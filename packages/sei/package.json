@@ -1,0 +1,40 @@
+{
+  "private": true,
+  "name": "@wormhole-foundation/sdk-sei",
+  "repository": "https://github.com/wormhole-foundation/connect-sdk",
+  "license": "Apache-2.0",
+  "version": "0.1.0-beta",
+  "main": "bin/src/index.js",
+  "author": "",
+  "description": "",
+  "engines": {
+    "node": ">=16",
+    "pnpm": ">=7"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "devDependencies": {
+    "@types/bs58": "^4.0.1",
+    "@typescript-eslint/eslint-plugin": "^5.54.1",
+    "@typescript-eslint/parser": "^5.54.1",
+    "eslint": "^8.35.0",
+    "eslint-config-prettier": "^8.7.0",
+    "lint-staged": "^13.1.2",
+    "prettier": "2.8.4",
+    "typescript": "^4.4.2"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig-build.json",
+    "clean": "pnpm -r run clean",
+    "lint": "npm run prettier && eslint --fix",
+    "prettier": "prettier --write ./src"
+  },
+  "dependencies": {
+    "@certusone/wormhole-sdk": "^0.9.21",
+    "@cosmjs/cosmwasm-stargate": "^0.27.1",
+    "@cosmjs/proto-signing": "^0.27.1",
+    "@cosmjs/stargate": "^0.27.1",
+    "bs58": "^4.0.1",
+    "cosmjs-types": "^0.8.0"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "extends": "../../../tsconfig.root.json",
+  "include": [
+    "./src/*.ts",
+    "./src/**/*.ts",
+    "./src/**/**/*.ts",
+    "./src/anchor-idl/*.json",
+    "./tests/*.ts",
+    "./tests/**/*.ts",
+    "./jest.config.ts"
+  ],
+  "files": [
+    "src/index.ts"
+  ],
+  "compilerOptions": {
+    "outDir": "./bin"
+  }
+}
