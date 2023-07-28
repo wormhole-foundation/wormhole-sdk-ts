@@ -1,8 +1,12 @@
 {
   "private": true,
   "name": "@wormhole-foundation/sdk-sei",
-  "repository": "",
+  "repository": "https://github.com/wormhole-foundation/connect-sdk",
   "license": "Apache-2.0",
+  "version": "0.1.0-beta",
+  "main": "bin/src/index.js",
+  "author": "",
+  "description": "",
   "engines": {
     "node": ">=16",
     "pnpm": ">=7"
