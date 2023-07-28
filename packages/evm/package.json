@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "@wormhole-foundation/sdk-evm",
+  "name": "@wormhole-foundation/connect-sdk-evm",
   "repository": "https://github.com/wormhole-foundation/connect-sdk",
   "license": "Apache-2.0",
   "version": "0.1.0-beta",
