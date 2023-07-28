@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "incremental": true,
+    "declaration": true,
+    "sourceMap": true,
+    "composite": true,
+    "types": ["mocha", "chai", "node", "jest"],
+    "typeRoots": ["./node_modules/@types"],
+    "lib": ["es2020"],
+    "module": "CommonJS",
+    "target": "es2020",
+    "esModuleInterop": true,
+    "strict": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "node",
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  }
+}

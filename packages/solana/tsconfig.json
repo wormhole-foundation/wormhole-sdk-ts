@@ -1,0 +1,19 @@
+{
+  "extends": "../../../tsconfig.root.json",
+  "include": [
+    "buffer-layout.d.ts",
+    "./src/*.ts",
+    "./src/**/*.ts",
+    "./src/**/**/*.ts",
+    "./src/**/**/**/*.ts",
+    "./tests/*.ts",
+    "./tests/**/*.ts",
+    "./jest.config.ts"
+  ],
+  "files": [
+    "./src/index.ts"
+  ],
+  "compilerOptions": {
+    "outDir": "./bin"
+  }
+}
