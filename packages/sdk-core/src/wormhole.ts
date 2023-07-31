@@ -171,7 +171,7 @@ export class Wormhole extends MultiProvider<Domain> {
         solanaContext = this.getContext(MAINNET_CHAINS.solana) as any;
       } catch (_) {
         throw new Error(
-          'You attempted to send a transfer to Solana, but the Solana context is not registered. You must import SolanaContext from @wormhole-foundation/sdk-solana and pass it in to the Wormhole class constructor',
+          'You attempted to send a transfer to Solana, but the Solana context is not registered. You must import SolanaContext from @wormhole-foundation/connect-sdk-solana and pass it in to the Wormhole class constructor',
         );
       }
       const account = await solanaContext.getAssociatedTokenAddress(
@@ -296,7 +296,7 @@ export class Wormhole extends MultiProvider<Domain> {
         seiContext = this.getContext(MAINNET_CHAINS.solana) as any;
       } catch (_) {
         throw new Error(
-          'You attempted to send a transfer to Sei, but the Sei context is not registered. You must import SeiContext from @wormhole-foundation/sdk-sei and pass it in to the Wormhole class constructor',
+          'You attempted to send a transfer to Sei, but the Sei context is not registered. You must import SeiContext from @wormhole-foundation/connect-sdk-sei and pass it in to the Wormhole class constructor',
         );
       }
       const { payload: seiPayload, receiver } =

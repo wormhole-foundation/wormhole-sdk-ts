@@ -1,5 +1,5 @@
 {
-  "extends": "../../../tsconfig.root.json",
+  "extends": "../../tsconfig.root.json",
   "include": [
     "buffer-layout.d.ts",
     "./src/*.ts",
@@ -14,6 +14,6 @@
     "./src/index.ts"
   ],
   "compilerOptions": {
-    "outDir": "./bin"
+    "outDir": "./dist"
   }
 }

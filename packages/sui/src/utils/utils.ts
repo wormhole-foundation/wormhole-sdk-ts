@@ -1,5 +1,6 @@
 import {
   builder,
+  DynamicFieldPage,
   getObjectType,
   isValidSuiAddress as isValidFullSuiAddress,
   JsonRpcProvider,
@@ -10,8 +11,7 @@ import {
   SuiTransactionBlockResponse,
   TransactionBlock,
 } from '@mysten/sui.js';
-import { DynamicFieldPage } from '@mysten/sui.js/dist/types/dynamic_fields';
-import { ensureHexPrefix } from '@wormhole-foundation/sdk-base';
+import { ensureHexPrefix } from '@wormhole-foundation/connect-sdk';
 import { SuiRpcValidationError } from './error';
 import { SuiError } from './types';
 
@@ -201,7 +201,7 @@ export async function getPackageId(
       parentId: objectId,
       cursor: nextCursor,
     });
-    currentPackage = dynamicFields.data.find((field) =>
+    currentPackage = dynamicFields.data.find((field: any) =>
       field.name.type.endsWith('CurrentPackage'),
     );
     nextCursor = dynamicFields.hasNextPage ? dynamicFields.nextCursor : null;

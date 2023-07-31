@@ -24,7 +24,7 @@ import {
   RelayerAbstract,
   MAINNET_CHAINS,
   Network,
-} from '@wormhole-foundation/sdk-base';
+} from '@wormhole-foundation/connect-sdk';
 
 import { SuiContracts } from './contracts';
 import { SuiRelayer } from './relayer';

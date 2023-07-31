@@ -12,7 +12,7 @@ import {
   ContractsAbstract,
   Wormhole,
   filterByContext,
-} from '@wormhole-foundation/sdk-base';
+} from '@wormhole-foundation/connect-sdk';
 
 import { createReadOnlyWormholeProgramInterface } from './utils/wormhole';
 import { createReadOnlyTokenBridgeProgramInterface } from './utils/tokenBridge';

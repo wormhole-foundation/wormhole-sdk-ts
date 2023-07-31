@@ -15,7 +15,7 @@ import {
   ParsedNftTransferVaa,
   parseNftTransferVaa,
   SignedVaa,
-} from '@wormhole-foundation/sdk-base';
+} from '@wormhole-foundation/connect-sdk';
 import { createReadOnlyNftBridgeProgramInterface } from '../program';
 import { deriveClaimKey, derivePostedVaaKey } from '../../wormhole';
 import {

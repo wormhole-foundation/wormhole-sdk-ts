@@ -1,5 +1,5 @@
 import { Types } from 'aptos';
-import { ChainId, createNonce } from '@wormhole-foundation/sdk-base';
+import { ChainId, createNonce } from '@wormhole-foundation/connect-sdk';
 import { isValidAptosType } from './utils';
 
 export const transferTokens = (

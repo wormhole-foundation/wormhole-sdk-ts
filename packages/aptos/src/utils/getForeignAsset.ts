@@ -1,5 +1,5 @@
 import { AptosClient } from 'aptos';
-import { ChainId } from '@wormhole-foundation/sdk-base';
+import { ChainId } from '@wormhole-foundation/connect-sdk';
 import { coalesceModuleAddress, getAssetFullyQualifiedType } from './utils';
 
 /**

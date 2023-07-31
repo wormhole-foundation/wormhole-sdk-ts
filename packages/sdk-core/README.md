@@ -9,9 +9,9 @@ A developer would use this package in conjunction with 1 or more of the chain co
 Getting started is simple, just import and pass in the contexts to the Wormhole class.
 
 ```ts
-import { Wormhole, Context, Network } from '@wormhole-foundation/sdk-base';
-import { EvmContext } from '@wormhole-foundation/sdk-evm';
-import { SolanaContext } from '@wormhole-foundation/sdk-solana';
+import { Wormhole, Context, Network } from '@wormhole-foundation/connect-sdk';
+import { EvmContext } from '@wormhole-foundation/connect-sdk-evm';
+import { SolanaContext } from '@wormhole-foundation/connect-sdk-solana';
 
 const NETWORK = Network.MAINNET;
 const contexts = {

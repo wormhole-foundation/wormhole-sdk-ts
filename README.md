@@ -4,14 +4,14 @@ The primary component here is the Wormhole class, which serves as a wrapper for 
 
 ## Usage
 
-A developer would use the sdk-core package in conjunction with 1 or more of the chain context packages. Most developers don't use every single chain and may only use a couple, this allows developers to import only the dependencies they actually need.
+A developer would use the core connect-sdk package in conjunction with 1 or more of the chain context packages. Most developers don't use every single chain and may only use a couple, this allows developers to import only the dependencies they actually need.
 
 Getting started is simple, just import and pass in the contexts to the Wormhole class.
 
 ```ts
-import { Wormhole, Context, Network } from '@wormhole-foundation/sdk-base';
-import { EvmContext } from '@wormhole-foundation/sdk-evm';
-import { SolanaContext } from '@wormhole-foundation/sdk-solana';
+import { Wormhole, Context, Network } from '@wormhole-foundation/connect-sdk';
+import { EvmContext } from '@wormhole-foundation/connect-sdk-evm';
+import { SolanaContext } from '@wormhole-foundation/connect-sdk-solana';
 
 const NETWORK = Network.MAINNET;
 const contexts = {

@@ -1,4 +1,4 @@
-import { uint8ArrayToHex } from '@wormhole-foundation/sdk-base';
+import { uint8ArrayToHex } from '@wormhole-foundation/connect-sdk';
 
 // TODO: why does this use the Algorand method, why isn't this in the vaa folder????
 

@@ -5,7 +5,7 @@ import {
   Commitment,
   PublicKeyInitData,
 } from '@solana/web3.js';
-import { ChainId, MAINNET_CHAINS } from '@wormhole-foundation/sdk-base';
+import { ChainId, MAINNET_CHAINS } from '@wormhole-foundation/connect-sdk';
 import { deriveAddress, getAccountData } from '../../utils';
 
 export { deriveSplTokenMetadataKey } from '../../utils/splMetadata';

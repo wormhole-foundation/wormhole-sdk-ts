@@ -23,6 +23,11 @@
     "coverage": "npm run coverage --workspaces --if-present"
   },
   "workspaces": [
-    "packages/*"
+    "packages/sdk-core",
+    "packages/aptos",
+    "packages/evm",
+    "packages/solana",
+    "packages/sei",
+    "packages/sui"
   ]
 }

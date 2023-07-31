@@ -43,7 +43,7 @@ import {
   NATIVE,
   Network,
   SeiAbstract,
-} from '@wormhole-foundation/sdk-base';
+} from '@wormhole-foundation/connect-sdk';
 import { SeiContracts } from './contracts';
 
 interface WrappedRegistryResponse {

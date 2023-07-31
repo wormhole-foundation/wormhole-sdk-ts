@@ -16,7 +16,7 @@ import {
   parseTokenTransferPayload,
   TokenBridgeAbstract,
   MAINNET_CHAINS,
-} from '@wormhole-foundation/sdk-base';
+} from '@wormhole-foundation/connect-sdk';
 import { AptosContracts } from './contracts';
 import {
   getForeignAssetAptos,

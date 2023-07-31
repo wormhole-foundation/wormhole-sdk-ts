@@ -6,7 +6,7 @@ import {
   ensureHexPrefix,
   ChainId,
   MAINNET_CHAINS,
-} from '@wormhole-foundation/sdk-base';
+} from '@wormhole-foundation/connect-sdk';
 import { NftBridgeState, TokenBridgeState } from '../types';
 
 /**

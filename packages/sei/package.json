@@ -4,7 +4,7 @@
   "repository": "https://github.com/wormhole-foundation/connect-sdk",
   "license": "Apache-2.0",
   "version": "0.1.0-beta",
-  "main": "bin/src/index.js",
+  "main": "dist/src/index.js",
   "author": "",
   "description": "",
   "engines": {
@@ -34,6 +34,7 @@
     "@cosmjs/cosmwasm-stargate": "^0.27.1",
     "@cosmjs/proto-signing": "^0.27.1",
     "@cosmjs/stargate": "^0.27.1",
+    "@wormhole-foundation/connect-sdk": "*",
     "bs58": "^4.0.1",
     "cosmjs-types": "^0.8.0"
   }

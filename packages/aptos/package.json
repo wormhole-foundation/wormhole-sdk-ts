@@ -4,7 +4,7 @@
   "repository": "https://github.com/wormhole-foundation/connect-sdk",
   "license": "Apache-2.0",
   "version": "0.1.0-beta",
-  "main": "bin/src/index.js",
+  "main": "dist/src/index.js",
   "author": "",
   "description": "",
   "engines": {
@@ -30,6 +30,7 @@
     "prettier": "prettier --write ./src"
   },
   "dependencies": {
+    "@wormhole-foundation/connect-sdk": "*",
     "js-sha3": "^0.8.0",
     "ethers": "^5.7.2"
   }

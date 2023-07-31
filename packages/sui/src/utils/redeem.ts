@@ -4,7 +4,7 @@ import {
   TransactionBlock,
 } from '@mysten/sui.js';
 import { getPackageId, getTokenCoinType, uint8ArrayToBCS } from './utils';
-import { parseTokenTransferVaa } from '@wormhole-foundation/sdk-base';
+import { parseTokenTransferVaa } from '@wormhole-foundation/connect-sdk';
 
 export async function redeemOnSui(
   provider: JsonRpcProvider,

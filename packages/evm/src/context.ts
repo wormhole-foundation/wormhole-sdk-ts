@@ -29,7 +29,7 @@ import {
   createNonce,
   MAINNET_CHAINS,
   Network,
-} from '@wormhole-foundation/sdk-base';
+} from '@wormhole-foundation/connect-sdk';
 import { EvmContracts } from './contracts';
 
 export * from './contracts';
