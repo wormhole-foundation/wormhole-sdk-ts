@@ -1,5 +1,4 @@
 {
-  "private": true,
   "name": "@wormhole-foundation/connect-sdk-aptos",
   "repository": "https://github.com/wormhole-foundation/connect-sdk",
   "license": "Apache-2.0",
