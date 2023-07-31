@@ -6,7 +6,7 @@ import {
   ContractsAbstract,
   Wormhole,
   filterByContext,
-} from '@wormhole-foundation/sdk-base';
+} from '@wormhole-foundation/connect-sdk';
 import { JsonRpcProvider } from '@mysten/sui.js';
 import { SuiRelayer } from './relayer';
 

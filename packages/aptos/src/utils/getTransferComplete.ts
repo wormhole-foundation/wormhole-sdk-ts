@@ -2,7 +2,7 @@ import { AptosClient } from 'aptos';
 import {
   ensureHexPrefix,
   getSignedVAAHash,
-} from '@wormhole-foundation/sdk-base';
+} from '@wormhole-foundation/connect-sdk';
 import { NftBridgeState } from '../types';
 
 export async function getIsTransferCompletedAptos(

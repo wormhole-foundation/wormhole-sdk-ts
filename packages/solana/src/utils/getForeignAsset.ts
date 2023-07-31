@@ -1,5 +1,5 @@
 import { Commitment, Connection, PublicKeyInitData } from '@solana/web3.js';
-import { ChainId } from '@wormhole-foundation/sdk-base';
+import { ChainId } from '@wormhole-foundation/connect-sdk';
 import { deriveWrappedMintKey, getWrappedMeta } from './tokenBridge';
 
 /**

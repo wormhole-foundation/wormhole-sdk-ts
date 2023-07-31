@@ -12,7 +12,7 @@ import {
   parseAttestMetaVaa,
   ParsedAttestMetaVaa,
   SignedVaa,
-} from '@wormhole-foundation/sdk-base';
+} from '@wormhole-foundation/connect-sdk';
 import { createReadOnlyTokenBridgeProgramInterface } from '../program';
 import { deriveClaimKey, derivePostedVaaKey } from '../../wormhole';
 import {

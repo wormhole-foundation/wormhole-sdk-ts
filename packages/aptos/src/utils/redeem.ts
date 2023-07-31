@@ -1,5 +1,5 @@
 import { AptosClient, Types } from 'aptos';
-import { MAINNET_CHAINS, ChainId } from '@wormhole-foundation/sdk-base';
+import { MAINNET_CHAINS, ChainId } from '@wormhole-foundation/connect-sdk';
 import {
   getAssetFullyQualifiedType,
   getTypeFromExternalAddress,

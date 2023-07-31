@@ -1,10 +1,9 @@
 {
-  "private": true,
   "name": "@wormhole-foundation/connect-sdk-evm",
   "repository": "https://github.com/wormhole-foundation/connect-sdk",
   "license": "Apache-2.0",
   "version": "0.1.0-beta",
-  "main": "bin/src/index.js",
+  "main": "dist/src/index.js",
   "author": "",
   "description": "",
   "engines": {
@@ -30,7 +29,7 @@
   },
   "dependencies": {
     "@certusone/wormhole-sdk": "^0.9.21",
-    "@wormhole-foundation/sdk-base": "*",
+    "@wormhole-foundation/connect-sdk": "*",
     "ethers": "^5.7.2"
   }
 }

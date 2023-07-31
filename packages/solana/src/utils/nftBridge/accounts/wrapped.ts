@@ -1,5 +1,5 @@
 import { tryNativeToUint8Array } from '@certusone/wormhole-sdk';
-import { ChainId, MAINNET_CHAINS } from '@wormhole-foundation/sdk-base';
+import { ChainId, MAINNET_CHAINS } from '@wormhole-foundation/connect-sdk';
 import { BN } from '@project-serum/anchor';
 import {
   Connection,

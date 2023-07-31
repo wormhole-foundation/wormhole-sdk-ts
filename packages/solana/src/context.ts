@@ -42,7 +42,7 @@ import {
   TokenBridgeAbstract,
   createNonce,
   SolanaAbstract,
-} from '@wormhole-foundation/sdk-base';
+} from '@wormhole-foundation/connect-sdk';
 
 import { SolContracts } from './contracts';
 import {

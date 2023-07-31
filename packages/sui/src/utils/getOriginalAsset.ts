@@ -2,7 +2,7 @@ import {
   MAINNET_CHAINS,
   ChainId,
   WormholeWrappedInfo,
-} from '@wormhole-foundation/sdk-base';
+} from '@wormhole-foundation/connect-sdk';
 import {
   getFieldsFromObjectResponse,
   getTokenFromTokenRegistry,

@@ -12,7 +12,7 @@ import {
   ParsedGovernanceVaa,
   parseGovernanceVaa,
   SignedVaa,
-} from '@wormhole-foundation/sdk-base';
+} from '@wormhole-foundation/connect-sdk';
 import { createReadOnlyWormholeProgramInterface } from '../program';
 import {
   deriveWormholeBridgeDataKey,

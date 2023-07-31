@@ -19,7 +19,7 @@ import {
   ParsedVaa,
   parseVaa,
   SignedVaa,
-} from '@wormhole-foundation/sdk-base';
+} from '@wormhole-foundation/connect-sdk';
 import { createReadOnlyWormholeProgramInterface } from '../program';
 
 const MAX_LEN_GUARDIAN_KEYS = 19;

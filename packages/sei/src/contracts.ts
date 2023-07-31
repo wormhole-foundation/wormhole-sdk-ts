@@ -6,7 +6,7 @@ import {
   ChainId,
   Context,
   Contracts,
-} from '@wormhole-foundation/sdk-base';
+} from '@wormhole-foundation/connect-sdk';
 
 export class SeiContracts extends ContractsAbstract {
   protected _contracts: Map<ChainName, any>;

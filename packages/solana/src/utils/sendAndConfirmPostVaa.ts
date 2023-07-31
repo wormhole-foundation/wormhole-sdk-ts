@@ -23,7 +23,7 @@ import {
   ParsedVaa,
   parseVaa,
   SignedVaa,
-} from '@wormhole-foundation/sdk-base';
+} from '@wormhole-foundation/connect-sdk';
 
 /**
  * @category Solana

@@ -12,7 +12,7 @@ import {
   SignedVaa,
   parseTokenTransferVaa,
   MAX_VAA_DECIMALS,
-} from '@wormhole-foundation/sdk-base';
+} from '@wormhole-foundation/connect-sdk';
 import {
   createCompleteTransferNativeInstruction,
   createCompleteTransferWrappedInstruction,

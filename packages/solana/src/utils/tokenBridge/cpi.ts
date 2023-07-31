@@ -10,7 +10,7 @@ import {
   ParsedTokenTransferVaa,
   parseTokenTransferVaa,
   SignedVaa,
-} from '@wormhole-foundation/sdk-base';
+} from '@wormhole-foundation/connect-sdk';
 import {
   deriveClaimKey,
   derivePostedVaaKey,

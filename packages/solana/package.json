@@ -1,10 +1,9 @@
 {
-  "private": true,
   "name": "@wormhole-foundation/connect-sdk-solana",
   "repository": "https://github.com/wormhole-foundation/connect-sdk",
   "license": "Apache-2.0",
   "version": "0.1.0-beta",
-  "main": "bin/src/index.js",
+  "main": "dist/src/index.js",
   "author": "",
   "description": "",
   "engines": {
@@ -35,7 +34,7 @@
     "@project-serum/borsh": "0.2.5",
     "@solana/spl-token": "0.3.5",
     "@solana/web3.js": "1.66.2",
-    "@wormhole-foundation/sdk-base": "*",
+    "@wormhole-foundation/connect-sdk": "*",
     "bs58": "^4.0.1",
     "ethers": "^5.7.2"
   }
