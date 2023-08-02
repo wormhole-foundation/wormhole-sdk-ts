@@ -30,6 +30,7 @@
     "packages/evm",
     "packages/solana",
     "packages/sei",
-    "packages/sui"
+    "packages/sui",
+    "packages/examples"
   ]
 }
