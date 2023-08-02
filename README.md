@@ -16,7 +16,7 @@ import { SolanaContext } from '@wormhole-foundation/connect-sdk-solana';
 const NETWORK = Network.MAINNET;
 const contexts = {
   [Context.EVM]: EvmContext,
-  [Context.Solana]: SolanaContext,
+  [Context.SOLANA]: SolanaContext,
 }
 const wormholeSDK = new Wormhole(NETWORK, contexts);
 const receipt = wormholeSDK.startTransfer(

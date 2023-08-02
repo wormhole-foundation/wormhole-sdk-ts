@@ -2,13 +2,13 @@
   "extends": "../../tsconfig.root.json",
   "include": [
     "./src/*.ts",
-    "./src/**/*.ts",
-    "./tests/*.ts",
-    "./tests/**/*.ts",
-    "./jest.config.ts"
+    "./src/**/*.ts"
   ],
-  "files": [
-    "./src/index.ts"
+  "exclude": [
+    "./node_modules",
+    "./dist",
+    "./tests",
+    "./.coverage"
   ],
   "compilerOptions": {
     "outDir": "./dist"
