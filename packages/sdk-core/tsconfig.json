@@ -4,15 +4,15 @@
     "./src/*.ts",
     "./src/**/*.ts",
     "./src/**/**/*.ts",
-    "./src/anchor-idl/*.json",
-    "./tests/*.ts",
-    "./tests/**/*.ts",
-    "./jest.config.ts"
+    "./src/anchor-idl/*.json"
   ],
-  "files": [
-    "src/index.ts"
+  "exclude": [
+    "./node_modules",
+    "./dist",
+    "./tests",
+    "./.coverage"
   ],
   "compilerOptions": {
-    "outDir": "./dist"
+    "outDir": "./dist",
   }
 }
