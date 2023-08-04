@@ -1,5 +1,6 @@
 import { Wormhole, Context, Network } from "@wormhole-foundation/connect-sdk";
 import { SolanaContext } from "@wormhole-foundation/connect-sdk-solana";
+import { Transaction } from "@solana/web3.js";
 import { EvmContext } from "@wormhole-foundation/connect-sdk-evm";
 import { getSolSigner, getEthSigner } from "./helpers";
 
@@ -23,7 +24,7 @@ import { getSolSigner, getEthSigner } from "./helpers";
   const receiverAddress = ethAcct.address;
 
   // Prepare the transactions to start a transfer across chains
-  const xfer = await wh.startTransfer(
+  const xfer: Transaction = await wh.startTransfer(
     "native",
     100n,
     senderChain,
