@@ -27,8 +27,6 @@ import {
   parseVaa,
   RelayerAbstract,
   createNonce,
-  MAINNET_CHAINS,
-  Network,
 } from '@wormhole-foundation/connect-sdk';
 import { EvmContracts } from './contracts';
 
@@ -190,22 +188,18 @@ export class EvmContext extends RelayerAbstract<ethers.ContractReceipt> {
     const amountBN = ethers.BigNumber.from(amount);
     const bridge = this.contracts.mustGetBridge(sendingChain);
 
-    let recipientAccount = recipientAddress;
-    // get token account for solana
-    if (recipientChainId === MAINNET_CHAINS.solana) {
-      let tokenId = token;
-      if (token === NATIVE) {
-        tokenId = {
-          address: await bridge.WETH(),
-          chain: sendingChainName,
-        };
-      }
-      recipientAccount = await this.wormhole.getSolanaRecipientAddress(
-        recipientChain,
-        tokenId as TokenId,
-        recipientAddress,
-      );
-    }
+    const tokenID: TokenId =
+      token === NATIVE
+        ? {
+            address: await bridge.WETH(),
+            chain: sendingChainName,
+          }
+        : token;
+
+    const recipientAccount = await destContext.getRecipientAddress(
+      tokenID,
+      recipientAddress,
+    );
 
     if (token === NATIVE) {
       // sending native ETH

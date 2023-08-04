@@ -89,6 +89,21 @@ export abstract class TokenBridgeAbstract<TransactionResult> {
   abstract parseAddress(address: any): string;
 
   /**
+   * Gets the recipient address on the recieving chain.
+   *  Note: this is a NoOp for chains other than Solana with its ATA
+   *
+   * @param tokenId The token identifier (native chain/address)
+   * @param recipientAddress The address of the receiver
+   * @returns The relayer fee
+   */
+  async getRecipientAddress(
+    tokenId: TokenId,
+    recipientAddress: string,
+  ): Promise<string> {
+    return recipientAddress;
+  }
+
+  /**
    * Format a token address to 32-bytes universal address, which can be utilized by the Wormhole contracts
    *
    * How is this different from {@link Wormhole#formatAddress | formatAddress}? Converting some assets to a universal representation might require querying a registry first
