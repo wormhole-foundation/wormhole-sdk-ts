@@ -24,7 +24,7 @@ always use the latest registered providers and signers.</p>
 deployments. These can be imported directly from the wormhole sdk.</p>
 </div>
 <div class="tsd-comment tsd-typography">
-<h4>Example</h4><pre><code class="language-ts"><span class="hl-7">// Set up mainnet and then access contracts as below:</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">context</span><span class="hl-1"> = </span><span class="hl-4">new</span><span class="hl-1"> </span><span class="hl-6">WormholeContext</span><span class="hl-1">(</span><span class="hl-2">Network</span><span class="hl-1">.</span><span class="hl-2">Mainnet</span><span class="hl-1">);</span><br/><span class="hl-4">let</span><span class="hl-1"> </span><span class="hl-2">bridge</span><span class="hl-1"> = </span><span class="hl-2">context</span><span class="hl-1">.</span><span class="hl-6">mustGetBridge</span><span class="hl-1">(</span><span class="hl-3">&#39;ethereum&#39;</span><span class="hl-1">);</span><br/><br/><span class="hl-7">// interact easily with any chain!</span><br/><span class="hl-7">// supports EVM, Solana, Terra, etc</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">tokenId</span><span class="hl-1"> = {</span><br/><span class="hl-1">  </span><span class="hl-2">chain:</span><span class="hl-1"> </span><span class="hl-3">&#39;ethereum&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-2">address:</span><span class="hl-1"> </span><span class="hl-3">&#39;0x123...&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">}</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">receipt</span><span class="hl-1"> = </span><span class="hl-2">context</span><span class="hl-1">.</span><span class="hl-6">startTransfer</span><span class="hl-1">(</span><br/><span class="hl-1">  </span><span class="hl-2">tokenId</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-4">new</span><span class="hl-1"> </span><span class="hl-6">BigInt</span><span class="hl-1">(</span><span class="hl-8">10</span><span class="hl-1">), </span><span class="hl-7">// amount</span><br/><span class="hl-1">  </span><span class="hl-3">&#39;ethereum&#39;</span><span class="hl-1">, </span><span class="hl-7">// sending chain</span><br/><span class="hl-1">  </span><span class="hl-3">&#39;0x789...&#39;</span><span class="hl-1">, </span><span class="hl-7">// sender address</span><br/><span class="hl-1">  </span><span class="hl-3">&#39;moonbeam&#39;</span><span class="hl-1">, </span><span class="hl-7">// destination chain</span><br/><span class="hl-1">  </span><span class="hl-3">&#39;0x789..., // recipient address on destination chai</span><span class="hl-9">n</span><br/><span class="hl-1">)</span>
+<h4>Example</h4><pre><code class="language-ts"><span class="hl-7">// Set up mainnet and then access contracts as below:</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">context</span><span class="hl-1"> = </span><span class="hl-4">new</span><span class="hl-1"> </span><span class="hl-6">WormholeContext</span><span class="hl-1">(</span><span class="hl-2">Network</span><span class="hl-1">.</span><span class="hl-2">Mainnet</span><span class="hl-1">);</span><br/><span class="hl-4">let</span><span class="hl-1"> </span><span class="hl-2">bridge</span><span class="hl-1"> = </span><span class="hl-2">context</span><span class="hl-1">.</span><span class="hl-6">mustGetBridge</span><span class="hl-1">(</span><span class="hl-3">&#39;ethereum&#39;</span><span class="hl-1">);</span><br/><br/><span class="hl-7">// interact easily with any chain!</span><br/><span class="hl-7">// supports EVM, Solana, Terra, etc</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">tokenId</span><span class="hl-1"> = {</span><br/><span class="hl-1">  </span><span class="hl-2">chain:</span><span class="hl-1"> </span><span class="hl-3">&#39;ethereum&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-2">address:</span><span class="hl-1"> </span><span class="hl-3">&#39;0x123...&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">}</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">receipt</span><span class="hl-1"> = </span><span class="hl-2">context</span><span class="hl-1">.</span><span class="hl-6">startTransfer</span><span class="hl-1">(</span><br/><span class="hl-1">  </span><span class="hl-2">tokenId</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-4">new</span><span class="hl-1"> </span><span class="hl-6">BigInt</span><span class="hl-1">(</span><span class="hl-8">10</span><span class="hl-1">), </span><span class="hl-7">// amount</span><br/><span class="hl-1">  </span><span class="hl-3">&#39;ethereum&#39;</span><span class="hl-1">, </span><span class="hl-7">// sending chain</span><br/><span class="hl-1">  </span><span class="hl-3">&#39;0x789...&#39;</span><span class="hl-1">, </span><span class="hl-7">// sender address</span><br/><span class="hl-1">  </span><span class="hl-3">&#39;moonbeam&#39;</span><span class="hl-1">, </span><span class="hl-7">// destination chain</span><br/><span class="hl-1">  </span><span class="hl-3">&#39;0x789...&#39;</span><span class="hl-1">, </span><span class="hl-7">// recipient address on destination chain</span><br/><span class="hl-1">)</span>
 </code><button>Copy</button></pre>
 </div></section>
 <section class="tsd-panel tsd-hierarchy">
@@ -34,7 +34,7 @@ deployments. These can be imported directly from the wormhole sdk.</p>
 <ul class="tsd-hierarchy">
 <li><span class="target">Wormhole</span></li></ul></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/dca75ae/packages/sdk-core/src/wormhole.ts#L56">packages/sdk-core/src/wormhole.ts:56</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/c177535/packages/sdk-core/src/wormhole.ts#L56">packages/sdk-core/src/wormhole.ts:56</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -76,7 +76,6 @@ deployments. These can be imported directly from the wormhole sdk.</p>
 <a href="_wormhole_foundation_connect_sdk.Wormhole.html#getNativeBalance" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>get<wbr/>Native<wbr/>Balance</span></a>
 <a href="_wormhole_foundation_connect_sdk.Wormhole.html#getProvider" class="tsd-index-link tsd-is-inherited tsd-is-external"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>get<wbr/>Provider</span></a>
 <a href="_wormhole_foundation_connect_sdk.Wormhole.html#getSigner" class="tsd-index-link tsd-is-inherited tsd-is-external"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>get<wbr/>Signer</span></a>
-<a href="_wormhole_foundation_connect_sdk.Wormhole.html#getSolanaRecipientAddress" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>get<wbr/>Solana<wbr/>Recipient<wbr/>Address</span></a>
 <a href="_wormhole_foundation_connect_sdk.Wormhole.html#getTokenBalance" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>get<wbr/>Token<wbr/>Balance</span></a>
 <a href="_wormhole_foundation_connect_sdk.Wormhole.html#getVAA" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>getVAA</span></a>
 <a href="_wormhole_foundation_connect_sdk.Wormhole.html#isTransferCompleted" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>is<wbr/>Transfer<wbr/>Completed</span></a>
@@ -124,19 +123,19 @@ deployments. These can be imported directly from the wormhole sdk.</p>
 <h4 class="tsd-returns-title">Returns <a href="_wormhole_foundation_connect_sdk.Wormhole.html" class="tsd-signature-type tsd-kind-class">Wormhole</a></h4><aside class="tsd-sources">
 <p>Overrides MultiProvider&lt;Domain&gt;.constructor</p>
 <ul>
-<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/dca75ae/packages/sdk-core/src/wormhole.ts#L60">packages/sdk-core/src/wormhole.ts:60</a></li></ul></aside></li></ul></section></section>
+<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/c177535/packages/sdk-core/src/wormhole.ts#L60">packages/sdk-core/src/wormhole.ts:60</a></li></ul></aside></li></ul></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Properties</h2>
 <section class="tsd-panel tsd-member tsd-is-protected"><a id="_contexts" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>_contexts</span><a href="#_contexts" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">_contexts</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type ">Map</span><span class="tsd-signature-symbol">&lt;</span><a href="../enums/_wormhole_foundation_connect_sdk.Context.html" class="tsd-signature-type tsd-kind-enum">Context</a><span class="tsd-signature-symbol">, </span><a href="../types/_wormhole_foundation_connect_sdk.AnyContext.html" class="tsd-signature-type tsd-kind-type-alias">AnyContext</a><span class="tsd-signature-symbol">&gt;</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/dca75ae/packages/sdk-core/src/wormhole.ts#L57">packages/sdk-core/src/wormhole.ts:57</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/c177535/packages/sdk-core/src/wormhole.ts#L57">packages/sdk-core/src/wormhole.ts:57</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member"><a id="conf" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>conf</span><a href="#conf" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">conf</span><span class="tsd-signature-symbol">:</span> <a href="../types/_wormhole_foundation_connect_sdk.WormholeConfig.html" class="tsd-signature-type tsd-kind-type-alias">WormholeConfig</a></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/dca75ae/packages/sdk-core/src/wormhole.ts#L58">packages/sdk-core/src/wormhole.ts:58</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/c177535/packages/sdk-core/src/wormhole.ts#L58">packages/sdk-core/src/wormhole.ts:58</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-protected tsd-is-inherited tsd-is-external"><a id="domains" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>domains</span><a href="#domains" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">domains</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type ">Map</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type ">Domain</span><span class="tsd-signature-symbol">&gt;</span></div><aside class="tsd-sources">
@@ -191,7 +190,7 @@ deployments. These can be imported directly from the wormhole sdk.</p>
 <li class="tsd-description">
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/dca75ae/packages/sdk-core/src/wormhole.ts#L82">packages/sdk-core/src/wormhole.ts:82</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/c177535/packages/sdk-core/src/wormhole.ts#L82">packages/sdk-core/src/wormhole.ts:82</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited tsd-is-external"><a id="registeredDomains" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>registered<wbr/>Domains</span><a href="#registeredDomains" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited tsd-is-external">
@@ -246,7 +245,7 @@ deployments. These can be imported directly from the wormhole sdk.</p>
 
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/dca75ae/packages/sdk-core/src/wormhole.ts#L396">packages/sdk-core/src/wormhole.ts:396</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/c177535/packages/sdk-core/src/wormhole.ts#L377">packages/sdk-core/src/wormhole.ts:377</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="fetchTokenDecimals" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>fetch<wbr/>Token<wbr/>Decimals</span><a href="#fetchTokenDecimals" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -271,7 +270,7 @@ deployments. These can be imported directly from the wormhole sdk.</p>
 
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/dca75ae/packages/sdk-core/src/wormhole.ts#L224">packages/sdk-core/src/wormhole.ts:224</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/c177535/packages/sdk-core/src/wormhole.ts#L203">packages/sdk-core/src/wormhole.ts:203</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="formatAddress" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>format<wbr/>Address</span><a href="#formatAddress" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -293,7 +292,7 @@ deployments. These can be imported directly from the wormhole sdk.</p>
 
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/dca75ae/packages/sdk-core/src/wormhole.ts#L474">packages/sdk-core/src/wormhole.ts:474</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/c177535/packages/sdk-core/src/wormhole.ts#L455">packages/sdk-core/src/wormhole.ts:455</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited tsd-is-external"><a id="getAddress" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>get<wbr/>Address</span><a href="#getAddress" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited tsd-is-external">
@@ -361,7 +360,7 @@ registered for a domain, it will return undefined</p>
 <h4>Throws</h4><p>Errors if context is not found</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/dca75ae/packages/sdk-core/src/wormhole.ts#L155">packages/sdk-core/src/wormhole.ts:155</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/c177535/packages/sdk-core/src/wormhole.ts#L155">packages/sdk-core/src/wormhole.ts:155</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="getContracts" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>get<wbr/>Contracts</span><a href="#getContracts" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -381,7 +380,7 @@ registered for a domain, it will return undefined</p>
 
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/dca75ae/packages/sdk-core/src/wormhole.ts#L132">packages/sdk-core/src/wormhole.ts:132</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/c177535/packages/sdk-core/src/wormhole.ts#L132">packages/sdk-core/src/wormhole.ts:132</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited tsd-is-external"><a id="getDomain" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>get<wbr/>Domain</span><a href="#getDomain" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited tsd-is-external">
@@ -408,7 +407,8 @@ registered for a domain, it will return undefined</p>
 <ul class="tsd-signatures">
 <li class="tsd-signature tsd-anchor-link" id="getForeignAsset.getForeignAsset-1"><span class="tsd-kind-call-signature">get<wbr/>Foreign<wbr/>Asset</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">tokenId</span>, <span class="tsd-kind-parameter">chain</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span><a href="#getForeignAsset.getForeignAsset-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
 <li class="tsd-description">
-<div class="tsd-comment tsd-typography"><p>Fetches the address for a token representation on any chain (These are the Wormhole token addresses, not necessarily the cannonical version of that token)</p>
+<div class="tsd-comment tsd-typography"><p>Fetches the address for a token representation on any chain
+ These are the Wormhole token addresses, not necessarily the cannonical version of that token</p>
 </div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
@@ -427,7 +427,7 @@ registered for a domain, it will return undefined</p>
 
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/dca75ae/packages/sdk-core/src/wormhole.ts#L193">packages/sdk-core/src/wormhole.ts:193</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/c177535/packages/sdk-core/src/wormhole.ts#L171">packages/sdk-core/src/wormhole.ts:171</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="getMessageIdentifier" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>get<wbr/>Message<wbr/>Identifier</span><a href="#getMessageIdentifier" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -447,7 +447,7 @@ registered for a domain, it will return undefined</p>
 
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/dca75ae/packages/sdk-core/src/wormhole.ts#L418">packages/sdk-core/src/wormhole.ts:418</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/c177535/packages/sdk-core/src/wormhole.ts#L399">packages/sdk-core/src/wormhole.ts:399</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="getNativeBalance" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>get<wbr/>Native<wbr/>Balance</span><a href="#getNativeBalance" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -472,7 +472,7 @@ registered for a domain, it will return undefined</p>
 
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/dca75ae/packages/sdk-core/src/wormhole.ts#L240">packages/sdk-core/src/wormhole.ts:240</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/c177535/packages/sdk-core/src/wormhole.ts#L219">packages/sdk-core/src/wormhole.ts:219</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited tsd-is-external"><a id="getProvider" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>get<wbr/>Provider</span><a href="#getProvider" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited tsd-is-external">
@@ -515,23 +515,6 @@ registered for a domain, it will return undefined</p>
 <p>Inherited from MultiProvider.getSigner</p>
 <ul>
 <li>Defined in node_modules/@nomad-xyz/multi-provider/dist/provider.d.ts:152</li></ul></aside></li></ul></section>
-<section class="tsd-panel tsd-member"><a id="getSolanaRecipientAddress" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><span>get<wbr/>Solana<wbr/>Recipient<wbr/>Address</span><a href="#getSolanaRecipientAddress" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
-<ul class="tsd-signatures">
-<li class="tsd-signature tsd-anchor-link" id="getSolanaRecipientAddress.getSolanaRecipientAddress-1"><span class="tsd-kind-call-signature">get<wbr/>Solana<wbr/>Recipient<wbr/>Address</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">recipientChain</span>, <span class="tsd-kind-parameter">tokenId</span>, <span class="tsd-kind-parameter">recipientAddress</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><a href="#getSolanaRecipientAddress.getSolanaRecipientAddress-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
-<li class="tsd-description">
-<div class="tsd-parameters">
-<h4 class="tsd-parameters-title">Parameters</h4>
-<ul class="tsd-parameter-list">
-<li>
-<h5><span class="tsd-kind-parameter">recipientChain</span>: <a href="../types/_wormhole_foundation_connect_sdk.ChainName.html" class="tsd-signature-type tsd-kind-type-alias">ChainName</a><span class="tsd-signature-symbol"> | </span><a href="../types/_wormhole_foundation_connect_sdk.ChainId.html" class="tsd-signature-type tsd-kind-type-alias">ChainId</a></h5></li>
-<li>
-<h5><span class="tsd-kind-parameter">tokenId</span>: <a href="../types/_wormhole_foundation_connect_sdk.TokenId.html" class="tsd-signature-type tsd-kind-type-alias">TokenId</a></h5></li>
-<li>
-<h5><span class="tsd-kind-parameter">recipientAddress</span>: <span class="tsd-signature-type">string</span></h5></li></ul></div>
-<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
-<ul>
-<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/dca75ae/packages/sdk-core/src/wormhole.ts#L163">packages/sdk-core/src/wormhole.ts:163</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="getTokenBalance" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>get<wbr/>Token<wbr/>Balance</span><a href="#getTokenBalance" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -561,7 +544,7 @@ registered for a domain, it will return undefined</p>
 
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/dca75ae/packages/sdk-core/src/wormhole.ts#L256">packages/sdk-core/src/wormhole.ts:256</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/c177535/packages/sdk-core/src/wormhole.ts#L235">packages/sdk-core/src/wormhole.ts:235</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="getVAA" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>getVAA</span><a href="#getVAA" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -582,7 +565,7 @@ registered for a domain, it will return undefined</p>
 
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/dca75ae/packages/sdk-core/src/wormhole.ts#L441">packages/sdk-core/src/wormhole.ts:441</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/c177535/packages/sdk-core/src/wormhole.ts#L422">packages/sdk-core/src/wormhole.ts:422</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="isTransferCompleted" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>is<wbr/>Transfer<wbr/>Completed</span><a href="#isTransferCompleted" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -604,7 +587,7 @@ registered for a domain, it will return undefined</p>
 
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/dca75ae/packages/sdk-core/src/wormhole.ts#L460">packages/sdk-core/src/wormhole.ts:460</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/c177535/packages/sdk-core/src/wormhole.ts#L441">packages/sdk-core/src/wormhole.ts:441</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited tsd-is-external"><a id="knownDomain" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>known<wbr/>Domain</span><a href="#knownDomain" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited tsd-is-external">
@@ -668,7 +651,7 @@ registered for a domain, it will return undefined</p>
 <h4>Throws</h4><p>Errors if contracts are not found</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/dca75ae/packages/sdk-core/src/wormhole.ts#L143">packages/sdk-core/src/wormhole.ts:143</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/c177535/packages/sdk-core/src/wormhole.ts#L143">packages/sdk-core/src/wormhole.ts:143</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited tsd-is-external"><a id="mustGetDomain" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>must<wbr/>Get<wbr/>Domain</span><a href="#mustGetDomain" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited tsd-is-external">
@@ -697,7 +680,8 @@ registered for a domain, it will return undefined</p>
 <ul class="tsd-signatures">
 <li class="tsd-signature tsd-anchor-link" id="mustGetForeignAsset.mustGetForeignAsset-1"><span class="tsd-kind-call-signature">must<wbr/>Get<wbr/>Foreign<wbr/>Asset</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">tokenId</span>, <span class="tsd-kind-parameter">chain</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span><a href="#mustGetForeignAsset.mustGetForeignAsset-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
 <li class="tsd-description">
-<div class="tsd-comment tsd-typography"><p>Fetches the address for a token representation on any chain (These are the Wormhole token addresses, not necessarily the cannonical version of that token)</p>
+<div class="tsd-comment tsd-typography"><p>Fetches the address for a token representation on any chain
+ These are the Wormhole token addresses, not necessarily the cannonical version of that token</p>
 </div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
@@ -718,7 +702,7 @@ registered for a domain, it will return undefined</p>
 <h4>Throws</h4><p>Throws if the token does not exist</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/dca75ae/packages/sdk-core/src/wormhole.ts#L209">packages/sdk-core/src/wormhole.ts:209</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/c177535/packages/sdk-core/src/wormhole.ts#L188">packages/sdk-core/src/wormhole.ts:188</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited tsd-is-external"><a id="mustGetProvider" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>must<wbr/>Get<wbr/>Provider</span><a href="#mustGetProvider" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited tsd-is-external">
@@ -786,7 +770,7 @@ registered for a domain, it will return undefined</p>
 
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/dca75ae/packages/sdk-core/src/wormhole.ts#L485">packages/sdk-core/src/wormhole.ts:485</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/c177535/packages/sdk-core/src/wormhole.ts#L466">packages/sdk-core/src/wormhole.ts:466</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="parseMessageFromTx" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>parse<wbr/>Message<wbr/>From<wbr/>Tx</span><a href="#parseMessageFromTx" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -811,7 +795,7 @@ registered for a domain, it will return undefined</p>
 
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/dca75ae/packages/sdk-core/src/wormhole.ts#L497">packages/sdk-core/src/wormhole.ts:497</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/c177535/packages/sdk-core/src/wormhole.ts#L478">packages/sdk-core/src/wormhole.ts:478</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited tsd-is-external"><a id="registerDomain" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>register<wbr/>Domain</span><a href="#registerDomain" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited tsd-is-external">
@@ -868,7 +852,7 @@ to resolves tha domain info, and reference it by name or number.</p>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/dca75ae/packages/sdk-core/src/wormhole.ts#L89">packages/sdk-core/src/wormhole.ts:89</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/c177535/packages/sdk-core/src/wormhole.ts#L89">packages/sdk-core/src/wormhole.ts:89</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited tsd-is-external"><a id="registerRpcProvider" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>register<wbr/>Rpc<wbr/>Provider</span><a href="#registerRpcProvider" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited tsd-is-external">
@@ -1048,7 +1032,7 @@ to resolves tha domain info, and reference it by name or number.</p>
 <h4>Throws</h4><p>If unable to get the signer or contracts, or if there is a problem executing the transaction</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/dca75ae/packages/sdk-core/src/wormhole.ts#L281">packages/sdk-core/src/wormhole.ts:281</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/c177535/packages/sdk-core/src/wormhole.ts#L260">packages/sdk-core/src/wormhole.ts:260</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="startTransferWithRelay" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>start<wbr/>Transfer<wbr/>With<wbr/>Relay</span><a href="#startTransferWithRelay" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -1101,7 +1085,7 @@ to resolves tha domain info, and reference it by name or number.</p>
 <h4>Throws</h4><p>If unable to get the signer or contracts, or if there is a problem executing the transaction</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/dca75ae/packages/sdk-core/src/wormhole.ts#L355">packages/sdk-core/src/wormhole.ts:355</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/c177535/packages/sdk-core/src/wormhole.ts#L336">packages/sdk-core/src/wormhole.ts:336</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="supportsSendWithRelay" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>supports<wbr/>Send<wbr/>With<wbr/>Relay</span><a href="#supportsSendWithRelay" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -1121,7 +1105,7 @@ to resolves tha domain info, and reference it by name or number.</p>
 
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/dca75ae/packages/sdk-core/src/wormhole.ts#L336">packages/sdk-core/src/wormhole.ts:336</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/c177535/packages/sdk-core/src/wormhole.ts#L317">packages/sdk-core/src/wormhole.ts:317</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="toChainId" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>to<wbr/>Chain<wbr/>Id</span><a href="#toChainId" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -1141,7 +1125,7 @@ to resolves tha domain info, and reference it by name or number.</p>
 
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/dca75ae/packages/sdk-core/src/wormhole.ts#L114">packages/sdk-core/src/wormhole.ts:114</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/c177535/packages/sdk-core/src/wormhole.ts#L114">packages/sdk-core/src/wormhole.ts:114</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="toChainName" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>to<wbr/>Chain<wbr/>Name</span><a href="#toChainName" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -1161,7 +1145,7 @@ to resolves tha domain info, and reference it by name or number.</p>
 
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/dca75ae/packages/sdk-core/src/wormhole.ts#L123">packages/sdk-core/src/wormhole.ts:123</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/c177535/packages/sdk-core/src/wormhole.ts#L123">packages/sdk-core/src/wormhole.ts:123</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-inherited tsd-is-external"><a id="unregisterSigner" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>unregister<wbr/>Signer</span><a href="#unregisterSigner" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-inherited tsd-is-external">
@@ -1203,7 +1187,7 @@ domain.</p>
 
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/dca75ae/packages/sdk-core/src/wormhole.ts#L511">packages/sdk-core/src/wormhole.ts:511</a></li></ul></aside></li></ul></section></section></div>
+<li>Defined in <a href="https://github.com/barnjamin/connect-sdk/blob/c177535/packages/sdk-core/src/wormhole.ts#L492">packages/sdk-core/src/wormhole.ts:492</a></li></ul></aside></li></ul></section></section></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
@@ -1248,7 +1232,6 @@ domain.</p>
 <li><a href="#getNativeBalance" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>get<wbr/>Native<wbr/>Balance</span></a></li>
 <li><a href="#getProvider" class="tsd-is-inherited tsd-is-external"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>get<wbr/>Provider</span></a></li>
 <li><a href="#getSigner" class="tsd-is-inherited tsd-is-external"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>get<wbr/>Signer</span></a></li>
-<li><a href="#getSolanaRecipientAddress" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>get<wbr/>Solana<wbr/>Recipient<wbr/>Address</span></a></li>
 <li><a href="#getTokenBalance" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>get<wbr/>Token<wbr/>Balance</span></a></li>
 <li><a href="#getVAA" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>getVAA</span></a></li>
 <li><a href="#isTransferCompleted" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>is<wbr/>Transfer<wbr/>Completed</span></a></li>
