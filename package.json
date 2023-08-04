@@ -22,7 +22,7 @@
     "compile": "npm run compile --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "coverage": "npm run coverage --workspaces --if-present",
-    "doc": "npm run doc --workspaces --if-present "
+    "docs": "typedoc"
   },
   "workspaces": [
     "packages/sdk-core",

@@ -39,7 +39,7 @@
     "prettier": "prettier --write ./src",
     "test": "jest",
     "coverage": "jest --coverage",
-    "doc":"npx typedoc src/index.ts"
+    "docs":"typedoc"
   },
   "devDependencies": {
     "@types/elliptic": "^6.4.14",
