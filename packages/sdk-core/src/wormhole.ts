@@ -8,6 +8,7 @@ import {
   AnyContext,
   ChainId,
   ChainName,
+  ChainConfig,
   Context,
   ContextConfig,
   Contracts,
@@ -264,7 +265,7 @@ export class Wormhole extends MultiProvider<Domain> {
   /**
    * Send a Token Bridge transfer
    *
-   * @dev This _must_ be claimed on the destination chain, see {@link WormholeContext#completeTransfer | completeTransfer}
+   * @dev This _must_ be claimed on the destination chain, see {@link Wormhole#completeTransfer | completeTransfer}
    *
    * @param token The Token Identifier (chain/address) or `'native'` if sending the native token
    * @param amount The token amount to be sent, as a string
@@ -431,7 +432,8 @@ export class Wormhole extends MultiProvider<Domain> {
   }
 
   /**
-   * Gets a VAA from the API or Guardian RPC, finality must be met before the VAA will be available. See {@link ChainConfig.finalityThreshold | finalityThreshold} on {@link MAINNET_CONFIG | the config}
+   * Gets a VAA from the API or Guardian RPC, finality must be met before the VAA will be available.
+   *  See {@link ChainConfig.finalityThreshold | finalityThreshold} on {@link MAINNET_CONFIG | the config}
    *
    * @param msg The MessageIdentifier used to fetch the VAA
    * @returns The ParsedVAA if available

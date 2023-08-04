@@ -28,7 +28,7 @@ export abstract class TokenBridgeAbstract<TransactionResult> {
   /**
    * Send a Token Bridge transfer
    *
-   * @dev This _must_ be claimed on the destination chain, see {@link Wormhole#redeem | redeem}
+   * @dev This _must_ be claimed on the destination chain, see {@link Wormhole#completeTransfer | completeTransfer}
    *
    * @param token The Token Identifier (chain/address) or `'native'` if sending the native token
    * @param amount The token amount to be sent, as a string
@@ -52,7 +52,7 @@ export abstract class TokenBridgeAbstract<TransactionResult> {
   /**
    * Send a Token Bridge transfer with a payload.  The payload is used to convey extra information about a transfer to be utilized in an application
    *
-   * @dev This _must_ be claimed on the destination chain, see {@link Wormhole#redeem | redeem}
+   * @dev This _must_ be claimed on the destination chain, see {@link Wormhole#completeTransfer | completeTransfer}
    *
    * @param token The Token Identifier (chain/address) or `'native'` if sending the native token
    * @param amount The token amount to be sent, as a string
