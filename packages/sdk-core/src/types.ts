@@ -32,8 +32,11 @@ export type ChainResourceMap = {
   [chain in ChainName]?: string;
 };
 
+export type AnyContext = RelayerAbstract<any>;
+export type AnyContracts = ContractsAbstract;
+
 export type ContextConfig = {
-  [C in Context]?: any;
+  [C in Context]?: { new (...args: any): AnyContext };
 };
 
 export type Contracts = {
@@ -71,9 +74,6 @@ export type TokenId = {
   chain: ChainName;
   address: string;
 };
-
-export type AnyContext = RelayerAbstract<any>;
-export type AnyContracts = ContractsAbstract;
 
 export interface ParsedMessage {
   sendTx: string;

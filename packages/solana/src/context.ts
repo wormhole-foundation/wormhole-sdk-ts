@@ -21,7 +21,7 @@ import {
   SystemProgram,
   Transaction,
 } from '@solana/web3.js';
-import { BigNumber } from 'ethers';
+import { BigNumber, BigNumberish } from 'ethers';
 import { arrayify, zeroPad, hexlify } from 'ethers/lib/utils';
 import {
   CONFIG,
@@ -42,6 +42,7 @@ import {
   TokenBridgeAbstract,
   createNonce,
   SolanaAbstract,
+  RelayerAbstract,
 } from '@wormhole-foundation/connect-sdk';
 
 import { SolContracts } from './contracts';
@@ -75,7 +76,7 @@ const SOLANA_TESTNET_EMITTER_ID =
  * @category Solana
  */
 export class SolanaContext
-  extends TokenBridgeAbstract<Transaction>
+  extends RelayerAbstract<Transaction>
   implements SolanaAbstract
 {
   readonly type = Context.SOLANA;
@@ -681,16 +682,21 @@ export class SolanaContext
         }, 0)
       : 0;
 
-    // parse message payload
-    const parsed = parseTokenTransferPayload(message.payload);
-
     // get sequence
     const sequence = response.meta?.logMessages
       ?.filter((msg) => msg.startsWith(SOLANA_SEQ_LOG))?.[0]
       ?.replace(SOLANA_SEQ_LOG, '');
+
+    console.log(sequence);
+
     if (!sequence) {
       throw new Error('sequence not found');
     }
+
+    console.log(message.payload.toString('base64'));
+
+    // parse message payload
+    const parsed = parseTokenTransferPayload(message.payload);
 
     // format response
     const tokenContext = this.wormhole.getContext(parsed.tokenChain as ChainId);
@@ -806,5 +812,39 @@ export class SolanaContext
 
   parseRelayerPayload(payload: Buffer): ParsedRelayerPayload {
     throw new Error('relaying is not supported on solana');
+  }
+  startTransferWithRelay(
+    token: TokenId | 'native',
+    amount: bigint,
+    toNativeToken: string,
+    sendingChain: ChainName | ChainId,
+    senderAddress: string,
+    recipientChain: ChainName | ChainId,
+    recipientAddress: string,
+    overrides?: any,
+  ): Promise<Transaction> {
+    throw new Error('Method not implemented.');
+  }
+  calculateNativeTokenAmt(
+    destChain: ChainName | ChainId,
+    tokenId: TokenId,
+    amount: BigNumberish,
+    walletAddress: string,
+  ): Promise<BigNumber> {
+    throw new Error('Method not implemented.');
+  }
+  calculateMaxSwapAmount(
+    destChain: ChainName | ChainId,
+    tokenId: TokenId,
+    walletAddress: string,
+  ): Promise<BigNumber> {
+    throw new Error('Method not implemented.');
+  }
+  getRelayerFee(
+    sourceChain: ChainName | ChainId,
+    destChain: ChainName | ChainId,
+    tokenId: TokenId,
+  ): Promise<BigNumber> {
+    throw new Error('Method not implemented.');
   }
 }
