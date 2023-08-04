@@ -38,7 +38,8 @@
     "lint": "npm run prettier && eslint --fix",
     "prettier": "prettier --write ./src",
     "test": "jest",
-    "coverage": "jest --coverage"
+    "coverage": "jest --coverage",
+    "docs":"typedoc"
   },
   "devDependencies": {
     "@types/elliptic": "^6.4.14",

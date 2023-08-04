@@ -1,0 +1,6 @@
+{
+  "entryPoints": ["packages/*"],
+  "name": "Connect SDK",
+  "entryPointStrategy": "packages",
+  "includeVersion": true
+}

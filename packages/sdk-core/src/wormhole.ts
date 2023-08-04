@@ -8,6 +8,7 @@ import {
   AnyContext,
   ChainId,
   ChainName,
+  ChainConfig,
   Context,
   ContextConfig,
   Contracts,
@@ -243,7 +244,7 @@ export class Wormhole extends MultiProvider<Domain> {
   /**
    * Send a Token Bridge transfer
    *
-   * @dev This _must_ be claimed on the destination chain, see {@link WormholeContext#completeTransfer | completeTransfer}
+   * @dev This _must_ be claimed on the destination chain, see {@link Wormhole#completeTransfer | completeTransfer}
    *
    * @param token The Token Identifier (chain/address) or `'native'` if sending the native token
    * @param amount The token amount to be sent, as a string
