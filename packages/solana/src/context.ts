@@ -182,6 +182,17 @@ export class SolanaContext
     );
   }
 
+  async getRecipientAddress(
+    tokenId: TokenId,
+    recipientAddress: string,
+  ): Promise<string> {
+    const account = await this.getAssociatedTokenAddress(
+      tokenId,
+      recipientAddress,
+    );
+    return account.toString();
+  }
+
   /**
    * Gets the Associate Token Account
    *

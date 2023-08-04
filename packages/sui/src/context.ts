@@ -22,8 +22,6 @@ import {
   parseTokenTransferPayload,
   Wormhole,
   RelayerAbstract,
-  MAINNET_CHAINS,
-  Network,
 } from '@wormhole-foundation/connect-sdk';
 
 import { SuiContracts } from './contracts';
@@ -87,22 +85,19 @@ export class SuiContext extends RelayerAbstract<TransactionBlock> {
     const relayerFeeBigInt = relayerFee ? BigInt(relayerFee) : undefined;
     const amountBigInt = BigNumber.from(amount).toBigInt();
 
-    let recipientAccount = recipientAddress;
-    // get token account for solana
-    if (recipientChainId === MAINNET_CHAINS.solana) {
-      let tokenId = token;
-      if (token === NATIVE) {
-        tokenId = {
-          address: SUI_TYPE_ARG,
-          chain: 'sui',
-        };
-      }
-      recipientAccount = await this.wormhole.getSolanaRecipientAddress(
-        recipientChain,
-        tokenId as TokenId,
-        recipientAddress,
-      );
-    }
+    const tokenId: TokenId =
+      token === NATIVE
+        ? {
+            address: SUI_TYPE_ARG,
+            chain: 'sui',
+          }
+        : token;
+
+    const recipientAccount = await destContext.getRecipientAddress(
+      tokenId,
+      recipientAddress,
+    );
+
     const formattedRecipientAccount = arrayify(
       destContext.formatAddress(recipientAccount),
     );
@@ -408,22 +403,19 @@ export class SuiContext extends RelayerAbstract<TransactionBlock> {
     const amountBigInt = BigNumber.from(amount).toBigInt();
     const toNativeTokenBigInt = BigNumber.from(toNativeToken).toBigInt();
 
-    let recipientAccount = recipientAddress;
-    // get token account for solana
-    if (recipientChainId === MAINNET_CHAINS.solana) {
-      let tokenId = token;
-      if (token === NATIVE) {
-        tokenId = {
-          address: SUI_TYPE_ARG,
-          chain: 'sui',
-        };
-      }
-      recipientAccount = await this.wormhole.getSolanaRecipientAddress(
-        recipientChain,
-        tokenId as TokenId,
-        recipientAddress,
-      );
-    }
+    const tokenId: TokenId =
+      token === NATIVE
+        ? {
+            address: SUI_TYPE_ARG,
+            chain: 'sui',
+          }
+        : token;
+
+    const recipientAccount = await destContext.getRecipientAddress(
+      tokenId,
+      recipientAddress,
+    );
+
     const formattedRecipientAccount = `0x${Buffer.from(
       arrayify(destContext.formatAddress(recipientAccount)),
     ).toString('hex')}`;

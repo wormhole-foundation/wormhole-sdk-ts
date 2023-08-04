@@ -41,7 +41,6 @@ import {
   parseTokenTransferPayload,
   parseVaa,
   NATIVE,
-  Network,
   SeiAbstract,
 } from '@wormhole-foundation/connect-sdk';
 import { SeiContracts } from './contracts';
@@ -173,15 +172,10 @@ export class SeiContext
     const destContext = this.wormhole.getContext(recipientChain);
     const targetChain = this.wormhole.toChainId(recipientChain);
 
-    let recipientAccount = recipientAddress;
-    // get token account for solana
-    if (targetChain === MAINNET_CHAINS.solana) {
-      recipientAccount = await this.wormhole.getSolanaRecipientAddress(
-        recipientChain,
-        token as TokenId,
-        recipientAddress,
-      );
-    }
+    const recipientAccount = await destContext.getRecipientAddress(
+      token,
+      recipientAddress,
+    );
 
     const targetAddress = Buffer.from(
       destContext.formatAddress(recipientAccount),

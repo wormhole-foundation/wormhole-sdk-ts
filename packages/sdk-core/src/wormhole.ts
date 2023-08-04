@@ -49,7 +49,7 @@ import { SeiAbstract } from './abstracts/contexts/sei';
  *   'ethereum', // sending chain
  *   '0x789...', // sender address
  *   'moonbeam', // destination chain
- *   '0x789..., // recipient address on destination chain
+ *   '0x789...', // recipient address on destination chain
  * )
  */
 export class Wormhole extends MultiProvider<Domain> {
@@ -159,31 +159,9 @@ export class Wormhole extends MultiProvider<Domain> {
     return context;
   }
 
-  async getSolanaRecipientAddress(
-    recipientChain: ChainName | ChainId,
-    tokenId: TokenId,
-    recipientAddress: string,
-  ) {
-    const recipientChainId = this.toChainId(recipientChain);
-    if (recipientChainId === MAINNET_CHAINS.solana) {
-      let solanaContext: SolanaAbstract;
-      try {
-        solanaContext = this.getContext(MAINNET_CHAINS.solana) as any;
-      } catch (_) {
-        throw new Error(
-          'You attempted to send a transfer to Solana, but the Solana context is not registered. You must import SolanaContext from @wormhole-foundation/connect-sdk-solana and pass it in to the Wormhole class constructor',
-        );
-      }
-      const account = await solanaContext.getAssociatedTokenAddress(
-        tokenId as TokenId,
-        recipientAddress,
-      );
-      return account.toString();
-    }
-  }
-
   /**
-   * Fetches the address for a token representation on any chain (These are the Wormhole token addresses, not necessarily the cannonical version of that token)
+   * Fetches the address for a token representation on any chain
+   *  These are the Wormhole token addresses, not necessarily the cannonical version of that token
    *
    * @param tokenId The Token ID (chain/address)
    * @param chain The chain name or id
@@ -198,7 +176,8 @@ export class Wormhole extends MultiProvider<Domain> {
   }
 
   /**
-   * Fetches the address for a token representation on any chain (These are the Wormhole token addresses, not necessarily the cannonical version of that token)
+   * Fetches the address for a token representation on any chain
+   *  These are the Wormhole token addresses, not necessarily the cannonical version of that token
    *
    * @param tokenId The Token ID (chain/address)
    * @param chain The chain name or id
@@ -296,7 +275,9 @@ export class Wormhole extends MultiProvider<Domain> {
         seiContext = this.getContext(MAINNET_CHAINS.solana) as any;
       } catch (_) {
         throw new Error(
-          'You attempted to send a transfer to Sei, but the Sei context is not registered. You must import SeiContext from @wormhole-foundation/connect-sdk-sei and pass it in to the Wormhole class constructor',
+          'You attempted to send a transfer to Sei, but the Sei context is not registered. ' +
+            'You must import SeiContext from @wormhole-foundation/connect-sdk-sei and pass it ' +
+            'in to the Wormhole class constructor',
         );
       }
       const { payload: seiPayload, receiver } =
@@ -431,7 +412,8 @@ export class Wormhole extends MultiProvider<Domain> {
   }
 
   /**
-   * Gets a VAA from the API or Guardian RPC, finality must be met before the VAA will be available. See {@link ChainConfig.finalityThreshold | finalityThreshold} on {@link MAINNET_CONFIG | the config}
+   * Gets a VAA from the API or Guardian RPC, finality must be met before the VAA will be available.
+   *  See {@link ChainConfig.finalityThreshold | finalityThreshold} on {@link MAINNET_CONFIG | the config}
    *
    * @param msg The MessageIdentifier used to fetch the VAA
    * @returns The ParsedVAA if available
