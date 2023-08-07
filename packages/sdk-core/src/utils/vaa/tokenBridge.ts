@@ -34,13 +34,15 @@ export function parseTokenTransferPayload(payload: Buffer): TokenTransfer {
   ) {
     throw new Error('not token bridge transfer VAA');
   }
-  const amount = BigInt(payload.subarray(1, 33).toString());
+  const amount = BigInt(`0x${payload.subarray(1, 33).toString('hex')}`);
   const tokenAddress = payload.subarray(33, 65);
   const tokenChain = payload.readUInt16BE(65);
   const to = payload.subarray(67, 99);
   const toChain = payload.readUInt16BE(99);
   const fee =
-    payloadType == 1 ? BigInt(payload.subarray(101, 133).toString()) : null;
+    payloadType == 1
+      ? BigInt(`0x${payload.subarray(101, 133).toString('hex')}`)
+      : null;
   const fromAddress = payloadType == 3 ? payload.subarray(101, 133) : null;
   const tokenTransferPayload = payload.subarray(133);
   return {
