@@ -24,6 +24,7 @@ import {
 import { ParsedVaa, parseVaa } from './utils/vaa';
 import { SolanaAbstract } from './abstracts/contexts/solana';
 import { SeiAbstract } from './abstracts/contexts/sei';
+import { NoContextError } from './errors';
 
 /**
  * The WormholeContext manages connections to Wormhole Core, Bridge and NFT Bridge contracts.
@@ -156,7 +157,7 @@ export class Wormhole extends MultiProvider<Domain> {
     const chainName = this.toChainName(chain);
     const { context: contextType } = this.conf.chains[chainName]!;
     const context = this._contexts.get(contextType);
-    if (!context) throw new Error('Not able to retrieve context');
+    if (!context) throw NoContextError(chain);
     return context;
   }
 
@@ -270,17 +271,10 @@ export class Wormhole extends MultiProvider<Domain> {
     const context = this.getContext(sendingChain);
     const recipientChainName = this.toChainName(recipientChain);
 
+    // TODO: genericize to `cosmos` or any chains
+    // that require a special payload to receive
     if (!payload && recipientChainName === 'sei') {
-      let seiContext: SeiAbstract;
-      try {
-        seiContext = this.getContext(MAINNET_CHAINS.solana) as any;
-      } catch (_) {
-        throw new Error(
-          'You attempted to send a transfer to Sei, but the Sei context is not registered. ' +
-            'You must import SeiContext from @wormhole-foundation/connect-sdk-sei and pass it ' +
-            'in to the Wormhole class constructor',
-        );
-      }
+      let seiContext: SeiAbstract = this.getContext(recipientChain) as any;
       const { payload: seiPayload, receiver } =
         await seiContext.buildSendPayload(token, recipientAddress);
       recipientAddress = receiver || recipientAddress;
