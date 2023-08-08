@@ -21,7 +21,7 @@ import {
   TokenId,
   WormholeConfig,
 } from './types';
-import { ParsedVaa, parseVaa } from './utils/vaa';
+import { ParsedVaa, SignedVaa, parseVaa } from './utils/vaa';
 import { SolanaAbstract } from './abstracts/contexts/solana';
 import { SeiAbstract } from './abstracts/contexts/sei';
 
@@ -417,9 +417,9 @@ export class Wormhole extends MultiProvider<Domain> {
    *  See {@link ChainConfig.finalityThreshold | finalityThreshold} on {@link MAINNET_CONFIG | the config}
    *
    * @param msg The MessageIdentifier used to fetch the VAA
-   * @returns The ParsedVAA if available
+   * @returns The VAA bytes if available
    */
-  async getVAA(msg: MessageIdentifier): Promise<ParsedVaa | undefined> {
+  async getVAABytes(msg: MessageIdentifier): Promise<SignedVaa | undefined> {
     const { emitterChain, emitterAddress, sequence } = msg;
     const url = `${this.conf.api}/api/v1/vaas/${emitterChain}/${emitterAddress}/${sequence}`;
     const response = await axios.get(url);
@@ -427,7 +427,20 @@ export class Wormhole extends MultiProvider<Domain> {
     if (!response.data.data) return;
 
     const data = response.data.data;
-    const vaaBytes = Buffer.from(data.vaa, 'base64');
+    return Buffer.from(data.vaa, 'base64');
+  }
+
+  /**
+   * Gets a VAA from the API or Guardian RPC and parses it, finality must be met before the VAA will be available.
+   *  See {@link ChainConfig.finalityThreshold | finalityThreshold} on {@link MAINNET_CONFIG | the config}
+   *
+   * @param msg The MessageIdentifier used to fetch the VAA
+   * @returns The Parsed VAA if available
+   */
+  async getVAA(msg: MessageIdentifier): Promise<ParsedVaa | undefined> {
+    const vaaBytes = await this.getVAABytes(msg);
+    if (vaaBytes === undefined) return undefined;
+
     return parseVaa(vaaBytes);
   }
 
