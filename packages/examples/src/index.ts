@@ -10,6 +10,16 @@ import { Transaction } from "@solana/web3.js";
 import { EvmContext } from "@wormhole-foundation/connect-sdk-evm";
 import { getSolSigner, getEthSigner } from "./helpers";
 
+/*
+TODO:
+  - why specify network as first arg and allow it in config?
+  - why require both `Context.SOLANA` and `SolanaContext`, not 
+      just pass a list of Context constructors?
+  - get typed context back from `getContext`
+  - get connection/provider/rpc service correctly typed from the context
+
+*/
+
 (async function () {
   const NETWORK = Network.TESTNET;
   const contexts = {
@@ -22,10 +32,11 @@ import { getSolSigner, getEthSigner } from "./helpers";
   const senderChain = "solana";
   const receiverChain = "goerli";
 
-  // strongarm it
+  // strong-arm the type
   const sendCtx: SolanaContext = wh.getContext(
     senderChain
   ) as unknown as SolanaContext;
+
   const rcvCtx: EvmContext = wh.getContext(
     receiverChain
   ) as unknown as EvmContext;
@@ -40,70 +51,51 @@ import { getSolSigner, getEthSigner } from "./helpers";
   const receiverAddress = ethAcct.address;
 
   // Prepare the transactions to start a transfer across chains
-  // const xfer: Transaction = await wh.startTransfer(
-  //   "native",
-  //   100n,
-  //   senderChain,
-  //   senderAddress,
-  //   receiverChain,
-  //   receiverAddress
-  // );
+  const xfer: Transaction = await wh.startTransfer(
+    "native",
+    100n,
+    senderChain,
+    senderAddress,
+    receiverChain,
+    receiverAddress
+  );
 
-  // xfer.partialSign(solAcct);
-  // console.log(xfer);
+  // TODO: forcing dev to get the conn out of the context is :(
 
-  // const txid = await sendCtx.connection?.sendRawTransaction(xfer.serialize());
-  // console.log(txid);
+  // Sign and send
+  xfer.partialSign(solAcct);
+  const txid = await sendCtx.connection!.sendRawTransaction(xfer.serialize());
 
-  //const txid =
-  //  "H1cFY6unJjxbFGmTKC6Dxefn5UA7Nk4rUiszTTE2XNkaxQH4xpjSQ6Ar99HeEWA358ocgQoDn9Q1s3vrsSwofso";
+  // Get deets from tx logs
+  const msgs = await sendCtx.parseMessageFromTx(txid, senderChain);
+  if (msgs.length === 0)
+    throw new Error("No messages found in transaction logs");
 
-  //const res = await sendCtx.parseMessageFromTx(txid, senderChain);
-  //console.log(res);
+  const { sequence, fromChain: emitterChain, emitterAddress } = msgs[0];
+
+  // Get signed VAA from api
+  const vaa = await wh.getVAA({
+    // TODO: allow either type
+    sequence: sequence.toString(),
+    emitterAddress,
+    // TODO: allow either type, dont require conversion to id
+    emitterChain: wh.toChainId(emitterChain),
+  });
+
+  if (vaa === undefined)
+    throw new Error("No VAA Found, maybe waiting for finality");
+
+  // TODO: this is required for complete transfer on evm
+  // we _should_ make methods to return unsigned txs instead
+  wh.registerSigner(receiverChain, ethAcct);
+  const completeXfer = await wh.completeTransfer(
+    receiverChain,
+    new Uint8Array(vaa),
+    // TODO: why is this required param?
+    undefined
+  );
+
+  console.log(completeXfer);
 
   // ...
-
-  const msgpayload =
-    "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKBpuIV/6rgYT7aH9jRhjANdrEOdwa6ztVmKDwAAAAAAEAAQAAAAAAAAAAAAAAAGpGQGX4F73XKlIf5ci1+UdWkYj2AAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==";
-  const payload = Buffer.from(msgpayload, "base64");
-  const x = parseTokenTransferPayload(payload);
-  console.log(x);
-
-  console.log(BigInt("1"));
-  console.log(BigInt("0x0a"));
 })();
-
-export function parseTokenTransferPayload(payload: Buffer): TokenTransfer {
-  const payloadType = payload.readUInt8(0);
-  if (
-    payloadType != TokenBridgePayload.Transfer &&
-    payloadType != TokenBridgePayload.TransferWithPayload
-  ) {
-    throw new Error("not token bridge transfer VAA");
-  }
-  console.log(payload.subarray(1, 33).toString("hex"));
-  console.log(payload);
-
-  const amount = BigInt(`0x${payload.subarray(1, 33).toString("hex")}`);
-  const tokenAddress = payload.subarray(33, 65);
-  const tokenChain = payload.readUInt16BE(65);
-  const to = payload.subarray(67, 99);
-  const toChain = payload.readUInt16BE(99);
-  const fee =
-    payloadType == 1
-      ? BigInt(`0x${payload.subarray(101, 133).toString("hex")}`)
-      : null;
-  const fromAddress = payloadType == 3 ? payload.subarray(101, 133) : null;
-  const tokenTransferPayload = payload.subarray(133);
-  return {
-    payloadType,
-    amount,
-    tokenAddress,
-    tokenChain,
-    to,
-    toChain,
-    fee,
-    fromAddress,
-    tokenTransferPayload,
-  };
-}
