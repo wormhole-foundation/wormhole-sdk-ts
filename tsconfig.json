@@ -2,37 +2,25 @@
   "extends": "./tsconfig.root.json",
   "references": [
     {
-      "path": "./packages/sdk-core",
+      "path": "./core/base"
     },
     {
-      "path": "./packages/evm",
+      "path": "./core/definitions"
     },
     {
-      "path": "./packages/solana",
+      "path": "./packages/evm"
     },
     {
-      "path": "./packages/sui",
+      "path": "./packages/solana"
     },
     {
-      "path": "./packages/sei",
+      "path": "./packages/sui"
     },
     {
-      "path": "./packages/aptos",
+      "path": "./packages/sei"
     },
-  ],
-  "files": [
-    "packages/sdk-core/src/*.ts",
-    "packages/sdk-core/src/**/*.ts",
-    "packages/evm/src/*.ts",
-    "packages/evm/src/**/*.ts",
-    "packages/solana/src/*.ts",
-    "packages/solana/src/**/*.ts",
-    "packages/solana/src/**/**/*.ts",
-    "packages/sui/src/*.ts",
-    "packages/sui/src/**/*.ts",
-    "packages/sei/src/*.ts",
-    "packages/sei/src/**/*.ts",
-    "packages/aptos/src/*.ts",
-    "packages/aptos/src/**/*.ts",
+    {
+      "path": "./packages/aptos"
+    },
   ]
 }

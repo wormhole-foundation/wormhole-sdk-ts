@@ -3,9 +3,12 @@ module.exports = {
   testEnvironment: 'node',
   coverageDirectory: '.coverage',
   verbose: true,
-  globals: {
-    'ts-jest': {
-      isolatedModules: true,
-    },
+  transform: {
+    '^.+\\.tsx?$': [
+      'ts-jest',
+      {
+        isolatedModules: true,
+      },
+    ],
   },
 };
