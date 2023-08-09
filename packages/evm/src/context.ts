@@ -1,677 +1,393 @@
 import {
-  Implementation__factory,
-  TokenImplementation__factory,
-} from '@certusone/wormhole-sdk/lib/cjs/ethers-contracts';
+  toChainId,
+  chainToChainId,
+  chainIdToChain,
+  contracts,
+  Network,
+  PlatformToChainsMapping,
+  evmChainIdToNetworkChainPair,
+} from '@wormhole-foundation/sdk-base';
 import {
-  BigNumber,
-  BigNumberish,
-  constants,
-  ContractReceipt,
-  ethers,
-  Overrides,
-  PayableOverrides,
-  PopulatedTransaction,
-  utils,
-} from 'ethers';
+  VAA,
+  serialize,
+  UniversalAddress,
+  ChainAddressPair,
+  UniversalOrNative,
+  TokenBridge,
+  keccak256,
+} from '@wormhole-foundation/sdk-definitions';
 
+import { EvmAddress } from './address';
+import { EvmUnsignedTransaction } from './unsignedTransaction';
 import {
-  TokenId,
-  ChainName,
-  ChainId,
-  NATIVE,
-  ParsedRelayerMessage,
-  ParsedMessage,
-  Context,
-  ParsedRelayerPayload,
-  Wormhole,
-  parseVaa,
-  RelayerAbstract,
-  createNonce,
-} from '@wormhole-foundation/connect-sdk';
+  TokenBridgeContract,
+  Bridge__factory as TokenBridgeFactory,
+  TokenImplementation__factory as TokenContractFactory,
+} from './ethers-contracts';
+import { Provider, TransactionRequest } from 'ethers';
 import { EvmContracts } from './contracts';
 
-export * from './contracts';
+type EvmChain = PlatformToChainsMapping<'Evm'>;
+type UniversalOrEvm = UniversalOrNative<'Evm'> | string;
 
-/**
- * @category EVM
- */
-export class EvmContext extends RelayerAbstract<ethers.ContractReceipt> {
-  readonly type = Context.EVM;
+const toEvmAddrString = (addr: UniversalOrEvm) =>
+  typeof addr === 'string'
+    ? addr
+    : (addr instanceof UniversalAddress ? addr.toNative('Evm') : addr).unwrap();
+
+const addFrom = (txReq: TransactionRequest, from: string) => ({
+  ...txReq,
+  from,
+});
+const unusedNonce = 0;
+const unusedArbiterFee = 0n;
+
+//a word on casts here:
+//  Typescript only properly resolves types when EvmTokenBridge is fully instantiated. Until such a
+//    time, it does not realize that e.g. NativeAddress<C> equals EvmAddress and hence we have to
+//    to cast (from our POV) entirely unnecessarily.
+//Currently the code does not consider Wormhole msg fee (because it is and always has been 0).
+//TODO more checks to determine that all necessary preconditions are met (e.g. that balances are
+//  sufficient) for a given transaction to succeed
+export class EvmContext implements TokenBridge<'Evm'> {
   readonly contracts: EvmContracts;
-  protected wormhole: Wormhole;
+  readonly tokenBridge: TokenBridgeContract;
 
-  constructor(wormholeInstance: Wormhole) {
-    super();
-    this.wormhole = wormholeInstance;
-    this.contracts = new EvmContracts(this.wormhole);
+  private constructor(
+    readonly network: Network,
+    readonly chain: EvmChain,
+    readonly provider: Provider,
+  ) {
+    this.contracts = new EvmContracts(network);
+
+    this.tokenBridge = this.contracts.mustGetTokenBridge(chain, provider);
   }
 
-  async getForeignAsset(
-    tokenId: TokenId,
-    chain: ChainName | ChainId,
-  ): Promise<string | null> {
-    const toChainId = this.wormhole.toChainId(chain);
-    const chainId = this.wormhole.toChainId(tokenId.chain);
-    // if the token is already native, return the token address
-    if (toChainId === chainId) return tokenId.address;
-    // else fetch the representation
-    const tokenBridge = this.contracts.mustGetBridge(chain);
-    const sourceContext = this.wormhole.getContext(tokenId.chain);
-    const tokenAddr = await sourceContext.formatAssetAddress(tokenId.address);
-    const foreignAddr = await tokenBridge.wrappedAsset(
-      chainId,
-      utils.arrayify(tokenAddr),
+  static async fromProvider(provider: Provider): Promise<EvmContext> {
+    const { chainId } = await provider.getNetwork();
+    const networkChainPair = evmChainIdToNetworkChainPair(chainId);
+    if (networkChainPair === undefined)
+      throw new Error(`Unknown EVM chainId ${chainId}`);
+
+    const [network, chain] = networkChainPair;
+    return new EvmContext(network, chain, provider);
+  }
+
+  async isWrappedAsset(token: UniversalOrEvm): Promise<boolean> {
+    return this.tokenBridge.isWrappedAsset(toEvmAddrString(token));
+  }
+
+  async getOriginalAsset(token: UniversalOrEvm): Promise<ChainAddressPair> {
+    if (!(await this.isWrappedAsset(token)))
+      throw new Error(`Token ${token} is not a wrapped asset`);
+
+    const tokenContract = TokenContractFactory.connect(
+      toEvmAddrString(token),
+      this.provider,
     );
-    if (foreignAddr === constants.AddressZero) return null;
-    return foreignAddr;
+    return Promise.all([
+      tokenContract.chainId().then(Number).then(toChainId).then(chainIdToChain),
+      tokenContract.nativeContract().then((addr) => new UniversalAddress(addr)),
+    ]);
   }
 
-  async mustGetForeignAsset(
-    tokenId: TokenId,
-    chain: ChainName | ChainId,
-  ): Promise<string> {
-    const addr = await this.getForeignAsset(tokenId, chain);
-    if (!addr) throw new Error('token not registered');
-    return addr;
-  }
-
-  /**
-   * Returns the decimals for a token
-   *
-   * @param tokenAddr The token address
-   * @param chain The token chain name or id
-   * @returns The number of token decimals
-   */
-  async fetchTokenDecimals(
-    tokenAddr: string,
-    chain: ChainName | ChainId,
-  ): Promise<number> {
-    const provider = this.wormhole.mustGetProvider(chain);
-    const tokenContract = TokenImplementation__factory.connect(
-      tokenAddr,
-      provider,
-    );
-    const decimals = await tokenContract.decimals();
-    return decimals;
-  }
-
-  async getNativeBalance(
-    walletAddr: string,
-    chain: ChainName | ChainId,
-  ): Promise<BigNumber> {
-    const provider = this.wormhole.mustGetProvider(chain);
-    return await provider.getBalance(walletAddr);
-  }
-
-  async getTokenBalance(
-    walletAddr: string,
-    tokenId: TokenId,
-    chain: ChainName | ChainId,
-  ): Promise<BigNumber | null> {
-    const address = await this.getForeignAsset(tokenId, chain);
-    if (!address) return null;
-    const provider = this.wormhole.mustGetProvider(chain);
-    const token = TokenImplementation__factory.connect(address, provider);
-    const balance = await token.balanceOf(walletAddr);
-    return balance;
-  }
-
-  /**
-   * Approves amount for bridge transfer. If no amount is specified, the max amount is approved
-   *
-   * @param chain The sending chain name or id
-   * @param contractAddress The contract for which to approve (i.e. bridge or relayer)
-   * @param tokenAddr The token address
-   * @param amount The amount to approve
-   * @param overrides Optional overrides, varies by chain
-   * @throws If the token address does not exist
-   */
-  async approve(
-    chain: ChainName | ChainId,
-    contractAddress: string,
-    tokenAddr: string,
-    amount?: BigNumberish,
-    overrides: PayableOverrides & { from?: string | Promise<string> } = {},
-  ): Promise<ethers.ContractReceipt | void> {
-    const signer = this.wormhole.getSigner(chain);
-    if (!signer) throw new Error(`No signer for ${chain}`);
-    const senderAddress = await signer.getAddress();
-    const tokenImplementation = TokenImplementation__factory.connect(
-      tokenAddr,
-      signer,
-    );
-    if (!tokenImplementation)
-      throw new Error(`token contract not available for ${tokenAddr}`);
-
-    const approved = await tokenImplementation.allowance(
-      senderAddress,
-      contractAddress,
-    );
-    const approveAmount = amount || constants.MaxUint256;
-    // Approve if necessary
-    if (approved.lt(approveAmount)) {
-      const tx = await tokenImplementation.approve(
-        contractAddress,
-        approveAmount,
-        overrides,
-      );
-      await tx.wait();
+  async hasWrappedAsset([
+    originalChain,
+    originalAddress,
+  ]: ChainAddressPair): Promise<boolean> {
+    try {
+      //TODO it's unclear to me why this would throw for a non-existent token but that's how the
+      //  old sdk checked for existence
+      await this.getWrappedAsset([originalChain, originalAddress]);
+      return true;
+    } catch (e) {
+      return false;
     }
   }
 
-  /**
-   * Prepare a send tx for a Token Bridge transfer (does not dispatch the transaction)
-   *
-   * @param token The Token Identifier (chain/address) or `'native'` if sending the native token
-   * @param amount The token amount to be sent
-   * @param sendingChain The source chain name or id
-   * @param senderAddress The address that is dispatching the transfer
-   * @param recipientChain The destination chain name or id
-   * @param recipientAddress The wallet address where funds will be sent (On solana, this is the associated token account)
-   * @param relayerFee A fee that would go to a relayer, if any
-   * @param overrides Overrides
-   * @returns The populated transaction
-   */
-  async prepareTransfer(
-    token: TokenId | typeof NATIVE,
-    amount: bigint,
-    sendingChain: ChainName | ChainId,
-    senderAddress: string,
-    recipientChain: ChainName | ChainId,
-    recipientAddress: string,
-    relayerFee: ethers.BigNumberish = 0,
-    overrides: PayableOverrides & { from?: string | Promise<string> } = {},
-  ): Promise<ethers.PopulatedTransaction> {
-    const destContext = this.wormhole.getContext(recipientChain);
-    const recipientChainId = this.wormhole.toChainId(recipientChain);
-    const sendingChainName = this.wormhole.toChainName(sendingChain);
-    const amountBN = ethers.BigNumber.from(amount);
-    const bridge = this.contracts.mustGetBridge(sendingChain);
-
-    const tokenID: TokenId =
-      token === NATIVE
-        ? {
-            address: await bridge.WETH(),
-            chain: sendingChainName,
-          }
-        : token;
-
-    const recipientAccount = await destContext.getRecipientAddress(
-      tokenID,
-      recipientAddress,
+  async getWrappedAsset([
+    originalChain,
+    originalAddress,
+  ]: ChainAddressPair): Promise<EvmAddress> {
+    return new EvmAddress(
+      await this.tokenBridge.wrappedAsset(
+        originalChain,
+        originalAddress.toString(),
+      ),
     );
-
-    if (token === NATIVE) {
-      // sending native ETH
-      await bridge.callStatic.wrapAndTransferETH(
-        recipientChainId,
-        destContext.formatAddress(recipientAccount),
-        relayerFee,
-        createNonce(),
-        {
-          ...overrides,
-          value: amountBN,
-          from: senderAddress,
-        },
-      );
-      return bridge.populateTransaction.wrapAndTransferETH(
-        recipientChainId,
-        destContext.formatAddress(recipientAccount),
-        relayerFee,
-        createNonce(),
-        {
-          ...overrides,
-          value: amountBN,
-        },
-      );
-    } else {
-      // sending ERC-20
-      //approve and send
-      const tokenAddr = await this.mustGetForeignAsset(token, sendingChain);
-      // simulate transaction
-      await bridge.callStatic.transferTokens(
-        tokenAddr,
-        amountBN,
-        recipientChainId,
-        destContext.formatAddress(recipientAccount),
-        relayerFee,
-        createNonce(),
-        {
-          ...overrides,
-          from: senderAddress,
-        },
-      );
-      return bridge.populateTransaction.transferTokens(
-        tokenAddr,
-        amountBN,
-        recipientChainId,
-        destContext.formatAddress(recipientAccount),
-        relayerFee,
-        createNonce(),
-        overrides,
-      );
-    }
-  }
-
-  async startTransfer(
-    token: TokenId | typeof NATIVE,
-    amount: bigint,
-    sendingChain: ChainName | ChainId,
-    senderAddress: string,
-    recipientChain: ChainName | ChainId,
-    recipientAddress: string,
-    relayerFee: ethers.BigNumberish = 0,
-    overrides: PayableOverrides & { from?: string | Promise<string> } = {},
-  ): Promise<ethers.ContractReceipt> {
-    const signer = this.wormhole.getSigner(sendingChain);
-    if (!signer) throw new Error(`No signer for ${sendingChain}`);
-
-    // approve for ERC-20 token transfers
-    if (token !== NATIVE) {
-      const amountBN = ethers.BigNumber.from(amount);
-      const bridge = this.contracts.mustGetBridge(sendingChain);
-      const tokenAddr = await this.mustGetForeignAsset(token, sendingChain);
-      await this.approve(
-        sendingChain,
-        bridge.address,
-        tokenAddr,
-        amountBN,
-        overrides,
-      );
-    }
-
-    // prepare and simulate transfer
-    const tx = await this.prepareTransfer(
-      token,
-      amount,
-      sendingChain,
-      senderAddress,
-      recipientChain,
-      recipientAddress,
-      relayerFee,
-      overrides,
-    );
-
-    const v = await signer.sendTransaction(tx);
-    return await v.wait();
-  }
-
-  /**
-   * Prepares a send tx for a Token Bridge transfer with a payload.  The payload is used to convey extra information about a transfer to be utilized in an application
-   *
-   * @dev This _must_ be claimed on the destination chain, see {@link Wormhole#redeem | redeem}
-   *
-   * @param token The Token Identifier (chain/address) or `'native'` if sending the native token
-   * @param amount The token amount to be sent
-   * @param sendingChain The source chain name or id
-   * @param senderAddress The address that is dispatching the transfer
-   * @param recipientChain The destination chain name or id
-   * @param recipientAddress The wallet address where funds will be sent (On solana, this is the associated token account)
-   * @param payload Arbitrary bytes that can contain any addition information about a given transfer
-   * @param overrides Overrides
-   * @returns The populated transaction
-   */
-  async startTransferWithPayload(
-    token: TokenId | typeof NATIVE,
-    amount: bigint,
-    sendingChain: ChainName | ChainId,
-    senderAddress: string,
-    recipientChain: ChainName | ChainId,
-    recipientAddress: string,
-    payload: Uint8Array,
-    overrides: PayableOverrides & { from?: string | Promise<string> } = {},
-  ): Promise<ethers.ContractReceipt> {
-    const destContext = this.wormhole.getContext(recipientChain);
-    const recipientChainId = this.wormhole.toChainId(recipientChain);
-    const bridge = this.contracts.mustGetBridge(sendingChain);
-    const amountBN = ethers.BigNumber.from(amount);
-
-    if (token === NATIVE) {
-      // sending native ETH
-      const v = await bridge.wrapAndTransferETHWithPayload(
-        recipientChainId,
-        destContext.formatAddress(recipientAddress),
-        createNonce(),
-        payload,
-        {
-          ...overrides,
-          value: amountBN,
-        },
-      );
-      return await v.wait();
-    } else {
-      // sending ERC-20
-      const tokenAddr = await this.mustGetForeignAsset(token, sendingChain);
-      await this.approve(sendingChain, bridge.address, tokenAddr, amountBN);
-      const v = await bridge.transferTokensWithPayload(
-        tokenAddr,
-        amountBN,
-        recipientChainId,
-        destContext.formatAddress(recipientAddress),
-        createNonce(),
-        payload,
-        overrides,
-      );
-      return await v.wait();
-    }
-  }
-
-  /**
-   * Prepares a send tx for a Token Bridge Relay transfer. This will automatically dispatch funds to the recipient on the destination chain.
-   *
-   * @param token The Token Identifier (native chain/address) or `'native'` if sending the native token
-   * @param amount The token amount to be sent, as a string
-   * @param toNativeToken The amount of sending token to be converted to native gas token on the destination chain
-   * @param sendingChain The source chain name or id
-   * @param senderAddress The address that is dispatching the transfer
-   * @param recipientChain The destination chain name or id
-   * @param recipientAddress The wallet address where funds will be sent (On solana, this is the associated token account)
-   * @param overrides Optional overrides, varies by chain
-   * @returns The populated relay transaction
-   */
-  async prepareTransferWithRelay(
-    token: TokenId | 'native',
-    amount: bigint,
-    toNativeToken: string,
-    sendingChain: ChainName | ChainId,
-    senderAddress: string,
-    recipientChain: ChainName | ChainId,
-    recipientAddress: string,
-    overrides: PayableOverrides & { from?: string | Promise<string> } = {},
-  ): Promise<ethers.PopulatedTransaction> {
-    const destContext = this.wormhole.getContext(recipientChain);
-    const recipientChainId = this.wormhole.toChainId(recipientChain);
-    const amountBN = ethers.BigNumber.from(amount);
-    const relayer = this.contracts.mustGetTokenBridgeRelayer(sendingChain);
-    const nativeTokenBN = ethers.BigNumber.from(toNativeToken);
-
-    if (token === NATIVE) {
-      // sending native ETH
-      return relayer.populateTransaction.wrapAndTransferEthWithRelay(
-        nativeTokenBN,
-        recipientChainId,
-        destContext.formatAddress(recipientAddress),
-        0, // opt out of batching
-        {
-          ...overrides,
-          value: amountBN,
-        },
-      );
-    } else {
-      // sending ERC-20
-      const tokenAddr = await this.mustGetForeignAsset(token, sendingChain);
-      return relayer.populateTransaction.transferTokensWithRelay(
-        this.parseAddress(tokenAddr),
-        amountBN,
-        nativeTokenBN,
-        recipientChainId,
-        destContext.formatAddress(recipientAddress),
-        0, // opt out of batching
-        overrides,
-      );
-    }
-  }
-
-  async startTransferWithRelay(
-    token: TokenId | 'native',
-    amount: bigint,
-    toNativeToken: string,
-    sendingChain: ChainName | ChainId,
-    senderAddress: string,
-    recipientChain: ChainName | ChainId,
-    recipientAddress: string,
-    overrides: PayableOverrides & { from?: string | Promise<string> } = {},
-  ): Promise<ethers.ContractReceipt> {
-    const signer = this.wormhole.getSigner(sendingChain);
-    if (!signer) throw new Error(`No signer for ${sendingChain}`);
-
-    // approve for ERC-20 token transfers
-    if (token !== NATIVE) {
-      const amountBN = ethers.BigNumber.from(amount);
-      const relayer = this.contracts.mustGetTokenBridgeRelayer(sendingChain);
-      const tokenAddr = await this.mustGetForeignAsset(token, sendingChain);
-      await this.approve(
-        sendingChain,
-        relayer.address,
-        tokenAddr,
-        amountBN,
-        overrides,
-      );
-    }
-
-    // prepare and simulate transfer
-    const tx = await this.prepareTransferWithRelay(
-      token,
-      amount,
-      toNativeToken,
-      sendingChain,
-      senderAddress,
-      recipientChain,
-      recipientAddress,
-      overrides,
-    );
-
-    const v = await signer.sendTransaction(tx);
-    return await v.wait();
-  }
-
-  /**
-   * Prepares a redeem tx, which redeems funds for a token bridge transfer on the destination chain
-   *
-   * @param destChain The destination chain name or id
-   * @param signedVAA The Signed VAA bytes
-   * @param overrides Optional overrides, varies between chains
-   * @returns The populated redeem transaction
-   */
-  async prepareRedeem(
-    destChain: ChainName | ChainId,
-    signedVAA: Uint8Array,
-    overrides: Overrides & { from?: string | Promise<string> } = {},
-  ): Promise<PopulatedTransaction> {
-    const bridge = this.contracts.mustGetBridge(destChain);
-    await bridge.callStatic.completeTransfer(signedVAA, overrides);
-    return bridge.populateTransaction.completeTransfer(signedVAA, overrides);
-  }
-
-  async completeTransfer(
-    destChain: ChainName | ChainId,
-    signedVAA: Uint8Array,
-    overrides: Overrides & { from?: string | Promise<string> } = {},
-  ): Promise<ContractReceipt> {
-    const signer = this.wormhole.getSigner(destChain);
-    if (!signer) throw new Error(`No signer for ${destChain}`);
-    const tx = await this.prepareRedeem(destChain, signedVAA, overrides);
-    const v = await signer.sendTransaction(tx);
-    return await v.wait();
-    // TODO: unwrap native assets
-    // const v = await bridge.completeTransferAndUnwrapETH(signedVAA, overrides);
-    // const receipt = await v.wait();
-    // return receipt;
-  }
-
-  async calculateMaxSwapAmount(
-    destChain: ChainName | ChainId,
-    tokenId: TokenId,
-    walletAddress: string,
-  ): Promise<BigNumber> {
-    const relayer = this.contracts.mustGetTokenBridgeRelayer(destChain);
-    const token = await this.mustGetForeignAsset(tokenId, destChain);
-    return await relayer.calculateMaxSwapAmountIn(token);
-  }
-
-  async calculateNativeTokenAmt(
-    destChain: ChainName | ChainId,
-    tokenId: TokenId,
-    amount: BigNumberish,
-    walletAddress: string,
-  ): Promise<BigNumber> {
-    const relayer = this.contracts.mustGetTokenBridgeRelayer(destChain);
-    const token = await this.mustGetForeignAsset(tokenId, destChain);
-    return await relayer.calculateNativeSwapAmountOut(token, amount);
-  }
-
-  async parseMessageFromTx(
-    tx: string,
-    chain: ChainName | ChainId,
-  ): Promise<ParsedMessage[] | ParsedRelayerMessage[]> {
-    const provider = this.wormhole.mustGetProvider(chain);
-    const receipt = await provider.getTransactionReceipt(tx);
-    if (!receipt) throw new Error(`No receipt for ${tx} on ${chain}`);
-
-    let gasFee: BigNumber;
-    const { gasUsed, effectiveGasPrice } = receipt;
-    if (gasUsed && effectiveGasPrice) {
-      gasFee = gasUsed.mul(effectiveGasPrice);
-    }
-
-    const core = this.contracts.mustGetCore(chain);
-    const bridge = this.contracts.mustGetBridge(chain);
-    const bridgeLogs = receipt.logs.filter((l: any) => {
-      return l.address === core.address;
-    });
-    const parsedLogs = bridgeLogs.map(async (bridgeLog) => {
-      const parsed =
-        Implementation__factory.createInterface().parseLog(bridgeLog);
-
-      // parse token bridge message
-      const fromChain = this.wormhole.toChainName(chain);
-      if (parsed.args.payload.startsWith('0x01')) {
-        const parsedTransfer = await bridge.parseTransfer(parsed.args.payload); // for bridge messages
-        const destContext = this.wormhole.getContext(
-          parsedTransfer.toChain as ChainId,
-        );
-        const tokenContext = this.wormhole.getContext(
-          parsedTransfer.tokenChain as ChainId,
-        );
-        const tokenAddress = await tokenContext.parseAssetAddress(
-          parsedTransfer.tokenAddress,
-        );
-        const tokenChain = this.wormhole.toChainName(parsedTransfer.tokenChain);
-        const parsedMessage: ParsedMessage = {
-          sendTx: tx,
-          sender: receipt.from,
-          amount: parsedTransfer.amount,
-          payloadID: parsedTransfer.payloadID,
-          recipient: destContext.parseAddress(parsedTransfer.to),
-          toChain: this.wormhole.toChainName(parsedTransfer.toChain),
-          fromChain,
-          tokenAddress,
-          tokenChain,
-          tokenId: {
-            chain: tokenChain,
-            address: tokenAddress,
-          },
-          sequence: parsed.args.sequence,
-          emitterAddress: utils.hexlify(this.formatAddress(bridge.address)),
-          block: receipt.blockNumber,
-          gasFee,
-        };
-        return parsedMessage;
-      }
-
-      // parse token bridge relayer message
-      const parsedTransfer = await bridge.parseTransferWithPayload(
-        parsed.args.payload,
-      );
-      const destContext = this.wormhole.getContext(
-        parsedTransfer.toChain as ChainId,
-      );
-
-      const toChain = this.wormhole.toChainName(parsedTransfer.toChain);
-
-      /**
-       * Not all relayers follow the same payload structure (i.e. sei)
-       * so we request the destination context to parse the payload
-       */
-      const relayerPayload: ParsedRelayerPayload =
-        destContext.parseRelayerPayload(
-          Buffer.from(utils.arrayify(parsedTransfer.payload)),
-        );
-
-      const tokenContext = this.wormhole.getContext(
-        parsedTransfer.tokenChain as ChainId,
-      );
-      const tokenAddress = await tokenContext.parseAssetAddress(
-        parsedTransfer.tokenAddress,
-      );
-      const tokenChain = this.wormhole.toChainName(parsedTransfer.tokenChain);
-      const parsedMessage: ParsedRelayerMessage = {
-        sendTx: tx,
-        sender: receipt.from,
-        amount: parsedTransfer.amount,
-        payloadID: parsedTransfer.payloadID,
-        to: destContext.parseAddress(parsedTransfer.to),
-        toChain,
-        fromChain,
-        tokenAddress,
-        tokenChain,
-        tokenId: {
-          chain: tokenChain,
-          address: tokenAddress,
-        },
-        sequence: parsed.args.sequence,
-        emitterAddress: utils.hexlify(this.formatAddress(bridge.address)),
-        block: receipt.blockNumber,
-        gasFee,
-        payload: parsedTransfer.payload,
-        relayerPayloadId: relayerPayload.relayerPayloadId,
-        recipient: destContext.parseAddress(relayerPayload.to),
-        relayerFee: relayerPayload.relayerFee,
-        toNativeTokenAmount: relayerPayload.toNativeTokenAmount,
-      };
-      return parsedMessage;
-    });
-    return await Promise.all(parsedLogs);
-  }
-
-  async getRelayerFee(
-    sourceChain: ChainName | ChainId,
-    destChain: ChainName | ChainId,
-    tokenId: TokenId,
-  ): Promise<BigNumber> {
-    const relayer = this.contracts.mustGetTokenBridgeRelayer(sourceChain);
-    // get asset address
-    const address = await this.mustGetForeignAsset(tokenId, sourceChain);
-    // get token decimals
-    const provider = this.wormhole.mustGetProvider(sourceChain);
-    const tokenContract = TokenImplementation__factory.connect(
-      address,
-      provider,
-    );
-    const decimals = await tokenContract.decimals();
-    // get relayer fee as token amt
-    const destChainId = this.wormhole.toChainId(destChain);
-    return await relayer.calculateRelayerFee(destChainId, address, decimals);
   }
 
   async isTransferCompleted(
-    destChain: ChainName | ChainId,
-    signedVaa: string,
+    vaa: VAA<'Transfer'> | VAA<'TransferWithPayload'>,
   ): Promise<boolean> {
-    const tokenBridge = this.contracts.mustGetBridge(destChain);
-    const hash = parseVaa(utils.arrayify(signedVaa)).hash;
-    return await tokenBridge.isTransferCompleted(hash);
+    //The double keccak here is neccessary due to a fuckup in the original implementation of the
+    //  EVM core bridge:
+    //Guardians don't sign messages (bodies) but explicitly hash them via keccak256 first.
+    //However, they use an ECDSA scheme for signing where the first step is to hash the "message"
+    //  (which at this point is already the digest of the original message/body!)
+    //Now, on EVM, ecrecover expects the final digest (i.e. a bytes32 rather than a dynamic bytes)
+    //  i.e. it does no hashing itself. Therefore the EVM core bridge has to hash the body twice
+    //  before calling ecrecover. But in the process of doing so, it erroneously sets the doubly
+    //  hashed value as vm.hash instead of using the only once hashed value.
+    //And finally this double digest is then used in a mapping to store whether a VAA has already
+    //  been redeemed or not, which is ultimately the reason why we have to keccak the hash one
+    //  more time here.
+    return this.tokenBridge.isTransferCompleted(keccak256(vaa.hash));
   }
 
-  formatAddress(address: string): Uint8Array {
-    return Buffer.from(utils.zeroPad(address, 32));
+  //TODO bestEffortFindRedemptionTx()
+
+  async *createAttestation(
+    token: UniversalOrEvm,
+  ): AsyncGenerator<EvmUnsignedTransaction> {
+    const ignoredNonce = 0;
+    return this.createUnsignedTx(
+      await this.tokenBridge.attestToken.populateTransaction(
+        toEvmAddrString(token),
+        ignoredNonce,
+      ),
+      'TokenBridge.createAttestation',
+    );
   }
 
-  parseAddress(address: ethers.utils.BytesLike): string {
-    const parsed = utils.hexlify(utils.stripZeros(address));
-    return utils.getAddress(parsed);
+  async *submitAttestation(
+    vaa: VAA<'AttestMeta'>,
+  ): AsyncGenerator<EvmUnsignedTransaction> {
+    const func = (await this.hasWrappedAsset([
+      vaa.payload.token.chain,
+      vaa.payload.token.address,
+    ]))
+      ? 'createWrapped'
+      : 'updateWrapped';
+    return this.createUnsignedTx(
+      await this.tokenBridge[func].populateTransaction(serialize(vaa)),
+      'TokenBridge.' + func,
+    );
   }
 
-  async formatAssetAddress(address: string): Promise<Uint8Array> {
-    return this.formatAddress(address);
+  //alternative naming: initiateTransfer
+  async *transfer(
+    sender: UniversalOrEvm,
+    recipient: ChainAddressPair,
+    token: UniversalOrEvm | 'native',
+    amount: bigint,
+    payload?: Uint8Array,
+  ): AsyncGenerator<EvmUnsignedTransaction> {
+    const senderAddr = toEvmAddrString(sender);
+    const recipientChainId = chainToChainId(recipient[0]);
+    const recipientAddress = recipient[1].toString();
+    if (typeof token === 'string' && token === 'native') {
+      const txReq = await (payload === undefined
+        ? this.tokenBridge.wrapAndTransferETH.populateTransaction(
+            recipientChainId,
+            recipientAddress,
+            unusedArbiterFee,
+            unusedNonce,
+            { value: amount },
+          )
+        : this.tokenBridge.wrapAndTransferETHWithPayload.populateTransaction(
+            recipientChainId,
+            recipientAddress,
+            unusedNonce,
+            payload,
+            { value: amount },
+          ));
+      return this.createUnsignedTx(
+        addFrom(txReq, senderAddr),
+        'TokenBridge.wrapAndTransferETH' +
+          (payload === undefined ? '' : 'WithPayload'),
+      );
+    } else {
+      //TODO check for ERC-2612 (permit) support on token?
+      const tokenAddr = toEvmAddrString(token);
+      const tokenContract = TokenContractFactory.connect(
+        tokenAddr,
+        this.provider,
+      );
+      const allowance = await tokenContract.allowance(
+        senderAddr,
+        this.tokenBridge.target,
+      );
+      if (allowance < amount) {
+        const txReq = await tokenContract.approve.populateTransaction(
+          this.tokenBridge.target,
+          amount,
+        );
+        yield this.createUnsignedTx(
+          addFrom(txReq, senderAddr),
+          'ERC20.approve of TokenBridge',
+        );
+      }
+      const sharedParams = [
+        tokenAddr,
+        amount,
+        recipientChainId,
+        recipientAddress,
+      ] as const;
+      const txReq = await (payload === undefined
+        ? this.tokenBridge.transferTokens.populateTransaction(
+            ...sharedParams,
+            unusedArbiterFee,
+            unusedNonce,
+          )
+        : this.tokenBridge.transferTokensWithPayload.populateTransaction(
+            ...sharedParams,
+            unusedNonce,
+            payload,
+          ));
+      return this.createUnsignedTx(
+        addFrom(txReq, senderAddr),
+        'TokenBridge.transferTokens' +
+          (payload === undefined ? '' : 'WithPayload'),
+      );
+    }
   }
 
-  async parseAssetAddress(address: string): Promise<string> {
-    return this.parseAddress(address);
+  //alternative naming: completeTransfer
+  async *redeem(
+    sender: UniversalOrEvm,
+    vaa: VAA<'Transfer'> | VAA<'TransferWithPayload'>,
+    unwrapNative: boolean = true,
+  ): AsyncGenerator<EvmUnsignedTransaction> {
+    const senderAddr = toEvmAddrString(sender);
+    if (vaa.payload.token.chain !== this.chain)
+      if (vaa.payloadLiteral === 'TransferWithPayload') {
+        const fromAddr = vaa.payload.from.toNative('Evm').unwrap();
+        if (fromAddr !== senderAddr)
+          throw new Error(
+            `VAA.from (${fromAddr}) does not match sender (${senderAddr})`,
+          );
+      }
+    const wrappedNativeAddr = await this.tokenBridge.WETH();
+    const tokenAddr = vaa.payload.token.address.toNative('Evm').unwrap();
+    if (tokenAddr === wrappedNativeAddr && unwrapNative) {
+      const txReq =
+        await this.tokenBridge.completeTransferAndUnwrapETH.populateTransaction(
+          serialize(vaa),
+        );
+      return this.createUnsignedTx(
+        addFrom(txReq, senderAddr),
+        'TokenBridge.completeTransferAndUnwrapETH',
+      );
+    } else {
+      const txReq = await this.tokenBridge.completeTransfer.populateTransaction(
+        serialize(vaa),
+      );
+      return this.createUnsignedTx(
+        addFrom(txReq, senderAddr),
+        'TokenBridge.completeTransfer',
+      );
+    }
   }
 
-  async getCurrentBlock(chain: ChainName | ChainId): Promise<number> {
-    const provider = this.wormhole.mustGetProvider(chain);
-    return await provider.getBlockNumber();
+  private createUnsignedTx(
+    txReq: TransactionRequest,
+    description: string,
+    stackable: boolean = false,
+  ): EvmUnsignedTransaction {
+    return new EvmUnsignedTransaction(
+      txReq,
+      this.network,
+      this.chain,
+      description,
+      stackable,
+    );
   }
+
+  // Relayer impl
+  // relaySupported(chain: Chain): boolean {
+  //   // TODO: check if chain has supported relayer contracts
+  //   return true;
+  // }
+
+  // async getRelayerFee(
+  //   sourceChain: Chain,
+  //   destChain: Chain,
+  //   tokenId: UniversalOrNative<'Evm'>,
+  // ): Promise<bigint> {
+  //   const relayer = this.contracts.mustGetTokenBridgeRelayer(
+  //     sourceChain,
+  //     this.provider,
+  //   );
+  //   // get asset address
+  //   const address = ''; // await this.getForeignAsset(tokenId, sourceChain);
+
+  //   const tokenContract = TokenContractFactory.connect(address, this.provider);
+  //   const decimals = await tokenContract.decimals();
+  //   // get relayer fee as token amt
+  //   const destChainId = toChainId(destChain);
+  //   return await relayer.calculateRelayerFee(destChainId, address, decimals);
+  // }
+  // async startTransferWithRelay(
+  //   token: UniversalOrNative<'Evm'> | 'native',
+  //   amount: bigint,
+  //   toNativeToken: string,
+  //   sendingChain: Chain,
+  //   senderAddress: string,
+  //   recipientChain: Chain,
+  //   recipientAddress: string,
+  //   overrides?: any,
+  // ): Promise<any> {
+  //   const signer = this.wormhole.getSigner(sendingChain);
+  //   if (!signer) throw new Error(`No signer for ${sendingChain}`);
+
+  //   // approve for ERC-20 token transfers
+  //   if (token !== NATIVE) {
+  //     const amountBN = BigInt(amount);
+  //     const relayer = this.contracts.mustGetTokenBridgeRelayer(
+  //       sendingChain,
+  //       this.provider,
+  //     );
+  //     const tokenAddr = await this.mustGetForeignAsset(token, sendingChain);
+
+  //     // TODO
+  //     // await this.approve(
+  //     //   sendingChain,
+  //     //   relayer.address,
+  //     //   tokenAddr,
+  //     //   amountBN,
+  //     //   overrides,
+  //     // );
+  //   }
+
+  //   // prepare and simulate transfer
+  //   const tx = await this.prepareTransferWithRelay(
+  //     token,
+  //     amount,
+  //     toNativeToken,
+  //     sendingChain,
+  //     senderAddress,
+  //     recipientChain,
+  //     recipientAddress,
+  //     overrides,
+  //   );
+
+  //   const v = await signer.sendTransaction(tx);
+  //   return await v.wait();
+  // }
+  // async calculateNativeTokenAmt(
+  //   destChain: Chain,
+  //   tokenId: UniversalOrNative<'Evm'>,
+  //   amount: bigint,
+  //   walletAddress: string,
+  // ): Promise<bigint> {
+  //   const relayer = this.contracts.mustGetTokenBridgeRelayer(
+  //     destChain,
+  //     this.provider,
+  //   );
+  //   const token = await this.mustGetForeignAsset(tokenId, destChain);
+  //   return await relayer.calculateNativeSwapAmountOut(token, amount);
+  // }
+  // async calculateMaxSwapAmount(
+  //   destChain: Chain,
+  //   tokenId: UniversalOrNative<'Evm'>,
+  //   walletAddress: string,
+  // ): Promise<bigint> {
+  //   const relayer = this.contracts.mustGetTokenBridgeRelayer(
+  //     destChain,
+  //     this.provider,
+  //   );
+  //   const token = await this.mustGetForeignAsset(tokenId, destChain);
+  //   return await relayer.calculateMaxSwapAmountIn(token);
+  // }
 }

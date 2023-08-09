@@ -1,0 +1,10 @@
+{
+  "name": "@wormhole-foundation/sdk-base",
+  "version": "0.1.0",
+  "main": "./dist/index.js",
+  "scripts": {
+    "test": "jest --config ../jest.config.ts __tests__/*.ts",
+    "build": "tsc -p ./tsconfig.json",
+    "clean": "rm -rf ./dist"
+  }
+}
