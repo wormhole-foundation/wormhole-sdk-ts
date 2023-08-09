@@ -2,7 +2,9 @@
   "extends": "../../tsconfig.root.json",
   "include": [
     "./src/*.ts",
-    "./src/**/*.ts"
+    "./src/**/*.ts",
+    "./src/**/**/*.ts",
+    "./src/anchor-idl/*.json"
   ],
   "exclude": [
     "./node_modules",
@@ -12,6 +14,7 @@
   ],
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": "src",
+    "skipLibCheck": true,
   }
 }

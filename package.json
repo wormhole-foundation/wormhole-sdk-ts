@@ -25,11 +25,8 @@
     "docs": "typedoc"
   },
   "workspaces": [
-    "packages/sdk-core",
-    "packages/aptos",
-    "packages/evm",
-    "packages/solana",
-    "packages/sei",
-    "packages/sui"
+    "core/base",
+    "core/definitions",
+    "core/connect"
   ]
 }

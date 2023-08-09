@@ -1,16 +1,9 @@
 import { ethers_contracts } from '@certusone/wormhole-sdk';
+import { ChainId, Chain as ChainName } from '@wormhole-foundation/sdk-base';
+import { TokenBridgeRelayer } from './abis/TokenBridgeRelayer';
+import { TokenBridgeRelayer__factory } from './abis/TokenBridgeRelayer__factory';
 
-import {
-  ChainName,
-  ChainId,
-  Contracts,
-  Context,
-  TokenBridgeRelayer,
-  TokenBridgeRelayer__factory,
-  ContractsAbstract,
-  Wormhole,
-  filterByContext,
-} from '@wormhole-foundation/connect-sdk';
+import { Contracts, Context, Wormhole } from '@wormhole-foundation/connect-sdk';
 
 /**
  * @category EVM

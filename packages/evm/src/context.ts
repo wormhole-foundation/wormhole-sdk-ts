@@ -14,19 +14,19 @@ import {
   utils,
 } from 'ethers';
 
+import { ChainId, Chain as ChainName } from '@wormhole-foundation/sdk-base';
+import { VAA, deserialize } from '@wormhole-foundation/sdk-definitions';
+
 import {
   TokenId,
-  ChainName,
-  ChainId,
   NATIVE,
   ParsedRelayerMessage,
   ParsedMessage,
   Context,
   ParsedRelayerPayload,
   Wormhole,
-  parseVaa,
-  RelayerAbstract,
   createNonce,
+  //RelayerAbstract,
 } from '@wormhole-foundation/connect-sdk';
 import { EvmContracts } from './contracts';
 
@@ -649,7 +649,7 @@ export class EvmContext extends RelayerAbstract<ethers.ContractReceipt> {
     signedVaa: string,
   ): Promise<boolean> {
     const tokenBridge = this.contracts.mustGetBridge(destChain);
-    const hash = parseVaa(utils.arrayify(signedVaa)).hash;
+    const hash = deserialize('Uint8Array', utils.arrayify(signedVaa)).hash;
     return await tokenBridge.isTransferCompleted(hash);
   }
 
