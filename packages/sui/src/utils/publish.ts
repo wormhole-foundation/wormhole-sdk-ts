@@ -4,8 +4,8 @@ import {
   normalizeSuiObjectId,
   TransactionBlock,
 } from '@mysten/sui.js';
-import { SuiBuildOutput } from './types';
-import { getOriginalPackageId, getPackageId } from './utils';
+import { SuiBuildOutput } from './types.js';
+import { getOriginalPackageId, getPackageId } from './utils.js';
 
 export const publishCoin = async (
   provider: JsonRpcProvider,

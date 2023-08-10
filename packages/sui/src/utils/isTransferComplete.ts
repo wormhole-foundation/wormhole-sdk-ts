@@ -1,5 +1,5 @@
 import { JsonRpcProvider } from '@mysten/sui.js';
-import { getObjectFields, getTableKeyType } from './utils';
+import { getObjectFields, getTableKeyType } from './utils.js';
 import { getSignedVAAHash } from '@wormhole-foundation/connect-sdk';
 
 export async function getIsTransferCompleted(

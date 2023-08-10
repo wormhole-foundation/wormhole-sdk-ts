@@ -7,12 +7,12 @@ import {
   SystemProgram,
   Connection,
 } from '@solana/web3.js';
-import { createReadOnlyWormholeProgramInterface } from '../program';
+import { createReadOnlyWormholeProgramInterface } from '../program.js';
 import {
   deriveWormholeBridgeDataKey,
   deriveGuardianSetKey,
   derivePostedVaaKey,
-} from '../accounts';
+} from '../accounts/index.js';
 import {
   isBytes,
   ParsedVaa,

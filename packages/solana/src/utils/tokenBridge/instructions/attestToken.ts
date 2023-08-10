@@ -4,13 +4,13 @@ import {
   PublicKeyInitData,
   TransactionInstruction,
 } from '@solana/web3.js';
-import { createReadOnlyTokenBridgeProgramInterface } from '../program';
-import { getPostMessageAccounts } from '../../wormhole';
+import { createReadOnlyTokenBridgeProgramInterface } from '../program.js';
+import { getPostMessageAccounts } from '../../wormhole/index.js';
 import {
   deriveSplTokenMetadataKey,
   deriveTokenBridgeConfigKey,
   deriveWrappedMetaKey,
-} from '../accounts';
+} from '../accounts/index.js';
 
 export function createAttestTokenInstruction(
   connection: Connection,

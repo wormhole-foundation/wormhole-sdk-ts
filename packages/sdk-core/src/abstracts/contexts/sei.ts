@@ -1,4 +1,4 @@
-import { TokenId } from '../../types';
+import { TokenId } from '../../types.js';
 
 /**
  * @abstract

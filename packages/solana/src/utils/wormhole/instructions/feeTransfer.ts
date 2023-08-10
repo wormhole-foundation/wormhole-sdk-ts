@@ -6,7 +6,7 @@ import {
   SystemProgram,
   TransactionInstruction,
 } from '@solana/web3.js';
-import { deriveFeeCollectorKey, getWormholeBridgeData } from '../accounts';
+import { deriveFeeCollectorKey, getWormholeBridgeData } from '../accounts/index.js';
 
 export async function createBridgeFeeTransferInstruction(
   connection: Connection,

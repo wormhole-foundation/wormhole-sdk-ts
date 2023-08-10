@@ -16,14 +16,14 @@ import {
 import {
   createReadOnlyNftBridgeProgramInterface,
   tokenIdToMint,
-} from '../program';
-import { deriveClaimKey, derivePostedVaaKey } from '../../wormhole';
+} from '../program.js';
+import { deriveClaimKey, derivePostedVaaKey } from '../../wormhole/index.js';
 import {
   deriveEndpointKey,
   deriveNftBridgeConfigKey,
   deriveCustodyKey,
   deriveCustodySignerKey,
-} from '../accounts';
+} from '../accounts/index.js';
 
 export function createCompleteTransferNativeInstruction(
   connection: Connection,

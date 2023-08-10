@@ -15,14 +15,14 @@ import {
   parseNftBridgeUpgradeContractVaa,
   SignedVaa,
 } from '@wormhole-foundation/connect-sdk';
-import { createReadOnlyNftBridgeProgramInterface } from '../program';
-import { deriveClaimKey, derivePostedVaaKey } from '../../wormhole';
+import { createReadOnlyNftBridgeProgramInterface } from '../program.js';
+import { deriveClaimKey, derivePostedVaaKey } from '../../wormhole/index.js';
 import {
   deriveEndpointKey,
   deriveNftBridgeConfigKey,
   deriveUpgradeAuthorityKey,
-} from '../accounts';
-import { BpfLoaderUpgradeable, deriveUpgradeableProgramKey } from '../../utils';
+} from '../accounts/index.js';
+import { BpfLoaderUpgradeable, deriveUpgradeableProgramKey } from '../../utils/index.js';
 
 export function createRegisterChainInstruction(
   connection: Connection,

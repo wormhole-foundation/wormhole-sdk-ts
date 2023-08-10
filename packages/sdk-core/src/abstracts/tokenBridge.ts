@@ -6,8 +6,8 @@ import {
   TokenId,
   ChainName,
   ChainId,
-} from '../types';
-import { Wormhole } from '../wormhole';
+} from '../types.js';
+import { Wormhole } from '../wormhole.js';
 
 /**
  * @abstract

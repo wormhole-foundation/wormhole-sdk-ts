@@ -1,4 +1,4 @@
-export * from './utils';
+export * from './utils/index.js';
 
 /**
  * @category Solana
@@ -6,7 +6,7 @@ export * from './utils';
 export {
   postVaa as postVaaSolana,
   postVaaWithRetry as postVaaSolanaWithRetry,
-} from './sendAndConfirmPostVaa';
+} from './sendAndConfirmPostVaa.js';
 /**
  * @category Solana
  */
@@ -15,16 +15,16 @@ export {
   createPostVaaInstruction as createPostVaaInstructionSolana,
   createBridgeFeeTransferInstruction,
   getPostMessageAccounts as getWormholeCpiAccounts,
-} from './wormhole';
+} from './wormhole/index.js';
 
 /**
  * @category Solana
  */
-export * from './wormhole/cpi';
+export * from './wormhole/cpi.js';
 /**
  * @category Solana
  */
-export * from './tokenBridge/cpi';
+export * from './tokenBridge/cpi.js';
 
-export * from './getForeignAsset';
-export * from './redeem';
+export * from './getForeignAsset.js';
+export * from './redeem.js';

@@ -13,14 +13,14 @@ import {
   parseTokenTransferVaa,
   SignedVaa,
 } from '@wormhole-foundation/connect-sdk';
-import { createReadOnlyTokenBridgeProgramInterface } from '../program';
-import { deriveClaimKey, derivePostedVaaKey } from '../../wormhole';
+import { createReadOnlyTokenBridgeProgramInterface } from '../program.js';
+import { deriveClaimKey, derivePostedVaaKey } from '../../wormhole/index.js';
 import {
   deriveEndpointKey,
   deriveTokenBridgeConfigKey,
   deriveCustodyKey,
   deriveCustodySignerKey,
-} from '../accounts';
+} from '../accounts/index.js';
 
 export function createCompleteTransferNativeInstruction(
   connection: Connection,

@@ -4,12 +4,12 @@ import {
   PublicKey,
   PublicKeyInitData,
 } from '@solana/web3.js';
-import { deriveAddress } from '../../utils';
+import { deriveAddress } from '../../utils/index.js';
 import {
   deriveEmitterSequenceKey,
   getSequenceTracker,
   SequenceTracker,
-} from './sequence';
+} from './sequence.js';
 
 export interface EmitterAccounts {
   emitter: PublicKey;

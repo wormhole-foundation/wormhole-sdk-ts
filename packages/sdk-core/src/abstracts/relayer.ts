@@ -1,6 +1,6 @@
 import { BigNumber, BigNumberish } from 'ethers';
-import { TokenId, ChainName, ChainId, ParsedRelayerPayload } from '../types';
-import { TokenBridgeAbstract } from './tokenBridge';
+import { TokenId, ChainName, ChainId, ParsedRelayerPayload } from '../types.js';
+import { TokenBridgeAbstract } from './tokenBridge.js';
 
 /**
  * @abstract

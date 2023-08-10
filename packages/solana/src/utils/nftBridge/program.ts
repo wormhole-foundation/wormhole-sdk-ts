@@ -1,8 +1,8 @@
 import { Connection, PublicKey, PublicKeyInitData } from '@solana/web3.js';
 import { BN, Program, Provider } from '@project-serum/anchor';
-import { createReadOnlyProvider } from '../utils';
-import { NftBridgeCoder } from './coder';
-import { NftBridge } from '../types/nftBridge';
+import { createReadOnlyProvider } from '../utils/index.js';
+import { NftBridgeCoder } from './coder/index.js';
+import { NftBridge } from '../types/nftBridge.js';
 import { anchorIdl } from '@wormhole-foundation/connect-sdk';
 
 export const NFT_TRANSFER_NATIVE_TOKEN_ADDRESS = Buffer.alloc(32, 1);

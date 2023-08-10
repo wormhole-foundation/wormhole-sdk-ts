@@ -1,4 +1,4 @@
-import { ParsedVaa, parseVaa, SignedVaa } from './wormhole';
+import { ParsedVaa, parseVaa, SignedVaa } from './wormhole.js';
 
 export interface Governance {
   module: string;

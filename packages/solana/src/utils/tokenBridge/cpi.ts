@@ -15,7 +15,7 @@ import {
   deriveClaimKey,
   derivePostedVaaKey,
   getWormholeDerivedAccounts,
-} from '../wormhole';
+} from '../wormhole/index.js';
 import {
   deriveAuthoritySignerKey,
   deriveCustodyKey,
@@ -27,11 +27,11 @@ import {
   deriveTokenBridgeConfigKey,
   deriveWrappedMetaKey,
   deriveWrappedMintKey,
-} from './accounts';
+} from './accounts/index.js';
 import {
   getTransferNativeWithPayloadAccounts,
   getTransferWrappedWithPayloadAccounts,
-} from './instructions';
+} from './instructions/index.js';
 
 export interface TokenBridgeBaseDerivedAccounts {
   /**

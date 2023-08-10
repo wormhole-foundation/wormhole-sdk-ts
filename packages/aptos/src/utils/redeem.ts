@@ -3,8 +3,8 @@ import { MAINNET_CHAINS, ChainId } from '@wormhole-foundation/connect-sdk';
 import {
   getAssetFullyQualifiedType,
   getTypeFromExternalAddress,
-} from './utils';
-import { _parseVAAAlgorand } from './vaa';
+} from './utils.js';
+import { _parseVAAAlgorand } from './vaa.js';
 
 export const completeTransferAndRegister = async (
   client: AptosClient,

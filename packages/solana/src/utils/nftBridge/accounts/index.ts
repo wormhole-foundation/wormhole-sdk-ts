@@ -1,5 +1,5 @@
-export * from './config';
-export * from './wrapped';
+export * from './config.js';
+export * from './wrapped.js';
 
 export {
   EndpointRegistration,
@@ -10,4 +10,4 @@ export {
   deriveMintAuthorityKey,
   deriveUpgradeAuthorityKey,
   getEndpointRegistration,
-} from '../../tokenBridge';
+} from '../../tokenBridge/index.js';

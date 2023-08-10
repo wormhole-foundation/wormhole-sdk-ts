@@ -42,8 +42,8 @@
   },
   "sideEffects": false,
   "scripts": {
-    "build": "tsc -b ./tsconfig.cjs.json ./tsconfig.esm.json",
-    "clean": "rimraf cjs esm",
+    "build": "npm run clean && tsc -b ./tsconfig.cjs.json ./tsconfig.esm.json",
+    "clean": "rimraf cjs esm *.tsbuildinfo",
     "lint": "npm run prettier && eslint --fix",
     "prettier": "prettier --write ./src",
     "test": "jest",

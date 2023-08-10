@@ -1,6 +1,6 @@
 import { Commitment, Connection, PublicKeyInitData } from '@solana/web3.js';
 import { ChainId } from '@wormhole-foundation/connect-sdk';
-import { deriveWrappedMintKey, getWrappedMeta } from './tokenBridge';
+import { deriveWrappedMintKey, getWrappedMeta } from './tokenBridge/index.js';
 
 /**
  * Returns a foreign asset address on Solana for a provided native chain and asset address

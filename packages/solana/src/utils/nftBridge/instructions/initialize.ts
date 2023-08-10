@@ -6,8 +6,8 @@ import {
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction,
 } from '@solana/web3.js';
-import { createReadOnlyNftBridgeProgramInterface } from '../program';
-import { deriveNftBridgeConfigKey } from '../accounts';
+import { createReadOnlyNftBridgeProgramInterface } from '../program.js';
+import { deriveNftBridgeConfigKey } from '../accounts/index.js';
 
 export function createInitializeInstruction(
   connection: Connection,

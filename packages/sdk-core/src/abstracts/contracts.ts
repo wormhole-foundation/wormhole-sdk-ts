@@ -1,5 +1,5 @@
-import { ChainName, ChainId } from '../types';
-import { Wormhole } from '../wormhole';
+import { ChainName, ChainId } from '../types.js';
+import { Wormhole } from '../wormhole.js';
 
 /**
  * @abstract

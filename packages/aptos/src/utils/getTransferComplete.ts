@@ -3,7 +3,7 @@ import {
   ensureHexPrefix,
   getSignedVAAHash,
 } from '@wormhole-foundation/connect-sdk';
-import { NftBridgeState } from '../types';
+import { NftBridgeState } from '../types.js';
 
 export async function getIsTransferCompletedAptos(
   client: AptosClient,

@@ -1,6 +1,6 @@
 import { JsonRpcProvider, TransactionBlock } from '@mysten/sui.js';
 import { BigNumber, BigNumberish } from 'ethers';
-import { getObjectFields } from './utils';
+import { getObjectFields } from './utils/index.js';
 
 export interface TokenInfo {
   max_native_swap_amount: string;

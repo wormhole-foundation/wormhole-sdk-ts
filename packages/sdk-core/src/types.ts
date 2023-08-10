@@ -1,9 +1,9 @@
 import { BigNumber } from 'ethers';
-import { ParsedVaa, SignedVaa } from './utils/vaa';
-import { MainnetChainId, MainnetChainName } from './config/MAINNET';
-import { TestnetChainId, TestnetChainName } from './config/TESTNET';
-import { RelayerAbstract } from './abstracts/relayer';
-import { ContractsAbstract } from './abstracts/contracts';
+import { ParsedVaa, SignedVaa } from './utils/vaa/index.js';
+import { MainnetChainId, MainnetChainName } from './config/MAINNET.js';
+import { TestnetChainId, TestnetChainName } from './config/TESTNET.js';
+import { RelayerAbstract } from './abstracts/relayer.js';
+import { ContractsAbstract } from './abstracts/contracts.js';
 
 export enum Network {
   MAINNET = 'mainnet',

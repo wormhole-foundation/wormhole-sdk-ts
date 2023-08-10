@@ -28,9 +28,9 @@ import {
   RelayerAbstract,
   createNonce,
 } from '@wormhole-foundation/connect-sdk';
-import { EvmContracts } from './contracts';
+import { EvmContracts } from './contracts.js';
 
-export * from './contracts';
+export * from './contracts.js';
 
 /**
  * @category EVM

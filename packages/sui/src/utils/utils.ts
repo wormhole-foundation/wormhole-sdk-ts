@@ -12,8 +12,8 @@ import {
   TransactionBlock,
 } from '@mysten/sui.js';
 import { ensureHexPrefix } from '@wormhole-foundation/connect-sdk';
-import { SuiRpcValidationError } from './error';
-import { SuiError } from './types';
+import { SuiRpcValidationError } from './error.js';
+import { SuiError } from './types.js';
 
 const MAX_PURE_ARGUMENT_SIZE = 16 * 1024;
 const UPGRADE_CAP_TYPE = '0x2::package::UpgradeCap';

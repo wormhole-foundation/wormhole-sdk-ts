@@ -1,11 +1,11 @@
 import { Coder, Idl } from '@project-serum/anchor';
-import { NftBridgeAccountsCoder } from './accounts';
-import { NftBridgeEventsCoder } from './events';
-import { NftBridgeInstructionCoder } from './instruction';
-import { NftBridgeStateCoder } from './state';
-import { NftBridgeTypesCoder } from './types';
+import { NftBridgeAccountsCoder } from './accounts.js';
+import { NftBridgeEventsCoder } from './events.js';
+import { NftBridgeInstructionCoder } from './instruction.js';
+import { NftBridgeStateCoder } from './state.js';
+import { NftBridgeTypesCoder } from './types.js';
 
-export { NftBridgeInstruction } from './instruction';
+export { NftBridgeInstruction } from './instruction.js';
 
 export class NftBridgeCoder implements Coder {
   readonly instruction: NftBridgeInstructionCoder;

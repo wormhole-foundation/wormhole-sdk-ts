@@ -2,9 +2,9 @@ import { Idl, Instruction, InstructionCoder } from '@project-serum/anchor';
 import bs58 from 'bs58';
 import { Layout } from 'buffer-layout';
 import { camelCase, upperFirst } from 'lodash';
-import { IdlField, IdlStateMethod } from '../../anchor';
+import { IdlField, IdlStateMethod } from '../../anchor/index.js';
 import * as borsh from '@coral-xyz/borsh';
-import { IdlCoder } from './idl';
+import { IdlCoder } from './idl.js';
 
 // Inspired by  coral-xyz/anchor
 //

@@ -4,7 +4,7 @@ import {
   Commitment,
   PublicKeyInitData,
 } from '@solana/web3.js';
-import { getAccountData } from '../../utils';
+import { getAccountData } from '../../utils/index.js';
 
 export async function getSignatureSetData(
   connection: Connection,

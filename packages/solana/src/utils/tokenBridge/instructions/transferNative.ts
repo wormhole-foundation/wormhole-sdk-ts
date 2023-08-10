@@ -5,14 +5,14 @@ import {
   TransactionInstruction,
 } from '@solana/web3.js';
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import { createReadOnlyTokenBridgeProgramInterface } from '../program';
-import { getPostMessageCpiAccounts } from '../../wormhole';
+import { createReadOnlyTokenBridgeProgramInterface } from '../program.js';
+import { getPostMessageCpiAccounts } from '../../wormhole/index.js';
 import {
   deriveAuthoritySignerKey,
   deriveCustodySignerKey,
   deriveTokenBridgeConfigKey,
   deriveCustodyKey,
-} from '../accounts';
+} from '../accounts/index.js';
 
 export function createTransferNativeInstruction(
   connection: Connection,

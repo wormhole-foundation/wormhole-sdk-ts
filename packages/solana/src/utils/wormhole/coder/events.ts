@@ -1,5 +1,5 @@
 import { EventCoder, Event, Idl } from '@project-serum/anchor';
-import { IdlEvent } from '../../anchor';
+import { IdlEvent } from '../../anchor/index.js';
 
 export class WormholeEventsCoder implements EventCoder {
   constructor(_idl: Idl) {}

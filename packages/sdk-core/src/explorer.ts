@@ -1,4 +1,4 @@
-import { ChainName, Network } from './types';
+import { ChainName, Network } from './types.js';
 
 type ExplorerSettings = {
   name: string;

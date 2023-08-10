@@ -3,7 +3,7 @@ import {
   deriveTokenBridgeConfigKey,
   getTokenBridgeConfig,
   TokenBridgeConfig,
-} from '../../tokenBridge';
+} from '../../tokenBridge/index.js';
 
 export const deriveNftBridgeConfigKey = deriveTokenBridgeConfigKey;
 

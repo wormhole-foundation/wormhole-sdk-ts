@@ -13,8 +13,8 @@ import {
   ParsedAttestMetaVaa,
   SignedVaa,
 } from '@wormhole-foundation/connect-sdk';
-import { createReadOnlyTokenBridgeProgramInterface } from '../program';
-import { deriveClaimKey, derivePostedVaaKey } from '../../wormhole';
+import { createReadOnlyTokenBridgeProgramInterface } from '../program.js';
+import { deriveClaimKey, derivePostedVaaKey } from '../../wormhole/index.js';
 import {
   deriveEndpointKey,
   deriveMintAuthorityKey,
@@ -22,8 +22,8 @@ import {
   deriveWrappedMetaKey,
   deriveTokenBridgeConfigKey,
   deriveWrappedMintKey,
-} from '../accounts';
-import { SplTokenMetadataProgram } from '../../utils';
+} from '../accounts/index.js';
+import { SplTokenMetadataProgram } from '../../utils/index.js';
 
 export function createCreateWrappedInstruction(
   connection: Connection,

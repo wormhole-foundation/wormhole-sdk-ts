@@ -1,8 +1,8 @@
 import { Connection, PublicKey, PublicKeyInitData } from '@solana/web3.js';
 import { Program, Provider } from '@project-serum/anchor';
-import { createReadOnlyProvider } from '../utils';
-import { WormholeCoder } from './coder';
-import { Wormhole } from '../types/wormhole';
+import { createReadOnlyProvider } from '../utils/index.js';
+import { WormholeCoder } from './coder/index.js';
+import { Wormhole } from '../types/wormhole.js';
 import { anchorIdl } from '@wormhole-foundation/connect-sdk';
 
 export function createWormholeProgramInterface(

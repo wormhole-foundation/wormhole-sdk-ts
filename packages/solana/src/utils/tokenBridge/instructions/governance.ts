@@ -14,14 +14,14 @@ import {
   parseTokenBridgeUpgradeContractVaa,
   SignedVaa,
 } from '@wormhole-foundation/connect-sdk';
-import { createReadOnlyTokenBridgeProgramInterface } from '../program';
-import { deriveClaimKey, derivePostedVaaKey } from '../../wormhole';
+import { createReadOnlyTokenBridgeProgramInterface } from '../program.js';
+import { deriveClaimKey, derivePostedVaaKey } from '../../wormhole/index.js';
 import {
   deriveEndpointKey,
   deriveTokenBridgeConfigKey,
   deriveUpgradeAuthorityKey,
-} from '../accounts';
-import { BpfLoaderUpgradeable, deriveUpgradeableProgramKey } from '../../utils';
+} from '../accounts/index.js';
+import { BpfLoaderUpgradeable, deriveUpgradeableProgramKey } from '../../utils/index.js';
 
 export function createRegisterChainInstruction(
   tokenBridgeProgramId: PublicKeyInitData,

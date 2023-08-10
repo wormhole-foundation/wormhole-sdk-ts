@@ -10,7 +10,7 @@ import {
   isValidSuiAddress,
 } from '@mysten/sui.js';
 import { BigNumber, BigNumberish } from 'ethers';
-import { arrayify, hexlify } from 'ethers/lib/utils';
+import { arrayify, hexlify } from 'ethers/lib/utils.js';
 import {
   ChainId,
   ChainName,
@@ -24,8 +24,8 @@ import {
   RelayerAbstract,
 } from '@wormhole-foundation/connect-sdk';
 
-import { SuiContracts } from './contracts';
-import { SuiRelayer } from './relayer';
+import { SuiContracts } from './contracts.js';
+import { SuiRelayer } from './relayer.js';
 import {
   getForeignAsset,
   getIsTransferCompleted,
@@ -33,7 +33,7 @@ import {
   getPackageId,
   redeemOnSui,
   transferFromSui,
-} from './utils';
+} from './utils/index.js';
 
 /**
  * @category Sui

@@ -7,10 +7,10 @@ import {
   Commitment,
   PublicKeyInitData,
 } from '@solana/web3.js';
-import { deriveAddress, getAccountData } from '../../utils';
-import { deriveWrappedMetaKey } from '../../tokenBridge';
+import { deriveAddress, getAccountData } from '../../utils/index.js';
+import { deriveWrappedMetaKey } from '../../tokenBridge/index.js';
 
-export { deriveWrappedMetaKey } from '../../tokenBridge';
+export { deriveWrappedMetaKey } from '../../tokenBridge/index.js';
 
 export function deriveWrappedMintKey(
   tokenBridgeProgramId: PublicKeyInitData,

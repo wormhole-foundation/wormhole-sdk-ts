@@ -1,7 +1,7 @@
-export * from './config';
-export * from './custody';
-export * from './endpoint';
-export * from './transferWithPayload';
-export * from './signer';
-export * from './wrapped';
-export { deriveUpgradeAuthorityKey } from '../../wormhole';
+export * from './config.js';
+export * from './custody.js';
+export * from './endpoint.js';
+export * from './transferWithPayload.js';
+export * from './signer.js';
+export * from './wrapped.js';
+export { deriveUpgradeAuthorityKey } from '../../wormhole/index.js';

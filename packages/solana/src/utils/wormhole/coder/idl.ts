@@ -4,7 +4,7 @@
 
 import * as borsh from '@coral-xyz/borsh';
 import { Layout } from 'buffer-layout';
-import { IdlField, IdlTypeDef } from '../../anchor';
+import { IdlField, IdlTypeDef } from '../../anchor/index.js';
 import { camelCase } from 'lodash';
 
 export class IdlCoder {

@@ -6,7 +6,7 @@ import {
   SUI_TYPE_ARG,
   TransactionBlock,
 } from '@mysten/sui.js';
-import { getPackageId, isSameType } from './utils';
+import { getPackageId, isSameType } from './utils.js';
 
 export async function transferFromSui(
   provider: JsonRpcProvider,

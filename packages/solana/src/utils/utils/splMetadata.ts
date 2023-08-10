@@ -13,7 +13,7 @@ import {
   getAccountData,
   newAccountMeta,
   newReadOnlyAccountMeta,
-} from './account';
+} from './account.js';
 
 export class Creator {
   address: PublicKey;

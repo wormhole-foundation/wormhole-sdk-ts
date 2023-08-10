@@ -13,19 +13,19 @@ import {
   parseNftTransferVaa,
   SignedVaa,
 } from '@wormhole-foundation/connect-sdk';
-import { createReadOnlyNftBridgeProgramInterface } from '../program';
-import { derivePostedVaaKey } from '../../wormhole';
+import { createReadOnlyNftBridgeProgramInterface } from '../program.js';
+import { derivePostedVaaKey } from '../../wormhole/index.js';
 import {
   deriveEndpointKey,
   deriveNftBridgeConfigKey,
   deriveWrappedMintKey,
   deriveWrappedMetaKey,
   deriveMintAuthorityKey,
-} from '../accounts';
+} from '../accounts/index.js';
 import {
   deriveSplTokenMetadataKey,
   SplTokenMetadataProgram,
-} from '../../utils';
+} from '../../utils/index.js';
 
 export function createCompleteWrappedMetaInstruction(
   connection: Connection,

@@ -2,7 +2,7 @@
   "compilerOptions": {
     "incremental": true,
     "declaration": true,
-    "sourceMap": true,
+    "sourceMap": false,
     "composite": true,
     "types": ["mocha", "chai", "node", "jest"],
     "typeRoots": ["./node_modules/@types"],

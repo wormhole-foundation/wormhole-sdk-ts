@@ -1,8 +1,8 @@
 import { Connection, PublicKey, PublicKeyInitData } from '@solana/web3.js';
 import { Program, Provider } from '@project-serum/anchor';
-import { createReadOnlyProvider } from '../utils';
-import { TokenBridgeCoder } from './coder';
-import { TokenBridge } from '../types/tokenBridge';
+import { createReadOnlyProvider } from '../utils/index.js';
+import { TokenBridgeCoder } from './coder/index.js';
+import { TokenBridge } from '../types/tokenBridge.js';
 import { anchorIdl } from '@wormhole-foundation/connect-sdk';
 
 export function createTokenBridgeProgramInterface(

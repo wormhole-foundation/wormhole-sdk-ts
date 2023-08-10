@@ -1,11 +1,11 @@
-import { ParsedGovernanceVaa, parseGovernanceVaa } from './governance';
+import { ParsedGovernanceVaa, parseGovernanceVaa } from './governance.js';
 import {
   parseTokenBridgeRegisterChainGovernancePayload,
   parseTokenBridgeUpgradeContractGovernancePayload,
   TokenBridgeRegisterChain,
   TokenBridgeUpgradeContract,
-} from './tokenBridge';
-import { ParsedVaa, parseVaa, SignedVaa } from './wormhole';
+} from './tokenBridge.js';
+import { ParsedVaa, parseVaa, SignedVaa } from './wormhole.js';
 
 export enum NftBridgePayload {
   Transfer = 1,

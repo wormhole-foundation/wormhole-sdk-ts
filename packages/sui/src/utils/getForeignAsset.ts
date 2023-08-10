@@ -1,6 +1,6 @@
 import { JsonRpcProvider } from '@mysten/sui.js';
 import { ChainId } from '@wormhole-foundation/connect-sdk';
-import { getTokenCoinType } from './utils';
+import { getTokenCoinType } from './utils.js';
 
 export async function getForeignAsset(
   provider: JsonRpcProvider,

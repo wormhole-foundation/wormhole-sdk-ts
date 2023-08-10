@@ -1,8 +1,8 @@
 import { Parser } from 'binary-parser';
 import { BigNumber, ethers } from 'ethers';
-import { hexlify, keccak256, solidityKeccak256 } from 'ethers/lib/utils';
+import { hexlify, keccak256, solidityKeccak256 } from 'ethers/lib/utils.js';
 import * as elliptic from 'elliptic';
-import { SignedVaa, parseVaa } from './wormhole';
+import { SignedVaa, parseVaa } from './wormhole.js';
 
 export const MAX_VAA_DECIMALS = 8;
 

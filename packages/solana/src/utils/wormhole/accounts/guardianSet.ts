@@ -8,7 +8,7 @@ import {
   ETHEREUM_KEY_LENGTH,
   deriveAddress,
   getAccountData,
-} from '../../utils';
+} from '../../utils/index.js';
 
 export function deriveGuardianSetKey(
   wormholeProgramId: PublicKeyInitData,

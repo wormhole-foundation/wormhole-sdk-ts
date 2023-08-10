@@ -4,8 +4,8 @@ import {
   PublicKey,
   PublicKeyInitData,
 } from '@solana/web3.js';
-import { deriveAddress, getAccountData } from '../../utils';
-import { MessageData } from '../message';
+import { deriveAddress, getAccountData } from '../../utils/index.js';
+import { MessageData } from '../message.js';
 
 export class PostedMessageData {
   message: MessageData;

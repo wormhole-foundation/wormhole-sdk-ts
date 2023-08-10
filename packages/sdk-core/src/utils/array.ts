@@ -1,4 +1,4 @@
-import { hexlify } from 'ethers/lib/utils';
+import { hexlify } from 'ethers/lib/utils.js';
 
 export const uint8ArrayToHex = (a: Uint8Array): string =>
   Buffer.from(a).toString('hex');

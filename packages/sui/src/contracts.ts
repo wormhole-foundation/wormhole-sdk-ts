@@ -8,7 +8,7 @@ import {
   filterByContext,
 } from '@wormhole-foundation/connect-sdk';
 import { JsonRpcProvider } from '@mysten/sui.js';
-import { SuiRelayer } from './relayer';
+import { SuiRelayer } from './relayer.js';
 
 /**
  * @category Sui

@@ -3,7 +3,7 @@ import {
   SUI_CLOCK_OBJECT_ID,
   TransactionBlock,
 } from '@mysten/sui.js';
-import { getPackageId, getTokenCoinType, uint8ArrayToBCS } from './utils';
+import { getPackageId, getTokenCoinType, uint8ArrayToBCS } from './utils.js';
 import { parseTokenTransferVaa } from '@wormhole-foundation/connect-sdk';
 
 export async function redeemOnSui(

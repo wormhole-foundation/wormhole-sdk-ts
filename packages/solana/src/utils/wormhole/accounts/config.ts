@@ -4,7 +4,7 @@ import {
   Commitment,
   PublicKeyInitData,
 } from '@solana/web3.js';
-import { deriveAddress, getAccountData } from '../../utils';
+import { deriveAddress, getAccountData } from '../../utils/index.js';
 
 export function deriveWormholeBridgeDataKey(
   wormholeProgramId: PublicKeyInitData,

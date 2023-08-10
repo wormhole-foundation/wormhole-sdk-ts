@@ -14,9 +14,9 @@ import {
   filterByContext,
 } from '@wormhole-foundation/connect-sdk';
 
-import { createReadOnlyWormholeProgramInterface } from './utils/wormhole';
-import { createReadOnlyTokenBridgeProgramInterface } from './utils/tokenBridge';
-import { createReadOnlyNftBridgeProgramInterface } from './utils/nftBridge';
+import { createReadOnlyWormholeProgramInterface } from './utils/wormhole/index.js';
+import { createReadOnlyTokenBridgeProgramInterface } from './utils/tokenBridge/index.js';
+import { createReadOnlyNftBridgeProgramInterface } from './utils/nftBridge/index.js';
 
 /**
  * @category Solana

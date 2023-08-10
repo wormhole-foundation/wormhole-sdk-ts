@@ -22,7 +22,7 @@ import {
   Transaction,
 } from '@solana/web3.js';
 import { BigNumber } from 'ethers';
-import { arrayify, zeroPad, hexlify } from 'ethers/lib/utils';
+import { arrayify, zeroPad, hexlify } from 'ethers/lib/utils.js';
 import {
   CONFIG,
   MAINNET_CHAINS,
@@ -44,24 +44,24 @@ import {
   SolanaAbstract,
 } from '@wormhole-foundation/connect-sdk';
 
-import { SolContracts } from './contracts';
+import { SolContracts } from './contracts.js';
 import {
   createTransferNativeInstruction,
   createTransferWrappedInstruction,
   createTransferNativeWithPayloadInstruction,
   createApproveAuthoritySignerInstruction,
   createTransferWrappedWithPayloadInstruction,
-} from './utils/tokenBridge';
+} from './utils/tokenBridge/index.js';
 import {
   deriveWormholeEmitterKey,
   getClaim,
   getPostedMessage,
-} from './utils/wormhole';
+} from './utils/wormhole/index.js';
 import {
   getForeignAssetSolana,
   redeemAndUnwrapOnSolana,
   redeemOnSolana,
-} from './utils';
+} from './utils/index.js';
 
 const SOLANA_SEQ_LOG = 'Program log: Sequence: ';
 const SOLANA_CHAIN_NAME = CONFIG.MAINNET.chains.solana!.key;

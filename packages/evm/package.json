@@ -16,7 +16,7 @@
   "type": "module",
   "main": "./cjs/index.js",
   "exports": {
-    "./*": {
+    ".": {
       "types": "./cjs/index.d.ts",
       "require": "./cjs/index.js",
       "import": "./esm/index.js",
@@ -50,8 +50,8 @@
   },
   "sideEffects": false,
   "scripts": {
-    "build": "tsc -b ./tsconfig.cjs.json ./tsconfig.esm.json",
-    "clean": "rimraf cjs esm",
+    "build": "npm run clean && tsc -b ./tsconfig.cjs.json ./tsconfig.esm.json",
+    "clean": "rimraf cjs esm *.tsbuildinfo",
     "lint": "npm run prettier && eslint --fix",
     "prettier": "prettier --write ./src"
   },

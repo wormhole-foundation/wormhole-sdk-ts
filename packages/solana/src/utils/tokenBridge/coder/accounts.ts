@@ -1,5 +1,5 @@
 import { AccountsCoder, Idl } from '@project-serum/anchor';
-import { accountSize, IdlTypeDef } from '../../anchor';
+import { accountSize, IdlTypeDef } from '../../anchor/index.js';
 
 export class TokenBridgeAccountsCoder<A extends string = string>
   implements AccountsCoder

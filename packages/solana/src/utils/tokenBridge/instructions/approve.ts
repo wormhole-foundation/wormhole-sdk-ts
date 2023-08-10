@@ -1,6 +1,6 @@
 import { createApproveInstruction } from '@solana/spl-token';
 import { PublicKey, PublicKeyInitData } from '@solana/web3.js';
-import { deriveAuthoritySignerKey } from '../accounts';
+import { deriveAuthoritySignerKey } from '../accounts/index.js';
 
 export function createApproveAuthoritySignerInstruction(
   tokenBridgeProgramId: PublicKeyInitData,

@@ -16,7 +16,7 @@ import {
 import {
   createCompleteTransferNativeInstruction,
   createCompleteTransferWrappedInstruction,
-} from './tokenBridge';
+} from './tokenBridge/index.js';
 import {
   ACCOUNT_SIZE,
   NATIVE_MINT,

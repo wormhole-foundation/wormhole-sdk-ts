@@ -5,18 +5,18 @@ import {
   TransactionInstruction,
 } from '@solana/web3.js';
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import { createReadOnlyNftBridgeProgramInterface } from '../program';
-import { getPostMessageAccounts } from '../../wormhole';
+import { createReadOnlyNftBridgeProgramInterface } from '../program.js';
+import { getPostMessageAccounts } from '../../wormhole/index.js';
 import {
   deriveAuthoritySignerKey,
   deriveCustodySignerKey,
   deriveNftBridgeConfigKey,
   deriveCustodyKey,
-} from '../accounts';
+} from '../accounts/index.js';
 import {
   deriveSplTokenMetadataKey,
   SplTokenMetadataProgram,
-} from '../../utils';
+} from '../../utils/index.js';
 
 export function createTransferNativeInstruction(
   connection: Connection,

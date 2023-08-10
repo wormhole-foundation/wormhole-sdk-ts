@@ -1,5 +1,5 @@
-import { ParsedGovernanceVaa, parseGovernanceVaa } from './governance';
-import { ParsedVaa, parseVaa, SignedVaa } from './wormhole';
+import { ParsedGovernanceVaa, parseGovernanceVaa } from './governance.js';
+import { ParsedVaa, parseVaa, SignedVaa } from './wormhole.js';
 
 export enum TokenBridgePayload {
   Transfer = 1,

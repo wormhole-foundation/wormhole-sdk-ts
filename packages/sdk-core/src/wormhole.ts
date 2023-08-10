@@ -2,8 +2,8 @@ import { Domain, MultiProvider } from '@nomad-xyz/multi-provider';
 import { BigNumber } from 'ethers';
 import axios from 'axios';
 
-import MAINNET_CONFIG, { MAINNET_CHAINS } from './config/MAINNET';
-import TESTNET_CONFIG, { TESTNET_CHAINS } from './config/TESTNET';
+import MAINNET_CONFIG, { MAINNET_CHAINS } from './config/MAINNET.js';
+import TESTNET_CONFIG, { TESTNET_CHAINS } from './config/TESTNET.js';
 import {
   AnyContext,
   ChainId,
@@ -20,10 +20,9 @@ import {
   SendResult,
   TokenId,
   WormholeConfig,
-} from './types';
-import { ParsedVaa, parseVaa } from './utils/vaa';
-import { SolanaAbstract } from './abstracts/contexts/solana';
-import { SeiAbstract } from './abstracts/contexts/sei';
+} from './types.js';
+import { ParsedVaa, parseVaa } from './utils/vaa/index.js';
+import { SeiAbstract } from './abstracts/contexts/sei.js';
 
 /**
  * The WormholeContext manages connections to Wormhole Core, Bridge and NFT Bridge contracts.

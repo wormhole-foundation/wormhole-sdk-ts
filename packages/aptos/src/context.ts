@@ -16,7 +16,7 @@ import {
   parseTokenTransferPayload,
   TokenBridgeAbstract,
 } from '@wormhole-foundation/connect-sdk';
-import { AptosContracts } from './contracts';
+import { AptosContracts } from './contracts.js';
 import {
   getForeignAssetAptos,
   getIsTransferCompletedAptos,
@@ -24,7 +24,7 @@ import {
   isValidAptosType,
   redeemOnAptos,
   transferFromAptos,
-} from './utils';
+} from './utils/index.js';
 
 export const APTOS_COIN = '0x1::aptos_coin::AptosCoin';
 

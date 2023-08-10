@@ -8,19 +8,19 @@ import {
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction,
 } from '@solana/web3.js';
-import { createSecp256k1Instruction } from '../../utils';
+import { createSecp256k1Instruction } from '../../utils/index.js';
 import {
   getGuardianSet,
   deriveGuardianSetKey,
   getWormholeBridgeData,
-} from '../accounts';
+} from '../accounts/index.js';
 import {
   isBytes,
   ParsedVaa,
   parseVaa,
   SignedVaa,
 } from '@wormhole-foundation/connect-sdk';
-import { createReadOnlyWormholeProgramInterface } from '../program';
+import { createReadOnlyWormholeProgramInterface } from '../program.js';
 
 const MAX_LEN_GUARDIAN_KEYS = 19;
 

@@ -9,7 +9,7 @@ import {
   deriveWormholeBridgeDataKey,
   deriveFeeCollectorKey,
   getEmitterKeys,
-} from '../accounts';
+} from '../accounts/index.js';
 
 /** All accounts required to make a cross-program invocation with the Core Bridge program */
 export interface PostMessageAccounts {

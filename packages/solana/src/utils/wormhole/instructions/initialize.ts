@@ -7,12 +7,12 @@ import {
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction,
 } from '@solana/web3.js';
-import { createReadOnlyWormholeProgramInterface } from '../program';
+import { createReadOnlyWormholeProgramInterface } from '../program.js';
 import {
   deriveFeeCollectorKey,
   deriveGuardianSetKey,
   deriveWormholeBridgeDataKey,
-} from '../accounts';
+} from '../accounts/index.js';
 import BN from 'bn.js';
 
 export function createInitializeInstruction(

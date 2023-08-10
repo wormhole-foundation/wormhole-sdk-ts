@@ -4,7 +4,7 @@ import {
   ChainConfig,
   Contracts,
   Network,
-} from '../types';
+} from '../types.js';
 
 /**
  * Mainnet chain name to chain id mapping

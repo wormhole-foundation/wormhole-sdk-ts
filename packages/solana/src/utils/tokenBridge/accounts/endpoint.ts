@@ -5,7 +5,7 @@ import {
   PublicKeyInitData,
 } from '@solana/web3.js';
 import { ChainId, MAINNET_CHAINS } from '@wormhole-foundation/connect-sdk';
-import { deriveAddress, getAccountData } from '../../utils';
+import { deriveAddress, getAccountData } from '../../utils/index.js';
 import { tryNativeToUint8Array } from '@certusone/wormhole-sdk';
 
 export function deriveEndpointKey(

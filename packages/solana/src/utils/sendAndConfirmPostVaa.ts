@@ -13,11 +13,11 @@ import {
   modifySignTransaction,
   TransactionSignatureAndResponse,
   PreparedTransactions,
-} from './utils';
+} from './utils/index.js';
 import {
   createPostVaaInstruction,
   createVerifySignaturesInstructions,
-} from './wormhole';
+} from './wormhole/index.js';
 import {
   isBytes,
   ParsedVaa,

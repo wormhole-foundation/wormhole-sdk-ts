@@ -1,5 +1,5 @@
-import { keccak256 } from 'ethers/lib/utils';
-export { isBytes } from 'ethers/lib/utils';
+import { keccak256 } from 'ethers/lib/utils.js';
+export { isBytes } from 'ethers/lib/utils.js';
 
 export interface GuardianSignature {
   index: number;

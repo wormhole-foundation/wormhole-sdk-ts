@@ -13,7 +13,7 @@ import {
   parseGovernanceVaa,
   SignedVaa,
 } from '@wormhole-foundation/connect-sdk';
-import { createReadOnlyWormholeProgramInterface } from '../program';
+import { createReadOnlyWormholeProgramInterface } from '../program.js';
 import {
   deriveWormholeBridgeDataKey,
   deriveClaimKey,
@@ -21,8 +21,8 @@ import {
   deriveGuardianSetKey,
   derivePostedVaaKey,
   deriveUpgradeAuthorityKey,
-} from '../accounts';
-import { BpfLoaderUpgradeable, deriveUpgradeableProgramKey } from '../../utils';
+} from '../accounts/index.js';
+import { BpfLoaderUpgradeable, deriveUpgradeableProgramKey } from '../../utils/index.js';
 
 export function createSetFeesInstruction(
   connection: Connection,

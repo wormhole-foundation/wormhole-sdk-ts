@@ -8,7 +8,7 @@ import {
   getTokenFromTokenRegistry,
   isValidSuiType,
   trimSuiType,
-} from './utils';
+} from './utils.js';
 import { JsonRpcProvider } from '@mysten/sui.js';
 
 export async function getOriginalAssetSui(

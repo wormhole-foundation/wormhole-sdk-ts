@@ -23,7 +23,7 @@ import {
   zeroPad,
   hexStripZeros,
   keccak256,
-} from 'ethers/lib/utils';
+} from 'ethers/lib/utils.js';
 import {
   ChainId,
   ChainName,
@@ -43,7 +43,7 @@ import {
   NATIVE,
   SeiAbstract,
 } from '@wormhole-foundation/connect-sdk';
-import { SeiContracts } from './contracts';
+import { SeiContracts } from './contracts.js';
 
 interface WrappedRegistryResponse {
   address: string;

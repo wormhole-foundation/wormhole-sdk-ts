@@ -3,8 +3,8 @@ import {
   deriveFeeCollectorKey,
   deriveWormholeBridgeDataKey,
   getEmitterKeys,
-} from './accounts';
-import { getPostMessageAccounts } from './instructions';
+} from './accounts/index.js';
+import { getPostMessageAccounts } from './instructions/index.js';
 
 export interface WormholeDerivedAccounts {
   /**
