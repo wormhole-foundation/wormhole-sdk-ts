@@ -34,3 +34,5 @@ export const SolanaContracts = {
   TokenBridge: SolanaTokenBridge,
   NftBridge: SolanaNftBridge,
 };
+
+export * from './anchor-idl';

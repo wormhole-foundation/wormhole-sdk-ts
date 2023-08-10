@@ -1,16 +1,13 @@
 {
   "extends": "../../tsconfig.root.json",
   "include": [
-    "./src/*.ts",
     "./src/**/*.ts"
   ],
   "exclude": [
     "./node_modules",
-    "./dist",
+    "./esm",
+    "./cjs",
     "./tests",
     "./.coverage"
-  ],
-  "compilerOptions": {
-    "outDir": "./dist"
-  }
+  ]
 }

@@ -3,15 +3,14 @@ import { Program, Provider } from '@project-serum/anchor';
 import { createReadOnlyProvider } from '../utils';
 import { WormholeCoder } from './coder';
 import { Wormhole } from '../types/wormhole';
-
-import IDL from '@wormhole-foundation/connect-sdk/dist/src/anchor-idl/wormhole.json';
+import { anchorIdl } from '@wormhole-foundation/connect-sdk';
 
 export function createWormholeProgramInterface(
   programId: PublicKeyInitData,
   provider?: Provider,
 ): Program<Wormhole> {
   return new Program<Wormhole>(
-    IDL as Wormhole,
+    anchorIdl.wormhole as Wormhole,
     new PublicKey(programId),
     provider === undefined ? ({ connection: null } as any) : provider,
     coder(),
@@ -29,5 +28,5 @@ export function createReadOnlyWormholeProgramInterface(
 }
 
 export function coder(): WormholeCoder {
-  return new WormholeCoder(IDL as Wormhole);
+  return new WormholeCoder(anchorIdl.wormhole as Wormhole);
 }

@@ -8,11 +8,9 @@
   ],
   "exclude": [
     "./node_modules",
-    "./dist",
+    "./esm",
+    "./cjs",
     "./tests",
     "./.coverage"
-  ],
-  "compilerOptions": {
-    "outDir": "./dist",
-  }
+  ]
 }

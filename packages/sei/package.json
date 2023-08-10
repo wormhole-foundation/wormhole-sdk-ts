@@ -13,12 +13,21 @@
   },
   "license": "Apache-2.0",
   "version": "0.1.0-beta.1",
-  "main": "dist/src/index.js",
-  "types": "dist/src/index.d.ts",
+  "type": "module",
+  "main": "./cjs/index.js",
+  "exports": {
+    ".": {
+      "types": "./cjs/index.d.ts",
+      "require": "./cjs/index.js",
+      "import": "./esm/index.js",
+      "default": "./esm/index.js"
+    }
+  },
   "author": "",
   "description": "SDK for SEI, used in conjunction with @wormhole-foundation/connect-sdk",
   "files": [
-    "dist/**/*",
+    "cjs/**/*",
+    "esm/**/*",
     "src/**/*"
   ],
   "keywords": [
@@ -34,8 +43,8 @@
   },
   "sideEffects": false,
   "scripts": {
-    "build": "tsc -p tsconfig-build.json",
-    "clean": "pnpm -r run clean",
+    "build": "tsc -b ./tsconfig.cjs.json ./tsconfig.esm.json",
+    "clean": "rimraf cjs esm",
     "lint": "npm run prettier && eslint --fix",
     "prettier": "prettier --write ./src"
   },

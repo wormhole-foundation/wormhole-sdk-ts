@@ -3,8 +3,7 @@ import { BN, Program, Provider } from '@project-serum/anchor';
 import { createReadOnlyProvider } from '../utils';
 import { NftBridgeCoder } from './coder';
 import { NftBridge } from '../types/nftBridge';
-
-import IDL from '@wormhole-foundation/connect-sdk/dist/src/anchor-idl/nft_bridge.json';
+import { anchorIdl } from '@wormhole-foundation/connect-sdk';
 
 export const NFT_TRANSFER_NATIVE_TOKEN_ADDRESS = Buffer.alloc(32, 1);
 
@@ -13,7 +12,7 @@ export function createNftBridgeProgramInterface(
   provider?: Provider,
 ): Program<NftBridge> {
   return new Program<NftBridge>(
-    IDL as NftBridge,
+    anchorIdl.nft_bridge as NftBridge,
     new PublicKey(programId),
     provider === undefined ? ({ connection: null } as any) : provider,
     coder(),
@@ -31,7 +30,7 @@ export function createReadOnlyNftBridgeProgramInterface(
 }
 
 export function coder(): NftBridgeCoder {
-  return new NftBridgeCoder(IDL as NftBridge);
+  return new NftBridgeCoder(anchorIdl.nft_bridge as NftBridge);
 }
 
 export function tokenIdToMint(tokenId: bigint) {

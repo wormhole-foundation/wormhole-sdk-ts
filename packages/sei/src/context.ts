@@ -188,7 +188,7 @@ export class SeiContext
 
     const isNative = token.address === this.NATIVE_DENOM;
 
-    let msgs = [];
+    let msgs: EncodeObject[] = [];
     if (isNative) {
       msgs = this.createInitiateNativeTransferMessages(
         senderAddress,

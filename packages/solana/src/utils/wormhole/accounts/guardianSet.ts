@@ -63,7 +63,7 @@ export class GuardianSetData {
     const creationTime = data.readUInt32LE(keysEnd);
     const expirationTime = data.readUInt32LE(4 + keysEnd);
 
-    const keys = [];
+    const keys: Buffer[] = [];
     for (let i = 0; i < keysLen; ++i) {
       const start = 8 + i * ETHEREUM_KEY_LENGTH;
       keys.push(data.subarray(start, start + ETHEREUM_KEY_LENGTH));
