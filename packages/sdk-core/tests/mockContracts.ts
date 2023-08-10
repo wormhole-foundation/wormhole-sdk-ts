@@ -1,7 +1,7 @@
-import { ContractsAbstract } from "../src/abstracts/contracts";
-import { ChainName, ChainId, Context } from "../src/types";
-import { Wormhole } from "../src/wormhole";
-import { filterByContext } from "../src/utils";
+import { ContractsAbstract } from "../src/abstracts/contracts.js";
+import { ChainName, ChainId, Context } from "../src/types.js";
+import { Wormhole } from "../src/wormhole.js";
+import { filterByContext } from "../src/utils/index.js";
 
 export class MockContracts extends ContractsAbstract {
   protected _contracts: Map<ChainName, any>;

@@ -1,7 +1,7 @@
-import { TESTNET_CHAINS } from "../../src/config/TESTNET";
-import { Network, Context } from "../../src/types";
-import { Wormhole } from "../../src/wormhole";
-import { MockContext1, MockContext2 } from "../mockContext";
+import { TESTNET_CHAINS } from "../../src/config/TESTNET.js";
+import { Network, Context } from "../../src/types.js";
+import { Wormhole } from "../../src/wormhole.js";
+import { MockContext1, MockContext2 } from "../mockContext.js";
 
 const NETWORK = Network.TESTNET;
 

@@ -3,9 +3,10 @@ module.exports = {
   testEnvironment: 'node',
   coverageDirectory: '.coverage',
   verbose: true,
-  globals: {
-    'ts-jest': {
-      isolatedModules: true,
-    },
+  transform: {
+    '^.+\\.tsx?$': ['ts-jest', {//the content you'd placed at "global"
+      babel: true,
+      tsconfig: 'tsconfig.json',
+    }]
   },
 };
