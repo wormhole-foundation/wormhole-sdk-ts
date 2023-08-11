@@ -1,38 +1,88 @@
 import { describe, expect, it } from "@jest/globals";
 
-import {
-  Layout,
-  addFixedValues,
-} from "wormhole-base";
+import { Layout, addFixedValues } from "@wormhole-foundation/sdk-base";
 
 const testLayout = [
-  {name: "fixedDirectPrimitive", binary: "uint", size: 1, custom: 3},
-  {name: "fixedDirectCustom", binary: "uint", size: 1, custom: {to: 42, from: 1}},
-  {name: "dynamicDirectPrimitive", binary: "uint", size: 1},
-  {name: "dynamicDirectCustom", binary: "uint", size: 1, custom: {to: (val: number) => val+1, from: (val: number) => val-1}},
-  {name: "someDynamicObject", binary: "object", layout: [
-    {name: "someDynamicBytes", binary: "bytes", size: 4 },
-    {name: "someDynamicLengthBytes", binary: "bytes", lengthSize: 4 },
-  ]},
-  {name: "objectWithOnlyFixed", binary: "object", layout: [
-    {name: "someFixedObjectUint", binary: "uint", size: 1, custom: {to: 13, from: 1}},
-  ]},
-  {name: "objectWithSomeFixed", binary: "object", layout: [
-    {name: "someFixedBytes", binary: "bytes", custom: {to: new Uint8Array(4), from: new Uint8Array(4)} },
-    {name: "someFixedUint", binary: "uint", size: 1, custom: {to: 33, from: 1}},
-    {name: "someDynamicUint", binary: "uint", size: 1 },
-  ]},
-  {name: "arrayWithOnlyFixed", binary: "array", lengthSize: 1, layout: [
-    {name: "someFixedArrayUint", binary: "uint", size: 1, custom: 12},
-  ]},
-  {name: "arrayWithSomeFixed", binary: "array", lengthSize: 1, layout: [
-    {name: "someDynamicUint", binary: "uint", size: 1 },
-    {name: "someFixedUint", binary: "uint", size: 1, custom: 25},
-    {name: "someFixedBytes", binary: "bytes", custom: {to: new Uint8Array(4), from: new Uint8Array(4)} },
-  ]},
-  {name: "arrayWithOnlyDynamic", binary: "array", lengthSize: 1, layout: [
-    {name: "someDynamicArrayUint", binary: "uint", size: 1 },
-  ]},
+  { name: "fixedDirectPrimitive", binary: "uint", size: 1, custom: 3 },
+  {
+    name: "fixedDirectCustom",
+    binary: "uint",
+    size: 1,
+    custom: { to: 42, from: 1 },
+  },
+  { name: "dynamicDirectPrimitive", binary: "uint", size: 1 },
+  {
+    name: "dynamicDirectCustom",
+    binary: "uint",
+    size: 1,
+    custom: { to: (val: number) => val + 1, from: (val: number) => val - 1 },
+  },
+  {
+    name: "someDynamicObject",
+    binary: "object",
+    layout: [
+      { name: "someDynamicBytes", binary: "bytes", size: 4 },
+      { name: "someDynamicLengthBytes", binary: "bytes", lengthSize: 4 },
+    ],
+  },
+  {
+    name: "objectWithOnlyFixed",
+    binary: "object",
+    layout: [
+      {
+        name: "someFixedObjectUint",
+        binary: "uint",
+        size: 1,
+        custom: { to: 13, from: 1 },
+      },
+    ],
+  },
+  {
+    name: "objectWithSomeFixed",
+    binary: "object",
+    layout: [
+      {
+        name: "someFixedBytes",
+        binary: "bytes",
+        custom: { to: new Uint8Array(4), from: new Uint8Array(4) },
+      },
+      {
+        name: "someFixedUint",
+        binary: "uint",
+        size: 1,
+        custom: { to: 33, from: 1 },
+      },
+      { name: "someDynamicUint", binary: "uint", size: 1 },
+    ],
+  },
+  {
+    name: "arrayWithOnlyFixed",
+    binary: "array",
+    lengthSize: 1,
+    layout: [
+      { name: "someFixedArrayUint", binary: "uint", size: 1, custom: 12 },
+    ],
+  },
+  {
+    name: "arrayWithSomeFixed",
+    binary: "array",
+    lengthSize: 1,
+    layout: [
+      { name: "someDynamicUint", binary: "uint", size: 1 },
+      { name: "someFixedUint", binary: "uint", size: 1, custom: 25 },
+      {
+        name: "someFixedBytes",
+        binary: "bytes",
+        custom: { to: new Uint8Array(4), from: new Uint8Array(4) },
+      },
+    ],
+  },
+  {
+    name: "arrayWithOnlyDynamic",
+    binary: "array",
+    lengthSize: 1,
+    layout: [{ name: "someDynamicArrayUint", binary: "uint", size: 1 }],
+  },
 ] as const satisfies Layout;
 
 describe("Layout tests", function () {
@@ -45,16 +95,13 @@ describe("Layout tests", function () {
         someDynamicLengthBytes: new Uint8Array(5),
       },
       objectWithSomeFixed: { someDynamicUint: 8 },
-      arrayWithSomeFixed: [
-        { someDynamicUint: 10 },
-        { someDynamicUint: 11 },
-      ],
+      arrayWithSomeFixed: [{ someDynamicUint: 10 }, { someDynamicUint: 11 }],
       arrayWithOnlyDynamic: [
         { someDynamicArrayUint: 14 },
         { someDynamicArrayUint: 16 },
       ],
     };
-    
+
     const complete = addFixedValues(testLayout, dynamicValues);
     expect(complete).toEqual({
       fixedDirectPrimitive: 3,
@@ -87,7 +134,7 @@ describe("Layout tests", function () {
       arrayWithOnlyDynamic: [
         { someDynamicArrayUint: 14 },
         { someDynamicArrayUint: 16 },
-      ]
+      ],
     });
   });
 });

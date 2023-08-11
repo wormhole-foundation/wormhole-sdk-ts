@@ -40,8 +40,8 @@
     "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo",
     "lint": "npm run prettier && eslint --fix",
     "prettier": "prettier --write ./src",
-    "test": "jest",
-    "coverage": "jest --coverage",
+    "test": "jest --config ../../jest.config.ts __tests__/**/*.ts",
+    "coverage": "jest --config ../../jest.config.ts --coverage",
     "docs": "typedoc"
   },
   "devDependencies": {

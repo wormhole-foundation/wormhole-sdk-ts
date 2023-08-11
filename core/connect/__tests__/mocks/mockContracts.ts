@@ -1,19 +1,17 @@
-import { ContractsAbstract } from "../src/abstracts/contracts";
-import { ChainName, ChainId, Context } from "../src/types";
-import { Wormhole } from "../src/wormhole";
-import { filterByContext } from "../src/utils";
+import { ChainName, ChainId } from '@wormhole-foundation/sdk-base';
+import { Wormhole } from '../../src/wormhole';
+import { contracts, platformToChains } from '@wormhole-foundation/sdk-base';
 
-export class MockContracts extends ContractsAbstract {
+export class MockContracts {
   protected _contracts: Map<ChainName, any>;
   readonly wormhole: Wormhole;
 
   constructor(wormholeBase: Wormhole) {
-    super();
     this.wormhole = wormholeBase;
     this._contracts = new Map();
-    const chains = filterByContext(wormholeBase.conf, Context.SEI);
+    const chains = platformToChains('Cosmwasm');
     chains.forEach((c) => {
-      this._contracts.set(c.key, c.contracts);
+      this._contracts.set(c, contracts['Testnet'][c]);
     });
   }
 
