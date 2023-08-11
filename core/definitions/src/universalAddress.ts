@@ -2,7 +2,7 @@ import {
   hexByteStringToUint8Array,
   uint8ArrayToHexByteString,
   isHexByteString,
-} from "@wormhole-foundation/sdk-base/dist";
+} from "@wormhole-foundation/sdk-base";
 
 import { Address, toNative } from "./address";
 

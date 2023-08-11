@@ -1,10 +1,13 @@
 {
   "name": "@wormhole-foundation/sdk-base",
   "version": "0.1.0",
-  "main": "./dist/index.js",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
   "scripts": {
     "test": "jest --config ../jest.config.ts __tests__/*.ts",
-    "build": "tsc -p ./tsconfig.json",
-    "clean": "rm -rf ./dist"
+    "build:cjs":"tsc -p ./tsconfig.cjs.json",
+    "build:esm":"tsc -p ./tsconfig.esm.json",
+    "build":"npm run clean && npm run build:cjs && npm run build:esm",
+    "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo"
   }
 }

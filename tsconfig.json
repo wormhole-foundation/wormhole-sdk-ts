@@ -1,26 +1,15 @@
 {
-  "extends": "./tsconfig.root.json",
-  "references": [
-    {
-      "path": "./core/base"
-    },
-    {
-      "path": "./core/definitions"
-    },
-    {
-      "path": "./packages/evm"
-    },
-    {
-      "path": "./packages/solana"
-    },
-    {
-      "path": "./packages/sui"
-    },
-    {
-      "path": "./packages/sei"
-    },
-    {
-      "path": "./packages/aptos"
-    },
-  ]
+  "compilerOptions": {
+    "lib": ["es2022"],
+    "target": "es2022",
+    "types": ["mocha", "chai", "node", "jest"],
+    "esModuleInterop": true,
+    "strict": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "node",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "skipLibCheck": true
+  }
 }
