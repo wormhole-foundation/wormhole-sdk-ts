@@ -34,8 +34,10 @@
   },
   "sideEffects": false,
   "scripts": {
-    "build": "tsc -p tsconfig-build.json",
-    "clean": "pnpm -r run clean",
+    "build:cjs": "tsc -p ./tsconfig.cjs.json",
+    "build:esm": "tsc -p ./tsconfig.esm.json",
+    "build": "npm run clean && npm run build:cjs && npm run build:esm",
+    "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo",
     "lint": "npm run prettier && eslint --fix",
     "prettier": "prettier --write ./src"
   },

@@ -8,8 +8,8 @@ async function createContext(): Promise<EvmContext> {
   return await EvmContext.fromProvider(provider);
 }
 
-test('Initializes', async () => {
+test('Dumb', async () => {
   const ctx = await createContext();
   const addy = new UniversalAddress(new Uint8Array(32));
-  console.log(await ctx.transfer(addy, ['Solana', addy], 'native', 1000n));
+  console.log(ctx.transfer(addy, ['Solana', addy], 'native', 1000n));
 });

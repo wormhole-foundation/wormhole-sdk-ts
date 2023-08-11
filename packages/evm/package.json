@@ -13,7 +13,8 @@
   },
   "license": "Apache-2.0",
   "version": "0.1.0-beta.1",
-  "main": "dist/index.js",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
   "types": "dist/index.d.ts",
   "author": "",
   "description": "SDK for EVM chains, used in conjunction with @wormhole-foundation/connect-sdk",
@@ -36,13 +37,14 @@
     "evm"
   ],
   "engines": {
-    "node": ">=16",
-    "pnpm": ">=7"
+    "node": ">=16"
   },
   "sideEffects": false,
   "scripts": {
-    "build": "tsc -p tsconfig-build.json",
-    "clean": "pnpm -r run clean",
+    "build:cjs":"tsc -p ./tsconfig.cjs.json",
+    "build:esm":"tsc -p ./tsconfig.esm.json",
+    "build":"npm run clean && npm run build:cjs && npm run build:esm",
+    "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo",
     "lint": "npm run prettier && eslint --fix",
     "prettier": "prettier --write ./src",
     "test":"jest --config ./jest.config.ts"
