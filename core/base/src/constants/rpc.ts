@@ -1,9 +1,8 @@
-import { MAINNET, TESTNET } from "./networks";
 import { toMapping } from "../utils";
 
 const rpcConfig = [
   [
-    MAINNET,
+    "Mainnet",
     [
       ["Ethereum", "https://rpc.ankr.com/eth"],
       ["Solana", "https://api.mainnet-beta.solana.com"],
@@ -19,7 +18,7 @@ const rpcConfig = [
     ],
   ],
   [
-    TESTNET,
+    "Testnet",
     [
       ["Ethereum", "https://rpc.ankr.com/eth_goerli"],
       ["Polygon", "https://polygon-mumbai.blockpi.network/v1/rpc/public"],
@@ -37,6 +36,6 @@ const rpcConfig = [
 ] as const;
 
 export const RPC_CONFIG = {
-  Mainnet: toMapping(rpcConfig[0][1], 0, 1),
-  Testnet: toMapping(rpcConfig[1][1], 0, 1),
+  Mainnet: toMapping(rpcConfig[0][1]),
+  Testnet: toMapping(rpcConfig[1][1]),
 };

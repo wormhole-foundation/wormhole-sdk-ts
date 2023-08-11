@@ -1,9 +1,9 @@
-import { TESTNET_CHAINS } from "../../src/config/TESTNET";
-import { Network, Context } from "../../src/types";
+
+import { Context } from "../../src/types";
 import { Wormhole } from "../../src/wormhole";
 import { MockContext1, MockContext2 } from "../mockContext";
 
-const NETWORK = Network.TESTNET;
+const network = "Testnet";
 
 describe('registers context classes correctly', () => {
   let wormhole: Wormhole;
@@ -12,24 +12,24 @@ describe('registers context classes correctly', () => {
       [Context.EVM]: MockContext1,
       [Context.SOLANA]: MockContext2,
     }
-    wormhole = new Wormhole(NETWORK, contextConfig);
+    wormhole = new Wormhole(network, contextConfig);
   })
   it('initializes and registers context classes correctly', async () => {
-    const evmContext = wormhole.getContext(TESTNET_CHAINS.goerli);
-    const solanaContext = wormhole.getContext(TESTNET_CHAINS.solana);
+    const evmContext = wormhole.getContext("Ethereum");
+    const solanaContext = wormhole.getContext("Solana");
     const evmAnswer = await evmContext.startTransfer('native', BigInt(0), 1, '', 2, '', undefined);
     expect(evmAnswer).toEqual(1);
     const solanaAnswer = await solanaContext.startTransfer('native', BigInt(0), 1, '', 2, '', undefined);
     expect(solanaAnswer).toEqual(2);
   })
   it('contexts can access other contexts', async () => {
-    const evmContext = wormhole.getContext(TESTNET_CHAINS.goerli);
-    const solanaContext = wormhole.getContext(TESTNET_CHAINS.solana);
+    const evmContext = wormhole.getContext("Ethereum");
+    const solanaContext = wormhole.getContext("Solana");
     // @ts-ignore
-    const getSolanaFromEvm = evmContext.wormhole.getContext(TESTNET_CHAINS.solana);
+    const getSolanaFromEvm = evmContext.wormhole.getContext("Solana");
     expect(getSolanaFromEvm).toBeTruthy();
     // @ts-ignore
-    const getEvmFromSolana = solanaContext.wormhole.getContext(TESTNET_CHAINS.goerli);
+    const getEvmFromSolana = solanaContext.wormhole.getContext("Ethereum");
     expect(getEvmFromSolana).toBeTruthy();
   })
 });

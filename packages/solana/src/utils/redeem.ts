@@ -8,10 +8,10 @@ import {
   Transaction,
 } from '@solana/web3.js';
 import {
-  MAINNET_CHAINS,
   SignedVaa,
   parseTokenTransferVaa,
   MAX_VAA_DECIMALS,
+  chainToChainId,
 } from '@wormhole-foundation/connect-sdk';
 import {
   createCompleteTransferNativeInstruction,
@@ -39,7 +39,7 @@ export async function redeemOnSolana(
 ) {
   const parsed = parseTokenTransferVaa(signedVaa);
   const createCompleteTransferInstruction =
-    parsed.tokenChain == MAINNET_CHAINS.solana
+    parsed.tokenChain == chainToChainId("Solana")
       ? createCompleteTransferNativeInstruction
       : createCompleteTransferWrappedInstruction;
   const transaction = new Transaction().add(

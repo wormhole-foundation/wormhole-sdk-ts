@@ -1,7 +1,7 @@
 import {
-  MAINNET_CHAINS,
   ChainId,
   WormholeWrappedInfo,
+  chainToChainId,
 } from '@wormhole-foundation/connect-sdk';
 import {
   getFieldsFromObjectResponse,
@@ -50,7 +50,7 @@ export async function getOriginalAssetSui(
   } else if (type.includes(`native_asset::NativeAsset<${coinType}>`)) {
     return {
       isWrapped: false,
-      chainId: MAINNET_CHAINS.sui,
+      chainId: chainToChainId("Sui"),
       assetAddress: new Uint8Array(
         fields.value.fields.token_address.fields.value.fields.data,
       ),

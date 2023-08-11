@@ -1,5 +1,5 @@
 import { AptosClient, Types } from 'aptos';
-import { MAINNET_CHAINS, ChainId } from '@wormhole-foundation/connect-sdk';
+import { chainIdToChain, ChainId } from '@wormhole-foundation/connect-sdk';
 import {
   getAssetFullyQualifiedType,
   getTypeFromExternalAddress,
@@ -18,13 +18,13 @@ export const completeTransferAndRegister = async (
     throw new Error('VAA does not contain required information');
   }
 
-  if (parsedVAA.ToChain !== MAINNET_CHAINS.aptos) {
+  if (chainIdToChain(parsedVAA.ToChain) !== "Aptos") {
     throw new Error('Transfer is not destined for Aptos');
   }
 
   // assertChain(parsedVAA.FromChain);
   const assetType =
-    parsedVAA.FromChain === MAINNET_CHAINS.aptos
+  chainIdToChain(parsedVAA.FromChain) === "Aptos"
       ? await getTypeFromExternalAddress(
           client,
           tokenBridgeAddress,

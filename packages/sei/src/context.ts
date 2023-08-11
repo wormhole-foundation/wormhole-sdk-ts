@@ -35,7 +35,6 @@ import {
   WormholeWrappedInfo,
   Wormhole,
   TokenBridgeAbstract,
-  MAINNET_CHAINS,
   stripHexPrefix,
   hexToUint8Array,
   parseTokenTransferPayload,

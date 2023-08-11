@@ -25,7 +25,7 @@ import { BigNumber } from 'ethers';
 import { arrayify, zeroPad, hexlify } from 'ethers/lib/utils';
 import {
   CONFIG,
-  MAINNET_CHAINS,
+  chainToChainId,
   parseTokenTransferPayload,
   parseTokenTransferVaa,
   parseVaa,
@@ -37,7 +37,6 @@ import {
   Context,
   ParsedRelayerPayload,
   ParsedRelayerMessage,
-  Network,
   Wormhole,
   TokenBridgeAbstract,
   createNonce,
@@ -64,12 +63,14 @@ import {
 } from './utils';
 
 const SOLANA_SEQ_LOG = 'Program log: Sequence: ';
-const SOLANA_CHAIN_NAME = CONFIG.MAINNET.chains.solana!.key;
+const SOLANA_CHAIN_NAME = CONFIG["Mainnet"].chains.solana!.key;
 
-const SOLANA_MAINNET_EMMITER_ID =
-  'ec7372995d5cc8732397fb0ad35c0121e0eaa90d26f828a534cab54391b3a4f5';
-const SOLANA_TESTNET_EMITTER_ID =
-  '3b26409f8aaded3f5ddca184695aa6a0fa829b0c85caf84856324896d214ca98';
+const sharedEmitter = '3b26409f8aaded3f5ddca184695aa6a0fa829b0c85caf84856324896d214ca98';
+const SOLANA_EMMITER_ID = {
+  Mainnet: 'ec7372995d5cc8732397fb0ad35c0121e0eaa90d26f828a534cab54391b3a4f5',
+  Testnet: sharedEmitter,
+  Devnet: sharedEmitter,
+};
 
 /**
  * @category Solana
@@ -87,7 +88,7 @@ export class SolanaContext
     super();
     this.wormhole = wormholeInstance;
     const tag =
-      this.wormhole.network === Network.MAINNET ? 'mainnet-beta' : 'devnet';
+      this.wormhole.network === "Mainnet" ? 'mainnet-beta' : 'devnet';
     this.connection = new Connection(
       this.wormhole.conf.rpcs.solana || clusterApiUrl(tag),
     );
@@ -718,10 +719,7 @@ export class SolanaContext
         address: tokenAddress,
       },
       sequence: BigNumber.from(sequence),
-      emitterAddress:
-        this.wormhole.conf.network === Network.MAINNET
-          ? SOLANA_MAINNET_EMMITER_ID
-          : SOLANA_TESTNET_EMITTER_ID,
+      emitterAddress: SOLANA_EMMITER_ID[this.wormhole.conf.network],
       gasFee: BigNumber.from(gasFee),
       block: response.slot,
     };
@@ -763,7 +761,7 @@ export class SolanaContext
 
     const parsed = parseTokenTransferVaa(signedVAA);
     const tokenChain = parsed.tokenChain;
-    if (tokenChain === MAINNET_CHAINS.solana) {
+    if (tokenChain === chainToChainId("Solana")) {
       return await redeemAndUnwrapOnSolana(
         this.connection,
         contracts.core,
