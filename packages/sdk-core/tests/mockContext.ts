@@ -1,8 +1,8 @@
 import { BigNumber } from 'ethers';
-import { TokenBridgeAbstract } from '../src/abstracts/tokenBridge';
-import { AnyContracts, ChainId, ChainName, ParsedMessage, ParsedRelayerMessage, TokenId, Network } from '../src/types';
-import { Wormhole } from '../src/wormhole';
-import { MockContracts } from './mockContracts';
+import { TokenBridgeAbstract } from '../src/abstracts/tokenBridge.js';
+import { AnyContracts, ChainId, ChainName, ParsedMessage, ParsedRelayerMessage, TokenId } from '../src/types.js';
+import { Wormhole } from '../src/wormhole.js';
+import { MockContracts } from './mockContracts.js';
 
 export class MockContext1 extends TokenBridgeAbstract<any> {
   contracts: AnyContracts;

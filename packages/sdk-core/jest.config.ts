@@ -1,12 +1,8 @@
 module.exports = {
   preset: 'ts-jest',
+  resolver: "ts-jest-resolver",
   testEnvironment: 'node',
   coverageDirectory: '.coverage',
   verbose: true,
-  transform: {
-    '^.+\\.tsx?$': ['ts-jest', {//the content you'd placed at "global"
-      babel: true,
-      tsconfig: 'tsconfig.json',
-    }]
-  },
+  transform: {},
 };
