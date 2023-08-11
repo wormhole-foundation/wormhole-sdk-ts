@@ -89,6 +89,26 @@ export class EvmContracts {
     return bridge;
   }
 
+  getTokenImplementation(
+    connection: Provider,
+    address: string,
+  ): ethers_contracts.TokenImplementation | undefined {
+    return ethers_contracts.TokenImplementation__factory.connect(
+      address,
+      connection,
+    );
+  }
+
+  mustGetTokenImplementation(
+    connection: Provider,
+    address: string,
+  ): ethers_contracts.TokenImplementation {
+    const ti = this.getTokenImplementation(connection, address);
+    if (!ti)
+      throw new Error(`No token implementation available for: ${address}`);
+    return ti;
+  }
+
   /**
    * Returns wormhole NFT bridge contract for the chain
    *

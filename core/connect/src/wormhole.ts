@@ -10,13 +10,10 @@ import {
   toChainName,
   Platform,
   Contracts,
-  finalityThreshold,
-  rpcAddress,
 } from '@wormhole-foundation/sdk-base';
 import { deserialize, VAA } from '@wormhole-foundation/sdk-definitions';
 
 import {
-  ChainConfig,
   ContextConfig,
   MessageIdentifier,
   ParsedMessage,
@@ -47,8 +44,6 @@ export class Wormhole {
       const context = new contexts[platformType as Platform]!(this);
       this._contexts.set(platformType as Platform, context);
     }
-
-    this.initializeRpc();
   }
 
   get network(): string {
@@ -56,44 +51,11 @@ export class Wormhole {
   }
 
   /**
-   * Registers rpcs
-   */
-  private initializeRpc() {
-    for (const network of Object.keys(this.conf.rpcs)) {
-      const n = network as ChainName;
-
-      // TODO:
-      // const rpc = rpcAddress(this.conf.network);
-      // const finality = finalityThreshold(this.conf.network);
-
-      // const chains = CHAINS[this.conf.network]; //CHAINS[network]
-
-      // const chainConfig = (chains as any)[n];
-      // if (!chainConfig) throw new Error('invalid network name');
-
-      // register domain
-      //this.registerDomain({
-      //  // @ts-ignore
-      //  domain: chainConfig,
-      //  name: network,
-      //});
-      //// register RPC provider
-      //if (this.conf.rpcs[n]) {
-      //  this.registerRpcProvider(network, this.conf.rpcs[n]!);
-      //}
-    }
-  }
-
-  //getRPC(): RPCConnection {
-
-  //}
-
-  /**
    * Converts to chain id
    * @param nameOrId the chain name or chain id
    * @returns the chain id
    */
-  toChainId(nameOrId: string | number): ChainId {
+  static toChainId(nameOrId: string | number): ChainId {
     return toChainId(nameOrId);
   }
 
@@ -102,7 +64,7 @@ export class Wormhole {
    * @param nameOrId the chain name or chain id
    * @returns the chain name
    */
-  toChainName(nameOrId: string | number): ChainName {
+  static toChainName(nameOrId: string | number): ChainName {
     return toChainName(nameOrId);
   }
 
@@ -112,7 +74,7 @@ export class Wormhole {
    * @returns the contract addresses
    */
   getContracts(chain: Chain): Contracts | undefined {
-    const chainName = this.toChainName(chain);
+    const chainName = Wormhole.toChainName(chain);
     return this.conf.chains[chainName]?.contracts;
   }
 
@@ -135,7 +97,7 @@ export class Wormhole {
    * @throws Errors if context is not found
    */
   getContext(chain: Chain): AnyContext {
-    const chainName = this.toChainName(chain);
+    const chainName = Wormhole.toChainName(chain);
     const { context: contextType } = this.conf.chains[chainName]!;
     const context = this._contexts.get(contextType);
     if (!context) throw new Error('Not able to retrieve context');
@@ -143,7 +105,7 @@ export class Wormhole {
   }
 
   /**
-   * Fetches the address for a token representation on any chain
+   * Gets the address for a token representation on any chain
    *  These are the Wormhole token addresses, not necessarily the cannonical version of that token
    *
    * @param tokenId The Token ID (chain/address)
@@ -159,7 +121,7 @@ export class Wormhole {
   }
 
   /**
-   * Fetches the address for a token representation on any chain
+   * Gets the address for a token representation on any chain
    *  These are the Wormhole token addresses, not necessarily the cannonical version of that token
    *
    * @param tokenId The Token ID (chain/address)
@@ -168,20 +130,21 @@ export class Wormhole {
    * @throws Throws if the token does not exist
    */
   async mustGetForeignAsset(tokenId: TokenId, chain: Chain): Promise<string> {
-    const context = this.getContext(chain);
-    return await context.mustGetForeignAsset(tokenId, chain);
+    const address = await this.getForeignAsset(tokenId, chain);
+    if (!address) throw new Error('No asset registered');
+    return address;
   }
 
   /**
-   * Fetches the number of decimals for a token on a given chain
+   * Gets the number of decimals for a token on a given chain
    *
    * @param tokenId The Token ID (home chain/address)
    * @param chain The chain name or id of the token/representation
    * @returns The number of decimals
    */
-  async fetchTokenDecimals(tokenId: TokenId, chain: Chain): Promise<number> {
+  async getTokenDecimals(tokenId: TokenId, chain: Chain): Promise<bigint> {
+    const repr = await this.mustGetForeignAsset(tokenId, chain);
     const context = this.getContext(chain);
-    const repr = await context.mustGetForeignAsset(tokenId, chain);
     return await context.fetchTokenDecimals(repr, chain);
   }
 
@@ -192,10 +155,7 @@ export class Wormhole {
    * @param chain The chain name or id
    * @returns The native balance as a BigNumber
    */
-  async getNativeBalance(
-    walletAddress: string,
-    chain: Chain,
-  ): Promise<BigNumber> {
+  async getNativeBalance(walletAddress: string, chain: Chain): Promise<bigint> {
     const context = this.getContext(chain);
     return await context.getNativeBalance(walletAddress, chain);
   }
@@ -244,7 +204,7 @@ export class Wormhole {
     payload?: Uint8Array,
   ): Promise<SendResult> {
     const context = this.getContext(sendingChain);
-    const recipientChainName = this.toChainName(recipientChain);
+    const recipientChainName = Wormhole.toChainName(recipientChain);
 
     // TODO: put it back
     // if (!payload && recipientChainName === 'sei') {
@@ -322,7 +282,7 @@ export class Wormhole {
   ): Promise<SendResult> {
     if (!this.supportsSendWithRelay(sendingChain)) {
       throw new Error(
-        `Relayer is not supported on ${this.toChainName(sendingChain)}`,
+        `Relayer is not supported on ${Wormhole.toChainName(sendingChain)}`,
       );
     }
 
@@ -377,7 +337,7 @@ export class Wormhole {
     txData: ParsedMessage | ParsedRelayerMessage,
   ): MessageIdentifier {
     // TODO: wh-connect checks finality first, do we need to?
-    const emitterChain = this.toChainId(txData.fromChain);
+    const emitterChain = Wormhole.toChainId(txData.fromChain);
     const emitterAddress = txData.emitterAddress.startsWith('0x')
       ? txData.emitterAddress.slice(2)
       : txData.emitterAddress;

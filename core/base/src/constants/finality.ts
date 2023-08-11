@@ -35,17 +35,20 @@ const finalityThresholds = [
       ["Sei", 0],
     ],
   ],
-  ["Devnet", []],
 ] as const satisfies readonly (readonly [
   Network,
   readonly (readonly [ChainName, number])[]
 ])[];
 
-// TODO: recursive toMapping
 const mapping = {
   Mainnet: toMapping(finalityThresholds[0][1]),
   Testnet: toMapping(finalityThresholds[1][1]),
-  Devnet: toMapping(finalityThresholds[2][1]),
+  // TODO: reusing testnet finality, ok?
+  Devnet: toMapping(finalityThresholds[1][1]),
 } as const;
 
-export const finalityThreshold = toMappingFunc(mapping);
+export const finalityThreshold = toMappingFunc(mapping) satisfies (
+  n: Network
+) => {
+  readonly [K in ChainName]?: number;
+};

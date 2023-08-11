@@ -16,12 +16,12 @@ export class MockContracts {
   }
 
   getContracts(chain: ChainName | ChainId): any | undefined {
-    const chainName = this.wormhole.toChainName(chain);
+    const chainName = Wormhole.toChainName(chain);
     return this._contracts.get(chainName);
   }
 
   mustGetContracts(chain: ChainName | ChainId): any {
-    const chainName = this.wormhole.toChainName(chain);
+    const chainName = Wormhole.toChainName(chain);
     const contracts = this._contracts.get(chainName);
     if (!contracts) throw new Error(`no Sui contracts found for ${chain}`);
     return contracts;

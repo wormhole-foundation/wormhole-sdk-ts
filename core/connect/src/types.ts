@@ -4,7 +4,7 @@ import {
   Network,
   ChainId,
   ChainName,
-  Contracts,
+  ChainConfig,
 } from '@wormhole-foundation/sdk-base';
 
 export const NATIVE = 'native';
@@ -13,34 +13,17 @@ export type AnyContext = any;
 export type RedeemResult = any;
 export type SendResult = any;
 
-export type ChainResourceMap = {
-  [chain in ChainName]?: string;
-};
-
 export type ContextConfig = {
   [P in Platform]?: any;
-};
-
-export type ChainConfig = {
-  key: ChainName;
-  id: ChainId;
-  context: Platform;
-  contracts: Contracts;
-  finalityThreshold: number;
-  nativeTokenDecimals: number;
 };
 
 export type WormholeConfig = {
   network: Network;
   api: string;
-  rpcs: ChainResourceMap;
-  rest: ChainResourceMap;
   chains: {
-    [chain in ChainName]?: ChainConfig;
+    [K in ChainName]?: ChainConfig;
   };
 };
-
-export type Address = string;
 
 export type TokenId = {
   chain: ChainName;

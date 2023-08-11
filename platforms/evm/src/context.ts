@@ -1,124 +1,93 @@
-// import {
-//   Implementation__factory,
-//   TokenImplementation__factory,
-// } from '@certusone/wormhole-sdk/lib/cjs/ethers-contracts';
-// import {
-//   BigNumber,
-//   BigNumberish,
-//   constants,
-//   ContractReceipt,
-//   ethers,
-//   Overrides,
-//   PayableOverrides,
-//   PopulatedTransaction,
-//   utils,
-// } from 'ethers';
-//
-// import { ChainId, ChainName, Platform } from '@wormhole-foundation/sdk-base';
+import { ChainId, ChainName, Platform } from '@wormhole-foundation/sdk-base';
 // import {
 //   Relayer,
 //   VAA,
 //   deserialize,
 // } from '@wormhole-foundation/sdk-definitions';
 //
-// import {
-//   TokenId,
-//   NATIVE,
-//   ParsedRelayerMessage,
-//   ParsedMessage,
-//   ParsedRelayerPayload,
-//   Wormhole,
-//   createNonce,
-//   //RelayerAbstract,
-// } from '@wormhole-foundation/connect-sdk';
-// import { EvmContracts } from './contracts';
-//
-// export * from './contracts';
-//
-// /**
-//  * @category EVM
-//  */
-// export class EvmContext implements Relayer<'Evm'> {
-//   readonly type: Platform = 'Evm';
-//   readonly contracts: EvmContracts;
-//
-//   protected wormhole: Wormhole;
-//
-//   constructor(wormholeInstance: Wormhole) {
-//     this.wormhole = wormholeInstance;
-//     this.contracts = new EvmContracts(this.wormhole);
-//   }
-//
-//   async getForeignAsset(
-//     tokenId: TokenId,
-//     chain: ChainName | ChainId,
-//   ): Promise<string | null> {
-//     const toChainId = this.wormhole.toChainId(chain);
-//     const chainId = this.wormhole.toChainId(tokenId.chain);
-//     // if the token is already native, return the token address
-//     if (toChainId === chainId) return tokenId.address;
-//     // else fetch the representation
-//     const tokenBridge = this.contracts.mustGetBridge(chain);
-//     const sourceContext = this.wormhole.getContext(tokenId.chain);
-//     const tokenAddr = await sourceContext.formatAssetAddress(tokenId.address);
-//     const foreignAddr = await tokenBridge.wrappedAsset(
-//       chainId,
-//       utils.arrayify(tokenAddr),
-//     );
-//     if (foreignAddr === constants.AddressZero) return null;
-//     return foreignAddr;
-//   }
-//
-//   async mustGetForeignAsset(
-//     tokenId: TokenId,
-//     chain: ChainName | ChainId,
-//   ): Promise<string> {
-//     const addr = await this.getForeignAsset(tokenId, chain);
-//     if (!addr) throw new Error('token not registered');
-//     return addr;
-//   }
-//
-//   /**
-//    * Returns the decimals for a token
-//    *
-//    * @param tokenAddr The token address
-//    * @param chain The token chain name or id
-//    * @returns The number of token decimals
-//    */
-//   async fetchTokenDecimals(
-//     tokenAddr: string,
-//     chain: ChainName | ChainId,
-//   ): Promise<number> {
-//     const provider = this.wormhole.mustGetProvider(chain);
-//     const tokenContract = TokenImplementation__factory.connect(
-//       tokenAddr,
-//       provider,
-//     );
-//     const decimals = await tokenContract.decimals();
-//     return decimals;
-//   }
-//
-//   async getNativeBalance(
-//     walletAddr: string,
-//     chain: ChainName | ChainId,
-//   ): Promise<BigNumber> {
-//     const provider = this.wormhole.mustGetProvider(chain);
-//     return await provider.getBalance(walletAddr);
-//   }
-//
-//   async getTokenBalance(
-//     walletAddr: string,
-//     tokenId: TokenId,
-//     chain: ChainName | ChainId,
-//   ): Promise<BigNumber | null> {
-//     const address = await this.getForeignAsset(tokenId, chain);
-//     if (!address) return null;
-//     const provider = this.wormhole.mustGetProvider(chain);
-//     const token = TokenImplementation__factory.connect(address, provider);
-//     const balance = await token.balanceOf(walletAddr);
-//     return balance;
-//   }
-//
+
+import { Wormhole, TokenId } from '@wormhole-foundation/connect-sdk';
+import { EvmContracts } from './contracts';
+import { EvmTokenBridge } from './tokenBridge';
+import { ethers } from 'ethers';
+import { UniversalAddress } from '@wormhole-foundation/sdk-definitions';
+
+/**
+ * @category EVM
+ */
+export class EvmContext {
+  readonly type: Platform = 'Evm';
+  readonly contracts: EvmContracts;
+  protected wormhole: Wormhole;
+
+  constructor(wormholeInstance: Wormhole) {
+    this.wormhole = wormholeInstance;
+    this.contracts = new EvmContracts(this.wormhole.conf.network);
+  }
+
+  getProvider(chain: ChainName): ethers.Provider {
+    // TODO: cache?
+    const rpcAddress = this.wormhole.conf.chains[chain]!.rpc;
+    return new ethers.JsonRpcProvider(rpcAddress);
+  }
+
+  async getTokenBridge(chain: ChainName): Promise<EvmTokenBridge> {
+    // TODO: cache?
+    return await EvmTokenBridge.fromProvider(this.getProvider(chain));
+  }
+
+  async getForeignAsset(
+    tokenId: TokenId,
+    chain: ChainName,
+  ): Promise<string | null> {
+    // if the token is already native, return the token address
+    if (chain === tokenId.chain) return tokenId.address;
+
+    // else fetch the representation
+    const sourceContext = this.wormhole.getContext(tokenId.chain);
+    const tokenAddr = await sourceContext.formatAssetAddress(tokenId.address);
+
+    const tokenBridge = await this.getTokenBridge(chain);
+    const foreignAddr = await tokenBridge.getWrappedAsset([
+      chain,
+      new UniversalAddress(tokenAddr),
+    ]);
+    return foreignAddr.toString();
+  }
+
+  async getTokenDecimals(tokenAddr: string, chain: ChainName): Promise<bigint> {
+    const provider = this.getProvider(chain);
+    const tokenContract = this.contracts.mustGetTokenImplementation(
+      provider,
+      tokenAddr,
+    );
+    const decimals = await tokenContract.decimals();
+    return decimals;
+  }
+
+  async getNativeBalance(
+    walletAddr: string,
+    chain: ChainName,
+  ): Promise<bigint> {
+    const provider = this.getProvider(chain);
+    return await provider.getBalance(walletAddr);
+  }
+
+  async getTokenBalance(
+    walletAddr: string,
+    tokenId: TokenId,
+    chain: ChainName,
+  ): Promise<bigint | null> {
+    const address = await this.getForeignAsset(tokenId, chain);
+    if (!address) return null;
+
+    const provider = this.getProvider(chain);
+    const token = this.contracts.mustGetTokenImplementation(provider, address);
+    const balance = await token.balanceOf(walletAddr);
+    return balance;
+  }
+}
+
 //   /**
 //    * Approves amount for bridge transfer. If no amount is specified, the max amount is approved
 //    *
@@ -674,4 +643,3 @@
 //     return await provider.getBlockNumber();
 //   }
 // }
-//

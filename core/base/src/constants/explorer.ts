@@ -1,8 +1,8 @@
 import { Chain, ChainName } from "./chains";
 import { Network } from "./networks";
-import { toMapping } from "../utils";
+import { toMapping, toMappingFunc } from "../utils";
 
-type ExplorerSettings = {
+export type ExplorerSettings = {
   name: string;
   baseUrl: string;
   endpoints: {
@@ -291,19 +291,22 @@ const explorerConfig = [
   readonly (readonly [ChainName, ExplorerSettings])[]
 ])[];
 
-export const EXPLORER_CONFIG = {
+const explorerMapping = {
   Mainnet: toMapping(explorerConfig[0][1]),
   Testnet: toMapping(explorerConfig[1][1]),
   Devnet: toMapping(explorerConfig[2][1]),
 } as const;
+
+export const explorerConfigs = toMappingFunc(explorerMapping) satisfies (
+  n: Network
+) => { readonly [K in ChainName]?: ExplorerSettings };
 
 export function linkToTx(
   chainName: ChainName,
   txId: string,
   network: Network
 ): string {
-  const explorerConfig =
-    network == "Mainnet" ? EXPLORER_CONFIG.Mainnet : EXPLORER_CONFIG.Testnet;
+  const explorerConfig = explorerConfigs(network);
 
   // TODO: add missing chains to rpc config
   // @ts-ignore
@@ -319,8 +322,7 @@ export function linkToAccount(
   account: string,
   network: Network
 ): string {
-  const explorerConfig =
-    network === "Mainnet" ? EXPLORER_CONFIG.Mainnet : EXPLORER_CONFIG.Testnet;
+  const explorerConfig = explorerConfigs(network);
 
   // TODO: add missing chains to rpc config
   // @ts-ignore

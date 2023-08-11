@@ -29,6 +29,6 @@
     "core/base",
     "core/definitions",
     "core/connect",
-    "packages/evm"
+    "platforms/evm"
   ]
 }

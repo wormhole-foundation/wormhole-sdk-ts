@@ -2,7 +2,6 @@ import {
   toChainId,
   chainToChainId,
   chainIdToChain,
-  contracts,
   Network,
   PlatformToChainsMapping,
   evmChainIdToNetworkChainPair,
@@ -21,7 +20,6 @@ import { EvmAddress } from './address';
 import { EvmUnsignedTransaction } from './unsignedTransaction';
 import {
   TokenBridgeContract,
-  Bridge__factory as TokenBridgeFactory,
   TokenImplementation__factory as TokenContractFactory,
 } from './ethers-contracts';
 import { Provider, TransactionRequest } from 'ethers';
@@ -49,7 +47,7 @@ const unusedArbiterFee = 0n;
 //Currently the code does not consider Wormhole msg fee (because it is and always has been 0).
 //TODO more checks to determine that all necessary preconditions are met (e.g. that balances are
 //  sufficient) for a given transaction to succeed
-export class EvmContext implements TokenBridge<'Evm'> {
+export class EvmTokenBridge implements TokenBridge<'Evm'> {
   readonly contracts: EvmContracts;
   readonly tokenBridge: TokenBridgeContract;
 
@@ -63,14 +61,14 @@ export class EvmContext implements TokenBridge<'Evm'> {
     this.tokenBridge = this.contracts.mustGetTokenBridge(chain, provider);
   }
 
-  static async fromProvider(provider: Provider): Promise<EvmContext> {
+  static async fromProvider(provider: Provider): Promise<EvmTokenBridge> {
     const { chainId } = await provider.getNetwork();
     const networkChainPair = evmChainIdToNetworkChainPair(chainId);
     if (networkChainPair === undefined)
       throw new Error(`Unknown EVM chainId ${chainId}`);
 
     const [network, chain] = networkChainPair;
-    return new EvmContext(network, chain, provider);
+    return new EvmTokenBridge(network, chain, provider);
   }
 
   async isWrappedAsset(token: UniversalOrEvm): Promise<boolean> {
@@ -293,101 +291,4 @@ export class EvmContext implements TokenBridge<'Evm'> {
       stackable,
     );
   }
-
-  // Relayer impl
-  // relaySupported(chain: Chain): boolean {
-  //   // TODO: check if chain has supported relayer contracts
-  //   return true;
-  // }
-
-  // async getRelayerFee(
-  //   sourceChain: Chain,
-  //   destChain: Chain,
-  //   tokenId: UniversalOrNative<'Evm'>,
-  // ): Promise<bigint> {
-  //   const relayer = this.contracts.mustGetTokenBridgeRelayer(
-  //     sourceChain,
-  //     this.provider,
-  //   );
-  //   // get asset address
-  //   const address = ''; // await this.getForeignAsset(tokenId, sourceChain);
-
-  //   const tokenContract = TokenContractFactory.connect(address, this.provider);
-  //   const decimals = await tokenContract.decimals();
-  //   // get relayer fee as token amt
-  //   const destChainId = toChainId(destChain);
-  //   return await relayer.calculateRelayerFee(destChainId, address, decimals);
-  // }
-  // async startTransferWithRelay(
-  //   token: UniversalOrNative<'Evm'> | 'native',
-  //   amount: bigint,
-  //   toNativeToken: string,
-  //   sendingChain: Chain,
-  //   senderAddress: string,
-  //   recipientChain: Chain,
-  //   recipientAddress: string,
-  //   overrides?: any,
-  // ): Promise<any> {
-  //   const signer = this.wormhole.getSigner(sendingChain);
-  //   if (!signer) throw new Error(`No signer for ${sendingChain}`);
-
-  //   // approve for ERC-20 token transfers
-  //   if (token !== NATIVE) {
-  //     const amountBN = BigInt(amount);
-  //     const relayer = this.contracts.mustGetTokenBridgeRelayer(
-  //       sendingChain,
-  //       this.provider,
-  //     );
-  //     const tokenAddr = await this.mustGetForeignAsset(token, sendingChain);
-
-  //     // TODO
-  //     // await this.approve(
-  //     //   sendingChain,
-  //     //   relayer.address,
-  //     //   tokenAddr,
-  //     //   amountBN,
-  //     //   overrides,
-  //     // );
-  //   }
-
-  //   // prepare and simulate transfer
-  //   const tx = await this.prepareTransferWithRelay(
-  //     token,
-  //     amount,
-  //     toNativeToken,
-  //     sendingChain,
-  //     senderAddress,
-  //     recipientChain,
-  //     recipientAddress,
-  //     overrides,
-  //   );
-
-  //   const v = await signer.sendTransaction(tx);
-  //   return await v.wait();
-  // }
-  // async calculateNativeTokenAmt(
-  //   destChain: Chain,
-  //   tokenId: UniversalOrNative<'Evm'>,
-  //   amount: bigint,
-  //   walletAddress: string,
-  // ): Promise<bigint> {
-  //   const relayer = this.contracts.mustGetTokenBridgeRelayer(
-  //     destChain,
-  //     this.provider,
-  //   );
-  //   const token = await this.mustGetForeignAsset(tokenId, destChain);
-  //   return await relayer.calculateNativeSwapAmountOut(token, amount);
-  // }
-  // async calculateMaxSwapAmount(
-  //   destChain: Chain,
-  //   tokenId: UniversalOrNative<'Evm'>,
-  //   walletAddress: string,
-  // ): Promise<bigint> {
-  //   const relayer = this.contracts.mustGetTokenBridgeRelayer(
-  //     destChain,
-  //     this.provider,
-  //   );
-  //   const token = await this.mustGetForeignAsset(tokenId, destChain);
-  //   return await relayer.calculateMaxSwapAmountIn(token);
-  // }
 }

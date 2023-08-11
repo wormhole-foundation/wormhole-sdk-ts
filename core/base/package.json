@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
+  "types":"./dist/esm/index.d.ts",
   "scripts": {
     "test": "jest --config ../../jest.config.ts __tests__/*.ts",
     "build:cjs":"tsc -p ./tsconfig.cjs.json",
