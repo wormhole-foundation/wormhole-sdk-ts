@@ -6,7 +6,6 @@ import {
   ChainName,
   Chain,
   Network,
-  MAINNET,
   toChainId,
   toChainName,
   Platform,
@@ -27,7 +26,7 @@ import {
   SendResult,
 } from './types';
 
-import { MAINNET_CONFIG, TESTNET_CONFIG } from './constants';
+import { CONFIG } from './constants';
 
 export class Wormhole {
   protected _contexts: Map<Platform, AnyContext>;
@@ -39,7 +38,7 @@ export class Wormhole {
     contexts: ContextConfig,
     conf?: WormholeConfig,
   ) {
-    this.conf = conf ? conf : Wormhole.getConfig(network);
+    this.conf = conf ?? CONFIG[network];
 
     this._contexts = new Map();
     for (const platformType in contexts) {
@@ -55,16 +54,6 @@ export class Wormhole {
   }
 
   /**
-   * Get the default config for Mainnet or Testnet
-   *
-   * @param network 'MAINNET', 'TESTNET' or 'DEVNET'
-   * @returns A Wormhole Config
-   */
-  static getConfig(network: Network): WormholeConfig {
-    return network === MAINNET ? MAINNET_CONFIG : TESTNET_CONFIG;
-  }
-
-  /**
    * Registers rpcs
    */
   private initializeRpc() {
@@ -72,8 +61,7 @@ export class Wormhole {
       const n = network as Chain;
 
       // TODO: ... need to cobble together full chain configs with contracts/finality/explorer/...
-      const chains = undefined;
-      // this.conf.network === MAINNET ? MAINNET_CHAINS : TESTNET_CHAINS;
+      const chains = undefined; //CHAINS[network]
 
       const chainConfig = (chains as any)[n];
       if (!chainConfig) throw new Error('invalid network name');
@@ -258,7 +246,7 @@ export class Wormhole {
     // if (!payload && recipientChainName === 'sei') {
     //   let seiContext: SeiAbstract;
     //   try {
-    //     seiContext = this.getContext(MAINNET_CHAINS.solana) as any;
+    //     seiContext = this.getContext("Solana") as any;
     //   } catch (_) {
     //     throw new Error(
     //       'You attempted to send a transfer to Sei, but the Sei context is not registered. ' +
@@ -399,7 +387,7 @@ export class Wormhole {
 
   /**
    * Gets a VAA from the API or Guardian RPC, finality must be met before the VAA will be available.
-   *  See {@link ChainConfig.finalityThreshold | finalityThreshold} on {@link MAINNET_CONFIG | the config}
+   *  See {@link ChainConfig.finalityThreshold | finalityThreshold} on {@link CONFIG | the config}
    *
    * @param msg The MessageIdentifier used to fetch the VAA
    * @returns The ParsedVAA if available

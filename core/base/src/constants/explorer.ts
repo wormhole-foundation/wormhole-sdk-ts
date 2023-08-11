@@ -1,5 +1,5 @@
 import { Chain } from "./chains";
-import { Network, MAINNET, TESTNET } from "./networks";
+import { Network } from "./networks";
 import { toMapping } from "../utils";
 
 type ExplorerSettings = {
@@ -19,7 +19,7 @@ type ExplorerSettings = {
 
 const explorerConfig = [
   [
-    MAINNET,
+    "Mainnet",
     [
       [
         "Ethereum",
@@ -145,7 +145,7 @@ const explorerConfig = [
     ],
   ],
   [
-    TESTNET,
+    "Testnet",
     [
       [
         "Ethereum",
@@ -288,8 +288,8 @@ const explorerConfig = [
 ] as const;
 
 export const EXPLORER_CONFIG = {
-  Mainnet: toMapping(explorerConfig[0][1], 0, 1),
-  Testnet: toMapping(explorerConfig[1][1], 0, 1),
+  Mainnet: toMapping(explorerConfig[0][1]),
+  Testnet: toMapping(explorerConfig[1][1]),
 } as const;
 
 export function linkToTx(
@@ -298,7 +298,7 @@ export function linkToTx(
   network: Network
 ): string {
   const explorerConfig =
-    network == MAINNET ? EXPLORER_CONFIG.Mainnet : EXPLORER_CONFIG.Testnet;
+    network == "Mainnet" ? EXPLORER_CONFIG.Mainnet : EXPLORER_CONFIG.Testnet;
 
   // TODO:
   // @ts-ignore
@@ -315,7 +315,7 @@ export function linkToAccount(
   network: Network
 ): string {
   const explorerConfig =
-    network === MAINNET ? EXPLORER_CONFIG.Mainnet : EXPLORER_CONFIG.Testnet;
+    network === "Mainnet" ? EXPLORER_CONFIG.Mainnet : EXPLORER_CONFIG.Testnet;
 
   // TODO:
   // @ts-ignore

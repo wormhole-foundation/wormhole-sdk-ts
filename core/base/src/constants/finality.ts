@@ -1,9 +1,8 @@
-import { MAINNET, TESTNET } from "./networks";
-import { toMapping } from "../utils";
+import { toMapping, toMappingFunc } from "../utils";
 
 const finalityThresholds = [
   [
-    MAINNET,
+    "Mainnet",
     [
       ["Ethereum", 64],
       ["Solana", 32],
@@ -19,11 +18,11 @@ const finalityThresholds = [
     ],
   ],
   [
-    TESTNET,
+    "Testnet",
     [
       ["Ethereum", 64],
       ["Solana", 32],
-      ["Polygon", 512],
+      ["Polygon", 64],
       ["Bsc", 15],
       ["Avalanche", 1],
       ["Fantom", 1],
@@ -37,7 +36,9 @@ const finalityThresholds = [
 ] as const;
 
 // TODO: recursive toMapping
-export const FINALITY_THRESHOLDS = {
-  Mainnet: toMapping(finalityThresholds[0][1], 0, 1),
-  Testnet: toMapping(finalityThresholds[1][1], 0, 1),
-};
+const mapping = {
+  Mainnet: toMapping(finalityThresholds[0][1]),
+  Testnet: toMapping(finalityThresholds[1][1]),
+} as const;
+
+export const finalityThreshold = toMappingFunc(mapping);

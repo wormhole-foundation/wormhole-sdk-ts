@@ -1,6 +1,6 @@
-import { toMapping } from "../utils";
+import { toMapping, toMappingFunc } from "../utils";
 
-const nativeTokenDecimals = [
+const nativeDecimalEntries = [
   ["Ethereum", 18],
   ["Solana", 9],
   ["Polygon", 18],
@@ -14,7 +14,5 @@ const nativeTokenDecimals = [
   ["Sei", 6],
 ] as const;
 
-export const NATIVE_DECIMALS = {
-  Mainnet: toMapping(nativeTokenDecimals, 0, 1),
-  Testnet: toMapping(nativeTokenDecimals, 0, 1),
-};
+const mapping = toMapping(nativeDecimalEntries);
+export const nativeDecimals = toMappingFunc(mapping);

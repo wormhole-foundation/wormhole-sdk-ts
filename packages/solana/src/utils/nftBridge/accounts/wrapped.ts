@@ -1,5 +1,5 @@
 import { tryNativeToUint8Array } from '@certusone/wormhole-sdk';
-import { ChainId, MAINNET_CHAINS } from '@wormhole-foundation/connect-sdk';
+import { ChainId, chainToChainId } from '@wormhole-foundation/connect-sdk';
 import { BN } from '@project-serum/anchor';
 import {
   Connection,
@@ -18,7 +18,7 @@ export function deriveWrappedMintKey(
   tokenAddress: Buffer | Uint8Array | string,
   tokenId: bigint | number,
 ): PublicKey {
-  if (tokenChain == MAINNET_CHAINS.solana) {
+  if (tokenChain == chainToChainId("Solana")) {
     throw new Error(
       'tokenChain == CHAIN_ID_SOLANA does not have wrapped mint key',
     );

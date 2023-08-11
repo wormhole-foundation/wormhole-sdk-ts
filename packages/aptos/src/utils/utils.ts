@@ -4,8 +4,8 @@ import { sha3_256 } from 'js-sha3';
 import {
   hex,
   ensureHexPrefix,
+  chainToChainId,
   ChainId,
-  MAINNET_CHAINS,
 } from '@wormhole-foundation/connect-sdk';
 import { NftBridgeState, TokenBridgeState } from '../types';
 
@@ -126,7 +126,7 @@ export const deriveResourceAccountAddress = async (
   originChainId: ChainId,
   originAddress: Uint8Array,
 ): Promise<string | null> => {
-  if (originChainId === MAINNET_CHAINS.aptos) {
+  if (originChainId === chainToChainId("Aptos")) {
     return null;
   }
 
@@ -152,7 +152,7 @@ export const getForeignAssetAddress = (
   originChain: ChainId,
   originAddress: string,
 ): string | null => {
-  if (originChain === MAINNET_CHAINS.aptos) {
+  if (originChain === chainToChainId("Aptos")) {
     return null;
   }
 
@@ -187,7 +187,7 @@ export const getAssetFullyQualifiedType = (
   originAddress: string,
 ): string | null => {
   // native asset
-  if (originChain === MAINNET_CHAINS.aptos) {
+  if (originChain === chainToChainId("Aptos")) {
     // originAddress should be of form address::module::type
     if (!isValidAptosType(originAddress)) {
       console.error('Invalid qualified type');

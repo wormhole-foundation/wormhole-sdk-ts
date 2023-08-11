@@ -28,8 +28,7 @@ export class SolContracts extends ContractsAbstract {
   constructor(wormholeBase: Wormhole) {
     super();
     this.wormhole = wormholeBase;
-    const tag =
-      wormholeBase.network === Network.MAINNET ? 'mainnet-beta' : 'devnet';
+    const tag = wormholeBase.network === "Mainnet" ? 'mainnet-beta' : 'devnet';
     this._contracts = new Map();
     const chains = filterByContext(wormholeBase.conf, Context.SOLANA);
     chains.forEach((c) => {
