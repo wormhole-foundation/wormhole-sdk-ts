@@ -1,15 +1,14 @@
 import { BigNumber } from 'ethers';
-import { TokenBridgeAbstract } from '../src/abstracts/tokenBridge';
-import { AnyContracts, ChainId, ChainName, ParsedMessage, ParsedRelayerMessage, TokenId, Network } from '../src/types';
-import { Wormhole } from '../src/wormhole';
+import { ParsedMessage, ParsedRelayerMessage, TokenId } from '../../src/types';
+import { Wormhole } from '../../src/wormhole';
 import { MockContracts } from './mockContracts';
+import { Contracts, ChainName, ChainId } from '@wormhole-foundation/sdk-base';
 
-export class MockContext1 extends TokenBridgeAbstract<any> {
-  contracts: AnyContracts;
+export class MockContext1 {
+  contracts: MockContracts;
   readonly wormhole: Wormhole;
 
   constructor(wormholeInstance: Wormhole) {
-    super();
     this.wormhole = wormholeInstance;
     this.contracts = new MockContracts(this.wormhole);
   }
@@ -24,7 +23,7 @@ export class MockContext1 extends TokenBridgeAbstract<any> {
     relayerFee: any,
   ): Promise<any> {
     return 1;
-  };
+  }
   async startTransferWithPayload(
     token: TokenId | 'native',
     amount: bigint,
@@ -35,50 +34,50 @@ export class MockContext1 extends TokenBridgeAbstract<any> {
     payload: any,
   ): Promise<any> {
     throw new Error('not implemented');
-  };
+  }
   formatAddress(address: string): any {
     throw new Error('not implemented');
-  };
+  }
   parseAddress(address: any): string {
     throw new Error('not implemented');
-  };
+  }
   async formatAssetAddress(address: string): Promise<any> {
     throw new Error('not implemented');
-  };
+  }
   async parseAssetAddress(address: any): Promise<string> {
     throw new Error('not implemented');
-  };;
+  }
   async getForeignAsset(
     tokenId: TokenId,
     chain: ChainName | ChainId,
   ): Promise<string | null> {
     throw new Error('not implemented');
-  };
+  }
   async mustGetForeignAsset(
     tokenId: TokenId,
     chain: ChainName | ChainId,
   ): Promise<string> {
     throw new Error('not implemented');
-  };
+  }
   async parseMessageFromTx(
     tx: string,
     chain: ChainName | ChainId,
-  ): Promise<ParsedMessage[] | ParsedRelayerMessage[]>{
+  ): Promise<ParsedMessage[] | ParsedRelayerMessage[]> {
     throw new Error('not implemented');
-  };
+  }
   async getNativeBalance(
     walletAddress: string,
     chain: ChainName | ChainId,
-  ): Promise<BigNumber>{
+  ): Promise<BigNumber> {
     throw new Error('not implemented');
-  };
+  }
   async getTokenBalance(
     walletAddress: string,
     tokenId: TokenId,
     chain: ChainName | ChainId,
-  ): Promise<BigNumber | null>{
+  ): Promise<BigNumber | null> {
     throw new Error('not implemented');
-  };
+  }
   async completeTransfer(
     destChain: ChainName | ChainId,
     signedVAA: Uint8Array,
@@ -86,7 +85,7 @@ export class MockContext1 extends TokenBridgeAbstract<any> {
     payerAddr?: any,
   ): Promise<any> {
     throw new Error('not implemented');
-  };
+  }
 
   /**
    * Checks if a transfer has been completed or not
@@ -100,14 +99,14 @@ export class MockContext1 extends TokenBridgeAbstract<any> {
     signedVaa: string,
   ): Promise<boolean> {
     throw new Error('not implemented');
-  };
+  }
 
   async fetchTokenDecimals(
     tokenAddr: string,
     chain: ChainName | ChainId,
   ): Promise<number> {
     throw new Error('not implemented');
-  };
+  }
 }
 
 export class MockContext2 extends MockContext1 {
@@ -125,5 +124,5 @@ export class MockContext2 extends MockContext1 {
     relayerFee: any,
   ): Promise<any> {
     return 2;
-  };
+  }
 }

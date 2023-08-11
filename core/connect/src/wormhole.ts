@@ -10,6 +10,8 @@ import {
   toChainName,
   Platform,
   Contracts,
+  chains as CHAINS,
+  RPC_CONFIG,
 } from '@wormhole-foundation/sdk-base';
 import { deserialize, VAA } from '@wormhole-foundation/sdk-definitions';
 
@@ -58,13 +60,13 @@ export class Wormhole {
    */
   private initializeRpc() {
     for (const network of Object.keys(this.conf.rpcs)) {
-      const n = network as Chain;
+      const n = network as ChainName;
 
-      // TODO: ... need to cobble together full chain configs with contracts/finality/explorer/...
-      const chains = undefined; //CHAINS[network]
+      // TODO:
+      // const chains = CHAINS[this.conf.network]; //CHAINS[network]
 
-      const chainConfig = (chains as any)[n];
-      if (!chainConfig) throw new Error('invalid network name');
+      // const chainConfig = (chains as any)[n];
+      // if (!chainConfig) throw new Error('invalid network name');
 
       // TODO:
       // register domain
