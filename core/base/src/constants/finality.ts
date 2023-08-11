@@ -1,3 +1,5 @@
+import { Network } from "./networks";
+import { ChainName } from "./chains";
 import { toMapping, toMappingFunc } from "../utils";
 
 const finalityThresholds = [
@@ -33,12 +35,17 @@ const finalityThresholds = [
       ["Sei", 0],
     ],
   ],
-] as const;
+  ["Devnet", []],
+] as const satisfies readonly (readonly [
+  Network,
+  readonly (readonly [ChainName, number])[]
+])[];
 
 // TODO: recursive toMapping
 const mapping = {
   Mainnet: toMapping(finalityThresholds[0][1]),
   Testnet: toMapping(finalityThresholds[1][1]),
+  Devnet: toMapping(finalityThresholds[2][1]),
 } as const;
 
 export const finalityThreshold = toMappingFunc(mapping);

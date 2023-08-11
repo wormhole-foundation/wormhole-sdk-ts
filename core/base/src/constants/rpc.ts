@@ -1,4 +1,6 @@
-import { toMapping } from "../utils";
+import { toMapping, toMappingFunc } from "../utils";
+import { Network } from "./networks";
+import { ChainName } from "./chains";
 
 const rpcConfig = [
   [
@@ -33,9 +35,16 @@ const rpcConfig = [
       ["Sei", "https://rpc.atlantic-2.seinetwork.io"],
     ],
   ],
-] as const;
+  ["Devnet", []],
+] as const satisfies readonly (readonly [
+  Network,
+  readonly (readonly [ChainName, string])[]
+])[];
 
-export const RPC_CONFIG = {
+export const rpcs = {
   Mainnet: toMapping(rpcConfig[0][1]),
   Testnet: toMapping(rpcConfig[1][1]),
+  Devnet: toMapping(rpcConfig[2][1]),
 };
+
+export const rpcAddress = toMappingFunc(rpcs);

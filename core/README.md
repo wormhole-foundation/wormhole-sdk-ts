@@ -5,7 +5,7 @@ The SDK Core is broken into several logical subpackages
 
 ## Base
 
-The `base` package contains constants (e.g. contract addresses) and ABI/IDL type specifications for contracts.
+The `base` package contains constants (e.g. contract addresses, RPC config, Finality, etc...) 
 
 
 ## Definitions
@@ -17,10 +17,5 @@ The `definitions` package contains definitions for the VAA structures and interf
 
 The `connect` package contains the classes and types are used directly by developers.
 
-
--------------------
-
-
-Why do we have Mainnet/Testnet/Devnet uppercase? same q for chains? Can we just go lowercase on all of 'em?
-
+It should provide the interface that can dispatch calls to the correct Context objects for a given platform/network/chain 
 

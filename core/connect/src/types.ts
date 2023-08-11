@@ -7,11 +7,11 @@ import {
   Contracts,
 } from '@wormhole-foundation/sdk-base';
 
+export const NATIVE = 'native';
+
 export type AnyContext = any;
 export type RedeemResult = any;
 export type SendResult = any;
-
-export const NATIVE = 'native';
 
 export type ChainResourceMap = {
   [chain in ChainName]?: string;

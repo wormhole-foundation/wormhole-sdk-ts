@@ -1,11 +1,11 @@
-import { RPC_CONFIG, Network } from '@wormhole-foundation/sdk-base';
+import { rpcAddress, Network } from '@wormhole-foundation/sdk-base';
 import { WormholeConfig } from './types';
 
 //TODO AMO this looks wrong to me
 const sharedConfig = {
-  network: "Testnet",
+  network: 'Testnet',
   api: 'https://api.testnet.wormscan.io',
-  rpcs: RPC_CONFIG.Testnet,
+  rpcs: rpcAddress('Testnet'),
   // TODO: why is this here?
   // https://github.com/wormhole-foundation/connect-sdk/blob/main/packages/sei/src/context.ts#L238
   rest: { Sei: 'https://rest.atlantic-2.seinetwork.io' },
@@ -14,9 +14,9 @@ const sharedConfig = {
 
 export const CONFIG = {
   Mainnet: {
-    network: "Mainnet",
+    network: 'Mainnet',
     api: 'https://api.wormscan.io',
-    rpcs: RPC_CONFIG.Mainnet,
+    rpcs: rpcAddress('Mainnet'),
     // TODO: why is this here?
     rest: { Sei: '' },
     chains: {},

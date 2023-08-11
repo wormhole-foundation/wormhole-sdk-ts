@@ -1,4 +1,4 @@
-import { Chain } from "./chains";
+import { Chain, ChainName } from "./chains";
 import { Network } from "./networks";
 import { toMapping } from "../utils";
 
@@ -285,22 +285,27 @@ const explorerConfig = [
       ],
     ],
   ],
-] as const;
+  ["Devnet", []],
+] as const satisfies readonly (readonly [
+  Network,
+  readonly (readonly [ChainName, ExplorerSettings])[]
+])[];
 
 export const EXPLORER_CONFIG = {
   Mainnet: toMapping(explorerConfig[0][1]),
   Testnet: toMapping(explorerConfig[1][1]),
+  Devnet: toMapping(explorerConfig[2][1]),
 } as const;
 
 export function linkToTx(
-  chainName: Chain,
+  chainName: ChainName,
   txId: string,
   network: Network
 ): string {
   const explorerConfig =
     network == "Mainnet" ? EXPLORER_CONFIG.Mainnet : EXPLORER_CONFIG.Testnet;
 
-  // TODO:
+  // TODO: add missing chains to rpc config
   // @ts-ignore
   const chainConfig = explorerConfig[chainName];
   if (!chainConfig) throw new Error("invalid chain, explorer config not found");
@@ -310,14 +315,14 @@ export function linkToTx(
 }
 
 export function linkToAccount(
-  chainName: Chain,
+  chainName: ChainName,
   account: string,
   network: Network
 ): string {
   const explorerConfig =
     network === "Mainnet" ? EXPLORER_CONFIG.Mainnet : EXPLORER_CONFIG.Testnet;
 
-  // TODO:
+  // TODO: add missing chains to rpc config
   // @ts-ignore
   const chainConfig = explorerConfig[chainName];
   if (!chainConfig) throw new Error("invalid chain, explorer config not found");

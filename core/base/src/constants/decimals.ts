@@ -1,3 +1,4 @@
+import { ChainName } from "./chains";
 import { toMapping, toMappingFunc } from "../utils";
 
 const nativeDecimalEntries = [
@@ -12,7 +13,7 @@ const nativeDecimalEntries = [
   ["Sui", 9],
   ["Aptos", 8],
   ["Sei", 6],
-] as const;
+] as const satisfies readonly (readonly [ChainName, number])[];
 
 const mapping = toMapping(nativeDecimalEntries);
 export const nativeDecimals = toMappingFunc(mapping);
