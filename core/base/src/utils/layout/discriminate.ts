@@ -238,7 +238,7 @@ function generateLayoutDiscriminator<const LA extends readonly Layout[]>(
 
   const fixedKnownBytes: FixedKnownByte[] = Array(
     Math.max(...fixedKnown.map(fkb => fkb[fkb.length][0] + fkb[fkb.length][1].length))
-  ).map(_ => []);
+  ).fill([]);
 
   for (let i = 0; i < fixedKnown.length; ++i)
     for (const [offset, serialized] of fixedKnown[i])

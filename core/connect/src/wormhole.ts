@@ -2,8 +2,6 @@ import { BigNumber } from 'ethers';
 import axios from 'axios';
 
 import {
-  ChainId,
-  ChainName,
   Chain,
   Network,
   toChainId,
@@ -46,26 +44,8 @@ export class Wormhole {
     }
   }
 
-  get network(): string {
+  get network(): Network {
     return this.conf.network;
-  }
-
-  /**
-   * Converts to chain id
-   * @param nameOrId the chain name or chain id
-   * @returns the chain id
-   */
-  static toChainId(nameOrId: string | number): ChainId {
-    return toChainId(nameOrId);
-  }
-
-  /**
-   * Converts to chain name
-   * @param nameOrId the chain name or chain id
-   * @returns the chain name
-   */
-  static toChainName(nameOrId: string | number): ChainName {
-    return toChainName(nameOrId);
   }
 
   /**
@@ -74,7 +54,7 @@ export class Wormhole {
    * @returns the contract addresses
    */
   getContracts(chain: Chain): Contracts | undefined {
-    const chainName = Wormhole.toChainName(chain);
+    const chainName = toChainName(chain);
     return this.conf.chains[chainName]?.contracts;
   }
 
@@ -97,7 +77,7 @@ export class Wormhole {
    * @throws Errors if context is not found
    */
   getContext(chain: Chain): AnyContext {
-    const chainName = Wormhole.toChainName(chain);
+    const chainName = toChainName(chain);
     const { context: contextType } = this.conf.chains[chainName]!;
     const context = this._contexts.get(contextType);
     if (!context) throw new Error('Not able to retrieve context');
@@ -204,7 +184,7 @@ export class Wormhole {
     payload?: Uint8Array,
   ): Promise<SendResult> {
     const context = this.getContext(sendingChain);
-    const recipientChainName = Wormhole.toChainName(recipientChain);
+    const recipientChainName = toChainName(recipientChain);
 
     // TODO: put it back
     // if (!payload && recipientChainName === 'sei') {
@@ -282,7 +262,7 @@ export class Wormhole {
   ): Promise<SendResult> {
     if (!this.supportsSendWithRelay(sendingChain)) {
       throw new Error(
-        `Relayer is not supported on ${Wormhole.toChainName(sendingChain)}`,
+        `Relayer is not supported on ${toChainName(sendingChain)}`,
       );
     }
 
@@ -337,7 +317,7 @@ export class Wormhole {
     txData: ParsedMessage | ParsedRelayerMessage,
   ): MessageIdentifier {
     // TODO: wh-connect checks finality first, do we need to?
-    const emitterChain = Wormhole.toChainId(txData.fromChain);
+    const emitterChain = toChainId(txData.fromChain);
     const emitterAddress = txData.emitterAddress.startsWith('0x')
       ? txData.emitterAddress.slice(2)
       : txData.emitterAddress;
