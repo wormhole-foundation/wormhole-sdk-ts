@@ -39,7 +39,6 @@ import {
   ParsedRelayerMessage,
   Wormhole,
   TokenBridgeAbstract,
-  createNonce,
   SolanaAbstract,
 } from '@wormhole-foundation/connect-sdk';
 
@@ -318,7 +317,7 @@ export class SolanaContext
     );
 
     const message = Keypair.generate();
-    const nonce = createNonce().readUInt32LE(0);
+    const nonce = 0;
     const tokenBridgeTransferIx = payload
       ? createTransferNativeWithPayloadInstruction(
           this.connection,
@@ -413,7 +412,7 @@ export class SolanaContext
     if (fromOwnerAddress === undefined) {
       fromOwnerAddress = senderAddress;
     }
-    const nonce = createNonce().readUInt32LE(0);
+    const nonce = 0;
     const approvalIx = createApproveAuthoritySignerInstruction(
       contracts.token_bridge,
       fromAddress,

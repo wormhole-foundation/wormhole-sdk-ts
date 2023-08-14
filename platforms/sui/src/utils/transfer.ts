@@ -1,4 +1,4 @@
-import { ChainId, createNonce } from '@wormhole-foundation/connect-sdk';
+import { ChainId } from '@wormhole-foundation/connect-sdk';
 import { SuiCoinObject } from './types';
 import {
   JsonRpcProvider,
@@ -74,7 +74,7 @@ export async function transferFromSui(
       tx.pure(recipientChainId),
       tx.pure([...recipient]),
       tx.pure(relayerFee),
-      tx.pure(createNonce().readUInt32LE()),
+      tx.pure(0),
     ],
     typeArguments: [coinType],
   });

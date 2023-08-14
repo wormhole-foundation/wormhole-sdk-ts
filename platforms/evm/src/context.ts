@@ -179,7 +179,7 @@ export class EvmContext {
 //         recipientChainId,
 //         destContext.formatAddress(recipientAccount),
 //         relayerFee,
-//         createNonce(),
+//         0,
 //         {
 //           ...overrides,
 //           value: amountBN,
@@ -190,7 +190,7 @@ export class EvmContext {
 //         recipientChainId,
 //         destContext.formatAddress(recipientAccount),
 //         relayerFee,
-//         createNonce(),
+//         0,
 //         {
 //           ...overrides,
 //           value: amountBN,
@@ -207,7 +207,7 @@ export class EvmContext {
 //         recipientChainId,
 //         destContext.formatAddress(recipientAccount),
 //         relayerFee,
-//         createNonce(),
+//         0,
 //         {
 //           ...overrides,
 //           from: senderAddress,
@@ -219,7 +219,7 @@ export class EvmContext {
 //         recipientChainId,
 //         destContext.formatAddress(recipientAccount),
 //         relayerFee,
-//         createNonce(),
+//         0,
 //         overrides,
 //       );
 //     }
@@ -303,7 +303,7 @@ export class EvmContext {
 //       const v = await bridge.wrapAndTransferETHWithPayload(
 //         recipientChainId,
 //         destContext.formatAddress(recipientAddress),
-//         createNonce(),
+//         0,
 //         payload,
 //         {
 //           ...overrides,
@@ -320,7 +320,7 @@ export class EvmContext {
 //         amountBN,
 //         recipientChainId,
 //         destContext.formatAddress(recipientAddress),
-//         createNonce(),
+//         0,
 //         payload,
 //         overrides,
 //       );

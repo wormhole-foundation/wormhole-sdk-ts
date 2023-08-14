@@ -1,5 +1,5 @@
 import { Types } from 'aptos';
-import { ChainId, createNonce } from '@wormhole-foundation/connect-sdk';
+import { ChainId } from '@wormhole-foundation/connect-sdk';
 import { isValidAptosType } from './utils';
 
 export const transferTokens = (
@@ -65,7 +65,7 @@ export function transferFromAptos(
       recipientChain,
       recipient,
       relayerFee,
-      createNonce().readUInt32LE(0),
+      0,
       payload,
     );
   }
@@ -77,6 +77,6 @@ export function transferFromAptos(
     recipientChain,
     recipient,
     relayerFee,
-    createNonce().readUInt32LE(0),
+    0,
   );
 }
