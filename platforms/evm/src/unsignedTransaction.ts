@@ -4,7 +4,7 @@ import { TransactionRequest } from 'ethers';
 
 export class EvmUnsignedTransaction implements UnsignedTransaction {
   constructor(
-    readonly transacion: TransactionRequest,
+    readonly transaction: TransactionRequest,
     readonly network: Network,
     readonly chain: ChainName,
     readonly description: string,

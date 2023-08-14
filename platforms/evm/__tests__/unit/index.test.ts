@@ -1,15 +1,15 @@
 import { UniversalAddress } from '@wormhole-foundation/sdk-definitions';
 import { Wormhole } from '@wormhole-foundation/connect-sdk';
-import { EvmContext } from '../../src/context';
-import { EvmTokenBridge } from '../../src';
+import { EvmPlatform } from '../../src/platform';
+import { EvmChain, EvmTokenBridge } from '../../src';
 import { Transaction } from 'ethers';
 
 describe('Initialize Objects', () => {
-  const wh = new Wormhole('Testnet', { Evm: EvmContext });
+  const wh = new Wormhole('Testnet', [EvmPlatform]);
 
-  let ethCtx: EvmContext;
+  let ethCtx: EvmPlatform;
   test('Get Ethereum Context', () => {
-    ethCtx = wh.getContext('Ethereum');
+    ethCtx = wh.getContext('Ethereum') as EvmPlatform;
     expect(ethCtx).toBeTruthy();
   });
 

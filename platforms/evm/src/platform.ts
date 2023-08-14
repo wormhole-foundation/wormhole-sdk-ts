@@ -1,33 +1,37 @@
-import { ChainId, ChainName, Platform } from '@wormhole-foundation/sdk-base';
-// import {
-//   Relayer,
-//   VAA,
-//   deserialize,
-// } from '@wormhole-foundation/sdk-definitions';
-//
-
-import { Wormhole, TokenId } from '@wormhole-foundation/connect-sdk';
+import {
+  Network,
+  ChainName,
+  PlatformName,
+} from '@wormhole-foundation/sdk-base';
+import { TokenId } from '@wormhole-foundation/connect-sdk';
 import { EvmContracts } from './contracts';
 import { EvmTokenBridge } from './tokenBridge';
 import { ethers } from 'ethers';
 import { UniversalAddress } from '@wormhole-foundation/sdk-definitions';
+import {
+  Platform,
+  ChainContext,
+  ChainsConfig,
+} from '@wormhole-foundation/connect-sdk';
 
 /**
  * @category EVM
  */
-export class EvmContext {
-  readonly type: Platform = 'Evm';
+export class EvmPlatform implements Platform {
+  readonly type: PlatformName = 'Evm';
   readonly contracts: EvmContracts;
-  protected wormhole: Wormhole;
+  readonly conf: ChainsConfig;
+  readonly network: Network;
 
-  constructor(wormholeInstance: Wormhole) {
-    this.wormhole = wormholeInstance;
-    this.contracts = new EvmContracts(this.wormhole.conf.network);
+  constructor(network: Network, conf: ChainsConfig) {
+    this.conf = conf;
+    this.network = network;
+    this.contracts = new EvmContracts(network);
   }
 
   getProvider(chain: ChainName): ethers.Provider {
     // TODO: cache?
-    const rpcAddress = this.wormhole.conf.chains[chain]!.rpc;
+    const rpcAddress = this.conf[chain]!.rpc;
     return new ethers.JsonRpcProvider(rpcAddress);
   }
 
@@ -39,27 +43,24 @@ export class EvmContext {
   async getForeignAsset(
     tokenId: TokenId,
     chain: ChainName,
-  ): Promise<string | null> {
+  ): Promise<UniversalAddress | null> {
     // if the token is already native, return the token address
-    if (chain === tokenId.chain) return tokenId.address;
+    if (chain === tokenId[0]) return tokenId[1];
 
     // else fetch the representation
-    const sourceContext = this.wormhole.getContext(tokenId.chain);
-    const tokenAddr = await sourceContext.formatAssetAddress(tokenId.address);
-
     const tokenBridge = await this.getTokenBridge(chain);
-    const foreignAddr = await tokenBridge.getWrappedAsset([
-      chain,
-      new UniversalAddress(tokenAddr),
-    ]);
-    return foreignAddr.toString();
+    const foreignAddr = await tokenBridge.getWrappedAsset([chain, tokenId[1]]);
+    return foreignAddr.toUniversalAddress();
   }
 
-  async getTokenDecimals(tokenAddr: string, chain: ChainName): Promise<bigint> {
+  async getTokenDecimals(
+    tokenAddr: UniversalAddress,
+    chain: ChainName,
+  ): Promise<bigint> {
     const provider = this.getProvider(chain);
     const tokenContract = this.contracts.mustGetTokenImplementation(
       provider,
-      tokenAddr,
+      tokenAddr.toString(),
     );
     const decimals = await tokenContract.decimals();
     return decimals;
@@ -82,7 +83,10 @@ export class EvmContext {
     if (!address) return null;
 
     const provider = this.getProvider(chain);
-    const token = this.contracts.mustGetTokenImplementation(provider, address);
+    const token = this.contracts.mustGetTokenImplementation(
+      provider,
+      address.toString(),
+    );
     const balance = await token.balanceOf(walletAddr);
     return balance;
   }
