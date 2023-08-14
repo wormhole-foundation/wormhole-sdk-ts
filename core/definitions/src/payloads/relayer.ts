@@ -1,8 +1,6 @@
 import {
   Layout,
-  LengthPrefixedBytesLayoutItem,
   ToMapping,
-  layoutConversion,
   UintLayoutItem,
   ObjectLayoutItem,
 } from "@wormhole-foundation/sdk-base";
@@ -14,18 +12,16 @@ import {
 } from "../layout-items";
 import { registerPayloadType } from "../vaa";
 
-const executionInfoLayout = [
-  { name: "waste", binary: "uint", size: 31, custom: 0n, omit: true },
-  { name: "version", binary: "uint", size: 1, custom: 0, omit: true },
-  { name: "gasLimit", ...amountItem },
-  { name: "targetChainRefundPerGasUnused", ...amountItem },
-] as const satisfies Layout;
-
-const encodedExecutionItem = {
-  binary: "bytes",
-  lengthSize: 4,
-  custom: layoutConversion(executionInfoLayout),
-} as const satisfies Omit<LengthPrefixedBytesLayoutItem, "name">;
+const encodedExecutionInfoItem = {
+  binary: "object",
+  layout: [
+    { name: "size", binary: "uint", size: 4, custom: 3*32, omit: true },
+    { name: "waste", binary: "uint", size: 31, custom: 0n, omit: true },
+    { name: "version", binary: "uint", size: 1, custom: 0, omit: true },
+    { name: "gasLimit", ...amountItem },
+    { name: "targetChainRefundPerGasUnused", ...amountItem },
+  ]
+} as const satisfies Omit<ObjectLayoutItem, "name">;
 
 const payloadIdItem = <N extends number>(id: N) =>
   ({
@@ -60,7 +56,7 @@ const relayerPayloads = [
       { name: "payload", binary: "bytes", lengthSize: 4 },
       { name: "requestedReceiverValue", ...amountItem },
       { name: "extraReceiverValue", ...amountItem },
-      { name: "executionInfo", ...encodedExecutionItem },
+      { name: "executionInfo", ...encodedExecutionInfoItem },
       { name: "refund", ...addressChainItem },
       { name: "refundDeliveryProvider", ...universalAddressItem },
       { name: "sourceDeliveryProvider", ...universalAddressItem },
@@ -75,7 +71,7 @@ const relayerPayloads = [
       { name: "deliveryVaaKey", binary: "object", layout: vaaKeyLayout },
       { name: "targetChain", ...chainItem() },
       { name: "newRequestedReceiverValue", ...amountItem },
-      { name: "newEncodedExecutionInfo", ...encodedExecutionItem },
+      { name: "newEncodedExecutionInfo", ...encodedExecutionInfoItem },
       { name: "newSourceDeliveryProvider", ...universalAddressItem },
       { name: "newSenderAddress", ...universalAddressItem },
     ],
@@ -85,7 +81,7 @@ const relayerPayloads = [
     [
       { name: "version", binary: "uint", size: 1, custom: 1, omit: true },
       { name: "receiverValue", ...amountItem },
-      { name: "newExecutionInfo", ...encodedExecutionItem },
+      { name: "newExecutionInfo", ...encodedExecutionInfoItem },
       { name: "redeliveryHash", binary: "bytes", size: 32 },
     ],
   ],
