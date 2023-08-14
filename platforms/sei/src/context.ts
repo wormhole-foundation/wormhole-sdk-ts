@@ -35,6 +35,7 @@ import {
   WormholeWrappedInfo,
   Wormhole,
   TokenBridgeAbstract,
+  chainToChainId,
   stripHexPrefix,
   hexToUint8Array,
   parseTokenTransferPayload,
@@ -534,7 +535,7 @@ export class SeiContext
   async getOriginalAssetSei(
     wrappedAddress: string,
   ): Promise<WormholeWrappedInfo> {
-    const chainId = MAINNET_CHAINS.sei;
+    const chainId = chainToChainId("Sei");
     if (isNativeCosmWasmDenom(chainId, wrappedAddress)) {
       return {
         isWrapped: false,
