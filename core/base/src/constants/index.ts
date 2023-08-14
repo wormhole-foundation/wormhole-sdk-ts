@@ -9,5 +9,3 @@ export * from "./rpc";
 
 export * from "./contracts";
 export * from "./modules";
-
-export * from "./chainConfigs";

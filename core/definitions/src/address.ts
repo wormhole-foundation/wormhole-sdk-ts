@@ -1,7 +1,7 @@
 import {
   ChainName,
   isChain,
-  Platform,
+  PlatformName,
   chainToPlatform,
   ChainToPlatformMapping,
 } from "@wormhole-foundation/sdk-base";
@@ -42,14 +42,14 @@ declare global {
 
 export type MappedPlatforms = keyof Wormhole.PlatformToNativeAddressMapping;
 
-type ChainOrPlatformToPlatform<T extends ChainName | Platform> =
+type ChainOrPlatformToPlatform<T extends ChainName | PlatformName> =
   T extends ChainName ? ChainToPlatformMapping<T> : T;
-export type NativeAddress<T extends Platform | ChainName> =
+export type NativeAddress<T extends PlatformName | ChainName> =
   ChainOrPlatformToPlatform<T> extends MappedPlatforms
     ? Wormhole.PlatformToNativeAddressMapping[ChainOrPlatformToPlatform<T>]
     : never;
 
-export type UniversalOrNative<P extends Platform> =
+export type UniversalOrNative<P extends PlatformName> =
   | UniversalAddress
   | NativeAddress<P>;
 
@@ -60,7 +60,7 @@ export type ChainAddressPair<C extends ChainName = ChainName> = readonly [
 
 type NativeAddressCtr = new (ua: UniversalAddress) => Address;
 
-const nativeFactory = new Map<Platform, NativeAddressCtr>();
+const nativeFactory = new Map<PlatformName, NativeAddressCtr>();
 
 export function registerNative<P extends MappedPlatforms>(
   platform: P,
@@ -74,11 +74,11 @@ export function registerNative<P extends MappedPlatforms>(
   nativeFactory.set(platform, ctr);
 }
 
-export function toNative<T extends Platform | ChainName>(
+export function toNative<T extends PlatformName | ChainName>(
   chainOrPlatform: T,
   ua: UniversalAddress
 ): NativeAddress<T> {
-  const platform: Platform = isChain(chainOrPlatform)
+  const platform: PlatformName = isChain(chainOrPlatform)
     ? chainToPlatform(chainOrPlatform)
     : chainOrPlatform;
   const nativeCtr = nativeFactory.get(platform);

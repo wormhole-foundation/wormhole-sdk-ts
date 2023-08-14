@@ -1,10 +1,15 @@
 import { BigNumber } from 'ethers';
-import { ParsedMessage, ParsedRelayerMessage, TokenId } from '../../src/types';
+import { TokenId } from '../../src/types';
 import { Wormhole } from '../../src/wormhole';
 import { MockContracts } from './mockContracts';
-import { Contracts, ChainName, ChainId } from '@wormhole-foundation/sdk-base';
+import {
+  PlatformName,
+  ChainName,
+  ChainId,
+} from '@wormhole-foundation/sdk-base';
 
 export class MockContext1 {
+  private type: PlatformName = 'Evm';
   contracts: MockContracts;
   readonly wormhole: Wormhole;
 
