@@ -10,7 +10,7 @@ describe('registers context classes correctly', () => {
       ['Evm']: MockContext1,
       ['Solana']: MockContext2,
     };
-    wormhole = new Wormhole(network, contextConfig);
+    wormhole = new Wormhole(network, [MockContext1, MockContext2]);
   });
   it('initializes and registers context classes correctly', async () => {
     const evmContext = wormhole.getContext('Ethereum');

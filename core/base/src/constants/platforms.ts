@@ -43,11 +43,11 @@ const platformAndChainsEntries = [
 ] as const satisfies readonly (readonly [string, readonly ChainName[]])[];
 
 export const platforms = column(platformAndChainsEntries, 0);
-export type Platform = (typeof platforms)[number];
+export type PlatformName = (typeof platforms)[number];
 
 const platformToChainsMapping = toMapping(platformAndChainsEntries);
 export const platformToChains = toMappingFunc(platformToChainsMapping);
-export type PlatformToChainsMapping<P extends Platform> =
+export type PlatformToChainsMapping<P extends PlatformName> =
   (typeof platformToChainsMapping)[P][number];
 const chainToPlatformMapping = reverseArrayMapping(platformToChainsMapping);
 export const chainToPlatform = toMappingFunc(chainToPlatformMapping);
@@ -56,7 +56,7 @@ export type ChainToPlatformMapping<C extends ChainName> =
 
 export const inPlatform = (
   chain: ChainName,
-  platform: Platform
+  platform: PlatformName
 ): chain is (typeof platformToChainsMapping)[typeof platform][number] =>
   chain in platformToChainsMapping[platform];
 

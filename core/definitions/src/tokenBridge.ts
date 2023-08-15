@@ -1,10 +1,10 @@
-import { Platform } from "@wormhole-foundation/sdk-base";
+import { PlatformName } from "@wormhole-foundation/sdk-base";
 import { UniversalOrNative, NativeAddress, ChainAddressPair } from "./address";
 import { VAA } from "./vaa";
 import { UnsignedTransaction } from "./unsignedTransaction";
 import "./payloads/tokenBridge";
 
-export interface TokenBridge<P extends Platform> {
+export interface TokenBridge<P extends PlatformName> {
   //read-only:
   isWrappedAsset(token: UniversalOrNative<P>): Promise<boolean>;
   getOriginalAsset(token: UniversalOrNative<P>): Promise<ChainAddressPair>;
