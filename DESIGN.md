@@ -103,6 +103,30 @@ Provides methods to step through the transfer process
 
 Escape hatch to just dump transactions?
 
+## Glossary
+
+- Network
+    Mainnet, Testnet, Devnet
+- Platform
+    A chain or group of chains within the same ecosystem that share common logic (e.g. EVM, Cosmwasm, etc)
+- Platform Context
+    A class which implements a standardized format and set of methods. It may include additional chain-specific methods and logic.
+- Module
+    A cross-chain application built on top of Wormhole (the core contracts are also considered a module)
+- Universal Address
+    A 32-byte address, used by the wormhole contracts
+- Native Address (I think this should be called "Platform Address")
+    An address in the standard chain-specific format
+- Native
+    The "home" chain (e.g. ETH is native to Ethereum)
+- Foreign
+    A non-native chain (e.g. ETH is foreign to Moonbeam)
+- VAA (Verified Action Approval)
+    The core messaging primitive in Wormhole, it contains information about a message and a payload encoded as bytes.  Once finality is achieved and it is observed by the majority of the guardians, it is signed and can then be used to complete a transfer on the destination chain
+- Payload
+    Bytes that can be passed along with any wormhole message that contain application-specific data
+- Finality/Finality Threshold
+    The required number of blocks to wait until a VAA is produced
 
 # Discussion
 
@@ -115,6 +139,7 @@ Wormhole class provides the main interface to do _everything_
 - Provides access to PlatformContexts -- getContext(ChainName)
 - Provides "shortcuts" to start a WormholeTransfer -- tokenTransfer/nftTransfer/cctp/...
 - Helpers for getting VAAs? or generally querying the API?
+- Abstract away chain-specific logic for easy mode access to methods
 
 ## What do we want from a PlatformContext and how is that different from a provider / common utilities for a given platform?
 
@@ -123,6 +148,7 @@ Provides Platform specific logic for a set of things
 - Register Modules (contract/app specific functionality)
 - Translates Platform specific stuff to generic stuff (e.g. ethers.Provider => RPC connection)
 - Deals with Platform specific interaction w/ chain (approve on eth, postvaa on sol, ...)
+- Implements standardized method format
 
 ## What's the relationship between platforms/chains/providers?
 
@@ -135,7 +161,10 @@ Provides Platform specific logic for a set of things
 - A Signer is an interface to sign transactions
 - It _may_ be backed by a wallet but not necessarily, as long as it fulfils the interface
 
-
 ## Can we provide some way to make other non-standard applications available to use through the WormholeTransfer?
 
-Say I have an app that defines its own protocol, can I provide something that adheres to the WormholeTransfer interface so a dev can install it and call it like the TokenTransfer? 
+Say I have an app that defines its own protocol, can I provide something that adheres to the WormholeTransfer interface so a dev can install it and call it like the TokenTransfer?
+
+## What is the preferred terminology to refer to either end of a cross-chain message: from/to, source/target or origin/destination?
+
+## What is the preferred terminology for the core Wormhole layer? (i.e. Core Contracts or Wormhole Contracts)
