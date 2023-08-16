@@ -23,7 +23,7 @@ export type SignedTxn = any;
 export interface Signer {
   chain(): ChainName;
   address(): string;
-  sign(tx: Txn): Promise<SignedTxn>;
+  sign(tx: Txn[]): Promise<SignedTxn[]>;
 }
 
 // TODO: move to definition layer

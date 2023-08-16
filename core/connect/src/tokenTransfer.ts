@@ -2,7 +2,7 @@ import { Signer, TokenId, TxHash, SequenceId, ChainContext } from './types';
 import { WormholeTransfer, TransferState } from './wormholeTransfer';
 import { Wormhole } from './wormhole';
 import { UniversalAddress, VAA } from '@wormhole-foundation/sdk-definitions';
-import { ChainName, PlatformName } from '@wormhole-foundation/sdk-base';
+import { ChainName } from '@wormhole-foundation/sdk-base';
 
 export interface TokenTransferDetails {
   token: TokenId | 'native';
@@ -97,13 +97,16 @@ export class TokenTransfer implements WormholeTransfer {
       this.transfer.payload,
     );
 
-    // TODO: wow
-    const signed = [];
+    // TODO: check 'stackable'?
+    const unsigned = [];
     for await (const tx of xfer) {
-      console.log(tx);
-      signed.push(await this.from.sign(tx));
+      unsigned.push(tx);
     }
-    return await this.transfer.fromChain.sendWait(signed);
+
+    // TODO: use signer argument if one is provided
+    return await this.transfer.fromChain.sendWait(
+      await this.from.sign(unsigned),
+    );
   }
 
   // wait for the VAA to be ready

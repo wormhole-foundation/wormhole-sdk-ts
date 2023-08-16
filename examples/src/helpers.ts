@@ -23,8 +23,20 @@ class EthSigner implements Signer {
   address(): string {
     return this._wallet.address;
   }
-  async sign(tx: UnsignedTransaction): Promise<SignedTxn> {
-    return await this._wallet.signTransaction(tx.transaction);
+  async sign(tx: UnsignedTransaction[]): Promise<SignedTxn[]> {
+    const signed = [];
+
+    for (const txn of tx) {
+      const t: ethers.TransactionRequest = {
+        ...txn.transaction,
+        ...{
+          gasLimit: 100_000,
+          maxFeePerGas: 40_000_000_000,
+        },
+      };
+      signed.push(await this._wallet.signTransaction(t));
+    }
+    return signed;
   }
 }
 export function getEvmSigner(chain: ChainName): EthSigner {

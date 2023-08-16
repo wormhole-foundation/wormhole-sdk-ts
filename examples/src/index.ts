@@ -5,26 +5,25 @@ import { getEvmSigner } from "./helpers";
 (async function () {
   // init Wormhole object, passing config for which network
   // to use (testnet/mainnet/...) and what Platforms to support
-
   const wh = new Wormhole("Testnet", [EvmPlatform]);
 
   //// init some Signer objects from a local key
-  const ethSigner = getEvmSigner("Ethereum");
   const celoSigner = getEvmSigner("Celo");
+  const ethSigner = getEvmSigner("Ethereum");
 
   // Create a TokenTransfer object that we can step through the process.
   // It holds a `state` field that is used to inform where in the process we are
   const tx: TokenTransfer = wh.tokenTransfer(
     "native",
     100n,
-    ethSigner,
-    celoSigner
+    celoSigner,
+    ethSigner
   );
   console.log(`Created token transfer object: ${tx}`);
 
   //// 1) Submit the transactions to the source chain, passing a signer to sign any txns
-  const txid = await tx.start();
-  console.log(`Started transfer with txid: ${txid}`);
+  const txids = await tx.start();
+  console.log(`Started transfer with txid: ${txids}`);
 
   //// 2) wait for the VAA to be signed and ready
   //const seq = await tx.ready();
