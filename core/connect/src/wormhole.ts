@@ -1,28 +1,20 @@
-import { BigNumber } from 'ethers';
-import axios from 'axios';
-
 import {
   Chain,
   ChainName,
   Network,
-  toChainId,
   toChainName,
   PlatformName,
   Contracts,
 } from '@wormhole-foundation/sdk-base';
-import {
-  deserialize,
-  UniversalAddress,
-  VAA,
-} from '@wormhole-foundation/sdk-definitions';
+import { UniversalAddress } from '@wormhole-foundation/sdk-definitions';
 
 import {
-  MessageIdentifier,
   TokenId,
   WormholeConfig,
   PlatformCtr,
   Signer,
   Platform,
+  ChainContext,
 } from './types';
 
 import { CONFIG } from './constants';
@@ -42,8 +34,15 @@ export class Wormhole {
 
     this._platforms = new Map();
     for (const p of platforms) {
-      const platformContext = new p(network, this.conf.chains);
-      this._platforms.set(platformContext.type, platformContext);
+      const platformName = p.prototype.platform;
+
+      const filteredChains = Object.fromEntries(
+        Object.entries(this.conf.chains).filter(([_, v]) => {
+          return v.platform == platformName;
+        }),
+      );
+
+      this._platforms.set(platformName, new p(network, filteredChains));
     }
   }
 
@@ -75,9 +74,8 @@ export class Wormhole {
    * @param chain the chain name or chain id
    * @returns the contract addresses
    */
-  getContracts(chain: Chain): Contracts | undefined {
-    const chainName = toChainName(chain);
-    return this.conf.chains[chainName]?.contracts;
+  getContracts(chain: ChainName): Contracts | undefined {
+    return this.conf.chains[chain]?.contracts;
   }
 
   /**
@@ -86,24 +84,34 @@ export class Wormhole {
    * @returns the contract addresses
    * @throws Errors if contracts are not found
    */
-  mustGetContracts(chain: Chain): Contracts {
+  mustGetContracts(chain: ChainName): Contracts {
     const contracts = this.getContracts(chain);
     if (!contracts) throw new Error(`no contracts found for ${chain}`);
     return contracts;
   }
 
   /**
-   * Returns the chain "context", i.e. the class with chain-specific logic and methods
+   * Returns the platform "context", i.e. the class with platform-specific logic and methods
    * @param chain the chain name or chain id
    * @returns the chain context class
    * @throws Errors if context is not found
    */
-  getContext(chain: Chain): Platform {
-    const chainName = toChainName(chain);
-    const { context: contextType } = this.conf.chains[chainName]!;
-    const context = this._platforms.get(contextType);
-    if (!context) throw new Error('Not able to retrieve context');
-    return context;
+  getPlatform(chain: ChainName): Platform {
+    const { platform: platformType } = this.conf.chains[chain]!;
+    const platform = this._platforms.get(platformType);
+    if (!platform) throw new Error('Not able to retrieve context');
+    return platform;
+  }
+
+  /**
+   * Returns the platform "context", i.e. the class with platform-specific logic and methods
+   * @param chain the chain name or chain id
+   * @returns the chain context class
+   * @throws Errors if context is not found
+   */
+  getChain(chain: ChainName): ChainContext {
+    const platform = this.getPlatform(chain);
+    return platform.getChain(chain);
   }
 
   /**
@@ -118,7 +126,7 @@ export class Wormhole {
     tokenId: TokenId,
     chain: ChainName,
   ): Promise<UniversalAddress | null> {
-    const context = this.getContext(chain);
+    const context = this.getPlatform(chain);
     return await context.getForeignAsset(tokenId, chain);
   }
 
@@ -149,7 +157,7 @@ export class Wormhole {
    */
   async getTokenDecimals(tokenId: TokenId, chain: ChainName): Promise<bigint> {
     const repr = await this.mustGetForeignAsset(tokenId, chain);
-    const context = this.getContext(chain);
+    const context = this.getPlatform(chain);
     return await context.getTokenDecimals(repr, chain);
   }
 
@@ -164,7 +172,7 @@ export class Wormhole {
     walletAddress: string,
     chain: ChainName,
   ): Promise<bigint> {
-    const context = this.getContext(chain);
+    const context = this.getPlatform(chain);
     return await context.getNativeBalance(walletAddress, chain);
   }
 
@@ -181,7 +189,7 @@ export class Wormhole {
     tokenId: TokenId,
     chain: ChainName,
   ): Promise<bigint | null> {
-    const context = this.getContext(chain);
+    const context = this.getPlatform(chain);
     return await context.getTokenBalance(walletAddress, tokenId, chain);
   }
 
@@ -190,10 +198,10 @@ export class Wormhole {
    * @param chain the chain name or chain id
    * @returns boolean representing if automatic relay is available
    */
-  supportsSendWithRelay(chain: Chain): boolean {
+  supportsSendWithRelay(chain: ChainName): boolean {
     return !!(
       this.getContracts(chain)?.Relayer &&
-      'startTransferWithRelay' in this.getContext(chain)
+      'startTransferWithRelay' in this.getPlatform(chain)
     );
   }
 

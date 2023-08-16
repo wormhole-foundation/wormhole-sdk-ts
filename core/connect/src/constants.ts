@@ -16,7 +16,7 @@ import { WormholeConfig } from './types';
 
 export type ChainConfig = {
   key: ChainName;
-  context: PlatformName;
+  platform: PlatformName;
   contracts: Contracts;
   finalityThreshold: number;
   nativeTokenDecimals: number;
@@ -40,7 +40,7 @@ function combineConfig(n: Network): NetworkChainConfigs {
     .map((c: ChainName): ChainConfig => {
       return {
         key: c,
-        context: chainToPlatform(c),
+        platform: chainToPlatform(c),
         // @ts-ignore
         finalityThreshold: finalityThreshold(n)[c],
         // @ts-ignore
@@ -67,7 +67,6 @@ const chainConfigMapping = {
 
 export const chainConfigs = toMappingFunc(chainConfigMapping);
 
-//TODO AMO this looks wrong to me
 const sharedConfig = {
   network: 'Testnet',
   api: 'https://api.testnet.wormscan.io',

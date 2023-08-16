@@ -27,7 +27,7 @@ export interface Signer {
 
 // TODO: move to definition layer
 export interface Platform {
-  readonly type: PlatformName;
+  readonly platform: PlatformName;
   // TODO: Asset vs token?
   getForeignAsset(
     tokenId: TokenId,
@@ -43,6 +43,7 @@ export interface Platform {
     tokenId: TokenId,
     chain: ChainName,
   ): Promise<bigint | null>;
+  getChain(chain: ChainName): ChainContext;
 }
 
 export type PlatformCtr = new (
@@ -55,11 +56,8 @@ export type RpcConnection = any;
 export interface ChainContext {
   readonly chain: ChainName;
   readonly network: Network;
-  // TODO: config? move here
-
+  readonly platform: Platform;
   getRPC(): RpcConnection;
-
-  // add methods
 }
 
 export type ChainCtr = new () => ChainContext;
