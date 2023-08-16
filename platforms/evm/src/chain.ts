@@ -2,15 +2,22 @@ import { ChainName, Network } from '@wormhole-foundation/sdk-base';
 import { UniversalAddress } from '@wormhole-foundation/sdk-definitions';
 import { ethers } from 'ethers';
 import { EvmPlatform } from './platform';
-import { ChainContext, TokenId } from '@wormhole-foundation/connect-sdk';
+import {
+  ChainContext,
+  TokenId,
+  TxHash,
+  SignedTxn,
+} from '@wormhole-foundation/connect-sdk';
+import { EvmTokenBridge } from './tokenBridge';
 
 export class EvmChain implements ChainContext {
   readonly chain: ChainName;
   readonly network: Network;
   readonly platform: EvmPlatform;
 
-  // Cached RPC connection
+  // Cached objects
   private provider?: ethers.Provider;
+  private tokenBridge?: EvmTokenBridge;
 
   constructor(platform: EvmPlatform, chain: ChainName) {
     this.chain = chain;
@@ -24,6 +31,24 @@ export class EvmChain implements ChainContext {
       : this.platform.getProvider(this.chain);
 
     return this.provider;
+  }
+
+  async getTokenBridge(): Promise<EvmTokenBridge> {
+    this.tokenBridge = this.tokenBridge
+      ? this.tokenBridge
+      : await this.platform.getTokenBridge(this.getRPC());
+    return this.tokenBridge;
+  }
+
+  async sendWait(stxns: SignedTxn[]): Promise<TxHash[]> {
+    // TODO: horrible?
+    const txhashes: TxHash[] = [];
+    const rpc = this.getRPC();
+    for (const stxn of stxns) {
+      const receipt = await rpc.broadcastTransaction(stxn);
+      txhashes.push(receipt.hash);
+    }
+    return txhashes;
   }
 
   async getForeignAsset(tokenId: TokenId): Promise<UniversalAddress | null> {

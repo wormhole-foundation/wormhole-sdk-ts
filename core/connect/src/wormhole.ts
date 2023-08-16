@@ -1,9 +1,7 @@
 import {
-  Chain,
+  PlatformName,
   ChainName,
   Network,
-  toChainName,
-  PlatformName,
   Contracts,
 } from '@wormhole-foundation/sdk-base';
 import { UniversalAddress } from '@wormhole-foundation/sdk-definitions';
@@ -34,7 +32,7 @@ export class Wormhole {
 
     this._platforms = new Map();
     for (const p of platforms) {
-      const platformName = p.prototype.platform;
+      const platformName = p._platform;
 
       const filteredChains = Object.fromEntries(
         Object.entries(this.conf.chains).filter(([_, v]) => {
@@ -63,6 +61,8 @@ export class Wormhole {
         token: token,
         amount: amount,
         payload: payload,
+        fromChain: this.getChain(from.chain()),
+        toChain: this.getChain(to.chain()),
       },
       from,
       to,
@@ -99,7 +99,7 @@ export class Wormhole {
   getPlatform(chain: ChainName): Platform {
     const { platform: platformType } = this.conf.chains[chain]!;
     const platform = this._platforms.get(platformType);
-    if (!platform) throw new Error('Not able to retrieve context');
+    if (!platform) throw new Error(`Not able to retrieve platform ${platform}`);
     return platform;
   }
 

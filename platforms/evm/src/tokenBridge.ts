@@ -139,7 +139,7 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     token: UniversalOrEvm,
   ): AsyncGenerator<EvmUnsignedTransaction> {
     const ignoredNonce = 0;
-    return this.createUnsignedTx(
+    yield this.createUnsignedTx(
       await this.tokenBridge.attestToken.populateTransaction(
         toEvmAddrString(token),
         ignoredNonce,
@@ -157,7 +157,7 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     ]))
       ? 'createWrapped'
       : 'updateWrapped';
-    return this.createUnsignedTx(
+    yield this.createUnsignedTx(
       await this.tokenBridge[func].populateTransaction(serialize(vaa)),
       'TokenBridge.' + func,
     );
@@ -190,7 +190,7 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
             payload,
             { value: amount },
           ));
-      return this.createUnsignedTx(
+      yield this.createUnsignedTx(
         addFrom(txReq, senderAddr),
         'TokenBridge.wrapAndTransferETH' +
           (payload === undefined ? '' : 'WithPayload'),
@@ -233,7 +233,7 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
             unusedNonce,
             payload,
           ));
-      return this.createUnsignedTx(
+      yield this.createUnsignedTx(
         addFrom(txReq, senderAddr),
         'TokenBridge.transferTokens' +
           (payload === undefined ? '' : 'WithPayload'),
@@ -263,7 +263,7 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
         await this.tokenBridge.completeTransferAndUnwrapETH.populateTransaction(
           serialize(vaa),
         );
-      return this.createUnsignedTx(
+      yield this.createUnsignedTx(
         addFrom(txReq, senderAddr),
         'TokenBridge.completeTransferAndUnwrapETH',
       );
@@ -271,7 +271,7 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
       const txReq = await this.tokenBridge.completeTransfer.populateTransaction(
         serialize(vaa),
       );
-      return this.createUnsignedTx(
+      yield this.createUnsignedTx(
         addFrom(txReq, senderAddr),
         'TokenBridge.completeTransfer',
       );

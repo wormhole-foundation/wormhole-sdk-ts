@@ -1,13 +1,15 @@
-import { Signer, TokenId, TxHash, SequenceId } from './types';
+import { Signer, TokenId, TxHash, SequenceId, ChainContext } from './types';
 import { WormholeTransfer, TransferState } from './wormholeTransfer';
 import { Wormhole } from './wormhole';
 import { UniversalAddress, VAA } from '@wormhole-foundation/sdk-definitions';
-import { ChainName } from '@wormhole-foundation/sdk-base';
+import { ChainName, PlatformName } from '@wormhole-foundation/sdk-base';
 
 export interface TokenTransferDetails {
   token: TokenId | 'native';
   amount: bigint;
   payload?: Uint8Array;
+  fromChain: ChainContext;
+  toChain: ChainContext;
 }
 
 export class TokenTransfer implements WormholeTransfer {
@@ -18,8 +20,8 @@ export class TokenTransfer implements WormholeTransfer {
 
   // transfer details
   transfer: TokenTransferDetails;
-  source: Signer;
-  destination: Signer;
+  from: Signer;
+  to: Signer;
 
   // The corresponding vaa representing the TokenTransfer
   // on the source chain (if its been completed and finalized)
@@ -38,8 +40,8 @@ export class TokenTransfer implements WormholeTransfer {
   ) {
     this.wh = wh;
     this.transfer = transfer;
-    this.source = from;
-    this.destination = to;
+    this.from = from;
+    this.to = to;
     this.state = TransferState.Created;
   }
 
@@ -64,7 +66,7 @@ export class TokenTransfer implements WormholeTransfer {
 
   // start the WormholeTransfer by submitting transactions to the source chain
   // returns a transaction hash
-  async start(signer?: Signer): Promise<TxHash> {
+  async start(signer?: Signer): Promise<TxHash[]> {
     /*
         0) check that the current `state` is valid to call this (eg: state == Created)
         1) get a token transfer transaction for the token bridge given the context  
@@ -73,30 +75,57 @@ export class TokenTransfer implements WormholeTransfer {
         4) return transaction id
     */
 
-    return '0xdeadbeef';
+    if (this.state !== TransferState.Created)
+      throw new Error(`Invalid state transition in 'start'`);
+
+    const tb = await this.transfer.fromChain.getTokenBridge();
+    const sender = this.transfer.toChain.platform.parseAddress(
+      this.from.address(),
+    );
+    const recipient = this.transfer.toChain.platform.parseAddress(
+      this.to.address(),
+    );
+
+    const tokenAddress =
+      this.transfer.token === 'native' ? 'native' : this.transfer.token[1];
+
+    const xfer = tb.transfer(
+      sender,
+      [this.to.chain(), recipient],
+      tokenAddress,
+      this.transfer.amount,
+      this.transfer.payload,
+    );
+
+    // TODO: wow
+    const signed = [];
+    for await (const tx of xfer) {
+      signed.push(await this.from.sign(tx));
+    }
+    return await this.transfer.fromChain.sendWait(signed);
   }
 
   // wait for the VAA to be ready
   // returns the sequence number
-  async ready(): Promise<SequenceId> {
+  async ready(): Promise<SequenceId[]> {
     /*
         0) check that the current `state` is valid to call this  (eg: state == Started)
         1) poll the api on an interval to check if the VAA is available
         2) Once available, pull the VAA and parse it
         3) return seq
     */
-    return 0n;
+    return [0n];
   }
 
   // finish the WormholeTransfer by submitting transactions to the destination chain
   // returns a transaction hash
-  async finish(signer?: Signer): Promise<TxHash> {
+  async finish(signer?: Signer): Promise<TxHash[]> {
     /*
         0) check that the current `state` is valid to call this  (eg: state == Ready)
         1) prepare the transactions and sign them given the signer
         2) submit the VAA and transactions on chain
         3) return txid of submission
     */
-    return '0xdeadbeef';
+    return ['0xdeadbeef'];
   }
 }

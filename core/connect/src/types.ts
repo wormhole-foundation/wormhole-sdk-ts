@@ -7,6 +7,7 @@ import {
   UnsignedTransaction,
   ChainAddressPair,
   UniversalAddress,
+  TokenBridge,
 } from '@wormhole-foundation/sdk-definitions';
 
 import { ChainConfig } from './constants';
@@ -17,8 +18,8 @@ export type TxHash = string;
 export type SequenceId = bigint;
 
 // TODO: move to definitions? Genericize
-type Txn = UnsignedTransaction;
-type SignedTxn = any;
+export type Txn = UnsignedTransaction;
+export type SignedTxn = any;
 export interface Signer {
   chain(): ChainName;
   address(): string;
@@ -44,20 +45,33 @@ export interface Platform {
     chain: ChainName,
   ): Promise<bigint | null>;
   getChain(chain: ChainName): ChainContext;
+  parseAddress(address: string): UniversalAddress;
 }
 
-export type PlatformCtr = new (
-  network: Network,
-  conf: ChainsConfig,
-) => Platform;
+export type PlatformCtr = {
+  _platform: PlatformName;
+  new (network: Network, conf: ChainsConfig): Platform;
+};
 
 export type RpcConnection = any;
+
+// TODO: idk if this is actually doing what i want
+type OmitChain<Fn> = Fn extends (...args: infer P) => infer R
+  ? (...args: Exclude<P, ChainName>) => R
+  : never;
 
 export interface ChainContext {
   readonly chain: ChainName;
   readonly network: Network;
   readonly platform: Platform;
   getRPC(): RpcConnection;
+  sendWait(stxns: SignedTxn[]): Promise<TxHash[]>;
+  getTokenBridge(): Promise<TokenBridge<'Evm'>>;
+
+  getForeignAsset: OmitChain<Platform['getForeignAsset']>;
+  getTokenDecimals: OmitChain<Platform['getTokenDecimals']>;
+  getNativeBalance: OmitChain<Platform['getNativeBalance']>;
+  getTokenBalance: OmitChain<Platform['getTokenBalance']>;
 }
 
 export type ChainCtr = new () => ChainContext;

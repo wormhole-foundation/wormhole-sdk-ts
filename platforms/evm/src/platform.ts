@@ -10,12 +10,15 @@ import { ethers } from 'ethers';
 import { UniversalAddress } from '@wormhole-foundation/sdk-definitions';
 import { Platform, ChainsConfig } from '@wormhole-foundation/connect-sdk';
 import { EvmChain } from './chain';
+import { EvmAddress } from './address';
 
 /**
  * @category EVM
  */
 export class EvmPlatform implements Platform {
-  readonly platform: PlatformName = 'Evm';
+  // lol
+  static readonly _platform: 'Evm' = 'Evm';
+  readonly platform: PlatformName = EvmPlatform._platform;
 
   readonly network: Network;
   readonly conf: ChainsConfig;
@@ -36,8 +39,8 @@ export class EvmPlatform implements Platform {
     return new EvmChain(this, chain);
   }
 
-  async getTokenBridge(chain: ChainName): Promise<EvmTokenBridge> {
-    return await EvmTokenBridge.fromProvider(this.getProvider(chain));
+  async getTokenBridge(provider: ethers.Provider): Promise<EvmTokenBridge> {
+    return await EvmTokenBridge.fromProvider(provider);
   }
 
   async getForeignAsset(
@@ -48,7 +51,8 @@ export class EvmPlatform implements Platform {
     if (chain === tokenId[0]) return tokenId[1];
 
     // else fetch the representation
-    const tokenBridge = await this.getTokenBridge(chain);
+    // TODO: this uses a brand new provider, not great
+    const tokenBridge = await this.getTokenBridge(this.getProvider(chain));
     const foreignAddr = await tokenBridge.getWrappedAsset([chain, tokenId[1]]);
     return foreignAddr.toUniversalAddress();
   }
@@ -89,5 +93,9 @@ export class EvmPlatform implements Platform {
     );
     const balance = await token.balanceOf(walletAddr);
     return balance;
+  }
+
+  parseAddress(address: string): UniversalAddress {
+    return new EvmAddress(address).toUniversalAddress();
   }
 }

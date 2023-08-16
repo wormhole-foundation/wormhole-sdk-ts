@@ -35,7 +35,19 @@ export class EvmAddress implements Address {
 
       this.address = ethers.getAddress(ethers.hexlify(address));
     } else if (address instanceof UniversalAddress) {
-      this.address = ethers.getAddress(address.toString());
+      // If its a universal address and we want it to be an ethereum address,
+      // we need to chop off the first 12 bytes of padding
+      const addressBytes = address.toUint8Array();
+      // double check to make sure there are no non zero bytes
+      if (
+        addressBytes.slice(0, 12).some((v) => {
+          v !== 0;
+        })
+      )
+        throw new Error(`Invalid EVM address ${address}`);
+
+      const suffix = Buffer.from(addressBytes.slice(12)).toString('hex');
+      this.address = ethers.getAddress(suffix);
     } else throw new Error(`Invalid EVM address ${address}`);
   }
 

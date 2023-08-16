@@ -17,18 +17,18 @@ export interface WormholeTransfer {
 
   // start the WormholeTransfer by submitting transactions to the source chain
   // returns a transaction hash
-  start(signer?: Signer): Promise<TxHash>;
+  start(signer?: Signer): Promise<TxHash[]>;
 
   // how many blocks until source is final
   // sourceFinalized(): Promise<bigint>;
 
   // wait for the VAA to be ready
   // returns the sequence number
-  ready(): Promise<SequenceId>;
+  ready(): Promise<SequenceId[]>;
 
   // finish the WormholeTransfer by submitting transactions to the destination chain
   // returns a transaction hash
-  finish(signer?: Signer): Promise<TxHash>;
+  finish(signer?: Signer): Promise<TxHash[]>;
 
   // How many blocks until destination is final
   // destinationFinalized(): Promise<bigint>;
