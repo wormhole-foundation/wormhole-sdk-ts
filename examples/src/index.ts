@@ -13,17 +13,25 @@ import { getEvmSigner } from "./helpers";
 
   // Create a TokenTransfer object that we can step through the process.
   // It holds a `state` field that is used to inform where in the process we are
-  const tx: TokenTransfer = wh.tokenTransfer(
-    "native",
-    100n,
-    celoSigner,
-    ethSigner
-  );
-  console.log(`Created token transfer object: ${tx}`);
+  // const tx: TokenTransfer = wh.tokenTransfer(
+  //   "native",
+  //   100n,
+  //   celoSigner,
+  //   ethSigner
+  // );
+  // console.log(`Created token transfer object: ${tx}`);
 
-  //// 1) Submit the transactions to the source chain, passing a signer to sign any txns
-  const txids = await tx.start();
-  console.log(`Started transfer with txid: ${txids}`);
+  // //// 1) Submit the transactions to the source chain, passing a signer to sign any txns
+  // const txids = await tx.start();
+  // console.log(`Started transfer with txid: ${txids}`);
+
+  const tx = await TokenTransfer.fromTransaction(
+    wh,
+    "Celo",
+    "0xb7677fabbe96e2caf10fdc14a3c971e60ff49458e83528c2594d87a7238af838"
+  );
+
+  console.log(tx);
 
   //// 2) wait for the VAA to be signed and ready
   //const seq = await tx.ready();

@@ -84,11 +84,15 @@ export const toChainId = (chain: number | string | Chain): ChainId => {
   return chainId;
 };
 
-export const toChainName = (chain: number | string | Chain): ChainName => {
+export const toChainName = (
+  chain: number | string | Chain | bigint
+): ChainName => {
   let chainName: string = "";
   if (typeof chain === "string" && isChain(chain)) chainName = chain;
   if (typeof chain === "number" && isChainId(chain))
     chainName = chainIdToChain(chain);
+  if (typeof chain === "bigint" && isChainId(Number(chain)))
+    chainName = chainIdToChain(Number(chain) as ChainId);
   assertChain(chainName);
   return chainName;
 };

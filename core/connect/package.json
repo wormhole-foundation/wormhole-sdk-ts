@@ -34,10 +34,10 @@
   },
   "sideEffects": false,
   "scripts": {
-    "build:cjs":"tsc -p ./tsconfig.cjs.json",
-    "build:esm":"tsc -p ./tsconfig.esm.json",
-    "build":"npm run build:cjs && npm run build:esm",
-    "rebuild":"npm run clean && npm run build:cjs && npm run build:esm",
+    "build:cjs": "tsc -p ./tsconfig.cjs.json",
+    "build:esm": "tsc -p ./tsconfig.esm.json",
+    "build": "npm run build:cjs && npm run build:esm",
+    "rebuild": "npm run clean && npm run build:cjs && npm run build:esm",
     "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo",
     "lint": "npm run prettier && eslint --fix",
     "prettier": "prettier --write ./src",
@@ -57,10 +57,10 @@
     "typescript": "^5.1.6"
   },
   "dependencies": {
-    "@wormhole-foundation/sdk-base":"*",
-    "@wormhole-foundation/sdk-definitions":"*",
     "@ethersproject/providers": "^5.7.2",
     "@nomad-xyz/multi-provider": "^1.1.0",
+    "@wormhole-foundation/sdk-base": "*",
+    "@wormhole-foundation/sdk-definitions": "*",
     "axios": "^1.4.0",
     "binary-parser": "^2.2.1",
     "elliptic": "^6.5.4",

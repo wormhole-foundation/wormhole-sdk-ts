@@ -1,4 +1,11 @@
-import { Signer, TokenId, TxHash, SequenceId, ChainContext } from './types';
+import {
+  Signer,
+  TokenId,
+  TxHash,
+  SequenceId,
+  ChainContext,
+  TokenTransferTransaction,
+} from './types';
 import { WormholeTransfer, TransferState } from './wormholeTransfer';
 import { Wormhole } from './wormhole';
 import { UniversalAddress, VAA } from '@wormhole-foundation/sdk-definitions';
@@ -25,12 +32,7 @@ export class TokenTransfer implements WormholeTransfer {
 
   // The corresponding vaa representing the TokenTransfer
   // on the source chain (if its been completed and finalized)
-  vaa?: {
-    chain: ChainName;
-    emitter: UniversalAddress;
-    sequence: bigint;
-    vaa?: VAA;
-  };
+  vaa?: VAA;
 
   constructor(
     wh: Wormhole,
@@ -57,11 +59,36 @@ export class TokenTransfer implements WormholeTransfer {
   }
   // init from source tx hash
   static async fromTransaction(
+    wh: Wormhole,
     chain: ChainName,
     txid: string,
   ): Promise<TokenTransfer> {
-    throw new Error('Not implemented');
-    //return new TokenTransfer();
+    const c = wh.getChain(chain);
+
+    const parsedTxDeets: TokenTransferTransaction[] = await c.getTransaction(
+      txid,
+    );
+
+    // TODO:
+    if (parsedTxDeets.length !== 1) throw new Error('que?');
+
+    const [tx] = parsedTxDeets;
+    const tt = new TokenTransfer(
+      wh,
+      {
+        token: tx.tokenId,
+        amount: tx.amount,
+        fromChain: wh.getChain(tx.fromChain),
+        toChain: wh.getChain(tx.toChain),
+      },
+      // @ts-ignore
+      undefined,
+      // @ts-ignore
+      undefined,
+    );
+
+    tt.vaa = await wh.getVAA(chain, tx.emitterAddress, tx.sequence);
+    return tt;
   }
 
   // start the WormholeTransfer by submitting transactions to the source chain

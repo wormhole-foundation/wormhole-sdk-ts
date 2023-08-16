@@ -41,7 +41,7 @@ export class EvmContracts {
    * @returns An interface for the core contract, undefined if not found
    */
   getCore(
-    chain: Chain,
+    chain: ChainName,
     connection: Provider,
   ): ethers_contracts.Wormhole | undefined {
     const address = this.mustGetContracts(chain).CoreBridge;
@@ -54,7 +54,10 @@ export class EvmContracts {
    *
    * @returns An interface for the core contract, errors if not found
    */
-  mustGetCore(chain: Chain, connection: Provider): ethers_contracts.Wormhole {
+  mustGetCore(
+    chain: ChainName,
+    connection: Provider,
+  ): ethers_contracts.Wormhole {
     const core = this.getCore(chain, connection);
     if (!core) throw new Error(`Core contract for domain ${chain} not found`);
     return core;
@@ -66,7 +69,7 @@ export class EvmContracts {
    * @returns An interface for the bridge contract, undefined if not found
    */
   getTokenBridge(
-    chain: Chain,
+    chain: ChainName,
     connection: Provider,
   ): ethers_contracts.TokenBridgeContract | undefined {
     const address = this.mustGetContracts(chain).TokenBridge;
@@ -80,7 +83,7 @@ export class EvmContracts {
    * @returns An interface for the bridge contract, errors if not found
    */
   mustGetTokenBridge(
-    chain: Chain,
+    chain: ChainName,
     connection: Provider,
   ): ethers_contracts.TokenBridgeContract {
     const bridge = this.getTokenBridge(chain, connection);
@@ -115,7 +118,7 @@ export class EvmContracts {
    * @returns An interface for the NFT bridge contract, undefined if not found
    */
   getNftBridge(
-    chain: Chain,
+    chain: ChainName,
     connection: Provider,
   ): ethers_contracts.NFTBridge | undefined {
     const address = this.mustGetContracts(chain).NftBridge;
@@ -129,7 +132,7 @@ export class EvmContracts {
    * @returns An interface for the NFT bridge contract, errors if not found
    */
   mustGetNftBridge(
-    chain: Chain,
+    chain: ChainName,
     connection: Provider,
   ): ethers_contracts.NFTBridge {
     const nftBridge = this.getNftBridge(chain, connection);
@@ -144,7 +147,7 @@ export class EvmContracts {
    * @returns An interface for the Token Bridge Relayer contract, undefined if not found
    */
   getTokenBridgeRelayer(
-    chain: Chain,
+    chain: ChainName,
     connection: Provider,
   ): ethers_contracts.WormholeRelayer | undefined {
     const address = this.mustGetContracts(chain).Relayer;
@@ -161,7 +164,7 @@ export class EvmContracts {
    * @returns An interface for the Token Bridge Relayer contract, errors if not found
    */
   mustGetTokenBridgeRelayer(
-    chain: Chain,
+    chain: ChainName,
     connection: Provider,
   ): ethers_contracts.WormholeRelayer {
     const relayer = this.getTokenBridgeRelayer(chain, connection);
@@ -170,5 +173,9 @@ export class EvmContracts {
         `Token Bridge Relayer contract for domain ${chain} not found`,
       );
     return relayer;
+  }
+
+  getImplementation(): ethers_contracts.ImplementationInterface {
+    return ethers_contracts.Implementation__factory.createInterface();
   }
 }

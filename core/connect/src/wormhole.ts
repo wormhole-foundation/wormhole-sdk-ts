@@ -3,8 +3,14 @@ import {
   ChainName,
   Network,
   Contracts,
+  toChainId,
 } from '@wormhole-foundation/sdk-base';
-import { UniversalAddress } from '@wormhole-foundation/sdk-definitions';
+import {
+  UniversalAddress,
+  deserialize,
+  VAA,
+} from '@wormhole-foundation/sdk-definitions';
+import axios from 'axios';
 
 import {
   TokenId,
@@ -205,6 +211,34 @@ export class Wormhole {
     );
   }
 
+  /**
+   * Gets a VAA from the API or Guardian RPC, finality must be met before the VAA will be available.
+   *  See {@link ChainConfig.finalityThreshold | finalityThreshold} on {@link CONFIG | the config}
+   *
+   * @param msg The MessageIdentifier used to fetch the VAA
+   * @returns The ParsedVAA if available
+   */
+  async getVAA(
+    chain: ChainName,
+    emitter: string,
+    seq: bigint,
+  ): Promise<VAA<'Uint8Array'> | undefined> {
+    const chainId = toChainId(chain);
+    const emitterAddress = emitter.startsWith('0x')
+      ? emitter.slice(2)
+      : emitter;
+
+    //const url = `${this.conf.api}/api/v1/vaas/${chainId}/${emitterAddress}/${seq}`;
+    const url = `https://wormhole-v2-testnet-api.certus.one/v1/signed_vaa/${chainId}/${emitterAddress}/${seq}`;
+    const response = await axios.get(url);
+
+    if (!response.data) return;
+
+    const { data } = response;
+    const vaaBytes = Buffer.from(data.vaaBytes, 'base64');
+    return deserialize('Uint8Array', new Uint8Array(vaaBytes));
+  }
+
   //
   //
   //  /**
@@ -228,25 +262,7 @@ export class Wormhole {
   //    };
   //  }
   //
-  //  /**
-  //   * Gets a VAA from the API or Guardian RPC, finality must be met before the VAA will be available.
-  //   *  See {@link ChainConfig.finalityThreshold | finalityThreshold} on {@link CONFIG | the config}
-  //   *
-  //   * @param msg The MessageIdentifier used to fetch the VAA
-  //   * @returns The ParsedVAA if available
-  //   */
-  //  async getVAA(msg: MessageIdentifier): Promise<VAA<'Uint8Array'> | undefined> {
-  //    const { emitterChain, emitterAddress, sequence } = msg;
-  //    const url = `${this.conf.api}/api/v1/vaas/${emitterChain}/${emitterAddress}/${sequence}`;
-  //    const response = await axios.get(url);
-  //
-  //    if (!response.data.data) return;
-  //
-  //    const data = response.data.data;
-  //    const vaaBytes = Buffer.from(data.vaa, 'base64');
-  //
-  //    return deserialize('Uint8Array', new Uint8Array(vaaBytes));
-  //  }
+
   //
   //  /**
   //   * Checks if a transfer has been completed or not

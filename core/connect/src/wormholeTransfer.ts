@@ -30,6 +30,6 @@ export interface WormholeTransfer {
   // returns a transaction hash
   finish(signer?: Signer): Promise<TxHash[]>;
 
-  // How many blocks until destination is final
+  // how many blocks until destination is final
   // destinationFinalized(): Promise<bigint>;
 }

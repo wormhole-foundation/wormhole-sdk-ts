@@ -1,9 +1,14 @@
 import {
   Network,
   ChainName,
+  ChainId,
   PlatformName,
+  toChainName,
 } from '@wormhole-foundation/sdk-base';
-import { TokenId } from '@wormhole-foundation/connect-sdk';
+import {
+  TokenId,
+  TokenTransferTransaction,
+} from '@wormhole-foundation/connect-sdk';
 import { EvmContracts } from './contracts';
 import { EvmTokenBridge } from './tokenBridge';
 import { ethers } from 'ethers';
@@ -11,6 +16,7 @@ import { UniversalAddress } from '@wormhole-foundation/sdk-definitions';
 import { Platform, ChainsConfig } from '@wormhole-foundation/connect-sdk';
 import { EvmChain } from './chain';
 import { EvmAddress } from './address';
+import { BridgeStructs } from './ethers-contracts/Bridge';
 
 /**
  * @category EVM
@@ -97,5 +103,80 @@ export class EvmPlatform implements Platform {
 
   parseAddress(address: string): UniversalAddress {
     return new EvmAddress(address).toUniversalAddress();
+  }
+
+  async parseMessageFromTx(
+    chain: ChainName,
+    txid: string,
+    rpc: ethers.Provider,
+  ): Promise<(TokenTransferTransaction | {})[]> {
+    const receipt = await rpc.getTransactionReceipt(txid);
+    if (receipt === null) throw new Error('No transaction found');
+
+    const { fee: gasFee } = receipt;
+
+    const core = this.contracts.mustGetCore(chain, rpc);
+    const coreAddress = await core.getAddress();
+
+    const bridge = this.contracts.mustGetTokenBridge(chain, rpc);
+    const bridgeAddress = new EvmAddress(await bridge.getAddress())
+      .toUniversalAddress()
+      .toString();
+
+    const bridgeLogs = receipt.logs.filter((l: any) => {
+      return l.address === coreAddress;
+    });
+
+    const impl = this.contracts.getImplementation();
+    const parsedLogs = bridgeLogs.map(async (bridgeLog) => {
+      const { topics, data } = bridgeLog;
+      const parsed = impl.parseLog({ topics: topics.slice(), data });
+
+      // TODO: should we bail here?
+      if (parsed === null) return {};
+
+      // parse token bridge message, 0x01 == transfer, attest == 0x02,  w/ payload 0x03
+      let parsedTransfer:
+        | BridgeStructs.TransferStructOutput
+        | BridgeStructs.TransferWithPayloadStructOutput;
+
+      if (parsed.args.payload.startsWith('0x01')) {
+        // parse token bridge transfer data
+        parsedTransfer = await bridge.parseTransfer(parsed.args.payload);
+      } else if (parsed.args.payload.startsWith('0x03')) {
+        // parse token bridge transfer with payload data
+        parsedTransfer = await bridge.parseTransferWithPayload(
+          parsed.args.payload,
+        );
+      } else {
+        // git gud
+        throw new Error(
+          `unrecognized payload for ${txid}: ${parsed.args.payload}`,
+        );
+      }
+
+      const toChain = toChainName(parsedTransfer.toChain);
+      const tokenAddress = new UniversalAddress(parsedTransfer.tokenAddress);
+      const tokenChain = toChainName(parsedTransfer.tokenChain);
+
+      // TODO: format addresses to universal
+      const x: TokenTransferTransaction = {
+        sendTx: txid,
+        sender: receipt.from,
+        amount: parsedTransfer.amount,
+        payloadID: parsedTransfer.payloadID,
+        toChain: toChain,
+        fromChain: chain,
+        sequence: parsed.args.sequence,
+        block: BigInt(receipt.blockNumber),
+        gasFee,
+        recipient: parsedTransfer.to,
+        tokenId: [tokenChain, tokenAddress],
+        emitterAddress: bridgeAddress,
+      };
+      return x;
+    });
+
+    return await Promise.all(parsedLogs);
   }
 }

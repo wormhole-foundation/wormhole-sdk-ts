@@ -69,14 +69,14 @@ export const chainConfigs = toMappingFunc(chainConfigMapping);
 
 const sharedConfig = {
   network: 'Testnet',
-  api: 'https://api.testnet.wormscan.io',
+  api: 'https://api.testnet.wormholescan.io',
   chains: chainConfigs('Testnet'),
 } as const;
 
 export const CONFIG = {
   Mainnet: {
     network: 'Mainnet',
-    api: 'https://api.wormscan.io',
+    api: 'https://api.wormholescan.io',
     chains: chainConfigs('Mainnet'),
   },
   Testnet: sharedConfig,

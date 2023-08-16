@@ -40,6 +40,16 @@ export class EvmChain implements ChainContext {
     return this.tokenBridge;
   }
 
+  async getTransaction(txid: string): Promise<any> {
+    const txs = await this.platform.parseMessageFromTx(
+      this.chain,
+      txid,
+      this.getRPC(),
+    );
+
+    return txs;
+  }
+
   async sendWait(stxns: SignedTxn[]): Promise<TxHash[]> {
     // TODO: horrible?
     const rpc = this.getRPC();

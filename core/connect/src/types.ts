@@ -8,6 +8,7 @@ import {
   ChainAddressPair,
   UniversalAddress,
   TokenBridge,
+  Address,
 } from '@wormhole-foundation/sdk-definitions';
 
 import { ChainConfig } from './constants';
@@ -67,6 +68,7 @@ export interface ChainContext {
   getRPC(): RpcConnection;
   sendWait(stxns: SignedTxn[]): Promise<TxHash[]>;
   getTokenBridge(): Promise<TokenBridge<'Evm'>>;
+  getTransaction(txid: string): Promise<any>;
 
   getForeignAsset: OmitChain<Platform['getForeignAsset']>;
   getTokenDecimals: OmitChain<Platform['getTokenDecimals']>;
@@ -88,3 +90,24 @@ export type WormholeConfig = {
 export type TokenId = ChainAddressPair;
 export type MessageIdentifier = ChainAddressPair & { sequence: SequenceId };
 export type WormholeWrappedInfo = ChainAddressPair & { isWrapped: boolean };
+
+export type TokenTransferTransaction = {
+  sendTx: TxHash;
+
+  fromChain: ChainName;
+  sender: string;
+
+  toChain: ChainName;
+  recipient: string;
+
+  tokenId: TokenId;
+  amount: bigint;
+
+  emitterAddress: string;
+  sequence: bigint;
+
+  payloadID: bigint;
+
+  block: bigint;
+  gasFee: bigint;
+};
