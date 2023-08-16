@@ -42,11 +42,11 @@ export class EvmChain implements ChainContext {
 
   async sendWait(stxns: SignedTxn[]): Promise<TxHash[]> {
     // TODO: horrible?
-    const txhashes: TxHash[] = [];
     const rpc = this.getRPC();
+    const txhashes: TxHash[] = [];
     for (const stxn of stxns) {
-      const receipt = await rpc.broadcastTransaction(stxn);
-      txhashes.push(receipt.hash);
+      const { hash } = await rpc.broadcastTransaction(stxn);
+      txhashes.push(hash);
     }
     return txhashes;
   }

@@ -1,8 +1,9 @@
 import bs58 from "bs58";
 import { ethers } from "ethers";
 import { Keypair } from "@solana/web3.js";
-import { Signer } from "@wormhole-foundation/connect-sdk";
+import { SignedTxn, Signer } from "@wormhole-foundation/connect-sdk";
 import { ChainName } from "@wormhole-foundation/sdk-base";
+import { UnsignedTransaction } from "@wormhole-foundation/sdk-definitions";
 
 // read in from `.env`
 require("dotenv").config();
@@ -22,8 +23,8 @@ class EthSigner implements Signer {
   address(): string {
     return this._wallet.address;
   }
-  async sign(tx: any): Promise<any> {
-    return await this._wallet.signTransaction(tx);
+  async sign(tx: UnsignedTransaction): Promise<SignedTxn> {
+    return await this._wallet.signTransaction(tx.transaction);
   }
 }
 export function getEvmSigner(chain: ChainName): EthSigner {

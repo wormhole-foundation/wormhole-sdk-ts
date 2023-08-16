@@ -100,6 +100,7 @@ export class TokenTransfer implements WormholeTransfer {
     // TODO: wow
     const signed = [];
     for await (const tx of xfer) {
+      console.log(tx);
       signed.push(await this.from.sign(tx));
     }
     return await this.transfer.fromChain.sendWait(signed);

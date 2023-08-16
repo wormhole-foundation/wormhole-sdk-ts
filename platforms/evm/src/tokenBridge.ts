@@ -5,6 +5,7 @@ import {
   Network,
   PlatformToChainsMapping,
   evmChainIdToNetworkChainPair,
+  evmNetworkChainToEvmChainId,
 } from '@wormhole-foundation/sdk-base';
 import {
   VAA,
@@ -37,6 +38,10 @@ const addFrom = (txReq: TransactionRequest, from: string) => ({
   ...txReq,
   from,
 });
+const addChainId = (txReq: TransactionRequest, chainId: bigint) => ({
+  ...txReq,
+  chainId,
+});
 const unusedNonce = 0;
 const unusedArbiterFee = 0n;
 
@@ -50,6 +55,7 @@ const unusedArbiterFee = 0n;
 export class EvmTokenBridge implements TokenBridge<'Evm'> {
   readonly contracts: EvmContracts;
   readonly tokenBridge: TokenBridgeContract;
+  readonly chainId: bigint;
 
   private constructor(
     readonly network: Network,
@@ -58,6 +64,7 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
   ) {
     this.contracts = new EvmContracts(network);
 
+    this.chainId = evmNetworkChainToEvmChainId(network, chain);
     this.tokenBridge = this.contracts.mustGetTokenBridge(chain, provider);
   }
 
@@ -284,7 +291,7 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     stackable: boolean = false,
   ): EvmUnsignedTransaction {
     return new EvmUnsignedTransaction(
-      txReq,
+      addChainId(txReq, this.chainId),
       this.network,
       this.chain,
       description,

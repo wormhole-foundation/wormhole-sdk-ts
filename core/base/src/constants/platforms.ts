@@ -5,6 +5,7 @@ import {
   toMappingFunc,
   reverseArrayMapping,
 } from "../utils/mapping";
+import { Network } from "./networks";
 
 const platformAndChainsEntries = [
   [
@@ -108,6 +109,24 @@ const evmChainIdToNetworkChainMapping = new Map<bigint, NetworkChainPair>(
 //can't use toMapping here because bigint keys are not supported
 export const evmChainIdToNetworkChainPair = (chainId: bigint) =>
   evmChainIdToNetworkChainMapping.get(chainId);
+
+// Maps Network=>Chain Name => Evm Chain ID
+const evmNetworkToEvmChainId = evmChainIdToNetworkChainEntries
+  .map((v) => {
+    return [v[1][0], { [v[1][1]]: v[0] }] as [string, Record<string, bigint>];
+  })
+  .reduce((acc: Record<string, Record<string, bigint>>, [key, value]) => {
+    if (!(key in acc)) acc[key] = {};
+    acc[key] = { ...acc[key], ...value };
+    return acc;
+  }, {});
+
+export const evmNetworkChainToEvmChainId = (
+  network: Network,
+  chain: ChainName
+) => {
+  return evmNetworkToEvmChainId[network][chain];
+};
 
 //TODO more platform specific functions, e.g.:
 //  Solana genesis block <-> (Chain, Network)
