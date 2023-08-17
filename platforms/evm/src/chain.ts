@@ -41,13 +41,11 @@ export class EvmChain implements ChainContext {
   }
 
   async getTransaction(txid: string): Promise<any> {
-    const txs = await this.platform.parseMessageFromTx(
+    return await this.platform.parseMessageFromTx(
       this.chain,
       txid,
       this.getRPC(),
     );
-
-    return txs;
   }
 
   async sendWait(stxns: SignedTxn[]): Promise<TxHash[]> {
@@ -56,8 +54,15 @@ export class EvmChain implements ChainContext {
 
     // TODO: concurrent
     for (const stxn of stxns) {
-      const { hash } = await rpc.broadcastTransaction(stxn);
-      txhashes.push(hash);
+      console.log(`Sending: ${stxn}`);
+
+      const txRes = await rpc.broadcastTransaction(stxn);
+      const txReceipt = await txRes.wait();
+      console.log(txReceipt);
+      // TODO: throw error?
+      if (txReceipt === null) continue;
+
+      txhashes.push(txReceipt.hash);
     }
     return txhashes;
   }

@@ -8,6 +8,7 @@ import {
 import {
   TokenId,
   TokenTransferTransaction,
+  TxHash,
 } from '@wormhole-foundation/connect-sdk';
 import { EvmContracts } from './contracts';
 import { EvmTokenBridge } from './tokenBridge';
@@ -102,16 +103,21 @@ export class EvmPlatform implements Platform {
   }
 
   parseAddress(address: string): UniversalAddress {
+    // 42 is 20bytes as hex + 2 bytes for 0x
+    if (address.length > 42) {
+      return new UniversalAddress(address);
+    }
     return new EvmAddress(address).toUniversalAddress();
   }
 
   async parseMessageFromTx(
     chain: ChainName,
-    txid: string,
+    txid: TxHash,
     rpc: ethers.Provider,
   ): Promise<(TokenTransferTransaction | {})[]> {
     const receipt = await rpc.getTransactionReceipt(txid);
-    if (receipt === null) throw new Error('No transaction found');
+    if (receipt === null)
+      throw new Error(`No transaction found with txid: ${txid}`);
 
     const { fee: gasFee } = receipt;
 

@@ -33,3 +33,10 @@ export interface WormholeTransfer {
   // how many blocks until destination is final
   // destinationFinalized(): Promise<bigint>;
 }
+
+export enum TransferStatus {}
+
+export interface WormholeRelayedTransfer {
+  start(): void;
+  status(): TransferStatus;
+}
