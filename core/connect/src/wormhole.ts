@@ -9,6 +9,7 @@ import {
   UniversalAddress,
   deserialize,
   VAA,
+  deserializePayload,
 } from '@wormhole-foundation/sdk-definitions';
 import axios from 'axios';
 
@@ -23,6 +24,7 @@ import {
 
 import { CONFIG } from './constants';
 import { TokenTransfer } from './tokenTransfer';
+import { emit } from 'process';
 
 export class Wormhole {
   protected _platforms: Map<PlatformName, Platform>;
@@ -218,16 +220,17 @@ export class Wormhole {
    * @param msg The MessageIdentifier used to fetch the VAA
    * @returns The ParsedVAA if available
    */
-  async getVAA(
+  async getVAABytes(
     chain: ChainName,
-    emitter: string,
+    emitter: UniversalAddress,
     seq: bigint,
-  ): Promise<VAA<'Uint8Array'> | undefined> {
+  ): Promise<Uint8Array | undefined> {
     const chainId = toChainId(chain);
-    const emitterAddress = emitter.startsWith('0x')
-      ? emitter.slice(2)
+    const emitterAddress = emitter.toString().startsWith('0x')
+      ? emitter.toString().slice(2)
       : emitter;
 
+    // TODO: Make both data formats work
     //const url = `${this.conf.api}/api/v1/vaas/${chainId}/${emitterAddress}/${seq}`;
     const url = `https://wormhole-v2-testnet-api.certus.one/v1/signed_vaa/${chainId}/${emitterAddress}/${seq}`;
     const response = await axios.get(url);
@@ -235,8 +238,25 @@ export class Wormhole {
     if (!response.data) return;
 
     const { data } = response;
-    const vaaBytes = Buffer.from(data.vaaBytes, 'base64');
-    return deserialize('Uint8Array', new Uint8Array(vaaBytes));
+    return new Uint8Array(Buffer.from(data.vaaBytes, 'base64'));
+  }
+
+  /**
+   * Gets a VAA from the API or Guardian RPC, finality must be met before the VAA will be available.
+   *  See {@link ChainConfig.finalityThreshold | finalityThreshold} on {@link CONFIG | the config}
+   *
+   * @param msg The MessageIdentifier used to fetch the VAA
+   * @returns The ParsedVAA if available
+   */
+  async getVAA(
+    chain: ChainName,
+    emitter: UniversalAddress,
+    seq: bigint,
+  ): Promise<VAA | undefined> {
+    const vaaBytes = await this.getVAABytes(chain, emitter, seq);
+    if (vaaBytes === undefined) return;
+
+    return deserialize('Uint8Array', vaaBytes);
   }
 
   //

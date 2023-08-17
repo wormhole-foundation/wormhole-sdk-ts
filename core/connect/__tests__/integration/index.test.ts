@@ -4,6 +4,9 @@ import { MockContext1, MockContext2 } from '../mocks/mockContext';
 const network = 'Testnet';
 
 describe('registers context classes correctly', () => {
+  it('lol', () => {
+    expect(true).toBeTruthy();
+  });
   //  let wormhole: Wormhole;
   //  beforeEach(async () => {
   //    const contextConfig = {

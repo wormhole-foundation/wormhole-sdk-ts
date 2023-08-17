@@ -91,6 +91,7 @@ export type TokenId = ChainAddressPair;
 export type MessageIdentifier = ChainAddressPair & { sequence: SequenceId };
 export type WormholeWrappedInfo = ChainAddressPair & { isWrapped: boolean };
 
+// Details for a source chain Token Transfer transaction
 export type TokenTransferTransaction = {
   sendTx: TxHash;
 

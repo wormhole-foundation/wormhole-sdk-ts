@@ -38,6 +38,7 @@ const transferCommonLayout = [
     name: "token",
     binary: "object",
     layout: [
+      { name: "amount", ...amountItem },
       { name: "address", ...universalAddressItem },
       { name: "chain", ...chainItem() },
     ],

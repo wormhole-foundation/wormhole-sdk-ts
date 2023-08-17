@@ -27,35 +27,73 @@ export class TokenTransfer implements WormholeTransfer {
 
   // transfer details
   transfer: TokenTransferDetails;
-  from: Signer;
-  to: Signer;
+
+  from: UniversalAddress;
+  fromSigner?: Signer;
+
+  to: UniversalAddress;
+  toSigner?: Signer;
 
   // The corresponding vaa representing the TokenTransfer
   // on the source chain (if its been completed and finalized)
-  vaa?: VAA;
+  vaas?: {
+    emitter: UniversalAddress;
+    sequence: bigint;
+    vaa?: VAA<'Transfer'> | VAA<'TransferWithPayload'>;
+  }[];
 
   constructor(
     wh: Wormhole,
     transfer: TokenTransferDetails,
-    from: Signer,
-    to: Signer,
+    from: Signer | UniversalAddress,
+    to: Signer | UniversalAddress,
   ) {
+    this.state = TransferState.Created;
     this.wh = wh;
     this.transfer = transfer;
-    this.from = from;
-    this.to = to;
-    this.state = TransferState.Created;
+
+    if (from instanceof UniversalAddress) {
+      this.from = from;
+    } else {
+      this.fromSigner = from;
+      this.from = transfer.fromChain.platform.parseAddress(from.address());
+    }
+
+    if (to instanceof UniversalAddress) {
+      this.to = to;
+    } else {
+      this.toSigner = to;
+      this.to = transfer.toChain.platform.parseAddress(to.address());
+    }
   }
 
   // Static initializers for in flight transfers that have not been completed
 
   // init from the seq id
   static async fromIdentifier(
+    wh: Wormhole,
     chain: ChainName,
-    seq: bigint,
+    emitter: UniversalAddress,
+    sequence: bigint,
   ): Promise<TokenTransfer> {
-    throw new Error('Not implemented');
-    //return new TokenTransfer();
+    const vaa = await wh.getVAA(chain, emitter, sequence);
+
+    // TODO: waiting for changes to make vaa parse
+    const details: TokenTransferDetails = {
+      token: 'native',
+      amount: 100n,
+      toChain: wh.getChain('Ethereum'),
+      fromChain: wh.getChain('Celo'),
+    };
+
+    return new TokenTransfer(
+      wh,
+      details,
+      // @ts-ignore
+      undefined,
+      // @ts-ignore
+      undefined,
+    );
   }
   // init from source tx hash
   static async fromTransaction(
@@ -69,25 +107,28 @@ export class TokenTransfer implements WormholeTransfer {
       txid,
     );
 
-    // TODO:
-    if (parsedTxDeets.length !== 1) throw new Error('que?');
-
+    for (const tx of parsedTxDeets) {
+    }
     const [tx] = parsedTxDeets;
+
+    const details: TokenTransferDetails = {
+      token: tx.tokenId,
+      amount: tx.amount,
+      fromChain: wh.getChain(tx.fromChain),
+      toChain: wh.getChain(tx.toChain),
+    };
+
     const tt = new TokenTransfer(
       wh,
-      {
-        token: tx.tokenId,
-        amount: tx.amount,
-        fromChain: wh.getChain(tx.fromChain),
-        toChain: wh.getChain(tx.toChain),
-      },
-      // @ts-ignore
-      undefined,
-      // @ts-ignore
-      undefined,
+      details,
+      details.fromChain.platform.parseAddress(tx.sender),
+      details.toChain.platform.parseAddress(tx.recipient),
     );
 
-    tt.vaa = await wh.getVAA(chain, tx.emitterAddress, tx.sequence);
+    const emitter = details.fromChain.platform.parseAddress(tx.emitterAddress);
+    //tt.sequence = tx.sequence;
+    //tt.vaa = await wh.getVAA(chain, emitter, tx.sequence);
+
     return tt;
   }
 
@@ -103,22 +144,16 @@ export class TokenTransfer implements WormholeTransfer {
     */
 
     if (this.state !== TransferState.Created)
-      throw new Error(`Invalid state transition in 'start'`);
+      throw new Error('Invalid state transition in `start`');
 
     const tb = await this.transfer.fromChain.getTokenBridge();
-    const sender = this.transfer.toChain.platform.parseAddress(
-      this.from.address(),
-    );
-    const recipient = this.transfer.toChain.platform.parseAddress(
-      this.to.address(),
-    );
 
     const tokenAddress =
       this.transfer.token === 'native' ? 'native' : this.transfer.token[1];
 
     const xfer = tb.transfer(
-      sender,
-      [this.to.chain(), recipient],
+      this.from,
+      [this.transfer.toChain.chain, this.to],
       tokenAddress,
       this.transfer.amount,
       this.transfer.payload,
@@ -130,10 +165,20 @@ export class TokenTransfer implements WormholeTransfer {
       unsigned.push(tx);
     }
 
-    // TODO: use signer argument if one is provided
-    return await this.transfer.fromChain.sendWait(
-      await this.from.sign(unsigned),
+    const s = signer ? signer : this.fromSigner;
+    if (s === undefined) throw new Error('No signer defined');
+
+    const txHashes = await this.transfer.fromChain.sendWait(
+      await s.sign(unsigned),
     );
+
+    // TODO: concurrent
+    const results = [];
+    for (const txHash of txHashes) {
+      results.push(await this.transfer.fromChain.getTransaction(txHash));
+    }
+
+    return txHashes;
   }
 
   // wait for the VAA to be ready
@@ -145,7 +190,12 @@ export class TokenTransfer implements WormholeTransfer {
         2) Once available, pull the VAA and parse it
         3) return seq
     */
-    return [0n];
+    if (this.state < TransferState.Started || this.state > TransferState.Ready)
+      throw new Error('Invalid state transition in `ready`');
+
+    //if (this.sequence) return [this.sequence];
+
+    throw new Error('No');
   }
 
   // finish the WormholeTransfer by submitting transactions to the destination chain
@@ -157,6 +207,24 @@ export class TokenTransfer implements WormholeTransfer {
         2) submit the VAA and transactions on chain
         3) return txid of submission
     */
-    return ['0xdeadbeef'];
+    if (this.state < TransferState.Ready)
+      throw new Error('Invalid state transition in `finish`');
+
+    // TODO: fetch it for 'em
+    if (!this.vaas) throw new Error('No Vaa');
+
+    const tb = await this.transfer.toChain.getTokenBridge();
+    const xfer = tb.redeem(this.from, this.vaas[0].vaa!);
+
+    // TODO: check 'stackable'?
+    const unsigned = [];
+    for await (const tx of xfer) {
+      unsigned.push(tx);
+    }
+
+    const s = signer ? signer : this.toSigner;
+    if (s === undefined) throw new Error('No signer defined');
+
+    return await this.transfer.toChain.sendWait(await s.sign(unsigned));
   }
 }
