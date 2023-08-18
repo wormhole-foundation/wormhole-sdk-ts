@@ -6,47 +6,49 @@ import {
   ChainName,
   ChainId,
   Contracts,
-  Context,
+  toChainName,
+  platformToChains,
+  contracts,
   Network,
-  TokenBridgeRelayer,
-  ContractsAbstract,
-  Wormhole,
-  filterByContext,
-} from '@wormhole-foundation/connect-sdk';
+} from '@wormhole-foundation/sdk-base';
 
 import { createReadOnlyWormholeProgramInterface } from './utils/wormhole';
 import { createReadOnlyTokenBridgeProgramInterface } from './utils/tokenBridge';
 import { createReadOnlyNftBridgeProgramInterface } from './utils/nftBridge';
+import { Connection, clusterApiUrl } from '@solana/web3.js';
 
 /**
  * @category Solana
  */
-export class SolContracts extends ContractsAbstract {
-  protected _contracts: Map<ChainName, any>;
-  protected wormhole: Wormhole;
+// TODO: create Contracts interface
+export class SolContracts {
+  protected _contracts: Map<ChainName, Contracts>;
+  protected _connection: Connection;
 
-  constructor(wormholeBase: Wormhole) {
-    super();
-    this.wormhole = wormholeBase;
-    const tag = wormholeBase.network === "Mainnet" ? 'mainnet-beta' : 'devnet';
+  constructor(network: Network, connection?: Connection) {
+    if (connection) {
+      this._connection = connection;
+    } else {
+      const tag = network === 'Mainnet' ? 'mainnet-beta' : 'devnet';
+      this._connection = new Connection(clusterApiUrl(tag));
+    }
     this._contracts = new Map();
-    const chains = filterByContext(wormholeBase.conf, Context.SOLANA);
-    chains.forEach((c) => {
-      this._contracts.set(c.key, c.contracts);
+    platformToChains('Evm').forEach((c) => {
+      this._contracts.set(c, contracts[network][c]);
     });
   }
 
   get connection() {
-    return (this.wormhole as any).connection;
+    return this._connection;
   }
 
   getContracts(chain: ChainName | ChainId): Contracts | undefined {
-    const chainName = this.wormhole.toChainName(chain);
+    const chainName = toChainName(chain);
     return this._contracts.get(chainName);
   }
 
   mustGetContracts(chain: ChainName | ChainId): Contracts {
-    const chainName = this.wormhole.toChainName(chain);
+    const chainName = toChainName(chain);
     const contracts = this._contracts.get(chainName);
     if (!contracts) throw new Error(`no Solana contracts found for ${chain}`);
     return contracts;
@@ -60,11 +62,11 @@ export class SolContracts extends ContractsAbstract {
   getCore(chain?: ChainName | ChainId): Program<WormholeCore> | undefined {
     if (!this.connection) throw new Error('no connection');
 
-    const contracts = this.wormhole.mustGetContracts('solana');
-    if (!contracts.core) return;
+    const contracts = this.mustGetContracts('Solana');
+    if (!contracts.CoreBridge) return;
 
     return createReadOnlyWormholeProgramInterface(
-      contracts.core,
+      contracts.CoreBridge,
       this.connection,
     );
   }
@@ -88,11 +90,11 @@ export class SolContracts extends ContractsAbstract {
   getBridge(chain?: ChainName | ChainId): Program<TokenBridge> | undefined {
     if (!this.connection) throw new Error('no connection');
 
-    const contracts = this.wormhole.mustGetContracts('solana');
-    if (!contracts.token_bridge) return;
+    const contracts = this.wormhole.mustGetContracts('Solana');
+    if (!contracts.TokenBridge) return;
 
     return createReadOnlyTokenBridgeProgramInterface(
-      contracts.token_bridge,
+      contracts.TokenBridge,
       this.connection,
     );
   }
@@ -117,11 +119,11 @@ export class SolContracts extends ContractsAbstract {
   getNftBridge(chain?: ChainName | ChainId): Program<NftBridge> | undefined {
     if (!this.connection) throw new Error('no connection');
 
-    const contracts = this.wormhole.mustGetContracts('solana');
-    if (!contracts.nft_bridge) return;
+    const contracts = this.wormhole.mustGetContracts('Solana');
+    if (!contracts.NftBridge) return;
 
     return createReadOnlyNftBridgeProgramInterface(
-      contracts.nft_bridge,
+      contracts.NftBridge,
       this.connection,
     );
   }
@@ -145,7 +147,7 @@ export class SolContracts extends ContractsAbstract {
    */
   getTokenBridgeRelayer(
     chain?: ChainName | ChainId,
-  ): TokenBridgeRelayer | undefined {
+  ): any | undefined {
     return undefined;
   }
 
@@ -154,7 +156,7 @@ export class SolContracts extends ContractsAbstract {
    *
    * @returns An interface for the Token Bridge Relayer contract, errors if not found
    */
-  mustGetTokenBridgeRelayer(chain: ChainName | ChainId): TokenBridgeRelayer {
+  mustGetTokenBridgeRelayer(chain: ChainName | ChainId): any {
     throw new Error('relayer not deployed on Solana');
   }
 }

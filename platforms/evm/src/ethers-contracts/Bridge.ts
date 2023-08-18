@@ -13,7 +13,7 @@ import type {
   ContractRunner,
   ContractMethod,
   Listener,
-} from "ethers";
+} from 'ethers';
 import type {
   TypedContractEvent,
   TypedDeferredTopicFilter,
@@ -21,7 +21,7 @@ import type {
   TypedLogDescription,
   TypedListener,
   TypedContractMethod,
-} from "./common";
+} from './common';
 
 export declare namespace BridgeStructs {
   export type TransferStruct = {
@@ -41,7 +41,7 @@ export declare namespace BridgeStructs {
     tokenChain: bigint,
     to: string,
     toChain: bigint,
-    fee: bigint
+    fee: bigint,
   ] & {
     payloadID: bigint;
     amount: bigint;
@@ -67,7 +67,7 @@ export declare namespace BridgeStructs {
     tokenChain: bigint,
     decimals: bigint,
     symbol: string,
-    name: string
+    name: string,
   ] & {
     payloadID: bigint;
     tokenAddress: string;
@@ -96,7 +96,7 @@ export declare namespace BridgeStructs {
     to: string,
     toChain: bigint,
     fromAddress: string,
-    payload: string
+    payload: string,
   ] & {
     payloadID: bigint;
     amount: bigint;
@@ -119,7 +119,7 @@ export declare namespace BridgeStructs {
     module: string,
     action: bigint,
     evmChainId: bigint,
-    newChainId: bigint
+    newChainId: bigint,
   ] & {
     module: string;
     action: bigint;
@@ -140,7 +140,7 @@ export declare namespace BridgeStructs {
     action: bigint,
     chainId: bigint,
     emitterChainID: bigint,
-    emitterAddress: string
+    emitterAddress: string,
   ] & {
     module: string;
     action: bigint;
@@ -160,368 +160,368 @@ export declare namespace BridgeStructs {
     module: string,
     action: bigint,
     chainId: bigint,
-    newContract: string
+    newContract: string,
   ] & { module: string; action: bigint; chainId: bigint; newContract: string };
 }
 
 export interface BridgeInterface extends Interface {
   getFunction(
     nameOrSignature:
-      | "WETH"
-      | "_parseTransferCommon"
-      | "attestToken"
-      | "bridgeContracts"
-      | "chainId"
-      | "completeTransfer"
-      | "completeTransferAndUnwrapETH"
-      | "completeTransferAndUnwrapETHWithPayload"
-      | "completeTransferWithPayload"
-      | "createWrapped"
-      | "encodeAssetMeta"
-      | "encodeTransfer"
-      | "encodeTransferWithPayload"
-      | "evmChainId"
-      | "finality"
-      | "governanceActionIsConsumed"
-      | "governanceChainId"
-      | "governanceContract"
-      | "isFork"
-      | "isInitialized"
-      | "isTransferCompleted"
-      | "isWrappedAsset"
-      | "outstandingBridged"
-      | "parseAssetMeta"
-      | "parsePayloadID"
-      | "parseRecoverChainId"
-      | "parseRegisterChain"
-      | "parseTransfer"
-      | "parseTransferWithPayload"
-      | "parseUpgrade"
-      | "registerChain"
-      | "submitRecoverChainId"
-      | "tokenImplementation"
-      | "transferTokens"
-      | "transferTokensWithPayload"
-      | "updateWrapped"
-      | "upgrade"
-      | "wormhole"
-      | "wrapAndTransferETH"
-      | "wrapAndTransferETHWithPayload"
-      | "wrappedAsset"
+      | 'WETH'
+      | '_parseTransferCommon'
+      | 'attestToken'
+      | 'bridgeContracts'
+      | 'chainId'
+      | 'completeTransfer'
+      | 'completeTransferAndUnwrapETH'
+      | 'completeTransferAndUnwrapETHWithPayload'
+      | 'completeTransferWithPayload'
+      | 'createWrapped'
+      | 'encodeAssetMeta'
+      | 'encodeTransfer'
+      | 'encodeTransferWithPayload'
+      | 'evmChainId'
+      | 'finality'
+      | 'governanceActionIsConsumed'
+      | 'governanceChainId'
+      | 'governanceContract'
+      | 'isFork'
+      | 'isInitialized'
+      | 'isTransferCompleted'
+      | 'isWrappedAsset'
+      | 'outstandingBridged'
+      | 'parseAssetMeta'
+      | 'parsePayloadID'
+      | 'parseRecoverChainId'
+      | 'parseRegisterChain'
+      | 'parseTransfer'
+      | 'parseTransferWithPayload'
+      | 'parseUpgrade'
+      | 'registerChain'
+      | 'submitRecoverChainId'
+      | 'tokenImplementation'
+      | 'transferTokens'
+      | 'transferTokensWithPayload'
+      | 'updateWrapped'
+      | 'upgrade'
+      | 'wormhole'
+      | 'wrapAndTransferETH'
+      | 'wrapAndTransferETHWithPayload'
+      | 'wrappedAsset',
   ): FunctionFragment;
 
   getEvent(
     nameOrSignatureOrTopic:
-      | "AdminChanged"
-      | "BeaconUpgraded"
-      | "ContractUpgraded"
-      | "TransferRedeemed"
-      | "Upgraded"
+      | 'AdminChanged'
+      | 'BeaconUpgraded'
+      | 'ContractUpgraded'
+      | 'TransferRedeemed'
+      | 'Upgraded',
   ): EventFragment;
 
-  encodeFunctionData(functionFragment: "WETH", values?: undefined): string;
+  encodeFunctionData(functionFragment: 'WETH', values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "_parseTransferCommon",
-    values: [BytesLike]
+    functionFragment: '_parseTransferCommon',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "attestToken",
-    values: [AddressLike, BigNumberish]
+    functionFragment: 'attestToken',
+    values: [AddressLike, BigNumberish],
   ): string;
   encodeFunctionData(
-    functionFragment: "bridgeContracts",
-    values: [BigNumberish]
+    functionFragment: 'bridgeContracts',
+    values: [BigNumberish],
   ): string;
-  encodeFunctionData(functionFragment: "chainId", values?: undefined): string;
+  encodeFunctionData(functionFragment: 'chainId', values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "completeTransfer",
-    values: [BytesLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "completeTransferAndUnwrapETH",
-    values: [BytesLike]
+    functionFragment: 'completeTransfer',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "completeTransferAndUnwrapETHWithPayload",
-    values: [BytesLike]
+    functionFragment: 'completeTransferAndUnwrapETH',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "completeTransferWithPayload",
-    values: [BytesLike]
+    functionFragment: 'completeTransferAndUnwrapETHWithPayload',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "createWrapped",
-    values: [BytesLike]
+    functionFragment: 'completeTransferWithPayload',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "encodeAssetMeta",
-    values: [BridgeStructs.AssetMetaStruct]
+    functionFragment: 'createWrapped',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "encodeTransfer",
-    values: [BridgeStructs.TransferStruct]
+    functionFragment: 'encodeAssetMeta',
+    values: [BridgeStructs.AssetMetaStruct],
   ): string;
   encodeFunctionData(
-    functionFragment: "encodeTransferWithPayload",
-    values: [BridgeStructs.TransferWithPayloadStruct]
+    functionFragment: 'encodeTransfer',
+    values: [BridgeStructs.TransferStruct],
   ): string;
   encodeFunctionData(
-    functionFragment: "evmChainId",
-    values?: undefined
-  ): string;
-  encodeFunctionData(functionFragment: "finality", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "governanceActionIsConsumed",
-    values: [BytesLike]
+    functionFragment: 'encodeTransferWithPayload',
+    values: [BridgeStructs.TransferWithPayloadStruct],
   ): string;
   encodeFunctionData(
-    functionFragment: "governanceChainId",
-    values?: undefined
+    functionFragment: 'evmChainId',
+    values?: undefined,
+  ): string;
+  encodeFunctionData(functionFragment: 'finality', values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: 'governanceActionIsConsumed',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "governanceContract",
-    values?: undefined
-  ): string;
-  encodeFunctionData(functionFragment: "isFork", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "isInitialized",
-    values: [AddressLike]
+    functionFragment: 'governanceChainId',
+    values?: undefined,
   ): string;
   encodeFunctionData(
-    functionFragment: "isTransferCompleted",
-    values: [BytesLike]
+    functionFragment: 'governanceContract',
+    values?: undefined,
+  ): string;
+  encodeFunctionData(functionFragment: 'isFork', values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: 'isInitialized',
+    values: [AddressLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "isWrappedAsset",
-    values: [AddressLike]
+    functionFragment: 'isTransferCompleted',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "outstandingBridged",
-    values: [AddressLike]
+    functionFragment: 'isWrappedAsset',
+    values: [AddressLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "parseAssetMeta",
-    values: [BytesLike]
+    functionFragment: 'outstandingBridged',
+    values: [AddressLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "parsePayloadID",
-    values: [BytesLike]
+    functionFragment: 'parseAssetMeta',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "parseRecoverChainId",
-    values: [BytesLike]
+    functionFragment: 'parsePayloadID',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "parseRegisterChain",
-    values: [BytesLike]
+    functionFragment: 'parseRecoverChainId',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "parseTransfer",
-    values: [BytesLike]
+    functionFragment: 'parseRegisterChain',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "parseTransferWithPayload",
-    values: [BytesLike]
+    functionFragment: 'parseTransfer',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "parseUpgrade",
-    values: [BytesLike]
+    functionFragment: 'parseTransferWithPayload',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "registerChain",
-    values: [BytesLike]
+    functionFragment: 'parseUpgrade',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "submitRecoverChainId",
-    values: [BytesLike]
+    functionFragment: 'registerChain',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "tokenImplementation",
-    values?: undefined
+    functionFragment: 'submitRecoverChainId',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "transferTokens",
+    functionFragment: 'tokenImplementation',
+    values?: undefined,
+  ): string;
+  encodeFunctionData(
+    functionFragment: 'transferTokens',
     values: [
       AddressLike,
       BigNumberish,
       BigNumberish,
       BytesLike,
       BigNumberish,
-      BigNumberish
-    ]
+      BigNumberish,
+    ],
   ): string;
   encodeFunctionData(
-    functionFragment: "transferTokensWithPayload",
+    functionFragment: 'transferTokensWithPayload',
     values: [
       AddressLike,
       BigNumberish,
       BigNumberish,
       BytesLike,
       BigNumberish,
-      BytesLike
-    ]
+      BytesLike,
+    ],
   ): string;
   encodeFunctionData(
-    functionFragment: "updateWrapped",
-    values: [BytesLike]
+    functionFragment: 'updateWrapped',
+    values: [BytesLike],
   ): string;
-  encodeFunctionData(functionFragment: "upgrade", values: [BytesLike]): string;
-  encodeFunctionData(functionFragment: "wormhole", values?: undefined): string;
+  encodeFunctionData(functionFragment: 'upgrade', values: [BytesLike]): string;
+  encodeFunctionData(functionFragment: 'wormhole', values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "wrapAndTransferETH",
-    values: [BigNumberish, BytesLike, BigNumberish, BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "wrapAndTransferETHWithPayload",
-    values: [BigNumberish, BytesLike, BigNumberish, BytesLike]
+    functionFragment: 'wrapAndTransferETH',
+    values: [BigNumberish, BytesLike, BigNumberish, BigNumberish],
   ): string;
   encodeFunctionData(
-    functionFragment: "wrappedAsset",
-    values: [BigNumberish, BytesLike]
+    functionFragment: 'wrapAndTransferETHWithPayload',
+    values: [BigNumberish, BytesLike, BigNumberish, BytesLike],
+  ): string;
+  encodeFunctionData(
+    functionFragment: 'wrappedAsset',
+    values: [BigNumberish, BytesLike],
   ): string;
 
-  decodeFunctionResult(functionFragment: "WETH", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'WETH', data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "_parseTransferCommon",
-    data: BytesLike
+    functionFragment: '_parseTransferCommon',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "attestToken",
-    data: BytesLike
+    functionFragment: 'attestToken',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "bridgeContracts",
-    data: BytesLike
+    functionFragment: 'bridgeContracts',
+    data: BytesLike,
   ): Result;
-  decodeFunctionResult(functionFragment: "chainId", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'chainId', data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "completeTransfer",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "completeTransferAndUnwrapETH",
-    data: BytesLike
+    functionFragment: 'completeTransfer',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "completeTransferAndUnwrapETHWithPayload",
-    data: BytesLike
+    functionFragment: 'completeTransferAndUnwrapETH',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "completeTransferWithPayload",
-    data: BytesLike
+    functionFragment: 'completeTransferAndUnwrapETHWithPayload',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "createWrapped",
-    data: BytesLike
+    functionFragment: 'completeTransferWithPayload',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "encodeAssetMeta",
-    data: BytesLike
+    functionFragment: 'createWrapped',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "encodeTransfer",
-    data: BytesLike
+    functionFragment: 'encodeAssetMeta',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "encodeTransferWithPayload",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "evmChainId", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "finality", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "governanceActionIsConsumed",
-    data: BytesLike
+    functionFragment: 'encodeTransfer',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "governanceChainId",
-    data: BytesLike
+    functionFragment: 'encodeTransferWithPayload',
+    data: BytesLike,
+  ): Result;
+  decodeFunctionResult(functionFragment: 'evmChainId', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'finality', data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: 'governanceActionIsConsumed',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "governanceContract",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "isFork", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "isInitialized",
-    data: BytesLike
+    functionFragment: 'governanceChainId',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "isTransferCompleted",
-    data: BytesLike
+    functionFragment: 'governanceContract',
+    data: BytesLike,
+  ): Result;
+  decodeFunctionResult(functionFragment: 'isFork', data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: 'isInitialized',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "isWrappedAsset",
-    data: BytesLike
+    functionFragment: 'isTransferCompleted',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "outstandingBridged",
-    data: BytesLike
+    functionFragment: 'isWrappedAsset',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "parseAssetMeta",
-    data: BytesLike
+    functionFragment: 'outstandingBridged',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "parsePayloadID",
-    data: BytesLike
+    functionFragment: 'parseAssetMeta',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "parseRecoverChainId",
-    data: BytesLike
+    functionFragment: 'parsePayloadID',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "parseRegisterChain",
-    data: BytesLike
+    functionFragment: 'parseRecoverChainId',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "parseTransfer",
-    data: BytesLike
+    functionFragment: 'parseRegisterChain',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "parseTransferWithPayload",
-    data: BytesLike
+    functionFragment: 'parseTransfer',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "parseUpgrade",
-    data: BytesLike
+    functionFragment: 'parseTransferWithPayload',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "registerChain",
-    data: BytesLike
+    functionFragment: 'parseUpgrade',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "submitRecoverChainId",
-    data: BytesLike
+    functionFragment: 'registerChain',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "tokenImplementation",
-    data: BytesLike
+    functionFragment: 'submitRecoverChainId',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "transferTokens",
-    data: BytesLike
+    functionFragment: 'tokenImplementation',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "transferTokensWithPayload",
-    data: BytesLike
+    functionFragment: 'transferTokens',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "updateWrapped",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "upgrade", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "wormhole", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "wrapAndTransferETH",
-    data: BytesLike
+    functionFragment: 'transferTokensWithPayload',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "wrapAndTransferETHWithPayload",
-    data: BytesLike
+    functionFragment: 'updateWrapped',
+    data: BytesLike,
+  ): Result;
+  decodeFunctionResult(functionFragment: 'upgrade', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'wormhole', data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: 'wrapAndTransferETH',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "wrappedAsset",
-    data: BytesLike
+    functionFragment: 'wrapAndTransferETHWithPayload',
+    data: BytesLike,
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: 'wrappedAsset',
+    data: BytesLike,
   ): Result;
 }
 
@@ -567,12 +567,12 @@ export namespace TransferRedeemedEvent {
   export type InputTuple = [
     emitterChainId: BigNumberish,
     emitterAddress: BytesLike,
-    sequence: BigNumberish
+    sequence: BigNumberish,
   ];
   export type OutputTuple = [
     emitterChainId: bigint,
     emitterAddress: string,
-    sequence: bigint
+    sequence: bigint,
   ];
   export interface OutputObject {
     emitterChainId: bigint;
@@ -606,193 +606,193 @@ export interface Bridge extends BaseContract {
   queryFilter<TCEvent extends TypedContractEvent>(
     event: TCEvent,
     fromBlockOrBlockhash?: string | number | undefined,
-    toBlock?: string | number | undefined
+    toBlock?: string | number | undefined,
   ): Promise<Array<TypedEventLog<TCEvent>>>;
   queryFilter<TCEvent extends TypedContractEvent>(
     filter: TypedDeferredTopicFilter<TCEvent>,
     fromBlockOrBlockhash?: string | number | undefined,
-    toBlock?: string | number | undefined
+    toBlock?: string | number | undefined,
   ): Promise<Array<TypedEventLog<TCEvent>>>;
 
   on<TCEvent extends TypedContractEvent>(
     event: TCEvent,
-    listener: TypedListener<TCEvent>
+    listener: TypedListener<TCEvent>,
   ): Promise<this>;
   on<TCEvent extends TypedContractEvent>(
     filter: TypedDeferredTopicFilter<TCEvent>,
-    listener: TypedListener<TCEvent>
+    listener: TypedListener<TCEvent>,
   ): Promise<this>;
 
   once<TCEvent extends TypedContractEvent>(
     event: TCEvent,
-    listener: TypedListener<TCEvent>
+    listener: TypedListener<TCEvent>,
   ): Promise<this>;
   once<TCEvent extends TypedContractEvent>(
     filter: TypedDeferredTopicFilter<TCEvent>,
-    listener: TypedListener<TCEvent>
+    listener: TypedListener<TCEvent>,
   ): Promise<this>;
 
   listeners<TCEvent extends TypedContractEvent>(
-    event: TCEvent
+    event: TCEvent,
   ): Promise<Array<TypedListener<TCEvent>>>;
   listeners(eventName?: string): Promise<Array<Listener>>;
   removeAllListeners<TCEvent extends TypedContractEvent>(
-    event?: TCEvent
+    event?: TCEvent,
   ): Promise<this>;
 
-  WETH: TypedContractMethod<[], [string], "view">;
+  WETH: TypedContractMethod<[], [string], 'view'>;
 
   _parseTransferCommon: TypedContractMethod<
     [encoded: BytesLike],
     [BridgeStructs.TransferStructOutput],
-    "view"
+    'view'
   >;
 
   attestToken: TypedContractMethod<
     [tokenAddress: AddressLike, nonce: BigNumberish],
     [bigint],
-    "payable"
+    'payable'
   >;
 
   bridgeContracts: TypedContractMethod<
     [chainId_: BigNumberish],
     [string],
-    "view"
+    'view'
   >;
 
-  chainId: TypedContractMethod<[], [bigint], "view">;
+  chainId: TypedContractMethod<[], [bigint], 'view'>;
 
   completeTransfer: TypedContractMethod<
     [encodedVm: BytesLike],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
   completeTransferAndUnwrapETH: TypedContractMethod<
     [encodedVm: BytesLike],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
   completeTransferAndUnwrapETHWithPayload: TypedContractMethod<
     [encodedVm: BytesLike],
     [string],
-    "nonpayable"
+    'nonpayable'
   >;
 
   completeTransferWithPayload: TypedContractMethod<
     [encodedVm: BytesLike],
     [string],
-    "nonpayable"
+    'nonpayable'
   >;
 
   createWrapped: TypedContractMethod<
     [encodedVm: BytesLike],
     [string],
-    "nonpayable"
+    'nonpayable'
   >;
 
   encodeAssetMeta: TypedContractMethod<
     [meta: BridgeStructs.AssetMetaStruct],
     [string],
-    "view"
+    'view'
   >;
 
   encodeTransfer: TypedContractMethod<
     [transfer: BridgeStructs.TransferStruct],
     [string],
-    "view"
+    'view'
   >;
 
   encodeTransferWithPayload: TypedContractMethod<
     [transfer: BridgeStructs.TransferWithPayloadStruct],
     [string],
-    "view"
+    'view'
   >;
 
-  evmChainId: TypedContractMethod<[], [bigint], "view">;
+  evmChainId: TypedContractMethod<[], [bigint], 'view'>;
 
-  finality: TypedContractMethod<[], [bigint], "view">;
+  finality: TypedContractMethod<[], [bigint], 'view'>;
 
   governanceActionIsConsumed: TypedContractMethod<
     [hash: BytesLike],
     [boolean],
-    "view"
+    'view'
   >;
 
-  governanceChainId: TypedContractMethod<[], [bigint], "view">;
+  governanceChainId: TypedContractMethod<[], [bigint], 'view'>;
 
-  governanceContract: TypedContractMethod<[], [string], "view">;
+  governanceContract: TypedContractMethod<[], [string], 'view'>;
 
-  isFork: TypedContractMethod<[], [boolean], "view">;
+  isFork: TypedContractMethod<[], [boolean], 'view'>;
 
-  isInitialized: TypedContractMethod<[impl: AddressLike], [boolean], "view">;
+  isInitialized: TypedContractMethod<[impl: AddressLike], [boolean], 'view'>;
 
   isTransferCompleted: TypedContractMethod<
     [hash: BytesLike],
     [boolean],
-    "view"
+    'view'
   >;
 
-  isWrappedAsset: TypedContractMethod<[token: AddressLike], [boolean], "view">;
+  isWrappedAsset: TypedContractMethod<[token: AddressLike], [boolean], 'view'>;
 
   outstandingBridged: TypedContractMethod<
     [token: AddressLike],
     [bigint],
-    "view"
+    'view'
   >;
 
   parseAssetMeta: TypedContractMethod<
     [encoded: BytesLike],
     [BridgeStructs.AssetMetaStructOutput],
-    "view"
+    'view'
   >;
 
-  parsePayloadID: TypedContractMethod<[encoded: BytesLike], [bigint], "view">;
+  parsePayloadID: TypedContractMethod<[encoded: BytesLike], [bigint], 'view'>;
 
   parseRecoverChainId: TypedContractMethod<
     [encodedRecoverChainId: BytesLike],
     [BridgeStructs.RecoverChainIdStructOutput],
-    "view"
+    'view'
   >;
 
   parseRegisterChain: TypedContractMethod<
     [encoded: BytesLike],
     [BridgeStructs.RegisterChainStructOutput],
-    "view"
+    'view'
   >;
 
   parseTransfer: TypedContractMethod<
     [encoded: BytesLike],
     [BridgeStructs.TransferStructOutput],
-    "view"
+    'view'
   >;
 
   parseTransferWithPayload: TypedContractMethod<
     [encoded: BytesLike],
     [BridgeStructs.TransferWithPayloadStructOutput],
-    "view"
+    'view'
   >;
 
   parseUpgrade: TypedContractMethod<
     [encoded: BytesLike],
     [BridgeStructs.UpgradeContractStructOutput],
-    "view"
+    'view'
   >;
 
   registerChain: TypedContractMethod<
     [encodedVM: BytesLike],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
   submitRecoverChainId: TypedContractMethod<
     [encodedVM: BytesLike],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
-  tokenImplementation: TypedContractMethod<[], [string], "view">;
+  tokenImplementation: TypedContractMethod<[], [string], 'view'>;
 
   transferTokens: TypedContractMethod<
     [
@@ -801,10 +801,10 @@ export interface Bridge extends BaseContract {
       recipientChain: BigNumberish,
       recipient: BytesLike,
       arbiterFee: BigNumberish,
-      nonce: BigNumberish
+      nonce: BigNumberish,
     ],
     [bigint],
-    "payable"
+    'payable'
   >;
 
   transferTokensWithPayload: TypedContractMethod<
@@ -814,31 +814,31 @@ export interface Bridge extends BaseContract {
       recipientChain: BigNumberish,
       recipient: BytesLike,
       nonce: BigNumberish,
-      payload: BytesLike
+      payload: BytesLike,
     ],
     [bigint],
-    "payable"
+    'payable'
   >;
 
   updateWrapped: TypedContractMethod<
     [encodedVm: BytesLike],
     [string],
-    "nonpayable"
+    'nonpayable'
   >;
 
-  upgrade: TypedContractMethod<[encodedVM: BytesLike], [void], "nonpayable">;
+  upgrade: TypedContractMethod<[encodedVM: BytesLike], [void], 'nonpayable'>;
 
-  wormhole: TypedContractMethod<[], [string], "view">;
+  wormhole: TypedContractMethod<[], [string], 'view'>;
 
   wrapAndTransferETH: TypedContractMethod<
     [
       recipientChain: BigNumberish,
       recipient: BytesLike,
       arbiterFee: BigNumberish,
-      nonce: BigNumberish
+      nonce: BigNumberish,
     ],
     [bigint],
-    "payable"
+    'payable'
   >;
 
   wrapAndTransferETHWithPayload: TypedContractMethod<
@@ -846,167 +846,167 @@ export interface Bridge extends BaseContract {
       recipientChain: BigNumberish,
       recipient: BytesLike,
       nonce: BigNumberish,
-      payload: BytesLike
+      payload: BytesLike,
     ],
     [bigint],
-    "payable"
+    'payable'
   >;
 
   wrappedAsset: TypedContractMethod<
     [tokenChainId: BigNumberish, tokenAddress: BytesLike],
     [string],
-    "view"
+    'view'
   >;
 
   getFunction<T extends ContractMethod = ContractMethod>(
-    key: string | FunctionFragment
+    key: string | FunctionFragment,
   ): T;
 
   getFunction(
-    nameOrSignature: "WETH"
-  ): TypedContractMethod<[], [string], "view">;
+    nameOrSignature: 'WETH',
+  ): TypedContractMethod<[], [string], 'view'>;
   getFunction(
-    nameOrSignature: "_parseTransferCommon"
+    nameOrSignature: '_parseTransferCommon',
   ): TypedContractMethod<
     [encoded: BytesLike],
     [BridgeStructs.TransferStructOutput],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "attestToken"
+    nameOrSignature: 'attestToken',
   ): TypedContractMethod<
     [tokenAddress: AddressLike, nonce: BigNumberish],
     [bigint],
-    "payable"
+    'payable'
   >;
   getFunction(
-    nameOrSignature: "bridgeContracts"
-  ): TypedContractMethod<[chainId_: BigNumberish], [string], "view">;
+    nameOrSignature: 'bridgeContracts',
+  ): TypedContractMethod<[chainId_: BigNumberish], [string], 'view'>;
   getFunction(
-    nameOrSignature: "chainId"
-  ): TypedContractMethod<[], [bigint], "view">;
+    nameOrSignature: 'chainId',
+  ): TypedContractMethod<[], [bigint], 'view'>;
   getFunction(
-    nameOrSignature: "completeTransfer"
-  ): TypedContractMethod<[encodedVm: BytesLike], [void], "nonpayable">;
+    nameOrSignature: 'completeTransfer',
+  ): TypedContractMethod<[encodedVm: BytesLike], [void], 'nonpayable'>;
   getFunction(
-    nameOrSignature: "completeTransferAndUnwrapETH"
-  ): TypedContractMethod<[encodedVm: BytesLike], [void], "nonpayable">;
+    nameOrSignature: 'completeTransferAndUnwrapETH',
+  ): TypedContractMethod<[encodedVm: BytesLike], [void], 'nonpayable'>;
   getFunction(
-    nameOrSignature: "completeTransferAndUnwrapETHWithPayload"
-  ): TypedContractMethod<[encodedVm: BytesLike], [string], "nonpayable">;
+    nameOrSignature: 'completeTransferAndUnwrapETHWithPayload',
+  ): TypedContractMethod<[encodedVm: BytesLike], [string], 'nonpayable'>;
   getFunction(
-    nameOrSignature: "completeTransferWithPayload"
-  ): TypedContractMethod<[encodedVm: BytesLike], [string], "nonpayable">;
+    nameOrSignature: 'completeTransferWithPayload',
+  ): TypedContractMethod<[encodedVm: BytesLike], [string], 'nonpayable'>;
   getFunction(
-    nameOrSignature: "createWrapped"
-  ): TypedContractMethod<[encodedVm: BytesLike], [string], "nonpayable">;
+    nameOrSignature: 'createWrapped',
+  ): TypedContractMethod<[encodedVm: BytesLike], [string], 'nonpayable'>;
   getFunction(
-    nameOrSignature: "encodeAssetMeta"
+    nameOrSignature: 'encodeAssetMeta',
   ): TypedContractMethod<
     [meta: BridgeStructs.AssetMetaStruct],
     [string],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "encodeTransfer"
+    nameOrSignature: 'encodeTransfer',
   ): TypedContractMethod<
     [transfer: BridgeStructs.TransferStruct],
     [string],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "encodeTransferWithPayload"
+    nameOrSignature: 'encodeTransferWithPayload',
   ): TypedContractMethod<
     [transfer: BridgeStructs.TransferWithPayloadStruct],
     [string],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "evmChainId"
-  ): TypedContractMethod<[], [bigint], "view">;
+    nameOrSignature: 'evmChainId',
+  ): TypedContractMethod<[], [bigint], 'view'>;
   getFunction(
-    nameOrSignature: "finality"
-  ): TypedContractMethod<[], [bigint], "view">;
+    nameOrSignature: 'finality',
+  ): TypedContractMethod<[], [bigint], 'view'>;
   getFunction(
-    nameOrSignature: "governanceActionIsConsumed"
-  ): TypedContractMethod<[hash: BytesLike], [boolean], "view">;
+    nameOrSignature: 'governanceActionIsConsumed',
+  ): TypedContractMethod<[hash: BytesLike], [boolean], 'view'>;
   getFunction(
-    nameOrSignature: "governanceChainId"
-  ): TypedContractMethod<[], [bigint], "view">;
+    nameOrSignature: 'governanceChainId',
+  ): TypedContractMethod<[], [bigint], 'view'>;
   getFunction(
-    nameOrSignature: "governanceContract"
-  ): TypedContractMethod<[], [string], "view">;
+    nameOrSignature: 'governanceContract',
+  ): TypedContractMethod<[], [string], 'view'>;
   getFunction(
-    nameOrSignature: "isFork"
-  ): TypedContractMethod<[], [boolean], "view">;
+    nameOrSignature: 'isFork',
+  ): TypedContractMethod<[], [boolean], 'view'>;
   getFunction(
-    nameOrSignature: "isInitialized"
-  ): TypedContractMethod<[impl: AddressLike], [boolean], "view">;
+    nameOrSignature: 'isInitialized',
+  ): TypedContractMethod<[impl: AddressLike], [boolean], 'view'>;
   getFunction(
-    nameOrSignature: "isTransferCompleted"
-  ): TypedContractMethod<[hash: BytesLike], [boolean], "view">;
+    nameOrSignature: 'isTransferCompleted',
+  ): TypedContractMethod<[hash: BytesLike], [boolean], 'view'>;
   getFunction(
-    nameOrSignature: "isWrappedAsset"
-  ): TypedContractMethod<[token: AddressLike], [boolean], "view">;
+    nameOrSignature: 'isWrappedAsset',
+  ): TypedContractMethod<[token: AddressLike], [boolean], 'view'>;
   getFunction(
-    nameOrSignature: "outstandingBridged"
-  ): TypedContractMethod<[token: AddressLike], [bigint], "view">;
+    nameOrSignature: 'outstandingBridged',
+  ): TypedContractMethod<[token: AddressLike], [bigint], 'view'>;
   getFunction(
-    nameOrSignature: "parseAssetMeta"
+    nameOrSignature: 'parseAssetMeta',
   ): TypedContractMethod<
     [encoded: BytesLike],
     [BridgeStructs.AssetMetaStructOutput],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "parsePayloadID"
-  ): TypedContractMethod<[encoded: BytesLike], [bigint], "view">;
+    nameOrSignature: 'parsePayloadID',
+  ): TypedContractMethod<[encoded: BytesLike], [bigint], 'view'>;
   getFunction(
-    nameOrSignature: "parseRecoverChainId"
+    nameOrSignature: 'parseRecoverChainId',
   ): TypedContractMethod<
     [encodedRecoverChainId: BytesLike],
     [BridgeStructs.RecoverChainIdStructOutput],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "parseRegisterChain"
+    nameOrSignature: 'parseRegisterChain',
   ): TypedContractMethod<
     [encoded: BytesLike],
     [BridgeStructs.RegisterChainStructOutput],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "parseTransfer"
+    nameOrSignature: 'parseTransfer',
   ): TypedContractMethod<
     [encoded: BytesLike],
     [BridgeStructs.TransferStructOutput],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "parseTransferWithPayload"
+    nameOrSignature: 'parseTransferWithPayload',
   ): TypedContractMethod<
     [encoded: BytesLike],
     [BridgeStructs.TransferWithPayloadStructOutput],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "parseUpgrade"
+    nameOrSignature: 'parseUpgrade',
   ): TypedContractMethod<
     [encoded: BytesLike],
     [BridgeStructs.UpgradeContractStructOutput],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "registerChain"
-  ): TypedContractMethod<[encodedVM: BytesLike], [void], "nonpayable">;
+    nameOrSignature: 'registerChain',
+  ): TypedContractMethod<[encodedVM: BytesLike], [void], 'nonpayable'>;
   getFunction(
-    nameOrSignature: "submitRecoverChainId"
-  ): TypedContractMethod<[encodedVM: BytesLike], [void], "nonpayable">;
+    nameOrSignature: 'submitRecoverChainId',
+  ): TypedContractMethod<[encodedVM: BytesLike], [void], 'nonpayable'>;
   getFunction(
-    nameOrSignature: "tokenImplementation"
-  ): TypedContractMethod<[], [string], "view">;
+    nameOrSignature: 'tokenImplementation',
+  ): TypedContractMethod<[], [string], 'view'>;
   getFunction(
-    nameOrSignature: "transferTokens"
+    nameOrSignature: 'transferTokens',
   ): TypedContractMethod<
     [
       token: AddressLike,
@@ -1014,13 +1014,13 @@ export interface Bridge extends BaseContract {
       recipientChain: BigNumberish,
       recipient: BytesLike,
       arbiterFee: BigNumberish,
-      nonce: BigNumberish
+      nonce: BigNumberish,
     ],
     [bigint],
-    "payable"
+    'payable'
   >;
   getFunction(
-    nameOrSignature: "transferTokensWithPayload"
+    nameOrSignature: 'transferTokensWithPayload',
   ): TypedContractMethod<
     [
       token: AddressLike,
@@ -1028,82 +1028,82 @@ export interface Bridge extends BaseContract {
       recipientChain: BigNumberish,
       recipient: BytesLike,
       nonce: BigNumberish,
-      payload: BytesLike
+      payload: BytesLike,
     ],
     [bigint],
-    "payable"
+    'payable'
   >;
   getFunction(
-    nameOrSignature: "updateWrapped"
-  ): TypedContractMethod<[encodedVm: BytesLike], [string], "nonpayable">;
+    nameOrSignature: 'updateWrapped',
+  ): TypedContractMethod<[encodedVm: BytesLike], [string], 'nonpayable'>;
   getFunction(
-    nameOrSignature: "upgrade"
-  ): TypedContractMethod<[encodedVM: BytesLike], [void], "nonpayable">;
+    nameOrSignature: 'upgrade',
+  ): TypedContractMethod<[encodedVM: BytesLike], [void], 'nonpayable'>;
   getFunction(
-    nameOrSignature: "wormhole"
-  ): TypedContractMethod<[], [string], "view">;
+    nameOrSignature: 'wormhole',
+  ): TypedContractMethod<[], [string], 'view'>;
   getFunction(
-    nameOrSignature: "wrapAndTransferETH"
+    nameOrSignature: 'wrapAndTransferETH',
   ): TypedContractMethod<
     [
       recipientChain: BigNumberish,
       recipient: BytesLike,
       arbiterFee: BigNumberish,
-      nonce: BigNumberish
+      nonce: BigNumberish,
     ],
     [bigint],
-    "payable"
+    'payable'
   >;
   getFunction(
-    nameOrSignature: "wrapAndTransferETHWithPayload"
+    nameOrSignature: 'wrapAndTransferETHWithPayload',
   ): TypedContractMethod<
     [
       recipientChain: BigNumberish,
       recipient: BytesLike,
       nonce: BigNumberish,
-      payload: BytesLike
+      payload: BytesLike,
     ],
     [bigint],
-    "payable"
+    'payable'
   >;
   getFunction(
-    nameOrSignature: "wrappedAsset"
+    nameOrSignature: 'wrappedAsset',
   ): TypedContractMethod<
     [tokenChainId: BigNumberish, tokenAddress: BytesLike],
     [string],
-    "view"
+    'view'
   >;
 
   getEvent(
-    key: "AdminChanged"
+    key: 'AdminChanged',
   ): TypedContractEvent<
     AdminChangedEvent.InputTuple,
     AdminChangedEvent.OutputTuple,
     AdminChangedEvent.OutputObject
   >;
   getEvent(
-    key: "BeaconUpgraded"
+    key: 'BeaconUpgraded',
   ): TypedContractEvent<
     BeaconUpgradedEvent.InputTuple,
     BeaconUpgradedEvent.OutputTuple,
     BeaconUpgradedEvent.OutputObject
   >;
   getEvent(
-    key: "ContractUpgraded"
+    key: 'ContractUpgraded',
   ): TypedContractEvent<
     ContractUpgradedEvent.InputTuple,
     ContractUpgradedEvent.OutputTuple,
     ContractUpgradedEvent.OutputObject
   >;
   getEvent(
-    key: "TransferRedeemed"
+    key: 'TransferRedeemed',
   ): TypedContractEvent<
     TransferRedeemedEvent.InputTuple,
     TransferRedeemedEvent.OutputTuple,
     TransferRedeemedEvent.OutputObject
   >;
   getEvent(
-    key: "Upgraded"
+    key: 'Upgraded',
   ): TypedContractEvent<
     UpgradedEvent.InputTuple,
     UpgradedEvent.OutputTuple,
@@ -1111,7 +1111,7 @@ export interface Bridge extends BaseContract {
   >;
 
   filters: {
-    "AdminChanged(address,address)": TypedContractEvent<
+    'AdminChanged(address,address)': TypedContractEvent<
       AdminChangedEvent.InputTuple,
       AdminChangedEvent.OutputTuple,
       AdminChangedEvent.OutputObject
@@ -1122,7 +1122,7 @@ export interface Bridge extends BaseContract {
       AdminChangedEvent.OutputObject
     >;
 
-    "BeaconUpgraded(address)": TypedContractEvent<
+    'BeaconUpgraded(address)': TypedContractEvent<
       BeaconUpgradedEvent.InputTuple,
       BeaconUpgradedEvent.OutputTuple,
       BeaconUpgradedEvent.OutputObject
@@ -1133,7 +1133,7 @@ export interface Bridge extends BaseContract {
       BeaconUpgradedEvent.OutputObject
     >;
 
-    "ContractUpgraded(address,address)": TypedContractEvent<
+    'ContractUpgraded(address,address)': TypedContractEvent<
       ContractUpgradedEvent.InputTuple,
       ContractUpgradedEvent.OutputTuple,
       ContractUpgradedEvent.OutputObject
@@ -1144,7 +1144,7 @@ export interface Bridge extends BaseContract {
       ContractUpgradedEvent.OutputObject
     >;
 
-    "TransferRedeemed(uint16,bytes32,uint64)": TypedContractEvent<
+    'TransferRedeemed(uint16,bytes32,uint64)': TypedContractEvent<
       TransferRedeemedEvent.InputTuple,
       TransferRedeemedEvent.OutputTuple,
       TransferRedeemedEvent.OutputObject
@@ -1155,7 +1155,7 @@ export interface Bridge extends BaseContract {
       TransferRedeemedEvent.OutputObject
     >;
 
-    "Upgraded(address)": TypedContractEvent<
+    'Upgraded(address)': TypedContractEvent<
       UpgradedEvent.InputTuple,
       UpgradedEvent.OutputTuple,
       UpgradedEvent.OutputObject

@@ -18,7 +18,7 @@ export function deriveWrappedMintKey(
   tokenAddress: Buffer | Uint8Array | string,
   tokenId: bigint | number,
 ): PublicKey {
-  if (tokenChain == chainToChainId("Solana")) {
+  if (tokenChain == chainToChainId('Solana')) {
     throw new Error(
       'tokenChain == CHAIN_ID_SOLANA does not have wrapped mint key',
     );

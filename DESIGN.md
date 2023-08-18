@@ -168,3 +168,5 @@ Say I have an app that defines its own protocol, can I provide something that ad
 ## What is the preferred terminology to refer to either end of a cross-chain message: from/to, source/target or origin/destination?
 
 ## What is the preferred terminology for the core Wormhole layer? (i.e. Core Contracts or Wormhole Contracts)
+
+## It seems like we've moved away from supporting ChainName AND Chain ID in methods. Is it preferred to only use ChainName and what is the reasoning there?  I think it's convenient to support either.

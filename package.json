@@ -30,6 +30,7 @@
     "core/base",
     "core/definitions",
     "core/connect",
-    "platforms/evm"
+    "platforms/evm",
+    "platforms/solana"
   ]
 }

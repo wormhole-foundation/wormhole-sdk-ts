@@ -26,9 +26,7 @@ import { BridgeStructs } from './ethers-contracts/Bridge';
  * @category EVM
  */
 export class EvmPlatform implements Platform {
-  // lol
-  static readonly _platform: 'Evm' = 'Evm';
-  readonly platform: PlatformName = EvmPlatform._platform;
+  public static platform: PlatformName = 'Evm';
 
   readonly network: Network;
   readonly conf: ChainsConfig;
@@ -196,3 +194,5 @@ export class EvmPlatform implements Platform {
     return await Promise.all(parsedLogs);
   }
 }
+
+EvmPlatform.platform;

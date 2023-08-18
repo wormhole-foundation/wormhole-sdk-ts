@@ -13,7 +13,7 @@ import type {
   ContractRunner,
   ContractMethod,
   Listener,
-} from "ethers";
+} from 'ethers';
 import type {
   TypedContractEvent,
   TypedDeferredTopicFilter,
@@ -21,73 +21,73 @@ import type {
   TypedLogDescription,
   TypedListener,
   TypedContractMethod,
-} from "./common";
+} from './common';
 
 export interface TokenImplementationInterface extends Interface {
   getFunction(
     nameOrSignature:
-      | "DOMAIN_SEPARATOR"
-      | "allowance"
-      | "approve"
-      | "balanceOf"
-      | "burn"
-      | "chainId"
-      | "decimals"
-      | "decreaseAllowance"
-      | "eip712Domain"
-      | "increaseAllowance"
-      | "initialize"
-      | "mint"
-      | "name"
-      | "nativeContract"
-      | "nonces"
-      | "owner"
-      | "permit"
-      | "symbol"
-      | "totalSupply"
-      | "transfer"
-      | "transferFrom"
-      | "updateDetails"
+      | 'DOMAIN_SEPARATOR'
+      | 'allowance'
+      | 'approve'
+      | 'balanceOf'
+      | 'burn'
+      | 'chainId'
+      | 'decimals'
+      | 'decreaseAllowance'
+      | 'eip712Domain'
+      | 'increaseAllowance'
+      | 'initialize'
+      | 'mint'
+      | 'name'
+      | 'nativeContract'
+      | 'nonces'
+      | 'owner'
+      | 'permit'
+      | 'symbol'
+      | 'totalSupply'
+      | 'transfer'
+      | 'transferFrom'
+      | 'updateDetails',
   ): FunctionFragment;
 
-  getEvent(nameOrSignatureOrTopic: "Approval" | "Transfer"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: 'Approval' | 'Transfer'): EventFragment;
 
   encodeFunctionData(
-    functionFragment: "DOMAIN_SEPARATOR",
-    values?: undefined
+    functionFragment: 'DOMAIN_SEPARATOR',
+    values?: undefined,
   ): string;
   encodeFunctionData(
-    functionFragment: "allowance",
-    values: [AddressLike, AddressLike]
+    functionFragment: 'allowance',
+    values: [AddressLike, AddressLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "approve",
-    values: [AddressLike, BigNumberish]
+    functionFragment: 'approve',
+    values: [AddressLike, BigNumberish],
   ): string;
   encodeFunctionData(
-    functionFragment: "balanceOf",
-    values: [AddressLike]
+    functionFragment: 'balanceOf',
+    values: [AddressLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "burn",
-    values: [AddressLike, BigNumberish]
+    functionFragment: 'burn',
+    values: [AddressLike, BigNumberish],
   ): string;
-  encodeFunctionData(functionFragment: "chainId", values?: undefined): string;
-  encodeFunctionData(functionFragment: "decimals", values?: undefined): string;
+  encodeFunctionData(functionFragment: 'chainId', values?: undefined): string;
+  encodeFunctionData(functionFragment: 'decimals', values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "decreaseAllowance",
-    values: [AddressLike, BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "eip712Domain",
-    values?: undefined
+    functionFragment: 'decreaseAllowance',
+    values: [AddressLike, BigNumberish],
   ): string;
   encodeFunctionData(
-    functionFragment: "increaseAllowance",
-    values: [AddressLike, BigNumberish]
+    functionFragment: 'eip712Domain',
+    values?: undefined,
   ): string;
   encodeFunctionData(
-    functionFragment: "initialize",
+    functionFragment: 'increaseAllowance',
+    values: [AddressLike, BigNumberish],
+  ): string;
+  encodeFunctionData(
+    functionFragment: 'initialize',
     values: [
       string,
       string,
@@ -95,22 +95,22 @@ export interface TokenImplementationInterface extends Interface {
       BigNumberish,
       AddressLike,
       BigNumberish,
-      BytesLike
-    ]
+      BytesLike,
+    ],
   ): string;
   encodeFunctionData(
-    functionFragment: "mint",
-    values: [AddressLike, BigNumberish]
+    functionFragment: 'mint',
+    values: [AddressLike, BigNumberish],
   ): string;
-  encodeFunctionData(functionFragment: "name", values?: undefined): string;
+  encodeFunctionData(functionFragment: 'name', values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "nativeContract",
-    values?: undefined
+    functionFragment: 'nativeContract',
+    values?: undefined,
   ): string;
-  encodeFunctionData(functionFragment: "nonces", values: [AddressLike]): string;
-  encodeFunctionData(functionFragment: "owner", values?: undefined): string;
+  encodeFunctionData(functionFragment: 'nonces', values: [AddressLike]): string;
+  encodeFunctionData(functionFragment: 'owner', values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "permit",
+    functionFragment: 'permit',
     values: [
       AddressLike,
       AddressLike,
@@ -118,72 +118,72 @@ export interface TokenImplementationInterface extends Interface {
       BigNumberish,
       BigNumberish,
       BytesLike,
-      BytesLike
-    ]
+      BytesLike,
+    ],
   ): string;
-  encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
+  encodeFunctionData(functionFragment: 'symbol', values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "totalSupply",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "transfer",
-    values: [AddressLike, BigNumberish]
+    functionFragment: 'totalSupply',
+    values?: undefined,
   ): string;
   encodeFunctionData(
-    functionFragment: "transferFrom",
-    values: [AddressLike, AddressLike, BigNumberish]
+    functionFragment: 'transfer',
+    values: [AddressLike, BigNumberish],
   ): string;
   encodeFunctionData(
-    functionFragment: "updateDetails",
-    values: [string, string, BigNumberish]
+    functionFragment: 'transferFrom',
+    values: [AddressLike, AddressLike, BigNumberish],
+  ): string;
+  encodeFunctionData(
+    functionFragment: 'updateDetails',
+    values: [string, string, BigNumberish],
   ): string;
 
   decodeFunctionResult(
-    functionFragment: "DOMAIN_SEPARATOR",
-    data: BytesLike
+    functionFragment: 'DOMAIN_SEPARATOR',
+    data: BytesLike,
   ): Result;
-  decodeFunctionResult(functionFragment: "allowance", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "burn", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "chainId", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "decimals", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'allowance', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'approve', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'balanceOf', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'burn', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'chainId', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'decimals', data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "decreaseAllowance",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "eip712Domain",
-    data: BytesLike
+    functionFragment: 'decreaseAllowance',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "increaseAllowance",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "nativeContract",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "nonces", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "permit", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "totalSupply",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "transfer", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "transferFrom",
-    data: BytesLike
+    functionFragment: 'eip712Domain',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "updateDetails",
-    data: BytesLike
+    functionFragment: 'increaseAllowance',
+    data: BytesLike,
+  ): Result;
+  decodeFunctionResult(functionFragment: 'initialize', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'mint', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'name', data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: 'nativeContract',
+    data: BytesLike,
+  ): Result;
+  decodeFunctionResult(functionFragment: 'nonces', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'owner', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'permit', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'symbol', data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: 'totalSupply',
+    data: BytesLike,
+  ): Result;
+  decodeFunctionResult(functionFragment: 'transfer', data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: 'transferFrom',
+    data: BytesLike,
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: 'updateDetails',
+    data: BytesLike,
   ): Result;
 }
 
@@ -191,7 +191,7 @@ export namespace ApprovalEvent {
   export type InputTuple = [
     owner: AddressLike,
     spender: AddressLike,
-    value: BigNumberish
+    value: BigNumberish,
   ];
   export type OutputTuple = [owner: string, spender: string, value: bigint];
   export interface OutputObject {
@@ -209,7 +209,7 @@ export namespace TransferEvent {
   export type InputTuple = [
     from: AddressLike,
     to: AddressLike,
-    value: BigNumberish
+    value: BigNumberish,
   ];
   export type OutputTuple = [from: string, to: string, value: bigint];
   export interface OutputObject {
@@ -232,70 +232,70 @@ export interface TokenImplementation extends BaseContract {
   queryFilter<TCEvent extends TypedContractEvent>(
     event: TCEvent,
     fromBlockOrBlockhash?: string | number | undefined,
-    toBlock?: string | number | undefined
+    toBlock?: string | number | undefined,
   ): Promise<Array<TypedEventLog<TCEvent>>>;
   queryFilter<TCEvent extends TypedContractEvent>(
     filter: TypedDeferredTopicFilter<TCEvent>,
     fromBlockOrBlockhash?: string | number | undefined,
-    toBlock?: string | number | undefined
+    toBlock?: string | number | undefined,
   ): Promise<Array<TypedEventLog<TCEvent>>>;
 
   on<TCEvent extends TypedContractEvent>(
     event: TCEvent,
-    listener: TypedListener<TCEvent>
+    listener: TypedListener<TCEvent>,
   ): Promise<this>;
   on<TCEvent extends TypedContractEvent>(
     filter: TypedDeferredTopicFilter<TCEvent>,
-    listener: TypedListener<TCEvent>
+    listener: TypedListener<TCEvent>,
   ): Promise<this>;
 
   once<TCEvent extends TypedContractEvent>(
     event: TCEvent,
-    listener: TypedListener<TCEvent>
+    listener: TypedListener<TCEvent>,
   ): Promise<this>;
   once<TCEvent extends TypedContractEvent>(
     filter: TypedDeferredTopicFilter<TCEvent>,
-    listener: TypedListener<TCEvent>
+    listener: TypedListener<TCEvent>,
   ): Promise<this>;
 
   listeners<TCEvent extends TypedContractEvent>(
-    event: TCEvent
+    event: TCEvent,
   ): Promise<Array<TypedListener<TCEvent>>>;
   listeners(eventName?: string): Promise<Array<Listener>>;
   removeAllListeners<TCEvent extends TypedContractEvent>(
-    event?: TCEvent
+    event?: TCEvent,
   ): Promise<this>;
 
-  DOMAIN_SEPARATOR: TypedContractMethod<[], [string], "view">;
+  DOMAIN_SEPARATOR: TypedContractMethod<[], [string], 'view'>;
 
   allowance: TypedContractMethod<
     [owner_: AddressLike, spender_: AddressLike],
     [bigint],
-    "view"
+    'view'
   >;
 
   approve: TypedContractMethod<
     [spender_: AddressLike, amount_: BigNumberish],
     [boolean],
-    "nonpayable"
+    'nonpayable'
   >;
 
-  balanceOf: TypedContractMethod<[account_: AddressLike], [bigint], "view">;
+  balanceOf: TypedContractMethod<[account_: AddressLike], [bigint], 'view'>;
 
   burn: TypedContractMethod<
     [account_: AddressLike, amount_: BigNumberish],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
-  chainId: TypedContractMethod<[], [bigint], "view">;
+  chainId: TypedContractMethod<[], [bigint], 'view'>;
 
-  decimals: TypedContractMethod<[], [bigint], "view">;
+  decimals: TypedContractMethod<[], [bigint], 'view'>;
 
   decreaseAllowance: TypedContractMethod<
     [spender_: AddressLike, subtractedValue_: BigNumberish],
     [boolean],
-    "nonpayable"
+    'nonpayable'
   >;
 
   eip712Domain: TypedContractMethod<
@@ -309,15 +309,15 @@ export interface TokenImplementation extends BaseContract {
         domainVerifyingContract: string;
         domainSalt: string;
         domainExtensions: bigint[];
-      }
+      },
     ],
-    "view"
+    'view'
   >;
 
   increaseAllowance: TypedContractMethod<
     [spender_: AddressLike, addedValue_: BigNumberish],
     [boolean],
-    "nonpayable"
+    'nonpayable'
   >;
 
   initialize: TypedContractMethod<
@@ -328,25 +328,25 @@ export interface TokenImplementation extends BaseContract {
       sequence_: BigNumberish,
       owner_: AddressLike,
       chainId_: BigNumberish,
-      nativeContract_: BytesLike
+      nativeContract_: BytesLike,
     ],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
   mint: TypedContractMethod<
     [account_: AddressLike, amount_: BigNumberish],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
-  name: TypedContractMethod<[], [string], "view">;
+  name: TypedContractMethod<[], [string], 'view'>;
 
-  nativeContract: TypedContractMethod<[], [string], "view">;
+  nativeContract: TypedContractMethod<[], [string], 'view'>;
 
-  nonces: TypedContractMethod<[owner_: AddressLike], [bigint], "view">;
+  nonces: TypedContractMethod<[owner_: AddressLike], [bigint], 'view'>;
 
-  owner: TypedContractMethod<[], [string], "view">;
+  owner: TypedContractMethod<[], [string], 'view'>;
 
   permit: TypedContractMethod<
     [
@@ -356,81 +356,79 @@ export interface TokenImplementation extends BaseContract {
       deadline_: BigNumberish,
       v_: BigNumberish,
       r_: BytesLike,
-      s_: BytesLike
+      s_: BytesLike,
     ],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
-  symbol: TypedContractMethod<[], [string], "view">;
+  symbol: TypedContractMethod<[], [string], 'view'>;
 
-  totalSupply: TypedContractMethod<[], [bigint], "view">;
+  totalSupply: TypedContractMethod<[], [bigint], 'view'>;
 
   transfer: TypedContractMethod<
     [recipient_: AddressLike, amount_: BigNumberish],
     [boolean],
-    "nonpayable"
+    'nonpayable'
   >;
 
   transferFrom: TypedContractMethod<
     [sender_: AddressLike, recipient_: AddressLike, amount_: BigNumberish],
     [boolean],
-    "nonpayable"
+    'nonpayable'
   >;
 
   updateDetails: TypedContractMethod<
     [name_: string, symbol_: string, sequence_: BigNumberish],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
   getFunction<T extends ContractMethod = ContractMethod>(
-    key: string | FunctionFragment
+    key: string | FunctionFragment,
   ): T;
 
   getFunction(
-    nameOrSignature: "DOMAIN_SEPARATOR"
-  ): TypedContractMethod<[], [string], "view">;
+    nameOrSignature: 'DOMAIN_SEPARATOR',
+  ): TypedContractMethod<[], [string], 'view'>;
   getFunction(
-    nameOrSignature: "allowance"
+    nameOrSignature: 'allowance',
   ): TypedContractMethod<
     [owner_: AddressLike, spender_: AddressLike],
     [bigint],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "approve"
+    nameOrSignature: 'approve',
   ): TypedContractMethod<
     [spender_: AddressLike, amount_: BigNumberish],
     [boolean],
-    "nonpayable"
+    'nonpayable'
   >;
   getFunction(
-    nameOrSignature: "balanceOf"
-  ): TypedContractMethod<[account_: AddressLike], [bigint], "view">;
+    nameOrSignature: 'balanceOf',
+  ): TypedContractMethod<[account_: AddressLike], [bigint], 'view'>;
   getFunction(
-    nameOrSignature: "burn"
+    nameOrSignature: 'burn',
   ): TypedContractMethod<
     [account_: AddressLike, amount_: BigNumberish],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
   getFunction(
-    nameOrSignature: "chainId"
-  ): TypedContractMethod<[], [bigint], "view">;
+    nameOrSignature: 'chainId',
+  ): TypedContractMethod<[], [bigint], 'view'>;
   getFunction(
-    nameOrSignature: "decimals"
-  ): TypedContractMethod<[], [bigint], "view">;
+    nameOrSignature: 'decimals',
+  ): TypedContractMethod<[], [bigint], 'view'>;
   getFunction(
-    nameOrSignature: "decreaseAllowance"
+    nameOrSignature: 'decreaseAllowance',
   ): TypedContractMethod<
     [spender_: AddressLike, subtractedValue_: BigNumberish],
     [boolean],
-    "nonpayable"
+    'nonpayable'
   >;
-  getFunction(
-    nameOrSignature: "eip712Domain"
-  ): TypedContractMethod<
+  getFunction(nameOrSignature: 'eip712Domain'): TypedContractMethod<
     [],
     [
       [string, string, string, bigint, string, string, bigint[]] & {
@@ -441,19 +439,19 @@ export interface TokenImplementation extends BaseContract {
         domainVerifyingContract: string;
         domainSalt: string;
         domainExtensions: bigint[];
-      }
+      },
     ],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "increaseAllowance"
+    nameOrSignature: 'increaseAllowance',
   ): TypedContractMethod<
     [spender_: AddressLike, addedValue_: BigNumberish],
     [boolean],
-    "nonpayable"
+    'nonpayable'
   >;
   getFunction(
-    nameOrSignature: "initialize"
+    nameOrSignature: 'initialize',
   ): TypedContractMethod<
     [
       name_: string,
@@ -462,32 +460,32 @@ export interface TokenImplementation extends BaseContract {
       sequence_: BigNumberish,
       owner_: AddressLike,
       chainId_: BigNumberish,
-      nativeContract_: BytesLike
+      nativeContract_: BytesLike,
     ],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
   getFunction(
-    nameOrSignature: "mint"
+    nameOrSignature: 'mint',
   ): TypedContractMethod<
     [account_: AddressLike, amount_: BigNumberish],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
   getFunction(
-    nameOrSignature: "name"
-  ): TypedContractMethod<[], [string], "view">;
+    nameOrSignature: 'name',
+  ): TypedContractMethod<[], [string], 'view'>;
   getFunction(
-    nameOrSignature: "nativeContract"
-  ): TypedContractMethod<[], [string], "view">;
+    nameOrSignature: 'nativeContract',
+  ): TypedContractMethod<[], [string], 'view'>;
   getFunction(
-    nameOrSignature: "nonces"
-  ): TypedContractMethod<[owner_: AddressLike], [bigint], "view">;
+    nameOrSignature: 'nonces',
+  ): TypedContractMethod<[owner_: AddressLike], [bigint], 'view'>;
   getFunction(
-    nameOrSignature: "owner"
-  ): TypedContractMethod<[], [string], "view">;
+    nameOrSignature: 'owner',
+  ): TypedContractMethod<[], [string], 'view'>;
   getFunction(
-    nameOrSignature: "permit"
+    nameOrSignature: 'permit',
   ): TypedContractMethod<
     [
       owner_: AddressLike,
@@ -496,48 +494,48 @@ export interface TokenImplementation extends BaseContract {
       deadline_: BigNumberish,
       v_: BigNumberish,
       r_: BytesLike,
-      s_: BytesLike
+      s_: BytesLike,
     ],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
   getFunction(
-    nameOrSignature: "symbol"
-  ): TypedContractMethod<[], [string], "view">;
+    nameOrSignature: 'symbol',
+  ): TypedContractMethod<[], [string], 'view'>;
   getFunction(
-    nameOrSignature: "totalSupply"
-  ): TypedContractMethod<[], [bigint], "view">;
+    nameOrSignature: 'totalSupply',
+  ): TypedContractMethod<[], [bigint], 'view'>;
   getFunction(
-    nameOrSignature: "transfer"
+    nameOrSignature: 'transfer',
   ): TypedContractMethod<
     [recipient_: AddressLike, amount_: BigNumberish],
     [boolean],
-    "nonpayable"
+    'nonpayable'
   >;
   getFunction(
-    nameOrSignature: "transferFrom"
+    nameOrSignature: 'transferFrom',
   ): TypedContractMethod<
     [sender_: AddressLike, recipient_: AddressLike, amount_: BigNumberish],
     [boolean],
-    "nonpayable"
+    'nonpayable'
   >;
   getFunction(
-    nameOrSignature: "updateDetails"
+    nameOrSignature: 'updateDetails',
   ): TypedContractMethod<
     [name_: string, symbol_: string, sequence_: BigNumberish],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
   getEvent(
-    key: "Approval"
+    key: 'Approval',
   ): TypedContractEvent<
     ApprovalEvent.InputTuple,
     ApprovalEvent.OutputTuple,
     ApprovalEvent.OutputObject
   >;
   getEvent(
-    key: "Transfer"
+    key: 'Transfer',
   ): TypedContractEvent<
     TransferEvent.InputTuple,
     TransferEvent.OutputTuple,
@@ -545,7 +543,7 @@ export interface TokenImplementation extends BaseContract {
   >;
 
   filters: {
-    "Approval(address,address,uint256)": TypedContractEvent<
+    'Approval(address,address,uint256)': TypedContractEvent<
       ApprovalEvent.InputTuple,
       ApprovalEvent.OutputTuple,
       ApprovalEvent.OutputObject
@@ -556,7 +554,7 @@ export interface TokenImplementation extends BaseContract {
       ApprovalEvent.OutputObject
     >;
 
-    "Transfer(address,address,uint256)": TypedContractEvent<
+    'Transfer(address,address,uint256)': TypedContractEvent<
       TransferEvent.InputTuple,
       TransferEvent.OutputTuple,
       TransferEvent.OutputObject

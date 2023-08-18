@@ -39,7 +39,7 @@ export async function redeemOnSolana(
 ) {
   const parsed = parseTokenTransferVaa(signedVaa);
   const createCompleteTransferInstruction =
-    parsed.tokenChain == chainToChainId("Solana")
+    parsed.tokenChain == chainToChainId('Solana')
       ? createCompleteTransferNativeInstruction
       : createCompleteTransferWrappedInstruction;
   const transaction = new Transaction().add(

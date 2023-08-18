@@ -13,7 +13,7 @@ import type {
   ContractRunner,
   ContractMethod,
   Listener,
-} from "ethers";
+} from 'ethers';
 import type {
   TypedContractEvent,
   TypedDeferredTopicFilter,
@@ -21,7 +21,7 @@ import type {
   TypedLogDescription,
   TypedListener,
   TypedContractMethod,
-} from "./common";
+} from './common';
 
 export declare namespace NFTBridgeStructs {
   export type TransferStruct = {
@@ -43,7 +43,7 @@ export declare namespace NFTBridgeStructs {
     tokenID: bigint,
     uri: string,
     to: string,
-    toChain: bigint
+    toChain: bigint,
   ] & {
     tokenAddress: string;
     tokenChain: bigint;
@@ -66,7 +66,7 @@ export declare namespace NFTBridgeStructs {
     module: string,
     action: bigint,
     evmChainId: bigint,
-    newChainId: bigint
+    newChainId: bigint,
   ] & {
     module: string;
     action: bigint;
@@ -87,7 +87,7 @@ export declare namespace NFTBridgeStructs {
     action: bigint,
     chainId: bigint,
     emitterChainID: bigint,
-    emitterAddress: string
+    emitterAddress: string,
   ] & {
     module: string;
     action: bigint;
@@ -107,7 +107,7 @@ export declare namespace NFTBridgeStructs {
     module: string,
     action: bigint,
     chainId: bigint,
-    newContract: string
+    newContract: string,
   ] & { module: string; action: bigint; chainId: bigint; newContract: string };
 }
 
@@ -123,214 +123,214 @@ export declare namespace NFTBridgeStorage {
 export interface NFTBridgeInterface extends Interface {
   getFunction(
     nameOrSignature:
-      | "bridgeContracts"
-      | "chainId"
-      | "completeTransfer"
-      | "encodeTransfer"
-      | "evmChainId"
-      | "finality"
-      | "governanceActionIsConsumed"
-      | "governanceChainId"
-      | "governanceContract"
-      | "isFork"
-      | "isInitialized"
-      | "isTransferCompleted"
-      | "isWrappedAsset"
-      | "onERC721Received"
-      | "parseRecoverChainId"
-      | "parseRegisterChain"
-      | "parseTransfer"
-      | "parseUpgrade"
-      | "registerChain"
-      | "splCache"
-      | "submitRecoverChainId"
-      | "tokenImplementation"
-      | "transferNFT"
-      | "upgrade"
-      | "wormhole"
-      | "wrappedAsset"
+      | 'bridgeContracts'
+      | 'chainId'
+      | 'completeTransfer'
+      | 'encodeTransfer'
+      | 'evmChainId'
+      | 'finality'
+      | 'governanceActionIsConsumed'
+      | 'governanceChainId'
+      | 'governanceContract'
+      | 'isFork'
+      | 'isInitialized'
+      | 'isTransferCompleted'
+      | 'isWrappedAsset'
+      | 'onERC721Received'
+      | 'parseRecoverChainId'
+      | 'parseRegisterChain'
+      | 'parseTransfer'
+      | 'parseUpgrade'
+      | 'registerChain'
+      | 'splCache'
+      | 'submitRecoverChainId'
+      | 'tokenImplementation'
+      | 'transferNFT'
+      | 'upgrade'
+      | 'wormhole'
+      | 'wrappedAsset',
   ): FunctionFragment;
 
   getEvent(
     nameOrSignatureOrTopic:
-      | "AdminChanged"
-      | "BeaconUpgraded"
-      | "ContractUpgraded"
-      | "Upgraded"
+      | 'AdminChanged'
+      | 'BeaconUpgraded'
+      | 'ContractUpgraded'
+      | 'Upgraded',
   ): EventFragment;
 
   encodeFunctionData(
-    functionFragment: "bridgeContracts",
-    values: [BigNumberish]
+    functionFragment: 'bridgeContracts',
+    values: [BigNumberish],
   ): string;
-  encodeFunctionData(functionFragment: "chainId", values?: undefined): string;
+  encodeFunctionData(functionFragment: 'chainId', values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "completeTransfer",
-    values: [BytesLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "encodeTransfer",
-    values: [NFTBridgeStructs.TransferStruct]
+    functionFragment: 'completeTransfer',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "evmChainId",
-    values?: undefined
-  ): string;
-  encodeFunctionData(functionFragment: "finality", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "governanceActionIsConsumed",
-    values: [BytesLike]
+    functionFragment: 'encodeTransfer',
+    values: [NFTBridgeStructs.TransferStruct],
   ): string;
   encodeFunctionData(
-    functionFragment: "governanceChainId",
-    values?: undefined
+    functionFragment: 'evmChainId',
+    values?: undefined,
+  ): string;
+  encodeFunctionData(functionFragment: 'finality', values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: 'governanceActionIsConsumed',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "governanceContract",
-    values?: undefined
-  ): string;
-  encodeFunctionData(functionFragment: "isFork", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "isInitialized",
-    values: [AddressLike]
+    functionFragment: 'governanceChainId',
+    values?: undefined,
   ): string;
   encodeFunctionData(
-    functionFragment: "isTransferCompleted",
-    values: [BytesLike]
+    functionFragment: 'governanceContract',
+    values?: undefined,
+  ): string;
+  encodeFunctionData(functionFragment: 'isFork', values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: 'isInitialized',
+    values: [AddressLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "isWrappedAsset",
-    values: [AddressLike]
+    functionFragment: 'isTransferCompleted',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "onERC721Received",
-    values: [AddressLike, AddressLike, BigNumberish, BytesLike]
+    functionFragment: 'isWrappedAsset',
+    values: [AddressLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "parseRecoverChainId",
-    values: [BytesLike]
+    functionFragment: 'onERC721Received',
+    values: [AddressLike, AddressLike, BigNumberish, BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "parseRegisterChain",
-    values: [BytesLike]
+    functionFragment: 'parseRecoverChainId',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "parseTransfer",
-    values: [BytesLike]
+    functionFragment: 'parseRegisterChain',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "parseUpgrade",
-    values: [BytesLike]
+    functionFragment: 'parseTransfer',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "registerChain",
-    values: [BytesLike]
+    functionFragment: 'parseUpgrade',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "splCache",
-    values: [BigNumberish]
+    functionFragment: 'registerChain',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "submitRecoverChainId",
-    values: [BytesLike]
+    functionFragment: 'splCache',
+    values: [BigNumberish],
   ): string;
   encodeFunctionData(
-    functionFragment: "tokenImplementation",
-    values?: undefined
+    functionFragment: 'submitRecoverChainId',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "transferNFT",
-    values: [AddressLike, BigNumberish, BigNumberish, BytesLike, BigNumberish]
+    functionFragment: 'tokenImplementation',
+    values?: undefined,
   ): string;
-  encodeFunctionData(functionFragment: "upgrade", values: [BytesLike]): string;
-  encodeFunctionData(functionFragment: "wormhole", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "wrappedAsset",
-    values: [BigNumberish, BytesLike]
+    functionFragment: 'transferNFT',
+    values: [AddressLike, BigNumberish, BigNumberish, BytesLike, BigNumberish],
+  ): string;
+  encodeFunctionData(functionFragment: 'upgrade', values: [BytesLike]): string;
+  encodeFunctionData(functionFragment: 'wormhole', values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: 'wrappedAsset',
+    values: [BigNumberish, BytesLike],
   ): string;
 
   decodeFunctionResult(
-    functionFragment: "bridgeContracts",
-    data: BytesLike
+    functionFragment: 'bridgeContracts',
+    data: BytesLike,
   ): Result;
-  decodeFunctionResult(functionFragment: "chainId", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'chainId', data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "completeTransfer",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "encodeTransfer",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "evmChainId", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "finality", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "governanceActionIsConsumed",
-    data: BytesLike
+    functionFragment: 'completeTransfer',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "governanceChainId",
-    data: BytesLike
+    functionFragment: 'encodeTransfer',
+    data: BytesLike,
+  ): Result;
+  decodeFunctionResult(functionFragment: 'evmChainId', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'finality', data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: 'governanceActionIsConsumed',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "governanceContract",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "isFork", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "isInitialized",
-    data: BytesLike
+    functionFragment: 'governanceChainId',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "isTransferCompleted",
-    data: BytesLike
+    functionFragment: 'governanceContract',
+    data: BytesLike,
+  ): Result;
+  decodeFunctionResult(functionFragment: 'isFork', data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: 'isInitialized',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "isWrappedAsset",
-    data: BytesLike
+    functionFragment: 'isTransferCompleted',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "onERC721Received",
-    data: BytesLike
+    functionFragment: 'isWrappedAsset',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "parseRecoverChainId",
-    data: BytesLike
+    functionFragment: 'onERC721Received',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "parseRegisterChain",
-    data: BytesLike
+    functionFragment: 'parseRecoverChainId',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "parseTransfer",
-    data: BytesLike
+    functionFragment: 'parseRegisterChain',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "parseUpgrade",
-    data: BytesLike
+    functionFragment: 'parseTransfer',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "registerChain",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "splCache", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "submitRecoverChainId",
-    data: BytesLike
+    functionFragment: 'parseUpgrade',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "tokenImplementation",
-    data: BytesLike
+    functionFragment: 'registerChain',
+    data: BytesLike,
+  ): Result;
+  decodeFunctionResult(functionFragment: 'splCache', data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: 'submitRecoverChainId',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "transferNFT",
-    data: BytesLike
+    functionFragment: 'tokenImplementation',
+    data: BytesLike,
   ): Result;
-  decodeFunctionResult(functionFragment: "upgrade", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "wormhole", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "wrappedAsset",
-    data: BytesLike
+    functionFragment: 'transferNFT',
+    data: BytesLike,
+  ): Result;
+  decodeFunctionResult(functionFragment: 'upgrade', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'wormhole', data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: 'wrappedAsset',
+    data: BytesLike,
   ): Result;
 }
 
@@ -393,140 +393,140 @@ export interface NFTBridge extends BaseContract {
   queryFilter<TCEvent extends TypedContractEvent>(
     event: TCEvent,
     fromBlockOrBlockhash?: string | number | undefined,
-    toBlock?: string | number | undefined
+    toBlock?: string | number | undefined,
   ): Promise<Array<TypedEventLog<TCEvent>>>;
   queryFilter<TCEvent extends TypedContractEvent>(
     filter: TypedDeferredTopicFilter<TCEvent>,
     fromBlockOrBlockhash?: string | number | undefined,
-    toBlock?: string | number | undefined
+    toBlock?: string | number | undefined,
   ): Promise<Array<TypedEventLog<TCEvent>>>;
 
   on<TCEvent extends TypedContractEvent>(
     event: TCEvent,
-    listener: TypedListener<TCEvent>
+    listener: TypedListener<TCEvent>,
   ): Promise<this>;
   on<TCEvent extends TypedContractEvent>(
     filter: TypedDeferredTopicFilter<TCEvent>,
-    listener: TypedListener<TCEvent>
+    listener: TypedListener<TCEvent>,
   ): Promise<this>;
 
   once<TCEvent extends TypedContractEvent>(
     event: TCEvent,
-    listener: TypedListener<TCEvent>
+    listener: TypedListener<TCEvent>,
   ): Promise<this>;
   once<TCEvent extends TypedContractEvent>(
     filter: TypedDeferredTopicFilter<TCEvent>,
-    listener: TypedListener<TCEvent>
+    listener: TypedListener<TCEvent>,
   ): Promise<this>;
 
   listeners<TCEvent extends TypedContractEvent>(
-    event: TCEvent
+    event: TCEvent,
   ): Promise<Array<TypedListener<TCEvent>>>;
   listeners(eventName?: string): Promise<Array<Listener>>;
   removeAllListeners<TCEvent extends TypedContractEvent>(
-    event?: TCEvent
+    event?: TCEvent,
   ): Promise<this>;
 
   bridgeContracts: TypedContractMethod<
     [chainId_: BigNumberish],
     [string],
-    "view"
+    'view'
   >;
 
-  chainId: TypedContractMethod<[], [bigint], "view">;
+  chainId: TypedContractMethod<[], [bigint], 'view'>;
 
   completeTransfer: TypedContractMethod<
     [encodedVm: BytesLike],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
   encodeTransfer: TypedContractMethod<
     [transfer: NFTBridgeStructs.TransferStruct],
     [string],
-    "view"
+    'view'
   >;
 
-  evmChainId: TypedContractMethod<[], [bigint], "view">;
+  evmChainId: TypedContractMethod<[], [bigint], 'view'>;
 
-  finality: TypedContractMethod<[], [bigint], "view">;
+  finality: TypedContractMethod<[], [bigint], 'view'>;
 
   governanceActionIsConsumed: TypedContractMethod<
     [hash: BytesLike],
     [boolean],
-    "view"
+    'view'
   >;
 
-  governanceChainId: TypedContractMethod<[], [bigint], "view">;
+  governanceChainId: TypedContractMethod<[], [bigint], 'view'>;
 
-  governanceContract: TypedContractMethod<[], [string], "view">;
+  governanceContract: TypedContractMethod<[], [string], 'view'>;
 
-  isFork: TypedContractMethod<[], [boolean], "view">;
+  isFork: TypedContractMethod<[], [boolean], 'view'>;
 
-  isInitialized: TypedContractMethod<[impl: AddressLike], [boolean], "view">;
+  isInitialized: TypedContractMethod<[impl: AddressLike], [boolean], 'view'>;
 
   isTransferCompleted: TypedContractMethod<
     [hash: BytesLike],
     [boolean],
-    "view"
+    'view'
   >;
 
-  isWrappedAsset: TypedContractMethod<[token: AddressLike], [boolean], "view">;
+  isWrappedAsset: TypedContractMethod<[token: AddressLike], [boolean], 'view'>;
 
   onERC721Received: TypedContractMethod<
     [
       operator: AddressLike,
       arg1: AddressLike,
       arg2: BigNumberish,
-      arg3: BytesLike
+      arg3: BytesLike,
     ],
     [string],
-    "view"
+    'view'
   >;
 
   parseRecoverChainId: TypedContractMethod<
     [encodedRecoverChainId: BytesLike],
     [NFTBridgeStructs.RecoverChainIdStructOutput],
-    "view"
+    'view'
   >;
 
   parseRegisterChain: TypedContractMethod<
     [encoded: BytesLike],
     [NFTBridgeStructs.RegisterChainStructOutput],
-    "view"
+    'view'
   >;
 
   parseTransfer: TypedContractMethod<
     [encoded: BytesLike],
     [NFTBridgeStructs.TransferStructOutput],
-    "view"
+    'view'
   >;
 
   parseUpgrade: TypedContractMethod<
     [encoded: BytesLike],
     [NFTBridgeStructs.UpgradeContractStructOutput],
-    "view"
+    'view'
   >;
 
   registerChain: TypedContractMethod<
     [encodedVM: BytesLike],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
   splCache: TypedContractMethod<
     [tokenId: BigNumberish],
     [NFTBridgeStorage.SPLCacheStructOutput],
-    "view"
+    'view'
   >;
 
   submitRecoverChainId: TypedContractMethod<
     [encodedVM: BytesLike],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
-  tokenImplementation: TypedContractMethod<[], [string], "view">;
+  tokenImplementation: TypedContractMethod<[], [string], 'view'>;
 
   transferNFT: TypedContractMethod<
     [
@@ -534,175 +534,175 @@ export interface NFTBridge extends BaseContract {
       tokenID: BigNumberish,
       recipientChain: BigNumberish,
       recipient: BytesLike,
-      nonce: BigNumberish
+      nonce: BigNumberish,
     ],
     [bigint],
-    "payable"
+    'payable'
   >;
 
-  upgrade: TypedContractMethod<[encodedVM: BytesLike], [void], "nonpayable">;
+  upgrade: TypedContractMethod<[encodedVM: BytesLike], [void], 'nonpayable'>;
 
-  wormhole: TypedContractMethod<[], [string], "view">;
+  wormhole: TypedContractMethod<[], [string], 'view'>;
 
   wrappedAsset: TypedContractMethod<
     [tokenChainId: BigNumberish, tokenAddress: BytesLike],
     [string],
-    "view"
+    'view'
   >;
 
   getFunction<T extends ContractMethod = ContractMethod>(
-    key: string | FunctionFragment
+    key: string | FunctionFragment,
   ): T;
 
   getFunction(
-    nameOrSignature: "bridgeContracts"
-  ): TypedContractMethod<[chainId_: BigNumberish], [string], "view">;
+    nameOrSignature: 'bridgeContracts',
+  ): TypedContractMethod<[chainId_: BigNumberish], [string], 'view'>;
   getFunction(
-    nameOrSignature: "chainId"
-  ): TypedContractMethod<[], [bigint], "view">;
+    nameOrSignature: 'chainId',
+  ): TypedContractMethod<[], [bigint], 'view'>;
   getFunction(
-    nameOrSignature: "completeTransfer"
-  ): TypedContractMethod<[encodedVm: BytesLike], [void], "nonpayable">;
+    nameOrSignature: 'completeTransfer',
+  ): TypedContractMethod<[encodedVm: BytesLike], [void], 'nonpayable'>;
   getFunction(
-    nameOrSignature: "encodeTransfer"
+    nameOrSignature: 'encodeTransfer',
   ): TypedContractMethod<
     [transfer: NFTBridgeStructs.TransferStruct],
     [string],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "evmChainId"
-  ): TypedContractMethod<[], [bigint], "view">;
+    nameOrSignature: 'evmChainId',
+  ): TypedContractMethod<[], [bigint], 'view'>;
   getFunction(
-    nameOrSignature: "finality"
-  ): TypedContractMethod<[], [bigint], "view">;
+    nameOrSignature: 'finality',
+  ): TypedContractMethod<[], [bigint], 'view'>;
   getFunction(
-    nameOrSignature: "governanceActionIsConsumed"
-  ): TypedContractMethod<[hash: BytesLike], [boolean], "view">;
+    nameOrSignature: 'governanceActionIsConsumed',
+  ): TypedContractMethod<[hash: BytesLike], [boolean], 'view'>;
   getFunction(
-    nameOrSignature: "governanceChainId"
-  ): TypedContractMethod<[], [bigint], "view">;
+    nameOrSignature: 'governanceChainId',
+  ): TypedContractMethod<[], [bigint], 'view'>;
   getFunction(
-    nameOrSignature: "governanceContract"
-  ): TypedContractMethod<[], [string], "view">;
+    nameOrSignature: 'governanceContract',
+  ): TypedContractMethod<[], [string], 'view'>;
   getFunction(
-    nameOrSignature: "isFork"
-  ): TypedContractMethod<[], [boolean], "view">;
+    nameOrSignature: 'isFork',
+  ): TypedContractMethod<[], [boolean], 'view'>;
   getFunction(
-    nameOrSignature: "isInitialized"
-  ): TypedContractMethod<[impl: AddressLike], [boolean], "view">;
+    nameOrSignature: 'isInitialized',
+  ): TypedContractMethod<[impl: AddressLike], [boolean], 'view'>;
   getFunction(
-    nameOrSignature: "isTransferCompleted"
-  ): TypedContractMethod<[hash: BytesLike], [boolean], "view">;
+    nameOrSignature: 'isTransferCompleted',
+  ): TypedContractMethod<[hash: BytesLike], [boolean], 'view'>;
   getFunction(
-    nameOrSignature: "isWrappedAsset"
-  ): TypedContractMethod<[token: AddressLike], [boolean], "view">;
+    nameOrSignature: 'isWrappedAsset',
+  ): TypedContractMethod<[token: AddressLike], [boolean], 'view'>;
   getFunction(
-    nameOrSignature: "onERC721Received"
+    nameOrSignature: 'onERC721Received',
   ): TypedContractMethod<
     [
       operator: AddressLike,
       arg1: AddressLike,
       arg2: BigNumberish,
-      arg3: BytesLike
+      arg3: BytesLike,
     ],
     [string],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "parseRecoverChainId"
+    nameOrSignature: 'parseRecoverChainId',
   ): TypedContractMethod<
     [encodedRecoverChainId: BytesLike],
     [NFTBridgeStructs.RecoverChainIdStructOutput],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "parseRegisterChain"
+    nameOrSignature: 'parseRegisterChain',
   ): TypedContractMethod<
     [encoded: BytesLike],
     [NFTBridgeStructs.RegisterChainStructOutput],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "parseTransfer"
+    nameOrSignature: 'parseTransfer',
   ): TypedContractMethod<
     [encoded: BytesLike],
     [NFTBridgeStructs.TransferStructOutput],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "parseUpgrade"
+    nameOrSignature: 'parseUpgrade',
   ): TypedContractMethod<
     [encoded: BytesLike],
     [NFTBridgeStructs.UpgradeContractStructOutput],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "registerChain"
-  ): TypedContractMethod<[encodedVM: BytesLike], [void], "nonpayable">;
+    nameOrSignature: 'registerChain',
+  ): TypedContractMethod<[encodedVM: BytesLike], [void], 'nonpayable'>;
   getFunction(
-    nameOrSignature: "splCache"
+    nameOrSignature: 'splCache',
   ): TypedContractMethod<
     [tokenId: BigNumberish],
     [NFTBridgeStorage.SPLCacheStructOutput],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "submitRecoverChainId"
-  ): TypedContractMethod<[encodedVM: BytesLike], [void], "nonpayable">;
+    nameOrSignature: 'submitRecoverChainId',
+  ): TypedContractMethod<[encodedVM: BytesLike], [void], 'nonpayable'>;
   getFunction(
-    nameOrSignature: "tokenImplementation"
-  ): TypedContractMethod<[], [string], "view">;
+    nameOrSignature: 'tokenImplementation',
+  ): TypedContractMethod<[], [string], 'view'>;
   getFunction(
-    nameOrSignature: "transferNFT"
+    nameOrSignature: 'transferNFT',
   ): TypedContractMethod<
     [
       token: AddressLike,
       tokenID: BigNumberish,
       recipientChain: BigNumberish,
       recipient: BytesLike,
-      nonce: BigNumberish
+      nonce: BigNumberish,
     ],
     [bigint],
-    "payable"
+    'payable'
   >;
   getFunction(
-    nameOrSignature: "upgrade"
-  ): TypedContractMethod<[encodedVM: BytesLike], [void], "nonpayable">;
+    nameOrSignature: 'upgrade',
+  ): TypedContractMethod<[encodedVM: BytesLike], [void], 'nonpayable'>;
   getFunction(
-    nameOrSignature: "wormhole"
-  ): TypedContractMethod<[], [string], "view">;
+    nameOrSignature: 'wormhole',
+  ): TypedContractMethod<[], [string], 'view'>;
   getFunction(
-    nameOrSignature: "wrappedAsset"
+    nameOrSignature: 'wrappedAsset',
   ): TypedContractMethod<
     [tokenChainId: BigNumberish, tokenAddress: BytesLike],
     [string],
-    "view"
+    'view'
   >;
 
   getEvent(
-    key: "AdminChanged"
+    key: 'AdminChanged',
   ): TypedContractEvent<
     AdminChangedEvent.InputTuple,
     AdminChangedEvent.OutputTuple,
     AdminChangedEvent.OutputObject
   >;
   getEvent(
-    key: "BeaconUpgraded"
+    key: 'BeaconUpgraded',
   ): TypedContractEvent<
     BeaconUpgradedEvent.InputTuple,
     BeaconUpgradedEvent.OutputTuple,
     BeaconUpgradedEvent.OutputObject
   >;
   getEvent(
-    key: "ContractUpgraded"
+    key: 'ContractUpgraded',
   ): TypedContractEvent<
     ContractUpgradedEvent.InputTuple,
     ContractUpgradedEvent.OutputTuple,
     ContractUpgradedEvent.OutputObject
   >;
   getEvent(
-    key: "Upgraded"
+    key: 'Upgraded',
   ): TypedContractEvent<
     UpgradedEvent.InputTuple,
     UpgradedEvent.OutputTuple,
@@ -710,7 +710,7 @@ export interface NFTBridge extends BaseContract {
   >;
 
   filters: {
-    "AdminChanged(address,address)": TypedContractEvent<
+    'AdminChanged(address,address)': TypedContractEvent<
       AdminChangedEvent.InputTuple,
       AdminChangedEvent.OutputTuple,
       AdminChangedEvent.OutputObject
@@ -721,7 +721,7 @@ export interface NFTBridge extends BaseContract {
       AdminChangedEvent.OutputObject
     >;
 
-    "BeaconUpgraded(address)": TypedContractEvent<
+    'BeaconUpgraded(address)': TypedContractEvent<
       BeaconUpgradedEvent.InputTuple,
       BeaconUpgradedEvent.OutputTuple,
       BeaconUpgradedEvent.OutputObject
@@ -732,7 +732,7 @@ export interface NFTBridge extends BaseContract {
       BeaconUpgradedEvent.OutputObject
     >;
 
-    "ContractUpgraded(address,address)": TypedContractEvent<
+    'ContractUpgraded(address,address)': TypedContractEvent<
       ContractUpgradedEvent.InputTuple,
       ContractUpgradedEvent.OutputTuple,
       ContractUpgradedEvent.OutputObject
@@ -743,7 +743,7 @@ export interface NFTBridge extends BaseContract {
       ContractUpgradedEvent.OutputObject
     >;
 
-    "Upgraded(address)": TypedContractEvent<
+    'Upgraded(address)': TypedContractEvent<
       UpgradedEvent.InputTuple,
       UpgradedEvent.OutputTuple,
       UpgradedEvent.OutputObject

@@ -5,7 +5,7 @@ import {
 } from '@wormhole-foundation/sdk-base';
 import {
   UnsignedTransaction,
-  ChainAddress,
+  ChainAddressPair,
   UniversalAddress,
   TokenBridge,
 } from '@wormhole-foundation/sdk-definitions';
@@ -31,35 +31,34 @@ export interface RpcConnection {
 
 // TODO: move to definition layer? -- Can't without more changes, TokenTransferTransaction declared here
 // Force passing RPC connection so we don't create a new one with every fn call
-export interface Platform {
-  readonly platform: PlatformName;
-  readonly network?: Network;
-  getForeignAsset(
-    chain: ChainName,
+// TODO: move to definition layer
+export abstract class Platform {
+  public static platform: PlatformName;
+  // TODO: Asset vs token?
+  abstract getForeignAsset(
     rpc: RpcConnection,
+    chain: ChainName,
     tokenId: TokenId,
   ): Promise<UniversalAddress | null>;
-  getTokenDecimals(
+  abstract getTokenDecimals(
     rpc: RpcConnection,
     tokenAddr: UniversalAddress,
   ): Promise<bigint>;
-  getNativeBalance(rpc: RpcConnection, walletAddr: string): Promise<bigint>;
-  getTokenBalance(
-    chain: ChainName,
+  abstract getNativeBalance(rpc: RpcConnection, walletAddr: string, chain: ChainName): Promise<bigint>;
+  abstract getTokenBalance(
     rpc: RpcConnection,
     walletAddr: string,
     tokenId: TokenId,
   ): Promise<bigint | null>;
-  //
-  getChain(chain: ChainName): ChainContext;
-  getRpc(chain: ChainName): RpcConnection;
-  getTokenBridge(rpc: RpcConnection): Promise<TokenBridge<PlatformName>>;
-  parseTransaction(
-    chain: ChainName,
+  abstract getRpc(chain: ChainName): RpcConnection;
+  abstract getTokenBridge(rpc: RpcConnection): Promise<TokenBridge<PlatformName>>;
+  abstract getChain(chain: ChainName): ChainContext;
+  abstract parseAddress(address: string): UniversalAddress;
+  abstract parseTransaction(
     rpc: RpcConnection,
+    chain: ChainName,
     txid: TxHash,
-  ): Promise<TokenTransferTransaction[]>;
-  parseAddress(address: string): UniversalAddress;
+  ): Promise<TokenTransferTransaction[]>
 }
 
 export type PlatformCtr = {
@@ -106,16 +105,16 @@ export type WormholeConfig = {
   chains: ChainsConfig;
 };
 
-export type TokenId = ChainAddress;
-export type MessageIdentifier = ChainAddress & { sequence: SequenceId };
+export type TokenId = ChainAddressPair;
+export type MessageIdentifier = ChainAddressPair & { sequence: SequenceId };
 export type TransactionIdentifier = { chain: ChainName; txid: TxHash };
 
 export type TokenTransferDetails = {
   token: TokenId | 'native';
   amount: bigint;
   payload?: Uint8Array;
-  from: ChainAddress;
-  to: ChainAddress;
+  from: ChainAddressPair;
+  to: ChainAddressPair;
 };
 
 export type WormholeMessage = {

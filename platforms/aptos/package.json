@@ -39,7 +39,8 @@
     "build": "npm run clean && npm run build:cjs && npm run build:esm",
     "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo",
     "lint": "npm run prettier && eslint --fix",
-    "prettier": "prettier --write ./src"
+    "prettier": "prettier --write ./src",
+    "test": "jest --config ../../jest.config.ts __tests__/*.ts"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.54.1",

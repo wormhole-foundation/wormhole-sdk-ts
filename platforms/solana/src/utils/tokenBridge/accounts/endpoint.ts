@@ -13,7 +13,7 @@ export function deriveEndpointKey(
   emitterChain: number | ChainId,
   emitterAddress: Buffer | Uint8Array | string,
 ): PublicKey {
-  if (emitterChain == chainToChainId("Solana")) {
+  if (emitterChain == chainToChainId('Solana')) {
     throw new Error(
       'emitterChain == CHAIN_ID_SOLANA cannot exist as foreign token bridge emitter',
     );
