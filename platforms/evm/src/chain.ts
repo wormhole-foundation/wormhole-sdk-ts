@@ -7,6 +7,7 @@ import {
   TokenId,
   TxHash,
   SignedTxn,
+  TokenTransferTransaction,
 } from '@wormhole-foundation/connect-sdk';
 import { EvmTokenBridge } from './tokenBridge';
 
@@ -40,7 +41,7 @@ export class EvmChain implements ChainContext {
     return this.tokenBridge;
   }
 
-  async getTransaction(txid: string): Promise<any> {
+  async getTransaction(txid: string): Promise<TokenTransferTransaction[]> {
     return await this.platform.parseMessageFromTx(
       this.chain,
       txid,

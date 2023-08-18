@@ -1,8 +1,10 @@
 import { Wormhole, TokenTransfer } from "@wormhole-foundation/connect-sdk";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm/src"; // TODO: why
 import { getEvmSigner } from "./helpers";
+import { UniversalAddress } from "@wormhole-foundation/sdk-definitions";
 
 (async function () {
+  const fresh = true;
   // init Wormhole object, passing config for which network
   // to use (testnet/mainnet/...) and what Platforms to support
   const wh = new Wormhole("Testnet", [EvmPlatform]);
@@ -16,12 +18,7 @@ import { getEvmSigner } from "./helpers";
 
   // Create a TokenTransfer object that we can step through the process.
   // It holds a `state` field that is used to inform where in the process we are
-  const tt: TokenTransfer = wh.tokenTransfer(
-    "native",
-    100000n,
-    sendSigner,
-    rcvSigner
-  );
+  const tt = wh.tokenTransfer("native", 1000000n, sendSigner, rcvSigner);
   console.log(`Created token transfer object`);
   console.log(tt);
 
@@ -34,6 +31,6 @@ import { getEvmSigner } from "./helpers";
   console.log(`VAA is ready with seq: ${seq}`);
 
   // 3) redeem the VAA on the dest chain, passing a signer to sign any transactions
-  await tt.finish(rcvSigner);
+  await tt.finish();
   console.log(`Transfer is complete!`);
 })();

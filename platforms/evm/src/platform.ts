@@ -114,7 +114,7 @@ export class EvmPlatform implements Platform {
     chain: ChainName,
     txid: TxHash,
     rpc: ethers.Provider,
-  ): Promise<(TokenTransferTransaction | {})[]> {
+  ): Promise<TokenTransferTransaction[]> {
     const receipt = await rpc.getTransactionReceipt(txid);
     if (receipt === null)
       throw new Error(`No transaction found with txid: ${txid}`);
@@ -138,8 +138,8 @@ export class EvmPlatform implements Platform {
       const { topics, data } = bridgeLog;
       const parsed = impl.parseLog({ topics: topics.slice(), data });
 
-      // TODO: should we bail here?
-      if (parsed === null) return {};
+      // TODO: should we be niicer here?
+      if (parsed === null) throw new Error(`Failed to parse logs: ${data}`);
 
       // parse token bridge message, 0x01 == transfer, attest == 0x02,  w/ payload 0x03
       let parsedTransfer:

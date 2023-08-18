@@ -81,12 +81,12 @@ export class TokenTransfer implements WormholeTransfer {
     emitter: UniversalAddress,
     sequence: bigint,
   ): Promise<TokenTransfer> {
-    const vaaBytes = await wh.getVAABytes(chain, emitter, sequence);
-
-    if (!vaaBytes)
-      throw new Error('No vaa for the provided chain/emitter/sequence');
-
-    const vaa = deserialize('Transfer', vaaBytes);
+    const vaa = await TokenTransfer.waitForTransferVaa(
+      wh,
+      chain,
+      emitter,
+      sequence,
+    );
 
     // TODO: waiting for changes to make vaa parse
     const details: TokenTransferDetails = {
@@ -99,8 +99,8 @@ export class TokenTransfer implements WormholeTransfer {
     const tt = new TokenTransfer(
       wh,
       details,
-      // @ts-ignore
-      undefined,
+      // TODO: this is a lie, but its ok because we no longer have `from` info
+      emitter,
       vaa.payload.to.address,
     );
 
@@ -111,6 +111,8 @@ export class TokenTransfer implements WormholeTransfer {
         vaa: vaa,
       },
     ];
+
+    tt.state = TransferState.Ready;
 
     return tt;
   }
@@ -146,17 +148,22 @@ export class TokenTransfer implements WormholeTransfer {
 
     const emitter = details.fromChain.platform.parseAddress(tx.emitterAddress);
 
-    const vaaBytes = await wh.getVAABytes(chain, emitter, tx.sequence);
-    if (vaaBytes) {
-      tt.vaas = [
-        {
-          emitter: emitter,
-          sequence: tx.sequence,
-          vaa: deserialize('Transfer', vaaBytes),
-        },
-      ];
-      tt.state = TransferState.Ready;
-    }
+    const vaa = await TokenTransfer.waitForTransferVaa(
+      wh,
+      chain,
+      emitter,
+      tx.sequence,
+    );
+
+    tt.vaas = [
+      {
+        emitter: emitter,
+        sequence: tx.sequence,
+        vaa: vaa,
+      },
+    ];
+
+    tt.state = TransferState.Ready;
     return tt;
   }
 
@@ -208,11 +215,20 @@ export class TokenTransfer implements WormholeTransfer {
     // TODO: concurrent
     for (const txHash of txHashes) {
       const txRes = await this.transfer.fromChain.getTransaction(txHash);
-      console.log(txRes);
+
+      // TODO:
+      if (txRes.length != 1) throw new Error('Idk what to do with != 1');
+      const [tx] = txRes;
+
+      const emitter = this.transfer.fromChain.platform.parseAddress(
+        tx.emitterAddress,
+      );
+
       if (!this.vaas) this.vaas = [];
+
       this.vaas.push({
-        emitter: txRes.emitterAddress,
-        sequence: txRes.sequence,
+        emitter: emitter,
+        sequence: txRes[0].sequence,
       });
     }
 
@@ -237,7 +253,8 @@ export class TokenTransfer implements WormholeTransfer {
         // already got it
         if (this.vaas[idx].vaa) continue;
 
-        this.vaas[idx].vaa = await this.getTransferVaa(
+        this.vaas[idx].vaa = await TokenTransfer.waitForTransferVaa(
+          this.wh,
           this.transfer.fromChain.chain,
           this.vaas[idx].emitter,
           this.vaas[idx].sequence,
@@ -270,9 +287,10 @@ export class TokenTransfer implements WormholeTransfer {
 
     const unsigned = [];
     for (const cachedVaa of this.vaas) {
-      const vaa = !cachedVaa.vaa
+      const vaa = cachedVaa.vaa
         ? cachedVaa.vaa
-        : await this.getTransferVaa(
+        : await TokenTransfer.waitForTransferVaa(
+            this.wh,
             this.transfer.fromChain.chain,
             cachedVaa.emitter,
             cachedVaa.sequence,
@@ -281,7 +299,7 @@ export class TokenTransfer implements WormholeTransfer {
       if (!vaa) throw new Error('No Vaa found');
 
       const tb = await this.transfer.toChain.getTokenBridge();
-      const xfer = tb.redeem(this.from, vaa);
+      const xfer = tb.redeem(this.to, vaa);
 
       // TODO: check 'stackable'?
       for await (const tx of xfer) {
@@ -295,12 +313,26 @@ export class TokenTransfer implements WormholeTransfer {
     return await this.transfer.toChain.sendWait(await s.sign(unsigned));
   }
 
-  private async getTransferVaa(
+  static async waitForTransferVaa(
+    wh: Wormhole,
     chain: ChainName,
     emitter: UniversalAddress,
     sequence: bigint,
+    retries: number = 5,
   ): Promise<VAA<'Transfer'>> {
-    const vaaBytes = await this.wh.getVAABytes(chain, emitter, sequence);
+    let vaaBytes: Uint8Array | undefined;
+    for (let i = retries; i > 0 && !vaaBytes; i--) {
+      console.log(`Waiting for vaa (${i} retries left)`);
+
+      // TODO: config wait seconds?
+      if (i != retries) await new Promise((f) => setTimeout(f, 2000));
+
+      try {
+        vaaBytes = await wh.getVAABytes(chain, emitter, sequence);
+      } catch (e) {
+        console.error(`Caught an error waiting for VAA: ${e}`);
+      }
+    }
 
     if (!vaaBytes)
       throw new Error('No vaa for the provided chain/emitter/sequence');

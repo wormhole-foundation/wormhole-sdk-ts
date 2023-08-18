@@ -68,7 +68,7 @@ export interface ChainContext {
   getRPC(): RpcConnection;
   sendWait(stxns: SignedTxn[]): Promise<TxHash[]>;
   getTokenBridge(): Promise<TokenBridge<'Evm'>>;
-  getTransaction(txid: string): Promise<any>;
+  getTransaction(txid: string): Promise<TokenTransferTransaction[]>;
 
   getForeignAsset: OmitChain<Platform['getForeignAsset']>;
   getTokenDecimals: OmitChain<Platform['getTokenDecimals']>;
