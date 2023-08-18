@@ -13,7 +13,7 @@ export enum TransferState {
 // for things like TokenTransfers, NFTTransfers, CCTP, etc...
 export interface WormholeTransfer {
   // the current state of this transfer
-  state: TransferState;
+  transferState(): TransferState;
 
   // start the WormholeTransfer by submitting transactions to the source chain
   // returns a transaction hash

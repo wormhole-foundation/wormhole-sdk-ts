@@ -19,6 +19,7 @@
   "scripts": {
     "lint": "npm run lint --workspaces --if-present",
     "build": "npm run build --workspaces --if-present",
+    "rebuild": "npm run rebuild --workspaces --if-present",
     "compile": "npm run compile --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "coverage": "npm run coverage --workspaces --if-present",

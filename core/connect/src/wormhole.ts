@@ -56,25 +56,22 @@ export class Wormhole {
     return this.conf.network;
   }
 
-  tokenTransfer(
+  async tokenTransfer(
     token: TokenId | 'native',
     amount: bigint,
     from: Signer,
     to: Signer,
     payload?: Uint8Array,
-  ): TokenTransfer {
-    return new TokenTransfer(
-      this,
-      {
-        token: token,
-        amount: amount,
-        payload: payload,
-        fromChain: this.getChain(from.chain()),
-        toChain: this.getChain(to.chain()),
-      },
+  ): Promise<TokenTransfer> {
+    return await TokenTransfer.from(this, {
+      token: token,
+      amount: amount,
+      payload: payload,
+      fromChain: this.getChain(from.chain()),
+      toChain: this.getChain(to.chain()),
       from,
       to,
-    );
+    });
   }
 
   /**

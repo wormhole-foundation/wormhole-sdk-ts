@@ -88,8 +88,44 @@ export type WormholeConfig = {
 };
 
 export type TokenId = ChainAddressPair;
+
 export type MessageIdentifier = ChainAddressPair & { sequence: SequenceId };
-export type WormholeWrappedInfo = ChainAddressPair & { isWrapped: boolean };
+export function isMessageIdentifier(
+  thing: MessageIdentifier | any,
+): thing is MessageIdentifier {
+  return (<MessageIdentifier>thing).sequence !== undefined;
+}
+
+export type TransactionIdentifier = { chain: ChainName; txid: TxHash };
+export function isTransactionIdentifier(
+  thing: TransactionIdentifier | any,
+): thing is TransactionIdentifier {
+  return (
+    (<TransactionIdentifier>thing).chain !== undefined &&
+    (<TransactionIdentifier>thing).txid !== undefined
+  );
+}
+
+export type TokenTransferDetails = {
+  token: TokenId | 'native';
+  amount: bigint;
+  payload?: Uint8Array;
+  fromChain: ChainContext;
+  toChain: ChainContext;
+  from: Signer | UniversalAddress;
+  to: Signer | UniversalAddress;
+};
+
+export function isTokenTransferDetails(
+  thing: TokenTransferDetails | any,
+): thing is TokenTransferDetails {
+  return (
+    (<TokenTransferDetails>thing).token !== undefined &&
+    (<TokenTransferDetails>thing).amount !== undefined &&
+    (<TokenTransferDetails>thing).fromChain !== undefined &&
+    (<TokenTransferDetails>thing).toChain !== undefined
+  );
+}
 
 // Details for a source chain Token Transfer transaction
 export type TokenTransferTransaction = {
