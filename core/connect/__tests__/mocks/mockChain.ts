@@ -1,34 +1,41 @@
-import { ChainName, Network } from '@wormhole-foundation/sdk-base';
 import {
+  Platform,
+  RpcConnection,
+  ChainContext,
+  SignedTxn,
+  TxHash,
+  TokenTransferTransaction,
+  TokenId,
+} from '../../src/types';
+import {
+  ChainAddressPair,
+  NativeAddress,
   TokenBridge,
   UniversalAddress,
+  UniversalOrNative,
+  UnsignedTransaction,
+  VAA,
 } from '@wormhole-foundation/sdk-definitions';
-import { ethers } from 'ethers';
-import { EvmPlatform } from './platform';
-import {
-  ChainContext,
-  TokenId,
-  TxHash,
-  SignedTxn,
-  TokenTransferTransaction,
-} from '@wormhole-foundation/connect-sdk';
+import { ChainName, Network } from '@wormhole-foundation/sdk-base';
+import { MockPlatform, MockProvider } from './mockPlatform';
+import { MockTokenBridge } from './mockTokenBridge';
 
-export class EvmChain implements ChainContext {
+export class MockChain implements ChainContext {
   readonly chain: ChainName;
   readonly network: Network;
-  readonly platform: EvmPlatform;
+  readonly platform: Platform;
 
   // Cached objects
-  private provider?: ethers.Provider;
-  private tokenBridge?: TokenBridge<'Evm'>;
+  private provider?: MockProvider;
+  private tokenBridge?: MockTokenBridge;
 
-  constructor(platform: EvmPlatform, chain: ChainName) {
+  constructor(platform: Platform, chain: ChainName) {
     this.chain = chain;
-    this.network = platform.network;
+    this.network = platform.network!;
     this.platform = platform;
   }
 
-  getRPC(): ethers.Provider {
+  getRPC(): MockProvider | undefined {
     this.provider = this.provider
       ? this.provider
       : this.platform.getProvider(this.chain);
@@ -39,7 +46,7 @@ export class EvmChain implements ChainContext {
   async getTokenBridge(): Promise<TokenBridge<'Evm'>> {
     this.tokenBridge = this.tokenBridge
       ? this.tokenBridge
-      : await this.platform.getTokenBridge(this.getRPC());
+      : await this.platform.getTokenBridge(this.chain, this.getRPC());
     return this.tokenBridge;
   }
 
@@ -59,7 +66,7 @@ export class EvmChain implements ChainContext {
     for (const stxn of stxns) {
       console.log(`Sending: ${stxn}`);
 
-      const txRes = await rpc.broadcastTransaction(stxn);
+      const txRes = await rpc!.broadcastTransaction(stxn);
       const txReceipt = await txRes.wait();
       console.log(txReceipt);
       // TODO: throw error?

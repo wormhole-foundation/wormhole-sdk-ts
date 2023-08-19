@@ -8,7 +8,6 @@ import {
   ChainAddressPair,
   UniversalAddress,
   TokenBridge,
-  Address,
 } from '@wormhole-foundation/sdk-definitions';
 
 import { ChainConfig } from './constants';
@@ -30,22 +29,33 @@ export interface Signer {
 // TODO: move to definition layer
 export interface Platform {
   readonly platform: PlatformName;
+  readonly network?: Network;
   // TODO: Asset vs token?
   getForeignAsset(
-    tokenId: TokenId,
     chain: ChainName,
+    tokenId: TokenId,
   ): Promise<UniversalAddress | null>;
   getTokenDecimals(
-    tokenAddr: UniversalAddress,
     chain: ChainName,
+    tokenAddr: UniversalAddress,
   ): Promise<bigint>;
-  getNativeBalance(walletAddr: string, chain: ChainName): Promise<bigint>;
+  getNativeBalance(chain: ChainName, walletAddr: string): Promise<bigint>;
   getTokenBalance(
+    chain: ChainName,
     walletAddr: string,
     tokenId: TokenId,
-    chain: ChainName,
   ): Promise<bigint | null>;
+  //
   getChain(chain: ChainName): ChainContext;
+  getProvider(chain: ChainName): RpcConnection;
+  // Pass in RPC, the ChainContext should hold any cached rpc
+  // and be passed in
+  getTokenBridge(rpc: RpcConnection): Promise<TokenBridge<PlatformName>>;
+  parseTransaction(
+    chain: ChainName,
+    txid: TxHash,
+    rpc: RpcConnection,
+  ): Promise<TokenTransferTransaction[]>;
   parseAddress(address: string): UniversalAddress;
 }
 
@@ -56,9 +66,8 @@ export type PlatformCtr = {
 
 export type RpcConnection = any;
 
-// TODO: idk if this is actually doing what i want
-type OmitChain<Fn> = Fn extends (...args: infer P) => infer R
-  ? (...args: Exclude<P, ChainName>) => R
+type OmitChain<Fn> = Fn extends (chain: ChainName, ...args: infer P) => infer R
+  ? (...args: P) => R
   : never;
 
 export interface ChainContext {
@@ -67,7 +76,7 @@ export interface ChainContext {
   readonly platform: Platform;
   getRPC(): RpcConnection;
   sendWait(stxns: SignedTxn[]): Promise<TxHash[]>;
-  getTokenBridge(): Promise<TokenBridge<'Evm'>>;
+  getTokenBridge(): Promise<TokenBridge<PlatformName>>;
   getTransaction(txid: string): Promise<TokenTransferTransaction[]>;
 
   getForeignAsset: OmitChain<Platform['getForeignAsset']>;
