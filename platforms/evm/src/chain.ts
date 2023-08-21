@@ -34,7 +34,7 @@ export class EvmChain implements ChainContext {
   getRPC(): ethers.Provider {
     this.provider = this.provider
       ? this.provider
-      : this.platform.getProvider(this.chain);
+      : this.platform.getRpc(this.chain);
 
     return this.provider;
   }
@@ -46,11 +46,11 @@ export class EvmChain implements ChainContext {
     return this.tokenBridge;
   }
 
-  async getTransaction(txid: string): Promise<TokenTransferTransaction[]> {
+  async parseTransaction(txid: string): Promise<TokenTransferTransaction[]> {
     return await this.platform.parseTransaction(
       this.chain,
-      txid,
       this.getRPC(),
+      txid,
     );
   }
 
@@ -74,19 +74,24 @@ export class EvmChain implements ChainContext {
   }
 
   async getForeignAsset(tokenId: TokenId): Promise<UniversalAddress | null> {
-    return this.platform.getForeignAsset(this.chain, tokenId);
+    return this.platform.getForeignAsset(this.chain, this.getRPC(), tokenId);
   }
   async getTokenDecimals(tokenAddr: UniversalAddress): Promise<bigint> {
-    return this.platform.getTokenDecimals(this.chain, tokenAddr);
+    return this.platform.getTokenDecimals(this.getRPC(), tokenAddr);
   }
   async getNativeBalance(walletAddr: string): Promise<bigint> {
-    return this.platform.getNativeBalance(this.chain, walletAddr);
+    return this.platform.getNativeBalance(this.getRPC(), walletAddr);
   }
   async getTokenBalance(
     walletAddr: string,
     tokenId: TokenId,
   ): Promise<bigint | null> {
-    return this.platform.getTokenBalance(this.chain, walletAddr, tokenId);
+    return this.platform.getTokenBalance(
+      this.chain,
+      this.getRPC(),
+      walletAddr,
+      tokenId,
+    );
   }
 
   async getFinalizedHeight(): Promise<bigint> {

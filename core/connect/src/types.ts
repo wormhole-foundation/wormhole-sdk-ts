@@ -25,6 +25,12 @@ export interface Signer {
   sign(tx: UnsignedTransaction[]): Promise<SignedTxn[]>;
 }
 
+// TODO: definition layer? more flexible?
+export interface RpcConnection {
+  broadcastTransaction(stxns: string): Promise<any>;
+  getBalance(address: string): Promise<bigint>;
+}
+
 // TODO: move to definition layer
 export interface Platform {
   readonly platform: PlatformName;
@@ -32,28 +38,30 @@ export interface Platform {
   // TODO: Asset vs token?
   getForeignAsset(
     chain: ChainName,
+    rpc: RpcConnection,
     tokenId: TokenId,
   ): Promise<UniversalAddress | null>;
   getTokenDecimals(
-    chain: ChainName,
+    rpc: RpcConnection,
     tokenAddr: UniversalAddress,
   ): Promise<bigint>;
-  getNativeBalance(chain: ChainName, walletAddr: string): Promise<bigint>;
+  getNativeBalance(rpc: RpcConnection, walletAddr: string): Promise<bigint>;
   getTokenBalance(
     chain: ChainName,
+    rpc: RpcConnection,
     walletAddr: string,
     tokenId: TokenId,
   ): Promise<bigint | null>;
   //
   getChain(chain: ChainName): ChainContext;
-  getProvider(chain: ChainName): RpcConnection;
+  getRpc(chain: ChainName): RpcConnection;
   // Pass in RPC, the ChainContext should hold any cached rpc
   // and be passed in
   getTokenBridge(rpc: RpcConnection): Promise<TokenBridge<PlatformName>>;
   parseTransaction(
     chain: ChainName,
-    txid: TxHash,
     rpc: RpcConnection,
+    txid: TxHash,
   ): Promise<TokenTransferTransaction[]>;
   parseAddress(address: string): UniversalAddress;
 }
@@ -63,11 +71,17 @@ export type PlatformCtr = {
   new (network: Network, conf: ChainsConfig): Platform;
 };
 
-export type RpcConnection = any;
+// This requires the arguments in the function definition come in the same order
+// [chain], [rpc], ...
 
 type OmitChain<Fn> = Fn extends (chain: ChainName, ...args: infer P) => infer R
   ? (...args: P) => R
-  : never;
+  : Fn;
+type OmitRpc<Fn> = Fn extends (rpc: RpcConnection, ...args: infer P) => infer R
+  ? (...args: P) => R
+  : Fn;
+
+type OmitChainRpc<Fn> = OmitRpc<OmitChain<Fn>>;
 
 export interface ChainContext {
   readonly chain: ChainName;
@@ -78,14 +92,11 @@ export interface ChainContext {
   getTokenBridge(): Promise<TokenBridge<PlatformName>>;
 
   // TODO: can we add these automatically?
-  getForeignAsset: OmitChain<Platform['getForeignAsset']>;
-  getTokenDecimals: OmitChain<Platform['getTokenDecimals']>;
-  getNativeBalance: OmitChain<Platform['getNativeBalance']>;
-  getTokenBalance: OmitChain<Platform['getTokenBalance']>;
-
-  // query rpc
-  // TODO: rename to getMessageFromTransaction?  or something?
-  getTransaction(txid: string): Promise<TokenTransferTransaction[]>;
+  getForeignAsset: OmitChainRpc<Platform['getForeignAsset']>;
+  getTokenDecimals: OmitChainRpc<Platform['getTokenDecimals']>;
+  getNativeBalance: OmitChainRpc<Platform['getNativeBalance']>;
+  getTokenBalance: OmitChainRpc<Platform['getTokenBalance']>;
+  parseTransaction: OmitChainRpc<Platform['parseTransaction']>;
 }
 
 export type ChainCtr = new () => ChainContext;

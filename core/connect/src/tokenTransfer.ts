@@ -139,7 +139,7 @@ export class TokenTransfer implements WormholeTransfer {
 
     const c = wh.getChain(chain);
 
-    const parsedTxDeets: TokenTransferTransaction[] = await c.getTransaction(
+    const parsedTxDeets: TokenTransferTransaction[] = await c.parseTransaction(
       txid,
     );
 
@@ -206,7 +206,7 @@ export class TokenTransfer implements WormholeTransfer {
 
     // TODO: concurrent
     for (const txHash of txHashes) {
-      const txRes = await fromChain.getTransaction(txHash);
+      const txRes = await fromChain.parseTransaction(txHash);
 
       // TODO:
       if (txRes.length != 1) throw new Error('Idk what to do with != 1');

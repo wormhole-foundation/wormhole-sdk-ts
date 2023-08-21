@@ -26,7 +26,7 @@ describe('Initialize Objects', () => {
   });
 
   test('Recover Transfer Details', async () => {
-    const txs = await ethCtx.getTransaction(
+    const txs = await ethCtx.parseTransaction(
       '0xb7677fabbe96e2caf10fdc14a3c971e60ff49458e83528c2594d87a7238af838',
     );
     expect(txs.length).toBe(1);
