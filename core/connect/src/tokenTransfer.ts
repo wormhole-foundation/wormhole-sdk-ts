@@ -123,7 +123,7 @@ export class TokenTransfer implements WormholeTransfer {
     wh: Wormhole,
     from: MessageIdentifier,
   ): Promise<TokenTransfer> {
-    const [chain, emitter] = from;
+    const { chain, address: emitter } = from;
     const vaa = await TokenTransfer.waitForTransferVaa(
       wh,
       chain,
@@ -132,7 +132,7 @@ export class TokenTransfer implements WormholeTransfer {
     );
 
     const details: TokenTransferDetails = {
-      token: [vaa.payload.token.chain, vaa.payload.token.address],
+      token: { ...vaa.payload.token },
       amount: vaa.payload.token.amount,
       toChain: wh.getChain(vaa.payload.to.chain),
       fromChain: wh.getChain(vaa.emitterChain),
@@ -221,11 +221,11 @@ export class TokenTransfer implements WormholeTransfer {
       throw new Error('Invalid state transition in `start`');
 
     const tokenAddress =
-      this.transfer.token === 'native' ? 'native' : this.transfer.token[1];
+      this.transfer.token === 'native' ? 'native' : this.transfer.token.address;
 
     const xfer = this.fromTokenBridge!.transfer(
       this.from,
-      [this.transfer.toChain.chain, this.to],
+      { chain: this.transfer.toChain.chain, address: this.to },
       tokenAddress,
       this.transfer.amount,
       this.transfer.payload,

@@ -5,7 +5,7 @@ import {
 } from '@wormhole-foundation/sdk-base';
 import {
   UnsignedTransaction,
-  ChainAddressPair,
+  ChainAddress,
   UniversalAddress,
   TokenBridge,
 } from '@wormhole-foundation/sdk-definitions';
@@ -100,9 +100,9 @@ export type WormholeConfig = {
   chains: ChainsConfig;
 };
 
-export type TokenId = ChainAddressPair;
+export type TokenId = ChainAddress;
 
-export type MessageIdentifier = ChainAddressPair & { sequence: SequenceId };
+export type MessageIdentifier = ChainAddress & { sequence: SequenceId };
 export function isMessageIdentifier(
   thing: MessageIdentifier | any,
 ): thing is MessageIdentifier {

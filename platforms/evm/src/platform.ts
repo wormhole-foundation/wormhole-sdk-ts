@@ -58,12 +58,15 @@ export class EvmPlatform implements Platform {
     tokenId: TokenId,
   ): Promise<UniversalAddress | null> {
     // if the token is already native, return the token address
-    if (chain === tokenId[0]) return tokenId[1];
+    if (chain === tokenId.chain) return tokenId.address;
 
     // else fetch the representation
     // TODO: this uses a brand new provider, not great
     const tokenBridge = await this.getTokenBridge(this.getProvider(chain));
-    const foreignAddr = await tokenBridge.getWrappedAsset([chain, tokenId[1]]);
+    const foreignAddr = await tokenBridge.getWrappedAsset({
+      chain,
+      address: tokenId.address,
+    });
     return foreignAddr.toUniversalAddress();
   }
 
@@ -180,7 +183,7 @@ export class EvmPlatform implements Platform {
         block: BigInt(receipt.blockNumber),
         gasFee,
         recipient: parsedTransfer.to,
-        tokenId: [tokenChain, tokenAddress],
+        tokenId: { chain: tokenChain, address: tokenAddress },
         emitterAddress: bridgeAddress,
       };
       return x;

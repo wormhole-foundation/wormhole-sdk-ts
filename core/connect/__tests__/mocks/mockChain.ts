@@ -8,7 +8,6 @@ import {
   TokenId,
 } from '../../src/types';
 import {
-  ChainAddressPair,
   NativeAddress,
   TokenBridge,
   UniversalAddress,
@@ -33,6 +32,9 @@ export class MockChain implements ChainContext {
     this.chain = chain;
     this.network = platform.network!;
     this.platform = platform;
+  }
+  getFinalizedHeight(): Promise<bigint> {
+    throw new Error('Method not implemented.');
   }
 
   getRPC(): MockProvider | undefined {

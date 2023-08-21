@@ -1,7 +1,7 @@
 import { EvmAddress } from '@wormhole-foundation/connect-sdk-evm';
 import { PlatformName } from '@wormhole-foundation/sdk-base';
 import {
-  ChainAddressPair,
+  ChainAddress,
   NativeAddress,
   TokenBridge,
   UniversalOrNative,
@@ -13,14 +13,14 @@ export class MockTokenBridge implements TokenBridge<'Evm'> {
   isWrappedAsset(token: UniversalOrNative<'Evm'>): Promise<boolean> {
     throw new Error('Method not implemented.');
   }
-  getOriginalAsset(token: UniversalOrNative<'Evm'>): Promise<ChainAddressPair> {
+  getOriginalAsset(token: UniversalOrNative<'Evm'>): Promise<ChainAddress> {
     throw new Error('Method not implemented.');
   }
-  hasWrappedAsset(original: ChainAddressPair): Promise<boolean> {
+  hasWrappedAsset(original: ChainAddress): Promise<boolean> {
     throw new Error('Method not implemented.');
   }
   async getWrappedAsset(
-    original: ChainAddressPair,
+    original: ChainAddress,
   ): Promise<NativeAddress<PlatformName>> {
     throw new Error('Method not implemented.');
   }
@@ -41,7 +41,7 @@ export class MockTokenBridge implements TokenBridge<'Evm'> {
   }
   transfer(
     sender: UniversalOrNative<'Evm'>,
-    recipient: ChainAddressPair,
+    recipient: ChainAddress,
     token: 'native' | UniversalOrNative<'Evm'>,
     amount: bigint,
     payload?: Uint8Array | undefined,
