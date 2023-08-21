@@ -1,9 +1,9 @@
 import {
-  MessageIdentifier,
   TokenTransfer,
   TxHash,
   Wormhole,
 } from "@wormhole-foundation/connect-sdk";
+import { ethers } from "ethers";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { getEvmSigner } from "./helpers";
 import { ChainName } from "@wormhole-foundation/sdk-base";
@@ -19,14 +19,20 @@ import {
 
   // init some Signer objects from a local key
   const sendChain = wh.getChain("Avalanche");
-  const sendSigner = await getEvmSigner(sendChain.chain, sendChain.getRPC());
+  const sendSigner = await getEvmSigner(
+    sendChain.chain,
+    sendChain.getRPC() as ethers.Provider
+  );
   const sender: ChainAddress = {
     chain: sendSigner.chain(),
     address: sendChain.platform.parseAddress(sendSigner.address()),
   };
 
   const rcvChain = wh.getChain("Celo");
-  const rcvSigner = await getEvmSigner(rcvChain.chain, rcvChain.getRPC());
+  const rcvSigner = await getEvmSigner(
+    rcvChain.chain,
+    rcvChain.getRPC() as ethers.Provider
+  );
   const receiver: ChainAddress = {
     chain: rcvSigner.chain(),
     address: rcvChain.platform.parseAddress(rcvSigner.address()),
@@ -34,12 +40,11 @@ import {
 
   // Create a TokenTransfer object that we can step through the process.
   // It holds a `state` field that is used to inform where in the process we are
-
   const tt = await wh.tokenTransfer("native", 10000000n, sender, receiver);
   console.log(`Created token transfer object`);
   console.log(tt);
 
-  // 1) Submit the transactions to the source chain, passing a signer to sign any txns
+  //1) Submit the transactions to the source chain, passing a signer to sign any txns
   const txids = await tt.start(sendSigner);
   console.log(`Started transfer with txid: ${txids}`);
 

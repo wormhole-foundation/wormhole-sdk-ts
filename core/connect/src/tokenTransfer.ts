@@ -97,7 +97,7 @@ export class TokenTransfer implements WormholeTransfer {
     const fromChain = wh.getChain(tt.transfer.from.chain);
     tt.fromTokenBridge = await fromChain.getTokenBridge();
 
-    const toChain = wh.getChain(tt.transfer.from.chain);
+    const toChain = wh.getChain(tt.transfer.to.chain);
     tt.toTokenBridge = await toChain.getTokenBridge();
 
     return tt;

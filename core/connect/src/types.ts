@@ -12,9 +12,7 @@ import {
 
 import { ChainConfig } from './constants';
 
-// TODO: move to definitions?
 export type TxHash = string;
-// Possibly duplicate definition?
 export type SequenceId = bigint;
 
 // TODO: move to definitions? Genericize
@@ -31,11 +29,11 @@ export interface RpcConnection {
   getBalance(address: string): Promise<bigint>;
 }
 
-// TODO: move to definition layer
+// TODO: move to definition layer? -- Can't without more changes, TokenTransferTransaction declared here
+// Force passing RPC connection so we don't create a new one with every fn call
 export interface Platform {
   readonly platform: PlatformName;
   readonly network?: Network;
-  // TODO: Asset vs token?
   getForeignAsset(
     chain: ChainName,
     rpc: RpcConnection,
@@ -55,8 +53,6 @@ export interface Platform {
   //
   getChain(chain: ChainName): ChainContext;
   getRpc(chain: ChainName): RpcConnection;
-  // Pass in RPC, the ChainContext should hold any cached rpc
-  // and be passed in
   getTokenBridge(rpc: RpcConnection): Promise<TokenBridge<PlatformName>>;
   parseTransaction(
     chain: ChainName,
