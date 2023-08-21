@@ -9,23 +9,20 @@ import {
   UniversalAddress,
   deserialize,
   VAA,
-  deserializePayload,
   ChainAddress,
 } from '@wormhole-foundation/sdk-definitions';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 
 import {
   TokenId,
   WormholeConfig,
   PlatformCtr,
-  Signer,
   Platform,
   ChainContext,
 } from './types';
 
 import { CONFIG } from './constants';
 import { TokenTransfer } from './tokenTransfer';
-import { emit } from 'process';
 
 export class Wormhole {
   protected _platforms: Map<PlatformName, Platform>;
@@ -219,19 +216,31 @@ export class Wormhole {
   async getVAABytes(
     chain: ChainName,
     emitter: UniversalAddress,
-    seq: bigint,
+    sequence: bigint,
+    retries: number = 5,
   ): Promise<Uint8Array | undefined> {
     const chainId = toChainId(chain);
     const emitterAddress = emitter.toString().startsWith('0x')
       ? emitter.toString().slice(2)
       : emitter;
 
+    let response: AxiosResponse<any, any> | undefined;
     // TODO: Make both data formats work
     //const url = `${this.conf.api}/api/v1/vaas/${chainId}/${emitterAddress}/${seq}`;
-    const url = `https://wormhole-v2-testnet-api.certus.one/v1/signed_vaa/${chainId}/${emitterAddress}/${seq}`;
-    const response = await axios.get(url);
+    const url = `https://wormhole-v2-testnet-api.certus.one/v1/signed_vaa/${chainId}/${emitterAddress}/${sequence}`;
 
-    if (!response.data) return;
+    for (let i = retries; i > 0 && !response; i--) {
+      // TODO: config wait seconds?
+      if (i != retries) await new Promise((f) => setTimeout(f, 2000));
+
+      try {
+        response = await axios.get(url);
+      } catch (e) {
+        console.error(`Caught an error waiting for VAA: ${e}`);
+      }
+    }
+
+    if (!response || !response.data) return;
 
     const { data } = response;
     return new Uint8Array(Buffer.from(data.vaaBytes, 'base64'));

@@ -1,9 +1,7 @@
 import {
   Signer,
-  TokenId,
   TxHash,
   SequenceId,
-  ChainContext,
   TokenTransferDetails,
   TokenTransferTransaction,
   MessageIdentifier,
@@ -27,7 +25,6 @@ import { ChainName, PlatformName } from '@wormhole-foundation/sdk-base';
  * What do with multiple transactions or VAAs?
  * What do for `stackable` transactions?
  * More concurrent promises instead of linearizing/blocking
- * How should we handle retrying VAA grabing? move to Wormhole?
  */
 
 export class TokenTransfer implements WormholeTransfer {
@@ -108,18 +105,20 @@ export class TokenTransfer implements WormholeTransfer {
     wh: Wormhole,
     from: MessageIdentifier,
   ): Promise<TokenTransfer> {
-    const { chain, address: emitter } = from;
-    const vaa = await TokenTransfer.waitForTransferVaa(
+    const { chain, address: emitter, sequence } = from;
+    const vaa = await TokenTransfer.getTransferVaa(
       wh,
       chain,
       emitter,
-      from.sequence,
+      sequence,
     );
 
     const details: TokenTransferDetails = {
       token: { ...vaa.payload.token },
       amount: vaa.payload.token.amount,
-      from: { chain: chain, address: emitter },
+      // TODO: the `from.address` here is a lie, but we don't
+      // immediately have enough info to get the _correct_ one
+      from: { ...from },
       to: { ...vaa.payload.to },
     };
 
@@ -150,7 +149,7 @@ export class TokenTransfer implements WormholeTransfer {
     tt.state = TransferState.Started;
 
     const { address: emitter, sequence } = tx.message.msg;
-    const vaa = await TokenTransfer.waitForTransferVaa(
+    const vaa = await TokenTransfer.getTransferVaa(
       wh,
       chain,
       emitter,
@@ -241,7 +240,7 @@ export class TokenTransfer implements WormholeTransfer {
       // already got it
       if (this.vaas[idx].vaa) continue;
 
-      this.vaas[idx].vaa = await TokenTransfer.waitForTransferVaa(
+      this.vaas[idx].vaa = await TokenTransfer.getTransferVaa(
         this.wh,
         this.transfer.from.chain,
         this.vaas[idx].emitter,
@@ -274,7 +273,7 @@ export class TokenTransfer implements WormholeTransfer {
     for (const cachedVaa of this.vaas) {
       const vaa = cachedVaa.vaa
         ? cachedVaa.vaa
-        : await TokenTransfer.waitForTransferVaa(
+        : await TokenTransfer.getTransferVaa(
             this.wh,
             this.transfer.from.chain,
             cachedVaa.emitter,
@@ -298,31 +297,15 @@ export class TokenTransfer implements WormholeTransfer {
     return await toChain.sendWait(await s.sign(unsigned));
   }
 
-  // TODO: move retry/wait logic to Wormhole
-  static async waitForTransferVaa(
+  static async getTransferVaa(
     wh: Wormhole,
     chain: ChainName,
     emitter: UniversalAddress,
     sequence: bigint,
     retries: number = 5,
   ): Promise<VAA<'Transfer'>> {
-    let vaaBytes: Uint8Array | undefined;
-    for (let i = retries; i > 0 && !vaaBytes; i--) {
-      console.log(`Waiting for vaa (${i} retries left)`);
-
-      // TODO: config wait seconds?
-      if (i != retries) await new Promise((f) => setTimeout(f, 2000));
-
-      try {
-        vaaBytes = await wh.getVAABytes(chain, emitter, sequence);
-      } catch (e) {
-        console.error(`Caught an error waiting for VAA: ${e}`);
-      }
-    }
-
-    if (!vaaBytes)
-      throw new Error('No vaa for the provided chain/emitter/sequence');
-
+    const vaaBytes = await wh.getVAABytes(chain, emitter, sequence, retries);
+    if (!vaaBytes) throw new Error(`No VAA available after ${retries} retries`);
     return deserialize('Transfer', vaaBytes);
   }
 }
