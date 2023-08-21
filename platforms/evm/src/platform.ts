@@ -40,7 +40,7 @@ export class EvmPlatform implements Platform {
     this.contracts = new EvmContracts(network);
   }
 
-  getProvider(chain: ChainName): ethers.Provider {
+  getRpc(chain: ChainName): ethers.Provider {
     const rpcAddress = this.conf[chain]!.rpc;
     return new ethers.JsonRpcProvider(rpcAddress);
   }
@@ -49,20 +49,19 @@ export class EvmPlatform implements Platform {
     return new EvmChain(this, chain);
   }
 
-  async getTokenBridge(rpc: RpcConnection): Promise<TokenBridge<'Evm'>> {
+  async getTokenBridge(rpc: ethers.Provider): Promise<TokenBridge<'Evm'>> {
     return await EvmTokenBridge.fromProvider(rpc);
   }
 
   async getForeignAsset(
     chain: ChainName,
+    rpc: ethers.Provider,
     tokenId: TokenId,
   ): Promise<UniversalAddress | null> {
     // if the token is already native, return the token address
     if (chain === tokenId.chain) return tokenId.address;
 
-    // else fetch the representation
-    // TODO: this uses a brand new provider, not great
-    const tokenBridge = await this.getTokenBridge(this.getProvider(chain));
+    const tokenBridge = await this.getTokenBridge(rpc);
     const foreignAddr = await tokenBridge.getWrappedAsset({
       chain,
       address: tokenId.address,
@@ -71,12 +70,11 @@ export class EvmPlatform implements Platform {
   }
 
   async getTokenDecimals(
-    chain: ChainName,
+    rpc: ethers.Provider,
     tokenAddr: UniversalAddress,
   ): Promise<bigint> {
-    const provider = this.getProvider(chain);
     const tokenContract = this.contracts.mustGetTokenImplementation(
-      provider,
+      rpc,
       tokenAddr.toString(),
     );
     const decimals = await tokenContract.decimals();
@@ -84,24 +82,23 @@ export class EvmPlatform implements Platform {
   }
 
   async getNativeBalance(
-    chain: ChainName,
+    rpc: RpcConnection,
     walletAddr: string,
   ): Promise<bigint> {
-    const provider = this.getProvider(chain);
-    return await provider.getBalance(walletAddr);
+    return await rpc.getBalance(walletAddr);
   }
 
   async getTokenBalance(
     chain: ChainName,
+    rpc: ethers.Provider,
     walletAddr: string,
     tokenId: TokenId,
   ): Promise<bigint | null> {
-    const address = await this.getForeignAsset(chain, tokenId);
+    const address = await this.getForeignAsset(chain, rpc, tokenId);
     if (!address) return null;
 
-    const provider = this.getProvider(chain);
     const token = this.contracts.mustGetTokenImplementation(
-      provider,
+      rpc,
       address.toString(),
     );
     const balance = await token.balanceOf(walletAddr);
@@ -109,7 +106,7 @@ export class EvmPlatform implements Platform {
   }
 
   parseAddress(address: string): UniversalAddress {
-    // 42 is 20bytes as hex + 2 bytes for 0x
+    // 42 is 20 bytes as hex + 2 bytes for 0x
     if (address.length > 42) {
       return new UniversalAddress(address);
     }
@@ -118,8 +115,8 @@ export class EvmPlatform implements Platform {
 
   async parseTransaction(
     chain: ChainName,
-    txid: TxHash,
     rpc: ethers.Provider,
+    txid: TxHash,
   ): Promise<TokenTransferTransaction[]> {
     const receipt = await rpc.getTransactionReceipt(txid);
     if (receipt === null)
@@ -144,7 +141,7 @@ export class EvmPlatform implements Platform {
       const { topics, data } = bridgeLog;
       const parsed = impl.parseLog({ topics: topics.slice(), data });
 
-      // TODO: should we be niicer here?
+      // TODO: should we be nicer here?
       if (parsed === null) throw new Error(`Failed to parse logs: ${data}`);
 
       // parse token bridge message, 0x01 == transfer, attest == 0x02,  w/ payload 0x03
@@ -171,7 +168,6 @@ export class EvmPlatform implements Platform {
       const tokenAddress = new UniversalAddress(parsedTransfer.tokenAddress);
       const tokenChain = toChainName(parsedTransfer.tokenChain);
 
-      // TODO: format addresses to universal
       const ttt: TokenTransferTransaction = {
         message: {
           tx: { chain: chain, txid },
