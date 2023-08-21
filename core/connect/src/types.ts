@@ -77,12 +77,16 @@ export interface ChainContext {
   getRPC(): RpcConnection;
   sendWait(stxns: SignedTxn[]): Promise<TxHash[]>;
   getTokenBridge(): Promise<TokenBridge<PlatformName>>;
-  getTransaction(txid: string): Promise<TokenTransferTransaction[]>;
 
+  // TODO: can we add these automatically?
   getForeignAsset: OmitChain<Platform['getForeignAsset']>;
   getTokenDecimals: OmitChain<Platform['getTokenDecimals']>;
   getNativeBalance: OmitChain<Platform['getNativeBalance']>;
   getTokenBalance: OmitChain<Platform['getTokenBalance']>;
+
+  // query rpc
+  getFinalizedHeight(): Promise<bigint>;
+  getTransaction(txid: string): Promise<TokenTransferTransaction[]>;
 }
 
 export type ChainCtr = new () => ChainContext;
@@ -135,6 +139,12 @@ export function isTokenTransferDetails(
     (<TokenTransferDetails>thing).toChain !== undefined
   );
 }
+
+export type WormholeMessage = {
+  tx: TransactionIdentifier;
+
+  msg: MessageIdentifier;
+};
 
 // Details for a source chain Token Transfer transaction
 export type TokenTransferTransaction = {

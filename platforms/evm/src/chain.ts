@@ -11,12 +11,14 @@ import {
   TxHash,
   SignedTxn,
   TokenTransferTransaction,
+  ChainConfig,
 } from '@wormhole-foundation/connect-sdk';
 
 export class EvmChain implements ChainContext {
   readonly chain: ChainName;
   readonly network: Network;
   readonly platform: EvmPlatform;
+  readonly conf: ChainConfig;
 
   // Cached objects
   private provider?: ethers.Provider;
@@ -25,6 +27,7 @@ export class EvmChain implements ChainContext {
   constructor(platform: EvmPlatform, chain: ChainName) {
     this.chain = chain;
     this.network = platform.network;
+    this.conf = platform.conf[chain]!;
     this.platform = platform;
   }
 
@@ -84,5 +87,12 @@ export class EvmChain implements ChainContext {
     tokenId: TokenId,
   ): Promise<bigint | null> {
     return this.platform.getTokenBalance(this.chain, walletAddr, tokenId);
+  }
+
+  async getFinalizedHeight(): Promise<bigint> {
+    const rpc = this.getRPC();
+
+    const block = await rpc.getBlockNumber();
+    return BigInt(block - this.conf.finalityThreshold);
   }
 }
