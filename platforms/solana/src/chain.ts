@@ -1,6 +1,5 @@
 import { ChainName, Network } from '@wormhole-foundation/sdk-base';
 import { UniversalAddress } from '@wormhole-foundation/sdk-definitions';
-import { ethers } from 'ethers';
 import { SolanaPlatform } from './platform';
 import {
   ChainContext,
@@ -10,7 +9,7 @@ import {
   TokenTransferTransaction,
 } from '@wormhole-foundation/connect-sdk';
 import { Connection } from '@solana/web3.js';
-// import { EvmTokenBridge } from './tokenBridge';
+import { SolanaTokenBridge } from './tokenBridge';
 
 export class SolanaChain implements ChainContext {
   readonly chain: ChainName;
@@ -18,7 +17,6 @@ export class SolanaChain implements ChainContext {
   readonly platform: SolanaPlatform;
 
   // Cached objects
-  // private provider?: ethers.Provider;
   private tokenBridge?: SolanaTokenBridge;
 
   constructor(platform: SolanaPlatform, chain: ChainName) {
@@ -31,39 +29,39 @@ export class SolanaChain implements ChainContext {
     return this.platform.connection!;
   }
 
-  async getTokenBridge(): Promise<SolanaTokenBridge> {
-    this.tokenBridge = this.tokenBridge
-      ? this.tokenBridge
-      : await this.platform.getTokenBridge(this.getRPC());
-    return this.tokenBridge;
-  }
+  // async getTokenBridge(): Promise<SolanaTokenBridge> {
+  //   this.tokenBridge = this.tokenBridge
+  //     ? this.tokenBridge
+  //     : await this.platform.getTokenBridge(this.getRPC());
+  //   return this.tokenBridge;
+  // }
 
-  async getTransaction(txid: string): Promise<TokenTransferTransaction[]> {
-    return await this.platform.parseMessageFromTx(
-      this.chain,
-      txid,
-      this.getRPC(),
-    );
-  }
+  // async getTransaction(txid: string): Promise<TokenTransferTransaction[]> {
+  //   return await this.platform.parseMessageFromTx(
+  //     this.chain,
+  //     txid,
+  //     this.getRPC(),
+  //   );
+  // }
 
-  async sendWait(stxns: SignedTxn[]): Promise<TxHash[]> {
-    const rpc = this.getRPC();
-    const txhashes: TxHash[] = [];
+  // async sendWait(stxns: SignedTxn[]): Promise<TxHash[]> {
+  //   const rpc = this.getRPC();
+  //   const txhashes: TxHash[] = [];
 
-    // TODO: concurrent
-    for (const stxn of stxns) {
-      console.log(`Sending: ${stxn}`);
+  //   // TODO: concurrent
+  //   for (const stxn of stxns) {
+  //     console.log(`Sending: ${stxn}`);
 
-      const txRes = await rpc.broadcastTransaction(stxn);
-      const txReceipt = await txRes.wait();
-      console.log(txReceipt);
-      // TODO: throw error?
-      if (txReceipt === null) continue;
+  //     const txRes = await rpc.broadcastTransaction(stxn);
+  //     const txReceipt = await txRes.wait();
+  //     console.log(txReceipt);
+  //     // TODO: throw error?
+  //     if (txReceipt === null) continue;
 
-      txhashes.push(txReceipt.hash);
-    }
-    return txhashes;
-  }
+  //     txhashes.push(txReceipt.hash);
+  //   }
+  //   return txhashes;
+  // }
 
   async getForeignAsset(tokenId: TokenId): Promise<UniversalAddress | null> {
     return this.platform.getForeignAsset(tokenId, this.chain);

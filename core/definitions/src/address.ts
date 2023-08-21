@@ -42,7 +42,7 @@ declare global {
 
 export type MappedPlatforms = keyof Wormhole.PlatformToNativeAddressMapping;
 
-type ChainOrPlatformToPlatform<T extends ChainName | PlatformName> =
+export type ChainOrPlatformToPlatform<T extends ChainName | PlatformName> =
   T extends ChainName ? ChainToPlatformMapping<T> : T;
 export type NativeAddress<T extends PlatformName | ChainName> =
   ChainOrPlatformToPlatform<T> extends MappedPlatforms

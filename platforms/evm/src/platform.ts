@@ -9,6 +9,7 @@ import {
   TokenId,
   TokenTransferTransaction,
   TxHash,
+  registerPlatform,
 } from '@wormhole-foundation/connect-sdk';
 import { EvmContracts } from './contracts';
 import { EvmTokenBridge } from './tokenBridge';
@@ -195,4 +196,4 @@ export class EvmPlatform implements Platform {
   }
 }
 
-EvmPlatform.platform;
+registerPlatform('Evm', EvmPlatform);

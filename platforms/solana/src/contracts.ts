@@ -21,7 +21,7 @@ import { Connection, clusterApiUrl } from '@solana/web3.js';
  * @category Solana
  */
 // TODO: create Contracts interface
-export class SolContracts {
+export class SolanaContracts {
   protected _contracts: Map<ChainName, Contracts>;
   protected _connection: Connection;
 

@@ -4,6 +4,7 @@ import {
   Network,
   Contracts,
   toChainId,
+  ChainToPlatformMapping,
 } from '@wormhole-foundation/sdk-base';
 import {
   UniversalAddress,
@@ -23,31 +24,16 @@ import {
 
 import { CONFIG } from './constants';
 import { TokenTransfer } from './tokenTransfer';
+import { getPlatform } from './platformMappings';
 
 export class Wormhole {
-  protected _platforms: Map<PlatformName, Platform>;
-
   readonly conf: WormholeConfig;
 
   constructor(
     network: Network,
-    platforms: PlatformCtr[],
     conf?: WormholeConfig,
   ) {
     this.conf = conf ?? CONFIG[network];
-
-    this._platforms = new Map();
-    for (const p of platforms) {
-      const platformName = p._platform;
-
-      const filteredChains = Object.fromEntries(
-        Object.entries(this.conf.chains).filter(([_, v]) => {
-          return v.platform == platformName;
-        }),
-      );
-
-      this._platforms.set(platformName, new p(network, filteredChains));
-    }
   }
 
   get network(): Network {
@@ -93,13 +79,12 @@ export class Wormhole {
 
   /**
    * Returns the platform "context", i.e. the class with platform-specific logic and methods
-   * @param chain the chain name or chain id
+   * @param chainOrPlatform the platform or chain name
    * @returns the chain context class
    * @throws Errors if context is not found
    */
-  getPlatform(chain: ChainName): Platform {
-    const { platform: platformType } = this.conf.chains[chain]!;
-    const platform = this._platforms.get(platformType);
+  getPlatform(chainOrPlatform: PlatformName | ChainName): Platform {
+    const platform = getPlatform(chainOrPlatform);
     if (!platform) throw new Error(`Not able to retrieve platform ${platform}`);
     return platform;
   }

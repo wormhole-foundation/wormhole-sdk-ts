@@ -9,7 +9,6 @@ import {
   UniversalAddress,
   TokenBridge,
 } from '@wormhole-foundation/sdk-definitions';
-
 import { ChainConfig } from './constants';
 
 export type TxHash = string;
@@ -34,6 +33,8 @@ export interface RpcConnection {
 // TODO: move to definition layer
 export abstract class Platform {
   public static platform: PlatformName;
+  abstract network: Network;
+  abstract conf: ChainsConfig;
   // TODO: Asset vs token?
   abstract getForeignAsset(
     rpc: RpcConnection,
@@ -58,7 +59,7 @@ export abstract class Platform {
     rpc: RpcConnection,
     chain: ChainName,
     txid: TxHash,
-  ): Promise<TokenTransferTransaction[]>
+  ): Promise<TokenTransferTransaction[]>;
 }
 
 export type PlatformCtr = {
