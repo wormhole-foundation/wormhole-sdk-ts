@@ -10,7 +10,7 @@ import {
   isTokenTransferDetails,
   isTransactionIdentifier,
 } from './types';
-import { WormholeTransfer, TransferState } from './wormholeTransfer';
+import { ManualWormholeTransfer, TransferState } from './wormholeTransfer';
 import { Wormhole } from './wormhole';
 import {
   TokenBridge,
@@ -27,7 +27,7 @@ import { ChainName, PlatformName } from '@wormhole-foundation/sdk-base';
  * More concurrent promises instead of linearizing/blocking
  */
 
-export class TokenTransfer implements WormholeTransfer {
+export class ManualTokenTransfer implements ManualWormholeTransfer {
   private readonly wh: Wormhole;
 
   // state machine tracker
@@ -64,27 +64,27 @@ export class TokenTransfer implements WormholeTransfer {
   static async from(
     wh: Wormhole,
     from: TokenTransferDetails,
-  ): Promise<TokenTransfer>;
+  ): Promise<ManualTokenTransfer>;
   static async from(
     wh: Wormhole,
     from: MessageIdentifier,
-  ): Promise<TokenTransfer>;
+  ): Promise<ManualTokenTransfer>;
   static async from(
     wh: Wormhole,
     from: TransactionIdentifier,
-  ): Promise<TokenTransfer>;
+  ): Promise<ManualTokenTransfer>;
   static async from(
     wh: Wormhole,
     from: TokenTransferDetails | MessageIdentifier | TransactionIdentifier,
-  ): Promise<TokenTransfer> {
-    let tt: TokenTransfer | undefined;
+  ): Promise<ManualTokenTransfer> {
+    let tt: ManualTokenTransfer | undefined;
 
     if (isMessageIdentifier(from)) {
-      tt = await TokenTransfer.fromIdentifier(wh, from);
+      tt = await ManualTokenTransfer.fromIdentifier(wh, from);
     } else if (isTransactionIdentifier(from)) {
-      tt = await TokenTransfer.fromTransaction(wh, from);
+      tt = await ManualTokenTransfer.fromTransaction(wh, from);
     } else if (isTokenTransferDetails(from)) {
-      tt = new TokenTransfer(wh, from);
+      tt = new ManualTokenTransfer(wh, from);
     }
 
     if (tt === undefined)
@@ -104,9 +104,9 @@ export class TokenTransfer implements WormholeTransfer {
   private static async fromIdentifier(
     wh: Wormhole,
     from: MessageIdentifier,
-  ): Promise<TokenTransfer> {
+  ): Promise<ManualTokenTransfer> {
     const { chain, address: emitter, sequence } = from;
-    const vaa = await TokenTransfer.getTransferVaa(
+    const vaa = await ManualTokenTransfer.getTransferVaa(
       wh,
       chain,
       emitter,
@@ -122,7 +122,7 @@ export class TokenTransfer implements WormholeTransfer {
       to: { ...vaa.payload.to },
     };
 
-    const tt = new TokenTransfer(wh, details);
+    const tt = new ManualTokenTransfer(wh, details);
     tt.vaas = [{ emitter, sequence: vaa.sequence, vaa }];
 
     tt.state = TransferState.Ready;
@@ -133,7 +133,7 @@ export class TokenTransfer implements WormholeTransfer {
   private static async fromTransaction(
     wh: Wormhole,
     from: TransactionIdentifier,
-  ): Promise<TokenTransfer> {
+  ): Promise<ManualTokenTransfer> {
     const { chain, txid } = from;
 
     const c = wh.getChain(chain);
@@ -145,11 +145,11 @@ export class TokenTransfer implements WormholeTransfer {
     // TODO: assuming single tx
     const [tx] = parsedTxDeets;
 
-    const tt = new TokenTransfer(wh, tx.details);
+    const tt = new ManualTokenTransfer(wh, tx.details);
     tt.state = TransferState.Started;
 
     const { address: emitter, sequence } = tx.message.msg;
-    const vaa = await TokenTransfer.getTransferVaa(
+    const vaa = await ManualTokenTransfer.getTransferVaa(
       wh,
       chain,
       emitter,
@@ -240,7 +240,7 @@ export class TokenTransfer implements WormholeTransfer {
       // already got it
       if (this.vaas[idx].vaa) continue;
 
-      this.vaas[idx].vaa = await TokenTransfer.getTransferVaa(
+      this.vaas[idx].vaa = await ManualTokenTransfer.getTransferVaa(
         this.wh,
         this.transfer.from.chain,
         this.vaas[idx].emitter,
@@ -273,7 +273,7 @@ export class TokenTransfer implements WormholeTransfer {
     for (const cachedVaa of this.vaas) {
       const vaa = cachedVaa.vaa
         ? cachedVaa.vaa
-        : await TokenTransfer.getTransferVaa(
+        : await ManualTokenTransfer.getTransferVaa(
             this.wh,
             this.transfer.from.chain,
             cachedVaa.emitter,

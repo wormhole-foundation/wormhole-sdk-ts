@@ -22,7 +22,7 @@ import {
 } from './types';
 
 import { CONFIG } from './constants';
-import { TokenTransfer } from './tokenTransfer';
+import { ManualTokenTransfer } from './manualTokenTransfer';
 
 export class Wormhole {
   protected _platforms: Map<PlatformName, Platform>;
@@ -60,8 +60,8 @@ export class Wormhole {
     from: ChainAddress,
     to: ChainAddress,
     payload?: Uint8Array,
-  ): Promise<TokenTransfer> {
-    return await TokenTransfer.from(this, {
+  ): Promise<ManualTokenTransfer> {
+    return await ManualTokenTransfer.from(this, {
       token: token,
       amount: amount,
       payload: payload,
