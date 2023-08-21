@@ -132,7 +132,7 @@ export class Wormhole {
     chain: ChainName,
   ): Promise<UniversalAddress | null> {
     const context = this.getPlatform(chain);
-    return await context.getForeignAsset(tokenId, chain);
+    return await context.getForeignAsset(chain, tokenId);
   }
 
   /**
@@ -163,7 +163,7 @@ export class Wormhole {
   async getTokenDecimals(tokenId: TokenId, chain: ChainName): Promise<bigint> {
     const repr = await this.mustGetForeignAsset(tokenId, chain);
     const context = this.getPlatform(chain);
-    return await context.getTokenDecimals(repr, chain);
+    return await context.getTokenDecimals(chain, repr);
   }
 
   /**
@@ -178,7 +178,7 @@ export class Wormhole {
     chain: ChainName,
   ): Promise<bigint> {
     const context = this.getPlatform(chain);
-    return await context.getNativeBalance(walletAddress, chain);
+    return await context.getNativeBalance(chain, walletAddress);
   }
 
   /**
@@ -195,7 +195,7 @@ export class Wormhole {
     chain: ChainName,
   ): Promise<bigint | null> {
     const context = this.getPlatform(chain);
-    return await context.getTokenBalance(walletAddress, tokenId, chain);
+    return await context.getTokenBalance(chain, walletAddress, tokenId);
   }
 
   /**

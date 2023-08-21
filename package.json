@@ -30,7 +30,6 @@
     "core/base",
     "core/definitions",
     "core/connect",
-    "platforms/evm",
-    "examples"
+    "platforms/evm"
   ]
 }

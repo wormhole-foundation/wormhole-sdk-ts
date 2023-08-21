@@ -1,11 +1,11 @@
 import {
   Network,
   ChainName,
-  ChainId,
   PlatformName,
   toChainName,
 } from '@wormhole-foundation/sdk-base';
 import {
+  RpcConnection,
   TokenId,
   TokenTransferTransaction,
   TxHash,
@@ -13,7 +13,10 @@ import {
 import { EvmContracts } from './contracts';
 import { EvmTokenBridge } from './tokenBridge';
 import { ethers } from 'ethers';
-import { UniversalAddress } from '@wormhole-foundation/sdk-definitions';
+import {
+  TokenBridge,
+  UniversalAddress,
+} from '@wormhole-foundation/sdk-definitions';
 import { Platform, ChainsConfig } from '@wormhole-foundation/connect-sdk';
 import { EvmChain } from './chain';
 import { EvmAddress } from './address';
@@ -46,13 +49,13 @@ export class EvmPlatform implements Platform {
     return new EvmChain(this, chain);
   }
 
-  async getTokenBridge(provider: ethers.Provider): Promise<EvmTokenBridge> {
-    return await EvmTokenBridge.fromProvider(provider);
+  async getTokenBridge(rpc: RpcConnection): Promise<TokenBridge<'Evm'>> {
+    return await EvmTokenBridge.fromProvider(rpc);
   }
 
   async getForeignAsset(
-    tokenId: TokenId,
     chain: ChainName,
+    tokenId: TokenId,
   ): Promise<UniversalAddress | null> {
     // if the token is already native, return the token address
     if (chain === tokenId[0]) return tokenId[1];
@@ -65,8 +68,8 @@ export class EvmPlatform implements Platform {
   }
 
   async getTokenDecimals(
-    tokenAddr: UniversalAddress,
     chain: ChainName,
+    tokenAddr: UniversalAddress,
   ): Promise<bigint> {
     const provider = this.getProvider(chain);
     const tokenContract = this.contracts.mustGetTokenImplementation(
@@ -78,19 +81,19 @@ export class EvmPlatform implements Platform {
   }
 
   async getNativeBalance(
-    walletAddr: string,
     chain: ChainName,
+    walletAddr: string,
   ): Promise<bigint> {
     const provider = this.getProvider(chain);
     return await provider.getBalance(walletAddr);
   }
 
   async getTokenBalance(
+    chain: ChainName,
     walletAddr: string,
     tokenId: TokenId,
-    chain: ChainName,
   ): Promise<bigint | null> {
-    const address = await this.getForeignAsset(tokenId, chain);
+    const address = await this.getForeignAsset(chain, tokenId);
     if (!address) return null;
 
     const provider = this.getProvider(chain);
@@ -110,7 +113,7 @@ export class EvmPlatform implements Platform {
     return new EvmAddress(address).toUniversalAddress();
   }
 
-  async parseMessageFromTx(
+  async parseTransaction(
     chain: ChainName,
     txid: TxHash,
     rpc: ethers.Provider,

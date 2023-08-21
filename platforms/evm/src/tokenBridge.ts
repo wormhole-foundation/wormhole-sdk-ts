@@ -110,15 +110,9 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     }
   }
 
-  async getWrappedAsset([
-    originalChain,
-    originalAddress,
-  ]: ChainAddressPair): Promise<EvmAddress> {
+  async getWrappedAsset(original: ChainAddressPair): Promise<EvmAddress> {
     return new EvmAddress(
-      await this.tokenBridge.wrappedAsset(
-        originalChain,
-        originalAddress.toString(),
-      ),
+      await this.tokenBridge.wrappedAsset(original[0], original[1].toString()),
     );
   }
 
