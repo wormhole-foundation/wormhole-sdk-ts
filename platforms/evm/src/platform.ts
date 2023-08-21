@@ -131,9 +131,9 @@ export class EvmPlatform implements Platform {
     const coreAddress = await core.getAddress();
 
     const bridge = this.contracts.mustGetTokenBridge(chain, rpc);
-    const bridgeAddress = new EvmAddress(await bridge.getAddress())
-      .toUniversalAddress()
-      .toString();
+    const bridgeAddress = new EvmAddress(
+      await bridge.getAddress(),
+    ).toUniversalAddress();
 
     const bridgeLogs = receipt.logs.filter((l: any) => {
       return l.address === coreAddress;
@@ -172,21 +172,29 @@ export class EvmPlatform implements Platform {
       const tokenChain = toChainName(parsedTransfer.tokenChain);
 
       // TODO: format addresses to universal
-      const x: TokenTransferTransaction = {
-        sendTx: txid,
-        sender: receipt.from,
-        amount: parsedTransfer.amount,
-        payloadID: parsedTransfer.payloadID,
-        toChain: toChain,
-        fromChain: chain,
-        sequence: parsed.args.sequence,
+      const ttt: TokenTransferTransaction = {
+        message: {
+          tx: { chain: chain, txid },
+          msg: {
+            chain: chain,
+            address: bridgeAddress,
+            sequence: parsed.args.sequence,
+          },
+          payloadId: parsedTransfer.payloadID,
+        },
+        details: {
+          token: { chain: tokenChain, address: tokenAddress },
+          amount: parsedTransfer.amount,
+          from: { chain, address: this.parseAddress(receipt.from) },
+          to: {
+            chain: toChain,
+            address: new UniversalAddress(parsedTransfer.to),
+          },
+        },
         block: BigInt(receipt.blockNumber),
         gasFee,
-        recipient: parsedTransfer.to,
-        tokenId: { chain: tokenChain, address: tokenAddress },
-        emitterAddress: bridgeAddress,
       };
-      return x;
+      return ttt;
     });
 
     return await Promise.all(parsedLogs);

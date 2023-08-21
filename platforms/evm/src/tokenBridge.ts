@@ -90,11 +90,11 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
       toEvmAddrString(token),
       this.provider,
     );
-    const ca = await Promise.all([
+    const [chain, address] = await Promise.all([
       tokenContract.chainId().then(Number).then(toChainId).then(chainIdToChain),
       tokenContract.nativeContract().then((addr) => new UniversalAddress(addr)),
     ]);
-    return { chain: ca[0], address: ca[1] };
+    return { chain, address };
   }
 
   async hasWrappedAsset({ chain, address }: ChainAddress): Promise<boolean> {

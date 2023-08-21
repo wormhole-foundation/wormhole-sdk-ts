@@ -32,8 +32,8 @@ describe('Initialize Objects', () => {
     expect(txs.length).toBe(1);
 
     const tx: TokenTransferTransaction = txs[0];
-    expect(tx.amount).toBe(0n);
-    expect(tx.fromChain).toBe('Celo');
+    expect(tx.details.amount).toBe(0n);
+    expect(tx.details.from.chain).toBe('Celo');
   });
 
   test('Recover Wormhole Transfer', async () => {

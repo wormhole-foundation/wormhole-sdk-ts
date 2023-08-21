@@ -18,12 +18,11 @@ export type TxHash = string;
 export type SequenceId = bigint;
 
 // TODO: move to definitions? Genericize
-export type Txn = UnsignedTransaction;
 export type SignedTxn = any;
 export interface Signer {
   chain(): ChainName;
   address(): string;
-  sign(tx: Txn[]): Promise<SignedTxn[]>;
+  sign(tx: UnsignedTransaction[]): Promise<SignedTxn[]>;
 }
 
 // TODO: move to definition layer
@@ -85,7 +84,7 @@ export interface ChainContext {
   getTokenBalance: OmitChain<Platform['getTokenBalance']>;
 
   // query rpc
-  getFinalizedHeight(): Promise<bigint>;
+  // TODO: rename to getMessageFromTransaction?  or something?
   getTransaction(txid: string): Promise<TokenTransferTransaction[]>;
 }
 
@@ -101,15 +100,38 @@ export type WormholeConfig = {
 };
 
 export type TokenId = ChainAddress;
-
 export type MessageIdentifier = ChainAddress & { sequence: SequenceId };
+export type TransactionIdentifier = { chain: ChainName; txid: TxHash };
+
+export type TokenTransferDetails = {
+  token: TokenId | 'native';
+  amount: bigint;
+  payload?: Uint8Array;
+  from: ChainAddress;
+  to: ChainAddress;
+};
+
+export type WormholeMessage = {
+  tx: TransactionIdentifier;
+  msg: MessageIdentifier;
+  payloadId: bigint;
+};
+
+// Details for a source chain Token Transfer transaction
+export type TokenTransferTransaction = {
+  message: WormholeMessage;
+
+  details: TokenTransferDetails;
+  block: bigint;
+  gasFee: bigint;
+};
+
 export function isMessageIdentifier(
   thing: MessageIdentifier | any,
 ): thing is MessageIdentifier {
   return (<MessageIdentifier>thing).sequence !== undefined;
 }
 
-export type TransactionIdentifier = { chain: ChainName; txid: TxHash };
 export function isTransactionIdentifier(
   thing: TransactionIdentifier | any,
 ): thing is TransactionIdentifier {
@@ -119,51 +141,13 @@ export function isTransactionIdentifier(
   );
 }
 
-export type TokenTransferDetails = {
-  token: TokenId | 'native';
-  amount: bigint;
-  payload?: Uint8Array;
-  fromChain: ChainContext;
-  toChain: ChainContext;
-  from: Signer | UniversalAddress;
-  to: Signer | UniversalAddress;
-};
-
 export function isTokenTransferDetails(
   thing: TokenTransferDetails | any,
 ): thing is TokenTransferDetails {
   return (
     (<TokenTransferDetails>thing).token !== undefined &&
     (<TokenTransferDetails>thing).amount !== undefined &&
-    (<TokenTransferDetails>thing).fromChain !== undefined &&
-    (<TokenTransferDetails>thing).toChain !== undefined
+    (<TokenTransferDetails>thing).from !== undefined &&
+    (<TokenTransferDetails>thing).to !== undefined
   );
 }
-
-export type WormholeMessage = {
-  tx: TransactionIdentifier;
-
-  msg: MessageIdentifier;
-};
-
-// Details for a source chain Token Transfer transaction
-export type TokenTransferTransaction = {
-  sendTx: TxHash;
-
-  fromChain: ChainName;
-  sender: string;
-
-  toChain: ChainName;
-  recipient: string;
-
-  tokenId: TokenId;
-  amount: bigint;
-
-  emitterAddress: string;
-  sequence: bigint;
-
-  payloadID: bigint;
-
-  block: bigint;
-  gasFee: bigint;
-};

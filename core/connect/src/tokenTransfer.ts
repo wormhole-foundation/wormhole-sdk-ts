@@ -39,11 +39,9 @@ export class TokenTransfer implements WormholeTransfer {
   // transfer details
   transfer: TokenTransferDetails;
 
-  from: UniversalAddress;
   fromSigner?: Signer;
   private fromTokenBridge?: TokenBridge<PlatformName>;
 
-  to: UniversalAddress;
   toSigner?: Signer;
   private toTokenBridge?: TokenBridge<PlatformName>;
 
@@ -59,22 +57,6 @@ export class TokenTransfer implements WormholeTransfer {
     this.state = TransferState.Created;
     this.wh = wh;
     this.transfer = transfer;
-
-    if (transfer.from instanceof UniversalAddress) {
-      this.from = transfer.from;
-    } else {
-      this.fromSigner = transfer.from;
-      this.from = transfer.fromChain.platform.parseAddress(
-        transfer.from.address(),
-      );
-    }
-
-    if (transfer.to instanceof UniversalAddress) {
-      this.to = transfer.to;
-    } else {
-      this.toSigner = transfer.to;
-      this.to = transfer.toChain.platform.parseAddress(transfer.to.address());
-    }
   }
 
   transferState(): TransferState {
@@ -112,8 +94,11 @@ export class TokenTransfer implements WormholeTransfer {
       throw new Error('Invalid `from` parameter for TokenTransfer');
 
     // cache token bridges
-    tt.fromTokenBridge = await tt.transfer.fromChain.getTokenBridge();
-    tt.toTokenBridge = await tt.transfer.toChain.getTokenBridge();
+    const fromChain = wh.getChain(tt.transfer.from.chain);
+    tt.fromTokenBridge = await fromChain.getTokenBridge();
+
+    const toChain = wh.getChain(tt.transfer.from.chain);
+    tt.toTokenBridge = await toChain.getTokenBridge();
 
     return tt;
   }
@@ -134,22 +119,12 @@ export class TokenTransfer implements WormholeTransfer {
     const details: TokenTransferDetails = {
       token: { ...vaa.payload.token },
       amount: vaa.payload.token.amount,
-      toChain: wh.getChain(vaa.payload.to.chain),
-      fromChain: wh.getChain(vaa.emitterChain),
-      // TODO: this is a lie, but its ok because we no longer have `from` info
-      from: emitter,
-      to: vaa.payload.to.address,
+      from: { chain: chain, address: emitter },
+      to: { ...vaa.payload.to },
     };
 
     const tt = new TokenTransfer(wh, details);
-
-    tt.vaas = [
-      {
-        emitter: vaa.emitterAddress,
-        sequence: vaa.sequence,
-        vaa: vaa,
-      },
-    ];
+    tt.vaas = [{ emitter, sequence: vaa.sequence, vaa }];
 
     tt.state = TransferState.Ready;
 
@@ -168,40 +143,21 @@ export class TokenTransfer implements WormholeTransfer {
       txid,
     );
 
+    // TODO: assuming single tx
     const [tx] = parsedTxDeets;
 
-    const fromChain = wh.getChain(tx.fromChain);
-    const toChain = wh.getChain(tx.toChain);
-    const details: TokenTransferDetails = {
-      token: tx.tokenId,
-      amount: tx.amount,
-      fromChain,
-      toChain,
-      from: fromChain.platform.parseAddress(tx.sender),
-      to: toChain.platform.parseAddress(tx.recipient),
-    };
-
-    const tt = new TokenTransfer(wh, details);
-
+    const tt = new TokenTransfer(wh, tx.details);
     tt.state = TransferState.Started;
 
-    const emitter = details.fromChain.platform.parseAddress(tx.emitterAddress);
-
+    const { address: emitter, sequence } = tx.message.msg;
     const vaa = await TokenTransfer.waitForTransferVaa(
       wh,
       chain,
       emitter,
-      tx.sequence,
+      sequence,
     );
 
-    tt.vaas = [
-      {
-        emitter: emitter,
-        sequence: tx.sequence,
-        vaa: vaa,
-      },
-    ];
-
+    tt.vaas = [{ emitter, sequence, vaa }];
     tt.state = TransferState.Ready;
     return tt;
   }
@@ -224,8 +180,8 @@ export class TokenTransfer implements WormholeTransfer {
       this.transfer.token === 'native' ? 'native' : this.transfer.token.address;
 
     const xfer = this.fromTokenBridge!.transfer(
-      this.from,
-      { chain: this.transfer.toChain.chain, address: this.to },
+      this.transfer.from.address,
+      { chain: this.transfer.to.chain, address: this.transfer.to.address },
       tokenAddress,
       this.transfer.amount,
       this.transfer.payload,
@@ -243,30 +199,23 @@ export class TokenTransfer implements WormholeTransfer {
     const s = signer ? signer : this.fromSigner;
     if (s === undefined) throw new Error('No signer defined');
 
-    const txHashes = await this.transfer.fromChain.sendWait(
-      await s.sign(unsigned),
-    );
+    const fromChain = this.wh.getChain(this.transfer.from.chain);
+    const txHashes = await fromChain.sendWait(await s.sign(unsigned));
 
     this.state = TransferState.Started;
 
     // TODO: concurrent
     for (const txHash of txHashes) {
-      const txRes = await this.transfer.fromChain.getTransaction(txHash);
+      const txRes = await fromChain.getTransaction(txHash);
 
       // TODO:
       if (txRes.length != 1) throw new Error('Idk what to do with != 1');
       const [tx] = txRes;
 
-      const emitter = this.transfer.fromChain.platform.parseAddress(
-        tx.emitterAddress,
-      );
+      const { address: emitter, sequence } = tx.message.msg;
 
       if (!this.vaas) this.vaas = [];
-
-      this.vaas.push({
-        emitter: emitter,
-        sequence: txRes[0].sequence,
-      });
+      this.vaas.push({ emitter: emitter, sequence: sequence });
     }
 
     return txHashes;
@@ -294,7 +243,7 @@ export class TokenTransfer implements WormholeTransfer {
 
       this.vaas[idx].vaa = await TokenTransfer.waitForTransferVaa(
         this.wh,
-        this.transfer.fromChain.chain,
+        this.transfer.from.chain,
         this.vaas[idx].emitter,
         this.vaas[idx].sequence,
       );
@@ -327,14 +276,14 @@ export class TokenTransfer implements WormholeTransfer {
         ? cachedVaa.vaa
         : await TokenTransfer.waitForTransferVaa(
             this.wh,
-            this.transfer.fromChain.chain,
+            this.transfer.from.chain,
             cachedVaa.emitter,
             cachedVaa.sequence,
           );
 
       if (!vaa) throw new Error('No Vaa found');
 
-      const xfer = this.toTokenBridge!.redeem(this.to, vaa);
+      const xfer = this.toTokenBridge!.redeem(this.transfer.to.address, vaa);
 
       // TODO: check 'stackable'?
       for await (const tx of xfer) {
@@ -345,7 +294,8 @@ export class TokenTransfer implements WormholeTransfer {
     const s = signer ? signer : this.toSigner;
     if (s === undefined) throw new Error('No signer defined');
 
-    return await this.transfer.toChain.sendWait(await s.sign(unsigned));
+    const toChain = this.wh.getChain(this.transfer.to.chain);
+    return await toChain.sendWait(await s.sign(unsigned));
   }
 
   // TODO: move retry/wait logic to Wormhole

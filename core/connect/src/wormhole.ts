@@ -10,6 +10,7 @@ import {
   deserialize,
   VAA,
   deserializePayload,
+  ChainAddress,
 } from '@wormhole-foundation/sdk-definitions';
 import axios from 'axios';
 
@@ -59,16 +60,14 @@ export class Wormhole {
   async tokenTransfer(
     token: TokenId | 'native',
     amount: bigint,
-    from: Signer,
-    to: Signer,
+    from: ChainAddress,
+    to: ChainAddress,
     payload?: Uint8Array,
   ): Promise<TokenTransfer> {
     return await TokenTransfer.from(this, {
       token: token,
       amount: amount,
       payload: payload,
-      fromChain: this.getChain(from.chain()),
-      toChain: this.getChain(to.chain()),
       from,
       to,
     });
