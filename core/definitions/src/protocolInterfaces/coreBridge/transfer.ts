@@ -1,4 +1,5 @@
-import { Signer, TxHash, SequenceId } from './types';
+// TODO: move some types out of platform
+import { Signer, TxHash, SequenceId } from '../../platform/types';
 
 // Transfer state machine states
 export enum TransferState {

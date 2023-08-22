@@ -1,5 +1,5 @@
 import { Chain, PlatformName } from "@wormhole-foundation/sdk-base";
-import { UniversalOrNative } from "./address";
+import { UniversalOrNative } from "../../address";
 
 export interface Relayer<P extends PlatformName> {
   relaySupported(chain: Chain): boolean;

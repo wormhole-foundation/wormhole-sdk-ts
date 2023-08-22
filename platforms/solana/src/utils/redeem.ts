@@ -11,7 +11,6 @@ import {
   SignedVaa,
   parseTokenTransferVaa,
   MAX_VAA_DECIMALS,
-  chainToChainId,
 } from '@wormhole-foundation/connect-sdk';
 import {
   createCompleteTransferNativeInstruction,
@@ -27,6 +26,7 @@ import {
   getMinimumBalanceForRentExemptAccount,
   getMint,
 } from '@solana/spl-token';
+import { toChainId } from '@wormhole-foundation/sdk-base';
 
 export async function redeemOnSolana(
   connection: Connection,
@@ -39,7 +39,7 @@ export async function redeemOnSolana(
 ) {
   const parsed = parseTokenTransferVaa(signedVaa);
   const createCompleteTransferInstruction =
-    parsed.tokenChain == chainToChainId('Solana')
+    parsed.tokenChain == toChainId('Solana')
       ? createCompleteTransferNativeInstruction
       : createCompleteTransferWrappedInstruction;
   const transaction = new Transaction().add(

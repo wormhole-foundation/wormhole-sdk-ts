@@ -1,30 +1,16 @@
+import axios, { AxiosResponse } from 'axios';
 import {
   PlatformName,
   ChainName,
   Network,
   Contracts,
   toChainId,
-  ChainToPlatformMapping,
 } from '@wormhole-foundation/sdk-base';
-import {
-  UniversalAddress,
-  deserialize,
-  VAA,
-  ChainAddress,
-} from '@wormhole-foundation/sdk-definitions';
-import axios, { AxiosResponse } from 'axios';
-
-import {
-  TokenId,
-  WormholeConfig,
-  PlatformCtr,
-  Platform,
-  ChainContext,
-} from './types';
-
-import { CONFIG } from './constants';
-import { TokenTransfer } from './tokenTransfer';
-import { getPlatform } from './platformMappings';
+import { CONFIG, ChainContext, Platform, TokenId, WormholeConfig, getPlatform } from './platform';
+import { ChainAddress } from './address';
+import { TokenTransfer } from './protocolInterfaces/tokenBridge/transfer';
+import { UniversalAddress } from './universalAddress';
+import { VAA, deserialize } from './vaa';
 
 export class Wormhole {
   readonly conf: WormholeConfig;
@@ -41,19 +27,21 @@ export class Wormhole {
   }
 
   async tokenTransfer(
-    token: TokenId | 'native',
+    token: TokenId,
     amount: bigint,
     from: ChainAddress,
     to: ChainAddress,
     payload?: Uint8Array,
   ): Promise<TokenTransfer> {
-    return await TokenTransfer.from(this, {
-      token: token,
-      amount: amount,
-      payload: payload,
-      from,
-      to,
-    });
+    // TODO:
+    throw new Error('not implemented')
+    // return await TokenTransfer.from(this, {
+    //   token: token,
+    //   amount: amount,
+    //   payload: payload,
+    //   from,
+    //   to,
+    // });
   }
 
   /**
@@ -113,7 +101,7 @@ export class Wormhole {
     chain: ChainName,
   ): Promise<UniversalAddress | null> {
     const context = this.getChain(chain);
-    return await context.getForeignAsset(tokenId);
+    return await context.getForeignAsset(chain, tokenId);
   }
 
   /**
@@ -159,7 +147,7 @@ export class Wormhole {
     chain: ChainName,
   ): Promise<bigint> {
     const context = this.getChain(chain);
-    return await context.getNativeBalance(walletAddress);
+    return await context.getNativeBalance(walletAddress, chain);
   }
 
   /**

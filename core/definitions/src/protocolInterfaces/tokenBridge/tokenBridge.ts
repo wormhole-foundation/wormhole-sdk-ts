@@ -1,8 +1,8 @@
 import { PlatformName } from "@wormhole-foundation/sdk-base";
-import { UniversalOrNative, NativeAddress, ChainAddress } from "./address";
-import { VAA } from "./vaa";
-import { UnsignedTransaction } from "./unsignedTransaction";
-import "./payloads/tokenBridge";
+import { UniversalOrNative, NativeAddress, ChainAddress } from "../../address";
+import { VAA } from "../../vaa";
+import { UnsignedTransaction } from "../../unsignedTransaction";
+import "../../payloads/tokenBridge";
 
 export interface TokenBridge<P extends PlatformName> {
   //read-only:

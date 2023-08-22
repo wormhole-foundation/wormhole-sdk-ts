@@ -29,7 +29,6 @@
   "workspaces": [
     "core/base",
     "core/definitions",
-    "core/connect",
     "platforms/evm",
     "platforms/solana"
   ]

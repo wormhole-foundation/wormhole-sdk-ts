@@ -6,7 +6,8 @@ import {
   Network,
 } from '@wormhole-foundation/sdk-base';
 import { ChainOrPlatformToPlatform } from '@wormhole-foundation/sdk-definitions';
-import { ChainsConfig, Platform } from './types';
+import { Platform } from './platform';
+import { ChainsConfig } from './types';
 
 declare global {
   namespace Wormhole {

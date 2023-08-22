@@ -9,7 +9,7 @@ A developer would use the core connect-sdk package in conjunction with 1 or more
 Getting started is simple, just import and pass in the contexts to the Wormhole class.
 
 ```ts
-import { Wormhole, Context } from '@wormhole-foundation/connect-sdk';
+import { Wormhole, Context } from '@wormhole-foundation/sdk-definitions';
 import { EvmContext } from '@wormhole-foundation/connect-sdk-evm';
 import { SolanaContext } from '@wormhole-foundation/connect-sdk-solana';
 

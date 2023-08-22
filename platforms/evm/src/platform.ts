@@ -10,7 +10,9 @@ import {
   TokenTransferTransaction,
   TxHash,
   registerPlatform,
-} from '@wormhole-foundation/connect-sdk';
+  Platform,
+  ChainsConfig,
+} from '@wormhole-foundation/sdk-definitions';
 import { EvmContracts } from './contracts';
 import { EvmTokenBridge } from './tokenBridge';
 import { ethers } from 'ethers';
@@ -18,7 +20,6 @@ import {
   TokenBridge,
   UniversalAddress,
 } from '@wormhole-foundation/sdk-definitions';
-import { Platform, ChainsConfig } from '@wormhole-foundation/connect-sdk';
 import { EvmChain } from './chain';
 import { EvmAddress } from './address';
 import { BridgeStructs } from './ethers-contracts/Bridge';

@@ -12,7 +12,7 @@ import {
   SignedTxn,
   TokenTransferTransaction,
   ChainConfig,
-} from '@wormhole-foundation/connect-sdk';
+} from '@wormhole-foundation/sdk-definitions';
 
 export class EvmChain implements ChainContext {
   readonly chain: ChainName;
