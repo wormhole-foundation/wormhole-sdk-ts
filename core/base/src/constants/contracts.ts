@@ -17,7 +17,7 @@ export const contracts = {
       CoreBridge: "0x98f3c9e6E3fAce36bAAd05FE09d375Ef1464288B",
       TokenBridge: "0x3ee18B2214AFF97000D974cf647E7C347E8fa585",
       NftBridge: "0x6FFd7EdE62328b3Af38FCD61461Bbfc52F5651fE",
-      Relayer: undefined,
+      Relayer: "0xcafd2f0a35a4459fa40c0517e17e6fa2939441ca",
     },
     Terra: {
       CoreBridge: "terra1dq03ugtd40zu9hcgdzrsq6z2z4hwhc9tqk2uy5",
@@ -29,19 +29,19 @@ export const contracts = {
       CoreBridge: "0x98f3c9e6E3fAce36bAAd05FE09d375Ef1464288B",
       TokenBridge: "0xB6F6D86a8f9879A9c87f643768d9efc38c1Da6E7",
       NftBridge: "0x5a58505a96D1dbf8dF91cB21B54419FC36e93fdE",
-      Relayer: undefined,
+      Relayer: "0xcafd2f0a35a4459fa40c0517e17e6fa2939441ca",
     },
     Polygon: {
       CoreBridge: "0x7A4B5a56256163F07b2C80A7cA55aBE66c4ec4d7",
       TokenBridge: "0x5a58505a96D1dbf8dF91cB21B54419FC36e93fdE",
       NftBridge: "0x90BBd86a6Fe93D3bc3ed6335935447E75fAb7fCf",
-      Relayer: undefined,
+      Relayer: "0xcafd2f0a35a4459fa40c0517e17e6fa2939441ca",
     },
     Avalanche: {
       CoreBridge: "0x54a8e5f9c4CbA08F9943965859F6c34eAF03E26c",
       TokenBridge: "0x0e082F06FF657D94310cB8cE8B0D9a04541d8052",
       NftBridge: "0xf7B6737Ca9c4e08aE573F75A97B73D7a813f5De5",
-      Relayer: undefined,
+      Relayer: "0xcafd2f0a35a4459fa40c0517e17e6fa2939441ca",
     },
     Oasis: {
       CoreBridge: "0xfE8cD454b4A1CA468B57D79c0cc77Ef5B6f64585",
@@ -65,7 +65,7 @@ export const contracts = {
       CoreBridge: "0x126783A6Cb203a3E35344528B26ca3a0489a1485",
       TokenBridge: "0x7C9Fc5741288cDFdD83CeB07f3ea7e22618D79D2",
       NftBridge: "0xA9c7119aBDa80d4a4E0C06C8F4d8cF5893234535",
-      Relayer: undefined,
+      Relayer: "0xcafd2f0a35a4459fa40c0517e17e6fa2939441ca",
     },
     Karura: {
       CoreBridge: "0xa321448d90d4e5b0A732867c18eA198e75CAC48E",
@@ -89,7 +89,7 @@ export const contracts = {
       CoreBridge: "0xa321448d90d4e5b0A732867c18eA198e75CAC48E",
       TokenBridge: "0x796Dff6D74F3E27060B71255Fe517BFb23C93eed",
       NftBridge: "0xA6A377d75ca5c9052c9a77ED1e865Cc25Bd97bf3",
-      Relayer: undefined,
+      Relayer: "0xcafd2f0a35a4459fa40c0517e17e6fa2939441ca",
     },
     Near: {
       CoreBridge: "contract.wormhole_crypto.near",
@@ -124,13 +124,14 @@ export const contracts = {
       TokenBridge:
         "0xc57508ee0d4595e5a8728974a4a93a787d38f339757230d441e895422c07aba9",
       NftBridge: undefined,
-      Relayer: undefined,
+      Relayer:
+        "0x57f4e0ba41a7045e29d435bc66cc4175f381eb700e6ec16d4fdfe92e5a4dff9f",
     },
     Moonbeam: {
       CoreBridge: "0xC8e2b0cD52Cf01b0Ce87d389Daa3d414d4cE29f3",
       TokenBridge: "0xb1731c586ca89a23809861c6103f0b96b3f57d92",
       NftBridge: "0x453cfbe096c0f8d763e8c5f24b441097d577bde2",
-      Relayer: undefined,
+      Relayer: "0xcafd2f0a35a4459fa40c0517e17e6fa2939441ca",
     },
     Neon: {
       CoreBridge: undefined,
@@ -222,7 +223,7 @@ export const contracts = {
       CoreBridge: "0x706abc4E45D419950511e474C7B9Ed348A4a716c",
       TokenBridge: "0xF890982f9310df57d00f659cf4fd87e65adEd8d7",
       NftBridge: "0xD8E4C2DbDd2e2bd8F1336EA691dBFF6952B1a6eB",
-      Relayer: undefined,
+      Relayer: "0x9563a59c15842a6f322b10f69d1dd88b41f2e97b",
     },
     Terra: {
       CoreBridge: "terra1pd65m0q9tl3v8znnz5f5ltsfegyzah7g42cx5v",
@@ -234,19 +235,19 @@ export const contracts = {
       CoreBridge: "0x68605AD7b15c732a30b1BbC62BE8F2A509D74b4D",
       TokenBridge: "0x9dcF9D205C9De35334D646BeE44b2D2859712A09",
       NftBridge: "0xcD16E5613EF35599dc82B24Cb45B5A93D779f1EE",
-      Relayer: undefined,
+      Relayer: "0x9563a59c15842a6f322b10f69d1dd88b41f2e97b",
     },
     Polygon: {
       CoreBridge: "0x0CBE91CF822c73C2315FB05100C2F714765d5c20",
       TokenBridge: "0x377D55a7928c046E18eEbb61977e714d2a76472a",
       NftBridge: "0x51a02d0dcb5e52F5b92bdAA38FA013C91c7309A9",
-      Relayer: undefined,
+      Relayer: "0x9563a59c15842a6f322b10f69d1dd88b41f2e97b",
     },
     Avalanche: {
       CoreBridge: "0x7bbcE28e64B3F8b84d876Ab298393c38ad7aac4C",
       TokenBridge: "0x61E44E506Ca5659E6c0bba9b678586fA2d729756",
       NftBridge: "0xD601BAf2EEE3C028344471684F6b27E789D9075D",
-      Relayer: undefined,
+      Relayer: "0x9563a59c15842a6f322b10f69d1dd88b41f2e97b",
     },
     Oasis: {
       CoreBridge: "0xc1C338397ffA53a2Eb12A7038b4eeb34791F8aCb",
@@ -270,7 +271,7 @@ export const contracts = {
       CoreBridge: "0x1BB3B4119b7BA9dfad76B0545fb3F531383c3bB7",
       TokenBridge: "0x599CEa2204B4FaECd584Ab1F2b6aCA137a0afbE8",
       NftBridge: "0x63eD9318628D26BdCB15df58B53BB27231D1B227",
-      Relayer: undefined,
+      Relayer: "0x9563a59c15842a6f322b10f69d1dd88b41f2e97b",
     },
     Karura: {
       CoreBridge: "0xE4eacc10990ba3308DdCC72d985f2a27D20c7d03",
@@ -294,7 +295,7 @@ export const contracts = {
       CoreBridge: "0x88505117CA88e7dd2eC6EA1E13f0948db2D50D56",
       TokenBridge: "0x05ca6037eC51F8b712eD2E6Fa72219FEaE74E153",
       NftBridge: "0xaCD8190F647a31E56A656748bC30F69259f245Db",
-      Relayer: undefined,
+      Relayer: "0x9563a59c15842a6f322b10f69d1dd88b41f2e97b",
     },
     Near: {
       CoreBridge: "wormhole.wormhole.Testnet",
@@ -329,13 +330,14 @@ export const contracts = {
       TokenBridge:
         "0x6fb10cdb7aa299e9a4308752dadecb049ff55a892de92992a1edbd7912b3d6da",
       NftBridge: undefined,
-      Relayer: undefined,
+      Relayer:
+        "0xb30040e5120f8cb853b691cb6d45981ae884b1d68521a9dc7c3ae881c0031923",
     },
     Moonbeam: {
       CoreBridge: "0xa5B7D85a8f27dd7907dc8FdC21FA5657D5E2F901",
       TokenBridge: "0xbc976D4b9D57E57c3cA52e1Fd136C45FF7955A96",
       NftBridge: "0x98A0F4B96972b32Fcb3BD03cAeB66A44a6aB9Edb",
-      Relayer: undefined,
+      Relayer: "0x9563a59c15842a6f322b10f69d1dd88b41f2e97b",
     },
     Neon: {
       CoreBridge: "0x268557122Ffd64c85750d630b716471118F323c8",
