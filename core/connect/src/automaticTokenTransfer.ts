@@ -12,7 +12,7 @@ import {
 import { AutomaticWormholeTransfer, TransferState } from './wormholeTransfer';
 import { Wormhole } from './wormhole';
 import {
-  TokenBridge,
+  AutomaticTokenBridge,
   UniversalAddress,
   UnsignedTransaction,
   VAA,
@@ -36,7 +36,7 @@ export class AutomaticTokenTransfer implements AutomaticWormholeTransfer {
   transfer: TokenTransferDetails;
 
   fromSigner?: Signer;
-  private fromTokenBridge?: TokenBridge<PlatformName>;
+  private fromTokenBridge?: AutomaticTokenBridge<PlatformName>;
 
   // The corresponding vaa representing the TokenTransfer
   // on the source chain (if its been completed and finalized)
@@ -90,7 +90,7 @@ export class AutomaticTokenTransfer implements AutomaticWormholeTransfer {
 
     // cache token bridges
     const fromChain = wh.getChain(tt.transfer.from.chain);
-    tt.fromTokenBridge = await fromChain.getTokenBridge();
+    tt.fromTokenBridge = await fromChain.getAutomaticTokenBridge();
 
     return tt;
   }
@@ -178,7 +178,6 @@ export class AutomaticTokenTransfer implements AutomaticWormholeTransfer {
       { chain: this.transfer.to.chain, address: this.transfer.to.address },
       tokenAddress,
       this.transfer.amount,
-      this.transfer.payload,
     );
 
     // TODO: check 'stackable'?
