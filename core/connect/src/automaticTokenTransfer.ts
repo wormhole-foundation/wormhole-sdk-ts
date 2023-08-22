@@ -10,7 +10,7 @@ import {
   isTokenTransferDetails,
   isTransactionIdentifier,
 } from './types';
-import { ManualWormholeTransfer, TransferState } from './wormholeTransfer';
+import { AutomaticWormholeTransfer, TransferState } from './wormholeTransfer';
 import { Wormhole } from './wormhole';
 import {
   TokenBridge,
@@ -27,7 +27,7 @@ import { ChainName, PlatformName } from '@wormhole-foundation/sdk-base';
  * More concurrent promises instead of linearizing/blocking
  */
 
-export class AutomaticTokenTransfer implements ManualWormholeTransfer {
+export class AutomaticTokenTransfer implements AutomaticWormholeTransfer {
   private readonly wh: Wormhole;
 
   // state machine tracker
@@ -38,9 +38,6 @@ export class AutomaticTokenTransfer implements ManualWormholeTransfer {
 
   fromSigner?: Signer;
   private fromTokenBridge?: TokenBridge<PlatformName>;
-
-  toSigner?: Signer;
-  private toTokenBridge?: TokenBridge<PlatformName>;
 
   // The corresponding vaa representing the TokenTransfer
   // on the source chain (if its been completed and finalized)
@@ -93,9 +90,6 @@ export class AutomaticTokenTransfer implements ManualWormholeTransfer {
     // cache token bridges
     const fromChain = wh.getChain(tt.transfer.from.chain);
     tt.fromTokenBridge = await fromChain.getTokenBridge();
-
-    const toChain = wh.getChain(tt.transfer.to.chain);
-    tt.toTokenBridge = await toChain.getTokenBridge();
 
     return tt;
   }
@@ -218,83 +212,6 @@ export class AutomaticTokenTransfer implements ManualWormholeTransfer {
     }
 
     return txHashes;
-  }
-
-  // wait for the VAA to be ready
-  // returns the sequence number
-  async ready(): Promise<SequenceId[]> {
-    /*
-          0) check that the current `state` is valid to call this  (eg: state == Started)
-          1) poll the api on an interval to check if the VAA is available
-          2) Once available, pull the VAA and parse it
-          3) return seq
-      */
-    if (this.state < TransferState.Started || this.state > TransferState.Ready)
-      throw new Error('Invalid state transition in `ready`');
-
-    if (!this.vaas || this.vaas.length == 0)
-      throw new Error('No VAA details available');
-
-    // Check if we already have the VAA
-    for (const idx in this.vaas) {
-      // already got it
-      if (this.vaas[idx].vaa) continue;
-
-      this.vaas[idx].vaa = await AutomaticTokenTransfer.getTransferVaa(
-        this.wh,
-        this.transfer.from.chain,
-        this.vaas[idx].emitter,
-        this.vaas[idx].sequence,
-      );
-    }
-
-    this.state = TransferState.Ready;
-    return this.vaas.map((v) => {
-      return v.sequence;
-    });
-  }
-
-  // finish the WormholeTransfer by submitting transactions to the destination chain
-  // returns a transaction hash
-  async finish(signer?: Signer): Promise<TxHash[]> {
-    /*
-          0) check that the current `state` is valid to call this  (eg: state == Ready)
-          1) prepare the transactions and sign them given the signer
-          2) submit the VAA and transactions on chain
-          3) return txid of submission
-      */
-    if (this.state < TransferState.Ready)
-      throw new Error('Invalid state transition in `finish`');
-
-    // TODO: fetch it for 'em? We should _not_ be Ready if we dont have these
-    if (!this.vaas) throw new Error('No VAA details available');
-
-    const unsigned: UnsignedTransaction[] = [];
-    for (const cachedVaa of this.vaas) {
-      const vaa = cachedVaa.vaa
-        ? cachedVaa.vaa
-        : await AutomaticTokenTransfer.getTransferVaa(
-            this.wh,
-            this.transfer.from.chain,
-            cachedVaa.emitter,
-            cachedVaa.sequence,
-          );
-
-      if (!vaa) throw new Error('No Vaa found');
-
-      const xfer = this.toTokenBridge!.redeem(this.transfer.to.address, vaa);
-
-      // TODO: check 'stackable'?
-      for await (const tx of xfer) {
-        unsigned.push(tx);
-      }
-    }
-
-    const s = signer ? signer : this.toSigner;
-    if (s === undefined) throw new Error('No signer defined');
-
-    const toChain = this.wh.getChain(this.transfer.to.chain);
-    return await toChain.sendWait(await s.sign(unsigned));
   }
 
   static async getTransferVaa(

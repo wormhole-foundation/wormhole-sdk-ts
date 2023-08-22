@@ -23,6 +23,7 @@ import {
 
 import { CONFIG } from './constants';
 import { ManualTokenTransfer } from './manualTokenTransfer';
+import { AutomaticTokenTransfer } from './automaticTokenTransfer';
 
 export class Wormhole {
   protected _platforms: Map<PlatformName, Platform>;
@@ -59,8 +60,18 @@ export class Wormhole {
     amount: bigint,
     from: ChainAddress,
     to: ChainAddress,
+    automatic: boolean,
     payload?: Uint8Array,
-  ): Promise<ManualTokenTransfer> {
+  ): Promise<ManualTokenTransfer | AutomaticTokenTransfer> {
+    if (automatic) {
+      return await AutomaticTokenTransfer.from(this, {
+        token: token,
+        amount: amount,
+        payload: payload,
+        from,
+        to,
+      });
+    }
     return await ManualTokenTransfer.from(this, {
       token: token,
       amount: amount,
@@ -257,15 +268,14 @@ export class Wormhole {
     chain: ChainName,
     emitter: UniversalAddress,
     seq: bigint,
+    retries: number = 5,
   ): Promise<VAA | undefined> {
-    const vaaBytes = await this.getVAABytes(chain, emitter, seq);
+    const vaaBytes = await this.getVAABytes(chain, emitter, seq, retries);
     if (vaaBytes === undefined) return;
 
     return deserialize('Uint8Array', vaaBytes);
   }
 
-  //
-  //
   //  /**
   //   * Gets required fields from a ParsedMessage or ParsedRelayerMessage used to fetch a VAA
   //   *

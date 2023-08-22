@@ -3,11 +3,10 @@ import {
   UniversalAddress,
   VAA,
 } from '@wormhole-foundation/sdk-definitions';
-import { Wormhole } from '../../src/wormhole';
+import { PlatformName } from '@wormhole-foundation/sdk-base';
+import { Platform, RpcConnection, Wormhole } from '../../src';
 import { MockPlatform } from '../mocks/mockPlatform';
 import { MockChain } from '../mocks/mockChain';
-import { Platform, RpcConnection } from '../../src';
-import { PlatformName } from '@wormhole-foundation/sdk-base';
 
 describe('Wormhole Tests', () => {
   let wh: Wormhole;
@@ -33,13 +32,13 @@ describe('Platform Tests', () => {
   const p: Platform = wh.getPlatform('Ethereum');
   let rpc: RpcConnection;
   test('Gets RPC', () => {
-    rpc = p.getProvider('Ethereum');
+    rpc = p.getRpc('Ethereum');
     expect(rpc).toBeTruthy();
   });
 
   let tb: TokenBridge<PlatformName>;
   test('Gets Token Bridge', async () => {
-    tb = await p.getTokenBridge('Ethereum', rpc);
+    tb = await p.getTokenBridge(rpc);
     expect(tb).toBeTruthy();
   });
 });
