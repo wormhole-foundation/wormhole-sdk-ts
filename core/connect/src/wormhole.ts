@@ -22,7 +22,8 @@ import {
 } from './types';
 
 import { CONFIG } from './constants';
-import { TokenTransfer } from './tokenTransfer';
+import { ManualTokenTransfer } from './manualTokenTransfer';
+import { AutomaticTokenTransfer } from './automaticTokenTransfer';
 
 export class Wormhole {
   protected _platforms: Map<PlatformName, Platform>;
@@ -59,9 +60,33 @@ export class Wormhole {
     amount: bigint,
     from: ChainAddress,
     to: ChainAddress,
+    automatic: false,
     payload?: Uint8Array,
-  ): Promise<TokenTransfer> {
-    return await TokenTransfer.from(this, {
+  ): Promise<ManualTokenTransfer>;
+  async tokenTransfer(
+    token: TokenId | 'native',
+    amount: bigint,
+    from: ChainAddress,
+    to: ChainAddress,
+    automatic: true,
+  ): Promise<AutomaticTokenTransfer>;
+  async tokenTransfer(
+    token: TokenId | 'native',
+    amount: bigint,
+    from: ChainAddress,
+    to: ChainAddress,
+    automatic: boolean,
+    payload?: Uint8Array,
+  ): Promise<AutomaticTokenTransfer | ManualTokenTransfer> {
+    if (automatic) {
+      return await AutomaticTokenTransfer.from(this, {
+        token: token,
+        amount: amount,
+        from,
+        to,
+      });
+    }
+    return await ManualTokenTransfer.from(this, {
       token: token,
       amount: amount,
       payload: payload,
@@ -257,15 +282,14 @@ export class Wormhole {
     chain: ChainName,
     emitter: UniversalAddress,
     seq: bigint,
+    retries: number = 5,
   ): Promise<VAA | undefined> {
-    const vaaBytes = await this.getVAABytes(chain, emitter, seq);
+    const vaaBytes = await this.getVAABytes(chain, emitter, seq, retries);
     if (vaaBytes === undefined) return;
 
     return deserialize('Uint8Array', vaaBytes);
   }
 
-  //
-  //
   //  /**
   //   * Gets required fields from a ParsedMessage or ParsedRelayerMessage used to fetch a VAA
   //   *

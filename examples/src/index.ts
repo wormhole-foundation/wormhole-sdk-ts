@@ -1,5 +1,7 @@
 import {
-  TokenTransfer,
+  AutomaticTokenTransfer,
+  ManualTokenTransfer,
+  TransferState,
   TxHash,
   Wormhole,
 } from "@wormhole-foundation/connect-sdk";
@@ -13,6 +15,11 @@ import {
 } from "@wormhole-foundation/sdk-definitions";
 
 (async function () {
+  await automaticTransfer();
+  // manualTransfer()
+})();
+
+async function automaticTransfer() {
   // init Wormhole object, passing config for which network
   // to use (testnet/mainnet/...) and what Platforms to support
   const wh = new Wormhole("Testnet", [EvmPlatform]);
@@ -21,7 +28,64 @@ import {
   const sendChain = wh.getChain("Avalanche");
   const sendSigner = await getEvmSigner(
     sendChain.chain,
-    sendChain.getRPC() as ethers.Provider
+    sendChain.getRpc() as ethers.Provider
+  );
+  const sender: ChainAddress = {
+    chain: sendSigner.chain(),
+    address: sendChain.platform.parseAddress(sendSigner.address()),
+  };
+
+  const rcvChain = wh.getChain("Polygon");
+  const rcvSigner = await getEvmSigner(
+    rcvChain.chain,
+    rcvChain.getRpc() as ethers.Provider
+  );
+  const receiver: ChainAddress = {
+    chain: rcvSigner.chain(),
+    address: rcvChain.platform.parseAddress(rcvSigner.address()),
+  };
+
+  const tt = await AutomaticTokenTransfer.from(wh, {
+    chain: sendChain.chain,
+    txid: "0xce9665abe063a8629967c7cb2dae9948d70a784be85c165bb5d7187fc5cea16f",
+  });
+
+  // Create a TokenTransfer object that we can step through the process.
+  // It holds a `state` field that is used to inform where in the process we are
+  // const tt = await wh.tokenTransfer(
+  //   "native",
+  //   10000000n,
+  //   sender,
+  //   receiver,
+  //   true
+  // );
+  // console.log(`Created token transfer object`);
+  // console.log(tt);
+
+  //1) Submit the transactions to the source chain, passing a signer to sign any txns
+  // const txids = await tt.start(sendSigner);
+  // console.log(`Started transfer with txid: ${txids}`);
+
+  // 3) redeem the VAA on the dest chain, passing a signer to sign any transactions
+  while (tt.transferState() != TransferState.Complete) {
+    console.log(
+      `Current state: ${tt.transferState()}. Sleeping and trying again in 2 seconds`
+    );
+    await new Promise((f) => setTimeout(f, 2000));
+  }
+  console.log(`Transfer is complete!`);
+}
+
+async function manualTransfer() {
+  // init Wormhole object, passing config for which network
+  // to use (testnet/mainnet/...) and what Platforms to support
+  const wh = new Wormhole("Testnet", [EvmPlatform]);
+
+  // init some Signer objects from a local key
+  const sendChain = wh.getChain("Avalanche");
+  const sendSigner = await getEvmSigner(
+    sendChain.chain,
+    sendChain.getRpc() as ethers.Provider
   );
   const sender: ChainAddress = {
     chain: sendSigner.chain(),
@@ -31,7 +95,7 @@ import {
   const rcvChain = wh.getChain("Celo");
   const rcvSigner = await getEvmSigner(
     rcvChain.chain,
-    rcvChain.getRPC() as ethers.Provider
+    rcvChain.getRpc() as ethers.Provider
   );
   const receiver: ChainAddress = {
     chain: rcvSigner.chain(),
@@ -40,7 +104,13 @@ import {
 
   // Create a TokenTransfer object that we can step through the process.
   // It holds a `state` field that is used to inform where in the process we are
-  const tt = await wh.tokenTransfer("native", 10000000n, sender, receiver);
+  const tt = await wh.tokenTransfer(
+    "native",
+    10000000n,
+    sender,
+    receiver,
+    false
+  );
   console.log(`Created token transfer object`);
   console.log(tt);
 
@@ -55,15 +125,15 @@ import {
   // 3) redeem the VAA on the dest chain, passing a signer to sign any transactions
   await tt.finish(rcvSigner);
   console.log(`Transfer is complete!`);
-})();
+}
 
 // If the transfer was already started and the txid is available
 async function pickupFromTx(
   wh: Wormhole,
   chain: ChainName,
   txid: TxHash
-): Promise<TokenTransfer> {
-  return await TokenTransfer.from(wh, { chain, txid });
+): Promise<ManualTokenTransfer> {
+  return await ManualTokenTransfer.from(wh, { chain, txid });
 }
 
 // If the transfer was already started and the emitter/seq are available
@@ -72,8 +142,8 @@ async function pickupFromMsgId(
   chain: ChainName,
   emitter: UniversalAddress,
   sequence: bigint
-): Promise<TokenTransfer> {
-  return await TokenTransfer.from(wh, {
+): Promise<ManualTokenTransfer> {
+  return await ManualTokenTransfer.from(wh, {
     chain,
     address: emitter,
     sequence,

@@ -1,4 +1,9 @@
 import {
+  TokenBridge,
+  UniversalAddress,
+} from '@wormhole-foundation/sdk-definitions';
+import { ChainName, Network } from '@wormhole-foundation/sdk-base';
+import {
   Platform,
   RpcConnection,
   ChainContext,
@@ -6,26 +11,17 @@ import {
   TxHash,
   TokenTransferTransaction,
   TokenId,
-} from '../../src/types';
-import {
-  NativeAddress,
-  TokenBridge,
-  UniversalAddress,
-  UniversalOrNative,
-  UnsignedTransaction,
-  VAA,
-} from '@wormhole-foundation/sdk-definitions';
-import { ChainName, Network } from '@wormhole-foundation/sdk-base';
-import { MockPlatform, MockProvider } from './mockPlatform';
+} from '../../src/';
+import { MockPlatform, MockRpc } from './mockPlatform';
 import { MockTokenBridge } from './mockTokenBridge';
 
 export class MockChain implements ChainContext {
   readonly chain: ChainName;
   readonly network: Network;
-  readonly platform: Platform;
+  readonly platform: MockPlatform;
 
   // Cached objects
-  private provider?: MockProvider;
+  private rpc?: RpcConnection;
   private tokenBridge?: MockTokenBridge;
 
   constructor(platform: Platform, chain: ChainName) {
@@ -33,35 +29,21 @@ export class MockChain implements ChainContext {
     this.network = platform.network!;
     this.platform = platform;
   }
-  getFinalizedHeight(): Promise<bigint> {
-    throw new Error('Method not implemented.');
-  }
 
-  getRPC(): MockProvider | undefined {
-    this.provider = this.provider
-      ? this.provider
-      : this.platform.getProvider(this.chain);
-
-    return this.provider;
+  getRpc(): MockRpc {
+    this.rpc = this.rpc ? this.rpc : this.platform.getRpc(this.chain);
+    return this.rpc;
   }
 
   async getTokenBridge(): Promise<TokenBridge<'Evm'>> {
     this.tokenBridge = this.tokenBridge
       ? this.tokenBridge
-      : await this.platform.getTokenBridge(this.chain, this.getRPC());
+      : await this.platform.getTokenBridge(this.getRpc());
     return this.tokenBridge;
   }
 
-  async getTransaction(txid: string): Promise<TokenTransferTransaction[]> {
-    return await this.platform.parseTransaction(
-      this.chain,
-      txid,
-      this.getRPC(),
-    );
-  }
-
   async sendWait(stxns: SignedTxn[]): Promise<TxHash[]> {
-    const rpc = this.getRPC();
+    const rpc = this.getRpc();
     const txhashes: TxHash[] = [];
 
     // TODO: concurrent
@@ -80,18 +62,27 @@ export class MockChain implements ChainContext {
   }
 
   async getForeignAsset(tokenId: TokenId): Promise<UniversalAddress | null> {
-    return this.platform.getForeignAsset(this.chain, tokenId);
+    return this.platform.getForeignAsset(this.chain, this.getRpc(), tokenId);
   }
   async getTokenDecimals(tokenAddr: UniversalAddress): Promise<bigint> {
-    return this.platform.getTokenDecimals(this.chain, tokenAddr);
+    return this.platform.getTokenDecimals(this.getRpc(), tokenAddr);
   }
   async getNativeBalance(walletAddr: string): Promise<bigint> {
-    return this.platform.getNativeBalance(this.chain, walletAddr);
+    return this.platform.getNativeBalance(this.getRpc(), walletAddr);
   }
   async getTokenBalance(
     walletAddr: string,
     tokenId: TokenId,
   ): Promise<bigint | null> {
-    return this.platform.getTokenBalance(this.chain, walletAddr, tokenId);
+    return this.platform.getTokenBalance(
+      this.chain,
+      this.getRpc(),
+      walletAddr,
+      tokenId,
+    );
+  }
+
+  async parseTransaction(txid: string): Promise<TokenTransferTransaction[]> {
+    return [];
   }
 }
