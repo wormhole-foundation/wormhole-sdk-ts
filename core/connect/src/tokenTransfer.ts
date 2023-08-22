@@ -13,13 +13,14 @@ import {
 import { WormholeTransfer, TransferState } from './wormholeTransfer';
 import { Wormhole } from './wormhole';
 import {
-  TokenBridge,
+  ChainAddress,
   UniversalAddress,
   UnsignedTransaction,
   VAA,
   deserialize,
 } from '@wormhole-foundation/sdk-definitions';
-import { ChainName, PlatformName } from '@wormhole-foundation/sdk-base';
+import { Network, ChainName } from '@wormhole-foundation/sdk-base';
+import { chainConfigs } from './constants';
 
 /**
  * What do with multiple transactions or VAAs?
@@ -100,9 +101,11 @@ export class TokenTransfer implements WormholeTransfer {
       sequence,
     );
 
-    // TODO: actually check
-    let automatic = false;
-    if (vaa.payload.to.address.toString() === 'TODO') automatic = true;
+    // Check if its a payload 3 targeted at a relayer on the destination chain
+    const rcv = vaa.payload.to;
+    const automatic =
+      vaa.payloadLiteral === 'TransferWithPayload' &&
+      rcv.address.toString() === wh.conf.chains[rcv.chain]?.contracts.Relayer;
 
     const details: TokenTransferDetails = {
       token: { ...vaa.payload.token },
@@ -128,29 +131,14 @@ export class TokenTransfer implements WormholeTransfer {
   ): Promise<TokenTransfer> {
     const { chain, txid } = from;
 
-    const c = wh.getChain(chain);
+    const originChain = wh.getChain(chain);
 
-    const parsedTxDeets: TokenTransferTransaction[] = await c.parseTransaction(
-      txid,
-    );
+    const parsedTxs: TokenTransferTransaction[] =
+      await originChain.parseTransaction(txid);
 
     // TODO: assuming single tx
-    const [tx] = parsedTxDeets;
-
-    const tt = new TokenTransfer(wh, tx.details);
-    tt.state = TransferState.Started;
-
-    const { address: emitter, sequence } = tx.message.msg;
-    const vaa = await TokenTransfer.getTransferVaa(
-      wh,
-      chain,
-      emitter,
-      sequence,
-    );
-
-    tt.vaas = [{ emitter, sequence, vaa }];
-    tt.state = TransferState.Ready;
-    return tt;
+    const [tx] = parsedTxs;
+    return TokenTransfer.fromIdentifier(wh, tx.message.msg);
   }
 
   // start the WormholeTransfer by submitting transactions to the source chain
