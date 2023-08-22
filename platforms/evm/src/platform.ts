@@ -175,6 +175,9 @@ export class EvmPlatform implements Platform {
       const tokenAddress = new UniversalAddress(parsedTransfer.tokenAddress);
       const tokenChain = toChainName(parsedTransfer.tokenChain);
 
+      let automatic = false;
+      if (parsedTransfer.to.toString() === 'TODO') automatic = true;
+
       const ttt: TokenTransferTransaction = {
         message: {
           tx: { chain: chain, txid },
@@ -193,6 +196,7 @@ export class EvmPlatform implements Platform {
             chain: toChain,
             address: new UniversalAddress(parsedTransfer.to),
           },
+          automatic,
         },
         block: BigInt(receipt.blockNumber),
         gasFee,

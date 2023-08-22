@@ -10,7 +10,7 @@ import {
   isTokenTransferDetails,
   isTransactionIdentifier,
 } from './types';
-import { ManualWormholeTransfer, TransferState } from './wormholeTransfer';
+import { WormholeTransfer, TransferState } from './wormholeTransfer';
 import { Wormhole } from './wormhole';
 import {
   TokenBridge,
@@ -27,7 +27,7 @@ import { ChainName, PlatformName } from '@wormhole-foundation/sdk-base';
  * More concurrent promises instead of linearizing/blocking
  */
 
-export class TokenTransfer implements ManualWormholeTransfer {
+export class TokenTransfer implements WormholeTransfer {
   private readonly wh: Wormhole;
 
   // state machine tracker
@@ -35,12 +35,6 @@ export class TokenTransfer implements ManualWormholeTransfer {
 
   // transfer details
   transfer: TokenTransferDetails;
-
-  fromSigner?: Signer;
-  private fromTokenBridge?: TokenBridge<PlatformName>;
-
-  toSigner?: Signer;
-  private toTokenBridge?: TokenBridge<PlatformName>;
 
   // The corresponding vaa representing the TokenTransfer
   // on the source chain (if its been completed and finalized)
@@ -90,13 +84,6 @@ export class TokenTransfer implements ManualWormholeTransfer {
     if (tt === undefined)
       throw new Error('Invalid `from` parameter for TokenTransfer');
 
-    // cache token bridges
-    const fromChain = wh.getChain(tt.transfer.from.chain);
-    tt.fromTokenBridge = await fromChain.getTokenBridge();
-
-    const toChain = wh.getChain(tt.transfer.to.chain);
-    tt.toTokenBridge = await toChain.getTokenBridge();
-
     return tt;
   }
 
@@ -113,6 +100,10 @@ export class TokenTransfer implements ManualWormholeTransfer {
       sequence,
     );
 
+    // TODO: actually check
+    let automatic = false;
+    if (vaa.payload.to.address.toString() === 'TODO') automatic = true;
+
     const details: TokenTransferDetails = {
       token: { ...vaa.payload.token },
       amount: vaa.payload.token.amount,
@@ -120,6 +111,7 @@ export class TokenTransfer implements ManualWormholeTransfer {
       // immediately have enough info to get the _correct_ one
       from: { ...from },
       to: { ...vaa.payload.to },
+      automatic,
     };
 
     const tt = new TokenTransfer(wh, details);
@@ -163,7 +155,7 @@ export class TokenTransfer implements ManualWormholeTransfer {
 
   // start the WormholeTransfer by submitting transactions to the source chain
   // returns a transaction hash
-  async start(signer?: Signer): Promise<TxHash[]> {
+  async start(signer: Signer): Promise<TxHash[]> {
     /*
         0) check that the current `state` is valid to call this (eg: state == Created)
         1) get a token transfer transaction for the token bridge given the context
@@ -178,13 +170,27 @@ export class TokenTransfer implements ManualWormholeTransfer {
     const tokenAddress =
       this.transfer.token === 'native' ? 'native' : this.transfer.token.address;
 
-    const xfer = this.fromTokenBridge!.transfer(
-      this.transfer.from.address,
-      { chain: this.transfer.to.chain, address: this.transfer.to.address },
-      tokenAddress,
-      this.transfer.amount,
-      this.transfer.payload,
-    );
+    const fromChain = this.wh.getChain(this.transfer.from.chain);
+
+    let xfer: AsyncGenerator<UnsignedTransaction>;
+    if (this.transfer.automatic) {
+      const tb = await fromChain.getAutomaticTokenBridge();
+      xfer = tb.transfer(
+        this.transfer.from.address,
+        { chain: this.transfer.to.chain, address: this.transfer.to.address },
+        tokenAddress,
+        this.transfer.amount,
+      );
+    } else {
+      const tb = await fromChain.getTokenBridge();
+      xfer = tb.transfer(
+        this.transfer.from.address,
+        { chain: this.transfer.to.chain, address: this.transfer.to.address },
+        tokenAddress,
+        this.transfer.amount,
+        this.transfer.payload,
+      );
+    }
 
     // TODO: check 'stackable'?
     const unsigned: UnsignedTransaction[] = [];
@@ -195,11 +201,7 @@ export class TokenTransfer implements ManualWormholeTransfer {
       unsigned.push(tx);
     }
 
-    const s = signer ? signer : this.fromSigner;
-    if (s === undefined) throw new Error('No signer defined');
-
-    const fromChain = this.wh.getChain(this.transfer.from.chain);
-    const txHashes = await fromChain.sendWait(await s.sign(unsigned));
+    const txHashes = await fromChain.sendWait(await signer.sign(unsigned));
 
     this.state = TransferState.Started;
 
@@ -256,7 +258,7 @@ export class TokenTransfer implements ManualWormholeTransfer {
 
   // finish the WormholeTransfer by submitting transactions to the destination chain
   // returns a transaction hash
-  async finish(signer?: Signer): Promise<TxHash[]> {
+  async finish(signer: Signer): Promise<TxHash[]> {
     /*
         0) check that the current `state` is valid to call this  (eg: state == Ready)
         1) prepare the transactions and sign them given the signer
@@ -268,6 +270,8 @@ export class TokenTransfer implements ManualWormholeTransfer {
 
     // TODO: fetch it for 'em? We should _not_ be Ready if we dont have these
     if (!this.vaas) throw new Error('No VAA details available');
+
+    const toChain = this.wh.getChain(this.transfer.to.chain);
 
     const unsigned: UnsignedTransaction[] = [];
     for (const cachedVaa of this.vaas) {
@@ -282,7 +286,23 @@ export class TokenTransfer implements ManualWormholeTransfer {
 
       if (!vaa) throw new Error('No Vaa found');
 
-      const xfer = this.toTokenBridge!.redeem(this.transfer.to.address, vaa);
+      let xfer: AsyncGenerator<UnsignedTransaction> | undefined;
+      if (this.transfer.automatic) {
+        if (vaa.payloadLiteral === 'Transfer')
+          throw new Error(
+            'VAA is a simple transfer but expected Payload for automatic delivery',
+          );
+
+        const tb = await toChain.getAutomaticTokenBridge();
+        xfer = tb.redeem(this.transfer.to.address, vaa);
+      } else {
+        const tb = await toChain.getTokenBridge();
+        xfer = tb.redeem(this.transfer.to.address, vaa);
+      }
+
+      // TODO: better error
+      if (xfer === undefined)
+        throw new Error('No handler defined for VAA type');
 
       // TODO: check 'stackable'?
       for await (const tx of xfer) {
@@ -290,11 +310,7 @@ export class TokenTransfer implements ManualWormholeTransfer {
       }
     }
 
-    const s = signer ? signer : this.toSigner;
-    if (s === undefined) throw new Error('No signer defined');
-
-    const toChain = this.wh.getChain(this.transfer.to.chain);
-    return await toChain.sendWait(await s.sign(unsigned));
+    return await toChain.sendWait(await signer.sign(unsigned));
   }
 
   static async getTransferVaa(
@@ -303,7 +319,7 @@ export class TokenTransfer implements ManualWormholeTransfer {
     emitter: UniversalAddress,
     sequence: bigint,
     retries: number = 5,
-  ): Promise<VAA<'Transfer'>> {
+  ): Promise<VAA<'Transfer'> | VAA<'TransferWithPayload'>> {
     const vaaBytes = await wh.getVAABytes(chain, emitter, sequence, retries);
     if (!vaaBytes) throw new Error(`No VAA available after ${retries} retries`);
     return deserialize('Transfer', vaaBytes);

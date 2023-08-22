@@ -22,8 +22,7 @@ import {
 } from './types';
 
 import { CONFIG } from './constants';
-import { ManualTokenTransfer } from './manualTokenTransfer';
-import { AutomaticTokenTransfer } from './automaticTokenTransfer';
+import { TokenTransfer } from './tokenTransfer';
 
 export class Wormhole {
   protected _platforms: Map<PlatformName, Platform>;
@@ -60,38 +59,19 @@ export class Wormhole {
     amount: bigint,
     from: ChainAddress,
     to: ChainAddress,
-    automatic: false,
-    payload?: Uint8Array,
-  ): Promise<ManualTokenTransfer>;
-  async tokenTransfer(
-    token: TokenId | 'native',
-    amount: bigint,
-    from: ChainAddress,
-    to: ChainAddress,
-    automatic: true,
-  ): Promise<AutomaticTokenTransfer>;
-  async tokenTransfer(
-    token: TokenId | 'native',
-    amount: bigint,
-    from: ChainAddress,
-    to: ChainAddress,
     automatic: boolean,
     payload?: Uint8Array,
-  ): Promise<AutomaticTokenTransfer | ManualTokenTransfer> {
-    if (automatic) {
-      return await AutomaticTokenTransfer.from(this, {
-        token: token,
-        amount: amount,
-        from,
-        to,
-      });
-    }
-    return await ManualTokenTransfer.from(this, {
+  ): Promise<TokenTransfer> {
+    if (automatic && payload)
+      throw new Error('Payload with automatic delivery is not supported');
+
+    return await TokenTransfer.from(this, {
       token: token,
       amount: amount,
-      payload: payload,
       from,
       to,
+      automatic: automatic,
+      payload: payload,
     });
   }
 

@@ -56,7 +56,9 @@ export interface Platform {
   getRpc(chain: ChainName): RpcConnection;
   // protocol clients
   getTokenBridge(rpc: RpcConnection): Promise<TokenBridge<PlatformName>>;
-  getAutomaticTokenBridge(): Promise<AutomaticTokenBridge<PlatformName>>;
+  getAutomaticTokenBridge(
+    rpc: RpcConnection,
+  ): Promise<AutomaticTokenBridge<PlatformName>>;
 
   parseTransaction(
     chain: ChainName,
@@ -90,15 +92,16 @@ export interface ChainContext {
   getRpc(): RpcConnection;
   sendWait(stxns: SignedTxn[]): Promise<TxHash[]>;
 
-  getTokenBridge(): Promise<TokenBridge<PlatformName>>;
-  getAutomaticTokenBridge(): Promise<AutomaticTokenBridge<PlatformName>>;
-
   // TODO: can we add these automatically?
   getForeignAsset: OmitChainRpc<Platform['getForeignAsset']>;
   getTokenDecimals: OmitChainRpc<Platform['getTokenDecimals']>;
   getNativeBalance: OmitChainRpc<Platform['getNativeBalance']>;
   getTokenBalance: OmitChainRpc<Platform['getTokenBalance']>;
   parseTransaction: OmitChainRpc<Platform['parseTransaction']>;
+
+  // protocols
+  getTokenBridge: OmitChainRpc<Platform['getTokenBridge']>;
+  getAutomaticTokenBridge: OmitChainRpc<Platform['getAutomaticTokenBridge']>;
 }
 
 export type ChainCtr = new () => ChainContext;
@@ -119,9 +122,10 @@ export type TransactionIdentifier = { chain: ChainName; txid: TxHash };
 export type TokenTransferDetails = {
   token: TokenId | 'native';
   amount: bigint;
-  payload?: Uint8Array;
   from: ChainAddress;
   to: ChainAddress;
+  automatic: boolean;
+  payload?: Uint8Array;
 };
 
 export type WormholeMessage = {
