@@ -11,7 +11,7 @@ export enum TransferState {
 
 // WormholeTransfer abstracts the process and state transitions
 // for things like TokenTransfers, NFTTransfers, CCTP, etc...
-export interface WormholeTransfer {
+export interface ManualWormholeTransfer {
   // the current state of this transfer
   transferState(): TransferState;
 
@@ -34,9 +34,7 @@ export interface WormholeTransfer {
   // destinationFinalized(): Promise<bigint>;
 }
 
-export enum TransferStatus {}
-
-export interface WormholeRelayedTransfer {
-  start(): void;
-  status(): TransferStatus;
+export interface AutomaticWormholeTransfer {
+  start(signer?: Signer): Promise<TxHash[]>;
+  transferState(): TransferState;
 }

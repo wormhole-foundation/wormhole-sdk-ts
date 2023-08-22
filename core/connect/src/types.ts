@@ -83,7 +83,7 @@ export interface ChainContext {
   readonly chain: ChainName;
   readonly network: Network;
   readonly platform: Platform;
-  getRPC(): RpcConnection;
+  getRpc(): RpcConnection;
   sendWait(stxns: SignedTxn[]): Promise<TxHash[]>;
   getTokenBridge(): Promise<TokenBridge<PlatformName>>;
 

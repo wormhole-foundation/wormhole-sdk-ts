@@ -29,21 +29,22 @@ import { EvmContracts } from './contracts';
 type EvmChain = PlatformToChainsMapping<'Evm'>;
 type UniversalOrEvm = UniversalOrNative<'Evm'> | string;
 
-const toEvmAddrString = (addr: UniversalOrEvm) =>
+// TODO: move these to a central locatio if we're reusing them
+export const toEvmAddrString = (addr: UniversalOrEvm) =>
   typeof addr === 'string'
     ? addr
     : (addr instanceof UniversalAddress ? addr.toNative('Evm') : addr).unwrap();
 
-const addFrom = (txReq: TransactionRequest, from: string) => ({
+export const addFrom = (txReq: TransactionRequest, from: string) => ({
   ...txReq,
   from,
 });
-const addChainId = (txReq: TransactionRequest, chainId: bigint) => ({
+export const addChainId = (txReq: TransactionRequest, chainId: bigint) => ({
   ...txReq,
   chainId,
 });
-const unusedNonce = 0;
-const unusedArbiterFee = 0n;
+export const unusedNonce = 0;
+export const unusedArbiterFee = 0n;
 
 //a word on casts here:
 //  Typescript only properly resolves types when EvmTokenBridge is fully instantiated. Until such a
@@ -108,6 +109,8 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     }
   }
 
+  // TODO:
+  // @ts-ignore
   async getWrappedAsset({ chain, address }: ChainAddress): Promise<EvmAddress> {
     return new EvmAddress(
       await this.tokenBridge.wrappedAsset(chain, address.toString()),

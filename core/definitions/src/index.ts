@@ -4,4 +4,5 @@ export * from "./vaa";
 export * from "./unsignedTransaction";
 export * from "./utils";
 export * from "./tokenBridge";
+export * from "./automaticTokenBridge";
 export * from "./relayer";

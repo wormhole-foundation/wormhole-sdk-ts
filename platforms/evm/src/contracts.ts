@@ -149,10 +149,10 @@ export class EvmContracts {
   getTokenBridgeRelayer(
     chain: ChainName,
     connection: Provider,
-  ): ethers_contracts.WormholeRelayer | undefined {
+  ): ethers_contracts.TokenBridgeRelayer | undefined {
     const address = this.mustGetContracts(chain).Relayer;
     if (!address) return undefined;
-    return ethers_contracts.WormholeRelayer__factory.connect(
+    return ethers_contracts.TokenBridgeRelayer__factory.connect(
       address,
       connection,
     );
@@ -166,7 +166,7 @@ export class EvmContracts {
   mustGetTokenBridgeRelayer(
     chain: ChainName,
     connection: Provider,
-  ): ethers_contracts.WormholeRelayer {
+  ): ethers_contracts.TokenBridgeRelayer {
     const relayer = this.getTokenBridgeRelayer(chain, connection);
     if (!relayer)
       throw new Error(
