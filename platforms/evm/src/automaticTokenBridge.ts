@@ -9,6 +9,9 @@ import {
   ChainAddress,
   UniversalOrNative,
   AutomaticTokenBridge,
+  UnsignedTransaction,
+  VAA,
+  serialize,
 } from '@wormhole-foundation/sdk-definitions';
 
 import { addChainId, addFrom, toEvmAddrString } from './tokenBridge';
@@ -38,6 +41,21 @@ export class EvmAutomaticTokenBridge implements AutomaticTokenBridge<'Evm'> {
     this.tokenBridgeRelayer = this.contracts.mustGetTokenBridgeRelayer(
       chain,
       provider,
+    );
+  }
+  async *redeem(
+    sender: UniversalOrNative<'Evm'>,
+    vaa: VAA<'TransferWithPayload'>,
+  ): AsyncGenerator<EvmUnsignedTransaction> {
+    const senderAddr = toEvmAddrString(sender);
+    const txReq =
+      await this.tokenBridgeRelayer.completeTransferWithRelay.populateTransaction(
+        serialize(vaa),
+      );
+
+    return this.createUnsignedTx(
+      addFrom(txReq, senderAddr),
+      'TokenBridgeRelayer.completeTransferWithRelay',
     );
   }
 
