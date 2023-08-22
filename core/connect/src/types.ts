@@ -124,7 +124,7 @@ export type TokenTransferDetails = {
   amount: bigint;
   from: ChainAddress;
   to: ChainAddress;
-  automatic: boolean;
+  automatic?: boolean;
   payload?: Uint8Array;
 };
 
