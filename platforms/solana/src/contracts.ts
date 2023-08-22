@@ -90,7 +90,7 @@ export class SolanaContracts {
   getBridge(chain?: ChainName | ChainId): Program<TokenBridge> | undefined {
     if (!this.connection) throw new Error('no connection');
 
-    const contracts = this.wormhole.mustGetContracts('Solana');
+    const contracts = this.mustGetContracts('Solana');
     if (!contracts.TokenBridge) return;
 
     return createReadOnlyTokenBridgeProgramInterface(
@@ -119,7 +119,7 @@ export class SolanaContracts {
   getNftBridge(chain?: ChainName | ChainId): Program<NftBridge> | undefined {
     if (!this.connection) throw new Error('no connection');
 
-    const contracts = this.wormhole.mustGetContracts('Solana');
+    const contracts = this.mustGetContracts('Solana');
     if (!contracts.NftBridge) return;
 
     return createReadOnlyNftBridgeProgramInterface(
@@ -145,9 +145,7 @@ export class SolanaContracts {
    *
    * @returns An interface for the Token Bridge Relayer contract, undefined if not found
    */
-  getTokenBridgeRelayer(
-    chain?: ChainName | ChainId,
-  ): any | undefined {
+  getTokenBridgeRelayer(chain?: ChainName | ChainId): any | undefined {
     return undefined;
   }
 

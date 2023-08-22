@@ -150,15 +150,16 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
   async *submitAttestation(
     vaa: VAA<'AttestMeta'>,
   ): AsyncGenerator<EvmUnsignedTransaction> {
-    const func = (await this.hasWrappedAsset({
-      ...vaa.payload.token,
-    }))
-      ? 'createWrapped'
-      : 'updateWrapped';
-    yield this.createUnsignedTx(
-      await this.tokenBridge[func].populateTransaction(serialize(vaa)),
-      'TokenBridge.' + func,
-    );
+    // TODO: fix
+    // const func = (await this.hasWrappedAsset({
+    //   ...vaa.payload.token,
+    // }))
+    //   ? 'createWrapped'
+    //   : 'updateWrapped';
+    // yield this.createUnsignedTx(
+    //   await this.tokenBridge[func].populateTransaction(serialize(vaa)),
+    //   'TokenBridge.' + func,
+    // );
   }
 
   //alternative naming: initiateTransfer

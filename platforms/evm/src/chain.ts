@@ -31,10 +31,10 @@ export class EvmChain implements ChainContext {
     this.platform = platform;
   }
 
-  getRPC(): ethers.Provider {
+  getConnection(): ethers.Provider {
     this.provider = this.provider
       ? this.provider
-      : this.platform.getRpc(this.chain);
+      : this.platform.getConnection(this.chain);
 
     return this.provider;
   }
@@ -42,20 +42,16 @@ export class EvmChain implements ChainContext {
   async getTokenBridge(): Promise<TokenBridge<'Evm'>> {
     this.tokenBridge = this.tokenBridge
       ? this.tokenBridge
-      : await this.platform.getTokenBridge(this.getRPC());
+      : await this.platform.getTokenBridge(this.chain);
     return this.tokenBridge;
   }
 
   async parseTransaction(txid: string): Promise<TokenTransferTransaction[]> {
-    return await this.platform.parseTransaction(
-      this.chain,
-      this.getRPC(),
-      txid,
-    );
+    return await this.platform.parseTransaction(this.chain, txid);
   }
 
   async sendWait(stxns: SignedTxn[]): Promise<TxHash[]> {
-    const rpc = this.getRPC();
+    const rpc = this.getConnection();
     const txhashes: TxHash[] = [];
 
     // TODO: concurrent
@@ -74,28 +70,23 @@ export class EvmChain implements ChainContext {
   }
 
   async getForeignAsset(tokenId: TokenId): Promise<UniversalAddress | null> {
-    return this.platform.getForeignAsset(this.chain, this.getRPC(), tokenId);
+    return this.platform.getForeignAsset(this.chain, tokenId);
   }
   async getTokenDecimals(tokenAddr: UniversalAddress): Promise<bigint> {
-    return this.platform.getTokenDecimals(this.getRPC(), tokenAddr);
+    return this.platform.getTokenDecimals(this.chain, tokenAddr);
   }
   async getNativeBalance(walletAddr: string): Promise<bigint> {
-    return this.platform.getNativeBalance(this.getRPC(), walletAddr);
+    return this.platform.getNativeBalance(this.chain, walletAddr);
   }
   async getTokenBalance(
     walletAddr: string,
     tokenId: TokenId,
   ): Promise<bigint | null> {
-    return this.platform.getTokenBalance(
-      this.chain,
-      this.getRPC(),
-      walletAddr,
-      tokenId,
-    );
+    return this.platform.getTokenBalance(this.chain, walletAddr, tokenId);
   }
 
   async getFinalizedHeight(): Promise<bigint> {
-    const rpc = this.getRPC();
+    const rpc = this.getConnection();
 
     const block = await rpc.getBlockNumber();
     return BigInt(block - this.conf.finalityThreshold);

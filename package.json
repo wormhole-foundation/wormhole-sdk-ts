@@ -23,7 +23,7 @@
     "compile": "npm run compile --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "coverage": "npm run coverage --workspaces --if-present",
-    "clean":"npm run clean --workspaces --if-present",
+    "clean": "npm run clean --workspaces --if-present",
     "docs": "typedoc"
   },
   "workspaces": [

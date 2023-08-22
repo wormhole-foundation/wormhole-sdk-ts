@@ -1,10 +1,12 @@
 import {
   Network,
   ChainName,
+  ChainId,
 } from '@wormhole-foundation/sdk-base';
 import { ChainConfig } from './constants';
 import { UnsignedTransaction } from '../unsignedTransaction';
 import { ChainAddress } from '../address';
+import { UniversalAddress } from '../universalAddress';
 
 export type TxHash = string;
 export type SequenceId = bigint;
@@ -17,19 +19,9 @@ export interface Signer {
   sign(tx: UnsignedTransaction[]): Promise<SignedTxn[]>;
 }
 
-export interface RpcConnection {
-  broadcastTransaction(stxns: string): Promise<any>;
-  getBalance(address: string): Promise<bigint>;
-}
-
 export type OmitChain<Fn> = Fn extends (chain: ChainName, ...args: infer P) => infer R
   ? (...args: P) => R
   : Fn;
-export type OmitRpc<Fn> = Fn extends (rpc: RpcConnection, ...args: infer P) => infer R
-  ? (...args: P) => R
-  : Fn;
-
-export type OmitChainRpc<Fn> = OmitRpc<OmitChain<Fn>>;
 
 export type ChainsConfig = {
   [K in ChainName]?: ChainConfig;
@@ -41,7 +33,11 @@ export type WormholeConfig = {
 };
 
 export type TokenId = ChainAddress;
-export type MessageIdentifier = ChainAddress & { sequence: SequenceId };
+export type MessageIdentifier = {
+  chain: ChainId;
+  emitterAddress: UniversalAddress;
+  sequence: SequenceId;
+};
 export type TransactionIdentifier = { chain: ChainName; txid: TxHash };
 
 export type TokenTransferDetails = {
@@ -54,7 +50,7 @@ export type TokenTransferDetails = {
 
 export type WormholeMessage = {
   tx: TransactionIdentifier;
-  msg: MessageIdentifier;
+  msgId: MessageIdentifier;
   payloadId: bigint;
 };
 

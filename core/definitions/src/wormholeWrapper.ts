@@ -101,7 +101,7 @@ export class Wormhole {
     chain: ChainName,
   ): Promise<UniversalAddress | null> {
     const context = this.getChain(chain);
-    return await context.getForeignAsset(chain, tokenId);
+    return await context.getForeignAsset(tokenId);
   }
 
   /**
@@ -147,7 +147,7 @@ export class Wormhole {
     chain: ChainName,
   ): Promise<bigint> {
     const context = this.getChain(chain);
-    return await context.getNativeBalance(walletAddress, chain);
+    return await context.getNativeBalance(walletAddress);
   }
 
   /**

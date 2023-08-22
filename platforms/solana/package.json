@@ -20,7 +20,8 @@
   "description": "SDK for Solana, used in conjunction with @wormhole-foundation/connect-sdk",
   "files": [
     "dist/**/*",
-    "src/**/*"
+    "src/**/*",
+    "buffer-layout.d.ts"
   ],
   "keywords": [
     "wormhole",
@@ -44,6 +45,7 @@
     "test": "jest --config ../../jest.config.ts __tests__/*.ts"
   },
   "devDependencies": {
+    "@types/bs58": "^4.0.1",
     "@typescript-eslint/eslint-plugin": "^5.54.1",
     "@typescript-eslint/parser": "^5.54.1",
     "eslint": "^8.35.0",

@@ -1,25 +1,24 @@
+import { ethers } from 'ethers';
 import {
   Network,
   ChainName,
   PlatformName,
   toChainName,
+  ChainId,
+  toChainId,
 } from '@wormhole-foundation/sdk-base';
 import {
-  RpcConnection,
   TokenId,
   TokenTransferTransaction,
   TxHash,
   registerPlatform,
   Platform,
   ChainsConfig,
-} from '@wormhole-foundation/sdk-definitions';
-import { EvmContracts } from './contracts';
-import { EvmTokenBridge } from './tokenBridge';
-import { ethers } from 'ethers';
-import {
   TokenBridge,
   UniversalAddress,
 } from '@wormhole-foundation/sdk-definitions';
+import { EvmContracts } from './contracts';
+import { EvmTokenBridge } from './tokenBridge';
 import { EvmChain } from './chain';
 import { EvmAddress } from './address';
 import { BridgeStructs } from './ethers-contracts/Bridge';
@@ -40,7 +39,11 @@ export class EvmPlatform implements Platform {
     this.contracts = new EvmContracts(network);
   }
 
-  getRpc(chain: ChainName): ethers.Provider {
+  setConnection(chain: ChainName, rpc: string) {
+    // TODO: add getConnection
+  }
+
+  getConnection(chain: ChainName): ethers.Provider {
     const rpcAddress = this.conf[chain]!.rpc;
     return new ethers.JsonRpcProvider(rpcAddress);
   }
@@ -49,19 +52,20 @@ export class EvmPlatform implements Platform {
     return new EvmChain(this, chain);
   }
 
-  async getTokenBridge(rpc: ethers.Provider): Promise<TokenBridge<'Evm'>> {
+  async getTokenBridge(chain: ChainName): Promise<TokenBridge<'Evm'>> {
+    const rpc = this.getConnection(chain);
     return await EvmTokenBridge.fromProvider(rpc);
   }
 
   async getForeignAsset(
     chain: ChainName,
-    rpc: ethers.Provider,
     tokenId: TokenId,
   ): Promise<UniversalAddress | null> {
+    const rpc = this.getConnection(chain);
     // if the token is already native, return the token address
     if (chain === tokenId.chain) return tokenId.address;
 
-    const tokenBridge = await this.getTokenBridge(rpc);
+    const tokenBridge = await this.getTokenBridge(chain);
     const foreignAddr = await tokenBridge.getWrappedAsset({
       chain,
       address: tokenId.address,
@@ -70,9 +74,10 @@ export class EvmPlatform implements Platform {
   }
 
   async getTokenDecimals(
-    rpc: ethers.Provider,
+    chain: ChainName,
     tokenAddr: UniversalAddress,
   ): Promise<bigint> {
+    const rpc = this.getConnection(chain);
     const tokenContract = this.contracts.mustGetTokenImplementation(
       rpc,
       tokenAddr.toString(),
@@ -82,19 +87,20 @@ export class EvmPlatform implements Platform {
   }
 
   async getNativeBalance(
-    rpc: RpcConnection,
+    chain: ChainName,
     walletAddr: string,
   ): Promise<bigint> {
+    const rpc = this.getConnection(chain);
     return await rpc.getBalance(walletAddr);
   }
 
   async getTokenBalance(
     chain: ChainName,
-    rpc: ethers.Provider,
     walletAddr: string,
     tokenId: TokenId,
   ): Promise<bigint | null> {
-    const address = await this.getForeignAsset(chain, rpc, tokenId);
+    const rpc = this.getConnection(chain);
+    const address = await this.getForeignAsset(chain, tokenId);
     if (!address) return null;
 
     const token = this.contracts.mustGetTokenImplementation(
@@ -115,9 +121,9 @@ export class EvmPlatform implements Platform {
 
   async parseTransaction(
     chain: ChainName,
-    rpc: ethers.Provider,
     txid: TxHash,
   ): Promise<TokenTransferTransaction[]> {
+    const rpc = this.getConnection(chain);
     const receipt = await rpc.getTransactionReceipt(txid);
     if (receipt === null)
       throw new Error(`No transaction found with txid: ${txid}`);
@@ -171,9 +177,9 @@ export class EvmPlatform implements Platform {
       const ttt: TokenTransferTransaction = {
         message: {
           tx: { chain: chain, txid },
-          msg: {
-            chain: chain,
-            address: bridgeAddress,
+          msgId: {
+            chain: toChainId(toChain),
+            emitterAddress: bridgeAddress,
             sequence: parsed.args.sequence,
           },
           payloadId: parsedTransfer.payloadID,

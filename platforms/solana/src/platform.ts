@@ -1,8 +1,4 @@
-import {
-  Connection,
-  PublicKey,
-  PublicKeyInitData,
-} from '@solana/web3.js';
+import { Connection, PublicKey, PublicKeyInitData } from '@solana/web3.js';
 import {
   ChainName,
   ChainId,
@@ -20,21 +16,20 @@ import {
   getPlatform,
   registerPlatform,
   ChainContext,
-} from '@wormhole-foundation/connect-sdk';
+} from '@wormhole-foundation/sdk-definitions';
 
 import { SolanaContracts } from './contracts';
+import { deriveWormholeEmitterKey, getPostedMessage } from './utils/wormhole';
+import { getForeignAssetSolana } from './utils';
 import {
-  deriveWormholeEmitterKey,
-  getPostedMessage,
-} from './utils/wormhole';
-import {
-  getForeignAssetSolana,
-} from './utils';
-import { hexByteStringToUint8Array, uint8ArrayToHexByteString } from '@wormhole-foundation/sdk-base';
+  hexByteStringToUint8Array,
+  uint8ArrayToHexByteString,
+} from '@wormhole-foundation/sdk-base';
 import { UniversalAddress } from '@wormhole-foundation/sdk-definitions';
 import { SolanaAddress } from './address';
 import { parseTokenTransferPayload } from '@certusone/wormhole-sdk';
 import { SolanaChain } from './chain';
+import { SolanaTokenBridge } from './tokenBridge';
 
 const SOLANA_SEQ_LOG = 'Program log: Sequence: ';
 const SOLANA_CHAIN_NAME = CONFIG['Mainnet'].chains.Solana!.key;
@@ -70,18 +65,25 @@ export class SolanaPlatform implements Platform {
    *
    * @param connection The Solana Connection
    */
-  async setConnection(connection: Connection) {
-    this.connection = connection;
+  async setConnection(chain: ChainName, rpc: string) {
+    this.connection = new Connection(rpc);
   }
 
-  // TODO: Fix once SolanaChain is implemented
+  getConnection() {
+    return this.connection;
+  }
+
   getChain(chain: ChainName): ChainContext {
-    return (new SolanaChain(this, chain)) as unknown as ChainContext;
+    return new SolanaChain(this, chain) as unknown as ChainContext;
+  }
+
+  getTokenBridge(chain: ChainName): Promise<SolanaTokenBridge> {
+    throw new Error('not implemented');
   }
 
   async getTokenDecimals(
+    chain: ChainName,
     tokenAddr: UniversalAddress,
-    chain?: ChainName,
   ): Promise<bigint> {
     if (!this.connection) throw new Error('no connection');
     let mint = await this.connection.getParsedAccountInfo(
@@ -93,23 +95,21 @@ export class SolanaPlatform implements Platform {
   }
 
   async getNativeBalance(
-    walletAddr: string,
     chain: ChainName,
+    walletAddr: string,
   ): Promise<bigint> {
     if (!this.connection) throw new Error('no connection');
-    const balance = await this.connection.getBalance(
-      new PublicKey(walletAddr),
-    );
+    const balance = await this.connection.getBalance(new PublicKey(walletAddr));
     return BigInt(balance);
   }
 
   async getTokenBalance(
+    chain: ChainName,
     walletAddress: string,
     tokenId: TokenId,
-    chain: ChainName,
   ): Promise<bigint | null> {
     if (!this.connection) throw new Error('no connection');
-    const address = await this.getForeignAsset(tokenId, chain);
+    const address = await this.getForeignAsset(chain, tokenId);
     if (!address) return null;
     const splToken = await this.connection.getTokenAccountsByOwner(
       new PublicKey(walletAddress),
@@ -136,14 +136,14 @@ export class SolanaPlatform implements Platform {
   }
 
   async getForeignAsset(
-    tokenId: TokenId,
     chain: ChainName,
+    tokenId: TokenId,
   ): Promise<UniversalAddress | null> {
     if (!this.connection) throw new Error('no connection');
 
-    const chainId = toChainId(tokenId[0]);
+    const chainId = toChainId(tokenId.chain);
     const destChainId = toChainId(chain);
-    if (destChainId === chainId) return tokenId[1];
+    if (destChainId === chainId) return tokenId.address;
 
     const contracts = this.contracts.mustGetContracts(chain);
     if (!contracts.TokenBridge) throw new Error('contracts not found');
@@ -151,14 +151,14 @@ export class SolanaPlatform implements Platform {
     const addr = await getForeignAssetSolana(
       this.connection,
       contracts.TokenBridge,
-      chainId,
-      tokenId[1].unwrap(),
+      chainId as any,
+      tokenId.address.unwrap(),
     );
     if (!addr) return null;
     return new SolanaAddress(addr).toUniversalAddress();
   }
 
-  async parseMessageFromTx(
+  async parseTransaction(
     chain: ChainName | ChainId,
     tx: string,
   ): Promise<TokenTransferTransaction[]> {
@@ -214,30 +214,38 @@ export class SolanaPlatform implements Platform {
     const tokenAddress = new UniversalAddress(parsed.tokenAddress);
     const tokenChain = toChainName(parsed.tokenChain);
 
-    const toAddress = destPlatform.parseAddress(uint8ArrayToHexByteString(parsed.to));
+    const toAddress = (destPlatform as Platform).parseAddress(
+      uint8ArrayToHexByteString(parsed.to),
+    );
+    const sender = new UniversalAddress(accounts[0].toString());
 
     const parsedMessage: TokenTransferTransaction = {
-      sendTx: tx,
-      sender: accounts[0].toString(),
-      amount: BigInt(parsed.amount),
-      payloadID: BigInt(parsed.payloadType),
-      recipient: toAddress.toString(),
-      toChain: toChainName(parsed.toChain),
-      fromChain: toChainName(chain),
-      tokenId: [
-        toChainName(tokenChain),
-        tokenAddress,
-      ],
-      sequence: BigInt(sequence),
-      emitterAddress: SOLANA_EMMITER_ID[this.network],
-      gasFee: BigInt(gasFee),
+      message: {
+        tx: {
+          chain: toChainName(chain),
+          txid: tx,
+        },
+        msgId: {
+          chain: parsed.toChain as ChainId,
+          emitterAddress: new UniversalAddress(SOLANA_EMMITER_ID[this.network]),
+          sequence: BigInt(sequence),
+        },
+        payloadId: BigInt(parsed.payloadType),
+      },
+      details: {
+        token: { chain: tokenChain, address: tokenAddress },
+        amount: BigInt(parsed.amount),
+        from: { chain: toChainName(chain), address: sender },
+        to: { chain: toChainName(parsed.toChain), address: toAddress },
+      },
       block: BigInt(response.slot),
+      gasFee: BigInt(gasFee),
     };
 
-    if (parsedMessage.payloadID === BigInt(3)) {
+    if (parsedMessage.message.payloadId === BigInt(3)) {
       // TODO:
-      // const destContext = this.wormhole.getPlatform(toChainName(parsed.toChain));
-      // const parsedPayload = destContext.parseRelayerPayload(
+      // const destContext = getPlatform(toChainName(parsed.toChain));
+      // const parsedPayload = (destContext as Platform).parseRelayerPayload(
       //   parsed.tokenTransferPayload,
       // );
       // const parsedPayloadMessage: ParsedRelayerMessage = {
