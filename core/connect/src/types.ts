@@ -8,6 +8,7 @@ import {
   ChainAddress,
   UniversalAddress,
   TokenBridge,
+  AutomaticTokenBridge,
 } from '@wormhole-foundation/sdk-definitions';
 
 import { ChainConfig } from './constants';
@@ -53,7 +54,10 @@ export interface Platform {
   //
   getChain(chain: ChainName): ChainContext;
   getRpc(chain: ChainName): RpcConnection;
+  // protocol clients
   getTokenBridge(rpc: RpcConnection): Promise<TokenBridge<PlatformName>>;
+  getAutomaticTokenBridge(): Promise<AutomaticTokenBridge<PlatformName>>;
+
   parseTransaction(
     chain: ChainName,
     rpc: RpcConnection,
@@ -85,7 +89,9 @@ export interface ChainContext {
   readonly platform: Platform;
   getRpc(): RpcConnection;
   sendWait(stxns: SignedTxn[]): Promise<TxHash[]>;
+
   getTokenBridge(): Promise<TokenBridge<PlatformName>>;
+  getAutomaticTokenBridge(): Promise<AutomaticTokenBridge<PlatformName>>;
 
   // TODO: can we add these automatically?
   getForeignAsset: OmitChainRpc<Platform['getForeignAsset']>;

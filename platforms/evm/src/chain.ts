@@ -1,5 +1,6 @@
 import { ChainName, Network } from '@wormhole-foundation/sdk-base';
 import {
+  AutomaticTokenBridge,
   TokenBridge,
   UniversalAddress,
 } from '@wormhole-foundation/sdk-definitions';
@@ -23,6 +24,7 @@ export class EvmChain implements ChainContext {
   // Cached objects
   private provider?: ethers.Provider;
   private tokenBridge?: TokenBridge<'Evm'>;
+  private autoTokenBridge?: AutomaticTokenBridge<'Evm'>;
 
   constructor(platform: EvmPlatform, chain: ChainName) {
     this.chain = chain;
@@ -44,6 +46,13 @@ export class EvmChain implements ChainContext {
       ? this.tokenBridge
       : await this.platform.getTokenBridge(this.getRpc());
     return this.tokenBridge;
+  }
+
+  async getAutomaticTokenBridge(): Promise<AutomaticTokenBridge<'Evm'>> {
+    this.autoTokenBridge = this.autoTokenBridge
+      ? this.autoTokenBridge
+      : await this.platform.getAutomaticTokenBridge(this.getRpc());
+    return this.autoTokenBridge;
   }
 
   async parseTransaction(txid: string): Promise<TokenTransferTransaction[]> {
@@ -92,12 +101,5 @@ export class EvmChain implements ChainContext {
       walletAddr,
       tokenId,
     );
-  }
-
-  async getFinalizedHeight(): Promise<bigint> {
-    const rpc = this.getRpc();
-
-    const block = await rpc.getBlockNumber();
-    return BigInt(block - this.conf.finalityThreshold);
   }
 }
