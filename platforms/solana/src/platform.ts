@@ -214,7 +214,7 @@ export class SolanaPlatform implements Platform {
     const tokenAddress = new UniversalAddress(parsed.tokenAddress);
     const tokenChain = toChainName(parsed.tokenChain);
 
-    const toAddress = (destPlatform as Platform).parseAddress(uint8ArrayToHexByteString(parsed.to));
+    const toAddress = destPlatform.parseAddress(uint8ArrayToHexByteString(parsed.to));
 
     const parsedMessage: TokenTransferTransaction = {
       sendTx: tx,
@@ -252,6 +252,14 @@ export class SolanaPlatform implements Platform {
     }
 
     return [parsedMessage];
+  }
+}
+
+declare global {
+  namespace Wormhole {
+    interface PlatformMapping {
+      Solana: SolanaPlatform;
+    }
   }
 }
 

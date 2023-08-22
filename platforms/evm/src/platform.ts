@@ -196,4 +196,12 @@ export class EvmPlatform implements Platform {
   }
 }
 
+declare global {
+  namespace Wormhole {
+    interface PlatformMapping {
+      Evm: EvmPlatform;
+    }
+  }
+}
+
 registerPlatform('Evm', EvmPlatform);

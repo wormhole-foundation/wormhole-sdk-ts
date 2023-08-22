@@ -6,14 +6,6 @@ import {
 
 import { ethers } from 'ethers';
 
-declare global {
-  namespace Wormhole {
-    interface PlatformToNativeAddressMapping {
-      Evm: EvmAddress;
-    }
-  }
-}
-
 export class EvmAddress implements Address {
   static readonly byteSize = 20;
 
@@ -68,6 +60,14 @@ export class EvmAddress implements Address {
   }
   static isValidAddress(address: string) {
     return ethers.isAddress(address);
+  }
+}
+
+declare global {
+  namespace Wormhole {
+    interface PlatformToNativeAddressMapping {
+      Evm: EvmAddress;
+    }
   }
 }
 

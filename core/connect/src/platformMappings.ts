@@ -3,9 +3,10 @@ import {
   ChainName,
   isChain,
   chainToPlatform,
+  Network,
 } from '@wormhole-foundation/sdk-base';
 import { ChainOrPlatformToPlatform } from '@wormhole-foundation/sdk-definitions';
-import { Platform } from './types';
+import { ChainsConfig, Platform } from './types';
 
 declare global {
   namespace Wormhole {
@@ -20,20 +21,21 @@ export type PlatformType<T extends PlatformName | ChainName> =
     ? Wormhole.PlatformMapping[ChainOrPlatformToPlatform<T>]
     : never;
 
-const platformFactory = new Map<PlatformName, Platform>();
+type PlatformCtr = new (network: Network, conf: ChainsConfig) => Platform;
+
+const platformFactory = new Map<PlatformName, PlatformCtr>();
 
 export function registerPlatform<P extends SupportedPlatforms>(
   platform: P,
-  platformImpl: Platform,
+  platformCtr: PlatformCtr,
 ): void {
   if (platformFactory.has(platform))
     throw new Error(
-      `Native address type for platform ${platform} has already registered`,
+      `Platform type for platform ${platform} has already registered`,
     );
 
-  platformFactory.set(platform, platformImpl);
+  platformFactory.set(platform, platformCtr);
 }
-// registerPlatform<'Evm'>('Evm', undefined as Platform);
 
 export function toPlatformName<T extends PlatformName | ChainName>(
   chainOrPlatform: T,
