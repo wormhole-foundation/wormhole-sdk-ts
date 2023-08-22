@@ -1,0 +1,138 @@
+import { ChainName } from "./chains";
+import {
+  column,
+  toMapping,
+  toMappingFunc,
+  reverseArrayMapping,
+} from "../utils/mapping";
+import { Network } from "./networks";
+
+const platformAndChainsEntries = [
+  [
+    "Evm",
+    [
+      "Ethereum",
+      "Bsc",
+      "Polygon",
+      "Avalanche",
+      "Oasis",
+      "Aurora",
+      "Fantom",
+      "Karura",
+      "Acala",
+      "Klaytn",
+      "Celo",
+      "Moonbeam",
+      "Neon",
+      "Arbitrum",
+      "Optimism",
+      "Gnosis",
+      "Base",
+      "Sepolia",
+    ],
+  ],
+  ["Solana", ["Solana", "Pythnet"]],
+  ["Cosmwasm", ["Terra", "Terra2", "Injective", "Xpla", "Sei"]],
+  ["Btc", ["Btc"]],
+  //TODO don't know if any of the following chains actually share a platform with any other chain
+  ["Algorand", ["Algorand"]],
+  ["Sui", ["Sui"]],
+  ["Aptos", ["Aptos"]],
+  ["Osmosis", ["Osmosis"]],
+  ["Wormchain", ["Wormchain"]],
+  ["Near", ["Near"]],
+] as const satisfies readonly (readonly [string, readonly ChainName[]])[];
+
+export const platforms = column(platformAndChainsEntries, 0);
+export type PlatformName = (typeof platforms)[number];
+
+const platformToChainsMapping = toMapping(platformAndChainsEntries);
+export const platformToChains = toMappingFunc(platformToChainsMapping);
+export type PlatformToChainsMapping<P extends PlatformName> =
+  (typeof platformToChainsMapping)[P][number];
+const chainToPlatformMapping = reverseArrayMapping(platformToChainsMapping);
+export const chainToPlatform = toMappingFunc(chainToPlatformMapping);
+export type ChainToPlatformMapping<C extends ChainName> =
+  (typeof chainToPlatformMapping)[C];
+
+export const inPlatform = (
+  chain: ChainName,
+  platform: PlatformName
+): chain is (typeof platformToChainsMapping)[typeof platform][number] =>
+  chain in platformToChainsMapping[platform];
+
+export type NetworkChainPair = readonly [
+  "Mainnet" | "Testnet",
+  PlatformToChainsMapping<"Evm">
+];
+const evmChainIdToNetworkChainEntries = [
+  [1n, ["Mainnet", "Ethereum"]],
+  [5n, ["Testnet", "Ethereum"]], //goerli
+  [11155111n, ["Testnet", "Sepolia"]], //actually just another ethereum testnet...
+  [56n, ["Mainnet", "Bsc"]],
+  [97n, ["Testnet", "Bsc"]],
+  [137n, ["Mainnet", "Polygon"]],
+  [80001n, ["Testnet", "Polygon"]], //mumbai
+  [43114n, ["Mainnet", "Avalanche"]],
+  [43113n, ["Testnet", "Avalanche"]], //fuji
+  [42262n, ["Mainnet", "Oasis"]],
+  [42261n, ["Testnet", "Oasis"]],
+  [1313161554n, ["Mainnet", "Aurora"]],
+  [1313161555n, ["Testnet", "Aurora"]],
+  [250n, ["Mainnet", "Fantom"]],
+  [4002n, ["Testnet", "Fantom"]],
+  [686n, ["Mainnet", "Karura"]],
+  [596n, ["Testnet", "Karura"]],
+  [787n, ["Mainnet", "Acala"]],
+  [597n, ["Testnet", "Acala"]],
+  [8217n, ["Mainnet", "Klaytn"]],
+  [1001n, ["Testnet", "Klaytn"]], //baobab
+  [42220n, ["Mainnet", "Celo"]],
+  [44787n, ["Testnet", "Celo"]], //alfajores
+  [1284n, ["Mainnet", "Moonbeam"]],
+  [1287n, ["Testnet", "Moonbeam"]], //moonbase alpha
+  [245022934n, ["Mainnet", "Neon"]],
+  //[        n, ["Testnet", "Neon"]], //TODO
+  [42161n, ["Mainnet", "Arbitrum"]],
+  [421613n, ["Testnet", "Arbitrum"]], //arbitrum goerli
+  [10n, ["Mainnet", "Optimism"]],
+  [420n, ["Testnet", "Optimism"]],
+  [100n, ["Mainnet", "Gnosis"]],
+  [77n, ["Testnet", "Gnosis"]],
+  [8453n, ["Mainnet", "Base"]],
+  [84531n, ["Testnet", "Base"]],
+] as const satisfies readonly (readonly [bigint, NetworkChainPair])[];
+
+const evmChainIdToNetworkChainMapping = new Map<bigint, NetworkChainPair>(
+  evmChainIdToNetworkChainEntries
+);
+//can't use toMapping here because bigint keys are not supported
+export const evmChainIdToNetworkChainPair = (chainId: bigint) =>
+  evmChainIdToNetworkChainMapping.get(chainId);
+
+// Maps Network=>Chain Name => Evm Chain ID
+const evmNetworkToEvmChainId = evmChainIdToNetworkChainEntries
+  .map((v) => {
+    return [v[1][0], { [v[1][1]]: v[0] }] as [string, Record<string, bigint>];
+  })
+  .reduce((acc: Record<string, Record<string, bigint>>, [key, value]) => {
+    if (!(key in acc)) acc[key] = {};
+    acc[key] = { ...acc[key], ...value };
+    return acc;
+  }, {});
+
+export const evmNetworkChainToEvmChainId = (
+  network: Network,
+  chain: ChainName
+) => {
+  return evmNetworkToEvmChainId[network][chain];
+};
+
+//TODO more platform specific functions, e.g.:
+//  Solana genesis block <-> (Chain, Network)
+//  similar mappings for other platforms
+
+// Solana genesis blocks:
+//   devnet: EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG (i.e. testnet for us)
+//   testnet: 4uhcVJyU9pJkvQyS88uRDiswHXSCkY3zQawwpjk2NsNY << not used!
+//   mainnet-beta: 5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d

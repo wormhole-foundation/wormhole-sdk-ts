@@ -1,38 +1,18 @@
 {
-  "extends": "./tsconfig.root.json",
-  "references": [
-    {
-      "path": "./packages/sdk-core",
-    },
-    {
-      "path": "./packages/evm",
-    },
-    {
-      "path": "./packages/solana",
-    },
-    {
-      "path": "./packages/sui",
-    },
-    {
-      "path": "./packages/sei",
-    },
-    {
-      "path": "./packages/aptos",
-    },
-  ],
-  "files": [
-    "packages/sdk-core/src/*.ts",
-    "packages/sdk-core/src/**/*.ts",
-    "packages/evm/src/*.ts",
-    "packages/evm/src/**/*.ts",
-    "packages/solana/src/*.ts",
-    "packages/solana/src/**/*.ts",
-    "packages/solana/src/**/**/*.ts",
-    "packages/sui/src/*.ts",
-    "packages/sui/src/**/*.ts",
-    "packages/sei/src/*.ts",
-    "packages/sei/src/**/*.ts",
-    "packages/aptos/src/*.ts",
-    "packages/aptos/src/**/*.ts",
+  "compilerOptions": {
+    "lib": ["es2022"],
+    "target": "es2022",
+    "types": ["mocha", "chai", "node", "jest"],
+    "esModuleInterop": true,
+    "strict": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "node",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "./src/"
   ]
 }
