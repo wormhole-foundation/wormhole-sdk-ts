@@ -1,19 +1,19 @@
 import { PlatformName } from "@wormhole-foundation/sdk-base";
-import { UniversalOrNative, NativeAddress, ChainAddress } from "./address";
-import { VAA } from "./vaa";
+import { UniversalOrNative, ChainAddress } from "./address";
 import { UnsignedTransaction } from "./unsignedTransaction";
-import "./payloads/tokenBridge";
+import { VAA } from "./vaa";
 
 //https://github.com/circlefin/evm-cctp-contracts
 
 export interface CircleBridge<P extends PlatformName> {
-  transfer(
-    sender: UniversalOrNative<P>,
-    recipient: ChainAddress,
-    amount: bigint
-  ): AsyncGenerator<UnsignedTransaction>;
   redeem(
     sender: UniversalOrNative<P>,
     vaa: VAA<"Transfer"> | VAA<"TransferWithPayload">
+  ): AsyncGenerator<UnsignedTransaction>;
+  transfer(
+    token: ChainAddress,
+    sender: UniversalOrNative<P>,
+    recipient: ChainAddress,
+    amount: bigint
   ): AsyncGenerator<UnsignedTransaction>;
 }

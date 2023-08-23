@@ -6,4 +6,5 @@ export * from "./utils";
 export * from "./relayer";
 export * from "./tokenBridge";
 export * from "./automaticTokenBridge";
-export * from "./cctp";
+export * from "./wormholeCircleRelayer";
+export * from "./circleBridge";

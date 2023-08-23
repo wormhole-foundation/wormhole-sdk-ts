@@ -175,7 +175,6 @@ export const contracts = {
       TokenBridge: "0xF890982f9310df57d00f659cf4fd87e65adEd8d7",
       NftBridge: "0xD8E4C2DbDd2e2bd8F1336EA691dBFF6952B1a6eB",
       Relayer: "0x9563a59c15842a6f322b10f69d1dd88b41f2e97b",
-
       CCTP: {
         cctpTokenMessenger: "0xd0c3da58f55358142b8d3e06c1c30c5c6114efe8",
         cctpMessageTransmitter: "0x26413e8157cd32011e726065a5462e97dd4d03d9",

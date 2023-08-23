@@ -9,8 +9,7 @@ import {
   ChainAddress,
   UniversalOrNative,
   VAA,
-  CircleBridge,
-  UnsignedTransaction,
+  WormholeCircleRelayer,
 } from '@wormhole-foundation/sdk-definitions';
 
 import { addChainId, addFrom, toEvmAddrString } from './tokenBridge';
@@ -20,14 +19,15 @@ import { Provider, TransactionRequest } from 'ethers';
 import { EvmContracts } from './contracts';
 import { TokenId } from '@wormhole-foundation/connect-sdk';
 
-//https://github.com/circlefin/evm-cctp-contracts
 type EvmChain = PlatformToChainsMapping<'Evm'>;
 type UniversalOrEvm = UniversalOrNative<'Evm'> | string;
 
-export class EvmCircleBridge implements CircleBridge<'Evm'> {
+export class EvmCircleRelayer implements WormholeCircleRelayer<'Evm'> {
   readonly contracts: EvmContracts;
   readonly circleRelayer: CircleRelayer;
   readonly chainId: bigint;
+
+  // https://github.com/wormhole-foundation/wormhole-connect/blob/development/sdk/src/contexts/eth/context.ts#L379
 
   private constructor(
     readonly network: Network,
@@ -43,23 +43,16 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
     );
   }
 
-  static async fromProvider(provider: Provider): Promise<EvmCircleBridge> {
+  static async fromProvider(provider: Provider): Promise<EvmCircleRelayer> {
     const { chainId } = await provider.getNetwork();
     const networkChainPair = evmChainIdToNetworkChainPair(chainId);
     if (networkChainPair === undefined)
       throw new Error(`Unknown EVM chainId ${chainId}`);
 
     const [network, chain] = networkChainPair;
-    return new EvmCircleBridge(network, chain, provider);
+    return new EvmCircleRelayer(network, chain, provider);
   }
 
-  async *redeem(
-    sender: UniversalOrEvm,
-    vaa: VAA<'Transfer'> | VAA<'TransferWithPayload'>,
-  ): AsyncGenerator<UnsignedTransaction> {
-    return;
-  }
-  //alternative naming: initiateTransfer
   async *transfer(
     token: TokenId,
     sender: UniversalOrEvm,
@@ -72,33 +65,42 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
     const recipientAddress = recipient.address.toString();
     const nativeTokenGas = nativeGas ? nativeGas : 0n;
 
-    //const tokenAddr = await wh.mustGetForeignAsset(
-    //  token as TokenId,
-    //  sendingChain,
-    //);
+    const tokenAddr = toEvmAddrString(token.address);
 
-    //// approve
-    //await chainContext.approve(
-    //  sendingChain,
-    //  circleRelayer.address,
-    //  tokenAddr,
-    //  parsedAmt,
-    //);
+    const tokenContract = this.contracts.mustGetTokenImplementation(
+      this.provider,
+      tokenAddr,
+    );
 
-    //console.log('About to send 2');
-    //const txReq =
-    //  await this.circleRelayer.transferTokensWithRelay.populateTransaction(
-    //    chainContext.context.parseAddress(tokenAddr, sendingChain),
-    //    parsedAmt,
-    //    parsedNativeAmt,
-    //    this.chainId,
-    //    recipientAddress,
-    //  );
+    const allowance = await tokenContract.allowance(
+      senderAddr,
+      this.circleRelayer.target,
+    );
 
-    //yield this.createUnsignedTx(
-    //  addFrom(txReq, senderAddr),
-    //  'TokenBridgeRelayer.transferTokensWithRelay',
-    //);
+    if (allowance < amount) {
+      const txReq = await tokenContract.approve.populateTransaction(
+        this.circleRelayer.target,
+        amount,
+      );
+      yield this.createUnsignedTx(
+        addFrom(txReq, senderAddr),
+        'ERC20.approve of TokenBridge',
+      );
+    }
+
+    const txReq =
+      await this.circleRelayer.transferTokensWithRelay.populateTransaction(
+        tokenAddr,
+        amount,
+        nativeTokenGas,
+        recipientChainId,
+        recipientAddress,
+      );
+
+    yield this.createUnsignedTx(
+      addFrom(txReq, senderAddr),
+      'CircleRelayer.transfer',
+    );
   }
 
   private createUnsignedTx(

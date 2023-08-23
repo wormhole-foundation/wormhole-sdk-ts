@@ -200,13 +200,68 @@ export class EvmContracts {
    *
    * @returns An interface for the Wormhole CCTP relayer contract, errors if not found
    */
-  mustGetWormholeCircleRelayer(chain: ChainName, connection: Provider): any {
+  mustGetWormholeCircleRelayer(
+    chain: ChainName,
+    connection: Provider,
+  ): ethers_contracts.CircleRelayer {
     const circleRelayer = this.getWormholeCircleRelayer(chain, connection);
     if (!circleRelayer)
       throw new Error(
         `Wormhole Circle relayer contract for domain ${chain} not found`,
       );
     return circleRelayer;
+  }
+
+  getCircleTokenMessenger(
+    chain: ChainName,
+    connection: Provider,
+  ): ethers_contracts.TokenMessenger.TokenMessenger | undefined {
+    const addresses = this.mustGetContracts(chain).CCTP;
+    if (typeof addresses !== 'object') return undefined;
+    return ethers_contracts.TokenMessenger__factory.connect(
+      // TODO:
+      // @ts-ignore
+      addresses.cctpTokenMessenger,
+      connection,
+    );
+  }
+
+  mustGetCircleTokenMessenger(
+    chain: ChainName,
+    connection: Provider,
+  ): ethers_contracts.TokenMessenger.TokenMessenger {
+    const ctm = this.getCircleTokenMessenger(chain, connection);
+    if (!ctm)
+      throw new Error(
+        `Circle Token Messenger contract for domain ${chain} not found`,
+      );
+    return ctm;
+  }
+
+  getCircleMessageTransmitter(
+    chain: ChainName,
+    connection: Provider,
+  ): ethers_contracts.MessageTransmitter.MessageTransmitter | undefined {
+    const addresses = this.mustGetContracts(chain).CCTP;
+    if (typeof addresses !== 'object') return undefined;
+    return ethers_contracts.MessageTransmitter__factory.connect(
+      // TODO:
+      // @ts-ignore
+      addresses.cctpTokenMessenger,
+      connection,
+    );
+  }
+
+  mustGetCircleMessageTransmitter(
+    chain: ChainName,
+    connection: Provider,
+  ): ethers_contracts.MessageTransmitter.MessageTransmitter {
+    const cmt = this.getCircleMessageTransmitter(chain, connection);
+    if (!cmt)
+      throw new Error(
+        `Circle Messenge Transmitter contract for domain ${chain} not found`,
+      );
+    return cmt;
   }
 
   getImplementation(): ethers_contracts.ImplementationInterface {

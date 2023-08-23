@@ -6,3 +6,5 @@ export * from './Wormhole__factory';
 export * from './Implementation__factory';
 export * from './TokenBridgeRelayer__factory';
 export * from './CircleRelayer__factory';
+export * from './TokenMessenger__factory';
+export * from './MessageTransmitter__factory';

@@ -8,7 +8,7 @@ import {
   isTransactionIdentifier,
   CCTPTransferDetails,
   isCCTPTransferDetails,
-  CCTPTransferTransaction,
+  TokenTransferTransaction,
 } from './types';
 import { WormholeTransfer, TransferState } from './wormholeTransfer';
 import { Wormhole } from './wormhole';
@@ -104,6 +104,7 @@ export class CCTPTransfer implements WormholeTransfer {
       rcv.address.toString() === wh.conf.chains[rcv.chain]?.contracts.Relayer;
 
     const details: CCTPTransferDetails = {
+      token: vaa.payload.token,
       amount: vaa.payload.token.amount,
       // TODO: the `from.address` here is a lie, but we don't
       // immediately have enough info to get the _correct_ one
@@ -128,7 +129,7 @@ export class CCTPTransfer implements WormholeTransfer {
 
     const originChain = wh.getChain(chain);
 
-    const parsedTxs: CCTPTransferTransaction[] =
+    const parsedTxs: TokenTransferTransaction[] =
       await originChain.parseTransaction(txid);
 
     // TODO: assuming single tx
@@ -156,8 +157,9 @@ export class CCTPTransfer implements WormholeTransfer {
 
     let xfer: AsyncGenerator<UnsignedTransaction>;
     if (this.transfer.automatic) {
-      const tb = await fromChain.getCircleBridge();
+      const tb = await fromChain.getCircleRelayer();
       xfer = tb.transfer(
+        this.transfer.token,
         this.transfer.from.address,
         { chain: this.transfer.to.chain, address: this.transfer.to.address },
         this.transfer.amount,
@@ -166,22 +168,21 @@ export class CCTPTransfer implements WormholeTransfer {
       // TODO
       const tb = await fromChain.getCircleBridge();
       xfer = tb.transfer(
+        this.transfer.token,
         this.transfer.from.address,
         { chain: this.transfer.to.chain, address: this.transfer.to.address },
         this.transfer.amount,
       );
     }
 
-    // TODO: check 'stackable'?
-    const unsigned: UnsignedTransaction[] = [];
+    // TODO: definitely a bug here, we _only_ send when !stackable
+    const txHashes: TxHash[] = [];
     for await (const tx of xfer) {
       if (!tx.stackable) {
-        // sign/send
+        // sign/send/wait
+        txHashes.push(...(await fromChain.sendWait(await signer.sign([tx]))));
       }
-      unsigned.push(tx);
     }
-
-    const txHashes = await fromChain.sendWait(await signer.sign(unsigned));
 
     this.state = TransferState.Started;
 
@@ -253,7 +254,7 @@ export class CCTPTransfer implements WormholeTransfer {
 
     const toChain = this.wh.getChain(this.transfer.to.chain);
 
-    const unsigned: UnsignedTransaction[] = [];
+    const txHashes: TxHash[] = [];
     for (const cachedVaa of this.vaas) {
       const vaa = cachedVaa.vaa
         ? cachedVaa.vaa
@@ -284,13 +285,14 @@ export class CCTPTransfer implements WormholeTransfer {
       if (xfer === undefined)
         throw new Error('No handler defined for VAA type');
 
-      // TODO: check 'stackable'?
+      // TODO: definitely a bug here, we _only_ send when !stackable
       for await (const tx of xfer) {
-        unsigned.push(tx);
+        if (!tx.stackable) {
+          txHashes.push(...(await toChain.sendWait(await signer.sign([tx]))));
+        }
       }
     }
-
-    return await toChain.sendWait(await signer.sign(unsigned));
+    return txHashes;
   }
 
   static async getTransferVaa(

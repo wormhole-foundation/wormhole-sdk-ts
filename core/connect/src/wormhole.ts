@@ -56,6 +56,7 @@ export class Wormhole {
   }
 
   async cctpTransfer(
+    token: TokenId,
     amount: bigint,
     from: ChainAddress,
     to: ChainAddress,
@@ -66,6 +67,7 @@ export class Wormhole {
       throw new Error('Payload with automatic delivery is not supported');
 
     return await CCTPTransfer.from(this, {
+      token: token,
       amount: amount,
       from,
       to,

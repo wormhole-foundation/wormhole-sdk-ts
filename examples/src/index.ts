@@ -6,7 +6,10 @@ import {
 import { ethers } from "ethers";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { getEvmSigner } from "./helpers";
-import { ChainAddress } from "@wormhole-foundation/sdk-definitions";
+import {
+  ChainAddress,
+  UniversalAddress,
+} from "@wormhole-foundation/sdk-definitions";
 
 (async function () {
   await cctpTransfer();
@@ -40,7 +43,22 @@ async function cctpTransfer() {
     address: rcvChain.platform.parseAddress(rcvSigner.address()),
   };
 
-  const xfer = await wh.cctpTransfer(sender, receiver, 100000n);
+  const xfer = await wh.cctpTransfer(
+    {
+      chain: sendChain.chain,
+      address: sendChain.platform.parseAddress(
+        "0x5425890298aed601595a70AB815c96711a31Bc65"
+      ),
+    },
+    100000n,
+    sender,
+    receiver,
+    false
+  );
+  console.log(xfer);
+
+  const txids = await xfer.start(sendSigner);
+  console.log(txids);
 }
 
 async function automaticTransfer() {

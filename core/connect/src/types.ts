@@ -9,6 +9,7 @@ import {
   UniversalAddress,
   TokenBridge,
   AutomaticTokenBridge,
+  WormholeCircleRelayer,
   CircleBridge,
 } from '@wormhole-foundation/sdk-definitions';
 
@@ -60,6 +61,9 @@ export interface Platform {
   getAutomaticTokenBridge(
     rpc: RpcConnection,
   ): Promise<AutomaticTokenBridge<PlatformName>>;
+  getCircleRelayer(
+    rpc: RpcConnection,
+  ): Promise<WormholeCircleRelayer<PlatformName>>;
   getCircleBridge(rpc: RpcConnection): Promise<CircleBridge<PlatformName>>;
 
   // utils
@@ -105,6 +109,7 @@ export interface ChainContext {
   // protocols
   getTokenBridge: OmitChainRpc<Platform['getTokenBridge']>;
   getAutomaticTokenBridge: OmitChainRpc<Platform['getAutomaticTokenBridge']>;
+  getCircleRelayer: OmitChainRpc<Platform['getCircleRelayer']>;
   getCircleBridge: OmitChainRpc<Platform['getCircleBridge']>;
 }
 
@@ -133,6 +138,7 @@ export type TokenTransferDetails = {
 };
 
 export type CCTPTransferDetails = {
+  token: TokenId;
   amount: bigint;
   from: ChainAddress;
   to: ChainAddress;
