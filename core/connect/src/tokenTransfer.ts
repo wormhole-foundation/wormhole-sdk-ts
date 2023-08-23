@@ -13,14 +13,12 @@ import {
 import { WormholeTransfer, TransferState } from './wormholeTransfer';
 import { Wormhole } from './wormhole';
 import {
-  ChainAddress,
   UniversalAddress,
   UnsignedTransaction,
   VAA,
   deserialize,
 } from '@wormhole-foundation/sdk-definitions';
-import { Network, ChainName } from '@wormhole-foundation/sdk-base';
-import { chainConfigs } from './constants';
+import { ChainName } from '@wormhole-foundation/sdk-base';
 
 /**
  * What do with multiple transactions or VAAs?
@@ -310,6 +308,14 @@ export class TokenTransfer implements WormholeTransfer {
   ): Promise<VAA<'Transfer'> | VAA<'TransferWithPayload'>> {
     const vaaBytes = await wh.getVAABytes(chain, emitter, sequence, retries);
     if (!vaaBytes) throw new Error(`No VAA available after ${retries} retries`);
-    return deserialize('Transfer', vaaBytes);
+
+    const partial = deserialize('Uint8Array', vaaBytes);
+    switch (partial.payload[0]) {
+      case 1:
+        return deserialize('Transfer', vaaBytes);
+      case 3:
+        return deserialize('TransferWithPayload', vaaBytes);
+    }
+    throw new Error(`No serde defined for type: ${partial.payload[0]}`);
   }
 }
