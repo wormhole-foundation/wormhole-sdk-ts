@@ -12,6 +12,7 @@ import {
   ChainName,
 } from '@wormhole-foundation/sdk-base';
 import {
+  AutomaticTokenBridge,
   TokenBridge,
   UniversalAddress,
 } from '@wormhole-foundation/sdk-definitions';
@@ -74,6 +75,11 @@ export class MockPlatform implements Platform {
   }
   async getTokenBridge(rpc: RpcConnection): Promise<TokenBridge<PlatformName>> {
     return new MockTokenBridge();
+  }
+  async getAutomaticTokenBridge(
+    rpc: RpcConnection,
+  ): Promise<AutomaticTokenBridge<PlatformName>> {
+    throw new Error('Method not implemented.');
   }
   parseAddress(address: string): UniversalAddress {
     throw new Error('Method not implemented.');

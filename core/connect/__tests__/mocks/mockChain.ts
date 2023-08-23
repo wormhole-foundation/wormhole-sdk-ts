@@ -1,8 +1,13 @@
 import {
+  AutomaticTokenBridge,
   TokenBridge,
   UniversalAddress,
 } from '@wormhole-foundation/sdk-definitions';
-import { ChainName, Network } from '@wormhole-foundation/sdk-base';
+import {
+  ChainName,
+  Network,
+  PlatformName,
+} from '@wormhole-foundation/sdk-base';
 import {
   Platform,
   RpcConnection,
@@ -40,6 +45,10 @@ export class MockChain implements ChainContext {
       ? this.tokenBridge
       : await this.platform.getTokenBridge(this.getRpc());
     return this.tokenBridge;
+  }
+
+  async getAutomaticTokenBridge(): Promise<AutomaticTokenBridge<PlatformName>> {
+    throw new Error('Method not implemented.');
   }
 
   async sendWait(stxns: SignedTxn[]): Promise<TxHash[]> {
