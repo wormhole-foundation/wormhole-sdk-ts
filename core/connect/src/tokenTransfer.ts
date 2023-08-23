@@ -1,46 +1,43 @@
 import {
   Signer,
+  TokenId,
   TxHash,
   SequenceId,
-  TokenTransferDetails,
+  ChainContext,
   TokenTransferTransaction,
-  MessageIdentifier,
-  TransactionIdentifier,
-  isMessageIdentifier,
-  isTokenTransferDetails,
-  isTransactionIdentifier,
 } from './types';
 import { WormholeTransfer, TransferState } from './wormholeTransfer';
 import { Wormhole } from './wormhole';
 import {
-  TokenBridge,
   UniversalAddress,
   UnsignedTransaction,
   VAA,
   deserialize,
 } from '@wormhole-foundation/sdk-definitions';
-import { ChainName, PlatformName } from '@wormhole-foundation/sdk-base';
+import { ChainName } from '@wormhole-foundation/sdk-base';
 
-/**
- * What do with multiple transactions or VAAs?
- * What do for `stackable` transactions?
- * More concurrent promises instead of linearizing/blocking
- */
+export interface TokenTransferDetails {
+  token: TokenId | 'native';
+  amount: bigint;
+  payload?: Uint8Array;
+  fromChain: ChainContext;
+  toChain: ChainContext;
+}
 
 export class TokenTransfer implements WormholeTransfer {
-  private readonly wh: Wormhole;
-
   // state machine tracker
-  private state: TransferState;
+  state: TransferState;
+
+  wh: Wormhole;
 
   // transfer details
   transfer: TokenTransferDetails;
 
+  from: UniversalAddress;
   fromSigner?: Signer;
-  private fromTokenBridge?: TokenBridge<PlatformName>;
 
+  to: UniversalAddress;
   toSigner?: Signer;
-  private toTokenBridge?: TokenBridge<PlatformName>;
 
   // The corresponding vaa representing the TokenTransfer
   // on the source chain (if its been completed and finalized)
@@ -50,113 +47,122 @@ export class TokenTransfer implements WormholeTransfer {
     vaa?: VAA<'Transfer'> | VAA<'TransferWithPayload'>;
   }[];
 
-  private constructor(wh: Wormhole, transfer: TokenTransferDetails) {
+  constructor(
+    wh: Wormhole,
+    transfer: TokenTransferDetails,
+    from: Signer | UniversalAddress,
+    to: Signer | UniversalAddress,
+  ) {
     this.state = TransferState.Created;
     this.wh = wh;
     this.transfer = transfer;
-  }
 
-  transferState(): TransferState {
-    return this.state;
+    if (from instanceof UniversalAddress) {
+      this.from = from;
+    } else {
+      this.fromSigner = from;
+      this.from = transfer.fromChain.platform.parseAddress(from.address());
+    }
+
+    if (to instanceof UniversalAddress) {
+      this.to = to;
+    } else {
+      this.toSigner = to;
+      this.to = transfer.toChain.platform.parseAddress(to.address());
+    }
   }
 
   // Static initializers for in flight transfers that have not been completed
-  static async from(
-    wh: Wormhole,
-    from: TokenTransferDetails,
-  ): Promise<TokenTransfer>;
-  static async from(
-    wh: Wormhole,
-    from: MessageIdentifier,
-  ): Promise<TokenTransfer>;
-  static async from(
-    wh: Wormhole,
-    from: TransactionIdentifier,
-  ): Promise<TokenTransfer>;
-  static async from(
-    wh: Wormhole,
-    from: TokenTransferDetails | MessageIdentifier | TransactionIdentifier,
-  ): Promise<TokenTransfer> {
-    let tt: TokenTransfer | undefined;
-
-    if (isMessageIdentifier(from)) {
-      tt = await TokenTransfer.fromIdentifier(wh, from);
-    } else if (isTransactionIdentifier(from)) {
-      tt = await TokenTransfer.fromTransaction(wh, from);
-    } else if (isTokenTransferDetails(from)) {
-      tt = new TokenTransfer(wh, from);
-    }
-
-    if (tt === undefined)
-      throw new Error('Invalid `from` parameter for TokenTransfer');
-
-    // cache token bridges
-    const fromChain = wh.getChain(tt.transfer.from.chain);
-    tt.fromTokenBridge = await fromChain.getTokenBridge();
-
-    const toChain = wh.getChain(tt.transfer.to.chain);
-    tt.toTokenBridge = await toChain.getTokenBridge();
-
-    return tt;
-  }
 
   // init from the seq id
-  private static async fromIdentifier(
+  static async fromIdentifier(
     wh: Wormhole,
-    from: MessageIdentifier,
+    chain: ChainName,
+    emitter: UniversalAddress,
+    sequence: bigint,
   ): Promise<TokenTransfer> {
-    const { chain, address: emitter, sequence } = from;
-    const vaa = await TokenTransfer.getTransferVaa(
+    const vaa = await TokenTransfer.waitForTransferVaa(
       wh,
       chain,
       emitter,
       sequence,
     );
 
+    // TODO: waiting for changes to make vaa parse
     const details: TokenTransferDetails = {
-      token: { ...vaa.payload.token },
+      token: [vaa.payload.token.chain, vaa.payload.token.address],
       amount: vaa.payload.token.amount,
-      // TODO: the `from.address` here is a lie, but we don't
-      // immediately have enough info to get the _correct_ one
-      from: { ...from },
-      to: { ...vaa.payload.to },
+      toChain: wh.getChain(vaa.payload.to.chain),
+      fromChain: wh.getChain(vaa.emitterChain),
     };
 
-    const tt = new TokenTransfer(wh, details);
-    tt.vaas = [{ emitter, sequence: vaa.sequence, vaa }];
+    const tt = new TokenTransfer(
+      wh,
+      details,
+      // TODO: this is a lie, but its ok because we no longer have `from` info
+      emitter,
+      vaa.payload.to.address,
+    );
+
+    tt.vaas = [
+      {
+        emitter: vaa.emitterAddress,
+        sequence: vaa.sequence,
+        vaa: vaa,
+      },
+    ];
 
     tt.state = TransferState.Ready;
 
     return tt;
   }
   // init from source tx hash
-  private static async fromTransaction(
+  static async fromTransaction(
     wh: Wormhole,
-    from: TransactionIdentifier,
+    chain: ChainName,
+    txid: string,
   ): Promise<TokenTransfer> {
-    const { chain, txid } = from;
-
     const c = wh.getChain(chain);
 
-    const parsedTxDeets: TokenTransferTransaction[] = await c.parseTransaction(
+    const parsedTxDeets: TokenTransferTransaction[] = await c.getTransaction(
       txid,
     );
 
-    // TODO: assuming single tx
     const [tx] = parsedTxDeets;
 
-    const tt = new TokenTransfer(wh, tx.details);
+    const details: TokenTransferDetails = {
+      token: tx.tokenId,
+      amount: tx.amount,
+      fromChain: wh.getChain(tx.fromChain),
+      toChain: wh.getChain(tx.toChain),
+    };
+
+    const tt = new TokenTransfer(
+      wh,
+      details,
+      details.fromChain.platform.parseAddress(tx.sender),
+      details.toChain.platform.parseAddress(tx.recipient),
+    );
+
     tt.state = TransferState.Started;
 
-    const { address: emitter, sequence } = tx.message.msg;
-    const vaa = await TokenTransfer.getTransferVaa(
+    const emitter = details.fromChain.platform.parseAddress(tx.emitterAddress);
+
+    const vaa = await TokenTransfer.waitForTransferVaa(
       wh,
       chain,
       emitter,
-      sequence,
+      tx.sequence,
     );
 
-    tt.vaas = [{ emitter, sequence, vaa }];
+    tt.vaas = [
+      {
+        emitter: emitter,
+        sequence: tx.sequence,
+        vaa: vaa,
+      },
+    ];
+
     tt.state = TransferState.Ready;
     return tt;
   }
@@ -175,12 +181,14 @@ export class TokenTransfer implements WormholeTransfer {
     if (this.state !== TransferState.Created)
       throw new Error('Invalid state transition in `start`');
 
-    const tokenAddress =
-      this.transfer.token === 'native' ? 'native' : this.transfer.token.address;
+    const tb = await this.transfer.fromChain.getTokenBridge();
 
-    const xfer = this.fromTokenBridge!.transfer(
-      this.transfer.from.address,
-      { chain: this.transfer.to.chain, address: this.transfer.to.address },
+    const tokenAddress =
+      this.transfer.token === 'native' ? 'native' : this.transfer.token[1];
+
+    const xfer = tb.transfer(
+      this.from,
+      [this.transfer.toChain.chain, this.to],
       tokenAddress,
       this.transfer.amount,
       this.transfer.payload,
@@ -198,23 +206,30 @@ export class TokenTransfer implements WormholeTransfer {
     const s = signer ? signer : this.fromSigner;
     if (s === undefined) throw new Error('No signer defined');
 
-    const fromChain = this.wh.getChain(this.transfer.from.chain);
-    const txHashes = await fromChain.sendWait(await s.sign(unsigned));
+    const txHashes = await this.transfer.fromChain.sendWait(
+      await s.sign(unsigned),
+    );
 
     this.state = TransferState.Started;
 
     // TODO: concurrent
     for (const txHash of txHashes) {
-      const txRes = await fromChain.parseTransaction(txHash);
+      const txRes = await this.transfer.fromChain.getTransaction(txHash);
 
       // TODO:
       if (txRes.length != 1) throw new Error('Idk what to do with != 1');
       const [tx] = txRes;
 
-      const { address: emitter, sequence } = tx.message.msg;
+      const emitter = this.transfer.fromChain.platform.parseAddress(
+        tx.emitterAddress,
+      );
 
       if (!this.vaas) this.vaas = [];
-      this.vaas.push({ emitter: emitter, sequence: sequence });
+
+      this.vaas.push({
+        emitter: emitter,
+        sequence: txRes[0].sequence,
+      });
     }
 
     return txHashes;
@@ -232,26 +247,27 @@ export class TokenTransfer implements WormholeTransfer {
     if (this.state < TransferState.Started || this.state > TransferState.Ready)
       throw new Error('Invalid state transition in `ready`');
 
-    if (!this.vaas || this.vaas.length == 0)
-      throw new Error('No VAA details available');
+    // Check if we already have it
+    if (this.vaas && this.vaas.length > 0) {
+      for (const idx in this.vaas) {
+        // already got it
+        if (this.vaas[idx].vaa) continue;
 
-    // Check if we already have the VAA
-    for (const idx in this.vaas) {
-      // already got it
-      if (this.vaas[idx].vaa) continue;
+        this.vaas[idx].vaa = await TokenTransfer.waitForTransferVaa(
+          this.wh,
+          this.transfer.fromChain.chain,
+          this.vaas[idx].emitter,
+          this.vaas[idx].sequence,
+        );
+      }
 
-      this.vaas[idx].vaa = await TokenTransfer.getTransferVaa(
-        this.wh,
-        this.transfer.from.chain,
-        this.vaas[idx].emitter,
-        this.vaas[idx].sequence,
-      );
+      this.state = TransferState.Ready;
+      return this.vaas.map((v) => {
+        return v.sequence;
+      });
     }
-
-    this.state = TransferState.Ready;
-    return this.vaas.map((v) => {
-      return v.sequence;
-    });
+    // TODO: and if we dont? Where do we save txid or get seq ?
+    return [];
   }
 
   // finish the WormholeTransfer by submitting transactions to the destination chain
@@ -266,23 +282,24 @@ export class TokenTransfer implements WormholeTransfer {
     if (this.state < TransferState.Ready)
       throw new Error('Invalid state transition in `finish`');
 
-    // TODO: fetch it for 'em? We should _not_ be Ready if we dont have these
-    if (!this.vaas) throw new Error('No VAA details available');
+    // TODO: fetch it for 'em
+    if (!this.vaas) throw new Error('No Vaas');
 
-    const unsigned: UnsignedTransaction[] = [];
+    const unsigned = [];
     for (const cachedVaa of this.vaas) {
       const vaa = cachedVaa.vaa
         ? cachedVaa.vaa
-        : await TokenTransfer.getTransferVaa(
+        : await TokenTransfer.waitForTransferVaa(
             this.wh,
-            this.transfer.from.chain,
+            this.transfer.fromChain.chain,
             cachedVaa.emitter,
             cachedVaa.sequence,
           );
 
       if (!vaa) throw new Error('No Vaa found');
 
-      const xfer = this.toTokenBridge!.redeem(this.transfer.to.address, vaa);
+      const tb = await this.transfer.toChain.getTokenBridge();
+      const xfer = tb.redeem(this.to, vaa);
 
       // TODO: check 'stackable'?
       for await (const tx of xfer) {
@@ -293,19 +310,33 @@ export class TokenTransfer implements WormholeTransfer {
     const s = signer ? signer : this.toSigner;
     if (s === undefined) throw new Error('No signer defined');
 
-    const toChain = this.wh.getChain(this.transfer.to.chain);
-    return await toChain.sendWait(await s.sign(unsigned));
+    return await this.transfer.toChain.sendWait(await s.sign(unsigned));
   }
 
-  static async getTransferVaa(
+  static async waitForTransferVaa(
     wh: Wormhole,
     chain: ChainName,
     emitter: UniversalAddress,
     sequence: bigint,
     retries: number = 5,
   ): Promise<VAA<'Transfer'>> {
-    const vaaBytes = await wh.getVAABytes(chain, emitter, sequence, retries);
-    if (!vaaBytes) throw new Error(`No VAA available after ${retries} retries`);
+    let vaaBytes: Uint8Array | undefined;
+    for (let i = retries; i > 0 && !vaaBytes; i--) {
+      console.log(`Waiting for vaa (${i} retries left)`);
+
+      // TODO: config wait seconds?
+      if (i != retries) await new Promise((f) => setTimeout(f, 2000));
+
+      try {
+        vaaBytes = await wh.getVAABytes(chain, emitter, sequence);
+      } catch (e) {
+        console.error(`Caught an error waiting for VAA: ${e}`);
+      }
+    }
+
+    if (!vaaBytes)
+      throw new Error('No vaa for the provided chain/emitter/sequence');
+
     return deserialize('Transfer', vaaBytes);
   }
 }

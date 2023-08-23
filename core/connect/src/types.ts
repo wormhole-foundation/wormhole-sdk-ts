@@ -5,61 +5,52 @@ import {
 } from '@wormhole-foundation/sdk-base';
 import {
   UnsignedTransaction,
-  ChainAddress,
+  ChainAddressPair,
   UniversalAddress,
   TokenBridge,
 } from '@wormhole-foundation/sdk-definitions';
 
 import { ChainConfig } from './constants';
 
+// TODO: move to definitions?
 export type TxHash = string;
+// Possibly duplicate definition?
 export type SequenceId = bigint;
 
 // TODO: move to definitions? Genericize
+export type Txn = UnsignedTransaction;
 export type SignedTxn = any;
 export interface Signer {
   chain(): ChainName;
   address(): string;
-  sign(tx: UnsignedTransaction[]): Promise<SignedTxn[]>;
+  sign(tx: Txn[]): Promise<SignedTxn[]>;
 }
 
-// TODO: definition layer? more flexible?
-export interface RpcConnection {
-  broadcastTransaction(stxns: string): Promise<any>;
-  getBalance(address: string): Promise<bigint>;
-}
-
-// TODO: move to definition layer? -- Can't without more changes, TokenTransferTransaction declared here
-// Force passing RPC connection so we don't create a new one with every fn call
-export interface Platform {
-  readonly platform: PlatformName;
-  readonly network?: Network;
-  getForeignAsset(
-    chain: ChainName,
-    rpc: RpcConnection,
+// TODO: move to definition layer
+export abstract class Platform {
+  public static platform: PlatformName;
+  // TODO: Asset vs token?
+  abstract getForeignAsset(
     tokenId: TokenId,
-  ): Promise<UniversalAddress | null>;
-  getTokenDecimals(
-    rpc: RpcConnection,
-    tokenAddr: UniversalAddress,
-  ): Promise<bigint>;
-  getNativeBalance(rpc: RpcConnection, walletAddr: string): Promise<bigint>;
-  getTokenBalance(
     chain: ChainName,
-    rpc: RpcConnection,
+  ): Promise<UniversalAddress | null>;
+  abstract getTokenDecimals(
+    tokenAddr: UniversalAddress,
+    chain: ChainName,
+  ): Promise<bigint>;
+  abstract getNativeBalance(walletAddr: string, chain: ChainName): Promise<bigint>;
+  abstract getTokenBalance(
     walletAddr: string,
     tokenId: TokenId,
-  ): Promise<bigint | null>;
-  //
-  getChain(chain: ChainName): ChainContext;
-  getRpc(chain: ChainName): RpcConnection;
-  getTokenBridge(rpc: RpcConnection): Promise<TokenBridge<PlatformName>>;
-  parseTransaction(
     chain: ChainName,
-    rpc: RpcConnection,
+  ): Promise<bigint | null>;
+  abstract getChain(chain: ChainName): ChainContext;
+  abstract parseAddress(address: string): UniversalAddress;
+  abstract parseMessageFromTx(
+    chain: ChainName,
     txid: TxHash,
-  ): Promise<TokenTransferTransaction[]>;
-  parseAddress(address: string): UniversalAddress;
+    rpc: any,
+  ): Promise<TokenTransferTransaction[]>
 }
 
 export type PlatformCtr = {
@@ -67,17 +58,12 @@ export type PlatformCtr = {
   new (network: Network, conf: ChainsConfig): Platform;
 };
 
-// This requires the arguments in the function definition come in the same order
-// [chain], [rpc], ...
+export type RpcConnection = any;
 
-type OmitChain<Fn> = Fn extends (chain: ChainName, ...args: infer P) => infer R
-  ? (...args: P) => R
-  : Fn;
-type OmitRpc<Fn> = Fn extends (rpc: RpcConnection, ...args: infer P) => infer R
-  ? (...args: P) => R
-  : Fn;
-
-type OmitChainRpc<Fn> = OmitRpc<OmitChain<Fn>>;
+// TODO: idk if this is actually doing what i want
+type OmitChain<Fn> = Fn extends (...args: infer P) => infer R
+  ? (...args: Exclude<P, ChainName>) => R
+  : never;
 
 export interface ChainContext {
   readonly chain: ChainName;
@@ -85,14 +71,13 @@ export interface ChainContext {
   readonly platform: Platform;
   getRPC(): RpcConnection;
   sendWait(stxns: SignedTxn[]): Promise<TxHash[]>;
-  getTokenBridge(): Promise<TokenBridge<PlatformName>>;
+  getTokenBridge(): Promise<TokenBridge<'Evm'>>;
+  getTransaction(txid: string): Promise<TokenTransferTransaction[]>;
 
-  // TODO: can we add these automatically?
-  getForeignAsset: OmitChainRpc<Platform['getForeignAsset']>;
-  getTokenDecimals: OmitChainRpc<Platform['getTokenDecimals']>;
-  getNativeBalance: OmitChainRpc<Platform['getNativeBalance']>;
-  getTokenBalance: OmitChainRpc<Platform['getTokenBalance']>;
-  parseTransaction: OmitChainRpc<Platform['parseTransaction']>;
+  getForeignAsset: OmitChain<Platform['getForeignAsset']>;
+  getTokenDecimals: OmitChain<Platform['getTokenDecimals']>;
+  getNativeBalance: OmitChain<Platform['getNativeBalance']>;
+  getTokenBalance: OmitChain<Platform['getTokenBalance']>;
 }
 
 export type ChainCtr = new () => ChainContext;
@@ -106,55 +91,28 @@ export type WormholeConfig = {
   chains: ChainsConfig;
 };
 
-export type TokenId = ChainAddress;
-export type MessageIdentifier = ChainAddress & { sequence: SequenceId };
-export type TransactionIdentifier = { chain: ChainName; txid: TxHash };
-
-export type TokenTransferDetails = {
-  token: TokenId | 'native';
-  amount: bigint;
-  payload?: Uint8Array;
-  from: ChainAddress;
-  to: ChainAddress;
-};
-
-export type WormholeMessage = {
-  tx: TransactionIdentifier;
-  msg: MessageIdentifier;
-  payloadId: bigint;
-};
+export type TokenId = ChainAddressPair;
+export type MessageIdentifier = ChainAddressPair & { sequence: SequenceId };
+export type WormholeWrappedInfo = ChainAddressPair & { isWrapped: boolean };
 
 // Details for a source chain Token Transfer transaction
 export type TokenTransferTransaction = {
-  message: WormholeMessage;
+  sendTx: TxHash;
 
-  details: TokenTransferDetails;
+  fromChain: ChainName;
+  sender: string;
+
+  toChain: ChainName;
+  recipient: string;
+
+  tokenId: TokenId;
+  amount: bigint;
+
+  emitterAddress: string;
+  sequence: bigint;
+
+  payloadID: bigint;
+
   block: bigint;
   gasFee: bigint;
 };
-
-export function isMessageIdentifier(
-  thing: MessageIdentifier | any,
-): thing is MessageIdentifier {
-  return (<MessageIdentifier>thing).sequence !== undefined;
-}
-
-export function isTransactionIdentifier(
-  thing: TransactionIdentifier | any,
-): thing is TransactionIdentifier {
-  return (
-    (<TransactionIdentifier>thing).chain !== undefined &&
-    (<TransactionIdentifier>thing).txid !== undefined
-  );
-}
-
-export function isTokenTransferDetails(
-  thing: TokenTransferDetails | any,
-): thing is TokenTransferDetails {
-  return (
-    (<TokenTransferDetails>thing).token !== undefined &&
-    (<TokenTransferDetails>thing).amount !== undefined &&
-    (<TokenTransferDetails>thing).from !== undefined &&
-    (<TokenTransferDetails>thing).to !== undefined
-  );
-}

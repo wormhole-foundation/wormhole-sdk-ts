@@ -2,11 +2,9 @@ import {
   TokenTransferTransaction,
   Wormhole,
   TokenTransfer,
-  TransactionIdentifier,
 } from '@wormhole-foundation/connect-sdk';
 import { EvmPlatform } from '../../src/platform';
 import { EvmChain, EvmTokenBridge } from '../../src';
-import { TokenBridge } from '@wormhole-foundation/sdk-definitions';
 
 describe('Initialize Objects', () => {
   const wh = new Wormhole('Testnet', [EvmPlatform]);
@@ -17,7 +15,7 @@ describe('Initialize Objects', () => {
     expect(ethCtx).toBeTruthy();
   });
 
-  let tokenBridge: TokenBridge<'Evm'>;
+  let tokenBridge: EvmTokenBridge;
   test('Get Ethereum Token Bridge', async () => {
     // TODO: We already asked for the `Ethereum` context, seems weird to
     // re-specify to get rpc/tokenbridge/etc...
@@ -26,23 +24,23 @@ describe('Initialize Objects', () => {
   });
 
   test('Recover Transfer Details', async () => {
-    const txs = await ethCtx.parseTransaction(
+    const txs = await ethCtx.getTransaction(
       '0xb7677fabbe96e2caf10fdc14a3c971e60ff49458e83528c2594d87a7238af838',
     );
     expect(txs.length).toBe(1);
 
     const tx: TokenTransferTransaction = txs[0];
-    expect(tx.details.amount).toBe(0n);
-    expect(tx.details.from.chain).toBe('Celo');
+    expect(tx.amount).toBe(0n);
+    expect(tx.fromChain).toBe('Celo');
   });
 
   test('Recover Wormhole Transfer', async () => {
-    const txident: TransactionIdentifier = {
-      chain: 'Celo',
-      txid: '0xb7677fabbe96e2caf10fdc14a3c971e60ff49458e83528c2594d87a7238af838',
-    };
-    const tx = await TokenTransfer.from(wh, txident);
-    expect(tx).toBeTruthy();
+    const tx = await TokenTransfer.fromTransaction(
+      wh,
+      'Celo',
+      '0xb7677fabbe96e2caf10fdc14a3c971e60ff49458e83528c2594d87a7238af838',
+    );
+    console.log(tx);
   });
 
   // test('Create Transfer Transaction', async () => {

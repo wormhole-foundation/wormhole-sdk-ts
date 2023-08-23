@@ -9,20 +9,22 @@ import {
   UniversalAddress,
   deserialize,
   VAA,
-  ChainAddress,
+  deserializePayload,
 } from '@wormhole-foundation/sdk-definitions';
-import axios, { AxiosResponse } from 'axios';
+import axios from 'axios';
 
 import {
   TokenId,
   WormholeConfig,
   PlatformCtr,
+  Signer,
   Platform,
   ChainContext,
 } from './types';
 
 import { CONFIG } from './constants';
 import { TokenTransfer } from './tokenTransfer';
+import { emit } from 'process';
 
 export class Wormhole {
   protected _platforms: Map<PlatformName, Platform>;
@@ -54,20 +56,25 @@ export class Wormhole {
     return this.conf.network;
   }
 
-  async tokenTransfer(
+  tokenTransfer(
     token: TokenId | 'native',
     amount: bigint,
-    from: ChainAddress,
-    to: ChainAddress,
+    from: Signer,
+    to: Signer,
     payload?: Uint8Array,
-  ): Promise<TokenTransfer> {
-    return await TokenTransfer.from(this, {
-      token: token,
-      amount: amount,
-      payload: payload,
+  ): TokenTransfer {
+    return new TokenTransfer(
+      this,
+      {
+        token: token,
+        amount: amount,
+        payload: payload,
+        fromChain: this.getChain(from.chain()),
+        toChain: this.getChain(to.chain()),
+      },
       from,
       to,
-    });
+    );
   }
 
   /**
@@ -127,8 +134,8 @@ export class Wormhole {
     tokenId: TokenId,
     chain: ChainName,
   ): Promise<UniversalAddress | null> {
-    const context = this.getChain(chain);
-    return await context.getForeignAsset(tokenId);
+    const context = this.getPlatform(chain);
+    return await context.getForeignAsset(tokenId, chain);
   }
 
   /**
@@ -158,8 +165,8 @@ export class Wormhole {
    */
   async getTokenDecimals(tokenId: TokenId, chain: ChainName): Promise<bigint> {
     const repr = await this.mustGetForeignAsset(tokenId, chain);
-    const context = this.getChain(chain);
-    return await context.getTokenDecimals(repr);
+    const context = this.getPlatform(chain);
+    return await context.getTokenDecimals(repr, chain);
   }
 
   /**
@@ -173,8 +180,8 @@ export class Wormhole {
     walletAddress: string,
     chain: ChainName,
   ): Promise<bigint> {
-    const context = this.getChain(chain);
-    return await context.getNativeBalance(walletAddress);
+    const context = this.getPlatform(chain);
+    return await context.getNativeBalance(walletAddress, chain);
   }
 
   /**
@@ -190,8 +197,8 @@ export class Wormhole {
     tokenId: TokenId,
     chain: ChainName,
   ): Promise<bigint | null> {
-    const context = this.getChain(chain);
-    return await context.getTokenBalance(walletAddress, tokenId);
+    const context = this.getPlatform(chain);
+    return await context.getTokenBalance(walletAddress, tokenId, chain);
   }
 
   /**
@@ -216,31 +223,19 @@ export class Wormhole {
   async getVAABytes(
     chain: ChainName,
     emitter: UniversalAddress,
-    sequence: bigint,
-    retries: number = 5,
+    seq: bigint,
   ): Promise<Uint8Array | undefined> {
     const chainId = toChainId(chain);
     const emitterAddress = emitter.toString().startsWith('0x')
       ? emitter.toString().slice(2)
       : emitter;
 
-    let response: AxiosResponse<any, any> | undefined;
     // TODO: Make both data formats work
     //const url = `${this.conf.api}/api/v1/vaas/${chainId}/${emitterAddress}/${seq}`;
-    const url = `https://wormhole-v2-testnet-api.certus.one/v1/signed_vaa/${chainId}/${emitterAddress}/${sequence}`;
+    const url = `https://wormhole-v2-testnet-api.certus.one/v1/signed_vaa/${chainId}/${emitterAddress}/${seq}`;
+    const response = await axios.get(url);
 
-    for (let i = retries; i > 0 && !response; i--) {
-      // TODO: config wait seconds?
-      if (i != retries) await new Promise((f) => setTimeout(f, 2000));
-
-      try {
-        response = await axios.get(url);
-      } catch (e) {
-        console.error(`Caught an error waiting for VAA: ${e}`);
-      }
-    }
-
-    if (!response || !response.data) return;
+    if (!response.data) return;
 
     const { data } = response;
     return new Uint8Array(Buffer.from(data.vaaBytes, 'base64'));

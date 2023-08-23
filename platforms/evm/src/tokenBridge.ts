@@ -11,7 +11,7 @@ import {
   VAA,
   serialize,
   UniversalAddress,
-  ChainAddress,
+  ChainAddressPair,
   UniversalOrNative,
   TokenBridge,
   keccak256,
@@ -82,7 +82,7 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     return this.tokenBridge.isWrappedAsset(toEvmAddrString(token));
   }
 
-  async getOriginalAsset(token: UniversalOrEvm): Promise<ChainAddress> {
+  async getOriginalAsset(token: UniversalOrEvm): Promise<ChainAddressPair> {
     if (!(await this.isWrappedAsset(token)))
       throw new Error(`Token ${token} is not a wrapped asset`);
 
@@ -90,27 +90,35 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
       toEvmAddrString(token),
       this.provider,
     );
-    const [chain, address] = await Promise.all([
+    return Promise.all([
       tokenContract.chainId().then(Number).then(toChainId).then(chainIdToChain),
       tokenContract.nativeContract().then((addr) => new UniversalAddress(addr)),
     ]);
-    return { chain, address };
   }
 
-  async hasWrappedAsset({ chain, address }: ChainAddress): Promise<boolean> {
+  async hasWrappedAsset([
+    originalChain,
+    originalAddress,
+  ]: ChainAddressPair): Promise<boolean> {
     try {
       //TODO it's unclear to me why this would throw for a non-existent token but that's how the
       //  old sdk checked for existence
-      await this.getWrappedAsset({ chain, address });
+      await this.getWrappedAsset([originalChain, originalAddress]);
       return true;
     } catch (e) {
       return false;
     }
   }
 
-  async getWrappedAsset({ chain, address }: ChainAddress): Promise<EvmAddress> {
+  async getWrappedAsset([
+    originalChain,
+    originalAddress,
+  ]: ChainAddressPair): Promise<EvmAddress> {
     return new EvmAddress(
-      await this.tokenBridge.wrappedAsset(chain, address.toString()),
+      await this.tokenBridge.wrappedAsset(
+        originalChain,
+        originalAddress.toString(),
+      ),
     );
   }
 
@@ -150,9 +158,10 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
   async *submitAttestation(
     vaa: VAA<'AttestMeta'>,
   ): AsyncGenerator<EvmUnsignedTransaction> {
-    const func = (await this.hasWrappedAsset({
-      ...vaa.payload.token,
-    }))
+    const func = (await this.hasWrappedAsset([
+      vaa.payload.token.chain,
+      vaa.payload.token.address,
+    ]))
       ? 'createWrapped'
       : 'updateWrapped';
     yield this.createUnsignedTx(
@@ -164,14 +173,14 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
   //alternative naming: initiateTransfer
   async *transfer(
     sender: UniversalOrEvm,
-    recipient: ChainAddress,
+    recipient: ChainAddressPair,
     token: UniversalOrEvm | 'native',
     amount: bigint,
     payload?: Uint8Array,
   ): AsyncGenerator<EvmUnsignedTransaction> {
     const senderAddr = toEvmAddrString(sender);
-    const recipientChainId = chainToChainId(recipient.chain);
-    const recipientAddress = recipient.address.toString();
+    const recipientChainId = chainToChainId(recipient[0]);
+    const recipientAddress = recipient[1].toString();
     if (typeof token === 'string' && token === 'native') {
       const txReq = await (payload === undefined
         ? this.tokenBridge.wrapAndTransferETH.populateTransaction(

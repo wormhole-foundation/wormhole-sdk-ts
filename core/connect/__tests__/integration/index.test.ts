@@ -1,5 +1,5 @@
 import { Wormhole } from '@wormhole-foundation/connect-sdk';
-import { MockContext1, MockContext2 } from '../mocks/mockPlatform';
+import { MockContext1, MockContext2 } from '../mocks/mockContext';
 
 const network = 'Testnet';
 

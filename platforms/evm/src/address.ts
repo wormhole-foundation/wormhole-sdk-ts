@@ -1,9 +1,8 @@
 import {
   Address,
-  UniversalAddress,
   registerNative,
+  UniversalAddress,
 } from '@wormhole-foundation/sdk-definitions';
-
 import { ethers } from 'ethers';
 
 declare global {

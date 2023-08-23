@@ -13,7 +13,7 @@ import type {
   ContractRunner,
   ContractMethod,
   Listener,
-} from "ethers";
+} from 'ethers';
 import type {
   TypedContractEvent,
   TypedDeferredTopicFilter,
@@ -21,7 +21,7 @@ import type {
   TypedLogDescription,
   TypedListener,
   TypedContractMethod,
-} from "./common";
+} from './common';
 
 export declare namespace Structs {
   export type GuardianSetStruct = {
@@ -31,7 +31,7 @@ export declare namespace Structs {
 
   export type GuardianSetStructOutput = [
     keys: string[],
-    expirationTime: bigint
+    expirationTime: bigint,
   ] & { keys: string[]; expirationTime: bigint };
 
   export type SignatureStruct = {
@@ -45,7 +45,7 @@ export declare namespace Structs {
     r: string,
     s: string,
     v: bigint,
-    guardianIndex: bigint
+    guardianIndex: bigint,
   ] & { r: string; s: string; v: bigint; guardianIndex: bigint };
 
   export type VMStruct = {
@@ -73,7 +73,7 @@ export declare namespace Structs {
     payload: string,
     guardianSetIndex: bigint,
     signatures: Structs.SignatureStructOutput[],
-    hash: string
+    hash: string,
   ] & {
     version: bigint;
     timestamp: bigint;
@@ -101,7 +101,7 @@ export declare namespace GovernanceStructs {
     module: string,
     action: bigint,
     chain: bigint,
-    newContract: string
+    newContract: string,
   ] & { module: string; action: bigint; chain: bigint; newContract: string };
 
   export type GuardianSetUpgradeStruct = {
@@ -117,7 +117,7 @@ export declare namespace GovernanceStructs {
     action: bigint,
     chain: bigint,
     newGuardianSet: Structs.GuardianSetStructOutput,
-    newGuardianSetIndex: bigint
+    newGuardianSetIndex: bigint,
   ] & {
     module: string;
     action: bigint;
@@ -137,7 +137,7 @@ export declare namespace GovernanceStructs {
     module: string,
     action: bigint,
     evmChainId: bigint,
-    newChainId: bigint
+    newChainId: bigint,
   ] & {
     module: string;
     action: bigint;
@@ -156,7 +156,7 @@ export declare namespace GovernanceStructs {
     module: string,
     action: bigint,
     chain: bigint,
-    messageFee: bigint
+    messageFee: bigint,
   ] & { module: string; action: bigint; chain: bigint; messageFee: bigint };
 
   export type TransferFeesStruct = {
@@ -172,7 +172,7 @@ export declare namespace GovernanceStructs {
     action: bigint,
     chain: bigint,
     amount: bigint,
-    recipient: string
+    recipient: string,
   ] & {
     module: string;
     action: bigint;
@@ -185,247 +185,247 @@ export declare namespace GovernanceStructs {
 export interface ImplementationInterface extends Interface {
   getFunction(
     nameOrSignature:
-      | "chainId"
-      | "evmChainId"
-      | "getCurrentGuardianSetIndex"
-      | "getGuardianSet"
-      | "getGuardianSetExpiry"
-      | "governanceActionIsConsumed"
-      | "governanceChainId"
-      | "governanceContract"
-      | "initialize"
-      | "isFork"
-      | "isInitialized"
-      | "messageFee"
-      | "nextSequence"
-      | "parseAndVerifyVM"
-      | "parseContractUpgrade"
-      | "parseGuardianSetUpgrade"
-      | "parseRecoverChainId"
-      | "parseSetMessageFee"
-      | "parseTransferFees"
-      | "parseVM"
-      | "publishMessage"
-      | "quorum"
-      | "submitContractUpgrade"
-      | "submitNewGuardianSet"
-      | "submitRecoverChainId"
-      | "submitSetMessageFee"
-      | "submitTransferFees"
-      | "verifySignatures"
-      | "verifyVM"
+      | 'chainId'
+      | 'evmChainId'
+      | 'getCurrentGuardianSetIndex'
+      | 'getGuardianSet'
+      | 'getGuardianSetExpiry'
+      | 'governanceActionIsConsumed'
+      | 'governanceChainId'
+      | 'governanceContract'
+      | 'initialize'
+      | 'isFork'
+      | 'isInitialized'
+      | 'messageFee'
+      | 'nextSequence'
+      | 'parseAndVerifyVM'
+      | 'parseContractUpgrade'
+      | 'parseGuardianSetUpgrade'
+      | 'parseRecoverChainId'
+      | 'parseSetMessageFee'
+      | 'parseTransferFees'
+      | 'parseVM'
+      | 'publishMessage'
+      | 'quorum'
+      | 'submitContractUpgrade'
+      | 'submitNewGuardianSet'
+      | 'submitRecoverChainId'
+      | 'submitSetMessageFee'
+      | 'submitTransferFees'
+      | 'verifySignatures'
+      | 'verifyVM',
   ): FunctionFragment;
 
   getEvent(
     nameOrSignatureOrTopic:
-      | "AdminChanged"
-      | "BeaconUpgraded"
-      | "ContractUpgraded"
-      | "GuardianSetAdded"
-      | "LogMessagePublished"
-      | "Upgraded"
+      | 'AdminChanged'
+      | 'BeaconUpgraded'
+      | 'ContractUpgraded'
+      | 'GuardianSetAdded'
+      | 'LogMessagePublished'
+      | 'Upgraded',
   ): EventFragment;
 
-  encodeFunctionData(functionFragment: "chainId", values?: undefined): string;
+  encodeFunctionData(functionFragment: 'chainId', values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "evmChainId",
-    values?: undefined
+    functionFragment: 'evmChainId',
+    values?: undefined,
   ): string;
   encodeFunctionData(
-    functionFragment: "getCurrentGuardianSetIndex",
-    values?: undefined
+    functionFragment: 'getCurrentGuardianSetIndex',
+    values?: undefined,
   ): string;
   encodeFunctionData(
-    functionFragment: "getGuardianSet",
-    values: [BigNumberish]
+    functionFragment: 'getGuardianSet',
+    values: [BigNumberish],
   ): string;
   encodeFunctionData(
-    functionFragment: "getGuardianSetExpiry",
-    values?: undefined
+    functionFragment: 'getGuardianSetExpiry',
+    values?: undefined,
   ): string;
   encodeFunctionData(
-    functionFragment: "governanceActionIsConsumed",
-    values: [BytesLike]
+    functionFragment: 'governanceActionIsConsumed',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "governanceChainId",
-    values?: undefined
+    functionFragment: 'governanceChainId',
+    values?: undefined,
   ): string;
   encodeFunctionData(
-    functionFragment: "governanceContract",
-    values?: undefined
+    functionFragment: 'governanceContract',
+    values?: undefined,
   ): string;
   encodeFunctionData(
-    functionFragment: "initialize",
-    values?: undefined
+    functionFragment: 'initialize',
+    values?: undefined,
   ): string;
-  encodeFunctionData(functionFragment: "isFork", values?: undefined): string;
+  encodeFunctionData(functionFragment: 'isFork', values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "isInitialized",
-    values: [AddressLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "messageFee",
-    values?: undefined
+    functionFragment: 'isInitialized',
+    values: [AddressLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "nextSequence",
-    values: [AddressLike]
+    functionFragment: 'messageFee',
+    values?: undefined,
   ): string;
   encodeFunctionData(
-    functionFragment: "parseAndVerifyVM",
-    values: [BytesLike]
+    functionFragment: 'nextSequence',
+    values: [AddressLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "parseContractUpgrade",
-    values: [BytesLike]
+    functionFragment: 'parseAndVerifyVM',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "parseGuardianSetUpgrade",
-    values: [BytesLike]
+    functionFragment: 'parseContractUpgrade',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "parseRecoverChainId",
-    values: [BytesLike]
+    functionFragment: 'parseGuardianSetUpgrade',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "parseSetMessageFee",
-    values: [BytesLike]
+    functionFragment: 'parseRecoverChainId',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "parseTransferFees",
-    values: [BytesLike]
-  ): string;
-  encodeFunctionData(functionFragment: "parseVM", values: [BytesLike]): string;
-  encodeFunctionData(
-    functionFragment: "publishMessage",
-    values: [BigNumberish, BytesLike, BigNumberish]
+    functionFragment: 'parseSetMessageFee',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "quorum",
-    values: [BigNumberish]
+    functionFragment: 'parseTransferFees',
+    values: [BytesLike],
+  ): string;
+  encodeFunctionData(functionFragment: 'parseVM', values: [BytesLike]): string;
+  encodeFunctionData(
+    functionFragment: 'publishMessage',
+    values: [BigNumberish, BytesLike, BigNumberish],
   ): string;
   encodeFunctionData(
-    functionFragment: "submitContractUpgrade",
-    values: [BytesLike]
+    functionFragment: 'quorum',
+    values: [BigNumberish],
   ): string;
   encodeFunctionData(
-    functionFragment: "submitNewGuardianSet",
-    values: [BytesLike]
+    functionFragment: 'submitContractUpgrade',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "submitRecoverChainId",
-    values: [BytesLike]
+    functionFragment: 'submitNewGuardianSet',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "submitSetMessageFee",
-    values: [BytesLike]
+    functionFragment: 'submitRecoverChainId',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "submitTransferFees",
-    values: [BytesLike]
+    functionFragment: 'submitSetMessageFee',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "verifySignatures",
-    values: [BytesLike, Structs.SignatureStruct[], Structs.GuardianSetStruct]
+    functionFragment: 'submitTransferFees',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "verifyVM",
-    values: [Structs.VMStruct]
+    functionFragment: 'verifySignatures',
+    values: [BytesLike, Structs.SignatureStruct[], Structs.GuardianSetStruct],
+  ): string;
+  encodeFunctionData(
+    functionFragment: 'verifyVM',
+    values: [Structs.VMStruct],
   ): string;
 
-  decodeFunctionResult(functionFragment: "chainId", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "evmChainId", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'chainId', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'evmChainId', data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "getCurrentGuardianSetIndex",
-    data: BytesLike
+    functionFragment: 'getCurrentGuardianSetIndex',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getGuardianSet",
-    data: BytesLike
+    functionFragment: 'getGuardianSet',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getGuardianSetExpiry",
-    data: BytesLike
+    functionFragment: 'getGuardianSetExpiry',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "governanceActionIsConsumed",
-    data: BytesLike
+    functionFragment: 'governanceActionIsConsumed',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "governanceChainId",
-    data: BytesLike
+    functionFragment: 'governanceChainId',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "governanceContract",
-    data: BytesLike
+    functionFragment: 'governanceContract',
+    data: BytesLike,
   ): Result;
-  decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "isFork", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'initialize', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'isFork', data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "isInitialized",
-    data: BytesLike
+    functionFragment: 'isInitialized',
+    data: BytesLike,
   ): Result;
-  decodeFunctionResult(functionFragment: "messageFee", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'messageFee', data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "nextSequence",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "parseAndVerifyVM",
-    data: BytesLike
+    functionFragment: 'nextSequence',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "parseContractUpgrade",
-    data: BytesLike
+    functionFragment: 'parseAndVerifyVM',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "parseGuardianSetUpgrade",
-    data: BytesLike
+    functionFragment: 'parseContractUpgrade',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "parseRecoverChainId",
-    data: BytesLike
+    functionFragment: 'parseGuardianSetUpgrade',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "parseSetMessageFee",
-    data: BytesLike
+    functionFragment: 'parseRecoverChainId',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "parseTransferFees",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "parseVM", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "publishMessage",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "quorum", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "submitContractUpgrade",
-    data: BytesLike
+    functionFragment: 'parseSetMessageFee',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "submitNewGuardianSet",
-    data: BytesLike
+    functionFragment: 'parseTransferFees',
+    data: BytesLike,
+  ): Result;
+  decodeFunctionResult(functionFragment: 'parseVM', data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: 'publishMessage',
+    data: BytesLike,
+  ): Result;
+  decodeFunctionResult(functionFragment: 'quorum', data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: 'submitContractUpgrade',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "submitRecoverChainId",
-    data: BytesLike
+    functionFragment: 'submitNewGuardianSet',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "submitSetMessageFee",
-    data: BytesLike
+    functionFragment: 'submitRecoverChainId',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "submitTransferFees",
-    data: BytesLike
+    functionFragment: 'submitSetMessageFee',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "verifySignatures",
-    data: BytesLike
+    functionFragment: 'submitTransferFees',
+    data: BytesLike,
   ): Result;
-  decodeFunctionResult(functionFragment: "verifyVM", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: 'verifySignatures',
+    data: BytesLike,
+  ): Result;
+  decodeFunctionResult(functionFragment: 'verifyVM', data: BytesLike): Result;
 }
 
 export namespace AdminChangedEvent {
@@ -484,14 +484,14 @@ export namespace LogMessagePublishedEvent {
     sequence: BigNumberish,
     nonce: BigNumberish,
     payload: BytesLike,
-    consistencyLevel: BigNumberish
+    consistencyLevel: BigNumberish,
   ];
   export type OutputTuple = [
     sender: string,
     sequence: bigint,
     nonce: bigint,
     payload: string,
-    consistencyLevel: bigint
+    consistencyLevel: bigint,
   ];
   export interface OutputObject {
     sender: string;
@@ -527,73 +527,73 @@ export interface Implementation extends BaseContract {
   queryFilter<TCEvent extends TypedContractEvent>(
     event: TCEvent,
     fromBlockOrBlockhash?: string | number | undefined,
-    toBlock?: string | number | undefined
+    toBlock?: string | number | undefined,
   ): Promise<Array<TypedEventLog<TCEvent>>>;
   queryFilter<TCEvent extends TypedContractEvent>(
     filter: TypedDeferredTopicFilter<TCEvent>,
     fromBlockOrBlockhash?: string | number | undefined,
-    toBlock?: string | number | undefined
+    toBlock?: string | number | undefined,
   ): Promise<Array<TypedEventLog<TCEvent>>>;
 
   on<TCEvent extends TypedContractEvent>(
     event: TCEvent,
-    listener: TypedListener<TCEvent>
+    listener: TypedListener<TCEvent>,
   ): Promise<this>;
   on<TCEvent extends TypedContractEvent>(
     filter: TypedDeferredTopicFilter<TCEvent>,
-    listener: TypedListener<TCEvent>
+    listener: TypedListener<TCEvent>,
   ): Promise<this>;
 
   once<TCEvent extends TypedContractEvent>(
     event: TCEvent,
-    listener: TypedListener<TCEvent>
+    listener: TypedListener<TCEvent>,
   ): Promise<this>;
   once<TCEvent extends TypedContractEvent>(
     filter: TypedDeferredTopicFilter<TCEvent>,
-    listener: TypedListener<TCEvent>
+    listener: TypedListener<TCEvent>,
   ): Promise<this>;
 
   listeners<TCEvent extends TypedContractEvent>(
-    event: TCEvent
+    event: TCEvent,
   ): Promise<Array<TypedListener<TCEvent>>>;
   listeners(eventName?: string): Promise<Array<Listener>>;
   removeAllListeners<TCEvent extends TypedContractEvent>(
-    event?: TCEvent
+    event?: TCEvent,
   ): Promise<this>;
 
-  chainId: TypedContractMethod<[], [bigint], "view">;
+  chainId: TypedContractMethod<[], [bigint], 'view'>;
 
-  evmChainId: TypedContractMethod<[], [bigint], "view">;
+  evmChainId: TypedContractMethod<[], [bigint], 'view'>;
 
-  getCurrentGuardianSetIndex: TypedContractMethod<[], [bigint], "view">;
+  getCurrentGuardianSetIndex: TypedContractMethod<[], [bigint], 'view'>;
 
   getGuardianSet: TypedContractMethod<
     [index: BigNumberish],
     [Structs.GuardianSetStructOutput],
-    "view"
+    'view'
   >;
 
-  getGuardianSetExpiry: TypedContractMethod<[], [bigint], "view">;
+  getGuardianSetExpiry: TypedContractMethod<[], [bigint], 'view'>;
 
   governanceActionIsConsumed: TypedContractMethod<
     [hash: BytesLike],
     [boolean],
-    "view"
+    'view'
   >;
 
-  governanceChainId: TypedContractMethod<[], [bigint], "view">;
+  governanceChainId: TypedContractMethod<[], [bigint], 'view'>;
 
-  governanceContract: TypedContractMethod<[], [string], "view">;
+  governanceContract: TypedContractMethod<[], [string], 'view'>;
 
-  initialize: TypedContractMethod<[], [void], "nonpayable">;
+  initialize: TypedContractMethod<[], [void], 'nonpayable'>;
 
-  isFork: TypedContractMethod<[], [boolean], "view">;
+  isFork: TypedContractMethod<[], [boolean], 'view'>;
 
-  isInitialized: TypedContractMethod<[impl: AddressLike], [boolean], "view">;
+  isInitialized: TypedContractMethod<[impl: AddressLike], [boolean], 'view'>;
 
-  messageFee: TypedContractMethod<[], [bigint], "view">;
+  messageFee: TypedContractMethod<[], [bigint], 'view'>;
 
-  nextSequence: TypedContractMethod<[emitter: AddressLike], [bigint], "view">;
+  nextSequence: TypedContractMethod<[emitter: AddressLike], [bigint], 'view'>;
 
   parseAndVerifyVM: TypedContractMethod<
     [encodedVM: BytesLike],
@@ -602,284 +602,282 @@ export interface Implementation extends BaseContract {
         vm: Structs.VMStructOutput;
         valid: boolean;
         reason: string;
-      }
+      },
     ],
-    "view"
+    'view'
   >;
 
   parseContractUpgrade: TypedContractMethod<
     [encodedUpgrade: BytesLike],
     [GovernanceStructs.ContractUpgradeStructOutput],
-    "view"
+    'view'
   >;
 
   parseGuardianSetUpgrade: TypedContractMethod<
     [encodedUpgrade: BytesLike],
     [GovernanceStructs.GuardianSetUpgradeStructOutput],
-    "view"
+    'view'
   >;
 
   parseRecoverChainId: TypedContractMethod<
     [encodedRecoverChainId: BytesLike],
     [GovernanceStructs.RecoverChainIdStructOutput],
-    "view"
+    'view'
   >;
 
   parseSetMessageFee: TypedContractMethod<
     [encodedSetMessageFee: BytesLike],
     [GovernanceStructs.SetMessageFeeStructOutput],
-    "view"
+    'view'
   >;
 
   parseTransferFees: TypedContractMethod<
     [encodedTransferFees: BytesLike],
     [GovernanceStructs.TransferFeesStructOutput],
-    "view"
+    'view'
   >;
 
   parseVM: TypedContractMethod<
     [encodedVM: BytesLike],
     [Structs.VMStructOutput],
-    "view"
+    'view'
   >;
 
   publishMessage: TypedContractMethod<
     [nonce: BigNumberish, payload: BytesLike, consistencyLevel: BigNumberish],
     [bigint],
-    "payable"
+    'payable'
   >;
 
-  quorum: TypedContractMethod<[numGuardians: BigNumberish], [bigint], "view">;
+  quorum: TypedContractMethod<[numGuardians: BigNumberish], [bigint], 'view'>;
 
   submitContractUpgrade: TypedContractMethod<
     [_vm: BytesLike],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
   submitNewGuardianSet: TypedContractMethod<
     [_vm: BytesLike],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
   submitRecoverChainId: TypedContractMethod<
     [_vm: BytesLike],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
   submitSetMessageFee: TypedContractMethod<
     [_vm: BytesLike],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
   submitTransferFees: TypedContractMethod<
     [_vm: BytesLike],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
   verifySignatures: TypedContractMethod<
     [
       hash: BytesLike,
       signatures: Structs.SignatureStruct[],
-      guardianSet: Structs.GuardianSetStruct
+      guardianSet: Structs.GuardianSetStruct,
     ],
     [[boolean, string] & { valid: boolean; reason: string }],
-    "view"
+    'view'
   >;
 
   verifyVM: TypedContractMethod<
     [vm: Structs.VMStruct],
     [[boolean, string] & { valid: boolean; reason: string }],
-    "view"
+    'view'
   >;
 
   getFunction<T extends ContractMethod = ContractMethod>(
-    key: string | FunctionFragment
+    key: string | FunctionFragment,
   ): T;
 
   getFunction(
-    nameOrSignature: "chainId"
-  ): TypedContractMethod<[], [bigint], "view">;
+    nameOrSignature: 'chainId',
+  ): TypedContractMethod<[], [bigint], 'view'>;
   getFunction(
-    nameOrSignature: "evmChainId"
-  ): TypedContractMethod<[], [bigint], "view">;
+    nameOrSignature: 'evmChainId',
+  ): TypedContractMethod<[], [bigint], 'view'>;
   getFunction(
-    nameOrSignature: "getCurrentGuardianSetIndex"
-  ): TypedContractMethod<[], [bigint], "view">;
+    nameOrSignature: 'getCurrentGuardianSetIndex',
+  ): TypedContractMethod<[], [bigint], 'view'>;
   getFunction(
-    nameOrSignature: "getGuardianSet"
+    nameOrSignature: 'getGuardianSet',
   ): TypedContractMethod<
     [index: BigNumberish],
     [Structs.GuardianSetStructOutput],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "getGuardianSetExpiry"
-  ): TypedContractMethod<[], [bigint], "view">;
+    nameOrSignature: 'getGuardianSetExpiry',
+  ): TypedContractMethod<[], [bigint], 'view'>;
   getFunction(
-    nameOrSignature: "governanceActionIsConsumed"
-  ): TypedContractMethod<[hash: BytesLike], [boolean], "view">;
+    nameOrSignature: 'governanceActionIsConsumed',
+  ): TypedContractMethod<[hash: BytesLike], [boolean], 'view'>;
   getFunction(
-    nameOrSignature: "governanceChainId"
-  ): TypedContractMethod<[], [bigint], "view">;
+    nameOrSignature: 'governanceChainId',
+  ): TypedContractMethod<[], [bigint], 'view'>;
   getFunction(
-    nameOrSignature: "governanceContract"
-  ): TypedContractMethod<[], [string], "view">;
+    nameOrSignature: 'governanceContract',
+  ): TypedContractMethod<[], [string], 'view'>;
   getFunction(
-    nameOrSignature: "initialize"
-  ): TypedContractMethod<[], [void], "nonpayable">;
+    nameOrSignature: 'initialize',
+  ): TypedContractMethod<[], [void], 'nonpayable'>;
   getFunction(
-    nameOrSignature: "isFork"
-  ): TypedContractMethod<[], [boolean], "view">;
+    nameOrSignature: 'isFork',
+  ): TypedContractMethod<[], [boolean], 'view'>;
   getFunction(
-    nameOrSignature: "isInitialized"
-  ): TypedContractMethod<[impl: AddressLike], [boolean], "view">;
+    nameOrSignature: 'isInitialized',
+  ): TypedContractMethod<[impl: AddressLike], [boolean], 'view'>;
   getFunction(
-    nameOrSignature: "messageFee"
-  ): TypedContractMethod<[], [bigint], "view">;
+    nameOrSignature: 'messageFee',
+  ): TypedContractMethod<[], [bigint], 'view'>;
   getFunction(
-    nameOrSignature: "nextSequence"
-  ): TypedContractMethod<[emitter: AddressLike], [bigint], "view">;
-  getFunction(
-    nameOrSignature: "parseAndVerifyVM"
-  ): TypedContractMethod<
+    nameOrSignature: 'nextSequence',
+  ): TypedContractMethod<[emitter: AddressLike], [bigint], 'view'>;
+  getFunction(nameOrSignature: 'parseAndVerifyVM'): TypedContractMethod<
     [encodedVM: BytesLike],
     [
       [Structs.VMStructOutput, boolean, string] & {
         vm: Structs.VMStructOutput;
         valid: boolean;
         reason: string;
-      }
+      },
     ],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "parseContractUpgrade"
+    nameOrSignature: 'parseContractUpgrade',
   ): TypedContractMethod<
     [encodedUpgrade: BytesLike],
     [GovernanceStructs.ContractUpgradeStructOutput],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "parseGuardianSetUpgrade"
+    nameOrSignature: 'parseGuardianSetUpgrade',
   ): TypedContractMethod<
     [encodedUpgrade: BytesLike],
     [GovernanceStructs.GuardianSetUpgradeStructOutput],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "parseRecoverChainId"
+    nameOrSignature: 'parseRecoverChainId',
   ): TypedContractMethod<
     [encodedRecoverChainId: BytesLike],
     [GovernanceStructs.RecoverChainIdStructOutput],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "parseSetMessageFee"
+    nameOrSignature: 'parseSetMessageFee',
   ): TypedContractMethod<
     [encodedSetMessageFee: BytesLike],
     [GovernanceStructs.SetMessageFeeStructOutput],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "parseTransferFees"
+    nameOrSignature: 'parseTransferFees',
   ): TypedContractMethod<
     [encodedTransferFees: BytesLike],
     [GovernanceStructs.TransferFeesStructOutput],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "parseVM"
+    nameOrSignature: 'parseVM',
   ): TypedContractMethod<
     [encodedVM: BytesLike],
     [Structs.VMStructOutput],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "publishMessage"
+    nameOrSignature: 'publishMessage',
   ): TypedContractMethod<
     [nonce: BigNumberish, payload: BytesLike, consistencyLevel: BigNumberish],
     [bigint],
-    "payable"
+    'payable'
   >;
   getFunction(
-    nameOrSignature: "quorum"
-  ): TypedContractMethod<[numGuardians: BigNumberish], [bigint], "view">;
+    nameOrSignature: 'quorum',
+  ): TypedContractMethod<[numGuardians: BigNumberish], [bigint], 'view'>;
   getFunction(
-    nameOrSignature: "submitContractUpgrade"
-  ): TypedContractMethod<[_vm: BytesLike], [void], "nonpayable">;
+    nameOrSignature: 'submitContractUpgrade',
+  ): TypedContractMethod<[_vm: BytesLike], [void], 'nonpayable'>;
   getFunction(
-    nameOrSignature: "submitNewGuardianSet"
-  ): TypedContractMethod<[_vm: BytesLike], [void], "nonpayable">;
+    nameOrSignature: 'submitNewGuardianSet',
+  ): TypedContractMethod<[_vm: BytesLike], [void], 'nonpayable'>;
   getFunction(
-    nameOrSignature: "submitRecoverChainId"
-  ): TypedContractMethod<[_vm: BytesLike], [void], "nonpayable">;
+    nameOrSignature: 'submitRecoverChainId',
+  ): TypedContractMethod<[_vm: BytesLike], [void], 'nonpayable'>;
   getFunction(
-    nameOrSignature: "submitSetMessageFee"
-  ): TypedContractMethod<[_vm: BytesLike], [void], "nonpayable">;
+    nameOrSignature: 'submitSetMessageFee',
+  ): TypedContractMethod<[_vm: BytesLike], [void], 'nonpayable'>;
   getFunction(
-    nameOrSignature: "submitTransferFees"
-  ): TypedContractMethod<[_vm: BytesLike], [void], "nonpayable">;
+    nameOrSignature: 'submitTransferFees',
+  ): TypedContractMethod<[_vm: BytesLike], [void], 'nonpayable'>;
   getFunction(
-    nameOrSignature: "verifySignatures"
+    nameOrSignature: 'verifySignatures',
   ): TypedContractMethod<
     [
       hash: BytesLike,
       signatures: Structs.SignatureStruct[],
-      guardianSet: Structs.GuardianSetStruct
+      guardianSet: Structs.GuardianSetStruct,
     ],
     [[boolean, string] & { valid: boolean; reason: string }],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "verifyVM"
+    nameOrSignature: 'verifyVM',
   ): TypedContractMethod<
     [vm: Structs.VMStruct],
     [[boolean, string] & { valid: boolean; reason: string }],
-    "view"
+    'view'
   >;
 
   getEvent(
-    key: "AdminChanged"
+    key: 'AdminChanged',
   ): TypedContractEvent<
     AdminChangedEvent.InputTuple,
     AdminChangedEvent.OutputTuple,
     AdminChangedEvent.OutputObject
   >;
   getEvent(
-    key: "BeaconUpgraded"
+    key: 'BeaconUpgraded',
   ): TypedContractEvent<
     BeaconUpgradedEvent.InputTuple,
     BeaconUpgradedEvent.OutputTuple,
     BeaconUpgradedEvent.OutputObject
   >;
   getEvent(
-    key: "ContractUpgraded"
+    key: 'ContractUpgraded',
   ): TypedContractEvent<
     ContractUpgradedEvent.InputTuple,
     ContractUpgradedEvent.OutputTuple,
     ContractUpgradedEvent.OutputObject
   >;
   getEvent(
-    key: "GuardianSetAdded"
+    key: 'GuardianSetAdded',
   ): TypedContractEvent<
     GuardianSetAddedEvent.InputTuple,
     GuardianSetAddedEvent.OutputTuple,
     GuardianSetAddedEvent.OutputObject
   >;
   getEvent(
-    key: "LogMessagePublished"
+    key: 'LogMessagePublished',
   ): TypedContractEvent<
     LogMessagePublishedEvent.InputTuple,
     LogMessagePublishedEvent.OutputTuple,
     LogMessagePublishedEvent.OutputObject
   >;
   getEvent(
-    key: "Upgraded"
+    key: 'Upgraded',
   ): TypedContractEvent<
     UpgradedEvent.InputTuple,
     UpgradedEvent.OutputTuple,
@@ -887,7 +885,7 @@ export interface Implementation extends BaseContract {
   >;
 
   filters: {
-    "AdminChanged(address,address)": TypedContractEvent<
+    'AdminChanged(address,address)': TypedContractEvent<
       AdminChangedEvent.InputTuple,
       AdminChangedEvent.OutputTuple,
       AdminChangedEvent.OutputObject
@@ -898,7 +896,7 @@ export interface Implementation extends BaseContract {
       AdminChangedEvent.OutputObject
     >;
 
-    "BeaconUpgraded(address)": TypedContractEvent<
+    'BeaconUpgraded(address)': TypedContractEvent<
       BeaconUpgradedEvent.InputTuple,
       BeaconUpgradedEvent.OutputTuple,
       BeaconUpgradedEvent.OutputObject
@@ -909,7 +907,7 @@ export interface Implementation extends BaseContract {
       BeaconUpgradedEvent.OutputObject
     >;
 
-    "ContractUpgraded(address,address)": TypedContractEvent<
+    'ContractUpgraded(address,address)': TypedContractEvent<
       ContractUpgradedEvent.InputTuple,
       ContractUpgradedEvent.OutputTuple,
       ContractUpgradedEvent.OutputObject
@@ -920,7 +918,7 @@ export interface Implementation extends BaseContract {
       ContractUpgradedEvent.OutputObject
     >;
 
-    "GuardianSetAdded(uint32)": TypedContractEvent<
+    'GuardianSetAdded(uint32)': TypedContractEvent<
       GuardianSetAddedEvent.InputTuple,
       GuardianSetAddedEvent.OutputTuple,
       GuardianSetAddedEvent.OutputObject
@@ -931,7 +929,7 @@ export interface Implementation extends BaseContract {
       GuardianSetAddedEvent.OutputObject
     >;
 
-    "LogMessagePublished(address,uint64,uint32,bytes,uint8)": TypedContractEvent<
+    'LogMessagePublished(address,uint64,uint32,bytes,uint8)': TypedContractEvent<
       LogMessagePublishedEvent.InputTuple,
       LogMessagePublishedEvent.OutputTuple,
       LogMessagePublishedEvent.OutputObject
@@ -942,7 +940,7 @@ export interface Implementation extends BaseContract {
       LogMessagePublishedEvent.OutputObject
     >;
 
-    "Upgraded(address)": TypedContractEvent<
+    'Upgraded(address)': TypedContractEvent<
       UpgradedEvent.InputTuple,
       UpgradedEvent.OutputTuple,
       UpgradedEvent.OutputObject

@@ -13,8 +13,9 @@
   },
   "license": "Apache-2.0",
   "version": "0.1.0-beta.1",
-  "main": "dist/src/index.js",
-  "types": "dist/src/index.d.ts",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
   "author": "",
   "description": "SDK for Solana, used in conjunction with @wormhole-foundation/connect-sdk",
   "files": [
@@ -39,7 +40,8 @@
     "build": "npm run clean && npm run build:cjs && npm run build:esm",
     "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo",
     "lint": "npm run prettier && eslint --fix",
-    "prettier": "prettier --write ./src"
+    "prettier": "prettier --write ./src",
+    "test": "jest --config ../../jest.config.ts __tests__/*.ts"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.54.1",
@@ -48,7 +50,7 @@
     "eslint-config-prettier": "^8.7.0",
     "lint-staged": "^13.1.2",
     "prettier": "2.8.4",
-    "typescript": "^4.4.2"
+    "typescript": "5.1.6"
   },
   "dependencies": {
     "@certusone/wormhole-sdk": "^0.9.21",
@@ -58,7 +60,6 @@
     "@solana/spl-token": "0.3.5",
     "@solana/web3.js": "1.66.2",
     "@wormhole-foundation/connect-sdk": "*",
-    "bs58": "^4.0.1",
-    "ethers": "^5.7.2"
+    "bs58": "^4.0.1"
   }
 }

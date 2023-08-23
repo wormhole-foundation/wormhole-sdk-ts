@@ -1,7 +1,7 @@
 import { ChainName, Network } from '@wormhole-foundation/sdk-base';
 import { UniversalAddress } from '@wormhole-foundation/sdk-definitions';
 import { ethers } from 'ethers';
-import { EvmPlatform } from './platform';
+import { SolanaPlatform } from './platform';
 import {
   ChainContext,
   TokenId,
@@ -9,32 +9,29 @@ import {
   SignedTxn,
   TokenTransferTransaction,
 } from '@wormhole-foundation/connect-sdk';
-import { EvmTokenBridge } from './tokenBridge';
+import { Connection } from '@solana/web3.js';
+// import { EvmTokenBridge } from './tokenBridge';
 
-export class EvmChain implements ChainContext {
+export class SolanaChain implements ChainContext {
   readonly chain: ChainName;
   readonly network: Network;
-  readonly platform: EvmPlatform;
+  readonly platform: SolanaPlatform;
 
   // Cached objects
-  private provider?: ethers.Provider;
-  private tokenBridge?: EvmTokenBridge;
+  // private provider?: ethers.Provider;
+  private tokenBridge?: SolanaTokenBridge;
 
-  constructor(platform: EvmPlatform, chain: ChainName) {
+  constructor(platform: SolanaPlatform, chain: ChainName) {
     this.chain = chain;
     this.network = platform.network;
     this.platform = platform;
   }
 
-  getRPC(): ethers.Provider {
-    this.provider = this.provider
-      ? this.provider
-      : this.platform.getProvider(this.chain);
-
-    return this.provider;
+  getRPC(): Connection {
+    return this.platform.connection!;
   }
 
-  async getTokenBridge(): Promise<EvmTokenBridge> {
+  async getTokenBridge(): Promise<SolanaTokenBridge> {
     this.tokenBridge = this.tokenBridge
       ? this.tokenBridge
       : await this.platform.getTokenBridge(this.getRPC());
