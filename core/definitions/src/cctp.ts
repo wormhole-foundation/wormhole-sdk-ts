@@ -6,7 +6,7 @@ import "./payloads/tokenBridge";
 
 //https://github.com/circlefin/evm-cctp-contracts
 
-export interface CCTP<P extends PlatformName> {
+export interface CircleBridge<P extends PlatformName> {
   transfer(
     sender: UniversalOrNative<P>,
     recipient: ChainAddress,

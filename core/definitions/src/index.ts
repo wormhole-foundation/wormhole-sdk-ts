@@ -3,6 +3,7 @@ export * from "./universalAddress";
 export * from "./vaa";
 export * from "./unsignedTransaction";
 export * from "./utils";
+export * from "./relayer";
 export * from "./tokenBridge";
 export * from "./automaticTokenBridge";
-export * from "./relayer";
+export * from "./cctp";

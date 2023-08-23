@@ -9,9 +9,39 @@ import { getEvmSigner } from "./helpers";
 import { ChainAddress } from "@wormhole-foundation/sdk-definitions";
 
 (async function () {
-  await automaticTransfer();
+  await cctpTransfer();
+  //await automaticTransfer();
   // manualTransfer()
 })();
+
+async function cctpTransfer() {
+  // init Wormhole object, passing config for which network
+  // to use (testnet/mainnet/...) and what Platforms to support
+  const wh = new Wormhole("Testnet", [EvmPlatform]);
+
+  // init some Signer objects from a local key
+  const sendChain = wh.getChain("Avalanche");
+  const sendSigner = await getEvmSigner(
+    sendChain.chain,
+    sendChain.getRpc() as ethers.Provider
+  );
+  const sender: ChainAddress = {
+    chain: sendSigner.chain(),
+    address: sendChain.platform.parseAddress(sendSigner.address()),
+  };
+
+  const rcvChain = wh.getChain("Celo");
+  const rcvSigner = await getEvmSigner(
+    rcvChain.chain,
+    rcvChain.getRpc() as ethers.Provider
+  );
+  const receiver: ChainAddress = {
+    chain: rcvSigner.chain(),
+    address: rcvChain.platform.parseAddress(rcvSigner.address()),
+  };
+
+  const xfer = await wh.cctpTransfer(sender, receiver, 100000n);
+}
 
 async function automaticTransfer() {
   // init Wormhole object, passing config for which network

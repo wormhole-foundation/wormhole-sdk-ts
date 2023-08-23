@@ -5,3 +5,4 @@ export * from './WormholeRelayer__factory';
 export * from './Wormhole__factory';
 export * from './Implementation__factory';
 export * from './TokenBridgeRelayer__factory';
+export * from './CircleRelayer__factory';
