@@ -23,6 +23,7 @@ import {
 
 import { CONFIG } from './constants';
 import { TokenTransfer } from './tokenTransfer';
+import { CCTPTransfer } from './cctpTransfer';
 
 export class Wormhole {
   protected _platforms: Map<PlatformName, Platform>;
@@ -52,6 +53,27 @@ export class Wormhole {
 
   get network(): Network {
     return this.conf.network;
+  }
+
+  async cctpTransfer(
+    token: TokenId,
+    amount: bigint,
+    from: ChainAddress,
+    to: ChainAddress,
+    automatic: boolean,
+    payload?: Uint8Array,
+  ): Promise<CCTPTransfer> {
+    if (automatic && payload)
+      throw new Error('Payload with automatic delivery is not supported');
+
+    return await CCTPTransfer.from(this, {
+      token: token,
+      amount: amount,
+      from,
+      to,
+      automatic: automatic,
+      payload: payload,
+    });
   }
 
   async tokenTransfer(
@@ -268,6 +290,36 @@ export class Wormhole {
     if (vaaBytes === undefined) return;
 
     return deserialize('Uint8Array', vaaBytes);
+  }
+
+  async getCircleAttestation(
+    msgHash: string,
+    retries: number = 5,
+  ): Promise<string | undefined> {
+    // TODO: move to conf?
+    const CIRCLE_ATTESTATION =
+      this.network === 'Mainnet'
+        ? 'https://iris-api.circle.com/attestations/'
+        : 'https://iris-api-sandbox.circle.com/attestations/';
+
+    let response: AxiosResponse<any, any> | undefined;
+
+    for (let i = retries; i > 0 && !response; i--) {
+      // TODO: config wait seconds?
+      if (i != retries) await new Promise((f) => setTimeout(f, 2000));
+
+      try {
+        response = await axios.get(`${CIRCLE_ATTESTATION}${msgHash}`);
+      } catch (e) {
+        console.error(`Caught an error waiting for Circle Attestation: ${e}`);
+      }
+      if (response === undefined || response.status !== 200) return;
+
+      const { data } = response;
+
+      // TODO: what are the statuses? should we retry if
+      if (data.status === 'complete') return data.attestation;
+    }
   }
 
   //  /**

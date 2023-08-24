@@ -13,14 +13,12 @@ import {
   serialize,
 } from '@wormhole-foundation/sdk-definitions';
 
-import { addChainId, addFrom, toEvmAddrString } from './tokenBridge';
+import { addChainId, addFrom, toEvmAddrString } from './types';
 import { EvmUnsignedTransaction } from './unsignedTransaction';
 import { TokenBridgeRelayer } from './ethers-contracts';
 import { Provider, TransactionRequest } from 'ethers';
 import { EvmContracts } from './contracts';
-
-type EvmChain = PlatformToChains<'Evm'>;
-type UniversalOrEvm = UniversalOrNative<'Evm'> | string;
+import { EvmChainName, UniversalOrEvm } from './types';
 
 export class EvmAutomaticTokenBridge implements AutomaticTokenBridge<'Evm'> {
   readonly contracts: EvmContracts;
@@ -31,7 +29,7 @@ export class EvmAutomaticTokenBridge implements AutomaticTokenBridge<'Evm'> {
 
   private constructor(
     readonly network: 'Mainnet' | 'Testnet',
-    readonly chain: EvmChain,
+    readonly chain: EvmChainName,
     readonly provider: Provider,
   ) {
     this.contracts = new EvmContracts(network);

@@ -3,7 +3,6 @@ import {
   chainToChainId,
   chainIdToChain,
   Network,
-  PlatformToChains,
   evmChainIdToNetworkChainPair,
   evmNetworkChainToEvmChainId,
 } from '@wormhole-foundation/sdk-base';
@@ -12,7 +11,6 @@ import {
   serialize,
   UniversalAddress,
   ChainAddress,
-  UniversalOrNative,
   TokenBridge,
   keccak256,
 } from '@wormhole-foundation/sdk-definitions';
@@ -25,24 +23,14 @@ import {
 } from './ethers-contracts';
 import { Provider, TransactionRequest } from 'ethers';
 import { EvmContracts } from './contracts';
+import {
+  EvmChainName,
+  UniversalOrEvm,
+  addFrom,
+  addChainId,
+  toEvmAddrString,
+} from './types';
 
-type EvmChain = PlatformToChains<'Evm'>;
-type UniversalOrEvm = UniversalOrNative<'Evm'> | string;
-
-// TODO: move these to a central locatio if we're reusing them
-export const toEvmAddrString = (addr: UniversalOrEvm) =>
-  typeof addr === 'string'
-    ? addr
-    : (addr instanceof UniversalAddress ? addr.toNative('Evm') : addr).unwrap();
-
-export const addFrom = (txReq: TransactionRequest, from: string) => ({
-  ...txReq,
-  from,
-});
-export const addChainId = (txReq: TransactionRequest, chainId: bigint) => ({
-  ...txReq,
-  chainId,
-});
 export const unusedNonce = 0;
 export const unusedArbiterFee = 0n;
 
@@ -60,7 +48,7 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
 
   private constructor(
     readonly network: Network,
-    readonly chain: EvmChain,
+    readonly chain: EvmChainName,
     readonly provider: Provider,
   ) {
     this.contracts = new EvmContracts(network);

@@ -9,6 +9,8 @@ import {
   UniversalAddress,
   TokenBridge,
   AutomaticTokenBridge,
+  WormholeCircleRelayer,
+  CircleBridge,
 } from '@wormhole-foundation/sdk-definitions';
 
 import { ChainConfig } from './constants';
@@ -59,7 +61,12 @@ export interface Platform {
   getAutomaticTokenBridge(
     rpc: RpcConnection,
   ): Promise<AutomaticTokenBridge<PlatformName>>;
+  getCircleRelayer(
+    rpc: RpcConnection,
+  ): Promise<WormholeCircleRelayer<PlatformName>>;
+  getCircleBridge(rpc: RpcConnection): Promise<CircleBridge<PlatformName>>;
 
+  // utils
   parseTransaction(
     chain: ChainName,
     rpc: RpcConnection,
@@ -102,6 +109,8 @@ export interface ChainContext {
   // protocols
   getTokenBridge: OmitChainRpc<Platform['getTokenBridge']>;
   getAutomaticTokenBridge: OmitChainRpc<Platform['getAutomaticTokenBridge']>;
+  getCircleRelayer: OmitChainRpc<Platform['getCircleRelayer']>;
+  getCircleBridge: OmitChainRpc<Platform['getCircleBridge']>;
 }
 
 export type ChainCtr = new () => ChainContext;
@@ -128,6 +137,15 @@ export type TokenTransferDetails = {
   payload?: Uint8Array;
 };
 
+export type CCTPTransferDetails = {
+  token: TokenId;
+  amount: bigint;
+  from: ChainAddress;
+  to: ChainAddress;
+  automatic?: boolean;
+  payload?: Uint8Array;
+};
+
 export type WormholeMessage = {
   tx: TransactionIdentifier;
   msg: MessageIdentifier;
@@ -137,8 +155,14 @@ export type WormholeMessage = {
 // Details for a source chain Token Transfer transaction
 export type TokenTransferTransaction = {
   message: WormholeMessage;
-
   details: TokenTransferDetails;
+  block: bigint;
+  gasFee: bigint;
+};
+
+export type CCTPTransferTransaction = {
+  message?: WormholeMessage;
+  details: CCTPTransferDetails;
   block: bigint;
   gasFee: bigint;
 };
@@ -166,5 +190,15 @@ export function isTokenTransferDetails(
     (<TokenTransferDetails>thing).amount !== undefined &&
     (<TokenTransferDetails>thing).from !== undefined &&
     (<TokenTransferDetails>thing).to !== undefined
+  );
+}
+
+export function isCCTPTransferDetails(
+  thing: CCTPTransferDetails | any,
+): thing is TokenTransferDetails {
+  return (
+    (<CCTPTransferDetails>thing).amount !== undefined &&
+    (<CCTPTransferDetails>thing).from !== undefined &&
+    (<CCTPTransferDetails>thing).to !== undefined
   );
 }
