@@ -1,19 +1,18 @@
 import {
   chainToChainId,
   Network,
-  PlatformToChainsMapping,
   evmChainIdToNetworkChainPair,
   evmNetworkChainToEvmChainId,
 } from '@wormhole-foundation/sdk-base';
 import {
   ChainAddress,
-  UniversalOrNative,
   VAA,
   CircleBridge,
   UnsignedTransaction,
 } from '@wormhole-foundation/sdk-definitions';
 
-import { addChainId, addFrom, toEvmAddrString } from './tokenBridge';
+import { EvmChainName, UniversalOrEvm } from './types';
+import { addChainId, toEvmAddrString } from './types';
 import { EvmUnsignedTransaction } from './unsignedTransaction';
 import { CircleRelayer } from './ethers-contracts';
 import { Provider, TransactionRequest } from 'ethers';
@@ -21,8 +20,6 @@ import { EvmContracts } from './contracts';
 import { TokenId } from '@wormhole-foundation/connect-sdk';
 
 //https://github.com/circlefin/evm-cctp-contracts
-type EvmChain = PlatformToChainsMapping<'Evm'>;
-type UniversalOrEvm = UniversalOrNative<'Evm'> | string;
 
 export class EvmCircleBridge implements CircleBridge<'Evm'> {
   readonly contracts: EvmContracts;
@@ -30,8 +27,8 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
   readonly chainId: bigint;
 
   private constructor(
-    readonly network: Network,
-    readonly chain: EvmChain,
+    readonly network: 'Mainnet' | 'Testnet',
+    readonly chain: EvmChainName,
     readonly provider: Provider,
   ) {
     this.contracts = new EvmContracts(network);
@@ -45,7 +42,7 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
 
   static async fromProvider(provider: Provider): Promise<EvmCircleBridge> {
     const { chainId } = await provider.getNetwork();
-    const networkChainPair = evmChainIdToNetworkChainPair(chainId);
+    const networkChainPair = evmChainIdToNetworkChainPair.get(chainId);
     if (networkChainPair === undefined)
       throw new Error(`Unknown EVM chainId ${chainId}`);
 

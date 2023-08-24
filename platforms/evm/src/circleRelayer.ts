@@ -1,26 +1,25 @@
 import {
   chainToChainId,
-  Network,
-  PlatformToChainsMapping,
   evmChainIdToNetworkChainPair,
   evmNetworkChainToEvmChainId,
 } from '@wormhole-foundation/sdk-base';
 import {
   ChainAddress,
-  UniversalOrNative,
-  VAA,
   WormholeCircleRelayer,
 } from '@wormhole-foundation/sdk-definitions';
 
-import { addChainId, addFrom, toEvmAddrString } from './tokenBridge';
+import {
+  EvmChainName,
+  UniversalOrEvm,
+  addChainId,
+  addFrom,
+  toEvmAddrString,
+} from './types';
 import { EvmUnsignedTransaction } from './unsignedTransaction';
 import { CircleRelayer } from './ethers-contracts';
 import { Provider, TransactionRequest } from 'ethers';
 import { EvmContracts } from './contracts';
 import { TokenId } from '@wormhole-foundation/connect-sdk';
-
-type EvmChain = PlatformToChainsMapping<'Evm'>;
-type UniversalOrEvm = UniversalOrNative<'Evm'> | string;
 
 export class EvmCircleRelayer implements WormholeCircleRelayer<'Evm'> {
   readonly contracts: EvmContracts;
@@ -30,8 +29,8 @@ export class EvmCircleRelayer implements WormholeCircleRelayer<'Evm'> {
   // https://github.com/wormhole-foundation/wormhole-connect/blob/development/sdk/src/contexts/eth/context.ts#L379
 
   private constructor(
-    readonly network: Network,
-    readonly chain: EvmChain,
+    readonly network: 'Mainnet' | 'Testnet',
+    readonly chain: EvmChainName,
     readonly provider: Provider,
   ) {
     this.contracts = new EvmContracts(network);
@@ -45,7 +44,7 @@ export class EvmCircleRelayer implements WormholeCircleRelayer<'Evm'> {
 
   static async fromProvider(provider: Provider): Promise<EvmCircleRelayer> {
     const { chainId } = await provider.getNetwork();
-    const networkChainPair = evmChainIdToNetworkChainPair(chainId);
+    const networkChainPair = evmChainIdToNetworkChainPair.get(chainId);
     if (networkChainPair === undefined)
       throw new Error(`Unknown EVM chainId ${chainId}`);
 
