@@ -13,7 +13,7 @@ import type {
   ContractRunner,
   ContractMethod,
   Listener,
-} from "ethers";
+} from 'ethers';
 import type {
   TypedContractEvent,
   TypedDeferredTopicFilter,
@@ -21,7 +21,7 @@ import type {
   TypedLogDescription,
   TypedListener,
   TypedContractMethod,
-} from "./common";
+} from './common';
 
 export type EvmDeliveryInstructionStruct = {
   sourceChain: BigNumberish;
@@ -44,7 +44,7 @@ export type EvmDeliveryInstructionStructOutput = [
   targetChainRefundPerGasUnused: bigint,
   senderAddress: string,
   deliveryHash: string,
-  signedVaas: string[]
+  signedVaas: string[],
 ] & {
   sourceChain: bigint;
   targetAddress: string;
@@ -66,80 +66,80 @@ export type VaaKeyStruct = {
 export type VaaKeyStructOutput = [
   chainId: bigint,
   emitterAddress: string,
-  sequence: bigint
+  sequence: bigint,
 ] & { chainId: bigint; emitterAddress: string; sequence: bigint };
 
 export interface WormholeRelayerInterface extends Interface {
   getFunction(
     nameOrSignature:
-      | "checkAndExecuteUpgradeMigration"
-      | "deliver"
-      | "deliveryAttempted"
-      | "deliveryFailureBlock"
-      | "deliverySuccessBlock"
-      | "executeInstruction"
-      | "forward"
-      | "forwardPayloadToEvm"
-      | "forwardToEvm"
-      | "forwardVaasToEvm"
-      | "getDefaultDeliveryProvider"
-      | "getDefaultDeliveryProviderOnChain"
-      | "getOriginalOrDefaultDeliveryProvider"
-      | "getRegisteredWormholeRelayerContract"
-      | "initialize"
-      | "quoteDeliveryPrice"
-      | "quoteEVMDeliveryPrice(uint16,uint256,uint256,address)"
-      | "quoteEVMDeliveryPrice(uint16,uint256,uint256)"
-      | "quoteNativeForChain"
-      | "registerWormholeRelayerContract"
-      | "resend"
-      | "resendToEvm"
-      | "send"
-      | "sendPayloadToEvm(uint16,address,bytes,uint256,uint256,uint16,address)"
-      | "sendPayloadToEvm(uint16,address,bytes,uint256,uint256)"
-      | "sendToEvm"
-      | "sendVaasToEvm(uint16,address,bytes,uint256,uint256,(uint16,bytes32,uint64)[])"
-      | "sendVaasToEvm(uint16,address,bytes,uint256,uint256,(uint16,bytes32,uint64)[],uint16,address)"
-      | "setDefaultDeliveryProvider"
-      | "submitContractUpgrade"
+      | 'checkAndExecuteUpgradeMigration'
+      | 'deliver'
+      | 'deliveryAttempted'
+      | 'deliveryFailureBlock'
+      | 'deliverySuccessBlock'
+      | 'executeInstruction'
+      | 'forward'
+      | 'forwardPayloadToEvm'
+      | 'forwardToEvm'
+      | 'forwardVaasToEvm'
+      | 'getDefaultDeliveryProvider'
+      | 'getDefaultDeliveryProviderOnChain'
+      | 'getOriginalOrDefaultDeliveryProvider'
+      | 'getRegisteredWormholeRelayerContract'
+      | 'initialize'
+      | 'quoteDeliveryPrice'
+      | 'quoteEVMDeliveryPrice(uint16,uint256,uint256,address)'
+      | 'quoteEVMDeliveryPrice(uint16,uint256,uint256)'
+      | 'quoteNativeForChain'
+      | 'registerWormholeRelayerContract'
+      | 'resend'
+      | 'resendToEvm'
+      | 'send'
+      | 'sendPayloadToEvm(uint16,address,bytes,uint256,uint256,uint16,address)'
+      | 'sendPayloadToEvm(uint16,address,bytes,uint256,uint256)'
+      | 'sendToEvm'
+      | 'sendVaasToEvm(uint16,address,bytes,uint256,uint256,(uint16,bytes32,uint64)[])'
+      | 'sendVaasToEvm(uint16,address,bytes,uint256,uint256,(uint16,bytes32,uint64)[],uint16,address)'
+      | 'setDefaultDeliveryProvider'
+      | 'submitContractUpgrade',
   ): FunctionFragment;
 
   getEvent(
     nameOrSignatureOrTopic:
-      | "AdminChanged"
-      | "BeaconUpgraded"
-      | "ContractUpgraded"
-      | "Delivery"
-      | "SendEvent"
-      | "Upgraded"
+      | 'AdminChanged'
+      | 'BeaconUpgraded'
+      | 'ContractUpgraded'
+      | 'Delivery'
+      | 'SendEvent'
+      | 'Upgraded',
   ): EventFragment;
 
   encodeFunctionData(
-    functionFragment: "checkAndExecuteUpgradeMigration",
-    values?: undefined
+    functionFragment: 'checkAndExecuteUpgradeMigration',
+    values?: undefined,
   ): string;
   encodeFunctionData(
-    functionFragment: "deliver",
-    values: [BytesLike[], BytesLike, AddressLike, BytesLike]
+    functionFragment: 'deliver',
+    values: [BytesLike[], BytesLike, AddressLike, BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "deliveryAttempted",
-    values: [BytesLike]
+    functionFragment: 'deliveryAttempted',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "deliveryFailureBlock",
-    values: [BytesLike]
+    functionFragment: 'deliveryFailureBlock',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "deliverySuccessBlock",
-    values: [BytesLike]
+    functionFragment: 'deliverySuccessBlock',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "executeInstruction",
-    values: [EvmDeliveryInstructionStruct]
+    functionFragment: 'executeInstruction',
+    values: [EvmDeliveryInstructionStruct],
   ): string;
   encodeFunctionData(
-    functionFragment: "forward",
+    functionFragment: 'forward',
     values: [
       BigNumberish,
       BytesLike,
@@ -151,15 +151,15 @@ export interface WormholeRelayerInterface extends Interface {
       BytesLike,
       AddressLike,
       VaaKeyStruct[],
-      BigNumberish
-    ]
+      BigNumberish,
+    ],
   ): string;
   encodeFunctionData(
-    functionFragment: "forwardPayloadToEvm",
-    values: [BigNumberish, AddressLike, BytesLike, BigNumberish, BigNumberish]
+    functionFragment: 'forwardPayloadToEvm',
+    values: [BigNumberish, AddressLike, BytesLike, BigNumberish, BigNumberish],
   ): string;
   encodeFunctionData(
-    functionFragment: "forwardToEvm",
+    functionFragment: 'forwardToEvm',
     values: [
       BigNumberish,
       AddressLike,
@@ -171,76 +171,76 @@ export interface WormholeRelayerInterface extends Interface {
       AddressLike,
       AddressLike,
       VaaKeyStruct[],
-      BigNumberish
-    ]
+      BigNumberish,
+    ],
   ): string;
   encodeFunctionData(
-    functionFragment: "forwardVaasToEvm",
+    functionFragment: 'forwardVaasToEvm',
     values: [
       BigNumberish,
       AddressLike,
       BytesLike,
       BigNumberish,
       BigNumberish,
-      VaaKeyStruct[]
-    ]
+      VaaKeyStruct[],
+    ],
   ): string;
   encodeFunctionData(
-    functionFragment: "getDefaultDeliveryProvider",
-    values?: undefined
+    functionFragment: 'getDefaultDeliveryProvider',
+    values?: undefined,
   ): string;
   encodeFunctionData(
-    functionFragment: "getDefaultDeliveryProviderOnChain",
-    values: [BigNumberish]
+    functionFragment: 'getDefaultDeliveryProviderOnChain',
+    values: [BigNumberish],
   ): string;
   encodeFunctionData(
-    functionFragment: "getOriginalOrDefaultDeliveryProvider",
-    values: [BigNumberish]
+    functionFragment: 'getOriginalOrDefaultDeliveryProvider',
+    values: [BigNumberish],
   ): string;
   encodeFunctionData(
-    functionFragment: "getRegisteredWormholeRelayerContract",
-    values: [BigNumberish]
+    functionFragment: 'getRegisteredWormholeRelayerContract',
+    values: [BigNumberish],
   ): string;
   encodeFunctionData(
-    functionFragment: "initialize",
-    values: [AddressLike]
+    functionFragment: 'initialize',
+    values: [AddressLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "quoteDeliveryPrice",
-    values: [BigNumberish, BigNumberish, BytesLike, AddressLike]
+    functionFragment: 'quoteDeliveryPrice',
+    values: [BigNumberish, BigNumberish, BytesLike, AddressLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "quoteEVMDeliveryPrice(uint16,uint256,uint256,address)",
-    values: [BigNumberish, BigNumberish, BigNumberish, AddressLike]
+    functionFragment: 'quoteEVMDeliveryPrice(uint16,uint256,uint256,address)',
+    values: [BigNumberish, BigNumberish, BigNumberish, AddressLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "quoteEVMDeliveryPrice(uint16,uint256,uint256)",
-    values: [BigNumberish, BigNumberish, BigNumberish]
+    functionFragment: 'quoteEVMDeliveryPrice(uint16,uint256,uint256)',
+    values: [BigNumberish, BigNumberish, BigNumberish],
   ): string;
   encodeFunctionData(
-    functionFragment: "quoteNativeForChain",
-    values: [BigNumberish, BigNumberish, AddressLike]
+    functionFragment: 'quoteNativeForChain',
+    values: [BigNumberish, BigNumberish, AddressLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "registerWormholeRelayerContract",
-    values: [BytesLike]
+    functionFragment: 'registerWormholeRelayerContract',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "resend",
-    values: [VaaKeyStruct, BigNumberish, BigNumberish, BytesLike, AddressLike]
+    functionFragment: 'resend',
+    values: [VaaKeyStruct, BigNumberish, BigNumberish, BytesLike, AddressLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "resendToEvm",
+    functionFragment: 'resendToEvm',
     values: [
       VaaKeyStruct,
       BigNumberish,
       BigNumberish,
       BigNumberish,
-      AddressLike
-    ]
+      AddressLike,
+    ],
   ): string;
   encodeFunctionData(
-    functionFragment: "send",
+    functionFragment: 'send',
     values: [
       BigNumberish,
       BytesLike,
@@ -252,11 +252,11 @@ export interface WormholeRelayerInterface extends Interface {
       BytesLike,
       AddressLike,
       VaaKeyStruct[],
-      BigNumberish
-    ]
+      BigNumberish,
+    ],
   ): string;
   encodeFunctionData(
-    functionFragment: "sendPayloadToEvm(uint16,address,bytes,uint256,uint256,uint16,address)",
+    functionFragment: 'sendPayloadToEvm(uint16,address,bytes,uint256,uint256,uint16,address)',
     values: [
       BigNumberish,
       AddressLike,
@@ -264,15 +264,15 @@ export interface WormholeRelayerInterface extends Interface {
       BigNumberish,
       BigNumberish,
       BigNumberish,
-      AddressLike
-    ]
+      AddressLike,
+    ],
   ): string;
   encodeFunctionData(
-    functionFragment: "sendPayloadToEvm(uint16,address,bytes,uint256,uint256)",
-    values: [BigNumberish, AddressLike, BytesLike, BigNumberish, BigNumberish]
+    functionFragment: 'sendPayloadToEvm(uint16,address,bytes,uint256,uint256)',
+    values: [BigNumberish, AddressLike, BytesLike, BigNumberish, BigNumberish],
   ): string;
   encodeFunctionData(
-    functionFragment: "sendToEvm",
+    functionFragment: 'sendToEvm',
     values: [
       BigNumberish,
       AddressLike,
@@ -284,22 +284,22 @@ export interface WormholeRelayerInterface extends Interface {
       AddressLike,
       AddressLike,
       VaaKeyStruct[],
-      BigNumberish
-    ]
+      BigNumberish,
+    ],
   ): string;
   encodeFunctionData(
-    functionFragment: "sendVaasToEvm(uint16,address,bytes,uint256,uint256,(uint16,bytes32,uint64)[])",
+    functionFragment: 'sendVaasToEvm(uint16,address,bytes,uint256,uint256,(uint16,bytes32,uint64)[])',
     values: [
       BigNumberish,
       AddressLike,
       BytesLike,
       BigNumberish,
       BigNumberish,
-      VaaKeyStruct[]
-    ]
+      VaaKeyStruct[],
+    ],
   ): string;
   encodeFunctionData(
-    functionFragment: "sendVaasToEvm(uint16,address,bytes,uint256,uint256,(uint16,bytes32,uint64)[],uint16,address)",
+    functionFragment: 'sendVaasToEvm(uint16,address,bytes,uint256,uint256,(uint16,bytes32,uint64)[],uint16,address)',
     values: [
       BigNumberish,
       AddressLike,
@@ -308,119 +308,119 @@ export interface WormholeRelayerInterface extends Interface {
       BigNumberish,
       VaaKeyStruct[],
       BigNumberish,
-      AddressLike
-    ]
+      AddressLike,
+    ],
   ): string;
   encodeFunctionData(
-    functionFragment: "setDefaultDeliveryProvider",
-    values: [BytesLike]
+    functionFragment: 'setDefaultDeliveryProvider',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "submitContractUpgrade",
-    values: [BytesLike]
+    functionFragment: 'submitContractUpgrade',
+    values: [BytesLike],
   ): string;
 
   decodeFunctionResult(
-    functionFragment: "checkAndExecuteUpgradeMigration",
-    data: BytesLike
+    functionFragment: 'checkAndExecuteUpgradeMigration',
+    data: BytesLike,
   ): Result;
-  decodeFunctionResult(functionFragment: "deliver", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'deliver', data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "deliveryAttempted",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "deliveryFailureBlock",
-    data: BytesLike
+    functionFragment: 'deliveryAttempted',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "deliverySuccessBlock",
-    data: BytesLike
+    functionFragment: 'deliveryFailureBlock',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "executeInstruction",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "forward", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "forwardPayloadToEvm",
-    data: BytesLike
+    functionFragment: 'deliverySuccessBlock',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "forwardToEvm",
-    data: BytesLike
+    functionFragment: 'executeInstruction',
+    data: BytesLike,
+  ): Result;
+  decodeFunctionResult(functionFragment: 'forward', data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: 'forwardPayloadToEvm',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "forwardVaasToEvm",
-    data: BytesLike
+    functionFragment: 'forwardToEvm',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getDefaultDeliveryProvider",
-    data: BytesLike
+    functionFragment: 'forwardVaasToEvm',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getDefaultDeliveryProviderOnChain",
-    data: BytesLike
+    functionFragment: 'getDefaultDeliveryProvider',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getOriginalOrDefaultDeliveryProvider",
-    data: BytesLike
+    functionFragment: 'getDefaultDeliveryProviderOnChain',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getRegisteredWormholeRelayerContract",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "quoteDeliveryPrice",
-    data: BytesLike
+    functionFragment: 'getOriginalOrDefaultDeliveryProvider',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "quoteEVMDeliveryPrice(uint16,uint256,uint256,address)",
-    data: BytesLike
+    functionFragment: 'getRegisteredWormholeRelayerContract',
+    data: BytesLike,
+  ): Result;
+  decodeFunctionResult(functionFragment: 'initialize', data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: 'quoteDeliveryPrice',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "quoteEVMDeliveryPrice(uint16,uint256,uint256)",
-    data: BytesLike
+    functionFragment: 'quoteEVMDeliveryPrice(uint16,uint256,uint256,address)',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "quoteNativeForChain",
-    data: BytesLike
+    functionFragment: 'quoteEVMDeliveryPrice(uint16,uint256,uint256)',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "registerWormholeRelayerContract",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "resend", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "resendToEvm",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "send", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "sendPayloadToEvm(uint16,address,bytes,uint256,uint256,uint16,address)",
-    data: BytesLike
+    functionFragment: 'quoteNativeForChain',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "sendPayloadToEvm(uint16,address,bytes,uint256,uint256)",
-    data: BytesLike
+    functionFragment: 'registerWormholeRelayerContract',
+    data: BytesLike,
   ): Result;
-  decodeFunctionResult(functionFragment: "sendToEvm", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'resend', data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "sendVaasToEvm(uint16,address,bytes,uint256,uint256,(uint16,bytes32,uint64)[])",
-    data: BytesLike
+    functionFragment: 'resendToEvm',
+    data: BytesLike,
   ): Result;
+  decodeFunctionResult(functionFragment: 'send', data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "sendVaasToEvm(uint16,address,bytes,uint256,uint256,(uint16,bytes32,uint64)[],uint16,address)",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setDefaultDeliveryProvider",
-    data: BytesLike
+    functionFragment: 'sendPayloadToEvm(uint16,address,bytes,uint256,uint256,uint16,address)',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "submitContractUpgrade",
-    data: BytesLike
+    functionFragment: 'sendPayloadToEvm(uint16,address,bytes,uint256,uint256)',
+    data: BytesLike,
+  ): Result;
+  decodeFunctionResult(functionFragment: 'sendToEvm', data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: 'sendVaasToEvm(uint16,address,bytes,uint256,uint256,(uint16,bytes32,uint64)[])',
+    data: BytesLike,
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: 'sendVaasToEvm(uint16,address,bytes,uint256,uint256,(uint16,bytes32,uint64)[],uint16,address)',
+    data: BytesLike,
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: 'setDefaultDeliveryProvider',
+    data: BytesLike,
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: 'submitContractUpgrade',
+    data: BytesLike,
   ): Result;
 }
 
@@ -472,7 +472,7 @@ export namespace DeliveryEvent {
     gasUsed: BigNumberish,
     refundStatus: BigNumberish,
     additionalStatusInfo: BytesLike,
-    overridesInfo: BytesLike
+    overridesInfo: BytesLike,
   ];
   export type OutputTuple = [
     recipientContract: string,
@@ -483,7 +483,7 @@ export namespace DeliveryEvent {
     gasUsed: bigint,
     refundStatus: bigint,
     additionalStatusInfo: string,
-    overridesInfo: string
+    overridesInfo: string,
   ];
   export interface OutputObject {
     recipientContract: string;
@@ -506,12 +506,12 @@ export namespace SendEventEvent {
   export type InputTuple = [
     sequence: BigNumberish,
     deliveryQuote: BigNumberish,
-    paymentForExtraReceiverValue: BigNumberish
+    paymentForExtraReceiverValue: BigNumberish,
   ];
   export type OutputTuple = [
     sequence: bigint,
     deliveryQuote: bigint,
-    paymentForExtraReceiverValue: bigint
+    paymentForExtraReceiverValue: bigint,
   ];
   export interface OutputObject {
     sequence: bigint;
@@ -545,44 +545,44 @@ export interface WormholeRelayer extends BaseContract {
   queryFilter<TCEvent extends TypedContractEvent>(
     event: TCEvent,
     fromBlockOrBlockhash?: string | number | undefined,
-    toBlock?: string | number | undefined
+    toBlock?: string | number | undefined,
   ): Promise<Array<TypedEventLog<TCEvent>>>;
   queryFilter<TCEvent extends TypedContractEvent>(
     filter: TypedDeferredTopicFilter<TCEvent>,
     fromBlockOrBlockhash?: string | number | undefined,
-    toBlock?: string | number | undefined
+    toBlock?: string | number | undefined,
   ): Promise<Array<TypedEventLog<TCEvent>>>;
 
   on<TCEvent extends TypedContractEvent>(
     event: TCEvent,
-    listener: TypedListener<TCEvent>
+    listener: TypedListener<TCEvent>,
   ): Promise<this>;
   on<TCEvent extends TypedContractEvent>(
     filter: TypedDeferredTopicFilter<TCEvent>,
-    listener: TypedListener<TCEvent>
+    listener: TypedListener<TCEvent>,
   ): Promise<this>;
 
   once<TCEvent extends TypedContractEvent>(
     event: TCEvent,
-    listener: TypedListener<TCEvent>
+    listener: TypedListener<TCEvent>,
   ): Promise<this>;
   once<TCEvent extends TypedContractEvent>(
     filter: TypedDeferredTopicFilter<TCEvent>,
-    listener: TypedListener<TCEvent>
+    listener: TypedListener<TCEvent>,
   ): Promise<this>;
 
   listeners<TCEvent extends TypedContractEvent>(
-    event: TCEvent
+    event: TCEvent,
   ): Promise<Array<TypedListener<TCEvent>>>;
   listeners(eventName?: string): Promise<Array<Listener>>;
   removeAllListeners<TCEvent extends TypedContractEvent>(
-    event?: TCEvent
+    event?: TCEvent,
   ): Promise<this>;
 
   checkAndExecuteUpgradeMigration: TypedContractMethod<
     [],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
   deliver: TypedContractMethod<
@@ -590,28 +590,28 @@ export interface WormholeRelayer extends BaseContract {
       encodedVMs: BytesLike[],
       encodedDeliveryVAA: BytesLike,
       relayerRefundAddress: AddressLike,
-      deliveryOverrides: BytesLike
+      deliveryOverrides: BytesLike,
     ],
     [void],
-    "payable"
+    'payable'
   >;
 
   deliveryAttempted: TypedContractMethod<
     [deliveryHash: BytesLike],
     [boolean],
-    "view"
+    'view'
   >;
 
   deliveryFailureBlock: TypedContractMethod<
     [deliveryHash: BytesLike],
     [bigint],
-    "view"
+    'view'
   >;
 
   deliverySuccessBlock: TypedContractMethod<
     [deliveryHash: BytesLike],
     [bigint],
-    "view"
+    'view'
   >;
 
   executeInstruction: TypedContractMethod<
@@ -621,9 +621,9 @@ export interface WormholeRelayer extends BaseContract {
         status: bigint;
         gasUsed: bigint;
         targetRevertDataTruncated: string;
-      }
+      },
     ],
-    "nonpayable"
+    'nonpayable'
   >;
 
   forward: TypedContractMethod<
@@ -638,10 +638,10 @@ export interface WormholeRelayer extends BaseContract {
       refundAddress: BytesLike,
       deliveryProviderAddress: AddressLike,
       vaaKeys: VaaKeyStruct[],
-      consistencyLevel: BigNumberish
+      consistencyLevel: BigNumberish,
     ],
     [void],
-    "payable"
+    'payable'
   >;
 
   forwardPayloadToEvm: TypedContractMethod<
@@ -650,10 +650,10 @@ export interface WormholeRelayer extends BaseContract {
       targetAddress: AddressLike,
       payload: BytesLike,
       receiverValue: BigNumberish,
-      gasLimit: BigNumberish
+      gasLimit: BigNumberish,
     ],
     [void],
-    "payable"
+    'payable'
   >;
 
   forwardToEvm: TypedContractMethod<
@@ -668,10 +668,10 @@ export interface WormholeRelayer extends BaseContract {
       refundAddress: AddressLike,
       deliveryProviderAddress: AddressLike,
       vaaKeys: VaaKeyStruct[],
-      consistencyLevel: BigNumberish
+      consistencyLevel: BigNumberish,
     ],
     [void],
-    "payable"
+    'payable'
   >;
 
   forwardVaasToEvm: TypedContractMethod<
@@ -681,18 +681,18 @@ export interface WormholeRelayer extends BaseContract {
       payload: BytesLike,
       receiverValue: BigNumberish,
       gasLimit: BigNumberish,
-      vaaKeys: VaaKeyStruct[]
+      vaaKeys: VaaKeyStruct[],
     ],
     [void],
-    "payable"
+    'payable'
   >;
 
-  getDefaultDeliveryProvider: TypedContractMethod<[], [string], "view">;
+  getDefaultDeliveryProvider: TypedContractMethod<[], [string], 'view'>;
 
   getDefaultDeliveryProviderOnChain: TypedContractMethod<
     [targetChain: BigNumberish],
     [string],
-    "view"
+    'view'
   >;
 
   getOriginalOrDefaultDeliveryProvider: TypedContractMethod<
@@ -701,21 +701,21 @@ export interface WormholeRelayer extends BaseContract {
       [string, string] & {
         deliveryProvider: string;
         deliveryProviderOnTarget: string;
-      }
+      },
     ],
-    "view"
+    'view'
   >;
 
   getRegisteredWormholeRelayerContract: TypedContractMethod<
     [chainId: BigNumberish],
     [string],
-    "view"
+    'view'
   >;
 
   initialize: TypedContractMethod<
     [defaultDeliveryProvider: AddressLike],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
   quoteDeliveryPrice: TypedContractMethod<
@@ -723,62 +723,62 @@ export interface WormholeRelayer extends BaseContract {
       targetChain: BigNumberish,
       receiverValue: BigNumberish,
       encodedExecutionParameters: BytesLike,
-      deliveryProviderAddress: AddressLike
+      deliveryProviderAddress: AddressLike,
     ],
     [
       [bigint, string] & {
         nativePriceQuote: bigint;
         encodedExecutionInfo: string;
-      }
+      },
     ],
-    "view"
+    'view'
   >;
 
-  "quoteEVMDeliveryPrice(uint16,uint256,uint256,address)": TypedContractMethod<
+  'quoteEVMDeliveryPrice(uint16,uint256,uint256,address)': TypedContractMethod<
     [
       targetChain: BigNumberish,
       receiverValue: BigNumberish,
       gasLimit: BigNumberish,
-      deliveryProviderAddress: AddressLike
+      deliveryProviderAddress: AddressLike,
     ],
     [
       [bigint, bigint] & {
         nativePriceQuote: bigint;
         targetChainRefundPerGasUnused: bigint;
-      }
+      },
     ],
-    "view"
+    'view'
   >;
 
-  "quoteEVMDeliveryPrice(uint16,uint256,uint256)": TypedContractMethod<
+  'quoteEVMDeliveryPrice(uint16,uint256,uint256)': TypedContractMethod<
     [
       targetChain: BigNumberish,
       receiverValue: BigNumberish,
-      gasLimit: BigNumberish
+      gasLimit: BigNumberish,
     ],
     [
       [bigint, bigint] & {
         nativePriceQuote: bigint;
         targetChainRefundPerGasUnused: bigint;
-      }
+      },
     ],
-    "view"
+    'view'
   >;
 
   quoteNativeForChain: TypedContractMethod<
     [
       targetChain: BigNumberish,
       currentChainAmount: BigNumberish,
-      deliveryProviderAddress: AddressLike
+      deliveryProviderAddress: AddressLike,
     ],
     [bigint],
-    "view"
+    'view'
   >;
 
   registerWormholeRelayerContract: TypedContractMethod<
     [encodedVm: BytesLike],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
   resend: TypedContractMethod<
@@ -787,10 +787,10 @@ export interface WormholeRelayer extends BaseContract {
       targetChain: BigNumberish,
       newReceiverValue: BigNumberish,
       newEncodedExecutionParameters: BytesLike,
-      newDeliveryProviderAddress: AddressLike
+      newDeliveryProviderAddress: AddressLike,
     ],
     [bigint],
-    "payable"
+    'payable'
   >;
 
   resendToEvm: TypedContractMethod<
@@ -799,10 +799,10 @@ export interface WormholeRelayer extends BaseContract {
       targetChain: BigNumberish,
       newReceiverValue: BigNumberish,
       newGasLimit: BigNumberish,
-      newDeliveryProviderAddress: AddressLike
+      newDeliveryProviderAddress: AddressLike,
     ],
     [bigint],
-    "payable"
+    'payable'
   >;
 
   send: TypedContractMethod<
@@ -817,13 +817,13 @@ export interface WormholeRelayer extends BaseContract {
       refundAddress: BytesLike,
       deliveryProviderAddress: AddressLike,
       vaaKeys: VaaKeyStruct[],
-      consistencyLevel: BigNumberish
+      consistencyLevel: BigNumberish,
     ],
     [bigint],
-    "payable"
+    'payable'
   >;
 
-  "sendPayloadToEvm(uint16,address,bytes,uint256,uint256,uint16,address)": TypedContractMethod<
+  'sendPayloadToEvm(uint16,address,bytes,uint256,uint256,uint16,address)': TypedContractMethod<
     [
       targetChain: BigNumberish,
       targetAddress: AddressLike,
@@ -831,22 +831,22 @@ export interface WormholeRelayer extends BaseContract {
       receiverValue: BigNumberish,
       gasLimit: BigNumberish,
       refundChain: BigNumberish,
-      refundAddress: AddressLike
+      refundAddress: AddressLike,
     ],
     [bigint],
-    "payable"
+    'payable'
   >;
 
-  "sendPayloadToEvm(uint16,address,bytes,uint256,uint256)": TypedContractMethod<
+  'sendPayloadToEvm(uint16,address,bytes,uint256,uint256)': TypedContractMethod<
     [
       targetChain: BigNumberish,
       targetAddress: AddressLike,
       payload: BytesLike,
       receiverValue: BigNumberish,
-      gasLimit: BigNumberish
+      gasLimit: BigNumberish,
     ],
     [bigint],
-    "payable"
+    'payable'
   >;
 
   sendToEvm: TypedContractMethod<
@@ -861,26 +861,26 @@ export interface WormholeRelayer extends BaseContract {
       refundAddress: AddressLike,
       deliveryProviderAddress: AddressLike,
       vaaKeys: VaaKeyStruct[],
-      consistencyLevel: BigNumberish
+      consistencyLevel: BigNumberish,
     ],
     [bigint],
-    "payable"
+    'payable'
   >;
 
-  "sendVaasToEvm(uint16,address,bytes,uint256,uint256,(uint16,bytes32,uint64)[])": TypedContractMethod<
+  'sendVaasToEvm(uint16,address,bytes,uint256,uint256,(uint16,bytes32,uint64)[])': TypedContractMethod<
     [
       targetChain: BigNumberish,
       targetAddress: AddressLike,
       payload: BytesLike,
       receiverValue: BigNumberish,
       gasLimit: BigNumberish,
-      vaaKeys: VaaKeyStruct[]
+      vaaKeys: VaaKeyStruct[],
     ],
     [bigint],
-    "payable"
+    'payable'
   >;
 
-  "sendVaasToEvm(uint16,address,bytes,uint256,uint256,(uint16,bytes32,uint64)[],uint16,address)": TypedContractMethod<
+  'sendVaasToEvm(uint16,address,bytes,uint256,uint256,(uint16,bytes32,uint64)[],uint16,address)': TypedContractMethod<
     [
       targetChain: BigNumberish,
       targetAddress: AddressLike,
@@ -889,67 +889,65 @@ export interface WormholeRelayer extends BaseContract {
       gasLimit: BigNumberish,
       vaaKeys: VaaKeyStruct[],
       refundChain: BigNumberish,
-      refundAddress: AddressLike
+      refundAddress: AddressLike,
     ],
     [bigint],
-    "payable"
+    'payable'
   >;
 
   setDefaultDeliveryProvider: TypedContractMethod<
     [encodedVm: BytesLike],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
   submitContractUpgrade: TypedContractMethod<
     [encodedVm: BytesLike],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
   getFunction<T extends ContractMethod = ContractMethod>(
-    key: string | FunctionFragment
+    key: string | FunctionFragment,
   ): T;
 
   getFunction(
-    nameOrSignature: "checkAndExecuteUpgradeMigration"
-  ): TypedContractMethod<[], [void], "nonpayable">;
+    nameOrSignature: 'checkAndExecuteUpgradeMigration',
+  ): TypedContractMethod<[], [void], 'nonpayable'>;
   getFunction(
-    nameOrSignature: "deliver"
+    nameOrSignature: 'deliver',
   ): TypedContractMethod<
     [
       encodedVMs: BytesLike[],
       encodedDeliveryVAA: BytesLike,
       relayerRefundAddress: AddressLike,
-      deliveryOverrides: BytesLike
+      deliveryOverrides: BytesLike,
     ],
     [void],
-    "payable"
+    'payable'
   >;
   getFunction(
-    nameOrSignature: "deliveryAttempted"
-  ): TypedContractMethod<[deliveryHash: BytesLike], [boolean], "view">;
+    nameOrSignature: 'deliveryAttempted',
+  ): TypedContractMethod<[deliveryHash: BytesLike], [boolean], 'view'>;
   getFunction(
-    nameOrSignature: "deliveryFailureBlock"
-  ): TypedContractMethod<[deliveryHash: BytesLike], [bigint], "view">;
+    nameOrSignature: 'deliveryFailureBlock',
+  ): TypedContractMethod<[deliveryHash: BytesLike], [bigint], 'view'>;
   getFunction(
-    nameOrSignature: "deliverySuccessBlock"
-  ): TypedContractMethod<[deliveryHash: BytesLike], [bigint], "view">;
-  getFunction(
-    nameOrSignature: "executeInstruction"
-  ): TypedContractMethod<
+    nameOrSignature: 'deliverySuccessBlock',
+  ): TypedContractMethod<[deliveryHash: BytesLike], [bigint], 'view'>;
+  getFunction(nameOrSignature: 'executeInstruction'): TypedContractMethod<
     [evmInstruction: EvmDeliveryInstructionStruct],
     [
       [bigint, bigint, string] & {
         status: bigint;
         gasUsed: bigint;
         targetRevertDataTruncated: string;
-      }
+      },
     ],
-    "nonpayable"
+    'nonpayable'
   >;
   getFunction(
-    nameOrSignature: "forward"
+    nameOrSignature: 'forward',
   ): TypedContractMethod<
     [
       targetChain: BigNumberish,
@@ -962,26 +960,26 @@ export interface WormholeRelayer extends BaseContract {
       refundAddress: BytesLike,
       deliveryProviderAddress: AddressLike,
       vaaKeys: VaaKeyStruct[],
-      consistencyLevel: BigNumberish
+      consistencyLevel: BigNumberish,
     ],
     [void],
-    "payable"
+    'payable'
   >;
   getFunction(
-    nameOrSignature: "forwardPayloadToEvm"
+    nameOrSignature: 'forwardPayloadToEvm',
   ): TypedContractMethod<
     [
       targetChain: BigNumberish,
       targetAddress: AddressLike,
       payload: BytesLike,
       receiverValue: BigNumberish,
-      gasLimit: BigNumberish
+      gasLimit: BigNumberish,
     ],
     [void],
-    "payable"
+    'payable'
   >;
   getFunction(
-    nameOrSignature: "forwardToEvm"
+    nameOrSignature: 'forwardToEvm',
   ): TypedContractMethod<
     [
       targetChain: BigNumberish,
@@ -994,13 +992,13 @@ export interface WormholeRelayer extends BaseContract {
       refundAddress: AddressLike,
       deliveryProviderAddress: AddressLike,
       vaaKeys: VaaKeyStruct[],
-      consistencyLevel: BigNumberish
+      consistencyLevel: BigNumberish,
     ],
     [void],
-    "payable"
+    'payable'
   >;
   getFunction(
-    nameOrSignature: "forwardVaasToEvm"
+    nameOrSignature: 'forwardVaasToEvm',
   ): TypedContractMethod<
     [
       targetChain: BigNumberish,
@@ -1008,131 +1006,129 @@ export interface WormholeRelayer extends BaseContract {
       payload: BytesLike,
       receiverValue: BigNumberish,
       gasLimit: BigNumberish,
-      vaaKeys: VaaKeyStruct[]
+      vaaKeys: VaaKeyStruct[],
     ],
     [void],
-    "payable"
+    'payable'
   >;
   getFunction(
-    nameOrSignature: "getDefaultDeliveryProvider"
-  ): TypedContractMethod<[], [string], "view">;
+    nameOrSignature: 'getDefaultDeliveryProvider',
+  ): TypedContractMethod<[], [string], 'view'>;
   getFunction(
-    nameOrSignature: "getDefaultDeliveryProviderOnChain"
-  ): TypedContractMethod<[targetChain: BigNumberish], [string], "view">;
+    nameOrSignature: 'getDefaultDeliveryProviderOnChain',
+  ): TypedContractMethod<[targetChain: BigNumberish], [string], 'view'>;
   getFunction(
-    nameOrSignature: "getOriginalOrDefaultDeliveryProvider"
+    nameOrSignature: 'getOriginalOrDefaultDeliveryProvider',
   ): TypedContractMethod<
     [targetChain: BigNumberish],
     [
       [string, string] & {
         deliveryProvider: string;
         deliveryProviderOnTarget: string;
-      }
+      },
     ],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "getRegisteredWormholeRelayerContract"
-  ): TypedContractMethod<[chainId: BigNumberish], [string], "view">;
+    nameOrSignature: 'getRegisteredWormholeRelayerContract',
+  ): TypedContractMethod<[chainId: BigNumberish], [string], 'view'>;
   getFunction(
-    nameOrSignature: "initialize"
+    nameOrSignature: 'initialize',
   ): TypedContractMethod<
     [defaultDeliveryProvider: AddressLike],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
-  getFunction(
-    nameOrSignature: "quoteDeliveryPrice"
-  ): TypedContractMethod<
+  getFunction(nameOrSignature: 'quoteDeliveryPrice'): TypedContractMethod<
     [
       targetChain: BigNumberish,
       receiverValue: BigNumberish,
       encodedExecutionParameters: BytesLike,
-      deliveryProviderAddress: AddressLike
+      deliveryProviderAddress: AddressLike,
     ],
     [
       [bigint, string] & {
         nativePriceQuote: bigint;
         encodedExecutionInfo: string;
-      }
+      },
     ],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "quoteEVMDeliveryPrice(uint16,uint256,uint256,address)"
+    nameOrSignature: 'quoteEVMDeliveryPrice(uint16,uint256,uint256,address)',
   ): TypedContractMethod<
     [
       targetChain: BigNumberish,
       receiverValue: BigNumberish,
       gasLimit: BigNumberish,
-      deliveryProviderAddress: AddressLike
+      deliveryProviderAddress: AddressLike,
     ],
     [
       [bigint, bigint] & {
         nativePriceQuote: bigint;
         targetChainRefundPerGasUnused: bigint;
-      }
+      },
     ],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "quoteEVMDeliveryPrice(uint16,uint256,uint256)"
+    nameOrSignature: 'quoteEVMDeliveryPrice(uint16,uint256,uint256)',
   ): TypedContractMethod<
     [
       targetChain: BigNumberish,
       receiverValue: BigNumberish,
-      gasLimit: BigNumberish
+      gasLimit: BigNumberish,
     ],
     [
       [bigint, bigint] & {
         nativePriceQuote: bigint;
         targetChainRefundPerGasUnused: bigint;
-      }
+      },
     ],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "quoteNativeForChain"
+    nameOrSignature: 'quoteNativeForChain',
   ): TypedContractMethod<
     [
       targetChain: BigNumberish,
       currentChainAmount: BigNumberish,
-      deliveryProviderAddress: AddressLike
+      deliveryProviderAddress: AddressLike,
     ],
     [bigint],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "registerWormholeRelayerContract"
-  ): TypedContractMethod<[encodedVm: BytesLike], [void], "nonpayable">;
+    nameOrSignature: 'registerWormholeRelayerContract',
+  ): TypedContractMethod<[encodedVm: BytesLike], [void], 'nonpayable'>;
   getFunction(
-    nameOrSignature: "resend"
+    nameOrSignature: 'resend',
   ): TypedContractMethod<
     [
       deliveryVaaKey: VaaKeyStruct,
       targetChain: BigNumberish,
       newReceiverValue: BigNumberish,
       newEncodedExecutionParameters: BytesLike,
-      newDeliveryProviderAddress: AddressLike
+      newDeliveryProviderAddress: AddressLike,
     ],
     [bigint],
-    "payable"
+    'payable'
   >;
   getFunction(
-    nameOrSignature: "resendToEvm"
+    nameOrSignature: 'resendToEvm',
   ): TypedContractMethod<
     [
       deliveryVaaKey: VaaKeyStruct,
       targetChain: BigNumberish,
       newReceiverValue: BigNumberish,
       newGasLimit: BigNumberish,
-      newDeliveryProviderAddress: AddressLike
+      newDeliveryProviderAddress: AddressLike,
     ],
     [bigint],
-    "payable"
+    'payable'
   >;
   getFunction(
-    nameOrSignature: "send"
+    nameOrSignature: 'send',
   ): TypedContractMethod<
     [
       targetChain: BigNumberish,
@@ -1145,13 +1141,13 @@ export interface WormholeRelayer extends BaseContract {
       refundAddress: BytesLike,
       deliveryProviderAddress: AddressLike,
       vaaKeys: VaaKeyStruct[],
-      consistencyLevel: BigNumberish
+      consistencyLevel: BigNumberish,
     ],
     [bigint],
-    "payable"
+    'payable'
   >;
   getFunction(
-    nameOrSignature: "sendPayloadToEvm(uint16,address,bytes,uint256,uint256,uint16,address)"
+    nameOrSignature: 'sendPayloadToEvm(uint16,address,bytes,uint256,uint256,uint16,address)',
   ): TypedContractMethod<
     [
       targetChain: BigNumberish,
@@ -1160,26 +1156,26 @@ export interface WormholeRelayer extends BaseContract {
       receiverValue: BigNumberish,
       gasLimit: BigNumberish,
       refundChain: BigNumberish,
-      refundAddress: AddressLike
+      refundAddress: AddressLike,
     ],
     [bigint],
-    "payable"
+    'payable'
   >;
   getFunction(
-    nameOrSignature: "sendPayloadToEvm(uint16,address,bytes,uint256,uint256)"
+    nameOrSignature: 'sendPayloadToEvm(uint16,address,bytes,uint256,uint256)',
   ): TypedContractMethod<
     [
       targetChain: BigNumberish,
       targetAddress: AddressLike,
       payload: BytesLike,
       receiverValue: BigNumberish,
-      gasLimit: BigNumberish
+      gasLimit: BigNumberish,
     ],
     [bigint],
-    "payable"
+    'payable'
   >;
   getFunction(
-    nameOrSignature: "sendToEvm"
+    nameOrSignature: 'sendToEvm',
   ): TypedContractMethod<
     [
       targetChain: BigNumberish,
@@ -1192,13 +1188,13 @@ export interface WormholeRelayer extends BaseContract {
       refundAddress: AddressLike,
       deliveryProviderAddress: AddressLike,
       vaaKeys: VaaKeyStruct[],
-      consistencyLevel: BigNumberish
+      consistencyLevel: BigNumberish,
     ],
     [bigint],
-    "payable"
+    'payable'
   >;
   getFunction(
-    nameOrSignature: "sendVaasToEvm(uint16,address,bytes,uint256,uint256,(uint16,bytes32,uint64)[])"
+    nameOrSignature: 'sendVaasToEvm(uint16,address,bytes,uint256,uint256,(uint16,bytes32,uint64)[])',
   ): TypedContractMethod<
     [
       targetChain: BigNumberish,
@@ -1206,13 +1202,13 @@ export interface WormholeRelayer extends BaseContract {
       payload: BytesLike,
       receiverValue: BigNumberish,
       gasLimit: BigNumberish,
-      vaaKeys: VaaKeyStruct[]
+      vaaKeys: VaaKeyStruct[],
     ],
     [bigint],
-    "payable"
+    'payable'
   >;
   getFunction(
-    nameOrSignature: "sendVaasToEvm(uint16,address,bytes,uint256,uint256,(uint16,bytes32,uint64)[],uint16,address)"
+    nameOrSignature: 'sendVaasToEvm(uint16,address,bytes,uint256,uint256,(uint16,bytes32,uint64)[],uint16,address)',
   ): TypedContractMethod<
     [
       targetChain: BigNumberish,
@@ -1222,55 +1218,55 @@ export interface WormholeRelayer extends BaseContract {
       gasLimit: BigNumberish,
       vaaKeys: VaaKeyStruct[],
       refundChain: BigNumberish,
-      refundAddress: AddressLike
+      refundAddress: AddressLike,
     ],
     [bigint],
-    "payable"
+    'payable'
   >;
   getFunction(
-    nameOrSignature: "setDefaultDeliveryProvider"
-  ): TypedContractMethod<[encodedVm: BytesLike], [void], "nonpayable">;
+    nameOrSignature: 'setDefaultDeliveryProvider',
+  ): TypedContractMethod<[encodedVm: BytesLike], [void], 'nonpayable'>;
   getFunction(
-    nameOrSignature: "submitContractUpgrade"
-  ): TypedContractMethod<[encodedVm: BytesLike], [void], "nonpayable">;
+    nameOrSignature: 'submitContractUpgrade',
+  ): TypedContractMethod<[encodedVm: BytesLike], [void], 'nonpayable'>;
 
   getEvent(
-    key: "AdminChanged"
+    key: 'AdminChanged',
   ): TypedContractEvent<
     AdminChangedEvent.InputTuple,
     AdminChangedEvent.OutputTuple,
     AdminChangedEvent.OutputObject
   >;
   getEvent(
-    key: "BeaconUpgraded"
+    key: 'BeaconUpgraded',
   ): TypedContractEvent<
     BeaconUpgradedEvent.InputTuple,
     BeaconUpgradedEvent.OutputTuple,
     BeaconUpgradedEvent.OutputObject
   >;
   getEvent(
-    key: "ContractUpgraded"
+    key: 'ContractUpgraded',
   ): TypedContractEvent<
     ContractUpgradedEvent.InputTuple,
     ContractUpgradedEvent.OutputTuple,
     ContractUpgradedEvent.OutputObject
   >;
   getEvent(
-    key: "Delivery"
+    key: 'Delivery',
   ): TypedContractEvent<
     DeliveryEvent.InputTuple,
     DeliveryEvent.OutputTuple,
     DeliveryEvent.OutputObject
   >;
   getEvent(
-    key: "SendEvent"
+    key: 'SendEvent',
   ): TypedContractEvent<
     SendEventEvent.InputTuple,
     SendEventEvent.OutputTuple,
     SendEventEvent.OutputObject
   >;
   getEvent(
-    key: "Upgraded"
+    key: 'Upgraded',
   ): TypedContractEvent<
     UpgradedEvent.InputTuple,
     UpgradedEvent.OutputTuple,
@@ -1278,7 +1274,7 @@ export interface WormholeRelayer extends BaseContract {
   >;
 
   filters: {
-    "AdminChanged(address,address)": TypedContractEvent<
+    'AdminChanged(address,address)': TypedContractEvent<
       AdminChangedEvent.InputTuple,
       AdminChangedEvent.OutputTuple,
       AdminChangedEvent.OutputObject
@@ -1289,7 +1285,7 @@ export interface WormholeRelayer extends BaseContract {
       AdminChangedEvent.OutputObject
     >;
 
-    "BeaconUpgraded(address)": TypedContractEvent<
+    'BeaconUpgraded(address)': TypedContractEvent<
       BeaconUpgradedEvent.InputTuple,
       BeaconUpgradedEvent.OutputTuple,
       BeaconUpgradedEvent.OutputObject
@@ -1300,7 +1296,7 @@ export interface WormholeRelayer extends BaseContract {
       BeaconUpgradedEvent.OutputObject
     >;
 
-    "ContractUpgraded(address,address)": TypedContractEvent<
+    'ContractUpgraded(address,address)': TypedContractEvent<
       ContractUpgradedEvent.InputTuple,
       ContractUpgradedEvent.OutputTuple,
       ContractUpgradedEvent.OutputObject
@@ -1311,7 +1307,7 @@ export interface WormholeRelayer extends BaseContract {
       ContractUpgradedEvent.OutputObject
     >;
 
-    "Delivery(address,uint16,uint64,bytes32,uint8,uint256,uint8,bytes,bytes)": TypedContractEvent<
+    'Delivery(address,uint16,uint64,bytes32,uint8,uint256,uint8,bytes,bytes)': TypedContractEvent<
       DeliveryEvent.InputTuple,
       DeliveryEvent.OutputTuple,
       DeliveryEvent.OutputObject
@@ -1322,7 +1318,7 @@ export interface WormholeRelayer extends BaseContract {
       DeliveryEvent.OutputObject
     >;
 
-    "SendEvent(uint64,uint256,uint256)": TypedContractEvent<
+    'SendEvent(uint64,uint256,uint256)': TypedContractEvent<
       SendEventEvent.InputTuple,
       SendEventEvent.OutputTuple,
       SendEventEvent.OutputObject
@@ -1333,7 +1329,7 @@ export interface WormholeRelayer extends BaseContract {
       SendEventEvent.OutputObject
     >;
 
-    "Upgraded(address)": TypedContractEvent<
+    'Upgraded(address)': TypedContractEvent<
       UpgradedEvent.InputTuple,
       UpgradedEvent.OutputTuple,
       UpgradedEvent.OutputObject

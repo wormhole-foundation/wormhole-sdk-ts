@@ -12,7 +12,7 @@ import {
   nativeDecimals,
   rpcAddress,
   RoArray,
-  constMap
+  constMap,
 } from '@wormhole-foundation/sdk-base';
 import { WormholeConfig } from './types';
 
@@ -43,11 +43,11 @@ function combineConfig(n: Network): NetworkChainConfigs {
       return {
         key: c,
         platform: chainToPlatform(c),
-        finalityThreshold: finalityThreshold.get(n,c)!, //TODO the exclamation mark is a lie
+        finalityThreshold: finalityThreshold.get(n, c)!, //TODO the exclamation mark is a lie
         contracts: contracts[n][c],
         nativeTokenDecimals: nativeDecimals.get(c)!, //TODO the exclamation mark is a lie
-        explorer: explorerConfigs(n,c)!, //TODO the exclamation mark is a lie
-        rpc: rpcAddress(n,c)!, //TODO the exclamation mark is a lie
+        explorer: explorerConfigs(n, c)!, //TODO the exclamation mark is a lie
+        rpc: rpcAddress(n, c)!, //TODO the exclamation mark is a lie
       };
     })
     .reduce((acc, curr) => {
@@ -59,9 +59,9 @@ function combineConfig(n: Network): NetworkChainConfigs {
 
 // Combine all the configs for each network/chain
 const chainConfigMapping = [
-  ["Mainnet", combineConfig('Mainnet')],
-  ["Testnet", combineConfig('Testnet')],
-  ["Devnet", combineConfig('Devnet')],
+  ['Mainnet', combineConfig('Mainnet')],
+  ['Testnet', combineConfig('Testnet')],
+  ['Devnet', combineConfig('Devnet')],
 ] as const satisfies RoArray<readonly [Network, NetworkChainConfigs]>;
 
 export const chainConfigs = constMap(chainConfigMapping);

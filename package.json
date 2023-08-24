@@ -24,6 +24,7 @@
     "test": "npm run test --workspaces --if-present",
     "coverage": "npm run coverage --workspaces --if-present",
     "clean":"npm run clean --workspaces --if-present",
+    "prettier":"npm run prettier --workspaces --if-present",
     "docs": "typedoc"
   },
   "workspaces": [
