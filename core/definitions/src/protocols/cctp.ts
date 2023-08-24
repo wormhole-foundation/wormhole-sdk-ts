@@ -18,7 +18,8 @@ export interface WormholeCircleRelayer<P extends PlatformName> {
 export interface CircleBridge<P extends PlatformName> {
   redeem(
     sender: UniversalOrNative<P>,
-    vaa: VAA<"Transfer"> | VAA<"TransferWithPayload">
+    message: string,
+    attestation: string
   ): AsyncGenerator<UnsignedTransaction>;
   transfer(
     token: ChainAddress,

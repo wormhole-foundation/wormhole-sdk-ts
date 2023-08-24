@@ -1,6 +1,5 @@
 import {
   chainToChainId,
-  Network,
   evmChainIdToNetworkChainPair,
   evmNetworkChainToEvmChainId,
 } from '@wormhole-foundation/sdk-base';
@@ -12,23 +11,26 @@ import {
 } from '@wormhole-foundation/sdk-definitions';
 
 import {
+  addFrom,
   addChainId,
   toEvmAddrString,
   EvmChainName,
   UniversalOrEvm,
 } from '../types';
 import { EvmUnsignedTransaction } from '../unsignedTransaction';
-import { CircleRelayer } from '../ethers-contracts';
+import { MessageTransmitter, TokenMessenger } from '../ethers-contracts';
 import { Provider, TransactionRequest } from 'ethers';
 import { EvmContracts } from '../contracts';
 import { TokenId } from '@wormhole-foundation/connect-sdk';
+import { send } from 'process';
 
 //https://github.com/circlefin/evm-cctp-contracts
 
 export class EvmCircleBridge implements CircleBridge<'Evm'> {
   readonly contracts: EvmContracts;
-  readonly circleRelayer: CircleRelayer;
   readonly chainId: bigint;
+  readonly msgTransmitter: MessageTransmitter.MessageTransmitter;
+  readonly tokenMessenger: TokenMessenger.TokenMessenger;
 
   private constructor(
     readonly network: 'Mainnet' | 'Testnet',
@@ -38,7 +40,12 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
     this.contracts = new EvmContracts(network);
 
     this.chainId = evmNetworkChainToEvmChainId(network, chain);
-    this.circleRelayer = this.contracts.mustGetWormholeCircleRelayer(
+
+    this.msgTransmitter = this.contracts.mustGetCircleMessageTransmitter(
+      chain,
+      provider,
+    );
+    this.tokenMessenger = this.contracts.mustGetCircleTokenMessenger(
       chain,
       provider,
     );
@@ -56,9 +63,20 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
 
   async *redeem(
     sender: UniversalOrEvm,
-    vaa: VAA<'Transfer'> | VAA<'TransferWithPayload'>,
+    message: string,
+    attestation: string,
   ): AsyncGenerator<UnsignedTransaction> {
-    return;
+    const senderAddr = toEvmAddrString(sender);
+
+    const txReq = await this.msgTransmitter.receiveMessage.populateTransaction(
+      message,
+      attestation,
+    );
+
+    yield this.createUnsignedTx(
+      addFrom(txReq, senderAddr),
+      'CircleBridge.redeem',
+    );
   }
   //alternative naming: initiateTransfer
   async *transfer(
@@ -73,33 +91,44 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
     const recipientAddress = recipient.address.toString();
     const nativeTokenGas = nativeGas ? nativeGas : 0n;
 
-    //const tokenAddr = await wh.mustGetForeignAsset(
-    //  token as TokenId,
-    //  sendingChain,
-    //);
+    const tokenAddr = toEvmAddrString(token.address);
 
-    //// approve
-    //await chainContext.approve(
-    //  sendingChain,
-    //  circleRelayer.address,
-    //  tokenAddr,
-    //  parsedAmt,
-    //);
+    const tokenContract = this.contracts.mustGetTokenImplementation(
+      this.provider,
+      tokenAddr,
+    );
 
-    //console.log('About to send 2');
-    //const txReq =
-    //  await this.circleRelayer.transferTokensWithRelay.populateTransaction(
-    //    chainContext.context.parseAddress(tokenAddr, sendingChain),
-    //    parsedAmt,
-    //    parsedNativeAmt,
-    //    this.chainId,
-    //    recipientAddress,
-    //  );
+    const allowance = await tokenContract.allowance(
+      senderAddr,
+      this.tokenMessenger.target,
+    );
 
-    //yield this.createUnsignedTx(
-    //  addFrom(txReq, senderAddr),
-    //  'TokenBridgeRelayer.transferTokensWithRelay',
-    //);
+    if (allowance < amount) {
+      const txReq = await tokenContract.approve.populateTransaction(
+        this.tokenMessenger.target,
+        amount,
+      );
+      yield this.createUnsignedTx(
+        addFrom(txReq, senderAddr),
+        'ERC20.approve of CircleBridge',
+        false,
+      );
+    }
+
+    // TODO: config for cctpDomain
+    const destinationDomain = 1;
+
+    const txReq = await this.tokenMessenger.depositForBurn.populateTransaction(
+      amount,
+      destinationDomain,
+      recipientAddress,
+      tokenAddr,
+    );
+
+    yield this.createUnsignedTx(
+      addFrom(txReq, senderAddr),
+      'CircleBridge.transfer',
+    );
   }
 
   private createUnsignedTx(

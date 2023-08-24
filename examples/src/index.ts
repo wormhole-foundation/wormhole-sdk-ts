@@ -27,16 +27,9 @@ type TransferStuff = {
   // to use (e.g. Mainnet/Testnet) and what Platforms to support
   const wh = new Wormhole("Testnet", [EvmPlatform]);
 
-  const fuck: PlatformName | ChainName = "Evm";
-  const platform: PlatformName = isChain(fuck)
-    ? chainToPlatform.get(fuck)!
-    : fuck;
-
-  console.log(platform);
-
   // spongebob-patrick-from-here-to-there.jpg
   const src = "Avalanche";
-  const dst = "Polygon";
+  const dst = "Ethereum";
 
   // Grab chain Contexts
   const sendChain = wh.getChain(src);
@@ -58,9 +51,9 @@ type TransferStuff = {
     address: receiver,
   };
 
-  // await cctpTransfer(wh, source, destination);
+  await cctpTransfer(wh, source, destination);
   // await automaticTransfer(wh, source, destination);
-  await manualTransfer(wh, source, destination);
+  // await manualTransfer(wh, source, destination);
 })();
 
 async function cctpTransfer(

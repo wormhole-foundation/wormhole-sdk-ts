@@ -21,12 +21,6 @@ import {
 } from '@wormhole-foundation/sdk-definitions';
 import { ChainName, PlatformName } from '@wormhole-foundation/sdk-base';
 
-/**
- * What do with multiple transactions or VAAs?
- * What do for `stackable` transactions?
- * More concurrent promises instead of linearizing/blocking
- */
-
 export class CCTPTransfer implements WormholeTransfer {
   private readonly wh: Wormhole;
 

@@ -83,7 +83,7 @@ export class EvmCircleRelayer implements WormholeCircleRelayer<'Evm'> {
       );
       yield this.createUnsignedTx(
         addFrom(txReq, senderAddr),
-        'ERC20.approve of TokenBridge',
+        'ERC20.approve of CircleRelayer',
       );
     }
 
