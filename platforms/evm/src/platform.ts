@@ -59,7 +59,7 @@ export class EvmPlatform implements Platform {
     tokenId: TokenId,
   ): Promise<UniversalAddress | null> {
     // if the token is already native, return the token address
-    if (chain === tokenId.chain) return tokenId.address;
+    if (chain === tokenId.chain) return tokenId.address.toUniversalAddress();
 
     const tokenBridge = await this.getTokenBridge(rpc);
     const foreignAddr = await tokenBridge.getWrappedAsset({

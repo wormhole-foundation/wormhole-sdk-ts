@@ -1,15 +1,13 @@
 import {
   platformToChains,
-  modules,
   Module,
   FixedConversion,
   column,
-  Column,
-  toMapping,
-  ToMapping,
+  constMap,
+  ShallowMapping,
   Layout,
-  Flatten,
   ConcatStringLiterals,
+  RoArray,
 } from "@wormhole-foundation/sdk-base";
 
 import {
@@ -104,198 +102,100 @@ const actionTuples = [
       layout: [{ name: "defaultProvider", ...universalAddressItem }],
     },
   ],
-] as const satisfies readonly (readonly [
-  string,
-  { allowNull: boolean; layout: Layout }
-])[];
+] as const satisfies RoArray<readonly [string, { allowNull: boolean; layout: Layout }]>;
 
 const actions = column(actionTuples, 0);
 type Action = (typeof actions)[number];
 
-const actionMapping = toMapping(actionTuples);
+const actionMapping = constMap(actionTuples);
 
 const sdkModuleNameAndGovernanceVaaModuleEntries = [
   ["CoreBridge", "Core"],
   ["TokenBridge", "TokenBridge"],
   ["NftBridge", "NFTBridge"],
   ["Relayer", "WormholeRelayer"],
-] as const satisfies readonly (readonly [Module, string])[];
+] as const satisfies RoArray<readonly [Module, string]>;
 
-const sdkModuleNameToGovernanceVaaModuleMapping = toMapping(
+const sdkModuleNameToGovernanceVaaModuleMapping = constMap(
   sdkModuleNameAndGovernanceVaaModuleEntries
 );
 
-const moduleToActionToNumTuples = [
-  //see https://github.com/wormhole-foundation/wormhole/blob/96c6cc2b325addc2125bb438b228921a4be6b7f3/ethereum/contracts/GovernanceStructs.sol#L64
-  [
-    "CoreBridge",
-    [
-      ["UpgradeContract", 1],
-      ["GuardianSetUpgrade", 2],
-      ["SetMessageFee", 3],
-      ["TransferFees", 4],
-      ["RecoverChainId", 5],
-    ],
-  ],
-  //see https://github.com/wormhole-foundation/wormhole/blob/96c6cc2b325addc2125bb438b228921a4be6b7f3/ethereum/contracts/bridge/BridgeGovernance.sol#L115
-  [
-    "TokenBridge",
-    [
-      ["RegisterChain", 1],
-      ["UpgradeContract", 2],
-      ["RecoverChainId", 3],
-    ],
-  ],
-  //see https://github.com/wormhole-foundation/wormhole/blob/96c6cc2b325addc2125bb438b228921a4be6b7f3/ethereum/contracts/nft/NFTBridgeGovernance.sol#L112
-  [
-    "NftBridge",
-    [
-      ["RegisterChain", 1],
-      ["UpgradeContract", 2],
-      ["RecoverChainId", 3],
-    ],
-  ],
-  //see https://github.com/wormhole-foundation/wormhole/blob/96c6cc2b325addc2125bb438b228921a4be6b7f3/ethereum/contracts/relayer/wormholeRelayer/WormholeRelayerGovernance.sol#L60
-  [
-    "Relayer",
-    [
-      ["RegisterChain", 1],
-      ["UpgradeContract", 2],
-      ["UpdateDefaultProvider", 3],
-    ],
-  ],
-] as const satisfies readonly (readonly [
-  Module,
-  readonly (readonly [Action, number])[]
-])[];
+const moduleConversion = <M extends Module>(module: M) => ({
+  to: module,
+  from: ((): Uint8Array => {
+    const moduleBytesSize = 32;
+    const bytes = new Uint8Array(moduleBytesSize);
+    const vaaModule = sdkModuleNameToGovernanceVaaModuleMapping(module);
+    for (let i = 1; i <= vaaModule.length; ++i)
+      bytes[moduleBytesSize - i] = vaaModule.charCodeAt(vaaModule.length - i);
 
-const [actionToNumMapping, moduleActions] = (() => {
-  //that's what you get when your insane programming language doesn't support higher order functions
-  //  on types...
-  const moduleToActionTuple = toMapping(moduleToActionToNumTuples);
-  return [
-    toMapping(
-      modules.map((module) => [module, toMapping(moduleToActionTuple[module])])
-    ) as { readonly [M in Module]: ToMapping<(typeof moduleToActionTuple)[M]> },
-    toMapping(
-      modules.map((module) => [module, column(moduleToActionTuple[module], 0)])
-    ) as {
-      readonly [M in Module]: (typeof moduleToActionTuple)[M] extends infer A extends readonly any[]
-        ? readonly [...{ [K in keyof A]: A[K][0] }]
-        : never;
-    },
-  ];
-})();
+    return bytes;
+  })(),
+} as const satisfies FixedConversion<Uint8Array, M>);
 
-type ModuleAction<M extends Module> = (typeof moduleActions)[M][number];
-
-const moduleBytesSize = 32;
-
-const moduleConversion = <M extends Module>(module: M) =>
-  ({
-    to: module,
-    from: ((): Uint8Array => {
-      const bytes = new Uint8Array(moduleBytesSize);
-      const vaaModule = sdkModuleNameToGovernanceVaaModuleMapping[module];
-      for (let i = 1; i <= vaaModule.length; ++i)
-        bytes[moduleBytesSize - i] = vaaModule.charCodeAt(vaaModule.length - i);
-
-      return bytes;
-    })(),
-  } as const satisfies FixedConversion<Uint8Array, M>);
-
-const actionConversion = <M extends Module, const A extends ModuleAction<M>>(
-  module: M,
-  action: A
-) =>
+const actionConversion = <A extends Action, N extends number>(action: A, num: N) =>
   ({
     to: action,
-    from: actionToNumMapping[module][action] as number,
-  } as const satisfies FixedConversion<number, A>);
+    from: num,
+  } as const satisfies FixedConversion<N, A>);
 
-const headerLayout = <M extends Module, const A extends ModuleAction<M>>(
+const headerLayout = <
+  M extends Module, A extends Action, N extends number
+>(module: M, action: A, num: N) => [
+  {
+    name: "module",
+    binary: "bytes",
+    custom: moduleConversion(module),
+  },
+  {
+    name: "action",
+    binary: "uint",
+    size: 1,
+    custom: actionConversion(action, num),
+  },
+  { name: "chain", ...chainItem(actionMapping(action)) },
+] as const satisfies Layout;
+
+const governancePayload = <M extends Module, A extends Action, N extends number>(
   module: M,
-  action: A & Action
-) =>
-  [
-    {
-      name: "module",
-      binary: "bytes",
-      size: moduleBytesSize,
-      custom: moduleConversion(module),
-    },
-    {
-      name: "action",
-      binary: "uint",
-      size: 1,
-      custom: actionConversion(module, action),
-    },
-    { name: "chain", ...chainItem(actionMapping[action]) },
-  ] as const;
+  action: A,
+  num: N,
+) => [
+  module + action as ConcatStringLiterals<[M, A]>, [
+    ...headerLayout(module, action, num),
+    ...actionMapping(action).layout,
+  ]
+] as const;
 
-type GovernancePayloadLayouts = Flatten<
-  typeof modules extends infer M
-    ? {
-        readonly [I in keyof M]: (typeof modules)[I] extends keyof typeof moduleActions
-          ? (typeof moduleActions)[(typeof modules)[I]] extends infer A
-            ? {
-                [J in keyof A]: readonly [
-                  ConcatStringLiterals<
-                    [
-                      (typeof modules)[I],
-                      (typeof moduleActions)[(typeof modules)[I]][J]
-                    ]
-                  >,
-                  Flatten<
-                    [
-                      ReturnType<
-                        typeof headerLayout<
-                          (typeof modules)[I],
-                          (typeof moduleActions)[(typeof modules)[I]][J]
-                        >
-                      >,
-                      (typeof moduleActions)[(typeof modules)[I]][J] extends keyof typeof actionMapping
-                        ? (typeof actionMapping)[(typeof moduleActions)[(typeof modules)[I]][J]]["layout"]
-                        : never
-                    ]
-                  >
-                ];
-              }
-            : never
-          : never;
-      }
-    : never
->;
+const governancePayloads = [
+  //see https://github.com/wormhole-foundation/wormhole/blob/96c6cc2b325addc2125bb438b228921a4be6b7f3/ethereum/contracts/GovernanceStructs.sol#L64
+  governancePayload("CoreBridge", "UpgradeContract", 1),
+  governancePayload("CoreBridge", "GuardianSetUpgrade", 2),
+  governancePayload("CoreBridge", "SetMessageFee", 3),
+  governancePayload("CoreBridge", "TransferFees", 4),
+  governancePayload("CoreBridge", "RecoverChainId", 5),
+  //see https://github.com/wormhole-foundation/wormhole/blob/96c6cc2b325addc2125bb438b228921a4be6b7f3/ethereum/contracts/bridge/BridgeGovernance.sol#L115
+  governancePayload("TokenBridge", "RegisterChain", 1),
+  governancePayload("TokenBridge", "UpgradeContract", 2),
+  governancePayload("TokenBridge", "RecoverChainId", 3),
+  //see https://github.com/wormhole-foundation/wormhole/blob/96c6cc2b325addc2125bb438b228921a4be6b7f3/ethereum/contracts/nft/NFTBridgeGovernance.sol#L112
+  governancePayload("NftBridge", "RegisterChain", 1),
+  governancePayload("NftBridge", "UpgradeContract", 2),
+  governancePayload("NftBridge", "RecoverChainId", 3),
+  //see https://github.com/wormhole-foundation/wormhole/blob/96c6cc2b325addc2125bb438b228921a4be6b7f3/ethereum/contracts/relayer/wormholeRelayer/WormholeRelayerGovernance.sol#L60
+  governancePayload("Relayer", "RegisterChain", 1),
+  governancePayload("Relayer", "UpgradeContract", 2),
+  governancePayload("Relayer", "UpdateDefaultProvider", 3),
+] as const satisfies RoArray<readonly [string, Layout]>;
 
-export const governancePayloadLiterals = modules.flatMap((module) =>
-  moduleActions[module].map((action) => module + action)
-) as readonly string[] as Column<GovernancePayloadLayouts, 0>;
-
-export const governancePayloadLiteralToLayoutMapping = toMapping(
-  modules.flatMap((module) =>
-    moduleActions[module].map((action) => [
-      module + action,
-      [...headerLayout(module, action), ...actionMapping[action].layout],
-    ])
-  ) as readonly (readonly [
-    (typeof governancePayloadLiterals)[number],
-    Layout
-  ])[]
-) as ToMapping<GovernancePayloadLayouts>;
-
-export const governanceModuleActions = moduleActions;
+type GovernancePayloads = ShallowMapping<typeof governancePayloads>;
 
 //side-effects! finally, register with factory:
 declare global {
   namespace Wormhole {
-    interface PayloadLiteralToDescriptionMapping
-      extends ToMapping<GovernancePayloadLayouts> {}
+    interface PayloadLiteralToDescriptionMapping extends GovernancePayloads {}
   }
 }
 
-governancePayloadLiterals.forEach((payloadLiteral) =>
-  registerPayloadType(
-    payloadLiteral,
-    governancePayloadLiteralToLayoutMapping[payloadLiteral]
-  )
-);
+for (const [payloadLiteral, layout] of governancePayloads)
+  registerPayloadType(payloadLiteral, layout);

@@ -6,11 +6,13 @@ import {
   chainToPlatform,
   Contracts,
   ExplorerSettings,
+  contracts,
   explorerConfigs,
   finalityThreshold,
   nativeDecimals,
-  toMappingFunc,
   rpcAddress,
+  RoArray,
+  constMap
 } from '@wormhole-foundation/sdk-base';
 import { WormholeConfig } from './types';
 
@@ -26,8 +28,8 @@ export type ChainConfig = {
 
 /*
 TODO:
-    add missing chains for each config 
- Note: the `ts-ignore`s here are because not every chain
+    add missing chains for each config
+ Note: the false exclamation marks here are because not every chain
     is represented in the consts we're pulling from yet
 */
 
@@ -41,14 +43,11 @@ function combineConfig(n: Network): NetworkChainConfigs {
       return {
         key: c,
         platform: chainToPlatform(c),
-        // @ts-ignore
-        finalityThreshold: finalityThreshold(n)[c],
-        // @ts-ignore
-        nativeDecimals: nativeDecimals(c),
-        // @ts-ignore
-        explorer: explorerConfigs(n)[c],
-        // @ts-ignore
-        rpc: rpcAddress(n)[c],
+        finalityThreshold: finalityThreshold.get(n,c)!, //TODO the exclamation mark is a lie
+        contracts: contracts[n][c],
+        nativeTokenDecimals: nativeDecimals.get(c)!, //TODO the exclamation mark is a lie
+        explorer: explorerConfigs(n,c)!, //TODO the exclamation mark is a lie
+        rpc: rpcAddress(n,c)!, //TODO the exclamation mark is a lie
       };
     })
     .reduce((acc, curr) => {
@@ -59,13 +58,13 @@ function combineConfig(n: Network): NetworkChainConfigs {
 }
 
 // Combine all the configs for each network/chain
-const chainConfigMapping = {
-  Mainnet: combineConfig('Mainnet'),
-  Testnet: combineConfig('Testnet'),
-  Devnet: combineConfig('Devnet'),
-} as const satisfies Record<Network, NetworkChainConfigs>;
+const chainConfigMapping = [
+  ["Mainnet", combineConfig('Mainnet')],
+  ["Testnet", combineConfig('Testnet')],
+  ["Devnet", combineConfig('Devnet')],
+] as const satisfies RoArray<readonly [Network, NetworkChainConfigs]>;
 
-export const chainConfigs = toMappingFunc(chainConfigMapping);
+export const chainConfigs = constMap(chainConfigMapping);
 
 const sharedConfig = {
   network: 'Testnet',

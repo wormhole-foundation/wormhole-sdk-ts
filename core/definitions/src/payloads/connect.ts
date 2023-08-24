@@ -1,4 +1,4 @@
-import { ToMapping } from "@wormhole-foundation/sdk-base";
+import { ShallowMapping } from "@wormhole-foundation/sdk-base";
 import { payloadIdItem, universalAddressItem, amountItem } from "../layout-items";
 import { registerPayloadType } from "../vaa";
 import { transferWithPayloadLayout } from "./tokenBridge";
@@ -25,7 +25,7 @@ export const connectPayloads = [
 declare global {
   namespace Wormhole {
     interface PayloadLiteralToDescriptionMapping
-      extends ToMapping<typeof connectPayloads> {}
+      extends ShallowMapping<typeof connectPayloads> {}
   }
 }
 

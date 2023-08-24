@@ -70,5 +70,3 @@ export class EvmAddress implements Address {
     return ethers.isAddress(address);
   }
 }
-
-registerNative('Evm', EvmAddress);

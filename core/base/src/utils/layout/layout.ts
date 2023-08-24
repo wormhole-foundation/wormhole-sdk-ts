@@ -109,30 +109,21 @@ export type BytesLayoutItem = |
 export type LayoutItem = UintLayoutItem | BytesLayoutItem | ArrayLayoutItem | ObjectLayoutItem;
 export type Layout = readonly LayoutItem[];
 
-//TODO this is an extremly ugly hack to get around the “Type instantiation is excessively deep and
-//     possibly infinite” issue that popped up when ObjectLayoutItems were added
-//I'm not convinced this is really necessary and that there isn't some way to amend the code which
-//  prevents the issue altogether, but for now this will have to do
-type Depth = [never, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-type MaxDepth = 10;
-
 type NameOrOmitted<T extends { name: PropertyKey }> = T extends {omit: true} ? never : T["name"];
 
 //the order of the checks matters here!
 //  if FixedConversion was tested for first, its ToType would erroneously be inferred to be a
 //    the `to` function that actually belongs to a CustomConversion
 //  unclear why this happens, seeing how the `from` type wouldn't fit but it happened nonetheless
-export type LayoutToType<L extends Layout, D extends Depth[number] = MaxDepth> =
-  [D] extends [never]
-  ? never
-  : { readonly [I in L[number] as NameOrOmitted<I>]: LayoutItemToType<I, D> };
+export type LayoutToType<L extends Layout> =
+  { readonly [I in L[number] as NameOrOmitted<I>]: LayoutItemToType<I> };
 
-export type LayoutItemToType<I extends LayoutItem, D extends Depth[number] = MaxDepth> =
-  I extends ArrayLayoutItem
-  ? LayoutToType<I["layout"], Depth[D]>[]
-  : I extends ObjectLayoutItem
-  ? LayoutToType<I["layout"], Depth[D]>
-  : I extends UintLayoutItem
+export type LayoutItemToType<I extends LayoutItem> =
+  [I] extends [ArrayLayoutItem]
+  ? LayoutToType<I["layout"]>[]
+  : [I] extends [ObjectLayoutItem]
+  ? LayoutToType<I["layout"]>
+  : [I] extends [UintLayoutItem]
   ? I["custom"] extends number | bigint
     ? I["custom"]
     : I["custom"] extends CustomConversion<any, infer ToType>
@@ -140,7 +131,7 @@ export type LayoutItemToType<I extends LayoutItem, D extends Depth[number] = Max
     : I["custom"] extends FixedConversion<any, infer ToType>
     ? ToType
     : UintSizeToPrimitive<I["size"]>
-  : I extends BytesLayoutItem
+  : [I] extends [BytesLayoutItem]
   ? I["custom"] extends CustomConversion<any, infer ToType>
     ? ToType
     : I["custom"] extends FixedConversion<any, infer ToType>

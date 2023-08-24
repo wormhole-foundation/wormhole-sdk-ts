@@ -166,7 +166,7 @@ export class TokenTransfer implements WormholeTransfer {
   async start(signer?: Signer): Promise<TxHash[]> {
     /*
         0) check that the current `state` is valid to call this (eg: state == Created)
-        1) get a token transfer transaction for the token bridge given the context  
+        1) get a token transfer transaction for the token bridge given the context
         2) sign it given the signer
         3) submit it to chain
         4) return transaction id

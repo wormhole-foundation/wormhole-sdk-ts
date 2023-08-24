@@ -3,7 +3,7 @@ import {
   isChain,
   PlatformName,
   chainToPlatform,
-  ChainToPlatformMapping,
+  ChainToPlatform,
 } from "@wormhole-foundation/sdk-base";
 
 //TODO BRRRR circular include!!
@@ -43,11 +43,13 @@ declare global {
 export type MappedPlatforms = keyof Wormhole.PlatformToNativeAddressMapping;
 
 type ChainOrPlatformToPlatform<T extends ChainName | PlatformName> =
-  T extends ChainName ? ChainToPlatformMapping<T> : T;
+  T extends ChainName ? ChainToPlatform<T> : T;
+type GetNativeAddress<T extends PlatformName> =
+  T extends MappedPlatforms
+  ? Wormhole.PlatformToNativeAddressMapping[T]
+  : never;
 export type NativeAddress<T extends PlatformName | ChainName> =
-  ChainOrPlatformToPlatform<T> extends MappedPlatforms
-    ? Wormhole.PlatformToNativeAddressMapping[ChainOrPlatformToPlatform<T>]
-    : never;
+  GetNativeAddress<ChainOrPlatformToPlatform<T>>;
 
 export type UniversalOrNative<P extends PlatformName> =
   | UniversalAddress

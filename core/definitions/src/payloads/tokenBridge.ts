@@ -4,7 +4,7 @@ import {
   CustomConversion,
   FixedSizeBytesLayoutItem,
   range,
-  ToMapping,
+  ShallowMapping,
 } from "@wormhole-foundation/sdk-base";
 import { payloadIdItem, chainItem, universalAddressItem, amountItem } from "../layout-items";
 import { registerPayloadType } from "../vaa";
@@ -21,8 +21,6 @@ const fixedLengthStringItem = {
       new Uint8Array(str.split("").map((c) => c.charCodeAt(0))),
   } satisfies CustomConversion<Uint8Array, string>,
 } as const satisfies Omit<FixedSizeBytesLayoutItem, "name">;
-
-
 
 export const transferWithPayloadLayout = <const P extends Omit<LayoutItem, "name">>(
   customPayload: P
@@ -86,7 +84,7 @@ export const tokenBridgePayloads = [
 declare global {
   namespace Wormhole {
     interface PayloadLiteralToDescriptionMapping
-      extends ToMapping<typeof tokenBridgePayloads> {}
+      extends ShallowMapping<typeof tokenBridgePayloads> {}
   }
 }
 

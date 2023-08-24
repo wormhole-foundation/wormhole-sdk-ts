@@ -1,4 +1,4 @@
-import { toMapping, toMappingFunc } from "../utils";
+import { constMap, RoArray } from "../utils";
 import { Network } from "./networks";
 import { ChainName } from "./chains";
 
@@ -35,16 +35,9 @@ const rpcConfig = [
       ["Sei", "https://rpc.atlantic-2.seinetwork.io"],
     ],
   ],
-  ["Devnet", []],
-] as const satisfies readonly (readonly [
-  Network,
-  readonly (readonly [ChainName, string])[]
-])[];
+] as const satisfies
+  RoArray<readonly ["Mainnet" | "Testnet", RoArray<readonly [ChainName, string]>]>;
 
-export const rpcs = {
-  Mainnet: toMapping(rpcConfig[0][1]),
-  Testnet: toMapping(rpcConfig[1][1]),
-  Devnet: toMapping(rpcConfig[2][1]),
-};
-
-export const rpcAddress = toMappingFunc(rpcs);
+const rpc = constMap(rpcConfig);
+export const rpcAddress = (network: Network, chain: ChainName) =>
+  network === "Devnet" ? undefined : rpc.get(network, chain);

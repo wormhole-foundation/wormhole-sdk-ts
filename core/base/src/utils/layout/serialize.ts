@@ -12,19 +12,19 @@ import {
 } from "./layout";
 import { checkUint8ArrayDeeplyEqual, checkUint8ArraySize, checkUintEquals } from "./utils";
 
-export function serializeLayout<L extends Layout>(
+export function serializeLayout<const L extends Layout>(
   layout: L,
   data: LayoutToType<L>,
 ): Uint8Array;
 
-export function serializeLayout<L extends Layout>(
+export function serializeLayout<const L extends Layout>(
   layout: L,
   data: LayoutToType<L>,
   encoded: Uint8Array,
   offset?: number,
 ): number;
 
-export function serializeLayout<L extends Layout>(
+export function serializeLayout<const L extends Layout>(
   layout: L,
   data: LayoutToType<L>,
   encoded?: Uint8Array,
@@ -65,7 +65,7 @@ const calcLayoutSize = (
         }
 
         item = item as FixedSizeBytesLayoutItem | LengthPrefixedBytesLayoutItem;
-        
+
         if ("size" in item && item.size !== undefined)
           return acc + item.size;
 
@@ -112,22 +112,19 @@ export function serializeUint(
 
 function serializeLayoutItem(
   item: LayoutItem,
-  data: LayoutItemToType<typeof item>,
+  data: any,
   encoded: Uint8Array,
   offset: number
 ): number {
   try {
     switch (item.binary) {
       case "object": {
-        data = data as LayoutItemToType<typeof item>;
         for (const i of item.layout)
           offset = serializeLayoutItem(i, data[i.name], encoded, offset);
 
         break;
       }
       case "array": {
-        //Typescript does not infer the narrowed type of data automatically and retroactively
-        data = data as LayoutItemToType<typeof item>;
         if (item.lengthSize !== undefined)
           offset = serializeUint(encoded, offset, data.length, item.lengthSize);
 
@@ -137,7 +134,6 @@ function serializeLayoutItem(
         break;
       }
       case "bytes": {
-        data = data as LayoutItemToType<typeof item>;
         const value = (() => {
           if (item.custom !== undefined) {
             if (item.custom instanceof Uint8Array) {
@@ -166,7 +162,6 @@ function serializeLayoutItem(
         break;
       }
       case "uint": {
-        data = data as LayoutItemToType<typeof item>;
         const value = (() => {
           if (item.custom !== undefined) {
             if (typeof item.custom == "number" || typeof item.custom === "bigint") {

@@ -1,5 +1,5 @@
 import { ChainName } from "./chains";
-import { toMapping, toMappingFunc } from "../utils";
+import { constMap } from "../utils";
 
 const nativeDecimalEntries = [
   ["Ethereum", 18],
@@ -15,5 +15,4 @@ const nativeDecimalEntries = [
   ["Sei", 6],
 ] as const satisfies readonly (readonly [ChainName, number])[];
 
-const mapping = toMapping(nativeDecimalEntries);
-export const nativeDecimals = toMappingFunc(mapping);
+export const nativeDecimals = constMap(nativeDecimalEntries);

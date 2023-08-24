@@ -24,7 +24,7 @@ const asciiHexCharToNumber = (str: string, index: number): number => {
     throw new Error(
       `Character ${str.charAt(index)} at position ${index} in ${str} is not a hex char`
     );
-  
+
   return val;
 }
 
@@ -37,7 +37,7 @@ export const isHexByteString = (str: string, expectedBytes?: number): boolean =>
   for (; i < str.length; ++i)
     if (Number.isNaN(tryAsciiHexCharToNumber(str, i)))
       return false;
-  
+
   return true;
 }
 
@@ -45,14 +45,14 @@ export const isHexByteString = (str: string, expectedBytes?: number): boolean =>
 export const hexByteStringToUint8Array = (str: string): Uint8Array => {
   if (str.length % 2 !== 0)
     throw new Error(`hex byte string has odd length: ${str}`);
-  
+
   const prefixOffset = str.length > 2 && str[1] === "x" ? 2 : 0;
   const ret = new Uint8Array((str.length - prefixOffset) / 2);
   for (let i = prefixOffset; i < str.length; i += 2)
-    ret[(i - prefixOffset) / 2] = 
+    ret[(i - prefixOffset) / 2] =
       asciiHexCharToNumber(str, i) * 16 +
       asciiHexCharToNumber(str, i + 1);
-  
+
   return ret;
 }
 

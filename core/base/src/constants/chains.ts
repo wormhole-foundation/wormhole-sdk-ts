@@ -1,4 +1,5 @@
-import { unzip, toMapping, toMappingFunc } from "../utils/mapping";
+import { zip } from "../utils/array";
+import { constMap } from "../utils/mapping";
 
 //Typescript being the absolute mess that it is has no way to turn the keys of an object that is
 //  declared `as const` into an `as const` array (see:
@@ -45,21 +46,16 @@ const chainsAndChainIdEntries = [
   ["Sepolia", 10002],
 ] as const;
 
-export const [chains, chainIds] = unzip(chainsAndChainIdEntries);
+export const [chains, chainIds] = zip(chainsAndChainIdEntries);
 export type ChainName = (typeof chains)[number];
 export type ChainId = (typeof chainIds)[number];
 export type Chain = ChainName | ChainId;
 
-const chainToChainIdMapping = toMapping(chainsAndChainIdEntries);
-export const chainToChainId = toMappingFunc(chainToChainIdMapping);
-const chainIdToChainMapping = toMapping(chainsAndChainIdEntries, 1, 0);
-export const chainIdToChain = toMappingFunc(chainIdToChainMapping);
+export const chainToChainId = constMap(chainsAndChainIdEntries);
+export const chainIdToChain = constMap(chainsAndChainIdEntries, [1, 0]);
 
-export const isChain = (chain: string): chain is ChainName =>
-  chain in chainToChainIdMapping;
-
-export const isChainId = (chainId: number): chainId is ChainId =>
-  chainId in chainIdToChainMapping;
+export const isChain = (chain: string): chain is ChainName => chainToChainId.has(chain);
+export const isChainId = (chainId: number): chainId is ChainId => chainIdToChain.has(chainId);
 
 export function assertChainId(chainId: number): asserts chainId is ChainId {
   if (!isChainId(chainId)) throw Error(`Unknown Wormhole chain id: ${chainId}`);
@@ -76,23 +72,30 @@ export const asChainId = (chainId: number): ChainId => {
 };
 
 export const toChainId = (chain: number | string | Chain): ChainId => {
-  let chainId: number = 0;
-  if (typeof chain === "string" && isChain(chain))
-    chainId = chainToChainId(chain);
-  if (typeof chain === "number" && isChainId(chain)) chainId = chain;
-  assertChainId(chainId);
-  return chainId;
+  switch (typeof chain) {
+    case "string":
+      if (isChain(chain)) return chainToChainId(chain);
+      break;
+    case "number":
+      if (isChainId(chain)) return chain;
+      break;
+  }
+  throw Error(`Cannot convert to ChainId: ${chain}`);
 };
 
 export const toChainName = (
   chain: number | string | Chain | bigint
 ): ChainName => {
-  let chainName: string = "";
-  if (typeof chain === "string" && isChain(chain)) chainName = chain;
-  if (typeof chain === "number" && isChainId(chain))
-    chainName = chainIdToChain(chain);
-  if (typeof chain === "bigint" && isChainId(Number(chain)))
-    chainName = chainIdToChain(Number(chain) as ChainId);
-  assertChain(chainName);
-  return chainName;
+  switch (typeof chain) {
+    case "string":
+      if (isChain(chain)) return chain;
+      break;
+    case "number":
+      if (isChainId(chain)) return chainIdToChain(chain);
+      break;
+    case "bigint":
+      if (isChainId(Number(chain))) return chainIdToChain(Number(chain) as ChainId);
+      break;
+  }
+  throw Error(`Cannot convert to ChainName: ${chain}`);
 };

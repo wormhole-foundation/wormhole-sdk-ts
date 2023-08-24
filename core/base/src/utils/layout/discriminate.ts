@@ -39,7 +39,7 @@ function layoutItemMeta(
 
       if (item?.custom instanceof Uint8Array)
         return knownFixed(item.custom.length, item.custom);
-    
+
       if (item?.custom?.from instanceof Uint8Array)
         return knownFixed(item.custom.from.length, item.custom.from);
 
@@ -203,7 +203,7 @@ function isSubset(sortedLhs: readonly number[], sortedRhs: readonly number[]) {
 //  would thus always have odd size). I.e. it would wrongly conclude that the power of the size
 //  discriminator is 0 when it should be 1.
 //The alternative to accepting this limitation is tracking all possible combinations of offsets,
-//  multiples, and their arbitrary composition which would be massively more complicated and 
+//  multiples, and their arbitrary composition which would be massively more complicated and
 //  also pointless in the general case because we'd have to figure out whether a given size can be
 //  expressed as some combination of offsets and array size multiples in which case it's almost
 //  certainly computaionally cheaper to simply attempt to deserialize the given given data for the
@@ -218,7 +218,7 @@ function generateLayoutDiscriminator<const LA extends readonly Layout[]>(
   type LayoutIndex = Uint;
   type Candidates = LayoutIndex[];
   type FixedKnownByte = (readonly [ByteVal, LayoutIndex])[];
-  
+
   const fixedKnown = layouts.map(_ => [] as FixedBytes);
   const sizeBounds = layouts.map((l, i) => createLayoutMeta(l, 0, fixedKnown[i]));
 
@@ -232,7 +232,7 @@ function generateLayoutDiscriminator<const LA extends readonly Layout[]>(
     for (const [lower, candidates] of ascendingBounds)
       if (size >= lower)
         return candidates;
-    
+
     return [];
   };
 
@@ -244,7 +244,7 @@ function generateLayoutDiscriminator<const LA extends readonly Layout[]>(
     for (const [offset, serialized] of fixedKnown[i])
       for (let j = 0; j < serialized.length; ++j)
         fixedKnownBytes[offset + j].push([serialized[j], i]);
-  
+
   let bestBytes = [];
   for (const [bytePos, fixedKnownByte] of fixedKnownBytes.entries()) {
     //the number of layouts with a given size is an upper bound on the discriminatory power of
@@ -253,7 +253,7 @@ function generateLayoutDiscriminator<const LA extends readonly Layout[]>(
     //  a known, fixed value at this position.
     let power = layoutsWithSize(bytePos).length;
     const anyValueLayouts =
-      setMinus(layoutsWithSize(bytePos), fixedKnownByte.map(([, layoutIdx]) => layoutIdx)); 
+      setMinus(layoutsWithSize(bytePos), fixedKnownByte.map(([, layoutIdx]) => layoutIdx));
     const outOfBoundsLayouts = setMinus(layouts.map((_, i) => i), layoutsWithSize(bytePos));
     const distinctValues = new Map<BytePos, Candidates>();
     //the following equation holds (after applying .length to each component):
@@ -271,7 +271,7 @@ function generateLayoutDiscriminator<const LA extends readonly Layout[]>(
       const curPower = fixedKnownByte.length - layoutsWithValue.length + outOfBoundsLayouts.length;
       power = Math.min(power, curPower);
     }
-    
+
     if (power === 0)
       continue;
 
@@ -284,7 +284,7 @@ function generateLayoutDiscriminator<const LA extends readonly Layout[]>(
         const layout = distinctValues.get(encoded[bytePos]);
         if (layout === undefined)
           return [];
-        
+
         return layout;
       }];
     }
@@ -311,7 +311,7 @@ function generateLayoutDiscriminator<const LA extends readonly Layout[]>(
       firstStrategy = strategy;
       return;
     }
-    
+
     strategies.set(candidates, strategy);
     if (!candidatesBySize.has(candidates.length))
       candidatesBySize.set(candidates.length, []);
@@ -354,7 +354,7 @@ function generateLayoutDiscriminator<const LA extends readonly Layout[]>(
           fixedKnownCount - layoutsWithValue.length + narrowedOutOfBoundsLayouts.length;
         narrowedPower = Math.min(narrowedPower, curPower);
       }
-      
+
       if (narrowedPower === 0)
         continue;
 
@@ -401,15 +401,15 @@ function generateLayoutDiscriminator<const LA extends readonly Layout[]>(
     addStrategy(candidates, "indistinguishable");
     distinguishable = false;
   }
-  
+
   recursivelyBuildStrategy(layouts.map((_, i) => i), bestBytes);
-  
+
   const findSmallestSuperSetStrategy = (candidates: Candidates) => {
     for (let size = candidates.length + 1; size < layouts.length - 2; ++size)
       for (const larger of candidatesBySize.get(size) ?? [])
         if (isSubset(candidates, larger))
           return strategies.get(larger)!;
-  
+
     throw new Error("Implementation error in layout discrimination algorithm");
   };
 

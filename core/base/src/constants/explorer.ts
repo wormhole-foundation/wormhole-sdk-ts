@@ -1,6 +1,6 @@
-import { Chain, ChainName } from "./chains";
+import { ChainName } from "./chains";
 import { Network } from "./networks";
-import { toMapping, toMappingFunc } from "../utils";
+import { constMap, RoArray } from "../utils";
 
 export type ExplorerSettings = {
   name: string;
@@ -285,32 +285,23 @@ const explorerConfig = [
       ],
     ],
   ],
-  ["Devnet", []],
-] as const satisfies readonly (readonly [
-  Network,
-  readonly (readonly [ChainName, ExplorerSettings])[]
-])[];
+] as const satisfies RoArray<(readonly [
+  "Mainnet" | "Testnet",
+  RoArray<(readonly [ChainName, ExplorerSettings])>
+])>;
 
-const explorerMapping = {
-  Mainnet: toMapping(explorerConfig[0][1]),
-  Testnet: toMapping(explorerConfig[1][1]),
-  Devnet: toMapping(explorerConfig[2][1]),
-} as const;
+const explorerConfs = constMap(explorerConfig);
 
-export const explorerConfigs = toMappingFunc(explorerMapping) satisfies (
-  n: Network
-) => { readonly [K in ChainName]?: ExplorerSettings };
+export const explorerConfigs = (network: Network, chain: ChainName) =>
+  network === "Devnet" ? undefined : (explorerConfs.get(network, chain) as ExplorerSettings);
 
 export function linkToTx(
   chainName: ChainName,
   txId: string,
   network: Network
 ): string {
-  const explorerConfig = explorerConfigs(network);
-
   // TODO: add missing chains to rpc config
-  // @ts-ignore
-  const chainConfig = explorerConfig[chainName];
+  const chainConfig = explorerConfigs(network, chainName);
   if (!chainConfig) throw new Error("invalid chain, explorer config not found");
   const { baseUrl, endpoints, networkQuery } = chainConfig;
   const query = networkQuery ? networkQuery[network] : "";
@@ -322,11 +313,8 @@ export function linkToAccount(
   account: string,
   network: Network
 ): string {
-  const explorerConfig = explorerConfigs(network);
-
   // TODO: add missing chains to rpc config
-  // @ts-ignore
-  const chainConfig = explorerConfig[chainName];
+  const chainConfig = explorerConfigs(network, chainName);
   if (!chainConfig) throw new Error("invalid chain, explorer config not found");
   const { baseUrl, endpoints, networkQuery } = chainConfig;
   const query = networkQuery ? networkQuery[network] : "";

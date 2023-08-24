@@ -1,6 +1,6 @@
 import {
   Layout,
-  ToMapping,
+  ShallowMapping,
   UintLayoutItem,
   ObjectLayoutItem,
 } from "@wormhole-foundation/sdk-base";
@@ -92,7 +92,7 @@ const relayerPayloads = [
 declare global {
   namespace Wormhole {
     interface PayloadLiteralToDescriptionMapping
-      extends ToMapping<typeof relayerPayloads> {}
+      extends ShallowMapping<typeof relayerPayloads> {}
   }
 }
 

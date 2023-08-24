@@ -12,18 +12,18 @@
  *   the naming of the token bridge and the nft bridge seem to be a lot more consistent, though:
  *     - for EVM the TokenBridge and NFTbridge reside in the "bridge" and "nft" directory respectively: https://github.com/wormhole-foundation/wormhole/tree/main/ethereum/contracts)
  *   the WormholeRelayer resides in relayer/wormholeRelayer (only built for EVM so far)
- * 
+ *
  *   Within the solana directory, only the token bridge and the nft bridge are considered modules
  *     (i.e. are in the modules directory: https://github.com/wormhole-foundation/wormhole/tree/main/solana/modules).
  *   While in the JS SDK, the core bridge functionality is in the "bridge" directory
  *     (notice the clash with EVM where bridge refers to the token bridge...).
- * 
+ *
  * Additionally, "modules" seems like a bad choice in a TS/JS context...
- * 
+ *
  * With all of this in mind: What should we name modules here?
  * My preferred choice would be ["CoreBridge", "TokenBridge", "NftBridge", "Relayer"]
  *   but ["Core", "TokenBridge", "NFTBridge", "WormholeRelayer"] seems to be more consistent given
- *   current naming "conventions" 
+ *   current naming "conventions"
  */
 
 export const modules = [

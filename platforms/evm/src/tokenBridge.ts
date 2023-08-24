@@ -3,7 +3,7 @@ import {
   chainToChainId,
   chainIdToChain,
   Network,
-  PlatformToChainsMapping,
+  PlatformToChains,
   evmChainIdToNetworkChainPair,
   evmNetworkChainToEvmChainId,
 } from '@wormhole-foundation/sdk-base';
@@ -26,7 +26,7 @@ import {
 import { Provider, TransactionRequest } from 'ethers';
 import { EvmContracts } from './contracts';
 
-type EvmChain = PlatformToChainsMapping<'Evm'>;
+type EvmChain = PlatformToChains<'Evm'>;
 type UniversalOrEvm = UniversalOrNative<'Evm'> | string;
 
 const toEvmAddrString = (addr: UniversalOrEvm) =>
@@ -64,13 +64,13 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
   ) {
     this.contracts = new EvmContracts(network);
 
-    this.chainId = evmNetworkChainToEvmChainId(network, chain);
+    this.chainId = evmNetworkChainToEvmChainId.get(network, chain)!;
     this.tokenBridge = this.contracts.mustGetTokenBridge(chain, provider);
   }
 
   static async fromProvider(provider: Provider): Promise<EvmTokenBridge> {
     const { chainId } = await provider.getNetwork();
-    const networkChainPair = evmChainIdToNetworkChainPair(chainId);
+    const networkChainPair = evmChainIdToNetworkChainPair.get(chainId);
     if (networkChainPair === undefined)
       throw new Error(`Unknown EVM chainId ${chainId}`);
 
@@ -248,14 +248,14 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     const senderAddr = toEvmAddrString(sender);
     if (vaa.payload.token.chain !== this.chain)
       if (vaa.payloadLiteral === 'TransferWithPayload') {
-        const fromAddr = vaa.payload.from.toNative('Evm').unwrap();
+        const fromAddr = new EvmAddress(vaa.payload.from).unwrap();
         if (fromAddr !== senderAddr)
           throw new Error(
             `VAA.from (${fromAddr}) does not match sender (${senderAddr})`,
           );
       }
     const wrappedNativeAddr = await this.tokenBridge.WETH();
-    const tokenAddr = vaa.payload.token.address.toNative('Evm').unwrap();
+    const tokenAddr = new EvmAddress(vaa.payload.token.address).unwrap();
     if (tokenAddr === wrappedNativeAddr && unwrapNative) {
       const txReq =
         await this.tokenBridge.completeTransferAndUnwrapETH.populateTransaction(
