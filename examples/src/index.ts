@@ -7,20 +7,6 @@ import { ethers } from "ethers";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { getEvmSigner } from "./helpers";
 import { ChainAddress } from "@wormhole-foundation/sdk-definitions";
-import {
-  ChainName,
-  PlatformName,
-  chainIdToChain,
-  chainToPlatform,
-  isChain,
-  isPlatform,
-} from "@wormhole-foundation/sdk-base";
-
-type TransferStuff = {
-  chain: ChainContext;
-  signer: Signer;
-  address: ChainAddress;
-};
 
 (async function () {
   // init Wormhole object, passing config for which network
@@ -33,32 +19,12 @@ type TransferStuff = {
 
   // Grab chain Contexts
   const sendChain = wh.getChain(src);
-
-  console.log(
-    await sendChain.parseTransaction(
-      "0xce9665abe063a8629967c7cb2dae9948d70a784be85c165bb5d7187fc5cea16f"
-    )
-  );
-
-  return;
-
   const rcvChain = wh.getChain(dst);
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
-  const [sendSigner, sender] = await getSigner(sendChain);
-  const source: TransferStuff = {
-    chain: sendChain,
-    signer: sendSigner,
-    address: sender,
-  };
-
-  const [rcvSigner, receiver] = await getSigner(rcvChain);
-  const destination: TransferStuff = {
-    chain: rcvChain,
-    signer: rcvSigner,
-    address: receiver,
-  };
+  const source = await getStuff(sendChain);
+  const destination = await getStuff(rcvChain);
 
   await cctpTransfer(wh, source, destination);
   // await automaticTransfer(wh, source, destination);
@@ -148,16 +114,22 @@ async function manualTransfer(
   // console.log(`Transfer is complete!`);
 }
 
-async function getSigner(chain: ChainContext): Promise<[Signer, ChainAddress]> {
+type TransferStuff = {
+  chain: ChainContext;
+  signer: Signer;
+  address: ChainAddress;
+};
+
+async function getStuff(chain: ChainContext): Promise<TransferStuff> {
   const signer = await getEvmSigner(
     chain.chain,
     chain.getRpc() as ethers.Provider
   );
 
-  const addy: ChainAddress = {
+  const address: ChainAddress = {
     chain: signer.chain(),
     address: chain.platform.parseAddress(signer.address()),
   };
 
-  return [signer, addy];
+  return { chain, signer, address };
 }

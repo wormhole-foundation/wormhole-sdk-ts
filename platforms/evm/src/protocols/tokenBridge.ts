@@ -5,6 +5,8 @@ import {
   Network,
   evmChainIdToNetworkChainPair,
   evmNetworkChainToEvmChainId,
+  ChainName,
+  toChainName,
 } from '@wormhole-foundation/sdk-base';
 import {
   VAA,
@@ -21,7 +23,7 @@ import {
   TokenBridgeContract,
   TokenImplementation__factory as TokenContractFactory,
 } from '../ethers-contracts';
-import { Provider, TransactionRequest } from 'ethers';
+import { Provider, TransactionRequest, ethers } from 'ethers';
 import { EvmContracts } from '../contracts';
 import {
   EvmChainName,
@@ -32,6 +34,11 @@ import {
   unusedArbiterFee,
   unusedNonce,
 } from '../types';
+import {
+  TokenTransferTransaction,
+  TxHash,
+} from '@wormhole-foundation/connect-sdk';
+import { BridgeStructs } from '../ethers-contracts/Bridge';
 
 //a word on casts here:
 //  Typescript only properly resolves types when EvmTokenBridge is fully instantiated. Until such a
@@ -51,7 +58,6 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     readonly provider: Provider,
   ) {
     this.contracts = new EvmContracts(network);
-
     this.chainId = evmNetworkChainToEvmChainId.get(network, chain)!;
     this.tokenBridge = this.contracts.mustGetTokenBridge(chain, provider);
   }
@@ -264,6 +270,90 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
         'TokenBridge.completeTransfer',
       );
     }
+  }
+
+  async parseTransactionDetails(
+    txid: TxHash,
+  ): Promise<TokenTransferTransaction[]> {
+    const receipt = await this.provider.getTransactionReceipt(txid);
+    if (receipt === null)
+      throw new Error(`No transaction found with txid: ${txid}`);
+
+    const { fee: gasFee } = receipt;
+
+    const core = this.contracts.mustGetCore(this.chain, this.provider);
+    const coreAddress = await core.getAddress();
+
+    const bridge = this.contracts.mustGetTokenBridge(this.chain, this.provider);
+    const bridgeAddress = new EvmAddress(
+      await bridge.getAddress(),
+    ).toUniversalAddress();
+
+    const bridgeLogs = receipt.logs.filter((l: any) => {
+      return l.address === coreAddress;
+    });
+
+    const impl = this.contracts.getImplementation();
+    const parsedLogs = bridgeLogs.map(async (bridgeLog) => {
+      const { topics, data } = bridgeLog;
+      const parsed = impl.parseLog({ topics: topics.slice(), data });
+
+      // TODO: should we be nicer here?
+      if (parsed === null) throw new Error(`Failed to parse logs: ${data}`);
+
+      // parse token bridge message, 0x01 == transfer, attest == 0x02,  w/ payload 0x03
+      let parsedTransfer:
+        | BridgeStructs.TransferStructOutput
+        | BridgeStructs.TransferWithPayloadStructOutput;
+
+      if (parsed.args.payload.startsWith('0x01')) {
+        // parse token bridge transfer data
+        parsedTransfer = await bridge.parseTransfer(parsed.args.payload);
+      } else if (parsed.args.payload.startsWith('0x03')) {
+        // parse token bridge transfer with payload data
+        parsedTransfer = await bridge.parseTransferWithPayload(
+          parsed.args.payload,
+        );
+      } else {
+        // git gud
+        throw new Error(
+          `unrecognized payload for ${txid}: ${parsed.args.payload}`,
+        );
+      }
+
+      const toChain = toChainName(parsedTransfer.toChain);
+      const tokenAddress = new UniversalAddress(parsedTransfer.tokenAddress);
+      const tokenChain = toChainName(parsedTransfer.tokenChain);
+
+      const ttt: TokenTransferTransaction = {
+        message: {
+          tx: { chain: this.chain, txid },
+          msg: {
+            chain: this.chain,
+            address: bridgeAddress,
+            sequence: parsed.args.sequence,
+          },
+          payloadId: parsedTransfer.payloadID,
+        },
+        details: {
+          token: { chain: tokenChain, address: tokenAddress },
+          amount: parsedTransfer.amount,
+          from: {
+            chain: this.chain,
+            address: new EvmAddress(receipt.from).toUniversalAddress(),
+          },
+          to: {
+            chain: toChain,
+            address: new UniversalAddress(parsedTransfer.to),
+          },
+        },
+        block: BigInt(receipt.blockNumber),
+        gasFee,
+      };
+      return ttt;
+    });
+
+    return await Promise.all(parsedLogs);
   }
 
   private createUnsignedTx(

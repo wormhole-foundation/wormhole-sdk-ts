@@ -12,6 +12,7 @@ import {
   Platform,
   ChainsConfig,
   MessageIdentifier,
+  isMessageIdentifier,
 } from '@wormhole-foundation/connect-sdk';
 import {
   AutomaticTokenBridge,
@@ -145,6 +146,7 @@ export class EvmPlatform implements Platform {
     txid: TxHash,
   ): Promise<MessageIdentifier[]> {
     const receipt = await rpc.getTransactionReceipt(txid);
+
     if (receipt === null)
       throw new Error(`No transaction found with txid: ${txid}`);
 
@@ -159,13 +161,13 @@ export class EvmPlatform implements Platform {
       .map((log) => {
         const { topics, data } = log;
         const parsed = coreImpl.parseLog({ topics: topics.slice(), data });
-        // TODO: should we be nicer here?
-        if (parsed === null) throw new Error(`Failed to parse logs: ${data}`);
+        if (parsed === null) return undefined;
         return {
           chain: chain,
           address: this.parseAddress(parsed.args.sender),
           sequence: parsed.args.sequence,
         } as MessageIdentifier;
-      });
+      })
+      .filter(isMessageIdentifier);
   }
 }

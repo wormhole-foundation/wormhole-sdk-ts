@@ -121,18 +121,16 @@ export class CCTPTransfer implements WormholeTransfer {
     from: TransactionIdentifier,
   ): Promise<CCTPTransfer> {
     const { chain, txid } = from;
-
     const originChain = wh.getChain(chain);
-
     const parsed: MessageIdentifier[] = await originChain.parseTransaction(
       txid,
     );
 
+    if (parsed.length === 0)
+      throw new Error(`No Message Identifiers found in transaction: ${txid}`);
+
     // TODO: assuming single tx
-    const [msg] = parsed;
-    console.log(msg);
-    throw new Error('fk');
-    //return CCTPTransfer.fromIdentifier(wh, msg);
+    return CCTPTransfer.fromIdentifier(wh, parsed[0]);
   }
 
   // start the WormholeTransfer by submitting transactions to the source chain
