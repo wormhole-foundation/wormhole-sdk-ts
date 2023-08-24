@@ -2,8 +2,13 @@ import { PlatformToChains } from '@wormhole-foundation/sdk-base';
 import {
   UniversalAddress,
   UniversalOrNative,
+  registerNative,
 } from '@wormhole-foundation/sdk-definitions';
 import { TransactionRequest } from 'ethers';
+
+import { EvmAddress } from './address';
+
+registerNative('Evm', EvmAddress);
 
 export const unusedNonce = 0;
 export const unusedArbiterFee = 0n;

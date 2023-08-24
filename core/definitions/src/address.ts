@@ -4,6 +4,7 @@ import {
   PlatformName,
   chainToPlatform,
   ChainToPlatform,
+  isPlatform,
 } from "@wormhole-foundation/sdk-base";
 
 //TODO BRRRR circular include!!
@@ -44,8 +45,7 @@ export type MappedPlatforms = keyof Wormhole.PlatformToNativeAddressMapping;
 
 type ChainOrPlatformToPlatform<T extends ChainName | PlatformName> =
   T extends ChainName ? ChainToPlatform<T> : T;
-type GetNativeAddress<T extends PlatformName> =
-  T extends MappedPlatforms
+type GetNativeAddress<T extends PlatformName> = T extends MappedPlatforms
   ? Wormhole.PlatformToNativeAddressMapping[T]
   : never;
 export type NativeAddress<T extends PlatformName | ChainName> =
@@ -81,8 +81,9 @@ export function toNative<T extends PlatformName | ChainName>(
   ua: UniversalAddress
 ): NativeAddress<T> {
   const platform: PlatformName = isChain(chainOrPlatform)
-    ? chainToPlatform(chainOrPlatform)
+    ? chainToPlatform.get(chainOrPlatform)!
     : chainOrPlatform;
+
   const nativeCtr = nativeFactory.get(platform);
   if (!nativeCtr)
     throw new Error(

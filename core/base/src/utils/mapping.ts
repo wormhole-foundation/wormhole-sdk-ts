@@ -95,7 +95,7 @@ const cartesianRightRecursive = <const T extends RoArray>(arr: T): CartesianRigh
   ? (arr as MappingEntries).map(([key, val]) =>
       Array.isArray(val)
       ? (isRecursiveTuple(val) ? cartesianRightRecursive(val) : val).map(ele => [key, ele].flat())
-      : [key, val]
+      : [[key, val]]
     ).flat()
   : isRecursiveTuple(arr)
   ? cartesianRightRecursive(arr[1] as RoArray).map((ele: any) => [arr[0], ele])
@@ -275,6 +275,7 @@ const toMapping = <
       if (!isMappableKey(key))
         throw new Error(`Invalid key: ${key} in ${keyCol}`);
 
+
   const ret = buildMapping(keyCartesianSet as CartesianSet<MappableKey>, zip(leafValues));
 
   if (allSingletons)
@@ -353,7 +354,7 @@ export const constMap = <
   const mapping = toMapping(mappingEntries, shape);
   const genericMappingFunc = ((...args: any[]) =>
     args.reduce((subMapping: any, key) =>
-      subMapping[key.toString()] ?? {}, mapping)) as ToGenericMappingFunc<M, S>;
+      subMapping[key.toString()] ?? undefined, mapping)) as ToGenericMappingFunc<M, S>;
 
   (genericMappingFunc as any)["get"] = get(genericMappingFunc);
   (genericMappingFunc as any)["has"] = has(genericMappingFunc);

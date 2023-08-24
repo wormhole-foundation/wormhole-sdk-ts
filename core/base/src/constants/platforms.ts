@@ -44,6 +44,9 @@ export type PlatformName = (typeof platforms)[number];
 export const platformToChains = constMap(platformAndChainsEntries);
 export const chainToPlatform = constMap(platformAndChainsEntries, [1, 0]);
 
+export const isPlatform = (platform: string): platform is PlatformName =>
+  platformToChains.has(platform);
+
 export type PlatformToChains<P extends PlatformName> = ReturnType<
   typeof platformToChains<P>
 >[number];

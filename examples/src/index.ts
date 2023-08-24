@@ -7,7 +7,14 @@ import { ethers } from "ethers";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { getEvmSigner } from "./helpers";
 import { ChainAddress } from "@wormhole-foundation/sdk-definitions";
-import { ChainName } from "@wormhole-foundation/sdk-base";
+import {
+  ChainName,
+  PlatformName,
+  chainIdToChain,
+  chainToPlatform,
+  isChain,
+  isPlatform,
+} from "@wormhole-foundation/sdk-base";
 
 type TransferStuff = {
   chain: ChainContext;
@@ -20,9 +27,16 @@ type TransferStuff = {
   // to use (e.g. Mainnet/Testnet) and what Platforms to support
   const wh = new Wormhole("Testnet", [EvmPlatform]);
 
+  const fuck: PlatformName | ChainName = "Evm";
+  const platform: PlatformName = isChain(fuck)
+    ? chainToPlatform.get(fuck)!
+    : fuck;
+
+  console.log(platform);
+
   // spongebob-patrick-from-here-to-there.jpg
   const src = "Avalanche";
-  const dst = "Celo";
+  const dst = "Polygon";
 
   // Grab chain Contexts
   const sendChain = wh.getChain(src);
@@ -119,17 +133,17 @@ async function manualTransfer(
   console.log(`Created token transfer object`);
   console.log(tt);
 
-  //1) Submit the transactions to the source chain, passing a signer to sign any txns
+  // //1) Submit the transactions to the source chain, passing a signer to sign any txns
   const txids = await tt.start(src.signer);
   console.log(`Started transfer with txid: ${txids}`);
 
-  // 2) wait for the VAA to be signed and ready
-  const seq = await tt.ready();
-  console.log(`VAA is ready with seq: ${seq}`);
+  // // 2) wait for the VAA to be signed and ready
+  // const seq = await tt.ready();
+  // console.log(`VAA is ready with seq: ${seq}`);
 
-  // 3) redeem the VAA on the dest chain, passing a signer to sign any transactions
-  await tt.finish(dst.signer);
-  console.log(`Transfer is complete!`);
+  // // 3) redeem the VAA on the dest chain, passing a signer to sign any transactions
+  // await tt.finish(dst.signer);
+  // console.log(`Transfer is complete!`);
 }
 
 async function getSigner(chain: ChainContext): Promise<[Signer, ChainAddress]> {
