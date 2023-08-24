@@ -124,14 +124,15 @@ export class CCTPTransfer implements WormholeTransfer {
 
     const originChain = wh.getChain(chain);
 
-    const parsedTxs: TokenTransferTransaction[] =
-      await originChain.parseTransaction(txid);
+    const parsed: MessageIdentifier[] = await originChain.parseTransaction(
+      txid,
+    );
 
     // TODO: assuming single tx
-    const [tx] = parsedTxs;
-    console.log(tx);
+    const [msg] = parsed;
+    console.log(msg);
     throw new Error('fk');
-    //return CCTPTransfer.fromIdentifier(wh, tx.message.msg);
+    //return CCTPTransfer.fromIdentifier(wh, msg);
   }
 
   // start the WormholeTransfer by submitting transactions to the source chain
@@ -152,17 +153,16 @@ export class CCTPTransfer implements WormholeTransfer {
 
     let xfer: AsyncGenerator<UnsignedTransaction>;
     if (this.transfer.automatic) {
-      const tb = await fromChain.getCircleRelayer();
-      xfer = tb.transfer(
+      const cr = await fromChain.getCircleRelayer();
+      xfer = cr.transfer(
         this.transfer.token,
         this.transfer.from.address,
         { chain: this.transfer.to.chain, address: this.transfer.to.address },
         this.transfer.amount,
       );
     } else {
-      // TODO
-      const tb = await fromChain.getCircleBridge();
-      xfer = tb.transfer(
+      const cb = await fromChain.getCircleBridge();
+      xfer = cb.transfer(
         this.transfer.token,
         this.transfer.from.address,
         { chain: this.transfer.to.chain, address: this.transfer.to.address },
@@ -175,7 +175,13 @@ export class CCTPTransfer implements WormholeTransfer {
     for await (const tx of xfer) {
       if (!tx.stackable) {
         // sign/send/wait
-        txHashes.push(...(await fromChain.sendWait(await signer.sign([tx]))));
+        const signed = await signer.sign([tx]);
+        console.log(signed);
+        throw new Error('ok');
+        const txHashes = await fromChain.sendWait(signed);
+        txHashes.push(...txHashes);
+      } else {
+        // TODO: prolly should do something with these
       }
     }
 
@@ -183,13 +189,11 @@ export class CCTPTransfer implements WormholeTransfer {
 
     // TODO: concurrent
     for (const txHash of txHashes) {
-      const txRes = await fromChain.parseTransaction(txHash);
-
+      const parsed = await fromChain.parseTransaction(txHash);
       // TODO:
-      if (txRes.length != 1) throw new Error('Idk what to do with != 1');
-      const [tx] = txRes;
-
-      const { address: emitter, sequence } = tx.message.msg;
+      if (parsed.length != 1) throw new Error('Idk what to do with != 1');
+      const [msg] = parsed;
+      const { address: emitter, sequence } = msg;
 
       if (!this.vaas) this.vaas = [];
       this.vaas.push({ emitter: emitter, sequence: sequence });
@@ -283,7 +287,11 @@ export class CCTPTransfer implements WormholeTransfer {
       // TODO: definitely a bug here, we _only_ send when !stackable
       for await (const tx of xfer) {
         if (!tx.stackable) {
-          txHashes.push(...(await toChain.sendWait(await signer.sign([tx]))));
+          const signed = await signer.sign([tx]);
+          const txHashes = await toChain.sendWait(signed);
+          txHashes.push(...txHashes);
+        } else {
+          // TODO...
         }
       }
     }

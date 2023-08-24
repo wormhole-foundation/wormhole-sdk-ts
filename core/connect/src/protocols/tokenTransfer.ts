@@ -13,12 +13,13 @@ import {
 import { WormholeTransfer, TransferState } from '../wormholeTransfer';
 import { Wormhole } from '../wormhole';
 import {
+  NativeAddress,
   UniversalAddress,
   UnsignedTransaction,
   VAA,
   deserialize,
 } from '@wormhole-foundation/sdk-definitions';
-import { ChainName } from '@wormhole-foundation/sdk-base';
+import { ChainName, PlatformName } from '@wormhole-foundation/sdk-base';
 
 /**
  * What do with multiple transactions or VAAs?
@@ -38,7 +39,7 @@ export class TokenTransfer implements WormholeTransfer {
   // The corresponding vaa representing the TokenTransfer
   // on the source chain (if its been completed and finalized)
   vaas?: {
-    emitter: UniversalAddress;
+    emitter: UniversalAddress | NativeAddress<PlatformName>;
     sequence: bigint;
     vaa?: VAA<'Transfer'> | VAA<'TransferWithPayload'>;
   }[];
@@ -131,12 +132,13 @@ export class TokenTransfer implements WormholeTransfer {
 
     const originChain = wh.getChain(chain);
 
-    const parsedTxs: TokenTransferTransaction[] =
-      await originChain.parseTransaction(txid);
+    const parsed: MessageIdentifier[] = await originChain.parseTransaction(
+      txid,
+    );
 
     // TODO: assuming single tx
-    const [tx] = parsedTxs;
-    return TokenTransfer.fromIdentifier(wh, tx.message.msg);
+    const [msg] = parsed;
+    return TokenTransfer.fromIdentifier(wh, msg);
   }
 
   // start the WormholeTransfer by submitting transactions to the source chain
@@ -193,13 +195,13 @@ export class TokenTransfer implements WormholeTransfer {
 
     // TODO: concurrent
     for (const txHash of txHashes) {
-      const txRes = await fromChain.parseTransaction(txHash);
+      const parsed = await fromChain.parseTransaction(txHash);
 
       // TODO:
-      if (txRes.length != 1) throw new Error('Idk what to do with != 1');
-      const [tx] = txRes;
+      if (parsed.length != 1) throw new Error('Idk what to do with != 1');
+      const [msg] = parsed;
 
-      const { address: emitter, sequence } = tx.message.msg;
+      const { address: emitter, sequence } = msg;
 
       if (!this.vaas) this.vaas = [];
       this.vaas.push({ emitter: emitter, sequence: sequence });
@@ -290,8 +292,11 @@ export class TokenTransfer implements WormholeTransfer {
       if (xfer === undefined)
         throw new Error('No handler defined for VAA type');
 
-      // TODO: check 'stackable'?
       for await (const tx of xfer) {
+        // TODO
+        // if(!tx.stackable){
+        // }else{
+        // }
         unsigned.push(tx);
       }
     }
@@ -302,7 +307,7 @@ export class TokenTransfer implements WormholeTransfer {
   static async getTransferVaa(
     wh: Wormhole,
     chain: ChainName,
-    emitter: UniversalAddress,
+    emitter: UniversalAddress | NativeAddress<PlatformName>,
     sequence: bigint,
     retries: number = 5,
   ): Promise<VAA<'Transfer'> | VAA<'TransferWithPayload'>> {

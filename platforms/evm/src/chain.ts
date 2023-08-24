@@ -15,6 +15,7 @@ import {
   SignedTxn,
   TokenTransferTransaction,
   ChainConfig,
+  MessageIdentifier,
 } from '@wormhole-foundation/connect-sdk';
 
 export class EvmChain implements ChainContext {
@@ -72,7 +73,7 @@ export class EvmChain implements ChainContext {
     return this.circleBridge;
   }
 
-  async parseTransaction(txid: string): Promise<TokenTransferTransaction[]> {
+  async parseTransaction(txid: string): Promise<MessageIdentifier[]> {
     return await this.platform.parseTransaction(
       this.chain,
       this.getRpc(),

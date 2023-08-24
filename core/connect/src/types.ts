@@ -71,7 +71,7 @@ export interface Platform {
     chain: ChainName,
     rpc: RpcConnection,
     txid: TxHash,
-  ): Promise<TokenTransferTransaction[]>;
+  ): Promise<MessageIdentifier[]>;
   parseAddress(address: string): UniversalAddress;
 }
 

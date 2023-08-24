@@ -11,6 +11,7 @@ import {
   TxHash,
   Platform,
   ChainsConfig,
+  MessageIdentifier,
 } from '@wormhole-foundation/connect-sdk';
 import {
   AutomaticTokenBridge,
@@ -142,82 +143,29 @@ export class EvmPlatform implements Platform {
     chain: ChainName,
     rpc: ethers.Provider,
     txid: TxHash,
-  ): Promise<TokenTransferTransaction[]> {
+  ): Promise<MessageIdentifier[]> {
     const receipt = await rpc.getTransactionReceipt(txid);
     if (receipt === null)
       throw new Error(`No transaction found with txid: ${txid}`);
 
-    const { fee: gasFee } = receipt;
-
     const core = this.contracts.mustGetCore(chain, rpc);
     const coreAddress = await core.getAddress();
+    const coreImpl = this.contracts.getImplementation();
 
-    const bridge = this.contracts.mustGetTokenBridge(chain, rpc);
-    const bridgeAddress = new EvmAddress(
-      await bridge.getAddress(),
-    ).toUniversalAddress();
-
-    const bridgeLogs = receipt.logs.filter((l: any) => {
-      return l.address === coreAddress;
-    });
-
-    const impl = this.contracts.getImplementation();
-    const parsedLogs = bridgeLogs.map(async (bridgeLog) => {
-      const { topics, data } = bridgeLog;
-      const parsed = impl.parseLog({ topics: topics.slice(), data });
-
-      // TODO: should we be nicer here?
-      if (parsed === null) throw new Error(`Failed to parse logs: ${data}`);
-
-      // parse token bridge message, 0x01 == transfer, attest == 0x02,  w/ payload 0x03
-      let parsedTransfer:
-        | BridgeStructs.TransferStructOutput
-        | BridgeStructs.TransferWithPayloadStructOutput;
-
-      if (parsed.args.payload.startsWith('0x01')) {
-        // parse token bridge transfer data
-        parsedTransfer = await bridge.parseTransfer(parsed.args.payload);
-      } else if (parsed.args.payload.startsWith('0x03')) {
-        // parse token bridge transfer with payload data
-        parsedTransfer = await bridge.parseTransferWithPayload(
-          parsed.args.payload,
-        );
-      } else {
-        // git gud
-        throw new Error(
-          `unrecognized payload for ${txid}: ${parsed.args.payload}`,
-        );
-      }
-
-      const toChain = toChainName(parsedTransfer.toChain);
-      const tokenAddress = new UniversalAddress(parsedTransfer.tokenAddress);
-      const tokenChain = toChainName(parsedTransfer.tokenChain);
-
-      const ttt: TokenTransferTransaction = {
-        message: {
-          tx: { chain: chain, txid },
-          msg: {
-            chain: chain,
-            address: bridgeAddress,
-            sequence: parsed.args.sequence,
-          },
-          payloadId: parsedTransfer.payloadID,
-        },
-        details: {
-          token: { chain: tokenChain, address: tokenAddress },
-          amount: parsedTransfer.amount,
-          from: { chain, address: this.parseAddress(receipt.from) },
-          to: {
-            chain: toChain,
-            address: new UniversalAddress(parsedTransfer.to),
-          },
-        },
-        block: BigInt(receipt.blockNumber),
-        gasFee,
-      };
-      return ttt;
-    });
-
-    return await Promise.all(parsedLogs);
+    return receipt.logs
+      .filter((l: any) => {
+        return l.address === coreAddress;
+      })
+      .map((log) => {
+        const { topics, data } = log;
+        const parsed = coreImpl.parseLog({ topics: topics.slice(), data });
+        // TODO: should we be nicer here?
+        if (parsed === null) throw new Error(`Failed to parse logs: ${data}`);
+        return {
+          chain: chain,
+          address: this.parseAddress(parsed.args.sender),
+          sequence: parsed.args.sequence,
+        } as MessageIdentifier;
+      });
   }
 }

@@ -33,6 +33,15 @@ type TransferStuff = {
 
   // Grab chain Contexts
   const sendChain = wh.getChain(src);
+
+  console.log(
+    await sendChain.parseTransaction(
+      "0xce9665abe063a8629967c7cb2dae9948d70a784be85c165bb5d7187fc5cea16f"
+    )
+  );
+
+  return;
+
   const rcvChain = wh.getChain(dst);
 
   // Get signer from local key but anything that implements
@@ -71,7 +80,7 @@ async function cctpTransfer(
     100000n,
     src.address,
     dst.address,
-    false
+    true
   );
   console.log(xfer);
 
