@@ -5,6 +5,9 @@ import {
 } from '@wormhole-foundation/sdk-definitions';
 import { TransactionRequest } from 'ethers';
 
+export const unusedNonce = 0;
+export const unusedArbiterFee = 0n;
+
 export type EvmChainName = PlatformToChains<'Evm'>;
 export type UniversalOrEvm = UniversalOrNative<'Evm'> | string;
 

@@ -29,10 +29,9 @@ import {
   addFrom,
   addChainId,
   toEvmAddrString,
+  unusedArbiterFee,
+  unusedNonce,
 } from './types';
-
-export const unusedNonce = 0;
-export const unusedArbiterFee = 0n;
 
 //a word on casts here:
 //  Typescript only properly resolves types when EvmTokenBridge is fully instantiated. Until such a
