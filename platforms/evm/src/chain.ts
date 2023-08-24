@@ -1,5 +1,8 @@
 import { ChainName, Network } from '@wormhole-foundation/sdk-base';
 import {
+  AutomaticTokenBridge,
+  WormholeCircleRelayer,
+  CircleBridge,
   TokenBridge,
   UniversalAddress,
 } from '@wormhole-foundation/sdk-definitions';
@@ -23,6 +26,9 @@ export class EvmChain implements ChainContext {
   // Cached objects
   private provider?: ethers.Provider;
   private tokenBridge?: TokenBridge<'Evm'>;
+  private autoTokenBridge?: AutomaticTokenBridge<'Evm'>;
+  private circleRelayer?: WormholeCircleRelayer<'Evm'>;
+  private circleBridge?: CircleBridge<'Evm'>;
 
   constructor(platform: EvmPlatform, chain: ChainName) {
     this.chain = chain;
@@ -31,7 +37,7 @@ export class EvmChain implements ChainContext {
     this.platform = platform;
   }
 
-  getRPC(): ethers.Provider {
+  getRpc(): ethers.Provider {
     this.provider = this.provider
       ? this.provider
       : this.platform.getRpc(this.chain);
@@ -42,20 +48,40 @@ export class EvmChain implements ChainContext {
   async getTokenBridge(): Promise<TokenBridge<'Evm'>> {
     this.tokenBridge = this.tokenBridge
       ? this.tokenBridge
-      : await this.platform.getTokenBridge(this.getRPC());
+      : await this.platform.getTokenBridge(this.getRpc());
     return this.tokenBridge;
+  }
+
+  async getAutomaticTokenBridge(): Promise<AutomaticTokenBridge<'Evm'>> {
+    this.autoTokenBridge = this.autoTokenBridge
+      ? this.autoTokenBridge
+      : await this.platform.getAutomaticTokenBridge(this.getRpc());
+    return this.autoTokenBridge;
+  }
+
+  async getCircleRelayer(): Promise<WormholeCircleRelayer<'Evm'>> {
+    this.circleRelayer = this.circleRelayer
+      ? this.circleRelayer
+      : await this.platform.getCircleRelayer(this.getRpc());
+    return this.circleRelayer;
+  }
+  async getCircleBridge(): Promise<CircleBridge<'Evm'>> {
+    this.circleBridge = this.circleBridge
+      ? this.circleBridge
+      : await this.platform.getCircleBridge(this.getRpc());
+    return this.circleBridge;
   }
 
   async parseTransaction(txid: string): Promise<TokenTransferTransaction[]> {
     return await this.platform.parseTransaction(
       this.chain,
-      this.getRPC(),
+      this.getRpc(),
       txid,
     );
   }
 
   async sendWait(stxns: SignedTxn[]): Promise<TxHash[]> {
-    const rpc = this.getRPC();
+    const rpc = this.getRpc();
     const txhashes: TxHash[] = [];
 
     // TODO: concurrent
@@ -74,13 +100,13 @@ export class EvmChain implements ChainContext {
   }
 
   async getForeignAsset(tokenId: TokenId): Promise<UniversalAddress | null> {
-    return this.platform.getForeignAsset(this.chain, this.getRPC(), tokenId);
+    return this.platform.getForeignAsset(this.chain, this.getRpc(), tokenId);
   }
   async getTokenDecimals(tokenAddr: UniversalAddress): Promise<bigint> {
-    return this.platform.getTokenDecimals(this.getRPC(), tokenAddr);
+    return this.platform.getTokenDecimals(this.getRpc(), tokenAddr);
   }
   async getNativeBalance(walletAddr: string): Promise<bigint> {
-    return this.platform.getNativeBalance(this.getRPC(), walletAddr);
+    return this.platform.getNativeBalance(this.getRpc(), walletAddr);
   }
   async getTokenBalance(
     walletAddr: string,
@@ -88,16 +114,9 @@ export class EvmChain implements ChainContext {
   ): Promise<bigint | null> {
     return this.platform.getTokenBalance(
       this.chain,
-      this.getRPC(),
+      this.getRpc(),
       walletAddr,
       tokenId,
     );
-  }
-
-  async getFinalizedHeight(): Promise<bigint> {
-    const rpc = this.getRPC();
-
-    const block = await rpc.getBlockNumber();
-    return BigInt(block - this.conf.finalityThreshold);
   }
 }

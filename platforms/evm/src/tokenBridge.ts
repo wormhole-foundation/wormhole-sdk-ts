@@ -3,7 +3,6 @@ import {
   chainToChainId,
   chainIdToChain,
   Network,
-  PlatformToChains,
   evmChainIdToNetworkChainPair,
   evmNetworkChainToEvmChainId,
 } from '@wormhole-foundation/sdk-base';
@@ -12,7 +11,6 @@ import {
   serialize,
   UniversalAddress,
   ChainAddress,
-  UniversalOrNative,
   TokenBridge,
   keccak256,
 } from '@wormhole-foundation/sdk-definitions';
@@ -25,25 +23,15 @@ import {
 } from './ethers-contracts';
 import { Provider, TransactionRequest } from 'ethers';
 import { EvmContracts } from './contracts';
-
-type EvmChain = PlatformToChains<'Evm'>;
-type UniversalOrEvm = UniversalOrNative<'Evm'> | string;
-
-const toEvmAddrString = (addr: UniversalOrEvm) =>
-  typeof addr === 'string'
-    ? addr
-    : (addr instanceof UniversalAddress ? addr.toNative('Evm') : addr).unwrap();
-
-const addFrom = (txReq: TransactionRequest, from: string) => ({
-  ...txReq,
-  from,
-});
-const addChainId = (txReq: TransactionRequest, chainId: bigint) => ({
-  ...txReq,
-  chainId,
-});
-const unusedNonce = 0;
-const unusedArbiterFee = 0n;
+import {
+  EvmChainName,
+  UniversalOrEvm,
+  addFrom,
+  addChainId,
+  toEvmAddrString,
+  unusedArbiterFee,
+  unusedNonce,
+} from './types';
 
 //a word on casts here:
 //  Typescript only properly resolves types when EvmTokenBridge is fully instantiated. Until such a
@@ -59,7 +47,7 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
 
   private constructor(
     readonly network: Network,
-    readonly chain: EvmChain,
+    readonly chain: EvmChainName,
     readonly provider: Provider,
   ) {
     this.contracts = new EvmContracts(network);
@@ -108,6 +96,8 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     }
   }
 
+  // TODO:
+  // @ts-ignore
   async getWrappedAsset({ chain, address }: ChainAddress): Promise<EvmAddress> {
     return new EvmAddress(
       await this.tokenBridge.wrappedAsset(chain, address.toString()),

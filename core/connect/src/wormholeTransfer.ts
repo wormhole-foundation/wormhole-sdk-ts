@@ -17,7 +17,7 @@ export interface WormholeTransfer {
 
   // start the WormholeTransfer by submitting transactions to the source chain
   // returns a transaction hash
-  start(signer?: Signer): Promise<TxHash[]>;
+  start(signer: Signer): Promise<TxHash[]>;
 
   // how many blocks until source is final
   // sourceFinalized(): Promise<bigint>;
@@ -28,15 +28,8 @@ export interface WormholeTransfer {
 
   // finish the WormholeTransfer by submitting transactions to the destination chain
   // returns a transaction hash
-  finish(signer?: Signer): Promise<TxHash[]>;
+  finish(signer: Signer): Promise<TxHash[]>;
 
   // how many blocks until destination is final
   // destinationFinalized(): Promise<bigint>;
-}
-
-export enum TransferStatus {}
-
-export interface WormholeRelayedTransfer {
-  start(): void;
-  status(): TransferStatus;
 }

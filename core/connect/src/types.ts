@@ -8,6 +8,9 @@ import {
   ChainAddress,
   UniversalAddress,
   TokenBridge,
+  AutomaticTokenBridge,
+  WormholeCircleRelayer,
+  CircleBridge,
 } from '@wormhole-foundation/sdk-definitions';
 
 import { ChainConfig } from './constants';
@@ -53,7 +56,17 @@ export interface Platform {
   //
   getChain(chain: ChainName): ChainContext;
   getRpc(chain: ChainName): RpcConnection;
+  // protocol clients
   getTokenBridge(rpc: RpcConnection): Promise<TokenBridge<PlatformName>>;
+  getAutomaticTokenBridge(
+    rpc: RpcConnection,
+  ): Promise<AutomaticTokenBridge<PlatformName>>;
+  getCircleRelayer(
+    rpc: RpcConnection,
+  ): Promise<WormholeCircleRelayer<PlatformName>>;
+  getCircleBridge(rpc: RpcConnection): Promise<CircleBridge<PlatformName>>;
+
+  // utils
   parseTransaction(
     chain: ChainName,
     rpc: RpcConnection,
@@ -83,9 +96,8 @@ export interface ChainContext {
   readonly chain: ChainName;
   readonly network: Network;
   readonly platform: Platform;
-  getRPC(): RpcConnection;
+  getRpc(): RpcConnection;
   sendWait(stxns: SignedTxn[]): Promise<TxHash[]>;
-  getTokenBridge(): Promise<TokenBridge<PlatformName>>;
 
   // TODO: can we add these automatically?
   getForeignAsset: OmitChainRpc<Platform['getForeignAsset']>;
@@ -93,6 +105,12 @@ export interface ChainContext {
   getNativeBalance: OmitChainRpc<Platform['getNativeBalance']>;
   getTokenBalance: OmitChainRpc<Platform['getTokenBalance']>;
   parseTransaction: OmitChainRpc<Platform['parseTransaction']>;
+
+  // protocols
+  getTokenBridge: OmitChainRpc<Platform['getTokenBridge']>;
+  getAutomaticTokenBridge: OmitChainRpc<Platform['getAutomaticTokenBridge']>;
+  getCircleRelayer: OmitChainRpc<Platform['getCircleRelayer']>;
+  getCircleBridge: OmitChainRpc<Platform['getCircleBridge']>;
 }
 
 export type ChainCtr = new () => ChainContext;
@@ -113,9 +131,19 @@ export type TransactionIdentifier = { chain: ChainName; txid: TxHash };
 export type TokenTransferDetails = {
   token: TokenId | 'native';
   amount: bigint;
-  payload?: Uint8Array;
   from: ChainAddress;
   to: ChainAddress;
+  automatic?: boolean;
+  payload?: Uint8Array;
+};
+
+export type CCTPTransferDetails = {
+  token: TokenId;
+  amount: bigint;
+  from: ChainAddress;
+  to: ChainAddress;
+  automatic?: boolean;
+  payload?: Uint8Array;
 };
 
 export type WormholeMessage = {
@@ -127,8 +155,14 @@ export type WormholeMessage = {
 // Details for a source chain Token Transfer transaction
 export type TokenTransferTransaction = {
   message: WormholeMessage;
-
   details: TokenTransferDetails;
+  block: bigint;
+  gasFee: bigint;
+};
+
+export type CCTPTransferTransaction = {
+  message?: WormholeMessage;
+  details: CCTPTransferDetails;
   block: bigint;
   gasFee: bigint;
 };
@@ -156,5 +190,15 @@ export function isTokenTransferDetails(
     (<TokenTransferDetails>thing).amount !== undefined &&
     (<TokenTransferDetails>thing).from !== undefined &&
     (<TokenTransferDetails>thing).to !== undefined
+  );
+}
+
+export function isCCTPTransferDetails(
+  thing: CCTPTransferDetails | any,
+): thing is TokenTransferDetails {
+  return (
+    (<CCTPTransferDetails>thing).amount !== undefined &&
+    (<CCTPTransferDetails>thing).from !== undefined &&
+    (<CCTPTransferDetails>thing).to !== undefined
   );
 }

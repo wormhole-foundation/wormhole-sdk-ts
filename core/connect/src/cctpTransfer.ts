@@ -2,13 +2,13 @@ import {
   Signer,
   TxHash,
   SequenceId,
-  TokenTransferDetails,
-  TokenTransferTransaction,
   MessageIdentifier,
   TransactionIdentifier,
   isMessageIdentifier,
-  isTokenTransferDetails,
   isTransactionIdentifier,
+  CCTPTransferDetails,
+  isCCTPTransferDetails,
+  TokenTransferTransaction,
 } from './types';
 import { WormholeTransfer, TransferState } from './wormholeTransfer';
 import { Wormhole } from './wormhole';
@@ -26,16 +26,19 @@ import { ChainName } from '@wormhole-foundation/sdk-base';
  * More concurrent promises instead of linearizing/blocking
  */
 
-export class TokenTransfer implements WormholeTransfer {
+export class CCTPTransfer implements WormholeTransfer {
   private readonly wh: Wormhole;
 
   // state machine tracker
   private state: TransferState;
 
   // transfer details
-  transfer: TokenTransferDetails;
+  transfer: CCTPTransferDetails;
 
-  // The corresponding vaa representing the TokenTransfer
+  // attestation from circle (obv)
+  circleAttestation?: string;
+
+  // The corresponding vaa representing the CCTPTransfer
   // on the source chain (if its been completed and finalized)
   vaas?: {
     emitter: UniversalAddress;
@@ -43,7 +46,7 @@ export class TokenTransfer implements WormholeTransfer {
     vaa?: VAA<'Transfer'> | VAA<'TransferWithPayload'>;
   }[];
 
-  private constructor(wh: Wormhole, transfer: TokenTransferDetails) {
+  private constructor(wh: Wormhole, transfer: CCTPTransferDetails) {
     this.state = TransferState.Created;
     this.wh = wh;
     this.transfer = transfer;
@@ -56,32 +59,32 @@ export class TokenTransfer implements WormholeTransfer {
   // Static initializers for in flight transfers that have not been completed
   static async from(
     wh: Wormhole,
-    from: TokenTransferDetails,
-  ): Promise<TokenTransfer>;
+    from: CCTPTransferDetails,
+  ): Promise<CCTPTransfer>;
   static async from(
     wh: Wormhole,
     from: MessageIdentifier,
-  ): Promise<TokenTransfer>;
+  ): Promise<CCTPTransfer>;
   static async from(
     wh: Wormhole,
     from: TransactionIdentifier,
-  ): Promise<TokenTransfer>;
+  ): Promise<CCTPTransfer>;
   static async from(
     wh: Wormhole,
-    from: TokenTransferDetails | MessageIdentifier | TransactionIdentifier,
-  ): Promise<TokenTransfer> {
-    let tt: TokenTransfer | undefined;
+    from: CCTPTransferDetails | MessageIdentifier | TransactionIdentifier,
+  ): Promise<CCTPTransfer> {
+    let tt: CCTPTransfer | undefined;
 
     if (isMessageIdentifier(from)) {
-      tt = await TokenTransfer.fromIdentifier(wh, from);
+      tt = await CCTPTransfer.fromIdentifier(wh, from);
     } else if (isTransactionIdentifier(from)) {
-      tt = await TokenTransfer.fromTransaction(wh, from);
-    } else if (isTokenTransferDetails(from)) {
-      tt = new TokenTransfer(wh, from);
+      tt = await CCTPTransfer.fromTransaction(wh, from);
+    } else if (isCCTPTransferDetails(from)) {
+      tt = new CCTPTransfer(wh, from);
     }
 
     if (tt === undefined)
-      throw new Error('Invalid `from` parameter for TokenTransfer');
+      throw new Error('Invalid `from` parameter for CCTPTransfer');
 
     return tt;
   }
@@ -90,14 +93,9 @@ export class TokenTransfer implements WormholeTransfer {
   private static async fromIdentifier(
     wh: Wormhole,
     from: MessageIdentifier,
-  ): Promise<TokenTransfer> {
+  ): Promise<CCTPTransfer> {
     const { chain, address: emitter, sequence } = from;
-    const vaa = await TokenTransfer.getTransferVaa(
-      wh,
-      chain,
-      emitter,
-      sequence,
-    );
+    const vaa = await CCTPTransfer.getTransferVaa(wh, chain, emitter, sequence);
 
     // Check if its a payload 3 targeted at a relayer on the destination chain
     const rcv = vaa.payload.to;
@@ -105,8 +103,8 @@ export class TokenTransfer implements WormholeTransfer {
       vaa.payloadLiteral === 'TransferWithPayload' &&
       rcv.address.toString() === wh.conf.chains[rcv.chain]?.contracts.Relayer;
 
-    const details: TokenTransferDetails = {
-      token: { ...vaa.payload.token },
+    const details: CCTPTransferDetails = {
+      token: vaa.payload.token,
       amount: vaa.payload.token.amount,
       // TODO: the `from.address` here is a lie, but we don't
       // immediately have enough info to get the _correct_ one
@@ -115,7 +113,7 @@ export class TokenTransfer implements WormholeTransfer {
       automatic,
     };
 
-    const tt = new TokenTransfer(wh, details);
+    const tt = new CCTPTransfer(wh, details);
     tt.vaas = [{ emitter, sequence: vaa.sequence, vaa }];
 
     tt.state = TransferState.Ready;
@@ -126,7 +124,7 @@ export class TokenTransfer implements WormholeTransfer {
   private static async fromTransaction(
     wh: Wormhole,
     from: TransactionIdentifier,
-  ): Promise<TokenTransfer> {
+  ): Promise<CCTPTransfer> {
     const { chain, txid } = from;
 
     const originChain = wh.getChain(chain);
@@ -136,7 +134,9 @@ export class TokenTransfer implements WormholeTransfer {
 
     // TODO: assuming single tx
     const [tx] = parsedTxs;
-    return TokenTransfer.fromIdentifier(wh, tx.message.msg);
+    console.log(tx);
+    throw new Error('fk');
+    //return CCTPTransfer.fromIdentifier(wh, tx.message.msg);
   }
 
   // start the WormholeTransfer by submitting transactions to the source chain
@@ -144,7 +144,7 @@ export class TokenTransfer implements WormholeTransfer {
   async start(signer: Signer): Promise<TxHash[]> {
     /*
         0) check that the current `state` is valid to call this (eg: state == Created)
-        1) get a token transfer transaction for the token bridge given the context
+        1) get a token transfer transaction for the token bridge given the context  
         2) sign it given the signer
         3) submit it to chain
         4) return transaction id
@@ -153,41 +153,36 @@ export class TokenTransfer implements WormholeTransfer {
     if (this.state !== TransferState.Created)
       throw new Error('Invalid state transition in `start`');
 
-    const tokenAddress =
-      this.transfer.token === 'native' ? 'native' : this.transfer.token.address;
-
     const fromChain = this.wh.getChain(this.transfer.from.chain);
 
     let xfer: AsyncGenerator<UnsignedTransaction>;
     if (this.transfer.automatic) {
-      const tb = await fromChain.getAutomaticTokenBridge();
+      const tb = await fromChain.getCircleRelayer();
       xfer = tb.transfer(
+        this.transfer.token,
         this.transfer.from.address,
         { chain: this.transfer.to.chain, address: this.transfer.to.address },
-        tokenAddress,
         this.transfer.amount,
       );
     } else {
-      const tb = await fromChain.getTokenBridge();
+      // TODO
+      const tb = await fromChain.getCircleBridge();
       xfer = tb.transfer(
+        this.transfer.token,
         this.transfer.from.address,
         { chain: this.transfer.to.chain, address: this.transfer.to.address },
-        tokenAddress,
         this.transfer.amount,
-        this.transfer.payload,
       );
     }
 
-    // TODO: check 'stackable'?
-    const unsigned: UnsignedTransaction[] = [];
+    // TODO: definitely a bug here, we _only_ send when !stackable
+    const txHashes: TxHash[] = [];
     for await (const tx of xfer) {
       if (!tx.stackable) {
-        // sign/send
+        // sign/send/wait
+        txHashes.push(...(await fromChain.sendWait(await signer.sign([tx]))));
       }
-      unsigned.push(tx);
     }
-
-    const txHashes = await fromChain.sendWait(await signer.sign(unsigned));
 
     this.state = TransferState.Started;
 
@@ -228,7 +223,7 @@ export class TokenTransfer implements WormholeTransfer {
       // already got it
       if (this.vaas[idx].vaa) continue;
 
-      this.vaas[idx].vaa = await TokenTransfer.getTransferVaa(
+      this.vaas[idx].vaa = await CCTPTransfer.getTransferVaa(
         this.wh,
         this.transfer.from.chain,
         this.vaas[idx].emitter,
@@ -259,11 +254,11 @@ export class TokenTransfer implements WormholeTransfer {
 
     const toChain = this.wh.getChain(this.transfer.to.chain);
 
-    const unsigned: UnsignedTransaction[] = [];
+    const txHashes: TxHash[] = [];
     for (const cachedVaa of this.vaas) {
       const vaa = cachedVaa.vaa
         ? cachedVaa.vaa
-        : await TokenTransfer.getTransferVaa(
+        : await CCTPTransfer.getTransferVaa(
             this.wh,
             this.transfer.from.chain,
             cachedVaa.emitter,
@@ -290,13 +285,14 @@ export class TokenTransfer implements WormholeTransfer {
       if (xfer === undefined)
         throw new Error('No handler defined for VAA type');
 
-      // TODO: check 'stackable'?
+      // TODO: definitely a bug here, we _only_ send when !stackable
       for await (const tx of xfer) {
-        unsigned.push(tx);
+        if (!tx.stackable) {
+          txHashes.push(...(await toChain.sendWait(await signer.sign([tx]))));
+        }
       }
     }
-
-    return await toChain.sendWait(await signer.sign(unsigned));
+    return txHashes;
   }
 
   static async getTransferVaa(

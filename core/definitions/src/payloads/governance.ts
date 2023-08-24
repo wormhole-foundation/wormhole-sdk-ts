@@ -102,7 +102,9 @@ const actionTuples = [
       layout: [{ name: "defaultProvider", ...universalAddressItem }],
     },
   ],
-] as const satisfies RoArray<readonly [string, { allowNull: boolean; layout: Layout }]>;
+] as const satisfies RoArray<
+  readonly [string, { allowNull: boolean; layout: Layout }]
+>;
 
 const actions = column(actionTuples, 0);
 type Action = (typeof actions)[number];
@@ -114,58 +116,70 @@ const sdkModuleNameAndGovernanceVaaModuleEntries = [
   ["TokenBridge", "TokenBridge"],
   ["NftBridge", "NFTBridge"],
   ["Relayer", "WormholeRelayer"],
+  // TODO: wat is this
+  ["CCTP", "TokenBridge"],
 ] as const satisfies RoArray<readonly [Module, string]>;
 
 const sdkModuleNameToGovernanceVaaModuleMapping = constMap(
   sdkModuleNameAndGovernanceVaaModuleEntries
 );
 
-const moduleConversion = <M extends Module>(module: M) => ({
-  to: module,
-  from: ((): Uint8Array => {
-    const moduleBytesSize = 32;
-    const bytes = new Uint8Array(moduleBytesSize);
-    const vaaModule = sdkModuleNameToGovernanceVaaModuleMapping(module);
-    for (let i = 1; i <= vaaModule.length; ++i)
-      bytes[moduleBytesSize - i] = vaaModule.charCodeAt(vaaModule.length - i);
+const moduleConversion = <M extends Module>(module: M) =>
+  ({
+    to: module,
+    from: ((): Uint8Array => {
+      const moduleBytesSize = 32;
+      const bytes = new Uint8Array(moduleBytesSize);
+      const vaaModule = sdkModuleNameToGovernanceVaaModuleMapping(module);
+      for (let i = 1; i <= vaaModule.length; ++i)
+        bytes[moduleBytesSize - i] = vaaModule.charCodeAt(vaaModule.length - i);
 
-    return bytes;
-  })(),
-} as const satisfies FixedConversion<Uint8Array, M>);
+      return bytes;
+    })(),
+  } as const satisfies FixedConversion<Uint8Array, M>);
 
-const actionConversion = <A extends Action, N extends number>(action: A, num: N) =>
+const actionConversion = <A extends Action, N extends number>(
+  action: A,
+  num: N
+) =>
   ({
     to: action,
     from: num,
   } as const satisfies FixedConversion<N, A>);
 
-const headerLayout = <
-  M extends Module, A extends Action, N extends number
->(module: M, action: A, num: N) => [
-  {
-    name: "module",
-    binary: "bytes",
-    custom: moduleConversion(module),
-  },
-  {
-    name: "action",
-    binary: "uint",
-    size: 1,
-    custom: actionConversion(action, num),
-  },
-  { name: "chain", ...chainItem(actionMapping(action)) },
-] as const satisfies Layout;
-
-const governancePayload = <M extends Module, A extends Action, N extends number>(
+const headerLayout = <M extends Module, A extends Action, N extends number>(
   module: M,
   action: A,
-  num: N,
-) => [
-  module + action as ConcatStringLiterals<[M, A]>, [
-    ...headerLayout(module, action, num),
-    ...actionMapping(action).layout,
-  ]
-] as const;
+  num: N
+) =>
+  [
+    {
+      name: "module",
+      binary: "bytes",
+      custom: moduleConversion(module),
+    },
+    {
+      name: "action",
+      binary: "uint",
+      size: 1,
+      custom: actionConversion(action, num),
+    },
+    { name: "chain", ...chainItem(actionMapping(action)) },
+  ] as const satisfies Layout;
+
+const governancePayload = <
+  M extends Module,
+  A extends Action,
+  N extends number
+>(
+  module: M,
+  action: A,
+  num: N
+) =>
+  [
+    (module + action) as ConcatStringLiterals<[M, A]>,
+    [...headerLayout(module, action, num), ...actionMapping(action).layout],
+  ] as const;
 
 const governancePayloads = [
   //see https://github.com/wormhole-foundation/wormhole/blob/96c6cc2b325addc2125bb438b228921a4be6b7f3/ethereum/contracts/GovernanceStructs.sol#L64
