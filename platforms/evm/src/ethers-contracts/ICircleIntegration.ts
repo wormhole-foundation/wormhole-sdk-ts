@@ -12,14 +12,14 @@ import type {
   ContractRunner,
   ContractMethod,
   Listener,
-} from "ethers";
+} from 'ethers';
 import type {
   TypedContractEvent,
   TypedDeferredTopicFilter,
   TypedEventLog,
   TypedListener,
   TypedContractMethod,
-} from "./common";
+} from './common';
 
 export declare namespace ICircleIntegration {
   export type DepositWithPayloadStruct = {
@@ -41,7 +41,7 @@ export declare namespace ICircleIntegration {
     nonce: bigint,
     fromAddress: string,
     mintRecipient: string,
-    payload: string
+    payload: string,
   ] & {
     token: string;
     amount: bigint;
@@ -62,7 +62,7 @@ export declare namespace ICircleIntegration {
   export type RedeemParametersStructOutput = [
     encodedWormholeMessage: string,
     circleBridgeMessage: string,
-    circleAttestation: string
+    circleAttestation: string,
   ] & {
     encodedWormholeMessage: string;
     circleBridgeMessage: string;
@@ -80,7 +80,7 @@ export declare namespace ICircleIntegration {
     token: string,
     amount: bigint,
     targetChain: bigint,
-    mintRecipient: string
+    mintRecipient: string,
   ] & {
     token: string;
     amount: bigint;
@@ -92,219 +92,219 @@ export declare namespace ICircleIntegration {
 export interface ICircleIntegrationInterface extends Interface {
   getFunction(
     nameOrSignature:
-      | "chainId"
-      | "circleBridge"
-      | "circleTransmitter"
-      | "decodeDepositWithPayload"
-      | "encodeDepositWithPayload"
-      | "evmChain"
-      | "fetchLocalTokenAddress"
-      | "getChainIdFromDomain"
-      | "getDomainFromChainId"
-      | "getRegisteredEmitter"
-      | "isAcceptedToken"
-      | "isInitialized"
-      | "isMessageConsumed"
-      | "localDomain"
-      | "redeemTokensWithPayload"
-      | "registerAcceptedToken"
-      | "registerEmitterAndDomain"
-      | "registerTargetChainToken"
-      | "targetAcceptedToken"
-      | "transferTokensWithPayload"
-      | "updateWormholeFinality"
-      | "upgradeContract"
-      | "verifyGovernanceMessage"
-      | "wormhole"
-      | "wormholeFinality"
+      | 'chainId'
+      | 'circleBridge'
+      | 'circleTransmitter'
+      | 'decodeDepositWithPayload'
+      | 'encodeDepositWithPayload'
+      | 'evmChain'
+      | 'fetchLocalTokenAddress'
+      | 'getChainIdFromDomain'
+      | 'getDomainFromChainId'
+      | 'getRegisteredEmitter'
+      | 'isAcceptedToken'
+      | 'isInitialized'
+      | 'isMessageConsumed'
+      | 'localDomain'
+      | 'redeemTokensWithPayload'
+      | 'registerAcceptedToken'
+      | 'registerEmitterAndDomain'
+      | 'registerTargetChainToken'
+      | 'targetAcceptedToken'
+      | 'transferTokensWithPayload'
+      | 'updateWormholeFinality'
+      | 'upgradeContract'
+      | 'verifyGovernanceMessage'
+      | 'wormhole'
+      | 'wormholeFinality',
   ): FunctionFragment;
 
-  encodeFunctionData(functionFragment: "chainId", values?: undefined): string;
+  encodeFunctionData(functionFragment: 'chainId', values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "circleBridge",
-    values?: undefined
+    functionFragment: 'circleBridge',
+    values?: undefined,
   ): string;
   encodeFunctionData(
-    functionFragment: "circleTransmitter",
-    values?: undefined
+    functionFragment: 'circleTransmitter',
+    values?: undefined,
   ): string;
   encodeFunctionData(
-    functionFragment: "decodeDepositWithPayload",
-    values: [BytesLike]
+    functionFragment: 'decodeDepositWithPayload',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "encodeDepositWithPayload",
-    values: [ICircleIntegration.DepositWithPayloadStruct]
+    functionFragment: 'encodeDepositWithPayload',
+    values: [ICircleIntegration.DepositWithPayloadStruct],
   ): string;
-  encodeFunctionData(functionFragment: "evmChain", values?: undefined): string;
+  encodeFunctionData(functionFragment: 'evmChain', values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "fetchLocalTokenAddress",
-    values: [BigNumberish, BytesLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getChainIdFromDomain",
-    values: [BigNumberish]
+    functionFragment: 'fetchLocalTokenAddress',
+    values: [BigNumberish, BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "getDomainFromChainId",
-    values: [BigNumberish]
+    functionFragment: 'getChainIdFromDomain',
+    values: [BigNumberish],
   ): string;
   encodeFunctionData(
-    functionFragment: "getRegisteredEmitter",
-    values: [BigNumberish]
+    functionFragment: 'getDomainFromChainId',
+    values: [BigNumberish],
   ): string;
   encodeFunctionData(
-    functionFragment: "isAcceptedToken",
-    values: [AddressLike]
+    functionFragment: 'getRegisteredEmitter',
+    values: [BigNumberish],
   ): string;
   encodeFunctionData(
-    functionFragment: "isInitialized",
-    values: [AddressLike]
+    functionFragment: 'isAcceptedToken',
+    values: [AddressLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "isMessageConsumed",
-    values: [BytesLike]
+    functionFragment: 'isInitialized',
+    values: [AddressLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "localDomain",
-    values?: undefined
+    functionFragment: 'isMessageConsumed',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "redeemTokensWithPayload",
-    values: [ICircleIntegration.RedeemParametersStruct]
+    functionFragment: 'localDomain',
+    values?: undefined,
   ): string;
   encodeFunctionData(
-    functionFragment: "registerAcceptedToken",
-    values: [BytesLike]
+    functionFragment: 'redeemTokensWithPayload',
+    values: [ICircleIntegration.RedeemParametersStruct],
   ): string;
   encodeFunctionData(
-    functionFragment: "registerEmitterAndDomain",
-    values: [BytesLike]
+    functionFragment: 'registerAcceptedToken',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "registerTargetChainToken",
-    values: [BytesLike]
+    functionFragment: 'registerEmitterAndDomain',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "targetAcceptedToken",
-    values: [AddressLike, BigNumberish]
+    functionFragment: 'registerTargetChainToken',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "transferTokensWithPayload",
+    functionFragment: 'targetAcceptedToken',
+    values: [AddressLike, BigNumberish],
+  ): string;
+  encodeFunctionData(
+    functionFragment: 'transferTokensWithPayload',
     values: [
       ICircleIntegration.TransferParametersStruct,
       BigNumberish,
-      BytesLike
-    ]
+      BytesLike,
+    ],
   ): string;
   encodeFunctionData(
-    functionFragment: "updateWormholeFinality",
-    values: [BytesLike]
+    functionFragment: 'updateWormholeFinality',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "upgradeContract",
-    values: [BytesLike]
+    functionFragment: 'upgradeContract',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "verifyGovernanceMessage",
-    values: [BytesLike, BigNumberish]
+    functionFragment: 'verifyGovernanceMessage',
+    values: [BytesLike, BigNumberish],
   ): string;
-  encodeFunctionData(functionFragment: "wormhole", values?: undefined): string;
+  encodeFunctionData(functionFragment: 'wormhole', values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "wormholeFinality",
-    values?: undefined
+    functionFragment: 'wormholeFinality',
+    values?: undefined,
   ): string;
 
-  decodeFunctionResult(functionFragment: "chainId", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'chainId', data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "circleBridge",
-    data: BytesLike
+    functionFragment: 'circleBridge',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "circleTransmitter",
-    data: BytesLike
+    functionFragment: 'circleTransmitter',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "decodeDepositWithPayload",
-    data: BytesLike
+    functionFragment: 'decodeDepositWithPayload',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "encodeDepositWithPayload",
-    data: BytesLike
+    functionFragment: 'encodeDepositWithPayload',
+    data: BytesLike,
   ): Result;
-  decodeFunctionResult(functionFragment: "evmChain", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'evmChain', data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "fetchLocalTokenAddress",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getChainIdFromDomain",
-    data: BytesLike
+    functionFragment: 'fetchLocalTokenAddress',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getDomainFromChainId",
-    data: BytesLike
+    functionFragment: 'getChainIdFromDomain',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getRegisteredEmitter",
-    data: BytesLike
+    functionFragment: 'getDomainFromChainId',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "isAcceptedToken",
-    data: BytesLike
+    functionFragment: 'getRegisteredEmitter',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "isInitialized",
-    data: BytesLike
+    functionFragment: 'isAcceptedToken',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "isMessageConsumed",
-    data: BytesLike
+    functionFragment: 'isInitialized',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "localDomain",
-    data: BytesLike
+    functionFragment: 'isMessageConsumed',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "redeemTokensWithPayload",
-    data: BytesLike
+    functionFragment: 'localDomain',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "registerAcceptedToken",
-    data: BytesLike
+    functionFragment: 'redeemTokensWithPayload',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "registerEmitterAndDomain",
-    data: BytesLike
+    functionFragment: 'registerAcceptedToken',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "registerTargetChainToken",
-    data: BytesLike
+    functionFragment: 'registerEmitterAndDomain',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "targetAcceptedToken",
-    data: BytesLike
+    functionFragment: 'registerTargetChainToken',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "transferTokensWithPayload",
-    data: BytesLike
+    functionFragment: 'targetAcceptedToken',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "updateWormholeFinality",
-    data: BytesLike
+    functionFragment: 'transferTokensWithPayload',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "upgradeContract",
-    data: BytesLike
+    functionFragment: 'updateWormholeFinality',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "verifyGovernanceMessage",
-    data: BytesLike
+    functionFragment: 'upgradeContract',
+    data: BytesLike,
   ): Result;
-  decodeFunctionResult(functionFragment: "wormhole", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "wormholeFinality",
-    data: BytesLike
+    functionFragment: 'verifyGovernanceMessage',
+    data: BytesLike,
+  ): Result;
+  decodeFunctionResult(functionFragment: 'wormhole', data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: 'wormholeFinality',
+    data: BytesLike,
   ): Result;
 }
 
@@ -317,265 +317,265 @@ export interface ICircleIntegration extends BaseContract {
   queryFilter<TCEvent extends TypedContractEvent>(
     event: TCEvent,
     fromBlockOrBlockhash?: string | number | undefined,
-    toBlock?: string | number | undefined
+    toBlock?: string | number | undefined,
   ): Promise<Array<TypedEventLog<TCEvent>>>;
   queryFilter<TCEvent extends TypedContractEvent>(
     filter: TypedDeferredTopicFilter<TCEvent>,
     fromBlockOrBlockhash?: string | number | undefined,
-    toBlock?: string | number | undefined
+    toBlock?: string | number | undefined,
   ): Promise<Array<TypedEventLog<TCEvent>>>;
 
   on<TCEvent extends TypedContractEvent>(
     event: TCEvent,
-    listener: TypedListener<TCEvent>
+    listener: TypedListener<TCEvent>,
   ): Promise<this>;
   on<TCEvent extends TypedContractEvent>(
     filter: TypedDeferredTopicFilter<TCEvent>,
-    listener: TypedListener<TCEvent>
+    listener: TypedListener<TCEvent>,
   ): Promise<this>;
 
   once<TCEvent extends TypedContractEvent>(
     event: TCEvent,
-    listener: TypedListener<TCEvent>
+    listener: TypedListener<TCEvent>,
   ): Promise<this>;
   once<TCEvent extends TypedContractEvent>(
     filter: TypedDeferredTopicFilter<TCEvent>,
-    listener: TypedListener<TCEvent>
+    listener: TypedListener<TCEvent>,
   ): Promise<this>;
 
   listeners<TCEvent extends TypedContractEvent>(
-    event: TCEvent
+    event: TCEvent,
   ): Promise<Array<TypedListener<TCEvent>>>;
   listeners(eventName?: string): Promise<Array<Listener>>;
   removeAllListeners<TCEvent extends TypedContractEvent>(
-    event?: TCEvent
+    event?: TCEvent,
   ): Promise<this>;
 
-  chainId: TypedContractMethod<[], [bigint], "view">;
+  chainId: TypedContractMethod<[], [bigint], 'view'>;
 
-  circleBridge: TypedContractMethod<[], [string], "view">;
+  circleBridge: TypedContractMethod<[], [string], 'view'>;
 
-  circleTransmitter: TypedContractMethod<[], [string], "view">;
+  circleTransmitter: TypedContractMethod<[], [string], 'view'>;
 
   decodeDepositWithPayload: TypedContractMethod<
     [encoded: BytesLike],
     [ICircleIntegration.DepositWithPayloadStructOutput],
-    "view"
+    'view'
   >;
 
   encodeDepositWithPayload: TypedContractMethod<
     [message: ICircleIntegration.DepositWithPayloadStruct],
     [string],
-    "view"
+    'view'
   >;
 
-  evmChain: TypedContractMethod<[], [bigint], "view">;
+  evmChain: TypedContractMethod<[], [bigint], 'view'>;
 
   fetchLocalTokenAddress: TypedContractMethod<
     [sourceDomain: BigNumberish, sourceToken: BytesLike],
     [string],
-    "view"
+    'view'
   >;
 
   getChainIdFromDomain: TypedContractMethod<
     [domain: BigNumberish],
     [bigint],
-    "view"
+    'view'
   >;
 
   getDomainFromChainId: TypedContractMethod<
     [chainId_: BigNumberish],
     [bigint],
-    "view"
+    'view'
   >;
 
   getRegisteredEmitter: TypedContractMethod<
     [emitterChainId: BigNumberish],
     [string],
-    "view"
+    'view'
   >;
 
-  isAcceptedToken: TypedContractMethod<[token: AddressLike], [boolean], "view">;
+  isAcceptedToken: TypedContractMethod<[token: AddressLike], [boolean], 'view'>;
 
-  isInitialized: TypedContractMethod<[impl: AddressLike], [boolean], "view">;
+  isInitialized: TypedContractMethod<[impl: AddressLike], [boolean], 'view'>;
 
-  isMessageConsumed: TypedContractMethod<[hash: BytesLike], [boolean], "view">;
+  isMessageConsumed: TypedContractMethod<[hash: BytesLike], [boolean], 'view'>;
 
-  localDomain: TypedContractMethod<[], [bigint], "view">;
+  localDomain: TypedContractMethod<[], [bigint], 'view'>;
 
   redeemTokensWithPayload: TypedContractMethod<
     [params: ICircleIntegration.RedeemParametersStruct],
     [ICircleIntegration.DepositWithPayloadStructOutput],
-    "nonpayable"
+    'nonpayable'
   >;
 
   registerAcceptedToken: TypedContractMethod<
     [encodedMessage: BytesLike],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
   registerEmitterAndDomain: TypedContractMethod<
     [encodedMessage: BytesLike],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
   registerTargetChainToken: TypedContractMethod<
     [encodedMessage: BytesLike],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
   targetAcceptedToken: TypedContractMethod<
     [sourceToken: AddressLike, chainId_: BigNumberish],
     [string],
-    "view"
+    'view'
   >;
 
   transferTokensWithPayload: TypedContractMethod<
     [
       transferParams: ICircleIntegration.TransferParametersStruct,
       batchId: BigNumberish,
-      payload: BytesLike
+      payload: BytesLike,
     ],
     [bigint],
-    "payable"
+    'payable'
   >;
 
   updateWormholeFinality: TypedContractMethod<
     [encodedMessage: BytesLike],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
   upgradeContract: TypedContractMethod<
     [encodedMessage: BytesLike],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
   verifyGovernanceMessage: TypedContractMethod<
     [encodedMessage: BytesLike, action: BigNumberish],
     [[string, string] & { messageHash: string; payload: string }],
-    "view"
+    'view'
   >;
 
-  wormhole: TypedContractMethod<[], [string], "view">;
+  wormhole: TypedContractMethod<[], [string], 'view'>;
 
-  wormholeFinality: TypedContractMethod<[], [bigint], "view">;
+  wormholeFinality: TypedContractMethod<[], [bigint], 'view'>;
 
   getFunction<T extends ContractMethod = ContractMethod>(
-    key: string | FunctionFragment
+    key: string | FunctionFragment,
   ): T;
 
   getFunction(
-    nameOrSignature: "chainId"
-  ): TypedContractMethod<[], [bigint], "view">;
+    nameOrSignature: 'chainId',
+  ): TypedContractMethod<[], [bigint], 'view'>;
   getFunction(
-    nameOrSignature: "circleBridge"
-  ): TypedContractMethod<[], [string], "view">;
+    nameOrSignature: 'circleBridge',
+  ): TypedContractMethod<[], [string], 'view'>;
   getFunction(
-    nameOrSignature: "circleTransmitter"
-  ): TypedContractMethod<[], [string], "view">;
+    nameOrSignature: 'circleTransmitter',
+  ): TypedContractMethod<[], [string], 'view'>;
   getFunction(
-    nameOrSignature: "decodeDepositWithPayload"
+    nameOrSignature: 'decodeDepositWithPayload',
   ): TypedContractMethod<
     [encoded: BytesLike],
     [ICircleIntegration.DepositWithPayloadStructOutput],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "encodeDepositWithPayload"
+    nameOrSignature: 'encodeDepositWithPayload',
   ): TypedContractMethod<
     [message: ICircleIntegration.DepositWithPayloadStruct],
     [string],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "evmChain"
-  ): TypedContractMethod<[], [bigint], "view">;
+    nameOrSignature: 'evmChain',
+  ): TypedContractMethod<[], [bigint], 'view'>;
   getFunction(
-    nameOrSignature: "fetchLocalTokenAddress"
+    nameOrSignature: 'fetchLocalTokenAddress',
   ): TypedContractMethod<
     [sourceDomain: BigNumberish, sourceToken: BytesLike],
     [string],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "getChainIdFromDomain"
-  ): TypedContractMethod<[domain: BigNumberish], [bigint], "view">;
+    nameOrSignature: 'getChainIdFromDomain',
+  ): TypedContractMethod<[domain: BigNumberish], [bigint], 'view'>;
   getFunction(
-    nameOrSignature: "getDomainFromChainId"
-  ): TypedContractMethod<[chainId_: BigNumberish], [bigint], "view">;
+    nameOrSignature: 'getDomainFromChainId',
+  ): TypedContractMethod<[chainId_: BigNumberish], [bigint], 'view'>;
   getFunction(
-    nameOrSignature: "getRegisteredEmitter"
-  ): TypedContractMethod<[emitterChainId: BigNumberish], [string], "view">;
+    nameOrSignature: 'getRegisteredEmitter',
+  ): TypedContractMethod<[emitterChainId: BigNumberish], [string], 'view'>;
   getFunction(
-    nameOrSignature: "isAcceptedToken"
-  ): TypedContractMethod<[token: AddressLike], [boolean], "view">;
+    nameOrSignature: 'isAcceptedToken',
+  ): TypedContractMethod<[token: AddressLike], [boolean], 'view'>;
   getFunction(
-    nameOrSignature: "isInitialized"
-  ): TypedContractMethod<[impl: AddressLike], [boolean], "view">;
+    nameOrSignature: 'isInitialized',
+  ): TypedContractMethod<[impl: AddressLike], [boolean], 'view'>;
   getFunction(
-    nameOrSignature: "isMessageConsumed"
-  ): TypedContractMethod<[hash: BytesLike], [boolean], "view">;
+    nameOrSignature: 'isMessageConsumed',
+  ): TypedContractMethod<[hash: BytesLike], [boolean], 'view'>;
   getFunction(
-    nameOrSignature: "localDomain"
-  ): TypedContractMethod<[], [bigint], "view">;
+    nameOrSignature: 'localDomain',
+  ): TypedContractMethod<[], [bigint], 'view'>;
   getFunction(
-    nameOrSignature: "redeemTokensWithPayload"
+    nameOrSignature: 'redeemTokensWithPayload',
   ): TypedContractMethod<
     [params: ICircleIntegration.RedeemParametersStruct],
     [ICircleIntegration.DepositWithPayloadStructOutput],
-    "nonpayable"
+    'nonpayable'
   >;
   getFunction(
-    nameOrSignature: "registerAcceptedToken"
-  ): TypedContractMethod<[encodedMessage: BytesLike], [void], "nonpayable">;
+    nameOrSignature: 'registerAcceptedToken',
+  ): TypedContractMethod<[encodedMessage: BytesLike], [void], 'nonpayable'>;
   getFunction(
-    nameOrSignature: "registerEmitterAndDomain"
-  ): TypedContractMethod<[encodedMessage: BytesLike], [void], "nonpayable">;
+    nameOrSignature: 'registerEmitterAndDomain',
+  ): TypedContractMethod<[encodedMessage: BytesLike], [void], 'nonpayable'>;
   getFunction(
-    nameOrSignature: "registerTargetChainToken"
-  ): TypedContractMethod<[encodedMessage: BytesLike], [void], "nonpayable">;
+    nameOrSignature: 'registerTargetChainToken',
+  ): TypedContractMethod<[encodedMessage: BytesLike], [void], 'nonpayable'>;
   getFunction(
-    nameOrSignature: "targetAcceptedToken"
+    nameOrSignature: 'targetAcceptedToken',
   ): TypedContractMethod<
     [sourceToken: AddressLike, chainId_: BigNumberish],
     [string],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "transferTokensWithPayload"
+    nameOrSignature: 'transferTokensWithPayload',
   ): TypedContractMethod<
     [
       transferParams: ICircleIntegration.TransferParametersStruct,
       batchId: BigNumberish,
-      payload: BytesLike
+      payload: BytesLike,
     ],
     [bigint],
-    "payable"
+    'payable'
   >;
   getFunction(
-    nameOrSignature: "updateWormholeFinality"
-  ): TypedContractMethod<[encodedMessage: BytesLike], [void], "nonpayable">;
+    nameOrSignature: 'updateWormholeFinality',
+  ): TypedContractMethod<[encodedMessage: BytesLike], [void], 'nonpayable'>;
   getFunction(
-    nameOrSignature: "upgradeContract"
-  ): TypedContractMethod<[encodedMessage: BytesLike], [void], "nonpayable">;
+    nameOrSignature: 'upgradeContract',
+  ): TypedContractMethod<[encodedMessage: BytesLike], [void], 'nonpayable'>;
   getFunction(
-    nameOrSignature: "verifyGovernanceMessage"
+    nameOrSignature: 'verifyGovernanceMessage',
   ): TypedContractMethod<
     [encodedMessage: BytesLike, action: BigNumberish],
     [[string, string] & { messageHash: string; payload: string }],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "wormhole"
-  ): TypedContractMethod<[], [string], "view">;
+    nameOrSignature: 'wormhole',
+  ): TypedContractMethod<[], [string], 'view'>;
   getFunction(
-    nameOrSignature: "wormholeFinality"
-  ): TypedContractMethod<[], [bigint], "view">;
+    nameOrSignature: 'wormholeFinality',
+  ): TypedContractMethod<[], [bigint], 'view'>;
 
   filters: {};
 }

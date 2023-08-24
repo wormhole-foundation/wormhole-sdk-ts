@@ -57,6 +57,9 @@ export class EvmAddress implements Address {
   toString() {
     return this.address;
   }
+  toNative() {
+    return this.address;
+  }
   toUint8Array() {
     return ethers.getBytes(this.address);
   }

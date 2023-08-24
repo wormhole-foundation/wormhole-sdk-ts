@@ -9,16 +9,17 @@ import {
   CCTPTransferDetails,
   isCCTPTransferDetails,
   TokenTransferTransaction,
-} from './types';
-import { WormholeTransfer, TransferState } from './wormholeTransfer';
-import { Wormhole } from './wormhole';
+} from '../types';
+import { WormholeTransfer, TransferState } from '../wormholeTransfer';
+import { Wormhole } from '../wormhole';
 import {
+  NativeAddress,
   UniversalAddress,
   UnsignedTransaction,
   VAA,
   deserialize,
 } from '@wormhole-foundation/sdk-definitions';
-import { ChainName } from '@wormhole-foundation/sdk-base';
+import { ChainName, PlatformName } from '@wormhole-foundation/sdk-base';
 
 /**
  * What do with multiple transactions or VAAs?
@@ -41,7 +42,7 @@ export class CCTPTransfer implements WormholeTransfer {
   // The corresponding vaa representing the CCTPTransfer
   // on the source chain (if its been completed and finalized)
   vaas?: {
-    emitter: UniversalAddress;
+    emitter: UniversalAddress | NativeAddress<PlatformName>;
     sequence: bigint;
     vaa?: VAA<'Transfer'> | VAA<'TransferWithPayload'>;
   }[];
@@ -298,7 +299,7 @@ export class CCTPTransfer implements WormholeTransfer {
   static async getTransferVaa(
     wh: Wormhole,
     chain: ChainName,
-    emitter: UniversalAddress,
+    emitter: UniversalAddress | NativeAddress<PlatformName>,
     sequence: bigint,
     retries: number = 5,
   ): Promise<VAA<'Transfer'> | VAA<'TransferWithPayload'>> {

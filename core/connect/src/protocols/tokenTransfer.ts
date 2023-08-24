@@ -9,9 +9,9 @@ import {
   isMessageIdentifier,
   isTokenTransferDetails,
   isTransactionIdentifier,
-} from './types';
-import { WormholeTransfer, TransferState } from './wormholeTransfer';
-import { Wormhole } from './wormhole';
+} from '../types';
+import { WormholeTransfer, TransferState } from '../wormholeTransfer';
+import { Wormhole } from '../wormhole';
 import {
   UniversalAddress,
   UnsignedTransaction,

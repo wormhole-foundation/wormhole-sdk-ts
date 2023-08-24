@@ -1,7 +1,5 @@
 import {
   chainToChainId,
-  Network,
-  PlatformToChains,
   evmChainIdToNetworkChainPair,
   evmNetworkChainToEvmChainId,
 } from '@wormhole-foundation/sdk-base';
@@ -13,12 +11,18 @@ import {
   serialize,
 } from '@wormhole-foundation/sdk-definitions';
 
-import { addChainId, addFrom, toEvmAddrString } from './types';
-import { EvmUnsignedTransaction } from './unsignedTransaction';
-import { TokenBridgeRelayer } from './ethers-contracts';
 import { Provider, TransactionRequest } from 'ethers';
-import { EvmContracts } from './contracts';
-import { EvmChainName, UniversalOrEvm } from './types';
+
+import {
+  EvmChainName,
+  UniversalOrEvm,
+  addChainId,
+  addFrom,
+  toEvmAddrString,
+} from '../types';
+import { EvmUnsignedTransaction } from '../unsignedTransaction';
+import { TokenBridgeRelayer } from '../ethers-contracts';
+import { EvmContracts } from '../contracts';
 
 export class EvmAutomaticTokenBridge implements AutomaticTokenBridge<'Evm'> {
   readonly contracts: EvmContracts;

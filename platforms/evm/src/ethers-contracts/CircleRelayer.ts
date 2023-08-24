@@ -13,7 +13,7 @@ import type {
   ContractRunner,
   ContractMethod,
   Listener,
-} from "ethers";
+} from 'ethers';
 import type {
   TypedContractEvent,
   TypedDeferredTopicFilter,
@@ -21,7 +21,7 @@ import type {
   TypedLogDescription,
   TypedListener,
   TypedContractMethod,
-} from "./common";
+} from './common';
 
 export declare namespace CircleRelayerStructs {
   export type TransferTokensWithRelayStruct = {
@@ -35,7 +35,7 @@ export declare namespace CircleRelayerStructs {
     payloadId: bigint,
     targetRelayerFee: bigint,
     toNativeTokenAmount: bigint,
-    targetRecipientWallet: string
+    targetRecipientWallet: string,
   ] & {
     payloadId: bigint;
     targetRelayerFee: bigint;
@@ -54,7 +54,7 @@ export declare namespace ICircleIntegration {
   export type RedeemParametersStructOutput = [
     encodedWormholeMessage: string,
     circleBridgeMessage: string,
-    circleAttestation: string
+    circleAttestation: string,
   ] & {
     encodedWormholeMessage: string;
     circleBridgeMessage: string;
@@ -65,284 +65,284 @@ export declare namespace ICircleIntegration {
 export interface CircleRelayerInterface extends Interface {
   getFunction(
     nameOrSignature:
-      | "VERSION"
-      | "bytes32ToAddress"
-      | "calculateMaxSwapAmountIn"
-      | "calculateNativeSwapAmountOut"
-      | "cancelOwnershipTransferRequest"
-      | "chainId"
-      | "circleIntegration"
-      | "confirmOwnershipTransferRequest"
-      | "decodeTransferTokensWithRelay"
-      | "encodeTransferTokensWithRelay"
-      | "feeRecipient"
-      | "getPaused"
-      | "getRegisteredContract"
-      | "maxNativeSwapAmount"
-      | "nativeSwapRate"
-      | "nativeSwapRatePrecision"
-      | "nativeTokenDecimals"
-      | "owner"
-      | "ownerAssistant"
-      | "pendingOwner"
-      | "redeemTokens"
-      | "registerContract"
-      | "relayerFee"
-      | "setPauseForTransfers"
-      | "submitOwnershipTransferRequest"
-      | "transferTokensWithRelay"
-      | "updateFeeRecipient"
-      | "updateMaxNativeSwapAmount"
-      | "updateNativeSwapRate"
-      | "updateNativeSwapRatePrecision"
-      | "updateOwnerAssistant"
-      | "updateRelayerFee"
-      | "wormhole"
+      | 'VERSION'
+      | 'bytes32ToAddress'
+      | 'calculateMaxSwapAmountIn'
+      | 'calculateNativeSwapAmountOut'
+      | 'cancelOwnershipTransferRequest'
+      | 'chainId'
+      | 'circleIntegration'
+      | 'confirmOwnershipTransferRequest'
+      | 'decodeTransferTokensWithRelay'
+      | 'encodeTransferTokensWithRelay'
+      | 'feeRecipient'
+      | 'getPaused'
+      | 'getRegisteredContract'
+      | 'maxNativeSwapAmount'
+      | 'nativeSwapRate'
+      | 'nativeSwapRatePrecision'
+      | 'nativeTokenDecimals'
+      | 'owner'
+      | 'ownerAssistant'
+      | 'pendingOwner'
+      | 'redeemTokens'
+      | 'registerContract'
+      | 'relayerFee'
+      | 'setPauseForTransfers'
+      | 'submitOwnershipTransferRequest'
+      | 'transferTokensWithRelay'
+      | 'updateFeeRecipient'
+      | 'updateMaxNativeSwapAmount'
+      | 'updateNativeSwapRate'
+      | 'updateNativeSwapRatePrecision'
+      | 'updateOwnerAssistant'
+      | 'updateRelayerFee'
+      | 'wormhole',
   ): FunctionFragment;
 
   getEvent(
     nameOrSignatureOrTopic:
-      | "AdminChanged"
-      | "BeaconUpgraded"
-      | "FeeRecipientUpdated"
-      | "OwnershipTransfered"
-      | "SwapExecuted"
-      | "SwapRateUpdated"
-      | "Upgraded"
+      | 'AdminChanged'
+      | 'BeaconUpgraded'
+      | 'FeeRecipientUpdated'
+      | 'OwnershipTransfered'
+      | 'SwapExecuted'
+      | 'SwapRateUpdated'
+      | 'Upgraded',
   ): EventFragment;
 
-  encodeFunctionData(functionFragment: "VERSION", values?: undefined): string;
+  encodeFunctionData(functionFragment: 'VERSION', values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "bytes32ToAddress",
-    values: [BytesLike]
+    functionFragment: 'bytes32ToAddress',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "calculateMaxSwapAmountIn",
-    values: [AddressLike]
+    functionFragment: 'calculateMaxSwapAmountIn',
+    values: [AddressLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "calculateNativeSwapAmountOut",
-    values: [AddressLike, BigNumberish]
+    functionFragment: 'calculateNativeSwapAmountOut',
+    values: [AddressLike, BigNumberish],
   ): string;
   encodeFunctionData(
-    functionFragment: "cancelOwnershipTransferRequest",
-    values: [BigNumberish]
+    functionFragment: 'cancelOwnershipTransferRequest',
+    values: [BigNumberish],
   ): string;
-  encodeFunctionData(functionFragment: "chainId", values?: undefined): string;
+  encodeFunctionData(functionFragment: 'chainId', values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "circleIntegration",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "confirmOwnershipTransferRequest",
-    values?: undefined
+    functionFragment: 'circleIntegration',
+    values?: undefined,
   ): string;
   encodeFunctionData(
-    functionFragment: "decodeTransferTokensWithRelay",
-    values: [BytesLike]
+    functionFragment: 'confirmOwnershipTransferRequest',
+    values?: undefined,
   ): string;
   encodeFunctionData(
-    functionFragment: "encodeTransferTokensWithRelay",
-    values: [CircleRelayerStructs.TransferTokensWithRelayStruct]
+    functionFragment: 'decodeTransferTokensWithRelay',
+    values: [BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "feeRecipient",
-    values?: undefined
-  ): string;
-  encodeFunctionData(functionFragment: "getPaused", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "getRegisteredContract",
-    values: [BigNumberish]
+    functionFragment: 'encodeTransferTokensWithRelay',
+    values: [CircleRelayerStructs.TransferTokensWithRelayStruct],
   ): string;
   encodeFunctionData(
-    functionFragment: "maxNativeSwapAmount",
-    values: [AddressLike]
+    functionFragment: 'feeRecipient',
+    values?: undefined,
+  ): string;
+  encodeFunctionData(functionFragment: 'getPaused', values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: 'getRegisteredContract',
+    values: [BigNumberish],
   ): string;
   encodeFunctionData(
-    functionFragment: "nativeSwapRate",
-    values: [AddressLike]
+    functionFragment: 'maxNativeSwapAmount',
+    values: [AddressLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "nativeSwapRatePrecision",
-    values?: undefined
+    functionFragment: 'nativeSwapRate',
+    values: [AddressLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "nativeTokenDecimals",
-    values?: undefined
-  ): string;
-  encodeFunctionData(functionFragment: "owner", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "ownerAssistant",
-    values?: undefined
+    functionFragment: 'nativeSwapRatePrecision',
+    values?: undefined,
   ): string;
   encodeFunctionData(
-    functionFragment: "pendingOwner",
-    values?: undefined
+    functionFragment: 'nativeTokenDecimals',
+    values?: undefined,
+  ): string;
+  encodeFunctionData(functionFragment: 'owner', values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: 'ownerAssistant',
+    values?: undefined,
   ): string;
   encodeFunctionData(
-    functionFragment: "redeemTokens",
-    values: [ICircleIntegration.RedeemParametersStruct]
+    functionFragment: 'pendingOwner',
+    values?: undefined,
   ): string;
   encodeFunctionData(
-    functionFragment: "registerContract",
-    values: [BigNumberish, BytesLike]
+    functionFragment: 'redeemTokens',
+    values: [ICircleIntegration.RedeemParametersStruct],
   ): string;
   encodeFunctionData(
-    functionFragment: "relayerFee",
-    values: [BigNumberish, AddressLike]
+    functionFragment: 'registerContract',
+    values: [BigNumberish, BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "setPauseForTransfers",
-    values: [BigNumberish, boolean]
+    functionFragment: 'relayerFee',
+    values: [BigNumberish, AddressLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "submitOwnershipTransferRequest",
-    values: [BigNumberish, AddressLike]
+    functionFragment: 'setPauseForTransfers',
+    values: [BigNumberish, boolean],
   ): string;
   encodeFunctionData(
-    functionFragment: "transferTokensWithRelay",
-    values: [AddressLike, BigNumberish, BigNumberish, BigNumberish, BytesLike]
+    functionFragment: 'submitOwnershipTransferRequest',
+    values: [BigNumberish, AddressLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "updateFeeRecipient",
-    values: [BigNumberish, AddressLike]
+    functionFragment: 'transferTokensWithRelay',
+    values: [AddressLike, BigNumberish, BigNumberish, BigNumberish, BytesLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "updateMaxNativeSwapAmount",
-    values: [BigNumberish, AddressLike, BigNumberish]
+    functionFragment: 'updateFeeRecipient',
+    values: [BigNumberish, AddressLike],
   ): string;
   encodeFunctionData(
-    functionFragment: "updateNativeSwapRate",
-    values: [BigNumberish, AddressLike, BigNumberish]
+    functionFragment: 'updateMaxNativeSwapAmount',
+    values: [BigNumberish, AddressLike, BigNumberish],
   ): string;
   encodeFunctionData(
-    functionFragment: "updateNativeSwapRatePrecision",
-    values: [BigNumberish, BigNumberish]
+    functionFragment: 'updateNativeSwapRate',
+    values: [BigNumberish, AddressLike, BigNumberish],
   ): string;
   encodeFunctionData(
-    functionFragment: "updateOwnerAssistant",
-    values: [BigNumberish, AddressLike]
+    functionFragment: 'updateNativeSwapRatePrecision',
+    values: [BigNumberish, BigNumberish],
   ): string;
   encodeFunctionData(
-    functionFragment: "updateRelayerFee",
-    values: [BigNumberish, AddressLike, BigNumberish]
+    functionFragment: 'updateOwnerAssistant',
+    values: [BigNumberish, AddressLike],
   ): string;
-  encodeFunctionData(functionFragment: "wormhole", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: 'updateRelayerFee',
+    values: [BigNumberish, AddressLike, BigNumberish],
+  ): string;
+  encodeFunctionData(functionFragment: 'wormhole', values?: undefined): string;
 
-  decodeFunctionResult(functionFragment: "VERSION", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'VERSION', data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "bytes32ToAddress",
-    data: BytesLike
+    functionFragment: 'bytes32ToAddress',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "calculateMaxSwapAmountIn",
-    data: BytesLike
+    functionFragment: 'calculateMaxSwapAmountIn',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "calculateNativeSwapAmountOut",
-    data: BytesLike
+    functionFragment: 'calculateNativeSwapAmountOut',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "cancelOwnershipTransferRequest",
-    data: BytesLike
+    functionFragment: 'cancelOwnershipTransferRequest',
+    data: BytesLike,
   ): Result;
-  decodeFunctionResult(functionFragment: "chainId", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'chainId', data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "circleIntegration",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "confirmOwnershipTransferRequest",
-    data: BytesLike
+    functionFragment: 'circleIntegration',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "decodeTransferTokensWithRelay",
-    data: BytesLike
+    functionFragment: 'confirmOwnershipTransferRequest',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "encodeTransferTokensWithRelay",
-    data: BytesLike
+    functionFragment: 'decodeTransferTokensWithRelay',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "feeRecipient",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "getPaused", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "getRegisteredContract",
-    data: BytesLike
+    functionFragment: 'encodeTransferTokensWithRelay',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "maxNativeSwapAmount",
-    data: BytesLike
+    functionFragment: 'feeRecipient',
+    data: BytesLike,
+  ): Result;
+  decodeFunctionResult(functionFragment: 'getPaused', data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: 'getRegisteredContract',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "nativeSwapRate",
-    data: BytesLike
+    functionFragment: 'maxNativeSwapAmount',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "nativeSwapRatePrecision",
-    data: BytesLike
+    functionFragment: 'nativeSwapRate',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "nativeTokenDecimals",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "ownerAssistant",
-    data: BytesLike
+    functionFragment: 'nativeSwapRatePrecision',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "pendingOwner",
-    data: BytesLike
+    functionFragment: 'nativeTokenDecimals',
+    data: BytesLike,
+  ): Result;
+  decodeFunctionResult(functionFragment: 'owner', data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: 'ownerAssistant',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "redeemTokens",
-    data: BytesLike
+    functionFragment: 'pendingOwner',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "registerContract",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "relayerFee", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "setPauseForTransfers",
-    data: BytesLike
+    functionFragment: 'redeemTokens',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "submitOwnershipTransferRequest",
-    data: BytesLike
+    functionFragment: 'registerContract',
+    data: BytesLike,
+  ): Result;
+  decodeFunctionResult(functionFragment: 'relayerFee', data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: 'setPauseForTransfers',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "transferTokensWithRelay",
-    data: BytesLike
+    functionFragment: 'submitOwnershipTransferRequest',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "updateFeeRecipient",
-    data: BytesLike
+    functionFragment: 'transferTokensWithRelay',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "updateMaxNativeSwapAmount",
-    data: BytesLike
+    functionFragment: 'updateFeeRecipient',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "updateNativeSwapRate",
-    data: BytesLike
+    functionFragment: 'updateMaxNativeSwapAmount',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "updateNativeSwapRatePrecision",
-    data: BytesLike
+    functionFragment: 'updateNativeSwapRate',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "updateOwnerAssistant",
-    data: BytesLike
+    functionFragment: 'updateNativeSwapRatePrecision',
+    data: BytesLike,
   ): Result;
   decodeFunctionResult(
-    functionFragment: "updateRelayerFee",
-    data: BytesLike
+    functionFragment: 'updateOwnerAssistant',
+    data: BytesLike,
   ): Result;
-  decodeFunctionResult(functionFragment: "wormhole", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: 'updateRelayerFee',
+    data: BytesLike,
+  ): Result;
+  decodeFunctionResult(functionFragment: 'wormhole', data: BytesLike): Result;
 }
 
 export namespace AdminChangedEvent {
@@ -373,7 +373,7 @@ export namespace BeaconUpgradedEvent {
 export namespace FeeRecipientUpdatedEvent {
   export type InputTuple = [
     oldRecipient: AddressLike,
-    newRecipient: AddressLike
+    newRecipient: AddressLike,
   ];
   export type OutputTuple = [oldRecipient: string, newRecipient: string];
   export interface OutputObject {
@@ -405,14 +405,14 @@ export namespace SwapExecutedEvent {
     relayer: AddressLike,
     token: AddressLike,
     tokenAmount: BigNumberish,
-    nativeAmount: BigNumberish
+    nativeAmount: BigNumberish,
   ];
   export type OutputTuple = [
     recipient: string,
     relayer: string,
     token: string,
     tokenAmount: bigint,
-    nativeAmount: bigint
+    nativeAmount: bigint,
   ];
   export interface OutputObject {
     recipient: string;
@@ -461,144 +461,144 @@ export interface CircleRelayer extends BaseContract {
   queryFilter<TCEvent extends TypedContractEvent>(
     event: TCEvent,
     fromBlockOrBlockhash?: string | number | undefined,
-    toBlock?: string | number | undefined
+    toBlock?: string | number | undefined,
   ): Promise<Array<TypedEventLog<TCEvent>>>;
   queryFilter<TCEvent extends TypedContractEvent>(
     filter: TypedDeferredTopicFilter<TCEvent>,
     fromBlockOrBlockhash?: string | number | undefined,
-    toBlock?: string | number | undefined
+    toBlock?: string | number | undefined,
   ): Promise<Array<TypedEventLog<TCEvent>>>;
 
   on<TCEvent extends TypedContractEvent>(
     event: TCEvent,
-    listener: TypedListener<TCEvent>
+    listener: TypedListener<TCEvent>,
   ): Promise<this>;
   on<TCEvent extends TypedContractEvent>(
     filter: TypedDeferredTopicFilter<TCEvent>,
-    listener: TypedListener<TCEvent>
+    listener: TypedListener<TCEvent>,
   ): Promise<this>;
 
   once<TCEvent extends TypedContractEvent>(
     event: TCEvent,
-    listener: TypedListener<TCEvent>
+    listener: TypedListener<TCEvent>,
   ): Promise<this>;
   once<TCEvent extends TypedContractEvent>(
     filter: TypedDeferredTopicFilter<TCEvent>,
-    listener: TypedListener<TCEvent>
+    listener: TypedListener<TCEvent>,
   ): Promise<this>;
 
   listeners<TCEvent extends TypedContractEvent>(
-    event: TCEvent
+    event: TCEvent,
   ): Promise<Array<TypedListener<TCEvent>>>;
   listeners(eventName?: string): Promise<Array<Listener>>;
   removeAllListeners<TCEvent extends TypedContractEvent>(
-    event?: TCEvent
+    event?: TCEvent,
   ): Promise<this>;
 
-  VERSION: TypedContractMethod<[], [string], "view">;
+  VERSION: TypedContractMethod<[], [string], 'view'>;
 
   bytes32ToAddress: TypedContractMethod<
     [address_: BytesLike],
     [string],
-    "view"
+    'view'
   >;
 
   calculateMaxSwapAmountIn: TypedContractMethod<
     [token: AddressLike],
     [bigint],
-    "view"
+    'view'
   >;
 
   calculateNativeSwapAmountOut: TypedContractMethod<
     [token: AddressLike, toNativeAmount: BigNumberish],
     [bigint],
-    "view"
+    'view'
   >;
 
   cancelOwnershipTransferRequest: TypedContractMethod<
     [chainId_: BigNumberish],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
-  chainId: TypedContractMethod<[], [bigint], "view">;
+  chainId: TypedContractMethod<[], [bigint], 'view'>;
 
-  circleIntegration: TypedContractMethod<[], [string], "view">;
+  circleIntegration: TypedContractMethod<[], [string], 'view'>;
 
   confirmOwnershipTransferRequest: TypedContractMethod<
     [],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
   decodeTransferTokensWithRelay: TypedContractMethod<
     [encoded: BytesLike],
     [CircleRelayerStructs.TransferTokensWithRelayStructOutput],
-    "view"
+    'view'
   >;
 
   encodeTransferTokensWithRelay: TypedContractMethod<
     [transfer: CircleRelayerStructs.TransferTokensWithRelayStruct],
     [string],
-    "view"
+    'view'
   >;
 
-  feeRecipient: TypedContractMethod<[], [string], "view">;
+  feeRecipient: TypedContractMethod<[], [string], 'view'>;
 
-  getPaused: TypedContractMethod<[], [boolean], "view">;
+  getPaused: TypedContractMethod<[], [boolean], 'view'>;
 
   getRegisteredContract: TypedContractMethod<
     [emitterChainId: BigNumberish],
     [string],
-    "view"
+    'view'
   >;
 
   maxNativeSwapAmount: TypedContractMethod<
     [token: AddressLike],
     [bigint],
-    "view"
+    'view'
   >;
 
-  nativeSwapRate: TypedContractMethod<[token: AddressLike], [bigint], "view">;
+  nativeSwapRate: TypedContractMethod<[token: AddressLike], [bigint], 'view'>;
 
-  nativeSwapRatePrecision: TypedContractMethod<[], [bigint], "view">;
+  nativeSwapRatePrecision: TypedContractMethod<[], [bigint], 'view'>;
 
-  nativeTokenDecimals: TypedContractMethod<[], [bigint], "view">;
+  nativeTokenDecimals: TypedContractMethod<[], [bigint], 'view'>;
 
-  owner: TypedContractMethod<[], [string], "view">;
+  owner: TypedContractMethod<[], [string], 'view'>;
 
-  ownerAssistant: TypedContractMethod<[], [string], "view">;
+  ownerAssistant: TypedContractMethod<[], [string], 'view'>;
 
-  pendingOwner: TypedContractMethod<[], [string], "view">;
+  pendingOwner: TypedContractMethod<[], [string], 'view'>;
 
   redeemTokens: TypedContractMethod<
     [redeemParams: ICircleIntegration.RedeemParametersStruct],
     [void],
-    "payable"
+    'payable'
   >;
 
   registerContract: TypedContractMethod<
     [chainId_: BigNumberish, contractAddress: BytesLike],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
   relayerFee: TypedContractMethod<
     [chainId_: BigNumberish, token: AddressLike],
     [bigint],
-    "view"
+    'view'
   >;
 
   setPauseForTransfers: TypedContractMethod<
     [chainId_: BigNumberish, paused: boolean],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
   submitOwnershipTransferRequest: TypedContractMethod<
     [chainId_: BigNumberish, newOwner: AddressLike],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
   transferTokensWithRelay: TypedContractMethod<
@@ -607,264 +607,264 @@ export interface CircleRelayer extends BaseContract {
       amount: BigNumberish,
       toNativeTokenAmount: BigNumberish,
       targetChain: BigNumberish,
-      targetRecipientWallet: BytesLike
+      targetRecipientWallet: BytesLike,
     ],
     [bigint],
-    "payable"
+    'payable'
   >;
 
   updateFeeRecipient: TypedContractMethod<
     [chainId_: BigNumberish, newFeeRecipient: AddressLike],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
   updateMaxNativeSwapAmount: TypedContractMethod<
     [chainId_: BigNumberish, token: AddressLike, maxAmount: BigNumberish],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
   updateNativeSwapRate: TypedContractMethod<
     [chainId_: BigNumberish, token: AddressLike, swapRate: BigNumberish],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
   updateNativeSwapRatePrecision: TypedContractMethod<
     [chainId_: BigNumberish, nativeSwapRatePrecision_: BigNumberish],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
   updateOwnerAssistant: TypedContractMethod<
     [chainId_: BigNumberish, newAssistant: AddressLike],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
   updateRelayerFee: TypedContractMethod<
     [chainId_: BigNumberish, token: AddressLike, amount: BigNumberish],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
 
-  wormhole: TypedContractMethod<[], [string], "view">;
+  wormhole: TypedContractMethod<[], [string], 'view'>;
 
   getFunction<T extends ContractMethod = ContractMethod>(
-    key: string | FunctionFragment
+    key: string | FunctionFragment,
   ): T;
 
   getFunction(
-    nameOrSignature: "VERSION"
-  ): TypedContractMethod<[], [string], "view">;
+    nameOrSignature: 'VERSION',
+  ): TypedContractMethod<[], [string], 'view'>;
   getFunction(
-    nameOrSignature: "bytes32ToAddress"
-  ): TypedContractMethod<[address_: BytesLike], [string], "view">;
+    nameOrSignature: 'bytes32ToAddress',
+  ): TypedContractMethod<[address_: BytesLike], [string], 'view'>;
   getFunction(
-    nameOrSignature: "calculateMaxSwapAmountIn"
-  ): TypedContractMethod<[token: AddressLike], [bigint], "view">;
+    nameOrSignature: 'calculateMaxSwapAmountIn',
+  ): TypedContractMethod<[token: AddressLike], [bigint], 'view'>;
   getFunction(
-    nameOrSignature: "calculateNativeSwapAmountOut"
+    nameOrSignature: 'calculateNativeSwapAmountOut',
   ): TypedContractMethod<
     [token: AddressLike, toNativeAmount: BigNumberish],
     [bigint],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "cancelOwnershipTransferRequest"
-  ): TypedContractMethod<[chainId_: BigNumberish], [void], "nonpayable">;
+    nameOrSignature: 'cancelOwnershipTransferRequest',
+  ): TypedContractMethod<[chainId_: BigNumberish], [void], 'nonpayable'>;
   getFunction(
-    nameOrSignature: "chainId"
-  ): TypedContractMethod<[], [bigint], "view">;
+    nameOrSignature: 'chainId',
+  ): TypedContractMethod<[], [bigint], 'view'>;
   getFunction(
-    nameOrSignature: "circleIntegration"
-  ): TypedContractMethod<[], [string], "view">;
+    nameOrSignature: 'circleIntegration',
+  ): TypedContractMethod<[], [string], 'view'>;
   getFunction(
-    nameOrSignature: "confirmOwnershipTransferRequest"
-  ): TypedContractMethod<[], [void], "nonpayable">;
+    nameOrSignature: 'confirmOwnershipTransferRequest',
+  ): TypedContractMethod<[], [void], 'nonpayable'>;
   getFunction(
-    nameOrSignature: "decodeTransferTokensWithRelay"
+    nameOrSignature: 'decodeTransferTokensWithRelay',
   ): TypedContractMethod<
     [encoded: BytesLike],
     [CircleRelayerStructs.TransferTokensWithRelayStructOutput],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "encodeTransferTokensWithRelay"
+    nameOrSignature: 'encodeTransferTokensWithRelay',
   ): TypedContractMethod<
     [transfer: CircleRelayerStructs.TransferTokensWithRelayStruct],
     [string],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "feeRecipient"
-  ): TypedContractMethod<[], [string], "view">;
+    nameOrSignature: 'feeRecipient',
+  ): TypedContractMethod<[], [string], 'view'>;
   getFunction(
-    nameOrSignature: "getPaused"
-  ): TypedContractMethod<[], [boolean], "view">;
+    nameOrSignature: 'getPaused',
+  ): TypedContractMethod<[], [boolean], 'view'>;
   getFunction(
-    nameOrSignature: "getRegisteredContract"
-  ): TypedContractMethod<[emitterChainId: BigNumberish], [string], "view">;
+    nameOrSignature: 'getRegisteredContract',
+  ): TypedContractMethod<[emitterChainId: BigNumberish], [string], 'view'>;
   getFunction(
-    nameOrSignature: "maxNativeSwapAmount"
-  ): TypedContractMethod<[token: AddressLike], [bigint], "view">;
+    nameOrSignature: 'maxNativeSwapAmount',
+  ): TypedContractMethod<[token: AddressLike], [bigint], 'view'>;
   getFunction(
-    nameOrSignature: "nativeSwapRate"
-  ): TypedContractMethod<[token: AddressLike], [bigint], "view">;
+    nameOrSignature: 'nativeSwapRate',
+  ): TypedContractMethod<[token: AddressLike], [bigint], 'view'>;
   getFunction(
-    nameOrSignature: "nativeSwapRatePrecision"
-  ): TypedContractMethod<[], [bigint], "view">;
+    nameOrSignature: 'nativeSwapRatePrecision',
+  ): TypedContractMethod<[], [bigint], 'view'>;
   getFunction(
-    nameOrSignature: "nativeTokenDecimals"
-  ): TypedContractMethod<[], [bigint], "view">;
+    nameOrSignature: 'nativeTokenDecimals',
+  ): TypedContractMethod<[], [bigint], 'view'>;
   getFunction(
-    nameOrSignature: "owner"
-  ): TypedContractMethod<[], [string], "view">;
+    nameOrSignature: 'owner',
+  ): TypedContractMethod<[], [string], 'view'>;
   getFunction(
-    nameOrSignature: "ownerAssistant"
-  ): TypedContractMethod<[], [string], "view">;
+    nameOrSignature: 'ownerAssistant',
+  ): TypedContractMethod<[], [string], 'view'>;
   getFunction(
-    nameOrSignature: "pendingOwner"
-  ): TypedContractMethod<[], [string], "view">;
+    nameOrSignature: 'pendingOwner',
+  ): TypedContractMethod<[], [string], 'view'>;
   getFunction(
-    nameOrSignature: "redeemTokens"
+    nameOrSignature: 'redeemTokens',
   ): TypedContractMethod<
     [redeemParams: ICircleIntegration.RedeemParametersStruct],
     [void],
-    "payable"
+    'payable'
   >;
   getFunction(
-    nameOrSignature: "registerContract"
+    nameOrSignature: 'registerContract',
   ): TypedContractMethod<
     [chainId_: BigNumberish, contractAddress: BytesLike],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
   getFunction(
-    nameOrSignature: "relayerFee"
+    nameOrSignature: 'relayerFee',
   ): TypedContractMethod<
     [chainId_: BigNumberish, token: AddressLike],
     [bigint],
-    "view"
+    'view'
   >;
   getFunction(
-    nameOrSignature: "setPauseForTransfers"
+    nameOrSignature: 'setPauseForTransfers',
   ): TypedContractMethod<
     [chainId_: BigNumberish, paused: boolean],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
   getFunction(
-    nameOrSignature: "submitOwnershipTransferRequest"
+    nameOrSignature: 'submitOwnershipTransferRequest',
   ): TypedContractMethod<
     [chainId_: BigNumberish, newOwner: AddressLike],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
   getFunction(
-    nameOrSignature: "transferTokensWithRelay"
+    nameOrSignature: 'transferTokensWithRelay',
   ): TypedContractMethod<
     [
       token: AddressLike,
       amount: BigNumberish,
       toNativeTokenAmount: BigNumberish,
       targetChain: BigNumberish,
-      targetRecipientWallet: BytesLike
+      targetRecipientWallet: BytesLike,
     ],
     [bigint],
-    "payable"
+    'payable'
   >;
   getFunction(
-    nameOrSignature: "updateFeeRecipient"
+    nameOrSignature: 'updateFeeRecipient',
   ): TypedContractMethod<
     [chainId_: BigNumberish, newFeeRecipient: AddressLike],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
   getFunction(
-    nameOrSignature: "updateMaxNativeSwapAmount"
+    nameOrSignature: 'updateMaxNativeSwapAmount',
   ): TypedContractMethod<
     [chainId_: BigNumberish, token: AddressLike, maxAmount: BigNumberish],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
   getFunction(
-    nameOrSignature: "updateNativeSwapRate"
+    nameOrSignature: 'updateNativeSwapRate',
   ): TypedContractMethod<
     [chainId_: BigNumberish, token: AddressLike, swapRate: BigNumberish],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
   getFunction(
-    nameOrSignature: "updateNativeSwapRatePrecision"
+    nameOrSignature: 'updateNativeSwapRatePrecision',
   ): TypedContractMethod<
     [chainId_: BigNumberish, nativeSwapRatePrecision_: BigNumberish],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
   getFunction(
-    nameOrSignature: "updateOwnerAssistant"
+    nameOrSignature: 'updateOwnerAssistant',
   ): TypedContractMethod<
     [chainId_: BigNumberish, newAssistant: AddressLike],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
   getFunction(
-    nameOrSignature: "updateRelayerFee"
+    nameOrSignature: 'updateRelayerFee',
   ): TypedContractMethod<
     [chainId_: BigNumberish, token: AddressLike, amount: BigNumberish],
     [void],
-    "nonpayable"
+    'nonpayable'
   >;
   getFunction(
-    nameOrSignature: "wormhole"
-  ): TypedContractMethod<[], [string], "view">;
+    nameOrSignature: 'wormhole',
+  ): TypedContractMethod<[], [string], 'view'>;
 
   getEvent(
-    key: "AdminChanged"
+    key: 'AdminChanged',
   ): TypedContractEvent<
     AdminChangedEvent.InputTuple,
     AdminChangedEvent.OutputTuple,
     AdminChangedEvent.OutputObject
   >;
   getEvent(
-    key: "BeaconUpgraded"
+    key: 'BeaconUpgraded',
   ): TypedContractEvent<
     BeaconUpgradedEvent.InputTuple,
     BeaconUpgradedEvent.OutputTuple,
     BeaconUpgradedEvent.OutputObject
   >;
   getEvent(
-    key: "FeeRecipientUpdated"
+    key: 'FeeRecipientUpdated',
   ): TypedContractEvent<
     FeeRecipientUpdatedEvent.InputTuple,
     FeeRecipientUpdatedEvent.OutputTuple,
     FeeRecipientUpdatedEvent.OutputObject
   >;
   getEvent(
-    key: "OwnershipTransfered"
+    key: 'OwnershipTransfered',
   ): TypedContractEvent<
     OwnershipTransferedEvent.InputTuple,
     OwnershipTransferedEvent.OutputTuple,
     OwnershipTransferedEvent.OutputObject
   >;
   getEvent(
-    key: "SwapExecuted"
+    key: 'SwapExecuted',
   ): TypedContractEvent<
     SwapExecutedEvent.InputTuple,
     SwapExecutedEvent.OutputTuple,
     SwapExecutedEvent.OutputObject
   >;
   getEvent(
-    key: "SwapRateUpdated"
+    key: 'SwapRateUpdated',
   ): TypedContractEvent<
     SwapRateUpdatedEvent.InputTuple,
     SwapRateUpdatedEvent.OutputTuple,
     SwapRateUpdatedEvent.OutputObject
   >;
   getEvent(
-    key: "Upgraded"
+    key: 'Upgraded',
   ): TypedContractEvent<
     UpgradedEvent.InputTuple,
     UpgradedEvent.OutputTuple,
@@ -872,7 +872,7 @@ export interface CircleRelayer extends BaseContract {
   >;
 
   filters: {
-    "AdminChanged(address,address)": TypedContractEvent<
+    'AdminChanged(address,address)': TypedContractEvent<
       AdminChangedEvent.InputTuple,
       AdminChangedEvent.OutputTuple,
       AdminChangedEvent.OutputObject
@@ -883,7 +883,7 @@ export interface CircleRelayer extends BaseContract {
       AdminChangedEvent.OutputObject
     >;
 
-    "BeaconUpgraded(address)": TypedContractEvent<
+    'BeaconUpgraded(address)': TypedContractEvent<
       BeaconUpgradedEvent.InputTuple,
       BeaconUpgradedEvent.OutputTuple,
       BeaconUpgradedEvent.OutputObject
@@ -894,7 +894,7 @@ export interface CircleRelayer extends BaseContract {
       BeaconUpgradedEvent.OutputObject
     >;
 
-    "FeeRecipientUpdated(address,address)": TypedContractEvent<
+    'FeeRecipientUpdated(address,address)': TypedContractEvent<
       FeeRecipientUpdatedEvent.InputTuple,
       FeeRecipientUpdatedEvent.OutputTuple,
       FeeRecipientUpdatedEvent.OutputObject
@@ -905,7 +905,7 @@ export interface CircleRelayer extends BaseContract {
       FeeRecipientUpdatedEvent.OutputObject
     >;
 
-    "OwnershipTransfered(address,address)": TypedContractEvent<
+    'OwnershipTransfered(address,address)': TypedContractEvent<
       OwnershipTransferedEvent.InputTuple,
       OwnershipTransferedEvent.OutputTuple,
       OwnershipTransferedEvent.OutputObject
@@ -916,7 +916,7 @@ export interface CircleRelayer extends BaseContract {
       OwnershipTransferedEvent.OutputObject
     >;
 
-    "SwapExecuted(address,address,address,uint256,uint256)": TypedContractEvent<
+    'SwapExecuted(address,address,address,uint256,uint256)': TypedContractEvent<
       SwapExecutedEvent.InputTuple,
       SwapExecutedEvent.OutputTuple,
       SwapExecutedEvent.OutputObject
@@ -927,7 +927,7 @@ export interface CircleRelayer extends BaseContract {
       SwapExecutedEvent.OutputObject
     >;
 
-    "SwapRateUpdated(address,uint256)": TypedContractEvent<
+    'SwapRateUpdated(address,uint256)': TypedContractEvent<
       SwapRateUpdatedEvent.InputTuple,
       SwapRateUpdatedEvent.OutputTuple,
       SwapRateUpdatedEvent.OutputObject
@@ -938,7 +938,7 @@ export interface CircleRelayer extends BaseContract {
       SwapRateUpdatedEvent.OutputObject
     >;
 
-    "Upgraded(address)": TypedContractEvent<
+    'Upgraded(address)': TypedContractEvent<
       UpgradedEvent.InputTuple,
       UpgradedEvent.OutputTuple,
       UpgradedEvent.OutputObject

@@ -1,8 +1,8 @@
 import { PlatformName } from "@wormhole-foundation/sdk-base";
-import { UniversalOrNative, NativeAddress, ChainAddress } from "./address";
-import { VAA } from "./vaa";
-import { UnsignedTransaction } from "./unsignedTransaction";
-import "./payloads/tokenBridge";
+import { UniversalOrNative, NativeAddress, ChainAddress } from "../address";
+import { VAA } from "../vaa";
+import { UnsignedTransaction } from "../unsignedTransaction";
+import "../payloads/tokenBridge";
 
 export interface TokenBridge<P extends PlatformName> {
   //read-only:
@@ -34,5 +34,19 @@ export interface TokenBridge<P extends PlatformName> {
     sender: UniversalOrNative<P>,
     vaa: VAA<"Transfer"> | VAA<"TransferWithPayload">,
     unwrapNative?: boolean //default: true
+  ): AsyncGenerator<UnsignedTransaction>;
+}
+
+export interface AutomaticTokenBridge<P extends PlatformName> {
+  transfer(
+    sender: UniversalOrNative<P>,
+    recipient: ChainAddress,
+    token: UniversalOrNative<P> | "native",
+    amount: bigint,
+    nativeGas?: bigint
+  ): AsyncGenerator<UnsignedTransaction>;
+  redeem(
+    sender: UniversalOrNative<P>,
+    vaa: VAA<"TransferWithPayload">
   ): AsyncGenerator<UnsignedTransaction>;
 }

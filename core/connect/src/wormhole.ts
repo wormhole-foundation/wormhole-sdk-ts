@@ -10,6 +10,7 @@ import {
   deserialize,
   VAA,
   ChainAddress,
+  NativeAddress,
 } from '@wormhole-foundation/sdk-definitions';
 import axios, { AxiosResponse } from 'axios';
 
@@ -22,8 +23,8 @@ import {
 } from './types';
 
 import { CONFIG } from './constants';
-import { TokenTransfer } from './tokenTransfer';
-import { CCTPTransfer } from './cctpTransfer';
+import { TokenTransfer } from './protocols/tokenTransfer';
+import { CCTPTransfer } from './protocols/cctpTransfer';
 
 export class Wormhole {
   protected _platforms: Map<PlatformName, Platform>;
@@ -242,7 +243,7 @@ export class Wormhole {
    */
   async getVAABytes(
     chain: ChainName,
-    emitter: UniversalAddress,
+    emitter: UniversalAddress | NativeAddress<PlatformName>,
     sequence: bigint,
     retries: number = 5,
   ): Promise<Uint8Array | undefined> {

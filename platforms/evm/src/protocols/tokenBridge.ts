@@ -15,14 +15,14 @@ import {
   keccak256,
 } from '@wormhole-foundation/sdk-definitions';
 
-import { EvmAddress } from './address';
-import { EvmUnsignedTransaction } from './unsignedTransaction';
+import { EvmAddress } from '../address';
+import { EvmUnsignedTransaction } from '../unsignedTransaction';
 import {
   TokenBridgeContract,
   TokenImplementation__factory as TokenContractFactory,
-} from './ethers-contracts';
+} from '../ethers-contracts';
 import { Provider, TransactionRequest } from 'ethers';
-import { EvmContracts } from './contracts';
+import { EvmContracts } from '../contracts';
 import {
   EvmChainName,
   UniversalOrEvm,
@@ -31,7 +31,7 @@ import {
   toEvmAddrString,
   unusedArbiterFee,
   unusedNonce,
-} from './types';
+} from '../types';
 
 //a word on casts here:
 //  Typescript only properly resolves types when EvmTokenBridge is fully instantiated. Until such a

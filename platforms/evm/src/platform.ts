@@ -9,10 +9,9 @@ import {
   TokenId,
   TokenTransferTransaction,
   TxHash,
+  Platform,
+  ChainsConfig,
 } from '@wormhole-foundation/connect-sdk';
-import { EvmContracts } from './contracts';
-import { EvmTokenBridge } from './tokenBridge';
-import { ethers } from 'ethers';
 import {
   AutomaticTokenBridge,
   WormholeCircleRelayer,
@@ -20,13 +19,17 @@ import {
   UniversalAddress,
   CircleBridge,
 } from '@wormhole-foundation/sdk-definitions';
-import { Platform, ChainsConfig } from '@wormhole-foundation/connect-sdk';
+
+import { ethers } from 'ethers';
+import { EvmContracts } from './contracts';
 import { EvmChain } from './chain';
 import { EvmAddress } from './address';
 import { BridgeStructs } from './ethers-contracts/Bridge';
-import { EvmAutomaticTokenBridge } from './automaticTokenBridge';
-import { EvmCircleRelayer } from './circleRelayer';
-import { EvmCircleBridge } from './circleBridge';
+
+import { EvmTokenBridge } from './protocols/tokenBridge';
+import { EvmAutomaticTokenBridge } from './protocols/automaticTokenBridge';
+import { EvmCircleRelayer } from './protocols/circleRelayer';
+import { EvmCircleBridge } from './protocols/circleBridge';
 
 /**
  * @category EVM
