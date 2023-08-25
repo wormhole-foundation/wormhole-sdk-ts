@@ -293,6 +293,7 @@ export class Wormhole {
     return deserialize('Uint8Array', vaaBytes);
   }
 
+  // TODO: does this belong here?
   async getCircleAttestation(
     msgHash: string,
     retries: number = 5,

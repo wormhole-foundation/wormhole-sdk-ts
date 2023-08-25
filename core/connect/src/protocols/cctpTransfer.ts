@@ -8,7 +8,6 @@ import {
   isTransactionIdentifier,
   CCTPTransferDetails,
   isCCTPTransferDetails,
-  TokenTransferTransaction,
 } from '../types';
 import { WormholeTransfer, TransferState } from '../wormholeTransfer';
 import { Wormhole } from '../wormhole';
@@ -18,6 +17,7 @@ import {
   UnsignedTransaction,
   VAA,
   deserialize,
+  toNative,
 } from '@wormhole-foundation/sdk-definitions';
 import { ChainName, PlatformName } from '@wormhole-foundation/sdk-base';
 
@@ -40,6 +40,8 @@ export class CCTPTransfer implements WormholeTransfer {
     sequence: bigint;
     vaa?: VAA<'Transfer'> | VAA<'TransferWithPayload'>;
   }[];
+
+  txids?: TxHash[];
 
   private constructor(wh: Wormhole, transfer: CCTPTransferDetails) {
     this.state = TransferState.Created;
@@ -122,15 +124,33 @@ export class CCTPTransfer implements WormholeTransfer {
   ): Promise<CCTPTransfer> {
     const { chain, txid } = from;
     const originChain = wh.getChain(chain);
-    const parsed: MessageIdentifier[] = await originChain.parseTransaction(
-      txid,
-    );
+    // TODO: assumes VAA
+    const parsedMsgIdent: MessageIdentifier[] =
+      await originChain.parseTransaction(txid);
+    // If we found a VAA message, use it
+    if (parsedMsgIdent.length !== 0)
+      return CCTPTransfer.fromIdentifier(wh, parsedMsgIdent[0]);
 
-    if (parsed.length === 0)
-      throw new Error(`No Message Identifiers found in transaction: ${txid}`);
+    // Otherwise try to parse out a circle message
+    const cb = await originChain.getCircleBridge();
+    const circleMessage = await cb.parseTransactionDetails(txid);
+    console.log(circleMessage);
 
-    // TODO: assuming single tx
-    return CCTPTransfer.fromIdentifier(wh, parsed[0]);
+    // TODO
+    throw new Error('Not implemented');
+    // return new CCTPTransfer(wh, {
+    //   // token:
+    //   amount: circleMessage.amount,
+    //   //from: {
+    //   //  chain: circleMessage.fromChain,
+    //   //  address: toNative('Evm', circleMessage.depositor).toUniversalAddress(),
+    //   //},
+    //   //to: {
+    //   //  chain: 'Ethereum',
+    //   //  address: circleMessage.destination.recipient,
+    //   //},
+    //   automatic: false,
+    // });
   }
 
   // start the WormholeTransfer by submitting transactions to the source chain
@@ -174,8 +194,6 @@ export class CCTPTransfer implements WormholeTransfer {
       if (!tx.stackable) {
         // sign/send/wait
         const signed = await signer.sign([tx]);
-        console.log(signed);
-        throw new Error('ok');
         const txHashes = await fromChain.sendWait(signed);
         txHashes.push(...txHashes);
       } else {
@@ -183,35 +201,15 @@ export class CCTPTransfer implements WormholeTransfer {
       }
     }
 
+    console.log(txHashes);
+
+    this.txids = txHashes;
     this.state = TransferState.Started;
-
-    // TODO: concurrent
-    for (const txHash of txHashes) {
-      const parsed = await fromChain.parseTransaction(txHash);
-      // TODO:
-      if (parsed.length != 1) throw new Error('Idk what to do with != 1');
-      const [msg] = parsed;
-      const { address: emitter, sequence } = msg;
-
-      if (!this.vaas) this.vaas = [];
-      this.vaas.push({ emitter: emitter, sequence: sequence });
-    }
 
     return txHashes;
   }
 
-  // wait for the VAA to be ready
-  // returns the sequence number
-  async ready(): Promise<SequenceId[]> {
-    /*
-        0) check that the current `state` is valid to call this  (eg: state == Started)
-        1) poll the api on an interval to check if the VAA is available
-        2) Once available, pull the VAA and parse it
-        3) return seq
-    */
-    if (this.state < TransferState.Started || this.state > TransferState.Ready)
-      throw new Error('Invalid state transition in `ready`');
-
+  private async readyAutomatic(): Promise<SequenceId[]> {
     if (!this.vaas || this.vaas.length == 0)
       throw new Error('No VAA details available');
 
@@ -228,10 +226,49 @@ export class CCTPTransfer implements WormholeTransfer {
       );
     }
 
-    this.state = TransferState.Ready;
     return this.vaas.map((v) => {
       return v.sequence;
     });
+  }
+  private async readyManual(): Promise<SequenceId[]> {
+    if (!this.txids || this.txids.length == 0)
+      throw new Error('No Transaction IDs details available');
+
+    const fromChain = this.wh.getChain(this.transfer.from.chain);
+
+    for (const txHash of this.txids) {
+      const cb = await fromChain.getCircleBridge();
+      const txDeets = await cb.parseTransactionDetails(txHash);
+      console.log(txDeets);
+      const ca = this.wh.getCircleAttestation(txDeets.messageHash.toString());
+      console.log(ca);
+    }
+
+    // TODO
+    return [];
+  }
+
+  // wait for the VAA to be ready
+  // returns the sequence number
+  async ready(): Promise<SequenceId[]> {
+    /*
+        0) check that the current `state` is valid to call this  (eg: state == Started)
+        1) poll the api on an interval to check if the VAA is available
+        2) Once available, pull the VAA and parse it
+        3) return seq
+    */
+    if (this.state < TransferState.Started || this.state > TransferState.Ready)
+      throw new Error('Invalid state transition in `ready`');
+
+    let seqs: SequenceId[];
+    if (this.transfer.automatic) {
+      seqs = await this.readyAutomatic();
+    } else {
+      seqs = await this.readyManual();
+    }
+
+    this.state = TransferState.Ready;
+    return seqs;
   }
 
   // finish the WormholeTransfer by submitting transactions to the destination chain

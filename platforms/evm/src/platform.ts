@@ -13,6 +13,7 @@ import {
   ChainsConfig,
   MessageIdentifier,
   isMessageIdentifier,
+  SignedTxn,
 } from '@wormhole-foundation/connect-sdk';
 import {
   AutomaticTokenBridge,
@@ -37,7 +38,8 @@ import { EvmCircleBridge } from './protocols/circleBridge';
  * @category EVM
  */
 export class EvmPlatform implements Platform {
-  // lol
+  // TODO: this is bad, I wanted `platform` in the interface but couldnt make it
+  // static, so we do a lil hackery
   static readonly _platform: 'Evm' = 'Evm';
   readonly platform: PlatformName = EvmPlatform._platform;
 
@@ -131,6 +133,23 @@ export class EvmPlatform implements Platform {
     const balance = await token.balanceOf(walletAddr);
     return balance;
   }
+
+  async sendWait(rpc: RpcConnection, stxns: SignedTxn[]): Promise<TxHash[]> {
+    const txhashes: TxHash[] = [];
+    // TODO: concurrent?
+    for (const stxn of stxns) {
+      const txRes = await rpc.broadcastTransaction(stxn);
+      const txReceipt = await txRes.wait();
+      console.log(txReceipt);
+      // TODO: throw error?
+      if (txReceipt === null) continue;
+
+      txhashes.push(txReceipt.hash);
+    }
+    return txhashes;
+  }
+
+  //
 
   parseAddress(address: string): UniversalAddress {
     // 42 is 20 bytes as hex + 2 bytes for 0x

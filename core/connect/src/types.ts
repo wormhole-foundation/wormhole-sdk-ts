@@ -67,6 +67,7 @@ export interface Platform {
   getCircleBridge(rpc: RpcConnection): Promise<CircleBridge<PlatformName>>;
 
   // utils
+  sendWait(rpc: RpcConnection, stxns: SignedTxn[]): Promise<TxHash[]>;
   parseTransaction(
     chain: ChainName,
     rpc: RpcConnection,
@@ -97,7 +98,6 @@ export interface ChainContext {
   readonly network: Network;
   readonly platform: Platform;
   getRpc(): RpcConnection;
-  sendWait(stxns: SignedTxn[]): Promise<TxHash[]>;
 
   // TODO: can we add these automatically?
   getForeignAsset: OmitChainRpc<Platform['getForeignAsset']>;
@@ -105,6 +105,9 @@ export interface ChainContext {
   getNativeBalance: OmitChainRpc<Platform['getNativeBalance']>;
   getTokenBalance: OmitChainRpc<Platform['getTokenBalance']>;
   parseTransaction: OmitChainRpc<Platform['parseTransaction']>;
+
+  //
+  sendWait: OmitChainRpc<Platform['sendWait']>;
 
   // protocols
   getTokenBridge: OmitChainRpc<Platform['getTokenBridge']>;

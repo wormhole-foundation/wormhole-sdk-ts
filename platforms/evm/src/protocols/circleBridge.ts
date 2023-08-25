@@ -1,13 +1,15 @@
 import {
+  ChainName,
   chainToChainId,
   evmChainIdToNetworkChainPair,
   evmNetworkChainToEvmChainId,
 } from '@wormhole-foundation/sdk-base';
 import {
   ChainAddress,
-  VAA,
+  CCTPInfo,
   CircleBridge,
   UnsignedTransaction,
+  keccak256,
 } from '@wormhole-foundation/sdk-definitions';
 
 import {
@@ -19,10 +21,9 @@ import {
 } from '../types';
 import { EvmUnsignedTransaction } from '../unsignedTransaction';
 import { MessageTransmitter, TokenMessenger } from '../ethers-contracts';
-import { Provider, TransactionRequest } from 'ethers';
+import { LogDescription, Provider, TransactionRequest } from 'ethers';
 import { EvmContracts } from '../contracts';
 import { TokenId } from '@wormhole-foundation/connect-sdk';
-import { send } from 'process';
 
 //https://github.com/circlefin/evm-cctp-contracts
 
@@ -31,6 +32,20 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
   readonly chainId: bigint;
   readonly msgTransmitter: MessageTransmitter.MessageTransmitter;
   readonly tokenMessenger: TokenMessenger.TokenMessenger;
+
+  // TODO: config for cctpDomain
+  // https://developers.circle.com/stablecoin/docs/cctp-technical-reference#domain-list
+  readonly chainNameToCircleId = {
+    Ethereum: 0,
+    Avalanche: 1,
+    Arbitrum: 3,
+  };
+
+  readonly circleIdToChainName = Object.fromEntries(
+    Object.entries(this.chainNameToCircleId).map(([k, v]) => {
+      return [v, k];
+    }),
+  );
 
   private constructor(
     readonly network: 'Mainnet' | 'Testnet',
@@ -84,13 +99,9 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
     sender: UniversalOrEvm,
     recipient: ChainAddress,
     amount: bigint,
-    nativeGas?: bigint,
   ): AsyncGenerator<EvmUnsignedTransaction> {
     const senderAddr = toEvmAddrString(sender);
-    const recipientChainId = chainToChainId(recipient.chain);
     const recipientAddress = recipient.address.toString();
-    const nativeTokenGas = nativeGas ? nativeGas : 0n;
-
     const tokenAddr = toEvmAddrString(token.address);
 
     const tokenContract = this.contracts.mustGetTokenImplementation(
@@ -116,11 +127,16 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
     }
 
     // TODO: config for cctpDomain
-    const destinationDomain = 1;
-
+    // https://developers.circle.com/stablecoin/docs/cctp-technical-reference#domain-list
+    const chainNameToCircleId = {
+      Ethereum: 0n,
+      Avalanche: 1n,
+      Arbitrum: 3n,
+    };
     const txReq = await this.tokenMessenger.depositForBurn.populateTransaction(
       amount,
-      destinationDomain,
+      // @ts-ignore
+      chainNameToCircleId[recipient.chain],
       recipientAddress,
       tokenAddr,
     );
@@ -129,6 +145,73 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
       addFrom(txReq, senderAddr),
       'CircleBridge.transfer',
     );
+  }
+
+  // https://goerli.etherscan.io/tx/0xe4984775c76b8fe7c2b09cd56fb26830f6e5c5c6b540eb97d37d41f47f33faca#eventlog
+  async parseTransactionDetails(txid: string): Promise<CCTPInfo> {
+    const receipt = await this.provider.getTransactionReceipt(txid);
+    if (!receipt) throw new Error(`No receipt for ${txid} on ${this.chain}`);
+
+    // TODO: Can we get this event topic from somewhere else?
+    const tokenLogs = receipt.logs
+      .filter(
+        (log) =>
+          log.topics[0] ===
+          '0x2fa9ca894982930190727e75500a97d8dc500233a5065e0f3126c48fbe0343c0',
+      )
+      .map((tokenLog) => {
+        const { topics, data } = tokenLog;
+        return this.tokenMessenger.interface.parseLog({
+          topics: topics.slice(),
+          data: data,
+        });
+      })
+      .filter((l): l is LogDescription => !!l);
+
+    if (tokenLogs.length === 0)
+      throw new Error(`No log message for token transfer found in ${txid}`);
+    const [tokenLog] = tokenLogs;
+
+    const messageLogs = receipt.logs
+      .filter(
+        (log) =>
+          log.topics[0] ===
+          '0x8c5261668696ce22758910d05bab8f186d6eb247ceac2af2e82c7dc17669b036',
+      )
+      .map((messageLog) => {
+        const { topics, data } = messageLog;
+        return this.msgTransmitter.interface.parseLog({
+          topics: topics.slice(),
+          data: data,
+        });
+      })
+      .filter((l): l is LogDescription => !!l);
+
+    if (messageLogs.length === 0)
+      throw new Error(
+        `No log message for message transmitter found in ${txid}`,
+      );
+
+    const [messageLog] = messageLogs;
+
+    const messageHash = keccak256(messageLog.args.message);
+
+    return {
+      fromChain: this.chain,
+      txid: receipt.hash,
+      block: BigInt(receipt.blockNumber),
+      gasUsed: receipt.gasUsed.toString(),
+      depositor: receipt.from,
+      amount: tokenLog.args.amount,
+      destination: {
+        recipient: tokenLog.args.mintRecipient,
+        domain: tokenLog.args.destinationDomain,
+        tokenMessenger: tokenLog.args.destinationTokenMessenger,
+        caller: tokenLog.args.destinationCaller,
+      },
+      message: messageLog.args.message,
+      messageHash,
+    };
   }
 
   private createUnsignedTx(

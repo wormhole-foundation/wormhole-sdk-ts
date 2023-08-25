@@ -10,7 +10,7 @@ export enum TransferState {
 }
 
 // WormholeTransfer abstracts the process and state transitions
-// for things like TokenTransfers, NFTTransfers, CCTP, etc...
+// for things like TokenTransfers, NFTTransfers, CCTP (with VAA), etc...
 export interface WormholeTransfer {
   // the current state of this transfer
   transferState(): TransferState;
@@ -25,6 +25,32 @@ export interface WormholeTransfer {
   // wait for the VAA to be ready
   // returns the sequence number
   ready(): Promise<SequenceId[]>;
+
+  // finish the WormholeTransfer by submitting transactions to the destination chain
+  // returns a transaction hash
+  finish(signer: Signer): Promise<TxHash[]>;
+
+  // how many blocks until destination is final
+  // destinationFinalized(): Promise<bigint>;
+}
+
+export type CircleMessageHash = {
+  message: string;
+  attestation: string;
+};
+// CircleTransfer abstracts the process and state transitions
+// for Circle USDC transfers over CCTP that do _not_ have an associated VAA
+export interface CircleTransfer {
+  // the current state of this transfer
+  transferState(): TransferState;
+
+  // start the WormholeTransfer by submitting transactions to the source chain
+  // returns a transaction hash
+  start(signer: Signer): Promise<TxHash[]>;
+
+  // wait for the VAA to be ready
+  // returns the sequence number
+  ready(): Promise<CircleMessageHash[]>;
 
   // finish the WormholeTransfer by submitting transactions to the destination chain
   // returns a transaction hash

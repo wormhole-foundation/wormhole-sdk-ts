@@ -1,6 +1,7 @@
 import {
   Signer,
   ChainContext,
+  CCTPTransfer,
   Wormhole,
 } from "@wormhole-foundation/connect-sdk";
 import { ethers } from "ethers";
@@ -36,22 +37,34 @@ async function cctpTransfer(
   src: TransferStuff,
   dst: TransferStuff
 ) {
-  const xfer = await wh.cctpTransfer(
-    {
-      chain: src.chain.chain,
-      address: src.chain.platform.parseAddress(
-        "0x5425890298aed601595a70AB815c96711a31Bc65"
-      ),
-    },
-    100000n,
-    src.address,
-    dst.address,
-    true
-  );
+  if (src.chain.chain !== "Avalanche") {
+    throw new Error("no plz");
+  }
+  // avax usdc addy
+  const usdc = {
+    chain: src.chain.chain,
+    address: src.chain.platform.parseAddress(
+      "0x5425890298aed601595a70AB815c96711a31Bc65"
+    ),
+  };
+  const xfer = await CCTPTransfer.from(wh, {
+    chain: src.chain.chain,
+    txid: "0xd63dcc451359f6e7ed33499bdd877b4c51a8eb26c4b300d4fdb5773793aebb04",
+  });
   console.log(xfer);
+  console.log(await xfer.ready());
 
-  const txids = await xfer.start(src.signer);
-  console.log(txids);
+  // const xfer = await wh.cctpTransfer(
+  //   usdc,
+  //   10000n,
+  //   src.address,
+  //   dst.address,
+  //   false
+  // );
+  // console.log(xfer);
+
+  // const txids = await xfer.start(src.signer);
+  // console.log(txids);
 }
 
 async function automaticTransfer(

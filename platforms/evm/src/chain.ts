@@ -82,22 +82,7 @@ export class EvmChain implements ChainContext {
   }
 
   async sendWait(stxns: SignedTxn[]): Promise<TxHash[]> {
-    const rpc = this.getRpc();
-    const txhashes: TxHash[] = [];
-
-    // TODO: concurrent
-    for (const stxn of stxns) {
-      console.log(`Sending: ${stxn}`);
-
-      const txRes = await rpc.broadcastTransaction(stxn);
-      const txReceipt = await txRes.wait();
-      console.log(txReceipt);
-      // TODO: throw error?
-      if (txReceipt === null) continue;
-
-      txhashes.push(txReceipt.hash);
-    }
-    return txhashes;
+    return this.platform.sendWait(this.getRpc(), stxns);
   }
 
   async getForeignAsset(tokenId: TokenId): Promise<UniversalAddress | null> {
