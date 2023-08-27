@@ -5,7 +5,8 @@ import {
 } from '@wormhole-foundation/sdk-base';
 import {
   ChainAddress,
-  WormholeCircleRelayer,
+  AutomaticCircleBridge,
+  TokenId,
 } from '@wormhole-foundation/sdk-definitions';
 
 import {
@@ -19,9 +20,8 @@ import { EvmUnsignedTransaction } from '../unsignedTransaction';
 import { CircleRelayer } from '../ethers-contracts';
 import { Provider, TransactionRequest } from 'ethers';
 import { EvmContracts } from '../contracts';
-import { TokenId } from '@wormhole-foundation/connect-sdk';
 
-export class EvmCircleRelayer implements WormholeCircleRelayer<'Evm'> {
+export class EvmAutomaticCircleBridge implements AutomaticCircleBridge<'Evm'> {
   readonly contracts: EvmContracts;
   readonly circleRelayer: CircleRelayer;
   readonly chainId: bigint;
@@ -42,14 +42,16 @@ export class EvmCircleRelayer implements WormholeCircleRelayer<'Evm'> {
     );
   }
 
-  static async fromProvider(provider: Provider): Promise<EvmCircleRelayer> {
+  static async fromProvider(
+    provider: Provider,
+  ): Promise<EvmAutomaticCircleBridge> {
     const { chainId } = await provider.getNetwork();
     const networkChainPair = evmChainIdToNetworkChainPair.get(chainId);
     if (networkChainPair === undefined)
       throw new Error(`Unknown EVM chainId ${chainId}`);
 
     const [network, chain] = networkChainPair;
-    return new EvmCircleRelayer(network, chain, provider);
+    return new EvmAutomaticCircleBridge(network, chain, provider);
   }
 
   async *transfer(
@@ -83,7 +85,7 @@ export class EvmCircleRelayer implements WormholeCircleRelayer<'Evm'> {
       );
       yield this.createUnsignedTx(
         addFrom(txReq, senderAddr),
-        'ERC20.approve of TokenBridge',
+        'ERC20.approve of CircleRelayer',
       );
     }
 

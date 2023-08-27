@@ -11,16 +11,13 @@ import {
   VAA,
   ChainAddress,
   NativeAddress,
+  TokenId,
+  Platform,
+  ChainContext,
 } from '@wormhole-foundation/sdk-definitions';
 import axios, { AxiosResponse } from 'axios';
 
-import {
-  TokenId,
-  WormholeConfig,
-  PlatformCtr,
-  Platform,
-  ChainContext,
-} from './types';
+import { WormholeConfig, PlatformCtr } from './types';
 
 import { CONFIG } from './constants';
 import { TokenTransfer } from './protocols/tokenTransfer';
@@ -293,28 +290,26 @@ export class Wormhole {
     return deserialize('Uint8Array', vaaBytes);
   }
 
+  // TODO: does this belong here?
   async getCircleAttestation(
     msgHash: string,
     retries: number = 5,
   ): Promise<string | undefined> {
-    // TODO: move to conf?
-    const CIRCLE_ATTESTATION =
-      this.network === 'Mainnet'
-        ? 'https://iris-api.circle.com/attestations/'
-        : 'https://iris-api-sandbox.circle.com/attestations/';
-
     let response: AxiosResponse<any, any> | undefined;
+
+    const url = `${this.conf.circleAPI}/${msgHash}`;
+    console.log(url);
 
     for (let i = retries; i > 0 && !response; i--) {
       // TODO: config wait seconds?
       if (i != retries) await new Promise((f) => setTimeout(f, 2000));
 
       try {
-        response = await axios.get(`${CIRCLE_ATTESTATION}${msgHash}`);
+        response = await axios.get(url);
       } catch (e) {
         console.error(`Caught an error waiting for Circle Attestation: ${e}`);
       }
-      if (response === undefined || response.status !== 200) return;
+      if (response === undefined || response.status !== 200) continue;
 
       const { data } = response;
 

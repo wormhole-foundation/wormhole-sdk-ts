@@ -1,10 +1,12 @@
 import {
   TokenBridge,
   UniversalAddress,
+  Platform,
+  RpcConnection,
   VAA,
 } from '@wormhole-foundation/sdk-definitions';
 import { PlatformName } from '@wormhole-foundation/sdk-base';
-import { Platform, RpcConnection, Wormhole } from '../../src';
+import { Wormhole } from '../../src';
 import { MockPlatform } from '../mocks/mockPlatform';
 import { MockChain } from '../mocks/mockChain';
 

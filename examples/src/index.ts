@@ -1,42 +1,16 @@
-import {
-  Signer,
-  ChainContext,
-  Wormhole,
-} from "@wormhole-foundation/connect-sdk";
-import { ethers } from "ethers";
+import { CCTPTransfer, Wormhole } from "@wormhole-foundation/connect-sdk";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
-import { getEvmSigner } from "./helpers";
-import { ChainAddress } from "@wormhole-foundation/sdk-definitions";
-import {
-  ChainName,
-  PlatformName,
-  chainIdToChain,
-  chainToPlatform,
-  isChain,
-  isPlatform,
-} from "@wormhole-foundation/sdk-base";
-
-type TransferStuff = {
-  chain: ChainContext;
-  signer: Signer;
-  address: ChainAddress;
-};
+//
+import { TransferStuff, getStuff } from "./helpers";
 
 (async function () {
   // init Wormhole object, passing config for which network
   // to use (e.g. Mainnet/Testnet) and what Platforms to support
   const wh = new Wormhole("Testnet", [EvmPlatform]);
 
-  const fuck: PlatformName | ChainName = "Evm";
-  const platform: PlatformName = isChain(fuck)
-    ? chainToPlatform.get(fuck)!
-    : fuck;
-
-  console.log(platform);
-
   // spongebob-patrick-from-here-to-there.jpg
   const src = "Avalanche";
-  const dst = "Polygon";
+  const dst = "Ethereum";
 
   // Grab chain Contexts
   const sendChain = wh.getChain(src);
@@ -44,23 +18,12 @@ type TransferStuff = {
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
-  const [sendSigner, sender] = await getSigner(sendChain);
-  const source: TransferStuff = {
-    chain: sendChain,
-    signer: sendSigner,
-    address: sender,
-  };
+  const source = await getStuff(sendChain);
+  const destination = await getStuff(rcvChain);
 
-  const [rcvSigner, receiver] = await getSigner(rcvChain);
-  const destination: TransferStuff = {
-    chain: rcvChain,
-    signer: rcvSigner,
-    address: receiver,
-  };
-
-  // await cctpTransfer(wh, source, destination);
+  await cctpTransfer(wh, source, destination);
   // await automaticTransfer(wh, source, destination);
-  await manualTransfer(wh, source, destination);
+  // await manualTransfer(wh, source, destination);
 })();
 
 async function cctpTransfer(
@@ -68,22 +31,39 @@ async function cctpTransfer(
   src: TransferStuff,
   dst: TransferStuff
 ) {
-  const xfer = await wh.cctpTransfer(
-    {
-      chain: src.chain.chain,
-      address: src.chain.platform.parseAddress(
-        "0x5425890298aed601595a70AB815c96711a31Bc65"
-      ),
-    },
-    100000n,
-    src.address,
-    dst.address,
-    false
-  );
-  console.log(xfer);
+  if (src.chain.chain !== "Avalanche") {
+    throw new Error("no plz");
+  }
+  // avax usdc addy
+  const usdc = {
+    chain: src.chain.chain,
+    address: src.chain.platform.parseAddress(
+      "0x5425890298aed601595a70AB815c96711a31Bc65"
+    ),
+  };
+  //const txid = "0xe4984775c76b8fe7c2b09cd56fb26830f6e5c5c6b540eb97d37d41f47f33faca";
+  //const txid = "0xd63dcc451359f6e7ed33499bdd877b4c51a8eb26c4b300d4fdb5773793aebb04";
+  const txid =
+    "0x2286e468764e5345978a84f4de3ad211d5b7e7c59b98590dd5eb5e95e72a2c7e";
 
-  const txids = await xfer.start(src.signer);
-  console.log(txids);
+  const xfer = await CCTPTransfer.from(wh, {
+    chain: src.chain.chain,
+    txid: txid,
+  });
+  console.log(xfer);
+  console.log(await xfer.fetchAttestation(1000));
+
+  // const xfer = await wh.cctpTransfer(
+  //   usdc,
+  //   10000n,
+  //   src.address,
+  //   dst.address,
+  //   false
+  // );
+  // console.log(xfer);
+
+  // const txids = await xfer.start(src.signer);
+  // console.log(txids);
 }
 
 async function automaticTransfer(
@@ -104,15 +84,15 @@ async function automaticTransfer(
   console.log(tt);
 
   // 1) Submit the transactions to the source chain, passing a signer to sign any txns
-  const txids = await tt.start(src.signer);
+  const txids = await tt.initiateTransfer(src.signer);
   console.log(`Started transfer with txid: ${txids}`);
 
   // 2) wait for the VAA to be signed and ready
-  const seq = await tt.ready();
+  const seq = await tt.fetchAttestation();
   console.log(`VAA is ready with seq: ${seq}`);
 
   // 3) redeem the VAA on the dest chain, passing a signer to sign any transactions
-  await tt.finish(dst.signer);
+  await tt.completeTransfer(dst.signer);
   console.log(`Transfer is complete!`);
 }
 
@@ -134,28 +114,14 @@ async function manualTransfer(
   console.log(tt);
 
   // //1) Submit the transactions to the source chain, passing a signer to sign any txns
-  const txids = await tt.start(src.signer);
+  const txids = await tt.initiateTransfer(src.signer);
   console.log(`Started transfer with txid: ${txids}`);
 
   // // 2) wait for the VAA to be signed and ready
-  // const seq = await tt.ready();
+  // const seq = await tt.fetchAttestation();
   // console.log(`VAA is ready with seq: ${seq}`);
 
   // // 3) redeem the VAA on the dest chain, passing a signer to sign any transactions
-  // await tt.finish(dst.signer);
+  // await tt.completeTransfer(dst.signer);
   // console.log(`Transfer is complete!`);
-}
-
-async function getSigner(chain: ChainContext): Promise<[Signer, ChainAddress]> {
-  const signer = await getEvmSigner(
-    chain.chain,
-    chain.getRpc() as ethers.Provider
-  );
-
-  const addy: ChainAddress = {
-    chain: signer.chain(),
-    address: chain.platform.parseAddress(signer.address()),
-  };
-
-  return [signer, addy];
 }

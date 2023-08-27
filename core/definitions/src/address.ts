@@ -4,7 +4,6 @@ import {
   PlatformName,
   chainToPlatform,
   ChainToPlatform,
-  isPlatform,
 } from "@wormhole-foundation/sdk-base";
 
 //TODO BRRRR circular include!!

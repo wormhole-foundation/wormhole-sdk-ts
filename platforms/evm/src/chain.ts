@@ -1,21 +1,19 @@
 import { ChainName, Network } from '@wormhole-foundation/sdk-base';
 import {
   AutomaticTokenBridge,
-  WormholeCircleRelayer,
+  AutomaticCircleBridge,
   CircleBridge,
   TokenBridge,
   UniversalAddress,
-} from '@wormhole-foundation/sdk-definitions';
-import { ethers } from 'ethers';
-import { EvmPlatform } from './platform';
-import {
   ChainContext,
   TokenId,
   TxHash,
   SignedTxn,
-  TokenTransferTransaction,
-  ChainConfig,
-} from '@wormhole-foundation/connect-sdk';
+  WormholeMessageId,
+} from '@wormhole-foundation/sdk-definitions';
+import { ethers } from 'ethers';
+import { EvmPlatform } from './platform';
+import { ChainConfig } from '@wormhole-foundation/connect-sdk';
 
 export class EvmChain implements ChainContext {
   readonly chain: ChainName;
@@ -27,8 +25,8 @@ export class EvmChain implements ChainContext {
   private provider?: ethers.Provider;
   private tokenBridge?: TokenBridge<'Evm'>;
   private autoTokenBridge?: AutomaticTokenBridge<'Evm'>;
-  private circleRelayer?: WormholeCircleRelayer<'Evm'>;
   private circleBridge?: CircleBridge<'Evm'>;
+  private autoCircleBridge?: AutomaticCircleBridge<'Evm'>;
 
   constructor(platform: EvmPlatform, chain: ChainName) {
     this.chain = chain;
@@ -59,11 +57,11 @@ export class EvmChain implements ChainContext {
     return this.autoTokenBridge;
   }
 
-  async getCircleRelayer(): Promise<WormholeCircleRelayer<'Evm'>> {
-    this.circleRelayer = this.circleRelayer
-      ? this.circleRelayer
-      : await this.platform.getCircleRelayer(this.getRpc());
-    return this.circleRelayer;
+  async getAutomaticCircleBridge(): Promise<AutomaticCircleBridge<'Evm'>> {
+    this.autoCircleBridge = this.autoCircleBridge
+      ? this.autoCircleBridge
+      : await this.platform.getAutomaticCircleBridge(this.getRpc());
+    return this.autoCircleBridge;
   }
   async getCircleBridge(): Promise<CircleBridge<'Evm'>> {
     this.circleBridge = this.circleBridge
@@ -72,7 +70,7 @@ export class EvmChain implements ChainContext {
     return this.circleBridge;
   }
 
-  async parseTransaction(txid: string): Promise<TokenTransferTransaction[]> {
+  async parseTransaction(txid: string): Promise<WormholeMessageId[]> {
     return await this.platform.parseTransaction(
       this.chain,
       this.getRpc(),
@@ -81,22 +79,7 @@ export class EvmChain implements ChainContext {
   }
 
   async sendWait(stxns: SignedTxn[]): Promise<TxHash[]> {
-    const rpc = this.getRpc();
-    const txhashes: TxHash[] = [];
-
-    // TODO: concurrent
-    for (const stxn of stxns) {
-      console.log(`Sending: ${stxn}`);
-
-      const txRes = await rpc.broadcastTransaction(stxn);
-      const txReceipt = await txRes.wait();
-      console.log(txReceipt);
-      // TODO: throw error?
-      if (txReceipt === null) continue;
-
-      txhashes.push(txReceipt.hash);
-    }
-    return txhashes;
+    return this.platform.sendWait(this.getRpc(), stxns);
   }
 
   async getForeignAsset(tokenId: TokenId): Promise<UniversalAddress | null> {

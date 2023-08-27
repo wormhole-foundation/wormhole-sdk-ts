@@ -36,7 +36,9 @@
   "scripts": {
     "build:cjs": "tsc -p ./tsconfig.cjs.json",
     "build:esm": "tsc -p ./tsconfig.esm.json",
-    "build": "npm run clean && npm run build:cjs && npm run build:esm",
+    "build": "npm run build:cjs && npm run build:esm",
+    "rebuild": "npm run clean && npm run build:cjs && npm run build:esm",
+    "test":"jest --config ../../jest.config.ts",
     "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo",
     "lint": "npm run prettier && eslint --fix",
     "prettier": "prettier --write ./src"
@@ -48,7 +50,7 @@
     "eslint-config-prettier": "^8.7.0",
     "lint-staged": "^13.1.2",
     "prettier": "2.8.4",
-    "typescript": "^4.4.2"
+    "typescript": "5.1.6"
   },
   "dependencies": {
     "@certusone/wormhole-sdk": "^0.9.21",
@@ -58,7 +60,6 @@
     "@solana/spl-token": "0.3.5",
     "@solana/web3.js": "1.66.2",
     "@wormhole-foundation/connect-sdk": "*",
-    "bs58": "^4.0.1",
-    "ethers": "^5.7.2"
+    "bs58": "^4.0.1"
   }
 }

@@ -1,34 +1,45 @@
 import {
+  ChainName,
   chainToChainId,
-  Network,
   evmChainIdToNetworkChainPair,
   evmNetworkChainToEvmChainId,
 } from '@wormhole-foundation/sdk-base';
 import {
   ChainAddress,
-  VAA,
+  CircleTransferDetails,
   CircleBridge,
   UnsignedTransaction,
+  keccak256,
+  TokenId,
 } from '@wormhole-foundation/sdk-definitions';
 
+import { EvmAddress } from '../address';
 import {
+  addFrom,
   addChainId,
   toEvmAddrString,
   EvmChainName,
   UniversalOrEvm,
 } from '../types';
 import { EvmUnsignedTransaction } from '../unsignedTransaction';
-import { CircleRelayer } from '../ethers-contracts';
-import { Provider, TransactionRequest } from 'ethers';
+import { MessageTransmitter, TokenMessenger } from '../ethers-contracts';
+import { LogDescription, Provider, TransactionRequest } from 'ethers';
 import { EvmContracts } from '../contracts';
-import { TokenId } from '@wormhole-foundation/connect-sdk';
 
 //https://github.com/circlefin/evm-cctp-contracts
 
+// TODO: Can we get this event topic from somewhere else?
+export const TOKEN_EVENT_HASH =
+  '0x2fa9ca894982930190727e75500a97d8dc500233a5065e0f3126c48fbe0343c0';
+
+export const MESSAGE_EVENT_HASH =
+  '0x8c5261668696ce22758910d05bab8f186d6eb247ceac2af2e82c7dc17669b036';
+
 export class EvmCircleBridge implements CircleBridge<'Evm'> {
   readonly contracts: EvmContracts;
-  readonly circleRelayer: CircleRelayer;
   readonly chainId: bigint;
+  readonly msgTransmitter: MessageTransmitter.MessageTransmitter;
+  readonly tokenMessenger: TokenMessenger.TokenMessenger;
 
   private constructor(
     readonly network: 'Mainnet' | 'Testnet',
@@ -38,7 +49,12 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
     this.contracts = new EvmContracts(network);
 
     this.chainId = evmNetworkChainToEvmChainId(network, chain);
-    this.circleRelayer = this.contracts.mustGetWormholeCircleRelayer(
+
+    this.msgTransmitter = this.contracts.mustGetCircleMessageTransmitter(
+      chain,
+      provider,
+    );
+    this.tokenMessenger = this.contracts.mustGetCircleTokenMessenger(
       chain,
       provider,
     );
@@ -56,9 +72,20 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
 
   async *redeem(
     sender: UniversalOrEvm,
-    vaa: VAA<'Transfer'> | VAA<'TransferWithPayload'>,
+    message: string,
+    attestation: string,
   ): AsyncGenerator<UnsignedTransaction> {
-    return;
+    const senderAddr = toEvmAddrString(sender);
+
+    const txReq = await this.msgTransmitter.receiveMessage.populateTransaction(
+      message,
+      attestation,
+    );
+
+    yield this.createUnsignedTx(
+      addFrom(txReq, senderAddr),
+      'CircleBridge.redeem',
+    );
   }
   //alternative naming: initiateTransfer
   async *transfer(
@@ -66,40 +93,112 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
     sender: UniversalOrEvm,
     recipient: ChainAddress,
     amount: bigint,
-    nativeGas?: bigint,
   ): AsyncGenerator<EvmUnsignedTransaction> {
     const senderAddr = toEvmAddrString(sender);
-    const recipientChainId = chainToChainId(recipient.chain);
     const recipientAddress = recipient.address.toString();
-    const nativeTokenGas = nativeGas ? nativeGas : 0n;
+    const tokenAddr = toEvmAddrString(token.address);
 
-    //const tokenAddr = await wh.mustGetForeignAsset(
-    //  token as TokenId,
-    //  sendingChain,
-    //);
+    const tokenContract = this.contracts.mustGetTokenImplementation(
+      this.provider,
+      tokenAddr,
+    );
 
-    //// approve
-    //await chainContext.approve(
-    //  sendingChain,
-    //  circleRelayer.address,
-    //  tokenAddr,
-    //  parsedAmt,
-    //);
+    const allowance = await tokenContract.allowance(
+      senderAddr,
+      this.tokenMessenger.target,
+    );
 
-    //console.log('About to send 2');
-    //const txReq =
-    //  await this.circleRelayer.transferTokensWithRelay.populateTransaction(
-    //    chainContext.context.parseAddress(tokenAddr, sendingChain),
-    //    parsedAmt,
-    //    parsedNativeAmt,
-    //    this.chainId,
-    //    recipientAddress,
-    //  );
+    if (allowance < amount) {
+      const txReq = await tokenContract.approve.populateTransaction(
+        this.tokenMessenger.target,
+        amount,
+      );
+      yield this.createUnsignedTx(
+        addFrom(txReq, senderAddr),
+        'ERC20.approve of CircleBridge',
+        false,
+      );
+    }
 
-    //yield this.createUnsignedTx(
-    //  addFrom(txReq, senderAddr),
-    //  'TokenBridgeRelayer.transferTokensWithRelay',
-    //);
+    const txReq = await this.tokenMessenger.depositForBurn.populateTransaction(
+      amount,
+      // @ts-ignore
+      chainNameToCircleId[recipient.chain],
+      recipientAddress,
+      tokenAddr,
+    );
+
+    yield this.createUnsignedTx(
+      addFrom(txReq, senderAddr),
+      'CircleBridge.transfer',
+    );
+  }
+
+  // https://goerli.etherscan.io/tx/0xe4984775c76b8fe7c2b09cd56fb26830f6e5c5c6b540eb97d37d41f47f33faca#eventlog
+  async parseTransactionDetails(txid: string): Promise<CircleTransferDetails> {
+    const receipt = await this.provider.getTransactionReceipt(txid);
+    if (!receipt) throw new Error(`No receipt for ${txid} on ${this.chain}`);
+
+    const tokenLogs = receipt.logs
+      .filter((log) => log.topics[0] === TOKEN_EVENT_HASH)
+      .map((tokenLog) => {
+        const { topics, data } = tokenLog;
+        return this.tokenMessenger.interface.parseLog({
+          topics: topics.slice(),
+          data: data,
+        });
+      })
+      .filter((l): l is LogDescription => !!l);
+
+    if (tokenLogs.length === 0)
+      throw new Error(`No log message for token transfer found in ${txid}`);
+    const [tokenLog] = tokenLogs;
+
+    const messageLogs = receipt.logs
+      .filter((log) => log.topics[0] === MESSAGE_EVENT_HASH)
+      .map((messageLog) => {
+        const { topics, data } = messageLog;
+        return this.msgTransmitter.interface.parseLog({
+          topics: topics.slice(),
+          data: data,
+        });
+      })
+      .filter((l): l is LogDescription => !!l);
+
+    if (messageLogs.length === 0)
+      throw new Error(
+        `No log message for message transmitter found in ${txid}`,
+      );
+
+    // TODO: just taking the first one here, will there be >1?
+    const [messageLog] = messageLogs;
+    // Need to get the message (0xdeadbeef...) to bytes prior to hashing
+    const msgBytes = new Uint8Array(
+      Buffer.from((messageLog.args.message as string).slice(2), 'hex'),
+    );
+    const messageHash = `0x${Buffer.from(keccak256(msgBytes)).toString('hex')}`;
+
+    return {
+      txid: receipt.hash,
+      from: {
+        chain: this.chain,
+        address: new EvmAddress(receipt.from).toUniversalAddress(),
+      },
+      token: {
+        chain: this.chain,
+        address: new EvmAddress(tokenLog.args.burnToken).toUniversalAddress(),
+      },
+      amount: tokenLog.args.amount,
+      destination: {
+        recipient: tokenLog.args.mintRecipient,
+        domain: tokenLog.args.destinationDomain,
+        tokenMessenger: tokenLog.args.destinationTokenMessenger,
+        caller: tokenLog.args.destinationCaller,
+      },
+      messageId: {
+        msgHash: messageHash,
+      },
+    };
   }
 
   private createUnsignedTx(
