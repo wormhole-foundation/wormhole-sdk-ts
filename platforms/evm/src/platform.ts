@@ -12,10 +12,10 @@ import {
   isWormholeMessageId,
   SignedTxn,
   AutomaticTokenBridge,
-  WormholeCircleRelayer,
   TokenBridge,
   UniversalAddress,
   CircleBridge,
+  AutomaticCircleBridge,
 } from '@wormhole-foundation/sdk-definitions';
 import { ChainsConfig } from '@wormhole-foundation/connect-sdk';
 
@@ -26,7 +26,7 @@ import { EvmAddress } from './address';
 
 import { EvmTokenBridge } from './protocols/tokenBridge';
 import { EvmAutomaticTokenBridge } from './protocols/automaticTokenBridge';
-import { EvmCircleRelayer } from './protocols/circleRelayer';
+import { EvmAutomaticCircleBridge } from './protocols/automaticCircleBridge';
 import { EvmCircleBridge } from './protocols/circleBridge';
 
 /**
@@ -67,14 +67,14 @@ export class EvmPlatform implements Platform {
   ): Promise<AutomaticTokenBridge<'Evm'>> {
     return await EvmAutomaticTokenBridge.fromProvider(rpc);
   }
-  async getCircleRelayer(
-    rpc: ethers.Provider,
-  ): Promise<WormholeCircleRelayer<'Evm'>> {
-    return await EvmCircleRelayer.fromProvider(rpc);
-  }
 
   async getCircleBridge(rpc: ethers.Provider): Promise<CircleBridge<'Evm'>> {
     return await EvmCircleBridge.fromProvider(rpc);
+  }
+  async getAutomaticCircleBridge(
+    rpc: ethers.Provider,
+  ): Promise<AutomaticCircleBridge<'Evm'>> {
+    return await EvmAutomaticCircleBridge.fromProvider(rpc);
   }
 
   async getForeignAsset(

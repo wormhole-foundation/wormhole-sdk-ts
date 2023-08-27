@@ -10,10 +10,8 @@ import { TokenId, TxHash } from "./types";
 import { WormholeMessageId } from "./attestation";
 import { SignedTxn } from "./types";
 // protocols
-import { TokenBridge } from "./protocols/tokenBridge";
-import { AutomaticTokenBridge } from "./protocols/tokenBridge";
-import { WormholeCircleRelayer } from "./protocols/cctp";
-import { CircleBridge } from "./protocols/cctp";
+import { TokenBridge, AutomaticTokenBridge } from "./protocols/tokenBridge";
+import { CircleBridge, AutomaticCircleBridge } from "./protocols/cctp";
 
 // TODO: move to definition layer? -- Can't without more changes, TokenTransferTransaction declared here
 // Force passing RPC connection so we don't create a new one with every fn call
@@ -47,9 +45,9 @@ export interface Platform {
   getAutomaticTokenBridge(
     rpc: RpcConnection
   ): Promise<AutomaticTokenBridge<PlatformName>>;
-  getCircleRelayer(
+  getAutomaticCircleBridge(
     rpc: RpcConnection
-  ): Promise<WormholeCircleRelayer<PlatformName>>;
+  ): Promise<AutomaticCircleBridge<PlatformName>>;
   getCircleBridge(rpc: RpcConnection): Promise<CircleBridge<PlatformName>>;
 
   // Platform interaction utils

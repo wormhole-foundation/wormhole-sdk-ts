@@ -164,7 +164,7 @@ export class CCTPTransfer implements WormholeTransfer {
 
     let xfer: AsyncGenerator<UnsignedTransaction>;
     if (this.transfer.automatic) {
-      const cr = await fromChain.getCircleRelayer();
+      const cr = await fromChain.getAutomaticCircleBridge();
       xfer = cr.transfer(
         this.transfer.token,
         this.transfer.from.address,

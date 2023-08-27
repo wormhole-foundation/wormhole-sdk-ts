@@ -20,7 +20,7 @@ export type CircleTransferDetails = {
   messageId: CircleMessageId;
 };
 
-export interface WormholeCircleRelayer<P extends PlatformName> {
+export interface AutomaticCircleBridge<P extends PlatformName> {
   transfer(
     token: ChainAddress,
     sender: UniversalOrNative<P>,

@@ -1,7 +1,7 @@
 import { ChainName, Network } from '@wormhole-foundation/sdk-base';
 import {
   AutomaticTokenBridge,
-  WormholeCircleRelayer,
+  AutomaticCircleBridge,
   CircleBridge,
   TokenBridge,
   UniversalAddress,
@@ -25,8 +25,8 @@ export class EvmChain implements ChainContext {
   private provider?: ethers.Provider;
   private tokenBridge?: TokenBridge<'Evm'>;
   private autoTokenBridge?: AutomaticTokenBridge<'Evm'>;
-  private circleRelayer?: WormholeCircleRelayer<'Evm'>;
   private circleBridge?: CircleBridge<'Evm'>;
+  private autoCircleBridge?: AutomaticCircleBridge<'Evm'>;
 
   constructor(platform: EvmPlatform, chain: ChainName) {
     this.chain = chain;
@@ -57,11 +57,11 @@ export class EvmChain implements ChainContext {
     return this.autoTokenBridge;
   }
 
-  async getCircleRelayer(): Promise<WormholeCircleRelayer<'Evm'>> {
-    this.circleRelayer = this.circleRelayer
-      ? this.circleRelayer
-      : await this.platform.getCircleRelayer(this.getRpc());
-    return this.circleRelayer;
+  async getAutomaticCircleBridge(): Promise<AutomaticCircleBridge<'Evm'>> {
+    this.autoCircleBridge = this.autoCircleBridge
+      ? this.autoCircleBridge
+      : await this.platform.getAutomaticCircleBridge(this.getRpc());
+    return this.autoCircleBridge;
   }
   async getCircleBridge(): Promise<CircleBridge<'Evm'>> {
     this.circleBridge = this.circleBridge

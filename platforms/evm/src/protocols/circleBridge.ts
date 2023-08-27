@@ -28,6 +28,13 @@ import { EvmContracts } from '../contracts';
 
 //https://github.com/circlefin/evm-cctp-contracts
 
+// TODO: Can we get this event topic from somewhere else?
+export const TOKEN_EVENT_HASH =
+  '0x2fa9ca894982930190727e75500a97d8dc500233a5065e0f3126c48fbe0343c0';
+
+export const MESSAGE_EVENT_HASH =
+  '0x8c5261668696ce22758910d05bab8f186d6eb247ceac2af2e82c7dc17669b036';
+
 export class EvmCircleBridge implements CircleBridge<'Evm'> {
   readonly contracts: EvmContracts;
   readonly chainId: bigint;
@@ -146,13 +153,8 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
     const receipt = await this.provider.getTransactionReceipt(txid);
     if (!receipt) throw new Error(`No receipt for ${txid} on ${this.chain}`);
 
-    // TODO: Can we get this event topic from somewhere else?
     const tokenLogs = receipt.logs
-      .filter(
-        (log) =>
-          log.topics[0] ===
-          '0x2fa9ca894982930190727e75500a97d8dc500233a5065e0f3126c48fbe0343c0',
-      )
+      .filter((log) => log.topics[0] === TOKEN_EVENT_HASH)
       .map((tokenLog) => {
         const { topics, data } = tokenLog;
         return this.tokenMessenger.interface.parseLog({
@@ -167,11 +169,7 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
     const [tokenLog] = tokenLogs;
 
     const messageLogs = receipt.logs
-      .filter(
-        (log) =>
-          log.topics[0] ===
-          '0x8c5261668696ce22758910d05bab8f186d6eb247ceac2af2e82c7dc17669b036',
-      )
+      .filter((log) => log.topics[0] === MESSAGE_EVENT_HASH)
       .map((messageLog) => {
         const { topics, data } = messageLog;
         return this.msgTransmitter.interface.parseLog({
@@ -191,7 +189,10 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
     const messageHash = keccak256(messageLog.args.message);
 
     return {
-      from: { chain: this.chain, address: new EvmAddress(receipt.from) },
+      from: {
+        chain: this.chain,
+        address: new EvmAddress(receipt.from).toUniversalAddress(),
+      },
       txid: receipt.hash,
       amount: tokenLog.args.amount,
       destination: {

@@ -33,6 +33,6 @@ export interface ChainContext {
   // protocols
   getTokenBridge: OmitChainRpc<Platform["getTokenBridge"]>;
   getAutomaticTokenBridge: OmitChainRpc<Platform["getAutomaticTokenBridge"]>;
-  getCircleRelayer: OmitChainRpc<Platform["getCircleRelayer"]>;
   getCircleBridge: OmitChainRpc<Platform["getCircleBridge"]>;
+  getAutomaticCircleBridge: OmitChainRpc<Platform["getAutomaticCircleBridge"]>;
 }
