@@ -285,15 +285,19 @@ const explorerConfig = [
       ],
     ],
   ],
-] as const satisfies RoArray<(readonly [
-  "Mainnet" | "Testnet",
-  RoArray<(readonly [ChainName, ExplorerSettings])>
-])>;
+] as const satisfies RoArray<
+  readonly [
+    "Mainnet" | "Testnet",
+    RoArray<readonly [ChainName, ExplorerSettings]>
+  ]
+>;
 
 const explorerConfs = constMap(explorerConfig);
 
 export const explorerConfigs = (network: Network, chain: ChainName) =>
-  network === "Devnet" ? undefined : (explorerConfs.get(network, chain) as ExplorerSettings);
+  network === "Devnet"
+    ? undefined
+    : (explorerConfs.get(network, chain) as ExplorerSettings);
 
 export function linkToTx(
   chainName: ChainName,

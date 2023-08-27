@@ -1,3 +1,4 @@
+import { Network } from "./networks";
 import { Chain, ChainName } from "./chains";
 import { zip, constMap, RoArray } from "../utils";
 
@@ -15,8 +16,30 @@ export type CircleChainId = (typeof circleChainIds)[number];
 export const circleChainId = constMap(circleDomains);
 export const circleChainIdToChainName = constMap(circleDomains, [1, 0]);
 
-export const isCircleChain = (chain: string): chain is CircleChainName =>
-  circleChainId.has(chain);
+const usdcContracts = [
+  [
+    "Mainnet",
+    [
+      ["Ethereum", "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"],
+      ["Avalanche", "0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e"],
+    ],
+  ],
+  [
+    "Testnet",
+    [
+      ["Avalanche", "0x5425890298aed601595a70AB815c96711a31Bc65"],
+      ["Ethereum", "0x07865c6e87b9f70255377e024ace6630c1eaa37f"],
+    ],
+  ],
+] as const satisfies RoArray<
+  readonly [Network, RoArray<readonly [ChainName, string]>]
+>;
+
+export const usdcContract = constMap(usdcContracts);
+
+export const isCircleChain = (
+  chain: string | ChainName | CircleChainName
+): chain is CircleChainName => circleChainId.has(chain);
 export const isCircleChainId = (chainId: number): chainId is CircleChainId =>
   circleChainIdToChainName.has(chainId);
 

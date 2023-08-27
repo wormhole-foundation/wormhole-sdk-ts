@@ -1,4 +1,6 @@
-import { CCTPTransfer, Wormhole } from "@wormhole-foundation/connect-sdk";
+import { Wormhole } from "@wormhole-foundation/connect-sdk";
+// TODO: should we re-export the things they need? should we rename the underlying packages?
+import { TokenId } from "@wormhole-foundation/sdk-definitions";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 //
 import { TransferStuff, getStuff } from "./helpers";
@@ -21,95 +23,84 @@ import { TransferStuff, getStuff } from "./helpers";
   const source = await getStuff(sendChain);
   const destination = await getStuff(rcvChain);
 
-  await cctpTransfer(wh, source, destination);
-  // await automaticTransfer(wh, source, destination);
-  // await manualTransfer(wh, source, destination);
+  // Regular Token Bridge Transfer
+  // await tokenTransfer(wh, 'native', 100000n, source, destination, false);
+  // await tokenTransfer(wh, 'native', 100000n, source, destination, true);
+
+  // Circle USDC CCTP Transfer
+  await cctpTransfer(wh, 100000n, source, destination, false);
+  // await cctpTransfer(wh, 100000n, source, destination, true);
 })();
+
+async function tokenTransfer(
+  wh: Wormhole,
+  token: TokenId | "native",
+  amount: bigint,
+  src: TransferStuff,
+  dst: TransferStuff,
+  automatic: boolean
+) {
+  // Create a TokenTransfer object that we can step through the process.
+  // It holds a `state` field that is used to inform where in the process we are
+  const xfer = await wh.tokenTransfer(
+    token,
+    amount,
+    src.address,
+    dst.address,
+    automatic
+  );
+  console.log(xfer);
+
+  // 1) Submit the transactions to the source chain, passing a signer to sign any txns
+  console.log("Starting transfer");
+  const srcTxids = await xfer.initiateTransfer(src.signer);
+  console.log(`Started transfer: ${srcTxids}`);
+
+  // 2) wait for the VAA to be signed and ready
+  console.log("Getting Attestation");
+  const attestIds = await xfer.fetchAttestation();
+  console.log(`Got Attestation: ${attestIds}`);
+
+  // 3) redeem the VAA on the dest chain
+  if (!automatic) {
+    // 3a) Manual redemption passing a signer to sign any transactions
+    console.log("Completing Transfer");
+    const destTxids = await xfer.completeTransfer(dst.signer);
+    console.log(`Completed Transfer: ${destTxids}`);
+  } else {
+    // 3b) Automatic redemption, tracking the redemption status
+    console.log("TODO: track redemption");
+  }
+}
 
 async function cctpTransfer(
   wh: Wormhole,
+  amount: bigint,
   src: TransferStuff,
-  dst: TransferStuff
+  dst: TransferStuff,
+  automatic: boolean
 ) {
-  if (src.chain.chain !== "Avalanche") {
-    throw new Error("no plz");
-  }
-  // avax usdc addy
-  const usdc = {
-    chain: src.chain.chain,
-    address: src.chain.platform.parseAddress(
-      "0x5425890298aed601595a70AB815c96711a31Bc65"
-    ),
-  };
-
-  const txid =
-    "0xd63dcc451359f6e7ed33499bdd877b4c51a8eb26c4b300d4fdb5773793aebb04";
-  const xfer = await CCTPTransfer.from(wh, {
-    chain: src.chain.chain,
-    txid: txid,
-  });
+  const xfer = await wh.cctpTransfer(
+    amount,
+    src.address,
+    dst.address,
+    automatic
+  );
   console.log(xfer);
-  console.log(await xfer.fetchAttestation(1000));
 
-  console.log(await xfer.completeTransfer(dst.signer));
-}
+  console.log("Starting Transfer");
+  const srcTxids = await xfer.initiateTransfer(src.signer);
+  console.log(`Started Transfer: ${srcTxids}`);
 
-async function automaticTransfer(
-  wh: Wormhole,
-  src: TransferStuff,
-  dst: TransferStuff
-) {
-  // Create a TokenTransfer object that we can step through the process.
-  // It holds a `state` field that is used to inform where in the process we are
-  const tt = await wh.tokenTransfer(
-    "native",
-    10000000n,
-    src.address,
-    dst.address,
-    false
-  );
-  console.log(`Created token transfer object`);
-  console.log(tt);
+  console.log("Waiting for Attestation");
+  const attestIds = await xfer.fetchAttestation(1000);
+  console.log(`Got Attestation: ${attestIds}`);
 
-  // 1) Submit the transactions to the source chain, passing a signer to sign any txns
-  const txids = await tt.initiateTransfer(src.signer);
-  console.log(`Started transfer with txid: ${txids}`);
-
-  // 2) wait for the VAA to be signed and ready
-  const seq = await tt.fetchAttestation();
-  console.log(`VAA is ready with seq: ${seq}`);
-
-  // 3) redeem the VAA on the dest chain, passing a signer to sign any transactions
-  await tt.completeTransfer(dst.signer);
-  console.log(`Transfer is complete!`);
-}
-
-async function manualTransfer(
-  wh: Wormhole,
-  src: TransferStuff,
-  dst: TransferStuff
-) {
-  // Create a TokenTransfer object that we can step through the process.
-  // It holds a `state` field that is used to inform where in the process we are
-  const tt = await wh.tokenTransfer(
-    "native",
-    10000000n,
-    src.address,
-    dst.address,
-    false
-  );
-  console.log(`Created token transfer object`);
-  console.log(tt);
-
-  // //1) Submit the transactions to the source chain, passing a signer to sign any txns
-  const txids = await tt.initiateTransfer(src.signer);
-  console.log(`Started transfer with txid: ${txids}`);
-
-  // // 2) wait for the VAA to be signed and ready
-  // const seq = await tt.fetchAttestation();
-  // console.log(`VAA is ready with seq: ${seq}`);
-
-  // // 3) redeem the VAA on the dest chain, passing a signer to sign any transactions
-  // await tt.completeTransfer(dst.signer);
-  // console.log(`Transfer is complete!`);
+  if (!automatic) {
+    console.log("Completing Transfer");
+    const dstTxids = await xfer.completeTransfer(dst.signer);
+    console.log(`Completed Transfer: ${dstTxids}`);
+  } else {
+    console.log("TODO: track redemption");
+  }
 }
