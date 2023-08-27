@@ -59,8 +59,7 @@ class EthSigner implements Signer {
       const t: ethers.TransactionRequest = {
         ...txn.transaction,
         ...{
-          gasLimit: 200_000,
-          maxFeePerGas: 40_000_000_000,
+          gasLimit: 1_500_000_000,
           nonce: this.nonce,
         },
       };

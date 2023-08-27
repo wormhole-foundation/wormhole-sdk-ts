@@ -247,7 +247,7 @@ export class EvmContracts {
     return ethers_contracts.MessageTransmitter__factory.connect(
       // TODO:
       // @ts-ignore
-      addresses.cctpTokenMessenger,
+      addresses.cctpMessageTransmitter,
       connection,
     );
   }

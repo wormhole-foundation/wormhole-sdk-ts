@@ -77,9 +77,19 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
   ): AsyncGenerator<UnsignedTransaction> {
     const senderAddr = toEvmAddrString(sender);
 
+    const parsedMsg = new Uint8Array(
+      Buffer.from(message.startsWith('0x') ? message.slice(2) : message, 'hex'),
+    );
+    const parsedAttest = new Uint8Array(
+      Buffer.from(
+        attestation.startsWith('0x') ? attestation.slice(2) : attestation,
+        'hex',
+      ),
+    );
+
     const txReq = await this.msgTransmitter.receiveMessage.populateTransaction(
-      message,
-      attestation,
+      parsedMsg,
+      parsedAttest,
     );
 
     yield this.createUnsignedTx(
@@ -173,9 +183,11 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
     // TODO: just taking the first one here, will there be >1?
     const [messageLog] = messageLogs;
     // Need to get the message (0xdeadbeef...) to bytes prior to hashing
-    const msgBytes = new Uint8Array(
-      Buffer.from((messageLog.args.message as string).slice(2), 'hex'),
+    const message = Buffer.from(
+      (messageLog.args.message as string).slice(2),
+      'hex',
     );
+    const msgBytes = new Uint8Array(message);
     const messageHash = `0x${Buffer.from(keccak256(msgBytes)).toString('hex')}`;
 
     return {
@@ -196,6 +208,7 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
         caller: tokenLog.args.destinationCaller,
       },
       messageId: {
+        message: message.toString('hex'),
         msgHash: messageHash,
       },
     };

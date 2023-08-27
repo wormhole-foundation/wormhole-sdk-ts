@@ -22,7 +22,11 @@ import {
 } from '@wormhole-foundation/sdk-definitions';
 
 import { CCTPTransferDetails, isCCTPTransferDetails } from '../types';
-import { WormholeTransfer, TransferState } from '../wormholeTransfer';
+import {
+  WormholeTransfer,
+  TransferState,
+  AttestationId,
+} from '../wormholeTransfer';
 import { Wormhole } from '../wormhole';
 
 export class CCTPTransfer implements WormholeTransfer {
@@ -146,6 +150,8 @@ export class CCTPTransfer implements WormholeTransfer {
     if (msgIds.length > 0) {
       ct = await CCTPTransfer.fromIdentifier(wh, msgIds[0]);
     } else {
+      // TODO: fromCircleIdentifier?
+
       // Otherwise try to parse out a circle message
       const cb = await originChain.getCircleBridge();
       const circleMessage = await cb.parseTransactionDetails(txid);
@@ -167,8 +173,7 @@ export class CCTPTransfer implements WormholeTransfer {
 
       ct = new CCTPTransfer(wh, xferDeets);
       ct.state = TransferState.Initiated;
-
-      // TODO: add identifier info for circle attestation
+      ct.circleAttestations = [{ id: circleMessage.messageId }];
     }
 
     ct.txids = [from.txid];
@@ -230,7 +235,7 @@ export class CCTPTransfer implements WormholeTransfer {
     return txHashes;
   }
 
-  private async fetchWormholeAttestation(): Promise<SequenceId[]> {
+  private async fetchWormholeAttestation(): Promise<WormholeMessageId[]> {
     if (!this.vaas || this.vaas.length == 0)
       throw new Error('No VAA details available');
 
@@ -248,30 +253,31 @@ export class CCTPTransfer implements WormholeTransfer {
     }
 
     return this.vaas.map((v) => {
-      return v.id.sequence;
+      return v.id;
     });
   }
-  private async fetchCircleAttestation(): Promise<SequenceId[]> {
-    if (!this.txids || this.txids.length == 0)
-      throw new Error('No Transaction IDs details available');
 
-    const fromChain = this.wh.getChain(this.transfer.from.chain);
+  private async fetchCircleAttestation(): Promise<CircleMessageId[]> {
+    if (!this.circleAttestations || this.circleAttestations.length == 0)
+      throw new Error('No Attestation IDs details available');
 
-    for (const txHash of this.txids) {
-      const cb = await fromChain.getCircleBridge();
-      const txDeets = await cb.parseTransactionDetails(txHash);
-      console.log(txDeets);
-      const ca = await this.wh.getCircleAttestation(txDeets.messageId.msgHash);
-      console.log(ca);
+    for (const idx in this.circleAttestations) {
+      const ca = this.circleAttestations[idx];
+      // already got it
+      if (ca.attestation) continue;
+
+      this.circleAttestations[idx].attestation =
+        await this.wh.getCircleAttestation(ca.id.msgHash);
     }
 
-    // TODO
-    return [];
+    return this.circleAttestations.map((v) => {
+      return v.id;
+    });
   }
 
   // wait for the VAA to be ready
   // returns the sequence number
-  async fetchAttestation(timeout: number): Promise<SequenceId[]> {
+  async fetchAttestation(timeout: number): Promise<AttestationId[]> {
     /*
         0) check that the current `state` is valid to call this  (eg: state == Started)
         1) poll the api on an interval to check if the VAA is available
@@ -284,15 +290,16 @@ export class CCTPTransfer implements WormholeTransfer {
     )
       throw new Error('Invalid state transition in `fetchAttestation`');
 
-    let seqs: SequenceId[];
+    let ids: AttestationId[];
     if (this.transfer.automatic) {
-      seqs = await this.fetchWormholeAttestation();
+      ids = await this.fetchWormholeAttestation();
     } else {
-      seqs = await this.fetchCircleAttestation();
+      ids = await this.fetchCircleAttestation();
     }
 
     this.state = TransferState.Attested;
-    return seqs;
+
+    return ids;
   }
 
   // finish the WormholeTransfer by submitting transactions to the destination chain
@@ -308,53 +315,65 @@ export class CCTPTransfer implements WormholeTransfer {
       throw new Error('Invalid state transition in `finish`');
 
     // TODO: fetch it for 'em? We should _not_ be Ready if we dont have these
-    if (!this.vaas) throw new Error('No VAA details available');
+    if (this.transfer.automatic) {
+      if (!this.vaas) throw new Error('No VAA details available');
 
-    const toChain = this.wh.getChain(this.transfer.to.chain);
+      const toChain = this.wh.getChain(this.transfer.to.chain);
 
-    const txHashes: TxHash[] = [];
-    for (const cachedVaa of this.vaas) {
-      const vaa = cachedVaa.vaa
-        ? cachedVaa.vaa
-        : await CCTPTransfer.getTransferVaa(
-            this.wh,
-            this.transfer.from.chain,
-            cachedVaa.id.emitter,
-            cachedVaa.id.sequence,
-          );
+      const txHashes: TxHash[] = [];
+      for (const cachedVaa of this.vaas) {
+        const vaa = cachedVaa.vaa
+          ? cachedVaa.vaa
+          : await CCTPTransfer.getTransferVaa(
+              this.wh,
+              this.transfer.from.chain,
+              cachedVaa.id.emitter,
+              cachedVaa.id.sequence,
+            );
 
-      if (!vaa) throw new Error('No Vaa found');
+        if (!vaa) throw new Error('No Vaa found');
 
-      let xfer: AsyncGenerator<UnsignedTransaction> | undefined;
-      if (this.transfer.automatic) {
         if (vaa.payloadLiteral === 'CircleTransferRelay')
           throw new Error(
             'VAA is a simple transfer but expected Payload for automatic delivery',
           );
 
-        const tb = await toChain.getAutomaticTokenBridge();
-        //xfer = tb.redeem(this.transfer.to.address, vaa);
-      } else {
-        const tb = await toChain.getTokenBridge();
-        //xfer = tb.redeem(this.transfer.to.address, vaa);
+        const tb = await toChain.getAutomaticCircleBridge();
+
+        throw new Error('No method to redeem auto circle bridge tx (yet)');
       }
+      return txHashes;
+    } else {
+      if (!this.circleAttestations)
+        throw new Error('No Circle Attestation details available');
 
-      // TODO: better error
-      if (xfer === undefined)
-        throw new Error('No handler defined for VAA type');
+      const toChain = this.wh.getChain(this.transfer.to.chain);
 
-      // TODO: definitely a bug here, we _only_ send when !stackable
-      for await (const tx of xfer) {
-        if (!tx.stackable) {
-          const signed = await signer.sign([tx]);
-          const txHashes = await toChain.sendWait(signed);
-          txHashes.push(...txHashes);
-        } else {
-          // TODO...
+      const txHashes: TxHash[] = [];
+      for (const cachedAttestation of this.circleAttestations) {
+        const msg = cachedAttestation.id.message;
+        const attestation = cachedAttestation.attestation!;
+
+        const tb = await toChain.getCircleBridge();
+        const xfer = tb.redeem(this.transfer.to.address, msg, attestation);
+
+        // TODO: better error
+        if (xfer === undefined)
+          throw new Error('No handler defined for VAA type');
+
+        // TODO: definitely a bug here, we _only_ send when !stackable
+        for await (const tx of xfer) {
+          if (!tx.stackable) {
+            const signed = await signer.sign([tx]);
+            const txHashes = await toChain.sendWait(signed);
+            txHashes.push(...txHashes);
+          } else {
+            // TODO...
+          }
         }
       }
+      return txHashes;
     }
-    return txHashes;
   }
 
   static async getTransferVaa(
@@ -366,13 +385,7 @@ export class CCTPTransfer implements WormholeTransfer {
   ): Promise<VAA<'CircleTransferRelay'>> {
     const vaaBytes = await wh.getVAABytes(chain, emitter, sequence, retries);
     if (!vaaBytes) throw new Error(`No VAA available after ${retries} retries`);
-
     const partial = deserialize('Uint8Array', vaaBytes);
-
-    console.log(emitter.toString());
-    console.log(partial);
-    console.log(deserializePayload('CircleTransferRelay', partial.payload));
-
     switch (partial.payload[0]) {
       case 1:
         return deserialize('CircleTransferRelay', vaaBytes);

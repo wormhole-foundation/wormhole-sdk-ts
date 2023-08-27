@@ -25,6 +25,7 @@ export type getWormholeAttestation = (id: WormholeMessageId) => Promise<VAA>;
 // Circle Message Identifier
 // Used to fetch a Circle attestation
 export type CircleMessageId = {
+  message: string;
   msgHash: string;
 };
 export function isCircleMessageId(
@@ -33,10 +34,8 @@ export function isCircleMessageId(
   return (<CircleMessageId>thing).msgHash !== undefined;
 }
 
-export type CircleAttestation = {
-  message: string;
-  attestation: string;
-};
+// No parsing
+export type CircleAttestation = string;
 
 export type getCircleAttestation = (
   id: CircleMessageId
