@@ -1,25 +1,22 @@
-import {
-  Signer,
-  TxHash,
-  SequenceId,
-  MessageIdentifier,
-  TransactionIdentifier,
-  isMessageIdentifier,
-  isTransactionIdentifier,
-  CCTPTransferDetails,
-  isCCTPTransferDetails,
-} from '../types';
-import { WormholeTransfer, TransferState } from '../wormholeTransfer';
-import { Wormhole } from '../wormhole';
+import { ChainName, PlatformName } from '@wormhole-foundation/sdk-base';
 import {
   NativeAddress,
   UniversalAddress,
   UnsignedTransaction,
   VAA,
   deserialize,
-  toNative,
+  Signer,
+  TxHash,
+  SequenceId,
+  WormholeMessageId,
+  TransactionId,
+  isWormholeMessageId,
+  isTransactionIdentifier,
 } from '@wormhole-foundation/sdk-definitions';
-import { ChainName, PlatformName } from '@wormhole-foundation/sdk-base';
+
+import { CCTPTransferDetails, isCCTPTransferDetails } from '../types';
+import { WormholeTransfer, TransferState } from '../wormholeTransfer';
+import { Wormhole } from '../wormhole';
 
 export class CCTPTransfer implements WormholeTransfer {
   private readonly wh: Wormhole;
@@ -49,7 +46,7 @@ export class CCTPTransfer implements WormholeTransfer {
     this.transfer = transfer;
   }
 
-  transferState(): TransferState {
+  async getTransferState(): Promise<TransferState> {
     return this.state;
   }
 
@@ -60,19 +57,15 @@ export class CCTPTransfer implements WormholeTransfer {
   ): Promise<CCTPTransfer>;
   static async from(
     wh: Wormhole,
-    from: MessageIdentifier,
+    from: WormholeMessageId,
   ): Promise<CCTPTransfer>;
+  static async from(wh: Wormhole, from: TransactionId): Promise<CCTPTransfer>;
   static async from(
     wh: Wormhole,
-    from: TransactionIdentifier,
-  ): Promise<CCTPTransfer>;
-  static async from(
-    wh: Wormhole,
-    from: CCTPTransferDetails | MessageIdentifier | TransactionIdentifier,
+    from: CCTPTransferDetails | WormholeMessageId | TransactionId,
   ): Promise<CCTPTransfer> {
     let tt: CCTPTransfer | undefined;
-
-    if (isMessageIdentifier(from)) {
+    if (isWormholeMessageId(from)) {
       tt = await CCTPTransfer.fromIdentifier(wh, from);
     } else if (isTransactionIdentifier(from)) {
       tt = await CCTPTransfer.fromTransaction(wh, from);
@@ -89,9 +82,9 @@ export class CCTPTransfer implements WormholeTransfer {
   // init from the seq id
   private static async fromIdentifier(
     wh: Wormhole,
-    from: MessageIdentifier,
+    from: WormholeMessageId,
   ): Promise<CCTPTransfer> {
-    const { chain, address: emitter, sequence } = from;
+    const { chain, emitter, sequence } = from;
     const vaa = await CCTPTransfer.getTransferVaa(wh, chain, emitter, sequence);
 
     // Check if its a payload 3 targeted at a relayer on the destination chain
@@ -105,7 +98,7 @@ export class CCTPTransfer implements WormholeTransfer {
       amount: vaa.payload.token.amount,
       // TODO: the `from.address` here is a lie, but we don't
       // immediately have enough info to get the _correct_ one
-      from: { ...from },
+      from: { address: from.emitter, chain: from.chain },
       to: { ...vaa.payload.to },
       automatic,
     };
@@ -113,19 +106,19 @@ export class CCTPTransfer implements WormholeTransfer {
     const tt = new CCTPTransfer(wh, details);
     tt.vaas = [{ emitter, sequence: vaa.sequence, vaa }];
 
-    tt.state = TransferState.Ready;
+    tt.state = TransferState.Attested;
 
     return tt;
   }
   // init from source tx hash
   private static async fromTransaction(
     wh: Wormhole,
-    from: TransactionIdentifier,
+    from: TransactionId,
   ): Promise<CCTPTransfer> {
     const { chain, txid } = from;
     const originChain = wh.getChain(chain);
     // TODO: assumes VAA
-    const parsedMsgIdent: MessageIdentifier[] =
+    const parsedMsgIdent: WormholeMessageId[] =
       await originChain.parseTransaction(txid);
     // If we found a VAA message, use it
     if (parsedMsgIdent.length !== 0)
@@ -155,7 +148,7 @@ export class CCTPTransfer implements WormholeTransfer {
 
   // start the WormholeTransfer by submitting transactions to the source chain
   // returns a transaction hash
-  async start(signer: Signer): Promise<TxHash[]> {
+  async initiateTransfer(signer: Signer): Promise<TxHash[]> {
     /*
         0) check that the current `state` is valid to call this (eg: state == Created)
         1) get a token transfer transaction for the token bridge given the context  
@@ -204,7 +197,7 @@ export class CCTPTransfer implements WormholeTransfer {
     console.log(txHashes);
 
     this.txids = txHashes;
-    this.state = TransferState.Started;
+    this.state = TransferState.Initiated;
 
     return txHashes;
   }
@@ -240,7 +233,7 @@ export class CCTPTransfer implements WormholeTransfer {
       const cb = await fromChain.getCircleBridge();
       const txDeets = await cb.parseTransactionDetails(txHash);
       console.log(txDeets);
-      const ca = this.wh.getCircleAttestation(txDeets.messageHash.toString());
+      const ca = this.wh.getCircleAttestation(txDeets.messageId.msgHash);
       console.log(ca);
     }
 
@@ -250,14 +243,17 @@ export class CCTPTransfer implements WormholeTransfer {
 
   // wait for the VAA to be ready
   // returns the sequence number
-  async ready(): Promise<SequenceId[]> {
+  async fetchAttestation(timeout: number): Promise<SequenceId[]> {
     /*
         0) check that the current `state` is valid to call this  (eg: state == Started)
         1) poll the api on an interval to check if the VAA is available
         2) Once available, pull the VAA and parse it
         3) return seq
     */
-    if (this.state < TransferState.Started || this.state > TransferState.Ready)
+    if (
+      this.state < TransferState.Initiated ||
+      this.state > TransferState.Attested
+    )
       throw new Error('Invalid state transition in `ready`');
 
     let seqs: SequenceId[];
@@ -267,20 +263,20 @@ export class CCTPTransfer implements WormholeTransfer {
       seqs = await this.readyManual();
     }
 
-    this.state = TransferState.Ready;
+    this.state = TransferState.Attested;
     return seqs;
   }
 
   // finish the WormholeTransfer by submitting transactions to the destination chain
   // returns a transaction hash
-  async finish(signer: Signer): Promise<TxHash[]> {
+  async completeTransfer(signer: Signer): Promise<TxHash[]> {
     /*
         0) check that the current `state` is valid to call this  (eg: state == Ready)
         1) prepare the transactions and sign them given the signer
         2) submit the VAA and transactions on chain
         3) return txid of submission
     */
-    if (this.state < TransferState.Ready)
+    if (this.state < TransferState.Attested)
       throw new Error('Invalid state transition in `finish`');
 
     // TODO: fetch it for 'em? We should _not_ be Ready if we dont have these

@@ -1,6 +1,11 @@
-import { ChainName, ChainId } from '@wormhole-foundation/sdk-base';
+import {
+  ChainName,
+  ChainId,
+  contracts,
+  platformToChains,
+  toChainName,
+} from '@wormhole-foundation/sdk-base';
 import { Wormhole } from '../../src/wormhole';
-import { contracts, platformToChains } from '@wormhole-foundation/sdk-base';
 
 export class MockContracts {
   protected _contracts: Map<ChainName, any>;
@@ -16,12 +21,12 @@ export class MockContracts {
   }
 
   getContracts(chain: ChainName | ChainId): any | undefined {
-    const chainName = Wormhole.toChainName(chain);
+    const chainName = toChainName(chain);
     return this._contracts.get(chainName);
   }
 
   mustGetContracts(chain: ChainName | ChainId): any {
-    const chainName = Wormhole.toChainName(chain);
+    const chainName = toChainName(chain);
     const contracts = this._contracts.get(chainName);
     if (!contracts) throw new Error(`no Sui contracts found for ${chain}`);
     return contracts;

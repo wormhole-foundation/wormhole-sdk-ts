@@ -5,7 +5,6 @@ import {
   Network,
   evmChainIdToNetworkChainPair,
   evmNetworkChainToEvmChainId,
-  ChainName,
   toChainName,
 } from '@wormhole-foundation/sdk-base';
 import {
@@ -14,6 +13,7 @@ import {
   UniversalAddress,
   ChainAddress,
   TokenBridge,
+  TxHash,
   keccak256,
 } from '@wormhole-foundation/sdk-definitions';
 
@@ -23,7 +23,7 @@ import {
   TokenBridgeContract,
   TokenImplementation__factory as TokenContractFactory,
 } from '../ethers-contracts';
-import { Provider, TransactionRequest, ethers } from 'ethers';
+import { Provider, TransactionRequest } from 'ethers';
 import { EvmContracts } from '../contracts';
 import {
   EvmChainName,
@@ -34,10 +34,7 @@ import {
   unusedArbiterFee,
   unusedNonce,
 } from '../types';
-import {
-  TokenTransferTransaction,
-  TxHash,
-} from '@wormhole-foundation/connect-sdk';
+import { TokenTransferTransaction } from '@wormhole-foundation/connect-sdk';
 import { BridgeStructs } from '../ethers-contracts/Bridge';
 
 //a word on casts here:
@@ -330,7 +327,7 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
           tx: { chain: this.chain, txid },
           msg: {
             chain: this.chain,
-            address: bridgeAddress,
+            emitter: bridgeAddress,
             sequence: parsed.args.sequence,
           },
           payloadId: parsedTransfer.payloadID,

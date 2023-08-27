@@ -1,8 +1,24 @@
-import { ChainName, PlatformName } from "@wormhole-foundation/sdk-base";
+import { PlatformName } from "@wormhole-foundation/sdk-base";
 import { UniversalOrNative, ChainAddress } from "../address";
+import { CircleMessageId } from "../attestation";
 import { UnsignedTransaction } from "../unsignedTransaction";
+import { TxHash } from "../types";
 
-//https://github.com/circlefin/evm-cctp-contracts
+// https://github.com/circlefin/evm-cctp-contracts
+
+// TODO: Genericize to support other platforms
+export type CircleTransferDetails = {
+  txid: TxHash;
+  from: ChainAddress;
+  amount: bigint;
+  destination: {
+    domain: number;
+    recipient: string;
+    tokenMessenger: string;
+    caller: string;
+  };
+  messageId: CircleMessageId;
+};
 
 export interface WormholeCircleRelayer<P extends PlatformName> {
   transfer(
@@ -13,24 +29,6 @@ export interface WormholeCircleRelayer<P extends PlatformName> {
     nativeGas?: bigint
   ): AsyncGenerator<UnsignedTransaction>;
 }
-
-// TODO: Genericize to support other platforms
-export type CCTPInfo = {
-  fromChain: ChainName;
-  txid: string;
-  block: bigint;
-  gasUsed: string;
-  depositor: string;
-  amount: bigint;
-  destination: {
-    domain: number;
-    recipient: string;
-    tokenMessenger: string;
-    caller: string;
-  };
-  message: string;
-  messageHash: Uint8Array;
-};
 
 export interface CircleBridge<P extends PlatformName> {
   redeem(
@@ -44,5 +42,5 @@ export interface CircleBridge<P extends PlatformName> {
     recipient: ChainAddress,
     amount: bigint
   ): AsyncGenerator<UnsignedTransaction>;
-  parseTransactionDetails(txid: string): Promise<CCTPInfo>;
+  parseTransactionDetails(txid: string): Promise<CircleTransferDetails>;
 }

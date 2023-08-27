@@ -6,12 +6,14 @@ import {
 } from '@wormhole-foundation/sdk-base';
 import {
   ChainAddress,
-  CCTPInfo,
+  CircleTransferDetails,
   CircleBridge,
   UnsignedTransaction,
   keccak256,
+  TokenId,
 } from '@wormhole-foundation/sdk-definitions';
 
+import { EvmAddress } from '../address';
 import {
   addFrom,
   addChainId,
@@ -23,7 +25,6 @@ import { EvmUnsignedTransaction } from '../unsignedTransaction';
 import { MessageTransmitter, TokenMessenger } from '../ethers-contracts';
 import { LogDescription, Provider, TransactionRequest } from 'ethers';
 import { EvmContracts } from '../contracts';
-import { TokenId } from '@wormhole-foundation/connect-sdk';
 
 //https://github.com/circlefin/evm-cctp-contracts
 
@@ -126,13 +127,6 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
       );
     }
 
-    // TODO: config for cctpDomain
-    // https://developers.circle.com/stablecoin/docs/cctp-technical-reference#domain-list
-    const chainNameToCircleId = {
-      Ethereum: 0n,
-      Avalanche: 1n,
-      Arbitrum: 3n,
-    };
     const txReq = await this.tokenMessenger.depositForBurn.populateTransaction(
       amount,
       // @ts-ignore
@@ -148,7 +142,7 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
   }
 
   // https://goerli.etherscan.io/tx/0xe4984775c76b8fe7c2b09cd56fb26830f6e5c5c6b540eb97d37d41f47f33faca#eventlog
-  async parseTransactionDetails(txid: string): Promise<CCTPInfo> {
+  async parseTransactionDetails(txid: string): Promise<CircleTransferDetails> {
     const receipt = await this.provider.getTransactionReceipt(txid);
     if (!receipt) throw new Error(`No receipt for ${txid} on ${this.chain}`);
 
@@ -197,11 +191,8 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
     const messageHash = keccak256(messageLog.args.message);
 
     return {
-      fromChain: this.chain,
+      from: { chain: this.chain, address: new EvmAddress(receipt.from) },
       txid: receipt.hash,
-      block: BigInt(receipt.blockNumber),
-      gasUsed: receipt.gasUsed.toString(),
-      depositor: receipt.from,
       amount: tokenLog.args.amount,
       destination: {
         recipient: tokenLog.args.mintRecipient,
@@ -209,8 +200,9 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
         tokenMessenger: tokenLog.args.destinationTokenMessenger,
         caller: tokenLog.args.destinationCaller,
       },
-      message: messageLog.args.message,
-      messageHash,
+      messageId: {
+        msgHash: messageHash.toString(),
+      },
     };
   }
 

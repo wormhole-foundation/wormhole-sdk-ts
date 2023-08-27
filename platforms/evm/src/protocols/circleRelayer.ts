@@ -6,6 +6,7 @@ import {
 import {
   ChainAddress,
   WormholeCircleRelayer,
+  TokenId,
 } from '@wormhole-foundation/sdk-definitions';
 
 import {
@@ -19,7 +20,6 @@ import { EvmUnsignedTransaction } from '../unsignedTransaction';
 import { CircleRelayer } from '../ethers-contracts';
 import { Provider, TransactionRequest } from 'ethers';
 import { EvmContracts } from '../contracts';
-import { TokenId } from '@wormhole-foundation/connect-sdk';
 
 export class EvmCircleRelayer implements WormholeCircleRelayer<'Evm'> {
   readonly contracts: EvmContracts;

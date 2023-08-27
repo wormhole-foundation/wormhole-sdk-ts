@@ -2,21 +2,22 @@ import {
   AutomaticTokenBridge,
   TokenBridge,
   UniversalAddress,
+  Platform,
+  RpcConnection,
+  ChainContext,
+  SignedTxn,
+  TxHash,
+  TokenId,
+  WormholeMessageId,
+  CircleBridge,
+  WormholeCircleRelayer,
 } from '@wormhole-foundation/sdk-definitions';
 import {
   ChainName,
   Network,
   PlatformName,
 } from '@wormhole-foundation/sdk-base';
-import {
-  Platform,
-  RpcConnection,
-  ChainContext,
-  SignedTxn,
-  TxHash,
-  TokenTransferTransaction,
-  TokenId,
-} from '../../src/';
+import { TokenTransferTransaction } from '../../src/';
 import { MockPlatform, MockRpc } from './mockPlatform';
 import { MockTokenBridge } from './mockTokenBridge';
 
@@ -48,6 +49,12 @@ export class MockChain implements ChainContext {
   }
 
   async getAutomaticTokenBridge(): Promise<AutomaticTokenBridge<PlatformName>> {
+    throw new Error('Method not implemented.');
+  }
+  async getCircleBridge(): Promise<CircleBridge<PlatformName>> {
+    throw new Error('Method not implemented.');
+  }
+  async getCircleRelayer(): Promise<WormholeCircleRelayer<PlatformName>> {
     throw new Error('Method not implemented.');
   }
 
@@ -91,7 +98,7 @@ export class MockChain implements ChainContext {
     );
   }
 
-  async parseTransaction(txid: string): Promise<TokenTransferTransaction[]> {
+  async parseTransaction(txid: string): Promise<WormholeMessageId[]> {
     return [];
   }
 }

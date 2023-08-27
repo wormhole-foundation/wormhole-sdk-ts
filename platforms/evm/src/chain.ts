@@ -5,18 +5,15 @@ import {
   CircleBridge,
   TokenBridge,
   UniversalAddress,
-} from '@wormhole-foundation/sdk-definitions';
-import { ethers } from 'ethers';
-import { EvmPlatform } from './platform';
-import {
   ChainContext,
   TokenId,
   TxHash,
   SignedTxn,
-  TokenTransferTransaction,
-  ChainConfig,
-  MessageIdentifier,
-} from '@wormhole-foundation/connect-sdk';
+  WormholeMessageId,
+} from '@wormhole-foundation/sdk-definitions';
+import { ethers } from 'ethers';
+import { EvmPlatform } from './platform';
+import { ChainConfig } from '@wormhole-foundation/connect-sdk';
 
 export class EvmChain implements ChainContext {
   readonly chain: ChainName;
@@ -73,7 +70,7 @@ export class EvmChain implements ChainContext {
     return this.circleBridge;
   }
 
-  async parseTransaction(txid: string): Promise<MessageIdentifier[]> {
+  async parseTransaction(txid: string): Promise<WormholeMessageId[]> {
     return await this.platform.parseTransaction(
       this.chain,
       this.getRpc(),

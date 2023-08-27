@@ -11,16 +11,13 @@ import {
   VAA,
   ChainAddress,
   NativeAddress,
+  TokenId,
+  Platform,
+  ChainContext,
 } from '@wormhole-foundation/sdk-definitions';
 import axios, { AxiosResponse } from 'axios';
 
-import {
-  TokenId,
-  WormholeConfig,
-  PlatformCtr,
-  Platform,
-  ChainContext,
-} from './types';
+import { WormholeConfig, PlatformCtr } from './types';
 
 import { CONFIG } from './constants';
 import { TokenTransfer } from './protocols/tokenTransfer';

@@ -1,4 +1,3 @@
-import { EvmAddress } from '@wormhole-foundation/connect-sdk-evm';
 import { PlatformName } from '@wormhole-foundation/sdk-base';
 import {
   ChainAddress,

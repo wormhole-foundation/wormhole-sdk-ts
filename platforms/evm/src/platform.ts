@@ -2,32 +2,27 @@ import {
   Network,
   ChainName,
   PlatformName,
-  toChainName,
 } from '@wormhole-foundation/sdk-base';
 import {
   RpcConnection,
   TokenId,
-  TokenTransferTransaction,
   TxHash,
   Platform,
-  ChainsConfig,
-  MessageIdentifier,
-  isMessageIdentifier,
+  WormholeMessageId,
+  isWormholeMessageId,
   SignedTxn,
-} from '@wormhole-foundation/connect-sdk';
-import {
   AutomaticTokenBridge,
   WormholeCircleRelayer,
   TokenBridge,
   UniversalAddress,
   CircleBridge,
 } from '@wormhole-foundation/sdk-definitions';
+import { ChainsConfig } from '@wormhole-foundation/connect-sdk';
 
 import { ethers } from 'ethers';
 import { EvmContracts } from './contracts';
 import { EvmChain } from './chain';
 import { EvmAddress } from './address';
-import { BridgeStructs } from './ethers-contracts/Bridge';
 
 import { EvmTokenBridge } from './protocols/tokenBridge';
 import { EvmAutomaticTokenBridge } from './protocols/automaticTokenBridge';
@@ -163,7 +158,7 @@ export class EvmPlatform implements Platform {
     chain: ChainName,
     rpc: ethers.Provider,
     txid: TxHash,
-  ): Promise<MessageIdentifier[]> {
+  ): Promise<WormholeMessageId[]> {
     const receipt = await rpc.getTransactionReceipt(txid);
 
     if (receipt === null)
@@ -183,10 +178,10 @@ export class EvmPlatform implements Platform {
         if (parsed === null) return undefined;
         return {
           chain: chain,
-          address: this.parseAddress(parsed.args.sender),
+          emitter: this.parseAddress(parsed.args.sender),
           sequence: parsed.args.sequence,
-        } as MessageIdentifier;
+        } as WormholeMessageId;
       })
-      .filter(isMessageIdentifier);
+      .filter(isWormholeMessageId);
   }
 }
