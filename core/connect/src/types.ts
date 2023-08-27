@@ -26,6 +26,7 @@ export type ChainsConfig = {
 export type WormholeConfig = {
   network: Network;
   api: string;
+  circleAPI: string;
   chains: ChainsConfig;
 };
 

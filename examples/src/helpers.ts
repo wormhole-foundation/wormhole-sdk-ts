@@ -1,14 +1,40 @@
+import { ChainName } from "@wormhole-foundation/sdk-base";
+import {
+  Signer,
+  ChainContext,
+  ChainAddress,
+  SignedTxn,
+  UnsignedTransaction,
+} from "@wormhole-foundation/sdk-definitions";
+
 import bs58 from "bs58";
 import { ethers } from "ethers";
 import { Keypair } from "@solana/web3.js";
-import { SignedTxn, Signer } from "@wormhole-foundation/connect-sdk";
-import { ChainName } from "@wormhole-foundation/sdk-base";
-import { UnsignedTransaction } from "@wormhole-foundation/sdk-definitions";
 
 // read in from `.env`
 require("dotenv").config();
 
 // TODO: err msg instructing dev to `cp .env.template .env` and set values
+
+export type TransferStuff = {
+  chain: ChainContext;
+  signer: Signer;
+  address: ChainAddress;
+};
+
+export async function getStuff(chain: ChainContext): Promise<TransferStuff> {
+  const signer = await getEvmSigner(
+    chain.chain,
+    chain.getRpc() as ethers.Provider
+  );
+
+  const address: ChainAddress = {
+    chain: signer.chain(),
+    address: chain.platform.parseAddress(signer.address()),
+  };
+
+  return { chain, signer, address };
+}
 
 export function getSolSigner(): Keypair {
   const pk = process.env.SOL_PRIVATE_KEY!;

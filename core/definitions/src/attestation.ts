@@ -13,7 +13,11 @@ export type WormholeMessageId = {
 export function isWormholeMessageId(
   thing: WormholeMessageId | any
 ): thing is WormholeMessageId {
-  return (<WormholeMessageId>thing).sequence !== undefined;
+  return (
+    (<WormholeMessageId>thing).sequence !== undefined &&
+    (<WormholeMessageId>thing).emitter !== undefined &&
+    (<WormholeMessageId>thing).chain !== undefined
+  );
 }
 
 export type getWormholeAttestation = (id: WormholeMessageId) => Promise<VAA>;

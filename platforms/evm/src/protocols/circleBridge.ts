@@ -41,20 +41,6 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
   readonly msgTransmitter: MessageTransmitter.MessageTransmitter;
   readonly tokenMessenger: TokenMessenger.TokenMessenger;
 
-  // TODO: config for cctpDomain
-  // https://developers.circle.com/stablecoin/docs/cctp-technical-reference#domain-list
-  readonly chainNameToCircleId = {
-    Ethereum: 0,
-    Avalanche: 1,
-    Arbitrum: 3,
-  };
-
-  readonly circleIdToChainName = Object.fromEntries(
-    Object.entries(this.chainNameToCircleId).map(([k, v]) => {
-      return [v, k];
-    }),
-  );
-
   private constructor(
     readonly network: 'Mainnet' | 'Testnet',
     readonly chain: EvmChainName,
@@ -184,16 +170,22 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
         `No log message for message transmitter found in ${txid}`,
       );
 
+    // TODO: just taking the first one here, will there be >1?
     const [messageLog] = messageLogs;
-
-    const messageHash = keccak256(messageLog.args.message);
+    const messageHash = `0x${Buffer.from(
+      keccak256(messageLog.args.message),
+    ).toString('hex')}`;
 
     return {
+      txid: receipt.hash,
       from: {
         chain: this.chain,
         address: new EvmAddress(receipt.from).toUniversalAddress(),
       },
-      txid: receipt.hash,
+      token: {
+        chain: this.chain,
+        address: new EvmAddress(tokenLog.args.burnToken).toUniversalAddress(),
+      },
       amount: tokenLog.args.amount,
       destination: {
         recipient: tokenLog.args.mintRecipient,
@@ -202,7 +194,7 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
         caller: tokenLog.args.destinationCaller,
       },
       messageId: {
-        msgHash: messageHash.toString(),
+        msgHash: messageHash,
       },
     };
   }

@@ -39,8 +39,7 @@ export class TokenTransfer implements WormholeTransfer {
   // The corresponding vaa representing the TokenTransfer
   // on the source chain (if its been completed and finalized)
   vaas?: {
-    emitter: UniversalAddress | NativeAddress<PlatformName>;
-    sequence: bigint;
+    id: WormholeMessageId;
     vaa?: VAA<'Transfer'> | VAA<'TransferWithPayload'>;
   }[];
 
@@ -114,7 +113,9 @@ export class TokenTransfer implements WormholeTransfer {
     };
 
     const tt = new TokenTransfer(wh, details);
-    tt.vaas = [{ emitter, sequence: vaa.sequence, vaa }];
+    tt.vaas = [
+      { id: { emitter, sequence: vaa.sequence, chain: from.chain }, vaa },
+    ];
 
     tt.state = TransferState.Attested;
 
@@ -201,7 +202,9 @@ export class TokenTransfer implements WormholeTransfer {
       const { emitter, sequence } = msg;
 
       if (!this.vaas) this.vaas = [];
-      this.vaas.push({ emitter: emitter, sequence: sequence });
+      this.vaas.push({
+        id: { emitter, sequence, chain: fromChain.chain },
+      });
     }
 
     return txHashes;
@@ -233,14 +236,14 @@ export class TokenTransfer implements WormholeTransfer {
       this.vaas[idx].vaa = await TokenTransfer.getTransferVaa(
         this.wh,
         this.transfer.from.chain,
-        this.vaas[idx].emitter,
-        this.vaas[idx].sequence,
+        this.vaas[idx].id.emitter,
+        this.vaas[idx].id.sequence,
       );
     }
 
     this.state = TransferState.Attested;
     return this.vaas.map((v) => {
-      return v.sequence;
+      return v.id.sequence;
     });
   }
 
@@ -268,8 +271,8 @@ export class TokenTransfer implements WormholeTransfer {
         : await TokenTransfer.getTransferVaa(
             this.wh,
             this.transfer.from.chain,
-            cachedVaa.emitter,
-            cachedVaa.sequence,
+            cachedVaa.id.emitter,
+            cachedVaa.id.sequence,
           );
 
       if (!vaa) throw new Error('No Vaa found');

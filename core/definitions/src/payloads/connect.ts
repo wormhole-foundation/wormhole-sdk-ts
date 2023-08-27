@@ -1,23 +1,36 @@
 import { ShallowMapping } from "@wormhole-foundation/sdk-base";
-import { payloadIdItem, universalAddressItem, amountItem } from "../layout-items";
+import {
+  payloadIdItem,
+  universalAddressItem,
+  amountItem,
+  chainItem,
+} from "../layout-items";
 import { registerPayloadType } from "../vaa";
-import { transferWithPayloadLayout } from "./tokenBridge";
 
-const transferWithRelayLayout = [
+const circleTransferRelay = [
   payloadIdItem(1),
+  {
+    name: "token",
+    binary: "object",
+    layout: [
+      { name: "address", ...universalAddressItem },
+      { name: "amount", ...amountItem },
+    ],
+  },
+  { name: "destinationDomain", binary: "uint", size: 8 },
+  { name: "nonce", binary: "uint", size: 8 },
+  { name: "caller", ...universalAddressItem },
+  { name: "mintRecipient", ...universalAddressItem },
+  // TODO:
+  { name: "idk", binary: "uint", size: 2 },
+  { name: "otherpayloadid", binary: "uint", size: 1, exclude: true },
   { name: "targetRelayerFee", ...amountItem },
   { name: "toNativeTokenAmount", ...amountItem },
   { name: "targetRecipient", ...universalAddressItem },
 ] as const;
 
 export const connectPayloads = [
-  [
-    "ConnectTransferLayout",
-    transferWithPayloadLayout({
-      binary: "object",
-      layout: transferWithRelayLayout,
-    })
-  ],
+  ["CircleTransferRelay", circleTransferRelay],
 ] as const;
 
 // factory registration:
