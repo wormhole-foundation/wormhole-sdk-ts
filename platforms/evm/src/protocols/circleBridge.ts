@@ -172,9 +172,11 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
 
     // TODO: just taking the first one here, will there be >1?
     const [messageLog] = messageLogs;
-    const messageHash = `0x${Buffer.from(
-      keccak256(messageLog.args.message),
-    ).toString('hex')}`;
+    // Need to get the message (0xdeadbeef...) to bytes prior to hashing
+    const msgBytes = new Uint8Array(
+      Buffer.from((messageLog.args.message as string).slice(2), 'hex'),
+    );
+    const messageHash = `0x${Buffer.from(keccak256(msgBytes)).toString('hex')}`;
 
     return {
       txid: receipt.hash,

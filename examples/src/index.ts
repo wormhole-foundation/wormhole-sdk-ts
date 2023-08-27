@@ -41,11 +41,13 @@ async function cctpTransfer(
       "0x5425890298aed601595a70AB815c96711a31Bc65"
     ),
   };
+  //const txid = "0xe4984775c76b8fe7c2b09cd56fb26830f6e5c5c6b540eb97d37d41f47f33faca";
+  //const txid = "0xd63dcc451359f6e7ed33499bdd877b4c51a8eb26c4b300d4fdb5773793aebb04";
   const txid =
-    "0xe4984775c76b8fe7c2b09cd56fb26830f6e5c5c6b540eb97d37d41f47f33faca";
+    "0x2286e468764e5345978a84f4de3ad211d5b7e7c59b98590dd5eb5e95e72a2c7e";
 
   const xfer = await CCTPTransfer.from(wh, {
-    chain: dst.chain.chain,
+    chain: src.chain.chain,
     txid: txid,
   });
   console.log(xfer);

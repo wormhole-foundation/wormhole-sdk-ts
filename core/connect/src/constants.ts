@@ -69,7 +69,7 @@ export const chainConfigs = constMap(chainConfigMapping);
 const sharedConfig: WormholeConfig = {
   network: 'Testnet',
   api: 'https://api.testnet.wormholescan.io',
-  circleAPI: 'https://iris-api-sandbox.circle.com/attestations',
+  circleAPI: 'https://iris-api-sandbox.circle.com/v1/attestations',
   chains: chainConfigs('Testnet'),
 } as const;
 
@@ -77,7 +77,7 @@ export const CONFIG = {
   Mainnet: {
     network: 'Mainnet',
     api: 'https://api.wormholescan.io',
-    circleAPI: 'https://iris-api.circle.com/attestations',
+    circleAPI: 'https://iris-api.circle.com/v1/attestations',
     chains: chainConfigs('Mainnet'),
   },
   Testnet: sharedConfig,

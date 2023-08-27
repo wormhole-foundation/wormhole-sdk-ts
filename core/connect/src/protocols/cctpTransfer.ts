@@ -167,6 +167,7 @@ export class CCTPTransfer implements WormholeTransfer {
 
       ct = new CCTPTransfer(wh, xferDeets);
       ct.state = TransferState.Initiated;
+
       // TODO: add identifier info for circle attestation
     }
 

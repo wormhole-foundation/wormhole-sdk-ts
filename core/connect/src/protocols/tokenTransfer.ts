@@ -12,11 +12,7 @@ import {
   isWormholeMessageId,
   isTransactionIdentifier,
 } from '@wormhole-foundation/sdk-definitions';
-import {
-  isTokenTransferDetails,
-  TokenTransferDetails,
-  TokenTransferTransaction,
-} from '../types';
+import { isTokenTransferDetails, TokenTransferDetails } from '../types';
 import { WormholeTransfer, TransferState } from '../wormholeTransfer';
 import { Wormhole } from '../wormhole';
 import { ChainName, PlatformName } from '@wormhole-foundation/sdk-base';
