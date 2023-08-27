@@ -13,7 +13,11 @@ import {
   isTransactionIdentifier,
 } from '@wormhole-foundation/sdk-definitions';
 import { isTokenTransferDetails, TokenTransferDetails } from '../types';
-import { WormholeTransfer, TransferState } from '../wormholeTransfer';
+import {
+  WormholeTransfer,
+  TransferState,
+  AttestationId,
+} from '../wormholeTransfer';
 import { Wormhole } from '../wormhole';
 import { ChainName, PlatformName } from '@wormhole-foundation/sdk-base';
 
@@ -208,7 +212,7 @@ export class TokenTransfer implements WormholeTransfer {
 
   // wait for the VAA to be ready
   // returns the sequence number
-  async fetchAttestation(): Promise<SequenceId[]> {
+  async fetchAttestation(): Promise<AttestationId[]> {
     /*
         0) check that the current `state` is valid to call this  (eg: state == Started)
         1) poll the api on an interval to check if the VAA is available
@@ -239,7 +243,7 @@ export class TokenTransfer implements WormholeTransfer {
 
     this.state = TransferState.Attested;
     return this.vaas.map((v) => {
-      return v.id.sequence;
+      return v.id;
     });
   }
 

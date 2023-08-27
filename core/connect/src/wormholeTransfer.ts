@@ -1,7 +1,12 @@
-import { Signer, TxHash } from '@wormhole-foundation/sdk-definitions';
+import {
+  Signer,
+  TxHash,
+  WormholeMessageId,
+  CircleMessageId,
+} from '@wormhole-foundation/sdk-definitions';
 
 // Could be VAA or Circle or ..?
-export type AttestationId = any;
+export type AttestationId = WormholeMessageId | CircleMessageId;
 
 // Transfer state machine states
 export enum TransferState {
