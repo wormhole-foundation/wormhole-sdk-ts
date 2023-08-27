@@ -45,7 +45,8 @@ class EthSigner implements Signer {
   constructor(
     private _chain: ChainName,
     private _wallet: ethers.Wallet,
-    private nonce: number
+    private nonce: number,
+    private provider: ethers.Provider
   ) {}
   chain(): ChainName {
     return this._chain;
@@ -55,11 +56,19 @@ class EthSigner implements Signer {
   }
   async sign(tx: UnsignedTransaction[]): Promise<SignedTxn[]> {
     const signed = [];
+
+    let { gasPrice } = await this.provider.getFeeData();
+    if (!gasPrice) gasPrice = 50_000_000_000n;
+
     for (const txn of tx) {
+      const est = await this.provider.estimateGas(txn.transaction);
+      const limit = gasPrice * est * 2n;
+
       const t: ethers.TransactionRequest = {
         ...txn.transaction,
         ...{
-          gasLimit: 1_500_000_000,
+          gasLimit: limit,
+          maxFeePerGas: gasPrice,
           nonce: this.nonce,
         },
       };
@@ -79,5 +88,5 @@ export async function getEvmSigner(
 
   const txCount = await provider.getTransactionCount(wallet.address);
 
-  return new EthSigner(chain, wallet, txCount);
+  return new EthSigner(chain, wallet, txCount, provider);
 }

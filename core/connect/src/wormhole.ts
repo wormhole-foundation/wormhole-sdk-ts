@@ -4,6 +4,8 @@ import {
   Network,
   Contracts,
   toChainId,
+  isCircleChain,
+  usdcContract,
 } from '@wormhole-foundation/sdk-base';
 import {
   UniversalAddress,
@@ -14,6 +16,7 @@ import {
   TokenId,
   Platform,
   ChainContext,
+  toNative,
 } from '@wormhole-foundation/sdk-definitions';
 import axios, { AxiosResponse } from 'axios';
 
@@ -54,7 +57,6 @@ export class Wormhole {
   }
 
   async cctpTransfer(
-    token: TokenId,
     amount: bigint,
     from: ChainAddress,
     to: ChainAddress,
@@ -64,13 +66,24 @@ export class Wormhole {
     if (automatic && payload)
       throw new Error('Payload with automatic delivery is not supported');
 
+    if (!isCircleChain(from.chain))
+      throw new Error('Payload with automatic delivery is not supported');
+
+    // TODO: devnet
+    // @ts-ignore
+    const contract = usdcContract(this.network, from.chain);
+    const token: TokenId = {
+      chain: from.chain,
+      address: toNative(from.chain, contract),
+    };
+
     return await CCTPTransfer.from(this, {
-      token: token,
-      amount: amount,
+      token,
+      amount,
       from,
       to,
-      automatic: automatic,
-      payload: payload,
+      automatic,
+      payload,
     });
   }
 

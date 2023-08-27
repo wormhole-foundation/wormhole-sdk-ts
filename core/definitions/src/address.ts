@@ -59,7 +59,9 @@ export type ChainAddress<C extends ChainName = ChainName> = {
   readonly address: UniversalAddress | NativeAddress<C>;
 };
 
-type NativeAddressCtr = new (ua: UniversalAddress) => Address;
+type NativeAddressCtr = new (
+  ua: UniversalAddress | string | Uint8Array
+) => Address;
 
 const nativeFactory = new Map<PlatformName, NativeAddressCtr>();
 
@@ -77,7 +79,7 @@ export function registerNative<P extends MappedPlatforms>(
 
 export function toNative<T extends PlatformName | ChainName>(
   chainOrPlatform: T,
-  ua: UniversalAddress
+  ua: UniversalAddress | string | Uint8Array
 ): NativeAddress<T> {
   const platform: PlatformName = isChain(chainOrPlatform)
     ? chainToPlatform.get(chainOrPlatform)!
