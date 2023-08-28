@@ -22,6 +22,7 @@ const usdcContracts = [
     [
       ["Ethereum", "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"],
       ["Avalanche", "0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e"],
+      ["Arbitrum", "0xff970a61a04b1ca14834a43f5de4533ebddb5cc8"],
     ],
   ],
   [
@@ -29,6 +30,7 @@ const usdcContracts = [
     [
       ["Avalanche", "0x5425890298aed601595a70AB815c96711a31Bc65"],
       ["Ethereum", "0x07865c6e87b9f70255377e024ace6630c1eaa37f"],
+      ["Arbitrum", "0x179522635726710dd7d2035a81d856de4aa7836c"],
     ],
   ],
 ] as const satisfies RoArray<

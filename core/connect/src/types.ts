@@ -47,6 +47,7 @@ export type CCTPTransferDetails = {
   to: ChainAddress;
   automatic?: boolean;
   payload?: Uint8Array;
+  nativeGas?: bigint;
 };
 
 export type WormholeMessage = {

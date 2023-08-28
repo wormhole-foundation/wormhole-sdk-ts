@@ -1,12 +1,11 @@
 import {
-  CCTPTransfer,
   TokenTransfer,
   TransferState,
   Wormhole,
   WormholeTransfer,
 } from "@wormhole-foundation/connect-sdk";
 // TODO: should we re-export the things they need? should we rename the underlying packages?
-import { TokenId, TxHash } from "@wormhole-foundation/sdk-definitions";
+import { TokenId } from "@wormhole-foundation/sdk-definitions";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 //
 import { TransferStuff, getStuff } from "./helpers";
@@ -14,22 +13,16 @@ import { TransferStuff, getStuff } from "./helpers";
 /*
 TODOS:
 
-- Test different Assets
-- Test Automatic redeem
-
+- Arbitrum rpc?
+- Test !native Assets in token bridge 
+- Better tracking of auto-redeem, use target contract?
 - gas dropoff
-- track automatic completion
+- tx finalization estimate
 - event emission/subscription for status changes 
 - add gateway protocol 
-
 - Validation of inputs (amount > dust, etc..)
-
-- re-export from connect?
-- gas estimation?
-- use fetchAttestations in complete transfer instead of erroring?
-
-Avax=>polygon never relayed?
-0xb2f0c9ccb6e9e78f48113038fdea7b9b35ad3241586ae73a7ae959e7c8209710
+- re-export common types from connect?
+- gas estimation of routes?
 
 */
 
@@ -39,22 +32,18 @@ Avax=>polygon never relayed?
   const wh = new Wormhole("Testnet", [EvmPlatform]);
 
   // Grab chain Contexts
-  const sendChain = wh.getChain("Ethereum");
-  const rcvChain = wh.getChain("Avalanche");
+  const sendChain = wh.getChain("Avalanche");
+  const rcvChain = wh.getChain("Ethereum");
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
   const source = await getStuff(sendChain);
   const destination = await getStuff(rcvChain);
 
-  const xfer = await TokenTransfer.from(wh, {
-    chain: rcvChain.chain,
-    txid: "0xbd1e3591d20178973ba6169e0db183da3e45cb05855e7f3f15306a280e715eec",
-  });
-  console.log(await xfer.getTransferState());
-
-  // Regular Token Bridge Transfer
+  // // Manual Token Bridge Transfer
   // await tokenTransfer(wh, "native", 10_000_000n, source, destination, false);
+
+  // // Automatic Token Bridge Transfer
   // await tokenTransfer(
   //   wh,
   //   "native",
@@ -64,12 +53,27 @@ Avax=>polygon never relayed?
   //   true
   // );
 
-  // Circle USDC CCTP Transfer
+  // Automatic Token Bridge Transfer With Gas Dropoff
+  // await tokenTransfer(
+  //   wh,
+  //   "native",
+  //   1_000_000_000_000n,
+  //   source,
+  //   destination,
+  //   true,
+  //   2_000_000_000_000n
+  // );
+
+  // // Manual Circle USDC CCTP Transfer
   // await cctpTransfer(wh, 1_000_000n, source, destination, false);
 
-  // Note: auto relay takes 0.1usdc or 1usdc?
-  // 0xdb98291d3dcf85419f431c3245f91a2fa3faecae5674865d2df5d2c85935d129
+  // // Note: auto relay takes 0.1usdc when xfering to any chain beside goerli, which is 1 usdc
+
+  // // Automatic Circle USDC CCTP Transfer
   // await cctpTransfer(wh, 19_000_000n, source, destination, true);
+
+  // Automatic Circle USDC CCTP Transfer With Gas Dropoff
+  await cctpTransfer(wh, 2_100_000n, source, destination, true, 1_000_000n);
 })();
 
 async function tokenTransfer(
@@ -78,7 +82,8 @@ async function tokenTransfer(
   amount: bigint,
   src: TransferStuff,
   dst: TransferStuff,
-  automatic: boolean
+  automatic: boolean,
+  nativeGas?: bigint
 ) {
   // Create a TokenTransfer object that we can step through the process.
   // It holds a `state` field that is used to inform where in the process we are
@@ -87,7 +92,9 @@ async function tokenTransfer(
     amount,
     src.address,
     dst.address,
-    automatic
+    automatic,
+    undefined,
+    nativeGas
   );
   console.log(xfer);
 
@@ -115,35 +122,39 @@ async function cctpTransfer(
   amount: bigint,
   src: TransferStuff,
   dst: TransferStuff,
-  automatic: boolean
+  automatic: boolean,
+  nativeGas?: bigint
 ) {
   const xfer = await wh.cctpTransfer(
     amount,
     src.address,
     dst.address,
-    automatic
+    automatic,
+    undefined,
+    nativeGas
   );
   console.log(xfer);
 
   console.log("Starting Transfer");
   const srcTxids = await xfer.initiateTransfer(src.signer);
-  console.log(`Started Transfer: ${srcTxids}`);
+  console.log(`Started Transfer: `, srcTxids);
 
   if (automatic) return waitLog(xfer);
 
   console.log("Waiting for Attestation");
   const attestIds = await xfer.fetchAttestation(1000);
-  console.log(`Got Attestation: ${attestIds}`);
+  console.log(`Got Attestation: `, attestIds);
 
   console.log("Completing Transfer");
   const dstTxids = await xfer.completeTransfer(dst.signer);
-  console.log(`Completed Transfer: ${dstTxids}`);
+  console.log(`Completed Transfer: `, dstTxids);
 }
 
 async function waitLog(xfer: WormholeTransfer): Promise<void> {
   console.log("Checking for complete status");
+  console.log(xfer);
   while ((await xfer.getTransferState()) < TransferState.Completed) {
     console.log("Not yet...");
-    await new Promise((f) => setTimeout(f, 2000));
+    await new Promise((f) => setTimeout(f, 5000));
   }
 }

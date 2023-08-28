@@ -27,6 +27,7 @@ import {
   AttestationId,
 } from '../wormholeTransfer';
 import { Wormhole } from '../wormhole';
+import { ethers } from 'ethers';
 
 export class CCTPTransfer implements WormholeTransfer {
   private readonly wh: Wormhole;
@@ -207,15 +208,12 @@ export class CCTPTransfer implements WormholeTransfer {
     let xfer: AsyncGenerator<UnsignedTransaction>;
     if (this.transfer.automatic) {
       const cr = await fromChain.getAutomaticCircleBridge();
-
-      //const fee = await cr.getRelayerFee();
-
       xfer = cr.transfer(
         this.transfer.token,
         this.transfer.from.address,
         { chain: this.transfer.to.chain, address: this.transfer.to.address },
         this.transfer.amount,
-        0n,
+        this.transfer.nativeGas,
       );
     } else {
       const cb = await fromChain.getCircleBridge();
@@ -227,17 +225,19 @@ export class CCTPTransfer implements WormholeTransfer {
       );
     }
 
-    // TODO: definitely a bug here, we _only_ send when !stackable
+    let unsigned: UnsignedTransaction[] = [];
     const txHashes: TxHash[] = [];
     for await (const tx of xfer) {
+      unsigned.push(tx);
       if (!tx.stackable) {
-        // sign/send/wait
-        const signed = await signer.sign([tx]);
-        const txHashes = await fromChain.sendWait(signed);
-        txHashes.push(...txHashes);
-      } else {
-        // TODO: prolly should do something with these
+        const signed = await signer.sign(unsigned);
+        txHashes.push(...(await fromChain.sendWait(signed)));
+        unsigned = [];
       }
+    }
+    if (unsigned.length > 0) {
+      const signed = await signer.sign(unsigned);
+      txHashes.push(...(await fromChain.sendWait(signed)));
     }
 
     this.txids = txHashes;

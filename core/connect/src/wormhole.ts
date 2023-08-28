@@ -65,6 +65,7 @@ export class Wormhole {
     to: ChainAddress,
     automatic: boolean,
     payload?: Uint8Array,
+    nativeGas?: bigint,
   ): Promise<CCTPTransfer> {
     if (automatic && payload)
       throw new Error('Payload with automatic delivery is not supported');
@@ -72,7 +73,7 @@ export class Wormhole {
     if (!isCircleChain(from.chain))
       throw new Error('Payload with automatic delivery is not supported');
 
-    // TODO: devnet
+    // TODO: ts-ignore because devnet not setup for circle stuff
     // @ts-ignore
     const contract = usdcContract(this.network, from.chain);
     const token: TokenId = {
@@ -87,6 +88,7 @@ export class Wormhole {
       to,
       automatic,
       payload,
+      nativeGas,
     });
   }
 
@@ -97,17 +99,22 @@ export class Wormhole {
     to: ChainAddress,
     automatic: boolean,
     payload?: Uint8Array,
+    nativeGas?: bigint,
   ): Promise<TokenTransfer> {
-    if (automatic && payload)
+    if (payload && automatic)
       throw new Error('Payload with automatic delivery is not supported');
 
+    if (nativeGas && !automatic)
+      throw new Error('Gas Dropoff is only supported for automatic transfers');
+
     return await TokenTransfer.from(this, {
-      token: token,
-      amount: amount,
+      token,
+      amount,
       from,
       to,
-      automatic: automatic,
-      payload: payload,
+      automatic,
+      payload,
+      nativeGas,
     });
   }
 
@@ -348,7 +355,9 @@ export class Wormhole {
 
     const url = `${this.conf.api}/api/v1/transactions/${id}`;
 
+    // TODO: try/catch this
     const response = await axios.get(url);
+
     if (!response || !response.data)
       throw new Error(`No data available for sequence: ${id}`);
 

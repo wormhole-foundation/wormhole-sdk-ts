@@ -99,7 +99,7 @@ export class EvmAutomaticTokenBridge implements AutomaticTokenBridge<'Evm'> {
           recipientChainId,
           recipientAddress,
           0, // skip batching
-          { value: relayerFee + amount },
+          { value: relayerFee + amount + nativeTokenGas },
         );
       yield this.createUnsignedTx(
         addFrom(txReq, senderAddr),
