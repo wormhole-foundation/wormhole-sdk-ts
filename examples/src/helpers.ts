@@ -56,12 +56,14 @@ class EthSigner implements Signer {
   }
   async sign(tx: UnsignedTransaction[]): Promise<SignedTxn[]> {
     const signed = [];
+    const { gasPrice } = await this.provider.getFeeData();
     // TODO: get better gas prices
     for (const txn of tx) {
       const t: ethers.TransactionRequest = {
         ...txn.transaction,
         ...{
           gasLimit: 10_000_000n,
+          gasPrice: gasPrice,
           maxFeePerGas: 40_000_000_000n,
           nonce: this.nonce,
         },

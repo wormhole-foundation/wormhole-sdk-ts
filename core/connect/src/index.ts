@@ -4,3 +4,4 @@ export * from './constants';
 export * from './wormholeTransfer';
 export * from './protocols/tokenTransfer';
 export * from './protocols/cctpTransfer';
+export * as api from './api';

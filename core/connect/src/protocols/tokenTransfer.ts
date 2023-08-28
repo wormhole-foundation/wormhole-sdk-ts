@@ -53,6 +53,24 @@ export class TokenTransfer implements WormholeTransfer {
   }
 
   async getTransferState(): Promise<TransferState> {
+    // TODO :puke:
+    if (this.transfer.automatic) {
+      if (this.vaas && this.vaas.length > 0) {
+        const { chain, emitter, sequence } = this.vaas[0].id;
+        const txStatus = await this.wh.getTransactionStatus(
+          chain,
+          emitter,
+          sequence,
+        );
+
+        if (txStatus.globalTx.destinationTx) {
+          if (txStatus.globalTx.destinationTx.status === 'completed') {
+            this.state = TransferState.Completed;
+          }
+        }
+      }
+    }
+
     return this.state;
   }
 
@@ -101,9 +119,15 @@ export class TokenTransfer implements WormholeTransfer {
 
     // Check if its a payload 3 targeted at a relayer on the destination chain
     const rcv = vaa.payload.to;
+    // TODO: this has to be ignored becuase toNative thinks its `never`
+    const rcvAddress = // @ts-ignore
+      (rcv.address.toNative(chain).toString() as string).toLowerCase();
+    const relayerAddress =
+      wh.conf.chains[rcv.chain]?.contracts.Relayer?.toString().toLowerCase();
+
     const automatic =
       vaa.payloadLiteral === 'TransferWithPayload' &&
-      rcv.address.toString() === wh.conf.chains[rcv.chain]?.contracts.Relayer;
+      rcvAddress === relayerAddress;
 
     const details: TokenTransferDetails = {
       token: { ...vaa.payload.token },
@@ -216,7 +240,8 @@ export class TokenTransfer implements WormholeTransfer {
       const parsed = await fromChain.parseTransaction(txHash);
 
       // TODO:
-      if (parsed.length != 1) throw new Error('Idk what to do with != 1');
+      if (parsed.length != 1)
+        throw new Error(`Expected a single VAA, got ${parsed.length}`);
 
       const [{ emitter, sequence }] = parsed;
 

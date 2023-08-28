@@ -99,12 +99,23 @@ export class CCTPTransfer implements WormholeTransfer {
     const vaa = await CCTPTransfer.getTransferVaa(wh, chain, emitter, sequence);
 
     // Check if its a payload 3 targeted at a relayer on the destination chain
-    const rcvAddress = vaa.payload.mintRecipient;
-    const rcvChain = toCircleChainName(vaa.payload.destinationDomain);
+    const rcvAddress: NativeAddress<typeof chain> =
+      vaa.payload.mintRecipient.toNative(chain);
+
+    const rcvChain = toCircleChainName(vaa.payload.targetDomain);
+
+    const cctpContracts = wh.conf.chains[rcvChain]?.contracts.CCTP as {
+      wormholeCircleRelayer: string;
+    };
+    const relayerAddress = cctpContracts['wormholeCircleRelayer'].toLowerCase();
 
     const automatic =
       vaa.payloadLiteral === 'CircleTransferRelay' &&
-      rcvAddress.toString() === wh.conf.chains[rcvChain]?.contracts.Relayer;
+      //@ts-ignore
+      rcvAddress.toString().toLowerCase() === relayerAddress;
+
+    console.log(rcvAddress);
+    console.log(relayerAddress);
 
     const details: CCTPTransferDetails = {
       token: {
@@ -112,12 +123,10 @@ export class CCTPTransfer implements WormholeTransfer {
         address: vaa.payload.token.address.toNative(chain),
       },
       amount: vaa.payload.token.amount,
-      // TODO: the `from.address` here is a lie, but we don't
-      // immediately have enough info to get the _correct_ one
-      from: { address: from.emitter, chain: from.chain },
+      from: { address: vaa.payload.caller, chain: from.chain },
       to: {
         chain: rcvChain,
-        address: rcvAddress.toNative(rcvChain),
+        address: rcvAddress,
       },
       automatic,
     };
