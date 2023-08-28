@@ -5,6 +5,24 @@ import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 //
 import { TransferStuff, getStuff } from "./helpers";
 
+/*
+TODOS:
+
+- Test different Assets
+- Test Automatic redeem
+
+
+- gas dropoff
+- track automatic completion
+- event emission/subscription for status changes 
+- add gateway protocol 
+
+- re-export from connect?
+- gas estimation?
+- use fetchAttestations in complete transfer instead of erroring?
+
+*/
+
 (async function () {
   // init Wormhole object, passing config for which network
   // to use (e.g. Mainnet/Testnet) and what Platforms to support

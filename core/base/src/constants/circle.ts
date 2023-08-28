@@ -37,6 +37,13 @@ const usdcContracts = [
 
 export const usdcContract = constMap(usdcContracts);
 
+const circleAPIs = [
+  ["Mainnet", "https://iris-api.circle.com/v1/attestations"],
+  ["Testnet", "https://iris-api-sandbox.circle.com/v1/attestations"],
+] as const satisfies RoArray<readonly [Network, string]>;
+
+export const circleAPI = constMap(circleAPIs);
+
 export const isCircleChain = (
   chain: string | ChainName | CircleChainName
 ): chain is CircleChainName => circleChainId.has(chain);

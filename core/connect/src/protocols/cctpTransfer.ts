@@ -9,10 +9,8 @@ import {
   UnsignedTransaction,
   VAA,
   deserialize,
-  deserializePayload,
   Signer,
   TxHash,
-  SequenceId,
   WormholeMessageId,
   TransactionId,
   isWormholeMessageId,
@@ -322,24 +320,10 @@ export class CCTPTransfer implements WormholeTransfer {
 
       const txHashes: TxHash[] = [];
       for (const cachedVaa of this.vaas) {
-        const vaa = cachedVaa.vaa
-          ? cachedVaa.vaa
-          : await CCTPTransfer.getTransferVaa(
-              this.wh,
-              this.transfer.from.chain,
-              cachedVaa.id.emitter,
-              cachedVaa.id.sequence,
-            );
-
+        const { vaa } = cachedVaa;
         if (!vaa) throw new Error('No Vaa found');
-
-        if (vaa.payloadLiteral === 'CircleTransferRelay')
-          throw new Error(
-            'VAA is a simple transfer but expected Payload for automatic delivery',
-          );
-
         const tb = await toChain.getAutomaticCircleBridge();
-
+        //TODO: tb.redeem()
         throw new Error('No method to redeem auto circle bridge tx (yet)');
       }
       return txHashes;
@@ -351,25 +335,37 @@ export class CCTPTransfer implements WormholeTransfer {
 
       const txHashes: TxHash[] = [];
       for (const cachedAttestation of this.circleAttestations) {
-        const msg = cachedAttestation.id.message;
-        const attestation = cachedAttestation.attestation!;
+        const { id, attestation } = cachedAttestation;
+
+        if (!attestation)
+          throw new Error(`No Circle Attestation for ${id.msgHash}`);
 
         const tb = await toChain.getCircleBridge();
-        const xfer = tb.redeem(this.transfer.to.address, msg, attestation);
+        const xfer = tb.redeem(
+          this.transfer.to.address,
+          id.message,
+          attestation,
+        );
 
-        // TODO: better error
-        if (xfer === undefined)
-          throw new Error('No handler defined for VAA type');
-
-        // TODO: definitely a bug here, we _only_ send when !stackable
+        let unsigned: UnsignedTransaction[] = [];
         for await (const tx of xfer) {
+          unsigned.push(tx);
+
+          // If we get a non-stackable tx, sign and send the transactions
+          // we've gotten so far
           if (!tx.stackable) {
-            const signed = await signer.sign([tx]);
+            const signed = await signer.sign(unsigned);
             const txHashes = await toChain.sendWait(signed);
             txHashes.push(...txHashes);
-          } else {
-            // TODO...
+            // reset unsigned
+            unsigned = [];
           }
+        }
+
+        if (unsigned.length > 0) {
+          const signed = await signer.sign(unsigned);
+          const txHashes = await toChain.sendWait(signed);
+          txHashes.push(...txHashes);
         }
       }
       return txHashes;

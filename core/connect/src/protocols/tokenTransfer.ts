@@ -257,25 +257,20 @@ export class TokenTransfer implements WormholeTransfer {
         3) return txid of submission
     */
     if (this.state < TransferState.Attested)
-      throw new Error('Invalid state transition in `finish`');
+      throw new Error(
+        'Invalid state transition in `finish`. Be sure to call `fetchAttestation`.',
+      );
 
-    // TODO: fetch it for 'em? We should _not_ be Ready if we dont have these
     if (!this.vaas) throw new Error('No VAA details available');
 
     const toChain = this.wh.getChain(this.transfer.to.chain);
 
-    const unsigned: UnsignedTransaction[] = [];
+    let unsigned: UnsignedTransaction[] = [];
+    const txHashes: TxHash[] = [];
     for (const cachedVaa of this.vaas) {
-      const vaa = cachedVaa.vaa
-        ? cachedVaa.vaa
-        : await TokenTransfer.getTransferVaa(
-            this.wh,
-            this.transfer.from.chain,
-            cachedVaa.id.emitter,
-            cachedVaa.id.sequence,
-          );
+      const { vaa } = cachedVaa;
 
-      if (!vaa) throw new Error('No Vaa found');
+      if (!vaa) throw new Error(`No VAA found for ${cachedVaa.id.sequence}`);
 
       let xfer: AsyncGenerator<UnsignedTransaction> | undefined;
       if (this.transfer.automatic) {
@@ -296,15 +291,24 @@ export class TokenTransfer implements WormholeTransfer {
         throw new Error('No handler defined for VAA type');
 
       for await (const tx of xfer) {
-        // TODO
-        // if(!tx.stackable){
-        // }else{
-        // }
         unsigned.push(tx);
+        // If we find a tx that is not stackable, sign it and send
+        // the accumulated txs so far
+        if (!tx.stackable) {
+          const signedTxns = await signer.sign(unsigned);
+          const txids = await toChain.sendWait(signedTxns);
+          txHashes.push(...txids);
+          // reset unsigned
+          unsigned = [];
+        }
       }
     }
-
-    return await toChain.sendWait(await signer.sign(unsigned));
+    if (unsigned.length > 0) {
+      const signedTxns = await signer.sign(unsigned);
+      const txids = await toChain.sendWait(signedTxns);
+      txHashes.push(...txids);
+    }
+    return txHashes;
   }
 
   static async getTransferVaa(
