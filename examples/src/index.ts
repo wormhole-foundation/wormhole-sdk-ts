@@ -1,6 +1,6 @@
-import { Wormhole } from "@wormhole-foundation/connect-sdk";
+import { TokenTransfer, Wormhole } from "@wormhole-foundation/connect-sdk";
 // TODO: should we re-export the things they need? should we rename the underlying packages?
-import { TokenId } from "@wormhole-foundation/sdk-definitions";
+import { TokenId, TxHash } from "@wormhole-foundation/sdk-definitions";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 //
 import { TransferStuff, getStuff } from "./helpers";
@@ -11,15 +11,21 @@ TODOS:
 - Test different Assets
 - Test Automatic redeem
 
-
 - gas dropoff
 - track automatic completion
 - event emission/subscription for status changes 
 - add gateway protocol 
 
+
+- Validation of inputs (amount > dust, etc..)
+
 - re-export from connect?
 - gas estimation?
 - use fetchAttestations in complete transfer instead of erroring?
+
+
+Track down: 0xb2f0c9ccb6e9e78f48113038fdea7b9b35ad3241586ae73a7ae959e7c8209710
+
 
 */
 
@@ -28,13 +34,9 @@ TODOS:
   // to use (e.g. Mainnet/Testnet) and what Platforms to support
   const wh = new Wormhole("Testnet", [EvmPlatform]);
 
-  // spongebob-patrick-from-here-to-there.jpg
-  const src = "Avalanche";
-  const dst = "Ethereum";
-
   // Grab chain Contexts
-  const sendChain = wh.getChain(src);
-  const rcvChain = wh.getChain(dst);
+  const sendChain = wh.getChain("Avalanche");
+  const rcvChain = wh.getChain("Polygon");
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
@@ -42,13 +44,47 @@ TODOS:
   const destination = await getStuff(rcvChain);
 
   // Regular Token Bridge Transfer
-  // await tokenTransfer(wh, 'native', 100000n, source, destination, false);
-  // await tokenTransfer(wh, 'native', 100000n, source, destination, true);
+  // await tokenTransfer(wh, "native", 10_000_000n, source, destination, false);
+  await tokenTransfer(
+    wh,
+    "native",
+    1_000_000_000_000n,
+    source,
+    destination,
+    true
+  );
+
+  // Or pickup from in-flight transfer
+  // await completeTokenTranfer(
+  //   wh,
+  //   source,
+  //   destination,
+  //   "0x4b251da18f4ff18acdc05804a7ed35341bf56365d940f269282241469df33a83"
+  // );
 
   // Circle USDC CCTP Transfer
-  await cctpTransfer(wh, 100000n, source, destination, false);
-  // await cctpTransfer(wh, 100000n, source, destination, true);
+  // await cctpTransfer(wh, 1_000_000n, source, destination, false);
+  // await cctpTransfer(wh, 1_000_000n, source, destination, true);
 })();
+
+async function completeTokenTranfer(
+  wh: Wormhole,
+  src: TransferStuff,
+  dst: TransferStuff,
+  txid: TxHash
+): Promise<void> {
+  const xfer = await TokenTransfer.from(wh, {
+    chain: src.chain.chain,
+    txid: txid,
+  });
+  const s = await xfer.getTransferState();
+  console.log("Current state", s);
+  // const attestIds = await xfer.fetchAttestation();
+  // console.log("Got attestations");
+  // console.log(attestIds);
+
+  // console.log(await xfer.completeTransfer(dst.signer));
+}
 
 async function tokenTransfer(
   wh: Wormhole,
@@ -74,19 +110,18 @@ async function tokenTransfer(
   const srcTxids = await xfer.initiateTransfer(src.signer);
   console.log(`Started transfer: ${srcTxids}`);
 
-  // 2) wait for the VAA to be signed and ready
+  // 2) wait for the VAA to be signed and ready (not required for auto transfer)
   console.log("Getting Attestation");
   const attestIds = await xfer.fetchAttestation();
   console.log(`Got Attestation: ${attestIds}`);
 
-  // 3) redeem the VAA on the dest chain
   if (!automatic) {
-    // 3a) Manual redemption passing a signer to sign any transactions
+    // 3) redeem the VAA on the dest chain
     console.log("Completing Transfer");
     const destTxids = await xfer.completeTransfer(dst.signer);
     console.log(`Completed Transfer: ${destTxids}`);
   } else {
-    // 3b) Automatic redemption, tracking the redemption status
+    // 2) Automatic redemption, tracking the redemption status
     console.log("TODO: track redemption");
   }
 }
@@ -110,11 +145,11 @@ async function cctpTransfer(
   const srcTxids = await xfer.initiateTransfer(src.signer);
   console.log(`Started Transfer: ${srcTxids}`);
 
-  console.log("Waiting for Attestation");
-  const attestIds = await xfer.fetchAttestation(1000);
-  console.log(`Got Attestation: ${attestIds}`);
-
   if (!automatic) {
+    console.log("Waiting for Attestation");
+    const attestIds = await xfer.fetchAttestation(1000);
+    console.log(`Got Attestation: ${attestIds}`);
+
     console.log("Completing Transfer");
     const dstTxids = await xfer.completeTransfer(dst.signer);
     console.log(`Completed Transfer: ${dstTxids}`);

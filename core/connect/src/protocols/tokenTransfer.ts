@@ -36,6 +36,9 @@ export class TokenTransfer implements WormholeTransfer {
   // transfer details
   transfer: TokenTransferDetails;
 
+  // Source txids
+  txids?: TxHash[];
+
   // The corresponding vaa representing the TokenTransfer
   // on the source chain (if its been completed and finalized)
   vaas?: {
@@ -161,11 +164,19 @@ export class TokenTransfer implements WormholeTransfer {
     let xfer: AsyncGenerator<UnsignedTransaction>;
     if (this.transfer.automatic) {
       const tb = await fromChain.getAutomaticTokenBridge();
+      const fee = await tb.getRelayerFee(
+        this.transfer.from,
+        this.transfer.to,
+        this.transfer.token,
+      );
+
       xfer = tb.transfer(
         this.transfer.from.address,
         { chain: this.transfer.to.chain, address: this.transfer.to.address },
         tokenAddress,
         this.transfer.amount,
+        fee,
+        this.transfer.nativeGas,
       );
     } else {
       const tb = await fromChain.getTokenBridge();
@@ -178,17 +189,26 @@ export class TokenTransfer implements WormholeTransfer {
       );
     }
 
-    // TODO: check 'stackable'?
-    const unsigned: UnsignedTransaction[] = [];
+    let unsigned: UnsignedTransaction[] = [];
+    const txHashes: TxHash[] = [];
     for await (const tx of xfer) {
+      unsigned.push(tx);
       if (!tx.stackable) {
         // sign/send
+        txHashes.push(
+          ...(await fromChain.sendWait(await signer.sign(unsigned))),
+        );
+        // reset unsigned
+        unsigned = [];
       }
-      unsigned.push(tx);
     }
 
-    const txHashes = await fromChain.sendWait(await signer.sign(unsigned));
+    if (unsigned.length > 0) {
+      txHashes.push(...(await fromChain.sendWait(await signer.sign(unsigned))));
+    }
 
+    // Set txids and update statemachine
+    this.txids = txHashes;
     this.state = TransferState.Initiated;
 
     // TODO: concurrent
@@ -197,9 +217,8 @@ export class TokenTransfer implements WormholeTransfer {
 
       // TODO:
       if (parsed.length != 1) throw new Error('Idk what to do with != 1');
-      const [msg] = parsed;
 
-      const { emitter, sequence } = msg;
+      const [{ emitter, sequence }] = parsed;
 
       if (!this.vaas) this.vaas = [];
       this.vaas.push({

@@ -135,7 +135,6 @@ export class EvmPlatform implements Platform {
     for (const stxn of stxns) {
       const txRes = await rpc.broadcastTransaction(stxn);
       const txReceipt = await txRes.wait();
-      console.log(txReceipt);
       // TODO: throw error?
       if (txReceipt === null) continue;
 

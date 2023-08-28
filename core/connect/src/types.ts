@@ -37,6 +37,7 @@ export type TokenTransferDetails = {
   to: ChainAddress;
   automatic?: boolean;
   payload?: Uint8Array;
+  nativeGas?: bigint;
 };
 
 export type CCTPTransferDetails = {

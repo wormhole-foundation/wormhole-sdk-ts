@@ -8,6 +8,7 @@ import {
   platformToChains,
   contracts,
 } from '@wormhole-foundation/sdk-base';
+import { TokenId, toNative } from '@wormhole-foundation/sdk-definitions';
 import { Provider } from 'ethers';
 
 /**
@@ -266,5 +267,16 @@ export class EvmContracts {
 
   getImplementation(): ethers_contracts.ImplementationInterface {
     return ethers_contracts.Implementation__factory.createInterface();
+  }
+
+  async getNativeWrapped(
+    chain: ChainName,
+    connection: Provider,
+  ): Promise<TokenId> {
+    const address = toNative(
+      chain,
+      await this.mustGetTokenBridge(chain, connection).WETH(),
+    );
+    return { address, chain };
   }
 }

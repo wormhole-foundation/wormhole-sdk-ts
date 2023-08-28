@@ -29,3 +29,7 @@ export const addChainId = (txReq: TransactionRequest, chainId: bigint) => ({
   ...txReq,
   chainId,
 });
+export const addValue = (txReq: TransactionRequest, value: bigint) => ({
+  ...txReq,
+  value,
+});

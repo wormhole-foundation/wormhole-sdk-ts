@@ -1,7 +1,10 @@
 import {
+  ChainName,
   chainToChainId,
   evmChainIdToNetworkChainPair,
   evmNetworkChainToEvmChainId,
+  nativeDecimals,
+  toChainId,
 } from '@wormhole-foundation/sdk-base';
 import {
   ChainAddress,
@@ -9,6 +12,8 @@ import {
   AutomaticTokenBridge,
   VAA,
   serialize,
+  TokenId,
+  RpcConnection,
 } from '@wormhole-foundation/sdk-definitions';
 
 import { Provider, TransactionRequest } from 'ethers';
@@ -18,6 +23,7 @@ import {
   UniversalOrEvm,
   addChainId,
   addFrom,
+  addValue,
   toEvmAddrString,
 } from '../types';
 import { EvmUnsignedTransaction } from '../unsignedTransaction';
@@ -78,19 +84,22 @@ export class EvmAutomaticTokenBridge implements AutomaticTokenBridge<'Evm'> {
     recipient: ChainAddress,
     token: UniversalOrEvm | 'native',
     amount: bigint,
+    relayerFee: bigint,
     nativeGas?: bigint,
   ): AsyncGenerator<EvmUnsignedTransaction> {
     const senderAddr = toEvmAddrString(sender);
     const recipientChainId = chainToChainId(recipient.chain);
     const recipientAddress = recipient.address.toString();
     const nativeTokenGas = nativeGas ? nativeGas : 0n;
-    if (typeof token === 'string' && token === 'native') {
+
+    if (token === 'native') {
       const txReq =
         await this.tokenBridgeRelayer.wrapAndTransferEthWithRelay.populateTransaction(
           nativeTokenGas,
           recipientChainId,
           recipientAddress,
-          0,
+          0, // skip batching
+          { value: relayerFee + amount },
         );
       yield this.createUnsignedTx(
         addFrom(txReq, senderAddr),
@@ -116,6 +125,32 @@ export class EvmAutomaticTokenBridge implements AutomaticTokenBridge<'Evm'> {
         'TokenBridgeRelayer.transferTokensWithRelay',
       );
     }
+  }
+
+  async getRelayerFee(
+    sender: ChainAddress,
+    recipient: ChainAddress,
+    token: TokenId | 'native',
+  ): Promise<bigint> {
+    const tokenId: TokenId =
+      token === 'native'
+        ? await this.contracts.getNativeWrapped(sender.chain, this.provider)
+        : token;
+
+    const destChainId = toChainId(recipient.chain);
+    const destTokenAddress = toEvmAddrString(tokenId.address);
+
+    const tokenContract = this.contracts.mustGetTokenImplementation(
+      this.provider,
+      destTokenAddress,
+    );
+    const decimals = await tokenContract.decimals();
+
+    return await this.tokenBridgeRelayer.calculateRelayerFee(
+      destChainId,
+      destTokenAddress,
+      decimals,
+    );
   }
 
   private createUnsignedTx(

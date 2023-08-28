@@ -29,8 +29,10 @@ export interface AutomaticCircleBridge<P extends PlatformName> {
     sender: UniversalOrNative<P>,
     recipient: ChainAddress,
     amount: bigint,
+    relayerFee: bigint,
     nativeGas?: bigint
   ): AsyncGenerator<UnsignedTransaction>;
+  // getRelayerFee(): Promise<bigint>;
 }
 
 export interface CircleBridge<P extends PlatformName> {
