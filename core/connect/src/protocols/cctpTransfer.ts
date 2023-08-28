@@ -17,6 +17,7 @@ import {
   isTransactionIdentifier,
   CircleAttestation,
   CircleMessageId,
+  toNative,
 } from '@wormhole-foundation/sdk-definitions';
 
 import { CCTPTransferDetails, isCCTPTransferDetails } from '../types';
@@ -98,24 +99,23 @@ export class CCTPTransfer implements WormholeTransfer {
     const { chain, emitter, sequence } = from;
     const vaa = await CCTPTransfer.getTransferVaa(wh, chain, emitter, sequence);
 
-    // Check if its a payload 3 targeted at a relayer on the destination chain
-    const rcvAddress: NativeAddress<typeof chain> =
-      vaa.payload.mintRecipient.toNative(chain);
-
     const rcvChain = toCircleChainName(vaa.payload.targetDomain);
-
-    const cctpContracts = wh.conf.chains[rcvChain]?.contracts.CCTP as {
+    // Check if its a payload 3 targeted at a relayer on the destination chain
+    const { wormholeCircleRelayer } = wh.conf.chains[rcvChain]?.contracts
+      .CCTP as {
       wormholeCircleRelayer: string;
     };
-    const relayerAddress = cctpContracts['wormholeCircleRelayer'].toLowerCase();
+
+    const rcvAddress = vaa.payload.mintRecipient;
+    const relayerAddress = toNative(
+      chain,
+      wormholeCircleRelayer,
+      // @ts-ignore
+    ).toUniversalAddress();
 
     const automatic =
       vaa.payloadLiteral === 'CircleTransferRelay' &&
-      //@ts-ignore
-      rcvAddress.toString().toLowerCase() === relayerAddress;
-
-    console.log(rcvAddress);
-    console.log(relayerAddress);
+      rcvAddress.equals(relayerAddress);
 
     const details: CCTPTransferDetails = {
       token: {

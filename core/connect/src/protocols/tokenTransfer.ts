@@ -11,6 +11,7 @@ import {
   TransactionId,
   isWormholeMessageId,
   isTransactionIdentifier,
+  toNative,
 } from '@wormhole-foundation/sdk-definitions';
 import { isTokenTransferDetails, TokenTransferDetails } from '../types';
 import {
@@ -118,16 +119,16 @@ export class TokenTransfer implements WormholeTransfer {
     );
 
     // Check if its a payload 3 targeted at a relayer on the destination chain
-    const rcv = vaa.payload.to;
-    // TODO: this has to be ignored becuase toNative thinks its `never`
-    const rcvAddress = // @ts-ignore
-      (rcv.address.toNative(chain).toString() as string).toLowerCase();
-    const relayerAddress =
-      wh.conf.chains[rcv.chain]?.contracts.Relayer?.toString().toLowerCase();
+    const { address } = vaa.payload.to;
+    const relayerAddress = toNative(
+      chain,
+      wh.conf.chains[chain]?.contracts.Relayer as string,
+      //@ts-ignore
+    ).toUniversalAddress();
 
     const automatic =
       vaa.payloadLiteral === 'TransferWithPayload' &&
-      rcvAddress === relayerAddress;
+      address.equals(relayerAddress);
 
     const details: TokenTransferDetails = {
       token: { ...vaa.payload.token },

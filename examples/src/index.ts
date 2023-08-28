@@ -47,9 +47,9 @@ Avax=>polygon never relayed?
   const source = await getStuff(sendChain);
   const destination = await getStuff(rcvChain);
 
-  const xfer = await CCTPTransfer.from(wh, {
+  const xfer = await TokenTransfer.from(wh, {
     chain: rcvChain.chain,
-    txid: "0x67b2b6d6b7de45e791e1707b1e66d64255e5e1e0d781fdf01bcc12c78214cd9c",
+    txid: "0xbd1e3591d20178973ba6169e0db183da3e45cb05855e7f3f15306a280e715eec",
   });
   console.log(await xfer.getTransferState());
 
