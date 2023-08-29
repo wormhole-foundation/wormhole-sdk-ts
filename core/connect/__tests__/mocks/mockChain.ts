@@ -11,6 +11,7 @@ import {
   WormholeMessageId,
   CircleBridge,
   WormholeCircleRelayer,
+  AutomaticCircleBridge,
 } from '@wormhole-foundation/sdk-definitions';
 import {
   ChainName,
@@ -34,6 +35,10 @@ export class MockChain implements ChainContext {
     this.chain = chain;
     this.network = platform.network!;
     this.platform = platform;
+  }
+
+  getAutomaticCircleBridge(): Promise<AutomaticCircleBridge<PlatformName>> {
+    throw new Error('Not implemented');
   }
 
   getRpc(): MockRpc {

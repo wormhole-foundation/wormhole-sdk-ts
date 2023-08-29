@@ -353,8 +353,7 @@ export const constMap = <
 >(mappingEntries: M, shape?: S): ConstMapRet<ToGenericMappingFunc<M, S>> => {
   const mapping = toMapping(mappingEntries, shape);
   const genericMappingFunc = ((...args: any[]) =>
-    args.reduce((subMapping: any, key) =>
-      subMapping[key.toString()] ?? undefined, mapping)) as ToGenericMappingFunc<M, S>;
+    args.reduce((subMapping: any, key) => subMapping?subMapping[key.toString()] ?? undefined:undefined, mapping)) as ToGenericMappingFunc<M, S>;
 
   (genericMappingFunc as any)["get"] = get(genericMappingFunc);
   (genericMappingFunc as any)["has"] = has(genericMappingFunc);

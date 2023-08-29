@@ -15,7 +15,7 @@ import {
   UniversalAddress,
   WormholeMessageId,
   CircleBridge,
-  WormholeCircleRelayer,
+  AutomaticCircleBridge,
 } from '@wormhole-foundation/sdk-definitions';
 import { MockTokenBridge } from './mockTokenBridge';
 import { MockChain } from './mockChain';
@@ -31,6 +31,11 @@ export class MockRpc implements RpcConnection {
 }
 
 export class MockPlatform implements Platform {
+  getAutomaticCircleBridge(
+    rpc: RpcConnection,
+  ): Promise<AutomaticCircleBridge<PlatformName>> {
+    throw new Error('Method not implemented.');
+  }
   // TODO: same hack as evm
   static _platform: PlatformName = 'Evm';
   readonly platform = MockPlatform._platform;
@@ -91,7 +96,7 @@ export class MockPlatform implements Platform {
   }
   async getCircleRelayer(
     rpc: RpcConnection,
-  ): Promise<WormholeCircleRelayer<PlatformName>> {
+  ): Promise<AutomaticCircleBridge<PlatformName>> {
     throw new Error('Method Not implemented.');
   }
   parseAddress(address: string): UniversalAddress {

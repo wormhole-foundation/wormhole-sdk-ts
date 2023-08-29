@@ -3,11 +3,11 @@ import {
   Chain,
   ChainName,
   toChainName,
-  Contracts,
   Network,
   platformToChains,
   contracts,
 } from '@wormhole-foundation/sdk-base';
+import { ChainsConfig, Contracts } from '@wormhole-foundation/connect-sdk';
 import { TokenId, toNative } from '@wormhole-foundation/sdk-definitions';
 import { Provider } from 'ethers';
 
@@ -18,10 +18,10 @@ import { Provider } from 'ethers';
 export class EvmContracts {
   protected _contracts: Map<ChainName, Contracts>;
 
-  constructor(network: Network) {
+  constructor(conf: ChainsConfig) {
     this._contracts = new Map();
-    platformToChains('Evm').forEach((c) => {
-      this._contracts.set(c, contracts[network][c]);
+    Object.entries(conf).forEach(([c, cfg]) => {
+      this._contracts.set(c as ChainName, cfg.contracts);
     });
   }
 
@@ -45,7 +45,7 @@ export class EvmContracts {
     chain: ChainName,
     connection: Provider,
   ): ethers_contracts.Wormhole | undefined {
-    const address = this.mustGetContracts(chain).CoreBridge;
+    const address = this.mustGetContracts(chain).coreBridge;
     if (typeof address !== 'string') return undefined;
     return ethers_contracts.Wormhole__factory.connect(address, connection);
   }
@@ -73,7 +73,7 @@ export class EvmContracts {
     chain: ChainName,
     connection: Provider,
   ): ethers_contracts.TokenBridgeContract | undefined {
-    const address = this.mustGetContracts(chain).TokenBridge;
+    const address = this.mustGetContracts(chain).tokenBridge;
     if (typeof address !== 'string') return undefined;
     return ethers_contracts.Bridge__factory.connect(address, connection);
   }
@@ -122,7 +122,7 @@ export class EvmContracts {
     chain: ChainName,
     connection: Provider,
   ): ethers_contracts.NFTBridge | undefined {
-    const address = this.mustGetContracts(chain).NftBridge;
+    const address = this.mustGetContracts(chain).nftBridge;
     if (typeof address !== 'string') return undefined;
     return ethers_contracts.NFTBridge__factory.connect(address, connection);
   }
@@ -151,7 +151,7 @@ export class EvmContracts {
     chain: ChainName,
     connection: Provider,
   ): ethers_contracts.TokenBridgeRelayer | undefined {
-    const address = this.mustGetContracts(chain).Relayer;
+    const address = this.mustGetContracts(chain).relayer;
     if (typeof address !== 'string') return undefined;
 
     return ethers_contracts.TokenBridgeRelayer__factory.connect(
@@ -186,12 +186,10 @@ export class EvmContracts {
     chain: ChainName,
     connection: Provider,
   ): ethers_contracts.CircleRelayer | undefined {
-    const addresses = this.mustGetContracts(chain).CCTP;
-    if (typeof addresses !== 'object') return undefined;
+    const relayerAddress = this.mustGetContracts(chain).cctp.wormholeRelayer;
+    if (!relayerAddress) return undefined;
     return ethers_contracts.CircleRelayer__factory.connect(
-      // TODO:
-      // @ts-ignore
-      addresses.wormholeCircleRelayer,
+      relayerAddress,
       connection,
     );
   }
@@ -217,12 +215,10 @@ export class EvmContracts {
     chain: ChainName,
     connection: Provider,
   ): ethers_contracts.TokenMessenger.TokenMessenger | undefined {
-    const addresses = this.mustGetContracts(chain).CCTP;
-    if (typeof addresses !== 'object') return undefined;
+    const address = this.mustGetContracts(chain).cctp.tokenMessenger;
+    if (!address) return undefined;
     return ethers_contracts.TokenMessenger__factory.connect(
-      // TODO:
-      // @ts-ignore
-      addresses.cctpTokenMessenger,
+      address,
       connection,
     );
   }
@@ -243,12 +239,10 @@ export class EvmContracts {
     chain: ChainName,
     connection: Provider,
   ): ethers_contracts.MessageTransmitter.MessageTransmitter | undefined {
-    const addresses = this.mustGetContracts(chain).CCTP;
-    if (typeof addresses !== 'object') return undefined;
+    const address = this.mustGetContracts(chain).cctp.messageTransmitter;
+    if (!address) return undefined;
     return ethers_contracts.MessageTransmitter__factory.connect(
-      // TODO:
-      // @ts-ignore
-      addresses.cctpMessageTransmitter,
+      address,
       connection,
     );
   }

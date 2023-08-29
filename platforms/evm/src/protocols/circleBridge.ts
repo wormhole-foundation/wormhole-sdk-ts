@@ -36,7 +36,6 @@ export const MESSAGE_EVENT_HASH =
   '0x8c5261668696ce22758910d05bab8f186d6eb247ceac2af2e82c7dc17669b036';
 
 export class EvmCircleBridge implements CircleBridge<'Evm'> {
-  readonly contracts: EvmContracts;
   readonly chainId: bigint;
   readonly msgTransmitter: MessageTransmitter.MessageTransmitter;
   readonly tokenMessenger: TokenMessenger.TokenMessenger;
@@ -45,9 +44,8 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
     readonly network: 'Mainnet' | 'Testnet',
     readonly chain: EvmChainName,
     readonly provider: Provider,
+    readonly contracts: EvmContracts,
   ) {
-    this.contracts = new EvmContracts(network);
-
     this.chainId = evmNetworkChainToEvmChainId(network, chain);
 
     this.msgTransmitter = this.contracts.mustGetCircleMessageTransmitter(
@@ -60,14 +58,17 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
     );
   }
 
-  static async fromProvider(provider: Provider): Promise<EvmCircleBridge> {
+  static async fromProvider(
+    provider: Provider,
+    contracts: EvmContracts,
+  ): Promise<EvmCircleBridge> {
     const { chainId } = await provider.getNetwork();
     const networkChainPair = evmChainIdToNetworkChainPair.get(chainId);
     if (networkChainPair === undefined)
       throw new Error(`Unknown EVM chainId ${chainId}`);
 
     const [network, chain] = networkChainPair;
-    return new EvmCircleBridge(network, chain, provider);
+    return new EvmCircleBridge(network, chain, provider, contracts);
   }
 
   async *redeem(

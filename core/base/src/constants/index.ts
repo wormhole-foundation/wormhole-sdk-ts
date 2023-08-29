@@ -7,7 +7,7 @@ export * from "./decimals";
 export * from "./explorer";
 export * from "./rpc";
 
-export * from "./contracts";
+export * as contracts from "./contracts";
 export * from "./modules";
 
 export * from "./circle";
