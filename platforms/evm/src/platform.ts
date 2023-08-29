@@ -4,7 +4,6 @@ import {
   PlatformName,
 } from '@wormhole-foundation/sdk-base';
 import {
-  RpcConnection,
   TokenId,
   TxHash,
   Platform,

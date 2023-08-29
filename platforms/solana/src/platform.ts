@@ -174,7 +174,9 @@ export class SolanaPlatform implements Platform {
       return programId === wormholeCore;
     });
 
-    console.log(bridgeInstructions);
+    const emitter = new SolanaAddress(
+      accounts[bridgeInstructions[0].accounts[1]],
+    );
 
     // get sequence
     const sequence = response.meta?.logMessages
@@ -185,14 +187,12 @@ export class SolanaPlatform implements Platform {
       throw new Error('sequence not found');
     }
 
-    throw new Error('Not finished');
-
-    // return [
-    //   {
-    //     chain,
-    //     emitter: new UniversalAddress(new Uint8Array()),
-    //     sequence: BigInt(sequence),
-    //   },
-    // ];
+    return [
+      {
+        chain,
+        emitter: emitter.toUniversalAddress(),
+        sequence: BigInt(sequence),
+      },
+    ];
   }
 }

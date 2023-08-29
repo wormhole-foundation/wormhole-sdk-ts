@@ -38,7 +38,7 @@
     "build:esm": "tsc -p ./tsconfig.esm.json",
     "build": "npm run build:cjs && npm run build:esm",
     "rebuild": "npm run clean && npm run build:cjs && npm run build:esm",
-    "test": "jest --config ../../jest.config.ts",
+    "test": "jest --config ./jest.config.ts",
     "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo",
     "lint": "npm run prettier && eslint --fix",
     "prettier": "prettier --write ./src"
