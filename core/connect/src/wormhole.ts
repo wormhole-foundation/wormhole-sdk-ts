@@ -17,6 +17,8 @@ import {
   Platform,
   ChainContext,
   toNative,
+  WormholeMessageId,
+  TransactionId,
 } from '@wormhole-foundation/sdk-definitions';
 import axios, { AxiosResponse } from 'axios';
 
@@ -25,6 +27,7 @@ import { WormholeConfig, PlatformCtr } from './types';
 import { CONFIG } from './constants';
 import { TokenTransfer } from './protocols/tokenTransfer';
 import { CCTPTransfer } from './protocols/cctpTransfer';
+import { TransactionStatus } from './api';
 
 export class Wormhole {
   protected _platforms: Map<PlatformName, Platform>;
@@ -62,6 +65,7 @@ export class Wormhole {
     to: ChainAddress,
     automatic: boolean,
     payload?: Uint8Array,
+    nativeGas?: bigint,
   ): Promise<CCTPTransfer> {
     if (automatic && payload)
       throw new Error('Payload with automatic delivery is not supported');
@@ -69,7 +73,7 @@ export class Wormhole {
     if (!isCircleChain(from.chain))
       throw new Error('Payload with automatic delivery is not supported');
 
-    // TODO: devnet
+    // TODO: ts-ignore because devnet not setup for circle stuff
     // @ts-ignore
     const contract = usdcContract(this.network, from.chain);
     const token: TokenId = {
@@ -84,6 +88,7 @@ export class Wormhole {
       to,
       automatic,
       payload,
+      nativeGas,
     });
   }
 
@@ -94,17 +99,22 @@ export class Wormhole {
     to: ChainAddress,
     automatic: boolean,
     payload?: Uint8Array,
+    nativeGas?: bigint,
   ): Promise<TokenTransfer> {
-    if (automatic && payload)
+    if (payload && automatic)
       throw new Error('Payload with automatic delivery is not supported');
 
+    if (nativeGas && !automatic)
+      throw new Error('Gas Dropoff is only supported for automatic transfers');
+
     return await TokenTransfer.from(this, {
-      token: token,
-      amount: amount,
+      token,
+      amount,
       from,
       to,
-      automatic: automatic,
-      payload: payload,
+      automatic,
+      payload,
+      nativeGas,
     });
   }
 
@@ -331,29 +341,32 @@ export class Wormhole {
     }
   }
 
-  //  /**
-  //   * Gets required fields from a ParsedMessage or ParsedRelayerMessage used to fetch a VAA
-  //   *
-  //   * @param txData The ParsedMessage or ParsedRelayerMessage that is the result of a transaction on a source chain
-  //   * @returns The MessageIdentifier collection of fields to uniquely identify a VAA
-  //   */
-  //
-  //  getMessageIdentifier(txData: any): MessageIdentifier {
-  //    // TODO: wh-connect checks finality first, do we need to?
-  //    const emitterChain = toChainName(txData.fromChain);
-  //    const emitterAddress = txData.emitterAddress.startsWith('0x')
-  //      ? txData.emitterAddress.slice(2)
-  //      : txData.emitterAddress;
-  //
-  //    return {
-  //      chain: emitterChain,
-  //      emitterAddress,
-  //      sequence: txData.sequence.toString(),
-  //    };
-  //  }
-  //
+  async getTransactionStatus(
+    chain: ChainName,
+    emitter: UniversalAddress | NativeAddress<PlatformName>,
+    sequence: bigint,
+  ): Promise<TransactionStatus> {
+    const chainId = toChainId(chain);
+    const emitterAddress = emitter.toString().startsWith('0x')
+      ? emitter.toString().slice(2)
+      : emitter;
 
-  //
+    const id = `${chainId}/${emitterAddress}/${sequence}`;
+
+    const url = `${this.conf.api}/api/v1/transactions/${id}`;
+
+    // TODO: try/catch this
+    const response = await axios.get(url);
+
+    if (!response || !response.data)
+      throw new Error(`No data available for sequence: ${id}`);
+
+    const { data } = response;
+
+    // TODO: actually check this data
+    return data as TransactionStatus;
+  }
+
   //  /**
   //   * Checks if a transfer has been completed or not
   //   *

@@ -9,16 +9,15 @@ import {
   UnsignedTransaction,
   VAA,
   deserialize,
-  deserializePayload,
   Signer,
   TxHash,
-  SequenceId,
   WormholeMessageId,
   TransactionId,
   isWormholeMessageId,
   isTransactionIdentifier,
   CircleAttestation,
   CircleMessageId,
+  toNative,
 } from '@wormhole-foundation/sdk-definitions';
 
 import { CCTPTransferDetails, isCCTPTransferDetails } from '../types';
@@ -28,6 +27,7 @@ import {
   AttestationId,
 } from '../wormholeTransfer';
 import { Wormhole } from '../wormhole';
+import { ethers } from 'ethers';
 
 export class CCTPTransfer implements WormholeTransfer {
   private readonly wh: Wormhole;
@@ -100,13 +100,23 @@ export class CCTPTransfer implements WormholeTransfer {
     const { chain, emitter, sequence } = from;
     const vaa = await CCTPTransfer.getTransferVaa(wh, chain, emitter, sequence);
 
+    const rcvChain = toCircleChainName(vaa.payload.targetDomain);
     // Check if its a payload 3 targeted at a relayer on the destination chain
+    const { wormholeCircleRelayer } = wh.conf.chains[rcvChain]?.contracts
+      .CCTP as {
+      wormholeCircleRelayer: string;
+    };
+
     const rcvAddress = vaa.payload.mintRecipient;
-    const rcvChain = toCircleChainName(vaa.payload.destinationDomain);
+    const relayerAddress = toNative(
+      chain,
+      wormholeCircleRelayer,
+      // @ts-ignore
+    ).toUniversalAddress();
 
     const automatic =
       vaa.payloadLiteral === 'CircleTransferRelay' &&
-      rcvAddress.toString() === wh.conf.chains[rcvChain]?.contracts.Relayer;
+      rcvAddress.equals(relayerAddress);
 
     const details: CCTPTransferDetails = {
       token: {
@@ -114,12 +124,10 @@ export class CCTPTransfer implements WormholeTransfer {
         address: vaa.payload.token.address.toNative(chain),
       },
       amount: vaa.payload.token.amount,
-      // TODO: the `from.address` here is a lie, but we don't
-      // immediately have enough info to get the _correct_ one
-      from: { address: from.emitter, chain: from.chain },
+      from: { address: vaa.payload.caller, chain: from.chain },
       to: {
         chain: rcvChain,
-        address: rcvAddress.toNative(rcvChain),
+        address: rcvAddress,
       },
       automatic,
     };
@@ -205,6 +213,7 @@ export class CCTPTransfer implements WormholeTransfer {
         this.transfer.from.address,
         { chain: this.transfer.to.chain, address: this.transfer.to.address },
         this.transfer.amount,
+        this.transfer.nativeGas,
       );
     } else {
       const cb = await fromChain.getCircleBridge();
@@ -216,17 +225,19 @@ export class CCTPTransfer implements WormholeTransfer {
       );
     }
 
-    // TODO: definitely a bug here, we _only_ send when !stackable
+    let unsigned: UnsignedTransaction[] = [];
     const txHashes: TxHash[] = [];
     for await (const tx of xfer) {
+      unsigned.push(tx);
       if (!tx.stackable) {
-        // sign/send/wait
-        const signed = await signer.sign([tx]);
-        const txHashes = await fromChain.sendWait(signed);
-        txHashes.push(...txHashes);
-      } else {
-        // TODO: prolly should do something with these
+        const signed = await signer.sign(unsigned);
+        txHashes.push(...(await fromChain.sendWait(signed)));
+        unsigned = [];
       }
+    }
+    if (unsigned.length > 0) {
+      const signed = await signer.sign(unsigned);
+      txHashes.push(...(await fromChain.sendWait(signed)));
     }
 
     this.txids = txHashes;
@@ -322,24 +333,10 @@ export class CCTPTransfer implements WormholeTransfer {
 
       const txHashes: TxHash[] = [];
       for (const cachedVaa of this.vaas) {
-        const vaa = cachedVaa.vaa
-          ? cachedVaa.vaa
-          : await CCTPTransfer.getTransferVaa(
-              this.wh,
-              this.transfer.from.chain,
-              cachedVaa.id.emitter,
-              cachedVaa.id.sequence,
-            );
-
+        const { vaa } = cachedVaa;
         if (!vaa) throw new Error('No Vaa found');
-
-        if (vaa.payloadLiteral === 'CircleTransferRelay')
-          throw new Error(
-            'VAA is a simple transfer but expected Payload for automatic delivery',
-          );
-
         const tb = await toChain.getAutomaticCircleBridge();
-
+        //TODO: tb.redeem()
         throw new Error('No method to redeem auto circle bridge tx (yet)');
       }
       return txHashes;
@@ -351,25 +348,37 @@ export class CCTPTransfer implements WormholeTransfer {
 
       const txHashes: TxHash[] = [];
       for (const cachedAttestation of this.circleAttestations) {
-        const msg = cachedAttestation.id.message;
-        const attestation = cachedAttestation.attestation!;
+        const { id, attestation } = cachedAttestation;
+
+        if (!attestation)
+          throw new Error(`No Circle Attestation for ${id.msgHash}`);
 
         const tb = await toChain.getCircleBridge();
-        const xfer = tb.redeem(this.transfer.to.address, msg, attestation);
+        const xfer = tb.redeem(
+          this.transfer.to.address,
+          id.message,
+          attestation,
+        );
 
-        // TODO: better error
-        if (xfer === undefined)
-          throw new Error('No handler defined for VAA type');
-
-        // TODO: definitely a bug here, we _only_ send when !stackable
+        let unsigned: UnsignedTransaction[] = [];
         for await (const tx of xfer) {
+          unsigned.push(tx);
+
+          // If we get a non-stackable tx, sign and send the transactions
+          // we've gotten so far
           if (!tx.stackable) {
-            const signed = await signer.sign([tx]);
+            const signed = await signer.sign(unsigned);
             const txHashes = await toChain.sendWait(signed);
             txHashes.push(...txHashes);
-          } else {
-            // TODO...
+            // reset unsigned
+            unsigned = [];
           }
+        }
+
+        if (unsigned.length > 0) {
+          const signed = await signer.sign(unsigned);
+          const txHashes = await toChain.sendWait(signed);
+          txHashes.push(...txHashes);
         }
       }
       return txHashes;

@@ -11,6 +11,7 @@ import {
   TransactionId,
   isWormholeMessageId,
   isTransactionIdentifier,
+  toNative,
 } from '@wormhole-foundation/sdk-definitions';
 import { isTokenTransferDetails, TokenTransferDetails } from '../types';
 import {
@@ -36,6 +37,9 @@ export class TokenTransfer implements WormholeTransfer {
   // transfer details
   transfer: TokenTransferDetails;
 
+  // Source txids
+  txids?: TxHash[];
+
   // The corresponding vaa representing the TokenTransfer
   // on the source chain (if its been completed and finalized)
   vaas?: {
@@ -50,6 +54,24 @@ export class TokenTransfer implements WormholeTransfer {
   }
 
   async getTransferState(): Promise<TransferState> {
+    // TODO :puke:
+    if (this.transfer.automatic) {
+      if (this.vaas && this.vaas.length > 0) {
+        const { chain, emitter, sequence } = this.vaas[0].id;
+        const txStatus = await this.wh.getTransactionStatus(
+          chain,
+          emitter,
+          sequence,
+        );
+
+        if (txStatus.globalTx.destinationTx) {
+          if (txStatus.globalTx.destinationTx.status === 'completed') {
+            this.state = TransferState.Completed;
+          }
+        }
+      }
+    }
+
     return this.state;
   }
 
@@ -97,10 +119,16 @@ export class TokenTransfer implements WormholeTransfer {
     );
 
     // Check if its a payload 3 targeted at a relayer on the destination chain
-    const rcv = vaa.payload.to;
+    const { address } = vaa.payload.to;
+    const relayerAddress = toNative(
+      chain,
+      wh.conf.chains[chain]?.contracts.Relayer as string,
+      //@ts-ignore
+    ).toUniversalAddress();
+
     const automatic =
       vaa.payloadLiteral === 'TransferWithPayload' &&
-      rcv.address.toString() === wh.conf.chains[rcv.chain]?.contracts.Relayer;
+      address.equals(relayerAddress);
 
     const details: TokenTransferDetails = {
       token: { ...vaa.payload.token },
@@ -161,11 +189,19 @@ export class TokenTransfer implements WormholeTransfer {
     let xfer: AsyncGenerator<UnsignedTransaction>;
     if (this.transfer.automatic) {
       const tb = await fromChain.getAutomaticTokenBridge();
+      const fee = await tb.getRelayerFee(
+        this.transfer.from,
+        this.transfer.to,
+        this.transfer.token,
+      );
+
       xfer = tb.transfer(
         this.transfer.from.address,
         { chain: this.transfer.to.chain, address: this.transfer.to.address },
         tokenAddress,
         this.transfer.amount,
+        fee,
+        this.transfer.nativeGas,
       );
     } else {
       const tb = await fromChain.getTokenBridge();
@@ -178,17 +214,26 @@ export class TokenTransfer implements WormholeTransfer {
       );
     }
 
-    // TODO: check 'stackable'?
-    const unsigned: UnsignedTransaction[] = [];
+    let unsigned: UnsignedTransaction[] = [];
+    const txHashes: TxHash[] = [];
     for await (const tx of xfer) {
+      unsigned.push(tx);
       if (!tx.stackable) {
         // sign/send
+        txHashes.push(
+          ...(await fromChain.sendWait(await signer.sign(unsigned))),
+        );
+        // reset unsigned
+        unsigned = [];
       }
-      unsigned.push(tx);
     }
 
-    const txHashes = await fromChain.sendWait(await signer.sign(unsigned));
+    if (unsigned.length > 0) {
+      txHashes.push(...(await fromChain.sendWait(await signer.sign(unsigned))));
+    }
 
+    // Set txids and update statemachine
+    this.txids = txHashes;
     this.state = TransferState.Initiated;
 
     // TODO: concurrent
@@ -196,10 +241,10 @@ export class TokenTransfer implements WormholeTransfer {
       const parsed = await fromChain.parseTransaction(txHash);
 
       // TODO:
-      if (parsed.length != 1) throw new Error('Idk what to do with != 1');
-      const [msg] = parsed;
+      if (parsed.length != 1)
+        throw new Error(`Expected a single VAA, got ${parsed.length}`);
 
-      const { emitter, sequence } = msg;
+      const [{ emitter, sequence }] = parsed;
 
       if (!this.vaas) this.vaas = [];
       this.vaas.push({
@@ -257,25 +302,20 @@ export class TokenTransfer implements WormholeTransfer {
         3) return txid of submission
     */
     if (this.state < TransferState.Attested)
-      throw new Error('Invalid state transition in `finish`');
+      throw new Error(
+        'Invalid state transition in `finish`. Be sure to call `fetchAttestation`.',
+      );
 
-    // TODO: fetch it for 'em? We should _not_ be Ready if we dont have these
     if (!this.vaas) throw new Error('No VAA details available');
 
     const toChain = this.wh.getChain(this.transfer.to.chain);
 
-    const unsigned: UnsignedTransaction[] = [];
+    let unsigned: UnsignedTransaction[] = [];
+    const txHashes: TxHash[] = [];
     for (const cachedVaa of this.vaas) {
-      const vaa = cachedVaa.vaa
-        ? cachedVaa.vaa
-        : await TokenTransfer.getTransferVaa(
-            this.wh,
-            this.transfer.from.chain,
-            cachedVaa.id.emitter,
-            cachedVaa.id.sequence,
-          );
+      const { vaa } = cachedVaa;
 
-      if (!vaa) throw new Error('No Vaa found');
+      if (!vaa) throw new Error(`No VAA found for ${cachedVaa.id.sequence}`);
 
       let xfer: AsyncGenerator<UnsignedTransaction> | undefined;
       if (this.transfer.automatic) {
@@ -296,15 +336,24 @@ export class TokenTransfer implements WormholeTransfer {
         throw new Error('No handler defined for VAA type');
 
       for await (const tx of xfer) {
-        // TODO
-        // if(!tx.stackable){
-        // }else{
-        // }
         unsigned.push(tx);
+        // If we find a tx that is not stackable, sign it and send
+        // the accumulated txs so far
+        if (!tx.stackable) {
+          const signedTxns = await signer.sign(unsigned);
+          const txids = await toChain.sendWait(signedTxns);
+          txHashes.push(...txids);
+          // reset unsigned
+          unsigned = [];
+        }
       }
     }
-
-    return await toChain.sendWait(await signer.sign(unsigned));
+    if (unsigned.length > 0) {
+      const signedTxns = await signer.sign(unsigned);
+      const txids = await toChain.sendWait(signedTxns);
+      txHashes.push(...txids);
+    }
+    return txHashes;
   }
 
   static async getTransferVaa(

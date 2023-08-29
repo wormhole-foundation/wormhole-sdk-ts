@@ -17,16 +17,22 @@ const circleTransferRelay = [
       { name: "amount", ...amountItem },
     ],
   },
-  { name: "destinationDomain", binary: "uint", size: 8 },
+  { name: "sourceDomain", binary: "uint", size: 4 },
+  { name: "targetDomain", binary: "uint", size: 4 },
   { name: "nonce", binary: "uint", size: 8 },
   { name: "caller", ...universalAddressItem },
   { name: "mintRecipient", ...universalAddressItem },
-  // TODO:
-  { name: "idk", binary: "uint", size: 2 },
-  { name: "otherpayloadid", binary: "uint", size: 1, exclude: true },
-  { name: "targetRelayerFee", ...amountItem },
-  { name: "toNativeTokenAmount", ...amountItem },
-  { name: "targetRecipient", ...universalAddressItem },
+  { name: "payloadSize", binary: "uint", size: 2 },
+  {
+    name: "relayerPayload",
+    binary: "object",
+    layout: [
+      payloadIdItem(1),
+      { name: "targetRelayerFee", ...amountItem },
+      { name: "toNativeTokenAmount", ...amountItem },
+      { name: "targetRecipient", ...universalAddressItem },
+    ],
+  },
 ] as const;
 
 export const connectPayloads = [

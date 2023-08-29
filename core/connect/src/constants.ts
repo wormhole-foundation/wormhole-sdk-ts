@@ -13,6 +13,7 @@ import {
   rpcAddress,
   RoArray,
   constMap,
+  circleAPI,
 } from '@wormhole-foundation/sdk-base';
 import { WormholeConfig } from './types';
 
@@ -68,8 +69,9 @@ export const chainConfigs = constMap(chainConfigMapping);
 
 const sharedConfig: WormholeConfig = {
   network: 'Testnet',
-  api: 'https://api.testnet.wormholescan.io',
-  circleAPI: 'https://iris-api-sandbox.circle.com/v1/attestations',
+  //api: 'https://api.testnet.wormholescan.io',
+  api: 'https://api.testnet.wormscan.io',
+  circleAPI: circleAPI('Testnet'),
   chains: chainConfigs('Testnet'),
 } as const;
 
@@ -77,7 +79,7 @@ export const CONFIG = {
   Mainnet: {
     network: 'Mainnet',
     api: 'https://api.wormholescan.io',
-    circleAPI: 'https://iris-api.circle.com/v1/attestations',
+    circleAPI: circleAPI('Mainnet'),
     chains: chainConfigs('Mainnet'),
   },
   Testnet: sharedConfig,

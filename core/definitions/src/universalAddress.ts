@@ -2,9 +2,10 @@ import {
   hexByteStringToUint8Array,
   uint8ArrayToHexByteString,
   isHexByteString,
+  PlatformName,
 } from "@wormhole-foundation/sdk-base";
 
-import { Address, toNative } from "./address";
+import { Address, ChainAddress, NativeAddress, toNative } from "./address";
 
 export class UniversalAddress implements Address {
   static readonly byteSize = 32;
@@ -41,6 +42,14 @@ export class UniversalAddress implements Address {
   toUniversalAddress() {
     return this;
   }
+
+  equals(other: UniversalAddress): boolean {
+    if (other instanceof UniversalAddress) {
+      return other.toString() === this.toString();
+    }
+    return false;
+  }
+
   static isValidAddress(address: string) {
     return isHexByteString(address, UniversalAddress.byteSize);
   }
