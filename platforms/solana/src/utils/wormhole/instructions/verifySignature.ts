@@ -14,13 +14,8 @@ import {
   deriveGuardianSetKey,
   getWormholeBridgeData,
 } from '../accounts';
-import {
-  isBytes,
-  ParsedVaa,
-  parseVaa,
-  SignedVaa,
-} from '@wormhole-foundation/connect-sdk';
 import { createReadOnlyWormholeProgramInterface } from '../program';
+import { VAA } from '@wormhole-foundation/sdk-definitions';
 
 const MAX_LEN_GUARDIAN_KEYS = 19;
 
@@ -49,12 +44,11 @@ export async function createVerifySignaturesInstructions(
   connection: Connection,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: SignedVaa | ParsedVaa,
+  vaa: VAA,
   signatureSet: PublicKeyInitData,
   commitment?: Commitment,
 ): Promise<TransactionInstruction[]> {
-  const parsed = isBytes(vaa) ? parseVaa(vaa) : vaa;
-  const guardianSetIndex = parsed.guardianSetIndex;
+  const guardianSetIndex = vaa.guardianSet;
   const info = await getWormholeBridgeData(connection, wormholeProgramId);
   if (guardianSetIndex != info.guardianSetIndex) {
     throw new Error('guardianSetIndex != config.guardianSetIndex');
@@ -67,7 +61,7 @@ export async function createVerifySignaturesInstructions(
     commitment,
   );
 
-  const guardianSignatures = parsed.guardianSignatures;
+  const guardianSignatures = vaa.signatures;
   const guardianKeys = guardianSetData.keys;
 
   const batchSize = 7;
@@ -81,23 +75,24 @@ export async function createVerifySignaturesInstructions(
     const keys: Buffer[] = [];
     for (let j = 0; j < end - start; ++j) {
       const item = guardianSignatures.at(j + start)!;
-      signatures.push(item.signature);
+      // TODO: idk encoding
+      signatures.push(Buffer.from(item.signature.toCompactRawBytes()));
 
-      const key = guardianKeys.at(item.index)!;
+      const key = guardianKeys.at(item.guardianIndex)!;
       keys.push(key);
 
-      signatureStatus[item.index] = j;
+      signatureStatus[item.guardianIndex] = j;
     }
 
     instructions.push(
-      createSecp256k1Instruction(signatures, keys, parsed.hash),
+      createSecp256k1Instruction(signatures, keys, Buffer.from(vaa.hash)),
     );
     instructions.push(
       createVerifySignaturesInstruction(
         connection,
         wormholeProgramId,
         payer,
-        parsed,
+        vaa,
         signatureSet,
         signatureStatus,
       ),
@@ -126,7 +121,7 @@ function createVerifySignaturesInstruction(
   connection: Connection,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: SignedVaa | ParsedVaa,
+  vaa: VAA,
   signatureSet: PublicKeyInitData,
   signatureStatus: number[],
 ): TransactionInstruction {
@@ -163,15 +158,11 @@ export function getVerifySignatureAccounts(
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
   signatureSet: PublicKeyInitData,
-  vaa: SignedVaa | ParsedVaa,
+  vaa: VAA,
 ): VerifySignatureAccounts {
-  const parsed = isBytes(vaa) ? parseVaa(vaa) : vaa;
   return {
     payer: new PublicKey(payer),
-    guardianSet: deriveGuardianSetKey(
-      wormholeProgramId,
-      parsed.guardianSetIndex,
-    ),
+    guardianSet: deriveGuardianSetKey(wormholeProgramId, vaa.guardianSet),
     signatureSet: new PublicKey(signatureSet),
     instructions: SYSVAR_INSTRUCTIONS_PUBKEY,
     rent: SYSVAR_RENT_PUBKEY,

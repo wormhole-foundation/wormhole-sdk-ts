@@ -4,7 +4,7 @@ import { createReadOnlyProvider } from '../utils';
 import { TokenBridgeCoder } from './coder';
 import { TokenBridge } from '../types/tokenBridge';
 
-import IDL from '@wormhole-foundation/connect-sdk/dist/src/anchor-idl/token_bridge.json';
+import IDL from '../../anchor-idl/token_bridge.json';
 
 export function createTokenBridgeProgramInterface(
   programId: PublicKeyInitData,

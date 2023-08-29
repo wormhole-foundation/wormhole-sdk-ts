@@ -3,6 +3,7 @@
 // https://github.com/coral-xyz/anchor/blob/master/ts/packages/anchor/src/coder/borsh/idl.ts
 
 import * as borsh from '@coral-xyz/borsh';
+// @ts-ignore
 import { Layout } from 'buffer-layout';
 import { IdlField, IdlTypeDef } from '../../anchor';
 import { camelCase } from 'lodash';

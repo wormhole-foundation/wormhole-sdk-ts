@@ -3,7 +3,6 @@ import {
   payloadIdItem,
   universalAddressItem,
   amountItem,
-  chainItem,
 } from "../layout-items";
 import { registerPayloadType } from "../vaa";
 

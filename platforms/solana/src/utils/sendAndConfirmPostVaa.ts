@@ -18,12 +18,7 @@ import {
   createPostVaaInstruction,
   createVerifySignaturesInstructions,
 } from './wormhole';
-import {
-  isBytes,
-  ParsedVaa,
-  parseVaa,
-  SignedVaa,
-} from '@wormhole-foundation/connect-sdk';
+import { VAA } from '@wormhole-foundation/sdk-definitions';
 
 /**
  * @category Solana
@@ -33,7 +28,7 @@ export async function postVaaWithRetry(
   signTransaction: SignTransaction,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: Buffer,
+  vaa: VAA,
   maxRetries?: number,
   commitment?: Commitment,
 ): Promise<TransactionSignatureAndResponse[]> {
@@ -76,7 +71,7 @@ export async function postVaa(
   signTransaction: SignTransaction,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: Buffer,
+  vaa: VAA,
   options?: ConfirmOptions,
   asyncVerifySignatures: boolean = true,
 ): Promise<TransactionSignatureAndResponse[]> {
@@ -145,17 +140,16 @@ export async function createPostSignedVaaTransactions(
   connection: Connection,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: SignedVaa | ParsedVaa,
+  vaa: VAA,
   commitment?: Commitment,
 ): Promise<PreparedTransactions> {
-  const parsed = isBytes(vaa) ? parseVaa(vaa) : vaa;
   const signatureSet = Keypair.generate();
 
   const verifySignaturesInstructions = await createVerifySignaturesInstructions(
     connection,
     wormholeProgramId,
     payer,
-    parsed,
+    vaa,
     signatureSet.publicKey,
     commitment,
   );
@@ -173,7 +167,7 @@ export async function createPostSignedVaaTransactions(
         connection,
         wormholeProgramId,
         payer,
-        parsed,
+        vaa,
         signatureSet.publicKey,
       ),
     ),

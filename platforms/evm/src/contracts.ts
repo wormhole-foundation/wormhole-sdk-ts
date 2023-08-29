@@ -1,12 +1,5 @@
 import * as ethers_contracts from './ethers-contracts';
-import {
-  Chain,
-  ChainName,
-  toChainName,
-  Network,
-  platformToChains,
-  contracts,
-} from '@wormhole-foundation/sdk-base';
+import { Chain, ChainName, toChainName } from '@wormhole-foundation/sdk-base';
 import { ChainsConfig, Contracts } from '@wormhole-foundation/connect-sdk';
 import { TokenId, toNative } from '@wormhole-foundation/sdk-definitions';
 import { Provider } from 'ethers';
@@ -25,12 +18,12 @@ export class EvmContracts {
     });
   }
 
-  getContracts(chain: Chain): Contracts | undefined {
+  getContracts(chain: ChainName): Contracts | undefined {
     const chainName = toChainName(chain);
     return this._contracts.get(chainName);
   }
 
-  mustGetContracts(chain: Chain): Contracts {
+  mustGetContracts(chain: ChainName): Contracts {
     const contracts = this.getContracts(chain);
     if (!contracts) throw new Error(`no EVM contracts found for ${chain}`);
     return contracts;

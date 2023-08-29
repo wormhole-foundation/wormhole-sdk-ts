@@ -10,12 +10,6 @@ import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
 } from '@solana/spl-token';
-import {
-  isBytes,
-  ParsedNftTransferVaa,
-  parseNftTransferVaa,
-  SignedVaa,
-} from '@wormhole-foundation/connect-sdk';
 import { createReadOnlyNftBridgeProgramInterface } from '../program';
 import { deriveClaimKey, derivePostedVaaKey } from '../../wormhole';
 import {
@@ -26,13 +20,14 @@ import {
   deriveMintAuthorityKey,
 } from '../accounts';
 import { SplTokenMetadataProgram } from '../../utils';
+import { VAA } from '@wormhole-foundation/sdk-definitions';
 
 export function createCompleteTransferWrappedInstruction(
   connection: Connection,
   nftBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: SignedVaa | ParsedNftTransferVaa,
+  vaa: VAA,
   toAuthority?: PublicKeyInitData,
 ): TransactionInstruction {
   const methods =
@@ -79,41 +74,41 @@ export function getCompleteTransferWrappedAccounts(
   nftBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: SignedVaa | ParsedNftTransferVaa,
+  vaa: VAA,
   toAuthority?: PublicKeyInitData,
 ): CompleteTransferWrappedAccounts {
-  const parsed = isBytes(vaa) ? parseNftTransferVaa(vaa) : vaa;
-  const mint = deriveWrappedMintKey(
-    nftBridgeProgramId,
-    parsed.tokenChain,
-    parsed.tokenAddress,
-    parsed.tokenId,
-  );
-  return {
-    payer: new PublicKey(payer),
-    config: deriveNftBridgeConfigKey(nftBridgeProgramId),
-    vaa: derivePostedVaaKey(wormholeProgramId, parsed.hash),
-    claim: deriveClaimKey(
-      nftBridgeProgramId,
-      parsed.emitterAddress,
-      parsed.emitterChain,
-      parsed.sequence,
-    ),
-    endpoint: deriveEndpointKey(
-      nftBridgeProgramId,
-      parsed.emitterChain,
-      parsed.emitterAddress,
-    ),
-    to: new PublicKey(parsed.to),
-    toAuthority: new PublicKey(toAuthority === undefined ? payer : toAuthority),
-    mint,
-    wrappedMeta: deriveWrappedMetaKey(nftBridgeProgramId, mint),
-    mintAuthority: deriveMintAuthorityKey(nftBridgeProgramId),
-    rent: SYSVAR_RENT_PUBKEY,
-    systemProgram: SystemProgram.programId,
-    tokenProgram: TOKEN_PROGRAM_ID,
-    splMetadataProgram: SplTokenMetadataProgram.programId,
-    associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-    wormholeProgram: new PublicKey(wormholeProgramId),
-  };
+  throw new Error('Not implemented');
+  // const mint = deriveWrappedMintKey(
+  //   nftBridgeProgramId,
+  //   vaa.tokenChain,
+  //   parsed.tokenAddress,
+  //   parsed.tokenId,
+  // );
+  // return {
+  //   payer: new PublicKey(payer),
+  //   config: deriveNftBridgeConfigKey(nftBridgeProgramId),
+  //   vaa: derivePostedVaaKey(wormholeProgramId, parsed.hash),
+  //   claim: deriveClaimKey(
+  //     nftBridgeProgramId,
+  //     parsed.emitterAddress,
+  //     parsed.emitterChain,
+  //     parsed.sequence,
+  //   ),
+  //   endpoint: deriveEndpointKey(
+  //     nftBridgeProgramId,
+  //     parsed.emitterChain,
+  //     parsed.emitterAddress,
+  //   ),
+  //   to: new PublicKey(parsed.to),
+  //   toAuthority: new PublicKey(toAuthority === undefined ? payer : toAuthority),
+  //   mint,
+  //   wrappedMeta: deriveWrappedMetaKey(nftBridgeProgramId, mint),
+  //   mintAuthority: deriveMintAuthorityKey(nftBridgeProgramId),
+  //   rent: SYSVAR_RENT_PUBKEY,
+  //   systemProgram: SystemProgram.programId,
+  //   tokenProgram: TOKEN_PROGRAM_ID,
+  //   splMetadataProgram: SplTokenMetadataProgram.programId,
+  //   associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+  //   wormholeProgram: new PublicKey(wormholeProgramId),
+  // };
 }

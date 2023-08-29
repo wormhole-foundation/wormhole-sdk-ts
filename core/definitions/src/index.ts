@@ -1,3 +1,9 @@
+// Make sure payloads are registered
+import "./payloads/connect";
+import "./payloads/relayer";
+import "./payloads/governance";
+import "./payloads/tokenBridge";
+
 export * from "./address";
 export * from "./universalAddress";
 export * from "./unsignedTransaction";

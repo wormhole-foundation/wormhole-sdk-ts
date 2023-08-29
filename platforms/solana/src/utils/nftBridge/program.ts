@@ -4,7 +4,7 @@ import { createReadOnlyProvider } from '../utils';
 import { NftBridgeCoder } from './coder';
 import { NftBridge } from '../types/nftBridge';
 
-import IDL from '@wormhole-foundation/connect-sdk/dist/src/anchor-idl/nft_bridge.json';
+import IDL from '../../anchor-idl/nft_bridge.json';
 
 export const NFT_TRANSFER_NATIVE_TOKEN_ADDRESS = Buffer.alloc(32, 1);
 

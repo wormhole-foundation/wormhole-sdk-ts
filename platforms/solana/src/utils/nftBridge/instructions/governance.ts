@@ -7,14 +7,6 @@ import {
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction,
 } from '@solana/web3.js';
-import {
-  isBytes,
-  ParsedNftBridgeRegisterChainVaa,
-  ParsedNftBridgeUpgradeContractVaa,
-  parseNftBridgeRegisterChainVaa,
-  parseNftBridgeUpgradeContractVaa,
-  SignedVaa,
-} from '@wormhole-foundation/connect-sdk';
 import { createReadOnlyNftBridgeProgramInterface } from '../program';
 import { deriveClaimKey, derivePostedVaaKey } from '../../wormhole';
 import {
@@ -23,13 +15,15 @@ import {
   deriveUpgradeAuthorityKey,
 } from '../accounts';
 import { BpfLoaderUpgradeable, deriveUpgradeableProgramKey } from '../../utils';
+import { VAA } from '@wormhole-foundation/sdk-definitions';
+import { toChainId } from '@wormhole-foundation/sdk-base';
 
 export function createRegisterChainInstruction(
   connection: Connection,
   nftBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: SignedVaa | ParsedNftBridgeRegisterChainVaa,
+  vaa: VAA<'NftBridgeRegisterChain'>,
 ): TransactionInstruction {
   const methods = createReadOnlyNftBridgeProgramInterface(
     nftBridgeProgramId,
@@ -66,23 +60,22 @@ export function getRegisterChainAccounts(
   nftBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: SignedVaa | ParsedNftBridgeRegisterChainVaa,
+  vaa: VAA<'NftBridgeRegisterChain'>,
 ): RegisterChainAccounts {
-  const parsed = isBytes(vaa) ? parseNftBridgeRegisterChainVaa(vaa) : vaa;
   return {
     payer: new PublicKey(payer),
     config: deriveNftBridgeConfigKey(nftBridgeProgramId),
     endpoint: deriveEndpointKey(
       nftBridgeProgramId,
-      parsed.foreignChain,
-      parsed.foreignAddress,
+      toChainId(vaa.payload.foreignChain),
+      vaa.payload.foreignAddress.toUint8Array(),
     ),
-    vaa: derivePostedVaaKey(wormholeProgramId, parsed.hash),
+    vaa: derivePostedVaaKey(wormholeProgramId, Buffer.from(vaa.hash)),
     claim: deriveClaimKey(
       nftBridgeProgramId,
-      parsed.emitterAddress,
-      parsed.emitterChain,
-      parsed.sequence,
+      vaa.emitterAddress.toUint8Array(),
+      toChainId(vaa.emitterChain),
+      vaa.sequence,
     ),
     rent: SYSVAR_RENT_PUBKEY,
     systemProgram: SystemProgram.programId,
@@ -95,7 +88,7 @@ export function createUpgradeContractInstruction(
   nftBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: SignedVaa | ParsedNftBridgeUpgradeContractVaa,
+  vaa: VAA<'NftBridgeUpgradeContract'>,
   spill?: PublicKeyInitData,
 ): TransactionInstruction {
   const methods = createReadOnlyNftBridgeProgramInterface(
@@ -138,22 +131,21 @@ export function getUpgradeContractAccounts(
   nftBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: SignedVaa | ParsedNftBridgeUpgradeContractVaa,
+  vaa: VAA<'NftBridgeUpgradeContract'>,
   spill?: PublicKeyInitData,
 ): UpgradeContractAccounts {
-  const parsed = isBytes(vaa) ? parseNftBridgeUpgradeContractVaa(vaa) : vaa;
   return {
     payer: new PublicKey(payer),
-    vaa: derivePostedVaaKey(wormholeProgramId, parsed.hash),
+    vaa: derivePostedVaaKey(wormholeProgramId, Buffer.from(vaa.hash)),
     claim: deriveClaimKey(
       nftBridgeProgramId,
-      parsed.emitterAddress,
-      parsed.emitterChain,
-      parsed.sequence,
+      vaa.emitterAddress.toUint8Array(),
+      toChainId(vaa.emitterChain),
+      vaa.sequence,
     ),
     upgradeAuthority: deriveUpgradeAuthorityKey(nftBridgeProgramId),
     spill: new PublicKey(spill === undefined ? payer : spill),
-    implementation: new PublicKey(parsed.newContract),
+    implementation: new PublicKey(vaa.payload.newContract.toUint8Array()),
     programData: deriveUpgradeableProgramKey(nftBridgeProgramId),
     nftBridgeProgram: new PublicKey(nftBridgeProgramId),
     rent: SYSVAR_RENT_PUBKEY,

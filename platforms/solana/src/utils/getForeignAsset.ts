@@ -1,5 +1,5 @@
 import { Commitment, Connection, PublicKeyInitData } from '@solana/web3.js';
-import { ChainId } from '@wormhole-foundation/connect-sdk';
+import { ChainName, toChainId } from '@wormhole-foundation/sdk-base';
 import { deriveWrappedMintKey, getWrappedMeta } from './tokenBridge';
 
 /**
@@ -14,13 +14,13 @@ import { deriveWrappedMintKey, getWrappedMeta } from './tokenBridge';
 export async function getForeignAssetSolana(
   connection: Connection,
   tokenBridgeAddress: PublicKeyInitData,
-  originChainId: ChainId,
+  originChain: ChainName,
   originAsset: Uint8Array,
   commitment?: Commitment,
 ): Promise<string | null> {
   const mint = deriveWrappedMintKey(
     tokenBridgeAddress,
-    originChainId as number,
+    toChainId(originChain) as number,
     originAsset,
   );
   return getWrappedMeta(connection, tokenBridgeAddress, mint, commitment)

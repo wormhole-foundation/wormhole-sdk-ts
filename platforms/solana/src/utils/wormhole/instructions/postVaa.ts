@@ -13,12 +13,8 @@ import {
   deriveGuardianSetKey,
   derivePostedVaaKey,
 } from '../accounts';
-import {
-  isBytes,
-  ParsedVaa,
-  parseVaa,
-  SignedVaa,
-} from '@wormhole-foundation/connect-sdk';
+import { VAA } from '@wormhole-foundation/sdk-definitions';
+import { toChainId } from '@wormhole-foundation/sdk-base';
 import BN from 'bn.js';
 
 /**
@@ -39,23 +35,22 @@ export function createPostVaaInstruction(
   connection: Connection,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: SignedVaa | ParsedVaa,
+  vaa: VAA,
   signatureSet: PublicKeyInitData,
 ): TransactionInstruction {
-  const parsed = isBytes(vaa) ? parseVaa(vaa) : vaa;
   const methods = createReadOnlyWormholeProgramInterface(
     wormholeProgramId,
     connection,
   ).methods.postVaa(
-    parsed.version,
-    parsed.guardianSetIndex,
-    parsed.timestamp,
-    parsed.nonce,
-    parsed.emitterChain,
-    [...parsed.emitterAddress],
-    new BN(parsed.sequence.toString()),
-    parsed.consistencyLevel,
-    parsed.payload,
+    1, // TODO: hardcoded VAA version
+    vaa.guardianSet,
+    vaa.timestamp,
+    vaa.nonce,
+    toChainId(vaa.emitterChain),
+    [...vaa.emitterAddress.toUint8Array()],
+    new BN(vaa.sequence.toString()),
+    vaa.consistencyLevel,
+    vaa.payload,
   );
 
   // @ts-ignore
@@ -64,7 +59,7 @@ export function createPostVaaInstruction(
       wormholeProgramId,
       payer,
       signatureSet,
-      parsed,
+      vaa,
     ) as any,
     signers: undefined,
     remainingAccounts: undefined,
@@ -88,17 +83,13 @@ export function getPostVaaAccounts(
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
   signatureSet: PublicKeyInitData,
-  vaa: SignedVaa | ParsedVaa,
+  vaa: VAA,
 ): PostVaaAccounts {
-  const parsed = isBytes(vaa) ? parseVaa(vaa) : vaa;
   return {
-    guardianSet: deriveGuardianSetKey(
-      wormholeProgramId,
-      parsed.guardianSetIndex,
-    ),
+    guardianSet: deriveGuardianSetKey(wormholeProgramId, vaa.guardianSet),
     bridge: deriveWormholeBridgeDataKey(wormholeProgramId),
     signatureSet: new PublicKey(signatureSet),
-    vaa: derivePostedVaaKey(wormholeProgramId, parsed.hash),
+    vaa: derivePostedVaaKey(wormholeProgramId, Buffer.from(vaa.hash)),
     payer: new PublicKey(payer),
     clock: SYSVAR_CLOCK_PUBKEY,
     rent: SYSVAR_RENT_PUBKEY,

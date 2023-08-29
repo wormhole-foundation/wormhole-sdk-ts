@@ -4,7 +4,7 @@ import { createReadOnlyProvider } from '../utils';
 import { WormholeCoder } from './coder';
 import { Wormhole } from '../types/wormhole';
 
-import IDL from '@wormhole-foundation/connect-sdk/dist/src/anchor-idl/wormhole.json';
+import IDL from '../../anchor-idl/wormhole.json';
 
 export function createWormholeProgramInterface(
   programId: PublicKeyInitData,

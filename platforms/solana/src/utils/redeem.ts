@@ -8,12 +8,6 @@ import {
   Transaction,
 } from '@solana/web3.js';
 import {
-  SignedVaa,
-  parseTokenTransferVaa,
-  MAX_VAA_DECIMALS,
-  chainToChainId,
-} from '@wormhole-foundation/connect-sdk';
-import {
   createCompleteTransferNativeInstruction,
   createCompleteTransferWrappedInstruction,
 } from './tokenBridge';
@@ -27,19 +21,22 @@ import {
   getMinimumBalanceForRentExemptAccount,
   getMint,
 } from '@solana/spl-token';
+import { UniversalAddress, VAA } from '@wormhole-foundation/sdk-definitions';
+
+// TODO:
+const MAX_VAA_DECIMALS = 8;
 
 export async function redeemOnSolana(
   connection: Connection,
   bridgeAddress: PublicKeyInitData,
   tokenBridgeAddress: PublicKeyInitData,
   payerAddress: PublicKeyInitData,
-  signedVaa: SignedVaa,
+  vaa: VAA<'Transfer'> | VAA<'TransferWithPayload'>,
   feeRecipientAddress?: PublicKeyInitData,
   commitment?: Commitment,
 ) {
-  const parsed = parseTokenTransferVaa(signedVaa);
   const createCompleteTransferInstruction =
-    parsed.tokenChain == chainToChainId("Solana")
+    vaa.payload.token.chain == 'Solana'
       ? createCompleteTransferNativeInstruction
       : createCompleteTransferWrappedInstruction;
   const transaction = new Transaction().add(
@@ -48,7 +45,7 @@ export async function redeemOnSolana(
       tokenBridgeAddress,
       bridgeAddress,
       payerAddress,
-      parsed,
+      vaa,
       feeRecipientAddress,
     ),
   );
@@ -63,20 +60,23 @@ export async function redeemAndUnwrapOnSolana(
   bridgeAddress: PublicKeyInitData,
   tokenBridgeAddress: PublicKeyInitData,
   payerAddress: PublicKeyInitData,
-  signedVaa: SignedVaa,
+  vaa: VAA<'Transfer'>,
   commitment?: Commitment,
 ) {
-  const parsed = parseTokenTransferVaa(signedVaa);
-  const targetPublicKey = new PublicKey(parsed.to);
+  const targetPublicKey = new PublicKey(vaa.payload.to);
   const targetAmount = await getMint(connection, NATIVE_MINT, commitment).then(
     (info) =>
-      parsed.amount * BigInt(Math.pow(10, info.decimals - MAX_VAA_DECIMALS)),
+      vaa.payload.token.amount *
+      BigInt(Math.pow(10, info.decimals - MAX_VAA_DECIMALS)),
   );
   const rentBalance = await getMinimumBalanceForRentExemptAccount(
     connection,
     commitment,
   );
-  if (Buffer.compare(parsed.tokenAddress, NATIVE_MINT.toBuffer()) != 0) {
+
+  // TODO: native compare
+  const nativeMint = new UniversalAddress(NATIVE_MINT.toBytes());
+  if (!vaa.payload.token.address.equals(nativeMint)) {
     return Promise.reject('tokenAddress != NATIVE_MINT');
   }
   const payerPublicKey = new PublicKey(payerAddress);
@@ -87,7 +87,7 @@ export async function redeemAndUnwrapOnSolana(
     tokenBridgeAddress,
     bridgeAddress,
     payerPublicKey,
-    signedVaa,
+    vaa,
   );
 
   //This will create a temporary account where the wSOL will be moved
