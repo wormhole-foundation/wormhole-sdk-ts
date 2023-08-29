@@ -30,7 +30,7 @@
   "workspaces": [
     "core/base",
     "core/definitions",
-    "core/connect",
+    "connect",
     "platforms/evm"
   ]
 }

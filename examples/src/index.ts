@@ -1,11 +1,9 @@
 import {
-  TokenTransfer,
   TransferState,
   Wormhole,
   WormholeTransfer,
+  definitions,
 } from "@wormhole-foundation/connect-sdk";
-// TODO: should we re-export the things they need? should we rename the underlying packages?
-import { TokenId } from "@wormhole-foundation/sdk-definitions";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 //
 import { TransferStuff, getStuff } from "./helpers";
@@ -78,7 +76,7 @@ TODOS:
 
 async function tokenTransfer(
   wh: Wormhole,
-  token: TokenId | "native",
+  token: definitions.TokenId | "native",
   amount: bigint,
   src: TransferStuff,
   dst: TransferStuff,
