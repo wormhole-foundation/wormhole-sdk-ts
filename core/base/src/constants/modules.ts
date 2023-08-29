@@ -1,5 +1,4 @@
 /*TODO
- * The term module is a hot mess in the wormhole ecosystem:
  *   governance actions have a module parameter:
  *     - "Core" - https://github.com/wormhole-foundation/wormhole/blob/9e61d151c61bedb18ab1d4ca6ffb1c6c91b108f0/ethereum/contracts/Governance.sol#L21
  *     - "TokenBridge" - https://github.com/wormhole-foundation/wormhole/blob/9e61d151c61bedb18ab1d4ca6ffb1c6c91b108f0/ethereum/contracts/bridge/BridgeGovernance.sol#L24
@@ -36,5 +35,5 @@ export const modules = [
 ] as const;
 
 export type Module = (typeof modules)[number];
-export const isModule = (module: string): module is Module =>
-  modules.includes(module as Module);
+export const isModuleName = (module: string): module is Module =>
+  module.includes(module as Module);

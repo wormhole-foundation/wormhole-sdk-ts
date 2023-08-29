@@ -45,7 +45,7 @@ export class EvmPlatform implements Platform {
   constructor(network: Network, conf: ChainsConfig) {
     this.network = network;
     this.conf = conf;
-    this.contracts = new EvmContracts(network);
+    this.contracts = new EvmContracts(conf);
   }
 
   getRpc(chain: ChainName): ethers.Provider {
@@ -58,23 +58,21 @@ export class EvmPlatform implements Platform {
   }
 
   async getTokenBridge(rpc: ethers.Provider): Promise<TokenBridge<'Evm'>> {
-    // TODO:
-    // @ts-ignore
-    return await EvmTokenBridge.fromProvider(rpc);
+    return await EvmTokenBridge.fromProvider(rpc, this.contracts);
   }
   async getAutomaticTokenBridge(
     rpc: ethers.Provider,
   ): Promise<AutomaticTokenBridge<'Evm'>> {
-    return await EvmAutomaticTokenBridge.fromProvider(rpc);
+    return await EvmAutomaticTokenBridge.fromProvider(rpc, this.contracts);
   }
 
   async getCircleBridge(rpc: ethers.Provider): Promise<CircleBridge<'Evm'>> {
-    return await EvmCircleBridge.fromProvider(rpc);
+    return await EvmCircleBridge.fromProvider(rpc, this.contracts);
   }
   async getAutomaticCircleBridge(
     rpc: ethers.Provider,
   ): Promise<AutomaticCircleBridge<'Evm'>> {
-    return await EvmAutomaticCircleBridge.fromProvider(rpc);
+    return await EvmAutomaticCircleBridge.fromProvider(rpc, this.contracts);
   }
 
   async getForeignAsset(

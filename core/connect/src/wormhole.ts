@@ -2,7 +2,6 @@ import {
   PlatformName,
   ChainName,
   Network,
-  Contracts,
   toChainId,
   isCircleChain,
   usdcContract,
@@ -24,7 +23,7 @@ import axios, { AxiosResponse } from 'axios';
 
 import { WormholeConfig, PlatformCtr } from './types';
 
-import { CONFIG } from './constants';
+import { CONFIG, Contracts } from './constants';
 import { TokenTransfer } from './protocols/tokenTransfer';
 import { CCTPTransfer } from './protocols/cctpTransfer';
 import { TransactionStatus } from './api';
@@ -249,7 +248,7 @@ export class Wormhole {
    */
   supportsSendWithRelay(chain: ChainName): boolean {
     return !!(
-      this.getContracts(chain)?.Relayer &&
+      this.getContracts(chain)?.relayer &&
       'startTransferWithRelay' in this.getPlatform(chain)
     );
   }

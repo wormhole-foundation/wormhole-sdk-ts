@@ -22,7 +22,6 @@ import { Provider, TransactionRequest } from 'ethers';
 import { EvmContracts } from '../contracts';
 
 export class EvmAutomaticCircleBridge implements AutomaticCircleBridge<'Evm'> {
-  readonly contracts: EvmContracts;
   readonly circleRelayer: CircleRelayer;
   readonly chainId: bigint;
 
@@ -32,9 +31,8 @@ export class EvmAutomaticCircleBridge implements AutomaticCircleBridge<'Evm'> {
     readonly network: 'Mainnet' | 'Testnet',
     readonly chain: EvmChainName,
     readonly provider: Provider,
+    readonly contracts: EvmContracts,
   ) {
-    this.contracts = new EvmContracts(network);
-
     this.chainId = evmNetworkChainToEvmChainId(network, chain);
     this.circleRelayer = this.contracts.mustGetWormholeCircleRelayer(
       chain,
@@ -44,6 +42,7 @@ export class EvmAutomaticCircleBridge implements AutomaticCircleBridge<'Evm'> {
 
   static async fromProvider(
     provider: Provider,
+    contracts: EvmContracts,
   ): Promise<EvmAutomaticCircleBridge> {
     const { chainId } = await provider.getNetwork();
     const networkChainPair = evmChainIdToNetworkChainPair.get(chainId);
@@ -51,7 +50,7 @@ export class EvmAutomaticCircleBridge implements AutomaticCircleBridge<'Evm'> {
       throw new Error(`Unknown EVM chainId ${chainId}`);
 
     const [network, chain] = networkChainPair;
-    return new EvmAutomaticCircleBridge(network, chain, provider);
+    return new EvmAutomaticCircleBridge(network, chain, provider, contracts);
   }
 
   async *transfer(

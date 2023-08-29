@@ -34,7 +34,10 @@ import {
   unusedArbiterFee,
   unusedNonce,
 } from '../types';
-import { TokenTransferTransaction } from '@wormhole-foundation/connect-sdk';
+import {
+  Contracts,
+  TokenTransferTransaction,
+} from '@wormhole-foundation/connect-sdk';
 import { BridgeStructs } from '../ethers-contracts/Bridge';
 
 //a word on casts here:
@@ -45,7 +48,6 @@ import { BridgeStructs } from '../ethers-contracts/Bridge';
 //TODO more checks to determine that all necessary preconditions are met (e.g. that balances are
 //  sufficient) for a given transaction to succeed
 export class EvmTokenBridge implements TokenBridge<'Evm'> {
-  readonly contracts: EvmContracts;
   readonly tokenBridge: TokenBridgeContract;
   readonly chainId: bigint;
 
@@ -53,20 +55,23 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     readonly network: Network,
     readonly chain: EvmChainName,
     readonly provider: Provider,
+    readonly contracts: EvmContracts,
   ) {
-    this.contracts = new EvmContracts(network);
     this.chainId = evmNetworkChainToEvmChainId.get(network, chain)!;
     this.tokenBridge = this.contracts.mustGetTokenBridge(chain, provider);
   }
 
-  static async fromProvider(provider: Provider): Promise<EvmTokenBridge> {
+  static async fromProvider(
+    provider: Provider,
+    contracts: EvmContracts,
+  ): Promise<EvmTokenBridge> {
     const { chainId } = await provider.getNetwork();
     const networkChainPair = evmChainIdToNetworkChainPair.get(chainId);
     if (networkChainPair === undefined)
       throw new Error(`Unknown EVM chainId ${chainId}`);
 
     const [network, chain] = networkChainPair;
-    return new EvmTokenBridge(network, chain, provider);
+    return new EvmTokenBridge(network, chain, provider, contracts);
   }
 
   async isWrappedAsset(token: UniversalOrEvm): Promise<boolean> {

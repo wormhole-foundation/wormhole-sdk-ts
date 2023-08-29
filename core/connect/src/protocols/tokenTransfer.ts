@@ -120,15 +120,16 @@ export class TokenTransfer implements WormholeTransfer {
 
     // Check if its a payload 3 targeted at a relayer on the destination chain
     const { address } = vaa.payload.to;
-    const relayerAddress = toNative(
-      chain,
-      wh.conf.chains[chain]?.contracts.Relayer as string,
-      //@ts-ignore
-    ).toUniversalAddress();
+    const { relayer } = wh.conf.chains[chain]!.contracts;
 
-    const automatic =
-      vaa.payloadLiteral === 'TransferWithPayload' &&
-      address.equals(relayerAddress);
+    let automatic = false;
+    if (relayer) {
+      //@ts-ignore
+      const relayerAddress = toNative(chain, relayer).toUniversalAddress();
+      automatic =
+        vaa.payloadLiteral === 'TransferWithPayload' &&
+        address.equals(relayerAddress);
+    }
 
     const details: TokenTransferDetails = {
       token: { ...vaa.payload.token },

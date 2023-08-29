@@ -31,7 +31,6 @@ import { TokenBridgeRelayer } from '../ethers-contracts';
 import { EvmContracts } from '../contracts';
 
 export class EvmAutomaticTokenBridge implements AutomaticTokenBridge<'Evm'> {
-  readonly contracts: EvmContracts;
   readonly tokenBridgeRelayer: TokenBridgeRelayer;
   readonly chainId: bigint;
 
@@ -41,9 +40,8 @@ export class EvmAutomaticTokenBridge implements AutomaticTokenBridge<'Evm'> {
     readonly network: 'Mainnet' | 'Testnet',
     readonly chain: EvmChainName,
     readonly provider: Provider,
+    readonly contracts: EvmContracts,
   ) {
-    this.contracts = new EvmContracts(network);
-
     this.chainId = evmNetworkChainToEvmChainId(network, chain);
     this.tokenBridgeRelayer = this.contracts.mustGetTokenBridgeRelayer(
       chain,
@@ -68,6 +66,7 @@ export class EvmAutomaticTokenBridge implements AutomaticTokenBridge<'Evm'> {
 
   static async fromProvider(
     provider: Provider,
+    contracts: EvmContracts,
   ): Promise<EvmAutomaticTokenBridge> {
     const { chainId } = await provider.getNetwork();
     const networkChainPair = evmChainIdToNetworkChainPair.get(chainId);
@@ -75,7 +74,7 @@ export class EvmAutomaticTokenBridge implements AutomaticTokenBridge<'Evm'> {
       throw new Error(`Unknown EVM chainId ${chainId}`);
 
     const [network, chain] = networkChainPair;
-    return new EvmAutomaticTokenBridge(network, chain, provider);
+    return new EvmAutomaticTokenBridge(network, chain, provider, contracts);
   }
 
   //alternative naming: initiateTransfer
