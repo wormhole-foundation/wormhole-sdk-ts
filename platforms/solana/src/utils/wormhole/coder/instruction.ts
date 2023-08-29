@@ -1,6 +1,5 @@
 import { Idl, Instruction, InstructionCoder } from '@project-serum/anchor';
 import bs58 from 'bs58';
-// @ts-ignore
 import { Layout } from 'buffer-layout';
 import { camelCase, upperFirst } from 'lodash';
 import { IdlField, IdlStateMethod } from '../../anchor';

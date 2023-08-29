@@ -104,7 +104,7 @@ export class EvmPlatform implements Platform {
   }
 
   async getNativeBalance(
-    rpc: RpcConnection,
+    rpc: ethers.Provider,
     walletAddr: string,
   ): Promise<bigint> {
     return await rpc.getBalance(walletAddr);
@@ -127,7 +127,7 @@ export class EvmPlatform implements Platform {
     return balance;
   }
 
-  async sendWait(rpc: RpcConnection, stxns: SignedTxn[]): Promise<TxHash[]> {
+  async sendWait(rpc: ethers.Provider, stxns: SignedTxn[]): Promise<TxHash[]> {
     const txhashes: TxHash[] = [];
     // TODO: concurrent?
     for (const stxn of stxns) {
