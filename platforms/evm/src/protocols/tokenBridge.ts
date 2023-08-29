@@ -15,15 +15,19 @@ import {
   TokenBridge,
   TxHash,
   keccak256,
+  TokenId,
 } from '@wormhole-foundation/sdk-definitions';
+import { TokenTransferTransaction } from '@wormhole-foundation/connect-sdk';
+import { Provider, TransactionRequest } from 'ethers';
 
-import { EvmAddress } from '../address';
-import { EvmUnsignedTransaction } from '../unsignedTransaction';
 import {
   TokenBridgeContract,
   TokenImplementation__factory as TokenContractFactory,
 } from '../ethers-contracts';
-import { Provider, TransactionRequest } from 'ethers';
+import { BridgeStructs } from '../ethers-contracts/Bridge';
+
+import { EvmAddress } from '../address';
+import { EvmUnsignedTransaction } from '../unsignedTransaction';
 import { EvmContracts } from '../contracts';
 import {
   EvmChainName,
@@ -34,11 +38,6 @@ import {
   unusedArbiterFee,
   unusedNonce,
 } from '../types';
-import {
-  Contracts,
-  TokenTransferTransaction,
-} from '@wormhole-foundation/connect-sdk';
-import { BridgeStructs } from '../ethers-contracts/Bridge';
 
 //a word on casts here:
 //  Typescript only properly resolves types when EvmTokenBridge is fully instantiated. Until such a
@@ -78,7 +77,7 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     return this.tokenBridge.isWrappedAsset(toEvmAddrString(token));
   }
 
-  async getOriginalAsset(token: UniversalOrEvm): Promise<ChainAddress> {
+  async getOriginalAsset(token: UniversalOrEvm): Promise<TokenId> {
     if (!(await this.isWrappedAsset(token)))
       throw new Error(`Token ${token} is not a wrapped asset`);
 
@@ -361,14 +360,14 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
   private createUnsignedTx(
     txReq: TransactionRequest,
     description: string,
-    stackable: boolean = false,
+    parallelizable: boolean = false,
   ): EvmUnsignedTransaction {
     return new EvmUnsignedTransaction(
       addChainId(txReq, this.chainId),
       this.network,
       this.chain,
       description,
-      stackable,
+      parallelizable,
     );
   }
 }

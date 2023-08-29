@@ -112,11 +112,22 @@ export const evmChainIdToNetworkChainPair = constMap(
 );
 export const evmNetworkChainToEvmChainId = constMap(networkChainEvmCIdEntries);
 
+const networkChainSolanaGenesisHashes = [
+  ["Mainnet", [["Solana", "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"]]],
+  ["Testnet", [["Solana", "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG"]]], // Note: this is referred to as `devnet` in sol
+] as const satisfies RoArray<
+  readonly [Network, RoArray<readonly [ChainName, string]>]
+>;
+
+export const solGenesisHashToNetworkChainPair = constMap(
+  networkChainSolanaGenesisHashes,
+  [2, [0, 1]]
+);
+
+export const solNetworkChainToGenesisHash = constMap(
+  networkChainSolanaGenesisHashes
+);
+
 //TODO more platform specific functions, e.g.:
 //  Solana genesis block <-> (Chain, Network)
 //  similar mappings for other platforms
-
-// Solana genesis blocks:
-//   devnet: EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG (i.e. testnet for us)
-//   testnet: 4uhcVJyU9pJkvQyS88uRDiswHXSCkY3zQawwpjk2NsNY << not used!
-//   mainnet-beta: 5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d

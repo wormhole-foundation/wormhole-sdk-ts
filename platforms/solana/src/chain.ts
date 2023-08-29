@@ -75,22 +75,7 @@ export class SolanaChain implements ChainContext {
   }
 
   async sendWait(stxns: SignedTxn[]): Promise<TxHash[]> {
-    const connection = this.getRpc();
-    const txhashes: TxHash[] = [];
-
-    // TODO: concurrent
-    for (const stxn of stxns) {
-      console.log(`Sending: ${stxn}`);
-
-      // TODO: Is this right?
-      const txReceipt = await connection.sendRawTransaction(stxn);
-      console.log(txReceipt);
-      // TODO: throw error?
-      if (txReceipt === null) continue;
-
-      txhashes.push(txReceipt);
-    }
-    return txhashes;
+    return this.platform.sendWait(this.getRpc(), stxns);
   }
 
   async getForeignAsset(tokenId: TokenId): Promise<UniversalAddress | null> {
@@ -102,6 +87,7 @@ export class SolanaChain implements ChainContext {
   async getNativeBalance(walletAddr: string): Promise<bigint> {
     return this.platform.getNativeBalance(this.getRpc(), walletAddr);
   }
+
   async getTokenBalance(
     walletAddr: string,
     tokenId: TokenId,

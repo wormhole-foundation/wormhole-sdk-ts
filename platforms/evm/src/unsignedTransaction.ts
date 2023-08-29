@@ -8,6 +8,6 @@ export class EvmUnsignedTransaction implements UnsignedTransaction {
     readonly network: Network,
     readonly chain: ChainName,
     readonly description: string,
-    readonly stackable: boolean = false,
+    readonly parallelizable: boolean = false,
   ) {}
 }

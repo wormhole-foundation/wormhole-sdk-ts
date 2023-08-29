@@ -1,6 +1,6 @@
 import { PlatformName } from "@wormhole-foundation/sdk-base";
 import { UniversalOrNative, NativeAddress, ChainAddress } from "../address";
-import { TokenId } from "../types";
+import { TokenId, WrappedTokenId } from "../types";
 import { VAA } from "../vaa";
 import { UnsignedTransaction } from "../unsignedTransaction";
 import "../payloads/tokenBridge";
@@ -8,7 +8,7 @@ import "../payloads/tokenBridge";
 export interface TokenBridge<P extends PlatformName> {
   //read-only:
   isWrappedAsset(token: UniversalOrNative<P>): Promise<boolean>;
-  getOriginalAsset(token: UniversalOrNative<P>): Promise<ChainAddress>;
+  getOriginalAsset(token: UniversalOrNative<P>): Promise<TokenId>;
   hasWrappedAsset(original: ChainAddress): Promise<boolean>;
   getWrappedAsset(original: ChainAddress): Promise<NativeAddress<P>>;
   isTransferCompleted(

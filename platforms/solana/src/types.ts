@@ -12,7 +12,7 @@ export const unusedNonce = 0;
 export const unusedArbiterFee = 0n;
 
 export type SolanaChainName = PlatformToChains<'Solana'>;
-export type UniversalOrSolana = UniversalOrNative<'Solana'> | string;
+export type UniversalOrSolana = UniversalOrNative<'Solana'>;
 
 export const toSolanaAddrString = (addr: UniversalOrSolana) =>
   typeof addr === 'string'

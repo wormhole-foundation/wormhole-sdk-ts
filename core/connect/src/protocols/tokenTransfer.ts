@@ -24,7 +24,6 @@ import { ChainName, PlatformName } from '@wormhole-foundation/sdk-base';
 
 /**
  * What do with multiple transactions or VAAs?
- * What do for `stackable` transactions?
  * More concurrent promises instead of linearizing/blocking
  */
 
@@ -208,7 +207,7 @@ export class TokenTransfer implements WormholeTransfer {
       const tb = await fromChain.getTokenBridge();
       xfer = tb.transfer(
         this.transfer.from.address,
-        { chain: this.transfer.to.chain, address: this.transfer.to.address },
+        this.transfer.to,
         tokenAddress,
         this.transfer.amount,
         this.transfer.payload,
@@ -219,7 +218,7 @@ export class TokenTransfer implements WormholeTransfer {
     const txHashes: TxHash[] = [];
     for await (const tx of xfer) {
       unsigned.push(tx);
-      if (!tx.stackable) {
+      if (!tx.parallelizable) {
         // sign/send
         txHashes.push(
           ...(await fromChain.sendWait(await signer.sign(unsigned))),
@@ -240,7 +239,6 @@ export class TokenTransfer implements WormholeTransfer {
     // TODO: concurrent
     for (const txHash of txHashes) {
       const parsed = await fromChain.parseTransaction(txHash);
-
       // TODO:
       if (parsed.length != 1)
         throw new Error(`Expected a single VAA, got ${parsed.length}`);
@@ -338,9 +336,9 @@ export class TokenTransfer implements WormholeTransfer {
 
       for await (const tx of xfer) {
         unsigned.push(tx);
-        // If we find a tx that is not stackable, sign it and send
+        // If we find a tx that is not parallelizable, sign it and send
         // the accumulated txs so far
-        if (!tx.stackable) {
+        if (!tx.parallelizable) {
           const signedTxns = await signer.sign(unsigned);
           const txids = await toChain.sendWait(signedTxns);
           txHashes.push(...txids);

@@ -71,7 +71,7 @@ export class SolanaContracts {
    *
    * @returns An interface for the bridge contract, undefined if not found
    */
-  getBridge(
+  getTokenBridge(
     chain: ChainName,
     connection: Connection,
   ): Program<TokenBridge> | undefined {
@@ -89,11 +89,11 @@ export class SolanaContracts {
    *
    * @returns An interface for the bridge contract, errors if not found
    */
-  mustGetBridge(
+  mustGetTokenBridge(
     chain: ChainName,
     connection: Connection,
   ): Program<TokenBridge> {
-    const bridge = this.getBridge(chain, connection);
+    const bridge = this.getTokenBridge(chain, connection);
     if (!bridge)
       throw new Error(`Bridge contract for domain ${chain} not found`);
     return bridge;

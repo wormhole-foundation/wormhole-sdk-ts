@@ -64,7 +64,7 @@ export class SolanaPlatform implements Platform {
   }
 
   async getTokenBridge(rpc: Connection): Promise<TokenBridge<'Solana'>> {
-    return SolanaTokenBridge.fromProvider(rpc);
+    return SolanaTokenBridge.fromProvider(rpc, this.contracts);
   }
 
   async getAutomaticTokenBridge(
@@ -118,8 +118,7 @@ export class SolanaPlatform implements Platform {
   }
 
   async getNativeBalance(rpc: Connection, walletAddr: string): Promise<bigint> {
-    const balance = await rpc.getBalance(new PublicKey(walletAddr));
-    return BigInt(balance);
+    return BigInt(await rpc.getBalance(new PublicKey(walletAddr)));
   }
 
   async getTokenBalance(
@@ -142,7 +141,20 @@ export class SolanaPlatform implements Platform {
   }
 
   async sendWait(rpc: Connection, stxns: SignedTxn[]): Promise<TxHash[]> {
-    throw new Error('Not implemented');
+    const txhashes: TxHash[] = [];
+
+    // TODO: concurrent
+    for (const stxn of stxns) {
+      console.log(`Sending: ${stxn}`);
+
+      const txReceipt = await rpc.sendRawTransaction(stxn);
+      console.log(txReceipt);
+
+      // TODO: throw error?
+      if (txReceipt === null) continue;
+      txhashes.push(txReceipt);
+    }
+    return txhashes;
   }
 
   parseAddress(address: string): UniversalAddress {
@@ -155,12 +167,9 @@ export class SolanaPlatform implements Platform {
     tx: string,
   ): Promise<WormholeMessageId[]> {
     const contracts = this.contracts.mustGetContracts(chain);
-
     if (!contracts.coreBridge) throw new Error('contracts not found');
 
     const response = await rpc.getTransaction(tx);
-    const parsedResponse = await rpc.getParsedTransaction(tx);
-
     if (!response || !response.meta?.innerInstructions![0].instructions)
       throw new Error('transaction not found');
 
@@ -174,11 +183,13 @@ export class SolanaPlatform implements Platform {
       return programId === wormholeCore;
     });
 
+    if (bridgeInstructions.length === 0)
+      throw new Error('no bridge messages found');
+
     const emitter = new SolanaAddress(
       accounts[bridgeInstructions[0].accounts[1]],
     );
 
-    // get sequence
     const sequence = response.meta?.logMessages
       ?.filter((msg) => msg.startsWith(SOLANA_SEQ_LOG))?.[0]
       ?.replace(SOLANA_SEQ_LOG, '');

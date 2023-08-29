@@ -155,14 +155,14 @@ export class EvmAutomaticTokenBridge implements AutomaticTokenBridge<'Evm'> {
   private createUnsignedTx(
     txReq: TransactionRequest,
     description: string,
-    stackable: boolean = false,
+    parallelizable: boolean = false,
   ): EvmUnsignedTransaction {
     return new EvmUnsignedTransaction(
       addChainId(txReq, this.chainId),
       this.network,
       this.chain,
       description,
-      stackable,
+      parallelizable,
     );
   }
 }
