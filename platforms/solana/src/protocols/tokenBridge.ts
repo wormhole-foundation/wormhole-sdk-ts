@@ -32,6 +32,9 @@ import {
   WrappedTokenId,
   TokenId,
   UniversalAddress,
+  NativeAddress,
+  serialize,
+  deserialize,
 } from '@wormhole-foundation/sdk-definitions';
 
 import { Wormhole as WormholeCore } from '../utils/types/wormhole';
@@ -39,6 +42,8 @@ import { Wormhole as WormholeCore } from '../utils/types/wormhole';
 import { TokenBridge as TokenBridgeContract } from '../utils/types/tokenBridge';
 import {
   createApproveAuthoritySignerInstruction,
+  createCompleteTransferNativeInstruction,
+  createCompleteTransferWrappedInstruction,
   createTransferNativeInstruction,
   createTransferNativeWithPayloadInstruction,
   createTransferWrappedInstruction,
@@ -51,6 +56,10 @@ import { SolanaContracts } from '../contracts';
 import { SolanaAddress } from '../address';
 import { SolanaUnsignedTransaction } from '../unsignedTransaction';
 import { SolanaChainName, UniversalOrSolana } from '../types';
+import {
+  createPostVaaInstruction,
+  createVerifySignaturesInstructions,
+} from '../utils/wormhole';
 
 export class SolanaTokenBridge implements TokenBridge<'Solana'> {
   readonly chainId: ChainId;
@@ -107,7 +116,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
       if (meta === null)
         return {
           chain: this.chain,
-          address: new SolanaAddress(mint.toBytes()),
+          address: new SolanaAddress(mint.toBytes()).toUniversalAddress(),
         };
 
       return {
@@ -130,7 +139,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     }
   }
 
-  async getWrappedAsset(token: TokenId): Promise<SolanaAddress> {
+  async getWrappedAsset(token: TokenId): Promise<NativeAddress<'Solana'>> {
     const mint = deriveWrappedMintKey(
       this.tokenBridge.programId,
       toChainId(token.chain),
@@ -148,6 +157,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     if (mintAddress === null)
       throw new Error(`No wrapped asset found for: ${token}`);
 
+    // @ts-ignore
     return new SolanaAddress(mintAddress);
   }
 
@@ -396,13 +406,94 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     yield this.createUnsignedTx(transaction, 'Solana.TransferTokens');
   }
 
-  //alternative naming: completeTransfer
+  private async postVaa(
+    sender: UniversalOrSolana,
+    vaa: VAA<'Transfer'> | VAA<'TransferWithPayload'>,
+  ) {
+    const senderAddr = new PublicKey(sender.toUint8Array());
+    const signatureSet = Keypair.generate();
+
+    const verifySignaturesInstructions =
+      await createVerifySignaturesInstructions(
+        this.connection,
+        this.coreBridge.programId,
+        senderAddr,
+        vaa,
+        signatureSet.publicKey,
+      );
+
+    const unsignedTransactions: Transaction[] = [];
+    for (let i = 0; i < verifySignaturesInstructions.length; i += 2) {
+      unsignedTransactions.push(
+        new Transaction().add(...verifySignaturesInstructions.slice(i, i + 2)),
+      );
+    }
+
+    unsignedTransactions.push(
+      new Transaction().add(
+        createPostVaaInstruction(
+          this.connection,
+          this.coreBridge.programId,
+          senderAddr,
+          // TODO: yuk
+          deserialize('Uint8Array', serialize(vaa)),
+          signatureSet.publicKey,
+        ),
+      ),
+    );
+
+    return {
+      unsignedTransactions,
+      signers: [signatureSet],
+    };
+  }
+
   async *redeem(
     sender: UniversalOrSolana,
     vaa: VAA<'Transfer'> | VAA<'TransferWithPayload'>,
     unwrapNative: boolean = true,
   ): AsyncGenerator<SolanaUnsignedTransaction> {
-    throw new Error('not implemented');
+    // TODO: check if vaa.payload.token.address is native Sol
+    const { blockhash } = await this.connection.getLatestBlockhash();
+    const senderAddress = new PublicKey(sender.toUint8Array());
+
+    const { unsignedTransactions: postVaaTxns, signers: postVaaSigners } =
+      await this.postVaa(sender, vaa);
+
+    // Take off the last tx in the set of postVAA txns
+    // to send after verify sig txns
+    const postVaaTx = postVaaTxns.pop()!;
+
+    for (const verifySigTx of postVaaTxns) {
+      verifySigTx.recentBlockhash = blockhash;
+      verifySigTx.feePayer = senderAddress;
+      verifySigTx.partialSign(postVaaSigners[0]);
+      yield this.createUnsignedTx(verifySigTx, 'Redeem.VerifySignature');
+    }
+
+    postVaaTx.recentBlockhash = blockhash;
+    postVaaTx.feePayer = senderAddress;
+    //postVaaTx.partialSign(postVaaSigners[0]);
+    yield this.createUnsignedTx(postVaaTx, 'Redeem.PostVAA');
+
+    const createCompleteTransferInstruction =
+      vaa.payload.token.chain == this.chain
+        ? createCompleteTransferNativeInstruction
+        : createCompleteTransferWrappedInstruction;
+
+    const transaction = new Transaction().add(
+      createCompleteTransferInstruction(
+        this.connection,
+        this.tokenBridge.programId,
+        this.coreBridge.programId,
+        senderAddress,
+        vaa,
+      ),
+    );
+
+    transaction.recentBlockhash = blockhash;
+    transaction.feePayer = senderAddress;
+    yield this.createUnsignedTx(transaction, 'Solana.RedeemTransfer');
   }
 
   private createUnsignedTx(

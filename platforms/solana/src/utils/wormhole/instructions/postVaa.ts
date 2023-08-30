@@ -50,17 +50,12 @@ export function createPostVaaInstruction(
     [...vaa.emitterAddress.toUint8Array()],
     new BN(vaa.sequence.toString()),
     vaa.consistencyLevel,
-    vaa.payload,
+    Buffer.from(vaa.payload),
   );
 
   // @ts-ignore
   return methods._ixFn(...methods._args, {
-    accounts: getPostVaaAccounts(
-      wormholeProgramId,
-      payer,
-      signatureSet,
-      vaa,
-    ) as any,
+    accounts: getPostVaaAccounts(wormholeProgramId, payer, signatureSet, vaa),
     signers: undefined,
     remainingAccounts: undefined,
     preInstructions: undefined,

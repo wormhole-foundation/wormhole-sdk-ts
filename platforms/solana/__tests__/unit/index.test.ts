@@ -6,8 +6,6 @@ import {
   TokenId,
   NativeAddress,
 } from '@wormhole-foundation/sdk-definitions';
-import { Keypair } from '@solana/web3.js';
-import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes';
 
 import { SolanaPlatform } from '../../src/platform';
 import { SolanaAddress, SolanaChain } from '../../src';

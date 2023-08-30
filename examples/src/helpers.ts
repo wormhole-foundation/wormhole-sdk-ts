@@ -9,7 +9,7 @@ import {
 
 import bs58 from "bs58";
 import { ethers } from "ethers";
-import { Keypair } from "@solana/web3.js";
+import { Transaction, Keypair } from "@solana/web3.js";
 
 // read in from `.env`
 require("dotenv").config();
@@ -75,6 +75,15 @@ class SolSigner implements Signer {
     const signed = [];
     for (const txn of tx) {
       const { description, transaction } = txn;
+
+      const t = transaction as Transaction;
+
+      console.log(t.instructions);
+      for (const ix of t.instructions) {
+        console.log(ix.data);
+        console.log(ix.keys);
+        console.log(ix.programId.toBase58());
+      }
 
       console.log(`Signing: ${description} for ${this.address()}`);
 

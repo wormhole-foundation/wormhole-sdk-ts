@@ -34,8 +34,8 @@ TODOS:
   const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform]);
 
   // Grab chain Contexts
-  const sendChain = wh.getChain("Solana");
-  const rcvChain = wh.getChain("Avalanche");
+  const sendChain = wh.getChain("Avalanche");
+  const rcvChain = wh.getChain("Solana");
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
@@ -47,6 +47,12 @@ TODOS:
   */
   // // Manual Token Bridge Transfer
   await tokenTransfer(wh, "native", 10_000_000n, source, destination, false);
+
+  // const xfer = await TokenTransfer.from(wh, {
+  //   chain: "Avalanche",
+  //   txid: "0xc7039eb0a029671d41b757900dbd4b61c0bd0105968fc28555299145348f7c1c",
+  // });
+  // console.log(await xfer.completeTransfer(destination.signer));
 
   // const xfer = await TokenTransfer.from(wh, {
   //   chain: "Solana",

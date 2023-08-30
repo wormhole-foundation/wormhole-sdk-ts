@@ -44,7 +44,7 @@ export async function createVerifySignaturesInstructions(
   connection: Connection,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: VAA,
+  vaa: VAA<any>,
   signatureSet: PublicKeyInitData,
   commitment?: Commitment,
 ): Promise<TransactionInstruction[]> {
@@ -75,10 +75,10 @@ export async function createVerifySignaturesInstructions(
     const keys: Buffer[] = [];
     for (let j = 0; j < end - start; ++j) {
       const item = guardianSignatures.at(j + start)!;
-      // TODO: idk encoding
-      signatures.push(Buffer.from(item.signature.toCompactRawBytes()));
+      signatures.push(item.signature.toBuffer());
 
       const key = guardianKeys.at(item.guardianIndex)!;
+      console.log(key);
       keys.push(key);
 
       signatureStatus[item.guardianIndex] = j;
