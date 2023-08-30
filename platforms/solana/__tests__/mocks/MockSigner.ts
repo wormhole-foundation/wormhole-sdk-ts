@@ -1,9 +1,6 @@
-import { Keypair, PublicKey } from '@solana/web3.js';
+import { Keypair } from '@solana/web3.js';
 import { ChainName } from '@wormhole-foundation/sdk-base';
-import {
-  Signer,
-  UnsignedTransaction,
-} from '@wormhole-foundation/sdk-definitions';
+import { Signer } from '@wormhole-foundation/sdk-definitions';
 import { SolanaUnsignedTransaction } from '../../src';
 
 export class MockSolanaSigner implements Signer {
@@ -29,12 +26,6 @@ export class MockSolanaSigner implements Signer {
       console.log(
         `Signing: ${description} for ${this.keypair.publicKey.toBase58()}`,
       );
-
-      transaction.instructions.forEach((ix) => {
-        ix.keys.forEach((k) => {
-          if (k.isSigner) console.log(k, k.pubkey.toBase58());
-        });
-      });
 
       transaction.partialSign(this.keypair);
       signed.push(transaction.serialize());

@@ -13,8 +13,9 @@
   },
   "license": "Apache-2.0",
   "version": "0.1.0-beta.1",
-  "main": "dist/src/index.js",
-  "types": "dist/src/index.d.ts",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
   "author": "",
   "description": "SDK for Solana, used in conjunction with @wormhole-foundation/connect-sdk",
   "files": [
@@ -29,8 +30,7 @@
     "solana"
   ],
   "engines": {
-    "node": ">=16",
-    "pnpm": ">=7"
+    "node": ">=16"
   },
   "sideEffects": false,
   "scripts": {

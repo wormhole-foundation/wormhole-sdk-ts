@@ -1,15 +1,20 @@
 import { Wormhole, TokenTransfer } from '@wormhole-foundation/connect-sdk';
-import { SolanaPlatform } from '../../src/platform';
-import { SolanaAddress, SolanaChain, SolanaTokenBridge } from '../../src';
 import {
   TokenBridge,
   ChainAddress,
   UniversalAddress,
   TokenId,
+  NativeAddress,
 } from '@wormhole-foundation/sdk-definitions';
+import { Keypair } from '@solana/web3.js';
+import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes';
+
+import { SolanaPlatform } from '../../src/platform';
+import { SolanaAddress, SolanaChain } from '../../src';
 import { MockSolanaSigner } from '../mocks/MockSigner';
 
 const WETH_ADDRESS = '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6';
+const SOL_TB_EMITTER = '4yttKWzRoNYS2HekxDfcZYmfQqnVWpKiJ8eydYRuFRgs';
 
 describe('Solana Unit Tests (not really unit tests)', () => {
   const sender = new MockSolanaSigner();
@@ -17,11 +22,11 @@ describe('Solana Unit Tests (not really unit tests)', () => {
 
   const from: ChainAddress = {
     chain: sender.chain(),
-    address: new SolanaAddress(sender.address()),
+    address: new SolanaAddress(sender.address()).toUniversalAddress(),
   };
   const to: ChainAddress = {
     chain: receiver.chain(),
-    address: new SolanaAddress(receiver.address()),
+    address: new SolanaAddress(receiver.address()).toUniversalAddress(),
   };
 
   const wh = new Wormhole('Testnet', [SolanaPlatform]);
@@ -41,7 +46,7 @@ describe('Solana Unit Tests (not really unit tests)', () => {
     });
   });
 
-  let solWrappedEth: SolanaAddress;
+  let solWrappedEth: NativeAddress<'Solana'>;
   describe('Get Token Details', () => {
     const wethAddressBytes = new Uint8Array(32);
     wethAddressBytes.set(
@@ -78,26 +83,27 @@ describe('Solana Unit Tests (not really unit tests)', () => {
 
   describe('Token Transfer Tests', () => {
     let xfer: TokenTransfer;
-    // test('Create Token Transfer', async () => {
-    //   xfer = await wh.tokenTransfer(
-    //     { address: solWrappedEth, chain: 'Solana' },
-    //     1_000_000_000n,
-    //     from,
-    //     to,
-    //     false,
-    //   );
-    //   expect(xfer).toBeTruthy();
+    test('Create Token Transfer Object', async () => {
+      xfer = await wh.tokenTransfer('native', 1_000_000_000n, from, to, false);
+      expect(xfer).toBeTruthy();
+    });
+
+    // test('Initiate Transfer', async () => {
     //   const txids = await xfer.initiateTransfer(sender);
     //   expect(txids.length).toBeGreaterThan(0);
     // });
 
     test('Recover Transfer Message ID', async () => {
+      const solEmitter = new SolanaAddress(SOL_TB_EMITTER).toUniversalAddress();
       const msgIds = await solCtx.parseTransaction(
-        'K5ApVaswLZf9CeNKzG53zq95Q3SxnQKuA6Nx1W4vGcMz9TsfCcAPMjXq8wt1r6GVw7aowSs7kUR5QzeHB6dffkU',
+        '4PE9CWyUj5SZH2XcyV7HZjYtNHyPRb4qi1zRtPptw1yewst5A4H1zKfbGsFFhCTELga3HJmhGtK6gEmEiGeKopSH',
       );
       expect(msgIds.length).toBe(1);
       expect(msgIds[0].chain).toEqual('Solana');
       expect(msgIds[0].sequence).toBeGreaterThan(0);
+      expect(msgIds[0].emitter.toUniversalAddress().equals(solEmitter)).toEqual(
+        true,
+      );
     });
 
     // test('Create Transfer Transaction', async () => {

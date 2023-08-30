@@ -7,8 +7,10 @@ import {
 // TODO: should we re-export the things they need? should we rename the underlying packages?
 import { TokenId } from "@wormhole-foundation/sdk-definitions";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
+import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 //
 import { TransferStuff, getStuff } from "./helpers";
+import { PublicKey } from "@solana/web3.js";
 
 /*
 TODOS:
@@ -29,19 +31,28 @@ TODOS:
 (async function () {
   // init Wormhole object, passing config for which network
   // to use (e.g. Mainnet/Testnet) and what Platforms to support
-  const wh = new Wormhole("Testnet", [EvmPlatform]);
+  const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform]);
 
   // Grab chain Contexts
-  const sendChain = wh.getChain("Avalanche");
-  const rcvChain = wh.getChain("Ethereum");
+  const sendChain = wh.getChain("Solana");
+  const rcvChain = wh.getChain("Avalanche");
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
   const source = await getStuff(sendChain);
   const destination = await getStuff(rcvChain);
 
+  /*
+  Token Transfer 
+  */
   // // Manual Token Bridge Transfer
-  // await tokenTransfer(wh, "native", 10_000_000n, source, destination, false);
+  await tokenTransfer(wh, "native", 10_000_000n, source, destination, false);
+
+  // const xfer = await TokenTransfer.from(wh, {
+  //   chain: "Solana",
+  //   txid: "5DEejHAwzBtSZYb3NU7vNeHFu9oLhijD97YFKqT69LQY2tGDF18y1GmyxfnnUdMCj4sT21Ffo6nGaFh959RixG4F",
+  // });
+  // console.log(await xfer.completeTransfer(destination.signer));
 
   // // Automatic Token Bridge Transfer
   // await tokenTransfer(
@@ -64,16 +75,17 @@ TODOS:
   //   2_000_000_000_000n
   // );
 
+  /*
+  CCTP
+  */
   // // Manual Circle USDC CCTP Transfer
   // await cctpTransfer(wh, 1_000_000n, source, destination, false);
 
   // // Note: auto relay takes 0.1usdc when xfering to any chain beside goerli, which is 1 usdc
-
   // // Automatic Circle USDC CCTP Transfer
   // await cctpTransfer(wh, 19_000_000n, source, destination, true);
-
-  // Automatic Circle USDC CCTP Transfer With Gas Dropoff
-  await cctpTransfer(wh, 2_100_000n, source, destination, true, 1_000_000n);
+  // // Automatic Circle USDC CCTP Transfer With Gas Dropoff
+  // await cctpTransfer(wh, 2_100_000n, source, destination, true, 1_000_000n);
 })();
 
 async function tokenTransfer(

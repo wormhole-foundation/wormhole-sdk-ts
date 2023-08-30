@@ -1,4 +1,9 @@
-import { Connection, PublicKey, PublicKeyInitData } from '@solana/web3.js';
+import {
+  Commitment,
+  Connection,
+  PublicKey,
+  PublicKeyInitData,
+} from '@solana/web3.js';
 import {
   ChainName,
   ChainId,
@@ -54,9 +59,9 @@ export class SolanaPlatform implements Platform {
     this.contracts = new SolanaContracts(conf);
   }
 
-  getRpc(chain: ChainName): Connection {
+  getRpc(chain: ChainName, commitment: Commitment = 'confirmed'): Connection {
     const rpcAddress = this.conf[chain]!.rpc;
-    return new Connection(rpcAddress);
+    return new Connection(rpcAddress, commitment);
   }
 
   getChain(chain: ChainName): SolanaChain {
@@ -64,6 +69,7 @@ export class SolanaPlatform implements Platform {
   }
 
   async getTokenBridge(rpc: Connection): Promise<TokenBridge<'Solana'>> {
+    //@ts-ignore
     return SolanaTokenBridge.fromProvider(rpc, this.contracts);
   }
 
@@ -145,15 +151,15 @@ export class SolanaPlatform implements Platform {
 
     // TODO: concurrent
     for (const stxn of stxns) {
-      console.log(`Sending: ${stxn}`);
-
-      const txReceipt = await rpc.sendRawTransaction(stxn);
-      console.log(txReceipt);
-
+      const txHash = await rpc.sendRawTransaction(stxn);
       // TODO: throw error?
-      if (txReceipt === null) continue;
-      txhashes.push(txReceipt);
+      if (!txHash) continue;
+
+      // TODO: allow passing this in? this method is also deprecated...
+      await rpc.confirmTransaction(txHash, 'finalized');
+      txhashes.push(txHash);
     }
+
     return txhashes;
   }
 
@@ -186,9 +192,9 @@ export class SolanaPlatform implements Platform {
     if (bridgeInstructions.length === 0)
       throw new Error('no bridge messages found');
 
-    const emitter = new SolanaAddress(
-      accounts[bridgeInstructions[0].accounts[1]],
-    );
+    // TODO: unsure about the single bridge instruction and the [2] index, will this always be the case?
+    const [logmsg] = bridgeInstructions;
+    const emitter = new SolanaAddress(accounts[logmsg.accounts[2]]);
 
     const sequence = response.meta?.logMessages
       ?.filter((msg) => msg.startsWith(SOLANA_SEQ_LOG))?.[0]

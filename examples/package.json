@@ -34,7 +34,8 @@
   },
   "sideEffects": false,
   "scripts": {
-    "doit": "cd .. && npm run build && cd - && npx tsx src/index.ts",
+    "doit": "npx tsx src/index.ts",
+    "doitagain": "cd .. && npm run build && cd - && npx tsx src/index.ts",
     "build:cjs": "tsc -p ./tsconfig.cjs.json",
     "build:esm": "tsc -p ./tsconfig.esm.json",
     "build": "npm run build:cjs && npm run build:esm",
@@ -61,6 +62,7 @@
   "dependencies": {
     "@wormhole-foundation/connect-sdk": "*",
     "@wormhole-foundation/connect-sdk-evm": "*",
+    "@wormhole-foundation/connect-sdk-solana": "*",
     "@wormhole-foundation/sdk-base": "*",
     "@wormhole-foundation/sdk-definitions": "*",
     "bs58": "^5.0.0",

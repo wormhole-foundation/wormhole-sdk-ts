@@ -1,11 +1,21 @@
 import {
+  Commitment,
   Connection,
   Keypair,
   PublicKey,
+  SystemProgram,
   Transaction,
   TransactionInstruction,
 } from '@solana/web3.js';
-import { getAssociatedTokenAddress } from '@solana/spl-token';
+import {
+  ACCOUNT_SIZE,
+  NATIVE_MINT,
+  TOKEN_PROGRAM_ID,
+  createCloseAccountInstruction,
+  createInitializeAccountInstruction,
+  getAssociatedTokenAddress,
+  getMinimumBalanceForRentExemptAccount,
+} from '@solana/spl-token';
 import { Program } from '@project-serum/anchor';
 
 import {
@@ -29,6 +39,8 @@ import { Wormhole as WormholeCore } from '../utils/types/wormhole';
 import { TokenBridge as TokenBridgeContract } from '../utils/types/tokenBridge';
 import {
   createApproveAuthoritySignerInstruction,
+  createTransferNativeInstruction,
+  createTransferNativeWithPayloadInstruction,
   createTransferWrappedInstruction,
   createTransferWrappedWithPayloadInstruction,
   deriveWrappedMintKey,
@@ -157,21 +169,114 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     throw new Error('not implemented');
   }
 
-  private async *transferSol(
+  private async transferSol(
     sender: UniversalOrSolana,
     recipient: ChainAddress,
     amount: bigint,
     payload?: Uint8Array,
-  ): AsyncGenerator<SolanaUnsignedTransaction> {
+  ): Promise<SolanaUnsignedTransaction> {
     //  https://github.com/wormhole-foundation/wormhole-connect/blob/development/sdk/src/contexts/solana/context.ts#L245
-    //   //This will create a temporary account where the wSOL will be created.
-    //   const createAncillaryAccountIx = SystemProgram.createAccount({
-    //     fromPubkey: payerPublicKey,
-    //     newAccountPubkey: ancillaryKeypair.publicKey,
-    //     lamports: rentBalance, //spl token accounts need rent exemption
-    //     space: ACCOUNT_SIZE,
-    //     programId: TOKEN_PROGRAM_ID,
-    //   });
+
+    const senderAddress = new PublicKey(sender.toUint8Array());
+    // TODO: why?
+    const payerPublicKey = senderAddress;
+
+    const recipientAddress = recipient.address.toUint8Array();
+    const recipientChainId = toChainId(recipient.chain);
+
+    const nonce = 0;
+    const relayerFee = 0n;
+
+    const message = Keypair.generate();
+    const ancillaryKeypair = Keypair.generate();
+
+    const rentBalance = await getMinimumBalanceForRentExemptAccount(
+      this.connection,
+    );
+
+    //This will create a temporary account where the wSOL will be created.
+    const createAncillaryAccountIx = SystemProgram.createAccount({
+      fromPubkey: payerPublicKey,
+      newAccountPubkey: ancillaryKeypair.publicKey,
+      lamports: rentBalance, //spl token accounts need rent exemption
+      space: ACCOUNT_SIZE,
+      programId: TOKEN_PROGRAM_ID,
+    });
+
+    //Send in the amount of SOL which we want converted to wSOL
+    const initialBalanceTransferIx = SystemProgram.transfer({
+      fromPubkey: payerPublicKey,
+      lamports: amount,
+      toPubkey: ancillaryKeypair.publicKey,
+    });
+
+    //Initialize the account as a WSOL account, with the original payerAddress as owner
+    const initAccountIx = createInitializeAccountInstruction(
+      ancillaryKeypair.publicKey,
+      NATIVE_MINT,
+      payerPublicKey,
+    );
+
+    //Normal approve & transfer instructions, except that the wSOL is sent from the ancillary account.
+    const approvalIx = createApproveAuthoritySignerInstruction(
+      this.tokenBridge.programId,
+      ancillaryKeypair.publicKey,
+      payerPublicKey,
+      amount,
+    );
+
+    const tokenBridgeTransferIx = payload
+      ? createTransferNativeWithPayloadInstruction(
+          this.connection,
+          this.tokenBridge.programId,
+          this.coreBridge.programId,
+          senderAddress,
+          message.publicKey,
+          ancillaryKeypair.publicKey,
+          NATIVE_MINT,
+          nonce,
+          amount,
+          recipientAddress,
+          recipientChainId,
+          payload,
+        )
+      : createTransferNativeInstruction(
+          this.connection,
+          this.tokenBridge.programId,
+          this.coreBridge.programId,
+          senderAddress,
+          message.publicKey,
+          ancillaryKeypair.publicKey,
+          NATIVE_MINT,
+          nonce,
+          amount,
+          relayerFee,
+          recipientAddress,
+          recipientChainId,
+        );
+
+    //Close the ancillary account for cleanup. Payer address receives any remaining funds
+    const closeAccountIx = createCloseAccountInstruction(
+      ancillaryKeypair.publicKey, //account to close
+      payerPublicKey, //Remaining funds destination
+      payerPublicKey, //authority
+    );
+
+    const { blockhash } = await this.connection.getLatestBlockhash();
+    const transaction = new Transaction();
+    transaction.recentBlockhash = blockhash;
+    transaction.feePayer = payerPublicKey;
+    transaction.add(
+      createAncillaryAccountIx,
+      initialBalanceTransferIx,
+      initAccountIx,
+      approvalIx,
+      tokenBridgeTransferIx,
+      closeAccountIx,
+    );
+    transaction.partialSign(message, ancillaryKeypair);
+
+    return this.createUnsignedTx(transaction, 'Solana.TransferNative');
   }
 
   async *transfer(
@@ -183,8 +288,10 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
   ): AsyncGenerator<SolanaUnsignedTransaction> {
     // TODO: payer vs sender?? can caller add diff payer later?
 
-    if (token === 'native')
-      return this.transferSol(sender, recipient, amount, payload);
+    if (token === 'native') {
+      yield await this.transferSol(sender, recipient, amount, payload);
+      return;
+    }
 
     const senderAddress = new PublicKey(sender.toUint8Array());
 

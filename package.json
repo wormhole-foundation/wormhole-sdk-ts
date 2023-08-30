@@ -32,6 +32,7 @@
     "core/definitions",
     "core/connect",
     "platforms/evm",
-    "platforms/solana"
+    "platforms/solana",
+    "examples"
   ]
 }

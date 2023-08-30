@@ -164,7 +164,10 @@ export class TokenTransfer implements WormholeTransfer {
 
     // TODO: assuming single tx
     const [msg] = parsed;
-    return TokenTransfer.fromIdentifier(wh, msg);
+    const tt = await TokenTransfer.fromIdentifier(wh, msg);
+    tt.txids = [txid];
+
+    return tt;
   }
 
   // start the WormholeTransfer by submitting transactions to the source chain
@@ -197,7 +200,7 @@ export class TokenTransfer implements WormholeTransfer {
 
       xfer = tb.transfer(
         this.transfer.from.address,
-        { chain: this.transfer.to.chain, address: this.transfer.to.address },
+        this.transfer.to,
         tokenAddress,
         this.transfer.amount,
         fee,
@@ -236,7 +239,7 @@ export class TokenTransfer implements WormholeTransfer {
     this.txids = txHashes;
     this.state = TransferState.Initiated;
 
-    // TODO: concurrent
+    // TODO: concurrent? wait for finalized somehow?
     for (const txHash of txHashes) {
       const parsed = await fromChain.parseTransaction(txHash);
       // TODO:
