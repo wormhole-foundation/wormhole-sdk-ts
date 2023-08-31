@@ -1,4 +1,4 @@
-import { ChainName } from "@wormhole-foundation/sdk-base";
+import { ChainName, PlatformName } from "@wormhole-foundation/sdk-base";
 import {
   Signer,
   ChainContext,
@@ -21,12 +21,14 @@ require("dotenv").config();
 // TODO: err msg instructing dev to `cp .env.template .env` and set values
 
 export type TransferStuff = {
-  chain: ChainContext;
+  chain: ChainContext<PlatformName>;
   signer: Signer;
   address: ChainAddress;
 };
 
-export async function getStuff(chain: ChainContext): Promise<TransferStuff> {
+export async function getStuff(
+  chain: ChainContext<PlatformName>
+): Promise<TransferStuff> {
   let signer: Signer;
   switch (chain.platform.platform) {
     case "Solana":

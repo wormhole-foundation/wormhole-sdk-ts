@@ -1,9 +1,7 @@
 import {
-  ChainName,
   chainToChainId,
   evmChainIdToNetworkChainPair,
   evmNetworkChainToEvmChainId,
-  nativeDecimals,
   toChainId,
 } from '@wormhole-foundation/sdk-base';
 import {
@@ -23,7 +21,6 @@ import {
   UniversalOrEvm,
   addChainId,
   addFrom,
-  addValue,
   toEvmAddrString,
 } from '../types';
 import { EvmUnsignedTransaction } from '../unsignedTransaction';
@@ -137,7 +134,7 @@ export class EvmAutomaticTokenBridge implements AutomaticTokenBridge<'Evm'> {
         : token;
 
     const destChainId = toChainId(recipient.chain);
-    const destTokenAddress = toEvmAddrString(tokenId.address);
+    const destTokenAddress = toEvmAddrString(tokenId.address.toString());
 
     const tokenContract = this.contracts.mustGetTokenImplementation(
       this.provider,

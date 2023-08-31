@@ -1,5 +1,10 @@
-import { ChainName } from "@wormhole-foundation/sdk-base";
+import {
+  ChainName,
+  ExplorerSettings,
+  PlatformName,
+} from "@wormhole-foundation/sdk-base";
 import { ChainAddress } from "./address";
+import { Contracts } from "./contracts";
 
 export type TxHash = string;
 export type SequenceId = bigint;
@@ -9,14 +14,6 @@ export type SignedTxn = any;
 
 // Fully qualified Token Id
 export type TokenId = ChainAddress;
-
-// Wrapped tokens have an original and wrapped version
-// original is the source chain
-// wrapped is _an_ instance of that token on a given foreign chain
-export type WrappedTokenId = {
-  original: TokenId;
-  wrapped: TokenId;
-};
 
 // Fully qualifier Transaction ID
 export type TransactionId = { chain: ChainName; txid: TxHash };
@@ -28,3 +25,17 @@ export function isTransactionIdentifier(
     (<TransactionId>thing).txid !== undefined
   );
 }
+
+export type ChainConfig = {
+  key: ChainName;
+  platform: PlatformName;
+  contracts: Contracts;
+  finalityThreshold: number;
+  nativeTokenDecimals: number;
+  explorer: ExplorerSettings;
+  rpc: string;
+};
+
+export type ChainsConfig = {
+  [K in ChainName]?: ChainConfig;
+};

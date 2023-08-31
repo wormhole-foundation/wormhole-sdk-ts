@@ -4,11 +4,11 @@ import {
   Platform,
   RpcConnection,
   VAA,
+  ChainContext,
 } from '@wormhole-foundation/sdk-definitions';
 import { PlatformName } from '@wormhole-foundation/sdk-base';
 import { Wormhole } from '../../src';
 import { MockPlatform } from '../mocks/mockPlatform';
-import { MockChain } from '../mocks/mockChain';
 
 describe('Wormhole Tests', () => {
   let wh: Wormhole;
@@ -16,13 +16,13 @@ describe('Wormhole Tests', () => {
     wh = new Wormhole('Devnet', [MockPlatform]);
   });
 
-  let p: MockPlatform;
+  let p: Platform<PlatformName>;
   test('Returns Platform', async () => {
     p = wh.getPlatform('Ethereum');
     expect(p).toBeTruthy();
   });
 
-  let c: MockChain;
+  let c: ChainContext<PlatformName>;
   test('Returns chain', async () => {
     c = wh.getChain('Ethereum');
     expect(c).toBeTruthy();
@@ -31,7 +31,7 @@ describe('Wormhole Tests', () => {
 
 describe('Platform Tests', () => {
   const wh: Wormhole = new Wormhole('Devnet', [MockPlatform]);
-  const p: Platform = wh.getPlatform('Ethereum');
+  const p: Platform<PlatformName> = wh.getPlatform('Ethereum');
   let rpc: RpcConnection;
   test('Gets RPC', () => {
     rpc = p.getRpc('Ethereum');

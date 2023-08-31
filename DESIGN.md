@@ -167,3 +167,41 @@ Say I have an app that defines its own protocol, can I provide something that ad
 
 
 ## What is the preferred terminology for the core Wormhole layer? (i.e. Core Contracts or Wormhole Contracts)
+
+
+
+
+
+
+8/31 notes
+
+
+
+Platforms
+------
+
+abstract chain context class, rpc is the only platform specific thing to implement
+
+Connect
+-----
+
+What do with xchain concepts without having xchain context?
+
+e.g. 
+// implement universal univeral decoder
+given eth address, and without installing evm platform, how do i turn it into a solana wrapped token without knowing how to fmt the address? 
+
+// For this, tweak the contracts
+given an xfer from eth=>sol, and without installing sol platform, how do i determine the ATA?
+
+
+
+Should we namespace export base/definitions? 
+
+
+
+------------------
+
+What is the benefit of costmap vs single fat object
+
+Why is network duped across platform/chaincontext/contracts?
