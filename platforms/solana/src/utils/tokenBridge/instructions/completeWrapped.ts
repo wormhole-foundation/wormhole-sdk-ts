@@ -7,12 +7,6 @@ import {
   TransactionInstruction,
 } from '@solana/web3.js';
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import {
-  isBytes,
-  ParsedTokenTransferVaa,
-  parseTokenTransferVaa,
-  SignedVaa,
-} from '@wormhole-foundation/connect-sdk';
 import { createReadOnlyTokenBridgeProgramInterface } from '../program';
 import { deriveClaimKey, derivePostedVaaKey } from '../../wormhole';
 import {
@@ -22,13 +16,15 @@ import {
   deriveWrappedMetaKey,
   deriveMintAuthorityKey,
 } from '../accounts';
+import { VAA } from '@wormhole-foundation/sdk-definitions';
+import { toChainId } from '@wormhole-foundation/sdk-base';
 
 export function createCompleteTransferWrappedInstruction(
   connection: Connection,
   tokenBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: SignedVaa | ParsedTokenTransferVaa,
+  vaa: VAA<'Transfer'> | VAA<'TransferWithPayload'>,
   feeRecipient?: PublicKeyInitData,
 ): TransactionInstruction {
   const methods = createReadOnlyTokenBridgeProgramInterface(
@@ -73,33 +69,34 @@ export function getCompleteTransferWrappedAccounts(
   tokenBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: SignedVaa | ParsedTokenTransferVaa,
+  vaa: VAA<'Transfer'> | VAA<'TransferWithPayload'>,
   feeRecipient?: PublicKeyInitData,
 ): CompleteTransferWrappedAccounts {
-  const parsed = isBytes(vaa) ? parseTokenTransferVaa(vaa) : vaa;
   const mint = deriveWrappedMintKey(
     tokenBridgeProgramId,
-    parsed.tokenChain,
-    parsed.tokenAddress,
+    toChainId(vaa.payload.token.chain),
+    vaa.payload.token.address.toUint8Array(),
   );
   return {
     payer: new PublicKey(payer),
     config: deriveTokenBridgeConfigKey(tokenBridgeProgramId),
-    vaa: derivePostedVaaKey(wormholeProgramId, parsed.hash),
+    vaa: derivePostedVaaKey(wormholeProgramId, Buffer.from(vaa.hash)),
     claim: deriveClaimKey(
       tokenBridgeProgramId,
-      parsed.emitterAddress,
-      parsed.emitterChain,
-      parsed.sequence,
+      vaa.emitterAddress.toUint8Array(),
+      toChainId(vaa.emitterChain),
+      vaa.sequence,
     ),
     endpoint: deriveEndpointKey(
       tokenBridgeProgramId,
-      parsed.emitterChain,
-      parsed.emitterAddress,
+      toChainId(vaa.emitterChain),
+      vaa.emitterAddress.toUint8Array(),
     ),
-    to: new PublicKey(parsed.to),
+    to: new PublicKey(vaa.payload.to.address.toUint8Array()),
     toFees: new PublicKey(
-      feeRecipient === undefined ? parsed.to : feeRecipient,
+      feeRecipient === undefined
+        ? vaa.payload.to.address.toUint8Array()
+        : feeRecipient,
     ),
     mint,
     wrappedMeta: deriveWrappedMetaKey(tokenBridgeProgramId, mint),

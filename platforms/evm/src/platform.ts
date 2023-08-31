@@ -4,7 +4,6 @@ import {
   PlatformName,
 } from '@wormhole-foundation/sdk-base';
 import {
-  RpcConnection,
   TokenId,
   TxHash,
   Platform,
@@ -16,8 +15,8 @@ import {
   UniversalAddress,
   CircleBridge,
   AutomaticCircleBridge,
+  ChainsConfig,
 } from '@wormhole-foundation/sdk-definitions';
-import { ChainsConfig } from '@wormhole-foundation/connect-sdk';
 
 import { ethers } from 'ethers';
 import { EvmContracts } from './contracts';
@@ -32,18 +31,15 @@ import { EvmCircleBridge } from './protocols/circleBridge';
 /**
  * @category EVM
  */
-export class EvmPlatform implements Platform {
-  // TODO: this is bad, I wanted `platform` in the interface but couldnt make it
-  // static, so we do a lil hackery
-  static readonly _platform: 'Evm' = 'Evm';
-  readonly platform: PlatformName = EvmPlatform._platform;
+export class EvmPlatform implements Platform<'Evm'> {
+  // Provides runtime concrete value
+  static _platform: 'Evm' = 'Evm';
+  readonly platform = EvmPlatform._platform;
 
-  readonly network: Network;
   readonly conf: ChainsConfig;
   readonly contracts: EvmContracts;
 
-  constructor(network: Network, conf: ChainsConfig) {
-    this.network = network;
+  constructor(conf: ChainsConfig) {
     this.conf = conf;
     this.contracts = new EvmContracts(conf);
   }
@@ -104,7 +100,7 @@ export class EvmPlatform implements Platform {
   }
 
   async getNativeBalance(
-    rpc: RpcConnection,
+    rpc: ethers.Provider,
     walletAddr: string,
   ): Promise<bigint> {
     return await rpc.getBalance(walletAddr);
@@ -127,7 +123,7 @@ export class EvmPlatform implements Platform {
     return balance;
   }
 
-  async sendWait(rpc: RpcConnection, stxns: SignedTxn[]): Promise<TxHash[]> {
+  async sendWait(rpc: ethers.Provider, stxns: SignedTxn[]): Promise<TxHash[]> {
     const txhashes: TxHash[] = [];
     // TODO: concurrent?
     for (const stxn of stxns) {

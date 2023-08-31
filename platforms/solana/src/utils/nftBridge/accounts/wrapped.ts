@@ -1,5 +1,5 @@
 import { tryNativeToUint8Array } from '@certusone/wormhole-sdk';
-import { ChainId, chainToChainId } from '@wormhole-foundation/connect-sdk';
+import { ChainName, toChainId, ChainId } from '@wormhole-foundation/sdk-base';
 import { BN } from '@project-serum/anchor';
 import {
   Connection,
@@ -9,7 +9,6 @@ import {
 } from '@solana/web3.js';
 import { deriveAddress, getAccountData } from '../../utils';
 import { deriveWrappedMetaKey } from '../../tokenBridge';
-
 export { deriveWrappedMetaKey } from '../../tokenBridge';
 
 export function deriveWrappedMintKey(
@@ -18,7 +17,7 @@ export function deriveWrappedMintKey(
   tokenAddress: Buffer | Uint8Array | string,
   tokenId: bigint | number,
 ): PublicKey {
-  if (tokenChain == chainToChainId("Solana")) {
+  if (tokenChain == toChainId('Solana')) {
     throw new Error(
       'tokenChain == CHAIN_ID_SOLANA does not have wrapped mint key',
     );

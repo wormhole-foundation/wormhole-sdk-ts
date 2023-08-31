@@ -1,23 +1,23 @@
-import {
-  PlatformName,
-  Network,
-  ChainName,
-} from "@wormhole-foundation/sdk-base";
+import { PlatformName, ChainName } from "@wormhole-foundation/sdk-base";
 import { UniversalAddress } from "./universalAddress";
 import { ChainContext } from "./chain";
 import { RpcConnection } from "./rpc";
-import { TokenId, TxHash } from "./types";
+import { ChainsConfig, TokenId, TxHash } from "./types";
 import { WormholeMessageId } from "./attestation";
 import { SignedTxn } from "./types";
 // protocols
 import { TokenBridge, AutomaticTokenBridge } from "./protocols/tokenBridge";
 import { CircleBridge, AutomaticCircleBridge } from "./protocols/cctp";
 
-// TODO: move to definition layer? -- Can't without more changes, TokenTransferTransaction declared here
+export type PlatformCtr<P extends PlatformName> = {
+  _platform: P;
+  new (conf: ChainsConfig): Platform<P>;
+};
+
 // Force passing RPC connection so we don't create a new one with every fn call
-export interface Platform {
-  readonly platform: PlatformName;
-  readonly network?: Network;
+export interface Platform<P extends PlatformName> {
+  readonly platform: P;
+  readonly conf: ChainsConfig;
   // Utils for platform specific queries
   getForeignAsset(
     chain: ChainName,
@@ -37,18 +37,16 @@ export interface Platform {
   ): Promise<bigint | null>;
 
   //
-  getChain(chain: ChainName): ChainContext;
+  getChain(chain: ChainName): ChainContext<P>;
   getRpc(chain: ChainName): RpcConnection;
 
   // protocol clients
-  getTokenBridge(rpc: RpcConnection): Promise<TokenBridge<PlatformName>>;
-  getAutomaticTokenBridge(
-    rpc: RpcConnection
-  ): Promise<AutomaticTokenBridge<PlatformName>>;
+  getTokenBridge(rpc: RpcConnection): Promise<TokenBridge<P>>;
+  getAutomaticTokenBridge(rpc: RpcConnection): Promise<AutomaticTokenBridge<P>>;
   getAutomaticCircleBridge(
     rpc: RpcConnection
-  ): Promise<AutomaticCircleBridge<PlatformName>>;
-  getCircleBridge(rpc: RpcConnection): Promise<CircleBridge<PlatformName>>;
+  ): Promise<AutomaticCircleBridge<P>>;
+  getCircleBridge(rpc: RpcConnection): Promise<CircleBridge<P>>;
 
   // Platform interaction utils
   sendWait(rpc: RpcConnection, stxns: SignedTxn[]): Promise<TxHash[]>;

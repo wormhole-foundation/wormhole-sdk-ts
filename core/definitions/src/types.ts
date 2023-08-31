@@ -1,5 +1,10 @@
-import { ChainName } from "@wormhole-foundation/sdk-base";
+import {
+  ChainName,
+  ExplorerSettings,
+  PlatformName,
+} from "@wormhole-foundation/sdk-base";
 import { ChainAddress } from "./address";
+import { Contracts } from "./contracts";
 
 export type TxHash = string;
 export type SequenceId = bigint;
@@ -20,3 +25,17 @@ export function isTransactionIdentifier(
     (<TransactionId>thing).txid !== undefined
   );
 }
+
+export type ChainConfig = {
+  key: ChainName;
+  platform: PlatformName;
+  contracts: Contracts;
+  finalityThreshold: number;
+  nativeTokenDecimals: number;
+  explorer: ExplorerSettings;
+  rpc: string;
+};
+
+export type ChainsConfig = {
+  [K in ChainName]?: ChainConfig;
+};

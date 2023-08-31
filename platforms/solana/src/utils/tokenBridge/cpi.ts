@@ -6,12 +6,6 @@ import {
   SYSVAR_RENT_PUBKEY,
 } from '@solana/web3.js';
 import {
-  isBytes,
-  ParsedTokenTransferVaa,
-  parseTokenTransferVaa,
-  SignedVaa,
-} from '@wormhole-foundation/connect-sdk';
-import {
   deriveClaimKey,
   derivePostedVaaKey,
   getWormholeDerivedAccounts,
@@ -32,6 +26,8 @@ import {
   getTransferNativeWithPayloadAccounts,
   getTransferWrappedWithPayloadAccounts,
 } from './instructions';
+import { VAA } from '@wormhole-foundation/sdk-definitions';
+import { toChainId } from '@wormhole-foundation/sdk-base';
 
 export interface TokenBridgeBaseDerivedAccounts {
   /**
@@ -351,27 +347,26 @@ export function getCompleteTransferNativeWithPayloadCpiAccounts(
   tokenBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: SignedVaa | ParsedTokenTransferVaa,
+  vaa: VAA<'Transfer'> | VAA<'TransferWithPayload'>,
   toTokenAccount: PublicKeyInitData,
 ): CompleteTransferNativeWithPayloadCpiAccounts {
-  const parsed = isBytes(vaa) ? parseTokenTransferVaa(vaa) : vaa;
-  const mint = new PublicKey(parsed.tokenAddress);
-  const cpiProgramId = new PublicKey(parsed.to);
+  const mint = new PublicKey(vaa.payload.token.address.toUint8Array());
+  const cpiProgramId = new PublicKey(vaa.payload.to.address.toUint8Array());
 
   return {
     payer: new PublicKey(payer),
     tokenBridgeConfig: deriveTokenBridgeConfigKey(tokenBridgeProgramId),
-    vaa: derivePostedVaaKey(wormholeProgramId, parsed.hash),
+    vaa: derivePostedVaaKey(wormholeProgramId, Buffer.from(vaa.hash)),
     tokenBridgeClaim: deriveClaimKey(
       tokenBridgeProgramId,
-      parsed.emitterAddress,
-      parsed.emitterChain,
-      parsed.sequence,
+      vaa.emitterAddress.toUint8Array(),
+      toChainId(vaa.emitterChain),
+      vaa.sequence,
     ),
     tokenBridgeForeignEndpoint: deriveEndpointKey(
       tokenBridgeProgramId,
-      parsed.emitterChain,
-      parsed.emitterAddress,
+      toChainId(vaa.emitterChain),
+      vaa.emitterAddress.toUint8Array(),
     ),
     toTokenAccount: new PublicKey(toTokenAccount),
     tokenBridgeRedeemer: deriveRedeemerAccountKey(cpiProgramId),
@@ -439,30 +434,29 @@ export function getCompleteTransferWrappedWithPayloadCpiAccounts(
   tokenBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: SignedVaa | ParsedTokenTransferVaa,
+  vaa: VAA<'Transfer'> | VAA<'TransferWithPayload'>,
   toTokenAccount: PublicKeyInitData,
 ): CompleteTransferWrappedWithPayloadCpiAccounts {
-  const parsed = isBytes(vaa) ? parseTokenTransferVaa(vaa) : vaa;
   const mint = deriveWrappedMintKey(
     tokenBridgeProgramId,
-    parsed.tokenChain,
-    parsed.tokenAddress,
+    toChainId(vaa.payload.token.chain),
+    vaa.payload.token.address.toUint8Array(),
   );
-  const cpiProgramId = new PublicKey(parsed.to);
+  const cpiProgramId = new PublicKey(vaa.payload.to.address.toUint8Array());
   return {
     payer: new PublicKey(payer),
     tokenBridgeConfig: deriveTokenBridgeConfigKey(tokenBridgeProgramId),
-    vaa: derivePostedVaaKey(wormholeProgramId, parsed.hash),
+    vaa: derivePostedVaaKey(wormholeProgramId, Buffer.from(vaa.hash)),
     tokenBridgeClaim: deriveClaimKey(
       tokenBridgeProgramId,
-      parsed.emitterAddress,
-      parsed.emitterChain,
-      parsed.sequence,
+      vaa.emitterAddress.toUint8Array(),
+      toChainId(vaa.emitterChain),
+      vaa.sequence,
     ),
     tokenBridgeForeignEndpoint: deriveEndpointKey(
       tokenBridgeProgramId,
-      parsed.emitterChain,
-      parsed.emitterAddress,
+      toChainId(vaa.emitterChain),
+      vaa.emitterAddress.toUint8Array(),
     ),
     toTokenAccount: new PublicKey(toTokenAccount),
     tokenBridgeRedeemer: deriveRedeemerAccountKey(cpiProgramId),

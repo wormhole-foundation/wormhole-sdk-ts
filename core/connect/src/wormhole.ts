@@ -16,26 +16,26 @@ import {
   Platform,
   ChainContext,
   toNative,
-  WormholeMessageId,
-  TransactionId,
+  PlatformCtr,
+  Contracts,
 } from '@wormhole-foundation/sdk-definitions';
 import axios, { AxiosResponse } from 'axios';
 
-import { WormholeConfig, PlatformCtr } from './types';
+import { WormholeConfig } from './types';
 
-import { CONFIG, Contracts } from './constants';
+import { CONFIG } from './constants';
 import { TokenTransfer } from './protocols/tokenTransfer';
 import { CCTPTransfer } from './protocols/cctpTransfer';
 import { TransactionStatus } from './api';
 
 export class Wormhole {
-  protected _platforms: Map<PlatformName, Platform>;
+  protected _platforms: Map<PlatformName, Platform<PlatformName>>;
 
   readonly conf: WormholeConfig;
 
   constructor(
     network: Network,
-    platforms: PlatformCtr[],
+    platforms: PlatformCtr<PlatformName>[],
     conf?: WormholeConfig,
   ) {
     this.conf = conf ?? CONFIG[network];
@@ -50,7 +50,7 @@ export class Wormhole {
         }),
       );
 
-      this._platforms.set(platformName, new p(network, filteredChains));
+      this._platforms.set(platformName, new p(filteredChains));
     }
   }
 
@@ -144,7 +144,7 @@ export class Wormhole {
    * @returns the chain context class
    * @throws Errors if context is not found
    */
-  getPlatform(chain: ChainName): Platform {
+  getPlatform(chain: ChainName): Platform<PlatformName> {
     const { platform: platformType } = this.conf.chains[chain]!;
     const platform = this._platforms.get(platformType);
     if (!platform) throw new Error(`Not able to retrieve platform ${platform}`);
@@ -157,7 +157,7 @@ export class Wormhole {
    * @returns the chain context class
    * @throws Errors if context is not found
    */
-  getChain(chain: ChainName): ChainContext {
+  getChain(chain: ChainName): ChainContext<PlatformName> {
     const platform = this.getPlatform(chain);
     return platform.getChain(chain);
   }
@@ -320,7 +320,6 @@ export class Wormhole {
     let response: AxiosResponse<any, any> | undefined;
 
     const url = `${this.conf.circleAPI}/${msgHash}`;
-    console.log(url);
 
     for (let i = retries; i > 0 && !response; i--) {
       // TODO: config wait seconds?

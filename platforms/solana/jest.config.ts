@@ -1,11 +1,20 @@
-module.exports = {
-  preset: 'ts-jest',
-  testEnvironment: 'node',
-  coverageDirectory: '.coverage',
+import type { JestConfigWithTsJest } from "ts-jest";
+
+const jestConfig: JestConfigWithTsJest = {
+  preset: "ts-jest",
   verbose: true,
-  globals: {
-    'ts-jest': {
-      isolatedModules: true,
-    },
+  modulePathIgnorePatterns: ["mocks"],
+  moduleNameMapper: {
+    "@noble/secp256k1": require.resolve("@noble/secp256k1"),
+  },
+  transform: {
+    "^.+\\.tsx?$": [
+      "ts-jest",
+      {
+        isolatedModules: true,
+      },
+    ],
   },
 };
+
+export default jestConfig;

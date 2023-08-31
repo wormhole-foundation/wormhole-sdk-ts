@@ -7,12 +7,8 @@ import {
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction,
 } from '@solana/web3.js';
-import {
-  isBytes,
-  ParsedGovernanceVaa,
-  parseGovernanceVaa,
-  SignedVaa,
-} from '@wormhole-foundation/connect-sdk';
+import { toChainId } from '@wormhole-foundation/sdk-base';
+import { VAA } from '@wormhole-foundation/sdk-definitions';
 import { createReadOnlyWormholeProgramInterface } from '../program';
 import {
   deriveWormholeBridgeDataKey,
@@ -28,7 +24,7 @@ export function createSetFeesInstruction(
   connection: Connection,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: SignedVaa | ParsedGovernanceVaa,
+  vaa: VAA,
 ): TransactionInstruction {
   const methods = createReadOnlyWormholeProgramInterface(
     wormholeProgramId,
@@ -56,18 +52,17 @@ export interface SetFeesAccounts {
 export function getSetFeesAccounts(
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: SignedVaa | ParsedGovernanceVaa,
+  vaa: VAA,
 ): SetFeesAccounts {
-  const parsed = isBytes(vaa) ? parseGovernanceVaa(vaa) : vaa;
   return {
     payer: new PublicKey(payer),
     bridge: deriveWormholeBridgeDataKey(wormholeProgramId),
-    vaa: derivePostedVaaKey(wormholeProgramId, parsed.hash),
+    vaa: derivePostedVaaKey(wormholeProgramId, Buffer.from(vaa.hash)),
     claim: deriveClaimKey(
       wormholeProgramId,
-      parsed.emitterAddress,
-      parsed.emitterChain,
-      parsed.sequence,
+      vaa.emitterAddress.toString(),
+      toChainId(vaa.emitterChain),
+      vaa.sequence,
     ),
     systemProgram: SystemProgram.programId,
   };
@@ -78,7 +73,7 @@ export function createTransferFeesInstruction(
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
   recipient: PublicKeyInitData,
-  vaa: SignedVaa | ParsedGovernanceVaa,
+  vaa: VAA,
 ): TransactionInstruction {
   const methods = createReadOnlyWormholeProgramInterface(
     wormholeProgramId,
@@ -115,18 +110,17 @@ export function getTransferFeesAccounts(
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
   recipient: PublicKeyInitData,
-  vaa: SignedVaa | ParsedGovernanceVaa,
+  vaa: VAA,
 ): TransferFeesAccounts {
-  const parsed = isBytes(vaa) ? parseGovernanceVaa(vaa) : vaa;
   return {
     payer: new PublicKey(payer),
     bridge: deriveWormholeBridgeDataKey(wormholeProgramId),
-    vaa: derivePostedVaaKey(wormholeProgramId, parsed.hash),
+    vaa: derivePostedVaaKey(wormholeProgramId, Buffer.from(vaa.hash)),
     claim: deriveClaimKey(
       wormholeProgramId,
-      parsed.emitterAddress,
-      parsed.emitterChain,
-      parsed.sequence,
+      vaa.emitterAddress.toString(),
+      toChainId(vaa.emitterChain),
+      vaa.sequence,
     ),
     feeCollector: deriveFeeCollectorKey(wormholeProgramId),
     recipient: new PublicKey(recipient),
@@ -139,7 +133,7 @@ export function createUpgradeGuardianSetInstruction(
   connection: Connection,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: SignedVaa | ParsedGovernanceVaa,
+  vaa: VAA,
 ): TransactionInstruction {
   const methods = createReadOnlyWormholeProgramInterface(
     wormholeProgramId,
@@ -173,26 +167,22 @@ export interface UpgradeGuardianSetAccounts {
 export function getUpgradeGuardianSetAccounts(
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: SignedVaa | ParsedGovernanceVaa,
+  vaa: VAA,
 ): UpgradeGuardianSetAccounts {
-  const parsed = isBytes(vaa) ? parseGovernanceVaa(vaa) : vaa;
   return {
     payer: new PublicKey(payer),
     bridge: deriveWormholeBridgeDataKey(wormholeProgramId),
-    vaa: derivePostedVaaKey(wormholeProgramId, parsed.hash),
+    vaa: derivePostedVaaKey(wormholeProgramId, Buffer.from(vaa.hash)),
     claim: deriveClaimKey(
       wormholeProgramId,
-      parsed.emitterAddress,
-      parsed.emitterChain,
-      parsed.sequence,
+      vaa.emitterAddress.toString(),
+      toChainId(vaa.emitterChain),
+      vaa.sequence,
     ),
-    guardianSetOld: deriveGuardianSetKey(
-      wormholeProgramId,
-      parsed.guardianSetIndex,
-    ),
+    guardianSetOld: deriveGuardianSetKey(wormholeProgramId, vaa.guardianSet),
     guardianSetNew: deriveGuardianSetKey(
       wormholeProgramId,
-      parsed.guardianSetIndex + 1,
+      vaa.guardianSet + 1,
     ),
     systemProgram: SystemProgram.programId,
   };
@@ -202,7 +192,7 @@ export function createUpgradeContractInstruction(
   connection: Connection,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: SignedVaa | ParsedGovernanceVaa,
+  vaa: VAA,
 ): TransactionInstruction {
   const methods = createReadOnlyWormholeProgramInterface(
     wormholeProgramId,
@@ -238,23 +228,23 @@ export interface UpgradeContractAccounts {
 export function getUpgradeContractAccounts(
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: SignedVaa | ParsedGovernanceVaa,
+  vaa: VAA,
   spill?: PublicKeyInitData,
 ): UpgradeContractAccounts {
-  const parsed = isBytes(vaa) ? parseGovernanceVaa(vaa) : vaa;
-  const implementation = parsed.orderPayload;
+  const implementation = vaa.payload;
   if (implementation.length != 32) {
     throw new Error('implementation.length != 32');
   }
+
   return {
     payer: new PublicKey(payer),
     bridge: deriveWormholeBridgeDataKey(wormholeProgramId),
-    vaa: derivePostedVaaKey(wormholeProgramId, parsed.hash),
+    vaa: derivePostedVaaKey(wormholeProgramId, Buffer.from(vaa.hash)),
     claim: deriveClaimKey(
       wormholeProgramId,
-      parsed.emitterAddress,
-      parsed.emitterChain,
-      parsed.sequence,
+      vaa.emitterAddress.toString(),
+      toChainId(vaa.emitterChain),
+      vaa.sequence,
     ),
     upgradeAuthority: deriveUpgradeAuthorityKey(wormholeProgramId),
     spill: new PublicKey(spill === undefined ? payer : spill),

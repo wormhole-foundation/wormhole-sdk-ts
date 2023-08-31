@@ -9,21 +9,20 @@ const cases = [
 
 //const original =
 describe("Token Transfer VAA tests", function () {
-  it("skip", () => {});
-  // it("should correctly deserialize and reserialize a transfer VAA", function () {
-  //   for (const testCase of cases) {
-  //     const vaaBytes = new Uint8Array(Buffer.from(testCase, "base64"));
-  //     let parsed:
-  //       | VAA<"Transfer" | "TransferWithPayload" | "AttestMeta">
-  //       | undefined;
-  //     for (const maybeType of tokenBridgePayloads) {
-  //       try {
-  //         parsed = deserialize(maybeType[0], vaaBytes);
-  //       } catch (e) {}
-  //     }
-  //     if (parsed === undefined) {
-  //       throw new Error(`Couldn't deserialize VAA: ${testCase}`);
-  //     }
-  //   }
-  // });
+  it("should correctly deserialize and reserialize a transfer VAA", function () {
+    for (const testCase of cases) {
+      const vaaBytes = new Uint8Array(Buffer.from(testCase, "base64"));
+      let parsed:
+        | VAA<"Transfer" | "TransferWithPayload" | "AttestMeta">
+        | undefined;
+      for (const maybeType of tokenBridgePayloads) {
+        try {
+          parsed = deserialize(maybeType[0], vaaBytes);
+        } catch (e) {}
+      }
+      if (parsed === undefined) {
+        throw new Error(`Couldn't deserialize VAA: ${testCase}`);
+      }
+    }
+  });
 });

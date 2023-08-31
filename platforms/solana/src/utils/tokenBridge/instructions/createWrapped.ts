@@ -7,12 +7,6 @@ import {
   TransactionInstruction,
 } from '@solana/web3.js';
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import {
-  isBytes,
-  parseAttestMetaVaa,
-  ParsedAttestMetaVaa,
-  SignedVaa,
-} from '@wormhole-foundation/connect-sdk';
 import { createReadOnlyTokenBridgeProgramInterface } from '../program';
 import { deriveClaimKey, derivePostedVaaKey } from '../../wormhole';
 import {
@@ -24,13 +18,15 @@ import {
   deriveWrappedMintKey,
 } from '../accounts';
 import { SplTokenMetadataProgram } from '../../utils';
+import { VAA } from '@wormhole-foundation/sdk-definitions';
+import { toChainId } from '@wormhole-foundation/sdk-base';
 
 export function createCreateWrappedInstruction(
   connection: Connection,
   tokenBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: SignedVaa | ParsedAttestMetaVaa,
+  vaa: VAA<'Transfer'> | VAA<'TransferWithPayload'>,
 ): TransactionInstruction {
   const methods = createReadOnlyTokenBridgeProgramInterface(
     tokenBridgeProgramId,
@@ -73,28 +69,27 @@ export function getCreateWrappedAccounts(
   tokenBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: SignedVaa | ParsedAttestMetaVaa,
+  vaa: VAA<'Transfer'> | VAA<'TransferWithPayload'>,
 ): CreateWrappedAccounts {
-  const parsed = isBytes(vaa) ? parseAttestMetaVaa(vaa) : vaa;
   const mint = deriveWrappedMintKey(
     tokenBridgeProgramId,
-    parsed.tokenChain,
-    parsed.tokenAddress,
+    toChainId(vaa.payload.token.chain),
+    vaa.payload.token.address.toUint8Array(),
   );
   return {
     payer: new PublicKey(payer),
     config: deriveTokenBridgeConfigKey(tokenBridgeProgramId),
     endpoint: deriveEndpointKey(
       tokenBridgeProgramId,
-      parsed.emitterChain,
-      parsed.emitterAddress,
+      toChainId(vaa.emitterChain),
+      vaa.emitterAddress.toUint8Array(),
     ),
-    vaa: derivePostedVaaKey(wormholeProgramId, parsed.hash),
+    vaa: derivePostedVaaKey(wormholeProgramId, Buffer.from(vaa.hash)),
     claim: deriveClaimKey(
       tokenBridgeProgramId,
-      parsed.emitterAddress,
-      parsed.emitterChain,
-      parsed.sequence,
+      vaa.emitterAddress.toUint8Array(),
+      toChainId(vaa.emitterChain),
+      vaa.sequence,
     ),
     mint,
     wrappedMeta: deriveWrappedMetaKey(tokenBridgeProgramId, mint),

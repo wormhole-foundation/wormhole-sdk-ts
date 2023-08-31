@@ -6,14 +6,6 @@ import {
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction,
 } from '@solana/web3.js';
-import {
-  isBytes,
-  ParsedTokenBridgeRegisterChainVaa,
-  ParsedTokenBridgeUpgradeContractVaa,
-  parseTokenBridgeRegisterChainVaa,
-  parseTokenBridgeUpgradeContractVaa,
-  SignedVaa,
-} from '@wormhole-foundation/connect-sdk';
 import { createReadOnlyTokenBridgeProgramInterface } from '../program';
 import { deriveClaimKey, derivePostedVaaKey } from '../../wormhole';
 import {
@@ -22,12 +14,14 @@ import {
   deriveUpgradeAuthorityKey,
 } from '../accounts';
 import { BpfLoaderUpgradeable, deriveUpgradeableProgramKey } from '../../utils';
+import { VAA } from '@wormhole-foundation/sdk-definitions';
+import { toChainId } from '@wormhole-foundation/sdk-base';
 
 export function createRegisterChainInstruction(
   tokenBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: SignedVaa | ParsedTokenBridgeRegisterChainVaa,
+  vaa: VAA<'TokenBridgeRegisterChain'>,
 ): TransactionInstruction {
   const methods =
     createReadOnlyTokenBridgeProgramInterface(
@@ -64,23 +58,22 @@ export function getRegisterChainAccounts(
   tokenBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: SignedVaa | ParsedTokenBridgeRegisterChainVaa,
+  vaa: VAA<'TokenBridgeRegisterChain'>,
 ): RegisterChainAccounts {
-  const parsed = isBytes(vaa) ? parseTokenBridgeRegisterChainVaa(vaa) : vaa;
   return {
     payer: new PublicKey(payer),
     config: deriveTokenBridgeConfigKey(tokenBridgeProgramId),
     endpoint: deriveEndpointKey(
       tokenBridgeProgramId,
-      parsed.foreignChain,
-      parsed.foreignAddress,
+      toChainId(vaa.payload.foreignChain),
+      vaa.payload.foreignAddress.toUint8Array(),
     ),
-    vaa: derivePostedVaaKey(wormholeProgramId, parsed.hash),
+    vaa: derivePostedVaaKey(wormholeProgramId, Buffer.from(vaa.hash)),
     claim: deriveClaimKey(
       tokenBridgeProgramId,
-      parsed.emitterAddress,
-      parsed.emitterChain,
-      parsed.sequence,
+      vaa.emitterAddress.toUint8Array(),
+      toChainId(vaa.emitterChain),
+      vaa.sequence,
     ),
     rent: SYSVAR_RENT_PUBKEY,
     systemProgram: SystemProgram.programId,
@@ -92,7 +85,7 @@ export function createUpgradeContractInstruction(
   tokenBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: SignedVaa | ParsedTokenBridgeUpgradeContractVaa,
+  vaa: VAA<'TokenBridgeUpgradeContract'>,
   spill?: PublicKeyInitData,
 ): TransactionInstruction {
   const methods =
@@ -135,22 +128,21 @@ export function getUpgradeContractAccounts(
   tokenBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: SignedVaa | ParsedTokenBridgeUpgradeContractVaa,
+  vaa: VAA<'TokenBridgeUpgradeContract'>,
   spill?: PublicKeyInitData,
 ): UpgradeContractAccounts {
-  const parsed = isBytes(vaa) ? parseTokenBridgeUpgradeContractVaa(vaa) : vaa;
   return {
     payer: new PublicKey(payer),
-    vaa: derivePostedVaaKey(wormholeProgramId, parsed.hash),
+    vaa: derivePostedVaaKey(wormholeProgramId, Buffer.from(vaa.hash)),
     claim: deriveClaimKey(
       tokenBridgeProgramId,
-      parsed.emitterAddress,
-      parsed.emitterChain,
-      parsed.sequence,
+      vaa.emitterAddress.toUint8Array(),
+      toChainId(vaa.emitterChain),
+      vaa.sequence,
     ),
     upgradeAuthority: deriveUpgradeAuthorityKey(tokenBridgeProgramId),
     spill: new PublicKey(spill === undefined ? payer : spill),
-    implementation: new PublicKey(parsed.newContract),
+    implementation: new PublicKey(vaa.payload.newContract),
     programData: deriveUpgradeableProgramKey(tokenBridgeProgramId),
     tokenBridgeProgram: new PublicKey(tokenBridgeProgramId),
     rent: SYSVAR_RENT_PUBKEY,

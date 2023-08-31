@@ -4,7 +4,7 @@ import {
   Commitment,
   PublicKeyInitData,
 } from '@solana/web3.js';
-import { ChainId, chainToChainId } from '@wormhole-foundation/connect-sdk';
+import { ChainId, toChainId } from '@wormhole-foundation/sdk-base';
 import { deriveAddress, getAccountData } from '../../utils';
 import { tryNativeToUint8Array } from '@certusone/wormhole-sdk';
 
@@ -13,7 +13,7 @@ export function deriveEndpointKey(
   emitterChain: number | ChainId,
   emitterAddress: Buffer | Uint8Array | string,
 ): PublicKey {
-  if (emitterChain == chainToChainId("Solana")) {
+  if (emitterChain == toChainId('Solana')) {
     throw new Error(
       'emitterChain == CHAIN_ID_SOLANA cannot exist as foreign token bridge emitter',
     );

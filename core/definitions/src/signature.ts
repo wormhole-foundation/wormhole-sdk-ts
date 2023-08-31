@@ -5,7 +5,18 @@
 import { Signature as SignatureOptionalRecovery } from "@noble/secp256k1";
 
 export class Signature extends SignatureOptionalRecovery {
-  constructor(readonly r: bigint, readonly s: bigint, readonly recovery: number) {
+  constructor(
+    readonly r: bigint,
+    readonly s: bigint,
+    readonly recovery: number
+  ) {
     super(r, s, recovery);
+  }
+
+  toBuffer(): Buffer {
+    const buff = new Uint8Array(65);
+    buff.set(this.toCompactRawBytes());
+    buff.set([this.recovery], 64);
+    return Buffer.from(buff);
   }
 }

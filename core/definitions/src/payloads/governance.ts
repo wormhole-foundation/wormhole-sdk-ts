@@ -202,14 +202,14 @@ const governancePayloads = [
   governancePayload("Relayer", "UpdateDefaultProvider", 3),
 ] as const satisfies RoArray<readonly [string, Layout]>;
 
-type GovernancePayloads = ShallowMapping<typeof governancePayloads>;
-
-//side-effects! finally, register with factory:
+// factory registration:
 declare global {
   namespace Wormhole {
-    interface PayloadLiteralToDescriptionMapping extends GovernancePayloads {}
+    interface PayloadLiteralToDescriptionMapping
+      extends ShallowMapping<typeof governancePayloads> {}
   }
 }
 
-for (const [payloadLiteral, layout] of governancePayloads)
-  registerPayloadType(payloadLiteral, layout);
+governancePayloads.forEach(([payloadLiteral, layout]) =>
+  registerPayloadType(payloadLiteral, layout)
+);

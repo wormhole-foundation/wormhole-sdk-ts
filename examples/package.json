@@ -34,11 +34,14 @@
   },
   "sideEffects": false,
   "scripts": {
-    "doit": "cd .. && npm run build && cd - && npx tsx src/index.ts",
+    "tb": "tsx src/tokenBridge.ts",
+    "cctp": "tsx src/cctp.ts",
+
     "build:cjs": "tsc -p ./tsconfig.cjs.json",
     "build:esm": "tsc -p ./tsconfig.esm.json",
     "build": "npm run build:cjs && npm run build:esm",
     "rebuild": "npm run clean && npm run build:cjs && npm run build:esm",
+    "buildall": "cd .. && npm run build && cd -",
     "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo",
     "lint": "npm run prettier && eslint --fix",
     "prettier": "prettier --write ./src",
@@ -61,6 +64,7 @@
   "dependencies": {
     "@wormhole-foundation/connect-sdk": "*",
     "@wormhole-foundation/connect-sdk-evm": "*",
+    "@wormhole-foundation/connect-sdk-solana": "*",
     "@wormhole-foundation/sdk-base": "*",
     "@wormhole-foundation/sdk-definitions": "*",
     "bs58": "^5.0.0",

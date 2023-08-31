@@ -60,7 +60,7 @@ wh.getOriginalToken(...)
 wh.getWrappedToken(orig, chain)
 ```
 
-## PlatformContext
+## Platform
 
 Base class to implement Platform specific logic?
 
@@ -81,18 +81,18 @@ cc.getRPC() // for evm -> ethers.Provider, for sol -> web3.Connection
 
 Holds references to Contract client 
 
+
+<!-- 
+Not Implemented
+
 Provides methods to lookup details for contract addresses, finality, address parsers/formatters
 
 ```ts
 cc.getTokenBridgeAddress()
 cc.estimateFinality(txid)
 ```
+-->
 
-Provides methods to dump transactions to invoke some action
-
-```ts
-
-```
 
 ## WormholeTransfer
 
@@ -100,8 +100,6 @@ Holds a reference to ChainContexts
 Holds details about the transfer
 May hold a ref to Signer
 Provides methods to step through the transfer process
-
-Escape hatch to just dump transactions?
 
 ## Glossary
 
@@ -167,4 +165,43 @@ Say I have an app that defines its own protocol, can I provide something that ad
 
 ## What is the preferred terminology to refer to either end of a cross-chain message: from/to, source/target or origin/destination?
 
+
 ## What is the preferred terminology for the core Wormhole layer? (i.e. Core Contracts or Wormhole Contracts)
+
+
+
+
+
+
+8/31 notes
+
+
+
+Platforms
+------
+
+abstract chain context class, rpc is the only platform specific thing to implement
+
+Connect
+-----
+
+What do with xchain concepts without having xchain context?
+
+e.g. 
+// implement universal univeral decoder
+given eth address, and without installing evm platform, how do i turn it into a solana wrapped token without knowing how to fmt the address? 
+
+// For this, tweak the contracts
+given an xfer from eth=>sol, and without installing sol platform, how do i determine the ATA?
+
+
+
+Should we namespace export base/definitions? 
+
+
+
+------------------
+
+What is the benefit of costmap vs single fat object
+
+Why is network duped across platform/chaincontext/contracts?

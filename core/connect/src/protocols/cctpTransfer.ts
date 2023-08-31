@@ -2,7 +2,6 @@ import {
   toCircleChainName,
   ChainName,
   PlatformName,
-  contracts,
 } from '@wormhole-foundation/sdk-base';
 import {
   NativeAddress,
@@ -28,7 +27,6 @@ import {
   AttestationId,
 } from '../wormholeTransfer';
 import { Wormhole } from '../wormhole';
-import { ethers } from 'ethers';
 
 export class CCTPTransfer implements WormholeTransfer {
   private readonly wh: Wormhole;
@@ -230,7 +228,7 @@ export class CCTPTransfer implements WormholeTransfer {
     const txHashes: TxHash[] = [];
     for await (const tx of xfer) {
       unsigned.push(tx);
-      if (!tx.stackable) {
+      if (!tx.parallelizable) {
         const signed = await signer.sign(unsigned);
         txHashes.push(...(await fromChain.sendWait(signed)));
         unsigned = [];
@@ -365,9 +363,9 @@ export class CCTPTransfer implements WormholeTransfer {
         for await (const tx of xfer) {
           unsigned.push(tx);
 
-          // If we get a non-stackable tx, sign and send the transactions
+          // If we get a non-parallelizable tx, sign and send the transactions
           // we've gotten so far
-          if (!tx.stackable) {
+          if (!tx.parallelizable) {
             const signed = await signer.sign(unsigned);
             const txHashes = await toChain.sendWait(signed);
             txHashes.push(...txHashes);

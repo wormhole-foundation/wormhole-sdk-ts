@@ -5,5 +5,8 @@ export interface UnsignedTransaction {
   readonly network: Network;
   readonly chain: ChainName;
   readonly description: string;
-  readonly stackable: boolean;
+  // parallelizable describes whether or not the transaction can be
+  // executed in parallel with others.
+  // If order matters, this will be false to ensure ordered execution
+  readonly parallelizable: boolean;
 }
