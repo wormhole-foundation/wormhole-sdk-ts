@@ -19,40 +19,39 @@ export interface Platform<P extends PlatformName> {
   readonly platform: P;
   readonly conf: ChainsConfig;
   // Utils for platform specific queries
-  getForeignAsset(
+  getWrappedAsset(
     chain: ChainName,
-    rpc: RpcConnection,
+    rpc: RpcConnection<P>,
     tokenId: TokenId
-  ): Promise<UniversalAddress | null>;
-  getTokenDecimals(
-    rpc: RpcConnection,
-    tokenAddr: UniversalAddress
-  ): Promise<bigint>;
-  getNativeBalance(rpc: RpcConnection, walletAddr: string): Promise<bigint>;
+  ): Promise<TokenId | null>;
+  getTokenDecimals(rpc: RpcConnection<P>, token: TokenId): Promise<bigint>;
+  getNativeBalance(rpc: RpcConnection<P>, walletAddr: string): Promise<bigint>;
   getTokenBalance(
     chain: ChainName,
-    rpc: RpcConnection,
+    rpc: RpcConnection<P>,
     walletAddr: string,
-    tokenId: TokenId
+    token: TokenId
   ): Promise<bigint | null>;
 
   //
   getChain(chain: ChainName): ChainContext<P>;
-  getRpc(chain: ChainName): RpcConnection;
+  getRpc(chain: ChainName): RpcConnection<P>;
 
   // protocol clients
-  getTokenBridge(rpc: RpcConnection): Promise<TokenBridge<P>>;
-  getAutomaticTokenBridge(rpc: RpcConnection): Promise<AutomaticTokenBridge<P>>;
+  getTokenBridge(rpc: RpcConnection<P>): Promise<TokenBridge<P>>;
+  getAutomaticTokenBridge(
+    rpc: RpcConnection<P>
+  ): Promise<AutomaticTokenBridge<P>>;
   getAutomaticCircleBridge(
-    rpc: RpcConnection
+    rpc: RpcConnection<P>
   ): Promise<AutomaticCircleBridge<P>>;
-  getCircleBridge(rpc: RpcConnection): Promise<CircleBridge<P>>;
+  getCircleBridge(rpc: RpcConnection<P>): Promise<CircleBridge<P>>;
 
   // Platform interaction utils
-  sendWait(rpc: RpcConnection, stxns: SignedTxn[]): Promise<TxHash[]>;
+  sendWait(rpc: RpcConnection<P>, stxns: SignedTxn[]): Promise<TxHash[]>;
   parseTransaction(
     chain: ChainName,
-    rpc: RpcConnection,
+    rpc: RpcConnection<P>,
     txid: TxHash
   ): Promise<WormholeMessageId[]>;
   parseAddress(address: string): UniversalAddress;

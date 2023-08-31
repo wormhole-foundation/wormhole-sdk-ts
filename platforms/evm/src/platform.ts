@@ -71,29 +71,29 @@ export class EvmPlatform implements Platform<'Evm'> {
     return await EvmAutomaticCircleBridge.fromProvider(rpc, this.contracts);
   }
 
-  async getForeignAsset(
+  async getWrappedAsset(
     chain: ChainName,
     rpc: ethers.Provider,
-    tokenId: TokenId,
-  ): Promise<UniversalAddress | null> {
+    token: TokenId,
+  ): Promise<TokenId | null> {
     // if the token is already native, return the token address
-    if (chain === tokenId.chain) return tokenId.address.toUniversalAddress();
+    if (chain === token.chain) return token;
 
     const tokenBridge = await this.getTokenBridge(rpc);
     const foreignAddr = await tokenBridge.getWrappedAsset({
       chain,
-      address: tokenId.address,
+      address: token.address,
     });
-    return foreignAddr.toUniversalAddress();
+    return { chain, address: foreignAddr.toUniversalAddress() };
   }
 
   async getTokenDecimals(
     rpc: ethers.Provider,
-    tokenAddr: UniversalAddress,
+    token: TokenId,
   ): Promise<bigint> {
     const tokenContract = this.contracts.mustGetTokenImplementation(
       rpc,
-      tokenAddr.toString(),
+      token.address.toString(),
     );
     const decimals = await tokenContract.decimals();
     return decimals;
@@ -112,7 +112,7 @@ export class EvmPlatform implements Platform<'Evm'> {
     walletAddr: string,
     tokenId: TokenId,
   ): Promise<bigint | null> {
-    const address = await this.getForeignAsset(chain, rpc, tokenId);
+    const address = await this.getWrappedAsset(chain, rpc, tokenId);
     if (!address) return null;
 
     const token = this.contracts.mustGetTokenImplementation(

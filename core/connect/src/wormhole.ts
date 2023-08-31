@@ -170,12 +170,11 @@ export class Wormhole {
    * @param chain The chain name or id
    * @returns The Wormhole address on the given chain, null if it does not exist
    */
-  async getForeignAsset(
-    tokenId: TokenId,
+  async getWrappedAsset(
     chain: ChainName,
-  ): Promise<UniversalAddress | null> {
-    const context = this.getChain(chain);
-    return await context.getForeignAsset(tokenId);
+    token: TokenId,
+  ): Promise<TokenId | null> {
+    return await this.getChain(chain).getWrappedAsset(token);
   }
 
   /**
@@ -187,11 +186,11 @@ export class Wormhole {
    * @returns The Wormhole address on the given chain
    * @throws Throws if the token does not exist
    */
-  async mustGetForeignAsset(
-    tokenId: TokenId,
+  async mustGetWrappedAsset(
     chain: ChainName,
-  ): Promise<UniversalAddress> {
-    const address = await this.getForeignAsset(tokenId, chain);
+    token: TokenId,
+  ): Promise<TokenId> {
+    const address = await this.getWrappedAsset(chain, token);
     if (!address) throw new Error('No asset registered');
     return address;
   }
@@ -203,9 +202,9 @@ export class Wormhole {
    * @param chain The chain name or id of the token/representation
    * @returns The number of decimals
    */
-  async getTokenDecimals(tokenId: TokenId, chain: ChainName): Promise<bigint> {
-    const repr = await this.mustGetForeignAsset(tokenId, chain);
+  async getTokenDecimals(chain: ChainName, token: TokenId): Promise<bigint> {
     const context = this.getChain(chain);
+    const repr = await this.mustGetWrappedAsset(chain, token);
     return await context.getTokenDecimals(repr);
   }
 
@@ -217,8 +216,8 @@ export class Wormhole {
    * @returns The native balance as a BigNumber
    */
   async getNativeBalance(
-    walletAddress: string,
     chain: ChainName,
+    walletAddress: string,
   ): Promise<bigint> {
     const context = this.getChain(chain);
     return await context.getNativeBalance(walletAddress);

@@ -16,6 +16,8 @@ import {
   TxHash,
   keccak256,
   TokenId,
+  NativeAddress,
+  toNative,
 } from '@wormhole-foundation/sdk-definitions';
 import { TokenTransferTransaction } from '@wormhole-foundation/connect-sdk';
 import { Provider, TransactionRequest } from 'ethers';
@@ -104,10 +106,13 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
   }
 
   // TODO:
-  // @ts-ignore
-  async getWrappedAsset({ chain, address }: ChainAddress): Promise<EvmAddress> {
-    return new EvmAddress(
-      await this.tokenBridge.wrappedAsset(chain, address.toString()),
+  async getWrappedAsset(token: TokenId): Promise<NativeAddress<'Evm'>> {
+    return toNative(
+      'Evm',
+      await this.tokenBridge.wrappedAsset(
+        token.chain,
+        token.address.toString(),
+      ),
     );
   }
 

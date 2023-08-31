@@ -29,6 +29,9 @@ import { EvmContracts } from '../contracts';
 //https://github.com/circlefin/evm-cctp-contracts
 
 // TODO: Can we get this event topic from somewhere else?
+// TODO: yes
+// const z = this.tokenMessenger.getEvent('DepositForBurn');
+// z.fragment.topicHash
 export const TOKEN_EVENT_HASH =
   '0x2fa9ca894982930190727e75500a97d8dc500233a5065e0f3126c48fbe0343c0';
 
@@ -107,7 +110,7 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
   ): AsyncGenerator<EvmUnsignedTransaction> {
     const senderAddr = toEvmAddrString(sender);
     const recipientAddress = recipient.address.toString();
-    const tokenAddr = toEvmAddrString(token.address);
+    const tokenAddr = toEvmAddrString(token.address as UniversalOrEvm);
 
     const tokenContract = this.contracts.mustGetTokenImplementation(
       this.provider,

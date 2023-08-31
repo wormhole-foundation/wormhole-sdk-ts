@@ -30,10 +30,12 @@ export class SolanaChain extends ChainContext<'Solana'> {
     token: TokenId,
     address: UniversalAddress,
   ): Promise<UniversalAddress> {
-    const nativeAddress = await this.getForeignAsset(token);
+    const wrapped = await this.getWrappedAsset(token);
+    if (!wrapped)
+      throw new Error(`No wrapped token on ${this.chain} for: ${token}`);
 
-    const mint = new PublicKey(nativeAddress!.toUint8Array());
-    const owner = new PublicKey(address.toUint8Array());
+    const mint = new PublicKey(wrapped.address.unwrap());
+    const owner = new PublicKey(address.unwrap());
 
     const ata = await getAssociatedTokenAddress(mint, owner);
     return new SolanaAddress(ata).toUniversalAddress();
