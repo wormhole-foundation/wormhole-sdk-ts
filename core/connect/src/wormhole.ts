@@ -320,7 +320,6 @@ export class Wormhole {
     let response: AxiosResponse<any, any> | undefined;
 
     const url = `${this.conf.circleAPI}/${msgHash}`;
-    console.log(url);
 
     for (let i = retries; i > 0 && !response; i--) {
       // TODO: config wait seconds?

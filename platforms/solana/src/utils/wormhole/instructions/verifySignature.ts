@@ -75,11 +75,9 @@ export async function createVerifySignaturesInstructions(
     const keys: Buffer[] = [];
     for (let j = 0; j < end - start; ++j) {
       const item = guardianSignatures.at(j + start)!;
-      signatures.push(item.signature.toBuffer());
 
-      const key = guardianKeys.at(item.guardianIndex)!;
-      console.log(key);
-      keys.push(key);
+      signatures.push(item.signature.toBuffer());
+      keys.push(guardianKeys.at(item.guardianIndex)!);
 
       signatureStatus[item.guardianIndex] = j;
     }

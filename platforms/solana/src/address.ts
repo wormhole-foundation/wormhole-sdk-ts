@@ -13,6 +13,7 @@ import { PublicKey, PublicKeyInitData } from '@solana/web3.js';
 declare global {
   namespace Wormhole {
     interface PlatformToNativeAddressMapping {
+      // @ts-ignore
       Solana: SolanaAddress;
     }
   }
@@ -40,6 +41,9 @@ export class SolanaAddress implements Address {
   toUint8Array() {
     return this.address.toBytes();
   }
+  toNative() {
+    return this.address;
+  }
   toUniversalAddress() {
     return new UniversalAddress(this.address.toBytes());
   }
@@ -50,6 +54,9 @@ export class SolanaAddress implements Address {
     } catch (e) {
       return false;
     }
+  }
+  equals(other: UniversalAddress): boolean {
+    return this.toUniversalAddress().equals(other);
   }
 }
 

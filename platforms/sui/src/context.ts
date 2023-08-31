@@ -254,7 +254,7 @@ export class SuiContext extends RelayerAbstract<TransactionBlock> {
       );
       return coinType;
     } catch (e) {
-      console.log(`getForeignAsset - error: ${e}`);
+      console.error(`getForeignAsset - error: ${e}`);
       throw e;
     }
   }

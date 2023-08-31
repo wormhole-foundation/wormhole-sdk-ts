@@ -25,7 +25,6 @@ import {
 } from '@wormhole-foundation/sdk-definitions';
 
 import { SolanaContracts } from './contracts';
-import { getForeignAssetSolana } from './utils';
 import { UniversalAddress } from '@wormhole-foundation/sdk-definitions';
 import { SolanaAddress } from './address';
 import { SolanaChain } from './chain';
@@ -84,25 +83,13 @@ export class SolanaPlatform implements Platform {
   async getForeignAsset(
     chain: ChainName,
     rpc: Connection,
-    tokenId: TokenId,
+    token: TokenId,
   ): Promise<UniversalAddress | null> {
-    const chainId = toChainId(tokenId.chain);
-    const destChainId = toChainId(chain);
-    if (destChainId === chainId) return tokenId.address.toUniversalAddress();
+    if (token.chain === chain) return token.address.toUniversalAddress();
 
-    const contracts = this.contracts.mustGetContracts(chain);
-    if (!contracts.tokenBridge) throw new Error('contracts not found');
-
-    const addr = await getForeignAssetSolana(
-      rpc,
-      contracts.tokenBridge,
-      chainId as any,
-      tokenId.address.toUint8Array(),
-    );
-
-    if (!addr) return null;
-
-    return new SolanaAddress(addr).toUniversalAddress();
+    const tb = await this.getTokenBridge(rpc);
+    const asset = await tb.getWrappedAsset(token);
+    return asset.toUniversalAddress();
   }
 
   async getTokenDecimals(

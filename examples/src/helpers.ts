@@ -1,4 +1,4 @@
-import { ChainName, platformToChains } from "@wormhole-foundation/sdk-base";
+import { ChainName } from "@wormhole-foundation/sdk-base";
 import {
   Signer,
   ChainContext,
@@ -10,6 +10,10 @@ import {
 import bs58 from "bs58";
 import { ethers } from "ethers";
 import { Transaction, Keypair } from "@solana/web3.js";
+import {
+  TransferState,
+  WormholeTransfer,
+} from "@wormhole-foundation/connect-sdk";
 
 // read in from `.env`
 require("dotenv").config();
@@ -41,6 +45,15 @@ export async function getStuff(chain: ChainContext): Promise<TransferStuff> {
   };
 
   return { chain, signer, address };
+}
+
+export async function waitLog(xfer: WormholeTransfer): Promise<void> {
+  console.log("Checking for complete status");
+  console.log(xfer);
+  while ((await xfer.getTransferState()) < TransferState.Completed) {
+    console.log("Not yet...");
+    await new Promise((f) => setTimeout(f, 5000));
+  }
 }
 
 export async function getEvmSigner(

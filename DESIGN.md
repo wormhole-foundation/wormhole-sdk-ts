@@ -60,7 +60,7 @@ wh.getOriginalToken(...)
 wh.getWrappedToken(orig, chain)
 ```
 
-## PlatformContext
+## Platform
 
 Base class to implement Platform specific logic?
 
@@ -81,18 +81,18 @@ cc.getRPC() // for evm -> ethers.Provider, for sol -> web3.Connection
 
 Holds references to Contract client 
 
+
+<!-- 
+Not Implemented
+
 Provides methods to lookup details for contract addresses, finality, address parsers/formatters
 
 ```ts
 cc.getTokenBridgeAddress()
 cc.estimateFinality(txid)
 ```
+-->
 
-Provides methods to dump transactions to invoke some action
-
-```ts
-
-```
 
 ## WormholeTransfer
 
@@ -100,8 +100,6 @@ Holds a reference to ChainContexts
 Holds details about the transfer
 May hold a ref to Signer
 Provides methods to step through the transfer process
-
-Escape hatch to just dump transactions?
 
 ## Glossary
 
@@ -166,5 +164,6 @@ Provides Platform specific logic for a set of things
 Say I have an app that defines its own protocol, can I provide something that adheres to the WormholeTransfer interface so a dev can install it and call it like the TokenTransfer?
 
 ## What is the preferred terminology to refer to either end of a cross-chain message: from/to, source/target or origin/destination?
+
 
 ## What is the preferred terminology for the core Wormhole layer? (i.e. Core Contracts or Wormhole Contracts)

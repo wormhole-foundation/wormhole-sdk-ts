@@ -8,6 +8,7 @@ import { ethers } from 'ethers';
 declare global {
   namespace Wormhole {
     interface PlatformToNativeAddressMapping {
+      // @ts-ignore
       Evm: EvmAddress;
     }
   }
@@ -70,5 +71,8 @@ export class EvmAddress implements Address {
   }
   static isValidAddress(address: string) {
     return ethers.isAddress(address);
+  }
+  equals(other: UniversalAddress): boolean {
+    return other.equals(this.toUniversalAddress());
   }
 }

@@ -10,7 +10,6 @@ import {
   TokenId,
   WormholeMessageId,
   CircleBridge,
-  WormholeCircleRelayer,
   AutomaticCircleBridge,
 } from '@wormhole-foundation/sdk-definitions';
 import {
@@ -59,7 +58,7 @@ export class MockChain implements ChainContext {
   async getCircleBridge(): Promise<CircleBridge<PlatformName>> {
     throw new Error('Method not implemented.');
   }
-  async getCircleRelayer(): Promise<WormholeCircleRelayer<PlatformName>> {
+  async getCircleRelayer(): Promise<AutomaticCircleBridge<PlatformName>> {
     throw new Error('Method not implemented.');
   }
 
@@ -69,11 +68,8 @@ export class MockChain implements ChainContext {
 
     // TODO: concurrent
     for (const stxn of stxns) {
-      console.log(`Sending: ${stxn}`);
-
       const txRes = await rpc!.broadcastTransaction(stxn);
       const txReceipt = await txRes.wait();
-      console.log(txReceipt);
       // TODO: throw error?
       if (txReceipt === null) continue;
 

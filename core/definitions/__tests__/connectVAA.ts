@@ -12,24 +12,10 @@ describe("Circle Transfer VAA tests", function () {
       const vaaBytes = Buffer.from(testCase, "base64");
 
       const parsed = deserialize("Uint8Array", new Uint8Array(vaaBytes));
-      console.log(parsed);
-
-      console.log(Buffer.from(parsed.payload).toString("hex"));
 
       const x = deserializePayload("CircleTransferRelay", parsed.payload);
-      console.log(x);
-
-      //let parsed: VAA<"ConnectTransferLayout"> | undefined;
-      //for (const maybeType of connectPayloads) {
-      //  try {
-      //    parsed = deserialize(maybeType[0], new Uint8Array(vaaBytes));
-      //  } catch (e) {
-      //    console.log(e);
-      //  }
-      //}
-      //if (parsed === undefined) {
-      //  throw new Error(`Couldn't deserialize VAA: ${testCase}`);
-      //}
+      expect(x).toBeTruthy();
+      // ...
     }
   });
 });

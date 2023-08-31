@@ -117,7 +117,6 @@ describe('Solana Unit Tests (not really unit tests)', () => {
 
     //   for await (const tx of txgen) {
     //     expect(tx).toBeTruthy();
-    //     console.log(tx);
     //   }
     // });
   });
