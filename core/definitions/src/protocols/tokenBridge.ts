@@ -1,6 +1,6 @@
 import { PlatformName } from "@wormhole-foundation/sdk-base";
 import { UniversalOrNative, NativeAddress, ChainAddress } from "../address";
-import { TokenId, WrappedTokenId } from "../types";
+import { TokenId } from "../types";
 import { VAA } from "../vaa";
 import { UnsignedTransaction } from "../unsignedTransaction";
 import "../payloads/tokenBridge";

@@ -1,28 +1,12 @@
-import {
-  Network,
-  ChainName,
-  PlatformName,
-} from '@wormhole-foundation/sdk-base';
+import { Network } from '@wormhole-foundation/sdk-base';
 import {
   ChainAddress,
   TransactionId,
   WormholeMessageId,
   TokenId,
-  Platform,
-  ChainContext,
+  ChainsConfig,
 } from '@wormhole-foundation/sdk-definitions';
 
-import { ChainConfig } from './constants';
-
-export type PlatformCtr = {
-  _platform: PlatformName;
-  new (network: Network, conf: ChainsConfig): Platform;
-};
-export type ChainCtr = new () => ChainContext;
-
-export type ChainsConfig = {
-  [K in ChainName]?: ChainConfig;
-};
 export type WormholeConfig = {
   network: Network;
   api: string;

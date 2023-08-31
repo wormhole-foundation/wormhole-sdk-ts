@@ -1,16 +1,5 @@
-import {
-  Commitment,
-  Connection,
-  PublicKey,
-  PublicKeyInitData,
-} from '@solana/web3.js';
-import {
-  ChainName,
-  ChainId,
-  toChainId,
-  PlatformName,
-  Network,
-} from '@wormhole-foundation/sdk-base';
+import { Commitment, Connection, PublicKey } from '@solana/web3.js';
+import { ChainName } from '@wormhole-foundation/sdk-base';
 import {
   Platform,
   TokenId,
@@ -22,6 +11,8 @@ import {
   SignedTxn,
   TxHash,
   WormholeMessageId,
+  ChainsConfig,
+  ChainContext,
 } from '@wormhole-foundation/sdk-definitions';
 
 import { SolanaContracts } from './contracts';
@@ -29,23 +20,20 @@ import { UniversalAddress } from '@wormhole-foundation/sdk-definitions';
 import { SolanaAddress } from './address';
 import { SolanaChain } from './chain';
 import { SolanaTokenBridge } from './protocols/tokenBridge';
-import { ChainsConfig } from '@wormhole-foundation/connect-sdk';
 
 const SOLANA_SEQ_LOG = 'Program log: Sequence: ';
 
 /**
  * @category Solana
  */
-export class SolanaPlatform implements Platform {
+export class SolanaPlatform implements Platform<'Solana'> {
   static readonly _platform: 'Solana' = 'Solana';
-  readonly platform: PlatformName = SolanaPlatform._platform;
+  readonly platform = SolanaPlatform._platform;
 
-  readonly network: Network;
   readonly conf: ChainsConfig;
   readonly contracts: SolanaContracts;
 
-  constructor(network: Network, conf: ChainsConfig) {
-    this.network = network;
+  constructor(conf: ChainsConfig) {
     this.conf = conf;
     this.contracts = new SolanaContracts(conf);
   }
@@ -55,7 +43,7 @@ export class SolanaPlatform implements Platform {
     return new Connection(rpcAddress, commitment);
   }
 
-  getChain(chain: ChainName): SolanaChain {
+  getChain(chain: ChainName): ChainContext<'Solana'> {
     return new SolanaChain(this, chain);
   }
 

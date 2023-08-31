@@ -1,7 +1,11 @@
 import * as ethers_contracts from './ethers-contracts';
-import { Chain, ChainName, toChainName } from '@wormhole-foundation/sdk-base';
-import { ChainsConfig, Contracts } from '@wormhole-foundation/connect-sdk';
-import { TokenId, toNative } from '@wormhole-foundation/sdk-definitions';
+import { ChainName, toChainName } from '@wormhole-foundation/sdk-base';
+import {
+  ChainsConfig,
+  Contracts,
+  TokenId,
+  toNative,
+} from '@wormhole-foundation/sdk-definitions';
 import { Provider } from 'ethers';
 
 /**

@@ -1,5 +1,4 @@
 import {
-  Commitment,
   Connection,
   Keypair,
   PublicKey,
@@ -29,7 +28,6 @@ import {
   TokenBridge,
   ChainAddress,
   VAA,
-  WrappedTokenId,
   TokenId,
   UniversalAddress,
   NativeAddress,

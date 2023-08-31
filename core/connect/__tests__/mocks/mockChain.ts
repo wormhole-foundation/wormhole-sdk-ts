@@ -18,88 +18,23 @@ import {
   PlatformName,
 } from '@wormhole-foundation/sdk-base';
 import { TokenTransferTransaction } from '../../src/';
-import { MockPlatform, MockRpc } from './mockPlatform';
+import { MockRpc } from './mockPlatform';
 import { MockTokenBridge } from './mockTokenBridge';
 
-export class MockChain implements ChainContext {
+export class MockChain extends ChainContext<'Evm'> {
   readonly chain: ChainName;
-  readonly network: Network;
-  readonly platform: MockPlatform;
+  readonly platform: Platform<'Evm'>;
 
   // Cached objects
-  private rpc?: RpcConnection;
   private tokenBridge?: MockTokenBridge;
 
-  constructor(platform: Platform, chain: ChainName) {
-    this.chain = chain;
-    this.network = platform.network!;
+  constructor(platform: Platform<'Evm'>, chain: ChainName) {
+    super(platform, chain);
     this.platform = platform;
-  }
-
-  getAutomaticCircleBridge(): Promise<AutomaticCircleBridge<PlatformName>> {
-    throw new Error('Not implemented');
   }
 
   getRpc(): MockRpc {
     this.rpc = this.rpc ? this.rpc : this.platform.getRpc(this.chain);
-    return this.rpc;
-  }
-
-  async getTokenBridge(): Promise<TokenBridge<'Evm'>> {
-    this.tokenBridge = this.tokenBridge
-      ? this.tokenBridge
-      : await this.platform.getTokenBridge(this.getRpc());
-    return this.tokenBridge;
-  }
-
-  async getAutomaticTokenBridge(): Promise<AutomaticTokenBridge<PlatformName>> {
-    throw new Error('Method not implemented.');
-  }
-  async getCircleBridge(): Promise<CircleBridge<PlatformName>> {
-    throw new Error('Method not implemented.');
-  }
-  async getCircleRelayer(): Promise<AutomaticCircleBridge<PlatformName>> {
-    throw new Error('Method not implemented.');
-  }
-
-  async sendWait(stxns: SignedTxn[]): Promise<TxHash[]> {
-    const rpc = this.getRpc();
-    const txhashes: TxHash[] = [];
-
-    // TODO: concurrent
-    for (const stxn of stxns) {
-      const txRes = await rpc!.broadcastTransaction(stxn);
-      const txReceipt = await txRes.wait();
-      // TODO: throw error?
-      if (txReceipt === null) continue;
-
-      txhashes.push(txReceipt.hash);
-    }
-    return txhashes;
-  }
-
-  async getForeignAsset(tokenId: TokenId): Promise<UniversalAddress | null> {
-    return this.platform.getForeignAsset(this.chain, this.getRpc(), tokenId);
-  }
-  async getTokenDecimals(tokenAddr: UniversalAddress): Promise<bigint> {
-    return this.platform.getTokenDecimals(this.getRpc(), tokenAddr);
-  }
-  async getNativeBalance(walletAddr: string): Promise<bigint> {
-    return this.platform.getNativeBalance(this.getRpc(), walletAddr);
-  }
-  async getTokenBalance(
-    walletAddr: string,
-    tokenId: TokenId,
-  ): Promise<bigint | null> {
-    return this.platform.getTokenBalance(
-      this.chain,
-      this.getRpc(),
-      walletAddr,
-      tokenId,
-    );
-  }
-
-  async parseTransaction(txid: string): Promise<WormholeMessageId[]> {
-    return [];
+    return this.rpc!;
   }
 }

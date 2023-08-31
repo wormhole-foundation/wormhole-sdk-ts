@@ -2,7 +2,6 @@ import {
   toCircleChainName,
   ChainName,
   PlatformName,
-  contracts,
 } from '@wormhole-foundation/sdk-base';
 import {
   NativeAddress,
@@ -28,7 +27,6 @@ import {
   AttestationId,
 } from '../wormholeTransfer';
 import { Wormhole } from '../wormhole';
-import { ethers } from 'ethers';
 
 export class CCTPTransfer implements WormholeTransfer {
   private readonly wh: Wormhole;
