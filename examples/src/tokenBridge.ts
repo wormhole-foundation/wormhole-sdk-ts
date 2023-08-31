@@ -23,10 +23,11 @@ import { TransferStuff, getStuff, waitLog } from "./helpers";
   const source = await getStuff(sendChain);
   const destination = await getStuff(rcvChain);
 
-  // Choose your adventure
-  await manualTokenTransfer(wh, "native", 100_000_000n, source, destination);
-  // await automaticTokenTransfer(wh, "native", 100_000_000n, source, destination);
-  // await automaticTokenTransferWithGasDropoff(
+  // Manual Token Bridge Transfer
+  await tokenTransfer(wh, "native", 100_000_000n, source, destination, false);
+
+  // Automatic Token Bridge Transfer
+  // await tokenTransfer(
   //   wh,
   //   "native",
   //   100_000_000n,
