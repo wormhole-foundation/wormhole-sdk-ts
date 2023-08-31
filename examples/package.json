@@ -34,8 +34,8 @@
   },
   "sideEffects": false,
   "scripts": {
-    "tokenBridge": "npx tsx src/tokenBridge.ts",
-    "cctp": "npx tsx src/cctp.ts",
+    "tb": "tsx src/tokenBridge.ts",
+    "cctp": "tsx src/cctp.ts",
 
     "build:cjs": "tsc -p ./tsconfig.cjs.json",
     "build:esm": "tsc -p ./tsconfig.esm.json",

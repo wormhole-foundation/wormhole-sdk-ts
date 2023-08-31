@@ -311,6 +311,9 @@ export class TokenTransfer implements WormholeTransfer {
     if (!this.vaas) throw new Error('No VAA details available');
 
     const toChain = this.wh.getChain(this.transfer.to.chain);
+    const toAddress = toChain.platform
+      .parseAddress(signer.address())
+      .toUniversalAddress();
 
     let unsigned: UnsignedTransaction[] = [];
     const txHashes: TxHash[] = [];
@@ -327,10 +330,10 @@ export class TokenTransfer implements WormholeTransfer {
           );
 
         const tb = await toChain.getAutomaticTokenBridge();
-        xfer = tb.redeem(this.transfer.to.address, vaa);
+        xfer = tb.redeem(toAddress, vaa);
       } else {
         const tb = await toChain.getTokenBridge();
-        xfer = tb.redeem(this.transfer.to.address, vaa);
+        xfer = tb.redeem(toAddress, vaa);
       }
 
       // TODO: better error

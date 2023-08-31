@@ -11,6 +11,7 @@ export interface TokenBridge<P extends PlatformName> {
   getOriginalAsset(token: UniversalOrNative<P>): Promise<TokenId>;
   hasWrappedAsset(original: ChainAddress): Promise<boolean>;
   getWrappedAsset(original: ChainAddress): Promise<NativeAddress<P>>;
+  getWrappedNative(): Promise<TokenId>;
   isTransferCompleted(
     vaa: VAA<"Transfer"> | VAA<"TransferWithPayload">
   ): Promise<boolean>;

@@ -1,8 +1,11 @@
-import { Wormhole } from "@wormhole-foundation/connect-sdk";
+import { TokenTransfer, Wormhole } from "@wormhole-foundation/connect-sdk";
 // TODO: should we re-export the things they need? should we rename the underlying packages?
 import { TokenId } from "@wormhole-foundation/sdk-definitions";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
-import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
+import {
+  SolanaChain,
+  SolanaPlatform,
+} from "@wormhole-foundation/connect-sdk-solana";
 //
 import { TransferStuff, getStuff, waitLog } from "./helpers";
 
@@ -21,7 +24,13 @@ import { TransferStuff, getStuff, waitLog } from "./helpers";
   const destination = await getStuff(rcvChain);
 
   // Manual Token Bridge Transfer
-  await tokenTransfer(wh, "native", 10_000_000n, source, destination, false);
+  await tokenTransfer(wh, "native", 100_000_000n, source, destination, false);
+
+  const xfer = await TokenTransfer.from(wh, {
+    chain: "Avalanche",
+    txid: "0xf7a56824565d446eda8d37649d2bf78e099a245c4d420c89eae552176ec96700",
+  });
+  console.log(await xfer.completeTransfer(destination.signer));
 
   // Automatic Token Bridge Transfer
   // await tokenTransfer(
@@ -54,12 +63,25 @@ async function tokenTransfer(
   automatic: boolean,
   nativeGas?: bigint
 ) {
-  // Create a TokenTransfer object that we can step through the process.
-  // It holds a `state` field that is used to inform where in the process we are
+  // Bit of hackery until solana contracts support being
+  // sent a VAA with the primary address
+  if (dst.chain.chain === "Solana") {
+    let t: TokenId;
+    if (token === "native") {
+      const tb = await src.chain.getTokenBridge();
+      t = await tb.getWrappedNative();
+    } else {
+      t = token;
+    }
 
-  if (dst.address.chain === "Solana") {
-    //getAssociatedTokenAddress();
-    //dst.chain.platform.get;
+    dst.address = {
+      chain: dst.address.chain,
+      address: await (<SolanaChain>dst.chain).getTokenAccount(
+        t,
+        // @ts-ignore
+        dst.address.address
+      ),
+    };
   }
 
   const xfer = await wh.tokenTransfer(
@@ -76,7 +98,7 @@ async function tokenTransfer(
   // 1) Submit the transactions to the source chain, passing a signer to sign any txns
   console.log("Starting transfer");
   const srcTxids = await xfer.initiateTransfer(src.signer);
-  console.log(`Started transfer: ${srcTxids}`);
+  console.log(`Started transfer: `, srcTxids);
 
   // If automatic, we're done
   if (automatic) return waitLog(xfer);
@@ -84,10 +106,10 @@ async function tokenTransfer(
   // 2) wait for the VAA to be signed and ready (not required for auto transfer)
   console.log("Getting Attestation");
   const attestIds = await xfer.fetchAttestation();
-  console.log(`Got Attestation: ${attestIds}`);
+  console.log(`Got Attestation: `, attestIds);
 
   // 3) redeem the VAA on the dest chain
   console.log("Completing Transfer");
   const destTxids = await xfer.completeTransfer(dst.signer);
-  console.log(`Completed Transfer: ${destTxids}`);
+  console.log(`Completed Transfer: `, destTxids);
 }

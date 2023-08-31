@@ -32,7 +32,7 @@ export async function getStuff(
   let signer: Signer;
   switch (chain.platform.platform) {
     case "Solana":
-      signer = await getSolSigner(chain.chain);
+      signer = getSolSigner(chain.chain);
       break;
     default:
       signer = await getEvmSigner(
@@ -51,7 +51,6 @@ export async function getStuff(
 
 export async function waitLog(xfer: WormholeTransfer): Promise<void> {
   console.log("Checking for complete status");
-  console.log(xfer);
   while ((await xfer.getTransferState()) < TransferState.Completed) {
     console.log("Not yet...");
     await new Promise((f) => setTimeout(f, 5000));
@@ -91,14 +90,15 @@ class SolSigner implements Signer {
     for (const txn of tx) {
       const { description, transaction } = txn;
 
-      const t = transaction as Transaction;
-
-      console.log(t.instructions);
-      for (const ix of t.instructions) {
-        console.log(ix.data);
-        console.log(ix.keys);
-        console.log(ix.programId.toBase58());
-      }
+      // const t = transaction as Transaction;
+      // console.log(t.instructions);
+      // for (const ix of t.instructions) {
+      //   console.log("Program: ", ix.programId.toBase58());
+      //   console.log(ix.data);
+      //   ix.keys.forEach((k) => {
+      //     console.log("Key: ", k.pubkey.toBase58());
+      //   });
+      // }
 
       console.log(`Signing: ${description} for ${this.address()}`);
 

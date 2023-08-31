@@ -357,6 +357,14 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     return await Promise.all(parsedLogs);
   }
 
+  async getWrappedNative(): Promise<TokenId> {
+    const address = await this.tokenBridge.WETH();
+    return {
+      chain: this.chain,
+      address: new EvmAddress(address).toUniversalAddress(),
+    };
+  }
+
   private createUnsignedTx(
     txReq: TransactionRequest,
     description: string,

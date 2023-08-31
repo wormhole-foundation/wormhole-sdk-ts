@@ -116,16 +116,18 @@ export class SolanaPlatform implements Platform<'Solana'> {
   async sendWait(rpc: Connection, stxns: SignedTxn[]): Promise<TxHash[]> {
     const txhashes: TxHash[] = [];
 
-    // TODO: concurrent
+    // TODO: concurrent?
+    let lastTxHash: TxHash;
     for (const stxn of stxns) {
       const txHash = await rpc.sendRawTransaction(stxn);
       // TODO: throw error?
       if (!txHash) continue;
-
-      // TODO: allow passing this in? this method is also deprecated...
-      await rpc.confirmTransaction(txHash, 'finalized');
+      lastTxHash = txHash;
       txhashes.push(txHash);
     }
+
+    // TODO: allow passing commitment level in? this method is also deprecated...
+    await rpc.confirmTransaction(lastTxHash!, 'finalized');
 
     return txhashes;
   }
