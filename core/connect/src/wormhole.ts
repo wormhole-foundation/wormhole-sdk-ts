@@ -19,6 +19,8 @@ import {
   toNative,
   PlatformCtr,
   Contracts,
+  TxHash,
+  WormholeMessageId,
 } from '@wormhole-foundation/sdk-definitions';
 import axios, { AxiosResponse } from 'axios';
 
@@ -163,8 +165,7 @@ export class Wormhole {
    * @throws Errors if context is not found
    */
   getChain(chain: ChainName): ChainContext<PlatformName> {
-    const platform = this.getPlatform(chain);
-    return platform.getChain(chain);
+    return this.getPlatform(chain).getChain(chain);
   }
 
   /**
@@ -208,9 +209,8 @@ export class Wormhole {
    * @returns The number of decimals
    */
   async getTokenDecimals(chain: ChainName, token: TokenId): Promise<bigint> {
-    const context = this.getChain(chain);
     const repr = await this.mustGetWrappedAsset(chain, token);
-    return await context.getTokenDecimals(repr);
+    return await this.getChain(chain).getTokenDecimals(repr);
   }
 
   /**
@@ -224,8 +224,7 @@ export class Wormhole {
     chain: ChainName,
     walletAddress: string,
   ): Promise<bigint> {
-    const context = this.getChain(chain);
-    return await context.getNativeBalance(walletAddress);
+    return await this.getChain(chain).getNativeBalance(walletAddress);
   }
 
   /**
@@ -238,11 +237,10 @@ export class Wormhole {
    */
   async getTokenBalance(
     walletAddress: string,
-    tokenId: TokenId,
+    token: TokenId,
     chain: ChainName,
   ): Promise<bigint | null> {
-    const context = this.getChain(chain);
-    return await context.getTokenBalance(walletAddress, tokenId);
+    return await this.getChain(chain).getTokenBalance(walletAddress, token);
   }
 
   /**
@@ -251,6 +249,7 @@ export class Wormhole {
    * @returns boolean representing if automatic relay is available
    */
   supportsSendWithRelay(chain: ChainName): boolean {
+    // TODO
     return !!(
       this.getContracts(chain)?.relayer &&
       'startTransferWithRelay' in this.getPlatform(chain)
@@ -369,6 +368,30 @@ export class Wormhole {
     return data as TransactionStatus;
   }
 
+  /**
+   * Parse an address to a universal address
+   *
+   * @param address The native address
+   * @returns The address in the universal format
+   */
+  parseAddress(chain: ChainName, address: string): UniversalAddress {
+    return this.getChain(chain).parseAddress(address);
+  }
+
+  /**
+   * Parses all relevant information from a transaction given the sending tx hash and sending chain
+   *
+   * @param tx The sending transaction hash
+   * @param chain The sending chain name or id
+   * @returns The parsed data
+   */
+  async parseMessageFromTx(
+    chain: ChainName,
+    txid: TxHash,
+  ): Promise<WormholeMessageId[]> {
+    return await this.getChain(chain).parseTransaction(txid);
+  }
+
   //  /**
   //   * Checks if a transfer has been completed or not
   //   *
@@ -395,26 +418,4 @@ export class Wormhole {
   //    return context.formatAddress(address);
   //  }
   //
-  //  /**
-  //   * Parse an address from a 32-byte universal address to a cannonical address
-  //   *
-  //   * @param address The 32-byte wormhole address
-  //   * @returns The address in the blockchain specific format
-  //   */
-  //  parseAddress(address: any, chain: Chain): string {
-  //    const context = this.getContext(chain);
-  //    return context.parseAddress(address);
-  //  }
-  //
-  //  /**
-  //   * Parses all relevant information from a transaction given the sending tx hash and sending chain
-  //   *
-  //   * @param tx The sending transaction hash
-  //   * @param chain The sending chain name or id
-  //   * @returns The parsed data
-  //   */
-  //  async parseMessageFromTx(tx: string, chain: Chain): Promise<any[]> {
-  //    const context = this.getContext(chain);
-  //    return await context.parseMessageFromTx(tx, chain);
-  //  }
 }

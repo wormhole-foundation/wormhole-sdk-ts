@@ -9,7 +9,7 @@
   },
   "homepage": "https://github.com/wormhole-foundation/connect-sdk#readme",
   "directories": {
-    "test": "tests"
+    "test": "__tests__"
   },
   "license": "Apache-2.0",
   "version": "0.1.0-beta.1",

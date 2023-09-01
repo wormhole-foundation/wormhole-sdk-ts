@@ -36,7 +36,10 @@ import {
 } from '@wormhole-foundation/sdk-definitions';
 
 import { Wormhole as WormholeCore } from '../utils/types/wormhole';
-
+import {
+  createPostVaaInstruction,
+  createVerifySignaturesInstructions,
+} from '../utils/wormhole';
 import { TokenBridge as TokenBridgeContract } from '../utils/types/tokenBridge';
 import {
   createApproveAuthoritySignerInstruction,
@@ -53,11 +56,6 @@ import {
 import { SolanaContracts } from '../contracts';
 import { SolanaUnsignedTransaction } from '../unsignedTransaction';
 import { SolanaChainName, UniversalOrSolana } from '../types';
-import {
-  createPostVaaInstruction,
-  createVerifySignaturesInstructions,
-} from '../utils/wormhole';
-import { getAccountData } from '../utils';
 
 export class SolanaTokenBridge implements TokenBridge<'Solana'> {
   readonly chainId: ChainId;
@@ -460,6 +458,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     const ataAddress = new PublicKey(vaa.payload.to.address.toUint8Array());
     const tokenMint = await this.getWrappedAsset(vaa.payload.token);
 
+    // If the ata doesn't exist yet, create it
     const acctInfo = await this.connection.getAccountInfo(ataAddress);
     if (acctInfo === null) {
       const ataCreationTx = new Transaction().add(
@@ -475,6 +474,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
       yield this.createUnsignedTx(ataCreationTx, 'Redeem.CreateATA');
     }
 
+    // Get transactions to verify sigs and post the VAA
     const { unsignedTransactions: postVaaTxns, signers: postVaaSigners } =
       await this.postVaa(sender, vaa);
 
@@ -482,11 +482,19 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     // to send after verify sig txns
     const postVaaTx = postVaaTxns.pop()!;
 
-    for (const verifySigTx of postVaaTxns) {
+    for (let i = 0; i < postVaaTxns.length; i++) {
+      const verifySigTx = postVaaTxns[i];
       verifySigTx.recentBlockhash = blockhash;
       verifySigTx.feePayer = senderAddress;
       verifySigTx.partialSign(postVaaSigners[0]);
-      yield this.createUnsignedTx(verifySigTx, 'Redeem.VerifySignature');
+      yield this.createUnsignedTx(
+        verifySigTx,
+        'Redeem.VerifySignature',
+        // all stackable except the last one
+        // so we flush the buffer of sig verifies
+        // and finalize prior to trying to Post the VAA
+        i < postVaaTxns.length - 1,
+      );
     }
 
     postVaaTx.recentBlockhash = blockhash;
