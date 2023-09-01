@@ -43,7 +43,7 @@ export async function getStuff(
 
   const address: ChainAddress = {
     chain: signer.chain(),
-    address: chain.platform.parseAddress(signer.address()),
+    address: chain.parseAddress(signer.address()),
   };
 
   return { chain, signer, address };

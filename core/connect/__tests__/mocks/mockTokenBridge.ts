@@ -1,26 +1,26 @@
-import { PlatformName } from '@wormhole-foundation/sdk-base';
 import {
   ChainAddress,
   NativeAddress,
   TokenBridge,
+  TokenId,
   UniversalOrNative,
   UnsignedTransaction,
   VAA,
 } from '@wormhole-foundation/sdk-definitions';
 
-export class MockTokenBridge implements TokenBridge<'Evm'> {
-  isWrappedAsset(token: UniversalOrNative<'Evm'>): Promise<boolean> {
+type P = 'Evm';
+
+export class MockTokenBridge implements TokenBridge<P> {
+  isWrappedAsset(token: UniversalOrNative<P>): Promise<boolean> {
     throw new Error('Method not implemented.');
   }
-  getOriginalAsset(token: UniversalOrNative<'Evm'>): Promise<ChainAddress> {
+  getOriginalAsset(token: UniversalOrNative<P>): Promise<ChainAddress> {
     throw new Error('Method not implemented.');
   }
   hasWrappedAsset(original: ChainAddress): Promise<boolean> {
     throw new Error('Method not implemented.');
   }
-  async getWrappedAsset(
-    original: ChainAddress,
-  ): Promise<NativeAddress<PlatformName>> {
+  async getWrappedAsset(original: ChainAddress): Promise<NativeAddress<P>> {
     throw new Error('Method not implemented.');
   }
   isTransferCompleted(
@@ -30,12 +30,12 @@ export class MockTokenBridge implements TokenBridge<'Evm'> {
   }
   createAttestation(
     address: UniversalOrNative<'Evm'>,
-  ): AsyncGenerator<UnsignedTransaction, any, unknown> {
+  ): AsyncGenerator<UnsignedTransaction> {
     throw new Error('Method not implemented.');
   }
   submitAttestation(
     vaa: VAA<'AttestMeta'>,
-  ): AsyncGenerator<UnsignedTransaction, any, unknown> {
+  ): AsyncGenerator<UnsignedTransaction> {
     throw new Error('Method not implemented.');
   }
   transfer(
@@ -44,14 +44,17 @@ export class MockTokenBridge implements TokenBridge<'Evm'> {
     token: 'native' | UniversalOrNative<'Evm'>,
     amount: bigint,
     payload?: Uint8Array | undefined,
-  ): AsyncGenerator<UnsignedTransaction, any, unknown> {
+  ): AsyncGenerator<UnsignedTransaction> {
     throw new Error('Method not implemented.');
   }
   redeem(
     sender: UniversalOrNative<'Evm'>,
     vaa: VAA<'Transfer'> | VAA<'TransferWithPayload'>,
     unwrapNative?: boolean | undefined,
-  ): AsyncGenerator<UnsignedTransaction, any, unknown> {
+  ): AsyncGenerator<UnsignedTransaction> {
+    throw new Error('Method not implemented.');
+  }
+  getWrappedNative(): Promise<TokenId> {
     throw new Error('Method not implemented.');
   }
 }

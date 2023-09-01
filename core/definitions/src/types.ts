@@ -9,7 +9,6 @@ import { Contracts } from "./contracts";
 export type TxHash = string;
 export type SequenceId = bigint;
 
-// TODO: Provide more details, Genericize?
 export type SignedTxn = any;
 
 // Fully qualified Token Id

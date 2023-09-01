@@ -11,7 +11,6 @@ import {
   VAA,
   serialize,
   TokenId,
-  RpcConnection,
 } from '@wormhole-foundation/sdk-definitions';
 
 import { Provider, TransactionRequest } from 'ethers';

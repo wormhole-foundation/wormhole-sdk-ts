@@ -13,7 +13,7 @@ import {
   deriveGuardianSetKey,
   derivePostedVaaKey,
 } from '../accounts';
-import { VAA } from '@wormhole-foundation/sdk-definitions';
+import { VAA, serializePayload } from '@wormhole-foundation/sdk-definitions';
 import { toChainId } from '@wormhole-foundation/sdk-base';
 import BN from 'bn.js';
 
@@ -35,7 +35,7 @@ export function createPostVaaInstruction(
   connection: Connection,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: VAA,
+  vaa: VAA<any>,
   signatureSet: PublicKeyInitData,
 ): TransactionInstruction {
   const methods = createReadOnlyWormholeProgramInterface(
@@ -50,7 +50,7 @@ export function createPostVaaInstruction(
     [...vaa.emitterAddress.toUint8Array()],
     new BN(vaa.sequence.toString()),
     vaa.consistencyLevel,
-    Buffer.from(vaa.payload),
+    Buffer.from(serializePayload(vaa.payloadLiteral, vaa.payload)),
   );
 
   // @ts-ignore

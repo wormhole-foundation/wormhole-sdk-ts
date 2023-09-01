@@ -1,25 +1,23 @@
-import { Connection, PublicKey } from '@solana/web3.js';
+import { PublicKey } from '@solana/web3.js';
 import { ChainName } from '@wormhole-foundation/sdk-base';
 import {
   ChainContext,
+  RpcConnection,
   TokenId,
   UniversalAddress,
 } from '@wormhole-foundation/sdk-definitions';
 import { SolanaPlatform } from './platform';
-import { UniversalOrSolana } from './types';
 import { getAssociatedTokenAddress } from '@solana/spl-token';
-import { SolanaAddress } from './address';
 
 export class SolanaChain extends ChainContext<'Solana'> {
   // Cached objects
-  private connection?: Connection;
+  private connection?: RpcConnection<'Solana'>;
 
   constructor(platform: SolanaPlatform, chain: ChainName) {
     super(platform, chain);
   }
 
-  getRpc(): Connection {
-    // @ts-ignore
+  getRpc(): RpcConnection<'Solana'> {
     this.connection = this.connection
       ? this.connection
       : this.platform.getRpc(this.chain);
@@ -30,12 +28,14 @@ export class SolanaChain extends ChainContext<'Solana'> {
     token: TokenId,
     address: UniversalAddress,
   ): Promise<UniversalAddress> {
-    const nativeAddress = await this.getForeignAsset(token);
+    const wrapped = await this.getWrappedAsset(token);
+    if (!wrapped)
+      throw new Error(`No wrapped token on ${this.chain} for: ${token}`);
 
-    const mint = new PublicKey(nativeAddress!.toUint8Array());
-    const owner = new PublicKey(address.toUint8Array());
+    const mint = new PublicKey(wrapped.address.unwrap());
+    const owner = new PublicKey(address.unwrap());
 
     const ata = await getAssociatedTokenAddress(mint, owner);
-    return new SolanaAddress(ata).toUniversalAddress();
+    return this.parseAddress(ata.toString());
   }
 }

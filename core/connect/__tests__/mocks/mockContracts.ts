@@ -1,22 +1,13 @@
-import {
-  ChainName,
-  ChainId,
-  contracts,
-  platformToChains,
-  toChainName,
-} from '@wormhole-foundation/sdk-base';
-import { Wormhole } from '../../src/wormhole';
+import { ChainName, ChainId, toChainName } from '@wormhole-foundation/sdk-base';
+import { ChainsConfig, Contracts } from '@wormhole-foundation/sdk-definitions';
 
 export class MockContracts {
-  protected _contracts: Map<ChainName, any>;
-  readonly wormhole: Wormhole;
+  protected _contracts: Map<ChainName, Contracts>;
 
-  constructor(wormholeBase: Wormhole) {
-    this.wormhole = wormholeBase;
+  constructor(conf: ChainsConfig) {
     this._contracts = new Map();
-    const chains = platformToChains('Cosmwasm');
-    chains.forEach((c) => {
-      this._contracts.set(c, contracts['Testnet'][c]);
+    Object.entries(conf).forEach(([c, cfg]) => {
+      this._contracts.set(c as ChainName, cfg.contracts);
     });
   }
 

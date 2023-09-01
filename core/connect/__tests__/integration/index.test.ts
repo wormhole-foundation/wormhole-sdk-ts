@@ -41,10 +41,8 @@ describe('registers context classes correctly', () => {
   //  it('contexts can access other contexts', async () => {
   //    const evmContext = wormhole.getContext('Ethereum');
   //    const solanaContext = wormhole.getContext('Solana');
-  //    // @ts-ignore
   //    const getSolanaFromEvm = evmContext.wormhole.getContext('Solana');
   //    expect(getSolanaFromEvm).toBeTruthy();
-  //    // @ts-ignore
   //    const getEvmFromSolana = solanaContext.wormhole.getContext('Ethereum');
   //    expect(getEvmFromSolana).toBeTruthy();
   //  });

@@ -2,19 +2,17 @@ import { Network } from "./networks";
 import { Chain, ChainName } from "./chains";
 import { zip, constMap, RoArray } from "../utils";
 
+const circleAPIs = [
+  ["Mainnet", "https://iris-api.circle.com/v1/attestations"],
+  ["Testnet", "https://iris-api-sandbox.circle.com/v1/attestations"],
+] as const satisfies RoArray<readonly [Network, string]>;
+
 // https://developers.circle.com/stablecoin/docs/cctp-technical-reference#domain-list
 const circleDomains = [
   ["Ethereum", 0],
   ["Avalanche", 1],
   ["Arbitrum", 3],
 ] as const satisfies RoArray<readonly [ChainName, number]>;
-
-export const [circleChains, circleChainIds] = zip(circleDomains);
-export type CircleChainName = (typeof circleChains)[number];
-export type CircleChainId = (typeof circleChainIds)[number];
-
-export const circleChainId = constMap(circleDomains);
-export const circleChainIdToChainName = constMap(circleDomains, [1, 0]);
 
 const usdcContracts = [
   [
@@ -37,20 +35,30 @@ const usdcContracts = [
   readonly [Network, RoArray<readonly [ChainName, string]>]
 >;
 
-export const usdcContract = constMap(usdcContracts);
+export const [circleChains, circleChainIds] = zip(circleDomains);
+export type CircleChainName = (typeof circleChains)[number];
+export type CircleChainId = (typeof circleChainIds)[number];
 
-const circleAPIs = [
-  ["Mainnet", "https://iris-api.circle.com/v1/attestations"],
-  ["Testnet", "https://iris-api-sandbox.circle.com/v1/attestations"],
-] as const satisfies RoArray<readonly [Network, string]>;
+export const [circleNetworks, _] = zip(usdcContracts);
+export type CircleNetwork = (typeof circleNetworks)[number];
 
+export const circleChainId = constMap(circleDomains);
+export const circleChainIdToChainName = constMap(circleDomains, [1, 0]);
 export const circleAPI = constMap(circleAPIs);
+
+export const usdcContract = constMap(usdcContracts);
 
 export const isCircleChain = (
   chain: string | ChainName | CircleChainName
 ): chain is CircleChainName => circleChainId.has(chain);
+
 export const isCircleChainId = (chainId: number): chainId is CircleChainId =>
   circleChainIdToChainName.has(chainId);
+
+export const isCircleSupported = (
+  network: Network,
+  chain: string | ChainName | CircleChainName
+): network is CircleNetwork => usdcContract.has(network, chain);
 
 export function assertCircleChainId(
   chainId: number

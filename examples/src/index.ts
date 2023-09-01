@@ -9,5 +9,5 @@ import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 
   // Grab a ChainContext
   const chain = wh.getChain("Solana");
-  // ...
+  //
 })();

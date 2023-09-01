@@ -13,10 +13,14 @@ export class Signature extends SignatureOptionalRecovery {
     super(r, s, recovery);
   }
 
-  toBuffer(): Buffer {
+  toUint8Array(): Uint8Array {
     const buff = new Uint8Array(65);
     buff.set(this.toCompactRawBytes());
     buff.set([this.recovery], 64);
-    return Buffer.from(buff);
+    return buff;
+  }
+
+  toBuffer(): Buffer {
+    return Buffer.from(this.toUint8Array());
   }
 }

@@ -17,8 +17,6 @@ describe('Initialize Objects', () => {
 
   let tokenBridge: TokenBridge<'Evm'>;
   test('Get Ethereum Token Bridge', async () => {
-    // TODO: We already asked for the `Ethereum` context, seems weird to
-    // re-specify to get rpc/tokenbridge/etc...
     tokenBridge = await ethCtx.getTokenBridge();
     expect(tokenBridge).toBeTruthy();
   });

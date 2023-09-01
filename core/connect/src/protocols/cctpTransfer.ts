@@ -106,11 +106,7 @@ export class CCTPTransfer implements WormholeTransfer {
 
     let automatic = false;
     if (wormholeRelayer) {
-      const relayerAddress = toNative(
-        chain,
-        wormholeRelayer,
-        // @ts-ignore
-      ).toUniversalAddress();
+      const relayerAddress = wh.getChain(chain).parseAddress(wormholeRelayer);
 
       automatic =
         vaa.payloadLiteral === 'CircleTransferRelay' &&
@@ -324,7 +320,6 @@ export class CCTPTransfer implements WormholeTransfer {
     if (this.state < TransferState.Attested)
       throw new Error('Invalid state transition in `finish`');
 
-    // TODO: fetch it for 'em? We should _not_ be Ready if we dont have these
     if (this.transfer.automatic) {
       if (!this.vaas) throw new Error('No VAA details available');
 

@@ -29,7 +29,6 @@ const platformAndChainsEntries = [
   ["Solana", ["Solana", "Pythnet"]],
   ["Cosmwasm", ["Terra", "Terra2", "Injective", "Xpla", "Sei"]],
   ["Btc", ["Btc"]],
-  //TODO don't know if any of the following chains actually share a platform with any other chain
   ["Algorand", ["Algorand"]],
   ["Sui", ["Sui"]],
   ["Aptos", ["Aptos"]],
@@ -127,7 +126,3 @@ export const solGenesisHashToNetworkChainPair = constMap(
 export const solNetworkChainToGenesisHash = constMap(
   networkChainSolanaGenesisHashes
 );
-
-//TODO more platform specific functions, e.g.:
-//  Solana genesis block <-> (Chain, Network)
-//  similar mappings for other platforms

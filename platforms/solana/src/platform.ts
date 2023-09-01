@@ -5,7 +5,6 @@ import {
   TokenId,
   TokenBridge,
   AutomaticTokenBridge,
-  RpcConnection,
   CircleBridge,
   AutomaticCircleBridge,
   SignedTxn,
@@ -13,11 +12,11 @@ import {
   WormholeMessageId,
   ChainsConfig,
   ChainContext,
+  toNative,
 } from '@wormhole-foundation/sdk-definitions';
 
 import { SolanaContracts } from './contracts';
 import { UniversalAddress } from '@wormhole-foundation/sdk-definitions';
-import { SolanaAddress } from './address';
 import { SolanaChain } from './chain';
 import { SolanaTokenBridge } from './protocols/tokenBridge';
 
@@ -47,44 +46,27 @@ export class SolanaPlatform implements Platform<'Solana'> {
     return new SolanaChain(this, chain);
   }
 
-  async getTokenBridge(rpc: Connection): Promise<TokenBridge<'Solana'>> {
-    //@ts-ignore
-    return SolanaTokenBridge.fromProvider(rpc, this.contracts);
-  }
-
-  async getAutomaticTokenBridge(
-    rpc: RpcConnection,
-  ): Promise<AutomaticTokenBridge<'Solana'>> {
-    throw new Error('Not implemented');
-  }
-
-  async getCircleBridge(rpc: RpcConnection): Promise<CircleBridge<'Solana'>> {
-    throw new Error('Not implemented');
-  }
-
-  async getAutomaticCircleBridge(
-    rpc: RpcConnection,
-  ): Promise<AutomaticCircleBridge<'Solana'>> {
-    throw new Error('Not implemented');
-  }
-
-  async getForeignAsset(
+  async getWrappedAsset(
     chain: ChainName,
     rpc: Connection,
     token: TokenId,
-  ): Promise<UniversalAddress | null> {
-    if (token.chain === chain) return token.address.toUniversalAddress();
+  ): Promise<TokenId | null> {
+    if (token.chain === chain) return token;
 
-    const tb = await this.getTokenBridge(rpc);
-    const asset = await tb.getWrappedAsset(token);
-    return asset.toUniversalAddress();
+    try {
+      const tb = await this.getTokenBridge(rpc);
+      const asset = await tb.getWrappedAsset(token);
+      return { chain, address: asset.toUniversalAddress() };
+    } catch (e) {
+      console.error(e);
+    }
+    return null;
   }
 
-  async getTokenDecimals(
-    rpc: Connection,
-    tokenAddr: UniversalAddress,
-  ): Promise<bigint> {
-    let mint = await rpc.getParsedAccountInfo(new PublicKey(tokenAddr));
+  async getTokenDecimals(rpc: Connection, token: TokenId): Promise<bigint> {
+    let mint = await rpc.getParsedAccountInfo(
+      new PublicKey(token.address.unwrap()),
+    );
     if (!mint) throw new Error('could not fetch token details');
     const { decimals } = (mint as any).value.data.parsed.info;
     return decimals;
@@ -100,7 +82,7 @@ export class SolanaPlatform implements Platform<'Solana'> {
     walletAddress: string,
     tokenId: TokenId,
   ): Promise<bigint | null> {
-    const address = await this.getForeignAsset(chain, rpc, tokenId);
+    const address = await this.getWrappedAsset(chain, rpc, tokenId);
     if (!address) return null;
 
     const splToken = await rpc.getTokenAccountsByOwner(
@@ -131,9 +113,28 @@ export class SolanaPlatform implements Platform<'Solana'> {
 
     return txhashes;
   }
+  async getTokenBridge(rpc: Connection): Promise<TokenBridge<'Solana'>> {
+    return SolanaTokenBridge.fromProvider(rpc, this.contracts);
+  }
 
-  parseAddress(address: string): UniversalAddress {
-    return new UniversalAddress(new PublicKey(address).toBytes());
+  async getAutomaticTokenBridge(
+    rpc: Connection,
+  ): Promise<AutomaticTokenBridge<'Solana'>> {
+    throw new Error('Not implemented');
+  }
+
+  async getCircleBridge(rpc: Connection): Promise<CircleBridge<'Solana'>> {
+    throw new Error('Not implemented');
+  }
+
+  async getAutomaticCircleBridge(
+    rpc: Connection,
+  ): Promise<AutomaticCircleBridge<'Solana'>> {
+    throw new Error('Not implemented');
+  }
+
+  parseAddress(chain: ChainName, address: string): UniversalAddress {
+    return toNative(chain, address).toUniversalAddress();
   }
 
   async parseTransaction(
@@ -163,7 +164,8 @@ export class SolanaPlatform implements Platform<'Solana'> {
 
     // TODO: unsure about the single bridge instruction and the [2] index, will this always be the case?
     const [logmsg] = bridgeInstructions;
-    const emitter = new SolanaAddress(accounts[logmsg.accounts[2]]);
+    const emitterAcct = accounts[logmsg.accounts[2]];
+    const emitter = this.parseAddress(chain, emitterAcct.toString());
 
     const sequence = response.meta?.logMessages
       ?.filter((msg) => msg.startsWith(SOLANA_SEQ_LOG))?.[0]

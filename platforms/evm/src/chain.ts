@@ -3,6 +3,7 @@ import {
   ChainContext,
   ChainConfig,
   Platform,
+  RpcConnection,
 } from '@wormhole-foundation/sdk-definitions';
 import { ethers } from 'ethers';
 
@@ -12,7 +13,7 @@ export class EvmChain extends ChainContext<'Evm'> {
   readonly conf: ChainConfig;
 
   // Cached objects
-  private provider?: ethers.Provider;
+  private provider?: RpcConnection<'Evm'>;
 
   constructor(platform: Platform<'Evm'>, chain: ChainName) {
     super(platform, chain);
@@ -22,8 +23,7 @@ export class EvmChain extends ChainContext<'Evm'> {
     this.platform = platform;
   }
 
-  getRpc(): ethers.Provider {
-    // @ts-ignore
+  getRpc(): RpcConnection<'Evm'> {
     this.provider = this.provider
       ? this.provider
       : this.platform.getRpc(this.chain);
