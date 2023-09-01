@@ -7,7 +7,6 @@ import "../payloads/connect";
 
 // https://github.com/circlefin/evm-cctp-contracts
 
-// TODO: Genericize to support other platforms?
 export type CircleTransferDetails = {
   txid: TxHash;
   token: TokenId;
@@ -15,7 +14,6 @@ export type CircleTransferDetails = {
   amount: bigint;
   destination: {
     domain: CircleChainId;
-    // TODO: universal addy?
     recipient: string;
     tokenMessenger: string;
     caller: string;

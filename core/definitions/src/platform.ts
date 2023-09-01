@@ -22,7 +22,7 @@ export interface Platform<P extends PlatformName> {
   getWrappedAsset(
     chain: ChainName,
     rpc: RpcConnection<P>,
-    tokenId: TokenId
+    token: TokenId
   ): Promise<TokenId | null>;
   getTokenDecimals(rpc: RpcConnection<P>, token: TokenId): Promise<bigint>;
   getNativeBalance(rpc: RpcConnection<P>, walletAddr: string): Promise<bigint>;
@@ -54,5 +54,5 @@ export interface Platform<P extends PlatformName> {
     rpc: RpcConnection<P>,
     txid: TxHash
   ): Promise<WormholeMessageId[]>;
-  parseAddress(address: string): UniversalAddress;
+  parseAddress(chain: ChainName, address: string): UniversalAddress;
 }

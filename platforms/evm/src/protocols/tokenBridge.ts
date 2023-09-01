@@ -28,7 +28,6 @@ import {
 } from '../ethers-contracts';
 import { BridgeStructs } from '../ethers-contracts/Bridge';
 
-import { EvmAddress } from '../address';
 import { EvmUnsignedTransaction } from '../unsignedTransaction';
 import { EvmContracts } from '../contracts';
 import {
@@ -41,13 +40,11 @@ import {
   unusedNonce,
 } from '../types';
 
-//a word on casts here:
-//  Typescript only properly resolves types when EvmTokenBridge is fully instantiated. Until such a
-//    time, it does not realize that e.g. NativeAddress<C> equals EvmAddress and hence we have to
-//    to cast (from our POV) entirely unnecessarily.
 //Currently the code does not consider Wormhole msg fee (because it is and always has been 0).
+
 //TODO more checks to determine that all necessary preconditions are met (e.g. that balances are
 //  sufficient) for a given transaction to succeed
+
 export class EvmTokenBridge implements TokenBridge<'Evm'> {
   readonly tokenBridge: TokenBridgeContract;
   readonly chainId: bigint;
@@ -133,8 +130,6 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     //  more time here.
     return this.tokenBridge.isTransferCompleted(keccak256(vaa.hash));
   }
-
-  //TODO bestEffortFindRedemptionTx()
 
   async *createAttestation(
     token: UniversalOrEvm,
@@ -250,14 +245,14 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     const senderAddr = toEvmAddrString(sender);
     if (vaa.payload.token.chain !== this.chain)
       if (vaa.payloadLiteral === 'TransferWithPayload') {
-        const fromAddr = new EvmAddress(vaa.payload.from).unwrap();
+        const fromAddr = toNative(this.chain, vaa.payload.from).unwrap();
         if (fromAddr !== senderAddr)
           throw new Error(
             `VAA.from (${fromAddr}) does not match sender (${senderAddr})`,
           );
       }
     const wrappedNativeAddr = await this.tokenBridge.WETH();
-    const tokenAddr = new EvmAddress(vaa.payload.token.address).unwrap();
+    const tokenAddr = toNative(this.chain, vaa.payload.token.address).unwrap();
     if (tokenAddr === wrappedNativeAddr && unwrapNative) {
       const txReq =
         await this.tokenBridge.completeTransferAndUnwrapETH.populateTransaction(
@@ -291,7 +286,8 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     const coreAddress = await core.getAddress();
 
     const bridge = this.contracts.mustGetTokenBridge(this.chain, this.provider);
-    const bridgeAddress = new EvmAddress(
+    const bridgeAddress = toNative(
+      this.chain,
       await bridge.getAddress(),
     ).toUniversalAddress();
 
@@ -346,11 +342,11 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
           amount: parsedTransfer.amount,
           from: {
             chain: this.chain,
-            address: new EvmAddress(receipt.from).toUniversalAddress(),
+            address: toNative(this.chain, receipt.from),
           },
           to: {
             chain: toChain,
-            address: new UniversalAddress(parsedTransfer.to),
+            address: toNative(toChain, parsedTransfer.to),
           },
         },
         block: BigInt(receipt.blockNumber),
@@ -366,7 +362,7 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     const address = await this.tokenBridge.WETH();
     return {
       chain: this.chain,
-      address: new EvmAddress(address).toUniversalAddress(),
+      address: toNative(this.chain, address),
     };
   }
 

@@ -42,7 +42,7 @@ const chainsAndChainIdEntries = [
   ["Base", 30],
   ["Sei", 32],
   ["Wormchain", 3104],
-  //TODO holy cow, how ugly of a hack is that?! - a chainId that's exclusive to a testnet!
+  // holy cow, how ugly of a hack is that?! - a chainId that's exclusive to a testnet!
   ["Sepolia", 10002],
 ] as const;
 

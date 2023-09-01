@@ -30,60 +30,55 @@ export class MockRpc {
 type P = 'Evm';
 
 export class MockPlatform implements Platform<P> {
-  // TODO: same hack as evm
   static _platform: P = 'Evm';
   readonly platform = MockPlatform._platform;
   conf: ChainsConfig;
 
   constructor(conf: ChainsConfig) {
     this.conf = conf;
-    //this.contracts = new MockContracts(conf);
   }
 
   getAutomaticCircleBridge(
-    rpc: RpcConnection,
+    rpc: RpcConnection<P>,
   ): Promise<AutomaticCircleBridge<P>> {
     throw new Error('Method not implemented.');
   }
 
-  getForeignAsset(
+  getWrappedAsset(
     chain: ChainName,
-    rpc: RpcConnection,
-    tokenId: TokenId,
-  ): Promise<UniversalAddress | null> {
+    rpc: RpcConnection<P>,
+    token: TokenId,
+  ): Promise<TokenId | null> {
     throw new Error('Method not implemented.');
   }
-  getTokenDecimals(
-    rpc: RpcConnection,
-    tokenAddr: UniversalAddress,
-  ): Promise<bigint> {
+  getTokenDecimals(rpc: RpcConnection<P>, token: TokenId): Promise<bigint> {
     throw new Error('Method not implemented.');
   }
-  getNativeBalance(rpc: RpcConnection, walletAddr: string): Promise<bigint> {
+  getNativeBalance(rpc: RpcConnection<P>, walletAddr: string): Promise<bigint> {
     throw new Error('Method not implemented.');
   }
   getTokenBalance(
     chain: ChainName,
-    rpc: RpcConnection,
+    rpc: RpcConnection<P>,
     walletAddr: string,
-    tokenId: TokenId,
+    token: TokenId,
   ): Promise<bigint | null> {
     throw new Error('Method not implemented.');
   }
   getChain(chain: ChainName): ChainContext<'Evm'> {
     return new MockChain(this, chain);
   }
-  getRpc(chain: ChainName): RpcConnection {
+  getRpc(chain: ChainName): RpcConnection<P> {
     return new MockRpc(chain);
   }
   async parseTransaction(
     chain: ChainName,
-    rpc: RpcConnection,
+    rpc: RpcConnection<P>,
     txid: TxHash,
   ): Promise<WormholeMessageId[]> {
     throw new Error('Method not implemented');
   }
-  async sendWait(rpc: RpcConnection, stxns: any[]): Promise<TxHash[]> {
+  async sendWait(rpc: RpcConnection<P>, stxns: any[]): Promise<TxHash[]> {
     const txhashes: TxHash[] = [];
 
     // TODO: concurrent
@@ -98,19 +93,19 @@ export class MockPlatform implements Platform<P> {
     return txhashes;
   }
 
-  async getTokenBridge(rpc: RpcConnection): Promise<TokenBridge<P>> {
+  async getTokenBridge(rpc: RpcConnection<P>): Promise<TokenBridge<P>> {
     return new MockTokenBridge();
   }
   async getAutomaticTokenBridge(
-    rpc: RpcConnection,
+    rpc: RpcConnection<P>,
   ): Promise<AutomaticTokenBridge<P>> {
     throw new Error('Method not implemented.');
   }
-  async getCircleBridge(rpc: RpcConnection): Promise<CircleBridge<P>> {
+  async getCircleBridge(rpc: RpcConnection<P>): Promise<CircleBridge<P>> {
     throw new Error('Method not implemented.');
   }
   async getCircleRelayer(
-    rpc: RpcConnection,
+    rpc: RpcConnection<P>,
   ): Promise<AutomaticCircleBridge<'Evm'>> {
     throw new Error('Method Not implemented.');
   }

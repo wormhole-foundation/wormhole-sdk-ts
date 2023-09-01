@@ -1,5 +1,3 @@
-// TODO: definition layer? more flexible?
-
 import { PlatformName } from "@wormhole-foundation/sdk-base";
 
 export interface EvmRpc {

@@ -15,7 +15,6 @@ export interface TokenBridge<P extends PlatformName> {
   isTransferCompleted(
     vaa: VAA<"Transfer"> | VAA<"TransferWithPayload">
   ): Promise<boolean>;
-  //TODO bestEffortFindRedemptionTx()
   //signer required:
   createAttestation(
     address: UniversalOrNative<P>

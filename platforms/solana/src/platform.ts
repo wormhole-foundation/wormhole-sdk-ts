@@ -12,11 +12,11 @@ import {
   WormholeMessageId,
   ChainsConfig,
   ChainContext,
+  toNative,
 } from '@wormhole-foundation/sdk-definitions';
 
 import { SolanaContracts } from './contracts';
 import { UniversalAddress } from '@wormhole-foundation/sdk-definitions';
-import { SolanaAddress } from './address';
 import { SolanaChain } from './chain';
 import { SolanaTokenBridge } from './protocols/tokenBridge';
 
@@ -114,7 +114,6 @@ export class SolanaPlatform implements Platform<'Solana'> {
     return txhashes;
   }
   async getTokenBridge(rpc: Connection): Promise<TokenBridge<'Solana'>> {
-    //@ts-ignore
     return SolanaTokenBridge.fromProvider(rpc, this.contracts);
   }
 
@@ -134,8 +133,8 @@ export class SolanaPlatform implements Platform<'Solana'> {
     throw new Error('Not implemented');
   }
 
-  parseAddress(address: string): UniversalAddress {
-    return new UniversalAddress(new PublicKey(address).toBytes());
+  parseAddress(chain: ChainName, address: string): UniversalAddress {
+    return toNative(chain, address).toUniversalAddress();
   }
 
   async parseTransaction(
@@ -165,7 +164,8 @@ export class SolanaPlatform implements Platform<'Solana'> {
 
     // TODO: unsure about the single bridge instruction and the [2] index, will this always be the case?
     const [logmsg] = bridgeInstructions;
-    const emitter = new SolanaAddress(accounts[logmsg.accounts[2]]);
+    const emitterAcct = accounts[logmsg.accounts[2]];
+    const emitter = this.parseAddress(chain, emitterAcct.toString());
 
     const sequence = response.meta?.logMessages
       ?.filter((msg) => msg.startsWith(SOLANA_SEQ_LOG))?.[0]

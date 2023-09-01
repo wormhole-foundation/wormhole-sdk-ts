@@ -3,6 +3,7 @@ import {
   ChainName,
   Network,
   toChainId,
+  isCircleSupported,
   isCircleChain,
   usdcContract,
 } from '@wormhole-foundation/sdk-base';
@@ -69,12 +70,16 @@ export class Wormhole {
     if (automatic && payload)
       throw new Error('Payload with automatic delivery is not supported');
 
-    if (!isCircleChain(from.chain))
-      throw new Error('Payload with automatic delivery is not supported');
+    if (
+      !isCircleChain(from.chain) ||
+      !isCircleSupported(this.network, from.chain)
+    )
+      throw new Error(
+        `Network and chain not supported: ${this.network} ${from.chain} `,
+      );
 
-    // TODO: ts-ignore because devnet not setup for circle stuff
-    // @ts-ignore
     const contract = usdcContract(this.network, from.chain);
+
     const token: TokenId = {
       chain: from.chain,
       address: toNative(from.chain, contract),

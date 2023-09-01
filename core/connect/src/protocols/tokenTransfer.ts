@@ -53,21 +53,22 @@ export class TokenTransfer implements WormholeTransfer {
   }
 
   async getTransferState(): Promise<TransferState> {
-    // TODO :puke:
-    if (this.transfer.automatic) {
-      if (this.vaas && this.vaas.length > 0) {
-        const { chain, emitter, sequence } = this.vaas[0].id;
-        const txStatus = await this.wh.getTransactionStatus(
-          chain,
-          emitter,
-          sequence,
-        );
+    if (!this.transfer.automatic) return this.state;
+    if (!this.vaas || this.vaas.length === 0) return this.state;
 
-        if (txStatus.globalTx.destinationTx) {
-          if (txStatus.globalTx.destinationTx.status === 'completed') {
-            this.state = TransferState.Completed;
-          }
-        }
+    const { chain, emitter, sequence } = this.vaas[0].id;
+    const txStatus = await this.wh.getTransactionStatus(
+      chain,
+      emitter,
+      sequence,
+    );
+
+    if (txStatus.globalTx.destinationTx) {
+      switch (txStatus.globalTx.destinationTx.status) {
+        case 'completed':
+          this.state = TransferState.Completed;
+          break;
+        // ... more?
       }
     }
 
@@ -123,8 +124,7 @@ export class TokenTransfer implements WormholeTransfer {
 
     let automatic = false;
     if (relayer) {
-      //@ts-ignore
-      const relayerAddress = toNative(chain, relayer).toUniversalAddress();
+      const relayerAddress = wh.getChain(chain).parseAddress(relayer);
       automatic =
         vaa.payloadLiteral === 'TransferWithPayload' &&
         address.equals(relayerAddress);
@@ -311,7 +311,7 @@ export class TokenTransfer implements WormholeTransfer {
     if (!this.vaas) throw new Error('No VAA details available');
 
     const toChain = this.wh.getChain(this.transfer.to.chain);
-    const toAddress = toChain.platform
+    const toAddress = toChain
       .parseAddress(signer.address())
       .toUniversalAddress();
 

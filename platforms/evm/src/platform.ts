@@ -1,8 +1,4 @@
-import {
-  Network,
-  ChainName,
-  PlatformName,
-} from '@wormhole-foundation/sdk-base';
+import { ChainName } from '@wormhole-foundation/sdk-base';
 import {
   TokenId,
   TxHash,
@@ -16,12 +12,12 @@ import {
   CircleBridge,
   AutomaticCircleBridge,
   ChainsConfig,
+  toNative,
 } from '@wormhole-foundation/sdk-definitions';
 
 import { ethers } from 'ethers';
 import { EvmContracts } from './contracts';
 import { EvmChain } from './chain';
-import { EvmAddress } from './address';
 
 import { EvmTokenBridge } from './protocols/tokenBridge';
 import { EvmAutomaticTokenBridge } from './protocols/automaticTokenBridge';
@@ -44,7 +40,7 @@ export class EvmPlatform implements Platform<'Evm'> {
     this.contracts = new EvmContracts(conf);
   }
 
-  getRpc(chain: ChainName): ethers.Provider {
+  getRpc(chain: ChainName): ethers.JsonRpcProvider {
     const rpcAddress = this.conf[chain]!.rpc;
     return new ethers.JsonRpcProvider(rpcAddress);
   }
@@ -137,14 +133,8 @@ export class EvmPlatform implements Platform<'Evm'> {
     return txhashes;
   }
 
-  //
-
-  parseAddress(address: string): UniversalAddress {
-    // 42 is 20 bytes as hex + 2 bytes for 0x
-    if (address.length > 42) {
-      return new UniversalAddress(address);
-    }
-    return new EvmAddress(address).toUniversalAddress();
+  parseAddress(chain: ChainName, address: string): UniversalAddress {
+    return toNative(chain, address).toUniversalAddress();
   }
 
   async parseTransaction(
@@ -171,7 +161,7 @@ export class EvmPlatform implements Platform<'Evm'> {
         if (parsed === null) return undefined;
         return {
           chain: chain,
-          emitter: this.parseAddress(parsed.args.sender),
+          emitter: this.parseAddress(chain, parsed.args.sender),
           sequence: parsed.args.sequence,
         } as WormholeMessageId;
       })

@@ -10,7 +10,6 @@ import {
   ACCOUNT_SIZE,
   NATIVE_MINT,
   TOKEN_PROGRAM_ID,
-  createAssociatedTokenAccount,
   createAssociatedTokenAccountInstruction,
   createCloseAccountInstruction,
   createInitializeAccountInstruction,
@@ -33,8 +32,7 @@ import {
   TokenId,
   UniversalAddress,
   NativeAddress,
-  serialize,
-  deserialize,
+  toNative,
 } from '@wormhole-foundation/sdk-definitions';
 
 import { Wormhole as WormholeCore } from '../utils/types/wormhole';
@@ -53,7 +51,6 @@ import {
 } from '../utils/tokenBridge';
 
 import { SolanaContracts } from '../contracts';
-import { SolanaAddress } from '../address';
 import { SolanaUnsignedTransaction } from '../unsignedTransaction';
 import { SolanaChainName, UniversalOrSolana } from '../types';
 import {
@@ -117,7 +114,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
       if (meta === null)
         return {
           chain: this.chain,
-          address: new SolanaAddress(mint.toBytes()).toUniversalAddress(),
+          address: toNative(this.chain, mint.toBytes()),
         };
 
       return {
@@ -158,8 +155,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     if (mintAddress === null)
       throw new Error(`No wrapped asset found for: ${token}`);
 
-    // @ts-ignore
-    return new SolanaAddress(mintAddress);
+    return toNative(this.chain, mintAddress);
   }
 
   async isTransferCompleted(
@@ -439,8 +435,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
           this.connection,
           this.coreBridge.programId,
           senderAddr,
-          // TODO: yuk
-          deserialize('Uint8Array', serialize(vaa)),
+          vaa,
           signatureSet.publicKey,
         ),
       ),
@@ -521,7 +516,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
   async getWrappedNative(): Promise<TokenId> {
     return {
       chain: this.chain,
-      address: new SolanaAddress(NATIVE_MINT).toUniversalAddress(),
+      address: toNative(this.chain, NATIVE_MINT.toBase58()),
     };
   }
 

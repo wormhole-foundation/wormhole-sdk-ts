@@ -1,6 +1,6 @@
 import {
-  ChainName,
-  chainToChainId,
+  CircleChainName,
+  circleChainId,
   evmChainIdToNetworkChainPair,
   evmNetworkChainToEvmChainId,
 } from '@wormhole-foundation/sdk-base';
@@ -11,9 +11,9 @@ import {
   UnsignedTransaction,
   keccak256,
   TokenId,
+  toNative,
 } from '@wormhole-foundation/sdk-definitions';
 
-import { EvmAddress } from '../address';
 import {
   addFrom,
   addChainId,
@@ -136,8 +136,7 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
 
     const txReq = await this.tokenMessenger.depositForBurn.populateTransaction(
       amount,
-      // @ts-ignore
-      chainNameToCircleId[recipient.chain],
+      circleChainId(recipient.chain as CircleChainName),
       recipientAddress,
       tokenAddr,
     );
@@ -184,9 +183,12 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
         `No log message for message transmitter found in ${txid}`,
       );
 
-    // TODO: just taking the first one here, will there be >1?
+    // just taking the first one here, will there ever be >1?
+    if (messageLogs.length > 1)
+      throw new Error(`Found more than one message in ${txid}`);
+
     const [messageLog] = messageLogs;
-    // Need to get the message (0xdeadbeef...) to bytes prior to hashing
+
     const message = Buffer.from(
       (messageLog.args.message as string).slice(2),
       'hex',
@@ -198,11 +200,14 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
       txid: receipt.hash,
       from: {
         chain: this.chain,
-        address: new EvmAddress(receipt.from).toUniversalAddress(),
+        address: toNative(this.chain, receipt.from).toUniversalAddress(),
       },
       token: {
         chain: this.chain,
-        address: new EvmAddress(tokenLog.args.burnToken).toUniversalAddress(),
+        address: toNative(
+          this.chain,
+          tokenLog.args.burnToken,
+        ).toUniversalAddress(),
       },
       amount: tokenLog.args.amount,
       destination: {

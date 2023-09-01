@@ -1,4 +1,4 @@
-/*TODO
+/* TODO: change name to Protocols?
  *   governance actions have a module parameter:
  *     - "Core" - https://github.com/wormhole-foundation/wormhole/blob/9e61d151c61bedb18ab1d4ca6ffb1c6c91b108f0/ethereum/contracts/Governance.sol#L21
  *     - "TokenBridge" - https://github.com/wormhole-foundation/wormhole/blob/9e61d151c61bedb18ab1d4ca6ffb1c6c91b108f0/ethereum/contracts/bridge/BridgeGovernance.sol#L24
@@ -31,7 +31,6 @@ export const modules = [
   "NftBridge",
   "Relayer",
   "CCTP",
-  //TODO "Connect"
 ] as const;
 
 export type Module = (typeof modules)[number];
