@@ -1,5 +1,6 @@
 import {
   Address,
+  NativeAddress,
   UniversalAddress,
 } from '@wormhole-foundation/sdk-definitions';
 
@@ -59,7 +60,7 @@ export class EvmAddress implements Address {
     return this.address;
   }
   toNative() {
-    return this.address;
+    return this;
   }
   toUint8Array() {
     return ethers.getBytes(this.address);

@@ -1,117 +1,270 @@
-import { Wormhole, TokenTransfer } from '@wormhole-foundation/connect-sdk';
 import {
   TokenBridge,
-  ChainAddress,
-  UniversalAddress,
-  TokenId,
-  NativeAddress,
-  ChainContext,
+  Platform,
+  testing,
+  toNative,
 } from '@wormhole-foundation/sdk-definitions';
+import { chainConfigs } from '@wormhole-foundation/connect-sdk';
 
-import { SolanaPlatform } from '../../src/platform';
-import { SolanaAddress, SolanaChain } from '../../src';
+import {
+  SolanaUnsignedTransaction,
+  SolanaPlatform,
+  SolanaContracts,
+  SolanaTokenBridge,
+} from '../../src/';
+
 import { MockSolanaSigner } from '../mocks/MockSigner';
 
-const WETH_ADDRESS = '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6';
-const SOL_TB_EMITTER = '4yttKWzRoNYS2HekxDfcZYmfQqnVWpKiJ8eydYRuFRgs';
+const NETWORK = 'Mainnet';
+const configs = chainConfigs(NETWORK);
 
-describe('Solana Unit Tests (not really unit tests)', () => {
-  const sender = new MockSolanaSigner();
-  const receiver = new MockSolanaSigner();
+const TOKEN_ADDRESSES = {
+  Mainnet: {
+    Solana: {
+      wsol: 'So11111111111111111111111111111111111111112',
+      wavax: 'KgV1GvrHQmRBY8sHQQeUKwTm2r2h8t4C8qt12Cw1HVE',
+    },
+  },
+};
 
-  const from: ChainAddress = {
-    chain: sender.chain(),
-    address: new SolanaAddress(sender.address()).toUniversalAddress(),
-  };
-  const to: ChainAddress = {
-    chain: receiver.chain(),
-    address: new SolanaAddress(receiver.address()).toUniversalAddress(),
-  };
+const bogusAddress = testing.utils.makeNativeAddress('Solana');
+const realNativeAddress = toNative(
+  'Solana',
+  TOKEN_ADDRESSES['Mainnet']['Solana']['wsol'],
+);
+const realWrappedAddress = toNative(
+  'Solana',
+  TOKEN_ADDRESSES['Mainnet']['Solana']['wavax'],
+);
 
-  let wh: Wormhole;
-  let solCtx: ChainContext<'Solana'>;
-  let tokenBridge: TokenBridge<'Solana'>;
+describe('TokenBridge Tests', () => {
+  const p: Platform<'Solana'> = new SolanaPlatform(configs);
+  let tb: TokenBridge<'Solana'>;
 
-  test('Setup', async () => {
-    wh = new Wormhole('Testnet', [SolanaPlatform]);
-    solCtx = wh.getChain('Solana') as SolanaChain;
-    tokenBridge = await solCtx.getTokenBridge();
+  test('Create TokenBridge', async () => {
+    const rpc = p.getRpc('Solana');
+    const contracts = new SolanaContracts(configs);
+    // @ts-ignore
+    tb = await SolanaTokenBridge.fromProvider(rpc, contracts);
+    expect(tb).toBeTruthy();
   });
 
-  let solWrappedEth: NativeAddress<'Solana'>;
-  describe('Get Token Details', () => {
-    const wethAddressBytes = new Uint8Array(32);
-    wethAddressBytes.set(
-      Uint8Array.from(Buffer.from(WETH_ADDRESS.slice(2), 'hex')),
-      12,
-    );
-    const wethAddress = new UniversalAddress(wethAddressBytes);
-    const wethToken: TokenId = {
-      chain: 'Ethereum',
-      address: wethAddress,
-    };
+  describe('Get Wrapped Asset Details', () => {
+    describe('isWrappedAsset', () => {
+      test('Bogus', async () => {
+        const isWrapped = await tb.isWrappedAsset(bogusAddress);
+        expect(isWrapped).toBe(false);
+      });
 
-    test('hasWrapped for WEth', async () => {
-      const hasWrapped = await tokenBridge.hasWrappedAsset(wethToken);
-      expect(hasWrapped).toBeTruthy();
+      test('Real Not Wrapped', async () => {
+        const isWrapped = await tb.isWrappedAsset(realNativeAddress);
+        expect(isWrapped).toBe(false);
+      });
+
+      test('Real Wrapped', async () => {
+        const isWrapped = await tb.isWrappedAsset(realWrappedAddress);
+        expect(isWrapped).toBe(true);
+      });
     });
 
-    test('getWrapped for WEth', async () => {
-      solWrappedEth = await tokenBridge.getWrappedAsset(wethToken);
-      expect(solWrappedEth).toBeTruthy();
+    describe('getOriginalAsset', () => {
+      test('Bogus', async () => {
+        expect(() => tb.getOriginalAsset(bogusAddress)).rejects.toThrow();
+      });
+
+      test('Real Not Wrapped', async () => {
+        expect(() => tb.getOriginalAsset(realNativeAddress)).rejects.toThrow();
+      });
+
+      test('Real Wrapped', async () => {
+        const orig = await tb.getOriginalAsset(realWrappedAddress);
+        expect(orig.chain).toEqual('Avalanche');
+        expect(orig).toBeTruthy();
+      });
     });
 
-    test('Lookup Original Asset', async () => {
-      const orig = await tokenBridge.getOriginalAsset(solWrappedEth);
-      expect(orig).toBeTruthy();
-      expect(orig.chain).toEqual(wethToken.chain);
-      expect(
-        orig.address
-          .toUniversalAddress()
-          .equals(wethToken.address.toUniversalAddress()),
-      );
+    describe('hasWrappedAsset', () => {
+      test('Bogus', async () => {
+        const hasWrapped = await tb.hasWrappedAsset({
+          chain: 'Avalanche',
+          address: bogusAddress,
+        });
+        expect(hasWrapped).toBe(false);
+      });
+
+      test('Real Not Wrapped', async () => {
+        const hasWrapped = await tb.hasWrappedAsset({
+          chain: 'Avalanche',
+          address: realNativeAddress,
+        });
+        expect(hasWrapped).toBe(false);
+      });
+
+      test('Real Wrapped', async () => {
+        const orig = await tb.getOriginalAsset(realWrappedAddress);
+        const hasWrapped = await tb.hasWrappedAsset(orig);
+        expect(hasWrapped).toBe(true);
+      });
+    });
+
+    describe('getWrappedAsset', () => {
+      test('Bogus', async () => {
+        const hasWrapped = tb.getWrappedAsset({
+          chain: 'Avalanche',
+          address: bogusAddress,
+        });
+        expect(hasWrapped).rejects.toThrow();
+      });
+
+      test('Real Not Wrapped', async () => {
+        const hasWrapped = tb.getWrappedAsset({
+          chain: 'Avalanche',
+          address: realNativeAddress,
+        });
+        expect(hasWrapped).rejects.toThrow();
+      });
+
+      test('Real Wrapped', async () => {
+        const orig = await tb.getOriginalAsset(realWrappedAddress);
+        const wrappedAsset = await tb.getWrappedAsset(orig);
+        expect(wrappedAsset.toString()).toBe(realWrappedAddress.toString());
+      });
     });
   });
 
-  describe('Token Transfer Tests', () => {
-    let xfer: TokenTransfer;
-    test('Create Token Transfer Object', async () => {
-      xfer = await wh.tokenTransfer('native', 1_000_000_000n, from, to, false);
-      expect(xfer).toBeTruthy();
+  // describe('Create Token Attestation Transactions', () => {
+  //   const chain = 'Solana';
+  //   const nativeAddress = testing.utils.makeNativeAddress(chain);
+
+  //   const tbAddress = p.conf[chain]!.contracts.tokenBridge!;
+
+  //   test('Create Attestation', async () => {
+  //     const attestation = tb.createAttestation(nativeAddress);
+  //     const allTxns: SolanaUnsignedTransaction[] = [];
+  //     for await (const atx of attestation) {
+  //       allTxns.push(atx);
+  //     }
+  //     expect(allTxns).toHaveLength(1);
+  //     const [attestTx] = allTxns;
+  //     expect(attestTx).toBeTruthy();
+  //     expect(attestTx.chain).toEqual(chain);
+
+  //     const { transaction } = attestTx;
+  //     console.log(transaction);
+  //     // expect(transaction.chainId).toEqual(
+  //     //   evmNetworkChainToSolanaChainId(NETWORK, chain),
+  //     // );
+  //   });
+
+  //   test('Submit Attestation', async () => {
+  //     // TODO: generator for this
+  //     const vaa: VAA<'AttestMeta'> = {
+  //       payloadLiteral: 'AttestMeta',
+  //       payload: {
+  //         token: { address: nativeAddress.toUniversalAddress(), chain: chain },
+  //         decimals: 8,
+  //         symbol: Buffer.from(new Uint8Array(16)).toString('hex'),
+  //         name: Buffer.from(new Uint8Array(16)).toString('hex'),
+  //       },
+  //       hash: new Uint8Array(32),
+  //       guardianSet: 0,
+  //       signatures: [{ guardianIndex: 0, signature: new Signature(1n, 2n, 1) }],
+  //       emitterChain: chain,
+  //       emitterAddress: toNative(chain, tbAddress).toUniversalAddress(),
+  //       sequence: 0n,
+  //       consistencyLevel: 0,
+  //       timestamp: 0,
+  //       nonce: 0,
+  //     };
+  //     const submitAttestation = tb.submitAttestation(vaa);
+
+  //     const allTxns: SolanaUnsignedTransaction[] = [];
+  //     for await (const atx of submitAttestation) {
+  //       allTxns.push(atx);
+  //     }
+  //     expect(allTxns).toHaveLength(1);
+  //     const [attestTx] = allTxns;
+  //     expect(attestTx).toBeTruthy();
+  //     expect(attestTx.chain).toEqual(chain);
+
+  //     const { transaction } = attestTx;
+  //     console.log(transaction);
+  //     // expect(transaction.chainId).toEqual(
+  //     //   evmNetworkChainToSolanaChainId(NETWORK, chain),
+  //     // );
+  //   });
+  // });
+
+  describe('Create TokenBridge Transactions', () => {
+    const chain = 'Solana';
+    const destChain = 'Ethereum';
+
+    const sendSigner = new MockSolanaSigner();
+
+    const sender = toNative(chain, sendSigner.address());
+    const recipient = testing.utils.makeChainAddress(destChain);
+
+    const tbAddress = p.conf[chain]!.contracts.tokenBridge!;
+
+    const amount = 1000n;
+    const payload = undefined;
+
+    describe('Token Transfer Transactions', () => {
+      describe('Transfer', () => {
+        test('Native', async () => {
+          const token = 'native';
+          const xfer = tb.transfer(sender, recipient, token, amount, payload);
+          expect(xfer).toBeTruthy();
+
+          const allTxns: SolanaUnsignedTransaction[] = [];
+          for await (const tx of xfer) {
+            allTxns.push(tx);
+          }
+          expect(allTxns).toHaveLength(1);
+
+          const [xferTx] = allTxns;
+          expect(xferTx).toBeTruthy();
+          expect(xferTx.chain).toEqual(chain);
+
+          const { transaction } = xferTx;
+          expect(transaction.instructions).toHaveLength(6);
+          // ...
+        });
+
+        test('Token', async () => {
+          const xfer = tb.transfer(
+            sender,
+            recipient,
+            realWrappedAddress,
+            amount,
+            payload,
+          );
+          expect(xfer).toBeTruthy();
+
+          const allTxns: SolanaUnsignedTransaction[] = [];
+          for await (const tx of xfer) {
+            allTxns.push(tx);
+          }
+          expect(allTxns).toHaveLength(1);
+
+          const [xferTx] = allTxns;
+          expect(xferTx).toBeTruthy();
+          expect(xferTx.chain).toEqual(chain);
+
+          const { transaction } = xferTx;
+          expect(transaction.instructions).toHaveLength(2);
+        });
+      });
     });
-
-    // test('Initiate Transfer', async () => {
-    //   const txids = await xfer.initiateTransfer(sender);
-    //   expect(txids.length).toBeGreaterThan(0);
-    // });
-
-    test('Recover Transfer Message ID', async () => {
-      const solEmitter = new SolanaAddress(SOL_TB_EMITTER).toUniversalAddress();
-      const msgIds = await solCtx.parseTransaction(
-        '4PE9CWyUj5SZH2XcyV7HZjYtNHyPRb4qi1zRtPptw1yewst5A4H1zKfbGsFFhCTELga3HJmhGtK6gEmEiGeKopSH',
-      );
-      expect(msgIds.length).toBe(1);
-      expect(msgIds[0].chain).toEqual('Solana');
-      expect(msgIds[0].sequence).toBeGreaterThan(0);
-      expect(msgIds[0].emitter.toUniversalAddress().equals(solEmitter)).toEqual(
-        true,
-      );
-    });
-
-    // test('Create Transfer Transaction', async () => {
-    //   const ethAddy = new UniversalAddress(new Uint8Array(20));
-    //   const solAddy = new UniversalAddress(new Uint8Array(32));
-
-    //   const txgen = tokenBridge.transfer(
-    //     ethAddy,
-    //     ['Solana', solAddy],
-    //     'native',
-    //     1000n,
-    //   );
-
-    //   for await (const tx of txgen) {
-    //     expect(tx).toBeTruthy();
-    //   }
-    // });
   });
 });
+
+async function collectTxns(
+  i: AsyncGenerator<SolanaUnsignedTransaction>,
+): Promise<SolanaUnsignedTransaction[]> {
+  const txns = [];
+  for await (const txn of i) {
+    txns.push(txn);
+  }
+  return txns;
+}
