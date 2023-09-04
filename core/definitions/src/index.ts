@@ -14,9 +14,12 @@ export * from "./platform";
 export * from "./chain";
 export * from "./contracts";
 export * from "./signer";
+export * from "./signature";
 export * from "./rpc";
 export * from "./attestation";
 export * from "./types";
 
 export * from "./protocols/tokenBridge";
 export * from "./protocols/cctp";
+
+export * as testing from "./testing";

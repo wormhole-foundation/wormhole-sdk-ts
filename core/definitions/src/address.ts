@@ -77,6 +77,16 @@ export function registerNative<P extends MappedPlatforms>(
   nativeFactory.set(platform, ctr);
 }
 
+export function nativeIsRegistered<T extends PlatformName | ChainName>(
+  chainOrPlatform: T
+): boolean {
+  const platform: PlatformName = isChain(chainOrPlatform)
+    ? chainToPlatform.get(chainOrPlatform)!
+    : chainOrPlatform;
+
+  return nativeFactory.has(platform);
+}
+
 export function toNative<T extends PlatformName | ChainName>(
   chainOrPlatform: T,
   ua: UniversalAddress | string | Uint8Array

@@ -42,7 +42,7 @@ export class SolanaAddress implements Address {
     return this.address.toBytes();
   }
   toNative() {
-    return this.address;
+    return this;
   }
   toUniversalAddress() {
     return new UniversalAddress(this.address.toBytes());

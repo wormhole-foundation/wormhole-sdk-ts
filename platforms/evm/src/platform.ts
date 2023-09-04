@@ -40,9 +40,9 @@ export class EvmPlatform implements Platform<'Evm'> {
     this.contracts = new EvmContracts(conf);
   }
 
-  getRpc(chain: ChainName): ethers.JsonRpcProvider {
+  getRpc(chain: ChainName): ethers.Provider {
     const rpcAddress = this.conf[chain]!.rpc;
-    return new ethers.JsonRpcProvider(rpcAddress);
+    return ethers.getDefaultProvider(rpcAddress);
   }
 
   getChain(chain: ChainName): EvmChain {
@@ -147,8 +147,7 @@ export class EvmPlatform implements Platform<'Evm'> {
     if (receipt === null)
       throw new Error(`No transaction found with txid: ${txid}`);
 
-    const core = this.contracts.mustGetCore(chain, rpc);
-    const coreAddress = await core.getAddress();
+    const coreAddress = this.conf[chain]!.contracts.coreBridge;
     const coreImpl = this.contracts.getImplementation();
 
     return receipt.logs

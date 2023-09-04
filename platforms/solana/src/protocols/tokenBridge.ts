@@ -33,6 +33,7 @@ import {
   UniversalAddress,
   NativeAddress,
   toNative,
+  ErrNotWrapped,
 } from '@wormhole-foundation/sdk-definitions';
 
 import { Wormhole as WormholeCore } from '../utils/types/wormhole';
@@ -100,6 +101,9 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
   }
 
   async getOriginalAsset(token: UniversalOrSolana): Promise<TokenId> {
+    if (!(await this.isWrappedAsset(token)))
+      throw ErrNotWrapped(token.toString());
+
     const mint = new PublicKey(token.toUint8Array());
 
     try {
@@ -122,17 +126,16 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     } catch (_) {
       // TODO: https://github.com/wormhole-foundation/wormhole/blob/main/sdk/js/src/token_bridge/getOriginalAsset.ts#L200
       // the current one returns 0s for address
-      throw new Error(`No wrapped asset for: ${token.toString()}`);
+      throw ErrNotWrapped(token.toString());
     }
   }
 
   async hasWrappedAsset(token: TokenId): Promise<boolean> {
     try {
-      this.getWrappedAsset(token);
+      await this.getWrappedAsset(token);
       return true;
-    } catch (_) {
-      return false;
-    }
+    } catch (_) {}
+    return false;
   }
 
   async getWrappedAsset(token: TokenId): Promise<NativeAddress<'Solana'>> {
@@ -142,18 +145,14 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
       token.address.toUint8Array(),
     );
 
-    const mintAddress = await getWrappedMeta(
-      this.connection,
-      this.tokenBridge.programId,
-      mint,
-    )
-      .catch((_) => null)
-      .then((meta) => (meta === null ? null : mint.toString()));
+    // If we don't throw an error getting wrapped meta, we're good to return
+    // the derived mint address back to the caller.
+    try {
+      await getWrappedMeta(this.connection, this.tokenBridge.programId, mint);
+      return toNative(this.chain, mint.toBase58());
+    } catch (_) {}
 
-    if (mintAddress === null)
-      throw new Error(`No wrapped asset found for: ${token}`);
-
-    return toNative(this.chain, mintAddress);
+    throw ErrNotWrapped(token.address.toString());
   }
 
   async isTransferCompleted(

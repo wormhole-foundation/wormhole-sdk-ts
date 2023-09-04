@@ -5,7 +5,6 @@ import {
   Platform,
   RpcConnection,
 } from '@wormhole-foundation/sdk-definitions';
-import { ethers } from 'ethers';
 
 export class EvmChain extends ChainContext<'Evm'> {
   readonly chain: ChainName;
