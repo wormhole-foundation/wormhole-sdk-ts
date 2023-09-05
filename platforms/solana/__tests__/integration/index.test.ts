@@ -52,7 +52,7 @@ beforeEach(async () => {
     // trying to match a fixture.
     after: (scope) => {
       scope.filteringRequestBody((body: string) => {
-        const o = JSON.parse(body);
+        const o = JSON.parse(body) as { id?: string };
         delete o.id;
         return JSON.stringify(o);
       });

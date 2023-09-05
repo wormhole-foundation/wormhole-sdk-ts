@@ -51,7 +51,8 @@
     "eslint-config-prettier": "^8.7.0",
     "lint-staged": "^13.1.2",
     "prettier": "2.8.4",
-    "typescript": "5.1.6"
+    "typescript": "5.1.6",
+    "nock": "^13.3.3"
   },
   "dependencies": {
     "@coral-xyz/borsh": "0.2.6",
@@ -60,7 +61,6 @@
     "@solana/spl-token": "0.3.5",
     "@solana/web3.js": "1.66.2",
     "@wormhole-foundation/connect-sdk": "*",
-    "bs58": "^4.0.1",
-    "nock": "^13.3.3"
+    "bs58": "^4.0.1"
   }
 }

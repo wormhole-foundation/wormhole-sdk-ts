@@ -60,7 +60,6 @@
     "typescript": "5.1.6"
   },
   "dependencies": {
-    "@certusone/wormhole-sdk": "^0.9.21",
     "@wormhole-foundation/sdk-base": "*",
     "@wormhole-foundation/sdk-definitions": "*",
     "@wormhole-foundation/connect-sdk": "*",
