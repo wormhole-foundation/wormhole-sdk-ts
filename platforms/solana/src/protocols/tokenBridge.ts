@@ -34,6 +34,7 @@ import {
   NativeAddress,
   toNative,
   ErrNotWrapped,
+  RpcConnection,
 } from '@wormhole-foundation/sdk-definitions';
 
 import { Wormhole as WormholeCore } from '../utils/types/wormhole';
@@ -76,10 +77,11 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
   }
 
   static async fromProvider(
-    connection: Connection,
+    connection: RpcConnection<'Solana'>,
     contracts: SolanaContracts,
   ): Promise<SolanaTokenBridge> {
-    const gh = await connection.getGenesisHash();
+    const conn = connection as Connection;
+    const gh = await conn.getGenesisHash();
     const netChain = solGenesisHashToNetworkChainPair.get(gh);
     if (!netChain)
       throw new Error(
@@ -87,7 +89,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
       );
 
     const [network, chain] = netChain;
-    return new SolanaTokenBridge(network, chain, connection, contracts);
+    return new SolanaTokenBridge(network, chain, conn, contracts);
   }
 
   async isWrappedAsset(token: UniversalOrSolana): Promise<boolean> {

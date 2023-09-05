@@ -1,7 +1,9 @@
 import {
+  ChainAddress,
   Platform,
   Signature,
   TokenBridge,
+  UniversalAddress,
   VAA,
   testing,
   toNative,
@@ -18,6 +20,65 @@ import {
   toChainId,
 } from '@wormhole-foundation/sdk-base';
 
+import nock from 'nock';
+
+// Setup nock to record fixtures
+const nockBack = nock.back;
+nockBack.fixtures = __dirname + '/fixtures';
+
+let nockDone: () => void;
+beforeEach(async () => {
+  nockBack.setMode('lockdown');
+  const fullTestName = expect.getState().currentTestName?.replace(/\s/g, '_');
+  const { nockDone: nd } = await nockBack(`${fullTestName}.json`, {
+    // Remove the `id` from the request body after preparing it but before
+    // trying to match a fixture.
+    after: (scope) => {
+      scope.filteringRequestBody((body: string) => {
+        const b = JSON.parse(body);
+
+        let formattedBody = b;
+        if (Array.isArray(b)) {
+          formattedBody = b.map((o) => {
+            delete o.id;
+            return o;
+          });
+        } else {
+          delete formattedBody.id;
+        }
+        return JSON.stringify(formattedBody);
+      });
+    },
+    // Remove the `id` from the request body before saving it as a fixture.
+    afterRecord: (defs) => {
+      return defs.map((d: nock.Definition) => {
+        if (typeof d.body !== 'object') return d;
+
+        if (Array.isArray(d.body)) {
+          const body = d.body as { id?: string }[];
+          d.body = body.map((o) => {
+            delete o.id;
+            return o;
+          });
+        } else {
+          const body = d.body as { id?: string };
+          delete body.id;
+          d.body = body;
+        }
+        return d;
+      });
+    },
+  });
+
+  // update global var
+  nockDone = nd;
+});
+
+afterEach(async () => {
+  nockDone();
+  nockBack.setMode('wild');
+});
+
 const NETWORK = 'Mainnet';
 const configs = chainConfigs(NETWORK);
 
@@ -30,7 +91,10 @@ const TOKEN_ADDRESSES = {
   },
 };
 
-const bogusAddress = testing.utils.makeNativeAddress('Ethereum');
+const bogusAddress = toNative(
+  'Evm',
+  '0x0000c581f595b53c5cb19bd0b3f8da6c935e2ca0',
+);
 const realNativeAddress = toNative(
   'Evm',
   TOKEN_ADDRESSES['Mainnet']['Ethereum']['wsteth'],
@@ -39,6 +103,15 @@ const realWrappedAddress = toNative(
   'Evm',
   TOKEN_ADDRESSES['Mainnet']['Ethereum']['wavax'],
 );
+
+const chain = 'Ethereum';
+const destChain = 'Avalanche';
+
+const sender = toNative('Evm', new Uint8Array(20));
+const recipient: ChainAddress = {
+  chain: destChain,
+  address: new UniversalAddress(new Uint8Array(32)),
+};
 
 describe('TokenBridge Tests', () => {
   const p: Platform<'Evm'> = new EvmPlatform(configs);
@@ -197,15 +270,10 @@ describe('TokenBridge Tests', () => {
   });
 
   describe('Create TokenBridge Transactions', () => {
-    const chain = 'Ethereum';
-    const destChain = 'Celo';
-
     const tbAddress = p.conf[chain]!.contracts.tokenBridge!;
 
     describe('Token Transfer Transactions', () => {
       describe('Transfer', () => {
-        const sender = testing.utils.makeNativeAddress(chain);
-        const recipient = testing.utils.makeChainAddress(destChain);
         const amount = 1000n;
         const payload = undefined;
 

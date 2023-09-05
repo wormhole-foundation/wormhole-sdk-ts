@@ -15,6 +15,8 @@ import {
 
 import { MockSolanaSigner } from '../mocks/MockSigner';
 
+import nock from 'nock';
+
 const NETWORK = 'Mainnet';
 const configs = chainConfigs(NETWORK);
 
@@ -37,6 +39,44 @@ const realWrappedAddress = toNative(
   TOKEN_ADDRESSES['Mainnet']['Solana']['wavax'],
 );
 
+// Setup nock to record fixtures
+const nockBack = nock.back;
+nockBack.fixtures = __dirname + '/fixtures';
+
+let nockDone: () => void;
+beforeEach(async () => {
+  nockBack.setMode('lockdown');
+  const fullTestName = expect.getState().currentTestName?.replace(/\s/g, '_');
+  const { nockDone: nd } = await nockBack(`${fullTestName}.json`, {
+    // Remove the `id` from the request body after preparing it but before
+    // trying to match a fixture.
+    after: (scope) => {
+      scope.filteringRequestBody((body: string) => {
+        const o = JSON.parse(body) as { id?: string };
+        delete o.id;
+        return JSON.stringify(o);
+      });
+    },
+    // Remove the `id` from the request body before saving it as a fixture.
+    afterRecord: (defs) => {
+      return defs.map((d: nock.Definition) => {
+        const body = d.body as { id?: string };
+        delete body.id;
+        d.body = body;
+        return d;
+      });
+    },
+  });
+
+  // update global var
+  nockDone = nd;
+});
+
+afterEach(async () => {
+  nockDone();
+  nockBack.setMode('wild');
+});
+
 describe('TokenBridge Tests', () => {
   const p: Platform<'Solana'> = new SolanaPlatform(configs);
   let tb: TokenBridge<'Solana'>;
@@ -44,9 +84,12 @@ describe('TokenBridge Tests', () => {
   test('Create TokenBridge', async () => {
     const rpc = p.getRpc('Solana');
     const contracts = new SolanaContracts(configs);
-    // @ts-ignore
+
     tb = await SolanaTokenBridge.fromProvider(rpc, contracts);
     expect(tb).toBeTruthy();
+
+    nockDone();
+    nockBack.setMode('wild');
   });
 
   describe('Get Wrapped Asset Details', () => {
@@ -258,13 +301,3 @@ describe('TokenBridge Tests', () => {
     });
   });
 });
-
-async function collectTxns(
-  i: AsyncGenerator<SolanaUnsignedTransaction>,
-): Promise<SolanaUnsignedTransaction[]> {
-  const txns = [];
-  for await (const txn of i) {
-    txns.push(txn);
-  }
-  return txns;
-}

@@ -1,25 +1,15 @@
 import { expect, test } from '@jest/globals';
-import {
-  ChainAddress,
-  UniversalAddress,
-  testing,
-} from '@wormhole-foundation/sdk-definitions';
+import { Connection, PublicKey } from '@solana/web3.js';
+
+import { testing } from '@wormhole-foundation/sdk-definitions';
 import {
   ChainName,
   chainToPlatform,
-  chainToChainId,
   chains,
 } from '@wormhole-foundation/sdk-base';
-import { Wormhole, chainConfigs } from '@wormhole-foundation/connect-sdk';
+import { chainConfigs } from '@wormhole-foundation/connect-sdk';
 
-import {
-  SolanaChain,
-  SolanaPlatform,
-  SolanaUnsignedTransaction,
-  SolanaTokenBridge,
-} from '../../src';
-import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes';
-import { Connection, PublicKey } from '@solana/web3.js';
+import { SolanaPlatform } from '../../src';
 
 // jest.mock('@solana/web3.js', () => {
 //   const actualWeb3 = jest.requireActual('@solana/web3.js');
@@ -28,12 +18,7 @@ import { Connection, PublicKey } from '@solana/web3.js';
 //   };
 // });
 
-// const address = [
-//   '4n4kd8bWSJvSzKfcyuQ8x3wKSx1QpyHhWv6J5sw3k4jY',
-//   '381e7091ac594a3bd7abb17669998b1db134111b4dab9d2d5cc8e5ef5d279127',
-// ];
 const SOLANA_CHAINS = chains.filter((c) => chainToPlatform(c) === 'Solana');
-
 const configs = chainConfigs('Mainnet');
 
 describe('Solana Platform Tests', () => {
@@ -52,37 +37,28 @@ describe('Solana Platform Tests', () => {
   describe('Get Token Bridge', () => {
     test('No RPC', async () => {
       const p = new SolanaPlatform({});
-
-      const rpc = new Connection('http://localhost:8545');
-      expect(() => p.getTokenBridge(rpc)).rejects.toThrow();
+      const fakeRpc = new Connection('http://localhost:8545');
+      expect(() => p.getTokenBridge(fakeRpc)).rejects.toThrow();
     });
     test('With RPC', async () => {
       const p = new SolanaPlatform({
         [SOLANA_CHAINS[0]]: configs[SOLANA_CHAINS[0]],
       });
-
       const rpc = p.getRpc(SOLANA_CHAINS[0]);
       const tb = await p.getTokenBridge(rpc);
       expect(tb).toBeTruthy();
     });
   });
 
-  // describe('Get Automatic Token Bridge', () => {
-  //   test('No RPC', async () => {
-  //     const p = new SolanaPlatform({});
-  //     const rpc = p.getRpc(SOLANA_CHAINS[0]);
-  //     expect(() => p.getAutomaticTokenBridge(rpc)).rejects.toThrow();
-  //   });
-  //   test('With RPC', async () => {
-  //     const p = new SolanaPlatform({
-  //       [SOLANA_CHAINS[0]]: configs[SOLANA_CHAINS[0]],
-  //     });
-
-  //     const rpc = p.getRpc(SOLANA_CHAINS[0]);
-  //     const tb = await p.getAutomaticTokenBridge(rpc);
-  //     expect(tb).toBeTruthy();
-  //   });
-  // });
+  describe('Get Automatic Token Bridge', () => {
+    test('Fails until implemented', async () => {
+      const p = new SolanaPlatform({
+        [SOLANA_CHAINS[0]]: configs[SOLANA_CHAINS[0]],
+      });
+      const rpc = p.getRpc(SOLANA_CHAINS[0]);
+      expect(() => p.getAutomaticTokenBridge(rpc)).rejects.toThrow();
+    });
+  });
 
   describe('Get Chain', () => {
     test('No conf', () => {
