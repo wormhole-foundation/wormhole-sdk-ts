@@ -4,9 +4,9 @@ import {
   Commitment,
   PublicKeyInitData,
 } from '@solana/web3.js';
-import { ChainId, toChainId } from '@wormhole-foundation/sdk-base';
+import { ChainId, toChainId, toChainName } from '@wormhole-foundation/sdk-base';
 import { deriveAddress, getAccountData } from '../../utils';
-import { tryNativeToUint8Array } from '@certusone/wormhole-sdk';
+import { toNative } from '@wormhole-foundation/sdk-definitions';
 
 export function deriveEndpointKey(
   tokenBridgeProgramId: PublicKeyInitData,
@@ -19,10 +19,8 @@ export function deriveEndpointKey(
     );
   }
   if (typeof emitterAddress == 'string') {
-    emitterAddress = tryNativeToUint8Array(
-      emitterAddress,
-      emitterChain as ChainId,
-    );
+    const parsedAddress = toNative(toChainName(emitterChain), emitterAddress);
+    emitterAddress = parsedAddress.toUint8Array();
   }
   return deriveAddress(
     [

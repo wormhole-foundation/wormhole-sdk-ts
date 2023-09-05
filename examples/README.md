@@ -11,7 +11,7 @@
 - [ ] tx finalization estimate
 - [ ] event emission/subscription for status changes 
 - [ ] add gateway protocol 
-- [ ]  Validation of inputs (amount > dust, etc..)
+- [ ] Validation of inputs (amount > dust, etc..)
 - [ ] re-export common types from connect?
 - [ ] gas estimation of routes?
 
@@ -38,11 +38,15 @@ npm run cctp
 
 ## Token Bridge
 
-[Source File](tokenBridge.ts)
+Demonstrates sending  of th
+
+[Source File](src/tokenBridge.ts)
 
 ## CCTP
 
-[Source File](cctp.ts)
+Demonstrates sending USDC using either CCTP or CCTP+Wormhole Auto Relayers
+
+[Source File](src/cctp.ts)
 
 ## NFT Bridge
 

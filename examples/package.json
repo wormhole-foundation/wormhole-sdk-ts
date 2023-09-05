@@ -9,7 +9,7 @@
   },
   "homepage": "https://github.com/wormhole-foundation/connect-sdk#readme",
   "directories": {
-    "test": "tests"
+    "test": "__tests__"
   },
   "license": "Apache-2.0",
   "version": "0.1.0-beta.1",
@@ -45,7 +45,6 @@
     "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo",
     "lint": "npm run prettier && eslint --fix",
     "prettier": "prettier --write ./src",
-    "test": "jest --config ../jest.config.ts __tests__/**/*.ts",
     "coverage": "jest --config ../jest.config.ts --coverage",
     "docs": "typedoc"
   },

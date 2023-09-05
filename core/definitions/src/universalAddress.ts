@@ -2,10 +2,9 @@ import {
   hexByteStringToUint8Array,
   uint8ArrayToHexByteString,
   isHexByteString,
-  PlatformName,
 } from "@wormhole-foundation/sdk-base";
 
-import { Address, ChainAddress, NativeAddress, toNative } from "./address";
+import { Address, NativeAddress, toNative } from "./address";
 
 export class UniversalAddress implements Address {
   static readonly byteSize = 32;
@@ -26,7 +25,9 @@ export class UniversalAddress implements Address {
     }
   }
 
-  toNative<T extends Parameters<typeof toNative>[0]>(platform: T) {
+  toNative<T extends Parameters<typeof toNative>[0]>(
+    platform: T
+  ): NativeAddress<T> {
     return toNative(platform, this);
   }
 

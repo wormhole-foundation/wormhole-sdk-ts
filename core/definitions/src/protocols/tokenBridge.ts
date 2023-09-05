@@ -5,6 +5,9 @@ import { VAA } from "../vaa";
 import { UnsignedTransaction } from "../unsignedTransaction";
 import "../payloads/tokenBridge";
 
+export const ErrNotWrapped = (token: string) =>
+  new Error(`Token ${token} is not a wrapped asset`);
+
 export interface TokenBridge<P extends PlatformName> {
   //read-only:
   isWrappedAsset(token: UniversalOrNative<P>): Promise<boolean>;
@@ -17,10 +20,12 @@ export interface TokenBridge<P extends PlatformName> {
   ): Promise<boolean>;
   //signer required:
   createAttestation(
-    address: UniversalOrNative<P>
+    token: UniversalOrNative<P>,
+    sender?: UniversalOrNative<P>
   ): AsyncGenerator<UnsignedTransaction>;
   submitAttestation(
-    vaa: VAA<"AttestMeta">
+    vaa: VAA<"AttestMeta">,
+    sender?: UniversalOrNative<P>
   ): AsyncGenerator<UnsignedTransaction>;
   //alternative naming: initiateTransfer
   transfer(

@@ -2,9 +2,13 @@
   "name": "connect-sdk",
   "version": "0.1.0",
   "license": "Apache-2.0",
+  "directories": {
+    "test": "__tests__"
+  },
   "devDependencies": {
     "@types/chai": "^4.3.5",
     "@types/jest": "^29.5.3",
+    "@types/lodash": "^4.14.197",
     "@types/mocha": "^10.0.1",
     "@types/node": "^20.4.1",
     "chai": "^4.3.7",
@@ -21,10 +25,11 @@
     "build": "npm run build --workspaces --if-present",
     "rebuild": "npm run rebuild --workspaces --if-present",
     "compile": "npm run compile --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present",
     "coverage": "npm run coverage --workspaces --if-present",
-    "clean":"npm run clean --workspaces --if-present",
-    "prettier":"npm run prettier --workspaces --if-present",
+    "clean": "npm run clean --workspaces --if-present",
+    "prettier": "npm run prettier --workspaces --if-present",
+    "test:integration": "jest --config ./jest.config.ts --roots ./__tests__",
+    "test": "npm run test --workspaces --if-present",
     "docs": "typedoc"
   },
   "workspaces": [

@@ -1,12 +1,12 @@
-import { tryNativeToUint8Array } from '@certusone/wormhole-sdk';
 import {
   Connection,
   PublicKey,
   Commitment,
   PublicKeyInitData,
 } from '@solana/web3.js';
-import { ChainId, toChainId } from '@wormhole-foundation/sdk-base';
+import { ChainId, toChainId, toChainName } from '@wormhole-foundation/sdk-base';
 import { deriveAddress, getAccountData } from '../../utils';
+import { toNative } from '@wormhole-foundation/sdk-definitions';
 
 export { deriveSplTokenMetadataKey } from '../../utils/splMetadata';
 
@@ -21,7 +21,8 @@ export function deriveWrappedMintKey(
     );
   }
   if (typeof tokenAddress == 'string') {
-    tokenAddress = tryNativeToUint8Array(tokenAddress, tokenChain as ChainId);
+    const parsedAddress = toNative(toChainName(tokenChain), tokenAddress);
+    tokenAddress = parsedAddress.toUint8Array();
   }
   return deriveAddress(
     [

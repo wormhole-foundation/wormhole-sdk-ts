@@ -13,7 +13,18 @@ core/
 
 platforms/ -- Platform specific logic 
     evm/
+        protocols/
+            tokenBridge.ts
+            cctp.ts 
+        chain.ts
+        platform.ts
+       ...
     solana/
+        protocols/
+            tokenBridge.ts 
+        chain.ts
+        platform.ts
+       ...
     ...
 ```
 
@@ -25,16 +36,19 @@ A `Platform` is a blockchain runtime, often shared across a number of chains (e.
 
 A `Chain` is a specific blockchain, potentially with overrides for slight differences in the platform implementation. 
 
-A `Module` is a specific application on a `Chain`, it provides a set of methods that can be called to accomplish some action (e.g. `TokenBridge` allows send,receive,lookup token, etc...)
+A `Protocol` (fka `Module`) is a specific application on a `Chain`, it provides a set of methods that can be called to accomplish some action (e.g. `TokenBridge` allows send/receive/lookup token, etc...)
 
 A `Signer` is an interface that provides a callback to sign one or more transaction objects. These signed transactions are sent to the blockchain to invoke some action.
 
+An `Attestation` is a signed guarantee that some _thing_ happened on a remote chain, sent to the target chain to complete a transfer.
 
-# Responsibilities
+
+# Details 
 
 ## Wormhole 
 
 Registers Platforms
+
 Allows overriding chain specific configs (rpc, contract addresses, ...)
 
 Provides methods to get PlatformContext or ChainContext objects
@@ -42,8 +56,8 @@ Provides methods to get PlatformContext or ChainContext objects
 wh.getPlatform("Evm")
 wh.getChain("Ethereum")
 ```
-Provides methods to create a `WormholeTransfer` for any `Module`
 
+Provides methods to create a `WormholeTransfer` for any `Protocol`
 ```ts
 wh.tokenTransfer(...)
 wh.nftTransfer(...)
@@ -51,7 +65,7 @@ wh.cctp(...)
 //...
 ```
 
-Provides methods to query API for VAAs and token details
+Provides methods to query an API for VAAs and token details
 ```ts
 // grab a vaa with identifier
 wh.getVaa(...)
@@ -62,19 +76,23 @@ wh.getWrappedToken(orig, chain)
 
 ## Platform
 
-Base class to implement Platform specific logic?
+Base class, implements Platform specific logic
 
-e.g.
-Evm requires approve token spend then transfer
-Solana requires postVaa then call redeem
+Parse Addresses
 
+Parse Message out of Transaction
+
+Sign/Send/Wait
 
 ## ChainContext
 
-Inherits from PlatformContext?
+Defined in abstract ChainContext class
 
-Holds RPC connection, initialized from default or overrides
+Note: Dispatches many calls to the Platform, filling in details like ChainName and RPC
 
+The `getRpc` method is the only platform specific thing _required_ to implement.
+
+Responsible for holding RPC connection, initialized from default or overrides
 ```ts
 cc.getRPC() // for evm -> ethers.Provider, for sol -> web3.Connection
 ```
@@ -84,7 +102,6 @@ Holds references to Contract client
 
 <!-- 
 Not Implemented
-
 Provides methods to lookup details for contract addresses, finality, address parsers/formatters
 
 ```ts
@@ -97,8 +114,9 @@ cc.estimateFinality(txid)
 ## WormholeTransfer
 
 Holds a reference to ChainContexts
+
 Holds details about the transfer
-May hold a ref to Signer
+
 Provides methods to step through the transfer process
 
 ## Glossary
@@ -109,7 +127,7 @@ Provides methods to step through the transfer process
     A chain or group of chains within the same ecosystem that share common logic (e.g. EVM, Cosmwasm, etc)
 - Platform Context
     A class which implements a standardized format and set of methods. It may include additional chain-specific methods and logic.
-- Module
+- Protocol 
     A cross-chain application built on top of Wormhole (the core contracts are also considered a module)
 - Universal Address
     A 32-byte address, used by the wormhole contracts
@@ -163,44 +181,24 @@ Provides Platform specific logic for a set of things
 
 Say I have an app that defines its own protocol, can I provide something that adheres to the WormholeTransfer interface so a dev can install it and call it like the TokenTransfer?
 
-## What is the preferred terminology to refer to either end of a cross-chain message: from/to, source/target or origin/destination?
 
+# Outstanding Questions: 
 
-## What is the preferred terminology for the core Wormhole layer? (i.e. Core Contracts or Wormhole Contracts)
+What is the preferred terminology to refer to either end of a cross-chain message: from/to, source/target or origin/destination?
 
-
-
-
-
-
-8/31 notes
-
-
-
-Platforms
-------
-
-abstract chain context class, rpc is the only platform specific thing to implement
-
-Connect
------
-
-What do with xchain concepts without having xchain context?
-
-e.g. 
-// implement universal univeral decoder
-given eth address, and without installing evm platform, how do i turn it into a solana wrapped token without knowing how to fmt the address? 
-
-// For this, tweak the contracts
-given an xfer from eth=>sol, and without installing sol platform, how do i determine the ATA?
-
-
+What is the preferred terminology for the core Wormhole layer? (i.e. Core Contracts or Wormhole Contracts)
 
 Should we namespace export base/definitions? 
 
+How should we think about xchain concepts without having xchain context?
 
+    e.g.  
+    // need to implement universal univeral decoder?
+    given eth address, and without installing evm platform, how do i turn it into a solana wrapped token without knowing how to fmt the address? 
 
-------------------
+    // neet to tweak contracts on sol to support !ATA?
+    given an xfer from eth=>sol, and without installing sol platform, how do i determine the ATA?
+
 
 What is the benefit of costmap vs single fat object
 

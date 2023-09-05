@@ -1,0 +1,200 @@
+[
+    {
+        "scope": "https://rpc.ankr.com:443",
+        "method": "POST",
+        "path": "/eth",
+        "body": [
+            {
+                "method": "eth_call",
+                "params": [
+                    {
+                        "to": "0x3ee18b2214aff97000d974cf647e7c347e8fa585",
+                        "data": "0x1a2be4da00000000000000000000000085f138bfee4ef8e540890cfb48f620571d67eda3"
+                    },
+                    "latest"
+                ],
+                "jsonrpc": "2.0"
+            },
+            {
+                "method": "eth_chainId",
+                "params": [],
+                "jsonrpc": "2.0"
+            }
+        ],
+        "status": 200,
+        "response": [
+            "1f8b0800000000000003000000ffff",
+            "8aae56ca2acecf2b2a4856b25232d23350d251ca4c51b23232d0512a4a2d2ecd2951b25232a83054aad5c1aed0d01245a10165c050a93616000000ffff03001582709792000000"
+        ],
+        "rawHeaders": [
+            "Date",
+            "Tue, 05 Sep 2023 14:32:59 GMT",
+            "Content-Type",
+            "application/json",
+            "Transfer-Encoding",
+            "chunked",
+            "Connection",
+            "close",
+            "CF-Cache-Status",
+            "DYNAMIC",
+            "Access-Control-Allow-Origin",
+            "*",
+            "Cache-Control",
+            "public, max-age=2",
+            "Access-Control-Allow-Headers",
+            "Content-Type,Authorization",
+            "Access-Control-Allow-Methods",
+            "GET,POST,DELETE,OPTIONS",
+            "Access-Control-Max-Age",
+            "86400",
+            "x-multirpc-response-type",
+            "1",
+            "Vary",
+            "Accept-Encoding",
+            "Server",
+            "cloudflare",
+            "CF-RAY",
+            "801f2f4caf0d8c6b-EWR",
+            "Content-Encoding",
+            "gzip"
+        ],
+        "responseIsBinary": false
+    },
+    {
+        "scope": "https://rpc.ankr.com:443",
+        "method": "POST",
+        "path": "/eth",
+        "body": [
+            {
+                "method": "eth_call",
+                "params": [
+                    {
+                        "to": "0x85f138bfee4ef8e540890cfb48f620571d67eda3",
+                        "data": "0x9a8a0592"
+                    },
+                    "latest"
+                ],
+                "jsonrpc": "2.0"
+            },
+            {
+                "method": "eth_chainId",
+                "params": [],
+                "jsonrpc": "2.0"
+            },
+            {
+                "method": "eth_call",
+                "params": [
+                    {
+                        "to": "0x85f138bfee4ef8e540890cfb48f620571d67eda3",
+                        "data": "0x3d6c043b"
+                    },
+                    "latest"
+                ],
+                "jsonrpc": "2.0"
+            },
+            {
+                "method": "eth_chainId",
+                "params": [],
+                "jsonrpc": "2.0"
+            }
+        ],
+        "status": 200,
+        "response": [
+            "1f8b0800000000000003000000ffff",
+            "8aae56ca2acecf2b2a4856b25232d23350d251ca4c51b23232d2512a4a2d2ecd2951b25232a83054aad5c1a1d084588586280a0d280366b8ed3126ca9e2463c33433b3c444e364c354730b536333e334030b73d344c32473935423f3240bd3b41433b36473a5da5800000000ffff03008f754c8523010000"
+        ],
+        "rawHeaders": [
+            "Date",
+            "Tue, 05 Sep 2023 14:32:59 GMT",
+            "Content-Type",
+            "application/json",
+            "Transfer-Encoding",
+            "chunked",
+            "Connection",
+            "close",
+            "CF-Cache-Status",
+            "DYNAMIC",
+            "Access-Control-Allow-Origin",
+            "*",
+            "Cache-Control",
+            "public, max-age=2",
+            "Access-Control-Allow-Headers",
+            "Content-Type,Authorization",
+            "Access-Control-Allow-Methods",
+            "GET,POST,DELETE,OPTIONS",
+            "Access-Control-Max-Age",
+            "86400",
+            "x-multirpc-response-type",
+            "1",
+            "Vary",
+            "Accept-Encoding",
+            "Server",
+            "cloudflare",
+            "CF-RAY",
+            "801f2f4db941424b-EWR",
+            "Content-Encoding",
+            "gzip"
+        ],
+        "responseIsBinary": false
+    },
+    {
+        "scope": "https://rpc.ankr.com:443",
+        "method": "POST",
+        "path": "/eth",
+        "body": [
+            {
+                "method": "eth_call",
+                "params": [
+                    {
+                        "to": "0x3ee18b2214aff97000d974cf647e7c347e8fa585",
+                        "data": "0x1ff1e2860000000000000000000000000000000000000000000000000000000000000006000000000000000000000000b31f66aa3c1e785363f0875a1b74e27b85fd66c7"
+                    },
+                    "latest"
+                ],
+                "jsonrpc": "2.0"
+            },
+            {
+                "method": "eth_chainId",
+                "params": [],
+                "jsonrpc": "2.0"
+            }
+        ],
+        "status": 200,
+        "response": [
+            "1f8b080000000000000374ca410a83301005d0bbfc7590494ce23457912e1a33032d62c52808c5bb77ed226ffdc61f3ef5bb6ceb8404d7110cde05c945834dea31ef48a0d3e2328d186e911a38a8ed39ab881765099ef8419366cf1a1d85c196384879f5b89e7f000000ffff0300effac18f92000000"
+        ],
+        "rawHeaders": [
+            "Date",
+            "Tue, 05 Sep 2023 14:33:00 GMT",
+            "Content-Type",
+            "application/json",
+            "Transfer-Encoding",
+            "chunked",
+            "Connection",
+            "close",
+            "CF-Cache-Status",
+            "DYNAMIC",
+            "Access-Control-Allow-Origin",
+            "*",
+            "Cache-Control",
+            "public, max-age=2",
+            "Access-Control-Allow-Headers",
+            "Content-Type,Authorization",
+            "Access-Control-Allow-Methods",
+            "GET,POST,DELETE,OPTIONS",
+            "Access-Control-Max-Age",
+            "86400",
+            "x-multirpc-response-type",
+            "1",
+            "Vary",
+            "Accept-Encoding",
+            "Server",
+            "cloudflare",
+            "CF-RAY",
+            "801f2f4ebc6242d3-EWR",
+            "Content-Encoding",
+            "gzip"
+        ],
+        "responseIsBinary": false
+    }
+]

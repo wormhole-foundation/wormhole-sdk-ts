@@ -120,17 +120,17 @@ export class SolanaPlatform implements Platform<'Solana'> {
   async getAutomaticTokenBridge(
     rpc: Connection,
   ): Promise<AutomaticTokenBridge<'Solana'>> {
-    throw new Error('Not implemented');
+    throw new Error('Not Supported');
   }
 
   async getCircleBridge(rpc: Connection): Promise<CircleBridge<'Solana'>> {
-    throw new Error('Not implemented');
+    throw new Error('Not Supported');
   }
 
   async getAutomaticCircleBridge(
     rpc: Connection,
   ): Promise<AutomaticCircleBridge<'Solana'>> {
-    throw new Error('Not implemented');
+    throw new Error('Not Supported');
   }
 
   parseAddress(chain: ChainName, address: string): UniversalAddress {

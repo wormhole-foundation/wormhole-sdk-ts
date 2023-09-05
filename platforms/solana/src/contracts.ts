@@ -26,13 +26,11 @@ export class SolanaContracts {
   }
 
   getContracts(chain: ChainName): Contracts | undefined {
-    const chainName = toChainName(chain);
-    return this._contracts.get(chainName);
+    return this._contracts.get(chain);
   }
 
   mustGetContracts(chain: ChainName): Contracts {
-    const chainName = toChainName(chain);
-    const contracts = this._contracts.get(chainName);
+    const contracts = this._contracts.get(chain);
     if (!contracts) throw new Error(`no Solana contracts found for ${chain}`);
     return contracts;
   }

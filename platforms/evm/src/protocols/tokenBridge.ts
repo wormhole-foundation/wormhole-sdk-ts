@@ -18,6 +18,7 @@ import {
   TokenId,
   NativeAddress,
   toNative,
+  ErrNotWrapped,
 } from '@wormhole-foundation/sdk-definitions';
 import { TokenTransferTransaction } from '@wormhole-foundation/connect-sdk';
 import { Provider, TransactionRequest } from 'ethers';
@@ -73,12 +74,12 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
   }
 
   async isWrappedAsset(token: UniversalOrEvm): Promise<boolean> {
-    return this.tokenBridge.isWrappedAsset(toEvmAddrString(token));
+    return await this.tokenBridge.isWrappedAsset(toEvmAddrString(token));
   }
 
   async getOriginalAsset(token: UniversalOrEvm): Promise<TokenId> {
     if (!(await this.isWrappedAsset(token)))
-      throw new Error(`Token ${token} is not a wrapped asset`);
+      throw ErrNotWrapped(token.toString());
 
     const tokenContract = TokenContractFactory.connect(
       toEvmAddrString(token),
@@ -102,12 +103,11 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     }
   }
 
-  // TODO:
   async getWrappedAsset(token: TokenId): Promise<NativeAddress<'Evm'>> {
     return toNative(
       'Evm',
       await this.tokenBridge.wrappedAsset(
-        token.chain,
+        toChainId(token.chain),
         token.address.toString(),
       ),
     );
