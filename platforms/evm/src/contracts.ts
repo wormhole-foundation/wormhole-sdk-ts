@@ -1,12 +1,13 @@
 import * as ethers_contracts from './ethers-contracts';
 import { ChainName, toChainName } from '@wormhole-foundation/sdk-base';
+import { coreBridge } from '@wormhole-foundation/sdk-base/src/constants/contracts';
 import {
   ChainsConfig,
   Contracts,
   TokenId,
   toNative,
 } from '@wormhole-foundation/sdk-definitions';
-import { Provider } from 'ethers';
+import { Provider, ethers } from 'ethers';
 
 /**
  * @category EVM
@@ -256,8 +257,20 @@ export class EvmContracts {
     return cmt;
   }
 
-  getImplementation(): ethers_contracts.ImplementationInterface {
+  getCoreImplementationInterface(): ethers_contracts.ImplementationInterface {
     return ethers_contracts.Implementation__factory.createInterface();
+  }
+
+  getCoreImplementation(
+    chain: ChainName,
+    connection: Provider,
+  ): ethers_contracts.Implementation {
+    const address = this.mustGetContracts(chain).coreBridge;
+    if (!address) throw new Error('Core bridge address not found');
+    return ethers_contracts.Implementation__factory.connect(
+      address,
+      connection,
+    );
   }
 
   async getNativeWrapped(

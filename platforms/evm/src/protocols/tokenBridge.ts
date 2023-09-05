@@ -98,9 +98,8 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
       //  old sdk checked for existence
       await this.getWrappedAsset({ chain, address });
       return true;
-    } catch (e) {
-      return false;
-    }
+    } catch (e) {}
+    return false;
   }
 
   async getWrappedAsset(token: TokenId): Promise<NativeAddress<'Evm'>> {
@@ -295,7 +294,8 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
       return l.address === coreAddress;
     });
 
-    const impl = this.contracts.getImplementation();
+    const impl = this.contracts.getCoreImplementationInterface();
+
     const parsedLogs = bridgeLogs.map(async (bridgeLog) => {
       const { topics, data } = bridgeLog;
       const parsed = impl.parseLog({ topics: topics.slice(), data });

@@ -8,6 +8,7 @@ import { SignedTxn } from "./types";
 // protocols
 import { TokenBridge, AutomaticTokenBridge } from "./protocols/tokenBridge";
 import { CircleBridge, AutomaticCircleBridge } from "./protocols/cctp";
+import { WormholeCore } from "./protocols/core";
 
 export type PlatformCtr<P extends PlatformName> = {
   _platform: P;
@@ -38,6 +39,7 @@ export interface Platform<P extends PlatformName> {
   getRpc(chain: ChainName): RpcConnection<P>;
 
   // protocol clients
+  getWormholeCore(rpc: RpcConnection<P>): Promise<WormholeCore<P>>;
   getTokenBridge(rpc: RpcConnection<P>): Promise<TokenBridge<P>>;
   getAutomaticTokenBridge(
     rpc: RpcConnection<P>

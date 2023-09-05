@@ -13,6 +13,7 @@ import {
   AutomaticCircleBridge,
   ChainsConfig,
   toNative,
+  EvmRpc,
 } from '@wormhole-foundation/sdk-definitions';
 
 import { ethers } from 'ethers';
@@ -23,6 +24,8 @@ import { EvmTokenBridge } from './protocols/tokenBridge';
 import { EvmAutomaticTokenBridge } from './protocols/automaticTokenBridge';
 import { EvmAutomaticCircleBridge } from './protocols/automaticCircleBridge';
 import { EvmCircleBridge } from './protocols/circleBridge';
+import { WormholeCore } from '@wormhole-foundation/sdk-definitions/dist/esm/protocols/core';
+import { EvmWormholeCore } from './protocols/wormholeCore';
 
 /**
  * @category EVM
@@ -47,6 +50,10 @@ export class EvmPlatform implements Platform<'Evm'> {
 
   getChain(chain: ChainName): EvmChain {
     return new EvmChain(this, chain);
+  }
+
+  getWormholeCore(rpc: ethers.Provider): Promise<WormholeCore<'Evm'>> {
+    return EvmWormholeCore.fromProvider(rpc, this.contracts);
   }
 
   async getTokenBridge(rpc: ethers.Provider): Promise<TokenBridge<'Evm'>> {
@@ -121,7 +128,6 @@ export class EvmPlatform implements Platform<'Evm'> {
 
   async sendWait(rpc: ethers.Provider, stxns: SignedTxn[]): Promise<TxHash[]> {
     const txhashes: TxHash[] = [];
-    // TODO: concurrent?
     for (const stxn of stxns) {
       const txRes = await rpc.broadcastTransaction(stxn);
       const txReceipt = await txRes.wait();
@@ -148,7 +154,7 @@ export class EvmPlatform implements Platform<'Evm'> {
       throw new Error(`No transaction found with txid: ${txid}`);
 
     const coreAddress = this.conf[chain]!.contracts.coreBridge;
-    const coreImpl = this.contracts.getImplementation();
+    const coreImpl = this.contracts.getCoreImplementationInterface();
 
     return receipt.logs
       .filter((l: any) => {

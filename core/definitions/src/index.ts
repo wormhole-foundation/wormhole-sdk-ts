@@ -19,6 +19,7 @@ export * from "./rpc";
 export * from "./attestation";
 export * from "./types";
 
+export * from "./protocols/core";
 export * from "./protocols/tokenBridge";
 export * from "./protocols/cctp";
 

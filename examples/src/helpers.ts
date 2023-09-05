@@ -125,7 +125,6 @@ class EthSigner implements Signer {
   async sign(tx: UnsignedTransaction[]): Promise<SignedTxn[]> {
     const signed = [];
     const { gasPrice, maxFeePerGas } = await this.provider.getFeeData();
-    // TODO: get better gas prices
     for (const txn of tx) {
       const { transaction, description } = txn;
       console.log(`Signing: ${description} for ${this.address()}`);

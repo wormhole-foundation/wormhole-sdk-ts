@@ -13,12 +13,14 @@ import {
   ChainsConfig,
   ChainContext,
   toNative,
+  SolRpc,
 } from '@wormhole-foundation/sdk-definitions';
 
 import { SolanaContracts } from './contracts';
 import { UniversalAddress } from '@wormhole-foundation/sdk-definitions';
 import { SolanaChain } from './chain';
 import { SolanaTokenBridge } from './protocols/tokenBridge';
+import { WormholeCore } from '@wormhole-foundation/sdk-definitions/dist/esm/protocols/core';
 
 const SOLANA_SEQ_LOG = 'Program log: Sequence: ';
 
@@ -113,6 +115,12 @@ export class SolanaPlatform implements Platform<'Solana'> {
 
     return txhashes;
   }
+
+  async getWormholeCore(rpc: SolRpc): Promise<WormholeCore<'Solana'>> {
+    throw new Error('Not Supported');
+    //return SolanaWormholeCore.fromProvider(rpc, this.contracts);
+  }
+
   async getTokenBridge(rpc: Connection): Promise<TokenBridge<'Solana'>> {
     return SolanaTokenBridge.fromProvider(rpc, this.contracts);
   }

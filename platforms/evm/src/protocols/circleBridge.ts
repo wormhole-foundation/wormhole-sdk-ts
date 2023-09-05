@@ -28,20 +28,13 @@ import { EvmContracts } from '../contracts';
 
 //https://github.com/circlefin/evm-cctp-contracts
 
-// TODO: Can we get this event topic from somewhere else?
-// TODO: yes
-// const z = this.tokenMessenger.getEvent('DepositForBurn');
-// z.fragment.topicHash
-export const TOKEN_EVENT_HASH =
-  '0x2fa9ca894982930190727e75500a97d8dc500233a5065e0f3126c48fbe0343c0';
-
-export const MESSAGE_EVENT_HASH =
-  '0x8c5261668696ce22758910d05bab8f186d6eb247ceac2af2e82c7dc17669b036';
-
 export class EvmCircleBridge implements CircleBridge<'Evm'> {
   readonly chainId: bigint;
   readonly msgTransmitter: MessageTransmitter.MessageTransmitter;
   readonly tokenMessenger: TokenMessenger.TokenMessenger;
+
+  readonly tokenEventHash: string;
+  readonly messageEventHash: string;
 
   private constructor(
     readonly network: 'Mainnet' | 'Testnet',
@@ -59,6 +52,12 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
       chain,
       provider,
     );
+
+    this.tokenEventHash =
+      this.tokenMessenger.getEvent('DepositForBurn').fragment.topicHash;
+
+    this.messageEventHash =
+      this.msgTransmitter.getEvent('MessageReceived').fragment.topicHash;
   }
 
   static async fromProvider(
@@ -153,7 +152,7 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
     if (!receipt) throw new Error(`No receipt for ${txid} on ${this.chain}`);
 
     const tokenLogs = receipt.logs
-      .filter((log) => log.topics[0] === TOKEN_EVENT_HASH)
+      .filter((log) => log.topics[0] === this.tokenEventHash)
       .map((tokenLog) => {
         const { topics, data } = tokenLog;
         return this.tokenMessenger.interface.parseLog({
@@ -168,7 +167,7 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
     const [tokenLog] = tokenLogs;
 
     const messageLogs = receipt.logs
-      .filter((log) => log.topics[0] === MESSAGE_EVENT_HASH)
+      .filter((log) => log.topics[0] === this.messageEventHash)
       .map((messageLog) => {
         const { topics, data } = messageLog;
         return this.msgTransmitter.interface.parseLog({

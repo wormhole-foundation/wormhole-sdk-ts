@@ -23,6 +23,7 @@ import {
 import { MockRpc } from "./rpc";
 import { MockChain } from "./chain";
 import { MockTokenBridge } from "./tokenBridge";
+import { WormholeCore } from "../../protocols/core";
 
 export function mockPlatformFactory(
   p: PlatformName
@@ -100,6 +101,9 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
     throw new Error("Method not implemented.");
   }
 
+  async getWormholeCore(rpc: RpcConnection<P>): Promise<WormholeCore<P>> {
+    throw new Error("Method not implemented.");
+  }
   async getTokenBridge(rpc: RpcConnection<P>): Promise<TokenBridge<P>> {
     return new MockTokenBridge<P>(rpc);
   }
