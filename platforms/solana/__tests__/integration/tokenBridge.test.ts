@@ -5,6 +5,7 @@ import {
   toNative,
   VAA,
   Signature,
+  nativeChainAddress,
 } from '@wormhole-foundation/sdk-definitions';
 import { chainConfigs } from '@wormhole-foundation/connect-sdk';
 
@@ -173,8 +174,10 @@ describe('TokenBridge Tests', () => {
 
       test('Real Wrapped', async () => {
         const orig = await tb.getOriginalAsset(realWrappedAddress);
-        const wrappedAsset = await tb.getWrappedAsset(orig);
-        expect(wrappedAsset.toString()).toBe(realWrappedAddress.toString());
+        const wrappedAsset = nativeChainAddress(await tb.getWrappedAsset(orig));
+        expect(wrappedAsset.address.toString()).toBe(
+          realWrappedAddress.toString(),
+        );
       });
     });
   });

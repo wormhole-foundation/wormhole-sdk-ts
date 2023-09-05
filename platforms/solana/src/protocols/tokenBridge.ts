@@ -143,7 +143,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     return false;
   }
 
-  async getWrappedAsset(token: TokenId): Promise<NativeAddress<'Solana'>> {
+  async getWrappedAsset(token: TokenId): Promise<TokenId> {
     const mint = deriveWrappedMintKey(
       this.tokenBridge.programId,
       toChainId(token.chain),
@@ -154,7 +154,10 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     // the derived mint address back to the caller.
     try {
       await getWrappedMeta(this.connection, this.tokenBridge.programId, mint);
-      return toNative(this.chain, mint.toBase58());
+      return {
+        chain: this.chain,
+        address: toNative(this.chain, mint.toBase58()),
+      };
     } catch (_) {}
 
     throw ErrNotWrapped(token.address.toString());
@@ -503,7 +506,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     const { blockhash } = await this.connection.getLatestBlockhash();
     const senderAddress = new PublicKey(sender.toUint8Array());
     const ataAddress = new PublicKey(vaa.payload.to.address.toUint8Array());
-    const tokenMint = await this.getWrappedAsset(vaa.payload.token);
+    const wrappedToken = await this.getWrappedAsset(vaa.payload.token);
 
     // If the ata doesn't exist yet, create it
     const acctInfo = await this.connection.getAccountInfo(ataAddress);
@@ -513,7 +516,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
           senderAddress,
           ataAddress,
           senderAddress,
-          new PublicKey(tokenMint.toUint8Array()),
+          new PublicKey(wrappedToken.address.toUint8Array()),
         ),
       );
       ataCreationTx.feePayer = senderAddress;

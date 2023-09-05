@@ -6,6 +6,7 @@ import {
   TokenBridge,
   UniversalAddress,
   VAA,
+  nativeChainAddress,
   testing,
   toNative,
 } from '@wormhole-foundation/sdk-definitions';
@@ -199,8 +200,10 @@ describe('TokenBridge Tests', () => {
 
       test('Real Wrapped', async () => {
         const orig = await tb.getOriginalAsset(realWrappedAddress);
-        const wrappedAsset = await tb.getWrappedAsset(orig);
-        expect(wrappedAsset.toString()).toBe(realWrappedAddress.toString());
+        const wrappedAsset = nativeChainAddress(await tb.getWrappedAsset(orig));
+        expect(wrappedAsset.address.toString()).toBe(
+          realWrappedAddress.toString(),
+        );
       });
     });
   });

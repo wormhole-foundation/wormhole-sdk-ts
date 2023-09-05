@@ -102,14 +102,12 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     return false;
   }
 
-  async getWrappedAsset(token: TokenId): Promise<NativeAddress<'Evm'>> {
-    return toNative(
-      'Evm',
-      await this.tokenBridge.wrappedAsset(
-        toChainId(token.chain),
-        token.address.toString(),
-      ),
+  async getWrappedAsset(token: TokenId): Promise<TokenId> {
+    const wrappedAddress = await this.tokenBridge.wrappedAsset(
+      toChainId(token.chain),
+      token.address.toString(),
     );
+    return { chain: this.chain, address: toNative('Evm', wrappedAddress) };
   }
 
   async isTransferCompleted(

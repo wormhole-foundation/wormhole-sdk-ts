@@ -7,7 +7,7 @@ import {
   AutomaticTokenBridge,
   CircleBridge,
   AutomaticCircleBridge,
-  SignedTxn,
+  SignedTx,
   TxHash,
   WormholeMessageId,
   ChainsConfig,
@@ -57,15 +57,22 @@ export class SolanaPlatform implements Platform<'Solana'> {
 
     try {
       const tb = await this.getTokenBridge(rpc);
-      const asset = await tb.getWrappedAsset(token);
-      return { chain, address: asset.toUniversalAddress() };
+      return await tb.getWrappedAsset(token);
     } catch (e) {
+      //  TODO: throw error?
       console.error(e);
     }
     return null;
   }
 
-  async getTokenDecimals(rpc: Connection, token: TokenId): Promise<bigint> {
+  async getDecimals(
+    chain: ChainName,
+    rpc: Connection,
+    token: TokenId | 'native',
+  ): Promise<bigint> {
+    if (token === 'native')
+      return BigInt(this.conf[chain]?.nativeTokenDecimals!);
+
     let mint = await rpc.getParsedAccountInfo(
       new PublicKey(token.address.unwrap()),
     );
@@ -74,17 +81,16 @@ export class SolanaPlatform implements Platform<'Solana'> {
     return decimals;
   }
 
-  async getNativeBalance(rpc: Connection, walletAddr: string): Promise<bigint> {
-    return BigInt(await rpc.getBalance(new PublicKey(walletAddr)));
-  }
-
-  async getTokenBalance(
+  async getBalance(
     chain: ChainName,
     rpc: Connection,
     walletAddress: string,
-    tokenId: TokenId,
+    token: TokenId | 'native',
   ): Promise<bigint | null> {
-    const address = await this.getWrappedAsset(chain, rpc, tokenId);
+    if (token === 'native')
+      return BigInt(await rpc.getBalance(new PublicKey(walletAddress)));
+
+    const address = await this.getWrappedAsset(chain, rpc, token);
     if (!address) return null;
 
     const splToken = await rpc.getTokenAccountsByOwner(
@@ -97,7 +103,7 @@ export class SolanaPlatform implements Platform<'Solana'> {
     return BigInt(balance.value.amount);
   }
 
-  async sendWait(rpc: Connection, stxns: SignedTxn[]): Promise<TxHash[]> {
+  async sendWait(rpc: Connection, stxns: SignedTx[]): Promise<TxHash[]> {
     const txhashes: TxHash[] = [];
 
     // TODO: concurrent?

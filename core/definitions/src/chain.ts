@@ -44,20 +44,13 @@ export abstract class ChainContext<P extends PlatformName> {
 
   abstract getRpc(): RpcConnection<P>;
 
-  getWrappedAsset: OmitChainRpc<P, "getWrappedAsset"> = (token) => {
-    return this.platform.getWrappedAsset(this.chain, this.getRpc(), token);
+  // Utils for platform specific queries
+  getDecimals: OmitChainRpc<P, "getDecimals"> = (token) => {
+    return this.platform.getDecimals(this.chain, this.getRpc(), token);
   };
 
-  getTokenDecimals: OmitRpc<P, "getTokenDecimals"> = (token) => {
-    return this.platform.getTokenDecimals(this.getRpc(), token);
-  };
-
-  getNativeBalance: OmitRpc<P, "getNativeBalance"> = (walletAddress) => {
-    return this.platform.getNativeBalance(this.getRpc(), walletAddress);
-  };
-
-  getTokenBalance: OmitChainRpc<P, "getTokenBalance"> = (walletAddr, token) => {
-    return this.platform.getTokenBalance(
+  getBalance: OmitChainRpc<P, "getBalance"> = (walletAddr, token) => {
+    return this.platform.getBalance(
       this.chain,
       this.getRpc(),
       walletAddr,
@@ -65,14 +58,17 @@ export abstract class ChainContext<P extends PlatformName> {
     );
   };
 
+  // Get details about the transaction
   parseTransaction: OmitChainRpc<P, "parseTransaction"> = (txid) => {
     return this.platform.parseTransaction(this.chain, this.getRpc(), txid);
   };
 
+  // Take a native address and convert it to a UniversalAddress
   parseAddress: OmitChain<P, "parseAddress"> = (address) => {
     return this.platform.parseAddress(this.chain, address);
   };
 
+  // Send a transaction and wait for it to be confirmed
   sendWait: OmitRpc<P, "sendWait"> = (stxns) => {
     return this.platform.sendWait(this.getRpc(), stxns);
   };

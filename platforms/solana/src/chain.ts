@@ -28,7 +28,9 @@ export class SolanaChain extends ChainContext<'Solana'> {
     token: TokenId,
     address: UniversalAddress,
   ): Promise<UniversalAddress> {
-    const wrapped = await this.getWrappedAsset(token);
+    const tb = await this.getTokenBridge();
+
+    const wrapped = await tb.getWrappedAsset(token);
     if (!wrapped)
       throw new Error(`No wrapped token on ${this.chain} for: ${token}`);
 

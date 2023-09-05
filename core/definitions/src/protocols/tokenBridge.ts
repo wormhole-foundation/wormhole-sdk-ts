@@ -10,22 +10,22 @@ export const ErrNotWrapped = (token: string) =>
 
 export interface TokenBridge<P extends PlatformName> {
   //read-only:
-  isWrappedAsset(token: UniversalOrNative<P>): Promise<boolean>;
-  getOriginalAsset(token: UniversalOrNative<P>): Promise<TokenId>;
-  hasWrappedAsset(original: ChainAddress): Promise<boolean>;
-  getWrappedAsset(original: ChainAddress): Promise<NativeAddress<P>>;
+  isWrappedAsset(maybe_native_token: UniversalOrNative<P>): Promise<boolean>;
+  hasWrappedAsset(original_token: TokenId): Promise<boolean>;
+  getWrappedAsset(original_token: TokenId): Promise<TokenId>;
+  getOriginalAsset(native_token: UniversalOrNative<P>): Promise<TokenId>;
   getWrappedNative(): Promise<TokenId>;
   isTransferCompleted(
     vaa: VAA<"Transfer"> | VAA<"TransferWithPayload">
   ): Promise<boolean>;
   //signer required:
   createAttestation(
-    token: UniversalOrNative<P>,
-    sender?: UniversalOrNative<P>
+    token_to_attest: UniversalOrNative<P>,
+    payer?: UniversalOrNative<P>
   ): AsyncGenerator<UnsignedTransaction>;
   submitAttestation(
     vaa: VAA<"AttestMeta">,
-    sender?: UniversalOrNative<P>
+    payer?: UniversalOrNative<P>
   ): AsyncGenerator<UnsignedTransaction>;
   //alternative naming: initiateTransfer
   transfer(

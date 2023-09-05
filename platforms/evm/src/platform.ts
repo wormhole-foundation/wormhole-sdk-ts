@@ -5,7 +5,7 @@ import {
   Platform,
   WormholeMessageId,
   isWormholeMessageId,
-  SignedTxn,
+  SignedTx,
   AutomaticTokenBridge,
   TokenBridge,
   UniversalAddress,
@@ -74,26 +74,14 @@ export class EvmPlatform implements Platform<'Evm'> {
     return await EvmAutomaticCircleBridge.fromProvider(rpc, this.contracts);
   }
 
-  async getWrappedAsset(
+  async getDecimals(
     chain: ChainName,
     rpc: ethers.Provider,
-    token: TokenId,
-  ): Promise<TokenId | null> {
-    // if the token is already native, return the token address
-    if (chain === token.chain) return token;
-
-    const tokenBridge = await this.getTokenBridge(rpc);
-    const foreignAddr = await tokenBridge.getWrappedAsset({
-      chain,
-      address: token.address,
-    });
-    return { chain, address: foreignAddr.toUniversalAddress() };
-  }
-
-  async getTokenDecimals(
-    rpc: ethers.Provider,
-    token: TokenId,
+    token: TokenId | 'native',
   ): Promise<bigint> {
+    if (token === 'native')
+      return BigInt(this.conf[chain]!.nativeTokenDecimals);
+
     const tokenContract = this.contracts.mustGetTokenImplementation(
       rpc,
       token.address.toString(),
@@ -102,20 +90,17 @@ export class EvmPlatform implements Platform<'Evm'> {
     return decimals;
   }
 
-  async getNativeBalance(
-    rpc: ethers.Provider,
-    walletAddr: string,
-  ): Promise<bigint> {
-    return await rpc.getBalance(walletAddr);
-  }
-
-  async getTokenBalance(
+  async getBalance(
     chain: ChainName,
     rpc: ethers.Provider,
     walletAddr: string,
-    tokenId: TokenId,
+    tokenId: TokenId | 'native',
   ): Promise<bigint | null> {
-    const address = await this.getWrappedAsset(chain, rpc, tokenId);
+    if (tokenId === 'native') return await rpc.getBalance(walletAddr);
+
+    const tb = await this.getTokenBridge(rpc);
+
+    const address = await tb.getWrappedAsset(tokenId);
     if (!address) return null;
 
     const token = this.contracts.mustGetTokenImplementation(
@@ -126,7 +111,7 @@ export class EvmPlatform implements Platform<'Evm'> {
     return balance;
   }
 
-  async sendWait(rpc: ethers.Provider, stxns: SignedTxn[]): Promise<TxHash[]> {
+  async sendWait(rpc: ethers.Provider, stxns: SignedTx[]): Promise<TxHash[]> {
     const txhashes: TxHash[] = [];
     for (const stxn of stxns) {
       const txRes = await rpc.broadcastTransaction(stxn);

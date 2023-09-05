@@ -180,7 +180,9 @@ export class Wormhole {
     chain: ChainName,
     token: TokenId,
   ): Promise<TokenId | null> {
-    return await this.getChain(chain).getWrappedAsset(token);
+    const ctx = this.getChain(chain);
+    const tb = await ctx.getTokenBridge();
+    return tb.getWrappedAsset(token);
   }
 
   /**
@@ -208,23 +210,12 @@ export class Wormhole {
    * @param chain The chain name or id of the token/representation
    * @returns The number of decimals
    */
-  async getTokenDecimals(chain: ChainName, token: TokenId): Promise<bigint> {
-    const repr = await this.mustGetWrappedAsset(chain, token);
-    return await this.getChain(chain).getTokenDecimals(repr);
-  }
-
-  /**
-   * Fetches the native token balance for a wallet
-   *
-   * @param walletAddress The wallet address
-   * @param chain The chain name or id
-   * @returns The native balance as a BigNumber
-   */
-  async getNativeBalance(
+  async getDecimals(
     chain: ChainName,
-    walletAddress: string,
+    token: TokenId | 'native',
   ): Promise<bigint> {
-    return await this.getChain(chain).getNativeBalance(walletAddress);
+    const ctx = this.getChain(chain);
+    return await ctx.getDecimals(token);
   }
 
   /**
@@ -235,12 +226,13 @@ export class Wormhole {
    * @param chain The chain name or id
    * @returns The token balance of the wormhole asset as a BigNumber
    */
-  async getTokenBalance(
+  async getBalance(
     walletAddress: string,
-    token: TokenId,
+    token: TokenId | 'native',
     chain: ChainName,
   ): Promise<bigint | null> {
-    return await this.getChain(chain).getTokenBalance(walletAddress, token);
+    const ctx = this.getChain(chain);
+    return ctx.getBalance(walletAddress, token);
   }
 
   /**

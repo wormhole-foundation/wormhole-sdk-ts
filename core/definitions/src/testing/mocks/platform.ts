@@ -46,6 +46,53 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
   constructor(conf: ChainsConfig) {
     this.conf = conf;
   }
+  getDecimals(
+    chain: ChainName,
+    rpc: RpcConnection<P>,
+    token: TokenId | "native"
+  ): Promise<bigint> {
+    throw new Error("Method not implemented.");
+  }
+  getBalance(
+    chain:
+      | "Solana"
+      | "Btc"
+      | "Algorand"
+      | "Sui"
+      | "Aptos"
+      | "Osmosis"
+      | "Wormchain"
+      | "Near"
+      | "Ethereum"
+      | "Terra"
+      | "Bsc"
+      | "Polygon"
+      | "Avalanche"
+      | "Oasis"
+      | "Aurora"
+      | "Fantom"
+      | "Karura"
+      | "Acala"
+      | "Klaytn"
+      | "Celo"
+      | "Moonbeam"
+      | "Neon"
+      | "Terra2"
+      | "Injective"
+      | "Arbitrum"
+      | "Optimism"
+      | "Gnosis"
+      | "Pythnet"
+      | "Xpla"
+      | "Base"
+      | "Sei"
+      | "Sepolia",
+    rpc: RpcConnection<P>,
+    walletAddr: string,
+    token: TokenId | "native"
+  ): Promise<bigint | null> {
+    throw new Error("Method not implemented.");
+  }
 
   getChain(chain: ChainName): ChainContext<P> {
     return new MockChain<P>(this, chain);
@@ -105,6 +152,7 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
     throw new Error("Method not implemented.");
   }
   async getTokenBridge(rpc: RpcConnection<P>): Promise<TokenBridge<P>> {
+    // @ts-ignore
     return new MockTokenBridge<P>(rpc);
   }
 
