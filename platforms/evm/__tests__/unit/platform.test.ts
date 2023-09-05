@@ -1,24 +1,14 @@
 import { expect, test } from '@jest/globals';
+import '../mocks/ethers';
+
 import { chainConfigs } from '@wormhole-foundation/connect-sdk';
-import { EvmPlatform } from '../../src/platform';
 import { testing } from '@wormhole-foundation/sdk-definitions';
 import {
   ChainName,
   chainToPlatform,
   chains,
 } from '@wormhole-foundation/sdk-base';
-
-jest.mock('ethers', () => {
-  const actualEthers = jest.requireActual('ethers');
-  return {
-    ...actualEthers,
-    getDefaultProvider: jest.fn().mockImplementation(() => {
-      return {
-        getNetwork: jest.fn().mockReturnValue({ chainId: 1 }),
-      };
-    }),
-  };
-});
+import { EvmPlatform } from '../../src/platform';
 
 import { getDefaultProvider } from 'ethers';
 

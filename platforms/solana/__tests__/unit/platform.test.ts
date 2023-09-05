@@ -1,38 +1,23 @@
 import { expect, test } from '@jest/globals';
-
-// Mock the genesis hash call for solana so we dont touch the network
-jest.mock('@solana/web3.js', () => {
-  const actualWeb3 = jest.requireActual('@solana/web3.js');
-  return {
-    ...actualWeb3,
-    getDefaultProvider: jest.fn().mockImplementation(() => {
-      return {
-        getGenesisHash: jest
-          .fn()
-          .mockReturnValue(solNetworkChainToGenesisHash(NETWORK, 'Solana')),
-      };
-    }),
-  };
-});
+import '../mocks/web3';
 
 import { testing } from '@wormhole-foundation/sdk-definitions';
 import {
   ChainName,
   chainToPlatform,
   chains,
-  solNetworkChainToGenesisHash,
 } from '@wormhole-foundation/sdk-base';
 import { chainConfigs } from '@wormhole-foundation/connect-sdk';
 
 import { SolanaPlatform } from '../../src';
 
-const NETWORK = 'Mainnet';
+import { PublicKey } from '@solana/web3.js';
 
-// @ts-ignore
-import { getDefaultProvider, PublicKey } from '@solana/web3.js';
+// @ts-ignore -- this is the mock we import above
+import { getDefaultProvider } from '@solana/web3.js';
 
 const SOLANA_CHAINS = chains.filter((c) => chainToPlatform(c) === 'Solana');
-const configs = chainConfigs(NETWORK);
+const configs = chainConfigs('Mainnet');
 
 describe('Solana Platform Tests', () => {
   describe('Parse Address', () => {
