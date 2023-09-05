@@ -20,10 +20,12 @@ export interface TokenBridge<P extends PlatformName> {
   ): Promise<boolean>;
   //signer required:
   createAttestation(
-    address: UniversalOrNative<P>
+    token: UniversalOrNative<P>,
+    sender?: UniversalOrNative<P>
   ): AsyncGenerator<UnsignedTransaction>;
   submitAttestation(
-    vaa: VAA<"AttestMeta">
+    vaa: VAA<"AttestMeta">,
+    sender?: UniversalOrNative<P>
   ): AsyncGenerator<UnsignedTransaction>;
   //alternative naming: initiateTransfer
   transfer(

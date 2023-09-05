@@ -39,14 +39,17 @@ import {
 
 import { Wormhole as WormholeCore } from '../utils/types/wormhole';
 import {
+  createBridgeFeeTransferInstruction,
   createPostVaaInstruction,
   createVerifySignaturesInstructions,
 } from '../utils/wormhole';
 import { TokenBridge as TokenBridgeContract } from '../utils/types/tokenBridge';
 import {
   createApproveAuthoritySignerInstruction,
+  createAttestTokenInstruction,
   createCompleteTransferNativeInstruction,
   createCompleteTransferWrappedInstruction,
+  createCreateWrappedInstruction,
   createTransferNativeInstruction,
   createTransferNativeWithPayloadInstruction,
   createTransferWrappedInstruction,
@@ -165,14 +168,57 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
 
   async *createAttestation(
     token: UniversalOrSolana,
+    sender: UniversalOrSolana,
   ): AsyncGenerator<SolanaUnsignedTransaction> {
-    throw new Error('not implemented');
+    const senderAddress = new PublicKey(sender.toUint8Array());
+    // TODO:
+    const nonce = 0; // createNonce().readUInt32LE(0);
+
+    const transferIx = await createBridgeFeeTransferInstruction(
+      this.connection,
+      this.coreBridge.programId,
+      senderAddress,
+    );
+    const messageKey = Keypair.generate();
+    const attestIx = createAttestTokenInstruction(
+      this.connection,
+      this.tokenBridge.programId,
+      this.coreBridge.programId,
+      senderAddress,
+      token.toUint8Array(),
+      messageKey.publicKey,
+      nonce,
+    );
+
+    const transaction = new Transaction().add(transferIx, attestIx);
+    const { blockhash } = await this.connection.getLatestBlockhash();
+    transaction.recentBlockhash = blockhash;
+    transaction.feePayer = senderAddress;
+    transaction.partialSign(messageKey);
+
+    yield this.createUnsignedTx(transaction, 'Solana.AttestToken');
   }
 
   async *submitAttestation(
     vaa: VAA<'AttestMeta'>,
+    sender: UniversalOrSolana,
   ): AsyncGenerator<SolanaUnsignedTransaction> {
-    throw new Error('not implemented');
+    const senderAddress = new PublicKey(sender.toUint8Array());
+
+    const transaction = new Transaction().add(
+      createCreateWrappedInstruction(
+        this.connection,
+        this.tokenBridge.programId,
+        this.coreBridge.programId,
+        senderAddress,
+        vaa,
+      ),
+    );
+    const { blockhash } = await this.connection.getLatestBlockhash();
+    transaction.recentBlockhash = blockhash;
+    transaction.feePayer = senderAddress;
+
+    yield this.createUnsignedTx(transaction, 'Solana.CreateWrapped');
   }
 
   private async transferSol(

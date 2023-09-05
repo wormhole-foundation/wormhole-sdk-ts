@@ -1,25 +1,38 @@
 import { expect, test } from '@jest/globals';
-import { Connection, PublicKey } from '@solana/web3.js';
+
+// Mock the genesis hash call for solana so we dont touch the network
+jest.mock('@solana/web3.js', () => {
+  const actualWeb3 = jest.requireActual('@solana/web3.js');
+  return {
+    ...actualWeb3,
+    getDefaultProvider: jest.fn().mockImplementation(() => {
+      return {
+        getGenesisHash: jest
+          .fn()
+          .mockReturnValue(solNetworkChainToGenesisHash(NETWORK, 'Solana')),
+      };
+    }),
+  };
+});
 
 import { testing } from '@wormhole-foundation/sdk-definitions';
 import {
   ChainName,
   chainToPlatform,
   chains,
+  solNetworkChainToGenesisHash,
 } from '@wormhole-foundation/sdk-base';
 import { chainConfigs } from '@wormhole-foundation/connect-sdk';
 
 import { SolanaPlatform } from '../../src';
 
-// jest.mock('@solana/web3.js', () => {
-//   const actualWeb3 = jest.requireActual('@solana/web3.js');
-//   return {
-//     ...actualWeb3,
-//   };
-// });
+const NETWORK = 'Mainnet';
+
+// @ts-ignore
+import { getDefaultProvider, PublicKey } from '@solana/web3.js';
 
 const SOLANA_CHAINS = chains.filter((c) => chainToPlatform(c) === 'Solana');
-const configs = chainConfigs('Mainnet');
+const configs = chainConfigs(NETWORK);
 
 describe('Solana Platform Tests', () => {
   describe('Parse Address', () => {
@@ -34,18 +47,14 @@ describe('Solana Platform Tests', () => {
     });
   });
 
+  const fakeRpc = getDefaultProvider();
+
   describe('Get Token Bridge', () => {
-    test('No RPC', async () => {
-      const p = new SolanaPlatform({});
-      const fakeRpc = new Connection('http://localhost:8545');
-      expect(() => p.getTokenBridge(fakeRpc)).rejects.toThrow();
-    });
-    test('With RPC', async () => {
+    test('Hardcoded Genesis mock', async () => {
       const p = new SolanaPlatform({
         [SOLANA_CHAINS[0]]: configs[SOLANA_CHAINS[0]],
       });
-      const rpc = p.getRpc(SOLANA_CHAINS[0]);
-      const tb = await p.getTokenBridge(rpc);
+      const tb = await p.getTokenBridge(fakeRpc);
       expect(tb).toBeTruthy();
     });
   });
@@ -55,8 +64,7 @@ describe('Solana Platform Tests', () => {
       const p = new SolanaPlatform({
         [SOLANA_CHAINS[0]]: configs[SOLANA_CHAINS[0]],
       });
-      const rpc = p.getRpc(SOLANA_CHAINS[0]);
-      expect(() => p.getAutomaticTokenBridge(rpc)).rejects.toThrow();
+      expect(() => p.getAutomaticTokenBridge(fakeRpc)).rejects.toThrow();
     });
   });
 

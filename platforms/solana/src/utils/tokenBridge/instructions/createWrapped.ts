@@ -26,7 +26,7 @@ export function createCreateWrappedInstruction(
   tokenBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: VAA<'Transfer'> | VAA<'TransferWithPayload'>,
+  vaa: VAA<'AttestMeta'>,
 ): TransactionInstruction {
   const methods = createReadOnlyTokenBridgeProgramInterface(
     tokenBridgeProgramId,
@@ -69,7 +69,7 @@ export function getCreateWrappedAccounts(
   tokenBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: VAA<'Transfer'> | VAA<'TransferWithPayload'>,
+  vaa: VAA<'AttestMeta'>,
 ): CreateWrappedAccounts {
   const mint = deriveWrappedMintKey(
     tokenBridgeProgramId,

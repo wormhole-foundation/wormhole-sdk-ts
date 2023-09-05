@@ -3,6 +3,8 @@ import {
   Platform,
   testing,
   toNative,
+  VAA,
+  Signature,
 } from '@wormhole-foundation/sdk-definitions';
 import { chainConfigs } from '@wormhole-foundation/connect-sdk';
 
@@ -38,6 +40,8 @@ const realWrappedAddress = toNative(
   'Solana',
   TOKEN_ADDRESSES['Mainnet']['Solana']['wavax'],
 );
+
+const sendSigner = new MockSolanaSigner();
 
 // Setup nock to record fixtures
 const nockBack = nock.back;
@@ -175,79 +179,73 @@ describe('TokenBridge Tests', () => {
     });
   });
 
-  // describe('Create Token Attestation Transactions', () => {
-  //   const chain = 'Solana';
-  //   const nativeAddress = testing.utils.makeNativeAddress(chain);
+  describe('Create Token Attestation Transactions', () => {
+    const chain = 'Solana';
+    const nativeAddress = testing.utils.makeNativeAddress(chain);
 
-  //   const tbAddress = p.conf[chain]!.contracts.tokenBridge!;
+    const sender = toNative(chain, sendSigner.address());
+    const tbAddress = p.conf[chain]!.contracts.tokenBridge!;
 
-  //   test('Create Attestation', async () => {
-  //     const attestation = tb.createAttestation(nativeAddress);
-  //     const allTxns: SolanaUnsignedTransaction[] = [];
-  //     for await (const atx of attestation) {
-  //       allTxns.push(atx);
-  //     }
-  //     expect(allTxns).toHaveLength(1);
-  //     const [attestTx] = allTxns;
-  //     expect(attestTx).toBeTruthy();
-  //     expect(attestTx.chain).toEqual(chain);
+    test('Create Attestation', async () => {
+      const attestation = tb.createAttestation(nativeAddress, sender);
+      const allTxns: SolanaUnsignedTransaction[] = [];
+      for await (const atx of attestation) {
+        allTxns.push(atx);
+      }
+      expect(allTxns).toHaveLength(1);
+      const [attestTx] = allTxns;
+      expect(attestTx).toBeTruthy();
+      expect(attestTx.chain).toEqual(chain);
 
-  //     const { transaction } = attestTx;
-  //     console.log(transaction);
-  //     // expect(transaction.chainId).toEqual(
-  //     //   evmNetworkChainToSolanaChainId(NETWORK, chain),
-  //     // );
-  //   });
+      const { transaction } = attestTx;
+      expect(transaction.instructions).toHaveLength(2);
+    });
 
-  //   test('Submit Attestation', async () => {
-  //     // TODO: generator for this
-  //     const vaa: VAA<'AttestMeta'> = {
-  //       payloadLiteral: 'AttestMeta',
-  //       payload: {
-  //         token: { address: nativeAddress.toUniversalAddress(), chain: chain },
-  //         decimals: 8,
-  //         symbol: Buffer.from(new Uint8Array(16)).toString('hex'),
-  //         name: Buffer.from(new Uint8Array(16)).toString('hex'),
-  //       },
-  //       hash: new Uint8Array(32),
-  //       guardianSet: 0,
-  //       signatures: [{ guardianIndex: 0, signature: new Signature(1n, 2n, 1) }],
-  //       emitterChain: chain,
-  //       emitterAddress: toNative(chain, tbAddress).toUniversalAddress(),
-  //       sequence: 0n,
-  //       consistencyLevel: 0,
-  //       timestamp: 0,
-  //       nonce: 0,
-  //     };
-  //     const submitAttestation = tb.submitAttestation(vaa);
+    test('Submit Attestation', async () => {
+      // TODO: generator for this
+      const vaa: VAA<'AttestMeta'> = {
+        payloadLiteral: 'AttestMeta',
+        payload: {
+          token: {
+            address: nativeAddress.toUniversalAddress(),
+            chain: 'Avalanche',
+          },
+          decimals: 8,
+          symbol: Buffer.from(new Uint8Array(16)).toString('hex'),
+          name: Buffer.from(new Uint8Array(16)).toString('hex'),
+        },
+        hash: new Uint8Array(32),
+        guardianSet: 0,
+        signatures: [{ guardianIndex: 0, signature: new Signature(1n, 2n, 1) }],
+        emitterChain: 'Avalanche',
+        emitterAddress: toNative(chain, tbAddress).toUniversalAddress(),
+        sequence: 0n,
+        consistencyLevel: 0,
+        timestamp: 0,
+        nonce: 0,
+      };
+      const submitAttestation = tb.submitAttestation(vaa, sender);
 
-  //     const allTxns: SolanaUnsignedTransaction[] = [];
-  //     for await (const atx of submitAttestation) {
-  //       allTxns.push(atx);
-  //     }
-  //     expect(allTxns).toHaveLength(1);
-  //     const [attestTx] = allTxns;
-  //     expect(attestTx).toBeTruthy();
-  //     expect(attestTx.chain).toEqual(chain);
+      const allTxns: SolanaUnsignedTransaction[] = [];
+      for await (const atx of submitAttestation) {
+        allTxns.push(atx);
+      }
+      expect(allTxns).toHaveLength(1);
+      const [attestTx] = allTxns;
+      expect(attestTx).toBeTruthy();
+      expect(attestTx.chain).toEqual(chain);
 
-  //     const { transaction } = attestTx;
-  //     console.log(transaction);
-  //     // expect(transaction.chainId).toEqual(
-  //     //   evmNetworkChainToSolanaChainId(NETWORK, chain),
-  //     // );
-  //   });
-  // });
+      const { transaction } = attestTx;
+      expect(transaction.instructions).toHaveLength(1);
+    });
+  });
 
   describe('Create TokenBridge Transactions', () => {
     const chain = 'Solana';
     const destChain = 'Ethereum';
 
-    const sendSigner = new MockSolanaSigner();
-
     const sender = toNative(chain, sendSigner.address());
     const recipient = testing.utils.makeChainAddress(destChain);
-
-    const tbAddress = p.conf[chain]!.contracts.tokenBridge!;
 
     const amount = 1000n;
     const payload = undefined;
