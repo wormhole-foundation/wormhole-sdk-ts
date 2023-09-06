@@ -1,4 +1,4 @@
-/* TODO: change name to Protocols?
+/* TODO:
  *   governance actions have a module parameter:
  *     - "Core" - https://github.com/wormhole-foundation/wormhole/blob/9e61d151c61bedb18ab1d4ca6ffb1c6c91b108f0/ethereum/contracts/Governance.sol#L21
  *     - "TokenBridge" - https://github.com/wormhole-foundation/wormhole/blob/9e61d151c61bedb18ab1d4ca6ffb1c6c91b108f0/ethereum/contracts/bridge/BridgeGovernance.sol#L24
@@ -17,15 +17,13 @@
  *   While in the JS SDK, the core bridge functionality is in the "bridge" directory
  *     (notice the clash with EVM where bridge refers to the token bridge...).
  *
- * Additionally, "modules" seems like a bad choice in a TS/JS context...
- *
  * With all of this in mind: What should we name modules here?
  * My preferred choice would be ["CoreBridge", "TokenBridge", "NftBridge", "Relayer"]
  *   but ["Core", "TokenBridge", "NFTBridge", "WormholeRelayer"] seems to be more consistent given
  *   current naming "conventions"
  */
 
-export const modules = [
+export const protocols = [
   "CoreBridge",
   "TokenBridge",
   "NftBridge",
@@ -33,6 +31,6 @@ export const modules = [
   "CCTP",
 ] as const;
 
-export type Module = (typeof modules)[number];
-export const isModuleName = (module: string): module is Module =>
-  module.includes(module as Module);
+export type ProtocolName = (typeof protocols)[number];
+export const isProtocolName = (protocol: string): protocol is ProtocolName =>
+  protocols.includes(protocol as ProtocolName);
