@@ -14,6 +14,7 @@ import {
   ChainsConfig,
   toNative,
   EvmRpc,
+  NativeAddress,
 } from '@wormhole-foundation/sdk-definitions';
 
 import { ethers } from 'ethers';
@@ -26,6 +27,7 @@ import { EvmAutomaticCircleBridge } from './protocols/automaticCircleBridge';
 import { EvmCircleBridge } from './protocols/circleBridge';
 import { WormholeCore } from '@wormhole-foundation/sdk-definitions/dist/esm/protocols/core';
 import { EvmWormholeCore } from './protocols/wormholeCore';
+import { EvmAddress } from './address';
 
 /**
  * @category EVM
@@ -124,8 +126,8 @@ export class EvmPlatform implements Platform<'Evm'> {
     return txhashes;
   }
 
-  parseAddress(chain: ChainName, address: string): UniversalAddress {
-    return toNative(chain, address).toUniversalAddress();
+  parseAddress(chain: ChainName, address: string): NativeAddress<'Evm'> {
+    return toNative(chain, address) as NativeAddress<'Evm'>;
   }
 
   async parseTransaction(
@@ -149,9 +151,11 @@ export class EvmPlatform implements Platform<'Evm'> {
         const { topics, data } = log;
         const parsed = coreImpl.parseLog({ topics: topics.slice(), data });
         if (parsed === null) return undefined;
+
+        const emitterAddress = this.parseAddress(chain, parsed.args.sender);
         return {
           chain: chain,
-          emitter: this.parseAddress(chain, parsed.args.sender),
+          emitter: emitterAddress.toUniversalAddress(),
           sequence: parsed.args.sequence,
         } as WormholeMessageId;
       })

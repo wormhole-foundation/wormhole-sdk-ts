@@ -19,6 +19,7 @@ import {
   PlatformCtr,
   toNative,
   nativeIsRegistered,
+  NativeAddress,
 } from "../..";
 import { MockRpc } from "./rpc";
 import { MockChain } from "./chain";
@@ -54,39 +55,7 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
     throw new Error("Method not implemented.");
   }
   getBalance(
-    chain:
-      | "Solana"
-      | "Btc"
-      | "Algorand"
-      | "Sui"
-      | "Aptos"
-      | "Osmosis"
-      | "Wormchain"
-      | "Near"
-      | "Ethereum"
-      | "Terra"
-      | "Bsc"
-      | "Polygon"
-      | "Avalanche"
-      | "Oasis"
-      | "Aurora"
-      | "Fantom"
-      | "Karura"
-      | "Acala"
-      | "Klaytn"
-      | "Celo"
-      | "Moonbeam"
-      | "Neon"
-      | "Terra2"
-      | "Injective"
-      | "Arbitrum"
-      | "Optimism"
-      | "Gnosis"
-      | "Pythnet"
-      | "Xpla"
-      | "Base"
-      | "Sei"
-      | "Sepolia",
+    chain: ChainName,
     rpc: RpcConnection<P>,
     walletAddr: string,
     token: TokenId | "native"
@@ -138,7 +107,7 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
     throw new Error("Method not implemented");
   }
 
-  parseAddress(chain: ChainName, address: string): UniversalAddress {
+  parseAddress(chain: ChainName, address: string): NativeAddress<P> {
     if (!nativeIsRegistered(chain)) throw new Error("Chain not registered");
     //@ts-ignore
     return toNative(chain, address).toUniversalAddress();

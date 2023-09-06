@@ -1,5 +1,4 @@
 import { PlatformName, ChainName } from "@wormhole-foundation/sdk-base";
-import { UniversalAddress } from "./universalAddress";
 import { ChainContext } from "./chain";
 import { RpcConnection } from "./rpc";
 import { ChainsConfig, TokenId, TxHash } from "./types";
@@ -9,6 +8,7 @@ import { SignedTx } from "./types";
 import { TokenBridge, AutomaticTokenBridge } from "./protocols/tokenBridge";
 import { CircleBridge, AutomaticCircleBridge } from "./protocols/cctp";
 import { WormholeCore } from "./protocols/core";
+import { NativeAddress } from "./address";
 
 export type PlatformCtr<P extends PlatformName> = {
   _platform: P;
@@ -54,5 +54,5 @@ export interface Platform<P extends PlatformName> {
     rpc: RpcConnection<P>,
     txid: TxHash
   ): Promise<WormholeMessageId[]>;
-  parseAddress(chain: ChainName, address: string): UniversalAddress;
+  parseAddress(chain: ChainName, address: string): NativeAddress<P>;
 }

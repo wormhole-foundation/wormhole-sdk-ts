@@ -2,6 +2,7 @@ import { PublicKey } from '@solana/web3.js';
 import { ChainName } from '@wormhole-foundation/sdk-base';
 import {
   ChainContext,
+  NativeAddress,
   RpcConnection,
   TokenId,
   UniversalAddress,
@@ -27,7 +28,7 @@ export class SolanaChain extends ChainContext<'Solana'> {
   async getTokenAccount(
     token: TokenId,
     address: UniversalAddress,
-  ): Promise<UniversalAddress> {
+  ): Promise<NativeAddress<'Solana'>> {
     const tb = await this.getTokenBridge();
 
     const wrapped = await tb.getWrappedAsset(token);

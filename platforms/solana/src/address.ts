@@ -47,14 +47,7 @@ export class SolanaAddress implements Address {
   toUniversalAddress() {
     return new UniversalAddress(this.address.toBytes());
   }
-  isValidAddress(address: string): boolean {
-    try {
-      new PublicKey(address);
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
+
   equals(other: UniversalAddress): boolean {
     return this.toUniversalAddress().equals(other);
   }

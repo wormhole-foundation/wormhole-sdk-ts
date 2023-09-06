@@ -2,6 +2,17 @@ import { Wormhole } from "@wormhole-foundation/connect-sdk";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 import { ethers } from "ethers";
+import { getStuff } from "./helpers";
+
+function fmtForDisplay(
+  value: bigint,
+  actual_decimals: bigint,
+  display_decimals: number
+): number {
+  const fixedPlace =
+    value / 10n ** (actual_decimals - BigInt(display_decimals));
+  return Number(fixedPlace) / 10 ** display_decimals;
+}
 
 (async function () {
   // init Wormhole object, passing config for which network
@@ -10,8 +21,15 @@ import { ethers } from "ethers";
 
   // Grab a ChainContext
   const chain = wh.getChain("Ethereum");
-  const tb = chain.getTokenBridge();
-  const rpc = chain.getRpc() as ethers.JsonRpcProvider;
+  const { signer } = await getStuff(chain);
+
+  const decimals = await wh.getDecimals(chain.chain, "native");
+  const balance = await wh.getBalance(chain.chain, "native", signer.address());
+
+  console.log(fmtForDisplay(balance!, decimals, 8));
+
+  //const tb = chain.getTokenBridge();
+  //const rpc = chain.getRpc() as ethers.JsonRpcProvider;
 
   //const txid =
   //  "0x4a2cad595038e496545dd3fd526874d91be3a5e9bfdfe6b78fafd6ffcdb9dbc8";

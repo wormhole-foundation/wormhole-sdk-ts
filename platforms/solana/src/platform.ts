@@ -14,10 +14,10 @@ import {
   ChainContext,
   toNative,
   SolRpc,
+  NativeAddress,
 } from '@wormhole-foundation/sdk-definitions';
 
 import { SolanaContracts } from './contracts';
-import { UniversalAddress } from '@wormhole-foundation/sdk-definitions';
 import { SolanaChain } from './chain';
 import { SolanaTokenBridge } from './protocols/tokenBridge';
 import { WormholeCore } from '@wormhole-foundation/sdk-definitions/dist/esm/protocols/core';
@@ -147,8 +147,8 @@ export class SolanaPlatform implements Platform<'Solana'> {
     throw new Error('Not Supported');
   }
 
-  parseAddress(chain: ChainName, address: string): UniversalAddress {
-    return toNative(chain, address).toUniversalAddress();
+  parseAddress(chain: ChainName, address: string): NativeAddress<'Solana'> {
+    return toNative(chain, address) as NativeAddress<'Solana'>;
   }
 
   async parseTransaction(
