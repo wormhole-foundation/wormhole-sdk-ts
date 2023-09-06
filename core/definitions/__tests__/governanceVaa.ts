@@ -116,7 +116,7 @@ describe("Governance VAA tests", function () {
         newContract: new UniversalAddress(new Uint8Array(32)),
       },
     });
-    expect(vaa.payload.module).toEqual("CoreBridge");
+    expect(vaa.payload.protocol).toEqual("CoreBridge");
     expect(vaa.payload.action).toEqual("UpgradeContract");
   });
 
@@ -127,7 +127,7 @@ describe("Governance VAA tests", function () {
     expect(vaa.signatures.length).toBe(13);
     expect(vaa.nonce).toBe(2651610618);
     expect(vaa.emitterChain).toBe("Solana");
-    expect(vaa.payload.module).toBe("CoreBridge");
+    expect(vaa.payload.protocol).toBe("CoreBridge");
     expect(vaa.payload.action).toBe("GuardianSetUpgrade");
     expect(vaa.payload.guardianSet).toBe(3);
     expect(vaa.payload.guardians.length).toBe(19);

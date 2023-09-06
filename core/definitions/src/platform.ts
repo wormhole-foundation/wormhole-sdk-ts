@@ -19,6 +19,8 @@ export type PlatformCtr<P extends PlatformName> = {
 export interface Platform<P extends PlatformName> {
   readonly platform: P;
   readonly conf: ChainsConfig;
+  getChain(chain: ChainName): ChainContext<P>;
+
   // Utils for platform specific queries
   getDecimals(
     chain: ChainName,
@@ -31,10 +33,16 @@ export interface Platform<P extends PlatformName> {
     walletAddr: string,
     token: TokenId | "native"
   ): Promise<bigint | null>;
-
-  //
-  getChain(chain: ChainName): ChainContext<P>;
   getRpc(chain: ChainName): RpcConnection<P>;
+
+  // Platform interaction utils
+  sendWait(rpc: RpcConnection<P>, stxns: SignedTx[]): Promise<TxHash[]>;
+  parseTransaction(
+    chain: ChainName,
+    rpc: RpcConnection<P>,
+    txid: TxHash
+  ): Promise<WormholeMessageId[]>;
+  parseAddress(chain: ChainName, address: string): NativeAddress<P>;
 
   // protocol clients
   getWormholeCore(rpc: RpcConnection<P>): Promise<WormholeCore<P>>;
@@ -46,13 +54,4 @@ export interface Platform<P extends PlatformName> {
     rpc: RpcConnection<P>
   ): Promise<AutomaticCircleBridge<P>>;
   getCircleBridge(rpc: RpcConnection<P>): Promise<CircleBridge<P>>;
-
-  // Platform interaction utils
-  sendWait(rpc: RpcConnection<P>, stxns: SignedTx[]): Promise<TxHash[]>;
-  parseTransaction(
-    chain: ChainName,
-    rpc: RpcConnection<P>,
-    txid: TxHash
-  ): Promise<WormholeMessageId[]>;
-  parseAddress(chain: ChainName, address: string): NativeAddress<P>;
 }

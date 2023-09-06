@@ -1,6 +1,6 @@
 import {
   platformToChains,
-  Module,
+  ProtocolName,
   FixedConversion,
   column,
   constMap,
@@ -111,32 +111,32 @@ type Action = (typeof actions)[number];
 
 const actionMapping = constMap(actionTuples);
 
-const sdkModuleNameAndGovernanceVaaModuleEntries = [
+const sdkProtocolNameAndGovernanceVaaModuleEntries = [
   ["CoreBridge", "Core"],
   ["TokenBridge", "TokenBridge"],
   ["NftBridge", "NFTBridge"],
   ["Relayer", "WormholeRelayer"],
   // TODO: wat is this
-  ["CCTP", "TokenBridge"],
-] as const satisfies RoArray<readonly [Module, string]>;
+  ["CCTP", "Circle"],
+] as const satisfies RoArray<readonly [ProtocolName, string]>;
 
-const sdkModuleNameToGovernanceVaaModuleMapping = constMap(
-  sdkModuleNameAndGovernanceVaaModuleEntries
+const sdkProtocolNameToGovernanceVaaModuleMapping = constMap(
+  sdkProtocolNameAndGovernanceVaaModuleEntries
 );
 
-const moduleConversion = <M extends Module>(module: M) =>
+const protocolConversion = <P extends ProtocolName>(protocol: P) =>
   ({
-    to: module,
+    to: protocol,
     from: ((): Uint8Array => {
       const moduleBytesSize = 32;
       const bytes = new Uint8Array(moduleBytesSize);
-      const vaaModule = sdkModuleNameToGovernanceVaaModuleMapping(module);
+      const vaaModule = sdkProtocolNameToGovernanceVaaModuleMapping(protocol);
       for (let i = 1; i <= vaaModule.length; ++i)
         bytes[moduleBytesSize - i] = vaaModule.charCodeAt(vaaModule.length - i);
 
       return bytes;
     })(),
-  } as const satisfies FixedConversion<Uint8Array, M>);
+  } as const satisfies FixedConversion<Uint8Array, P>);
 
 const actionConversion = <A extends Action, N extends number>(
   action: A,
@@ -147,16 +147,20 @@ const actionConversion = <A extends Action, N extends number>(
     from: num,
   } as const satisfies FixedConversion<N, A>);
 
-const headerLayout = <M extends Module, A extends Action, N extends number>(
-  module: M,
+const headerLayout = <
+  P extends ProtocolName,
+  A extends Action,
+  N extends number
+>(
+  protocol: P,
   action: A,
   num: N
 ) =>
   [
     {
-      name: "module",
+      name: "protocol",
       binary: "bytes",
-      custom: moduleConversion(module),
+      custom: protocolConversion(protocol),
     },
     {
       name: "action",
@@ -168,17 +172,17 @@ const headerLayout = <M extends Module, A extends Action, N extends number>(
   ] as const satisfies Layout;
 
 const governancePayload = <
-  M extends Module,
+  P extends ProtocolName,
   A extends Action,
   N extends number
 >(
-  module: M,
+  protocol: P,
   action: A,
   num: N
 ) =>
   [
-    (module + action) as ConcatStringLiterals<[M, A]>,
-    [...headerLayout(module, action, num), ...actionMapping(action).layout],
+    (protocol + action) as ConcatStringLiterals<[P, A]>,
+    [...headerLayout(protocol, action, num), ...actionMapping(action).layout],
   ] as const;
 
 const governancePayloads = [
