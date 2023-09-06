@@ -7,18 +7,20 @@ import {
   AutomaticTokenBridge,
   CircleBridge,
   AutomaticCircleBridge,
-  SignedTxn,
+  SignedTx,
   TxHash,
   WormholeMessageId,
   ChainsConfig,
   ChainContext,
   toNative,
+  SolRpc,
+  NativeAddress,
 } from '@wormhole-foundation/sdk-definitions';
 
 import { SolanaContracts } from './contracts';
-import { UniversalAddress } from '@wormhole-foundation/sdk-definitions';
 import { SolanaChain } from './chain';
 import { SolanaTokenBridge } from './protocols/tokenBridge';
+import { WormholeCore } from '@wormhole-foundation/sdk-definitions/dist/esm/protocols/core';
 
 const SOLANA_SEQ_LOG = 'Program log: Sequence: ';
 
@@ -46,24 +48,14 @@ export class SolanaPlatform implements Platform<'Solana'> {
     return new SolanaChain(this, chain);
   }
 
-  async getWrappedAsset(
+  async getDecimals(
     chain: ChainName,
     rpc: Connection,
-    token: TokenId,
-  ): Promise<TokenId | null> {
-    if (token.chain === chain) return token;
+    token: TokenId | 'native',
+  ): Promise<bigint> {
+    if (token === 'native')
+      return BigInt(this.conf[chain]?.nativeTokenDecimals!);
 
-    try {
-      const tb = await this.getTokenBridge(rpc);
-      const asset = await tb.getWrappedAsset(token);
-      return { chain, address: asset.toUniversalAddress() };
-    } catch (e) {
-      console.error(e);
-    }
-    return null;
-  }
-
-  async getTokenDecimals(rpc: Connection, token: TokenId): Promise<bigint> {
     let mint = await rpc.getParsedAccountInfo(
       new PublicKey(token.address.unwrap()),
     );
@@ -72,30 +64,31 @@ export class SolanaPlatform implements Platform<'Solana'> {
     return decimals;
   }
 
-  async getNativeBalance(rpc: Connection, walletAddr: string): Promise<bigint> {
-    return BigInt(await rpc.getBalance(new PublicKey(walletAddr)));
-  }
-
-  async getTokenBalance(
+  async getBalance(
     chain: ChainName,
     rpc: Connection,
     walletAddress: string,
-    tokenId: TokenId,
+    token: TokenId | 'native',
   ): Promise<bigint | null> {
-    const address = await this.getWrappedAsset(chain, rpc, tokenId);
-    if (!address) return null;
+    if (token === 'native')
+      return BigInt(await rpc.getBalance(new PublicKey(walletAddress)));
+
+    if (token.chain !== chain) {
+      const tb = await this.getTokenBridge(rpc);
+      token = { chain: chain, address: await tb.getWrappedAsset(token) };
+    }
 
     const splToken = await rpc.getTokenAccountsByOwner(
       new PublicKey(walletAddress),
-      { mint: new PublicKey(address) },
+      { mint: new PublicKey(token.address.toUint8Array()) },
     );
     if (!splToken.value[0]) return null;
-    const balance = await rpc.getTokenAccountBalance(splToken.value[0].pubkey);
 
+    const balance = await rpc.getTokenAccountBalance(splToken.value[0].pubkey);
     return BigInt(balance.value.amount);
   }
 
-  async sendWait(rpc: Connection, stxns: SignedTxn[]): Promise<TxHash[]> {
+  async sendWait(rpc: Connection, stxns: SignedTx[]): Promise<TxHash[]> {
     const txhashes: TxHash[] = [];
 
     // TODO: concurrent?
@@ -113,6 +106,12 @@ export class SolanaPlatform implements Platform<'Solana'> {
 
     return txhashes;
   }
+
+  async getWormholeCore(rpc: SolRpc): Promise<WormholeCore<'Solana'>> {
+    throw new Error('Not Supported');
+    //return SolanaWormholeCore.fromProvider(rpc, this.contracts);
+  }
+
   async getTokenBridge(rpc: Connection): Promise<TokenBridge<'Solana'>> {
     return SolanaTokenBridge.fromProvider(rpc, this.contracts);
   }
@@ -133,8 +132,8 @@ export class SolanaPlatform implements Platform<'Solana'> {
     throw new Error('Not Supported');
   }
 
-  parseAddress(chain: ChainName, address: string): UniversalAddress {
-    return toNative(chain, address).toUniversalAddress();
+  parseAddress(chain: ChainName, address: string): NativeAddress<'Solana'> {
+    return toNative(chain, address) as NativeAddress<'Solana'>;
   }
 
   async parseTransaction(

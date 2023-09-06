@@ -127,7 +127,8 @@ export class TokenTransfer implements WormholeTransfer {
       const relayerAddress = wh.getChain(chain).parseAddress(relayer);
       automatic =
         vaa.payloadLiteral === 'TransferWithPayload' &&
-        address.equals(relayerAddress);
+        // @ts-ignore -- why
+        address.equals(relayerAddress.toUniversalAddress());
     }
 
     const details: TokenTransferDetails = {
@@ -311,8 +312,10 @@ export class TokenTransfer implements WormholeTransfer {
     if (!this.vaas) throw new Error('No VAA details available');
 
     const toChain = this.wh.getChain(this.transfer.to.chain);
+
     const toAddress = toChain
       .parseAddress(signer.address())
+      // @ts-ignore -- why?
       .toUniversalAddress();
 
     let unsigned: UnsignedTransaction[] = [];

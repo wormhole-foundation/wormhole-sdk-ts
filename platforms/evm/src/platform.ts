@@ -5,7 +5,7 @@ import {
   Platform,
   WormholeMessageId,
   isWormholeMessageId,
-  SignedTxn,
+  SignedTx,
   AutomaticTokenBridge,
   TokenBridge,
   UniversalAddress,
@@ -13,6 +13,8 @@ import {
   AutomaticCircleBridge,
   ChainsConfig,
   toNative,
+  EvmRpc,
+  NativeAddress,
 } from '@wormhole-foundation/sdk-definitions';
 
 import { ethers } from 'ethers';
@@ -23,6 +25,9 @@ import { EvmTokenBridge } from './protocols/tokenBridge';
 import { EvmAutomaticTokenBridge } from './protocols/automaticTokenBridge';
 import { EvmAutomaticCircleBridge } from './protocols/automaticCircleBridge';
 import { EvmCircleBridge } from './protocols/circleBridge';
+import { WormholeCore } from '@wormhole-foundation/sdk-definitions/dist/esm/protocols/core';
+import { EvmWormholeCore } from './protocols/wormholeCore';
+import { EvmAddress } from './address';
 
 /**
  * @category EVM
@@ -49,6 +54,10 @@ export class EvmPlatform implements Platform<'Evm'> {
     return new EvmChain(this, chain);
   }
 
+  getWormholeCore(rpc: ethers.Provider): Promise<WormholeCore<'Evm'>> {
+    return EvmWormholeCore.fromProvider(rpc, this.contracts);
+  }
+
   async getTokenBridge(rpc: ethers.Provider): Promise<TokenBridge<'Evm'>> {
     return await EvmTokenBridge.fromProvider(rpc, this.contracts);
   }
@@ -67,26 +76,14 @@ export class EvmPlatform implements Platform<'Evm'> {
     return await EvmAutomaticCircleBridge.fromProvider(rpc, this.contracts);
   }
 
-  async getWrappedAsset(
+  async getDecimals(
     chain: ChainName,
     rpc: ethers.Provider,
-    token: TokenId,
-  ): Promise<TokenId | null> {
-    // if the token is already native, return the token address
-    if (chain === token.chain) return token;
-
-    const tokenBridge = await this.getTokenBridge(rpc);
-    const foreignAddr = await tokenBridge.getWrappedAsset({
-      chain,
-      address: token.address,
-    });
-    return { chain, address: foreignAddr.toUniversalAddress() };
-  }
-
-  async getTokenDecimals(
-    rpc: ethers.Provider,
-    token: TokenId,
+    token: TokenId | 'native',
   ): Promise<bigint> {
+    if (token === 'native')
+      return BigInt(this.conf[chain]!.nativeTokenDecimals);
+
     const tokenContract = this.contracts.mustGetTokenImplementation(
       rpc,
       token.address.toString(),
@@ -95,20 +92,17 @@ export class EvmPlatform implements Platform<'Evm'> {
     return decimals;
   }
 
-  async getNativeBalance(
-    rpc: ethers.Provider,
-    walletAddr: string,
-  ): Promise<bigint> {
-    return await rpc.getBalance(walletAddr);
-  }
-
-  async getTokenBalance(
+  async getBalance(
     chain: ChainName,
     rpc: ethers.Provider,
     walletAddr: string,
-    tokenId: TokenId,
+    tokenId: TokenId | 'native',
   ): Promise<bigint | null> {
-    const address = await this.getWrappedAsset(chain, rpc, tokenId);
+    if (tokenId === 'native') return await rpc.getBalance(walletAddr);
+
+    const tb = await this.getTokenBridge(rpc);
+
+    const address = await tb.getWrappedAsset(tokenId);
     if (!address) return null;
 
     const token = this.contracts.mustGetTokenImplementation(
@@ -119,9 +113,8 @@ export class EvmPlatform implements Platform<'Evm'> {
     return balance;
   }
 
-  async sendWait(rpc: ethers.Provider, stxns: SignedTxn[]): Promise<TxHash[]> {
+  async sendWait(rpc: ethers.Provider, stxns: SignedTx[]): Promise<TxHash[]> {
     const txhashes: TxHash[] = [];
-    // TODO: concurrent?
     for (const stxn of stxns) {
       const txRes = await rpc.broadcastTransaction(stxn);
       const txReceipt = await txRes.wait();
@@ -133,8 +126,8 @@ export class EvmPlatform implements Platform<'Evm'> {
     return txhashes;
   }
 
-  parseAddress(chain: ChainName, address: string): UniversalAddress {
-    return toNative(chain, address).toUniversalAddress();
+  parseAddress(chain: ChainName, address: string): NativeAddress<'Evm'> {
+    return toNative(chain, address) as NativeAddress<'Evm'>;
   }
 
   async parseTransaction(
@@ -148,7 +141,7 @@ export class EvmPlatform implements Platform<'Evm'> {
       throw new Error(`No transaction found with txid: ${txid}`);
 
     const coreAddress = this.conf[chain]!.contracts.coreBridge;
-    const coreImpl = this.contracts.getImplementation();
+    const coreImpl = this.contracts.getCoreImplementationInterface();
 
     return receipt.logs
       .filter((l: any) => {
@@ -158,9 +151,11 @@ export class EvmPlatform implements Platform<'Evm'> {
         const { topics, data } = log;
         const parsed = coreImpl.parseLog({ topics: topics.slice(), data });
         if (parsed === null) return undefined;
+
+        const emitterAddress = this.parseAddress(chain, parsed.args.sender);
         return {
           chain: chain,
-          emitter: this.parseAddress(chain, parsed.args.sender),
+          emitter: emitterAddress.toUniversalAddress(),
           sequence: parsed.args.sequence,
         } as WormholeMessageId;
       })

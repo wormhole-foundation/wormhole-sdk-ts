@@ -1,13 +1,14 @@
 import { PlatformName, ChainName } from "@wormhole-foundation/sdk-base";
-import { UniversalAddress } from "./universalAddress";
 import { ChainContext } from "./chain";
 import { RpcConnection } from "./rpc";
 import { ChainsConfig, TokenId, TxHash } from "./types";
 import { WormholeMessageId } from "./attestation";
-import { SignedTxn } from "./types";
+import { SignedTx } from "./types";
 // protocols
 import { TokenBridge, AutomaticTokenBridge } from "./protocols/tokenBridge";
 import { CircleBridge, AutomaticCircleBridge } from "./protocols/cctp";
+import { WormholeCore } from "./protocols/core";
+import { NativeAddress } from "./address";
 
 export type PlatformCtr<P extends PlatformName> = {
   _platform: P;
@@ -19,18 +20,16 @@ export interface Platform<P extends PlatformName> {
   readonly platform: P;
   readonly conf: ChainsConfig;
   // Utils for platform specific queries
-  getWrappedAsset(
+  getDecimals(
     chain: ChainName,
     rpc: RpcConnection<P>,
-    token: TokenId
-  ): Promise<TokenId | null>;
-  getTokenDecimals(rpc: RpcConnection<P>, token: TokenId): Promise<bigint>;
-  getNativeBalance(rpc: RpcConnection<P>, walletAddr: string): Promise<bigint>;
-  getTokenBalance(
+    token: TokenId | "native"
+  ): Promise<bigint>;
+  getBalance(
     chain: ChainName,
     rpc: RpcConnection<P>,
     walletAddr: string,
-    token: TokenId
+    token: TokenId | "native"
   ): Promise<bigint | null>;
 
   //
@@ -38,6 +37,7 @@ export interface Platform<P extends PlatformName> {
   getRpc(chain: ChainName): RpcConnection<P>;
 
   // protocol clients
+  getWormholeCore(rpc: RpcConnection<P>): Promise<WormholeCore<P>>;
   getTokenBridge(rpc: RpcConnection<P>): Promise<TokenBridge<P>>;
   getAutomaticTokenBridge(
     rpc: RpcConnection<P>
@@ -48,11 +48,11 @@ export interface Platform<P extends PlatformName> {
   getCircleBridge(rpc: RpcConnection<P>): Promise<CircleBridge<P>>;
 
   // Platform interaction utils
-  sendWait(rpc: RpcConnection<P>, stxns: SignedTxn[]): Promise<TxHash[]>;
+  sendWait(rpc: RpcConnection<P>, stxns: SignedTx[]): Promise<TxHash[]>;
   parseTransaction(
     chain: ChainName,
     rpc: RpcConnection<P>,
     txid: TxHash
   ): Promise<WormholeMessageId[]>;
-  parseAddress(chain: ChainName, address: string): UniversalAddress;
+  parseAddress(chain: ChainName, address: string): NativeAddress<P>;
 }

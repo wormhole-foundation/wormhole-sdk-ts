@@ -1,7 +1,6 @@
 import { Wormhole } from "@wormhole-foundation/connect-sdk";
 // TODO: should we re-export the things they need? should we rename the underlying packages?
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
-//
 import { TransferStuff, getStuff, waitLog } from "./helpers";
 
 /*

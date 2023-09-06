@@ -2,10 +2,7 @@ import { Wormhole } from "@wormhole-foundation/connect-sdk";
 // TODO: should we re-export the things they need? should we rename the underlying packages?
 import { TokenId } from "@wormhole-foundation/sdk-definitions";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
-import {
-  SolanaChain,
-  SolanaPlatform,
-} from "@wormhole-foundation/connect-sdk-solana";
+import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 //
 import { TransferStuff, getStuff, waitLog } from "./helpers";
 
@@ -59,21 +56,6 @@ async function tokenTransfer(
   nativeGas?: bigint,
   payload?: Uint8Array
 ) {
-  // Bit of (temporary) hackery until solana contracts support being
-  // sent a VAA with the primary address
-  if (dst.chain.chain === "Solana") {
-    // Overwrite the dest address with the ATA
-    dst.address = {
-      chain: dst.address.chain,
-      address: await (<SolanaChain>dst.chain).getTokenAccount(
-        token !== "native"
-          ? token
-          : await (await src.chain.getTokenBridge()).getWrappedNative(),
-        dst.address.address.toUniversalAddress()
-      ),
-    };
-  }
-
   const xfer = await wh.tokenTransfer(
     token,
     amount,

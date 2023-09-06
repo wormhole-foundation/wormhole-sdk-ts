@@ -62,7 +62,7 @@ export class MockTokenBridge<P extends PlatformName> implements TokenBridge<P> {
   ): AsyncGenerator<UnsignedTransaction> {
     throw new Error("Method not implemented.");
   }
-  getWrappedNative(): Promise<TokenId> {
+  getWrappedNative(): Promise<NativeAddress<P>> {
     throw new Error("Method not implemented.");
   }
 }

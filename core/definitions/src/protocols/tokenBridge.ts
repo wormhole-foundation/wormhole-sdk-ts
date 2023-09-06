@@ -9,23 +9,29 @@ export const ErrNotWrapped = (token: string) =>
   new Error(`Token ${token} is not a wrapped asset`);
 
 export interface TokenBridge<P extends PlatformName> {
-  //read-only:
-  isWrappedAsset(token: UniversalOrNative<P>): Promise<boolean>;
-  getOriginalAsset(token: UniversalOrNative<P>): Promise<TokenId>;
-  hasWrappedAsset(original: ChainAddress): Promise<boolean>;
-  getWrappedAsset(original: ChainAddress): Promise<NativeAddress<P>>;
-  getWrappedNative(): Promise<TokenId>;
+  // checks a native address to see if its a wrapped version
+  isWrappedAsset(nativeAddress: UniversalOrNative<P>): Promise<boolean>;
+  // returns the original asset with its foreign chain
+  getOriginalAsset(nativeAddress: UniversalOrNative<P>): Promise<TokenId>;
+  // returns the wrapped version of the native asset
+  getWrappedNative(): Promise<NativeAddress<P>>;
+
+  // Check to see if a foreign token has a wrapped version
+  hasWrappedAsset(foreignToken: TokenId): Promise<boolean>;
+  // Returns the address of the native version of this asset
+  getWrappedAsset(foreignToken: TokenId): Promise<NativeAddress<P>>;
+
   isTransferCompleted(
     vaa: VAA<"Transfer"> | VAA<"TransferWithPayload">
   ): Promise<boolean>;
   //signer required:
   createAttestation(
-    token: UniversalOrNative<P>,
-    sender?: UniversalOrNative<P>
+    token_to_attest: UniversalOrNative<P>,
+    payer?: UniversalOrNative<P>
   ): AsyncGenerator<UnsignedTransaction>;
   submitAttestation(
     vaa: VAA<"AttestMeta">,
-    sender?: UniversalOrNative<P>
+    payer?: UniversalOrNative<P>
   ): AsyncGenerator<UnsignedTransaction>;
   //alternative naming: initiateTransfer
   transfer(

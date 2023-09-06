@@ -3,13 +3,14 @@ import {
   Signer,
   ChainContext,
   ChainAddress,
-  SignedTxn,
+  SignedTx,
   UnsignedTransaction,
+  nativeChainAddress,
 } from "@wormhole-foundation/sdk-definitions";
 
 import bs58 from "bs58";
 import { ethers } from "ethers";
-import { Transaction, Keypair } from "@solana/web3.js";
+import { Keypair } from "@solana/web3.js";
 import {
   TransferState,
   WormholeTransfer,
@@ -41,12 +42,7 @@ export async function getStuff(
       );
   }
 
-  const address: ChainAddress = {
-    chain: signer.chain(),
-    address: chain.parseAddress(signer.address()),
-  };
-
-  return { chain, signer, address };
+  return { chain, signer, address: nativeChainAddress(signer) };
 }
 
 export async function waitLog(xfer: WormholeTransfer): Promise<void> {
@@ -122,10 +118,9 @@ class EthSigner implements Signer {
   address(): string {
     return this._wallet.address;
   }
-  async sign(tx: UnsignedTransaction[]): Promise<SignedTxn[]> {
+  async sign(tx: UnsignedTransaction[]): Promise<SignedTx[]> {
     const signed = [];
     const { gasPrice, maxFeePerGas } = await this.provider.getFeeData();
-    // TODO: get better gas prices
     for (const txn of tx) {
       const { transaction, description } = txn;
       console.log(`Signing: ${description} for ${this.address()}`);

@@ -6,6 +6,7 @@ import {
   isCircleSupported,
   isCircleChain,
   usdcContract,
+  chainToPlatform,
 } from '@wormhole-foundation/sdk-base';
 import {
   UniversalAddress,
@@ -30,6 +31,7 @@ import { CONFIG } from './constants';
 import { TokenTransfer } from './protocols/tokenTransfer';
 import { CCTPTransfer } from './protocols/cctpTransfer';
 import { TransactionStatus } from './api';
+import { isTokenId } from '@wormhole-foundation/sdk-definitions/src';
 
 export class Wormhole {
   protected _platforms: Map<PlatformName, Platform<PlatformName>>;
@@ -113,6 +115,13 @@ export class Wormhole {
     if (nativeGas && !automatic)
       throw new Error('Gas Dropoff is only supported for automatic transfers');
 
+    // Bit of (temporary) hackery until solana contracts support being
+    // sent a VAA with the primary address
+    if (to.chain === 'Solana') {
+      // Overwrite the dest address with the ATA
+      to = await this.getTokenAccount(from.chain, token, to);
+    }
+
     return await TokenTransfer.from(this, {
       token,
       amount,
@@ -131,18 +140,6 @@ export class Wormhole {
    */
   getContracts(chain: ChainName): Contracts | undefined {
     return this.conf.chains[chain]?.contracts;
-  }
-
-  /**
-   * Gets the contract addresses for a given chain
-   * @param chain the chain name or chain id
-   * @returns the contract addresses
-   * @throws Errors if contracts are not found
-   */
-  mustGetContracts(chain: ChainName): Contracts {
-    const contracts = this.getContracts(chain);
-    if (!contracts) throw new Error(`no contracts found for ${chain}`);
-    return contracts;
   }
 
   /**
@@ -165,7 +162,8 @@ export class Wormhole {
    * @throws Errors if context is not found
    */
   getChain(chain: ChainName): ChainContext<PlatformName> {
-    return this.getPlatform(chain).getChain(chain);
+    const platform = this.getPlatform(chain);
+    return platform.getChain(chain);
   }
 
   /**
@@ -176,29 +174,10 @@ export class Wormhole {
    * @param chain The chain name or id
    * @returns The Wormhole address on the given chain, null if it does not exist
    */
-  async getWrappedAsset(
-    chain: ChainName,
-    token: TokenId,
-  ): Promise<TokenId | null> {
-    return await this.getChain(chain).getWrappedAsset(token);
-  }
-
-  /**
-   * Gets the address for a token representation on any chain
-   *  These are the Wormhole token addresses, not necessarily the cannonical version of that token
-   *
-   * @param tokenId The Token ID (chain/address)
-   * @param chain The chain name or id
-   * @returns The Wormhole address on the given chain
-   * @throws Throws if the token does not exist
-   */
-  async mustGetWrappedAsset(
-    chain: ChainName,
-    token: TokenId,
-  ): Promise<TokenId> {
-    const address = await this.getWrappedAsset(chain, token);
-    if (!address) throw new Error('No asset registered');
-    return address;
+  async getWrappedAsset(chain: ChainName, token: TokenId): Promise<TokenId> {
+    const ctx = this.getChain(chain);
+    const tb = await ctx.getTokenBridge();
+    return { chain, address: await tb.getWrappedAsset(token) };
   }
 
   /**
@@ -208,23 +187,12 @@ export class Wormhole {
    * @param chain The chain name or id of the token/representation
    * @returns The number of decimals
    */
-  async getTokenDecimals(chain: ChainName, token: TokenId): Promise<bigint> {
-    const repr = await this.mustGetWrappedAsset(chain, token);
-    return await this.getChain(chain).getTokenDecimals(repr);
-  }
-
-  /**
-   * Fetches the native token balance for a wallet
-   *
-   * @param walletAddress The wallet address
-   * @param chain The chain name or id
-   * @returns The native balance as a BigNumber
-   */
-  async getNativeBalance(
+  async getDecimals(
     chain: ChainName,
-    walletAddress: string,
+    token: TokenId | 'native',
   ): Promise<bigint> {
-    return await this.getChain(chain).getNativeBalance(walletAddress);
+    const ctx = this.getChain(chain);
+    return await ctx.getDecimals(token);
   }
 
   /**
@@ -235,12 +203,67 @@ export class Wormhole {
    * @param chain The chain name or id
    * @returns The token balance of the wormhole asset as a BigNumber
    */
-  async getTokenBalance(
-    walletAddress: string,
-    token: TokenId,
+  async getBalance(
     chain: ChainName,
+    token: string | TokenId | 'native',
+    walletAddress: string,
   ): Promise<bigint | null> {
-    return await this.getChain(chain).getTokenBalance(walletAddress, token);
+    const ctx = this.getChain(chain);
+
+    if (typeof token === 'string' && token !== 'native') {
+      token = { chain: chain, address: ctx.parseAddress(token) };
+    }
+
+    return ctx.getBalance(walletAddress, token);
+  }
+
+  async getTokenAccount(
+    sendingChain: ChainName,
+    sendingToken:
+      | string
+      | UniversalAddress
+      | NativeAddress<PlatformName>
+      | TokenId
+      | 'native',
+    recipient: ChainAddress,
+  ): Promise<ChainAddress> {
+    const chain = this.getChain(recipient.chain);
+    // TODO: same as supportsSendWithRelay, need some
+    // way to id this in a less sketchy way
+    if ('getTokenAccount' in chain) {
+      let t: TokenId;
+      if (typeof sendingToken === 'string') {
+        if (sendingToken === 'native') {
+          const srcTb = await this.getChain(sendingChain).getTokenBridge();
+          t = { chain: sendingChain, address: await srcTb.getWrappedNative() };
+        } else {
+          t = {
+            chain: sendingChain,
+            address: this.parseAddress(sendingChain, sendingToken),
+          };
+        }
+      } else {
+        t = isTokenId(sendingToken)
+          ? sendingToken
+          : {
+              chain: sendingChain,
+              address: (
+                sendingToken as UniversalAddress | NativeAddress<PlatformName>
+              ).toUniversalAddress(),
+            };
+      }
+
+      const dstTokenBridge = await chain.getTokenBridge();
+      const dstNative = await dstTokenBridge.getWrappedAsset(t);
+
+      // @ts-ignore
+      return (await chain.getTokenAccount(
+        dstNative,
+        recipient.address,
+      )) as ChainAddress;
+    }
+
+    return recipient;
   }
 
   /**
@@ -374,7 +397,7 @@ export class Wormhole {
    * @param address The native address
    * @returns The address in the universal format
    */
-  parseAddress(chain: ChainName, address: string): UniversalAddress {
+  parseAddress(chain: ChainName, address: string): NativeAddress<PlatformName> {
     return this.getChain(chain).parseAddress(address);
   }
 

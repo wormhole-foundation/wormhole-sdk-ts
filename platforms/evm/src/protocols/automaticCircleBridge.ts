@@ -65,7 +65,7 @@ export class EvmAutomaticCircleBridge implements AutomaticCircleBridge<'Evm'> {
     const recipientAddress = recipient.address.toString();
     const nativeTokenGas = nativeGas ? nativeGas : 0n;
 
-    const tokenAddr = toEvmAddrString(token.address);
+    const tokenAddr = toEvmAddrString(token.address.toUniversalAddress());
 
     const tokenContract = this.contracts.mustGetTokenImplementation(
       this.provider,

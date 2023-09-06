@@ -30,7 +30,7 @@ function combineConfig(n: Network): ChainsConfig {
       return {
         key: c,
         platform: chainToPlatform(c),
-        finalityThreshold: finalityThreshold.get(n, c)!, //TODO the exclamation mark is a lie
+        finalityThreshold: finalityThreshold.get(n, c) || 0,
         contracts: getContracts(n, c),
         nativeTokenDecimals: nativeDecimals.get(c)!, //TODO the exclamation mark is a lie
         explorer: explorerConfigs(n, c)!, //TODO the exclamation mark is a lie

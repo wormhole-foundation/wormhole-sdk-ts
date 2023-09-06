@@ -6,6 +6,7 @@ import {
   TokenBridge,
   UniversalAddress,
   VAA,
+  nativeChainAddress,
   testing,
   toNative,
 } from '@wormhole-foundation/sdk-definitions';
