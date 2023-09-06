@@ -9,36 +9,82 @@ A developer would use the core connect-sdk package in conjunction with 1 or more
 Getting started is simple, just import and pass in the contexts to the Wormhole class.
 
 ```ts
-import { Wormhole, Context } from '@wormhole-foundation/connect-sdk';
+
+import { Wormhole, Signer } from '@wormhole-foundation/connect-sdk';
 import { EvmContext } from '@wormhole-foundation/connect-sdk-evm';
 import { SolanaContext } from '@wormhole-foundation/connect-sdk-solana';
 
 const network = "Mainnet";
-const contexts = {
-  [Context.EVM]: EvmContext,
-  [Context.SOLANA]: SolanaContext,
-}
-const wormholeSDK = new Wormhole(network, contexts);
-const receipt = wormholeSDK.startTransfer(
-  {
-    chain: 'ethereum',
-    address: '0x123...',
-  }, // token id (native chain and address)
-  new BigInt(10), // amount
-  'ethereum', // sending chain
-  '0x789...', // sender address
-  'moonbeam', // destination chain
-  '0x789...', // recipient address on destination chain
+const wh = new Wormhole(network, [EvmContext, SolanaContext]);
+
+
+const sender: Signer =  // ...
+const receiver: Signer = // ...
+
+// Get the ChainAddress for the sender and receiver signers
+const senderAddress: ChainAddress = nativeChainAddress(sender)     
+const receiverAddress: ChainAddress = nativeChainAddress(receiver) 
+
+// Create a TokenTransfer object, allowing us to shepard the transfer through the process and get updates on its status
+const manualXfer = wh.tokenTransfer(
+  'native',         // send native gas on source chain
+  10n,              // amount in base units
+  senderAddress,    // Sender address on source chain
+  recipientAddress, // Recipient address on destination chain
+  false,            // No Automatic transfer
 )
+
+// 1) Submit the transactions to the source chain, passing a signer to sign any txns
+const srcTxids = await manualXfer.initiateTransfer(src.signer);
+
+// 2) wait for the VAA to be signed and ready (not required for auto transfer)
+const attestIds = await manualXfer.fetchAttestation();
+
+// 3) redeem the VAA on the dest chain
+const destTxids = await manualXfer.completeTransfer(dst.signer);
+
+
+// OR for an automatic transfer
+const automaticXfer = wh.tokenTransfer(
+  'native',         // send native gas on source chain
+  10n,              // amount in base units
+  senderAddress,    // Sender address on source chain
+  recipientAddress, // Recipient address on destination chain
+  true,             // Automatic transfer
+)
+
+// 1) Submit the transactions to the source chain, passing a signer to sign any txns
+const srcTxids = await automaticXfer.initiateTransfer(src.signer);
+// 2) If automatic, we're done, just wait for the transfer to complete
+if (automatic) return waitLog(automaticXfer) ;
+
 ```
 
-### Note WIP
 
-Several components will be replaced over time.  Portions that will be changed:
+## WIP
 
-1. `@certusone/wormhole-sdk` will be removed as a dependency from all packages
-2. Contract interfaces will be imported from another package
-3. Chain Config will be rewritten and imported from [1-base-layer](https://github.com/nonergodic/sdkv2/tree/main/1-base-layer)
-4. Utils (`vaa`, `array`, etc) will be rewritten and imported from [2-base-layer](https://github.com/nonergodic/sdkv2/tree/main/2-definition-layer)
+This package is a Work in Progress so the interface may change. 
 
-Overall structure is subject to change
+
+## TODOS:
+
+
+Chains: 
+
+- [ ] Add support for Aptos chains
+- [ ] Add support for Sei chains
+- [ ] Add support for Sui chains
+- [ ] Add support for Cosmos chains
+- [ ] Add support for Algorand chains
+- [ ] Add support for Terra chains
+- [ ] Add support for Near chains
+
+Other:
+
+- [ ] Reexport common types from connect?
+- [ ] Add support for NFTBridge protocols
+- [ ] Gas utilities (estimate from unsigned, get gas used from txid) 
+- [ ] Better tracking of auto-redeem, use target contract?
+- [ ] Estimate tx finalization
+- [ ] Event emission/subscription for status changes 
+- [ ] Validation of inputs (amount > dust, etc..)
