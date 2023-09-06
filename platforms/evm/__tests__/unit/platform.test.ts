@@ -23,7 +23,7 @@ describe('EVM Platform Tests', () => {
       const address = testing.utils.makeNativeAddressHexString(chain);
       const parsed = p.parseAddress(chain, address);
       expect(parsed).toBeTruthy();
-      expect(parsed.toNative(chain).toString().toLowerCase()).toEqual(
+      expect(parsed.toNative().toString().toLowerCase()).toEqual(
         '0x' + address,
       );
     });

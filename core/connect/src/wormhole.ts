@@ -6,7 +6,7 @@ import {
   isCircleSupported,
   isCircleChain,
   usdcContract,
-  chainToPlatform,
+  isChain,
 } from '@wormhole-foundation/sdk-base';
 import {
   UniversalAddress,
@@ -63,6 +63,17 @@ export class Wormhole {
     return this.conf.network;
   }
 
+  /**
+   * Creates a CCTPTransfer object to move Native USDC from one chain to another
+   * @param amount the amount to transfer
+   * @param from the address to transfer from
+   * @param to the address to transfer to
+   * @param automatic whether to use automatic delivery
+   * @param payload the payload to send with the transfer
+   * @param nativeGas the amount of native gas to send with the transfer
+   * @returns the CCTPTransfer object
+   * @throws Errors if the chain or protocol is not supported
+   */
   async cctpTransfer(
     amount: bigint,
     from: ChainAddress,
@@ -100,6 +111,18 @@ export class Wormhole {
     });
   }
 
+  /**
+   * Creates a TokenTransfer object to move a token from one chain to another
+   * @param token the token to transfer
+   * @param amount the amount to transfer
+   * @param from the address to transfer from
+   * @param to the address to transfer to
+   * @param automatic whether to use automatic delivery
+   * @param payload the payload to send with the transfer
+   * @param nativeGas the amount of native gas to send with the transfer
+   * @returns the TokenTransfer object
+   * @throws Errors if the chain or protocol is not supported
+   */
   async tokenTransfer(
     token: TokenId | 'native',
     amount: bigint,
@@ -143,21 +166,24 @@ export class Wormhole {
   }
 
   /**
-   * Returns the platform "context", i.e. the class with platform-specific logic and methods
-   * @param chain the chain name or chain id
-   * @returns the chain context class
-   * @throws Errors if context is not found
+   * Returns the platform object, i.e. the class with platform-specific logic and methods
+   * @param chain the chain name or platform name
+   * @returns the platform context class
+   * @throws Errors if platform is not found
    */
-  getPlatform(chain: ChainName): Platform<PlatformName> {
-    const { platform: platformType } = this.conf.chains[chain]!;
-    const platform = this._platforms.get(platformType);
+  getPlatform(chain: ChainName | PlatformName): Platform<PlatformName> {
+    const platformName = isChain(chain)
+      ? this.conf.chains[chain]!.platform
+      : chain;
+
+    const platform = this._platforms.get(platformName);
     if (!platform) throw new Error(`Not able to retrieve platform ${platform}`);
     return platform;
   }
 
   /**
-   * Returns the platform "context", i.e. the class with platform-specific logic and methods
-   * @param chain the chain name or chain id
+   * Returns the chain "context", i.e. the class with chain-specific logic and methods
+   * @param chain the chain name
    * @returns the chain context class
    * @throws Errors if context is not found
    */
@@ -167,12 +193,14 @@ export class Wormhole {
   }
 
   /**
-   * Gets the address for a token representation on any chain
-   *  These are the Wormhole token addresses, not necessarily the cannonical version of that token
+   * Gets the TokenId for a token representation on any chain
+   *  These are the Wormhole wrapped token addresses, not necessarily
+   *  the cannonical version of that token
    *
    * @param tokenId The Token ID (chain/address)
    * @param chain The chain name or id
-   * @returns The Wormhole address on the given chain, null if it does not exist
+   * @returns The TokenId on the given chain, null if it does not exist
+   * @throws Errors if the chain is not supported or the token does not exist
    */
   async getWrappedAsset(chain: ChainName, token: TokenId): Promise<TokenId> {
     const ctx = this.getChain(chain);
@@ -217,31 +245,30 @@ export class Wormhole {
     return ctx.getBalance(walletAddress, token);
   }
 
+  /**
+   * Gets the associated token account for chains that require it (only Solana currently).
+   * @param sendingChain the chain name of the source token
+   * @param sendingToken the TokenId or address of the source token
+   * @param recipient the address of the recipient
+   * @returns
+   */
   async getTokenAccount(
     sendingChain: ChainName,
     sendingToken:
-      | string
       | UniversalAddress
       | NativeAddress<PlatformName>
       | TokenId
       | 'native',
     recipient: ChainAddress,
   ): Promise<ChainAddress> {
-    const chain = this.getChain(recipient.chain);
     // TODO: same as supportsSendWithRelay, need some
     // way to id this in a less sketchy way
+    const chain = this.getChain(recipient.chain);
     if ('getTokenAccount' in chain) {
       let t: TokenId;
-      if (typeof sendingToken === 'string') {
-        if (sendingToken === 'native') {
-          const srcTb = await this.getChain(sendingChain).getTokenBridge();
-          t = { chain: sendingChain, address: await srcTb.getWrappedNative() };
-        } else {
-          t = {
-            chain: sendingChain,
-            address: this.parseAddress(sendingChain, sendingToken),
-          };
-        }
+      if (sendingToken === 'native') {
+        const srcTb = await this.getChain(sendingChain).getTokenBridge();
+        t = { chain: sendingChain, address: await srcTb.getWrappedNative() };
       } else {
         t = isTokenId(sendingToken)
           ? sendingToken
@@ -267,24 +294,14 @@ export class Wormhole {
   }
 
   /**
-   * Check whether a chain supports automatic relaying
-   * @param chain the chain name or chain id
-   * @returns boolean representing if automatic relay is available
-   */
-  supportsSendWithRelay(chain: ChainName): boolean {
-    // TODO
-    return !!(
-      this.getContracts(chain)?.relayer &&
-      'startTransferWithRelay' in this.getPlatform(chain)
-    );
-  }
-
-  /**
-   * Gets a VAA from the API or Guardian RPC, finality must be met before the VAA will be available.
+   * Gets the Raw VAA Bytes from the API or Guardian RPC, finality must be met before the VAA will be available.
    *  See {@link ChainConfig.finalityThreshold | finalityThreshold} on {@link CONFIG | the config}
-   *
-   * @param msg The MessageIdentifier used to fetch the VAA
-   * @returns The ParsedVAA if available
+   * @param chain The chain name
+   * @param emitter The emitter address
+   * @param sequence The sequence number
+   * @param retries The number of times to retry
+   * @returns The VAA bytes if available
+   * @throws Errors if the VAA is not available after the retries
    */
   async getVAABytes(
     chain: ChainName,
@@ -293,9 +310,7 @@ export class Wormhole {
     retries: number = 5,
   ): Promise<Uint8Array | undefined> {
     const chainId = toChainId(chain);
-    const emitterAddress = emitter.toString().startsWith('0x')
-      ? emitter.toString().slice(2)
-      : emitter;
+    const emitterAddress = emitter.toUniversalAddress().toString();
 
     let response: AxiosResponse<any, any> | undefined;
     // TODO: Make both data formats work
@@ -312,10 +327,11 @@ export class Wormhole {
         console.error(`Caught an error waiting for VAA: ${e}`);
       }
     }
-
     if (!response || !response.data) return;
 
     const { data } = response;
+
+    //return new Uint8Array(Buffer.from(data.data.vaa, 'base64'));
     return new Uint8Array(Buffer.from(data.vaaBytes, 'base64'));
   }
 
@@ -323,16 +339,20 @@ export class Wormhole {
    * Gets a VAA from the API or Guardian RPC, finality must be met before the VAA will be available.
    *  See {@link ChainConfig.finalityThreshold | finalityThreshold} on {@link CONFIG | the config}
    *
-   * @param msg The MessageIdentifier used to fetch the VAA
-   * @returns The ParsedVAA if available
+   * @param chain The chain name
+   * @param emitter The emitter address
+   * @param sequence The sequence number
+   * @param retries The number of times to retry
+   * @returns The VAA if available
+   * @throws Errors if the VAA is not available after the retries
    */
   async getVAA(
     chain: ChainName,
     emitter: UniversalAddress,
-    seq: bigint,
+    sequence: bigint,
     retries: number = 5,
   ): Promise<VAA | undefined> {
-    const vaaBytes = await this.getVAABytes(chain, emitter, seq, retries);
+    const vaaBytes = await this.getVAABytes(chain, emitter, sequence, retries);
     if (vaaBytes === undefined) return;
 
     return deserialize('Uint8Array', vaaBytes);
@@ -365,16 +385,22 @@ export class Wormhole {
     }
   }
 
+  /**
+   * Get the status of a transaction, identified by the chain, emitter address, and sequence number
+   *
+   * @param chain the chain name
+   * @param emitter the emitter address
+   * @param sequence the sequence number
+   * @returns the TransactionStatus
+   */
+
   async getTransactionStatus(
     chain: ChainName,
     emitter: UniversalAddress | NativeAddress<PlatformName>,
     sequence: bigint,
   ): Promise<TransactionStatus> {
     const chainId = toChainId(chain);
-    const emitterAddress = emitter.toString().startsWith('0x')
-      ? emitter.toString().slice(2)
-      : emitter;
-
+    const emitterAddress = emitter.toUniversalAddress().toString();
     const id = `${chainId}/${emitterAddress}/${sequence}`;
 
     const url = `${this.conf.api}/api/v1/transactions/${id}`;
@@ -406,7 +432,7 @@ export class Wormhole {
    *
    * @param tx The sending transaction hash
    * @param chain The sending chain name or id
-   * @returns The parsed data
+   * @returns The parsed WormholeMessageId
    */
   async parseMessageFromTx(
     chain: ChainName,
@@ -441,4 +467,16 @@ export class Wormhole {
   //    return context.formatAddress(address);
   //  }
   //
+  // /**
+  //  * Check whether a chain supports automatic relaying
+  //  * @param chain the chain name or chain id
+  //  * @returns boolean representing if automatic relay is available
+  //  */
+  // supportsSendWithRelay(chain: ChainName): boolean {
+  //   // TODO
+  //   return !!(
+  //     this.getContracts(chain)?.relayer &&
+  //     'startTransferWithRelay' in this.getPlatform(chain)
+  //   );
+  // }
 }

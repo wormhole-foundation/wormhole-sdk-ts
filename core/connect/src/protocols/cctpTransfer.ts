@@ -110,7 +110,8 @@ export class CCTPTransfer implements WormholeTransfer {
 
       automatic =
         vaa.payloadLiteral === 'CircleTransferRelay' &&
-        rcvAddress.equals(relayerAddress);
+        // @ts-ignore
+        rcvAddress.equals(relayerAddress.toUniversalAddress());
     }
 
     const details: CCTPTransferDetails = {
