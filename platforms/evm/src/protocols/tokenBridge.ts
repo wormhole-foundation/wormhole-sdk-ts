@@ -6,8 +6,6 @@ import {
   evmChainIdToNetworkChainPair,
   evmNetworkChainToEvmChainId,
   toChainName,
-} from '@wormhole-foundation/sdk-base';
-import {
   VAA,
   serialize,
   UniversalAddress,
@@ -19,9 +17,8 @@ import {
   NativeAddress,
   toNative,
   ErrNotWrapped,
-  UniversalOrNative,
-} from '@wormhole-foundation/sdk-definitions';
-import { TokenTransferTransaction } from '@wormhole-foundation/connect-sdk';
+  TokenTransferTransaction,
+} from '@wormhole-foundation/connect-sdk';
 import { Provider, TransactionRequest } from 'ethers';
 
 import {

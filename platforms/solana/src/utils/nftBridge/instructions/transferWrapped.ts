@@ -10,13 +10,13 @@ import { getPostMessageAccounts } from '../../wormhole';
 import {
   deriveAuthoritySignerKey,
   deriveNftBridgeConfigKey,
-  deriveWrappedMetaKey,
   deriveWrappedMintKey,
 } from '../accounts';
 import {
   deriveSplTokenMetadataKey,
   SplTokenMetadataProgram,
 } from '../../utils';
+import { deriveWrappedMetaKey } from '../../tokenBridge';
 
 export function createTransferWrappedInstruction(
   connection: Connection,

@@ -3,8 +3,6 @@ import {
   circleChainId,
   evmChainIdToNetworkChainPair,
   evmNetworkChainToEvmChainId,
-} from '@wormhole-foundation/sdk-base';
-import {
   ChainAddress,
   CircleTransferDetails,
   CircleBridge,
@@ -12,7 +10,7 @@ import {
   keccak256,
   TokenId,
   toNative,
-} from '@wormhole-foundation/sdk-definitions';
+} from '@wormhole-foundation/connect-sdk';
 
 import {
   addFrom,

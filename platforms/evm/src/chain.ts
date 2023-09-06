@@ -1,10 +1,10 @@
-import { ChainName } from '@wormhole-foundation/sdk-base';
 import {
   ChainContext,
   ChainConfig,
   Platform,
   RpcConnection,
-} from '@wormhole-foundation/sdk-definitions';
+  ChainName,
+} from '@wormhole-foundation/connect-sdk';
 
 export class EvmChain extends ChainContext<'Evm'> {
   readonly chain: ChainName;

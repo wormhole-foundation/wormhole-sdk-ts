@@ -1,4 +1,3 @@
-import { ChainName, PlatformName } from "@wormhole-foundation/sdk-base";
 import {
   Signer,
   ChainContext,
@@ -6,15 +5,15 @@ import {
   SignedTx,
   UnsignedTransaction,
   nativeChainAddress,
-} from "@wormhole-foundation/sdk-definitions";
+  TransferState,
+  WormholeTransfer,
+  ChainName,
+  PlatformName,
+} from "@wormhole-foundation/connect-sdk";
 
 import bs58 from "bs58";
 import { ethers } from "ethers";
 import { Keypair } from "@solana/web3.js";
-import {
-  TransferState,
-  WormholeTransfer,
-} from "@wormhole-foundation/connect-sdk";
 
 // read in from `.env`
 require("dotenv").config();

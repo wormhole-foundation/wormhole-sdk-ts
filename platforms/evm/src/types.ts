@@ -1,9 +1,9 @@
-import { PlatformToChains } from '@wormhole-foundation/sdk-base';
 import {
   UniversalAddress,
   UniversalOrNative,
   registerNative,
-} from '@wormhole-foundation/sdk-definitions';
+  PlatformToChains,
+} from '@wormhole-foundation/connect-sdk';
 import { TransactionRequest } from 'ethers';
 
 import { EvmAddress } from './address';

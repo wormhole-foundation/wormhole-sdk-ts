@@ -15,7 +15,7 @@ import {
   getWormholeBridgeData,
 } from '../accounts';
 import { createReadOnlyWormholeProgramInterface } from '../program';
-import { VAA } from '@wormhole-foundation/sdk-definitions';
+import { VAA } from '@wormhole-foundation/connect-sdk';
 
 const MAX_LEN_GUARDIAN_KEYS = 19;
 

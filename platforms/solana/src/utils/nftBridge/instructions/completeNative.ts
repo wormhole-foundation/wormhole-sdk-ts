@@ -18,7 +18,7 @@ import {
   deriveCustodyKey,
   deriveCustodySignerKey,
 } from '../accounts';
-import { VAA } from '@wormhole-foundation/sdk-definitions';
+import { VAA } from '@wormhole-foundation/connect-sdk';
 
 export function createCompleteTransferNativeInstruction(
   connection: Connection,

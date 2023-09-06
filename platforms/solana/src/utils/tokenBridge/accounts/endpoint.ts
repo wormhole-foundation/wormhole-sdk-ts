@@ -4,9 +4,13 @@ import {
   Commitment,
   PublicKeyInitData,
 } from '@solana/web3.js';
-import { ChainId, toChainId, toChainName } from '@wormhole-foundation/sdk-base';
 import { deriveAddress, getAccountData } from '../../utils';
-import { toNative } from '@wormhole-foundation/sdk-definitions';
+import {
+  ChainId,
+  toChainId,
+  toChainName,
+  toNative,
+} from '@wormhole-foundation/connect-sdk';
 
 export function deriveEndpointKey(
   tokenBridgeProgramId: PublicKeyInitData,

@@ -1,4 +1,5 @@
 import { Wormhole } from "@wormhole-foundation/connect-sdk";
+// Platform specific packages
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 import { getStuff } from "./helpers";

@@ -1,13 +1,11 @@
 import {
-  chainToChainId,
-  evmChainIdToNetworkChainPair,
-  evmNetworkChainToEvmChainId,
-} from '@wormhole-foundation/sdk-base';
-import {
   ChainAddress,
   AutomaticCircleBridge,
   TokenId,
-} from '@wormhole-foundation/sdk-definitions';
+  chainToChainId,
+  evmChainIdToNetworkChainPair,
+  evmNetworkChainToEvmChainId,
+} from '@wormhole-foundation/connect-sdk';
 
 import {
   EvmChainName,

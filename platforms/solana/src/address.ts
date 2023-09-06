@@ -1,12 +1,10 @@
 import {
   isHexByteString,
   hexByteStringToUint8Array,
-} from '@wormhole-foundation/sdk-base';
-import {
   Address,
   registerNative,
   UniversalAddress,
-} from '@wormhole-foundation/sdk-definitions';
+} from '@wormhole-foundation/connect-sdk';
 
 import { PublicKey, PublicKeyInitData } from '@solana/web3.js';
 

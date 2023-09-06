@@ -1,12 +1,8 @@
-import { PlatformToChains } from '@wormhole-foundation/sdk-base';
 import {
+  PlatformToChains,
   UniversalAddress,
   UniversalOrNative,
-  registerNative,
-} from '@wormhole-foundation/sdk-definitions';
-
-//import { SolanaAddress } from './address';
-//registerNative('Solana', SolanaAddress);
+} from '@wormhole-foundation/connect-sdk';
 
 export const unusedNonce = 0;
 export const unusedArbiterFee = 0n;

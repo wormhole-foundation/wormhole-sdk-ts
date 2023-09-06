@@ -1,4 +1,21 @@
 import {
+  ChainId,
+  Network,
+  solGenesisHashToNetworkChainPair,
+  toChainId,
+  toChainName,
+  TokenBridge,
+  ChainAddress,
+  VAA,
+  TokenId,
+  UniversalAddress,
+  toNative,
+  ErrNotWrapped,
+  RpcConnection,
+  NativeAddress,
+} from '@wormhole-foundation/connect-sdk';
+
+import {
   Connection,
   Keypair,
   PublicKey,
@@ -17,26 +34,6 @@ import {
   getMinimumBalanceForRentExemptAccount,
 } from '@solana/spl-token';
 import { Program } from '@project-serum/anchor';
-
-import {
-  ChainId,
-  Network,
-  solGenesisHashToNetworkChainPair,
-  toChainId,
-  toChainName,
-} from '@wormhole-foundation/sdk-base';
-import {
-  TokenBridge,
-  ChainAddress,
-  VAA,
-  TokenId,
-  UniversalAddress,
-  toNative,
-  ErrNotWrapped,
-  RpcConnection,
-  UniversalOrNative,
-  NativeAddress,
-} from '@wormhole-foundation/sdk-definitions';
 
 import { Wormhole as WormholeCore } from '../utils/types/wormhole';
 import {

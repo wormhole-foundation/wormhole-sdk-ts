@@ -6,8 +6,8 @@ import {
   VAA,
   Signature,
   nativeChainAddress,
-} from '@wormhole-foundation/sdk-definitions';
-import { chainConfigs } from '@wormhole-foundation/connect-sdk';
+  chainConfigs,
+} from '@wormhole-foundation/connect-sdk';
 
 import {
   SolanaUnsignedTransaction,

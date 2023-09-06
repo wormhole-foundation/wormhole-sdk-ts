@@ -1,5 +1,5 @@
-import { ChainName } from '@wormhole-foundation/sdk-base';
 import {
+  ChainName,
   TokenId,
   TxHash,
   Platform,
@@ -8,14 +8,13 @@ import {
   SignedTx,
   AutomaticTokenBridge,
   TokenBridge,
-  UniversalAddress,
   CircleBridge,
   AutomaticCircleBridge,
   ChainsConfig,
   toNative,
-  EvmRpc,
   NativeAddress,
-} from '@wormhole-foundation/sdk-definitions';
+  WormholeCore,
+} from '@wormhole-foundation/connect-sdk';
 
 import { ethers } from 'ethers';
 import { EvmContracts } from './contracts';
@@ -25,9 +24,7 @@ import { EvmTokenBridge } from './protocols/tokenBridge';
 import { EvmAutomaticTokenBridge } from './protocols/automaticTokenBridge';
 import { EvmAutomaticCircleBridge } from './protocols/automaticCircleBridge';
 import { EvmCircleBridge } from './protocols/circleBridge';
-import { WormholeCore } from '@wormhole-foundation/sdk-definitions/dist/esm/protocols/core';
 import { EvmWormholeCore } from './protocols/wormholeCore';
-import { EvmAddress } from './address';
 
 /**
  * @category EVM

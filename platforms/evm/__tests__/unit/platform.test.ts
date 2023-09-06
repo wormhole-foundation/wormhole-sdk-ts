@@ -1,13 +1,13 @@
 import { expect, test } from '@jest/globals';
 import '../mocks/ethers';
 
-import { chainConfigs } from '@wormhole-foundation/connect-sdk';
-import { testing } from '@wormhole-foundation/sdk-definitions';
 import {
   ChainName,
   chainToPlatform,
   chains,
-} from '@wormhole-foundation/sdk-base';
+  chainConfigs,
+  testing,
+} from '@wormhole-foundation/connect-sdk';
 import { EvmPlatform } from '../../src/platform';
 
 import { getDefaultProvider } from 'ethers';

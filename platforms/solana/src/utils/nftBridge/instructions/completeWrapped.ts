@@ -16,11 +16,10 @@ import {
   deriveEndpointKey,
   deriveNftBridgeConfigKey,
   deriveWrappedMintKey,
-  deriveWrappedMetaKey,
   deriveMintAuthorityKey,
 } from '../accounts';
 import { SplTokenMetadataProgram } from '../../utils';
-import { VAA } from '@wormhole-foundation/sdk-definitions';
+import { VAA } from '@wormhole-foundation/connect-sdk';
 
 export function createCompleteTransferWrappedInstruction(
   connection: Connection,

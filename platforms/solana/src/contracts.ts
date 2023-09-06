@@ -1,7 +1,10 @@
 import { Connection } from '@solana/web3.js';
 import { Program } from '@project-serum/anchor';
-import { Contracts, ChainsConfig } from '@wormhole-foundation/sdk-definitions';
-import { ChainName, toChainName } from '@wormhole-foundation/sdk-base';
+import {
+  Contracts,
+  ChainsConfig,
+  ChainName,
+} from '@wormhole-foundation/connect-sdk';
 
 import { TokenBridge } from './utils/types/tokenBridge';
 import { createReadOnlyTokenBridgeProgramInterface } from './utils/tokenBridge';

@@ -1,6 +1,6 @@
 import { Commitment, Connection, PublicKey } from '@solana/web3.js';
-import { ChainName } from '@wormhole-foundation/sdk-base';
 import {
+  ChainName,
   Platform,
   TokenId,
   TokenBridge,
@@ -15,12 +15,12 @@ import {
   toNative,
   SolRpc,
   NativeAddress,
-} from '@wormhole-foundation/sdk-definitions';
+  WormholeCore,
+} from '@wormhole-foundation/connect-sdk';
 
 import { SolanaContracts } from './contracts';
 import { SolanaChain } from './chain';
 import { SolanaTokenBridge } from './protocols/tokenBridge';
-import { WormholeCore } from '@wormhole-foundation/sdk-definitions/dist/esm/protocols/core';
 
 const SOLANA_SEQ_LOG = 'Program log: Sequence: ';
 

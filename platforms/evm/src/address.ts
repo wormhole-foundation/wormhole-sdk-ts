@@ -1,8 +1,4 @@
-import {
-  Address,
-  NativeAddress,
-  UniversalAddress,
-} from '@wormhole-foundation/sdk-definitions';
+import { Address, UniversalAddress } from '@wormhole-foundation/connect-sdk';
 
 import { ethers } from 'ethers';
 

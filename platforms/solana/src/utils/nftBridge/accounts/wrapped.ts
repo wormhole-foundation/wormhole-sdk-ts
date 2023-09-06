@@ -1,9 +1,3 @@
-import {
-  ChainName,
-  toChainId,
-  ChainId,
-  toChainName,
-} from '@wormhole-foundation/sdk-base';
 import { BN } from '@project-serum/anchor';
 import {
   Connection,
@@ -11,10 +5,14 @@ import {
   Commitment,
   PublicKeyInitData,
 } from '@solana/web3.js';
+import {
+  toChainId,
+  ChainId,
+  toChainName,
+  toNative,
+} from '@wormhole-foundation/connect-sdk';
 import { deriveAddress, getAccountData } from '../../utils';
 import { deriveWrappedMetaKey } from '../../tokenBridge';
-import { toNative } from '@wormhole-foundation/sdk-definitions';
-export { deriveWrappedMetaKey } from '../../tokenBridge';
 
 export function deriveWrappedMintKey(
   tokenBridgeProgramId: PublicKeyInitData,
