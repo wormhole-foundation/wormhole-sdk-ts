@@ -1,5 +1,8 @@
-import { ChainName, Network } from '@wormhole-foundation/sdk-base';
-import { UnsignedTransaction } from '@wormhole-foundation/sdk-definitions';
+import {
+  UnsignedTransaction,
+  ChainName,
+  Network,
+} from '@wormhole-foundation/connect-sdk';
 import { TransactionRequest } from 'ethers';
 
 export class EvmUnsignedTransaction implements UnsignedTransaction {

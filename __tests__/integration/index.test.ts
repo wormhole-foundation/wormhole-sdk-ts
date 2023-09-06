@@ -7,7 +7,7 @@ import {
   testing,
 } from "@wormhole-foundation/sdk-definitions";
 import { PlatformName } from "@wormhole-foundation/sdk-base";
-import { Wormhole } from "@wormhole-foundation/connect-sdk";
+import { Wormhole } from "../../connect/dist/esm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 

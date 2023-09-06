@@ -113,6 +113,7 @@ describe("Governance VAA tests", function () {
       consistencyLevel: 0,
       payload: {
         chain: "Ethereum",
+        //@ts-ignore
         newContract: new UniversalAddress(new Uint8Array(32)),
       },
     });

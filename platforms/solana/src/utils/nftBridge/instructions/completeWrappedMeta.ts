@@ -2,25 +2,10 @@ import {
   Connection,
   PublicKey,
   PublicKeyInitData,
-  SystemProgram,
-  SYSVAR_RENT_PUBKEY,
   TransactionInstruction,
 } from '@solana/web3.js';
-import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { createReadOnlyNftBridgeProgramInterface } from '../program';
-import { derivePostedVaaKey } from '../../wormhole';
-import {
-  deriveEndpointKey,
-  deriveNftBridgeConfigKey,
-  deriveWrappedMintKey,
-  deriveWrappedMetaKey,
-  deriveMintAuthorityKey,
-} from '../accounts';
-import {
-  deriveSplTokenMetadataKey,
-  SplTokenMetadataProgram,
-} from '../../utils';
-import { VAA } from '@wormhole-foundation/sdk-definitions';
+import { VAA } from '@wormhole-foundation/connect-sdk';
 
 export function createCompleteWrappedMetaInstruction(
   connection: Connection,

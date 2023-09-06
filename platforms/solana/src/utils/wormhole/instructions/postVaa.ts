@@ -13,8 +13,11 @@ import {
   deriveGuardianSetKey,
   derivePostedVaaKey,
 } from '../accounts';
-import { VAA, serializePayload } from '@wormhole-foundation/sdk-definitions';
-import { toChainId } from '@wormhole-foundation/sdk-base';
+import {
+  VAA,
+  serializePayload,
+  toChainId,
+} from '@wormhole-foundation/connect-sdk';
 import BN from 'bn.js';
 
 /**

@@ -1,17 +1,15 @@
 import {
-  chainToChainId,
-  evmChainIdToNetworkChainPair,
-  evmNetworkChainToEvmChainId,
-  toChainId,
-} from '@wormhole-foundation/sdk-base';
-import {
   ChainAddress,
   UniversalOrNative,
   AutomaticTokenBridge,
   VAA,
   serialize,
   TokenId,
-} from '@wormhole-foundation/sdk-definitions';
+  chainToChainId,
+  evmChainIdToNetworkChainPair,
+  evmNetworkChainToEvmChainId,
+  toChainId,
+} from '@wormhole-foundation/connect-sdk';
 
 import { Provider, TransactionRequest } from 'ethers';
 

@@ -1,16 +1,16 @@
-import { evmNetworkChainToEvmChainId } from '@wormhole-foundation/sdk-base';
 import {
+  evmNetworkChainToEvmChainId,
   ChainAddress,
   Platform,
   Signature,
   TokenBridge,
   UniversalAddress,
   VAA,
-  nativeChainAddress,
   testing,
   toNative,
-} from '@wormhole-foundation/sdk-definitions';
-import { chainConfigs } from '@wormhole-foundation/connect-sdk';
+  chainConfigs,
+} from '@wormhole-foundation/connect-sdk';
+
 import {
   EvmPlatform,
   EvmContracts,

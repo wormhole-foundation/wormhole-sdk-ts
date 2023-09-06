@@ -1,13 +1,13 @@
 import { PublicKey } from '@solana/web3.js';
-import { ChainName } from '@wormhole-foundation/sdk-base';
 import {
+  ChainName,
   ChainContext,
   NativeAddress,
   RpcConnection,
   TokenId,
   UniversalAddress,
   UniversalOrNative,
-} from '@wormhole-foundation/sdk-definitions';
+} from '@wormhole-foundation/connect-sdk';
 import { SolanaPlatform } from './platform';
 import { getAssociatedTokenAddress } from '@solana/spl-token';
 

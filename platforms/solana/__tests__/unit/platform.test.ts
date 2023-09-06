@@ -1,13 +1,13 @@
 import { expect, test } from '@jest/globals';
 import '../mocks/web3';
 
-import { testing } from '@wormhole-foundation/sdk-definitions';
 import {
+  testing,
   ChainName,
   chainToPlatform,
   chains,
-} from '@wormhole-foundation/sdk-base';
-import { chainConfigs } from '@wormhole-foundation/connect-sdk';
+  chainConfigs,
+} from '@wormhole-foundation/connect-sdk';
 
 import { SolanaPlatform } from '../../src';
 

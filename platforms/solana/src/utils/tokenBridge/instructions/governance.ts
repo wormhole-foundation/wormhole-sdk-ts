@@ -14,8 +14,7 @@ import {
   deriveUpgradeAuthorityKey,
 } from '../accounts';
 import { BpfLoaderUpgradeable, deriveUpgradeableProgramKey } from '../../utils';
-import { VAA } from '@wormhole-foundation/sdk-definitions';
-import { toChainId } from '@wormhole-foundation/sdk-base';
+import { VAA, toChainId } from '@wormhole-foundation/connect-sdk';
 
 export function createRegisterChainInstruction(
   tokenBridgeProgramId: PublicKeyInitData,

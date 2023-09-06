@@ -1,13 +1,13 @@
 import { expect, test } from '@jest/globals';
 import '../mocks/ethers';
 
-import { chainConfigs } from '@wormhole-foundation/connect-sdk';
-import { testing } from '@wormhole-foundation/sdk-definitions';
 import {
   ChainName,
   chainToPlatform,
   chains,
-} from '@wormhole-foundation/sdk-base';
+  chainConfigs,
+  testing,
+} from '@wormhole-foundation/connect-sdk';
 import { EvmPlatform } from '../../src/platform';
 
 import { getDefaultProvider } from 'ethers';
@@ -23,7 +23,7 @@ describe('EVM Platform Tests', () => {
       const address = testing.utils.makeNativeAddressHexString(chain);
       const parsed = p.parseAddress(chain, address);
       expect(parsed).toBeTruthy();
-      expect(parsed.toNative(chain).toString().toLowerCase()).toEqual(
+      expect(parsed.toNative().toString().toLowerCase()).toEqual(
         '0x' + address,
       );
     });

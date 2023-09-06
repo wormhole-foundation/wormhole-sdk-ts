@@ -1,13 +1,13 @@
-import * as ethers_contracts from './ethers-contracts';
-import { ChainName, toChainName } from '@wormhole-foundation/sdk-base';
-import { coreBridge } from '@wormhole-foundation/sdk-base/src/constants/contracts';
 import {
+  ChainName,
+  toChainName,
   ChainsConfig,
   Contracts,
   TokenId,
   toNative,
-} from '@wormhole-foundation/sdk-definitions';
-import { Provider, ethers } from 'ethers';
+} from '@wormhole-foundation/connect-sdk';
+import * as ethers_contracts from './ethers-contracts';
+import { Provider } from 'ethers';
 
 /**
  * @category EVM

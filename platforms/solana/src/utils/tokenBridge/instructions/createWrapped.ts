@@ -18,8 +18,7 @@ import {
   deriveWrappedMintKey,
 } from '../accounts';
 import { SplTokenMetadataProgram } from '../../utils';
-import { VAA } from '@wormhole-foundation/sdk-definitions';
-import { toChainId } from '@wormhole-foundation/sdk-base';
+import { toChainId, VAA } from '@wormhole-foundation/connect-sdk';
 
 export function createCreateWrappedInstruction(
   connection: Connection,
