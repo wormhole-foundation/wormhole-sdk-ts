@@ -1,7 +1,6 @@
 import { Wormhole } from "@wormhole-foundation/connect-sdk";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
-import { ethers } from "ethers";
 import { getStuff } from "./helpers";
 
 function fmtForDisplay(

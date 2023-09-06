@@ -48,23 +48,6 @@ export class SolanaPlatform implements Platform<'Solana'> {
     return new SolanaChain(this, chain);
   }
 
-  async getWrappedAsset(
-    chain: ChainName,
-    rpc: Connection,
-    token: TokenId,
-  ): Promise<TokenId | null> {
-    if (token.chain === chain) return token;
-
-    try {
-      const tb = await this.getTokenBridge(rpc);
-      return await tb.getWrappedAsset(token);
-    } catch (e) {
-      //  TODO: throw error?
-      console.error(e);
-    }
-    return null;
-  }
-
   async getDecimals(
     chain: ChainName,
     rpc: Connection,
@@ -90,16 +73,18 @@ export class SolanaPlatform implements Platform<'Solana'> {
     if (token === 'native')
       return BigInt(await rpc.getBalance(new PublicKey(walletAddress)));
 
-    const address = await this.getWrappedAsset(chain, rpc, token);
-    if (!address) return null;
+    if (token.chain !== chain) {
+      const tb = await this.getTokenBridge(rpc);
+      token = { chain: chain, address: await tb.getWrappedAsset(token) };
+    }
 
     const splToken = await rpc.getTokenAccountsByOwner(
       new PublicKey(walletAddress),
-      { mint: new PublicKey(address) },
+      { mint: new PublicKey(token.address.toUint8Array()) },
     );
     if (!splToken.value[0]) return null;
-    const balance = await rpc.getTokenAccountBalance(splToken.value[0].pubkey);
 
+    const balance = await rpc.getTokenAccountBalance(splToken.value[0].pubkey);
     return BigInt(balance.value.amount);
   }
 

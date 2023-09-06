@@ -6,6 +6,7 @@ import {
   isCircleSupported,
   isCircleChain,
   usdcContract,
+  chainToPlatform,
 } from '@wormhole-foundation/sdk-base';
 import {
   UniversalAddress,
@@ -30,6 +31,7 @@ import { CONFIG } from './constants';
 import { TokenTransfer } from './protocols/tokenTransfer';
 import { CCTPTransfer } from './protocols/cctpTransfer';
 import { TransactionStatus } from './api';
+import { isTokenId } from '@wormhole-foundation/sdk-definitions/src';
 
 export class Wormhole {
   protected _platforms: Map<PlatformName, Platform<PlatformName>>;
@@ -113,6 +115,13 @@ export class Wormhole {
     if (nativeGas && !automatic)
       throw new Error('Gas Dropoff is only supported for automatic transfers');
 
+    // Bit of (temporary) hackery until solana contracts support being
+    // sent a VAA with the primary address
+    if (to.chain === 'Solana') {
+      // Overwrite the dest address with the ATA
+      to = await this.getTokenAccount(from.chain, token, to);
+    }
+
     return await TokenTransfer.from(this, {
       token,
       amount,
@@ -165,13 +174,10 @@ export class Wormhole {
    * @param chain The chain name or id
    * @returns The Wormhole address on the given chain, null if it does not exist
    */
-  async getWrappedAsset(
-    chain: ChainName,
-    token: TokenId,
-  ): Promise<TokenId | null> {
+  async getWrappedAsset(chain: ChainName, token: TokenId): Promise<TokenId> {
     const ctx = this.getChain(chain);
     const tb = await ctx.getTokenBridge();
-    return tb.getWrappedAsset(token);
+    return { chain, address: await tb.getWrappedAsset(token) };
   }
 
   /**
@@ -209,6 +215,55 @@ export class Wormhole {
     }
 
     return ctx.getBalance(walletAddress, token);
+  }
+
+  async getTokenAccount(
+    sendingChain: ChainName,
+    sendingToken:
+      | string
+      | UniversalAddress
+      | NativeAddress<PlatformName>
+      | TokenId
+      | 'native',
+    recipient: ChainAddress,
+  ): Promise<ChainAddress> {
+    const chain = this.getChain(recipient.chain);
+    // TODO: same as supportsSendWithRelay, need some
+    // way to id this in a less sketchy way
+    if ('getTokenAccount' in chain) {
+      let t: TokenId;
+      if (typeof sendingToken === 'string') {
+        if (sendingToken === 'native') {
+          const srcTb = await this.getChain(sendingChain).getTokenBridge();
+          t = { chain: sendingChain, address: await srcTb.getWrappedNative() };
+        } else {
+          t = {
+            chain: sendingChain,
+            address: this.parseAddress(sendingChain, sendingToken),
+          };
+        }
+      } else {
+        t = isTokenId(sendingToken)
+          ? sendingToken
+          : {
+              chain: sendingChain,
+              address: (
+                sendingToken as UniversalAddress | NativeAddress<PlatformName>
+              ).toUniversalAddress(),
+            };
+      }
+
+      const dstTokenBridge = await chain.getTokenBridge();
+      const dstNative = await dstTokenBridge.getWrappedAsset(t);
+
+      // @ts-ignore
+      return (await chain.getTokenAccount(
+        dstNative,
+        recipient.address,
+      )) as ChainAddress;
+    }
+
+    return recipient;
   }
 
   /**

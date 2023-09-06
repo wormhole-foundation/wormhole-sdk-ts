@@ -31,10 +31,11 @@ import {
   VAA,
   TokenId,
   UniversalAddress,
-  NativeAddress,
   toNative,
   ErrNotWrapped,
   RpcConnection,
+  UniversalOrNative,
+  NativeAddress,
 } from '@wormhole-foundation/sdk-definitions';
 
 import { Wormhole as WormholeCore } from '../utils/types/wormhole';
@@ -143,24 +144,21 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     return false;
   }
 
-  async getWrappedAsset(token: TokenId): Promise<TokenId> {
+  async getWrappedAsset(token: TokenId): Promise<NativeAddress<'Solana'>> {
     const mint = deriveWrappedMintKey(
       this.tokenBridge.programId,
       toChainId(token.chain),
-      token.address.toUint8Array(),
+      token.address.toUniversalAddress().toUint8Array(),
     );
 
     // If we don't throw an error getting wrapped meta, we're good to return
     // the derived mint address back to the caller.
     try {
       await getWrappedMeta(this.connection, this.tokenBridge.programId, mint);
-      return {
-        chain: this.chain,
-        address: toNative(this.chain, mint.toBase58()),
-      };
+      return toNative(this.chain, mint.toBase58());
     } catch (_) {}
 
-    throw ErrNotWrapped(token.address.toString());
+    throw ErrNotWrapped(token.address.toUniversalAddress().toString());
   }
 
   async isTransferCompleted(
@@ -516,7 +514,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
           senderAddress,
           ataAddress,
           senderAddress,
-          new PublicKey(wrappedToken.address.toUint8Array()),
+          new PublicKey(wrappedToken.toUint8Array()),
         ),
       );
       ataCreationTx.feePayer = senderAddress;
@@ -571,11 +569,8 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     yield this.createUnsignedTx(transaction, 'Solana.RedeemTransfer');
   }
 
-  async getWrappedNative(): Promise<TokenId> {
-    return {
-      chain: this.chain,
-      address: toNative(this.chain, NATIVE_MINT.toBase58()),
-    };
+  async getWrappedNative(): Promise<NativeAddress<'Solana'>> {
+    return toNative(this.chain, NATIVE_MINT.toBase58());
   }
 
   private createUnsignedTx(

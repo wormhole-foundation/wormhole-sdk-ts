@@ -2,6 +2,7 @@ import {
   ChainName,
   ExplorerSettings,
   PlatformName,
+  isChain,
 } from "@wormhole-foundation/sdk-base";
 import { ChainAddress, toNative } from "./address";
 import { Contracts } from "./contracts";
@@ -12,15 +13,19 @@ export type SequenceId = bigint;
 
 export type SignedTx = any;
 
-// Fully qualified Token Id
 export type TokenId = ChainAddress;
+export function isTokenId(thing: TokenId | any): thing is TokenId {
+  return (
+    typeof (<TokenId>thing).address !== undefined &&
+    isChain((<TokenId>thing).chain)
+  );
+}
 
 export interface Signer {
   chain(): ChainName;
   address(): string;
   sign(tx: UnsignedTransaction[]): Promise<SignedTx[]>;
 }
-
 export function isSigner(thing: Signer | any): thing is Signer {
   return (
     typeof (<Signer>thing).chain === "function" &&

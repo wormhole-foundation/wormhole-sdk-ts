@@ -6,6 +6,7 @@ import {
   RpcConnection,
   TokenId,
   UniversalAddress,
+  UniversalOrNative,
 } from '@wormhole-foundation/sdk-definitions';
 import { SolanaPlatform } from './platform';
 import { getAssociatedTokenAddress } from '@solana/spl-token';
@@ -26,17 +27,18 @@ export class SolanaChain extends ChainContext<'Solana'> {
   }
 
   async getTokenAccount(
-    token: TokenId,
+    token: UniversalOrNative<'Solana'> | 'native',
     address: UniversalAddress,
   ): Promise<NativeAddress<'Solana'>> {
     const tb = await this.getTokenBridge();
 
-    const wrapped = await tb.getWrappedAsset(token);
-    if (!wrapped)
-      throw new Error(`No wrapped token on ${this.chain} for: ${token}`);
+    const mintAddress: UniversalOrNative<'Solana'> =
+      token === 'native'
+        ? await tb.getWrappedNative()
+        : token.toUniversalAddress();
 
-    const mint = new PublicKey(wrapped.address.unwrap());
-    const owner = new PublicKey(address.unwrap());
+    const mint = new PublicKey(mintAddress.toUint8Array());
+    const owner = new PublicKey(address.toUint8Array());
 
     const ata = await getAssociatedTokenAddress(mint, owner);
     return this.parseAddress(ata.toString());

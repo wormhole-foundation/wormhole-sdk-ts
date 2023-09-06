@@ -10,7 +10,7 @@ import {
 
 import bs58 from "bs58";
 import { ethers } from "ethers";
-import { Transaction, Keypair } from "@solana/web3.js";
+import { Keypair } from "@solana/web3.js";
 import {
   TransferState,
   WormholeTransfer,

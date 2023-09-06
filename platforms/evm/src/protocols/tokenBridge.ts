@@ -19,6 +19,7 @@ import {
   NativeAddress,
   toNative,
   ErrNotWrapped,
+  UniversalOrNative,
 } from '@wormhole-foundation/sdk-definitions';
 import { TokenTransferTransaction } from '@wormhole-foundation/connect-sdk';
 import { Provider, TransactionRequest } from 'ethers';
@@ -40,6 +41,7 @@ import {
   unusedArbiterFee,
   unusedNonce,
 } from '../types';
+import { EvmZeroAddress } from '../address';
 
 //Currently the code does not consider Wormhole msg fee (because it is and always has been 0).
 
@@ -92,22 +94,26 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     return { chain, address };
   }
 
-  async hasWrappedAsset({ chain, address }: ChainAddress): Promise<boolean> {
+  async hasWrappedAsset(token: TokenId): Promise<boolean> {
     try {
       //TODO it's unclear to me why this would throw for a non-existent token but that's how the
       //  old sdk checked for existence
-      await this.getWrappedAsset({ chain, address });
+      await this.getWrappedAsset(token);
       return true;
     } catch (e) {}
     return false;
   }
 
-  async getWrappedAsset(token: TokenId): Promise<TokenId> {
+  async getWrappedAsset(token: TokenId): Promise<NativeAddress<'Evm'>> {
     const wrappedAddress = await this.tokenBridge.wrappedAsset(
       toChainId(token.chain),
-      token.address.toString(),
+      token.address.toUniversalAddress().toString(),
     );
-    return { chain: this.chain, address: toNative('Evm', wrappedAddress) };
+
+    if (wrappedAddress === EvmZeroAddress)
+      throw ErrNotWrapped(token.address.toUniversalAddress().toString());
+
+    return toNative('Evm', wrappedAddress);
   }
 
   async isTransferCompleted(
@@ -356,12 +362,9 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     return await Promise.all(parsedLogs);
   }
 
-  async getWrappedNative(): Promise<TokenId> {
+  async getWrappedNative(): Promise<NativeAddress<'Evm'>> {
     const address = await this.tokenBridge.WETH();
-    return {
-      chain: this.chain,
-      address: toNative(this.chain, address),
-    };
+    return toNative(this.chain, address);
   }
 
   private createUnsignedTx(
