@@ -60,7 +60,9 @@ export class EvmAutomaticCircleBridge implements AutomaticCircleBridge<'Evm'> {
   ): AsyncGenerator<EvmUnsignedTransaction> {
     const senderAddr = toEvmAddrString(sender);
     const recipientChainId = chainToChainId(recipient.chain);
-    const recipientAddress = recipient.address.toString();
+    const recipientAddress = recipient.address
+      .toUniversalAddress()
+      .toUint8Array();
     const nativeTokenGas = nativeGas ? nativeGas : 0n;
 
     const tokenAddr = toEvmAddrString(token.address.toUniversalAddress());

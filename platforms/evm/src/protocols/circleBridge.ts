@@ -106,7 +106,9 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
     amount: bigint,
   ): AsyncGenerator<EvmUnsignedTransaction> {
     const senderAddr = toEvmAddrString(sender);
-    const recipientAddress = recipient.address.toString();
+    const recipientAddress = recipient.address
+      .toUniversalAddress()
+      .toUint8Array();
     const tokenAddr = toEvmAddrString(token.address as UniversalOrEvm);
 
     const tokenContract = this.contracts.mustGetTokenImplementation(

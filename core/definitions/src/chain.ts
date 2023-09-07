@@ -63,14 +63,14 @@ export abstract class ChainContext<P extends PlatformName> {
     return this.platform.parseTransaction(this.chain, this.getRpc(), txid);
   };
 
+  // Send a transaction and wait for it to be confirmed
+  sendWait: OmitChainRpc<P, "sendWait"> = (stxns) => {
+    return this.platform.sendWait(this.chain, this.getRpc(), stxns);
+  };
+
   // Take a native address and convert it to a UniversalAddress
   parseAddress: OmitChain<P, "parseAddress"> = (address) => {
     return this.platform.parseAddress(this.chain, address);
-  };
-
-  // Send a transaction and wait for it to be confirmed
-  sendWait: OmitRpc<P, "sendWait"> = (stxns) => {
-    return this.platform.sendWait(this.getRpc(), stxns);
   };
 
   // protocols

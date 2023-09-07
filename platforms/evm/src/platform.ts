@@ -110,15 +110,24 @@ export class EvmPlatform implements Platform<'Evm'> {
     return balance;
   }
 
-  async sendWait(rpc: ethers.Provider, stxns: SignedTx[]): Promise<TxHash[]> {
+  async sendWait(
+    chain: ChainName,
+    rpc: ethers.Provider,
+    stxns: SignedTx[],
+  ): Promise<TxHash[]> {
     const txhashes: TxHash[] = [];
     for (const stxn of stxns) {
       const txRes = await rpc.broadcastTransaction(stxn);
-      const txReceipt = await txRes.wait();
-      // TODO: throw error?
-      if (txReceipt === null) continue;
+      txhashes.push(txRes.hash);
 
-      txhashes.push(txReceipt.hash);
+      if (chain === 'Celo') {
+        console.error('TODO: override celo block fetching');
+        continue;
+      }
+
+      // Wait for confirmation
+      const txReceipt = await txRes.wait();
+      if (txReceipt === null) continue; // TODO: throw error?
     }
     return txhashes;
   }
