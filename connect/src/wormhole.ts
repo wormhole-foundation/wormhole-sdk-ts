@@ -283,11 +283,11 @@ export class Wormhole {
       const dstTokenBridge = await chain.getTokenBridge();
       const dstNative = await dstTokenBridge.getWrappedAsset(t);
 
-      // @ts-ignore
-      return (await chain.getTokenAccount(
-        dstNative,
-        recipient.address,
-      )) as ChainAddress;
+      return {
+        chain: recipient.chain,
+        // @ts-ignore
+        address: await chain.getTokenAccount(dstNative, recipient.address),
+      } as ChainAddress;
     }
 
     return recipient;

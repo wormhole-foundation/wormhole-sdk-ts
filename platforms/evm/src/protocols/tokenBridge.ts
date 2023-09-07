@@ -167,7 +167,7 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     payload?: Uint8Array,
   ): AsyncGenerator<EvmUnsignedTransaction> {
     const senderAddr = toEvmAddrString(sender);
-    const recipientChainId = chainToChainId(recipient.chain);
+    const recipientChainId = toChainId(recipient.chain);
     const recipientAddress = recipient.address
       .toUniversalAddress()
       .toUint8Array();
