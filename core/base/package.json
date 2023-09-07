@@ -1,9 +1,26 @@
 {
   "name": "@wormhole-foundation/sdk-base",
-  "version": "0.1.0",
+  "version": "0.1.0-beta.4",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/wormhole-foundation/connect-sdk/issues"
+  },
+  "homepage": "https://github.com/wormhole-foundation/connect-sdk#readme",
+  "directories": {
+    "test": "__tests__"
+  },
+  "license": "Apache-2.0",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types":"./dist/esm/index.d.ts",
+  "files":[
+    "dist/**/*",
+    "src/**/*"
+  ],
+  "sideEffects": false,
   "scripts": {
     "test": "jest --config ../../jest.config.ts __tests__/*.ts",
     "build:cjs":"tsc -p ./tsconfig.cjs.json",
