@@ -36,7 +36,11 @@ export interface Platform<P extends PlatformName> {
   getRpc(chain: ChainName): RpcConnection<P>;
 
   // Platform interaction utils
-  sendWait(rpc: RpcConnection<P>, stxns: SignedTx[]): Promise<TxHash[]>;
+  sendWait(
+    chain: ChainName,
+    rpc: RpcConnection<P>,
+    stxns: SignedTx[]
+  ): Promise<TxHash[]>;
   parseTransaction(
     chain: ChainName,
     rpc: RpcConnection<P>,

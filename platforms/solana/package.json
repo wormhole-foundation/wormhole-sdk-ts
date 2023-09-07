@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/connect-sdk-solana",
-  "version": "0.1.1-beta",
+  "version": "0.1.3-beta",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"

@@ -113,7 +113,11 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
     return toNative(chain, address).toUniversalAddress();
   }
 
-  async sendWait(rpc: RpcConnection<P>, stxns: any[]): Promise<TxHash[]> {
+  async sendWait(
+    chain: ChainName,
+    rpc: RpcConnection<P>,
+    stxns: any[]
+  ): Promise<TxHash[]> {
     throw new Error("Method not implemented.");
   }
 

@@ -313,26 +313,26 @@ export class Wormhole {
     const emitterAddress = emitter.toUniversalAddress().toString();
 
     let response: AxiosResponse<any, any> | undefined;
-    // TODO: Make both data formats work
-    //const url = `${this.conf.api}/api/v1/vaas/${chainId}/${emitterAddress}/${seq}`;
-    const url = `https://wormhole-v2-testnet-api.certus.one/v1/signed_vaa/${chainId}/${emitterAddress}/${sequence}`;
+    const url = `${this.conf.api}/api/v1/vaas/${chainId}/${emitterAddress}/${sequence}`;
 
     for (let i = retries; i > 0 && !response; i--) {
-      // TODO: config wait seconds?
       if (i != retries) await new Promise((f) => setTimeout(f, 2000));
 
       try {
         response = await axios.get(url);
       } catch (e) {
-        console.error(`Caught an error waiting for VAA: ${e}`);
+        console.error(`Caught an error waiting for VAA: ${e}\n${url}\n`);
       }
     }
     if (!response || !response.data) return;
 
     const { data } = response;
 
-    //return new Uint8Array(Buffer.from(data.data.vaa, 'base64'));
-    return new Uint8Array(Buffer.from(data.vaaBytes, 'base64'));
+    return new Uint8Array(Buffer.from(data.data.vaa, 'base64'));
+
+    // TODO: Make both data formats work
+    // const url = `https://wormhole-v2-testnet-api.certus.one/v1/signed_vaa/${chainId}/${emitterAddress}/${sequence}`;
+    //return new Uint8Array(Buffer.from(data.vaaBytes, 'base64'));
   }
 
   /**

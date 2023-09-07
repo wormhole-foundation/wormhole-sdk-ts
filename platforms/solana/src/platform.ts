@@ -88,7 +88,11 @@ export class SolanaPlatform implements Platform<'Solana'> {
     return BigInt(balance.value.amount);
   }
 
-  async sendWait(rpc: Connection, stxns: SignedTx[]): Promise<TxHash[]> {
+  async sendWait(
+    chain: ChainName,
+    rpc: Connection,
+    stxns: SignedTx[],
+  ): Promise<TxHash[]> {
     const txhashes: TxHash[] = [];
 
     // TODO: concurrent?

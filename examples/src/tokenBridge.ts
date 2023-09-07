@@ -1,4 +1,8 @@
-import { Wormhole, TokenId } from "@wormhole-foundation/connect-sdk";
+import {
+  Wormhole,
+  TokenId,
+  TokenTransfer,
+} from "@wormhole-foundation/connect-sdk";
 // Import the platform specific packages
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
@@ -12,7 +16,7 @@ import { TransferStuff, getStuff, waitLog } from "./helpers";
 
   // Grab chain Contexts
   const sendChain = wh.getChain("Avalanche");
-  const rcvChain = wh.getChain("Solana");
+  const rcvChain = wh.getChain("Celo");
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
@@ -21,6 +25,7 @@ import { TransferStuff, getStuff, waitLog } from "./helpers";
 
   // Choose your adventure
   await manualTokenTransfer(wh, "native", 100_000_000n, source, destination);
+
   // await automaticTokenTransfer(wh, "native", 100_000_000n, source, destination);
   // await automaticTokenTransferWithGasDropoff(
   //   wh,

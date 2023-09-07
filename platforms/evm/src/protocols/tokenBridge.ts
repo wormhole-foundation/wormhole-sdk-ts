@@ -168,7 +168,9 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
   ): AsyncGenerator<EvmUnsignedTransaction> {
     const senderAddr = toEvmAddrString(sender);
     const recipientChainId = chainToChainId(recipient.chain);
-    const recipientAddress = recipient.address.toString();
+    const recipientAddress = recipient.address
+      .toUniversalAddress()
+      .toUint8Array();
     if (typeof token === 'string' && token === 'native') {
       const txReq = await (payload === undefined
         ? this.tokenBridge.wrapAndTransferETH.populateTransaction(
