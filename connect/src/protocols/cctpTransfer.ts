@@ -102,7 +102,7 @@ export class CCTPTransfer implements WormholeTransfer {
     const rcvAddress = vaa.payload.mintRecipient;
     const rcvChain = toCircleChainName(vaa.payload.targetDomain);
     // Check if its a payload 3 targeted at a relayer on the destination chain
-    const { wormholeRelayer } = wh.conf.chains[rcvChain]!.contracts.cctp;
+    const { wormholeRelayer } = wh.conf.chains[rcvChain]!.contracts.cctp!;
 
     let automatic = false;
     if (wormholeRelayer) {

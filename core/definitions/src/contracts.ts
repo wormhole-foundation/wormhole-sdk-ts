@@ -5,25 +5,20 @@ export type Contracts = {
   tokenBridge?: string;
   nftBridge?: string;
   relayer?: string;
-  cctp: {
-    tokenMessenger?: string;
-    messageTransmitter?: string;
-    wormholeRelayer?: string;
-    wormhole?: string;
-  };
+  cctp?: contracts.CircleContracts;
 };
 
 export function getContracts(n: Network, c: ChainName): Contracts {
-  return {
+  const ct: Contracts = {
     coreBridge: contracts.coreBridge.get(n, c),
     tokenBridge: contracts.tokenBridge.get(n, c),
     nftBridge: contracts.nftBridge.get(n, c),
     relayer: contracts.relayer.get(n, c),
-    cctp: {
-      tokenMessenger: contracts.cctpTokenMessenger.get(n, c),
-      messageTransmitter: contracts.cctpMessageTransmitter.get(n, c),
-      wormholeRelayer: contracts.cctpWormholeRelayer.get(n, c),
-      wormhole: contracts.cctpWormhole.get(n, c),
-    },
   };
+
+  if (contracts.circleContracts.has(n, c)) {
+    ct.cctp = contracts.circleContracts.get(n, c);
+  }
+
+  return ct;
 }

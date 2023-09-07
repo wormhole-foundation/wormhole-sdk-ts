@@ -10,7 +10,6 @@ export const coreBridge = constMap(core.coreBridgeContracts);
 export const tokenBridge = constMap(tb.tokenBridgeContracts);
 export const nftBridge = constMap(nb.nftBridgeContracts);
 export const relayer = constMap(r.relayerContracts);
-export const cctpTokenMessenger = constMap(circle.cctpTokenMessenger);
-export const cctpMessageTransmitter = constMap(circle.cctpMessageTransmitter);
-export const cctpWormholeRelayer = constMap(circle.cctpWormholeRelayer);
-export const cctpWormhole = constMap(circle.cctpWwormhole);
+
+export { CircleContracts } from "./circle";
+export const circleContracts = constMap(circle.circleContracts);
