@@ -16,6 +16,8 @@ const rpcConfig = [
       ["Moonbeam", "https://rpc.ankr.com/moonbeam"],
       ["Sui", "https://rpc.mainnet.sui.io"],
       ["Aptos", "https://fullnode.mainnet.aptoslabs.com/v1"],
+      ["Arbitrum", "https://arb1.arbitrum.io/rpc"],
+      ["Optimism", "https://mainnet.optimism.io"],
       ["Sei", ""], // TODO
     ],
   ],
@@ -33,10 +35,13 @@ const rpcConfig = [
       ["Sui", "https://fullnode.testnet.sui.io"],
       ["Aptos", "https://fullnode.testnet.aptoslabs.com/v1"],
       ["Sei", "https://rpc.atlantic-2.seinetwork.io"],
+      ["Arbitrum", "https://arbitrum-goerli.publicnode.com"],
+      ["Optimism", "https://optimism-goerli.publicnode.com"],
     ],
   ],
-] as const satisfies
-  RoArray<readonly ["Mainnet" | "Testnet", RoArray<readonly [ChainName, string]>]>;
+] as const satisfies RoArray<
+  readonly ["Mainnet" | "Testnet", RoArray<readonly [ChainName, string]>]
+>;
 
 const rpc = constMap(rpcConfig);
 export const rpcAddress = (network: Network, chain: ChainName) =>

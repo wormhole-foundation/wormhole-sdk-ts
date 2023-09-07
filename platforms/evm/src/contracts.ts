@@ -184,7 +184,7 @@ export class EvmContracts {
     chain: ChainName,
     connection: Provider,
   ): ethers_contracts.CircleRelayer | undefined {
-    const relayerAddress = this.mustGetContracts(chain).cctp.wormholeRelayer;
+    const relayerAddress = this.mustGetContracts(chain).cctp!.wormholeRelayer;
     if (!relayerAddress) return undefined;
     return ethers_contracts.CircleRelayer__factory.connect(
       relayerAddress,
@@ -213,7 +213,7 @@ export class EvmContracts {
     chain: ChainName,
     connection: Provider,
   ): ethers_contracts.TokenMessenger.TokenMessenger | undefined {
-    const address = this.mustGetContracts(chain).cctp.tokenMessenger;
+    const address = this.mustGetContracts(chain).cctp!.tokenMessenger;
     if (!address) return undefined;
     return ethers_contracts.TokenMessenger__factory.connect(
       address,
@@ -237,7 +237,7 @@ export class EvmContracts {
     chain: ChainName,
     connection: Provider,
   ): ethers_contracts.MessageTransmitter.MessageTransmitter | undefined {
-    const address = this.mustGetContracts(chain).cctp.messageTransmitter;
+    const address = this.mustGetContracts(chain).cctp!.messageTransmitter;
     if (!address) return undefined;
     return ethers_contracts.MessageTransmitter__factory.connect(
       address,
