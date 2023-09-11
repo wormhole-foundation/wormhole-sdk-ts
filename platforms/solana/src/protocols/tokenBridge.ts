@@ -231,7 +231,9 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     // TODO: why?
     const payerPublicKey = senderAddress;
 
-    const recipientAddress = recipient.address.toUint8Array();
+    const recipientAddress = recipient.address
+      .toUniversalAddress()
+      .toUint8Array();
     const recipientChainId = toChainId(recipient.chain);
 
     const nonce = 0;
@@ -351,7 +353,9 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
       senderAddress,
     );
 
-    const recipientAddress = recipient.address.toUint8Array();
+    const recipientAddress = recipient.address
+      .toUniversalAddress()
+      .toUint8Array();
     const recipientChainId = toChainId(recipient.chain);
 
     const nonce = 0;
