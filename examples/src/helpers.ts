@@ -13,7 +13,7 @@ import {
 
 import bs58 from "bs58";
 import { ethers } from "ethers";
-import { Keypair } from "@solana/web3.js";
+import { Transaction, Keypair } from "@solana/web3.js";
 
 // read in from `.env`
 require("dotenv").config();
