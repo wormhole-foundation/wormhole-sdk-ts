@@ -22,6 +22,7 @@ import {
   Contracts,
   TxHash,
   WormholeMessageId,
+  isTokenId,
 } from '@wormhole-foundation/sdk-definitions';
 import axios, { AxiosResponse } from 'axios';
 
@@ -31,7 +32,6 @@ import { CONFIG } from './constants';
 import { TokenTransfer } from './protocols/tokenTransfer';
 import { CCTPTransfer } from './protocols/cctpTransfer';
 import { TransactionStatus } from './api';
-import { isTokenId } from '@wormhole-foundation/sdk-definitions/src';
 
 export class Wormhole {
   protected _platforms: Map<PlatformName, Platform<PlatformName>>;
