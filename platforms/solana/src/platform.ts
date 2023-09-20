@@ -15,45 +15,55 @@ import {
   toNative,
   NativeAddress,
   WormholeCore,
+  CONFIG,
 } from '@wormhole-foundation/connect-sdk';
 
 import { SolanaContracts } from './contracts';
 import { SolanaChain } from './chain';
 import { SolanaTokenBridge } from './protocols/tokenBridge';
+import { SolanaAddress } from './address';
 
 const SOLANA_SEQ_LOG = 'Program log: Sequence: ';
 
+const _: Platform<'Solana'> = SolanaPlatform;
 /**
  * @category Solana
  */
-export class SolanaPlatform implements Platform<'Solana'> {
-  static readonly _platform: 'Solana' = 'Solana';
-  readonly platform = SolanaPlatform._platform;
+export module SolanaPlatform {
+  export const platform: 'Solana' = 'Solana';
+  export let conf: ChainsConfig = Object.fromEntries(
+    // TODO: move to util fn
+    Object.entries(CONFIG['Mainnet'].chains).filter(([_, v]) => {
+      return v.platform == platform;
+    }),
+  );
 
-  readonly conf: ChainsConfig;
-  readonly contracts: SolanaContracts;
+  export let contracts: SolanaContracts = new SolanaContracts(conf);
 
-  constructor(conf: ChainsConfig) {
-    this.conf = conf;
-    this.contracts = new SolanaContracts(conf);
+  export function init(_conf: ChainsConfig): Platform<'Solana'> {
+    conf = _conf;
+    contracts = new SolanaContracts(conf);
+    return SolanaPlatform;
   }
 
-  getRpc(chain: ChainName, commitment: Commitment = 'confirmed'): Connection {
-    const rpcAddress = this.conf[chain]!.rpc;
+  export function getRpc(
+    chain: ChainName,
+    commitment: Commitment = 'confirmed',
+  ): Connection {
+    const rpcAddress = conf[chain]!.rpc;
     return new Connection(rpcAddress, commitment);
   }
 
-  getChain(chain: ChainName): ChainContext<'Solana'> {
-    return new SolanaChain(this, chain);
+  export function getChain(chain: ChainName): ChainContext<'Solana'> {
+    return new SolanaChain(SolanaPlatform, chain);
   }
 
-  async getDecimals(
+  export async function getDecimals(
     chain: ChainName,
     rpc: Connection,
     token: TokenId | 'native',
   ): Promise<bigint> {
-    if (token === 'native')
-      return BigInt(this.conf[chain]?.nativeTokenDecimals!);
+    if (token === 'native') return BigInt(conf[chain]?.nativeTokenDecimals!);
 
     let mint = await rpc.getParsedAccountInfo(
       new PublicKey(token.address.unwrap()),
@@ -63,7 +73,7 @@ export class SolanaPlatform implements Platform<'Solana'> {
     return decimals;
   }
 
-  async getBalance(
+  export async function getBalance(
     chain: ChainName,
     rpc: Connection,
     walletAddress: string,
@@ -73,7 +83,7 @@ export class SolanaPlatform implements Platform<'Solana'> {
       return BigInt(await rpc.getBalance(new PublicKey(walletAddress)));
 
     if (token.chain !== chain) {
-      const tb = await this.getTokenBridge(rpc);
+      const tb = await getTokenBridge(rpc);
       token = { chain: chain, address: await tb.getWrappedAsset(token) };
     }
 
@@ -87,7 +97,7 @@ export class SolanaPlatform implements Platform<'Solana'> {
     return BigInt(balance.value.amount);
   }
 
-  async sendWait(
+  export async function sendWait(
     chain: ChainName,
     rpc: Connection,
     stxns: SignedTx[],
@@ -110,42 +120,51 @@ export class SolanaPlatform implements Platform<'Solana'> {
     return txhashes;
   }
 
-  async getWormholeCore(rpc: Connection): Promise<WormholeCore<'Solana'>> {
+  export async function getWormholeCore(
+    rpc: Connection,
+  ): Promise<WormholeCore<'Solana'>> {
     throw new Error('Not Supported');
     //return SolanaWormholeCore.fromProvider(rpc, this.contracts);
   }
 
-  async getTokenBridge(rpc: Connection): Promise<TokenBridge<'Solana'>> {
-    return SolanaTokenBridge.fromProvider(rpc, this.contracts);
+  export async function getTokenBridge(
+    rpc: Connection,
+  ): Promise<TokenBridge<'Solana'>> {
+    return SolanaTokenBridge.fromProvider(rpc, contracts);
   }
 
-  async getAutomaticTokenBridge(
+  export async function getAutomaticTokenBridge(
     rpc: Connection,
   ): Promise<AutomaticTokenBridge<'Solana'>> {
     throw new Error('Not Supported');
   }
 
-  async getCircleBridge(rpc: Connection): Promise<CircleBridge<'Solana'>> {
+  export async function getCircleBridge(
+    rpc: Connection,
+  ): Promise<CircleBridge<'Solana'>> {
     throw new Error('Not Supported');
   }
 
-  async getAutomaticCircleBridge(
+  export async function getAutomaticCircleBridge(
     rpc: Connection,
   ): Promise<AutomaticCircleBridge<'Solana'>> {
     throw new Error('Not Supported');
   }
 
-  parseAddress(chain: ChainName, address: string): NativeAddress<'Solana'> {
+  export function parseAddress(
+    chain: ChainName,
+    address: string,
+  ): NativeAddress<'Solana'> {
     return toNative(chain, address) as NativeAddress<'Solana'>;
   }
 
-  async parseTransaction(
+  export async function parseTransaction(
     chain: ChainName,
     rpc: Connection,
     tx: string,
   ): Promise<WormholeMessageId[]> {
-    const contracts = this.contracts.mustGetContracts(chain);
-    if (!contracts.coreBridge) throw new Error('contracts not found');
+    const _contracts = contracts.mustGetContracts(chain);
+    if (!_contracts.coreBridge) throw new Error('contracts not found');
 
     const response = await rpc.getTransaction(tx);
     if (!response || !response.meta?.innerInstructions![0].instructions)
@@ -157,7 +176,7 @@ export class SolanaPlatform implements Platform<'Solana'> {
     // find the instruction where the programId equals the Wormhole ProgramId and the emitter equals the Token Bridge
     const bridgeInstructions = instructions.filter((i) => {
       const programId = accounts[i.programIdIndex].toString();
-      const wormholeCore = contracts.coreBridge;
+      const wormholeCore = _contracts.coreBridge;
       return programId === wormholeCore;
     });
 
@@ -167,7 +186,7 @@ export class SolanaPlatform implements Platform<'Solana'> {
     // TODO: unsure about the single bridge instruction and the [2] index, will this always be the case?
     const [logmsg] = bridgeInstructions;
     const emitterAcct = accounts[logmsg.accounts[2]];
-    const emitter = this.parseAddress(chain, emitterAcct.toString());
+    const emitter = parseAddress(chain, emitterAcct.toString());
 
     const sequence = response.meta?.logMessages
       ?.filter((msg) => msg.startsWith(SOLANA_SEQ_LOG))?.[0]

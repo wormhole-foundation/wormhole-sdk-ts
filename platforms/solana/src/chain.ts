@@ -4,18 +4,17 @@ import {
   ChainContext,
   NativeAddress,
   RpcConnection,
-  TokenId,
   UniversalAddress,
   UniversalOrNative,
+  Platform,
 } from '@wormhole-foundation/connect-sdk';
-import { SolanaPlatform } from './platform';
 import { getAssociatedTokenAddress } from '@solana/spl-token';
 
 export class SolanaChain extends ChainContext<'Solana'> {
   // Cached objects
   private connection?: RpcConnection<'Solana'>;
 
-  constructor(platform: SolanaPlatform, chain: ChainName) {
+  constructor(platform: Platform<'Solana'>, chain: ChainName) {
     super(platform, chain);
   }
 

@@ -18,7 +18,6 @@ import {
   Platform,
   ChainContext,
   toNative,
-  PlatformCtr,
   Contracts,
   TxHash,
   WormholeMessageId,
@@ -40,22 +39,22 @@ export class Wormhole {
 
   constructor(
     network: Network,
-    platforms: PlatformCtr<PlatformName>[],
+    platforms: Platform<PlatformName>[],
     conf?: WormholeConfig,
   ) {
     this.conf = conf ?? CONFIG[network];
 
     this._platforms = new Map();
     for (const p of platforms) {
-      const platformName = p._platform;
+      const platformName = p.platform;
 
       const filteredChains = Object.fromEntries(
         Object.entries(this.conf.chains).filter(([_, v]) => {
           return v.platform == platformName;
         }),
       );
-
-      this._platforms.set(platformName, new p(filteredChains));
+      p.init(filteredChains);
+      this._platforms.set(platformName, p);
     }
   }
 

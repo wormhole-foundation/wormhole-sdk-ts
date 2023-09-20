@@ -16,7 +16,6 @@ import {
   CircleBridge,
   AutomaticCircleBridge,
   ChainsConfig,
-  PlatformCtr,
   toNative,
   nativeIsRegistered,
   NativeAddress,
@@ -26,35 +25,29 @@ import { MockChain } from "./chain";
 import { MockTokenBridge } from "./tokenBridge";
 import { WormholeCore } from "../../protocols/core";
 
-export function mockPlatformFactory(
-  p: PlatformName
-): PlatformCtr<PlatformName> {
-  class ConcreteMockPlatform extends MockPlatform<typeof p> {
-    static _platform: typeof p = p;
-    readonly platform = ConcreteMockPlatform._platform;
-  }
-  return ConcreteMockPlatform;
+// TODO: how tf is this gonna work?
+export function mockPlatformFactory<P extends "Evm">(p: P): Platform<"Evm"> {
+  return MockPlatform;
 }
 
-// Note: don't use this directly, instead create a ConcreteMockPlatform with the
-// mockPlatformFactory
-export class MockPlatform<P extends PlatformName> implements Platform<P> {
-  // @ts-ignore
-  readonly platform: P;
+module MockPlatform {
+  export const platform: "Evm" = "Evm";
+  export let conf: ChainsConfig;
 
-  conf: ChainsConfig;
+  export type P = typeof platform;
 
-  constructor(conf: ChainsConfig) {
-    this.conf = conf;
+  export function init(_conf: ChainsConfig): Platform<P> {
+    conf = _conf;
+    return MockPlatform;
   }
-  getDecimals(
+  export function getDecimals(
     chain: ChainName,
     rpc: RpcConnection<P>,
     token: TokenId | "native"
   ): Promise<bigint> {
     throw new Error("Method not implemented.");
   }
-  getBalance(
+  export function getBalance(
     chain: ChainName,
     rpc: RpcConnection<P>,
     walletAddr: string,
@@ -63,34 +56,34 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
     throw new Error("Method not implemented.");
   }
 
-  getChain(chain: ChainName): ChainContext<P> {
-    return new MockChain<P>(this, chain);
+  export function getChain(chain: ChainName): ChainContext<P> {
+    return new MockChain<P>(MockPlatform, chain);
   }
-  getRpc(chain: ChainName): RpcConnection<P> {
+  export function getRpc(chain: ChainName): RpcConnection<P> {
     // @ts-ignore
     return new MockRpc(chain);
   }
 
-  async getWrappedAsset(
+  export async function getWrappedAsset(
     chain: ChainName,
     rpc: RpcConnection<P>,
     token: TokenId
   ): Promise<TokenId | null> {
     throw new Error("Method not implemented.");
   }
-  async getTokenDecimals(
+  export async function getTokenDecimals(
     rpc: RpcConnection<P>,
     token: TokenId
   ): Promise<bigint> {
     return 8n;
   }
-  async getNativeBalance(
+  export async function getNativeBalance(
     rpc: RpcConnection<P>,
     walletAddr: string
   ): Promise<bigint> {
     return 0n;
   }
-  async getTokenBalance(
+  export async function getTokenBalance(
     chain: ChainName,
     rpc: RpcConnection<P>,
     walletAddr: string,
@@ -99,7 +92,7 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
     return 10n;
   }
 
-  async parseTransaction(
+  export async function parseTransaction(
     chain: ChainName,
     rpc: RpcConnection<P>,
     txid: TxHash
@@ -107,13 +100,16 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
     throw new Error("Method not implemented");
   }
 
-  parseAddress(chain: ChainName, address: string): NativeAddress<P> {
+  export function parseAddress(
+    chain: ChainName,
+    address: string
+  ): NativeAddress<P> {
     if (!nativeIsRegistered(chain)) throw new Error("Chain not registered");
     //@ts-ignore
     return toNative(chain, address).toUniversalAddress();
   }
 
-  async sendWait(
+  export async function sendWait(
     chain: ChainName,
     rpc: RpcConnection<P>,
     stxns: any[]
@@ -121,28 +117,34 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
     throw new Error("Method not implemented.");
   }
 
-  async getWormholeCore(rpc: RpcConnection<P>): Promise<WormholeCore<P>> {
+  export async function getWormholeCore(
+    rpc: RpcConnection<P>
+  ): Promise<WormholeCore<P>> {
     throw new Error("Method not implemented.");
   }
-  async getTokenBridge(rpc: RpcConnection<P>): Promise<TokenBridge<P>> {
+  export async function getTokenBridge(
+    rpc: RpcConnection<P>
+  ): Promise<TokenBridge<P>> {
     // @ts-ignore
     return new MockTokenBridge<P>(rpc);
   }
 
-  async getAutomaticTokenBridge(
+  export async function getAutomaticTokenBridge(
     rpc: RpcConnection<P>
   ): Promise<AutomaticTokenBridge<P>> {
     throw new Error("Method not implemented.");
   }
-  async getCircleBridge(rpc: RpcConnection<P>): Promise<CircleBridge<P>> {
+  export async function getCircleBridge(
+    rpc: RpcConnection<P>
+  ): Promise<CircleBridge<P>> {
     throw new Error("Method not implemented.");
   }
-  async getCircleRelayer(
+  export async function getCircleRelayer(
     rpc: RpcConnection<P>
   ): Promise<AutomaticCircleBridge<P>> {
     throw new Error("Method Not implemented.");
   }
-  async getAutomaticCircleBridge(
+  export async function getAutomaticCircleBridge(
     rpc: RpcConnection<P>
   ): Promise<AutomaticCircleBridge<P>> {
     throw new Error("Method not implemented.");

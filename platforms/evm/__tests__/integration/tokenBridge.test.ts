@@ -112,7 +112,7 @@ const recipient: ChainAddress = {
 };
 
 describe('TokenBridge Tests', () => {
-  const p: Platform<'Evm'> = new EvmPlatform(configs);
+  const p: Platform<'Evm'> = EvmPlatform.init(configs);
   let tb: TokenBridge<'Evm'>;
 
   test('Create TokenBridge', async () => {
