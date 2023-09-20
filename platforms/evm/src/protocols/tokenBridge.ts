@@ -1,10 +1,7 @@
 import {
   toChainId,
-  chainToChainId,
   chainIdToChain,
   Network,
-  evmChainIdToNetworkChainPair,
-  evmNetworkChainToEvmChainId,
   toChainName,
   VAA,
   serialize,
@@ -27,6 +24,10 @@ import {
 } from '../ethers-contracts';
 import { BridgeStructs } from '../ethers-contracts/Bridge';
 
+import {
+  evmChainIdToNetworkChainPair,
+  evmNetworkChainToEvmChainId,
+} from '../constants';
 import { EvmUnsignedTransaction } from '../unsignedTransaction';
 import { EvmContracts } from '../contracts';
 import {

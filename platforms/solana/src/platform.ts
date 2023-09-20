@@ -13,7 +13,6 @@ import {
   ChainsConfig,
   ChainContext,
   toNative,
-  SolRpc,
   NativeAddress,
   WormholeCore,
 } from '@wormhole-foundation/connect-sdk';
@@ -111,7 +110,7 @@ export class SolanaPlatform implements Platform<'Solana'> {
     return txhashes;
   }
 
-  async getWormholeCore(rpc: SolRpc): Promise<WormholeCore<'Solana'>> {
+  async getWormholeCore(rpc: Connection): Promise<WormholeCore<'Solana'>> {
     throw new Error('Not Supported');
     //return SolanaWormholeCore.fromProvider(rpc, this.contracts);
   }

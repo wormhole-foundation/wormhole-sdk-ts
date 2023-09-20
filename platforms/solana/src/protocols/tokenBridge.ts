@@ -1,7 +1,6 @@
 import {
   ChainId,
   Network,
-  solGenesisHashToNetworkChainPair,
   toChainId,
   toChainName,
   TokenBridge,
@@ -35,6 +34,7 @@ import {
 } from '@solana/spl-token';
 import { Program } from '@project-serum/anchor';
 
+import { solGenesisHashToNetworkChainPair } from '../constants';
 import { Wormhole as WormholeCore } from '../utils/types/wormhole';
 import {
   createBridgeFeeTransferInstruction,

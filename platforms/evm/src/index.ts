@@ -1,3 +1,4 @@
+export * from './constants';
 export * from './address';
 export * from './contracts';
 export * from './unsignedTransaction';

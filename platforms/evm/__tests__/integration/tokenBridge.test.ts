@@ -1,5 +1,4 @@
 import {
-  evmNetworkChainToEvmChainId,
   ChainAddress,
   Platform,
   Signature,
@@ -12,6 +11,7 @@ import {
 } from '@wormhole-foundation/connect-sdk';
 
 import {
+  evmNetworkChainToEvmChainId,
   EvmPlatform,
   EvmContracts,
   EvmTokenBridge,

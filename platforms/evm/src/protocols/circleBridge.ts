@@ -1,8 +1,6 @@
 import {
   CircleChainName,
   circleChainId,
-  evmChainIdToNetworkChainPair,
-  evmNetworkChainToEvmChainId,
   ChainAddress,
   CircleTransferDetails,
   CircleBridge,
@@ -12,6 +10,10 @@ import {
   toNative,
 } from '@wormhole-foundation/connect-sdk';
 
+import {
+  evmChainIdToNetworkChainPair,
+  evmNetworkChainToEvmChainId,
+} from '../constants';
 import {
   addFrom,
   addChainId,

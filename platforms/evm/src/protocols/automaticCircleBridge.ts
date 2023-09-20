@@ -3,9 +3,12 @@ import {
   AutomaticCircleBridge,
   TokenId,
   chainToChainId,
+} from '@wormhole-foundation/connect-sdk';
+
+import {
   evmChainIdToNetworkChainPair,
   evmNetworkChainToEvmChainId,
-} from '@wormhole-foundation/connect-sdk';
+} from '../constants';
 
 import {
   EvmChainName,
