@@ -27,13 +27,14 @@ const platformAndChainsEntries = [
     ],
   ],
   ["Solana", ["Solana", "Pythnet"]],
-  ["Cosmwasm", ["Terra", "Terra2", "Injective", "Xpla", "Sei"]],
+  [
+    "Cosmwasm",
+    ["Terra", "Terra2", "Injective", "Xpla", "Sei", "Osmosis", "Wormchain"],
+  ],
   ["Btc", ["Btc"]],
   ["Algorand", ["Algorand"]],
   ["Sui", ["Sui"]],
   ["Aptos", ["Aptos"]],
-  ["Osmosis", ["Osmosis"]],
-  ["Wormchain", ["Wormchain"]],
   ["Near", ["Near"]],
 ] as const satisfies RoArray<readonly [string, RoArray<ChainName>]>;
 
@@ -125,4 +126,39 @@ export const solGenesisHashToNetworkChainPair = constMap(
 
 export const solNetworkChainToGenesisHash = constMap(
   networkChainSolanaGenesisHashes
+);
+
+//    ["Terra", "Terra2", "Injective", "Xpla", "Sei", "Osmosis", "Wormchain"],
+
+const networkChainCosmwasmChainIds = [
+  [
+    "Mainnet",
+    [
+      ["Terra", "columbus-5"],
+      ["Terra2", "phoenix-1"],
+      ["Xpla", "dimension_37-1"],
+      ["Injective", "injective-1"],
+      ["Osmosis", "	osmosis-1"],
+    ],
+  ],
+  [
+    "Testnet",
+    [
+      ["Terra2", "pisco-1"],
+      ["Sei", "atlantic-1"],
+      ["Injective", "injective-888"],
+      ["Osmosis", "osmo-test-5"], // Or -4?
+    ],
+  ],
+] as const satisfies RoArray<
+  readonly [Network, RoArray<readonly [PlatformToChains<"Cosmwasm">, string]>]
+>;
+
+export const cosmwasmChainIdToNetworkChainPair = constMap(
+  networkChainCosmwasmChainIds,
+  [2, [0, 1]]
+);
+
+export const cosmwasmNetworkChainToChainId = constMap(
+  networkChainCosmwasmChainIds
 );
