@@ -14,7 +14,6 @@ import {
   toNative,
   NativeAddress,
   WormholeCore,
-  CONFIG,
   networkPlatformConfigs,
   DEFAULT_NETWORK,
   Network,
@@ -39,16 +38,19 @@ const _: Platform<'Evm'> = EvmPlatform;
  */
 // Provides runtime concrete value
 export module EvmPlatform {
-  export const platform: 'Evm' = 'Evm';
+  export const platform = 'Evm';
   export const network: Network = DEFAULT_NETWORK;
   export let conf: ChainsConfig = networkPlatformConfigs(network, platform);
 
   let contracts: EvmContracts = new EvmContracts(conf);
 
+  // this is just to prevent rewriting 'Evm' for every generic param
+  type P = typeof platform;
+
   export function setConfig(
     network: Network,
     _conf?: ChainsConfig,
-  ): Platform<'Evm'> {
+  ): Platform<P> {
     conf = _conf ? _conf : networkPlatformConfigs(network, platform);
     contracts = new EvmContracts(conf);
     return EvmPlatform;
@@ -65,30 +67,30 @@ export module EvmPlatform {
 
   export function getWormholeCore(
     rpc: ethers.Provider,
-  ): Promise<WormholeCore<'Evm'>> {
+  ): Promise<WormholeCore<P>> {
     return EvmWormholeCore.fromProvider(rpc, contracts);
   }
 
   export async function getTokenBridge(
     rpc: ethers.Provider,
-  ): Promise<TokenBridge<'Evm'>> {
+  ): Promise<TokenBridge<P>> {
     return await EvmTokenBridge.fromProvider(rpc, contracts);
   }
   export async function getAutomaticTokenBridge(
     rpc: ethers.Provider,
-  ): Promise<AutomaticTokenBridge<'Evm'>> {
+  ): Promise<AutomaticTokenBridge<P>> {
     return await EvmAutomaticTokenBridge.fromProvider(rpc, contracts);
   }
 
   export async function getCircleBridge(
     rpc: ethers.Provider,
-  ): Promise<CircleBridge<'Evm'>> {
+  ): Promise<CircleBridge<P>> {
     return await EvmCircleBridge.fromProvider(rpc, contracts);
   }
 
   export async function getAutomaticCircleBridge(
     rpc: ethers.Provider,
-  ): Promise<AutomaticCircleBridge<'Evm'>> {
+  ): Promise<AutomaticCircleBridge<P>> {
     return await EvmAutomaticCircleBridge.fromProvider(rpc, contracts);
   }
 
@@ -150,8 +152,8 @@ export module EvmPlatform {
   export function parseAddress(
     chain: ChainName,
     address: string,
-  ): NativeAddress<'Evm'> {
-    return toNative(chain, address) as NativeAddress<'Evm'>;
+  ): NativeAddress<P> {
+    return toNative(chain, address) as NativeAddress<P>;
   }
 
   export async function parseTransaction(

@@ -3,13 +3,48 @@ import {
   UniversalOrNative,
   registerNative,
   PlatformToChains,
+  ChainId,
 } from "@wormhole-foundation/connect-sdk";
 
 import { CosmwasmAddress } from "./address";
 import { Coin, EncodeObject } from "@cosmjs/proto-signing";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
+import { MSG_EXECUTE_CONTRACT_TYPE_URL } from "./constants";
 
 registerNative("Cosmwasm", CosmwasmAddress);
+
+export interface GatewayTransferMsg {
+  gateway_transfer: {
+    chain: ChainId;
+    recipient: string;
+    fee: string;
+    nonce: number;
+  };
+}
+
+export interface FromCosmosPayload {
+  gateway_ibc_token_bridge_payload: GatewayTransferMsg;
+}
+
+export interface IBCTransferInfo {
+  sequence: string;
+  timeout: string;
+  srcChannel: string;
+  dstChannel: string;
+  data: string;
+}
+
+export interface IBCTransferData {
+  amount: string;
+  denom: string;
+  memo: string;
+  receiver: string;
+  sender: string;
+}
+
+export interface WrappedRegistryResponse {
+  address: string;
+}
 
 export type CosmwasmChainName = PlatformToChains<"Cosmwasm">;
 export type UniversalOrCosmwasm = UniversalOrNative<"Cosmwasm"> | string;
@@ -22,32 +57,7 @@ export const toCosmwasmAddrString = (addr: UniversalOrCosmwasm) =>
         : addr
       ).unwrap();
 
-interface WrappedRegistryResponse {
-  address: string;
-}
-
-const MAINNET_NATIVE_DENOMS: Record<string, string> = {
-  osmosis: "uosmo",
-  wormchain: "uworm",
-  terra2: "uluna",
-  cosmoshub: "uatom",
-  evmos: "aevmos",
-};
-const TESTNET_NATIVE_DENOMS: Record<string, string> = {
-  ...MAINNET_NATIVE_DENOMS,
-  evmos: "atevmos",
-};
-
-const PREFIXES: Record<string, string> = {
-  osmosis: "osmo",
-  wormchain: "wormhole",
-  terra2: "terra",
-  cosmoshub: "cosmos",
-  evmos: "evmos",
-};
-
-const MSG_EXECUTE_CONTRACT_TYPE_URL = "/cosmwasm.wasm.v1.MsgExecuteContract";
-const buildExecuteMsg = (
+export const buildExecuteMsg = (
   sender: string,
   contract: string,
   msg: Record<string, any>,
@@ -61,5 +71,3 @@ const buildExecuteMsg = (
     funds,
   }),
 });
-
-const IBC_PORT = "transfer";

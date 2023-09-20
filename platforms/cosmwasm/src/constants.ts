@@ -5,6 +5,12 @@ import {
   constMap,
 } from "@wormhole-foundation/connect-sdk";
 
+export const MSG_EXECUTE_CONTRACT_TYPE_URL =
+  "/cosmwasm.wasm.v1.MsgExecuteContract";
+export const IBC_MSG_TYPE = "/ibc.applications.transfer.v1.MsgTransfer";
+export const IBC_PORT = "transfer";
+export const IBC_TIMEOUT_MILLIS = 10 * 60 * 1000; // 10 minutes
+
 const networkChainCosmwasmChainIds = [
   [
     "Mainnet",
@@ -48,3 +54,16 @@ const cosmwasmAddressPrefix = [
 
 export const chainToAddressPrefix = constMap(cosmwasmAddressPrefix);
 export const addressPrefixToChain = constMap(cosmwasmAddressPrefix, [1, [0]]);
+
+// const MAINNET_NATIVE_DENOMS: Record<string, string> = {
+//   osmosis: "uosmo",
+//   wormchain: "uworm",
+//   terra2: "uluna",
+//   cosmoshub: "uatom",
+//   evmos: "aevmos",
+// };
+// const TESTNET_NATIVE_DENOMS: Record<string, string> = {
+//   ...MAINNET_NATIVE_DENOMS,
+//   evmos: "atevmos",
+// };
+//

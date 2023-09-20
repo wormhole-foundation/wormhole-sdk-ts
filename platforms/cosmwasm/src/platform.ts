@@ -5,122 +5,97 @@ import {
   Platform,
   WormholeMessageId,
   SignedTx,
-  AutomaticTokenBridge,
   TokenBridge,
-  CircleBridge,
-  AutomaticCircleBridge,
   ChainsConfig,
   toNative,
   NativeAddress,
-  WormholeCore,
+  networkPlatformConfigs,
 } from "@wormhole-foundation/connect-sdk";
 import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import { CosmwasmContracts } from "./contracts";
 import { CosmwasmChain } from "./chain";
 import { CosmwasmTokenBridge } from "./protocols/tokenBridge";
 
+const _: Platform<"Cosmwasm"> = CosmwasmPlatform;
+
 /**
  * @category Cosmwasm
  */
-export class CosmwasmPlatform implements Platform<"Cosmwasm"> {
+module CosmwasmPlatform {
   // Provides runtime concrete value
-  static _platform: "Cosmwasm" = "Cosmwasm";
-  readonly platform = CosmwasmPlatform._platform;
+  export const platform = "Cosmwasm";
+  type P = typeof platform;
 
-  readonly conf: ChainsConfig;
-  readonly contracts: CosmwasmContracts;
+  export let conf: ChainsConfig = networkPlatformConfigs("Testnet", platform);
+  let contracts: CosmwasmContracts = new CosmwasmContracts(conf);
 
-  constructor(conf: ChainsConfig) {
-    this.conf = conf;
-    this.contracts = new CosmwasmContracts(conf);
+  export function setConfig(_conf: ChainsConfig): Platform<P> {
+    conf = conf;
+    contracts = new CosmwasmContracts(conf);
+    return CosmwasmPlatform;
   }
 
-  // TODO: rpc connnect is async for cosmwasm :thinking:
-  // @ts-ignore
-  async getRpc(chain: ChainName): Promise<CosmWasmClient> {
-    const rpcAddress = this.conf[chain]!.rpc;
+  export async function getRpc(chain: ChainName): Promise<CosmWasmClient> {
+    const rpcAddress = conf[chain]!.rpc;
     return CosmWasmClient.connect(rpcAddress);
   }
 
-  getChain(chain: ChainName): CosmwasmChain {
-    throw new Error("Not implemented");
-    //return new CosmwasmChain(this, chain);
+  export function getChain(chain: ChainName): CosmwasmChain {
+    return new CosmwasmChain(CosmwasmPlatform, chain);
   }
 
-  async getWormholeCore(
+  export async function getTokenBridge(
     rpc: CosmWasmClient
-  ): Promise<WormholeCore<"Cosmwasm">> {
-    throw new Error("Not implemented");
-    //return CosmwasmWormholeCore.fromProvider(rpc, this.contracts);
+  ): Promise<TokenBridge<P>> {
+    return await CosmwasmTokenBridge.fromProvider(rpc, contracts);
   }
 
-  async getTokenBridge(rpc: CosmWasmClient): Promise<TokenBridge<"Cosmwasm">> {
-    return await CosmwasmTokenBridge.fromProvider(rpc, this.contracts);
-  }
-
-  async getAutomaticTokenBridge(
-    rpc: CosmWasmClient
-  ): Promise<AutomaticTokenBridge<"Cosmwasm">> {
-    throw new Error("Not implemented");
-    //return await CosmwasmAutomaticTokenBridge.fromProvider(rpc, this.contracts);
-  }
-
-  async getCircleBridge(
-    rpc: CosmWasmClient
-  ): Promise<CircleBridge<"Cosmwasm">> {
-    throw new Error("Not implemented");
-    //return await CosmwasmCircleBridge.fromProvider(rpc, this.contracts);
-  }
-  async getAutomaticCircleBridge(
-    rpc: CosmWasmClient
-  ): Promise<AutomaticCircleBridge<"Cosmwasm">> {
-    throw new Error("Not implemented");
-    //return await CosmwasmAutomaticCircleBridge.fromProvider(
-    //  rpc,
-    //  this.contracts
-    //);
-  }
-
-  async getDecimals(
+  export async function getDecimals(
     chain: ChainName,
     rpc: CosmWasmClient,
     token: TokenId | "native"
   ): Promise<bigint> {
     throw new Error("Not implemented");
-    // if (token === "native")
-    //   return BigInt(this.conf[chain]!.nativeTokenDecimals);
-
-    // const tokenContract = this.contracts.mustGetTokenImplementation(
-    //   rpc,
-    //   token.address.toString()
-    // );
-    // const decimals = await tokenContract.decimals();
-    // return decimals;
+    //     if (tokenAddr === this.getNativeDenom(chain)) return 6;
+    //     const client = await this.getCosmWasmClient(chain);
+    //     const { decimals } = await client.queryContractSmart(tokenAddr, {
+    //       token_info: {},
+    //     });
+    //     return decimals;
   }
 
-  async getBalance(
+  export async function getBalance(
     chain: ChainName,
     rpc: CosmWasmClient,
     walletAddr: string,
     tokenId: TokenId | "native"
   ): Promise<bigint | null> {
     throw new Error("Not implemented");
-    //if (tokenId === "native") return await rpc.getBalance(walletAddr);
+    //     const assetAddress = await this.getForeignAsset(tokenId, chain);
+    //     if (!assetAddress) return null;
+    //     return this.getNativeBalance(walletAddress, chain, assetAddress);
 
-    //const tb = await this.getTokenBridge(rpc);
-
-    //const address = await tb.getWrappedAsset(tokenId);
-    //if (!address) return null;
-
-    //const token = this.contracts.mustGetTokenImplementation(
-    //  rpc,
-    //  address.toString()
-    //);
-    //const balance = await token.balanceOf(walletAddr);
-    //return balance;
+    //     const name = this.context.toChainName(chain);
+    //     const client = await this.getCosmWasmClient(name);
+    //     const { amount } = await client.getBalance(
+    //       walletAddress,
+    //       asset || this.getNativeDenom(name)
+    //     );
+    //     return BigNumber.from(amount);
   }
 
-  async sendWait(
+  // function getNativeDenom(chain: ChainName): string {
+  //   // const denom =
+  //   //   this.context.conf.env === "TESTNET"
+  //   //     ? TESTNET_NATIVE_DENOMS[name]
+  //   //     : MAINNET_NATIVE_DENOMS[name];
+  //   // if (!denom) {
+  //   //   throw new Error(`Native denomination not found for chain ${chain}`);
+  //   // }
+  //   // return denom;
+  // }
+
+  export async function sendWait(
     chain: ChainName,
     rpc: CosmWasmClient,
     stxns: SignedTx[]
@@ -144,11 +119,14 @@ export class CosmwasmPlatform implements Platform<"Cosmwasm"> {
     //return txhashes;
   }
 
-  parseAddress(chain: ChainName, address: string): NativeAddress<"Cosmwasm"> {
-    return toNative(chain, address) as NativeAddress<"Cosmwasm">;
+  export function parseAddress(
+    chain: ChainName,
+    address: string
+  ): NativeAddress<P> {
+    return toNative(chain, address) as NativeAddress<P>;
   }
 
-  async parseTransaction(
+  export async function parseTransaction(
     chain: ChainName,
     rpc: CosmWasmClient,
     txid: TxHash

@@ -30,16 +30,19 @@ const _: Platform<'Solana'> = SolanaPlatform;
  * @category Solana
  */
 export module SolanaPlatform {
-  export const platform: 'Solana' = 'Solana';
+  export const platform = 'Solana';
   export let network: Network = DEFAULT_NETWORK;
   export let conf: ChainsConfig = networkPlatformConfigs(network, platform);
 
   let contracts: SolanaContracts = new SolanaContracts(conf);
 
+  // this is just to prevent rewriting 'Solana' for every generic param
+  type P = typeof platform;
+
   export function setConfig(
     network: Network,
     _conf?: ChainsConfig,
-  ): Platform<'Solana'> {
+  ): Platform<P> {
     conf = _conf ? _conf : networkPlatformConfigs(network, platform);
     contracts = new SolanaContracts(conf);
     return SolanaPlatform;
@@ -53,7 +56,7 @@ export module SolanaPlatform {
     return new Connection(rpcAddress, commitment);
   }
 
-  export function getChain(chain: ChainName): ChainContext<'Solana'> {
+  export function getChain(chain: ChainName): ChainContext<P> {
     return new SolanaChain(chain);
   }
 
@@ -121,15 +124,15 @@ export module SolanaPlatform {
 
   export async function getTokenBridge(
     rpc: Connection,
-  ): Promise<TokenBridge<'Solana'>> {
+  ): Promise<TokenBridge<P>> {
     return SolanaTokenBridge.fromProvider(rpc, contracts);
   }
 
   export function parseAddress(
     chain: ChainName,
     address: string,
-  ): NativeAddress<'Solana'> {
-    return toNative(chain, address) as NativeAddress<'Solana'>;
+  ): NativeAddress<P> {
+    return toNative(chain, address) as NativeAddress<P>;
   }
 
   export async function parseTransaction(
