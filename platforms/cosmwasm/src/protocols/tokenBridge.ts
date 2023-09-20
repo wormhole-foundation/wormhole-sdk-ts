@@ -6,22 +6,16 @@ import {
   TxHash,
   TokenId,
   NativeAddress,
-  toNative,
   TokenTransferTransaction,
-  cosmwasmChainIdToNetworkChainPair,
 } from "@wormhole-foundation/connect-sdk";
 
+import { cosmwasmChainIdToNetworkChainPair } from "../constants";
 import {
   CosmwasmTransaction,
   CosmwasmUnsignedTransaction,
 } from "../unsignedTransaction";
 import { CosmwasmContracts } from "../contracts";
-import {
-  CosmwasmChainName,
-  UniversalOrCosmwasm,
-  toCosmwasmAddrString,
-} from "../types";
-import { CosmwasmZeroAddress } from "../address";
+import { CosmwasmChainName, UniversalOrCosmwasm } from "../types";
 import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 
 //Currently the code does not consider Wormhole msg fee (because it is and always has been 0).

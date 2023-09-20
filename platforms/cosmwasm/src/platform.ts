@@ -35,6 +35,7 @@ export class CosmwasmPlatform implements Platform<"Cosmwasm"> {
     this.contracts = new CosmwasmContracts(conf);
   }
 
+  // TODO: rpc connnect is async for cosmwasm :thinking:
   // @ts-ignore
   async getRpc(chain: ChainName): Promise<CosmWasmClient> {
     const rpcAddress = this.conf[chain]!.rpc;
@@ -46,7 +47,9 @@ export class CosmwasmPlatform implements Platform<"Cosmwasm"> {
     //return new CosmwasmChain(this, chain);
   }
 
-  getWormholeCore(rpc: CosmWasmClient): Promise<WormholeCore<"Cosmwasm">> {
+  async getWormholeCore(
+    rpc: CosmWasmClient
+  ): Promise<WormholeCore<"Cosmwasm">> {
     throw new Error("Not implemented");
     //return CosmwasmWormholeCore.fromProvider(rpc, this.contracts);
   }
@@ -54,6 +57,7 @@ export class CosmwasmPlatform implements Platform<"Cosmwasm"> {
   async getTokenBridge(rpc: CosmWasmClient): Promise<TokenBridge<"Cosmwasm">> {
     return await CosmwasmTokenBridge.fromProvider(rpc, this.contracts);
   }
+
   async getAutomaticTokenBridge(
     rpc: CosmWasmClient
   ): Promise<AutomaticTokenBridge<"Cosmwasm">> {

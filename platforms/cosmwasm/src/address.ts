@@ -1,6 +1,5 @@
+import { toBech32, fromHex, fromBech32, toHex } from "@cosmjs/encoding";
 import { Address, UniversalAddress } from "@wormhole-foundation/connect-sdk";
-
-import { ethers } from "ethers";
 
 declare global {
   namespace Wormhole {
@@ -11,66 +10,73 @@ declare global {
   }
 }
 
-export const CosmwasmZeroAddress = "0x0000000000000000000000000000000000000000";
-
 export class CosmwasmAddress implements Address {
-  static readonly byteSize = 20;
+  static readonly byteSize = 32;
 
-  //stored as checksum address
-  private readonly address: string;
+  private readonly prefix: string;
+  private readonly address: Uint8Array;
 
   constructor(address: string | Uint8Array | UniversalAddress) {
     if (typeof address === "string") {
       if (!CosmwasmAddress.isValidAddress(address))
-        throw new Error(
-          `Invalid EVM address, expected ${CosmwasmAddress.byteSize}-byte hex string but got ${address}`
-        );
+        throw new Error(`Invalid Cosmwasm address:  ${address}`);
 
-      this.address = ethers.getAddress(address);
+      const { data, prefix } = fromBech32(address);
+      this.address = data;
+      this.prefix = prefix;
     } else if (address instanceof Uint8Array) {
       if (address.length !== CosmwasmAddress.byteSize)
         throw new Error(
-          `Invalid EVM address, expected ${CosmwasmAddress.byteSize} bytes but got ${address.length}`
+          `Invalid Cosmwasm address, expected ${CosmwasmAddress.byteSize} bytes but got ${address.length}`
         );
 
-      this.address = ethers.getAddress(ethers.hexlify(address));
+      this.prefix = "";
+      this.address = address;
     } else if (address instanceof UniversalAddress) {
       // If its a universal address and we want it to be an ethereum address,
       // we need to chop off the first 12 bytes of padding
       const addressBytes = address.toUint8Array();
       // double check to make sure there are no non zero bytes
-      if (
-        addressBytes.slice(0, 12).some((v) => {
-          v !== 0;
-        })
-      )
-        throw new Error(`Invalid EVM address ${address}`);
+      if (addressBytes.length != CosmwasmAddress.byteSize)
+        throw new Error(`Invalid Cosmwasm address ${address}`);
 
-      const suffix = Buffer.from(addressBytes.slice(12)).toString("hex");
-      this.address = ethers.getAddress(suffix);
-    } else throw new Error(`Invalid EVM address ${address}`);
+      this.address = addressBytes;
+      this.prefix = "";
+    } else throw new Error(`Invalid Cosmwasm address ${address}`);
   }
 
   unwrap(): string {
-    return this.address;
+    return this.toString();
   }
+
   toString() {
-    return this.address;
+    return toBech32(this.prefix, this.address);
   }
+
   toNative() {
     return this;
   }
+
   toUint8Array() {
-    return ethers.getBytes(this.address);
+    return this.address;
   }
+
   toUniversalAddress() {
-    return new UniversalAddress(
-      ethers.zeroPadValue(this.address, UniversalAddress.byteSize)
-    );
+    const buff = new Uint8Array(UniversalAddress.byteSize);
+    buff.set(this.address, UniversalAddress.byteSize - this.address.length);
+    return new UniversalAddress(buff);
   }
-  static isValidAddress(address: string) {
-    return ethers.isAddress(address);
+
+  static isValidAddress(address: string): boolean {
+    try {
+      const maybe = fromBech32(address);
+      return (
+        maybe.data.length === CosmwasmAddress.byteSize && maybe.prefix !== ""
+      );
+    } catch (e) {}
+    return false;
   }
+
   equals(other: UniversalAddress): boolean {
     return other.equals(this.toUniversalAddress());
   }

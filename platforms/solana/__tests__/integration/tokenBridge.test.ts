@@ -5,7 +5,6 @@ import {
   toNative,
   VAA,
   Signature,
-  nativeChainAddress,
   chainConfigs,
 } from '@wormhole-foundation/connect-sdk';
 

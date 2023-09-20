@@ -61,9 +61,9 @@
   },
   "dependencies": {
     "@wormhole-foundation/connect-sdk": "*",
+    "@cosmjs/stargate": "^0.31.0",
     "@cosmjs/cosmwasm-stargate": "^0.31.0",
     "@cosmjs/proto-signing": "^0.31.0",
-    "@cosmjs/stargate": "^0.31.0",
     "@cosmjs/tendermint-rpc": "^0.31.0",
     "cosmjs-types": "^0.5.2"
   }

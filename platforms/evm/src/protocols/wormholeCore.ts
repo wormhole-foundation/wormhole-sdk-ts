@@ -1,12 +1,11 @@
-import {
-  Network,
-  evmChainIdToNetworkChainPair,
-  evmNetworkChainToEvmChainId,
-  WormholeCore,
-} from '@wormhole-foundation/connect-sdk';
+import { Network, WormholeCore } from '@wormhole-foundation/connect-sdk';
 import { Provider, TransactionRequest } from 'ethers';
 import { Implementation, ImplementationInterface } from '../ethers-contracts';
 
+import {
+  evmChainIdToNetworkChainPair,
+  evmNetworkChainToEvmChainId,
+} from '../constants';
 import { EvmUnsignedTransaction } from '../unsignedTransaction';
 import { EvmContracts } from '../contracts';
 import {

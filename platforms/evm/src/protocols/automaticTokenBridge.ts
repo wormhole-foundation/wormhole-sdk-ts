@@ -6,13 +6,15 @@ import {
   serialize,
   TokenId,
   chainToChainId,
-  evmChainIdToNetworkChainPair,
-  evmNetworkChainToEvmChainId,
   toChainId,
 } from '@wormhole-foundation/connect-sdk';
 
 import { Provider, TransactionRequest } from 'ethers';
 
+import {
+  evmChainIdToNetworkChainPair,
+  evmNetworkChainToEvmChainId,
+} from '../constants';
 import {
   EvmChainName,
   UniversalOrEvm,

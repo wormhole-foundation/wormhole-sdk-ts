@@ -10,19 +10,7 @@
 //   setupIbcExtension,
 // } from "@cosmjs/stargate";
 // import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
-// import {
-//   ChainId,
-//   ChainName,
-//   Context,
-//   NATIVE,
-//   ParsedMessage,
-//   ParsedRelayerMessage,
-//   ParsedRelayerPayload,
-//   TokenId,
-// } from "../../types";
-// import { WormholeContext } from "../../wormhole";
-// import { TokenBridgeAbstract } from "../abstracts/tokenBridge";
-// import { CosmosContracts } from "./contracts";
+// import { CosmwasmContracts } from "./contracts";
 // import { isCosmWasmChain, searchCosmosLogs } from "./utils";
 // import { ForeignAssetCache } from "../../utils";
 // import {
@@ -30,48 +18,6 @@
 //   Tendermint37Client,
 //   TendermintClient,
 // } from "@cosmjs/tendermint-rpc";
-//
-// interface WrappedRegistryResponse {
-//   address: string;
-// }
-//
-// const MAINNET_NATIVE_DENOMS: Record<string, string> = {
-//   osmosis: "uosmo",
-//   wormchain: "uworm",
-//   terra2: "uluna",
-//   cosmoshub: "uatom",
-//   evmos: "aevmos",
-// };
-// const TESTNET_NATIVE_DENOMS: Record<string, string> = {
-//   ...MAINNET_NATIVE_DENOMS,
-//   evmos: "atevmos",
-// };
-//
-// const PREFIXES: Record<string, string> = {
-//   osmosis: "osmo",
-//   wormchain: "wormhole",
-//   terra2: "terra",
-//   cosmoshub: "cosmos",
-//   evmos: "evmos",
-// };
-//
-// const MSG_EXECUTE_CONTRACT_TYPE_URL = "/cosmwasm.wasm.v1.MsgExecuteContract";
-// const buildExecuteMsg = (
-//   sender: string,
-//   contract: string,
-//   msg: Record<string, any>,
-//   funds?: Coin[]
-// ): EncodeObject => ({
-//   typeUrl: MSG_EXECUTE_CONTRACT_TYPE_URL,
-//   value: MsgExecuteContract.fromPartial({
-//     sender: sender,
-//     contract: contract,
-//     msg: Buffer.from(JSON.stringify(msg)),
-//     funds,
-//   }),
-// });
-//
-// const IBC_PORT = "transfer";
 //
 // export class CosmosContext<
 //   T extends WormholeContext
@@ -103,21 +49,6 @@
 //     const client = await this.getCosmWasmClient(chain);
 //     const transaction = await client.getTx(txId);
 //     return BigNumber.from(transaction?.gasUsed || 0);
-//   }
-//
-//   formatAddress(address: string): Uint8Array {
-//     return arrayify(zeroPad(cosmos.canonicalAddress(address), 32));
-//   }
-//
-//   parseAddress(address: any): string {
-//     const prefix = PREFIXES[this.chain];
-//     if (!prefix) throw new Error(`Prefix not found for chain ${this.chain}`);
-//
-//     const addr =
-//       typeof address === "string" && address.startsWith("0x")
-//         ? Buffer.from(hexStripZeros(address).substring(2), "hex")
-//         : address;
-//     return cosmos.humanAddress(prefix, addr);
 //   }
 //
 //   async formatAssetAddress(address: string): Promise<Uint8Array> {
