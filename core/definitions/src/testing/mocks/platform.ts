@@ -1,8 +1,4 @@
-import {
-  ChainName,
-  PlatformName,
-  chainToPlatform,
-} from "@wormhole-foundation/sdk-base";
+import { ChainName, PlatformName } from "@wormhole-foundation/sdk-base";
 import {
   ChainContext,
   Platform,
@@ -11,12 +7,10 @@ import {
   TokenId,
   AutomaticTokenBridge,
   TokenBridge,
-  UniversalAddress,
   WormholeMessageId,
   CircleBridge,
   AutomaticCircleBridge,
   ChainsConfig,
-  PlatformCtr,
   toNative,
   nativeIsRegistered,
   NativeAddress,
@@ -27,13 +21,14 @@ import { MockTokenBridge } from "./tokenBridge";
 import { WormholeCore } from "../../protocols/core";
 
 export function mockPlatformFactory(
-  p: PlatformName
-): PlatformCtr<PlatformName> {
+  p: PlatformName,
+  config: ChainsConfig
+): Platform<PlatformName> {
   class ConcreteMockPlatform extends MockPlatform<typeof p> {
     static _platform: typeof p = p;
     readonly platform = ConcreteMockPlatform._platform;
   }
-  return ConcreteMockPlatform;
+  return new ConcreteMockPlatform(config);
 }
 
 // Note: don't use this directly, instead create a ConcreteMockPlatform with the
@@ -47,6 +42,12 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
   constructor(conf: ChainsConfig) {
     this.conf = conf;
   }
+
+  setConfig(conf: ChainsConfig): MockPlatform<P> {
+    this.conf = conf;
+    return this;
+  }
+
   getDecimals(
     chain: ChainName,
     rpc: RpcConnection<P>,

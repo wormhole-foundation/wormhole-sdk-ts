@@ -1,37 +1,20 @@
 import { ChainName, PlatformName } from "@wormhole-foundation/sdk-base";
 import { Platform } from "./platform";
+
+import {
+  supportsAutomaticCircleBridge,
+  supportsCircleBridge,
+} from "./protocols/cctp";
+import {
+  supportsAutomaticTokenBridge,
+  supportsTokenBridge,
+} from "./protocols/tokenBridge";
 import { RpcConnection } from "./rpc";
 import { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge";
 import { AutomaticCircleBridge, CircleBridge } from "./protocols/cctp";
-
-// TODO: there has to be a nicer way to do this
-// This requires the arguments in the function definition come in the same order
-// [chain], [rpc], ...
-
-type _omitChain<Fn> = Fn extends (chain: ChainName, ...args: infer A) => infer R
-  ? (...args: A) => R
-  : Fn;
-type _omitRpc<P extends PlatformName, Fn> = Fn extends (
-  rpc: RpcConnection<P>,
-  ...args: infer A
-) => infer R
-  ? (...args: A) => R
-  : Fn;
-
-type OmitChainRpc<
-  P extends PlatformName,
-  F extends keyof Platform<P>
-> = _omitRpc<P, _omitChain<Platform<P>[F]>>;
-
-type OmitRpc<P extends PlatformName, F extends keyof Platform<P>> = _omitRpc<
-  P,
-  Platform<P>[F]
->;
-
-type OmitChain<
-  P extends PlatformName,
-  F extends keyof Platform<P>
-> = _omitChain<Platform<P>[F]>;
+import { SignedTx, TokenId } from "./types";
+import { WormholeMessageId } from "./attestation";
+import { NativeAddress } from "./address";
 
 export abstract class ChainContext<P extends PlatformName> {
   // Cached Protocol clients
@@ -44,62 +27,91 @@ export abstract class ChainContext<P extends PlatformName> {
 
   abstract getRpc(): RpcConnection<P>;
 
-  // Utils for platform specific queries
-  getDecimals: OmitChainRpc<P, "getDecimals"> = (token) => {
+  // Get the number of decimals for a token
+  async getDecimals(token: TokenId | "native"): Promise<bigint> {
     return this.platform.getDecimals(this.chain, this.getRpc(), token);
-  };
+  }
 
-  getBalance: OmitChainRpc<P, "getBalance"> = (walletAddr, token) => {
+  // Get the balance of a token for a given address
+  async getBalance(
+    walletAddr: string,
+    token: TokenId | "native"
+  ): Promise<bigint | null> {
     return this.platform.getBalance(
       this.chain,
       this.getRpc(),
       walletAddr,
       token
     );
-  };
+  }
 
   // Get details about the transaction
-  parseTransaction: OmitChainRpc<P, "parseTransaction"> = (txid) => {
+  async parseTransaction(txid: string): Promise<WormholeMessageId[]> {
     return this.platform.parseTransaction(this.chain, this.getRpc(), txid);
-  };
+  }
 
   // Send a transaction and wait for it to be confirmed
-  sendWait: OmitChainRpc<P, "sendWait"> = (stxns) => {
+  async sendWait(stxns: SignedTx): Promise<string[]> {
     return this.platform.sendWait(this.chain, this.getRpc(), stxns);
-  };
+  }
 
   // Take a native address and convert it to a UniversalAddress
-  parseAddress: OmitChain<P, "parseAddress"> = (address) => {
+  parseAddress(address: string): NativeAddress<P> {
     return this.platform.parseAddress(this.chain, address);
-  };
+  }
 
+  //
   // protocols
-  getTokenBridge: OmitRpc<P, "getTokenBridge"> = async () => {
+  //
+
+  //
+  supportsTokenBridge = () => supportsTokenBridge<P>(this.platform);
+  async getTokenBridge(): Promise<TokenBridge<P>> {
+    if (!supportsTokenBridge<P>(this.platform))
+      throw new Error("Platform does not support TokenBridge");
+
     this.tokenBridge = this.tokenBridge
       ? this.tokenBridge
       : await this.platform.getTokenBridge(this.getRpc());
-    return this.tokenBridge;
-  };
 
-  getAutomaticTokenBridge: OmitRpc<P, "getAutomaticTokenBridge"> = async () => {
+    return this.tokenBridge;
+  }
+
+  supportsAutomaticTokenBridge = () =>
+    supportsAutomaticTokenBridge<P>(this.platform);
+  async getAutomaticTokenBridge(): Promise<AutomaticTokenBridge<P>> {
+    if (!supportsAutomaticTokenBridge<P>(this.platform))
+      throw new Error("Platform does not support AutomaticTokenBridge");
+
     this.autoTokenBridge = this.autoTokenBridge
       ? this.autoTokenBridge
       : await this.platform.getAutomaticTokenBridge(this.getRpc());
     return this.autoTokenBridge;
-  };
+  }
 
-  getCircleBridge: OmitRpc<P, "getCircleBridge"> = async () => {
+  //
+  supportsCircleBridge = () => supportsCircleBridge<P>(this.platform);
+  async getCircleBridge(): Promise<CircleBridge<P>> {
+    if (!supportsCircleBridge<P>(this.platform))
+      throw new Error("Platform does not support CircleBridge");
+
     this.circleBridge = this.circleBridge
       ? this.circleBridge
       : await this.platform.getCircleBridge(this.getRpc());
     return this.circleBridge;
-  };
+  }
 
-  getAutomaticCircleBridge: OmitRpc<P, "getAutomaticCircleBridge"> =
-    async () => {
-      this.autoCircleBridge = this.autoCircleBridge
-        ? this.autoCircleBridge
-        : await this.platform.getAutomaticCircleBridge(this.getRpc());
-      return this.autoCircleBridge;
-    };
+  //
+  supportsAutomaticCircleBridge = () =>
+    supportsAutomaticCircleBridge<P>(this.platform);
+
+  async getAutomaticCircleBridge(): Promise<AutomaticCircleBridge<P>> {
+    if (!supportsAutomaticCircleBridge<P>(this.platform))
+      throw new Error("Platform does not support AutomaticCircleBridge");
+
+    this.autoCircleBridge = this.autoCircleBridge
+      ? this.autoCircleBridge
+      : await this.platform.getAutomaticCircleBridge(this.getRpc());
+    return this.autoCircleBridge;
+  }
 }

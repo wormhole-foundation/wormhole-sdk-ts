@@ -18,7 +18,6 @@ import {
   Platform,
   ChainContext,
   toNative,
-  PlatformCtr,
   Contracts,
   TxHash,
   WormholeMessageId,
@@ -28,7 +27,7 @@ import axios, { AxiosResponse } from 'axios';
 
 import { WormholeConfig } from './types';
 
-import { CONFIG } from './constants';
+import { CONFIG, networkPlatformConfigs } from './constants';
 import { TokenTransfer } from './protocols/tokenTransfer';
 import { CCTPTransfer } from './protocols/cctpTransfer';
 import { TransactionStatus } from './api';
@@ -40,22 +39,16 @@ export class Wormhole {
 
   constructor(
     network: Network,
-    platforms: PlatformCtr<PlatformName>[],
+    platforms: Platform<PlatformName>[],
     conf?: WormholeConfig,
   ) {
     this.conf = conf ?? CONFIG[network];
 
     this._platforms = new Map();
     for (const p of platforms) {
-      const platformName = p._platform;
-
-      const filteredChains = Object.fromEntries(
-        Object.entries(this.conf.chains).filter(([_, v]) => {
-          return v.platform == platformName;
-        }),
-      );
-
-      this._platforms.set(platformName, new p(filteredChains));
+      const platformName = p.platform;
+      const filteredChains = networkPlatformConfigs(network, platformName);
+      this._platforms.set(platformName, p.setConfig(filteredChains));
     }
   }
 
@@ -87,7 +80,9 @@ export class Wormhole {
 
     if (
       !isCircleChain(from.chain) ||
-      !isCircleSupported(this.network, from.chain)
+      !isCircleChain(to.chain) ||
+      !isCircleSupported(this.network, from.chain) ||
+      !isCircleSupported(this.network, to.chain)
     )
       throw new Error(
         `Network and chain not supported: ${this.network} ${from.chain} `,
@@ -137,6 +132,18 @@ export class Wormhole {
 
     if (nativeGas && !automatic)
       throw new Error('Gas Dropoff is only supported for automatic transfers');
+
+    const fromChain = this.getChain(from.chain);
+    const toChain = this.getChain(to.chain);
+
+    if (!fromChain.supportsTokenBridge())
+      throw new Error(`Token Bridge not supported on ${from.chain}`);
+
+    if (!toChain.supportsTokenBridge())
+      throw new Error(`Token Bridge not supported on ${to.chain}`);
+
+    if (automatic && !fromChain.supportsAutomaticTokenBridge())
+      throw new Error(`Automatic Token Bridge not supported on ${from.chain}`);
 
     // Bit of (temporary) hackery until solana contracts support being
     // sent a VAA with the primary address

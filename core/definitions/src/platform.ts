@@ -4,21 +4,17 @@ import { RpcConnection } from "./rpc";
 import { ChainsConfig, TokenId, TxHash } from "./types";
 import { WormholeMessageId } from "./attestation";
 import { SignedTx } from "./types";
-// protocols
-import { TokenBridge, AutomaticTokenBridge } from "./protocols/tokenBridge";
-import { CircleBridge, AutomaticCircleBridge } from "./protocols/cctp";
-import { WormholeCore } from "./protocols/core";
 import { NativeAddress } from "./address";
-
-export type PlatformCtr<P extends PlatformName> = {
-  _platform: P;
-  new (conf: ChainsConfig): Platform<P>;
-};
 
 // Force passing RPC connection so we don't create a new one with every fn call
 export interface Platform<P extends PlatformName> {
   readonly platform: P;
   readonly conf: ChainsConfig;
+
+  // update the config for this platform
+  setConfig(_conf: ChainsConfig): Platform<P>;
+
+  // Create a new Chain context object
   getChain(chain: ChainName): ChainContext<P>;
 
   // Utils for platform specific queries
@@ -47,15 +43,4 @@ export interface Platform<P extends PlatformName> {
     txid: TxHash
   ): Promise<WormholeMessageId[]>;
   parseAddress(chain: ChainName, address: string): NativeAddress<P>;
-
-  // protocol clients
-  getWormholeCore(rpc: RpcConnection<P>): Promise<WormholeCore<P>>;
-  getTokenBridge(rpc: RpcConnection<P>): Promise<TokenBridge<P>>;
-  getAutomaticTokenBridge(
-    rpc: RpcConnection<P>
-  ): Promise<AutomaticTokenBridge<P>>;
-  getAutomaticCircleBridge(
-    rpc: RpcConnection<P>
-  ): Promise<AutomaticCircleBridge<P>>;
-  getCircleBridge(rpc: RpcConnection<P>): Promise<CircleBridge<P>>;
 }

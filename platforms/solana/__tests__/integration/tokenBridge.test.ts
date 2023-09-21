@@ -82,7 +82,7 @@ afterEach(async () => {
 });
 
 describe('TokenBridge Tests', () => {
-  const p: Platform<'Solana'> = new SolanaPlatform(configs);
+  const p: Platform<'Solana'> = SolanaPlatform.setConfig(configs);
   let tb: TokenBridge<'Solana'>;
 
   test('Create TokenBridge', async () => {

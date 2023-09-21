@@ -5,17 +5,22 @@ import {
   ChainContext,
   testing,
 } from '@wormhole-foundation/sdk-definitions';
-import { PlatformName, platforms } from '@wormhole-foundation/sdk-base';
-import { Wormhole } from '../src';
+import {
+  Network,
+  PlatformName,
+  platforms,
+} from '@wormhole-foundation/sdk-base';
+import { Wormhole, chainConfigs } from '../src';
 
+const network: Network = 'Devnet';
 const allPlatformCtrs = platforms.map((p) => {
-  return testing.mocks.mockPlatformFactory(p);
+  return testing.mocks.mockPlatformFactory(p, chainConfigs(network));
 });
 
 describe('Wormhole Tests', () => {
   let wh: Wormhole;
   beforeEach(() => {
-    wh = new Wormhole('Devnet', allPlatformCtrs);
+    wh = new Wormhole(network, allPlatformCtrs);
   });
 
   let p: Platform<PlatformName>;
@@ -34,7 +39,7 @@ describe('Wormhole Tests', () => {
 describe('Platform Tests', () => {
   let p: Platform<PlatformName>;
   beforeEach(() => {
-    const wh = new Wormhole('Devnet', allPlatformCtrs);
+    const wh = new Wormhole(network, allPlatformCtrs);
     p = wh.getPlatform('Ethereum');
   });
 
@@ -54,7 +59,7 @@ describe('Platform Tests', () => {
 describe('Chain Tests', () => {
   let c: ChainContext<PlatformName>;
   beforeEach(() => {
-    const wh = new Wormhole('Devnet', allPlatformCtrs);
+    const wh = new Wormhole(network, allPlatformCtrs);
     const p = wh.getPlatform('Ethereum');
     c = wh.getChain('Ethereum');
   });

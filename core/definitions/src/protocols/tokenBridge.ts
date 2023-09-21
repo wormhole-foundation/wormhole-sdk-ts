@@ -4,9 +4,37 @@ import { TokenId } from "../types";
 import { VAA } from "../vaa";
 import { UnsignedTransaction } from "../unsignedTransaction";
 import "../payloads/tokenBridge";
+import { RpcConnection } from "../rpc";
 
 export const ErrNotWrapped = (token: string) =>
   new Error(`Token ${token} is not a wrapped asset`);
+
+export interface SupportsTokenBridge<P extends PlatformName> {
+  getTokenBridge(rpc: RpcConnection<P>): Promise<TokenBridge<P>>;
+}
+
+export function supportsTokenBridge<P extends PlatformName>(
+  thing: SupportsTokenBridge<P> | any
+): thing is SupportsTokenBridge<P> {
+  return typeof (<SupportsTokenBridge<P>>thing).getTokenBridge === "function";
+}
+
+export interface SupportsAutomaticTokenBridge<P extends PlatformName> {
+  getAutomaticTokenBridge(
+    rpc: RpcConnection<P>
+  ): Promise<AutomaticTokenBridge<P>>;
+}
+
+export function supportsAutomaticTokenBridge<P extends PlatformName>(
+  thing: SupportsAutomaticTokenBridge<P> | any
+): thing is SupportsAutomaticTokenBridge<P> {
+  return (
+    (<SupportsAutomaticTokenBridge<P>>thing).getAutomaticTokenBridge !==
+      undefined &&
+    typeof (<SupportsAutomaticTokenBridge<P>>thing).getAutomaticTokenBridge ===
+      "function"
+  );
+}
 
 export interface TokenBridge<P extends PlatformName> {
   // checks a native address to see if its a wrapped version
