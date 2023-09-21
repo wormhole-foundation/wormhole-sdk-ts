@@ -7,6 +7,7 @@ import {
   chainToPlatform,
   chains,
   chainConfigs,
+  supportsTokenBridge,
 } from '@wormhole-foundation/connect-sdk';
 
 import { SolanaPlatform } from '../../src';
@@ -39,19 +40,23 @@ describe('Solana Platform Tests', () => {
       const p = SolanaPlatform.setConfig({
         [SOLANA_CHAINS[0]]: configs[SOLANA_CHAINS[0]],
       });
+
+      if (!supportsTokenBridge(p))
+        throw new Error('Platform does not support TokenBridge');
+
       const tb = await p.getTokenBridge(fakeRpc);
       expect(tb).toBeTruthy();
     });
   });
 
-  describe('Get Automatic Token Bridge', () => {
-    test('Fails until implemented', async () => {
-      const p = SolanaPlatform.setConfig({
-        [SOLANA_CHAINS[0]]: configs[SOLANA_CHAINS[0]],
-      });
-      expect(() => p.getAutomaticTokenBridge(fakeRpc)).rejects.toThrow();
-    });
-  });
+  //describe('Get Automatic Token Bridge', () => {
+  //  test('Fails until implemented', async () => {
+  //    const p = SolanaPlatform.setConfig({
+  //      [SOLANA_CHAINS[0]]: configs[SOLANA_CHAINS[0]],
+  //    });
+  //    expect(() => p.getAutomaticTokenBridge(fakeRpc)).rejects.toThrow();
+  //  });
+  //});
 
   describe('Get Chain', () => {
     test('No conf', () => {

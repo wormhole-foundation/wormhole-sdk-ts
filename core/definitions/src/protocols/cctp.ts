@@ -4,8 +4,36 @@ import { CircleMessageId } from "../attestation";
 import { UnsignedTransaction } from "../unsignedTransaction";
 import { TokenId, TxHash } from "../types";
 import "../payloads/connect";
+import { RpcConnection } from "../rpc";
 
 // https://github.com/circlefin/evm-cctp-contracts
+
+export interface SupportsCircleBridge<P extends PlatformName> {
+  getCircleBridge(rpc: RpcConnection<P>): Promise<CircleBridge<P>>;
+}
+
+export function supportsCircleBridge<P extends PlatformName>(
+  thing: SupportsCircleBridge<P> | any
+): thing is SupportsCircleBridge<P> {
+  return typeof (<SupportsCircleBridge<P>>thing).getCircleBridge === "function";
+}
+
+export interface SupportsAutomaticCircleBridge<P extends PlatformName> {
+  getAutomaticCircleBridge(
+    rpc: RpcConnection<P>
+  ): Promise<AutomaticCircleBridge<P>>;
+}
+
+export function supportsAutomaticCircleBridge<P extends PlatformName>(
+  thing: SupportsAutomaticCircleBridge<P> | any
+): thing is SupportsAutomaticCircleBridge<P> {
+  return (
+    (<SupportsAutomaticCircleBridge<P>>thing).getAutomaticCircleBridge !==
+      undefined &&
+    typeof (<SupportsAutomaticCircleBridge<P>>thing)
+      .getAutomaticCircleBridge === "function"
+  );
+}
 
 export type CircleTransferDetails = {
   txid: TxHash;

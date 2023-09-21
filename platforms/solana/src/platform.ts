@@ -4,9 +4,6 @@ import {
   Platform,
   TokenId,
   TokenBridge,
-  AutomaticTokenBridge,
-  CircleBridge,
-  AutomaticCircleBridge,
   SignedTx,
   TxHash,
   WormholeMessageId,
@@ -14,7 +11,6 @@ import {
   ChainContext,
   toNative,
   NativeAddress,
-  WormholeCore,
   networkPlatformConfigs,
 } from '@wormhole-foundation/connect-sdk';
 
@@ -113,35 +109,10 @@ export module SolanaPlatform {
     return txhashes;
   }
 
-  export async function getWormholeCore(
-    rpc: Connection,
-  ): Promise<WormholeCore<'Solana'>> {
-    throw new Error('Not Supported');
-    //return SolanaWormholeCore.fromProvider(rpc, this.contracts);
-  }
-
   export async function getTokenBridge(
     rpc: Connection,
   ): Promise<TokenBridge<'Solana'>> {
     return SolanaTokenBridge.fromProvider(rpc, contracts);
-  }
-
-  export async function getAutomaticTokenBridge(
-    rpc: Connection,
-  ): Promise<AutomaticTokenBridge<'Solana'>> {
-    throw new Error('Not Supported');
-  }
-
-  export async function getCircleBridge(
-    rpc: Connection,
-  ): Promise<CircleBridge<'Solana'>> {
-    throw new Error('Not Supported');
-  }
-
-  export async function getAutomaticCircleBridge(
-    rpc: Connection,
-  ): Promise<AutomaticCircleBridge<'Solana'>> {
-    throw new Error('Not Supported');
   }
 
   export function parseAddress(
