@@ -20,13 +20,12 @@ import { MockChain } from "./chain";
 import { MockTokenBridge } from "./tokenBridge";
 import { WormholeCore } from "../../protocols/core";
 
-export function mockPlatformFactory(
-  p: PlatformName,
+export function mockPlatformFactory<P extends PlatformName>(
+  p: P,
   config: ChainsConfig
-): Platform<PlatformName> {
-  class ConcreteMockPlatform extends MockPlatform<typeof p> {
-    static _platform: typeof p = p;
-    readonly platform = ConcreteMockPlatform._platform;
+): Platform<P> {
+  class ConcreteMockPlatform extends MockPlatform<P> {
+    readonly platform = p;
   }
   return new ConcreteMockPlatform(config);
 }
@@ -65,7 +64,7 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
   }
 
   getChain(chain: ChainName): ChainContext<P> {
-    return new MockChain<P>(this, chain);
+    return new MockChain<P>(this.platform, chain);
   }
   getRpc(chain: ChainName): RpcConnection<P> {
     // @ts-ignore
