@@ -4,6 +4,7 @@ import {
   RpcConnection,
   ChainContext,
   testing,
+  supportsTokenBridge,
 } from '@wormhole-foundation/sdk-definitions';
 import {
   Network,
@@ -14,7 +15,7 @@ import { Wormhole, chainConfigs } from '../src';
 
 const network: Network = 'Devnet';
 const allPlatformCtrs = platforms.map((p) => {
-  return testing.mocks.mockPlatformFactory(p, chainConfigs(network));
+  return testing.mocks.mockPlatformFactory(network, p, chainConfigs(network));
 });
 
 describe('Wormhole Tests', () => {
@@ -51,6 +52,8 @@ describe('Platform Tests', () => {
 
   let tb: TokenBridge<PlatformName>;
   test('Gets Token Bridge', async () => {
+    if (!supportsTokenBridge(p)) throw new Error('Fail');
+
     tb = await p.getTokenBridge(rpc);
     expect(tb).toBeTruthy();
   });

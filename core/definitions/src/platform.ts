@@ -1,4 +1,8 @@
-import { PlatformName, ChainName } from "@wormhole-foundation/sdk-base";
+import {
+  PlatformName,
+  ChainName,
+  Network,
+} from "@wormhole-foundation/sdk-base";
 import { ChainContext } from "./chain";
 import { RpcConnection } from "./rpc";
 import { ChainsConfig, TokenId, TxHash } from "./types";
@@ -10,9 +14,10 @@ import { NativeAddress } from "./address";
 export interface Platform<P extends PlatformName> {
   readonly platform: P;
   readonly conf: ChainsConfig;
+  readonly network: Network;
 
   // update the config for this platform
-  setConfig(_conf: ChainsConfig): Platform<P>;
+  setConfig(network: Network, _conf?: ChainsConfig): Platform<P>;
 
   // Create a new Chain context object
   getChain(chain: ChainName): ChainContext<P>;

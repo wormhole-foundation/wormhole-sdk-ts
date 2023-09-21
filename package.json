@@ -29,7 +29,7 @@
     "clean": "npm run clean --workspaces --if-present",
     "prettier": "npm run prettier --workspaces --if-present",
     "test:integration": "jest --config ./jest.config.ts --roots ./__tests__",
-    "test": "npm run test --workspaces --if-present",
+    "test": "NETWORK=Mainnet npm run test --workspaces --if-present",
     "docs": "typedoc"
   },
   "workspaces": [

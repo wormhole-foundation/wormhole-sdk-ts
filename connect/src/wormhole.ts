@@ -27,7 +27,7 @@ import axios, { AxiosResponse } from 'axios';
 
 import { WormholeConfig } from './types';
 
-import { CONFIG, networkPlatformConfigs } from './constants';
+import { CONFIG, networkPlatformConfigs } from './config';
 import { TokenTransfer } from './protocols/tokenTransfer';
 import { CCTPTransfer } from './protocols/cctpTransfer';
 import { TransactionStatus } from './api';
@@ -48,7 +48,7 @@ export class Wormhole {
     for (const p of platforms) {
       const platformName = p.platform;
       const filteredChains = networkPlatformConfigs(network, platformName);
-      this._platforms.set(platformName, p.setConfig(filteredChains));
+      this._platforms.set(platformName, p.setConfig(network, filteredChains));
     }
   }
 
