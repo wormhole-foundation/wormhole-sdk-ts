@@ -31,8 +31,6 @@ import { EvmCircleBridge } from './protocols/circleBridge';
 import { EvmWormholeCore } from './protocols/wormholeCore';
 import { evmChainIdToNetworkChainPair } from './constants';
 
-const _: Platform<'Evm'> = EvmPlatform;
-
 /**
  * @category EVM
  */

@@ -1,4 +1,5 @@
 import {
+  ChainName,
   Network,
   PlatformToChains,
   RoArray,
@@ -48,22 +49,46 @@ const cosmwasmAddressPrefix = [
   ["Osmosis", "osmo"],
   ["Wormchain", "wormhole"],
   ["Terra2", "terra"],
-  //["Cosmoshub", "cosmos"],
-  //["Evmos", "evmos"],
+  ["Cosmoshub", "cosmos"],
+  ["Evmos", "evmos"],
 ] as const satisfies RoArray<readonly [PlatformToChains<"Cosmwasm">, string]>;
 
 export const chainToAddressPrefix = constMap(cosmwasmAddressPrefix);
 export const addressPrefixToChain = constMap(cosmwasmAddressPrefix, [1, [0]]);
 
-// const MAINNET_NATIVE_DENOMS: Record<string, string> = {
-//   osmosis: "uosmo",
-//   wormchain: "uworm",
-//   terra2: "uluna",
-//   cosmoshub: "uatom",
-//   evmos: "aevmos",
-// };
-// const TESTNET_NATIVE_DENOMS: Record<string, string> = {
-//   ...MAINNET_NATIVE_DENOMS,
-//   evmos: "atevmos",
-// };
-//
+const cosmwasmNativeDenom = [
+  [
+    "Mainnet",
+    [
+      ["Terra", "uluna"],
+      ["Terra2", "uluna"],
+      ["Osmosis", "uosmo"],
+      ["Wormchain", "uworm"],
+      ["Cosmoshub", "uatom"],
+      ["Evmos", "aevmos"],
+      ["Injective", "inj"],
+      ["Kujira", "kuji"],
+      ["Sei", "usei"],
+      ["Xpla", "uxpla"],
+    ],
+  ],
+  [
+    "Testnet",
+    [
+      ["Terra", "uluna"],
+      ["Terra2", "uluna"],
+      ["Osmosis", "uosmo"],
+      ["Wormchain", "uworm"],
+      ["Cosmoshub", "uatom"],
+      ["Evmos", "atevmos"],
+      ["Injective", "inj"],
+      ["Kujira", "kuji"],
+      ["Sei", "usei"],
+      ["Xpla", "uxpla"],
+    ],
+  ],
+] as const satisfies RoArray<
+  readonly [Network, RoArray<readonly [PlatformToChains<"Cosmwasm">, string]>]
+>;
+
+export const chainToNativeDenoms = constMap(cosmwasmNativeDenom);

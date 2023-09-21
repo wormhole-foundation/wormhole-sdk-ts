@@ -28,8 +28,6 @@ export function supportsAutomaticCircleBridge<P extends PlatformName>(
   thing: SupportsAutomaticCircleBridge<P> | any
 ): thing is SupportsAutomaticCircleBridge<P> {
   return (
-    (<SupportsAutomaticCircleBridge<P>>thing).getAutomaticCircleBridge !==
-      undefined &&
     typeof (<SupportsAutomaticCircleBridge<P>>thing)
       .getAutomaticCircleBridge === "function"
   );

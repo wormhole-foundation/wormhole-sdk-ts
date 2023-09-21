@@ -25,7 +25,6 @@ import { solGenesisHashToNetworkChainPair } from './constants';
 
 const SOLANA_SEQ_LOG = 'Program log: Sequence: ';
 
-const _: Platform<'Solana'> = SolanaPlatform;
 /**
  * @category Solana
  */

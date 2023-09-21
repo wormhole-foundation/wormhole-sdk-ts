@@ -10,18 +10,20 @@ import {
   toNative,
   NativeAddress,
   networkPlatformConfigs,
+  PlatformToChains,
 } from "@wormhole-foundation/connect-sdk";
 import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import { CosmwasmContracts } from "./contracts";
 import { CosmwasmChain } from "./chain";
 import { CosmwasmTokenBridge } from "./protocols/tokenBridge";
+import { chainToNativeDenoms } from "./constants";
 
 const _: Platform<"Cosmwasm"> = CosmwasmPlatform;
 
 /**
  * @category Cosmwasm
  */
-module CosmwasmPlatform {
+export module CosmwasmPlatform {
   // Provides runtime concrete value
   export const platform = "Cosmwasm";
   type P = typeof platform;
@@ -30,7 +32,7 @@ module CosmwasmPlatform {
   let contracts: CosmwasmContracts = new CosmwasmContracts(conf);
 
   export function setConfig(_conf: ChainsConfig): Platform<P> {
-    conf = conf;
+    conf = _conf;
     contracts = new CosmwasmContracts(conf);
     return CosmwasmPlatform;
   }
@@ -55,45 +57,40 @@ module CosmwasmPlatform {
     rpc: CosmWasmClient,
     token: TokenId | "native"
   ): Promise<bigint> {
-    throw new Error("Not implemented");
-    //     if (tokenAddr === this.getNativeDenom(chain)) return 6;
-    //     const client = await this.getCosmWasmClient(chain);
-    //     const { decimals } = await client.queryContractSmart(tokenAddr, {
-    //       token_info: {},
-    //     });
-    //     return decimals;
+    if (token === "native") return 6n;
+    const { decimals } = await rpc.queryContractSmart(
+      token.address.toString(),
+      {
+        token_info: {},
+      }
+    );
+    return decimals;
   }
 
   export async function getBalance(
     chain: ChainName,
     rpc: CosmWasmClient,
-    walletAddr: string,
+    walletAddress: string,
     tokenId: TokenId | "native"
   ): Promise<bigint | null> {
-    throw new Error("Not implemented");
-    //     const assetAddress = await this.getForeignAsset(tokenId, chain);
-    //     if (!assetAddress) return null;
-    //     return this.getNativeBalance(walletAddress, chain, assetAddress);
+    //throw new Error("Not implemented");
 
-    //     const name = this.context.toChainName(chain);
-    //     const client = await this.getCosmWasmClient(name);
-    //     const { amount } = await client.getBalance(
-    //       walletAddress,
-    //       asset || this.getNativeDenom(name)
-    //     );
-    //     return BigNumber.from(amount);
+    //TODO:
+    //  const assetAddress = await this.getForeignAsset(tokenId, chain);
+    //  if (!assetAddress) return null;
+    //  return this.getNativeBalance(walletAddress, chain, assetAddress);
+
+    const asset =
+      tokenId === "native" ? getNativeDenom(chain) : tokenId.address.toString();
+    const { amount } = await rpc.getBalance(walletAddress, asset);
+    return BigInt(amount);
   }
 
-  // function getNativeDenom(chain: ChainName): string {
-  //   // const denom =
-  //   //   this.context.conf.env === "TESTNET"
-  //   //     ? TESTNET_NATIVE_DENOMS[name]
-  //   //     : MAINNET_NATIVE_DENOMS[name];
-  //   // if (!denom) {
-  //   //   throw new Error(`Native denomination not found for chain ${chain}`);
-  //   // }
-  //   // return denom;
-  // }
+  function getNativeDenom(chain: ChainName): string {
+    // TODO: fixme
+    const network = "Testnet";
+    return chainToNativeDenoms(network, chain as PlatformToChains<"Cosmwasm">);
+  }
 
   export async function sendWait(
     chain: ChainName,
