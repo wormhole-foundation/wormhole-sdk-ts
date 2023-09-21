@@ -51,7 +51,7 @@ export module EvmPlatform {
   }
 
   export function getChain(chain: ChainName): EvmChain {
-    return new EvmChain(EvmPlatform, chain);
+    return new EvmChain(chain);
   }
 
   export function getWormholeCore(

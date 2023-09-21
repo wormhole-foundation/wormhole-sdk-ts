@@ -9,21 +9,10 @@ import {
   Platform,
 } from '@wormhole-foundation/connect-sdk';
 import { getAssociatedTokenAddress } from '@solana/spl-token';
+import { SolanaPlatform } from './platform';
 
 export class SolanaChain extends ChainContext<'Solana'> {
-  // Cached objects
-  private connection?: RpcConnection<'Solana'>;
-
-  constructor(platform: Platform<'Solana'>, chain: ChainName) {
-    super(platform, chain);
-  }
-
-  getRpc(): RpcConnection<'Solana'> {
-    this.connection = this.connection
-      ? this.connection
-      : this.platform.getRpc(this.chain);
-    return this.connection!;
-  }
+  readonly platform: Platform<'Solana'> = SolanaPlatform;
 
   async getTokenAccount(
     token: UniversalOrNative<'Solana'> | 'native',

@@ -44,7 +44,7 @@ export module SolanaPlatform {
   }
 
   export function getChain(chain: ChainName): ChainContext<'Solana'> {
-    return new SolanaChain(SolanaPlatform, chain);
+    return new SolanaChain(chain);
   }
 
   export async function getDecimals(

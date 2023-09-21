@@ -18,14 +18,20 @@ import { NativeAddress } from "./address";
 
 export abstract class ChainContext<P extends PlatformName> {
   // Cached Protocol clients
+  protected rpc?: RpcConnection<P>;
   protected tokenBridge?: TokenBridge<P>;
   protected autoTokenBridge?: AutomaticTokenBridge<P>;
   protected circleBridge?: CircleBridge<P>;
   protected autoCircleBridge?: AutomaticCircleBridge<P>;
 
-  constructor(readonly platform: Platform<P>, readonly chain: ChainName) {}
+  abstract platform: Platform<P>;
 
-  abstract getRpc(): RpcConnection<P>;
+  constructor(readonly chain: ChainName) {}
+
+  getRpc(): RpcConnection<P> {
+    this.rpc = this.rpc ? this.rpc : this.platform.getRpc(this.chain);
+    return this.rpc;
+  }
 
   // Get the number of decimals for a token
   async getDecimals(token: TokenId | "native"): Promise<bigint> {
