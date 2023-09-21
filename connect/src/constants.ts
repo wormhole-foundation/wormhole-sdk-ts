@@ -10,6 +10,7 @@ import {
   RoArray,
   constMap,
   circleAPI,
+  PlatformName,
 } from '@wormhole-foundation/sdk-base';
 import { WormholeConfig } from './types';
 import {
@@ -52,6 +53,17 @@ const chainConfigMapping = [
 ] as const satisfies RoArray<readonly [Network, ChainsConfig]>;
 
 export const chainConfigs = constMap(chainConfigMapping);
+
+export function networkPlatformConfigs(
+  network: Network,
+  platform: PlatformName,
+): ChainsConfig {
+  return Object.fromEntries(
+    Object.entries(chainConfigs(network)).filter(([_, v]) => {
+      return v.platform == platform;
+    }),
+  );
+}
 
 const sharedConfig: WormholeConfig = {
   network: 'Testnet',

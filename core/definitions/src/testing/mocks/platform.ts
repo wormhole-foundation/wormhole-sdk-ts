@@ -43,7 +43,7 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
     this.conf = conf;
   }
 
-  init(conf: ChainsConfig): MockPlatform<P> {
+  setConfig(conf: ChainsConfig): MockPlatform<P> {
     this.conf = conf;
     return this;
   }

@@ -21,7 +21,7 @@ const configs = chainConfigs('Mainnet');
 
 describe('Solana Platform Tests', () => {
   describe('Parse Address', () => {
-    const p = SolanaPlatform.init({});
+    const p = SolanaPlatform.setConfig({});
     test.each(SOLANA_CHAINS)('Parses Address for %s', (chain: ChainName) => {
       const address = testing.utils.makeNativeAddressHexString(chain);
       const parsed = p.parseAddress(chain, address);
@@ -36,7 +36,7 @@ describe('Solana Platform Tests', () => {
 
   describe('Get Token Bridge', () => {
     test('Hardcoded Genesis mock', async () => {
-      const p = SolanaPlatform.init({
+      const p = SolanaPlatform.setConfig({
         [SOLANA_CHAINS[0]]: configs[SOLANA_CHAINS[0]],
       });
       const tb = await p.getTokenBridge(fakeRpc);
@@ -46,7 +46,7 @@ describe('Solana Platform Tests', () => {
 
   describe('Get Automatic Token Bridge', () => {
     test('Fails until implemented', async () => {
-      const p = SolanaPlatform.init({
+      const p = SolanaPlatform.setConfig({
         [SOLANA_CHAINS[0]]: configs[SOLANA_CHAINS[0]],
       });
       expect(() => p.getAutomaticTokenBridge(fakeRpc)).rejects.toThrow();
@@ -56,14 +56,14 @@ describe('Solana Platform Tests', () => {
   describe('Get Chain', () => {
     test('No conf', () => {
       // no issues just grabbing the chain
-      const p = SolanaPlatform.init({});
+      const p = SolanaPlatform.setConfig({});
       expect(p.conf).toEqual({});
       const c = p.getChain(SOLANA_CHAINS[0]);
       expect(c).toBeTruthy();
     });
 
     test('With conf', () => {
-      const p = SolanaPlatform.init({
+      const p = SolanaPlatform.setConfig({
         [SOLANA_CHAINS[0]]: configs[SOLANA_CHAINS[0]],
       });
       expect(() => p.getChain(SOLANA_CHAINS[0])).not.toThrow();
@@ -72,7 +72,7 @@ describe('Solana Platform Tests', () => {
 
   describe('Get RPC Connection', () => {
     test('No conf', () => {
-      const p = SolanaPlatform.init({});
+      const p = SolanaPlatform.setConfig({});
       expect(p.conf).toEqual({});
 
       // expect getRpc to throw an error since we havent provided
@@ -82,7 +82,7 @@ describe('Solana Platform Tests', () => {
     });
 
     test('With conf', () => {
-      const p = SolanaPlatform.init({
+      const p = SolanaPlatform.setConfig({
         [SOLANA_CHAINS[0]]: {
           rpc: 'http://localhost:8545',
         },

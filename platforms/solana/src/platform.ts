@@ -15,13 +15,12 @@ import {
   toNative,
   NativeAddress,
   WormholeCore,
-  CONFIG,
+  networkPlatformConfigs,
 } from '@wormhole-foundation/connect-sdk';
 
 import { SolanaContracts } from './contracts';
 import { SolanaChain } from './chain';
 import { SolanaTokenBridge } from './protocols/tokenBridge';
-import { SolanaAddress } from './address';
 
 const SOLANA_SEQ_LOG = 'Program log: Sequence: ';
 
@@ -31,16 +30,10 @@ const _: Platform<'Solana'> = SolanaPlatform;
  */
 export module SolanaPlatform {
   export const platform: 'Solana' = 'Solana';
-  export let conf: ChainsConfig = Object.fromEntries(
-    // TODO: move to util fn
-    Object.entries(CONFIG['Mainnet'].chains).filter(([_, v]) => {
-      return v.platform == platform;
-    }),
-  );
+  export let conf: ChainsConfig = networkPlatformConfigs('Testnet', platform);
+  let contracts: SolanaContracts = new SolanaContracts(conf);
 
-  export let contracts: SolanaContracts = new SolanaContracts(conf);
-
-  export function init(_conf: ChainsConfig): Platform<'Solana'> {
+  export function setConfig(_conf: ChainsConfig): Platform<'Solana'> {
     conf = _conf;
     contracts = new SolanaContracts(conf);
     return SolanaPlatform;

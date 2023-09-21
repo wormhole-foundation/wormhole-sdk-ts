@@ -15,6 +15,7 @@ import {
   NativeAddress,
   WormholeCore,
   CONFIG,
+  networkPlatformConfigs,
 } from '@wormhole-foundation/connect-sdk';
 
 import { ethers } from 'ethers';
@@ -35,17 +36,10 @@ const _: Platform<'Evm'> = EvmPlatform;
 // Provides runtime concrete value
 export module EvmPlatform {
   export const platform: 'Evm' = 'Evm';
+  export let conf: ChainsConfig = networkPlatformConfigs('Testnet', platform);
+  let contracts: EvmContracts = new EvmContracts(conf);
 
-  export let conf: ChainsConfig = Object.fromEntries(
-    // TODO: move to util fn
-    Object.entries(CONFIG['Mainnet'].chains).filter(([_, v]) => {
-      return v.platform == platform;
-    }),
-  );
-
-  export let contracts: EvmContracts = new EvmContracts(conf);
-
-  export function init(_conf: ChainsConfig): Platform<'Evm'> {
+  export function setConfig(_conf: ChainsConfig): Platform<'Evm'> {
     conf = _conf;
     contracts = new EvmContracts(conf);
     return EvmPlatform;

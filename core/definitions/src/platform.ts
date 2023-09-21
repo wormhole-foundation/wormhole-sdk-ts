@@ -9,14 +9,13 @@ import { TokenBridge, AutomaticTokenBridge } from "./protocols/tokenBridge";
 import { CircleBridge, AutomaticCircleBridge } from "./protocols/cctp";
 import { WormholeCore } from "./protocols/core";
 import { NativeAddress } from "./address";
-import { Contracts } from "./contracts";
 
 // Force passing RPC connection so we don't create a new one with every fn call
 export interface Platform<P extends PlatformName> {
   readonly platform: P;
   readonly conf: ChainsConfig;
 
-  init(_conf: ChainsConfig): Platform<P>;
+  setConfig(_conf: ChainsConfig): Platform<P>;
 
   getChain(chain: ChainName): ChainContext<P>;
 

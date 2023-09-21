@@ -53,7 +53,7 @@ export class Wormhole {
           return v.platform == platformName;
         }),
       );
-      p.init(filteredChains);
+      p.setConfig(filteredChains);
       this._platforms.set(platformName, p);
     }
   }
