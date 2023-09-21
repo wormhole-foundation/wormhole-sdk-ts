@@ -18,8 +18,6 @@ import { CosmwasmChain } from "./chain";
 import { CosmwasmTokenBridge } from "./protocols/tokenBridge";
 import { chainToNativeDenoms } from "./constants";
 
-const _: Platform<"Cosmwasm"> = CosmwasmPlatform;
-
 /**
  * @category Cosmwasm
  */
@@ -43,7 +41,7 @@ export module CosmwasmPlatform {
   }
 
   export function getChain(chain: ChainName): CosmwasmChain {
-    return new CosmwasmChain(CosmwasmPlatform, chain);
+    return new CosmwasmChain(chain);
   }
 
   export async function getTokenBridge(
