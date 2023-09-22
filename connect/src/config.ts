@@ -83,3 +83,6 @@ export const CONFIG = {
   Testnet: sharedConfig,
   Devnet: sharedConfig,
 } as const satisfies Record<Network, WormholeConfig>;
+
+export const DEFAULT_NETWORK: Network =
+  (process.env.NETWORK as Network) || 'Testnet';

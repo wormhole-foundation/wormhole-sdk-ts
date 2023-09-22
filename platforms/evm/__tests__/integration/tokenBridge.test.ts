@@ -8,6 +8,7 @@ import {
   testing,
   toNative,
   chainConfigs,
+  DEFAULT_NETWORK,
 } from '@wormhole-foundation/connect-sdk';
 
 import {
@@ -77,8 +78,8 @@ afterEach(async () => {
   nockBack.setMode('wild');
 });
 
-const NETWORK = 'Mainnet';
-const configs = chainConfigs(NETWORK);
+const network = DEFAULT_NETWORK;
+const configs = chainConfigs(network);
 
 const TOKEN_ADDRESSES = {
   Mainnet: {
@@ -112,13 +113,12 @@ const recipient: ChainAddress = {
 };
 
 describe('TokenBridge Tests', () => {
-  const p: Platform<'Evm'> = EvmPlatform.setConfig(configs);
+  const p: Platform<'Evm'> = EvmPlatform.setConfig(network, configs);
   let tb: TokenBridge<'Evm'>;
 
   test('Create TokenBridge', async () => {
     const rpc = p.getRpc('Ethereum');
     const contracts = new EvmContracts(configs);
-    //@ts-ignore
     tb = await EvmTokenBridge.fromProvider(rpc, contracts);
     expect(tb).toBeTruthy();
   });
@@ -225,7 +225,8 @@ describe('TokenBridge Tests', () => {
 
       const { transaction } = attestTx;
       expect(transaction.chainId).toEqual(
-        evmNetworkChainToEvmChainId(NETWORK, chain),
+        // @ts-ignore
+        evmNetworkChainToEvmChainId(network, chain),
       );
     });
 
@@ -262,7 +263,8 @@ describe('TokenBridge Tests', () => {
 
       const { transaction } = attestTx;
       expect(transaction.chainId).toEqual(
-        evmNetworkChainToEvmChainId(NETWORK, chain),
+        // @ts-ignore
+        evmNetworkChainToEvmChainId(network, chain),
       );
     });
   });
@@ -292,7 +294,8 @@ describe('TokenBridge Tests', () => {
 
           const { transaction } = xferTx;
           expect(transaction.chainId).toEqual(
-            evmNetworkChainToEvmChainId(NETWORK, chain),
+            // @ts-ignore
+            evmNetworkChainToEvmChainId(network, chain),
           );
         });
 
@@ -323,7 +326,8 @@ describe('TokenBridge Tests', () => {
           const { transaction: xferTransaction } = xferTx;
           expect(xferTransaction.to).toEqual(tbAddress.toString());
           expect(xferTransaction.chainId).toEqual(
-            evmNetworkChainToEvmChainId(NETWORK, chain),
+            // @ts-ignore
+            evmNetworkChainToEvmChainId(network, chain),
           );
         });
       });

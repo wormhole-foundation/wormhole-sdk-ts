@@ -1,4 +1,8 @@
-import { ChainName, PlatformName } from "@wormhole-foundation/sdk-base";
+import {
+  ChainName,
+  Network,
+  PlatformName,
+} from "@wormhole-foundation/sdk-base";
 import {
   ChainContext,
   Platform,
@@ -21,13 +25,14 @@ import { MockTokenBridge } from "./tokenBridge";
 import { WormholeCore } from "../../protocols/core";
 
 export function mockPlatformFactory<P extends PlatformName>(
+  network: Network,
   p: P,
   config: ChainsConfig
 ): Platform<P> {
   class ConcreteMockPlatform extends MockPlatform<P> {
     readonly platform = p;
   }
-  return new ConcreteMockPlatform(config);
+  return new ConcreteMockPlatform(network, config);
 }
 
 // Note: don't use this directly, instead create a ConcreteMockPlatform with the
@@ -36,14 +41,17 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
   // @ts-ignore
   readonly platform: P;
 
+  network: Network;
   conf: ChainsConfig;
 
-  constructor(conf: ChainsConfig) {
+  constructor(network: Network, conf: ChainsConfig) {
+    this.network = network;
     this.conf = conf;
   }
 
-  setConfig(conf: ChainsConfig): MockPlatform<P> {
-    this.conf = conf;
+  setConfig(network: Network, _conf: ChainsConfig): MockPlatform<P> {
+    this.network = network;
+    this.conf = _conf;
     return this;
   }
 
@@ -64,7 +72,7 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
   }
 
   getChain(chain: ChainName): ChainContext<P> {
-    return new MockChain<P>(this.platform, chain);
+    return new MockChain<P>(this.network, this.platform, chain);
   }
   getRpc(chain: ChainName): RpcConnection<P> {
     // @ts-ignore

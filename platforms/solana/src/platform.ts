@@ -12,6 +12,8 @@ import {
   toNative,
   NativeAddress,
   networkPlatformConfigs,
+  DEFAULT_NETWORK,
+  Network,
 } from '@wormhole-foundation/connect-sdk';
 
 import { SolanaContracts } from './contracts';
@@ -26,11 +28,16 @@ const _: Platform<'Solana'> = SolanaPlatform;
  */
 export module SolanaPlatform {
   export const platform: 'Solana' = 'Solana';
-  export let conf: ChainsConfig = networkPlatformConfigs('Testnet', platform);
+  export let network: Network = DEFAULT_NETWORK;
+  export let conf: ChainsConfig = networkPlatformConfigs(network, platform);
+
   let contracts: SolanaContracts = new SolanaContracts(conf);
 
-  export function setConfig(_conf: ChainsConfig): Platform<'Solana'> {
-    conf = _conf;
+  export function setConfig(
+    network: Network,
+    _conf?: ChainsConfig,
+  ): Platform<'Solana'> {
+    conf = _conf ? _conf : networkPlatformConfigs(network, platform);
     contracts = new SolanaContracts(conf);
     return SolanaPlatform;
   }

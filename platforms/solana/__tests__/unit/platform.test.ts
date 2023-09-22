@@ -8,6 +8,7 @@ import {
   chains,
   chainConfigs,
   supportsTokenBridge,
+  DEFAULT_NETWORK,
 } from '@wormhole-foundation/connect-sdk';
 
 import { SolanaPlatform } from '../../src';
@@ -17,12 +18,14 @@ import { PublicKey } from '@solana/web3.js';
 // @ts-ignore -- this is the mock we import above
 import { getDefaultProvider } from '@solana/web3.js';
 
+const network = DEFAULT_NETWORK;
+
 const SOLANA_CHAINS = chains.filter((c) => chainToPlatform(c) === 'Solana');
-const configs = chainConfigs('Mainnet');
+const configs = chainConfigs(network);
 
 describe('Solana Platform Tests', () => {
   describe('Parse Address', () => {
-    const p = SolanaPlatform.setConfig({});
+    const p = SolanaPlatform.setConfig(network, {});
     test.each(SOLANA_CHAINS)('Parses Address for %s', (chain: ChainName) => {
       const address = testing.utils.makeNativeAddressHexString(chain);
       const parsed = p.parseAddress(chain, address);
@@ -37,7 +40,7 @@ describe('Solana Platform Tests', () => {
 
   describe('Get Token Bridge', () => {
     test('Hardcoded Genesis mock', async () => {
-      const p = SolanaPlatform.setConfig({
+      const p = SolanaPlatform.setConfig(network, {
         [SOLANA_CHAINS[0]]: configs[SOLANA_CHAINS[0]],
       });
 
@@ -61,14 +64,14 @@ describe('Solana Platform Tests', () => {
   describe('Get Chain', () => {
     test('No conf', () => {
       // no issues just grabbing the chain
-      const p = SolanaPlatform.setConfig({});
+      const p = SolanaPlatform.setConfig(network, {});
       expect(p.conf).toEqual({});
       const c = p.getChain(SOLANA_CHAINS[0]);
       expect(c).toBeTruthy();
     });
 
     test('With conf', () => {
-      const p = SolanaPlatform.setConfig({
+      const p = SolanaPlatform.setConfig(network, {
         [SOLANA_CHAINS[0]]: configs[SOLANA_CHAINS[0]],
       });
       expect(() => p.getChain(SOLANA_CHAINS[0])).not.toThrow();
@@ -77,7 +80,7 @@ describe('Solana Platform Tests', () => {
 
   describe('Get RPC Connection', () => {
     test('No conf', () => {
-      const p = SolanaPlatform.setConfig({});
+      const p = SolanaPlatform.setConfig(network, {});
       expect(p.conf).toEqual({});
 
       // expect getRpc to throw an error since we havent provided
@@ -87,7 +90,7 @@ describe('Solana Platform Tests', () => {
     });
 
     test('With conf', () => {
-      const p = SolanaPlatform.setConfig({
+      const p = SolanaPlatform.setConfig(network, {
         [SOLANA_CHAINS[0]]: {
           rpc: 'http://localhost:8545',
         },

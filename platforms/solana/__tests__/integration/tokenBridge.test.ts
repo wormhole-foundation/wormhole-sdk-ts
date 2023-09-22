@@ -6,6 +6,7 @@ import {
   VAA,
   Signature,
   chainConfigs,
+  DEFAULT_NETWORK,
 } from '@wormhole-foundation/connect-sdk';
 
 import {
@@ -19,8 +20,8 @@ import { MockSolanaSigner } from '../mocks/MockSigner';
 
 import nock from 'nock';
 
-const NETWORK = 'Mainnet';
-const configs = chainConfigs(NETWORK);
+const network = DEFAULT_NETWORK;
+const configs = chainConfigs(network);
 
 const TOKEN_ADDRESSES = {
   Mainnet: {
@@ -82,7 +83,7 @@ afterEach(async () => {
 });
 
 describe('TokenBridge Tests', () => {
-  const p: Platform<'Solana'> = SolanaPlatform.setConfig(configs);
+  const p: Platform<'Solana'> = SolanaPlatform.setConfig(network, configs);
   let tb: TokenBridge<'Solana'>;
 
   test('Create TokenBridge', async () => {
@@ -91,9 +92,6 @@ describe('TokenBridge Tests', () => {
 
     tb = await SolanaTokenBridge.fromProvider(rpc, contracts);
     expect(tb).toBeTruthy();
-
-    nockDone();
-    nockBack.setMode('wild');
   });
 
   describe('Get Wrapped Asset Details', () => {

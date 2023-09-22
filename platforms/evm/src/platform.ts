@@ -16,6 +16,8 @@ import {
   WormholeCore,
   CONFIG,
   networkPlatformConfigs,
+  DEFAULT_NETWORK,
+  Network,
 } from '@wormhole-foundation/connect-sdk';
 
 import { ethers } from 'ethers';
@@ -36,11 +38,16 @@ const _: Platform<'Evm'> = EvmPlatform;
 // Provides runtime concrete value
 export module EvmPlatform {
   export const platform: 'Evm' = 'Evm';
-  export let conf: ChainsConfig = networkPlatformConfigs('Testnet', platform);
+  export const network: Network = DEFAULT_NETWORK;
+  export let conf: ChainsConfig = networkPlatformConfigs(network, platform);
+
   let contracts: EvmContracts = new EvmContracts(conf);
 
-  export function setConfig(_conf: ChainsConfig): Platform<'Evm'> {
-    conf = _conf;
+  export function setConfig(
+    network: Network,
+    _conf?: ChainsConfig,
+  ): Platform<'Evm'> {
+    conf = _conf ? _conf : networkPlatformConfigs(network, platform);
     contracts = new EvmContracts(conf);
     return EvmPlatform;
   }
