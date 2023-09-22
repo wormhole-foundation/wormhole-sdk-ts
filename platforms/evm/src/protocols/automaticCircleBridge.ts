@@ -3,6 +3,7 @@ import {
   AutomaticCircleBridge,
   TokenId,
   chainToChainId,
+  Network,
 } from '@wormhole-foundation/connect-sdk';
 
 import {
@@ -21,6 +22,7 @@ import { EvmUnsignedTransaction } from '../unsignedTransaction';
 import { CircleRelayer } from '../ethers-contracts';
 import { Provider, TransactionRequest } from 'ethers';
 import { EvmContracts } from '../contracts';
+import { EvmPlatform } from '../platform';
 
 export class EvmAutomaticCircleBridge implements AutomaticCircleBridge<'Evm'> {
   readonly circleRelayer: CircleRelayer;
@@ -29,11 +31,14 @@ export class EvmAutomaticCircleBridge implements AutomaticCircleBridge<'Evm'> {
   // https://github.com/wormhole-foundation/wormhole-connect/blob/development/sdk/src/contexts/eth/context.ts#L379
 
   private constructor(
-    readonly network: 'Mainnet' | 'Testnet',
+    readonly network: Network,
     readonly chain: EvmChainName,
     readonly provider: Provider,
     readonly contracts: EvmContracts,
   ) {
+    if (network === 'Devnet')
+      throw new Error('AutomaticCircleBridge not supported on Devnet');
+
     this.chainId = evmNetworkChainToEvmChainId(network, chain);
     this.circleRelayer = this.contracts.mustGetWormholeCircleRelayer(
       chain,
@@ -45,12 +50,7 @@ export class EvmAutomaticCircleBridge implements AutomaticCircleBridge<'Evm'> {
     provider: Provider,
     contracts: EvmContracts,
   ): Promise<EvmAutomaticCircleBridge> {
-    const { chainId } = await provider.getNetwork();
-    const networkChainPair = evmChainIdToNetworkChainPair.get(chainId);
-    if (networkChainPair === undefined)
-      throw new Error(`Unknown EVM chainId ${chainId}`);
-
-    const [network, chain] = networkChainPair;
+    const [network, chain] = await EvmPlatform.chainFromRpc(provider);
     return new EvmAutomaticCircleBridge(network, chain, provider, contracts);
   }
 

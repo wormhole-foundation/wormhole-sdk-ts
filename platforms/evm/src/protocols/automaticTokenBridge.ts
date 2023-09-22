@@ -7,6 +7,7 @@ import {
   TokenId,
   chainToChainId,
   toChainId,
+  Network,
 } from '@wormhole-foundation/connect-sdk';
 
 import { Provider, TransactionRequest } from 'ethers';
@@ -25,6 +26,7 @@ import {
 import { EvmUnsignedTransaction } from '../unsignedTransaction';
 import { TokenBridgeRelayer } from '../ethers-contracts';
 import { EvmContracts } from '../contracts';
+import { EvmPlatform } from '../platform';
 
 export class EvmAutomaticTokenBridge implements AutomaticTokenBridge<'Evm'> {
   readonly tokenBridgeRelayer: TokenBridgeRelayer;
@@ -33,11 +35,14 @@ export class EvmAutomaticTokenBridge implements AutomaticTokenBridge<'Evm'> {
   // https://github.com/wormhole-foundation/wormhole-connect/blob/development/sdk/src/contexts/eth/context.ts#L379
 
   private constructor(
-    readonly network: 'Mainnet' | 'Testnet',
+    readonly network: Network,
     readonly chain: EvmChainName,
     readonly provider: Provider,
     readonly contracts: EvmContracts,
   ) {
+    if (network === 'Devnet')
+      throw new Error('AutomaticTokenBridge not supported on Devnet');
+
     this.chainId = evmNetworkChainToEvmChainId(network, chain);
     this.tokenBridgeRelayer = this.contracts.mustGetTokenBridgeRelayer(
       chain,
@@ -64,12 +69,7 @@ export class EvmAutomaticTokenBridge implements AutomaticTokenBridge<'Evm'> {
     provider: Provider,
     contracts: EvmContracts,
   ): Promise<EvmAutomaticTokenBridge> {
-    const { chainId } = await provider.getNetwork();
-    const networkChainPair = evmChainIdToNetworkChainPair.get(chainId);
-    if (networkChainPair === undefined)
-      throw new Error(`Unknown EVM chainId ${chainId}`);
-
-    const [network, chain] = networkChainPair;
+    const [network, chain] = await EvmPlatform.chainFromRpc(provider);
     return new EvmAutomaticTokenBridge(network, chain, provider, contracts);
   }
 

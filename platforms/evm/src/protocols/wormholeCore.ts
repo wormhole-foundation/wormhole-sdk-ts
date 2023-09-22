@@ -15,6 +15,7 @@ import {
   addFrom,
   toEvmAddrString,
 } from '../types';
+import { EvmPlatform } from '../platform';
 
 export class EvmWormholeCore implements WormholeCore<'Evm'> {
   readonly chainId: bigint;
@@ -38,12 +39,7 @@ export class EvmWormholeCore implements WormholeCore<'Evm'> {
     provider: Provider,
     contracts: EvmContracts,
   ): Promise<EvmWormholeCore> {
-    const { chainId } = await provider.getNetwork();
-    const networkChainPair = evmChainIdToNetworkChainPair.get(chainId);
-    if (networkChainPair === undefined)
-      throw new Error(`Unknown EVM chainId ${chainId}`);
-
-    const [network, chain] = networkChainPair;
+    const [network, chain] = await EvmPlatform.chainFromRpc(provider);
     return new EvmWormholeCore(network, chain, provider, contracts);
   }
 

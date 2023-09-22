@@ -48,4 +48,6 @@ export interface Platform<P extends PlatformName> {
     txid: TxHash
   ): Promise<WormholeMessageId[]>;
   parseAddress(chain: ChainName, address: string): NativeAddress<P>;
+
+  chainFromRpc(rpc: RpcConnection<P>): Promise<[Network, ChainName]>;
 }

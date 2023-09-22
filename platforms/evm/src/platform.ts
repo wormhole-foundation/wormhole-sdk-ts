@@ -18,6 +18,7 @@ import {
   networkPlatformConfigs,
   DEFAULT_NETWORK,
   Network,
+  PlatformToChains,
 } from '@wormhole-foundation/connect-sdk';
 
 import { ethers } from 'ethers';
@@ -29,6 +30,7 @@ import { EvmAutomaticTokenBridge } from './protocols/automaticTokenBridge';
 import { EvmAutomaticCircleBridge } from './protocols/automaticCircleBridge';
 import { EvmCircleBridge } from './protocols/circleBridge';
 import { EvmWormholeCore } from './protocols/wormholeCore';
+import { evmChainIdToNetworkChainPair } from './constants';
 
 const _: Platform<'Evm'> = EvmPlatform;
 
@@ -182,5 +184,16 @@ export module EvmPlatform {
         } as WormholeMessageId;
       })
       .filter(isWormholeMessageId);
+  }
+
+  export async function chainFromRpc(
+    rpc: ethers.Provider,
+  ): Promise<[Network, PlatformToChains<'Evm'>]> {
+    const { chainId } = await rpc.getNetwork();
+    const networkChainPair = evmChainIdToNetworkChainPair.get(chainId);
+    if (networkChainPair === undefined)
+      throw new Error(`Unknown EVM chainId ${chainId}`);
+    const [network, chain] = networkChainPair;
+    return [network, chain];
   }
 }

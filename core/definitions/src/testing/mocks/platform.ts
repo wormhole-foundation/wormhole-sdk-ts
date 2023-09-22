@@ -115,6 +115,10 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
     throw new Error("Method not implemented");
   }
 
+  async chainFromRpc(rpc: RpcConnection<P>): Promise<[Network, ChainName]> {
+    throw new Error("Not implemented");
+  }
+
   parseAddress(chain: ChainName, address: string): NativeAddress<P> {
     if (!nativeIsRegistered(chain)) throw new Error("Chain not registered");
     //@ts-ignore
