@@ -30,6 +30,7 @@ import { EvmAutomaticCircleBridge } from './protocols/automaticCircleBridge';
 import { EvmCircleBridge } from './protocols/circleBridge';
 import { EvmWormholeCore } from './protocols/wormholeCore';
 import { evmChainIdToNetworkChainPair } from './constants';
+import { EvmAddress } from './address';
 
 /**
  * @category EVM
@@ -42,13 +43,12 @@ export module EvmPlatform {
 
   let contracts: EvmContracts = new EvmContracts(conf);
 
-  // this is just to prevent rewriting 'Evm' for every generic param
   type P = typeof platform;
 
   export function setConfig(
     network: Network,
     _conf?: ChainsConfig,
-  ): Platform<P> {
+  ): typeof EvmPlatform {
     conf = _conf ? _conf : networkPlatformConfigs(network, platform);
     contracts = new EvmContracts(conf);
     return EvmPlatform;
@@ -65,30 +65,30 @@ export module EvmPlatform {
 
   export function getWormholeCore(
     rpc: ethers.Provider,
-  ): Promise<WormholeCore<P>> {
+  ): Promise<EvmWormholeCore> {
     return EvmWormholeCore.fromProvider(rpc, contracts);
   }
 
   export async function getTokenBridge(
     rpc: ethers.Provider,
-  ): Promise<TokenBridge<P>> {
+  ): Promise<EvmTokenBridge> {
     return await EvmTokenBridge.fromProvider(rpc, contracts);
   }
   export async function getAutomaticTokenBridge(
     rpc: ethers.Provider,
-  ): Promise<AutomaticTokenBridge<P>> {
+  ): Promise<EvmAutomaticTokenBridge> {
     return await EvmAutomaticTokenBridge.fromProvider(rpc, contracts);
   }
 
   export async function getCircleBridge(
     rpc: ethers.Provider,
-  ): Promise<CircleBridge<P>> {
+  ): Promise<EvmCircleBridge> {
     return await EvmCircleBridge.fromProvider(rpc, contracts);
   }
 
   export async function getAutomaticCircleBridge(
     rpc: ethers.Provider,
-  ): Promise<AutomaticCircleBridge<P>> {
+  ): Promise<EvmAutomaticCircleBridge> {
     return await EvmAutomaticCircleBridge.fromProvider(rpc, contracts);
   }
 
@@ -147,11 +147,9 @@ export module EvmPlatform {
     return txhashes;
   }
 
-  export function parseAddress(
-    chain: ChainName,
-    address: string,
-  ): NativeAddress<P> {
-    return toNative(chain, address) as NativeAddress<P>;
+  export function parseAddress(chain: ChainName, address: string): EvmAddress {
+    // TODO: y?
+    return toNative(chain, address) as unknown as EvmAddress;
   }
 
   export async function parseTransaction(
@@ -188,7 +186,7 @@ export module EvmPlatform {
 
   export async function chainFromRpc(
     rpc: ethers.Provider,
-  ): Promise<[Network, PlatformToChains<'Evm'>]> {
+  ): Promise<[Network, PlatformToChains<P>]> {
     const { chainId } = await rpc.getNetwork();
     const networkChainPair = evmChainIdToNetworkChainPair.get(chainId);
     if (networkChainPair === undefined)

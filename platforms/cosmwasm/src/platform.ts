@@ -23,12 +23,12 @@ import {
   chainToNativeDenoms,
   cosmwasmChainIdToNetworkChainPair,
 } from "./constants";
+import { CosmwasmAddress } from "./address";
 
 /**
  * @category Cosmwasm
  */
 export module CosmwasmPlatform {
-  // Provides runtime concrete value
   export const platform = "Cosmwasm";
   export let network: Network = DEFAULT_NETWORK;
   export let conf: ChainsConfig = networkPlatformConfigs(network, platform);
@@ -40,7 +40,7 @@ export module CosmwasmPlatform {
   export function setConfig(
     network: Network,
     _conf?: ChainsConfig
-  ): Platform<P> {
+  ): typeof CosmwasmPlatform {
     conf = _conf ? _conf : networkPlatformConfigs(network, platform);
     contracts = new CosmwasmContracts(conf);
     return CosmwasmPlatform;
@@ -57,7 +57,7 @@ export module CosmwasmPlatform {
 
   export async function getTokenBridge(
     rpc: CosmWasmClient
-  ): Promise<TokenBridge<P>> {
+  ): Promise<CosmwasmTokenBridge> {
     return await CosmwasmTokenBridge.fromProvider(rpc, contracts);
   }
 
@@ -102,7 +102,7 @@ export module CosmwasmPlatform {
     // TODO: required because of const map
     if (network === "Devnet") throw new Error("No devnet native denoms");
 
-    return chainToNativeDenoms(network, chain as PlatformToChains<"Cosmwasm">);
+    return chainToNativeDenoms(network, chain as PlatformToChains<P>);
   }
 
   export async function sendWait(
@@ -132,8 +132,8 @@ export module CosmwasmPlatform {
   export function parseAddress(
     chain: ChainName,
     address: string
-  ): NativeAddress<P> {
-    return toNative(chain, address) as NativeAddress<P>;
+  ): CosmwasmAddress {
+    return toNative(chain, address) as CosmwasmAddress;
   }
 
   export async function parseTransaction(
@@ -170,8 +170,8 @@ export module CosmwasmPlatform {
   }
 
   export async function chainFromRpc(
-    rpc: RpcConnection<"Cosmwasm">
-  ): Promise<[Network, PlatformToChains<"Cosmwasm">]> {
+    rpc: CosmWasmClient
+  ): Promise<[Network, PlatformToChains<P>]> {
     const chainId = await rpc.getChainId();
     const networkChainPair = cosmwasmChainIdToNetworkChainPair.get(chainId);
     if (networkChainPair === undefined)

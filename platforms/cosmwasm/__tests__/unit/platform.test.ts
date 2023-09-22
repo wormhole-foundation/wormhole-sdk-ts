@@ -3,62 +3,27 @@ import {
   chains,
   chainConfigs,
   DEFAULT_NETWORK,
-  supportsTokenBridge,
+  chainToPlatform,
 } from "@wormhole-foundation/connect-sdk";
 import { CosmwasmPlatform } from "../../src/platform";
 
 const network = DEFAULT_NETWORK;
+const configs = chainConfigs(network);
+
+// const COSMWASM_CHAINS = chains.filter(
+//   (c) => chainToPlatform(c) === CosmwasmPlatform.platform
+// );
 const COSMWASM_CHAINS = chains.filter((c) => c === "Cosmoshub");
-const configs = chainConfigs("Testnet");
 
 describe("Cosmwasm Platform Tests", () => {
-  // describe("Parse Address", () => {
-  //   const p = CosmwasmPlatform.setConfig({});
-  //   test.each(COSMWASM_CHAINS)("Parses Address for %s", (chain: ChainName) => {
-  //     const address = testing.utils.makeNativeAddressHexString(chain);
-  //     const parsed = p.parseAddress(chain, address);
-  //     expect(parsed).toBeTruthy();
-  //     expect(parsed.toNative().toString().toLowerCase()).toEqual(
-  //       "0x" + address
-  //     );
-  //   });
-  // });
-
   describe("Get Token Bridge", () => {
-    test("No RPC", async () => {
-      const p = CosmwasmPlatform;
-      // TODO: wrong
-      const rpc = await p.getRpc("Cosmoshub");
-      expect(() => p.getTokenBridge(rpc)).rejects.toThrow();
-    });
     test("With RPC", async () => {
       const p = CosmwasmPlatform.setConfig(network, {
         [COSMWASM_CHAINS[0]]: configs[COSMWASM_CHAINS[0]],
       });
       const rpc = await p.getRpc(COSMWASM_CHAINS[0]);
-
-      if (!supportsTokenBridge(p))
-        throw new Error("Token bridge not supported");
-
       const tb = await p.getTokenBridge(rpc);
       expect(tb).toBeTruthy();
-    });
-  });
-
-  describe("Get Automatic Token Bridge", () => {
-    test("No RPC", async () => {
-      const p = CosmwasmPlatform.setConfig(network, {});
-      //const rpc = getDefaultProvider("");
-      //expect(() => p.getAutomaticTokenBridge(rpc)).rejects.toThrow();
-    });
-    test("With RPC", async () => {
-      const p = CosmwasmPlatform.setConfig(network, {
-        [COSMWASM_CHAINS[0]]: configs[COSMWASM_CHAINS[0]],
-      });
-
-      //const rpc = getDefaultProvider("");
-      //const tb = await p.getAutomaticTokenBridge(rpc);
-      //expect(tb).toBeTruthy();
     });
   });
 

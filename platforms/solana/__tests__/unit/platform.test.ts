@@ -7,7 +7,6 @@ import {
   chainToPlatform,
   chains,
   chainConfigs,
-  supportsTokenBridge,
   DEFAULT_NETWORK,
 } from '@wormhole-foundation/connect-sdk';
 
@@ -20,7 +19,9 @@ import { getDefaultProvider } from '@solana/web3.js';
 
 const network = DEFAULT_NETWORK;
 
-const SOLANA_CHAINS = chains.filter((c) => chainToPlatform(c) === 'Solana');
+const SOLANA_CHAINS = chains.filter(
+  (c) => chainToPlatform(c) === SolanaPlatform.platform,
+);
 const configs = chainConfigs(network);
 
 describe('Solana Platform Tests', () => {
@@ -43,9 +44,6 @@ describe('Solana Platform Tests', () => {
       const p = SolanaPlatform.setConfig(network, {
         [SOLANA_CHAINS[0]]: configs[SOLANA_CHAINS[0]],
       });
-
-      if (!supportsTokenBridge(p))
-        throw new Error('Platform does not support TokenBridge');
 
       const tb = await p.getTokenBridge(fakeRpc);
       expect(tb).toBeTruthy();

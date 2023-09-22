@@ -21,7 +21,7 @@ const networkChainCosmwasmChainIds = [
       ["Xpla", "dimension_37-1"],
       ["Injective", "injective-1"],
       ["Osmosis", "	osmosis-1"],
-      ["Cosmoshub", "theta-1"], // TODO: validate
+      ["Cosmoshub", "cosmoshub-4"],
     ],
   ],
   [

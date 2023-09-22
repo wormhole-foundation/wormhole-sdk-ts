@@ -22,6 +22,7 @@ import { SolanaContracts } from './contracts';
 import { SolanaChain } from './chain';
 import { SolanaTokenBridge } from './protocols/tokenBridge';
 import { solGenesisHashToNetworkChainPair } from './constants';
+import { SolanaAddress } from './address';
 
 const SOLANA_SEQ_LOG = 'Program log: Sequence: ';
 
@@ -35,13 +36,12 @@ export module SolanaPlatform {
 
   let contracts: SolanaContracts = new SolanaContracts(conf);
 
-  // this is just to prevent rewriting 'Solana' for every generic param
   type P = typeof platform;
 
   export function setConfig(
     network: Network,
     _conf?: ChainsConfig,
-  ): Platform<P> {
+  ): typeof SolanaPlatform {
     conf = _conf ? _conf : networkPlatformConfigs(network, platform);
     contracts = new SolanaContracts(conf);
     return SolanaPlatform;
@@ -55,7 +55,7 @@ export module SolanaPlatform {
     return new Connection(rpcAddress, commitment);
   }
 
-  export function getChain(chain: ChainName): ChainContext<P> {
+  export function getChain(chain: ChainName): SolanaChain {
     return new SolanaChain(chain);
   }
 
@@ -123,15 +123,16 @@ export module SolanaPlatform {
 
   export async function getTokenBridge(
     rpc: Connection,
-  ): Promise<TokenBridge<P>> {
+  ): Promise<SolanaTokenBridge> {
     return SolanaTokenBridge.fromProvider(rpc, contracts);
   }
 
   export function parseAddress(
     chain: ChainName,
     address: string,
-  ): NativeAddress<P> {
-    return toNative(chain, address) as NativeAddress<P>;
+  ): SolanaAddress {
+    // TODO: y
+    return toNative(chain, address) as unknown as SolanaAddress;
   }
 
   export async function parseTransaction(
@@ -182,8 +183,8 @@ export module SolanaPlatform {
   }
 
   export async function chainFromRpc(
-    rpc: RpcConnection<'Solana'>,
-  ): Promise<[Network, PlatformToChains<'Solana'>]> {
+    rpc: RpcConnection<P>,
+  ): Promise<[Network, PlatformToChains<P>]> {
     const conn = rpc as Connection;
     const gh = await conn.getGenesisHash();
     const netChain = solGenesisHashToNetworkChainPair.get(gh);
