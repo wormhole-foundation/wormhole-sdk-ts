@@ -1,4 +1,4 @@
-import { toBech32, fromHex, fromBech32, toHex } from "@cosmjs/encoding";
+import { toBech32, fromBech32, fromHex } from "@cosmjs/encoding";
 import { Address, UniversalAddress } from "@wormhole-foundation/connect-sdk";
 
 declare global {
@@ -11,34 +11,37 @@ declare global {
 }
 
 export class CosmwasmAddress implements Address {
-  static readonly byteSize = 32;
+  static readonly contractAddressByteSize = 32;
+  static readonly accountAddressByteSize = 20;
 
   private readonly prefix: string;
   private readonly address: Uint8Array;
 
   constructor(address: string | Uint8Array | UniversalAddress) {
     if (typeof address === "string") {
-      if (!CosmwasmAddress.isValidAddress(address))
-        throw new Error(`Invalid Cosmwasm address:  ${address}`);
+      // A denom address like "IBC/..."
+      if (address.indexOf("/") !== -1) {
+        const chunks = address.split("/");
+        const data = fromHex(chunks[1]);
+        CosmwasmAddress.validLength(data);
 
-      const { data, prefix } = fromBech32(address);
-      this.address = data;
-      this.prefix = prefix;
+        this.address = data;
+        this.prefix = chunks[0];
+      } else {
+        if (!CosmwasmAddress.isValidAddress(address))
+          throw new Error(`Invalid Cosmwasm address:  ${address}`);
+
+        const { data, prefix } = fromBech32(address);
+        this.address = data;
+        this.prefix = prefix;
+      }
     } else if (address instanceof Uint8Array) {
-      if (address.length !== CosmwasmAddress.byteSize)
-        throw new Error(
-          `Invalid Cosmwasm address, expected ${CosmwasmAddress.byteSize} bytes but got ${address.length}`
-        );
-
+      CosmwasmAddress.validLength(address);
       this.prefix = "";
       this.address = address;
     } else if (address instanceof UniversalAddress) {
-      // If its a universal address and we want it to be an ethereum address,
-      // we need to chop off the first 12 bytes of padding
       const addressBytes = address.toUint8Array();
-      // double check to make sure there are no non zero bytes
-      if (addressBytes.length != CosmwasmAddress.byteSize)
-        throw new Error(`Invalid Cosmwasm address ${address}`);
+      CosmwasmAddress.validLength(addressBytes);
 
       this.address = addressBytes;
       this.prefix = "";
@@ -70,11 +73,22 @@ export class CosmwasmAddress implements Address {
   static isValidAddress(address: string): boolean {
     try {
       const maybe = fromBech32(address);
-      return (
-        maybe.data.length === CosmwasmAddress.byteSize && maybe.prefix !== ""
-      );
+      return CosmwasmAddress.validLength(maybe.data);
     } catch (e) {}
     return false;
+  }
+
+  private static validLength(address: Uint8Array): boolean {
+    if (
+      address.length !== CosmwasmAddress.contractAddressByteSize &&
+      address.length !== CosmwasmAddress.accountAddressByteSize
+    )
+      throw new Error(
+        `Invalid Cosmwasm address, expected ${CosmwasmAddress.contractAddressByteSize} ` +
+          `or ${CosmwasmAddress.accountAddressByteSize} bytes but got ${address.length}`
+      );
+
+    return true;
   }
 
   equals(other: UniversalAddress): boolean {

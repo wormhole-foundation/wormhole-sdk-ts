@@ -7,15 +7,15 @@ import {
   chains,
   chainConfigs,
   testing,
-  supportsTokenBridge,
-  supportsAutomaticTokenBridge,
   DEFAULT_NETWORK,
 } from '@wormhole-foundation/connect-sdk';
 import { EvmPlatform } from '../../src/platform';
 
 import { getDefaultProvider } from 'ethers';
 
-const EVM_CHAINS = chains.filter((c) => chainToPlatform(c) === 'Evm');
+const EVM_CHAINS = chains.filter(
+  (c) => chainToPlatform(c) === EvmPlatform.platform,
+);
 
 const network = DEFAULT_NETWORK;
 const configs = chainConfigs(network);
@@ -45,9 +45,6 @@ describe('EVM Platform Tests', () => {
       });
 
       const rpc = getDefaultProvider('');
-
-      if (!supportsTokenBridge(p)) throw new Error('Fail');
-
       const tb = await p.getTokenBridge(rpc);
       expect(tb).toBeTruthy();
     });
@@ -57,7 +54,6 @@ describe('EVM Platform Tests', () => {
     test('No RPC', async () => {
       const p = EvmPlatform.setConfig(network, {});
       const rpc = getDefaultProvider('');
-      if (!supportsAutomaticTokenBridge(p)) throw new Error('Fail');
       expect(() => p.getAutomaticTokenBridge(rpc)).rejects.toThrow();
     });
     test('With RPC', async () => {
@@ -66,7 +62,6 @@ describe('EVM Platform Tests', () => {
       });
 
       const rpc = getDefaultProvider('');
-      if (!supportsAutomaticTokenBridge(p)) throw new Error('Fail');
       const tb = await p.getAutomaticTokenBridge(rpc);
       expect(tb).toBeTruthy();
     });

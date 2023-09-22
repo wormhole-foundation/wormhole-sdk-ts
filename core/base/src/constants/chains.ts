@@ -41,7 +41,11 @@ const chainsAndChainIdEntries = [
   ["Btc", 29],
   ["Base", 30],
   ["Sei", 32],
+  ["Rootstock", 33],
   ["Wormchain", 3104],
+  ["Cosmoshub", 4000],
+  ["Evmos", 4001],
+  ["Kujira", 4002],
   // holy cow, how ugly of a hack is that?! - a chainId that's exclusive to a testnet!
   ["Sepolia", 10002],
 ] as const;

@@ -19,6 +19,16 @@ const rpcConfig = [
       ["Arbitrum", "https://arb1.arbitrum.io/rpc"],
       ["Optimism", "https://mainnet.optimism.io"],
       ["Sei", ""], // TODO
+
+      ["Terra", ""],
+      ["Terra2", ""],
+      ["Injective", ""],
+      ["Xpla", ""],
+      ["Wormchain", ""],
+
+      ["Osmosis", "https://osmosis-rpc.polkachu.com"],
+      ["Cosmoshub", "https://cosmos-rpc.polkachu.com"],
+      ["Evmos", "https://evmos-rpc.polkachu.com"],
     ],
   ],
   [
@@ -37,6 +47,14 @@ const rpcConfig = [
       ["Sei", "https://rpc.atlantic-2.seinetwork.io"],
       ["Arbitrum", "https://arbitrum-goerli.publicnode.com"],
       ["Optimism", "https://optimism-goerli.publicnode.com"],
+      ["Terra", ""],
+      ["Terra2", ""],
+      ["Injective", ""],
+      ["Xpla", ""],
+      ["Wormchain", ""],
+      ["Osmosis", "https://rpc.osmotest5.osmosis.zone"],
+      ["Cosmoshub", "https://rpc.sentry-02.theta-testnet.polypore.xyz"],
+      ["Evmos", "https://evmos-testnet-rpc.polkachu.com"],
     ],
   ],
 ] as const satisfies RoArray<

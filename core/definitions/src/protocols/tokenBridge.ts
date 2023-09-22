@@ -29,10 +29,8 @@ export function supportsAutomaticTokenBridge<P extends PlatformName>(
   thing: SupportsAutomaticTokenBridge<P> | any
 ): thing is SupportsAutomaticTokenBridge<P> {
   return (
-    (<SupportsAutomaticTokenBridge<P>>thing).getAutomaticTokenBridge !==
-      undefined &&
     typeof (<SupportsAutomaticTokenBridge<P>>thing).getAutomaticTokenBridge ===
-      "function"
+    "function"
   );
 }
 

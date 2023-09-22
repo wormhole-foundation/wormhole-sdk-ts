@@ -28,6 +28,7 @@ const networkChainEvmCIdEntries = [
       ['Optimism', 10n],
       ['Gnosis', 100n],
       ['Base', 8453n],
+      ['Rootstock', 30n],
     ],
   ],
   [
@@ -51,6 +52,7 @@ const networkChainEvmCIdEntries = [
       ['Optimism', 420n],
       ['Gnosis', 77n],
       ['Base', 84531n],
+      ['Rootstock', 31n],
     ],
   ],
 ] as const satisfies RoArray<
