@@ -6,12 +6,12 @@ import {
   chainConfigs,
   testing,
   SupportsTokenBridge,
+  DEFAULT_NETWORK,
 } from "@wormhole-foundation/connect-sdk";
 import { CosmwasmPlatform } from "../../src/platform";
-import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 
+const network = DEFAULT_NETWORK;
 const COSMWASM_CHAINS = chains.filter((c) => c === "Cosmoshub");
-
 const configs = chainConfigs("Testnet");
 
 describe("Cosmwasm Platform Tests", () => {
@@ -35,7 +35,7 @@ describe("Cosmwasm Platform Tests", () => {
       expect(() => p.getTokenBridge(rpc)).rejects.toThrow();
     });
     test("With RPC", async () => {
-      const p = CosmwasmPlatform.setConfig({
+      const p = CosmwasmPlatform.setConfig(network, {
         [COSMWASM_CHAINS[0]]: configs[COSMWASM_CHAINS[0]],
       });
       const rpc = await p.getRpc("Cosmoshub");
@@ -48,12 +48,12 @@ describe("Cosmwasm Platform Tests", () => {
 
   describe("Get Automatic Token Bridge", () => {
     test("No RPC", async () => {
-      const p = CosmwasmPlatform.setConfig({});
+      const p = CosmwasmPlatform.setConfig(network, {});
       //const rpc = getDefaultProvider("");
       //expect(() => p.getAutomaticTokenBridge(rpc)).rejects.toThrow();
     });
     test("With RPC", async () => {
-      const p = CosmwasmPlatform.setConfig({
+      const p = CosmwasmPlatform.setConfig(network, {
         [COSMWASM_CHAINS[0]]: configs[COSMWASM_CHAINS[0]],
       });
 
@@ -66,14 +66,14 @@ describe("Cosmwasm Platform Tests", () => {
   describe("Get Chain", () => {
     test("No conf", () => {
       // no issues just grabbing the chain
-      const p = CosmwasmPlatform.setConfig({});
+      const p = CosmwasmPlatform.setConfig(network, {});
       expect(p.conf).toEqual({});
       const c = p.getChain(COSMWASM_CHAINS[0]);
       expect(c).toBeTruthy();
     });
 
     test("With conf", () => {
-      const p = CosmwasmPlatform.setConfig({
+      const p = CosmwasmPlatform.setConfig(network, {
         [COSMWASM_CHAINS[0]]: configs[COSMWASM_CHAINS[0]],
       });
       expect(() => p.getChain(COSMWASM_CHAINS[0])).not.toThrow();
@@ -82,7 +82,7 @@ describe("Cosmwasm Platform Tests", () => {
 
   describe("Get RPC Connection", () => {
     test("No conf", async () => {
-      const p = CosmwasmPlatform.setConfig({});
+      const p = CosmwasmPlatform.setConfig(network, {});
       expect(p.conf).toEqual({});
 
       // expect getRpc to throw an error since we havent provided
@@ -94,7 +94,7 @@ describe("Cosmwasm Platform Tests", () => {
     });
 
     test("With conf", async () => {
-      const p = CosmwasmPlatform.setConfig({
+      const p = CosmwasmPlatform.setConfig(network, {
         [COSMWASM_CHAINS[0]]: configs[COSMWASM_CHAINS[0]],
       });
       expect(() => p.getRpc(COSMWASM_CHAINS[0])).not.toThrow();

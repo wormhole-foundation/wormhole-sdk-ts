@@ -11,6 +11,8 @@ import {
   NativeAddress,
   networkPlatformConfigs,
   PlatformToChains,
+  Network,
+  DEFAULT_NETWORK,
 } from "@wormhole-foundation/connect-sdk";
 import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import { CosmwasmContracts } from "./contracts";
@@ -24,13 +26,18 @@ import { chainToNativeDenoms } from "./constants";
 export module CosmwasmPlatform {
   // Provides runtime concrete value
   export const platform = "Cosmwasm";
-  type P = typeof platform;
+  export let network: Network = DEFAULT_NETWORK;
+  export let conf: ChainsConfig = networkPlatformConfigs(network, platform);
 
-  export let conf: ChainsConfig = networkPlatformConfigs("Testnet", platform);
   let contracts: CosmwasmContracts = new CosmwasmContracts(conf);
 
-  export function setConfig(_conf: ChainsConfig): Platform<P> {
-    conf = _conf;
+  type P = typeof platform;
+
+  export function setConfig(
+    network: Network,
+    _conf?: ChainsConfig
+  ): Platform<P> {
+    conf = _conf ? _conf : networkPlatformConfigs(network, platform);
     contracts = new CosmwasmContracts(conf);
     return CosmwasmPlatform;
   }
