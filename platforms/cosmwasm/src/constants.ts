@@ -22,6 +22,7 @@ const networkChainCosmwasmChainIds = [
       ["Injective", "injective-1"],
       ["Osmosis", "	osmosis-1"],
       ["Cosmoshub", "cosmoshub-4"],
+      ["Sei", "atlantic-2"],
     ],
   ],
   [

@@ -133,7 +133,10 @@ export module CosmwasmPlatform {
     chain: ChainName,
     address: string
   ): CosmwasmAddress {
-    return toNative(chain, address) as CosmwasmAddress;
+    const parsed = toNative(chain, address) as CosmwasmAddress;
+    // TODO: check prefix matches chain passed because
+    // cosmos has special prefixes for each chain
+    return parsed;
   }
 
   export async function parseTransaction(

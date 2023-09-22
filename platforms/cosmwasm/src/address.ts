@@ -1,4 +1,4 @@
-import { toBech32, fromBech32 } from "@cosmjs/encoding";
+import { toBech32, fromBech32, fromHex } from "@cosmjs/encoding";
 import { Address, UniversalAddress } from "@wormhole-foundation/connect-sdk";
 
 declare global {
@@ -19,12 +19,22 @@ export class CosmwasmAddress implements Address {
 
   constructor(address: string | Uint8Array | UniversalAddress) {
     if (typeof address === "string") {
-      if (!CosmwasmAddress.isValidAddress(address))
-        throw new Error(`Invalid Cosmwasm address:  ${address}`);
+      // A denom address like "IBC/..."
+      if (address.indexOf("/") !== -1) {
+        const chunks = address.split("/");
+        const data = fromHex(chunks[1]);
+        CosmwasmAddress.validLength(data);
 
-      const { data, prefix } = fromBech32(address);
-      this.address = data;
-      this.prefix = prefix;
+        this.address = data;
+        this.prefix = chunks[0];
+      } else {
+        if (!CosmwasmAddress.isValidAddress(address))
+          throw new Error(`Invalid Cosmwasm address:  ${address}`);
+
+        const { data, prefix } = fromBech32(address);
+        this.address = data;
+        this.prefix = prefix;
+      }
     } else if (address instanceof Uint8Array) {
       CosmwasmAddress.validLength(address);
       this.prefix = "";
