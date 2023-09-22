@@ -1,12 +1,9 @@
 import { expect, test } from "@jest/globals";
 import {
-  ChainName,
-  chainToPlatform,
   chains,
   chainConfigs,
-  testing,
-  SupportsTokenBridge,
   DEFAULT_NETWORK,
+  supportsTokenBridge,
 } from "@wormhole-foundation/connect-sdk";
 import { CosmwasmPlatform } from "../../src/platform";
 
@@ -38,11 +35,13 @@ describe("Cosmwasm Platform Tests", () => {
       const p = CosmwasmPlatform.setConfig(network, {
         [COSMWASM_CHAINS[0]]: configs[COSMWASM_CHAINS[0]],
       });
-      const rpc = await p.getRpc("Cosmoshub");
+      const rpc = await p.getRpc(COSMWASM_CHAINS[0]);
 
-      //const tbp = p as SupportsTokenBridge;
-      //const tb = await p.getTokenBridge(rpc);
-      //expect(tb).toBeTruthy();
+      if (!supportsTokenBridge(p))
+        throw new Error("Token bridge not supported");
+
+      const tb = await p.getTokenBridge(rpc);
+      expect(tb).toBeTruthy();
     });
   });
 

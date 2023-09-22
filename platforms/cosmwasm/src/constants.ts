@@ -21,6 +21,7 @@ const networkChainCosmwasmChainIds = [
       ["Xpla", "dimension_37-1"],
       ["Injective", "injective-1"],
       ["Osmosis", "	osmosis-1"],
+      ["Cosmoshub", "theta-1"], // TODO: validate
     ],
   ],
   [
@@ -30,6 +31,7 @@ const networkChainCosmwasmChainIds = [
       ["Sei", "atlantic-1"],
       ["Injective", "injective-888"],
       ["Osmosis", "osmo-test-5"], // Or -4?
+      ["Cosmoshub", "theta-testnet-001"],
     ],
   ],
 ] as const satisfies RoArray<

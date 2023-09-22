@@ -17,6 +17,7 @@ import {
 import { CosmwasmContracts } from "../contracts";
 import { CosmwasmChainName, UniversalOrCosmwasm } from "../types";
 import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
+import { CosmwasmPlatform } from "../platform";
 
 //Currently the code does not consider Wormhole msg fee (because it is and always has been 0).
 
@@ -37,12 +38,7 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
     provider: CosmWasmClient,
     contracts: CosmwasmContracts
   ): Promise<CosmwasmTokenBridge> {
-    const chainId = await provider.getChainId();
-    const networkChainPair = cosmwasmChainIdToNetworkChainPair.get(chainId);
-    if (networkChainPair === undefined)
-      throw new Error(`Unknown EVM chainId ${chainId}`);
-
-    const [network, chain] = networkChainPair;
+    const [network, chain] = await CosmwasmPlatform.chainFromRpc(provider);
     return new CosmwasmTokenBridge(network, chain, provider, contracts);
   }
 

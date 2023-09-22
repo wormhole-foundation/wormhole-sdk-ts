@@ -13,12 +13,16 @@ import {
   PlatformToChains,
   Network,
   DEFAULT_NETWORK,
+  RpcConnection,
 } from "@wormhole-foundation/connect-sdk";
 import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import { CosmwasmContracts } from "./contracts";
 import { CosmwasmChain } from "./chain";
 import { CosmwasmTokenBridge } from "./protocols/tokenBridge";
-import { chainToNativeDenoms } from "./constants";
+import {
+  chainToNativeDenoms,
+  cosmwasmChainIdToNetworkChainPair,
+} from "./constants";
 
 /**
  * @category Cosmwasm
@@ -78,22 +82,26 @@ export module CosmwasmPlatform {
     walletAddress: string,
     tokenId: TokenId | "native"
   ): Promise<bigint | null> {
-    //throw new Error("Not implemented");
+    if (tokenId === "native") {
+      const { amount } = await rpc.getBalance(
+        walletAddress,
+        getNativeDenom(chain)
+      );
+      return BigInt(amount);
+    }
 
-    //TODO:
-    //  const assetAddress = await this.getForeignAsset(tokenId, chain);
-    //  if (!assetAddress) return null;
-    //  return this.getNativeBalance(walletAddress, chain, assetAddress);
+    const tb = await getTokenBridge(rpc);
+    const address = await tb.getWrappedAsset(tokenId);
+    if (!address) return null;
 
-    const asset =
-      tokenId === "native" ? getNativeDenom(chain) : tokenId.address.toString();
-    const { amount } = await rpc.getBalance(walletAddress, asset);
+    const { amount } = await rpc.getBalance(walletAddress, address.toString());
     return BigInt(amount);
   }
 
   function getNativeDenom(chain: ChainName): string {
-    // TODO: fixme
-    const network = "Testnet";
+    // TODO: required because of const map
+    if (network === "Devnet") throw new Error("No devnet native denoms");
+
     return chainToNativeDenoms(network, chain as PlatformToChains<"Cosmwasm">);
   }
 
@@ -159,5 +167,17 @@ export module CosmwasmPlatform {
     //    } as WormholeMessageId;
     //  })
     //  .filter(isWormholeMessageId);
+  }
+
+  export async function chainFromRpc(
+    rpc: RpcConnection<"Cosmwasm">
+  ): Promise<[Network, PlatformToChains<"Cosmwasm">]> {
+    const chainId = await rpc.getChainId();
+    const networkChainPair = cosmwasmChainIdToNetworkChainPair.get(chainId);
+    if (networkChainPair === undefined)
+      throw new Error(`Unknown Cosmwasm chainId ${chainId}`);
+
+    const [network, chain] = networkChainPair;
+    return [network, chain];
   }
 }
