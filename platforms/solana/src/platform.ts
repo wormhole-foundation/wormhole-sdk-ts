@@ -14,11 +14,14 @@ import {
   networkPlatformConfigs,
   DEFAULT_NETWORK,
   Network,
+  RpcConnection,
+  PlatformToChains,
 } from '@wormhole-foundation/connect-sdk';
 
 import { SolanaContracts } from './contracts';
 import { SolanaChain } from './chain';
 import { SolanaTokenBridge } from './protocols/tokenBridge';
+import { solGenesisHashToNetworkChainPair } from './constants';
 
 const SOLANA_SEQ_LOG = 'Program log: Sequence: ';
 
@@ -174,5 +177,20 @@ export module SolanaPlatform {
         sequence: BigInt(sequence),
       },
     ];
+  }
+
+  export async function chainFromRpc(
+    rpc: RpcConnection<'Solana'>,
+  ): Promise<[Network, PlatformToChains<'Solana'>]> {
+    const conn = rpc as Connection;
+    const gh = await conn.getGenesisHash();
+    const netChain = solGenesisHashToNetworkChainPair.get(gh);
+    if (!netChain)
+      throw new Error(
+        `No matching genesis hash to determine network and chain: ${gh}`,
+      );
+
+    const [network, chain] = netChain;
+    return [network, chain];
   }
 }

@@ -34,7 +34,6 @@ import {
 } from '@solana/spl-token';
 import { Program } from '@project-serum/anchor';
 
-import { solGenesisHashToNetworkChainPair } from '../constants';
 import { Wormhole as WormholeCore } from '../utils/types/wormhole';
 import {
   createBridgeFeeTransferInstruction,
@@ -59,6 +58,7 @@ import {
 import { SolanaContracts } from '../contracts';
 import { SolanaUnsignedTransaction } from '../unsignedTransaction';
 import { SolanaChainName, UniversalOrSolana } from '../types';
+import { SolanaPlatform } from '../platform';
 
 export class SolanaTokenBridge implements TokenBridge<'Solana'> {
   readonly chainId: ChainId;
@@ -81,16 +81,8 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     connection: RpcConnection<'Solana'>,
     contracts: SolanaContracts,
   ): Promise<SolanaTokenBridge> {
-    const conn = connection as Connection;
-    const gh = await conn.getGenesisHash();
-    const netChain = solGenesisHashToNetworkChainPair.get(gh);
-    if (!netChain)
-      throw new Error(
-        `No matching genesis hash to determine network and chain: ${gh}`,
-      );
-
-    const [network, chain] = netChain;
-    return new SolanaTokenBridge(network, chain, conn, contracts);
+    const [network, chain] = await SolanaPlatform.chainFromRpc(connection);
+    return new SolanaTokenBridge(network, chain, connection, contracts);
   }
 
   async isWrappedAsset(token: UniversalOrSolana): Promise<boolean> {

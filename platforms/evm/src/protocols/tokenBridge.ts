@@ -40,6 +40,7 @@ import {
   unusedNonce,
 } from '../types';
 import { EvmZeroAddress } from '../address';
+import { EvmPlatform } from '../platform';
 
 //Currently the code does not consider Wormhole msg fee (because it is and always has been 0).
 
@@ -64,12 +65,7 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     provider: Provider,
     contracts: EvmContracts,
   ): Promise<EvmTokenBridge> {
-    const { chainId } = await provider.getNetwork();
-    const networkChainPair = evmChainIdToNetworkChainPair.get(chainId);
-    if (networkChainPair === undefined)
-      throw new Error(`Unknown EVM chainId ${chainId}`);
-
-    const [network, chain] = networkChainPair;
+    const [network, chain] = await EvmPlatform.chainFromRpc(provider);
     return new EvmTokenBridge(network, chain, provider, contracts);
   }
 

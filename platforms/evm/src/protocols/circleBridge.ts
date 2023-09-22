@@ -8,6 +8,7 @@ import {
   keccak256,
   TokenId,
   toNative,
+  Network,
 } from '@wormhole-foundation/connect-sdk';
 
 import {
@@ -25,6 +26,7 @@ import { EvmUnsignedTransaction } from '../unsignedTransaction';
 import { MessageTransmitter, TokenMessenger } from '../ethers-contracts';
 import { LogDescription, Provider, TransactionRequest } from 'ethers';
 import { EvmContracts } from '../contracts';
+import { EvmPlatform } from '../platform';
 
 //https://github.com/circlefin/evm-cctp-contracts
 
@@ -37,11 +39,14 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
   readonly messageEventHash: string;
 
   private constructor(
-    readonly network: 'Mainnet' | 'Testnet',
+    readonly network: Network,
     readonly chain: EvmChainName,
     readonly provider: Provider,
     readonly contracts: EvmContracts,
   ) {
+    if (network === 'Devnet')
+      throw new Error('CircleBridge not supported on Devnet');
+
     this.chainId = evmNetworkChainToEvmChainId(network, chain);
 
     this.msgTransmitter = this.contracts.mustGetCircleMessageTransmitter(
@@ -64,12 +69,7 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
     provider: Provider,
     contracts: EvmContracts,
   ): Promise<EvmCircleBridge> {
-    const { chainId } = await provider.getNetwork();
-    const networkChainPair = evmChainIdToNetworkChainPair.get(chainId);
-    if (networkChainPair === undefined)
-      throw new Error(`Unknown EVM chainId ${chainId}`);
-
-    const [network, chain] = networkChainPair;
+    const [network, chain] = await EvmPlatform.chainFromRpc(provider);
     return new EvmCircleBridge(network, chain, provider, contracts);
   }
 
