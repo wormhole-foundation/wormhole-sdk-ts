@@ -12,9 +12,7 @@ import {
 
 import { Provider, TransactionRequest } from 'ethers';
 
-import {
-  evmNetworkChainToEvmChainId,
-} from '../constants';
+import { evmNetworkChainToEvmChainId } from '../constants';
 import {
   EvmChainName,
   UniversalOrEvm,

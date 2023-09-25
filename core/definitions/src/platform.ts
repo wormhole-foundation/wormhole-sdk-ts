@@ -8,13 +8,13 @@ import { RpcConnection } from "./rpc";
 import { ChainsConfig, TokenId, TxHash } from "./types";
 import { WormholeMessageId } from "./attestation";
 import { SignedTx } from "./types";
-import { NativeAddress } from "./address";
 
 // Force passing RPC connection so we don't create a new one with every fn call
 export interface Platform<P extends PlatformName> {
   readonly platform: P;
   readonly conf: ChainsConfig;
   readonly network: Network;
+  readonly nativeDecimals: BigInt;
 
   // update the config for this platform
   setConfig(network: Network, _conf?: ChainsConfig): Platform<P>;

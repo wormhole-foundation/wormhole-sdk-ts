@@ -1,28 +1,18 @@
-import { Commitment, Connection, PublicKey } from '@solana/web3.js';
+import { Commitment, Connection } from '@solana/web3.js';
 import {
   ChainName,
-  Platform,
-  TokenId,
-  TokenBridge,
-  SignedTx,
-  TxHash,
   WormholeMessageId,
   ChainsConfig,
-  ChainContext,
   toNative,
-  NativeAddress,
   networkPlatformConfigs,
   DEFAULT_NETWORK,
   Network,
-  RpcConnection,
-  PlatformToChains,
 } from '@wormhole-foundation/connect-sdk';
 
 import { SolanaContracts } from './contracts';
 import { SolanaChain } from './chain';
 import { SolanaTokenBridge } from './protocols/tokenBridge';
-import { solGenesisHashToNetworkChainPair } from './constants';
-import { SolanaAddress } from './address';
+import { SolanaUtils } from './platformUtils';
 
 const SOLANA_SEQ_LOG = 'Program log: Sequence: ';
 
@@ -37,6 +27,14 @@ export module SolanaPlatform {
   let contracts: SolanaContracts = new SolanaContracts(conf);
 
   type P = typeof platform;
+  export const {
+    nativeDecimals,
+    getDecimals,
+    getBalance,
+    sendWait,
+    getCurrentBlock,
+    chainFromRpc,
+  } = SolanaUtils;
 
   export function setConfig(
     network: Network,
@@ -59,80 +57,10 @@ export module SolanaPlatform {
     return new SolanaChain(chain);
   }
 
-  export async function getDecimals(
-    chain: ChainName,
-    rpc: Connection,
-    token: TokenId | 'native',
-  ): Promise<bigint> {
-    if (token === 'native') return BigInt(conf[chain]?.nativeTokenDecimals!);
-
-    let mint = await rpc.getParsedAccountInfo(
-      new PublicKey(token.address.unwrap()),
-    );
-    if (!mint) throw new Error('could not fetch token details');
-    const { decimals } = (mint as any).value.data.parsed.info;
-    return decimals;
-  }
-
-  export async function getBalance(
-    chain: ChainName,
-    rpc: Connection,
-    walletAddress: string,
-    token: TokenId | 'native',
-  ): Promise<bigint | null> {
-    if (token === 'native')
-      return BigInt(await rpc.getBalance(new PublicKey(walletAddress)));
-
-    if (token.chain !== chain) {
-      const tb = await getTokenBridge(rpc);
-      token = { chain: chain, address: await tb.getWrappedAsset(token) };
-    }
-
-    const splToken = await rpc.getTokenAccountsByOwner(
-      new PublicKey(walletAddress),
-      { mint: new PublicKey(token.address.toUint8Array()) },
-    );
-    if (!splToken.value[0]) return null;
-
-    const balance = await rpc.getTokenAccountBalance(splToken.value[0].pubkey);
-    return BigInt(balance.value.amount);
-  }
-
-  export async function sendWait(
-    chain: ChainName,
-    rpc: Connection,
-    stxns: SignedTx[],
-  ): Promise<TxHash[]> {
-    const txhashes: TxHash[] = [];
-
-    // TODO: concurrent?
-    let lastTxHash: TxHash;
-    for (const stxn of stxns) {
-      const txHash = await rpc.sendRawTransaction(stxn);
-      // TODO: throw error?
-      if (!txHash) continue;
-      lastTxHash = txHash;
-      txhashes.push(txHash);
-    }
-
-    // TODO: allow passing commitment level in? this method is also deprecated...
-    await rpc.confirmTransaction(lastTxHash!, 'finalized');
-
-    return txhashes;
-  }
-
   export async function getTokenBridge(
     rpc: Connection,
   ): Promise<SolanaTokenBridge> {
     return SolanaTokenBridge.fromProvider(rpc, contracts);
-  }
-
-  export function parseAddress(
-    chain: ChainName,
-    address: string,
-  ): SolanaAddress {
-    // TODO: y
-    return toNative(chain, address) as unknown as SolanaAddress;
   }
 
   export async function parseTransaction(
@@ -163,7 +91,7 @@ export module SolanaPlatform {
     // TODO: unsure about the single bridge instruction and the [2] index, will this always be the case?
     const [logmsg] = bridgeInstructions;
     const emitterAcct = accounts[logmsg.accounts[2]];
-    const emitter = parseAddress(chain, emitterAcct.toString());
+    const emitter = toNative(chain, emitterAcct.toString());
 
     const sequence = response.meta?.logMessages
       ?.filter((msg) => msg.startsWith(SOLANA_SEQ_LOG))?.[0]
@@ -180,20 +108,5 @@ export module SolanaPlatform {
         sequence: BigInt(sequence),
       },
     ];
-  }
-
-  export async function chainFromRpc(
-    rpc: RpcConnection<P>,
-  ): Promise<[Network, PlatformToChains<P>]> {
-    const conn = rpc as Connection;
-    const gh = await conn.getGenesisHash();
-    const netChain = solGenesisHashToNetworkChainPair.get(gh);
-    if (!netChain)
-      throw new Error(
-        `No matching genesis hash to determine network and chain: ${gh}`,
-      );
-
-    const [network, chain] = netChain;
-    return [network, chain];
   }
 }

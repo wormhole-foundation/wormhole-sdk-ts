@@ -1,29 +1,17 @@
 import {
   ChainName,
-  TokenId,
   TxHash,
-  Platform,
   WormholeMessageId,
-  SignedTx,
-  TokenBridge,
   ChainsConfig,
-  toNative,
-  NativeAddress,
   networkPlatformConfigs,
-  PlatformToChains,
   Network,
   DEFAULT_NETWORK,
-  RpcConnection,
 } from "@wormhole-foundation/connect-sdk";
 import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import { CosmwasmContracts } from "./contracts";
 import { CosmwasmChain } from "./chain";
 import { CosmwasmTokenBridge } from "./protocols/tokenBridge";
-import {
-  chainToNativeDenoms,
-  cosmwasmChainIdToNetworkChainPair,
-} from "./constants";
-import { CosmwasmAddress } from "./address";
+import { CosmwasmUtils } from "./platformUtils";
 
 /**
  * @category Cosmwasm
@@ -36,6 +24,16 @@ export module CosmwasmPlatform {
   let contracts: CosmwasmContracts = new CosmwasmContracts(conf);
 
   type P = typeof platform;
+
+  // TODO: re-export all
+  export const {
+    nativeDecimals,
+    getDecimals,
+    getBalance,
+    sendWait,
+    getCurrentBlock,
+    chainFromRpc,
+  } = CosmwasmUtils;
 
   export function setConfig(
     network: Network,
@@ -61,83 +59,12 @@ export module CosmwasmPlatform {
     return await CosmwasmTokenBridge.fromProvider(rpc, contracts);
   }
 
-  export async function getDecimals(
-    chain: ChainName,
-    rpc: CosmWasmClient,
-    token: TokenId | "native"
-  ): Promise<bigint> {
-    if (token === "native") return 6n;
-    const { decimals } = await rpc.queryContractSmart(
-      token.address.toString(),
-      {
-        token_info: {},
-      }
-    );
-    return decimals;
-  }
+  // function getNativeDenom(chain: ChainName): string {
+  //   // TODO: required because of const map
+  //   if (network === "Devnet") throw new Error("No devnet native denoms");
 
-  export async function getBalance(
-    chain: ChainName,
-    rpc: CosmWasmClient,
-    walletAddress: string,
-    tokenId: TokenId | "native"
-  ): Promise<bigint | null> {
-    if (tokenId === "native") {
-      const { amount } = await rpc.getBalance(
-        walletAddress,
-        getNativeDenom(chain)
-      );
-      return BigInt(amount);
-    }
-
-    const tb = await getTokenBridge(rpc);
-    const address = await tb.getWrappedAsset(tokenId);
-    if (!address) return null;
-
-    const { amount } = await rpc.getBalance(walletAddress, address.toString());
-    return BigInt(amount);
-  }
-
-  function getNativeDenom(chain: ChainName): string {
-    // TODO: required because of const map
-    if (network === "Devnet") throw new Error("No devnet native denoms");
-
-    return chainToNativeDenoms(network, chain as PlatformToChains<P>);
-  }
-
-  export async function sendWait(
-    chain: ChainName,
-    rpc: CosmWasmClient,
-    stxns: SignedTx[]
-  ): Promise<TxHash[]> {
-    throw new Error("Not implemented");
-    //const txhashes: TxHash[] = [];
-
-    //for (const stxn of stxns) {
-    //  const txRes = await rpc.broadcastTransaction(stxn);
-    //  txhashes.push(txRes.hash);
-
-    //  if (chain === "Celo") {
-    //    console.error("TODO: override celo block fetching");
-    //    continue;
-    //  }
-
-    //  // Wait for confirmation
-    //  const txReceipt = await txRes.wait();
-    //  if (txReceipt === null) continue; // TODO: throw error?
-    //}
-    //return txhashes;
-  }
-
-  export function parseAddress(
-    chain: ChainName,
-    address: string
-  ): CosmwasmAddress {
-    const parsed = toNative(chain, address) as CosmwasmAddress;
-    // TODO: check prefix matches chain passed because
-    // cosmos has special prefixes for each chain
-    return parsed;
-  }
+  //   return chainToNativeDenoms(network, chain as PlatformToChains<P>);
+  // }
 
   export async function parseTransaction(
     chain: ChainName,
@@ -170,17 +97,5 @@ export module CosmwasmPlatform {
     //    } as WormholeMessageId;
     //  })
     //  .filter(isWormholeMessageId);
-  }
-
-  export async function chainFromRpc(
-    rpc: CosmWasmClient
-  ): Promise<[Network, PlatformToChains<P>]> {
-    const chainId = await rpc.getChainId();
-    const networkChainPair = cosmwasmChainIdToNetworkChainPair.get(chainId);
-    if (networkChainPair === undefined)
-      throw new Error(`Unknown Cosmwasm chainId ${chainId}`);
-
-    const [network, chain] = networkChainPair;
-    return [network, chain];
   }
 }

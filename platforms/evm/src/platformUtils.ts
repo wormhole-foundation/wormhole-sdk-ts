@@ -13,23 +13,23 @@ import { evmChainIdToNetworkChainPair } from './constants';
 import { EvmAddress, EvmZeroAddress } from './address';
 import { EvmContracts } from './contracts';
 
-const EVM_NATIVE_DECIMALS = 18;
-
 /**
  * @category EVM
  */
 // Provides runtime concrete value
 export module EvmUtils {
+  export const nativeDecimals = 18n;
+
   export async function getDecimals(
     chain: ChainName,
     rpc: Provider,
-    tokenAddress: EvmAddress,
+    tokenId: TokenId | 'native',
   ): Promise<bigint> {
-    if (tokenAddress.toString() === EvmZeroAddress) return BigInt(EVM_NATIVE_DECIMALS);
+    if (tokenId === 'native') return nativeDecimals;
 
     const tokenContract = EvmContracts.getTokenImplementation(
       rpc,
-      tokenAddress.toString(),
+      tokenId.address.toString(),
     );
     const decimals = await tokenContract.decimals();
     return decimals;
@@ -39,11 +39,14 @@ export module EvmUtils {
     chain: ChainName,
     rpc: Provider,
     walletAddr: string,
-    tokenAddress: EvmAddress,
+    tokenId: TokenId | 'native',
   ): Promise<bigint | null> {
-    if (tokenAddress.toString() === EvmZeroAddress) return await rpc.getBalance(walletAddr);
+    if (tokenId === 'native') return await rpc.getBalance(walletAddr);
 
-    const token = EvmContracts.getTokenImplementation(rpc, tokenAddress.toString());
+    const token = EvmContracts.getTokenImplementation(
+      rpc,
+      tokenId.address.toString(),
+    );
     const balance = await token.balanceOf(walletAddr);
     return balance;
   }

@@ -40,12 +40,10 @@ export class EvmContracts {
    *
    * @returns An interface for the core contract, errors if not found
    */
-  getCore(
-    chain: ChainName,
-    connection: Provider,
-  ): ethers_contracts.Wormhole {
+  getCore(chain: ChainName, connection: Provider): ethers_contracts.Wormhole {
     const address = this.getContracts(chain).coreBridge;
-    if (!address) throw new Error(`Core contract for domain ${chain} not found`);;
+    if (!address)
+      throw new Error(`Core contract for domain ${chain} not found`);
     return ethers_contracts.Wormhole__factory.connect(address, connection);
   }
 
@@ -59,7 +57,8 @@ export class EvmContracts {
     connection: Provider,
   ): ethers_contracts.TokenBridgeContract {
     const address = this.getContracts(chain).tokenBridge;
-    if (!address) throw new Error(`Bridge contract for domain ${chain} not found`);;
+    if (!address)
+      throw new Error(`Bridge contract for domain ${chain} not found`);
     return ethers_contracts.Bridge__factory.connect(address, connection);
   }
 

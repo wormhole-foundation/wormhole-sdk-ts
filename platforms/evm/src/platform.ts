@@ -33,7 +33,15 @@ export module EvmPlatform {
   let contracts: EvmContracts = new EvmContracts(conf);
 
   export type P = typeof platform;
-  export const { getDecimals, getBalance, sendWait, getCurrentBlock, chainFromRpc } = EvmUtils;
+
+  export const {
+    nativeDecimals,
+    getDecimals,
+    getBalance,
+    sendWait,
+    getCurrentBlock,
+    chainFromRpc,
+  } = EvmUtils;
 
   export function setConfig(
     network: Network,

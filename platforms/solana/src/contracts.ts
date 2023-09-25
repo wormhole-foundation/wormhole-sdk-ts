@@ -41,7 +41,8 @@ export class SolanaContracts {
    */
   getCore(chain: ChainName, connection: Connection): Program<WormholeCore> {
     const contracts = this.getContracts(chain);
-    if (!contracts.coreBridge) throw new Error(`Core contract for domain ${chain} not found`);
+    if (!contracts.coreBridge)
+      throw new Error(`Core contract for domain ${chain} not found`);
 
     return createReadOnlyWormholeProgramInterface(
       contracts.coreBridge,
@@ -76,10 +77,7 @@ export class SolanaContracts {
    *
    * @returns An interface for the NFT bridge contract, errors if not found
    */
-  getNftBridge(
-    chain: ChainName,
-    connection: Connection,
-  ): Program<NftBridge> {
+  getNftBridge(chain: ChainName, connection: Connection): Program<NftBridge> {
     const contracts = this.getContracts(chain);
     if (!contracts.nftBridge)
       throw new Error(`NFT Bridge contract for domain ${chain} not found`);

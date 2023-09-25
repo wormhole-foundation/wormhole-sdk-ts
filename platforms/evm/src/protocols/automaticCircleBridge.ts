@@ -6,9 +6,7 @@ import {
   Network,
 } from '@wormhole-foundation/connect-sdk';
 
-import {
-  evmNetworkChainToEvmChainId,
-} from '../constants';
+import { evmNetworkChainToEvmChainId } from '../constants';
 
 import {
   EvmChainName,

@@ -27,7 +27,7 @@ import { WormholeCore } from "../../protocols/core";
 export function mockPlatformFactory<P extends PlatformName>(
   network: Network,
   p: P,
-  config: ChainsConfig
+  config: ChainsConfig,
 ): Platform<P> {
   class ConcreteMockPlatform extends MockPlatform<P> {
     readonly platform = p;
@@ -40,6 +40,7 @@ export function mockPlatformFactory<P extends PlatformName>(
 export class MockPlatform<P extends PlatformName> implements Platform<P> {
   // @ts-ignore
   readonly platform: P;
+  readonly nativeDecimals = 18n;
 
   network: Network;
   conf: ChainsConfig;
