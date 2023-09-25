@@ -18,4 +18,6 @@ export interface WormholeCore<P extends PlatformName> {
     sender: UniversalOrNative<P>,
     message: string | Uint8Array
   ): AsyncGenerator<UnsignedTransaction>;
+  // TODO: parseTransactionDetails
+  // TODO: events?
 }

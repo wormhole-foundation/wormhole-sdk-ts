@@ -140,7 +140,7 @@ export module SolanaPlatform {
     rpc: Connection,
     tx: string,
   ): Promise<WormholeMessageId[]> {
-    const _contracts = contracts.mustGetContracts(chain);
+    const _contracts = contracts.getContracts(chain);
     if (!_contracts.coreBridge) throw new Error('contracts not found');
 
     const response = await rpc.getTransaction(tx);

@@ -7,7 +7,6 @@ import {
 } from '@wormhole-foundation/connect-sdk';
 
 import {
-  evmChainIdToNetworkChainPair,
   evmNetworkChainToEvmChainId,
 } from '../constants';
 
@@ -40,7 +39,7 @@ export class EvmAutomaticCircleBridge implements AutomaticCircleBridge<'Evm'> {
       throw new Error('AutomaticCircleBridge not supported on Devnet');
 
     this.chainId = evmNetworkChainToEvmChainId(network, chain);
-    this.circleRelayer = this.contracts.mustGetWormholeCircleRelayer(
+    this.circleRelayer = this.contracts.getWormholeCircleRelayer(
       chain,
       provider,
     );
@@ -70,7 +69,7 @@ export class EvmAutomaticCircleBridge implements AutomaticCircleBridge<'Evm'> {
 
     const tokenAddr = toEvmAddrString(token.address.toUniversalAddress());
 
-    const tokenContract = this.contracts.mustGetTokenImplementation(
+    const tokenContract = EvmContracts.getTokenImplementation(
       this.provider,
       tokenAddr,
     );

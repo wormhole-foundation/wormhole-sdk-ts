@@ -246,7 +246,7 @@ export class Wormhole {
     const ctx = this.getChain(chain);
 
     if (typeof token === 'string' && token !== 'native') {
-      token = { chain: chain, address: ctx.parseAddress(token) };
+      token = { chain: chain, address: toNative(chain, token) };
     }
 
     return ctx.getBalance(walletAddress, token);
@@ -431,7 +431,7 @@ export class Wormhole {
    * @returns The address in the universal format
    */
   parseAddress(chain: ChainName, address: string): NativeAddress<PlatformName> {
-    return this.getChain(chain).parseAddress(address);
+    return toNative(chain, address);
   }
 
   /**

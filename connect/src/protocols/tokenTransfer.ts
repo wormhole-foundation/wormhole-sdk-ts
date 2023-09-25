@@ -6,7 +6,6 @@ import {
   deserialize,
   Signer,
   TxHash,
-  SequenceId,
   WormholeMessageId,
   TransactionId,
   isWormholeMessageId,
@@ -124,7 +123,7 @@ export class TokenTransfer implements WormholeTransfer {
 
     let automatic = false;
     if (relayer) {
-      const relayerAddress = wh.getChain(chain).parseAddress(relayer);
+      const relayerAddress = toNative(chain, relayer);
       automatic =
         vaa.payloadLiteral === 'TransferWithPayload' &&
         //@ts-ignore
@@ -313,8 +312,7 @@ export class TokenTransfer implements WormholeTransfer {
 
     const toChain = this.wh.getChain(this.transfer.to.chain);
 
-    const toAddress = toChain
-      .parseAddress(signer.address())
+    const toAddress = toNative(this.transfer.to.chain, signer.address())
       //@ts-ignore
       .toUniversalAddress();
 

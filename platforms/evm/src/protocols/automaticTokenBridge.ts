@@ -13,7 +13,6 @@ import {
 import { Provider, TransactionRequest } from 'ethers';
 
 import {
-  evmChainIdToNetworkChainPair,
   evmNetworkChainToEvmChainId,
 } from '../constants';
 import {
@@ -44,7 +43,7 @@ export class EvmAutomaticTokenBridge implements AutomaticTokenBridge<'Evm'> {
       throw new Error('AutomaticTokenBridge not supported on Devnet');
 
     this.chainId = evmNetworkChainToEvmChainId(network, chain);
-    this.tokenBridgeRelayer = this.contracts.mustGetTokenBridgeRelayer(
+    this.tokenBridgeRelayer = this.contracts.getTokenBridgeRelayer(
       chain,
       provider,
     );
@@ -137,7 +136,7 @@ export class EvmAutomaticTokenBridge implements AutomaticTokenBridge<'Evm'> {
     const destChainId = toChainId(recipient.chain);
     const destTokenAddress = toEvmAddrString(tokenId.address.toString());
 
-    const tokenContract = this.contracts.mustGetTokenImplementation(
+    const tokenContract = EvmContracts.getTokenImplementation(
       this.provider,
       destTokenAddress,
     );

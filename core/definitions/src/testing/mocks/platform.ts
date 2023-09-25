@@ -78,6 +78,9 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
     // @ts-ignore
     return new MockRpc(chain);
   }
+  getCurrentBlock(rpc: any): Promise<number> {
+    throw new Error("Method not implemented");
+  }
 
   async getWrappedAsset(
     chain: ChainName,

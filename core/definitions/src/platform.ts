@@ -35,6 +35,7 @@ export interface Platform<P extends PlatformName> {
     token: TokenId | "native"
   ): Promise<bigint | null>;
   getRpc(chain: ChainName): RpcConnection<P>;
+  getCurrentBlock(rpc: RpcConnection<P>): Promise<number>;
 
   // Platform interaction utils
   sendWait(
@@ -47,7 +48,6 @@ export interface Platform<P extends PlatformName> {
     rpc: RpcConnection<P>,
     txid: TxHash
   ): Promise<WormholeMessageId[]>;
-  parseAddress(chain: ChainName, address: string): NativeAddress<P>;
 
   chainFromRpc(rpc: RpcConnection<P>): Promise<[Network, ChainName]>;
 }

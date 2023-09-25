@@ -1,9 +1,6 @@
 import {
   ChainContext,
-  ChainConfig,
   Platform,
-  RpcConnection,
-  ChainName,
 } from '@wormhole-foundation/connect-sdk';
 import { EvmPlatform } from './platform';
 

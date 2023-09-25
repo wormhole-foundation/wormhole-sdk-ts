@@ -28,11 +28,7 @@ export class SolanaContracts {
     });
   }
 
-  getContracts(chain: ChainName): Contracts | undefined {
-    return this._contracts.get(chain);
-  }
-
-  mustGetContracts(chain: ChainName): Contracts {
+  getContracts(chain: ChainName): Contracts {
     const contracts = this._contracts.get(chain);
     if (!contracts) throw new Error(`no Solana contracts found for ${chain}`);
     return contracts;
@@ -41,48 +37,19 @@ export class SolanaContracts {
   /**
    * Returns core wormhole contract for the chain
    *
-   * @returns An interface for the core contract, undefined if not found
+   * @returns An interface for the core contract, errors if not found
    */
-  getCore(
-    chain: ChainName,
-    connection: Connection,
-  ): Program<WormholeCore> | undefined {
-    const contracts = this.mustGetContracts(chain);
-    if (!contracts.coreBridge) return;
+  getCore(chain: ChainName, connection: Connection): Program<WormholeCore> {
+    const contracts = this.getContracts(chain);
+    if (!contracts.coreBridge) throw new Error(`Core contract for domain ${chain} not found`);
 
     return createReadOnlyWormholeProgramInterface(
       contracts.coreBridge,
       connection,
     );
-  }
-
-  /**
-   * Returns core wormhole contract for the chain
-   *
-   * @returns An interface for the core contract, errors if not found
-   */
-  mustGetCore(chain: ChainName, connection: Connection): Program<WormholeCore> {
-    const core = this.getCore(chain, connection);
-    if (!core) throw new Error(`Core contract for domain ${chain} not found`);
-    return core;
-  }
-
-  /**
-   * Returns wormhole bridge contract for the chain
-   *
-   * @returns An interface for the bridge contract, undefined if not found
-   */
-  getTokenBridge(
-    chain: ChainName,
-    connection: Connection,
-  ): Program<TokenBridge> | undefined {
-    const contracts = this.mustGetContracts(chain);
-    if (!contracts.tokenBridge) return;
-
-    return createReadOnlyTokenBridgeProgramInterface(
-      contracts.tokenBridge,
-      connection,
-    );
+    // const core = this.getCore(chain, connection);
+    // if (!core) throw new Error(`Core contract for domain ${chain} not found`);
+    // return core;
   }
 
   /**
@@ -90,30 +57,16 @@ export class SolanaContracts {
    *
    * @returns An interface for the bridge contract, errors if not found
    */
-  mustGetTokenBridge(
+  getTokenBridge(
     chain: ChainName,
     connection: Connection,
   ): Program<TokenBridge> {
-    const bridge = this.getTokenBridge(chain, connection);
-    if (!bridge)
+    const contracts = this.getContracts(chain);
+    if (!contracts.tokenBridge)
       throw new Error(`Bridge contract for domain ${chain} not found`);
-    return bridge;
-  }
 
-  /**
-   * Returns wormhole NFT bridge contract for the chain
-   *
-   * @returns An interface for the NFT bridge contract, undefined if not found
-   */
-  getNftBridge(
-    chain: ChainName,
-    connection: Connection,
-  ): Program<NftBridge> | undefined {
-    const contracts = this.mustGetContracts(chain);
-    if (!contracts.nftBridge) return;
-
-    return createReadOnlyNftBridgeProgramInterface(
-      contracts.nftBridge,
+    return createReadOnlyTokenBridgeProgramInterface(
+      contracts.tokenBridge,
       connection,
     );
   }
@@ -123,13 +76,17 @@ export class SolanaContracts {
    *
    * @returns An interface for the NFT bridge contract, errors if not found
    */
-  mustGetNftBridge(
+  getNftBridge(
     chain: ChainName,
     connection: Connection,
   ): Program<NftBridge> {
-    const nftBridge = this.getNftBridge(chain, connection);
-    if (!nftBridge)
+    const contracts = this.getContracts(chain);
+    if (!contracts.nftBridge)
       throw new Error(`NFT Bridge contract for domain ${chain} not found`);
-    return nftBridge;
+
+    return createReadOnlyNftBridgeProgramInterface(
+      contracts.nftBridge,
+      connection,
+    );
   }
 }

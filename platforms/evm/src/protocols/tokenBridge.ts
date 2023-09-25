@@ -24,10 +24,7 @@ import {
 } from '../ethers-contracts';
 import { BridgeStructs } from '../ethers-contracts/Bridge';
 
-import {
-  evmChainIdToNetworkChainPair,
-  evmNetworkChainToEvmChainId,
-} from '../constants';
+import { evmNetworkChainToEvmChainId } from '../constants';
 import { EvmUnsignedTransaction } from '../unsignedTransaction';
 import { EvmContracts } from '../contracts';
 import {
@@ -46,6 +43,7 @@ import { EvmPlatform } from '../platform';
 
 //TODO more checks to determine that all necessary preconditions are met (e.g. that balances are
 //  sufficient) for a given transaction to succeed
+// Action items: add a validate method and a simulate transfer method
 
 export class EvmTokenBridge implements TokenBridge<'Evm'> {
   readonly tokenBridge: TokenBridgeContract;
@@ -58,7 +56,7 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     readonly contracts: EvmContracts,
   ) {
     this.chainId = evmNetworkChainToEvmChainId.get(network, chain)!;
-    this.tokenBridge = this.contracts.mustGetTokenBridge(chain, provider);
+    this.tokenBridge = this.contracts.getTokenBridge(chain, provider);
   }
 
   static async fromProvider(
@@ -281,10 +279,10 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
 
     const { fee: gasFee } = receipt;
 
-    const core = this.contracts.mustGetCore(this.chain, this.provider);
+    const core = this.contracts.getCore(this.chain, this.provider);
     const coreAddress = await core.getAddress();
 
-    const bridge = this.contracts.mustGetTokenBridge(this.chain, this.provider);
+    const bridge = this.contracts.getTokenBridge(this.chain, this.provider);
     const bridgeAddress = toNative(
       this.chain,
       await bridge.getAddress(),

@@ -55,6 +55,7 @@ export interface AutomaticCircleBridge<P extends PlatformName> {
     amount: bigint,
     nativeGas?: bigint
   ): AsyncGenerator<UnsignedTransaction>;
+  // TODO: events
 }
 
 export interface CircleBridge<P extends PlatformName> {
