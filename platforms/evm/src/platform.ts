@@ -32,10 +32,9 @@ export module EvmPlatform {
 
   let contracts: EvmContracts = new EvmContracts(conf);
 
-  export type P = typeof platform;
+  export type Type = typeof platform;
 
   export const {
-    nativeDecimals,
     getDecimals,
     getBalance,
     sendWait,

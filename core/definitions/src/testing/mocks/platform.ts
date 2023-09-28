@@ -40,7 +40,6 @@ export function mockPlatformFactory<P extends PlatformName>(
 export class MockPlatform<P extends PlatformName> implements Platform<P> {
   // @ts-ignore
   readonly platform: P;
-  readonly nativeDecimals = 18n;
 
   network: Network;
   conf: ChainsConfig;

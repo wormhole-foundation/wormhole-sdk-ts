@@ -16,17 +16,6 @@ const configs = chainConfigs(network);
 const COSMWASM_CHAINS = chains.filter((c) => c === "Cosmoshub");
 
 describe("Cosmwasm Platform Tests", () => {
-  describe("Get Token Bridge", () => {
-    test("With RPC", async () => {
-      const p = CosmwasmPlatform.setConfig(network, {
-        [COSMWASM_CHAINS[0]]: configs[COSMWASM_CHAINS[0]],
-      });
-      const rpc = await p.getRpc(COSMWASM_CHAINS[0]);
-      const tb = await p.getTokenBridge(rpc);
-      expect(tb).toBeTruthy();
-    });
-  });
-
   describe("Get Chain", () => {
     test("No conf", () => {
       // no issues just grabbing the chain

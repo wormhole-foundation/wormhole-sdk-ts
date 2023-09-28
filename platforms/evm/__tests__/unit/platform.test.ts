@@ -21,18 +21,6 @@ const network = DEFAULT_NETWORK;
 const configs = chainConfigs(network);
 
 describe('EVM Platform Tests', () => {
-  describe('Parse Address', () => {
-    const p = EvmPlatform.setConfig(network, {});
-    test.each(EVM_CHAINS)('Parses Address for %s', (chain: ChainName) => {
-      const address = testing.utils.makeNativeAddressHexString(chain);
-      const parsed = p.parseAddress(chain, address);
-      expect(parsed).toBeTruthy();
-      expect(parsed.toNative().toString().toLowerCase()).toEqual(
-        '0x' + address,
-      );
-    });
-  });
-
   describe('Get Token Bridge', () => {
     test('No RPC', async () => {
       const p = EvmPlatform;

@@ -3,29 +3,28 @@ import {
   TokenId,
   TxHash,
   SignedTx,
-  toNative,
   Network,
   PlatformToChains,
+  nativeDecimals,
 } from '@wormhole-foundation/connect-sdk';
 
 import { Provider } from 'ethers';
 import { evmChainIdToNetworkChainPair } from './constants';
 import { EvmAddress, EvmZeroAddress } from './address';
 import { EvmContracts } from './contracts';
+import { EvmPlatform } from './platform';
 
 /**
  * @category EVM
  */
 // Provides runtime concrete value
 export module EvmUtils {
-  export const nativeDecimals = 18n;
-
   export async function getDecimals(
     chain: ChainName,
     rpc: Provider,
     tokenId: TokenId | 'native',
   ): Promise<bigint> {
-    if (tokenId === 'native') return nativeDecimals;
+    if (tokenId === 'native') return nativeDecimals(EvmPlatform.platform);
 
     const tokenContract = EvmContracts.getTokenImplementation(
       rpc,
@@ -79,7 +78,7 @@ export module EvmUtils {
 
   export async function chainFromRpc(
     rpc: Provider,
-  ): Promise<[Network, PlatformToChains<'Evm'>]> {
+  ): Promise<[Network, PlatformToChains<EvmPlatform.Type>]> {
     const { chainId } = await rpc.getNetwork();
     const networkChainPair = evmChainIdToNetworkChainPair.get(chainId);
     if (networkChainPair === undefined)

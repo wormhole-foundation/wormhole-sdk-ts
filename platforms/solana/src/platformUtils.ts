@@ -6,22 +6,23 @@ import {
   RpcConnection,
   Network,
   PlatformToChains,
+  nativeDecimals,
 } from '@wormhole-foundation/connect-sdk';
 import { Connection, PublicKey } from '@solana/web3.js';
 import { solGenesisHashToNetworkChainPair } from './constants';
+import { SolanaPlatform } from './platform';
 
 /**
  * @category Solana
  */
 // Provides runtime concrete value
 export module SolanaUtils {
-  export const nativeDecimals = 9n;
   export async function getDecimals(
     chain: ChainName,
     rpc: Connection,
     token: TokenId | 'native',
   ): Promise<bigint> {
-    if (token === 'native') return nativeDecimals;
+    if (token === 'native') return nativeDecimals(SolanaPlatform.platform);
 
     let mint = await rpc.getParsedAccountInfo(
       new PublicKey(token.address.unwrap()),
@@ -83,8 +84,8 @@ export module SolanaUtils {
   }
 
   export async function chainFromRpc(
-    rpc: RpcConnection<'Solana'>,
-  ): Promise<[Network, PlatformToChains<'Solana'>]> {
+    rpc: RpcConnection<SolanaPlatform.Type>,
+  ): Promise<[Network, PlatformToChains<SolanaPlatform.Type>]> {
     const conn = rpc as Connection;
     const gh = await conn.getGenesisHash();
     const netChain = solGenesisHashToNetworkChainPair.get(gh);

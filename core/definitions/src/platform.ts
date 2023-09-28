@@ -14,7 +14,6 @@ export interface Platform<P extends PlatformName> {
   readonly platform: P;
   readonly conf: ChainsConfig;
   readonly network: Network;
-  readonly nativeDecimals: BigInt;
 
   // update the config for this platform
   setConfig(network: Network, _conf?: ChainsConfig): Platform<P>;

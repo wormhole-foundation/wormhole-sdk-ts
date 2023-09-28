@@ -23,11 +23,10 @@ export module CosmwasmPlatform {
 
   let contracts: CosmwasmContracts = new CosmwasmContracts(conf);
 
-  type P = typeof platform;
+  export type Type = typeof platform;
 
   // TODO: re-export all
   export const {
-    nativeDecimals,
     getDecimals,
     getBalance,
     sendWait,

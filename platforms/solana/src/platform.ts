@@ -21,14 +21,13 @@ const SOLANA_SEQ_LOG = 'Program log: Sequence: ';
  */
 export module SolanaPlatform {
   export const platform = 'Solana';
+  export type Type = typeof platform;
   export let network: Network = DEFAULT_NETWORK;
   export let conf: ChainsConfig = networkPlatformConfigs(network, platform);
 
   let contracts: SolanaContracts = new SolanaContracts(conf);
 
-  type P = typeof platform;
   export const {
-    nativeDecimals,
     getDecimals,
     getBalance,
     sendWait,
