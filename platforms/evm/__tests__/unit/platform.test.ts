@@ -23,7 +23,7 @@ const configs = chainConfigs(network);
 describe('EVM Platform Tests', () => {
   describe('Get Token Bridge', () => {
     test('No RPC', async () => {
-      const p = EvmPlatform;
+      const p = EvmPlatform.setConfig(network, {});
       const rpc = getDefaultProvider('');
       expect(() => p.getTokenBridge(rpc)).rejects.toThrow();
     });
