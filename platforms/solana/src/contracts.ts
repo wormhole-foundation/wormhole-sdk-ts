@@ -48,9 +48,6 @@ export class SolanaContracts {
       contracts.coreBridge,
       connection,
     );
-    // const core = this.getCore(chain, connection);
-    // if (!core) throw new Error(`Core contract for domain ${chain} not found`);
-    // return core;
   }
 
   /**
