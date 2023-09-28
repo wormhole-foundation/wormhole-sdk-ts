@@ -25,18 +25,6 @@ const SOLANA_CHAINS = chains.filter(
 const configs = chainConfigs(network);
 
 describe('Solana Platform Tests', () => {
-  describe('Parse Address', () => {
-    const p = SolanaPlatform.setConfig(network, {});
-    test.each(SOLANA_CHAINS)('Parses Address for %s', (chain: ChainName) => {
-      const address = testing.utils.makeNativeAddressHexString(chain);
-      const parsed = p.parseAddress(chain, address);
-      expect(parsed).toBeTruthy();
-
-      const encoded = new PublicKey(parsed.toUint8Array());
-      expect(parsed.toUint8Array()).toEqual(encoded.toBytes());
-    });
-  });
-
   const fakeRpc = getDefaultProvider();
 
   describe('Get Token Bridge', () => {

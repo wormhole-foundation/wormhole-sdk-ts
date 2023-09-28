@@ -73,8 +73,8 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     readonly contracts: SolanaContracts,
   ) {
     this.chainId = toChainId(chain);
-    this.tokenBridge = this.contracts.mustGetTokenBridge(chain, connection);
-    this.coreBridge = this.contracts.mustGetCore(chain, connection);
+    this.tokenBridge = this.contracts.getTokenBridge(chain, connection);
+    this.coreBridge = this.contracts.getCore(chain, connection);
   }
 
   static async fromProvider(

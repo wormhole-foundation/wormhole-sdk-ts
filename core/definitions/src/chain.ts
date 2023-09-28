@@ -51,6 +51,10 @@ export abstract class ChainContext<P extends PlatformName> {
     );
   }
 
+  async getCurrentBlock(): Promise<number> {
+    return this.platform.getCurrentBlock(this.getRpc());
+  }
+
   // Get details about the transaction
   async parseTransaction(txid: string): Promise<WormholeMessageId[]> {
     return this.platform.parseTransaction(this.chain, this.getRpc(), txid);
@@ -59,11 +63,6 @@ export abstract class ChainContext<P extends PlatformName> {
   // Send a transaction and wait for it to be confirmed
   async sendWait(stxns: SignedTx): Promise<string[]> {
     return this.platform.sendWait(this.chain, this.getRpc(), stxns);
-  }
-
-  // Take a native address and convert it to a UniversalAddress
-  parseAddress(address: string): NativeAddress<P> {
-    return this.platform.parseAddress(this.chain, address);
   }
 
   //

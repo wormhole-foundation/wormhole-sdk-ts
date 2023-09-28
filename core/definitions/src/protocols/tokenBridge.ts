@@ -47,6 +47,7 @@ export interface TokenBridge<P extends PlatformName> {
   // Returns the address of the native version of this asset
   getWrappedAsset(foreignToken: TokenId): Promise<NativeAddress<P>>;
 
+  // TODO: preview (receive amount, fees, gas estimates, estimated blocks/time)
   isTransferCompleted(
     vaa: VAA<"Transfer"> | VAA<"TransferWithPayload">
   ): Promise<boolean>;
@@ -73,6 +74,7 @@ export interface TokenBridge<P extends PlatformName> {
     vaa: VAA<"Transfer"> | VAA<"TransferWithPayload">,
     unwrapNative?: boolean //default: true
   ): AsyncGenerator<UnsignedTransaction>;
+  // TODO: parse transaction
 }
 
 export interface AutomaticTokenBridge<P extends PlatformName> {
@@ -93,4 +95,19 @@ export interface AutomaticTokenBridge<P extends PlatformName> {
     recipient: ChainAddress,
     token: TokenId | "native"
   ): Promise<bigint>;
+  // the amount of native tokens a user would receive by swapping x amount of sending tokens
+  // nativeTokenAmount(
+  //   destChain: ChainName | ChainId,
+  //   token: TokenId,
+  //   amount: BigNumber,
+  //   walletAddress: string,
+  // ): Promise<BigNumber>;
+
+  // the maximum amount of sending tokens that can be swapped for native tokens
+  // maxSwapAmount(
+  //   destChain: ChainName | ChainId,
+  //   token: TokenId,
+  //   walletAddress: string,
+  // ): Promise<BigNumber>;
+  // TODO: events (Redeem, Swap)
 }

@@ -11,10 +11,7 @@ import {
   Network,
 } from '@wormhole-foundation/connect-sdk';
 
-import {
-  evmChainIdToNetworkChainPair,
-  evmNetworkChainToEvmChainId,
-} from '../constants';
+import { evmNetworkChainToEvmChainId } from '../constants';
 import {
   addFrom,
   addChainId,
@@ -49,11 +46,11 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
 
     this.chainId = evmNetworkChainToEvmChainId(network, chain);
 
-    this.msgTransmitter = this.contracts.mustGetCircleMessageTransmitter(
+    this.msgTransmitter = this.contracts.getCircleMessageTransmitter(
       chain,
       provider,
     );
-    this.tokenMessenger = this.contracts.mustGetCircleTokenMessenger(
+    this.tokenMessenger = this.contracts.getCircleTokenMessenger(
       chain,
       provider,
     );
@@ -113,7 +110,7 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
       .toUint8Array();
     const tokenAddr = toEvmAddrString(token.address as UniversalOrEvm);
 
-    const tokenContract = this.contracts.mustGetTokenImplementation(
+    const tokenContract = EvmContracts.getTokenImplementation(
       this.provider,
       tokenAddr,
     );

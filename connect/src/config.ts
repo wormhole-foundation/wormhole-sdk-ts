@@ -28,12 +28,13 @@ TODO:
 function combineConfig(n: Network): ChainsConfig {
   const cc: ChainsConfig = chains
     .map((c: ChainName): ChainConfig => {
+      const platform = chainToPlatform(c);
       return {
         key: c,
-        platform: chainToPlatform(c),
+        platform,
         finalityThreshold: finalityThreshold.get(n, c) || 0,
         contracts: getContracts(n, c),
-        nativeTokenDecimals: nativeDecimals.get(c)!, //TODO the exclamation mark is a lie
+        nativeTokenDecimals: nativeDecimals.get(platform)!, //TODO the exclamation mark is a lie
         explorer: explorerConfigs(n, c)!, //TODO the exclamation mark is a lie
         rpc: rpcAddress(n, c)!, //TODO the exclamation mark is a lie
       };

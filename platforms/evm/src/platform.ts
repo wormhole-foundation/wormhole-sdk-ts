@@ -1,23 +1,14 @@
 import {
   ChainName,
-  TokenId,
   TxHash,
-  Platform,
   WormholeMessageId,
   isWormholeMessageId,
-  SignedTx,
-  AutomaticTokenBridge,
-  TokenBridge,
-  CircleBridge,
-  AutomaticCircleBridge,
   ChainsConfig,
-  toNative,
-  NativeAddress,
-  WormholeCore,
   networkPlatformConfigs,
   DEFAULT_NETWORK,
   Network,
-  PlatformToChains,
+  toNative,
+  Platform,
 } from '@wormhole-foundation/connect-sdk';
 
 import { ethers } from 'ethers';
@@ -29,8 +20,10 @@ import { EvmAutomaticTokenBridge } from './protocols/automaticTokenBridge';
 import { EvmAutomaticCircleBridge } from './protocols/automaticCircleBridge';
 import { EvmCircleBridge } from './protocols/circleBridge';
 import { EvmWormholeCore } from './protocols/wormholeCore';
-import { evmChainIdToNetworkChainPair } from './constants';
-import { EvmAddress } from './address';
+import { EvmUtils } from './platformUtils';
+
+// forces EvmPlatform to implement Platform
+var _: Platform<'Evm'> = EvmPlatform;
 
 /**
  * @category EVM
@@ -43,7 +36,18 @@ export module EvmPlatform {
 
   let contracts: EvmContracts = new EvmContracts(conf);
 
-  type P = typeof platform;
+  export type Type = typeof platform;
+
+  export const {
+    nativeTokenId,
+    isNativeTokenId,
+    isSupportedChain,
+    getDecimals,
+    getBalance,
+    sendWait,
+    getCurrentBlock,
+    chainFromRpc,
+  } = EvmUtils;
 
   export function setConfig(
     network: Network,
@@ -92,66 +96,6 @@ export module EvmPlatform {
     return await EvmAutomaticCircleBridge.fromProvider(rpc, contracts);
   }
 
-  export async function getDecimals(
-    chain: ChainName,
-    rpc: ethers.Provider,
-    token: TokenId | 'native',
-  ): Promise<bigint> {
-    if (token === 'native') return BigInt(conf[chain]!.nativeTokenDecimals);
-
-    const tokenContract = contracts.mustGetTokenImplementation(
-      rpc,
-      token.address.toString(),
-    );
-    const decimals = await tokenContract.decimals();
-    return decimals;
-  }
-
-  export async function getBalance(
-    chain: ChainName,
-    rpc: ethers.Provider,
-    walletAddr: string,
-    tokenId: TokenId | 'native',
-  ): Promise<bigint | null> {
-    if (tokenId === 'native') return await rpc.getBalance(walletAddr);
-
-    const tb = await getTokenBridge(rpc);
-
-    const address = await tb.getWrappedAsset(tokenId);
-    if (!address) return null;
-
-    const token = contracts.mustGetTokenImplementation(rpc, address.toString());
-    const balance = await token.balanceOf(walletAddr);
-    return balance;
-  }
-
-  export async function sendWait(
-    chain: ChainName,
-    rpc: ethers.Provider,
-    stxns: SignedTx[],
-  ): Promise<TxHash[]> {
-    const txhashes: TxHash[] = [];
-    for (const stxn of stxns) {
-      const txRes = await rpc.broadcastTransaction(stxn);
-      txhashes.push(txRes.hash);
-
-      if (chain === 'Celo') {
-        console.error('TODO: override celo block fetching');
-        continue;
-      }
-
-      // Wait for confirmation
-      const txReceipt = await txRes.wait();
-      if (txReceipt === null) continue; // TODO: throw error?
-    }
-    return txhashes;
-  }
-
-  export function parseAddress(chain: ChainName, address: string): EvmAddress {
-    // TODO: y?
-    return toNative(chain, address) as unknown as EvmAddress;
-  }
-
   export async function parseTransaction(
     chain: ChainName,
     rpc: ethers.Provider,
@@ -174,7 +118,7 @@ export module EvmPlatform {
         const parsed = coreImpl.parseLog({ topics: topics.slice(), data });
         if (parsed === null) return undefined;
 
-        const emitterAddress = parseAddress(chain, parsed.args.sender);
+        const emitterAddress = toNative(chain, parsed.args.sender);
         return {
           chain: chain,
           emitter: emitterAddress.toUniversalAddress(),
@@ -182,16 +126,5 @@ export module EvmPlatform {
         } as WormholeMessageId;
       })
       .filter(isWormholeMessageId);
-  }
-
-  export async function chainFromRpc(
-    rpc: ethers.Provider,
-  ): Promise<[Network, PlatformToChains<P>]> {
-    const { chainId } = await rpc.getNetwork();
-    const networkChainPair = evmChainIdToNetworkChainPair.get(chainId);
-    if (networkChainPair === undefined)
-      throw new Error(`Unknown EVM chainId ${chainId}`);
-    const [network, chain] = networkChainPair;
-    return [network, chain];
   }
 }

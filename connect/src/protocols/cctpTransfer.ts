@@ -106,7 +106,7 @@ export class CCTPTransfer implements WormholeTransfer {
 
     let automatic = false;
     if (wormholeRelayer) {
-      const relayerAddress = wh.getChain(chain).parseAddress(wormholeRelayer);
+      const relayerAddress = toNative(chain, wormholeRelayer);
 
       automatic =
         vaa.payloadLiteral === 'CircleTransferRelay' &&

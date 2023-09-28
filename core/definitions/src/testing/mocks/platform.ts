@@ -27,7 +27,7 @@ import { WormholeCore } from "../../protocols/core";
 export function mockPlatformFactory<P extends PlatformName>(
   network: Network,
   p: P,
-  config: ChainsConfig
+  config: ChainsConfig,
 ): Platform<P> {
   class ConcreteMockPlatform extends MockPlatform<P> {
     readonly platform = p;
@@ -55,6 +55,18 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
     return this;
   }
 
+  nativeTokenId(chain: ChainName): TokenId {
+    throw new Error("Method not implemented.");
+  }
+
+  isNativeTokenId(chain: ChainName, tokenId: TokenId): boolean {
+    throw new Error("Method not implemented.");
+  }
+
+  isSupportedChain(chain: ChainName): boolean {
+    throw new Error("Method not implemented.");
+  }
+
   getDecimals(
     chain: ChainName,
     rpc: RpcConnection<P>,
@@ -77,6 +89,9 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
   getRpc(chain: ChainName): RpcConnection<P> {
     // @ts-ignore
     return new MockRpc(chain);
+  }
+  getCurrentBlock(rpc: any): Promise<number> {
+    throw new Error("Method not implemented");
   }
 
   async getWrappedAsset(

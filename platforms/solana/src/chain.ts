@@ -1,12 +1,11 @@
 import { PublicKey } from '@solana/web3.js';
 import {
-  ChainName,
   ChainContext,
   NativeAddress,
-  RpcConnection,
   UniversalAddress,
   UniversalOrNative,
   Platform,
+  toNative,
 } from '@wormhole-foundation/connect-sdk';
 import { getAssociatedTokenAddress } from '@solana/spl-token';
 import { SolanaPlatform } from './platform';
@@ -29,6 +28,6 @@ export class SolanaChain extends ChainContext<'Solana'> {
     const owner = new PublicKey(address.toUint8Array());
 
     const ata = await getAssociatedTokenAddress(mint, owner);
-    return this.parseAddress(ata.toString());
+    return toNative('Solana', ata.toString());
   }
 }

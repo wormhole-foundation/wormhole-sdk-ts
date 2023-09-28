@@ -63,7 +63,7 @@ export type ChainConfig = {
   platform: PlatformName;
   contracts: Contracts;
   finalityThreshold: number;
-  nativeTokenDecimals: number;
+  nativeTokenDecimals: bigint;
   explorer: ExplorerSettings;
   rpc: string;
 };

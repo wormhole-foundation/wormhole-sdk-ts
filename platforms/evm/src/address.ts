@@ -11,7 +11,7 @@ declare global {
   }
 }
 
-export const EvmZeroAddress = '0x0000000000000000000000000000000000000000';
+export const EvmZeroAddress = ethers.ZeroAddress;
 
 export class EvmAddress implements Address {
   static readonly byteSize = 20;
