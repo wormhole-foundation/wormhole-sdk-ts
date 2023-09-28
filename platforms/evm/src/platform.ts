@@ -8,6 +8,7 @@ import {
   DEFAULT_NETWORK,
   Network,
   toNative,
+  Platform,
 } from '@wormhole-foundation/connect-sdk';
 
 import { ethers } from 'ethers';
@@ -20,6 +21,9 @@ import { EvmAutomaticCircleBridge } from './protocols/automaticCircleBridge';
 import { EvmCircleBridge } from './protocols/circleBridge';
 import { EvmWormholeCore } from './protocols/wormholeCore';
 import { EvmUtils } from './platformUtils';
+
+// forces EvmPlatform to implement Platform
+var _: Platform<'Evm'> = EvmPlatform;
 
 /**
  * @category EVM
@@ -35,6 +39,9 @@ export module EvmPlatform {
   export type Type = typeof platform;
 
   export const {
+    nativeTokenId,
+    isNativeTokenId,
+    isSupportedChain,
     getDecimals,
     getBalance,
     sendWait,

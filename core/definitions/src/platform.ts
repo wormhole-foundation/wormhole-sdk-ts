@@ -9,17 +9,12 @@ import { ChainsConfig, TokenId, TxHash } from "./types";
 import { WormholeMessageId } from "./attestation";
 import { SignedTx } from "./types";
 
-// Force passing RPC connection so we don't create a new one with every fn call
-export interface Platform<P extends PlatformName> {
-  readonly platform: P;
-  readonly conf: ChainsConfig;
-  readonly network: Network;
+export interface PlatformUtils<P extends PlatformName> {
+  nativeTokenId(chain: ChainName): TokenId;
 
-  // update the config for this platform
-  setConfig(network: Network, _conf?: ChainsConfig): Platform<P>;
+  isSupportedChain(chain: ChainName): boolean;
 
-  // Create a new Chain context object
-  getChain(chain: ChainName): ChainContext<P>;
+  isNativeTokenId(chain: ChainName, tokenId: TokenId): boolean;
 
   // Utils for platform specific queries
   getDecimals(
@@ -33,7 +28,6 @@ export interface Platform<P extends PlatformName> {
     walletAddr: string,
     token: TokenId | "native"
   ): Promise<bigint | null>;
-  getRpc(chain: ChainName): RpcConnection<P>;
   getCurrentBlock(rpc: RpcConnection<P>): Promise<number>;
 
   // Platform interaction utils
@@ -42,11 +36,27 @@ export interface Platform<P extends PlatformName> {
     rpc: RpcConnection<P>,
     stxns: SignedTx[]
   ): Promise<TxHash[]>;
+
+  chainFromRpc(rpc: RpcConnection<P>): Promise<[Network, ChainName]>;
+}
+
+// Force passing RPC connection so we don't create a new one with every fn call
+export interface Platform<P extends PlatformName> extends PlatformUtils<P> {
+  readonly platform: P;
+  readonly conf: ChainsConfig;
+  readonly network: Network;
+
+  // update the config for this platform
+  setConfig(network: Network, _conf?: ChainsConfig): Platform<P>;
+
+  // Create a new Chain context object
+  getChain(chain: ChainName): ChainContext<P>;
+
+  getRpc(chain: ChainName): RpcConnection<P>;
+
   parseTransaction(
     chain: ChainName,
     rpc: RpcConnection<P>,
     txid: TxHash
   ): Promise<WormholeMessageId[]>;
-
-  chainFromRpc(rpc: RpcConnection<P>): Promise<[Network, ChainName]>;
 }

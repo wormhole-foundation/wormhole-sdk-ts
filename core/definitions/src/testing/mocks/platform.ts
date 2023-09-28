@@ -55,6 +55,18 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
     return this;
   }
 
+  nativeTokenId(chain: ChainName): TokenId {
+    throw new Error("Method not implemented.");
+  }
+
+  isNativeTokenId(chain: ChainName, tokenId: TokenId): boolean {
+    throw new Error("Method not implemented.");
+  }
+
+  isSupportedChain(chain: ChainName): boolean {
+    throw new Error("Method not implemented.");
+  }
+
   getDecimals(
     chain: ChainName,
     rpc: RpcConnection<P>,

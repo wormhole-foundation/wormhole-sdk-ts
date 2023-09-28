@@ -6,12 +6,16 @@ import {
   networkPlatformConfigs,
   Network,
   DEFAULT_NETWORK,
+  Platform,
 } from "@wormhole-foundation/connect-sdk";
 import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import { CosmwasmContracts } from "./contracts";
 import { CosmwasmChain } from "./chain";
 import { CosmwasmTokenBridge } from "./protocols/tokenBridge";
 import { CosmwasmUtils } from "./platformUtils";
+
+// forces CosmwasmPlatform to implement Platform
+var _: Platform<"Cosmwasm"> = CosmwasmPlatform
 
 /**
  * @category Cosmwasm
@@ -27,6 +31,9 @@ export module CosmwasmPlatform {
 
   // TODO: re-export all
   export const {
+    nativeTokenId,
+    isNativeTokenId,
+    isSupportedChain,
     getDecimals,
     getBalance,
     sendWait,
@@ -57,13 +64,6 @@ export module CosmwasmPlatform {
   ): Promise<CosmwasmTokenBridge> {
     return await CosmwasmTokenBridge.fromProvider(rpc, contracts);
   }
-
-  // function getNativeDenom(chain: ChainName): string {
-  //   // TODO: required because of const map
-  //   if (network === "Devnet") throw new Error("No devnet native denoms");
-
-  //   return chainToNativeDenoms(network, chain as PlatformToChains<P>);
-  // }
 
   export async function parseTransaction(
     chain: ChainName,

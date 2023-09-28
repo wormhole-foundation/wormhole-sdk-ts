@@ -7,6 +7,7 @@ import {
   networkPlatformConfigs,
   DEFAULT_NETWORK,
   Network,
+  Platform,
 } from '@wormhole-foundation/connect-sdk';
 
 import { SolanaContracts } from './contracts';
@@ -15,6 +16,9 @@ import { SolanaTokenBridge } from './protocols/tokenBridge';
 import { SolanaUtils } from './platformUtils';
 
 const SOLANA_SEQ_LOG = 'Program log: Sequence: ';
+
+// forces SolanaPlatform to implement Platform
+var _: Platform<'Solana'> = SolanaPlatform;
 
 /**
  * @category Solana
@@ -28,6 +32,9 @@ export module SolanaPlatform {
   let contracts: SolanaContracts = new SolanaContracts(conf);
 
   export const {
+    nativeTokenId,
+    isNativeTokenId,
+    isSupportedChain,
     getDecimals,
     getBalance,
     sendWait,

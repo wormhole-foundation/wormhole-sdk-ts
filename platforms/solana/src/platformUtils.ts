@@ -7,16 +7,41 @@ import {
   Network,
   PlatformToChains,
   nativeDecimals,
+  PlatformUtils,
+  chainToPlatform,
 } from '@wormhole-foundation/connect-sdk';
 import { Connection, PublicKey } from '@solana/web3.js';
 import { solGenesisHashToNetworkChainPair } from './constants';
 import { SolanaPlatform } from './platform';
+import { SolanaAddress, SolanaZeroAddress } from './address';
+
+// forces SolanaUtils to implement PlatformUtils
+var _: PlatformUtils<'Solana'> = SolanaUtils;
 
 /**
  * @category Solana
  */
 // Provides runtime concrete value
 export module SolanaUtils {
+  export function nativeTokenId(chain: ChainName): TokenId {
+    if (!isSupportedChain(chain)) throw new Error(`invalid chain: ${chain}`);
+    return {
+      chain: chain,
+      address: new SolanaAddress(SolanaZeroAddress) as any, // TODO: fix weird type error
+    };
+  }
+
+  export function isSupportedChain(chain: ChainName): boolean {
+    const platform = chainToPlatform(chain);
+    return platform === SolanaPlatform.platform;
+  }
+
+  export function isNativeTokenId(chain: ChainName, tokenId: TokenId): boolean {
+    if (!isSupportedChain(chain)) return false;
+    if (tokenId.chain !== chain) return false;
+    const native = nativeTokenId(chain);
+    return native == tokenId;
+  }
   export async function getDecimals(
     chain: ChainName,
     rpc: Connection,

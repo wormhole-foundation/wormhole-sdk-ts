@@ -7,24 +7,50 @@ import {
   PlatformToChains,
   WormholeMessageId,
   nativeDecimals,
+  chainToPlatform,
+  PlatformUtils,
 } from '@wormhole-foundation/connect-sdk';
 import { chainToNativeDenoms, cosmwasmChainIdToNetworkChainPair } from './constants';
 import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import { CosmwasmPlatform } from './platform';
+import { CosmwasmAddress } from './address';
+
+// forces CosmwasmUtils to implement PlatformUtils
+var _: PlatformUtils<"Cosmwasm"> = CosmwasmUtils;
 
 /**
  * @category CosmWasm
  */
 // Provides runtime concrete value
 export module CosmwasmUtils {
+  export function nativeTokenId(chain: ChainName): TokenId {
+    if (!isSupportedChain(chain)) throw new Error(`invalid chain for CosmWasm: ${chain}`);
+    return {
+      chain: chain,
+      address: new CosmwasmAddress(getNativeDenom(chain)),
+    }
+  }
+
+  export function isSupportedChain(chain: ChainName): boolean {
+    const platform = chainToPlatform(chain);
+    return platform === CosmwasmPlatform.platform;
+  }
+
+  export function isNativeTokenId(chain: ChainName, tokenId: TokenId): boolean {
+    if (!isSupportedChain(chain)) return false;
+    if (tokenId.chain !== chain) return false;
+    const native = nativeTokenId(chain);
+    return native == tokenId;
+  }
+
   export async function getDecimals(
     chain: ChainName,
     rpc: CosmWasmClient,
-    token: TokenId | "native"
+    tokenId: TokenId
   ): Promise<bigint> {
-    if (token === "native") return nativeDecimals(CosmwasmPlatform.platform);
+    if (isNativeTokenId(chain, tokenId)) return nativeDecimals(CosmwasmPlatform.platform);
     const { decimals } = await rpc.queryContractSmart(
-      token.address.toString(),
+      tokenId.address.toString(),
       {
         token_info: {},
       }
@@ -36,9 +62,9 @@ export module CosmwasmUtils {
     chain: ChainName,
     rpc: CosmWasmClient,
     walletAddress: string,
-    tokenId: TokenId | "native"
+    tokenId: TokenId | 'native'
   ): Promise<bigint | null> {
-    if (tokenId === "native") {
+    if (tokenId === 'native') {
       const { amount } = await rpc.getBalance(
         walletAddress,
         getNativeDenom(chain)
