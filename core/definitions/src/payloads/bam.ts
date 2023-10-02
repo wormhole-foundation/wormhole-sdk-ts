@@ -19,7 +19,7 @@ const bamLayout0: Layout = [
 export const bamPayloads = [
   [
     "BAMessage",
-    { ...bamCommonLayout, ...bamLayout0 }
+    [ ...bamCommonLayout, ...bamLayout0 ],
   ],
 ] as const satisfies readonly (readonly [string, Layout])[];
 
