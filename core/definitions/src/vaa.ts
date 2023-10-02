@@ -45,20 +45,23 @@ type PayloadLiteral = keyof Wormhole.PayloadLiteralToDescriptionMapping;
 type DescriptionOf<PL extends PayloadLiteral> =
   //TODO check if this lazy instantiation hack is actually necessary
   PL extends infer V extends PayloadLiteral
-  ? Wormhole.PayloadLiteralToDescriptionMapping[V]
-  : never;
+    ? Wormhole.PayloadLiteralToDescriptionMapping[V]
+    : never;
 
-type DescriptionToPayloadItem<D extends DescriptionOf<PayloadLiteral>> =
-  [D] extends [CustomConversion<Uint8Array, any>]
+type DescriptionToPayloadItem<D extends DescriptionOf<PayloadLiteral>> = [
+  D
+] extends [CustomConversion<Uint8Array, any>]
   ? { name: "payload"; binary: "bytes"; custom: D }
   : [D] extends [Layout]
   ? { name: "payload"; binary: "object"; layout: D }
   : never;
 
 export type PayloadLiteralToPayloadType<PL extends PayloadLiteral> =
-  DescriptionToPayloadItem<DescriptionOf<PL>> extends infer Item extends LayoutItem
-  ? LayoutItemToType<Item>
-  : never;
+  DescriptionToPayloadItem<
+    DescriptionOf<PL>
+  > extends infer Item extends LayoutItem
+    ? LayoutItemToType<Item>
+    : never;
 
 const guardianSignatureLayout = [
   { name: "guardianIndex", binary: "uint", size: 1 },

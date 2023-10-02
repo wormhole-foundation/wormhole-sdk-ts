@@ -33,14 +33,10 @@ const finalityThresholds = [
       ["Sei", 0],
     ],
   ],
-  [
-    "Testnet",
-    shareFinalities,
-  ],
-  [
-    "Devnet",
-    shareFinalities,
-  ],
-] as const satisfies RoArray<readonly [Network, RoArray<readonly [ChainName, number]>]>;
+  ["Testnet", shareFinalities],
+  ["Devnet", shareFinalities],
+] as const satisfies RoArray<
+  readonly [Network, RoArray<readonly [ChainName, number]>]
+>;
 
 export const finalityThreshold = constMap(finalityThresholds);

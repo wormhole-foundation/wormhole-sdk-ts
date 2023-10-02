@@ -17,11 +17,10 @@ type FixedBytes = (readonly [number, Uint8Array])[];
 function layoutItemMeta(
   item: LayoutItem,
   offset: number,
-  fixedBytes: FixedBytes,
+  fixedBytes: FixedBytes
 ): Bounds {
   function knownFixed(size: number, serialized: Uint8Array): Bounds {
-    if (Number.isFinite(offset))
-      fixedBytes.push([offset, serialized]);
+    if (Number.isFinite(offset)) fixedBytes.push([offset, serialized]);
 
     return [size, size];
   }
@@ -51,7 +50,7 @@ function layoutItemMeta(
     case "uint": {
       if (isPrimitiveType(item.custom)) {
         const serialized = new Uint8Array(item.size);
-        serializeUint(serialized, 0, item.custom, item.size)
+        serializeUint(serialized, 0, item.custom, item.size);
         return knownFixed(item.size, serialized);
       }
 
@@ -87,12 +86,13 @@ function calcAscendingBoundsAndPower(sizeBounds: readonly Bounds[]) {
       const end = sortedCandidates[0][0] + 1;
       //remove all candidates that end at the same position
       const removeIndex = sortedCandidates.findIndex(([upper]) => end <= upper);
-      if (removeIndex === -1)
-        sortedCandidates = [];
-      else
-        sortedCandidates.splice(0, removeIndex);
+      if (removeIndex === -1) sortedCandidates = [];
+      else sortedCandidates.splice(0, removeIndex);
       //introduce a new bound that captures all candidates that can have a size of at least `end`
-      ascendingBounds.set(end, sortedCandidates.map(([, j]) => j));
+      ascendingBounds.set(
+        end,
+        sortedCandidates.map(([, j]) => j)
+      );
     }
   };
 
@@ -102,14 +102,15 @@ function calcAscendingBoundsAndPower(sizeBounds: readonly Bounds[]) {
     .forEach(([[lower, upper], i]) => {
       closeCandidatesBefore(lower);
       const insertIndex = sortedCandidates.findIndex(([u]) => u <= upper);
-      if (insertIndex === -1)
-        sortedCandidates.push([upper, i]);
-      else
-        sortedCandidates.splice(insertIndex, 0, [upper, i]);
+      if (insertIndex === -1) sortedCandidates.push([upper, i]);
+      else sortedCandidates.splice(insertIndex, 0, [upper, i]);
 
       maxOverlap = Math.max(maxOverlap, sortedCandidates.length);
 
-      ascendingBounds.set(lower, sortedCandidates.map(([, j]) => j));
+      ascendingBounds.set(
+        lower,
+        sortedCandidates.map(([, j]) => j)
+      );
     });
   closeCandidatesBefore(Infinity);
 
@@ -119,29 +120,27 @@ function calcAscendingBoundsAndPower(sizeBounds: readonly Bounds[]) {
 function setMinus(sortedLhs: readonly number[], sortedRhs: readonly number[]) {
   const ret = [] as number[];
   let i = 0;
-  for (let j = 0; i < sortedLhs.length && j < sortedRhs.length;) {
-    if (sortedLhs[i] < sortedRhs[j])
-      ret.push(sortedLhs[i++]);
-    else if (sortedLhs[i] > sortedRhs[j])
-      ++j;
+  for (let j = 0; i < sortedLhs.length && j < sortedRhs.length; ) {
+    if (sortedLhs[i] < sortedRhs[j]) ret.push(sortedLhs[i++]);
+    else if (sortedLhs[i] > sortedRhs[j]) ++j;
     else {
       ++i;
       ++j;
     }
   }
-  for (; i < sortedLhs.length; ++i)
-    ret.push(sortedLhs[i]);
+  for (; i < sortedLhs.length; ++i) ret.push(sortedLhs[i]);
 
   return ret;
-};
+}
 
-function setIntersection(sortedLhs: readonly number[], sortedRhs: readonly number[]) {
+function setIntersection(
+  sortedLhs: readonly number[],
+  sortedRhs: readonly number[]
+) {
   let ret = [] as number[];
-  for (let i = 0, j = 0; i < sortedLhs.length && j < sortedRhs.length;) {
-    if (sortedLhs[i] < sortedRhs[j])
-      ++i;
-    else if (sortedLhs[i] > sortedRhs[j])
-      ++j;
+  for (let i = 0, j = 0; i < sortedLhs.length && j < sortedRhs.length; ) {
+    if (sortedLhs[i] < sortedRhs[j]) ++i;
+    else if (sortedLhs[i] > sortedRhs[j]) ++j;
     else {
       ret.push(sortedLhs[i]);
       ++i;
@@ -149,42 +148,37 @@ function setIntersection(sortedLhs: readonly number[], sortedRhs: readonly numbe
     }
   }
   return ret;
-};
+}
 
 function setUnion(sortedLhs: readonly number[], sortedRhs: readonly number[]) {
   let ret = [] as number[];
-  let i = 0, j = 0;
+  let i = 0,
+    j = 0;
   while (i < sortedLhs.length && j < sortedRhs.length) {
-    if (sortedLhs[i] < sortedRhs[j])
-      ret.push(sortedLhs[i++]);
-    else if (sortedLhs[i] > sortedRhs[j])
-      ret.push(sortedRhs[j++]);
+    if (sortedLhs[i] < sortedRhs[j]) ret.push(sortedLhs[i++]);
+    else if (sortedLhs[i] > sortedRhs[j]) ret.push(sortedRhs[j++]);
     else {
       ret.push(sortedLhs[i]);
       ++i;
       ++j;
     }
   }
-  for (; i < sortedLhs.length; ++i)
-    ret.push(sortedLhs[i]);
-  for (; j < sortedRhs.length; ++j)
-    ret.push(sortedRhs[j]);
+  for (; i < sortedLhs.length; ++i) ret.push(sortedLhs[i]);
+  for (; j < sortedRhs.length; ++j) ret.push(sortedRhs[j]);
   return ret;
-};
+}
 
 function isSubset(sortedLhs: readonly number[], sortedRhs: readonly number[]) {
-  for (let i = 0, j = 0; i < sortedLhs.length && j < sortedRhs.length;) {
-    if (sortedLhs[i] < sortedRhs[j])
-      return false;
-    else if (sortedLhs[i] > sortedRhs[j])
-      ++j;
+  for (let i = 0, j = 0; i < sortedLhs.length && j < sortedRhs.length; ) {
+    if (sortedLhs[i] < sortedRhs[j]) return false;
+    else if (sortedLhs[i] > sortedRhs[j]) ++j;
     else {
       ++i;
       ++j;
     }
   }
   return true;
-};
+}
 
 //Generates a greedy divide-and-conquer strategy to determine the layout (or set of layouts) that
 //  a given serialized byte array might conform to.
@@ -208,7 +202,7 @@ function isSubset(sortedLhs: readonly number[], sortedRhs: readonly number[]) {
 //  expressed as some combination of offsets and array size multiples in which case it's almost
 //  certainly computaionally cheaper to simply attempt to deserialize the given given data for the
 //  respective layout.
-function generateLayoutDiscriminator<const LA extends readonly Layout[]>(
+function generateLayoutDiscriminator<LA extends readonly Layout[]>(
   layouts: LA
 ): [boolean, (encoded: Uint8Array) => readonly number[]] {
   type Uint = number;
@@ -219,8 +213,10 @@ function generateLayoutDiscriminator<const LA extends readonly Layout[]>(
   type Candidates = LayoutIndex[];
   type FixedKnownByte = (readonly [ByteVal, LayoutIndex])[];
 
-  const fixedKnown = layouts.map(_ => [] as FixedBytes);
-  const sizeBounds = layouts.map((l, i) => createLayoutMeta(l, 0, fixedKnown[i]));
+  const fixedKnown = layouts.map((_) => [] as FixedBytes);
+  const sizeBounds = layouts.map((l, i) =>
+    createLayoutMeta(l, 0, fixedKnown[i])
+  );
 
   const [ascendingBounds, sizePower] = calcAscendingBoundsAndPower(sizeBounds);
   //we don't check sizePower here and bail early if it is perfect because we prefer perfect byte
@@ -230,14 +226,15 @@ function generateLayoutDiscriminator<const LA extends readonly Layout[]>(
 
   const layoutsWithSize = (size: Size) => {
     for (const [lower, candidates] of ascendingBounds)
-      if (size >= lower)
-        return candidates;
+      if (size >= lower) return candidates;
 
     return [];
   };
 
   const fixedKnownBytes: FixedKnownByte[] = Array(
-    Math.max(...fixedKnown.map(fkb => fkb[fkb.length][0] + fkb[fkb.length][1].length))
+    Math.max(
+      ...fixedKnown.map((fkb) => fkb[fkb.length][0] + fkb[fkb.length][1].length)
+    )
   ).fill([]);
 
   for (let i = 0; i < fixedKnown.length; ++i)
@@ -252,15 +249,19 @@ function generateLayoutDiscriminator<const LA extends readonly Layout[]>(
     //  exclude all layouts whose minimum size is larger than it, nevermind those who expect
     //  a known, fixed value at this position.
     let power = layoutsWithSize(bytePos).length;
-    const anyValueLayouts =
-      setMinus(layoutsWithSize(bytePos), fixedKnownByte.map(([, layoutIdx]) => layoutIdx));
-    const outOfBoundsLayouts = setMinus(layouts.map((_, i) => i), layoutsWithSize(bytePos));
+    const anyValueLayouts = setMinus(
+      layoutsWithSize(bytePos),
+      fixedKnownByte.map(([, layoutIdx]) => layoutIdx)
+    );
+    const outOfBoundsLayouts = setMinus(
+      layouts.map((_, i) => i),
+      layoutsWithSize(bytePos)
+    );
     const distinctValues = new Map<BytePos, Candidates>();
     //the following equation holds (after applying .length to each component):
     //layouts = outOfBoundsLayouts + arbitraryValLayouts + fixedKnownByte
     for (const [byteVal, candidate] of fixedKnownByte) {
-      if (!distinctValues.has(byteVal))
-        distinctValues.set(byteVal, []);
+      if (!distinctValues.has(byteVal)) distinctValues.set(byteVal, []);
 
       distinctValues.get(byteVal)!.push(candidate);
     }
@@ -268,28 +269,38 @@ function generateLayoutDiscriminator<const LA extends readonly Layout[]>(
       //if we find the byte value associated with the this set of layouts, we can eliminate
       //  all other layouts that don't have this value at this position and all layouts
       //  that are too short or too long to have a value in this position regardless
-      const curPower = fixedKnownByte.length - layoutsWithValue.length + outOfBoundsLayouts.length;
+      const curPower =
+        fixedKnownByte.length -
+        layoutsWithValue.length +
+        outOfBoundsLayouts.length;
       power = Math.min(power, curPower);
     }
 
-    if (power === 0)
-      continue;
+    if (power === 0) continue;
 
     if (power === layouts.length - 1) {
       //we have a perfect byte discriminator -> bail early
-      return [true, (encoded: Uint8Array) => {
-        if (encoded.length <= bytePos)
-          return outOfBoundsLayouts.length === 1 ? outOfBoundsLayouts : [];
+      return [
+        true,
+        (encoded: Uint8Array) => {
+          if (encoded.length <= bytePos)
+            return outOfBoundsLayouts.length === 1 ? outOfBoundsLayouts : [];
 
-        const layout = distinctValues.get(encoded[bytePos]);
-        if (layout === undefined)
-          return [];
+          const layout = distinctValues.get(encoded[bytePos]);
+          if (layout === undefined) return [];
 
-        return layout;
-      }];
+          return layout;
+        },
+      ];
     }
 
-    bestBytes.push([power, bytePos, outOfBoundsLayouts, distinctValues, anyValueLayouts] as const);
+    bestBytes.push([
+      power,
+      bytePos,
+      outOfBoundsLayouts,
+      distinctValues,
+      anyValueLayouts,
+    ] as const);
   }
 
   //if we get here, we know we don't have a perfect byte discriminator so we now check wether we
@@ -300,7 +311,10 @@ function generateLayoutDiscriminator<const LA extends readonly Layout[]>(
   //sort in descending order of power
   bestBytes.sort(([lhsPower], [rhsPower]) => rhsPower - lhsPower);
   type BestBytes = typeof bestBytes;
-  type Strategy = [BytePos, Candidates, Map<number, Candidates>] | "size" | "indistinguishable";
+  type Strategy =
+    | [BytePos, Candidates, Map<number, Candidates>]
+    | "size"
+    | "indistinguishable";
 
   let distinguishable = true;
   let firstStrategy: Strategy | undefined;
@@ -320,23 +334,28 @@ function generateLayoutDiscriminator<const LA extends readonly Layout[]>(
 
   const recursivelyBuildStrategy = (
     candidates: Candidates,
-    bestBytes: BestBytes,
+    bestBytes: BestBytes
   ) => {
-    if (candidates.length <= 1 || strategies.has(candidates))
-      return;
+    if (candidates.length <= 1 || strategies.has(candidates)) return;
 
     let sizePower = 0;
     const narrowedBounds = new Map<Size, Candidates>();
     for (const candidate of candidates) {
       const lower = sizeBounds[candidate][0];
       const overlap = setIntersection(ascendingBounds.get(lower)!, candidates);
-      narrowedBounds.set(lower, overlap)
+      narrowedBounds.set(lower, overlap);
       sizePower = Math.max(sizePower, overlap.length);
     }
     sizePower = candidates.length - sizePower;
 
     const narrowedBestBytes = [] as BestBytes;
-    for (const [power, bytePos, outOfBoundsLayouts, distinctValues, anyValueLayouts] of bestBytes) {
+    for (const [
+      power,
+      bytePos,
+      outOfBoundsLayouts,
+      distinctValues,
+      anyValueLayouts,
+    ] of bestBytes) {
       const narrowedDistinctValues = new Map<ByteVal, Candidates>();
       let fixedKnownCount = 0;
       for (const [byteVal, layoutsWithValue] of distinctValues) {
@@ -346,20 +365,28 @@ function generateLayoutDiscriminator<const LA extends readonly Layout[]>(
           fixedKnownCount += lwv.length;
         }
       }
-      const narrowedOutOfBoundsLayouts = setIntersection(outOfBoundsLayouts, candidates);
+      const narrowedOutOfBoundsLayouts = setIntersection(
+        outOfBoundsLayouts,
+        candidates
+      );
 
       let narrowedPower = power;
       for (const [, layoutsWithValue] of narrowedDistinctValues) {
         const curPower =
-          fixedKnownCount - layoutsWithValue.length + narrowedOutOfBoundsLayouts.length;
+          fixedKnownCount -
+          layoutsWithValue.length +
+          narrowedOutOfBoundsLayouts.length;
         narrowedPower = Math.min(narrowedPower, curPower);
       }
 
-      if (narrowedPower === 0)
-        continue;
+      if (narrowedPower === 0) continue;
 
       if (narrowedPower === candidates.length - 1) {
-        addStrategy(candidates, [bytePos, narrowedOutOfBoundsLayouts, narrowedDistinctValues]);
+        addStrategy(candidates, [
+          bytePos,
+          narrowedOutOfBoundsLayouts,
+          narrowedDistinctValues,
+        ]);
         return;
       }
 
@@ -368,7 +395,7 @@ function generateLayoutDiscriminator<const LA extends readonly Layout[]>(
         bytePos,
         narrowedOutOfBoundsLayouts,
         narrowedDistinctValues,
-        setIntersection(anyValueLayouts, candidates)
+        setIntersection(anyValueLayouts, candidates),
       ] as const);
     }
 
@@ -380,12 +407,24 @@ function generateLayoutDiscriminator<const LA extends readonly Layout[]>(
     narrowedBestBytes.sort(([lhsPower], [rhsPower]) => rhsPower - lhsPower);
 
     if (narrowedBestBytes.length > 0 && narrowedBestBytes[0][0] >= sizePower) {
-      const [, bytePos, narrowedOutOfBoundsLayouts, narrowedDistinctValues, anyValueLayouts] =
-        narrowedBestBytes[0];
-      addStrategy(candidates, [bytePos, narrowedOutOfBoundsLayouts, narrowedDistinctValues]);
+      const [
+        ,
+        bytePos,
+        narrowedOutOfBoundsLayouts,
+        narrowedDistinctValues,
+        anyValueLayouts,
+      ] = narrowedBestBytes[0];
+      addStrategy(candidates, [
+        bytePos,
+        narrowedOutOfBoundsLayouts,
+        narrowedDistinctValues,
+      ]);
       recursivelyBuildStrategy(narrowedOutOfBoundsLayouts, narrowedBestBytes);
       for (const cand of narrowedDistinctValues.values())
-        recursivelyBuildStrategy(setUnion(cand, anyValueLayouts), narrowedBestBytes.slice(1));
+        recursivelyBuildStrategy(
+          setUnion(cand, anyValueLayouts),
+          narrowedBestBytes.slice(1)
+        );
 
       return;
     }
@@ -400,54 +439,62 @@ function generateLayoutDiscriminator<const LA extends readonly Layout[]>(
 
     addStrategy(candidates, "indistinguishable");
     distinguishable = false;
-  }
+  };
 
-  recursivelyBuildStrategy(layouts.map((_, i) => i), bestBytes);
+  recursivelyBuildStrategy(
+    layouts.map((_, i) => i),
+    bestBytes
+  );
 
   const findSmallestSuperSetStrategy = (candidates: Candidates) => {
     for (let size = candidates.length + 1; size < layouts.length - 2; ++size)
       for (const larger of candidatesBySize.get(size) ?? [])
-        if (isSubset(candidates, larger))
-          return strategies.get(larger)!;
+        if (isSubset(candidates, larger)) return strategies.get(larger)!;
 
     throw new Error("Implementation error in layout discrimination algorithm");
   };
 
-  return [distinguishable, (encoded: Uint8Array) => {
-    let candidates = layouts.map((_, i) => i);
-    let strategy = firstStrategy!;
-    while (strategy !== "indistinguishable") {
-      switch (strategy) {
-        case "size": {
-          candidates = setIntersection(candidates, layoutsWithSize(encoded.length));
-          break;
-        }
-        default: {
-          const [bytePos, outOfBoundsLayouts, distinctValues] = strategy;
-          if (encoded.length <= bytePos)
-            candidates = setIntersection(candidates, outOfBoundsLayouts);
-          else {
-            const byteVal = encoded[bytePos];
-            for (const [val, cands] of distinctValues)
-              if (val !== byteVal)
-                candidates = setMinus(candidates, cands);
+  return [
+    distinguishable,
+    (encoded: Uint8Array) => {
+      let candidates = layouts.map((_, i) => i);
+      let strategy = firstStrategy!;
+      while (strategy !== "indistinguishable") {
+        switch (strategy) {
+          case "size": {
+            candidates = setIntersection(
+              candidates,
+              layoutsWithSize(encoded.length)
+            );
+            break;
+          }
+          default: {
+            const [bytePos, outOfBoundsLayouts, distinctValues] = strategy;
+            if (encoded.length <= bytePos)
+              candidates = setIntersection(candidates, outOfBoundsLayouts);
+            else {
+              const byteVal = encoded[bytePos];
+              for (const [val, cands] of distinctValues)
+                if (val !== byteVal) candidates = setMinus(candidates, cands);
 
-            candidates = setMinus(candidates, outOfBoundsLayouts);
+              candidates = setMinus(candidates, outOfBoundsLayouts);
+            }
           }
         }
+
+        if (candidates.length <= 1) return candidates;
+
+        strategy =
+          strategies.get(candidates) ??
+          findSmallestSuperSetStrategy(candidates);
       }
 
-      if (candidates.length <= 1)
-        return candidates;
-
-      strategy = strategies.get(candidates) ?? findSmallestSuperSetStrategy(candidates);
-    }
-
-    return candidates;
-  }];
+      return candidates;
+    },
+  ];
 }
 
-export function layoutDiscriminator<const LA extends readonly Layout[]>(
+export function layoutDiscriminator<LA extends readonly Layout[]>(
   layouts: LA,
   mustBeDistinguishable = true
 ) {
@@ -458,7 +505,7 @@ export function layoutDiscriminator<const LA extends readonly Layout[]>(
   return !mustBeDistinguishable
     ? discriminator
     : (encoded: Uint8Array) => {
-      const layout = discriminator(encoded);
-      return (layout.length === 0) ? null : layout[0];
-    };
+        const layout = discriminator(encoded);
+        return layout.length === 0 ? null : layout[0];
+      };
 }

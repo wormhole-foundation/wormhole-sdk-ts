@@ -27,7 +27,7 @@ import { WormholeCore } from "../../protocols/core";
 export function mockPlatformFactory<P extends PlatformName>(
   network: Network,
   p: P,
-  config: ChainsConfig,
+  config: ChainsConfig
 ): Platform<P> {
   class ConcreteMockPlatform extends MockPlatform<P> {
     readonly platform = p;

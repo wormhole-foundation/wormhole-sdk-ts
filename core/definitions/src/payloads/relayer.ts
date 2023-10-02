@@ -15,12 +15,12 @@ import { registerPayloadType } from "../vaa";
 const encodedExecutionInfoItem = {
   binary: "object",
   layout: [
-    { name: "size", binary: "uint", size: 4, custom: 3*32, omit: true },
+    { name: "size", binary: "uint", size: 4, custom: 3 * 32, omit: true },
     { name: "waste", binary: "uint", size: 31, custom: 0n, omit: true },
     { name: "version", binary: "uint", size: 1, custom: 0, omit: true },
     { name: "gasLimit", ...amountItem },
     { name: "targetChainRefundPerGasUnused", ...amountItem },
-  ]
+  ],
 } as const satisfies Omit<ObjectLayoutItem, "name">;
 
 const payloadIdItem = <N extends number>(id: N) =>

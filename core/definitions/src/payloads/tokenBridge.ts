@@ -6,7 +6,12 @@ import {
   range,
   ShallowMapping,
 } from "@wormhole-foundation/sdk-base";
-import { payloadIdItem, chainItem, universalAddressItem, amountItem } from "../layout-items";
+import {
+  payloadIdItem,
+  chainItem,
+  universalAddressItem,
+  amountItem,
+} from "../layout-items";
 import { registerPayloadType } from "../vaa";
 
 const fixedLengthStringItem = {
@@ -22,14 +27,15 @@ const fixedLengthStringItem = {
   } satisfies CustomConversion<Uint8Array, string>,
 } as const satisfies Omit<FixedSizeBytesLayoutItem, "name">;
 
-export const transferWithPayloadLayout = <const P extends Omit<LayoutItem, "name">>(
+export const transferWithPayloadLayout = <P extends Omit<LayoutItem, "name">>(
   customPayload: P
-) => ([
-  payloadIdItem(3),
-  ...transferCommonLayout,
-  { name: "from", ...universalAddressItem },
-  { name: "payload", ...customPayload },
-] as const);
+) =>
+  [
+    payloadIdItem(3),
+    ...transferCommonLayout,
+    { name: "from", ...universalAddressItem },
+    { name: "payload", ...customPayload },
+  ] as const;
 
 const transferCommonLayout = [
   {
@@ -73,10 +79,7 @@ export const tokenBridgePayloads = [
     "Transfer",
     [payloadIdItem(1), ...transferCommonLayout, { name: "fee", ...amountItem }],
   ],
-  [
-    "TransferWithPayload",
-    transferWithPayloadLayout({ binary: "bytes" }),
-  ],
+  ["TransferWithPayload", transferWithPayloadLayout({ binary: "bytes" })],
 ] as const satisfies readonly (readonly [string, Layout])[];
 
 // factory registration:
