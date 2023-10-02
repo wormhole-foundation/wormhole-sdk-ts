@@ -29,7 +29,7 @@ describe("BAM VAA tests", function () {
       const x = deserializePayload(payloadLiteral, parsed.payload);
 
       const targetAddress = Buffer.from(x.targetAddress).toString("hex");
-      const senderAddress = Buffer.from(x.targetAddress).toString("hex");
+      const senderAddress = Buffer.from(x.senderAddress).toString("hex");
       const parsedContents = Buffer.from(x.contents).toString("hex");
 
       expect(x).toBeTruthy();
