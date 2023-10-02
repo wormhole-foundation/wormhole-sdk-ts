@@ -3,6 +3,7 @@ import "./payloads/connect";
 import "./payloads/relayer";
 import "./payloads/governance";
 import "./payloads/tokenBridge";
+import "./payloads/bam";
 
 export * from "./address";
 export * from "./universalAddress";
