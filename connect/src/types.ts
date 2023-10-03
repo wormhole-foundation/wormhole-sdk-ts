@@ -1,4 +1,4 @@
-import { Network } from '@wormhole-foundation/sdk-base';
+import { ChainId, Network } from '@wormhole-foundation/sdk-base';
 import {
   ChainAddress,
   TransactionId,
@@ -72,5 +72,50 @@ export function isCCTPTransferDetails(
     (<CCTPTransferDetails>thing).amount !== undefined &&
     (<CCTPTransferDetails>thing).from !== undefined &&
     (<CCTPTransferDetails>thing).to !== undefined
+  );
+}
+
+//
+
+// GatewayTransferMsg is the message sent in the payload of a TokenTransfer
+// to be executed by the Gateway contract.
+export interface GatewayTransferMsg {
+  gateway_transfer: {
+    chain: ChainId;
+    recipient: string;
+    fee: string;
+    nonce: number;
+  };
+}
+
+// GatewayTransferWithPayloadMsg is the message sent in the payload of a
+// TokenTransfer with its own payload to be executed by the Gateway contract.
+export interface GatewayTransferWithPayloadMsg {
+  gateway_transfer_with_payload: {
+    chain: ChainId;
+    recipient: string;
+    fee: string;
+    nonce: number;
+    payload: string;
+  };
+}
+
+export type GatewayTransferDetails = {
+  token: TokenId | 'native';
+  amount: bigint;
+  from: ChainAddress;
+  to: ChainAddress;
+  payload?: Uint8Array;
+  nativeGas?: bigint;
+};
+
+export function isGatewayTransferDetails(
+  thing: GatewayTransferDetails | any,
+): thing is GatewayTransferDetails {
+  return (
+    (<GatewayTransferDetails>thing).token !== undefined &&
+    (<GatewayTransferDetails>thing).amount !== undefined &&
+    (<GatewayTransferDetails>thing).from !== undefined &&
+    (<GatewayTransferDetails>thing).to !== undefined
   );
 }

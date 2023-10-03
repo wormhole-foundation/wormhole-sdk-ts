@@ -1,5 +1,11 @@
-import { toBech32, fromBech32, fromHex } from "@cosmjs/encoding";
-import { Address, UniversalAddress } from "@wormhole-foundation/connect-sdk";
+import { toBech32, fromBech32, fromHex, fromBase64 } from "@cosmjs/encoding";
+import {
+  Address,
+  UniversalAddress,
+  registerNative,
+} from "@wormhole-foundation/connect-sdk";
+import { CosmwasmPlatform } from "./platform";
+import { nativeDenomToChain } from "./constants";
 
 declare global {
   namespace Wormhole {
@@ -10,50 +16,156 @@ declare global {
   }
 }
 
+/*
+Cosmos Addresses
+-----
+
+There are at least 5 types of addresses in Cosmos:
+
+
+  Native Denom
+    ex: "uatom"
+
+    address = [] // 0 bytes
+    domain = undefined
+    denom = "uatom"
+    denomType = "native"
+
+  Contract Address
+    ex: "wormhole1ctnjk7an90lz5wjfvr3cf6x984a8cjnv8dpmztmlpcq4xteaa2xs9pwmzk"
+
+    address = [0x...] // 32 bytes
+    domain = "wormhole"
+    denom = undefined
+    denomType = undefined
+
+  Account Address
+    ex: "cosmos1hsk6jryyqjfhp5dhc55tc9jtckygx0eph6dd02"
+
+    address = [0x...] // 20 bytes
+    domain = "cosmos"
+    denom = undefined
+    denomType = undefined
+
+  IBC Denom
+    ex: IBC/BAEAC83736444C09656FBE666FB625974FCCDEE566EB700EBFD2642C5F6CF13A
+
+    address = [0x...] // 32 bytes
+    domain = undefined
+    denom = undefined
+    denomType = "IBC" 
+
+  Factory Address
+    ex: "factory/inj17vytdwqczqz72j65saukplrktd4gyfme5agf6c/avax"
+
+    address = [0x...] 20 bytes
+    domain = "inj" 
+    denom =  "avax" 
+    denomType = "factory"
+
+*/
+
+// Factory type addresses may have hex or b64 or bech32 encoded addresses
+function tryDecode(data: string): { data: Uint8Array; prefix?: string } {
+  try {
+    return { ...fromBech32(data) };
+  } catch {}
+
+  try {
+    return { data: fromHex(data) };
+  } catch {}
+
+  try {
+    return { data: fromBase64(data) };
+  } catch {}
+
+  throw new Error(`Cannot decode: ${data}`);
+}
+
 export class CosmwasmAddress implements Address {
   static readonly contractAddressByteSize = 32;
   static readonly accountAddressByteSize = 20;
 
-  private readonly prefix: string;
+  // the actual bytes of the address
   private readonly address: Uint8Array;
+
+  // The domain is the prefix for the address, like "cosmos" or "ibc"
+  private readonly domain?: string;
+  // The denom is the token name, like "uatom" or "usdc"
+  private readonly denom?: string;
+  // The denomType is "native", "ibc", or "factory"
+  private readonly denomType?: string;
 
   constructor(address: string | Uint8Array | UniversalAddress) {
     if (typeof address === "string") {
-      // A denom address like "IBC/..."
-      if (address.indexOf("/") !== -1) {
-        const chunks = address.split("/");
-        const data = fromHex(chunks[1]);
-        CosmwasmAddress.validLength(data);
+      // A native denom like "uatom"
+      if (nativeDenomToChain.has(CosmwasmPlatform.network, address)) {
+        this.address = new Uint8Array(0);
+        this.denom = address;
+        this.denomType = "native";
+        this.domain = nativeDenomToChain
+          .get(CosmwasmPlatform.network, address)
+          ?.pop();
+        return;
+      }
 
+      if (address.indexOf("/") !== -1) {
+        // A denom address like "ibc/..." or "factory/..."
+        const chunks = address.split("/");
+
+        const { data, prefix } = tryDecode(chunks[1]);
         this.address = data;
-        this.prefix = chunks[0];
+        this.domain = prefix;
+
+        this.denomType = chunks[0];
+
+        if (chunks.length === 3) this.denom = chunks[2];
       } else {
+        // should be a contract or account address by now
         if (!CosmwasmAddress.isValidAddress(address))
           throw new Error(`Invalid Cosmwasm address:  ${address}`);
 
         const { data, prefix } = fromBech32(address);
         this.address = data;
-        this.prefix = prefix;
+        this.domain = prefix;
       }
     } else if (address instanceof Uint8Array) {
-      CosmwasmAddress.validLength(address);
-      this.prefix = "";
       this.address = address;
     } else if (address instanceof UniversalAddress) {
-      const addressBytes = address.toUint8Array();
-      CosmwasmAddress.validLength(addressBytes);
-
-      this.address = addressBytes;
-      this.prefix = "";
+      this.address = address.toUint8Array();
     } else throw new Error(`Invalid Cosmwasm address ${address}`);
+
+    if (!CosmwasmAddress.validAddressLength(this.address)) {
+      throw new Error("Expected 20 or 32 bytes address");
+    }
   }
 
   unwrap(): string {
     return this.toString();
   }
 
-  toString() {
-    return toBech32(this.prefix, this.address);
+  toString(): string {
+    // Coin address
+    if (this.denomType !== undefined) {
+      // native asset denom
+      if (this.denomType === "native") return this.denom!;
+
+      // ibc/hex
+      if (this.denomType === "ibc") {
+        // NOTE: this is case sensitive, should be `ibc` not `IBC`
+        return `${this.denomType.toLowerCase()}/${Buffer.from(this.address)
+          .toString("hex")
+          .toUpperCase()}`;
+      }
+
+      // factory/address/denom
+      return `${this.denomType}/${toBech32(this.domain!, this.address)}/${
+        this.denom
+      }`;
+    }
+
+    // contract or account address
+    return toBech32(this.domain!, this.address);
   }
 
   toNative() {
@@ -73,12 +185,12 @@ export class CosmwasmAddress implements Address {
   static isValidAddress(address: string): boolean {
     try {
       const maybe = fromBech32(address);
-      return CosmwasmAddress.validLength(maybe.data);
-    } catch (e) {}
+      return CosmwasmAddress.validAddressLength(maybe.data);
+    } catch {}
     return false;
   }
 
-  private static validLength(address: Uint8Array): boolean {
+  private static validAddressLength(address: Uint8Array): boolean {
     if (
       address.length !== CosmwasmAddress.contractAddressByteSize &&
       address.length !== CosmwasmAddress.accountAddressByteSize
@@ -95,3 +207,5 @@ export class CosmwasmAddress implements Address {
     return other.equals(this.toUniversalAddress());
   }
 }
+
+registerNative("Cosmwasm", CosmwasmAddress);

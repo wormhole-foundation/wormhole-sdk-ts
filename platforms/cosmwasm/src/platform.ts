@@ -1,4 +1,13 @@
 import {
+  IbcExtension,
+  QueryClient,
+  logs as cosmosLogs,
+  setupIbcExtension,
+} from "@cosmjs/stargate";
+import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
+import { TendermintClient } from "@cosmjs/tendermint-rpc";
+
+import {
   ChainName,
   TxHash,
   WormholeMessageId,
@@ -7,16 +16,21 @@ import {
   Network,
   DEFAULT_NETWORK,
   Platform,
+  UniversalAddress,
+  PlatformToChains,
 } from "@wormhole-foundation/connect-sdk";
-import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
+
 import { CosmwasmContracts } from "./contracts";
 import { CosmwasmChain } from "./chain";
-import { CosmwasmTokenBridge } from "./protocols/tokenBridge";
 import { CosmwasmUtils } from "./platformUtils";
+import { chainToNativeDenoms } from "./constants";
+import { searchCosmosLogs } from "./types";
+import { Gateway } from "./gateway";
 
-// forces CosmwasmPlatform to implement Platform
-var _: Platform<"Cosmwasm"> = CosmwasmPlatform
+import { CosmwasmTokenBridge } from "./protocols/tokenBridge";
+import { CosmwasmIbcBridge } from "./protocols/ibc";
 
+var _: Platform<"Cosmwasm"> = CosmwasmPlatform;
 /**
  * @category Cosmwasm
  */
@@ -25,7 +39,7 @@ export module CosmwasmPlatform {
   export let network: Network = DEFAULT_NETWORK;
   export let conf: ChainsConfig = networkPlatformConfigs(network, platform);
 
-  let contracts: CosmwasmContracts = new CosmwasmContracts(conf);
+  export let contracts: CosmwasmContracts = new CosmwasmContracts(conf);
 
   export type Type = typeof platform;
 
@@ -33,6 +47,7 @@ export module CosmwasmPlatform {
   export const {
     nativeTokenId,
     isNativeTokenId,
+    isNativeDenom,
     isSupportedChain,
     getDecimals,
     getBalance,
@@ -40,6 +55,14 @@ export module CosmwasmPlatform {
     getCurrentBlock,
     chainFromRpc,
   } = CosmwasmUtils;
+
+  export const {
+    getRpc: getGatewayRpc,
+    getWrappedAsset: getGatewayWrappedAsset,
+    address: gatewayAddress,
+    getDestinationChannel,
+    getSourceChannel,
+  } = Gateway;
 
   export function setConfig(
     network: Network,
@@ -52,11 +75,47 @@ export module CosmwasmPlatform {
 
   export async function getRpc(chain: ChainName): Promise<CosmWasmClient> {
     const rpcAddress = conf[chain]!.rpc;
-    return CosmWasmClient.connect(rpcAddress);
+    return await CosmWasmClient.connect(rpcAddress);
   }
 
   export function getChain(chain: ChainName): CosmwasmChain {
     return new CosmwasmChain(chain);
+  }
+
+  // TODO: should other platforms have something like this?
+  export function getNativeDenom(chain: ChainName): string {
+    // TODO: required because of const map
+    if (network === "Devnet") throw new Error("No devnet native denoms");
+    return chainToNativeDenoms(network, chain as PlatformToChains<Type>);
+  }
+
+  export async function parseTransaction(
+    chain: ChainName,
+    rpc: CosmWasmClient,
+    txid: TxHash
+  ): Promise<WormholeMessageId[]> {
+    const tx = await rpc.getTx(txid);
+    if (!tx) throw new Error("tx not found");
+
+    // parse logs emitted for the tx execution
+    const logs = cosmosLogs.parseRawLog(tx.rawLog);
+
+    // extract information wormhole contract logs
+    // - message.sequence: the vaa's sequence number
+    // - message.sender: the vaa's emitter address
+    const sequence = searchCosmosLogs("message.sequence", logs);
+    if (!sequence) throw new Error("sequence not found");
+
+    const emitterAddress = searchCosmosLogs("message.sender", logs);
+    if (!emitterAddress) throw new Error("emitter not found");
+
+    return [
+      {
+        chain: chain,
+        sequence: BigInt(sequence),
+        emitter: new UniversalAddress(emitterAddress),
+      },
+    ];
   }
 
   export async function getTokenBridge(
@@ -65,36 +124,17 @@ export module CosmwasmPlatform {
     return await CosmwasmTokenBridge.fromProvider(rpc, contracts);
   }
 
-  export async function parseTransaction(
-    chain: ChainName,
-    rpc: CosmWasmClient,
-    txid: TxHash
-  ): Promise<WormholeMessageId[]> {
-    throw new Error("Not implemented");
-    //const receipt = await rpc.getTransactionReceipt(txid);
-
-    //if (receipt === null)
-    //  throw new Error(`No transaction found with txid: ${txid}`);
-
-    //const coreAddress = this.conf[chain]!.contracts.coreBridge;
-    //const coreImpl = this.contracts.getCoreImplementationInterface();
-
-    //return receipt.logs
-    //  .filter((l: any) => {
-    //    return l.address === coreAddress;
-    //  })
-    //  .map((log) => {
-    //    const { topics, data } = log;
-    //    const parsed = coreImpl.parseLog({ topics: topics.slice(), data });
-    //    if (parsed === null) return undefined;
-
-    //    const emitterAddress = this.parseAddress(chain, parsed.args.sender);
-    //    return {
-    //      chain: chain,
-    //      emitter: emitterAddress.toUniversalAddress(),
-    //      sequence: parsed.args.sequence,
-    //    } as WormholeMessageId;
-    //  })
-    //  .filter(isWormholeMessageId);
+  export async function getIbcBridge(
+    rpc: CosmWasmClient
+  ): Promise<CosmwasmIbcBridge> {
+    return await CosmwasmIbcBridge.fromProvider(rpc, contracts);
   }
+
+  export const getQueryClient = (
+    rpc: CosmWasmClient
+  ): QueryClient & IbcExtension => {
+    // @ts-ignore
+    const tmClient: TendermintClient = rpc.getTmClient()!;
+    return QueryClient.withExtensions(tmClient, setupIbcExtension);
+  };
 }

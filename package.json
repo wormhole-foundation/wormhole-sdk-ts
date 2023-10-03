@@ -38,6 +38,7 @@
     "connect",
     "platforms/evm",
     "platforms/solana",
+    "platforms/cosmwasm",
     "examples"
   ]
 }

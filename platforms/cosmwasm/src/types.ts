@@ -1,28 +1,16 @@
 import {
   UniversalAddress,
   UniversalOrNative,
-  registerNative,
   PlatformToChains,
   ChainId,
+  GatewayTransferMsg,
 } from "@wormhole-foundation/connect-sdk";
 
-import { CosmwasmAddress } from "./address";
-import { Coin, EncodeObject } from "@cosmjs/proto-signing";
-import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
-import { MSG_EXECUTE_CONTRACT_TYPE_URL } from "./constants";
+import { logs as cosmosLogs } from "@cosmjs/stargate";
 
-registerNative("Cosmwasm", CosmwasmAddress);
-
-export interface GatewayTransferMsg {
-  gateway_transfer: {
-    chain: ChainId;
-    recipient: string;
-    fee: string;
-    nonce: number;
-  };
-}
-
-export interface FromCosmosPayload {
+// GatewayIBCTransferMsg is the message sent in the memo of an IBC transfer
+// to be decoded and executed by the Gateway contract.
+export interface GatewayIbcTransferMsg {
   gateway_ibc_token_bridge_payload: GatewayTransferMsg;
 }
 
@@ -57,17 +45,17 @@ export const toCosmwasmAddrString = (addr: UniversalOrCosmwasm) =>
         : addr
       ).unwrap();
 
-export const buildExecuteMsg = (
-  sender: string,
-  contract: string,
-  msg: Record<string, any>,
-  funds?: Coin[]
-): EncodeObject => ({
-  typeUrl: MSG_EXECUTE_CONTRACT_TYPE_URL,
-  value: MsgExecuteContract.fromPartial({
-    sender: sender,
-    contract: contract,
-    msg: Buffer.from(JSON.stringify(msg)),
-    funds,
-  }),
-});
+// TODO: do >1 key at a time
+export const searchCosmosLogs = (
+  key: string,
+  logs: readonly cosmosLogs.Log[]
+): string | null => {
+  for (const log of logs) {
+    for (const ev of log.events) {
+      for (const attr of ev.attributes) {
+        if (attr.key === key) return attr.value;
+      }
+    }
+  }
+  return null;
+};

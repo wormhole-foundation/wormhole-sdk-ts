@@ -41,14 +41,14 @@
   },
   "sideEffects": false,
   "scripts": {
-    "build:cjs":"tsc -p ./tsconfig.cjs.json",
-    "build:esm":"tsc -p ./tsconfig.esm.json",
-    "build":"npm run build:cjs && npm run build:esm",
-    "rebuild":"npm run clean && npm run build:cjs && npm run build:esm",
+    "build:cjs": "tsc -p ./tsconfig.cjs.json",
+    "build:esm": "tsc -p ./tsconfig.esm.json",
+    "build": "npm run build:cjs && npm run build:esm",
+    "rebuild": "npm run clean && npm run build:cjs && npm run build:esm",
     "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo",
     "lint": "npm run prettier && eslint --fix",
     "prettier": "prettier --write ./src",
-    "test":"jest --config ./jest.config.ts"
+    "test": "jest --config ./jest.config.ts"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.54.1",
@@ -60,11 +60,12 @@
     "typescript": "5.1.6"
   },
   "dependencies": {
-    "@wormhole-foundation/connect-sdk": "*",
-    "@cosmjs/stargate": "^0.31.0",
     "@cosmjs/cosmwasm-stargate": "^0.31.0",
     "@cosmjs/proto-signing": "^0.31.0",
+    "@cosmjs/stargate": "^0.31.0",
     "@cosmjs/tendermint-rpc": "^0.31.0",
-    "cosmjs-types": "^0.5.2"
+    "@wormhole-foundation/connect-sdk": "*",
+    "bs58": "^5.0.0",
+    "cosmjs-types": "^0.8.0"
   }
 }

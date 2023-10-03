@@ -37,6 +37,8 @@ export function makeNativeAddressHexString(chain: ChainName): string {
   switch (chainToPlatform(chain)) {
     case "Evm":
       return fake20ByteAddress();
+    case "Cosmwasm":
+      return fake20ByteAddress();
     default:
       return fake32ByteAddress();
   }

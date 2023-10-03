@@ -42,6 +42,10 @@ export const tokenBridgeContracts = [
         "xpla137w0wfch2dfmz7jl2ap8pcmswasj8kg06ay4dtjzw7tzkn77ufxqfw7acv",
       ],
       ["Sei", "sei1smzlm9t79kur392nu9egl8p8je9j92q4gzguewj56a05kyxxra0qy0nuf3"],
+      [
+        "Wormchain",
+        "wormhole1466nf3zuxpya8q9emxukd7vftaf6h4psr0a07srl5zw74zh84yjq4lyjmh",
+      ],
     ],
   ],
   [
@@ -86,6 +90,10 @@ export const tokenBridgeContracts = [
       ["Base", "0xA31aa3FDb7aF7Db93d18DDA4e19F811342EDF780"],
       ["Sei", "sei1jv5xw094mclanxt5emammy875qelf3v62u4tl4lp5nhte3w3s9ts9w9az2"],
       ["Sepolia", "0xDB5492265f6038831E89f495670FF909aDe94bd9"],
+      [
+        "Wormchain",
+        "wormhole1aaf9r6s7nxhysuegqrxv0wpm27ypyv4886medd3mrkrw6t4yfcnst3qpex",
+      ],
     ],
   ],
   [

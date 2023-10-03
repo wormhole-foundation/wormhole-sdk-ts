@@ -1,15 +1,43 @@
-import { EncodeObject } from "@cosmjs/proto-signing";
-import { StdFee } from "@cosmjs/stargate";
+import { Coin, EncodeObject } from "@cosmjs/proto-signing";
+import { StdFee, calculateFee } from "@cosmjs/stargate";
 import {
   UnsignedTransaction,
   ChainName,
   Network,
 } from "@wormhole-foundation/connect-sdk";
+import { MSG_EXECUTE_CONTRACT_TYPE_URL } from "./constants";
+import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
+import { CosmwasmPlatform } from "./platform";
 
 export interface CosmwasmTransaction {
-  fee: StdFee | "auto" | number;
+  fee: StdFee;
   msgs: EncodeObject[];
   memo: string;
+}
+
+export function computeFee(chain: ChainName): StdFee {
+  const denom = CosmwasmPlatform.getNativeDenom(chain);
+  // TODO: dont hardcode ths stuff
+  return calculateFee(1_000_000, `0.1${denom}`);
+}
+
+export function buildExecuteMsg(
+  sender: string,
+  contract: string,
+  msg: Record<string, any>,
+  funds?: Coin[]
+): EncodeObject {
+  console.log(msg);
+  const obj = {
+    typeUrl: MSG_EXECUTE_CONTRACT_TYPE_URL,
+    value: MsgExecuteContract.fromPartial({
+      sender: sender,
+      contract: contract,
+      msg: Buffer.from(JSON.stringify(msg)),
+      funds,
+    }),
+  };
+  return obj;
 }
 
 export class CosmwasmUnsignedTransaction implements UnsignedTransaction {
