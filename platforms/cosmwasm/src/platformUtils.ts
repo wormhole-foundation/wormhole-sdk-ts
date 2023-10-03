@@ -53,10 +53,11 @@ export module CosmwasmUtils {
   export async function getDecimals(
     chain: ChainName,
     rpc: CosmWasmClient,
-    tokenId: TokenId
+    tokenId: TokenId | "native"
   ): Promise<bigint> {
-    if (isNativeTokenId(chain, tokenId))
+    if (tokenId === "native" || isNativeTokenId(chain, tokenId))
       return nativeDecimals(CosmwasmPlatform.platform);
+
     const { decimals } = await rpc.queryContractSmart(
       tokenId.address.toString(),
       {

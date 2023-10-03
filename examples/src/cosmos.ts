@@ -28,7 +28,7 @@ import { TransferStuff, getStuff } from "./helpers";
 
   // we'll use the native token on the source chain
   const token = "native";
-  const amount = 1_000_000_000n;
+  const amount = await wh.normalizeAmount(leg1.chain.chain, token, 0.01);
 
   // Transfer native token from source chain, through gateway, to a cosmos chain
   const route1 = await transferIntoCosmos(wh, token, amount, leg1, leg2);

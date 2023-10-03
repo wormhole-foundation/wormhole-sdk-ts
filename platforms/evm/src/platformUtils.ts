@@ -47,10 +47,9 @@ export module EvmUtils {
   export async function getDecimals(
     chain: ChainName,
     rpc: Provider,
-    tokenId: TokenId,
+    tokenId: TokenId | 'native',
   ): Promise<bigint> {
-    if (isNativeTokenId(chain, tokenId))
-      return nativeDecimals(EvmPlatform.platform);
+    if (tokenId === 'native') return nativeDecimals(EvmPlatform.platform);
 
     const tokenContract = EvmContracts.getTokenImplementation(
       rpc,

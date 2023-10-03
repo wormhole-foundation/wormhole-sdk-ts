@@ -4,13 +4,11 @@ import {
   TokenTransfer,
   ChainName,
   Signer,
-  toNative,
 } from "@wormhole-foundation/connect-sdk";
 // Import the platform specific packages
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
-import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 //
 import { TransferStuff, getStuff, waitLog } from "./helpers";
 
@@ -40,31 +38,6 @@ import { TransferStuff, getStuff, waitLog } from "./helpers";
     source,
     destination
   );
-
-  // const seiRpc = (await rcvChain.getRpc()) as CosmWasmClient;
-  // const txid =
-  //   "0x46838dff1151478b6673861077a998d46430e072a064430408c1d7f68de5dcec";
-  // //"0xc7c6ee96c25b7d920c56e718783a314e16fdb2ed664a91d1ea71bd1ca809656e";
-  // const [msg] = await sendChain.parseTransaction(txid);
-  // const vaa = await wh.getVAABytes(msg.chain, msg.emitter, msg.sequence);
-  // console.log(
-  //   await seiRpc.queryContractSmart(
-  //     "sei1jv5xw094mclanxt5emammy875qelf3v62u4tl4lp5nhte3w3s9ts9w9az2",
-  //     {
-  //       //transfer_info: { vaa: Buffer.from(vaa!).toString("base64") },
-  //       wrapped_registry: {
-  //         chain: 6,
-  //         address: Buffer.from([
-  //           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 208, 10, 224, 132, 3, 185, 187,
-  //           185, 18, 75, 179, 5, 192, 144, 88, 227, 44, 57, 164, 140,
-  //         ]).toString("base64"),
-  //       },
-  //     }
-  //   )
-  // );
-  // return;
-
-  // await finishTransfer(wh, sendChain.chain, txid, destination.signer);
 
   // await automaticTokenTransfer(wh, "native", 100_000_000n, source, destination);
   // await automaticTokenTransferWithGasDropoff(
