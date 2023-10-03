@@ -6,3 +6,5 @@ export * from './unsignedTransaction';
 export * from './contracts';
 
 export * from './protocols/tokenBridge';
+
+export * from './types';

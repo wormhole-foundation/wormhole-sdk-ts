@@ -11,7 +11,8 @@ import { getAssociatedTokenAddress } from '@solana/spl-token';
 import { SolanaPlatform } from './platform';
 
 export class SolanaChain extends ChainContext<'Solana'> {
-  readonly platform: Platform<'Solana'> = SolanaPlatform;
+  // @ts-ignore
+  readonly platform = SolanaPlatform;
 
   async getTokenAccount(
     token: UniversalOrNative<'Solana'> | 'native',

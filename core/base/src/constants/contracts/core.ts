@@ -44,6 +44,10 @@ export const coreBridgeContracts = [
         "xpla1jn8qmdda5m6f6fqu9qv46rt7ajhklg40ukpqchkejcvy8x7w26cqxamv3w",
       ],
       ["Sei", "sei1gjrrme22cyha4ht2xapn3f08zzw6z3d4uxx6fyy9zd5dyr3yxgzqqncdqn"],
+      [
+        "Wormchain",
+        "wormhole1ufs3tlq4umljk0qfe8k5ya0x6hpavn897u2cnf9k0en9jr7qarqqaqfk2j",
+      ],
     ],
   ],
   [
@@ -94,6 +98,10 @@ export const coreBridgeContracts = [
       ["Base", "0x23908A62110e21C04F3A4e011d24F901F911744A"],
       ["Sei", "sei1nna9mzp274djrgzhzkac2gvm3j27l402s4xzr08chq57pjsupqnqaj0d5s"],
       ["Sepolia", "0x4a8bc80Ed5a4067f1CCf107057b8270E0cC11A78"],
+      [
+        "Wormchain",
+        "wormhole16jzpxp0e8550c9aht6q9svcux30vtyyyyxv5w2l2djjra46580wsazcjwp",
+      ],
     ],
   ],
   [

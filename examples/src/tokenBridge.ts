@@ -2,21 +2,28 @@ import {
   Wormhole,
   TokenId,
   TokenTransfer,
+  ChainName,
+  Signer,
 } from "@wormhole-foundation/connect-sdk";
 // Import the platform specific packages
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
+import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
 //
 import { TransferStuff, getStuff, waitLog } from "./helpers";
 
 (async function () {
   // init Wormhole object, passing config for which network
   // to use (e.g. Mainnet/Testnet) and what Platforms to support
-  const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform]);
+  const wh = new Wormhole("Testnet", [
+    EvmPlatform,
+    SolanaPlatform,
+    CosmwasmPlatform,
+  ]);
 
   // Grab chain Contexts
-  const sendChain = wh.getChain("Solana");
-  const rcvChain = wh.getChain("Avalanche");
+  const sendChain = wh.getChain("Avalanche");
+  const rcvChain = wh.getChain("Sei");
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
@@ -24,7 +31,13 @@ import { TransferStuff, getStuff, waitLog } from "./helpers";
   const destination = await getStuff(rcvChain);
 
   // Choose your adventure
-  await manualTokenTransfer(wh, "native", 100_000_000n, source, destination);
+  await manualTokenTransfer(
+    wh,
+    "native",
+    1_000_000_000_000n,
+    source,
+    destination
+  );
 
   // await automaticTokenTransfer(wh, "native", 100_000_000n, source, destination);
   // await automaticTokenTransferWithGasDropoff(
@@ -80,14 +93,28 @@ async function tokenTransfer(
   if (automatic) return waitLog(xfer);
 
   // 2) wait for the VAA to be signed and ready (not required for auto transfer)
-  console.log("Getting Attestation");
-  const attestIds = await xfer.fetchAttestation();
-  console.log(`Got Attestation: `, attestIds);
+  // console.log("Getting Attestation");
+  // const attestIds = await xfer.fetchAttestation();
+  // console.log(`Got Attestation: `, attestIds);
 
-  // 3) redeem the VAA on the dest chain
-  console.log("Completing Transfer");
-  const destTxids = await xfer.completeTransfer(dst.signer);
-  console.log(`Completed Transfer: `, destTxids);
+  // // 3) redeem the VAA on the dest chain
+  // console.log("Completing Transfer");
+  // const destTxids = await xfer.completeTransfer(dst.signer);
+  // console.log(`Completed Transfer: `, destTxids);
+}
+
+// If you've started a transfer but not completed it
+// this method will complete the transfer given the source
+// chain and transaction id
+async function finishTransfer(
+  wh: Wormhole,
+  chain: ChainName,
+  txid: string,
+  signer: Signer
+): Promise<void> {
+  const xfer = await TokenTransfer.from(wh, { chain, txid });
+  console.log(xfer);
+  await xfer.completeTransfer(signer);
 }
 
 async function manualTokenTransfer(

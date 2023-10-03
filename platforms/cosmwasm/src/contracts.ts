@@ -1,12 +1,10 @@
+import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import {
   ChainName,
-  toChainName,
   ChainsConfig,
   Contracts,
   TokenId,
-  toNative,
 } from "@wormhole-foundation/connect-sdk";
-import { Provider } from "ethers";
 
 /**
  * @category Cosmwasm
@@ -23,8 +21,8 @@ export class CosmwasmContracts {
   }
 
   getContracts(chain: ChainName): Contracts {
-    const contracts = this.getContracts(chain);
-    if (!contracts) throw new Error(`no EVM contracts found for ${chain}`);
+    const contracts = this._contracts.get(chain);
+    if (!contracts) throw new Error(`no Cosmwasm contracts found for ${chain}`);
     return contracts;
   }
 
@@ -33,9 +31,10 @@ export class CosmwasmContracts {
    *
    * @returns An interface for the core contract, errors if not found
    */
-  getCore(chain: ChainName, connection: Provider): string {
+  getCore(chain: ChainName, connection: CosmWasmClient): string {
     const address = this.getContracts(chain).coreBridge;
-    if (!address) throw new Error(`Core contract for domain ${chain} not found`);
+    if (!address)
+      throw new Error(`Core contract for domain ${chain} not found`);
     return address;
   }
 
@@ -44,7 +43,7 @@ export class CosmwasmContracts {
    *
    * @returns An interface for the bridge contract, errors if not found
    */
-  getTokenBridge(chain: ChainName, connection: Provider): string {
+  getTokenBridge(chain: ChainName, connection: CosmWasmClient): string {
     const address = this.getContracts(chain).tokenBridge;
     if (!address)
       throw new Error(`Bridge contract for domain ${chain} not found`);
@@ -56,7 +55,7 @@ export class CosmwasmContracts {
    *
    * @returns An interface for the NFT bridge contract, errors if not found
    */
-  getNftBridge(chain: ChainName, connection: Provider): string {
+  getNftBridge(chain: ChainName, connection: CosmWasmClient): string {
     const address = this.getContracts(chain).nftBridge;
     if (!address)
       throw new Error(`NFT Bridge contract for domain ${chain} not found`);
@@ -65,7 +64,7 @@ export class CosmwasmContracts {
 
   async getNativeWrapped(
     chain: ChainName,
-    connection: Provider
+    connection: CosmWasmClient
   ): Promise<TokenId> {
     throw new Error("Not implemented");
     // const address = toNative(

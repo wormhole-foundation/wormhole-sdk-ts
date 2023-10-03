@@ -2,7 +2,6 @@ import {
   isHexByteString,
   hexByteStringToUint8Array,
   Address,
-  registerNative,
   UniversalAddress,
 } from '@wormhole-foundation/connect-sdk';
 
@@ -53,5 +52,3 @@ export class SolanaAddress implements Address {
     return this.toUniversalAddress().equals(other);
   }
 }
-
-registerNative('Solana', SolanaAddress);

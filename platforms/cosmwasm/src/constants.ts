@@ -1,5 +1,4 @@
 import {
-  ChainName,
   Network,
   PlatformToChains,
   RoArray,
@@ -22,7 +21,10 @@ const networkChainCosmwasmChainIds = [
       ["Injective", "injective-1"],
       ["Osmosis", "	osmosis-1"],
       ["Cosmoshub", "cosmoshub-4"],
-      ["Sei", "atlantic-2"],
+      ["Sei", "pacific-1"],
+      ["Evmos", "evmos_9001-2"],
+      ["Wormchain", "wormchain"],
+      ["Xpla", "dimension_37-1"],
     ],
   ],
   [
@@ -31,10 +33,15 @@ const networkChainCosmwasmChainIds = [
       ["Terra2", "pisco-1"],
       ["Sei", "atlantic-1"],
       ["Injective", "injective-888"],
-      ["Osmosis", "osmo-test-5"], // Or -4?
+      ["Osmosis", "osmo-test-5"],
       ["Cosmoshub", "theta-testnet-001"],
+      ["Sei", "atlantic-2"],
+      ["Evmos", "evmos_9000-4"],
+      ["Wormchain", "wormchain-testnet-0"],
+      ["Xpla", "	cube_47-5"],
     ],
   ],
+  ["Devnet", []],
 ] as const satisfies RoArray<
   readonly [Network, RoArray<readonly [PlatformToChains<"Cosmwasm">, string]>]
 >;
@@ -54,6 +61,11 @@ const cosmwasmAddressPrefix = [
   ["Terra2", "terra"],
   ["Cosmoshub", "cosmos"],
   ["Evmos", "evmos"],
+  ["Injective", "inj"],
+  ["Sei", "sei"],
+  ["Terra", "terra"], // TODO: make sure this is right
+  ["Kujira", "kuji"], // TODO: make sure this is right
+  ["Xpla", "xpla"], // TODO: make sure this is right
 ] as const satisfies RoArray<readonly [PlatformToChains<"Cosmwasm">, string]>;
 
 export const chainToAddressPrefix = constMap(cosmwasmAddressPrefix);
@@ -64,7 +76,7 @@ const cosmwasmNativeDenom = [
     "Mainnet",
     [
       ["Terra", "uluna"],
-      ["Terra2", "uluna"],
+      ["Terra2", "uluna"], // same for both?
       ["Osmosis", "uosmo"],
       ["Wormchain", "uworm"],
       ["Cosmoshub", "uatom"],
@@ -95,3 +107,53 @@ const cosmwasmNativeDenom = [
 >;
 
 export const chainToNativeDenoms = constMap(cosmwasmNativeDenom);
+export const nativeDenomToChain = constMap(cosmwasmNativeDenom, [[0, 2], [1]]);
+
+const cosmwasmNetworkChainRestUrl = [
+  [
+    "Mainnet",
+    [
+      ["Injective", "https://lcd.injective.network"],
+      ["Evmos", "https://rest.bd.evmos.org:1317"],
+    ],
+  ],
+  [
+    "Testnet",
+    [
+      ["Injective", "https://k8s.testnet.lcd.injective.network"],
+      ["Evmos", "https://rest.bd.evmos.dev:1317"],
+    ],
+  ],
+  ["Devnet", []],
+] as const satisfies RoArray<
+  readonly [Network, RoArray<readonly [PlatformToChains<"Cosmwasm">, string]>]
+>;
+
+export const cosmwasmNetworkChainToRestUrls = constMap(
+  cosmwasmNetworkChainRestUrl
+);
+
+const channelId = [
+  [
+    "Mainnet",
+    [
+      ["Cosmoshub", ["channel-5"]], // TODO: check
+      ["Osmosis", ["channel-4"]], // TODO: check
+    ],
+  ],
+  [
+    "Testnet",
+    [
+      ["Cosmoshub", ["channel-5", "channel-486"]],
+      ["Osmosis", ["channel-4", "channel-3086"]],
+    ],
+  ],
+  ["Devnet", []],
+] as const satisfies RoArray<
+  readonly [
+    Network,
+    RoArray<readonly [PlatformToChains<"Cosmwasm">, RoArray<string>]>
+  ]
+>;
+
+export const networkChainToChannelId = constMap(channelId);
