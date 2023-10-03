@@ -145,8 +145,8 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     const func = (await this.hasWrappedAsset({
       ...vaa.payload.token,
     }))
-      ? 'createWrapped'
-      : 'updateWrapped';
+      ? 'updateWrapped'
+      : 'createWrapped';
     yield this.createUnsignedTx(
       await this.tokenBridge[func].populateTransaction(serialize(vaa)),
       'TokenBridge.' + func,
