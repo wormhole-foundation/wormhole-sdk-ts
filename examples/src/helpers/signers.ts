@@ -10,22 +10,20 @@ import { Keypair } from "@solana/web3.js";
 import { AccountData } from "@cosmjs/proto-signing";
 import { TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
 import { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
-
-import {
-  CosmwasmUnsignedTransaction,
-  chainToAddressPrefix,
-} from "@wormhole-foundation/connect-sdk-cosmwasm";
 import {
   ChainRestAuthApi,
   DEFAULT_STD_FEE,
   MsgExecuteContract,
-  MsgExecuteContractCompat,
   Msgs,
   PrivateKey,
   TxClient,
   createTransaction,
 } from "@injectivelabs/sdk-ts";
-import { max } from "lodash";
+
+import {
+  CosmwasmUnsignedTransaction,
+  chainToAddressPrefix,
+} from "@wormhole-foundation/connect-sdk-cosmwasm";
 
 export class EvmSigner implements Signer {
   constructor(
@@ -124,6 +122,7 @@ export class CosmosSigner implements Signer {
         transaction.memo
       );
       const encoded = TxRaw.encode(txRaw).finish();
+
       console.log(
         "Encoded: ",
         encodeURIComponent(Buffer.from(encoded).toString("base64"))

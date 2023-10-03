@@ -196,7 +196,7 @@ export class GatewayTransfer implements WormholeTransfer {
       : undefined;
 
     const msg = GatewayTransfer.transferMsg(
-      this.transfer.from.chain,
+      this.transfer.to.chain,
       this.transfer.to.address as NativeAddress<'Cosmwasm'>,
       0n,
       _payload,

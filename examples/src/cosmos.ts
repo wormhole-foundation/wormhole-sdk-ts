@@ -23,8 +23,8 @@ import { TransferStuff, getStuff } from "./helpers";
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
   const leg1 = await getStuff(wh.getChain("Avalanche"));
-  const leg2 = await getStuff(wh.getChain("Cosmoshub"));
-  const leg3 = await getStuff(wh.getChain("Osmosis"));
+  const leg2 = await getStuff(wh.getChain("Osmosis"));
+  const leg3 = await getStuff(wh.getChain("Cosmoshub"));
 
   // we'll use the native token on the source chain
   const token = "native";
@@ -32,6 +32,12 @@ import { TransferStuff, getStuff } from "./helpers";
 
   // Transfer native token from source chain, through gateway, to a cosmos chain
   const route1 = await transferIntoCosmos(wh, token, amount, leg1, leg2);
+
+  // const tb = await leg1.chain.getTokenBridge();
+  // const wrappedAvax: TokenId = {
+  //   chain: "Avalanche",
+  //   address: await tb.getWrappedNative(),
+  // };
 
   // Transfer Gateway factory token over IBC back through gateway to destination chain
   const route2 = await transferBetweenCosmos(
@@ -99,7 +105,7 @@ async function transferBetweenCosmos(
   dst: TransferStuff
 ): Promise<GatewayTransfer> {
   console.log(
-    `Beginning transfer out of cosmos from ${
+    `Beginning transfer within cosmos from ${
       src.chain.chain
     }:${src.address.address.toString()} to ${
       dst.chain.chain
