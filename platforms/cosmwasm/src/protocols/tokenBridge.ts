@@ -1,3 +1,4 @@
+import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import {
   Network,
   VAA,
@@ -5,137 +6,169 @@ import {
   TokenBridge,
   TxHash,
   TokenId,
-  NativeAddress,
   TokenTransferTransaction,
+  toNative,
+  toChainName,
+  UniversalAddress,
+  toChainId,
+  serialize,
+  contracts as Contracts,
 } from "@wormhole-foundation/connect-sdk";
 
-import { cosmwasmChainIdToNetworkChainPair } from "../constants";
 import {
+  buildExecuteMsg,
   CosmwasmTransaction,
   CosmwasmUnsignedTransaction,
+  computeFee,
 } from "../unsignedTransaction";
 import { CosmwasmContracts } from "../contracts";
-import { CosmwasmChainName, UniversalOrCosmwasm } from "../types";
-import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
+import {
+  CosmwasmChainName,
+  UniversalOrCosmwasm,
+  WrappedRegistryResponse,
+} from "../types";
 import { CosmwasmPlatform } from "../platform";
-
-//Currently the code does not consider Wormhole msg fee (because it is and always has been 0).
-
-//TODO more checks to determine that all necessary preconditions are met (e.g. that balances are
-//  sufficient) for a given transaction to succeed
+import { CosmwasmAddress } from "../address";
 
 export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
+  private tokenBridge: string;
+  private translator?: string;
   private constructor(
     readonly network: Network,
     readonly chain: CosmwasmChainName,
-    readonly provider: CosmWasmClient,
+    readonly rpc: CosmWasmClient,
     readonly contracts: CosmwasmContracts
   ) {
-    //this.tokenBridge = this.contracts.mustGetTokenBridge(chain, provider);
+    this.tokenBridge = this.contracts.getTokenBridge(this.chain, this.rpc);
+    if (Contracts.translator.has(network, chain)) {
+      this.translator = Contracts.translator.get(network, chain);
+    }
   }
 
   static async fromProvider(
-    provider: CosmWasmClient,
+    rpc: CosmWasmClient,
     contracts: CosmwasmContracts
   ): Promise<CosmwasmTokenBridge> {
-    const [network, chain] = await CosmwasmPlatform.chainFromRpc(provider);
-    return new CosmwasmTokenBridge(network, chain, provider, contracts);
+    const [network, chain] = await CosmwasmPlatform.chainFromRpc(rpc);
+    return new CosmwasmTokenBridge(network, chain, rpc, contracts);
   }
 
   async isWrappedAsset(token: UniversalOrCosmwasm): Promise<boolean> {
-    throw new Error("Not implemented");
-    //return await this.tokenBridge.isWrappedAsset(toCosmwasmAddrString(token));
-  }
-
-  async getOriginalAsset(token: UniversalOrCosmwasm): Promise<TokenId> {
-    throw new Error("Not implemented");
-    // if (!(await this.isWrappedAsset(token)))
-    //   throw ErrNotWrapped(token.toString());
-
-    // const tokenContract = TokenContractFactory.connect(
-    //   toCosmwasmAddrString(token),
-    //   this.provider
-    // );
-    // const [chain, address] = await Promise.all([
-    //   tokenContract.chainId().then(Number).then(toChainId).then(chainIdToChain),
-    //   tokenContract.nativeContract().then((addr) => new UniversalAddress(addr)),
-    // ]);
-    // return { chain, address };
-  }
-
-  async hasWrappedAsset(token: TokenId): Promise<boolean> {
-    throw new Error("Not implemented");
     try {
-      //TODO it's unclear to me why this would throw for a non-existent token but that's how the
-      //  old sdk checked for existence
-      await this.getWrappedAsset(token);
+      await this.getOriginalAsset(token);
       return true;
-    } catch (e) {}
+    } catch {}
     return false;
   }
 
-  async getWrappedAsset(token: TokenId): Promise<NativeAddress<"Cosmwasm">> {
-    throw new Error("Not implemented");
-    //const wrappedAddress = await this.tokenBridge.wrappedAsset(
-    //  toChainId(token.chain),
-    //  token.address.toUniversalAddress().toString()
-    //);
+  async hasWrappedAsset(token: TokenId): Promise<boolean> {
+    try {
+      await this.getWrappedAsset(token);
+      return true;
+    } catch {}
+    return false;
+  }
 
-    //if (wrappedAddress === CosmwasmZeroAddress)
-    //  throw ErrNotWrapped(token.address.toUniversalAddress().toString());
+  async getWrappedAsset(token: TokenId): Promise<CosmwasmAddress> {
+    if (token.chain === this.chain)
+      throw new Error(`Expected foreign chain, got ${token.chain}`);
 
-    //return toNative("Cosmwasm", wrappedAddress);
+    const base64Addr = Buffer.from(
+      token.address.toUniversalAddress().toUint8Array()
+    ).toString("base64");
+
+    const { address }: WrappedRegistryResponse =
+      await this.rpc.queryContractSmart(this.tokenBridge, {
+        wrapped_registry: {
+          chain: toChainId(token.chain),
+          address: base64Addr,
+        },
+      });
+
+    // @ts-ignore
+    return toNative(this.chain, address);
+  }
+
+  async getOriginalAsset(token: UniversalOrCosmwasm): Promise<TokenId> {
+    const wrappedAddress = token.toString();
+
+    const response = await this.rpc.queryContractSmart(wrappedAddress, {
+      wrapped_asset_info: {},
+    });
+
+    const origChain = toChainName(response.asset_chain);
+    const origAddress = Buffer.from(response.asset_address, "base64");
+
+    return {
+      chain: origChain,
+      address: new UniversalAddress(new Uint8Array(origAddress)),
+    };
   }
 
   async isTransferCompleted(
     vaa: VAA<"Transfer"> | VAA<"TransferWithPayload">
   ): Promise<boolean> {
-    throw new Error("Not implemented");
-    //The double keccak here is neccessary due to a fuckup in the original implementation of the
-    //  EVM core bridge:
-    //Guardians don't sign messages (bodies) but explicitly hash them via keccak256 first.
-    //However, they use an ECDSA scheme for signing where the first step is to hash the "message"
-    //  (which at this point is already the digest of the original message/body!)
-    //Now, on EVM, ecrecover expects the final digest (i.e. a bytes32 rather than a dynamic bytes)
-    //  i.e. it does no hashing itself. Therefore the EVM core bridge has to hash the body twice
-    //  before calling ecrecover. But in the process of doing so, it erroneously sets the doubly
-    //  hashed value as vm.hash instead of using the only once hashed value.
-    //And finally this double digest is then used in a mapping to store whether a VAA has already
-    //  been redeemed or not, which is ultimately the reason why we have to keccak the hash one
-    //  more time here.
-    //return this.tokenBridge.isTransferCompleted(keccak256(vaa.hash));
+    const tokenBridge = this.contracts.getTokenBridge(this.chain, this.rpc);
+    const data = Buffer.from(serialize(vaa)).toString("base64");
+    const result = await this.rpc.queryContractSmart(tokenBridge, {
+      is_vaa_redeemed: { vaa: data },
+    });
+    return result.is_redeemed;
   }
 
   async *createAttestation(
-    token: UniversalOrCosmwasm
+    token: UniversalOrCosmwasm | "native",
+    payer?: UniversalOrCosmwasm
   ): AsyncGenerator<CosmwasmUnsignedTransaction> {
-    throw new Error("Not implemented");
-    //const ignoredNonce = 0;
-    //yield this.createUnsignedTx(
-    //  await this.tokenBridge.attestToken.populateTransaction(
-    //    toCosmwasmAddrString(token),
-    //    ignoredNonce
-    //  ),
-    //  "TokenBridge.createAttestation"
-    //);
+    if (!payer) throw new Error("Payer required to create attestation");
+
+    // TODO nonce?
+    const nonce = 0;
+    const assetInfo =
+      token === "native"
+        ? {
+            native_token: {
+              denom: CosmwasmPlatform.getNativeDenom(this.chain),
+            },
+          }
+        : {
+            token: { contract_addr: token.toString() },
+          };
+
+    yield this.createUnsignedTx(
+      {
+        msgs: [
+          buildExecuteMsg(payer.toString(), this.tokenBridge, {
+            create_asset_meta: { asset_info: assetInfo, nonce },
+          }),
+        ],
+        fee: computeFee(this.chain),
+        memo: "Wormhole - Create Attestation",
+      },
+      "TokenBridge.createAttestation"
+    );
   }
 
   async *submitAttestation(
-    vaa: VAA<"AttestMeta">
+    vaa: VAA<"AttestMeta">,
+    payer?: UniversalOrCosmwasm
   ): AsyncGenerator<CosmwasmUnsignedTransaction> {
-    throw new Error("Not implemented");
-    //const func = (await this.hasWrappedAsset({
-    //  ...vaa.payload.token,
-    //}))
-    //  ? "createWrapped"
-    //  : "updateWrapped";
-    //yield this.createUnsignedTx(
-    //  await this.tokenBridge[func].populateTransaction(serialize(vaa)),
-    //  "TokenBridge." + func
-    //);
+    if (!payer) throw new Error("Payer required to submit attestation");
+
+    yield this.createUnsignedTx(
+      {
+        msgs: [
+          buildExecuteMsg(payer.toString(), this.tokenBridge, {
+            submit_vaa: { data: serialize(vaa) },
+          }),
+        ],
+        fee: computeFee(this.chain),
+        memo: "Wormhole - Submit Attestation",
+      },
+      "TokenBridge.submitAttestation"
+    );
   }
 
-  //alternative naming: initiateTransfer
   async *transfer(
     sender: UniversalOrCosmwasm,
     recipient: ChainAddress,
@@ -143,208 +176,144 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
     amount: bigint,
     payload?: Uint8Array
   ): AsyncGenerator<CosmwasmUnsignedTransaction> {
-    throw new Error("Not implemented");
-    // const senderAddr = toCosmwasmAddrString(sender);
-    // const recipientChainId = toChainId(recipient.chain);
-    // const recipientAddress = recipient.address
-    //   .toUniversalAddress()
-    //   .toUint8Array();
-    // if (typeof token === "string" && token === "native") {
-    //   const txReq = await (payload === undefined
-    //     ? this.tokenBridge.wrapAndTransferETH.populateTransaction(
-    //         recipientChainId,
-    //         recipientAddress,
-    //         unusedArbiterFee,
-    //         unusedNonce,
-    //         { value: amount }
-    //       )
-    //     : this.tokenBridge.wrapAndTransferETHWithPayload.populateTransaction(
-    //         recipientChainId,
-    //         recipientAddress,
-    //         unusedNonce,
-    //         payload,
-    //         { value: amount }
-    //       ));
-    //   yield this.createUnsignedTx(
-    //     addFrom(txReq, senderAddr),
-    //     "TokenBridge.wrapAndTransferETH" +
-    //       (payload === undefined ? "" : "WithPayload")
-    //   );
-    // } else {
-    //   //TODO check for ERC-2612 (permit) support on token?
-    //   const tokenAddr = toCosmwasmAddrString(token);
-    //   const tokenContract = TokenContractFactory.connect(
-    //     tokenAddr,
-    //     this.provider
-    //   );
-    //   const allowance = await tokenContract.allowance(
-    //     senderAddr,
-    //     this.tokenBridge.target
-    //   );
-    //   if (allowance < amount) {
-    //     const txReq = await tokenContract.approve.populateTransaction(
-    //       this.tokenBridge.target,
-    //       amount
-    //     );
-    //     yield this.createUnsignedTx(
-    //       addFrom(txReq, senderAddr),
-    //       "ERC20.approve of TokenBridge"
-    //     );
-    //   }
-    //   const sharedParams = [
-    //     tokenAddr,
-    //     amount,
-    //     recipientChainId,
-    //     recipientAddress,
-    //   ] as const;
-    //   const txReq = await (payload === undefined
-    //     ? this.tokenBridge.transferTokens.populateTransaction(
-    //         ...sharedParams,
-    //         unusedArbiterFee,
-    //         unusedNonce
-    //       )
-    //     : this.tokenBridge.transferTokensWithPayload.populateTransaction(
-    //         ...sharedParams,
-    //         unusedNonce,
-    //         payload
-    //       ));
-    //   yield this.createUnsignedTx(
-    //     addFrom(txReq, senderAddr),
-    //     "TokenBridge.transferTokens" +
-    //       (payload === undefined ? "" : "WithPayload")
-    //   );
-    // }
+    const nonce = Math.round(Math.random() * 100000);
+    const relayerFee = "0";
+
+    const recipientChainId = toChainId(recipient.chain);
+    const recipientAddress = Buffer.from(
+      recipient.address.toUniversalAddress().toUint8Array()
+    );
+
+    const denom = CosmwasmPlatform.getNativeDenom(this.chain);
+
+    const isNative = token === "native";
+
+    const tokenAddress = isNative ? denom : token.toString();
+
+    const senderAddress = sender.toString();
+
+    const mk_initiate_transfer = (info: object) => {
+      const common = {
+        asset: {
+          amount: amount.toString(),
+          info,
+        },
+        recipient_chain: recipientChainId,
+        recipient: Buffer.from(recipientAddress).toString("base64"),
+        fee: relayerFee,
+        nonce: nonce,
+      };
+
+      return payload
+        ? {
+            initiate_transfer_with_payload: { ...common, payload },
+          }
+        : {
+            initiate_transfer: common,
+          };
+    };
+
+    if (isNative) {
+      const msgs = [
+        buildExecuteMsg(
+          senderAddress,
+          this.tokenBridge,
+          { deposit_tokens: {} },
+          [{ amount: amount.toString(), denom: tokenAddress }]
+        ),
+        buildExecuteMsg(
+          senderAddress,
+          this.tokenBridge,
+          mk_initiate_transfer({
+            native_token: { denom: tokenAddress },
+          })
+        ),
+      ];
+
+      yield this.createUnsignedTx(
+        {
+          msgs,
+          fee: computeFee(this.chain),
+          memo: "Wormhole - Initiate Native Transfer",
+        },
+        "TokenBridge.transferNative"
+      );
+    } else {
+      const msgs = [
+        buildExecuteMsg(senderAddress, tokenAddress, {
+          increase_allowance: {
+            spender: this.tokenBridge,
+            amount: amount.toString(),
+            expires: { never: {} },
+          },
+        }),
+        buildExecuteMsg(
+          senderAddress,
+          this.tokenBridge,
+          mk_initiate_transfer({
+            token: { contract_addr: tokenAddress },
+          })
+        ),
+      ];
+
+      yield this.createUnsignedTx(
+        {
+          msgs,
+          fee: computeFee(this.chain),
+          memo: "Wormhole - Initiate Transfer",
+        },
+        "TokenBridge.transfer"
+      );
+    }
+    return;
   }
 
-  //alternative naming: completeTransfer
   async *redeem(
     sender: UniversalOrCosmwasm,
     vaa: VAA<"Transfer"> | VAA<"TransferWithPayload">,
     unwrapNative: boolean = true
   ): AsyncGenerator<CosmwasmUnsignedTransaction> {
-    throw new Error("Not implemented");
-    // const senderAddr = toCosmwasmAddrString(sender);
-    // if (vaa.payload.token.chain !== this.chain)
-    //   if (vaa.payloadLiteral === "TransferWithPayload") {
-    //     const fromAddr = toNative(this.chain, vaa.payload.from).unwrap();
-    //     if (fromAddr !== senderAddr)
-    //       throw new Error(
-    //         `VAA.from (${fromAddr}) does not match sender (${senderAddr})`
-    //       );
-    //   }
-    // const wrappedNativeAddr = await this.tokenBridge.WETH();
-    // const tokenAddr = toNative(this.chain, vaa.payload.token.address).unwrap();
-    // if (tokenAddr === wrappedNativeAddr && unwrapNative) {
-    //   const txReq =
-    //     await this.tokenBridge.completeTransferAndUnwrapETH.populateTransaction(
-    //       serialize(vaa)
-    //     );
-    //   yield this.createUnsignedTx(
-    //     addFrom(txReq, senderAddr),
-    //     "TokenBridge.completeTransferAndUnwrapETH"
-    //   );
-    // } else {
-    //   const txReq = await this.tokenBridge.completeTransfer.populateTransaction(
-    //     serialize(vaa)
-    //   );
-    //   yield this.createUnsignedTx(
-    //     addFrom(txReq, senderAddr),
-    //     "TokenBridge.completeTransfer"
-    //   );
-    // }
+    // TODO: unwrapNative
+
+    const data = Buffer.from(serialize(vaa)).toString("base64");
+
+    let msg;
+    if (
+      this.translator &&
+      toNative(this.chain, this.translator)
+        .toUniversalAddress()
+        .equals(vaa.payload.to.address)
+    ) {
+      msg = buildExecuteMsg(sender.toString(), this.translator, {
+        complete_transfer_and_convert: {
+          vaa: data,
+        },
+      });
+    } else {
+      msg = buildExecuteMsg(sender.toString(), this.tokenBridge, {
+        submit_vaa: { data },
+      });
+    }
+
+    yield this.createUnsignedTx(
+      {
+        msgs: [msg],
+        fee: computeFee(this.chain),
+        memo: "Wormhole - Complete Transfer",
+      },
+      "TokenBridge.redeem"
+    );
+    return;
   }
 
   async parseTransactionDetails(
     txid: TxHash
   ): Promise<TokenTransferTransaction[]> {
     throw new Error("Not implemented");
-    // const receipt = await this.provider.getTransactionReceipt(txid);
-    // if (receipt === null)
-    //   throw new Error(`No transaction found with txid: ${txid}`);
-
-    // const { fee: gasFee } = receipt;
-
-    // const core = this.contracts.mustGetCore(this.chain, this.provider);
-    // const coreAddress = await core.getAddress();
-
-    // const bridge = this.contracts.mustGetTokenBridge(this.chain, this.provider);
-    // const bridgeAddress = toNative(
-    //   this.chain,
-    //   await bridge.getAddress()
-    // ).toUniversalAddress();
-
-    // const bridgeLogs = receipt.logs.filter((l: any) => {
-    //   return l.address === coreAddress;
-    // });
-
-    // const impl = this.contracts.getCoreImplementationInterface();
-
-    // const parsedLogs = bridgeLogs.map(async (bridgeLog) => {
-    //   const { topics, data } = bridgeLog;
-    //   const parsed = impl.parseLog({ topics: topics.slice(), data });
-
-    //   // TODO: should we be nicer here?
-    //   if (parsed === null) throw new Error(`Failed to parse logs: ${data}`);
-
-    //   // parse token bridge message, 0x01 == transfer, attest == 0x02,  w/ payload 0x03
-    //   let parsedTransfer:
-    //     | BridgeStructs.TransferStructOutput
-    //     | BridgeStructs.TransferWithPayloadStructOutput;
-
-    //   if (parsed.args.payload.startsWith("0x01")) {
-    //     // parse token bridge transfer data
-    //     parsedTransfer = await bridge.parseTransfer(parsed.args.payload);
-    //   } else if (parsed.args.payload.startsWith("0x03")) {
-    //     // parse token bridge transfer with payload data
-    //     parsedTransfer = await bridge.parseTransferWithPayload(
-    //       parsed.args.payload
-    //     );
-    //   } else {
-    //     // git gud
-    //     throw new Error(
-    //       `unrecognized payload for ${txid}: ${parsed.args.payload}`
-    //     );
-    //   }
-
-    //   const toChain = toChainName(parsedTransfer.toChain);
-    //   const tokenAddress = new UniversalAddress(parsedTransfer.tokenAddress);
-    //   const tokenChain = toChainName(parsedTransfer.tokenChain);
-
-    //   const ttt: TokenTransferTransaction = {
-    //     message: {
-    //       tx: { chain: this.chain, txid },
-    //       msg: {
-    //         chain: this.chain,
-    //         emitter: bridgeAddress,
-    //         sequence: parsed.args.sequence,
-    //       },
-    //       payloadId: parsedTransfer.payloadID,
-    //     },
-    //     details: {
-    //       token: { chain: tokenChain, address: tokenAddress },
-    //       amount: parsedTransfer.amount,
-    //       from: {
-    //         chain: this.chain,
-    //         address: toNative(this.chain, receipt.from),
-    //       },
-    //       to: {
-    //         chain: toChain,
-    //         address: toNative(toChain, parsedTransfer.to),
-    //       },
-    //     },
-    //     block: BigInt(receipt.blockNumber),
-    //     gasFee,
-    //   };
-    //   return ttt;
-    // });
-
-    // return await Promise.all(parsedLogs);
   }
 
-  async getWrappedNative(): Promise<NativeAddress<"Cosmwasm">> {
-    throw new Error("Not implemented");
-    //const address = await this.tokenBridge.WETH();
-    //return toNative(this.chain, address);
+  async getWrappedNative(): Promise<CosmwasmAddress> {
+    return toNative(this.chain, CosmwasmPlatform.getNativeDenom(this.chain));
   }
 
   private createUnsignedTx(

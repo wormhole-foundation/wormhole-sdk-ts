@@ -7,6 +7,7 @@ import {
   isCircleChain,
   usdcContract,
   isChain,
+  chainToPlatform,
 } from '@wormhole-foundation/sdk-base';
 import {
   UniversalAddress,
@@ -25,11 +26,16 @@ import {
 } from '@wormhole-foundation/sdk-definitions';
 import axios, { AxiosResponse } from 'axios';
 
-import { WormholeConfig } from './types';
+import {
+  GatewayTransferDetails,
+  GatewayTransferMsg,
+  WormholeConfig,
+} from './types';
 
 import { CONFIG, networkPlatformConfigs } from './config';
 import { TokenTransfer } from './protocols/tokenTransfer';
 import { CCTPTransfer } from './protocols/cctpTransfer';
+import { GatewayTransfer } from './protocols/gatewayTransfer';
 import { TransactionStatus } from './api';
 
 export class Wormhole {
@@ -126,7 +132,7 @@ export class Wormhole {
     automatic: boolean,
     payload?: Uint8Array,
     nativeGas?: bigint,
-  ): Promise<TokenTransfer> {
+  ): Promise<TokenTransfer | GatewayTransfer> {
     if (payload && automatic)
       throw new Error('Payload with automatic delivery is not supported');
 
@@ -150,7 +156,39 @@ export class Wormhole {
     if (to.chain === 'Solana') {
       // Overwrite the dest address with the ATA
       to = await this.getTokenAccount(from.chain, token, to);
+    } else if (to.chain === 'Sei') {
+      if (payload) throw new Error('NO');
+
+      //
+      payload = Buffer.from(
+        JSON.stringify({
+          basic_recipient: {
+            recipient: Buffer.from(to.address.toString()).toString('base64'),
+          },
+        }),
+      );
+
+      to = {
+        chain: to.chain,
+        address: toNative(
+          to.chain,
+          toChain.platform.conf.Sei?.contracts.translator!,
+        ),
+      };
     }
+
+    // TODO: check if `toChain` is gateway supported
+    // not enough to check if its a Cosmos chain since Terra/Xpla/Sei are not supported
+    // if (chainToPlatform(to.chain) === 'Cosmwasm' ) {
+    //   return await GatewayTransfer.from(this, {
+    //     token,
+    //     amount,
+    //     from,
+    //     to,
+    //     payload,
+    //     nativeGas,
+    //   });
+    // }
 
     return await TokenTransfer.from(this, {
       token,
@@ -447,43 +485,4 @@ export class Wormhole {
   ): Promise<WormholeMessageId[]> {
     return await this.getChain(chain).parseTransaction(txid);
   }
-
-  //  /**
-  //   * Checks if a transfer has been completed or not
-  //   *
-  //   * @param destChain The destination chain name or id
-  //   * @param signedVAA The Signed VAA bytes
-  //   * @returns True if the transfer has been completed, otherwise false
-  //   */
-  //  async isTransferCompleted(
-  //    destChain: Chain,
-  //    signedVaa: string,
-  //  ): Promise<boolean> {
-  //    const context = this.getContext(destChain);
-  //    return await context.isTransferCompleted(destChain, signedVaa);
-  //  }
-  //
-  //  /**
-  //   * Format an address to a 32-byte universal address, which can be utilized by the Wormhole contracts
-  //   *
-  //   * @param address The address as a string
-  //   * @returns The address as a 32-byte Wormhole address
-  //   */
-  //  formatAddress(address: string, chain: Chain): any {
-  //    const context = this.getContext(chain);
-  //    return context.formatAddress(address);
-  //  }
-  //
-  // /**
-  //  * Check whether a chain supports automatic relaying
-  //  * @param chain the chain name or chain id
-  //  * @returns boolean representing if automatic relay is available
-  //  */
-  // supportsSendWithRelay(chain: ChainName): boolean {
-  //   // TODO
-  //   return !!(
-  //     this.getContracts(chain)?.relayer &&
-  //     'startTransferWithRelay' in this.getPlatform(chain)
-  //   );
-  // }
 }

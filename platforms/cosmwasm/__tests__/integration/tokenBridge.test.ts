@@ -1,92 +1,47 @@
 import {
-  ChainAddress,
-  Platform,
-  Signature,
-  TokenBridge,
-  UniversalAddress,
-  VAA,
-  testing,
   toNative,
   chainConfigs,
   DEFAULT_NETWORK,
+  testing,
+  VAA,
+  Signature,
+  ChainName,
 } from "@wormhole-foundation/connect-sdk";
 import {
   CosmwasmContracts,
   CosmwasmPlatform,
   CosmwasmTokenBridge,
+  CosmwasmUnsignedTransaction,
+  chainToNativeDenoms,
 } from "../../src";
 
-//import nock from 'nock';
-//// Setup nock to record fixtures
-//const nockBack = nock.back;
-//nockBack.fixtures = __dirname + '/fixtures';
-//
-//let nockDone: () => void;
-//beforeEach(async () => {
-//  nockBack.setMode('lockdown');
-//  const fullTestName = expect.getState().currentTestName?.replace(/\s/g, '_');
-//  const { nockDone: nd } = await nockBack(`${fullTestName}.json`, {
-//    // Remove the `id` from the request body after preparing it but before
-//    // trying to match a fixture.
-//    after: (scope) => {
-//      scope.filteringRequestBody((body: string) => {
-//        const b = JSON.parse(body);
-//
-//        let formattedBody = b;
-//        if (Array.isArray(b)) {
-//          formattedBody = b.map((o) => {
-//            delete o.id;
-//            return o;
-//          });
-//        } else {
-//          delete formattedBody.id;
-//        }
-//        return JSON.stringify(formattedBody);
-//      });
-//    },
-//    // Remove the `id` from the request body before saving it as a fixture.
-//    afterRecord: (defs) => {
-//      return defs.map((d: nock.Definition) => {
-//        if (typeof d.body !== 'object') return d;
-//
-//        if (Array.isArray(d.body)) {
-//          const body = d.body as { id?: string }[];
-//          d.body = body.map((o) => {
-//            delete o.id;
-//            return o;
-//          });
-//        } else {
-//          const body = d.body as { id?: string };
-//          delete body.id;
-//          d.body = body;
-//        }
-//        return d;
-//      });
-//    },
-//  });
-//
-//  // update global var
-//  nockDone = nd;
-//});
-//
-//afterEach(async () => {
-//  nockDone();
-//  nockBack.setMode('wild');
-//});
-
-const network = DEFAULT_NETWORK;
+const network = "Testnet"; //DEFAULT_NETWORK;
 const configs = chainConfigs(network);
 
-const chain = "Sei";
-// const bogusAddress = toNative(
-//   chain,
-//   "cosmos1qz8jg8xkx9q0sjy8x2z3sqrftxkx9q0sjy8x2z3sqrft"
-// );
-//
-// const realNativeAddress = toNative(
-//   chain,
-//   "ibc/F082B65C88E4B6D5EF1DB243CDA1D331D002759E938A0F5CD3FFDC5D53B3E349"
-// );
+const chain: ChainName = "Sei";
+const realNativeAddress = chainToNativeDenoms(network, chain);
+
+const sender = "sei1x76thkmwy03attv3j28ekkfmkhnyah3qnzwvn4";
+const senderAddress = toNative(chain, sender);
+
+// address for "turtle" a cw20 on sei
+const nativeTokenAddress = toNative(
+  chain,
+  "sei16aa3whueaddmms3qw0apz7ylddg0vwtw2zugafmccdtrxrwyx0kqwxntat"
+);
+
+// Wrapped avax on sei
+const wrappedTokenChain: ChainName = "Avalanche";
+const realWrappedAddress = toNative(
+  chain,
+  "sei1mgpq67pj7p2acy5x7r5lz7fulxmuxr3uh5f0szyvqgvru3glufzsxk8tnx"
+);
+
+// rando address, i think this is the token bridge
+const bogusAddress = toNative(
+  chain,
+  "sei1dkdwdvknx0qav5cp5kw68mkn3r99m3svkyjfvkztwh97dv2lm0ksj6xrak"
+);
 
 describe("TokenBridge Tests", () => {
   const p = CosmwasmPlatform.setConfig(network, configs);
@@ -102,212 +57,202 @@ describe("TokenBridge Tests", () => {
   describe("Get Wrapped Asset Details", () => {
     describe("isWrappedAsset", () => {
       test("Bogus", async () => {
-        expect(true).toBeTruthy();
-        //const isWrapped = await tb.isWrappedAsset(bogusAddress);
-        //expect(isWrapped).toBe(false);
+        const isWrapped = await tb.isWrappedAsset(bogusAddress);
+        expect(isWrapped).toBe(false);
       });
 
-      // test("Real Not Wrapped", async () => {
-      //   const isWrapped = await tb.isWrappedAsset(realNativeAddress);
-      //   expect(isWrapped).toBe(false);
-      // });
+      test("Real Not Wrapped", async () => {
+        const isWrapped = await tb.isWrappedAsset(realNativeAddress);
+        expect(isWrapped).toBe(false);
+      });
 
-      // test("Real Wrapped", async () => {
-      //   const isWrapped = await tb.isWrappedAsset(realWrappedAddress);
-      //   expect(isWrapped).toBe(true);
-      // });
+      test("Real Wrapped", async () => {
+        const isWrapped = await tb.isWrappedAsset(realWrappedAddress);
+        expect(isWrapped).toBe(true);
+      });
     });
 
-    // describe("getOriginalAsset", () => {
-    //   test("Bogus", async () => {
-    //     expect(() => tb.getOriginalAsset(bogusAddress)).rejects.toThrow();
-    //   });
+    describe("getOriginalAsset", () => {
+      test("Bogus", async () => {
+        expect(() => tb.getOriginalAsset(bogusAddress)).rejects.toThrow();
+      });
 
-    //   test("Real Not Wrapped", async () => {
-    //     expect(() => tb.getOriginalAsset(realNativeAddress)).rejects.toThrow();
-    //   });
+      test("Real Not Wrapped", async () => {
+        expect(() => tb.getOriginalAsset(realNativeAddress)).rejects.toThrow();
+      });
 
-    //   test("Real Wrapped", async () => {
-    //     const orig = await tb.getOriginalAsset(realWrappedAddress);
-    //     expect(orig.chain).toEqual("Avalanche");
-    //     expect(orig).toBeTruthy();
-    //   });
-    // });
+      test("Real Wrapped", async () => {
+        const orig = await tb.getOriginalAsset(realWrappedAddress);
+        expect(orig.chain).toEqual(wrappedTokenChain);
+        expect(orig).toBeTruthy();
+      });
+    });
 
-    // describe("hasWrappedAsset", () => {
-    //   test("Bogus", async () => {
-    //     const hasWrapped = await tb.hasWrappedAsset({
-    //       chain: "Avalanche",
-    //       address: bogusAddress,
-    //     });
-    //     expect(hasWrapped).toBe(false);
-    //   });
+    describe("hasWrappedAsset", () => {
+      test("Bogus", async () => {
+        const hasWrapped = await tb.hasWrappedAsset({
+          chain: wrappedTokenChain,
+          address: bogusAddress,
+        });
+        expect(hasWrapped).toBe(false);
+      });
 
-    //   test("Real Not Wrapped", async () => {
-    //     const hasWrapped = await tb.hasWrappedAsset({
-    //       chain: "Avalanche",
-    //       address: realNativeAddress,
-    //     });
-    //     expect(hasWrapped).toBe(false);
-    //   });
+      test("Real Not Wrapped", async () => {
+        const hasWrapped = await tb.hasWrappedAsset({
+          chain: chain,
+          address: toNative(chain, realNativeAddress),
+        });
+        expect(hasWrapped).toBe(false);
+      });
 
-    //   test("Real Wrapped", async () => {
-    //     const orig = await tb.getOriginalAsset(realWrappedAddress);
-    //     const hasWrapped = await tb.hasWrappedAsset(orig);
-    //     expect(hasWrapped).toBe(true);
-    //   });
-    // });
+      test("Real Wrapped", async () => {
+        const orig = await tb.getOriginalAsset(realWrappedAddress);
+        const hasWrapped = await tb.hasWrappedAsset(orig);
+        expect(hasWrapped).toBe(true);
+      });
+    });
 
-    // describe("getWrappedAsset", () => {
-    //   test("Bogus", async () => {
-    //     const hasWrapped = tb.getWrappedAsset({
-    //       chain: "Avalanche",
-    //       address: bogusAddress,
-    //     });
-    //     expect(hasWrapped).rejects.toThrow();
-    //   });
+    describe("getWrappedAsset", () => {
+      test("Bogus", async () => {
+        const hasWrapped = tb.getWrappedAsset({
+          chain: wrappedTokenChain,
+          address: bogusAddress,
+        });
+        expect(hasWrapped).rejects.toThrow();
+      });
 
-    //   test("Real Not Wrapped", async () => {
-    //     const hasWrapped = tb.getWrappedAsset({
-    //       chain: "Avalanche",
-    //       address: realNativeAddress,
-    //     });
-    //     expect(hasWrapped).rejects.toThrow();
-    //   });
+      test("Real Not Wrapped", async () => {
+        const hasWrapped = tb.getWrappedAsset({
+          chain: chain,
+          address: toNative(chain, realNativeAddress),
+        });
+        expect(hasWrapped).rejects.toThrow();
+      });
 
-    //   test("Real Wrapped", async () => {
-    //     const orig = await tb.getOriginalAsset(realWrappedAddress);
-    //     const wrappedAsset = await tb.getWrappedAsset(orig);
-    //     expect(wrappedAsset.toString()).toBe(realWrappedAddress.toString());
-    //   });
-    // });
+      test("Real Wrapped", async () => {
+        const orig = await tb.getOriginalAsset(realWrappedAddress);
+        const wrappedAsset = await tb.getWrappedAsset(orig);
+        expect(wrappedAsset.toString()).toBe(realWrappedAddress.toString());
+      });
+    });
   });
 
-  // describe("Create Token Attestation Transactions", () => {
-  //   const chain = "Ethereum";
-  //   const nativeAddress = testing.utils.makeNativeAddress(chain);
+  describe("Create Token Attestation Transactions", () => {
+    const tbAddress = p.conf[chain]!.contracts.tokenBridge!;
+    test("Create Attestation", async () => {
+      const attestation = tb.createAttestation(
+        nativeTokenAddress,
+        senderAddress
+      );
+      const allTxns: CosmwasmUnsignedTransaction[] = [];
+      for await (const atx of attestation) {
+        allTxns.push(atx);
+      }
+      expect(allTxns).toHaveLength(1);
+      const [attestTx] = allTxns;
+      expect(attestTx).toBeTruthy();
+      expect(attestTx.chain).toEqual(chain);
+    });
 
-  //   const tbAddress = p.conf[chain]!.contracts.tokenBridge!;
+    test("Submit Attestation", async () => {
+      // TODO: generator for this
+      const vaa: VAA<"AttestMeta"> = {
+        payloadLiteral: "AttestMeta",
+        payload: {
+          token: {
+            address: nativeTokenAddress.toUniversalAddress(),
+            chain: chain,
+          },
+          decimals: 8,
+          symbol: Buffer.from(new Uint8Array(16)).toString("hex"),
+          name: Buffer.from(new Uint8Array(16)).toString("hex"),
+        },
+        hash: new Uint8Array(32),
+        guardianSet: 0,
+        signatures: [{ guardianIndex: 0, signature: new Signature(1n, 2n, 1) }],
+        emitterChain: chain,
+        emitterAddress: toNative(chain, tbAddress).toUniversalAddress(),
+        sequence: 0n,
+        consistencyLevel: 0,
+        timestamp: 0,
+        nonce: 0,
+      };
+      const submitAttestation = tb.submitAttestation(vaa, senderAddress);
 
-  //   test("Create Attestation", async () => {
-  //     const attestation = tb.createAttestation(nativeAddress);
-  //     const allTxns: EvmUnsignedTransaction[] = [];
-  //     for await (const atx of attestation) {
-  //       allTxns.push(atx);
-  //     }
-  //     expect(allTxns).toHaveLength(1);
-  //     const [attestTx] = allTxns;
-  //     expect(attestTx).toBeTruthy();
-  //     expect(attestTx.chain).toEqual(chain);
+      const allTxns: CosmwasmUnsignedTransaction[] = [];
+      for await (const atx of submitAttestation) {
+        allTxns.push(atx);
+      }
+      expect(allTxns).toHaveLength(1);
+      const [attestTx] = allTxns;
+      expect(attestTx).toBeTruthy();
+      expect(attestTx.chain).toEqual(chain);
+    });
+  });
 
-  //     const { transaction } = attestTx;
-  //     expect(transaction.chainId).toEqual(
-  //       // @ts-ignore
-  //       evmNetworkChainToEvmChainId(network, chain)
-  //     );
-  //   });
+  describe("Create TokenBridge Transactions", () => {
+    const recipient = {
+      chain: "Cosmoshub" as ChainName,
+      address: toNative("Cosmoshub", sender).toUniversalAddress(),
+    };
+    describe("Token Transfer Transactions", () => {
+      describe("Transfer", () => {
+        const amount = 1000n;
+        const payload = undefined;
 
-  //   test("Submit Attestation", async () => {
-  //     // TODO: generator for this
-  //     const vaa: VAA<"AttestMeta"> = {
-  //       payloadLiteral: "AttestMeta",
-  //       payload: {
-  //         token: { address: nativeAddress.toUniversalAddress(), chain: chain },
-  //         decimals: 8,
-  //         symbol: Buffer.from(new Uint8Array(16)).toString("hex"),
-  //         name: Buffer.from(new Uint8Array(16)).toString("hex"),
-  //       },
-  //       hash: new Uint8Array(32),
-  //       guardianSet: 0,
-  //       signatures: [{ guardianIndex: 0, signature: new Signature(1n, 2n, 1) }],
-  //       emitterChain: chain,
-  //       emitterAddress: toNative(chain, tbAddress).toUniversalAddress(),
-  //       sequence: 0n,
-  //       consistencyLevel: 0,
-  //       timestamp: 0,
-  //       nonce: 0,
-  //     };
-  //     const submitAttestation = tb.submitAttestation(vaa);
+        test("Native", async () => {
+          const token = "native";
+          const xfer = tb.transfer(sender, recipient, token, amount, payload);
+          expect(xfer).toBeTruthy();
 
-  //     const allTxns: EvmUnsignedTransaction[] = [];
-  //     for await (const atx of submitAttestation) {
-  //       allTxns.push(atx);
-  //     }
-  //     expect(allTxns).toHaveLength(1);
-  //     const [attestTx] = allTxns;
-  //     expect(attestTx).toBeTruthy();
-  //     expect(attestTx.chain).toEqual(chain);
+          const allTxns: CosmwasmUnsignedTransaction[] = [];
+          for await (const tx of xfer) {
+            allTxns.push(tx);
+          }
+          expect(allTxns).toHaveLength(1);
 
-  //     const { transaction } = attestTx;
-  //     expect(transaction.chainId).toEqual(
-  //       // @ts-ignore
-  //       evmNetworkChainToEvmChainId(network, chain)
-  //     );
-  //   });
-  // });
+          const [xferTx] = allTxns;
+          expect(xferTx).toBeTruthy();
+          expect(xferTx.chain).toEqual(chain);
+        });
 
-  // describe("Create TokenBridge Transactions", () => {
-  //   const tbAddress = p.conf[chain]!.contracts.tokenBridge!;
+        test("Token", async () => {
+          const xfer = tb.transfer(
+            sender,
+            recipient,
+            realWrappedAddress,
+            amount,
+            payload
+          );
+          expect(xfer).toBeTruthy();
 
-  //   describe("Token Transfer Transactions", () => {
-  //     describe("Transfer", () => {
-  //       const amount = 1000n;
-  //       const payload = undefined;
+          const allTxns: CosmwasmUnsignedTransaction[] = [];
+          for await (const tx of xfer) {
+            allTxns.push(tx);
+          }
+          expect(allTxns).toHaveLength(1);
 
-  //       test("Native", async () => {
-  //         const token = "native";
-  //         const xfer = tb.transfer(sender, recipient, token, amount, payload);
-  //         expect(xfer).toBeTruthy();
+          const msgs = allTxns[0].transaction.msgs;
+          expect(msgs).toHaveLength(2);
 
-  //         const allTxns: EvmUnsignedTransaction[] = [];
-  //         for await (const tx of xfer) {
-  //           allTxns.push(tx);
-  //         }
-  //         expect(allTxns).toHaveLength(1);
+          const [approveTx, xferTx] = msgs;
+          expect(approveTx).toBeTruthy();
+          expect(approveTx.value.sender).toEqual(senderAddress.toString());
+          expect(xferTx).toBeTruthy();
+          expect(xferTx.value.sender).toEqual(senderAddress.toString());
 
-  //         const [xferTx] = allTxns;
-  //         expect(xferTx).toBeTruthy();
-  //         expect(xferTx.chain).toEqual(chain);
+          //expect(approveTx).toEqual(chain);
 
-  //         const { transaction } = xferTx;
-  //         expect(transaction.chainId).toEqual(
-  //           // @ts-ignore
-  //           evmNetworkChainToEvmChainId(network, chain)
-  //         );
-  //       });
-
-  //       test("Token", async () => {
-  //         // TODO: find a way to mock the allowance check
-  //         const xfer = tb.transfer(
-  //           sender,
-  //           recipient,
-  //           realWrappedAddress,
-  //           amount,
-  //           payload
-  //         );
-  //         expect(xfer).toBeTruthy();
-
-  //         const allTxns: EvmUnsignedTransaction[] = [];
-  //         for await (const tx of xfer) {
-  //           allTxns.push(tx);
-  //         }
-  //         expect(allTxns).toHaveLength(2);
-
-  //         const [approveTx, xferTx] = allTxns;
-  //         expect(approveTx).toBeTruthy();
-  //         const { transaction: approveTransaction } = approveTx;
-  //         expect(approveTransaction.to).toEqual(realWrappedAddress.toString());
-
-  //         expect(xferTx).toBeTruthy();
-  //         expect(xferTx.chain).toEqual(chain);
-  //         const { transaction: xferTransaction } = xferTx;
-  //         expect(xferTransaction.to).toEqual(tbAddress.toString());
-  //         expect(xferTransaction.chainId).toEqual(
-  //           // @ts-ignore
-  //           evmNetworkChainToEvmChainId(network, chain)
-  //         );
-  //       });
-  //     });
-  //   });
-  // });
+          // const { transaction: approveTransaction } = approveTx;
+          // expect(approveTransaction.msgs[0].).toEqual(realWrappedAddress.toString());
+          // const { transaction: xferTransaction } = xferTx;
+          // expect(xferTransaction.to).toEqual(tbAddress.toString());
+          // expect(xferTransaction.chainId).toEqual(
+          //   // @ts-ignore
+          //   evmNetworkChainToEvmChainId(network, chain)
+          // );
+        });
+      });
+    });
+  });
 });

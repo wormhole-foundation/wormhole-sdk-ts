@@ -11,95 +11,90 @@ import {
   isWormholeMessageId,
   isTransactionIdentifier,
   toNative,
+  ChainAddress,
 } from '@wormhole-foundation/sdk-definitions';
-import { isTokenTransferDetails, TokenTransferDetails } from '../types';
+import {
+  GatewayTransferDetails,
+  GatewayTransferMsg,
+  GatewayTransferWithPayloadMsg,
+  isGatewayTransferDetails,
+} from '../types';
 import {
   WormholeTransfer,
   TransferState,
   AttestationId,
 } from '../wormholeTransfer';
 import { Wormhole } from '../wormhole';
-import { ChainName, PlatformName } from '@wormhole-foundation/sdk-base';
+import {
+  ChainName,
+  PlatformName,
+  chainToPlatform,
+  toChainId,
+} from '@wormhole-foundation/sdk-base';
 
 /**
  * What do with multiple transactions or VAAs?
  * More concurrent promises instead of linearizing/blocking
  */
 
-export class TokenTransfer implements WormholeTransfer {
+export class GatewayTransfer implements WormholeTransfer {
   private readonly wh: Wormhole;
 
   // state machine tracker
   private state: TransferState;
 
   // transfer details
-  transfer: TokenTransferDetails;
+  transfer: GatewayTransferDetails;
 
   // Source txids
   txids?: TxHash[];
 
-  // The corresponding vaa representing the TokenTransfer
+  // The corresponding vaa representing the GatewayTransfer
   // on the source chain (if its been completed and finalized)
   vaas?: {
     id: WormholeMessageId;
     vaa?: VAA<'Transfer'> | VAA<'TransferWithPayload'>;
   }[];
 
-  private constructor(wh: Wormhole, transfer: TokenTransferDetails) {
+  private constructor(wh: Wormhole, transfer: GatewayTransferDetails) {
     this.state = TransferState.Created;
     this.wh = wh;
     this.transfer = transfer;
   }
 
   async getTransferState(): Promise<TransferState> {
-    if (!this.transfer.automatic) return this.state;
-    if (!this.vaas || this.vaas.length === 0) return this.state;
-
-    const { chain, emitter, sequence } = this.vaas[0].id;
-    const txStatus = await this.wh.getTransactionStatus(
-      chain,
-      emitter,
-      sequence,
-    );
-
-    if (txStatus.globalTx.destinationTx) {
-      switch (txStatus.globalTx.destinationTx.status) {
-        case 'completed':
-          this.state = TransferState.Completed;
-          break;
-        // ... more?
-      }
-    }
-
     return this.state;
   }
 
   // Static initializers for in flight transfers that have not been completed
   static async from(
     wh: Wormhole,
-    from: TokenTransferDetails,
-  ): Promise<TokenTransfer>;
+    from: GatewayTransferDetails,
+  ): Promise<GatewayTransfer>;
   static async from(
     wh: Wormhole,
     from: WormholeMessageId,
-  ): Promise<TokenTransfer>;
-  static async from(wh: Wormhole, from: TransactionId): Promise<TokenTransfer>;
+  ): Promise<GatewayTransfer>;
   static async from(
     wh: Wormhole,
-    from: TokenTransferDetails | WormholeMessageId | TransactionId,
-  ): Promise<TokenTransfer> {
-    let tt: TokenTransfer | undefined;
+    from: TransactionId,
+  ): Promise<GatewayTransfer>;
+  static async from(
+    wh: Wormhole,
+    from: GatewayTransferDetails | WormholeMessageId | TransactionId,
+  ): Promise<GatewayTransfer> {
+    let tt: GatewayTransfer | undefined;
 
     if (isWormholeMessageId(from)) {
-      tt = await TokenTransfer.fromIdentifier(wh, from);
+      tt = await GatewayTransfer.fromIdentifier(wh, from);
     } else if (isTransactionIdentifier(from)) {
-      tt = await TokenTransfer.fromTransaction(wh, from);
-    } else if (isTokenTransferDetails(from)) {
-      tt = new TokenTransfer(wh, from);
+      tt = await GatewayTransfer.fromTransaction(wh, from);
+    } else if (isGatewayTransferDetails(from)) {
+      tt = new GatewayTransfer(wh, from);
     }
 
     if (tt === undefined)
-      throw new Error('Invalid `from` parameter for TokenTransfer');
+      throw new Error('Invalid `from` parameter for GatewayTransfer');
 
     return tt;
   }
@@ -108,9 +103,9 @@ export class TokenTransfer implements WormholeTransfer {
   private static async fromIdentifier(
     wh: Wormhole,
     from: WormholeMessageId,
-  ): Promise<TokenTransfer> {
+  ): Promise<GatewayTransfer> {
     const { chain, emitter, sequence } = from;
-    const vaa = await TokenTransfer.getTransferVaa(
+    const vaa = await GatewayTransfer.getTransferVaa(
       wh,
       chain,
       emitter,
@@ -118,29 +113,28 @@ export class TokenTransfer implements WormholeTransfer {
     );
 
     // Check if its a payload 3 targeted at a relayer on the destination chain
-    const { address } = vaa.payload.to;
-    const { relayer } = wh.conf.chains[chain]!.contracts;
+    // const { address } = vaa.payload.to;
+    // const { relayer } = wh.conf.chains[chain]!.contracts;
 
-    let automatic = false;
-    if (relayer) {
-      const relayerAddress = toNative(chain, relayer);
-      automatic =
-        vaa.payloadLiteral === 'TransferWithPayload' &&
-        //@ts-ignore
-        address.equals(relayerAddress.toUniversalAddress());
-    }
+    // let automatic = false;
+    // if (relayer) {
+    //   const relayerAddress = toNative(chain, relayer);
+    //   automatic =
+    //     vaa.payloadLiteral === 'TransferWithPayload' &&
+    //     //@ts-ignore
+    //     address.equals(relayerAddress.toUniversalAddress());
+    // }
 
-    const details: TokenTransferDetails = {
+    const details: GatewayTransferDetails = {
       token: { ...vaa.payload.token },
       amount: vaa.payload.token.amount,
       // TODO: the `from.address` here is a lie, but we don't
       // immediately have enough info to get the _correct_ one
       from: { chain: from.chain, address: from.emitter },
       to: { ...vaa.payload.to },
-      automatic,
     };
 
-    const tt = new TokenTransfer(wh, details);
+    const tt = new GatewayTransfer(wh, details);
     tt.vaas = [
       { id: { emitter, sequence: vaa.sequence, chain: from.chain }, vaa },
     ];
@@ -153,7 +147,7 @@ export class TokenTransfer implements WormholeTransfer {
   private static async fromTransaction(
     wh: Wormhole,
     from: TransactionId,
-  ): Promise<TokenTransfer> {
+  ): Promise<GatewayTransfer> {
     const { chain, txid } = from;
 
     const originChain = wh.getChain(chain);
@@ -164,7 +158,7 @@ export class TokenTransfer implements WormholeTransfer {
 
     // TODO: assuming single tx
     const [msg] = parsed;
-    const tt = await TokenTransfer.fromIdentifier(wh, msg);
+    const tt = await GatewayTransfer.fromIdentifier(wh, msg);
     tt.txids = [txid];
 
     return tt;
@@ -180,42 +174,112 @@ export class TokenTransfer implements WormholeTransfer {
         3) submit it to chain
         4) return transaction id
     */
-
     if (this.state !== TransferState.Created)
       throw new Error('Invalid state transition in `start`');
+
+    if (chainToPlatform(this.transfer.from.chain) === 'Cosmwasm') {
+      return this.initiateTransferIbc(signer);
+      // ibc transfer?
+    }
 
     const tokenAddress =
       this.transfer.token === 'native' ? 'native' : this.transfer.token.address;
 
     const fromChain = this.wh.getChain(this.transfer.from.chain);
 
-    let xfer: AsyncGenerator<UnsignedTransaction>;
-    if (this.transfer.automatic) {
-      const tb = await fromChain.getAutomaticTokenBridge();
-      const fee = await tb.getRelayerFee(
-        this.transfer.from,
-        this.transfer.to,
-        this.transfer.token,
-      );
+    // Encode the payload so the gateway contract knows where to forward the
+    // newly minted tokens
 
-      xfer = tb.transfer(
-        this.transfer.from.address,
-        this.transfer.to,
-        tokenAddress,
-        this.transfer.amount,
-        fee,
-        this.transfer.nativeGas,
-      );
-    } else {
-      const tb = await fromChain.getTokenBridge();
-      xfer = tb.transfer(
-        this.transfer.from.address,
-        this.transfer.to,
-        tokenAddress,
-        this.transfer.amount,
-        this.transfer.payload,
-      );
+    // TODO: force string encoded payload or adhere to b64 encoding it?
+    let _payload = this.transfer.payload
+      ? Buffer.from(this.transfer.payload).toString('base64')
+      : undefined;
+
+    const msg = GatewayTransfer.transferMsg(
+      this.transfer.from.chain,
+      this.transfer.to.address as NativeAddress<'Cosmwasm'>,
+      0n,
+      _payload,
+    );
+    const payload = new Uint8Array(Buffer.from(msg));
+
+    const gatewayAddress = this.gatewayAddress();
+
+    const tb = await fromChain.getTokenBridge();
+    const xfer: AsyncGenerator<UnsignedTransaction> = tb.transfer(
+      this.transfer.from.address,
+      gatewayAddress,
+      tokenAddress,
+      this.transfer.amount,
+      payload,
+    );
+
+    let unsigned: UnsignedTransaction[] = [];
+    const txHashes: TxHash[] = [];
+    for await (const tx of xfer) {
+      unsigned.push(tx);
+      if (!tx.parallelizable) {
+        // sign/send
+        txHashes.push(
+          ...(await fromChain.sendWait(await signer.sign(unsigned))),
+        );
+        // reset unsigned
+        unsigned = [];
+      }
     }
+
+    if (unsigned.length > 0) {
+      txHashes.push(...(await fromChain.sendWait(await signer.sign(unsigned))));
+    }
+
+    // Set txids and update statemachine
+    this.txids = txHashes;
+    this.state = TransferState.Initiated;
+
+    // TODO: concurrent? wait for finalized somehow?
+    for (const txHash of txHashes) {
+      const parsed = await fromChain.parseTransaction(txHash);
+      // TODO:
+      if (parsed.length != 1)
+        throw new Error(`Expected a single VAA, got ${parsed.length}`);
+
+      const [{ emitter, sequence }] = parsed;
+
+      if (!this.vaas) this.vaas = [];
+      this.vaas.push({
+        id: { emitter, sequence, chain: fromChain.chain },
+      });
+    }
+
+    return txHashes;
+  }
+
+  async initiateTransferIbc(signer: Signer): Promise<string[]> {
+    /*
+    let _payload = this.transfer.payload
+      ? Buffer.from(this.transfer.payload).toString('base64')
+      : undefined;
+
+    const msg = GatewayTransfer.transferMsg(
+      this.transfer.from.chain,
+      this.transfer.to.address as NativeAddress<'Cosmwasm'>,
+      0n,
+      _payload,
+    );
+    */
+
+    const tokenAddress =
+      this.transfer.token === 'native' ? 'native' : this.transfer.token.address;
+
+    const fromChain = this.wh.getChain(this.transfer.from.chain);
+
+    const ibcBridge = await fromChain.getIbcBridge();
+    const xfer: AsyncGenerator<UnsignedTransaction> = ibcBridge.transfer(
+      this.transfer.from.address,
+      this.transfer.to,
+      tokenAddress,
+      this.transfer.amount,
+    );
 
     let unsigned: UnsignedTransaction[] = [];
     const txHashes: TxHash[] = [];
@@ -280,7 +344,7 @@ export class TokenTransfer implements WormholeTransfer {
       // already got it
       if (this.vaas[idx].vaa) continue;
 
-      this.vaas[idx].vaa = await TokenTransfer.getTransferVaa(
+      this.vaas[idx].vaa = await GatewayTransfer.getTransferVaa(
         this.wh,
         this.transfer.from.chain,
         this.vaas[idx].id.emitter,
@@ -323,24 +387,11 @@ export class TokenTransfer implements WormholeTransfer {
 
       if (!vaa) throw new Error(`No VAA found for ${cachedVaa.id.sequence}`);
 
-      let xfer: AsyncGenerator<UnsignedTransaction> | undefined;
-      if (this.transfer.automatic) {
-        if (vaa.payloadLiteral === 'Transfer')
-          throw new Error(
-            'VAA is a simple transfer but expected Payload for automatic delivery',
-          );
-
-        const tb = await toChain.getAutomaticTokenBridge();
-        xfer = tb.redeem(toAddress, vaa);
-      } else {
-        const tb = await toChain.getTokenBridge();
-        xfer = tb.redeem(toAddress, vaa);
-      }
-
-      // TODO: better error
-      if (xfer === undefined)
-        throw new Error('No handler defined for VAA type');
-
+      const tb = await toChain.getTokenBridge();
+      const xfer: AsyncGenerator<UnsignedTransaction> = tb.redeem(
+        toAddress,
+        vaa,
+      );
       for await (const tx of xfer) {
         unsigned.push(tx);
         // If we find a tx that is not parallelizable, sign it and send
@@ -367,17 +418,53 @@ export class TokenTransfer implements WormholeTransfer {
     emitter: UniversalAddress | NativeAddress<PlatformName>,
     sequence: bigint,
     retries: number = 5,
-  ): Promise<VAA<'Transfer'> | VAA<'TransferWithPayload'>> {
+  ): Promise<VAA<'TransferWithPayload'>> {
     const vaaBytes = await wh.getVAABytes(chain, emitter, sequence, retries);
     if (!vaaBytes) throw new Error(`No VAA available after ${retries} retries`);
 
     const partial = deserialize('Uint8Array', vaaBytes);
     switch (partial.payload[0]) {
-      case 1:
-        return deserialize('Transfer', vaaBytes);
       case 3:
         return deserialize('TransferWithPayload', vaaBytes);
     }
     throw new Error(`No serde defined for type: ${partial.payload[0]}`);
+  }
+
+  static transferMsg(
+    chain: ChainName,
+    recipient: NativeAddress<'Cosmwasm'>,
+    fee: bigint = 0n,
+    payload?: string,
+    nonce?: number,
+  ): string {
+    // Address of recipient is b64 encoded Cosmos bech32 address
+    // @ts-ignore
+    const address = Buffer.from(recipient.toString()).toString('base64');
+
+    const common = {
+      chain: toChainId(chain),
+      recipient: address,
+      fee: fee.toString(),
+      nonce: nonce,
+    };
+
+    const msg: GatewayTransferWithPayloadMsg | GatewayTransferMsg = payload
+      ? ({
+          gateway_transfer_with_payload: { ...common, payload: payload },
+        } as GatewayTransferWithPayloadMsg)
+      : ({ gateway_transfer: { ...common } } as GatewayTransferMsg);
+
+    return JSON.stringify(msg);
+  }
+
+  private gatewayAddress(): ChainAddress {
+    const chain = 'Wormchain';
+    // reference from conf instead of asking the module
+    // so we can keep from forcing install
+    const gatewayAddress = this.wh.conf.chains[chain]!.contracts.gateway!;
+    return {
+      chain: chain,
+      address: toNative(chain, gatewayAddress),
+    };
   }
 }

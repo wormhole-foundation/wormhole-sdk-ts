@@ -6,6 +6,8 @@ export type Contracts = {
   nftBridge?: string;
   relayer?: string;
   cctp?: contracts.CircleContracts;
+  gateway?: string;
+  translator?: string;
 };
 
 export function getContracts(n: Network, c: ChainName): Contracts {
@@ -18,6 +20,14 @@ export function getContracts(n: Network, c: ChainName): Contracts {
 
   if (contracts.circleContracts.has(n, c)) {
     ct.cctp = contracts.circleContracts.get(n, c);
+  }
+
+  if (contracts.gateway.has(n)) {
+    ct.gateway = contracts.gateway.get(n);
+  }
+
+  if (contracts.translator.has(n, c)) {
+    ct.translator = contracts.translator.get(n, c);
   }
 
   return ct;

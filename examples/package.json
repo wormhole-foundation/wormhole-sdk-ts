@@ -36,8 +36,7 @@
   "scripts": {
     "tb": "tsx src/tokenBridge.ts",
     "cctp": "tsx src/cctp.ts",
-    "demo":"tsx src/index.ts",
-
+    "demo": "tsx src/index.ts",
     "build:cjs": "tsc -p ./tsconfig.cjs.json",
     "build:esm": "tsc -p ./tsconfig.esm.json",
     "build": "npm run build:cjs && npm run build:esm",
@@ -62,7 +61,11 @@
     "typescript": "^5.1.6"
   },
   "dependencies": {
+    "@hanchon/evmos-signer": "^1.0.0",
+    "@injectivelabs/sdk-ts": "^1.14.0-beta.1",
+    "@sei-js/proto": "^3.0.2",
     "@wormhole-foundation/connect-sdk": "*",
+    "@wormhole-foundation/connect-sdk-cosmwasm": "*",
     "@wormhole-foundation/connect-sdk-evm": "*",
     "@wormhole-foundation/connect-sdk-solana": "*",
     "@wormhole-foundation/sdk-base": "*",

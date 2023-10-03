@@ -22,5 +22,6 @@ export * from "./types";
 export * from "./protocols/core";
 export * from "./protocols/tokenBridge";
 export * from "./protocols/cctp";
+export * from "./protocols/ibc";
 
 export * as testing from "./testing";
