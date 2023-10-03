@@ -5,8 +5,6 @@ import {
   keccak256,
   sha256,
   toChainId,
-  GatewayTransferMsg,
-  GatewayTransferWithPayloadMsg,
 } from "@wormhole-foundation/connect-sdk";
 import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import { IBC_PORT, networkChainToChannelId } from "./constants";
@@ -133,31 +131,5 @@ export module Gateway {
     const hashData = Buffer.from(`transfer/${channel}/${denom}`);
     const hash = Buffer.from(sha256(hashData)).toString("hex");
     return new CosmwasmAddress(`ibc/${hash.toUpperCase()}`);
-  }
-
-  export function transferMsg(
-    chain: ChainName,
-    recipient: CosmwasmAddress,
-    fee: bigint = 0n,
-    payload?: string,
-    nonce?: number
-  ): string {
-    // Address of recipient is b64 encoded Cosmos bech32 address
-    const address = Buffer.from(recipient.toString()).toString("base64");
-
-    const common = {
-      chain: toChainId(chain),
-      recipient: address,
-      fee: fee.toString(),
-      nonce: nonce,
-    };
-
-    const msg: GatewayTransferWithPayloadMsg | GatewayTransferMsg = payload
-      ? ({
-          gateway_transfer_with_payload: { ...common, payload: payload },
-        } as GatewayTransferWithPayloadMsg)
-      : ({ gateway_transfer: { ...common } } as GatewayTransferMsg);
-
-    return JSON.stringify(msg);
   }
 }

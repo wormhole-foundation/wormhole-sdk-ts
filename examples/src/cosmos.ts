@@ -7,7 +7,7 @@ import {
 // Import the platform specific packages
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
-// helpers
+
 import { TransferStuff, getStuff } from "./helpers";
 
 (async function () {
@@ -32,12 +32,7 @@ import { TransferStuff, getStuff } from "./helpers";
 
   // Transfer native token from source chain, through gateway, to a cosmos chain
   const route1 = await transferIntoCosmos(wh, token, amount, leg1, leg2);
-
-  // const tb = await leg1.chain.getTokenBridge();
-  // const wrappedAvax: TokenId = {
-  //   chain: "Avalanche",
-  //   address: await tb.getWrappedNative(),
-  // };
+  console.log("Transfer into Cosmos: ", route1);
 
   // Transfer Gateway factory token over IBC back through gateway to destination chain
   const route2 = await transferBetweenCosmos(
@@ -47,6 +42,7 @@ import { TransferStuff, getStuff } from "./helpers";
     leg2,
     leg3
   );
+  console.log("Transfer within Cosmos: ", route2);
 
   // Transfer Gateway factory token through gateway back to source chain
   const route3 = await transferOutOfCosmos(
@@ -56,9 +52,6 @@ import { TransferStuff, getStuff } from "./helpers";
     leg3,
     leg1
   );
-
-  console.log("Transfer into Cosmos: ", route1);
-  console.log("Transfer within Cosmos: ", route2);
   console.log("Transfer out of Cosmos: ", route3);
 })();
 
@@ -94,6 +87,10 @@ async function transferIntoCosmos(
   // TODO: log wait until its complete
   // await xfer.wait()
 
+  // TODO:
+  // - query wormchain for is_redeemed on the vaa
+  // - query wormchain ibc to see if its got outstanding commitments
+
   return xfer;
 }
 
@@ -128,6 +125,8 @@ async function transferBetweenCosmos(
 
   // TODO: log wait until its complete
   // await xfer.wait();
+
+  // - query wormchain ibc to see if its got outstanding commitments
 
   return xfer;
 }

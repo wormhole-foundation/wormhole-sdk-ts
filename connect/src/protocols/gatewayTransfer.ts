@@ -445,7 +445,7 @@ export class GatewayTransfer implements WormholeTransfer {
       chain: toChainId(chain),
       recipient: address,
       fee: fee.toString(),
-      nonce: nonce,
+      nonce: nonce ?? Math.round(Math.random() * 100000),
     };
 
     const msg: GatewayTransferWithPayloadMsg | GatewayTransferMsg = payload
