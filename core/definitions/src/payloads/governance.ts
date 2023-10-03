@@ -182,7 +182,12 @@ const governancePayload = <
 ) =>
   [
     (protocol + action) as ConcatStringLiterals<[P, A]>,
-    [...headerLayout(protocol, action, num), ...actionMapping(action).layout],
+    [
+      ...headerLayout(protocol, action, num),
+      //TODO why is this insane cast necessary here?!
+      //     why isn't typescript deducing the return type correctly by itself?
+      ...actionMapping(action).layout as ReturnType<typeof actionMapping<A>>["layout"]
+    ],
   ] as const;
 
 const governancePayloads = [
