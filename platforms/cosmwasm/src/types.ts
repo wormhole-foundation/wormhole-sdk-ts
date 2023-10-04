@@ -2,11 +2,12 @@ import {
   UniversalAddress,
   UniversalOrNative,
   PlatformToChains,
-  ChainId,
   GatewayTransferMsg,
 } from "@wormhole-foundation/connect-sdk";
-
 import { logs as cosmosLogs } from "@cosmjs/stargate";
+
+export type CosmwasmChainName = PlatformToChains<"Cosmwasm">;
+export type UniversalOrCosmwasm = UniversalOrNative<"Cosmwasm"> | string;
 
 // GatewayIBCTransferMsg is the message sent in the memo of an IBC transfer
 // to be decoded and executed by the Gateway contract.
@@ -14,14 +15,18 @@ export interface GatewayIbcTransferMsg {
   gateway_ibc_token_bridge_payload: GatewayTransferMsg;
 }
 
+// Summary of an IBCTransfer with the message
+// payload and a pending flag if we find it
+// in the PendingCommitment queue
 export interface IBCTransferInfo {
-  sequence: string;
-  timeout: string;
-  srcChannel: string;
-  dstChannel: string;
-  data: string;
+  sequence: number;
+  srcChan: string;
+  dstChan: string;
+  pending: boolean;
+  data: IBCTransferData;
 }
 
+// The expected payload sent as a string over IBC
 export interface IBCTransferData {
   amount: string;
   denom: string;
@@ -33,9 +38,6 @@ export interface IBCTransferData {
 export interface WrappedRegistryResponse {
   address: string;
 }
-
-export type CosmwasmChainName = PlatformToChains<"Cosmwasm">;
-export type UniversalOrCosmwasm = UniversalOrNative<"Cosmwasm"> | string;
 
 export const toCosmwasmAddrString = (addr: UniversalOrCosmwasm) =>
   typeof addr === "string"

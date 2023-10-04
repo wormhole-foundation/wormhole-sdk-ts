@@ -18,33 +18,42 @@ import { TransferStuff, getStuff } from "./helpers";
   // to use (e.g. Mainnet/Testnet) and what Platforms to support
   const wh = new Wormhole("Testnet", [EvmPlatform, CosmwasmPlatform]);
 
-  // We're going to transfer Avax from Avalanche into Cosmos through the Gateway
-  // then Transfer between chains using IBC and finally transfer out of Cosmos
-  // back to Avalanche
+  // We're going to transfer into, around, and out of the Cosmos ecosystem
+  // First on Avalanche, transparently through gateway and over IBC to Cosmoshub
+  // Then over IBC, transparently through gateway and over IBC to Osmosis
+  // Finally out of Osmosis, transparently through gateway, out to Avalanche
+
+  // eg:
+  //  Avalanche[avax] => {Gateway} -> Cosmoshub[gateway/wrapped avax]
+  //  Cosmoshub[gateway/wrapped avax] -> {Gateway} -> Osmosis[gateway/wrapped avax]
+  //  Osmosis[gateway/wrapped avax] -> {Gateway} => Avalanch[avax]
 
   // Grab chain Contexts for each leg of our journey
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
   const leg1 = await getStuff(wh.getChain("Avalanche"));
-  const leg2 = await getStuff(wh.getChain("Cosmoshub"));
-  const leg3 = await getStuff(wh.getChain("Osmosis"));
+  const leg2 = await getStuff(wh.getChain("Osmosis"));
+  const leg3 = await getStuff(wh.getChain("Cosmoshub"));
 
-  const xfer = await GatewayTransfer.from(wh, {
-    chain: leg1.chain.chain,
-    txid: "0x018f0c8b4821ad36678ade563782e354dc4cd5f22353e0b7954089dc20d70abb",
-  });
-
-  const payload = GatewayTransfer.recoverTransferPayload(xfer.vaas![0].vaa!);
-  console.log("Pending?: ", await Gateway.ibcTransferPending(payload));
-
-  return;
   // we'll use the native token on the source chain
   const token = "native";
   const amount = await wh.normalizeAmount(leg1.chain.chain, token, 0.01);
 
+  const route1 = await GatewayTransfer.from(wh, {
+    chain: leg1.chain.chain,
+    txid: "0x018f0c8b4821ad36678ade563782e354dc4cd5f22353e0b7954089dc20d70abb",
+  });
+
   // Transfer native token from source chain, through gateway, to a cosmos chain
-  const route1 = await transferIntoCosmos(wh, token, amount, leg1, leg2);
+  //const route1 = await transferIntoCosmos(wh, token, amount, leg1, leg2);
   console.log("Transfer into Cosmos: ", route1);
+
+  const payload = GatewayTransfer.recoverTransferPayload(route1.vaas![0].vaa!);
+  const ibcTransfer = await Gateway.ibcTransfer(payload);
+  console.log("Transfer: ", ibcTransfer);
+
+  // Not working below here
+  return;
 
   // Transfer Gateway factory token over IBC back through gateway to destination chain
   const route2 = await transferBetweenCosmos(
