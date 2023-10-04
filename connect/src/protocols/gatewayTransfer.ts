@@ -12,13 +12,11 @@ import {
   isTransactionIdentifier,
   toNative,
   ChainAddress,
-} from '@wormhole-foundation/sdk-definitions';
-import {
   GatewayTransferDetails,
   GatewayTransferMsg,
   GatewayTransferWithPayloadMsg,
   isGatewayTransferDetails,
-} from '../types';
+} from '@wormhole-foundation/sdk-definitions';
 import {
   WormholeTransfer,
   TransferState,

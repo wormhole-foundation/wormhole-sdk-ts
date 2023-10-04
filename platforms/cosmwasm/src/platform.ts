@@ -3,9 +3,9 @@ import {
   QueryClient,
   logs as cosmosLogs,
   setupIbcExtension,
-} from '@cosmjs/stargate';
-import { CosmWasmClient } from '@cosmjs/cosmwasm-stargate';
-import { TendermintClient } from '@cosmjs/tendermint-rpc';
+} from "@cosmjs/stargate";
+import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
+import { TendermintClient } from "@cosmjs/tendermint-rpc";
 
 import {
   ChainName,
@@ -18,24 +18,24 @@ import {
   Platform,
   UniversalAddress,
   PlatformToChains,
-} from '@wormhole-foundation/connect-sdk';
+} from "@wormhole-foundation/connect-sdk";
 
-import { CosmwasmContracts } from './contracts';
-import { CosmwasmChain } from './chain';
-import { CosmwasmUtils } from './platformUtils';
-import { chainToNativeDenoms } from './constants';
-import { searchCosmosLogs } from './types';
-import { Gateway } from './gateway';
+import { CosmwasmContracts } from "./contracts";
+import { CosmwasmChain } from "./chain";
+import { CosmwasmUtils } from "./platformUtils";
+import { chainToNativeDenoms } from "./constants";
+import { searchCosmosLogs } from "./types";
+import { Gateway } from "./gateway";
 
-import { CosmwasmTokenBridge } from './protocols/tokenBridge';
-import { CosmwasmIbcBridge } from './protocols/ibc';
+import { CosmwasmTokenBridge } from "./protocols/tokenBridge";
+import { CosmwasmIbcBridge } from "./protocols/ibc";
 
-var _: Platform<'Cosmwasm'> = CosmwasmPlatform;
+var _: Platform<"Cosmwasm"> = CosmwasmPlatform;
 /**
  * @category Cosmwasm
  */
 export module CosmwasmPlatform {
-  export const platform = 'Cosmwasm';
+  export const platform = "Cosmwasm";
   export let network: Network = DEFAULT_NETWORK;
   export let conf: ChainsConfig = networkPlatformConfigs(network, platform);
 
@@ -62,12 +62,11 @@ export module CosmwasmPlatform {
     address: gatewayAddress,
     getDestinationChannel,
     getSourceChannel,
-    ibcTransfer,
   } = Gateway;
 
   export function setConfig(
     network: Network,
-    _conf?: ChainsConfig,
+    _conf?: ChainsConfig
   ): typeof CosmwasmPlatform {
     conf = _conf ? _conf : networkPlatformConfigs(network, platform);
     contracts = new CosmwasmContracts(conf);
@@ -86,17 +85,17 @@ export module CosmwasmPlatform {
   // TODO: should other platforms have something like this?
   export function getNativeDenom(chain: ChainName): string {
     // TODO: required because of const map
-    if (network === 'Devnet') throw new Error('No devnet native denoms');
+    if (network === "Devnet") throw new Error("No devnet native denoms");
     return chainToNativeDenoms(network, chain as PlatformToChains<Type>);
   }
 
   export async function parseTransaction(
     chain: ChainName,
     rpc: CosmWasmClient,
-    txid: TxHash,
+    txid: TxHash
   ): Promise<WormholeMessageId[]> {
     const tx = await rpc.getTx(txid);
-    if (!tx) throw new Error('tx not found');
+    if (!tx) throw new Error("tx not found");
 
     // parse logs emitted for the tx execution
     const logs = cosmosLogs.parseRawLog(tx.rawLog);
@@ -104,11 +103,11 @@ export module CosmwasmPlatform {
     // extract information wormhole contract logs
     // - message.sequence: the vaa's sequence number
     // - message.sender: the vaa's emitter address
-    const sequence = searchCosmosLogs('message.sequence', logs);
-    if (!sequence) throw new Error('sequence not found');
+    const sequence = searchCosmosLogs("message.sequence", logs);
+    if (!sequence) throw new Error("sequence not found");
 
-    const emitterAddress = searchCosmosLogs('message.sender', logs);
-    if (!emitterAddress) throw new Error('emitter not found');
+    const emitterAddress = searchCosmosLogs("message.sender", logs);
+    if (!emitterAddress) throw new Error("emitter not found");
 
     return [
       {
@@ -120,19 +119,19 @@ export module CosmwasmPlatform {
   }
 
   export async function getTokenBridge(
-    rpc: CosmWasmClient,
+    rpc: CosmWasmClient
   ): Promise<CosmwasmTokenBridge> {
     return await CosmwasmTokenBridge.fromProvider(rpc, contracts);
   }
 
   export async function getIbcBridge(
-    rpc: CosmWasmClient,
+    rpc: CosmWasmClient
   ): Promise<CosmwasmIbcBridge> {
     return await CosmwasmIbcBridge.fromProvider(rpc, contracts);
   }
 
   export const getQueryClient = (
-    rpc: CosmWasmClient,
+    rpc: CosmWasmClient
   ): QueryClient & IbcExtension => {
     // @ts-ignore
     const tmClient: TendermintClient = rpc.getTmClient()!;

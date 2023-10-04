@@ -48,8 +48,17 @@ import { TransferStuff, getStuff } from "./helpers";
   //const route1 = await transferIntoCosmos(wh, token, amount, leg1, leg2);
   console.log("Transfer into Cosmos: ", route1);
 
-  const payload = GatewayTransfer.recoverTransferPayload(route1.vaas![0].vaa!);
-  const ibcTransfer = await Gateway.ibcTransfer(payload);
+  const vaa = route1.vaas![0].vaa!;
+  const payload = GatewayTransfer.recoverTransferPayload(vaa);
+
+  const wc = wh.getChain("Wormchain");
+
+  const tokenBridge = await wc.getTokenBridge();
+  const vaaRedeemed = await tokenBridge.isTransferCompleted(vaa);
+  console.log("VAA Redeemed?: ", vaaRedeemed);
+
+  const ibcBridge = await wc.getIbcBridge();
+  const ibcTransfer = await ibcBridge.lookupTransfer(payload);
   console.log("Transfer: ", ibcTransfer);
 
   // Not working below here
