@@ -88,6 +88,12 @@ export interface GatewayTransferMsg {
   };
 }
 
+export function isGatewayTransferMsg(
+  thing: GatewayTransferMsg | any,
+): thing is GatewayTransferMsg {
+  return (<GatewayTransferMsg>thing).gateway_transfer !== undefined;
+}
+
 // GatewayTransferWithPayloadMsg is the message sent in the payload of a
 // TokenTransfer with its own payload to be executed by the Gateway contract.
 export interface GatewayTransferWithPayloadMsg {
@@ -98,6 +104,15 @@ export interface GatewayTransferWithPayloadMsg {
     nonce: number;
     payload: string;
   };
+}
+
+export function isGatewayTransferWithPayloadMsg(
+  thing: GatewayTransferWithPayloadMsg | any,
+): thing is GatewayTransferWithPayloadMsg {
+  return (
+    (<GatewayTransferWithPayloadMsg>thing).gateway_transfer_with_payload !==
+    undefined
+  );
 }
 
 export type GatewayTransferDetails = {

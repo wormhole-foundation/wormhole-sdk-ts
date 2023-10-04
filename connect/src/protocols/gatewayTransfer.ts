@@ -38,6 +38,8 @@ import {
  */
 
 export class GatewayTransfer implements WormholeTransfer {
+  static chain: ChainName = 'Wormchain';
+
   private readonly wh: Wormhole;
 
   // state machine tracker
@@ -53,7 +55,7 @@ export class GatewayTransfer implements WormholeTransfer {
   // on the source chain (if its been completed and finalized)
   vaas?: {
     id: WormholeMessageId;
-    vaa?: VAA<'Transfer'> | VAA<'TransferWithPayload'>;
+    vaa?: VAA<'TransferWithPayload'>;
   }[];
 
   private constructor(wh: Wormhole, transfer: GatewayTransferDetails) {
@@ -111,19 +113,6 @@ export class GatewayTransfer implements WormholeTransfer {
       emitter,
       sequence,
     );
-
-    // Check if its a payload 3 targeted at a relayer on the destination chain
-    // const { address } = vaa.payload.to;
-    // const { relayer } = wh.conf.chains[chain]!.contracts;
-
-    // let automatic = false;
-    // if (relayer) {
-    //   const relayerAddress = toNative(chain, relayer);
-    //   automatic =
-    //     vaa.payloadLiteral === 'TransferWithPayload' &&
-    //     //@ts-ignore
-    //     address.equals(relayerAddress.toUniversalAddress());
-    // }
 
     const details: GatewayTransferDetails = {
       token: { ...vaa.payload.token },
@@ -195,13 +184,13 @@ export class GatewayTransfer implements WormholeTransfer {
       ? Buffer.from(this.transfer.payload).toString('base64')
       : undefined;
 
-    const msg = GatewayTransfer.transferMsg(
+    const msg = GatewayTransfer.makeTransferMsg(
       this.transfer.to.chain,
       this.transfer.to.address as NativeAddress<'Cosmwasm'>,
       0n,
       _payload,
     );
-    const payload = new Uint8Array(Buffer.from(msg));
+    const payload = new Uint8Array(Buffer.from(JSON.stringify(msg)));
 
     const gatewayAddress = this.gatewayAddress();
 
@@ -430,13 +419,13 @@ export class GatewayTransfer implements WormholeTransfer {
     throw new Error(`No serde defined for type: ${partial.payload[0]}`);
   }
 
-  static transferMsg(
+  static makeTransferMsg(
     chain: ChainName,
     recipient: NativeAddress<'Cosmwasm'>,
     fee: bigint = 0n,
     payload?: string,
     nonce?: number,
-  ): string {
+  ): GatewayTransferWithPayloadMsg | GatewayTransferMsg {
     // Address of recipient is b64 encoded Cosmos bech32 address
     // @ts-ignore
     const address = Buffer.from(recipient.toString()).toString('base64');
@@ -454,17 +443,53 @@ export class GatewayTransfer implements WormholeTransfer {
         } as GatewayTransferWithPayloadMsg)
       : ({ gateway_transfer: { ...common } } as GatewayTransferMsg);
 
-    return JSON.stringify(msg);
+    return msg;
+  }
+
+  static recoverTransferPayload(
+    vaa: VAA<'TransferWithPayload'>,
+  ): GatewayTransferWithPayloadMsg | GatewayTransferMsg {
+    return JSON.parse(Buffer.from(vaa.payload.payload).toString());
+  }
+
+  // Return whether or not the VAA has been redeemed
+  // to the gateway tokenbridge
+  async isVaaRedeemed(): Promise<boolean> {
+    // TODO: allow passing in?
+    if (!this.vaas || this.vaas.length === 0)
+      throw new Error('No VAAs to check');
+
+    // TODO: just looking at the first one we find
+    const [{ vaa }] = this.vaas;
+
+    const wc = this.wh.getChain(GatewayTransfer.chain);
+    const tb = await wc.getTokenBridge();
+
+    return await tb.isTransferCompleted(vaa!);
+  }
+
+  async isIbcRelayed(): Promise<boolean> {
+    // TODO: allow passing in?
+    if (!this.vaas || this.vaas.length === 0)
+      throw new Error('No VAAs to check');
+
+    // TODO: just looking at the first one we find
+    const [{ vaa }] = this.vaas;
+
+    const msg = GatewayTransfer.recoverTransferPayload(vaa!);
+    // TODO: pass message to the gateway fn to check this
+
+    return false;
   }
 
   private gatewayAddress(): ChainAddress {
-    const chain = 'Wormchain';
     // reference from conf instead of asking the module
     // so we can keep from forcing install
-    const gatewayAddress = this.wh.conf.chains[chain]!.contracts.gateway!;
+    const gatewayAddress =
+      this.wh.conf.chains[GatewayTransfer.chain]!.contracts.gateway!;
     return {
-      chain: chain,
-      address: toNative(chain, gatewayAddress),
+      chain: GatewayTransfer.chain,
+      address: toNative(GatewayTransfer.chain, gatewayAddress),
     };
   }
 }

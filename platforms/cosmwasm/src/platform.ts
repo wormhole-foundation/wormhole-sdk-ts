@@ -62,6 +62,7 @@ export module CosmwasmPlatform {
     address: gatewayAddress,
     getDestinationChannel,
     getSourceChannel,
+    ibcTransferPending,
   } = Gateway;
 
   export function setConfig(

@@ -110,9 +110,7 @@ export module CosmwasmUtils {
   ): Promise<TxHash[]> {
     const txhashes: TxHash[] = [];
     for (const stxn of stxns) {
-      console.log(stxn);
       const result = await rpc.broadcastTx(stxn);
-      console.log(result);
       txhashes.push(result.transactionHash);
     }
     return txhashes;

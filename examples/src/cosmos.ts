@@ -6,7 +6,10 @@ import {
 } from "@wormhole-foundation/connect-sdk";
 // Import the platform specific packages
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
-import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
+import {
+  CosmwasmPlatform,
+  Gateway,
+} from "@wormhole-foundation/connect-sdk-cosmwasm";
 
 import { TransferStuff, getStuff } from "./helpers";
 
@@ -23,9 +26,18 @@ import { TransferStuff, getStuff } from "./helpers";
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
   const leg1 = await getStuff(wh.getChain("Avalanche"));
-  const leg2 = await getStuff(wh.getChain("Osmosis"));
-  const leg3 = await getStuff(wh.getChain("Cosmoshub"));
+  const leg2 = await getStuff(wh.getChain("Cosmoshub"));
+  const leg3 = await getStuff(wh.getChain("Osmosis"));
 
+  const xfer = await GatewayTransfer.from(wh, {
+    chain: leg1.chain.chain,
+    txid: "0x018f0c8b4821ad36678ade563782e354dc4cd5f22353e0b7954089dc20d70abb",
+  });
+
+  const payload = GatewayTransfer.recoverTransferPayload(xfer.vaas![0].vaa!);
+  console.log("Pending?: ", await Gateway.ibcTransferPending(payload));
+
+  return;
   // we'll use the native token on the source chain
   const token = "native";
   const amount = await wh.normalizeAmount(leg1.chain.chain, token, 0.01);
