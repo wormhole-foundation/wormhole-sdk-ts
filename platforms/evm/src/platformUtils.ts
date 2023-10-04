@@ -82,10 +82,8 @@ export module EvmUtils {
   ): Promise<TxHash[]> {
     const txhashes: TxHash[] = [];
     for (const stxn of stxns) {
-      console.log('broadcasting');
       const txRes = await rpc.broadcastTransaction(stxn);
       txhashes.push(txRes.hash);
-      console.log('finished', txRes);
 
       if (chain === 'Celo') {
         console.error('TODO: override celo block fetching');

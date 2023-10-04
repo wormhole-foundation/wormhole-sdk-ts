@@ -144,8 +144,8 @@ const channelId = [
   [
     "Testnet",
     [
-      ["Cosmoshub", ["channel-5", "channel-486"]],
-      ["Osmosis", ["channel-4", "channel-3086"]],
+      ["Cosmoshub", ["channel-5", "channel-3086"]],
+      ["Osmosis", ["channel-4", "channel-486"]],
     ],
   ],
   ["Devnet", []],
