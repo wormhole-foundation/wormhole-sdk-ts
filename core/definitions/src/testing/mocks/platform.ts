@@ -2,7 +2,7 @@ import {
   ChainName,
   Network,
   PlatformName,
-} from "@wormhole-foundation/sdk-base";
+} from '@wormhole-foundation/sdk-base';
 import {
   ChainContext,
   Platform,
@@ -18,11 +18,11 @@ import {
   toNative,
   nativeIsRegistered,
   NativeAddress,
-} from "../..";
-import { MockRpc } from "./rpc";
-import { MockChain } from "./chain";
-import { MockTokenBridge } from "./tokenBridge";
-import { WormholeCore } from "../../protocols/core";
+} from '../..';
+import { MockRpc } from './rpc';
+import { MockChain } from './chain';
+import { MockTokenBridge } from './tokenBridge';
+import { WormholeCore } from '../../protocols/core';
 
 export function mockPlatformFactory<P extends PlatformName>(
   network: Network,
@@ -56,31 +56,31 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
   }
 
   nativeTokenId(chain: ChainName): TokenId {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
 
   isNativeTokenId(chain: ChainName, tokenId: TokenId): boolean {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
 
   isSupportedChain(chain: ChainName): boolean {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
 
   getDecimals(
     chain: ChainName,
     rpc: RpcConnection<P>,
-    token: TokenId | "native"
+    token: TokenId | 'native',
   ): Promise<bigint> {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
   getBalance(
     chain: ChainName,
     rpc: RpcConnection<P>,
     walletAddr: string,
-    token: TokenId | "native"
+    token: TokenId | 'native',
   ): Promise<bigint | null> {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
 
   getChain(chain: ChainName): ChainContext<P> {
@@ -91,25 +91,25 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
     return new MockRpc(chain);
   }
   getCurrentBlock(rpc: any): Promise<number> {
-    throw new Error("Method not implemented");
+    throw new Error('Method not implemented');
   }
 
   async getWrappedAsset(
     chain: ChainName,
     rpc: RpcConnection<P>,
-    token: TokenId
+    token: TokenId,
   ): Promise<TokenId | null> {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
   async getTokenDecimals(
     rpc: RpcConnection<P>,
-    token: TokenId
+    token: TokenId,
   ): Promise<bigint> {
     return 8n;
   }
   async getNativeBalance(
     rpc: RpcConnection<P>,
-    walletAddr: string
+    walletAddr: string,
   ): Promise<bigint> {
     return 0n;
   }
@@ -117,7 +117,7 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
     chain: ChainName,
     rpc: RpcConnection<P>,
     walletAddr: string,
-    token: TokenId
+    token: TokenId,
   ): Promise<bigint | null> {
     return 10n;
   }
@@ -125,17 +125,17 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
   async parseTransaction(
     chain: ChainName,
     rpc: RpcConnection<P>,
-    txid: TxHash
+    txid: TxHash,
   ): Promise<WormholeMessageId[]> {
-    throw new Error("Method not implemented");
+    throw new Error('Method not implemented');
   }
 
   async chainFromRpc(rpc: RpcConnection<P>): Promise<[Network, ChainName]> {
-    throw new Error("Not implemented");
+    throw new Error('Not implemented');
   }
 
   parseAddress(chain: ChainName, address: string): NativeAddress<P> {
-    if (!nativeIsRegistered(chain)) throw new Error("Chain not registered");
+    if (!nativeIsRegistered(chain)) throw new Error('Chain not registered');
     //@ts-ignore
     return toNative(chain, address).toUniversalAddress();
   }
@@ -143,13 +143,13 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
   async sendWait(
     chain: ChainName,
     rpc: RpcConnection<P>,
-    stxns: any[]
+    stxns: any[],
   ): Promise<TxHash[]> {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
 
   async getWormholeCore(rpc: RpcConnection<P>): Promise<WormholeCore<P>> {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
   async getTokenBridge(rpc: RpcConnection<P>): Promise<TokenBridge<P>> {
     // @ts-ignore
@@ -157,21 +157,21 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
   }
 
   async getAutomaticTokenBridge(
-    rpc: RpcConnection<P>
+    rpc: RpcConnection<P>,
   ): Promise<AutomaticTokenBridge<P>> {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
   async getCircleBridge(rpc: RpcConnection<P>): Promise<CircleBridge<P>> {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
   async getCircleRelayer(
-    rpc: RpcConnection<P>
+    rpc: RpcConnection<P>,
   ): Promise<AutomaticCircleBridge<P>> {
-    throw new Error("Method Not implemented.");
+    throw new Error('Method Not implemented.');
   }
   async getAutomaticCircleBridge(
-    rpc: RpcConnection<P>
+    rpc: RpcConnection<P>,
   ): Promise<AutomaticCircleBridge<P>> {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
 }

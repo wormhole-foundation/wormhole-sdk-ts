@@ -1,5 +1,5 @@
-import { ChainName, ChainId, toChainName } from "@wormhole-foundation/sdk-base";
-import { ChainsConfig, Contracts } from "../..";
+import { ChainName, ChainId, toChainName } from '@wormhole-foundation/sdk-base';
+import { ChainsConfig, Contracts } from '../..';
 
 export class MockContracts {
   protected _contracts: Map<ChainName, Contracts>;
@@ -24,34 +24,34 @@ export class MockContracts {
   }
 
   getCore(chain: ChainName | ChainId) {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
 
   mustGetCore(chain: ChainName | ChainId) {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
 
   getBridge(chain: ChainName | ChainId) {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
 
   mustGetBridge(chain: ChainName | ChainId) {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
 
   getNftBridge(chain: ChainName | ChainId) {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
 
   mustGetNftBridge(chain: ChainName | ChainId) {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
 
   getTokenBridgeRelayer(chain: ChainName | ChainId) {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
 
   mustGetTokenBridgeRelayer(chain: ChainName | ChainId) {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
 }

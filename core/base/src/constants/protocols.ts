@@ -24,11 +24,11 @@
  */
 
 export const protocols = [
-  "CoreBridge",
-  "TokenBridge",
-  "NftBridge",
-  "Relayer",
-  "CCTP",
+  'CoreBridge',
+  'TokenBridge',
+  'NftBridge',
+  'Relayer',
+  'CCTP',
 ] as const;
 
 export type ProtocolName = (typeof protocols)[number];

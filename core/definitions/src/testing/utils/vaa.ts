@@ -1,4 +1,4 @@
-import { PayloadLiteralToPayloadType } from "../../vaa";
+import { PayloadLiteralToPayloadType } from '../../vaa';
 
 export function makeVAA(payload: any) {
   return {

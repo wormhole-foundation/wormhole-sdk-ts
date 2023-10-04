@@ -9,7 +9,7 @@ import {
   addFixedValues,
   CustomConversion,
   LayoutItemToType,
-} from "@wormhole-foundation/sdk-base";
+} from '@wormhole-foundation/sdk-base';
 
 import {
   chainItem,
@@ -17,9 +17,9 @@ import {
   signatureItem,
   sequenceItem,
   guardianSetItem,
-} from "./layout-items";
+} from './layout-items';
 
-import { keccak256 } from "./utils";
+import { keccak256 } from './utils';
 
 const uint8ArrayConversion = {
   to: (val: Uint8Array) => val,
@@ -45,50 +45,52 @@ type PayloadLiteral = keyof Wormhole.PayloadLiteralToDescriptionMapping;
 type DescriptionOf<PL extends PayloadLiteral> =
   //TODO check if this lazy instantiation hack is actually necessary
   PL extends infer V extends PayloadLiteral
-  ? Wormhole.PayloadLiteralToDescriptionMapping[V]
-  : never;
+    ? Wormhole.PayloadLiteralToDescriptionMapping[V]
+    : never;
 
-type DescriptionToPayloadItem<D extends DescriptionOf<PayloadLiteral>> =
-  [D] extends [CustomConversion<Uint8Array, any>]
-  ? { name: "payload"; binary: "bytes"; custom: D }
+type DescriptionToPayloadItem<D extends DescriptionOf<PayloadLiteral>> = [
+  D,
+] extends [CustomConversion<Uint8Array, any>]
+  ? { name: 'payload'; binary: 'bytes'; custom: D }
   : [D] extends [Layout]
-  ? { name: "payload"; binary: "object"; layout: D }
+  ? { name: 'payload'; binary: 'object'; layout: D }
   : never;
 
 export type PayloadLiteralToPayloadType<PL extends PayloadLiteral> =
-  DescriptionToPayloadItem<DescriptionOf<PL>> extends infer Item extends LayoutItem
-  ? LayoutItemToType<Item>
-  : never;
+  DescriptionToPayloadItem<DescriptionOf<PL>> extends infer Item extends
+    LayoutItem
+    ? LayoutItemToType<Item>
+    : never;
 
 const guardianSignatureLayout = [
-  { name: "guardianIndex", binary: "uint", size: 1 },
-  { name: "signature", ...signatureItem },
+  { name: 'guardianIndex', binary: 'uint', size: 1 },
+  { name: 'signature', ...signatureItem },
 ] as const satisfies Layout;
 
 const headerLayout = [
-  { name: "version", binary: "uint", size: 1, custom: 1, omit: true },
-  { name: "guardianSet", ...guardianSetItem },
+  { name: 'version', binary: 'uint', size: 1, custom: 1, omit: true },
+  { name: 'guardianSet', ...guardianSetItem },
   {
-    name: "signatures",
-    binary: "array",
+    name: 'signatures',
+    binary: 'array',
     lengthSize: 1,
     layout: guardianSignatureLayout,
   },
 ] as const satisfies Layout;
 
 const envelopeLayout = [
-  { name: "timestamp", binary: "uint", size: 4 },
-  { name: "nonce", binary: "uint", size: 4 },
-  { name: "emitterChain", ...chainItem() },
-  { name: "emitterAddress", ...universalAddressItem },
-  { name: "sequence", ...sequenceItem },
-  { name: "consistencyLevel", binary: "uint", size: 1 },
+  { name: 'timestamp', binary: 'uint', size: 4 },
+  { name: 'nonce', binary: 'uint', size: 4 },
+  { name: 'emitterChain', ...chainItem() },
+  { name: 'emitterAddress', ...universalAddressItem },
+  { name: 'sequence', ...sequenceItem },
+  { name: 'consistencyLevel', binary: 'uint', size: 1 },
 ] as const satisfies Layout;
 
 const baseLayout = [...headerLayout, ...envelopeLayout] as const;
 type BaseLayout = LayoutToType<typeof baseLayout>;
 
-export interface VAA<PL extends PayloadLiteral = "Uint8Array">
+export interface VAA<PL extends PayloadLiteral = 'Uint8Array'>
   extends BaseLayout {
   readonly payloadLiteral: PL;
   readonly payload: PayloadLiteralToPayloadType<PL>;
@@ -120,17 +122,17 @@ function getPayloadDescription<PL extends PayloadLiteral>(payloadLiteral: PL) {
 }
 
 const isCustomConversion = (
-  val: any
+  val: any,
 ): val is CustomConversion<Uint8Array, any> => val.to !== undefined;
 
 const descriptionToPayloadItem = <PL extends PayloadLiteral>(
-  description: DescriptionOf<PL>
+  description: DescriptionOf<PL>,
 ): DescriptionToPayloadItem<typeof description> =>
   (isCustomConversion(description)
-    ? ({ name: "payload", binary: "bytes", custom: description } as const)
+    ? ({ name: 'payload', binary: 'bytes', custom: description } as const)
     : ({
-        name: "payload",
-        binary: "object",
+        name: 'payload',
+        binary: 'object',
         layout: description as Layout,
       } as const)) as DescriptionToPayloadItem<
     DescriptionOf<PL>
@@ -142,25 +144,25 @@ const bodyLayout = <PL extends PayloadLiteral>(payloadLiteral: PL) =>
     descriptionToPayloadItem(getPayloadDescription(payloadLiteral)),
   ] as const satisfies Layout;
 
-export const create = <PL extends PayloadLiteral = "Uint8Array">(
+export const create = <PL extends PayloadLiteral = 'Uint8Array'>(
   payloadLiteral: PL,
   vaaData: LayoutToType<
     DynamicItemsOfLayout<
       [...typeof baseLayout, DescriptionToPayloadItem<DescriptionOf<PL>>]
     >
-  >
+  >,
 ): VAA<PL> => {
   const body = bodyLayout(payloadLiteral) as Layout;
   const bodyWithFixed = addFixedValues(
     body,
     //not sure why the unknown cast here is required and why the type isn't inferred correctly
-    vaaData as LayoutToType<DynamicItemsOfLayout<typeof body>>
+    vaaData as LayoutToType<DynamicItemsOfLayout<typeof body>>,
   );
   return {
     payloadLiteral,
     ...addFixedValues(
       headerLayout,
-      vaaData as LayoutToType<typeof headerLayout>
+      vaaData as LayoutToType<typeof headerLayout>,
     ),
     ...bodyWithFixed,
     hash: keccak256(serializeLayout(body, bodyWithFixed)),
@@ -169,7 +171,7 @@ export const create = <PL extends PayloadLiteral = "Uint8Array">(
 
 export function registerPayloadType<PL extends PayloadLiteral>(
   payloadLiteral: PL,
-  payloadSerDe: CustomConversion<Uint8Array, any> | Layout
+  payloadSerDe: CustomConversion<Uint8Array, any> | Layout,
 ) {
   if (payloadFactory.has(payloadLiteral))
     throw new Error(`Payload type ${payloadLiteral} already registered`);
@@ -178,7 +180,7 @@ export function registerPayloadType<PL extends PayloadLiteral>(
 }
 
 export const serialize = <PL extends PayloadLiteral>(
-  vaa: VAA<PL>
+  vaa: VAA<PL>,
 ): Uint8Array => {
   const layout = [
     ...baseLayout,
@@ -189,9 +191,9 @@ export const serialize = <PL extends PayloadLiteral>(
 
 export function deserialize<PL extends PayloadLiteral>(
   payloadLiteral: PL,
-  data: Uint8Array | string
+  data: Uint8Array | string,
 ): VAA<PL> {
-  if (typeof data === "string") data = hexByteStringToUint8Array(data);
+  if (typeof data === 'string') data = hexByteStringToUint8Array(data);
 
   const [header, bodyOffset] = deserializeLayout(headerLayout, data, 0, false);
 
@@ -203,7 +205,7 @@ export function deserialize<PL extends PayloadLiteral>(
       header.signatures[i - 1].guardianIndex
     )
       throw new Error(
-        "Guardian signatures must be in ascending order of guardian set index"
+        'Guardian signatures must be in ascending order of guardian set index',
       );
 
   const body = deserializeLayout(bodyLayout(payloadLiteral), data, bodyOffset);
@@ -214,7 +216,7 @@ export function deserialize<PL extends PayloadLiteral>(
 
 export const serializePayload = <PL extends PayloadLiteral>(
   payloadLiteral: PL,
-  payload: PayloadLiteralToPayloadType<PL>
+  payload: PayloadLiteralToPayloadType<PL>,
 ) => {
   const description = getPayloadDescription(payloadLiteral);
   return isCustomConversion(description)
@@ -224,13 +226,13 @@ export const serializePayload = <PL extends PayloadLiteral>(
 
 export const deserializePayload = <PL extends PayloadLiteral>(
   payloadLiteral: PL,
-  data: Uint8Array | string
+  data: Uint8Array | string,
 ): PayloadLiteralToPayloadType<PL> => {
   const description = getPayloadDescription(payloadLiteral);
-  data = typeof data === "string" ? hexByteStringToUint8Array(data) : data;
+  data = typeof data === 'string' ? hexByteStringToUint8Array(data) : data;
   return isCustomConversion(description)
     ? description.to(data)
     : deserializeLayout(description as Layout, data);
 };
 
-payloadFactory.set("Uint8Array", uint8ArrayConversion);
+payloadFactory.set('Uint8Array', uint8ArrayConversion);

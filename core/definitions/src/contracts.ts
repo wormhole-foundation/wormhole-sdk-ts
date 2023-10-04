@@ -1,4 +1,4 @@
-import { ChainName, Network, contracts } from "@wormhole-foundation/sdk-base";
+import { ChainName, Network, contracts } from '@wormhole-foundation/sdk-base';
 
 export type Contracts = {
   coreBridge?: string;

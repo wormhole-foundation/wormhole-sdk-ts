@@ -1,6 +1,6 @@
-import { ChainName } from "./chains";
-import { Network } from "./networks";
-import { constMap, RoArray } from "../utils";
+import { ChainName } from './chains';
+import { Network } from './networks';
+import { constMap, RoArray } from '../utils';
 
 export type ExplorerSettings = {
   name: string;
@@ -19,267 +19,267 @@ export type ExplorerSettings = {
 
 const explorerConfig = [
   [
-    "Mainnet",
+    'Mainnet',
     [
       [
-        "Ethereum",
+        'Ethereum',
         {
-          name: "Etherscan",
-          baseUrl: "https://etherscan.io/",
+          name: 'Etherscan',
+          baseUrl: 'https://etherscan.io/',
           endpoints: {
-            tx: "tx/",
-            account: "address/",
+            tx: 'tx/',
+            account: 'address/',
           },
         },
       ],
       [
-        "Solana",
+        'Solana',
         {
-          name: "Solana Explorer",
-          baseUrl: "https://explorer.solana.com/",
+          name: 'Solana Explorer',
+          baseUrl: 'https://explorer.solana.com/',
           endpoints: {
-            tx: "tx/",
-            account: "address/",
+            tx: 'tx/',
+            account: 'address/',
           },
         },
       ],
       [
-        "Polygon",
+        'Polygon',
         {
-          name: "PolygonScan",
-          baseUrl: "https://polygonscan.com/",
+          name: 'PolygonScan',
+          baseUrl: 'https://polygonscan.com/',
           endpoints: {
-            tx: "tx/",
-            account: "address/",
+            tx: 'tx/',
+            account: 'address/',
           },
         },
       ],
       [
-        "Bsc",
+        'Bsc',
         {
-          name: "BscScan",
-          baseUrl: "https://bscscan.com/",
+          name: 'BscScan',
+          baseUrl: 'https://bscscan.com/',
           endpoints: {
-            tx: "tx/",
-            account: "address/",
+            tx: 'tx/',
+            account: 'address/',
           },
         },
       ],
       [
-        "Avalanche",
+        'Avalanche',
         {
-          name: "Snowtrace",
-          baseUrl: "https://snowtrace.io/",
+          name: 'Snowtrace',
+          baseUrl: 'https://snowtrace.io/',
           endpoints: {
-            tx: "tx/",
-            account: "address/",
+            tx: 'tx/',
+            account: 'address/',
           },
         },
       ],
       [
-        "Fantom",
+        'Fantom',
         {
-          name: "FTMscan",
-          baseUrl: "https://ftmscan.com/",
+          name: 'FTMscan',
+          baseUrl: 'https://ftmscan.com/',
           endpoints: {
-            tx: "tx/",
-            account: "address/",
+            tx: 'tx/',
+            account: 'address/',
           },
         },
       ],
       [
-        "Celo",
+        'Celo',
         {
-          name: "Celo Explorer",
-          baseUrl: "https://explorer.celo.org/mainnet/",
+          name: 'Celo Explorer',
+          baseUrl: 'https://explorer.celo.org/mainnet/',
           endpoints: {
-            tx: "tx/",
-            account: "address/",
+            tx: 'tx/',
+            account: 'address/',
           },
         },
       ],
       [
-        "Moonbeam",
+        'Moonbeam',
         {
-          name: "Moonscan",
-          baseUrl: "https://moonscan.io/",
+          name: 'Moonscan',
+          baseUrl: 'https://moonscan.io/',
           endpoints: {
-            tx: "tx/",
-            account: "address/",
+            tx: 'tx/',
+            account: 'address/',
           },
         },
       ],
       [
-        "Sui",
+        'Sui',
         {
-          name: "Sui Explorer",
-          baseUrl: "https://explorer.sui.io/",
+          name: 'Sui Explorer',
+          baseUrl: 'https://explorer.sui.io/',
           endpoints: {
-            tx: "txblock/",
-            account: "address/",
+            tx: 'txblock/',
+            account: 'address/',
           },
         },
       ],
       [
-        "Aptos",
+        'Aptos',
         {
-          name: "Aptos Explorer",
-          baseUrl: "https://explorer.aptoslabs.com/",
+          name: 'Aptos Explorer',
+          baseUrl: 'https://explorer.aptoslabs.com/',
           endpoints: {
-            tx: "txn/",
-            account: "account/",
+            tx: 'txn/',
+            account: 'account/',
           },
         },
       ],
       [
-        "Sei",
+        'Sei',
         {
-          name: "Sei Explorer",
-          baseUrl: "https://sei.explorers.guru/",
+          name: 'Sei Explorer',
+          baseUrl: 'https://sei.explorers.guru/',
           endpoints: {
-            tx: "transaction/",
-            account: "address/",
+            tx: 'transaction/',
+            account: 'address/',
           },
         },
       ],
     ],
   ],
   [
-    "Testnet",
+    'Testnet',
     [
       [
-        "Ethereum",
+        'Ethereum',
         {
-          name: "Etherscan",
-          baseUrl: "https://goerli.etherscan.io/",
+          name: 'Etherscan',
+          baseUrl: 'https://goerli.etherscan.io/',
           endpoints: {
-            tx: "tx/",
-            account: "address/",
+            tx: 'tx/',
+            account: 'address/',
           },
         },
       ],
       [
-        "Polygon",
+        'Polygon',
         {
-          name: "PolygonScan",
-          baseUrl: "https://mumbai.polygonscan.com/",
+          name: 'PolygonScan',
+          baseUrl: 'https://mumbai.polygonscan.com/',
           endpoints: {
-            tx: "tx/",
-            account: "address/",
+            tx: 'tx/',
+            account: 'address/',
           },
         },
       ],
       [
-        "Bsc",
+        'Bsc',
         {
-          name: "BscScan",
-          baseUrl: "https://testnet.bscscan.com/",
+          name: 'BscScan',
+          baseUrl: 'https://testnet.bscscan.com/',
           endpoints: {
-            tx: "tx/",
-            account: "address/",
+            tx: 'tx/',
+            account: 'address/',
           },
         },
       ],
       [
-        "Avalanche",
+        'Avalanche',
         {
-          name: "Snowtrace",
-          baseUrl: "https://testnet.snowtrace.io/",
+          name: 'Snowtrace',
+          baseUrl: 'https://testnet.snowtrace.io/',
           endpoints: {
-            tx: "tx/",
-            account: "address/",
+            tx: 'tx/',
+            account: 'address/',
           },
         },
       ],
       [
-        "Fantom",
+        'Fantom',
         {
-          name: "FTMscan",
-          baseUrl: "https://testnet.ftmscan.com/",
+          name: 'FTMscan',
+          baseUrl: 'https://testnet.ftmscan.com/',
           endpoints: {
-            tx: "tx/",
-            account: "address/",
+            tx: 'tx/',
+            account: 'address/',
           },
         },
       ],
       [
-        "Celo",
+        'Celo',
         {
-          name: "Celo Explorer",
-          baseUrl: "https://explorer.celo.org/alfajores/",
+          name: 'Celo Explorer',
+          baseUrl: 'https://explorer.celo.org/alfajores/',
           endpoints: {
-            tx: "tx/",
-            account: "address/",
+            tx: 'tx/',
+            account: 'address/',
           },
         },
       ],
       [
-        "Moonbeam",
+        'Moonbeam',
         {
-          name: "Moonscan",
-          baseUrl: "https://moonbase.moonscan.io/",
+          name: 'Moonscan',
+          baseUrl: 'https://moonbase.moonscan.io/',
           endpoints: {
-            tx: "tx/",
-            account: "address/",
+            tx: 'tx/',
+            account: 'address/',
           },
         },
       ],
       [
-        "Solana",
+        'Solana',
         {
-          name: "Solana Explorer",
-          baseUrl: "https://explorer.solana.com/",
+          name: 'Solana Explorer',
+          baseUrl: 'https://explorer.solana.com/',
           endpoints: {
-            tx: "tx/",
-            account: "address/",
+            tx: 'tx/',
+            account: 'address/',
           },
           networkQuery: {
-            default: "Devnet",
-            Testnet: "?cluster=testnet",
-            Devnet: "?cluster=devnet",
+            default: 'Devnet',
+            Testnet: '?cluster=testnet',
+            Devnet: '?cluster=devnet',
           },
         },
       ],
       [
-        "Sui",
+        'Sui',
         {
-          name: "Sui Explorer",
-          baseUrl: "https://explorer.sui.io/",
+          name: 'Sui Explorer',
+          baseUrl: 'https://explorer.sui.io/',
           endpoints: {
-            tx: "txblock/",
-            account: "address/",
+            tx: 'txblock/',
+            account: 'address/',
           },
           networkQuery: {
-            default: "Testnet",
-            Testnet: "?network=testnet",
-            Devnet: "?network=devnet",
+            default: 'Testnet',
+            Testnet: '?network=testnet',
+            Devnet: '?network=devnet',
           },
         },
       ],
       [
-        "Aptos",
+        'Aptos',
         {
-          name: "Aptos Explorer",
-          baseUrl: "https://explorer.aptoslabs.com/",
+          name: 'Aptos Explorer',
+          baseUrl: 'https://explorer.aptoslabs.com/',
           endpoints: {
-            tx: "txn/",
-            account: "account/",
+            tx: 'txn/',
+            account: 'account/',
           },
           networkQuery: {
-            default: "Testnet",
-            Testnet: "?network=testnet",
-            Devnet: "?network=devnet",
+            default: 'Testnet',
+            Testnet: '?network=testnet',
+            Devnet: '?network=devnet',
           },
         },
       ],
       [
-        "Sei",
+        'Sei',
         {
-          name: "Sei Explorer",
-          baseUrl: "https://sei.explorers.guru/",
+          name: 'Sei Explorer',
+          baseUrl: 'https://sei.explorers.guru/',
           endpoints: {
-            tx: "transaction/",
-            account: "address/",
+            tx: 'transaction/',
+            account: 'address/',
           },
         },
       ],
@@ -287,40 +287,40 @@ const explorerConfig = [
   ],
 ] as const satisfies RoArray<
   readonly [
-    "Mainnet" | "Testnet",
-    RoArray<readonly [ChainName, ExplorerSettings]>
+    'Mainnet' | 'Testnet',
+    RoArray<readonly [ChainName, ExplorerSettings]>,
   ]
 >;
 
 const explorerConfs = constMap(explorerConfig);
 
 export const explorerConfigs = (network: Network, chain: ChainName) =>
-  network === "Devnet"
+  network === 'Devnet'
     ? undefined
     : (explorerConfs.get(network, chain) as ExplorerSettings);
 
 export function linkToTx(
   chainName: ChainName,
   txId: string,
-  network: Network
+  network: Network,
 ): string {
   // TODO: add missing chains to rpc config
   const chainConfig = explorerConfigs(network, chainName);
-  if (!chainConfig) throw new Error("invalid chain, explorer config not found");
+  if (!chainConfig) throw new Error('invalid chain, explorer config not found');
   const { baseUrl, endpoints, networkQuery } = chainConfig;
-  const query = networkQuery ? networkQuery[network] : "";
+  const query = networkQuery ? networkQuery[network] : '';
   return `${baseUrl}${endpoints.tx}${txId}${query}`;
 }
 
 export function linkToAccount(
   chainName: ChainName,
   account: string,
-  network: Network
+  network: Network,
 ): string {
   // TODO: add missing chains to rpc config
   const chainConfig = explorerConfigs(network, chainName);
-  if (!chainConfig) throw new Error("invalid chain, explorer config not found");
+  if (!chainConfig) throw new Error('invalid chain, explorer config not found');
   const { baseUrl, endpoints, networkQuery } = chainConfig;
-  const query = networkQuery ? networkQuery[network] : "";
+  const query = networkQuery ? networkQuery[network] : '';
   return `${baseUrl}${endpoints.account}${account}${query}`;
 }
