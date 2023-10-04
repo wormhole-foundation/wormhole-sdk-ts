@@ -50,7 +50,7 @@ const networkChainEvmCIdEntries = [
       ['Neon', 245022940n],
       ['Arbitrum', 421613n], //arbitrum goerli
       ['Optimism', 420n],
-      ['Gnosis', 77n],
+      ['Gnosis', 10200n],
       ['Base', 84531n],
       ['Rootstock', 31n],
     ],
