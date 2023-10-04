@@ -1,11 +1,15 @@
 import {
   Network,
-  VAA,
   ChainAddress,
-  TxHash,
-  TokenTransferTransaction,
   toChainId,
   IbcBridge,
+  GatewayTransferMsg,
+  GatewayTransferWithPayloadMsg,
+  GatewayIbcTransferMsg,
+  IBCTransferInfo,
+  IBCTransferData,
+  toChainName,
+  isGatewayTransferMsg,
 } from "@wormhole-foundation/connect-sdk";
 import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import { MsgTransfer } from "cosmjs-types/ibc/applications/transfer/v1/tx";
@@ -17,11 +21,7 @@ import {
   CosmwasmUnsignedTransaction,
 } from "../unsignedTransaction";
 import { CosmwasmContracts } from "../contracts";
-import {
-  CosmwasmChainName,
-  GatewayIbcTransferMsg,
-  UniversalOrCosmwasm,
-} from "../types";
+import { CosmwasmChainName, UniversalOrCosmwasm } from "../types";
 import { CosmwasmPlatform } from "../platform";
 import {
   IBC_MSG_TYPE,
@@ -29,6 +29,8 @@ import {
   IBC_TIMEOUT_MILLIS,
   networkChainToChannelId,
 } from "../constants";
+import { Gateway } from "../gateway";
+import { CosmwasmUtils } from "../platformUtils";
 
 const millisToNano = (seconds: number) => seconds * 1_000_000;
 
@@ -75,6 +77,7 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
           recipient: recipientAddress,
           chain: toChainId(recipient.chain),
           nonce,
+          // TODO: fetch param of which contract?
           fee: "0",
         },
       },
@@ -108,10 +111,69 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
     return;
   }
 
-  async parseTransactionDetails(
-    txid: TxHash
-  ): Promise<TokenTransferTransaction[]> {
-    throw new Error("Not implemented");
+  // TODO: lookup by txid or GatewayIbcTransferMessage
+  // Returns the IBC Transfer message content and IBC transfer information
+  async lookupTransfer(
+    payload: GatewayTransferMsg | GatewayTransferWithPayloadMsg,
+    rpc?: CosmWasmClient
+  ): Promise<IBCTransferInfo> {
+    rpc = rpc ? rpc : await Gateway.getRpc();
+
+    const encodedPayload = Buffer.from(JSON.stringify(payload)).toString(
+      "base64"
+    );
+
+    // Find the transaction with matching payload
+    const txResults = await rpc.searchTx([
+      {
+        key: "wasm.transfer_payload",
+        value: encodedPayload,
+      },
+    ]);
+
+    if (txResults.length !== 1)
+      throw new Error(
+        `Expected 1 transaction, got ${txResults.length} found for payload: ${encodedPayload}`
+      );
+
+    const [tx] = txResults;
+
+    // Find packet and parse the sequence from the IBC send event
+    const seq = tx.events
+      .find((ev) => ev.type === "send_packet")
+      ?.attributes.find((attr) => attr.key === "packet_sequence");
+    if (!seq) throw new Error("No event found to identify sequence number");
+    const sequence = Number(seq.value);
+
+    // find and parse the payload from the IBC send event
+    const _data = tx.events
+      .find((ev) => ev.type === "send_packet")
+      ?.attributes.find((attr) => attr.key === "packet_data");
+    const data = (_data ? JSON.parse(_data.value) : {}) as IBCTransferData;
+
+    // figure out the which channels should we check
+    const finalDest = toChainName(
+      isGatewayTransferMsg(payload)
+        ? payload.gateway_transfer.chain
+        : payload.gateway_transfer_with_payload.chain
+    ) as CosmwasmChainName;
+
+    const srcChan = await Gateway.getSourceChannel(finalDest, rpc);
+    const dstChan = await Gateway.getDestinationChannel(finalDest, rpc);
+
+    const common = { sequence, srcChan, dstChan, data };
+
+    // If its present in the commitment results, its interpreted as in-flight
+    // the client throws an error and we report any error as not in-flight
+    const qc = CosmwasmUtils.asQueryClient(rpc);
+    try {
+      await qc.ibc.channel.packetCommitment(IBC_PORT, srcChan, sequence);
+      return { ...common, pending: true };
+    } catch (e) {
+      // TODO: catch http errors unrelated to no commitment in flight
+      // otherwise we might lie about pending = false
+    }
+    return { ...common, pending: false };
   }
 
   private createUnsignedTx(

@@ -12,13 +12,14 @@ import {
   isTransactionIdentifier,
   toNative,
   ChainAddress,
-} from '@wormhole-foundation/sdk-definitions';
-import {
   GatewayTransferDetails,
   GatewayTransferMsg,
   GatewayTransferWithPayloadMsg,
   isGatewayTransferDetails,
-} from '../types';
+  IBCTransferInfo,
+  ChainConfig,
+  ChainContext,
+} from '@wormhole-foundation/sdk-definitions';
 import {
   WormholeTransfer,
   TransferState,
@@ -42,6 +43,8 @@ export class GatewayTransfer implements WormholeTransfer {
 
   private readonly wh: Wormhole;
 
+  private readonly wc: ChainContext<PlatformName>;
+
   // state machine tracker
   private state: TransferState;
 
@@ -62,6 +65,9 @@ export class GatewayTransfer implements WormholeTransfer {
     this.state = TransferState.Created;
     this.wh = wh;
     this.transfer = transfer;
+
+    // cache the wormchain chain since we need it for checks
+    this.wc = this.wh.getChain(GatewayTransfer.chain);
   }
 
   async getTransferState(): Promise<TransferState> {
@@ -310,6 +316,10 @@ export class GatewayTransfer implements WormholeTransfer {
     return txHashes;
   }
 
+  async fetchRedeemed(): Promise<void> {
+    // return whether or not the wc tb has redeemed
+  }
+
   // wait for the VAA to be ready
   // returns the sequence number
   async fetchAttestation(): Promise<AttestationId[]> {
@@ -462,26 +472,24 @@ export class GatewayTransfer implements WormholeTransfer {
     // TODO: just looking at the first one we find
     const [{ vaa }] = this.vaas;
 
-    const wc = this.wh.getChain(GatewayTransfer.chain);
-    const tb = await wc.getTokenBridge();
-
+    const tb = await this.wc.getTokenBridge();
     return await tb.isTransferCompleted(vaa!);
   }
 
-  async isIbcRelayed(): Promise<boolean> {
+  async fetchIbcMessage(): Promise<IBCTransferInfo> {
     // TODO: allow passing in?
     if (!this.vaas || this.vaas.length === 0)
       throw new Error('No VAAs to check');
 
     // TODO: just looking at the first one we find
     const [{ vaa }] = this.vaas;
-
     const msg = GatewayTransfer.recoverTransferPayload(vaa!);
-    // TODO: pass message to the gateway fn to check this
 
-    return false;
+    const tb = await this.wc.getIbcBridge();
+    return tb.lookupTransfer(msg);
   }
 
+  // TODO: why isnt this a const?
   private gatewayAddress(): ChainAddress {
     // reference from conf instead of asking the module
     // so we can keep from forcing install
