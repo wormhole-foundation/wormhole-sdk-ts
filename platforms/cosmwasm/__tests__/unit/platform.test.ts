@@ -7,7 +7,7 @@ import {
 } from "@wormhole-foundation/connect-sdk";
 import { CosmwasmPlatform } from "../../src/platform";
 
-const network = DEFAULT_NETWORK;
+const network = "Testnet"; // DEFAULT_NETWORK;
 const configs = chainConfigs(network);
 
 // const COSMWASM_CHAINS = chains.filter(
@@ -50,8 +50,10 @@ describe("Cosmwasm Platform Tests", () => {
       const p = CosmwasmPlatform.setConfig(network, {
         [COSMWASM_CHAINS[0]]: configs[COSMWASM_CHAINS[0]],
       });
-      expect(() => p.getRpc(COSMWASM_CHAINS[0])).not.toThrow();
-      expect(() => p.getChain(COSMWASM_CHAINS[0]).getRpc()).not.toThrow();
+      expect(async () => await p.getRpc(COSMWASM_CHAINS[0])).not.toThrow();
+      expect(
+        async () => await p.getChain(COSMWASM_CHAINS[0]).getRpc()
+      ).not.toThrow();
     });
   });
 });

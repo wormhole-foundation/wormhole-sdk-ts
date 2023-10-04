@@ -27,7 +27,6 @@ export function buildExecuteMsg(
   msg: Record<string, any>,
   funds?: Coin[]
 ): EncodeObject {
-  console.log(msg);
   const obj = {
     typeUrl: MSG_EXECUTE_CONTRACT_TYPE_URL,
     value: MsgExecuteContract.fromPartial({

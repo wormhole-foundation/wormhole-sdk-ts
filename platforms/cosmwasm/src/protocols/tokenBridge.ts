@@ -13,6 +13,7 @@ import {
   toChainId,
   serialize,
   contracts as Contracts,
+  NativeAddress,
 } from "@wormhole-foundation/connect-sdk";
 
 import {
@@ -69,7 +70,9 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
     return false;
   }
 
-  async getWrappedAsset(token: TokenId): Promise<CosmwasmAddress> {
+  async getWrappedAsset(
+    token: TokenId
+  ): Promise<NativeAddress<CosmwasmPlatform.Type>> {
     if (token.chain === this.chain)
       throw new Error(`Expected foreign chain, got ${token.chain}`);
 
@@ -108,9 +111,8 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
   async isTransferCompleted(
     vaa: VAA<"Transfer"> | VAA<"TransferWithPayload">
   ): Promise<boolean> {
-    const tokenBridge = this.contracts.getTokenBridge(this.chain, this.rpc);
     const data = Buffer.from(serialize(vaa)).toString("base64");
-    const result = await this.rpc.queryContractSmart(tokenBridge, {
+    const result = await this.rpc.queryContractSmart(this.tokenBridge, {
       is_vaa_redeemed: { vaa: data },
     });
     return result.is_redeemed;
@@ -312,7 +314,7 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
     throw new Error("Not implemented");
   }
 
-  async getWrappedNative(): Promise<CosmwasmAddress> {
+  async getWrappedNative(): Promise<NativeAddress<CosmwasmPlatform.Type>> {
     return toNative(this.chain, CosmwasmPlatform.getNativeDenom(this.chain));
   }
 
