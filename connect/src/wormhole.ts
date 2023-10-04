@@ -7,7 +7,6 @@ import {
   isCircleChain,
   usdcContract,
   isChain,
-  chainToPlatform,
 } from '@wormhole-foundation/sdk-base';
 import {
   UniversalAddress,
@@ -26,11 +25,7 @@ import {
 } from '@wormhole-foundation/sdk-definitions';
 import axios, { AxiosResponse } from 'axios';
 
-import {
-  GatewayTransferDetails,
-  GatewayTransferMsg,
-  WormholeConfig,
-} from './types';
+import { WormholeConfig } from './types';
 
 import { CONFIG, networkPlatformConfigs } from './config';
 import { TokenTransfer } from './protocols/tokenTransfer';

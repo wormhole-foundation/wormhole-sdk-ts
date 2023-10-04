@@ -1,22 +1,18 @@
+import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import {
   ChainName,
-  GatewayTransferMsg,
-  GatewayTransferWithPayloadMsg,
-  isGatewayTransferMsg,
   PlatformToChains,
   TokenId,
   keccak256,
   sha256,
   toChainId,
-  toChainName,
 } from "@wormhole-foundation/connect-sdk";
-import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import bs58 from "bs58";
 
-import { IBC_PORT, networkChainToChannelId } from "./constants";
-import { CosmwasmUtils } from "./platformUtils";
-import { CosmwasmPlatform } from "./platform";
 import { CosmwasmAddress } from "./address";
+import { IBC_PORT, networkChainToChannelId } from "./constants";
+import { CosmwasmPlatform } from "./platform";
+import { CosmwasmUtils } from "./platformUtils";
 import { CosmwasmTokenBridge } from "./protocols/tokenBridge";
 import { CosmwasmChainName } from "./types";
 
@@ -79,7 +75,7 @@ export module Gateway {
     }
 
     rpc = rpc ? rpc : await getRpc();
-    const queryClient = CosmwasmUtils.getQueryClient(rpc);
+    const queryClient = CosmwasmUtils.asQueryClient(rpc);
 
     const sourceChannel = await getSourceChannel(chain, rpc);
     const conn = await queryClient.ibc.channel.channel(IBC_PORT, sourceChannel);
@@ -129,6 +125,8 @@ export module Gateway {
     return tokenId;
   }
 
+  // derive the ics20 token denom from the
+  // wrapped denom and destination channel
   export async function deriveIbcDenom(
     chain: CosmwasmChainName,
     denom: string
@@ -137,69 +135,5 @@ export module Gateway {
     const hashData = Buffer.from(`transfer/${channel}/${denom}`);
     const hash = Buffer.from(sha256(hashData)).toString("hex");
     return new CosmwasmAddress(`ibc/${hash.toUpperCase()}`);
-  }
-
-  export async function ibcTransferPending(
-    payload: GatewayTransferMsg | GatewayTransferWithPayloadMsg,
-    rpc?: CosmWasmClient
-  ): Promise<boolean> {
-    rpc = rpc ? rpc : await getRpc();
-
-    const finalDest = toChainName(
-      isGatewayTransferMsg(payload)
-        ? payload.gateway_transfer.chain
-        : payload.gateway_transfer_with_payload.chain
-    );
-
-    const encodedPayload = Buffer.from(JSON.stringify(payload)).toString(
-      "base64"
-    );
-
-    // Find the transaction with matching payload
-    const txResults = await rpc.searchTx([
-      {
-        key: "wasm.transfer_payload",
-        value: encodedPayload,
-      },
-    ]);
-
-    if (txResults.length === 0)
-      throw new Error(
-        `No matching transaction found for payload: ${encodedPayload}`
-      );
-
-    // just take the first
-    const [res] = txResults;
-
-    // Find IBC the sequence
-    let sequence: number | undefined;
-    for (const ev of res.events) {
-      if (ev.type !== "send_packet") continue;
-      for (const attr of ev.attributes) {
-        if (attr.key !== "packet_sequence") continue;
-        sequence = Number(attr.value);
-      }
-    }
-
-    if (!sequence)
-      throw new Error("No event found to identify sequence number");
-
-    const srcChannel = await getSourceChannel(
-      finalDest as CosmwasmChainName,
-      rpc
-    );
-
-    const queryClient = CosmwasmPlatform.getQueryClient(rpc);
-
-    try {
-      await queryClient.ibc.channel.packetCommitment(
-        IBC_PORT,
-        srcChannel,
-        Number(sequence)
-      );
-      return true;
-    } catch (e) {}
-
-    return false;
   }
 }
