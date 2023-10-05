@@ -133,26 +133,37 @@ export const cosmwasmNetworkChainToRestUrls = constMap(
   cosmwasmNetworkChainRestUrl
 );
 
+type IBCConnection = {
+  src: string;
+  dst: string;
+};
+
 const channelId = [
   [
     "Mainnet",
     [
-      ["Cosmoshub", ["channel-5"]], // TODO: check
-      ["Osmosis", ["channel-4"]], // TODO: check
+      ["Cosmoshub", { src: "channel-5", dst: "" }], // TODO: check
+      ["Osmosis", { src: "channel-4", dst: "" }], // TODO: check
     ],
   ],
   [
     "Testnet",
     [
-      ["Cosmoshub", ["channel-5", "channel-3086"]],
-      ["Osmosis", ["channel-4", "channel-486"]],
+      ["Cosmoshub", { src: "channel-5", dst: "channel-3086" }],
+      ["Osmosis", { src: "channel-4", dst: "channel-486" }],
     ],
   ],
-  ["Devnet", []],
+  [
+    "Devnet",
+    [
+      ["Cosmoshub", { src: "", dst: "" }],
+      ["Osmosis", { src: "", dst: "" }],
+    ],
+  ],
 ] as const satisfies RoArray<
   readonly [
     Network,
-    RoArray<readonly [PlatformToChains<"Cosmwasm">, RoArray<string>]>
+    RoArray<readonly [PlatformToChains<"Cosmwasm">, IBCConnection]>
   ]
 >;
 

@@ -3,6 +3,8 @@ import {
   TokenId,
   GatewayTransfer,
   GatewayTransferDetails,
+  toNative,
+  gatewayTransferMsg,
 } from "@wormhole-foundation/connect-sdk";
 // Import the platform specific packages
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
@@ -11,68 +13,92 @@ import {
   Gateway,
 } from "@wormhole-foundation/connect-sdk-cosmwasm";
 
+import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
+
 import { TransferStuff, getStuff } from "./helpers";
+
+// We're going to transfer into, around, and out of the Cosmos ecosystem
+// First on Avalanche, transparently through gateway and over IBC to Cosmoshub
+// Then over IBC, transparently through gateway and over IBC to Osmosis
+// Finally out of Osmosis, transparently through gateway, out to Avalanche
+
+// eg:
+//  Avalanche[avax] => {Gateway} -> Cosmoshub[gateway/wrapped avax]
+//  Cosmoshub[gateway/wrapped avax] -> {Gateway} -> Osmosis[gateway/wrapped avax]
+//  Osmosis[gateway/wrapped avax] -> {Gateway} => Avalanch[avax]
 
 (async function () {
   // init Wormhole object, passing config for which network
   // to use (e.g. Mainnet/Testnet) and what Platforms to support
   const wh = new Wormhole("Testnet", [EvmPlatform, CosmwasmPlatform]);
 
-  // We're going to transfer into, around, and out of the Cosmos ecosystem
-  // First on Avalanche, transparently through gateway and over IBC to Cosmoshub
-  // Then over IBC, transparently through gateway and over IBC to Osmosis
-  // Finally out of Osmosis, transparently through gateway, out to Avalanche
-
-  // eg:
-  //  Avalanche[avax] => {Gateway} -> Cosmoshub[gateway/wrapped avax]
-  //  Cosmoshub[gateway/wrapped avax] -> {Gateway} -> Osmosis[gateway/wrapped avax]
-  //  Osmosis[gateway/wrapped avax] -> {Gateway} => Avalanch[avax]
-
   // Grab chain Contexts for each leg of our journey
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
   const leg1 = await getStuff(wh.getChain("Avalanche"));
-  const leg2 = await getStuff(wh.getChain("Osmosis"));
-  const leg3 = await getStuff(wh.getChain("Cosmoshub"));
+  const leg2 = await getStuff(wh.getChain("Cosmoshub"));
+  const leg3 = await getStuff(wh.getChain("Osmosis"));
 
   // we'll use the native token on the source chain
   const token = "native";
   const amount = await wh.normalizeAmount(leg1.chain.chain, token, 0.01);
 
+  //const wc = wh.getChain("Wormchain");
+  //const rpc = (await wc.getRpc()) as CosmWasmClient;
+  //const results = await rpc.searchTx([
+  //  { key: "wasm.action", value: "complete_transfer_with_payload" },
+  //]);
+  //const flat = results
+  //  .map((r) => JSON.parse(r.rawLog)[0].events)
+  //  .flatMap((el) => el);
+  //flat.forEach((e) => {
+  //  console.log(e.type);
+  //  e.attributes.forEach((a: any) => {
+  //    console.log(a.key, a.value);
+  //  });
+  //});
+
+  //return;
+
   // Transfer native token from source chain, through gateway, to a cosmos chain
   //const route1 = await transferIntoCosmos(wh, token, amount, leg1, leg2);
-
   const route1 = await GatewayTransfer.from(wh, {
     chain: leg1.chain.chain,
-    txid: "0x018f0c8b4821ad36678ade563782e354dc4cd5f22353e0b7954089dc20d70abb",
+    txid: "0xba40ed516476a00c3eb4673b008888de81e994721e9fce1d62454eb3c29b4284",
   });
-  console.log("Transfer into Cosmos: ", route1);
-  console.log("Got VAAs", await route1.fetchAttestation());
-  console.log("Redeemed?: ", await route1.isVaaRedeemed());
-  console.log("IBC Message Details: ", await route1.fetchIbcMessage());
+  console.log("Route 1 (!Cosmos => Cosmos)", route1);
 
-  // Not working below here
-  return;
-
-  // Transfer Gateway factory token over IBC back through gateway to destination chain
-  const route2 = await transferBetweenCosmos(
-    wh,
-    route1.transfer.token as TokenId,
-    route1.transfer.amount,
-    leg2,
-    leg3
+  // Lookup the Gateway representation of the wrappd token
+  const cosmosTokenAddress = await Gateway.getWrappedAsset(
+    route1.transfer.token !== "native"
+      ? route1.transfer.token
+      : {
+          chain: leg1.chain.chain,
+          address: await (await leg1.chain.getTokenBridge()).getWrappedNative(),
+        }
   );
-  console.log("Transfer within Cosmos: ", route2);
+
+  console.log("Wrapped Token: ", cosmosTokenAddress.toString());
+
+  // // Transfer Gateway factory tokens over IBC through gateway to another Cosmos chain
+  // const route2 = await transferBetweenCosmos(
+  //   wh,
+  //   { chain: leg2.chain.chain, address: cosmosTokenAddress },
+  //   1000n,
+  //   leg2,
+  //   leg3
+  // );
+  // console.log("Route 2 (Cosmos -> Cosmos): ", route2);
 
   // Transfer Gateway factory token through gateway back to source chain
   const route3 = await transferOutOfCosmos(
     wh,
-    route2.transfer.token as TokenId,
-    route2.transfer.amount,
-    leg3,
+    { chain: leg2.chain.chain, address: cosmosTokenAddress },
+    1000n,
+    leg2,
     leg1
   );
-  console.log("Transfer out of Cosmos: ", route3);
+  console.log("Route 3 (Cosmos => !Cosmos): ", route3);
 })();
 
 async function transferIntoCosmos(
@@ -104,16 +130,12 @@ async function transferIntoCosmos(
   const vaa = await xfer.fetchAttestation();
   console.log("Got VAA", vaa);
 
-  console.log(await xfer.isVaaRedeemed());
-  console.log(await xfer.fetchIbcMessage());
-
-  //github.com/wormhole-foundation/connect-sdk/blob/cosmos-ibc-cleanup/platforms/cosmwasm/src/protocols/ibc.ts#L122-L184
-  // TODO: log wait until its complete
-  // await xfer.wait()
-
-  // TODO:
-  // - query wormchain for is_redeemed on the vaa
-  // - query wormchain ibc to see if its got outstanding commitments
+  while (!(await xfer.isDelivered(gatewayTransferMsg(xfer.transfer)))) {
+    console.log(
+      "IBCTransfer not delivered yet, sleeping 5s and trying again..."
+    );
+    await new Promise((r) => setTimeout(r, 5000));
+  }
 
   return xfer;
 }
@@ -144,13 +166,16 @@ async function transferBetweenCosmos(
   const srcTxIds = await xfer.initiateTransfer(src.signer);
   console.log("Started transfer on source chain", srcTxIds);
 
-  const vaa = await xfer.fetchAttestation();
-  console.log("Got VAA", vaa);
+  await xfer.fetchAttestation();
 
-  // TODO: log wait until its complete
-  // await xfer.wait();
-
-  // - query wormchain ibc to see if its got outstanding commitments
+  // TODO: Better wait loop
+  // - query wormchain to see if its sent its IBC transfer to the destination yet
+  while (!(await xfer.isDelivered(gatewayTransferMsg(xfer.transfer)))) {
+    console.log(
+      "IBCTransfer not delivered yet, sleeping 5s and trying again..."
+    );
+    await new Promise((r) => setTimeout(r, 5000));
+  }
 
   return xfer;
 }

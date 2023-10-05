@@ -1,41 +1,41 @@
+import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
+import { IndexedTx, MsgTransferEncodeObject, coin } from "@cosmjs/stargate";
 import {
-  Network,
   ChainAddress,
-  toChainId,
-  IbcBridge,
+  GatewayIbcTransferMsg,
   GatewayTransferMsg,
   GatewayTransferWithPayloadMsg,
-  GatewayIbcTransferMsg,
   IBCTransferInfo,
-  IBCTransferData,
-  toChainName,
-  isGatewayTransferMsg,
+  IbcBridge,
+  Network,
+  TxHash,
+  WormholeMessageId,
+  chainToPlatform,
+  toChainId,
 } from "@wormhole-foundation/connect-sdk";
-import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import { MsgTransfer } from "cosmjs-types/ibc/applications/transfer/v1/tx";
-import { coin, MsgTransferEncodeObject } from "@cosmjs/stargate";
 
-import {
-  CosmwasmTransaction,
-  computeFee,
-  CosmwasmUnsignedTransaction,
-} from "../unsignedTransaction";
-import { CosmwasmContracts } from "../contracts";
-import { CosmwasmChainName, UniversalOrCosmwasm } from "../types";
-import { CosmwasmPlatform } from "../platform";
+import { isIbcTransferInfo } from "@wormhole-foundation/sdk-definitions/src";
 import {
   IBC_MSG_TYPE,
   IBC_PORT,
   IBC_TIMEOUT_MILLIS,
   networkChainToChannelId,
 } from "../constants";
+import { CosmwasmContracts } from "../contracts";
 import { Gateway } from "../gateway";
+import { CosmwasmPlatform } from "../platform";
 import { CosmwasmUtils } from "../platformUtils";
+import { CosmwasmChainName, UniversalOrCosmwasm } from "../types";
+import {
+  CosmwasmTransaction,
+  CosmwasmUnsignedTransaction,
+  computeFee,
+} from "../unsignedTransaction";
 
 const millisToNano = (seconds: number) => seconds * 1_000_000;
 
 export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
-  private channelId: string;
   private gateway: string;
   private constructor(
     readonly network: Network,
@@ -44,11 +44,6 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
     readonly contracts: CosmwasmContracts
   ) {
     this.gateway = this.contracts.getContracts(this.chain).gateway!;
-    this.channelId = networkChainToChannelId(
-      network,
-      // @ts-ignore
-      chain as CosmwasmChainName
-    );
   }
 
   static async fromProvider(
@@ -67,9 +62,20 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
   ): AsyncGenerator<CosmwasmUnsignedTransaction> {
     const senderAddress = sender.toString();
     const nonce = Math.round(Math.random() * 10000);
-    const recipientAddress = Buffer.from(
-      recipient.address.toUniversalAddress().toUint8Array()
-    ).toString("base64");
+
+    // TODO: needs heavy testing
+    let recipientAddress;
+    if (chainToPlatform(recipient.chain) === "Cosmwasm") {
+      // If cosmwasm, we just want the b64 encoded string address
+      recipientAddress = Buffer.from(recipient.address.toString()).toString(
+        "base64"
+      );
+    } else {
+      // If we're bridging out of cosmos, we need the universal address
+      recipientAddress = Buffer.from(
+        recipient.address.toUniversalAddress().toUint8Array()
+      ).toString("base64");
+    }
 
     const payload: GatewayIbcTransferMsg = {
       gateway_ibc_token_bridge_payload: {
@@ -83,17 +89,26 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
       },
     };
 
+    const { dst } = networkChainToChannelId(
+      this.network,
+      // @ts-ignore
+      this.chain as CosmwasmChainName
+    )!;
+
     const timeout = millisToNano(Date.now() + IBC_TIMEOUT_MILLIS);
     const memo = JSON.stringify(payload);
+
+    const ibcDenom = await Gateway.deriveIbcDenom(this.chain, token.toString());
+    const ibcToken = coin(amount.toString(), ibcDenom.toString());
 
     const ibcMessage: MsgTransferEncodeObject = {
       typeUrl: IBC_MSG_TYPE,
       value: MsgTransfer.fromPartial({
         sourcePort: IBC_PORT,
-        sourceChannel: this.channelId,
+        sourceChannel: dst,
         sender: senderAddress,
         receiver: this.gateway,
-        token: coin(amount.toString(), token.toString()),
+        token: ibcToken,
         timeoutTimestamp: timeout,
         memo,
       }),
@@ -111,20 +126,88 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
     return;
   }
 
-  // TODO: lookup by txid or GatewayIbcTransferMessage
-  // Returns the IBC Transfer message content and IBC transfer information
-  async lookupTransfer(
-    payload: GatewayTransferMsg | GatewayTransferWithPayloadMsg,
-    rpc?: CosmWasmClient
-  ): Promise<IBCTransferInfo> {
-    rpc = rpc ? rpc : await Gateway.getRpc();
+  async lookupTransferFromTx(txid: TxHash): Promise<IBCTransferInfo> {
+    const txResults = await this.rpc.getTx(txid);
+    if (!txResults) throw new Error(`No transaction found with txid: ${txid}`);
+    if (txResults.code !== 0)
+      throw new Error(`Transaction failed: ${txResults.rawLog}`);
 
-    const encodedPayload = Buffer.from(JSON.stringify(payload)).toString(
-      "base64"
+    const xfers = await this.fetchTransferInfo(txResults!);
+    const xfer = xfers.find((xfer) => xfer.tx.txid === txid);
+    return xfer!;
+  }
+
+  async lookupMessageFromSequence(
+    channel: string,
+    incoming: boolean,
+    sequence: number
+  ): Promise<WormholeMessageId> {
+    const tx = await this.lookupTxFromChannelSequence(
+      channel,
+      incoming,
+      sequence
+    );
+    return Gateway.getWormholeMessage(this.chain, tx);
+  }
+
+  private async lookupTxFromChannelSequence(
+    channel: string,
+    incoming: boolean,
+    sequence: number
+  ): Promise<IndexedTx> {
+    const prefix = incoming ? "recv_packet" : "send_packet";
+    // Find the transaction with matching payload
+    const txResults = await this.rpc.searchTx([
+      {
+        key: `${prefix}.packet_dst_channel`,
+        value: channel,
+      },
+      {
+        key: `${prefix}.packet_sequence`,
+        value: sequence.toString(),
+      },
+    ]);
+
+    if (txResults.length !== 1)
+      throw new Error(
+        `Expected 1 transaction, got ${txResults.length} found for dst/sequence: ${channel}/${sequence}`
+      );
+
+    const [tx] = txResults;
+    return tx;
+  }
+
+  async lookupTransferFromSequence(
+    channel: string,
+    incoming: boolean,
+    sequence: number
+  ): Promise<IBCTransferInfo> {
+    // Finds the transaction but there may be multiple
+    // IBCTransfers as part of this
+    const tx = await this.lookupTxFromChannelSequence(
+      channel,
+      incoming,
+      sequence
     );
 
+    const xfers = await this.fetchTransferInfo(tx);
+    const xfer = xfers.find(
+      (xfer) =>
+        xfer.sequence === sequence &&
+        channel === (incoming ? xfer.dstChannel : xfer.srcChannel)
+    );
+
+    return xfer!;
+  }
+
+  // Returns the IBC Transfer message content and IBC transfer information
+  async lookupTransferFromMsg(
+    msg: GatewayTransferMsg | GatewayTransferWithPayloadMsg
+  ): Promise<IBCTransferInfo> {
+    const encodedPayload = Buffer.from(JSON.stringify(msg)).toString("base64");
+
     // Find the transaction with matching payload
-    const txResults = await rpc.searchTx([
+    const txResults = await this.rpc.searchTx([
       {
         key: "wasm.transfer_payload",
         value: encodedPayload,
@@ -137,43 +220,62 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
       );
 
     const [tx] = txResults;
+    const [xfer] = await this.fetchTransferInfo(tx);
+    return xfer;
+  }
 
-    // Find packet and parse the sequence from the IBC send event
-    const seq = tx.events
-      .find((ev) => ev.type === "send_packet")
-      ?.attributes.find((attr) => attr.key === "packet_sequence");
-    if (!seq) throw new Error("No event found to identify sequence number");
-    const sequence = Number(seq.value);
+  private async fetchTransferInfo(tx: IndexedTx): Promise<IBCTransferInfo[]> {
+    // TODO: make consts
+    const packets = tx.events.filter(
+      (ev) => ev.type === "send_packet" || ev.type === "recv_packet"
+    );
 
-    // find and parse the payload from the IBC send event
-    const _data = tx.events
-      .find((ev) => ev.type === "send_packet")
-      ?.attributes.find((attr) => attr.key === "packet_data");
-    const data = (_data ? JSON.parse(_data.value) : {}) as IBCTransferData;
+    if (packets.length === 0)
+      throw new Error(`No IBC Transfers found in: ${tx.hash}`);
 
-    // figure out the which channels should we check
-    const finalDest = toChainName(
-      isGatewayTransferMsg(payload)
-        ? payload.gateway_transfer.chain
-        : payload.gateway_transfer_with_payload.chain
-    ) as CosmwasmChainName;
-
-    const srcChan = await Gateway.getSourceChannel(finalDest, rpc);
-    const dstChan = await Gateway.getDestinationChannel(finalDest, rpc);
-
-    const common = { sequence, srcChan, dstChan, data };
-
-    // If its present in the commitment results, its interpreted as in-flight
-    // the client throws an error and we report any error as not in-flight
-    const qc = CosmwasmUtils.asQueryClient(rpc);
-    try {
-      await qc.ibc.channel.packetCommitment(IBC_PORT, srcChan, sequence);
-      return { ...common, pending: true };
-    } catch (e) {
-      // TODO: catch http errors unrelated to no commitment in flight
-      // otherwise we might lie about pending = false
+    // Try to assemble attributes from packet fields
+    const xfers = new Set<Partial<IBCTransferInfo>>();
+    for (const packet of packets) {
+      let xfer: Partial<IBCTransferInfo> = {};
+      for (const attr of packet.attributes) {
+        if (attr.key === "packet_sequence") xfer.sequence = Number(attr.value);
+        if (attr.key === "packet_dst_channel") xfer.dstChannel = attr.value;
+        if (attr.key === "packet_src_channel") xfer.srcChannel = attr.value;
+        if (attr.key === "packet_data") xfer.data = JSON.parse(attr.value);
+      }
+      xfers.add(xfer);
     }
-    return { ...common, pending: false };
+
+    const transfers: IBCTransferInfo[] = [];
+    for (const xfer of xfers) {
+      const common = {
+        ...xfer,
+        tx: { chain: this.chain, txid: tx.hash },
+        pending: false,
+      };
+
+      // If we were missing properties in the above
+      if (!isIbcTransferInfo(common)) continue;
+
+      // If its present in the commitment results, its interpreted as in-flight
+      // the client throws an error and we report any error as not in-flight
+      const qc = CosmwasmUtils.asQueryClient(this.rpc);
+      try {
+        await qc.ibc.channel.packetCommitment(
+          IBC_PORT,
+          common.srcChannel!,
+          common.sequence!
+        );
+        transfers.push({ ...common, pending: true });
+      } catch (e) {
+        // TODO: catch http errors unrelated to no commitment in flight
+        // otherwise we might lie about pending = false
+      }
+
+      transfers.push(common);
+    }
+
+    return transfers;
   }
 
   private createUnsignedTx(
