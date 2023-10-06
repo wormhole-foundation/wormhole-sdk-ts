@@ -15,13 +15,18 @@ import {
 } from "@wormhole-foundation/connect-sdk";
 
 import { CosmwasmChain } from "./chain";
-import { chainToNativeDenoms } from "./constants";
+import {
+  IbcChannel,
+  chainToNativeDenoms,
+  networkChainToChannelId,
+} from "./constants";
 import { CosmwasmContracts } from "./contracts";
 import { Gateway } from "./gateway";
 import { CosmwasmUtils } from "./platformUtils";
 
 import { CosmwasmIbcBridge } from "./protocols/ibc";
 import { CosmwasmTokenBridge } from "./protocols/tokenBridge";
+import { CosmwasmChainName } from "./types";
 
 var _: Platform<"Cosmwasm"> = CosmwasmPlatform;
 /**
@@ -88,7 +93,8 @@ export module CosmwasmPlatform {
     txid: TxHash
   ): Promise<WormholeMessageId[]> {
     const tx = await rpc.getTx(txid);
-    return [Gateway.getWormholeMessage(chain, tx!)];
+    if (!tx) throw new Error("No Transaction found: " + txid);
+    return [Gateway.getWormholeMessage(tx!)];
   }
 
   export async function getTokenBridge(
@@ -109,5 +115,14 @@ export module CosmwasmPlatform {
     // @ts-ignore
     const tmClient: TendermintClient = rpc.getTmClient()!;
     return QueryClient.withExtensions(tmClient, setupIbcExtension);
+  };
+
+  // cached channels from config if available
+  export const getIbcChannel = (
+    chain: CosmwasmChainName
+  ): IbcChannel | null => {
+    return networkChainToChannelId.has(network, chain)
+      ? networkChainToChannelId.get(network, chain)!
+      : null;
   };
 }

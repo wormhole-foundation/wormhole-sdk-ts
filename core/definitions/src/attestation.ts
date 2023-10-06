@@ -34,16 +34,17 @@ export function isCircleMessageId(
   return (<CircleMessageId>thing).msgHash !== undefined;
 }
 
-// No parsing
+// Raw payload from circle
 export type CircleAttestation = string;
 
 // Ibc Message Identifier
 // Used to fetch a Ibc attestation
 export type IbcMessageId = {
-  tx: TransactionId;
-  dstChannel: string;
+  chain: ChainName;
+  port: string;
   srcChannel: string;
-  sequence: Number;
+  dstChannel: string;
+  sequence: number;
 };
 export function isIbcMessageId(
   thing: IbcMessageId | any
@@ -51,7 +52,8 @@ export function isIbcMessageId(
   return (
     (<IbcMessageId>thing).dstChannel !== undefined &&
     (<IbcMessageId>thing).srcChannel !== undefined &&
-    (<IbcMessageId>thing).tx !== undefined &&
+    (<IbcMessageId>thing).chain !== undefined &&
+    (<IbcMessageId>thing).port !== undefined &&
     (<IbcMessageId>thing).sequence !== undefined
   );
 }

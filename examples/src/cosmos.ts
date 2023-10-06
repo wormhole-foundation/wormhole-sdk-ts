@@ -1,19 +1,15 @@
 import {
-  Wormhole,
-  TokenId,
   GatewayTransfer,
   GatewayTransferDetails,
-  toNative,
-  gatewayTransferMsg,
+  TokenId,
+  Wormhole,
 } from "@wormhole-foundation/connect-sdk";
 // Import the platform specific packages
-import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import {
   CosmwasmPlatform,
   Gateway,
 } from "@wormhole-foundation/connect-sdk-cosmwasm";
-
-import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
+import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 
 import { TransferStuff, getStuff } from "./helpers";
 
@@ -79,6 +75,7 @@ import { TransferStuff, getStuff } from "./helpers";
   );
 
   console.log("Wrapped Token: ", cosmosTokenAddress.toString());
+  return;
 
   // // Transfer Gateway factory tokens over IBC through gateway to another Cosmos chain
   // const route2 = await transferBetweenCosmos(
@@ -127,15 +124,8 @@ async function transferIntoCosmos(
   const srcTxIds = await xfer.initiateTransfer(src.signer);
   console.log("Started transfer on source chain", srcTxIds);
 
-  const vaa = await xfer.fetchAttestation();
-  console.log("Got VAA", vaa);
-
-  while (!(await xfer.isDelivered(gatewayTransferMsg(xfer.transfer)))) {
-    console.log(
-      "IBCTransfer not delivered yet, sleeping 5s and trying again..."
-    );
-    await new Promise((r) => setTimeout(r, 5000));
-  }
+  const attests = await xfer.fetchAttestation();
+  console.log("Got Attestations", attests);
 
   return xfer;
 }
@@ -166,16 +156,8 @@ async function transferBetweenCosmos(
   const srcTxIds = await xfer.initiateTransfer(src.signer);
   console.log("Started transfer on source chain", srcTxIds);
 
-  await xfer.fetchAttestation();
-
-  // TODO: Better wait loop
-  // - query wormchain to see if its sent its IBC transfer to the destination yet
-  while (!(await xfer.isDelivered(gatewayTransferMsg(xfer.transfer)))) {
-    console.log(
-      "IBCTransfer not delivered yet, sleeping 5s and trying again..."
-    );
-    await new Promise((r) => setTimeout(r, 5000));
-  }
+  const attests = await xfer.fetchAttestation();
+  console.log("Got attests: ", attests);
 
   return xfer;
 }
@@ -206,8 +188,8 @@ async function transferOutOfCosmos(
   const srcTxIds = await xfer.initiateTransfer(src.signer);
   console.log("Started transfer on source chain", srcTxIds);
 
-  const vaa = await xfer.fetchAttestation();
-  console.log("Got VAA", vaa);
+  const attests = await xfer.fetchAttestation();
+  console.log("Got attests", attests);
 
   // Since we're leaving cosmos, this is required to complete the transfer
   const dstTxIds = await xfer.completeTransfer(dst.signer);

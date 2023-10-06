@@ -4,11 +4,26 @@ import {
   RoArray,
   constMap,
 } from "@wormhole-foundation/connect-sdk";
+import { CosmwasmChainName } from "./types";
 
 export const MSG_EXECUTE_CONTRACT_TYPE_URL =
   "/cosmwasm.wasm.v1.MsgExecuteContract";
+
 export const IBC_MSG_TYPE = "/ibc.applications.transfer.v1.MsgTransfer";
-export const IBC_PORT = "transfer";
+
+export const IBC_TRANSFER_PORT = "transfer";
+
+// IBC Message Event type
+export const IBC_PACKET_SEND = "send_packet";
+export const IBC_PACKET_RECEIVE = "recv_packet";
+
+// Attributes for IBC Packet Event
+export const IBC_PACKET_DST = "packet_dst_channel";
+export const IBC_PACKET_SRC = "packet_src_channel";
+export const IBC_PACKET_SEQ = "packet_sequence";
+export const IBC_PACKET_DATA = "packet_data";
+export const IBC_PACKET_CONN = "packet_connection";
+
 export const IBC_TIMEOUT_MILLIS = 10 * 60 * 1000; // 10 minutes
 
 const networkChainCosmwasmChainIds = [
@@ -43,7 +58,7 @@ const networkChainCosmwasmChainIds = [
   ],
   ["Devnet", []],
 ] as const satisfies RoArray<
-  readonly [Network, RoArray<readonly [PlatformToChains<"Cosmwasm">, string]>]
+  readonly [Network, RoArray<readonly [CosmwasmChainName, string]>]
 >;
 
 export const cosmwasmChainIdToNetworkChainPair = constMap(
@@ -103,7 +118,7 @@ const cosmwasmNativeDenom = [
     ],
   ],
 ] as const satisfies RoArray<
-  readonly [Network, RoArray<readonly [PlatformToChains<"Cosmwasm">, string]>]
+  readonly [Network, RoArray<readonly [CosmwasmChainName, string]>]
 >;
 
 export const chainToNativeDenoms = constMap(cosmwasmNativeDenom);
@@ -126,45 +141,57 @@ const cosmwasmNetworkChainRestUrl = [
   ],
   ["Devnet", []],
 ] as const satisfies RoArray<
-  readonly [Network, RoArray<readonly [PlatformToChains<"Cosmwasm">, string]>]
+  readonly [Network, RoArray<readonly [CosmwasmChainName, string]>]
 >;
 
 export const cosmwasmNetworkChainToRestUrls = constMap(
   cosmwasmNetworkChainRestUrl
 );
 
-type IBCConnection = {
-  src: string;
-  dst: string;
+export type IbcChannel = {
+  srcChannel: string;
+  dstChannel: string;
 };
 
-const channelId = [
+// IBC Channels from the perspective of Wormchain
+const gatewayConnections = [
   [
     "Mainnet",
     [
-      ["Cosmoshub", { src: "channel-5", dst: "" }], // TODO: check
-      ["Osmosis", { src: "channel-4", dst: "" }], // TODO: check
+      ["Cosmoshub", { srcChannel: "channel-5", dstChannel: "" }],
+      ["Osmosis", { srcChannel: "channel-4", dstChannel: "" }],
     ],
   ],
   [
     "Testnet",
     [
-      ["Cosmoshub", { src: "channel-5", dst: "channel-3086" }],
-      ["Osmosis", { src: "channel-4", dst: "channel-486" }],
+      [
+        "Cosmoshub",
+        {
+          srcChannel: "channel-5",
+          dstChannel: "channel-3086",
+        },
+      ],
+      [
+        "Osmosis",
+        {
+          srcChannel: "channel-4",
+          dstChannel: "channel-486",
+        },
+      ],
     ],
   ],
   [
     "Devnet",
     [
-      ["Cosmoshub", { src: "", dst: "" }],
-      ["Osmosis", { src: "", dst: "" }],
+      ["Cosmoshub", { srcChannel: "", dstChannel: "" }],
+      ["Osmosis", { srcChannel: "", dstChannel: "" }],
     ],
   ],
 ] as const satisfies RoArray<
-  readonly [
-    Network,
-    RoArray<readonly [PlatformToChains<"Cosmwasm">, IBCConnection]>
-  ]
+  readonly [Network, RoArray<readonly [CosmwasmChainName, IbcChannel]>]
 >;
 
-export const networkChainToChannelId = constMap(channelId);
+export const networkChainToChannelId = constMap(gatewayConnections);
+export const networkChannelToChain = constMap(gatewayConnections, [0, [2, 1]]);
+export const networkToChannelMap = constMap(gatewayConnections, [0, [1, 2]]);

@@ -6,7 +6,7 @@ import {
   toChainId,
 } from "@wormhole-foundation/sdk-base";
 import { ChainAddress, NativeAddress, UniversalOrNative } from "../address";
-import { WormholeMessageId } from "../attestation";
+import { IbcMessageId, WormholeMessageId } from "../attestation";
 import { RpcConnection } from "../rpc";
 import { TokenId, TransactionId, TxHash } from "../types";
 import { UnsignedTransaction } from "../unsignedTransaction";
@@ -183,30 +183,26 @@ export function makeGatewayTransferMsg(
 // Summary of an IBCTransfer with the message
 // payload and a pending flag if we find it
 // in the PendingCommitment queue
-export interface IBCTransferInfo {
+export interface IbcTransferInfo {
   tx: TransactionId;
-  sequence: number;
-  srcChannel: string;
-  dstChannel: string;
+  id: IbcMessageId;
   pending: boolean;
-  data: IBCTransferData;
+  data: IbcTransferData;
 }
 
 export function isIbcTransferInfo(
-  thing: IBCTransferInfo | any
-): thing is IBCTransferInfo {
+  thing: IbcTransferInfo | any
+): thing is IbcTransferInfo {
   return (
-    (<IBCTransferInfo>thing).tx !== undefined &&
-    (<IBCTransferInfo>thing).sequence !== undefined &&
-    (<IBCTransferInfo>thing).srcChannel !== undefined &&
-    (<IBCTransferInfo>thing).dstChannel !== undefined &&
-    (<IBCTransferInfo>thing).pending !== undefined &&
-    (<IBCTransferInfo>thing).data !== undefined
+    (<IbcTransferInfo>thing).tx !== undefined &&
+    (<IbcTransferInfo>thing).id !== undefined &&
+    (<IbcTransferInfo>thing).pending !== undefined &&
+    (<IbcTransferInfo>thing).data !== undefined
   );
 }
 
 // The expected payload sent as a string over IBC
-export interface IBCTransferData {
+export interface IbcTransferData {
   amount: string;
   denom: string;
   memo: string;
@@ -234,6 +230,10 @@ export interface IbcBridge<P extends PlatformName> {
     payload?: Uint8Array
   ): AsyncGenerator<UnsignedTransaction>;
 
+  // cached from config
+  //getChannels(): IbcChannel | null;
+  //fetchChannels(): Promise<IbcChannel | null>;
+
   // Get WormholeMessageId
   lookupMessageFromSequence(
     channel: string,
@@ -241,14 +241,14 @@ export interface IbcBridge<P extends PlatformName> {
     sequence: Number
   ): Promise<WormholeMessageId>;
 
-  // Get IBCTransferInfo
-  lookupTransferFromTx(txid: TxHash): Promise<IBCTransferInfo>;
+  // Get IbcTransferInfo
+  lookupTransferFromTx(txid: TxHash): Promise<IbcTransferInfo>;
   lookupTransferFromSequence(
     channel: string,
     incoming: boolean,
     sequence: Number
-  ): Promise<IBCTransferInfo>;
+  ): Promise<IbcTransferInfo>;
   lookupTransferFromMsg(
     payload: GatewayTransferMsg | GatewayTransferWithPayloadMsg
-  ): Promise<IBCTransferInfo>;
+  ): Promise<IbcTransferInfo>;
 }

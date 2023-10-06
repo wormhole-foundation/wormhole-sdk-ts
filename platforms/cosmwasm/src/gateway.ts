@@ -3,29 +3,23 @@ import {
   ChainName,
   GatewayTransferMsg,
   GatewayTransferWithPayloadMsg,
-  NativeAddress,
-  PlatformToChains,
   TokenId,
   UniversalAddress,
   WormholeMessageId,
   keccak256,
   sha256,
   toChainId,
-  toNative,
 } from "@wormhole-foundation/connect-sdk";
 import bs58 from "bs58";
 
 import { CosmwasmAddress } from "./address";
-import { IBC_PORT, networkChainToChannelId } from "./constants";
 import { CosmwasmPlatform } from "./platform";
-import { CosmwasmUtils } from "./platformUtils";
 import { CosmwasmChainName } from "./types";
-
 import { CosmwasmIbcBridge } from "./protocols/ibc";
 import { CosmwasmTokenBridge } from "./protocols/tokenBridge";
 
 export module Gateway {
-  export const name: ChainName = "Wormchain";
+  export const name: "Wormchain" = "Wormchain";
 
   export function gatewayAddress(): string {
     const contracts = CosmwasmPlatform.contracts.getContracts(name);
@@ -81,56 +75,21 @@ export module Gateway {
   }
 
   // Returns the destination channel on wormchain for given source chain
-  export async function getDestinationChannel(
-    chain: CosmwasmChainName,
-    rpc?: CosmWasmClient
-  ): Promise<string> {
-    // @ts-ignore
-    if (networkChainToChannelId.has(CosmwasmPlatform.network, chain)) {
-      const { dst: channel } = networkChainToChannelId.get(
-        CosmwasmPlatform.network,
-        // @ts-ignore
-        chain
-      )!;
-      return channel;
-    }
-
-    rpc = rpc ? rpc : await getRpc();
-    const queryClient = CosmwasmUtils.asQueryClient(rpc);
-
-    const sourceChannel = await getSourceChannel(chain, rpc);
-    const conn = await queryClient.ibc.channel.channel(IBC_PORT, sourceChannel);
-    const destChannel = conn.channel?.counterparty?.channelId;
-    if (!destChannel) {
-      throw new Error(`No destination channel found on chain ${chain}`);
-    }
-    return destChannel;
+  export function getDestinationChannel(chain: CosmwasmChainName): string {
+    const channels = CosmwasmPlatform.getIbcChannel(chain);
+    if (!channels) throw new Error("No channels configured for chain " + chain);
+    return channels.dstChannel;
+  }
+  // Gets the source channel on wormchain for a given chain
+  export function getSourceChannel(chain: CosmwasmChainName): string {
+    const channels = CosmwasmPlatform.getIbcChannel(chain);
+    if (!channels) throw new Error("No channels configured for chain " + chain);
+    return channels.srcChannel;
   }
 
-  // Gets the source channel on wormchain for a given chain
-  export async function getSourceChannel(
-    chain: CosmwasmChainName,
-    rpc?: CosmWasmClient
-  ): Promise<string> {
-    // @ts-ignore
-    if (networkChainToChannelId.has(CosmwasmPlatform.network, chain)) {
-      const { src: channel } = networkChainToChannelId.get(
-        CosmwasmPlatform.network,
-        // @ts-ignore
-        chain
-      )!;
-      return channel;
-    }
-
-    rpc = rpc ? rpc : await getRpc();
-    try {
-      const { channel } = await rpc.queryContractSmart(gatewayAddress(), {
-        ibc_channel: { chain_id: toChainId(chain) },
-      });
-      return channel;
-    } catch {
-      throw new Error("No source channel found for chain " + chain);
-    }
+  // Returns whether or not a given chain is gateway supported
+  export function isSupported(chain: CosmwasmChainName): boolean {
+    return CosmwasmPlatform.getIbcChannel(chain) !== null;
   }
 
   // Derive the Token Address with context for whether or not its managed
@@ -161,13 +120,12 @@ export module Gateway {
 
   export function makeTransferMsg(
     chain: ChainName,
-    recipient: NativeAddress<"Cosmwasm">,
+    recipient: CosmwasmAddress,
     fee: bigint = 0n,
     payload?: string,
     nonce?: number
   ): GatewayTransferWithPayloadMsg | GatewayTransferMsg {
     // Address of recipient is b64 encoded Cosmos bech32 address
-    // @ts-ignore
     const address = Buffer.from(recipient.toString()).toString("base64");
 
     const common = {
@@ -187,10 +145,7 @@ export module Gateway {
   }
 
   // TODO: should we be able to get chainfrom tx?
-  export function getWormholeMessage(
-    chain: ChainName,
-    tx: IndexedTx
-  ): WormholeMessageId {
+  export function getWormholeMessage(tx: IndexedTx): WormholeMessageId {
     const wasm = tx.events
       .filter(
         (ev) =>
@@ -209,7 +164,7 @@ export module Gateway {
     })!.value;
 
     return {
-      chain: chain,
+      chain: Gateway.name,
       emitter: new UniversalAddress(emitter),
       sequence: BigInt(sequence),
     };
