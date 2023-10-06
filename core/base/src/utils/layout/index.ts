@@ -24,3 +24,5 @@ export {
   dynamicItemsOfLayout,
   addFixedValues,
 } from "./fixedDynamic";
+
+export { layoutDiscriminator } from "./discriminate";
