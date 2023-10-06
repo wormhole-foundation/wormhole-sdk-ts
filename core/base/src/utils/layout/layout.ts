@@ -132,9 +132,9 @@ export type LayoutItemToType<I extends LayoutItem> =
     ? ToType
     : UintSizeToPrimitive<I["size"]>
   : [I] extends [BytesLayoutItem]
-  ? I["custom"] extends CustomConversion<any, infer ToType>
+  ? I["custom"] extends CustomConversion<Uint8Array, infer ToType>
     ? ToType
-    : I["custom"] extends FixedConversion<any, infer ToType>
+    : I["custom"] extends FixedConversion<Uint8Array, infer ToType>
     ? ToType
     : Uint8Array
   : never;
