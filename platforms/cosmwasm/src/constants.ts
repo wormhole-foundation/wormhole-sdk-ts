@@ -15,14 +15,13 @@ const networkChainCosmwasmChainIds = [
   [
     "Mainnet",
     [
+      ["Cosmoshub", "cosmoshub-4"],
+      ["Evmos", "evmos_9001-2"],
+      ["Injective", "injective-1"],
+      ["Osmosis", "osmosis-1"],
+      ["Sei", "pacific-1"],
       ["Terra", "columbus-5"],
       ["Terra2", "phoenix-1"],
-      ["Xpla", "dimension_37-1"],
-      ["Injective", "injective-1"],
-      ["Osmosis", "	osmosis-1"],
-      ["Cosmoshub", "cosmoshub-4"],
-      ["Sei", "pacific-1"],
-      ["Evmos", "evmos_9001-2"],
       ["Wormchain", "wormchain"],
       ["Xpla", "dimension_37-1"],
     ],
@@ -30,15 +29,14 @@ const networkChainCosmwasmChainIds = [
   [
     "Testnet",
     [
-      ["Terra2", "pisco-1"],
-      ["Sei", "atlantic-1"],
+      ["Cosmoshub", "theta-testnet-001"],
+      ["Evmos", "evmos_9000-4"],
       ["Injective", "injective-888"],
       ["Osmosis", "osmo-test-5"],
-      ["Cosmoshub", "theta-testnet-001"],
       ["Sei", "atlantic-2"],
-      ["Evmos", "evmos_9000-4"],
+      ["Terra2", "pisco-1"],
       ["Wormchain", "wormchain-testnet-0"],
-      ["Xpla", "	cube_47-5"],
+      ["Xpla", "cube_47-5"],
     ],
   ],
   ["Devnet", []],
@@ -56,15 +54,15 @@ export const cosmwasmNetworkChainToChainId = constMap(
 );
 
 const cosmwasmAddressPrefix = [
-  ["Osmosis", "osmo"],
-  ["Wormchain", "wormhole"],
-  ["Terra2", "terra"],
   ["Cosmoshub", "cosmos"],
   ["Evmos", "evmos"],
   ["Injective", "inj"],
+  ["Kujira", "kuji"], // TODO: make sure this is right
+  ["Osmosis", "osmo"],
   ["Sei", "sei"],
   ["Terra", "terra"], // TODO: make sure this is right
-  ["Kujira", "kuji"], // TODO: make sure this is right
+  ["Terra2", "terra"],
+  ["Wormchain", "wormhole"],
   ["Xpla", "xpla"], // TODO: make sure this is right
 ] as const satisfies RoArray<readonly [PlatformToChains<"Cosmwasm">, string]>;
 
@@ -75,30 +73,30 @@ const cosmwasmNativeDenom = [
   [
     "Mainnet",
     [
-      ["Terra", "uluna"],
-      ["Terra2", "uluna"], // same for both?
-      ["Osmosis", "uosmo"],
-      ["Wormchain", "uworm"],
       ["Cosmoshub", "uatom"],
       ["Evmos", "aevmos"],
       ["Injective", "inj"],
       ["Kujira", "kuji"],
+      ["Osmosis", "uosmo"],
       ["Sei", "usei"],
+      ["Terra", "ulunah"],
+      ["Terra2", "uluna"], //TODO: same for both?
+      ["Wormchain", "uworm"],
       ["Xpla", "uxpla"],
     ],
   ],
   [
     "Testnet",
     [
-      ["Terra", "uluna"],
-      ["Terra2", "uluna"],
-      ["Osmosis", "uosmo"],
-      ["Wormchain", "uworm"],
       ["Cosmoshub", "uatom"],
       ["Evmos", "atevmos"],
       ["Injective", "inj"],
       ["Kujira", "kuji"],
+      ["Osmosis", "uosmo"],
       ["Sei", "usei"],
+      ["Terra", "ulunah"],
+      ["Terra2", "uluna"],
+      ["Wormchain", "uworm"],
       ["Xpla", "uxpla"],
     ],
   ],
@@ -137,8 +135,8 @@ const channelId = [
   [
     "Mainnet",
     [
-      ["Cosmoshub", ["channel-5"]], // TODO: check
-      ["Osmosis", ["channel-4"]], // TODO: check
+      ["Cosmoshub", ["channel-5", "x"]], // TODO: check
+      ["Osmosis", ["channel-4", "y"]], // TODO: check
     ],
   ],
   [
@@ -157,3 +155,5 @@ const channelId = [
 >;
 
 export const networkChainToChannelId = constMap(channelId);
+
+export const networkToChannelMap = constMap(channelId, [0, [1, 2]]);
