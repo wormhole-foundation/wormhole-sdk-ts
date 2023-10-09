@@ -112,9 +112,11 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
     vaa: VAA<"Transfer"> | VAA<"TransferWithPayload">
   ): Promise<boolean> {
     const data = Buffer.from(serialize(vaa)).toString("base64");
+    console.log(data);
     const result = await this.rpc.queryContractSmart(this.tokenBridge, {
       is_vaa_redeemed: { vaa: data },
     });
+    console.log(result);
     return result.is_redeemed;
   }
 

@@ -1,7 +1,7 @@
 import { ChainName } from "@wormhole-foundation/sdk-base";
 import { VAA } from "./vaa";
 import { UniversalAddress } from "./universalAddress";
-import { SequenceId } from "./types";
+import { SequenceId, TransactionId } from "./types";
 
 // Wormhole Message Identifier
 // used to fetch a VAA
@@ -34,9 +34,28 @@ export function isCircleMessageId(
   return (<CircleMessageId>thing).msgHash !== undefined;
 }
 
-// No parsing
+// Raw payload from circle
 export type CircleAttestation = string;
 
-export type getCircleAttestation = (
-  id: CircleMessageId
-) => Promise<CircleAttestation>;
+// Ibc Message Identifier
+// Used to fetch a Ibc attestation
+export type IbcMessageId = {
+  chain: ChainName;
+  srcPort: string;
+  srcChannel: string;
+  dstPort: string; 
+  dstChannel: string;
+  sequence: number;
+};
+export function isIbcMessageId(
+  thing: IbcMessageId | any
+): thing is IbcMessageId {
+  return (
+    (<IbcMessageId>thing).dstChannel !== undefined &&
+    (<IbcMessageId>thing).srcChannel !== undefined &&
+    (<IbcMessageId>thing).chain !== undefined &&
+    (<IbcMessageId>thing).srcPort !== undefined &&
+    (<IbcMessageId>thing).dstPort !== undefined &&
+    (<IbcMessageId>thing).sequence !== undefined
+  );
+}

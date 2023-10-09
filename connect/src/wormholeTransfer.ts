@@ -3,10 +3,11 @@ import {
   TxHash,
   WormholeMessageId,
   CircleMessageId,
+  IbcMessageId,
 } from '@wormhole-foundation/sdk-definitions';
 
 // Could be VAA or Circle or ..?
-export type AttestationId = WormholeMessageId | CircleMessageId;
+export type AttestationId = WormholeMessageId | CircleMessageId | IbcMessageId;
 
 // Transfer state machine states
 export enum TransferState {
