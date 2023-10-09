@@ -161,6 +161,7 @@ export module CosmwasmUtils {
     if (networkChainPair === undefined)
       throw new Error(`Unknown Cosmwasm chainId ${chainId}`);
 
+
     const [network, chain] = networkChainPair;
     return [network, chain];
   }
