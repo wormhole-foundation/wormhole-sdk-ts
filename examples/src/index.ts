@@ -41,6 +41,9 @@ function getEndPoint(network: string) {
     CosmwasmPlatform,
   ]);
 
+  console.log(wh);
+  console.log(wh.getContracts("Injective"))
+
   const chain: ChainName = "Injective";
   const chainCtx: CosmwasmChain = wh.getChain(chain) as CosmwasmChain;
   const chainId = cosmwasmNetworkChainToChainId(network, chain)[0];
@@ -63,6 +66,7 @@ function getEndPoint(network: string) {
   const accountNumber = parseInt(account.base_account.account_number, 10);
   let sequence = parseInt(account.base_account.sequence, 10);
 
+  return;
   const receiver = {
     chain: "Ethereum",
     address: toNative("Ethereum", "0x6603b4a7E29DfBDB6159c395a915e74757c1FB13"),

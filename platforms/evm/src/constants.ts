@@ -9,50 +9,50 @@ const networkChainEvmCIdEntries = [
   [
     'Mainnet',
     [
-      ['Ethereum', 1n],
-      // TODO: forced to add this to match other list
-      ['Sepolia', 0n],
-      ['Bsc', 56n],
-      ['Polygon', 137n],
-      ['Avalanche', 43114n],
-      ['Oasis', 42262n],
-      ['Aurora', 1313161554n],
-      ['Fantom', 250n],
-      ['Karura', 686n],
       ['Acala', 787n],
-      ['Klaytn', 8217n],
+      ['Arbitrum', 42161n],
+      ['Aurora', 1313161554n],
+      ['Avalanche', 43114n],
+      ['Base', 8453n],
+      ['Bsc', 56n],
       ['Celo', 42220n],
+      ['Ethereum', 1n],
+      ['Fantom', 250n],
+      ['Gnosis', 100n],
+      ['Karura', 686n],
+      ['Klaytn', 8217n],
       ['Moonbeam', 1284n],
       ['Neon', 245022934n],
-      ['Arbitrum', 42161n],
+      ['Oasis', 42262n],
       ['Optimism', 10n],
-      ['Gnosis', 100n],
-      ['Base', 8453n],
+      ['Polygon', 137n],
       ['Rootstock', 30n],
+      ['Sepolia', 0n],
+      // TODO: forced to add this to match other list
     ],
   ],
   [
     'Testnet',
     [
-      ['Ethereum', 5n], //goerli
-      ['Sepolia', 11155111n], //actually just another ethereum testnet...
-      ['Bsc', 97n],
-      ['Polygon', 80001n], //mumbai
-      ['Avalanche', 43113n], //fuji
-      ['Oasis', 42261n],
-      ['Aurora', 1313161555n],
-      ['Fantom', 4002n],
-      ['Karura', 596n],
       ['Acala', 597n],
-      ['Klaytn', 1001n], //baobab
+      ['Arbitrum', 421613n], //arbitrum goerli
+      ['Aurora', 1313161555n],
+      ['Avalanche', 43113n], //fuji
+      ['Base', 84531n],
+      ['Bsc', 97n],
       ['Celo', 44787n], //alfajores
+      ['Ethereum', 5n], //goerli
+      ['Fantom', 4002n],
+      ['Gnosis', 10200n],
+      ['Karura', 596n],
+      ['Klaytn', 1001n], //baobab
       ['Moonbeam', 1287n], //moonbase alpha
       ['Neon', 245022940n],
-      ['Arbitrum', 421613n], //arbitrum goerli
+      ['Oasis', 42261n],
       ['Optimism', 420n],
-      ['Gnosis', 10200n],
-      ['Base', 84531n],
+      ['Polygon', 80001n], //mumbai
       ['Rootstock', 31n],
+      ['Sepolia', 11155111n], //actually just another ethereum testnet...
     ],
   ],
 ] as const satisfies RoArray<
