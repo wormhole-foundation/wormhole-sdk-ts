@@ -105,7 +105,6 @@ export class CosmwasmAddress implements Address {
         this.denomType = "native";
         this.domain = nativeDenomToChain
           .get(CosmwasmPlatform.network, address)
-          ?.pop();
         return;
       }
 

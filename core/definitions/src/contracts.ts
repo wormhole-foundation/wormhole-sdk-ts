@@ -11,6 +11,7 @@ export type Contracts = {
 };
 
 export function getContracts(n: Network, c: ChainName): Contracts {
+
   const ct: Contracts = {
     coreBridge: contracts.coreBridge.get(n, c),
     tokenBridge: contracts.tokenBridge.get(n, c),
@@ -22,8 +23,8 @@ export function getContracts(n: Network, c: ChainName): Contracts {
     ct.cctp = contracts.circleContracts.get(n, c);
   }
 
-  if (contracts.gateway.has(n)) {
-    ct.gateway = contracts.gateway.get(n);
+  if (contracts.gateway.has(n, c)) {
+    ct.gateway = contracts.gateway.get(n, c);
   }
 
   if (contracts.translator.has(n, c)) {
