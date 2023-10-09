@@ -41,8 +41,9 @@ export type CircleAttestation = string;
 // Used to fetch a Ibc attestation
 export type IbcMessageId = {
   chain: ChainName;
-  port: string;
+  srcPort: string;
   srcChannel: string;
+  dstPort: string; 
   dstChannel: string;
   sequence: number;
 };
@@ -53,7 +54,8 @@ export function isIbcMessageId(
     (<IbcMessageId>thing).dstChannel !== undefined &&
     (<IbcMessageId>thing).srcChannel !== undefined &&
     (<IbcMessageId>thing).chain !== undefined &&
-    (<IbcMessageId>thing).port !== undefined &&
+    (<IbcMessageId>thing).srcPort !== undefined &&
+    (<IbcMessageId>thing).dstPort !== undefined &&
     (<IbcMessageId>thing).sequence !== undefined
   );
 }

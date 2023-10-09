@@ -240,13 +240,14 @@ export class GatewayTransfer implements WormholeTransfer {
     xfer: IbcTransferInfo,
   ): Promise<GatewayTransferDetails> {
     const token = {
-      chain: xfer.tx.chain,
-      address: toNative(xfer.tx.chain, xfer.data.denom),
+      chain: xfer.id.chain,
+      address: toNative(xfer.id.chain, xfer.data.denom),
     } as TokenId;
 
     const msg = asGatewayMsg(xfer.data.memo);
     const destChain = toChainName(msg.chain);
 
+    // TODO: sure it needs encoding?
     const _recip = Buffer.from(msg.recipient, 'base64');
     const recipient: ChainAddress =
       chainToPlatform(destChain) === 'Cosmwasm'
@@ -270,8 +271,8 @@ export class GatewayTransfer implements WormholeTransfer {
       token,
       amount: BigInt(xfer.data.amount),
       from: {
-        chain: xfer.tx.chain,
-        address: toNative(xfer.tx.chain, xfer.data.sender),
+        chain: xfer.id.chain,
+        address: toNative(xfer.id.chain, xfer.data.sender),
       },
       to: recipient,
       fee: BigInt(msg.fee),
@@ -427,19 +428,11 @@ export class GatewayTransfer implements WormholeTransfer {
 
       // now find the corresponding wormchain transaction given the ibcTransfer info
       const xfer = this.ibcTransfers[0];
-      const wcTransfer = await wcIbc.lookupTransferFromSequence(
-        xfer.id.dstChannel,
-        true,
-        xfer.id.sequence,
-      );
+      const wcTransfer = await wcIbc.lookupTransferFromIbcMsgId(xfer.id);
 
       // If we're leaving cosmos, grab the VAA from the gateway
       if (!this.toGateway()) {
-        const {
-          tx: { chain, txid },
-        } = wcTransfer;
-
-        const [whm] = await this.wh.parseMessageFromTx(chain, txid);
+        const whm = await wcIbc.lookupMessageFromIbcMsgId(xfer.id);
         const vaa = await GatewayTransfer.getTransferVaa(
           this.wh,
           whm.chain,
@@ -474,7 +467,7 @@ export class GatewayTransfer implements WormholeTransfer {
         return isVaaRedeemed(wcTb, [vaa]);
       };
       // TODO: conf for these settings? how do we choose them?
-      const redeemed = await retry<boolean>(isRedeemedTask, 2000, 5);
+      const redeemed = await retry<boolean>(isRedeemedTask, 2000, 10);
       if (!redeemed) throw new Error('VAA not found after retries exhausted');
 
       // Finally, get the IBC transactions from wormchain
@@ -484,7 +477,7 @@ export class GatewayTransfer implements WormholeTransfer {
       const wcTransferTask = () => {
         return fetchIbcXfer(wcIbc, this.msg);
       };
-      const wcTransfer = await retry<IbcTransferInfo>(wcTransferTask, 2000, 5);
+      const wcTransfer = await retry<IbcTransferInfo>(wcTransferTask, 2000, 10);
       if (!wcTransfer)
         throw new Error('Wormchain transfer not found after retries exhausted');
 

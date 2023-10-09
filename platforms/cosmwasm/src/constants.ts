@@ -20,6 +20,8 @@ export const IBC_PACKET_RECEIVE = "recv_packet";
 // Attributes for IBC Packet Event
 export const IBC_PACKET_DST = "packet_dst_channel";
 export const IBC_PACKET_SRC = "packet_src_channel";
+export const IBC_PACKET_SRC_PORT = "packet_src_port";
+export const IBC_PACKET_DST_PORT = "packet_dst_port";
 export const IBC_PACKET_SEQ = "packet_sequence";
 export const IBC_PACKET_DATA = "packet_data";
 export const IBC_PACKET_CONN = "packet_connection";

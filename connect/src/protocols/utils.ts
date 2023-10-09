@@ -40,7 +40,9 @@ export async function fetchIbcXfer(
   if (isTransactionIdentifier(msg)) {
     try {
       return await wcIbc.lookupTransferFromTx(msg.txid);
-    } catch (e) {}
+    } catch (e) {
+      console.error("Failed to lookup transfer from tx: ", e)
+    }
     //
   } else if (
     isGatewayTransferMsg(msg) ||
@@ -48,24 +50,15 @@ export async function fetchIbcXfer(
   ) {
     try {
       return await wcIbc.lookupTransferFromMsg(msg);
-    } catch (e) {}
+    } catch (e) {
+      console.error("Failed to lookup transfer from message: ", e)
+    }
   } else if (isIbcMessageId(msg)) {
-    // Try both directions
-    // TODO: can we do this in one query?
     try {
-      return await wcIbc.lookupTransferFromSequence(
-        msg.dstChannel,
-        true,
-        msg.sequence,
-      );
-    } catch (e) {}
-    try {
-      return await wcIbc.lookupTransferFromSequence(
-        msg.dstChannel,
-        false,
-        msg.sequence,
-      );
-    } catch (e) {}
+      return await wcIbc.lookupTransferFromIbcMsgId(msg);
+    } catch (e) {
+      console.error("Failed to lookup transfer from sequence: ", e)
+    }
   }
 
   return null;

@@ -8,7 +8,7 @@ import {
 import { ChainAddress, NativeAddress, UniversalOrNative } from "../address";
 import { IbcMessageId, WormholeMessageId } from "../attestation";
 import { RpcConnection } from "../rpc";
-import { TokenId, TransactionId, TxHash } from "../types";
+import { TokenId,  TxHash } from "../types";
 import { UnsignedTransaction } from "../unsignedTransaction";
 
 // Configuration for a transfer through the Gateway
@@ -184,17 +184,15 @@ export function makeGatewayTransferMsg(
 // payload and a pending flag if we find it
 // in the PendingCommitment queue
 export interface IbcTransferInfo {
-  tx: TransactionId;
   id: IbcMessageId;
-  pending: boolean;
   data: IbcTransferData;
+  pending: boolean;
 }
 
 export function isIbcTransferInfo(
   thing: IbcTransferInfo | any
 ): thing is IbcTransferInfo {
   return (
-    (<IbcTransferInfo>thing).tx !== undefined &&
     (<IbcTransferInfo>thing).id !== undefined &&
     (<IbcTransferInfo>thing).pending !== undefined &&
     (<IbcTransferInfo>thing).data !== undefined
@@ -234,19 +232,16 @@ export interface IbcBridge<P extends PlatformName> {
   //getChannels(): IbcChannel | null;
   //fetchChannels(): Promise<IbcChannel | null>;
 
-  // Get WormholeMessageId
-  lookupMessageFromSequence(
-    channel: string,
-    incoming: boolean,
-    sequence: Number
+  // Get WormholeMessageId for VAAs
+  lookupMessageFromIbcMsgId(
+    msg: IbcMessageId
   ): Promise<WormholeMessageId>;
 
-  // Get IbcTransferInfo
+  // Get IbcTransferInfo 
+  // TODO: overload
   lookupTransferFromTx(txid: TxHash): Promise<IbcTransferInfo>;
-  lookupTransferFromSequence(
-    channel: string,
-    incoming: boolean,
-    sequence: Number
+  lookupTransferFromIbcMsgId(
+    msg: IbcMessageId
   ): Promise<IbcTransferInfo>;
   lookupTransferFromMsg(
     payload: GatewayTransferMsg | GatewayTransferWithPayloadMsg

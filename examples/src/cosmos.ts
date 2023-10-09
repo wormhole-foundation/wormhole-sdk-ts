@@ -3,6 +3,7 @@ import {
   GatewayTransferDetails,
   TokenId,
   Wormhole,
+  toNative,
 } from "@wormhole-foundation/connect-sdk";
 // Import the platform specific packages
 import {
@@ -28,73 +29,53 @@ import { TransferStuff, getStuff } from "./helpers";
   // to use (e.g. Mainnet/Testnet) and what Platforms to support
   const wh = new Wormhole("Testnet", [EvmPlatform, CosmwasmPlatform]);
 
+
+
+
   // Grab chain Contexts for each leg of our journey
+const external = wh.getChain("Avalanche")
+const cosmos1 = wh.getChain("Cosmoshub")
+const cosmos2 = wh.getChain("Osmosis")  
+
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
-  const leg1 = await getStuff(wh.getChain("Avalanche"));
-  const leg2 = await getStuff(wh.getChain("Cosmoshub"));
-  const leg3 = await getStuff(wh.getChain("Osmosis"));
+  const leg1 = await getStuff(external);
+  const leg2 = await getStuff(cosmos1);
+  const leg3 = await getStuff(cosmos2);
 
   // we'll use the native token on the source chain
   const token = "native";
-  const amount = await wh.normalizeAmount(leg1.chain.chain, token, 0.01);
-
-  //const wc = wh.getChain("Wormchain");
-  //const rpc = (await wc.getRpc()) as CosmWasmClient;
-  //const results = await rpc.searchTx([
-  //  { key: "wasm.action", value: "complete_transfer_with_payload" },
-  //]);
-  //const flat = results
-  //  .map((r) => JSON.parse(r.rawLog)[0].events)
-  //  .flatMap((el) => el);
-  //flat.forEach((e) => {
-  //  console.log(e.type);
-  //  e.attributes.forEach((a: any) => {
-  //    console.log(a.key, a.value);
-  //  });
-  //});
-
-  //return;
+  const amount = await wh.normalizeAmount(external.chain, token, 0.01);
 
   // Transfer native token from source chain, through gateway, to a cosmos chain
   //const route1 = await transferIntoCosmos(wh, token, amount, leg1, leg2);
-  const route1 = await GatewayTransfer.from(wh, {
-    chain: leg1.chain.chain,
-    txid: "0xba40ed516476a00c3eb4673b008888de81e994721e9fce1d62454eb3c29b4284",
-  });
+  const route1 = await GatewayTransfer.from(wh, {chain: external.chain, txid: "0x2ae22f2946ef2754b39d5c438518fd2b63243ab6cb6449ecb5399c5c838f826d"}) 
   console.log("Route 1 (!Cosmos => Cosmos)", route1);
 
   // Lookup the Gateway representation of the wrappd token
-  const cosmosTokenAddress = await Gateway.getWrappedAsset(
-    route1.transfer.token !== "native"
-      ? route1.transfer.token
-      : {
-          chain: leg1.chain.chain,
-          address: await (await leg1.chain.getTokenBridge()).getWrappedNative(),
-        }
-  );
-
+  const cosmosTokenAddress = toNative("Wormchain", route1.ibcTransfers![0].data.denom) 
   console.log("Wrapped Token: ", cosmosTokenAddress.toString());
-  return;
 
   // // Transfer Gateway factory tokens over IBC through gateway to another Cosmos chain
+  const route2 = await GatewayTransfer.from(wh, {chain: cosmos1.chain, txid:"C6729DBCF6902BEB9EB4E61FE0C7F4B939465F24D4CB91287E04FF71293416D6"})
   // const route2 = await transferBetweenCosmos(
   //   wh,
-  //   { chain: leg2.chain.chain, address: cosmosTokenAddress },
+  //   { chain: cosmos1.chain, address: cosmosTokenAddress },
   //   1000n,
   //   leg2,
   //   leg3
   // );
-  // console.log("Route 2 (Cosmos -> Cosmos): ", route2);
+  console.log("Route 2 (Cosmos -> Cosmos): ", route2);
 
   // Transfer Gateway factory token through gateway back to source chain
-  const route3 = await transferOutOfCosmos(
-    wh,
-    { chain: leg2.chain.chain, address: cosmosTokenAddress },
-    1000n,
-    leg2,
-    leg1
-  );
+  const route3 = await GatewayTransfer.from(wh, {chain: cosmos2.chain, txid: "01211F7C044DF11C0091CCFD77E614E2B73073829CFC15FF10DC0F3DDBA450CE"})
+  // const route3 = await transferOutOfCosmos(
+  //   wh,
+  //   { chain: cosmos2.chain, address: cosmosTokenAddress },
+  //   1000n,
+  //   leg3,
+  //   leg1
+  // );
   console.log("Route 3 (Cosmos => !Cosmos): ", route3);
 })();
 
