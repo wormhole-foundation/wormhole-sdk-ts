@@ -108,11 +108,11 @@ export module Gateway {
 
   // derive the ics20 token denom from the
   // wrapped denom and destination channel
-  export async function deriveIbcDenom(
+  export function deriveIbcDenom(
     chain: CosmwasmChainName,
-    denom: string,
-  ): Promise<CosmwasmAddress> {
-    const channel = await getDestinationChannel(chain);
+    denom: string
+  ): CosmwasmAddress {
+    const channel = getDestinationChannel(chain);
     const hashData = Buffer.from(`transfer/${channel}/${denom}`);
     const hash = Buffer.from(sha256(hashData)).toString("hex");
     return new CosmwasmAddress(`ibc/${hash.toUpperCase()}`);
@@ -144,7 +144,7 @@ export module Gateway {
     return msg;
   }
 
-  // TODO: should we be able to get chainfrom tx?
+  // TODO: make consts
   export function getWormholeMessage(tx: IndexedTx): WormholeMessageId {
     const wasm = tx.events
       .filter(
