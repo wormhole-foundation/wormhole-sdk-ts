@@ -46,7 +46,7 @@ const rpcConfig = [
       ["Arbitrum", "https://arbitrum-goerli.publicnode.com"],
       ["Optimism", "https://optimism-goerli.publicnode.com"],
       ["Injective", "https://testnet.sentry.tm.injective.network"],
-      ["Osmosis", "https://rpc.osmotest5.osmosis.zone"],
+      ["Osmosis", "https://rpc.testnet.osmosis.zone"],
       ["Cosmoshub", "https://rpc.sentry-02.theta-testnet.polypore.xyz"],
       ["Evmos", "https://evmos-testnet-rpc.polkachu.com"],
       ["Wormchain", "https://wormchain-testnet.jumpisolated.com"],
