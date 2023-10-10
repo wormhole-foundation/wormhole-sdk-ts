@@ -110,7 +110,7 @@ export module Gateway {
   // wrapped denom and destination channel
   export function deriveIbcDenom(
     chain: CosmwasmChainName,
-    denom: string
+    denom: string,
   ): CosmwasmAddress {
     const channel = getDestinationChannel(chain);
     const hashData = Buffer.from(`transfer/${channel}/${denom}`);

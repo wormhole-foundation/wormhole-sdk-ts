@@ -6,9 +6,7 @@ import {
   toNative,
 } from "@wormhole-foundation/connect-sdk";
 // Import the platform specific packages
-import {
-  CosmwasmPlatform,
-} from "@wormhole-foundation/connect-sdk-cosmwasm";
+import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 
 import { TransferStuff, getStuff } from "./helpers";
@@ -23,7 +21,7 @@ import { TransferStuff, getStuff } from "./helpers";
 //  Cosmoshub[gateway/wrapped avax] -> {Gateway ->} Osmosis[gateway/wrapped avax]
 //  Osmosis[gateway/wrapped avax] -> {Gateway} => Avalanch[avax]
 
-// Key: 
+// Key:
 //   => : Regular contract call
 //   -> : IBC Transfer
 //   {*}: Transparently handled by Gateway
@@ -59,7 +57,7 @@ import { TransferStuff, getStuff } from "./helpers";
   // Lookup the Gateway representation of the wrappd token
   const cosmosTokenAddress = toNative(
     "Wormchain",
-    route1.ibcTransfers![0].data.denom
+    route1.ibcTransfers![0].data.denom,
   );
   console.log("Wrapped Token: ", cosmosTokenAddress.toString());
 

@@ -66,7 +66,7 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
     for (const [chain, channel] of networkToChannelMap(network)) {
       this.channelMap.set(
         channel[isGateway ? "dstChannel" : "srcChannel"],
-        chain
+        chain,
       );
     }
 
@@ -103,7 +103,6 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
         recipient.address.toUniversalAddress().toUint8Array(),
       ).toString("base64");
     }
-
 
     const payload: GatewayIbcTransferMsg = {
       gateway_ibc_token_bridge_payload: {
@@ -165,7 +164,7 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
   }
 
   async lookupMessageFromIbcMsgId(
-    msg: IbcMessageId
+    msg: IbcMessageId,
   ): Promise<WormholeMessageId> {
     const tx = await this.lookupTxFromIbcMsgId(msg);
     return Gateway.getWormholeMessage(tx);
@@ -202,11 +201,13 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
     ]);
 
     if (txResults.length === 0)
-      throw new Error(`Found no transactions for message: `+JSON.stringify(msg));
+      throw new Error(
+        `Found no transactions for message: ` + JSON.stringify(msg),
+      );
 
     if (txResults.length > 1)
       console.error(
-        `Expected 1 transaction, got ${txResults.length} found for IbcMsgid: ${msg}`
+        `Expected 1 transaction, got ${txResults.length} found for IbcMsgid: ${msg}`,
       );
 
     const [tx] = txResults;
@@ -220,7 +221,8 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
     // IBCTransfers as part of this
     const tx = await this.lookupTxFromIbcMsgId(msg);
     const xfers = await this.fetchTransferInfo(tx);
-    if (xfers.length === 0) throw new Error(`No transfers found on ${this.chain} in tx: ${tx}`);
+    if (xfers.length === 0)
+      throw new Error(`No transfers found on ${this.chain} in tx: ${tx}`);
     // TODO
     if (xfers.length > 1) console.error(">1 xfer in tx; why");
 
@@ -242,7 +244,9 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
     ]);
 
     if (txResults.length === 0)
-      throw new Error(`Found no transactions for payload: `+JSON.stringify(encodedPayload));
+      throw new Error(
+        `Found no transactions for payload: ` + JSON.stringify(encodedPayload),
+      );
 
     if (txResults.length !== 1)
       console.error("Expected 1 tx, got: ", txResults.length);
@@ -251,7 +255,9 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
     const xfers = await this.fetchTransferInfo(tx);
 
     if (xfers.length === 0)
-      throw new Error(`Found no transactions for payload: `+JSON.stringify(encodedPayload));
+      throw new Error(
+        `Found no transactions for payload: ` + JSON.stringify(encodedPayload),
+      );
 
     if (xfers.length !== 1)
       console.error("Expected 1 xfer, got: ", xfers.length);
@@ -286,8 +292,8 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
         if (attr.key === IBC_PACKET_DATA) xfer.data = JSON.parse(attr.value);
       }
 
-      // If we're receiving a packet, we need figure out who sent it 
-      // possibly resolving by source channel 
+      // If we're receiving a packet, we need figure out who sent it
+      // possibly resolving by source channel
       // we assign the chain to the sender as iternally canonical
       msgId.chain =
         packet.type === IBC_PACKET_SEND
@@ -304,7 +310,7 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
     return Array.from(xfers);
   }
 
-  // fetch whether or not this transfer is pending 
+  // fetch whether or not this transfer is pending
   private async fetchTransferInfo(tx: IndexedTx): Promise<IbcTransferInfo[]> {
     // Try to get all IBC packets (sent/received)
     const xfers = this.parseIbcTransferInfo(tx);
@@ -318,9 +324,9 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
         await qc.ibc.channel.packetCommitment(
           IBC_TRANSFER_PORT,
           xfer.id.srcChannel!,
-          xfer.id.sequence!
+          xfer.id.sequence!,
         );
-        xfer.pending = true
+        xfer.pending = true;
       } catch (e) {
         // TODO: catch http errors unrelated to no commitment in flight
         // otherwise we might lie about pending = false
@@ -340,7 +346,7 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
     try {
       const { channel: srcChannel } = await this.rpc.queryContractSmart(
         this.gatewayAddress,
-        { ibc_channel: { chain_id: toChainId(chain) } }
+        { ibc_channel: { chain_id: toChainId(chain) } },
       );
       const conn = await queryClient.ibc.channel.channel(
         IBC_TRANSFER_PORT,
@@ -349,7 +355,9 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
 
       const dstChannel = conn.channel?.counterparty?.channelId;
       if (!dstChannel)
-        throw new Error(`No destination channel found for chain ${chain} on ${this.chain}`);
+        throw new Error(
+          `No destination channel found for chain ${chain} on ${this.chain}`,
+        );
 
       return { srcChannel, dstChannel };
     } catch (e) {
