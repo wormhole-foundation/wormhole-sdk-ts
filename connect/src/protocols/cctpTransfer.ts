@@ -247,7 +247,9 @@ export class CCTPTransfer implements WormholeTransfer {
     return txHashes;
   }
 
-  private async fetchWormholeAttestation(): Promise<WormholeMessageId[]> {
+  private async fetchWormholeAttestation(
+    timeout?: number,
+  ): Promise<WormholeMessageId[]> {
     if (!this.vaas || this.vaas.length == 0)
       throw new Error("No VAA details available");
 
@@ -269,7 +271,9 @@ export class CCTPTransfer implements WormholeTransfer {
     });
   }
 
-  private async fetchCircleAttestation(): Promise<CircleMessageId[]> {
+  private async fetchCircleAttestation(
+    timeout?: number,
+  ): Promise<CircleMessageId[]> {
     if (!this.circleAttestations || this.circleAttestations.length == 0) {
       if (!this.txids)
         throw new Error("No circle attestations or transactions to fetch");
@@ -278,36 +282,37 @@ export class CCTPTransfer implements WormholeTransfer {
       const fromChain = this.wh.getChain(this.transfer.from.chain);
 
       const cb = await fromChain.getCircleBridge();
-
       const circleMessage = await cb.parseTransactionDetails(txid);
       this.circleAttestations = [{ id: circleMessage.messageId }];
     }
+
+    // TODO: add conf for interval per service ?
+    const retryInterval = 5000;
+    const tries = timeout ?? 60_000 / retryInterval;
 
     for (const idx in this.circleAttestations) {
       const ca = this.circleAttestations[idx];
       // already got it
       if (ca.attestation) continue;
 
-      const task = async () => {
-        return await this.wh.getCircleAttestation(ca.id.msgHash);
-      };
+      const attestation = await retry(
+        () => this.wh.getCircleAttestation(ca.id.msgHash),
+        retryInterval,
+        tries,
+      );
 
-      // TODO: add conf for retries
-      const attestation = await retry(task, 5000, 10);
       if (attestation === null)
         throw new Error("No attestation available after retries exhausted");
 
       this.circleAttestations[idx].attestation = attestation;
     }
 
-    return this.circleAttestations.map((v) => {
-      return v.id;
-    });
+    return this.circleAttestations.map((v) => v.id);
   }
 
   // wait for the VAA to be ready
   // returns the sequence number
-  async fetchAttestation(): Promise<AttestationId[]> {
+  async fetchAttestation(timeout?: number): Promise<AttestationId[]> {
     /*
         0) check that the current `state` is valid to call this  (eg: state == Started)
         1) poll the api on an interval to check if the VAA is available
@@ -322,9 +327,9 @@ export class CCTPTransfer implements WormholeTransfer {
 
     let ids: AttestationId[];
     if (this.transfer.automatic) {
-      ids = await this.fetchWormholeAttestation();
+      ids = await this.fetchWormholeAttestation(timeout);
     } else {
-      ids = await this.fetchCircleAttestation();
+      ids = await this.fetchCircleAttestation(timeout);
     }
 
     this.state = TransferState.Attested;
@@ -359,13 +364,14 @@ export class CCTPTransfer implements WormholeTransfer {
       }
       return txHashes;
     } else {
-      if (!this.circleAttestations)
-        throw new Error("No Circle Attestation details available");
+      if (!this.circleAttestations) {
+        await this.fetchAttestation();
+      }
 
       const toChain = this.wh.getChain(this.transfer.to.chain);
 
       const txHashes: TxHash[] = [];
-      for (const cachedAttestation of this.circleAttestations) {
+      for (const cachedAttestation of this.circleAttestations!) {
         const { id, attestation } = cachedAttestation;
 
         if (!attestation)
@@ -381,7 +387,6 @@ export class CCTPTransfer implements WormholeTransfer {
         let unsigned: UnsignedTransaction[] = [];
         for await (const tx of xfer) {
           unsigned.push(tx);
-
           // If we get a non-parallelizable tx, sign and send the transactions
           // we've gotten so far
           if (!tx.parallelizable) {
@@ -395,8 +400,8 @@ export class CCTPTransfer implements WormholeTransfer {
 
         if (unsigned.length > 0) {
           const signed = await signer.sign(unsigned);
-          const txHashes = await toChain.sendWait(signed);
-          txHashes.push(...txHashes);
+          const hashes = await toChain.sendWait(signed);
+          txHashes.push(...hashes);
         }
       }
       return txHashes;

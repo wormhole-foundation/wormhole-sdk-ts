@@ -18,8 +18,8 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
   const wh = new Wormhole("Testnet", [EvmPlatform]);
 
   // Grab chain Contexts
-  const sendChain = wh.getChain("Avalanche");
-  const rcvChain = wh.getChain("Ethereum");
+  const sendChain = wh.getChain("Ethereum");
+  const rcvChain = wh.getChain("Avalanche");
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
@@ -28,13 +28,15 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
 
   // Note: you can pick up a partial transfer from the origin chain name and txid
   // once created, you can call `fetchAttestations` or `completeTransfer` assuming its a manual transfer
-  // const xfer = await CCTPTransfer.from(wh, {
-  //   chain: "Avalanche",
-  //   txid: "0x57f2a070c1c405730e298d2362d5145cd9437853bc1d66c68221d5ef94e27b1e",
-  // });
+  const xfer = await CCTPTransfer.from(wh, {
+    chain: "Ethereum",
+    txid: "0x45938c1c491b066c967a75c9a959ed5d1ae6d014b819517ad4d8a63f34b988be",
+  });
+  console.log(await xfer.fetchAttestation(60 * 60 * 1000));
+  console.log(await xfer.completeTransfer(destination.signer));
 
   // Manual Circle USDC CCTP Transfer
-  await cctpTransfer(wh, 1_000_000n, source, destination, false);
+  //await cctpTransfer(wh, 1_000_000n, source, destination, false);
 
   // Automatic Circle USDC CCTP Transfer
   // await cctpTransfer(wh, 19_000_000n, source, destination, true);

@@ -13,6 +13,7 @@ const circleDomains = [
   ["Avalanche", 1],
   ["Optimism", 2],
   ["Arbitrum", 3],
+  ["Base", 6],
 ] as const satisfies RoArray<readonly [ChainName, number]>;
 
 const usdcContracts = [
