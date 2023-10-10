@@ -62,14 +62,9 @@ describe("Mapping tests", function () {
     expect(vals.length).toEqual(2);
   });
   it("should correctly create a mapping", function () {
-    const chainIdToNetworkChainPair = constMap(networkChainCosmwasmChainIds, [
-      2,
-      [0, 1],
-    ]);
+    const chainIdToNetworkChainPair = constMap(networkChainCosmwasmChainIds, [2, [0, 1]]);
     const vals = chainIdToNetworkChainPair("evmos_9000-4");
-    expect(vals.length).toEqual(2);
-    expect(vals[0]).toEqual("Testnet");
-    expect(vals[1]).toEqual("Evmos");
+    expect(vals).toEqual(["Testnet", "Evmos"]);
   });
 });
 
