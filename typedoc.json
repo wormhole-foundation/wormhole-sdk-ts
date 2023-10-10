@@ -1,7 +1,8 @@
 {
-  "entryPoints": ["connect",  "platforms/solana", "platforms/evm"],
+  "entryPoints": ["connect",  "platforms/solana", "platforms/evm", "platforms/cosmwasm"],
   "exclude": ["platforms/aptos", "platforms/sui", "platforms/sei"],
   "name": "Connect SDK",
   "entryPointStrategy": "packages",
+  "excludeExternals": true,
   "includeVersion": true
 }

@@ -378,7 +378,6 @@ export class Wormhole {
 
   /**
    * Gets the Raw VAA Bytes from the API or Guardian RPC, finality must be met before the VAA will be available.
-   *  See {@link ChainConfig.finalityThreshold | finalityThreshold} on {@link CONFIG | the config}
    * @param chain The chain name
    * @param emitter The emitter address
    * @param sequence The sequence number
@@ -420,8 +419,6 @@ export class Wormhole {
 
   /**
    * Gets a VAA from the API or Guardian RPC, finality must be met before the VAA will be available.
-   *  See {@link ChainConfig.finalityThreshold | finalityThreshold} on {@link CONFIG | the config}
-   *
    * @param chain The chain name
    * @param emitter The emitter address
    * @param sequence The sequence number
