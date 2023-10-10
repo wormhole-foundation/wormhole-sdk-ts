@@ -33,7 +33,8 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
   readonly tokenMessenger: TokenMessenger.TokenMessenger;
 
   readonly tokenEventHash: string;
-  readonly messageEventHash: string;
+  readonly messageSentEventHash: string;
+  readonly messageReceivedEventHash: string;
 
   private constructor(
     readonly network: Network,
@@ -58,7 +59,10 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
     this.tokenEventHash =
       this.tokenMessenger.getEvent('DepositForBurn').fragment.topicHash;
 
-    this.messageEventHash =
+    this.messageSentEventHash =
+      this.msgTransmitter.getEvent('MessageSent').fragment.topicHash;
+
+    this.messageReceivedEventHash =
       this.msgTransmitter.getEvent('MessageReceived').fragment.topicHash;
   }
 
@@ -163,10 +167,11 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
 
     if (tokenLogs.length === 0)
       throw new Error(`No log message for token transfer found in ${txid}`);
+
     const [tokenLog] = tokenLogs;
 
     const messageLogs = receipt.logs
-      .filter((log) => log.topics[0] === this.messageEventHash)
+      .filter((log) => log.topics[0] === this.messageSentEventHash)
       .map((messageLog) => {
         const { topics, data } = messageLog;
         return this.msgTransmitter.interface.parseLog({
@@ -183,7 +188,7 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
 
     // just taking the first one here, will there ever be >1?
     if (messageLogs.length > 1)
-      throw new Error(`Found more than one message in ${txid}`);
+      console.error('Expected 1 event to be found for transaction, got>1');
 
     const [messageLog] = messageLogs;
 

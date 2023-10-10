@@ -179,8 +179,6 @@ export class CosmwasmAddress implements Address {
           .toUpperCase()}`;
       }
 
-      console.log(this);
-
       // ?/factory/address/denom
       return `${this.denomType}/${toBech32(this.domain!, this.address)}/${
         this.denom

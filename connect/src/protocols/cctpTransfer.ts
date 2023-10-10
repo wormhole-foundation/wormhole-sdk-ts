@@ -27,6 +27,7 @@ import {
   AttestationId,
 } from "../wormholeTransfer";
 import { Wormhole } from "../wormhole";
+import { retry } from "./poller";
 
 export class CCTPTransfer implements WormholeTransfer {
   private readonly wh: Wormhole;
@@ -43,7 +44,7 @@ export class CCTPTransfer implements WormholeTransfer {
   // Populated if !automatic and after initialized
   circleAttestations?: {
     id: CircleMessageId;
-    attestation?: CircleAttestation;
+    attestation?: CircleAttestation | null;
   }[];
 
   // Populated if automatic and after initialized
@@ -77,16 +78,19 @@ export class CCTPTransfer implements WormholeTransfer {
     from: CCTPTransferDetails | WormholeMessageId | TransactionId,
   ): Promise<CCTPTransfer> {
     let tt: CCTPTransfer | undefined;
+    if (isCCTPTransferDetails(from)) {
+      return new CCTPTransfer(wh, from);
+    }
+
     if (isWormholeMessageId(from)) {
       tt = await CCTPTransfer.fromIdentifier(wh, from);
     } else if (isTransactionIdentifier(from)) {
       tt = await CCTPTransfer.fromTransaction(wh, from);
-    } else if (isCCTPTransferDetails(from)) {
-      tt = new CCTPTransfer(wh, from);
-    }
-
-    if (tt === undefined)
+    } else {
       throw new Error("Invalid `from` parameter for CCTPTransfer");
+    }
+    tt.state = TransferState.Attested;
+    await tt.fetchAttestation();
 
     return tt;
   }
@@ -131,7 +135,7 @@ export class CCTPTransfer implements WormholeTransfer {
     const tt = new CCTPTransfer(wh, details);
     tt.vaas = [{ id: { emitter, sequence: vaa.sequence, chain: chain }, vaa }];
 
-    tt.state = TransferState.Attested;
+    tt.state = TransferState.Initiated;
 
     return tt;
   }
@@ -142,6 +146,7 @@ export class CCTPTransfer implements WormholeTransfer {
   ): Promise<CCTPTransfer> {
     const { chain, txid } = from;
     const originChain = wh.getChain(chain);
+
     // First try to parse out a WormholeMessage
     // If we get one or more, we assume its a Wormhole attested
     // transfer
@@ -176,7 +181,7 @@ export class CCTPTransfer implements WormholeTransfer {
       };
 
       ct = new CCTPTransfer(wh, xferDeets);
-      ct.state = TransferState.Initiated;
+      ct.state = TransferState.Attested;
       ct.circleAttestations = [{ id: circleMessage.messageId }];
     }
 
@@ -265,16 +270,29 @@ export class CCTPTransfer implements WormholeTransfer {
   }
 
   private async fetchCircleAttestation(): Promise<CircleMessageId[]> {
-    if (!this.circleAttestations || this.circleAttestations.length == 0)
-      throw new Error("No Attestation IDs details available");
+    if (!this.circleAttestations || this.circleAttestations.length == 0) {
+      if (!this.txids)
+        throw new Error("No circle attestations or transactions to fetch");
+
+      const txid = this.txids[this.txids?.length - 1];
+      const fromChain = this.wh.getChain(this.transfer.from.chain);
+
+      const cb = await fromChain.getCircleBridge();
+
+      const circleMessage = await cb.parseTransactionDetails(txid);
+      this.circleAttestations = [{ id: circleMessage.messageId }];
+    }
 
     for (const idx in this.circleAttestations) {
       const ca = this.circleAttestations[idx];
       // already got it
       if (ca.attestation) continue;
 
-      this.circleAttestations[idx].attestation =
-        await this.wh.getCircleAttestation(ca.id.msgHash);
+      const task = async () => {
+        return await this.wh.getCircleAttestation(ca.id.msgHash);
+      };
+      // TODO: add conf for retries
+      this.circleAttestations[idx].attestation = await retry(task, 2000, 5);
     }
 
     return this.circleAttestations.map((v) => {
@@ -284,7 +302,7 @@ export class CCTPTransfer implements WormholeTransfer {
 
   // wait for the VAA to be ready
   // returns the sequence number
-  async fetchAttestation(timeout: number): Promise<AttestationId[]> {
+  async fetchAttestation(): Promise<AttestationId[]> {
     /*
         0) check that the current `state` is valid to call this  (eg: state == Started)
         1) poll the api on an interval to check if the VAA is available
@@ -363,8 +381,8 @@ export class CCTPTransfer implements WormholeTransfer {
           // we've gotten so far
           if (!tx.parallelizable) {
             const signed = await signer.sign(unsigned);
-            const txHashes = await toChain.sendWait(signed);
-            txHashes.push(...txHashes);
+            const hashes = await toChain.sendWait(signed);
+            txHashes.push(...hashes);
             // reset unsigned
             unsigned = [];
           }

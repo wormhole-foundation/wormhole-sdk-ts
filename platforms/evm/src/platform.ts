@@ -103,8 +103,7 @@ export module EvmPlatform {
   ): Promise<WormholeMessageId[]> {
     const receipt = await rpc.getTransactionReceipt(txid);
 
-    if (receipt === null)
-      throw new Error(`No transaction found with txid: ${txid}`);
+    if (receipt === null) return [];
 
     const coreAddress = conf[chain]!.contracts.coreBridge;
     const coreImpl = contracts.getCoreImplementationInterface();
