@@ -32,6 +32,7 @@ import { TokenTransfer } from "./protocols/tokenTransfer";
 import { CCTPTransfer } from "./protocols/cctpTransfer";
 import { GatewayTransfer } from "./protocols/gatewayTransfer";
 import { TransactionStatus } from "./api";
+import { getCircleAttestation } from "./circle-api";
 
 export class Wormhole {
   protected _platforms: Map<PlatformName, Platform<PlatformName>>;
@@ -438,31 +439,10 @@ export class Wormhole {
     return deserialize("Uint8Array", vaaBytes);
   }
 
-  // TODO: does this belong here?
-  async getCircleAttestation(
-    msgHash: string,
-    retries: number = 5,
-  ): Promise<string | undefined> {
-    let response: AxiosResponse<any, any> | undefined;
-
-    const url = `${this.conf.circleAPI}/${msgHash}`;
-
-    for (let i = retries; i > 0 && !response; i--) {
-      // TODO: config wait seconds?
-      if (i != retries) await new Promise((f) => setTimeout(f, 2000));
-
-      try {
-        response = await axios.get(url);
-      } catch (e) {
-        console.error(`Caught an error waiting for Circle Attestation: ${e}`);
-      }
-      if (response === undefined || response.status !== 200) continue;
-
-      const { data } = response;
-
-      // TODO: what are the statuses? should we retry if
-      if (data.status === "complete") return data.attestation;
-    }
+  async getCircleAttestation(msgHash: string): Promise<string | null> {
+    const attest = await getCircleAttestation(this.conf.circleAPI, msgHash);
+    if (attest !== null) return attest.message;
+    return null;
   }
 
   /**
