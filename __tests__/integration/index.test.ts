@@ -5,6 +5,7 @@ import {
   RpcConnection,
   ChainContext,
   testing,
+  supportsTokenBridge,
 } from "@wormhole-foundation/sdk-definitions";
 import { PlatformName } from "@wormhole-foundation/sdk-base";
 import { Wormhole } from "../../connect/dist/esm";
@@ -47,10 +48,10 @@ describe("Wormhole Tests", () => {
 });
 
 describe("Platform Tests", () => {
-  let p: Platform<PlatformName>;
+  let p: Platform<"Evm">;
   beforeEach(() => {
     const wh = new Wormhole("Devnet", allPlatformCtrs);
-    p = wh.getPlatform("Ethereum");
+    p = wh.getPlatform("Ethereum") as Platform<"Evm">;
   });
 
   let rpc: RpcConnection<PlatformName>;
@@ -61,7 +62,7 @@ describe("Platform Tests", () => {
 
   let tb: TokenBridge<PlatformName>;
   test("Gets Token Bridge", async () => {
-    tb = await p.getTokenBridge(rpc);
+    if(supportsTokenBridge(p)) tb = await p.getTokenBridge(rpc);
     expect(tb).toBeTruthy();
   });
 });
