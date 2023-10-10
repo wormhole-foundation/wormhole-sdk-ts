@@ -1,4 +1,4 @@
-import { Wormhole } from "@wormhole-foundation/connect-sdk";
+import { CCTPTransfer, Wormhole } from "@wormhole-foundation/connect-sdk";
 // TODO: should we re-export the things they need? should we rename the underlying packages?
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { TransferStuff, getStuff, waitLog } from "./helpers";
@@ -25,6 +25,13 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
   // Signer interface (e.g. wrapper around web wallet) should work
   const source = await getStuff(sendChain);
   const destination = await getStuff(rcvChain);
+
+  // Note: you can pick up a partial transfer from the origin chain name and txid
+  // once created, you can call `fetchAttestations` or `completeTransfer` assuming its a manual transfer
+  // const xfer = await CCTPTransfer.from(wh, {
+  //   chain: "Avalanche",
+  //   txid: "0x57f2a070c1c405730e298d2362d5145cd9437853bc1d66c68221d5ef94e27b1e",
+  // });
 
   // Manual Circle USDC CCTP Transfer
   await cctpTransfer(wh, 1_000_000n, source, destination, false);
@@ -61,7 +68,7 @@ async function cctpTransfer(
   if (automatic) return waitLog(xfer);
 
   console.log("Waiting for Attestation");
-  const attestIds = await xfer.fetchAttestation(1000);
+  const attestIds = await xfer.fetchAttestation();
   console.log(`Got Attestation: `, attestIds);
 
   console.log("Completing Transfer");
