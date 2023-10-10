@@ -120,8 +120,7 @@ export class CosmwasmAddress implements Address {
         this.address = new Uint8Array(0);
         this.denom = address;
         this.denomType = "native";
-        this.domain = nativeDenomToChain
-          .get(CosmwasmPlatform.network, address)
+        this.domain = nativeDenomToChain.get(CosmwasmPlatform.network, address);
         return;
       }
 
@@ -221,7 +220,7 @@ export class CosmwasmAddress implements Address {
     )
       throw new Error(
         `Invalid Cosmwasm address, expected ${CosmwasmAddress.contractAddressByteSize} ` +
-          `or ${CosmwasmAddress.accountAddressByteSize} bytes but got ${address.length}`
+          `or ${CosmwasmAddress.accountAddressByteSize} bytes but got ${address.length}`,
       );
 
     return true;

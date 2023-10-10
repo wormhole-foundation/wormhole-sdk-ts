@@ -36,7 +36,7 @@ import { TransferStuff, getStuff, waitLog } from "./helpers";
     "native",
     1_000_000_000_000n,
     source,
-    destination
+    destination,
   );
 
   // await automaticTokenTransfer(wh, "native", 100_000_000n, source, destination);
@@ -71,7 +71,7 @@ async function tokenTransfer(
   dst: TransferStuff,
   automatic: boolean,
   nativeGas?: bigint,
-  payload?: Uint8Array
+  payload?: Uint8Array,
 ) {
   const xfer = await wh.tokenTransfer(
     token,
@@ -80,7 +80,7 @@ async function tokenTransfer(
     dst.address,
     automatic,
     payload,
-    nativeGas
+    nativeGas,
   );
   console.log(xfer);
 
@@ -110,7 +110,7 @@ async function finishTransfer(
   wh: Wormhole,
   chain: ChainName,
   txid: string,
-  signer: Signer
+  signer: Signer,
 ): Promise<void> {
   const xfer = await TokenTransfer.from(wh, { chain, txid });
   console.log(xfer);
@@ -122,7 +122,7 @@ async function manualTokenTransfer(
   token: TokenId | "native",
   amount: bigint,
   src: TransferStuff,
-  dst: TransferStuff
+  dst: TransferStuff,
 ) {
   return tokenTransfer(wh, token, amount, src, dst, false);
 }
@@ -132,7 +132,7 @@ async function automaticTokenTransfer(
   token: TokenId | "native",
   amount: bigint,
   src: TransferStuff,
-  dst: TransferStuff
+  dst: TransferStuff,
 ) {
   return tokenTransfer(wh, token, amount, src, dst, true);
 }
@@ -143,7 +143,7 @@ async function automaticTokenTransferWithGasDropoff(
   amount: bigint,
   src: TransferStuff,
   dst: TransferStuff,
-  nativeGas: bigint
+  nativeGas: bigint,
 ) {
   return tokenTransfer(wh, token, amount, src, dst, true, nativeGas);
 }
@@ -154,7 +154,7 @@ async function manualTokenTransferWithPayload(
   amount: bigint,
   src: TransferStuff,
   dst: TransferStuff,
-  payload: Uint8Array
+  payload: Uint8Array,
 ) {
   return tokenTransfer(wh, token, amount, src, dst, false, undefined, payload);
 }
@@ -165,7 +165,7 @@ async function automaticTokenTransferWithPayload(
   amount: bigint,
   src: TransferStuff,
   dst: TransferStuff,
-  payload: Uint8Array
+  payload: Uint8Array,
 ) {
   return tokenTransfer(wh, token, amount, src, dst, true, undefined, payload);
 }
@@ -177,7 +177,7 @@ async function automaticTokenTransferWithPayloadAndGasDropoff(
   src: TransferStuff,
   dst: TransferStuff,
   nativeGas: bigint,
-  payload: Uint8Array
+  payload: Uint8Array,
 ) {
   return tokenTransfer(wh, token, amount, src, dst, true, nativeGas, payload);
 }

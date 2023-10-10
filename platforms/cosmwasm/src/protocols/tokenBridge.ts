@@ -38,7 +38,7 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
     readonly network: Network,
     readonly chain: CosmwasmChainName,
     readonly rpc: CosmWasmClient,
-    readonly contracts: CosmwasmContracts
+    readonly contracts: CosmwasmContracts,
   ) {
     this.tokenBridge = this.contracts.getTokenBridge(this.chain, this.rpc);
     if (Contracts.translator.has(network, chain)) {
@@ -48,7 +48,7 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
 
   static async fromProvider(
     rpc: CosmWasmClient,
-    contracts: CosmwasmContracts
+    contracts: CosmwasmContracts,
   ): Promise<CosmwasmTokenBridge> {
     const [network, chain] = await CosmwasmPlatform.chainFromRpc(rpc);
     return new CosmwasmTokenBridge(network, chain, rpc, contracts);
@@ -71,13 +71,13 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
   }
 
   async getWrappedAsset(
-    token: TokenId
+    token: TokenId,
   ): Promise<NativeAddress<CosmwasmPlatform.Type>> {
     if (token.chain === this.chain)
       throw new Error(`Expected foreign chain, got ${token.chain}`);
 
     const base64Addr = Buffer.from(
-      token.address.toUniversalAddress().toUint8Array()
+      token.address.toUniversalAddress().toUint8Array(),
     ).toString("base64");
 
     const { address }: WrappedRegistryResponse =
@@ -109,7 +109,7 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
   }
 
   async isTransferCompleted(
-    vaa: VAA<"Transfer"> | VAA<"TransferWithPayload">
+    vaa: VAA<"Transfer"> | VAA<"TransferWithPayload">,
   ): Promise<boolean> {
     const data = Buffer.from(serialize(vaa)).toString("base64");
     console.log(data);
@@ -122,7 +122,7 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
 
   async *createAttestation(
     token: UniversalOrCosmwasm | "native",
-    payer?: UniversalOrCosmwasm
+    payer?: UniversalOrCosmwasm,
   ): AsyncGenerator<CosmwasmUnsignedTransaction> {
     if (!payer) throw new Error("Payer required to create attestation");
 
@@ -149,13 +149,13 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
         fee: computeFee(this.chain),
         memo: "Wormhole - Create Attestation",
       },
-      "TokenBridge.createAttestation"
+      "TokenBridge.createAttestation",
     );
   }
 
   async *submitAttestation(
     vaa: VAA<"AttestMeta">,
-    payer?: UniversalOrCosmwasm
+    payer?: UniversalOrCosmwasm,
   ): AsyncGenerator<CosmwasmUnsignedTransaction> {
     if (!payer) throw new Error("Payer required to submit attestation");
 
@@ -169,7 +169,7 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
         fee: computeFee(this.chain),
         memo: "Wormhole - Submit Attestation",
       },
-      "TokenBridge.submitAttestation"
+      "TokenBridge.submitAttestation",
     );
   }
 
@@ -178,14 +178,14 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
     recipient: ChainAddress,
     token: UniversalOrCosmwasm | "native",
     amount: bigint,
-    payload?: Uint8Array
+    payload?: Uint8Array,
   ): AsyncGenerator<CosmwasmUnsignedTransaction> {
     const nonce = Math.round(Math.random() * 100000);
     const relayerFee = "0";
 
     const recipientChainId = toChainId(recipient.chain);
     const recipientAddress = Buffer.from(
-      recipient.address.toUniversalAddress().toUint8Array()
+      recipient.address.toUniversalAddress().toUint8Array(),
     );
 
     const denom = CosmwasmPlatform.getNativeDenom(this.chain);
@@ -223,14 +223,14 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
           senderAddress,
           this.tokenBridge,
           { deposit_tokens: {} },
-          [{ amount: amount.toString(), denom: tokenAddress }]
+          [{ amount: amount.toString(), denom: tokenAddress }],
         ),
         buildExecuteMsg(
           senderAddress,
           this.tokenBridge,
           mk_initiate_transfer({
             native_token: { denom: tokenAddress },
-          })
+          }),
         ),
       ];
 
@@ -240,7 +240,7 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
           fee: computeFee(this.chain),
           memo: "Wormhole - Initiate Native Transfer",
         },
-        "TokenBridge.transferNative"
+        "TokenBridge.transferNative",
       );
     } else {
       const msgs = [
@@ -256,7 +256,7 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
           this.tokenBridge,
           mk_initiate_transfer({
             token: { contract_addr: tokenAddress },
-          })
+          }),
         ),
       ];
 
@@ -266,7 +266,7 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
           fee: computeFee(this.chain),
           memo: "Wormhole - Initiate Transfer",
         },
-        "TokenBridge.transfer"
+        "TokenBridge.transfer",
       );
     }
     return;
@@ -275,7 +275,7 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
   async *redeem(
     sender: UniversalOrCosmwasm,
     vaa: VAA<"Transfer"> | VAA<"TransferWithPayload">,
-    unwrapNative: boolean = true
+    unwrapNative: boolean = true,
   ): AsyncGenerator<CosmwasmUnsignedTransaction> {
     // TODO: unwrapNative
 
@@ -305,13 +305,13 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
         fee: computeFee(this.chain),
         memo: "Wormhole - Complete Transfer",
       },
-      "TokenBridge.redeem"
+      "TokenBridge.redeem",
     );
     return;
   }
 
   async parseTransactionDetails(
-    txid: TxHash
+    txid: TxHash,
   ): Promise<TokenTransferTransaction[]> {
     throw new Error("Not implemented");
   }
@@ -323,14 +323,14 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
   private createUnsignedTx(
     txReq: CosmwasmTransaction,
     description: string,
-    parallelizable: boolean = false
+    parallelizable: boolean = false,
   ): CosmwasmUnsignedTransaction {
     return new CosmwasmUnsignedTransaction(
       txReq,
       this.network,
       this.chain,
       description,
-      parallelizable
+      parallelizable,
     );
   }
 }

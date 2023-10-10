@@ -63,11 +63,11 @@ const networkChainCosmwasmChainIds = [
 
 export const cosmwasmChainIdToNetworkChainPair = constMap(
   networkChainCosmwasmChainIds,
-  [2, [0, 1]]
+  [2, [0, 1]],
 );
 
 export const cosmwasmNetworkChainToChainId = constMap(
-  networkChainCosmwasmChainIds
+  networkChainCosmwasmChainIds,
 );
 
 const cosmwasmAddressPrefix = [
@@ -145,7 +145,7 @@ const cosmwasmNetworkChainRestUrl = [
 >;
 
 export const cosmwasmNetworkChainToRestUrls = constMap(
-  cosmwasmNetworkChainRestUrl
+  cosmwasmNetworkChainRestUrl,
 );
 
 export type IbcChannel = {

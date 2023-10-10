@@ -6,7 +6,7 @@ export interface Relayer<P extends PlatformName> {
   getRelayerFee(
     sourceChain: Chain,
     destChain: Chain,
-    tokenId: UniversalOrNative<P>
+    tokenId: UniversalOrNative<P>,
   ): Promise<bigint>;
   // TODO: What should this be named?
   // I don't think it should return an UnisgnedTransaction
@@ -20,18 +20,18 @@ export interface Relayer<P extends PlatformName> {
     senderAddress: string,
     recipientChain: Chain,
     recipientAddress: string,
-    overrides?: any
+    overrides?: any,
   ): Promise<any>;
   calculateNativeTokenAmt(
     destChain: Chain,
     tokenId: UniversalOrNative<P>,
     amount: bigint,
-    walletAddress: string
+    walletAddress: string,
   ): Promise<bigint>;
   calculateMaxSwapAmount(
     destChain: Chain,
     tokenId: UniversalOrNative<P>,
-    walletAddress: string
+    walletAddress: string,
   ): Promise<bigint>;
 }
 

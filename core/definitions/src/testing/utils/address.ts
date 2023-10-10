@@ -53,7 +53,7 @@ export function makeChainAddress(chain: ChainName): ChainAddress {
 
 // make a random NativeAddress for a given chain
 export function makeNativeAddress<T extends ChainName | PlatformName>(
-  chain: T
+  chain: T,
 ): NativeAddress<T> {
   let cn: ChainName;
   if (isPlatform(chain)) {

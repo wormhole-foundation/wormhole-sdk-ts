@@ -30,7 +30,7 @@ export class EvmSigner implements Signer {
     private _chain: ChainName,
     private _wallet: ethers.Wallet,
     private nonce: number,
-    private provider: ethers.Provider
+    private provider: ethers.Provider,
   ) {}
   chain(): ChainName {
     return this._chain;
@@ -99,7 +99,7 @@ export class CosmosSigner implements Signer {
   constructor(
     private _chain: ChainName,
     private _signer: SigningCosmWasmClient,
-    private _account: AccountData
+    private _account: AccountData,
   ) {}
 
   chain(): ChainName {
@@ -120,7 +120,7 @@ export class CosmosSigner implements Signer {
         this.address(),
         transaction.msgs,
         transaction.fee,
-        transaction.memo
+        transaction.memo,
       );
       const encoded = TxRaw.encode(txRaw).finish();
 
@@ -142,7 +142,7 @@ export class CosmosEvmSigner implements Signer {
     private _chain: ChainName,
     private _chainId: string,
     private _mnemonic: string,
-    private _rpc: ChainRestAuthApi
+    private _rpc: ChainRestAuthApi,
   ) {
     this.prefix = chainToAddressPrefix(_chain as PlatformToChains<"Cosmwasm">);
     this.key = PrivateKey.fromMnemonic(_mnemonic);

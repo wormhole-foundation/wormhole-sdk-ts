@@ -24,7 +24,7 @@ export const toCosmwasmAddrString = (addr: UniversalOrCosmwasm) =>
 // TODO: do >1 key at a time
 export const searchCosmosLogs = (
   key: string,
-  logs: readonly cosmosLogs.Log[]
+  logs: readonly cosmosLogs.Log[],
 ): string | null => {
   for (const log of logs) {
     for (const ev of log.events) {

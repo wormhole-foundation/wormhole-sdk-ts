@@ -32,17 +32,17 @@ export class MockTokenBridge<P extends PlatformName> implements TokenBridge<P> {
     throw new Error("Method not implemented.");
   }
   isTransferCompleted(
-    vaa: VAA<"Transfer"> | VAA<"TransferWithPayload">
+    vaa: VAA<"Transfer"> | VAA<"TransferWithPayload">,
   ): Promise<boolean> {
     throw new Error("Method not implemented.");
   }
   createAttestation(
-    address: UniversalOrNative<P>
+    address: UniversalOrNative<P>,
   ): AsyncGenerator<UnsignedTransaction> {
     throw new Error("Method not implemented.");
   }
   submitAttestation(
-    vaa: VAA<"AttestMeta">
+    vaa: VAA<"AttestMeta">,
   ): AsyncGenerator<UnsignedTransaction> {
     throw new Error("Method not implemented.");
   }
@@ -51,14 +51,14 @@ export class MockTokenBridge<P extends PlatformName> implements TokenBridge<P> {
     recipient: ChainAddress,
     token: "native" | UniversalOrNative<P>,
     amount: bigint,
-    payload?: Uint8Array | undefined
+    payload?: Uint8Array | undefined,
   ): AsyncGenerator<UnsignedTransaction> {
     throw new Error("Method not implemented.");
   }
   redeem(
     sender: UniversalOrNative<P>,
     vaa: VAA<"Transfer"> | VAA<"TransferWithPayload">,
-    unwrapNative?: boolean | undefined
+    unwrapNative?: boolean | undefined,
   ): AsyncGenerator<UnsignedTransaction> {
     throw new Error("Method not implemented.");
   }

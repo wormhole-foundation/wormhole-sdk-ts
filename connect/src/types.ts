@@ -1,11 +1,11 @@
-import { ChainId, Network } from '@wormhole-foundation/sdk-base';
+import { ChainId, Network } from "@wormhole-foundation/sdk-base";
 import {
   ChainAddress,
   TransactionId,
   WormholeMessageId,
   TokenId,
   ChainsConfig,
-} from '@wormhole-foundation/sdk-definitions';
+} from "@wormhole-foundation/sdk-definitions";
 
 export type WormholeConfig = {
   network: Network;
@@ -15,7 +15,7 @@ export type WormholeConfig = {
 };
 
 export type TokenTransferDetails = {
-  token: TokenId | 'native';
+  token: TokenId | "native";
   amount: bigint;
   from: ChainAddress;
   to: ChainAddress;

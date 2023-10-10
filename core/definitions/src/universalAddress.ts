@@ -16,7 +16,7 @@ export class UniversalAddress implements Address {
       if (!UniversalAddress.isValidAddress(address))
         throw new Error(
           `Invalid Wormhole address, expected ${UniversalAddress.byteSize}-byte ` +
-            `hex string but got ${address}`
+            `hex string but got ${address}`,
         );
 
       this.address = hexByteStringToUint8Array(address);
@@ -26,7 +26,7 @@ export class UniversalAddress implements Address {
   }
 
   toNative<T extends Parameters<typeof toNative>[0]>(
-    platform: T
+    platform: T,
   ): NativeAddress<T> {
     return toNative(platform, this);
   }

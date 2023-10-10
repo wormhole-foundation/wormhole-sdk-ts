@@ -43,14 +43,14 @@ export module Gateway {
   }
 
   export async function getTokenBridge(
-    rpc?: CosmWasmClient
+    rpc?: CosmWasmClient,
   ): Promise<CosmwasmTokenBridge> {
     rpc = rpc ? rpc : await getRpc();
     return CosmwasmPlatform.getTokenBridge(rpc);
   }
 
   export async function getIbcBridge(
-    rpc?: CosmWasmClient
+    rpc?: CosmWasmClient,
   ): Promise<CosmwasmIbcBridge> {
     rpc = rpc ? rpc : await getRpc();
     return CosmwasmPlatform.getIbcBridge(rpc);
@@ -59,7 +59,7 @@ export module Gateway {
   // Get the wrapped version of an asset created on wormchain
   // for a given chain
   export async function getWrappedAsset(
-    token: TokenId
+    token: TokenId,
   ): Promise<CosmwasmAddress> {
     const tb = await getTokenBridge();
     const wrappedAsset = await tb.getWrappedAsset(token);
@@ -67,7 +67,7 @@ export module Gateway {
     // Encode the original address to base58 and add it
     // to the factory address for cw20 style factory token address
     const encodedAddress = bs58.encode(
-      wrappedAsset.toUniversalAddress().toUint8Array()
+      wrappedAsset.toUniversalAddress().toUint8Array(),
     );
     const factoryAddress = `factory/${gatewayAddress()}/${encodedAddress}`;
 
@@ -96,7 +96,7 @@ export module Gateway {
   // https://github.com/wormhole-foundation/wormhole/blob/251e6c4a6478379ff862aed08d835f9022ef4143/cosmwasm/contracts/token-bridge/src/token_address.rs#L12
   export function deriveTokenAddress(
     chain: ChainName,
-    asset: string
+    asset: string,
   ): Uint8Array {
     const tokenId = new Uint8Array(32);
     //const addr = toNative(chain, asset) as CosmwasmAddress;
@@ -110,7 +110,7 @@ export module Gateway {
   // wrapped denom and destination channel
   export async function deriveIbcDenom(
     chain: CosmwasmChainName,
-    denom: string
+    denom: string,
   ): Promise<CosmwasmAddress> {
     const channel = await getDestinationChannel(chain);
     const hashData = Buffer.from(`transfer/${channel}/${denom}`);
@@ -123,7 +123,7 @@ export module Gateway {
     recipient: CosmwasmAddress,
     fee: bigint = 0n,
     payload?: string,
-    nonce?: number
+    nonce?: number,
   ): GatewayTransferWithPayloadMsg | GatewayTransferMsg {
     // Address of recipient is b64 encoded Cosmos bech32 address
     const address = Buffer.from(recipient.toString()).toString("base64");
@@ -151,7 +151,7 @@ export module Gateway {
         (ev) =>
           ev.type === "wasm" &&
           ev.attributes[0].key === "_contract_address" &&
-          ev.attributes[0].value === coreAddress()
+          ev.attributes[0].value === coreAddress(),
       )
       .pop();
 

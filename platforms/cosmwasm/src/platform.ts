@@ -64,7 +64,7 @@ export module CosmwasmPlatform {
 
   export function setConfig(
     network: Network,
-    _conf?: ChainsConfig
+    _conf?: ChainsConfig,
   ): typeof CosmwasmPlatform {
     conf = _conf ? _conf : networkPlatformConfigs(network, platform);
     contracts = new CosmwasmContracts(conf);
@@ -90,7 +90,7 @@ export module CosmwasmPlatform {
   export async function parseTransaction(
     chain: ChainName,
     rpc: CosmWasmClient,
-    txid: TxHash
+    txid: TxHash,
   ): Promise<WormholeMessageId[]> {
     const tx = await rpc.getTx(txid);
     if (!tx) throw new Error("No Transaction found: " + txid);
@@ -98,19 +98,19 @@ export module CosmwasmPlatform {
   }
 
   export async function getTokenBridge(
-    rpc: CosmWasmClient
+    rpc: CosmWasmClient,
   ): Promise<CosmwasmTokenBridge> {
     return await CosmwasmTokenBridge.fromProvider(rpc, contracts);
   }
 
   export async function getIbcBridge(
-    rpc: CosmWasmClient
+    rpc: CosmWasmClient,
   ): Promise<CosmwasmIbcBridge> {
     return await CosmwasmIbcBridge.fromProvider(rpc, contracts);
   }
 
   export const getQueryClient = (
-    rpc: CosmWasmClient
+    rpc: CosmWasmClient,
   ): QueryClient & IbcExtension => {
     // @ts-ignore
     const tmClient: TendermintClient = rpc.getTmClient()!;
@@ -119,7 +119,7 @@ export module CosmwasmPlatform {
 
   // cached channels from config if available
   export const getIbcChannel = (
-    chain: CosmwasmChainName
+    chain: CosmwasmChainName,
   ): IbcChannel | null => {
     return networkChainToChannelId.has(network, chain)
       ? networkChainToChannelId.get(network, chain)!

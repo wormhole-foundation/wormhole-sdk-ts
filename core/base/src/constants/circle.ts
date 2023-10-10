@@ -52,7 +52,7 @@ export const circleAPI = constMap(circleAPIs);
 export const usdcContract = constMap(usdcContracts);
 
 export const isCircleChain = (
-  chain: string | ChainName | CircleChainName
+  chain: string | ChainName | CircleChainName,
 ): chain is CircleChainName => circleChainId.has(chain);
 
 export const isCircleChainId = (chainId: number): chainId is CircleChainId =>
@@ -60,18 +60,18 @@ export const isCircleChainId = (chainId: number): chainId is CircleChainId =>
 
 export const isCircleSupported = (
   network: Network,
-  chain: string | ChainName | CircleChainName
+  chain: string | ChainName | CircleChainName,
 ): network is CircleNetwork => usdcContract.has(network, chain);
 
 export function assertCircleChainId(
-  chainId: number
+  chainId: number,
 ): asserts chainId is CircleChainId {
   if (!isCircleChainId(chainId))
     throw Error(`Unknown Circle chain id: ${chainId}`);
 }
 
 export function assertCircleChain(
-  chain: string
+  chain: string,
 ): asserts chain is CircleChainName {
   if (!isCircleChain(chain)) throw Error(`Unknown Circle chain: ${chain}`);
 }
@@ -83,7 +83,7 @@ export const asCircleChainId = (chainId: number): CircleChainId => {
 };
 
 export const toCircleChainId = (
-  chain: number | bigint | string | Chain
+  chain: number | bigint | string | Chain,
 ): CircleChainId => {
   switch (typeof chain) {
     case "string":
@@ -101,7 +101,7 @@ export const toCircleChainId = (
 };
 
 export const toCircleChainName = (
-  chain: number | string | Chain | bigint
+  chain: number | string | Chain | bigint,
 ): ChainName => {
   switch (typeof chain) {
     case "string":

@@ -11,13 +11,13 @@ import {
   constMap,
   circleAPI,
   PlatformName,
-} from '@wormhole-foundation/sdk-base';
-import { WormholeConfig } from './types';
+} from "@wormhole-foundation/sdk-base";
+import { WormholeConfig } from "./types";
 import {
   getContracts,
   ChainConfig,
   ChainsConfig,
-} from '@wormhole-foundation/sdk-definitions';
+} from "@wormhole-foundation/sdk-definitions";
 
 /*
 TODO:
@@ -48,9 +48,9 @@ function combineConfig(n: Network): ChainsConfig {
 
 // Combine all the configs for each network/chain
 const chainConfigMapping = [
-  ['Mainnet', combineConfig('Mainnet')],
-  ['Testnet', combineConfig('Testnet')],
-  ['Devnet', combineConfig('Devnet')],
+  ["Mainnet", combineConfig("Mainnet")],
+  ["Testnet", combineConfig("Testnet")],
+  ["Devnet", combineConfig("Devnet")],
 ] as const satisfies RoArray<readonly [Network, ChainsConfig]>;
 
 export const chainConfigs = constMap(chainConfigMapping);
@@ -67,23 +67,23 @@ export function networkPlatformConfigs(
 }
 
 const sharedConfig: WormholeConfig = {
-  network: 'Testnet',
+  network: "Testnet",
   //api: 'https://api.testnet.wormholescan.io',
-  api: 'https://api.testnet.wormscan.io',
-  circleAPI: circleAPI('Testnet'),
-  chains: chainConfigs('Testnet'),
+  api: "https://api.testnet.wormscan.io",
+  circleAPI: circleAPI("Testnet"),
+  chains: chainConfigs("Testnet"),
 } as const;
 
 export const CONFIG = {
   Mainnet: {
-    network: 'Mainnet',
-    api: 'https://api.wormholescan.io',
-    circleAPI: circleAPI('Mainnet'),
-    chains: chainConfigs('Mainnet'),
+    network: "Mainnet",
+    api: "https://api.wormholescan.io",
+    circleAPI: circleAPI("Mainnet"),
+    chains: chainConfigs("Mainnet"),
   },
   Testnet: sharedConfig,
   Devnet: sharedConfig,
 } as const satisfies Record<Network, WormholeConfig>;
 
 export const DEFAULT_NETWORK: Network =
-  (process.env.NETWORK as Network) || 'Testnet';
+  (process.env.NETWORK as Network) || "Testnet";
