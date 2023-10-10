@@ -211,7 +211,7 @@ const governancePayloads = [
   governancePayload("Relayer", "UpdateDefaultProvider", 3),
 ] as const satisfies NamedPayloads;
 
-export const governancePayloadDiscriminator = payloadDiscriminator(governancePayloads);
+//export const governancePayloadDiscriminator = payloadDiscriminator(governancePayloads);
 
 // factory registration:
 declare global {
