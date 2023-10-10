@@ -47,7 +47,7 @@ import { TransferStuff, getStuff } from "./helpers";
   const amount = await wh.normalizeAmount(external.chain, token, 0.01);
 
   // Transfer native token from source chain, through gateway, to a cosmos chain
-  //const route1 = await transferIntoCosmos(wh, token, amount, leg1, leg2);
+  // const route1 = await transferIntoCosmos(wh, token, amount, leg1, leg2);
   const route1 = await GatewayTransfer.from(wh, {
     chain: external.chain,
     txid: "0x2ae22f2946ef2754b39d5c438518fd2b63243ab6cb6449ecb5399c5c838f826d",
@@ -76,17 +76,17 @@ import { TransferStuff, getStuff } from "./helpers";
   console.log("Route 2 (Cosmos -> Cosmos): ", route2);
 
   // Transfer Gateway factory token through gateway back to source chain
-  const route3 = await GatewayTransfer.from(wh, {
-    chain: cosmos2.chain,
-    txid: "01211F7C044DF11C0091CCFD77E614E2B73073829CFC15FF10DC0F3DDBA450CE",
-  });
-  // const route3 = await transferOutOfCosmos(
-  //   wh,
-  //   { chain: cosmos2.chain, address: cosmosTokenAddress },
-  //   1000n,
-  //   leg3,
-  //   leg1
-  // );
+  //  const route3 = await GatewayTransfer.from(wh, {
+  //    chain: cosmos2.chain,
+  //    txid: "01211F7C044DF11C0091CCFD77E614E2B73073829CFC15FF10DC0F3DDBA450CE",
+  //  });
+  const route3 = await transferOutOfCosmos(
+    wh,
+    { chain: cosmos1.chain, address: cosmosTokenAddress },
+    1000n,
+    leg2,
+    leg1
+  );
   console.log("Route 3 (Cosmos => !Cosmos): ", route3);
 })();
 
