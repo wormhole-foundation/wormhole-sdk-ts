@@ -17,6 +17,16 @@ declare global {
 }
 
 /*
+Categories:
+
+Bank Tokens
+
+uatom,ibc/...,factory/...
+
+Contract Tokens
+
+*/
+/*
 Cosmos Addresses
 -----
 
@@ -63,6 +73,13 @@ There are at least 5 types of addresses in Cosmos:
     denom =  "avax" 
     denomType = "factory"
 
+  Transfer Denom
+    ex: transfer/channel-486/factory/wormhole1ctnjk7an90lz5wjfvr3cf6x984a8cjnv8dpmztmlpcq4xteaa2xs9pwmzk/6vxRV62YN1CTZeQM5ZfvCZDCVA4nLhtZcLxziYa7xYqb
+
+    address = [0x...] 32 bytes
+    domain = "wormhole"
+    denom = "6vxRV62YN1CTZeQM5ZfvCZDCVA4nLhtZcLxziYa7xYqb"
+    denomType = "transfer/channel-486/factory"
 */
 
 // Factory type addresses may have hex or b64 or bech32 encoded addresses
@@ -105,21 +122,26 @@ export class CosmwasmAddress implements Address {
         this.denomType = "native";
         this.domain = nativeDenomToChain
           .get(CosmwasmPlatform.network, address)
-          ?.pop();
         return;
       }
 
       if (address.indexOf("/") !== -1) {
-        // A denom address like "ibc/..." or "factory/..."
+        // A denom address like "ibc/..." or "factory/..." or "transfer/channel-${id}/factory/..."
         const chunks = address.split("/");
 
-        const { data, prefix } = tryDecode(chunks[1]);
-        this.address = data;
-        this.domain = prefix;
-
-        this.denomType = chunks[0];
-
-        if (chunks.length === 3) this.denom = chunks[2];
+        // It's a `transfer/...` denom
+        if (chunks.length >= 3) {
+          // Address will be second from the last
+          const { data, prefix } = tryDecode(chunks[chunks.length - 2]);
+          this.address = data;
+          this.domain = prefix;
+          this.denom = chunks[chunks.length - 1];
+          this.denomType = chunks.slice(0, chunks.length - 2).join("/");
+        } else {
+          const { data } = tryDecode(chunks[1]);
+          this.address = data;
+          this.denomType = chunks[0];
+        }
       } else {
         // should be a contract or account address by now
         if (!CosmwasmAddress.isValidAddress(address))
@@ -158,7 +180,9 @@ export class CosmwasmAddress implements Address {
           .toUpperCase()}`;
       }
 
-      // factory/address/denom
+      console.log(this);
+
+      // ?/factory/address/denom
       return `${this.denomType}/${toBech32(this.domain!, this.address)}/${
         this.denom
       }`;

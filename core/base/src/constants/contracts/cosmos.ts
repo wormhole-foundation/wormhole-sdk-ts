@@ -4,14 +4,19 @@ import { Network } from '../networks';
 
 export const gatewayContracts = [
   [
-    'Mainnet',
-    'wormhole14ejqjyq8um4p3xfqj74yld5waqljf88fz25yxnma0cngspxe3les00fpjx',
+
+    "Mainnet",
+   [
+    ["Wormchain", "wormhole14ejqjyq8um4p3xfqj74yld5waqljf88fz25yxnma0cngspxe3les00fpjx"],
+   ]
   ],
   [
-    'Testnet',
-    'wormhole1ctnjk7an90lz5wjfvr3cf6x984a8cjnv8dpmztmlpcq4xteaa2xs9pwmzk',
+    "Testnet",
+    [
+      ["Wormchain", "wormhole1ctnjk7an90lz5wjfvr3cf6x984a8cjnv8dpmztmlpcq4xteaa2xs9pwmzk" ]
+    ]
   ],
-] as const satisfies RoArray<readonly [Network, string]>;
+] as const satisfies RoArray<readonly [Network, RoArray<readonly [ChainName, string]>]>;
 
 export const translatorContracts = [
   [

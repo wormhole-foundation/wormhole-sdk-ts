@@ -141,7 +141,7 @@ type SplitAndReorderKeyAndValueColums<A extends CartesianSet, S extends Shape> =
 //we encode leaf values as double singletons to distinguish them from mapping entries and arrays
 //  of leaf values (in case the mapping isn't injective (i.e. a single key has multiple values
 //  associated with it))
-export type LeafValue = readonly [readonly [unknown]];
+type LeafValue = readonly [readonly [unknown]];
 
 //returns the mapping with unwrapped values if all leaves are indeed singletons
 //  otherwise returns false
@@ -214,26 +214,27 @@ const toMapping = <
     ? [range(crr[0].length - 1), [crr[0].length - 1]]
     : shape.map(ind => typeof ind === "number" ? [ind] : ind);
 
+  // store reference to leaf object to unwrap values if all leaves are singletons
   let leafObjects = [] as any[];
-  //if our leafs are arrays to begin with then we should not strip them
-  let allSingletons = definedShape[1].length === 1;
-  const buildMapping = (
+  let allSingletons = true;
+  const buildMappingRecursively = (
     keyCartesianSet: CartesianSet<MappableKey>,
-    values: RoArray
+    values: RoArray<RoArray>
   ): any => {
     const distinctKeys = Array.from(new Set<MappableKey>(keyCartesianSet[0]).values());
     const keyRows = new Map<MappableKey, number[]>(distinctKeys.map(key => [key, []]));
     for (const [i, key] of keyCartesianSet[0].entries())
       keyRows.get(key)!.push(i);
 
+    // termination case
     if (keyCartesianSet.length === 1) {
       const ret = Object.fromEntries(distinctKeys.map(key =>
-        [key, keyRows.get(key)!.flatMap(i => values[i])]
+        [key, keyRows.get(key)!.map(i => values[i].length === 1 ? values[i][0] : values[i])]
       ));
 
       if (allSingletons) {
         for (const valRow of keyRows.values())
-          if (valRow.length !== 1) {
+          if (valRow.length > 1) {
             allSingletons = false;
             return ret;
           }
@@ -248,7 +249,10 @@ const toMapping = <
       const rows = keyRows.get(key)!;
       const keyCartesianSubset = zip(rows.map(i => droppedKeyCol[i]));
       const valuesSubset = rows.map(i => values[i]);
-      return [key, buildMapping(keyCartesianSubset as CartesianSet<MappableKey>, valuesSubset)];
+      return [
+        key,
+        buildMappingRecursively(keyCartesianSubset as CartesianSet<MappableKey>, valuesSubset)
+      ];
     }));
   };
 
@@ -276,7 +280,10 @@ const toMapping = <
         throw new Error(`Invalid key: ${key} in ${keyCol}`);
 
 
-  const ret = buildMapping(keyCartesianSet as CartesianSet<MappableKey>, zip(leafValues));
+  const ret = buildMappingRecursively(
+    keyCartesianSet as CartesianSet<MappableKey>,
+    zip(leafValues)
+  );
 
   if (allSingletons)
     for (const leafObj of leafObjects)

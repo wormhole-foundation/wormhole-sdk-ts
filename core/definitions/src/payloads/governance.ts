@@ -15,7 +15,7 @@ import {
   universalAddressItem,
   guardianSetItem,
 } from "../layout-items";
-import { registerPayloadType } from "../vaa";
+import { NamedPayloads, payloadDiscriminator, registerPayloadType } from "../vaa";
 
 //One thing that's not captures by the payload itself is the fact that governance VAAs should
 //  always have Solana as the emitter chain and address bytes32(4) as the emitter address.
@@ -209,7 +209,9 @@ const governancePayloads = [
   governancePayload("Relayer", "RegisterChain", 1),
   governancePayload("Relayer", "UpgradeContract", 2),
   governancePayload("Relayer", "UpdateDefaultProvider", 3),
-] as const satisfies RoArray<readonly [string, Layout]>;
+] as const satisfies NamedPayloads;
+
+export const governancePayloadDiscriminator = payloadDiscriminator(governancePayloads);
 
 // factory registration:
 declare global {

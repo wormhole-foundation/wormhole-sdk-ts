@@ -10,7 +10,7 @@ import {
   sequenceItem,
   amountItem,
 } from "../layout-items";
-import { registerPayloadType } from "../vaa";
+import { NamedPayloads, payloadDiscriminator, registerPayloadType } from "../vaa";
 
 const encodedExecutionInfoItem = {
   binary: "object",
@@ -85,7 +85,9 @@ const relayerPayloads = [
       { name: "redeliveryHash", binary: "bytes", size: 32 },
     ],
   ],
-] as const satisfies readonly (readonly [string, Layout])[];
+] as const satisfies NamedPayloads;
+
+export const relayerPayloadDiscriminator = payloadDiscriminator(relayerPayloads);
 
 // factory registration:
 

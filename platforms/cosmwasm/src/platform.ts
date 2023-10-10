@@ -1,34 +1,32 @@
-import {
-  IbcExtension,
-  QueryClient,
-  logs as cosmosLogs,
-  setupIbcExtension,
-} from "@cosmjs/stargate";
 import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
+import { IbcExtension, QueryClient, setupIbcExtension } from "@cosmjs/stargate";
 import { TendermintClient } from "@cosmjs/tendermint-rpc";
 
 import {
   ChainName,
+  ChainsConfig,
+  DEFAULT_NETWORK,
+  Network,
+  Platform,
+  PlatformToChains,
   TxHash,
   WormholeMessageId,
-  ChainsConfig,
   networkPlatformConfigs,
-  Network,
-  DEFAULT_NETWORK,
-  Platform,
-  UniversalAddress,
-  PlatformToChains,
 } from "@wormhole-foundation/connect-sdk";
 
-import { CosmwasmContracts } from "./contracts";
 import { CosmwasmChain } from "./chain";
-import { CosmwasmUtils } from "./platformUtils";
-import { chainToNativeDenoms } from "./constants";
-import { searchCosmosLogs } from "./types";
+import {
+  IbcChannel,
+  chainToNativeDenoms,
+  networkChainToChannelId,
+} from "./constants";
+import { CosmwasmContracts } from "./contracts";
 import { Gateway } from "./gateway";
+import { CosmwasmUtils } from "./platformUtils";
 
-import { CosmwasmTokenBridge } from "./protocols/tokenBridge";
 import { CosmwasmIbcBridge } from "./protocols/ibc";
+import { CosmwasmTokenBridge } from "./protocols/tokenBridge";
+import { CosmwasmChainName } from "./types";
 
 var _: Platform<"Cosmwasm"> = CosmwasmPlatform;
 /**
@@ -59,10 +57,9 @@ export module CosmwasmPlatform {
   export const {
     getRpc: getGatewayRpc,
     getWrappedAsset: getGatewayWrappedAsset,
-    address: gatewayAddress,
+    gatewayAddress,
     getDestinationChannel,
     getSourceChannel,
-    ibcTransferPending,
   } = Gateway;
 
   export function setConfig(
@@ -96,27 +93,8 @@ export module CosmwasmPlatform {
     txid: TxHash
   ): Promise<WormholeMessageId[]> {
     const tx = await rpc.getTx(txid);
-    if (!tx) throw new Error("tx not found");
-
-    // parse logs emitted for the tx execution
-    const logs = cosmosLogs.parseRawLog(tx.rawLog);
-
-    // extract information wormhole contract logs
-    // - message.sequence: the vaa's sequence number
-    // - message.sender: the vaa's emitter address
-    const sequence = searchCosmosLogs("message.sequence", logs);
-    if (!sequence) throw new Error("sequence not found");
-
-    const emitterAddress = searchCosmosLogs("message.sender", logs);
-    if (!emitterAddress) throw new Error("emitter not found");
-
-    return [
-      {
-        chain: chain,
-        sequence: BigInt(sequence),
-        emitter: new UniversalAddress(emitterAddress),
-      },
-    ];
+    if (!tx) throw new Error("No Transaction found: " + txid);
+    return [Gateway.getWormholeMessage(tx!)];
   }
 
   export async function getTokenBridge(
@@ -137,5 +115,14 @@ export module CosmwasmPlatform {
     // @ts-ignore
     const tmClient: TendermintClient = rpc.getTmClient()!;
     return QueryClient.withExtensions(tmClient, setupIbcExtension);
+  };
+
+  // cached channels from config if available
+  export const getIbcChannel = (
+    chain: CosmwasmChainName
+  ): IbcChannel | null => {
+    return networkChainToChannelId.has(network, chain)
+      ? networkChainToChannelId.get(network, chain)!
+      : null;
   };
 }

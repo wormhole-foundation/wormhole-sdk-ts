@@ -115,6 +115,7 @@ export class CosmosSigner implements Signer {
     for (const txn of tx) {
       const { description, transaction } = txn as CosmwasmUnsignedTransaction;
       console.log(`Signing: ${description} for ${this.address()}`);
+
       const txRaw = await this._signer.sign(
         this.address(),
         transaction.msgs,
@@ -123,10 +124,10 @@ export class CosmosSigner implements Signer {
       );
       const encoded = TxRaw.encode(txRaw).finish();
 
-      console.log(
-        "Encoded: ",
-        encodeURIComponent(Buffer.from(encoded).toString("base64"))
-      );
+      // console.log(
+      //   "Encoded: ",
+      //   encodeURIComponent(Buffer.from(encoded).toString("base64"))
+      // );
       signed.push(encoded);
     }
 

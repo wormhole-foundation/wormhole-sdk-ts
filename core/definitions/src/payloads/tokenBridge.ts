@@ -7,7 +7,7 @@ import {
   ShallowMapping,
 } from "@wormhole-foundation/sdk-base";
 import { payloadIdItem, chainItem, universalAddressItem, amountItem } from "../layout-items";
-import { registerPayloadType } from "../vaa";
+import { NamedPayloads, payloadDiscriminator, registerPayloadType } from "../vaa";
 
 const fixedLengthStringItem = {
   binary: "bytes",
@@ -77,7 +77,9 @@ export const tokenBridgePayloads = [
     "TransferWithPayload",
     transferWithPayloadLayout({ binary: "bytes" }),
   ],
-] as const satisfies readonly (readonly [string, Layout])[];
+] as const satisfies NamedPayloads;
+
+export const tokenBridgePayloadDiscriminator = payloadDiscriminator(tokenBridgePayloads);
 
 // factory registration:
 

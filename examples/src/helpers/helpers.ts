@@ -26,32 +26,32 @@ import {
 import { CosmosEvmSigner, CosmosSigner, EvmSigner, SolSigner } from "./signers";
 import { ChainRestAuthApi } from "@injectivelabs/sdk-ts";
 
-import {
-  cosmosAminoConverters,
-  cosmwasmAminoConverters,
-  cosmwasmProtoRegistry,
-  ibcAminoConverters,
-  seiprotocolProtoRegistry,
-  seiprotocolAminoConverters,
-} from "@sei-js/proto";
-
-export const createSeiRegistry = (): Registry => {
-  return new Registry([
-    ...defaultRegistryTypes,
-    ...cosmwasmProtoRegistry,
-    ...seiprotocolProtoRegistry,
-  ]);
-};
-
-export const createSeiAminoTypes = (): AminoTypes => {
-  const types = {
-    ...cosmosAminoConverters,
-    ...cosmwasmAminoConverters,
-    ...ibcAminoConverters,
-    ...seiprotocolAminoConverters,
-  };
-  return new AminoTypes(types);
-};
+// import {
+//   cosmosAminoConverters,
+//   cosmwasmAminoConverters,
+//   cosmwasmProtoRegistry,
+//   ibcAminoConverters,
+//   seiprotocolProtoRegistry,
+//   seiprotocolAminoConverters,
+// } from "@sei-js/proto";
+//
+// export const createSeiRegistry = (): Registry => {
+//   return new Registry([
+//     ...defaultRegistryTypes,
+//     ...cosmwasmProtoRegistry,
+//     ...seiprotocolProtoRegistry,
+//   ]);
+// };
+//
+// export const createSeiAminoTypes = (): AminoTypes => {
+//   const types = {
+//     ...cosmosAminoConverters,
+//     ...cosmwasmAminoConverters,
+//     ...ibcAminoConverters,
+//     ...seiprotocolAminoConverters,
+//   };
+//   return new AminoTypes(types);
+// };
 
 // read in from `.env`
 require("dotenv").config();
@@ -125,18 +125,19 @@ export async function getCosmosSigner(
     return new CosmosEvmSigner(chain.chain, chainId, mnemonic, restRpc);
   }
 
-  let options = {};
+  let options = undefined;
   if (chain.chain === "Sei") {
-    options = {
-      registry: createSeiRegistry(),
-      aminoTypes: createSeiAminoTypes(),
-    };
+    // options = {
+    //   registry: createSeiRegistry(),
+    //   aminoTypes: createSeiAminoTypes(),
+    // };
   }
 
   // Otherwise use the default signer
   const signer = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
     prefix: chainToAddressPrefix(chain.chain as PlatformToChains<"Cosmwasm">),
   });
+
   const acct = (await signer.getAccounts())[0];
   const signingClient = await SigningCosmWasmClient.connectWithSigner(
     rpcAddress(chain.platform.network, chain.chain)!,
