@@ -4,7 +4,7 @@ import {
   PlatformName,
   chainToPlatform,
   ChainToPlatform,
-} from '@wormhole-foundation/sdk-base';
+} from "@wormhole-foundation/sdk-base";
 
 //TODO BRRRR circular include!!
 //I have yet to figure out how to get the equivalent of a forward declaration to work (without
@@ -14,7 +14,7 @@ import {
 //I could also create an interface via `interface IUnverisalAddress {}` but that seems like an
 //  even worse solution, as is just throwing everything into this file here and just brushing
 //  things under the rug by not separating them out.
-import { UniversalAddress } from './universalAddress';
+import { UniversalAddress } from "./universalAddress";
 
 export interface Address {
   //unwrap returns the underlying native address type, e.g.:

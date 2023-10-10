@@ -1,4 +1,4 @@
-import { PlatformName } from '@wormhole-foundation/sdk-base';
+import { PlatformName } from "@wormhole-foundation/sdk-base";
 import {
   GatewayTransferMsg,
   GatewayTransferWithPayloadMsg,
@@ -13,11 +13,11 @@ import {
   isGatewayTransferWithPayloadMsg,
   isIbcMessageId,
   isTransactionIdentifier,
-} from '@wormhole-foundation/sdk-definitions';
+} from "@wormhole-foundation/sdk-definitions";
 
 export async function isVaaRedeemed(
   tb: TokenBridge<PlatformName>,
-  vaas: (VAA<'Transfer'> | VAA<'TransferWithPayload'>)[],
+  vaas: (VAA<"Transfer"> | VAA<"TransferWithPayload">)[],
 ) {
   const redeemed = await Promise.all(
     vaas.map((v) => {
@@ -28,7 +28,7 @@ export async function isVaaRedeemed(
 }
 
 export async function fetchIbcXfer(
-  wcIbc: IbcBridge<'Cosmwasm'>,
+  wcIbc: IbcBridge<"Cosmwasm">,
   msg:
     | TxHash
     | TransactionId
@@ -41,7 +41,7 @@ export async function fetchIbcXfer(
     try {
       return await wcIbc.lookupTransferFromTx(msg.txid);
     } catch (e) {
-      console.error("Failed to lookup transfer from tx: ", e)
+      console.error("Failed to lookup transfer from tx: ", e);
     }
     //
   } else if (
@@ -51,13 +51,13 @@ export async function fetchIbcXfer(
     try {
       return await wcIbc.lookupTransferFromMsg(msg);
     } catch (e) {
-      console.error("Failed to lookup transfer from message: ", e)
+      console.error("Failed to lookup transfer from message: ", e);
     }
   } else if (isIbcMessageId(msg)) {
     try {
       return await wcIbc.lookupTransferFromIbcMsgId(msg);
     } catch (e) {
-      console.error("Failed to lookup transfer from sequence: ", e)
+      console.error("Failed to lookup transfer from sequence: ", e);
     }
   }
 

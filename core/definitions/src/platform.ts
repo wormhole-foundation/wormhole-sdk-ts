@@ -2,12 +2,12 @@ import {
   PlatformName,
   ChainName,
   Network,
-} from '@wormhole-foundation/sdk-base';
-import { ChainContext } from './chain';
-import { RpcConnection } from './rpc';
-import { ChainsConfig, TokenId, TxHash } from './types';
-import { WormholeMessageId } from './attestation';
-import { SignedTx } from './types';
+} from "@wormhole-foundation/sdk-base";
+import { ChainContext } from "./chain";
+import { RpcConnection } from "./rpc";
+import { ChainsConfig, TokenId, TxHash } from "./types";
+import { WormholeMessageId } from "./attestation";
+import { SignedTx } from "./types";
 
 export interface PlatformUtils<P extends PlatformName> {
   nativeTokenId(chain: ChainName): TokenId;
@@ -20,13 +20,13 @@ export interface PlatformUtils<P extends PlatformName> {
   getDecimals(
     chain: ChainName,
     rpc: RpcConnection<P>,
-    token: TokenId | 'native',
+    token: TokenId | "native",
   ): Promise<bigint>;
   getBalance(
     chain: ChainName,
     rpc: RpcConnection<P>,
     walletAddr: string,
-    token: TokenId | 'native',
+    token: TokenId | "native",
   ): Promise<bigint | null>;
   getCurrentBlock(rpc: RpcConnection<P>): Promise<number>;
 

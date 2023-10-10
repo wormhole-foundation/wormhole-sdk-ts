@@ -1,11 +1,10 @@
-import { ChainName } from './chains';
-import { RoArray, column, constMap } from '../utils';
+import { ChainName } from "./chains";
+import { RoArray, column, constMap } from "../utils";
 
 const platformAndChainsEntries = [
   [
-    'Evm',
+    "Evm",
     [
-
       "Acala",
       "Arbitrum",
       "Aurora",
@@ -27,11 +26,10 @@ const platformAndChainsEntries = [
       "Sepolia",
     ],
   ],
-  ['Solana', ['Solana', 'Pythnet']],
+  ["Solana", ["Solana", "Pythnet"]],
   [
-    'Cosmwasm',
+    "Cosmwasm",
     [
-
       "Cosmoshub",
       "Evmos",
       "Injective",
@@ -44,11 +42,11 @@ const platformAndChainsEntries = [
       "Xpla",
     ],
   ],
-  ['Btc', ['Btc']],
-  ['Algorand', ['Algorand']],
-  ['Sui', ['Sui']],
-  ['Aptos', ['Aptos']],
-  ['Near', ['Near']],
+  ["Btc", ["Btc"]],
+  ["Algorand", ["Algorand"]],
+  ["Sui", ["Sui"]],
+  ["Aptos", ["Aptos"]],
+  ["Near", ["Near"]],
 ] as const satisfies RoArray<readonly [string, RoArray<ChainName>]>;
 
 export const platforms = column(platformAndChainsEntries, 0);

@@ -2,9 +2,9 @@ import {
   ChainName,
   Network,
   PlatformName,
-} from '@wormhole-foundation/sdk-base';
-import { ChainContext, Platform } from '../..';
-import { mockPlatformFactory } from './platform';
+} from "@wormhole-foundation/sdk-base";
+import { ChainContext, Platform } from "../..";
+import { mockPlatformFactory } from "./platform";
 
 export function chainFactory<P extends PlatformName>(
   network: Network,

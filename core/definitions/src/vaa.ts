@@ -11,7 +11,7 @@ import {
   addFixedValues,
   CustomConversion,
   LayoutItemToType,
-} from '@wormhole-foundation/sdk-base';
+} from "@wormhole-foundation/sdk-base";
 
 import {
   chainItem,
@@ -19,13 +19,15 @@ import {
   signatureItem,
   sequenceItem,
   guardianSetItem,
-} from './layout-items';
+} from "./layout-items";
 
-import { keccak256 } from './utils';
+import { keccak256 } from "./utils";
 
 export type NamedPayloads = readonly (readonly [string, Layout])[];
 
-export const payloadDiscriminator = <NP extends NamedPayloads>(namedPayloads: NP) => {
+export const payloadDiscriminator = <NP extends NamedPayloads>(
+  namedPayloads: NP,
+) => {
   const literals = column(namedPayloads, 0);
   const layouts = column(namedPayloads, 1);
   const discriminator = layoutDiscriminator(layouts);
@@ -34,7 +36,7 @@ export const payloadDiscriminator = <NP extends NamedPayloads>(namedPayloads: NP
     const index = discriminator(data);
     return index === null ? null : literals[index];
   };
-}
+};
 
 const uint8ArrayConversion = {
   to: (val: Uint8Array) => val,
@@ -66,9 +68,9 @@ type DescriptionOf<PL extends PayloadLiteral> =
 type DescriptionToPayloadItem<D extends DescriptionOf<PayloadLiteral>> = [
   D,
 ] extends [CustomConversion<Uint8Array, any>]
-  ? { name: 'payload'; binary: 'bytes'; custom: D }
+  ? { name: "payload"; binary: "bytes"; custom: D }
   : [D] extends [Layout]
-  ? { name: 'payload'; binary: 'object'; layout: D }
+  ? { name: "payload"; binary: "object"; layout: D }
   : never;
 
 export type PayloadLiteralToPayloadType<PL extends PayloadLiteral> =
@@ -78,34 +80,34 @@ export type PayloadLiteralToPayloadType<PL extends PayloadLiteral> =
     : never;
 
 const guardianSignatureLayout = [
-  { name: 'guardianIndex', binary: 'uint', size: 1 },
-  { name: 'signature', ...signatureItem },
+  { name: "guardianIndex", binary: "uint", size: 1 },
+  { name: "signature", ...signatureItem },
 ] as const satisfies Layout;
 
 const headerLayout = [
-  { name: 'version', binary: 'uint', size: 1, custom: 1, omit: true },
-  { name: 'guardianSet', ...guardianSetItem },
+  { name: "version", binary: "uint", size: 1, custom: 1, omit: true },
+  { name: "guardianSet", ...guardianSetItem },
   {
-    name: 'signatures',
-    binary: 'array',
+    name: "signatures",
+    binary: "array",
     lengthSize: 1,
     layout: guardianSignatureLayout,
   },
 ] as const satisfies Layout;
 
 const envelopeLayout = [
-  { name: 'timestamp', binary: 'uint', size: 4 },
-  { name: 'nonce', binary: 'uint', size: 4 },
-  { name: 'emitterChain', ...chainItem() },
-  { name: 'emitterAddress', ...universalAddressItem },
-  { name: 'sequence', ...sequenceItem },
-  { name: 'consistencyLevel', binary: 'uint', size: 1 },
+  { name: "timestamp", binary: "uint", size: 4 },
+  { name: "nonce", binary: "uint", size: 4 },
+  { name: "emitterChain", ...chainItem() },
+  { name: "emitterAddress", ...universalAddressItem },
+  { name: "sequence", ...sequenceItem },
+  { name: "consistencyLevel", binary: "uint", size: 1 },
 ] as const satisfies Layout;
 
 const baseLayout = [...headerLayout, ...envelopeLayout] as const;
 type BaseLayout = LayoutToType<typeof baseLayout>;
 
-export interface VAA<PL extends PayloadLiteral = 'Uint8Array'>
+export interface VAA<PL extends PayloadLiteral = "Uint8Array">
   extends BaseLayout {
   readonly payloadLiteral: PL;
   readonly payload: PayloadLiteralToPayloadType<PL>;
@@ -143,10 +145,10 @@ const descriptionToPayloadItem = <PL extends PayloadLiteral>(
   description: DescriptionOf<PL>,
 ): DescriptionToPayloadItem<typeof description> =>
   (isCustomConversion(description)
-    ? ({ name: 'payload', binary: 'bytes', custom: description } as const)
+    ? ({ name: "payload", binary: "bytes", custom: description } as const)
     : ({
-        name: 'payload',
-        binary: 'object',
+        name: "payload",
+        binary: "object",
         layout: description as Layout,
       } as const)) as DescriptionToPayloadItem<
     DescriptionOf<PL>
@@ -158,7 +160,7 @@ const bodyLayout = <PL extends PayloadLiteral>(payloadLiteral: PL) =>
     descriptionToPayloadItem(getPayloadDescription(payloadLiteral)),
   ] as const satisfies Layout;
 
-export const create = <PL extends PayloadLiteral = 'Uint8Array'>(
+export const create = <PL extends PayloadLiteral = "Uint8Array">(
   payloadLiteral: PL,
   vaaData: LayoutToType<
     DynamicItemsOfLayout<
@@ -185,7 +187,7 @@ export const create = <PL extends PayloadLiteral = 'Uint8Array'>(
 
 export function registerPayloadType<PL extends PayloadLiteral>(
   payloadLiteral: PL,
-  payloadSerDe: Description
+  payloadSerDe: Description,
 ) {
   if (payloadFactory.has(payloadLiteral))
     throw new Error(`Payload type ${payloadLiteral} already registered`);
@@ -207,7 +209,7 @@ export function deserialize<PL extends PayloadLiteral>(
   payloadLiteral: PL,
   data: Uint8Array | string,
 ): VAA<PL> {
-  if (typeof data === 'string') data = hexByteStringToUint8Array(data);
+  if (typeof data === "string") data = hexByteStringToUint8Array(data);
 
   const [header, bodyOffset] = deserializeLayout(headerLayout, data, 0, false);
 
@@ -219,7 +221,7 @@ export function deserialize<PL extends PayloadLiteral>(
       header.signatures[i - 1].guardianIndex
     )
       throw new Error(
-        'Guardian signatures must be in ascending order of guardian set index',
+        "Guardian signatures must be in ascending order of guardian set index",
       );
 
   const body = deserializeLayout(bodyLayout(payloadLiteral), data, bodyOffset);
@@ -243,10 +245,10 @@ export const deserializePayload = <PL extends PayloadLiteral>(
   data: Uint8Array | string,
 ): PayloadLiteralToPayloadType<PL> => {
   const description = getPayloadDescription(payloadLiteral);
-  data = typeof data === 'string' ? hexByteStringToUint8Array(data) : data;
+  data = typeof data === "string" ? hexByteStringToUint8Array(data) : data;
   return isCustomConversion(description)
     ? description.to(data)
     : deserializeLayout(description as Layout, data);
 };
 
-payloadFactory.set('Uint8Array', uint8ArrayConversion);
+payloadFactory.set("Uint8Array", uint8ArrayConversion);

@@ -3,10 +3,10 @@ import {
   ExplorerSettings,
   PlatformName,
   isChain,
-} from '@wormhole-foundation/sdk-base';
-import { ChainAddress, toNative } from './address';
-import { Contracts } from './contracts';
-import { UnsignedTransaction } from './unsignedTransaction';
+} from "@wormhole-foundation/sdk-base";
+import { ChainAddress, toNative } from "./address";
+import { Contracts } from "./contracts";
+import { UnsignedTransaction } from "./unsignedTransaction";
 
 export type TxHash = string;
 export type SequenceId = bigint;
@@ -28,9 +28,9 @@ export interface Signer {
 }
 export function isSigner(thing: Signer | any): thing is Signer {
   return (
-    typeof (<Signer>thing).chain === 'function' &&
-    typeof (<Signer>thing).address == 'function' &&
-    typeof (<Signer>thing).sign === 'function'
+    typeof (<Signer>thing).chain === "function" &&
+    typeof (<Signer>thing).address == "function" &&
+    typeof (<Signer>thing).sign === "function"
   );
 }
 

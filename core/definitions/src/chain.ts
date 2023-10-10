@@ -1,22 +1,22 @@
-import { ChainName, PlatformName } from '@wormhole-foundation/sdk-base';
+import { ChainName, PlatformName } from "@wormhole-foundation/sdk-base";
 
-import { Platform } from './platform';
+import { Platform } from "./platform";
 import {
   AutomaticTokenBridge,
   TokenBridge,
   supportsAutomaticTokenBridge,
   supportsTokenBridge,
-} from './protocols/tokenBridge';
+} from "./protocols/tokenBridge";
 import {
   supportsAutomaticCircleBridge,
   supportsCircleBridge,
   AutomaticCircleBridge,
   CircleBridge,
-} from './protocols/cctp';
-import { supportsIbcBridge, IbcBridge } from './protocols/ibc';
-import { RpcConnection } from './rpc';
-import { SignedTx, TokenId } from './types';
-import { WormholeMessageId } from './attestation';
+} from "./protocols/cctp";
+import { supportsIbcBridge, IbcBridge } from "./protocols/ibc";
+import { RpcConnection } from "./rpc";
+import { SignedTx, TokenId } from "./types";
+import { WormholeMessageId } from "./attestation";
 
 export abstract class ChainContext<P extends PlatformName> {
   // Cached Protocol clients
@@ -37,14 +37,14 @@ export abstract class ChainContext<P extends PlatformName> {
   }
 
   // Get the number of decimals for a token
-  async getDecimals(token: TokenId | 'native'): Promise<bigint> {
+  async getDecimals(token: TokenId | "native"): Promise<bigint> {
     return this.platform.getDecimals(this.chain, this.getRpc(), token);
   }
 
   // Get the balance of a token for a given address
   async getBalance(
     walletAddr: string,
-    token: TokenId | 'native',
+    token: TokenId | "native",
   ): Promise<bigint | null> {
     return this.platform.getBalance(
       this.chain,
@@ -80,7 +80,7 @@ export abstract class ChainContext<P extends PlatformName> {
   supportsTokenBridge = () => supportsTokenBridge<P>(this.platform);
   async getTokenBridge(): Promise<TokenBridge<P>> {
     if (!supportsTokenBridge<P>(this.platform))
-      throw new Error('Platform does not support TokenBridge');
+      throw new Error("Platform does not support TokenBridge");
 
     this.tokenBridge = this.tokenBridge
       ? this.tokenBridge
@@ -94,7 +94,7 @@ export abstract class ChainContext<P extends PlatformName> {
     supportsAutomaticTokenBridge<P>(this.platform);
   async getAutomaticTokenBridge(): Promise<AutomaticTokenBridge<P>> {
     if (!supportsAutomaticTokenBridge<P>(this.platform))
-      throw new Error('Platform does not support AutomaticTokenBridge');
+      throw new Error("Platform does not support AutomaticTokenBridge");
 
     this.autoTokenBridge = this.autoTokenBridge
       ? this.autoTokenBridge
@@ -106,7 +106,7 @@ export abstract class ChainContext<P extends PlatformName> {
   supportsCircleBridge = () => supportsCircleBridge<P>(this.platform);
   async getCircleBridge(): Promise<CircleBridge<P>> {
     if (!supportsCircleBridge<P>(this.platform))
-      throw new Error('Platform does not support CircleBridge');
+      throw new Error("Platform does not support CircleBridge");
 
     this.circleBridge = this.circleBridge
       ? this.circleBridge
@@ -119,7 +119,7 @@ export abstract class ChainContext<P extends PlatformName> {
     supportsAutomaticCircleBridge<P>(this.platform);
   async getAutomaticCircleBridge(): Promise<AutomaticCircleBridge<P>> {
     if (!supportsAutomaticCircleBridge<P>(this.platform))
-      throw new Error('Platform does not support AutomaticCircleBridge');
+      throw new Error("Platform does not support AutomaticCircleBridge");
 
     this.autoCircleBridge = this.autoCircleBridge
       ? this.autoCircleBridge
@@ -131,7 +131,7 @@ export abstract class ChainContext<P extends PlatformName> {
   supportsIbcBridge = () => supportsIbcBridge<P>(this.platform);
   async getIbcBridge(): Promise<IbcBridge<P>> {
     if (!supportsIbcBridge<P>(this.platform))
-      throw new Error('Platform does not support AutomaticCircleBridge');
+      throw new Error("Platform does not support AutomaticCircleBridge");
 
     this.ibcBridge = this.ibcBridge
       ? this.ibcBridge

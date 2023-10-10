@@ -47,12 +47,12 @@ export type IbcMessageId = {
   chain: ChainName;
   srcPort: string;
   srcChannel: string;
-  dstPort: string; 
+  dstPort: string;
   dstChannel: string;
   sequence: number;
 };
 export function isIbcMessageId(
-  thing: IbcMessageId | any
+  thing: IbcMessageId | any,
 ): thing is IbcMessageId {
   return (
     (<IbcMessageId>thing).dstChannel !== undefined &&

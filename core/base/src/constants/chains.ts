@@ -1,5 +1,5 @@
-import { zip } from '../utils/array';
-import { constMap } from '../utils/mapping';
+import { zip } from "../utils/array";
+import { constMap } from "../utils/mapping";
 
 //Typescript being the absolute mess that it is has no way to turn the keys of an object that is
 //  declared `as const` into an `as const` array (see:
@@ -11,43 +11,43 @@ const chainsAndChainIdEntries = [
   //  * avoids awkward "chain but not 'Unset'" checks
   //  * "off" is not a TV channel either
   //Instead we'll use `null` for chain and 0 as the chainId where appropriate (e.g. governance VAAs)
-  ['Solana', 1],
-  ['Ethereum', 2],
-  ['Terra', 3],
-  ['Bsc', 4],
-  ['Polygon', 5],
-  ['Avalanche', 6],
-  ['Oasis', 7],
-  ['Algorand', 8],
-  ['Aurora', 9],
-  ['Fantom', 10],
-  ['Karura', 11],
-  ['Acala', 12],
-  ['Klaytn', 13],
-  ['Celo', 14],
-  ['Near', 15],
-  ['Moonbeam', 16],
-  ['Neon', 17],
-  ['Terra2', 18],
-  ['Injective', 19],
-  ['Osmosis', 20],
-  ['Sui', 21],
-  ['Aptos', 22],
-  ['Arbitrum', 23],
-  ['Optimism', 24],
-  ['Gnosis', 25],
-  ['Pythnet', 26],
-  ['Xpla', 28],
-  ['Btc', 29],
-  ['Base', 30],
-  ['Sei', 32],
-  ['Rootstock', 33],
-  ['Wormchain', 3104],
-  ['Cosmoshub', 4000],
-  ['Evmos', 4001],
-  ['Kujira', 4002],
+  ["Solana", 1],
+  ["Ethereum", 2],
+  ["Terra", 3],
+  ["Bsc", 4],
+  ["Polygon", 5],
+  ["Avalanche", 6],
+  ["Oasis", 7],
+  ["Algorand", 8],
+  ["Aurora", 9],
+  ["Fantom", 10],
+  ["Karura", 11],
+  ["Acala", 12],
+  ["Klaytn", 13],
+  ["Celo", 14],
+  ["Near", 15],
+  ["Moonbeam", 16],
+  ["Neon", 17],
+  ["Terra2", 18],
+  ["Injective", 19],
+  ["Osmosis", 20],
+  ["Sui", 21],
+  ["Aptos", 22],
+  ["Arbitrum", 23],
+  ["Optimism", 24],
+  ["Gnosis", 25],
+  ["Pythnet", 26],
+  ["Xpla", 28],
+  ["Btc", 29],
+  ["Base", 30],
+  ["Sei", 32],
+  ["Rootstock", 33],
+  ["Wormchain", 3104],
+  ["Cosmoshub", 4000],
+  ["Evmos", 4001],
+  ["Kujira", 4002],
   // holy cow, how ugly of a hack is that?! - a chainId that's exclusive to a testnet!
-  ['Sepolia', 10002],
+  ["Sepolia", 10002],
 ] as const;
 
 export const [chains, chainIds] = zip(chainsAndChainIdEntries);
@@ -79,10 +79,10 @@ export const asChainId = (chainId: number): ChainId => {
 
 export const toChainId = (chain: number | string | Chain): ChainId => {
   switch (typeof chain) {
-    case 'string':
+    case "string":
       if (isChain(chain)) return chainToChainId(chain);
       break;
-    case 'number':
+    case "number":
       if (isChainId(chain)) return chain;
       break;
   }
@@ -93,13 +93,13 @@ export const toChainName = (
   chain: number | string | Chain | bigint,
 ): ChainName => {
   switch (typeof chain) {
-    case 'string':
+    case "string":
       if (isChain(chain)) return chain;
       break;
-    case 'number':
+    case "number":
       if (isChainId(chain)) return chainIdToChain(chain);
       break;
-    case 'bigint':
+    case "bigint":
       if (isChainId(Number(chain)))
         return chainIdToChain(Number(chain) as ChainId);
       break;

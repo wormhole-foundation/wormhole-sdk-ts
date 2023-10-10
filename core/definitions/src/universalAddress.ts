@@ -2,9 +2,9 @@ import {
   hexByteStringToUint8Array,
   uint8ArrayToHexByteString,
   isHexByteString,
-} from '@wormhole-foundation/sdk-base';
+} from "@wormhole-foundation/sdk-base";
 
-import { Address, NativeAddress, toNative } from './address';
+import { Address, NativeAddress, toNative } from "./address";
 
 export class UniversalAddress implements Address {
   static readonly byteSize = 32;
@@ -12,7 +12,7 @@ export class UniversalAddress implements Address {
   private readonly address: Uint8Array;
 
   constructor(address: string | Uint8Array) {
-    if (typeof address === 'string') {
+    if (typeof address === "string") {
       if (!UniversalAddress.isValidAddress(address))
         throw new Error(
           `Invalid Wormhole address, expected ${UniversalAddress.byteSize}-byte ` +

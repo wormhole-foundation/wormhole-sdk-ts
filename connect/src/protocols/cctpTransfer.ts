@@ -2,7 +2,7 @@ import {
   toCircleChainName,
   ChainName,
   PlatformName,
-} from '@wormhole-foundation/sdk-base';
+} from "@wormhole-foundation/sdk-base";
 import {
   NativeAddress,
   UniversalAddress,
@@ -18,15 +18,15 @@ import {
   CircleAttestation,
   CircleMessageId,
   toNative,
-} from '@wormhole-foundation/sdk-definitions';
+} from "@wormhole-foundation/sdk-definitions";
 
-import { CCTPTransferDetails, isCCTPTransferDetails } from '../types';
+import { CCTPTransferDetails, isCCTPTransferDetails } from "../types";
 import {
   WormholeTransfer,
   TransferState,
   AttestationId,
-} from '../wormholeTransfer';
-import { Wormhole } from '../wormhole';
+} from "../wormholeTransfer";
+import { Wormhole } from "../wormhole";
 
 export class CCTPTransfer implements WormholeTransfer {
   private readonly wh: Wormhole;
@@ -49,7 +49,7 @@ export class CCTPTransfer implements WormholeTransfer {
   // Populated if automatic and after initialized
   vaas?: {
     id: WormholeMessageId;
-    vaa?: VAA<'CircleTransferRelay'>;
+    vaa?: VAA<"CircleTransferRelay">;
   }[];
 
   private constructor(wh: Wormhole, transfer: CCTPTransferDetails) {
@@ -86,7 +86,7 @@ export class CCTPTransfer implements WormholeTransfer {
     }
 
     if (tt === undefined)
-      throw new Error('Invalid `from` parameter for CCTPTransfer');
+      throw new Error("Invalid `from` parameter for CCTPTransfer");
 
     return tt;
   }
@@ -109,7 +109,7 @@ export class CCTPTransfer implements WormholeTransfer {
       const relayerAddress = toNative(chain, wormholeRelayer);
 
       automatic =
-        vaa.payloadLiteral === 'CircleTransferRelay' &&
+        vaa.payloadLiteral === "CircleTransferRelay" &&
         // @ts-ignore
         rcvAddress.equals(relayerAddress.toUniversalAddress());
     }
@@ -197,7 +197,7 @@ export class CCTPTransfer implements WormholeTransfer {
     */
 
     if (this.state !== TransferState.Created)
-      throw new Error('Invalid state transition in `start`');
+      throw new Error("Invalid state transition in `start`");
 
     const fromChain = this.wh.getChain(this.transfer.from.chain);
 
@@ -244,7 +244,7 @@ export class CCTPTransfer implements WormholeTransfer {
 
   private async fetchWormholeAttestation(): Promise<WormholeMessageId[]> {
     if (!this.vaas || this.vaas.length == 0)
-      throw new Error('No VAA details available');
+      throw new Error("No VAA details available");
 
     // Check if we already have the VAA
     for (const idx in this.vaas) {
@@ -266,7 +266,7 @@ export class CCTPTransfer implements WormholeTransfer {
 
   private async fetchCircleAttestation(): Promise<CircleMessageId[]> {
     if (!this.circleAttestations || this.circleAttestations.length == 0)
-      throw new Error('No Attestation IDs details available');
+      throw new Error("No Attestation IDs details available");
 
     for (const idx in this.circleAttestations) {
       const ca = this.circleAttestations[idx];
@@ -295,7 +295,7 @@ export class CCTPTransfer implements WormholeTransfer {
       this.state < TransferState.Initiated ||
       this.state > TransferState.Attested
     )
-      throw new Error('Invalid state transition in `fetchAttestation`');
+      throw new Error("Invalid state transition in `fetchAttestation`");
 
     let ids: AttestationId[];
     if (this.transfer.automatic) {
@@ -319,25 +319,25 @@ export class CCTPTransfer implements WormholeTransfer {
         3) return txid of submission
     */
     if (this.state < TransferState.Attested)
-      throw new Error('Invalid state transition in `finish`');
+      throw new Error("Invalid state transition in `finish`");
 
     if (this.transfer.automatic) {
-      if (!this.vaas) throw new Error('No VAA details available');
+      if (!this.vaas) throw new Error("No VAA details available");
 
       const toChain = this.wh.getChain(this.transfer.to.chain);
 
       const txHashes: TxHash[] = [];
       for (const cachedVaa of this.vaas) {
         const { vaa } = cachedVaa;
-        if (!vaa) throw new Error('No Vaa found');
+        if (!vaa) throw new Error("No Vaa found");
         const tb = await toChain.getAutomaticCircleBridge();
         //TODO: tb.redeem()
-        throw new Error('No method to redeem auto circle bridge tx (yet)');
+        throw new Error("No method to redeem auto circle bridge tx (yet)");
       }
       return txHashes;
     } else {
       if (!this.circleAttestations)
-        throw new Error('No Circle Attestation details available');
+        throw new Error("No Circle Attestation details available");
 
       const toChain = this.wh.getChain(this.transfer.to.chain);
 
@@ -386,13 +386,13 @@ export class CCTPTransfer implements WormholeTransfer {
     emitter: UniversalAddress | NativeAddress<PlatformName>,
     sequence: bigint,
     retries: number = 5,
-  ): Promise<VAA<'CircleTransferRelay'>> {
+  ): Promise<VAA<"CircleTransferRelay">> {
     const vaaBytes = await wh.getVAABytes(chain, emitter, sequence, retries);
     if (!vaaBytes) throw new Error(`No VAA available after ${retries} retries`);
-    const partial = deserialize('Uint8Array', vaaBytes);
+    const partial = deserialize("Uint8Array", vaaBytes);
     switch (partial.payload[0]) {
       case 1:
-        return deserialize('CircleTransferRelay', vaaBytes);
+        return deserialize("CircleTransferRelay", vaaBytes);
     }
     throw new Error(`No serde defined for type: ${partial.payload[0]}`);
   }

@@ -16,7 +16,7 @@ export async function retry<T>(
       }
 
       const result = await task();
-      console.log("Result: ", result)
+      console.log("Result: ", result);
       if (result !== null) {
         clearInterval(intervalId);
         resolve(result);

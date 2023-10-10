@@ -9,18 +9,18 @@ import {
   nativeDecimals,
   chainToPlatform,
   PlatformUtils,
-} from '@wormhole-foundation/connect-sdk';
+} from "@wormhole-foundation/connect-sdk";
 import {
   chainToNativeDenoms,
   cosmwasmChainIdToNetworkChainPair,
-} from './constants';
-import { CosmWasmClient } from '@cosmjs/cosmwasm-stargate';
-import { CosmwasmPlatform } from './platform';
-import { CosmwasmAddress } from './address';
-import { IbcExtension, QueryClient, setupIbcExtension } from '@cosmjs/stargate';
+} from "./constants";
+import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
+import { CosmwasmPlatform } from "./platform";
+import { CosmwasmAddress } from "./address";
+import { IbcExtension, QueryClient, setupIbcExtension } from "@cosmjs/stargate";
 
 // forces CosmwasmUtils to implement PlatformUtils
-var _: PlatformUtils<'Cosmwasm'> = CosmwasmUtils;
+var _: PlatformUtils<"Cosmwasm"> = CosmwasmUtils;
 
 /**
  * @category CosmWasm
@@ -53,9 +53,9 @@ export module CosmwasmUtils {
   export async function getDecimals(
     chain: ChainName,
     rpc: CosmWasmClient,
-    tokenId: TokenId | 'native',
+    tokenId: TokenId | "native",
   ): Promise<bigint> {
-    if (tokenId === 'native' || isNativeTokenId(chain, tokenId))
+    if (tokenId === "native" || isNativeTokenId(chain, tokenId))
       return nativeDecimals(CosmwasmPlatform.platform);
 
     const { decimals } = await rpc.queryContractSmart(
@@ -71,9 +71,9 @@ export module CosmwasmUtils {
     chain: ChainName,
     rpc: CosmWasmClient,
     walletAddress: string,
-    tokenId: TokenId | 'native',
+    tokenId: TokenId | "native",
   ): Promise<bigint | null> {
-    if (tokenId === 'native') {
+    if (tokenId === "native") {
       const { amount } = await rpc.getBalance(
         walletAddress,
         getNativeDenom(chain),
@@ -90,8 +90,8 @@ export module CosmwasmUtils {
 
   function getNativeDenom(chain: ChainName): string {
     // TODO: required because of const map
-    if (CosmwasmPlatform.network === 'Devnet')
-      throw new Error('No devnet native denoms');
+    if (CosmwasmPlatform.network === "Devnet")
+      throw new Error("No devnet native denoms");
 
     return chainToNativeDenoms(
       CosmwasmPlatform.network,
@@ -121,7 +121,7 @@ export module CosmwasmUtils {
     rpc: CosmWasmClient,
     txid: TxHash,
   ): Promise<WormholeMessageId[]> {
-    throw new Error('Not implemented');
+    throw new Error("Not implemented");
     //const receipt = await rpc.getTransactionReceipt(txid);
 
     //if (receipt === null)
@@ -160,7 +160,6 @@ export module CosmwasmUtils {
     const networkChainPair = cosmwasmChainIdToNetworkChainPair.get(chainId);
     if (networkChainPair === undefined)
       throw new Error(`Unknown Cosmwasm chainId ${chainId}`);
-
 
     const [network, chain] = networkChainPair;
     return [network, chain];

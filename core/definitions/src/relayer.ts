@@ -1,5 +1,5 @@
-import { Chain, PlatformName } from '@wormhole-foundation/sdk-base';
-import { UniversalOrNative } from './address';
+import { Chain, PlatformName } from "@wormhole-foundation/sdk-base";
+import { UniversalOrNative } from "./address";
 
 export interface Relayer<P extends PlatformName> {
   relaySupported(chain: Chain): boolean;
@@ -13,7 +13,7 @@ export interface Relayer<P extends PlatformName> {
   // rather it should take some signing callbacks and
   // a ref to track the progress
   startTransferWithRelay(
-    token: UniversalOrNative<P> | 'native',
+    token: UniversalOrNative<P> | "native",
     amount: bigint,
     toNativeToken: string,
     sendingChain: Chain,

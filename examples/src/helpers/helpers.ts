@@ -63,7 +63,7 @@ export interface TransferStuff {
 
 // TODO: err msg instructing dev to `cp .env.template .env` and set values
 export async function getStuff(
-  chain: ChainContext<PlatformName>
+  chain: ChainContext<PlatformName>,
 ): Promise<TransferStuff> {
   let signer: Signer;
   switch (chain.platform.platform) {
@@ -77,7 +77,7 @@ export async function getStuff(
       signer = await getEvmSigner(
         chain.chain,
         (await chain.getRpc()) as ethers.Provider,
-        process.env.ETH_PRIVATE_KEY!
+        process.env.ETH_PRIVATE_KEY!,
       );
   }
 
@@ -95,7 +95,7 @@ export async function waitLog(xfer: WormholeTransfer): Promise<void> {
 export async function getEvmSigner(
   chain: ChainName,
   provider: ethers.Provider,
-  privateKey: string
+  privateKey: string,
 ): Promise<Signer> {
   const wallet = new ethers.Wallet(privateKey);
   const txCount = await provider.getTransactionCount(wallet.address);
@@ -108,18 +108,18 @@ export function getSolSigner(chain: ChainName, privateKey: string): Signer {
 
 export async function getCosmosSigner(
   chain: ChainContext<PlatformName>,
-  mnemonic: string
+  mnemonic: string,
 ): Promise<Signer> {
   // Use the EVM signer for Evmos and Injective
   if (["Evmos", "Injective"].includes(chain.chain)) {
     const restRpc = new ChainRestAuthApi(
       // @ts-ignore
-      cosmwasmNetworkChainToRestUrls(chain.platform.network, chain.chain)
+      cosmwasmNetworkChainToRestUrls(chain.platform.network, chain.chain),
     );
     const chainId = cosmwasmNetworkChainToChainId(
       chain.platform.network,
       // @ts-ignore
-      chain.chain
+      chain.chain,
     )[0];
 
     return new CosmosEvmSigner(chain.chain, chainId, mnemonic, restRpc);
@@ -142,7 +142,7 @@ export async function getCosmosSigner(
   const signingClient = await SigningCosmWasmClient.connectWithSigner(
     rpcAddress(chain.platform.network, chain.chain)!,
     signer,
-    options
+    options,
   );
 
   return new CosmosSigner(chain.chain, signingClient, acct);

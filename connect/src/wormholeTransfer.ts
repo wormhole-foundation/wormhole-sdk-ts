@@ -4,7 +4,7 @@ import {
   WormholeMessageId,
   CircleMessageId,
   IbcMessageId,
-} from '@wormhole-foundation/sdk-definitions';
+} from "@wormhole-foundation/sdk-definitions";
 
 // Could be VAA or Circle or ..?
 export type AttestationId = WormholeMessageId | CircleMessageId | IbcMessageId;

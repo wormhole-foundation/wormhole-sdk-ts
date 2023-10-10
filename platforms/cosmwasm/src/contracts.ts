@@ -64,7 +64,7 @@ export class CosmwasmContracts {
 
   async getNativeWrapped(
     chain: ChainName,
-    connection: CosmWasmClient
+    connection: CosmWasmClient,
   ): Promise<TokenId> {
     throw new Error("Not implemented");
     // const address = toNative(
