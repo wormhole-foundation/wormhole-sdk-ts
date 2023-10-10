@@ -141,7 +141,7 @@ type SplitAndReorderKeyAndValueColums<A extends CartesianSet, S extends Shape> =
 //we encode leaf values as double singletons to distinguish them from mapping entries and arrays
 //  of leaf values (in case the mapping isn't injective (i.e. a single key has multiple values
 //  associated with it))
-export type LeafValue = readonly [readonly [unknown]];
+type LeafValue = readonly [readonly [unknown]];
 
 //returns the mapping with unwrapped values if all leaves are indeed singletons
 //  otherwise returns false
@@ -280,8 +280,10 @@ const toMapping = <
         throw new Error(`Invalid key: ${key} in ${keyCol}`);
 
 
-  const ret =
-    buildMappingRecursively(keyCartesianSet as CartesianSet<MappableKey>, zip(leafValues));
+  const ret = buildMappingRecursively(
+    keyCartesianSet as CartesianSet<MappableKey>,
+    zip(leafValues)
+  );
 
   if (allSingletons)
     for (const leafObj of leafObjects)

@@ -422,18 +422,20 @@ function generateLayoutDiscriminator(
   }];
 }
 
-export function layoutDiscriminator(
+export function layoutDiscriminator<B extends boolean = false>(
   layouts: readonly Layout[],
-  mustBeDistinguishable = true
+  allowAmbiguous?: B
 ) {
   const [distinguishable, discriminator] = generateLayoutDiscriminator(layouts);
-  if (!distinguishable && mustBeDistinguishable)
+  if (!distinguishable && !allowAmbiguous)
     throw new Error("Cannot uniquely distinguished the given layouts");
 
-  return mustBeDistinguishable
+  return (
+    !allowAmbiguous
     ? (encoded: Uint8Array) => {
-        const layout = discriminator(encoded);
-        return layout.length === 0 ? null : layout[0];
-      }
-    : discriminator;
+      const layout = discriminator(encoded);
+      return layout.length === 0 ? null : layout[0];
+    }
+    : discriminator
+  ) as (encoded: Uint8Array) => B extends false ? LayoutIndex | null : readonly LayoutIndex[];
 }

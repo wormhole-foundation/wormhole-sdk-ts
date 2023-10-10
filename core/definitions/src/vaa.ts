@@ -1,8 +1,10 @@
 import {
+  column,
   hexByteStringToUint8Array,
   Layout,
   LayoutItem,
   LayoutToType,
+  layoutDiscriminator,
   serializeLayout,
   deserializeLayout,
   DynamicItemsOfLayout,
@@ -20,6 +22,19 @@ import {
 } from "./layout-items";
 
 import { keccak256 } from "./utils";
+
+export type NamedPayloads = readonly (readonly [string, Layout])[];
+
+export const payloadDiscriminator = <NP extends NamedPayloads>(namedPayloads: NP) => {
+  const literals = column(namedPayloads, 0);
+  const layouts = column(namedPayloads, 1);
+  const discriminator = layoutDiscriminator(layouts);
+
+  return (data: Uint8Array): (typeof literals)[number] | null => {
+    const index = discriminator(data);
+    return index === null ? null : literals[index];
+  };
+}
 
 const uint8ArrayConversion = {
   to: (val: Uint8Array) => val,
@@ -107,10 +122,9 @@ export interface VAA<PL extends PayloadLiteral = "Uint8Array">
 // type Look = MyVaa["signatures"];
 // type x = { [K in keyof VAA<"CoreBridgeUpgradeContract">]: VAA<"CoreBridgeUpgradeContract">[K] };
 
-const payloadFactory = new Map<
-  PayloadLiteral,
-  Layout | CustomConversion<Uint8Array, any>
->();
+type Description = Layout | CustomConversion<Uint8Array, any>;
+
+const payloadFactory = new Map<PayloadLiteral, Description>();
 
 function getPayloadDescription<PL extends PayloadLiteral>(payloadLiteral: PL) {
   const description = payloadFactory.get(payloadLiteral);
@@ -169,7 +183,7 @@ export const create = <PL extends PayloadLiteral = "Uint8Array">(
 
 export function registerPayloadType<PL extends PayloadLiteral>(
   payloadLiteral: PL,
-  payloadSerDe: CustomConversion<Uint8Array, any> | Layout
+  payloadSerDe: Description
 ) {
   if (payloadFactory.has(payloadLiteral))
     throw new Error(`Payload type ${payloadLiteral} already registered`);

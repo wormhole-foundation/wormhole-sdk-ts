@@ -1,6 +1,6 @@
 import { Layout, UintLayoutItem, LengthPrefixedBytesLayoutItem, ShallowMapping } from "@wormhole-foundation/sdk-base";
 import { chainItem, amountItem } from "../layout-items";
-import { registerPayloadType } from "../vaa";
+import { NamedPayloads, payloadDiscriminator, registerPayloadType } from "../vaa";
 
 const bamAddressItem = {
   binary: "bytes",
@@ -50,7 +50,9 @@ export const bamPayloads = [
   [ "BamMessage", messageLayout(0) ],
   [ "BamTokenMessage", tokenMessageLayout() ],
   [ "BamExtendedMessage", extendedMessageLayout() ],
-] as const satisfies readonly (readonly [string, Layout])[];
+] as const satisfies NamedPayloads;
+
+export const bamPayloadDiscriminator = payloadDiscriminator(bamPayloads);
 
 // factory registration:
 
