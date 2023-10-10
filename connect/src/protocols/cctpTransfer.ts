@@ -291,8 +291,13 @@ export class CCTPTransfer implements WormholeTransfer {
       const task = async () => {
         return await this.wh.getCircleAttestation(ca.id.msgHash);
       };
+
       // TODO: add conf for retries
-      this.circleAttestations[idx].attestation = await retry(task, 2000, 5);
+      const attestation = await retry(task, 5000, 10);
+      if (attestation === null)
+        throw new Error("No attestation available after retries exhausted");
+
+      this.circleAttestations[idx].attestation = attestation;
     }
 
     return this.circleAttestations.map((v) => {

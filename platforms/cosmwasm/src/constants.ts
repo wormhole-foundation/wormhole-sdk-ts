@@ -175,8 +175,8 @@ const gatewayConnections = [
       [
         "Osmosis",
         {
-          srcChannel: "channel-4",
-          dstChannel: "channel-486",
+          srcChannel: "channel-9",
+          dstChannel: "channel-3906",
         },
       ],
     ],
