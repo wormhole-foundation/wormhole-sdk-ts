@@ -428,8 +428,6 @@ export class GatewayTransfer implements WormholeTransfer {
 
       // now find the corresponding wormchain transaction given the ibcTransfer info
       const xfer = this.ibcTransfers[0];
-      const wcTransfer = await wcIbc.lookupTransferFromIbcMsgId(xfer.id);
-
       // If we're leaving cosmos, grab the VAA from the gateway
       if (!this.toGateway()) {
         const whm = await wcIbc.lookupMessageFromIbcMsgId(xfer.id);
