@@ -64,13 +64,13 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
 
     const isGateway = this.chain === Gateway.name;
     for (const [chain, channel] of networkToChannelMap(network)) {
+      if(!isGateway && this.chain === chain) this.gatewayChannel = channel.dstChannel;
+
       this.channelMap.set(
         channel[isGateway ? "dstChannel" : "srcChannel"],
         chain,
       );
     }
-
-    this.gatewayChannel = this.channelMap.get(this.chain);
   }
 
   static async fromProvider(
