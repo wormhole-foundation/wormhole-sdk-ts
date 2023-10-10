@@ -211,20 +211,15 @@ const toMapping = <
     throw new Error("Invalid mapping: empty");
 
   const definedShape = (shape === undefined)
-    ? [range(crr[0].length - 1), crr[0].length - 1]
-    : shape
-  const adjustedShape = definedShape.map(ind => typeof ind === "number" ? [ind] : ind);
-
-  let finalSingleton = typeof definedShape[1] === 'number';
-  let allSingletons = true;
+    ? [range(crr[0].length - 1), [crr[0].length - 1]]
+    : shape.map(ind => typeof ind === "number" ? [ind] : ind);
 
   // store reference to leaf object to unwrap values if all leaves are singletons
   let leafObjects = [] as any[];
-
-  // define recursive function to build the mapping
-  const buildMapping = (
+  let allSingletons = true;
+  const buildMappingRecursively = (
     keyCartesianSet: CartesianSet<MappableKey>,
-    values: RoArray
+    values: RoArray<RoArray>
   ): any => {
     const distinctKeys = Array.from(new Set<MappableKey>(keyCartesianSet[0]).values());
     const keyRows = new Map<MappableKey, number[]>(distinctKeys.map(key => [key, []]));
@@ -233,35 +228,31 @@ const toMapping = <
 
     // termination case
     if (keyCartesianSet.length === 1) {
-      for (const valRow of keyRows.values())
-          if (valRow.length !== 1) 
-            allSingletons = false;
-
       const ret = Object.fromEntries(distinctKeys.map(key =>
-        [
-          key, 
-          finalSingleton || allSingletons
-          ? keyRows.get(key)!.flatMap(i => values[i])
-          :keyRows.get(key)!.map(i => values[i])
-        ]
+        [key, keyRows.get(key)!.map(i => values[i].length === 1 ? values[i][0] : values[i])]
       ));
 
-
-
-
-      if (finalSingleton) 
+      if (allSingletons) {
+        for (const valRow of keyRows.values())
+          if (valRow.length > 1) {
+            allSingletons = false;
+            return ret;
+          }
         leafObjects.push(ret);
+      }
 
       return ret;
     }
 
-    // advance set for next iteration
     const droppedKeyCol = zip(keyCartesianSet.slice(1));
     return Object.fromEntries(distinctKeys.map(key => {
       const rows = keyRows.get(key)!;
       const keyCartesianSubset = zip(rows.map(i => droppedKeyCol[i]));
       const valuesSubset = rows.map(i => values[i]);
-      return [key, buildMapping(keyCartesianSubset as CartesianSet<MappableKey>, valuesSubset)];
+      return [
+        key,
+        buildMappingRecursively(keyCartesianSubset as CartesianSet<MappableKey>, valuesSubset)
+      ];
     }));
   };
 
@@ -275,7 +266,7 @@ const toMapping = <
   };
 
   const [keyCartesianSet, leafValues] =
-    adjustedShape.map(indx => indx.map(col => getCol(col)));
+    definedShape.map(indx => indx.map(col => getCol(col)));
 
   if (keyCartesianSet.length === 0)
     throw new Error("Invalid shape: empty key set");
@@ -289,9 +280,10 @@ const toMapping = <
         throw new Error(`Invalid key: ${key} in ${keyCol}`);
 
 
-  const ret = buildMapping(keyCartesianSet as CartesianSet<MappableKey>, zip(leafValues));
+  const ret =
+    buildMappingRecursively(keyCartesianSet as CartesianSet<MappableKey>, zip(leafValues));
 
-  if(allSingletons)
+  if (allSingletons)
     for (const leafObj of leafObjects)
       for (const key of Object.keys(leafObj))
         leafObj[key] = leafObj[key][0];
