@@ -1,6 +1,10 @@
 // Signature represents the secp256k1 signature of a Guardian
 export class Signature {
-  constructor(readonly r: bigint, readonly s: bigint, readonly v: number) {}
+  constructor(
+    readonly r: bigint,
+    readonly s: bigint,
+    readonly v: number,
+  ) {}
 
   toUint8Array(): Uint8Array {
     const buff = new Uint8Array(65);

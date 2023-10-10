@@ -70,7 +70,7 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
   getDecimals(
     chain: ChainName,
     rpc: RpcConnection<P>,
-    token: TokenId | "native"
+    token: TokenId | "native",
   ): Promise<bigint> {
     throw new Error("Method not implemented.");
   }
@@ -78,7 +78,7 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
     chain: ChainName,
     rpc: RpcConnection<P>,
     walletAddr: string,
-    token: TokenId | "native"
+    token: TokenId | "native",
   ): Promise<bigint | null> {
     throw new Error("Method not implemented.");
   }
@@ -97,19 +97,19 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
   async getWrappedAsset(
     chain: ChainName,
     rpc: RpcConnection<P>,
-    token: TokenId
+    token: TokenId,
   ): Promise<TokenId | null> {
     throw new Error("Method not implemented.");
   }
   async getTokenDecimals(
     rpc: RpcConnection<P>,
-    token: TokenId
+    token: TokenId,
   ): Promise<bigint> {
     return 8n;
   }
   async getNativeBalance(
     rpc: RpcConnection<P>,
-    walletAddr: string
+    walletAddr: string,
   ): Promise<bigint> {
     return 0n;
   }
@@ -117,7 +117,7 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
     chain: ChainName,
     rpc: RpcConnection<P>,
     walletAddr: string,
-    token: TokenId
+    token: TokenId,
   ): Promise<bigint | null> {
     return 10n;
   }
@@ -125,7 +125,7 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
   async parseTransaction(
     chain: ChainName,
     rpc: RpcConnection<P>,
-    txid: TxHash
+    txid: TxHash,
   ): Promise<WormholeMessageId[]> {
     throw new Error("Method not implemented");
   }
@@ -143,7 +143,7 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
   async sendWait(
     chain: ChainName,
     rpc: RpcConnection<P>,
-    stxns: any[]
+    stxns: any[],
   ): Promise<TxHash[]> {
     throw new Error("Method not implemented.");
   }
@@ -157,7 +157,7 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
   }
 
   async getAutomaticTokenBridge(
-    rpc: RpcConnection<P>
+    rpc: RpcConnection<P>,
   ): Promise<AutomaticTokenBridge<P>> {
     throw new Error("Method not implemented.");
   }
@@ -165,12 +165,12 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
     throw new Error("Method not implemented.");
   }
   async getCircleRelayer(
-    rpc: RpcConnection<P>
+    rpc: RpcConnection<P>,
   ): Promise<AutomaticCircleBridge<P>> {
     throw new Error("Method Not implemented.");
   }
   async getAutomaticCircleBridge(
-    rpc: RpcConnection<P>
+    rpc: RpcConnection<P>,
   ): Promise<AutomaticCircleBridge<P>> {
     throw new Error("Method not implemented.");
   }

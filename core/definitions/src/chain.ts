@@ -44,13 +44,13 @@ export abstract class ChainContext<P extends PlatformName> {
   // Get the balance of a token for a given address
   async getBalance(
     walletAddr: string,
-    token: TokenId | "native"
+    token: TokenId | "native",
   ): Promise<bigint | null> {
     return this.platform.getBalance(
       this.chain,
       await this.getRpc(),
       walletAddr,
-      token
+      token,
     );
   }
 
@@ -63,7 +63,7 @@ export abstract class ChainContext<P extends PlatformName> {
     return this.platform.parseTransaction(
       this.chain,
       await this.getRpc(),
-      txid
+      txid,
     );
   }
 

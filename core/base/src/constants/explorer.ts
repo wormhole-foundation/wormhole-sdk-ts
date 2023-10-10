@@ -288,7 +288,7 @@ const explorerConfig = [
 ] as const satisfies RoArray<
   readonly [
     "Mainnet" | "Testnet",
-    RoArray<readonly [ChainName, ExplorerSettings]>
+    RoArray<readonly [ChainName, ExplorerSettings]>,
   ]
 >;
 
@@ -302,7 +302,7 @@ export const explorerConfigs = (network: Network, chain: ChainName) =>
 export function linkToTx(
   chainName: ChainName,
   txId: string,
-  network: Network
+  network: Network,
 ): string {
   // TODO: add missing chains to rpc config
   const chainConfig = explorerConfigs(network, chainName);
@@ -315,7 +315,7 @@ export function linkToTx(
 export function linkToAccount(
   chainName: ChainName,
   account: string,
-  network: Network
+  network: Network,
 ): string {
   // TODO: add missing chains to rpc config
   const chainConfig = explorerConfigs(network, chainName);

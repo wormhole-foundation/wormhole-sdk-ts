@@ -7,7 +7,7 @@ import {
   isCircleChain,
   usdcContract,
   isChain,
-} from '@wormhole-foundation/sdk-base';
+} from "@wormhole-foundation/sdk-base";
 import {
   UniversalAddress,
   deserialize,
@@ -22,16 +22,16 @@ import {
   TxHash,
   WormholeMessageId,
   isTokenId,
-} from '@wormhole-foundation/sdk-definitions';
-import axios, { AxiosResponse } from 'axios';
+} from "@wormhole-foundation/sdk-definitions";
+import axios, { AxiosResponse } from "axios";
 
-import { WormholeConfig } from './types';
+import { WormholeConfig } from "./types";
 
-import { CONFIG, networkPlatformConfigs } from './config';
-import { TokenTransfer } from './protocols/tokenTransfer';
-import { CCTPTransfer } from './protocols/cctpTransfer';
-import { GatewayTransfer } from './protocols/gatewayTransfer';
-import { TransactionStatus } from './api';
+import { CONFIG, networkPlatformConfigs } from "./config";
+import { TokenTransfer } from "./protocols/tokenTransfer";
+import { CCTPTransfer } from "./protocols/cctpTransfer";
+import { GatewayTransfer } from "./protocols/gatewayTransfer";
+import { TransactionStatus } from "./api";
 
 export class Wormhole {
   protected _platforms: Map<PlatformName, Platform<PlatformName>>;
@@ -77,7 +77,7 @@ export class Wormhole {
     nativeGas?: bigint,
   ): Promise<CCTPTransfer> {
     if (automatic && payload)
-      throw new Error('Payload with automatic delivery is not supported');
+      throw new Error("Payload with automatic delivery is not supported");
 
     if (
       !isCircleChain(from.chain) ||
@@ -120,7 +120,7 @@ export class Wormhole {
    * @throws Errors if the chain or protocol is not supported
    */
   async tokenTransfer(
-    token: TokenId | 'native',
+    token: TokenId | "native",
     amount: bigint,
     from: ChainAddress,
     to: ChainAddress,
@@ -129,10 +129,10 @@ export class Wormhole {
     nativeGas?: bigint,
   ): Promise<TokenTransfer | GatewayTransfer> {
     if (payload && automatic)
-      throw new Error('Payload with automatic delivery is not supported');
+      throw new Error("Payload with automatic delivery is not supported");
 
     if (nativeGas && !automatic)
-      throw new Error('Gas Dropoff is only supported for automatic transfers');
+      throw new Error("Gas Dropoff is only supported for automatic transfers");
 
     const fromChain = this.getChain(from.chain);
     const toChain = this.getChain(to.chain);
@@ -148,17 +148,17 @@ export class Wormhole {
 
     // Bit of (temporary) hackery until solana contracts support being
     // sent a VAA with the primary address
-    if (to.chain === 'Solana') {
+    if (to.chain === "Solana") {
       // Overwrite the dest address with the ATA
       to = await this.getTokenAccount(from.chain, token, to);
-    } else if (to.chain === 'Sei') {
-      if (payload) throw new Error('NO');
+    } else if (to.chain === "Sei") {
+      if (payload) throw new Error("NO");
 
       //
       payload = Buffer.from(
         JSON.stringify({
           basic_recipient: {
-            recipient: Buffer.from(to.address.toString()).toString('base64'),
+            recipient: Buffer.from(to.address.toString()).toString("base64"),
           },
         }),
       );
@@ -257,7 +257,7 @@ export class Wormhole {
    */
   async getDecimals(
     chain: ChainName,
-    token: TokenId | 'native',
+    token: TokenId | "native",
   ): Promise<bigint> {
     const ctx = this.getChain(chain);
     return await ctx.getDecimals(token);
@@ -273,7 +273,7 @@ export class Wormhole {
    */
   async normalizeAmount(
     chain: ChainName,
-    token: TokenId | 'native',
+    token: TokenId | "native",
     amount: number | string,
   ): Promise<bigint> {
     const ctx = this.getChain(chain);
@@ -281,16 +281,16 @@ export class Wormhole {
 
     // If we're passed a number, convert it to a string first
     // so we can do everything as bigints
-    if (typeof amount === 'number') {
+    if (typeof amount === "number") {
       amount = amount.toPrecision();
     }
 
     // TODO: punting
-    if (amount.includes('e'))
+    if (amount.includes("e"))
       throw new Error(`Exponential detected:  ${amount}`);
 
     // some slightly sketchy
-    const [whole, partial] = amount.split('.');
+    const [whole, partial] = amount.split(".");
     if (partial.length > decimals)
       throw new Error(
         `Overspecified decimal amount: ${partial.length} > ${decimals}`,
@@ -316,12 +316,12 @@ export class Wormhole {
    */
   async getBalance(
     chain: ChainName,
-    token: string | TokenId | 'native',
+    token: string | TokenId | "native",
     walletAddress: string,
   ): Promise<bigint | null> {
     const ctx = this.getChain(chain);
 
-    if (typeof token === 'string' && token !== 'native') {
+    if (typeof token === "string" && token !== "native") {
       token = { chain: chain, address: toNative(chain, token) };
     }
 
@@ -341,15 +341,15 @@ export class Wormhole {
       | UniversalAddress
       | NativeAddress<PlatformName>
       | TokenId
-      | 'native',
+      | "native",
     recipient: ChainAddress,
   ): Promise<ChainAddress> {
     // TODO: same as supportsSendWithRelay, need some
     // way to id this in a less sketchy way
     const chain = this.getChain(recipient.chain);
-    if ('getTokenAccount' in chain) {
+    if ("getTokenAccount" in chain) {
       let t: TokenId;
-      if (sendingToken === 'native') {
+      if (sendingToken === "native") {
         const srcTb = await this.getChain(sendingChain).getTokenBridge();
         t = { chain: sendingChain, address: await srcTb.getWrappedNative() };
       } else {
@@ -411,7 +411,7 @@ export class Wormhole {
 
     const { data } = response;
 
-    return new Uint8Array(Buffer.from(data.data.vaa, 'base64'));
+    return new Uint8Array(Buffer.from(data.data.vaa, "base64"));
 
     // TODO: Make both data formats work
     // const url = `https://wormhole-v2-testnet-api.certus.one/v1/signed_vaa/${chainId}/${emitterAddress}/${sequence}`;
@@ -438,7 +438,7 @@ export class Wormhole {
     const vaaBytes = await this.getVAABytes(chain, emitter, sequence, retries);
     if (vaaBytes === undefined) return;
 
-    return deserialize('Uint8Array', vaaBytes);
+    return deserialize("Uint8Array", vaaBytes);
   }
 
   // TODO: does this belong here?
@@ -464,7 +464,7 @@ export class Wormhole {
       const { data } = response;
 
       // TODO: what are the statuses? should we retry if
-      if (data.status === 'complete') return data.attestation;
+      if (data.status === "complete") return data.attestation;
     }
   }
 

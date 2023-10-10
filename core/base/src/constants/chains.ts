@@ -90,7 +90,7 @@ export const toChainId = (chain: number | string | Chain): ChainId => {
 };
 
 export const toChainName = (
-  chain: number | string | Chain | bigint
+  chain: number | string | Chain | bigint,
 ): ChainName => {
   switch (typeof chain) {
     case "string":

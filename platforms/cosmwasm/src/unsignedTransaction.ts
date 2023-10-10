@@ -25,7 +25,7 @@ export function buildExecuteMsg(
   sender: string,
   contract: string,
   msg: Record<string, any>,
-  funds?: Coin[]
+  funds?: Coin[],
 ): EncodeObject {
   const obj = {
     typeUrl: MSG_EXECUTE_CONTRACT_TYPE_URL,
@@ -45,6 +45,6 @@ export class CosmwasmUnsignedTransaction implements UnsignedTransaction {
     readonly network: Network,
     readonly chain: ChainName,
     readonly description: string,
-    readonly parallelizable: boolean = false
+    readonly parallelizable: boolean = false,
   ) {}
 }

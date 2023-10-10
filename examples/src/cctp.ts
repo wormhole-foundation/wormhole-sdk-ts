@@ -42,7 +42,7 @@ async function cctpTransfer(
   src: TransferStuff,
   dst: TransferStuff,
   automatic: boolean,
-  nativeGas?: bigint
+  nativeGas?: bigint,
 ) {
   const xfer = await wh.cctpTransfer(
     amount,
@@ -50,7 +50,7 @@ async function cctpTransfer(
     dst.address,
     automatic,
     undefined,
-    nativeGas
+    nativeGas,
   );
   console.log(xfer);
 

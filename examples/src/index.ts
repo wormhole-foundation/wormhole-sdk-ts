@@ -42,7 +42,7 @@ function getEndPoint(network: string) {
   ]);
 
   console.log(wh);
-  console.log(wh.getContracts("Injective"))
+  console.log(wh.getContracts("Injective"));
 
   const chain: ChainName = "Injective";
   const chainCtx: CosmwasmChain = wh.getChain(chain) as CosmwasmChain;
@@ -105,8 +105,8 @@ function getEndPoint(network: string) {
     const simulationResponse = await txService.simulate(txRaw);
     console.log(
       `Transaction simulation response: ${JSON.stringify(
-        simulationResponse.gasInfo
-      )}`
+        simulationResponse.gasInfo,
+      )}`,
     );
 
     /** Broadcast transaction */

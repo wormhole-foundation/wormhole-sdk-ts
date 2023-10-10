@@ -50,7 +50,7 @@ export function nativeChainAddress(s: Signer | TokenId): TokenId {
 // Fully qualifier Transaction ID
 export type TransactionId = { chain: ChainName; txid: TxHash };
 export function isTransactionIdentifier(
-  thing: TransactionId | any
+  thing: TransactionId | any,
 ): thing is TransactionId {
   return (
     (<TransactionId>thing).chain !== undefined &&
