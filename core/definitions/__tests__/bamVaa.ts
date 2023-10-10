@@ -28,7 +28,7 @@ describe("BAM VAA tests", function () {
 
       const targetAddress = uint8ArrayToHexByteString(payload.targetAddress);
       const senderAddress = uint8ArrayToHexByteString(payload.senderAddress);
-      const parsedContents = uint8ArrayToHexByteString(payload.contents);
+      const parsedContents = uint8ArrayToHexByteString(payload.contents as Uint8Array);
 
       expect(payload).toBeTruthy();
       expect(payload.targetChain).toEqual(testCase.targetChain);
