@@ -6,10 +6,7 @@ import {
   toNative,
 } from "@wormhole-foundation/connect-sdk";
 // Import the platform specific packages
-import {
-  CosmwasmPlatform,
-  Gateway,
-} from "@wormhole-foundation/connect-sdk-cosmwasm";
+import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 
 import { TransferStuff, getStuff } from "./helpers";
@@ -20,9 +17,14 @@ import { TransferStuff, getStuff } from "./helpers";
 // Finally out of Osmosis, transparently through gateway, out to Avalanche
 
 // eg:
-//  Avalanche[avax] => {Gateway} -> Cosmoshub[gateway/wrapped avax]
-//  Cosmoshub[gateway/wrapped avax] -> {Gateway} -> Osmosis[gateway/wrapped avax]
+//  Avalanche[avax] => {Gateway ->}Cosmoshub[gateway/wrapped avax]
+//  Cosmoshub[gateway/wrapped avax] -> {Gateway ->} Osmosis[gateway/wrapped avax]
 //  Osmosis[gateway/wrapped avax] -> {Gateway} => Avalanch[avax]
+
+// Key:
+//   => : Regular contract call
+//   -> : IBC Transfer
+//   {*}: Transparently handled by Gateway
 
 (async function () {
   // init Wormhole object, passing config for which network

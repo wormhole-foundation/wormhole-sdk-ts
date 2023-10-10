@@ -120,18 +120,20 @@ export async function getCosmosSigner(
       chain.platform.network,
       // @ts-ignore
       chain.chain,
-    )[0];
+    );
+
+    console.log(restRpc, chainId)
 
     return new CosmosEvmSigner(chain.chain, chainId, mnemonic, restRpc);
   }
 
   let options = undefined;
-  if (chain.chain === "Sei") {
-    // options = {
-    //   registry: createSeiRegistry(),
-    //   aminoTypes: createSeiAminoTypes(),
-    // };
-  }
+  // if (chain.chain === "Sei") {
+  //    options = {
+  //      registry: createSeiRegistry(),
+  //      aminoTypes: createSeiAminoTypes(),
+  //    };
+  // }
 
   // Otherwise use the default signer
   const signer = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
