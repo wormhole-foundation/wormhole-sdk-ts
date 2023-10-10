@@ -1,6 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 
-import { Layout, addFixedValues, layoutDiscriminator } from "@wormhole-foundation/sdk-base";
+import { Layout, addFixedValues, layoutDiscriminator } from "../src";
 
 describe("Layout tests", function () {
   it("should correctly add fixed values", function () {
@@ -231,13 +231,17 @@ describe("Layout tests", function () {
     });
 
     it("cannot be uniquely discriminated", function () {
-      const discriminator = layoutDiscriminator([
+      const layouts = [
         [{name: "type", binary: "uint", size: 1}],
         [{name: "type", binary: "uint", size: 1}],
-        [{name: "type", binary: "uint", size: 1},
-         {name: "data", binary: "uint", size: 1}],
-      ], false);
+        [
+          {name: "type", binary: "uint", size: 1}, 
+          {name: "data", binary: "uint", size: 1}
+        ],
+      ] as readonly Layout[];
+      expect (()=>layoutDiscriminator(layouts, false)).toThrow()
 
+      const discriminator = layoutDiscriminator(layouts, true);
       expect(discriminator(Uint8Array.from([0]))).toEqual([0, 1]);
       expect(discriminator(Uint8Array.from([0, 0]))).toEqual([2]);
     });

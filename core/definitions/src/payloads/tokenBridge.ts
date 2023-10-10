@@ -79,7 +79,7 @@ export const tokenBridgePayloads = [
   ],
 ] as const satisfies NamedPayloads;
 
-export const tokenBridgePayloadDiscriminator = payloadDiscriminator(tokenBridgePayloads);
+// export const tokenBridgePayloadDiscriminator = payloadDiscriminator(tokenBridgePayloads);
 
 // factory registration:
 

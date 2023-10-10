@@ -87,7 +87,7 @@ const relayerPayloads = [
   ],
 ] as const satisfies NamedPayloads;
 
-export const relayerPayloadDiscriminator = payloadDiscriminator(relayerPayloads);
+//export const relayerPayloadDiscriminator = payloadDiscriminator(relayerPayloads);
 
 // factory registration:
 
