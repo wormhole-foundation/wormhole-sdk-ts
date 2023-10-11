@@ -26,12 +26,15 @@ export type getWormholeAttestation = (id: WormholeMessageId) => Promise<VAA>;
 // Used to fetch a Circle attestation
 export type CircleMessageId = {
   message: string;
-  msgHash: string;
+  hash: string;
 };
 export function isCircleMessageId(
   thing: CircleMessageId | any,
 ): thing is CircleMessageId {
-  return (<CircleMessageId>thing).msgHash !== undefined;
+  return (
+    (<CircleMessageId>thing).message !== undefined &&
+    (<CircleMessageId>thing).hash !== undefined
+  );
 }
 
 // Raw payload from circle

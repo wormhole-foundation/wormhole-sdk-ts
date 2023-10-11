@@ -48,5 +48,5 @@ declare global {
 }
 
 connectPayloads.forEach(([payloadLiteral, layout]) =>
-  registerPayloadType(payloadLiteral, layout)
+  registerPayloadType(payloadLiteral, layout),
 );

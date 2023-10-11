@@ -18,7 +18,10 @@ import {
 } from "@wormhole-foundation/connect-sdk";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
-import { CosmwasmChain, CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
+import {
+  CosmwasmChain,
+  CosmwasmPlatform,
+} from "@wormhole-foundation/connect-sdk-cosmwasm";
 
 import { getStuff } from "./helpers";
 
@@ -35,24 +38,23 @@ import { getStuff } from "./helpers";
   const chain: ChainName = "Injective";
   const chainCtx = wh.getChain(chain) as CosmwasmChain;
 
-  const {signer} = await getStuff(chainCtx);
+  const { signer } = await getStuff(chainCtx);
   const walletAddr = toNative(chain, signer.address());
 
   const tb = await chainCtx.getTokenBridge();
 
-  const recvChain = wh.getChain("Ethereum")
-  const {address: receiver} = await getStuff(recvChain)
+  const recvChain = wh.getChain("Ethereum");
+  const { address: receiver } = await getStuff(recvChain);
 
   //
   console.log("creating transaction...");
   const xfer = tb.transfer(walletAddr, receiver, "native", 1_000_000n);
 
   // Gather transactions
-  const unsigned = []
-  for await (const msg of xfer) 
-    unsigned.push(msg)
-  const signedTxns = await signer.sign(unsigned)
+  const unsigned = [];
+  for await (const msg of xfer) unsigned.push(msg);
+  const signedTxns = await signer.sign(unsigned);
 
-  const txids = await chainCtx.sendWait(signedTxns)
-  console.log("Sent transactions: ", txids)
+  const txids = await chainCtx.sendWait(signedTxns);
+  console.log("Sent transactions: ", txids);
 })();

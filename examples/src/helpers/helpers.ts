@@ -122,7 +122,7 @@ export async function getCosmosSigner(
       chain.chain,
     );
 
-    console.log(restRpc, chainId)
+    console.log(restRpc, chainId);
 
     return new CosmosEvmSigner(chain.chain, chainId, mnemonic, restRpc);
   }

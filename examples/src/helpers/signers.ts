@@ -158,7 +158,7 @@ export class CosmosEvmSigner implements Signer {
 
   async sign(txns: UnsignedTransaction[]): Promise<SignedTx[]> {
     const pubKey = this.key.toPublicKey().toBase64();
-    const {sequence, accountNumber} = await this.getSignerData();
+    const { sequence, accountNumber } = await this.getSignerData();
 
     const signed: SignedTx[] = [];
     for (const tx of txns) {
@@ -174,7 +174,7 @@ export class CosmosEvmSigner implements Signer {
         return new MsgExecuteContract(f);
       });
 
-      console.log(message)
+      console.log(message);
 
       const { signBytes, txRaw } = createTransaction({
         message,

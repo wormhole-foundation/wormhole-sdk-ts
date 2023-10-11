@@ -1,12 +1,15 @@
+const DEFAULT_TIMEOUT = 60 * 1000; // 1 minute in milliseconds
+
 export type Task<T> = () => Promise<T | null>;
 
 export async function retry<T>(
   task: Task<T>,
   interval: number,
-  maxRetries: number,
+  timeout: number = DEFAULT_TIMEOUT,
 ): Promise<T | null> {
-  let retries = 0;
+  const maxRetries = Math.floor(timeout / interval);
 
+  let retries = 0;
   return new Promise<T | null>((resolve, reject) => {
     const intervalId = setInterval(async () => {
       if (retries >= maxRetries) {
