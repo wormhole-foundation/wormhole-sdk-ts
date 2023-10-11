@@ -85,7 +85,7 @@ import { TransferStuff, getStuff } from "./helpers";
     { chain: cosmos1.chain, address: cosmosTokenAddress },
     1000n,
     leg2,
-    leg1
+    leg1,
   );
   console.log("Route 3 (Cosmos => !Cosmos): ", route3);
 })();

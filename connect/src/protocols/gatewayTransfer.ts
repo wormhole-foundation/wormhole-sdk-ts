@@ -35,7 +35,7 @@ import {
   TransferState,
   WormholeTransfer,
 } from "../wormholeTransfer";
-import { retry } from "./poller";
+import { retry } from "./retry";
 import { fetchIbcXfer, isVaaRedeemed } from "./utils";
 
 export class GatewayTransfer implements WormholeTransfer {
@@ -416,12 +416,11 @@ export class GatewayTransfer implements WormholeTransfer {
 
       // start by getting the IBC transfers into wormchain
       // from the cosmos chain
-      const _ibcTransfers = await Promise.all(
-        this.transactions.map(async (tx) => {
-          return await bridge.lookupTransferFromTx(tx.txid);
-        }),
-      );
-      this.ibcTransfers = _ibcTransfers.flat();
+      this.ibcTransfers = (
+        await Promise.all(
+          this.transactions.map((tx) => bridge.lookupTransferFromTx(tx.txid)),
+        )
+      ).flat();
 
       // I don't know why this would happen so lmk if you see this
       if (this.ibcTransfers.length != 1) throw new Error("why?");
@@ -458,24 +457,25 @@ export class GatewayTransfer implements WormholeTransfer {
 
       attestations.push(whm);
 
+      // TODO: conf for these settings? how do we choose them?
+      const retryInterval = 2000;
+
       // Wait until the vaa is redeemed before trying to look up the
       // transfer message
       const wcTb = await this.wc.getTokenBridge();
-      const isRedeemedTask = () => {
-        return isVaaRedeemed(wcTb, [vaa]);
-      };
-      // TODO: conf for these settings? how do we choose them?
-      const redeemed = await retry<boolean>(isRedeemedTask, 2000, 10);
+      const isRedeemedTask = () => isVaaRedeemed(wcTb, [vaa]);
+      const redeemed = await retry<boolean>(isRedeemedTask, retryInterval);
       if (!redeemed) throw new Error("VAA not found after retries exhausted");
 
       // Finally, get the IBC transactions from wormchain
       // Note: Because we search by GatewayTransferMsg payload
       // there is a possibility of dupe messages being returned
       // using a nonce should help
-      const wcTransferTask = () => {
-        return fetchIbcXfer(wcIbc, this.msg);
-      };
-      const wcTransfer = await retry<IbcTransferInfo>(wcTransferTask, 2000, 10);
+      const wcTransferTask = () => fetchIbcXfer(wcIbc, this.msg);
+      const wcTransfer = await retry<IbcTransferInfo>(
+        wcTransferTask,
+        retryInterval,
+      );
       if (!wcTransfer)
         throw new Error("Wormchain transfer not found after retries exhausted");
 
