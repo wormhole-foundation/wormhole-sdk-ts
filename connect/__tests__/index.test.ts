@@ -1,3 +1,4 @@
+import * as publicRpcMock from './mocks/publicrpc';
 import {
   TokenBridge,
   Platform,
@@ -34,6 +35,25 @@ describe('Wormhole Tests', () => {
   test('returns chain', async () => {
     c = wh.getChain('Ethereum');
     expect(c).toBeTruthy();
+  });
+
+  describe('getVAABytes', () => {
+    test('returns vaa bytes', async () => {
+      const vaa = await wh.getVAABytes('Arbitrum', testing.utils.makeChainAddress('Arbitrum').address, 1n);
+      expect(vaa).toBeDefined();
+    });
+
+    test('returns undefined when vaa bytes not found', async () => {
+      publicRpcMock.givenSignedVaaNotFound();
+      const vaa = await wh.getVAABytes('Aptos', testing.utils.makeChainAddress('Aptos').address, 1n, 1);
+      expect(vaa).toBeUndefined();
+    });
+
+    test('returns after first try fails', async () => {
+      publicRpcMock.givenSignedVaaRequestWorksAfterRetry();
+      const vaa = await wh.getVAABytes('Base', testing.utils.makeChainAddress('Base').address, 1n, 2, { retryDelay: 10 });
+      expect(vaa).toBeDefined();
+    });
   });
 });
 
