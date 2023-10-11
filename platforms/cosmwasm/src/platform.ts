@@ -94,7 +94,7 @@ export module CosmwasmPlatform {
   ): Promise<WormholeMessageId[]> {
     const tx = await rpc.getTx(txid);
     if (!tx) throw new Error("No Transaction found: " + txid);
-    return [Gateway.getWormholeMessage(tx!)];
+    return [Gateway.parseWormholeMessage(tx)];
   }
 
   export async function getTokenBridge(

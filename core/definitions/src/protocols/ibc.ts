@@ -8,7 +8,7 @@ import {
 import { ChainAddress, NativeAddress, UniversalOrNative } from "../address";
 import { IbcMessageId, WormholeMessageId } from "../attestation";
 import { RpcConnection } from "../rpc";
-import { TokenId,  TxHash } from "../types";
+import { TokenId, TxHash } from "../types";
 import { UnsignedTransaction } from "../unsignedTransaction";
 
 // Configuration for a transfer through the Gateway
@@ -65,13 +65,13 @@ export interface GatewayIbcTransferMsg {
 }
 
 export function isGatewayTransferMsg(
-  thing: GatewayTransferMsg | any
+  thing: GatewayTransferMsg | any,
 ): thing is GatewayTransferMsg {
   return (<GatewayTransferMsg>thing).gateway_transfer !== undefined;
 }
 
 export function isGatewayTransferWithPayloadMsg(
-  thing: GatewayTransferWithPayloadMsg | any
+  thing: GatewayTransferWithPayloadMsg | any,
 ): thing is GatewayTransferWithPayloadMsg {
   return (
     (<GatewayTransferWithPayloadMsg>thing).gateway_transfer_with_payload !==
@@ -80,7 +80,7 @@ export function isGatewayTransferWithPayloadMsg(
 }
 
 export function isGatewayIbcTransferMsg(
-  thing: GatewayIbcTransferMsg | any
+  thing: GatewayIbcTransferMsg | any,
 ): thing is GatewayIbcTransferMsg {
   return (
     (<GatewayIbcTransferMsg>thing).gateway_ibc_token_bridge_payload !==
@@ -89,7 +89,7 @@ export function isGatewayIbcTransferMsg(
 }
 
 export function isGatewayTransferDetails(
-  thing: GatewayTransferDetails | any
+  thing: GatewayTransferDetails | any,
 ): thing is GatewayTransferDetails {
   return (
     (<GatewayTransferDetails>thing).token !== undefined &&
@@ -106,7 +106,7 @@ export function asGatewayMsg(
     | GatewayTransferMsg
     | GatewayTransferWithPayloadMsg
     | GatewayIbcTransferMsg
-    | string
+    | string,
 ): GatewayMsg {
   if (typeof msg === "string") msg = JSON.parse(msg);
 
@@ -119,7 +119,7 @@ export function asGatewayMsg(
 }
 
 export function gatewayTransferMsg(
-  gtd: GatewayTransferDetails | GatewayMsg
+  gtd: GatewayTransferDetails | GatewayMsg,
 ): GatewayTransferMsg | GatewayTransferWithPayloadMsg {
   if (isGatewayTransferDetails(gtd)) {
     // If we've already got a payload, b64 encode it so it works in json
@@ -134,7 +134,7 @@ export function gatewayTransferMsg(
       gtd.to.address as NativeAddress<"Cosmwasm">,
       gtd.fee,
       gtd.nonce ?? Math.round(Math.random() * 100000),
-      _payload
+      _payload,
     );
   }
 
@@ -145,7 +145,7 @@ export function gatewayTransferMsg(
     gtd.recipient,
     BigInt(gtd.fee),
     gtd.nonce,
-    gtd.payload
+    gtd.payload,
   );
 }
 
@@ -154,7 +154,7 @@ export function makeGatewayTransferMsg(
   recipient: NativeAddress<"Cosmwasm"> | string,
   fee: bigint = 0n,
   nonce: number,
-  payload?: string
+  payload?: string,
 ): GatewayTransferWithPayloadMsg | GatewayTransferMsg {
   // Address of recipient is b64 encoded Cosmos bech32 address
   // If its already a string, assume its been b64 encoded
@@ -190,7 +190,7 @@ export interface IbcTransferInfo {
 }
 
 export function isIbcTransferInfo(
-  thing: IbcTransferInfo | any
+  thing: IbcTransferInfo | any,
 ): thing is IbcTransferInfo {
   return (
     (<IbcTransferInfo>thing).id !== undefined &&
@@ -213,7 +213,7 @@ export interface SupportsIbcBridge<P extends PlatformName> {
 }
 
 export function supportsIbcBridge<P extends PlatformName>(
-  thing: SupportsIbcBridge<P> | any
+  thing: SupportsIbcBridge<P> | any,
 ): thing is SupportsIbcBridge<P> {
   return typeof (<SupportsIbcBridge<P>>thing).getIbcBridge === "function";
 }
@@ -225,25 +225,20 @@ export interface IbcBridge<P extends PlatformName> {
     recipient: ChainAddress,
     token: UniversalOrNative<P> | "native",
     amount: bigint,
-    payload?: Uint8Array
+    payload?: Uint8Array,
   ): AsyncGenerator<UnsignedTransaction>;
 
   // cached from config
   //getChannels(): IbcChannel | null;
   //fetchChannels(): Promise<IbcChannel | null>;
 
-  // Get WormholeMessageId for VAAs
-  lookupMessageFromIbcMsgId(
-    msg: IbcMessageId
-  ): Promise<WormholeMessageId>;
+  lookupMessageFromIbcMsgId(msg: IbcMessageId): Promise<WormholeMessageId>;
 
-  // Get IbcTransferInfo 
+  // Get IbcTransferInfo
   // TODO: overload
   lookupTransferFromTx(txid: TxHash): Promise<IbcTransferInfo>;
-  lookupTransferFromIbcMsgId(
-    msg: IbcMessageId
-  ): Promise<IbcTransferInfo>;
+  lookupTransferFromIbcMsgId(msg: IbcMessageId): Promise<IbcTransferInfo>;
   lookupTransferFromMsg(
-    payload: GatewayTransferMsg | GatewayTransferWithPayloadMsg
+    payload: GatewayTransferMsg | GatewayTransferWithPayloadMsg,
   ): Promise<IbcTransferInfo>;
 }
