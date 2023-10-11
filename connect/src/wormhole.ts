@@ -24,7 +24,7 @@ import {
   WormholeMessageId,
   isTokenId,
 } from "@wormhole-foundation/sdk-definitions";
-import axios, { AxiosResponse } from "axios";
+import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 
 import { WormholeConfig } from "./types";
 
@@ -359,6 +359,7 @@ export class Wormhole {
    * @param emitter The emitter address
    * @param sequence The sequence number
    * @param retries The number of times to retry
+   * @param opts The options for the request. Timeouts must be set in ms.
    * @returns The VAA bytes if available
    * @throws Errors if the VAA is not available after the retries
    */
@@ -367,15 +368,28 @@ export class Wormhole {
     emitter: UniversalAddress | NativeAddress<PlatformName>,
     sequence: bigint,
     retries: number = 5,
+    opts?: {
+      retryDelay?: number;
+      requestTimeout?: number;
+    },
   ): Promise<Uint8Array | undefined> {
     const chainId = toChainId(chain);
-    const emitterAddress = emitter.toUniversalAddress().toString();
+    const universalAddress = emitter.toUniversalAddress().toString();
+    const emitterAddress = universalAddress.startsWith("0x")
+      ? universalAddress.slice(2)
+      : universalAddress;
 
     let response: AxiosResponse<any, any> | undefined;
-    const url = `${this.conf.api}/api/v1/vaas/${chainId}/${emitterAddress}/${sequence}`;
+    const url = `${this.conf.api}/v1/signed_vaa/${chainId}/${emitterAddress}/${sequence}`;
+    const axiosOptions: AxiosRequestConfig = {};
+    if (opts?.requestTimeout) {
+      axiosOptions.timeout = opts.requestTimeout;
+      axiosOptions.signal = AbortSignal.timeout(opts.requestTimeout);
+    }
 
     for (let i = retries; i > 0 && !response; i--) {
-      if (i != retries) await new Promise((f) => setTimeout(f, 2000));
+      if (i != retries)
+        await new Promise((f) => setTimeout(f, opts?.retryDelay ?? 2000));
 
       try {
         response = await axios.get(url);
@@ -387,11 +401,7 @@ export class Wormhole {
 
     const { data } = response;
 
-    return new Uint8Array(Buffer.from(data.data.vaa, "base64"));
-
-    // TODO: Make both data formats work
-    // const url = `https://wormhole-v2-testnet-api.certus.one/v1/signed_vaa/${chainId}/${emitterAddress}/${sequence}`;
-    //return new Uint8Array(Buffer.from(data.vaaBytes, 'base64'));
+    return new Uint8Array(Buffer.from(data.vaaBytes, "base64"));
   }
 
   /**
