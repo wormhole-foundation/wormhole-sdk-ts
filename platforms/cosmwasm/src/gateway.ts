@@ -112,6 +112,10 @@ export module Gateway {
     chain: CosmwasmChainName,
     denom: string,
   ): CosmwasmAddress {
+    // If its already an IBC token, just return it
+    if (denom.startsWith("ibc/")) return new CosmwasmAddress(denom);
+
+    // Otherwise compute the ibc address from the channel and denom
     const channel = getDestinationChannel(chain);
     const hashData = Buffer.from(`transfer/${channel}/${denom}`);
     const hash = Buffer.from(sha256(hashData)).toString("hex");
@@ -145,21 +149,28 @@ export module Gateway {
   }
 
   // TODO: make consts
-  export function getWormholeMessage(tx: IndexedTx): WormholeMessageId {
-    const wasm = tx.events
-      .filter(
-        (ev) =>
-          ev.type === "wasm" &&
-          ev.attributes[0].key === "_contract_address" &&
-          ev.attributes[0].value === coreAddress(),
-      )
-      .pop();
+  export function parseWormholeMessage(tx: IndexedTx): WormholeMessageId {
+    console.log(tx.hash);
+    tx.events.forEach((ev) => console.log(ev.type, ev.attributes));
 
-    const sequence = wasm!.attributes.find((e) => {
+    const events = tx.events.filter(
+      (ev) =>
+        ev.type === "wasm" &&
+        ev.attributes[0].key === "_contract_address" &&
+        ev.attributes[0].value === coreAddress(),
+    );
+
+    if (events.length === 0) throw new Error("No wormhole message found in tx");
+    if (events.length > 1)
+      console.error(`Expected single message, found ${events.length}`);
+
+    const [wasm] = events;
+
+    const sequence = wasm.attributes.find((e) => {
       return e.key === "message.sequence";
     })!.value;
 
-    const emitter = wasm!.attributes.find((e) => {
+    const emitter = wasm.attributes.find((e) => {
       return e.key === "message.sender";
     })!.value;
 

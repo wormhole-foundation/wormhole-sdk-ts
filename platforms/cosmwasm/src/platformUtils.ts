@@ -116,39 +116,6 @@ export module CosmwasmUtils {
     return txhashes;
   }
 
-  export async function parseTransaction(
-    chain: ChainName,
-    rpc: CosmWasmClient,
-    txid: TxHash,
-  ): Promise<WormholeMessageId[]> {
-    throw new Error("Not implemented");
-    //const receipt = await rpc.getTransactionReceipt(txid);
-
-    //if (receipt === null)
-    //  throw new Error(`No transaction found with txid: ${txid}`);
-
-    //const coreAddress = this.conf[chain]!.contracts.coreBridge;
-    //const coreImpl = this.contracts.getCoreImplementationInterface();
-
-    //return receipt.logs
-    //  .filter((l: any) => {
-    //    return l.address === coreAddress;
-    //  })
-    //  .map((log) => {
-    //    const { topics, data } = log;
-    //    const parsed = coreImpl.parseLog({ topics: topics.slice(), data });
-    //    if (parsed === null) return undefined;
-
-    //    const emitterAddress = this.parseAddress(chain, parsed.args.sender);
-    //    return {
-    //      chain: chain,
-    //      emitter: emitterAddress.toUniversalAddress(),
-    //      sequence: parsed.args.sequence,
-    //    } as WormholeMessageId;
-    //  })
-    //  .filter(isWormholeMessageId);
-  }
-
   export async function getCurrentBlock(rpc: CosmWasmClient): Promise<number> {
     return rpc.getHeight();
   }
