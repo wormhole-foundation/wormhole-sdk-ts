@@ -408,7 +408,7 @@ export class GatewayTransfer implements WormholeTransfer {
       // assume all the txs are from the same chain
       // and get the ibc bridge once
       const chain = this.wh.getChain(this.transfer.from.chain);
-      const bridge = await chain.getIbcBridge();
+      const originIbcbridge = await chain.getIbcBridge();
 
       // Ultimately we need to find the corresponding Wormchain transaction
       // from the intitiating cosmos chain, this will contain the details of the
@@ -418,18 +418,28 @@ export class GatewayTransfer implements WormholeTransfer {
       // from the cosmos chain
       this.ibcTransfers = (
         await Promise.all(
-          this.transactions.map((tx) => bridge.lookupTransferFromTx(tx.txid)),
+          this.transactions.map((tx) =>
+            originIbcbridge.lookupTransferFromTx(tx.txid),
+          ),
         )
       ).flat();
 
       // I don't know why this would happen so lmk if you see this
       if (this.ibcTransfers.length != 1) throw new Error("why?");
 
-      // now find the corresponding wormchain transaction given the ibcTransfer info
-      const xfer = this.ibcTransfers[0];
       // If we're leaving cosmos, grab the VAA from the gateway
       if (!this.toGateway()) {
-        const whm = await wcIbc.lookupMessageFromIbcMsgId(xfer.id);
+        const [xfer] = this.ibcTransfers;
+
+        // now find the corresponding wormchain transaction given the ibcTransfer info
+        const retryInterval = 5000;
+        const task = () => wcIbc.lookupMessageFromIbcMsgId(xfer.id);
+        const whm = await retry<WormholeMessageId>(task, retryInterval);
+        if (!whm)
+          throw new Error(
+            "Matching wormhole message not found after retries exhausted",
+          );
+
         const vaa = await GatewayTransfer.getTransferVaa(
           this.wh,
           whm.chain,
@@ -463,9 +473,15 @@ export class GatewayTransfer implements WormholeTransfer {
       // Wait until the vaa is redeemed before trying to look up the
       // transfer message
       const wcTb = await this.wc.getTokenBridge();
-      const isRedeemedTask = () => isVaaRedeemed(wcTb, [vaa]);
+      // Since we want to retry until its redeemed, return null
+      // in the case that its not redeemed
+      const isRedeemedTask = async () => {
+        const redeemed = await isVaaRedeemed(wcTb, [vaa]);
+        return redeemed ? redeemed : null;
+      };
       const redeemed = await retry<boolean>(isRedeemedTask, retryInterval);
-      if (!redeemed) throw new Error("VAA not found after retries exhausted");
+      if (!redeemed)
+        throw new Error("VAA not redeemed after retries exhausted");
 
       // Finally, get the IBC transactions from wormchain
       // Note: Because we search by GatewayTransferMsg payload

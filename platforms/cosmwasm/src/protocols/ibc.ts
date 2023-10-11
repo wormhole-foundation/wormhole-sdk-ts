@@ -168,9 +168,10 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
     msg: IbcMessageId,
   ): Promise<WormholeMessageId> {
     const tx = await this.lookupTxFromIbcMsgId(msg);
-    return Gateway.getWormholeMessage(tx);
+    return Gateway.parseWormholeMessage(tx);
   }
 
+  // Private because we dont want to expose the IndexedTx type
   private async lookupTxFromIbcMsgId(msg: IbcMessageId): Promise<IndexedTx> {
     const prefix =
       this.chain === msg.chain ? IBC_PACKET_SEND : IBC_PACKET_RECEIVE;
@@ -342,29 +343,25 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
   }
 
   // Fetches the channel information between wormchain and a given chain
-  async fetchChannel(chain: CosmwasmChainName): Promise<IbcChannel | null> {
+  async fetchChannel(chain: CosmwasmChainName): Promise<IbcChannel> {
     const queryClient = CosmwasmUtils.asQueryClient(this.rpc);
-    try {
-      const { channel: srcChannel } = await this.rpc.queryContractSmart(
-        this.gatewayAddress,
-        { ibc_channel: { chain_id: toChainId(chain) } },
-      );
-      const conn = await queryClient.ibc.channel.channel(
-        IBC_TRANSFER_PORT,
-        srcChannel,
+
+    const { channel: srcChannel } = await this.rpc.queryContractSmart(
+      this.gatewayAddress,
+      { ibc_channel: { chain_id: toChainId(chain) } },
+    );
+    const conn = await queryClient.ibc.channel.channel(
+      IBC_TRANSFER_PORT,
+      srcChannel,
+    );
+
+    const dstChannel = conn.channel?.counterparty?.channelId;
+    if (!dstChannel)
+      throw new Error(
+        `No destination channel found for chain ${chain} on ${this.chain}`,
       );
 
-      const dstChannel = conn.channel?.counterparty?.channelId;
-      if (!dstChannel)
-        throw new Error(
-          `No destination channel found for chain ${chain} on ${this.chain}`,
-        );
-
-      return { srcChannel, dstChannel };
-    } catch (e) {
-      // TODO
-    }
-    return null;
+    return { srcChannel, dstChannel };
   }
 
   private createUnsignedTx(
