@@ -13,6 +13,7 @@ const circleDomains = [
   ["Avalanche", 1],
   ["Optimism", 2],
   ["Arbitrum", 3],
+  ["Base", 6],
 ] as const satisfies RoArray<readonly [ChainName, number]>;
 
 const usdcContracts = [
@@ -23,6 +24,7 @@ const usdcContracts = [
       ["Avalanche", "0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e"],
       ["Arbitrum", "0xaf88d065e77c8cC2239327C5EDb3A432268e5831"],
       ["Optimism", "0x179522635726710dd7d2035a81d856de4aa7836c"],
+      ["Base", "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"],
     ],
   ],
   [
@@ -32,6 +34,7 @@ const usdcContracts = [
       ["Arbitrum", "0xfd064A18f3BF249cf1f87FC203E90D8f650f2d63"],
       ["Ethereum", "0x07865c6e87b9f70255377e024ace6630c1eaa37f"],
       ["Optimism", "0xe05606174bac4A6364B31bd0eCA4bf4dD368f8C6"],
+      ["Base", "0xf175520c52418dfe19c8098071a252da48cd1c19"],
     ],
   ],
 ] as const satisfies RoArray<

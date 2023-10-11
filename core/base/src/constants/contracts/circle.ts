@@ -45,7 +45,7 @@ export const circleContracts = [
         "Optimism",
         {
           tokenMessenger: "0x2B4069517957735bE00ceE0fadAE88a26365528f",
-          messageTransmitter: "0x09Fb06A271faFf70A651047395AaEb6265265F13",
+          messageTransmitter: "0x4d41f22c5a0e5c74090899e5a8fb597a8842b3e8",
           wormholeRelayer: "0x4cb69FaE7e7Af841e44E1A1c30Af640739378bb2",
           wormhole: "0x2703483b1a5a7c577e8680de9df8be03c6f30e3c",
         },
@@ -90,6 +90,15 @@ export const circleContracts = [
           messageTransmitter: "0x9ff9a4da6f2157a9c82ce756f8fd7e0d75be8895",
           wormholeRelayer: "0x4cb69FaE7e7Af841e44E1A1c30Af640739378bb2",
           wormhole: "0x2703483b1a5a7c577e8680de9df8be03c6f30e3c",
+        },
+      ],
+      [
+        "Base",
+        {
+          tokenMessenger: "	0x877b8e8c9e2383077809787ED6F279ce01CB4cc8",
+          messageTransmitter: "0x9ff9a4da6f2157A9c82CE756f8fD7E0d75be8895",
+          wormholeRelayer: "",
+          wormhole: "",
         },
       ],
     ],

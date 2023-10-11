@@ -4,9 +4,10 @@ import {
   PlatformName,
   isChain,
 } from "@wormhole-foundation/sdk-base";
-import { ChainAddress, toNative } from "./address";
+import { ChainAddress, NativeAddress, toNative } from "./address";
 import { Contracts } from "./contracts";
 import { UnsignedTransaction } from "./unsignedTransaction";
+import { UniversalAddress } from "./universalAddress";
 
 export type TxHash = string;
 export type SequenceId = bigint;
@@ -34,7 +35,28 @@ export function isSigner(thing: Signer | any): thing is Signer {
   );
 }
 
-export function nativeChainAddress(s: Signer | TokenId): TokenId {
+export function nativeChainAddress(
+  s: Signer | TokenId | [ChainName, UniversalAddress | Uint8Array | string],
+): ChainAddress {
+  if (Array.isArray(s)) {
+    // We might be passed a universal address as a string
+    // First try to decode it as native, otherwise try
+    // to decode it as universal and convert it to native
+    let address: NativeAddress<(typeof s)[0]>;
+    try {
+      address = toNative(s[0], s[1]);
+    } catch {
+      address =
+        s[1] instanceof UniversalAddress
+          ? s[1].toNative(s[0])
+          : new UniversalAddress(s[1]).toNative(s[0]);
+    }
+    return {
+      chain: s[0],
+      address: address,
+    };
+  }
+
   if (isSigner(s))
     return {
       chain: s.chain(),

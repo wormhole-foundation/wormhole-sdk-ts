@@ -73,7 +73,6 @@ async function tokenTransfer(
   nativeGas?: bigint,
   payload?: Uint8Array,
 ) {
-
   const xfer = await wh.tokenTransfer(
     token,
     amount,
@@ -94,14 +93,14 @@ async function tokenTransfer(
   if (automatic) return waitLog(xfer);
 
   // 2) wait for the VAA to be signed and ready (not required for auto transfer)
-  // console.log("Getting Attestation");
-  // const attestIds = await xfer.fetchAttestation();
-  // console.log(`Got Attestation: `, attestIds);
+  console.log("Getting Attestation");
+  const attestIds = await xfer.fetchAttestation();
+  console.log(`Got Attestation: `, attestIds);
 
-  // // 3) redeem the VAA on the dest chain
-  // console.log("Completing Transfer");
-  // const destTxids = await xfer.completeTransfer(dst.signer);
-  // console.log(`Completed Transfer: `, destTxids);
+  // 3) redeem the VAA on the dest chain
+  console.log("Completing Transfer");
+  const destTxids = await xfer.completeTransfer(dst.signer);
+  console.log(`Completed Transfer: `, destTxids);
 }
 
 // If you've started a transfer but not completed it
