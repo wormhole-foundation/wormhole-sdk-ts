@@ -54,6 +54,7 @@ const checkEnvConfig = async (
     let foreignAddress: string | null = null;
     try {
       const foreignId = await wh.getWrappedAsset(chain, tokenId);
+      console.log(foreignId.address)
       foreignAddress = foreignId.address.toString();
     } catch (e: any) {
       if (
@@ -62,9 +63,8 @@ const checkEnvConfig = async (
       ) {
         // do not throw on wormchain errors
       } else {
-        // silence Not a wrapped asset error
-        // throw e;
-        // console.log(e)
+        // log error but keep going
+        console.error(e)
       }
     }
     return foreignAddress;
@@ -77,12 +77,12 @@ const checkEnvConfig = async (
       if (foreignChain !== tokenId.chain && isSupported) {
         console.log('FOREIGN CHAIN', foreignChain)
         const configForeignAddress = foreignAssetsCache ? foreignAssetsCache[foreignChain] : undefined;
-        const foreignAddress = await getForeignAddress(chain, tokenId);
+        const foreignAddress = await getForeignAddress(foreignChain, tokenId);
         console.log(foreignAddress)
         if (foreignAddress) {
           const foreignDecimals = await wh.getDecimals(
-            chain,
-            tokenId,
+            foreignChain,
+            toNative(foreignChain, foreignAddress),
           );
           console.log('FOREIGN', foreignAddress, foreignDecimals)
           if (configForeignAddress) {
@@ -90,7 +90,7 @@ const checkEnvConfig = async (
               throw new Error(
                 `❌ Invalid foreign address detected! Env: ${wh.conf.network}, Existing Address: ${configForeignAddress.address}, Chain: ${chain}, Expected: ${foreignAddress}, Received: ${configForeignAddress.address}`,
               );
-            } else if (BigInt(configForeignAddress.decimals) !== foreignDecimals) {
+            } else if (configForeignAddress.decimals !== Number(foreignDecimals)) {
               throw new Error(
                 `❌ Invalid foreign decimals detected! Env: ${wh.conf.network}, Existing Address: ${configForeignAddress.address}, Chain: ${chain}, Expected: ${foreignDecimals}, Received: ${configForeignAddress.decimals}`,
               );

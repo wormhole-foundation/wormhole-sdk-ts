@@ -9,6 +9,7 @@ import {
   nativeDecimals,
   chainToPlatform,
   PlatformUtils,
+  UniversalOrNative,
 } from "@wormhole-foundation/connect-sdk";
 import {
   chainToNativeDenoms,
@@ -53,13 +54,13 @@ export module CosmwasmUtils {
   export async function getDecimals(
     chain: ChainName,
     rpc: CosmWasmClient,
-    tokenId: TokenId | "native",
+    token: UniversalOrNative<'Cosmwasm'> | "native",
   ): Promise<bigint> {
-    if (tokenId === "native" || isNativeTokenId(chain, tokenId))
+    if (token === "native")
       return nativeDecimals(CosmwasmPlatform.platform);
 
     const { decimals } = await rpc.queryContractSmart(
-      tokenId.address.toString(),
+      token.toString(),
       {
         token_info: {},
       },
@@ -71,9 +72,9 @@ export module CosmwasmUtils {
     chain: ChainName,
     rpc: CosmWasmClient,
     walletAddress: string,
-    tokenId: TokenId | "native",
+    token: UniversalOrNative<'Cosmwasm'> | "native",
   ): Promise<bigint | null> {
-    if (tokenId === "native") {
+    if (token === "native") {
       const { amount } = await rpc.getBalance(
         walletAddress,
         getNativeDenom(chain),
@@ -83,7 +84,7 @@ export module CosmwasmUtils {
 
     const { amount } = await rpc.getBalance(
       walletAddress,
-      tokenId.address.toString(),
+      token.toString(),
     );
     return BigInt(amount);
   }
