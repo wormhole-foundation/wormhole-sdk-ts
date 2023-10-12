@@ -36,6 +36,7 @@
   "workspaces": [
     "core/base",
     "core/definitions",
+    "core/tokenRegistry",
     "connect",
     "platforms/evm",
     "platforms/solana",
