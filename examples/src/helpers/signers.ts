@@ -87,7 +87,9 @@ export class SolSigner implements Signer {
   async sign(tx: UnsignedTransaction[]): Promise<any[]> {
     const signed = [];
     for (const txn of tx) {
-      const { transaction } = txn;
+      const { description, transaction } = txn;
+      console.log(`Signing: ${description} for ${this.address()}`);
+
       transaction.partialSign(this._keypair);
       signed.push(transaction.serialize());
     }
@@ -122,12 +124,8 @@ export class CosmosSigner implements Signer {
         transaction.fee,
         transaction.memo,
       );
-      const encoded = TxRaw.encode(txRaw).finish();
 
-      // console.log(
-      //   "Encoded: ",
-      //   encodeURIComponent(Buffer.from(encoded).toString("base64"))
-      // );
+      const encoded = TxRaw.encode(txRaw).finish();
       signed.push(encoded);
     }
 
@@ -162,7 +160,8 @@ export class CosmosEvmSigner implements Signer {
 
     const signed: SignedTx[] = [];
     for (const tx of txns) {
-      const { transaction } = tx as CosmwasmUnsignedTransaction;
+      const { description, transaction } = tx as CosmwasmUnsignedTransaction;
+      console.log(`Signing ${description} for ${this.address()}`);
 
       // need to set contractAddress and msg
       const message: Msgs[] = transaction.msgs.map((m) => {

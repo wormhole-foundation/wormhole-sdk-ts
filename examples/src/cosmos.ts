@@ -49,57 +49,58 @@ import { TransferStuff, getStuff } from "./helpers";
   const token = "native";
   const amount = await wh.normalizeAmount(external.chain, token, 0.01);
 
-  const wc = wh.getChain("Wormchain");
-  const ibcBridge = (await wc.getIbcBridge()) as CosmwasmIbcBridge;
-  console.log(await ibcBridge.fetchChannel("Osmosis"));
-  console.log(await ibcBridge.fetchChannel("Cosmoshub"));
-  return;
-
   // Transfer native token from source chain, through gateway, to a cosmos chain
   // const route1 = await transferIntoCosmos(wh, token, amount, leg1, leg2);
   const route1 = await GatewayTransfer.from(wh, {
     chain: external.chain,
-    txid: "0x152b9686dc5ad8deef3329d2898609f8810b23d05760889e9a82952ead1a5ec6",
+    txid: "0x8d7ed0176d24a0b84ea1bcbd6af63d4a539404b568bb5072bdc9f6f89deb4042",
   });
   console.log("Route 1 (!Cosmos => Cosmos)", route1);
 
+  const wormchainToCosmos = route1.ibcTransfers![0];
+  console.log("Wormchain To Cosmos IBC Transfer: ", wormchainToCosmos);
   // Lookup the Gateway representation of the wrappd token
   const cosmosTokenAddress = toNative(
     "Wormchain",
-    route1.ibcTransfers![0].data.denom,
+    wormchainToCosmos.data.denom,
   );
   console.log("Wrapped Token: ", cosmosTokenAddress.toString());
 
+  const rcvIbcBridge = await cosmos1.getIbcBridge();
+  console.log(
+    await rcvIbcBridge.lookupTransferFromIbcMsgId(wormchainToCosmos.id),
+  );
+
   return;
+  // Wait for the delivery from wormchain to be confirmed
+
   // // Transfer Gateway factory tokens over IBC through gateway to another Cosmos chain
-  const route2 = await GatewayTransfer.from(wh, {
-    chain: cosmos1.chain,
-    txid: "C6729DBCF6902BEB9EB4E61FE0C7F4B939465F24D4CB91287E04FF71293416D6",
-  });
-  // const route2 = await transferBetweenCosmos(
-  //   wh,
-  //   { chain: cosmos1.chain, address: cosmosTokenAddress },
-  //   1000n,
-  //   leg2,
-  //   leg3
-  // );
+  //const route2 = await GatewayTransfer.from(wh, {
+  //  chain: cosmos1.chain,
+  //  txid: "C6729DBCF6902BEB9EB4E61FE0C7F4B939465F24D4CB91287E04FF71293416D6",
+  //});
+  const route2 = await transferBetweenCosmos(
+    wh,
+    { chain: cosmos1.chain, address: cosmosTokenAddress },
+    1000n,
+    leg2,
+    leg3,
+  );
   console.log("Route 2 (Cosmos -> Cosmos): ", route2);
 
   // Transfer Gateway factory token through gateway back to source chain
-  const route3 = await GatewayTransfer.from(wh, {
-    chain: cosmos2.chain,
-    txid: "7BE3F55926979C25C3853D7FB761F0C7E67C3439BEA11DA0F63C7D84DE3B7604",
-  });
+  // const route3 = await GatewayTransfer.from(wh, {
+  //   chain: cosmos2.chain,
+  //   txid: "7BE3F55926979C25C3853D7FB761F0C7E67C3439BEA11DA0F63C7D84DE3B7604",
+  // });
 
-  // const old =
-  //   "ibc/992697726C555A3376B330350423DB6126E6BA1D2EE265C40C3B11E00C85D5FE";
-  // const route3 = await transferOutOfCosmos(
-  //   wh,
-  //   { chain: cosmos2.chain, address: toNative("Wormchain", old) },
-  //   5998990n,
-  //   leg3,
-  //   leg1,
-  // );
+  const route3 = await transferOutOfCosmos(
+    wh,
+    { chain: cosmos2.chain, address: cosmosTokenAddress },
+    5998990n,
+    leg3,
+    leg1,
+  );
 
   console.log("Route 3 (Cosmos => !Cosmos): ", route3);
 })();

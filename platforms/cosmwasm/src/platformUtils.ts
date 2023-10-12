@@ -111,6 +111,10 @@ export module CosmwasmUtils {
     const txhashes: TxHash[] = [];
     for (const stxn of stxns) {
       const result = await rpc.broadcastTx(stxn);
+      if (result.code !== 0)
+        throw new Error(
+          `Error sending transaction (${result.transactionHash}): ${result.rawLog}`,
+        );
       txhashes.push(result.transactionHash);
     }
     return txhashes;

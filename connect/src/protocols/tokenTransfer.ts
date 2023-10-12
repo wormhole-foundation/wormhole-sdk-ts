@@ -312,9 +312,7 @@ export class TokenTransfer implements WormholeTransfer {
 
     const toChain = this.wh.getChain(this.transfer.to.chain);
 
-    const toAddress = toNative(this.transfer.to.chain, signer.address())
-      //@ts-ignore
-      .toUniversalAddress();
+    const rcvAddress = toNative(this.transfer.to.chain, signer.address());
 
     let unsigned: UnsignedTransaction[] = [];
     const txHashes: TxHash[] = [];
@@ -331,10 +329,10 @@ export class TokenTransfer implements WormholeTransfer {
           );
 
         const tb = await toChain.getAutomaticTokenBridge();
-        xfer = tb.redeem(toAddress, vaa);
+        xfer = tb.redeem(rcvAddress, vaa);
       } else {
         const tb = await toChain.getTokenBridge();
-        xfer = tb.redeem(toAddress, vaa);
+        xfer = tb.redeem(rcvAddress, vaa);
       }
 
       // TODO: better error

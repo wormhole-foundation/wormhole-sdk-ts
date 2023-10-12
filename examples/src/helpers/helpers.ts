@@ -26,33 +26,6 @@ import {
 import { CosmosEvmSigner, CosmosSigner, EvmSigner, SolSigner } from "./signers";
 import { ChainRestAuthApi } from "@injectivelabs/sdk-ts";
 
-// import {
-//   cosmosAminoConverters,
-//   cosmwasmAminoConverters,
-//   cosmwasmProtoRegistry,
-//   ibcAminoConverters,
-//   seiprotocolProtoRegistry,
-//   seiprotocolAminoConverters,
-// } from "@sei-js/proto";
-//
-// export const createSeiRegistry = (): Registry => {
-//   return new Registry([
-//     ...defaultRegistryTypes,
-//     ...cosmwasmProtoRegistry,
-//     ...seiprotocolProtoRegistry,
-//   ]);
-// };
-//
-// export const createSeiAminoTypes = (): AminoTypes => {
-//   const types = {
-//     ...cosmosAminoConverters,
-//     ...cosmwasmAminoConverters,
-//     ...ibcAminoConverters,
-//     ...seiprotocolAminoConverters,
-//   };
-//   return new AminoTypes(types);
-// };
-
 // read in from `.env`
 require("dotenv").config();
 export interface TransferStuff {
@@ -127,13 +100,7 @@ export async function getCosmosSigner(
     return new CosmosEvmSigner(chain.chain, chainId, mnemonic, restRpc);
   }
 
-  let options = undefined;
-  // if (chain.chain === "Sei") {
-  //    options = {
-  //      registry: createSeiRegistry(),
-  //      aminoTypes: createSeiAminoTypes(),
-  //    };
-  // }
+  let options = getCosmosOptions(chain.chain);
 
   // Otherwise use the default signer
   const signer = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
@@ -148,4 +115,33 @@ export async function getCosmosSigner(
   );
 
   return new CosmosSigner(chain.chain, signingClient, acct);
+}
+
+function getCosmosOptions(chain: ChainName): object | undefined {
+  // TODO: I'm not sure if this is needed
+  // if (chain === "Sei") {
+  //   const {
+  //     cosmosAminoConverters,
+  //     cosmwasmAminoConverters,
+  //     cosmwasmProtoRegistry,
+  //     ibcAminoConverters,
+  //     seiprotocolProtoRegistry,
+  //     seiprotocolAminoConverters,
+  //   } = require("@sei-js/proto");
+  //   const registry = new Registry([
+  //     ...defaultRegistryTypes,
+  //     ...cosmwasmProtoRegistry,
+  //     ...seiprotocolProtoRegistry,
+  //   ]);
+
+  //   const aminoTypes = new AminoTypes({
+  //     ...cosmosAminoConverters,
+  //     ...cosmwasmAminoConverters,
+  //     ...ibcAminoConverters,
+  //     ...seiprotocolAminoConverters,
+  //   });
+  //   return { registry, aminoTypes };
+  // }
+
+  return undefined;
 }
