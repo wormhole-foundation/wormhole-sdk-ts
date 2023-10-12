@@ -9,6 +9,7 @@ export type ForeignAssetsCache = {
 };
 
 export type TokenConfig = {
+  name: string;
   symbol: string;
   nativeChain: ChainName;
   decimals: number;
