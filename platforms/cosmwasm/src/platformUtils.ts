@@ -11,6 +11,7 @@ import {
   PlatformUtils,
 } from "@wormhole-foundation/connect-sdk";
 import {
+  IBC_TRANSFER_PORT,
   chainToNativeDenoms,
   cosmwasmChainIdToNetworkChainPair,
 } from "./constants";
@@ -134,6 +135,18 @@ export module CosmwasmUtils {
 
     const [network, chain] = networkChainPair;
     return [network, chain];
+  }
+
+  export async function getCounterpartyChannel(
+    sourceChannel: string,
+    rpc: CosmWasmClient,
+  ): Promise<string | null> {
+    const queryClient = asQueryClient(rpc);
+    const conn = await queryClient.ibc.channel.channel(
+      IBC_TRANSFER_PORT,
+      sourceChannel,
+    );
+    return conn.channel?.counterparty?.channelId ?? null;
   }
 
   export const asQueryClient = (

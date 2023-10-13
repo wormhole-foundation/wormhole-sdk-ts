@@ -36,24 +36,13 @@ export interface GatewayMsg {
 // GatewayTransferMsg is the message sent in the payload
 // of a TokenTransfer to be executed by the Gateway contract.
 export interface GatewayTransferMsg {
-  gateway_transfer: {
-    chain: ChainId;
-    recipient: string;
-    fee: string;
-    nonce: number;
-  };
+  gateway_transfer: Exclude<GatewayMsg, "payload">;
 }
 
 // GatewayTransferWithPayloadMsg is the message sent in the payload of a
 // TokenTransfer with its own payload to be executed by the Gateway contract.
 export interface GatewayTransferWithPayloadMsg {
-  gateway_transfer_with_payload: {
-    chain: ChainId;
-    recipient: string;
-    fee: string;
-    nonce: number;
-    payload: string;
-  };
+  gateway_transfer_with_payload: GatewayMsg;
 }
 
 // GatewayIBCTransferMsg is the message sent in the memo of an IBC transfer
@@ -101,7 +90,7 @@ export function isGatewayTransferDetails(
 
 // Get the underlying payload from a gateway message
 // without prefix
-export function asGatewayMsg(
+export function toGatewayMsg(
   msg:
     | GatewayTransferMsg
     | GatewayTransferWithPayloadMsg
@@ -151,7 +140,7 @@ export function gatewayTransferMsg(
 
 export function makeGatewayTransferMsg(
   chain: ChainName | ChainId,
-  recipient: NativeAddress<"Cosmwasm"> | string,
+  recipient: NativeAddress<PlatformName> | string,
   fee: bigint = 0n,
   nonce: number,
   payload?: string,
@@ -161,7 +150,7 @@ export function makeGatewayTransferMsg(
   const address =
     typeof recipient === "string"
       ? recipient
-      : // @ts-ignore
+      : //@ts-ignore
         Buffer.from(recipient.toString()).toString("base64");
 
   const common = {
@@ -229,8 +218,10 @@ export interface IbcBridge<P extends PlatformName> {
   ): AsyncGenerator<UnsignedTransaction>;
 
   // cached from config
-  //getChannels(): IbcChannel | null;
-  //fetchChannels(): Promise<IbcChannel | null>;
+  getTransferChannel(chain: ChainName): string | null;
+
+  // fetched from contract
+  fetchTransferChannel(chain: ChainName): Promise<string | null>;
 
   lookupMessageFromIbcMsgId(msg: IbcMessageId): Promise<WormholeMessageId>;
 
