@@ -7,7 +7,6 @@ import {
 import { circleMessageLayout } from "../src/protocols/cctp";
 import { UniversalAddress } from "../src";
 import { circleContracts } from "@wormhole-foundation/sdk-base/src/constants/contracts";
-import { circleBurnMessageLayout } from "../dist/cjs";
 
 const ethAddressToUniversal = (address: string) => {
   return new UniversalAddress("00".repeat(12) + address.slice(2));
@@ -40,39 +39,18 @@ describe("Circle Message tests", function () {
     );
 
     const decoded = deserializeLayout(circleMessageLayout, orig);
-
     expect(decoded.version).toEqual(0);
     expect(decoded.sourceDomain).toEqual(circleChainId(fromChain));
     expect(decoded.destinationDomain).toEqual(circleChainId(toChain));
     expect(decoded.nonce).toEqual(235558n);
     expect(decoded.sender.equals(actualSender)).toBeTruthy();
     expect(decoded.recipient.equals(actualReceiver)).toBeTruthy();
-    expect(decoded.messageBody.length).toEqual(132);
 
-    const decodedPayload = deserializeLayout(
-      circleBurnMessageLayout as Layout,
-      decoded.messageBody,
-    );
-
-    const burnToken = new UniversalAddress(
-      decodedPayload.burnToken.toUint8Array(),
-    );
-    const mintRecipient = new UniversalAddress(
-      decodedPayload.mintRecipient.toUint8Array(),
-    );
-    const messageSender = new UniversalAddress(
-      decodedPayload.messageSender.toUint8Array(),
-    );
-
-    // TODO: why does this fail? not passing instanceof check??
-    console.log(decodedPayload.burnToken.equals(tokenAddress));
-
+    const decodedPayload = decoded.payload;
     expect(decodedPayload.version).toEqual(0);
     expect(decodedPayload.amount).toEqual(1000000n);
-    expect(burnToken.equals(tokenAddress)).toBeTruthy();
-    expect(mintRecipient.equals(accountSender)).toBeTruthy();
-    expect(messageSender.equals(accountSender)).toBeTruthy();
-
-    console.log(decodedPayload);
+    expect(decodedPayload.burnToken.equals(tokenAddress)).toBeTruthy();
+    expect(decodedPayload.mintRecipient.equals(accountSender)).toBeTruthy();
+    expect(decodedPayload.messageSender.equals(accountSender)).toBeTruthy();
   });
 });

@@ -38,11 +38,12 @@ type PayloadLiteral = keyof Wormhole.PayloadLiteralToLayoutMapping & string;
 type LayoutOf<PL extends PayloadLiteral> =
   //TODO check if this lazy instantiation hack is actually necessary
   PL extends infer V extends PayloadLiteral
-  ? Wormhole.PayloadLiteralToLayoutMapping[V]
-  : never;
+    ? Wormhole.PayloadLiteralToLayoutMapping[V]
+    : never;
 
-type PayloadLiteralToPayloadType<PL extends PayloadLiteral> =
-  LayoutToType<LayoutOf<PL>>;
+type PayloadLiteralToPayloadType<PL extends PayloadLiteral> = LayoutToType<
+  LayoutOf<PL>
+>;
 
 const guardianSignatureLayout = [
   { name: "guardianIndex", binary: "uint", size: 1 },
@@ -75,9 +76,7 @@ type BaseLayout = LayoutToType<typeof baseLayout>;
 
 type ExtendedLiteral = PayloadLiteral | "Uint8Array";
 type ExtendedLiteralToPayloadType<EL extends ExtendedLiteral> =
-  EL extends PayloadLiteral
-  ? PayloadLiteralToPayloadType<EL>
-  : Uint8Array;
+  EL extends PayloadLiteral ? PayloadLiteralToPayloadType<EL> : Uint8Array;
 
 export interface VAA<EL extends ExtendedLiteral = ExtendedLiteral>
   extends BaseLayout {
@@ -102,26 +101,38 @@ function getPayloadLayout<PL extends PayloadLiteral>(payloadLiteral: PL) {
 
 const extendedLiteralToPayloadItem = <EL extends ExtendedLiteral>(
   extendedLiteral: EL,
-) => (
-  extendedLiteral === "Uint8Array"
-  ? { name: "payload", binary: "bytes" } as const
-  : { name: "payload", binary: "object", layout: getPayloadLayout(extendedLiteral) } as const
-) satisfies LayoutItem;
+) =>
+  (extendedLiteral === "Uint8Array"
+    ? ({ name: "payload", binary: "bytes" } as const)
+    : ({
+        name: "payload",
+        binary: "object",
+        layout: getPayloadLayout(extendedLiteral),
+      } as const)) satisfies LayoutItem;
 
 //annoyingly we can't use the return value of extendedLiteralToPayloadItem
 type ExtendedLiteralToDynamicItems<EL extends ExtendedLiteral> =
-  DynamicItemsOfLayout<[
-    ...typeof baseLayout,
-    EL extends PayloadLiteral
-    ? { name: "payload", binary: "object", layout: DynamicItemsOfLayout<LayoutOf<EL>> }
-    : { name: "payload", binary: "bytes" }
-  ]>;
+  DynamicItemsOfLayout<
+    [
+      ...typeof baseLayout,
+      EL extends PayloadLiteral
+        ? {
+            name: "payload";
+            binary: "object";
+            layout: DynamicItemsOfLayout<LayoutOf<EL>>;
+          }
+        : { name: "payload"; binary: "bytes" },
+    ]
+  >;
 
 export const create = <EL extends ExtendedLiteral = "Uint8Array">(
   extendedLiteral: EL,
   vaaData: LayoutToType<ExtendedLiteralToDynamicItems<EL>>,
 ): VAA<EL> => {
-  const bodyLayout = [...envelopeLayout, extendedLiteralToPayloadItem(extendedLiteral)] as const;
+  const bodyLayout = [
+    ...envelopeLayout,
+    extendedLiteralToPayloadItem(extendedLiteral),
+  ] as const;
   const bodyWithFixed = addFixedValues(
     bodyLayout,
     //not sure why the unknown cast here is required and why the type isn't inferred correctly
@@ -148,7 +159,9 @@ export function registerPayloadType<PL extends PayloadLiteral>(
   payloadFactory.set(payloadLiteral, payloadLayout);
 }
 
-export const serialize = <EL extends ExtendedLiteral>(vaa: VAA<EL>): Uint8Array => {
+export const serialize = <EL extends ExtendedLiteral>(
+  vaa: VAA<EL>,
+): Uint8Array => {
   const layout = [
     ...baseLayout,
     extendedLiteralToPayloadItem(vaa.payloadLiteral),
@@ -160,23 +173,23 @@ export const serializePayload = <EL extends ExtendedLiteral>(
   extendedLiteral: EL,
   payload: ExtendedLiteralToPayloadType<EL>,
 ) => {
-  if (extendedLiteral === "Uint8Array")
-    return payload;
+  if (extendedLiteral === "Uint8Array") return payload;
 
   const layout = getPayloadLayout(extendedLiteral);
   return serializeLayout(layout, payload as LayoutToType<typeof layout>);
-}
+};
 
 export type NamedPayloads = readonly (readonly [string, Layout])[];
 
-export const payloadDiscriminator = <NP extends NamedPayloads>(namedPayloads: NP) => {
+export const payloadDiscriminator = <NP extends NamedPayloads>(
+  namedPayloads: NP,
+) => {
   const literals = column(namedPayloads, 0);
   const layouts = column(namedPayloads, 1);
   const discriminator = layoutDiscriminator(layouts);
 
   return (data: Uint8Array | string): (typeof literals)[number] | null => {
-    if (typeof data === "string")
-      data = hexByteStringToUint8Array(data);
+    if (typeof data === "string") data = hexByteStringToUint8Array(data);
 
     const index = discriminator(data);
     return index !== null ? literals[index] : null;
@@ -194,12 +207,19 @@ export function deserialize<PL extends PayloadLiteral>(
 ): VAA<PL>;
 
 export function deserialize<EL extends ExtendedLiteral>(
-  payloadDet: EL | ((data: Uint8Array | string) => (EL & PayloadLiteral) | null),
+  payloadDet:
+    | EL
+    | ((data: Uint8Array | string) => (EL & PayloadLiteral) | null),
   data: Uint8Array | string,
 ): VAA<EL> {
   if (typeof data === "string") data = hexByteStringToUint8Array(data);
 
-  const [header, envelopeOffset] = deserializeLayout(headerLayout, data, 0, false);
+  const [header, envelopeOffset] = deserializeLayout(
+    headerLayout,
+    data,
+    0,
+    false,
+  );
 
   //ensure that guardian signature indicies are unique and in ascending order - see:
   //https://github.com/wormhole-foundation/wormhole/blob/8e0cf4c31f39b5ba06b0f6cdb6e690d3adf3d6a3/ethereum/contracts/Messages.sol#L121
@@ -212,22 +232,30 @@ export function deserialize<EL extends ExtendedLiteral>(
         "Guardian signatures must be in ascending order of guardian set index",
       );
 
-  const [envelope, payloadOffset] = deserializeLayout(envelopeLayout, data, envelopeOffset, false);
+  const [envelope, payloadOffset] = deserializeLayout(
+    envelopeLayout,
+    data,
+    envelopeOffset,
+    false,
+  );
 
   const [payloadLiteral, payload] =
     payloadDet === "Uint8Array"
-    ? ["Uint8Array", data.slice(payloadOffset)]
-    : typeof payloadDet === "string"
-    ? [payloadDet, deserializeLayout(getPayloadLayout(payloadDet), data, payloadOffset)]
-    : deserializePayload(payloadDet, data, payloadOffset);
+      ? ["Uint8Array", data.slice(payloadOffset)]
+      : typeof payloadDet === "string"
+      ? [
+          payloadDet,
+          deserializeLayout(getPayloadLayout(payloadDet), data, payloadOffset),
+        ]
+      : deserializePayload(payloadDet, data, payloadOffset);
   const hash = keccak256(data.slice(envelopeOffset));
 
   return { payloadLiteral, ...header, ...envelope, payload, hash } as VAA<EL>;
 }
 
 type DeserializePayloadReturn<EL extends ExtendedLiteral> =
-  ExtendedLiteralToPayloadType<EL> |
-  [EL & PayloadLiteral, PayloadLiteralToPayloadType<EL & PayloadLiteral>];
+  | ExtendedLiteralToPayloadType<EL>
+  | [EL & PayloadLiteral, PayloadLiteralToPayloadType<EL & PayloadLiteral>];
 
 export function deserializePayload<EL extends ExtendedLiteral>(
   payloadLiteral: EL,
@@ -242,7 +270,9 @@ export function deserializePayload<PL extends PayloadLiteral>(
 ): [PL, PayloadLiteralToPayloadType<PL>];
 
 export function deserializePayload<EL extends ExtendedLiteral>(
-  payloadDet: EL | ((data: Uint8Array | string) => (EL & PayloadLiteral) | null),
+  payloadDet:
+    | EL
+    | ((data: Uint8Array | string) => (EL & PayloadLiteral) | null),
   data: Uint8Array | string,
   offset = 0,
 ): DeserializePayloadReturn<EL> {
@@ -250,16 +280,20 @@ export function deserializePayload<EL extends ExtendedLiteral>(
   return (() => {
     if (typeof data === "string") data = hexByteStringToUint8Array(data);
 
-    if (payloadDet === "Uint8Array")
-      return data.slice(offset);
+    if (payloadDet === "Uint8Array") return data.slice(offset);
 
     if (typeof payloadDet === "string")
       return deserializeLayout(getPayloadLayout(payloadDet), data, offset);
 
     const candidate = payloadDet(data);
     if (candidate === null)
-      throw new Error(`Encoded data does not match any of the given payload types - ${data}`);
+      throw new Error(
+        `Encoded data does not match any of the given payload types - ${data}`,
+      );
 
-    return [candidate, deserializeLayout(getPayloadLayout(candidate), data, offset)];
+    return [
+      candidate,
+      deserializeLayout(getPayloadLayout(candidate), data, offset),
+    ];
   })() as DeserializePayloadReturn<EL>;
 }
