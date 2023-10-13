@@ -17,6 +17,7 @@ import { CosmwasmPlatform } from "./platform";
 import { CosmwasmChainName } from "./types";
 import { CosmwasmIbcBridge } from "./protocols/ibc";
 import { CosmwasmTokenBridge } from "./protocols/tokenBridge";
+import { IBC_TRANSFER_PORT } from "./constants";
 
 export module Gateway {
   export const name: "Wormchain" = "Wormchain";
@@ -74,36 +75,22 @@ export module Gateway {
     return new CosmwasmAddress(factoryAddress);
   }
 
-  // Returns the destination channel on wormchain for given source chain
+  // Returns the destination channel from the perspective of wormchain for given source chain
   export function getDestinationChannel(chain: CosmwasmChainName): string {
-    const channels = CosmwasmPlatform.getIbcChannel(chain);
+    const channels = CosmwasmPlatform.getIbcChannels(Gateway.name);
     if (!channels) throw new Error("No channels configured for chain " + chain);
-    return channels.dstChannel;
+    if (!(chain in channels))
+      throw new Error("No channel configured for chain " + chain);
+    return channels[chain]!;
   }
-  // Gets the source channel on wormchain for a given chain
+
+  // Gets the source channel from the perspective of wormchain for a given chain
   export function getSourceChannel(chain: CosmwasmChainName): string {
-    const channels = CosmwasmPlatform.getIbcChannel(chain);
+    const channels = CosmwasmPlatform.getIbcChannels(chain);
     if (!channels) throw new Error("No channels configured for chain " + chain);
-    return channels.srcChannel;
-  }
-
-  // Returns whether or not a given chain is gateway supported
-  export function isSupported(chain: CosmwasmChainName): boolean {
-    return CosmwasmPlatform.getIbcChannel(chain) !== null;
-  }
-
-  // Derive the Token Address with context for whether or not its managed
-  // https://github.com/wormhole-foundation/wormhole/blob/251e6c4a6478379ff862aed08d835f9022ef4143/cosmwasm/contracts/token-bridge/src/token_address.rs#L12
-  export function deriveTokenAddress(
-    chain: ChainName,
-    asset: string,
-  ): Uint8Array {
-    const tokenId = new Uint8Array(32);
-    //const addr = toNative(chain, asset) as CosmwasmAddress;
-    const nativeFlg = CosmwasmPlatform.isNativeDenom(chain, asset) ? 1 : 0;
-    tokenId.set([nativeFlg], 0);
-    tokenId.set(keccak256(asset).slice(1), 1);
-    return tokenId;
+    if (!(Gateway.name in channels))
+      throw new Error("No channel configured for chain " + chain);
+    return channels[Gateway.name]!;
   }
 
   // derive the ics20 token denom from the
@@ -112,12 +99,9 @@ export module Gateway {
     chain: CosmwasmChainName,
     denom: string,
   ): CosmwasmAddress {
-    // If its already an IBC token, just return it
-    if (denom.startsWith("ibc/")) return new CosmwasmAddress(denom);
-
     // Otherwise compute the ibc address from the channel and denom
     const channel = getDestinationChannel(chain);
-    const hashData = Buffer.from(`transfer/${channel}/${denom}`);
+    const hashData = Buffer.from(`${IBC_TRANSFER_PORT}/${channel}/${denom}`);
     const hash = Buffer.from(sha256(hashData)).toString("hex");
     return new CosmwasmAddress(`ibc/${hash.toUpperCase()}`);
   }
