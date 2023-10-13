@@ -24,7 +24,7 @@ import BN from 'bn.js';
  * Make {@link TransactionInstruction} for `post_vaa` instruction.
  *
  * This is used in {@link createPostSignedVaaTransactions}'s last transaction.
- * `signatureSet` is a {@link web3.Keypair} generated outside of this method, which was used
+ * `signatureSet` is a {@link @solana/web3.Keypair} generated outside of this method, which was used
  * to write signatures and the message hash to.
  *
  * https://github.com/certusone/wormhole/blob/main/solana/bridge/program/src/api/post_vaa.rs
@@ -53,7 +53,7 @@ export function createPostVaaInstruction(
     [...vaa.emitterAddress.toUint8Array()],
     new BN(vaa.sequence.toString()),
     vaa.consistencyLevel,
-    serializePayload(vaa.payloadLiteral, vaa.payload),
+    Buffer.from(serializePayload(vaa.payloadLiteral, vaa.payload)),
   );
 
   // @ts-ignore
