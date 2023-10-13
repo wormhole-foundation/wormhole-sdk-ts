@@ -21,7 +21,7 @@ import {
 
 import { keccak256 } from "./utils";
 
-//PayloadLiteralToLayoutMapping is the compile-time analog/complement to the runtime
+//LayoutLiteralToLayoutMapping is the compile-time analog/complement to the runtime
 //  payload factory. It uses TypeScript's interface merging mechanic to "dynamically" extend known
 //  payload types that are declared in different modules. This allows us to have full type safety
 //  when constructing payloads via the factory without having to ever declare the mapping of all
@@ -34,16 +34,20 @@ declare global {
   }
 }
 
-type PayloadLiteral = keyof Wormhole.PayloadLiteralToLayoutMapping & string;
-type LayoutOf<PL extends PayloadLiteral> =
+type LayoutLiteral = keyof Wormhole.PayloadLiteralToLayoutMapping & string;
+type LayoutOf<LL extends LayoutLiteral> =
   //TODO check if this lazy instantiation hack is actually necessary
-  PL extends infer V extends PayloadLiteral
+  LL extends infer V extends LayoutLiteral
     ? Wormhole.PayloadLiteralToLayoutMapping[V]
     : never;
 
-type PayloadLiteralToPayloadType<PL extends PayloadLiteral> = LayoutToType<
-  LayoutOf<PL>
+type LayoutLiteralToPayloadType<LL extends LayoutLiteral> = LayoutToType<
+  LayoutOf<LL>
 >;
+
+type PayloadLiteral = LayoutLiteral | "Uint8Array";
+type PayloadLiteralToPayloadType<PL extends PayloadLiteral> =
+  PL extends LayoutLiteral ? LayoutLiteralToPayloadType<PL> : Uint8Array;
 
 const guardianSignatureLayout = [
   { name: "guardianIndex", binary: "uint", size: 1 },
@@ -74,14 +78,10 @@ const envelopeLayout = [
 const baseLayout = [...headerLayout, ...envelopeLayout] as const;
 type BaseLayout = LayoutToType<typeof baseLayout>;
 
-type ExtendedLiteral = PayloadLiteral | "Uint8Array";
-type ExtendedLiteralToPayloadType<EL extends ExtendedLiteral> =
-  EL extends PayloadLiteral ? PayloadLiteralToPayloadType<EL> : Uint8Array;
-
-export interface VAA<EL extends ExtendedLiteral = ExtendedLiteral>
+export interface VAA<PL extends PayloadLiteral = PayloadLiteral>
   extends BaseLayout {
-  readonly payloadLiteral: EL;
-  readonly payload: ExtendedLiteralToPayloadType<EL>;
+  readonly payloadLiteral: PL;
+  readonly payload: PayloadLiteralToPayloadType<PL>;
   //TODO various problems with storing the hash here:
   // 1. On EVM the core bridge actually uses the double keccak-ed hash because of an early oversight
   // 2. As discussed on slack, storing memoized values on an object is a smell too
@@ -90,48 +90,48 @@ export interface VAA<EL extends ExtendedLiteral = ExtendedLiteral>
   readonly hash: Uint8Array;
 }
 
-const payloadFactory = new Map<PayloadLiteral, Layout>();
+const payloadFactory = new Map<LayoutLiteral, Layout>();
 
-function getPayloadLayout<PL extends PayloadLiteral>(payloadLiteral: PL) {
-  const layout = payloadFactory.get(payloadLiteral);
+function getPayloadLayout<LL extends LayoutLiteral>(layoutLiteral: LL) {
+  const layout = payloadFactory.get(layoutLiteral);
   if (!layout)
-    throw new Error(`No layout registered for payload type ${payloadLiteral}`);
-  return layout as LayoutOf<PL>;
+    throw new Error(`No layout registered for payload type ${layoutLiteral}`);
+  return layout as LayoutOf<LL>;
 }
 
-const extendedLiteralToPayloadItem = <EL extends ExtendedLiteral>(
-  extendedLiteral: EL,
+const payloadLiteralToPayloadItem = <PL extends PayloadLiteral>(
+  payloadLiteral: PL,
 ) =>
-  (extendedLiteral === "Uint8Array"
+  (payloadLiteral === "Uint8Array"
     ? ({ name: "payload", binary: "bytes" } as const)
     : ({
         name: "payload",
         binary: "object",
-        layout: getPayloadLayout(extendedLiteral),
+        layout: getPayloadLayout(payloadLiteral),
       } as const)) satisfies LayoutItem;
 
-//annoyingly we can't use the return value of extendedLiteralToPayloadItem
-type ExtendedLiteralToDynamicItems<EL extends ExtendedLiteral> =
+//annoyingly we can't use the return value of payloadLiteralToPayloadItem
+type PayloadLiteralToDynamicItems<PL extends PayloadLiteral> =
   DynamicItemsOfLayout<
     [
       ...typeof baseLayout,
-      EL extends PayloadLiteral
+      PL extends LayoutLiteral
         ? {
             name: "payload";
             binary: "object";
-            layout: DynamicItemsOfLayout<LayoutOf<EL>>;
+            layout: DynamicItemsOfLayout<LayoutOf<PL>>;
           }
         : { name: "payload"; binary: "bytes" },
     ]
   >;
 
-export const create = <EL extends ExtendedLiteral = "Uint8Array">(
-  extendedLiteral: EL,
-  vaaData: LayoutToType<ExtendedLiteralToDynamicItems<EL>>,
-): VAA<EL> => {
+export const create = <PL extends PayloadLiteral = "Uint8Array">(
+  payloadLiteral: PL,
+  vaaData: LayoutToType<PayloadLiteralToDynamicItems<PL>>,
+): VAA<PL> => {
   const bodyLayout = [
     ...envelopeLayout,
-    extendedLiteralToPayloadItem(extendedLiteral),
+    payloadLiteralToPayloadItem(payloadLiteral),
   ] as const;
   const bodyWithFixed = addFixedValues(
     bodyLayout,
@@ -139,18 +139,18 @@ export const create = <EL extends ExtendedLiteral = "Uint8Array">(
     vaaData as LayoutToType<DynamicItemsOfLayout<typeof bodyLayout>>,
   );
   return {
-    payloadLiteral: extendedLiteral,
+    payloadLiteral,
     ...addFixedValues(
       headerLayout,
       vaaData as LayoutToType<typeof headerLayout>,
     ),
     ...bodyWithFixed,
     hash: keccak256(serializeLayout(bodyLayout, bodyWithFixed)),
-  } as VAA<EL>;
+  } as VAA<PL>;
 };
 
-export function registerPayloadType<PL extends PayloadLiteral>(
-  payloadLiteral: PL,
+export function registerPayloadType<LL extends LayoutLiteral>(
+  payloadLiteral: LL,
   payloadLayout: Layout,
 ) {
   if (payloadFactory.has(payloadLiteral))
@@ -159,26 +159,28 @@ export function registerPayloadType<PL extends PayloadLiteral>(
   payloadFactory.set(payloadLiteral, payloadLayout);
 }
 
-export const serialize = <EL extends ExtendedLiteral>(
-  vaa: VAA<EL>,
+export const serialize = <PL extends PayloadLiteral>(
+  vaa: VAA<PL>,
 ): Uint8Array => {
   const layout = [
     ...baseLayout,
-    extendedLiteralToPayloadItem(vaa.payloadLiteral),
+    payloadLiteralToPayloadItem(vaa.payloadLiteral),
   ] as const satisfies Layout;
   return serializeLayout(layout, vaa as unknown as LayoutToType<typeof layout>);
 };
 
-export const serializePayload = <EL extends ExtendedLiteral>(
-  extendedLiteral: EL,
-  payload: ExtendedLiteralToPayloadType<EL>,
+export const serializePayload = <PL extends PayloadLiteral>(
+  payloadLiteral: PL,
+  payload: PayloadLiteralToPayloadType<PL>,
 ) => {
-  if (extendedLiteral === "Uint8Array") return payload;
+  if (payloadLiteral === "Uint8Array")
+    return payload as Uint8Array;
 
-  const layout = getPayloadLayout(extendedLiteral);
+  const layout = getPayloadLayout(payloadLiteral);
   return serializeLayout(layout, payload as LayoutToType<typeof layout>);
 };
 
+//can't use PayloadLiteral because it leads to a circular reference
 export type NamedPayloads = readonly (readonly [string, Layout])[];
 
 export const payloadDiscriminator = <NP extends NamedPayloads>(
@@ -196,22 +198,22 @@ export const payloadDiscriminator = <NP extends NamedPayloads>(
   };
 };
 
-export function deserialize<EL extends ExtendedLiteral>(
-  extendedLiteral: EL,
-  data: Uint8Array | string,
-): VAA<EL>;
-
 export function deserialize<PL extends PayloadLiteral>(
-  discriminator: (data: Uint8Array | string) => PL | null,
+  payloadLiteral: PL,
   data: Uint8Array | string,
 ): VAA<PL>;
 
-export function deserialize<EL extends ExtendedLiteral>(
-  payloadDet:
-    | EL
-    | ((data: Uint8Array | string) => (EL & PayloadLiteral) | null),
+export function deserialize<LL extends LayoutLiteral>(
+  discriminator: (data: Uint8Array | string) => LL | null,
   data: Uint8Array | string,
-): VAA<EL> {
+): VAA<LL>;
+
+export function deserialize<PL extends PayloadLiteral>(
+  payloadDet:
+    | PL
+    | ((data: Uint8Array | string) => (PL & LayoutLiteral) | null),
+  data: Uint8Array | string,
+): VAA<PL> {
   if (typeof data === "string") data = hexByteStringToUint8Array(data);
 
   const [header, envelopeOffset] = deserializeLayout(
@@ -250,32 +252,32 @@ export function deserialize<EL extends ExtendedLiteral>(
       : deserializePayload(payloadDet, data, payloadOffset);
   const hash = keccak256(data.slice(envelopeOffset));
 
-  return { payloadLiteral, ...header, ...envelope, payload, hash } as VAA<EL>;
+  return { payloadLiteral, ...header, ...envelope, payload, hash } as VAA<PL>;
 }
 
-type DeserializePayloadReturn<EL extends ExtendedLiteral> =
-  | ExtendedLiteralToPayloadType<EL>
-  | [EL & PayloadLiteral, PayloadLiteralToPayloadType<EL & PayloadLiteral>];
-
-export function deserializePayload<EL extends ExtendedLiteral>(
-  payloadLiteral: EL,
-  data: Uint8Array | string,
-  offset?: number,
-): ExtendedLiteralToPayloadType<EL>;
+type DeserializePayloadReturn<PL extends PayloadLiteral> =
+  | PayloadLiteralToPayloadType<PL>
+  | [PL & LayoutLiteral, LayoutLiteralToPayloadType<PL & LayoutLiteral>];
 
 export function deserializePayload<PL extends PayloadLiteral>(
-  discriminator: (data: Uint8Array | string) => PL | null,
+  payloadLiteral: PL,
   data: Uint8Array | string,
   offset?: number,
-): [PL, PayloadLiteralToPayloadType<PL>];
+): PayloadLiteralToPayloadType<PL>;
 
-export function deserializePayload<EL extends ExtendedLiteral>(
+export function deserializePayload<LL extends LayoutLiteral>(
+  discriminator: (data: Uint8Array | string) => LL | null,
+  data: Uint8Array | string,
+  offset?: number,
+): [LL, LayoutLiteralToPayloadType<LL>];
+
+export function deserializePayload<PL extends PayloadLiteral>(
   payloadDet:
-    | EL
-    | ((data: Uint8Array | string) => (EL & PayloadLiteral) | null),
+    | PL
+    | ((data: Uint8Array | string) => (PL & LayoutLiteral) | null),
   data: Uint8Array | string,
   offset = 0,
-): DeserializePayloadReturn<EL> {
+): DeserializePayloadReturn<PL> {
   //grouped together to have just a single cast on the return type
   return (() => {
     if (typeof data === "string") data = hexByteStringToUint8Array(data);
@@ -295,5 +297,5 @@ export function deserializePayload<EL extends ExtendedLiteral>(
       candidate,
       deserializeLayout(getPayloadLayout(candidate), data, offset),
     ];
-  })() as DeserializePayloadReturn<EL>;
+  })() as DeserializePayloadReturn<PL>;
 }
