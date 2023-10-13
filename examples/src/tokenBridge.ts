@@ -24,7 +24,7 @@ import { TransferStuff, getStuff, waitLog } from "./helpers";
 
   // Grab chain Contexts
   const sendChain = wh.getChain("Avalanche");
-  const rcvChain = wh.getChain("Sei");
+  const rcvChain = wh.getChain("Solana");
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work

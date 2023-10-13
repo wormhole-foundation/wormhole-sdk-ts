@@ -16,8 +16,8 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
   const wh = new Wormhole("Testnet", [EvmPlatform]);
 
   // Grab chain Contexts
-  const sendChain = wh.getChain("Avalanche");
-  const rcvChain = wh.getChain("Ethereum");
+  const sendChain = wh.getChain("Ethereum");
+  const rcvChain = wh.getChain("Avalanche");
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
@@ -25,7 +25,7 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
   const destination = await getStuff(rcvChain);
 
   // Manual Circle USDC CCTP Transfer
-  await cctpTransfer(wh, 1_000_000n, source, destination, false);
+  // await cctpTransfer(wh, 8_000_000n, source, destination, false);
 
   // Automatic Circle USDC CCTP Transfer
   // await cctpTransfer(wh, 19_000_000n, source, destination, true);
@@ -38,19 +38,18 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
   // This is especially helpful for chains with longer time to finality where you don't want
   // to have to wait for the attestation to be generated.
 
-  // const xfer = await CCTPTransfer.from(wh, {
-  //   chain: "Ethereum",
-  //   txid: "0xc5c9aaa7ecfc08f54db2674f6575fc00b3d0aa7a30bb6461043ac58e00b0f6f3",
-  // });
-  // console.log(xfer);
-  // console.log(await xfer.fetchAttestation(60 * 60 * 1000));
-  // console.log(await xfer.completeTransfer(destination.signer));
+  const xfer = await CCTPTransfer.from(wh, {
+    chain: "Ethereum",
+    txid: "0x28054d963e2a671f9e62b9cefa5d67fb857dd8f2259ce645e136bf7957354a09",
+  });
+  console.log(xfer);
+  console.log(await xfer.fetchAttestation(60 * 60 * 1000));
+  console.log(await xfer.completeTransfer(destination.signer));
 
   //const xfer = await CCTPTransfer.from(wh, {
   //  message:
   //    "0000000000000001000000000000000000048de9000000000000000000000000eb08f243e5d3fcff26a9e38ae5520a669f4019d0000000000000000000000000d0c3da58f55358142b8d3e06c1c30c5c6114efe80000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005425890298aed601595a70ab815c96711a31bc650000000000000000000000006603b4a7e29dfbdb6159c395a915e74757c1fb1300000000000000000000000000000000000000000000000000000000000f42400000000000000000000000006603b4a7e29dfbdb6159c395a915e74757c1fb13",
-  //  msgHash:
-  //    "0x212cc4cee09b47f84530638474db84832ac9e72f6c264aeca6f53904e352f80a",
+  //  msgHash: "",
   //});
   //console.log(xfer);
 })();
