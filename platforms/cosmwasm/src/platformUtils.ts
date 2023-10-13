@@ -55,17 +55,13 @@ export module CosmwasmUtils {
   export async function getDecimals(
     chain: ChainName,
     rpc: CosmWasmClient,
-    token: UniversalOrNative<'Cosmwasm'> | "native",
+    token: UniversalOrNative<"Cosmwasm"> | "native",
   ): Promise<bigint> {
-    if (token === "native")
-      return nativeDecimals(CosmwasmPlatform.platform);
+    if (token === "native") return nativeDecimals(CosmwasmPlatform.platform);
 
-    const { decimals } = await rpc.queryContractSmart(
-      token.toString(),
-      {
-        token_info: {},
-      },
-    );
+    const { decimals } = await rpc.queryContractSmart(token.toString(), {
+      token_info: {},
+    });
     return decimals;
   }
 
@@ -73,7 +69,7 @@ export module CosmwasmUtils {
     chain: ChainName,
     rpc: CosmWasmClient,
     walletAddress: string,
-    token: UniversalOrNative<'Cosmwasm'> | "native",
+    token: UniversalOrNative<"Cosmwasm"> | "native",
   ): Promise<bigint | null> {
     if (token === "native") {
       const { amount } = await rpc.getBalance(
@@ -83,10 +79,7 @@ export module CosmwasmUtils {
       return BigInt(amount);
     }
 
-    const { amount } = await rpc.getBalance(
-      walletAddress,
-      token.toString(),
-    );
+    const { amount } = await rpc.getBalance(walletAddress, token.toString());
     return BigInt(amount);
   }
 
