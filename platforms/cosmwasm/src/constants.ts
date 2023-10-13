@@ -148,50 +148,32 @@ export const cosmwasmNetworkChainToRestUrls = constMap(
   cosmwasmNetworkChainRestUrl,
 );
 
-export type IbcChannel = {
-  srcChannel: string;
-  dstChannel: string;
-};
+export type IbcChannels = Partial<Record<CosmwasmChainName, string>>;
 
-// IBC Channels from the perspective of Wormchain
+// For each chain, add the channel id for each other chain
 const gatewayConnections = [
   [
     "Mainnet",
-    [
-      ["Cosmoshub", { srcChannel: "channel-5", dstChannel: "" }],
-      ["Osmosis", { srcChannel: "channel-4", dstChannel: "" }],
-    ],
+    [["Wormchain", { Cosmoshub: "channel-5", Osmosis: "channel-4" }]],
   ],
   [
     "Testnet",
     [
-      [
-        "Cosmoshub",
-        {
-          srcChannel: "channel-5",
-          dstChannel: "channel-3086",
-        },
-      ],
-      [
-        "Osmosis",
-        {
-          srcChannel: "channel-9",
-          dstChannel: "channel-3906",
-        },
-      ],
+      ["Wormchain", { Cosmoshub: "channel-5", Osmosis: "channel-9" }],
+      ["Cosmoshub", { Wormchain: "channel-3086" }],
+      ["Osmosis", { Wormchain: "channel-3906" }],
     ],
   ],
   [
     "Devnet",
     [
-      ["Cosmoshub", { srcChannel: "", dstChannel: "" }],
-      ["Osmosis", { srcChannel: "", dstChannel: "" }],
+      ["Wormchain", { Cosmoshub: "channel-1", Osmosis: "channel-2" }],
+      ["Cosmoshub", { Wormchain: "channel-1" }],
+      ["Osmosis", { Wormchain: "channel-1" }],
     ],
   ],
 ] as const satisfies RoArray<
-  readonly [Network, RoArray<readonly [CosmwasmChainName, IbcChannel]>]
+  readonly [Network, RoArray<readonly [CosmwasmChainName, IbcChannels]>]
 >;
 
-export const networkChainToChannelId = constMap(gatewayConnections);
-export const networkChannelToChain = constMap(gatewayConnections, [0, [2, 1]]);
-export const networkToChannelMap = constMap(gatewayConnections, [0, [1, 2]]);
+export const networkChainToChannels = constMap(gatewayConnections);

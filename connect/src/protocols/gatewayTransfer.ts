@@ -20,7 +20,7 @@ import {
   UnsignedTransaction,
   VAA,
   WormholeMessageId,
-  asGatewayMsg,
+  toGatewayMsg,
   deserialize,
   gatewayTransferMsg,
   isGatewayTransferDetails,
@@ -28,6 +28,7 @@ import {
   isWormholeMessageId,
   toNative,
   IbcBridge,
+  nativeChainAddress,
 } from "@wormhole-foundation/sdk-definitions";
 import { Wormhole } from "../wormhole";
 import {
@@ -43,7 +44,11 @@ export class GatewayTransfer implements WormholeTransfer {
 
   private readonly wh: Wormhole;
 
-  private readonly wc: ChainContext<PlatformName>;
+  // Wormchain context
+  private readonly gateway: ChainContext<PlatformName>;
+  // Wormchain IBC Bridge
+  private readonly gatewayIbcBridge: IbcBridge<PlatformName>;
+  // Contract address
   private readonly gatewayAddress: ChainAddress;
 
   // state machine tracker
@@ -70,7 +75,12 @@ export class GatewayTransfer implements WormholeTransfer {
   // Any transfers we do over ibc
   ibcTransfers?: IbcTransferInfo[];
 
-  private constructor(wh: Wormhole, transfer: GatewayTransferDetails) {
+  private constructor(
+    wh: Wormhole,
+    transfer: GatewayTransferDetails,
+    gateway: ChainContext<PlatformName>,
+    gatewayIbc: IbcBridge<PlatformName>,
+  ) {
     this.state = TransferState.Created;
     this.wh = wh;
     this.transfer = transfer;
@@ -86,7 +96,10 @@ export class GatewayTransfer implements WormholeTransfer {
     };
 
     // cache the wormchain chain context since we need it for checks
-    this.wc = this.wh.getChain(GatewayTransfer.chain);
+    this.gateway = gateway;
+    this.gatewayIbcBridge = gatewayIbc;
+
+    // cache the message since we don't want to regenerate it any time we need it
     this.msg = gatewayTransferMsg(this.transfer);
   }
 
@@ -111,9 +124,13 @@ export class GatewayTransfer implements WormholeTransfer {
     wh: Wormhole,
     from: GatewayTransferDetails | WormholeMessageId | TransactionId,
   ): Promise<GatewayTransfer> {
+    // we need this regardless of the type of `from`
+    const wc = wh.getChain(GatewayTransfer.chain);
+    const wcibc = await wc.getIbcBridge();
+
     // Fresh new transfer
     if (isGatewayTransferDetails(from)) {
-      return new GatewayTransfer(wh, from);
+      return new GatewayTransfer(wh, from, wc, wcibc);
     }
 
     // Picking up where we left off
@@ -129,7 +146,7 @@ export class GatewayTransfer implements WormholeTransfer {
       throw new Error("Invalid `from` parameter for GatewayTransfer");
     }
 
-    const gt = new GatewayTransfer(wh, gtd);
+    const gt = new GatewayTransfer(wh, gtd, wc, wcibc);
     gt.transactions = txns;
 
     // Since we're picking up from somewhere we can move the
@@ -167,13 +184,13 @@ export class GatewayTransfer implements WormholeTransfer {
     // we need to preserve it
     let nonce: number | undefined;
 
-    let to = { ...vaa.payload.to };
+    let to: ChainAddress = { ...vaa.payload.to };
     // The payload here may be the message for Gateway
     // Lets be sure to pull the real payload if its set
     // Otherwise revert to undefined
     if (payload) {
       try {
-        const maybeWithPayload = asGatewayMsg(Buffer.from(payload).toString());
+        const maybeWithPayload = toGatewayMsg(Buffer.from(payload).toString());
         nonce = maybeWithPayload.nonce;
         payload = maybeWithPayload.payload
           ? new Uint8Array(Buffer.from(maybeWithPayload.payload))
@@ -185,13 +202,9 @@ export class GatewayTransfer implements WormholeTransfer {
           "base64",
         ).toString();
 
-        to = {
-          chain: destChain,
-          // @ts-ignore
-          address: toNative(destChain, recipientAddress),
-        };
-      } catch (e) {
-        // Ignoring, throws if not the payload isnt JSON
+        to = nativeChainAddress([destChain, recipientAddress]);
+      } catch {
+        /*Ignoring, throws if not the payload isnt JSON*/
       }
     }
 
@@ -244,7 +257,7 @@ export class GatewayTransfer implements WormholeTransfer {
       address: toNative(xfer.id.chain, xfer.data.denom),
     } as TokenId;
 
-    const msg = asGatewayMsg(xfer.data.memo);
+    const msg = toGatewayMsg(xfer.data.memo);
     const destChain = toChainName(msg.chain);
 
     // TODO: sure it needs encoding?
@@ -401,8 +414,6 @@ export class GatewayTransfer implements WormholeTransfer {
     const attestations: AttestationId[] = [];
     this.ibcTransfers = [];
 
-    const wcIbc = await this.wc.getIbcBridge();
-
     // collect ibc transfers and additional transaction ids
     if (this.fromGateway()) {
       // assume all the txs are from the same chain
@@ -433,7 +444,8 @@ export class GatewayTransfer implements WormholeTransfer {
 
         // now find the corresponding wormchain transaction given the ibcTransfer info
         const retryInterval = 5000;
-        const task = () => wcIbc.lookupMessageFromIbcMsgId(xfer.id);
+        const task = () =>
+          this.gatewayIbcBridge.lookupMessageFromIbcMsgId(xfer.id);
         const whm = await retry<WormholeMessageId>(task, retryInterval);
         if (!whm)
           throw new Error(
@@ -472,7 +484,7 @@ export class GatewayTransfer implements WormholeTransfer {
 
       // Wait until the vaa is redeemed before trying to look up the
       // transfer message
-      const wcTb = await this.wc.getTokenBridge();
+      const wcTb = await this.gateway.getTokenBridge();
       // Since we want to retry until its redeemed, return null
       // in the case that its not redeemed
       const isRedeemedTask = async () => {
@@ -487,7 +499,8 @@ export class GatewayTransfer implements WormholeTransfer {
       // Note: Because we search by GatewayTransferMsg payload
       // there is a possibility of dupe messages being returned
       // using a nonce should help
-      const wcTransferTask = () => fetchIbcXfer(wcIbc, this.msg);
+      const wcTransferTask = () =>
+        fetchIbcXfer(this.gatewayIbcBridge, this.msg);
       const wcTransfer = await retry<IbcTransferInfo>(
         wcTransferTask,
         retryInterval,
@@ -588,18 +601,17 @@ export class GatewayTransfer implements WormholeTransfer {
     throw new Error(`No serde defined for type: ${partial.payload[0]}`);
   }
 
-  // TODO: Is this a good enough check for what we want to do?
+  // Implicitly determine if the chain is Gateway enabled by
+  // checking to see if the Gateway IBC bridge has a transfer channel setup
   private fromGateway(): boolean {
-    //IbcBridge.getChannels();
-
-    return chainToPlatform(this.transfer.from.chain) === "Cosmwasm";
-    // return networkChainToChannelId.has(
-    //   this.wh.network,
-    //   this.transfer.from.chain,
-    // );
+    return (
+      this.gatewayIbcBridge.getTransferChannel(this.transfer.from.chain) !==
+      null
+    );
   }
   private toGateway(): boolean {
-    return chainToPlatform(this.transfer.to.chain) === "Cosmwasm";
-    // return networkChainToChannelId.has(this.wh.network, this.transfer.to.chain);
+    return (
+      this.gatewayIbcBridge.getTransferChannel(this.transfer.to.chain) !== null
+    );
   }
 }

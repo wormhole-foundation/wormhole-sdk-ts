@@ -2,6 +2,7 @@ import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import { IndexedTx, MsgTransferEncodeObject, coin } from "@cosmjs/stargate";
 import {
   ChainAddress,
+  ChainName,
   GatewayIbcTransferMsg,
   GatewayTransferMsg,
   GatewayTransferWithPayloadMsg,
@@ -30,8 +31,8 @@ import {
   IBC_PACKET_SRC_PORT,
   IBC_TIMEOUT_MILLIS,
   IBC_TRANSFER_PORT,
-  IbcChannel,
-  networkToChannelMap,
+  IbcChannels,
+  networkChainToChannels,
 } from "../constants";
 import { CosmwasmContracts } from "../contracts";
 import { Gateway } from "../gateway";
@@ -51,7 +52,8 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
   private gatewayChannel?: string;
 
   // map the local channel ids to the remote chain
-  private channelMap: Map<string, CosmwasmChainName> = new Map();
+  private channelToChain: Map<string, CosmwasmChainName> = new Map();
+  private chainToChannel: Map<CosmwasmChainName, string> = new Map();
 
   private constructor(
     readonly network: Network,
@@ -61,15 +63,15 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
   ) {
     this.gatewayAddress = this.contracts.getContracts(Gateway.name).gateway!;
 
-    const isGateway = this.chain === Gateway.name;
-    for (const [chain, channel] of networkToChannelMap(network)) {
-      if (!isGateway && this.chain === chain)
-        this.gatewayChannel = channel.dstChannel;
+    if (!networkChainToChannels.has(network, chain))
+      throw new Error("Unsupported IBC Chain, no channels available: " + chain);
 
-      this.channelMap.set(
-        channel[isGateway ? "dstChannel" : "srcChannel"],
-        chain,
-      );
+    // @ts-ignore
+    const channels: IbcChannels = networkChainToChannels(network, chain);
+
+    for (const [chain, channel] of Object.entries(channels)) {
+      this.channelToChain.set(channel, chain as CosmwasmChainName);
+      this.chainToChannel.set(chain as CosmwasmChainName, channel);
     }
   }
 
@@ -79,6 +81,10 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
   ): Promise<CosmwasmIbcBridge> {
     const [network, chain] = await CosmwasmPlatform.chainFromRpc(rpc);
     return new CosmwasmIbcBridge(network, chain, rpc, contracts);
+  }
+
+  getTransferChannel(chain: ChainName): string | null {
+    return this.chainToChannel.get(chain as CosmwasmChainName) ?? null;
   }
 
   async *transfer(
@@ -299,7 +305,7 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
       msgId.chain =
         packet.type === IBC_PACKET_SEND
           ? this.chain
-          : this.channelMap.get(msgId.srcChannel!)!;
+          : this.channelToChain.get(msgId.srcChannel!)!;
 
       // Note: using the type guard to tell us if we have all the fields we expect
       if (isIbcMessageId(msgId)) xfer.id = msgId;
@@ -341,26 +347,17 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
     return transfers;
   }
 
-  // Fetches the channel information between wormchain and a given chain
-  async fetchChannel(chain: CosmwasmChainName): Promise<IbcChannel> {
-    const queryClient = CosmwasmUtils.asQueryClient(this.rpc);
-
-    const { channel: srcChannel } = await this.rpc.queryContractSmart(
-      this.gatewayAddress,
-      { ibc_channel: { chain_id: toChainId(chain) } },
-    );
-    const conn = await queryClient.ibc.channel.channel(
-      IBC_TRANSFER_PORT,
-      srcChannel,
-    );
-
-    const dstChannel = conn.channel?.counterparty?.channelId;
-    if (!dstChannel)
+  // Fetches the local channel for the given chain
+  async fetchTransferChannel(chain: CosmwasmChainName): Promise<string> {
+    if (this.chain !== Gateway.name)
       throw new Error(
-        `No destination channel found for chain ${chain} on ${this.chain}`,
+        "Cannot query the transfer channels from a non-gateway chain",
       );
 
-    return { srcChannel, dstChannel };
+    const { channel } = await this.rpc.queryContractSmart(this.gatewayAddress, {
+      ibc_channel: { chain_id: toChainId(chain) },
+    });
+    return channel;
   }
 
   private createUnsignedTx(

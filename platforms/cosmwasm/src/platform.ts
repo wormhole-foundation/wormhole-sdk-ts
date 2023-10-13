@@ -16,9 +16,9 @@ import {
 
 import { CosmwasmChain } from "./chain";
 import {
-  IbcChannel,
+  IbcChannels,
   chainToNativeDenoms,
-  networkChainToChannelId,
+  networkChainToChannels,
 } from "./constants";
 import { CosmwasmContracts } from "./contracts";
 import { Gateway } from "./gateway";
@@ -118,11 +118,11 @@ export module CosmwasmPlatform {
   };
 
   // cached channels from config if available
-  export const getIbcChannel = (
+  export const getIbcChannels = (
     chain: CosmwasmChainName,
-  ): IbcChannel | null => {
-    return networkChainToChannelId.has(network, chain)
-      ? networkChainToChannelId.get(network, chain)!
+  ): IbcChannels | null => {
+    return networkChainToChannels.has(network, chain)
+      ? networkChainToChannels.get(network, chain)!
       : null;
   };
 }

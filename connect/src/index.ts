@@ -11,8 +11,6 @@ export * as circle from "./circle-api";
 export * as api from "./api";
 
 // Re-export from core packages
-
-/** @namespace */
 export {
   contracts,
   Chain,
