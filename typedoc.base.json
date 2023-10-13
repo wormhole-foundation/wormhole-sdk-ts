@@ -1,5 +1,5 @@
 {
   "$schema": "https://typedoc.org/schema.json",
   "includeVersion": true,
-  "excludeExternals": true 
+  "excludeExternals": true
 }

@@ -31,7 +31,7 @@
     "prettier": "npm run prettier --workspaces --if-present",
     "test:integration": "jest --config ./jest.config.ts --roots ./__tests__",
     "test": "NETWORK=Mainnet npm run test --workspaces --if-present",
-    "docs": "typedoc --plugin typedoc-plugin-missing-exports"
+    "docs": "typedoc"
   },
   "workspaces": [
     "core/base",
@@ -41,8 +41,5 @@
     "platforms/solana",
     "platforms/cosmwasm",
     "examples"
-  ],
-  "dependencies": {
-    "typedoc-plugin-missing-exports": "^2.1.0"
-  }
+  ]
 }
