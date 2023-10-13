@@ -15,8 +15,10 @@ import {
 } from "./protocols/cctp";
 import { supportsIbcBridge, IbcBridge } from "./protocols/ibc";
 import { RpcConnection } from "./rpc";
-import { SignedTx, TokenId } from "./types";
+import { SignedTx } from "./types";
 import { WormholeMessageId } from "./attestation";
+import { UniversalAddress } from "./universalAddress";
+import { NativeAddress } from "./address";
 
 export abstract class ChainContext<P extends PlatformName> {
   // Cached Protocol clients
@@ -37,14 +39,14 @@ export abstract class ChainContext<P extends PlatformName> {
   }
 
   // Get the number of decimals for a token
-  async getDecimals(token: TokenId | "native"): Promise<bigint> {
+  async getDecimals(token: NativeAddress<P> | UniversalAddress | "native"): Promise<bigint> {
     return this.platform.getDecimals(this.chain, this.getRpc(), token);
   }
 
   // Get the balance of a token for a given address
   async getBalance(
     walletAddr: string,
-    token: TokenId | "native",
+    token: NativeAddress<P> | UniversalAddress | "native",
   ): Promise<bigint | null> {
     return this.platform.getBalance(
       this.chain,

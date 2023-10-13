@@ -18,6 +18,7 @@ import {
   toNative,
   nativeIsRegistered,
   NativeAddress,
+  UniversalAddress,
 } from "../..";
 import { MockRpc } from "./rpc";
 import { MockChain } from "./chain";
@@ -70,7 +71,7 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
   getDecimals(
     chain: ChainName,
     rpc: RpcConnection<P>,
-    token: TokenId | "native",
+    token: NativeAddress<P> | UniversalAddress | "native",
   ): Promise<bigint> {
     throw new Error("Method not implemented.");
   }
@@ -78,7 +79,7 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
     chain: ChainName,
     rpc: RpcConnection<P>,
     walletAddr: string,
-    token: TokenId | "native",
+    token: NativeAddress<P> | UniversalAddress | "native",
   ): Promise<bigint | null> {
     throw new Error("Method not implemented.");
   }
