@@ -259,7 +259,7 @@ export class Wormhole {
    */
   async getDecimals(
     chain: ChainName,
-    token: TokenId | "native",
+    token: NativeAddress<PlatformName> | UniversalAddress | "native",
   ): Promise<bigint> {
     const ctx = this.getChain(chain);
     return await ctx.getDecimals(token);
@@ -275,7 +275,7 @@ export class Wormhole {
    */
   async normalizeAmount(
     chain: ChainName,
-    token: TokenId | "native",
+    token: UniversalAddress | NativeAddress<PlatformName> | "native",
     amount: number | string,
   ): Promise<bigint> {
     const ctx = this.getChain(chain);
@@ -293,15 +293,10 @@ export class Wormhole {
    */
   async getBalance(
     chain: ChainName,
-    token: string | TokenId | "native",
+    token: NativeAddress<PlatformName> | UniversalAddress | "native",
     walletAddress: string,
   ): Promise<bigint | null> {
     const ctx = this.getChain(chain);
-
-    if (typeof token === "string" && token !== "native") {
-      token = { chain: chain, address: toNative(chain, token) };
-    }
-
     return ctx.getBalance(walletAddress, token);
   }
 

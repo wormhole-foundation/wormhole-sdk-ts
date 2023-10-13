@@ -9,6 +9,7 @@ import {
   nativeDecimals,
   PlatformUtils,
   chainToPlatform,
+  UniversalOrNative,
 } from '@wormhole-foundation/connect-sdk';
 import { Connection, PublicKey } from '@solana/web3.js';
 import { solGenesisHashToNetworkChainPair } from './constants';
@@ -45,12 +46,12 @@ export module SolanaUtils {
   export async function getDecimals(
     chain: ChainName,
     rpc: Connection,
-    token: TokenId | 'native',
+    token: UniversalOrNative<'Solana'> | 'native',
   ): Promise<bigint> {
     if (token === 'native') return nativeDecimals(SolanaPlatform.platform);
 
     let mint = await rpc.getParsedAccountInfo(
-      new PublicKey(token.address.unwrap()),
+      new PublicKey(token.toUint8Array()),
     );
     if (!mint) throw new Error('could not fetch token details');
     const { decimals } = (mint as any).value.data.parsed.info;
@@ -61,7 +62,7 @@ export module SolanaUtils {
     chain: ChainName,
     rpc: Connection,
     walletAddress: string,
-    token: TokenId | 'native',
+    token: UniversalOrNative<'Solana'> | 'native',
   ): Promise<bigint | null> {
     if (token === 'native')
       return BigInt(await rpc.getBalance(new PublicKey(walletAddress)));
@@ -73,7 +74,7 @@ export module SolanaUtils {
 
     const splToken = await rpc.getTokenAccountsByOwner(
       new PublicKey(walletAddress),
-      { mint: new PublicKey(token.address.toUint8Array()) },
+      { mint: new PublicKey(token.toUint8Array()) },
     );
     if (!splToken.value[0]) return null;
 

@@ -8,6 +8,8 @@ import { RpcConnection } from "./rpc";
 import { ChainsConfig, TokenId, TxHash } from "./types";
 import { WormholeMessageId } from "./attestation";
 import { SignedTx } from "./types";
+import { NativeAddress } from "./address";
+import { UniversalAddress } from "./universalAddress";
 
 export interface PlatformUtils<P extends PlatformName> {
   nativeTokenId(chain: ChainName): TokenId;
@@ -20,13 +22,13 @@ export interface PlatformUtils<P extends PlatformName> {
   getDecimals(
     chain: ChainName,
     rpc: RpcConnection<P>,
-    token: TokenId | "native",
+    token: NativeAddress<P> | UniversalAddress | "native",
   ): Promise<bigint>;
   getBalance(
     chain: ChainName,
     rpc: RpcConnection<P>,
     walletAddr: string,
-    token: TokenId | "native",
+    token: NativeAddress<P> | UniversalAddress | "native",
   ): Promise<bigint | null>;
   getCurrentBlock(rpc: RpcConnection<P>): Promise<number>;
 

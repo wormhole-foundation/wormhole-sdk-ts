@@ -8,6 +8,7 @@ import {
   nativeDecimals,
   chainToPlatform,
   PlatformUtils,
+  UniversalOrNative,
 } from '@wormhole-foundation/connect-sdk';
 
 import { Provider } from 'ethers';
@@ -47,13 +48,13 @@ export module EvmUtils {
   export async function getDecimals(
     chain: ChainName,
     rpc: Provider,
-    tokenId: TokenId | 'native',
+    token: UniversalOrNative<'Evm'> | 'native',
   ): Promise<bigint> {
-    if (tokenId === 'native') return nativeDecimals(EvmPlatform.platform);
+    if (token === 'native') return nativeDecimals(EvmPlatform.platform);
 
     const tokenContract = EvmContracts.getTokenImplementation(
       rpc,
-      tokenId.address.toString(),
+      token.toString(),
     );
     const decimals = await tokenContract.decimals();
     return decimals;
@@ -63,15 +64,15 @@ export module EvmUtils {
     chain: ChainName,
     rpc: Provider,
     walletAddr: string,
-    tokenId: TokenId | 'native',
+    token: UniversalOrNative<'Evm'> | 'native',
   ): Promise<bigint | null> {
-    if (tokenId === 'native') return await rpc.getBalance(walletAddr);
+    if (token === 'native') return await rpc.getBalance(walletAddr);
 
-    const token = EvmContracts.getTokenImplementation(
+    const tokenImpl = EvmContracts.getTokenImplementation(
       rpc,
-      tokenId.address.toString(),
+      token.toString(),
     );
-    const balance = await token.balanceOf(walletAddr);
+    const balance = await tokenImpl.balanceOf(walletAddr);
     return balance;
   }
 
