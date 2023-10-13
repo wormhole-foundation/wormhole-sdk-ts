@@ -31,7 +31,6 @@ import {
   IBC_TIMEOUT_MILLIS,
   IBC_TRANSFER_PORT,
   IbcChannel,
-  networkChainToChannelId,
   networkToChannelMap,
 } from "../constants";
 import { CosmwasmContracts } from "../contracts";

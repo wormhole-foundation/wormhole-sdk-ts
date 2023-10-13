@@ -4,6 +4,7 @@ import {
   TokenTransfer,
   ChainName,
   Signer,
+  normalizeAmount,
 } from "@wormhole-foundation/connect-sdk";
 // Import the platform specific packages
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
@@ -30,14 +31,10 @@ import { TransferStuff, getStuff, waitLog } from "./helpers";
   const source = await getStuff(sendChain);
   const destination = await getStuff(rcvChain);
 
+  const amt = normalizeAmount("0.01", 18n);
+
   // Choose your adventure
-  await manualTokenTransfer(
-    wh,
-    "native",
-    1_000_000_000_000n,
-    source,
-    destination,
-  );
+  await manualTokenTransfer(wh, "native", amt, source, destination);
 
   // await automaticTokenTransfer(wh, "native", 100_000_000n, source, destination);
   // await automaticTokenTransferWithGasDropoff(

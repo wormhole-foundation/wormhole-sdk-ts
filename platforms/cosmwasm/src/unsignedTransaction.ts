@@ -27,7 +27,7 @@ export function buildExecuteMsg(
   msg: Record<string, any>,
   funds?: Coin[],
 ): EncodeObject {
-  const obj = {
+  return {
     typeUrl: MSG_EXECUTE_CONTRACT_TYPE_URL,
     value: MsgExecuteContract.fromPartial({
       sender: sender,
@@ -36,7 +36,6 @@ export function buildExecuteMsg(
       funds,
     }),
   };
-  return obj;
 }
 
 export class CosmwasmUnsignedTransaction implements UnsignedTransaction {

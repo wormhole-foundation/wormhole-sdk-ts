@@ -27,9 +27,9 @@ import {
   CosmwasmChainName,
   UniversalOrCosmwasm,
   WrappedRegistryResponse,
+  toCosmwasmAddrString,
 } from "../types";
 import { CosmwasmPlatform } from "../platform";
-import { CosmwasmAddress } from "../address";
 
 export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
   private tokenBridge: string;
@@ -185,6 +185,8 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
     const recipientAddress = Buffer.from(
       recipient.address.toUniversalAddress().toUint8Array(),
     );
+    // TODO: do we need to use the _native_ address for cosmos chains?
+    const encodedRecipient = Buffer.from(recipientAddress).toString("base64");
 
     const denom = CosmwasmPlatform.getNativeDenom(this.chain);
 
@@ -201,7 +203,7 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
           info,
         },
         recipient_chain: recipientChainId,
-        recipient: Buffer.from(recipientAddress).toString("base64"),
+        recipient: encodedRecipient,
         fee: relayerFee,
         nonce: nonce,
       };
@@ -278,24 +280,23 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
     // TODO: unwrapNative
 
     const data = Buffer.from(serialize(vaa)).toString("base64");
+    const senderAddress = toCosmwasmAddrString(sender);
 
-    let msg;
-    if (
+    const toTranslator =
       this.translator &&
       toNative(this.chain, this.translator)
         .toUniversalAddress()
-        .equals(vaa.payload.to.address)
-    ) {
-      msg = buildExecuteMsg(sender.toString(), this.translator, {
-        complete_transfer_and_convert: {
-          vaa: data,
-        },
-      });
-    } else {
-      msg = buildExecuteMsg(sender.toString(), this.tokenBridge, {
-        submit_vaa: { data },
-      });
-    }
+        .equals(vaa.payload.to.address);
+
+    const msg = toTranslator
+      ? buildExecuteMsg(senderAddress, this.translator!, {
+          complete_transfer_and_convert: {
+            vaa: data,
+          },
+        })
+      : buildExecuteMsg(senderAddress, this.tokenBridge, {
+          submit_vaa: { data },
+        });
 
     yield this.createUnsignedTx(
       {
