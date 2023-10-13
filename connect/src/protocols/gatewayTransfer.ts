@@ -10,8 +10,8 @@ import {
   GatewayTransferDetails,
   GatewayTransferMsg,
   GatewayTransferWithPayloadMsg,
+  IbcBridge,
   IbcTransferInfo,
-  NativeAddress,
   Signer,
   TokenId,
   TransactionId,
@@ -20,15 +20,14 @@ import {
   UnsignedTransaction,
   VAA,
   WormholeMessageId,
-  toGatewayMsg,
   deserialize,
   gatewayTransferMsg,
   isGatewayTransferDetails,
   isTransactionIdentifier,
   isWormholeMessageId,
-  toNative,
-  IbcBridge,
   nativeChainAddress,
+  toGatewayMsg,
+  toNative,
 } from "@wormhole-foundation/sdk-definitions";
 import { Wormhole } from "../wormhole";
 import {
@@ -115,14 +114,17 @@ export class GatewayTransfer implements WormholeTransfer {
   static async from(
     wh: Wormhole,
     from: WormholeMessageId,
+    timeout?: number,
   ): Promise<GatewayTransfer>;
   static async from(
     wh: Wormhole,
     from: TransactionId,
+    timeout?: number,
   ): Promise<GatewayTransfer>;
   static async from(
     wh: Wormhole,
     from: GatewayTransferDetails | WormholeMessageId | TransactionId,
+    timeout?: number,
   ): Promise<GatewayTransfer> {
     // we need this regardless of the type of `from`
     const wc = wh.getChain(GatewayTransfer.chain);
@@ -154,7 +156,7 @@ export class GatewayTransfer implements WormholeTransfer {
     gt.state = TransferState.Initiated;
 
     // Wait for what _can_ complete to complete
-    await gt.fetchAttestation();
+    await gt.fetchAttestation(timeout);
 
     return gt;
   }
@@ -165,13 +167,7 @@ export class GatewayTransfer implements WormholeTransfer {
     from: WormholeMessageId,
   ): Promise<GatewayTransferDetails> {
     // Starting with the VAA
-    const { chain: emitterChain, emitter, sequence } = from;
-    const vaa = await GatewayTransfer.getTransferVaa(
-      wh,
-      emitterChain,
-      emitter,
-      sequence,
-    );
+    const vaa = await GatewayTransfer.getTransferVaa(wh, from);
 
     // The VAA may have a payload which may have a nested GatewayTransferMessage
     let payload: Uint8Array | undefined =
@@ -235,7 +231,9 @@ export class GatewayTransfer implements WormholeTransfer {
 
     const originChain = wh.getChain(chain);
 
-    // If its origin chain is Cosmos, itll be an IBC message
+    // If its origin chain is Cosmos, it should be an IBC message
+    // but its not all the time so do this differently?
+    // check if the chain supports gateway?
     if (chainToPlatform(chain) === "Cosmwasm") {
       // Get the ibc tx info from the origin
       const ibcBridge = await originChain.getIbcBridge();
@@ -401,8 +399,10 @@ export class GatewayTransfer implements WormholeTransfer {
     });
   }
 
+  // TODO: track the time elapsed and subtract it from the timeout passed with
+  // successive updates
   // wait for the Attestations to be ready
-  async fetchAttestation(): Promise<AttestationId[]> {
+  async fetchAttestation(timeout?: number): Promise<AttestationId[]> {
     // Note: this method probably does too much
 
     if (
@@ -446,18 +446,18 @@ export class GatewayTransfer implements WormholeTransfer {
         const retryInterval = 5000;
         const task = () =>
           this.gatewayIbcBridge.lookupMessageFromIbcMsgId(xfer.id);
-        const whm = await retry<WormholeMessageId>(task, retryInterval);
+        const whm = await retry<WormholeMessageId>(
+          task,
+          retryInterval,
+          timeout,
+          "Gateway:IbcBridge:LookupWormholeMessageFromIncomingIbcMessage",
+        );
         if (!whm)
           throw new Error(
             "Matching wormhole message not found after retries exhausted",
           );
 
-        const vaa = await GatewayTransfer.getTransferVaa(
-          this.wh,
-          whm.chain,
-          whm.emitter,
-          whm.sequence,
-        );
+        const vaa = await GatewayTransfer.getTransferVaa(this.wh, whm);
         this.vaas = [{ id: whm, vaa }];
 
         attestations.push(whm);
@@ -469,18 +469,14 @@ export class GatewayTransfer implements WormholeTransfer {
       // GatewayTransferMsg
       const { chain, txid } = this.transactions[0];
       const [whm] = await this.wh.parseMessageFromTx(chain, txid);
-      const vaa = await GatewayTransfer.getTransferVaa(
-        this.wh,
-        whm.chain,
-        whm.emitter,
-        whm.sequence,
-      );
+      const vaa = await GatewayTransfer.getTransferVaa(this.wh, whm);
       this.vaas = [{ id: whm, vaa }];
 
       attestations.push(whm);
 
       // TODO: conf for these settings? how do we choose them?
-      const retryInterval = 2000;
+      const vaaRedeemedRetryInterval = 2000;
+      const transferCompleteInterval = 5000;
 
       // Wait until the vaa is redeemed before trying to look up the
       // transfer message
@@ -491,11 +487,16 @@ export class GatewayTransfer implements WormholeTransfer {
         const redeemed = await isVaaRedeemed(wcTb, [vaa]);
         return redeemed ? redeemed : null;
       };
-      const redeemed = await retry<boolean>(isRedeemedTask, retryInterval);
+      const redeemed = await retry<boolean>(
+        isRedeemedTask,
+        vaaRedeemedRetryInterval,
+        timeout,
+        "Gateway:TokenBridge:IsVaaRedeemed",
+      );
       if (!redeemed)
         throw new Error("VAA not redeemed after retries exhausted");
 
-      // Finally, get the IBC transactions from wormchain
+      // Next, get the IBC transactions from wormchain
       // Note: Because we search by GatewayTransferMsg payload
       // there is a possibility of dupe messages being returned
       // using a nonce should help
@@ -503,12 +504,32 @@ export class GatewayTransfer implements WormholeTransfer {
         fetchIbcXfer(this.gatewayIbcBridge, this.msg);
       const wcTransfer = await retry<IbcTransferInfo>(
         wcTransferTask,
-        retryInterval,
+        vaaRedeemedRetryInterval,
+        timeout,
+        "Gateway:IbcBridge:WormchainTransferInitiated",
       );
       if (!wcTransfer)
         throw new Error("Wormchain transfer not found after retries exhausted");
 
       this.ibcTransfers.push(wcTransfer);
+
+      // Finally, get the IBC transfer to the destination chain
+      const destChain = this.wh.getChain(this.transfer.to.chain);
+      const destIbcBridge = await destChain.getIbcBridge();
+      const destTransferTask = () => fetchIbcXfer(destIbcBridge, wcTransfer.id);
+      const destTransfer = await retry<IbcTransferInfo>(
+        destTransferTask,
+        transferCompleteInterval,
+        timeout,
+        "Destination:IbcBridge:WormchainTransferCompleted",
+      );
+      if (!destTransfer)
+        throw new Error(
+          "IBC Transfer into destination not found after retries exhausted" +
+            JSON.stringify(wcTransfer.id),
+        );
+
+      this.ibcTransfers.push(destTransfer);
     }
 
     // Add transfers to attestations we return
@@ -583,13 +604,12 @@ export class GatewayTransfer implements WormholeTransfer {
 
   static async getTransferVaa(
     wh: Wormhole,
-    chain: ChainName,
-    emitter: UniversalAddress | NativeAddress<PlatformName>,
-    sequence: bigint,
-    retries: number = 5,
+    whm: WormholeMessageId,
   ): Promise<VAA<"TransferWithPayload"> | VAA<"Transfer">> {
-    const vaaBytes = await wh.getVAABytes(chain, emitter, sequence, retries);
-    if (!vaaBytes) throw new Error(`No VAA available after ${retries} retries`);
+    const { chain, emitter, sequence } = whm;
+    const vaaBytes = await wh.getVAABytes(chain, emitter, sequence);
+    if (!vaaBytes)
+      throw new Error(`No VAA Available: ${chain}/${emitter}/${sequence}`);
 
     const partial = deserialize("Uint8Array", vaaBytes);
     switch (partial.payload[0]) {
