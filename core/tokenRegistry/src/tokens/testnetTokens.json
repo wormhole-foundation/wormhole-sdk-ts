@@ -1,443 +1,577 @@
 {
   "Ethereum": {
-      "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6": {
-          "foreignAssets": {
-              "Solana": {
-                  "address": "7VPWjBhCXrpYYBiRKZh1ubh9tLZZNkZGp2ReRphEV4Mc",
-                  "decimals": 8
-              },
-              "Bsc": {
-                  "address": "0x064a85eac6b4Bd7190BCAd3458dBD9459989c37B",
-                  "decimals": 18
-              },
-              "Avalanche": {
-                  "address": "0xbB5A2dC896Ec4E2fa77F40FA630582ed9c6D0172",
-                  "decimals": 18
-              },
-              "Fantom": {
-                  "address": "0x758FEebDDeC06f4bCcEc8F756C8efBD35d5b7124",
-                  "decimals": 18
-              },
-              "Celo": {
-                  "address": "0x898471a82737dFFfB61915F9e8381e279076D72b",
-                  "decimals": 18
-              },
-              "Moonbeam": {
-                  "address": "0xd27d8883E31FAA11B2613b14BE83ad8951C8783C",
-                  "decimals": 18
-              },
-              "Arbitrum": {
-                  "address": "0x285d75E04D78F53f4Ed29A506a7e8479EEf3035f",
-                  "decimals": 18
-              }
-          }
-      },
-      "0x07865c6e87b9f70255377e024ace6630c1eaa37f": {
-          "foreignAssets": {
-              "Bsc": {
-                  "address": "0x861B5C16A2EcED022241072A7beA9D530b99EB6f",
-                  "decimals": 6
-              },
-              "Polygon": {
-                  "address": "0x543237045a106D7fd2eE3e2B44b5728e70BDe9c3",
-                  "decimals": 6
-              }
-          }
-      },
-      "0xC2C527C0CACF457746Bd31B2a698Fe89de2b6d49": {
-          "foreignAssets": {
-              "Fantom": {
-                  "address": "0x32eF19C4b3DF65a24972A489e70AdDef5E54262C",
-                  "decimals": 6
-              }
-          }
+    "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6": {
+      "name": "WETH",
+      "symbol": "WETH",
+      "nativeChain": "Ethereum",
+      "decimals": 18,
+      "foreignAssets": {
+        "Solana": {
+          "address": "7VPWjBhCXrpYYBiRKZh1ubh9tLZZNkZGp2ReRphEV4Mc",
+          "decimals": 8
+        },
+        "Bsc": {
+          "address": "0x064a85eac6b4Bd7190BCAd3458dBD9459989c37B",
+          "decimals": 18
+        },
+        "Avalanche": {
+          "address": "0xbB5A2dC896Ec4E2fa77F40FA630582ed9c6D0172",
+          "decimals": 18
+        },
+        "Fantom": {
+          "address": "0x758FEebDDeC06f4bCcEc8F756C8efBD35d5b7124",
+          "decimals": 18
+        },
+        "Celo": {
+          "address": "0x898471a82737dFFfB61915F9e8381e279076D72b",
+          "decimals": 18
+        },
+        "Moonbeam": {
+          "address": "0xd27d8883E31FAA11B2613b14BE83ad8951C8783C",
+          "decimals": 18
+        },
+        "Arbitrum": {
+          "address": "0x285d75E04D78F53f4Ed29A506a7e8479EEf3035f",
+          "decimals": 18
+        },
+        "Polygon": {
+          "address": "0xc6735cc74553Cc2caeB9F5e1Ea0A4dAe12ef4632",
+          "decimals": 18
+        },
+        "Sui": {
+          "address": "0x72831f626b1f0e11be201893d5cb641917730b1ccac778e4a77f8ab2052f0784::coin::COIN",
+          "decimals": 8
+        },
+        "Aptos": {
+          "address": "0x381775005cb32cdd3dbf935ae1b978ed40d309c72b009cd4a812aab6d991418a::coin::T",
+          "decimals": 8
+        },
+        "Base": {
+          "address": "0x44D627f900da8AdaC7561bD73aA745F132450798",
+          "decimals": 18
+        },
+        "Sei": {
+          "address": "sei13pzlt9etk44hj22lckncvampq2qu2gxv6r6774f3hma4vc07wqgsmftjx7",
+          "decimals": 8
+        },
+        "Optimism": {
+          "address": "0x33Db338718aC89Cd8DB13B56af05be3a3029BBE5",
+          "decimals": 18
+        }
       }
+    },
+    "0x07865c6e87b9f70255377e024ace6630c1eaa37f": {
+      "name": "USDC (Ethereum)",
+      "symbol": "USDC",
+      "nativeChain": "Ethereum",
+      "decimals": 6,
+      "foreignAssets": {
+        "Bsc": {
+          "address": "0x861B5C16A2EcED022241072A7beA9D530b99EB6f",
+          "decimals": 6
+        },
+        "Polygon": {
+          "address": "0x543237045a106D7fd2eE3e2B44b5728e70BDe9c3",
+          "decimals": 6
+        },
+        "Avalanche": {
+          "address": "0x63A30f239DC8d1c17Bf6653a68Fc6C2F83641E6d",
+          "decimals": 6
+        },
+        "Fantom": {
+          "address": "0xDF7928AF5B33F7de592594958D8d6Ff8472Eb407",
+          "decimals": 6
+        },
+        "Celo": {
+          "address": "0xB0524bEF6c61c6150B340b2828a890fD8dEa60C0",
+          "decimals": 6
+        },
+        "Moonbeam": {
+          "address": "0xE5dE10C4b744bac6b783fAF8d9B9fDFF14Acc3c9",
+          "decimals": 6
+        },
+        "Solana": {
+          "address": "2BAqec7Qof3Y7VJatwFsRHUNSQBSkzaEsT1V5bW6dbZY",
+          "decimals": 6
+        },
+        "Base": {
+          "address": "0x5010B0988a035915C91a2a432085824FcB3D8d3f",
+          "decimals": 6
+        },
+        "Sei": {
+          "address": "sei1nj32y0h0vzam33ay42h2majlfk7tdkqcuk84srn0v2a52kmujgfsyfe78f",
+          "decimals": 6
+        },
+        "Arbitrum": {
+          "address": "0x42A212A2E7eA8feF4ED28F439F16A6ABDd34DA35",
+          "decimals": 6
+        },
+        "Optimism": {
+          "address": "0x0382F518AcE1a86224c78B7CDfa67B9774055A1b",
+          "decimals": 6
+        }
+      }
+    },
+    "0xC2C527C0CACF457746Bd31B2a698Fe89de2b6d49": {
+      "name": "USDT",
+      "symbol": "USDT",
+      "nativeChain": "Ethereum",
+      "decimals": 8,
+      "foreignAssets": {
+        "Fantom": {
+          "address": "0x32eF19C4b3DF65a24972A489e70AdDef5E54262C",
+          "decimals": 6
+        },
+        "Polygon": {
+          "address": "0x02E30E84161BE1aBfcBB2b154B11De4C2b5E0a32",
+          "decimals": 6
+        },
+        "Bsc": {
+          "address": "0xe94AaBAdB6F833f65B8A9AdDD030985B775188c9",
+          "decimals": 6
+        },
+        "Moonbeam": {
+          "address": "0x7f5Ca1bcFb38fDF4c0E0646FCbf3FA87740ff65D",
+          "decimals": 6
+        },
+        "Arbitrum": {
+          "address": "0x2B732F5ad6117818Ad3b7aC73C16033F6ECD78E5",
+          "decimals": 6
+        }
+      }
+    },
+    "0xC04B0d3107736C32e19F1c62b2aF67BE61d63a05": {
+      "name": "WBTC",
+      "symbol": "WBTC",
+      "nativeChain": "Ethereum",
+      "decimals": 8
+    },
+    "0x11fE4B6AE13d2a6055C8D9cF65c55bac32B5d844": {
+      "name": "DAI",
+      "symbol": "DAI",
+      "nativeChain": "Ethereum",
+      "decimals": 18,
+      "foreignAssets": {
+        "Polygon": {
+          "address": "0x87374d35C5F1bD78c2b1da383F460e154e7D3E5e",
+          "decimals": 18
+        },
+        "Bsc": {
+          "address": "0x45082C9Fc6BBCa72288F47Fad21dE0BECC75759E",
+          "decimals": 18
+        },
+        "Avalanche": {
+          "address": "0x3989C9c4bdd30400E6Aa90990683EAd6a1638A16",
+          "decimals": 18
+        },
+        "Fantom": {
+          "address": "0xE4FE5DF2084f9D81595e4fcba2399020FBE7b233",
+          "decimals": 18
+        },
+        "Celo": {
+          "address": "0xeBB3fF6E5d61d3793Fdb60f7942BA78E636019f6",
+          "decimals": 18
+        },
+        "Moonbeam": {
+          "address": "0xc31EC0108D8e886be58808B4C2C53f8365f1885D",
+          "decimals": 18
+        },
+        "Solana": {
+          "address": "3WK3mEDNPrNuQReBvM28NcsqrExMnPxD9pPJmgrUeKKH",
+          "decimals": 8
+        },
+        "Base": {
+          "address": "0x31B2BAEE47Dc5Fc06baEC1BF73C124031b44fB97",
+          "decimals": 18
+        }
+      }
+    }
   },
   "Polygon": {
-      "0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889": {
-          "name": "WMATIC",
-          "symbol": "WMATIC",
-          "nativeChain": "Polygon",
-          "decimals": 18,
-          "foreignAssets": {
-              "Ethereum": {
-                  "address": "0x7cd0e8ff09cEB653813bD3d63d0554c1CB4BFdf6",
-                  "decimals": 18
-              },
-              "Bsc": {
-                  "address": "0x7FCDA925f0994121752ca14C334297BeC3d0eA9E",
-                  "decimals": 18
-              },
-              "Avalanche": {
-                  "address": "0x78554394273957d7e55afC841aeA27Cce469AEd4",
-                  "decimals": 18
-              },
-              "Fantom": {
-                  "address": "0x47a4C4c0f96D6CBe5b5C0A46CB0E22d6A17F1430",
-                  "decimals": 18
-              },
-              "Celo": {
-                  "address": "0x7a56409988BBF8758b3ba412b9c7E3FE504C8544",
-                  "decimals": 18
-              },
-              "Moonbeam": {
-                  "address": "0xD2888f015BcB76CE3d27b6024cdEFA16836d0dbb",
-                  "decimals": 18
-              },
-              "Solana": {
-                  "address": "ACbmcQxbbhiXWM1GmapUSMmBYKMvnFLfAAXKqdo8xKwo",
-                  "decimals": 8
-              },
-              "Sui": {
-                  "address": "0xa516bcbf83b29a2944bb53ec9f934ea7d78c3626d3ae411d2fb9dcb977522e67::coin::COIN",
-                  "decimals": 8
-              },
-              "Aptos": {
-                  "address": "0x5f229253e2b2d03fb909f565feca49452582bd633a5816e5ce30aa593cb49d8a::coin::T",
-                  "decimals": 8
-              },
-              "Base": {
-                  "address": "0xFFB5d863d5132523d013338845A1Bb01EDd440f4",
-                  "decimals": 18
-              },
-              "Sei": {
-                  "address": "sei1dc94as3vgxn3qkr5h0lnnrep69mtfku6jg4t94gfkunuyzr5g5eqyqvj9p",
-                  "decimals": 8
-              },
-              "Arbitrum": {
-                  "address": "0x50FD4064cC536a964E2E0Dc7B3fE2313Ab386bEA",
-                  "decimals": 18
-              },
-              "Optimism": {
-                  "address": "0x427B5a0b0384D7FD3AF81805A166a2d9C1116D7d",
-                  "decimals": 18
-              }
-          }
-      },
-      "0x0FA8781a83E46826621b3BC094Ea2A0212e71B23": {
-          "name": "USDC (Mumbai)",
-          "symbol": "USDC",
-          "nativeChain": "Polygon",
-          "decimals": 6,
-          "foreignAssets": {
-              "Ethereum": {
-                  "address": "0xB3658B4C6704356F155c369F4583aF68424128e9",
-                  "decimals": 6
-              },
-              "Bsc": {
-                  "address": "0x88B8b85ED6d39E613d2d1449e1c1B808d505D561",
-                  "decimals": 6
-              },
-              "Avalanche": {
-                  "address": "0xFB2C24197A92598C633Ed8eE60ee90b104d7B145",
-                  "decimals": 6
-              },
-              "Fantom": {
-                  "address": "0x450dC724a1793b0E2182d09Eb883ad76f7F4C0Aa",
-                  "decimals": 6
-              },
-              "Celo": {
-                  "address": "0x4364bb251a0F33914AAb2088ed435122694Ce2BD",
-                  "decimals": 6
-              },
-              "Moonbeam": {
-                  "address": "0x5366c7204A49D6CdD6A99e647aE695Cb0866FD5e",
-                  "decimals": 6
-              },
-              "Sui": {
-                  "address": "0xe1deb395283034cbfc81c5acb4c89d3223e5165b5384282c73963aa5262a4993::coin::COIN",
-                  "decimals": 6
-              },
-              "Sei": {
-                  "address": "sei1vccw9g60mphsaj9t96vru53mjje3vmxcl49lg8lfqdh0zgmq6zsqf03y9n",
-                  "decimals": 6
-              }
-          }
+    "0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889": {
+      "name": "WMATIC",
+      "symbol": "WMATIC",
+      "nativeChain": "Polygon",
+      "decimals": 18,
+      "foreignAssets": {
+        "Ethereum": {
+          "address": "0x7cd0e8ff09cEB653813bD3d63d0554c1CB4BFdf6",
+          "decimals": 18
+        },
+        "Bsc": {
+          "address": "0x7FCDA925f0994121752ca14C334297BeC3d0eA9E",
+          "decimals": 18
+        },
+        "Avalanche": {
+          "address": "0x78554394273957d7e55afC841aeA27Cce469AEd4",
+          "decimals": 18
+        },
+        "Fantom": {
+          "address": "0x47a4C4c0f96D6CBe5b5C0A46CB0E22d6A17F1430",
+          "decimals": 18
+        },
+        "Celo": {
+          "address": "0x7a56409988BBF8758b3ba412b9c7E3FE504C8544",
+          "decimals": 18
+        },
+        "Moonbeam": {
+          "address": "0xD2888f015BcB76CE3d27b6024cdEFA16836d0dbb",
+          "decimals": 18
+        },
+        "Solana": {
+          "address": "ACbmcQxbbhiXWM1GmapUSMmBYKMvnFLfAAXKqdo8xKwo",
+          "decimals": 8
+        },
+        "Sui": {
+          "address": "0xa516bcbf83b29a2944bb53ec9f934ea7d78c3626d3ae411d2fb9dcb977522e67::coin::COIN",
+          "decimals": 8
+        },
+        "Aptos": {
+          "address": "0x5f229253e2b2d03fb909f565feca49452582bd633a5816e5ce30aa593cb49d8a::coin::T",
+          "decimals": 8
+        },
+        "Base": {
+          "address": "0xFFB5d863d5132523d013338845A1Bb01EDd440f4",
+          "decimals": 18
+        },
+        "Sei": {
+          "address": "sei1dc94as3vgxn3qkr5h0lnnrep69mtfku6jg4t94gfkunuyzr5g5eqyqvj9p",
+          "decimals": 8
+        },
+        "Arbitrum": {
+          "address": "0x50FD4064cC536a964E2E0Dc7B3fE2313Ab386bEA",
+          "decimals": 18
+        },
+        "Optimism": {
+          "address": "0x427B5a0b0384D7FD3AF81805A166a2d9C1116D7d",
+          "decimals": 18
+        }
       }
+    },
+    "0x0FA8781a83E46826621b3BC094Ea2A0212e71B23": {
+      "name": "USDC (Mumbai)",
+      "symbol": "USDC",
+      "nativeChain": "Polygon",
+      "decimals": 6,
+      "foreignAssets": {
+        "Ethereum": {
+          "address": "0xB3658B4C6704356F155c369F4583aF68424128e9",
+          "decimals": 6
+        },
+        "Bsc": {
+          "address": "0x88B8b85ED6d39E613d2d1449e1c1B808d505D561",
+          "decimals": 6
+        },
+        "Avalanche": {
+          "address": "0xFB2C24197A92598C633Ed8eE60ee90b104d7B145",
+          "decimals": 6
+        },
+        "Fantom": {
+          "address": "0x450dC724a1793b0E2182d09Eb883ad76f7F4C0Aa",
+          "decimals": 6
+        },
+        "Celo": {
+          "address": "0x4364bb251a0F33914AAb2088ed435122694Ce2BD",
+          "decimals": 6
+        },
+        "Moonbeam": {
+          "address": "0x5366c7204A49D6CdD6A99e647aE695Cb0866FD5e",
+          "decimals": 6
+        },
+        "Sui": {
+          "address": "0xe1deb395283034cbfc81c5acb4c89d3223e5165b5384282c73963aa5262a4993::coin::COIN",
+          "decimals": 6
+        },
+        "Sei": {
+          "address": "sei1vccw9g60mphsaj9t96vru53mjje3vmxcl49lg8lfqdh0zgmq6zsqf03y9n",
+          "decimals": 6
+        }
+      }
+    }
   },
   "Bsc": {
-      "0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd": {
-          "name": "WBNB",
-          "symbol": "WBNB",
-          "nativeChain": "Bsc",
-          "decimals": 18,
-          "foreignAssets": {
-              "Ethereum": {
-                  "address": "0xB19693FEB013Bab65866dE0a845a9511064230cE",
-                  "decimals": 18
-              },
-              "Polygon": {
-                  "address": "0x0C63D8ADB69204b2946DcB945a6f16d97C255eE2",
-                  "decimals": 18
-              },
-              "Avalanche": {
-                  "address": "0x10F1053bF2884b28ee0Bd7a2dDBa237Af3511d29",
-                  "decimals": 18
-              },
-              "Fantom": {
-                  "address": "0xfB174b43228950C2055CFc25AE93f2DCe8E2beF0",
-                  "decimals": 18
-              },
-              "Celo": {
-                  "address": "0xa8050be9389466c3c524F10F131f244ACbf21A0D",
-                  "decimals": 18
-              },
-              "Moonbeam": {
-                  "address": "0x6097E80331B0c6aF4F74D7F2363E70Cb2Fd078A5",
-                  "decimals": 18
-              },
-              "Solana": {
-                  "address": "BaGfF51MQ3a61papTRDYaNefBgTQ9ywnVne5fCff4bxT",
-                  "decimals": 8
-              },
-              "Sui": {
-                  "address": "0xddcf8680a8a4b8a527d8c85ec203274991590c2ea898d1c4635b70164d9c584b::coin::COIN",
-                  "decimals": 8
-              },
-              "Aptos": {
-                  "address": "0xa5894f5ddb8647e6143102aa336ff07374f7b32e88c1c703aef5b7c9a370bf80::coin::T",
-                  "decimals": 8
-              },
-              "Base": {
-                  "address": "0x9DeF11E63C23c71dE3716b81dD2Fdad2B24b8b7F",
-                  "decimals": 18
-              },
-              "Sei": {
-                  "address": "sei10a7see3f9t2j9l8fdweur3aqy4zgvz583a268hhhln3yzps6l5mqnl4ua6",
-                  "decimals": 8
-              },
-              "Arbitrum": {
-                  "address": "0xB039aC4Fa8Ed99d30C2f7D791294A9d5FAd698eF",
-                  "decimals": 18
-              }
-          }
+    "0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd": {
+      "name": "WBNB",
+      "symbol": "WBNB",
+      "nativeChain": "Bsc",
+      "decimals": 18,
+      "foreignAssets": {
+        "Ethereum": {
+          "address": "0xB19693FEB013Bab65866dE0a845a9511064230cE",
+          "decimals": 18
+        },
+        "Polygon": {
+          "address": "0x0C63D8ADB69204b2946DcB945a6f16d97C255eE2",
+          "decimals": 18
+        },
+        "Avalanche": {
+          "address": "0x10F1053bF2884b28ee0Bd7a2dDBa237Af3511d29",
+          "decimals": 18
+        },
+        "Fantom": {
+          "address": "0xfB174b43228950C2055CFc25AE93f2DCe8E2beF0",
+          "decimals": 18
+        },
+        "Celo": {
+          "address": "0xa8050be9389466c3c524F10F131f244ACbf21A0D",
+          "decimals": 18
+        },
+        "Moonbeam": {
+          "address": "0x6097E80331B0c6aF4F74D7F2363E70Cb2Fd078A5",
+          "decimals": 18
+        },
+        "Solana": {
+          "address": "BaGfF51MQ3a61papTRDYaNefBgTQ9ywnVne5fCff4bxT",
+          "decimals": 8
+        },
+        "Sui": {
+          "address": "0xddcf8680a8a4b8a527d8c85ec203274991590c2ea898d1c4635b70164d9c584b::coin::COIN",
+          "decimals": 8
+        },
+        "Aptos": {
+          "address": "0xa5894f5ddb8647e6143102aa336ff07374f7b32e88c1c703aef5b7c9a370bf80::coin::T",
+          "decimals": 8
+        },
+        "Base": {
+          "address": "0x9DeF11E63C23c71dE3716b81dD2Fdad2B24b8b7F",
+          "decimals": 18
+        },
+        "Sei": {
+          "address": "sei10a7see3f9t2j9l8fdweur3aqy4zgvz583a268hhhln3yzps6l5mqnl4ua6",
+          "decimals": 8
+        },
+        "Arbitrum": {
+          "address": "0xB039aC4Fa8Ed99d30C2f7D791294A9d5FAd698eF",
+          "decimals": 18
+        }
       }
+    }
   },
   "Avalanche": {
-      "0xd00ae08403B9bbb9124bB305C09058E32C39A48c": {
-          "name": "WAVAX",
-          "symbol": "WAVAX",
-          "nativeChain": "Avalanche",
-          "decimals": 18,
-          "foreignAssets": {
-              "Ethereum": {
-                  "address": "0x4C1b727f6df3B075E682C41a25687A69846aaC04",
-                  "decimals": 18
-              },
-              "Polygon": {
-                  "address": "0x51f3D34651523dD8CC4872ee261A1B0B3f73AceF",
-                  "decimals": 18
-              },
-              "Bsc": {
-                  "address": "0x6cE9E2c8b59bbcf65dA375D3d8AB503c8524caf7",
-                  "decimals": 18
-              },
-              "Fantom": {
-                  "address": "0x0f545Be981C37fB15ab7c65404648761e99016e4",
-                  "decimals": 18
-              },
-              "Celo": {
-                  "address": "0x502c8C83008D9Dd812a7C5fB886C063060C73Dbf",
-                  "decimals": 18
-              },
-              "Moonbeam": {
-                  "address": "0x2E8afeCC19842229358f3650cc3F091908dcbaB4",
-                  "decimals": 18
-              },
-              "Solana": {
-                  "address": "3Ftc5hTz9sG4huk79onufGiebJNDMZNL8HYgdMJ9E7JR",
-                  "decimals": 8
-              },
-              "Sui": {
-                  "address": "0xa600741c469fb57ed01497ddf101e798fa79a9c529bd176675c5c4d970811f80::coin::COIN",
-                  "decimals": 8
-              },
-              "Aptos": {
-                  "address": "0xbe8f4301c0b54e870902b9a23eeb95ce74ac190531782aa3262337ceb145401a::coin::T",
-                  "decimals": 8
-              },
-              "Base": {
-                  "address": "0x410B0EE532EFfB18fa4d90cc095B1CD58aC43d5a",
-                  "decimals": 18
-              },
-              "Sei": {
-                  "address": "sei1mgpq67pj7p2acy5x7r5lz7fulxmuxr3uh5f0szyvqgvru3glufzsxk8tnx",
-                  "decimals": 8
-              },
-              "Arbitrum": {
-                  "address": "0x92b0C4D27a05921Ded4BB117755990F567aEe049",
-                  "decimals": 18
-              }
-          }
-      },
-      "0x5425890298aed601595a70AB815c96711a31Bc65": {
-          "name": "USDC (Fuji)",
-          "symbol": "USDC",
-          "nativeChain": "Avalanche",
-          "decimals": 6,
-          "foreignAssets": {
-              "Ethereum": {
-                  "address": "0xF6699D3f725C4b64Cc6010F2DF77B4B05C76Cd5C",
-                  "decimals": 6
-              },
-              "Polygon": {
-                  "address": "0xcc048C353Fdc2f5c378B7BCab9B240Ca2b619f1c",
-                  "decimals": 6
-              },
-              "Bsc": {
-                  "address": "0x1cfeCf72bcBE1E429A21A5B11E708C7c397AaC54",
-                  "decimals": 6
-              },
-              "Fantom": {
-                  "address": "0x6BC4E8D8c1d54656D1DeBCa96efc53aFd1408aD2",
-                  "decimals": 6
-              },
-              "Celo": {
-                  "address": "0xDDB349c976cA2C873644F21f594767Eb5390C831",
-                  "decimals": 6
-              },
-              "Moonbeam": {
-                  "address": "0x6533CE14804D113b1F494dC56c5D60A43cb5C3b5",
-                  "decimals": 6
-              },
-              "Solana": {
-                  "address": "GQtMXZxnuacCFTXVeTvyHi6P9F6chbtzhVc8JgD8hv7c",
-                  "decimals": 6
-              },
-              "Sui": {
-                  "address": "0x2aa8c885d04e676c4e87b7d0f94d4f3b243b1b5d93239d1cc41d5528ce1714c1::coin::COIN",
-                  "decimals": 6
-              },
-              "Aptos": {
-                  "address": "0x02ef7697bdb33361ca39d228671203afc0dea3202e792d79d2072b761d87c834::coin::T",
-                  "decimals": 6
-              },
-              "Base": {
-                  "address": "0x4C5208246676486064c501E1DAF2dD21596Bc5f5",
-                  "decimals": 6
-              },
-              "Sei": {
-                  "address": "sei1uyce5s6cc8hveg0maq2lg7wm6v6fvwqmznypj559nzf9wr9tmw3qnd3ce7",
-                  "decimals": 6
-              },
-              "Arbitrum": {
-                  "address": "0xb39697B8BA5df91A169690DfEf88B911436619F2",
-                  "decimals": 6
-              }
-          }
+    "0xd00ae08403B9bbb9124bB305C09058E32C39A48c": {
+      "name": "WAVAX",
+      "symbol": "WAVAX",
+      "nativeChain": "Avalanche",
+      "decimals": 18,
+      "foreignAssets": {
+        "Ethereum": {
+          "address": "0x4C1b727f6df3B075E682C41a25687A69846aaC04",
+          "decimals": 18
+        },
+        "Polygon": {
+          "address": "0x51f3D34651523dD8CC4872ee261A1B0B3f73AceF",
+          "decimals": 18
+        },
+        "Bsc": {
+          "address": "0x6cE9E2c8b59bbcf65dA375D3d8AB503c8524caf7",
+          "decimals": 18
+        },
+        "Fantom": {
+          "address": "0x0f545Be981C37fB15ab7c65404648761e99016e4",
+          "decimals": 18
+        },
+        "Celo": {
+          "address": "0x502c8C83008D9Dd812a7C5fB886C063060C73Dbf",
+          "decimals": 18
+        },
+        "Moonbeam": {
+          "address": "0x2E8afeCC19842229358f3650cc3F091908dcbaB4",
+          "decimals": 18
+        },
+        "Solana": {
+          "address": "3Ftc5hTz9sG4huk79onufGiebJNDMZNL8HYgdMJ9E7JR",
+          "decimals": 8
+        },
+        "Sui": {
+          "address": "0xa600741c469fb57ed01497ddf101e798fa79a9c529bd176675c5c4d970811f80::coin::COIN",
+          "decimals": 8
+        },
+        "Aptos": {
+          "address": "0xbe8f4301c0b54e870902b9a23eeb95ce74ac190531782aa3262337ceb145401a::coin::T",
+          "decimals": 8
+        },
+        "Base": {
+          "address": "0x410B0EE532EFfB18fa4d90cc095B1CD58aC43d5a",
+          "decimals": 18
+        },
+        "Sei": {
+          "address": "sei1mgpq67pj7p2acy5x7r5lz7fulxmuxr3uh5f0szyvqgvru3glufzsxk8tnx",
+          "decimals": 8
+        },
+        "Arbitrum": {
+          "address": "0x92b0C4D27a05921Ded4BB117755990F567aEe049",
+          "decimals": 18
+        }
       }
+    },
+    "0x5425890298aed601595a70AB815c96711a31Bc65": {
+      "name": "USDC (Fuji)",
+      "symbol": "USDC",
+      "nativeChain": "Avalanche",
+      "decimals": 6,
+      "foreignAssets": {
+        "Ethereum": {
+          "address": "0xF6699D3f725C4b64Cc6010F2DF77B4B05C76Cd5C",
+          "decimals": 6
+        },
+        "Polygon": {
+          "address": "0xcc048C353Fdc2f5c378B7BCab9B240Ca2b619f1c",
+          "decimals": 6
+        },
+        "Bsc": {
+          "address": "0x1cfeCf72bcBE1E429A21A5B11E708C7c397AaC54",
+          "decimals": 6
+        },
+        "Fantom": {
+          "address": "0x6BC4E8D8c1d54656D1DeBCa96efc53aFd1408aD2",
+          "decimals": 6
+        },
+        "Celo": {
+          "address": "0xDDB349c976cA2C873644F21f594767Eb5390C831",
+          "decimals": 6
+        },
+        "Moonbeam": {
+          "address": "0x6533CE14804D113b1F494dC56c5D60A43cb5C3b5",
+          "decimals": 6
+        },
+        "Solana": {
+          "address": "GQtMXZxnuacCFTXVeTvyHi6P9F6chbtzhVc8JgD8hv7c",
+          "decimals": 6
+        },
+        "Sui": {
+          "address": "0x2aa8c885d04e676c4e87b7d0f94d4f3b243b1b5d93239d1cc41d5528ce1714c1::coin::COIN",
+          "decimals": 6
+        },
+        "Aptos": {
+          "address": "0x02ef7697bdb33361ca39d228671203afc0dea3202e792d79d2072b761d87c834::coin::T",
+          "decimals": 6
+        },
+        "Base": {
+          "address": "0x4C5208246676486064c501E1DAF2dD21596Bc5f5",
+          "decimals": 6
+        },
+        "Sei": {
+          "address": "sei1uyce5s6cc8hveg0maq2lg7wm6v6fvwqmznypj559nzf9wr9tmw3qnd3ce7",
+          "decimals": 6
+        },
+        "Arbitrum": {
+          "address": "0xb39697B8BA5df91A169690DfEf88B911436619F2",
+          "decimals": 6
+        }
+      }
+    }
   },
   "Fantom": {
-      "0xf1277d1Ed8AD466beddF92ef448A132661956621": {
-          "name": "WFTM",
-          "symbol": "WFTM",
-          "nativeChain": "Fantom",
-          "decimals": 18,
-          "foreignAssets": {
-              "Ethereum": {
-                  "address": "0x0d7A9Cdbb7C21E64825cF81750A5081a32aFb5d4",
-                  "decimals": 18
-              },
-              "Polygon": {
-                  "address": "0x84aa9100a36D6c3514605F62342abF3cE77D5b97",
-                  "decimals": 18
-              },
-              "Bsc": {
-                  "address": "0x9aB305B792DBdb8253bEE909E7006611Cb45175b",
-                  "decimals": 18
-              },
-              "Avalanche": {
-                  "address": "0x094cB577C21Ab1360178beE74B9591fa12216dAD",
-                  "decimals": 18
-              },
-              "Celo": {
-                  "address": "0xE6F8710cA14CFe7F5aAAD3A799C3d1D92dCba938",
-                  "decimals": 18
-              },
-              "Moonbeam": {
-                  "address": "0x566c1cebc6A4AFa1C122E039C4BEBe77043148Ee",
-                  "decimals": 18
-              },
-              "Solana": {
-                  "address": "DMw2tLaq1bVoAEKtkoUtieSk9bfCPUvubYLatTMsSVop",
-                  "decimals": 8
-              },
-              "Sui": {
-                  "address": "0x14e756ff65e0ac810a5f69ca5276ef5b899a6df3c4717de1f85559d8b5ae6ea6::coin::COIN",
-                  "decimals": 8
-              },
-              "Base": {
-                  "address": "0xB4808E58713112AbAbB8167C7187F8988df38bbD",
-                  "decimals": 18
-              },
-              "Sei": {
-                  "address": "sei1cr3j7rxq0dhq04ksftmj8n2w096w9g7ck8fngkvk2lrmy3qwz56q9thu9u",
-                  "decimals": 8
-              },
-              "Arbitrum": {
-                  "address": "0xa507f7566B8aDE000E886166B95964677ef3b3Ef",
-                  "decimals": 18
-              }
-          }
+    "0xf1277d1Ed8AD466beddF92ef448A132661956621": {
+      "name": "WFTM",
+      "symbol": "WFTM",
+      "nativeChain": "Fantom",
+      "decimals": 18,
+      "foreignAssets": {
+        "Ethereum": {
+          "address": "0x0d7A9Cdbb7C21E64825cF81750A5081a32aFb5d4",
+          "decimals": 18
+        },
+        "Polygon": {
+          "address": "0x84aa9100a36D6c3514605F62342abF3cE77D5b97",
+          "decimals": 18
+        },
+        "Bsc": {
+          "address": "0x9aB305B792DBdb8253bEE909E7006611Cb45175b",
+          "decimals": 18
+        },
+        "Avalanche": {
+          "address": "0x094cB577C21Ab1360178beE74B9591fa12216dAD",
+          "decimals": 18
+        },
+        "Celo": {
+          "address": "0xE6F8710cA14CFe7F5aAAD3A799C3d1D92dCba938",
+          "decimals": 18
+        },
+        "Moonbeam": {
+          "address": "0x566c1cebc6A4AFa1C122E039C4BEBe77043148Ee",
+          "decimals": 18
+        },
+        "Solana": {
+          "address": "DMw2tLaq1bVoAEKtkoUtieSk9bfCPUvubYLatTMsSVop",
+          "decimals": 8
+        },
+        "Sui": {
+          "address": "0x14e756ff65e0ac810a5f69ca5276ef5b899a6df3c4717de1f85559d8b5ae6ea6::coin::COIN",
+          "decimals": 8
+        },
+        "Base": {
+          "address": "0xB4808E58713112AbAbB8167C7187F8988df38bbD",
+          "decimals": 18
+        },
+        "Sei": {
+          "address": "sei1cr3j7rxq0dhq04ksftmj8n2w096w9g7ck8fngkvk2lrmy3qwz56q9thu9u",
+          "decimals": 8
+        },
+        "Arbitrum": {
+          "address": "0xa507f7566B8aDE000E886166B95964677ef3b3Ef",
+          "decimals": 18
+        }
       }
+    }
   },
   "Celo": {
-      "0xF194afDf50B03e69Bd7D057c1Aa9e10c9954E4C9": {
-          "name": "CELO",
-          "symbol": "CELO",
-          "nativeChain": "Celo",
-          "decimals": 18,
-          "foreignAssets": {
-              "Ethereum": {
-                  "address": "0xe092525a787CD56B901279b5864a224c22B95B72",
-                  "decimals": 18
-              },
-              "Polygon": {
-                  "address": "0xAd027790A64331A11bd1b651739450cC9Dc0098F",
-                  "decimals": 18
-              },
-              "Bsc": {
-                  "address": "0x1471698cBD9cAB0228F2EEA9303A2b3aA0ABDC2B",
-                  "decimals": 18
-              },
-              "Avalanche": {
-                  "address": "0xC66d9c2b33c347d4A4441975f4688fcD5DD4c441",
-                  "decimals": 18
-              },
-              "Fantom": {
-                  "address": "0xB18E73a69c3Aaea39a610372537Cf8482622d199",
-                  "decimals": 18
-              },
-              "Moonbeam": {
-                  "address": "0x3406a9b09adf0cb36DC04c1523C4b294C6b79513",
-                  "decimals": 18
-              },
-              "Solana": {
-                  "address": "84F2QX9278ToDmA98u4A86xSV9hz1ovazr8zwGaX6qjS",
-                  "decimals": 8
-              },
-              "Sui": {
-                  "address": "0x81868174a6b11e1acc337b3414f9912455435d486609fb8d50b34312865085f2::coin::COIN",
-                  "decimals": 8
-              },
-              "Aptos": {
-                  "address": "0xecbb0f7e7d049499ca83ca1358344f56557886f6f7adc740d6734cce7bfc9a14::coin::T",
-                  "decimals": 8
-              },
-              "Base": {
-                  "address": "0x72C56041ea5fe8bDE99b2A123fb5964cDE8C7FE9",
-                  "decimals": 18
-              },
-              "Sei": {
-                  "address": "sei1yw4wv2zqg9xkn67zvq3azye0t8h0x9kgyg3d53jym24gxt49vdyswk5upj",
-                  "decimals": 8
-              },
-              "Arbitrum": {
-                  "address": "0x9592eE6eD1D9E611b7aa6F20CCbD7Ba571Be8bdd",
-                  "decimals": 18
-              }
-          }
+    "0xF194afDf50B03e69Bd7D057c1Aa9e10c9954E4C9": {
+      "name": "CELO",
+      "symbol": "CELO",
+      "nativeChain": "Celo",
+      "decimals": 18,
+      "foreignAssets": {
+        "Ethereum": {
+          "address": "0xe092525a787CD56B901279b5864a224c22B95B72",
+          "decimals": 18
+        },
+        "Polygon": {
+          "address": "0xAd027790A64331A11bd1b651739450cC9Dc0098F",
+          "decimals": 18
+        },
+        "Bsc": {
+          "address": "0x1471698cBD9cAB0228F2EEA9303A2b3aA0ABDC2B",
+          "decimals": 18
+        },
+        "Avalanche": {
+          "address": "0xC66d9c2b33c347d4A4441975f4688fcD5DD4c441",
+          "decimals": 18
+        },
+        "Fantom": {
+          "address": "0xB18E73a69c3Aaea39a610372537Cf8482622d199",
+          "decimals": 18
+        },
+        "Moonbeam": {
+          "address": "0x3406a9b09adf0cb36DC04c1523C4b294C6b79513",
+          "decimals": 18
+        },
+        "Solana": {
+          "address": "84F2QX9278ToDmA98u4A86xSV9hz1ovazr8zwGaX6qjS",
+          "decimals": 8
+        },
+        "Sui": {
+          "address": "0x81868174a6b11e1acc337b3414f9912455435d486609fb8d50b34312865085f2::coin::COIN",
+          "decimals": 8
+        },
+        "Aptos": {
+          "address": "0xecbb0f7e7d049499ca83ca1358344f56557886f6f7adc740d6734cce7bfc9a14::coin::T",
+          "decimals": 8
+        },
+        "Base": {
+          "address": "0x72C56041ea5fe8bDE99b2A123fb5964cDE8C7FE9",
+          "decimals": 18
+        },
+        "Sei": {
+          "address": "sei1yw4wv2zqg9xkn67zvq3azye0t8h0x9kgyg3d53jym24gxt49vdyswk5upj",
+          "decimals": 8
+        },
+        "Arbitrum": {
+          "address": "0x9592eE6eD1D9E611b7aa6F20CCbD7Ba571Be8bdd",
+          "decimals": 18
+        }
       }
+    }
   },
   "Moonbeam": {
     "0xD909178CC99d318e4D46e7E66a972955859670E1": {
@@ -705,20 +839,20 @@
       }
     },
     "0xfd064A18f3BF249cf1f87FC203E90D8f650f2d63": {
-        "name": "USDC (Arbitrum)",
-        "symbol": "USDC",
-        "nativeChain": "Arbitrum",
-        "decimals": 6,
-        "foreignAssets": {
-          "Ethereum": {
-            "address": "0xd962F26D93c4eF609Ba00Ed6101326A1490B9489",
-            "decimals": 6
-          },
-          "Celo": {
-            "address": "0x0C4AbF95Ff3d82d1F02f55e65050eA5bA062606E",
-            "decimals": 6
-          }
+      "name": "USDC (Arbitrum)",
+      "symbol": "USDC",
+      "nativeChain": "Arbitrum",
+      "decimals": 6,
+      "foreignAssets": {
+        "Ethereum": {
+          "address": "0xd962F26D93c4eF609Ba00Ed6101326A1490B9489",
+          "decimals": 6
+        },
+        "Celo": {
+          "address": "0x0C4AbF95Ff3d82d1F02f55e65050eA5bA062606E",
+          "decimals": 6
         }
+      }
     }
   },
   "Optimism": {
@@ -751,10 +885,16 @@
       }
     },
     "0xe05606174bac4A6364B31bd0eCA4bf4dD368f8C6": {
-        "name": "USDC (Optimism)",
-        "symbol": "USDC",
-        "nativeChain": "Optimism",
-        "decimals": 6
+      "name": "USDC (Optimism)",
+      "symbol": "USDC",
+      "nativeChain": "Optimism",
+      "decimals": 6,
+      "foreignAssets": {
+        "Fantom": {
+          "address": "0x685B29e17440c42758Ab3F80FD3603EF01bebe9A",
+          "decimals": 6
+        }
+      }
     }
   },
   "Base": {

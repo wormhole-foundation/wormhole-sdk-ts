@@ -41,7 +41,10 @@ const checkEnvConfig = async (
 
   const [numUpdates, suggestedUpdates] = await getSuggestedUpdates(wh, tokensConfig);
   if (numUpdates as number > 0) {
-    console.log(`${numUpdates} updates available`);
+    console.log(`
+      ${numUpdates} updates available. To update, run:\n
+      npm run updateForeignAssets`
+    );
     console.log(JSON.stringify(suggestedUpdates, null, 4));
   } else {
     console.log('Up to date')
