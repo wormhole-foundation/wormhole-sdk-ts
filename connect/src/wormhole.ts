@@ -279,40 +279,8 @@ export class Wormhole {
     amount: number | string,
   ): Promise<bigint> {
     const ctx = this.getChain(chain);
-    let decimals;
-    if (token !== 'native') {
-      const tb = await ctx.getTokenBridge();
-      const address = await tb.getWrappedAsset(token)
-      decimals = await ctx.getDecimals(address);
-    } else {
-      decimals = await ctx.getDecimals('native');
-    }
-
-    // If we're passed a number, convert it to a string first
-    // so we can do everything as bigints
-    if (typeof amount === "number") {
-      amount = amount.toPrecision();
-    }
-
-    // TODO: punting
-    if (amount.includes("e"))
-      throw new Error(`Exponential detected:  ${amount}`);
-
-    // some slightly sketchy
-    const [whole, partial] = amount.split(".");
-    if (partial.length > decimals)
-      throw new Error(
-        `Overspecified decimal amount: ${partial.length} > ${decimals}`,
-      );
-
-    // combine whole and partial without decimals
-    const amt = BigInt(whole + partial);
-    // adjust number of decimals to account for decimals accounted for
-    // when we remove the decimal place for amt
-    decimals -= BigInt(partial.length);
-
-    // finally, produce the number in base units
-    return amt * 10n ** decimals;
+    let decimals = await ctx.getDecimals(token);
+    return normalizeAmount(amount, decimals);
   }
 
   /**
