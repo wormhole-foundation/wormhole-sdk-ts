@@ -50,11 +50,11 @@ import { TransferStuff, getStuff } from "./helpers";
   const amount = await wh.normalizeAmount(external.chain, token, 0.01);
 
   // Transfer native token from source chain, through gateway, to a cosmos chain
-  // const route1 = await transferIntoCosmos(wh, token, amount, leg1, leg2);
-  const route1 = await GatewayTransfer.from(wh, {
-    chain: external.chain,
-    txid: "0x8d7ed0176d24a0b84ea1bcbd6af63d4a539404b568bb5072bdc9f6f89deb4042",
-  });
+  const route1 = await transferIntoCosmos(wh, token, amount, leg1, leg2);
+  // const route1 = await GatewayTransfer.from(wh, {
+  //   chain: external.chain,
+  //   txid: "0x8d7ed0176d24a0b84ea1bcbd6af63d4a539404b568bb5072bdc9f6f89deb4042",
+  // });
   console.log("Route 1 (!Cosmos => Cosmos)", route1);
 
   const wormchainToCosmos = route1.ibcTransfers![0];
