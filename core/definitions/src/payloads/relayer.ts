@@ -87,13 +87,13 @@ const relayerPayloads = [
   ],
 ] as const satisfies NamedPayloads;
 
-//export const relayerPayloadDiscriminator = payloadDiscriminator(relayerPayloads);
+export const relayerPayloadDiscriminator = payloadDiscriminator(relayerPayloads);
 
 // factory registration:
 
 declare global {
   namespace Wormhole {
-    interface PayloadLiteralToDescriptionMapping
+    interface PayloadLiteralToLayoutMapping
       extends ShallowMapping<typeof relayerPayloads> {}
   }
 }

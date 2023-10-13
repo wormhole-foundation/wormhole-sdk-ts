@@ -144,7 +144,7 @@ describe("Layout tests", function () {
         [{name: "type", binary: "uint", size: 1, custom: 0}],
         [{name: "type", binary: "uint", size: 1, custom: 2}],
       ]);
-      
+
       expect(discriminator(Uint8Array.from([0]))).toBe(0);
       expect(discriminator(Uint8Array.from([2]))).toBe(1);
       expect(discriminator(Uint8Array.from([1]))).toBe(null);
@@ -188,7 +188,7 @@ describe("Layout tests", function () {
          {name: "data", binary: "uint", size: 1}],
         [{name: "type", binary: "uint", size: 1}],
       ]);
-      
+
       expect(discriminator(Uint8Array.from([0, 7]))).toBe(0);
       expect(discriminator(Uint8Array.from([0]))).toBe(1);
       expect(discriminator(Uint8Array.from([1]))).toBe(1);
@@ -235,7 +235,7 @@ describe("Layout tests", function () {
         [{name: "type", binary: "uint", size: 1}],
         [{name: "type", binary: "uint", size: 1}],
         [
-          {name: "type", binary: "uint", size: 1}, 
+          {name: "type", binary: "uint", size: 1},
           {name: "data", binary: "uint", size: 1}
         ],
       ] as readonly Layout[];

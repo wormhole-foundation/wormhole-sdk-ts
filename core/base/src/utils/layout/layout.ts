@@ -1,20 +1,16 @@
 //TODO:
-// * make FixedItem recursive
-// * implement a swtich layout item that maps different values (versions) to different sublayouts
-// * implement a method that determines the total size of a layout, if all items have known size
-// * implement a method that determines the offsets of items in a layout (if all preceding items
-//     have known, fixed size (i.e. no arrays))
-// * leverage the above to implement deserialization of just a set of fields of a layout
-// * implement a method that takes several layouts and a serialized piece of data and quickly
-//     determines which layouts this payload conforms to (might be 0 or even all!). Should leverage
-//     the above methods and fixed values in the layout to quickly exclude candidates.
-// * implement a method that allows "raw" serialization and deserialization" i.e. that skips all the
-//     custom conversions (should only be used for testing!) or even just partitions i.e. slices
-//     the encoded Uint8Array
+// * implement a switch layout item that maps different values (versions) to different sublayouts
 
-export type PrimitiveType = number | bigint | Uint8Array;
+export type UintType = number | bigint;
+export const isUintType = (x: any): x is UintType =>
+  typeof x === "number" || typeof x === "bigint";
+
+export type BytesType = Uint8Array;
+export const isBytesType = (x: any): x is BytesType => x instanceof Uint8Array;
+
+export type PrimitiveType = UintType | BytesType;
 export const isPrimitiveType = (x: any): x is PrimitiveType =>
-  typeof x === "number" || typeof x === "bigint" || x instanceof Uint8Array;
+  isUintType(x) || isBytesType(x);
 
 export type BinaryLiterals = "uint" | "bytes" | "array" | "object";
 
@@ -57,26 +53,26 @@ interface OptionalToFromCustom<T extends PrimitiveType> {
 };
 
 //size: number of bytes used to encode the item
-interface UintLayoutItemBase<T extends number | bigint> extends LayoutItemBase<"uint"> {
+interface UintLayoutItemBase<T extends UintType> extends LayoutItemBase<"uint"> {
   size: T extends bigint ? number : NumberSize,
 };
 
-export interface PrimitiveFixedUintLayoutItem<T extends number | bigint>
+export interface PrimitiveFixedUintLayoutItem<T extends UintType>
   extends UintLayoutItemBase<T>, PrimitiveFixedCustom<T> {};
 
-export interface OptionalToFromUintLayoutItem<T extends number | bigint>
+export interface OptionalToFromUintLayoutItem<T extends UintType>
   extends UintLayoutItemBase<T>, OptionalToFromCustom<T> {};
 
 export interface FixedPrimitiveBytesLayoutItem
-  extends LayoutItemBase<"bytes">, PrimitiveFixedCustom<Uint8Array> {};
+  extends LayoutItemBase<"bytes">, PrimitiveFixedCustom<BytesType> {};
 
 export interface FixedValueBytesLayoutItem extends LayoutItemBase<"bytes"> {
-  readonly custom: FixedConversion<Uint8Array, any>,
+  readonly custom: FixedConversion<BytesType, any>,
 };
 
 export interface FixedSizeBytesLayoutItem extends LayoutItemBase<"bytes"> {
   readonly size: number,
-  readonly custom?: CustomConversion<Uint8Array, any>,
+  readonly custom?: CustomConversion<BytesType, any>,
 };
 
 //length size: number of bytes used to encode the preceeding length field which in turn
@@ -84,7 +80,7 @@ export interface FixedSizeBytesLayoutItem extends LayoutItemBase<"bytes"> {
 //  undefined means it will consume the rest of the data
 export interface LengthPrefixedBytesLayoutItem extends LayoutItemBase<"bytes"> {
   readonly lengthSize?: NumberSize,
-  readonly custom?: CustomConversion<Uint8Array, any>,
+  readonly custom?: CustomConversion<BytesType, any>,
 };
 
 export interface ArrayLayoutItem extends LayoutItemBase<"array"> {
@@ -124,7 +120,7 @@ export type LayoutItemToType<I extends LayoutItem> =
   : [I] extends [ObjectLayoutItem]
   ? LayoutToType<I["layout"]>
   : [I] extends [UintLayoutItem]
-  ? I["custom"] extends number | bigint
+  ? I["custom"] extends UintType
     ? I["custom"]
     : I["custom"] extends CustomConversion<any, infer ToType>
     ? ToType
@@ -132,9 +128,9 @@ export type LayoutItemToType<I extends LayoutItem> =
     ? ToType
     : UintSizeToPrimitive<I["size"]>
   : [I] extends [BytesLayoutItem]
-  ? I["custom"] extends CustomConversion<Uint8Array, infer ToType>
+  ? I["custom"] extends CustomConversion<BytesType, infer ToType>
     ? ToType
-    : I["custom"] extends FixedConversion<Uint8Array, infer ToType>
+    : I["custom"] extends FixedConversion<BytesType, infer ToType>
     ? ToType
-    : Uint8Array
+    : BytesType //this also covers FixedValueBytesLayoutItem (Uint8Arrays don't support literals)
   : never;

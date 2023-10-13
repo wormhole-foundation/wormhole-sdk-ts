@@ -79,13 +79,13 @@ export const tokenBridgePayloads = [
   ],
 ] as const satisfies NamedPayloads;
 
-// export const tokenBridgePayloadDiscriminator = payloadDiscriminator(tokenBridgePayloads);
+export const tokenBridgePayloadDiscriminator = payloadDiscriminator(tokenBridgePayloads);
 
 // factory registration:
 
 declare global {
   namespace Wormhole {
-    interface PayloadLiteralToDescriptionMapping
+    interface PayloadLiteralToLayoutMapping
       extends ShallowMapping<typeof tokenBridgePayloads> {}
   }
 }

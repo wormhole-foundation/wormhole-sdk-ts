@@ -2,7 +2,8 @@ import {
   Layout,
   LayoutItem,
   LengthPrefixedBytesLayoutItem,
-  isPrimitiveType,
+  isUintType,
+  isBytesType,
 } from "./layout";
 
 import { serializeUint } from "./serialize";
@@ -20,7 +21,7 @@ type FixedBytes = (readonly [BytePos, Uint8Array])[];
 //  bound or Infinity) in anticipation of a future switch layout item that might contain multiple
 //  sublayouts which, unlike arrays currently, could all be bounded but potentially with
 //  different sizes
-type Bounds = readonly [Size, Size];
+type Bounds = [Size, Size];
 
 function arrayToBitset(arr: readonly number[]): Bitset {
   return arr.reduce((bit, i) => bit | BigInt(1) << BigInt(i), BigInt(0));
@@ -44,11 +45,11 @@ function count(candidates: Candidates) {
 
 function layoutItemMeta(
   item: LayoutItem,
-  offset: BytePos,
+  offset: BytePos | null,
   fixedBytes: FixedBytes,
 ): Bounds {
   function knownFixed(size: Size, serialized: Uint8Array): Bounds {
-    if (Number.isFinite(offset))
+    if (offset !== null)
       fixedBytes.push([offset, serialized]);
 
     return [size, size];
@@ -65,11 +66,11 @@ function layoutItemMeta(
       if ("size" in item && item.size !== undefined)
         return [item.size, item.size];
 
-      if (item?.custom instanceof Uint8Array)
+      if (isBytesType(item?.custom))
         return knownFixed(item.custom.length, item.custom);
 
-      if (item?.custom?.from instanceof Uint8Array)
-        return knownFixed(item.custom.from.length, item.custom.from);
+      if (isBytesType(item?.custom?.from))
+        return knownFixed(item!.custom!.from.length, item!.custom!.from);
 
       //TODO typescript should be able to infer that at this point the only possible remaining
       //  type for item is LengthPrefixedBytesLayoutItem, but for some reason it doesn't
@@ -77,9 +78,16 @@ function layoutItemMeta(
       return [item.lengthSize !== undefined ? item.lengthSize : 0, Infinity];
     }
     case "uint": {
-      if (isPrimitiveType(item.custom)) {
+      const fixedVal =
+        isUintType(item.custom)
+        ? item.custom
+        : isUintType(item?.custom?.from)
+        ? item!.custom!.from
+        : null;
+
+      if (fixedVal !== null) {
         const serialized = new Uint8Array(item.size);
-        serializeUint(serialized, 0, item.custom, item.size)
+        serializeUint(serialized, 0, fixedVal, item.size)
         return knownFixed(item.size, serialized);
       }
 
@@ -90,16 +98,17 @@ function layoutItemMeta(
 
 function createLayoutMeta(
   layout: Layout,
-  offset: BytePos,
+  offset: BytePos | null,
   fixedBytes: FixedBytes
 ): Bounds {
   let bounds = [0, 0] as Bounds;
   for (const item of layout) {
-    bounds = layoutItemMeta(item, offset, fixedBytes)
-      //we need the cast because of course mapping tuples to tuples is an unsolved problem in TS:
-      //https://stackoverflow.com/questions/57913193/how-to-use-array-map-with-tuples-in-typescript#answer-57913509
-      .map((b, i) => bounds[i] + b) as unknown as Bounds;
-    offset = bounds[0] === bounds[1] ? bounds[0] : Infinity;
+    const itemSize = layoutItemMeta(item, offset, fixedBytes);
+    bounds[0] += itemSize[0];
+    bounds[1] += itemSize[1];
+    //if the bounds don't agree then we can't reliably predict the offset of subsequent items
+    if (offset !== null)
+      offset = itemSize[0] === itemSize[1] ? offset + itemSize[0] : null;
   }
   return bounds;
 }
@@ -279,15 +288,9 @@ function generateLayoutDiscriminator(
   type Strategy = [BytePos, Candidates, Map<number, Candidates>] | "size" | "indistinguishable";
 
   let distinguishable = true;
-  let firstStrategy: Strategy | undefined;
   const strategies = new Map<Candidates, Strategy>();
   const candidatesBySize = new Map<Size, Candidates[]>();
   const addStrategy = (candidates: Candidates, strategy: Strategy) => {
-    if (firstStrategy === undefined) {
-      firstStrategy = strategy;
-      return;
-    }
-
     strategies.set(candidates, strategy);
     if (!candidatesBySize.has(count(candidates)))
       candidatesBySize.set(count(candidates), []);
@@ -394,8 +397,12 @@ function generateLayoutDiscriminator(
 
   return [distinguishable, (encoded: Uint8Array) => {
     let candidates = allLayouts;
-    let strategy = firstStrategy!;
-    while (strategy !== "indistinguishable") {
+
+    for (
+      let strategy = strategies.get(candidates)!;
+      strategy !== "indistinguishable";
+      strategy = strategies.get(candidates) ?? findSmallestSuperSetStrategy(candidates)
+    ) {
       if (strategy === "size")
         candidates &= layoutsWithSize(encoded.length);
       else {
@@ -414,8 +421,6 @@ function generateLayoutDiscriminator(
 
       if (count(candidates) <= 1)
         return bitsetToArray(candidates);
-
-      strategy = strategies.get(candidates) ?? findSmallestSuperSetStrategy(candidates);
     }
 
     return bitsetToArray(candidates);

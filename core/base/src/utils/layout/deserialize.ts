@@ -2,11 +2,14 @@ import {
   Layout,
   LayoutItem,
   LayoutToType,
-  LayoutItemToType,
   FixedPrimitiveBytesLayoutItem,
   FixedValueBytesLayoutItem,
   CustomConversion,
   UintSizeToPrimitive,
+  UintType,
+  BytesType,
+  isUintType,
+  isBytesType,
   numberMaxSize,
 } from "./layout";
 
@@ -109,9 +112,9 @@ function deserializeLayoutItem(
         let fixedFrom;
         let fixedTo;
         if (item.custom !== undefined) {
-          if (item.custom instanceof Uint8Array)
+          if (isBytesType(item.custom))
             fixedFrom = item.custom;
-          else if (item.custom.from instanceof Uint8Array) {
+          else if (isBytesType(item.custom.from)) {
             fixedFrom = item.custom.from;
             fixedTo = item.custom.to;
           }
@@ -139,7 +142,7 @@ function deserializeLayoutItem(
           return [fixedTo ?? fixedFrom, newOffset];
         }
 
-        type narrowedCustom = CustomConversion<Uint8Array, any>;
+        type narrowedCustom = CustomConversion<BytesType, any>;
         return [
           item.custom !== undefined ? (item.custom as narrowedCustom).to(value) : value,
           newOffset
@@ -148,21 +151,20 @@ function deserializeLayoutItem(
       case "uint": {
         const [value, newOffset] = deserializeUint(encoded, offset, item.size);
 
-        if (item.custom !== undefined) {
-          if (typeof item.custom === "number" || typeof item.custom === "bigint") {
-            checkUintEquals(item.custom, value);
-            return [item.custom, newOffset];
-          }
-          else if (typeof item.custom.from === "number" || typeof item.custom.from === "bigint") {
-            checkUintEquals(item.custom.from, value);
-            return [item.custom.to, newOffset];
-          }
+        if (isUintType(item.custom)) {
+          checkUintEquals(item.custom, value);
+          return [item.custom, newOffset];
         }
 
-        //narrowing to CustomConver<number | bigint, any> is a bit hacky here, since the true type
+        if (isUintType(item?.custom?.from)) {
+          checkUintEquals(item!.custom!.from, value);
+          return [item!.custom!.to, newOffset];
+        }
+
+        //narrowing to CustomConver<UintType, any> is a bit hacky here, since the true type
         //  would be CustomConver<number, any> | CustomConver<bigint, any>, but then we'd have to
         //  further tease that apart still for no real gain...
-        type narrowedCustom = CustomConversion<number | bigint, any>;
+        type narrowedCustom = CustomConversion<UintType, any>;
         return [
           item.custom !== undefined ? (item.custom as narrowedCustom).to(value) : value,
           newOffset

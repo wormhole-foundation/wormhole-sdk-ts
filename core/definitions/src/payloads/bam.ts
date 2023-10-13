@@ -52,13 +52,13 @@ export const bamPayloads = [
   [ "BamExtendedMessage", extendedMessageLayout() ],
 ] as const satisfies NamedPayloads;
 
-// export const bamPayloadDiscriminator = payloadDiscriminator(bamPayloads);
+export const bamPayloadDiscriminator = payloadDiscriminator(bamPayloads);
 
 // factory registration:
 
 declare global {
   namespace Wormhole {
-    interface PayloadLiteralToDescriptionMapping
+    interface PayloadLiteralToLayoutMapping
       extends ShallowMapping<typeof bamPayloads> {}
   }
 }

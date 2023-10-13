@@ -1,5 +1,3 @@
-import { PayloadLiteralToPayloadType } from "../../vaa";
-
 export function makeVAA(payload: any) {
   return {
     version: 1,
