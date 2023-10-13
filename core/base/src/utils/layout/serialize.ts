@@ -8,6 +8,9 @@ import {
   FixedPrimitiveBytesLayoutItem,
   FixedValueBytesLayoutItem,
   CustomConversion,
+  UintType,
+  isUintType,
+  isBytesType,
   numberMaxSize,
 } from "./layout";
 import { checkUint8ArrayDeeplyEqual, checkUint8ArraySize, checkUintEquals } from "./utils";
@@ -57,12 +60,11 @@ const calcLayoutSize = (
         return acc;
       }
       case "bytes": {
-        if (item.custom !== undefined) {
-          if (item.custom instanceof Uint8Array)
-            return acc + item.custom.length;
-          else if (item.custom.from instanceof Uint8Array)
-            return acc + item.custom.from.length;
-        }
+        if (isBytesType(item.custom))
+          return acc + item.custom.length;
+
+        if (isBytesType(item?.custom?.from))
+          return acc + item!.custom!.from.length;
 
         item = item as FixedSizeBytesLayoutItem | LengthPrefixedBytesLayoutItem;
 
@@ -91,7 +93,7 @@ const calcLayoutSize = (
 export function serializeUint(
   encoded: Uint8Array,
   offset: number,
-  val: number | bigint,
+  val: UintType,
   bytes: number,
 ): number {
   if (val < 0 || (typeof val === "number" && !Number.isInteger(val)))
@@ -135,16 +137,15 @@ function serializeLayoutItem(
       }
       case "bytes": {
         const value = (() => {
-          if (item.custom !== undefined) {
-            if (item.custom instanceof Uint8Array) {
-              if (!(item as { omit?: boolean })?.omit)
-                checkUint8ArrayDeeplyEqual(item.custom, data);
-              return item.custom;
-            }
-            if (item.custom.from instanceof Uint8Array)
-              //no proper way to deeply check equality of item.custom.to and data in JS
-              return item.custom.from;
+          if (isBytesType(item.custom)) {
+            if (!(item as { omit?: boolean })?.omit)
+              checkUint8ArrayDeeplyEqual(item.custom, data);
+            return item.custom;
           }
+
+          if (isBytesType(item?.custom?.from))
+            //no proper way to deeply check equality of item.custom.to and data in JS
+            return item!.custom!.from;
 
           item = item as
             Exclude<typeof item, FixedPrimitiveBytesLayoutItem | FixedValueBytesLayoutItem>;
@@ -163,16 +164,15 @@ function serializeLayoutItem(
       }
       case "uint": {
         const value = (() => {
-          if (item.custom !== undefined) {
-            if (typeof item.custom == "number" || typeof item.custom === "bigint") {
-              if (!(item as { omit?: boolean })?.omit)
-                checkUintEquals(item.custom, data);
-              return item.custom;
-            }
-            if (typeof item.custom.from == "number" || typeof item.custom.from === "bigint")
-              //no proper way to deeply check equality of item.custom.to and data in JS
-              return item.custom.from;
+          if (isUintType(item.custom)) {
+            if (!(item as { omit?: boolean })?.omit)
+              checkUintEquals(item.custom, data);
+            return item.custom;
           }
+
+          if (isUintType(item?.custom?.from))
+            //no proper way to deeply check equality of item.custom.to and data in JS
+            return item!.custom!.from;
 
           type narrowedCustom = CustomConversion<number, any> | CustomConversion<bigint, any>;
           return item.custom !== undefined ? (item.custom as narrowedCustom).from(data) : data;

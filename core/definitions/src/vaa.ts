@@ -9,8 +9,6 @@ import {
   deserializeLayout,
   DynamicItemsOfLayout,
   addFixedValues,
-  CustomConversion,
-  LayoutItemToType,
 } from "@wormhole-foundation/sdk-base";
 
 import {
@@ -23,27 +21,7 @@ import {
 
 import { keccak256 } from "./utils";
 
-export type NamedPayloads = readonly (readonly [string, Layout])[];
-
-export const payloadDiscriminator = <NP extends NamedPayloads>(
-  namedPayloads: NP,
-) => {
-  const literals = column(namedPayloads, 0);
-  const layouts = column(namedPayloads, 1);
-  const discriminator = layoutDiscriminator(layouts);
-
-  return (data: Uint8Array): (typeof literals)[number] | null => {
-    const index = discriminator(data);
-    return index === null ? null : literals[index];
-  };
-};
-
-const uint8ArrayConversion = {
-  to: (val: Uint8Array) => val,
-  from: (val: Uint8Array) => val,
-} as const satisfies CustomConversion<Uint8Array, Uint8Array>;
-
-//PayloadLiteralToDescriptionMapping is the compile-time analog/complement to the runtime
+//PayloadLiteralToLayoutMapping is the compile-time analog/complement to the runtime
 //  payload factory. It uses TypeScript's interface merging mechanic to "dynamically" extend known
 //  payload types that are declared in different modules. This allows us to have full type safety
 //  when constructing payloads via the factory without having to ever declare the mapping of all
@@ -51,33 +29,20 @@ const uint8ArrayConversion = {
 //  smell, would also prevent users of the SDK to register their own payload types!)
 declare global {
   namespace Wormhole {
-    //effective type: Record<string, Layout | CustomConversion<Uint8Array, any>>
-    interface PayloadLiteralToDescriptionMapping {
-      Uint8Array: typeof uint8ArrayConversion;
-    }
+    //effective type: Record<string, Layout>
+    interface PayloadLiteralToLayoutMapping {}
   }
 }
 
-type PayloadLiteral = keyof Wormhole.PayloadLiteralToDescriptionMapping;
-type DescriptionOf<PL extends PayloadLiteral> =
+type PayloadLiteral = keyof Wormhole.PayloadLiteralToLayoutMapping & string;
+type LayoutOf<PL extends PayloadLiteral> =
   //TODO check if this lazy instantiation hack is actually necessary
   PL extends infer V extends PayloadLiteral
-    ? Wormhole.PayloadLiteralToDescriptionMapping[V]
-    : never;
-
-type DescriptionToPayloadItem<D extends DescriptionOf<PayloadLiteral>> = [
-  D,
-] extends [CustomConversion<Uint8Array, any>]
-  ? { name: "payload"; binary: "bytes"; custom: D }
-  : [D] extends [Layout]
-  ? { name: "payload"; binary: "object"; layout: D }
+  ? Wormhole.PayloadLiteralToLayoutMapping[V]
   : never;
 
-export type PayloadLiteralToPayloadType<PL extends PayloadLiteral> =
-  DescriptionToPayloadItem<DescriptionOf<PL>> extends infer Item extends
-    LayoutItem
-    ? LayoutItemToType<Item>
-    : never;
+type PayloadLiteralToPayloadType<PL extends PayloadLiteral> =
+  LayoutToType<LayoutOf<PL>>;
 
 const guardianSignatureLayout = [
   { name: "guardianIndex", binary: "uint", size: 1 },
@@ -95,6 +60,7 @@ const headerLayout = [
   },
 ] as const satisfies Layout;
 
+//envelope + payload are getting hashed and signed
 const envelopeLayout = [
   { name: "timestamp", binary: "uint", size: 4 },
   { name: "nonce", binary: "uint", size: 4 },
@@ -107,10 +73,16 @@ const envelopeLayout = [
 const baseLayout = [...headerLayout, ...envelopeLayout] as const;
 type BaseLayout = LayoutToType<typeof baseLayout>;
 
-export interface VAA<PL extends PayloadLiteral = "Uint8Array">
+type ExtendedLiteral = PayloadLiteral | "Uint8Array";
+type ExtendedLiteralToPayloadType<EL extends ExtendedLiteral> =
+  EL extends PayloadLiteral
+  ? PayloadLiteralToPayloadType<EL>
+  : Uint8Array;
+
+export interface VAA<EL extends ExtendedLiteral = ExtendedLiteral>
   extends BaseLayout {
-  readonly payloadLiteral: PL;
-  readonly payload: PayloadLiteralToPayloadType<PL>;
+  readonly payloadLiteral: EL;
+  readonly payload: ExtendedLiteralToPayloadType<EL>;
   //TODO various problems with storing the hash here:
   // 1. On EVM the core bridge actually uses the double keccak-ed hash because of an early oversight
   // 2. As discussed on slack, storing memoized values on an object is a smell too
@@ -119,99 +91,115 @@ export interface VAA<PL extends PayloadLiteral = "Uint8Array">
   readonly hash: Uint8Array;
 }
 
-// type govAA = "CoreBridgeUpgradeContract";
-// type MyDescription = DescriptionOf<govAA>
-// type MyType = LayoutToType<DescriptionOf<govAA>>;
-// type MyVaa = { [K in keyof VAA<govAA>]: VAA<govAA>[K] };
-// type Look = MyVaa["signatures"];
-// type x = { [K in keyof VAA<"CoreBridgeUpgradeContract">]: VAA<"CoreBridgeUpgradeContract">[K] };
+const payloadFactory = new Map<PayloadLiteral, Layout>();
 
-type Description = Layout | CustomConversion<Uint8Array, any>;
-
-const payloadFactory = new Map<PayloadLiteral, Description>();
-
-function getPayloadDescription<PL extends PayloadLiteral>(payloadLiteral: PL) {
-  const description = payloadFactory.get(payloadLiteral);
-  if (!description)
+function getPayloadLayout<PL extends PayloadLiteral>(payloadLiteral: PL) {
+  const layout = payloadFactory.get(payloadLiteral);
+  if (!layout)
     throw new Error(`No layout registered for payload type ${payloadLiteral}`);
-  return description as DescriptionOf<PL>;
+  return layout as LayoutOf<PL>;
 }
 
-const isCustomConversion = (
-  val: any,
-): val is CustomConversion<Uint8Array, any> => val.to !== undefined;
+const extendedLiteralToPayloadItem = <EL extends ExtendedLiteral>(
+  extendedLiteral: EL,
+) => (
+  extendedLiteral === "Uint8Array"
+  ? { name: "payload", binary: "bytes" } as const
+  : { name: "payload", binary: "object", layout: getPayloadLayout(extendedLiteral) } as const
+) satisfies LayoutItem;
 
-const descriptionToPayloadItem = <PL extends PayloadLiteral>(
-  description: DescriptionOf<PL>,
-): DescriptionToPayloadItem<typeof description> =>
-  (isCustomConversion(description)
-    ? ({ name: "payload", binary: "bytes", custom: description } as const)
-    : ({
-        name: "payload",
-        binary: "object",
-        layout: description as Layout,
-      } as const)) as DescriptionToPayloadItem<
-    DescriptionOf<PL>
-  > satisfies LayoutItem;
+//annoyingly we can't use the return value of extendedLiteralToPayloadItem
+type ExtendedLiteralToDynamicItems<EL extends ExtendedLiteral> =
+  DynamicItemsOfLayout<[
+    ...typeof baseLayout,
+    EL extends PayloadLiteral
+    ? { name: "payload", binary: "object", layout: DynamicItemsOfLayout<LayoutOf<EL>> }
+    : { name: "payload", binary: "bytes" }
+  ]>;
 
-const bodyLayout = <PL extends PayloadLiteral>(payloadLiteral: PL) =>
-  [
-    ...envelopeLayout,
-    descriptionToPayloadItem(getPayloadDescription(payloadLiteral)),
-  ] as const satisfies Layout;
-
-export const create = <PL extends PayloadLiteral = "Uint8Array">(
-  payloadLiteral: PL,
-  vaaData: LayoutToType<
-    DynamicItemsOfLayout<
-      [...typeof baseLayout, DescriptionToPayloadItem<DescriptionOf<PL>>]
-    >
-  >,
-): VAA<PL> => {
-  const body = bodyLayout(payloadLiteral) as Layout;
+export const create = <EL extends ExtendedLiteral = "Uint8Array">(
+  extendedLiteral: EL,
+  vaaData: LayoutToType<ExtendedLiteralToDynamicItems<EL>>,
+): VAA<EL> => {
+  const bodyLayout = [...envelopeLayout, extendedLiteralToPayloadItem(extendedLiteral)] as const;
   const bodyWithFixed = addFixedValues(
-    body,
+    bodyLayout,
     //not sure why the unknown cast here is required and why the type isn't inferred correctly
-    vaaData as LayoutToType<DynamicItemsOfLayout<typeof body>>,
+    vaaData as LayoutToType<DynamicItemsOfLayout<typeof bodyLayout>>,
   );
   return {
-    payloadLiteral,
+    payloadLiteral: extendedLiteral,
     ...addFixedValues(
       headerLayout,
       vaaData as LayoutToType<typeof headerLayout>,
     ),
     ...bodyWithFixed,
-    hash: keccak256(serializeLayout(body, bodyWithFixed)),
-  } as VAA<PL>;
+    hash: keccak256(serializeLayout(bodyLayout, bodyWithFixed)),
+  } as VAA<EL>;
 };
 
 export function registerPayloadType<PL extends PayloadLiteral>(
   payloadLiteral: PL,
-  payloadSerDe: Description,
+  payloadLayout: Layout,
 ) {
   if (payloadFactory.has(payloadLiteral))
     throw new Error(`Payload type ${payloadLiteral} already registered`);
 
-  payloadFactory.set(payloadLiteral, payloadSerDe);
+  payloadFactory.set(payloadLiteral, payloadLayout);
 }
 
-export const serialize = <PL extends PayloadLiteral>(
-  vaa: VAA<PL>,
-): Uint8Array => {
+export const serialize = <EL extends ExtendedLiteral>(vaa: VAA<EL>): Uint8Array => {
   const layout = [
     ...baseLayout,
-    descriptionToPayloadItem(getPayloadDescription(vaa.payloadLiteral)),
-  ];
-  return serializeLayout(layout, vaa as LayoutToType<typeof layout>);
+    extendedLiteralToPayloadItem(vaa.payloadLiteral),
+  ] as const satisfies Layout;
+  return serializeLayout(layout, vaa as unknown as LayoutToType<typeof layout>);
 };
 
-export function deserialize<PL extends PayloadLiteral>(
-  payloadLiteral: PL,
+export const serializePayload = <EL extends ExtendedLiteral>(
+  extendedLiteral: EL,
+  payload: ExtendedLiteralToPayloadType<EL>,
+) => {
+  if (extendedLiteral === "Uint8Array")
+    return payload;
+
+  const layout = getPayloadLayout(extendedLiteral);
+  return serializeLayout(layout, payload as LayoutToType<typeof layout>);
+}
+
+export type NamedPayloads = readonly (readonly [string, Layout])[];
+
+export const payloadDiscriminator = <NP extends NamedPayloads>(namedPayloads: NP) => {
+  const literals = column(namedPayloads, 0);
+  const layouts = column(namedPayloads, 1);
+  const discriminator = layoutDiscriminator(layouts);
+
+  return (data: Uint8Array | string): (typeof literals)[number] | null => {
+    if (typeof data === "string")
+      data = hexByteStringToUint8Array(data);
+
+    const index = discriminator(data);
+    return index !== null ? literals[index] : null;
+  };
+};
+
+export function deserialize<EL extends ExtendedLiteral>(
+  extendedLiteral: EL,
   data: Uint8Array | string,
-): VAA<PL> {
+): VAA<EL>;
+
+export function deserialize<PL extends PayloadLiteral>(
+  discriminator: (data: Uint8Array | string) => PL | null,
+  data: Uint8Array | string,
+): VAA<PL>;
+
+export function deserialize<EL extends ExtendedLiteral>(
+  payloadDet: EL | ((data: Uint8Array | string) => (EL & PayloadLiteral) | null),
+  data: Uint8Array | string,
+): VAA<EL> {
   if (typeof data === "string") data = hexByteStringToUint8Array(data);
 
-  const [header, bodyOffset] = deserializeLayout(headerLayout, data, 0, false);
+  const [header, envelopeOffset] = deserializeLayout(headerLayout, data, 0, false);
 
   //ensure that guardian signature indicies are unique and in ascending order - see:
   //https://github.com/wormhole-foundation/wormhole/blob/8e0cf4c31f39b5ba06b0f6cdb6e690d3adf3d6a3/ethereum/contracts/Messages.sol#L121
@@ -224,31 +212,54 @@ export function deserialize<PL extends PayloadLiteral>(
         "Guardian signatures must be in ascending order of guardian set index",
       );
 
-  const body = deserializeLayout(bodyLayout(payloadLiteral), data, bodyOffset);
-  const hash = keccak256(data.slice(bodyOffset));
+  const [envelope, payloadOffset] = deserializeLayout(envelopeLayout, data, envelopeOffset, false);
 
-  return { payloadLiteral, ...header, ...body, hash } as VAA<PL>;
+  const [payloadLiteral, payload] =
+    payloadDet === "Uint8Array"
+    ? ["Uint8Array", data.slice(payloadOffset)]
+    : typeof payloadDet === "string"
+    ? [payloadDet, deserializeLayout(getPayloadLayout(payloadDet), data, payloadOffset)]
+    : deserializePayload(payloadDet, data, payloadOffset);
+  const hash = keccak256(data.slice(envelopeOffset));
+
+  return { payloadLiteral, ...header, ...envelope, payload, hash } as VAA<EL>;
 }
 
-export const serializePayload = <PL extends PayloadLiteral>(
-  payloadLiteral: PL,
-  payload: PayloadLiteralToPayloadType<PL>,
-) => {
-  const description = getPayloadDescription(payloadLiteral);
-  return isCustomConversion(description)
-    ? description.from(payload)
-    : serializeLayout(description as Layout, payload);
-};
+type DeserializePayloadReturn<EL extends ExtendedLiteral> =
+  ExtendedLiteralToPayloadType<EL> |
+  [EL & PayloadLiteral, PayloadLiteralToPayloadType<EL & PayloadLiteral>];
 
-export const deserializePayload = <PL extends PayloadLiteral>(
-  payloadLiteral: PL,
+export function deserializePayload<EL extends ExtendedLiteral>(
+  payloadLiteral: EL,
   data: Uint8Array | string,
-): PayloadLiteralToPayloadType<PL> => {
-  const description = getPayloadDescription(payloadLiteral);
-  data = typeof data === "string" ? hexByteStringToUint8Array(data) : data;
-  return isCustomConversion(description)
-    ? description.to(data)
-    : deserializeLayout(description as Layout, data);
-};
+  offset?: number,
+): ExtendedLiteralToPayloadType<EL>;
 
-payloadFactory.set("Uint8Array", uint8ArrayConversion);
+export function deserializePayload<PL extends PayloadLiteral>(
+  discriminator: (data: Uint8Array | string) => PL | null,
+  data: Uint8Array | string,
+  offset?: number,
+): [PL, PayloadLiteralToPayloadType<PL>];
+
+export function deserializePayload<EL extends ExtendedLiteral>(
+  payloadDet: EL | ((data: Uint8Array | string) => (EL & PayloadLiteral) | null),
+  data: Uint8Array | string,
+  offset = 0,
+): DeserializePayloadReturn<EL> {
+  //grouped together to have just a single cast on the return type
+  return (() => {
+    if (typeof data === "string") data = hexByteStringToUint8Array(data);
+
+    if (payloadDet === "Uint8Array")
+      return data.slice(offset);
+
+    if (typeof payloadDet === "string")
+      return deserializeLayout(getPayloadLayout(payloadDet), data, offset);
+
+    const candidate = payloadDet(data);
+    if (candidate === null)
+      throw new Error(`Encoded data does not match any of the given payload types - ${data}`);
+
+    return [candidate, deserializeLayout(getPayloadLayout(candidate), data, offset)];
+  })() as DeserializePayloadReturn<EL>;
+}

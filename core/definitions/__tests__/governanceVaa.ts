@@ -2,8 +2,8 @@ import { describe, expect, it } from "@jest/globals";
 
 import { hexByteStringToUint8Array } from "@wormhole-foundation/sdk-base";
 import { UniversalAddress } from "../src/universalAddress";
-import { create, deserialize, serialize } from "../src/vaa";
-import "../src/payloads/governance";
+import { create, deserialize, deserializePayload, serialize } from "../src/vaa";
+import { governancePayloadDiscriminator } from "../src/payloads/governance";
 
 //monkey-patch to allow stringifying BigInts
 (BigInt.prototype as any).toJSON = function () {
@@ -122,7 +122,11 @@ describe("Governance VAA tests", function () {
   });
 
   it("should correctly deserialize and reserialize a guardian set upgrade VAA", function () {
+    const rawvaa = deserialize("Uint8Array", guardianSetUpgrade);
+    expect(governancePayloadDiscriminator(rawvaa.payload)).toBe("CoreBridgeGuardianSetUpgrade");
+    const payload = deserializePayload("CoreBridgeGuardianSetUpgrade", rawvaa.payload);
     const vaa = deserialize("CoreBridgeGuardianSetUpgrade", guardianSetUpgrade);
+    expect(vaa.payload).toEqual(payload);
     expect(vaa.payloadLiteral).toBe("CoreBridgeGuardianSetUpgrade");
     expect(vaa.guardianSet).toBe(2);
     expect(vaa.signatures.length).toBe(13);
@@ -133,7 +137,6 @@ describe("Governance VAA tests", function () {
     expect(vaa.payload.guardianSet).toBe(3);
     expect(vaa.payload.guardians.length).toBe(19);
 
-    const encoded = serialize(vaa);
-    expect(encoded).toEqual(hexByteStringToUint8Array(guardianSetUpgrade));
+    expect(serialize(vaa)).toEqual(hexByteStringToUint8Array(guardianSetUpgrade));
   });
 });

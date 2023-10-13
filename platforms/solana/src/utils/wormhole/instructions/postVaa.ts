@@ -38,7 +38,7 @@ export function createPostVaaInstruction(
   connection: Connection,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: VAA<any>,
+  vaa: VAA,
   signatureSet: PublicKeyInitData,
 ): TransactionInstruction {
   const methods = createReadOnlyWormholeProgramInterface(
@@ -53,7 +53,7 @@ export function createPostVaaInstruction(
     [...vaa.emitterAddress.toUint8Array()],
     new BN(vaa.sequence.toString()),
     vaa.consistencyLevel,
-    Buffer.from(serializePayload(vaa.payloadLiteral, vaa.payload)),
+    serializePayload(vaa.payloadLiteral, vaa.payload),
   );
 
   // @ts-ignore

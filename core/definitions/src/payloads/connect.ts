@@ -42,7 +42,7 @@ export const connectPayloads = [
 
 declare global {
   namespace Wormhole {
-    interface PayloadLiteralToDescriptionMapping
+    interface PayloadLiteralToLayoutMapping
       extends ShallowMapping<typeof connectPayloads> {}
   }
 }
