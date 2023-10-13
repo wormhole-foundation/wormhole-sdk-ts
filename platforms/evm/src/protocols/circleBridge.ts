@@ -170,15 +170,16 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
 
     const [messageLog] = messageLogs;
     const { message } = messageLog.args;
-    const [header, body, hash] = deserializeCircleMessage(
+    const [circleMsg, hash] = deserializeCircleMessage(
       hexByteStringToUint8Array(message),
     );
+    const { payload: body } = circleMsg;
 
     const xferSender = body.messageSender;
     const xferReceiver = body.mintRecipient;
 
-    const sendChain = toCircleChainName(header.sourceDomain);
-    const rcvChain = toCircleChainName(header.destinationDomain);
+    const sendChain = toCircleChainName(circleMsg.sourceDomain);
+    const rcvChain = toCircleChainName(circleMsg.destinationDomain);
 
     const token = nativeChainAddress([sendChain, body.burnToken]);
 

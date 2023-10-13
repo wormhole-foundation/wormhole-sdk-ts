@@ -230,7 +230,7 @@ export function getUpgradeContractAccounts(
   vaa: VAA<'CoreBridgeUpgradeContract'>,
   spill?: PublicKeyInitData,
 ): UpgradeContractAccounts {
-  const {newContract} = vaa.payload;
+  const { newContract } = vaa.payload;
 
   return {
     payer: new PublicKey(payer),

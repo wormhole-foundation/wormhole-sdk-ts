@@ -1,21 +1,29 @@
 import {
-  PlatformName,
-  CircleChainId,
   Layout,
+  LayoutToType,
+  PlatformName,
   deserializeLayout,
   uint8ArrayToHexByteString,
-  LayoutToType,
 } from "@wormhole-foundation/sdk-base";
-import { UniversalOrNative, ChainAddress } from "../address";
+import { ChainAddress, UniversalOrNative } from "../address";
 import { CircleMessageId } from "../attestation";
-import { UnsignedTransaction } from "../unsignedTransaction";
-import { TokenId, TxHash } from "../types";
+import { universalAddressItem } from "../layout-items";
 import "../payloads/connect";
 import { RpcConnection } from "../rpc";
-import { universalAddressItem } from "../layout-items";
+import { TokenId } from "../types";
+import { UnsignedTransaction } from "../unsignedTransaction";
 import { keccak256 } from "../utils";
 
 // https://developers.circle.com/stablecoin/docs/cctp-technical-reference#message
+const circleBurnMessageLayout: Layout = [
+  { name: "version", binary: "uint", size: 4 },
+  { name: "burnToken", ...universalAddressItem },
+  { name: "mintRecipient", ...universalAddressItem },
+  { name: "amount", binary: "uint", size: 32 },
+  { name: "messageSender", ...universalAddressItem },
+];
+
+// TODO: convert domain to chain name?
 export const circleMessageLayout: Layout = [
   { name: "version", binary: "uint", size: 4 },
   { name: "sourceDomain", binary: "uint", size: 4 },
@@ -24,30 +32,16 @@ export const circleMessageLayout: Layout = [
   { name: "sender", ...universalAddressItem },
   { name: "recipient", ...universalAddressItem },
   { name: "destinationCaller", ...universalAddressItem },
-  { name: "messageBody", binary: "bytes" },
-];
-
-export const circleBurnMessageLayout: Layout = [
-  { name: "version", binary: "uint", size: 4 },
-  { name: "burnToken", ...universalAddressItem },
-  { name: "mintRecipient", ...universalAddressItem },
-  { name: "amount", binary: "uint", size: 32 },
-  { name: "messageSender", ...universalAddressItem },
+  // TODO: is this the only message body we'll get?
+  { name: "payload", binary: "object", layout: circleBurnMessageLayout },
 ];
 
 export const deserializeCircleMessage = (
   data: Uint8Array,
-): [
-  LayoutToType<typeof circleMessageLayout>,
-  LayoutToType<typeof circleBurnMessageLayout>,
-  string,
-] => {
+): [LayoutToType<typeof circleMessageLayout>, string] => {
   const msg = deserializeLayout(circleMessageLayout, data);
-  // Expect a body message, only Burn atm
-  if (msg.messageBody.length === 0) throw new Error("empty message body");
-  const burnMsg = deserializeLayout(circleBurnMessageLayout, msg.messageBody);
   const messsageHash = uint8ArrayToHexByteString(keccak256(data));
-  return [msg, burnMsg, messsageHash];
+  return [msg, messsageHash];
 };
 
 export type CircleTransferMessage = {

@@ -153,12 +153,13 @@ export class CCTPTransfer implements WormholeTransfer {
     wh: Wormhole,
     messageId: CircleMessageId,
   ): Promise<CCTPTransfer> {
-    const [message, burnMessage, hash] = deserializeCircleMessage(
+    const [message, hash] = deserializeCircleMessage(
       hexByteStringToUint8Array(messageId.message),
     );
     // If no hash is passed, set to the one we just computed
     if (messageId.hash === "") messageId.hash = hash;
 
+    const { payload: burnMessage } = message;
     const xferSender = burnMessage.messageSender;
     const xferReceiver = burnMessage.mintRecipient;
 
