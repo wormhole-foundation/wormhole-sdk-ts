@@ -52,7 +52,7 @@ const checkEnvConfig = async (
   const wh = new Wormhole(env, [EvmPlatform, SolanaPlatform]);
 
   const data = await getSuggestedUpdates(wh, tokensConfig);
-  const suggestedUpdates = data[0] as TokensConfig;
+  const suggestedUpdates = data[1] as TokensConfig;
   const newConfig = mergeDeep(tokensConfig, suggestedUpdates);
   const filePath = env === 'Mainnet' ? 'src/tokens/mainnetTokens.json' : 'src/tokens/testnetTokens.json';
   fs.writeFileSync(filePath, JSON.stringify(newConfig, null, 2));

@@ -10,10 +10,6 @@
           "address": "7VPWjBhCXrpYYBiRKZh1ubh9tLZZNkZGp2ReRphEV4Mc",
           "decimals": 8
         },
-        "Bsc": {
-          "address": "0x064a85eac6b4Bd7190BCAd3458dBD9459989c37B",
-          "decimals": 18
-        },
         "Avalanche": {
           "address": "0xbB5A2dC896Ec4E2fa77F40FA630582ed9c6D0172",
           "decimals": 18
@@ -56,6 +52,10 @@
         },
         "Optimism": {
           "address": "0x33Db338718aC89Cd8DB13B56af05be3a3029BBE5",
+          "decimals": 18
+        },
+        "Bsc": {
+          "address": "0x064a85eac6b4Bd7190BCAd3458dBD9459989c37B",
           "decimals": 18
         }
       }
