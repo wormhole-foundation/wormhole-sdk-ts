@@ -1,5 +1,4 @@
 import {
-  Layout,
   circleChainId,
   deserializeLayout,
   usdcContract,

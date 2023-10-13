@@ -18,6 +18,21 @@ const network = "Mainnet";
 const wh = new Wormhole(network, [EvmContext, SolanaContext]);
 
 
+```
+
+In order to sign transactions, a `Signer` interface is required.  This is a simple interface that can be implemented by wrapping a wallet or other signing mechanism.  The `Signer` interface is defined as follows: 
+
+```ts
+interface Signer {
+  // Wormhole defined chain name
+  chain(): ChainName;
+  // canonical string address format for chain
+  address(): string;
+  // sign a message, performing any additional checks or validation
+  sign(tx: UnsignedTransaction[]): Promise<SignedTx[]>;
+}
+
+
 const sender: Signer =  // ...
 const receiver: Signer = // ...
 
@@ -25,6 +40,13 @@ const receiver: Signer = // ...
 const senderAddress: ChainAddress = nativeChainAddress(sender)     
 const receiverAddress: ChainAddress = nativeChainAddress(receiver) 
 
+```
+See the [example signers](./examples/src/helpers/signers.ts) for examples of how to implement a signer for a specific chain.
+
+
+With the signer(s) available, we can create a new `WormholeTransfer` object (`TokenTransfer`, `CCTPTransfer`, `GatewayTransfer`, ...) and use it to transfer tokens between chains.  The `WormholeTransfer` object is responsible for tracking the transfer through the process and providing updates on its status. 
+
+```ts
 // Create a TokenTransfer object, allowing us to shepard the transfer through the process and get updates on its status
 const manualXfer = wh.tokenTransfer(
   'native',         // send native gas on source chain
@@ -43,6 +65,11 @@ const attestIds = await manualXfer.fetchAttestation();
 // 3) redeem the VAA on the dest chain
 const destTxids = await manualXfer.completeTransfer(dst.signer);
 
+```
+
+Some transfers allow for automatic relaying to the destination, in that case only the `initiateTransfer` is required. The status of the transfer can be tracked by periodically checking the status of the transfer object (TODO: event emission).
+
+```ts
 
 // OR for an automatic transfer
 const automaticXfer = wh.tokenTransfer(
@@ -63,26 +90,22 @@ if (automatic) return waitLog(automaticXfer) ;
 
 ## WIP
 
-This package is a Work in Progress so the interface may change. 
+:warning: This package is a Work in Progress so the interface may change and there are likely bugs.  Please report any issues you find.
 
 
 ## TODOS:
 
-
 Chains: 
 
 - [ ] Add support for Aptos chains
-- [ ] Add support for Sei chains
-- [ ] Add support for Sui chains
-- [ ] Add support for Cosmos chains
 - [ ] Add support for Algorand chains
-- [ ] Add support for Terra chains
+- [ ] Add support for Sui chains
 - [ ] Add support for Near chains
 
 Other:
 
-- [ ] Reexport common types from connect?
 - [ ] Add support for NFTBridge protocols
+- [ ] Simulate prior to sending 
 - [ ] Gas utilities (estimate from unsigned, get gas used from txid) 
 - [ ] Better tracking of auto-redeem, use target contract?
 - [ ] Estimate tx finalization

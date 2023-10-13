@@ -8,7 +8,7 @@ import {
   supportsTokenBridge,
 } from "@wormhole-foundation/sdk-definitions";
 import { PlatformName } from "@wormhole-foundation/sdk-base";
-import { Wormhole } from "../../connect/dist/esm";
+import { Wormhole } from "@wormhole-foundation/connect-sdk";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 
@@ -62,7 +62,7 @@ describe("Platform Tests", () => {
 
   let tb: TokenBridge<PlatformName>;
   test("Gets Token Bridge", async () => {
-    if(supportsTokenBridge(p)) tb = await p.getTokenBridge(rpc);
+    if (supportsTokenBridge(p)) tb = await p.getTokenBridge(rpc);
     expect(tb).toBeTruthy();
   });
 });
@@ -90,9 +90,9 @@ describe("Attestation Tests", () => {
       const parsedVaa = await wh.getVAA(
         "Celo",
         new UniversalAddress(
-          "0x00000000000000000000000005ca6037eC51F8b712eD2E6Fa72219FEaE74E153"
+          "0x00000000000000000000000005ca6037eC51F8b712eD2E6Fa72219FEaE74E153",
         ),
-        469n
+        469n,
       );
       expect(parsedVaa).toBeTruthy();
     });
