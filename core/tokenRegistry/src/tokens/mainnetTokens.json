@@ -1,9 +1,10 @@
 {
   "Ethereum": {
     "0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0": {
-      "name:": "wstETH",
+      "name": "wstETH",
       "symbol": "wstETH",
       "nativeChain": "Ethereum",
+      "decimals": 18,
       "foreignAssets": {
         "Arbitrum": {
           "address": "0xf2717122Dfdbe988ae811E7eFB157aAa07Ff9D0F",
@@ -22,7 +23,7 @@
     "0x18084fbA666a33d37592fA2633fD49a74DD93a88": {
       "name": "tBTC",
       "symbol": "tBTC",
-      "nativeChain": "ethereum",
+      "nativeChain": "Ethereum",
       "decimals": 18,
       "foreignAssets": {
         "Polygon": {
@@ -119,7 +120,7 @@
       "name": "USDC (Ethereum)",
       "symbol": "USDC",
       "nativeChain": "Ethereum",
-      "deimals": 6,
+      "decimals": 6,
       "foreignAssets": {
         "Bsc": {
           "address": "0xB04906e95AB5D797aDA81508115611fee694c2b3",
@@ -175,7 +176,7 @@
       "name": "WBTC",
       "symbol": "WBTC",
       "nativeChain": "Ethereum",
-      "deimals": 8,
+      "decimals": 8,
       "foreignAssets": {
         "Bsc": {
           "address": "0x43359676E1A3F9FbB5de095333f8e9c1B46dFA44",
@@ -231,7 +232,7 @@
       "name": "USDT",
       "symbol": "USDT",
       "nativeChain": "Ethereum",
-      "deimals": 6,
+      "decimals": 6,
       "foreignAssets": {
         "Bsc": {
           "address": "0x524bC91Dc82d6b90EF29F76A3ECAaBAffFD490Bc",
@@ -283,7 +284,7 @@
       "name": "DAI",
       "symbol": "DAI",
       "nativeChain": "Ethereum",
-      "deimals": 18,
+      "decimals": 18,
       "foreignAssets": {
         "Bsc": {
           "address": "0x3413a030EF81a3dD5a302F4B4D11d911e12ed337",
@@ -335,7 +336,7 @@
       "name": "BUSD",
       "symbol": "BUSD",
       "nativeChain": "Ethereum",
-      "deimals": 18,
+      "decimals": 18,
       "foreignAssets": {
         "Bsc": {
           "address": "0x035de3679E692C471072d1A09bEb9298fBB2BD31",
