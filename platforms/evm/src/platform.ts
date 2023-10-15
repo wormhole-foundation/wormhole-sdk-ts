@@ -102,7 +102,6 @@ export module EvmPlatform {
     txid: TxHash,
   ): Promise<WormholeMessageId[]> {
     const receipt = await rpc.getTransactionReceipt(txid);
-
     if (receipt === null) return [];
 
     const coreAddress = conf[chain]!.contracts.coreBridge;

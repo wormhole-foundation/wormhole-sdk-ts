@@ -23,6 +23,7 @@ import {
   TxHash,
   WormholeMessageId,
   isTokenId,
+  PayloadLiteral,
 } from "@wormhole-foundation/sdk-definitions";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 
@@ -35,6 +36,7 @@ import { GatewayTransfer } from "./protocols/gatewayTransfer";
 import { TransactionStatus } from "./api";
 import { getCircleAttestation } from "./circle-api";
 import { retry } from "./protocols/retry";
+import { getTransactionStatus, getVaaBytes } from "./protocols/tasks";
 
 export class Wormhole {
   protected _platforms: Map<PlatformName, Platform<PlatformName>>;
@@ -326,33 +328,31 @@ export class Wormhole {
     // TODO: same as supportsSendWithRelay, need some
     // way to id this in a less sketchy way
     const chain = this.getChain(recipient.chain);
-    if ("getTokenAccount" in chain) {
-      let t: TokenId;
-      if (sendingToken === "native") {
-        const srcTb = await this.getChain(sendingChain).getTokenBridge();
-        t = { chain: sendingChain, address: await srcTb.getWrappedNative() };
-      } else {
-        t = isTokenId(sendingToken)
-          ? sendingToken
-          : {
-              chain: sendingChain,
-              address: (
-                sendingToken as UniversalAddress | NativeAddress<PlatformName>
-              ).toUniversalAddress(),
-            };
-      }
+    if (!("getTokenAccount" in chain)) return recipient;
 
-      const dstTokenBridge = await chain.getTokenBridge();
-      const dstNative = await dstTokenBridge.getWrappedAsset(t);
-
-      return {
-        chain: recipient.chain,
-        // @ts-ignore
-        address: await chain.getTokenAccount(dstNative, recipient.address),
-      } as ChainAddress;
+    let t: TokenId;
+    if (sendingToken === "native") {
+      const srcTb = await this.getChain(sendingChain).getTokenBridge();
+      t = { chain: sendingChain, address: await srcTb.getWrappedNative() };
+    } else {
+      t = isTokenId(sendingToken)
+        ? sendingToken
+        : {
+            chain: sendingChain,
+            address: (
+              sendingToken as UniversalAddress | NativeAddress<PlatformName>
+            ).toUniversalAddress(),
+          };
     }
 
-    return recipient;
+    const dstTokenBridge = await chain.getTokenBridge();
+    const dstNative = await dstTokenBridge.getWrappedAsset(t);
+
+    return {
+      chain: recipient.chain,
+      // @ts-ignore
+      address: await chain.getTokenAccount(dstNative, recipient.address),
+    } as ChainAddress;
   }
 
   /**
@@ -371,43 +371,24 @@ export class Wormhole {
     sequence: bigint,
     timeout: number = 10_000,
   ): Promise<Uint8Array | undefined> {
-    const chainId = toChainId(chain);
-    const universalAddress = emitter.toUniversalAddress().toString();
-    const emitterAddress = universalAddress.startsWith("0x")
-      ? universalAddress.slice(2)
-      : universalAddress;
-
-    const url = `${this.conf.api}/v1/signed_vaa/${chainId}/${emitterAddress}/${sequence}`;
-
     // TODO: hardcoded timeouts
     const retryInterval = 2000;
 
-    const axiosOptions: AxiosRequestConfig = {
-      //timeout,
-      //signal: AbortSignal.timeout(reqTimeout),
-    };
+    const task = () =>
+      getVaaBytes(this.conf.api, {
+        chain,
+        emitter,
+        sequence,
+      } as WormholeMessageId);
 
-    const task = async () => {
-      try {
-        const response = await axios.get(url, axiosOptions);
-        if (!response || !response.data) return null;
-        const { data } = response;
-        return new Uint8Array(Buffer.from(data.vaaBytes, "base64"));
-      } catch (e) {
-        console.error(`Caught an error waiting for VAA: ${e}\n${url}\n`);
-      }
-      return null;
-    };
-
-    const vaa = await retry<Uint8Array>(
+    const vaaBytes = await retry<Uint8Array>(
       task,
       retryInterval,
       timeout,
-      "Wormholescan:signed_vaa",
+      "Wormholescan:GetVaaBytes",
     );
 
-    if (vaa) return vaa;
-    return undefined;
+    return vaaBytes ?? undefined;
   }
 
   /**
@@ -419,22 +400,26 @@ export class Wormhole {
    * @returns The VAA if available
    * @throws Errors if the VAA is not available after the retries
    */
-  async getVAA(
+  async getVAA<PL extends PayloadLiteral>(
     chain: ChainName,
     emitter: UniversalAddress,
     sequence: bigint,
-    retries: number = 5,
-  ): Promise<VAA | undefined> {
-    const vaaBytes = await this.getVAABytes(chain, emitter, sequence, retries);
+    decodeAs: PL,
+    timeout: number = 60_000,
+  ): Promise<VAA<PL> | undefined> {
+    const vaaBytes = await this.getVAABytes(chain, emitter, sequence, timeout);
     if (vaaBytes === undefined) return;
-
-    return deserialize("Uint8Array", vaaBytes);
+    return deserialize(decodeAs, vaaBytes);
   }
 
-  async getCircleAttestation(msgHash: string): Promise<string | null> {
-    const attest = await getCircleAttestation(this.conf.circleAPI, msgHash);
-    if (attest !== null) return attest.message;
-    return null;
+  async getCircleAttestation(
+    msgHash: string,
+    timeout: number = 60_000,
+  ): Promise<string | null> {
+    // TODO: hardcoded timeouts
+    const retryInterval = 2000;
+    const task = () => getCircleAttestation(this.conf.circleAPI, msgHash);
+    return retry<string>(task, retryInterval, timeout, "Circle:GetAttestation");
   }
 
   /**
@@ -450,23 +435,27 @@ export class Wormhole {
     chain: ChainName,
     emitter: UniversalAddress | NativeAddress<PlatformName>,
     sequence: bigint,
+    timeout = 60_000,
   ): Promise<TransactionStatus> {
-    const chainId = toChainId(chain);
-    const emitterAddress = emitter.toUniversalAddress().toString();
-    const id = `${chainId}/${emitterAddress}/${sequence}`;
+    // TODO: hardcoded timeouts
+    const retryInterval = 2000;
 
-    const url = `${this.conf.api}/api/v1/transactions/${id}`;
+    const whm = {
+      chain,
+      emitter,
+      sequence,
+    } as WormholeMessageId;
 
-    // TODO: try/catch this
-    const response = await axios.get(url);
+    const task = () => getTransactionStatus(this.conf.api, whm);
 
-    if (!response || !response.data)
-      throw new Error(`No data available for sequence: ${id}`);
-
-    const { data } = response;
-
-    // TODO: actually check this data
-    return data as TransactionStatus;
+    const status = await retry<TransactionStatus>(
+      task,
+      retryInterval,
+      timeout,
+      "Wormholescan:TransactionStatus",
+    );
+    if (!status) throw new Error(`No data available for : ${whm}`);
+    return status;
   }
 
   /**

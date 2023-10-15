@@ -1,6 +1,6 @@
-const DEFAULT_TIMEOUT = 60 * 1000; // 1 minute in milliseconds
+import { Task } from "./tasks";
 
-export type Task<T> = () => Promise<T | null>;
+const DEFAULT_TIMEOUT = 60 * 1000; // 1 minute in milliseconds
 
 export async function retry<T>(
   task: Task<T>,

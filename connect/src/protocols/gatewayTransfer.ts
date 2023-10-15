@@ -26,6 +26,7 @@ import {
   isTransactionIdentifier,
   isWormholeMessageId,
   nativeChainAddress,
+  serialize,
   toGatewayMsg,
   toNative,
 } from "@wormhole-foundation/sdk-definitions";
@@ -36,7 +37,8 @@ import {
   WormholeTransfer,
 } from "../wormholeTransfer";
 import { retry } from "./retry";
-import { fetchIbcXfer, isVaaRedeemed } from "./utils";
+import { fetchIbcXfer, isTokenBridgeVaaRedeemed } from "./tasks";
+import { signSendWait } from "./common";
 
 export class GatewayTransfer implements WormholeTransfer {
   static chain: ChainName = "Wormchain";
@@ -143,6 +145,7 @@ export class GatewayTransfer implements WormholeTransfer {
       gtd = await GatewayTransfer._fromTransaction(wh, from);
     } else if (isWormholeMessageId(from)) {
       // TODO: we're missing the transaction that created this
+      // get it from transaction status search on wormholescan?
       gtd = await GatewayTransfer._fromMsgId(wh, from);
     } else {
       throw new Error("Invalid `from` parameter for GatewayTransfer");
@@ -333,30 +336,7 @@ export class GatewayTransfer implements WormholeTransfer {
       new Uint8Array(Buffer.from(JSON.stringify(this.msg))),
     );
 
-    let unsigned: UnsignedTransaction[] = [];
-    const txHashes: TxHash[] = [];
-    for await (const tx of xfer) {
-      unsigned.push(tx);
-      if (!tx.parallelizable) {
-        // sign/send
-        txHashes.push(
-          ...(await fromChain.sendWait(await signer.sign(unsigned))),
-        );
-        // reset unsigned
-        unsigned = [];
-      }
-    }
-
-    if (unsigned.length > 0) {
-      txHashes.push(...(await fromChain.sendWait(await signer.sign(unsigned))));
-    }
-
-    return txHashes.map((t) => {
-      return {
-        txid: t,
-        chain: fromChain.chain,
-      };
-    });
+    return signSendWait(fromChain, xfer, signer);
   }
 
   private async _transferIbc(signer: Signer): Promise<TransactionId[]> {
@@ -373,30 +353,7 @@ export class GatewayTransfer implements WormholeTransfer {
       this.transfer.amount,
     );
 
-    let unsigned: UnsignedTransaction[] = [];
-    const txHashes: TxHash[] = [];
-    for await (const tx of xfer) {
-      unsigned.push(tx);
-      if (!tx.parallelizable) {
-        // sign/send
-        txHashes.push(
-          ...(await fromChain.sendWait(await signer.sign(unsigned))),
-        );
-        // reset unsigned
-        unsigned = [];
-      }
-    }
-
-    if (unsigned.length > 0) {
-      txHashes.push(...(await fromChain.sendWait(await signer.sign(unsigned))));
-    }
-
-    return txHashes.map((t) => {
-      return {
-        txid: t,
-        chain: fromChain.chain,
-      };
-    });
+    return signSendWait(fromChain, xfer, signer);
   }
 
   // TODO: track the time elapsed and subtract it from the timeout passed with
@@ -483,10 +440,7 @@ export class GatewayTransfer implements WormholeTransfer {
       const wcTb = await this.gateway.getTokenBridge();
       // Since we want to retry until its redeemed, return null
       // in the case that its not redeemed
-      const isRedeemedTask = async () => {
-        const redeemed = await isVaaRedeemed(wcTb, [vaa]);
-        return redeemed ? redeemed : null;
-      };
+      const isRedeemedTask = () => isTokenBridgeVaaRedeemed(wcTb, vaa);
       const redeemed = await retry<boolean>(
         isRedeemedTask,
         vaaRedeemedRetryInterval,
@@ -563,43 +517,25 @@ export class GatewayTransfer implements WormholeTransfer {
       );
 
     if (!this.vaas) throw new Error("No VAA details available to redeem");
+    if (this.vaas.length > 1) throw new Error("Expected 1 vaa");
 
     const { chain, address } = this.transfer.to;
 
     const toChain = this.wh.getChain(chain);
+    // TODO: these could be different, but when?
+    //const signerAddress = toNative(signer.chain(), signer.address());
     const toAddress = address.toUniversalAddress();
 
     const tb = await toChain.getTokenBridge();
 
-    let unsigned: UnsignedTransaction[] = [];
-    const txHashes: TxHash[] = [];
-    for (const cachedVaa of this.vaas) {
-      const { vaa } = cachedVaa;
+    const { vaa } = this.vaas[0];
+    if (!vaa) throw new Error(`No VAA found for ${this.vaas[0].id.sequence}`);
 
-      if (!vaa) throw new Error(`No VAA found for ${cachedVaa.id.sequence}`);
+    const xfer: AsyncGenerator<UnsignedTransaction> = tb.redeem(toAddress, vaa);
+    const redeemTxs = await signSendWait(toChain, xfer, signer);
+    this.transactions.push(...redeemTxs);
 
-      const xfer: AsyncGenerator<UnsignedTransaction> = tb.redeem(
-        toAddress,
-        vaa,
-      );
-      for await (const tx of xfer) {
-        unsigned.push(tx);
-        // If we find a tx that is not parallelizable, sign it and send
-        // the accumulated txs so far
-        if (!tx.parallelizable) {
-          txHashes.push(
-            ...(await toChain.sendWait(await signer.sign(unsigned))),
-          );
-          // reset unsigned
-          unsigned = [];
-        }
-      }
-    }
-
-    if (unsigned.length > 0) {
-      txHashes.push(...(await toChain.sendWait(await signer.sign(unsigned))));
-    }
-    return txHashes;
+    return redeemTxs.map(({ txid }) => txid);
   }
 
   static async getTransferVaa(
@@ -607,22 +543,24 @@ export class GatewayTransfer implements WormholeTransfer {
     whm: WormholeMessageId,
   ): Promise<VAA<"TransferWithPayload"> | VAA<"Transfer">> {
     const { chain, emitter, sequence } = whm;
-    const vaaBytes = await wh.getVAABytes(chain, emitter, sequence);
-    if (!vaaBytes)
+
+    const partial = await wh.getVAA(chain, emitter, sequence, "Uint8Array");
+
+    if (!partial)
       throw new Error(`No VAA Available: ${chain}/${emitter}/${sequence}`);
 
-    const partial = deserialize("Uint8Array", vaaBytes);
     switch (partial.payload[0]) {
       case 1:
-        return deserialize("Transfer", vaaBytes);
+        return deserialize("Transfer", serialize(partial));
       case 3:
-        return deserialize("TransferWithPayload", vaaBytes);
+        return deserialize("TransferWithPayload", serialize(partial));
     }
     throw new Error(`No serde defined for type: ${partial.payload[0]}`);
   }
 
   // Implicitly determine if the chain is Gateway enabled by
   // checking to see if the Gateway IBC bridge has a transfer channel setup
+  // If this is a new chain, add the channels to the constants file
   private fromGateway(): boolean {
     return (
       this.gatewayIbcBridge.getTransferChannel(this.transfer.from.chain) !==
