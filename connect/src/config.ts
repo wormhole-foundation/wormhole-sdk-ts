@@ -19,6 +19,8 @@ import {
   ChainsConfig,
 } from "@wormhole-foundation/sdk-definitions";
 
+export const DEFAULT_TASK_TIMEOUT = 60 * 1000; // 1 minute in milliseconds
+
 /*
 TODO:
     add missing chains for each config

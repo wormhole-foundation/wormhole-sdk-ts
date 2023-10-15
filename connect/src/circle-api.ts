@@ -33,6 +33,8 @@ export async function getCircleAttestation(
     const attestation = mapCircleAttestation(response?.data);
     return attestation.message === "PENDING" ? null : attestation.message;
   } catch (error) {
+    // This is a 404 error, which means the attestation is not yet available
+    // since its not available yet, we return null signaling it can be tried again
     if (!(axios.isAxiosError(error) && error?.response?.status === 404)) {
       return null;
     }

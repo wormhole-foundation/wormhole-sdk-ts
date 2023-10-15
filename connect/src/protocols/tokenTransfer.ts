@@ -19,9 +19,8 @@ import {
   AttestationId,
 } from "../wormholeTransfer";
 import { Wormhole } from "../wormhole";
-import { ChainName, PlatformName } from "@wormhole-foundation/sdk-base";
-import { retry } from "./retry";
-import { signSendWait } from "./common";
+import { signSendWait } from "../common";
+import { retry } from "../tasks";
 
 /**
  * What do with multiple transactions or VAAs?

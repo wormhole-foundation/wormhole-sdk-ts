@@ -8,7 +8,7 @@ export * from "./protocols/cctpTransfer";
 export * from "./protocols/gatewayTransfer";
 
 export * as circle from "./circle-api";
-export * as api from "./api";
+export * as api from "./whscan-api";
 
 // Re-export from core packages
 export {

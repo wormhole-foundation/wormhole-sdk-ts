@@ -2,7 +2,6 @@ import {
   PlatformName,
   ChainName,
   Network,
-  toChainId,
   isCircleSupported,
   isCircleChain,
   usdcContract,
@@ -25,18 +24,21 @@ import {
   isTokenId,
   PayloadLiteral,
 } from "@wormhole-foundation/sdk-definitions";
-import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 
 import { WormholeConfig } from "./types";
+import { CONFIG, DEFAULT_TASK_TIMEOUT, networkPlatformConfigs } from "./config";
 
-import { CONFIG, networkPlatformConfigs } from "./config";
 import { TokenTransfer } from "./protocols/tokenTransfer";
 import { CCTPTransfer } from "./protocols/cctpTransfer";
 import { GatewayTransfer } from "./protocols/gatewayTransfer";
-import { TransactionStatus } from "./api";
+
+import { retry } from "./tasks";
+import {
+  TransactionStatus,
+  getTransactionStatus,
+  getVaaBytes,
+} from "./whscan-api";
 import { getCircleAttestation } from "./circle-api";
-import { retry } from "./protocols/retry";
-import { getTransactionStatus, getVaaBytes } from "./protocols/tasks";
 
 export class Wormhole {
   protected _platforms: Map<PlatformName, Platform<PlatformName>>;
@@ -159,7 +161,7 @@ export class Wormhole {
       // Overwrite the dest address with the ATA
       to = await this.getTokenAccount(from.chain, token, to);
     } else if (to.chain === "Sei") {
-      if (payload) throw new Error("NO");
+      if (payload) throw new Error("Arbitrary payloads unsupported for Sei");
 
       //
       payload = Buffer.from(
@@ -369,7 +371,7 @@ export class Wormhole {
     chain: ChainName,
     emitter: UniversalAddress | NativeAddress<PlatformName>,
     sequence: bigint,
-    timeout: number = 10_000,
+    timeout: number = DEFAULT_TASK_TIMEOUT,
   ): Promise<Uint8Array | undefined> {
     // TODO: hardcoded timeouts
     const retryInterval = 2000;
@@ -377,9 +379,9 @@ export class Wormhole {
     const task = () =>
       getVaaBytes(this.conf.api, {
         chain,
-        emitter,
         sequence,
-      } as WormholeMessageId);
+        emitter: emitter.toUniversalAddress(),
+      });
 
     const vaaBytes = await retry<Uint8Array>(
       task,
@@ -405,7 +407,7 @@ export class Wormhole {
     emitter: UniversalAddress,
     sequence: bigint,
     decodeAs: PL,
-    timeout: number = 60_000,
+    timeout: number = DEFAULT_TASK_TIMEOUT,
   ): Promise<VAA<PL> | undefined> {
     const vaaBytes = await this.getVAABytes(chain, emitter, sequence, timeout);
     if (vaaBytes === undefined) return;
@@ -414,7 +416,7 @@ export class Wormhole {
 
   async getCircleAttestation(
     msgHash: string,
-    timeout: number = 60_000,
+    timeout: number = DEFAULT_TASK_TIMEOUT,
   ): Promise<string | null> {
     // TODO: hardcoded timeouts
     const retryInterval = 2000;
@@ -435,7 +437,7 @@ export class Wormhole {
     chain: ChainName,
     emitter: UniversalAddress | NativeAddress<PlatformName>,
     sequence: bigint,
-    timeout = 60_000,
+    timeout = DEFAULT_TASK_TIMEOUT,
   ): Promise<TransactionStatus> {
     // TODO: hardcoded timeouts
     const retryInterval = 2000;

@@ -58,17 +58,15 @@ describe("Wormhole Tests", () => {
       expect(vaa).toBeUndefined();
     });
 
-    // TODO: Fix this test
-    //test("returns after first try fails", async () => {
-    //  publicRpcMock.givenSignedVaaRequestWorksAfterRetry();
-    //  const vaa = await wh.getVAABytes(
-    //    "Base",
-    //    testing.utils.makeChainAddress("Base").address,
-    //    1n,
-    //    5,
-    //  );
-    //  expect(vaa).toBeDefined();
-    //});
+    test("returns after first try fails", async () => {
+      publicRpcMock.givenSignedVaaRequestWorksAfterRetry();
+      const vaa = await wh.getVAABytes(
+        "Base",
+        testing.utils.makeChainAddress("Base").address,
+        1n,
+      );
+      expect(vaa).toBeDefined();
+    });
   });
 });
 

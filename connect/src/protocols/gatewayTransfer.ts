@@ -36,9 +36,9 @@ import {
   TransferState,
   WormholeTransfer,
 } from "../wormholeTransfer";
-import { retry } from "./retry";
-import { fetchIbcXfer, isTokenBridgeVaaRedeemed } from "./tasks";
-import { signSendWait } from "./common";
+import { retry, fetchIbcXfer, isTokenBridgeVaaRedeemed } from "../tasks";
+import { signSendWait } from "../common";
+import { DEFAULT_TASK_TIMEOUT } from "../config";
 
 export class GatewayTransfer implements WormholeTransfer {
   static chain: ChainName = "Wormchain";
@@ -168,9 +168,10 @@ export class GatewayTransfer implements WormholeTransfer {
   private static async _fromMsgId(
     wh: Wormhole,
     from: WormholeMessageId,
+    timeout?: number,
   ): Promise<GatewayTransferDetails> {
     // Starting with the VAA
-    const vaa = await GatewayTransfer.getTransferVaa(wh, from);
+    const vaa = await GatewayTransfer.getTransferVaa(wh, from, timeout);
 
     // The VAA may have a payload which may have a nested GatewayTransferMessage
     let payload: Uint8Array | undefined =
@@ -229,6 +230,7 @@ export class GatewayTransfer implements WormholeTransfer {
   private static async _fromTransaction(
     wh: Wormhole,
     from: TransactionId,
+    timeout?: number,
   ): Promise<GatewayTransferDetails> {
     const { chain, txid } = from;
 
@@ -236,23 +238,23 @@ export class GatewayTransfer implements WormholeTransfer {
 
     // If its origin chain is Cosmos, it should be an IBC message
     // but its not all the time so do this differently?
-    // check if the chain supports gateway?
+    // TODO: check if the chain supports Gateway protocol?
     if (chainToPlatform(chain) === "Cosmwasm") {
       // Get the ibc tx info from the origin
       const ibcBridge = await originChain.getIbcBridge();
       const xfer = await ibcBridge.lookupTransferFromTx(from.txid);
-      return await GatewayTransfer._fromIbcTransfer(xfer);
+      return GatewayTransfer.ibcTransfertoGatewayTransfer(xfer);
     }
 
     // Otherwise grab the vaa details from the origin tx
     const [whMsgId] = await originChain.parseTransaction(txid);
-    return await GatewayTransfer._fromMsgId(wh, whMsgId);
+    return await GatewayTransfer._fromMsgId(wh, whMsgId, timeout);
   }
 
   // Recover transfer info the first step in the transfer
-  private static async _fromIbcTransfer(
+  private static ibcTransfertoGatewayTransfer(
     xfer: IbcTransferInfo,
-  ): Promise<GatewayTransferDetails> {
+  ): GatewayTransferDetails {
     const token = {
       chain: xfer.id.chain,
       address: toNative(xfer.id.chain, xfer.data.denom),
@@ -314,9 +316,6 @@ export class GatewayTransfer implements WormholeTransfer {
 
     // Update State Machine
     this.state = TransferState.Initiated;
-
-    // TODO: start thread to grab tx info?
-
     return this.transactions.map((tx) => tx.txid);
   }
 
@@ -535,16 +534,25 @@ export class GatewayTransfer implements WormholeTransfer {
     const redeemTxs = await signSendWait(toChain, xfer, signer);
     this.transactions.push(...redeemTxs);
 
+    this.state = TransferState.Completed;
+
     return redeemTxs.map(({ txid }) => txid);
   }
 
   static async getTransferVaa(
     wh: Wormhole,
     whm: WormholeMessageId,
+    timeout?: number,
   ): Promise<VAA<"TransferWithPayload"> | VAA<"Transfer">> {
     const { chain, emitter, sequence } = whm;
 
-    const partial = await wh.getVAA(chain, emitter, sequence, "Uint8Array");
+    const partial = await wh.getVAA(
+      chain,
+      emitter,
+      sequence,
+      "Uint8Array",
+      timeout,
+    );
 
     if (!partial)
       throw new Error(`No VAA Available: ${chain}/${emitter}/${sequence}`);
