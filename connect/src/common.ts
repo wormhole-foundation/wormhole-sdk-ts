@@ -30,7 +30,7 @@ export async function signSendWait(
     }
   }
 
-  if (txbuff.length > -1) {
+  if (txbuff.length > 0) {
     const signed = await signer.sign(txbuff);
     const txids = await chain.sendWait(signed);
     txHashes.push(...txids);

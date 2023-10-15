@@ -96,7 +96,6 @@ describe("Chain Tests", () => {
   let c: ChainContext<PlatformName>;
   beforeEach(() => {
     const wh = new Wormhole(network, allPlatformCtrs);
-    const p = wh.getPlatform("Ethereum");
     c = wh.getChain("Ethereum");
   });
 
