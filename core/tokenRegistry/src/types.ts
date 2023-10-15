@@ -14,7 +14,7 @@ export type TokenConfig = {
   nativeChain: ChainName;
   decimals: number;
   foreignAssets?: ForeignAssetsCache;
-}
+};
 export type TokensConfig = {
-  [chain in ChainName]?: { [key: string]: TokenConfig }
+  [chain in ChainName]?: { [key: string]: TokenConfig };
 };

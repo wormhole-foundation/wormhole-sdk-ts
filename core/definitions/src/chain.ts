@@ -39,7 +39,9 @@ export abstract class ChainContext<P extends PlatformName> {
   }
 
   // Get the number of decimals for a token
-  async getDecimals(token: NativeAddress<P> | UniversalAddress | "native"): Promise<bigint> {
+  async getDecimals(
+    token: NativeAddress<P> | UniversalAddress | "native",
+  ): Promise<bigint> {
     return this.platform.getDecimals(this.chain, this.getRpc(), token);
   }
 
