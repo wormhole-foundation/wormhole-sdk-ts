@@ -76,6 +76,8 @@ const blockTimeMilliseconds = [
   ["Terra2", 6000],
   ["Xpla", 5000],
   ["Wormchain", 5000],
+  ["Btc", 600000],
+  ["Pythnet", 400],
 ] as const satisfies RoArray<readonly [ChainName, number]>;
 
 export const blockTime = constMap(blockTimeMilliseconds);

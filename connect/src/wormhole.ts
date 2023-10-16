@@ -26,7 +26,13 @@ import {
 } from "@wormhole-foundation/sdk-definitions";
 
 import { WormholeConfig } from "./types";
-import { CONFIG, DEFAULT_TASK_TIMEOUT, networkPlatformConfigs } from "./config";
+import {
+  CIRCLE_RETRY_INTERVAL,
+  CONFIG,
+  DEFAULT_TASK_TIMEOUT,
+  WHSCAN_RETRY_INTERVAL,
+  networkPlatformConfigs,
+} from "./config";
 
 import { TokenTransfer } from "./protocols/tokenTransfer";
 import { CCTPTransfer } from "./protocols/cctpTransfer";
@@ -373,9 +379,6 @@ export class Wormhole {
     sequence: bigint,
     timeout: number = DEFAULT_TASK_TIMEOUT,
   ): Promise<Uint8Array | undefined> {
-    // TODO: hardcoded timeouts
-    const retryInterval = 2000;
-
     const task = () =>
       getVaaBytes(this.conf.api, {
         chain,
@@ -385,7 +388,7 @@ export class Wormhole {
 
     const vaaBytes = await retry<Uint8Array>(
       task,
-      retryInterval,
+      WHSCAN_RETRY_INTERVAL,
       timeout,
       "Wormholescan:GetVaaBytes",
     );
@@ -398,7 +401,7 @@ export class Wormhole {
    * @param chain The chain name
    * @param emitter The emitter address
    * @param sequence The sequence number
-   * @param retries The number of times to retry
+   * @param timeout The total amount of time to wait for the VAA to be available
    * @returns The VAA if available
    * @throws Errors if the VAA is not available after the retries
    */
@@ -418,10 +421,13 @@ export class Wormhole {
     msgHash: string,
     timeout: number = DEFAULT_TASK_TIMEOUT,
   ): Promise<string | null> {
-    // TODO: hardcoded timeouts
-    const retryInterval = 2000;
     const task = () => getCircleAttestation(this.conf.circleAPI, msgHash);
-    return retry<string>(task, retryInterval, timeout, "Circle:GetAttestation");
+    return retry<string>(
+      task,
+      CIRCLE_RETRY_INTERVAL,
+      timeout,
+      "Circle:GetAttestation",
+    );
   }
 
   /**
@@ -439,9 +445,6 @@ export class Wormhole {
     sequence: bigint,
     timeout = DEFAULT_TASK_TIMEOUT,
   ): Promise<TransactionStatus> {
-    // TODO: hardcoded timeouts
-    const retryInterval = 2000;
-
     const whm = {
       chain,
       emitter,
@@ -452,7 +455,7 @@ export class Wormhole {
 
     const status = await retry<TransactionStatus>(
       task,
-      retryInterval,
+      WHSCAN_RETRY_INTERVAL,
       timeout,
       "Wormholescan:TransactionStatus",
     );

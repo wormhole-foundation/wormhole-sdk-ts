@@ -64,7 +64,8 @@ export module EvmPlatform {
   }
 
   export function getChain(chain: ChainName): EvmChain {
-    return new EvmChain(chain);
+    if (chain in conf) return new EvmChain(conf[chain]!);
+    throw new Error('No configuration available for chain: ' + chain);
   }
 
   export function getWormholeCore(

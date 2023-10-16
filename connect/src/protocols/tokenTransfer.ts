@@ -303,11 +303,10 @@ export class TokenTransfer implements WormholeTransfer {
     const originChain = wh.getChain(chain);
 
     // TODO: hardcoded interval
-    const retryInterval = 2000;
     const getMsgTask = () => originChain.parseTransaction(txid);
     const parsed = await retry<WormholeMessageId[]>(
       getMsgTask,
-      retryInterval,
+      originChain.config.blockTime,
       timeout,
       "WormholeCore:ParseMessageFromTransaction",
     );

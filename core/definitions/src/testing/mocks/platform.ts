@@ -85,7 +85,8 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
   }
 
   getChain(chain: ChainName): ChainContext<P> {
-    return new MockChain<P>(this.network, this.platform, chain);
+    if (chain in this.conf) return new MockChain<P>(this.conf[chain]!);
+    throw new Error("No configuration available for chain: " + chain);
   }
   getRpc(chain: ChainName): RpcConnection<P> {
     // @ts-ignore

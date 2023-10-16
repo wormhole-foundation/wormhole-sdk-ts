@@ -5,7 +5,7 @@ import {
 } from "@wormhole-foundation/sdk-base";
 import { ChainContext } from "./chain";
 import { RpcConnection } from "./rpc";
-import { ChainsConfig, TokenId, TxHash } from "./types";
+import { ChainConfig, ChainsConfig, TokenId, TxHash } from "./types";
 import { WormholeMessageId } from "./attestation";
 import { SignedTx } from "./types";
 import { NativeAddress } from "./address";

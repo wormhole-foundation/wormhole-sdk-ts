@@ -1,6 +1,7 @@
 import {
   ChainName,
   ExplorerSettings,
+  Network,
   PlatformName,
   isChain,
 } from "@wormhole-foundation/sdk-base";
@@ -80,11 +81,16 @@ export function isTransactionIdentifier(
   );
 }
 
+// Configuration for a given Chain
 export type ChainConfig = {
   key: ChainName;
+  network: Network;
   platform: PlatformName;
   contracts: Contracts;
+  // Number of blocks before a transaction is considered final
   finalityThreshold: number;
+  // Average block time in milliseconds
+  blockTime: number;
   nativeTokenDecimals: bigint;
   explorer: ExplorerSettings;
   rpc: string;
