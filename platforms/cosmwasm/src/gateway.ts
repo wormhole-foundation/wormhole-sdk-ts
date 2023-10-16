@@ -75,17 +75,8 @@ export module Gateway {
     return new CosmwasmAddress(factoryAddress);
   }
 
-  // Returns the destination channel from the perspective of wormchain for given source chain
-  export function getDestinationChannel(chain: CosmwasmChainName): string {
-    const channels = CosmwasmPlatform.getIbcChannels(Gateway.name);
-    if (!channels) throw new Error("No channels configured for chain " + chain);
-    if (!(chain in channels))
-      throw new Error("No channel configured for chain " + chain);
-    return channels[chain]!;
-  }
-
-  // Gets the source channel from the perspective of wormchain for a given chain
-  export function getSourceChannel(chain: CosmwasmChainName): string {
+  // Gets the the source channel for outgoing transfers from wormchain
+  export function getGatewaySourceChannel(chain: CosmwasmChainName): string {
     const channels = CosmwasmPlatform.getIbcChannels(chain);
     if (!channels) throw new Error("No channels configured for chain " + chain);
     if (!(Gateway.name in channels))
@@ -100,7 +91,7 @@ export module Gateway {
     denom: string,
   ): CosmwasmAddress {
     // Otherwise compute the ibc address from the channel and denom
-    const channel = getDestinationChannel(chain);
+    const channel = getGatewaySourceChannel(chain);
     const hashData = Buffer.from(`${IBC_TRANSFER_PORT}/${channel}/${denom}`);
     const hash = Buffer.from(sha256(hashData)).toString("hex");
     return new CosmwasmAddress(`ibc/${hash.toUpperCase()}`);
@@ -134,9 +125,6 @@ export module Gateway {
 
   // TODO: make consts
   export function parseWormholeMessage(tx: IndexedTx): WormholeMessageId {
-    console.log(tx.hash);
-    tx.events.forEach((ev) => console.log(ev.type, ev.attributes));
-
     const events = tx.events.filter(
       (ev) =>
         ev.type === "wasm" &&

@@ -40,8 +40,8 @@ export async function fetchIbcXfer(
   if (isTransactionIdentifier(msg)) {
     try {
       return await wcIbc.lookupTransferFromTx(msg.txid);
-    } catch (e) {
-      console.error("Failed to lookup transfer from tx: ", e);
+    } catch {
+      //console.error("Failed to lookup transfer from tx: ", e);
     }
     //
   } else if (
@@ -50,14 +50,14 @@ export async function fetchIbcXfer(
   ) {
     try {
       return await wcIbc.lookupTransferFromMsg(msg);
-    } catch (e) {
-      console.error("Failed to lookup transfer from message: ", e);
+    } catch {
+      //console.error("Failed to lookup transfer from message: ", e);
     }
   } else if (isIbcMessageId(msg)) {
     try {
       return await wcIbc.lookupTransferFromIbcMsgId(msg);
-    } catch (e) {
-      console.error("Failed to lookup transfer from sequence: ", e);
+    } catch {
+      //console.error("Failed to lookup transfer from sequence: ", e);
     }
   }
 

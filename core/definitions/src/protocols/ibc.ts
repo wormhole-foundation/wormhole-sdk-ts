@@ -223,7 +223,11 @@ export interface IbcBridge<P extends PlatformName> {
   // fetched from contract
   fetchTransferChannel(chain: ChainName): Promise<string | null>;
 
-  lookupMessageFromIbcMsgId(msg: IbcMessageId): Promise<WormholeMessageId>;
+  // Find the wormhole emitted message id for a given IBC transfer
+  // if it does not exist, this will return null
+  lookupMessageFromIbcMsgId(
+    msg: IbcMessageId,
+  ): Promise<WormholeMessageId | null>;
 
   // Get IbcTransferInfo
   // TODO: overload

@@ -6,6 +6,7 @@ export async function retry<T>(
   task: Task<T>,
   interval: number,
   timeout: number = DEFAULT_TIMEOUT,
+  title?: string,
 ): Promise<T | null> {
   const maxRetries = Math.floor(timeout / interval);
 
@@ -23,6 +24,9 @@ export async function retry<T>(
         clearInterval(intervalId);
         resolve(result);
       }
+
+      if (title)
+        console.log(`Retrying ${title}, attempt ${retries}/${maxRetries} `);
 
       retries++;
     }, interval);
