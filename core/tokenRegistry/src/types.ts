@@ -15,6 +15,11 @@ export type TokenConfig = {
   decimals: number;
   foreignAssets?: ForeignAssetsCache;
 };
+
+export type TokenEntries = {
+  [key: string]: TokenConfig;
+};
+
 export type TokensConfig = {
-  [chain in ChainName]?: { [key: string]: TokenConfig };
+  [chain in ChainName]?: TokenEntries;
 };
