@@ -11,6 +11,7 @@ import {
   constMap,
   circleAPI,
   PlatformName,
+  blockTime,
 } from "@wormhole-foundation/sdk-base";
 import { WormholeConfig } from "./types";
 import {
@@ -19,12 +20,12 @@ import {
   ChainsConfig,
 } from "@wormhole-foundation/sdk-definitions";
 
-/*
-TODO:
-    add missing chains for each config
- Note: the false exclamation marks here are because not every chain
-    is represented in the consts we're pulling from yet
-*/
+export const DEFAULT_TASK_TIMEOUT = 60 * 1000; // 1 minute in milliseconds
+
+export const CIRCLE_RETRY_INTERVAL = 2000;
+export const WHSCAN_RETRY_INTERVAL = 2000;
+
+// TODO: add missing chains for each config
 function combineConfig(n: Network): ChainsConfig {
   const cc: ChainsConfig = chains
     .map((c: ChainName): ChainConfig => {
@@ -32,7 +33,9 @@ function combineConfig(n: Network): ChainsConfig {
       return {
         key: c,
         platform,
+        network: n,
         finalityThreshold: finalityThreshold.get(n, c) || 0,
+        blockTime: blockTime(c),
         contracts: getContracts(n, c),
         nativeTokenDecimals: nativeDecimals.get(platform)!, //TODO the exclamation mark is a lie
         explorer: explorerConfigs(n, c)!, //TODO the exclamation mark is a lie

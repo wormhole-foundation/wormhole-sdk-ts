@@ -1,4 +1,8 @@
-import { ChainName, PlatformName } from "@wormhole-foundation/sdk-base";
+import {
+  ChainName,
+  PlatformName,
+  ProtocolName,
+} from "@wormhole-foundation/sdk-base";
 
 import { Platform } from "./platform";
 import {
@@ -15,12 +19,16 @@ import {
 } from "./protocols/cctp";
 import { supportsIbcBridge, IbcBridge } from "./protocols/ibc";
 import { RpcConnection } from "./rpc";
-import { SignedTx } from "./types";
+import { ChainConfig, SignedTx } from "./types";
 import { WormholeMessageId } from "./attestation";
 import { UniversalAddress } from "./universalAddress";
 import { NativeAddress } from "./address";
 
 export abstract class ChainContext<P extends PlatformName> {
+  abstract platform: Platform<P>;
+
+  readonly chain: ChainName;
+
   // Cached Protocol clients
   protected rpc?: RpcConnection<P>;
   protected tokenBridge?: TokenBridge<P>;
@@ -29,9 +37,9 @@ export abstract class ChainContext<P extends PlatformName> {
   protected autoCircleBridge?: AutomaticCircleBridge<P>;
   protected ibcBridge?: IbcBridge<P>;
 
-  abstract platform: Platform<P>;
-
-  constructor(readonly chain: ChainName) {}
+  constructor(readonly config: ChainConfig) {
+    this.chain = config.key;
+  }
 
   getRpc(): Promise<RpcConnection<P>> {
     this.rpc = this.rpc ? this.rpc : this.platform.getRpc(this.chain);

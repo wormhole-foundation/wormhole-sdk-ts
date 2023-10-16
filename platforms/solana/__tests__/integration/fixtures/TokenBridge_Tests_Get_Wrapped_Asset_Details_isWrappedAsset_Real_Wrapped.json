@@ -16,13 +16,13 @@
         },
         "status": 200,
         "response": [
-            "1f8b08000000000004035d8f4b4f84301485f7fe8cbb0642a1e595b880c18c12a3980ccec2b828a53c142850608813febb7596ded549ee395fceb9c29714fd343008c0324cd060e272696708aec0443ff3ed26e9d0bcf34936a2573e64206c585879652bd4db42c4b509c164d760a5edc2ffc2059d29041f1055e1bf3bfc3c5a744c2382332bbdd448e4c56be2d625eab6ede95e51732ab983e15303be71b6cc346f15b2a4ade41ab4b41bc4344b0810b231f64c0dc4a5e793ea751153179fb2c409cfe9cbfa4dfcf5f896c7eb31e9c63c3e15d5b90a47f61c1daa2cbfedece78741b01a02db41bbeade140ac25cbbf449c975db2344c725c5ba67babeee148821dbf49d9250d8ef7e01676a45a538010000"
+            "1f8b08000000000004035d8f4d6f83300c86effb193e032221408ab4433fa66e68da3aa95d0fd30e4e08940d0810a06855fffbb21ee79325bf7eece7025f46377d2b2101eaf9e040afcc580d905c40ea6650f3adc5b67c57bd29756373c4239147629b3595b6634a99cf7cce16570726ac46f5b79ce180907cc0aa58feabf5cf23c56eb70ad981eece27a245f69ac6a79cd4f3fc746fa9028d8a187c3aa06625c701456591395646395061ddea7e3090101230c67d07f4b951bdfdebacfb7ab33fa4d1f2b87b99bec3c5b47d139b699bd69dd8ecb3e2582c3bf9bc5a170771f36c868756cb13244144ac4b8bd29e09c2abd52833cb6382c6b9e4b18b8ca1cb68c05c1ed3c8a539a28a38954470b8defd02ebd4c93243010000"
         ],
         "rawHeaders": [
             "content-type",
             "application/json; charset=utf-8",
             "date",
-            "Tue, 05 Sep 2023 13:14:14 GMT",
+            "Mon, 16 Oct 2023 14:01:06 GMT",
             "x-rpc-node",
             "pit37",
             "x-ratelimit-tier",
@@ -34,11 +34,11 @@
             "x-ratelimit-rps-limit",
             "100",
             "x-ratelimit-rps-remaining",
-            "95",
+            "96",
             "x-ratelimit-endpoint-limit",
             "unlimited",
             "x-ratelimit-endpoint-remaining",
-            "-334",
+            "-363",
             "x-ratelimit-conn-limit",
             "40",
             "x-ratelimit-conn-remaining",

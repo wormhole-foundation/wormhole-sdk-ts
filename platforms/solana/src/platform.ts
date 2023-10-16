@@ -60,7 +60,8 @@ export module SolanaPlatform {
   }
 
   export function getChain(chain: ChainName): SolanaChain {
-    return new SolanaChain(chain);
+    if (chain in conf) return new SolanaChain(conf[chain]!);
+    throw new Error('No configuration available for chain: ' + chain);
   }
 
   export async function getTokenBridge(

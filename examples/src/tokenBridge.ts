@@ -58,6 +58,13 @@ import { TransferStuff, getStuff, waitLog } from "./helpers";
   //   2_000_000_000_000n,
   //   payload
   // );
+
+  // Or pick up where you left off given the source transaction
+  // const xfer = await TokenTransfer.from(wh, {
+  //   chain: "Avalanche",
+  //   txid: "0xaed2eb6361283dab84aeb3d211935458f971c38d1238d29b4c8bae63c76ede00",
+  // });
+  // console.log(await xfer.completeTransfer(destination.signer));
 })();
 
 async function tokenTransfer(

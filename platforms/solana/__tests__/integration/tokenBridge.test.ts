@@ -84,12 +84,12 @@ afterEach(async () => {
 
 describe('TokenBridge Tests', () => {
   const p: Platform<'Solana'> = SolanaPlatform.setConfig(network, configs);
+
   let tb: TokenBridge<'Solana'>;
 
   test('Create TokenBridge', async () => {
     const rpc = p.getRpc('Solana');
     const contracts = new SolanaContracts(configs);
-
     tb = await SolanaTokenBridge.fromProvider(rpc, contracts);
     expect(tb).toBeTruthy();
   });

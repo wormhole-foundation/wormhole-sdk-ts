@@ -76,7 +76,8 @@ export module CosmwasmPlatform {
   }
 
   export function getChain(chain: ChainName): CosmwasmChain {
-    return new CosmwasmChain(chain);
+    if (chain in conf) return new CosmwasmChain(conf[chain]!);
+    throw new Error("No configuration available for chain: " + chain);
   }
 
   // TODO: should other platforms have something like this?

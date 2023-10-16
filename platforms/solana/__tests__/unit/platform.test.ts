@@ -38,22 +38,11 @@ describe('Solana Platform Tests', () => {
     });
   });
 
-  //describe('Get Automatic Token Bridge', () => {
-  //  test('Fails until implemented', async () => {
-  //    const p = SolanaPlatform.setConfig({
-  //      [SOLANA_CHAINS[0]]: configs[SOLANA_CHAINS[0]],
-  //    });
-  //    expect(() => p.getAutomaticTokenBridge(fakeRpc)).rejects.toThrow();
-  //  });
-  //});
-
   describe('Get Chain', () => {
     test('No conf', () => {
-      // no issues just grabbing the chain
       const p = SolanaPlatform.setConfig(network, {});
       expect(p.conf).toEqual({});
-      const c = p.getChain(SOLANA_CHAINS[0]);
-      expect(c).toBeTruthy();
+      expect(() => p.getChain(SOLANA_CHAINS[0])).toThrow();
     });
 
     test('With conf', () => {
@@ -72,14 +61,12 @@ describe('Solana Platform Tests', () => {
       // expect getRpc to throw an error since we havent provided
       // the conf to figure out how to connect
       expect(() => p.getRpc(SOLANA_CHAINS[0])).toThrow();
-      expect(() => p.getChain(SOLANA_CHAINS[0]).getRpc()).toThrow();
+      expect(() => p.getChain(SOLANA_CHAINS[0])).toThrow();
     });
 
     test('With conf', () => {
       const p = SolanaPlatform.setConfig(network, {
-        [SOLANA_CHAINS[0]]: {
-          rpc: 'http://localhost:8545',
-        },
+        [SOLANA_CHAINS[0]]: configs[SOLANA_CHAINS[0]],
       });
       expect(() => p.getRpc(SOLANA_CHAINS[0])).not.toThrow();
       expect(() => p.getChain(SOLANA_CHAINS[0]).getRpc()).not.toThrow();
