@@ -37,6 +37,7 @@ import { getCircleAttestation } from "./circle-api";
 
 export class Wormhole {
   protected _platforms: Map<PlatformName, Platform<PlatformName>>;
+  protected _chains: Map<ChainName, ChainContext<PlatformName>>;
 
   readonly conf: WormholeConfig;
 
@@ -47,6 +48,7 @@ export class Wormhole {
   ) {
     this.conf = conf ?? CONFIG[network];
 
+    this._chains = new Map();
     this._platforms = new Map();
     for (const p of platforms) {
       const platformName = p.platform;
@@ -230,8 +232,12 @@ export class Wormhole {
    * @throws Errors if context is not found
    */
   getChain(chain: ChainName): ChainContext<PlatformName> {
-    const platform = this.getPlatform(chain);
-    return platform.getChain(chain);
+    if (!this._chains.has(chain)) {
+      const platform = this.getPlatform(chain);
+      this._chains.set(chain, platform.getChain(chain));
+    }
+
+    return this._chains.get(chain)!;
   }
 
   /**
