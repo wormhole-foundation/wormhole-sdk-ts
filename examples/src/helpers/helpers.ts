@@ -1,30 +1,29 @@
 import {
-  Signer,
-  ChainContext,
   ChainAddress,
-  nativeChainAddress,
-  TransferState,
-  WormholeTransfer,
+  ChainContext,
   ChainName,
   PlatformName,
   PlatformToChains,
+  Signer,
+  TransferState,
+  WormholeTransfer,
+  nativeChainAddress,
   rpcAddress,
 } from "@wormhole-foundation/connect-sdk";
 
-import bs58 from "bs58";
-import { ethers } from "ethers";
-import { Keypair } from "@solana/web3.js";
-import { DirectSecp256k1HdWallet, Registry } from "@cosmjs/proto-signing";
 import { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
-import { AminoTypes, defaultRegistryTypes } from "@cosmjs/stargate";
+import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
+import { Keypair } from "@solana/web3.js";
 import {
   chainToAddressPrefix,
   cosmwasmNetworkChainToChainId,
   cosmwasmNetworkChainToRestUrls,
 } from "@wormhole-foundation/connect-sdk-cosmwasm";
+import bs58 from "bs58";
+import { ethers } from "ethers";
 
-import { CosmosEvmSigner, CosmosSigner, EvmSigner, SolSigner } from "./signers";
 import { ChainRestAuthApi } from "@injectivelabs/sdk-ts";
+import { CosmosEvmSigner, CosmosSigner, EvmSigner, SolSigner } from "./signers";
 
 // read in from `.env`
 require("dotenv").config();

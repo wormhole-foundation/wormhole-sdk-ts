@@ -1,9 +1,4 @@
-import {
-  ChainName,
-  PlatformName,
-  stripPrefix,
-  toChainId,
-} from "@wormhole-foundation/sdk-base";
+import { PlatformName } from "@wormhole-foundation/sdk-base";
 import {
   GatewayTransferMsg,
   GatewayTransferWithPayloadMsg,

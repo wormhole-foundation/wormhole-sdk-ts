@@ -1,7 +1,7 @@
 import { ChainName } from "@wormhole-foundation/sdk-base";
-import { VAA } from "./vaa";
+import { SequenceId } from "./types";
 import { UniversalAddress } from "./universalAddress";
-import { SequenceId, TransactionId } from "./types";
+import { VAA } from "./vaa";
 
 // Wormhole Message Identifier
 // used to fetch a VAA

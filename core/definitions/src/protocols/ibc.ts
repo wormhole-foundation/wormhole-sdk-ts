@@ -2,7 +2,6 @@ import {
   ChainId,
   ChainName,
   PlatformName,
-  isChainId,
   toChainId,
 } from "@wormhole-foundation/sdk-base";
 import { ChainAddress, NativeAddress, UniversalOrNative } from "../address";

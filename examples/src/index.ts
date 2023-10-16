@@ -1,27 +1,15 @@
-import { getNetworkInfo, Network as INetwork } from "@injectivelabs/networks";
 import {
-  PrivateKey,
-  TxGrpcApi,
-  ChainRestAuthApi,
-  createTransaction,
-  Msgs,
-  MsgExecuteContractCompat,
-  DEFAULT_STD_FEE,
-  TxClient,
-} from "@injectivelabs/sdk-ts";
-import {
-  ChainAddress,
   ChainName,
   Network,
-  Wormhole,
   toNative,
+  Wormhole,
 } from "@wormhole-foundation/connect-sdk";
-import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
-import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 import {
   CosmwasmChain,
   CosmwasmPlatform,
 } from "@wormhole-foundation/connect-sdk-cosmwasm";
+import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
+import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 
 import { getStuff } from "./helpers";
 

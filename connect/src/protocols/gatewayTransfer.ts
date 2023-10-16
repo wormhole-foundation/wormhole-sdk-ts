@@ -30,15 +30,14 @@ import {
   toGatewayMsg,
   toNative,
 } from "@wormhole-foundation/sdk-definitions";
+import { signSendWait } from "../common";
+import { fetchIbcXfer, isTokenBridgeVaaRedeemed, retry } from "../tasks";
 import { Wormhole } from "../wormhole";
 import {
   AttestationId,
   TransferState,
   WormholeTransfer,
 } from "../wormholeTransfer";
-import { retry, fetchIbcXfer, isTokenBridgeVaaRedeemed } from "../tasks";
-import { signSendWait } from "../common";
-import { DEFAULT_TASK_TIMEOUT } from "../config";
 
 export class GatewayTransfer implements WormholeTransfer {
   static chain: ChainName = "Wormchain";
