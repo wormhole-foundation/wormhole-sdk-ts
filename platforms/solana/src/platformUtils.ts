@@ -11,7 +11,7 @@ import {
   chainToPlatform,
   UniversalOrNative,
 } from '@wormhole-foundation/connect-sdk';
-import { Connection, PublicKey } from '@solana/web3.js';
+import { Connection, ParsedAccountData, PublicKey } from '@solana/web3.js';
 import { solGenesisHashToNetworkChainPair } from './constants';
 import { SolanaPlatform } from './platform';
 import { SolanaAddress, SolanaZeroAddress } from './address';
@@ -53,8 +53,10 @@ export module SolanaUtils {
     let mint = await rpc.getParsedAccountInfo(
       new PublicKey(token.toUint8Array()),
     );
-    if (!mint) throw new Error('could not fetch token details');
-    const { decimals } = (mint as any).value.data.parsed.info;
+
+    if (!mint || !mint.value) throw new Error('could not fetch token details');
+
+    const { decimals } = (mint.value.data as ParsedAccountData).parsed.info;
     return decimals;
   }
 

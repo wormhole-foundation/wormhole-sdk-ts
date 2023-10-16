@@ -19,7 +19,7 @@ console.warn = function (x: any, ...rest: any) {
 };
 
 import { ChainName, chains } from "@wormhole-foundation/sdk-base";
-import { ForeignAssetsCache, TokensConfig } from "./types";
+import { ForeignAssetsCache, TokenEntries, TokensConfig } from "./types";
 import { TokenId, Wormhole, toNative } from "@wormhole-foundation/connect-sdk";
 
 // TODO: Question: How do we handle if a user tries to perform an action for a chain/platform which isn't installed??
@@ -78,10 +78,9 @@ export const getForeignAddress = async (
 export const getForeignAssetsData = async (
   wh: Wormhole,
   chain: ChainName,
-  tokenId: TokenId | undefined,
+  tokenId: TokenId,
   foreignAssetsCache: ForeignAssetsCache | undefined,
 ) => {
-  if (!tokenId) return;
   let updates: ForeignAssetsCache = {};
   for (const foreignChain of chains) {
     const isSupported = isSupportedChain(foreignChain);
@@ -124,6 +123,39 @@ export const getForeignAssetsData = async (
   return updates;
 };
 
+type MaybeUpdate = [ChainName, string, ForeignAssetsCache | undefined];
+
+export const getForeignAssetsDataForChain = async (
+  wh: Wormhole,
+  chain: ChainName,
+  chainTokensConfig: TokenEntries,
+) => {
+  console.log("Checking chain", chain);
+  const maybeUpdates: MaybeUpdate[] = [];
+  for (const [token, config] of Object.entries(chainTokensConfig)) {
+    const tokenId = createTokenId(chain, token);
+    if (!tokenId) continue;
+
+    if (wh.network === "Mainnet" && tokenId.chain === "Solana") {
+      // sleep to avoid rate limiting
+      await new Promise((r) => setTimeout(r, 1000));
+    }
+
+    try {
+      const updates = await getForeignAssetsData(
+        wh,
+        chain,
+        tokenId,
+        config.foreignAssets,
+      );
+      maybeUpdates.push([chain, token, updates]);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+  return maybeUpdates;
+};
+
 export const getSuggestedUpdates = async (
   wh: Wormhole,
   tokensConfig: TokensConfig,
@@ -131,41 +163,39 @@ export const getSuggestedUpdates = async (
   let suggestedUpdates: TokensConfig = {};
   let numUpdates = 0;
 
-  for (const [chain, chainTokensConfig] of Object.entries(tokensConfig)) {
-    for (const [token, config] of Object.entries(chainTokensConfig)) {
-      const tokenId = createTokenId(chain as ChainName, token);
-      const updates = await getForeignAssetsData(
-        wh,
-        chain as ChainName,
-        tokenId,
-        config.foreignAssets,
-      );
-      if (updates && Object.values(updates).length > 0) {
-        numUpdates += Object.values(updates).length;
-        suggestedUpdates = {
-          ...suggestedUpdates,
-          [chain]: {
-            ...(suggestedUpdates[chain as ChainName] || {}),
-            [token]: {
-              ...(suggestedUpdates[chain as ChainName]
-                ? suggestedUpdates[chain as ChainName]![token] || {}
-                : {}),
-              foreignAssets: {
-                ...(suggestedUpdates[chain as ChainName]
-                  ? suggestedUpdates[chain as ChainName]![token]
-                    ? suggestedUpdates[chain as ChainName]![token]!
-                        .foreignAssets
-                    : {}
-                  : {}),
-                ...updates,
-              },
-            },
+  // Get updates for each chain concurrently
+  const maybeUpdates: MaybeUpdate[] = (
+    await Promise.all(
+      Object.entries(tokensConfig).map(([chain, chainTokensConfig]) =>
+        getForeignAssetsDataForChain(wh, chain as ChainName, chainTokensConfig),
+      ),
+    )
+  ).flat();
+
+  for (const [chain, token, updates] of maybeUpdates) {
+    if (!updates || Object.values(updates).length == 0) continue;
+    numUpdates += Object.values(updates).length;
+
+    suggestedUpdates = {
+      ...suggestedUpdates,
+      [chain]: {
+        ...(suggestedUpdates[chain] || {}),
+        [token]: {
+          ...(suggestedUpdates[chain]
+            ? suggestedUpdates[chain]![token] || {}
+            : {}),
+          foreignAssets: {
+            ...(suggestedUpdates[chain]
+              ? suggestedUpdates[chain]![token]
+                ? suggestedUpdates[chain]![token]!.foreignAssets
+                : {}
+              : {}),
+            ...updates,
           },
-        };
-      }
-    }
+        },
+      },
+    };
   }
-  // console.log(`${numUpdates} updates available`);
-  // console.log(JSON.stringify(suggestedUpdates, null, 4));
+
   return [numUpdates, suggestedUpdates];
 };
