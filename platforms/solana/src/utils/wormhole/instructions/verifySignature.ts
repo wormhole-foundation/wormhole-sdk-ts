@@ -50,9 +50,9 @@ export async function createVerifySignaturesInstructions(
 ): Promise<TransactionInstruction[]> {
   const guardianSetIndex = vaa.guardianSet;
   const info = await getWormholeBridgeData(connection, wormholeProgramId);
-  if (guardianSetIndex != info.guardianSetIndex) {
+
+  if (guardianSetIndex != info.guardianSetIndex)
     throw new Error('guardianSetIndex != config.guardianSetIndex');
-  }
 
   const guardianSetData = await getGuardianSet(
     connection,
@@ -85,6 +85,7 @@ export async function createVerifySignaturesInstructions(
     instructions.push(
       createSecp256k1Instruction(signatures, keys, Buffer.from(vaa.hash)),
     );
+
     instructions.push(
       createVerifySignaturesInstruction(
         connection,
@@ -103,7 +104,7 @@ export async function createVerifySignaturesInstructions(
  * Make {@link TransactionInstruction} for `verify_signatures` instruction.
  *
  * This is used in {@link createVerifySignaturesInstructions} for each batch of signatures being verified.
- * `signatureSet` is a {@link web3.Keypair} generated outside of this method, used
+ * `signatureSet` is a {@link @solana/web3.Keypair} generated outside of this method, used
  * for writing signatures and the message hash to.
  *
  * https://github.com/certusone/wormhole/blob/main/solana/bridge/program/src/api/verify_signature.rs

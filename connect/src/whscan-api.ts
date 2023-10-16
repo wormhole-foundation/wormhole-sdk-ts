@@ -16,8 +16,8 @@ export async function getVaaBytes(
   const { chain, emitter, sequence } = whm;
   const chainId = toChainId(chain);
   const emitterAddress = stripPrefix(
-    emitter.toUniversalAddress().toString(),
     "0x",
+    emitter.toUniversalAddress().toString(),
   );
 
   const url = `${rpcUrl}/v1/signed_vaa/${chainId}/${emitterAddress}/${sequence}`;

@@ -52,10 +52,9 @@ export async function retry<T>(
       if (result !== null) {
         clearInterval(intervalId);
         resolve(result);
-      }
-
-      if (title)
+      } else if (title) {
         console.log(`Retrying ${title}, attempt ${retries}/${maxRetries} `);
+      }
 
       retries++;
     }, interval);

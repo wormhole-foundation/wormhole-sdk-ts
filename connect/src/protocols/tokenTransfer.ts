@@ -36,8 +36,8 @@ export class TokenTransfer implements WormholeTransfer {
   // transfer details
   transfer: TokenTransferDetails;
 
-  // Source txids
-  txids?: TransactionId[];
+  // txids, populated once transactions are submitted
+  txids: TransactionId[] = [];
 
   // The corresponding vaa representing the TokenTransfer
   // on the source chain (if its been completed and finalized)
@@ -132,9 +132,11 @@ export class TokenTransfer implements WormholeTransfer {
       !!relayerAddress &&
       address.equals(relayerAddress);
 
+    const token = vaa.payload.token;
+
     const details: TokenTransferDetails = {
-      token: { ...vaa.payload.token },
-      amount: vaa.payload.token.amount,
+      token: { chain: token.chain, address: token.address },
+      amount: token.amount,
       // TODO: the `from.address` here is a lie, but we don't
       // immediately have enough info to get the _correct_ one
       from: { chain: id.chain, address: id.emitter },
@@ -227,8 +229,7 @@ export class TokenTransfer implements WormholeTransfer {
       throw new Error("Invalid state transition in `ready`");
 
     if (!this.vaas || this.vaas.length === 0) {
-      if (!this.txids || this.txids.length === 0)
-        throw new Error("No txids available");
+      if (this.txids.length === 0) throw new Error("No txids available");
 
       this.vaas = await Promise.all(
         this.txids.map(async (txid: TransactionId) => {
@@ -269,6 +270,7 @@ export class TokenTransfer implements WormholeTransfer {
     if (!this.vaas) throw new Error("No VAA details available");
 
     const toChain = this.wh.getChain(this.transfer.to.chain);
+
     const signerAddress = toNative(signer.chain(), signer.address());
 
     // TODO: when do we get >1?
@@ -290,7 +292,7 @@ export class TokenTransfer implements WormholeTransfer {
     }
 
     const redeemTxids = await signSendWait(toChain, xfer, signer);
-    this.txids!.push(...redeemTxids);
+    this.txids.push(...redeemTxids);
     return redeemTxids.map(({ txid }) => txid);
   }
 
@@ -302,10 +304,8 @@ export class TokenTransfer implements WormholeTransfer {
     const { chain, txid } = tx;
     const originChain = wh.getChain(chain);
 
-    // TODO: hardcoded interval
-    const getMsgTask = () => originChain.parseTransaction(txid);
     const parsed = await retry<WormholeMessageId[]>(
-      getMsgTask,
+      () => originChain.parseTransaction(txid),
       originChain.config.blockTime,
       timeout,
       "WormholeCore:ParseMessageFromTransaction",

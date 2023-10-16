@@ -243,10 +243,8 @@ export class Wormhole {
    * @throws Errors if context is not found
    */
   getChain(chain: ChainName): ChainContext<PlatformName> {
-    if (!this._chains.has(chain)) {
-      const platform = this.getPlatform(chain);
-      this._chains.set(chain, platform.getChain(chain));
-    }
+    if (!this._chains.has(chain))
+      this._chains.set(chain, this.getPlatform(chain).getChain(chain));
 
     return this._chains.get(chain)!;
   }

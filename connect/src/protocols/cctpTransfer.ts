@@ -31,7 +31,6 @@ import {
   TransferState,
   WormholeTransfer,
 } from "../wormholeTransfer";
-import { retry } from "../tasks";
 import { signSendWait } from "../common";
 import { DEFAULT_TASK_TIMEOUT } from "../config";
 
@@ -45,7 +44,7 @@ export class CCTPTransfer implements WormholeTransfer {
   transfer: CCTPTransferDetails;
 
   // Populated after Initialized
-  txids?: TransactionId[];
+  txids: TransactionId[] = [];
 
   // Populated if !automatic and after initialized
   circleAttestations?: {
@@ -275,7 +274,7 @@ export class CCTPTransfer implements WormholeTransfer {
     this.txids = await signSendWait(fromChain, xfer, signer);
     this.state = TransferState.Initiated;
 
-    return this.txids!.map(({ txid }) => txid);
+    return this.txids.map(({ txid }) => txid);
   }
 
   private async _fetchWormholeAttestation(
@@ -306,7 +305,7 @@ export class CCTPTransfer implements WormholeTransfer {
     if (!this.circleAttestations || this.circleAttestations.length == 0) {
       // If we dont have any circle attestations yet, we need to start by
       // fetching the transaction details from the source chain
-      if (!this.txids)
+      if (this.txids.length === 0)
         throw new Error("No circle attestations or transactions to fetch");
 
       // The last tx should be the circle transfer, its possible there was
@@ -319,14 +318,14 @@ export class CCTPTransfer implements WormholeTransfer {
       this.circleAttestations = [{ id: circleMessage.messageId }];
     }
 
-    // TODO: add conf for interval per service ?
-    const retryInterval = 5000;
     for (const idx in this.circleAttestations) {
       const ca = this.circleAttestations[idx];
       if (ca.attestation) continue; // already got it
 
-      const task = () => this.wh.getCircleAttestation(ca.id.hash);
-      const attestation = await retry<string>(task, retryInterval, timeout);
+      const attestation = await this.wh.getCircleAttestation(
+        ca.id.hash,
+        timeout,
+      );
       if (attestation === null)
         throw new Error("No attestation available after timeout exhausted");
 

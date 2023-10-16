@@ -6,7 +6,7 @@ import {
   PlatformToChains,
 } from "@wormhole-foundation/connect-sdk";
 import { ethers } from "ethers";
-import { Keypair } from "@solana/web3.js";
+import { Keypair, Transaction } from "@solana/web3.js";
 import { AccountData } from "@cosmjs/proto-signing";
 import { TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
 import { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
@@ -89,7 +89,6 @@ export class SolSigner implements Signer {
     for (const txn of tx) {
       const { description, transaction } = txn;
       console.log(`Signing: ${description} for ${this.address()}`);
-
       transaction.partialSign(this._keypair);
       signed.push(transaction.serialize());
     }

@@ -39,6 +39,7 @@ import {
   createBridgeFeeTransferInstruction,
   createPostVaaInstruction,
   createVerifySignaturesInstructions,
+  getClaim,
 } from '../utils/wormhole';
 import { TokenBridge as TokenBridgeContract } from '../utils/types/tokenBridge';
 import {
@@ -153,7 +154,14 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
   async isTransferCompleted(
     vaa: VAA<'Transfer'> | VAA<'TransferWithPayload'>,
   ): Promise<boolean> {
-    throw new Error('not implemented');
+    return getClaim(
+      this.connection,
+      this.tokenBridge.programId,
+      vaa.emitterAddress.toUint8Array(),
+      toChainId(vaa.emitterChain),
+      vaa.sequence,
+      'finalized',
+    ).catch((e) => false);
   }
 
   async *createAttestation(
@@ -527,7 +535,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
       const verifySigTx = postVaaTxns[i];
       verifySigTx.recentBlockhash = blockhash;
       verifySigTx.feePayer = senderAddress;
-      verifySigTx.partialSign(postVaaSigners[0]);
+      verifySigTx.partialSign(postVaaSigners[i]);
       yield this.createUnsignedTx(
         verifySigTx,
         'Redeem.VerifySignature',
