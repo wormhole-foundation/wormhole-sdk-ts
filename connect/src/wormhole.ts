@@ -34,6 +34,7 @@ import { CCTPTransfer } from "./protocols/cctpTransfer";
 import { GatewayTransfer } from "./protocols/gatewayTransfer";
 import { TransactionStatus } from "./api";
 import { getCircleAttestation } from "./circle-api";
+import { retry } from "./protocols/retry";
 
 export class Wormhole {
   protected _platforms: Map<PlatformName, Platform<PlatformName>>;
@@ -368,11 +369,7 @@ export class Wormhole {
     chain: ChainName,
     emitter: UniversalAddress | NativeAddress<PlatformName>,
     sequence: bigint,
-    retries: number = 5,
-    opts?: {
-      retryDelay?: number;
-      requestTimeout?: number;
-    },
+    timeout: number = 10_000,
   ): Promise<Uint8Array | undefined> {
     const chainId = toChainId(chain);
     const universalAddress = emitter.toUniversalAddress().toString();
@@ -380,29 +377,37 @@ export class Wormhole {
       ? universalAddress.slice(2)
       : universalAddress;
 
-    let response: AxiosResponse<any, any> | undefined;
     const url = `${this.conf.api}/v1/signed_vaa/${chainId}/${emitterAddress}/${sequence}`;
-    const axiosOptions: AxiosRequestConfig = {};
-    if (opts?.requestTimeout) {
-      axiosOptions.timeout = opts.requestTimeout;
-      axiosOptions.signal = AbortSignal.timeout(opts.requestTimeout);
-    }
 
-    for (let i = retries; i > 0 && !response; i--) {
-      if (i != retries)
-        await new Promise((f) => setTimeout(f, opts?.retryDelay ?? 2000));
+    // TODO: hardcoded timeouts
+    const retryInterval = 2000;
 
+    const axiosOptions: AxiosRequestConfig = {
+      //timeout,
+      //signal: AbortSignal.timeout(reqTimeout),
+    };
+
+    const task = async () => {
       try {
-        response = await axios.get(url);
+        const response = await axios.get(url, axiosOptions);
+        if (!response || !response.data) return null;
+        const { data } = response;
+        return new Uint8Array(Buffer.from(data.vaaBytes, "base64"));
       } catch (e) {
         console.error(`Caught an error waiting for VAA: ${e}\n${url}\n`);
       }
-    }
-    if (!response || !response.data) return;
+      return null;
+    };
 
-    const { data } = response;
+    const vaa = await retry<Uint8Array>(
+      task,
+      retryInterval,
+      timeout,
+      "Wormholescan:signed_vaa",
+    );
 
-    return new Uint8Array(Buffer.from(data.vaaBytes, "base64"));
+    if (vaa) return vaa;
+    return undefined;
   }
 
   /**

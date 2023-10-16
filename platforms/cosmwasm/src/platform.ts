@@ -58,8 +58,7 @@ export module CosmwasmPlatform {
     getRpc: getGatewayRpc,
     getWrappedAsset: getGatewayWrappedAsset,
     gatewayAddress,
-    getDestinationChannel,
-    getSourceChannel,
+    getGatewaySourceChannel,
   } = Gateway;
 
   export function setConfig(

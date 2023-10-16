@@ -49,7 +49,6 @@ const millisToNano = (seconds: number) => seconds * 1_000_000;
 
 export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
   private gatewayAddress: string;
-  private gatewayChannel?: string;
 
   // map the local channel ids to the remote chain
   private channelToChain: Map<string, CosmwasmChainName> = new Map();
@@ -132,7 +131,7 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
       typeUrl: IBC_MSG_TYPE,
       value: MsgTransfer.fromPartial({
         sourcePort: IBC_TRANSFER_PORT,
-        sourceChannel: this.gatewayChannel,
+        sourceChannel: this.chainToChannel.get(Gateway.name)!,
         sender: senderAddress,
         receiver: this.gatewayAddress,
         token: ibcToken,
@@ -171,13 +170,16 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
 
   async lookupMessageFromIbcMsgId(
     msg: IbcMessageId,
-  ): Promise<WormholeMessageId> {
+  ): Promise<WormholeMessageId | null> {
     const tx = await this.lookupTxFromIbcMsgId(msg);
+    if (!tx) return null;
     return Gateway.parseWormholeMessage(tx);
   }
 
   // Private because we dont want to expose the IndexedTx type
-  private async lookupTxFromIbcMsgId(msg: IbcMessageId): Promise<IndexedTx> {
+  private async lookupTxFromIbcMsgId(
+    msg: IbcMessageId,
+  ): Promise<IndexedTx | null> {
     const prefix =
       this.chain === msg.chain ? IBC_PACKET_SEND : IBC_PACKET_RECEIVE;
 
@@ -207,10 +209,10 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
       },
     ]);
 
-    if (txResults.length === 0)
-      throw new Error(
-        `Found no transactions for message: ` + JSON.stringify(msg),
-      );
+    if (txResults.length === 0) return null;
+    //throw new Error(
+    //  `Found no transactions for message: ` + JSON.stringify(msg),
+    //);
 
     if (txResults.length > 1)
       console.error(
@@ -227,9 +229,13 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
     // Finds the transaction but there may be multiple
     // IBCTransfers as part of this
     const tx = await this.lookupTxFromIbcMsgId(msg);
+    if (!tx)
+      throw new Error(`No transfers found on ${this.chain} in tx: ${tx}`);
+
     const xfers = await this.fetchTransferInfo(tx);
     if (xfers.length === 0)
       throw new Error(`No transfers found on ${this.chain} in tx: ${tx}`);
+
     // TODO
     if (xfers.length > 1) console.error(">1 xfer in tx; why");
 
@@ -305,7 +311,7 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
       msgId.chain =
         packet.type === IBC_PACKET_SEND
           ? this.chain
-          : this.channelToChain.get(msgId.srcChannel!)!;
+          : this.channelToChain.get(msgId.dstChannel!)!;
 
       // Note: using the type guard to tell us if we have all the fields we expect
       if (isIbcMessageId(msgId)) xfer.id = msgId;
