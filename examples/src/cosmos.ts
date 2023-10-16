@@ -6,12 +6,7 @@ import {
   toNative,
 } from "@wormhole-foundation/connect-sdk";
 // Import the platform specific packages
-import {
-  CosmwasmIbcBridge,
-  CosmwasmPlatform,
-  CosmwasmUtils,
-  Gateway,
-} from "@wormhole-foundation/connect-sdk-cosmwasm";
+import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 
 import { TransferStuff, getStuff } from "./helpers";

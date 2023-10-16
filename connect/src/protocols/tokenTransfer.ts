@@ -1,26 +1,24 @@
 import {
-  NativeAddress,
-  UniversalAddress,
+  Signer,
+  TransactionId,
+  TxHash,
   UnsignedTransaction,
   VAA,
-  deserialize,
-  Signer,
-  TxHash,
   WormholeMessageId,
-  TransactionId,
-  isWormholeMessageId,
+  deserialize,
   isTransactionIdentifier,
+  isWormholeMessageId,
   toNative,
 } from "@wormhole-foundation/sdk-definitions";
-import { isTokenTransferDetails, TokenTransferDetails } from "../types";
-import {
-  WormholeTransfer,
-  TransferState,
-  AttestationId,
-} from "../wormholeTransfer";
-import { Wormhole } from "../wormhole";
 import { signSendWait } from "../common";
 import { retry } from "../tasks";
+import { TokenTransferDetails, isTokenTransferDetails } from "../types";
+import { Wormhole } from "../wormhole";
+import {
+  AttestationId,
+  TransferState,
+  WormholeTransfer,
+} from "../wormholeTransfer";
 
 /**
  * What do with multiple transactions or VAAs?

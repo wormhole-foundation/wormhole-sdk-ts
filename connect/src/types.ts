@@ -1,10 +1,10 @@
-import { ChainId, Network } from "@wormhole-foundation/sdk-base";
+import { Network } from "@wormhole-foundation/sdk-base";
 import {
   ChainAddress,
+  ChainsConfig,
+  TokenId,
   TransactionId,
   WormholeMessageId,
-  TokenId,
-  ChainsConfig,
 } from "@wormhole-foundation/sdk-definitions";
 
 export type WormholeConfig = {

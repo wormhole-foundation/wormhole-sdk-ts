@@ -1,28 +1,24 @@
-import {
-  ChainName,
-  PlatformName,
-  ProtocolName,
-} from "@wormhole-foundation/sdk-base";
+import { ChainName, PlatformName } from "@wormhole-foundation/sdk-base";
 
+import { NativeAddress } from "./address";
+import { WormholeMessageId } from "./attestation";
 import { Platform } from "./platform";
+import {
+  AutomaticCircleBridge,
+  CircleBridge,
+  supportsAutomaticCircleBridge,
+  supportsCircleBridge,
+} from "./protocols/cctp";
+import { IbcBridge, supportsIbcBridge } from "./protocols/ibc";
 import {
   AutomaticTokenBridge,
   TokenBridge,
   supportsAutomaticTokenBridge,
   supportsTokenBridge,
 } from "./protocols/tokenBridge";
-import {
-  supportsAutomaticCircleBridge,
-  supportsCircleBridge,
-  AutomaticCircleBridge,
-  CircleBridge,
-} from "./protocols/cctp";
-import { supportsIbcBridge, IbcBridge } from "./protocols/ibc";
 import { RpcConnection } from "./rpc";
 import { ChainConfig, SignedTx } from "./types";
-import { WormholeMessageId } from "./attestation";
 import { UniversalAddress } from "./universalAddress";
-import { NativeAddress } from "./address";
 
 export abstract class ChainContext<P extends PlatformName> {
   abstract platform: Platform<P>;
