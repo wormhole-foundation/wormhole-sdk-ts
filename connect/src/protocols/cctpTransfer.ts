@@ -31,7 +31,8 @@ import {
   TransferState,
   WormholeTransfer,
 } from "../wormholeTransfer";
-import { retry } from "./retry";
+import { signSendWait } from "../common";
+import { DEFAULT_TASK_TIMEOUT } from "../config";
 
 export class CCTPTransfer implements WormholeTransfer {
   private readonly wh: Wormhole;
@@ -43,7 +44,7 @@ export class CCTPTransfer implements WormholeTransfer {
   transfer: CCTPTransferDetails;
 
   // Populated after Initialized
-  txids?: TxHash[];
+  txids: TransactionId[] = [];
 
   // Populated if !automatic and after initialized
   circleAttestations?: {
@@ -75,9 +76,18 @@ export class CCTPTransfer implements WormholeTransfer {
   static async from(
     wh: Wormhole,
     from: WormholeMessageId,
+    timeout?: number,
   ): Promise<CCTPTransfer>;
-  static async from(wh: Wormhole, from: CircleMessageId): Promise<CCTPTransfer>;
-  static async from(wh: Wormhole, from: TransactionId): Promise<CCTPTransfer>;
+  static async from(
+    wh: Wormhole,
+    from: CircleMessageId,
+    timeout?: number,
+  ): Promise<CCTPTransfer>;
+  static async from(
+    wh: Wormhole,
+    from: TransactionId,
+    timeout?: number,
+  ): Promise<CCTPTransfer>;
   static async from(
     wh: Wormhole,
     from:
@@ -85,6 +95,7 @@ export class CCTPTransfer implements WormholeTransfer {
       | WormholeMessageId
       | CircleMessageId
       | TransactionId,
+    timeout: number = DEFAULT_TASK_TIMEOUT,
   ): Promise<CCTPTransfer> {
     // This is a new transfer, just return the object
     if (isCCTPTransferDetails(from)) {
@@ -94,15 +105,15 @@ export class CCTPTransfer implements WormholeTransfer {
     // This is an existing transfer, fetch the details
     let tt: CCTPTransfer | undefined;
     if (isWormholeMessageId(from)) {
-      tt = await CCTPTransfer.fromWormholeMessageId(wh, from);
+      tt = await CCTPTransfer.fromWormholeMessageId(wh, from, timeout);
     } else if (isTransactionIdentifier(from)) {
-      tt = await CCTPTransfer.fromTransaction(wh, from);
+      tt = await CCTPTransfer.fromTransaction(wh, from, timeout);
     } else if (isCircleMessageId(from)) {
-      tt = await CCTPTransfer.fromCircleMessageId(wh, from);
+      tt = await CCTPTransfer.fromCircleMessageId(wh, from, timeout);
     } else {
       throw new Error("Invalid `from` parameter for CCTPTransfer");
     }
-    await tt.fetchAttestation();
+    await tt.fetchAttestation(timeout);
 
     return tt;
   }
@@ -111,6 +122,7 @@ export class CCTPTransfer implements WormholeTransfer {
   private static async fromWormholeMessageId(
     wh: Wormhole,
     from: WormholeMessageId,
+    timeout: number,
   ): Promise<CCTPTransfer> {
     const { chain, emitter, sequence } = from;
     const vaa = await CCTPTransfer.getTransferVaa(wh, chain, emitter, sequence);
@@ -152,6 +164,7 @@ export class CCTPTransfer implements WormholeTransfer {
   private static async fromCircleMessageId(
     wh: Wormhole,
     messageId: CircleMessageId,
+    timeout: number,
   ): Promise<CCTPTransfer> {
     const [message, hash] = deserializeCircleMessage(
       hexByteStringToUint8Array(messageId.message),
@@ -187,6 +200,7 @@ export class CCTPTransfer implements WormholeTransfer {
   private static async fromTransaction(
     wh: Wormhole,
     from: TransactionId,
+    timeout: number,
   ): Promise<CCTPTransfer> {
     const { chain, txid } = from;
     const originChain = wh.getChain(chain);
@@ -201,7 +215,7 @@ export class CCTPTransfer implements WormholeTransfer {
     // If we found a VAA message, use it
     let ct: CCTPTransfer;
     if (msgIds.length > 0) {
-      ct = await CCTPTransfer.fromWormholeMessageId(wh, msgIds[0]);
+      ct = await CCTPTransfer.fromWormholeMessageId(wh, msgIds[0], timeout);
     } else {
       // Otherwise try to parse out a circle message
       const cb = await originChain.getCircleBridge();
@@ -217,7 +231,7 @@ export class CCTPTransfer implements WormholeTransfer {
     }
 
     ct.state = TransferState.Initiated;
-    ct.txids = [from.txid];
+    ct.txids = [from];
     return ct;
   }
 
@@ -257,28 +271,13 @@ export class CCTPTransfer implements WormholeTransfer {
       );
     }
 
-    let unsigned: UnsignedTransaction[] = [];
-    const txHashes: TxHash[] = [];
-    for await (const tx of xfer) {
-      unsigned.push(tx);
-      if (!tx.parallelizable) {
-        const signed = await signer.sign(unsigned);
-        txHashes.push(...(await fromChain.sendWait(signed)));
-        unsigned = [];
-      }
-    }
-    if (unsigned.length > 0) {
-      const signed = await signer.sign(unsigned);
-      txHashes.push(...(await fromChain.sendWait(signed)));
-    }
-
-    this.txids = txHashes;
+    this.txids = await signSendWait(fromChain, xfer, signer);
     this.state = TransferState.Initiated;
 
-    return txHashes;
+    return this.txids.map(({ txid }) => txid);
   }
 
-  private async fetchWormholeAttestation(
+  private async _fetchWormholeAttestation(
     timeout?: number,
   ): Promise<WormholeMessageId[]> {
     if (!this.vaas || this.vaas.length == 0)
@@ -300,13 +299,13 @@ export class CCTPTransfer implements WormholeTransfer {
     return this.vaas.map((v) => v.id);
   }
 
-  private async fetchCircleAttestation(
+  private async _fetchCircleAttestation(
     timeout?: number,
   ): Promise<CircleMessageId[]> {
     if (!this.circleAttestations || this.circleAttestations.length == 0) {
       // If we dont have any circle attestations yet, we need to start by
       // fetching the transaction details from the source chain
-      if (!this.txids)
+      if (this.txids.length === 0)
         throw new Error("No circle attestations or transactions to fetch");
 
       // The last tx should be the circle transfer, its possible there was
@@ -315,18 +314,18 @@ export class CCTPTransfer implements WormholeTransfer {
       const fromChain = this.wh.getChain(this.transfer.from.chain);
 
       const cb = await fromChain.getCircleBridge();
-      const circleMessage = await cb.parseTransactionDetails(txid);
+      const circleMessage = await cb.parseTransactionDetails(txid.txid);
       this.circleAttestations = [{ id: circleMessage.messageId }];
     }
 
-    // TODO: add conf for interval per service ?
-    const retryInterval = 5000;
     for (const idx in this.circleAttestations) {
       const ca = this.circleAttestations[idx];
       if (ca.attestation) continue; // already got it
 
-      const task = () => this.wh.getCircleAttestation(ca.id.hash);
-      const attestation = await retry<string>(task, retryInterval, timeout);
+      const attestation = await this.wh.getCircleAttestation(
+        ca.id.hash,
+        timeout,
+      );
       if (attestation === null)
         throw new Error("No attestation available after timeout exhausted");
 
@@ -352,8 +351,8 @@ export class CCTPTransfer implements WormholeTransfer {
       throw new Error("Invalid state transition in `fetchAttestation`");
 
     const ids: AttestationId[] = this.transfer.automatic
-      ? await this.fetchWormholeAttestation(timeout)
-      : await this.fetchCircleAttestation(timeout);
+      ? await this._fetchWormholeAttestation(timeout)
+      : await this._fetchCircleAttestation(timeout);
 
     this.state = TransferState.Attested;
 
@@ -372,60 +371,41 @@ export class CCTPTransfer implements WormholeTransfer {
     if (this.state < TransferState.Attested)
       throw new Error("Invalid state transition in `finish`");
 
+    // If its automatic, this does not need to be called
     if (this.transfer.automatic) {
       if (!this.vaas) throw new Error("No VAA details available");
+      if (this.vaas.length > 1)
+        throw new Error(`Expected a VAA, found ${this.vaas.length}`);
 
-      const toChain = this.wh.getChain(this.transfer.to.chain);
+      const { vaa } = this.vaas[0];
+      if (!vaa) throw new Error("No VAA found");
 
-      const txHashes: TxHash[] = [];
-      for (const cachedVaa of this.vaas) {
-        const { vaa } = cachedVaa;
-        if (!vaa) throw new Error("No Vaa found");
-        const tb = await toChain.getAutomaticCircleBridge();
-        //TODO: tb.redeem()
-        throw new Error("No method to redeem auto circle bridge tx (yet)");
-      }
-      return txHashes;
-    } else {
-      // If no circle attestations, fetch 'em
-      if (!this.circleAttestations) await this.fetchAttestation();
-
-      const toChain = this.wh.getChain(this.transfer.to.chain);
-
-      const txHashes: TxHash[] = [];
-      for (const cachedAttestation of this.circleAttestations!) {
-        const { id, attestation } = cachedAttestation;
-
-        if (!attestation)
-          throw new Error(`No Circle Attestation for ${id.hash}`);
-
-        const tb = await toChain.getCircleBridge();
-        const xfer = tb.redeem(
-          this.transfer.to.address,
-          id.message,
-          attestation,
-        );
-
-        let unsigned: UnsignedTransaction[] = [];
-        for await (const tx of xfer) {
-          unsigned.push(tx);
-          // If we get a non-parallelizable tx, sign and send the transactions
-          // we've gotten so far
-          if (!tx.parallelizable) {
-            const signed = await signer.sign(unsigned);
-            txHashes.push(...(await toChain.sendWait(signed)));
-            // reset unsigned
-            unsigned = [];
-          }
-        }
-
-        if (unsigned.length > 0) {
-          const signed = await signer.sign(unsigned);
-          txHashes.push(...(await toChain.sendWait(signed)));
-        }
-      }
-      return txHashes;
+      //const tb = await toChain.getAutomaticCircleBridge();
+      //const xfer = tb.redeem(vaa);
+      //const txids = await signSendWait(toChain, xfer, signer);
+      throw new Error("No method to redeem auto circle bridge tx (yet)");
     }
+
+    if (!this.circleAttestations)
+      throw new Error("No Circle Attestations found");
+
+    if (this.circleAttestations.length > 1)
+      throw new Error(
+        `Expected a single circle attestation, found ${this.circleAttestations.length}`,
+      );
+
+    const toChain = this.wh.getChain(this.transfer.to.chain);
+
+    const { id, attestation } = this.circleAttestations[0];
+
+    if (!attestation) throw new Error(`No Circle Attestation for ${id.hash}`);
+
+    const tb = await toChain.getCircleBridge();
+    const xfer = tb.redeem(this.transfer.to.address, id.message, attestation);
+
+    const txids = await signSendWait(toChain, xfer, signer);
+    this.txids?.push(...txids);
+    return txids.map(({ txid }) => txid);
   }
 
   static async getTransferVaa(
@@ -433,10 +413,10 @@ export class CCTPTransfer implements WormholeTransfer {
     chain: ChainName,
     emitter: UniversalAddress | NativeAddress<PlatformName>,
     sequence: bigint,
-    retries: number = 5,
+    timeout?: number,
   ): Promise<VAA<"CircleTransferRelay">> {
-    const vaaBytes = await wh.getVAABytes(chain, emitter, sequence, retries);
-    if (!vaaBytes) throw new Error(`No VAA available after ${retries} retries`);
+    const vaaBytes = await wh.getVAABytes(chain, emitter, sequence, timeout);
+    if (!vaaBytes) throw new Error(`No VAA available after timeout exhausted`);
 
     const partial = deserialize("Uint8Array", vaaBytes);
     switch (partial.payload[0]) {

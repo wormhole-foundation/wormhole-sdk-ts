@@ -59,12 +59,13 @@ export module EvmPlatform {
   }
 
   export function getRpc(chain: ChainName): ethers.Provider {
-    const rpcAddress = conf[chain]!.rpc;
-    return ethers.getDefaultProvider(rpcAddress);
+    if (chain in conf) return ethers.getDefaultProvider(conf[chain]!.rpc);
+    throw new Error('No configuration available for chain: ' + chain);
   }
 
   export function getChain(chain: ChainName): EvmChain {
-    return new EvmChain(chain);
+    if (chain in conf) return new EvmChain(conf[chain]!);
+    throw new Error('No configuration available for chain: ' + chain);
   }
 
   export function getWormholeCore(
@@ -102,7 +103,6 @@ export module EvmPlatform {
     txid: TxHash,
   ): Promise<WormholeMessageId[]> {
     const receipt = await rpc.getTransactionReceipt(txid);
-
     if (receipt === null) return [];
 
     const coreAddress = conf[chain]!.contracts.coreBridge;

@@ -16,11 +16,11 @@ export function createSecp256k1Instruction(
   keys: Buffer[],
   message: Buffer,
 ): TransactionInstruction {
-  return {
+  return new TransactionInstruction({
     keys: [],
     programId: Secp256k1Program.programId,
     data: Secp256k1SignatureOffsets.serialize(signatures, keys, message),
-  };
+  });
 }
 
 /**

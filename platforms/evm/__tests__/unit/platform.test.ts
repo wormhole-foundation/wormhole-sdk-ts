@@ -57,11 +57,9 @@ describe('EVM Platform Tests', () => {
 
   describe('Get Chain', () => {
     test('No conf', () => {
-      // no issues just grabbing the chain
       const p = EvmPlatform.setConfig(network, {});
       expect(p.conf).toEqual({});
-      const c = p.getChain(EVM_CHAINS[0]);
-      expect(c).toBeTruthy();
+      expect(() => p.getChain(EVM_CHAINS[0])).toThrow();
     });
 
     test('With conf', () => {
@@ -80,17 +78,16 @@ describe('EVM Platform Tests', () => {
       // expect getRpc to throw an error since we havent provided
       // the conf to figure out how to connect
       expect(() => p.getRpc(EVM_CHAINS[0])).toThrow();
-      expect(() => p.getChain(EVM_CHAINS[0]).getRpc()).toThrow();
     });
 
     test('With conf', () => {
       const p = EvmPlatform.setConfig(network, {
-        [EVM_CHAINS[0]]: {
-          rpc: 'http://localhost:8545',
-        },
+        [EVM_CHAINS[0]]: configs[EVM_CHAINS[0]],
       });
+      const C = p.getChain(EVM_CHAINS[0]);
+      console.log(C);
       expect(() => p.getRpc(EVM_CHAINS[0])).not.toThrow();
-      expect(() => p.getChain(EVM_CHAINS[0]).getRpc()).not.toThrow();
+      expect(() => C.getRpc()).not.toThrow();
     });
   });
 });

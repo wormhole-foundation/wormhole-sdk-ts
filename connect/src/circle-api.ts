@@ -26,20 +26,18 @@ const mapCircleAttestation = (
 export async function getCircleAttestation(
   circleApi: string,
   msgHash: string,
-): Promise<Attestation | null> {
+): Promise<string | null> {
   const url = `${circleApi}/${msgHash}`;
   try {
     const response = await axios.get<CircleAttestationResponse>(url);
     const attestation = mapCircleAttestation(response?.data);
-
-    // Found but still pending
-    if (attestation.message === "PENDING") return null;
-
-    return attestation;
+    return attestation.message === "PENDING" ? null : attestation.message;
   } catch (error) {
+    // This is a 404 error, which means the attestation is not yet available
+    // since its not available yet, we return null signaling it can be tried again
     if (!(axios.isAxiosError(error) && error?.response?.status === 404)) {
-      console.error(error);
+      return null;
     }
-    return null;
+    throw error;
   }
 }

@@ -45,7 +45,7 @@ type LayoutLiteralToPayloadType<LL extends LayoutLiteral> = LayoutToType<
   LayoutOf<LL>
 >;
 
-type PayloadLiteral = LayoutLiteral | "Uint8Array";
+export type PayloadLiteral = LayoutLiteral | "Uint8Array";
 type PayloadLiteralToPayloadType<PL extends PayloadLiteral> =
   PL extends LayoutLiteral ? LayoutLiteralToPayloadType<PL> : Uint8Array;
 
@@ -173,8 +173,7 @@ export const serializePayload = <PL extends PayloadLiteral>(
   payloadLiteral: PL,
   payload: PayloadLiteralToPayloadType<PL>,
 ) => {
-  if (payloadLiteral === "Uint8Array")
-    return payload as Uint8Array;
+  if (payloadLiteral === "Uint8Array") return payload as Uint8Array;
 
   const layout = getPayloadLayout(payloadLiteral);
   return serializeLayout(layout, payload as LayoutToType<typeof layout>);
@@ -209,9 +208,7 @@ export function deserialize<LL extends LayoutLiteral>(
 ): VAA<LL>;
 
 export function deserialize<PL extends PayloadLiteral>(
-  payloadDet:
-    | PL
-    | ((data: Uint8Array | string) => (PL & LayoutLiteral) | null),
+  payloadDet: PL | ((data: Uint8Array | string) => (PL & LayoutLiteral) | null),
   data: Uint8Array | string,
 ): VAA<PL> {
   if (typeof data === "string") data = hexByteStringToUint8Array(data);
@@ -272,9 +269,7 @@ export function deserializePayload<LL extends LayoutLiteral>(
 ): [LL, LayoutLiteralToPayloadType<LL>];
 
 export function deserializePayload<PL extends PayloadLiteral>(
-  payloadDet:
-    | PL
-    | ((data: Uint8Array | string) => (PL & LayoutLiteral) | null),
+  payloadDet: PL | ((data: Uint8Array | string) => (PL & LayoutLiteral) | null),
   data: Uint8Array | string,
   offset = 0,
 ): DeserializePayloadReturn<PL> {
