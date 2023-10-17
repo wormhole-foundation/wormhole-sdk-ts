@@ -104,7 +104,7 @@ function tryDecode(data: string): { data: Uint8Array; prefix?: string } {
 export class CosmwasmAddress implements Address {
   static readonly contractAddressByteSize = 32;
   static readonly accountAddressByteSize = 20;
-  static readonly platform: PlatformName = 'Cosmwasm';
+  public readonly platform: PlatformName = 'Cosmwasm';
 
   // the actual bytes of the address
   private readonly address: Uint8Array;
@@ -236,7 +236,8 @@ export class CosmwasmAddress implements Address {
   }
 
   static instanceof(address: any) {
-    return address.platform === CosmwasmAddress.platform;
+    const platform: PlatformName = 'Cosmwasm';
+    return address.platform === platform;
   }
 
   equals(other: UniversalAddress): boolean {

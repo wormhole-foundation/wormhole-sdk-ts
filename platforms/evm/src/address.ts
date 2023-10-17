@@ -16,7 +16,7 @@ export const EvmZeroAddress = ethers.ZeroAddress;
 
 export class EvmAddress implements Address {
   static readonly byteSize = 20;
-  static readonly platform: PlatformName = 'Evm';
+  public readonly platform: PlatformName = 'Evm';
 
   // stored as checksum address
   private readonly address: string;
@@ -79,7 +79,8 @@ export class EvmAddress implements Address {
     return ethers.isAddress(address);
   }
   static instanceof(address: any) {
-    return address.platform === EvmAddress.platform;
+    const platform: PlatformName = 'Evm'
+    return address.platform === platform;
   }
   equals(other: UniversalAddress): boolean {
     return other.equals(this.toUniversalAddress());

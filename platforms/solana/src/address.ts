@@ -23,7 +23,7 @@ export const SolanaZeroAddress = '11111111111111111111111111111111';
 
 export class SolanaAddress implements Address {
   static readonly byteSize = 32;
-  static readonly platform: PlatformName = 'Solana';
+  public readonly platform: PlatformName = 'Solana';
 
   private readonly address: PublicKey;
 
@@ -57,7 +57,8 @@ export class SolanaAddress implements Address {
   }
 
   static instanceof(address: any) {
-    return address.platform === SolanaAddress.platform;
+    const platform: PlatformName = 'Solana';
+    return address.platform === platform;
   }
 
   equals(other: UniversalAddress): boolean {
