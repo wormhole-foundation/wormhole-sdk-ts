@@ -57,7 +57,7 @@ export module SolanaUtils {
     if (!mint || !mint.value) throw new Error('could not fetch token details');
 
     const { decimals } = (mint.value.data as ParsedAccountData).parsed.info;
-    return decimals;
+    return BigInt(decimals);
   }
 
   export async function getBalance(
