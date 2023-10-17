@@ -9,7 +9,7 @@ import {
   TxClient,
   createTransaction,
 } from "@injectivelabs/sdk-ts";
-import { Keypair } from "@solana/web3.js";
+import { Keypair, Transaction } from "@solana/web3.js";
 import {
   ChainName,
   PlatformToChains,
@@ -88,9 +88,22 @@ export class SolSigner implements Signer {
     const signed = [];
     for (const txn of tx) {
       const { description, transaction } = txn;
+
       console.log(`Signing: ${description} for ${this.address()}`);
       transaction.partialSign(this._keypair);
       signed.push(transaction.serialize());
+
+      // Uncomment for debug
+      //const st = transaction as Transaction;
+      //console.log(st.signatures);
+      //console.log(st.feePayer);
+      //st.instructions.forEach((ix) => {
+      //  console.log("Program", ix.programId.toBase58());
+      //  console.log("Data: ", ix.data.toString("hex"));
+      //  ix.keys.forEach((k) => {
+      //    console.log(k.pubkey.toBase58());
+      //  });
+      //});
     }
     return signed;
   }

@@ -435,7 +435,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
 
     const approvalIx = createApproveAuthoritySignerInstruction(
       this.tokenBridge.programId,
-      token.toUint8Array(),
+      senderTokenAddress,
       senderAddress,
       amount,
     );

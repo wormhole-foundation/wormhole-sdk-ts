@@ -28,6 +28,7 @@ export function normalizeAmount(
 
   // combine whole and partial without decimals
   const amt = BigInt(whole + partial);
+
   // adjust number of decimals to account for decimals accounted for
   // when we remove the decimal place for amt
   decimals -= BigInt(partial.length);
