@@ -43,11 +43,12 @@ export module SolanaPlatform {
   } = SolanaUtils;
 
   export function setConfig(
-    network: Network,
+    _network: Network,
     _conf?: ChainsConfig,
   ): typeof SolanaPlatform {
     conf = _conf ? _conf : networkPlatformConfigs(network, platform);
     contracts = new SolanaContracts(conf);
+    network = _network;
     return SolanaPlatform;
   }
 
