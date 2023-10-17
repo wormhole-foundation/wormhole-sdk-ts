@@ -31,7 +31,7 @@ var _: Platform<'Evm'> = EvmPlatform;
 // Provides runtime concrete value
 export module EvmPlatform {
   export const platform = 'Evm';
-  export const network: Network = DEFAULT_NETWORK;
+  export let network: Network = DEFAULT_NETWORK;
   export let conf: ChainsConfig = networkPlatformConfigs(network, platform);
 
   let contracts: EvmContracts = new EvmContracts(conf);
@@ -50,11 +50,12 @@ export module EvmPlatform {
   } = EvmUtils;
 
   export function setConfig(
-    network: Network,
+    _network: Network,
     _conf?: ChainsConfig,
   ): typeof EvmPlatform {
     conf = _conf ? _conf : networkPlatformConfigs(network, platform);
     contracts = new EvmContracts(conf);
+    network = _network;
     return EvmPlatform;
   }
 

@@ -62,11 +62,12 @@ export module CosmwasmPlatform {
   } = Gateway;
 
   export function setConfig(
-    network: Network,
+    _network: Network,
     _conf?: ChainsConfig,
   ): typeof CosmwasmPlatform {
     conf = _conf ? _conf : networkPlatformConfigs(network, platform);
     contracts = new CosmwasmContracts(conf);
+    network = _network;
     return CosmwasmPlatform;
   }
 
