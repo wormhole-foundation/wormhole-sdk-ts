@@ -7,7 +7,8 @@ import { NativeAddress } from "./address";
 import { WormholeMessageId } from "./attestation";
 import { ChainContext } from "./chain";
 import { RpcConnection } from "./rpc";
-import { ChainsConfig, SignedTx, TokenId, TxHash } from "./types";
+import { AnyAddress, Balances, ChainsConfig, TokenId, TxHash } from "./types";
+import { SignedTx } from "./types";
 import { UniversalAddress } from "./universalAddress";
 
 export interface PlatformUtils<P extends PlatformName> {
@@ -27,8 +28,14 @@ export interface PlatformUtils<P extends PlatformName> {
     chain: ChainName,
     rpc: RpcConnection<P>,
     walletAddr: string,
-    token: NativeAddress<P> | UniversalAddress | "native",
+    token: AnyAddress,
   ): Promise<bigint | null>;
+  getBalances(
+    chain: ChainName,
+    rpc: RpcConnection<P>,
+    walletAddress: string,
+    tokens: AnyAddress[],
+  ): Promise<Balances>;
   getCurrentBlock(rpc: RpcConnection<P>): Promise<number>;
 
   // Platform interaction utils

@@ -37,6 +37,7 @@ export module SolanaPlatform {
     isSupportedChain,
     getDecimals,
     getBalance,
+    getBalances,
     sendWait,
     getCurrentBlock,
     chainFromRpc,

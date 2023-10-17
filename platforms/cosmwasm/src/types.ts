@@ -7,13 +7,14 @@ import {
 import { logs as cosmosLogs } from "@cosmjs/stargate";
 
 export type CosmwasmChainName = PlatformToChains<"Cosmwasm">;
-export type UniversalOrCosmwasm = UniversalOrNative<"Cosmwasm"> | string;
+export type UniversalOrCosmwasm = UniversalOrNative<"Cosmwasm">;
+export type AnyCosmwasmAddress = UniversalOrCosmwasm | string;
 
 export interface WrappedRegistryResponse {
   address: string;
 }
 
-export const toCosmwasmAddrString = (addr: UniversalOrCosmwasm) =>
+export const toCosmwasmAddrString = (addr: AnyCosmwasmAddress) =>
   typeof addr === "string"
     ? addr
     : (addr instanceof UniversalAddress

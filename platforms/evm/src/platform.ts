@@ -44,6 +44,7 @@ export module EvmPlatform {
     isSupportedChain,
     getDecimals,
     getBalance,
+    getBalances,
     sendWait,
     getCurrentBlock,
     chainFromRpc,

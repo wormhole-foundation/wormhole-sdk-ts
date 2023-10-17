@@ -2,8 +2,6 @@ import { expect, test } from "@jest/globals";
 import {
   chains,
   chainConfigs,
-  DEFAULT_NETWORK,
-  chainToPlatform,
 } from "@wormhole-foundation/connect-sdk";
 import { CosmwasmPlatform } from "../../src/platform";
 

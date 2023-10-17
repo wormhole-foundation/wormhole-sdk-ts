@@ -14,9 +14,10 @@ export const unusedNonce = 0;
 export const unusedArbiterFee = 0n;
 
 export type EvmChainName = PlatformToChains<'Evm'>;
-export type UniversalOrEvm = UniversalOrNative<'Evm'> | string;
+export type UniversalOrEvm = UniversalOrNative<'Evm'>;
+export type AnyEvmAddress = UniversalOrEvm | string;
 
-export const toEvmAddrString = (addr: UniversalOrEvm) =>
+export const toEvmAddrString = (addr: AnyEvmAddress) =>
   typeof addr === 'string'
     ? addr
     : (addr instanceof UniversalAddress ? addr.toNative('Evm') : addr).unwrap();
