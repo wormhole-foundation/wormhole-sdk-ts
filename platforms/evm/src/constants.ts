@@ -55,6 +55,12 @@ const networkChainEvmCIdEntries = [
       ['Sepolia', 11155111n], //actually just another ethereum testnet...
     ],
   ],
+  [
+    "Devnet",
+    [
+      ["Bsc", 1397n]
+    ]
+  ]
 ] as const satisfies RoArray<
   readonly [Network, RoArray<readonly [PlatformToChains<'Evm'>, bigint]>]
 >;
