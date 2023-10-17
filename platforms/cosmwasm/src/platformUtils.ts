@@ -19,7 +19,7 @@ import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import { CosmwasmPlatform } from "./platform";
 import { CosmwasmAddress } from "./address";
 import { BankExtension, IbcExtension, QueryClient, setupIbcExtension } from "@cosmjs/stargate";
-import { AnyCosmwasmAddress, toCosmwasmAddrString } from "./types";
+import { AnyCosmwasmAddress } from "./types";
 
 // forces CosmwasmUtils to implement PlatformUtils
 var _: PlatformUtils<"Cosmwasm"> = CosmwasmUtils;
@@ -59,7 +59,8 @@ export module CosmwasmUtils {
   ): Promise<bigint> {
     if (token === "native") return nativeDecimals(CosmwasmPlatform.platform);
 
-    const { decimals } = await rpc.queryContractSmart(toCosmwasmAddrString(token), {
+    const addrStr = new CosmwasmAddress(token).toString();
+    const { decimals } = await rpc.queryContractSmart(addrStr, {
       token_info: {},
     });
     return decimals;
@@ -79,7 +80,8 @@ export module CosmwasmUtils {
       return BigInt(amount);
     }
 
-    const { amount } = await rpc.getBalance(walletAddress, toCosmwasmAddrString(token));
+    const addrStr = new CosmwasmAddress(token).toString();
+    const { amount } = await rpc.getBalance(walletAddress, addrStr);
     return BigInt(amount);
   }
 
@@ -90,8 +92,8 @@ export module CosmwasmUtils {
     tokens: (AnyCosmwasmAddress | "native")[],
   ): Promise<Balances> {
     const allBalances = await rpc.bank.allBalances(walletAddress);
-    const balancesArr = tokens.map((t) => {
-      const address = t === 'native' ? getNativeDenom(chain) : toCosmwasmAddrString(t);
+    const balancesArr = tokens.map((token) => {
+      const address = token === 'native' ? getNativeDenom(chain) : new CosmwasmAddress(token).toString();
       const balance = allBalances.find(
         (balance) => balance.denom === address,
       );

@@ -16,7 +16,7 @@ import { evmChainIdToNetworkChainPair } from './constants';
 import { EvmAddress, EvmZeroAddress } from './address';
 import { EvmContracts } from './contracts';
 import { EvmPlatform } from './platform';
-import { AnyEvmAddress, toEvmAddrString } from './types';
+import { AnyEvmAddress } from './types';
 
 // forces EvmUtils to implement PlatformUtils
 var _: PlatformUtils<'Evm'> = EvmUtils;
@@ -55,7 +55,7 @@ export module EvmUtils {
 
     const tokenContract = EvmContracts.getTokenImplementation(
       rpc,
-      toEvmAddrString(token),
+      new EvmAddress(token).toString(),
     );
     return tokenContract.decimals();
   }
@@ -70,7 +70,7 @@ export module EvmUtils {
 
     const tokenImpl = EvmContracts.getTokenImplementation(
       rpc,
-      toEvmAddrString(token),
+      new EvmAddress(token).toString(),
     );
     return tokenImpl.balanceOf(walletAddr);
   }
@@ -81,9 +81,9 @@ export module EvmUtils {
     walletAddr: string,
     tokens: (AnyEvmAddress | 'native')[],
   ): Promise<Balances> {
-    const balancesArr = await Promise.all(tokens.map(async (a) => {
-      const balance = await getBalance(chain, rpc, walletAddr, a);
-      const address = toEvmAddrString(a);
+    const balancesArr = await Promise.all(tokens.map(async (token) => {
+      const balance = await getBalance(chain, rpc, walletAddr, token);
+      const address = token === 'native' ? 'native' : new EvmAddress(token).toString();
       return { [address]: balance }
     }))
     return balancesArr.reduce(

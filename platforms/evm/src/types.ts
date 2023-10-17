@@ -15,12 +15,7 @@ export const unusedArbiterFee = 0n;
 
 export type EvmChainName = PlatformToChains<'Evm'>;
 export type UniversalOrEvm = UniversalOrNative<'Evm'>;
-export type AnyEvmAddress = UniversalOrEvm | string;
-
-export const toEvmAddrString = (addr: AnyEvmAddress) =>
-  typeof addr === 'string'
-    ? addr
-    : (addr instanceof UniversalAddress ? addr.toNative('Evm') : addr).unwrap();
+export type AnyEvmAddress = UniversalOrEvm | string | Uint8Array;
 
 export const addFrom = (txReq: TransactionRequest, from: string) => ({
   ...txReq,

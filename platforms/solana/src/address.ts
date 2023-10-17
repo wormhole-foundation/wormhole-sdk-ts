@@ -5,7 +5,8 @@ import {
   UniversalAddress,
 } from '@wormhole-foundation/connect-sdk';
 
-import { PublicKey, PublicKeyInitData } from '@solana/web3.js';
+import { PublicKey } from '@solana/web3.js';
+import { AnySolanaAddress } from './types';
 
 declare global {
   namespace Wormhole {
@@ -24,7 +25,10 @@ export class SolanaAddress implements Address {
 
   private readonly address: PublicKey;
 
-  constructor(address: PublicKeyInitData | UniversalAddress) {
+  constructor(address: AnySolanaAddress) {
+    if (address instanceof SolanaAddress) {
+      Object.assign(this, address);
+    }
     if (address instanceof UniversalAddress)
       this.address = new PublicKey(address.toUint8Array());
     if (typeof address === 'string' && isHexByteString(address))

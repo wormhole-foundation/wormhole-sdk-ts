@@ -1,6 +1,7 @@
 import { Address, UniversalAddress } from '@wormhole-foundation/connect-sdk';
 
 import { ethers } from 'ethers';
+import { AnyEvmAddress } from './types';
 
 declare global {
   namespace Wormhole {
@@ -19,7 +20,10 @@ export class EvmAddress implements Address {
   // stored as checksum address
   private readonly address: string;
 
-  constructor(address: string | Uint8Array | UniversalAddress) {
+  constructor(address: AnyEvmAddress) {
+    if (address instanceof EvmAddress) {
+      Object.assign(this, address);
+    }
     if (typeof address === 'string') {
       if (!EvmAddress.isValidAddress(address))
         throw new Error(

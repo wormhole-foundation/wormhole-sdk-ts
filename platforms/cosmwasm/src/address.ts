@@ -6,6 +6,7 @@ import {
 } from "@wormhole-foundation/connect-sdk";
 import { CosmwasmPlatform } from "./platform";
 import { nativeDenomToChain } from "./constants";
+import { AnyCosmwasmAddress } from "./types";
 
 declare global {
   namespace Wormhole {
@@ -113,7 +114,10 @@ export class CosmwasmAddress implements Address {
   // The denomType is "native", "ibc", or "factory"
   private readonly denomType?: string;
 
-  constructor(address: string | Uint8Array | UniversalAddress) {
+  constructor(address: AnyCosmwasmAddress) {
+    if (address instanceof CosmwasmAddress) {
+      Object.assign(this, address);
+    }
     if (typeof address === "string") {
       // A native denom like "uatom"
       if (nativeDenomToChain.has(CosmwasmPlatform.network, address)) {

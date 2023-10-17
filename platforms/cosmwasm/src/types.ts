@@ -8,19 +8,11 @@ import { logs as cosmosLogs } from "@cosmjs/stargate";
 
 export type CosmwasmChainName = PlatformToChains<"Cosmwasm">;
 export type UniversalOrCosmwasm = UniversalOrNative<"Cosmwasm">;
-export type AnyCosmwasmAddress = UniversalOrCosmwasm | string;
+export type AnyCosmwasmAddress = UniversalOrCosmwasm | string | Uint8Array;
 
 export interface WrappedRegistryResponse {
   address: string;
 }
-
-export const toCosmwasmAddrString = (addr: AnyCosmwasmAddress) =>
-  typeof addr === "string"
-    ? addr
-    : (addr instanceof UniversalAddress
-        ? addr.toNative("Cosmwasm")
-        : addr
-      ).unwrap();
 
 // TODO: do >1 key at a time
 export const searchCosmosLogs = (

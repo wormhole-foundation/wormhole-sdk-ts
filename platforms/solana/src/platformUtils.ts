@@ -16,7 +16,7 @@ import { Connection, ParsedAccountData, PublicKey } from '@solana/web3.js';
 import { solGenesisHashToNetworkChainPair } from './constants';
 import { SolanaPlatform } from './platform';
 import { SolanaAddress, SolanaZeroAddress } from './address';
-import { AnySolanaAddress, toSolanaAddrPublicKey, toSolanaAddrString } from './types';
+import { AnySolanaAddress } from './types';
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
 // forces SolanaUtils to implement PlatformUtils
@@ -79,7 +79,7 @@ export module SolanaUtils {
 
     const splToken = await rpc.getTokenAccountsByOwner(
       new PublicKey(walletAddress),
-      { mint: toSolanaAddrPublicKey(token) },
+      { mint: new SolanaAddress(token).unwrap() },
     );
     if (!splToken.value[0]) return null;
 
@@ -106,13 +106,13 @@ export module SolanaUtils {
         },
       );
 
-    const balancesArr = tokens.map((address) => {
-      if (address === 'native') {
+    const balancesArr = tokens.map((token) => {
+      if (token === 'native') {
         return { ['native']: native };
       }
-      const addrString = toSolanaAddrString(address);
+      const addrString = new SolanaAddress(token).toString();
       const amount = splParsedTokenAccounts.value.find(
-        (v) => v?.account.data.parsed?.info?.mint === address,
+        (v) => v?.account.data.parsed?.info?.mint === token,
       )?.account.data.parsed?.info?.tokenAmount?.amount;
       if (!amount) return { [addrString]: null };
       return { [addrString]: BigInt(amount) };
