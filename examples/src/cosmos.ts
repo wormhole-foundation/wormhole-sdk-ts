@@ -50,17 +50,19 @@ import { TransferStuff, getStuff } from "./helpers";
   const amount = await wh.normalizeAmount(external.chain, token, 0.01);
 
   // Transfer native token from source chain, through gateway, to a cosmos chain
+  fakeIt = true;
   let route1 = fakeIt
     ? await GatewayTransfer.from(
         wh,
         {
           chain: external.chain,
-          txid: "0x2f16069165ee2c2a683c47fb6eb867ae81873cff41d52bf2a2a8e25d52168b99",
+          txid: "0x444cf70f53df4f299332284f5d2f8eace285ef1f277da1353c688fefcae3c90b",
         },
         600_000,
       )
     : await transferIntoCosmos(wh, token, amount, leg1, leg2);
   //console.log("Route 1 (External => Cosmos)", route1);
+  fakeIt = false;
 
   const { denom } = route1.ibcTransfers![0].data;
   // Lookup the Gateway representation of the wrappd token

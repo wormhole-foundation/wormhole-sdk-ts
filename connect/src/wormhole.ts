@@ -142,7 +142,7 @@ export class Wormhole {
     automatic: boolean,
     payload?: Uint8Array,
     nativeGas?: bigint,
-  ): Promise<TokenTransfer | GatewayTransfer> {
+  ): Promise<TokenTransfer> {
     if (payload && automatic)
       throw new Error("Payload with automatic delivery is not supported");
 

@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-token-registry",
-  "version": "0.1.4",
+  "version": "0.1.6-beta",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"

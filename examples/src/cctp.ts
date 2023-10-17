@@ -16,8 +16,8 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
   const wh = new Wormhole("Testnet", [EvmPlatform]);
 
   // Grab chain Contexts
-  const sendChain = wh.getChain("Ethereum");
-  const rcvChain = wh.getChain("Avalanche");
+  const sendChain = wh.getChain("Avalanche");
+  const rcvChain = wh.getChain("Ethereum");
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
@@ -25,7 +25,7 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
   const destination = await getStuff(rcvChain);
 
   // Manual Circle USDC CCTP Transfer
-  await cctpTransfer(wh, 8_000_000n, source, destination, false);
+  await cctpTransfer(wh, 1_000_000n, source, destination, false);
 
   // Automatic Circle USDC CCTP Transfer
   // await cctpTransfer(wh, 19_000_000n, source, destination, true);
