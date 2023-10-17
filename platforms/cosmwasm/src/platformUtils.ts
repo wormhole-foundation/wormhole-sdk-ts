@@ -18,7 +18,12 @@ import {
 import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import { CosmwasmPlatform } from "./platform";
 import { CosmwasmAddress } from "./address";
-import { BankExtension, IbcExtension, QueryClient, setupIbcExtension } from "@cosmjs/stargate";
+import {
+  BankExtension,
+  IbcExtension,
+  QueryClient,
+  setupIbcExtension,
+} from "@cosmjs/stargate";
 import { AnyCosmwasmAddress } from "./types";
 
 // forces CosmwasmUtils to implement PlatformUtils
@@ -93,18 +98,16 @@ export module CosmwasmUtils {
   ): Promise<Balances> {
     const allBalances = await rpc.bank.allBalances(walletAddress);
     const balancesArr = tokens.map((token) => {
-      const address = token === 'native' ? getNativeDenom(chain) : new CosmwasmAddress(token).toString();
-      const balance = allBalances.find(
-        (balance) => balance.denom === address,
-      );
+      const address =
+        token === "native"
+          ? getNativeDenom(chain)
+          : new CosmwasmAddress(token).toString();
+      const balance = allBalances.find((balance) => balance.denom === address);
       const balanceBigInt = balance ? BigInt(balance.amount) : null;
-      return { [address]: balanceBigInt }
+      return { [address]: balanceBigInt };
     });
 
-    return balancesArr.reduce(
-      (obj, item) => Object.assign(obj, item),
-      {}
-    );
+    return balancesArr.reduce((obj, item) => Object.assign(obj, item), {});
   }
 
   function getNativeDenom(chain: ChainName): string {

@@ -16,7 +16,14 @@ export type SequenceId = bigint;
 export type SignedTx = any;
 
 // TODO: Can we make this more dynamic?
-export type AnyAddress = NativeAddress<PlatformName> | UniversalAddress | string | number | Uint8Array | number[] | "native";
+export type AnyAddress =
+  | NativeAddress<PlatformName>
+  | UniversalAddress
+  | string
+  | number
+  | Uint8Array
+  | number[]
+  | "native";
 
 export type TokenId = ChainAddress;
 export function isTokenId(thing: TokenId | any): thing is TokenId {
@@ -28,7 +35,7 @@ export function isTokenId(thing: TokenId | any): thing is TokenId {
 
 export type Balances = {
   [key: string]: BigInt | null;
-}
+};
 
 export interface Signer {
   chain(): ChainName;

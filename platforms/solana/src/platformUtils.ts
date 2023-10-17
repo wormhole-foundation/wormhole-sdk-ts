@@ -98,13 +98,12 @@ export module SolanaUtils {
       native = BigInt(await rpc.getBalance(new PublicKey(walletAddress)));
     }
 
-    const splParsedTokenAccounts =
-      await rpc.getParsedTokenAccountsByOwner(
-        new PublicKey(walletAddress),
-        {
-          programId: new PublicKey(TOKEN_PROGRAM_ID),
-        },
-      );
+    const splParsedTokenAccounts = await rpc.getParsedTokenAccountsByOwner(
+      new PublicKey(walletAddress),
+      {
+        programId: new PublicKey(TOKEN_PROGRAM_ID),
+      },
+    );
 
     const balancesArr = tokens.map((token) => {
       if (token === 'native') {
@@ -118,10 +117,7 @@ export module SolanaUtils {
       return { [addrString]: BigInt(amount) };
     });
 
-    return balancesArr.reduce(
-      (obj, item) => Object.assign(obj, item),
-      {}
-    );
+    return balancesArr.reduce((obj, item) => Object.assign(obj, item), {});
   }
 
   export async function sendWait(

@@ -92,7 +92,7 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
     walletAddress: string,
     tokens: AnyAddress[],
   ): Promise<Balances> {
-    throw new Error("method not implemented")
+    throw new Error("method not implemented");
   }
 
   getChain(chain: ChainName): ChainContext<P> {

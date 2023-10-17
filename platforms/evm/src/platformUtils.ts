@@ -81,15 +81,15 @@ export module EvmUtils {
     walletAddr: string,
     tokens: (AnyEvmAddress | 'native')[],
   ): Promise<Balances> {
-    const balancesArr = await Promise.all(tokens.map(async (token) => {
-      const balance = await getBalance(chain, rpc, walletAddr, token);
-      const address = token === 'native' ? 'native' : new EvmAddress(token).toString();
-      return { [address]: balance }
-    }))
-    return balancesArr.reduce(
-      (obj, item) => Object.assign(obj, item),
-      {}
+    const balancesArr = await Promise.all(
+      tokens.map(async (token) => {
+        const balance = await getBalance(chain, rpc, walletAddr, token);
+        const address =
+          token === 'native' ? 'native' : new EvmAddress(token).toString();
+        return { [address]: balance };
+      }),
     );
+    return balancesArr.reduce((obj, item) => Object.assign(obj, item), {});
   }
 
   export async function sendWait(
