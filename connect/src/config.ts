@@ -81,7 +81,7 @@ export const CONFIG = {
     chains: chainConfigs("Testnet"),
   },
   Devnet: {
-    api: "https://localhost:7071", // Tilt Guardian REST api
+    api: "http://localhost:7071", // Tilt Guardian REST api
     circleAPI: "",
     chains: chainConfigs("Devnet"),
   },
