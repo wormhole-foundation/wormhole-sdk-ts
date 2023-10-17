@@ -69,14 +69,6 @@ export function networkPlatformConfigs(
   );
 }
 
-const sharedConfig: WormholeConfig = {
-  network: "Testnet",
-  //api: 'https://api.testnet.wormholescan.io',
-  api: "https://api.testnet.wormscan.io",
-  circleAPI: circleAPI("Testnet"),
-  chains: chainConfigs("Testnet"),
-} as const;
-
 export const CONFIG = {
   Mainnet: {
     network: "Mainnet",
@@ -84,8 +76,18 @@ export const CONFIG = {
     circleAPI: circleAPI("Mainnet"),
     chains: chainConfigs("Mainnet"),
   },
-  Testnet: sharedConfig,
-  Devnet: sharedConfig,
+  Testnet: {
+    network: "Testnet",
+    api: "https://api.testnet.wormholescan.io",
+    circleAPI: circleAPI("Testnet"),
+    chains: chainConfigs("Testnet"),
+  },
+  Devnet: {
+    network: "Devnet",
+    api: "https://localhost:7071", // Tilt Guardian REST api
+    circleAPI: "",
+    chains: chainConfigs("Devnet"),
+  },
 } as const satisfies Record<Network, WormholeConfig>;
 
 export const DEFAULT_NETWORK: Network =
