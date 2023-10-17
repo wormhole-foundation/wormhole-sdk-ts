@@ -71,19 +71,16 @@ export function networkPlatformConfigs(
 
 export const CONFIG = {
   Mainnet: {
-    network: "Mainnet",
     api: "https://api.wormholescan.io",
     circleAPI: circleAPI("Mainnet"),
     chains: chainConfigs("Mainnet"),
   },
   Testnet: {
-    network: "Testnet",
     api: "https://api.testnet.wormholescan.io",
     circleAPI: circleAPI("Testnet"),
     chains: chainConfigs("Testnet"),
   },
   Devnet: {
-    network: "Devnet",
     api: "https://localhost:7071", // Tilt Guardian REST api
     circleAPI: "",
     chains: chainConfigs("Devnet"),

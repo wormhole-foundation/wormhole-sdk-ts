@@ -97,13 +97,13 @@ export const getForeignAssetsData = async (
         if (configForeignAddress) {
           if (configForeignAddress.address !== foreignAddress) {
             throw new Error(
-              `❌ Invalid foreign address detected! Env: ${wh.conf.network}, Existing Address: ${configForeignAddress.address}, Chain: ${chain}, Expected: ${foreignAddress}, Received: ${configForeignAddress.address}`,
+              `❌ Invalid foreign address detected! Env: ${wh.network}, Existing Address: ${configForeignAddress.address}, Chain: ${chain}, Expected: ${foreignAddress}, Received: ${configForeignAddress.address}`,
             );
           } else if (
             configForeignAddress.decimals !== Number(foreignDecimals)
           ) {
             throw new Error(
-              `❌ Invalid foreign decimals detected! Env: ${wh.conf.network}, Existing Address: ${configForeignAddress.address}, Chain: ${chain}, Expected: ${foreignDecimals}, Received: ${configForeignAddress.decimals}`,
+              `❌ Invalid foreign decimals detected! Env: ${wh.network}, Existing Address: ${configForeignAddress.address}, Chain: ${chain}, Expected: ${foreignDecimals}, Received: ${configForeignAddress.decimals}`,
             );
           } else {
             // console.log('✅ Config matches');
