@@ -2,10 +2,12 @@ import { Network } from "./networks";
 import { ChainName } from "./chains";
 import { constMap, RoArray } from "../utils";
 
+// Number of blocks before a transaction is considered final
 const shareFinalities = [
   ["Ethereum", 64],
+  ["Sepolia", 64],
   ["Solana", 32],
-  ["Polygon", 64],
+  ["Polygon", 64], // Note this is faster on !Mainnet currently but only because of guardian settings
   ["Bsc", 15],
   ["Avalanche", 1],
   ["Fantom", 1],
@@ -14,6 +16,7 @@ const shareFinalities = [
   ["Sui", 0],
   ["Aptos", 0],
   ["Sei", 0],
+  ["Algorand", 0],
 ] as const;
 
 const finalityThresholds = [
@@ -39,6 +42,7 @@ const finalityThresholds = [
 
 export const finalityThreshold = constMap(finalityThresholds);
 
+// number of milliseconds between blocks
 const blockTimeMilliseconds = [
   ["Acala", 12000],
   ["Algorand", 3300],
@@ -79,3 +83,18 @@ const blockTimeMilliseconds = [
 ] as const satisfies RoArray<readonly [ChainName, number]>;
 
 export const blockTime = constMap(blockTimeMilliseconds);
+
+// Some chains are required to post proof of their blocks to other chains
+// and the transaction containing that proof must be finalized
+// before a transaction contained in one of those blocks is considered final
+// const rollupContracts = [
+//   // mainnet/polygon/ethereum 0x86E4Dc95c7FBdBf52e33D563BbDB00823894C287
+//   // mainnet/optimism/ethereum 0xdfe97868233d1aa22e815a266982f2cf17685a27
+//   // mainnet/arbitrum/ethereum 0x1c479675ad559dc151f6ec7ed3fbf8cee79582b6
+//   //
+//   // testnet/polygon/ethereum 0x2890ba17efe978480615e330ecb65333b880928e
+//   // testnet/arbitrum/ethereum 0x45af9ed1d03703e480ce7d328fb684bb67da5049 // TODO, is there another one??
+//   // testnet/optimism/ethereum 0xe6dfba0953616bacab0c9a8ecb3a9bba77fc15c0
+//   //
+// ];
+//
