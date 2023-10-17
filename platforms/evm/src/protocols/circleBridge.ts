@@ -105,7 +105,9 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
     const recipientAddress = recipient.address
       .toUniversalAddress()
       .toUint8Array();
-    const tokenAddr = new EvmAddress(token.address as UniversalOrEvm).toString();
+    const tokenAddr = new EvmAddress(
+      token.address as UniversalOrEvm,
+    ).toString();
 
     const tokenContract = EvmContracts.getTokenImplementation(
       this.provider,

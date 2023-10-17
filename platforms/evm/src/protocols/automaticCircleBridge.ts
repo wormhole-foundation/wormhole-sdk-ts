@@ -8,12 +8,7 @@ import {
 
 import { evmNetworkChainToEvmChainId } from '../constants';
 
-import {
-  AnyEvmAddress,
-  EvmChainName,
-  addChainId,
-  addFrom,
-} from '../types';
+import { AnyEvmAddress, EvmChainName, addChainId, addFrom } from '../types';
 import { EvmUnsignedTransaction } from '../unsignedTransaction';
 import { CircleRelayer } from '../ethers-contracts';
 import { Provider, TransactionRequest } from 'ethers';
@@ -65,7 +60,9 @@ export class EvmAutomaticCircleBridge implements AutomaticCircleBridge<'Evm'> {
       .toUint8Array();
     const nativeTokenGas = nativeGas ? nativeGas : 0n;
 
-    const tokenAddr = new EvmAddress(token.address.toUniversalAddress()).toString();
+    const tokenAddr = new EvmAddress(
+      token.address.toUniversalAddress(),
+    ).toString();
 
     const tokenContract = EvmContracts.getTokenImplementation(
       this.provider,

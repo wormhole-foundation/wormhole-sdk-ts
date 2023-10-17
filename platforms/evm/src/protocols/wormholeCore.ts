@@ -8,12 +8,7 @@ import {
 } from '../constants';
 import { EvmUnsignedTransaction } from '../unsignedTransaction';
 import { EvmContracts } from '../contracts';
-import {
-  AnyEvmAddress,
-  EvmChainName,
-  addChainId,
-  addFrom,
-} from '../types';
+import { AnyEvmAddress, EvmChainName, addChainId, addFrom } from '../types';
 import { EvmPlatform } from '../platform';
 import { EvmAddress } from '../address';
 

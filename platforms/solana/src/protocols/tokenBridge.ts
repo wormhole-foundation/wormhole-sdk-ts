@@ -101,7 +101,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     if (!(await this.isWrappedAsset(token)))
       throw ErrNotWrapped(token.toString());
 
-    const tokenAddr = new SolanaAddress(token).toUint8Array()
+    const tokenAddr = new SolanaAddress(token).toUint8Array();
     const mint = new PublicKey(tokenAddr);
 
     try {
@@ -170,7 +170,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     token: AnySolanaAddress,
     payer?: AnySolanaAddress,
   ): AsyncGenerator<SolanaUnsignedTransaction> {
-    if (!payer) throw new Error("Payer required to create attestation");
+    if (!payer) throw new Error('Payer required to create attestation');
     const senderAddress = new SolanaAddress(payer).unwrap();
     // TODO:
     const nonce = 0; // createNonce().readUInt32LE(0);
@@ -204,7 +204,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     vaa: VAA<'AttestMeta'>,
     payer?: AnySolanaAddress,
   ): AsyncGenerator<SolanaUnsignedTransaction> {
-    if (!payer) throw new Error("Payer required to create attestation");
+    if (!payer) throw new Error('Payer required to create attestation');
     const senderAddress = new SolanaAddress(payer).unwrap();
 
     const transaction = new Transaction().add(

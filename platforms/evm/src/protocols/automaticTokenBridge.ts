@@ -12,12 +12,7 @@ import {
 import { Provider, TransactionRequest } from 'ethers';
 
 import { evmNetworkChainToEvmChainId } from '../constants';
-import {
-  AnyEvmAddress,
-  EvmChainName,
-  addChainId,
-  addFrom,
-} from '../types';
+import { AnyEvmAddress, EvmChainName, addChainId, addFrom } from '../types';
 import { EvmUnsignedTransaction } from '../unsignedTransaction';
 import { TokenBridgeRelayer } from '../ethers-contracts';
 import { EvmContracts } from '../contracts';
@@ -131,7 +126,9 @@ export class EvmAutomaticTokenBridge implements AutomaticTokenBridge<'Evm'> {
         : token;
 
     const destChainId = toChainId(recipient.chain);
-    const destTokenAddress = new EvmAddress(tokenId.address.toString()).toString();
+    const destTokenAddress = new EvmAddress(
+      tokenId.address.toString(),
+    ).toString();
 
     const tokenContract = EvmContracts.getTokenImplementation(
       this.provider,

@@ -67,7 +67,9 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
   }
 
   async isWrappedAsset(token: AnyEvmAddress): Promise<boolean> {
-    return await this.tokenBridge.isWrappedAsset(new EvmAddress(token).toString());
+    return await this.tokenBridge.isWrappedAsset(
+      new EvmAddress(token).toString(),
+    );
   }
 
   async getOriginalAsset(token: AnyEvmAddress): Promise<TokenId> {

@@ -125,7 +125,13 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
     const timeout = millisToNano(Date.now() + IBC_TIMEOUT_MILLIS);
     const memo = JSON.stringify(payload);
 
-    const ibcDenom = token === 'native' ? CosmwasmPlatform.getNativeDenom(this.chain) : Gateway.deriveIbcDenom(this.chain, new CosmwasmAddress(token).toString());
+    const ibcDenom =
+      token === "native"
+        ? CosmwasmPlatform.getNativeDenom(this.chain)
+        : Gateway.deriveIbcDenom(
+            this.chain,
+            new CosmwasmAddress(token).toString(),
+          );
     const ibcToken = coin(amount.toString(), ibcDenom.toString());
 
     const ibcMessage: MsgTransferEncodeObject = {

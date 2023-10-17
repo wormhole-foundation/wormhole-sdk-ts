@@ -35,9 +35,7 @@ export class MockTokenBridge<P extends PlatformName> implements TokenBridge<P> {
   ): Promise<boolean> {
     throw new Error("Method not implemented.");
   }
-  createAttestation(
-    address: AnyAddress,
-  ): AsyncGenerator<UnsignedTransaction> {
+  createAttestation(address: AnyAddress): AsyncGenerator<UnsignedTransaction> {
     throw new Error("Method not implemented.");
   }
   submitAttestation(
