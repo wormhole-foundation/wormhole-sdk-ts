@@ -49,7 +49,7 @@ import { getCircleAttestation } from "./circle-api";
 export class Wormhole {
   protected _platforms: Map<PlatformName, Platform<PlatformName>>;
   protected _chains: Map<ChainName, ChainContext<PlatformName>>;
-
+  protected readonly _network: Network;
   readonly conf: WormholeConfig;
 
   constructor(
@@ -57,6 +57,7 @@ export class Wormhole {
     platforms: Platform<PlatformName>[],
     conf?: WormholeConfig,
   ) {
+    this._network = network;
     this.conf = conf ?? CONFIG[network];
 
     this._chains = new Map();
@@ -69,7 +70,7 @@ export class Wormhole {
   }
 
   get network(): Network {
-    return this.conf.network;
+    return this._network;
   }
 
   /**
@@ -344,11 +345,11 @@ export class Wormhole {
       t = isTokenId(sendingToken)
         ? sendingToken
         : {
-            chain: sendingChain,
-            address: (
-              sendingToken as UniversalAddress | NativeAddress<PlatformName>
-            ).toUniversalAddress(),
-          };
+          chain: sendingChain,
+          address: (
+            sendingToken as UniversalAddress | NativeAddress<PlatformName>
+          ).toUniversalAddress(),
+        };
     }
 
     const dstTokenBridge = await chain.getTokenBridge();
