@@ -8,7 +8,6 @@ import {
 } from "@wormhole-foundation/sdk-definitions";
 
 export type WormholeConfig = {
-  network: Network;
   api: string;
   circleAPI: string;
   chains: ChainsConfig;
