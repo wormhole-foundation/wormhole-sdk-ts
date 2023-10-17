@@ -17,8 +17,8 @@ import { evmNetworkChainToEvmChainId } from '../constants';
 import {
   addFrom,
   addChainId,
-  toEvmAddrString,
   EvmChainName,
+  AnyEvmAddress,
   UniversalOrEvm,
 } from '../types';
 import { EvmUnsignedTransaction } from '../unsignedTransaction';
@@ -26,6 +26,7 @@ import { MessageTransmitter, TokenMessenger } from '../ethers-contracts';
 import { LogDescription, Provider, TransactionRequest } from 'ethers';
 import { EvmContracts } from '../contracts';
 import { EvmPlatform } from '../platform';
+import { EvmAddress } from '../address';
 
 //https://github.com/circlefin/evm-cctp-contracts
 
@@ -77,11 +78,11 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
   }
 
   async *redeem(
-    sender: UniversalOrEvm,
+    sender: AnyEvmAddress,
     message: string,
     attestation: string,
   ): AsyncGenerator<UnsignedTransaction> {
-    const senderAddr = toEvmAddrString(sender);
+    const senderAddr = new EvmAddress(sender).toString();
 
     const txReq = await this.msgTransmitter.receiveMessage.populateTransaction(
       hexByteStringToUint8Array(message),
@@ -96,15 +97,15 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
   //alternative naming: initiateTransfer
   async *transfer(
     token: TokenId,
-    sender: UniversalOrEvm,
+    sender: AnyEvmAddress,
     recipient: ChainAddress,
     amount: bigint,
   ): AsyncGenerator<EvmUnsignedTransaction> {
-    const senderAddr = toEvmAddrString(sender);
+    const senderAddr = new EvmAddress(sender).toString();
     const recipientAddress = recipient.address
       .toUniversalAddress()
       .toUint8Array();
-    const tokenAddr = toEvmAddrString(token.address as UniversalOrEvm);
+    const tokenAddr = new EvmAddress(token.address as UniversalOrEvm).toString();
 
     const tokenContract = EvmContracts.getTokenImplementation(
       this.provider,

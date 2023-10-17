@@ -1,5 +1,5 @@
 import { PlatformName } from "@wormhole-foundation/sdk-base";
-import { UniversalOrNative } from "../address";
+import { AnyAddress } from "../types";
 import { UnsignedTransaction } from "../unsignedTransaction";
 import { RpcConnection } from "../rpc";
 
@@ -15,7 +15,7 @@ export function supportsWormholeCore<P extends PlatformName>(
 
 export interface WormholeCore<P extends PlatformName> {
   publishMessage(
-    sender: UniversalOrNative<P>,
+    sender: AnyAddress,
     message: string | Uint8Array
   ): AsyncGenerator<UnsignedTransaction>;
   // TODO: parseTransactionDetails

@@ -1,5 +1,4 @@
 import {
-  UniversalAddress,
   UniversalOrNative,
   registerNative,
   PlatformToChains,

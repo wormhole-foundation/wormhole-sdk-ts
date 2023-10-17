@@ -29,14 +29,13 @@ import { EvmUnsignedTransaction } from '../unsignedTransaction';
 import { EvmContracts } from '../contracts';
 import {
   EvmChainName,
-  UniversalOrEvm,
   addFrom,
   addChainId,
-  toEvmAddrString,
   unusedArbiterFee,
   unusedNonce,
+  AnyEvmAddress,
 } from '../types';
-import { EvmZeroAddress } from '../address';
+import { EvmAddress, EvmZeroAddress } from '../address';
 import { EvmPlatform } from '../platform';
 
 //Currently the code does not consider Wormhole msg fee (because it is and always has been 0).
@@ -67,16 +66,16 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     return new EvmTokenBridge(network, chain, provider, contracts);
   }
 
-  async isWrappedAsset(token: UniversalOrEvm): Promise<boolean> {
-    return await this.tokenBridge.isWrappedAsset(toEvmAddrString(token));
+  async isWrappedAsset(token: AnyEvmAddress): Promise<boolean> {
+    return await this.tokenBridge.isWrappedAsset(new EvmAddress(token).toString());
   }
 
-  async getOriginalAsset(token: UniversalOrEvm): Promise<TokenId> {
+  async getOriginalAsset(token: AnyEvmAddress): Promise<TokenId> {
     if (!(await this.isWrappedAsset(token)))
       throw ErrNotWrapped(token.toString());
 
     const tokenContract = TokenContractFactory.connect(
-      toEvmAddrString(token),
+      new EvmAddress(token).toString(),
       this.provider,
     );
     const [chain, address] = await Promise.all([
@@ -127,12 +126,12 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
   }
 
   async *createAttestation(
-    token: UniversalOrEvm,
+    token: AnyEvmAddress,
   ): AsyncGenerator<EvmUnsignedTransaction> {
     const ignoredNonce = 0;
     yield this.createUnsignedTx(
       await this.tokenBridge.attestToken.populateTransaction(
-        toEvmAddrString(token),
+        new EvmAddress(token).toString(),
         ignoredNonce,
       ),
       'TokenBridge.createAttestation',
@@ -155,13 +154,13 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
 
   //alternative naming: initiateTransfer
   async *transfer(
-    sender: UniversalOrEvm,
+    sender: AnyEvmAddress,
     recipient: ChainAddress,
-    token: UniversalOrEvm | 'native',
+    token: AnyEvmAddress | 'native',
     amount: bigint,
     payload?: Uint8Array,
   ): AsyncGenerator<EvmUnsignedTransaction> {
-    const senderAddr = toEvmAddrString(sender);
+    const senderAddr = new EvmAddress(sender).toString();
     const recipientChainId = toChainId(recipient.chain);
     const recipientAddress = recipient.address
       .toUniversalAddress()
@@ -189,7 +188,7 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
       );
     } else {
       //TODO check for ERC-2612 (permit) support on token?
-      const tokenAddr = toEvmAddrString(token);
+      const tokenAddr = new EvmAddress(token).toString();
       const tokenContract = TokenContractFactory.connect(
         tokenAddr,
         this.provider,
@@ -235,11 +234,11 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
 
   //alternative naming: completeTransfer
   async *redeem(
-    sender: UniversalOrEvm,
+    sender: AnyEvmAddress,
     vaa: VAA<'Transfer'> | VAA<'TransferWithPayload'>,
     unwrapNative: boolean = true,
   ): AsyncGenerator<EvmUnsignedTransaction> {
-    const senderAddr = toEvmAddrString(sender);
+    const senderAddr = new EvmAddress(sender).toString();
     if (vaa.payload.token.chain !== this.chain)
       if (vaa.payloadLiteral === 'TransferWithPayload') {
         const fromAddr = toNative(this.chain, vaa.payload.from).unwrap();

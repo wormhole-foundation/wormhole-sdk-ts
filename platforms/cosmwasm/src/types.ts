@@ -1,8 +1,6 @@
 import {
-  UniversalAddress,
   UniversalOrNative,
   PlatformToChains,
-  GatewayTransferMsg,
 } from "@wormhole-foundation/connect-sdk";
 import { logs as cosmosLogs } from "@cosmjs/stargate";
 

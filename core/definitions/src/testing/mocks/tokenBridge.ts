@@ -1,11 +1,10 @@
 import { PlatformName } from "@wormhole-foundation/sdk-base";
 import {
+  AnyAddress,
   ChainAddress,
   NativeAddress,
   RpcConnection,
   TokenBridge,
-  TokenId,
-  UniversalOrNative,
   UnsignedTransaction,
   VAA,
 } from "../..";
@@ -19,10 +18,10 @@ import {
 export class MockTokenBridge<P extends PlatformName> implements TokenBridge<P> {
   constructor(readonly rpc: RpcConnection<P>) {}
 
-  isWrappedAsset(token: UniversalOrNative<P>): Promise<boolean> {
+  isWrappedAsset(token: AnyAddress): Promise<boolean> {
     throw new Error("Method not implemented.");
   }
-  getOriginalAsset(token: UniversalOrNative<P>): Promise<ChainAddress> {
+  getOriginalAsset(token: AnyAddress): Promise<ChainAddress> {
     throw new Error("Method not implemented.");
   }
   hasWrappedAsset(original: ChainAddress): Promise<boolean> {
@@ -37,7 +36,7 @@ export class MockTokenBridge<P extends PlatformName> implements TokenBridge<P> {
     throw new Error("Method not implemented.");
   }
   createAttestation(
-    address: UniversalOrNative<P>,
+    address: AnyAddress,
   ): AsyncGenerator<UnsignedTransaction> {
     throw new Error("Method not implemented.");
   }
@@ -47,16 +46,16 @@ export class MockTokenBridge<P extends PlatformName> implements TokenBridge<P> {
     throw new Error("Method not implemented.");
   }
   transfer(
-    sender: UniversalOrNative<P>,
+    sender: AnyAddress,
     recipient: ChainAddress,
-    token: "native" | UniversalOrNative<P>,
+    token: "native" | AnyAddress,
     amount: bigint,
     payload?: Uint8Array | undefined,
   ): AsyncGenerator<UnsignedTransaction> {
     throw new Error("Method not implemented.");
   }
   redeem(
-    sender: UniversalOrNative<P>,
+    sender: AnyAddress,
     vaa: VAA<"Transfer"> | VAA<"TransferWithPayload">,
     unwrapNative?: boolean | undefined,
   ): AsyncGenerator<UnsignedTransaction> {

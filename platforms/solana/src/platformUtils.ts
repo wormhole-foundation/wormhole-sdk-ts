@@ -9,7 +9,6 @@ import {
   nativeDecimals,
   PlatformUtils,
   chainToPlatform,
-  UniversalOrNative,
   Balances,
 } from '@wormhole-foundation/connect-sdk';
 import { Connection, ParsedAccountData, PublicKey } from '@solana/web3.js';
@@ -49,12 +48,12 @@ export module SolanaUtils {
   export async function getDecimals(
     chain: ChainName,
     rpc: Connection,
-    token: UniversalOrNative<'Solana'> | 'native',
+    token: AnySolanaAddress | 'native',
   ): Promise<bigint> {
     if (token === 'native') return nativeDecimals(SolanaPlatform.platform);
 
     let mint = await rpc.getParsedAccountInfo(
-      new PublicKey(token.toUint8Array()),
+      new SolanaAddress(token).unwrap(),
     );
 
     if (!mint || !mint.value) throw new Error('could not fetch token details');

@@ -1,6 +1,5 @@
 import {
   PlatformToChains,
-  UniversalAddress,
   UniversalOrNative,
   registerNative,
 } from '@wormhole-foundation/connect-sdk';

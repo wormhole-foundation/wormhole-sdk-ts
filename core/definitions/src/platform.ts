@@ -22,7 +22,7 @@ export interface PlatformUtils<P extends PlatformName> {
   getDecimals(
     chain: ChainName,
     rpc: RpcConnection<P>,
-    token: NativeAddress<P> | UniversalAddress | "native",
+    token: AnyAddress | "native",
   ): Promise<bigint>;
   getBalance(
     chain: ChainName,

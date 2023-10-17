@@ -9,13 +9,13 @@ import {
 import { EvmUnsignedTransaction } from '../unsignedTransaction';
 import { EvmContracts } from '../contracts';
 import {
+  AnyEvmAddress,
   EvmChainName,
-  UniversalOrEvm,
   addChainId,
   addFrom,
-  toEvmAddrString,
 } from '../types';
 import { EvmPlatform } from '../platform';
+import { EvmAddress } from '../address';
 
 export class EvmWormholeCore implements WormholeCore<'Evm'> {
   readonly chainId: bigint;
@@ -44,10 +44,10 @@ export class EvmWormholeCore implements WormholeCore<'Evm'> {
   }
 
   async *publishMessage(
-    sender: UniversalOrEvm,
+    sender: AnyEvmAddress,
     message: Uint8Array | string,
   ): AsyncGenerator<EvmUnsignedTransaction> {
-    const senderAddr = toEvmAddrString(sender);
+    const senderAddr = new EvmAddress(sender).toString();
 
     const txReq = await this.core.publishMessage.populateTransaction(
       0,
