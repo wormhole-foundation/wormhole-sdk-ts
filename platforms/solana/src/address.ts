@@ -3,6 +3,7 @@ import {
   hexByteStringToUint8Array,
   Address,
   UniversalAddress,
+  PlatformName,
 } from '@wormhole-foundation/connect-sdk';
 
 import { PublicKey } from '@solana/web3.js';
@@ -22,15 +23,18 @@ export const SolanaZeroAddress = '11111111111111111111111111111111';
 
 export class SolanaAddress implements Address {
   static readonly byteSize = 32;
+  static readonly platform: PlatformName = 'Solana';
 
   private readonly address: PublicKey;
 
   constructor(address: AnySolanaAddress) {
-    if (address instanceof SolanaAddress) {
-      Object.assign(this, address);
+    if (SolanaAddress.instanceof(address)) {
+      const a = address as unknown as SolanaAddress;
+      this.address = a.address;
+      return;
     }
-    if (address instanceof UniversalAddress)
-      this.address = new PublicKey(address.toUint8Array());
+    if (UniversalAddress.instanceof(address))
+      this.address = new PublicKey((address as UniversalAddress).toUint8Array());
     if (typeof address === 'string' && isHexByteString(address))
       this.address = new PublicKey(hexByteStringToUint8Array(address));
     else this.address = new PublicKey(address);
@@ -50,6 +54,10 @@ export class SolanaAddress implements Address {
   }
   toUniversalAddress() {
     return new UniversalAddress(this.address.toBytes());
+  }
+
+  static instanceof(address: any) {
+    return address.platform === SolanaAddress.platform;
   }
 
   equals(other: UniversalAddress): boolean {

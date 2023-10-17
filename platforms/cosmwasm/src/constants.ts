@@ -70,7 +70,7 @@ export const cosmwasmNetworkChainToChainId = constMap(
   networkChainCosmwasmChainIds,
 );
 
-const cosmwasmAddressPrefix = [
+export const cosmwasmAddressPrefix = [
   ["Cosmoshub", "cosmos"],
   ["Evmos", "evmos"],
   ["Injective", "inj"],
@@ -85,6 +85,9 @@ const cosmwasmAddressPrefix = [
 
 export const chainToAddressPrefix = constMap(cosmwasmAddressPrefix);
 export const addressPrefixToChain = constMap(cosmwasmAddressPrefix, [1, [0]]);
+
+export const AllPrefixes = cosmwasmAddressPrefix.map(p => p[1]);
+export type AnyPrefix = typeof AllPrefixes[number];
 
 const cosmwasmNativeDenom = [
   [
