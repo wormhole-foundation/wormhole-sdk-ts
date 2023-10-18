@@ -7,16 +7,21 @@ import {
     Wormhole,
     isWormholeMessageId,
     normalizeAmount,
+    signSendWait,
 } from "@wormhole-foundation/connect-sdk";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
-import { SolanaAddress, SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
-import { signSendWait } from "@wormhole-foundation/connect-sdk/src";
+import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
+import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
+
+import { expect, jest, test } from '@jest/globals';
+
 import { getStuff } from './helpers';
+
 
 jest.setTimeout(10 * 60 * 1000)
 
 const network = "Devnet"
-const allPlatforms = [SolanaPlatform, EvmPlatform];
+const allPlatforms = [SolanaPlatform, EvmPlatform, CosmwasmPlatform];
 
 describe("Tilt Token Bridge Tests", () => {
     const wh = new Wormhole(network, allPlatforms)
@@ -32,10 +37,6 @@ describe("Tilt Token Bridge Tests", () => {
         let srcAcct: ChainAddress;
         let dstAcct: ChainAddress;
 
-        let srcTb: TokenBridge<PlatformName>;
-        let dstTb: TokenBridge<PlatformName>;
-        let wrappedNativeToken: NativeAddress<PlatformName>;
-
         beforeAll(async () => {
             const srcStuff = await getStuff(src);
             srcSigner = srcStuff.signer
@@ -44,14 +45,13 @@ describe("Tilt Token Bridge Tests", () => {
             const dstStuff = await getStuff(dst)
             dstSigner = dstStuff.signer
             dstAcct = dstStuff.address
-
-            srcTb = await src.getTokenBridge()
-            dstTb = await dst.getTokenBridge()
-
-            wrappedNativeToken = await srcTb.getWrappedNative()
         })
 
         test("Create Wrapped", async () => {
+            const srcTb: TokenBridge<PlatformName> = await src.getTokenBridge();
+            const dstTb: TokenBridge<PlatformName> = await dst.getTokenBridge();
+            const wrappedNativeToken: NativeAddress<PlatformName> = await srcTb.getWrappedNative()
+
             // TODO: should we make sure its a clean env? should we update if it already exists?
             const wrappedExists = await dstTb.hasWrappedAsset({ chain: src.chain, address: wrappedNativeToken })
             if (wrappedExists) return
