@@ -132,7 +132,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     try {
       await this.getWrappedAsset(token);
       return true;
-    } catch (_) {}
+    } catch (_) { }
     return false;
   }
 
@@ -148,7 +148,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     try {
       await getWrappedMeta(this.connection, this.tokenBridge.programId, mint);
       return toNative(this.chain, mint.toBase58());
-    } catch (_) {}
+    } catch (_) { }
 
     throw ErrNotWrapped(token.address.toUniversalAddress().toString());
   }
@@ -164,6 +164,10 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
       vaa.sequence,
       'finalized',
     ).catch((e) => false);
+  }
+
+  async getWrappedNative(): Promise<NativeAddress<'Solana'>> {
+    return toNative(this.chain, NATIVE_MINT.toBase58());
   }
 
   async *createAttestation(
@@ -207,6 +211,12 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     if (!payer) throw new Error('Payer required to create attestation');
     const senderAddress = new SolanaAddress(payer).unwrap();
 
+    const { blockhash } = await this.connection.getLatestBlockhash();
+
+    // Yield transactions to verify sigs and post the VAA
+    yield* this.postVaa(senderAddress, vaa, blockhash);
+
+    // Now yield the transaction to actually create the token
     const transaction = new Transaction().add(
       createCreateWrappedInstruction(
         this.connection,
@@ -216,7 +226,6 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
         vaa,
       ),
     );
-    const { blockhash } = await this.connection.getLatestBlockhash();
     transaction.recentBlockhash = blockhash;
     transaction.feePayer = senderAddress;
 
@@ -283,33 +292,33 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
 
     const tokenBridgeTransferIx = payload
       ? createTransferNativeWithPayloadInstruction(
-          this.connection,
-          this.tokenBridge.programId,
-          this.coreBridge.programId,
-          senderAddress,
-          message.publicKey,
-          ancillaryKeypair.publicKey,
-          NATIVE_MINT,
-          nonce,
-          amount,
-          recipientAddress,
-          recipientChainId,
-          payload,
-        )
+        this.connection,
+        this.tokenBridge.programId,
+        this.coreBridge.programId,
+        senderAddress,
+        message.publicKey,
+        ancillaryKeypair.publicKey,
+        NATIVE_MINT,
+        nonce,
+        amount,
+        recipientAddress,
+        recipientChainId,
+        payload,
+      )
       : createTransferNativeInstruction(
-          this.connection,
-          this.tokenBridge.programId,
-          this.coreBridge.programId,
-          senderAddress,
-          message.publicKey,
-          ancillaryKeypair.publicKey,
-          NATIVE_MINT,
-          nonce,
-          amount,
-          relayerFee,
-          recipientAddress,
-          recipientChainId,
-        );
+        this.connection,
+        this.tokenBridge.programId,
+        this.coreBridge.programId,
+        senderAddress,
+        message.publicKey,
+        ancillaryKeypair.publicKey,
+        NATIVE_MINT,
+        nonce,
+        amount,
+        relayerFee,
+        recipientAddress,
+        recipientChainId,
+      );
 
     //Close the ancillary account for cleanup. Payer address receives any remaining funds
     const closeAccountIx = createCloseAccountInstruction(
@@ -372,69 +381,69 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     if (isSolanaNative) {
       tokenBridgeTransferIx = payload
         ? createTransferNativeWithPayloadInstruction(
-            this.connection,
-            this.tokenBridge.programId,
-            this.coreBridge.programId,
-            senderAddress,
-            message.publicKey,
-            senderTokenAddress,
-            tokenAddress,
-            nonce,
-            amount,
-            recipientAddress,
-            recipientChainId,
-            payload,
-          )
+          this.connection,
+          this.tokenBridge.programId,
+          this.coreBridge.programId,
+          senderAddress,
+          message.publicKey,
+          senderTokenAddress,
+          tokenAddress,
+          nonce,
+          amount,
+          recipientAddress,
+          recipientChainId,
+          payload,
+        )
         : createTransferNativeInstruction(
-            this.connection,
-            this.tokenBridge.programId,
-            this.coreBridge.programId,
-            senderAddress,
-            message.publicKey,
-            senderTokenAddress,
-            tokenAddress,
-            nonce,
-            amount,
-            relayerFee,
-            recipientAddress,
-            recipientChainId,
-          );
+          this.connection,
+          this.tokenBridge.programId,
+          this.coreBridge.programId,
+          senderAddress,
+          message.publicKey,
+          senderTokenAddress,
+          tokenAddress,
+          nonce,
+          amount,
+          relayerFee,
+          recipientAddress,
+          recipientChainId,
+        );
     } else {
       const originAsset = await this.getOriginalAsset(token);
 
       tokenBridgeTransferIx = payload
         ? createTransferWrappedWithPayloadInstruction(
-            this.connection,
-            this.tokenBridge.programId,
-            this.coreBridge.programId,
-            senderAddress,
-            message.publicKey,
-            senderTokenAddress,
-            senderAddress,
-            toChainId(originAsset.chain),
-            originAsset.address.toUint8Array(),
-            nonce,
-            amount,
-            recipientAddress,
-            recipientChainId,
-            payload,
-          )
+          this.connection,
+          this.tokenBridge.programId,
+          this.coreBridge.programId,
+          senderAddress,
+          message.publicKey,
+          senderTokenAddress,
+          senderAddress,
+          toChainId(originAsset.chain),
+          originAsset.address.toUint8Array(),
+          nonce,
+          amount,
+          recipientAddress,
+          recipientChainId,
+          payload,
+        )
         : createTransferWrappedInstruction(
-            this.connection,
-            this.tokenBridge.programId,
-            this.coreBridge.programId,
-            senderAddress,
-            message.publicKey,
-            senderTokenAddress,
-            senderAddress,
-            toChainId(originAsset.chain),
-            originAsset.address.toUint8Array(),
-            nonce,
-            amount,
-            relayerFee,
-            recipientAddress,
-            recipientChainId,
-          );
+          this.connection,
+          this.tokenBridge.programId,
+          this.coreBridge.programId,
+          senderAddress,
+          message.publicKey,
+          senderTokenAddress,
+          senderAddress,
+          toChainId(originAsset.chain),
+          originAsset.address.toUint8Array(),
+          nonce,
+          amount,
+          relayerFee,
+          recipientAddress,
+          recipientChainId,
+        );
     }
 
     const approvalIx = createApproveAuthoritySignerInstruction(
@@ -455,47 +464,6 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     transaction.partialSign(message);
 
     yield this.createUnsignedTx(transaction, 'Solana.TransferTokens');
-  }
-
-  private async postVaa(
-    sender: AnySolanaAddress,
-    vaa: VAA<'Transfer'> | VAA<'TransferWithPayload'>,
-  ) {
-    const senderAddr = new SolanaAddress(sender).unwrap();
-    const signatureSet = Keypair.generate();
-
-    const verifySignaturesInstructions =
-      await createVerifySignaturesInstructions(
-        this.connection,
-        this.coreBridge.programId,
-        senderAddr,
-        vaa,
-        signatureSet.publicKey,
-      );
-
-    const unsignedTransactions: Transaction[] = [];
-    for (let i = 0; i < verifySignaturesInstructions.length; i += 2) {
-      unsignedTransactions.push(
-        new Transaction().add(...verifySignaturesInstructions.slice(i, i + 2)),
-      );
-    }
-
-    unsignedTransactions.push(
-      new Transaction().add(
-        createPostVaaInstruction(
-          this.connection,
-          this.coreBridge.programId,
-          senderAddr,
-          vaa,
-          signatureSet.publicKey,
-        ),
-      ),
-    );
-
-    return {
-      unsignedTransactions,
-      signers: [signatureSet],
-    };
   }
 
   async *redeem(
@@ -527,32 +495,8 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
       yield this.createUnsignedTx(ataCreationTx, 'Redeem.CreateATA');
     }
 
-    // Get transactions to verify sigs and post the VAA
-    const { unsignedTransactions: postVaaTxns, signers: postVaaSigners } =
-      await this.postVaa(sender, vaa);
-
-    // Take off the last tx in the set of postVAA txns
-    // to send after verify sig txns
-    const postVaaTx = postVaaTxns.pop()!;
-
-    for (let i = 0; i < postVaaTxns.length; i++) {
-      const verifySigTx = postVaaTxns[i];
-      verifySigTx.recentBlockhash = blockhash;
-      verifySigTx.feePayer = senderAddress;
-      verifySigTx.partialSign(postVaaSigners[i]);
-      yield this.createUnsignedTx(
-        verifySigTx,
-        'Redeem.VerifySignature',
-        // all stackable except the last one
-        // so we flush the buffer of sig verifies
-        // and finalize prior to trying to Post the VAA
-        i < postVaaTxns.length - 1,
-      );
-    }
-
-    postVaaTx.recentBlockhash = blockhash;
-    postVaaTx.feePayer = senderAddress;
-    yield this.createUnsignedTx(postVaaTx, 'Redeem.PostVAA');
+    // Yield transactions to verify sigs and post the VAA
+    yield* this.postVaa(sender, vaa, blockhash);
 
     const createCompleteTransferInstruction =
       vaa.payload.token.chain == this.chain
@@ -574,8 +518,58 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     yield this.createUnsignedTx(transaction, 'Solana.RedeemTransfer');
   }
 
-  async getWrappedNative(): Promise<NativeAddress<'Solana'>> {
-    return toNative(this.chain, NATIVE_MINT.toBase58());
+  private async *postVaa(
+    sender: AnySolanaAddress,
+    vaa: VAA<'Transfer'> | VAA<'TransferWithPayload'> | VAA<'AttestMeta'>,
+    blockhash: string,
+  ) {
+    const senderAddr = new SolanaAddress(sender).unwrap();
+    const signatureSet = Keypair.generate();
+
+    const verifySignaturesInstructions =
+      await createVerifySignaturesInstructions(
+        this.connection,
+        this.coreBridge.programId,
+        senderAddr,
+        vaa,
+        signatureSet.publicKey,
+      );
+
+    // Create a new transaction for every 2 signatures we have to Verify
+    for (let i = 0; i < verifySignaturesInstructions.length; i += 2) {
+      const verifySigTx = new Transaction().add(
+        ...verifySignaturesInstructions.slice(i, i + 2),
+      );
+      verifySigTx.recentBlockhash = blockhash;
+      verifySigTx.feePayer = senderAddr;
+      verifySigTx.partialSign(signatureSet);
+
+      const lastIx = i >= verifySignaturesInstructions.length - 2;
+
+      yield this.createUnsignedTx(
+        verifySigTx,
+        'Redeem.VerifySignature',
+        // all stackable except the last one
+        // so we flush the buffer of sig verifies
+        // and finalize prior to trying to Post the VAA
+        !lastIx,
+      );
+    }
+
+    // Finally create the VAA posting transaction
+    const postVaaTx = new Transaction().add(
+      createPostVaaInstruction(
+        this.connection,
+        this.coreBridge.programId,
+        senderAddr,
+        vaa,
+        signatureSet.publicKey,
+      ),
+    );
+    postVaaTx.recentBlockhash = blockhash;
+    postVaaTx.feePayer = senderAddr;
+
+    yield this.createUnsignedTx(postVaaTx, 'Redeem.PostVAA');
   }
 
   private createUnsignedTx(

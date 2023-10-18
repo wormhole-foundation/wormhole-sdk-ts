@@ -31,7 +31,7 @@ export class EvmSigner implements Signer {
     private _wallet: ethers.Wallet,
     private nonce: number,
     private provider: ethers.Provider,
-  ) {}
+  ) { }
   chain(): ChainName {
     return this._chain;
   }
@@ -64,7 +64,6 @@ export class EvmSigner implements Signer {
           nonce: this.nonce,
         },
       };
-      console.log(t);
       signed.push(await this._wallet.signTransaction(t));
 
       this.nonce += 1;
@@ -74,7 +73,7 @@ export class EvmSigner implements Signer {
 }
 
 export class SolSigner implements Signer {
-  constructor(private _chain: ChainName, private _keypair: Keypair) {}
+  constructor(private _chain: ChainName, private _keypair: Keypair) { }
 
   chain(): ChainName {
     return this._chain;
@@ -94,16 +93,16 @@ export class SolSigner implements Signer {
       signed.push(transaction.serialize());
 
       // Uncomment for debug
-      const st = transaction as Transaction;
-      console.log(st.signatures);
-      console.log(st.feePayer);
-      st.instructions.forEach((ix) => {
-        console.log("Program", ix.programId.toBase58());
-        console.log("Data: ", ix.data.toString("hex"));
-        ix.keys.forEach((k) => {
-          console.log(k.pubkey.toBase58());
-        });
-      });
+      // const st = transaction as Transaction;
+      // console.log(st.signatures);
+      // console.log(st.feePayer);
+      // st.instructions.forEach((ix) => {
+      //   console.log("Program", ix.programId.toBase58());
+      //   console.log("Data: ", ix.data.toString("hex"));
+      //   ix.keys.forEach((k) => {
+      //     console.log(k.pubkey.toBase58());
+      //   });
+      // });
     }
     return signed;
   }
@@ -114,7 +113,7 @@ export class CosmosSigner implements Signer {
     private _chain: ChainName,
     private _signer: SigningCosmWasmClient,
     private _account: AccountData,
-  ) {}
+  ) { }
 
   chain(): ChainName {
     return this._chain;
@@ -184,8 +183,6 @@ export class CosmosEvmSigner implements Signer {
         };
         return new MsgExecuteContract(f);
       });
-
-      console.log(message);
 
       const { signBytes, txRaw } = createTransaction({
         message,
