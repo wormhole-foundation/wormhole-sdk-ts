@@ -1,13 +1,8 @@
 import {
   UniversalOrNative,
-  registerNative,
   PlatformToChains,
 } from '@wormhole-foundation/connect-sdk';
 import { TransactionRequest } from 'ethers';
-
-import { EvmAddress } from './address';
-
-registerNative('Evm', EvmAddress);
 
 export const unusedNonce = 0;
 export const unusedArbiterFee = 0n;

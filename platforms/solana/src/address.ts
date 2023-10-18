@@ -4,6 +4,7 @@ import {
   Address,
   UniversalAddress,
   PlatformName,
+  registerNative,
 } from '@wormhole-foundation/connect-sdk';
 
 import { PublicKey } from '@solana/web3.js';
@@ -67,3 +68,5 @@ export class SolanaAddress implements Address {
     return this.toUniversalAddress().equals(other);
   }
 }
+
+registerNative('Solana', SolanaAddress);
