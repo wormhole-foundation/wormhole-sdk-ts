@@ -1,4 +1,4 @@
-import { Address, UniversalAddress } from '@wormhole-foundation/connect-sdk';
+import { Address, UniversalAddress, registerNative } from '@wormhole-foundation/connect-sdk';
 
 import { ethers } from 'ethers';
 import { AnyEvmAddress } from './types';
@@ -86,3 +86,5 @@ export class EvmAddress implements Address {
     return other.equals(this.toUniversalAddress());
   }
 }
+
+registerNative('Evm', EvmAddress);
