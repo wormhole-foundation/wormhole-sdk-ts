@@ -8,6 +8,7 @@ import {
 
 import { PublicKey } from '@solana/web3.js';
 import { AnySolanaAddress } from './types';
+import { SolanaPlatform } from '../dist/esm';
 
 declare global {
   namespace Wormhole {
@@ -23,7 +24,7 @@ export const SolanaZeroAddress = '11111111111111111111111111111111';
 
 export class SolanaAddress implements Address {
   static readonly byteSize = 32;
-  public readonly platform: PlatformName = 'Solana';
+  public readonly platform: PlatformName = SolanaPlatform.platform;
 
   private readonly address: PublicKey;
 
@@ -34,7 +35,9 @@ export class SolanaAddress implements Address {
       return;
     }
     if (UniversalAddress.instanceof(address))
-      this.address = new PublicKey((address as UniversalAddress).toUint8Array());
+      this.address = new PublicKey(
+        (address as UniversalAddress).toUint8Array(),
+      );
     if (typeof address === 'string' && isHexByteString(address))
       this.address = new PublicKey(hexByteStringToUint8Array(address));
     else this.address = new PublicKey(address);
@@ -57,8 +60,7 @@ export class SolanaAddress implements Address {
   }
 
   static instanceof(address: any) {
-    const platform: PlatformName = 'Solana';
-    return address.platform === platform;
+    return address.platform === SolanaPlatform.platform;
   }
 
   equals(other: UniversalAddress): boolean {

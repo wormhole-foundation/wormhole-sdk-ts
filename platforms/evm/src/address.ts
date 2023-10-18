@@ -1,7 +1,8 @@
-import { Address, PlatformName, UniversalAddress } from '@wormhole-foundation/connect-sdk';
+import { Address, UniversalAddress } from '@wormhole-foundation/connect-sdk';
 
 import { ethers } from 'ethers';
 import { AnyEvmAddress } from './types';
+import { EvmPlatform } from './platform';
 
 declare global {
   namespace Wormhole {
@@ -16,7 +17,7 @@ export const EvmZeroAddress = ethers.ZeroAddress;
 
 export class EvmAddress implements Address {
   static readonly byteSize = 20;
-  public readonly platform: PlatformName = 'Evm';
+  public readonly platform = EvmPlatform.platform;
 
   // stored as checksum address
   private readonly address: string;
@@ -79,8 +80,7 @@ export class EvmAddress implements Address {
     return ethers.isAddress(address);
   }
   static instanceof(address: any) {
-    const platform: PlatformName = 'Evm'
-    return address.platform === platform;
+    return address.platform === EvmPlatform.platform;
   }
   equals(other: UniversalAddress): boolean {
     return other.equals(this.toUniversalAddress());

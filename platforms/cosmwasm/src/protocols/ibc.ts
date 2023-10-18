@@ -37,7 +37,6 @@ import {
 import { CosmwasmContracts } from "../contracts";
 import { Gateway } from "../gateway";
 import { CosmwasmPlatform } from "../platform";
-import { CosmwasmUtils } from "../platformUtils";
 import { CosmwasmChainName, AnyCosmwasmAddress } from "../types";
 import {
   CosmwasmTransaction,
@@ -339,7 +338,7 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
     for (const xfer of xfers) {
       // If its present in the commitment results, its interpreted as in-flight
       // the client throws an error and we report any error as not in-flight
-      const qc = CosmwasmUtils.asQueryClient(this.rpc);
+      const qc = CosmwasmPlatform.getQueryClient(this.rpc);
       try {
         await qc.ibc.channel.packetCommitment(
           IBC_TRANSFER_PORT,

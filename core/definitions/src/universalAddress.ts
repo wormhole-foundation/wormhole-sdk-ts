@@ -8,7 +8,7 @@ import { Address, NativeAddress, toNative } from "./address";
 
 export class UniversalAddress implements Address {
   static readonly byteSize = 32;
-  private readonly type = 'Universal';
+  private readonly type = "Universal";
 
   private readonly address: Uint8Array;
 
@@ -57,6 +57,6 @@ export class UniversalAddress implements Address {
   }
 
   static instanceof(address: any) {
-    return address.type === 'Universal';
+    return address.type === "Universal";
   }
 }

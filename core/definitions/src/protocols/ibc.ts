@@ -211,7 +211,7 @@ export interface IbcBridge<P extends PlatformName> {
   transfer(
     sender: AnyAddress,
     recipient: ChainAddress,
-    token: AnyAddress | "native",
+    token: AnyAddress,
     amount: bigint,
     payload?: Uint8Array,
   ): AsyncGenerator<UnsignedTransaction>;

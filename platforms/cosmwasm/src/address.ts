@@ -1,7 +1,6 @@
 import { toBech32, fromBech32, fromHex, fromBase64 } from "@cosmjs/encoding";
 import {
   Address,
-  PlatformName,
   UniversalAddress,
   registerNative,
 } from "@wormhole-foundation/connect-sdk";
@@ -104,7 +103,7 @@ function tryDecode(data: string): { data: Uint8Array; prefix?: string } {
 export class CosmwasmAddress implements Address {
   static readonly contractAddressByteSize = 32;
   static readonly accountAddressByteSize = 20;
-  public readonly platform: PlatformName = 'Cosmwasm';
+  public readonly platform = CosmwasmPlatform.platform;
 
   // the actual bytes of the address
   private readonly address: Uint8Array;
@@ -236,8 +235,7 @@ export class CosmwasmAddress implements Address {
   }
 
   static instanceof(address: any) {
-    const platform: PlatformName = 'Cosmwasm';
-    return address.platform === platform;
+    return address.platform === CosmwasmPlatform.platform;
   }
 
   equals(other: UniversalAddress): boolean {

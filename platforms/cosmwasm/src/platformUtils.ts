@@ -18,12 +18,6 @@ import {
 import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import { CosmwasmPlatform } from "./platform";
 import { CosmwasmAddress } from "./address";
-import {
-  BankExtension,
-  IbcExtension,
-  QueryClient,
-  setupIbcExtension,
-} from "@cosmjs/stargate";
 import { AnyCosmwasmAddress } from "./types";
 
 // forces CosmwasmUtils to implement PlatformUtils
@@ -92,11 +86,12 @@ export module CosmwasmUtils {
 
   export async function getBalances(
     chain: ChainName,
-    rpc: QueryClient & BankExtension & IbcExtension,
+    rpc: CosmWasmClient,
     walletAddress: string,
     tokens: (AnyCosmwasmAddress | "native")[],
   ): Promise<Balances> {
-    const allBalances = await rpc.bank.allBalances(walletAddress);
+    const client = CosmwasmPlatform.getQueryClient(rpc);
+    const allBalances = await client.bank.allBalances(walletAddress);
     const balancesArr = tokens.map((token) => {
       const address =
         token === "native"
@@ -162,19 +157,11 @@ export module CosmwasmUtils {
     sourceChannel: string,
     rpc: CosmWasmClient,
   ): Promise<string | null> {
-    const queryClient = asQueryClient(rpc);
+    const queryClient = CosmwasmPlatform.getQueryClient(rpc);
     const conn = await queryClient.ibc.channel.channel(
       IBC_TRANSFER_PORT,
       sourceChannel,
     );
     return conn.channel?.counterparty?.channelId ?? null;
   }
-
-  export const asQueryClient = (
-    rpc: CosmWasmClient,
-  ): QueryClient & IbcExtension => {
-    // @ts-ignore
-    const tmClient: TendermintClient = rpc.getTmClient()!;
-    return QueryClient.withExtensions(tmClient, setupIbcExtension);
-  };
 }

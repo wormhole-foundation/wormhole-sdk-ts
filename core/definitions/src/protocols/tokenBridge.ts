@@ -64,7 +64,7 @@ export interface TokenBridge<P extends PlatformName> {
   transfer(
     sender: AnyAddress,
     recipient: ChainAddress,
-    token: AnyAddress | "native",
+    token: AnyAddress,
     amount: bigint,
     payload?: Uint8Array
   ): AsyncGenerator<UnsignedTransaction>;
@@ -81,7 +81,7 @@ export interface AutomaticTokenBridge<P extends PlatformName> {
   transfer(
     sender: AnyAddress,
     recipient: ChainAddress,
-    token: AnyAddress | "native",
+    token: AnyAddress,
     amount: bigint,
     relayerFee: bigint,
     nativeGas?: bigint

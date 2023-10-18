@@ -13,7 +13,7 @@ export interface Relayer<P extends PlatformName> {
   // rather it should take some signing callbacks and
   // a ref to track the progress
   startTransferWithRelay(
-    token: AnyAddress | "native",
+    token: AnyAddress,
     amount: bigint,
     toNativeToken: string,
     sendingChain: Chain,
