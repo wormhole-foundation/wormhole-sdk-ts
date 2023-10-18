@@ -166,6 +166,10 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     ).catch((e) => false);
   }
 
+  async getWrappedNative(): Promise<NativeAddress<'Solana'>> {
+    return toNative(this.chain, NATIVE_MINT.toBase58());
+  }
+
   async *createAttestation(
     token: AnySolanaAddress,
     payer?: AnySolanaAddress,
@@ -209,33 +213,10 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
 
     const { blockhash } = await this.connection.getLatestBlockhash();
 
-    // Get transactions to verify sigs and post the VAA
-    const { unsignedTransactions: postVaaTxns, signers: postVaaSigners } =
-      await this.postVaa(sender, vaa);
+    // Yield transactions to verify sigs and post the VAA
+    yield* this.postVaa(sender, vaa, blockhash);
 
-    // Take off the last tx in the set of postVAA txns
-    // to send after verify sig txns
-    const postVaaTx = postVaaTxns.pop()!;
-
-    for (let i = 0; i < postVaaTxns.length; i++) {
-      const verifySigTx = postVaaTxns[i];
-      verifySigTx.recentBlockhash = blockhash;
-      verifySigTx.feePayer = senderAddress;
-      verifySigTx.partialSign(postVaaSigners[i]);
-      yield this.createUnsignedTx(
-        verifySigTx,
-        'Redeem.VerifySignature',
-        // all stackable except the last one
-        // so we flush the buffer of sig verifies
-        // and finalize prior to trying to Post the VAA
-        i < postVaaTxns.length - 1,
-      );
-    }
-
-    postVaaTx.recentBlockhash = blockhash;
-    postVaaTx.feePayer = senderAddress;
-    yield this.createUnsignedTx(postVaaTx, 'Redeem.PostVAA');
-
+    // Now yield the transaction to actually create the token
     const transaction = new Transaction().add(
       createCreateWrappedInstruction(
         this.connection,
@@ -485,47 +466,6 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     yield this.createUnsignedTx(transaction, 'Solana.TransferTokens');
   }
 
-  private async postVaa(
-    sender: AnySolanaAddress,
-    vaa: VAA<'Transfer'> | VAA<'TransferWithPayload'> | VAA<'AttestMeta'>,
-  ) {
-    const senderAddr = new SolanaAddress(sender).unwrap();
-    const signatureSet = Keypair.generate();
-
-    const verifySignaturesInstructions =
-      await createVerifySignaturesInstructions(
-        this.connection,
-        this.coreBridge.programId,
-        senderAddr,
-        vaa,
-        signatureSet.publicKey,
-      );
-
-    const unsignedTransactions: Transaction[] = [];
-    for (let i = 0; i < verifySignaturesInstructions.length; i += 2) {
-      unsignedTransactions.push(
-        new Transaction().add(...verifySignaturesInstructions.slice(i, i + 2)),
-      );
-    }
-
-    unsignedTransactions.push(
-      new Transaction().add(
-        createPostVaaInstruction(
-          this.connection,
-          this.coreBridge.programId,
-          senderAddr,
-          vaa,
-          signatureSet.publicKey,
-        ),
-      ),
-    );
-
-    return {
-      unsignedTransactions,
-      signers: [signatureSet],
-    };
-  }
-
   async *redeem(
     sender: AnySolanaAddress,
     vaa: VAA<'Transfer'> | VAA<'TransferWithPayload'>,
@@ -555,32 +495,8 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
       yield this.createUnsignedTx(ataCreationTx, 'Redeem.CreateATA');
     }
 
-    // Get transactions to verify sigs and post the VAA
-    const { unsignedTransactions: postVaaTxns, signers: postVaaSigners } =
-      await this.postVaa(sender, vaa);
-
-    // Take off the last tx in the set of postVAA txns
-    // to send after verify sig txns
-    const postVaaTx = postVaaTxns.pop()!;
-
-    for (let i = 0; i < postVaaTxns.length; i++) {
-      const verifySigTx = postVaaTxns[i];
-      verifySigTx.recentBlockhash = blockhash;
-      verifySigTx.feePayer = senderAddress;
-      verifySigTx.partialSign(postVaaSigners[i]);
-      yield this.createUnsignedTx(
-        verifySigTx,
-        'Redeem.VerifySignature',
-        // all stackable except the last one
-        // so we flush the buffer of sig verifies
-        // and finalize prior to trying to Post the VAA
-        i < postVaaTxns.length - 1,
-      );
-    }
-
-    postVaaTx.recentBlockhash = blockhash;
-    postVaaTx.feePayer = senderAddress;
-    yield this.createUnsignedTx(postVaaTx, 'Redeem.PostVAA');
+    // Yield transactions to verify sigs and post the VAA
+    yield* this.postVaa(sender, vaa, blockhash);
 
     const createCompleteTransferInstruction =
       vaa.payload.token.chain == this.chain
@@ -602,8 +518,58 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     yield this.createUnsignedTx(transaction, 'Solana.RedeemTransfer');
   }
 
-  async getWrappedNative(): Promise<NativeAddress<'Solana'>> {
-    return toNative(this.chain, NATIVE_MINT.toBase58());
+  private async *postVaa(
+    sender: AnySolanaAddress,
+    vaa: VAA<'Transfer'> | VAA<'TransferWithPayload'> | VAA<'AttestMeta'>,
+    blockhash: string
+  ) {
+    const senderAddr = new SolanaAddress(sender).unwrap();
+    const signatureSet = Keypair.generate();
+
+    const verifySignaturesInstructions =
+      await createVerifySignaturesInstructions(
+        this.connection,
+        this.coreBridge.programId,
+        senderAddr,
+        vaa,
+        signatureSet.publicKey,
+      );
+
+    // Create a new transaction for every 2 signatures we have to Verify
+    for (let i = 0; i < verifySignaturesInstructions.length; i += 2) {
+      const verifySigTx = new Transaction().add(
+        ...verifySignaturesInstructions.slice(i, i + 2)
+      )
+      verifySigTx.recentBlockhash = blockhash;
+      verifySigTx.feePayer = senderAddr;
+      verifySigTx.partialSign(signatureSet);
+
+      const lastIx = i >= verifySignaturesInstructions.length - 2
+
+      yield this.createUnsignedTx(
+        verifySigTx,
+        'Redeem.VerifySignature',
+        // all stackable except the last one
+        // so we flush the buffer of sig verifies
+        // and finalize prior to trying to Post the VAA
+        !lastIx
+      );
+    }
+
+    // Finally create the VAA posting transaction
+    const postVaaTx = new Transaction().add(
+      createPostVaaInstruction(
+        this.connection,
+        this.coreBridge.programId,
+        senderAddr,
+        vaa,
+        signatureSet.publicKey,
+      ),
+    )
+    postVaaTx.recentBlockhash = blockhash;
+    postVaaTx.feePayer = senderAddr;
+
+    yield this.createUnsignedTx(postVaaTx, 'Redeem.PostVAA');
   }
 
   private createUnsignedTx(

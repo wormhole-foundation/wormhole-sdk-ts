@@ -19,15 +19,15 @@ export async function signSendWait(
   const txHashes: TxHash[] = [];
   for await (const tx of xfer) {
     txbuff.push(tx);
+    if (tx.parallelizable) continue
 
-    if (!tx.parallelizable) {
-      // sign/send
-      const signed = await signer.sign(txbuff);
-      const txids = await chain.sendWait(signed);
-      txHashes.push(...txids);
-      // reset buffer
-      txbuff = [];
-    }
+    // If !parallelizable, sign/send the current buffer
+    const signed = await signer.sign(txbuff);
+    const txids = await chain.sendWait(signed);
+    txHashes.push(...txids);
+
+    // reset buffer
+    txbuff = [];
   }
 
   if (txbuff.length > 0) {

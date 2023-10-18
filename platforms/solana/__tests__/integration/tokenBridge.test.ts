@@ -50,7 +50,7 @@ nockBack.fixtures = __dirname + '/fixtures';
 
 let nockDone: () => void;
 beforeEach(async () => {
-  nockBack.setMode('update');
+  nockBack.setMode('lockdown');
   const fullTestName = expect.getState().currentTestName?.replace(/\s/g, '_');
   const { nockDone: nd } = await nockBack(`${fullTestName}.json`, {
     // Remove the `id` from the request body after preparing it but before
