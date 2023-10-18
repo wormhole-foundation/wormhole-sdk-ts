@@ -8,7 +8,7 @@ import {
 
 import { PublicKey } from '@solana/web3.js';
 import { AnySolanaAddress } from './types';
-import { SolanaPlatform } from '../dist/esm';
+import { SolanaPlatform } from './platform';
 
 declare global {
   namespace Wormhole {
