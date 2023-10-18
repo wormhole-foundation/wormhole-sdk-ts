@@ -31,7 +31,7 @@ export class EvmSigner implements Signer {
     private _wallet: ethers.Wallet,
     private nonce: number,
     private provider: ethers.Provider,
-  ) { }
+  ) {}
   chain(): ChainName {
     return this._chain;
   }
@@ -74,7 +74,7 @@ export class EvmSigner implements Signer {
 }
 
 export class SolSigner implements Signer {
-  constructor(private _chain: ChainName, private _keypair: Keypair) { }
+  constructor(private _chain: ChainName, private _keypair: Keypair) {}
 
   chain(): ChainName {
     return this._chain;
@@ -114,7 +114,7 @@ export class CosmosSigner implements Signer {
     private _chain: ChainName,
     private _signer: SigningCosmWasmClient,
     private _account: AccountData,
-  ) { }
+  ) {}
 
   chain(): ChainName {
     return this._chain;

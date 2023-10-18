@@ -214,7 +214,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     const { blockhash } = await this.connection.getLatestBlockhash();
 
     // Yield transactions to verify sigs and post the VAA
-    yield* this.postVaa(sender, vaa, blockhash);
+    yield* this.postVaa(senderAddress, vaa, blockhash);
 
     // Now yield the transaction to actually create the token
     const transaction = new Transaction().add(
@@ -521,7 +521,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
   private async *postVaa(
     sender: AnySolanaAddress,
     vaa: VAA<'Transfer'> | VAA<'TransferWithPayload'> | VAA<'AttestMeta'>,
-    blockhash: string
+    blockhash: string,
   ) {
     const senderAddr = new SolanaAddress(sender).unwrap();
     const signatureSet = Keypair.generate();
@@ -538,13 +538,13 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     // Create a new transaction for every 2 signatures we have to Verify
     for (let i = 0; i < verifySignaturesInstructions.length; i += 2) {
       const verifySigTx = new Transaction().add(
-        ...verifySignaturesInstructions.slice(i, i + 2)
-      )
+        ...verifySignaturesInstructions.slice(i, i + 2),
+      );
       verifySigTx.recentBlockhash = blockhash;
       verifySigTx.feePayer = senderAddr;
       verifySigTx.partialSign(signatureSet);
 
-      const lastIx = i >= verifySignaturesInstructions.length - 2
+      const lastIx = i >= verifySignaturesInstructions.length - 2;
 
       yield this.createUnsignedTx(
         verifySigTx,
@@ -552,7 +552,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
         // all stackable except the last one
         // so we flush the buffer of sig verifies
         // and finalize prior to trying to Post the VAA
-        !lastIx
+        !lastIx,
       );
     }
 
@@ -565,7 +565,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
         vaa,
         signatureSet.publicKey,
       ),
-    )
+    );
     postVaaTx.recentBlockhash = blockhash;
     postVaaTx.feePayer = senderAddr;
 

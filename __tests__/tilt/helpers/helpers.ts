@@ -1,10 +1,12 @@
 import {
   ChainAddress,
+  ChainConfig,
   ChainContext,
   ChainName,
   PlatformName,
   PlatformToChains,
   Signer,
+  WormholeConfig,
   nativeChainAddress,
   rpcAddress,
 } from "@wormhole-foundation/connect-sdk";
@@ -93,4 +95,23 @@ export async function getCosmosSigner(
   );
 
   return new CosmosSigner(chain.chain, signingClient, acct);
+}
+
+
+
+// const conf = overrideChainSetting(CONFIG[network], {
+//     "Ethereum": { "rpc": "http://localhost:8545" },
+//     "Bsc": { "rpc": "http://localhost:8546" },
+//     "Solana": { "rpc": "http://localhost:8899" }
+// })
+
+export type ConfigOverride = {
+  [key: string]: Partial<ChainConfig>
+}
+export function overrideChainSetting(conf: WormholeConfig, overrides: ConfigOverride): WormholeConfig {
+  for (const [cn, oride] of Object.entries(overrides)) {
+    // @ts-ignore
+    conf.chains[cn] = { ...conf.chains[cn], ...oride }
+  }
+  return conf
 }

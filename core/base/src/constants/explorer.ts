@@ -292,7 +292,7 @@ const explorerConfig = [
   ]
 >;
 
-const explorerConfs = constMap(explorerConfig);
+export const explorerConfs = constMap(explorerConfig);
 
 export const explorerConfigs = (network: Network, chain: ChainName) =>
   network === "Devnet"

@@ -1,32 +1,25 @@
-import { TokenBridge, CONFIG, ChainConfig, Wormhole, WormholeConfig, isWormholeMessageId, nativeChainAddress, normalizeAmount, NativeAddress, Signer, ChainAddress } from "@wormhole-foundation/connect-sdk";
-import { signSendWait } from "@wormhole-foundation/connect-sdk/src";
+import {
+    CONFIG,
+    ChainAddress,
+    NativeAddress,
+    Signer,
+    TokenBridge,
+    Wormhole,
+    isWormholeMessageId,
+    normalizeAmount,
+} from "@wormhole-foundation/connect-sdk";
+import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaAddress, SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
-import { EvmAddress, EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
-import { getEvmSigner, getSolSigner, getStuff } from './helpers';
-
-type ConfigOverride = {
-    [key: string]: Partial<ChainConfig>
-}
-
-function overrideChainSetting(conf: WormholeConfig, overrides: ConfigOverride): WormholeConfig {
-    for (const [cn, oride] of Object.entries(overrides)) {
-        // @ts-ignore
-        conf.chains[cn] = { ...conf.chains[cn], ...oride }
-    }
-    return conf
-}
-
-const network = "Devnet"
-const allPlatformCtrs = [SolanaPlatform, EvmPlatform];
-const conf = overrideChainSetting(CONFIG[network], {
-    "Ethereum": { "rpc": "http://localhost:8545" },
-    "Bsc": { "rpc": "http://localhost:8546" },
-    "Solana": { "rpc": "http://localhost:8899" }
-})
+import { signSendWait } from "@wormhole-foundation/connect-sdk/src";
+import { getStuff } from './helpers';
 
 jest.setTimeout(10 * 60 * 1000)
+
+const network = "Devnet"
+const allPlatforms = [SolanaPlatform, EvmPlatform];
+
 describe("Tilt Token Bridge Tests", () => {
-    const wh = new Wormhole(network, allPlatformCtrs, conf)
+    const wh = new Wormhole(network, allPlatforms)
 
     describe("Ethereum To Solana", () => {
         const eth = wh.getChain("Ethereum");
@@ -102,5 +95,4 @@ describe("Tilt Token Bridge Tests", () => {
             expect(completed.length).toEqual(3)
         })
     })
-
 });

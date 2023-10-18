@@ -11,7 +11,12 @@ import {
   chainToPlatform,
   Balances,
 } from '@wormhole-foundation/connect-sdk';
-import { BlockheightBasedTransactionConfirmationStrategy, Connection, ParsedAccountData, PublicKey } from '@solana/web3.js';
+import {
+  BlockheightBasedTransactionConfirmationStrategy,
+  Connection,
+  ParsedAccountData,
+  PublicKey,
+} from '@solana/web3.js';
 import { solGenesisHashToNetworkChainPair } from './constants';
 import { SolanaPlatform } from './platform';
 import { SolanaAddress, SolanaZeroAddress } from './address';
@@ -124,9 +129,11 @@ export module SolanaUtils {
     rpc: Connection,
     stxns: SignedTx[],
   ): Promise<TxHash[]> {
-    console.log("SENDWAIT")
+    console.log('SENDWAIT');
 
-    const txhashes = await Promise.all(stxns.map((stxn) => rpc.sendRawTransaction(stxn)))
+    const txhashes = await Promise.all(
+      stxns.map((stxn) => rpc.sendRawTransaction(stxn)),
+    );
 
     // const { blockhash, lastValidBlockHeight } = await rpc.getLatestBlockhash();
     // const bhs: BlockheightBasedTransactionConfirmationStrategy = {
