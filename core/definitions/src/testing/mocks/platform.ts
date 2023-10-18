@@ -19,6 +19,8 @@ import {
   nativeIsRegistered,
   NativeAddress,
   UniversalAddress,
+  AnyAddress,
+  Balances,
 } from "../..";
 import { MockRpc } from "./rpc";
 import { MockChain } from "./chain";
@@ -82,6 +84,15 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
     token: NativeAddress<P> | UniversalAddress | "native",
   ): Promise<bigint | null> {
     throw new Error("Method not implemented.");
+  }
+
+  getBalances(
+    chain: ChainName,
+    rpc: RpcConnection<PlatformName>,
+    walletAddress: string,
+    tokens: AnyAddress[],
+  ): Promise<Balances> {
+    throw new Error("method not implemented");
   }
 
   getChain(chain: ChainName): ChainContext<P> {

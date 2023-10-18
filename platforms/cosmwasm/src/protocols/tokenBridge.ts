@@ -24,12 +24,12 @@ import {
 } from "../unsignedTransaction";
 import { CosmwasmContracts } from "../contracts";
 import {
+  AnyCosmwasmAddress,
   CosmwasmChainName,
-  UniversalOrCosmwasm,
   WrappedRegistryResponse,
-  toCosmwasmAddrString,
 } from "../types";
 import { CosmwasmPlatform } from "../platform";
+import { CosmwasmAddress } from "../address";
 
 export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
   private tokenBridge: string;
@@ -54,7 +54,7 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
     return new CosmwasmTokenBridge(network, chain, rpc, contracts);
   }
 
-  async isWrappedAsset(token: UniversalOrCosmwasm): Promise<boolean> {
+  async isWrappedAsset(token: AnyCosmwasmAddress): Promise<boolean> {
     try {
       await this.getOriginalAsset(token);
       return true;
@@ -92,8 +92,8 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
     return toNative(this.chain, address);
   }
 
-  async getOriginalAsset(token: UniversalOrCosmwasm): Promise<TokenId> {
-    const wrappedAddress = token.toString();
+  async getOriginalAsset(token: AnyCosmwasmAddress): Promise<TokenId> {
+    const wrappedAddress = new CosmwasmAddress(token).toString();
 
     const response = await this.rpc.queryContractSmart(wrappedAddress, {
       wrapped_asset_info: {},
@@ -119,10 +119,13 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
   }
 
   async *createAttestation(
-    token: UniversalOrCosmwasm | "native",
-    payer?: UniversalOrCosmwasm,
+    token: AnyCosmwasmAddress | "native",
+    payer?: AnyCosmwasmAddress,
   ): AsyncGenerator<CosmwasmUnsignedTransaction> {
     if (!payer) throw new Error("Payer required to create attestation");
+
+    const tokenStr = new CosmwasmAddress(token).toString();
+    const payerStr = new CosmwasmAddress(payer).toString();
 
     // TODO nonce?
     const nonce = 0;
@@ -134,13 +137,13 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
             },
           }
         : {
-            token: { contract_addr: token.toString() },
+            token: { contract_addr: tokenStr },
           };
 
     yield this.createUnsignedTx(
       {
         msgs: [
-          buildExecuteMsg(payer.toString(), this.tokenBridge, {
+          buildExecuteMsg(payerStr, this.tokenBridge, {
             create_asset_meta: { asset_info: assetInfo, nonce },
           }),
         ],
@@ -153,14 +156,16 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
 
   async *submitAttestation(
     vaa: VAA<"AttestMeta">,
-    payer?: UniversalOrCosmwasm,
+    payer?: AnyCosmwasmAddress,
   ): AsyncGenerator<CosmwasmUnsignedTransaction> {
     if (!payer) throw new Error("Payer required to submit attestation");
+
+    const payerStr = new CosmwasmAddress(payer).toString();
 
     yield this.createUnsignedTx(
       {
         msgs: [
-          buildExecuteMsg(payer.toString(), this.tokenBridge, {
+          buildExecuteMsg(payerStr, this.tokenBridge, {
             submit_vaa: { data: serialize(vaa) },
           }),
         ],
@@ -172,9 +177,9 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
   }
 
   async *transfer(
-    sender: UniversalOrCosmwasm,
+    sender: AnyCosmwasmAddress,
     recipient: ChainAddress,
-    token: UniversalOrCosmwasm | "native",
+    token: AnyCosmwasmAddress | "native",
     amount: bigint,
     payload?: Uint8Array,
   ): AsyncGenerator<CosmwasmUnsignedTransaction> {
@@ -194,7 +199,7 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
 
     const tokenAddress = isNative ? denom : token.toString();
 
-    const senderAddress = sender.toString();
+    const senderAddress = new CosmwasmAddress(sender).toString();
 
     const mk_initiate_transfer = (info: object) => {
       const common = {
@@ -273,14 +278,14 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
   }
 
   async *redeem(
-    sender: UniversalOrCosmwasm,
+    sender: AnyCosmwasmAddress,
     vaa: VAA<"Transfer"> | VAA<"TransferWithPayload">,
     unwrapNative: boolean = true,
   ): AsyncGenerator<CosmwasmUnsignedTransaction> {
     // TODO: unwrapNative
 
     const data = Buffer.from(serialize(vaa)).toString("base64");
-    const senderAddress = toCosmwasmAddrString(sender);
+    const senderAddress = new CosmwasmAddress(sender).toString();
 
     const toTranslator =
       this.translator &&

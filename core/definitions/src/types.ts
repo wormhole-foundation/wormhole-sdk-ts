@@ -15,6 +15,14 @@ export type SequenceId = bigint;
 
 export type SignedTx = any;
 
+export type AnyAddress =
+  | NativeAddress<PlatformName>
+  | UniversalAddress
+  | string
+  | number
+  | Uint8Array
+  | number[];
+
 export type TokenId = ChainAddress;
 export function isTokenId(thing: TokenId | any): thing is TokenId {
   return (
@@ -22,6 +30,10 @@ export function isTokenId(thing: TokenId | any): thing is TokenId {
     isChain((<TokenId>thing).chain)
   );
 }
+
+export type Balances = {
+  [key: string]: BigInt | null;
+};
 
 export interface Signer {
   chain(): ChainName;

@@ -5,11 +5,10 @@ import {
   SignedTx,
   Network,
   PlatformToChains,
-  WormholeMessageId,
   nativeDecimals,
   chainToPlatform,
   PlatformUtils,
-  UniversalOrNative,
+  Balances,
 } from "@wormhole-foundation/connect-sdk";
 import {
   IBC_TRANSFER_PORT,
@@ -19,7 +18,7 @@ import {
 import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import { CosmwasmPlatform } from "./platform";
 import { CosmwasmAddress } from "./address";
-import { IbcExtension, QueryClient, setupIbcExtension } from "@cosmjs/stargate";
+import { AnyCosmwasmAddress } from "./types";
 
 // forces CosmwasmUtils to implement PlatformUtils
 var _: PlatformUtils<"Cosmwasm"> = CosmwasmUtils;
@@ -55,11 +54,12 @@ export module CosmwasmUtils {
   export async function getDecimals(
     chain: ChainName,
     rpc: CosmWasmClient,
-    token: UniversalOrNative<"Cosmwasm"> | "native",
+    token: AnyCosmwasmAddress | "native",
   ): Promise<bigint> {
     if (token === "native") return nativeDecimals(CosmwasmPlatform.platform);
 
-    const { decimals } = await rpc.queryContractSmart(token.toString(), {
+    const addrStr = new CosmwasmAddress(token).toString();
+    const { decimals } = await rpc.queryContractSmart(addrStr, {
       token_info: {},
     });
     return decimals;
@@ -69,7 +69,7 @@ export module CosmwasmUtils {
     chain: ChainName,
     rpc: CosmWasmClient,
     walletAddress: string,
-    token: UniversalOrNative<"Cosmwasm"> | "native",
+    token: AnyCosmwasmAddress | "native",
   ): Promise<bigint | null> {
     if (token === "native") {
       const { amount } = await rpc.getBalance(
@@ -79,8 +79,30 @@ export module CosmwasmUtils {
       return BigInt(amount);
     }
 
-    const { amount } = await rpc.getBalance(walletAddress, token.toString());
+    const addrStr = new CosmwasmAddress(token).toString();
+    const { amount } = await rpc.getBalance(walletAddress, addrStr);
     return BigInt(amount);
+  }
+
+  export async function getBalances(
+    chain: ChainName,
+    rpc: CosmWasmClient,
+    walletAddress: string,
+    tokens: (AnyCosmwasmAddress | "native")[],
+  ): Promise<Balances> {
+    const client = CosmwasmPlatform.getQueryClient(rpc);
+    const allBalances = await client.bank.allBalances(walletAddress);
+    const balancesArr = tokens.map((token) => {
+      const address =
+        token === "native"
+          ? getNativeDenom(chain)
+          : new CosmwasmAddress(token).toString();
+      const balance = allBalances.find((balance) => balance.denom === address);
+      const balanceBigInt = balance ? BigInt(balance.amount) : null;
+      return { [address]: balanceBigInt };
+    });
+
+    return balancesArr.reduce((obj, item) => Object.assign(obj, item), {});
   }
 
   function getNativeDenom(chain: ChainName): string {
@@ -135,19 +157,11 @@ export module CosmwasmUtils {
     sourceChannel: string,
     rpc: CosmWasmClient,
   ): Promise<string | null> {
-    const queryClient = asQueryClient(rpc);
+    const queryClient = CosmwasmPlatform.getQueryClient(rpc);
     const conn = await queryClient.ibc.channel.channel(
       IBC_TRANSFER_PORT,
       sourceChannel,
     );
     return conn.channel?.counterparty?.channelId ?? null;
   }
-
-  export const asQueryClient = (
-    rpc: CosmWasmClient,
-  ): QueryClient & IbcExtension => {
-    // @ts-ignore
-    const tmClient: TendermintClient = rpc.getTmClient()!;
-    return QueryClient.withExtensions(tmClient, setupIbcExtension);
-  };
 }

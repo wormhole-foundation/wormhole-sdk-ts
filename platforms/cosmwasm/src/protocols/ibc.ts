@@ -37,13 +37,13 @@ import {
 import { CosmwasmContracts } from "../contracts";
 import { Gateway } from "../gateway";
 import { CosmwasmPlatform } from "../platform";
-import { CosmwasmUtils } from "../platformUtils";
-import { CosmwasmChainName, UniversalOrCosmwasm } from "../types";
+import { CosmwasmChainName, AnyCosmwasmAddress } from "../types";
 import {
   CosmwasmTransaction,
   CosmwasmUnsignedTransaction,
   computeFee,
 } from "../unsignedTransaction";
+import { CosmwasmAddress } from "../address";
 
 const millisToNano = (seconds: number) => seconds * 1_000_000;
 
@@ -87,12 +87,12 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
   }
 
   async *transfer(
-    sender: UniversalOrCosmwasm,
+    sender: AnyCosmwasmAddress,
     recipient: ChainAddress,
-    token: UniversalOrCosmwasm | "native",
+    token: AnyCosmwasmAddress | "native",
     amount: bigint,
   ): AsyncGenerator<CosmwasmUnsignedTransaction> {
-    const senderAddress = sender.toString();
+    const senderAddress = new CosmwasmAddress(sender).toString();
     const nonce = Math.round(Math.random() * 10000);
 
     // TODO: needs heavy testing
@@ -124,7 +124,13 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
     const timeout = millisToNano(Date.now() + IBC_TIMEOUT_MILLIS);
     const memo = JSON.stringify(payload);
 
-    const ibcDenom = Gateway.deriveIbcDenom(this.chain, token.toString());
+    const ibcDenom =
+      token === "native"
+        ? CosmwasmPlatform.getNativeDenom(this.chain)
+        : Gateway.deriveIbcDenom(
+            this.chain,
+            new CosmwasmAddress(token).toString(),
+          );
     const ibcToken = coin(amount.toString(), ibcDenom.toString());
 
     const ibcMessage: MsgTransferEncodeObject = {
@@ -332,7 +338,7 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
     for (const xfer of xfers) {
       // If its present in the commitment results, its interpreted as in-flight
       // the client throws an error and we report any error as not in-flight
-      const qc = CosmwasmUtils.asQueryClient(this.rpc);
+      const qc = CosmwasmPlatform.getQueryClient(this.rpc);
       try {
         await qc.ibc.channel.packetCommitment(
           IBC_TRANSFER_PORT,

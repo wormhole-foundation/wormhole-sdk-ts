@@ -9,12 +9,14 @@ import {
   nativeDecimals,
   PlatformUtils,
   chainToPlatform,
-  UniversalOrNative,
+  Balances,
 } from '@wormhole-foundation/connect-sdk';
 import { Connection, ParsedAccountData, PublicKey } from '@solana/web3.js';
 import { solGenesisHashToNetworkChainPair } from './constants';
 import { SolanaPlatform } from './platform';
 import { SolanaAddress, SolanaZeroAddress } from './address';
+import { AnySolanaAddress } from './types';
+import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
 // forces SolanaUtils to implement PlatformUtils
 var _: PlatformUtils<'Solana'> = SolanaUtils;
@@ -46,12 +48,12 @@ export module SolanaUtils {
   export async function getDecimals(
     chain: ChainName,
     rpc: Connection,
-    token: UniversalOrNative<'Solana'> | 'native',
+    token: AnySolanaAddress | 'native',
   ): Promise<bigint> {
     if (token === 'native') return nativeDecimals(SolanaPlatform.platform);
 
     let mint = await rpc.getParsedAccountInfo(
-      new PublicKey(token.toUint8Array()),
+      new SolanaAddress(token).unwrap(),
     );
 
     if (!mint || !mint.value) throw new Error('could not fetch token details');
@@ -64,7 +66,7 @@ export module SolanaUtils {
     chain: ChainName,
     rpc: Connection,
     walletAddress: string,
-    token: UniversalOrNative<'Solana'> | 'native',
+    token: AnySolanaAddress | 'native',
   ): Promise<bigint | null> {
     if (token === 'native')
       return BigInt(await rpc.getBalance(new PublicKey(walletAddress)));
@@ -76,12 +78,45 @@ export module SolanaUtils {
 
     const splToken = await rpc.getTokenAccountsByOwner(
       new PublicKey(walletAddress),
-      { mint: new PublicKey(token.toUint8Array()) },
+      { mint: new SolanaAddress(token).unwrap() },
     );
     if (!splToken.value[0]) return null;
 
     const balance = await rpc.getTokenAccountBalance(splToken.value[0].pubkey);
     return BigInt(balance.value.amount);
+  }
+
+  export async function getBalances(
+    chain: ChainName,
+    rpc: Connection,
+    walletAddress: string,
+    tokens: (AnySolanaAddress | 'native')[],
+  ): Promise<Balances> {
+    let native: bigint;
+    if (tokens.includes('native')) {
+      native = BigInt(await rpc.getBalance(new PublicKey(walletAddress)));
+    }
+
+    const splParsedTokenAccounts = await rpc.getParsedTokenAccountsByOwner(
+      new PublicKey(walletAddress),
+      {
+        programId: new PublicKey(TOKEN_PROGRAM_ID),
+      },
+    );
+
+    const balancesArr = tokens.map((token) => {
+      if (token === 'native') {
+        return { ['native']: native };
+      }
+      const addrString = new SolanaAddress(token).toString();
+      const amount = splParsedTokenAccounts.value.find(
+        (v) => v?.account.data.parsed?.info?.mint === token,
+      )?.account.data.parsed?.info?.tokenAmount?.amount;
+      if (!amount) return { [addrString]: null };
+      return { [addrString]: BigInt(amount) };
+    });
+
+    return balancesArr.reduce((obj, item) => Object.assign(obj, item), {});
   }
 
   export async function sendWait(

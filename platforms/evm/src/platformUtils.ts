@@ -8,7 +8,7 @@ import {
   nativeDecimals,
   chainToPlatform,
   PlatformUtils,
-  UniversalOrNative,
+  Balances,
 } from '@wormhole-foundation/connect-sdk';
 
 import { Provider } from 'ethers';
@@ -16,6 +16,7 @@ import { evmChainIdToNetworkChainPair } from './constants';
 import { EvmAddress, EvmZeroAddress } from './address';
 import { EvmContracts } from './contracts';
 import { EvmPlatform } from './platform';
+import { AnyEvmAddress } from './types';
 
 // forces EvmUtils to implement PlatformUtils
 var _: PlatformUtils<'Evm'> = EvmUtils;
@@ -48,32 +49,47 @@ export module EvmUtils {
   export async function getDecimals(
     chain: ChainName,
     rpc: Provider,
-    token: UniversalOrNative<'Evm'> | 'native',
+    token: AnyEvmAddress | 'native',
   ): Promise<bigint> {
     if (token === 'native') return nativeDecimals(EvmPlatform.platform);
 
     const tokenContract = EvmContracts.getTokenImplementation(
       rpc,
-      token.toString(),
+      new EvmAddress(token).toString(),
     );
-    const decimals = await tokenContract.decimals();
-    return decimals;
+    return tokenContract.decimals();
   }
 
   export async function getBalance(
     chain: ChainName,
     rpc: Provider,
     walletAddr: string,
-    token: UniversalOrNative<'Evm'> | 'native',
+    token: AnyEvmAddress | 'native',
   ): Promise<bigint | null> {
-    if (token === 'native') return await rpc.getBalance(walletAddr);
+    if (token === 'native') return rpc.getBalance(walletAddr);
 
     const tokenImpl = EvmContracts.getTokenImplementation(
       rpc,
-      token.toString(),
+      new EvmAddress(token).toString(),
     );
-    const balance = await tokenImpl.balanceOf(walletAddr);
-    return balance;
+    return tokenImpl.balanceOf(walletAddr);
+  }
+
+  export async function getBalances(
+    chain: ChainName,
+    rpc: Provider,
+    walletAddr: string,
+    tokens: (AnyEvmAddress | 'native')[],
+  ): Promise<Balances> {
+    const balancesArr = await Promise.all(
+      tokens.map(async (token) => {
+        const balance = await getBalance(chain, rpc, walletAddr, token);
+        const address =
+          token === 'native' ? 'native' : new EvmAddress(token).toString();
+        return { [address]: balance };
+      }),
+    );
+    return balancesArr.reduce((obj, item) => Object.assign(obj, item), {});
   }
 
   export async function sendWait(

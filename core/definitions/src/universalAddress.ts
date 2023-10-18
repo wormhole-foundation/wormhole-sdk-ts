@@ -8,6 +8,7 @@ import { Address, NativeAddress, toNative } from "./address";
 
 export class UniversalAddress implements Address {
   static readonly byteSize = 32;
+  private readonly type = "Universal";
 
   private readonly address: Uint8Array;
 
@@ -45,7 +46,7 @@ export class UniversalAddress implements Address {
   }
 
   equals(other: UniversalAddress): boolean {
-    if (other instanceof UniversalAddress) {
+    if (UniversalAddress.instanceof(other)) {
       return other.toString() === this.toString();
     }
     return false;
@@ -53,5 +54,9 @@ export class UniversalAddress implements Address {
 
   static isValidAddress(address: string) {
     return isHexByteString(address, UniversalAddress.byteSize);
+  }
+
+  static instanceof(address: any) {
+    return address.type === "Universal";
   }
 }

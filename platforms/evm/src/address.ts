@@ -1,6 +1,8 @@
-import { Address, UniversalAddress } from '@wormhole-foundation/connect-sdk';
+import { Address, UniversalAddress, registerNative } from '@wormhole-foundation/connect-sdk';
 
 import { ethers } from 'ethers';
+import { AnyEvmAddress } from './types';
+import { EvmPlatform } from './platform';
 
 declare global {
   namespace Wormhole {
@@ -15,11 +17,17 @@ export const EvmZeroAddress = ethers.ZeroAddress;
 
 export class EvmAddress implements Address {
   static readonly byteSize = 20;
+  public readonly platform = EvmPlatform.platform;
 
-  //stored as checksum address
+  // stored as checksum address
   private readonly address: string;
 
-  constructor(address: string | Uint8Array | UniversalAddress) {
+  constructor(address: AnyEvmAddress) {
+    if (EvmAddress.instanceof(address)) {
+      const a = address as unknown as EvmAddress;
+      this.address = a.address;
+      return;
+    }
     if (typeof address === 'string') {
       if (!EvmAddress.isValidAddress(address))
         throw new Error(
@@ -34,7 +42,7 @@ export class EvmAddress implements Address {
         );
 
       this.address = ethers.getAddress(ethers.hexlify(address));
-    } else if (address instanceof UniversalAddress) {
+    } else if (UniversalAddress.instanceof(address)) {
       // If its a universal address and we want it to be an ethereum address,
       // we need to chop off the first 12 bytes of padding
       const addressBytes = address.toUint8Array();
@@ -71,7 +79,12 @@ export class EvmAddress implements Address {
   static isValidAddress(address: string) {
     return ethers.isAddress(address);
   }
+  static instanceof(address: any) {
+    return address.platform === EvmPlatform.platform;
+  }
   equals(other: UniversalAddress): boolean {
     return other.equals(this.toUniversalAddress());
   }
 }
+
+registerNative('Evm', EvmAddress);

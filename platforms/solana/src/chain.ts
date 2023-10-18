@@ -4,7 +4,6 @@ import {
   NativeAddress,
   UniversalAddress,
   UniversalOrNative,
-  Platform,
   toNative,
 } from '@wormhole-foundation/connect-sdk';
 import { getAssociatedTokenAddress } from '@solana/spl-token';

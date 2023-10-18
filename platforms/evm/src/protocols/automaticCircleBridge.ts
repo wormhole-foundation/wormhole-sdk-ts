@@ -8,18 +8,13 @@ import {
 
 import { evmNetworkChainToEvmChainId } from '../constants';
 
-import {
-  EvmChainName,
-  UniversalOrEvm,
-  addChainId,
-  addFrom,
-  toEvmAddrString,
-} from '../types';
+import { AnyEvmAddress, EvmChainName, addChainId, addFrom } from '../types';
 import { EvmUnsignedTransaction } from '../unsignedTransaction';
 import { CircleRelayer } from '../ethers-contracts';
 import { Provider, TransactionRequest } from 'ethers';
 import { EvmContracts } from '../contracts';
 import { EvmPlatform } from '../platform';
+import { EvmAddress } from '../address';
 
 export class EvmAutomaticCircleBridge implements AutomaticCircleBridge<'Evm'> {
   readonly circleRelayer: CircleRelayer;
@@ -53,19 +48,21 @@ export class EvmAutomaticCircleBridge implements AutomaticCircleBridge<'Evm'> {
 
   async *transfer(
     token: TokenId,
-    sender: UniversalOrEvm,
+    sender: AnyEvmAddress,
     recipient: ChainAddress,
     amount: bigint,
     nativeGas?: bigint,
   ): AsyncGenerator<EvmUnsignedTransaction> {
-    const senderAddr = toEvmAddrString(sender);
+    const senderAddr = new EvmAddress(sender).toString();
     const recipientChainId = chainToChainId(recipient.chain);
     const recipientAddress = recipient.address
       .toUniversalAddress()
       .toUint8Array();
     const nativeTokenGas = nativeGas ? nativeGas : 0n;
 
-    const tokenAddr = toEvmAddrString(token.address.toUniversalAddress());
+    const tokenAddr = new EvmAddress(
+      token.address.toUniversalAddress(),
+    ).toString();
 
     const tokenContract = EvmContracts.getTokenImplementation(
       this.provider,

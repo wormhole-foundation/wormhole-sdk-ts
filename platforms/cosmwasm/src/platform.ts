@@ -1,5 +1,11 @@
 import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
-import { IbcExtension, QueryClient, setupIbcExtension } from "@cosmjs/stargate";
+import {
+  BankExtension,
+  IbcExtension,
+  QueryClient,
+  setupBankExtension,
+  setupIbcExtension,
+} from "@cosmjs/stargate";
 import { TendermintClient } from "@cosmjs/tendermint-rpc";
 
 import {
@@ -49,6 +55,7 @@ export module CosmwasmPlatform {
     isSupportedChain,
     getDecimals,
     getBalance,
+    getBalances,
     sendWait,
     getCurrentBlock,
     chainFromRpc,
@@ -112,10 +119,14 @@ export module CosmwasmPlatform {
 
   export const getQueryClient = (
     rpc: CosmWasmClient,
-  ): QueryClient & IbcExtension => {
+  ): QueryClient & BankExtension & IbcExtension => {
     // @ts-ignore
     const tmClient: TendermintClient = rpc.getTmClient()!;
-    return QueryClient.withExtensions(tmClient, setupIbcExtension);
+    return QueryClient.withExtensions(
+      tmClient,
+      setupBankExtension,
+      setupIbcExtension,
+    );
   };
 
   // cached channels from config if available

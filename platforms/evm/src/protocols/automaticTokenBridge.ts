@@ -1,6 +1,5 @@
 import {
   ChainAddress,
-  UniversalOrNative,
   AutomaticTokenBridge,
   VAA,
   serialize,
@@ -13,17 +12,12 @@ import {
 import { Provider, TransactionRequest } from 'ethers';
 
 import { evmNetworkChainToEvmChainId } from '../constants';
-import {
-  EvmChainName,
-  UniversalOrEvm,
-  addChainId,
-  addFrom,
-  toEvmAddrString,
-} from '../types';
+import { AnyEvmAddress, EvmChainName, addChainId, addFrom } from '../types';
 import { EvmUnsignedTransaction } from '../unsignedTransaction';
 import { TokenBridgeRelayer } from '../ethers-contracts';
 import { EvmContracts } from '../contracts';
 import { EvmPlatform } from '../platform';
+import { EvmAddress } from '../address';
 
 export class EvmAutomaticTokenBridge implements AutomaticTokenBridge<'Evm'> {
   readonly tokenBridgeRelayer: TokenBridgeRelayer;
@@ -47,10 +41,10 @@ export class EvmAutomaticTokenBridge implements AutomaticTokenBridge<'Evm'> {
     );
   }
   async *redeem(
-    sender: UniversalOrNative<'Evm'>,
+    sender: AnyEvmAddress,
     vaa: VAA<'TransferWithPayload'>,
   ): AsyncGenerator<EvmUnsignedTransaction> {
-    const senderAddr = toEvmAddrString(sender);
+    const senderAddr = new EvmAddress(sender).toString();
     const txReq =
       await this.tokenBridgeRelayer.completeTransferWithRelay.populateTransaction(
         serialize(vaa),
@@ -72,14 +66,14 @@ export class EvmAutomaticTokenBridge implements AutomaticTokenBridge<'Evm'> {
 
   //alternative naming: initiateTransfer
   async *transfer(
-    sender: UniversalOrEvm,
+    sender: AnyEvmAddress,
     recipient: ChainAddress,
-    token: UniversalOrEvm | 'native',
+    token: AnyEvmAddress | 'native',
     amount: bigint,
     relayerFee: bigint,
     nativeGas?: bigint,
   ): AsyncGenerator<EvmUnsignedTransaction> {
-    const senderAddr = toEvmAddrString(sender);
+    const senderAddr = new EvmAddress(sender).toString();
     const recipientChainId = chainToChainId(recipient.chain);
     const recipientAddress = recipient.address
       .toUniversalAddress()
@@ -101,7 +95,7 @@ export class EvmAutomaticTokenBridge implements AutomaticTokenBridge<'Evm'> {
       );
     } else {
       //TODO check for ERC-2612 (permit) support on token?
-      const tokenAddr = toEvmAddrString(token);
+      const tokenAddr = new EvmAddress(token).toString();
       // TODO: allowance?
 
       const txReq =
@@ -132,7 +126,9 @@ export class EvmAutomaticTokenBridge implements AutomaticTokenBridge<'Evm'> {
         : token;
 
     const destChainId = toChainId(recipient.chain);
-    const destTokenAddress = toEvmAddrString(tokenId.address.toString());
+    const destTokenAddress = new EvmAddress(
+      tokenId.address.toString(),
+    ).toString();
 
     const tokenContract = EvmContracts.getTokenImplementation(
       this.provider,
