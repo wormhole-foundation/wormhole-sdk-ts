@@ -55,10 +55,18 @@ const rpcConfig = [
       ["Terra2", ""],
     ],
   ],
+  [
+    "Devnet",
+    [
+      ["Ethereum", "http://localhost:8545"],
+      ["Bsc", "http://localhost:8546"],
+      ["Solana", "http://localhost:8899"],
+    ],
+  ],
 ] as const satisfies RoArray<
-  readonly ["Mainnet" | "Testnet", RoArray<readonly [ChainName, string]>]
+  readonly [Network, RoArray<readonly [ChainName, string]>]
 >;
 
 const rpc = constMap(rpcConfig);
 export const rpcAddress = (network: Network, chain: ChainName) =>
-  network === "Devnet" ? undefined : rpc.get(network, chain);
+  rpc.has(network, chain) ? rpc.get(network, chain) : "";

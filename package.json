@@ -29,7 +29,7 @@
     "coverage": "npm run coverage --workspaces --if-present",
     "clean": "npm run clean --workspaces --if-present",
     "prettier": "npm run prettier --workspaces --if-present",
-    "test:integration": "jest --config ./jest.config.ts --roots ./__tests__",
+    "test:tilt": "jest --config ./jest.config.ts --roots ./__tests__",
     "test": "NETWORK=Mainnet npm run test --workspaces --if-present",
     "docs": "typedoc"
   },

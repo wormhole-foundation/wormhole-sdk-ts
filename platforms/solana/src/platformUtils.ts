@@ -11,7 +11,12 @@ import {
   chainToPlatform,
   Balances,
 } from '@wormhole-foundation/connect-sdk';
-import { Connection, ParsedAccountData, PublicKey } from '@solana/web3.js';
+import {
+  BlockheightBasedTransactionConfirmationStrategy,
+  Connection,
+  ParsedAccountData,
+  PublicKey,
+} from '@solana/web3.js';
 import { solGenesisHashToNetworkChainPair } from './constants';
 import { SolanaPlatform } from './platform';
 import { SolanaAddress, SolanaZeroAddress } from './address';
@@ -124,20 +129,18 @@ export module SolanaUtils {
     rpc: Connection,
     stxns: SignedTx[],
   ): Promise<TxHash[]> {
-    const txhashes: TxHash[] = [];
+    console.log('SENDWAIT');
 
-    // TODO: concurrent?
-    let lastTxHash: TxHash;
-    for (const stxn of stxns) {
-      const txHash = await rpc.sendRawTransaction(stxn);
-      // TODO: throw error?
-      if (!txHash) continue;
-      lastTxHash = txHash;
-      txhashes.push(txHash);
-    }
+    const txhashes = await Promise.all(
+      stxns.map((stxn) => rpc.sendRawTransaction(stxn)),
+    );
 
-    // TODO: allow passing commitment level in? this method is also deprecated...
-    await rpc.confirmTransaction(lastTxHash!, 'finalized');
+    // const { blockhash, lastValidBlockHeight } = await rpc.getLatestBlockhash();
+    // const bhs: BlockheightBasedTransactionConfirmationStrategy = {
+    //   signature: txhashes[txhashes.length - 1], blockhash, lastValidBlockHeight
+    // }
+    // await rpc.confirmTransaction(bhs, 'finalized');
+    await rpc.confirmTransaction(txhashes[txhashes.length - 1], 'finalized');
 
     return txhashes;
   }

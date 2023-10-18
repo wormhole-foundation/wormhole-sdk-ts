@@ -190,6 +190,7 @@ describe('TokenBridge Tests', () => {
       for await (const atx of attestation) {
         allTxns.push(atx);
       }
+
       expect(allTxns).toHaveLength(1);
       const [attestTx] = allTxns;
       expect(attestTx).toBeTruthy();
@@ -213,7 +214,7 @@ describe('TokenBridge Tests', () => {
           name: Buffer.from(new Uint8Array(16)).toString('hex'),
         },
         hash: new Uint8Array(32),
-        guardianSet: 0,
+        guardianSet: 3,
         signatures: [{ guardianIndex: 0, signature: new Signature(1n, 2n, 1) }],
         emitterChain: 'Avalanche',
         emitterAddress: toNative(chain, tbAddress).toUniversalAddress(),
@@ -228,13 +229,13 @@ describe('TokenBridge Tests', () => {
       for await (const atx of submitAttestation) {
         allTxns.push(atx);
       }
-      expect(allTxns).toHaveLength(1);
-      const [attestTx] = allTxns;
-      expect(attestTx).toBeTruthy();
-      expect(attestTx.chain).toEqual(chain);
+      expect(allTxns).toHaveLength(3);
 
-      const { transaction } = attestTx;
-      expect(transaction.instructions).toHaveLength(1);
+      const [verifySig, postVaa, create] = allTxns;
+      //
+      expect(verifySig.transaction.instructions).toHaveLength(2)
+      expect(postVaa.transaction.instructions).toHaveLength(1)
+      expect(create.transaction.instructions).toHaveLength(1);
     });
   });
 
