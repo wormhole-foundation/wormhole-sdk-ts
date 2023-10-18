@@ -3,9 +3,13 @@ import {
   hexByteStringToUint8Array,
   Address,
   UniversalAddress,
+  PlatformName,
+  registerNative,
 } from '@wormhole-foundation/connect-sdk';
 
-import { PublicKey, PublicKeyInitData } from '@solana/web3.js';
+import { PublicKey } from '@solana/web3.js';
+import { AnySolanaAddress } from './types';
+import { SolanaPlatform } from './platform';
 
 declare global {
   namespace Wormhole {
@@ -21,12 +25,20 @@ export const SolanaZeroAddress = '11111111111111111111111111111111';
 
 export class SolanaAddress implements Address {
   static readonly byteSize = 32;
+  public readonly platform: PlatformName = SolanaPlatform.platform;
 
   private readonly address: PublicKey;
 
-  constructor(address: PublicKeyInitData | UniversalAddress) {
-    if (address instanceof UniversalAddress)
-      this.address = new PublicKey(address.toUint8Array());
+  constructor(address: AnySolanaAddress) {
+    if (SolanaAddress.instanceof(address)) {
+      const a = address as unknown as SolanaAddress;
+      this.address = a.address;
+      return;
+    }
+    if (UniversalAddress.instanceof(address))
+      this.address = new PublicKey(
+        (address as UniversalAddress).toUint8Array(),
+      );
     if (typeof address === 'string' && isHexByteString(address))
       this.address = new PublicKey(hexByteStringToUint8Array(address));
     else this.address = new PublicKey(address);
@@ -48,7 +60,13 @@ export class SolanaAddress implements Address {
     return new UniversalAddress(this.address.toBytes());
   }
 
+  static instanceof(address: any) {
+    return address.platform === SolanaPlatform.platform;
+  }
+
   equals(other: UniversalAddress): boolean {
     return this.toUniversalAddress().equals(other);
   }
 }
+
+registerNative('Solana', SolanaAddress);

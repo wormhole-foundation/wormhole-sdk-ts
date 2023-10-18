@@ -1,25 +1,15 @@
 import {
-  UniversalAddress,
   UniversalOrNative,
-  registerNative,
   PlatformToChains,
 } from '@wormhole-foundation/connect-sdk';
 import { TransactionRequest } from 'ethers';
-
-import { EvmAddress } from './address';
-
-registerNative('Evm', EvmAddress);
 
 export const unusedNonce = 0;
 export const unusedArbiterFee = 0n;
 
 export type EvmChainName = PlatformToChains<'Evm'>;
-export type UniversalOrEvm = UniversalOrNative<'Evm'> | string;
-
-export const toEvmAddrString = (addr: UniversalOrEvm) =>
-  typeof addr === 'string'
-    ? addr
-    : (addr instanceof UniversalAddress ? addr.toNative('Evm') : addr).unwrap();
+export type UniversalOrEvm = UniversalOrNative<'Evm'>;
+export type AnyEvmAddress = UniversalOrEvm | string | Uint8Array;
 
 export const addFrom = (txReq: TransactionRequest, from: string) => ({
   ...txReq,

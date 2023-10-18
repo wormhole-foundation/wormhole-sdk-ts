@@ -5,12 +5,12 @@ import {
   deserializeLayout,
   uint8ArrayToHexByteString,
 } from "@wormhole-foundation/sdk-base";
-import { ChainAddress, UniversalOrNative } from "../address";
+import { ChainAddress } from "../address";
 import { CircleMessageId } from "../attestation";
 import { universalAddressItem } from "../layout-items";
 import "../payloads/connect";
 import { RpcConnection } from "../rpc";
-import { TokenId } from "../types";
+import { AnyAddress, TokenId } from "../types";
 import { UnsignedTransaction } from "../unsignedTransaction";
 import { keccak256 } from "../utils";
 
@@ -55,7 +55,7 @@ export type CircleTransferMessage = {
 export interface AutomaticCircleBridge<P extends PlatformName> {
   transfer(
     token: ChainAddress,
-    sender: UniversalOrNative<P>,
+    sender: AnyAddress,
     recipient: ChainAddress,
     amount: bigint,
     nativeGas?: bigint,
@@ -66,13 +66,13 @@ export interface AutomaticCircleBridge<P extends PlatformName> {
 // https://github.com/circlefin/evm-cctp-contracts
 export interface CircleBridge<P extends PlatformName> {
   redeem(
-    sender: UniversalOrNative<P>,
+    sender: AnyAddress,
     message: string,
     attestation: string,
   ): AsyncGenerator<UnsignedTransaction>;
   transfer(
     token: ChainAddress,
-    sender: UniversalOrNative<P>,
+    sender: AnyAddress,
     recipient: ChainAddress,
     amount: bigint,
   ): AsyncGenerator<UnsignedTransaction>;

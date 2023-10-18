@@ -1,6 +1,6 @@
 import { PlatformName } from "@wormhole-foundation/sdk-base";
-import { UniversalOrNative, NativeAddress, ChainAddress } from "../address";
-import { TokenId } from "../types";
+import { NativeAddress, ChainAddress } from "../address";
+import { AnyAddress, TokenId } from "../types";
 import { VAA } from "../vaa";
 import { UnsignedTransaction } from "../unsignedTransaction";
 import "../payloads/tokenBridge";
@@ -36,9 +36,9 @@ export function supportsAutomaticTokenBridge<P extends PlatformName>(
 
 export interface TokenBridge<P extends PlatformName> {
   // checks a native address to see if its a wrapped version
-  isWrappedAsset(nativeAddress: UniversalOrNative<P>): Promise<boolean>;
+  isWrappedAsset(nativeAddress: AnyAddress): Promise<boolean>;
   // returns the original asset with its foreign chain
-  getOriginalAsset(nativeAddress: UniversalOrNative<P>): Promise<TokenId>;
+  getOriginalAsset(nativeAddress: AnyAddress): Promise<TokenId>;
   // returns the wrapped version of the native asset
   getWrappedNative(): Promise<NativeAddress<P>>;
 
@@ -53,24 +53,24 @@ export interface TokenBridge<P extends PlatformName> {
   ): Promise<boolean>;
   //signer required:
   createAttestation(
-    token_to_attest: UniversalOrNative<P>,
-    payer?: UniversalOrNative<P>
+    token_to_attest: AnyAddress,
+    payer?: AnyAddress
   ): AsyncGenerator<UnsignedTransaction>;
   submitAttestation(
     vaa: VAA<"AttestMeta">,
-    payer?: UniversalOrNative<P>
+    payer?: AnyAddress
   ): AsyncGenerator<UnsignedTransaction>;
   //alternative naming: initiateTransfer
   transfer(
-    sender: UniversalOrNative<P>,
+    sender: AnyAddress,
     recipient: ChainAddress,
-    token: UniversalOrNative<P> | "native",
+    token: AnyAddress,
     amount: bigint,
     payload?: Uint8Array
   ): AsyncGenerator<UnsignedTransaction>;
   //alternative naming: completeTransfer
   redeem(
-    sender: UniversalOrNative<P>,
+    sender: AnyAddress,
     vaa: VAA<"Transfer"> | VAA<"TransferWithPayload">,
     unwrapNative?: boolean //default: true
   ): AsyncGenerator<UnsignedTransaction>;
@@ -79,15 +79,15 @@ export interface TokenBridge<P extends PlatformName> {
 
 export interface AutomaticTokenBridge<P extends PlatformName> {
   transfer(
-    sender: UniversalOrNative<P>,
+    sender: AnyAddress,
     recipient: ChainAddress,
-    token: UniversalOrNative<P> | "native",
+    token: AnyAddress,
     amount: bigint,
     relayerFee: bigint,
     nativeGas?: bigint
   ): AsyncGenerator<UnsignedTransaction>;
   redeem(
-    sender: UniversalOrNative<P>,
+    sender: AnyAddress,
     vaa: VAA<"TransferWithPayload">
   ): AsyncGenerator<UnsignedTransaction>;
   getRelayerFee(

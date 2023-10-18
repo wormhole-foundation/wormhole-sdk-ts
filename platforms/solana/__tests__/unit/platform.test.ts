@@ -12,8 +12,6 @@ import {
 
 import { SolanaPlatform } from '../../src';
 
-import { PublicKey } from '@solana/web3.js';
-
 // @ts-ignore -- this is the mock we import above
 import { getDefaultProvider } from '@solana/web3.js';
 

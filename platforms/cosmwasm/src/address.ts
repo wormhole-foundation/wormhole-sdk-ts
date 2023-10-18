@@ -6,6 +6,7 @@ import {
 } from "@wormhole-foundation/connect-sdk";
 import { CosmwasmPlatform } from "./platform";
 import { nativeDenomToChain } from "./constants";
+import { AnyCosmwasmAddress } from "./types";
 
 declare global {
   namespace Wormhole {
@@ -102,6 +103,7 @@ function tryDecode(data: string): { data: Uint8Array; prefix?: string } {
 export class CosmwasmAddress implements Address {
   static readonly contractAddressByteSize = 32;
   static readonly accountAddressByteSize = 20;
+  public readonly platform = CosmwasmPlatform.platform;
 
   // the actual bytes of the address
   private readonly address: Uint8Array;
@@ -113,7 +115,15 @@ export class CosmwasmAddress implements Address {
   // The denomType is "native", "ibc", or "factory"
   private readonly denomType?: string;
 
-  constructor(address: string | Uint8Array | UniversalAddress) {
+  constructor(address: AnyCosmwasmAddress) {
+    if (CosmwasmAddress.instanceof(address)) {
+      const a = address as unknown as CosmwasmAddress;
+      this.address = a.address;
+      this.domain = a.domain;
+      this.denom = a.denom;
+      this.denomType = a.denomType;
+      return;
+    }
     if (typeof address === "string") {
       // A native denom like "uatom"
       if (nativeDenomToChain.has(CosmwasmPlatform.network, address)) {
@@ -152,7 +162,7 @@ export class CosmwasmAddress implements Address {
       }
     } else if (address instanceof Uint8Array) {
       this.address = address;
-    } else if (address instanceof UniversalAddress) {
+    } else if (UniversalAddress.instanceof(address)) {
       this.address = address.toUint8Array();
     } else throw new Error(`Invalid Cosmwasm address ${address}`);
 
@@ -222,6 +232,10 @@ export class CosmwasmAddress implements Address {
       );
 
     return true;
+  }
+
+  static instanceof(address: any) {
+    return address.platform === CosmwasmPlatform.platform;
   }
 
   equals(other: UniversalAddress): boolean {

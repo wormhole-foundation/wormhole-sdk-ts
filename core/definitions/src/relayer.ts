@@ -1,19 +1,19 @@
 import { Chain, PlatformName } from "@wormhole-foundation/sdk-base";
-import { UniversalOrNative } from "./address";
+import { AnyAddress } from "./types";
 
 export interface Relayer<P extends PlatformName> {
   relaySupported(chain: Chain): boolean;
   getRelayerFee(
     sourceChain: Chain,
     destChain: Chain,
-    tokenId: UniversalOrNative<P>,
+    tokenId: AnyAddress,
   ): Promise<bigint>;
   // TODO: What should this be named?
   // I don't think it should return an UnisgnedTransaction
   // rather it should take some signing callbacks and
   // a ref to track the progress
   startTransferWithRelay(
-    token: UniversalOrNative<P> | "native",
+    token: AnyAddress,
     amount: bigint,
     toNativeToken: string,
     sendingChain: Chain,
@@ -24,13 +24,13 @@ export interface Relayer<P extends PlatformName> {
   ): Promise<any>;
   calculateNativeTokenAmt(
     destChain: Chain,
-    tokenId: UniversalOrNative<P>,
+    tokenId: AnyAddress,
     amount: bigint,
     walletAddress: string,
   ): Promise<bigint>;
   calculateMaxSwapAmount(
     destChain: Chain,
-    tokenId: UniversalOrNative<P>,
+    tokenId: AnyAddress,
     walletAddress: string,
   ): Promise<bigint>;
 }
