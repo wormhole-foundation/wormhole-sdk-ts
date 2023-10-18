@@ -1,111 +1,18 @@
-import { CONFIG, ChainConfig, ChainContext, ChainName, Network, PlatformName, Wormhole, WormholeConfig, nativeChainAddress, normalizeAmount } from "@wormhole-foundation/connect-sdk";
-import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
-import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
-import { getEvmSigner, getSolSigner } from "./helpers";
-import base58 from "bs58";
-import { ethers } from "ethers";
-import { signSendWait } from "@wormhole-foundation/connect-sdk/src";
+import base58 from 'bs58';
 
+const ci = true
 
 export const ETH_PRIVATE_KEY =
     "0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d"; // account 0
 
-export const SOLANA_PRIVATE_KEY = base58.encode(new Uint8Array([
+export const SOLANA_PRIVATE_KEY = new Uint8Array([
     14, 173, 153, 4, 176, 224, 201, 111, 32, 237, 183, 185, 159, 247, 22, 161, 89,
     84, 215, 209, 212, 137, 10, 92, 157, 49, 29, 192, 101, 164, 152, 70, 87, 65,
     8, 174, 214, 157, 175, 126, 98, 90, 54, 24, 100, 177, 247, 77, 19, 112, 47,
     44, 165, 109, 233, 102, 14, 86, 109, 29, 134, 145, 132, 141,
-]));
-
-function overrideChainSetting(conf: WormholeConfig, chain: ChainName, setting: keyof ChainConfig, value: any): WormholeConfig {
-    // @ts-ignore
-    conf.chains[chain] = { ...conf.chains[chain], [setting]: value }
-    return conf
-}
-
-async function getNative(chain: ChainContext<PlatformName>): Promise<string> {
-    try {
-        const tb = await chain.getTokenBridge()
-        const addy = await tb.getWrappedNative()
-        return addy.toString()
-    } catch (e) {
-        console.error("Could not get native for: ", chain.chain)
-        console.error(e)
-    }
-    return ""
-}
-
-(async function () {
-    const network = "Devnet"
-
-    let cnf: WormholeConfig = CONFIG[network]
-    cnf = overrideChainSetting(cnf, "Ethereum", "rpc", "http://localhost:8545")
-    cnf = overrideChainSetting(cnf, "Bsc", "rpc", "http://localhost:8546")
-    cnf = overrideChainSetting(cnf, "Solana", "rpc", "http://localhost:8899")
-
-    const wh = new Wormhole(network, [EvmPlatform, SolanaPlatform], cnf);
-
-    const eth = wh.getChain("Ethereum");
-    const sol = wh.getChain("Solana")
-
-    const evmSigner = await getEvmSigner(
-        eth.chain,
-        (await eth.getRpc()) as ethers.Provider,
-        ETH_PRIVATE_KEY
-    );
-    const solSigner = getSolSigner(sol.chain, SOLANA_PRIVATE_KEY)
-
-    const evmAcct = nativeChainAddress(evmSigner)
-    const solAcct = nativeChainAddress(solSigner)
-
-    const amt = normalizeAmount("1", eth.config.nativeTokenDecimals)
+]);
 
 
-    const etb = await eth.getTokenBridge()
-    const stb = await sol.getTokenBridge()
-
-    const wrappedNativeToken = await etb.getWrappedNative()
-
-    // Check if a wrapped version exists, if not, created it
-    if (!await stb.hasWrappedAsset({ chain: eth.chain, address: wrappedNativeToken })) {
-        // Create attestation txns
-        const attest = etb.createAttestation(await etb.getWrappedNative())
-        // Sign/send
-        const txns = await signSendWait(eth, attest, evmSigner)
-
-        // Get the wormhole message id
-        const [msgid] = await eth.parseTransaction(txns[txns.length - 1].txid)
-        // Get the VAA, deserialized to payload type of AttestMeta
-        const vaa = await wh.getVAA(msgid.chain, msgid.emitter, msgid.sequence, "AttestMeta")
-
-        // Create the submit attestation txns
-        const completeAttest = stb.submitAttestation(vaa!, solAcct.address)
-        // Sign/send
-        const solTxns = await signSendWait(sol, completeAttest, solSigner)
-        console.log("Completion txns on solana: ", solTxns)
-    }
-
-    // Now we can send the transfer
-    console.log("Creating transfer")
-    const xfer = await wh.tokenTransfer("native", amt, evmAcct, solAcct, false)
-    console.log("Created", xfer)
-
-    console.log("Initiating transfer")
-    const txids = await xfer.initiateTransfer(evmSigner)
-    console.log("Initiated with txids: ", txids)
-
-    console.log("Getting attestations")
-    const att = await xfer.fetchAttestation()
-    console.log("Got attests: ", att)
-
-    console.log("Completing transfer")
-    const completed = await xfer.completeTransfer(solSigner)
-    console.log("Finished transfer: ", completed)
-})();
-
-
-
-const ci = true
 
 // see devnet.md
 export const ETH_NODE_URL = ci ? "ws://eth-devnet:8545" : "ws://localhost:8545";
@@ -180,5 +87,6 @@ export const SUI_NODE_URL = ci ? "http://sui:9000" : "http://localhost:9000";
 export const SUI_FAUCET_URL = ci
     ? "http://sui:5003/gas"
     : "http://localhost:5003/gas";
+
 
 

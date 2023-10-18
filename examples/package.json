@@ -34,7 +34,6 @@
   },
   "sideEffects": false,
   "scripts": {
-    "testing":"tsx src/testing.ts",
     "tb": "tsx src/tokenBridge.ts",
     "cctp": "tsx src/cctp.ts",
     "demo": "tsx src/index.ts",
