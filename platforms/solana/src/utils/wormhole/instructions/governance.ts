@@ -23,7 +23,7 @@ export function createSetFeesInstruction(
   connection: Connection,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: VAA<'CoreBridgeSetMessageFee'>,
+  vaa: VAA<'CoreBridge-SetMessageFee'>,
 ): TransactionInstruction {
   const methods = createReadOnlyWormholeProgramInterface(
     wormholeProgramId,
@@ -51,7 +51,7 @@ export interface SetFeesAccounts {
 export function getSetFeesAccounts(
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: VAA<'CoreBridgeSetMessageFee'>,
+  vaa: VAA<'CoreBridge-SetMessageFee'>,
 ): SetFeesAccounts {
   return {
     payer: new PublicKey(payer),
@@ -72,7 +72,7 @@ export function createTransferFeesInstruction(
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
   recipient: PublicKeyInitData,
-  vaa: VAA<'CoreBridgeTransferFees'>,
+  vaa: VAA<'CoreBridge-TransferFees'>,
 ): TransactionInstruction {
   const methods = createReadOnlyWormholeProgramInterface(
     wormholeProgramId,
@@ -109,7 +109,7 @@ export function getTransferFeesAccounts(
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
   recipient: PublicKeyInitData,
-  vaa: VAA<'CoreBridgeTransferFees'>,
+  vaa: VAA<'CoreBridge-TransferFees'>,
 ): TransferFeesAccounts {
   return {
     payer: new PublicKey(payer),
@@ -132,7 +132,7 @@ export function createUpgradeGuardianSetInstruction(
   connection: Connection,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: VAA<'CoreBridgeGuardianSetUpgrade'>,
+  vaa: VAA<'CoreBridge-GuardianSetUpgrade'>,
 ): TransactionInstruction {
   const methods = createReadOnlyWormholeProgramInterface(
     wormholeProgramId,
@@ -166,7 +166,7 @@ export interface UpgradeGuardianSetAccounts {
 export function getUpgradeGuardianSetAccounts(
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: VAA<'CoreBridgeGuardianSetUpgrade'>,
+  vaa: VAA<'CoreBridge-GuardianSetUpgrade'>,
 ): UpgradeGuardianSetAccounts {
   return {
     payer: new PublicKey(payer),
@@ -191,7 +191,7 @@ export function createUpgradeContractInstruction(
   connection: Connection,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: VAA<'CoreBridgeUpgradeContract'>,
+  vaa: VAA<'CoreBridge-UpgradeContract'>,
 ): TransactionInstruction {
   const methods = createReadOnlyWormholeProgramInterface(
     wormholeProgramId,
@@ -227,7 +227,7 @@ export interface UpgradeContractAccounts {
 export function getUpgradeContractAccounts(
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: VAA<'CoreBridgeUpgradeContract'>,
+  vaa: VAA<'CoreBridge-UpgradeContract'>,
   spill?: PublicKeyInitData,
 ): UpgradeContractAccounts {
   const { newContract } = vaa.payload;

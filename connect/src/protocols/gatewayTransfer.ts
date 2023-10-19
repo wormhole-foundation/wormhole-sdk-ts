@@ -18,7 +18,7 @@ import {
   TxHash,
   UniversalAddress,
   UnsignedTransaction,
-  VAA,
+  TokenBridge,
   WormholeMessageId,
   deserialize,
   gatewayTransferMsg,
@@ -69,7 +69,7 @@ export class GatewayTransfer implements WormholeTransfer {
   // on the source chain (if it came from outside cosmos and if its been completed and finalized)
   vaas?: {
     id: WormholeMessageId;
-    vaa?: VAA<"TransferWithPayload"> | VAA<"Transfer">;
+    vaa?: TokenBridge.VAA<"Transfer" | "TransferWithPayload">;
   }[];
 
   // Any transfers we do over ibc
@@ -174,7 +174,7 @@ export class GatewayTransfer implements WormholeTransfer {
 
     // The VAA may have a payload which may have a nested GatewayTransferMessage
     let payload: Uint8Array | undefined =
-      vaa.payloadLiteral === "TransferWithPayload"
+      vaa.payloadName === "TransferWithPayload"
         ? vaa.payload.payload
         : undefined;
 
@@ -542,27 +542,21 @@ export class GatewayTransfer implements WormholeTransfer {
     wh: Wormhole,
     whm: WormholeMessageId,
     timeout?: number,
-  ): Promise<VAA<"TransferWithPayload"> | VAA<"Transfer">> {
+  ): Promise<TokenBridge.VAA<"Transfer" | "TransferWithPayload">> {
     const { chain, emitter, sequence } = whm;
 
-    const partial = await wh.getVAA(
+    const vaa = await wh.getVAA(
       chain,
       emitter,
       sequence,
-      "Uint8Array",
+      TokenBridge.getTransferDiscriminator(),
       timeout,
     );
 
-    if (!partial)
+    if (!vaa)
       throw new Error(`No VAA Available: ${chain}/${emitter}/${sequence}`);
 
-    switch (partial.payload[0]) {
-      case 1:
-        return deserialize("Transfer", serialize(partial));
-      case 3:
-        return deserialize("TransferWithPayload", serialize(partial));
-    }
-    throw new Error(`No serde defined for type: ${partial.payload[0]}`);
+    return vaa;
   }
 
   // Implicitly determine if the chain is Gateway enabled by

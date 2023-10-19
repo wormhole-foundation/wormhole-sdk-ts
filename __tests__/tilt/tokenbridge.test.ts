@@ -65,7 +65,7 @@ describe("Tilt Token Bridge Tests", () => {
             const [msgid] = await eth.parseTransaction(txns[txns.length - 1].txid)
             expect(isWormholeMessageId(msgid)).toBeTruthy()
 
-            const vaa = await wh.getVAA(msgid.chain, msgid.emitter, msgid.sequence, "AttestMeta")
+            const vaa = await wh.getVAA(msgid.chain, msgid.emitter, msgid.sequence, "TokenBridge-AttestMeta")
             expect(vaa).toBeTruthy()
 
             const completeAttest = stb.submitAttestation(vaa!, solAcct.address as SolanaAddress)

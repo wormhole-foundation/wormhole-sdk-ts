@@ -6,7 +6,6 @@ import {
   RpcConnection,
   TokenBridge,
   UnsignedTransaction,
-  VAA,
 } from "../..";
 
 //export function mockTokenBridgeFactory(
@@ -31,7 +30,7 @@ export class MockTokenBridge<P extends PlatformName> implements TokenBridge<P> {
     throw new Error("Method not implemented.");
   }
   isTransferCompleted(
-    vaa: VAA<"Transfer"> | VAA<"TransferWithPayload">,
+    vaa: TokenBridge.VAA<"Transfer" | "TransferWithPayload">,
   ): Promise<boolean> {
     throw new Error("Method not implemented.");
   }
@@ -39,7 +38,7 @@ export class MockTokenBridge<P extends PlatformName> implements TokenBridge<P> {
     throw new Error("Method not implemented.");
   }
   submitAttestation(
-    vaa: VAA<"AttestMeta">,
+    vaa: TokenBridge.VAA<"AttestMeta">,
   ): AsyncGenerator<UnsignedTransaction> {
     throw new Error("Method not implemented.");
   }
@@ -54,7 +53,7 @@ export class MockTokenBridge<P extends PlatformName> implements TokenBridge<P> {
   }
   redeem(
     sender: AnyAddress,
-    vaa: VAA<"Transfer"> | VAA<"TransferWithPayload">,
+    vaa: TokenBridge.VAA<"Transfer" | "TransferWithPayload">,
     unwrapNative?: boolean | undefined,
   ): AsyncGenerator<UnsignedTransaction> {
     throw new Error("Method not implemented.");

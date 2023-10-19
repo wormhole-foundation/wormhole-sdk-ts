@@ -16,14 +16,14 @@ import {
   deriveWrappedMetaKey,
   deriveMintAuthorityKey,
 } from '../accounts';
-import { VAA, toChainId } from '@wormhole-foundation/connect-sdk';
+import { TokenBridge, toChainId } from '@wormhole-foundation/connect-sdk';
 
 export function createCompleteTransferWrappedInstruction(
   connection: Connection,
   tokenBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: VAA<'Transfer'> | VAA<'TransferWithPayload'>,
+  vaa: TokenBridge.VAA<'Transfer' | 'TransferWithPayload'>,
   feeRecipient?: PublicKeyInitData,
 ): TransactionInstruction {
   const methods = createReadOnlyTokenBridgeProgramInterface(
@@ -68,7 +68,7 @@ export function getCompleteTransferWrappedAccounts(
   tokenBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: VAA<'Transfer'> | VAA<'TransferWithPayload'>,
+  vaa: TokenBridge.VAA<'Transfer' | 'TransferWithPayload'>,
   feeRecipient?: PublicKeyInitData,
 ): CompleteTransferWrappedAccounts {
   const mint = deriveWrappedMintKey(

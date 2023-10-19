@@ -18,14 +18,14 @@ import {
   deriveWrappedMintKey,
 } from '../accounts';
 import { SplTokenMetadataProgram } from '../../utils';
-import { toChainId, VAA } from '@wormhole-foundation/connect-sdk';
+import { TokenBridge, toChainId } from '@wormhole-foundation/connect-sdk';
 
 export function createCreateWrappedInstruction(
   connection: Connection,
   tokenBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: VAA<'AttestMeta'>,
+  vaa: TokenBridge.VAA<'AttestMeta'>,
 ): TransactionInstruction {
   const methods = createReadOnlyTokenBridgeProgramInterface(
     tokenBridgeProgramId,
@@ -68,7 +68,7 @@ export function getCreateWrappedAccounts(
   tokenBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: VAA<'AttestMeta'>,
+  vaa: TokenBridge.VAA<'AttestMeta'>,
 ): CreateWrappedAccounts {
   const mint = deriveWrappedMintKey(
     tokenBridgeProgramId,

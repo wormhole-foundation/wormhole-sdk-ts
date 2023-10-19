@@ -1,7 +1,7 @@
-import { PlatformName } from "@wormhole-foundation/sdk-base";
+import { PlatformName, lazyInstantiate } from "@wormhole-foundation/sdk-base";
 import { NativeAddress, ChainAddress } from "../address";
 import { AnyAddress, TokenId } from "../types";
-import { VAA } from "../vaa";
+import { ProtocolVAA, payloadDiscriminator } from "../vaa";
 import { UnsignedTransaction } from "../unsignedTransaction";
 import "../payloads/tokenBridge";
 import { RpcConnection } from "../rpc";
@@ -34,6 +34,17 @@ export function supportsAutomaticTokenBridge<P extends PlatformName>(
   );
 }
 
+export namespace TokenBridge {
+  export type VAA<PayloadName extends string> = ProtocolVAA<"TokenBridge", PayloadName>;
+
+  // export const transferPayloadNames = ["Transfer", "TransferWithPayload"] as const;
+  // export type TransferPayloadNames = typeof transferPayloadNames[number];
+
+  export const getTransferDiscriminator = lazyInstantiate(
+    () => payloadDiscriminator(["TokenBridge", ["Transfer", "TransferWithPayload"]])
+  );
+}
+
 export interface TokenBridge<P extends PlatformName> {
   // checks a native address to see if its a wrapped version
   isWrappedAsset(nativeAddress: AnyAddress): Promise<boolean>;
@@ -49,7 +60,7 @@ export interface TokenBridge<P extends PlatformName> {
 
   // TODO: preview (receive amount, fees, gas estimates, estimated blocks/time)
   isTransferCompleted(
-    vaa: VAA<"Transfer"> | VAA<"TransferWithPayload">
+    vaa: TokenBridge.VAA<"Transfer" | "TransferWithPayload">
   ): Promise<boolean>;
   //signer required:
   createAttestation(
@@ -57,7 +68,7 @@ export interface TokenBridge<P extends PlatformName> {
     payer?: AnyAddress
   ): AsyncGenerator<UnsignedTransaction>;
   submitAttestation(
-    vaa: VAA<"AttestMeta">,
+    vaa: TokenBridge.VAA<"AttestMeta">,
     payer?: AnyAddress
   ): AsyncGenerator<UnsignedTransaction>;
   //alternative naming: initiateTransfer
@@ -71,7 +82,7 @@ export interface TokenBridge<P extends PlatformName> {
   //alternative naming: completeTransfer
   redeem(
     sender: AnyAddress,
-    vaa: VAA<"Transfer"> | VAA<"TransferWithPayload">,
+    vaa: TokenBridge.VAA<"Transfer" | "TransferWithPayload">,
     unwrapNative?: boolean //default: true
   ): AsyncGenerator<UnsignedTransaction>;
   // TODO: parse transaction
@@ -88,7 +99,7 @@ export interface AutomaticTokenBridge<P extends PlatformName> {
   ): AsyncGenerator<UnsignedTransaction>;
   redeem(
     sender: AnyAddress,
-    vaa: VAA<"TransferWithPayload">
+    vaa: TokenBridge.VAA<"TransferWithPayload">
   ): AsyncGenerator<UnsignedTransaction>;
   getRelayerFee(
     sender: ChainAddress,

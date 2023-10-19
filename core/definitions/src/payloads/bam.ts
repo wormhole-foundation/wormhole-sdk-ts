@@ -1,6 +1,6 @@
 import { Layout, UintLayoutItem, LengthPrefixedBytesLayoutItem, ShallowMapping } from "@wormhole-foundation/sdk-base";
 import { chainItem, amountItem } from "../layout-items";
-import { NamedPayloads, payloadDiscriminator, registerPayloadType } from "../vaa";
+import { RegisterPayloadTypes, NamedPayloads, registerPayloadTypes } from "../vaa";
 
 const bamAddressItem = {
   binary: "bytes",
@@ -9,9 +9,9 @@ const bamAddressItem = {
 
 const customOrEmpty = (custom: any) => custom ? { custom } : {};
 
-const messageLayout = <
-  const T extends number,
-  const C extends Pick<LengthPrefixedBytesLayoutItem, "custom">,
+export const messageLayout = <
+  T extends number,
+  C extends Pick<LengthPrefixedBytesLayoutItem, "custom">,
 >(type: T, customContents?: C) => [
   { name: "magicByte", binary: "uint", size: 1, custom: 0xbb, omit: true },
   { name: "version", binary: "uint", size: 1, custom: 0, omit: true },
@@ -23,10 +23,10 @@ const messageLayout = <
   { name: "contents", binary: "bytes", lengthSize: 2, ...customOrEmpty(customContents) },
 ] as const satisfies Layout;
 
-const tokenMessageLayout = <
-  const C extends Pick<LengthPrefixedBytesLayoutItem, "custom">,
-  const B extends Pick<UintLayoutItem, "custom">,
-  const A extends Pick<UintLayoutItem, "custom">,
+export const tokenMessageLayout = <
+  C extends Pick<LengthPrefixedBytesLayoutItem, "custom">,
+  B extends Pick<UintLayoutItem, "custom">,
+  A extends Pick<UintLayoutItem, "custom">,
 >(
   custom?: { contents?: C, bridge?: B, assetIdentifier?: A },
 ) => [
@@ -36,9 +36,9 @@ const tokenMessageLayout = <
   { name: "amount", ...amountItem },
 ] as const satisfies Layout;
 
-const extendedMessageLayout = <
-  const C extends Pick<LengthPrefixedBytesLayoutItem, "custom">,
-  const R extends Pick<LengthPrefixedBytesLayoutItem, "custom">,
+export const extendedMessageLayout = <
+  C extends Pick<LengthPrefixedBytesLayoutItem, "custom">,
+  R extends Pick<LengthPrefixedBytesLayoutItem, "custom">,
 >(
   custom?: { contents?: C, relaySignal?: R },
 ) => [
@@ -46,23 +46,19 @@ const extendedMessageLayout = <
   { name: "relaySignal", binary: "bytes", lengthSize: 2, ...customOrEmpty(custom?.relaySignal) },
 ] as const satisfies Layout;
 
-export const bamPayloads = [
-  [ "BamMessage", messageLayout(0) ],
-  [ "BamTokenMessage", tokenMessageLayout() ],
-  [ "BamExtendedMessage", extendedMessageLayout() ],
+export const namedPayloads = [
+  [ "Message", messageLayout(0) ],
+  [ "TokenMessage", tokenMessageLayout() ],
+  [ "ExtendedMessage", extendedMessageLayout() ],
 ] as const satisfies NamedPayloads;
-
-export const bamPayloadDiscriminator = payloadDiscriminator(bamPayloads);
 
 // factory registration:
 
 declare global {
   namespace Wormhole {
     interface PayloadLiteralToLayoutMapping
-      extends ShallowMapping<typeof bamPayloads> {}
+      extends RegisterPayloadTypes<"BAM", typeof namedPayloads> {}
   }
 }
 
-bamPayloads.forEach(([payloadLiteral, layout]) =>
-  registerPayloadType(payloadLiteral, layout)
-);
+registerPayloadTypes("BAM", namedPayloads);

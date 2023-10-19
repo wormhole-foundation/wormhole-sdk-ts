@@ -8,7 +8,6 @@ import {
   TokenBridge,
   TransactionId,
   TxHash,
-  VAA,
   isGatewayTransferMsg,
   isGatewayTransferWithPayloadMsg,
   isIbcMessageId,
@@ -58,7 +57,7 @@ export async function retry<T>(
 
 export async function isTokenBridgeVaaRedeemed(
   tb: TokenBridge<PlatformName>,
-  vaa: VAA<"Transfer"> | VAA<"TransferWithPayload">,
+  vaa: TokenBridge.VAA<"Transfer" | "TransferWithPayload">,
 ): Promise<boolean | null> {
   try {
     const isRedeemed = await tb.isTransferCompleted(vaa);

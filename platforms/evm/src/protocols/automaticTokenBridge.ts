@@ -1,7 +1,7 @@
 import {
   ChainAddress,
   AutomaticTokenBridge,
-  VAA,
+  TokenBridge,
   serialize,
   TokenId,
   chainToChainId,
@@ -42,7 +42,7 @@ export class EvmAutomaticTokenBridge implements AutomaticTokenBridge<'Evm'> {
   }
   async *redeem(
     sender: AnyEvmAddress,
-    vaa: VAA<'TransferWithPayload'>,
+    vaa: TokenBridge.VAA<'TransferWithPayload'>,
   ): AsyncGenerator<EvmUnsignedTransaction> {
     const senderAddr = new EvmAddress(sender).toString();
     const txReq =

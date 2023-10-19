@@ -1,5 +1,4 @@
 import {
-  column,
   hexByteStringToUint8Array,
   Layout,
   LayoutItem,
@@ -34,20 +33,46 @@ declare global {
   }
 }
 
-type LayoutLiteral = keyof Wormhole.PayloadLiteralToLayoutMapping & string;
+export type LayoutLiteral = keyof Wormhole.PayloadLiteralToLayoutMapping & string;
 type LayoutOf<LL extends LayoutLiteral> =
   //TODO check if this lazy instantiation hack is actually necessary
   LL extends infer V extends LayoutLiteral
     ? Wormhole.PayloadLiteralToLayoutMapping[V]
     : never;
 
-type LayoutLiteralToPayloadType<LL extends LayoutLiteral> = LayoutToType<
-  LayoutOf<LL>
->;
+type LayoutLiteralToPayloadType<LL extends LayoutLiteral> = LayoutToType<LayoutOf<LL>>;
+
+//we aren't enforcing that Protocol is actually a protocol as to keep things user-extensible
+type ProtocolName = string | null;
+
+type ToLiteralFormat<PN extends ProtocolName, PayloadName extends string> =
+  PN extends null ? PayloadName : `${PN}-${PayloadName}`;
+
+type ComposeLiteral<ProtocolN extends ProtocolName, PayloadN extends string, Literal> =
+  ToLiteralFormat<ProtocolN, PayloadN> extends infer L extends Literal ? L : never;
+
+export const composeLiteral = <ProtocolN extends ProtocolName, PayloadN extends string>(
+  protocol: ProtocolN,
+  payloadName: PayloadN
+) => (
+  protocol ? `${protocol}-${payloadName}` : payloadName
+) as ComposeLiteral<ProtocolN, PayloadN, PayloadLiteral>;
 
 export type PayloadLiteral = LayoutLiteral | "Uint8Array";
 type PayloadLiteralToPayloadType<PL extends PayloadLiteral> =
   PL extends LayoutLiteral ? LayoutLiteralToPayloadType<PL> : Uint8Array;
+
+type DecomposeLiteral<PL extends PayloadLiteral> =
+  PL extends `${infer Protocol}-${infer LayoutName}`
+  ? [Protocol, LayoutName]
+  : [null, PL];
+
+const decomposeLiteral = <PL extends PayloadLiteral>(payloadLiteral: PL) => {
+  const index = payloadLiteral.indexOf("-");
+  return (index !== -1
+    ? [payloadLiteral.slice(0, index), payloadLiteral.slice(index + 1)]
+    : [null, payloadLiteral]) as DecomposeLiteral<PL>;
+}
 
 const guardianSignatureLayout = [
   { name: "guardianIndex", binary: "uint", size: 1 },
@@ -80,6 +105,8 @@ type BaseLayout = LayoutToType<typeof baseLayout>;
 
 export interface VAA<PL extends PayloadLiteral = PayloadLiteral>
   extends BaseLayout {
+  readonly protocolName: DecomposeLiteral<PL>[0];
+  readonly payloadName: DecomposeLiteral<PL>[1];
   readonly payloadLiteral: PL;
   readonly payload: PayloadLiteralToPayloadType<PL>;
   //TODO various problems with storing the hash here:
@@ -89,6 +116,28 @@ export interface VAA<PL extends PayloadLiteral = PayloadLiteral>
   //  the SDK has matured a little further.
   readonly hash: Uint8Array;
 }
+
+//We enforce distribution over union types, e.g. have
+//    ProtocolVAA<"TokenBridge", "Transfer" | "TransferWithPayload">
+//  turned into
+//    VAA<"TokenBridge-Transfer"> | VAA<"TokenBridge-TransferWithPayload">
+//  rather than
+//    VAA<"TokenBridge-Transfer" | "TokenBridge-TransferWithPayload">
+//  because while the latter is considered more idiomatic/canonical, it actually interferes with
+//  the most natural way to narrow VAAs via querying the payloadName or payloadLiteral.
+//  (Thanks for absolutely nothing, Typescript).
+//  For example, given the TokenBridge VAA union example:
+//  if (vaa.payloadName === "Transfer")
+//    typeof vaa //no narrowing - still resolves to the union type when using the latter approach
+export type DistributiveVAA<PL extends PayloadLiteral> =
+  PL extends PayloadLiteral
+  ? VAA<PL>
+  : never;
+
+export type ProtocolVAA<PN extends ProtocolName, PayloadName extends string> = 
+  ComposeLiteral<PN, PayloadName, PayloadLiteral> extends infer PL extends PayloadLiteral
+  ? DistributiveVAA<PL>
+  : never;
 
 const payloadFactory = new Map<LayoutLiteral, Layout>();
 
@@ -125,10 +174,11 @@ type PayloadLiteralToDynamicItems<PL extends PayloadLiteral> =
     ]
   >;
 
-export const create = <PL extends PayloadLiteral = "Uint8Array">(
+export const createVAA = <PL extends PayloadLiteral = "Uint8Array">(
   payloadLiteral: PL,
   vaaData: LayoutToType<PayloadLiteralToDynamicItems<PL>>,
 ): VAA<PL> => {
+  const [protocolName, payloadName] = decomposeLiteral(payloadLiteral);
   const bodyLayout = [
     ...envelopeLayout,
     payloadLiteralToPayloadItem(payloadLiteral),
@@ -139,6 +189,8 @@ export const create = <PL extends PayloadLiteral = "Uint8Array">(
     vaaData as LayoutToType<DynamicItemsOfLayout<typeof bodyLayout>>,
   );
   return {
+    protocolName,
+    payloadName,
     payloadLiteral,
     ...addFixedValues(
       headerLayout,
@@ -149,14 +201,24 @@ export const create = <PL extends PayloadLiteral = "Uint8Array">(
   } as VAA<PL>;
 };
 
-export function registerPayloadType<LL extends LayoutLiteral>(
-  payloadLiteral: LL,
-  payloadLayout: Layout,
-) {
+export function registerPayloadType(protocol: ProtocolName, name: string, layout: Layout) {
+  const payloadLiteral = composeLiteral(protocol, name);
   if (payloadFactory.has(payloadLiteral))
     throw new Error(`Payload type ${payloadLiteral} already registered`);
 
-  payloadFactory.set(payloadLiteral, payloadLayout);
+  payloadFactory.set(payloadLiteral, layout);
+}
+
+type AtLeast1<T> = readonly [T, ...T[]];
+type AtLeast2<T> = readonly [T, T, ...T[]];
+
+export type NamedPayloads = AtLeast1<readonly [string, Layout]>;
+export type RegisterPayloadTypes<ProtocolN extends ProtocolName, NP extends NamedPayloads> =
+  { readonly [E in NP[number] as ToLiteralFormat<ProtocolN, E[0]>]: E[1] };
+
+export function registerPayloadTypes(protocol: ProtocolName, payloads: NamedPayloads) {
+  for (const [name, layout] of payloads)
+    registerPayloadType(protocol, name, layout);
 }
 
 export const serialize = <PL extends PayloadLiteral>(
@@ -179,46 +241,84 @@ export const serializePayload = <PL extends PayloadLiteral>(
   return serializeLayout(layout, payload as LayoutToType<typeof layout>);
 };
 
-//can't use PayloadLiteral because it leads to a circular reference
-export type NamedPayloads = readonly (readonly [string, Layout])[];
+//string assumed to be in hex format
+export type Byteish = Uint8Array | string;
 
-export const payloadDiscriminator = <NP extends NamedPayloads>(
-  namedPayloads: NP,
-) => {
-  const literals = column(namedPayloads, 0);
-  const layouts = column(namedPayloads, 1);
-  const discriminator = layoutDiscriminator(layouts);
+export type PayloadDiscriminator<
+  LL extends LayoutLiteral = LayoutLiteral,
+  AllowAmbiguous extends boolean = false
+> = (data: Byteish) => (AllowAmbiguous extends false ? LL | null : readonly LL[]);
 
-  return (data: Uint8Array | string): (typeof literals)[number] | null => {
-    if (typeof data === "string") data = hexByteStringToUint8Array(data);
+type PayloadGroup = readonly [ProtocolName, AtLeast1<string>];
+type PayloadGroupToLayoutLiterals<PG extends PayloadGroup> =
+  ComposeLiteral<PG[0], PG[1][number], LayoutLiteral>;
+type PayloadGroupsToLayoutLiteralsRecursive<PGA extends readonly PayloadGroup[]> =
+  PGA extends readonly [infer PG extends PayloadGroup, ...infer T extends readonly PayloadGroup[]]
+  ? PayloadGroupToLayoutLiterals<PG> | PayloadGroupsToLayoutLiteralsRecursive<T>
+  : never;
+type PayloadGroupsToLayoutLiterals<PGA extends readonly PayloadGroup[]> =
+  PayloadGroupsToLayoutLiteralsRecursive<PGA> extends infer Value extends LayoutLiteral
+  ? Value
+  : never;
 
-    const index = discriminator(data);
-    return index !== null ? literals[index] : null;
-  };
+type LLDtoLLs<LLD extends AtLeast2<LayoutLiteral> | readonly [ProtocolName, AtLeast2<string>]
+| AtLeast2<PayloadGroup>> =
+  LLD extends AtLeast2<LayoutLiteral>
+  ? LLD[number]
+  : LLD extends readonly [ProtocolName, AtLeast2<string>]
+  ? PayloadGroupToLayoutLiterals<LLD>
+  : LLD extends AtLeast2<PayloadGroup>
+  ? PayloadGroupsToLayoutLiterals<LLD>
+  : never;
+
+export function payloadDiscriminator<
+  const LLD extends AtLeast2<LayoutLiteral> | readonly [ProtocolName, AtLeast2<string>]
+    | AtLeast2<PayloadGroup>,
+  B extends boolean = false
+>(
+  payloadLiterals: LLD,
+  allowAmbiguous?: B
+): PayloadDiscriminator<LLDtoLLs<LLD>, B> {
+  const literals = (() => {
+    if (Array.isArray(payloadLiterals[0]))
+      return (payloadLiterals as AtLeast2<PayloadGroup>).flatMap(([protocol, payloadNames]) =>
+        payloadNames.map((name) => composeLiteral(protocol, name))
+      );
+    
+    if (typeof payloadLiterals[1] === "string")
+      return payloadLiterals as AtLeast2<LayoutLiteral>;
+    
+    const [protocol, payloadNames] =
+      payloadLiterals as readonly [ProtocolName, AtLeast2<LayoutLiteral>];
+    return payloadNames.map((name) => composeLiteral(protocol, name));
+  })();
+  
+  const discriminator = layoutDiscriminator(
+    literals.map(literal => getPayloadLayout(literal)),
+    !!allowAmbiguous
+  );
+
+  return ((data: Byteish) => {
+    if (typeof data === "string")
+      data = hexByteStringToUint8Array(data);
+
+    const cands = discriminator(data);
+    return (Array.isArray(cands))
+      ? cands.map((c) => literals[c])
+      : cands !== null ? literals[cands as number] : null;
+  }) as PayloadDiscriminator<LLDtoLLs<LLD>, B>;
 };
 
-export function deserialize<PL extends PayloadLiteral>(
-  payloadLiteral: PL,
-  data: Uint8Array | string,
-): VAA<PL>;
+export type ExtractLiteral<T> = T extends PayloadDiscriminator<infer LL> ? LL : T;
 
-export function deserialize<LL extends LayoutLiteral>(
-  discriminator: (data: Uint8Array | string) => LL | null,
-  data: Uint8Array | string,
-): VAA<LL>;
-
-export function deserialize<PL extends PayloadLiteral>(
-  payloadDet: PL | ((data: Uint8Array | string) => (PL & LayoutLiteral) | null),
-  data: Uint8Array | string,
-): VAA<PL> {
+export function deserialize<T extends PayloadLiteral | PayloadDiscriminator>(
+  payloadDet: T,
+  data: Byteish,
+): DistributiveVAA<ExtractLiteral<T>> {
   if (typeof data === "string") data = hexByteStringToUint8Array(data);
 
-  const [header, envelopeOffset] = deserializeLayout(
-    headerLayout,
-    data,
-    0,
-    false,
-  );
+  const [header, envelopeOffset] =
+    deserializeLayout(headerLayout, data, 0, false);
 
   //ensure that guardian signature indicies are unique and in ascending order - see:
   //https://github.com/wormhole-foundation/wormhole/blob/8e0cf4c31f39b5ba06b0f6cdb6e690d3adf3d6a3/ethereum/contracts/Messages.sol#L121
@@ -239,40 +339,48 @@ export function deserialize<PL extends PayloadLiteral>(
   );
 
   const [payloadLiteral, payload] =
-    payloadDet === "Uint8Array"
-      ? ["Uint8Array", data.slice(payloadOffset)]
-      : typeof payloadDet === "string"
+      typeof payloadDet === "string"
       ? [
-          payloadDet,
-          deserializeLayout(getPayloadLayout(payloadDet), data, payloadOffset),
-        ]
-      : deserializePayload(payloadDet, data, payloadOffset);
+        payloadDet as PayloadLiteral,
+        deserializePayload(payloadDet as PayloadLiteral, data, payloadOffset)
+      ]
+      : deserializePayload(payloadDet as PayloadDiscriminator, data, payloadOffset);
+  const [protocolName, payloadName] = decomposeLiteral(payloadLiteral);
   const hash = keccak256(data.slice(envelopeOffset));
 
-  return { payloadLiteral, ...header, ...envelope, payload, hash } as VAA<PL>;
+  return {
+    protocolName,
+    payloadName,
+    payloadLiteral,
+    ...header,
+    ...envelope,
+    payload,
+    hash
+  } satisfies VAA as DistributiveVAA<ExtractLiteral<T>>;
 }
 
-type DeserializePayloadReturn<PL extends PayloadLiteral> =
-  | PayloadLiteralToPayloadType<PL>
-  | [PL & LayoutLiteral, LayoutLiteralToPayloadType<PL & LayoutLiteral>];
+type DeserializedPair<LL extends LayoutLiteral = LayoutLiteral> =
+  //enforce distribution over union types so we actually get matching pairs
+  //  i.e. [LL1, LayoutLiteralToPayloadType<LL1>] | [LL2, LayoutLiteralToPayloadType<LL2>] | ...
+  //  instead of [LL1 | LL2, LayoutLiteralToPayloadType<LL1 | LL2>]
+  LL extends LayoutLiteral
+  ? readonly [LL, LayoutLiteralToPayloadType<LL>]
+  : never;
 
-export function deserializePayload<PL extends PayloadLiteral>(
-  payloadLiteral: PL,
-  data: Uint8Array | string,
-  offset?: number,
-): PayloadLiteralToPayloadType<PL>;
+type DeserializePayloadReturn<T> =
+  T extends PayloadLiteral
+  ? PayloadLiteralToPayloadType<T>
+  : T extends PayloadDiscriminator<infer LL>
+  ? DeserializedPair<LL>
+  : never;
 
-export function deserializePayload<LL extends LayoutLiteral>(
-  discriminator: (data: Uint8Array | string) => LL | null,
-  data: Uint8Array | string,
-  offset?: number,
-): [LL, LayoutLiteralToPayloadType<LL>];
-
-export function deserializePayload<PL extends PayloadLiteral>(
-  payloadDet: PL | ((data: Uint8Array | string) => (PL & LayoutLiteral) | null),
-  data: Uint8Array | string,
+export function deserializePayload<
+  T extends PayloadLiteral | PayloadDiscriminator
+>(
+  payloadDet: T,
+  data: Byteish,
   offset = 0,
-): DeserializePayloadReturn<PL> {
+): DeserializePayloadReturn<T> {
   //grouped together to have just a single cast on the return type
   return (() => {
     if (typeof data === "string") data = hexByteStringToUint8Array(data);
@@ -282,15 +390,47 @@ export function deserializePayload<PL extends PayloadLiteral>(
     if (typeof payloadDet === "string")
       return deserializeLayout(getPayloadLayout(payloadDet), data, offset);
 
-    const candidate = payloadDet(data);
+    //kinda unfortunate that we have to slice here, future improvement would be passing an optional
+    //  offset to the discriminator
+    const candidate = payloadDet(data.slice(offset));
     if (candidate === null)
       throw new Error(
         `Encoded data does not match any of the given payload types - ${data}`,
       );
-
+    
     return [
       candidate,
       deserializeLayout(getPayloadLayout(candidate), data, offset),
     ];
-  })() as DeserializePayloadReturn<PL>;
+  })() as DeserializePayloadReturn<T>;
 }
+
+export const blindDeserializePayload = (() => {
+  const rebuildDiscrimininator = () => {
+    const layoutLiterals = Array.from(payloadFactory.keys());
+    const layouts = layoutLiterals.map((l) => payloadFactory.get(l)!);
+    return [layoutLiterals, layoutDiscriminator(layouts, true)] as const;
+  }
+
+  let layoutLiterals = [] as LayoutLiteral[];
+  let discriminator = (_: Uint8Array) => [] as readonly number[];
+
+  return (data: Byteish): readonly DeserializedPair[] => {
+    if (payloadFactory.size !== layoutLiterals.length)
+      [layoutLiterals, discriminator] = rebuildDiscrimininator();
+
+    if (typeof data === "string")
+      data = hexByteStringToUint8Array(data);
+
+    const candidates = discriminator(data).map((c) => layoutLiterals[c]);
+    return candidates.reduce((acc, literal) => {
+        try {
+          acc.push([literal, deserializePayload(literal, data)] as DeserializedPair);
+        }
+        catch {}
+        return acc;
+      },
+      [] as DeserializedPair[]
+    );
+  }
+})();
