@@ -1,7 +1,6 @@
 import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import {
   Network,
-  VAA,
   ChainAddress,
   TokenBridge,
   TxHash,
@@ -109,7 +108,7 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
   }
 
   async isTransferCompleted(
-    vaa: VAA<"Transfer"> | VAA<"TransferWithPayload">,
+    vaa: TokenBridge.VAA<"Transfer" | "TransferWithPayload">,
   ): Promise<boolean> {
     const data = Buffer.from(serialize(vaa)).toString("base64");
     const result = await this.rpc.queryContractSmart(this.tokenBridge, {
@@ -155,7 +154,7 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
   }
 
   async *submitAttestation(
-    vaa: VAA<"AttestMeta">,
+    vaa: TokenBridge.VAA<"AttestMeta">,
     payer?: AnyCosmwasmAddress,
   ): AsyncGenerator<CosmwasmUnsignedTransaction> {
     if (!payer) throw new Error("Payer required to submit attestation");
@@ -279,7 +278,7 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
 
   async *redeem(
     sender: AnyCosmwasmAddress,
-    vaa: VAA<"Transfer"> | VAA<"TransferWithPayload">,
+    vaa: TokenBridge.VAA<"Transfer" | "TransferWithPayload">,
     unwrapNative: boolean = true,
   ): AsyncGenerator<CosmwasmUnsignedTransaction> {
     // TODO: unwrapNative

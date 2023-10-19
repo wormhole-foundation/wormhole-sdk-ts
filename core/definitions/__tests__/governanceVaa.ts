@@ -2,8 +2,15 @@ import { describe, expect, it } from "@jest/globals";
 
 import { hexByteStringToUint8Array } from "@wormhole-foundation/sdk-base";
 import { UniversalAddress } from "../src/universalAddress";
-import { create, deserialize, deserializePayload, serialize } from "../src/vaa";
-import { governancePayloadDiscriminator } from "../src/payloads/governance";
+import {
+  createVAA,
+  deserialize,
+  deserializePayload,
+  serialize,
+  blindDeserializePayload,
+  payloadDiscriminator,
+} from "../src/vaa";
+import "../src/payloads/governance";
 
 //monkey-patch to allow stringifying BigInts
 (BigInt.prototype as any).toJSON = function () {
@@ -101,8 +108,26 @@ const guardianSetUpgrade =
   /*guardian*/ "6fbebc898f403e4773e95feb15e80c9a99c8348d";
 
 describe("Governance VAA tests", function () {
+  const governanceDiscriminator = payloadDiscriminator([
+    ["CoreBridge",
+      ["UpgradeContract", "GuardianSetUpgrade", "SetMessageFee", "TransferFees", "RecoverChainId"]
+    ],
+    ["TokenBridge",
+      ["RegisterChain", "UpgradeContract", "RecoverChainId"]
+    ],
+    ["NftBridge",
+      ["RegisterChain", "UpgradeContract", "RecoverChainId"]
+    ],
+    ["Relayer",
+      ["RegisterChain", "UpgradeContract", "UpdateDefaultProvider"]
+    ],
+    ["CCTP",
+      ["UpdateFinality", "RegisterEmitterAndDomain", "UpgradeContract"]
+    ]
+  ]);
+
   it("should create an empty VAA from an object with omitted fixed values", function () {
-    const vaa = create("CoreBridgeUpgradeContract", {
+    const vaa = createVAA("CoreBridge:UpgradeContract", {
       guardianSet: 0,
       signatures: [],
       nonce: 0,
@@ -123,11 +148,11 @@ describe("Governance VAA tests", function () {
 
   it("should correctly deserialize and reserialize a guardian set upgrade VAA", function () {
     const rawvaa = deserialize("Uint8Array", guardianSetUpgrade);
-    expect(governancePayloadDiscriminator(rawvaa.payload)).toBe("CoreBridgeGuardianSetUpgrade");
-    const payload = deserializePayload("CoreBridgeGuardianSetUpgrade", rawvaa.payload);
-    const vaa = deserialize("CoreBridgeGuardianSetUpgrade", guardianSetUpgrade);
+    expect(governanceDiscriminator(rawvaa.payload)).toBe("CoreBridge:GuardianSetUpgrade");
+    const payload = deserializePayload("CoreBridge:GuardianSetUpgrade", rawvaa.payload);
+    const vaa = deserialize("CoreBridge:GuardianSetUpgrade", guardianSetUpgrade);
     expect(vaa.payload).toEqual(payload);
-    expect(vaa.payloadLiteral).toBe("CoreBridgeGuardianSetUpgrade");
+    expect(vaa.payloadLiteral).toBe("CoreBridge:GuardianSetUpgrade");
     expect(vaa.guardianSet).toBe(2);
     expect(vaa.signatures.length).toBe(13);
     expect(vaa.nonce).toBe(2651610618);
@@ -137,6 +162,9 @@ describe("Governance VAA tests", function () {
     expect(vaa.payload.guardianSet).toBe(3);
     expect(vaa.payload.guardians.length).toBe(19);
 
-    expect(serialize(vaa)).toEqual(hexByteStringToUint8Array(guardianSetUpgrade));
+    expect(serialize(vaa))
+      .toEqual(hexByteStringToUint8Array(guardianSetUpgrade));
+    expect(blindDeserializePayload(rawvaa.payload))
+      .toEqual([["CoreBridge:GuardianSetUpgrade", vaa.payload]]);
   });
 });

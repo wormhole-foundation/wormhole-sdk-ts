@@ -3,7 +3,6 @@ import {
   chainIdToChain,
   Network,
   toChainName,
-  VAA,
   serialize,
   UniversalAddress,
   ChainAddress,
@@ -110,7 +109,7 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
   }
 
   async isTransferCompleted(
-    vaa: VAA<'Transfer'> | VAA<'TransferWithPayload'>,
+    vaa: TokenBridge.VAA<'Transfer' | 'TransferWithPayload'>,
   ): Promise<boolean> {
     //The double keccak here is neccessary due to a fuckup in the original implementation of the
     //  EVM core bridge:
@@ -141,7 +140,7 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
   }
 
   async *submitAttestation(
-    vaa: VAA<'AttestMeta'>,
+    vaa: TokenBridge.VAA<'AttestMeta'>,
   ): AsyncGenerator<EvmUnsignedTransaction> {
     const func = (await this.hasWrappedAsset({
       ...vaa.payload.token,
@@ -237,18 +236,19 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
   //alternative naming: completeTransfer
   async *redeem(
     sender: AnyEvmAddress,
-    vaa: VAA<'Transfer'> | VAA<'TransferWithPayload'>,
+    vaa: TokenBridge.VAA<'Transfer' | 'TransferWithPayload'>,
     unwrapNative: boolean = true,
   ): AsyncGenerator<EvmUnsignedTransaction> {
     const senderAddr = new EvmAddress(sender).toString();
-    if (vaa.payload.token.chain !== this.chain)
-      if (vaa.payloadLiteral === 'TransferWithPayload') {
-        const fromAddr = toNative(this.chain, vaa.payload.from).unwrap();
-        if (fromAddr !== senderAddr)
-          throw new Error(
-            `VAA.from (${fromAddr}) does not match sender (${senderAddr})`,
-          );
-      }
+    if (vaa.payloadName === 'TransferWithPayload' &&
+        vaa.payload.token.chain !== this.chain) {
+      const fromAddr = toNative(this.chain, vaa.payload.from).unwrap();
+      if (fromAddr !== senderAddr)
+        throw new Error(
+          `VAA.from (${fromAddr}) does not match sender (${senderAddr})`,
+        );
+    }
+
     const wrappedNativeAddr = await this.tokenBridge.WETH();
     const tokenAddr = toNative(this.chain, vaa.payload.token.address).unwrap();
     if (tokenAddr === wrappedNativeAddr && unwrapNative) {

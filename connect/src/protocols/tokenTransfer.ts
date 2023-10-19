@@ -3,7 +3,7 @@ import {
   TransactionId,
   TxHash,
   UnsignedTransaction,
-  VAA,
+  TokenBridge,
   WormholeMessageId,
   deserialize,
   isTransactionIdentifier,
@@ -41,7 +41,7 @@ export class TokenTransfer implements WormholeTransfer {
   // on the source chain (if its been completed and finalized)
   vaas?: {
     id: WormholeMessageId;
-    vaa?: VAA<"Transfer"> | VAA<"TransferWithPayload">;
+    vaa?: TokenBridge.VAA<"Transfer" | "TransferWithPayload">;
   }[];
 
   private constructor(wh: Wormhole, transfer: TokenTransferDetails) {
@@ -126,7 +126,7 @@ export class TokenTransfer implements WormholeTransfer {
 
     // Check if its a payload 3 targeted at a relayer on the destination chain
     const automatic =
-      vaa.payloadLiteral === "TransferWithPayload" &&
+      vaa.payloadName === "TransferWithPayload" &&
       !!relayerAddress &&
       address.equals(relayerAddress);
 
@@ -277,7 +277,7 @@ export class TokenTransfer implements WormholeTransfer {
 
     let xfer: AsyncGenerator<UnsignedTransaction>;
     if (this.transfer.automatic) {
-      if (vaa.payloadLiteral === "Transfer")
+      if (vaa.payloadName === "Transfer")
         throw new Error(
           "VAA is a simple transfer but expected Payload for automatic delivery",
         );
@@ -320,18 +320,10 @@ export class TokenTransfer implements WormholeTransfer {
     wh: Wormhole,
     whm: WormholeMessageId,
     timeout?: number,
-  ): Promise<VAA<"Transfer"> | VAA<"TransferWithPayload">> {
+  ): Promise<TokenBridge.VAA<"Transfer" | "TransferWithPayload">> {
     const { chain, emitter, sequence } = whm;
-    const vaaBytes = await wh.getVAABytes(chain, emitter, sequence, timeout);
-    if (!vaaBytes) throw new Error(`No VAA available after retries exhausted`);
-
-    const partial = deserialize("Uint8Array", vaaBytes);
-    switch (partial.payload[0]) {
-      case 1:
-        return deserialize("Transfer", vaaBytes);
-      case 3:
-        return deserialize("TransferWithPayload", vaaBytes);
-    }
-    throw new Error(`No serde defined for type: ${partial.payload[0]}`);
+    const vaa = await wh.getVAA(chain, emitter, sequence, TokenBridge.getTransferDiscriminator(), timeout);
+    if (!vaa) throw new Error(`No VAA available after retries exhausted`);
+    return vaa;
   }
 }
