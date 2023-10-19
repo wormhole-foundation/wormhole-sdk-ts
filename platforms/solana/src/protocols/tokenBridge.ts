@@ -60,7 +60,6 @@ import { SolanaUnsignedTransaction } from '../unsignedTransaction';
 import { AnySolanaAddress, SolanaChainName } from '../types';
 import { SolanaPlatform } from '../platform';
 import { SolanaAddress } from '../address';
-import { wrap } from 'module';
 
 export class SolanaTokenBridge implements TokenBridge<'Solana'> {
   readonly chainId: ChainId;
@@ -479,8 +478,6 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     const senderAddress = new SolanaAddress(sender).unwrap();
     const ataAddress = new SolanaAddress(vaa.payload.to.address.toUint8Array()).unwrap();
     const wrappedToken = await this.getWrappedAsset(vaa.payload.token);
-    // if (unwrapNative && wrappedToken.equals(await this.getWrappedNative())) {
-    // }
 
     // If the ata doesn't exist yet, create it
     const acctInfo = await this.connection.getAccountInfo(ataAddress);

@@ -8,8 +8,8 @@ spec:
     spec:
       restartPolicy: Never
       containers:
-        - name: sdk-ci-tests
-          image: sdk-test
+        - name: connect-sdk-ci-tests
+          image: connect-sdk-test
           command:
             - /bin/sh
             - -c

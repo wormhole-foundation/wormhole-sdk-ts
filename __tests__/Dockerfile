@@ -9,14 +9,12 @@ RUN npm i typescript -g
 RUN mkdir -p /app
 WORKDIR /app
 
-COPY sdk/js/package.json sdk/js/package-lock.json  ./sdk/js/
+COPY package.json package-lock.json ./connect-sdk/
 RUN --mount=type=cache,uid=1000,gid=1000,target=/home/node/.npm \
-  npm ci --prefix sdk/js
-COPY sdk/js ./sdk/js
+  npm ci --prefix connect-sdk 
+COPY . ./connect-sdk
+RUN npm run rebuild --prefix connect-sdk
 
-
-RUN npm run build --prefix sdk/js
-
+RUN mkdir -p testing
 COPY __tests__/wait-run.sh ./testing
-
 WORKDIR /app/testing

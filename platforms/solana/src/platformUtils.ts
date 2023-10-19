@@ -153,10 +153,15 @@ export module SolanaUtils {
     const conn = rpc as Connection;
     const gh = await conn.getGenesisHash();
     const netChain = solGenesisHashToNetworkChainPair.get(gh);
-    if (!netChain)
+
+    if (!netChain) {
+      // TODO: this is required for tilt/ci since it gets a new genesis hash
+      if (SolanaPlatform.network === "Devnet") return ["Devnet", "Solana"]
+
       throw new Error(
         `No matching genesis hash to determine network and chain: ${gh}`,
       );
+    }
 
     const [network, chain] = netChain;
     return [network, chain];
