@@ -127,7 +127,7 @@ describe("Governance VAA tests", function () {
   ]);
 
   it("should create an empty VAA from an object with omitted fixed values", function () {
-    const vaa = createVAA("CoreBridge-UpgradeContract", {
+    const vaa = createVAA("CoreBridge:UpgradeContract", {
       guardianSet: 0,
       signatures: [],
       nonce: 0,
@@ -148,11 +148,11 @@ describe("Governance VAA tests", function () {
 
   it("should correctly deserialize and reserialize a guardian set upgrade VAA", function () {
     const rawvaa = deserialize("Uint8Array", guardianSetUpgrade);
-    expect(governanceDiscriminator(rawvaa.payload)).toBe("CoreBridge-GuardianSetUpgrade");
-    const payload = deserializePayload("CoreBridge-GuardianSetUpgrade", rawvaa.payload);
-    const vaa = deserialize("CoreBridge-GuardianSetUpgrade", guardianSetUpgrade);
+    expect(governanceDiscriminator(rawvaa.payload)).toBe("CoreBridge:GuardianSetUpgrade");
+    const payload = deserializePayload("CoreBridge:GuardianSetUpgrade", rawvaa.payload);
+    const vaa = deserialize("CoreBridge:GuardianSetUpgrade", guardianSetUpgrade);
     expect(vaa.payload).toEqual(payload);
-    expect(vaa.payloadLiteral).toBe("CoreBridge-GuardianSetUpgrade");
+    expect(vaa.payloadLiteral).toBe("CoreBridge:GuardianSetUpgrade");
     expect(vaa.guardianSet).toBe(2);
     expect(vaa.signatures.length).toBe(13);
     expect(vaa.nonce).toBe(2651610618);
@@ -165,6 +165,6 @@ describe("Governance VAA tests", function () {
     expect(serialize(vaa))
       .toEqual(hexByteStringToUint8Array(guardianSetUpgrade));
     expect(blindDeserializePayload(rawvaa.payload))
-      .toEqual([["CoreBridge-GuardianSetUpgrade", vaa.payload]]);
+      .toEqual([["CoreBridge:GuardianSetUpgrade", vaa.payload]]);
   });
 });

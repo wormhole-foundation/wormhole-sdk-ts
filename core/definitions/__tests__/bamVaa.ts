@@ -2,7 +2,7 @@ import { uint8ArrayToHexByteString } from "@wormhole-foundation/sdk-base";
 import "../src/payloads/bam";
 import { deserialize, serializePayload } from "../src/vaa";
 
-const payloadLiteral = "BAM-Message";
+const payloadLiteral = "BAM:Message";
 const goerliBamAppAddress = "0x44fbfee0af8efa9e580760844f6159a8e2124b53";
 // these two contracts are deployed at the same address, made 2 variables to avoid confusion
 const baseGoerliBamAppAddress = goerliBamAppAddress;

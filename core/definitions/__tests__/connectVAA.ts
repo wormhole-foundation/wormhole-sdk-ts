@@ -12,7 +12,7 @@ describe("CCTP Transfer VAA tests", function () {
 
       const parsed = deserialize("Uint8Array", new Uint8Array(vaaBytes));
 
-      const x = deserializePayload("CCTP-TransferRelay", parsed.payload);
+      const x = deserializePayload("CCTP:TransferRelay", parsed.payload);
       expect(x).toBeTruthy();
       // ...
     }

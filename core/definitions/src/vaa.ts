@@ -46,7 +46,7 @@ type LayoutLiteralToPayloadType<LL extends LayoutLiteral> = LayoutToType<LayoutO
 type ProtocolName = string | null;
 
 type ToLiteralFormat<PN extends ProtocolName, PayloadName extends string> =
-  PN extends null ? PayloadName : `${PN}-${PayloadName}`;
+  PN extends null ? PayloadName : `${PN}:${PayloadName}`;
 
 type ComposeLiteral<ProtocolN extends ProtocolName, PayloadN extends string, Literal> =
   ToLiteralFormat<ProtocolN, PayloadN> extends infer L extends Literal ? L : never;
@@ -55,7 +55,7 @@ export const composeLiteral = <ProtocolN extends ProtocolName, PayloadN extends 
   protocol: ProtocolN,
   payloadName: PayloadN
 ) => (
-  protocol ? `${protocol}-${payloadName}` : payloadName
+  protocol ? `${protocol}:${payloadName}` : payloadName
 ) as ComposeLiteral<ProtocolN, PayloadN, PayloadLiteral>;
 
 export type PayloadLiteral = LayoutLiteral | "Uint8Array";
@@ -63,12 +63,12 @@ type PayloadLiteralToPayloadType<PL extends PayloadLiteral> =
   PL extends LayoutLiteral ? LayoutLiteralToPayloadType<PL> : Uint8Array;
 
 type DecomposeLiteral<PL extends PayloadLiteral> =
-  PL extends `${infer Protocol}-${infer LayoutName}`
+  PL extends `${infer Protocol}:${infer LayoutName}`
   ? [Protocol, LayoutName]
   : [null, PL];
 
 const decomposeLiteral = <PL extends PayloadLiteral>(payloadLiteral: PL) => {
-  const index = payloadLiteral.indexOf("-");
+  const index = payloadLiteral.indexOf(":");
   return (index !== -1
     ? [payloadLiteral.slice(0, index), payloadLiteral.slice(index + 1)]
     : [null, payloadLiteral]) as DecomposeLiteral<PL>;
@@ -120,9 +120,9 @@ export interface VAA<PL extends PayloadLiteral = PayloadLiteral>
 //We enforce distribution over union types, e.g. have
 //    ProtocolVAA<"TokenBridge", "Transfer" | "TransferWithPayload">
 //  turned into
-//    VAA<"TokenBridge-Transfer"> | VAA<"TokenBridge-TransferWithPayload">
+//    VAA<"TokenBridge:Transfer"> | VAA<"TokenBridge:TransferWithPayload">
 //  rather than
-//    VAA<"TokenBridge-Transfer" | "TokenBridge-TransferWithPayload">
+//    VAA<"TokenBridge:Transfer" | "TokenBridge:TransferWithPayload">
 //  because while the latter is considered more idiomatic/canonical, it actually interferes with
 //  the most natural way to narrow VAAs via querying the payloadName or payloadLiteral.
 //  (Thanks for absolutely nothing, Typescript).

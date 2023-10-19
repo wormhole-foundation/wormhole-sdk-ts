@@ -22,7 +22,7 @@ export function createRegisterChainInstruction(
   nftBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: VAA<'NftBridge-RegisterChain'>,
+  vaa: VAA<'NftBridge:RegisterChain'>,
 ): TransactionInstruction {
   const methods = createReadOnlyNftBridgeProgramInterface(
     nftBridgeProgramId,
@@ -59,7 +59,7 @@ export function getRegisterChainAccounts(
   nftBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: VAA<'NftBridge-RegisterChain'>,
+  vaa: VAA<'NftBridge:RegisterChain'>,
 ): RegisterChainAccounts {
   return {
     payer: new PublicKey(payer),
@@ -87,7 +87,7 @@ export function createUpgradeContractInstruction(
   nftBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: VAA<'NftBridge-UpgradeContract'>,
+  vaa: VAA<'NftBridge:UpgradeContract'>,
   spill?: PublicKeyInitData,
 ): TransactionInstruction {
   const methods = createReadOnlyNftBridgeProgramInterface(
@@ -130,7 +130,7 @@ export function getUpgradeContractAccounts(
   nftBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: VAA<'NftBridge-UpgradeContract'>,
+  vaa: VAA<'NftBridge:UpgradeContract'>,
   spill?: PublicKeyInitData,
 ): UpgradeContractAccounts {
   return {

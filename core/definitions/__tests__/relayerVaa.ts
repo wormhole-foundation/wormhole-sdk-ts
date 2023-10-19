@@ -15,10 +15,10 @@ const original =
 
 describe("Relayer VAA tests", function () {
   it("should correctly deserialize and reserialize a relayer VAA", function () {
-    const payload = deserializePayload("Relayer-DeliveryInstruction", original);
+    const payload = deserializePayload("Relayer:DeliveryInstruction", original);
     expect(payload.target.chain).toBe("Polygon");
     expect(payload.refund.chain).toBe("Polygon");
-    const encoded = serializePayload("Relayer-DeliveryInstruction", payload);
+    const encoded = serializePayload("Relayer:DeliveryInstruction", payload);
     expect(encoded).toEqual(hexByteStringToUint8Array(original));
   });
 });

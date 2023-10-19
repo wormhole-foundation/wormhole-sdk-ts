@@ -418,7 +418,7 @@ export class CCTPTransfer implements WormholeTransfer {
     sequence: bigint,
     timeout?: number,
   ): Promise<CCTPVAA<"TransferRelay">> {
-    const vaa = await wh.getVAA(chain, emitter, sequence, "CCTP-TransferRelay", timeout);
+    const vaa = await wh.getVAA(chain, emitter, sequence, "CCTP:TransferRelay", timeout);
     if (!vaa) throw new Error(`No VAA available after timeout exhausted`);
 
     return vaa;
