@@ -129,8 +129,6 @@ export module SolanaUtils {
     rpc: Connection,
     stxns: SignedTx[],
   ): Promise<TxHash[]> {
-    console.log('SENDWAIT');
-
     const txhashes = await Promise.all(
       stxns.map((stxn) => rpc.sendRawTransaction(stxn)),
     );
