@@ -14,13 +14,13 @@ import {
   deriveUpgradeAuthorityKey,
 } from '../accounts';
 import { BpfLoaderUpgradeable, deriveUpgradeableProgramKey } from '../../utils';
-import { VAA, toChainId } from '@wormhole-foundation/connect-sdk';
+import { TokenBridge, toChainId } from '@wormhole-foundation/connect-sdk';
 
 export function createRegisterChainInstruction(
   tokenBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: VAA<'TokenBridgeRegisterChain'>,
+  vaa: TokenBridge.VAA<'RegisterChain'>,
 ): TransactionInstruction {
   const methods =
     createReadOnlyTokenBridgeProgramInterface(
@@ -57,7 +57,7 @@ export function getRegisterChainAccounts(
   tokenBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: VAA<'TokenBridgeRegisterChain'>,
+  vaa: TokenBridge.VAA<'RegisterChain'>,
 ): RegisterChainAccounts {
   return {
     payer: new PublicKey(payer),
@@ -84,7 +84,7 @@ export function createUpgradeContractInstruction(
   tokenBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: VAA<'TokenBridgeUpgradeContract'>,
+  vaa: TokenBridge.VAA<'UpgradeContract'>,
   spill?: PublicKeyInitData,
 ): TransactionInstruction {
   const methods =
@@ -127,7 +127,7 @@ export function getUpgradeContractAccounts(
   tokenBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: VAA<'TokenBridgeUpgradeContract'>,
+  vaa: TokenBridge.VAA<'UpgradeContract'>,
   spill?: PublicKeyInitData,
 ): UpgradeContractAccounts {
   return {

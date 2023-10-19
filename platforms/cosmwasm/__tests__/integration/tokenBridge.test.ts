@@ -3,9 +3,9 @@ import {
   chainConfigs,
   DEFAULT_NETWORK,
   testing,
-  VAA,
   Signature,
   ChainName,
+  createVAA,
 } from "@wormhole-foundation/connect-sdk";
 import {
   CosmwasmContracts,
@@ -156,8 +156,7 @@ describe("TokenBridge Tests", () => {
 
     test("Submit Attestation", async () => {
       // TODO: generator for this
-      const vaa: VAA<"AttestMeta"> = {
-        payloadLiteral: "AttestMeta",
+      const vaa = createVAA("TokenBridge:AttestMeta", {
         payload: {
           token: {
             address: nativeTokenAddress.toUniversalAddress(),
@@ -167,7 +166,6 @@ describe("TokenBridge Tests", () => {
           symbol: Buffer.from(new Uint8Array(16)).toString("hex"),
           name: Buffer.from(new Uint8Array(16)).toString("hex"),
         },
-        hash: new Uint8Array(32),
         guardianSet: 0,
         signatures: [{ guardianIndex: 0, signature: new Signature(1n, 2n, 1) }],
         emitterChain: chain,
@@ -176,7 +174,7 @@ describe("TokenBridge Tests", () => {
         consistencyLevel: 0,
         timestamp: 0,
         nonce: 0,
-      };
+      });
       const submitAttestation = tb.submitAttestation(vaa, senderAddress);
 
       const allTxns: CosmwasmUnsignedTransaction[] = [];

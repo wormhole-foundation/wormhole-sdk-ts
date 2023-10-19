@@ -10,7 +10,7 @@ import {
   sequenceItem,
   amountItem,
 } from "../layout-items";
-import { NamedPayloads, payloadDiscriminator, registerPayloadType } from "../vaa";
+import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../vaa";
 
 const encodedExecutionInfoItem = {
   binary: "object",
@@ -47,7 +47,7 @@ const vaaKeyLayout = [
   { name: "sequence", ...sequenceItem },
 ] as const satisfies Layout;
 
-const relayerPayloads = [
+const namedPayloads = [
   [
     "DeliveryInstruction",
     [
@@ -87,17 +87,13 @@ const relayerPayloads = [
   ],
 ] as const satisfies NamedPayloads;
 
-export const relayerPayloadDiscriminator = payloadDiscriminator(relayerPayloads);
-
 // factory registration:
 
 declare global {
   namespace Wormhole {
     interface PayloadLiteralToLayoutMapping
-      extends ShallowMapping<typeof relayerPayloads> {}
+      extends RegisterPayloadTypes<"Relayer", typeof namedPayloads> {}
   }
 }
 
-relayerPayloads.forEach(([payloadLiteral, layout]) =>
-  registerPayloadType(payloadLiteral, layout)
-);
+registerPayloadTypes("Relayer", namedPayloads);

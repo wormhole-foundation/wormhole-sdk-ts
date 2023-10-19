@@ -5,7 +5,6 @@ import {
   toChainName,
   TokenBridge,
   ChainAddress,
-  VAA,
   TokenId,
   UniversalAddress,
   toNative,
@@ -154,7 +153,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
   }
 
   async isTransferCompleted(
-    vaa: VAA<'Transfer'> | VAA<'TransferWithPayload'>,
+    vaa: TokenBridge.VAA<'Transfer' | 'TransferWithPayload'>,
   ): Promise<boolean> {
     return getClaim(
       this.connection,
@@ -205,7 +204,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
   }
 
   async *submitAttestation(
-    vaa: VAA<'AttestMeta'>,
+    vaa: TokenBridge.VAA<'AttestMeta'>,
     payer?: AnySolanaAddress,
   ): AsyncGenerator<SolanaUnsignedTransaction> {
     if (!payer) throw new Error('Payer required to create attestation');
@@ -468,7 +467,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
 
   async *redeem(
     sender: AnySolanaAddress,
-    vaa: VAA<'Transfer'> | VAA<'TransferWithPayload'>,
+    vaa: TokenBridge.VAA<'Transfer' | 'TransferWithPayload'>,
     unwrapNative: boolean = true,
   ): AsyncGenerator<SolanaUnsignedTransaction> {
     // TODO unwrapNative?
@@ -520,7 +519,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
 
   private async *postVaa(
     sender: AnySolanaAddress,
-    vaa: VAA<'Transfer'> | VAA<'TransferWithPayload'> | VAA<'AttestMeta'>,
+    vaa: TokenBridge.VAA<'Transfer' | 'TransferWithPayload' | 'AttestMeta'>,
     blockhash: string,
   ) {
     const senderAddr = new SolanaAddress(sender).unwrap();

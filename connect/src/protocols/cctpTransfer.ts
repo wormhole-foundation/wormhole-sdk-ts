@@ -13,7 +13,8 @@ import {
   TxHash,
   UniversalAddress,
   UnsignedTransaction,
-  VAA,
+  ProtocolVAA,
+  composeLiteral,
   WormholeMessageId,
   deserialize,
   deserializeCircleMessage,
@@ -33,6 +34,8 @@ import {
 } from "../wormholeTransfer";
 import { signSendWait } from "../common";
 import { DEFAULT_TASK_TIMEOUT } from "../config";
+
+export type CCTPVAA<PayloadName extends string> = ProtocolVAA<"CCTP", PayloadName>;
 
 export class CCTPTransfer implements WormholeTransfer {
   private readonly wh: Wormhole;
@@ -55,7 +58,7 @@ export class CCTPTransfer implements WormholeTransfer {
   // Populated if automatic and after initialized
   vaas?: {
     id: WormholeMessageId;
-    vaa?: VAA<"CircleTransferRelay">;
+    vaa?: CCTPVAA<"TransferRelay">;
   }[];
 
   private constructor(wh: Wormhole, transfer: CCTPTransferDetails) {
@@ -140,7 +143,7 @@ export class CCTPTransfer implements WormholeTransfer {
         //@ts-ignore
       ).toUniversalAddress();
       automatic =
-        vaa.payloadLiteral === "CircleTransferRelay" &&
+        vaa.payloadName === "TransferRelay" &&
         rcvAddress.equals(relayerAddress);
     }
 
@@ -414,15 +417,10 @@ export class CCTPTransfer implements WormholeTransfer {
     emitter: UniversalAddress | NativeAddress<PlatformName>,
     sequence: bigint,
     timeout?: number,
-  ): Promise<VAA<"CircleTransferRelay">> {
-    const vaaBytes = await wh.getVAABytes(chain, emitter, sequence, timeout);
-    if (!vaaBytes) throw new Error(`No VAA available after timeout exhausted`);
+  ): Promise<CCTPVAA<"TransferRelay">> {
+    const vaa = await wh.getVAA(chain, emitter, sequence, "CCTP:TransferRelay", timeout);
+    if (!vaa) throw new Error(`No VAA available after timeout exhausted`);
 
-    const partial = deserialize("Uint8Array", vaaBytes);
-    switch (partial.payload[0]) {
-      case 1:
-        return deserialize("CircleTransferRelay", vaaBytes);
-    }
-    throw new Error(`No serde defined for type: ${partial.payload[0]}`);
+    return vaa;
   }
 }

@@ -3,10 +3,10 @@ import {
   Platform,
   testing,
   toNative,
-  VAA,
   Signature,
   chainConfigs,
   DEFAULT_NETWORK,
+  createVAA,
 } from '@wormhole-foundation/connect-sdk';
 
 import {
@@ -202,8 +202,7 @@ describe('TokenBridge Tests', () => {
 
     test('Submit Attestation', async () => {
       // TODO: generator for this
-      const vaa: VAA<'AttestMeta'> = {
-        payloadLiteral: 'AttestMeta',
+      const vaa = createVAA('TokenBridge:AttestMeta', {
         payload: {
           token: {
             address: nativeAddress.toUniversalAddress(),
@@ -213,7 +212,6 @@ describe('TokenBridge Tests', () => {
           symbol: Buffer.from(new Uint8Array(16)).toString('hex'),
           name: Buffer.from(new Uint8Array(16)).toString('hex'),
         },
-        hash: new Uint8Array(32),
         guardianSet: 3,
         signatures: [{ guardianIndex: 0, signature: new Signature(1n, 2n, 1) }],
         emitterChain: 'Avalanche',
@@ -222,7 +220,7 @@ describe('TokenBridge Tests', () => {
         consistencyLevel: 0,
         timestamp: 0,
         nonce: 0,
-      };
+      });
       const submitAttestation = tb.submitAttestation(vaa, sender);
 
       const allTxns: SolanaUnsignedTransaction[] = [];

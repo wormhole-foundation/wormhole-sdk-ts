@@ -1,12 +1,13 @@
-import { ShallowMapping } from "@wormhole-foundation/sdk-base";
 import {
-  payloadIdItem,
-  universalAddressItem,
-  amountItem,
-} from "../layout-items";
-import { registerPayloadType } from "../vaa";
+  Layout,
+  LayoutItem,
+  LengthPrefixedBytesLayoutItem,
 
-const circleTransferRelay = [
+} from "@wormhole-foundation/sdk-base";
+import { payloadIdItem, universalAddressItem, amountItem } from "../layout-items";
+import { RegisterPayloadTypes, NamedPayloads, registerPayloadTypes } from "../vaa";
+
+const depositWithPayloadBase =[
   payloadIdItem(1),
   {
     name: "token",
@@ -21,32 +22,50 @@ const circleTransferRelay = [
   { name: "nonce", binary: "uint", size: 8 },
   { name: "caller", ...universalAddressItem },
   { name: "mintRecipient", ...universalAddressItem },
-  { name: "payloadSize", binary: "uint", size: 2 },
-  {
-    name: "relayerPayload",
-    binary: "object",
-    layout: [
-      payloadIdItem(1),
-      { name: "targetRelayerFee", ...amountItem },
-      { name: "toNativeTokenAmount", ...amountItem },
-      { name: "targetRecipient", ...universalAddressItem },
-    ],
-  },
 ] as const;
 
-export const connectPayloads = [
-  ["CircleTransferRelay", circleTransferRelay],
+//a future optimization would be to calculate the layout size from the layout itself
+//  thought that does require implementing arithmetic on number literals, which is its very
+//  own can of worms
+export const depositWithSizedLayoutPayload = <S extends number, L extends Layout>(
+  byteSize: S,
+  layout: L,
+) => [
+  ...depositWithPayloadBase,
+  { name: "payloadSize", binary: "uint", size: 2, custom: byteSize, omit: true },
+  { name: "payload", binary: "object", layout }
 ] as const;
+
+export const depositWithBytesPayload = <C extends Pick<LengthPrefixedBytesLayoutItem, "custom">>(
+  customPayload: C
+) => [
+  ...depositWithPayloadBase,
+  { name: "payload", binary: "bytes", lengthSize: 2, ...customPayload}
+] as const;
+
+
+export const namedPayloads = [
+  ["DepositWithPayload", depositWithBytesPayload({})],
+  ["TransferRelay",
+    depositWithSizedLayoutPayload(
+      1+3*32,
+      [
+        payloadIdItem(1),
+        { name: "targetRelayerFee", ...amountItem },
+        { name: "toNativeTokenAmount", ...amountItem },
+        { name: "targetRecipient", ...universalAddressItem },
+      ] as const
+    )
+  ]
+] as const satisfies NamedPayloads;
 
 // factory registration:
 
 declare global {
   namespace Wormhole {
     interface PayloadLiteralToLayoutMapping
-      extends ShallowMapping<typeof connectPayloads> {}
+      extends RegisterPayloadTypes<"CCTP", typeof namedPayloads> {}
   }
 }
 
-connectPayloads.forEach(([payloadLiteral, layout]) =>
-  registerPayloadType(payloadLiteral, layout),
-);
+registerPayloadTypes("CCTP", namedPayloads);

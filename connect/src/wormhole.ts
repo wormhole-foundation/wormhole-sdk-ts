@@ -11,7 +11,6 @@ import {
 import {
   UniversalAddress,
   deserialize,
-  VAA,
   ChainAddress,
   NativeAddress,
   TokenId,
@@ -23,6 +22,7 @@ import {
   WormholeMessageId,
   isTokenId,
   PayloadLiteral,
+  PayloadDiscriminator,
 } from "@wormhole-foundation/sdk-definitions";
 
 import { WormholeConfig } from "./types";
@@ -404,13 +404,13 @@ export class Wormhole {
    * @returns The VAA if available
    * @throws Errors if the VAA is not available after the retries
    */
-  async getVAA<PL extends PayloadLiteral>(
+  async getVAA<T extends PayloadLiteral | PayloadDiscriminator>(
     chain: ChainName,
-    emitter: UniversalAddress,
+    emitter: UniversalAddress | NativeAddress<PlatformName>,
     sequence: bigint,
-    decodeAs: PL,
+    decodeAs: T,
     timeout: number = DEFAULT_TASK_TIMEOUT,
-  ): Promise<VAA<PL> | undefined> {
+  ): Promise<ReturnType<typeof deserialize<T>> | undefined> {
     const vaaBytes = await this.getVAABytes(chain, emitter, sequence, timeout);
     if (vaaBytes === undefined) return;
     return deserialize(decodeAs, vaaBytes);

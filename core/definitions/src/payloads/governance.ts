@@ -4,9 +4,7 @@ import {
   FixedConversion,
   column,
   constMap,
-  ShallowMapping,
   Layout,
-  ConcatStringLiterals,
   RoArray,
 } from "@wormhole-foundation/sdk-base";
 
@@ -15,7 +13,7 @@ import {
   universalAddressItem,
   guardianSetItem,
 } from "../layout-items";
-import { NamedPayloads, payloadDiscriminator, registerPayloadType } from "../vaa";
+import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../vaa";
 
 //One thing that's not captures by the payload itself is the fact that governance VAAs should
 //  always have Solana as the emitter chain and address bytes32(4) as the emitter address.
@@ -102,6 +100,24 @@ const actionTuples = [
       layout: [{ name: "defaultProvider", ...universalAddressItem }],
     },
   ],
+  [
+    "RegisterEmitterAndDomain",
+    {
+      allowNull: true,
+      layout: [
+        { name: "emitterChain", ...chainItem() },
+        { name: "emitterAddress", ...universalAddressItem },
+        { name: "domain", binary: "uint", size: 4 },
+      ]
+    }
+  ],
+  [
+    "UpdateFinality",
+    {
+      allowNull: false,
+      layout: [{ name: "finality", binary: "uint", size: 1 }]
+    }
+  ],
 ] as const satisfies RoArray<
   readonly [string, { allowNull: boolean; layout: Layout }]
 >;
@@ -116,8 +132,7 @@ const sdkProtocolNameAndGovernanceVaaModuleEntries = [
   ["TokenBridge", "TokenBridge"],
   ["NftBridge", "NFTBridge"],
   ["Relayer", "WormholeRelayer"],
-  // TODO: wat is this
-  ["CCTP", "Circle"],
+  ["CCTP", "CircleIntegration"],
 ] as const satisfies RoArray<readonly [ProtocolName, string]>;
 
 const sdkProtocolNameToGovernanceVaaModuleMapping = constMap(
@@ -179,48 +194,70 @@ const governancePayload = <
   protocol: P,
   action: A,
   num: N
-) =>
+) => [
+  action,
   [
-    (protocol + action) as ConcatStringLiterals<[P, A]>,
-    [
-      ...headerLayout(protocol, action, num),
-      //TODO why is this insane cast necessary here?!
-      //     why isn't typescript deducing the return type correctly by itself?
-      ...actionMapping(action).layout as ReturnType<typeof actionMapping<A>>["layout"]
-    ],
-  ] as const;
+    ...headerLayout(protocol, action, num),
+    //TODO why is this insane cast necessary here?!
+    //     why isn't typescript deducing the return type correctly by itself?
+    ...actionMapping(action).layout as ReturnType<typeof actionMapping<A>>["layout"]
+  ],
+] as const;
 
-const governancePayloads = [
-  //see https://github.com/wormhole-foundation/wormhole/blob/96c6cc2b325addc2125bb438b228921a4be6b7f3/ethereum/contracts/GovernanceStructs.sol#L64
+const coreBridgePayloads = [
+  //see wormhole ethereum/contracts/GovernanceStructs.sol
   governancePayload("CoreBridge", "UpgradeContract", 1),
   governancePayload("CoreBridge", "GuardianSetUpgrade", 2),
   governancePayload("CoreBridge", "SetMessageFee", 3),
   governancePayload("CoreBridge", "TransferFees", 4),
   governancePayload("CoreBridge", "RecoverChainId", 5),
-  //see https://github.com/wormhole-foundation/wormhole/blob/96c6cc2b325addc2125bb438b228921a4be6b7f3/ethereum/contracts/bridge/BridgeGovernance.sol#L115
+] as const satisfies NamedPayloads;
+
+const tokenBridgePayloads = [
+  //see wormhole ethereum/contracts/bridge/BridgeGovernance.sol
   governancePayload("TokenBridge", "RegisterChain", 1),
   governancePayload("TokenBridge", "UpgradeContract", 2),
   governancePayload("TokenBridge", "RecoverChainId", 3),
-  //see https://github.com/wormhole-foundation/wormhole/blob/96c6cc2b325addc2125bb438b228921a4be6b7f3/ethereum/contracts/nft/NFTBridgeGovernance.sol#L112
+] as const satisfies NamedPayloads;
+
+const nftBridgePayloads = [
+  //see wormhole ethereum/contracts/nft/NFTBridgeGovernance.sol
   governancePayload("NftBridge", "RegisterChain", 1),
   governancePayload("NftBridge", "UpgradeContract", 2),
   governancePayload("NftBridge", "RecoverChainId", 3),
-  //see https://github.com/wormhole-foundation/wormhole/blob/96c6cc2b325addc2125bb438b228921a4be6b7f3/ethereum/contracts/relayer/wormholeRelayer/WormholeRelayerGovernance.sol#L60
+] as const satisfies NamedPayloads;
+
+const relayerPayloads = [
+  //see wormhole ethereum/contracts/relayer/wormholeRelayer/WormholeRelayerGovernance.sol
   governancePayload("Relayer", "RegisterChain", 1),
   governancePayload("Relayer", "UpgradeContract", 2),
   governancePayload("Relayer", "UpdateDefaultProvider", 3),
 ] as const satisfies NamedPayloads;
 
-export const governancePayloadDiscriminator = payloadDiscriminator(governancePayloads);
+const cctpPayloads = [
+  //see wormhole-circle-integration evm/src/circle_integration/CircleIntegrationGovernance.sol
+  governancePayload("CCTP", "UpdateFinality", 1),
+  governancePayload("CCTP", "RegisterEmitterAndDomain", 2),
+  governancePayload("CCTP", "UpgradeContract", 3),
+] as const satisfies NamedPayloads;
+
 
 // factory registration:
 declare global {
   namespace Wormhole {
-    interface PayloadLiteralToLayoutMapping
-      extends ShallowMapping<typeof governancePayloads> {}
+    interface PayloadLiteralToLayoutMapping extends
+      RegisterPayloadTypes<"CoreBridge", typeof coreBridgePayloads>,
+      RegisterPayloadTypes<"TokenBridge", typeof tokenBridgePayloads>,
+      RegisterPayloadTypes<"NftBridge", typeof nftBridgePayloads>,
+      RegisterPayloadTypes<"Relayer", typeof relayerPayloads>,
+      RegisterPayloadTypes<"CCTP", typeof cctpPayloads>
+    {}
   }
 }
 
-governancePayloads.forEach(([payloadLiteral, layout]) =>
-  registerPayloadType(payloadLiteral, layout)
-);
+registerPayloadTypes("CoreBridge", coreBridgePayloads);
+registerPayloadTypes("TokenBridge", tokenBridgePayloads);
+registerPayloadTypes("NftBridge", nftBridgePayloads);
+registerPayloadTypes("Relayer", relayerPayloads);
+registerPayloadTypes("CCTP", cctpPayloads);
+

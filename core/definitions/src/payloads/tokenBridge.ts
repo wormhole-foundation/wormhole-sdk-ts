@@ -4,10 +4,9 @@ import {
   CustomConversion,
   FixedSizeBytesLayoutItem,
   range,
-  ShallowMapping,
 } from "@wormhole-foundation/sdk-base";
 import { payloadIdItem, chainItem, universalAddressItem, amountItem } from "../layout-items";
-import { NamedPayloads, payloadDiscriminator, registerPayloadType } from "../vaa";
+import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../vaa";
 
 const fixedLengthStringItem = {
   binary: "bytes",
@@ -22,7 +21,7 @@ const fixedLengthStringItem = {
   } satisfies CustomConversion<Uint8Array, string>,
 } as const satisfies Omit<FixedSizeBytesLayoutItem, "name">;
 
-export const transferWithPayloadLayout = <const P extends Omit<LayoutItem, "name">>(
+export const transferWithPayloadLayout = <P extends Omit<LayoutItem, "name">>(
   customPayload: P
 ) => ([
   payloadIdItem(3),
@@ -51,7 +50,7 @@ const transferCommonLayout = [
   },
 ] as const satisfies Layout;
 
-export const tokenBridgePayloads = [
+export const namedPayloads = [
   [
     "AttestMeta",
     [
@@ -79,17 +78,13 @@ export const tokenBridgePayloads = [
   ],
 ] as const satisfies NamedPayloads;
 
-export const tokenBridgePayloadDiscriminator = payloadDiscriminator(tokenBridgePayloads);
-
 // factory registration:
 
 declare global {
   namespace Wormhole {
     interface PayloadLiteralToLayoutMapping
-      extends ShallowMapping<typeof tokenBridgePayloads> {}
+      extends RegisterPayloadTypes<"TokenBridge", typeof namedPayloads> {}
   }
 }
 
-tokenBridgePayloads.forEach(([payloadLiteral, layout]) =>
-  registerPayloadType(payloadLiteral, layout)
-);
+registerPayloadTypes("TokenBridge", namedPayloads);

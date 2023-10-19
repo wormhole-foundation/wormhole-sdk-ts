@@ -26,7 +26,7 @@ import {
   getTransferNativeWithPayloadAccounts,
   getTransferWrappedWithPayloadAccounts,
 } from './instructions';
-import { VAA, toChainId } from '@wormhole-foundation/connect-sdk';
+import { TokenBridge, toChainId } from '@wormhole-foundation/connect-sdk';
 
 export interface TokenBridgeBaseDerivedAccounts {
   /**
@@ -346,7 +346,7 @@ export function getCompleteTransferNativeWithPayloadCpiAccounts(
   tokenBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: VAA<'Transfer'> | VAA<'TransferWithPayload'>,
+  vaa: TokenBridge.VAA<'Transfer' | 'TransferWithPayload'>,
   toTokenAccount: PublicKeyInitData,
 ): CompleteTransferNativeWithPayloadCpiAccounts {
   const mint = new PublicKey(vaa.payload.token.address.toUint8Array());
@@ -433,7 +433,7 @@ export function getCompleteTransferWrappedWithPayloadCpiAccounts(
   tokenBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: VAA<'Transfer'> | VAA<'TransferWithPayload'>,
+  vaa: TokenBridge.VAA<'Transfer' | 'TransferWithPayload'>,
   toTokenAccount: PublicKeyInitData,
 ): CompleteTransferWrappedWithPayloadCpiAccounts {
   const mint = deriveWrappedMintKey(
