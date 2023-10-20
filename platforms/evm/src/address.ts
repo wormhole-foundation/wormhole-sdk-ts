@@ -79,11 +79,15 @@ export class EvmAddress implements Address {
   static isValidAddress(address: string) {
     return ethers.isAddress(address);
   }
-  static instanceof(address: any) {
+  static instanceof(address: any): address is EvmAddress {
     return address.platform === EvmPlatform.platform;
   }
-  equals(other: UniversalAddress): boolean {
-    return other.equals(this.toUniversalAddress());
+  equals(other: EvmAddress | UniversalAddress): boolean {
+    if (EvmAddress.instanceof(other)) {
+      return other.address === this.address
+    } else {
+      return other.equals(this.toUniversalAddress());
+    }
   }
 }
 
