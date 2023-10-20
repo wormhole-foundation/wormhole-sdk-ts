@@ -60,12 +60,16 @@ export class SolanaAddress implements Address {
     return new UniversalAddress(this.address.toBytes());
   }
 
-  static instanceof(address: any) {
+  static instanceof(address: any): address is SolanaAddress {
     return address.platform === SolanaPlatform.platform;
   }
 
-  equals(other: UniversalAddress): boolean {
-    return this.toUniversalAddress().equals(other);
+  equals(other: SolanaAddress | UniversalAddress): boolean {
+    if (SolanaAddress.instanceof(other)) {
+      return other.unwrap().equals(this.unwrap())
+    } else {
+      return this.toUniversalAddress().equals(other);
+    }
   }
 }
 
