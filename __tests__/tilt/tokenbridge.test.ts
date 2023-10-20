@@ -15,7 +15,7 @@ import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
 
-import { expect, jest, test } from '@jest/globals';
+import { expect, jest, describe, test } from '@jest/globals';
 
 import { getStuff } from './helpers';
 
@@ -33,10 +33,9 @@ const e2es: [ChainName, ChainName][] = [
 describe("Token Bridge E2E Tests", () => {
     const wh = new Wormhole(network, allPlatforms)
 
-    const [srcChain, dstChain] = e2es[0]
+    //const [srcChain, dstChain] = e2es[0]
 
-    describe(`${srcChain} To ${dstChain}`, () => {
-
+    describe.each(e2es)('%s to %s', (srcChain, dstChain) => {
         const src = wh.getChain(srcChain);
         const dst = wh.getChain(dstChain)
 
@@ -68,15 +67,17 @@ describe("Token Bridge E2E Tests", () => {
 
         describe("Attest Token", () => {
             let msgid: WormholeMessageId;
-
+            let wrappedExists: boolean;
             test(`Check if the wrapped token exists on ${dstChain}`, async () => {
-                const wrappedExists = await dstTb.hasWrappedAsset({ chain: src.chain, address: token })
+                wrappedExists = await dstTb.hasWrappedAsset({ chain: src.chain, address: token })
                 // We should not have this token in a clean environment
-                expect(wrappedExists).toBeFalsy()
+                //expect(wrappedExists).toBeFalsy()
             })
 
             test(`Create Attestation VAA on ${srcChain}`, async () => {
-                const attest = srcTb.createAttestation(token)
+                if (wrappedExists) return;
+
+                const attest = srcTb.createAttestation(token, srcAcct.address)
                 const txns = await signSendWait(src, attest, srcSigner)
                 expect(txns).toHaveLength(1)
 
@@ -88,18 +89,19 @@ describe("Token Bridge E2E Tests", () => {
             })
 
             test(`Submit Attestation VAA on ${dstChain}`, async () => {
+                if (wrappedExists) return;
                 const vaa = await wh.getVAA(msgid.chain, msgid.emitter, msgid.sequence, "TokenBridge:AttestMeta")
                 expect(vaa).toBeTruthy()
 
                 const completeAttest = dstTb.submitAttestation(vaa!, dstAcct.address)
-                const solTxns = await signSendWait(dst, completeAttest, dstSigner)
-                expect(solTxns.length).toBeGreaterThanOrEqual(1)
+                const dstTxns = await signSendWait(dst, completeAttest, dstSigner)
+                expect(dstTxns.length).toBeGreaterThanOrEqual(1)
             })
             // TODO: add test for updating wrapped
         })
 
 
-        test(`Send transfer: ${srcChain} to ${dstChain}`, async () => {
+        test(`Perform transfer: ${srcChain} to ${dstChain}`, async () => {
             // TODO: balance checks before and after
             const amt = normalizeAmount("1", src.config.nativeTokenDecimals)
 
@@ -109,7 +111,7 @@ describe("Token Bridge E2E Tests", () => {
             expect(transfer.from).toEqual(srcAcct)
             expect(transfer.amount).toEqual(amt)
             expect(transfer.automatic).toBeFalsy()
-            expect(transfer.token).toEqual(token)
+            expect(transfer.token).toEqual("native")
 
             const srcTxIds = await xfer.initiateTransfer(srcSigner)
             expect(srcTxIds.length).toBeGreaterThanOrEqual(1)

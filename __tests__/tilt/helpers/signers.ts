@@ -54,11 +54,12 @@ export class EvmSigner implements Signer {
     for (const txn of tx) {
       const { transaction, description } = txn;
       console.log(`Signing: ${description} for ${this.address()}`);
+      console.log(transaction)
 
       const t: ethers.TransactionRequest = {
         ...transaction,
         ...{
-          gasLimit: 500_000n,
+          gasLimit: 1_000_000n,
           maxFeePerGas,
           maxPriorityFeePerGas,
           nonce: this.nonce,
@@ -93,16 +94,16 @@ export class SolSigner implements Signer {
       signed.push(transaction.serialize());
 
       // Uncomment for debug
-      // const st = transaction as Transaction;
-      // console.log(st.signatures);
-      // console.log(st.feePayer);
-      // st.instructions.forEach((ix) => {
-      //   console.log("Program", ix.programId.toBase58());
-      //   console.log("Data: ", ix.data.toString("hex"));
-      //   ix.keys.forEach((k) => {
-      //     console.log(k.pubkey.toBase58());
-      //   });
-      // });
+      const st = transaction as Transaction;
+      console.log(st.signatures);
+      console.log(st.feePayer);
+      st.instructions.forEach((ix) => {
+        console.log("Program", ix.programId.toBase58());
+        console.log("Data: ", ix.data.toString("hex"));
+        ix.keys.forEach((k) => {
+          console.log(k.pubkey.toBase58());
+        });
+      });
     }
     return signed;
   }

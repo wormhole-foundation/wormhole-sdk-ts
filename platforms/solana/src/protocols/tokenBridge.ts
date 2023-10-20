@@ -544,7 +544,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
       verifySigTx.feePayer = senderAddr;
       verifySigTx.partialSign(signatureSet);
 
-      const lastIx = i >= verifySignaturesInstructions.length - 2;
+      const lastIx = i > verifySignaturesInstructions.length - 3;
 
       yield this.createUnsignedTx(
         verifySigTx,

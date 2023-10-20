@@ -133,18 +133,22 @@ export module SolanaUtils {
       stxns.map((stxn) => rpc.sendRawTransaction(stxn)),
     );
 
-    // const { blockhash, lastValidBlockHeight } = await rpc.getLatestBlockhash();
-    // const bhs: BlockheightBasedTransactionConfirmationStrategy = {
-    //   signature: txhashes[txhashes.length - 1], blockhash, lastValidBlockHeight
-    // }
-    // await rpc.confirmTransaction(bhs, 'finalized');
-    await rpc.confirmTransaction(txhashes[txhashes.length - 1], 'finalized');
+    const { blockhash, lastValidBlockHeight } = await rpc.getLatestBlockhash(rpc.commitment);
+
+    await Promise.all(
+      txhashes.map((txid) => {
+        const bhs: BlockheightBasedTransactionConfirmationStrategy = {
+          signature: txid, blockhash, lastValidBlockHeight
+        }
+        return rpc.confirmTransaction(bhs, rpc.commitment)
+      })
+    );
 
     return txhashes;
   }
 
   export async function getCurrentBlock(rpc: Connection): Promise<number> {
-    return await rpc.getSlot();
+    return await rpc.getSlot(rpc.commitment);
   }
 
   export async function chainFromRpc(

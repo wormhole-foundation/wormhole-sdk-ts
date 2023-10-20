@@ -97,14 +97,6 @@ export async function getCosmosSigner(
   return new CosmosSigner(chain.chain, signingClient, acct);
 }
 
-
-
-// const conf = overrideChainSetting(CONFIG[network], {
-//     "Ethereum": { "rpc": "http://localhost:8545" },
-//     "Bsc": { "rpc": "http://localhost:8546" },
-//     "Solana": { "rpc": "http://localhost:8899" }
-// })
-
 export type ConfigOverride = {
   [key: string]: Partial<ChainConfig>
 }
