@@ -1,10 +1,12 @@
 import {
     ChainAddress,
+    ChainName,
     NativeAddress,
     PlatformName,
     Signer,
     TokenBridge,
     Wormhole,
+    WormholeMessageId,
     isWormholeMessageId,
     normalizeAmount,
     signSendWait,
@@ -23,19 +25,31 @@ jest.setTimeout(10 * 60 * 1000)
 const network = "Devnet"
 const allPlatforms = [SolanaPlatform, EvmPlatform, CosmwasmPlatform];
 
-describe("Tilt Token Bridge Tests", () => {
+const e2es: [ChainName, ChainName][] = [
+    ["Ethereum", "Solana"],
+    ["Solana", "Ethereum"],
+]
+
+describe("Token Bridge E2E Tests", () => {
     const wh = new Wormhole(network, allPlatforms)
 
+    const [srcChain, dstChain] = e2es[0]
 
-    describe("Ethereum To Solana", () => {
-        const src = wh.getChain("Ethereum");
-        const dst = wh.getChain("Solana")
+    describe(`${srcChain} To ${dstChain}`, () => {
+
+        const src = wh.getChain(srcChain);
+        const dst = wh.getChain(dstChain)
 
         let srcSigner: Signer;
         let dstSigner: Signer;
 
         let srcAcct: ChainAddress;
         let dstAcct: ChainAddress;
+
+        let srcTb: TokenBridge<PlatformName>;
+        let dstTb: TokenBridge<PlatformName>;
+
+        let token: NativeAddress<PlatformName>;
 
         beforeAll(async () => {
             const srcStuff = await getStuff(src);
@@ -45,51 +59,70 @@ describe("Tilt Token Bridge Tests", () => {
             const dstStuff = await getStuff(dst)
             dstSigner = dstStuff.signer
             dstAcct = dstStuff.address
+
+            srcTb = await src.getTokenBridge();
+            dstTb = await dst.getTokenBridge();
+
+            token = await srcTb.getWrappedNative()
         })
 
-        test("Create Wrapped", async () => {
-            const srcTb: TokenBridge<PlatformName> = await src.getTokenBridge();
-            const dstTb: TokenBridge<PlatformName> = await dst.getTokenBridge();
-            const wrappedNativeToken: NativeAddress<PlatformName> = await srcTb.getWrappedNative()
+        describe("Attest Token", () => {
+            let msgid: WormholeMessageId;
 
-            // TODO: should we make sure its a clean env? should we update if it already exists?
-            const wrappedExists = await dstTb.hasWrappedAsset({ chain: src.chain, address: wrappedNativeToken })
-            if (wrappedExists) return
+            test(`Check if the wrapped token exists on ${dstChain}`, async () => {
+                const wrappedExists = await dstTb.hasWrappedAsset({ chain: src.chain, address: token })
+                // We should not have this token in a clean environment
+                expect(wrappedExists).toBeFalsy()
+            })
 
-            const attest = srcTb.createAttestation(wrappedNativeToken)
-            const txns = await signSendWait(src, attest, srcSigner)
-            expect(txns).toHaveLength(1)
+            test(`Create Attestation VAA on ${srcChain}`, async () => {
+                const attest = srcTb.createAttestation(token)
+                const txns = await signSendWait(src, attest, srcSigner)
+                expect(txns).toHaveLength(1)
 
-            const [msgid] = await src.parseTransaction(txns[txns.length - 1].txid)
-            expect(isWormholeMessageId(msgid)).toBeTruthy()
+                const msgs = await src.parseTransaction(txns[txns.length - 1].txid)
+                expect(msgs).toHaveLength(1)
 
-            const vaa = await wh.getVAA(msgid.chain, msgid.emitter, msgid.sequence, "TokenBridge:AttestMeta")
-            expect(vaa).toBeTruthy()
+                msgid = msgs[0]
+                expect(isWormholeMessageId(msgid)).toBeTruthy()
+            })
 
-            const completeAttest = dstTb.submitAttestation(vaa!, dstAcct.address)
-            const solTxns = await signSendWait(dst, completeAttest, dstSigner)
-            expect(solTxns.length).toBeGreaterThanOrEqual(1)
+            test(`Submit Attestation VAA on ${dstChain}`, async () => {
+                const vaa = await wh.getVAA(msgid.chain, msgid.emitter, msgid.sequence, "TokenBridge:AttestMeta")
+                expect(vaa).toBeTruthy()
+
+                const completeAttest = dstTb.submitAttestation(vaa!, dstAcct.address)
+                const solTxns = await signSendWait(dst, completeAttest, dstSigner)
+                expect(solTxns.length).toBeGreaterThanOrEqual(1)
+            })
+            // TODO: add test for updating wrapped
         })
 
-        test("Send Native Transfer", async () => {
+
+        test(`Send transfer: ${srcChain} to ${dstChain}`, async () => {
+            // TODO: balance checks before and after
             const amt = normalizeAmount("1", src.config.nativeTokenDecimals)
 
             const xfer = await wh.tokenTransfer("native", amt, srcAcct, dstAcct, false)
-            expect(xfer.txids.length).toEqual(0)
-            expect(xfer.transfer.from).toEqual(srcAcct)
+            const { transfer, txids } = xfer;
+            expect(txids.length).toEqual(0)
+            expect(transfer.from).toEqual(srcAcct)
+            expect(transfer.amount).toEqual(amt)
+            expect(transfer.automatic).toBeFalsy()
+            expect(transfer.token).toEqual(token)
 
-            const txids = await xfer.initiateTransfer(srcSigner)
-            expect(txids.length).toBeGreaterThanOrEqual(1)
-            expect(xfer.txids.length).toEqual(txids.length)
+            const srcTxIds = await xfer.initiateTransfer(srcSigner)
+            expect(srcTxIds.length).toBeGreaterThanOrEqual(1)
+            expect(xfer.txids.length).toEqual(srcTxIds.length)
 
             const atts = await xfer.fetchAttestation()
             expect(atts.length).toEqual(1)
 
-            const [att] = atts
+            const att = atts[0]
             expect(isWormholeMessageId(att)).toBeTruthy()
 
-            const completed = await xfer.completeTransfer(dstSigner)
-            expect(completed.length).toBeGreaterThanOrEqual(1)
+            const dstTxIds = await xfer.completeTransfer(dstSigner)
+            expect(dstTxIds.length).toBeGreaterThanOrEqual(1)
         })
     })
 });
