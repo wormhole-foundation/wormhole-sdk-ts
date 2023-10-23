@@ -8,23 +8,23 @@ import {
   CircleAttestation,
   CircleMessageId,
   NativeAddress,
+  ProtocolVAA,
   Signer,
   TransactionId,
   TxHash,
   UniversalAddress,
   UnsignedTransaction,
-  ProtocolVAA,
-  composeLiteral,
   WormholeMessageId,
-  deserialize,
   deserializeCircleMessage,
   isCircleMessageId,
   isTransactionIdentifier,
   isWormholeMessageId,
   nativeChainAddress,
-  toNative,
+  toNative
 } from "@wormhole-foundation/sdk-definitions";
 
+import { signSendWait } from "../common";
+import { DEFAULT_TASK_TIMEOUT } from "../config";
 import { CCTPTransferDetails, isCCTPTransferDetails } from "../types";
 import { Wormhole } from "../wormhole";
 import {
@@ -32,8 +32,6 @@ import {
   TransferState,
   WormholeTransfer,
 } from "../wormholeTransfer";
-import { signSendWait } from "../common";
-import { DEFAULT_TASK_TIMEOUT } from "../config";
 
 export type CCTPVAA<PayloadName extends string> = ProtocolVAA<"CCTP", PayloadName>;
 

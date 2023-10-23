@@ -39,6 +39,7 @@ export interface Signer {
   chain(): ChainName;
   address(): string;
   sign(tx: UnsignedTransaction[]): Promise<SignedTx[]>;
+  // signAndSend(tx: UnsignedTransaction[]): Promise<TxHash[]>;
 }
 export function isSigner(thing: Signer | any): thing is Signer {
   return (
