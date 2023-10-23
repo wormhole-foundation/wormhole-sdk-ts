@@ -20,5 +20,5 @@ spec:
                 - test
                 - -e
                 - "/app/testing/success"
-            initialDelaySeconds: 5
-            periodSeconds: 5
+            initialDelaySeconds: 60 
+            periodSeconds: 15 
