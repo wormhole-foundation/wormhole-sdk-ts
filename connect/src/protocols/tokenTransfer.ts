@@ -19,11 +19,6 @@ import {
   WormholeTransfer,
 } from "../wormholeTransfer";
 
-/**
- * What do with multiple transactions or VAAs?
- * More concurrent promises instead of linearizing/blocking
- */
-
 export class TokenTransfer implements WormholeTransfer {
   private readonly wh: Wormhole;
 

@@ -35,19 +35,39 @@ export type Balances = {
   [key: string]: BigInt | null;
 };
 
-export interface Signer {
+export interface SignOnlySigner {
   chain(): ChainName;
   address(): string;
   sign(tx: UnsignedTransaction[]): Promise<SignedTx[]>;
-  // signAndSend(tx: UnsignedTransaction[]): Promise<TxHash[]>;
 }
-export function isSigner(thing: Signer | any): thing is Signer {
+export function isSignOnlySigner(thing: SignOnlySigner | any): thing is SignOnlySigner {
   return (
-    typeof (<Signer>thing).chain === "function" &&
-    typeof (<Signer>thing).address == "function" &&
-    typeof (<Signer>thing).sign === "function"
+    typeof (<SignOnlySigner>thing).chain === "function" &&
+    typeof (<SignOnlySigner>thing).address == "function" &&
+    typeof (<SignOnlySigner>thing).sign === "function"
   );
 }
+
+export interface SignAndSendSigner {
+  chain(): ChainName;
+  address(): string;
+  signAndSend(tx: UnsignedTransaction[]): Promise<TxHash[]>;
+}
+
+export function isSignAndSendSigner(thing: SignAndSendSigner | any): thing is SignAndSendSigner {
+  return (
+    typeof (<SignAndSendSigner>thing).chain === "function" &&
+    typeof (<SignAndSendSigner>thing).address == "function" &&
+    typeof (<SignAndSendSigner>thing).signAndSend === "function"
+  );
+}
+
+export type Signer = SignOnlySigner | SignAndSendSigner;
+
+export function isSigner(thing: Signer | any): thing is Signer {
+  return isSignOnlySigner(thing) || isSignAndSendSigner(thing)
+}
+
 
 export function nativeChainAddress(
   s: Signer | TokenId | [ChainName, UniversalAddress | Uint8Array | string],

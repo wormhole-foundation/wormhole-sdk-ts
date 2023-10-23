@@ -13,6 +13,7 @@ import { Keypair, Transaction } from "@solana/web3.js";
 import {
   ChainName,
   PlatformToChains,
+  SignOnlySigner,
   SignedTx,
   Signer,
   UnsignedTransaction,
@@ -25,13 +26,13 @@ import {
   chainToAddressPrefix,
 } from "@wormhole-foundation/connect-sdk-cosmwasm";
 
-export class EvmSigner implements Signer {
+export class EvmSigner implements SignOnlySigner {
   constructor(
     private _chain: ChainName,
     private _wallet: ethers.Wallet,
     private nonce: number,
     private provider: ethers.Provider,
-  ) {}
+  ) { }
   chain(): ChainName {
     return this._chain;
   }
@@ -73,8 +74,8 @@ export class EvmSigner implements Signer {
   }
 }
 
-export class SolSigner implements Signer {
-  constructor(private _chain: ChainName, private _keypair: Keypair) {}
+export class SolSigner implements SignOnlySigner {
+  constructor(private _chain: ChainName, private _keypair: Keypair) { }
 
   chain(): ChainName {
     return this._chain;
@@ -109,12 +110,12 @@ export class SolSigner implements Signer {
   }
 }
 
-export class CosmosSigner implements Signer {
+export class CosmosSigner implements SignOnlySigner {
   constructor(
     private _chain: ChainName,
     private _signer: SigningCosmWasmClient,
     private _account: AccountData,
-  ) {}
+  ) { }
 
   chain(): ChainName {
     return this._chain;
@@ -145,7 +146,7 @@ export class CosmosSigner implements Signer {
   }
 }
 
-export class CosmosEvmSigner implements Signer {
+export class CosmosEvmSigner implements SignOnlySigner {
   private key: PrivateKey;
   private prefix: string;
   constructor(
