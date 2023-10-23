@@ -33,8 +33,6 @@ const e2es: [ChainName, ChainName][] = [
 describe("Token Bridge E2E Tests", () => {
     const wh = new Wormhole(network, allPlatforms)
 
-    //const [srcChain, dstChain] = e2es[0]
-
     describe.each(e2es)('%s to %s', (srcChain, dstChain) => {
         const src = wh.getChain(srcChain);
         const dst = wh.getChain(dstChain)
