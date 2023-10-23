@@ -55,7 +55,7 @@ export module SolanaPlatform {
 
   export function getRpc(
     chain: ChainName,
-    commitment: Commitment = 'confirmed',
+    commitment: Commitment = 'finalized',
   ): Connection {
     const rpcAddress = conf[chain]!.rpc;
     return new Connection(rpcAddress, commitment);

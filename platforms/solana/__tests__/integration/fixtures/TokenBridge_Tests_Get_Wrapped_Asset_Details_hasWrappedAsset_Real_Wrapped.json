@@ -10,19 +10,19 @@
                 "F6ZZBNoi2XaguDJyzW2MdawdzFrLTgUjoi4fznPLNejE",
                 {
                     "encoding": "base64",
-                    "commitment": "confirmed"
+                    "commitment": "finalized"
                 }
             ]
         },
         "status": 200,
         "response": [
-            "1f8b08000000000004035d8f4d4f84301086effe8c3903a1503e130fb09855621493c53d180f6d291f0a1428b0c40dffddba47e734c9bcf3cc3c57f892a29f0606215886091a4c5c2eed0ce11598e867bedd5a3234ef7c928de8550e19c83590a7b2b2156a6c5918e3c0f7d0aec14ada85ff2d176426107e405c45ffeaf0f36891318b1d9c5bd9a5468216afa95797a8dbb6a77b45a5447217c3a7067ce36c99096d15b224ade41ab4a41bc4344b0811b231f64d0dc4a5e793faeb22a62e39e5a91b9db397f5db09d6e31b4dd663da8d343915d5b98a46f61c1faa9cde3cfbf96110ac86d0769172190853676c67571a4da17866699a8c62ac178c211d73d7d27d3728759f79c4a1c4f40acf87fdee17fd90e94043010000"
+            "1f8b08000000000004035d8f4d4f83401086effe8c3903d9e1634b493cf4c3541ba33529f6603cccb20b4581a52ca5c486ffeedaa3739a64de79669e2b7c19dd746d0609f81e03073a65ce550fc91532ddf46abcb5d496efaa33a56e6c0e3de41ece6cd654da8e7d3f6231c6219b1c18a83aabbf65493d41f201cb62f1af563f8f3e9d76cb284cfddde5885ac8d7edec98633d8e4ff7962ac8281ec2a7036a54d9b9275159644e95510e5454b7baeb0d24884118c6cc017d695467ffbae8ae5eefd32d5f1c762fc377341f366f623d6cb6f549acf7b238148b53f6bc5c15a9b87936fd43abb323240147ebd25266cf04d164354a69790299e48293abe6227243a6a41b2b8a5c8e9c61904b44ca61bafb0507005d0743010000"
         ],
         "rawHeaders": [
             "content-type",
             "application/json; charset=utf-8",
             "date",
-            "Wed, 18 Oct 2023 12:40:46 GMT",
+            "Sat, 21 Oct 2023 13:12:51 GMT",
             "x-rpc-node",
             "pit37",
             "x-ratelimit-tier",
@@ -38,7 +38,7 @@
             "x-ratelimit-endpoint-limit",
             "unlimited",
             "x-ratelimit-endpoint-remaining",
-            "-140",
+            "-258",
             "x-ratelimit-conn-limit",
             "40",
             "x-ratelimit-conn-remaining",
@@ -81,19 +81,19 @@
                 "F6ZZBNoi2XaguDJyzW2MdawdzFrLTgUjoi4fznPLNejE",
                 {
                     "encoding": "base64",
-                    "commitment": "confirmed"
+                    "commitment": "finalized"
                 }
             ]
         },
         "status": 200,
         "response": [
-            "1f8b08000000000004035d8f4d4f83401086effe8c3943d3fde82e90788062aa8dd19a147b301e769705aac052965262c37f77edd1394d32ef3c33cf15beac69fb4e410478b1040f7a6dcff500d1159469073ddd5ad11ddf756f8fa67539b4406c81b8cbdadab831c694d230e078f66014f559ff2de76210107d4052c6ff6afdf388c56997ac688677970a1999bf6e7955a0669a9eee1d550aab19854f0ff4a4d57910b276c842d4567b508ba633fd60214288501a2c3d309756f7eeaf8be99b749f6d597cd8bd8cdfab70dcbcc974dc6c9b934cf7797928e3937a4ed665266f9eedf0d01955414418722e9d50ee0c59cd4ee3983b5ea1240bc992fb8432e9538da51f8445e1871c078c6b41081230dffd0274e8389343010000"
+            "1f8b08000000000004035d8f4d4f83401086effe8c3943c32ecb87241eda62aa8dd19a147b301e663fa0556081a5406cf8ef5d7b744e93cc3bcfcc73816fa3ebae1190005d78e040a7ccb9ec21b980d075afa65b8bcde94375e6a46b9b230b122e4864b3a6d4764c69e0c52466deecc080e559fd2d4bec11924f5815cb7fb5fe7da2d8ee5601cbe86e3c12cde5db363ae6a49aa6e7074be56854c8e0cb01352971ee919716996369940325568dee7a0309213e63b1e7801e6bd5d9bf46dd55e93edb86cbc3ee75f809ee87cd3b4f87cdb66a79ba97c5a158b6e265b52e327ef3acfbc7468b23247e48ac4b83c29ef183d96a9ca4e5798ae49271e562c4a5cbb8142e0a16bb7e8e18914862486398efae4e71d9d743010000"
         ],
         "rawHeaders": [
             "content-type",
             "application/json; charset=utf-8",
             "date",
-            "Wed, 18 Oct 2023 12:40:45 GMT",
+            "Sat, 21 Oct 2023 13:12:52 GMT",
             "x-rpc-node",
             "pit37",
             "x-ratelimit-tier",
@@ -109,7 +109,7 @@
             "x-ratelimit-endpoint-limit",
             "unlimited",
             "x-ratelimit-endpoint-remaining",
-            "-141",
+            "-259",
             "x-ratelimit-conn-limit",
             "40",
             "x-ratelimit-conn-remaining",
@@ -152,19 +152,19 @@
                 "F6ZZBNoi2XaguDJyzW2MdawdzFrLTgUjoi4fznPLNejE",
                 {
                     "encoding": "base64",
-                    "commitment": "confirmed"
+                    "commitment": "finalized"
                 }
             ]
         },
         "status": 200,
         "response": [
-            "1f8b08000000000004035d8f4d6f83300c86effb193e0322217c146907285337346d9dd4ae8769878424c006040850b4aaff7d598ff3c9925f3ff673812fadbab12f2006ecb860c128f4dc4c105fa050dd24d65b4bfbfa5d8cba569dc92107050e0a4d5637ca8c3126846ca2105f2d5868338bbf654e270af107a465f2afb63f8f980efbd42747bc3f574831fe9a879544edba3edd1b2aa35a04043e2d10ab28e689b2c620256db4b0a0a16dafc649438c904748e45aa0ce9d18cd5f6735b6d9e19807c969ffb27cfb9b65f7c6b26597b703cb0ebc3c95c9503ca7dbf2c86e9eddf4d0aba282d80b9071e96961ce78fed568d4dcf024c318f390db88236213c136369381b4852751c80337923884ebdd2f6d53262b43010000"
+            "1f8b08000000000004035d8f4d4fc3300c86effc0c9fdb29e9f72a7168573498100c696507c4c149936e90366dd37515d3fe3b61477cb2e4d78ffd5ce0cbe876e838a4e02d08383008735223a417e0ba1dc57c6bb13bbe8bc11c756b737441a3058d6dd6286dc79e1792842601b93a30a13a89bfe50a4784f403f23afb57ab9f470ffb6d1e06a5b73d1fa866d5eb263e48daccf3d3bda53234220ae0d301310b7e1a91298b94a88c704061d3e961349052ea0741421cd0e7560cf6afb31e9a62576ea26cbf7d99bec3e5b47e63c5b4de343d2b7655bdafb39e3fe7abba6437cf767ce8343f40ea47d4ba74c8ed193fbc5a8d636579a1448984305756157303c66217975cb831f19628a890312770bdfb058dae410343010000"
         ],
         "rawHeaders": [
             "content-type",
             "application/json; charset=utf-8",
             "date",
-            "Wed, 18 Oct 2023 12:40:46 GMT",
+            "Sat, 21 Oct 2023 13:12:52 GMT",
             "x-rpc-node",
             "pit37",
             "x-ratelimit-tier",
@@ -180,7 +180,7 @@
             "x-ratelimit-endpoint-limit",
             "unlimited",
             "x-ratelimit-endpoint-remaining",
-            "-142",
+            "-260",
             "x-ratelimit-conn-limit",
             "40",
             "x-ratelimit-conn-remaining",

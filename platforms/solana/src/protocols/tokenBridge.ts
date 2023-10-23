@@ -473,6 +473,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     // TODO unwrapNative?
     // TODO: check if vaa.payload.token.address is native Sol
 
+
     const { blockhash } = await this.connection.getLatestBlockhash();
     const senderAddress = new SolanaAddress(sender).unwrap();
     const ataAddress = new SolanaAddress(vaa.payload.to.address.toUint8Array()).unwrap();
@@ -543,7 +544,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
       verifySigTx.feePayer = senderAddr;
       verifySigTx.partialSign(signatureSet);
 
-      const lastIx = i >= verifySignaturesInstructions.length - 2;
+      const lastIx = i > verifySignaturesInstructions.length - 3;
 
       yield this.createUnsignedTx(
         verifySigTx,

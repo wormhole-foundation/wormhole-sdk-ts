@@ -7,22 +7,22 @@
             "method": "getAccountInfo",
             "jsonrpc": "2.0",
             "params": [
-                "9m1MkfqqSuUpvNcEFc2vuJikyjBaoCo46GWNseSdeUwR",
+                "G5Gyf9kNJ3yqt2sB3AWbQj8NQ3MjZqiz32kxbD6g5783",
                 {
                     "encoding": "base64",
-                    "commitment": "confirmed"
+                    "commitment": "finalized"
                 }
             ]
         },
         "status": 200,
         "response": [
-            "1f8b08000000000004031dca3b0ec3201045d13ecb98da20988cf92d243d180a220416d85124cb7b0f4af7aedeb9e03d5aedfb060e900b58a0a7719603dc055bab47fafea7dff32bf5915b9d4e72a9b8d4d38ed2e68d4844d668712ff0f1e54ce0ea59caac1c278f49eb35f8c8a446cd2809c50261606450d9a7b1c1c415eec70fe1c4f5df8a000000"
+            "1f8b08000000000004031dca410e83201085e17d8f316b21337454e420dd23b0a02160409a26c6bb9774f7febcef82772bb91e0e0c288930410dada713cc05aee4337cffd31ef1156a8b250f47921649ebb02d95712b35a326cd784ff0b1a90730b9a7342afac167764fcb1404223ac1b87b61f5c68237bd3b726b58bc85fbf103417532b68a000000"
         ],
         "rawHeaders": [
             "content-type",
             "application/json; charset=utf-8",
             "date",
-            "Wed, 18 Oct 2023 12:40:45 GMT",
+            "Sat, 21 Oct 2023 13:12:51 GMT",
             "x-rpc-node",
             "pit37",
             "x-ratelimit-tier",
@@ -38,7 +38,7 @@
             "x-ratelimit-endpoint-limit",
             "unlimited",
             "x-ratelimit-endpoint-remaining",
-            "-128",
+            "-243",
             "x-ratelimit-conn-limit",
             "40",
             "x-ratelimit-conn-remaining",

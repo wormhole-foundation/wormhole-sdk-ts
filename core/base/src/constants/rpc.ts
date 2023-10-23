@@ -58,9 +58,9 @@ const rpcConfig = [
   [
     "Devnet",
     [
-      ["Ethereum", "http://localhost:8545"],
-      ["Bsc", "http://localhost:8546"],
-      ["Solana", "http://localhost:8899"],
+      ["Ethereum", "http://eth-devnet:8545"],
+      ["Bsc", "http://eth-devnet2:8546"],
+      ["Solana", "http://solana-devnet:8899"],
     ],
   ],
 ] as const satisfies RoArray<
