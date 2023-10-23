@@ -39,6 +39,49 @@ export class TokenTransfer implements WormholeTransfer {
   }[];
 
   private constructor(wh: Wormhole, transfer: TokenTransferDetails) {
+
+    if (transfer.payload && transfer.automatic)
+      throw new Error("Payload with automatic delivery is not supported");
+
+    if (transfer.nativeGas && !transfer.automatic)
+      throw new Error("Gas Dropoff is only supported for automatic transfers");
+
+    const fromChain = wh.getChain(transfer.from.chain);
+    const toChain = wh.getChain(transfer.to.chain);
+
+    if (!fromChain.supportsTokenBridge())
+      throw new Error(`Token Bridge not supported on ${transfer.from.chain}`);
+
+    if (!toChain.supportsTokenBridge())
+      throw new Error(`Token Bridge not supported on ${transfer.to.chain}`);
+
+    if (transfer.automatic && !fromChain.supportsAutomaticTokenBridge())
+      throw new Error(`Automatic Token Bridge not supported on ${transfer.from.chain}`);
+
+
+    if (transfer.to.chain === "Sei") {
+      if (transfer.payload) throw new Error("Arbitrary payloads unsupported for Sei");
+
+      // For sei, we reserve the payload for a token transfer through the sei bridge. 
+      transfer.payload = Buffer.from(
+        JSON.stringify({
+          basic_recipient: {
+            recipient: Buffer.from(transfer.to.address.toString()).toString("base64"),
+          },
+        }),
+      );
+
+      transfer.to = {
+        chain: transfer.to.chain,
+        address: toNative(
+          transfer.to.chain,
+          toChain.platform.conf.Sei?.contracts.translator!,
+        ),
+      };
+    }
+
+
+
     this.state = TransferState.Created;
     this.wh = wh;
     this.transfer = transfer;
@@ -88,6 +131,14 @@ export class TokenTransfer implements WormholeTransfer {
     timeout: number = 6000,
   ): Promise<TokenTransfer> {
     if (isTokenTransferDetails(from)) {
+
+      // Bit of (temporary) hackery until solana contracts support being
+      // sent a VAA with the primary address
+      if (from.to.chain === "Solana") {
+        // Overwrite the dest address with the ATA
+        from.to = await wh.getTokenAccount(from.from.chain, from.token, from.to);
+      }
+
       return new TokenTransfer(wh, from);
     }
 

@@ -148,7 +148,6 @@ export class CCTPTransfer implements WormholeTransfer {
     const details: CCTPTransferDetails = {
       from: nativeChainAddress([from.chain, vaa.payload.caller]),
       to: nativeChainAddress([rcvChain, rcvAddress]),
-      token: nativeChainAddress([chain, vaa.payload.token.address]),
       amount: vaa.payload.token.amount,
       automatic,
     };
@@ -180,12 +179,9 @@ export class CCTPTransfer implements WormholeTransfer {
     const sendChain = toCircleChainName(message.sourceDomain);
     const rcvChain = toCircleChainName(message.destinationDomain);
 
-    const token = nativeChainAddress([sendChain, burnMessage.burnToken]);
-
     const details: CCTPTransferDetails = {
       from: nativeChainAddress([sendChain, xferSender]),
       to: nativeChainAddress([rcvChain, xferReceiver]),
-      token,
       amount: burnMessage.amount,
       automatic: false,
     };
@@ -256,7 +252,6 @@ export class CCTPTransfer implements WormholeTransfer {
     if (this.transfer.automatic) {
       const cr = await fromChain.getAutomaticCircleBridge();
       xfer = cr.transfer(
-        this.transfer.token,
         this.transfer.from.address,
         { chain: this.transfer.to.chain, address: this.transfer.to.address },
         this.transfer.amount,
@@ -265,7 +260,6 @@ export class CCTPTransfer implements WormholeTransfer {
     } else {
       const cb = await fromChain.getCircleBridge();
       xfer = cb.transfer(
-        this.transfer.token,
         this.transfer.from.address,
         { chain: this.transfer.to.chain, address: this.transfer.to.address },
         this.transfer.amount,

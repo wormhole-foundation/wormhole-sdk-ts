@@ -1,20 +1,22 @@
 import {
-  ChainAddress,
   AutomaticCircleBridge,
-  TokenId,
-  chainToChainId,
+  ChainAddress,
+  CircleChainName,
+  CircleNetwork,
   Network,
+  chainToChainId,
+  usdcContract
 } from '@wormhole-foundation/connect-sdk';
 
 import { evmNetworkChainToEvmChainId } from '../constants';
 
+import { Provider, TransactionRequest } from 'ethers';
+import { EvmAddress } from '../address';
+import { EvmContracts } from '../contracts';
+import { CircleRelayer } from '../ethers-contracts';
+import { EvmPlatform } from '../platform';
 import { AnyEvmAddress, EvmChainName, addChainId, addFrom } from '../types';
 import { EvmUnsignedTransaction } from '../unsignedTransaction';
-import { CircleRelayer } from '../ethers-contracts';
-import { Provider, TransactionRequest } from 'ethers';
-import { EvmContracts } from '../contracts';
-import { EvmPlatform } from '../platform';
-import { EvmAddress } from '../address';
 
 export class EvmAutomaticCircleBridge implements AutomaticCircleBridge<'Evm'> {
   readonly circleRelayer: CircleRelayer;
@@ -47,7 +49,6 @@ export class EvmAutomaticCircleBridge implements AutomaticCircleBridge<'Evm'> {
   }
 
   async *transfer(
-    token: TokenId,
     sender: AnyEvmAddress,
     recipient: ChainAddress,
     amount: bigint,
@@ -60,9 +61,7 @@ export class EvmAutomaticCircleBridge implements AutomaticCircleBridge<'Evm'> {
       .toUint8Array();
     const nativeTokenGas = nativeGas ? nativeGas : 0n;
 
-    const tokenAddr = new EvmAddress(
-      token.address.toUniversalAddress(),
-    ).toString();
+    const tokenAddr = usdcContract(this.network as CircleNetwork, this.chain as CircleChainName)
 
     const tokenContract = EvmContracts.getTokenImplementation(
       this.provider,

@@ -24,7 +24,6 @@ export type TokenTransferDetails = {
 };
 
 export type CCTPTransferDetails = {
-  token: TokenId;
   amount: bigint;
   from: ChainAddress;
   to: ChainAddress;
