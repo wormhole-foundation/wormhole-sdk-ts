@@ -54,11 +54,12 @@ export class EvmSigner implements Signer {
     for (const txn of tx) {
       const { transaction, description } = txn;
       console.log(`Signing: ${description} for ${this.address()}`);
+      //console.log(transaction)
 
       const t: ethers.TransactionRequest = {
         ...transaction,
         ...{
-          gasLimit: 500_000n,
+          gasLimit: 1_000_000n,
           maxFeePerGas,
           maxPriorityFeePerGas,
           nonce: this.nonce,

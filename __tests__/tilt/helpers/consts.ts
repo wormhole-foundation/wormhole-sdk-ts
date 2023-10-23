@@ -1,5 +1,3 @@
-import base58 from 'bs58';
-
 const ci = true
 
 export const ETH_PRIVATE_KEY =
