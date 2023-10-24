@@ -54,7 +54,6 @@ export type CircleTransferMessage = {
 
 export interface AutomaticCircleBridge<P extends PlatformName> {
   transfer(
-    token: ChainAddress,
     sender: AnyAddress,
     recipient: ChainAddress,
     amount: bigint,
@@ -71,7 +70,6 @@ export interface CircleBridge<P extends PlatformName> {
     attestation: string,
   ): AsyncGenerator<UnsignedTransaction>;
   transfer(
-    token: ChainAddress,
     sender: AnyAddress,
     recipient: ChainAddress,
     amount: bigint,

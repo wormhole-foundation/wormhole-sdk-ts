@@ -161,7 +161,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
       vaa.emitterAddress.toUint8Array(),
       toChainId(vaa.emitterChain),
       vaa.sequence,
-      'finalized',
+      this.connection.commitment,
     ).catch((e) => false);
   }
 

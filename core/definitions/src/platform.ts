@@ -3,13 +3,10 @@ import {
   Network,
   PlatformName,
 } from "@wormhole-foundation/sdk-base";
-import { NativeAddress } from "./address";
 import { WormholeMessageId } from "./attestation";
 import { ChainContext } from "./chain";
 import { RpcConnection } from "./rpc";
-import { AnyAddress, Balances, ChainsConfig, TokenId, TxHash } from "./types";
-import { SignedTx } from "./types";
-import { UniversalAddress } from "./universalAddress";
+import { AnyAddress, Balances, ChainsConfig, SignedTx, TokenId, TxHash } from "./types";
 
 export interface PlatformUtils<P extends PlatformName> {
   nativeTokenId(chain: ChainName): TokenId;

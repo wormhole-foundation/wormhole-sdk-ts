@@ -105,15 +105,7 @@ export class Wormhole {
         `Network and chain not supported: ${this.network} ${from.chain} `,
       );
 
-    const contract = usdcContract(this.network, from.chain);
-
-    const token: TokenId = {
-      chain: from.chain,
-      address: toNative(from.chain, contract),
-    };
-
     return await CCTPTransfer.from(this, {
-      token,
       amount,
       from,
       to,
@@ -144,50 +136,6 @@ export class Wormhole {
     payload?: Uint8Array,
     nativeGas?: bigint,
   ): Promise<TokenTransfer> {
-    if (payload && automatic)
-      throw new Error("Payload with automatic delivery is not supported");
-
-    if (nativeGas && !automatic)
-      throw new Error("Gas Dropoff is only supported for automatic transfers");
-
-    const fromChain = this.getChain(from.chain);
-    const toChain = this.getChain(to.chain);
-
-    if (!fromChain.supportsTokenBridge())
-      throw new Error(`Token Bridge not supported on ${from.chain}`);
-
-    if (!toChain.supportsTokenBridge())
-      throw new Error(`Token Bridge not supported on ${to.chain}`);
-
-    if (automatic && !fromChain.supportsAutomaticTokenBridge())
-      throw new Error(`Automatic Token Bridge not supported on ${from.chain}`);
-
-    // Bit of (temporary) hackery until solana contracts support being
-    // sent a VAA with the primary address
-    if (to.chain === "Solana") {
-      // Overwrite the dest address with the ATA
-      to = await this.getTokenAccount(from.chain, token, to);
-    } else if (to.chain === "Sei") {
-      if (payload) throw new Error("Arbitrary payloads unsupported for Sei");
-
-      //
-      payload = Buffer.from(
-        JSON.stringify({
-          basic_recipient: {
-            recipient: Buffer.from(to.address.toString()).toString("base64"),
-          },
-        }),
-      );
-
-      to = {
-        chain: to.chain,
-        address: toNative(
-          to.chain,
-          toChain.platform.conf.Sei?.contracts.translator!,
-        ),
-      };
-    }
-
     // TODO: check if `toChain` is gateway supported
     // not enough to check if its a Cosmos chain since Terra/Xpla/Sei are not supported
     // if (chainToPlatform(to.chain) === 'Cosmwasm' ) {
@@ -345,11 +293,11 @@ export class Wormhole {
       t = isTokenId(sendingToken)
         ? sendingToken
         : {
-            chain: sendingChain,
-            address: (
-              sendingToken as UniversalAddress | NativeAddress<PlatformName>
-            ).toUniversalAddress(),
-          };
+          chain: sendingChain,
+          address: (
+            sendingToken as UniversalAddress | NativeAddress<PlatformName>
+          ).toUniversalAddress(),
+        };
     }
 
     const dstTokenBridge = await chain.getTokenBridge();

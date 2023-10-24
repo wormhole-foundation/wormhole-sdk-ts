@@ -1,32 +1,32 @@
 import {
-  CircleChainName,
-  circleChainId,
   ChainAddress,
   CircleBridge,
-  UnsignedTransaction,
-  TokenId,
-  Network,
-  nativeChainAddress,
-  hexByteStringToUint8Array,
-  deserializeCircleMessage,
-  toCircleChainName,
+  CircleChainName,
+  CircleNetwork,
   CircleTransferMessage,
+  Network,
+  UnsignedTransaction,
+  circleChainId,
+  deserializeCircleMessage,
+  hexByteStringToUint8Array,
+  nativeChainAddress,
+  toCircleChainName,
+  usdcContract
 } from '@wormhole-foundation/connect-sdk';
 
+import { LogDescription, Provider, TransactionRequest } from 'ethers';
+import { EvmAddress } from '../address';
 import { evmNetworkChainToEvmChainId } from '../constants';
+import { EvmContracts } from '../contracts';
+import { MessageTransmitter, TokenMessenger } from '../ethers-contracts';
+import { EvmPlatform } from '../platform';
 import {
-  addFrom,
-  addChainId,
-  EvmChainName,
   AnyEvmAddress,
-  UniversalOrEvm,
+  EvmChainName,
+  addChainId,
+  addFrom
 } from '../types';
 import { EvmUnsignedTransaction } from '../unsignedTransaction';
-import { MessageTransmitter, TokenMessenger } from '../ethers-contracts';
-import { LogDescription, Provider, TransactionRequest } from 'ethers';
-import { EvmContracts } from '../contracts';
-import { EvmPlatform } from '../platform';
-import { EvmAddress } from '../address';
 
 //https://github.com/circlefin/evm-cctp-contracts
 
@@ -96,7 +96,6 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
   }
   //alternative naming: initiateTransfer
   async *transfer(
-    token: TokenId,
     sender: AnyEvmAddress,
     recipient: ChainAddress,
     amount: bigint,
@@ -105,9 +104,8 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
     const recipientAddress = recipient.address
       .toUniversalAddress()
       .toUint8Array();
-    const tokenAddr = new EvmAddress(
-      token.address as UniversalOrEvm,
-    ).toString();
+
+    const tokenAddr = usdcContract(this.network as CircleNetwork, this.chain as CircleChainName)
 
     const tokenContract = EvmContracts.getTokenImplementation(
       this.provider,

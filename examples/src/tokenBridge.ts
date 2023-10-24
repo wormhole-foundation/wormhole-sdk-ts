@@ -31,7 +31,7 @@ import { TransferStuff, getStuff, waitLog } from "./helpers";
   const source = await getStuff(sendChain);
   const destination = await getStuff(rcvChain);
 
-  const amt = normalizeAmount("0.01", 18n);
+  const amt = normalizeAmount("0.01", sendChain.config.nativeTokenDecimals);
 
   // Choose your adventure
   await manualTokenTransfer(wh, "native", amt, source, destination);

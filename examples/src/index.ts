@@ -1,6 +1,7 @@
 import {
   ChainName,
   Network,
+  signSendWait,
   toNative,
   Wormhole,
 } from "@wormhole-foundation/connect-sdk";
@@ -34,15 +35,8 @@ import { getStuff } from "./helpers";
   const recvChain = wh.getChain("Ethereum");
   const { address: receiver } = await getStuff(recvChain);
 
-  //
-  console.log("creating transaction...");
+  console.log("creating, signing and sending transaction...");
   const xfer = tb.transfer(walletAddr, receiver, "native", 1_000_000n);
-
-  // Gather transactions
-  const unsigned = [];
-  for await (const msg of xfer) unsigned.push(msg);
-  const signedTxns = await signer.sign(unsigned);
-
-  const txids = await chainCtx.sendWait(signedTxns);
+  const txids = await signSendWait(chainCtx, xfer, signer)
   console.log("Sent transactions: ", txids);
 })();
