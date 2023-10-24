@@ -7,6 +7,8 @@ import {
 } from "@wormhole-foundation/sdk-base";
 import { ChainAddress, NativeAddress, toNative } from "./address";
 import { Contracts } from "./contracts";
+import { Signer, isSigner } from './signer'
+
 import { UnsignedTransaction } from "./unsignedTransaction";
 import { UniversalAddress } from "./universalAddress";
 
@@ -34,39 +36,6 @@ export function isTokenId(thing: TokenId | any): thing is TokenId {
 export type Balances = {
   [key: string]: BigInt | null;
 };
-
-export interface SignOnlySigner {
-  chain(): ChainName;
-  address(): string;
-  sign(tx: UnsignedTransaction[]): Promise<SignedTx[]>;
-}
-export function isSignOnlySigner(thing: SignOnlySigner | any): thing is SignOnlySigner {
-  return (
-    typeof (<SignOnlySigner>thing).chain === "function" &&
-    typeof (<SignOnlySigner>thing).address == "function" &&
-    typeof (<SignOnlySigner>thing).sign === "function"
-  );
-}
-
-export interface SignAndSendSigner {
-  chain(): ChainName;
-  address(): string;
-  signAndSend(tx: UnsignedTransaction[]): Promise<TxHash[]>;
-}
-
-export function isSignAndSendSigner(thing: SignAndSendSigner | any): thing is SignAndSendSigner {
-  return (
-    typeof (<SignAndSendSigner>thing).chain === "function" &&
-    typeof (<SignAndSendSigner>thing).address == "function" &&
-    typeof (<SignAndSendSigner>thing).signAndSend === "function"
-  );
-}
-
-export type Signer = SignOnlySigner | SignAndSendSigner;
-
-export function isSigner(thing: Signer | any): thing is Signer {
-  return isSignOnlySigner(thing) || isSignAndSendSigner(thing)
-}
 
 
 export function nativeChainAddress(
