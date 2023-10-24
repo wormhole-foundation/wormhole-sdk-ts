@@ -1,8 +1,8 @@
 import { Keypair } from '@solana/web3.js';
-import { Signer, ChainName } from '@wormhole-foundation/connect-sdk';
+import { ChainName, SignOnlySigner } from '@wormhole-foundation/connect-sdk';
 import { SolanaUnsignedTransaction } from '../../src';
 
-export class MockSolanaSigner implements Signer {
+export class MockSolanaSigner implements SignOnlySigner {
   readonly keypair: Keypair;
 
   constructor(kp?: Keypair) {
