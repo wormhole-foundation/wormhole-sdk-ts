@@ -1,4 +1,4 @@
-import { ChainName, PlatformName } from "@wormhole-foundation/sdk-base";
+import { ChainName, PlatformName, ProtocolName } from "@wormhole-foundation/sdk-base";
 
 import { NativeAddress } from "./address";
 import { WormholeMessageId } from "./attestation";
@@ -83,7 +83,6 @@ export abstract class ChainContext<P extends PlatformName> {
   //
   // protocols
   //
-
   //
   supportsTokenBridge = () => supportsTokenBridge<P>(this.platform);
   async getTokenBridge(): Promise<TokenBridge<P>> {

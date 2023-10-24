@@ -13,22 +13,20 @@ import {
   IbcBridge,
   IbcTransferInfo,
   Signer,
+  TokenBridge,
   TokenId,
   TransactionId,
   TxHash,
   UniversalAddress,
   UnsignedTransaction,
-  TokenBridge,
   WormholeMessageId,
-  deserialize,
   gatewayTransferMsg,
   isGatewayTransferDetails,
   isTransactionIdentifier,
   isWormholeMessageId,
   nativeChainAddress,
-  serialize,
   toGatewayMsg,
-  toNative,
+  toNative
 } from "@wormhole-foundation/sdk-definitions";
 import { signSendWait } from "../common";
 import { fetchIbcXfer, isTokenBridgeVaaRedeemed, retry } from "../tasks";
@@ -267,16 +265,16 @@ export class GatewayTransfer implements WormholeTransfer {
     const recipient: ChainAddress =
       chainToPlatform(destChain) === "Cosmwasm"
         ? {
-            chain: destChain,
-            address: toNative(destChain, _recip.toString()),
-          }
+          chain: destChain,
+          address: toNative(destChain, _recip.toString()),
+        }
         : {
-            chain: destChain,
-            address: toNative(
-              destChain,
-              new UniversalAddress(new Uint8Array(_recip)),
-            ),
-          };
+          chain: destChain,
+          address: toNative(
+            destChain,
+            new UniversalAddress(new Uint8Array(_recip)),
+          ),
+        };
 
     const payload = msg.payload
       ? new Uint8Array(Buffer.from(msg.payload))
@@ -393,10 +391,9 @@ export class GatewayTransfer implements WormholeTransfer {
       // I don't know why this would happen so lmk if you see this
       if (this.ibcTransfers.length != 1) throw new Error("why?");
 
-      // If we're leaving cosmos, grab the VAA from the gateway
+      const [xfer] = this.ibcTransfers;
       if (!this.toGateway()) {
-        const [xfer] = this.ibcTransfers;
-
+        // If we're leaving cosmos, grab the VAA from the gateway
         // now find the corresponding wormchain transaction given the ibcTransfer info
         const retryInterval = 5000;
         const task = () =>
@@ -416,13 +413,19 @@ export class GatewayTransfer implements WormholeTransfer {
         this.vaas = [{ id: whm, vaa }];
 
         attestations.push(whm);
+      } else {
+        // Otherwise we need to get the transfer on the destination chain
+        const dstChain = this.wh.getChain(this.transfer.to.chain);
+        const dstIbcBridge = await dstChain.getIbcBridge();
+        const ibcXfer = await dstIbcBridge.lookupTransferFromIbcMsgId(xfer.id)
+        this.ibcTransfers.push(ibcXfer);
       }
     } else {
       // Otherwise, we're coming from outside cosmos and
       // we need to find the wormchain ibc transaction information
       // by searching for the transaction containing the
       // GatewayTransferMsg
-      const { chain, txid } = this.transactions[0];
+      const { chain, txid } = this.transactions[this.transactions.length - 1];
       const [whm] = await this.wh.parseMessageFromTx(chain, txid);
       const vaa = await GatewayTransfer.getTransferVaa(this.wh, whm);
       this.vaas = [{ id: whm, vaa }];
@@ -463,6 +466,10 @@ export class GatewayTransfer implements WormholeTransfer {
       if (!wcTransfer)
         throw new Error("Wormchain transfer not found after retries exhausted");
 
+      if (wcTransfer.pending) {
+        // TODO: check if pending and bail(?) if so
+      }
+
       this.ibcTransfers.push(wcTransfer);
 
       // Finally, get the IBC transfer to the destination chain
@@ -478,7 +485,7 @@ export class GatewayTransfer implements WormholeTransfer {
       if (!destTransfer)
         throw new Error(
           "IBC Transfer into destination not found after retries exhausted" +
-            JSON.stringify(wcTransfer.id),
+          JSON.stringify(wcTransfer.id),
         );
 
       this.ibcTransfers.push(destTransfer);
@@ -508,11 +515,8 @@ export class GatewayTransfer implements WormholeTransfer {
       );
 
     if (this.toGateway())
-      // TODO: Return the txids from the final transfers?
-      //return this.ibcTransfers?.map((xfer) => xfer.tx.txid) ?? [];
-      throw new Error(
-        "Complete transfer is not necessary for Gateway supported chains",
-      );
+      // TODO: assuming the last transaction captured is the one from gateway to the destination
+      return [this.transactions[this.transactions.length - 1].txid]
 
     if (!this.vaas) throw new Error("No VAA details available to redeem");
     if (this.vaas.length > 1) throw new Error("Expected 1 vaa");
