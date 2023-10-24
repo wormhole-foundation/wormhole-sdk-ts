@@ -80,11 +80,11 @@ export async function getCosmosSigner(
       // @ts-ignore
       chain.chain,
     );
-    return new CosmosEvmSigner(chain.chain, chainId, mnemonic, restRpc);
+    return new CosmosEvmSigner(chain.chain, chainId, mnemonic!, restRpc);
   }
 
   // Otherwise use the default signer
-  const signer = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
+  const signer = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic!, {
     prefix: chainToAddressPrefix(chain.chain as PlatformToChains<"Cosmwasm">),
   });
 

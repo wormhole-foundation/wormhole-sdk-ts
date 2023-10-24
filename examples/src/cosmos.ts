@@ -18,9 +18,9 @@ import { TransferStuff, getStuff } from "./helpers";
 // Finally out of Osmosis, transparently through gateway, out to Avalanche
 
 // eg:
-//  Avalanche[avax] => {Gateway ->}Cosmoshub[gateway/wrapped avax]
-//  Cosmoshub[gateway/wrapped avax] -> {Gateway ->} Osmosis[gateway/wrapped avax]
-//  Osmosis[gateway/wrapped avax] -> {Gateway} => Avalanch[avax]
+//  Avalanche[avax] => {Gateway ->}Osmosis[gateway/wrapped avax]
+//  Osmosis[gateway/wrapped avax] -> {Gateway ->} Cosmoshub[gateway/wrapped avax]
+//  Cosmoshub[gateway/wrapped avax] -> {Gateway} => Avalanch[avax]
 
 // Key:
 //   => : Regular contract call
@@ -50,18 +50,20 @@ import { TransferStuff, getStuff } from "./helpers";
   const token = "native";
   const amount = normalizeAmount("0.01", external.config.nativeTokenDecimals);
 
+  fakeIt = true
   // Transfer native token from source chain, through gateway, to a cosmos chain
   let route1 = fakeIt
     ? await GatewayTransfer.from(
       wh,
       {
         chain: external.chain,
-        txid: "0x444cf70f53df4f299332284f5d2f8eace285ef1f277da1353c688fefcae3c90b",
+        txid: "0x7302c7bca282676a2ba19d7453b94c4c5b09f73b9be0c871dfccddfb012818cb",
       },
       600_000,
     )
     : await transferIntoCosmos(wh, token, amount, leg1, leg2);
   //console.log("Route 1 (External => Cosmos)", route1);
+  fakeIt = false
 
   const { denom } = route1.ibcTransfers![0].data;
   // Lookup the Gateway representation of the wrappd token

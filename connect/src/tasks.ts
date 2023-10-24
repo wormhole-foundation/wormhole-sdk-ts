@@ -61,10 +61,12 @@ export async function isTokenBridgeVaaRedeemed(
 ): Promise<boolean | null> {
   try {
     const isRedeemed = await tb.isTransferCompleted(vaa);
-    return isRedeemed ?? null;
+    // Only return a real value if its true, otherwise return null
+    // signaling that we should retry
+    return isRedeemed ? isRedeemed : null;
   } catch (e) {
     // TODO: what types of errors might we catch here? 429? 500?
-    //console.log(`Caught an error checking if VAA is redeemed: ${e}\n`);
+    console.error(`Caught an error checking if VAA is redeemed: ${e}\n`);
     return null;
   }
 }
@@ -87,7 +89,7 @@ export async function fetchIbcXfer(
     else throw new Error("Invalid message type:" + JSON.stringify(msg));
   } catch (e) {
     // TODO: what type of errors might we catch here? 429? 500?
-    // console.error("Failed to lookup transfer from tx: ", e);
+    console.error("Caught an error looking for ibc transfer: ", e);
   }
   return null;
 }

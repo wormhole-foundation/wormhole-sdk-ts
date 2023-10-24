@@ -13,6 +13,7 @@ import {
   platforms,
 } from "@wormhole-foundation/sdk-base";
 import { Wormhole, chainConfigs } from "../src";
+import { test, describe, expect } from '@jest/globals';
 
 const network: Network = "Devnet";
 const allPlatformCtrs = platforms.map((p) => {

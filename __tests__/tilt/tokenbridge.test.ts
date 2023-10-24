@@ -18,7 +18,7 @@ import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
 
 import { expect, jest, describe, test } from '@jest/globals';
 
-import { getStuff } from './helpers';
+import { TEST_ERC20, TEST_SOLANA_TOKEN, getStuff } from './helpers';
 
 
 jest.setTimeout(10 * 60 * 1000)
@@ -26,15 +26,17 @@ jest.setTimeout(10 * 60 * 1000)
 const network = "Devnet"
 const allPlatforms = [SolanaPlatform, EvmPlatform, CosmwasmPlatform];
 
-const e2es: [ChainName, ChainName][] = [
-    // ["Ethereum", "Solana"],
-    ["Solana", "Ethereum"],
+const e2es: [ChainName, ChainName, string][] = [
+    ["Ethereum", "Solana", "native"],
+    ["Ethereum", "Solana", TEST_ERC20],
+    ["Solana", "Ethereum", "native"],
+    ["Solana", "Ethereum", TEST_SOLANA_TOKEN],
 ]
 
 describe("Token Bridge E2E Tests", () => {
     const wh = new Wormhole(network, allPlatforms)
 
-    describe.each(e2es)('%s to %s', (srcChain, dstChain) => {
+    describe.each(e2es)('%s to %s', (srcChain, dstChain, tokenAddress) => {
         const src = wh.getChain(srcChain);
         const dst = wh.getChain(dstChain)
 
@@ -61,7 +63,7 @@ describe("Token Bridge E2E Tests", () => {
             srcTb = await src.getTokenBridge();
             dstTb = await dst.getTokenBridge();
 
-            token = await srcTb.getWrappedNative()
+            token = tokenAddress === "native" ? await srcTb.getWrappedNative() : wh.parseAddress(srcChain, tokenAddress)
         })
 
         describe("Attest Token", () => {
@@ -73,9 +75,7 @@ describe("Token Bridge E2E Tests", () => {
                 //expect(wrappedExists).toBeFalsy()
             })
 
-            test(`Create Attestation VAA on ${srcChain}`, async () => {
-                if (wrappedExists) return;
-
+            test(`Create attestation VAA on ${srcChain}`, async () => {
                 const attest = srcTb.createAttestation(token, srcAcct.address)
                 const txns = await signSendWait(src, attest, srcSigner)
                 expect(txns).toHaveLength(1)
@@ -87,8 +87,7 @@ describe("Token Bridge E2E Tests", () => {
                 expect(isWormholeMessageId(msgid)).toBeTruthy()
             })
 
-            test(`Submit Attestation VAA on ${dstChain}`, async () => {
-                if (wrappedExists) return;
+            test(`Create or update wrapped on ${dstChain}`, async () => {
                 const vaa = await wh.getVAA(msgid.chain, msgid.emitter, msgid.sequence, "TokenBridge:AttestMeta")
                 expect(vaa).toBeTruthy()
 
@@ -96,7 +95,6 @@ describe("Token Bridge E2E Tests", () => {
                 const dstTxns = await signSendWait(dst, completeAttest, dstSigner)
                 expect(dstTxns.length).toBeGreaterThanOrEqual(1)
             })
-            // TODO: add test for updating wrapped
         })
 
 
@@ -120,7 +118,7 @@ describe("Token Bridge E2E Tests", () => {
                 expect(xfer.txids.length).toEqual(srcTxIds.length)
             })
             test(`Fetch attestation: ${srcChain} to ${dstChain}`, async () => {
-                const atts = await xfer.fetchAttestation(600_000)
+                const atts = await xfer.fetchAttestation(60_000)
                 expect(atts.length).toEqual(1)
 
                 const [att] = atts

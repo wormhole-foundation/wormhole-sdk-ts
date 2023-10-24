@@ -21,7 +21,6 @@ export async function getVaaBytes(
   );
 
   const url = `${rpcUrl}/v1/signed_vaa/${chainId}/${emitterAddress}/${sequence}`;
-  console.log(url)
 
   try {
     const {
@@ -31,16 +30,18 @@ export async function getVaaBytes(
     });
     return new Uint8Array(Buffer.from(vaaBytes, "base64"));
   } catch (error) {
-    // This is a 404 error, which means the VAA is not yet available
-    // since its not available yet, we return null signaling it can be tried again
+    if (!error) return null
 
-    // TODO: this is buggy
-    if (!(axios.isAxiosError(error) && error?.response?.status === 404)) {
-      return null;
+    if (typeof error === "object") {
+      // A 404 error means the VAA is not yet available
+      // since its not available yet, we return null signaling it can be tried again
+      if (axios.isAxiosError(error) && error.response?.status === 404) return null
+      if ("status" in error && error.status === 404) return null
     }
-    return null
-    //throw error;
+
+    throw error;
   }
+
 }
 
 /**
