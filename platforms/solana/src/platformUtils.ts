@@ -76,11 +76,6 @@ export module SolanaUtils {
     if (token === 'native')
       return BigInt(await rpc.getBalance(new PublicKey(walletAddress)));
 
-    // if (token.chain !== chain) {
-    //   const tb = await getTokenBridge(rpc);
-    //   token = { chain: chain, address: await tb.getWrappedAsset(token) };
-    // }
-
     const splToken = await rpc.getTokenAccountsByOwner(
       new PublicKey(walletAddress),
       { mint: new SolanaAddress(token).unwrap() },
