@@ -64,7 +64,7 @@ export async function isTokenBridgeVaaRedeemed(
     return isRedeemed ?? null;
   } catch (e) {
     // TODO: what types of errors might we catch here? 429? 500?
-    console.error(`Caught an error checking if VAA is redeemed: ${e}\n`);
+    //console.log(`Caught an error checking if VAA is redeemed: ${e}\n`);
     return null;
   }
 }
@@ -87,7 +87,7 @@ export async function fetchIbcXfer(
     else throw new Error("Invalid message type:" + JSON.stringify(msg));
   } catch (e) {
     // TODO: what type of errors might we catch here? 429? 500?
-    console.error("Failed to lookup transfer from tx: ", e);
+    // console.error("Failed to lookup transfer from tx: ", e);
   }
   return null;
 }

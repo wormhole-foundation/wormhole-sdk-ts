@@ -272,7 +272,7 @@ export class TokenTransfer implements WormholeTransfer {
       throw new Error("Invalid state transition in `ready`");
 
     if (!this.vaas || this.vaas.length === 0) {
-      if (this.txids.length === 0) throw new Error("No txids available");
+      if (this.txids.length === 0) throw new Error("No VAAs set and txids available to look them up");
 
       this.vaas = await Promise.all(
         this.txids.map(async (txid: TransactionId) => {

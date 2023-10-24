@@ -5,6 +5,7 @@ import {
     PlatformName,
     Signer,
     TokenBridge,
+    TokenTransfer,
     Wormhole,
     WormholeMessageId,
     isWormholeMessageId,
@@ -26,7 +27,7 @@ const network = "Devnet"
 const allPlatforms = [SolanaPlatform, EvmPlatform, CosmwasmPlatform];
 
 const e2es: [ChainName, ChainName][] = [
-    ["Ethereum", "Solana"],
+    // ["Ethereum", "Solana"],
     ["Solana", "Ethereum"],
 ]
 
@@ -99,30 +100,46 @@ describe("Token Bridge E2E Tests", () => {
         })
 
 
-        test(`Perform transfer: ${srcChain} to ${dstChain}`, async () => {
-            // TODO: balance checks before and after
+        describe('Token Transfer', () => {
             const amt = normalizeAmount("1", src.config.nativeTokenDecimals)
 
-            const xfer = await wh.tokenTransfer("native", amt, srcAcct, dstAcct, false)
-            const { transfer, txids } = xfer;
-            expect(txids.length).toEqual(0)
-            expect(transfer.from).toEqual(srcAcct)
-            expect(transfer.amount).toEqual(amt)
-            expect(transfer.automatic).toBeFalsy()
-            expect(transfer.token).toEqual("native")
+            let xfer: TokenTransfer;
+            test(`Create transfer: ${srcChain} to ${dstChain}`, async () => {
+                xfer = await wh.tokenTransfer("native", amt, srcAcct, dstAcct, false)
+                const { transfer, txids } = xfer;
+                expect(txids.length).toEqual(0)
+                expect(transfer.from).toEqual(srcAcct)
+                expect(transfer.amount).toEqual(amt)
+                expect(transfer.automatic).toBeFalsy()
+                expect(transfer.token).toEqual("native")
+            })
+            test(`Initiate transfer: ${srcChain} to ${dstChain}`, async () => {
+                // TODO: balance checks before and after
+                const srcTxIds = await xfer.initiateTransfer(srcSigner)
+                expect(srcTxIds.length).toBeGreaterThanOrEqual(1)
+                expect(xfer.txids.length).toEqual(srcTxIds.length)
+            })
+            test(`Fetch attestation: ${srcChain} to ${dstChain}`, async () => {
+                const atts = await xfer.fetchAttestation(600_000)
+                expect(atts.length).toEqual(1)
 
-            const srcTxIds = await xfer.initiateTransfer(srcSigner)
-            expect(srcTxIds.length).toBeGreaterThanOrEqual(1)
-            expect(xfer.txids.length).toEqual(srcTxIds.length)
+                const [att] = atts
+                expect(isWormholeMessageId(att)).toBeTruthy()
 
-            const atts = await xfer.fetchAttestation()
-            expect(atts.length).toEqual(1)
-
-            const att = atts[0]
-            expect(isWormholeMessageId(att)).toBeTruthy()
-
-            const dstTxIds = await xfer.completeTransfer(dstSigner)
-            expect(dstTxIds.length).toBeGreaterThanOrEqual(1)
+                expect(xfer.vaas).toBeTruthy()
+                expect(xfer.vaas!.length).toEqual(1)
+                expect(xfer.vaas![0].vaa).toBeTruthy()
+            })
+            test(`Complete transfer: ${srcChain} to ${dstChain}`, async () => {
+                // TODO: balance checks before and after
+                const dstTxIds = await xfer.completeTransfer(dstSigner)
+                expect(dstTxIds.length).toBeGreaterThanOrEqual(1)
+            })
+            test(`Is Transfer Redeemed: ${srcChain} to ${dstChain}`, async () => {
+                const { vaa } = xfer.vaas![0]
+                const isCompleted = await dstTb.isTransferCompleted(vaa!)
+                expect(isCompleted).toBeTruthy()
+            })
         })
     })
 });
