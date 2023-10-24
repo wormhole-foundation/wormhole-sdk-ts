@@ -274,11 +274,10 @@ export class TokenTransfer implements WormholeTransfer {
     if (!this.vaas || this.vaas.length === 0) {
       if (this.txids.length === 0) throw new Error("No VAAs set and txids available to look them up");
 
-      this.vaas = await Promise.all(
-        this.txids.map(async (txid: TransactionId) => {
-          return { id: await TokenTransfer.getTransferMessage(this.wh, txid) };
-        }),
-      );
+      // TODO: assuming the _last_ transaction in the list will contain the msg id
+      const txid = this.txids[this.txids.length - 1]
+      const msgId = await TokenTransfer.getTransferMessage(this.wh, txid)
+      this.vaas = [{ id: msgId }]
     }
 
     for (const idx in this.vaas) {
