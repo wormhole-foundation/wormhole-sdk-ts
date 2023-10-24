@@ -52,26 +52,28 @@ export interface TokenBridge<P extends PlatformName> {
   getOriginalAsset(nativeAddress: AnyAddress): Promise<TokenId>;
   // returns the wrapped version of the native asset
   getWrappedNative(): Promise<NativeAddress<P>>;
-
   // Check to see if a foreign token has a wrapped version
   hasWrappedAsset(foreignToken: TokenId): Promise<boolean>;
   // Returns the address of the native version of this asset
   getWrappedAsset(foreignToken: TokenId): Promise<NativeAddress<P>>;
-
-  // TODO: preview (receive amount, fees, gas estimates, estimated blocks/time)
+  // Checks if a transfer VAA has been redeemed
   isTransferCompleted(
     vaa: TokenBridge.VAA<"Transfer" | "TransferWithPayload">
   ): Promise<boolean>;
-  //signer required:
+  // Create a Token Attestation VAA containing metadata about
+  // the token that may be submitted to a Token bridge on another chain 
+  // to allow it to create a wrapped version of the token
   createAttestation(
     token_to_attest: AnyAddress,
     payer?: AnyAddress
   ): AsyncGenerator<UnsignedTransaction>;
+  // Submit the Token Attestation VAA to the Token bridge
+  // to create the wrapped token represented by the data in the VAA
   submitAttestation(
     vaa: TokenBridge.VAA<"AttestMeta">,
     payer?: AnyAddress
   ): AsyncGenerator<UnsignedTransaction>;
-  //alternative naming: initiateTransfer
+  // Initiate a transfer of some token to another chain
   transfer(
     sender: AnyAddress,
     recipient: ChainAddress,
@@ -79,13 +81,14 @@ export interface TokenBridge<P extends PlatformName> {
     amount: bigint,
     payload?: Uint8Array
   ): AsyncGenerator<UnsignedTransaction>;
-  //alternative naming: completeTransfer
+  // Redeem a transfer VAA to receive the tokens on this chain
   redeem(
     sender: AnyAddress,
     vaa: TokenBridge.VAA<"Transfer" | "TransferWithPayload">,
     unwrapNative?: boolean //default: true
   ): AsyncGenerator<UnsignedTransaction>;
-  // TODO: parse transaction
+
+  // TODO: preview (receive amount, fees, gas estimates, estimated blocks/time)
 }
 
 export interface AutomaticTokenBridge<P extends PlatformName> {
