@@ -5,6 +5,7 @@ import {
     PlatformName,
     Signer,
     TokenBridge,
+    TokenId,
     TokenTransfer,
     Wormhole,
     WormholeMessageId,
@@ -36,7 +37,7 @@ const e2es: [ChainName, ChainName, string][] = [
 describe("Token Bridge E2E Tests", () => {
     const wh = new Wormhole(network, allPlatforms)
 
-    describe.each(e2es)('%s to %s', (srcChain, dstChain, tokenAddress) => {
+    describe.each(e2es)('%s to %s (%s)', (srcChain, dstChain, tokenToSend) => {
         const src = wh.getChain(srcChain);
         const dst = wh.getChain(dstChain)
 
@@ -49,7 +50,14 @@ describe("Token Bridge E2E Tests", () => {
         let srcTb: TokenBridge<PlatformName>;
         let dstTb: TokenBridge<PlatformName>;
 
-        let token: NativeAddress<PlatformName>;
+        // TODO: too many kinds of things here
+        let tokenAddress: NativeAddress<PlatformName>;
+        let token: TokenId;
+        let tokenOrNative: TokenId | "native";
+
+
+        let srcBalanceToken: NativeAddress<PlatformName> | "native";
+        let dstBalanceToken: NativeAddress<PlatformName>;
 
         beforeAll(async () => {
             const srcStuff = await getStuff(src);
@@ -63,20 +71,24 @@ describe("Token Bridge E2E Tests", () => {
             srcTb = await src.getTokenBridge();
             dstTb = await dst.getTokenBridge();
 
-            token = tokenAddress === "native" ? await srcTb.getWrappedNative() : wh.parseAddress(srcChain, tokenAddress)
+            tokenAddress = tokenToSend === "native" ? await srcTb.getWrappedNative() : wh.parseAddress(srcChain, tokenToSend)
+            srcBalanceToken = tokenToSend === "native" ? "native" : tokenAddress
+
+            token = { chain: srcChain, address: tokenAddress }
+            tokenOrNative = tokenToSend === "native" ? "native" : token
         })
+
 
         describe("Attest Token", () => {
             let msgid: WormholeMessageId;
             let wrappedExists: boolean;
             test(`Check if the wrapped token exists on ${dstChain}`, async () => {
-                wrappedExists = await dstTb.hasWrappedAsset({ chain: src.chain, address: token })
-                // We should not have this token in a clean environment
-                //expect(wrappedExists).toBeFalsy()
+                wrappedExists = await dstTb.hasWrappedAsset(token)
+                expect(wrappedExists).toBeDefined()
             })
 
             test(`Create attestation VAA on ${srcChain}`, async () => {
-                const attest = srcTb.createAttestation(token, srcAcct.address)
+                const attest = srcTb.createAttestation(tokenAddress, srcAcct.address)
                 const txns = await signSendWait(src, attest, srcSigner)
                 expect(txns).toHaveLength(1)
 
@@ -95,28 +107,65 @@ describe("Token Bridge E2E Tests", () => {
                 const dstTxns = await signSendWait(dst, completeAttest, dstSigner)
                 expect(dstTxns.length).toBeGreaterThanOrEqual(1)
             })
+
+            test(`Lookup wrapped on ${dstChain}`, async () => {
+                dstBalanceToken = await dstTb.getWrappedAsset(token)
+                expect(dstBalanceToken).toBeDefined()
+            })
         })
 
 
         describe('Token Transfer', () => {
-            const amt = normalizeAmount("1", src.config.nativeTokenDecimals)
+            let amt: bigint;
+            let bridgedAmt: bigint;
+
+            let senderBalance: bigint;
+            let receiverBalance: bigint;
 
             let xfer: TokenTransfer;
             test(`Create transfer: ${srcChain} to ${dstChain}`, async () => {
-                xfer = await wh.tokenTransfer("native", amt, srcAcct, dstAcct, false)
+                const decimals = await wh.getDecimals(srcChain, srcBalanceToken)
+                amt = normalizeAmount("1", decimals)
+                // scale the amt by the difference in number of decimals for balance checks
+                // Since ethereum allows >8 decimals, we have to get the decimals from the dst chain
+                const bridgedDecimals = await wh.getDecimals(dstChain, dstBalanceToken)
+                bridgedAmt = amt / 10n ** (decimals - bridgedDecimals)
+
+                xfer = await wh.tokenTransfer(tokenOrNative, amt, srcAcct, dstAcct, false)
                 const { transfer, txids } = xfer;
                 expect(txids.length).toEqual(0)
                 expect(transfer.from).toEqual(srcAcct)
                 expect(transfer.amount).toEqual(amt)
                 expect(transfer.automatic).toBeFalsy()
-                expect(transfer.token).toEqual("native")
+                expect(transfer.token).toEqual(tokenOrNative)
+
+                senderBalance = (await wh.getBalance(srcChain, srcBalanceToken, srcAcct.address.toString()))!
+                expect(senderBalance).toBeGreaterThan(0)
+
+                receiverBalance = (await wh.getBalance(dstChain, dstBalanceToken, dstAcct.address.toString()))!
+                expect(receiverBalance).toBeGreaterThan(0)
             })
+
             test(`Initiate transfer: ${srcChain} to ${dstChain}`, async () => {
-                // TODO: balance checks before and after
                 const srcTxIds = await xfer.initiateTransfer(srcSigner)
                 expect(srcTxIds.length).toBeGreaterThanOrEqual(1)
                 expect(xfer.txids.length).toEqual(srcTxIds.length)
+
+
+                const senderBalanceAfter = (await wh.getBalance(srcChain, srcBalanceToken, srcAcct.address.toString()))!
+                if (srcBalanceToken === "native") {
+                    // account for gas cost
+                    // TODO: get actual gas costs?
+                    expect(senderBalanceAfter).toBeLessThan(senderBalance - amt)
+                } else {
+                    expect(senderBalanceAfter).toEqual(senderBalance - amt)
+                }
+                senderBalance = senderBalanceAfter;
+
+                const receiverBalanceAfter = (await wh.getBalance(dstChain, dstBalanceToken, dstAcct.address.toString()))!
+                expect(receiverBalanceAfter).toEqual(receiverBalance)
             })
+
             test(`Fetch attestation: ${srcChain} to ${dstChain}`, async () => {
                 const atts = await xfer.fetchAttestation(60_000)
                 expect(atts.length).toEqual(1)
@@ -128,11 +177,18 @@ describe("Token Bridge E2E Tests", () => {
                 expect(xfer.vaas!.length).toEqual(1)
                 expect(xfer.vaas![0].vaa).toBeTruthy()
             })
+
             test(`Complete transfer: ${srcChain} to ${dstChain}`, async () => {
-                // TODO: balance checks before and after
                 const dstTxIds = await xfer.completeTransfer(dstSigner)
                 expect(dstTxIds.length).toBeGreaterThanOrEqual(1)
+
+                const senderBalanceAfter = (await wh.getBalance(srcChain, srcBalanceToken, srcAcct.address.toString()))!
+                expect(senderBalanceAfter).toEqual(senderBalance)
+
+                const receiverBalanceAfter = (await wh.getBalance(dstChain, dstBalanceToken, dstAcct.address.toString()))!
+                expect(receiverBalanceAfter).toEqual(receiverBalance + bridgedAmt)
             })
+
             test(`Is Transfer Redeemed: ${srcChain} to ${dstChain}`, async () => {
                 const { vaa } = xfer.vaas![0]
                 const isCompleted = await dstTb.isTransferCompleted(vaa!)
