@@ -1,5 +1,5 @@
 import {
-  hexByteStringToUint8Array,
+  encoding,
   Layout,
   LayoutItem,
   LayoutToType,
@@ -29,7 +29,7 @@ import { keccak256 } from "./utils";
 declare global {
   namespace Wormhole {
     //effective type: Record<string, Layout>
-    interface PayloadLiteralToLayoutMapping {}
+    interface PayloadLiteralToLayoutMapping { }
   }
 }
 
@@ -37,8 +37,8 @@ export type LayoutLiteral = keyof Wormhole.PayloadLiteralToLayoutMapping & strin
 type LayoutOf<LL extends LayoutLiteral> =
   //TODO check if this lazy instantiation hack is actually necessary
   LL extends infer V extends LayoutLiteral
-    ? Wormhole.PayloadLiteralToLayoutMapping[V]
-    : never;
+  ? Wormhole.PayloadLiteralToLayoutMapping[V]
+  : never;
 
 type LayoutLiteralToPayloadType<LL extends LayoutLiteral> = LayoutToType<LayoutOf<LL>>;
 
@@ -134,7 +134,7 @@ export type DistributiveVAA<PL extends PayloadLiteral> =
   ? VAA<PL>
   : never;
 
-export type ProtocolVAA<PN extends ProtocolName, PayloadName extends string> = 
+export type ProtocolVAA<PN extends ProtocolName, PayloadName extends string> =
   ComposeLiteral<PN, PayloadName, PayloadLiteral> extends infer PL extends PayloadLiteral
   ? DistributiveVAA<PL>
   : never;
@@ -154,10 +154,10 @@ const payloadLiteralToPayloadItem = <PL extends PayloadLiteral>(
   (payloadLiteral === "Uint8Array"
     ? ({ name: "payload", binary: "bytes" } as const)
     : ({
-        name: "payload",
-        binary: "object",
-        layout: getPayloadLayout(payloadLiteral),
-      } as const)) satisfies LayoutItem;
+      name: "payload",
+      binary: "object",
+      layout: getPayloadLayout(payloadLiteral),
+    } as const)) satisfies LayoutItem;
 
 //annoyingly we can't use the return value of payloadLiteralToPayloadItem
 type PayloadLiteralToDynamicItems<PL extends PayloadLiteral> =
@@ -165,12 +165,12 @@ type PayloadLiteralToDynamicItems<PL extends PayloadLiteral> =
     [
       ...typeof baseLayout,
       PL extends LayoutLiteral
-        ? {
-            name: "payload";
-            binary: "object";
-            layout: DynamicItemsOfLayout<LayoutOf<PL>>;
-          }
-        : { name: "payload"; binary: "bytes" },
+      ? {
+        name: "payload";
+        binary: "object";
+        layout: DynamicItemsOfLayout<LayoutOf<PL>>;
+      }
+      : { name: "payload"; binary: "bytes" },
     ]
   >;
 
@@ -214,7 +214,7 @@ type AtLeast2<T> = readonly [T, T, ...T[]];
 
 export type NamedPayloads = AtLeast1<readonly [string, Layout]>;
 export type RegisterPayloadTypes<ProtocolN extends ProtocolName, NP extends NamedPayloads> =
-  { readonly [E in NP[number] as ToLiteralFormat<ProtocolN, E[0]>]: E[1] };
+  { readonly [E in NP[number]as ToLiteralFormat<ProtocolN, E[0]>]: E[1] };
 
 export function registerPayloadTypes(protocol: ProtocolName, payloads: NamedPayloads) {
   for (const [name, layout] of payloads)
@@ -262,7 +262,7 @@ type PayloadGroupsToLayoutLiterals<PGA extends readonly PayloadGroup[]> =
   : never;
 
 type LLDtoLLs<LLD extends AtLeast2<LayoutLiteral> | readonly [ProtocolName, AtLeast2<string>]
-| AtLeast2<PayloadGroup>> =
+  | AtLeast2<PayloadGroup>> =
   LLD extends AtLeast2<LayoutLiteral>
   ? LLD[number]
   : LLD extends readonly [ProtocolName, AtLeast2<string>]
@@ -273,7 +273,7 @@ type LLDtoLLs<LLD extends AtLeast2<LayoutLiteral> | readonly [ProtocolName, AtLe
 
 export function payloadDiscriminator<
   const LLD extends AtLeast2<LayoutLiteral> | readonly [ProtocolName, AtLeast2<string>]
-    | AtLeast2<PayloadGroup>,
+  | AtLeast2<PayloadGroup>,
   B extends boolean = false
 >(
   payloadLiterals: LLD,
@@ -284,15 +284,15 @@ export function payloadDiscriminator<
       return (payloadLiterals as AtLeast2<PayloadGroup>).flatMap(([protocol, payloadNames]) =>
         payloadNames.map((name) => composeLiteral(protocol, name))
       );
-    
+
     if (typeof payloadLiterals[1] === "string")
       return payloadLiterals as AtLeast2<LayoutLiteral>;
-    
+
     const [protocol, payloadNames] =
       payloadLiterals as readonly [ProtocolName, AtLeast2<LayoutLiteral>];
     return payloadNames.map((name) => composeLiteral(protocol, name));
   })();
-  
+
   const discriminator = layoutDiscriminator(
     literals.map(literal => getPayloadLayout(literal)),
     !!allowAmbiguous
@@ -300,7 +300,7 @@ export function payloadDiscriminator<
 
   return ((data: Byteish) => {
     if (typeof data === "string")
-      data = hexByteStringToUint8Array(data);
+      data = encoding.hex.decode(data);
 
     const cands = discriminator(data);
     return (Array.isArray(cands))
@@ -315,7 +315,7 @@ export function deserialize<T extends PayloadLiteral | PayloadDiscriminator>(
   payloadDet: T,
   data: Byteish,
 ): DistributiveVAA<ExtractLiteral<T>> {
-  if (typeof data === "string") data = hexByteStringToUint8Array(data);
+  if (typeof data === "string") data = encoding.hex.decode(data);
 
   const [header, envelopeOffset] =
     deserializeLayout(headerLayout, data, 0, false);
@@ -339,7 +339,7 @@ export function deserialize<T extends PayloadLiteral | PayloadDiscriminator>(
   );
 
   const [payloadLiteral, payload] =
-      typeof payloadDet === "string"
+    typeof payloadDet === "string"
       ? [
         payloadDet as PayloadLiteral,
         deserializePayload(payloadDet as PayloadLiteral, data, payloadOffset)
@@ -383,7 +383,7 @@ export function deserializePayload<
 ): DeserializePayloadReturn<T> {
   //grouped together to have just a single cast on the return type
   return (() => {
-    if (typeof data === "string") data = hexByteStringToUint8Array(data);
+    if (typeof data === "string") data = encoding.hex.decode(data);
 
     if (payloadDet === "Uint8Array") return data.slice(offset);
 
@@ -397,7 +397,7 @@ export function deserializePayload<
       throw new Error(
         `Encoded data does not match any of the given payload types - ${data}`,
       );
-    
+
     return [
       candidate,
       deserializeLayout(getPayloadLayout(candidate), data, offset),
@@ -420,16 +420,16 @@ export const blindDeserializePayload = (() => {
       [layoutLiterals, discriminator] = rebuildDiscrimininator();
 
     if (typeof data === "string")
-      data = hexByteStringToUint8Array(data);
+      data = encoding.hex.decode(data);
 
     const candidates = discriminator(data).map((c) => layoutLiterals[c]);
     return candidates.reduce((acc, literal) => {
-        try {
-          acc.push([literal, deserializePayload(literal, data)] as DeserializedPair);
-        }
-        catch {}
-        return acc;
-      },
+      try {
+        acc.push([literal, deserializePayload(literal, data)] as DeserializedPair);
+      }
+      catch { }
+      return acc;
+    },
       [] as DeserializedPair[]
     );
   }

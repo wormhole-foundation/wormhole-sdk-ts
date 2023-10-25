@@ -1,4 +1,4 @@
-import { uint8ArrayToHexByteString } from "@wormhole-foundation/sdk-base";
+import { encoding } from "@wormhole-foundation/sdk-base";
 import "../src/payloads/bam";
 import { deserialize, serializePayload } from "../src/vaa";
 
@@ -27,10 +27,10 @@ describe("BAM VAA tests", function () {
 
       const { payload } = deserialize(payloadLiteral, vaaBytes);
 
-      const targetAddress = uint8ArrayToHexByteString(payload.targetAddress);
-      const senderAddress = uint8ArrayToHexByteString(payload.senderAddress);
-      const parsedContents = uint8ArrayToHexByteString(
-        payload.contents as Uint8Array,
+      const targetAddress = encoding.hex.encode(payload.targetAddress, true);
+      const senderAddress = encoding.hex.encode(payload.senderAddress, true);
+      const parsedContents = encoding.hex.encode(
+        payload.contents as Uint8Array, true
       );
 
       expect(payload).toBeTruthy();
@@ -51,7 +51,7 @@ describe("BAM VAA tests", function () {
       // @ts-ignore
       const serialized: Uint8Array = serializePayload(payloadLiteral, payload);
 
-      const serializedHex = uint8ArrayToHexByteString(serialized);
+      const serializedHex = encoding.hex.encode(serialized, true);
       expect(serializedHex).toEqual(testCase.payload);
     }
   });

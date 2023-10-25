@@ -53,13 +53,11 @@ export {
   assertCircleChainId,
   constMap,
   explorerConfigs,
-  hexByteStringToUint8Array,
   isChain,
   isChainId,
   isCircleChain,
   isCircleChainId,
   isCircleSupported,
-  isHexByteString,
   isNetwork,
   isPlatform,
   isProtocolName,
@@ -67,12 +65,11 @@ export {
   linkToTx,
   normalizeAmount,
   rpcAddress,
-  stripPrefix,
   toChainId,
   toChainName,
   toCircleChainId,
   toCircleChainName,
-  uint8ArrayToHexByteString,
+  encoding,
 } from "@wormhole-foundation/sdk-base";
 
 export * from "@wormhole-foundation/sdk-definitions";

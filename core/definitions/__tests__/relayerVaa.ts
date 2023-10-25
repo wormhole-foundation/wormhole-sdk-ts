@@ -1,6 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 
-import { hexByteStringToUint8Array } from "@wormhole-foundation/sdk-base";
+import { encoding } from "@wormhole-foundation/sdk-base";
 import { serializePayload, deserializePayload } from "../src/vaa";
 import "../src/payloads/relayer";
 
@@ -19,6 +19,6 @@ describe("Relayer VAA tests", function () {
     expect(payload.target.chain).toBe("Polygon");
     expect(payload.refund.chain).toBe("Polygon");
     const encoded = serializePayload("Relayer:DeliveryInstruction", payload);
-    expect(encoded).toEqual(hexByteStringToUint8Array(original));
+    expect(encoded).toEqual(encoding.hex.decode(original));
   });
 });

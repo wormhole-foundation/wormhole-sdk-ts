@@ -3,7 +3,7 @@ import {
   LayoutToType,
   PlatformName,
   deserializeLayout,
-  uint8ArrayToHexByteString,
+  encoding,
 } from "@wormhole-foundation/sdk-base";
 import { ChainAddress } from "../address";
 import { CircleMessageId } from "../attestation";
@@ -40,7 +40,7 @@ export const deserializeCircleMessage = (
   data: Uint8Array,
 ): [LayoutToType<typeof circleMessageLayout>, string] => {
   const msg = deserializeLayout(circleMessageLayout, data);
-  const messsageHash = uint8ArrayToHexByteString(keccak256(data));
+  const messsageHash = encoding.hex.encode(keccak256(data));
   return [msg, messsageHash];
 };
 
