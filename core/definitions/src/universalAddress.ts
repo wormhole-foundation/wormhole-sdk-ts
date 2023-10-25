@@ -1,8 +1,4 @@
-import {
-  hexByteStringToUint8Array,
-  uint8ArrayToHexByteString,
-  isHexByteString,
-} from "@wormhole-foundation/sdk-base";
+import { encoding } from "@wormhole-foundation/sdk-base";
 
 import { Address, NativeAddress, toNative } from "./address";
 
@@ -17,10 +13,10 @@ export class UniversalAddress implements Address {
       if (!UniversalAddress.isValidAddress(address))
         throw new Error(
           `Invalid Wormhole address, expected ${UniversalAddress.byteSize}-byte ` +
-            `hex string but got ${address}`,
+          `hex string but got ${address}`,
         );
 
-      this.address = hexByteStringToUint8Array(address);
+      this.address = encoding.hex.decode(address);
     } else {
       this.address = address;
     }
@@ -36,7 +32,7 @@ export class UniversalAddress implements Address {
     return this.address;
   }
   toString() {
-    return uint8ArrayToHexByteString(this.address);
+    return encoding.hex.encode(this.address, true);
   }
   toUint8Array() {
     return this.address;
@@ -53,7 +49,7 @@ export class UniversalAddress implements Address {
   }
 
   static isValidAddress(address: string) {
-    return isHexByteString(address, UniversalAddress.byteSize);
+    return encoding.hex.valid(address) && encoding.stripPrefix("0x", address).length === UniversalAddress.byteSize * 2;
   }
 
   static instanceof(address: any) {

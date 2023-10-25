@@ -3,6 +3,7 @@ import {
   ChainName,
   PlatformName,
   toChainId,
+  encoding,
 } from "@wormhole-foundation/sdk-base";
 import { ChainAddress, NativeAddress } from "../address";
 import { IbcMessageId, WormholeMessageId } from "../attestation";
@@ -48,8 +49,8 @@ export interface GatewayTransferWithPayloadMsg {
 // to be decoded and executed by the Gateway contract.
 export interface GatewayIbcTransferMsg {
   gateway_ibc_token_bridge_payload:
-    | GatewayTransferMsg
-    | GatewayTransferWithPayloadMsg;
+  | GatewayTransferMsg
+  | GatewayTransferWithPayloadMsg;
 }
 
 export function isGatewayTransferMsg(
@@ -112,7 +113,7 @@ export function gatewayTransferMsg(
   if (isGatewayTransferDetails(gtd)) {
     // If we've already got a payload, b64 encode it so it works in json
     const _payload = gtd.payload
-      ? Buffer.from(gtd.payload).toString("base64")
+      ? encoding.b64.encode(gtd.payload)
       : undefined;
 
     // Encode the payload so the gateway contract knows where to forward the
@@ -150,7 +151,7 @@ export function makeGatewayTransferMsg(
     typeof recipient === "string"
       ? recipient
       : //@ts-ignore
-        Buffer.from(recipient.toString()).toString("base64");
+      encoding.b64.encode(recipient.toString());
 
   const common = {
     chain: toChainId(chain),
@@ -161,8 +162,8 @@ export function makeGatewayTransferMsg(
 
   const msg: GatewayTransferWithPayloadMsg | GatewayTransferMsg = payload
     ? ({
-        gateway_transfer_with_payload: { ...common, payload: payload },
-      } as GatewayTransferWithPayloadMsg)
+      gateway_transfer_with_payload: { ...common, payload: payload },
+    } as GatewayTransferWithPayloadMsg)
     : ({ gateway_transfer: { ...common } } as GatewayTransferMsg);
 
   return msg;

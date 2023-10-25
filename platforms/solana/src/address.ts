@@ -1,10 +1,9 @@
 import {
-  isHexByteString,
-  hexByteStringToUint8Array,
   Address,
   UniversalAddress,
   PlatformName,
   registerNative,
+  encoding,
 } from '@wormhole-foundation/connect-sdk';
 
 import { PublicKey } from '@solana/web3.js';
@@ -39,8 +38,8 @@ export class SolanaAddress implements Address {
       this.address = new PublicKey(
         (address as UniversalAddress).toUint8Array(),
       );
-    if (typeof address === 'string' && isHexByteString(address))
-      this.address = new PublicKey(hexByteStringToUint8Array(address));
+    if (typeof address === 'string' && encoding.hex.valid(address))
+      this.address = new PublicKey(encoding.hex.decode(address));
     else this.address = new PublicKey(address);
   }
 

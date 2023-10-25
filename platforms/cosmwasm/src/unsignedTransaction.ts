@@ -4,6 +4,7 @@ import {
   UnsignedTransaction,
   ChainName,
   Network,
+  encoding,
 } from "@wormhole-foundation/connect-sdk";
 import { MSG_EXECUTE_CONTRACT_TYPE_URL } from "./constants";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
@@ -32,7 +33,7 @@ export function buildExecuteMsg(
     value: MsgExecuteContract.fromPartial({
       sender: sender,
       contract: contract,
-      msg: Buffer.from(JSON.stringify(msg)),
+      msg: encoding.toUint8Array(JSON.stringify(msg)),
       funds,
     }),
   };
@@ -45,5 +46,5 @@ export class CosmwasmUnsignedTransaction implements UnsignedTransaction {
     readonly chain: ChainName,
     readonly description: string,
     readonly parallelizable: boolean = false,
-  ) {}
+  ) { }
 }

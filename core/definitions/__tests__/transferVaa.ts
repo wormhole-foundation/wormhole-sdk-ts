@@ -1,3 +1,4 @@
+import { encoding } from '@wormhole-foundation/sdk-base'
 import { payloadDiscriminator, deserialize } from "../src/vaa";
 import "../src/payloads/tokenBridge";
 
@@ -13,7 +14,7 @@ describe("Token Transfer VAA tests", function () {
   );
   it("should correctly deserialize and reserialize a transfer VAA", function () {
     for (const [payloadName, encoded] of cases) {
-      const vaaBytes = new Uint8Array(Buffer.from(encoded, "base64"));
+      const vaaBytes = encoding.b64.decode(encoded);
       const vaa = deserialize(discriminator, vaaBytes);
       expect(vaa.payloadName).toBe(payloadName);
     }

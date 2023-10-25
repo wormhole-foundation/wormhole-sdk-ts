@@ -12,9 +12,6 @@ import { createReadOnlyTokenBridgeProgramInterface } from './utils/tokenBridge';
 import { Wormhole as WormholeCore } from './utils/types/wormhole';
 import { createReadOnlyWormholeProgramInterface } from './utils/wormhole';
 
-import { NftBridge } from './utils/types/nftBridge';
-import { createReadOnlyNftBridgeProgramInterface } from './utils/nftBridge';
-
 /**
  * @category Solana
  */
@@ -69,19 +66,5 @@ export class SolanaContracts {
     );
   }
 
-  /**
-   * Returns wormhole NFT bridge contract for the chain
-   *
-   * @returns An interface for the NFT bridge contract, errors if not found
-   */
-  getNftBridge(chain: ChainName, connection: Connection): Program<NftBridge> {
-    const contracts = this.getContracts(chain);
-    if (!contracts.nftBridge)
-      throw new Error(`NFT Bridge contract for domain ${chain} not found`);
 
-    return createReadOnlyNftBridgeProgramInterface(
-      contracts.nftBridge,
-      connection,
-    );
-  }
 }

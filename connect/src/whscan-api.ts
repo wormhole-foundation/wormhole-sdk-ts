@@ -1,4 +1,4 @@
-import { stripPrefix, toChainId } from "@wormhole-foundation/sdk-base";
+import { encoding, toChainId } from "@wormhole-foundation/sdk-base";
 import { WormholeMessageId } from "@wormhole-foundation/sdk-definitions";
 import axios from "axios";
 
@@ -15,7 +15,7 @@ export async function getVaaBytes(
 ): Promise<Uint8Array | null> {
   const { chain, emitter, sequence } = whm;
   const chainId = toChainId(chain);
-  const emitterAddress = stripPrefix(
+  const emitterAddress = encoding.stripPrefix(
     "0x",
     emitter.toUniversalAddress().toString(),
   );
@@ -28,7 +28,7 @@ export async function getVaaBytes(
     } = await axios.get<{ vaaBytes: string }>(url, {
       timeout: 2000,
     });
-    return new Uint8Array(Buffer.from(vaaBytes, "base64"));
+    return encoding.b64.decode(vaaBytes);
   } catch (error) {
     if (!error) return null
 

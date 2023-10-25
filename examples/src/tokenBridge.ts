@@ -46,7 +46,7 @@ import { TransferStuff, getStuff, waitLog } from "./helpers";
   //   2_000_000_000_000n
   // );
 
-  // const payload = new Uint8Array(Buffer.from("hai"))
+  // const payload = encoding.toUint8Array("hai")
   // await manualTokenTransferWithPayload(wh, "native", 100_000_000n, source, destination, payload);
   // await automaticTokenTransferWithPayload(wh, "native", 100_000_000n, source, destination, payload);
   // await automaticTokenTransferWithPayloadAndGasDropoff(
