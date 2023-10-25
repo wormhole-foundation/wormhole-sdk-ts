@@ -1,11 +1,10 @@
 import {
   toNative,
   chainConfigs,
-  DEFAULT_NETWORK,
-  testing,
   Signature,
   ChainName,
   createVAA,
+  encoding,
 } from "@wormhole-foundation/connect-sdk";
 import {
   CosmwasmContracts,
@@ -163,8 +162,8 @@ describe("TokenBridge Tests", () => {
             chain: chain,
           },
           decimals: 8,
-          symbol: Buffer.from(new Uint8Array(16)).toString("hex"),
-          name: Buffer.from(new Uint8Array(16)).toString("hex"),
+          symbol: encoding.hex.encode(new Uint8Array(16)),
+          name: encoding.hex.encode(new Uint8Array(16)),
         },
         guardianSet: 0,
         signatures: [{ guardianIndex: 0, signature: new Signature(1n, 2n, 1) }],

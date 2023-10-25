@@ -16,6 +16,7 @@ import {
   isIbcMessageId,
   isIbcTransferInfo,
   toChainId,
+  encoding,
 } from "@wormhole-foundation/connect-sdk";
 import { MsgTransfer } from "cosmjs-types/ibc/applications/transfer/v1/tx";
 
@@ -96,18 +97,10 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
     const nonce = Math.round(Math.random() * 10000);
 
     // TODO: needs heavy testing
-    let recipientAddress;
-    if (chainToPlatform(recipient.chain) === "Cosmwasm") {
-      // If cosmwasm, we just want the b64 encoded string address
-      recipientAddress = Buffer.from(recipient.address.toString()).toString(
-        "base64",
-      );
-    } else {
-      // If we're bridging out of cosmos, we need the universal address
-      recipientAddress = Buffer.from(
-        recipient.address.toUniversalAddress().toUint8Array(),
-      ).toString("base64");
-    }
+    let recipientAddress: string = encoding.b64.encode(
+      chainToPlatform(recipient.chain) === "Cosmwasm" ? recipient.address.toString() :
+        recipient.address.toUniversalAddress().toUint8Array()
+    )
 
     const payload: GatewayIbcTransferMsg = {
       gateway_ibc_token_bridge_payload: {
@@ -128,9 +121,9 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
       token === "native"
         ? CosmwasmPlatform.getNativeDenom(this.chain)
         : Gateway.deriveIbcDenom(
-            this.chain,
-            new CosmwasmAddress(token).toString(),
-          );
+          this.chain,
+          new CosmwasmAddress(token).toString(),
+        );
     const ibcToken = coin(amount.toString(), ibcDenom.toString());
 
     const ibcMessage: MsgTransferEncodeObject = {
@@ -252,7 +245,7 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
   async lookupTransferFromMsg(
     msg: GatewayTransferMsg | GatewayTransferWithPayloadMsg,
   ): Promise<IbcTransferInfo> {
-    const encodedPayload = Buffer.from(JSON.stringify(msg)).toString("base64");
+    const encodedPayload = encoding.b64.encode(JSON.stringify(msg));
 
     // Find the transaction with matching payload
     const txResults = await this.rpc.searchTx([

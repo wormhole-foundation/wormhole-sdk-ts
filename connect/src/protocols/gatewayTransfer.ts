@@ -2,6 +2,7 @@ import {
   ChainName,
   PlatformName,
   chainToPlatform,
+  encoding,
   toChainName,
 } from "@wormhole-foundation/sdk-base";
 import {
@@ -187,18 +188,14 @@ export class GatewayTransfer implements WormholeTransfer {
     // Otherwise revert to undefined
     if (payload) {
       try {
-        const maybeWithPayload = toGatewayMsg(Buffer.from(payload).toString());
+        const maybeWithPayload = toGatewayMsg(encoding.fromUint8Array(payload));
         nonce = maybeWithPayload.nonce;
         payload = maybeWithPayload.payload
-          ? new Uint8Array(Buffer.from(maybeWithPayload.payload))
+          ? encoding.toUint8Array(maybeWithPayload.payload)
           : undefined;
 
         const destChain = toChainName(maybeWithPayload.chain);
-        const recipientAddress = Buffer.from(
-          maybeWithPayload.recipient,
-          "base64",
-        ).toString();
-
+        const recipientAddress = encoding.b64.decode(maybeWithPayload.recipient)
         to = nativeChainAddress([destChain, recipientAddress]);
       } catch {
         /*Ignoring, throws if not the payload isnt JSON*/
@@ -260,8 +257,7 @@ export class GatewayTransfer implements WormholeTransfer {
     const msg = toGatewayMsg(xfer.data.memo);
     const destChain = toChainName(msg.chain);
 
-    // TODO: sure it needs encoding?
-    const _recip = Buffer.from(msg.recipient, "base64");
+    const _recip = encoding.b64.valid(msg.recipient) ? encoding.fromUint8Array(encoding.b64.decode(msg.recipient)) : msg.recipient;
     const recipient: ChainAddress =
       chainToPlatform(destChain) === "Cosmwasm"
         ? {
@@ -272,12 +268,12 @@ export class GatewayTransfer implements WormholeTransfer {
           chain: destChain,
           address: toNative(
             destChain,
-            new UniversalAddress(new Uint8Array(_recip)),
+            new UniversalAddress(_recip),
           ),
         };
 
     const payload = msg.payload
-      ? new Uint8Array(Buffer.from(msg.payload))
+      ? encoding.toUint8Array(msg.payload)
       : undefined;
 
     const details: GatewayTransferDetails = {
@@ -329,7 +325,7 @@ export class GatewayTransfer implements WormholeTransfer {
       this.gatewayAddress,
       tokenAddress,
       this.transfer.amount,
-      new Uint8Array(Buffer.from(JSON.stringify(this.msg))),
+      encoding.toUint8Array(JSON.stringify(this.msg)),
     );
 
     return signSendWait(fromChain, xfer, signer);

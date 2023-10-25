@@ -1,6 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 
-import { hexByteStringToUint8Array } from "@wormhole-foundation/sdk-base";
+import { encoding } from "@wormhole-foundation/sdk-base";
 import { UniversalAddress } from "../src/universalAddress";
 import {
   createVAA,
@@ -163,7 +163,7 @@ describe("Governance VAA tests", function () {
     expect(vaa.payload.guardians.length).toBe(19);
 
     expect(serialize(vaa))
-      .toEqual(hexByteStringToUint8Array(guardianSetUpgrade));
+      .toEqual(encoding.hex.decode(guardianSetUpgrade));
     expect(blindDeserializePayload(rawvaa.payload))
       .toEqual([["CoreBridge:GuardianSetUpgrade", vaa.payload]]);
   });

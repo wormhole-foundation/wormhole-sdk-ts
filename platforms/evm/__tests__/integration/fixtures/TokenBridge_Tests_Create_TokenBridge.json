@@ -16,7 +16,7 @@
         },
         "rawHeaders": [
             "Date",
-            "Mon, 16 Oct 2023 13:45:03 GMT",
+            "Wed, 25 Oct 2023 15:29:23 GMT",
             "Content-Type",
             "application/json",
             "Content-Length",
@@ -24,7 +24,7 @@
             "Connection",
             "close",
             "CF-Cache-Status",
-            "HIT",
+            "DYNAMIC",
             "Access-Control-Allow-Origin",
             "*",
             "Cache-Control",
@@ -44,7 +44,7 @@
             "Server",
             "cloudflare",
             "CF-RAY",
-            "8170bd73a8b442cd-EWR"
+            "81bb7ea68f464405-EWR"
         ],
         "responseIsBinary": false
     }

@@ -1,8 +1,8 @@
 import {
   ChainName,
   PlatformName,
-  hexByteStringToUint8Array,
   toCircleChainName,
+  encoding,
 } from "@wormhole-foundation/sdk-base";
 import {
   CircleAttestation,
@@ -167,7 +167,7 @@ export class CCTPTransfer implements WormholeTransfer {
     timeout: number,
   ): Promise<CCTPTransfer> {
     const [message, hash] = deserializeCircleMessage(
-      hexByteStringToUint8Array(messageId.message),
+      encoding.hex.decode(messageId.message),
     );
     // If no hash is passed, set to the one we just computed
     if (messageId.hash === "") messageId.hash = hash;

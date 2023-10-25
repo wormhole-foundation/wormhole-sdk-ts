@@ -1,6 +1,5 @@
 import {
   ChainAddress,
-  Platform,
   Signature,
   TokenBridge,
   UniversalAddress,
@@ -9,6 +8,7 @@ import {
   chainConfigs,
   DEFAULT_NETWORK,
   createVAA,
+  encoding,
 } from '@wormhole-foundation/connect-sdk';
 
 import {
@@ -237,8 +237,8 @@ describe('TokenBridge Tests', () => {
         payload: {
           token: { address: nativeAddress.toUniversalAddress(), chain: chain },
           decimals: 8,
-          symbol: Buffer.from(new Uint8Array(16)).toString('hex'),
-          name: Buffer.from(new Uint8Array(16)).toString('hex'),
+          symbol: encoding.hex.encode(new Uint8Array(16)),
+          name: encoding.hex.encode(new Uint8Array(16)),
         },
         guardianSet: 0,
         signatures: [{ guardianIndex: 0, signature: new Signature(1n, 2n, 1) }],

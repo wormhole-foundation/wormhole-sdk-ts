@@ -15,7 +15,7 @@ import {
   PlatformToChains,
   SignOnlySigner,
   SignedTx,
-  Signer,
+  encoding,
   UnsignedTransaction,
 } from "@wormhole-foundation/connect-sdk";
 import {
@@ -180,7 +180,7 @@ export class CosmosEvmSigner implements SignOnlySigner {
       const message: Msgs[] = transaction.msgs.map((m) => {
         const f = {
           ...m.value,
-          msg: JSON.parse(Buffer.from(m.value.msg).toString()),
+          msg: JSON.parse(encoding.fromUint8Array(m.value.msg)),
           contractAddress: m.value.contract,
         };
         return new MsgExecuteContract(f);
@@ -195,8 +195,9 @@ export class CosmosEvmSigner implements SignOnlySigner {
         memo: transaction.memo,
         fee: DEFAULT_STD_FEE,
       });
-      txRaw.signatures = [await this.key.sign(Buffer.from(signBytes))];
-      signed.push(Buffer.from(TxClient.encode(txRaw), "base64"));
+      // @ts-ignore
+      txRaw.signatures = [await this.key.sign(signBytes)];
+      signed.push(encoding.b64.decode(TxClient.encode(txRaw)));
     }
 
     return signed;

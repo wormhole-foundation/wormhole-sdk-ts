@@ -8,10 +8,10 @@ import {
   UnsignedTransaction,
   circleChainId,
   deserializeCircleMessage,
-  hexByteStringToUint8Array,
   nativeChainAddress,
   toCircleChainName,
-  usdcContract
+  usdcContract,
+  encoding
 } from '@wormhole-foundation/connect-sdk';
 
 import { LogDescription, Provider, TransactionRequest } from 'ethers';
@@ -85,8 +85,8 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
     const senderAddr = new EvmAddress(sender).toString();
 
     const txReq = await this.msgTransmitter.receiveMessage.populateTransaction(
-      hexByteStringToUint8Array(message),
-      hexByteStringToUint8Array(attestation),
+      encoding.hex.decode(message),
+      encoding.hex.decode(attestation),
     );
 
     yield this.createUnsignedTx(
@@ -172,7 +172,7 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
     const [messageLog] = messageLogs;
     const { message } = messageLog.args;
     const [circleMsg, hash] = deserializeCircleMessage(
-      hexByteStringToUint8Array(message),
+      encoding.hex.decode(message),
     );
     const { payload: body } = circleMsg;
 

@@ -18,6 +18,7 @@ import {
   TransferState,
   WormholeTransfer,
 } from "../wormholeTransfer";
+import { encoding } from "@wormhole-foundation/sdk-base";
 
 export class TokenTransfer implements WormholeTransfer {
   private readonly wh: Wormhole;
@@ -63,10 +64,10 @@ export class TokenTransfer implements WormholeTransfer {
       if (transfer.payload) throw new Error("Arbitrary payloads unsupported for Sei");
 
       // For sei, we reserve the payload for a token transfer through the sei bridge. 
-      transfer.payload = Buffer.from(
+      transfer.payload = encoding.toUint8Array(
         JSON.stringify({
           basic_recipient: {
-            recipient: Buffer.from(transfer.to.address.toString()).toString("base64"),
+            recipient: encoding.b64.encode(encoding.toUint8Array(transfer.to.address.toString())),
           },
         }),
       );

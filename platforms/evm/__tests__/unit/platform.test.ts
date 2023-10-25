@@ -85,7 +85,6 @@ describe('EVM Platform Tests', () => {
         [EVM_CHAINS[0]]: configs[EVM_CHAINS[0]],
       });
       const C = p.getChain(EVM_CHAINS[0]);
-      console.log(C);
       expect(() => p.getRpc(EVM_CHAINS[0])).not.toThrow();
       expect(() => C.getRpc()).not.toThrow();
     });
