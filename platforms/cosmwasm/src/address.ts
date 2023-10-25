@@ -1,5 +1,6 @@
 import { toBech32, fromBech32, fromHex, fromBase64 } from "@cosmjs/encoding";
 import {
+  encoding,
   Address,
   UniversalAddress,
   registerNative,
@@ -184,8 +185,7 @@ export class CosmwasmAddress implements Address {
       // ibc/hex
       if (this.denomType === "ibc") {
         // NOTE: this is case sensitive, should be `ibc` not `IBC`
-        return `${this.denomType.toLowerCase()}/${Buffer.from(this.address)
-          .toString("hex")
+        return `${this.denomType.toLowerCase()}/${encoding.hex.encode(this.address)
           .toUpperCase()}`;
       }
 

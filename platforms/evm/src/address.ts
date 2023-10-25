@@ -1,4 +1,4 @@
-import { Address, UniversalAddress, registerNative } from '@wormhole-foundation/connect-sdk';
+import { encoding, Address, UniversalAddress, registerNative } from '@wormhole-foundation/connect-sdk';
 
 import { ethers } from 'ethers';
 import { AnyEvmAddress } from './types';
@@ -54,7 +54,7 @@ export class EvmAddress implements Address {
       )
         throw new Error(`Invalid EVM address ${address}`);
 
-      const suffix = Buffer.from(addressBytes.slice(12)).toString('hex');
+      const suffix = encoding.hex.encode(addressBytes.slice(12));
       this.address = ethers.getAddress(suffix);
     } else throw new Error(`Invalid EVM address ${address}`);
   }

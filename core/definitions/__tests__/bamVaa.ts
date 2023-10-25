@@ -23,7 +23,7 @@ const cases = [
 describe("BAM VAA tests", function () {
   it("should correctly deserialize a BAM VAA", function () {
     for (const testCase of cases) {
-      const vaaBytes = Buffer.from(testCase.vaa, "base64");
+      const vaaBytes = encoding.b64.decode(testCase.vaa);
 
       const { payload } = deserialize(payloadLiteral, vaaBytes);
 
@@ -43,7 +43,7 @@ describe("BAM VAA tests", function () {
 
   it("should correctly serialize a BAM VAA", function () {
     for (const testCase of cases) {
-      const vaaBytes = Buffer.from(testCase.vaa, "base64");
+      const vaaBytes = encoding.b64.decode(testCase.vaa);
 
       const { payload } = deserialize(payloadLiteral, vaaBytes);
 

@@ -34,17 +34,3 @@ export interface Relayer<P extends PlatformName> {
     walletAddress: string,
   ): Promise<bigint>;
 }
-
-//function parseRelayerPayload(transferPayload: Buffer): ParsedRelayerPayload {
-//  return {
-//    relayerPayloadId: transferPayload.readUint8(0),
-//    relayerFee: BigNumber.from(
-//      "0x" + transferPayload.subarray(1, 33).toString("hex")
-//    ),
-//    toNativeTokenAmount: BigNumber.from(
-//      "0x" + transferPayload.subarray(33, 65).toString("hex")
-//    ),
-//    to: "0x" + transferPayload.subarray(65, 98).toString("hex"),
-//  };
-//}
-//

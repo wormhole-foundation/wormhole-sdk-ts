@@ -17,6 +17,7 @@ import {
   SignedTx,
   Signer,
   UnsignedTransaction,
+  encoding,
 } from "@wormhole-foundation/connect-sdk";
 import { TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
 import { ethers } from "ethers";
@@ -198,7 +199,7 @@ export class CosmosEvmSigner implements SignOnlySigner {
         fee: DEFAULT_STD_FEE,
       });
       txRaw.signatures = [await this.key.sign(Buffer.from(signBytes))];
-      signed.push(Buffer.from(TxClient.encode(txRaw), "base64"));
+      signed.push(encoding.b64.decode(TxClient.encode(txRaw)));
     }
 
     return signed;

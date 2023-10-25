@@ -1,4 +1,5 @@
 import "../src/payloads/connect";
+import { encoding } from "@wormhole-foundation/sdk-base";
 import { deserialize, deserializePayload } from "../src/vaa";
 
 const cases = [
@@ -8,9 +9,9 @@ const cases = [
 describe("CCTP Transfer VAA tests", function () {
   it("should correctly deserialize and reserialize a CCTP Transfer Relay VAA", function () {
     for (const testCase of cases) {
-      const vaaBytes = Buffer.from(testCase, "base64");
+      const vaaBytes = encoding.b64.decode(testCase);
 
-      const parsed = deserialize("Uint8Array", new Uint8Array(vaaBytes));
+      const parsed = deserialize("Uint8Array", vaaBytes);
 
       const x = deserializePayload("CCTP:TransferRelay", parsed.payload);
       expect(x).toBeTruthy();

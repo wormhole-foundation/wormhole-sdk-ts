@@ -2,6 +2,7 @@ import {
   circleChainId,
   deserializeLayout,
   usdcContract,
+  encoding,
 } from "@wormhole-foundation/sdk-base";
 import { circleMessageLayout } from "../src/protocols/cctp";
 import { UniversalAddress } from "../src";
@@ -16,7 +17,7 @@ describe("Circle Message tests", function () {
     // log taken from here: https://goerli.etherscan.io/tx/0x45938c1c491b066c967a75c9a959ed5d1ae6d014b819517ad4d8a63f34b988be
     const _orig =
       "0000000000000000000000010000000000039826000000000000000000000000d0c3da58f55358142b8d3e06c1c30c5c6114efe8000000000000000000000000eb08f243e5d3fcff26a9e38ae5520a669f4019d000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000007865c6e87b9f70255377e024ace6630c1eaa37f0000000000000000000000006603b4a7e29dfbdb6159c395a915e74757c1fb1300000000000000000000000000000000000000000000000000000000000f42400000000000000000000000006603b4a7e29dfbdb6159c395a915e74757c1fb13";
-    const orig = new Uint8Array(Buffer.from(_orig, "hex"));
+    const orig = encoding.hex.decode(_orig);
 
     const fromChain = "Ethereum";
     const toChain = "Avalanche";

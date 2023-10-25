@@ -23,13 +23,16 @@ function isHexEncoded(input: string): boolean {
 export const hex = {
     valid: isHexEncoded,
     decode: (input: string) => base16.decode(stripPrefix('0x', input).toUpperCase()),
-    encode: (input: Uint8Array, prefix: boolean = false) => (prefix ? "0x" : "") + base16.encode(input).toLowerCase(),
+    encode: (input: string | Uint8Array, prefix: boolean = false) => {
+        input = typeof input === "string" ? toUint8Array(input) : input;
+        return (prefix ? "0x" : "") + base16.encode(input).toLowerCase()
+    }
 }
 
 export const b64 = {
     valid: isBase64Encoded,
     decode: base64.decode,
-    encode: base64.encode,
+    encode: (input: string | Uint8Array) => base64.encode(typeof input === "string" ? toUint8Array(input) : input)
 }
 
 export const b58 = {

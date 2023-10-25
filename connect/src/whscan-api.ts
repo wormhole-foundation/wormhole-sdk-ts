@@ -28,7 +28,7 @@ export async function getVaaBytes(
     } = await axios.get<{ vaaBytes: string }>(url, {
       timeout: 2000,
     });
-    return new Uint8Array(Buffer.from(vaaBytes, "base64"));
+    return encoding.b64.decode(vaaBytes);
   } catch (error) {
     if (!error) return null
 

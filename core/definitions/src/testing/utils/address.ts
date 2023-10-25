@@ -3,6 +3,7 @@ import {
   ChainName,
   PlatformName,
   chainToPlatform,
+  encoding,
   isPlatform,
   platformToChains,
 } from "@wormhole-foundation/sdk-base";
@@ -14,22 +15,22 @@ import {
 } from "../../";
 
 // return a random buffer of length n
-function randomBuffer(n: number): Buffer {
+function randomBuffer(n: number): Uint8Array {
   const buff = new Uint8Array(n);
   crypto.getRandomValues(buff);
-  return Buffer.from(buff);
+  return buff;
 }
 
 // get a random 20 byte address
 function fake20ByteAddress(): string {
   const buff = randomBuffer(20);
-  return buff.toString("hex");
+  return encoding.hex.encode(buff);
 }
 
 // get a random 32 byte address
 function fake32ByteAddress(): string {
   const buff = randomBuffer(32);
-  return buff.toString("hex");
+  return encoding.hex.encode(buff);
 }
 
 // make a random native address for a given chain
