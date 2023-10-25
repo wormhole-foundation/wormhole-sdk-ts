@@ -15,7 +15,7 @@ import {
 } from "../../";
 
 // return a random buffer of length n
-function randomBuffer(n: number): Uint8Array {
+function randomBytes(n: number): Uint8Array {
   const buff = new Uint8Array(n);
   crypto.getRandomValues(buff);
   return buff;
@@ -23,13 +23,13 @@ function randomBuffer(n: number): Uint8Array {
 
 // get a random 20 byte address
 function fake20ByteAddress(): string {
-  const buff = randomBuffer(20);
+  const buff = randomBytes(20);
   return encoding.hex.encode(buff);
 }
 
 // get a random 32 byte address
 function fake32ByteAddress(): string {
-  const buff = randomBuffer(32);
+  const buff = randomBytes(32);
   return encoding.hex.encode(buff);
 }
 

@@ -37,7 +37,7 @@ export const b64 = {
 
 export const b58 = {
     decode: base58.decode,
-    encode: base58.encode,
+    encode: (input: string | Uint8Array) => base58.encode(typeof input === "string" ? toUint8Array(input) : input),
 }
 
 
