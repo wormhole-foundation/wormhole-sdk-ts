@@ -544,15 +544,10 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
       verifySigTx.feePayer = senderAddr;
       verifySigTx.partialSign(signatureSet);
 
-      const lastIx = i > verifySignaturesInstructions.length - 3;
-
       yield this.createUnsignedTx(
         verifySigTx,
         'Redeem.VerifySignature',
-        // all stackable except the last one
-        // so we flush the buffer of sig verifies
-        // and finalize prior to trying to Post the VAA
-        !lastIx,
+        true
       );
     }
 

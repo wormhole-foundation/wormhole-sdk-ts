@@ -29,12 +29,16 @@ export async function signSendWait(
   // marked as parallelizable
   let txbuff: UnsignedTransaction[] = [];
   for await (const tx of xfer) {
-    txbuff.push(tx);
-    if (tx.parallelizable) continue;
-    // If !parallelizable, sign/send the current buffer
-    txHashes.push(...await signSend(txbuff));
-    // reset buffer
-    txbuff = [];
+    // if parallelizable, buffer it
+    if (tx.parallelizable) {
+      txbuff.push(tx);
+    } else {
+      if (txbuff.length > 0) {
+        txHashes.push(...await signSend(txbuff));
+        txbuff = [];
+      }
+      txHashes.push(...await signSend([tx]));
+    }
   }
 
   if (txbuff.length > 0) {
