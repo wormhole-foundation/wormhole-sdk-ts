@@ -87,5 +87,7 @@ export const CONFIG = {
   },
 } as const satisfies Record<Network, WormholeConfig>;
 
+
+const inNode = typeof process !== 'undefined'
 export const DEFAULT_NETWORK: Network =
-  (process?.env?.NETWORK as Network) || "Testnet";
+  (inNode && process.env.NETWORK as Network) || "Testnet";

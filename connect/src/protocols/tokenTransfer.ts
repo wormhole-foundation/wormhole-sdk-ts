@@ -67,7 +67,7 @@ export class TokenTransfer implements WormholeTransfer {
       transfer.payload = encoding.toUint8Array(
         JSON.stringify({
           basic_recipient: {
-            recipient: encoding.b64.encode(encoding.toUint8Array(transfer.to.address.toString())),
+            recipient: encoding.b64.encode(transfer.to.address.toString()),
           },
         }),
       );
@@ -277,7 +277,7 @@ export class TokenTransfer implements WormholeTransfer {
 
       // TODO: assuming the _last_ transaction in the list will contain the msg id
       const txid = this.txids[this.txids.length - 1]
-      const msgId = await TokenTransfer.getTransferMessage(this.wh, txid)
+      const msgId = await TokenTransfer.getTransferMessage(this.wh, txid, timeout)
       this.vaas = [{ id: msgId }]
     }
 
@@ -347,17 +347,24 @@ export class TokenTransfer implements WormholeTransfer {
     const { chain, txid } = tx;
     const originChain = wh.getChain(chain);
 
+    const task = async () => {
+      const msgs = await originChain.parseTransaction(txid)
+      // possible the node we hit does not have this data yet
+      // return null to signal retry
+      if (msgs.length === 0) return null
+      return msgs
+    }
+
     const parsed = await retry<WormholeMessageId[]>(
-      () => originChain.parseTransaction(txid),
+      task,
       originChain.config.blockTime,
       timeout,
       "WormholeCore:ParseMessageFromTransaction",
     );
     if (!parsed) throw new Error(`No WormholeMessageId found for ${txid}`);
-
-    // TODO
     if (parsed.length != 1)
       throw new Error(`Expected a single VAA, got ${parsed.length}`);
+
     return parsed[0];
   }
 
