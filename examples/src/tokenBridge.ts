@@ -99,7 +99,7 @@ async function tokenTransfer(
 
   // 2) wait for the VAA to be signed and ready (not required for auto transfer)
   console.log("Getting Attestation");
-  const attestIds = await xfer.fetchAttestation();
+  const attestIds = await xfer.fetchAttestation(60_000);
   console.log(`Got Attestation: `, attestIds);
 
   // 3) redeem the VAA on the dest chain

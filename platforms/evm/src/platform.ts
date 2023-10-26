@@ -47,6 +47,7 @@ export module EvmPlatform {
     getBalances,
     sendWait,
     getCurrentBlock,
+    chainFromChainId,
     chainFromRpc,
   } = EvmUtils;
 

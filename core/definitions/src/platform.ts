@@ -9,30 +9,35 @@ import { RpcConnection } from "./rpc";
 import { AnyAddress, Balances, ChainsConfig, SignedTx, TokenId, TxHash } from "./types";
 
 export interface PlatformUtils<P extends PlatformName> {
+  // Get the native (gas) token id for a given chain
   nativeTokenId(chain: ChainName): TokenId;
-
-  isSupportedChain(chain: ChainName): boolean;
-
   isNativeTokenId(chain: ChainName, tokenId: TokenId): boolean;
 
-  // Utils for platform specific queries
+  // Check if this chain is supported by this platform
+  isSupportedChain(chain: ChainName): boolean;
+
+  // Get the number of decimals for a given token
   getDecimals(
     chain: ChainName,
     rpc: RpcConnection<P>,
     token: AnyAddress,
   ): Promise<bigint>;
+  // Get the balance of a token for a given wallet address
   getBalance(
     chain: ChainName,
     rpc: RpcConnection<P>,
     walletAddr: string,
     token: AnyAddress,
   ): Promise<bigint | null>;
+  // Look up the balances for a list of tokens for a given wallet address
+  // TODO: this should be batched but isn't currently
   getBalances(
     chain: ChainName,
     rpc: RpcConnection<P>,
     walletAddress: string,
     tokens: AnyAddress[],
   ): Promise<Balances>;
+  // Look up the latest block 
   getCurrentBlock(rpc: RpcConnection<P>): Promise<number>;
 
   // Platform interaction utils
@@ -42,6 +47,13 @@ export interface PlatformUtils<P extends PlatformName> {
     stxns: SignedTx[],
   ): Promise<TxHash[]>;
 
+  // Look up a Chain from its native chain ID
+  // See implementation for details
+  // Note: this is _not_ the same as the Wormhole chain id
+  chainFromChainId(chainId: string): [Network, ChainName];
+
+  // Given an RPC connection, request the native chain id
+  // then resolve it to a Wormhole Canonical network and chain name
   chainFromRpc(rpc: RpcConnection<P>): Promise<[Network, ChainName]>;
 }
 
@@ -57,8 +69,10 @@ export interface Platform<P extends PlatformName> extends PlatformUtils<P> {
   // Create a new Chain context object
   getChain(chain: ChainName): ChainContext<P>;
 
+  // Create a _new_ RPC Connection
   getRpc(chain: ChainName): RpcConnection<P>;
 
+  // Look up transaction logs and parse out Wormhole messages
   parseTransaction(
     chain: ChainName,
     rpc: RpcConnection<P>,

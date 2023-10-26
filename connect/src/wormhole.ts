@@ -430,7 +430,29 @@ export class Wormhole {
   async parseMessageFromTx(
     chain: ChainName,
     txid: TxHash,
+    timeout?: number,
   ): Promise<WormholeMessageId[]> {
-    return await this.getChain(chain).parseTransaction(txid);
+    const originChain = this.getChain(chain);
+
+    const task = async () => {
+      const msgs = await originChain.parseTransaction(txid)
+      // possible the node we hit does not have this data yet
+      // return null to signal retry
+      if (msgs.length === 0) return null
+      return msgs
+    }
+
+    const parsed = await retry<WormholeMessageId[]>(
+      task,
+      originChain.config.blockTime,
+      timeout,
+      "WormholeCore:ParseMessageFromTransaction",
+    );
+
+    if (!parsed) throw new Error(`No WormholeMessageId found for ${txid}`);
+    if (parsed.length != 1)
+      throw new Error(`Expected a single VAA, got ${parsed.length}`);
+
+    return parsed;
   }
 }
