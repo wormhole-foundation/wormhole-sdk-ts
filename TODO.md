@@ -16,6 +16,3 @@ Other:
 - [ ] Better tracking of auto-redeem, use target contract?
 - [ ] Estimate tx finalization
 - [ ] Event emission/subscription for status changes 
-- [ ] Validation of inputs (amount > dust, etc..)
-- [ ] Better tracking of auto-redeem, use target contract?
-- [ ] Event emission/subscription for status changes 
