@@ -40,7 +40,7 @@ export const deserializeCircleMessage = (
   data: Uint8Array,
 ): [LayoutToType<typeof circleMessageLayout>, string] => {
   const msg = deserializeLayout(circleMessageLayout, data);
-  const messsageHash = encoding.hex.encode(keccak256(data));
+  const messsageHash = encoding.hex.encode(keccak256(data), true);
   return [msg, messsageHash];
 };
 
