@@ -40,6 +40,7 @@ export module SolanaPlatform {
     getBalances,
     sendWait,
     getCurrentBlock,
+    chainFromChainId,
     chainFromRpc,
   } = SolanaUtils;
 

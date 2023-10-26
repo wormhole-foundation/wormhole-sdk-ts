@@ -58,6 +58,7 @@ export module CosmwasmPlatform {
     getBalances,
     sendWait,
     getCurrentBlock,
+    chainFromChainId,
     chainFromRpc,
   } = CosmwasmUtils;
 

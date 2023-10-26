@@ -9,6 +9,7 @@ import {
   chainToPlatform,
   PlatformUtils,
   Balances,
+  encoding,
 } from '@wormhole-foundation/connect-sdk';
 
 import { Provider } from 'ethers';
@@ -118,14 +119,24 @@ export module EvmUtils {
     return await rpc.getBlockNumber();
   }
 
+  // Look up the Wormhole Canonical Network and Chain from the EVM chainId
+  export function chainFromChainId(
+    eip155ChainId: string,
+  ): [Network, PlatformToChains<EvmPlatform.Type>] {
+    const ci = encoding.bignum.decode(eip155ChainId)
+    const networkChainPair = evmChainIdToNetworkChainPair.get(ci);
+
+    if (networkChainPair === undefined)
+      throw new Error(`Unknown EVM chainId ${eip155ChainId}`);
+
+    const [network, chain] = networkChainPair;
+    return [network, chain];
+  }
+
   export async function chainFromRpc(
     rpc: Provider,
   ): Promise<[Network, PlatformToChains<EvmPlatform.Type>]> {
     const { chainId } = await rpc.getNetwork();
-    const networkChainPair = evmChainIdToNetworkChainPair.get(chainId);
-    if (networkChainPair === undefined)
-      throw new Error(`Unknown EVM chainId ${chainId}`);
-    const [network, chain] = networkChainPair;
-    return [network, chain];
+    return chainFromChainId(encoding.bignum.encode(chainId, true))
   }
 }

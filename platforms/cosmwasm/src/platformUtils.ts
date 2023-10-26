@@ -141,16 +141,23 @@ export module CosmwasmUtils {
     return rpc.getHeight();
   }
 
+  export function chainFromChainId(
+    chainMoniker: string,
+  ): [Network, PlatformToChains<CosmwasmPlatform.Type>] {
+    const networkChainPair = cosmwasmChainIdToNetworkChainPair.get(chainMoniker);
+
+    if (networkChainPair === undefined)
+      throw new Error(`Unknown Cosmwasm chainId ${chainMoniker}`);
+
+    const [network, chain] = networkChainPair;
+    return [network, chain];
+  }
+
   export async function chainFromRpc(
     rpc: CosmWasmClient,
   ): Promise<[Network, PlatformToChains<CosmwasmPlatform.Type>]> {
     const chainId = await rpc.getChainId();
-    const networkChainPair = cosmwasmChainIdToNetworkChainPair.get(chainId);
-    if (networkChainPair === undefined)
-      throw new Error(`Unknown Cosmwasm chainId ${chainId}`);
-
-    const [network, chain] = networkChainPair;
-    return [network, chain];
+    return chainFromChainId(chainId);
   }
 
   export async function getCounterpartyChannel(
