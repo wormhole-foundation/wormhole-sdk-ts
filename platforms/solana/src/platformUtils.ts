@@ -146,23 +146,28 @@ export module SolanaUtils {
     return await rpc.getSlot(rpc.commitment);
   }
 
-  export async function chainFromRpc(
-    rpc: RpcConnection<SolanaPlatform.Type>,
-  ): Promise<[Network, PlatformToChains<SolanaPlatform.Type>]> {
-    const conn = rpc as Connection;
-    const gh = await conn.getGenesisHash();
-    const netChain = solGenesisHashToNetworkChainPair.get(gh);
+  export function chainFromChainId(genesisHash: string): [Network, PlatformToChains<SolanaPlatform.Type>] {
+    const netChain = solGenesisHashToNetworkChainPair.get(genesisHash);
 
     if (!netChain) {
       // TODO: this is required for tilt/ci since it gets a new genesis hash
       if (SolanaPlatform.network === "Devnet") return ["Devnet", "Solana"]
 
       throw new Error(
-        `No matching genesis hash to determine network and chain: ${gh}`,
+        `No matching genesis hash to determine network and chain: ${genesisHash}`,
       );
     }
 
     const [network, chain] = netChain;
     return [network, chain];
+
+  }
+
+  export async function chainFromRpc(
+    rpc: RpcConnection<SolanaPlatform.Type>,
+  ): Promise<[Network, PlatformToChains<SolanaPlatform.Type>]> {
+    const conn = rpc as Connection;
+    const gh = await conn.getGenesisHash();
+    return chainFromChainId(gh);
   }
 }

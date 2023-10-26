@@ -40,8 +40,16 @@ export const b58 = {
     encode: (input: string | Uint8Array) => base58.encode(typeof input === "string" ? toUint8Array(input) : input),
 }
 
+export const bignum = {
+    decode: (input: string) => BigInt(input),
+    encode: (input: bigint, prefix: boolean = false) => (prefix ? "0x" : "") + input.toString(16)
+}
 
-export const toUint8Array = (value: string): Uint8Array => {
+
+export const toUint8Array = (value: string | bigint): Uint8Array => {
+    if (typeof value === "bigint")
+        return toUint8Array(bignum.encode(value))
+
     return (new TextEncoder()).encode(value);
 }
 

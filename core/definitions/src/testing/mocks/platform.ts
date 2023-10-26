@@ -143,6 +143,9 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
     throw new Error("Method not implemented");
   }
 
+  chainFromChainId(chainId: string): [Network, ChainName] {
+    throw new Error("Not implemented");
+  }
   async chainFromRpc(rpc: RpcConnection<P>): Promise<[Network, ChainName]> {
     throw new Error("Not implemented");
   }
