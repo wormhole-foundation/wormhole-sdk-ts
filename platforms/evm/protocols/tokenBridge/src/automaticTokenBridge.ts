@@ -11,13 +11,19 @@ import {
 
 import { Provider, TransactionRequest } from 'ethers';
 
-import { evmNetworkChainToEvmChainId } from '../constants';
-import { AnyEvmAddress, EvmChainName, addChainId, addFrom } from '../types';
-import { EvmUnsignedTransaction } from '../unsignedTransaction';
-import { TokenBridgeRelayer } from '../ethers-contracts';
-import { EvmContracts } from '../contracts';
-import { EvmPlatform } from '../platform';
-import { EvmAddress } from '../address';
+import { TokenBridgeRelayer } from './ethers-contracts';
+
+import {
+  evmNetworkChainToEvmChainId,
+  AnyEvmAddress,
+  EvmChainName,
+  addChainId,
+  addFrom,
+  EvmUnsignedTransaction,
+  EvmContracts,
+  EvmPlatform,
+  EvmAddress,
+} from '@wormhole-foundation/connect-sdk-evm';
 
 export class EvmAutomaticTokenBridge implements AutomaticTokenBridge<'Evm'> {
   readonly tokenBridgeRelayer: TokenBridgeRelayer;

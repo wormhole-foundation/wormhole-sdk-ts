@@ -14,8 +14,6 @@ import {
 import {
   evmNetworkChainToEvmChainId,
   EvmPlatform,
-  EvmContracts,
-  EvmTokenBridge,
   EvmUnsignedTransaction,
 } from '../../src';
 import { test, describe, expect } from '@jest/globals';
@@ -119,8 +117,7 @@ describe('TokenBridge Tests', () => {
 
   test('Create TokenBridge', async () => {
     const rpc = p.getRpc('Ethereum');
-    const contracts = new EvmContracts(configs);
-    tb = await EvmTokenBridge.fromProvider(rpc, contracts);
+    tb = await p.getTokenBridge(rpc)
     expect(tb).toBeTruthy();
   });
 
