@@ -11,7 +11,7 @@ import {
   nativeChainAddress,
   toCircleChainName,
   usdcContract,
-  encoding
+  encoding,
 } from '@wormhole-foundation/connect-sdk';
 
 import { LogDescription, Provider, TransactionRequest } from 'ethers';
@@ -20,12 +20,7 @@ import { evmNetworkChainToEvmChainId } from '../constants';
 import { EvmContracts } from '../contracts';
 import { MessageTransmitter, TokenMessenger } from '../ethers-contracts';
 import { EvmPlatform } from '../platform';
-import {
-  AnyEvmAddress,
-  EvmChainName,
-  addChainId,
-  addFrom
-} from '../types';
+import { AnyEvmAddress, EvmChainName, addChainId, addFrom } from '../types';
 import { EvmUnsignedTransaction } from '../unsignedTransaction';
 
 //https://github.com/circlefin/evm-cctp-contracts
@@ -105,7 +100,10 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
       .toUniversalAddress()
       .toUint8Array();
 
-    const tokenAddr = usdcContract(this.network as CircleNetwork, this.chain as CircleChainName)
+    const tokenAddr = usdcContract(
+      this.network as CircleNetwork,
+      this.chain as CircleChainName,
+    );
 
     const tokenContract = EvmContracts.getTokenImplementation(
       this.provider,

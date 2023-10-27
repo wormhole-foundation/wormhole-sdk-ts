@@ -98,9 +98,10 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
 
     // TODO: needs heavy testing
     let recipientAddress: string = encoding.b64.encode(
-      chainToPlatform(recipient.chain) === "Cosmwasm" ? recipient.address.toString() :
-        recipient.address.toUniversalAddress().toUint8Array()
-    )
+      chainToPlatform(recipient.chain) === "Cosmwasm"
+        ? recipient.address.toString()
+        : recipient.address.toUniversalAddress().toUint8Array(),
+    );
 
     const payload: GatewayIbcTransferMsg = {
       gateway_ibc_token_bridge_payload: {
@@ -121,9 +122,9 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
       token === "native"
         ? CosmwasmPlatform.getNativeDenom(this.chain)
         : Gateway.deriveIbcDenom(
-          this.chain,
-          new CosmwasmAddress(token).toString(),
-        );
+            this.chain,
+            new CosmwasmAddress(token).toString(),
+          );
     const ibcToken = coin(amount.toString(), ibcDenom.toString());
 
     const ibcMessage: MsgTransferEncodeObject = {

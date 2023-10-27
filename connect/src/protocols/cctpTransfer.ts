@@ -20,7 +20,7 @@ import {
   isTransactionIdentifier,
   isWormholeMessageId,
   nativeChainAddress,
-  toNative
+  toNative,
 } from "@wormhole-foundation/sdk-definitions";
 
 import { signSendWait } from "../common";
@@ -33,7 +33,10 @@ import {
   WormholeTransfer,
 } from "../wormholeTransfer";
 
-export type CCTPVAA<PayloadName extends string> = ProtocolVAA<"CCTP", PayloadName>;
+export type CCTPVAA<PayloadName extends string> = ProtocolVAA<
+  "CCTP",
+  PayloadName
+>;
 
 export class CCTPTransfer implements WormholeTransfer {
   private readonly wh: Wormhole;
@@ -410,7 +413,13 @@ export class CCTPTransfer implements WormholeTransfer {
     sequence: bigint,
     timeout?: number,
   ): Promise<CCTPVAA<"TransferRelay">> {
-    const vaa = await wh.getVAA(chain, emitter, sequence, "CCTP:TransferRelay", timeout);
+    const vaa = await wh.getVAA(
+      chain,
+      emitter,
+      sequence,
+      "CCTP:TransferRelay",
+      timeout,
+    );
     if (!vaa) throw new Error(`No VAA available after timeout exhausted`);
 
     return vaa;

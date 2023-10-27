@@ -37,6 +37,6 @@ import { getStuff } from "./helpers";
 
   console.log("creating, signing and sending transaction...");
   const xfer = tb.transfer(walletAddr, receiver, "native", 1_000_000n);
-  const txids = await signSendWait(chainCtx, xfer, signer)
+  const txids = await signSendWait(chainCtx, xfer, signer);
   console.log("Sent transactions: ", txids);
 })();

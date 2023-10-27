@@ -128,15 +128,19 @@ export module SolanaUtils {
       stxns.map((stxn) => rpc.sendRawTransaction(stxn)),
     );
 
-    const { blockhash, lastValidBlockHeight } = await rpc.getLatestBlockhash(rpc.commitment);
+    const { blockhash, lastValidBlockHeight } = await rpc.getLatestBlockhash(
+      rpc.commitment,
+    );
 
     await Promise.all(
       txhashes.map((txid) => {
         const bhs: BlockheightBasedTransactionConfirmationStrategy = {
-          signature: txid, blockhash, lastValidBlockHeight
-        }
-        return rpc.confirmTransaction(bhs, rpc.commitment)
-      })
+          signature: txid,
+          blockhash,
+          lastValidBlockHeight,
+        };
+        return rpc.confirmTransaction(bhs, rpc.commitment);
+      }),
     );
 
     return txhashes;
@@ -146,12 +150,14 @@ export module SolanaUtils {
     return await rpc.getSlot(rpc.commitment);
   }
 
-  export function chainFromChainId(genesisHash: string): [Network, PlatformToChains<SolanaPlatform.Type>] {
+  export function chainFromChainId(
+    genesisHash: string,
+  ): [Network, PlatformToChains<SolanaPlatform.Type>] {
     const netChain = solGenesisHashToNetworkChainPair.get(genesisHash);
 
     if (!netChain) {
       // TODO: this is required for tilt/ci since it gets a new genesis hash
-      if (SolanaPlatform.network === "Devnet") return ["Devnet", "Solana"]
+      if (SolanaPlatform.network === 'Devnet') return ['Devnet', 'Solana'];
 
       throw new Error(
         `No matching genesis hash to determine network and chain: ${genesisHash}`,
@@ -160,7 +166,6 @@ export module SolanaUtils {
 
     const [network, chain] = netChain;
     return [network, chain];
-
   }
 
   export async function chainFromRpc(

@@ -58,7 +58,7 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
     try {
       await this.getOriginalAsset(token);
       return true;
-    } catch { }
+    } catch {}
     return false;
   }
 
@@ -66,7 +66,7 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
     try {
       await this.getWrappedAsset(token);
       return true;
-    } catch { }
+    } catch {}
     return false;
   }
 
@@ -132,13 +132,13 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
     const assetInfo =
       token === "native"
         ? {
-          native_token: {
-            denom: CosmwasmPlatform.getNativeDenom(this.chain),
-          },
-        }
+            native_token: {
+              denom: CosmwasmPlatform.getNativeDenom(this.chain),
+            },
+          }
         : {
-          token: { contract_addr: tokenStr },
-        };
+            token: { contract_addr: tokenStr },
+          };
 
     yield this.createUnsignedTx(
       {
@@ -188,7 +188,9 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
 
     const recipientChainId = toChainId(recipient.chain);
     // TODO: do we need to use the _native_ address for cosmos chains?
-    const encodedRecipient = encoding.b64.encode(recipient.address.toUniversalAddress().toUint8Array());
+    const encodedRecipient = encoding.b64.encode(
+      recipient.address.toUniversalAddress().toUint8Array(),
+    );
 
     const denom = CosmwasmPlatform.getNativeDenom(this.chain);
 
@@ -212,11 +214,11 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
 
       return payload
         ? {
-          initiate_transfer_with_payload: { ...common, payload },
-        }
+            initiate_transfer_with_payload: { ...common, payload },
+          }
         : {
-          initiate_transfer: common,
-        };
+            initiate_transfer: common,
+          };
     };
 
     if (isNative) {
@@ -292,13 +294,13 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
 
     const msg = toTranslator
       ? buildExecuteMsg(senderAddress, this.translator!, {
-        complete_transfer_and_convert: {
-          vaa: data,
-        },
-      })
+          complete_transfer_and_convert: {
+            vaa: data,
+          },
+        })
       : buildExecuteMsg(senderAddress, this.tokenBridge, {
-        submit_vaa: { data },
-      });
+          submit_vaa: { data },
+        });
 
     yield this.createUnsignedTx(
       {

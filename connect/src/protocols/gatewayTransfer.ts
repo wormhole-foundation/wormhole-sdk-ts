@@ -27,7 +27,7 @@ import {
   isWormholeMessageId,
   nativeChainAddress,
   toGatewayMsg,
-  toNative
+  toNative,
 } from "@wormhole-foundation/sdk-definitions";
 import { signSendWait } from "../common";
 import { fetchIbcXfer, isTokenBridgeVaaRedeemed, retry } from "../tasks";
@@ -195,7 +195,9 @@ export class GatewayTransfer implements WormholeTransfer {
           : undefined;
 
         const destChain = toChainName(maybeWithPayload.chain);
-        const recipientAddress = encoding.b64.decode(maybeWithPayload.recipient)
+        const recipientAddress = encoding.b64.decode(
+          maybeWithPayload.recipient,
+        );
         to = nativeChainAddress([destChain, recipientAddress]);
       } catch {
         /*Ignoring, throws if not the payload isnt JSON*/
@@ -257,20 +259,19 @@ export class GatewayTransfer implements WormholeTransfer {
     const msg = toGatewayMsg(xfer.data.memo);
     const destChain = toChainName(msg.chain);
 
-    const _recip = encoding.b64.valid(msg.recipient) ? encoding.fromUint8Array(encoding.b64.decode(msg.recipient)) : msg.recipient;
+    const _recip = encoding.b64.valid(msg.recipient)
+      ? encoding.fromUint8Array(encoding.b64.decode(msg.recipient))
+      : msg.recipient;
     const recipient: ChainAddress =
       chainToPlatform(destChain) === "Cosmwasm"
         ? {
-          chain: destChain,
-          address: toNative(destChain, _recip.toString()),
-        }
+            chain: destChain,
+            address: toNative(destChain, _recip.toString()),
+          }
         : {
-          chain: destChain,
-          address: toNative(
-            destChain,
-            new UniversalAddress(_recip),
-          ),
-        };
+            chain: destChain,
+            address: toNative(destChain, new UniversalAddress(_recip)),
+          };
 
     const payload = msg.payload
       ? encoding.toUint8Array(msg.payload)
@@ -412,7 +413,7 @@ export class GatewayTransfer implements WormholeTransfer {
         // Otherwise we need to get the transfer on the destination chain
         const dstChain = this.wh.getChain(this.transfer.to.chain);
         const dstIbcBridge = await dstChain.getIbcBridge();
-        const ibcXfer = await dstIbcBridge.lookupTransferFromIbcMsgId(xfer.id)
+        const ibcXfer = await dstIbcBridge.lookupTransferFromIbcMsgId(xfer.id);
         this.ibcTransfers.push(ibcXfer);
       }
     } else {
@@ -480,7 +481,7 @@ export class GatewayTransfer implements WormholeTransfer {
       if (!destTransfer)
         throw new Error(
           "IBC Transfer into destination not found after retries exhausted" +
-          JSON.stringify(wcTransfer.id),
+            JSON.stringify(wcTransfer.id),
         );
 
       this.ibcTransfers.push(destTransfer);
@@ -511,7 +512,7 @@ export class GatewayTransfer implements WormholeTransfer {
 
     if (this.toGateway())
       // TODO: assuming the last transaction captured is the one from gateway to the destination
-      return [this.transactions[this.transactions.length - 1].txid]
+      return [this.transactions[this.transactions.length - 1].txid];
 
     if (!this.vaas) throw new Error("No VAA details available to redeem");
     if (this.vaas.length > 1) throw new Error("Expected 1 vaa");

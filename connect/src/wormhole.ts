@@ -293,11 +293,11 @@ export class Wormhole {
       t = isTokenId(sendingToken)
         ? sendingToken
         : {
-          chain: sendingChain,
-          address: (
-            sendingToken as UniversalAddress | NativeAddress<PlatformName>
-          ).toUniversalAddress(),
-        };
+            chain: sendingChain,
+            address: (
+              sendingToken as UniversalAddress | NativeAddress<PlatformName>
+            ).toUniversalAddress(),
+          };
     }
 
     const dstTokenBridge = await chain.getTokenBridge();
@@ -435,12 +435,12 @@ export class Wormhole {
     const originChain = this.getChain(chain);
 
     const task = async () => {
-      const msgs = await originChain.parseTransaction(txid)
+      const msgs = await originChain.parseTransaction(txid);
       // possible the node we hit does not have this data yet
       // return null to signal retry
-      if (msgs.length === 0) return null
-      return msgs
-    }
+      if (msgs.length === 0) return null;
+      return msgs;
+    };
 
     const parsed = await retry<WormholeMessageId[]>(
       task,

@@ -65,7 +65,7 @@ export class SolanaAddress implements Address {
 
   equals(other: SolanaAddress | UniversalAddress): boolean {
     if (SolanaAddress.instanceof(other)) {
-      return other.unwrap().equals(this.unwrap())
+      return other.unwrap().equals(this.unwrap());
     } else {
       return this.toUniversalAddress().equals(other);
     }
