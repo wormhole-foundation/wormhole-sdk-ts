@@ -1,14 +1,16 @@
+import { encoding } from "@wormhole-foundation/sdk-base";
+
 const ci = true
 
 export const ETH_PRIVATE_KEY =
     "0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d"; // account 0
 
-export const SOLANA_PRIVATE_KEY = new Uint8Array([
+export const SOLANA_PRIVATE_KEY = encoding.b58.encode(new Uint8Array([
     14, 173, 153, 4, 176, 224, 201, 111, 32, 237, 183, 185, 159, 247, 22, 161, 89,
     84, 215, 209, 212, 137, 10, 92, 157, 49, 29, 192, 101, 164, 152, 70, 87, 65,
     8, 174, 214, 157, 175, 126, 98, 90, 54, 24, 100, 177, 247, 77, 19, 112, 47,
     44, 165, 109, 233, 102, 14, 86, 109, 29, 134, 145, 132, 141,
-]);
+]));
 
 export const TERRA_PRIVATE_KEY =
     "noble width taxi input there patrol clown public spell aunt wish punch moment will misery eight excess arena pen turtle minimum grain vague inmate"; // test7
