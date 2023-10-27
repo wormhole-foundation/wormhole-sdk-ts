@@ -1,16 +1,13 @@
-import { Signer, ChainName, SignOnlySigner, SignedTx, UnsignedTransaction } from "@wormhole-foundation/connect-sdk";
+import { Signer, ChainName, SignOnlySigner, SignedTx, UnsignedTransaction, ChainContext, PlatformName } from "@wormhole-foundation/connect-sdk";
 import { ethers } from "ethers";
 
-
+// Get a SignOnlySigner for the EVM platform
 export async function getEvmSigner(
-    chain: ChainName,
-    provider: ethers.Provider,
+    chain: ChainContext<PlatformName>,
     privateKey: string,
 ): Promise<Signer> {
-    return new EvmSigner(chain, provider, privateKey);
+    return new EvmSigner(chain.chain, await chain.getRpc(), privateKey);
 }
-
-
 
 // EvmSigner implements SignOnlySender
 export class EvmSigner implements SignOnlySigner {
@@ -61,6 +58,11 @@ export class EvmSigner implements SignOnlySigner {
                     nonce,
                 },
             };
+
+            // TODO
+            // const estimate = await this.provider.estimateGas(t)
+            // t.gasLimit = estimate
+
             signed.push(await this._wallet.signTransaction(t));
 
             nonce += 1;

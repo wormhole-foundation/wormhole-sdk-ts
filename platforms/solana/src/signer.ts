@@ -1,8 +1,15 @@
-import { Keypair, Transaction } from "@solana/web3.js";
-import { ChainName, SignOnlySigner, Signer, UnsignedTransaction, encoding } from "@wormhole-foundation/connect-sdk";
+import { Keypair } from "@solana/web3.js";
+import { ChainContext, ChainName, PlatformName, SignOnlySigner, Signer, UnsignedTransaction, encoding } from "@wormhole-foundation/connect-sdk";
 
-export function getSolanaSigner(chain: ChainName, privateKey: string): Signer {
-    return new SolanaSigner(chain, Keypair.fromSecretKey(encoding.b58.decode(privateKey)));
+// returns a SignOnlySigner for the Solana platform
+export function getSolanaSigner(
+    chain: ChainContext<PlatformName>,
+    privateKey: string
+): Signer {
+    return new SolanaSigner(
+        chain.chain,
+        Keypair.fromSecretKey(encoding.b58.decode(privateKey)),
+    );
 }
 
 export class SolanaSigner implements SignOnlySigner {

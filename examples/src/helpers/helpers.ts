@@ -12,15 +12,8 @@ import { getCosmwasmSigner } from "@wormhole-foundation/connect-sdk-cosmwasm";
 import { getEvmSigner } from "@wormhole-foundation/connect-sdk-evm";
 import { getSolanaSigner } from "@wormhole-foundation/connect-sdk-solana";
 
-
 // read in from `.env`
 require("dotenv").config();
-
-export interface TransferStuff {
-  chain: ChainContext<PlatformName>;
-  signer: Signer;
-  address: ChainAddress;
-}
 
 function getEnv(key: string): string {
   // If we're in the browser, return empty string
@@ -28,9 +21,16 @@ function getEnv(key: string): string {
 
   // Otherwise, return the env var or error
   const val = process.env[key];
-  if (!val) throw new Error(`Missing env var ${key}, did you forget to set valies in '.env'?`);
+  if (!val)
+    throw new Error(`Missing env var ${key}, did you forget to set valies in '.env'?`);
 
   return val;
+}
+
+export interface TransferStuff {
+  chain: ChainContext<PlatformName>;
+  signer: Signer;
+  address: ChainAddress;
 }
 
 
@@ -41,18 +41,16 @@ export async function getStuff(
 
   switch (chain.platform.platform) {
     case "Solana":
-      signer = getSolanaSigner(chain.chain, getEnv("SOL_PRIVATE_KEY"));
+      signer = getSolanaSigner(chain, getEnv("SOL_PRIVATE_KEY"));
       break;
     case "Cosmwasm":
       signer = await getCosmwasmSigner(chain, getEnv("COSMOS_MNEMONIC"));
       break;
+    case "Evm":
+      signer = await getEvmSigner(chain, getEnv("ETH_PRIVATE_KEY"));
+      break;
     default:
-      const provider = await chain.getRpc()
-      signer = await getEvmSigner(
-        chain.chain,
-        provider,
-        getEnv("ETH_PRIVATE_KEY"),
-      );
+      throw new Error("Unrecognized platform: " + chain.platform.platform)
   }
 
   return { chain, signer, address: nativeChainAddress(signer) };
