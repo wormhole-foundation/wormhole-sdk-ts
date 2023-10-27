@@ -1,6 +1,6 @@
 import { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
-import { AccountData } from "@cosmjs/proto-signing";
-import { ChainName, PlatformToChains, SignOnlySigner, SignedTx, UnsignedTransaction, encoding } from "@wormhole-foundation/connect-sdk";
+import { AccountData, DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
+import { ChainContext, ChainName, Network, PlatformName, PlatformToChains, SignOnlySigner, SignedTx, Signer, UnsignedTransaction, encoding, rpcAddress } from "@wormhole-foundation/connect-sdk";
 import { CosmwasmUnsignedTransaction } from "./unsignedTransaction";
 import { TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
 import {
@@ -12,13 +12,37 @@ import {
     TxClient,
     createTransaction,
 } from "@injectivelabs/sdk-ts";
-import { chainToAddressPrefix } from "./constants";
+import { chainToAddressPrefix, cosmwasmNetworkChainToChainId, cosmwasmNetworkChainToRestUrls } from "./constants";
+
+export async function getCosmwasmSigner(
+    chain: ChainContext<PlatformName>,
+    mnemonic: string,
+): Promise<Signer> {
+    // TODO: add this to config/consts
+    // Use the EVM signer for Evmos and Injective only
+    if (["Evmos", "Injective"].includes(chain.chain)) {
+        return new CosmwasmEvmSigner(chain.chain, chain.platform.network, mnemonic);
+    }
+
+    // Otherwise use the default signer
+    const signer = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
+        prefix: chainToAddressPrefix(chain.chain as PlatformToChains<"Cosmwasm">),
+    });
+
+    const acct = (await signer.getAccounts())[0];
+    const signingClient = await SigningCosmWasmClient.connectWithSigner(
+        rpcAddress(chain.platform.network, chain.chain)!,
+        signer,
+    );
+
+    return new CosmwasmSigner(chain.chain, signingClient, acct.address);
+}
 
 export class CosmwasmSigner implements SignOnlySigner {
     constructor(
         private _chain: ChainName,
         private _signer: SigningCosmWasmClient,
-        private _account: AccountData,
+        private _account: string,
     ) { }
 
     chain(): ChainName {
@@ -26,7 +50,7 @@ export class CosmwasmSigner implements SignOnlySigner {
     }
 
     address(): string {
-        return this._account.address;
+        return this._account;
     }
 
     async sign(tx: UnsignedTransaction[]): Promise<SignedTx[]> {
@@ -52,14 +76,31 @@ export class CosmwasmSigner implements SignOnlySigner {
 
 
 export class CosmwasmEvmSigner implements SignOnlySigner {
+    private _chainId: string;
     private key: PrivateKey;
     private prefix: string;
+    private _rpc: ChainRestAuthApi;
     constructor(
         private _chain: ChainName,
-        private _chainId: string,
-        private _mnemonic: string,
-        private _rpc: ChainRestAuthApi,
+        _network: Network,
+        _mnemonic: string,
     ) {
+
+        this._rpc = new ChainRestAuthApi(
+            cosmwasmNetworkChainToRestUrls(
+                _network,
+                //@ts-ignore
+                chain,
+            ),
+        );
+
+        this._chainId = cosmwasmNetworkChainToChainId(
+            _network,
+            // @ts-ignore
+            chain.chain,
+        );
+
+
         this.prefix = chainToAddressPrefix(_chain as PlatformToChains<"Cosmwasm">);
         this.key = PrivateKey.fromMnemonic(_mnemonic);
     }
@@ -90,8 +131,6 @@ export class CosmwasmEvmSigner implements SignOnlySigner {
                 };
                 return new MsgExecuteContract(f);
             });
-
-            console.log(message);
 
             const { signBytes, txRaw } = createTransaction({
                 message,
