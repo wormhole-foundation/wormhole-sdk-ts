@@ -14,9 +14,9 @@ import {
   SolanaPlatform,
   SolanaContracts,
   SolanaTokenBridge,
+  getSolanaSigner,
 } from '../../src/';
 
-import { MockSolanaSigner } from '../mocks/MockSigner';
 import { expect, describe, test } from '@jest/globals';
 
 import nock from 'nock';
@@ -33,6 +33,8 @@ const TOKEN_ADDRESSES = {
   },
 };
 
+const senderAddress = testing.utils.makeNativeAddress('Solana').toString();
+
 const bogusAddress = testing.utils.makeNativeAddress('Solana');
 const realNativeAddress = toNative(
   'Solana',
@@ -42,8 +44,6 @@ const realWrappedAddress = toNative(
   'Solana',
   TOKEN_ADDRESSES['Mainnet']['Solana']['wavax'],
 );
-
-const sendSigner = new MockSolanaSigner();
 
 // Setup nock to record fixtures
 const nockBack = nock.back;
@@ -182,7 +182,7 @@ describe('TokenBridge Tests', () => {
     const chain = 'Solana';
     const nativeAddress = testing.utils.makeNativeAddress(chain);
 
-    const sender = toNative(chain, sendSigner.address());
+    const sender = toNative(chain, senderAddress);
     const tbAddress = p.conf[chain]!.contracts.tokenBridge!;
 
     test('Create Attestation', async () => {
@@ -242,7 +242,7 @@ describe('TokenBridge Tests', () => {
     const chain = 'Solana';
     const destChain = 'Ethereum';
 
-    const sender = toNative(chain, sendSigner.address());
+    const sender = toNative(chain, senderAddress);
     const recipient = testing.utils.makeChainAddress(destChain);
 
     const amount = 1000n;

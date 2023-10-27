@@ -72,7 +72,7 @@ export class GatewayTransfer implements WormholeTransfer {
   }[];
 
   // Any transfers we do over ibc
-  ibcTransfers?: IbcTransferInfo[];
+  ibcTransfers: IbcTransferInfo[] = [];
 
   private constructor(
     wh: Wormhole,
@@ -361,7 +361,6 @@ export class GatewayTransfer implements WormholeTransfer {
       throw new Error("Invalid state transition in `fetchAttestation`");
 
     const attestations: AttestationId[] = [];
-    this.ibcTransfers = [];
 
     // collect ibc transfers and additional transaction ids
     if (this.fromGateway()) {

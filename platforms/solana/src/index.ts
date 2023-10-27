@@ -4,5 +4,7 @@ export * from './platform';
 export * from './chain';
 export * from './unsignedTransaction';
 export * from './contracts';
-export * from './protocols/tokenBridge';
 export * from './types';
+export * from './signer';
+
+export * from './protocols/tokenBridge';

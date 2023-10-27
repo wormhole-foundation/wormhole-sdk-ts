@@ -44,7 +44,6 @@
     "prettier": "prettier --write ./src"
   },
   "devDependencies": {
-    "@types/bs58": "^4.0.1",
     "@typescript-eslint/eslint-plugin": "^5.54.1",
     "@typescript-eslint/parser": "^5.54.1",
     "eslint": "^8.35.0",
@@ -61,7 +60,6 @@
     "@project-serum/borsh": "0.2.5",
     "@solana/spl-token": "0.3.5",
     "@solana/web3.js": "1.66.2",
-    "bs58": "^4.0.1",
     "lodash": "^4.17.21"
   }
 }

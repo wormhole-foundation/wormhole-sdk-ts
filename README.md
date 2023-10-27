@@ -275,7 +275,7 @@ export interface SignAndSendSigner {
 ```
 
 
-See the [example signers](https://github.com/wormhole-foundation/connect-sdk/blob/develop/examples/src/helpers/signers.ts) for examples of how to implement a signer for a specific chain.
+See the [example signer](https://github.com/wormhole-foundation/connect-sdk/blob/develop/platforms/evm/src/signer.ts) for an example of how to implement a signer for a specific chain or platform.
 
 
 ```ts
