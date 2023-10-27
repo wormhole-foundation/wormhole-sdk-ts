@@ -5,7 +5,7 @@ import {
   CircleNetwork,
   Network,
   chainToChainId,
-  usdcContract
+  usdcContract,
 } from '@wormhole-foundation/connect-sdk';
 
 import { evmNetworkChainToEvmChainId } from '../constants';
@@ -61,7 +61,10 @@ export class EvmAutomaticCircleBridge implements AutomaticCircleBridge<'Evm'> {
       .toUint8Array();
     const nativeTokenGas = nativeGas ? nativeGas : 0n;
 
-    const tokenAddr = usdcContract(this.network as CircleNetwork, this.chain as CircleChainName)
+    const tokenAddr = usdcContract(
+      this.network as CircleNetwork,
+      this.chain as CircleChainName,
+    );
 
     const tokenContract = EvmContracts.getTokenImplementation(
       this.provider,

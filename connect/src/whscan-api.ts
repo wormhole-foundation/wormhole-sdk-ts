@@ -30,18 +30,18 @@ export async function getVaaBytes(
     });
     return encoding.b64.decode(vaaBytes);
   } catch (error) {
-    if (!error) return null
+    if (!error) return null;
 
     if (typeof error === "object") {
       // A 404 error means the VAA is not yet available
       // since its not available yet, we return null signaling it can be tried again
-      if (axios.isAxiosError(error) && error.response?.status === 404) return null
-      if ("status" in error && error.status === 404) return null
+      if (axios.isAxiosError(error) && error.response?.status === 404)
+        return null;
+      if ("status" in error && error.status === 404) return null;
     }
 
     throw error;
   }
-
 }
 
 /**

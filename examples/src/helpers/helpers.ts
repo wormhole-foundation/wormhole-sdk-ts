@@ -5,7 +5,7 @@ import {
   Signer,
   TransferState,
   WormholeTransfer,
-  nativeChainAddress
+  nativeChainAddress,
 } from "@wormhole-foundation/connect-sdk";
 
 import { getCosmwasmSigner } from "@wormhole-foundation/connect-sdk-cosmwasm";
@@ -17,12 +17,14 @@ require("dotenv").config();
 
 function getEnv(key: string): string {
   // If we're in the browser, return empty string
-  if (typeof process === undefined) return ""
+  if (typeof process === undefined) return "";
 
   // Otherwise, return the env var or error
   const val = process.env[key];
   if (!val)
-    throw new Error(`Missing env var ${key}, did you forget to set valies in '.env'?`);
+    throw new Error(
+      `Missing env var ${key}, did you forget to set valies in '.env'?`,
+    );
 
   return val;
 }
@@ -32,7 +34,6 @@ export interface TransferStuff {
   signer: Signer;
   address: ChainAddress;
 }
-
 
 export async function getStuff(
   chain: ChainContext<PlatformName>,
@@ -50,7 +51,7 @@ export async function getStuff(
       signer = await getEvmSigner(chain, getEnv("ETH_PRIVATE_KEY"));
       break;
     default:
-      throw new Error("Unrecognized platform: " + chain.platform.platform)
+      throw new Error("Unrecognized platform: " + chain.platform.platform);
   }
 
   return { chain, signer, address: nativeChainAddress(signer) };
@@ -63,4 +64,3 @@ export async function waitLog(xfer: WormholeTransfer): Promise<void> {
     await new Promise((f) => setTimeout(f, 5000));
   }
 }
-

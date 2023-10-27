@@ -6,7 +6,14 @@ import {
 import { WormholeMessageId } from "./attestation";
 import { ChainContext } from "./chain";
 import { RpcConnection } from "./rpc";
-import { AnyAddress, Balances, ChainsConfig, SignedTx, TokenId, TxHash } from "./types";
+import {
+  AnyAddress,
+  Balances,
+  ChainsConfig,
+  SignedTx,
+  TokenId,
+  TxHash,
+} from "./types";
 
 export interface PlatformUtils<P extends PlatformName> {
   // Get the native (gas) token id for a given chain
@@ -37,7 +44,7 @@ export interface PlatformUtils<P extends PlatformName> {
     walletAddress: string,
     tokens: AnyAddress[],
   ): Promise<Balances>;
-  // Look up the latest block 
+  // Look up the latest block
   getCurrentBlock(rpc: RpcConnection<P>): Promise<number>;
 
   // Platform interaction utils

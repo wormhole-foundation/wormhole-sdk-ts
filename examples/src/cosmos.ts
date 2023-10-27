@@ -50,20 +50,20 @@ import { TransferStuff, getStuff } from "./helpers";
   const token = "native";
   const amount = normalizeAmount("0.01", external.config.nativeTokenDecimals);
 
-  fakeIt = true
+  fakeIt = true;
   // Transfer native token from source chain, through gateway, to a cosmos chain
   let route1 = fakeIt
     ? await GatewayTransfer.from(
-      wh,
-      {
-        chain: external.chain,
-        txid: "0x7302c7bca282676a2ba19d7453b94c4c5b09f73b9be0c871dfccddfb012818cb",
-      },
-      600_000,
-    )
+        wh,
+        {
+          chain: external.chain,
+          txid: "0x7302c7bca282676a2ba19d7453b94c4c5b09f73b9be0c871dfccddfb012818cb",
+        },
+        600_000,
+      )
     : await transferIntoCosmos(wh, token, amount, leg1, leg2);
   //console.log("Route 1 (External => Cosmos)", route1);
-  fakeIt = false
+  fakeIt = false;
 
   const { denom } = route1.ibcTransfers![0].data;
   // Lookup the Gateway representation of the wrappd token
@@ -73,40 +73,40 @@ import { TransferStuff, getStuff } from "./helpers";
   // Transfer Gateway factory tokens over IBC through gateway to another Cosmos chain
   let route2 = fakeIt
     ? await GatewayTransfer.from(
-      wh,
-      {
-        chain: cosmos1.chain,
-        txid: "E016E2C7AB5F38925AFE3696598CD880B9E801519D4BD348D3F48B7ECD1FC129",
-      },
-      600_000,
-    )
+        wh,
+        {
+          chain: cosmos1.chain,
+          txid: "E016E2C7AB5F38925AFE3696598CD880B9E801519D4BD348D3F48B7ECD1FC129",
+        },
+        600_000,
+      )
     : await transferBetweenCosmos(
-      wh,
-      { chain: cosmos1.chain, address: cosmosTokenAddress },
-      1000n,
-      leg2,
-      leg3,
-    );
+        wh,
+        { chain: cosmos1.chain, address: cosmosTokenAddress },
+        1000n,
+        leg2,
+        leg3,
+      );
   //console.log("Route 2 (Cosmos -> Cosmos): ", route2);
 
   fakeIt = false;
   // Transfer Gateway factory token through gateway back to source chain
   let route3 = fakeIt
     ? await GatewayTransfer.from(
-      wh,
-      {
-        chain: cosmos2.chain,
-        txid: "2DD7887DB74E47753E4A05DC15D76252FA3BA073B3BF0D9402ED5C313FF773EE",
-      },
-      600_000,
-    )
+        wh,
+        {
+          chain: cosmos2.chain,
+          txid: "2DD7887DB74E47753E4A05DC15D76252FA3BA073B3BF0D9402ED5C313FF773EE",
+        },
+        600_000,
+      )
     : await transferOutOfCosmos(
-      wh,
-      { chain: cosmos2.chain, address: cosmosTokenAddress },
-      1000n,
-      leg3,
-      leg1,
-    );
+        wh,
+        { chain: cosmos2.chain, address: cosmosTokenAddress },
+        1000n,
+        leg3,
+        leg1,
+      );
   //console.log("Route 3 (Cosmos => External): ", route3);
 })();
 
@@ -118,8 +118,10 @@ async function transferIntoCosmos(
   dst: TransferStuff,
 ): Promise<GatewayTransfer> {
   console.log(
-    `Beginning transfer into Cosmos from ${src.chain.chain
-    }:${src.address.address.toString()} to ${dst.chain.chain
+    `Beginning transfer into Cosmos from ${
+      src.chain.chain
+    }:${src.address.address.toString()} to ${
+      dst.chain.chain
     }:${dst.address.address.toString()}`,
   );
 
@@ -148,8 +150,10 @@ async function transferBetweenCosmos(
   dst: TransferStuff,
 ): Promise<GatewayTransfer> {
   console.log(
-    `Beginning transfer within cosmos from ${src.chain.chain
-    }:${src.address.address.toString()} to ${dst.chain.chain
+    `Beginning transfer within cosmos from ${
+      src.chain.chain
+    }:${src.address.address.toString()} to ${
+      dst.chain.chain
     }:${dst.address.address.toString()}`,
   );
 
@@ -178,8 +182,10 @@ async function transferOutOfCosmos(
   dst: TransferStuff,
 ): Promise<GatewayTransfer> {
   console.log(
-    `Beginning transfer out of cosmos from ${src.chain.chain
-    }:${src.address.address.toString()} to ${dst.chain.chain
+    `Beginning transfer out of cosmos from ${
+      src.chain.chain
+    }:${src.address.address.toString()} to ${
+      dst.chain.chain
     }:${dst.address.address.toString()}`,
   );
 

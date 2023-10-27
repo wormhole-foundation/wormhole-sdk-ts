@@ -20,6 +20,7 @@ import {
 import { expect, describe, test } from '@jest/globals';
 
 import nock from 'nock';
+import { Keypair } from '@solana/web3.js';
 
 const network = DEFAULT_NETWORK;
 const configs = chainConfigs(network);
@@ -33,7 +34,7 @@ const TOKEN_ADDRESSES = {
   },
 };
 
-const senderAddress = testing.utils.makeNativeAddress('Solana').toString();
+const senderAddress = Keypair.generate().publicKey.toBase58();
 
 const bogusAddress = testing.utils.makeNativeAddress('Solana');
 const realNativeAddress = toNative(
