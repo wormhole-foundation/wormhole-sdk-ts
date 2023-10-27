@@ -17,14 +17,16 @@ import { Keypair } from "@solana/web3.js";
 import {
   chainToAddressPrefix,
   cosmwasmNetworkChainToChainId,
+  CosmwasmSigner, CosmwasmEvmSigner,
   cosmwasmNetworkChainToRestUrls,
 } from "@wormhole-foundation/connect-sdk-cosmwasm";
 import bs58 from "bs58";
 import { ethers } from "ethers";
 
 import { ChainRestAuthApi } from "@injectivelabs/sdk-ts";
-import { CosmosEvmSigner, CosmosSigner, EvmSigner, SolSigner } from "./signers";
 
+import { EvmSigner } from "@wormhole-foundation/connect-sdk-evm";
+import { SolanaSigner } from "@wormhole-foundation/connect-sdk-solana";
 // read in from `.env`
 require("dotenv").config();
 export interface TransferStuff {
@@ -75,7 +77,7 @@ export async function getEvmSigner(
 }
 
 export function getSolSigner(chain: ChainName, privateKey: string): Signer {
-  return new SolSigner(chain, Keypair.fromSecretKey(bs58.decode(privateKey)));
+  return new SolanaSigner(chain, Keypair.fromSecretKey(bs58.decode(privateKey)));
 }
 
 export async function getCosmosSigner(
@@ -96,7 +98,7 @@ export async function getCosmosSigner(
 
     console.log(restRpc, chainId);
 
-    return new CosmosEvmSigner(chain.chain, chainId, mnemonic, restRpc);
+    return new CosmwasmEvmSigner(chain.chain, chainId, mnemonic, restRpc);
   }
 
   let options = getCosmosOptions(chain.chain);
@@ -113,7 +115,7 @@ export async function getCosmosSigner(
     options,
   );
 
-  return new CosmosSigner(chain.chain, signingClient, acct);
+  return new CosmwasmSigner(chain.chain, signingClient, acct);
 }
 
 function getCosmosOptions(chain: ChainName): object | undefined {

@@ -18,12 +18,15 @@ import {
   chainToAddressPrefix,
   cosmwasmNetworkChainToChainId,
   cosmwasmNetworkChainToRestUrls,
+  CosmwasmSigner, CosmwasmEvmSigner
 } from "@wormhole-foundation/connect-sdk-cosmwasm";
 import { ethers } from "ethers";
 
 import { ChainRestAuthApi } from "@injectivelabs/sdk-ts";
-import { CosmosEvmSigner, CosmosSigner, EvmSigner, SolSigner } from "./signers";
-import { ETH_PRIVATE_KEY, SOLANA_PRIVATE_KEY, TERRA2_PRIVATE_KEY, TERRA_PRIVATE_KEY } from "./consts";
+import { EvmSigner } from "@wormhole-foundation/connect-sdk-evm";
+import { SolanaSigner } from "@wormhole-foundation/connect-sdk-solana";
+
+import { ETH_PRIVATE_KEY, SOLANA_PRIVATE_KEY, TERRA_PRIVATE_KEY } from "./consts";
 
 export interface TransferStuff {
   chain: ChainContext<PlatformName>;
@@ -61,7 +64,7 @@ export async function getEvmSigner(
 }
 
 export function getSolSigner(chain: ChainContext<PlatformName>): Signer {
-  return new SolSigner(chain.chain, Keypair.fromSecretKey(SOLANA_PRIVATE_KEY));
+  return new SolanaSigner(chain.chain, Keypair.fromSecretKey(SOLANA_PRIVATE_KEY));
 }
 
 export async function getCosmosSigner(
@@ -80,7 +83,7 @@ export async function getCosmosSigner(
       // @ts-ignore
       chain.chain,
     );
-    return new CosmosEvmSigner(chain.chain, chainId, mnemonic!, restRpc);
+    return new CosmwasmEvmSigner(chain.chain, chainId, mnemonic!, restRpc);
   }
 
   // Otherwise use the default signer
@@ -94,7 +97,7 @@ export async function getCosmosSigner(
     signer
   );
 
-  return new CosmosSigner(chain.chain, signingClient, acct);
+  return new CosmwasmSigner(chain.chain, signingClient, acct);
 }
 
 export type ConfigOverride = {
