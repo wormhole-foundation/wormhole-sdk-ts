@@ -100,7 +100,7 @@ describe("Token Bridge E2E Tests", () => {
             })
 
             test(`Create or update wrapped on ${dstChain}`, async () => {
-                const vaa = await wh.getVAA(msgid.chain, msgid.emitter, msgid.sequence, "TokenBridge:AttestMeta")
+                const vaa = await wh.getVaa(msgid.chain, msgid.emitter, msgid.sequence, "TokenBridge:AttestMeta")
                 expect(vaa).toBeTruthy()
 
                 const completeAttest = dstTb.submitAttestation(vaa!, dstAcct.address)

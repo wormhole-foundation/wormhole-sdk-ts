@@ -1,31 +1,29 @@
 import {
-  PlatformName,
   ChainName,
   Network,
-  isCircleSupported,
-  isCircleChain,
-  usdcContract,
+  PlatformName,
   isChain,
+  isCircleChain,
+  isCircleSupported,
   normalizeAmount,
 } from "@wormhole-foundation/sdk-base";
 import {
-  UniversalAddress,
-  deserialize,
   ChainAddress,
-  NativeAddress,
-  TokenId,
-  Platform,
   ChainContext,
-  toNative,
   Contracts,
-  TxHash,
-  WormholeMessageId,
-  isTokenId,
-  PayloadLiteral,
+  NativeAddress,
   PayloadDiscriminator,
+  PayloadLiteral,
+  Platform,
+  TokenId,
+  TxHash,
+  UniversalAddress,
+  WormholeMessageId,
+  deserialize,
+  isTokenId,
+  toNative,
 } from "@wormhole-foundation/sdk-definitions";
 
-import { WormholeConfig } from "./types";
 import {
   CIRCLE_RETRY_INTERVAL,
   CONFIG,
@@ -33,18 +31,20 @@ import {
   WHSCAN_RETRY_INTERVAL,
   networkPlatformConfigs,
 } from "./config";
+import { WormholeConfig } from "./types";
 
-import { TokenTransfer } from "./protocols/tokenTransfer";
 import { CCTPTransfer } from "./protocols/cctpTransfer";
-import { GatewayTransfer } from "./protocols/gatewayTransfer";
+import { TokenTransfer } from "./protocols/tokenTransfer";
 
+import { getCircleAttestation } from "./circle-api";
 import { retry } from "./tasks";
 import {
   TransactionStatus,
   getTransactionStatus,
+  getVaaBytesWithRetry,
   getVaaBytes,
+  getVaaWithRetry,
 } from "./whscan-api";
-import { getCircleAttestation } from "./circle-api";
 
 export class Wormhole {
   protected _platforms: Map<PlatformName, Platform<PlatformName>>;
@@ -293,11 +293,11 @@ export class Wormhole {
       t = isTokenId(sendingToken)
         ? sendingToken
         : {
-            chain: sendingChain,
-            address: (
-              sendingToken as UniversalAddress | NativeAddress<PlatformName>
-            ).toUniversalAddress(),
-          };
+          chain: sendingChain,
+          address: (
+            sendingToken as UniversalAddress | NativeAddress<PlatformName>
+          ).toUniversalAddress(),
+        };
     }
 
     const dstTokenBridge = await chain.getTokenBridge();
@@ -320,27 +320,21 @@ export class Wormhole {
    * @returns The VAA bytes if available
    * @throws Errors if the VAA is not available after the retries
    */
-  async getVAABytes(
+  async getVaaBytes(
     chain: ChainName,
     emitter: UniversalAddress | NativeAddress<PlatformName>,
     sequence: bigint,
     timeout: number = DEFAULT_TASK_TIMEOUT,
   ): Promise<Uint8Array | undefined> {
-    const task = () =>
-      getVaaBytes(this.conf.api, {
+    return getVaaBytesWithRetry(
+      this.conf.api,
+      {
         chain,
         sequence,
         emitter: emitter.toUniversalAddress(),
-      });
-
-    const vaaBytes = await retry<Uint8Array>(
-      task,
-      WHSCAN_RETRY_INTERVAL,
+      },
       timeout,
-      "Wormholescan:GetVaaBytes",
     );
-
-    return vaaBytes ?? undefined;
   }
 
   /**
@@ -352,16 +346,23 @@ export class Wormhole {
    * @returns The VAA if available
    * @throws Errors if the VAA is not available after the retries
    */
-  async getVAA<T extends PayloadLiteral | PayloadDiscriminator>(
+  async getVaa<T extends PayloadLiteral | PayloadDiscriminator>(
     chain: ChainName,
     emitter: UniversalAddress | NativeAddress<PlatformName>,
     sequence: bigint,
     decodeAs: T,
     timeout: number = DEFAULT_TASK_TIMEOUT,
   ): Promise<ReturnType<typeof deserialize<T>> | undefined> {
-    const vaaBytes = await this.getVAABytes(chain, emitter, sequence, timeout);
-    if (vaaBytes === undefined) return;
-    return deserialize(decodeAs, vaaBytes);
+    return getVaaWithRetry(
+      this.conf.api,
+      {
+        chain,
+        sequence,
+        emitter: emitter.toUniversalAddress(),
+      },
+      decodeAs,
+      timeout,
+    );
   }
 
   async getCircleAttestation(

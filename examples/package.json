@@ -68,10 +68,10 @@
     "@sei-js/proto": "^3.0.2",
     "@wormhole-foundation/connect-sdk": "*",
     "@wormhole-foundation/connect-sdk-cosmwasm": "*",
-    "@wormhole-foundation/connect-sdk-evm": "*",
     "@wormhole-foundation/connect-sdk-solana": "*",
-    "@wormhole-foundation/sdk-base": "*",
-    "@wormhole-foundation/sdk-definitions": "*",
+    "@wormhole-foundation/connect-sdk-evm": "*",
+    "@wormhole-foundation/connect-sdk-evm-tokenbridge":"*",
+    "@wormhole-foundation/connect-sdk-evm-cctp":"*",
     "bs58": "^5.0.0",
     "ethers": "^6.7.0"
   }
