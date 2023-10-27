@@ -1,4 +1,4 @@
-import { CCTPTransfer, Wormhole } from "@wormhole-foundation/connect-sdk";
+import { CCTPTransfer, Signer, TransactionId, Wormhole } from "@wormhole-foundation/connect-sdk";
 // TODO: should we re-export the things they need? should we rename the underlying packages?
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { TransferStuff, getStuff, waitLog } from "./helpers";
@@ -25,7 +25,7 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
   const destination = await getStuff(rcvChain);
 
   // Manual Circle USDC CCTP Transfer
-  //await cctpTransfer(wh, 1_000_000n, source, destination, false);
+  await cctpTransfer(wh, 1_000_000n, source, destination, false);
 
   // Automatic Circle USDC CCTP Transfer
   // await cctpTransfer(wh, 19_000_000n, source, destination, true);
@@ -38,20 +38,10 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
   // This is especially helpful for chains with longer time to finality where you don't want
   // to have to wait for the attestation to be generated.
 
-  const xfer = await CCTPTransfer.from(wh, {
-    chain: "Avalanche",
-    txid: "0x4695a5ae7ed2efcf2d585bdb2e64436f6b8bd67fe547789d8b8ba6fab6d9483f",
-  });
-  console.log(xfer);
-  console.log(await xfer.fetchAttestation(60 * 60 * 1000));
-  console.log(await xfer.completeTransfer(destination.signer));
-
-  //const xfer = await CCTPTransfer.from(wh, {
-  //  message:
-  //    "0000000000000001000000000000000000048de9000000000000000000000000eb08f243e5d3fcff26a9e38ae5520a669f4019d0000000000000000000000000d0c3da58f55358142b8d3e06c1c30c5c6114efe80000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005425890298aed601595a70ab815c96711a31bc650000000000000000000000006603b4a7e29dfbdb6159c395a915e74757c1fb1300000000000000000000000000000000000000000000000000000000000f42400000000000000000000000006603b4a7e29dfbdb6159c395a915e74757c1fb13",
-  //  msgHash: "",
+  //await completeTransfer(wh, {
+  //  chain: "Avalanche",
+  //  txid: "0x4695a5ae7ed2efcf2d585bdb2e64436f6b8bd67fe547789d8b8ba6fab6d9483f",
   //});
-  //console.log(xfer);
 })();
 
 async function cctpTransfer(
@@ -85,4 +75,16 @@ async function cctpTransfer(
   console.log("Completing Transfer");
   const dstTxids = await xfer.completeTransfer(dst.signer);
   console.log(`Completed Transfer: `, dstTxids);
+}
+
+
+async function completeTransfer(wh: Wormhole, txid: TransactionId, signer: Signer): Promise<void> {
+  // Rebuild the transfer from the source txid
+  const xfer = await CCTPTransfer.from(wh, txid);
+
+  const attestIds = await xfer.fetchAttestation(60 * 60 * 1000);
+  console.log("Got attestation: ", attestIds)
+
+  const dstTxIds = await xfer.completeTransfer(signer);
+  console.log("Completed transfer: ", dstTxIds)
 }
