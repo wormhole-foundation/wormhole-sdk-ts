@@ -13,7 +13,7 @@ export class UniversalAddress implements Address {
       if (!UniversalAddress.isValidAddress(address))
         throw new Error(
           `Invalid Wormhole address, expected ${UniversalAddress.byteSize}-byte ` +
-          `hex string but got ${address}`,
+            `hex string but got ${address}`,
         );
 
       this.address = encoding.hex.decode(address);
@@ -49,7 +49,11 @@ export class UniversalAddress implements Address {
   }
 
   static isValidAddress(address: string) {
-    return encoding.hex.valid(address) && encoding.stripPrefix("0x", address).length === UniversalAddress.byteSize * 2;
+    return (
+      encoding.hex.valid(address) &&
+      encoding.stripPrefix("0x", address).length ===
+        UniversalAddress.byteSize * 2
+    );
   }
 
   static instanceof(address: any) {

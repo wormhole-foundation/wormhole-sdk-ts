@@ -65,6 +65,4 @@ export class SolanaContracts {
       connection,
     );
   }
-
-
 }

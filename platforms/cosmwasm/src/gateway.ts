@@ -93,7 +93,9 @@ export module Gateway {
   ): CosmwasmAddress {
     // Otherwise compute the ibc address from the channel and denom
     const channel = getGatewaySourceChannel(chain);
-    const hashData = encoding.toUint8Array(`${IBC_TRANSFER_PORT}/${channel}/${denom}`);
+    const hashData = encoding.toUint8Array(
+      `${IBC_TRANSFER_PORT}/${channel}/${denom}`,
+    );
     const hash = encoding.hex.encode(sha256(hashData));
     return new CosmwasmAddress(`ibc/${hash.toUpperCase()}`);
   }
@@ -117,8 +119,8 @@ export module Gateway {
 
     const msg: GatewayTransferWithPayloadMsg | GatewayTransferMsg = payload
       ? ({
-        gateway_transfer_with_payload: { ...common, payload: payload },
-      } as GatewayTransferWithPayloadMsg)
+          gateway_transfer_with_payload: { ...common, payload: payload },
+        } as GatewayTransferWithPayloadMsg)
       : ({ gateway_transfer: { ...common } } as GatewayTransferMsg);
 
     return msg;

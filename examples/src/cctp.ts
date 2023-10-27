@@ -1,4 +1,9 @@
-import { CCTPTransfer, Signer, TransactionId, Wormhole } from "@wormhole-foundation/connect-sdk";
+import {
+  CCTPTransfer,
+  Signer,
+  TransactionId,
+  Wormhole,
+} from "@wormhole-foundation/connect-sdk";
 // TODO: should we re-export the things they need? should we rename the underlying packages?
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { TransferStuff, getStuff, waitLog } from "./helpers";
@@ -77,14 +82,17 @@ async function cctpTransfer(
   console.log(`Completed Transfer: `, dstTxids);
 }
 
-
-async function completeTransfer(wh: Wormhole, txid: TransactionId, signer: Signer): Promise<void> {
+async function completeTransfer(
+  wh: Wormhole,
+  txid: TransactionId,
+  signer: Signer,
+): Promise<void> {
   // Rebuild the transfer from the source txid
   const xfer = await CCTPTransfer.from(wh, txid);
 
   const attestIds = await xfer.fetchAttestation(60 * 60 * 1000);
-  console.log("Got attestation: ", attestIds)
+  console.log("Got attestation: ", attestIds);
 
   const dstTxIds = await xfer.completeTransfer(signer);
-  console.log("Completed transfer: ", dstTxIds)
+  console.log("Completed transfer: ", dstTxIds);
 }

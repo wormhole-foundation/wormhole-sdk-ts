@@ -123,7 +123,7 @@ export module EvmUtils {
   export function chainFromChainId(
     eip155ChainId: string,
   ): [Network, PlatformToChains<EvmPlatform.Type>] {
-    const ci = encoding.bignum.decode(eip155ChainId)
+    const ci = encoding.bignum.decode(eip155ChainId);
     const networkChainPair = evmChainIdToNetworkChainPair.get(ci);
 
     if (networkChainPair === undefined)
@@ -137,6 +137,6 @@ export module EvmUtils {
     rpc: Provider,
   ): Promise<[Network, PlatformToChains<EvmPlatform.Type>]> {
     const { chainId } = await rpc.getNetwork();
-    return chainFromChainId(encoding.bignum.encode(chainId, true))
+    return chainFromChainId(encoding.bignum.encode(chainId, true));
   }
 }

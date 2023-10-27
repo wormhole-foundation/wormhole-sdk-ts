@@ -39,7 +39,6 @@ export class TokenTransfer implements WormholeTransfer {
   }[];
 
   private constructor(wh: Wormhole, transfer: TokenTransferDetails) {
-
     if (transfer.payload && transfer.automatic)
       throw new Error("Payload with automatic delivery is not supported");
 
@@ -56,13 +55,15 @@ export class TokenTransfer implements WormholeTransfer {
       throw new Error(`Token Bridge not supported on ${transfer.to.chain}`);
 
     if (transfer.automatic && !fromChain.supportsAutomaticTokenBridge())
-      throw new Error(`Automatic Token Bridge not supported on ${transfer.from.chain}`);
-
+      throw new Error(
+        `Automatic Token Bridge not supported on ${transfer.from.chain}`,
+      );
 
     if (transfer.to.chain === "Sei") {
-      if (transfer.payload) throw new Error("Arbitrary payloads unsupported for Sei");
+      if (transfer.payload)
+        throw new Error("Arbitrary payloads unsupported for Sei");
 
-      // For sei, we reserve the payload for a token transfer through the sei bridge. 
+      // For sei, we reserve the payload for a token transfer through the sei bridge.
       transfer.payload = encoding.toUint8Array(
         JSON.stringify({
           basic_recipient: {
@@ -79,8 +80,6 @@ export class TokenTransfer implements WormholeTransfer {
         ),
       };
     }
-
-
 
     this.state = TransferState.Created;
     this.wh = wh;
@@ -131,12 +130,15 @@ export class TokenTransfer implements WormholeTransfer {
     timeout: number = 6000,
   ): Promise<TokenTransfer> {
     if (isTokenTransferDetails(from)) {
-
       // Bit of (temporary) hackery until solana contracts support being
       // sent a VAA with the primary address
       if (from.to.chain === "Solana") {
         // Overwrite the dest address with the ATA
-        from.to = await wh.getTokenAccount(from.from.chain, from.token, from.to);
+        from.to = await wh.getTokenAccount(
+          from.from.chain,
+          from.token,
+          from.to,
+        );
       }
 
       return new TokenTransfer(wh, from);
@@ -166,7 +168,7 @@ export class TokenTransfer implements WormholeTransfer {
     const { relayer } = wh.conf.chains[chain]!.contracts;
     const relayerAddress = relayer
       ? // @ts-ignore
-      toNative(chain, relayer).toUniversalAddress()
+        toNative(chain, relayer).toUniversalAddress()
       : null;
 
     // Check if its a payload 3 targeted at a relayer on the destination chain
@@ -272,12 +274,17 @@ export class TokenTransfer implements WormholeTransfer {
       throw new Error("Invalid state transition in `ready`");
 
     if (!this.vaas || this.vaas.length === 0) {
-      if (this.txids.length === 0) throw new Error("No VAAs set and txids available to look them up");
+      if (this.txids.length === 0)
+        throw new Error("No VAAs set and txids available to look them up");
 
       // TODO: assuming the _last_ transaction in the list will contain the msg id
-      const txid = this.txids[this.txids.length - 1]
-      const msgId = await TokenTransfer.getTransferMessage(this.wh, txid, timeout)
-      this.vaas = [{ id: msgId }]
+      const txid = this.txids[this.txids.length - 1];
+      const msgId = await TokenTransfer.getTransferMessage(
+        this.wh,
+        txid,
+        timeout,
+      );
+      this.vaas = [{ id: msgId }];
     }
 
     for (const idx in this.vaas) {
@@ -343,9 +350,10 @@ export class TokenTransfer implements WormholeTransfer {
     tx: TransactionId,
     timeout?: number,
   ): Promise<WormholeMessageId> {
-    const { chain, txid } = tx
-    const msgs = await wh.parseMessageFromTx(chain, txid, timeout)
-    if (msgs.length === 0) throw new Error(`No messages found in transaction ${txid}`)
+    const { chain, txid } = tx;
+    const msgs = await wh.parseMessageFromTx(chain, txid, timeout);
+    if (msgs.length === 0)
+      throw new Error(`No messages found in transaction ${txid}`);
     return msgs[0];
   }
 
@@ -355,7 +363,13 @@ export class TokenTransfer implements WormholeTransfer {
     timeout?: number,
   ): Promise<TokenBridge.VAA<"Transfer" | "TransferWithPayload">> {
     const { chain, emitter, sequence } = whm;
-    const vaa = await wh.getVAA(chain, emitter, sequence, TokenBridge.getTransferDiscriminator(), timeout);
+    const vaa = await wh.getVAA(
+      chain,
+      emitter,
+      sequence,
+      TokenBridge.getTransferDiscriminator(),
+      timeout,
+    );
     if (!vaa) throw new Error(`No VAA available after retries exhausted`);
     return vaa;
   }

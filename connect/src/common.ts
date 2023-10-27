@@ -16,10 +16,13 @@ export async function signSendWait(
 ): Promise<TransactionId[]> {
   const txHashes: TxHash[] = [];
 
-  if (!isSigner(signer)) throw new Error("Invalid signer, not SignAndSendSigner or SignOnlySigner")
+  if (!isSigner(signer))
+    throw new Error("Invalid signer, not SignAndSendSigner or SignOnlySigner");
 
   const signSend = async (txns: UnsignedTransaction[]): Promise<TxHash[]> =>
-    isSignAndSendSigner(signer) ? signer.signAndSend(txns) : chain.sendWait(await signer.sign(txns));
+    isSignAndSendSigner(signer)
+      ? signer.signAndSend(txns)
+      : chain.sendWait(await signer.sign(txns));
 
   let txbuff: UnsignedTransaction[] = [];
   for await (const tx of xfer) {
@@ -28,23 +31,23 @@ export async function signSendWait(
     if (tx.parallelizable) {
       txbuff.push(tx);
     } else {
-      // if we find one is not parallelizable 
-      // flush the buffer then sign and send the 
+      // if we find one is not parallelizable
+      // flush the buffer then sign and send the
       // current tx
       if (txbuff.length > 0) {
-        txHashes.push(...await signSend(txbuff));
+        txHashes.push(...(await signSend(txbuff)));
         txbuff = [];
       }
       // TODO: it may be possible to group this tx with
-      // those in the buffer if there are any but 
+      // those in the buffer if there are any but
       // the parallelizable flag alone is not enough to signal
       // if this is safe
-      txHashes.push(...await signSend([tx]));
+      txHashes.push(...(await signSend([tx])));
     }
   }
 
   if (txbuff.length > 0) {
-    txHashes.push(...await signSend(txbuff));
+    txHashes.push(...(await signSend(txbuff)));
   }
 
   return txHashes.map((txid) => ({ chain: chain.chain, txid }));

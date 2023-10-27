@@ -7,7 +7,7 @@ import {
 } from "@wormhole-foundation/sdk-base";
 import { ChainAddress, NativeAddress, toNative } from "./address";
 import { Contracts } from "./contracts";
-import { Signer, isSigner } from './signer'
+import { Signer, isSigner } from "./signer";
 
 import { UnsignedTransaction } from "./unsignedTransaction";
 import { UniversalAddress } from "./universalAddress";
@@ -36,7 +36,6 @@ export function isTokenId(thing: TokenId | any): thing is TokenId {
 export type Balances = {
   [key: string]: BigInt | null;
 };
-
 
 export function nativeChainAddress(
   s: Signer | TokenId | [ChainName, UniversalAddress | Uint8Array | string],

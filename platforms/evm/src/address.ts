@@ -1,4 +1,9 @@
-import { encoding, Address, UniversalAddress, registerNative } from '@wormhole-foundation/connect-sdk';
+import {
+  encoding,
+  Address,
+  UniversalAddress,
+  registerNative,
+} from '@wormhole-foundation/connect-sdk';
 
 import { ethers } from 'ethers';
 import { AnyEvmAddress } from './types';
@@ -84,7 +89,7 @@ export class EvmAddress implements Address {
   }
   equals(other: EvmAddress | UniversalAddress): boolean {
     if (EvmAddress.instanceof(other)) {
-      return other.address === this.address
+      return other.address === this.address;
     } else {
       return other.equals(this.toUniversalAddress());
     }
