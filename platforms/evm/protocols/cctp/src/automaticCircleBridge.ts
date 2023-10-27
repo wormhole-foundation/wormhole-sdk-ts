@@ -7,16 +7,21 @@ import {
   chainToChainId,
   usdcContract,
 } from '@wormhole-foundation/connect-sdk';
-
-import { evmNetworkChainToEvmChainId } from '../constants';
-
 import { Provider, TransactionRequest } from 'ethers';
-import { EvmAddress } from '../address';
-import { EvmContracts } from '../contracts';
-import { CircleRelayer } from '../ethers-contracts';
-import { EvmPlatform } from '../platform';
-import { AnyEvmAddress, EvmChainName, addChainId, addFrom } from '../types';
-import { EvmUnsignedTransaction } from '../unsignedTransaction';
+
+import { CircleRelayer } from './ethers-contracts';
+
+import {
+  evmNetworkChainToEvmChainId,
+  EvmAddress,
+  EvmContracts,
+  EvmPlatform,
+  AnyEvmAddress,
+  EvmChainName,
+  addChainId,
+  addFrom,
+  EvmUnsignedTransaction,
+} from '@wormhole-foundation/connect-sdk-evm';
 
 export class EvmAutomaticCircleBridge implements AutomaticCircleBridge<'Evm'> {
   readonly circleRelayer: CircleRelayer;

@@ -20,22 +20,23 @@ import { Provider, TransactionRequest } from 'ethers';
 import {
   TokenBridgeContract,
   TokenImplementation__factory as TokenContractFactory,
-} from '../ethers-contracts';
-import { BridgeStructs } from '../ethers-contracts/Bridge';
+} from './ethers-contracts';
+import { BridgeStructs } from './ethers-contracts/Bridge';
 
-import { evmNetworkChainToEvmChainId } from '../constants';
-import { EvmUnsignedTransaction } from '../unsignedTransaction';
-import { EvmContracts } from '../contracts';
 import {
+  evmNetworkChainToEvmChainId,
+  EvmUnsignedTransaction,
+  EvmContracts,
   EvmChainName,
   addFrom,
   addChainId,
   unusedArbiterFee,
   unusedNonce,
   AnyEvmAddress,
-} from '../types';
-import { EvmAddress, EvmZeroAddress } from '../address';
-import { EvmPlatform } from '../platform';
+  EvmAddress,
+  EvmZeroAddress,
+  EvmPlatform,
+} from '@wormhole-foundation/connect-sdk-evm';
 
 //Currently the code does not consider Wormhole msg fee (because it is and always has been 0).
 

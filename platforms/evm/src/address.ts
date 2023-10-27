@@ -96,4 +96,8 @@ export class EvmAddress implements Address {
   }
 }
 
-registerNative('Evm', EvmAddress);
+try {
+  registerNative('Evm', EvmAddress);
+} catch (e) {
+  console.error('Dup registry of evm address', e);
+}

@@ -14,15 +14,20 @@ import {
   encoding,
 } from '@wormhole-foundation/connect-sdk';
 
-import { LogDescription, Provider, TransactionRequest } from 'ethers';
-import { EvmAddress } from '../address';
-import { evmNetworkChainToEvmChainId } from '../constants';
-import { EvmContracts } from '../contracts';
-import { MessageTransmitter, TokenMessenger } from '../ethers-contracts';
-import { EvmPlatform } from '../platform';
-import { AnyEvmAddress, EvmChainName, addChainId, addFrom } from '../types';
-import { EvmUnsignedTransaction } from '../unsignedTransaction';
+import { MessageTransmitter, TokenMessenger } from './ethers-contracts';
 
+import { LogDescription, Provider, TransactionRequest } from 'ethers';
+import {
+  EvmAddress,
+  evmNetworkChainToEvmChainId,
+  EvmContracts,
+  EvmPlatform,
+  AnyEvmAddress,
+  EvmChainName,
+  addChainId,
+  addFrom,
+  EvmUnsignedTransaction,
+} from '@wormhole-foundation/connect-sdk-evm';
 //https://github.com/circlefin/evm-cctp-contracts
 
 export class EvmCircleBridge implements CircleBridge<'Evm'> {

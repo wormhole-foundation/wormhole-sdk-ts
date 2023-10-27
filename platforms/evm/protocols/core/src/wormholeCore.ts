@@ -1,16 +1,18 @@
 import { Network, WormholeCore } from '@wormhole-foundation/connect-sdk';
 import { Provider, TransactionRequest } from 'ethers';
-import { Implementation, ImplementationInterface } from '../ethers-contracts';
+import { Implementation, ImplementationInterface } from './ethers-contracts';
 
 import {
-  evmChainIdToNetworkChainPair,
   evmNetworkChainToEvmChainId,
-} from '../constants';
-import { EvmUnsignedTransaction } from '../unsignedTransaction';
-import { EvmContracts } from '../contracts';
-import { AnyEvmAddress, EvmChainName, addChainId, addFrom } from '../types';
-import { EvmPlatform } from '../platform';
-import { EvmAddress } from '../address';
+  EvmUnsignedTransaction,
+  EvmContracts,
+  AnyEvmAddress,
+  EvmChainName,
+  addChainId,
+  addFrom,
+  EvmPlatform,
+  EvmAddress,
+} from '@wormhole-foundation/connect-sdk-evm';
 
 export class EvmWormholeCore implements WormholeCore<'Evm'> {
   readonly chainId: bigint;

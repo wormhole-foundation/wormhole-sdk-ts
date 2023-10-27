@@ -1,5 +1,5 @@
 import { Idl, Instruction, InstructionCoder } from '@project-serum/anchor';
-import bs58 from 'bs58';
+import { encoding } from '@wormhole-foundation/connect-sdk';
 import { Layout } from 'buffer-layout';
 import { camelCase, upperFirst } from 'lodash';
 import { IdlField, IdlStateMethod } from '../../anchor';
@@ -67,10 +67,11 @@ export class WormholeInstructionCoder implements InstructionCoder {
 
   public decode(
     ix: Buffer | Uint8Array,
-    encoding: 'hex' | 'base58' = 'hex',
+    _encoding: 'hex' | 'base58' = 'hex',
   ): Instruction | null {
     if (typeof ix === 'string') {
-      ix = encoding === 'hex' ? Buffer.from(ix, 'hex') : bs58.decode(ix);
+      ix =
+        _encoding === 'hex' ? Buffer.from(ix, 'hex') : encoding.b58.decode(ix);
     }
     let discriminator = Buffer.from(ix.slice(0, 1)).readInt8();
     let data = Buffer.from(ix.slice(1));

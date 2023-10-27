@@ -9,17 +9,16 @@ import {
   Network,
   toNative,
   Platform,
+  TokenBridge,
+  AutomaticTokenBridge,
+  CircleBridge,
+  AutomaticCircleBridge,
+  WormholeCore,
 } from '@wormhole-foundation/connect-sdk';
 
 import { ethers } from 'ethers';
 import { EvmContracts } from './contracts';
 import { EvmChain } from './chain';
-
-import { EvmTokenBridge } from './protocols/tokenBridge';
-import { EvmAutomaticTokenBridge } from './protocols/automaticTokenBridge';
-import { EvmAutomaticCircleBridge } from './protocols/automaticCircleBridge';
-import { EvmCircleBridge } from './protocols/circleBridge';
-import { EvmWormholeCore } from './protocols/wormholeCore';
 import { EvmUtils } from './platformUtils';
 
 // forces EvmPlatform to implement Platform
@@ -71,33 +70,73 @@ export module EvmPlatform {
     throw new Error('No configuration available for chain: ' + chain);
   }
 
-  export function getWormholeCore(
+  export async function getWormholeCore(
     rpc: ethers.Provider,
-  ): Promise<EvmWormholeCore> {
-    return EvmWormholeCore.fromProvider(rpc, contracts);
+  ): Promise<WormholeCore<'Evm'>> {
+    try {
+      const {
+        EvmWormholeCore,
+      } = require('@wormhole-foundation/connect-sdk-evm-core');
+      return await EvmWormholeCore.fromProvider(rpc, contracts);
+    } catch (e) {
+      console.error('Error loading EvmTokenBridge', e);
+      throw e;
+    }
   }
 
   export async function getTokenBridge(
     rpc: ethers.Provider,
-  ): Promise<EvmTokenBridge> {
-    return await EvmTokenBridge.fromProvider(rpc, contracts);
+  ): Promise<TokenBridge<'Evm'>> {
+    try {
+      const {
+        EvmTokenBridge,
+      } = require('@wormhole-foundation/connect-sdk-evm-tokenbridge');
+      return await EvmTokenBridge.fromProvider(rpc, contracts);
+    } catch (e) {
+      console.error('Error loading EvmTokenBridge', e);
+      throw e;
+    }
   }
   export async function getAutomaticTokenBridge(
     rpc: ethers.Provider,
-  ): Promise<EvmAutomaticTokenBridge> {
-    return await EvmAutomaticTokenBridge.fromProvider(rpc, contracts);
+  ): Promise<AutomaticTokenBridge<'Evm'>> {
+    try {
+      const {
+        EvmAutomaticTokenBridge,
+      } = require('@wormhole-foundation/connect-sdk-evm-tokenbridge');
+      return await EvmAutomaticTokenBridge.fromProvider(rpc, contracts);
+    } catch (e) {
+      console.error('Error loading EvmAutomaticTokenBridge', e);
+      throw e;
+    }
   }
 
   export async function getCircleBridge(
     rpc: ethers.Provider,
-  ): Promise<EvmCircleBridge> {
-    return await EvmCircleBridge.fromProvider(rpc, contracts);
+  ): Promise<CircleBridge<'Evm'>> {
+    try {
+      const {
+        EvmCircleBridge,
+      } = require('@wormhole-foundation/connect-sdk-evm-cctp');
+      return await EvmCircleBridge.fromProvider(rpc, contracts);
+    } catch (e) {
+      console.error('Error loading EvmAutomaticCircleBridge', e);
+      throw e;
+    }
   }
 
   export async function getAutomaticCircleBridge(
     rpc: ethers.Provider,
-  ): Promise<EvmAutomaticCircleBridge> {
-    return await EvmAutomaticCircleBridge.fromProvider(rpc, contracts);
+  ): Promise<AutomaticCircleBridge<'Evm'>> {
+    try {
+      const {
+        EvmAutomaticCircleBridge,
+      } = require('@wormhole-foundation/connect-sdk-evm-cctp');
+      return await EvmAutomaticCircleBridge.fromProvider(rpc, contracts);
+    } catch (e) {
+      console.error('Error loading EvmAutomaticCircleBridge', e);
+      throw e;
+    }
   }
 
   export async function parseTransaction(
