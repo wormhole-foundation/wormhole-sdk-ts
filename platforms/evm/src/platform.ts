@@ -17,7 +17,6 @@ import {
 } from '@wormhole-foundation/connect-sdk';
 
 import { ethers } from 'ethers';
-import { EvmContracts } from './contracts';
 import { EvmChain } from './chain';
 import { EvmUtils } from './platformUtils';
 
@@ -33,8 +32,6 @@ export module EvmPlatform {
   export let network: Network = DEFAULT_NETWORK;
   export let conf: ChainsConfig = networkPlatformConfigs(network, platform);
 
-  let contracts: EvmContracts = new EvmContracts(conf);
-
   export type Type = typeof platform;
 
   export const {
@@ -48,6 +45,7 @@ export module EvmPlatform {
     getCurrentBlock,
     chainFromChainId,
     chainFromRpc,
+    getTokenImplementation,
   } = EvmUtils;
 
   export function setConfig(
@@ -55,7 +53,6 @@ export module EvmPlatform {
     _conf?: ChainsConfig,
   ): typeof EvmPlatform {
     conf = _conf ? _conf : networkPlatformConfigs(network, platform);
-    contracts = new EvmContracts(conf);
     network = _network;
     return EvmPlatform;
   }
@@ -77,7 +74,7 @@ export module EvmPlatform {
       const {
         EvmWormholeCore,
       } = require('@wormhole-foundation/connect-sdk-evm-core');
-      return await EvmWormholeCore.fromProvider(rpc, contracts);
+      return await EvmWormholeCore.fromProvider(rpc, conf);
     } catch (e) {
       console.error('Error loading EvmTokenBridge', e);
       throw e;
@@ -91,7 +88,7 @@ export module EvmPlatform {
       const {
         EvmTokenBridge,
       } = require('@wormhole-foundation/connect-sdk-evm-tokenbridge');
-      return await EvmTokenBridge.fromProvider(rpc, contracts);
+      return await EvmTokenBridge.fromProvider(rpc, conf);
     } catch (e) {
       console.error('Error loading EvmTokenBridge', e);
       throw e;
@@ -104,7 +101,7 @@ export module EvmPlatform {
       const {
         EvmAutomaticTokenBridge,
       } = require('@wormhole-foundation/connect-sdk-evm-tokenbridge');
-      return await EvmAutomaticTokenBridge.fromProvider(rpc, contracts);
+      return await EvmAutomaticTokenBridge.fromProvider(rpc, conf);
     } catch (e) {
       console.error('Error loading EvmAutomaticTokenBridge', e);
       throw e;
@@ -118,7 +115,7 @@ export module EvmPlatform {
       const {
         EvmCircleBridge,
       } = require('@wormhole-foundation/connect-sdk-evm-cctp');
-      return await EvmCircleBridge.fromProvider(rpc, contracts);
+      return await EvmCircleBridge.fromProvider(rpc, conf);
     } catch (e) {
       console.error('Error loading EvmAutomaticCircleBridge', e);
       throw e;
@@ -132,7 +129,7 @@ export module EvmPlatform {
       const {
         EvmAutomaticCircleBridge,
       } = require('@wormhole-foundation/connect-sdk-evm-cctp');
-      return await EvmAutomaticCircleBridge.fromProvider(rpc, contracts);
+      return await EvmAutomaticCircleBridge.fromProvider(rpc, conf);
     } catch (e) {
       console.error('Error loading EvmAutomaticCircleBridge', e);
       throw e;
@@ -148,7 +145,7 @@ export module EvmPlatform {
     if (receipt === null) return [];
 
     const coreAddress = conf[chain]!.contracts.coreBridge;
-    const coreImpl = contracts.getCoreImplementationInterface();
+    const coreImpl = EvmUtils.getCoreImplementationInterface();
 
     return receipt.logs
       .filter((l: any) => {

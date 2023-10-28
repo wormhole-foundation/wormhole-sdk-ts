@@ -12,10 +12,11 @@ import {
   encoding,
 } from '@wormhole-foundation/connect-sdk';
 
+import * as ethers_contracts from './ethers-contracts';
+
 import { Provider } from 'ethers';
 import { evmChainIdToNetworkChainPair } from './constants';
 import { EvmAddress, EvmZeroAddress } from './address';
-import { EvmContracts } from './contracts';
 import { EvmPlatform } from './platform';
 import { AnyEvmAddress } from './types';
 
@@ -54,7 +55,7 @@ export module EvmUtils {
   ): Promise<bigint> {
     if (token === 'native') return nativeDecimals(EvmPlatform.platform);
 
-    const tokenContract = EvmContracts.getTokenImplementation(
+    const tokenContract = getTokenImplementation(
       rpc,
       new EvmAddress(token).toString(),
     );
@@ -69,7 +70,7 @@ export module EvmUtils {
   ): Promise<bigint | null> {
     if (token === 'native') return rpc.getBalance(walletAddr);
 
-    const tokenImpl = EvmContracts.getTokenImplementation(
+    const tokenImpl = getTokenImplementation(
       rpc,
       new EvmAddress(token).toString(),
     );
@@ -138,5 +139,22 @@ export module EvmUtils {
   ): Promise<[Network, PlatformToChains<EvmPlatform.Type>]> {
     const { chainId } = await rpc.getNetwork();
     return chainFromChainId(encoding.bignum.encode(chainId, true));
+  }
+
+  export function getCoreImplementationInterface(): ethers_contracts.ImplementationInterface {
+    return ethers_contracts.Implementation__factory.createInterface();
+  }
+
+  export function getTokenImplementation(
+    connection: Provider,
+    address: string,
+  ): ethers_contracts.TokenImplementation {
+    const ti = ethers_contracts.TokenImplementation__factory.connect(
+      address,
+      connection,
+    );
+    if (!ti)
+      throw new Error(`No token implementation available for: ${address}`);
+    return ti;
   }
 }
