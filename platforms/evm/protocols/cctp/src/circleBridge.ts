@@ -12,6 +12,8 @@ import {
   toCircleChainName,
   usdcContract,
   encoding,
+  Contracts,
+  ChainsConfig,
 } from '@wormhole-foundation/connect-sdk';
 
 import { MessageTransmitter, TokenMessenger } from './ethers-contracts';
@@ -20,7 +22,6 @@ import { LogDescription, Provider, TransactionRequest } from 'ethers';
 import {
   EvmAddress,
   evmNetworkChainToEvmChainId,
-  EvmContracts,
   EvmPlatform,
   AnyEvmAddress,
   EvmChainName,
@@ -28,6 +29,7 @@ import {
   addFrom,
   EvmUnsignedTransaction,
 } from '@wormhole-foundation/connect-sdk-evm';
+import { ethers_contracts } from '.';
 //https://github.com/circlefin/evm-cctp-contracts
 
 export class EvmCircleBridge implements CircleBridge<'Evm'> {
@@ -43,19 +45,34 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
     readonly network: Network,
     readonly chain: EvmChainName,
     readonly provider: Provider,
-    readonly contracts: EvmContracts,
+    readonly contracts: Contracts,
   ) {
     if (network === 'Devnet')
       throw new Error('CircleBridge not supported on Devnet');
 
     this.chainId = evmNetworkChainToEvmChainId(network, chain);
 
-    this.msgTransmitter = this.contracts.getCircleMessageTransmitter(
-      chain,
+
+    const msgTransmitterAddress = contracts.cctp?.messageTransmitter;
+    if (!msgTransmitterAddress)
+      throw new Error(
+        `Circle Messenge Transmitter contract for domain ${chain} not found`,
+      );
+
+    this.msgTransmitter = ethers_contracts.MessageTransmitter__factory.connect(
+      msgTransmitterAddress,
       provider,
     );
-    this.tokenMessenger = this.contracts.getCircleTokenMessenger(
-      chain,
+
+
+    const tokenMessengerAddress = contracts.cctp?.tokenMessenger;
+    if (!tokenMessengerAddress)
+      throw new Error(
+        `Circle Token Messenger contract for domain ${chain} not found`,
+      );
+
+    this.tokenMessenger = ethers_contracts.TokenMessenger__factory.connect(
+      tokenMessengerAddress,
       provider,
     );
 
@@ -71,10 +88,10 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
 
   static async fromProvider(
     provider: Provider,
-    contracts: EvmContracts,
+    config: ChainsConfig,
   ): Promise<EvmCircleBridge> {
     const [network, chain] = await EvmPlatform.chainFromRpc(provider);
-    return new EvmCircleBridge(network, chain, provider, contracts);
+    return new EvmCircleBridge(network, chain, provider, config[chain]!.contracts!);
   }
 
   async *redeem(
@@ -110,7 +127,7 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
       this.chain as CircleChainName,
     );
 
-    const tokenContract = EvmContracts.getTokenImplementation(
+    const tokenContract = EvmPlatform.getTokenImplementation(
       this.provider,
       tokenAddr,
     );
