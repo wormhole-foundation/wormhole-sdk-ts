@@ -130,9 +130,11 @@ const actionMapping = constMap(actionTuples);
 const sdkProtocolNameAndGovernanceVaaModuleEntries = [
   ["CoreBridge", "Core"],
   ["TokenBridge", "TokenBridge"],
+  ["AutomaticTokenBridge", "TokenBridge"],
   ["NftBridge", "NFTBridge"],
   ["Relayer", "WormholeRelayer"],
-  ["CCTP", "CircleIntegration"],
+  ["CircleBridge", "CircleIntegration"],
+  ["AutomaticCircleBridge", "CircleIntegration"],
 ] as const satisfies RoArray<readonly [ProtocolName, string]>;
 
 const sdkProtocolNameToGovernanceVaaModuleMapping = constMap(
@@ -140,27 +142,27 @@ const sdkProtocolNameToGovernanceVaaModuleMapping = constMap(
 );
 
 const protocolConversion = <P extends ProtocolName>(protocol: P) =>
-  ({
-    to: protocol,
-    from: ((): Uint8Array => {
-      const moduleBytesSize = 32;
-      const bytes = new Uint8Array(moduleBytesSize);
-      const vaaModule = sdkProtocolNameToGovernanceVaaModuleMapping(protocol);
-      for (let i = 1; i <= vaaModule.length; ++i)
-        bytes[moduleBytesSize - i] = vaaModule.charCodeAt(vaaModule.length - i);
+({
+  to: protocol,
+  from: ((): Uint8Array => {
+    const moduleBytesSize = 32;
+    const bytes = new Uint8Array(moduleBytesSize);
+    const vaaModule = sdkProtocolNameToGovernanceVaaModuleMapping(protocol);
+    for (let i = 1; i <= vaaModule.length; ++i)
+      bytes[moduleBytesSize - i] = vaaModule.charCodeAt(vaaModule.length - i);
 
-      return bytes;
-    })(),
-  } as const satisfies FixedConversion<Uint8Array, P>);
+    return bytes;
+  })(),
+} as const satisfies FixedConversion<Uint8Array, P>);
 
 const actionConversion = <A extends Action, N extends number>(
   action: A,
   num: N
 ) =>
-  ({
-    to: action,
-    from: num,
-  } as const satisfies FixedConversion<N, A>);
+({
+  to: action,
+  from: num,
+} as const satisfies FixedConversion<N, A>);
 
 const headerLayout = <
   P extends ProtocolName,
@@ -236,9 +238,9 @@ const relayerPayloads = [
 
 const cctpPayloads = [
   //see wormhole-circle-integration evm/src/circle_integration/CircleIntegrationGovernance.sol
-  governancePayload("CCTP", "UpdateFinality", 1),
-  governancePayload("CCTP", "RegisterEmitterAndDomain", 2),
-  governancePayload("CCTP", "UpgradeContract", 3),
+  governancePayload("AutomaticCircleBridge", "UpdateFinality", 1),
+  governancePayload("AutomaticCircleBridge", "RegisterEmitterAndDomain", 2),
+  governancePayload("AutomaticCircleBridge", "UpgradeContract", 3),
 ] as const satisfies NamedPayloads;
 
 
@@ -250,8 +252,7 @@ declare global {
       RegisterPayloadTypes<"TokenBridge", typeof tokenBridgePayloads>,
       RegisterPayloadTypes<"NftBridge", typeof nftBridgePayloads>,
       RegisterPayloadTypes<"Relayer", typeof relayerPayloads>,
-      RegisterPayloadTypes<"CCTP", typeof cctpPayloads>
-    {}
+      RegisterPayloadTypes<"CCTP", typeof cctpPayloads> { }
   }
 }
 

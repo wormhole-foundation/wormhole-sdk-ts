@@ -14,6 +14,7 @@ import {
   CircleBridge,
   AutomaticCircleBridge,
   WormholeCore,
+  ProtocolName,
 } from '@wormhole-foundation/connect-sdk';
 
 import { ethers } from 'ethers';
@@ -67,16 +68,34 @@ export module EvmPlatform {
     throw new Error('No configuration available for chain: ' + chain);
   }
 
-  export async function getWormholeCore(
-    rpc: ethers.Provider,
-  ): Promise<WormholeCore<'Evm'>> {
+  async function loadModule(module: string): Promise<Record<string, any>> {
     try {
-      const {
-        EvmWormholeCore,
-      } = require('@wormhole-foundation/connect-sdk-evm-core');
-      return await EvmWormholeCore.fromProvider(rpc, conf);
+      // @ts-ignore -- complains about commonjs but compiles?
+      return await import('@wormhole-foundation/connect-sdk-evm-' + module);
     } catch (e) {
-      console.error('Error loading EvmTokenBridge', e);
+      console.error('Error loading ' + module, e);
+      throw e;
+    }
+  }
+
+  export async function getProtocol<P extends ProtocolName>(protocol: P): Promise<any> {
+    try {
+      switch (protocol) {
+        case 'TokenBridge':
+        case 'AutomaticTokenBridge':
+          const tb = await loadModule('tokenbridge');
+          if (platform + protocol in tb)
+            return tb[platform + protocol]
+        case 'CircleBridge':
+        case 'AutomaticCircleBridge':
+          const cb = await loadModule('cctp');
+          if (platform + protocol in cb)
+            return cb[platform + protocol]
+        default:
+          throw new Error("Protocol not supported: " + protocol)
+      }
+    } catch (e) {
+      console.error('Error loading ' + protocol, e);
       throw e;
     }
   }
@@ -84,56 +103,31 @@ export module EvmPlatform {
   export async function getTokenBridge(
     rpc: ethers.Provider,
   ): Promise<TokenBridge<'Evm'>> {
-    try {
-      const {
-        EvmTokenBridge,
-      } = require('@wormhole-foundation/connect-sdk-evm-tokenbridge');
-      return await EvmTokenBridge.fromProvider(rpc, conf);
-    } catch (e) {
-      console.error('Error loading EvmTokenBridge', e);
-      throw e;
-    }
+    return (await getProtocol('TokenBridge')).fromProvider(rpc, conf);
   }
   export async function getAutomaticTokenBridge(
     rpc: ethers.Provider,
   ): Promise<AutomaticTokenBridge<'Evm'>> {
-    try {
-      const {
-        EvmAutomaticTokenBridge,
-      } = require('@wormhole-foundation/connect-sdk-evm-tokenbridge');
-      return await EvmAutomaticTokenBridge.fromProvider(rpc, conf);
-    } catch (e) {
-      console.error('Error loading EvmAutomaticTokenBridge', e);
-      throw e;
-    }
+    return (await getProtocol('TokenBridge')).fromProvider(rpc, conf);
+  }
+
+
+  export async function getWormholeCore(
+    rpc: ethers.Provider,
+  ): Promise<WormholeCore<'Evm'>> {
+    return (await getProtocol('CoreBridge')).fromProvider(rpc, conf);
   }
 
   export async function getCircleBridge(
     rpc: ethers.Provider,
   ): Promise<CircleBridge<'Evm'>> {
-    try {
-      const {
-        EvmCircleBridge,
-      } = require('@wormhole-foundation/connect-sdk-evm-cctp');
-      return await EvmCircleBridge.fromProvider(rpc, conf);
-    } catch (e) {
-      console.error('Error loading EvmAutomaticCircleBridge', e);
-      throw e;
-    }
+    return (await getProtocol('CircleBridge')).fromProvider(rpc, conf);
   }
 
   export async function getAutomaticCircleBridge(
     rpc: ethers.Provider,
   ): Promise<AutomaticCircleBridge<'Evm'>> {
-    try {
-      const {
-        EvmAutomaticCircleBridge,
-      } = require('@wormhole-foundation/connect-sdk-evm-cctp');
-      return await EvmAutomaticCircleBridge.fromProvider(rpc, conf);
-    } catch (e) {
-      console.error('Error loading EvmAutomaticCircleBridge', e);
-      throw e;
-    }
+    return (await getProtocol('AutomaticCircleBridge')).fromProvider(rpc, conf);
   }
 
   export async function parseTransaction(
