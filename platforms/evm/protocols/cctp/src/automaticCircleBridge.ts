@@ -1,8 +1,10 @@
 import {
   AutomaticCircleBridge,
   ChainAddress,
+  ChainsConfig,
   CircleChainName,
   CircleNetwork,
+  Contracts,
   Network,
   chainToChainId,
   usdcContract,
@@ -14,7 +16,6 @@ import { CircleRelayer } from './ethers-contracts';
 import {
   evmNetworkChainToEvmChainId,
   EvmAddress,
-  EvmContracts,
   EvmPlatform,
   AnyEvmAddress,
   EvmChainName,
@@ -22,6 +23,7 @@ import {
   addFrom,
   EvmUnsignedTransaction,
 } from '@wormhole-foundation/connect-sdk-evm';
+import { ethers_contracts } from '.';
 
 export class EvmAutomaticCircleBridge implements AutomaticCircleBridge<'Evm'> {
   readonly circleRelayer: CircleRelayer;
@@ -33,24 +35,32 @@ export class EvmAutomaticCircleBridge implements AutomaticCircleBridge<'Evm'> {
     readonly network: Network,
     readonly chain: EvmChainName,
     readonly provider: Provider,
-    readonly contracts: EvmContracts,
+    readonly contracts: Contracts,
   ) {
     if (network === 'Devnet')
       throw new Error('AutomaticCircleBridge not supported on Devnet');
 
     this.chainId = evmNetworkChainToEvmChainId(network, chain);
-    this.circleRelayer = this.contracts.getWormholeCircleRelayer(
-      chain,
+
+    const relayerAddress = this.contracts.cctp?.wormholeRelayer;
+    if (!relayerAddress)
+      throw new Error(
+        `Wormhole Circle relayer contract for domain ${chain} not found`,
+      );
+
+    this.circleRelayer = ethers_contracts.CircleRelayer__factory.connect(
+      relayerAddress,
       provider,
     );
+
   }
 
   static async fromProvider(
     provider: Provider,
-    contracts: EvmContracts,
+    config: ChainsConfig,
   ): Promise<EvmAutomaticCircleBridge> {
     const [network, chain] = await EvmPlatform.chainFromRpc(provider);
-    return new EvmAutomaticCircleBridge(network, chain, provider, contracts);
+    return new EvmAutomaticCircleBridge(network, chain, provider, config[chain]!.contracts!);
   }
 
   async *transfer(
@@ -71,7 +81,7 @@ export class EvmAutomaticCircleBridge implements AutomaticCircleBridge<'Evm'> {
       this.chain as CircleChainName,
     );
 
-    const tokenContract = EvmContracts.getTokenImplementation(
+    const tokenContract = EvmPlatform.getTokenImplementation(
       this.provider,
       tokenAddr,
     );

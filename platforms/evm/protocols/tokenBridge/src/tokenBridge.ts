@@ -14,6 +14,8 @@ import {
   toNative,
   ErrNotWrapped,
   TokenTransferTransaction,
+  Contracts,
+  ChainsConfig,
 } from '@wormhole-foundation/connect-sdk';
 import { Provider, TransactionRequest } from 'ethers';
 
@@ -22,11 +24,11 @@ import {
   TokenImplementation__factory as TokenContractFactory,
 } from './ethers-contracts';
 import { BridgeStructs } from './ethers-contracts/Bridge';
+import { ethers_contracts } from '.';
 
 import {
   evmNetworkChainToEvmChainId,
   EvmUnsignedTransaction,
-  EvmContracts,
   EvmChainName,
   addFrom,
   addChainId,
@@ -46,24 +48,36 @@ import {
 
 export class EvmTokenBridge implements TokenBridge<'Evm'> {
   readonly tokenBridge: TokenBridgeContract;
+  readonly tokenBridgeAddress: string;
   readonly chainId: bigint;
 
   private constructor(
     readonly network: Network,
     readonly chain: EvmChainName,
     readonly provider: Provider,
-    readonly contracts: EvmContracts,
+    readonly contracts: Contracts,
   ) {
     this.chainId = evmNetworkChainToEvmChainId.get(network, chain)!;
-    this.tokenBridge = this.contracts.getTokenBridge(chain, provider);
+
+    const tokenBridgeAddress = this.contracts.tokenBridge!;
+    if (!tokenBridgeAddress)
+      throw new Error(
+        `Wormhole Token Bridge contract for domain ${chain} not found`,
+      );
+
+    this.tokenBridgeAddress = tokenBridgeAddress
+    this.tokenBridge = ethers_contracts.Bridge__factory.connect(
+      this.tokenBridgeAddress,
+      provider
+    )
   }
 
   static async fromProvider(
     provider: Provider,
-    contracts: EvmContracts,
+    config: ChainsConfig,
   ): Promise<EvmTokenBridge> {
     const [network, chain] = await EvmPlatform.chainFromRpc(provider);
-    return new EvmTokenBridge(network, chain, provider, contracts);
+    return new EvmTokenBridge(network, chain, provider, config[chain]!.contracts!);
   }
 
   async isWrappedAsset(token: AnyEvmAddress): Promise<boolean> {
@@ -93,7 +107,7 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
       //  old sdk checked for existence
       await this.getWrappedAsset(token);
       return true;
-    } catch (e) {}
+    } catch (e) { }
     return false;
   }
 
@@ -169,31 +183,29 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     if (typeof token === 'string' && token === 'native') {
       const txReq = await (payload === undefined
         ? this.tokenBridge.wrapAndTransferETH.populateTransaction(
-            recipientChainId,
-            recipientAddress,
-            unusedArbiterFee,
-            unusedNonce,
-            { value: amount },
-          )
+          recipientChainId,
+          recipientAddress,
+          unusedArbiterFee,
+          unusedNonce,
+          { value: amount },
+        )
         : this.tokenBridge.wrapAndTransferETHWithPayload.populateTransaction(
-            recipientChainId,
-            recipientAddress,
-            unusedNonce,
-            payload,
-            { value: amount },
-          ));
+          recipientChainId,
+          recipientAddress,
+          unusedNonce,
+          payload,
+          { value: amount },
+        ));
       yield this.createUnsignedTx(
         addFrom(txReq, senderAddr),
         'TokenBridge.wrapAndTransferETH' +
-          (payload === undefined ? '' : 'WithPayload'),
+        (payload === undefined ? '' : 'WithPayload'),
       );
     } else {
       //TODO check for ERC-2612 (permit) support on token?
       const tokenAddr = new EvmAddress(token).toString();
-      const tokenContract = TokenContractFactory.connect(
-        tokenAddr,
-        this.provider,
-      );
+      const tokenContract = EvmPlatform.getTokenImplementation(this.provider, tokenAddr);
+
       const allowance = await tokenContract.allowance(
         senderAddr,
         this.tokenBridge.target,
@@ -216,19 +228,19 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
       ] as const;
       const txReq = await (payload === undefined
         ? this.tokenBridge.transferTokens.populateTransaction(
-            ...sharedParams,
-            unusedArbiterFee,
-            unusedNonce,
-          )
+          ...sharedParams,
+          unusedArbiterFee,
+          unusedNonce,
+        )
         : this.tokenBridge.transferTokensWithPayload.populateTransaction(
-            ...sharedParams,
-            unusedNonce,
-            payload,
-          ));
+          ...sharedParams,
+          unusedNonce,
+          payload,
+        ));
       yield this.createUnsignedTx(
         addFrom(txReq, senderAddr),
         'TokenBridge.transferTokens' +
-          (payload === undefined ? '' : 'WithPayload'),
+        (payload === undefined ? '' : 'WithPayload'),
       );
     }
   }
@@ -281,20 +293,16 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
 
     const { fee: gasFee } = receipt;
 
-    const core = this.contracts.getCore(this.chain, this.provider);
-    const coreAddress = await core.getAddress();
-
-    const bridge = this.contracts.getTokenBridge(this.chain, this.provider);
     const bridgeAddress = toNative(
       this.chain,
-      await bridge.getAddress(),
+      this.tokenBridgeAddress,
     ).toUniversalAddress();
 
     const bridgeLogs = receipt.logs.filter((l: any) => {
-      return l.address === coreAddress;
+      return l.address === this.contracts.coreBridge;
     });
 
-    const impl = this.contracts.getCoreImplementationInterface();
+    const impl = ethers_contracts.Implementation__factory.createInterface();
 
     const parsedLogs = bridgeLogs.map(async (bridgeLog) => {
       const { topics, data } = bridgeLog;
@@ -310,10 +318,10 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
 
       if (parsed.args.payload.startsWith('0x01')) {
         // parse token bridge transfer data
-        parsedTransfer = await bridge.parseTransfer(parsed.args.payload);
+        parsedTransfer = await this.tokenBridge.parseTransfer(parsed.args.payload);
       } else if (parsed.args.payload.startsWith('0x03')) {
         // parse token bridge transfer with payload data
-        parsedTransfer = await bridge.parseTransferWithPayload(
+        parsedTransfer = await this.tokenBridge.parseTransferWithPayload(
           parsed.args.payload,
         );
       } else {
