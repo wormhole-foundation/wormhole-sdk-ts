@@ -25,7 +25,7 @@ import {
 
 import { signSendWait } from "../common";
 import { DEFAULT_TASK_TIMEOUT } from "../config";
-import { CCTPTransferDetails, isCCTPTransferDetails } from "../types";
+import { CircleTransferDetails, isCircleTransferDetails } from "../types";
 import { Wormhole } from "../wormhole";
 import {
   AttestationId,
@@ -33,19 +33,19 @@ import {
   WormholeTransfer,
 } from "../wormholeTransfer";
 
-export type CCTPVAA<PayloadName extends string> = ProtocolVAA<
-  "CCTP",
+export type AutomaticCircleBridgeVAA<PayloadName extends string> = ProtocolVAA<
+  "AutomaticCircleBridge",
   PayloadName
 >;
 
-export class CCTPTransfer implements WormholeTransfer {
+export class CircleTransfer implements WormholeTransfer {
   private readonly wh: Wormhole;
 
   // state machine tracker
   private state: TransferState;
 
   // transfer details
-  transfer: CCTPTransferDetails;
+  transfer: CircleTransferDetails;
 
   // Populated after Initialized
   txids: TransactionId[] = [];
@@ -59,10 +59,10 @@ export class CCTPTransfer implements WormholeTransfer {
   // Populated if automatic and after initialized
   vaas?: {
     id: WormholeMessageId;
-    vaa?: CCTPVAA<"TransferRelay">;
+    vaa?: AutomaticCircleBridgeVAA<"TransferRelay">;
   }[];
 
-  private constructor(wh: Wormhole, transfer: CCTPTransferDetails) {
+  private constructor(wh: Wormhole, transfer: CircleTransferDetails) {
     this.state = TransferState.Created;
     this.wh = wh;
     this.transfer = transfer;
@@ -75,47 +75,47 @@ export class CCTPTransfer implements WormholeTransfer {
   // Static initializers for in flight transfers that have not been completed
   static async from(
     wh: Wormhole,
-    from: CCTPTransferDetails,
-  ): Promise<CCTPTransfer>;
+    from: CircleTransferDetails,
+  ): Promise<CircleTransfer>;
   static async from(
     wh: Wormhole,
     from: WormholeMessageId,
     timeout?: number,
-  ): Promise<CCTPTransfer>;
+  ): Promise<CircleTransfer>;
   static async from(
     wh: Wormhole,
     from: CircleMessageId,
     timeout?: number,
-  ): Promise<CCTPTransfer>;
+  ): Promise<CircleTransfer>;
   static async from(
     wh: Wormhole,
     from: TransactionId,
     timeout?: number,
-  ): Promise<CCTPTransfer>;
+  ): Promise<CircleTransfer>;
   static async from(
     wh: Wormhole,
     from:
-      | CCTPTransferDetails
+      | CircleTransferDetails
       | WormholeMessageId
       | CircleMessageId
       | TransactionId,
     timeout: number = DEFAULT_TASK_TIMEOUT,
-  ): Promise<CCTPTransfer> {
+  ): Promise<CircleTransfer> {
     // This is a new transfer, just return the object
-    if (isCCTPTransferDetails(from)) {
-      return new CCTPTransfer(wh, from);
+    if (isCircleTransferDetails(from)) {
+      return new CircleTransfer(wh, from);
     }
 
     // This is an existing transfer, fetch the details
-    let tt: CCTPTransfer | undefined;
+    let tt: CircleTransfer | undefined;
     if (isWormholeMessageId(from)) {
-      tt = await CCTPTransfer.fromWormholeMessageId(wh, from, timeout);
+      tt = await CircleTransfer.fromWormholeMessageId(wh, from, timeout);
     } else if (isTransactionIdentifier(from)) {
-      tt = await CCTPTransfer.fromTransaction(wh, from, timeout);
+      tt = await CircleTransfer.fromTransaction(wh, from, timeout);
     } else if (isCircleMessageId(from)) {
-      tt = await CCTPTransfer.fromCircleMessageId(wh, from, timeout);
+      tt = await CircleTransfer.fromCircleMessageId(wh, from, timeout);
     } else {
-      throw new Error("Invalid `from` parameter for CCTPTransfer");
+      throw new Error("Invalid `from` parameter for CircleTransfer");
     }
     await tt.fetchAttestation(timeout);
 
@@ -127,9 +127,9 @@ export class CCTPTransfer implements WormholeTransfer {
     wh: Wormhole,
     from: WormholeMessageId,
     timeout: number,
-  ): Promise<CCTPTransfer> {
+  ): Promise<CircleTransfer> {
     const { chain, emitter, sequence } = from;
-    const vaa = await CCTPTransfer.getTransferVaa(wh, chain, emitter, sequence);
+    const vaa = await CircleTransfer.getTransferVaa(wh, chain, emitter, sequence);
 
     const rcvAddress = vaa.payload.mintRecipient;
     const rcvChain = toCircleChainName(vaa.payload.targetDomain);
@@ -148,14 +148,14 @@ export class CCTPTransfer implements WormholeTransfer {
         rcvAddress.equals(relayerAddress);
     }
 
-    const details: CCTPTransferDetails = {
+    const details: CircleTransferDetails = {
       from: nativeChainAddress([from.chain, vaa.payload.caller]),
       to: nativeChainAddress([rcvChain, rcvAddress]),
       amount: vaa.payload.token.amount,
       automatic,
     };
 
-    const tt = new CCTPTransfer(wh, details);
+    const tt = new CircleTransfer(wh, details);
     tt.vaas = [{ id: { emitter, sequence: vaa.sequence, chain: chain }, vaa }];
     tt.state = TransferState.Initiated;
 
@@ -168,7 +168,7 @@ export class CCTPTransfer implements WormholeTransfer {
     wh: Wormhole,
     messageId: CircleMessageId,
     timeout: number,
-  ): Promise<CCTPTransfer> {
+  ): Promise<CircleTransfer> {
     const [message, hash] = deserializeCircleMessage(
       encoding.hex.decode(messageId.message),
     );
@@ -182,14 +182,14 @@ export class CCTPTransfer implements WormholeTransfer {
     const sendChain = toCircleChainName(message.sourceDomain);
     const rcvChain = toCircleChainName(message.destinationDomain);
 
-    const details: CCTPTransferDetails = {
+    const details: CircleTransferDetails = {
       from: nativeChainAddress([sendChain, xferSender]),
       to: nativeChainAddress([rcvChain, xferReceiver]),
       amount: burnMessage.amount,
       automatic: false,
     };
 
-    const xfer = new CCTPTransfer(wh, details);
+    const xfer = new CircleTransfer(wh, details);
     xfer.circleAttestations = [{ id: messageId }];
     xfer.state = TransferState.Initiated;
 
@@ -201,7 +201,7 @@ export class CCTPTransfer implements WormholeTransfer {
     wh: Wormhole,
     from: TransactionId,
     timeout: number,
-  ): Promise<CCTPTransfer> {
+  ): Promise<CircleTransfer> {
     const { chain, txid } = from;
     const originChain = wh.getChain(chain);
 
@@ -213,20 +213,20 @@ export class CCTPTransfer implements WormholeTransfer {
     );
 
     // If we found a VAA message, use it
-    let ct: CCTPTransfer;
+    let ct: CircleTransfer;
     if (msgIds.length > 0) {
-      ct = await CCTPTransfer.fromWormholeMessageId(wh, msgIds[0], timeout);
+      ct = await CircleTransfer.fromWormholeMessageId(wh, msgIds[0], timeout);
     } else {
       // Otherwise try to parse out a circle message
       const cb = await originChain.getCircleBridge();
       const circleMessage = await cb.parseTransactionDetails(txid);
-      const details: CCTPTransferDetails = {
+      const details: CircleTransferDetails = {
         ...circleMessage,
         // Note: assuming automatic is false since we didn't find a VAA
         automatic: false,
       };
 
-      ct = new CCTPTransfer(wh, details);
+      ct = new CircleTransfer(wh, details);
       ct.circleAttestations = [{ id: circleMessage.messageId }];
     }
 
@@ -286,7 +286,7 @@ export class CCTPTransfer implements WormholeTransfer {
       // already got it
       if (this.vaas[idx].vaa) continue;
 
-      this.vaas[idx].vaa = await CCTPTransfer.getTransferVaa(
+      this.vaas[idx].vaa = await CircleTransfer.getTransferVaa(
         this.wh,
         this.transfer.from.chain,
         this.vaas[idx].id.emitter,
@@ -412,12 +412,12 @@ export class CCTPTransfer implements WormholeTransfer {
     emitter: UniversalAddress | NativeAddress<PlatformName>,
     sequence: bigint,
     timeout?: number,
-  ): Promise<CCTPVAA<"TransferRelay">> {
+  ): Promise<AutomaticCircleBridgeVAA<"TransferRelay">> {
     const vaa = await wh.getVaa(
       chain,
       emitter,
       sequence,
-      "CCTP:TransferRelay",
+      "AutomaticCircleBridge:TransferRelay",
       timeout,
     );
     if (!vaa) throw new Error(`No VAA available after timeout exhausted`);

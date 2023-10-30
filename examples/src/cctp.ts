@@ -1,5 +1,5 @@
 import {
-  CCTPTransfer,
+  CircleTransfer,
   Signer,
   TransactionId,
   Wormhole,
@@ -57,7 +57,7 @@ async function cctpTransfer(
   automatic: boolean,
   nativeGas?: bigint,
 ) {
-  const xfer = await wh.cctpTransfer(
+  const xfer = await wh.circleTransfer(
     amount,
     src.address,
     dst.address,
@@ -88,7 +88,7 @@ async function completeTransfer(
   signer: Signer,
 ): Promise<void> {
   // Rebuild the transfer from the source txid
-  const xfer = await CCTPTransfer.from(wh, txid);
+  const xfer = await CircleTransfer.from(wh, txid);
 
   const attestIds = await xfer.fetchAttestation(60 * 60 * 1000);
   console.log("Got attestation: ", attestIds);

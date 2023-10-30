@@ -7,7 +7,7 @@ import {
 import { payloadIdItem, universalAddressItem, amountItem } from "../layout-items";
 import { RegisterPayloadTypes, NamedPayloads, registerPayloadTypes } from "../vaa";
 
-const depositWithPayloadBase =[
+const depositWithPayloadBase = [
   payloadIdItem(1),
   {
     name: "token",
@@ -40,7 +40,7 @@ export const depositWithBytesPayload = <C extends Pick<LengthPrefixedBytesLayout
   customPayload: C
 ) => [
   ...depositWithPayloadBase,
-  { name: "payload", binary: "bytes", lengthSize: 2, ...customPayload}
+  { name: "payload", binary: "bytes", lengthSize: 2, ...customPayload }
 ] as const;
 
 
@@ -48,7 +48,7 @@ export const namedPayloads = [
   ["DepositWithPayload", depositWithBytesPayload({})],
   ["TransferRelay",
     depositWithSizedLayoutPayload(
-      1+3*32,
+      1 + 3 * 32,
       [
         payloadIdItem(1),
         { name: "targetRelayerFee", ...amountItem },
@@ -64,8 +64,8 @@ export const namedPayloads = [
 declare global {
   namespace Wormhole {
     interface PayloadLiteralToLayoutMapping
-      extends RegisterPayloadTypes<"CCTP", typeof namedPayloads> {}
+      extends RegisterPayloadTypes<"AutomaticCircleBridge", typeof namedPayloads> { }
   }
 }
 
-registerPayloadTypes("CCTP", namedPayloads);
+registerPayloadTypes("AutomaticCircleBridge", namedPayloads);
