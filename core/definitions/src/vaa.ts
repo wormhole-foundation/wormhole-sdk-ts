@@ -180,23 +180,17 @@ const payloadLiteralToPayloadItem = <PL extends PayloadLiteral>(
 
 //annoyingly we can't use the return value of payloadLiteralToPayloadItem
 type PayloadLiteralToDynamicItems<PL extends PayloadLiteral> =
-  DynamicItemsOfLayout<
-    [
-      ...typeof baseLayout,
-      PL extends LayoutLiteral
-        ? {
-            name: "payload";
-            binary: "object";
-            layout: DynamicItemsOfLayout<LayoutOf<PL>>;
-          }
-        : { name: "payload"; binary: "bytes" },
-    ]
-  >;
+  DynamicItemsOfLayout<[
+    ...typeof baseLayout,
+    PL extends LayoutLiteral
+    ? { name: "payload"; binary: "object"; layout: DynamicItemsOfLayout<LayoutOf<PL>> }
+    : { name: "payload"; binary: "bytes" },
+  ]>;
 
-export const createVAA = <PL extends PayloadLiteral = "Uint8Array">(
+export function createVAA<PL extends PayloadLiteral = "Uint8Array">(
   payloadLiteral: PL,
   vaaData: LayoutToType<PayloadLiteralToDynamicItems<PL>>,
-): VAA<PL> => {
+): VAA<PL> {
   const [protocolName, payloadName] = decomposeLiteral(payloadLiteral);
   const bodyLayout = [
     ...envelopeLayout,
@@ -249,9 +243,9 @@ export function registerPayloadTypes(
     registerPayloadType(protocol, name, layout);
 }
 
-export const serialize = <PL extends PayloadLiteral>(
+export function serialize<PL extends PayloadLiteral>(
   vaa: VAA<PL>,
-): Uint8Array => {
+): Uint8Array {
   const layout = [
     ...baseLayout,
     payloadLiteralToPayloadItem(vaa.payloadLiteral),
@@ -259,10 +253,10 @@ export const serialize = <PL extends PayloadLiteral>(
   return serializeLayout(layout, vaa as unknown as LayoutToType<typeof layout>);
 };
 
-export const serializePayload = <PL extends PayloadLiteral>(
+export function serializePayload<PL extends PayloadLiteral>(
   payloadLiteral: PL,
   payload: PayloadLiteralToPayloadType<PL>,
-) => {
+) {
   if (payloadLiteral === "Uint8Array") return payload as Uint8Array;
 
   const layout = getPayloadLayout(payloadLiteral);

@@ -31,27 +31,25 @@ type FilterItemsOfIdLayoutPairs<ILA extends readonly IdLayoutPair[], Fixed exten
   : [];
 
 type FilterItem<I extends LayoutItem, Fixed extends boolean> =
-  I extends UintLayoutItem | BytesLayoutItem
+  [I] extends [UintLayoutItem | BytesLayoutItem]
   ? I extends { custom: PrimitiveType | FixedConversion<PrimitiveType, any> }
     ? Fixed extends true ? I : never
     : Fixed extends true ? never : I
-  : I extends ObjectLayoutItem | ArrayLayoutItem
+  : [I] extends [ObjectLayoutItem | ArrayLayoutItem]
   ? FilterItemsOfLayout<I["layout"], Fixed> extends infer L
     ? IsEmpty<L> extends false
       ? { readonly [K in keyof I]: K extends "layout" ? L : I[K] }
       : never
     : never
-  : I extends SwitchLayoutItem
-  ? FilterItemsOfIdLayoutPairs<I["idLayoutPairs"], Fixed> extends infer Narrowed
-    ? IsEmpty<Narrowed> extends false
-      ? { readonly [K in keyof I]: K extends "idLayoutPairs" ? Narrowed : I[K] }
-      : never
-    : never
+  : [I] extends [SwitchLayoutItem]
+  ? { readonly [K in keyof I]:
+      K extends "idLayoutPairs" ? FilterItemsOfIdLayoutPairs<I["idLayoutPairs"], Fixed> : I[K]
+    }
   : never;
 
 type FilterItemsOfLayout<L extends Layout, Fixed extends boolean> =
   L extends readonly [infer H extends LayoutItem, ...infer T extends Layout]
-  ? FilterItem<H, Fixed> extends infer I
+  ? FilterItem<H, Fixed> extends infer I extends LayoutItem
     ? IsNever<I> extends false
       ? [I, ...FilterItemsOfLayout<T, Fixed>]
       : FilterItemsOfLayout<T, Fixed>
