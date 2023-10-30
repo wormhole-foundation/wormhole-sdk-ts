@@ -40,6 +40,8 @@ const addressChainItem = {
   ],
 } as const satisfies Omit<ObjectLayoutItem, "name">;
 
+//TODO now also supports CCTP attestations using value 2
+//  should be implemented as a switch layout item (which does not yet exist)
 const vaaKeyLayout = [
   { name: "version", binary: "uint", size: 1, custom: { to: "Key", from: 1 } },
   { name: "chain", ...chainItem() },

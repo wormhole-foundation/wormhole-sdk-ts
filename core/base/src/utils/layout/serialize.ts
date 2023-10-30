@@ -7,6 +7,7 @@ import {
   LengthPrefixedBytesLayoutItem,
   FixedPrimitiveBytesLayoutItem,
   FixedValueBytesLayoutItem,
+  SwitchLayoutItem,
   CustomConversion,
   UintType,
   isUintType,
@@ -40,24 +41,21 @@ export function serializeLayout<const L extends Layout>(
   return encoded === undefined ? ret : offset;
 }
 
+const findIdLayoutPair = (item: SwitchLayoutItem) => {
+  const id = item.idTag !== undefined ? item.idTag : "id";
+  return (item.idLayoutPairs as any[]).find(([idOrConversionId]) =>
+    (Array.isArray(idOrConversionId) ? idOrConversionId[1] : idOrConversionId) == id
+  )!;
+}
+
 const calcLayoutSize = (
   layout: Layout,
   data: LayoutToType<typeof layout>
 ): number =>
   layout.reduce((acc: number, item: LayoutItem) => {
     switch (item.binary) {
-      case "object": {
-        return acc + calcLayoutSize(item.layout, data[item.name] as LayoutItemToType<typeof item>)
-      }
-      case "array": {
-        if (item.lengthSize !== undefined)
-          acc += item.lengthSize;
-
-        const narrowedData = data[item.name] as LayoutItemToType<typeof item>;
-        for (let i = 0; i < narrowedData.length; ++i)
-          acc += calcLayoutSize(item.layout, narrowedData[i]);
-
-        return acc;
+      case "uint": {
+        return acc + item.size;
       }
       case "bytes": {
         if (isBytesType(item.custom))
@@ -80,13 +78,27 @@ const calcLayoutSize = (
           : (data[item.name] as LayoutItemToType<typeof item>)
         ).length;
       }
-      case "uint": {
-        return acc + item.size;
+      case "array": {
+        if (item.lengthSize !== undefined)
+          acc += item.lengthSize;
+
+        const narrowedData = data[item.name] as LayoutItemToType<typeof item>;
+        for (let i = 0; i < narrowedData.length; ++i)
+          acc += calcLayoutSize(item.layout, narrowedData[i]);
+
+        return acc;
+      }
+      case "object": {
+        return acc + calcLayoutSize(item.layout, data[item.name] as LayoutItemToType<typeof item>)
+      }
+      case "switch": {
+        const [_, layout] = findIdLayoutPair(item);
+        return acc + item.idSize + calcLayoutSize(layout, data[item.name]);
       }
     }
   },
   0
-  );
+);
 
 //Wormhole uses big endian by default for all uints
 //endianess can be easily added to UintLayout items if necessary
@@ -120,9 +132,16 @@ function serializeLayoutItem(
 ): number {
   try {
     switch (item.binary) {
+      case "switch": {
+        const [idOrConversionId, layout] = findIdLayoutPair(item);
+        const idNum = (Array.isArray(idOrConversionId) ? idOrConversionId[0] : idOrConversionId);
+        offset = serializeUint(encoded, offset, idNum, item.idSize);
+        offset = serializeLayout(layout, data, encoded, offset);
+
+        break;
+      }
       case "object": {
-        for (const i of item.layout)
-          offset = serializeLayoutItem(i, data[i.name], encoded, offset);
+        offset = serializeLayout(item.layout, data, encoded, offset);
 
         break;
       }

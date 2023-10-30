@@ -1,6 +1,3 @@
-//TODO:
-// * implement a switch layout item that maps different values (versions) to different sublayouts
-
 export type UintType = number | bigint;
 export const isUintType = (x: any): x is UintType =>
   typeof x === "number" || typeof x === "bigint";
@@ -12,7 +9,7 @@ export type PrimitiveType = UintType | BytesType;
 export const isPrimitiveType = (x: any): x is PrimitiveType =>
   isUintType(x) || isBytesType(x);
 
-export type BinaryLiterals = "uint" | "bytes" | "array" | "object";
+export type BinaryLiterals = "uint" | "bytes" | "array" | "object" | "switch";
 
 //Why only a max value of 2**(6*8)?
 //quote from here: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isInteger#description
@@ -92,6 +89,15 @@ export interface ObjectLayoutItem extends LayoutItemBase<"object"> {
   readonly layout: Layout,
 }
 
+type PlainId = number;
+type ConversionId = readonly [number, unknown];
+type IdLayoutPair<Id extends PlainId | ConversionId, L extends Layout = Layout> = readonly [Id, L];
+export interface SwitchLayoutItem extends LayoutItemBase<"switch"> {
+  readonly idTag?: string,
+  readonly idSize: NumberSize,
+  readonly idLayoutPairs: readonly IdLayoutPair<PlainId>[] | readonly IdLayoutPair<ConversionId>[],
+}
+
 export type UintLayoutItem = |
   PrimitiveFixedUintLayoutItem<number> |
   OptionalToFromUintLayoutItem<number> |
@@ -102,24 +108,37 @@ export type BytesLayoutItem = |
   FixedValueBytesLayoutItem |
   FixedSizeBytesLayoutItem |
   LengthPrefixedBytesLayoutItem;
-export type LayoutItem = UintLayoutItem | BytesLayoutItem | ArrayLayoutItem | ObjectLayoutItem;
+export type LayoutItem =
+  UintLayoutItem | BytesLayoutItem | ArrayLayoutItem | ObjectLayoutItem | SwitchLayoutItem;
 export type Layout = readonly LayoutItem[];
 
 type NameOrOmitted<T extends { name: PropertyKey }> = T extends {omit: true} ? never : T["name"];
+
+export type LayoutToType<L extends Layout> =
+  { readonly [I in L[number] as NameOrOmitted<I>]: LayoutItemToType<I> };
+
+type MaybeConvert<Id extends PlainId | ConversionId> =
+  Id extends readonly [number, infer Converted] ? Converted : Id;
+
+type IdLayoutPairArray = readonly IdLayoutPair<number>[] | readonly IdLayoutPair<ConversionId>[];
+type IdLayoutPairsToTypeUnion<T extends IdLayoutPairArray, IdTag extends string> =
+  T extends readonly [infer Head,...infer Tail extends IdLayoutPairArray]
+  ? Head extends IdLayoutPair<infer MaybeConversionId, infer L extends Layout>
+    ? MaybeConvert<MaybeConversionId> extends infer Id
+      ? LayoutToType<L> extends infer LT extends object
+        ? { readonly [K in IdTag | keyof LT]: K extends keyof LT ? LT[K] : Id }
+          | IdLayoutPairsToTypeUnion<Tail, IdTag>
+        : never
+      : never
+    : never
+  : never;
 
 //the order of the checks matters here!
 //  if FixedConversion was tested for first, its ToType would erroneously be inferred to be a
 //    the `to` function that actually belongs to a CustomConversion
 //  unclear why this happens, seeing how the `from` type wouldn't fit but it happened nonetheless
-export type LayoutToType<L extends Layout> =
-  { readonly [I in L[number] as NameOrOmitted<I>]: LayoutItemToType<I> };
-
 export type LayoutItemToType<I extends LayoutItem> =
-  [I] extends [ArrayLayoutItem]
-  ? LayoutToType<I["layout"]>[]
-  : [I] extends [ObjectLayoutItem]
-  ? LayoutToType<I["layout"]>
-  : [I] extends [UintLayoutItem]
+  [I] extends [UintLayoutItem]
   ? I["custom"] extends UintType
     ? I["custom"]
     : I["custom"] extends CustomConversion<any, infer ToType>
@@ -133,4 +152,10 @@ export type LayoutItemToType<I extends LayoutItem> =
     : I["custom"] extends FixedConversion<BytesType, infer ToType>
     ? ToType
     : BytesType //this also covers FixedValueBytesLayoutItem (Uint8Arrays don't support literals)
+  : [I] extends [ArrayLayoutItem]
+  ? LayoutToType<I["layout"]>[]
+  : [I] extends [ObjectLayoutItem]
+  ? LayoutToType<I["layout"]>
+  : [I] extends [SwitchLayoutItem]
+  ? IdLayoutPairsToTypeUnion<I["idLayoutPairs"], I["idTag"] extends string ? I["idTag"] : "id">
   : never;
