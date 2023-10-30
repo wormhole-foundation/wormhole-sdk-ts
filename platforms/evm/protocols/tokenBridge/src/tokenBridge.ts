@@ -17,10 +17,7 @@ import {
 import { Provider, TransactionRequest } from 'ethers';
 
 import { ethers_contracts } from '.';
-import {
-  TokenBridgeContract,
-  TokenImplementation__factory as TokenContractFactory,
-} from './ethers-contracts';
+import { TokenBridgeContract } from './ethers-contracts';
 
 import {
   AnyEvmAddress,
@@ -80,10 +77,7 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     if (!(await this.isWrappedAsset(token)))
       throw ErrNotWrapped(token.toString());
 
-    const tokenContract = TokenContractFactory.connect(
-      new EvmAddress(token).toString(),
-      this.provider,
-    );
+    const tokenContract = EvmPlatform.getTokenImplementation(this.provider, token.toString());
     const [chain, address] = await Promise.all([
       tokenContract.chainId().then(Number).then(toChainId).then(chainIdToChain),
       tokenContract.nativeContract().then((addr) => new UniversalAddress(addr)),

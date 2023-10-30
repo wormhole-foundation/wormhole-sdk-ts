@@ -141,10 +141,6 @@ export module EvmUtils {
     return chainFromChainId(encoding.bignum.encode(chainId, true));
   }
 
-  export function getCoreImplementationInterface(): ethers_contracts.ImplementationInterface {
-    return ethers_contracts.Implementation__factory.createInterface();
-  }
-
   export function getTokenImplementation(
     connection: Provider,
     address: string,
