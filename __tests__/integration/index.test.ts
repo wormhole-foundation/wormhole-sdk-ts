@@ -112,7 +112,7 @@ describe("Chain Tests", () => {
 //   );
 // });
 
-// describe('CCTP Transfer', () => {
+// describe('Circle Transfer', () => {
 //   it('should create a cctpTransfer', async () => {
 //     // Setup
 //     // your mock setup here

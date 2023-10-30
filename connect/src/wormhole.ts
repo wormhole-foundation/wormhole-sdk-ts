@@ -33,7 +33,7 @@ import {
 } from "./config";
 import { WormholeConfig } from "./types";
 
-import { CCTPTransfer } from "./protocols/cctpTransfer";
+import { CircleTransfer } from "./protocols/cctpTransfer";
 import { TokenTransfer } from "./protocols/tokenTransfer";
 
 import { getCircleAttestation } from "./circle-api";
@@ -74,24 +74,24 @@ export class Wormhole {
   }
 
   /**
-   * Creates a CCTPTransfer object to move Native USDC from one chain to another
+   * Creates a CircleTransfer object to move Native USDC from one chain to another
    * @param amount the amount to transfer
    * @param from the address to transfer from
    * @param to the address to transfer to
    * @param automatic whether to use automatic delivery
    * @param payload the payload to send with the transfer
    * @param nativeGas the amount of native gas to send with the transfer
-   * @returns the CCTPTransfer object
+   * @returns the CircleTransfer object
    * @throws Errors if the chain or protocol is not supported
    */
-  async cctpTransfer(
+  async circleTransfer(
     amount: bigint,
     from: ChainAddress,
     to: ChainAddress,
     automatic: boolean,
     payload?: Uint8Array,
     nativeGas?: bigint,
-  ): Promise<CCTPTransfer> {
+  ): Promise<CircleTransfer> {
     if (automatic && payload)
       throw new Error("Payload with automatic delivery is not supported");
 
@@ -105,7 +105,7 @@ export class Wormhole {
         `Network and chain not supported: ${this.network} ${from.chain} `,
       );
 
-    return await CCTPTransfer.from(this, {
+    return await CircleTransfer.from(this, {
       amount,
       from,
       to,

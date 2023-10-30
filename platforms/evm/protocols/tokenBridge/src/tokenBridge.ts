@@ -1,50 +1,40 @@
 import {
-  toChainId,
-  chainIdToChain,
-  Network,
-  toChainName,
-  serialize,
-  UniversalAddress,
   ChainAddress,
-  TokenBridge,
-  TxHash,
-  keccak256,
-  TokenId,
-  NativeAddress,
-  toNative,
-  ErrNotWrapped,
-  TokenTransferTransaction,
-  Contracts,
   ChainsConfig,
+  Contracts,
+  ErrNotWrapped,
+  NativeAddress,
+  Network,
+  TokenBridge,
+  TokenId,
+  UniversalAddress,
+  chainIdToChain,
+  keccak256,
+  serialize,
+  toChainId,
+  toNative
 } from '@wormhole-foundation/connect-sdk';
 import { Provider, TransactionRequest } from 'ethers';
 
+import { ethers_contracts } from '.';
 import {
   TokenBridgeContract,
   TokenImplementation__factory as TokenContractFactory,
 } from './ethers-contracts';
-import { BridgeStructs } from './ethers-contracts/Bridge';
-import { ethers_contracts } from '.';
 
 import {
-  evmNetworkChainToEvmChainId,
-  EvmUnsignedTransaction,
-  EvmChainName,
-  addFrom,
-  addChainId,
-  unusedArbiterFee,
-  unusedNonce,
   AnyEvmAddress,
   EvmAddress,
-  EvmZeroAddress,
+  EvmChainName,
   EvmPlatform,
+  EvmUnsignedTransaction,
+  EvmZeroAddress,
+  addChainId,
+  addFrom,
+  evmNetworkChainToEvmChainId,
+  unusedArbiterFee,
+  unusedNonce,
 } from '@wormhole-foundation/connect-sdk-evm';
-
-//Currently the code does not consider Wormhole msg fee (because it is and always has been 0).
-
-//TODO more checks to determine that all necessary preconditions are met (e.g. that balances are
-//  sufficient) for a given transaction to succeed
-// Action items: add a validate method and a simulate transfer method
 
 export class EvmTokenBridge implements TokenBridge<'Evm'> {
   readonly tokenBridge: TokenBridgeContract;
@@ -103,8 +93,6 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
 
   async hasWrappedAsset(token: TokenId): Promise<boolean> {
     try {
-      //TODO it's unclear to me why this would throw for a non-existent token but that's how the
-      //  old sdk checked for existence
       await this.getWrappedAsset(token);
       return true;
     } catch (e) { }
@@ -282,88 +270,6 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
         'TokenBridge.completeTransfer',
       );
     }
-  }
-
-  async parseTransactionDetails(
-    txid: TxHash,
-  ): Promise<TokenTransferTransaction[]> {
-    const receipt = await this.provider.getTransactionReceipt(txid);
-    if (receipt === null)
-      throw new Error(`No transaction found with txid: ${txid}`);
-
-    const { fee: gasFee } = receipt;
-
-    const bridgeAddress = toNative(
-      this.chain,
-      this.tokenBridgeAddress,
-    ).toUniversalAddress();
-
-    const bridgeLogs = receipt.logs.filter((l: any) => {
-      return l.address === this.contracts.coreBridge;
-    });
-
-    const impl = ethers_contracts.Implementation__factory.createInterface();
-
-    const parsedLogs = bridgeLogs.map(async (bridgeLog) => {
-      const { topics, data } = bridgeLog;
-      const parsed = impl.parseLog({ topics: topics.slice(), data });
-
-      // TODO: should we be nicer here?
-      if (parsed === null) throw new Error(`Failed to parse logs: ${data}`);
-
-      // parse token bridge message, 0x01 == transfer, attest == 0x02,  w/ payload 0x03
-      let parsedTransfer:
-        | BridgeStructs.TransferStructOutput
-        | BridgeStructs.TransferWithPayloadStructOutput;
-
-      if (parsed.args.payload.startsWith('0x01')) {
-        // parse token bridge transfer data
-        parsedTransfer = await this.tokenBridge.parseTransfer(parsed.args.payload);
-      } else if (parsed.args.payload.startsWith('0x03')) {
-        // parse token bridge transfer with payload data
-        parsedTransfer = await this.tokenBridge.parseTransferWithPayload(
-          parsed.args.payload,
-        );
-      } else {
-        // git gud
-        throw new Error(
-          `unrecognized payload for ${txid}: ${parsed.args.payload}`,
-        );
-      }
-
-      const toChain = toChainName(parsedTransfer.toChain);
-      const tokenAddress = new UniversalAddress(parsedTransfer.tokenAddress);
-      const tokenChain = toChainName(parsedTransfer.tokenChain);
-
-      const ttt: TokenTransferTransaction = {
-        message: {
-          tx: { chain: this.chain, txid },
-          msg: {
-            chain: this.chain,
-            emitter: bridgeAddress,
-            sequence: parsed.args.sequence,
-          },
-          payloadId: parsedTransfer.payloadID,
-        },
-        details: {
-          token: { chain: tokenChain, address: tokenAddress },
-          amount: parsedTransfer.amount,
-          from: {
-            chain: this.chain,
-            address: toNative(this.chain, receipt.from),
-          },
-          to: {
-            chain: toChain,
-            address: toNative(toChain, parsedTransfer.to),
-          },
-        },
-        block: BigInt(receipt.blockNumber),
-        gasFee,
-      };
-      return ttt;
-    });
-
-    return await Promise.all(parsedLogs);
   }
 
   async getWrappedNative(): Promise<NativeAddress<'Evm'>> {

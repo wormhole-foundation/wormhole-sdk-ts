@@ -252,7 +252,7 @@ declare global {
       RegisterPayloadTypes<"TokenBridge", typeof tokenBridgePayloads>,
       RegisterPayloadTypes<"NftBridge", typeof nftBridgePayloads>,
       RegisterPayloadTypes<"Relayer", typeof relayerPayloads>,
-      RegisterPayloadTypes<"CCTP", typeof cctpPayloads> { }
+      RegisterPayloadTypes<"AutomaticCircleBridge", typeof cctpPayloads> { }
   }
 }
 
@@ -260,5 +260,5 @@ registerPayloadTypes("CoreBridge", coreBridgePayloads);
 registerPayloadTypes("TokenBridge", tokenBridgePayloads);
 registerPayloadTypes("NftBridge", nftBridgePayloads);
 registerPayloadTypes("Relayer", relayerPayloads);
-registerPayloadTypes("CCTP", cctpPayloads);
+registerPayloadTypes("AutomaticCircleBridge", cctpPayloads);
 
