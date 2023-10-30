@@ -1,4 +1,4 @@
-import { Contracts, Network, WormholeCore } from '@wormhole-foundation/connect-sdk';
+import { Contracts, Network, TxHash, WormholeCore, WormholeMessageId, isWormholeMessageId, toNative } from '@wormhole-foundation/connect-sdk';
 import { Provider, TransactionRequest } from 'ethers';
 import { Implementation, ImplementationInterface } from './ethers-contracts';
 import { ethers_contracts } from '.';
@@ -17,6 +17,8 @@ import {
 export class EvmWormholeCore implements WormholeCore<'Evm'> {
   readonly chainId: bigint;
 
+  readonly coreAddress: string;
+
   readonly core: Implementation;
   readonly coreIface: ImplementationInterface;
 
@@ -32,6 +34,8 @@ export class EvmWormholeCore implements WormholeCore<'Evm'> {
 
     const address = this.contracts.coreBridge;
     if (!address) throw new Error('Core bridge address not found');
+
+    this.coreAddress = address
 
     this.core = ethers_contracts.Implementation__factory.connect(
       address,
@@ -65,13 +69,28 @@ export class EvmWormholeCore implements WormholeCore<'Evm'> {
     );
   }
 
-  // async parseTransactionDetails(
-  //   txid: TxHash,
-  // ): Promise<TokenTransferTransaction[]> {
-  //   const receipt = await this.provider.getTransactionReceipt(txid);
-  //   if (receipt === null)
-  //     throw new Error(`No transaction found with txid: ${txid}`);
-  // }
+  async parseTransaction(
+    txid: TxHash,
+  ): Promise<WormholeMessageId[]> {
+    const receipt = await this.provider.getTransactionReceipt(txid);
+    if (receipt === null) return [];
+
+    return receipt.logs
+      .filter((l: any) => { return l.address === this.coreAddress })
+      .map((log) => {
+        const { topics, data } = log;
+        const parsed = this.coreIface.parseLog({ topics: topics.slice(), data });
+        if (parsed === null) return undefined;
+
+        const emitterAddress = toNative(this.chain, parsed.args.sender);
+        return {
+          chain: this.chain,
+          emitter: emitterAddress.toUniversalAddress(),
+          sequence: parsed.args.sequence,
+        } as WormholeMessageId;
+      })
+      .filter(isWormholeMessageId);
+  }
 
   private createUnsignedTx(
     txReq: TransactionRequest,
