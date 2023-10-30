@@ -153,7 +153,7 @@ export type LayoutItemToType<I extends LayoutItem> =
     ? ToType
     : BytesType //this also covers FixedValueBytesLayoutItem (Uint8Arrays don't support literals)
   : [I] extends [ArrayLayoutItem]
-  ? LayoutToType<I["layout"]>[]
+  ? readonly LayoutToType<I["layout"]>[]
   : [I] extends [ObjectLayoutItem]
   ? LayoutToType<I["layout"]>
   : [I] extends [SwitchLayoutItem]

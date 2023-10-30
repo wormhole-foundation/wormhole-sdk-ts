@@ -41,8 +41,8 @@ export function serializeLayout<const L extends Layout>(
   return encoded === undefined ? ret : offset;
 }
 
-const findIdLayoutPair = (item: SwitchLayoutItem) => {
-  const id = item.idTag !== undefined ? item.idTag : "id";
+const findIdLayoutPair = (item: SwitchLayoutItem, data: any) => {
+  const id = data[item.idTag ?? "id"];
   return (item.idLayoutPairs as any[]).find(([idOrConversionId]) =>
     (Array.isArray(idOrConversionId) ? idOrConversionId[1] : idOrConversionId) == id
   )!;
@@ -92,7 +92,7 @@ const calcLayoutSize = (
         return acc + calcLayoutSize(item.layout, data[item.name] as LayoutItemToType<typeof item>)
       }
       case "switch": {
-        const [_, layout] = findIdLayoutPair(item);
+        const [_, layout] = findIdLayoutPair(item, data[item.name]);
         return acc + item.idSize + calcLayoutSize(layout, data[item.name]);
       }
     }
@@ -133,16 +133,14 @@ function serializeLayoutItem(
   try {
     switch (item.binary) {
       case "switch": {
-        const [idOrConversionId, layout] = findIdLayoutPair(item);
+        const [idOrConversionId, layout] = findIdLayoutPair(item, data);
         const idNum = (Array.isArray(idOrConversionId) ? idOrConversionId[0] : idOrConversionId);
         offset = serializeUint(encoded, offset, idNum, item.idSize);
         offset = serializeLayout(layout, data, encoded, offset);
-
         break;
       }
       case "object": {
         offset = serializeLayout(item.layout, data, encoded, offset);
-
         break;
       }
       case "array": {

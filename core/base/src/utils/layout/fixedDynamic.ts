@@ -149,7 +149,10 @@ export const addFixedValues = <L extends Layout>(
         const [_, idLayout] = (item.idLayoutPairs as IdLayoutPair[]).find(([idOrConversionId]) =>
           (Array.isArray(idOrConversionId) ? idOrConversionId[1] : idOrConversionId) == id
         )!;
-        ret[item.name] = addFixedValues(idLayout, fromDynamic() as any);
+        ret[item.name] = {
+          [item.idTag ?? "id"]: id,
+          ...addFixedValues(idLayout, fromDynamic() as any)
+        };
         break;
       }
     }
