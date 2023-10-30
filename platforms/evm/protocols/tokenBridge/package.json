@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/connect-sdk-evm-tokenbridge",
-  "version": "0.1.7",
+  "version": "0.1.8-beta.1",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -61,6 +61,7 @@
   "dependencies": {
     "@wormhole-foundation/connect-sdk": "*",
     "@wormhole-foundation/connect-sdk-evm": "*",
+    "@wormhole-foundation/connect-sdk-evm-core": "*",
     "typechain":"^8.2.0",
     "ethers": "^6.5.1",
     "@typechain/ethers-v6": "^0.4.0"

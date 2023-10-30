@@ -128,7 +128,7 @@ type Action = (typeof actions)[number];
 const actionMapping = constMap(actionTuples);
 
 const sdkProtocolNameAndGovernanceVaaModuleEntries = [
-  ["CoreBridge", "Core"],
+  ["WormholeCore", "Core"],
   ["TokenBridge", "TokenBridge"],
   ["AutomaticTokenBridge", "TokenBridge"],
   ["NftBridge", "NFTBridge"],
@@ -208,11 +208,11 @@ const governancePayload = <
 
 const coreBridgePayloads = [
   //see wormhole ethereum/contracts/GovernanceStructs.sol
-  governancePayload("CoreBridge", "UpgradeContract", 1),
-  governancePayload("CoreBridge", "GuardianSetUpgrade", 2),
-  governancePayload("CoreBridge", "SetMessageFee", 3),
-  governancePayload("CoreBridge", "TransferFees", 4),
-  governancePayload("CoreBridge", "RecoverChainId", 5),
+  governancePayload("WormholeCore", "UpgradeContract", 1),
+  governancePayload("WormholeCore", "GuardianSetUpgrade", 2),
+  governancePayload("WormholeCore", "SetMessageFee", 3),
+  governancePayload("WormholeCore", "TransferFees", 4),
+  governancePayload("WormholeCore", "RecoverChainId", 5),
 ] as const satisfies NamedPayloads;
 
 const tokenBridgePayloads = [
@@ -248,7 +248,7 @@ const cctpPayloads = [
 declare global {
   namespace Wormhole {
     interface PayloadLiteralToLayoutMapping extends
-      RegisterPayloadTypes<"CoreBridge", typeof coreBridgePayloads>,
+      RegisterPayloadTypes<"WormholeCore", typeof coreBridgePayloads>,
       RegisterPayloadTypes<"TokenBridge", typeof tokenBridgePayloads>,
       RegisterPayloadTypes<"NftBridge", typeof nftBridgePayloads>,
       RegisterPayloadTypes<"Relayer", typeof relayerPayloads>,
@@ -256,7 +256,7 @@ declare global {
   }
 }
 
-registerPayloadTypes("CoreBridge", coreBridgePayloads);
+registerPayloadTypes("WormholeCore", coreBridgePayloads);
 registerPayloadTypes("TokenBridge", tokenBridgePayloads);
 registerPayloadTypes("NftBridge", nftBridgePayloads);
 registerPayloadTypes("Relayer", relayerPayloads);
