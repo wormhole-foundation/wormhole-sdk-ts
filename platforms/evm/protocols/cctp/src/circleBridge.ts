@@ -52,7 +52,6 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
 
     this.chainId = evmNetworkChainToEvmChainId(network, chain);
 
-
     const msgTransmitterAddress = contracts.cctp?.messageTransmitter;
     if (!msgTransmitterAddress)
       throw new Error(
@@ -63,7 +62,6 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
       msgTransmitterAddress,
       provider,
     );
-
 
     const tokenMessengerAddress = contracts.cctp?.tokenMessenger;
     if (!tokenMessengerAddress)
@@ -91,7 +89,12 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
     config: ChainsConfig,
   ): Promise<EvmCircleBridge> {
     const [network, chain] = await EvmPlatform.chainFromRpc(provider);
-    return new EvmCircleBridge(network, chain, provider, config[chain]!.contracts!);
+    return new EvmCircleBridge(
+      network,
+      chain,
+      provider,
+      config[chain]!.contracts!,
+    );
   }
 
   async *redeem(

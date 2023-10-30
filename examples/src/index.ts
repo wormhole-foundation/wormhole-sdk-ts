@@ -37,7 +37,12 @@ import { getStuff } from "./helpers";
   console.log("Wormhole Messages: ", whm);
 
   // Get the VAA from the wormhole message id
-  const vaa = await api.getVaaWithRetry(CONFIG["Testnet"].api, whm, "TokenBridge:Transfer", 60_000);
+  const vaa = await api.getVaaWithRetry(
+    CONFIG["Testnet"].api,
+    whm,
+    "TokenBridge:Transfer",
+    60_000,
+  );
 
   // Now get the token bridge on the redeem side
   const rcvTb = await rcv.getTokenBridge();
