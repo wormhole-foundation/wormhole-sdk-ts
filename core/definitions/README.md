@@ -30,11 +30,11 @@ Generic Relayer:
 - "DeliveryOverride"
 
 Governance
-- "CoreBridgeUpgradeContract"
-- "CoreBridgeGuardianSetUpgrade"
-- "CoreBridgeSetMessageFee"
-- "CoreBridgeTransferFees"
-- "CoreBridgeRecoverChainId"
+- "WormholeCoreUpgradeContract"
+- "WormholeCoreGuardianSetUpgrade"
+- "WormholeCoreSetMessageFee"
+- "WormholeCoreTransferFees"
+- "WormholeCoreRecoverChainId"
 - "TokenBridgeRegisterChain"
 - "TokenBridgeUpgradeContract"
 - "TokenBridgeRecoverChainId"

@@ -82,6 +82,10 @@ export module EvmPlatform {
           const cb = await loadProtocolModule(platform, 'cctp');
           if (platform + protocol in cb)
             return cb[platform + protocol]
+        case 'WormholeCore':
+          const core = await loadProtocolModule(platform, 'core');
+          if (platform + protocol in core)
+            return core[platform + protocol]
         default:
           throw new Error("Protocol not supported: " + protocol)
       }
@@ -94,7 +98,7 @@ export module EvmPlatform {
   export async function getWormholeCore(
     rpc: ethers.Provider,
   ): Promise<WormholeCore<'Evm'>> {
-    return (await getProtocol('CoreBridge')).fromProvider(rpc, conf);
+    return (await getProtocol('WormholeCore')).fromProvider(rpc, conf);
   }
   export async function getTokenBridge(
     rpc: ethers.Provider,

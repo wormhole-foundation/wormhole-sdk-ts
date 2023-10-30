@@ -1,4 +1,4 @@
-import { Contracts, Network, TxHash, WormholeCore, WormholeMessageId, isWormholeMessageId, toNative } from '@wormhole-foundation/connect-sdk';
+import { ChainsConfig, Contracts, Network, TxHash, WormholeCore, WormholeMessageId, isWormholeMessageId, toNative } from '@wormhole-foundation/connect-sdk';
 import { Provider, TransactionRequest } from 'ethers';
 import { Implementation, ImplementationInterface } from './ethers-contracts';
 import { ethers_contracts } from '.';
@@ -36,7 +36,6 @@ export class EvmWormholeCore implements WormholeCore<'Evm'> {
     if (!address) throw new Error('Core bridge address not found');
 
     this.coreAddress = address
-
     this.core = ethers_contracts.Implementation__factory.connect(
       address,
       provider,
@@ -45,10 +44,10 @@ export class EvmWormholeCore implements WormholeCore<'Evm'> {
 
   static async fromProvider(
     provider: Provider,
-    contracts: Contracts,
+    config: ChainsConfig,
   ): Promise<EvmWormholeCore> {
     const [network, chain] = await EvmPlatform.chainFromRpc(provider);
-    return new EvmWormholeCore(network, chain, provider, contracts);
+    return new EvmWormholeCore(network, chain, provider, config[chain]!.contracts);
   }
 
   async *publishMessage(

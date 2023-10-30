@@ -1,6 +1,6 @@
 {
   "name": "connect-sdk",
-  "version": "0.1.8-beta.6",
+  "version": "0.1.8-beta.1",
   "license": "Apache-2.0",
   "directories": {
     "test": "__tests__"
