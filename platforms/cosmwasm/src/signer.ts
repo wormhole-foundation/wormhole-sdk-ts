@@ -1,20 +1,5 @@
 import { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
-import { AccountData, DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
-import {
-  ChainContext,
-  ChainName,
-  Network,
-  PlatformName,
-  PlatformToChains,
-  SignOnlySigner,
-  SignedTx,
-  Signer,
-  UnsignedTransaction,
-  encoding,
-  rpcAddress,
-} from "@wormhole-foundation/connect-sdk";
-import { CosmwasmUnsignedTransaction } from "./unsignedTransaction";
-import { TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
+import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
 import {
   ChainRestAuthApi,
   DEFAULT_STD_FEE,
@@ -25,33 +10,51 @@ import {
   createTransaction,
 } from "@injectivelabs/sdk-ts";
 import {
+  ChainName,
+  Network,
+  PlatformToChains,
+  RpcConnection,
+  SignOnlySigner,
+  SignedTx,
+  Signer,
+  UnsignedTransaction,
+  encoding,
+  rpcAddress
+} from "@wormhole-foundation/connect-sdk";
+import { TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
+import {
   chainToAddressPrefix,
   cosmwasmNetworkChainToChainId,
   cosmwasmNetworkChainToRestUrls,
 } from "./constants";
+import { CosmwasmPlatform } from "./platform";
+import { CosmwasmUnsignedTransaction } from "./unsignedTransaction";
 
 export async function getCosmwasmSigner(
-  chain: ChainContext<PlatformName>,
+  rpc: RpcConnection<'Cosmwasm'>,
   mnemonic: string,
 ): Promise<Signer> {
+
+  const [network, chain] = await CosmwasmPlatform.chainFromRpc(rpc);
+
   // TODO: add this to config/consts
   // Use the EVM signer for Evmos and Injective only
-  if (["Evmos", "Injective"].includes(chain.chain)) {
-    return new CosmwasmEvmSigner(chain.chain, chain.platform.network, mnemonic);
+  if (["Evmos", "Injective"].includes(chain)) {
+    return new CosmwasmEvmSigner(chain, network, mnemonic);
   }
 
   // Otherwise use the default signer
   const signer = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
-    prefix: chainToAddressPrefix(chain.chain as PlatformToChains<"Cosmwasm">),
+    prefix: chainToAddressPrefix(chain as PlatformToChains<"Cosmwasm">),
   });
 
   const acct = (await signer.getAccounts())[0];
   const signingClient = await SigningCosmWasmClient.connectWithSigner(
-    rpcAddress(chain.platform.network, chain.chain)!,
+    rpcAddress(network, chain)!,
     signer,
   );
 
-  return new CosmwasmSigner(chain.chain, signingClient, acct.address);
+  return new CosmwasmSigner(chain, signingClient, acct.address);
 }
 
 export class CosmwasmSigner implements SignOnlySigner {
@@ -59,7 +62,7 @@ export class CosmwasmSigner implements SignOnlySigner {
     private _chain: ChainName,
     private _signer: SigningCosmWasmClient,
     private _account: string,
-  ) {}
+  ) { }
 
   chain(): ChainName {
     return this._chain;

@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/connect-sdk-solana-tokenbridge",
-  "version": "0.1.8-beta.1",
+  "version": "0.1.8-beta.5",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
