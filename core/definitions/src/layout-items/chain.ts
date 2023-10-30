@@ -27,7 +27,7 @@ export const chainItem = <
         if (val === 0) {
           if (!opts?.allowNull)
             throw new Error(
-              "ChainId 0 is not valid for this module and action"
+              "ChainId 0 is not valid for this protocol and action"
             );
 
           return null as AllowNull<C[number], N>;

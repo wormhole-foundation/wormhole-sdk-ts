@@ -22,7 +22,7 @@ import { keccak256 } from "./utils";
 
 //LayoutLiteralToLayoutMapping is the compile-time analog/complement to the runtime
 //  payload factory. It uses TypeScript's interface merging mechanic to "dynamically" extend known
-//  payload types that are declared in different modules. This allows us to have full type safety
+//  payload types that are declared in different protocols. This allows us to have full type safety
 //  when constructing payloads via the factory without having to ever declare the mapping of all
 //  payloads and their respective layouts in a single place (which, besides being a terrible code
 //  smell, would also prevent users of the SDK to register their own payload types!)

@@ -1,11 +1,8 @@
-import {
-  Layout,
-  ShallowMapping,
-  UintLayoutItem,
-  ObjectLayoutItem,
-} from "@wormhole-foundation/sdk-base";
+import { Layout, UintLayoutItem,  ObjectLayoutItem } from "@wormhole-foundation/sdk-base";
 import {
   chainItem,
+  circleDomainItem,
+  circleNonceItem,
   universalAddressItem,
   sequenceItem,
   amountItem,
@@ -40,14 +37,28 @@ const addressChainItem = {
   ],
 } as const satisfies Omit<ObjectLayoutItem, "name">;
 
-//TODO now also supports CCTP attestations using value 2
-//  should be implemented as a switch layout item (which does not yet exist)
 const vaaKeyLayout = [
-  { name: "version", binary: "uint", size: 1, custom: { to: "Key", from: 1 } },
   { name: "chain", ...chainItem() },
   { name: "emitterAddress", ...universalAddressItem },
   { name: "sequence", ...sequenceItem },
-] as const satisfies Layout;
+] as const;
+
+const cctpKeyLayout = [
+  { name: "size", binary: "uint", size: 4, custom: 12, omit: true },
+  { name: "domain", ...circleDomainItem },
+  { name: "nonce", ...circleNonceItem },
+] as const;
+
+const messageKeySwitchLayout = [{
+  name: "messageKey",
+  binary: "switch",
+  idSize: 1,
+  idTag: "keyType",
+  idLayoutPairs: [
+    [[1, "VAA"], vaaKeyLayout],
+    [[2, "CCTP"], cctpKeyLayout]
+  ]
+}] as const satisfies Layout;
 
 const namedPayloads = [
   [
@@ -63,7 +74,7 @@ const namedPayloads = [
       { name: "refundDeliveryProvider", ...universalAddressItem },
       { name: "sourceDeliveryProvider", ...universalAddressItem },
       { name: "senderAddress", ...universalAddressItem },
-      { name: "vaaKeys", binary: "array", lengthSize: 1, layout: vaaKeyLayout },
+      { name: "messageKeys", binary: "array", lengthSize: 1, layout: messageKeySwitchLayout },
     ],
   ],
   [
