@@ -52,7 +52,6 @@ export class EvmAutomaticCircleBridge implements AutomaticCircleBridge<'Evm'> {
       relayerAddress,
       provider,
     );
-
   }
 
   static async fromProvider(
@@ -60,7 +59,12 @@ export class EvmAutomaticCircleBridge implements AutomaticCircleBridge<'Evm'> {
     config: ChainsConfig,
   ): Promise<EvmAutomaticCircleBridge> {
     const [network, chain] = await EvmPlatform.chainFromRpc(provider);
-    return new EvmAutomaticCircleBridge(network, chain, provider, config[chain]!.contracts!);
+    return new EvmAutomaticCircleBridge(
+      network,
+      chain,
+      provider,
+      config[chain]!.contracts!,
+    );
   }
 
   async *transfer(

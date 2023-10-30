@@ -12,10 +12,8 @@ import {
 import {
   SolanaUnsignedTransaction,
   SolanaPlatform,
-  SolanaContracts,
-  SolanaTokenBridge,
-  getSolanaSigner,
 } from '../../src/';
+import { SolanaTokenBridge } from '@wormhole-foundation/connect-sdk-solana-tokenbridge'
 
 import { expect, describe, test } from '@jest/globals';
 
@@ -85,14 +83,13 @@ afterEach(async () => {
 });
 
 describe('TokenBridge Tests', () => {
-  const p: Platform<'Solana'> = SolanaPlatform.setConfig(network, configs);
+  const p: typeof SolanaPlatform = SolanaPlatform.setConfig(network, configs);
 
   let tb: TokenBridge<'Solana'>;
 
   test('Create TokenBridge', async () => {
     const rpc = p.getRpc('Solana');
-    const contracts = new SolanaContracts(configs);
-    tb = await SolanaTokenBridge.fromProvider(rpc, contracts);
+    tb = await p.getTokenBridge(rpc);
     expect(tb).toBeTruthy();
   });
 

@@ -12,7 +12,7 @@ import {
   keccak256,
   serialize,
   toChainId,
-  toNative
+  toNative,
 } from '@wormhole-foundation/connect-sdk';
 import { Provider, TransactionRequest } from 'ethers';
 
@@ -52,11 +52,11 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
         `Wormhole Token Bridge contract for domain ${chain} not found`,
       );
 
-    this.tokenBridgeAddress = tokenBridgeAddress
+    this.tokenBridgeAddress = tokenBridgeAddress;
     this.tokenBridge = ethers_contracts.Bridge__factory.connect(
       this.tokenBridgeAddress,
-      provider
-    )
+      provider,
+    );
   }
 
   static async fromProvider(
@@ -64,7 +64,12 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     config: ChainsConfig,
   ): Promise<EvmTokenBridge> {
     const [network, chain] = await EvmPlatform.chainFromRpc(provider);
-    return new EvmTokenBridge(network, chain, provider, config[chain]!.contracts!);
+    return new EvmTokenBridge(
+      network,
+      chain,
+      provider,
+      config[chain]!.contracts!,
+    );
   }
 
   async isWrappedAsset(token: AnyEvmAddress): Promise<boolean> {
@@ -77,7 +82,10 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     if (!(await this.isWrappedAsset(token)))
       throw ErrNotWrapped(token.toString());
 
-    const tokenContract = EvmPlatform.getTokenImplementation(this.provider, token.toString());
+    const tokenContract = EvmPlatform.getTokenImplementation(
+      this.provider,
+      token.toString(),
+    );
     const [chain, address] = await Promise.all([
       tokenContract.chainId().then(Number).then(toChainId).then(chainIdToChain),
       tokenContract.nativeContract().then((addr) => new UniversalAddress(addr)),
@@ -89,7 +97,7 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     try {
       await this.getWrappedAsset(token);
       return true;
-    } catch (e) { }
+    } catch (e) {}
     return false;
   }
 
@@ -165,28 +173,31 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     if (typeof token === 'string' && token === 'native') {
       const txReq = await (payload === undefined
         ? this.tokenBridge.wrapAndTransferETH.populateTransaction(
-          recipientChainId,
-          recipientAddress,
-          unusedArbiterFee,
-          unusedNonce,
-          { value: amount },
-        )
+            recipientChainId,
+            recipientAddress,
+            unusedArbiterFee,
+            unusedNonce,
+            { value: amount },
+          )
         : this.tokenBridge.wrapAndTransferETHWithPayload.populateTransaction(
-          recipientChainId,
-          recipientAddress,
-          unusedNonce,
-          payload,
-          { value: amount },
-        ));
+            recipientChainId,
+            recipientAddress,
+            unusedNonce,
+            payload,
+            { value: amount },
+          ));
       yield this.createUnsignedTx(
         addFrom(txReq, senderAddr),
         'TokenBridge.wrapAndTransferETH' +
-        (payload === undefined ? '' : 'WithPayload'),
+          (payload === undefined ? '' : 'WithPayload'),
       );
     } else {
       //TODO check for ERC-2612 (permit) support on token?
       const tokenAddr = new EvmAddress(token).toString();
-      const tokenContract = EvmPlatform.getTokenImplementation(this.provider, tokenAddr);
+      const tokenContract = EvmPlatform.getTokenImplementation(
+        this.provider,
+        tokenAddr,
+      );
 
       const allowance = await tokenContract.allowance(
         senderAddr,
@@ -210,19 +221,19 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
       ] as const;
       const txReq = await (payload === undefined
         ? this.tokenBridge.transferTokens.populateTransaction(
-          ...sharedParams,
-          unusedArbiterFee,
-          unusedNonce,
-        )
+            ...sharedParams,
+            unusedArbiterFee,
+            unusedNonce,
+          )
         : this.tokenBridge.transferTokensWithPayload.populateTransaction(
-          ...sharedParams,
-          unusedNonce,
-          payload,
-        ));
+            ...sharedParams,
+            unusedNonce,
+            payload,
+          ));
       yield this.createUnsignedTx(
         addFrom(txReq, senderAddr),
         'TokenBridge.transferTokens' +
-        (payload === undefined ? '' : 'WithPayload'),
+          (payload === undefined ? '' : 'WithPayload'),
       );
     }
   }

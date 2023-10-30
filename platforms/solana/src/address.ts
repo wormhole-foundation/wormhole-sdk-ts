@@ -72,4 +72,8 @@ export class SolanaAddress implements Address {
   }
 }
 
-registerNative('Solana', SolanaAddress);
+try {
+  registerNative('Solana', SolanaAddress);
+} catch (e) {
+  console.error(e);
+}

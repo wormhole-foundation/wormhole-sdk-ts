@@ -293,11 +293,11 @@ export class Wormhole {
       t = isTokenId(sendingToken)
         ? sendingToken
         : {
-          chain: sendingChain,
-          address: (
-            sendingToken as UniversalAddress | NativeAddress<PlatformName>
-          ).toUniversalAddress(),
-        };
+            chain: sendingChain,
+            address: (
+              sendingToken as UniversalAddress | NativeAddress<PlatformName>
+            ).toUniversalAddress(),
+          };
     }
 
     const dstTokenBridge = await chain.getTokenBridge();

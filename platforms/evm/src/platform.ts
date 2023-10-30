@@ -69,25 +69,24 @@ export module EvmPlatform {
     throw new Error('No configuration available for chain: ' + chain);
   }
 
-  export async function getProtocol<P extends ProtocolName>(protocol: P): Promise<any> {
+  export async function getProtocol<P extends ProtocolName>(
+    protocol: P,
+  ): Promise<any> {
     try {
       switch (protocol) {
         case 'TokenBridge':
         case 'AutomaticTokenBridge':
           const tb = await loadProtocolModule(platform, 'tokenbridge');
-          if (platform + protocol in tb)
-            return tb[platform + protocol]
+          if (platform + protocol in tb) return tb[platform + protocol];
         case 'CircleBridge':
         case 'AutomaticCircleBridge':
           const cb = await loadProtocolModule(platform, 'cctp');
-          if (platform + protocol in cb)
-            return cb[platform + protocol]
+          if (platform + protocol in cb) return cb[platform + protocol];
         case 'WormholeCore':
           const core = await loadProtocolModule(platform, 'core');
-          if (platform + protocol in core)
-            return core[platform + protocol]
+          if (platform + protocol in core) return core[platform + protocol];
         default:
-          throw new Error("Protocol not supported: " + protocol)
+          throw new Error('Protocol not supported: ' + protocol);
       }
     } catch (e) {
       console.error('Error loading ' + protocol, e);
@@ -126,7 +125,7 @@ export module EvmPlatform {
     rpc: ethers.Provider,
     txid: TxHash,
   ): Promise<WormholeMessageId[]> {
-    const wc = await getWormholeCore(rpc)
-    return wc.parseTransaction(txid)
+    const wc = await getWormholeCore(rpc);
+    return wc.parseTransaction(txid);
   }
 }

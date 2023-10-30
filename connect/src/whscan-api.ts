@@ -74,7 +74,9 @@ export async function getVaaBytesWithRetry(
   return vaaBytes ?? undefined;
 }
 
-export async function getVaaWithRetry<T extends PayloadLiteral | PayloadDiscriminator>(
+export async function getVaaWithRetry<
+  T extends PayloadLiteral | PayloadDiscriminator,
+>(
   apiUrl: string,
   whm: WormholeMessageId,
   decodeAs: T,
@@ -84,8 +86,6 @@ export async function getVaaWithRetry<T extends PayloadLiteral | PayloadDiscrimi
   if (vaaBytes === undefined) return;
   return deserialize(decodeAs, vaaBytes);
 }
-
-
 
 /**
  * Gets the status for a transaction given WormholeMessageId or `null` if the VAA is not available yet.

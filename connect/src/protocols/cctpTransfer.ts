@@ -129,7 +129,12 @@ export class CircleTransfer implements WormholeTransfer {
     timeout: number,
   ): Promise<CircleTransfer> {
     const { chain, emitter, sequence } = from;
-    const vaa = await CircleTransfer.getTransferVaa(wh, chain, emitter, sequence);
+    const vaa = await CircleTransfer.getTransferVaa(
+      wh,
+      chain,
+      emitter,
+      sequence,
+    );
 
     const rcvAddress = vaa.payload.mintRecipient;
     const rcvChain = toCircleChainName(vaa.payload.targetDomain);

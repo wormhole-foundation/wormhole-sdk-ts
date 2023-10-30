@@ -41,7 +41,6 @@ export class EvmAutomaticTokenBridge implements AutomaticTokenBridge<'Evm'> {
 
     this.chainId = evmNetworkChainToEvmChainId(network, chain);
 
-
     const tokenBridgeAddress = this.contracts.tokenBridge!;
     if (!tokenBridgeAddress)
       throw new Error(
@@ -50,8 +49,8 @@ export class EvmAutomaticTokenBridge implements AutomaticTokenBridge<'Evm'> {
 
     this.tokenBridge = ethers_contracts.Bridge__factory.connect(
       tokenBridgeAddress,
-      provider
-    )
+      provider,
+    );
 
     const relayerAddress = this.contracts.relayer;
     if (!relayerAddress)
@@ -59,10 +58,11 @@ export class EvmAutomaticTokenBridge implements AutomaticTokenBridge<'Evm'> {
         `Wormhole Token Bridge Relayer contract for domain ${chain} not found`,
       );
 
-    this.tokenBridgeRelayer = ethers_contracts.TokenBridgeRelayer__factory.connect(
-      relayerAddress,
-      provider,
-    );
+    this.tokenBridgeRelayer =
+      ethers_contracts.TokenBridgeRelayer__factory.connect(
+        relayerAddress,
+        provider,
+      );
   }
   async *redeem(
     sender: AnyEvmAddress,
@@ -85,7 +85,12 @@ export class EvmAutomaticTokenBridge implements AutomaticTokenBridge<'Evm'> {
     config: ChainsConfig,
   ): Promise<EvmAutomaticTokenBridge> {
     const [network, chain] = await EvmPlatform.chainFromRpc(provider);
-    return new EvmAutomaticTokenBridge(network, chain, provider, config[chain]!.contracts!);
+    return new EvmAutomaticTokenBridge(
+      network,
+      chain,
+      provider,
+      config[chain]!.contracts!,
+    );
   }
 
   //alternative naming: initiateTransfer

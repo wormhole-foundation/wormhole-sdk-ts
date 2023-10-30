@@ -1,4 +1,13 @@
-import { ChainsConfig, Contracts, Network, TxHash, WormholeCore, WormholeMessageId, isWormholeMessageId, toNative } from '@wormhole-foundation/connect-sdk';
+import {
+  ChainsConfig,
+  Contracts,
+  Network,
+  TxHash,
+  WormholeCore,
+  WormholeMessageId,
+  isWormholeMessageId,
+  toNative,
+} from '@wormhole-foundation/connect-sdk';
 import { Provider, TransactionRequest } from 'ethers';
 import { Implementation, ImplementationInterface } from './ethers-contracts';
 import { ethers_contracts } from '.';
@@ -35,7 +44,7 @@ export class EvmWormholeCore implements WormholeCore<'Evm'> {
     const address = this.contracts.coreBridge;
     if (!address) throw new Error('Core bridge address not found');
 
-    this.coreAddress = address
+    this.coreAddress = address;
     this.core = ethers_contracts.Implementation__factory.connect(
       address,
       provider,
@@ -47,7 +56,12 @@ export class EvmWormholeCore implements WormholeCore<'Evm'> {
     config: ChainsConfig,
   ): Promise<EvmWormholeCore> {
     const [network, chain] = await EvmPlatform.chainFromRpc(provider);
-    return new EvmWormholeCore(network, chain, provider, config[chain]!.contracts);
+    return new EvmWormholeCore(
+      network,
+      chain,
+      provider,
+      config[chain]!.contracts,
+    );
   }
 
   async *publishMessage(
@@ -68,17 +82,20 @@ export class EvmWormholeCore implements WormholeCore<'Evm'> {
     );
   }
 
-  async parseTransaction(
-    txid: TxHash,
-  ): Promise<WormholeMessageId[]> {
+  async parseTransaction(txid: TxHash): Promise<WormholeMessageId[]> {
     const receipt = await this.provider.getTransactionReceipt(txid);
     if (receipt === null) return [];
 
     return receipt.logs
-      .filter((l: any) => { return l.address === this.coreAddress })
+      .filter((l: any) => {
+        return l.address === this.coreAddress;
+      })
       .map((log) => {
         const { topics, data } = log;
-        const parsed = this.coreIface.parseLog({ topics: topics.slice(), data });
+        const parsed = this.coreIface.parseLog({
+          topics: topics.slice(),
+          data,
+        });
         if (parsed === null) return undefined;
 
         const emitterAddress = toNative(this.chain, parsed.args.sender);
