@@ -1,7 +1,8 @@
 import { PlatformName } from "@wormhole-foundation/sdk-base";
-import { AnyAddress } from "../types";
+import { AnyAddress, TxHash } from "../types";
 import { UnsignedTransaction } from "../unsignedTransaction";
 import { RpcConnection } from "../rpc";
+import { WormholeMessageId } from "../attestation";
 
 export interface SupportsWormholeCore<P extends PlatformName> {
   getWormholeCore(rpc: RpcConnection<P>): Promise<WormholeCore<P>>;
@@ -18,6 +19,6 @@ export interface WormholeCore<P extends PlatformName> {
     sender: AnyAddress,
     message: string | Uint8Array
   ): AsyncGenerator<UnsignedTransaction>;
-  // TODO: parseTransactionDetails
+  parseTransaction(txid: TxHash): Promise<WormholeMessageId[]>;
   // TODO: events?
 }

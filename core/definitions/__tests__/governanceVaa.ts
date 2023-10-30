@@ -121,7 +121,7 @@ describe("Governance VAA tests", function () {
     ["Relayer",
       ["RegisterChain", "UpgradeContract", "UpdateDefaultProvider"]
     ],
-    ["CCTP",
+    ["AutomaticCircleBridge",
       ["UpdateFinality", "RegisterEmitterAndDomain", "UpgradeContract"]
     ]
   ]);

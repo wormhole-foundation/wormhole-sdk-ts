@@ -14,6 +14,8 @@ import {
   CircleBridge,
   AutomaticCircleBridge,
   WormholeCore,
+  ProtocolName,
+  loadProtocolModule,
 } from '@wormhole-foundation/connect-sdk';
 
 import { ethers } from 'ethers';
@@ -67,73 +69,52 @@ export module EvmPlatform {
     throw new Error('No configuration available for chain: ' + chain);
   }
 
-  export async function getWormholeCore(
-    rpc: ethers.Provider,
-  ): Promise<WormholeCore<'Evm'>> {
+  export async function getProtocol<P extends ProtocolName>(protocol: P): Promise<any> {
     try {
-      const {
-        EvmWormholeCore,
-      } = require('@wormhole-foundation/connect-sdk-evm-core');
-      return await EvmWormholeCore.fromProvider(rpc, conf);
+      switch (protocol) {
+        case 'TokenBridge':
+        case 'AutomaticTokenBridge':
+          const tb = await loadProtocolModule(platform, 'tokenbridge');
+          if (platform + protocol in tb)
+            return tb[platform + protocol]
+        case 'CircleBridge':
+        case 'AutomaticCircleBridge':
+          const cb = await loadProtocolModule(platform, 'cctp');
+          if (platform + protocol in cb)
+            return cb[platform + protocol]
+        default:
+          throw new Error("Protocol not supported: " + protocol)
+      }
     } catch (e) {
-      console.error('Error loading EvmTokenBridge', e);
+      console.error('Error loading ' + protocol, e);
       throw e;
     }
   }
 
+  export async function getWormholeCore(
+    rpc: ethers.Provider,
+  ): Promise<WormholeCore<'Evm'>> {
+    return (await getProtocol('CoreBridge')).fromProvider(rpc, conf);
+  }
   export async function getTokenBridge(
     rpc: ethers.Provider,
   ): Promise<TokenBridge<'Evm'>> {
-    try {
-      const {
-        EvmTokenBridge,
-      } = require('@wormhole-foundation/connect-sdk-evm-tokenbridge');
-      return await EvmTokenBridge.fromProvider(rpc, conf);
-    } catch (e) {
-      console.error('Error loading EvmTokenBridge', e);
-      throw e;
-    }
+    return (await getProtocol('TokenBridge')).fromProvider(rpc, conf);
   }
   export async function getAutomaticTokenBridge(
     rpc: ethers.Provider,
   ): Promise<AutomaticTokenBridge<'Evm'>> {
-    try {
-      const {
-        EvmAutomaticTokenBridge,
-      } = require('@wormhole-foundation/connect-sdk-evm-tokenbridge');
-      return await EvmAutomaticTokenBridge.fromProvider(rpc, conf);
-    } catch (e) {
-      console.error('Error loading EvmAutomaticTokenBridge', e);
-      throw e;
-    }
+    return (await getProtocol('TokenBridge')).fromProvider(rpc, conf);
   }
-
   export async function getCircleBridge(
     rpc: ethers.Provider,
   ): Promise<CircleBridge<'Evm'>> {
-    try {
-      const {
-        EvmCircleBridge,
-      } = require('@wormhole-foundation/connect-sdk-evm-cctp');
-      return await EvmCircleBridge.fromProvider(rpc, conf);
-    } catch (e) {
-      console.error('Error loading EvmAutomaticCircleBridge', e);
-      throw e;
-    }
+    return (await getProtocol('CircleBridge')).fromProvider(rpc, conf);
   }
-
   export async function getAutomaticCircleBridge(
     rpc: ethers.Provider,
   ): Promise<AutomaticCircleBridge<'Evm'>> {
-    try {
-      const {
-        EvmAutomaticCircleBridge,
-      } = require('@wormhole-foundation/connect-sdk-evm-cctp');
-      return await EvmAutomaticCircleBridge.fromProvider(rpc, conf);
-    } catch (e) {
-      console.error('Error loading EvmAutomaticCircleBridge', e);
-      throw e;
-    }
+    return (await getProtocol('AutomaticCircleBridge')).fromProvider(rpc, conf);
   }
 
   export async function parseTransaction(
@@ -141,28 +122,7 @@ export module EvmPlatform {
     rpc: ethers.Provider,
     txid: TxHash,
   ): Promise<WormholeMessageId[]> {
-    const receipt = await rpc.getTransactionReceipt(txid);
-    if (receipt === null) return [];
-
-    const coreAddress = conf[chain]!.contracts.coreBridge;
-    const coreImpl = EvmUtils.getCoreImplementationInterface();
-
-    return receipt.logs
-      .filter((l: any) => {
-        return l.address === coreAddress;
-      })
-      .map((log) => {
-        const { topics, data } = log;
-        const parsed = coreImpl.parseLog({ topics: topics.slice(), data });
-        if (parsed === null) return undefined;
-
-        const emitterAddress = toNative(chain, parsed.args.sender);
-        return {
-          chain: chain,
-          emitter: emitterAddress.toUniversalAddress(),
-          sequence: parsed.args.sequence,
-        } as WormholeMessageId;
-      })
-      .filter(isWormholeMessageId);
+    const wc = await getWormholeCore(rpc)
+    return wc.parseTransaction(txid)
   }
 }
