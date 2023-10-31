@@ -1,7 +1,7 @@
 import {
   encoding,
   Layout,
-  LayoutItem,
+  NamedLayoutItem,
   LayoutToType,
   layoutDiscriminator,
   serializeLayout,
@@ -104,10 +104,10 @@ const headerLayout = [
     name: "signatures",
     binary: "array",
     lengthSize: 1,
-    layout: guardianSignatureLayout,
+    arrayItem: { binary: "object", layout: guardianSignatureLayout },
   },
 ] as const satisfies Layout;
-
+ 
 //envelope + payload are getting hashed and signed
 const envelopeLayout = [
   { name: "timestamp", binary: "uint", size: 4 },
@@ -176,7 +176,7 @@ const payloadLiteralToPayloadItem = <PL extends PayloadLiteral>(
         name: "payload",
         binary: "object",
         layout: getPayloadLayout(payloadLiteral),
-      } as const)) satisfies LayoutItem;
+      } as const)) satisfies NamedLayoutItem;
 
 //annoyingly we can't use the return value of payloadLiteralToPayloadItem
 type PayloadLiteralToDynamicItems<PL extends PayloadLiteral> =

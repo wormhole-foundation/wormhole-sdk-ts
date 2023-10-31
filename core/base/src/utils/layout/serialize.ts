@@ -1,10 +1,9 @@
 import {
   Layout,
   LayoutItem,
+  NamedLayoutItem,
   LayoutToType,
   LayoutItemToType,
-  FixedSizeBytesLayoutItem,
-  LengthPrefixedBytesLayoutItem,
   FixedPrimitiveBytesLayoutItem,
   FixedValueBytesLayoutItem,
   SwitchLayoutItem,
@@ -48,57 +47,60 @@ const findIdLayoutPair = (item: SwitchLayoutItem, data: any) => {
   )!;
 }
 
+const withIgnoredName = (item: LayoutItem) => ({ ...item, name: "ignored" });
+
+const calcItemSize = (item: NamedLayoutItem, data: any) => {
+  switch (item.binary) {
+    case "uint": {
+      return item.size;
+    }
+    case "bytes": {
+      if (isBytesType(item.custom))
+        return item.custom.length;
+
+      if (isBytesType(item?.custom?.from))
+        return item!.custom!.from.length;
+
+      if ("size" in item && item.size !== undefined)
+        return item.size;
+
+      let size = 0;
+      if ((item as { lengthSize?: number })?.lengthSize !== undefined)
+        size += (item as { lengthSize: number }).lengthSize;
+
+      return size + (
+        (item.custom !== undefined)
+        ? item.custom.from(data)
+        : (data as LayoutItemToType<typeof item>)
+      ).length;
+    }
+    case "array": {
+      let size = 0;
+      if (item.lengthSize !== undefined)
+        size += item.lengthSize;
+
+      const narrowedData = data as LayoutItemToType<typeof item>;
+      for (let i = 0; i < narrowedData.length; ++i)
+        size += calcItemSize(withIgnoredName(item.arrayItem), narrowedData[i]);
+
+      return size;
+    }
+    case "object": {
+      return calcLayoutSize(item.layout, data as LayoutItemToType<typeof item>)
+    }
+    case "switch": {
+      const [_, layout] = findIdLayoutPair(item, data);
+      return item.idSize + calcLayoutSize(layout, data);
+    }
+  }
+}
+
 const calcLayoutSize = (
   layout: Layout,
   data: LayoutToType<typeof layout>
 ): number =>
-  layout.reduce((acc: number, item: LayoutItem) => {
-    switch (item.binary) {
-      case "uint": {
-        return acc + item.size;
-      }
-      case "bytes": {
-        if (isBytesType(item.custom))
-          return acc + item.custom.length;
-
-        if (isBytesType(item?.custom?.from))
-          return acc + item!.custom!.from.length;
-
-        item = item as FixedSizeBytesLayoutItem | LengthPrefixedBytesLayoutItem;
-
-        if ("size" in item && item.size !== undefined)
-          return acc + item.size;
-
-        if (item.lengthSize !== undefined)
-          acc += item.lengthSize;
-
-        return acc + (
-          (item.custom !== undefined)
-          ? item.custom.from(data[item.name])
-          : (data[item.name] as LayoutItemToType<typeof item>)
-        ).length;
-      }
-      case "array": {
-        if (item.lengthSize !== undefined)
-          acc += item.lengthSize;
-
-        const narrowedData = data[item.name] as LayoutItemToType<typeof item>;
-        for (let i = 0; i < narrowedData.length; ++i)
-          acc += calcLayoutSize(item.layout, narrowedData[i]);
-
-        return acc;
-      }
-      case "object": {
-        return acc + calcLayoutSize(item.layout, data[item.name] as LayoutItemToType<typeof item>)
-      }
-      case "switch": {
-        const [_, layout] = findIdLayoutPair(item, data[item.name]);
-        return acc + item.idSize + calcLayoutSize(layout, data[item.name]);
-      }
-    }
-  },
-  0
-);
+  layout.reduce((acc: number, item: NamedLayoutItem) =>
+    acc + calcItemSize(item, data[item.name]), 0);
 
 //Wormhole uses big endian by default for all uints
 //endianess can be easily added to UintLayout items if necessary
@@ -125,7 +127,7 @@ export function serializeUint(
 }
 
 function serializeLayoutItem(
-  item: LayoutItem,
+  item: NamedLayoutItem,
   data: any,
   encoded: Uint8Array,
   offset: number
@@ -148,7 +150,7 @@ function serializeLayoutItem(
           offset = serializeUint(encoded, offset, data.length, item.lengthSize);
 
         for (let i = 0; i < data.length; ++i)
-          offset = serializeLayout(item.layout, data[i], encoded, offset);
+          offset = serializeLayoutItem(withIgnoredName(item.arrayItem), data[i], encoded, offset);
 
         break;
       }

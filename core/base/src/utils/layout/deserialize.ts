@@ -1,7 +1,8 @@
 import {
   Layout,
-  LayoutItem,
+  NamedLayoutItem,
   LayoutToType,
+  LayoutItemToType,
   FixedPrimitiveBytesLayoutItem,
   FixedValueBytesLayoutItem,
   CustomConversion,
@@ -84,7 +85,7 @@ function deserializeUint<S extends number>(
 }
 
 function deserializeLayoutItem(
-  item: LayoutItem,
+  item: NamedLayoutItem,
   encoded: Uint8Array,
   offset: number,
 ): readonly [any, number] {
@@ -154,17 +155,28 @@ function deserializeLayoutItem(
         ];
       }
       case "array": {
-        let ret = [] as LayoutToType<typeof item.layout>[];
+        let ret = [] as any[];
+        const { arrayItem } = item;
+        const deserializeArrayItem = (index: number) => {
+          const [deserializedItem, newOffset] = deserializeLayoutItem(
+            { name: `${item.name}[${index}]`, ...arrayItem },
+            encoded,
+            offset
+          );
+          ret.push(deserializedItem);
+          offset = newOffset;
+        }
+        
         if (item.lengthSize !== undefined) {
           const [length, newOffset] = deserializeUint(encoded, offset, item.lengthSize);
           offset = newOffset;
           for (let i = 0; i < length; ++i)
-            [ret[i], offset] = internalDeserializeLayout(item.layout, encoded, offset);
+            deserializeArrayItem(i);
         }
-        else {
+        else
           while (offset < encoded.length)
-            [ret[ret.length], offset] = internalDeserializeLayout(item.layout, encoded, offset);
-        }
+            deserializeArrayItem(ret.length);
+
         return [ret, offset];
       }
       case "object": {

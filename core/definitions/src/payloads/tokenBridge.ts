@@ -19,9 +19,9 @@ const fixedLengthStringItem = {
     from: (str: string) =>
       new Uint8Array(str.split("").map((c) => c.charCodeAt(0))),
   } satisfies CustomConversion<Uint8Array, string>,
-} as const satisfies Omit<FixedSizeBytesLayoutItem, "name">;
+} as const satisfies FixedSizeBytesLayoutItem;
 
-export const transferWithPayloadLayout = <P extends Omit<LayoutItem, "name">>(
+export const transferWithPayloadLayout = <P extends LayoutItem>(
   customPayload: P
 ) => ([
   payloadIdItem(3),

@@ -36,7 +36,6 @@ export type CustomConversion<FromType extends PrimitiveType, ToType> = {
 };
 
 interface LayoutItemBase<BL extends BinaryLiterals> {
-  readonly name: string,
   readonly binary: BL,
 };
 
@@ -82,7 +81,7 @@ export interface LengthPrefixedBytesLayoutItem extends LayoutItemBase<"bytes"> {
 
 export interface ArrayLayoutItem extends LayoutItemBase<"array"> {
   readonly lengthSize?: NumberSize,
-  readonly layout: Layout,
+  readonly arrayItem: LayoutItem,
 };
 
 export interface ObjectLayoutItem extends LayoutItemBase<"object"> {
@@ -110,9 +109,10 @@ export type BytesLayoutItem = |
   LengthPrefixedBytesLayoutItem;
 export type LayoutItem =
   UintLayoutItem | BytesLayoutItem | ArrayLayoutItem | ObjectLayoutItem | SwitchLayoutItem;
-export type Layout = readonly LayoutItem[];
+export type NamedLayoutItem = LayoutItem & { readonly name: string };
+export type Layout = readonly NamedLayoutItem[];
 
-type NameOrOmitted<T extends { name: PropertyKey }> = T extends {omit: true} ? never : T["name"];
+type NameOrOmitted<T extends { name: string }> = T extends {omit: true} ? never : T["name"];
 
 export type LayoutToType<L extends Layout> =
   { readonly [I in L[number] as NameOrOmitted<I>]: LayoutItemToType<I> };
@@ -133,17 +133,13 @@ type IdLayoutPairsToTypeUnion<T extends IdLayoutPairArray, IdTag extends string>
     : never
   : never;
 
-//the order of the checks matters here!
-//  if FixedConversion was tested for first, its ToType would erroneously be inferred to be a
-//    the `to` function that actually belongs to a CustomConversion
-//  unclear why this happens, seeing how the `from` type wouldn't fit but it happened nonetheless
 export type LayoutItemToType<I extends LayoutItem> =
   [I] extends [UintLayoutItem]
   ? I["custom"] extends UintType
     ? I["custom"]
-    : I["custom"] extends CustomConversion<any, infer ToType>
+    : I["custom"] extends CustomConversion<infer FromType extends UintType, infer ToType>
     ? ToType
-    : I["custom"] extends FixedConversion<any, infer ToType>
+    : I["custom"] extends FixedConversion<infer FromType extends UintType, infer ToType>
     ? ToType
     : UintSizeToPrimitive<I["size"]>
   : [I] extends [BytesLayoutItem]
@@ -153,7 +149,7 @@ export type LayoutItemToType<I extends LayoutItem> =
     ? ToType
     : BytesType //this also covers FixedValueBytesLayoutItem (Uint8Arrays don't support literals)
   : [I] extends [ArrayLayoutItem]
-  ? readonly LayoutToType<I["layout"]>[]
+  ? readonly LayoutItemToType<I["arrayItem"]>[]
   : [I] extends [ObjectLayoutItem]
   ? LayoutToType<I["layout"]>
   : [I] extends [SwitchLayoutItem]

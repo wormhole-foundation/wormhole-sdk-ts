@@ -1,6 +1,7 @@
 export {
   Layout,
   LayoutItem,
+  NamedLayoutItem,
   UintLayoutItem,
   BytesLayoutItem,
   FixedPrimitiveBytesLayoutItem,

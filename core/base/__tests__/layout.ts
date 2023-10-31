@@ -65,15 +65,13 @@ const testLayout = [
     name: "arrayWithOnlyFixed",
     binary: "array",
     lengthSize: 1,
-    layout: [
-      { name: "someFixedArrayUint", binary: "uint", size: 1, custom: 12 },
-    ],
+    arrayItem: { binary: "uint", size: 1, custom: 12 },
   },
   {
     name: "arrayWithSomeFixed",
     binary: "array",
     lengthSize: 1,
-    layout: [
+    arrayItem: { binary: "object", layout: [
       { name: "someDynamicUint", binary: "uint", size: 1 },
       { name: "someFixedUint", binary: "uint", size: 1, custom: 25 },
       {
@@ -81,23 +79,13 @@ const testLayout = [
         binary: "bytes",
         custom: { to: new Uint8Array(4), from: new Uint8Array(4) },
       },
-    ],
+    ]},
   },
   {
     name: "arrayWithOnlyDynamic",
     binary: "array",
     lengthSize: 1,
-    layout: [{ name: "someDynamicArrayUint", binary: "uint", size: 1 }],
-  },
-  {
-    name: "switchWithOnlyFixed",
-    binary: "switch",
-    idSize: 1,
-    idTag: "customIdName",
-    idLayoutPairs: [
-      [[2, "case1"], [{ name: "case1Uint", binary: "uint", size: 1, custom: 12 }]],
-      [[4, "case2"], [{ name: "case2Bytes", binary: "bytes", custom: new Uint8Array(2) }]],
-    ],
+    arrayItem: { binary: "uint", size: 1 },
   },
   {
     name: "switchWithSomeFixed",
@@ -117,9 +105,9 @@ const testLayout = [
 ] as const satisfies Layout;
 
 //uncomment the following to "test" correct type resolution:
-// import { FixedItemsOfLayout, DynamicItemsOfLayout } from "../src";
-// type FixedItems = FixedItemsOfLayout<typeof testLayout>;
-// type DynamicItems = DynamicItemsOfLayout<typeof testLayout>;
+import { LayoutToType, FixedItemsOfLayout, DynamicItemsOfLayout } from "../src";
+type FixedItems = FixedItemsOfLayout<typeof testLayout>;
+type DynamicItems = LayoutToType<DynamicItemsOfLayout<typeof testLayout>>;
 
 describe("Layout tests", function () {
 
@@ -151,14 +139,7 @@ describe("Layout tests", function () {
         someFixedBytes: new Uint8Array(4),
       },
     ],
-    arrayWithOnlyDynamic: [
-      { someDynamicArrayUint: 14 },
-      { someDynamicArrayUint: 16 },
-    ],
-    switchWithOnlyFixed: {
-      customIdName: "case2",
-      case2Bytes: new Uint8Array(2)
-    },
+    arrayWithOnlyDynamic: [14, 16],
     switchWithSomeFixed: {
       id: 1,
       case1FixedUint: 4,
@@ -176,10 +157,7 @@ describe("Layout tests", function () {
       },
       objectWithSomeFixed: { someDynamicUint: 8 },
       arrayWithSomeFixed: [{ someDynamicUint: 10 }, { someDynamicUint: 11 }],
-      arrayWithOnlyDynamic: [
-        { someDynamicArrayUint: 14 },
-        { someDynamicArrayUint: 16 },
-      ],
+      arrayWithOnlyDynamic: [14, 16],
       switchWithOnlyFixed: {
         customIdName: "case2",
       },

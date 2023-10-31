@@ -24,4 +24,4 @@ export const signatureItem = {
     from: (val: Signature): Uint8Array =>
       serializeLayout(signatureLayout, { r: val.r, s: val.s, v: val.v }),
   } as const satisfies CustomConversion<Uint8Array, Signature>,
-} as const satisfies Omit<FixedSizeBytesLayoutItem, "name">;
+} as const satisfies FixedSizeBytesLayoutItem;
