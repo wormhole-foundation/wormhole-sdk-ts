@@ -54,7 +54,7 @@ export class EvmAutomaticCircleBridge implements AutomaticCircleBridge<'Evm'> {
     );
   }
 
-  static async fromProvider(
+  static async fromRpc(
     provider: Provider,
     config: ChainsConfig,
   ): Promise<EvmAutomaticCircleBridge> {

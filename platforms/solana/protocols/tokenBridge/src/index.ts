@@ -1,10 +1,6 @@
-import { SolanaPlatform } from '@wormhole-foundation/connect-sdk-solana';
+import { registerProtocol } from '@wormhole-foundation/connect-sdk';
 import { SolanaTokenBridge } from './tokenBridge';
-
-export function registerProtocols(): void {
-    // Register this module with the EVM module
-    SolanaPlatform.registerProtocol('TokenBridge', SolanaTokenBridge);
-}
+registerProtocol('Solana', 'TokenBridge', SolanaTokenBridge);
 
 
 export * from './types';

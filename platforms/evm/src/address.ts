@@ -98,6 +98,4 @@ export class EvmAddress implements Address {
 
 try {
   registerNative('Evm', EvmAddress);
-} catch (e) {
-  console.error('Dup registry of evm address', e);
-}
+} catch { }

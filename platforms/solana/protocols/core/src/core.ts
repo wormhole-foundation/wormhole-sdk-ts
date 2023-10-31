@@ -46,8 +46,8 @@ export class SolanaWormholeCore implements WormholeCore<'Solana'> {
     );
   }
 
-  static async fromProvider(
-    connection: RpcConnection<'Solana'>,
+  static async fromRpc(
+    connection: Connection,
     config: ChainsConfig,
   ): Promise<SolanaWormholeCore> {
     const [network, chain] = await SolanaPlatform.chainFromRpc(connection);

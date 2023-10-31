@@ -4,10 +4,12 @@ import {
   DEFAULT_NETWORK,
   Network,
   Platform,
+  ProtocolInitializer,
   ProtocolName,
   TokenBridge,
   WormholeCore,
   WormholeMessageId,
+  getProtocolInitializer,
   networkPlatformConfigs
 } from '@wormhole-foundation/connect-sdk';
 import { SolanaChain } from './chain';
@@ -65,32 +67,22 @@ export module SolanaPlatform {
     throw new Error('No configuration available for chain: ' + chain);
   }
 
-
-  export function registerProtocol<PN extends ProtocolName>(name: PN, module: any): void {
-    if (registeredProtocols.has(name)) throw new Error('Protocol already registered: ' + name);
-    registeredProtocols.set(name, module);
-  }
-
   export function getProtocol<P extends ProtocolName>(
     protocol: P,
-  ): any {
-    if (!registeredProtocols.has(protocol))
-      throw new Error('Protocol not registered: ' + protocol);
-    return registeredProtocols.get(protocol);
+  ): ProtocolInitializer<Type> {
+    return getProtocolInitializer(platform, protocol);
   }
-
-
 
   export async function getWormholeCore(
     rpc: Connection,
   ): Promise<WormholeCore<'Solana'>> {
-    return getProtocol('WormholeCore').fromProvider(rpc, conf);
+    return getProtocol('WormholeCore').fromRpc(rpc, conf);
   }
 
   export async function getTokenBridge(
     rpc: Connection,
   ): Promise<TokenBridge<'Solana'>> {
-    return getProtocol('TokenBridge').fromProvider(rpc, conf);
+    return getProtocol('TokenBridge').fromRpc(rpc, conf);
   }
 
   export async function parseTransaction(

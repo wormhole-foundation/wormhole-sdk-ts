@@ -7,12 +7,14 @@ import {
   DEFAULT_NETWORK,
   Network,
   Platform,
+  ProtocolInitializer,
   ProtocolName,
   TokenBridge,
   TxHash,
   WormholeCore,
   WormholeMessageId,
-  networkPlatformConfigs
+  networkPlatformConfigs,
+  getProtocolInitializer
 } from '@wormhole-foundation/connect-sdk';
 
 import { ethers } from 'ethers';
@@ -31,8 +33,6 @@ export module EvmPlatform {
   export let network: Network = DEFAULT_NETWORK;
   export let conf: ChainsConfig = networkPlatformConfigs(network, platform);
   export type Type = typeof platform;
-
-  const registeredProtocols = new Map<ProtocolName, any>();
 
   export const {
     nativeTokenId,
@@ -57,7 +57,6 @@ export module EvmPlatform {
     return EvmPlatform;
   }
 
-
   export function getRpc(chain: ChainName): ethers.Provider {
     if (chain in conf) return ethers.getDefaultProvider(conf[chain]!.rpc);
     throw new Error('No configuration available for chain: ' + chain);
@@ -68,43 +67,36 @@ export module EvmPlatform {
     throw new Error('No configuration available for chain: ' + chain);
   }
 
-  export function registerProtocol<PN extends ProtocolName>(name: PN, module: any): void {
-    if (registeredProtocols.has(name)) throw new Error('Protocol already registered: ' + name);
-    registeredProtocols.set(name, module);
-  }
-
-  export function getProtocol<P extends ProtocolName>(
-    protocol: P,
-  ): any {
-    if (!registeredProtocols.has(protocol))
-      throw new Error('Protocol not registered: ' + protocol);
-    return registeredProtocols.get(protocol);
+  export function getProtocol<PN extends ProtocolName>(
+    protocol: PN,
+  ): ProtocolInitializer<Type> {
+    return getProtocolInitializer(platform, protocol);
   }
 
   export async function getWormholeCore(
     rpc: ethers.Provider,
   ): Promise<WormholeCore<'Evm'>> {
-    return getProtocol('WormholeCore').fromProvider(rpc, conf);
+    return getProtocol('WormholeCore').fromRpc(rpc, conf);
   }
   export async function getTokenBridge(
     rpc: ethers.Provider,
   ): Promise<TokenBridge<'Evm'>> {
-    return getProtocol('TokenBridge').fromProvider(rpc, conf);
+    return getProtocol('TokenBridge').fromRpc(rpc, conf);
   }
   export async function getAutomaticTokenBridge(
     rpc: ethers.Provider,
   ): Promise<AutomaticTokenBridge<'Evm'>> {
-    return getProtocol('TokenBridge').fromProvider(rpc, conf);
+    return getProtocol('TokenBridge').fromRpc(rpc, conf);
   }
   export async function getCircleBridge(
     rpc: ethers.Provider,
   ): Promise<CircleBridge<'Evm'>> {
-    return getProtocol('CircleBridge').fromProvider(rpc, conf);
+    return getProtocol('CircleBridge').fromRpc(rpc, conf);
   }
   export async function getAutomaticCircleBridge(
     rpc: ethers.Provider,
   ): Promise<AutomaticCircleBridge<'Evm'>> {
-    return getProtocol('AutomaticCircleBridge').fromProvider(rpc, conf);
+    return getProtocol('AutomaticCircleBridge').fromRpc(rpc, conf);
   }
 
   export async function parseTransaction(

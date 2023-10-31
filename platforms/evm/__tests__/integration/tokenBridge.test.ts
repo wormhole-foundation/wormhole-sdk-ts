@@ -11,11 +11,16 @@ import {
   encoding,
 } from '@wormhole-foundation/connect-sdk';
 
+import '@wormhole-foundation/connect-sdk-evm-core';
+import '@wormhole-foundation/connect-sdk-evm-tokenbridge';
+
 import {
   evmNetworkChainToEvmChainId,
   EvmPlatform,
   EvmUnsignedTransaction,
 } from '../../src';
+
+
 import { test, describe, expect } from '@jest/globals';
 
 import nock from 'nock';

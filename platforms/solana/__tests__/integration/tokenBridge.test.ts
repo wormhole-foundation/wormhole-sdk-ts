@@ -1,6 +1,5 @@
 import {
   TokenBridge,
-  Platform,
   testing,
   toNative,
   Signature,
@@ -9,11 +8,15 @@ import {
   createVAA,
 } from '@wormhole-foundation/connect-sdk';
 
+import '@wormhole-foundation/connect-sdk-solana-core'
+import '@wormhole-foundation/connect-sdk-solana-tokenbridge'
+
+
 import {
   SolanaUnsignedTransaction,
   SolanaPlatform,
 } from '../../src/';
-import { SolanaTokenBridge } from '@wormhole-foundation/connect-sdk-solana-tokenbridge'
+
 
 import { expect, describe, test } from '@jest/globals';
 
@@ -37,11 +40,13 @@ const senderAddress = Keypair.generate().publicKey.toBase58();
 const bogusAddress = testing.utils.makeNativeAddress('Solana');
 const realNativeAddress = toNative(
   'Solana',
-  TOKEN_ADDRESSES['Mainnet']['Solana']['wsol'],
+  // @ts-ignore
+  TOKEN_ADDRESSES[network]['Solana']['wsol'],
 );
 const realWrappedAddress = toNative(
   'Solana',
-  TOKEN_ADDRESSES['Mainnet']['Solana']['wavax'],
+  // @ts-ignore
+  TOKEN_ADDRESSES[network]['Solana']['wavax'],
 );
 
 // Setup nock to record fixtures

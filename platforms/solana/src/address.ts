@@ -74,6 +74,4 @@ export class SolanaAddress implements Address {
 
 try {
   registerNative('Solana', SolanaAddress);
-} catch (e) {
-  console.error(e);
-}
+} catch { }

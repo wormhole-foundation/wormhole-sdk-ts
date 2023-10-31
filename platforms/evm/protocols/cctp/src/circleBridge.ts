@@ -84,7 +84,7 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
       this.msgTransmitter.getEvent('MessageReceived').fragment.topicHash;
   }
 
-  static async fromProvider(
+  static async fromRpc(
     provider: Provider,
     config: ChainsConfig,
   ): Promise<EvmCircleBridge> {

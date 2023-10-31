@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/connect-sdk-cosmwasm",
-  "version": "0.1.8-beta.5",
+  "version": "0.1.8-beta.6",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
