@@ -38,9 +38,7 @@ type FilterItem<I extends LayoutItem, Fixed extends boolean> =
     : Fixed extends true ? never : I
   : [I] extends [ArrayLayoutItem]
   ? FilterItem<I["arrayItem"], Fixed> extends infer LI
-    ? IsNever<LI> extends false
-      ? { readonly [K in keyof I]: K extends "arrayItem" ? LI : I[K] }
-      : never
+    ? { readonly [K in keyof I]: K extends "arrayItem" ? LI : I[K] }
     : never
   : [I] extends [ObjectLayoutItem]
   ? FilterItemsOfLayout<I["layout"], Fixed> extends infer L

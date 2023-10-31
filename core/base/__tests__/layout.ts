@@ -155,6 +155,7 @@ describe("Layout tests", function () {
         someDynamicBytes: new Uint8Array(4),
         someDynamicLengthBytes: new Uint8Array(5),
       },
+      arrayWithOnlyFixed: [],
       objectWithSomeFixed: { someDynamicUint: 8 },
       arrayWithSomeFixed: [{ someDynamicUint: 10 }, { someDynamicUint: 11 }],
       arrayWithOnlyDynamic: [14, 16],
