@@ -32,7 +32,7 @@ export function registerProtocol<P extends PlatformName, PN extends ProtocolName
 
     if (protocols.has(protocol))
         throw new Error(
-            `Native address type for platform ${platform} has already registered`,
+            `Protocol ${protocol} for platform ${platform} has already registered`,
         );
 
     protocols.set(protocol, ctr);
