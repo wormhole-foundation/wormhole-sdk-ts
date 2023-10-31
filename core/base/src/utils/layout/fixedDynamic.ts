@@ -63,6 +63,7 @@ type FilterItemsOfLayout<L extends Layout, Fixed extends boolean> =
 
 function filterItem(item: LayoutItem, fixed: boolean): LayoutItem | null {
   switch (item.binary) {
+    case "int":
     case "uint":
     case "bytes": {
       const isFixedItem = item["custom"] !== undefined && (

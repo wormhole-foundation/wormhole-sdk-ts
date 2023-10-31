@@ -1,15 +1,16 @@
-export type UintType = number | bigint;
-export const isUintType = (x: any): x is UintType =>
+export type NumType = number | bigint;
+export const isNumType = (x: any): x is NumType =>
   typeof x === "number" || typeof x === "bigint";
 
 export type BytesType = Uint8Array;
 export const isBytesType = (x: any): x is BytesType => x instanceof Uint8Array;
 
-export type PrimitiveType = UintType | BytesType;
+export type PrimitiveType = NumType | BytesType;
 export const isPrimitiveType = (x: any): x is PrimitiveType =>
-  isUintType(x) || isBytesType(x);
+  isNumType(x) || isBytesType(x);
 
-export type BinaryLiterals = "uint" | "bytes" | "array" | "object" | "switch";
+export type BinaryLiterals = "int" | "uint" | "bytes" | "array" | "object" | "switch";
+export type Endianness = "little" | "big"; //default is always big
 
 //Why only a max value of 2**(6*8)?
 //quote from here: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isInteger#description
@@ -22,7 +23,7 @@ export type BinaryLiterals = "uint" | "bytes" | "array" | "object" | "switch";
 export type NumberSize = 1 | 2 | 3 | 4 | 5 | 6;
 export const numberMaxSize = 6;
 
-export type UintSizeToPrimitive<Size extends number> =
+export type NumSizeToPrimitive<Size extends number> =
   Size extends NumberSize ? number : bigint;
 
 export type FixedConversion<FromType extends PrimitiveType, ToType> = {
@@ -49,15 +50,17 @@ interface OptionalToFromCustom<T extends PrimitiveType> {
 };
 
 //size: number of bytes used to encode the item
-interface UintLayoutItemBase<T extends UintType> extends LayoutItemBase<"uint"> {
+interface NumLayoutItemBase<T extends NumType, Signed extends Boolean>
+    extends LayoutItemBase<Signed extends true ? "int" : "uint"> {
   size: T extends bigint ? number : NumberSize,
+  endianness?: Endianness, //default is big
 };
 
-export interface PrimitiveFixedUintLayoutItem<T extends UintType>
-  extends UintLayoutItemBase<T>, PrimitiveFixedCustom<T> {};
+interface PrimitiveFixedNumLayoutItem<T extends NumType, Signed extends Boolean>
+  extends NumLayoutItemBase<T, Signed>, PrimitiveFixedCustom<T> {};
 
-export interface OptionalToFromUintLayoutItem<T extends UintType>
-  extends UintLayoutItemBase<T>, OptionalToFromCustom<T> {};
+interface OptionalToFromNumLayoutItem<T extends NumType, Signed extends Boolean>
+  extends NumLayoutItemBase<T, Signed>, OptionalToFromCustom<T> {};
 
 export interface FixedPrimitiveBytesLayoutItem
   extends LayoutItemBase<"bytes">, PrimitiveFixedCustom<BytesType> {};
@@ -76,11 +79,13 @@ export interface FixedSizeBytesLayoutItem extends LayoutItemBase<"bytes"> {
 //  undefined means it will consume the rest of the data
 export interface LengthPrefixedBytesLayoutItem extends LayoutItemBase<"bytes"> {
   readonly lengthSize?: NumberSize,
+  readonly lengthEndianness?: Endianness, //default is big
   readonly custom?: CustomConversion<BytesType, any>,
 };
 
 export interface ArrayLayoutItem extends LayoutItemBase<"array"> {
   readonly lengthSize?: NumberSize,
+  readonly lengthEndianness?: Endianness, //default is big
   readonly arrayItem: LayoutItem,
 };
 
@@ -92,23 +97,27 @@ type PlainId = number;
 type ConversionId = readonly [number, unknown];
 type IdLayoutPair<Id extends PlainId | ConversionId, L extends Layout = Layout> = readonly [Id, L];
 export interface SwitchLayoutItem extends LayoutItemBase<"switch"> {
-  readonly idTag?: string,
   readonly idSize: NumberSize,
+  readonly idTag?: string,
+  readonly idEndianness?: Endianness, //default is big
   readonly idLayoutPairs: readonly IdLayoutPair<PlainId>[] | readonly IdLayoutPair<ConversionId>[],
 }
 
-export type UintLayoutItem = |
-  PrimitiveFixedUintLayoutItem<number> |
-  OptionalToFromUintLayoutItem<number> |
-  PrimitiveFixedUintLayoutItem<bigint> |
-  OptionalToFromUintLayoutItem<bigint>;
+type NumLayoutItem<Signed extends boolean = boolean> =
+  PrimitiveFixedNumLayoutItem<number, Signed> |
+  OptionalToFromNumLayoutItem<number, Signed> |
+  PrimitiveFixedNumLayoutItem<bigint, Signed> |
+  OptionalToFromNumLayoutItem<bigint, Signed>;
+
+export type IntLayoutItem = NumLayoutItem<true>;
+export type UintLayoutItem = NumLayoutItem<false>;
 export type BytesLayoutItem = |
   FixedPrimitiveBytesLayoutItem |
   FixedValueBytesLayoutItem |
   FixedSizeBytesLayoutItem |
   LengthPrefixedBytesLayoutItem;
 export type LayoutItem =
-  UintLayoutItem | BytesLayoutItem | ArrayLayoutItem | ObjectLayoutItem | SwitchLayoutItem;
+  IntLayoutItem | UintLayoutItem | BytesLayoutItem | ArrayLayoutItem | ObjectLayoutItem | SwitchLayoutItem;
 export type NamedLayoutItem = LayoutItem & { readonly name: string };
 export type Layout = readonly NamedLayoutItem[];
 
@@ -134,14 +143,14 @@ type IdLayoutPairsToTypeUnion<T extends IdLayoutPairArray, IdTag extends string>
   : never;
 
 export type LayoutItemToType<I extends LayoutItem> =
-  [I] extends [UintLayoutItem]
-  ? I["custom"] extends UintType
+  [I] extends [NumLayoutItem]
+  ? I["custom"] extends NumType
     ? I["custom"]
-    : I["custom"] extends CustomConversion<infer FromType extends UintType, infer ToType>
+    : I["custom"] extends CustomConversion<infer FromType extends NumType, infer ToType>
     ? ToType
-    : I["custom"] extends FixedConversion<infer FromType extends UintType, infer ToType>
+    : I["custom"] extends FixedConversion<infer FromType extends NumType, infer ToType>
     ? ToType
-    : UintSizeToPrimitive<I["size"]>
+    : NumSizeToPrimitive<I["size"]>
   : [I] extends [BytesLayoutItem]
   ? I["custom"] extends CustomConversion<BytesType, infer ToType>
     ? ToType
