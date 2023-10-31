@@ -1,4 +1,5 @@
 import {
+  Endianness,
   Layout,
   LayoutItem,
   NamedLayoutItem,
@@ -8,12 +9,12 @@ import {
   FixedValueBytesLayoutItem,
   SwitchLayoutItem,
   CustomConversion,
-  UintType,
-  isUintType,
+  NumType,
+  isNumType,
   isBytesType,
   numberMaxSize,
 } from "./layout";
-import { checkUint8ArrayDeeplyEqual, checkUint8ArraySize, checkUintEquals } from "./utils";
+import { checkUint8ArrayDeeplyEqual, checkUint8ArraySize, checkNumEquals } from "./utils";
 
 export function serializeLayout<const L extends Layout>(
   layout: L,
@@ -51,6 +52,7 @@ const withIgnoredName = (item: LayoutItem) => ({ ...item, name: "ignored" });
 
 const calcItemSize = (item: NamedLayoutItem, data: any) => {
   switch (item.binary) {
+    case "int":
     case "uint": {
       return item.size;
     }
@@ -102,26 +104,45 @@ const calcLayoutSize = (
   layout.reduce((acc: number, item: NamedLayoutItem) =>
     acc + calcItemSize(item, data[item.name]), 0);
 
-//Wormhole uses big endian by default for all uints
-//endianess can be easily added to UintLayout items if necessary
-export function serializeUint(
+
+//see numberMaxSize comment in layout.ts
+const maxAllowedNumberVal = 2**(numberMaxSize * 8);
+
+export function serializeNum(
   encoded: Uint8Array,
   offset: number,
-  val: UintType,
+  val: NumType,
   bytes: number,
+  endianness: Endianness = "big",
+  signed: boolean = false,
 ): number {
-  if (val < 0 || (typeof val === "number" && !Number.isInteger(val)))
-    throw new Error(`Value ${val} is not an unsigned integer`);
+  if (!signed && val < 0)
+    throw new Error(`Value ${val} is negative but unsigned`);
 
-  if (bytes > numberMaxSize && typeof val === "number" && val >= 2**(numberMaxSize * 8))
-    throw new Error(`Value ${val} is too large to be safely converted into an integer`);
+  if (typeof val === "number") {
+    if (!Number.isInteger(val))
+      throw new Error(`Value ${val} is not an integer`);
 
-  if (val >= 2n ** BigInt(bytes * 8))
+    if (bytes > numberMaxSize) {
+      if (val >= maxAllowedNumberVal)
+        throw new Error(`Value ${val} is too large to be safely converted into an integer`);
+
+      if (signed && val <= -maxAllowedNumberVal)
+        throw new Error(`Value ${val} is too small to be safely converted into an integer`);
+    }
+  }
+
+  const bound = 2n ** BigInt(bytes * 8)
+  if (val >= bound)
     throw new Error(`Value ${val} is too large for ${bytes} bytes`);
 
-  //big endian byte order
+  if (signed && val < -bound)
+    throw new Error(`Value ${val} is too small for ${bytes} bytes`);
+
+  //correctly handles both signed and unsigned values
   for (let i = 0; i < bytes; ++i)
-    encoded[offset + i] = Number((BigInt(val) >> BigInt(8*(bytes-i-1)) & 0xffn));
+    encoded[offset + i] =
+      Number((BigInt(val) >> BigInt(8*(endianness === "big" ? bytes-i-1 : i)) & 0xffn));
 
   return offset + bytes;
 }
@@ -134,24 +155,25 @@ function serializeLayoutItem(
 ): number {
   try {
     switch (item.binary) {
-      case "switch": {
-        const [idOrConversionId, layout] = findIdLayoutPair(item, data);
-        const idNum = (Array.isArray(idOrConversionId) ? idOrConversionId[0] : idOrConversionId);
-        offset = serializeUint(encoded, offset, idNum, item.idSize);
-        offset = serializeLayout(layout, data, encoded, offset);
-        break;
-      }
-      case "object": {
-        offset = serializeLayout(item.layout, data, encoded, offset);
-        break;
-      }
-      case "array": {
-        if (item.lengthSize !== undefined)
-          offset = serializeUint(encoded, offset, data.length, item.lengthSize);
+      case "int":
+      case "uint": {
+        const value = (() => {
+          if (isNumType(item.custom)) {
+            if (!(item as { omit?: boolean })?.omit)
+              checkNumEquals(item.custom, data);
+            return item.custom;
+          }
 
-        for (let i = 0; i < data.length; ++i)
-          offset = serializeLayoutItem(withIgnoredName(item.arrayItem), data[i], encoded, offset);
+          if (isNumType(item?.custom?.from))
+            //no proper way to deeply check equality of item.custom.to and data in JS
+            return item!.custom!.from;
 
+          type narrowedCustom = CustomConversion<number, any> | CustomConversion<bigint, any>;
+          return item.custom !== undefined ? (item.custom as narrowedCustom).from(data) : data;
+        })();
+
+        offset =
+          serializeNum(encoded, offset, value, item.size, item.endianness, item.binary === "int");
         break;
       }
       case "bytes": {
@@ -172,7 +194,8 @@ function serializeLayoutItem(
           if ("size" in item && item.size !== undefined)
             checkUint8ArraySize(ret, item.size);
           else if (item.lengthSize !== undefined)
-            offset = serializeUint(encoded, offset, ret.length, item.lengthSize);
+            offset =
+              serializeNum(encoded, offset, ret.length, item.lengthSize, item.lengthEndianness);
 
           return ret;
         })();
@@ -181,23 +204,25 @@ function serializeLayoutItem(
         offset += value.length;
         break;
       }
-      case "uint": {
-        const value = (() => {
-          if (isUintType(item.custom)) {
-            if (!(item as { omit?: boolean })?.omit)
-              checkUintEquals(item.custom, data);
-            return item.custom;
-          }
+      case "array": {
+        if (item.lengthSize !== undefined)
+          offset =
+            serializeNum(encoded, offset, data.length, item.lengthSize, item.lengthEndianness);
 
-          if (isUintType(item?.custom?.from))
-            //no proper way to deeply check equality of item.custom.to and data in JS
-            return item!.custom!.from;
+        for (let i = 0; i < data.length; ++i)
+          offset = serializeLayoutItem(withIgnoredName(item.arrayItem), data[i], encoded, offset);
 
-          type narrowedCustom = CustomConversion<number, any> | CustomConversion<bigint, any>;
-          return item.custom !== undefined ? (item.custom as narrowedCustom).from(data) : data;
-        })();
-
-        offset = serializeUint(encoded, offset, value, item.size);
+        break;
+      }
+      case "object": {
+        offset = serializeLayout(item.layout, data, encoded, offset);
+        break;
+      }
+      case "switch": {
+        const [idOrConversionId, layout] = findIdLayoutPair(item, data);
+        const idNum = (Array.isArray(idOrConversionId) ? idOrConversionId[0] : idOrConversionId);
+        offset = serializeNum(encoded, offset, idNum, item.idSize, item.idEndianness);
+        offset = serializeLayout(layout, data, encoded, offset);
         break;
       }
     }

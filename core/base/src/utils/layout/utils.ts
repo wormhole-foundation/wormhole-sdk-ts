@@ -5,7 +5,7 @@ export const checkUint8ArraySize = (custom: Uint8Array, size: number): void => {
     );
 }
 
-export const checkUintEquals = (custom: number | bigint, data: number | bigint): void => {
+export const checkNumEquals = (custom: number | bigint, data: number | bigint): void => {
   if (custom != data)
     throw new Error(
       `value mismatch: (constant) layout value: ${custom}, data value: ${data}`

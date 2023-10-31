@@ -2,11 +2,11 @@ import {
   Layout,
   LayoutItem,
   LengthPrefixedBytesLayoutItem,
-  isUintType,
+  isNumType,
   isBytesType,
 } from "./layout";
 
-import { serializeUint } from "./serialize";
+import { serializeNum } from "./serialize";
 
 //defining a bunch of types for readability
 type Uint = number;
@@ -56,17 +56,18 @@ function layoutItemMeta(
   }
 
   switch (item.binary) {
+    case "int":
     case "uint": {
       const fixedVal =
-        isUintType(item.custom)
+        isNumType(item.custom)
         ? item.custom
-        : isUintType(item?.custom?.from)
+        : isNumType(item?.custom?.from)
         ? item!.custom!.from
         : null;
 
       if (fixedVal !== null) {
         const serialized = new Uint8Array(item.size);
-        serializeUint(serialized, 0, fixedVal, item.size);
+        serializeNum(serialized, 0, fixedVal, item.size, item.endianness, item.binary === "int");
         return knownFixed(item.size, serialized);
       }
 
@@ -95,12 +96,12 @@ function layoutItemMeta(
     }
     case "switch": {
       const caseFixedBytes = item.idLayoutPairs.map(_ => []) as FixedBytes[];
-      const {idSize} = item;
+      const {idSize, idEndianness} = item;
       const caseBounds = item.idLayoutPairs.map(([idOrConversionId, layout], caseIndex) => {
         const idVal = Array.isArray(idOrConversionId) ? idOrConversionId[0] : idOrConversionId;
         if (offset !== null) {
           const serializedId = new Uint8Array(idSize);
-          serializeUint(serializedId, 0, idVal, idSize);
+          serializeNum(serializedId, 0, idVal, idSize, idEndianness);
           caseFixedBytes[caseIndex].push([0, serializedId]);
         }
         const ret = createLayoutMeta(layout, offset ? idSize : null, caseFixedBytes[caseIndex]);
