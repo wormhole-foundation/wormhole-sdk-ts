@@ -7,4 +7,4 @@ export const payloadIdItem = <ID extends number>(id: ID) =>
     size: 1,
     custom: id,
     omit: true,
-  } as const satisfies UintLayoutItem);
+  } as const satisfies UintLayoutItem & { readonly name: string });

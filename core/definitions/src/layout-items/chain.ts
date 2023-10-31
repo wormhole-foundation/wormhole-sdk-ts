@@ -27,7 +27,7 @@ export const chainItem = <
         if (val === 0) {
           if (!opts?.allowNull)
             throw new Error(
-              "ChainId 0 is not valid for this module and action"
+              "ChainId 0 is not valid for this protocol and action"
             );
 
           return null as AllowNull<C[number], N>;
@@ -45,7 +45,7 @@ export const chainItem = <
       from: (val: AllowNull<C[number], N>): number =>
         val == null ? 0 : chainToChainId(val),
     } satisfies CustomConversion<number, AllowNull<C[number], N>>,
-  } as const satisfies Omit<UintLayoutItem, "name">);
+  } as const satisfies UintLayoutItem);
 
 export const fixedChainItem = <C extends ChainName>(chain: C) =>
   ({
@@ -54,4 +54,4 @@ export const fixedChainItem = <C extends ChainName>(chain: C) =>
       to: chain,
       from: chainToChainId(chain),
     } satisfies FixedConversion<number, C>,
-  } as const satisfies Omit<UintLayoutItem, "name">);
+  } as const satisfies UintLayoutItem);

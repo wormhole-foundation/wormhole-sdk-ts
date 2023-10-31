@@ -69,9 +69,7 @@ const actionTuples = [
           name: "guardians",
           binary: "array",
           lengthSize: 1,
-          layout: [
-            { name: "address", binary: "bytes", size: 20 }, //TODO better (custom) type?
-          ],
+          arrayItem: { binary: "bytes", size: 20 }, //TODO better (custom) type?
         },
       ],
     },

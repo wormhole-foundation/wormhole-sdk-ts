@@ -1,7 +1,7 @@
 import {
   encoding,
   Layout,
-  LayoutItem,
+  NamedLayoutItem,
   LayoutToType,
   layoutDiscriminator,
   serializeLayout,
@@ -22,7 +22,7 @@ import { keccak256 } from "./utils";
 
 //LayoutLiteralToLayoutMapping is the compile-time analog/complement to the runtime
 //  payload factory. It uses TypeScript's interface merging mechanic to "dynamically" extend known
-//  payload types that are declared in different modules. This allows us to have full type safety
+//  payload types that are declared in different protocols. This allows us to have full type safety
 //  when constructing payloads via the factory without having to ever declare the mapping of all
 //  payloads and their respective layouts in a single place (which, besides being a terrible code
 //  smell, would also prevent users of the SDK to register their own payload types!)
@@ -104,10 +104,10 @@ const headerLayout = [
     name: "signatures",
     binary: "array",
     lengthSize: 1,
-    layout: guardianSignatureLayout,
+    arrayItem: { binary: "object", layout: guardianSignatureLayout },
   },
 ] as const satisfies Layout;
-
+ 
 //envelope + payload are getting hashed and signed
 const envelopeLayout = [
   { name: "timestamp", binary: "uint", size: 4 },
@@ -176,27 +176,21 @@ const payloadLiteralToPayloadItem = <PL extends PayloadLiteral>(
         name: "payload",
         binary: "object",
         layout: getPayloadLayout(payloadLiteral),
-      } as const)) satisfies LayoutItem;
+      } as const)) satisfies NamedLayoutItem;
 
 //annoyingly we can't use the return value of payloadLiteralToPayloadItem
 type PayloadLiteralToDynamicItems<PL extends PayloadLiteral> =
-  DynamicItemsOfLayout<
-    [
-      ...typeof baseLayout,
-      PL extends LayoutLiteral
-        ? {
-            name: "payload";
-            binary: "object";
-            layout: DynamicItemsOfLayout<LayoutOf<PL>>;
-          }
-        : { name: "payload"; binary: "bytes" },
-    ]
-  >;
+  DynamicItemsOfLayout<[
+    ...typeof baseLayout,
+    PL extends LayoutLiteral
+    ? { name: "payload"; binary: "object"; layout: DynamicItemsOfLayout<LayoutOf<PL>> }
+    : { name: "payload"; binary: "bytes" },
+  ]>;
 
-export const createVAA = <PL extends PayloadLiteral = "Uint8Array">(
+export function createVAA<PL extends PayloadLiteral = "Uint8Array">(
   payloadLiteral: PL,
   vaaData: LayoutToType<PayloadLiteralToDynamicItems<PL>>,
-): VAA<PL> => {
+): VAA<PL> {
   const [protocolName, payloadName] = decomposeLiteral(payloadLiteral);
   const bodyLayout = [
     ...envelopeLayout,
@@ -249,9 +243,9 @@ export function registerPayloadTypes(
     registerPayloadType(protocol, name, layout);
 }
 
-export const serialize = <PL extends PayloadLiteral>(
+export function serialize<PL extends PayloadLiteral>(
   vaa: VAA<PL>,
-): Uint8Array => {
+): Uint8Array {
   const layout = [
     ...baseLayout,
     payloadLiteralToPayloadItem(vaa.payloadLiteral),
@@ -259,10 +253,10 @@ export const serialize = <PL extends PayloadLiteral>(
   return serializeLayout(layout, vaa as unknown as LayoutToType<typeof layout>);
 };
 
-export const serializePayload = <PL extends PayloadLiteral>(
+export function serializePayload<PL extends PayloadLiteral>(
   payloadLiteral: PL,
   payload: PayloadLiteralToPayloadType<PL>,
-) => {
+) {
   if (payloadLiteral === "Uint8Array") return payload as Uint8Array;
 
   const layout = getPayloadLayout(payloadLiteral);
