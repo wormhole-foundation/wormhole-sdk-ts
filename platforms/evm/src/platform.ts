@@ -1,21 +1,18 @@
 import {
+  AutomaticCircleBridge,
+  AutomaticTokenBridge,
   ChainName,
-  TxHash,
-  WormholeMessageId,
-  isWormholeMessageId,
   ChainsConfig,
-  networkPlatformConfigs,
+  CircleBridge,
   DEFAULT_NETWORK,
   Network,
-  toNative,
   Platform,
-  TokenBridge,
-  AutomaticTokenBridge,
-  CircleBridge,
-  AutomaticCircleBridge,
-  WormholeCore,
   ProtocolName,
-  loadProtocolModule,
+  TokenBridge,
+  TxHash,
+  WormholeCore,
+  WormholeMessageId,
+  networkPlatformConfigs
 } from '@wormhole-foundation/connect-sdk';
 
 import { ethers } from 'ethers';
@@ -33,8 +30,9 @@ export module EvmPlatform {
   export const platform = 'Evm';
   export let network: Network = DEFAULT_NETWORK;
   export let conf: ChainsConfig = networkPlatformConfigs(network, platform);
-
   export type Type = typeof platform;
+
+  const registeredProtocols = new Map<ProtocolName, any>();
 
   export const {
     nativeTokenId,
@@ -59,6 +57,7 @@ export module EvmPlatform {
     return EvmPlatform;
   }
 
+
   export function getRpc(chain: ChainName): ethers.Provider {
     if (chain in conf) return ethers.getDefaultProvider(conf[chain]!.rpc);
     throw new Error('No configuration available for chain: ' + chain);
@@ -69,55 +68,43 @@ export module EvmPlatform {
     throw new Error('No configuration available for chain: ' + chain);
   }
 
-  export async function getProtocol<P extends ProtocolName>(
+  export function registerProtocol<PN extends ProtocolName>(name: PN, module: any): void {
+    if (registeredProtocols.has(name)) throw new Error('Protocol already registered: ' + name);
+    registeredProtocols.set(name, module);
+  }
+
+  export function getProtocol<P extends ProtocolName>(
     protocol: P,
-  ): Promise<any> {
-    try {
-      switch (protocol) {
-        case 'TokenBridge':
-        case 'AutomaticTokenBridge':
-          const tb = await loadProtocolModule(platform, 'tokenbridge');
-          if (platform + protocol in tb) return tb[platform + protocol];
-        case 'CircleBridge':
-        case 'AutomaticCircleBridge':
-          const cb = await loadProtocolModule(platform, 'cctp');
-          if (platform + protocol in cb) return cb[platform + protocol];
-        case 'WormholeCore':
-          const core = await loadProtocolModule(platform, 'core');
-          if (platform + protocol in core) return core[platform + protocol];
-        default:
-          throw new Error('Protocol not supported: ' + protocol);
-      }
-    } catch (e) {
-      console.error('Error loading ' + protocol, e);
-      throw e;
-    }
+  ): any {
+    if (!registeredProtocols.has(protocol))
+      throw new Error('Protocol not registered: ' + protocol);
+    return registeredProtocols.get(protocol);
   }
 
   export async function getWormholeCore(
     rpc: ethers.Provider,
   ): Promise<WormholeCore<'Evm'>> {
-    return (await getProtocol('WormholeCore')).fromProvider(rpc, conf);
+    return getProtocol('WormholeCore').fromProvider(rpc, conf);
   }
   export async function getTokenBridge(
     rpc: ethers.Provider,
   ): Promise<TokenBridge<'Evm'>> {
-    return (await getProtocol('TokenBridge')).fromProvider(rpc, conf);
+    return getProtocol('TokenBridge').fromProvider(rpc, conf);
   }
   export async function getAutomaticTokenBridge(
     rpc: ethers.Provider,
   ): Promise<AutomaticTokenBridge<'Evm'>> {
-    return (await getProtocol('TokenBridge')).fromProvider(rpc, conf);
+    return getProtocol('TokenBridge').fromProvider(rpc, conf);
   }
   export async function getCircleBridge(
     rpc: ethers.Provider,
   ): Promise<CircleBridge<'Evm'>> {
-    return (await getProtocol('CircleBridge')).fromProvider(rpc, conf);
+    return getProtocol('CircleBridge').fromProvider(rpc, conf);
   }
   export async function getAutomaticCircleBridge(
     rpc: ethers.Provider,
   ): Promise<AutomaticCircleBridge<'Evm'>> {
-    return (await getProtocol('AutomaticCircleBridge')).fromProvider(rpc, conf);
+    return getProtocol('AutomaticCircleBridge').fromProvider(rpc, conf);
   }
 
   export async function parseTransaction(

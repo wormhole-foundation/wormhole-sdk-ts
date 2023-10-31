@@ -4,7 +4,6 @@ export * from "./config";
 export * from "./wormholeTransfer";
 export * from "./common";
 
-export * from "./protocols/loadProtocol";
 export * from "./protocols/tokenTransfer";
 export * from "./protocols/cctpTransfer";
 export * from "./protocols/gatewayTransfer";

@@ -6,9 +6,14 @@ import {
 } from "@wormhole-foundation/connect-sdk";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 
+import * as evmTb from "@wormhole-foundation/connect-sdk-evm-tokenbridge";
+import * as evmCore from "@wormhole-foundation/connect-sdk-evm-core";
+
 import { getStuff } from "./helpers";
 
 (async function () {
+  evmTb.registerProtocols();
+  evmCore.registerProtocols();
   // Setup
   const snd = EvmPlatform.getChain("Avalanche");
   const rcv = EvmPlatform.getChain("Ethereum");
