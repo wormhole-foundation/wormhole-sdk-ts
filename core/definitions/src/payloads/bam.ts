@@ -5,7 +5,7 @@ import { RegisterPayloadTypes, NamedPayloads, registerPayloadTypes } from "../va
 const bamAddressItem = {
   binary: "bytes",
   lengthSize: 2
-} as const satisfies Omit<LengthPrefixedBytesLayoutItem, "name">;
+} as const satisfies LengthPrefixedBytesLayoutItem;
 
 const customOrEmpty = (custom: any) => custom ? { custom } : {};
 

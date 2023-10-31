@@ -1,13 +1,14 @@
+import { Layout, LengthPrefixedBytesLayoutItem } from "@wormhole-foundation/sdk-base";
 import {
-  Layout,
-  LayoutItem,
-  LengthPrefixedBytesLayoutItem,
-
-} from "@wormhole-foundation/sdk-base";
-import { payloadIdItem, universalAddressItem, amountItem } from "../layout-items";
+  payloadIdItem,
+  universalAddressItem,
+  amountItem,
+  circleDomainItem,
+  circleNonceItem
+} from "../layout-items";
 import { RegisterPayloadTypes, NamedPayloads, registerPayloadTypes } from "../vaa";
 
-const depositWithPayloadBase =[
+const depositWithPayloadBase = [
   payloadIdItem(1),
   {
     name: "token",
@@ -17,9 +18,9 @@ const depositWithPayloadBase =[
       { name: "amount", ...amountItem },
     ],
   },
-  { name: "sourceDomain", binary: "uint", size: 4 },
-  { name: "targetDomain", binary: "uint", size: 4 },
-  { name: "nonce", binary: "uint", size: 8 },
+  { name: "sourceDomain", ...circleDomainItem },
+  { name: "targetDomain", ...circleDomainItem },
+  { name: "nonce", ...circleNonceItem },
   { name: "caller", ...universalAddressItem },
   { name: "mintRecipient", ...universalAddressItem },
 ] as const;
@@ -42,7 +43,6 @@ export const depositWithBytesPayload = <C extends Pick<LengthPrefixedBytesLayout
   ...depositWithPayloadBase,
   { name: "payload", binary: "bytes", lengthSize: 2, ...customPayload}
 ] as const;
-
 
 export const namedPayloads = [
   ["DepositWithPayload", depositWithBytesPayload({})],
