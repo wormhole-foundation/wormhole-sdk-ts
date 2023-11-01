@@ -8,9 +8,9 @@ import {
   nativeChainAddress,
 } from "@wormhole-foundation/connect-sdk";
 
-import { getCosmwasmSigner } from "@wormhole-foundation/connect-sdk-cosmwasm";
-import { getEvmSigner } from "@wormhole-foundation/connect-sdk-evm";
-import { getSolanaSigner } from "@wormhole-foundation/connect-sdk-solana";
+import { getCosmwasmSigner } from "@wormhole-foundation/connect-sdk-cosmwasm/src/testing";
+import { getEvmSigner } from "@wormhole-foundation/connect-sdk-evm/src/testing";
+import { getSolanaSigner } from "@wormhole-foundation/connect-sdk-solana/src/testing";
 
 // read in from `.env`
 require("dotenv").config();
