@@ -4,5 +4,6 @@ export * from './platform';
 export * from './chain';
 export * from './unsignedTransaction';
 export * from './types';
-export * from './signer';
 export * from './utils';
+
+export * as testing from './testing';

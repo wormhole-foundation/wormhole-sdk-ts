@@ -18,6 +18,16 @@ npm install @wormhole-foundation/connect-sdk-solana
 npm install @wormhole-foundation/connect-sdk-cosmwasm
 ```
 
+And any protocols you intend to use
+
+```bash
+npm install @wormhole-foundation/connect-sdk-evm-core
+npm install @wormhole-foundation/connect-sdk-evm-tokenbridge
+
+npm install @wormhole-foundation/connect-sdk-solana-core
+npm install @wormhole-foundation/connect-sdk-solana-tokenbridge
+```
+
 ## Usage
 
 A developer would use the core connect-sdk package in conjunction with 1 or more of the chain context packages. Most developers don't use every single chain and may only use a couple, this allows developers to import only the dependencies they actually need.
@@ -28,6 +38,13 @@ Getting started is simple, just import and pass in the [Platform](#platforms) mo
 import { Wormhole, Signer } from '@wormhole-foundation/connect-sdk';
 import { EvmContext } from '@wormhole-foundation/connect-sdk-evm';
 import { SolanaContext } from '@wormhole-foundation/connect-sdk-solana';
+
+// include the protocols you wish to use
+import "@wormhole-foundation/connect-sdk-evm-core"
+import "@wormhole-foundation/connect-sdk-evm-tokenbridge"
+import "@wormhole-foundation/connect-sdk-solana-core"
+import "@wormhole-foundation/connect-sdk-solana-tokenbridge"
+
 
 const network = "Mainnet"; // Or "Testnet"
 const wh = new Wormhole(network, [EvmContext, SolanaContext]);
@@ -222,6 +239,9 @@ Using the `WormholeTransfer` abstractions is the recommended way to interact wit
 ```ts
 import {signSendWait} from '@wormhole-foundation/connect-sdk';
 
+import "@wormhole-foundation/connect-sdk-evm-core"
+import "@wormhole-foundation/connect-sdk-evm-tokenbridge"
+
 // ...
 
 const tb = await srcChain.getTokenBridge() // => TokenBridge<'Evm'>
@@ -275,7 +295,7 @@ export interface SignAndSendSigner {
 ```
 
 
-See the [example signer](https://github.com/wormhole-foundation/connect-sdk/blob/develop/platforms/evm/src/signer.ts) for an example of how to implement a signer for a specific chain or platform.
+See the testing signers ([Evm](https://github.com/wormhole-foundation/connect-sdk/blob/develop/platforms/evm/src/testing/signer.ts), [Solana](https://github.com/wormhole-foundation/connect-sdk/blob/develop/platforms/solana/src/testing/signer.ts), ...) for an example of how to implement a signer for a specific chain or platform.
 
 
 ```ts
