@@ -12,7 +12,6 @@ export interface WrappedRegistryResponse {
   address: string;
 }
 
-// TODO: do >1 key at a time
 export const searchCosmosLogs = (
   key: string,
   logs: readonly cosmosLogs.Log[],

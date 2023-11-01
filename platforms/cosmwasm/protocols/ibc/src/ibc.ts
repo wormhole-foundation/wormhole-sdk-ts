@@ -243,8 +243,8 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
     if (xfers.length === 0)
       throw new Error(`No transfers found on ${this.chain} in tx: ${tx}`);
 
-    // TODO
-    if (xfers.length > 1) console.error(">1 xfer in tx; why");
+    if (xfers.length > 1)
+      throw new Error(`Found ${xfers.length} transfers, expected 1`);
 
     return xfers[0];
   }
@@ -294,7 +294,6 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
     if (packets.length === 0)
       throw new Error(`No IBC Transfers on ${this.chain} found in: ${tx.hash}`);
 
-    // TODO: gotta be a way to parse these out better?
     // Try to assemble attributes from packet fields
     const xfers = new Set<IbcTransferInfo>();
     for (const packet of packets) {

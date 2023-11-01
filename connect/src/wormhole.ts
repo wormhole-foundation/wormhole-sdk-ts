@@ -280,8 +280,6 @@ export class Wormhole {
       | "native",
     recipient: ChainAddress,
   ): Promise<ChainAddress> {
-    // TODO: same as supportsSendWithRelay, need some
-    // way to id this in a less sketchy way
     const chain = this.getChain(recipient.chain);
     if (!("getTokenAccount" in chain)) return recipient;
 

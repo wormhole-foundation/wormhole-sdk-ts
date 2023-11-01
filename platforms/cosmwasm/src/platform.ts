@@ -58,6 +58,7 @@ export module CosmwasmPlatform {
     getCurrentBlock,
     chainFromChainId,
     chainFromRpc,
+    getNativeDenom,
   } = CosmwasmUtils;
 
   export const {
@@ -107,13 +108,6 @@ export module CosmwasmPlatform {
     rpc: CosmWasmClient,
   ): Promise<IbcBridge<"Cosmwasm">> {
     return await getProtocol("IbcBridge").fromRpc(rpc, conf);
-  }
-
-  // TODO: should other platforms have something like this?
-  export function getNativeDenom(chain: ChainName): string {
-    // TODO: required because of const map
-    if (network === "Devnet") throw new Error("No devnet native denoms");
-    return chainToNativeDenoms(network, chain as PlatformToChains<Type>);
   }
 
   export async function parseTransaction(

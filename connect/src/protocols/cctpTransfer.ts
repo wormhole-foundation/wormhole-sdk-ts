@@ -167,8 +167,6 @@ export class CircleTransfer implements WormholeTransfer {
     return tt;
   }
 
-  // TODO: should be allowed to be partial msg,
-  // we can recover from either the msg or msghash
   private static async fromCircleMessageId(
     wh: Wormhole,
     messageId: CircleMessageId,

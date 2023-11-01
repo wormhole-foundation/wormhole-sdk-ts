@@ -12,12 +12,12 @@ import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
 //
 
-import "@wormhole-foundation/connect-sdk-evm-core"
-import "@wormhole-foundation/connect-sdk-evm-tokenbridge"
-import "@wormhole-foundation/connect-sdk-solana-core"
-import "@wormhole-foundation/connect-sdk-solana-tokenbridge"
-import "@wormhole-foundation/connect-sdk-cosmwasm-core"
-import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge"
+import "@wormhole-foundation/connect-sdk-evm-core";
+import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
+import "@wormhole-foundation/connect-sdk-solana-core";
+import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
+import "@wormhole-foundation/connect-sdk-cosmwasm-core";
+import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
 
 import { TransferStuff, getStuff, waitLog } from "./helpers";
 

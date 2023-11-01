@@ -26,6 +26,7 @@ import {
   chainToAddressPrefix,
   cosmwasmNetworkChainToChainId,
   cosmwasmNetworkChainToRestUrls,
+  evmLikeChains,
 } from "./constants";
 import { CosmwasmPlatform } from "./platform";
 import { CosmwasmUnsignedTransaction } from "./unsignedTransaction";
@@ -36,9 +37,8 @@ export async function getCosmwasmSigner(
 ): Promise<Signer> {
   const [network, chain] = await CosmwasmPlatform.chainFromRpc(rpc);
 
-  // TODO: add this to config/consts
   // Use the EVM signer for Evmos and Injective only
-  if (["Evmos", "Injective"].includes(chain)) {
+  if (evmLikeChains.includes(chain)) {
     return new CosmwasmEvmSigner(chain, network, mnemonic);
   }
 

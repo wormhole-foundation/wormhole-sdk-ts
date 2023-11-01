@@ -205,7 +205,6 @@ describe('TokenBridge Tests', () => {
     });
 
     test('Submit Attestation', async () => {
-      // TODO: generator for this
       const vaa = createVAA('TokenBridge:AttestMeta', {
         payload: {
           token: {

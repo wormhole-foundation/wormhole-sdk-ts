@@ -33,7 +33,8 @@ export module EvmUtils {
       throw new Error(`invalid chain for EVM: ${chain}`);
     return {
       chain: chain,
-      address: new EvmAddress(EvmZeroAddress) as any, // TODO: fix weird type error
+      // @ts-ignore
+      address: new EvmAddress(EvmZeroAddress),
     };
   }
 
@@ -111,7 +112,7 @@ export module EvmUtils {
 
       // Wait for confirmation
       const txReceipt = await txRes.wait();
-      if (txReceipt === null) continue; // TODO: throw error?
+      if (txReceipt === null) throw new Error('Received null TxReceipt');
     }
     return txhashes;
   }

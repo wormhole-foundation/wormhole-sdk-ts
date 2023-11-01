@@ -144,8 +144,6 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
         address: new UniversalAddress(meta.tokenAddress),
       };
     } catch (_) {
-      // TODO: https://github.com/wormhole-foundation/wormhole/blob/main/sdk/js/src/token_bridge/getOriginalAsset.ts#L200
-      // the current one returns 0s for address
       throw ErrNotWrapped(token.toString());
     }
   }
@@ -200,8 +198,8 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
   ): AsyncGenerator<SolanaUnsignedTransaction> {
     if (!payer) throw new Error('Payer required to create attestation');
     const senderAddress = new SolanaAddress(payer).unwrap();
-    // TODO:
-    const nonce = 0; // createNonce().readUInt32LE(0);
+    // TODO: createNonce().readUInt32LE(0);
+    const nonce = 0;
 
     const transferIx = await utils.createBridgeFeeTransferInstruction(
       this.connection,
@@ -495,8 +493,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     vaa: TokenBridge.VAA<'Transfer' | 'TransferWithPayload'>,
     unwrapNative: boolean = true,
   ): AsyncGenerator<SolanaUnsignedTransaction> {
-    // TODO unwrapNative?
-    // TODO: check if vaa.payload.token.address is native Sol
+    // TODO: unwrapNative? check if vaa.payload.token.address is native Sol
 
     const { blockhash } = await this.connection.getLatestBlockhash();
     const senderAddress = new SolanaAddress(sender).unwrap();

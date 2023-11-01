@@ -234,7 +234,6 @@ describe('TokenBridge Tests', () => {
     });
 
     test('Submit Attestation', async () => {
-      // TODO: generator for this
       const vaa = createVAA('TokenBridge:AttestMeta', {
         payload: {
           token: { address: nativeAddress.toUniversalAddress(), chain: chain },
@@ -301,7 +300,6 @@ describe('TokenBridge Tests', () => {
         });
 
         test('Token', async () => {
-          // TODO: find a way to mock the allowance check
           const xfer = tb.transfer(
             sender,
             recipient,

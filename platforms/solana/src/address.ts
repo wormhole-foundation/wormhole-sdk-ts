@@ -19,7 +19,6 @@ declare global {
   }
 }
 
-// TODO: is there a zero address for Solana?
 export const SolanaZeroAddress = '11111111111111111111111111111111';
 
 export class SolanaAddress implements Address {
