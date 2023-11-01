@@ -64,4 +64,5 @@ export const evmChainIdToNetworkChainPair = constMap(
   networkChainEvmCIdEntries,
   [2, [0, 1]],
 );
+
 export const evmNetworkChainToEvmChainId = constMap(networkChainEvmCIdEntries);

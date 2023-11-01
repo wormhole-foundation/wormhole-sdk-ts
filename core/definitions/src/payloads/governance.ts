@@ -135,11 +135,13 @@ const sdkProtocolNameAndGovernanceVaaModuleEntries = [
   ["AutomaticCircleBridge", "CircleIntegration"],
 ] as const satisfies RoArray<readonly [ProtocolName, string]>;
 
+type GovernedProtocols = typeof sdkProtocolNameAndGovernanceVaaModuleEntries[number][0];
+
 const sdkProtocolNameToGovernanceVaaModuleMapping = constMap(
   sdkProtocolNameAndGovernanceVaaModuleEntries
 );
 
-const protocolConversion = <P extends ProtocolName>(protocol: P) =>
+const protocolConversion = <P extends GovernedProtocols>(protocol: P) =>
 ({
   to: protocol,
   from: ((): Uint8Array => {
@@ -163,7 +165,7 @@ const actionConversion = <A extends Action, N extends number>(
 } as const satisfies FixedConversion<N, A>);
 
 const headerLayout = <
-  P extends ProtocolName,
+  P extends GovernedProtocols,
   A extends Action,
   N extends number
 >(
@@ -187,7 +189,7 @@ const headerLayout = <
   ] as const satisfies Layout;
 
 const governancePayload = <
-  P extends ProtocolName,
+  P extends GovernedProtocols,
   A extends Action,
   N extends number
 >(

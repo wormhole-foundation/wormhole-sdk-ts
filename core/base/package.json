@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-base",
-  "version": "0.1.8-beta.7",
+  "version": "0.1.8-beta.9",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -15,23 +15,24 @@
   "license": "Apache-2.0",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
-  "types":"./dist/esm/index.d.ts",
-  "files":[
+  "types": "./dist/esm/index.d.ts",
+  "files": [
     "dist/**/*",
     "src/**/*"
   ],
   "dependencies": {
-    "@scure/base":"^1.1.3"
+    "@scure/base": "^1.1.3"
   },
   "sideEffects": false,
   "scripts": {
     "test": "jest --config ../../jest.config.ts __tests__/*.ts",
-    "build:cjs":"tsc -p ./tsconfig.cjs.json",
-    "build:esm":"tsc -p ./tsconfig.esm.json",
-    "build":"npm run build:cjs && npm run build:esm",
-    "rebuild":"npm run clean && npm run build:cjs && npm run build:esm",
+    "build:cjs": "tsc -p ./tsconfig.cjs.json",
+    "build:esm": "tsc -p ./tsconfig.esm.json",
+    "build": "npm run build:cjs && npm run build:esm",
+    "rebuild": "npm run clean && npm run build:cjs && npm run build:esm",
     "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo",
     "lint": "npm run prettier && eslint --fix",
+    "bump:beta": "bump prerelease",
     "prettier": "prettier --write ./src"
   }
 }

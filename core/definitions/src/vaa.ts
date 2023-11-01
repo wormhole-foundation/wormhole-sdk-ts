@@ -107,7 +107,7 @@ const headerLayout = [
     arrayItem: { binary: "object", layout: guardianSignatureLayout },
   },
 ] as const satisfies Layout;
- 
+
 //envelope + payload are getting hashed and signed
 const envelopeLayout = [
   { name: "timestamp", binary: "uint", size: 4 },
@@ -180,12 +180,18 @@ const payloadLiteralToPayloadItem = <PL extends PayloadLiteral>(
 
 //annoyingly we can't use the return value of payloadLiteralToPayloadItem
 type PayloadLiteralToDynamicItems<PL extends PayloadLiteral> =
-  DynamicItemsOfLayout<[
-    ...typeof baseLayout,
-    PL extends LayoutLiteral
-    ? { name: "payload"; binary: "object"; layout: DynamicItemsOfLayout<LayoutOf<PL>> }
-    : { name: "payload"; binary: "bytes" },
-  ]>;
+  DynamicItemsOfLayout<
+    [
+      ...typeof baseLayout,
+      PL extends LayoutLiteral
+        ? {
+            name: "payload";
+            binary: "object";
+            layout: DynamicItemsOfLayout<LayoutOf<PL>>;
+          }
+        : { name: "payload"; binary: "bytes" },
+    ]
+  >;
 
 export function createVAA<PL extends PayloadLiteral = "Uint8Array">(
   payloadLiteral: PL,
@@ -212,7 +218,7 @@ export function createVAA<PL extends PayloadLiteral = "Uint8Array">(
     ...bodyWithFixed,
     hash: keccak256(serializeLayout(bodyLayout, bodyWithFixed)),
   } as VAA<PL>;
-};
+}
 
 export function registerPayloadType(
   protocol: ProtocolName,
@@ -243,15 +249,13 @@ export function registerPayloadTypes(
     registerPayloadType(protocol, name, layout);
 }
 
-export function serialize<PL extends PayloadLiteral>(
-  vaa: VAA<PL>,
-): Uint8Array {
+export function serialize<PL extends PayloadLiteral>(vaa: VAA<PL>): Uint8Array {
   const layout = [
     ...baseLayout,
     payloadLiteralToPayloadItem(vaa.payloadLiteral),
   ] as const satisfies Layout;
   return serializeLayout(layout, vaa as unknown as LayoutToType<typeof layout>);
-};
+}
 
 export function serializePayload<PL extends PayloadLiteral>(
   payloadLiteral: PL,
@@ -261,7 +265,7 @@ export function serializePayload<PL extends PayloadLiteral>(
 
   const layout = getPayloadLayout(payloadLiteral);
   return serializeLayout(layout, payload as LayoutToType<typeof layout>);
-};
+}
 
 //string assumed to be in hex format
 export type Byteish = Uint8Array | string;

@@ -3,10 +3,14 @@ import {
   Signer,
   TransactionId,
   Wormhole,
+  normalizeAmount,
 } from "@wormhole-foundation/connect-sdk";
 // TODO: should we re-export the things they need? should we rename the underlying packages?
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { TransferStuff, getStuff, waitLog } from "./helpers";
+
+import "@wormhole-foundation/connect-sdk-evm-core";
+import "@wormhole-foundation/connect-sdk-evm-cctp";
 
 /*
 Notes:
@@ -29,8 +33,11 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
   const source = await getStuff(sendChain);
   const destination = await getStuff(rcvChain);
 
+  // 6 decimals for USDC (mosltly)
+  const amount = normalizeAmount("0.01", 6n);
+
   // Manual Circle USDC CCTP Transfer
-  await cctpTransfer(wh, 1_000_000n, source, destination, false);
+  await cctpTransfer(wh, amount, source, destination, false);
 
   // Automatic Circle USDC CCTP Transfer
   // await cctpTransfer(wh, 19_000_000n, source, destination, true);

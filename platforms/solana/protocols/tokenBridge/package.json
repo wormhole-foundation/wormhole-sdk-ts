@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/connect-sdk-solana-tokenbridge",
-  "version": "0.1.8-beta.7",
+  "version": "0.1.8-beta.9",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -40,12 +40,13 @@
     "rebuild": "npm run clean && npm run build:cjs && npm run build:esm",
     "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo",
     "lint": "npm run prettier && eslint --fix",
+    "bump:beta": "bump prerelease",
     "prettier": "prettier --write ./src"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.54.1",
     "@typescript-eslint/parser": "^5.54.1",
-    "@wormhole-foundation/connect-sdk-solana-tokenbridge":"*",
+    "@wormhole-foundation/connect-sdk-solana-tokenbridge": "*",
     "eslint": "^8.35.0",
     "eslint-config-prettier": "^8.7.0",
     "lint-staged": "^13.1.2",

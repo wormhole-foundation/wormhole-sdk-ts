@@ -30,6 +30,7 @@ export const protocols = [
   "CircleBridge",
   "AutomaticCircleBridge",
   "Relayer",
+  "IbcBridge",
   // not implemented
   "NftBridge",
 ] as const;

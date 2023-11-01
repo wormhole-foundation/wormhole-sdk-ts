@@ -42,13 +42,22 @@ export async function getStuff(
 
   switch (chain.platform.platform) {
     case "Solana":
-      signer = await getSolanaSigner(await chain.getRpc(), getEnv("SOL_PRIVATE_KEY"));
+      signer = await getSolanaSigner(
+        await chain.getRpc(),
+        getEnv("SOL_PRIVATE_KEY"),
+      );
       break;
     case "Cosmwasm":
-      signer = await getCosmwasmSigner(await chain.getRpc(), getEnv("COSMOS_MNEMONIC"));
+      signer = await getCosmwasmSigner(
+        await chain.getRpc(),
+        getEnv("COSMOS_MNEMONIC"),
+      );
       break;
     case "Evm":
-      signer = await getEvmSigner(await chain.getRpc(), getEnv("ETH_PRIVATE_KEY"));
+      signer = await getEvmSigner(
+        await chain.getRpc(),
+        getEnv("ETH_PRIVATE_KEY"),
+      );
       break;
     default:
       throw new Error("Unrecognized platform: " + chain.platform.platform);

@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/connect-sdk-evm-tokenbridge",
-  "version": "0.1.8-beta.7",
+  "version": "0.1.8-beta.9",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -41,12 +41,13 @@
   },
   "sideEffects": false,
   "scripts": {
-    "build:cjs":"tsc -p ./tsconfig.cjs.json",
-    "build:esm":"tsc -p ./tsconfig.esm.json",
-    "build":"npm run build:cjs && npm run build:esm",
-    "rebuild":"npm run clean && npm run build:cjs && npm run build:esm",
+    "build:cjs": "tsc -p ./tsconfig.cjs.json",
+    "build:esm": "tsc -p ./tsconfig.esm.json",
+    "build": "npm run build:cjs && npm run build:esm",
+    "rebuild": "npm run clean && npm run build:cjs && npm run build:esm",
     "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo",
     "lint": "npm run prettier && eslint --fix",
+    "bump:beta": "bump prerelease",
     "prettier": "prettier --write ./src"
   },
   "devDependencies": {
@@ -62,7 +63,7 @@
     "@wormhole-foundation/connect-sdk": "*",
     "@wormhole-foundation/connect-sdk-evm": "*",
     "@wormhole-foundation/connect-sdk-evm-core": "*",
-    "typechain":"^8.2.0",
+    "typechain": "^8.2.0",
     "ethers": "^6.5.1",
     "@typechain/ethers-v6": "^0.4.0"
   }

@@ -12,7 +12,6 @@ import "@wormhole-foundation/connect-sdk-evm-core";
 import { getStuff } from "./helpers";
 
 (async function () {
-
   // Setup
   const snd = EvmPlatform.getChain("Avalanche");
   const rcv = EvmPlatform.getChain("Ethereum");

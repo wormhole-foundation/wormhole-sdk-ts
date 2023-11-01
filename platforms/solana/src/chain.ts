@@ -24,7 +24,7 @@ export class SolanaChain extends ChainContext<'Solana'> {
         ? await tb.getWrappedNative()
         : token.toUniversalAddress();
 
-    const mint = new SolanaAddress(mintAddress).unwrap();
+    const mint = new SolanaAddress(mintAddress.toUint8Array()).unwrap();
     const owner = new SolanaAddress(address).unwrap();
 
     const ata = await getAssociatedTokenAddress(mint, owner);
