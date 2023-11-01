@@ -1,7 +1,7 @@
 import { PlatformName, lazyInstantiate } from "@wormhole-foundation/sdk-base";
 import { NativeAddress, ChainAddress } from "../address";
 import { AnyAddress, TokenId } from "../types";
-import { ProtocolVAA, payloadDiscriminator } from "../vaa";
+import { ProtocolVAA, ProtocolPayload, payloadDiscriminator } from "../vaa";
 import { UnsignedTransaction } from "../unsignedTransaction";
 import "../payloads/tokenBridge";
 import { RpcConnection } from "../rpc";
@@ -36,6 +36,7 @@ export function supportsAutomaticTokenBridge<P extends PlatformName>(
 
 export namespace TokenBridge {
   export type VAA<PayloadName extends string> = ProtocolVAA<"TokenBridge", PayloadName>;
+  export type Payload<PayloadName extends string> = ProtocolPayload<"TokenBridge", PayloadName>;
 
   // export const transferPayloadNames = ["Transfer", "TransferWithPayload"] as const;
   // export type TransferPayloadNames = typeof transferPayloadNames[number];
