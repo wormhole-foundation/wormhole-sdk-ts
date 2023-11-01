@@ -41,7 +41,7 @@ export function serializeLayout<const L extends Layout>(
   return encoded === undefined ? ret : offset;
 }
 
-const findIdLayoutPair = (item: SwitchLayoutItem, data: any) => {
+function findIdLayoutPair(item: SwitchLayoutItem, data: any) {
   const id = data[item.idTag ?? "id"];
   return (item.idLayoutPairs as any[]).find(([idOrConversionId]) =>
     (Array.isArray(idOrConversionId) ? idOrConversionId[1] : idOrConversionId) == id
@@ -50,7 +50,49 @@ const findIdLayoutPair = (item: SwitchLayoutItem, data: any) => {
 
 const withIgnoredName = (item: LayoutItem) => ({ ...item, name: "ignored" });
 
-const calcItemSize = (item: NamedLayoutItem, data: any) => {
+function staticCalcItemSize(item: NamedLayoutItem) {
+  switch (item.binary) {
+    case "int":
+    case "uint": {
+      return item.size;
+    }
+    case "bytes": {
+      if ("size" in item && item.size !== undefined)
+        return item.size;
+
+      if (isBytesType(item.custom))
+        return item.custom.length;
+
+      if (isBytesType(item?.custom?.from))
+        return item!.custom!.from.length;
+
+      throw new Error("Cannot statically determine size of dynamic bytes");
+    }
+    case "array":
+      throw new Error("Cannot statically determine size of dynamic array");
+    case "object": {
+      return calcLayoutSize(item.layout);
+    }
+    case "switch": {
+      let size = null;
+      if (item.idLayoutPairs.length === 0)
+        throw new Error(`switch item '${item.name}' has no idLayoutPairs`);
+
+      for (const [_, layout] of item.idLayoutPairs) {
+        const layoutSize = calcLayoutSize(layout);
+        if (size === null)
+          size = layoutSize;
+        else if (layoutSize !== size)
+          throw new Error(
+            "Cannot statically determine size of switch item with different layout sizes"
+          );
+      }
+      return item.idSize + size!;
+    }
+  }
+}
+
+function calcItemSize(item: NamedLayoutItem, data: any) {
   switch (item.binary) {
     case "int":
     case "uint": {
@@ -97,13 +139,13 @@ const calcItemSize = (item: NamedLayoutItem, data: any) => {
   }
 }
 
-const calcLayoutSize = (
+export function calcLayoutSize(
   layout: Layout,
-  data: LayoutToType<typeof layout>
-): number =>
-  layout.reduce((acc: number, item: NamedLayoutItem) =>
-    acc + calcItemSize(item, data[item.name]), 0);
-
+  data?: LayoutToType<typeof layout>
+): number {
+  return layout.reduce((acc: number, item: NamedLayoutItem) =>
+    acc + (data !== undefined ? calcItemSize(item, data[item.name]) : staticCalcItemSize(item)), 0);
+}
 
 //see numberMaxSize comment in layout.ts
 const maxAllowedNumberVal = 2**(numberMaxSize * 8);
