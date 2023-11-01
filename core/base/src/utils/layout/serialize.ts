@@ -142,7 +142,7 @@ export function serializeNum(
   //correctly handles both signed and unsigned values
   for (let i = 0; i < bytes; ++i)
     encoded[offset + i] =
-      Number((BigInt(val) >> BigInt(8*(endianness === "big" ? bytes-i-1 : i)) & 0xffn));
+      Number((BigInt(val) >> BigInt(8 * (endianness === "big" ? bytes-i-1 : i)) & 0xffn));
 
   return offset + bytes;
 }

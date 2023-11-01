@@ -125,6 +125,7 @@ export function addFixedValues<L extends Layout>(
   for (const item of layout) {
     const fromDynamic = () => dynamicValues[item.name as keyof typeof dynamicValues];
     switch (item.binary) {
+      case "int":
       case "uint":
       case "bytes": {
         if (!(item as {omit?: boolean})?.omit)
