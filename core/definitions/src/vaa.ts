@@ -41,7 +41,7 @@ type LayoutOf<LL extends LayoutLiteral> =
     ? Wormhole.PayloadLiteralToLayoutMapping[V]
     : never;
 
-type LayoutLiteralToPayloadType<LL extends LayoutLiteral> = LayoutToType<
+type LayoutLiteralToPayload<LL extends LayoutLiteral> = LayoutToType<
   LayoutOf<LL>
 >;
 
@@ -75,8 +75,8 @@ export const composeLiteral = <
   >;
 
 export type PayloadLiteral = LayoutLiteral | "Uint8Array";
-type PayloadLiteralToPayloadType<PL extends PayloadLiteral> =
-  PL extends LayoutLiteral ? LayoutLiteralToPayloadType<PL> : Uint8Array;
+export type Payload<PL extends PayloadLiteral> =
+  PL extends LayoutLiteral ? LayoutLiteralToPayload<PL> : Uint8Array;
 
 type DecomposeLiteral<PL extends PayloadLiteral> =
   PL extends `${infer Protocol}:${infer LayoutName}`
@@ -126,7 +126,7 @@ export interface VAA<PL extends PayloadLiteral = PayloadLiteral>
   readonly protocolName: DecomposeLiteral<PL>[0];
   readonly payloadName: DecomposeLiteral<PL>[1];
   readonly payloadLiteral: PL;
-  readonly payload: PayloadLiteralToPayloadType<PL>;
+  readonly payload: Payload<PL>;
   //TODO various problems with storing the hash here:
   // 1. On EVM the core bridge actually uses the double keccak-ed hash because of an early oversight
   // 2. As discussed on slack, storing memoized values on an object is a smell too
@@ -156,6 +156,16 @@ export type ProtocolVAA<
 > = ComposeLiteral<PN, PayloadName, PayloadLiteral> extends infer PL extends
   PayloadLiteral
   ? DistributiveVAA<PL>
+  : never;
+
+export type DistributivePayload<PL extends PayloadLiteral> =
+  PL extends PayloadLiteral ? Payload<PL> : never;
+
+export type ProtocolPayload<
+  PN extends ProtocolName,
+  PayloadName extends string,
+> = ComposeLiteral<PN, PayloadName, PayloadLiteral> extends infer PL extends PayloadLiteral
+  ? DistributivePayload<PL>
   : never;
 
 const payloadFactory = new Map<LayoutLiteral, Layout>();
@@ -259,7 +269,7 @@ export function serialize<PL extends PayloadLiteral>(vaa: VAA<PL>): Uint8Array {
 
 export function serializePayload<PL extends PayloadLiteral>(
   payloadLiteral: PL,
-  payload: PayloadLiteralToPayloadType<PL>,
+  payload: Payload<PL>,
 ) {
   if (payloadLiteral === "Uint8Array") return payload as Uint8Array;
 
@@ -414,14 +424,12 @@ export function deserialize<T extends PayloadLiteral | PayloadDiscriminator>(
 
 type DeserializedPair<LL extends LayoutLiteral = LayoutLiteral> =
   //enforce distribution over union types so we actually get matching pairs
-  //  i.e. [LL1, LayoutLiteralToPayloadType<LL1>] | [LL2, LayoutLiteralToPayloadType<LL2>] | ...
-  //  instead of [LL1 | LL2, LayoutLiteralToPayloadType<LL1 | LL2>]
-  LL extends LayoutLiteral
-    ? readonly [LL, LayoutLiteralToPayloadType<LL>]
-    : never;
+  //  i.e. [LL1, LayoutLiteralToPayload<LL1>] | [LL2, LayoutLiteralToPayload<LL2>] | ...
+  //  instead of [LL1 | LL2, LayoutLiteralToPayload<LL1 | LL2>]
+  LL extends LayoutLiteral ? readonly [LL, LayoutLiteralToPayload<LL>] : never;
 
 type DeserializePayloadReturn<T> = T extends PayloadLiteral
-  ? PayloadLiteralToPayloadType<T>
+  ? Payload<T>
   : T extends PayloadDiscriminator<infer LL>
   ? DeserializedPair<LL>
   : never;
