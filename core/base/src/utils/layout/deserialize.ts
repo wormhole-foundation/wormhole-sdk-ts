@@ -81,7 +81,7 @@ function deserializeNum<S extends number>(
     val |= BigInt(encoded[offset + i]) << BigInt(8 * (endianness === "big" ? bytes-i-1 : i));
 
   //check sign bit if value is indeed signed and adjust accordingly
-  if (signed && (encoded[offset + (endianness === "big" ? bytes-1 : 0)] & 0x80))
+  if (signed && (encoded[offset + (endianness === "big" ? 0 : bytes-1)] & 0x80))
     val -= 1n << BigInt(8 * bytes);
 
   return [

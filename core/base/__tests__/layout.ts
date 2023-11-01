@@ -172,6 +172,24 @@ describe("Layout tests", function () {
     expect(complete).toEqual(completeValues);
   });
 
+  const fixedInt = { name: "fixedSignedInt", binary: "int", size: 2 } as const;
+
+  it("should correctly serialize and deserialize signed integers", function () {
+    const layout = [fixedInt] as const;
+    const encoded = serializeLayout(layout, { fixedSignedInt: -257 });
+    expect(encoded).toEqual(new Uint8Array([0xfe, 0xff]));
+    const decoded = deserializeLayout(layout, encoded);
+    expect(decoded).toEqual({ fixedSignedInt: -257 });
+  });
+
+  it("should correctly serialize and deserialize little endian signed integers", function () {
+    const layout = [{...fixedInt, endianness: "little"}] as const;
+    const encoded = serializeLayout(layout, { fixedSignedInt: -257 });
+    expect(encoded).toEqual(new Uint8Array([0xff, 0xfe]));
+    const decoded = deserializeLayout(layout, encoded);
+    expect(decoded).toEqual({ fixedSignedInt: -257 });
+  });
+
   it("should serialize and deserialze correctly", function () {
     const encoded = serializeLayout(testLayout, completeValues);
     const decoded = deserializeLayout(testLayout, encoded);
