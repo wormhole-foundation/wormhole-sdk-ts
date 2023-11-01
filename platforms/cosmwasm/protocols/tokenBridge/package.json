@@ -1,5 +1,5 @@
 {
-  "name": "@wormhole-foundation/connect-sdk-cosmwasm",
+  "name": "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge",
   "version": "0.1.8-beta.7",
   "repository": {
     "type": "git",
@@ -57,17 +57,13 @@
     "eslint-config-prettier": "^8.7.0",
     "lint-staged": "^13.1.2",
     "prettier": "2.8.4",
-    "typescript": "5.1.6",
-    "@wormhole-foundation/connect-sdk-cosmwasm-core": "*",
-    "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge": "*",
-    "@wormhole-foundation/connect-sdk-cosmwasm-ibc": "*"
+    "typescript": "5.1.6"
   },
   "dependencies": {
     "@cosmjs/cosmwasm-stargate": "^0.31.0",
-    "@cosmjs/proto-signing": "^0.31.0",
     "@cosmjs/stargate": "^0.31.0",
-    "@cosmjs/tendermint-rpc": "^0.31.0",
+    "cosmjs-types": "^0.8.0",
     "@wormhole-foundation/connect-sdk": "*",
-    "cosmjs-types": "^0.8.0"
+    "@wormhole-foundation/connect-sdk-cosmwasm": "*"
   }
 }

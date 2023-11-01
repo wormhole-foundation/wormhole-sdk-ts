@@ -154,7 +154,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     try {
       await this.getWrappedAsset(token);
       return true;
-    } catch (_) { }
+    } catch (_) {}
     return false;
   }
 
@@ -170,7 +170,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     try {
       await getWrappedMeta(this.connection, this.tokenBridge.programId, mint);
       return toNative(this.chain, mint.toBase58());
-    } catch (_) { }
+    } catch (_) {}
 
     throw ErrNotWrapped(token.address.toUniversalAddress().toString());
   }
@@ -316,33 +316,33 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
 
     const tokenBridgeTransferIx = payload
       ? createTransferNativeWithPayloadInstruction(
-        this.connection,
-        this.tokenBridge.programId,
-        this.coreAddress,
-        senderAddress,
-        message.publicKey,
-        ancillaryKeypair.publicKey,
-        NATIVE_MINT,
-        nonce,
-        amount,
-        recipientAddress,
-        recipientChainId,
-        payload,
-      )
+          this.connection,
+          this.tokenBridge.programId,
+          this.coreAddress,
+          senderAddress,
+          message.publicKey,
+          ancillaryKeypair.publicKey,
+          NATIVE_MINT,
+          nonce,
+          amount,
+          recipientAddress,
+          recipientChainId,
+          payload,
+        )
       : createTransferNativeInstruction(
-        this.connection,
-        this.tokenBridge.programId,
-        this.coreAddress,
-        senderAddress,
-        message.publicKey,
-        ancillaryKeypair.publicKey,
-        NATIVE_MINT,
-        nonce,
-        amount,
-        relayerFee,
-        recipientAddress,
-        recipientChainId,
-      );
+          this.connection,
+          this.tokenBridge.programId,
+          this.coreAddress,
+          senderAddress,
+          message.publicKey,
+          ancillaryKeypair.publicKey,
+          NATIVE_MINT,
+          nonce,
+          amount,
+          relayerFee,
+          recipientAddress,
+          recipientChainId,
+        );
 
     //Close the ancillary account for cleanup. Payer address receives any remaining funds
     const closeAccountIx = createCloseAccountInstruction(
@@ -405,69 +405,69 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     if (isSolanaNative) {
       tokenBridgeTransferIx = payload
         ? createTransferNativeWithPayloadInstruction(
-          this.connection,
-          this.tokenBridge.programId,
-          this.coreAddress,
-          senderAddress,
-          message.publicKey,
-          senderTokenAddress,
-          tokenAddress,
-          nonce,
-          amount,
-          recipientAddress,
-          recipientChainId,
-          payload,
-        )
+            this.connection,
+            this.tokenBridge.programId,
+            this.coreAddress,
+            senderAddress,
+            message.publicKey,
+            senderTokenAddress,
+            tokenAddress,
+            nonce,
+            amount,
+            recipientAddress,
+            recipientChainId,
+            payload,
+          )
         : createTransferNativeInstruction(
-          this.connection,
-          this.tokenBridge.programId,
-          this.coreAddress,
-          senderAddress,
-          message.publicKey,
-          senderTokenAddress,
-          tokenAddress,
-          nonce,
-          amount,
-          relayerFee,
-          recipientAddress,
-          recipientChainId,
-        );
+            this.connection,
+            this.tokenBridge.programId,
+            this.coreAddress,
+            senderAddress,
+            message.publicKey,
+            senderTokenAddress,
+            tokenAddress,
+            nonce,
+            amount,
+            relayerFee,
+            recipientAddress,
+            recipientChainId,
+          );
     } else {
       const originAsset = await this.getOriginalAsset(token);
 
       tokenBridgeTransferIx = payload
         ? createTransferWrappedWithPayloadInstruction(
-          this.connection,
-          this.tokenBridge.programId,
-          this.coreAddress,
-          senderAddress,
-          message.publicKey,
-          senderTokenAddress,
-          senderAddress,
-          toChainId(originAsset.chain),
-          originAsset.address.toUint8Array(),
-          nonce,
-          amount,
-          recipientAddress,
-          recipientChainId,
-          payload,
-        )
+            this.connection,
+            this.tokenBridge.programId,
+            this.coreAddress,
+            senderAddress,
+            message.publicKey,
+            senderTokenAddress,
+            senderAddress,
+            toChainId(originAsset.chain),
+            originAsset.address.toUint8Array(),
+            nonce,
+            amount,
+            recipientAddress,
+            recipientChainId,
+            payload,
+          )
         : createTransferWrappedInstruction(
-          this.connection,
-          this.tokenBridge.programId,
-          this.coreAddress,
-          senderAddress,
-          message.publicKey,
-          senderTokenAddress,
-          senderAddress,
-          toChainId(originAsset.chain),
-          originAsset.address.toUint8Array(),
-          nonce,
-          amount,
-          relayerFee,
-          recipientAddress,
-          recipientChainId,
-        );
+            this.connection,
+            this.tokenBridge.programId,
+            this.coreAddress,
+            senderAddress,
+            message.publicKey,
+            senderTokenAddress,
+            senderAddress,
+            toChainId(originAsset.chain),
+            originAsset.address.toUint8Array(),
+            nonce,
+            amount,
+            relayerFee,
+            recipientAddress,
+            recipientChainId,
+          );
     }
 
     const approvalIx = createApproveAuthoritySignerInstruction(

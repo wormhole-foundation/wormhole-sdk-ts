@@ -11,9 +11,10 @@ import {
   UniversalAddress,
   toChainId,
   serialize,
-  contracts as Contracts,
   NativeAddress,
   encoding,
+  ChainsConfig,
+  Contracts,
 } from "@wormhole-foundation/connect-sdk";
 
 import {
@@ -21,15 +22,12 @@ import {
   CosmwasmTransaction,
   CosmwasmUnsignedTransaction,
   computeFee,
-} from "../unsignedTransaction";
-import { CosmwasmContracts } from "../contracts";
-import {
   AnyCosmwasmAddress,
   CosmwasmChainName,
   WrappedRegistryResponse,
-} from "../types";
-import { CosmwasmPlatform } from "../platform";
-import { CosmwasmAddress } from "../address";
+  CosmwasmPlatform,
+  CosmwasmAddress,
+} from "@wormhole-foundation/connect-sdk-cosmwasm";
 
 export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
   private tokenBridge: string;
@@ -38,20 +36,30 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
     readonly network: Network,
     readonly chain: CosmwasmChainName,
     readonly rpc: CosmWasmClient,
-    readonly contracts: CosmwasmContracts,
+    readonly contracts: Contracts,
   ) {
-    this.tokenBridge = this.contracts.getTokenBridge(this.chain, this.rpc);
-    if (Contracts.translator.has(network, chain)) {
-      this.translator = Contracts.translator.get(network, chain);
-    }
+    const tokenBridgeAddress = this.contracts.tokenBridge!;
+    if (!tokenBridgeAddress)
+      throw new Error(
+        `Wormhole Token Bridge contract for domain ${chain} not found`,
+      );
+
+    this.tokenBridge = tokenBridgeAddress;
+    // May be undefined, thats ok
+    this.translator = this.contracts.translator;
   }
 
-  static async fromProvider(
+  static async fromRpc(
     rpc: CosmWasmClient,
-    contracts: CosmwasmContracts,
+    config: ChainsConfig,
   ): Promise<CosmwasmTokenBridge> {
     const [network, chain] = await CosmwasmPlatform.chainFromRpc(rpc);
-    return new CosmwasmTokenBridge(network, chain, rpc, contracts);
+    return new CosmwasmTokenBridge(
+      network,
+      chain,
+      rpc,
+      config[chain]!.contracts,
+    );
   }
 
   async isWrappedAsset(token: AnyCosmwasmAddress): Promise<boolean> {

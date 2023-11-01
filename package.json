@@ -45,6 +45,9 @@
     "platforms/solana/protocols/core",
     "platforms/solana/protocols/tokenBridge",
     "platforms/cosmwasm",
+    "platforms/cosmwasm/protocols/core",
+    "platforms/cosmwasm/protocols/tokenBridge",
+    "platforms/cosmwasm/protocols/ibc",
     "examples",
     "core/tokenRegistry"
   ]

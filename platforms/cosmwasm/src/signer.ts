@@ -19,7 +19,7 @@ import {
   Signer,
   UnsignedTransaction,
   encoding,
-  rpcAddress
+  rpcAddress,
 } from "@wormhole-foundation/connect-sdk";
 import { TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
 import {
@@ -31,10 +31,9 @@ import { CosmwasmPlatform } from "./platform";
 import { CosmwasmUnsignedTransaction } from "./unsignedTransaction";
 
 export async function getCosmwasmSigner(
-  rpc: RpcConnection<'Cosmwasm'>,
+  rpc: RpcConnection<"Cosmwasm">,
   mnemonic: string,
 ): Promise<Signer> {
-
   const [network, chain] = await CosmwasmPlatform.chainFromRpc(rpc);
 
   // TODO: add this to config/consts
@@ -62,7 +61,7 @@ export class CosmwasmSigner implements SignOnlySigner {
     private _chain: ChainName,
     private _signer: SigningCosmWasmClient,
     private _account: string,
-  ) { }
+  ) {}
 
   chain(): ChainName {
     return this._chain;
