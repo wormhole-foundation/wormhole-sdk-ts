@@ -9,7 +9,7 @@ import {
   UnsignedTransaction,
   encoding,
 } from '@wormhole-foundation/connect-sdk';
-import { SolanaPlatform } from './platform';
+import { SolanaPlatform } from '../platform';
 
 // returns a SignOnlySigner for the Solana platform
 export async function getSolanaSigner(

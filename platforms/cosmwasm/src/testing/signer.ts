@@ -27,9 +27,9 @@ import {
   cosmwasmNetworkChainToChainId,
   cosmwasmNetworkChainToRestUrls,
   evmLikeChains,
-} from "./constants";
-import { CosmwasmPlatform } from "./platform";
-import { CosmwasmUnsignedTransaction } from "./unsignedTransaction";
+} from "../constants";
+import { CosmwasmPlatform } from "../platform";
+import { CosmwasmUnsignedTransaction } from "../unsignedTransaction";
 
 export async function getCosmwasmSigner(
   rpc: RpcConnection<"Cosmwasm">,
