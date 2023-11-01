@@ -12,10 +12,11 @@ import {
   encoding,
 } from '@wormhole-foundation/connect-sdk';
 
+import * as ethers_contracts from './ethers-contracts';
+
 import { Provider } from 'ethers';
 import { evmChainIdToNetworkChainPair } from './constants';
 import { EvmAddress, EvmZeroAddress } from './address';
-import { EvmContracts } from './contracts';
 import { EvmPlatform } from './platform';
 import { AnyEvmAddress } from './types';
 
@@ -32,7 +33,8 @@ export module EvmUtils {
       throw new Error(`invalid chain for EVM: ${chain}`);
     return {
       chain: chain,
-      address: new EvmAddress(EvmZeroAddress) as any, // TODO: fix weird type error
+      // @ts-ignore
+      address: new EvmAddress(EvmZeroAddress),
     };
   }
 
@@ -54,7 +56,7 @@ export module EvmUtils {
   ): Promise<bigint> {
     if (token === 'native') return nativeDecimals(EvmPlatform.platform);
 
-    const tokenContract = EvmContracts.getTokenImplementation(
+    const tokenContract = getTokenImplementation(
       rpc,
       new EvmAddress(token).toString(),
     );
@@ -69,7 +71,7 @@ export module EvmUtils {
   ): Promise<bigint | null> {
     if (token === 'native') return rpc.getBalance(walletAddr);
 
-    const tokenImpl = EvmContracts.getTokenImplementation(
+    const tokenImpl = getTokenImplementation(
       rpc,
       new EvmAddress(token).toString(),
     );
@@ -110,7 +112,7 @@ export module EvmUtils {
 
       // Wait for confirmation
       const txReceipt = await txRes.wait();
-      if (txReceipt === null) continue; // TODO: throw error?
+      if (txReceipt === null) throw new Error('Received null TxReceipt');
     }
     return txhashes;
   }
@@ -138,5 +140,18 @@ export module EvmUtils {
   ): Promise<[Network, PlatformToChains<EvmPlatform.Type>]> {
     const { chainId } = await rpc.getNetwork();
     return chainFromChainId(encoding.bignum.encode(chainId, true));
+  }
+
+  export function getTokenImplementation(
+    connection: Provider,
+    address: string,
+  ): ethers_contracts.TokenImplementation {
+    const ti = ethers_contracts.TokenImplementation__factory.connect(
+      address,
+      connection,
+    );
+    if (!ti)
+      throw new Error(`No token implementation available for: ${address}`);
+    return ti;
   }
 }

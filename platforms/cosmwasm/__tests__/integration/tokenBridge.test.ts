@@ -5,14 +5,16 @@ import {
   ChainName,
   createVAA,
   encoding,
+  TokenBridge,
 } from "@wormhole-foundation/connect-sdk";
 import {
-  CosmwasmContracts,
   CosmwasmPlatform,
-  CosmwasmTokenBridge,
   CosmwasmUnsignedTransaction,
   chainToNativeDenoms,
 } from "../../src";
+
+import "@wormhole-foundation/connect-sdk-cosmwasm-core";
+import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
 
 const network = "Testnet"; //DEFAULT_NETWORK;
 const configs = chainConfigs(network);
@@ -45,11 +47,10 @@ const bogusAddress = toNative(
 describe("TokenBridge Tests", () => {
   const p = CosmwasmPlatform.setConfig(network, configs);
 
-  let tb: CosmwasmTokenBridge;
+  let tb: TokenBridge<'Cosmwasm'>;
   test("Create TokenBridge", async () => {
     const rpc = await p.getRpc(chain);
-    const contracts = new CosmwasmContracts(configs);
-    tb = await CosmwasmTokenBridge.fromProvider(rpc, contracts);
+    tb = await p.getTokenBridge(rpc)
     expect(tb).toBeTruthy();
   });
 
@@ -154,7 +155,6 @@ describe("TokenBridge Tests", () => {
     });
 
     test("Submit Attestation", async () => {
-      // TODO: generator for this
       const vaa = createVAA("TokenBridge:AttestMeta", {
         payload: {
           token: {

@@ -19,7 +19,7 @@ export enum TransferState {
 }
 
 // WormholeTransfer abstracts the process and state transitions
-// for things like TokenTransfers, NFTTransfers, CCTP (with VAA), etc...
+// for things like TokenTransfers, NFTTransfers, Circle (with VAA), etc...
 export interface WormholeTransfer {
   // may reach out to an external service to get the transfer state
   // return the state of this transfer

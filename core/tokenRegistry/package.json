@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-token-registry",
-  "version": "0.1.8-beta.6",
+  "version": "0.1.8-beta.9",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -27,6 +27,7 @@
     "rebuild": "npm run clean && npm run build:cjs && npm run build:esm",
     "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo",
     "lint": "npm run prettier && eslint --fix",
+    "bump:beta": "bump prerelease",
     "prettier": "prettier --write ./src",
     "updateForeignAssets": "npx ts-node ./src/scripts/updateForeignAssetConfig"
   },

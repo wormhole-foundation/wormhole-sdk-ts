@@ -38,9 +38,9 @@ describe("Wormhole Tests", () => {
     expect(c).toBeTruthy();
   });
 
-  describe("getVAABytes", () => {
+  describe("getVaaBytes", () => {
     test("returns vaa bytes", async () => {
-      const vaa = await wh.getVAABytes(
+      const vaa = await wh.getVaaBytes(
         "Arbitrum",
         testing.utils.makeChainAddress("Arbitrum").address,
         1n,
@@ -50,7 +50,7 @@ describe("Wormhole Tests", () => {
 
     test("returns undefined when vaa bytes not found", async () => {
       publicRpcMock.givenSignedVaaNotFound();
-      const vaa = await wh.getVAABytes(
+      const vaa = await wh.getVaaBytes(
         "Aptos",
         testing.utils.makeChainAddress("Aptos").address,
         1n,
@@ -61,7 +61,7 @@ describe("Wormhole Tests", () => {
 
     test("returns after first try fails", async () => {
       publicRpcMock.givenSignedVaaRequestWorksAfterRetry();
-      const vaa = await wh.getVAABytes(
+      const vaa = await wh.getVaaBytes(
         "Base",
         testing.utils.makeChainAddress("Base").address,
         1n,

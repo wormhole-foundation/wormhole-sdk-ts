@@ -2,16 +2,18 @@ import { expect, test } from '@jest/globals';
 import '../mocks/ethers';
 
 import {
-  ChainName,
   chainToPlatform,
   chains,
   chainConfigs,
-  testing,
   DEFAULT_NETWORK,
 } from '@wormhole-foundation/connect-sdk';
+
+import '@wormhole-foundation/connect-sdk-evm-tokenbridge'
+import '@wormhole-foundation/connect-sdk-evm-core'
 import { EvmPlatform } from '../../src/platform';
 
 import { getDefaultProvider } from 'ethers';
+
 
 const EVM_CHAINS = chains.filter(
   (c) => chainToPlatform(c) === EvmPlatform.platform,
@@ -48,7 +50,6 @@ describe('EVM Platform Tests', () => {
       const p = EvmPlatform.setConfig(network, {
         [EVM_CHAINS[0]]: configs[EVM_CHAINS[0]],
       });
-
       const rpc = getDefaultProvider('');
       const tb = await p.getAutomaticTokenBridge(rpc);
       expect(tb).toBeTruthy();

@@ -23,7 +23,7 @@ export type TokenTransferDetails = {
   nativeGas?: bigint;
 };
 
-export type CCTPTransferDetails = {
+export type CircleTransferDetails = {
   amount: bigint;
   from: ChainAddress;
   to: ChainAddress;
@@ -46,9 +46,9 @@ export type TokenTransferTransaction = {
   gasFee: bigint;
 };
 
-export type CCTPTransferTransaction = {
+export type CircleTransferTransaction = {
   message?: WormholeMessage;
-  details: CCTPTransferDetails;
+  details: CircleTransferDetails;
   block: bigint;
   gasFee: bigint;
 };
@@ -64,12 +64,12 @@ export function isTokenTransferDetails(
   );
 }
 
-export function isCCTPTransferDetails(
-  thing: CCTPTransferDetails | any,
+export function isCircleTransferDetails(
+  thing: CircleTransferDetails | any,
 ): thing is TokenTransferDetails {
   return (
-    (<CCTPTransferDetails>thing).amount !== undefined &&
-    (<CCTPTransferDetails>thing).from !== undefined &&
-    (<CCTPTransferDetails>thing).to !== undefined
+    (<CircleTransferDetails>thing).amount !== undefined &&
+    (<CircleTransferDetails>thing).from !== undefined &&
+    (<CircleTransferDetails>thing).to !== undefined
   );
 }

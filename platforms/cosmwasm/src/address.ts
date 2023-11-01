@@ -248,4 +248,6 @@ export class CosmwasmAddress implements Address {
   }
 }
 
-registerNative("Cosmwasm", CosmwasmAddress);
+try {
+  registerNative("Cosmwasm", CosmwasmAddress);
+} catch {}

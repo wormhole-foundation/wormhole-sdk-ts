@@ -1,6 +1,5 @@
 import {
   TokenBridge,
-  Platform,
   testing,
   toNative,
   Signature,
@@ -9,13 +8,15 @@ import {
   createVAA,
 } from '@wormhole-foundation/connect-sdk';
 
+import '@wormhole-foundation/connect-sdk-solana-core'
+import '@wormhole-foundation/connect-sdk-solana-tokenbridge'
+
+
 import {
   SolanaUnsignedTransaction,
   SolanaPlatform,
-  SolanaContracts,
-  SolanaTokenBridge,
-  getSolanaSigner,
 } from '../../src/';
+
 
 import { expect, describe, test } from '@jest/globals';
 
@@ -39,11 +40,13 @@ const senderAddress = Keypair.generate().publicKey.toBase58();
 const bogusAddress = testing.utils.makeNativeAddress('Solana');
 const realNativeAddress = toNative(
   'Solana',
-  TOKEN_ADDRESSES['Mainnet']['Solana']['wsol'],
+  // @ts-ignore
+  TOKEN_ADDRESSES[network]['Solana']['wsol'],
 );
 const realWrappedAddress = toNative(
   'Solana',
-  TOKEN_ADDRESSES['Mainnet']['Solana']['wavax'],
+  // @ts-ignore
+  TOKEN_ADDRESSES[network]['Solana']['wavax'],
 );
 
 // Setup nock to record fixtures
@@ -85,14 +88,13 @@ afterEach(async () => {
 });
 
 describe('TokenBridge Tests', () => {
-  const p: Platform<'Solana'> = SolanaPlatform.setConfig(network, configs);
+  const p: typeof SolanaPlatform = SolanaPlatform.setConfig(network, configs);
 
   let tb: TokenBridge<'Solana'>;
 
   test('Create TokenBridge', async () => {
     const rpc = p.getRpc('Solana');
-    const contracts = new SolanaContracts(configs);
-    tb = await SolanaTokenBridge.fromProvider(rpc, contracts);
+    tb = await p.getTokenBridge(rpc);
     expect(tb).toBeTruthy();
   });
 
@@ -203,7 +205,6 @@ describe('TokenBridge Tests', () => {
     });
 
     test('Submit Attestation', async () => {
-      // TODO: generator for this
       const vaa = createVAA('TokenBridge:AttestMeta', {
         payload: {
           token: {

@@ -27,8 +27,7 @@ const networkChainEvmCIdEntries = [
       ['Optimism', 10n],
       ['Polygon', 137n],
       ['Rootstock', 30n],
-      ['Sepolia', 0n],
-      // TODO: forced to add this to match other list
+      ['Sepolia', 0n], // Note: this is a lie but sepolia is just a testnet
     ],
   ],
   [
@@ -64,4 +63,5 @@ export const evmChainIdToNetworkChainPair = constMap(
   networkChainEvmCIdEntries,
   [2, [0, 1]],
 );
+
 export const evmNetworkChainToEvmChainId = constMap(networkChainEvmCIdEntries);

@@ -15,5 +15,5 @@ The `definitions` package contains:
 
 - definitions for the VAA payload structure layout
 - definitions of interfaces for Platforms and ChainContexts
-- definitions of protocol interfaces  (e.g. TokenBridge, CCTP, etc...)
+- definitions of protocol interfaces  (e.g. TokenBridge, Circle, etc...)
 - definitions of types (e.g. Address, TokenId, Signer, etc...)

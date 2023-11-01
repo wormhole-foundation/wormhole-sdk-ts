@@ -53,7 +53,7 @@ The `WormholeTransfer` interface provides a convenient abstraction to encapsulat
 
 Performing a Token Transfer is trivial for any source and destination chains. 
 
-We can create a new `WormholeTransfer` object (`TokenTransfer`, `CCTPTransfer`, `GatewayTransfer`, ...) and use it to transfer tokens between chains.  The `WormholeTransfer` object is responsible for tracking the transfer through the process and providing updates on its status. 
+We can create a new `WormholeTransfer` object (`TokenTransfer`, `CircleTransfer`, `GatewayTransfer`, ...) and use it to transfer tokens between chains.  The `WormholeTransfer` object is responsible for tracking the transfer through the process and providing updates on its status. 
 
 ```ts
 

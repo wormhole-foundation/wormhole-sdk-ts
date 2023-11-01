@@ -363,7 +363,7 @@ export class TokenTransfer implements WormholeTransfer {
     timeout?: number,
   ): Promise<TokenBridge.VAA<"Transfer" | "TransferWithPayload">> {
     const { chain, emitter, sequence } = whm;
-    const vaa = await wh.getVAA(
+    const vaa = await wh.getVaa(
       chain,
       emitter,
       sequence,

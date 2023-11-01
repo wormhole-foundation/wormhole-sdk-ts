@@ -11,13 +11,16 @@ import {
   encoding,
 } from '@wormhole-foundation/connect-sdk';
 
+import '@wormhole-foundation/connect-sdk-evm-core';
+import '@wormhole-foundation/connect-sdk-evm-tokenbridge';
+
 import {
   evmNetworkChainToEvmChainId,
   EvmPlatform,
-  EvmContracts,
-  EvmTokenBridge,
   EvmUnsignedTransaction,
 } from '../../src';
+
+
 import { test, describe, expect } from '@jest/globals';
 
 import nock from 'nock';
@@ -119,8 +122,7 @@ describe('TokenBridge Tests', () => {
 
   test('Create TokenBridge', async () => {
     const rpc = p.getRpc('Ethereum');
-    const contracts = new EvmContracts(configs);
-    tb = await EvmTokenBridge.fromProvider(rpc, contracts);
+    tb = await p.getTokenBridge(rpc)
     expect(tb).toBeTruthy();
   });
 
@@ -232,7 +234,6 @@ describe('TokenBridge Tests', () => {
     });
 
     test('Submit Attestation', async () => {
-      // TODO: generator for this
       const vaa = createVAA('TokenBridge:AttestMeta', {
         payload: {
           token: { address: nativeAddress.toUniversalAddress(), chain: chain },
@@ -299,7 +300,6 @@ describe('TokenBridge Tests', () => {
         });
 
         test('Token', async () => {
-          // TODO: find a way to mock the allowance check
           const xfer = tb.transfer(
             sender,
             recipient,

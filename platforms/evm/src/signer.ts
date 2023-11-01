@@ -6,15 +6,18 @@ import {
   UnsignedTransaction,
   ChainContext,
   PlatformName,
+  RpcConnection,
 } from '@wormhole-foundation/connect-sdk';
 import { ethers } from 'ethers';
+import { EvmPlatform } from './platform';
 
 // Get a SignOnlySigner for the EVM platform
 export async function getEvmSigner(
-  chain: ChainContext<PlatformName>,
+  rpc: RpcConnection<'Evm'>,
   privateKey: string,
 ): Promise<Signer> {
-  return new EvmSigner(chain.chain, await chain.getRpc(), privateKey);
+  const [_, chain] = await EvmPlatform.chainFromRpc(rpc);
+  return new EvmSigner(chain, rpc, privateKey);
 }
 
 // EvmSigner implements SignOnlySender
