@@ -1,5 +1,7 @@
 import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import { IndexedTx, MsgTransferEncodeObject, coin } from "@cosmjs/stargate";
+import { MsgTransfer } from "cosmjs-types/ibc/applications/transfer/v1/tx";
+
 import {
   ChainAddress,
   ChainName,
@@ -17,8 +19,9 @@ import {
   isIbcTransferInfo,
   toChainId,
   encoding,
+  Contracts,
+  ChainsConfig,
 } from "@wormhole-foundation/connect-sdk";
-import { MsgTransfer } from "cosmjs-types/ibc/applications/transfer/v1/tx";
 
 import {
   IBC_MSG_TYPE,
@@ -34,17 +37,17 @@ import {
   IBC_TRANSFER_PORT,
   IbcChannels,
   networkChainToChannels,
-} from "../constants";
-import { CosmwasmContracts } from "../contracts";
-import { Gateway } from "../gateway";
-import { CosmwasmPlatform } from "../platform";
-import { CosmwasmChainName, AnyCosmwasmAddress } from "../types";
-import {
+  Gateway,
+  CosmwasmPlatform,
+  CosmwasmChainName,
+  AnyCosmwasmAddress,
   CosmwasmTransaction,
   CosmwasmUnsignedTransaction,
   computeFee,
-} from "../unsignedTransaction";
-import { CosmwasmAddress } from "../address";
+  CosmwasmAddress,
+} from "@wormhole-foundation/connect-sdk-cosmwasm";
+
+import { CosmwasmWormholeCore } from "@wormhole-foundation/connect-sdk-cosmwasm-core";
 
 const millisToNano = (seconds: number) => seconds * 1_000_000;
 
@@ -59,12 +62,12 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
     readonly network: Network,
     readonly chain: CosmwasmChainName,
     readonly rpc: CosmWasmClient,
-    readonly contracts: CosmwasmContracts,
+    readonly contracts: Contracts,
   ) {
-    this.gatewayAddress = this.contracts.getContracts(Gateway.name).gateway!;
-
     if (!networkChainToChannels.has(network, chain))
       throw new Error("Unsupported IBC Chain, no channels available: " + chain);
+
+    this.gatewayAddress = this.contracts.gateway!;
 
     // @ts-ignore
     const channels: IbcChannels = networkChainToChannels(network, chain);
@@ -75,12 +78,12 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
     }
   }
 
-  static async fromProvider(
+  static async fromRpc(
     rpc: CosmWasmClient,
-    contracts: CosmwasmContracts,
+    config: ChainsConfig,
   ): Promise<CosmwasmIbcBridge> {
     const [network, chain] = await CosmwasmPlatform.chainFromRpc(rpc);
-    return new CosmwasmIbcBridge(network, chain, rpc, contracts);
+    return new CosmwasmIbcBridge(network, chain, rpc, config[chain]!.contracts);
   }
 
   getTransferChannel(chain: ChainName): string | null {
@@ -173,7 +176,11 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
   ): Promise<WormholeMessageId | null> {
     const tx = await this.lookupTxFromIbcMsgId(msg);
     if (!tx) return null;
-    return Gateway.parseWormholeMessage(tx);
+    return CosmwasmWormholeCore.parseWormholeMessage(
+      Gateway.name,
+      Gateway.coreAddress(),
+      tx,
+    );
   }
 
   // Private because we dont want to expose the IndexedTx type

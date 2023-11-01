@@ -14,7 +14,7 @@ import {
   WormholeCore,
   WormholeMessageId,
   networkPlatformConfigs,
-  getProtocolInitializer
+  getProtocolInitializer,
 } from '@wormhole-foundation/connect-sdk';
 
 import { ethers } from 'ethers';

@@ -10,7 +10,7 @@ import {
   WormholeCore,
   WormholeMessageId,
   getProtocolInitializer,
-  networkPlatformConfigs
+  networkPlatformConfigs,
 } from '@wormhole-foundation/connect-sdk';
 import { SolanaChain } from './chain';
 import { SolanaUtils } from './platformUtils';
@@ -30,7 +30,6 @@ export module SolanaPlatform {
   export let conf: ChainsConfig = networkPlatformConfigs(network, platform);
 
   const registeredProtocols = new Map<ProtocolName, any>();
-
 
   export const {
     nativeTokenId,

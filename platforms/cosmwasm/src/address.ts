@@ -88,15 +88,15 @@ There are at least 5 types of addresses in Cosmos:
 function tryDecode(data: string): { data: Uint8Array; prefix?: string } {
   try {
     return { ...fromBech32(data) };
-  } catch {}
+  } catch { }
 
   try {
     return { data: fromHex(data) };
-  } catch {}
+  } catch { }
 
   try {
     return { data: fromBase64(data) };
-  } catch {}
+  } catch { }
 
   throw new Error(`Cannot decode: ${data}`);
 }
@@ -191,9 +191,8 @@ export class CosmwasmAddress implements Address {
       }
 
       // ?/factory/address/denom
-      return `${this.denomType}/${toBech32(this.domain!, this.address)}/${
-        this.denom
-      }`;
+      return `${this.denomType}/${toBech32(this.domain!, this.address)}/${this.denom
+        }`;
     }
 
     // contract or account address
@@ -218,7 +217,7 @@ export class CosmwasmAddress implements Address {
     try {
       const maybe = fromBech32(address);
       return CosmwasmAddress.validAddressLength(maybe.data);
-    } catch {}
+    } catch { }
     return false;
   }
 
@@ -229,7 +228,7 @@ export class CosmwasmAddress implements Address {
     )
       throw new Error(
         `Invalid Cosmwasm address, expected ${CosmwasmAddress.contractAddressByteSize} ` +
-          `or ${CosmwasmAddress.accountAddressByteSize} bytes but got ${address.length}`,
+        `or ${CosmwasmAddress.accountAddressByteSize} bytes but got ${address.length}`,
       );
 
     return true;
@@ -248,4 +247,6 @@ export class CosmwasmAddress implements Address {
   }
 }
 
-registerNative("Cosmwasm", CosmwasmAddress);
+try {
+  registerNative("Cosmwasm", CosmwasmAddress);
+} catch { }

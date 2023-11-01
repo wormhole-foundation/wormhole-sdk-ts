@@ -12,11 +12,17 @@ import {
   ChainName,
   ChainsConfig,
   DEFAULT_NETWORK,
+  IbcBridge,
   Network,
   Platform,
   PlatformToChains,
+  ProtocolInitializer,
+  ProtocolName,
+  TokenBridge,
   TxHash,
+  WormholeCore,
   WormholeMessageId,
+  getProtocolInitializer,
   networkPlatformConfigs,
 } from "@wormhole-foundation/connect-sdk";
 
@@ -26,12 +32,8 @@ import {
   chainToNativeDenoms,
   networkChainToChannels,
 } from "./constants";
-import { CosmwasmContracts } from "./contracts";
 import { Gateway } from "./gateway";
 import { CosmwasmUtils } from "./platformUtils";
-
-import { CosmwasmIbcBridge } from "./protocols/ibc";
-import { CosmwasmTokenBridge } from "./protocols/tokenBridge";
 import { CosmwasmChainName } from "./types";
 
 var _: Platform<"Cosmwasm"> = CosmwasmPlatform;
@@ -42,12 +44,8 @@ export module CosmwasmPlatform {
   export const platform = "Cosmwasm";
   export let network: Network = DEFAULT_NETWORK;
   export let conf: ChainsConfig = networkPlatformConfigs(network, platform);
-
-  export let contracts: CosmwasmContracts = new CosmwasmContracts(conf);
-
   export type Type = typeof platform;
 
-  // TODO: re-export all
   export const {
     nativeTokenId,
     isNativeTokenId,
@@ -74,7 +72,6 @@ export module CosmwasmPlatform {
     _conf?: ChainsConfig,
   ): typeof CosmwasmPlatform {
     conf = _conf ? _conf : networkPlatformConfigs(network, platform);
-    contracts = new CosmwasmContracts(conf);
     network = _network;
     return CosmwasmPlatform;
   }
@@ -89,6 +86,29 @@ export module CosmwasmPlatform {
     throw new Error("No configuration available for chain: " + chain);
   }
 
+  export function getProtocol<PN extends ProtocolName>(
+    protocol: PN,
+  ): ProtocolInitializer<Type> {
+    return getProtocolInitializer(platform, protocol);
+  }
+
+  export async function getWormholeCore(
+    rpc: CosmWasmClient,
+  ): Promise<WormholeCore<"Cosmwasm">> {
+    return getProtocol("WormholeCore").fromRpc(rpc, conf);
+  }
+  export async function getTokenBridge(
+    rpc: CosmWasmClient,
+  ): Promise<TokenBridge<"Cosmwasm">> {
+    return getProtocol("TokenBridge").fromRpc(rpc, conf);
+  }
+
+  export async function getIbcBridge(
+    rpc: CosmWasmClient,
+  ): Promise<IbcBridge<"Cosmwasm">> {
+    return await getProtocol("IbcBridge").fromRpc(rpc, conf);
+  }
+
   // TODO: should other platforms have something like this?
   export function getNativeDenom(chain: ChainName): string {
     // TODO: required because of const map
@@ -101,21 +121,8 @@ export module CosmwasmPlatform {
     rpc: CosmWasmClient,
     txid: TxHash,
   ): Promise<WormholeMessageId[]> {
-    const tx = await rpc.getTx(txid);
-    if (!tx) throw new Error("No Transaction found: " + txid);
-    return [Gateway.parseWormholeMessage(tx)];
-  }
-
-  export async function getTokenBridge(
-    rpc: CosmWasmClient,
-  ): Promise<CosmwasmTokenBridge> {
-    return await CosmwasmTokenBridge.fromProvider(rpc, contracts);
-  }
-
-  export async function getIbcBridge(
-    rpc: CosmWasmClient,
-  ): Promise<CosmwasmIbcBridge> {
-    return await CosmwasmIbcBridge.fromProvider(rpc, contracts);
+    const core = await getWormholeCore(rpc);
+    return core.parseTransaction(txid);
   }
 
   export const getQueryClient = (

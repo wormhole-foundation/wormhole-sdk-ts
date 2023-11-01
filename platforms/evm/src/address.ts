@@ -98,4 +98,4 @@ export class EvmAddress implements Address {
 
 try {
   registerNative('Evm', EvmAddress);
-} catch { }
+} catch {}

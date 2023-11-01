@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/connect-sdk-examples",
-  "version": "0.1.8-beta.7",
+  "version": "0.1.8-beta.8",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -37,8 +37,8 @@
     "tb": "tsx src/tokenBridge.ts",
     "cctp": "tsx src/cctp.ts",
     "demo": "tsx src/index.ts",
-    "cosmos":"tsx src/cosmos.ts",
-    "recosmos":"cd ../platforms/cosmwasm && npm run rebuild && cd - && tsx src/cosmos.ts",
+    "cosmos": "tsx src/cosmos.ts",
+    "recosmos": "cd ../platforms/cosmwasm && npm run rebuild && cd - && tsx src/cosmos.ts",
     "build:cjs": "tsc -p ./tsconfig.cjs.json",
     "build:esm": "tsc -p ./tsconfig.esm.json",
     "build": "npm run build:cjs && npm run build:esm",
@@ -47,6 +47,7 @@
     "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo",
     "lint": "npm run prettier && eslint --fix",
     "prettier": "prettier --write ./src",
+    "bump:beta": "bump prerelease",
     "coverage": "jest --config ../jest.config.ts --coverage",
     "docs": "typedoc"
   },
@@ -70,8 +71,8 @@
     "@wormhole-foundation/connect-sdk-cosmwasm": "*",
     "@wormhole-foundation/connect-sdk-solana": "*",
     "@wormhole-foundation/connect-sdk-evm": "*",
-    "@wormhole-foundation/connect-sdk-evm-tokenbridge":"*",
-    "@wormhole-foundation/connect-sdk-evm-cctp":"*",
+    "@wormhole-foundation/connect-sdk-evm-tokenbridge": "*",
+    "@wormhole-foundation/connect-sdk-evm-cctp": "*",
     "bs58": "^5.0.0",
     "ethers": "^6.7.0"
   }

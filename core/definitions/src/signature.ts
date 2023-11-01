@@ -8,7 +8,7 @@ export class Signature {
     readonly r: bigint,
     readonly s: bigint,
     readonly v: number,
-  ) { }
+  ) {}
 
   encode(): Uint8Array {
     return signatureItem.custom.from(this);

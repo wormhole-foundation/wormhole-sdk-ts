@@ -1,6 +1,6 @@
 {
   "name": "connect-sdk",
-  "version": "0.1.8-beta.7",
+  "version": "0.1.8-beta.8",
   "license": "Apache-2.0",
   "directories": {
     "test": "__tests__"
@@ -19,7 +19,8 @@
     "ts-mocha": "^10.0.0",
     "ts-node": "^10.9.1",
     "typedoc": "^0.24.8",
-    "typescript": "^5.1.6"
+    "typescript": "^5.1.6",
+    "@jsdevtools/version-bump-prompt": "^6.1.0"
   },
   "scripts": {
     "lint": "npm run lint --workspaces --if-present",
@@ -29,6 +30,7 @@
     "coverage": "npm run coverage --workspaces --if-present",
     "clean": "npm run clean --workspaces --if-present",
     "prettier": "npm run prettier --workspaces --if-present",
+    "bump:beta": "bump prerelease && npm run bump:beta --workspaces --if-present",
     "test:tilt": "jest --verbose --config ./jest.config.ts --roots ./__tests__/tilt",
     "test": "NETWORK=Mainnet npm run test --workspaces --if-present",
     "docs": "typedoc"
@@ -45,6 +47,9 @@
     "platforms/solana/protocols/core",
     "platforms/solana/protocols/tokenBridge",
     "platforms/cosmwasm",
+    "platforms/cosmwasm/protocols/core",
+    "platforms/cosmwasm/protocols/tokenBridge",
+    "platforms/cosmwasm/protocols/ibc",
     "examples",
     "core/tokenRegistry"
   ]
