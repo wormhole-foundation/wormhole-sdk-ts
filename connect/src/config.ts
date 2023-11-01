@@ -25,7 +25,6 @@ export const DEFAULT_TASK_TIMEOUT = 60 * 1000; // 1 minute in milliseconds
 export const CIRCLE_RETRY_INTERVAL = 2000;
 export const WHSCAN_RETRY_INTERVAL = 2000;
 
-// TODO: add missing chains for each config
 function combineConfig(n: Network): ChainsConfig {
   const cc: ChainsConfig = chains
     .map((c: ChainName): ChainConfig => {
@@ -34,12 +33,12 @@ function combineConfig(n: Network): ChainsConfig {
         key: c,
         platform,
         network: n,
-        finalityThreshold: finalityThreshold.get(n, c) || 0,
+        finalityThreshold: finalityThreshold.get(n, c) ?? 0,
         blockTime: blockTime(c),
         contracts: getContracts(n, c),
-        nativeTokenDecimals: nativeDecimals.get(platform)!, //TODO the exclamation mark is a lie
-        explorer: explorerConfigs(n, c)!, //TODO the exclamation mark is a lie
-        rpc: rpcAddress(n, c)!, //TODO the exclamation mark is a lie
+        nativeTokenDecimals: nativeDecimals(platform),
+        explorer: explorerConfigs(n, c),
+        rpc: rpcAddress(n, c),
       };
     })
     .reduce((acc, curr) => {

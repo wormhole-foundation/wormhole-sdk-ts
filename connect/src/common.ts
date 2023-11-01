@@ -38,7 +38,7 @@ export async function signSendWait(
         txHashes.push(...(await signSend(txbuff)));
         txbuff = [];
       }
-      // TODO: it may be possible to group this tx with
+      // Note: it may be possible to group this tx with
       // those in the buffer if there are any but
       // the parallelizable flag alone is not enough to signal
       // if this is safe

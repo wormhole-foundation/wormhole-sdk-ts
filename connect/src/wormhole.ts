@@ -1,31 +1,29 @@
 import {
-  PlatformName,
   ChainName,
   Network,
-  isCircleSupported,
-  isCircleChain,
-  usdcContract,
+  PlatformName,
   isChain,
+  isCircleChain,
+  isCircleSupported,
   normalizeAmount,
 } from "@wormhole-foundation/sdk-base";
 import {
-  UniversalAddress,
-  deserialize,
   ChainAddress,
-  NativeAddress,
-  TokenId,
-  Platform,
   ChainContext,
-  toNative,
   Contracts,
-  TxHash,
-  WormholeMessageId,
-  isTokenId,
-  PayloadLiteral,
+  NativeAddress,
   PayloadDiscriminator,
+  PayloadLiteral,
+  Platform,
+  TokenId,
+  TxHash,
+  UniversalAddress,
+  WormholeMessageId,
+  deserialize,
+  isTokenId,
+  toNative,
 } from "@wormhole-foundation/sdk-definitions";
 
-import { WormholeConfig } from "./types";
 import {
   CIRCLE_RETRY_INTERVAL,
   CONFIG,
@@ -33,18 +31,20 @@ import {
   WHSCAN_RETRY_INTERVAL,
   networkPlatformConfigs,
 } from "./config";
+import { WormholeConfig } from "./types";
 
+import { CircleTransfer } from "./protocols/cctpTransfer";
 import { TokenTransfer } from "./protocols/tokenTransfer";
-import { CCTPTransfer } from "./protocols/cctpTransfer";
-import { GatewayTransfer } from "./protocols/gatewayTransfer";
 
+import { getCircleAttestation } from "./circle-api";
 import { retry } from "./tasks";
 import {
   TransactionStatus,
   getTransactionStatus,
+  getVaaBytesWithRetry,
   getVaaBytes,
+  getVaaWithRetry,
 } from "./whscan-api";
-import { getCircleAttestation } from "./circle-api";
 
 export class Wormhole {
   protected _platforms: Map<PlatformName, Platform<PlatformName>>;
@@ -74,24 +74,24 @@ export class Wormhole {
   }
 
   /**
-   * Creates a CCTPTransfer object to move Native USDC from one chain to another
+   * Creates a CircleTransfer object to move Native USDC from one chain to another
    * @param amount the amount to transfer
    * @param from the address to transfer from
    * @param to the address to transfer to
    * @param automatic whether to use automatic delivery
    * @param payload the payload to send with the transfer
    * @param nativeGas the amount of native gas to send with the transfer
-   * @returns the CCTPTransfer object
+   * @returns the CircleTransfer object
    * @throws Errors if the chain or protocol is not supported
    */
-  async cctpTransfer(
+  async circleTransfer(
     amount: bigint,
     from: ChainAddress,
     to: ChainAddress,
     automatic: boolean,
     payload?: Uint8Array,
     nativeGas?: bigint,
-  ): Promise<CCTPTransfer> {
+  ): Promise<CircleTransfer> {
     if (automatic && payload)
       throw new Error("Payload with automatic delivery is not supported");
 
@@ -105,7 +105,7 @@ export class Wormhole {
         `Network and chain not supported: ${this.network} ${from.chain} `,
       );
 
-    return await CCTPTransfer.from(this, {
+    return await CircleTransfer.from(this, {
       amount,
       from,
       to,
@@ -280,8 +280,6 @@ export class Wormhole {
       | "native",
     recipient: ChainAddress,
   ): Promise<ChainAddress> {
-    // TODO: same as supportsSendWithRelay, need some
-    // way to id this in a less sketchy way
     const chain = this.getChain(recipient.chain);
     if (!("getTokenAccount" in chain)) return recipient;
 
@@ -320,27 +318,21 @@ export class Wormhole {
    * @returns The VAA bytes if available
    * @throws Errors if the VAA is not available after the retries
    */
-  async getVAABytes(
+  async getVaaBytes(
     chain: ChainName,
     emitter: UniversalAddress | NativeAddress<PlatformName>,
     sequence: bigint,
     timeout: number = DEFAULT_TASK_TIMEOUT,
   ): Promise<Uint8Array | undefined> {
-    const task = () =>
-      getVaaBytes(this.conf.api, {
+    return getVaaBytesWithRetry(
+      this.conf.api,
+      {
         chain,
         sequence,
         emitter: emitter.toUniversalAddress(),
-      });
-
-    const vaaBytes = await retry<Uint8Array>(
-      task,
-      WHSCAN_RETRY_INTERVAL,
+      },
       timeout,
-      "Wormholescan:GetVaaBytes",
     );
-
-    return vaaBytes ?? undefined;
   }
 
   /**
@@ -352,16 +344,23 @@ export class Wormhole {
    * @returns The VAA if available
    * @throws Errors if the VAA is not available after the retries
    */
-  async getVAA<T extends PayloadLiteral | PayloadDiscriminator>(
+  async getVaa<T extends PayloadLiteral | PayloadDiscriminator>(
     chain: ChainName,
     emitter: UniversalAddress | NativeAddress<PlatformName>,
     sequence: bigint,
     decodeAs: T,
     timeout: number = DEFAULT_TASK_TIMEOUT,
   ): Promise<ReturnType<typeof deserialize<T>> | undefined> {
-    const vaaBytes = await this.getVAABytes(chain, emitter, sequence, timeout);
-    if (vaaBytes === undefined) return;
-    return deserialize(decodeAs, vaaBytes);
+    return getVaaWithRetry(
+      this.conf.api,
+      {
+        chain,
+        sequence,
+        emitter: emitter.toUniversalAddress(),
+      },
+      decodeAs,
+      timeout,
+    );
   }
 
   async getCircleAttestation(

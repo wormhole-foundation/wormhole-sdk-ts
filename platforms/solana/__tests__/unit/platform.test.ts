@@ -2,15 +2,16 @@ import { expect, test } from '@jest/globals';
 import '../mocks/web3';
 
 import {
-  testing,
-  ChainName,
-  chainToPlatform,
-  chains,
-  chainConfigs,
   DEFAULT_NETWORK,
+  chainConfigs,
+  chainToPlatform,
+  chains
 } from '@wormhole-foundation/connect-sdk';
 
 import { SolanaPlatform } from '../../src';
+
+import '@wormhole-foundation/connect-sdk-solana-core'
+import '@wormhole-foundation/connect-sdk-solana-tokenbridge'
 
 // @ts-ignore -- this is the mock we import above
 import { getDefaultProvider } from '@solana/web3.js';

@@ -1,16 +1,31 @@
-import { encoding, toChainId } from "@wormhole-foundation/sdk-base";
-import { WormholeMessageId } from "@wormhole-foundation/sdk-definitions";
+import {
+  ChainName,
+  PlatformName,
+  encoding,
+  toChainId,
+} from "@wormhole-foundation/sdk-base";
+import {
+  NativeAddress,
+  PayloadDiscriminator,
+  PayloadLiteral,
+  UniversalAddress,
+  VAA,
+  WormholeMessageId,
+  deserialize,
+} from "@wormhole-foundation/sdk-definitions";
 import axios from "axios";
+import { DEFAULT_TASK_TIMEOUT, WHSCAN_RETRY_INTERVAL } from "./config";
+import { retry } from "./tasks";
 
 /**
  * Gets the bytes of a VAA for a given WormholeMessageId or `null` if the VAA is not available yet.
- * @param rpcUrl the url of the wormholescan API
+ * @param apiUrl the url of the wormholescan API
  * @param whm the WormholeMessageId
  * @returns a Uint8Array containing the VAA or `null` if it's not available yet
  * @throws Errors if the service throws an unrecoverable error (e.g. 500)
  */
 export async function getVaaBytes(
-  rpcUrl: string,
+  apiUrl: string,
   whm: WormholeMessageId,
 ): Promise<Uint8Array | null> {
   const { chain, emitter, sequence } = whm;
@@ -20,7 +35,7 @@ export async function getVaaBytes(
     emitter.toUniversalAddress().toString(),
   );
 
-  const url = `${rpcUrl}/v1/signed_vaa/${chainId}/${emitterAddress}/${sequence}`;
+  const url = `${apiUrl}/v1/signed_vaa/${chainId}/${emitterAddress}/${sequence}`;
 
   try {
     const {
@@ -42,6 +57,34 @@ export async function getVaaBytes(
 
     throw error;
   }
+}
+
+export async function getVaaBytesWithRetry(
+  apiUrl: string,
+  whm: WormholeMessageId,
+  timeout: number = DEFAULT_TASK_TIMEOUT,
+): Promise<Uint8Array | undefined> {
+  const task = () => getVaaBytes(apiUrl, whm);
+  const vaaBytes = await retry<Uint8Array>(
+    task,
+    WHSCAN_RETRY_INTERVAL,
+    timeout,
+    "Wormholescan:GetVaaBytes",
+  );
+  return vaaBytes ?? undefined;
+}
+
+export async function getVaaWithRetry<
+  T extends PayloadLiteral | PayloadDiscriminator,
+>(
+  apiUrl: string,
+  whm: WormholeMessageId,
+  decodeAs: T,
+  timeout: number = DEFAULT_TASK_TIMEOUT,
+): Promise<ReturnType<typeof deserialize<T>> | undefined> {
+  const vaaBytes = await getVaaBytesWithRetry(apiUrl, whm, timeout);
+  if (vaaBytes === undefined) return;
+  return deserialize(decodeAs, vaaBytes);
 }
 
 /**

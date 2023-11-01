@@ -13,7 +13,7 @@ export function normalizeAmount(
   // so we can do everything as bigints
   if (typeof amount === "number") amount = amount.toPrecision();
 
-  // TODO?: punting
+  // punting
   if (amount.includes("e")) throw new Error(`Exponential detected:  ${amount}`);
 
   // If its a whole number, just add a decimal place to normalize

@@ -26,13 +26,13 @@ export async function getStuff(
   let signer: Signer;
   switch (chain.platform.platform) {
     case "Solana":
-      signer = getSolanaSigner(chain, SOLANA_PRIVATE_KEY);
+      signer = await getSolanaSigner(await chain.getRpc(), SOLANA_PRIVATE_KEY);
       break;
     case "Cosmwasm":
-      signer = await getCosmwasmSigner(chain, TERRA_PRIVATE_KEY);
+      signer = await getCosmwasmSigner(await chain.getRpc(), TERRA_PRIVATE_KEY);
       break;
     default:
-      signer = await getEvmSigner(chain, ETH_PRIVATE_KEY);
+      signer = await getEvmSigner(await chain.getRpc(), ETH_PRIVATE_KEY);
   }
 
   return { chain, signer, address: nativeChainAddress(signer) };

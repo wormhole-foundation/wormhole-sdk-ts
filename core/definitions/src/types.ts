@@ -93,7 +93,7 @@ export type ChainConfig = {
   // Average block time in milliseconds
   blockTime: number;
   nativeTokenDecimals: bigint;
-  explorer: ExplorerSettings;
+  explorer?: ExplorerSettings;
   rpc: string;
 };
 

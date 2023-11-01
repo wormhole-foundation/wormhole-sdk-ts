@@ -6,6 +6,8 @@ import {
 } from "@wormhole-foundation/connect-sdk";
 import { CosmwasmChainName } from "./types";
 
+export const DEFAULT_FEE = 1_000_000;
+
 export const MSG_EXECUTE_CONTRACT_TYPE_URL =
   "/cosmwasm.wasm.v1.MsgExecuteContract";
 
@@ -74,13 +76,13 @@ const cosmwasmAddressPrefix = [
   ["Cosmoshub", "cosmos"],
   ["Evmos", "evmos"],
   ["Injective", "inj"],
-  ["Kujira", "kuji"], // TODO: make sure this is right
+  ["Kujira", "kuji"],
   ["Osmosis", "osmo"],
   ["Sei", "sei"],
-  ["Terra", "terra"], // TODO: make sure this is right
+  ["Terra", "terra"],
   ["Terra2", "terra"],
   ["Wormchain", "wormhole"],
-  ["Xpla", "xpla"], // TODO: make sure this is right
+  ["Xpla", "xpla"],
 ] as const satisfies RoArray<readonly [PlatformToChains<"Cosmwasm">, string]>;
 
 export const chainToAddressPrefix = constMap(cosmwasmAddressPrefix);
@@ -96,8 +98,8 @@ const cosmwasmNativeDenom = [
       ["Kujira", "kuji"],
       ["Osmosis", "uosmo"],
       ["Sei", "usei"],
-      ["Terra", "ulunah"],
-      ["Terra2", "uluna"], //TODO: same for both?
+      ["Terra", "luna"],
+      ["Terra2", "uluna"],
       ["Wormchain", "uworm"],
       ["Xpla", "uxpla"],
     ],
@@ -111,7 +113,7 @@ const cosmwasmNativeDenom = [
       ["Kujira", "kuji"],
       ["Osmosis", "uosmo"],
       ["Sei", "usei"],
-      ["Terra", "ulunah"],
+      ["Terra", "luna"],
       ["Terra2", "uluna"],
       ["Wormchain", "uworm"],
       ["Xpla", "uxpla"],
@@ -177,3 +179,5 @@ const gatewayConnections = [
 >;
 
 export const networkChainToChannels = constMap(gatewayConnections);
+
+export const evmLikeChains = ["Evmos", "Injective"];

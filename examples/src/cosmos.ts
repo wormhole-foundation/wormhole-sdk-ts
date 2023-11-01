@@ -12,6 +12,12 @@ import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 
 import { TransferStuff, getStuff } from "./helpers";
 
+import "@wormhole-foundation/connect-sdk-evm-core";
+import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
+import "@wormhole-foundation/connect-sdk-cosmwasm-core";
+import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
+import "@wormhole-foundation/connect-sdk-cosmwasm-ibc";
+
 // We're going to transfer into, around, and out of the Cosmos ecosystem
 // First on Avalanche, transparently through gateway and over IBC to Cosmoshub
 // Then over IBC, transparently through gateway and over IBC to Osmosis
@@ -50,7 +56,6 @@ import { TransferStuff, getStuff } from "./helpers";
   const token = "native";
   const amount = normalizeAmount("0.01", external.config.nativeTokenDecimals);
 
-  fakeIt = true;
   // Transfer native token from source chain, through gateway, to a cosmos chain
   let route1 = fakeIt
     ? await GatewayTransfer.from(
@@ -63,7 +68,6 @@ import { TransferStuff, getStuff } from "./helpers";
       )
     : await transferIntoCosmos(wh, token, amount, leg1, leg2);
   //console.log("Route 1 (External => Cosmos)", route1);
-  fakeIt = false;
 
   const { denom } = route1.ibcTransfers![0].data;
   // Lookup the Gateway representation of the wrappd token

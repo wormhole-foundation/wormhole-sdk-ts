@@ -86,7 +86,7 @@ describe("Chain Tests", () => {
 //   const wh = new Wormhole("Testnet", []);
 //   describe("VAA Tests", () => {
 //     test("GetVAA", async () => {
-//       const parsedVaa = await wh.getVAA(
+//       const parsedVaa = await wh.getVaa(
 //         "Celo",
 //         new UniversalAddress(
 //           "0x00000000000000000000000005ca6037eC51F8b712eD2E6Fa72219FEaE74E153",
@@ -112,7 +112,7 @@ describe("Chain Tests", () => {
 //   );
 // });
 
-// describe('CCTP Transfer', () => {
+// describe('Circle Transfer', () => {
 //   it('should create a cctpTransfer', async () => {
 //     // Setup
 //     // your mock setup here
@@ -209,11 +209,11 @@ describe("Chain Tests", () => {
 //   expect(typeof result).toBe('boolean');
 // });
 
-// it('should handle getVAABytes', async () => {
+// it('should handle getVaaBytes', async () => {
 //   // Setup, Test, and Assertions as above
 // });
 
-// it('should handle getVAA', async () => {
+// it('should handle getVaa', async () => {
 //   // Setup, Test, and Assertions as above
 // });
 

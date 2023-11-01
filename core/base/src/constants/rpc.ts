@@ -69,4 +69,4 @@ const rpcConfig = [
 
 const rpc = constMap(rpcConfig);
 export const rpcAddress = (network: Network, chain: ChainName) =>
-  rpc.has(network, chain) ? rpc.get(network, chain) : "";
+  rpc.get(network, chain) ?? "";

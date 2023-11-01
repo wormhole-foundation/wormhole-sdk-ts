@@ -1,13 +1,13 @@
-import { PublicKey } from '@solana/web3.js';
 import {
   ChainContext,
   NativeAddress,
-  UniversalAddress,
   UniversalOrNative,
   toNative,
 } from '@wormhole-foundation/connect-sdk';
 import { getAssociatedTokenAddress } from '@solana/spl-token';
 import { SolanaPlatform } from './platform';
+import { AnySolanaAddress } from './types';
+import { SolanaAddress } from './address';
 
 export class SolanaChain extends ChainContext<'Solana'> {
   // @ts-ignore
@@ -15,7 +15,7 @@ export class SolanaChain extends ChainContext<'Solana'> {
 
   async getTokenAccount(
     token: UniversalOrNative<'Solana'> | 'native',
-    address: UniversalAddress,
+    address: AnySolanaAddress,
   ): Promise<NativeAddress<'Solana'>> {
     const tb = await this.getTokenBridge();
 
@@ -24,8 +24,8 @@ export class SolanaChain extends ChainContext<'Solana'> {
         ? await tb.getWrappedNative()
         : token.toUniversalAddress();
 
-    const mint = new PublicKey(mintAddress.toUint8Array());
-    const owner = new PublicKey(address.toUint8Array());
+    const mint = new SolanaAddress(mintAddress.toUint8Array()).unwrap();
+    const owner = new SolanaAddress(address).unwrap();
 
     const ata = await getAssociatedTokenAddress(mint, owner);
     return toNative('Solana', ata.toString());

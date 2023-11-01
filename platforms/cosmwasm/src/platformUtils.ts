@@ -33,7 +33,6 @@ export module CosmwasmUtils {
       throw new Error(`invalid chain for CosmWasm: ${chain}`);
     return {
       chain: chain,
-      // TODO
       // @ts-ignore
       address: new CosmwasmAddress(getNativeDenom(chain)),
     };
@@ -105,12 +104,9 @@ export module CosmwasmUtils {
     return balancesArr.reduce((obj, item) => Object.assign(obj, item), {});
   }
 
-  function getNativeDenom(chain: ChainName): string {
-    // TODO: required because of const map
-    if (CosmwasmPlatform.network === "Devnet")
-      throw new Error("No devnet native denoms");
-
+  export function getNativeDenom(chain: ChainName): string {
     return chainToNativeDenoms(
+      //@ts-ignore
       CosmwasmPlatform.network,
       chain as PlatformToChains<CosmwasmPlatform.Type>,
     );

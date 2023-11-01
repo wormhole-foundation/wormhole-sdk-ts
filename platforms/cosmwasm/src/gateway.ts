@@ -1,40 +1,36 @@
-import { CosmWasmClient, IndexedTx } from "@cosmjs/cosmwasm-stargate";
+import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import {
   ChainName,
   GatewayTransferMsg,
   GatewayTransferWithPayloadMsg,
+  IbcBridge,
+  TokenBridge,
   TokenId,
-  UniversalAddress,
-  WormholeMessageId,
   encoding,
-  keccak256,
   sha256,
   toChainId,
 } from "@wormhole-foundation/connect-sdk";
-import bs58 from "bs58";
 
 import { CosmwasmAddress } from "./address";
+import { IBC_TRANSFER_PORT } from "./constants";
 import { CosmwasmPlatform } from "./platform";
 import { CosmwasmChainName } from "./types";
-import { CosmwasmIbcBridge } from "./protocols/ibc";
-import { CosmwasmTokenBridge } from "./protocols/tokenBridge";
-import { IBC_TRANSFER_PORT } from "./constants";
 
 export module Gateway {
   export const name: "Wormchain" = "Wormchain";
 
   export function gatewayAddress(): string {
-    const contracts = CosmwasmPlatform.contracts.getContracts(name);
+    const { contracts } = CosmwasmPlatform.conf[name]!;
     return contracts.gateway!;
   }
 
   export function tokenBridgeAddress(): string {
-    const contracts = CosmwasmPlatform.contracts.getContracts(name);
+    const { contracts } = CosmwasmPlatform.conf[name]!;
     return contracts.tokenBridge!;
   }
 
   export function coreAddress(): string {
-    const contracts = CosmwasmPlatform.contracts.getContracts(name);
+    const { contracts } = CosmwasmPlatform.conf[name]!;
     return contracts.coreBridge!;
   }
 
@@ -46,14 +42,14 @@ export module Gateway {
 
   export async function getTokenBridge(
     rpc?: CosmWasmClient,
-  ): Promise<CosmwasmTokenBridge> {
+  ): Promise<TokenBridge<"Cosmwasm">> {
     rpc = rpc ? rpc : await getRpc();
     return CosmwasmPlatform.getTokenBridge(rpc);
   }
 
   export async function getIbcBridge(
     rpc?: CosmWasmClient,
-  ): Promise<CosmwasmIbcBridge> {
+  ): Promise<IbcBridge<"Cosmwasm">> {
     rpc = rpc ? rpc : await getRpc();
     return CosmwasmPlatform.getIbcBridge(rpc);
   }
@@ -68,7 +64,7 @@ export module Gateway {
 
     // Encode the original address to base58 and add it
     // to the factory address for cw20 style factory token address
-    const encodedAddress = bs58.encode(
+    const encodedAddress = encoding.b58.encode(
       wrappedAsset.toUniversalAddress().toUint8Array(),
     );
     const factoryAddress = `factory/${gatewayAddress()}/${encodedAddress}`;
@@ -124,35 +120,5 @@ export module Gateway {
       : ({ gateway_transfer: { ...common } } as GatewayTransferMsg);
 
     return msg;
-  }
-
-  // TODO: make consts
-  export function parseWormholeMessage(tx: IndexedTx): WormholeMessageId {
-    const events = tx.events.filter(
-      (ev) =>
-        ev.type === "wasm" &&
-        ev.attributes[0].key === "_contract_address" &&
-        ev.attributes[0].value === coreAddress(),
-    );
-
-    if (events.length === 0) throw new Error("No wormhole message found in tx");
-    if (events.length > 1)
-      console.error(`Expected single message, found ${events.length}`);
-
-    const [wasm] = events;
-
-    const sequence = wasm.attributes.find((e) => {
-      return e.key === "message.sequence";
-    })!.value;
-
-    const emitter = wasm.attributes.find((e) => {
-      return e.key === "message.sender";
-    })!.value;
-
-    return {
-      chain: Gateway.name,
-      emitter: new UniversalAddress(emitter),
-      sequence: BigInt(sequence),
-    };
   }
 }

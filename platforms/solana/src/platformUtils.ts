@@ -35,7 +35,8 @@ export module SolanaUtils {
     if (!isSupportedChain(chain)) throw new Error(`invalid chain: ${chain}`);
     return {
       chain: chain,
-      address: new SolanaAddress(SolanaZeroAddress) as any, // TODO: fix weird type error
+      // @ts-ignore
+      address: new SolanaAddress(SolanaZeroAddress),
     };
   }
 
@@ -156,7 +157,7 @@ export module SolanaUtils {
     const netChain = solGenesisHashToNetworkChainPair.get(genesisHash);
 
     if (!netChain) {
-      // TODO: this is required for tilt/ci since it gets a new genesis hash
+      // Note: this is required for tilt/ci since it gets a new genesis hash
       if (SolanaPlatform.network === 'Devnet') return ['Devnet', 'Solana'];
 
       throw new Error(
