@@ -69,17 +69,11 @@ export async function isTokenBridgeVaaRedeemed(
 
 export async function fetchIbcXfer(
   wcIbc: IbcBridge<"Cosmwasm">,
-  msg:
-    | TxHash
-    | TransactionId
-    | IbcMessageId
-    | GatewayTransferMsg
-    | GatewayTransferWithPayloadMsg,
+  msg: TxHash | TransactionId | IbcMessageId | GatewayTransferMsg | GatewayTransferWithPayloadMsg,
 ): Promise<IbcTransferInfo | null> {
   try {
     if (isIbcMessageId(msg)) return await wcIbc.lookupTransferFromIbcMsgId(msg);
-    else if (isTransactionIdentifier(msg))
-      return await wcIbc.lookupTransferFromTx(msg.txid);
+    else if (isTransactionIdentifier(msg)) return await wcIbc.lookupTransferFromTx(msg.txid);
     else if (isGatewayTransferMsg(msg) || isGatewayTransferWithPayloadMsg(msg))
       return await wcIbc.lookupTransferFromMsg(msg);
     else throw new Error("Invalid message type:" + JSON.stringify(msg));

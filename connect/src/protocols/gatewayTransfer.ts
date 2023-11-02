@@ -32,11 +32,7 @@ import {
 import { signSendWait } from "../common";
 import { fetchIbcXfer, isTokenBridgeVaaRedeemed, retry } from "../tasks";
 import { Wormhole } from "../wormhole";
-import {
-  AttestationId,
-  TransferState,
-  WormholeTransfer,
-} from "../wormholeTransfer";
+import { AttestationId, TransferState, WormholeTransfer } from "../wormholeTransfer";
 
 export class GatewayTransfer implements WormholeTransfer {
   static chain: ChainName = "Wormchain";
@@ -107,20 +103,13 @@ export class GatewayTransfer implements WormholeTransfer {
   }
 
   // Static initializers for in flight transfers that have not been completed
-  static async from(
-    wh: Wormhole,
-    from: GatewayTransferDetails,
-  ): Promise<GatewayTransfer>;
+  static async from(wh: Wormhole, from: GatewayTransferDetails): Promise<GatewayTransfer>;
   static async from(
     wh: Wormhole,
     from: WormholeMessageId,
     timeout?: number,
   ): Promise<GatewayTransfer>;
-  static async from(
-    wh: Wormhole,
-    from: TransactionId,
-    timeout?: number,
-  ): Promise<GatewayTransfer>;
+  static async from(wh: Wormhole, from: TransactionId, timeout?: number): Promise<GatewayTransfer>;
   static async from(
     wh: Wormhole,
     from: GatewayTransferDetails | WormholeMessageId | TransactionId,
@@ -173,9 +162,7 @@ export class GatewayTransfer implements WormholeTransfer {
 
     // The VAA may have a payload which may have a nested GatewayTransferMessage
     let payload: Uint8Array | undefined =
-      vaa.payloadName === "TransferWithPayload"
-        ? vaa.payload.payload
-        : undefined;
+      vaa.payloadName === "TransferWithPayload" ? vaa.payload.payload : undefined;
 
     // Nonce for GatewayTransferMessage may be in the payload
     // and since we use the payload to find the Wormchain transacton
@@ -195,9 +182,7 @@ export class GatewayTransfer implements WormholeTransfer {
           : undefined;
 
         const destChain = toChainName(maybeWithPayload.chain);
-        const recipientAddress = encoding.b64.decode(
-          maybeWithPayload.recipient,
-        );
+        const recipientAddress = encoding.b64.decode(maybeWithPayload.recipient);
         to = nativeChainAddress([destChain, recipientAddress]);
       } catch {
         /*Ignoring, throws if not the payload isnt JSON*/
@@ -248,9 +233,7 @@ export class GatewayTransfer implements WormholeTransfer {
   }
 
   // Recover transfer info the first step in the transfer
-  private static ibcTransfertoGatewayTransfer(
-    xfer: IbcTransferInfo,
-  ): GatewayTransferDetails {
+  private static ibcTransfertoGatewayTransfer(xfer: IbcTransferInfo): GatewayTransferDetails {
     const token = {
       chain: xfer.id.chain,
       address: toNative(xfer.id.chain, xfer.data.denom),
@@ -273,9 +256,7 @@ export class GatewayTransfer implements WormholeTransfer {
             address: toNative(destChain, new UniversalAddress(_recip)),
           };
 
-    const payload = msg.payload
-      ? encoding.toUint8Array(msg.payload)
-      : undefined;
+    const payload = msg.payload ? encoding.toUint8Array(msg.payload) : undefined;
 
     const details: GatewayTransferDetails = {
       token,
@@ -314,8 +295,7 @@ export class GatewayTransfer implements WormholeTransfer {
   }
 
   private async _transfer(signer: Signer): Promise<TransactionId[]> {
-    const tokenAddress =
-      this.transfer.token === "native" ? "native" : this.transfer.token.address;
+    const tokenAddress = this.transfer.token === "native" ? "native" : this.transfer.token.address;
 
     const fromChain = this.wh.getChain(this.transfer.from.chain);
 
@@ -333,8 +313,7 @@ export class GatewayTransfer implements WormholeTransfer {
   }
 
   private async _transferIbc(signer: Signer): Promise<TransactionId[]> {
-    if (this.transfer.token === "native")
-      throw new Error("Native not supported for IBC transfers");
+    if (this.transfer.token === "native") throw new Error("Native not supported for IBC transfers");
 
     const fromChain = this.wh.getChain(this.transfer.from.chain);
 
@@ -355,10 +334,7 @@ export class GatewayTransfer implements WormholeTransfer {
   async fetchAttestation(timeout?: number): Promise<AttestationId[]> {
     // Note: this method probably does too much
 
-    if (
-      this.state < TransferState.Initiated ||
-      this.state > TransferState.Attested
-    )
+    if (this.state < TransferState.Initiated || this.state > TransferState.Attested)
       throw new Error("Invalid state transition in `fetchAttestation`");
 
     const attestations: AttestationId[] = [];
@@ -378,9 +354,7 @@ export class GatewayTransfer implements WormholeTransfer {
       // from the cosmos chain
       this.ibcTransfers = (
         await Promise.all(
-          this.transactions.map((tx) =>
-            originIbcbridge.lookupTransferFromTx(tx.txid),
-          ),
+          this.transactions.map((tx) => originIbcbridge.lookupTransferFromTx(tx.txid)),
         )
       ).flat();
 
@@ -392,18 +366,14 @@ export class GatewayTransfer implements WormholeTransfer {
         // If we're leaving cosmos, grab the VAA from the gateway
         // now find the corresponding wormchain transaction given the ibcTransfer info
         const retryInterval = 5000;
-        const task = () =>
-          this.gatewayIbcBridge.lookupMessageFromIbcMsgId(xfer.id);
+        const task = () => this.gatewayIbcBridge.lookupMessageFromIbcMsgId(xfer.id);
         const whm = await retry<WormholeMessageId>(
           task,
           retryInterval,
           timeout,
           "Gateway:IbcBridge:LookupWormholeMessageFromIncomingIbcMessage",
         );
-        if (!whm)
-          throw new Error(
-            "Matching wormhole message not found after retries exhausted",
-          );
+        if (!whm) throw new Error("Matching wormhole message not found after retries exhausted");
 
         const vaa = await GatewayTransfer.getTransferVaa(this.wh, whm);
         this.vaas = [{ id: whm, vaa }];
@@ -444,23 +414,20 @@ export class GatewayTransfer implements WormholeTransfer {
         timeout,
         "Gateway:TokenBridge:IsVaaRedeemed",
       );
-      if (!redeemed)
-        throw new Error("VAA not redeemed after retries exhausted");
+      if (!redeemed) throw new Error("VAA not redeemed after retries exhausted");
 
       // Next, get the IBC transactions from wormchain
       // Note: Because we search by GatewayTransferMsg payload
       // there is a possibility of dupe messages being returned
       // using a nonce should help
-      const wcTransferTask = () =>
-        fetchIbcXfer(this.gatewayIbcBridge, this.msg);
+      const wcTransferTask = () => fetchIbcXfer(this.gatewayIbcBridge, this.msg);
       const wcTransfer = await retry<IbcTransferInfo>(
         wcTransferTask,
         vaaRedeemedRetryInterval,
         timeout,
         "Gateway:IbcBridge:WormchainTransferInitiated",
       );
-      if (!wcTransfer)
-        throw new Error("Wormchain transfer not found after retries exhausted");
+      if (!wcTransfer) throw new Error("Wormchain transfer not found after retries exhausted");
 
       if (wcTransfer.pending) {
         // TODO: check if pending and bail(?) if so
@@ -506,9 +473,7 @@ export class GatewayTransfer implements WormholeTransfer {
         3) return txid of submission
     */
     if (this.state < TransferState.Attested)
-      throw new Error(
-        "Invalid state transition in `finish`. Be sure to call `fetchAttestation`.",
-      );
+      throw new Error("Invalid state transition in `finish`. Be sure to call `fetchAttestation`.");
 
     if (this.toGateway())
       // TODO: assuming the last transaction captured is the one from gateway to the destination
@@ -553,8 +518,7 @@ export class GatewayTransfer implements WormholeTransfer {
       timeout,
     );
 
-    if (!vaa)
-      throw new Error(`No VAA Available: ${chain}/${emitter}/${sequence}`);
+    if (!vaa) throw new Error(`No VAA Available: ${chain}/${emitter}/${sequence}`);
 
     return vaa;
   }
@@ -563,14 +527,9 @@ export class GatewayTransfer implements WormholeTransfer {
   // checking to see if the Gateway IBC bridge has a transfer channel setup
   // If this is a new chain, add the channels to the constants file
   private fromGateway(): boolean {
-    return (
-      this.gatewayIbcBridge.getTransferChannel(this.transfer.from.chain) !==
-      null
-    );
+    return this.gatewayIbcBridge.getTransferChannel(this.transfer.from.chain) !== null;
   }
   private toGateway(): boolean {
-    return (
-      this.gatewayIbcBridge.getTransferChannel(this.transfer.to.chain) !== null
-    );
+    return this.gatewayIbcBridge.getTransferChannel(this.transfer.to.chain) !== null;
   }
 }

@@ -12,10 +12,7 @@ import {
   WormholeCore,
   WormholeMessageId,
 } from "@wormhole-foundation/connect-sdk";
-import {
-  CosmwasmChainName,
-  CosmwasmPlatform,
-} from "@wormhole-foundation/connect-sdk-cosmwasm";
+import { CosmwasmChainName, CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
 
 export class CosmwasmWormholeCore implements WormholeCore<"Cosmwasm"> {
   private coreAddress: string;
@@ -28,24 +25,14 @@ export class CosmwasmWormholeCore implements WormholeCore<"Cosmwasm"> {
   ) {
     const coreAddress = this.contracts.coreBridge!;
     if (!coreAddress)
-      throw new Error(
-        `Wormhole Token Bridge contract for domain ${chain} not found`,
-      );
+      throw new Error(`Wormhole Token Bridge contract for domain ${chain} not found`);
 
     this.coreAddress = coreAddress;
   }
 
-  static async fromRpc(
-    rpc: CosmWasmClient,
-    config: ChainsConfig,
-  ): Promise<CosmwasmWormholeCore> {
+  static async fromRpc(rpc: CosmWasmClient, config: ChainsConfig): Promise<CosmwasmWormholeCore> {
     const [network, chain] = await CosmwasmPlatform.chainFromRpc(rpc);
-    return new CosmwasmWormholeCore(
-      network,
-      chain,
-      rpc,
-      config[chain]!.contracts,
-    );
+    return new CosmwasmWormholeCore(network, chain, rpc, config[chain]!.contracts);
   }
 
   publishMessage(
@@ -58,13 +45,7 @@ export class CosmwasmWormholeCore implements WormholeCore<"Cosmwasm"> {
   async parseTransaction(txid: string): Promise<WormholeMessageId[]> {
     const tx = await this.rpc.getTx(txid);
     if (!tx) throw new Error("No transaction found for txid: " + txid);
-    return [
-      CosmwasmWormholeCore.parseWormholeMessage(
-        this.chain,
-        this.coreAddress,
-        tx,
-      ),
-    ];
+    return [CosmwasmWormholeCore.parseWormholeMessage(this.chain, this.coreAddress, tx)];
   }
 
   // TODO: make consts
@@ -81,8 +62,7 @@ export class CosmwasmWormholeCore implements WormholeCore<"Cosmwasm"> {
     );
 
     if (events.length === 0) throw new Error("No wormhole message found in tx");
-    if (events.length > 1)
-      console.error(`Expected single message, found ${events.length}`);
+    if (events.length > 1) console.error(`Expected single message, found ${events.length}`);
 
     const [wasm] = events;
 

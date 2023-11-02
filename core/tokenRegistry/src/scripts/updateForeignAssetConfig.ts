@@ -52,9 +52,7 @@ const checkEnvConfig = async (env: Network, tokensConfig: TokensConfig) => {
   const suggestedUpdates = data[1] as TokensConfig;
   const newConfig = mergeDeep(tokensConfig, suggestedUpdates);
   const filePath =
-    env === "Mainnet"
-      ? "src/tokens/mainnetTokens.json"
-      : "src/tokens/testnetTokens.json";
+    env === "Mainnet" ? "src/tokens/mainnetTokens.json" : "src/tokens/testnetTokens.json";
   fs.writeFileSync(filePath, JSON.stringify(newConfig, null, 2));
 };
 

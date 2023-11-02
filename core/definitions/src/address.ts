@@ -42,26 +42,24 @@ declare global {
 
 export type MappedPlatforms = keyof Wormhole.PlatformToNativeAddressMapping;
 
-type ChainOrPlatformToPlatform<T extends ChainName | PlatformName> =
-  T extends ChainName ? ChainToPlatform<T> : T;
+type ChainOrPlatformToPlatform<T extends ChainName | PlatformName> = T extends ChainName
+  ? ChainToPlatform<T>
+  : T;
 type GetNativeAddress<T extends PlatformName> = T extends MappedPlatforms
   ? Wormhole.PlatformToNativeAddressMapping[T]
   : never;
-export type NativeAddress<T extends PlatformName | ChainName> =
-  GetNativeAddress<ChainOrPlatformToPlatform<T>>;
+export type NativeAddress<T extends PlatformName | ChainName> = GetNativeAddress<
+  ChainOrPlatformToPlatform<T>
+>;
 
-export type UniversalOrNative<P extends PlatformName> =
-  | UniversalAddress
-  | NativeAddress<P>;
+export type UniversalOrNative<P extends PlatformName> = UniversalAddress | NativeAddress<P>;
 
 export type ChainAddress<C extends ChainName = ChainName> = {
   readonly chain: C;
   readonly address: UniversalAddress | NativeAddress<C>;
 };
 
-type NativeAddressCtr = new (
-  ua: UniversalAddress | string | Uint8Array,
-) => Address;
+type NativeAddressCtr = new (ua: UniversalAddress | string | Uint8Array) => Address;
 
 const nativeFactory = new Map<PlatformName, NativeAddressCtr>();
 
@@ -70,9 +68,7 @@ export function registerNative<P extends MappedPlatforms>(
   ctr: NativeAddressCtr,
 ): void {
   if (nativeFactory.has(platform))
-    throw new Error(
-      `Native address type for platform ${platform} has already registered`,
-    );
+    throw new Error(`Native address type for platform ${platform} has already registered`);
 
   nativeFactory.set(platform, ctr);
 }
@@ -96,10 +92,7 @@ export function toNative<T extends PlatformName | ChainName>(
     : chainOrPlatform;
 
   const nativeCtr = nativeFactory.get(platform);
-  if (!nativeCtr)
-    throw new Error(
-      `No native address type registered for platform ${platform}`,
-    );
+  if (!nativeCtr) throw new Error(`No native address type registered for platform ${platform}`);
 
   return new nativeCtr(ua) as unknown as NativeAddress<T>;
 }

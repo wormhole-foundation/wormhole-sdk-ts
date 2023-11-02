@@ -1,19 +1,8 @@
-import {
-  ChainName,
-  Network,
-  PlatformName,
-} from "@wormhole-foundation/sdk-base";
+import { ChainName, Network, PlatformName } from "@wormhole-foundation/sdk-base";
 import { WormholeMessageId } from "./attestation";
 import { ChainContext } from "./chain";
 import { RpcConnection } from "./rpc";
-import {
-  AnyAddress,
-  Balances,
-  ChainsConfig,
-  SignedTx,
-  TokenId,
-  TxHash,
-} from "./types";
+import { AnyAddress, Balances, ChainsConfig, SignedTx, TokenId, TxHash } from "./types";
 
 export interface PlatformUtils<P extends PlatformName> {
   // Get the native (gas) token id for a given chain
@@ -24,11 +13,7 @@ export interface PlatformUtils<P extends PlatformName> {
   isSupportedChain(chain: ChainName): boolean;
 
   // Get the number of decimals for a given token
-  getDecimals(
-    chain: ChainName,
-    rpc: RpcConnection<P>,
-    token: AnyAddress,
-  ): Promise<bigint>;
+  getDecimals(chain: ChainName, rpc: RpcConnection<P>, token: AnyAddress): Promise<bigint>;
   // Get the balance of a token for a given wallet address
   getBalance(
     chain: ChainName,
@@ -48,11 +33,7 @@ export interface PlatformUtils<P extends PlatformName> {
   getCurrentBlock(rpc: RpcConnection<P>): Promise<number>;
 
   // Platform interaction utils
-  sendWait(
-    chain: ChainName,
-    rpc: RpcConnection<P>,
-    stxns: SignedTx[],
-  ): Promise<TxHash[]>;
+  sendWait(chain: ChainName, rpc: RpcConnection<P>, stxns: SignedTx[]): Promise<TxHash[]>;
 
   // Look up a Chain from its native chain ID
   // See implementation for details

@@ -14,11 +14,7 @@ import {
   blockTime,
 } from "@wormhole-foundation/sdk-base";
 import { WormholeConfig } from "./types";
-import {
-  getContracts,
-  ChainConfig,
-  ChainsConfig,
-} from "@wormhole-foundation/sdk-definitions";
+import { getContracts, ChainConfig, ChainsConfig } from "@wormhole-foundation/sdk-definitions";
 
 export const DEFAULT_TASK_TIMEOUT = 60 * 1000; // 1 minute in milliseconds
 
@@ -57,10 +53,7 @@ const chainConfigMapping = [
 
 export const chainConfigs = constMap(chainConfigMapping);
 
-export function networkPlatformConfigs(
-  network: Network,
-  platform: PlatformName,
-): ChainsConfig {
+export function networkPlatformConfigs(network: Network, platform: PlatformName): ChainsConfig {
   return Object.fromEntries(
     Object.entries(chainConfigs(network)).filter(([_, v]) => {
       return v.platform == platform;
@@ -87,5 +80,4 @@ export const CONFIG = {
 } as const satisfies Record<Network, WormholeConfig>;
 
 const inNode = typeof process !== "undefined";
-export const DEFAULT_NETWORK: Network =
-  (inNode && (process.env.NETWORK as Network)) || "Testnet";
+export const DEFAULT_NETWORK: Network = (inNode && (process.env.NETWORK as Network)) || "Testnet";

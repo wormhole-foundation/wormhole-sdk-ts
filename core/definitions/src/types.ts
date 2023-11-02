@@ -27,10 +27,7 @@ export type AnyAddress =
 
 export type TokenId = ChainAddress;
 export function isTokenId(thing: TokenId | any): thing is TokenId {
-  return (
-    typeof (<TokenId>thing).address !== undefined &&
-    isChain((<TokenId>thing).chain)
-  );
+  return typeof (<TokenId>thing).address !== undefined && isChain((<TokenId>thing).chain);
 }
 
 export type Balances = {
@@ -73,13 +70,8 @@ export function nativeChainAddress(
 
 // Fully qualifier Transaction ID
 export type TransactionId = { chain: ChainName; txid: TxHash };
-export function isTransactionIdentifier(
-  thing: TransactionId | any,
-): thing is TransactionId {
-  return (
-    (<TransactionId>thing).chain !== undefined &&
-    (<TransactionId>thing).txid !== undefined
-  );
+export function isTransactionIdentifier(thing: TransactionId | any): thing is TransactionId {
+  return (<TransactionId>thing).chain !== undefined && (<TransactionId>thing).txid !== undefined;
 }
 
 // Configuration for a given Chain

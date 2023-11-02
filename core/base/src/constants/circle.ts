@@ -37,9 +37,7 @@ const usdcContracts = [
       ["Base", "0xf175520c52418dfe19c8098071a252da48cd1c19"],
     ],
   ],
-] as const satisfies RoArray<
-  readonly [Network, RoArray<readonly [ChainName, string]>]
->;
+] as const satisfies RoArray<readonly [Network, RoArray<readonly [ChainName, string]>]>;
 
 export const [circleChains, circleChainIds] = zip(circleDomains);
 export type CircleChainName = (typeof circleChains)[number];
@@ -66,16 +64,11 @@ export const isCircleSupported = (
   chain: string | ChainName | CircleChainName,
 ): network is CircleNetwork => usdcContract.has(network, chain);
 
-export function assertCircleChainId(
-  chainId: number,
-): asserts chainId is CircleChainId {
-  if (!isCircleChainId(chainId))
-    throw Error(`Unknown Circle chain id: ${chainId}`);
+export function assertCircleChainId(chainId: number): asserts chainId is CircleChainId {
+  if (!isCircleChainId(chainId)) throw Error(`Unknown Circle chain id: ${chainId}`);
 }
 
-export function assertCircleChain(
-  chain: string,
-): asserts chain is CircleChainName {
+export function assertCircleChain(chain: string): asserts chain is CircleChainName {
   if (!isCircleChain(chain)) throw Error(`Unknown Circle chain: ${chain}`);
 }
 
@@ -85,9 +78,7 @@ export const asCircleChainId = (chainId: number): CircleChainId => {
   return chainId;
 };
 
-export const toCircleChainId = (
-  chain: number | bigint | string | Chain,
-): CircleChainId => {
+export const toCircleChainId = (chain: number | bigint | string | Chain): CircleChainId => {
   switch (typeof chain) {
     case "string":
       if (isCircleChain(chain)) return circleChainId(chain);
@@ -103,9 +94,7 @@ export const toCircleChainId = (
   throw Error(`Cannot convert to ChainId: ${chain}`);
 };
 
-export const toCircleChainName = (
-  chain: number | string | Chain | bigint,
-): ChainName => {
+export const toCircleChainName = (chain: number | string | Chain | bigint): ChainName => {
   switch (typeof chain) {
     case "string":
       if (isCircleChain(chain)) return chain;

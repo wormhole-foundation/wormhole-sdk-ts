@@ -27,11 +27,7 @@ import {
 } from "@wormhole-foundation/connect-sdk";
 
 import { CosmwasmChain } from "./chain";
-import {
-  IbcChannels,
-  chainToNativeDenoms,
-  networkChainToChannels,
-} from "./constants";
+import { IbcChannels, chainToNativeDenoms, networkChainToChannels } from "./constants";
 import { Gateway } from "./gateway";
 import { CosmwasmUtils } from "./platformUtils";
 import { CosmwasmChainName } from "./types";
@@ -68,10 +64,7 @@ export module CosmwasmPlatform {
     getGatewaySourceChannel,
   } = Gateway;
 
-  export function setConfig(
-    _network: Network,
-    _conf?: ChainsConfig,
-  ): typeof CosmwasmPlatform {
+  export function setConfig(_network: Network, _conf?: ChainsConfig): typeof CosmwasmPlatform {
     conf = _conf ? _conf : networkPlatformConfigs(network, platform);
     network = _network;
     return CosmwasmPlatform;
@@ -87,26 +80,18 @@ export module CosmwasmPlatform {
     throw new Error("No configuration available for chain: " + chain);
   }
 
-  export function getProtocol<PN extends ProtocolName>(
-    protocol: PN,
-  ): ProtocolInitializer<Type> {
+  export function getProtocol<PN extends ProtocolName>(protocol: PN): ProtocolInitializer<Type> {
     return getProtocolInitializer(platform, protocol);
   }
 
-  export async function getWormholeCore(
-    rpc: CosmWasmClient,
-  ): Promise<WormholeCore<"Cosmwasm">> {
+  export async function getWormholeCore(rpc: CosmWasmClient): Promise<WormholeCore<"Cosmwasm">> {
     return getProtocol("WormholeCore").fromRpc(rpc, conf);
   }
-  export async function getTokenBridge(
-    rpc: CosmWasmClient,
-  ): Promise<TokenBridge<"Cosmwasm">> {
+  export async function getTokenBridge(rpc: CosmWasmClient): Promise<TokenBridge<"Cosmwasm">> {
     return getProtocol("TokenBridge").fromRpc(rpc, conf);
   }
 
-  export async function getIbcBridge(
-    rpc: CosmWasmClient,
-  ): Promise<IbcBridge<"Cosmwasm">> {
+  export async function getIbcBridge(rpc: CosmWasmClient): Promise<IbcBridge<"Cosmwasm">> {
     return await getProtocol("IbcBridge").fromRpc(rpc, conf);
   }
 
@@ -124,17 +109,11 @@ export module CosmwasmPlatform {
   ): QueryClient & BankExtension & IbcExtension => {
     // @ts-ignore
     const tmClient: TendermintClient = rpc.getTmClient()!;
-    return QueryClient.withExtensions(
-      tmClient,
-      setupBankExtension,
-      setupIbcExtension,
-    );
+    return QueryClient.withExtensions(tmClient, setupBankExtension, setupIbcExtension);
   };
 
   // cached channels from config if available
-  export const getIbcChannels = (
-    chain: CosmwasmChainName,
-  ): IbcChannels | null => {
+  export const getIbcChannels = (chain: CosmwasmChainName): IbcChannels | null => {
     return networkChainToChannels.has(network, chain)
       ? networkChainToChannels.get(network, chain)!
       : null;

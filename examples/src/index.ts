@@ -1,9 +1,4 @@
-import {
-  CONFIG,
-  api,
-  normalizeAmount,
-  signSendWait,
-} from "@wormhole-foundation/connect-sdk";
+import { CONFIG, api, normalizeAmount, signSendWait } from "@wormhole-foundation/connect-sdk";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 
 import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
@@ -40,12 +35,7 @@ import { getStuff } from "./helpers";
   console.log("Wormhole Messages: ", whm);
 
   // Get the VAA from the wormhole message id
-  const vaa = await api.getVaaWithRetry(
-    CONFIG["Testnet"].api,
-    whm,
-    "TokenBridge:Transfer",
-    60_000,
-  );
+  const vaa = await api.getVaaWithRetry(CONFIG["Testnet"].api, whm, "TokenBridge:Transfer", 60_000);
 
   // Now get the token bridge on the redeem side
   const rcvTb = await rcv.getTokenBridge();

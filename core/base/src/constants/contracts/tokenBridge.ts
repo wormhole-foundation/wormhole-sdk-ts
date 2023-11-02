@@ -22,30 +22,15 @@ export const tokenBridgeContracts = [
       ["Celo", "0x796Dff6D74F3E27060B71255Fe517BFb23C93eed"],
       ["Near", "contract.portalbridge.near"],
       ["Injective", "inj1ghd753shjuwexxywmgs4xz7x2q732vcnxxynfn"],
-      [
-        "Aptos",
-        "0x576410486a2da45eee6c949c995670112ddf2fbeedab20350d506328eefc9d4f",
-      ],
-      [
-        "Sui",
-        "0xc57508ee0d4595e5a8728974a4a93a787d38f339757230d441e895422c07aba9",
-      ],
+      ["Aptos", "0x576410486a2da45eee6c949c995670112ddf2fbeedab20350d506328eefc9d4f"],
+      ["Sui", "0xc57508ee0d4595e5a8728974a4a93a787d38f339757230d441e895422c07aba9"],
       ["Moonbeam", "0xb1731c586ca89a23809861c6103f0b96b3f57d92"],
-      [
-        "Terra2",
-        "terra153366q50k7t8nn7gec00hg66crnhkdggpgdtaxltaq6xrutkkz3s992fw9",
-      ],
+      ["Terra2", "terra153366q50k7t8nn7gec00hg66crnhkdggpgdtaxltaq6xrutkkz3s992fw9"],
       ["Arbitrum", "0x0b2402144Bb366A632D14B83F244D2e0e21bD39c"],
       ["Optimism", "0x1D68124e65faFC907325e3EDbF8c4d84499DAa8b"],
-      [
-        "Xpla",
-        "xpla137w0wfch2dfmz7jl2ap8pcmswasj8kg06ay4dtjzw7tzkn77ufxqfw7acv",
-      ],
+      ["Xpla", "xpla137w0wfch2dfmz7jl2ap8pcmswasj8kg06ay4dtjzw7tzkn77ufxqfw7acv"],
       ["Sei", "sei1smzlm9t79kur392nu9egl8p8je9j92q4gzguewj56a05kyxxra0qy0nuf3"],
-      [
-        "Wormchain",
-        "wormhole1466nf3zuxpya8q9emxukd7vftaf6h4psr0a07srl5zw74zh84yjq4lyjmh",
-      ],
+      ["Wormchain", "wormhole1466nf3zuxpya8q9emxukd7vftaf6h4psr0a07srl5zw74zh84yjq4lyjmh"],
     ],
   ],
   [
@@ -67,33 +52,18 @@ export const tokenBridgeContracts = [
       ["Celo", "0x05ca6037eC51F8b712eD2E6Fa72219FEaE74E153"],
       ["Near", "token.wormhole.Testnet"],
       ["Injective", "inj1q0e70vhrv063eah90mu97sazhywmeegp7myvnh"],
-      [
-        "Aptos",
-        "0x576410486a2da45eee6c949c995670112ddf2fbeedab20350d506328eefc9d4f",
-      ],
-      [
-        "Sui",
-        "0x6fb10cdb7aa299e9a4308752dadecb049ff55a892de92992a1edbd7912b3d6da",
-      ],
+      ["Aptos", "0x576410486a2da45eee6c949c995670112ddf2fbeedab20350d506328eefc9d4f"],
+      ["Sui", "0x6fb10cdb7aa299e9a4308752dadecb049ff55a892de92992a1edbd7912b3d6da"],
       ["Moonbeam", "0xbc976D4b9D57E57c3cA52e1Fd136C45FF7955A96"],
       ["Neon", "0xEe3dB83916Ccdc3593b734F7F2d16D630F39F1D0"],
-      [
-        "Terra2",
-        "terra1c02vds4uhgtrmcw7ldlg75zumdqxr8hwf7npseuf2h58jzhpgjxsgmwkvk",
-      ],
+      ["Terra2", "terra1c02vds4uhgtrmcw7ldlg75zumdqxr8hwf7npseuf2h58jzhpgjxsgmwkvk"],
       ["Arbitrum", "0x23908A62110e21C04F3A4e011d24F901F911744A"],
       ["Optimism", "0xC7A204bDBFe983FCD8d8E61D02b475D4073fF97e"],
-      [
-        "Xpla",
-        "xpla1kek6zgdaxcsu35nqfsyvs2t9vs87dqkkq6hjdgczacysjn67vt8sern93x",
-      ],
+      ["Xpla", "xpla1kek6zgdaxcsu35nqfsyvs2t9vs87dqkkq6hjdgczacysjn67vt8sern93x"],
       ["Base", "0xA31aa3FDb7aF7Db93d18DDA4e19F811342EDF780"],
       ["Sei", "sei1jv5xw094mclanxt5emammy875qelf3v62u4tl4lp5nhte3w3s9ts9w9az2"],
       ["Sepolia", "0xDB5492265f6038831E89f495670FF909aDe94bd9"],
-      [
-        "Wormchain",
-        "wormhole1aaf9r6s7nxhysuegqrxv0wpm27ypyv4886medd3mrkrw6t4yfcnst3qpex",
-      ],
+      ["Wormchain", "wormhole1aaf9r6s7nxhysuegqrxv0wpm27ypyv4886medd3mrkrw6t4yfcnst3qpex"],
     ],
   ],
   [
@@ -105,21 +75,10 @@ export const tokenBridgeContracts = [
       ["Bsc", "0x0290FB167208Af455bB137780163b7B7a9a10C16"],
       ["Algorand", "6"],
       ["Near", "token.test.near"],
-      [
-        "Aptos",
-        "0x84a5f374d29fc77e370014dce4fd6a55b58ad608de8074b0be5571701724da31",
-      ],
-      [
-        "Sui",
-        "0xa6a3da85bbe05da5bfd953708d56f1a3a023e7fb58e5a824a3d4de3791e8f690",
-      ],
-      [
-        "Terra2",
-        "terra1nc5tatafv6eyq7llkr2gv50ff9e22mnf70qgjlv737ktmt4eswrquka9l6",
-      ],
+      ["Aptos", "0x84a5f374d29fc77e370014dce4fd6a55b58ad608de8074b0be5571701724da31"],
+      ["Sui", "0xa6a3da85bbe05da5bfd953708d56f1a3a023e7fb58e5a824a3d4de3791e8f690"],
+      ["Terra2", "terra1nc5tatafv6eyq7llkr2gv50ff9e22mnf70qgjlv737ktmt4eswrquka9l6"],
       ["Wormchain", "wormhole1zugu6cajc4z7ue29g9wnes9a5ep9cs7yu7rn3z"],
     ],
   ],
-] as const satisfies RoArray<
-  readonly [Network, RoArray<readonly [ChainName, string]>]
->;
+] as const satisfies RoArray<readonly [Network, RoArray<readonly [ChainName, string]>]>;
