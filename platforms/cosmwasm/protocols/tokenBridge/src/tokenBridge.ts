@@ -40,26 +40,16 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
   ) {
     const tokenBridgeAddress = this.contracts.tokenBridge!;
     if (!tokenBridgeAddress)
-      throw new Error(
-        `Wormhole Token Bridge contract for domain ${chain} not found`,
-      );
+      throw new Error(`Wormhole Token Bridge contract for domain ${chain} not found`);
 
     this.tokenBridge = tokenBridgeAddress;
     // May be undefined, thats ok
     this.translator = this.contracts.translator;
   }
 
-  static async fromRpc(
-    rpc: CosmWasmClient,
-    config: ChainsConfig,
-  ): Promise<CosmwasmTokenBridge> {
+  static async fromRpc(rpc: CosmWasmClient, config: ChainsConfig): Promise<CosmwasmTokenBridge> {
     const [network, chain] = await CosmwasmPlatform.chainFromRpc(rpc);
-    return new CosmwasmTokenBridge(
-      network,
-      chain,
-      rpc,
-      config[chain]!.contracts,
-    );
+    return new CosmwasmTokenBridge(network, chain, rpc, config[chain]!.contracts);
   }
 
   async isWrappedAsset(token: AnyCosmwasmAddress): Promise<boolean> {
@@ -78,23 +68,20 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
     return false;
   }
 
-  async getWrappedAsset(
-    token: TokenId,
-  ): Promise<NativeAddress<CosmwasmPlatform.Type>> {
-    if (token.chain === this.chain)
-      throw new Error(`Expected foreign chain, got ${token.chain}`);
+  async getWrappedAsset(token: TokenId): Promise<NativeAddress<CosmwasmPlatform.Type>> {
+    if (token.chain === this.chain) throw new Error(`Expected foreign chain, got ${token.chain}`);
 
-    const base64Addr = encoding.b64.encode(
-      token.address.toUniversalAddress().toUint8Array(),
-    );
+    const base64Addr = encoding.b64.encode(token.address.toUniversalAddress().toUint8Array());
 
-    const { address }: WrappedRegistryResponse =
-      await this.rpc.queryContractSmart(this.tokenBridge, {
+    const { address }: WrappedRegistryResponse = await this.rpc.queryContractSmart(
+      this.tokenBridge,
+      {
         wrapped_registry: {
           chain: toChainId(token.chain),
           address: base64Addr,
         },
-      });
+      },
+    );
 
     // @ts-ignore
     return toNative(this.chain, address);
@@ -231,12 +218,9 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
 
     if (isNative) {
       const msgs = [
-        buildExecuteMsg(
-          senderAddress,
-          this.tokenBridge,
-          { deposit_tokens: {} },
-          [{ amount: amount.toString(), denom: tokenAddress }],
-        ),
+        buildExecuteMsg(senderAddress, this.tokenBridge, { deposit_tokens: {} }, [
+          { amount: amount.toString(), denom: tokenAddress },
+        ]),
         buildExecuteMsg(
           senderAddress,
           this.tokenBridge,
@@ -296,9 +280,7 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
 
     const toTranslator =
       this.translator &&
-      toNative(this.chain, this.translator)
-        .toUniversalAddress()
-        .equals(vaa.payload.to.address);
+      toNative(this.chain, this.translator).toUniversalAddress().equals(vaa.payload.to.address);
 
     const msg = toTranslator
       ? buildExecuteMsg(senderAddress, this.translator!, {
@@ -321,9 +303,7 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
     return;
   }
 
-  async parseTransactionDetails(
-    txid: TxHash,
-  ): Promise<TokenTransferTransaction[]> {
+  async parseTransactionDetails(txid: TxHash): Promise<TokenTransferTransaction[]> {
     throw new Error("Not implemented");
   }
 

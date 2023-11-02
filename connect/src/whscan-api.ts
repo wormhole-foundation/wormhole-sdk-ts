@@ -1,9 +1,4 @@
-import {
-  ChainName,
-  PlatformName,
-  encoding,
-  toChainId,
-} from "@wormhole-foundation/sdk-base";
+import { ChainName, PlatformName, encoding, toChainId } from "@wormhole-foundation/sdk-base";
 import {
   NativeAddress,
   PayloadDiscriminator,
@@ -30,10 +25,7 @@ export async function getVaaBytes(
 ): Promise<Uint8Array | null> {
   const { chain, emitter, sequence } = whm;
   const chainId = toChainId(chain);
-  const emitterAddress = encoding.stripPrefix(
-    "0x",
-    emitter.toUniversalAddress().toString(),
-  );
+  const emitterAddress = encoding.stripPrefix("0x", emitter.toUniversalAddress().toString());
 
   const url = `${apiUrl}/v1/signed_vaa/${chainId}/${emitterAddress}/${sequence}`;
 
@@ -50,8 +42,7 @@ export async function getVaaBytes(
     if (typeof error === "object") {
       // A 404 error means the VAA is not yet available
       // since its not available yet, we return null signaling it can be tried again
-      if (axios.isAxiosError(error) && error.response?.status === 404)
-        return null;
+      if (axios.isAxiosError(error) && error.response?.status === 404) return null;
       if ("status" in error && error.status === 404) return null;
     }
 
@@ -74,9 +65,7 @@ export async function getVaaBytesWithRetry(
   return vaaBytes ?? undefined;
 }
 
-export async function getVaaWithRetry<
-  T extends PayloadLiteral | PayloadDiscriminator,
->(
+export async function getVaaWithRetry<T extends PayloadLiteral | PayloadDiscriminator>(
   apiUrl: string,
   whm: WormholeMessageId,
   decodeAs: T,

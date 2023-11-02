@@ -24,11 +24,7 @@ import { TransferStuff, getStuff, waitLog } from "./helpers";
 (async function () {
   // init Wormhole object, passing config for which network
   // to use (e.g. Mainnet/Testnet) and what Platforms to support
-  const wh = new Wormhole("Testnet", [
-    EvmPlatform,
-    SolanaPlatform,
-    CosmwasmPlatform,
-  ]);
+  const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform, CosmwasmPlatform]);
 
   // Grab chain Contexts
   const sendChain = wh.getChain("Avalanche");

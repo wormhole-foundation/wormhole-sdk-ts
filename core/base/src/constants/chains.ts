@@ -58,10 +58,8 @@ export type Chain = ChainName | ChainId;
 export const chainToChainId = constMap(chainsAndChainIdEntries);
 export const chainIdToChain = constMap(chainsAndChainIdEntries, [1, 0]);
 
-export const isChain = (chain: string): chain is ChainName =>
-  chainToChainId.has(chain);
-export const isChainId = (chainId: number): chainId is ChainId =>
-  chainIdToChain.has(chainId);
+export const isChain = (chain: string): chain is ChainName => chainToChainId.has(chain);
+export const isChainId = (chainId: number): chainId is ChainId => chainIdToChain.has(chainId);
 
 export function assertChainId(chainId: number): asserts chainId is ChainId {
   if (!isChainId(chainId)) throw Error(`Unknown Wormhole chain id: ${chainId}`);
@@ -89,9 +87,7 @@ export const toChainId = (chain: number | string | Chain): ChainId => {
   throw Error(`Cannot convert to ChainId: ${chain}`);
 };
 
-export const toChainName = (
-  chain: number | string | Chain | bigint,
-): ChainName => {
+export const toChainName = (chain: number | string | Chain | bigint): ChainName => {
   switch (typeof chain) {
     case "string":
       if (isChain(chain)) return chain;
@@ -100,8 +96,7 @@ export const toChainName = (
       if (isChainId(chain)) return chainIdToChain(chain);
       break;
     case "bigint":
-      if (isChainId(Number(chain)))
-        return chainIdToChain(Number(chain) as ChainId);
+      if (isChainId(Number(chain))) return chainIdToChain(Number(chain) as ChainId);
       break;
   }
   throw Error(`Cannot convert to ChainName: ${chain}`);

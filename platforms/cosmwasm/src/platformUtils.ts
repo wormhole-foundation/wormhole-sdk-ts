@@ -29,8 +29,7 @@ var _: PlatformUtils<"Cosmwasm"> = CosmwasmUtils;
 // Provides runtime concrete value
 export module CosmwasmUtils {
   export function nativeTokenId(chain: ChainName): TokenId {
-    if (!isSupportedChain(chain))
-      throw new Error(`invalid chain for CosmWasm: ${chain}`);
+    if (!isSupportedChain(chain)) throw new Error(`invalid chain for CosmWasm: ${chain}`);
     return {
       chain: chain,
       // @ts-ignore
@@ -71,10 +70,7 @@ export module CosmwasmUtils {
     token: AnyCosmwasmAddress | "native",
   ): Promise<bigint | null> {
     if (token === "native") {
-      const { amount } = await rpc.getBalance(
-        walletAddress,
-        getNativeDenom(chain),
-      );
+      const { amount } = await rpc.getBalance(walletAddress, getNativeDenom(chain));
       return BigInt(amount);
     }
 
@@ -93,9 +89,7 @@ export module CosmwasmUtils {
     const allBalances = await client.bank.allBalances(walletAddress);
     const balancesArr = tokens.map((token) => {
       const address =
-        token === "native"
-          ? getNativeDenom(chain)
-          : new CosmwasmAddress(token).toString();
+        token === "native" ? getNativeDenom(chain) : new CosmwasmAddress(token).toString();
       const balance = allBalances.find((balance) => balance.denom === address);
       const balanceBigInt = balance ? BigInt(balance.amount) : null;
       return { [address]: balanceBigInt };
@@ -125,9 +119,7 @@ export module CosmwasmUtils {
     for (const stxn of stxns) {
       const result = await rpc.broadcastTx(stxn);
       if (result.code !== 0)
-        throw new Error(
-          `Error sending transaction (${result.transactionHash}): ${result.rawLog}`,
-        );
+        throw new Error(`Error sending transaction (${result.transactionHash}): ${result.rawLog}`);
       txhashes.push(result.transactionHash);
     }
     return txhashes;
@@ -140,11 +132,9 @@ export module CosmwasmUtils {
   export function chainFromChainId(
     chainMoniker: string,
   ): [Network, PlatformToChains<CosmwasmPlatform.Type>] {
-    const networkChainPair =
-      cosmwasmChainIdToNetworkChainPair.get(chainMoniker);
+    const networkChainPair = cosmwasmChainIdToNetworkChainPair.get(chainMoniker);
 
-    if (networkChainPair === undefined)
-      throw new Error(`Unknown Cosmwasm chainId ${chainMoniker}`);
+    if (networkChainPair === undefined) throw new Error(`Unknown Cosmwasm chainId ${chainMoniker}`);
 
     const [network, chain] = networkChainPair;
     return [network, chain];
@@ -162,10 +152,7 @@ export module CosmwasmUtils {
     rpc: CosmWasmClient,
   ): Promise<string | null> {
     const queryClient = CosmwasmPlatform.getQueryClient(rpc);
-    const conn = await queryClient.ibc.channel.channel(
-      IBC_TRANSFER_PORT,
-      sourceChannel,
-    );
+    const conn = await queryClient.ibc.channel.channel(IBC_TRANSFER_PORT, sourceChannel);
     return conn.channel?.counterparty?.channelId ?? null;
   }
 }

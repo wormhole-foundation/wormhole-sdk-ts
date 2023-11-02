@@ -7,12 +7,7 @@ import {
   isPlatform,
   platformToChains,
 } from "@wormhole-foundation/sdk-base";
-import {
-  ChainAddress,
-  NativeAddress,
-  UniversalAddress,
-  toNative,
-} from "../../";
+import { ChainAddress, NativeAddress, UniversalAddress, toNative } from "../../";
 
 // return a random buffer of length n
 function randomBytes(n: number): Uint8Array {
@@ -53,9 +48,7 @@ export function makeChainAddress(chain: ChainName): ChainAddress {
 }
 
 // make a random NativeAddress for a given chain
-export function makeNativeAddress<T extends ChainName | PlatformName>(
-  chain: T,
-): NativeAddress<T> {
+export function makeNativeAddress<T extends ChainName | PlatformName>(chain: T): NativeAddress<T> {
   let cn: ChainName;
   if (isPlatform(chain)) {
     // just grab the first one

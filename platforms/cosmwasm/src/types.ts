@@ -1,7 +1,4 @@
-import {
-  UniversalOrNative,
-  PlatformToChains,
-} from "@wormhole-foundation/connect-sdk";
+import { UniversalOrNative, PlatformToChains } from "@wormhole-foundation/connect-sdk";
 import { logs as cosmosLogs } from "@cosmjs/stargate";
 
 export type CosmwasmChainName = PlatformToChains<"Cosmwasm">;
@@ -12,10 +9,7 @@ export interface WrappedRegistryResponse {
   address: string;
 }
 
-export const searchCosmosLogs = (
-  key: string,
-  logs: readonly cosmosLogs.Log[],
-): string | null => {
+export const searchCosmosLogs = (key: string, logs: readonly cosmosLogs.Log[]): string | null => {
   for (const log of logs) {
     for (const ev of log.events) {
       for (const attr of ev.attributes) {

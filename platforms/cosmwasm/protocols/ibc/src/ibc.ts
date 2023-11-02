@@ -78,10 +78,7 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
     }
   }
 
-  static async fromRpc(
-    rpc: CosmWasmClient,
-    config: ChainsConfig,
-  ): Promise<CosmwasmIbcBridge> {
+  static async fromRpc(rpc: CosmWasmClient, config: ChainsConfig): Promise<CosmwasmIbcBridge> {
     const [network, chain] = await CosmwasmPlatform.chainFromRpc(rpc);
     return new CosmwasmIbcBridge(network, chain, rpc, config[chain]!.contracts);
   }
@@ -124,10 +121,7 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
     const ibcDenom =
       token === "native"
         ? CosmwasmPlatform.getNativeDenom(this.chain)
-        : Gateway.deriveIbcDenom(
-            this.chain,
-            new CosmwasmAddress(token).toString(),
-          );
+        : Gateway.deriveIbcDenom(this.chain, new CosmwasmAddress(token).toString());
     const ibcToken = coin(amount.toString(), ibcDenom.toString());
 
     const ibcMessage: MsgTransferEncodeObject = {
@@ -159,36 +153,25 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
     const txResults = await this.rpc.getTx(txid);
 
     if (!txResults) throw new Error(`No transaction found with txid: ${txid}`);
-    if (txResults.code !== 0)
-      throw new Error(`Transaction failed: ${txResults.rawLog}`);
+    if (txResults.code !== 0) throw new Error(`Transaction failed: ${txResults.rawLog}`);
 
     const xfers = await this.fetchTransferInfo(txResults!);
 
-    if (xfers.length === 0)
-      throw new Error("No transfers found for tx: " + txid);
+    if (xfers.length === 0) throw new Error("No transfers found for tx: " + txid);
     if (xfers.length > 1) console.error(">1 xfer in tx; why");
 
     return xfers[0];
   }
 
-  async lookupMessageFromIbcMsgId(
-    msg: IbcMessageId,
-  ): Promise<WormholeMessageId | null> {
+  async lookupMessageFromIbcMsgId(msg: IbcMessageId): Promise<WormholeMessageId | null> {
     const tx = await this.lookupTxFromIbcMsgId(msg);
     if (!tx) return null;
-    return CosmwasmWormholeCore.parseWormholeMessage(
-      Gateway.name,
-      Gateway.coreAddress(),
-      tx,
-    );
+    return CosmwasmWormholeCore.parseWormholeMessage(Gateway.name, Gateway.coreAddress(), tx);
   }
 
   // Private because we dont want to expose the IndexedTx type
-  private async lookupTxFromIbcMsgId(
-    msg: IbcMessageId,
-  ): Promise<IndexedTx | null> {
-    const prefix =
-      this.chain === msg.chain ? IBC_PACKET_SEND : IBC_PACKET_RECEIVE;
+  private async lookupTxFromIbcMsgId(msg: IbcMessageId): Promise<IndexedTx | null> {
+    const prefix = this.chain === msg.chain ? IBC_PACKET_SEND : IBC_PACKET_RECEIVE;
 
     const { srcChannel, dstChannel, sequence, srcPort, dstPort } = msg;
 
@@ -222,29 +205,22 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
     //);
 
     if (txResults.length > 1)
-      console.error(
-        `Expected 1 transaction, got ${txResults.length} found for IbcMsgid: ${msg}`,
-      );
+      console.error(`Expected 1 transaction, got ${txResults.length} found for IbcMsgid: ${msg}`);
 
     const [tx] = txResults;
     return tx;
   }
 
-  async lookupTransferFromIbcMsgId(
-    msg: IbcMessageId,
-  ): Promise<IbcTransferInfo> {
+  async lookupTransferFromIbcMsgId(msg: IbcMessageId): Promise<IbcTransferInfo> {
     // Finds the transaction but there may be multiple
     // IBCTransfers as part of this
     const tx = await this.lookupTxFromIbcMsgId(msg);
-    if (!tx)
-      throw new Error(`No transfers found on ${this.chain} in tx: ${tx}`);
+    if (!tx) throw new Error(`No transfers found on ${this.chain} in tx: ${tx}`);
 
     const xfers = await this.fetchTransferInfo(tx);
-    if (xfers.length === 0)
-      throw new Error(`No transfers found on ${this.chain} in tx: ${tx}`);
+    if (xfers.length === 0) throw new Error(`No transfers found on ${this.chain} in tx: ${tx}`);
 
-    if (xfers.length > 1)
-      throw new Error(`Found ${xfers.length} transfers, expected 1`);
+    if (xfers.length > 1) throw new Error(`Found ${xfers.length} transfers, expected 1`);
 
     return xfers[0];
   }
@@ -264,23 +240,17 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
     ]);
 
     if (txResults.length === 0)
-      throw new Error(
-        `Found no transactions for payload: ` + JSON.stringify(encodedPayload),
-      );
+      throw new Error(`Found no transactions for payload: ` + JSON.stringify(encodedPayload));
 
-    if (txResults.length !== 1)
-      console.error("Expected 1 tx, got: ", txResults.length);
+    if (txResults.length !== 1) console.error("Expected 1 tx, got: ", txResults.length);
 
     const [tx] = txResults;
     const xfers = await this.fetchTransferInfo(tx);
 
     if (xfers.length === 0)
-      throw new Error(
-        `Found no transactions for payload: ` + JSON.stringify(encodedPayload),
-      );
+      throw new Error(`Found no transactions for payload: ` + JSON.stringify(encodedPayload));
 
-    if (xfers.length !== 1)
-      console.error("Expected 1 xfer, got: ", xfers.length);
+    if (xfers.length !== 1) console.error("Expected 1 xfer, got: ", xfers.length);
 
     return xfers[0];
   }
@@ -315,9 +285,7 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
       // possibly resolving by source channel
       // we assign the chain to the sender as iternally canonical
       msgId.chain =
-        packet.type === IBC_PACKET_SEND
-          ? this.chain
-          : this.channelToChain.get(msgId.dstChannel!)!;
+        packet.type === IBC_PACKET_SEND ? this.chain : this.channelToChain.get(msgId.dstChannel!)!;
 
       // Note: using the type guard to tell us if we have all the fields we expect
       if (isIbcMessageId(msgId)) xfer.id = msgId;
@@ -362,9 +330,7 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
   // Fetches the local channel for the given chain
   async fetchTransferChannel(chain: CosmwasmChainName): Promise<string> {
     if (this.chain !== Gateway.name)
-      throw new Error(
-        "Cannot query the transfer channels from a non-gateway chain",
-      );
+      throw new Error("Cannot query the transfer channels from a non-gateway chain");
 
     const { channel } = await this.rpc.queryContractSmart(this.gatewayAddress, {
       ibc_channel: { chain_id: toChainId(chain) },

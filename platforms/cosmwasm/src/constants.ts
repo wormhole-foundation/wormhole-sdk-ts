@@ -1,15 +1,9 @@
-import {
-  Network,
-  PlatformToChains,
-  RoArray,
-  constMap,
-} from "@wormhole-foundation/connect-sdk";
+import { Network, PlatformToChains, RoArray, constMap } from "@wormhole-foundation/connect-sdk";
 import { CosmwasmChainName } from "./types";
 
 export const DEFAULT_FEE = 1_000_000;
 
-export const MSG_EXECUTE_CONTRACT_TYPE_URL =
-  "/cosmwasm.wasm.v1.MsgExecuteContract";
+export const MSG_EXECUTE_CONTRACT_TYPE_URL = "/cosmwasm.wasm.v1.MsgExecuteContract";
 
 export const IBC_MSG_TYPE = "/ibc.applications.transfer.v1.MsgTransfer";
 
@@ -59,18 +53,14 @@ const networkChainCosmwasmChainIds = [
     ],
   ],
   ["Devnet", []],
-] as const satisfies RoArray<
-  readonly [Network, RoArray<readonly [CosmwasmChainName, string]>]
->;
+] as const satisfies RoArray<readonly [Network, RoArray<readonly [CosmwasmChainName, string]>]>;
 
-export const cosmwasmChainIdToNetworkChainPair = constMap(
-  networkChainCosmwasmChainIds,
-  [2, [0, 1]],
-);
+export const cosmwasmChainIdToNetworkChainPair = constMap(networkChainCosmwasmChainIds, [
+  2,
+  [0, 1],
+]);
 
-export const cosmwasmNetworkChainToChainId = constMap(
-  networkChainCosmwasmChainIds,
-);
+export const cosmwasmNetworkChainToChainId = constMap(networkChainCosmwasmChainIds);
 
 const cosmwasmAddressPrefix = [
   ["Cosmoshub", "cosmos"],
@@ -119,9 +109,7 @@ const cosmwasmNativeDenom = [
       ["Xpla", "uxpla"],
     ],
   ],
-] as const satisfies RoArray<
-  readonly [Network, RoArray<readonly [CosmwasmChainName, string]>]
->;
+] as const satisfies RoArray<readonly [Network, RoArray<readonly [CosmwasmChainName, string]>]>;
 
 export const chainToNativeDenoms = constMap(cosmwasmNativeDenom);
 export const nativeDenomToChain = constMap(cosmwasmNativeDenom, [[0, 2], [1]]);
@@ -142,22 +130,15 @@ const cosmwasmNetworkChainRestUrl = [
     ],
   ],
   ["Devnet", []],
-] as const satisfies RoArray<
-  readonly [Network, RoArray<readonly [CosmwasmChainName, string]>]
->;
+] as const satisfies RoArray<readonly [Network, RoArray<readonly [CosmwasmChainName, string]>]>;
 
-export const cosmwasmNetworkChainToRestUrls = constMap(
-  cosmwasmNetworkChainRestUrl,
-);
+export const cosmwasmNetworkChainToRestUrls = constMap(cosmwasmNetworkChainRestUrl);
 
 export type IbcChannels = Partial<Record<CosmwasmChainName, string>>;
 
 // For each chain, add the channel id for each other chain
 const gatewayConnections = [
-  [
-    "Mainnet",
-    [["Wormchain", { Cosmoshub: "channel-5", Osmosis: "channel-4" }]],
-  ],
+  ["Mainnet", [["Wormchain", { Cosmoshub: "channel-5", Osmosis: "channel-4" }]]],
   [
     "Testnet",
     [

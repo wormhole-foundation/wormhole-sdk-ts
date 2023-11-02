@@ -27,11 +27,7 @@ import { signSendWait } from "../common";
 import { DEFAULT_TASK_TIMEOUT } from "../config";
 import { CircleTransferDetails, isCircleTransferDetails } from "../types";
 import { Wormhole } from "../wormhole";
-import {
-  AttestationId,
-  TransferState,
-  WormholeTransfer,
-} from "../wormholeTransfer";
+import { AttestationId, TransferState, WormholeTransfer } from "../wormholeTransfer";
 
 export type AutomaticCircleBridgeVAA<PayloadName extends string> = ProtocolVAA<
   "AutomaticCircleBridge",
@@ -73,32 +69,17 @@ export class CircleTransfer implements WormholeTransfer {
   }
 
   // Static initializers for in flight transfers that have not been completed
-  static async from(
-    wh: Wormhole,
-    from: CircleTransferDetails,
-  ): Promise<CircleTransfer>;
+  static async from(wh: Wormhole, from: CircleTransferDetails): Promise<CircleTransfer>;
   static async from(
     wh: Wormhole,
     from: WormholeMessageId,
     timeout?: number,
   ): Promise<CircleTransfer>;
+  static async from(wh: Wormhole, from: CircleMessageId, timeout?: number): Promise<CircleTransfer>;
+  static async from(wh: Wormhole, from: TransactionId, timeout?: number): Promise<CircleTransfer>;
   static async from(
     wh: Wormhole,
-    from: CircleMessageId,
-    timeout?: number,
-  ): Promise<CircleTransfer>;
-  static async from(
-    wh: Wormhole,
-    from: TransactionId,
-    timeout?: number,
-  ): Promise<CircleTransfer>;
-  static async from(
-    wh: Wormhole,
-    from:
-      | CircleTransferDetails
-      | WormholeMessageId
-      | CircleMessageId
-      | TransactionId,
+    from: CircleTransferDetails | WormholeMessageId | CircleMessageId | TransactionId,
     timeout: number = DEFAULT_TASK_TIMEOUT,
   ): Promise<CircleTransfer> {
     // This is a new transfer, just return the object
@@ -129,12 +110,7 @@ export class CircleTransfer implements WormholeTransfer {
     timeout: number,
   ): Promise<CircleTransfer> {
     const { chain, emitter, sequence } = from;
-    const vaa = await CircleTransfer.getTransferVaa(
-      wh,
-      chain,
-      emitter,
-      sequence,
-    );
+    const vaa = await CircleTransfer.getTransferVaa(wh, chain, emitter, sequence);
 
     const rcvAddress = vaa.payload.mintRecipient;
     const rcvChain = toCircleChainName(vaa.payload.targetDomain);
@@ -148,9 +124,7 @@ export class CircleTransfer implements WormholeTransfer {
         wormholeRelayer,
         //@ts-ignore
       ).toUniversalAddress();
-      automatic =
-        vaa.payloadName === "TransferRelay" &&
-        rcvAddress.equals(relayerAddress);
+      automatic = vaa.payloadName === "TransferRelay" && rcvAddress.equals(relayerAddress);
     }
 
     const details: CircleTransferDetails = {
@@ -172,9 +146,7 @@ export class CircleTransfer implements WormholeTransfer {
     messageId: CircleMessageId,
     timeout: number,
   ): Promise<CircleTransfer> {
-    const [message, hash] = deserializeCircleMessage(
-      encoding.hex.decode(messageId.message),
-    );
+    const [message, hash] = deserializeCircleMessage(encoding.hex.decode(messageId.message));
     // If no hash is passed, set to the one we just computed
     if (messageId.hash === "") messageId.hash = hash;
 
@@ -211,9 +183,7 @@ export class CircleTransfer implements WormholeTransfer {
     // First try to parse out a WormholeMessage
     // If we get one or more, we assume its a Wormhole attested
     // transfer
-    const msgIds: WormholeMessageId[] = await originChain.parseTransaction(
-      txid,
-    );
+    const msgIds: WormholeMessageId[] = await originChain.parseTransaction(txid);
 
     // If we found a VAA message, use it
     let ct: CircleTransfer;
@@ -278,11 +248,8 @@ export class CircleTransfer implements WormholeTransfer {
     return this.txids.map(({ txid }) => txid);
   }
 
-  private async _fetchWormholeAttestation(
-    timeout?: number,
-  ): Promise<WormholeMessageId[]> {
-    if (!this.vaas || this.vaas.length == 0)
-      throw new Error("No VAA details available");
+  private async _fetchWormholeAttestation(timeout?: number): Promise<WormholeMessageId[]> {
+    if (!this.vaas || this.vaas.length == 0) throw new Error("No VAA details available");
 
     // Check if we already have the VAA
     for (const idx in this.vaas) {
@@ -300,9 +267,7 @@ export class CircleTransfer implements WormholeTransfer {
     return this.vaas.map((v) => v.id);
   }
 
-  private async _fetchCircleAttestation(
-    timeout?: number,
-  ): Promise<CircleMessageId[]> {
+  private async _fetchCircleAttestation(timeout?: number): Promise<CircleMessageId[]> {
     if (!this.circleAttestations || this.circleAttestations.length == 0) {
       // If we dont have any circle attestations yet, we need to start by
       // fetching the transaction details from the source chain
@@ -323,12 +288,8 @@ export class CircleTransfer implements WormholeTransfer {
       const ca = this.circleAttestations[idx];
       if (ca.attestation) continue; // already got it
 
-      const attestation = await this.wh.getCircleAttestation(
-        ca.id.hash,
-        timeout,
-      );
-      if (attestation === null)
-        throw new Error("No attestation available after timeout exhausted");
+      const attestation = await this.wh.getCircleAttestation(ca.id.hash, timeout);
+      if (attestation === null) throw new Error("No attestation available after timeout exhausted");
 
       this.circleAttestations[idx].attestation = attestation;
     }
@@ -345,10 +306,7 @@ export class CircleTransfer implements WormholeTransfer {
         2) Once available, pull the VAA and parse it
         3) return seq
     */
-    if (
-      this.state < TransferState.Initiated ||
-      this.state > TransferState.Attested
-    )
+    if (this.state < TransferState.Initiated || this.state > TransferState.Attested)
       throw new Error("Invalid state transition in `fetchAttestation`");
 
     const ids: AttestationId[] = this.transfer.automatic
@@ -375,8 +333,7 @@ export class CircleTransfer implements WormholeTransfer {
     // If its automatic, this does not need to be called
     if (this.transfer.automatic) {
       if (!this.vaas) throw new Error("No VAA details available");
-      if (this.vaas.length > 1)
-        throw new Error(`Expected a VAA, found ${this.vaas.length}`);
+      if (this.vaas.length > 1) throw new Error(`Expected a VAA, found ${this.vaas.length}`);
 
       const { vaa } = this.vaas[0];
       if (!vaa) throw new Error("No VAA found");
@@ -387,8 +344,7 @@ export class CircleTransfer implements WormholeTransfer {
       throw new Error("No method to redeem auto circle bridge tx (yet)");
     }
 
-    if (!this.circleAttestations)
-      throw new Error("No Circle Attestations found");
+    if (!this.circleAttestations) throw new Error("No Circle Attestations found");
 
     if (this.circleAttestations.length > 1)
       throw new Error(

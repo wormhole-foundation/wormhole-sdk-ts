@@ -40,33 +40,25 @@ export module Gateway {
     return await CosmWasmClient.connect(rpcAddress);
   }
 
-  export async function getTokenBridge(
-    rpc?: CosmWasmClient,
-  ): Promise<TokenBridge<"Cosmwasm">> {
+  export async function getTokenBridge(rpc?: CosmWasmClient): Promise<TokenBridge<"Cosmwasm">> {
     rpc = rpc ? rpc : await getRpc();
     return CosmwasmPlatform.getTokenBridge(rpc);
   }
 
-  export async function getIbcBridge(
-    rpc?: CosmWasmClient,
-  ): Promise<IbcBridge<"Cosmwasm">> {
+  export async function getIbcBridge(rpc?: CosmWasmClient): Promise<IbcBridge<"Cosmwasm">> {
     rpc = rpc ? rpc : await getRpc();
     return CosmwasmPlatform.getIbcBridge(rpc);
   }
 
   // Get the wrapped version of an asset created on wormchain
   // for a given chain
-  export async function getWrappedAsset(
-    token: TokenId,
-  ): Promise<CosmwasmAddress> {
+  export async function getWrappedAsset(token: TokenId): Promise<CosmwasmAddress> {
     const tb = await getTokenBridge();
     const wrappedAsset = await tb.getWrappedAsset(token);
 
     // Encode the original address to base58 and add it
     // to the factory address for cw20 style factory token address
-    const encodedAddress = encoding.b58.encode(
-      wrappedAsset.toUniversalAddress().toUint8Array(),
-    );
+    const encodedAddress = encoding.b58.encode(wrappedAsset.toUniversalAddress().toUint8Array());
     const factoryAddress = `factory/${gatewayAddress()}/${encodedAddress}`;
 
     return new CosmwasmAddress(factoryAddress);
@@ -76,22 +68,16 @@ export module Gateway {
   export function getGatewaySourceChannel(chain: CosmwasmChainName): string {
     const channels = CosmwasmPlatform.getIbcChannels(chain);
     if (!channels) throw new Error("No channels configured for chain " + chain);
-    if (!(Gateway.name in channels))
-      throw new Error("No channel configured for chain " + chain);
+    if (!(Gateway.name in channels)) throw new Error("No channel configured for chain " + chain);
     return channels[Gateway.name]!;
   }
 
   // derive the ics20 token denom from the
   // wrapped denom and destination channel
-  export function deriveIbcDenom(
-    chain: CosmwasmChainName,
-    denom: string,
-  ): CosmwasmAddress {
+  export function deriveIbcDenom(chain: CosmwasmChainName, denom: string): CosmwasmAddress {
     // Otherwise compute the ibc address from the channel and denom
     const channel = getGatewaySourceChannel(chain);
-    const hashData = encoding.toUint8Array(
-      `${IBC_TRANSFER_PORT}/${channel}/${denom}`,
-    );
+    const hashData = encoding.toUint8Array(`${IBC_TRANSFER_PORT}/${channel}/${denom}`);
     const hash = encoding.hex.encode(sha256(hashData));
     return new CosmwasmAddress(`ibc/${hash.toUpperCase()}`);
   }

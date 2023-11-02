@@ -17,10 +17,7 @@ export interface CosmwasmTransaction {
 }
 
 export function computeFee(chain: ChainName): StdFee {
-  return calculateFee(
-    DEFAULT_FEE,
-    `0.1${CosmwasmPlatform.getNativeDenom(chain)}`,
-  );
+  return calculateFee(DEFAULT_FEE, `0.1${CosmwasmPlatform.getNativeDenom(chain)}`);
 }
 
 export function buildExecuteMsg(

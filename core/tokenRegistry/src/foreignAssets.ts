@@ -49,21 +49,14 @@ export const createTokenId = (chain: ChainName, address: string) => {
   };
 };
 
-export const getForeignAddress = async (
-  wh: Wormhole,
-  chain: ChainName,
-  tokenId: TokenId,
-) => {
+export const getForeignAddress = async (wh: Wormhole, chain: ChainName, tokenId: TokenId) => {
   if (!isSupportedChain(chain)) return;
   let foreignAddress: string | null = null;
   try {
     const foreignId = await wh.getWrappedAsset(chain, tokenId);
     foreignAddress = foreignId.address.toString();
   } catch (e: any) {
-    if (
-      e?.message === "3104 RPC not configured" ||
-      e?.message === "wormchain RPC not configured"
-    ) {
+    if (e?.message === "3104 RPC not configured" || e?.message === "wormchain RPC not configured") {
       // do not throw on wormchain errors
     } else if (e?.message.includes("is not a wrapped asset")) {
       // do not throw if wrapped asset does not exist
@@ -99,9 +92,7 @@ export const getForeignAssetsData = async (
             throw new Error(
               `❌ Invalid foreign address detected! Env: ${wh.network}, Existing Address: ${configForeignAddress.address}, Chain: ${chain}, Expected: ${foreignAddress}, Received: ${configForeignAddress.address}`,
             );
-          } else if (
-            configForeignAddress.decimals !== Number(foreignDecimals)
-          ) {
+          } else if (configForeignAddress.decimals !== Number(foreignDecimals)) {
             throw new Error(
               `❌ Invalid foreign decimals detected! Env: ${wh.network}, Existing Address: ${configForeignAddress.address}, Chain: ${chain}, Expected: ${foreignDecimals}, Received: ${configForeignAddress.decimals}`,
             );
@@ -142,12 +133,7 @@ export const getForeignAssetsDataForChain = async (
     }
 
     try {
-      const updates = await getForeignAssetsData(
-        wh,
-        chain,
-        tokenId,
-        config.foreignAssets,
-      );
+      const updates = await getForeignAssetsData(wh, chain, tokenId, config.foreignAssets);
       maybeUpdates.push([chain, token, updates]);
     } catch (e) {
       console.error(e);
@@ -156,10 +142,7 @@ export const getForeignAssetsDataForChain = async (
   return maybeUpdates;
 };
 
-export const getSuggestedUpdates = async (
-  wh: Wormhole,
-  tokensConfig: TokensConfig,
-) => {
+export const getSuggestedUpdates = async (wh: Wormhole, tokensConfig: TokensConfig) => {
   let suggestedUpdates: TokensConfig = {};
   let numUpdates = 0;
 
@@ -181,9 +164,7 @@ export const getSuggestedUpdates = async (
       [chain]: {
         ...(suggestedUpdates[chain] || {}),
         [token]: {
-          ...(suggestedUpdates[chain]
-            ? suggestedUpdates[chain]![token] || {}
-            : {}),
+          ...(suggestedUpdates[chain] ? suggestedUpdates[chain]![token] || {} : {}),
           foreignAssets: {
             ...(suggestedUpdates[chain]
               ? suggestedUpdates[chain]![token]

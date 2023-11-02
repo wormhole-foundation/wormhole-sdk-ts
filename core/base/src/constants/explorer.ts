@@ -286,24 +286,15 @@ const explorerConfig = [
     ],
   ],
 ] as const satisfies RoArray<
-  readonly [
-    "Mainnet" | "Testnet",
-    RoArray<readonly [ChainName, ExplorerSettings]>,
-  ]
+  readonly ["Mainnet" | "Testnet", RoArray<readonly [ChainName, ExplorerSettings]>]
 >;
 
 export const explorerConfs = constMap(explorerConfig);
 
 export const explorerConfigs = (network: Network, chain: ChainName) =>
-  network === "Devnet"
-    ? undefined
-    : (explorerConfs.get(network, chain) as ExplorerSettings);
+  network === "Devnet" ? undefined : (explorerConfs.get(network, chain) as ExplorerSettings);
 
-export function linkToTx(
-  chainName: ChainName,
-  txId: string,
-  network: Network,
-): string {
+export function linkToTx(chainName: ChainName, txId: string, network: Network): string {
   // TODO: add missing chains to rpc config
   const chainConfig = explorerConfigs(network, chainName);
   if (!chainConfig) throw new Error("invalid chain, explorer config not found");
@@ -312,11 +303,7 @@ export function linkToTx(
   return `${baseUrl}${endpoints.tx}${txId}${query}`;
 }
 
-export function linkToAccount(
-  chainName: ChainName,
-  account: string,
-  network: Network,
-): string {
+export function linkToAccount(chainName: ChainName, account: string, network: Network): string {
   // TODO: add missing chains to rpc config
   const chainConfig = explorerConfigs(network, chainName);
   if (!chainConfig) throw new Error("invalid chain, explorer config not found");

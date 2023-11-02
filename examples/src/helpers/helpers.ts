@@ -21,10 +21,7 @@ function getEnv(key: string): string {
 
   // Otherwise, return the env var or error
   const val = process.env[key];
-  if (!val)
-    throw new Error(
-      `Missing env var ${key}, did you forget to set valies in '.env'?`,
-    );
+  if (!val) throw new Error(`Missing env var ${key}, did you forget to set valies in '.env'?`);
 
   return val;
 }
@@ -35,29 +32,18 @@ export interface TransferStuff {
   address: ChainAddress;
 }
 
-export async function getStuff(
-  chain: ChainContext<PlatformName>,
-): Promise<TransferStuff> {
+export async function getStuff(chain: ChainContext<PlatformName>): Promise<TransferStuff> {
   let signer: Signer;
 
   switch (chain.platform.platform) {
     case "Solana":
-      signer = await getSolanaSigner(
-        await chain.getRpc(),
-        getEnv("SOL_PRIVATE_KEY"),
-      );
+      signer = await getSolanaSigner(await chain.getRpc(), getEnv("SOL_PRIVATE_KEY"));
       break;
     case "Cosmwasm":
-      signer = await getCosmwasmSigner(
-        await chain.getRpc(),
-        getEnv("COSMOS_MNEMONIC"),
-      );
+      signer = await getCosmwasmSigner(await chain.getRpc(), getEnv("COSMOS_MNEMONIC"));
       break;
     case "Evm":
-      signer = await getEvmSigner(
-        await chain.getRpc(),
-        getEnv("ETH_PRIVATE_KEY"),
-      );
+      signer = await getEvmSigner(await chain.getRpc(), getEnv("ETH_PRIVATE_KEY"));
       break;
     default:
       throw new Error("Unrecognized platform: " + chain.platform.platform);

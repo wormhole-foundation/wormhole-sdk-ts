@@ -1,8 +1,4 @@
-import {
-  ChainName,
-  PlatformName,
-  ProtocolName,
-} from "@wormhole-foundation/sdk-base";
+import { ChainName, PlatformName, ProtocolName } from "@wormhole-foundation/sdk-base";
 
 import { NativeAddress } from "./address";
 import { WormholeMessageId } from "./attestation";
@@ -47,9 +43,7 @@ export abstract class ChainContext<P extends PlatformName> {
   }
 
   // Get the number of decimals for a token
-  async getDecimals(
-    token: NativeAddress<P> | UniversalAddress | "native",
-  ): Promise<bigint> {
+  async getDecimals(token: NativeAddress<P> | UniversalAddress | "native"): Promise<bigint> {
     return this.platform.getDecimals(this.chain, this.getRpc(), token);
   }
 
@@ -58,12 +52,7 @@ export abstract class ChainContext<P extends PlatformName> {
     walletAddr: string,
     token: NativeAddress<P> | UniversalAddress | "native",
   ): Promise<bigint | null> {
-    return this.platform.getBalance(
-      this.chain,
-      await this.getRpc(),
-      walletAddr,
-      token,
-    );
+    return this.platform.getBalance(this.chain, await this.getRpc(), walletAddr, token);
   }
 
   async getCurrentBlock(): Promise<number> {
@@ -72,11 +61,7 @@ export abstract class ChainContext<P extends PlatformName> {
 
   // Get details about the transaction
   async parseTransaction(txid: string): Promise<WormholeMessageId[]> {
-    return this.platform.parseTransaction(
-      this.chain,
-      await this.getRpc(),
-      txid,
-    );
+    return this.platform.parseTransaction(this.chain, await this.getRpc(), txid);
   }
 
   // Send a transaction and wait for it to be confirmed
@@ -101,8 +86,7 @@ export abstract class ChainContext<P extends PlatformName> {
   }
 
   //
-  supportsAutomaticTokenBridge = () =>
-    supportsAutomaticTokenBridge<P>(this.platform);
+  supportsAutomaticTokenBridge = () => supportsAutomaticTokenBridge<P>(this.platform);
   async getAutomaticTokenBridge(): Promise<AutomaticTokenBridge<P>> {
     if (!supportsAutomaticTokenBridge<P>(this.platform))
       throw new Error("Platform does not support AutomaticTokenBridge");
@@ -126,8 +110,7 @@ export abstract class ChainContext<P extends PlatformName> {
   }
 
   //
-  supportsAutomaticCircleBridge = () =>
-    supportsAutomaticCircleBridge<P>(this.platform);
+  supportsAutomaticCircleBridge = () => supportsAutomaticCircleBridge<P>(this.platform);
   async getAutomaticCircleBridge(): Promise<AutomaticCircleBridge<P>> {
     if (!supportsAutomaticCircleBridge<P>(this.platform))
       throw new Error("Platform does not support AutomaticCircleBridge");

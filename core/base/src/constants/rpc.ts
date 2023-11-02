@@ -63,10 +63,7 @@ const rpcConfig = [
       ["Solana", "http://solana-devnet:8899"],
     ],
   ],
-] as const satisfies RoArray<
-  readonly [Network, RoArray<readonly [ChainName, string]>]
->;
+] as const satisfies RoArray<readonly [Network, RoArray<readonly [ChainName, string]>]>;
 
 const rpc = constMap(rpcConfig);
-export const rpcAddress = (network: Network, chain: ChainName) =>
-  rpc.get(network, chain) ?? "";
+export const rpcAddress = (network: Network, chain: ChainName) => rpc.get(network, chain) ?? "";

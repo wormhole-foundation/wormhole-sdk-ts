@@ -88,11 +88,7 @@ async function cctpTransfer(
   console.log(`Completed Transfer: `, dstTxids);
 }
 
-async function completeTransfer(
-  wh: Wormhole,
-  txid: TransactionId,
-  signer: Signer,
-): Promise<void> {
+async function completeTransfer(wh: Wormhole, txid: TransactionId, signer: Signer): Promise<void> {
   // Rebuild the transfer from the source txid
   const xfer = await CircleTransfer.from(wh, txid);
 

@@ -22,9 +22,7 @@ export class UniversalAddress implements Address {
     }
   }
 
-  toNative<T extends Parameters<typeof toNative>[0]>(
-    platform: T,
-  ): NativeAddress<T> {
+  toNative<T extends Parameters<typeof toNative>[0]>(platform: T): NativeAddress<T> {
     return toNative(platform, this);
   }
 
@@ -51,8 +49,7 @@ export class UniversalAddress implements Address {
   static isValidAddress(address: string) {
     return (
       encoding.hex.valid(address) &&
-      encoding.stripPrefix("0x", address).length ===
-        UniversalAddress.byteSize * 2
+      encoding.stripPrefix("0x", address).length === UniversalAddress.byteSize * 2
     );
   }
 

@@ -16,8 +16,7 @@ export async function signSendWait(
 ): Promise<TransactionId[]> {
   const txHashes: TxHash[] = [];
 
-  if (!isSigner(signer))
-    throw new Error("Invalid signer, not SignAndSendSigner or SignOnlySigner");
+  if (!isSigner(signer)) throw new Error("Invalid signer, not SignAndSendSigner or SignOnlySigner");
 
   const signSend = async (txns: UnsignedTransaction[]): Promise<TxHash[]> =>
     isSignAndSendSigner(signer)

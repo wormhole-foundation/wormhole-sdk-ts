@@ -122,9 +122,7 @@ async function transferIntoCosmos(
   dst: TransferStuff,
 ): Promise<GatewayTransfer> {
   console.log(
-    `Beginning transfer into Cosmos from ${
-      src.chain.chain
-    }:${src.address.address.toString()} to ${
+    `Beginning transfer into Cosmos from ${src.chain.chain}:${src.address.address.toString()} to ${
       dst.chain.chain
     }:${dst.address.address.toString()}`,
   );
@@ -156,9 +154,7 @@ async function transferBetweenCosmos(
   console.log(
     `Beginning transfer within cosmos from ${
       src.chain.chain
-    }:${src.address.address.toString()} to ${
-      dst.chain.chain
-    }:${dst.address.address.toString()}`,
+    }:${src.address.address.toString()} to ${dst.chain.chain}:${dst.address.address.toString()}`,
   );
 
   const xfer = await GatewayTransfer.from(wh, {
@@ -188,9 +184,7 @@ async function transferOutOfCosmos(
   console.log(
     `Beginning transfer out of cosmos from ${
       src.chain.chain
-    }:${src.address.address.toString()} to ${
-      dst.chain.chain
-    }:${dst.address.address.toString()}`,
+    }:${src.address.address.toString()} to ${dst.chain.chain}:${dst.address.address.toString()}`,
   );
 
   const xfer = await GatewayTransfer.from(wh, {

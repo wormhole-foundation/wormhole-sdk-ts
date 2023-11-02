@@ -22,32 +22,17 @@ export const coreBridgeContracts = [
       ["Celo", "0xa321448d90d4e5b0A732867c18eA198e75CAC48E"],
       ["Near", "contract.wormhole_crypto.near"],
       ["Injective", "inj17p9rzwnnfxcjp32un9ug7yhhzgtkhvl9l2q74d"],
-      [
-        "Aptos",
-        "0x5bc11445584a763c1fa7ed39081f1b920954da14e04b32440cba863d03e19625",
-      ],
-      [
-        "Sui",
-        "0xaeab97f96cf9877fee2883315d459552b2b921edc16d7ceac6eab944dd88919c",
-      ],
+      ["Aptos", "0x5bc11445584a763c1fa7ed39081f1b920954da14e04b32440cba863d03e19625"],
+      ["Sui", "0xaeab97f96cf9877fee2883315d459552b2b921edc16d7ceac6eab944dd88919c"],
       ["Moonbeam", "0xC8e2b0cD52Cf01b0Ce87d389Daa3d414d4cE29f3"],
-      [
-        "Terra2",
-        "terra12mrnzvhx3rpej6843uge2yyfppfyd3u9c3uq223q8sl48huz9juqffcnhp",
-      ],
+      ["Terra2", "terra12mrnzvhx3rpej6843uge2yyfppfyd3u9c3uq223q8sl48huz9juqffcnhp"],
       ["Arbitrum", "0xa5f208e072434bC67592E4C49C1B991BA79BCA46"],
       ["Optimism", "0xEe91C335eab126dF5fDB3797EA9d6aD93aeC9722"],
       ["Gnosis", "0xa321448d90d4e5b0A732867c18eA198e75CAC48E"],
       ["Pythnet", "H3fxXJ86ADW2PNuDDmZJg6mzTtPxkYCpNuQUTgmJ7AjU"],
-      [
-        "Xpla",
-        "xpla1jn8qmdda5m6f6fqu9qv46rt7ajhklg40ukpqchkejcvy8x7w26cqxamv3w",
-      ],
+      ["Xpla", "xpla1jn8qmdda5m6f6fqu9qv46rt7ajhklg40ukpqchkejcvy8x7w26cqxamv3w"],
       ["Sei", "sei1gjrrme22cyha4ht2xapn3f08zzw6z3d4uxx6fyy9zd5dyr3yxgzqqncdqn"],
-      [
-        "Wormchain",
-        "wormhole1ufs3tlq4umljk0qfe8k5ya0x6hpavn897u2cnf9k0en9jr7qarqqaqfk2j",
-      ],
+      ["Wormchain", "wormhole1ufs3tlq4umljk0qfe8k5ya0x6hpavn897u2cnf9k0en9jr7qarqqaqfk2j"],
     ],
   ],
   [
@@ -69,39 +54,21 @@ export const coreBridgeContracts = [
       ["Celo", "0x88505117CA88e7dd2eC6EA1E13f0948db2D50D56"],
       ["Near", "wormhole.wormhole.Testnet"],
       ["Injective", "inj1xx3aupmgv3ce537c0yce8zzd3sz567syuyedpg"],
-      [
-        "Osmosis",
-        "osmo1hggkxr0hpw83f8vuft7ruvmmamsxmwk2hzz6nytdkzyup9krt0dq27sgyx",
-      ],
-      [
-        "Aptos",
-        "0x5bc11445584a763c1fa7ed39081f1b920954da14e04b32440cba863d03e19625",
-      ],
-      [
-        "Sui",
-        "0x31358d198147da50db32eda2562951d53973a0c0ad5ed738e9b17d88b213d790",
-      ],
+      ["Osmosis", "osmo1hggkxr0hpw83f8vuft7ruvmmamsxmwk2hzz6nytdkzyup9krt0dq27sgyx"],
+      ["Aptos", "0x5bc11445584a763c1fa7ed39081f1b920954da14e04b32440cba863d03e19625"],
+      ["Sui", "0x31358d198147da50db32eda2562951d53973a0c0ad5ed738e9b17d88b213d790"],
       ["Moonbeam", "0xa5B7D85a8f27dd7907dc8FdC21FA5657D5E2F901"],
       ["Neon", "0x268557122Ffd64c85750d630b716471118F323c8"],
-      [
-        "Terra2",
-        "terra19nv3xr5lrmmr7egvrk2kqgw4kcn43xrtd5g0mpgwwvhetusk4k7s66jyv0",
-      ],
+      ["Terra2", "terra19nv3xr5lrmmr7egvrk2kqgw4kcn43xrtd5g0mpgwwvhetusk4k7s66jyv0"],
       ["Arbitrum", "0xC7A204bDBFe983FCD8d8E61D02b475D4073fF97e"],
       ["Optimism", "0x6b9C8671cdDC8dEab9c719bB87cBd3e782bA6a35"],
       ["Gnosis", "0xE4eacc10990ba3308DdCC72d985f2a27D20c7d03"],
       ["Pythnet", "EUrRARh92Cdc54xrDn6qzaqjA77NRrCcfbr8kPwoTL4z"],
-      [
-        "Xpla",
-        "xpla1upkjn4mthr0047kahvn0llqx4qpqfn75lnph4jpxfn8walmm8mqsanyy35",
-      ],
+      ["Xpla", "xpla1upkjn4mthr0047kahvn0llqx4qpqfn75lnph4jpxfn8walmm8mqsanyy35"],
       ["Base", "0x23908A62110e21C04F3A4e011d24F901F911744A"],
       ["Sei", "sei1nna9mzp274djrgzhzkac2gvm3j27l402s4xzr08chq57pjsupqnqaj0d5s"],
       ["Sepolia", "0x4a8bc80Ed5a4067f1CCf107057b8270E0cC11A78"],
-      [
-        "Wormchain",
-        "wormhole16jzpxp0e8550c9aht6q9svcux30vtyyyyxv5w2l2djjra46580wsazcjwp",
-      ],
+      ["Wormchain", "wormhole16jzpxp0e8550c9aht6q9svcux30vtyyyyxv5w2l2djjra46580wsazcjwp"],
     ],
   ],
   [
@@ -113,21 +80,10 @@ export const coreBridgeContracts = [
       ["Bsc", "0xC89Ce4735882C9F0f0FE26686c53074E09B0D550"],
       ["Algorand", "4"],
       ["Near", "wormhole.test.near"],
-      [
-        "Aptos",
-        "0xde0036a9600559e295d5f6802ef6f3f802f510366e0c23912b0655d972166017",
-      ],
-      [
-        "Sui",
-        "0x5a5160ca3c2037f4b4051344096ef7a48ebf4400b3f385e57ea90e1628a8bde0",
-      ],
-      [
-        "Terra2",
-        "terra14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9ssrc8au",
-      ],
+      ["Aptos", "0xde0036a9600559e295d5f6802ef6f3f802f510366e0c23912b0655d972166017"],
+      ["Sui", "0x5a5160ca3c2037f4b4051344096ef7a48ebf4400b3f385e57ea90e1628a8bde0"],
+      ["Terra2", "terra14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9ssrc8au"],
       ["Wormchain", "wormhole1ap5vgur5zlgys8whugfegnn43emka567dtq0jl"],
     ],
   ],
-] as const satisfies RoArray<
-  readonly [Network, RoArray<readonly [ChainName, string]>]
->;
+] as const satisfies RoArray<readonly [Network, RoArray<readonly [ChainName, string]>]>;
