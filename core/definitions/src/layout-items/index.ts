@@ -1,5 +1,6 @@
 export * from "./amount";
 export * from "./chain";
+export * from "./circle";
 export * from "./guardianSet";
 export * from "./payloadId";
 export * from "./sequence";

@@ -1,12 +1,15 @@
 import {
-  CCTPTransfer,
+  CircleTransfer,
   Signer,
   TransactionId,
   Wormhole,
+  normalizeAmount,
 } from "@wormhole-foundation/connect-sdk";
-// TODO: should we re-export the things they need? should we rename the underlying packages?
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { TransferStuff, getStuff, waitLog } from "./helpers";
+
+import "@wormhole-foundation/connect-sdk-evm-core";
+import "@wormhole-foundation/connect-sdk-evm-cctp";
 
 /*
 Notes:
@@ -29,8 +32,11 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
   const source = await getStuff(sendChain);
   const destination = await getStuff(rcvChain);
 
+  // 6 decimals for USDC (mosltly)
+  const amount = normalizeAmount("0.01", 6n);
+
   // Manual Circle USDC CCTP Transfer
-  await cctpTransfer(wh, 1_000_000n, source, destination, false);
+  await cctpTransfer(wh, amount, source, destination, false);
 
   // Automatic Circle USDC CCTP Transfer
   // await cctpTransfer(wh, 19_000_000n, source, destination, true);
@@ -57,7 +63,7 @@ async function cctpTransfer(
   automatic: boolean,
   nativeGas?: bigint,
 ) {
-  const xfer = await wh.cctpTransfer(
+  const xfer = await wh.circleTransfer(
     amount,
     src.address,
     dst.address,
@@ -82,13 +88,9 @@ async function cctpTransfer(
   console.log(`Completed Transfer: `, dstTxids);
 }
 
-async function completeTransfer(
-  wh: Wormhole,
-  txid: TransactionId,
-  signer: Signer,
-): Promise<void> {
+async function completeTransfer(wh: Wormhole, txid: TransactionId, signer: Signer): Promise<void> {
   // Rebuild the transfer from the source txid
-  const xfer = await CCTPTransfer.from(wh, txid);
+  const xfer = await CircleTransfer.from(wh, txid);
 
   const attestIds = await xfer.fetchAttestation(60 * 60 * 1000);
   console.log("Got attestation: ", attestIds);

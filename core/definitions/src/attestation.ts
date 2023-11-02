@@ -10,9 +10,7 @@ export type WormholeMessageId = {
   emitter: UniversalAddress;
   sequence: SequenceId;
 };
-export function isWormholeMessageId(
-  thing: WormholeMessageId | any,
-): thing is WormholeMessageId {
+export function isWormholeMessageId(thing: WormholeMessageId | any): thing is WormholeMessageId {
   return (
     (<WormholeMessageId>thing).sequence !== undefined &&
     (<WormholeMessageId>thing).emitter !== undefined &&
@@ -28,21 +26,16 @@ export type CircleMessageId = {
   message: string;
   hash: string;
 };
-export function isCircleMessageId(
-  thing: CircleMessageId | any,
-): thing is CircleMessageId {
+export function isCircleMessageId(thing: CircleMessageId | any): thing is CircleMessageId {
   return (
-    (<CircleMessageId>thing).message !== undefined &&
-    (<CircleMessageId>thing).hash !== undefined
+    (<CircleMessageId>thing).message !== undefined && (<CircleMessageId>thing).hash !== undefined
   );
 }
 
 // Raw payload from circle
 export type CircleAttestation = string;
 
-export type getCircleAttestation = (
-  id: CircleMessageId,
-) => Promise<CircleAttestation>;
+export type getCircleAttestation = (id: CircleMessageId) => Promise<CircleAttestation>;
 
 // Ibc Message Identifier
 // Used to fetch a Ibc attestation
@@ -54,9 +47,7 @@ export type IbcMessageId = {
   dstChannel: string;
   sequence: number;
 };
-export function isIbcMessageId(
-  thing: IbcMessageId | any,
-): thing is IbcMessageId {
+export function isIbcMessageId(thing: IbcMessageId | any): thing is IbcMessageId {
   return (
     (<IbcMessageId>thing).dstChannel !== undefined &&
     (<IbcMessageId>thing).srcChannel !== undefined &&

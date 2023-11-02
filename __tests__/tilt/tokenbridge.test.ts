@@ -50,7 +50,6 @@ describe("Token Bridge E2E Tests", () => {
         let srcTb: TokenBridge<PlatformName>;
         let dstTb: TokenBridge<PlatformName>;
 
-        // TODO: too many kinds of things here
         let tokenAddress: NativeAddress<PlatformName>;
         let token: TokenId;
         let tokenOrNative: TokenId | "native";
@@ -100,7 +99,7 @@ describe("Token Bridge E2E Tests", () => {
             })
 
             test(`Create or update wrapped on ${dstChain}`, async () => {
-                const vaa = await wh.getVAA(msgid.chain, msgid.emitter, msgid.sequence, "TokenBridge:AttestMeta")
+                const vaa = await wh.getVaa(msgid.chain, msgid.emitter, msgid.sequence, "TokenBridge:AttestMeta")
                 expect(vaa).toBeTruthy()
 
                 const completeAttest = dstTb.submitAttestation(vaa!, dstAcct.address)
@@ -155,7 +154,6 @@ describe("Token Bridge E2E Tests", () => {
                 const senderBalanceAfter = (await wh.getBalance(srcChain, srcBalanceToken, srcAcct.address.toString()))!
                 if (srcBalanceToken === "native") {
                     // account for gas cost
-                    // TODO: get actual gas costs?
                     expect(senderBalanceAfter).toBeLessThan(senderBalance - amt)
                 } else {
                     expect(senderBalanceAfter).toEqual(senderBalance - amt)

@@ -3,4 +3,4 @@ import { UintLayoutItem } from "@wormhole-foundation/sdk-base";
 export const guardianSetItem = {
   binary: "uint",
   size: 4,
-} as const satisfies Omit<UintLayoutItem, "name">;
+} as const satisfies UintLayoutItem;

@@ -36,10 +36,7 @@ const MAINNET_TOKENS = JSON.parse(mainnetTokens) as TokensConfig;
 const checkEnvConfig = async (env: Network, tokensConfig: TokensConfig) => {
   const wh = new Wormhole(env, [EvmPlatform, SolanaPlatform]);
 
-  const [numUpdates, suggestedUpdates] = await getSuggestedUpdates(
-    wh,
-    tokensConfig,
-  );
+  const [numUpdates, suggestedUpdates] = await getSuggestedUpdates(wh, tokensConfig);
   if ((numUpdates as number) > 0) {
     console.log(`
       ${numUpdates} updates available. To update, run:\n

@@ -29,17 +29,13 @@ export class MockTokenBridge<P extends PlatformName> implements TokenBridge<P> {
   async getWrappedAsset(original: ChainAddress): Promise<NativeAddress<P>> {
     throw new Error("Method not implemented.");
   }
-  isTransferCompleted(
-    vaa: TokenBridge.VAA<"Transfer" | "TransferWithPayload">,
-  ): Promise<boolean> {
+  isTransferCompleted(vaa: TokenBridge.VAA<"Transfer" | "TransferWithPayload">): Promise<boolean> {
     throw new Error("Method not implemented.");
   }
   createAttestation(address: AnyAddress): AsyncGenerator<UnsignedTransaction> {
     throw new Error("Method not implemented.");
   }
-  submitAttestation(
-    vaa: TokenBridge.VAA<"AttestMeta">,
-  ): AsyncGenerator<UnsignedTransaction> {
+  submitAttestation(vaa: TokenBridge.VAA<"AttestMeta">): AsyncGenerator<UnsignedTransaction> {
     throw new Error("Method not implemented.");
   }
   transfer(

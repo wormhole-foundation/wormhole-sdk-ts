@@ -1,8 +1,4 @@
-import {
-  ChainName,
-  Network,
-  PlatformName,
-} from "@wormhole-foundation/sdk-base";
+import { ChainName, Network, PlatformName } from "@wormhole-foundation/sdk-base";
 import {
   ChainContext,
   Platform,
@@ -114,16 +110,10 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
   ): Promise<TokenId | null> {
     throw new Error("Method not implemented.");
   }
-  async getTokenDecimals(
-    rpc: RpcConnection<P>,
-    token: TokenId,
-  ): Promise<bigint> {
+  async getTokenDecimals(rpc: RpcConnection<P>, token: TokenId): Promise<bigint> {
     return 8n;
   }
-  async getNativeBalance(
-    rpc: RpcConnection<P>,
-    walletAddr: string,
-  ): Promise<bigint> {
+  async getNativeBalance(rpc: RpcConnection<P>, walletAddr: string): Promise<bigint> {
     return 0n;
   }
   async getTokenBalance(
@@ -156,11 +146,7 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
     return toNative(chain, address).toUniversalAddress();
   }
 
-  async sendWait(
-    chain: ChainName,
-    rpc: RpcConnection<P>,
-    stxns: any[],
-  ): Promise<TxHash[]> {
+  async sendWait(chain: ChainName, rpc: RpcConnection<P>, stxns: any[]): Promise<TxHash[]> {
     throw new Error("Method not implemented.");
   }
 
@@ -172,22 +158,16 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
     return new MockTokenBridge<P>(rpc);
   }
 
-  async getAutomaticTokenBridge(
-    rpc: RpcConnection<P>,
-  ): Promise<AutomaticTokenBridge<P>> {
+  async getAutomaticTokenBridge(rpc: RpcConnection<P>): Promise<AutomaticTokenBridge<P>> {
     throw new Error("Method not implemented.");
   }
   async getCircleBridge(rpc: RpcConnection<P>): Promise<CircleBridge<P>> {
     throw new Error("Method not implemented.");
   }
-  async getCircleRelayer(
-    rpc: RpcConnection<P>,
-  ): Promise<AutomaticCircleBridge<P>> {
+  async getCircleRelayer(rpc: RpcConnection<P>): Promise<AutomaticCircleBridge<P>> {
     throw new Error("Method Not implemented.");
   }
-  async getAutomaticCircleBridge(
-    rpc: RpcConnection<P>,
-  ): Promise<AutomaticCircleBridge<P>> {
+  async getAutomaticCircleBridge(rpc: RpcConnection<P>): Promise<AutomaticCircleBridge<P>> {
     throw new Error("Method not implemented.");
   }
 }

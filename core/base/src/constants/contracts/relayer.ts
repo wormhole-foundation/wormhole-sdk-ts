@@ -12,10 +12,7 @@ export const relayerContracts = [
       ["Avalanche", "0xcafd2f0a35a4459fa40c0517e17e6fa2939441ca"],
       ["Fantom", "0xcafd2f0a35a4459fa40c0517e17e6fa2939441ca"],
       ["Celo", "0xcafd2f0a35a4459fa40c0517e17e6fa2939441ca"],
-      [
-        "Sui",
-        "0x57f4e0ba41a7045e29d435bc66cc4175f381eb700e6ec16d4fdfe92e5a4dff9f",
-      ],
+      ["Sui", "0x57f4e0ba41a7045e29d435bc66cc4175f381eb700e6ec16d4fdfe92e5a4dff9f"],
       ["Moonbeam", "0xcafd2f0a35a4459fa40c0517e17e6fa2939441ca"],
     ],
   ],
@@ -28,13 +25,8 @@ export const relayerContracts = [
       ["Avalanche", "0x9563a59c15842a6f322b10f69d1dd88b41f2e97b"],
       ["Fantom", "0x9563a59c15842a6f322b10f69d1dd88b41f2e97b"],
       ["Celo", "0x9563a59c15842a6f322b10f69d1dd88b41f2e97b"],
-      [
-        "Sui",
-        "0xb30040e5120f8cb853b691cb6d45981ae884b1d68521a9dc7c3ae881c0031923",
-      ],
+      ["Sui", "0xb30040e5120f8cb853b691cb6d45981ae884b1d68521a9dc7c3ae881c0031923"],
       ["Moonbeam", "0x9563a59c15842a6f322b10f69d1dd88b41f2e97b"],
     ],
   ],
-] as const satisfies RoArray<
-  readonly [Network, RoArray<readonly [ChainName, string]>]
->;
+] as const satisfies RoArray<readonly [Network, RoArray<readonly [ChainName, string]>]>;

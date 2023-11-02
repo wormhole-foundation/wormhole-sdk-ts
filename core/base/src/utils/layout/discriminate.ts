@@ -2,11 +2,11 @@ import {
   Layout,
   LayoutItem,
   LengthPrefixedBytesLayoutItem,
-  isUintType,
+  isNumType,
   isBytesType,
 } from "./layout";
 
-import { serializeUint } from "./serialize";
+import { serializeNum } from "./serialize";
 
 //defining a bunch of types for readability
 type Uint = number;
@@ -56,11 +56,22 @@ function layoutItemMeta(
   }
 
   switch (item.binary) {
-    case "object": {
-      return createLayoutMeta(item.layout, offset, fixedBytes);
-    }
-    case "array": {
-      return [item.lengthSize !== undefined ? item.lengthSize : 0, Infinity];
+    case "int":
+    case "uint": {
+      const fixedVal =
+        isNumType(item.custom)
+        ? item.custom
+        : isNumType(item?.custom?.from)
+        ? item!.custom!.from
+        : null;
+
+      if (fixedVal !== null) {
+        const serialized = new Uint8Array(item.size);
+        serializeNum(serialized, 0, fixedVal, item.size, item.endianness, item.binary === "int");
+        return knownFixed(item.size, serialized);
+      }
+
+      return [item.size, item.size];
     }
     case "bytes": {
       if ("size" in item && item.size !== undefined)
@@ -77,21 +88,102 @@ function layoutItemMeta(
       item = item as LengthPrefixedBytesLayoutItem;
       return [item.lengthSize !== undefined ? item.lengthSize : 0, Infinity];
     }
-    case "uint": {
-      const fixedVal =
-        isUintType(item.custom)
-        ? item.custom
-        : isUintType(item?.custom?.from)
-        ? item!.custom!.from
-        : null;
+    case "array": {
+      if ("length" in item) {
+        let localFixedBytes = [] as FixedBytes;
+        const itemSize = layoutItemMeta(item.arrayItem, 0, localFixedBytes);
+        if (offset !== null) {
+          if (itemSize[0] !== itemSize[1]) {
+            //if the size of an array item is not fixed we can only add the fixed bytes of the
+            //  first item
+            if (item.length > 0)
+              for (const [o, s] of localFixedBytes)
+                fixedBytes.push([offset + o, s]);
+          }
+          else {
+            //otherwise we can add fixed know bytes for each array item
+            for (let i = 0; i < item.length; ++i)
+              for (const [o, s] of localFixedBytes)
+                fixedBytes.push([offset + o + i * itemSize[0], s]);
+          }
+        }
 
-      if (fixedVal !== null) {
-        const serialized = new Uint8Array(item.size);
-        serializeUint(serialized, 0, fixedVal, item.size)
-        return knownFixed(item.size, serialized);
+        return [item.length * itemSize[0], item.length * itemSize[1]];
       }
 
-      return [item.size, item.size];
+      return [item.lengthSize !== undefined ? item.lengthSize : 0, Infinity];
+    }
+    case "object": {
+      return createLayoutMeta(item.layout, offset, fixedBytes);
+    }
+    case "switch": {
+      const caseFixedBytes = item.idLayoutPairs.map(_ => []) as FixedBytes[];
+      const {idSize, idEndianness} = item;
+      const caseBounds = item.idLayoutPairs.map(([idOrConversionId, layout], caseIndex) => {
+        const idVal = Array.isArray(idOrConversionId) ? idOrConversionId[0] : idOrConversionId;
+        if (offset !== null) {
+          const serializedId = new Uint8Array(idSize);
+          serializeNum(serializedId, 0, idVal, idSize, idEndianness);
+          caseFixedBytes[caseIndex].push([0, serializedId]);
+        }
+        const ret = createLayoutMeta(layout, offset ? idSize : null, caseFixedBytes[caseIndex]);
+        return [ret[0] + idSize, ret[1] + idSize] as Bounds;
+      });
+
+      if (offset !== null)
+        //find bytes that have the same value across all cases (turning this into a lambda to enable
+        //  early return from inner loops)
+        (() => {
+          //constrain search to the minimum length of all cases
+          const minLen = Math.min(
+            ...caseFixedBytes.map(fbs => fbs.at(-1)![0] + fbs.at(-1)![1].length)
+          );
+          //keep track of the current index in each case's fixed bytes array
+          const itIndexes = caseFixedBytes.map(_ => 0);
+
+          for (let bytePos = 0; bytePos < minLen;) {
+            let byteVal = null;
+            let caseIndex = 0;
+            while (caseIndex < caseFixedBytes.length) {
+              let curItIndex = itIndexes[caseIndex];
+              const curFixedBytes = caseFixedBytes[caseIndex];
+              const [curOffset, curSerialized] = curFixedBytes[curItIndex];
+              if (curOffset + curSerialized.length <= bytePos) {
+                //no fixed byte at this position in this case
+                ++curItIndex;
+
+                if (curItIndex === curFixedBytes.length)
+                  return; //we have exhausted all fixed bytes in at least one case
+
+                itIndexes[caseIndex] = curItIndex;
+                //jump to the next possible bytePos given the fixed bytes of the current case index
+                bytePos = curFixedBytes[curItIndex][0];
+                break;
+              }
+
+              const curByteVal = curSerialized[bytePos - curOffset];
+              if (byteVal === null)
+                byteVal = curByteVal;
+
+              if (curByteVal !== byteVal)
+                break;
+
+              caseIndex++;
+            }
+
+            //only if we made it through all cases without breaking do we have a fixed byte
+            //  and hence add it to the list of fixed bytes
+            if (caseIndex === caseFixedBytes.length) {
+              fixedBytes.push([offset + bytePos, new Uint8Array([byteVal!])]);
+              ++bytePos;
+            }
+          }
+        })();
+
+      return [
+        Math.min(...caseBounds.map(([lower]) => lower)),
+        Math.max(...caseBounds.map(([_, upper]) => upper))
+      ] as Bounds;
     }
   }
 }

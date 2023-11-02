@@ -1,13 +1,15 @@
+import { Layout, LengthPrefixedBytesLayoutItem } from "@wormhole-foundation/sdk-base";
 import {
-  Layout,
-  LayoutItem,
-  LengthPrefixedBytesLayoutItem,
-
-} from "@wormhole-foundation/sdk-base";
-import { payloadIdItem, universalAddressItem, amountItem } from "../layout-items";
+  payloadIdItem,
+  universalAddressItem,
+  amountItem,
+  circleDomainItem,
+  circleNonceItem
+} from "../layout-items";
 import { RegisterPayloadTypes, NamedPayloads, registerPayloadTypes } from "../vaa";
 
-const depositWithPayloadBase =[
+//from here: https://github.com/wormhole-foundation/wormhole-circle-integration/blob/105ad59bad687416527003e0241dee4020889341/evm/src/circle_integration/CircleIntegrationMessages.sol#L25
+const depositWithPayloadBase = [
   payloadIdItem(1),
   {
     name: "token",
@@ -17,9 +19,9 @@ const depositWithPayloadBase =[
       { name: "amount", ...amountItem },
     ],
   },
-  { name: "sourceDomain", binary: "uint", size: 4 },
-  { name: "targetDomain", binary: "uint", size: 4 },
-  { name: "nonce", binary: "uint", size: 8 },
+  { name: "sourceDomain", ...circleDomainItem },
+  { name: "targetDomain", ...circleDomainItem },
+  { name: "nonce", ...circleNonceItem },
   { name: "caller", ...universalAddressItem },
   { name: "mintRecipient", ...universalAddressItem },
 ] as const;
@@ -40,23 +42,19 @@ export const depositWithBytesPayload = <C extends Pick<LengthPrefixedBytesLayout
   customPayload: C
 ) => [
   ...depositWithPayloadBase,
-  { name: "payload", binary: "bytes", lengthSize: 2, ...customPayload}
+  { name: "payload", binary: "bytes", lengthSize: 2, ...customPayload }
 ] as const;
 
+export const connectPayload = [
+  payloadIdItem(1),
+  { name: "targetRelayerFee", ...amountItem },
+  { name: "toNativeTokenAmount", ...amountItem },
+  { name: "targetRecipient", ...universalAddressItem },
+] as const;
 
 export const namedPayloads = [
   ["DepositWithPayload", depositWithBytesPayload({})],
-  ["TransferRelay",
-    depositWithSizedLayoutPayload(
-      1+3*32,
-      [
-        payloadIdItem(1),
-        { name: "targetRelayerFee", ...amountItem },
-        { name: "toNativeTokenAmount", ...amountItem },
-        { name: "targetRecipient", ...universalAddressItem },
-      ] as const
-    )
-  ]
+  ["TransferRelay", depositWithSizedLayoutPayload(1+3*32, connectPayload)],
 ] as const satisfies NamedPayloads;
 
 // factory registration:
@@ -64,8 +62,8 @@ export const namedPayloads = [
 declare global {
   namespace Wormhole {
     interface PayloadLiteralToLayoutMapping
-      extends RegisterPayloadTypes<"CCTP", typeof namedPayloads> {}
+      extends RegisterPayloadTypes<"AutomaticCircleBridge", typeof namedPayloads> { }
   }
 }
 
-registerPayloadTypes("CCTP", namedPayloads);
+registerPayloadTypes("AutomaticCircleBridge", namedPayloads);

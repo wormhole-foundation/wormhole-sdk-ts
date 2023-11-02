@@ -16,9 +16,7 @@ export interface Attestation {
   status: CircleAttestationStatus;
 }
 
-const mapCircleAttestation = (
-  attestationResponse: CircleAttestationResponse,
-) => ({
+const mapCircleAttestation = (attestationResponse: CircleAttestationResponse) => ({
   message: attestationResponse.attestation,
   status: attestationResponse.status,
 });
@@ -37,8 +35,7 @@ export async function getCircleAttestation(
     if (typeof error === "object") {
       // A 404 error means the VAA is not yet available
       // since its not available yet, we return null signaling it can be tried again
-      if (axios.isAxiosError(error) && error.response?.status === 404)
-        return null;
+      if (axios.isAxiosError(error) && error.response?.status === 404) return null;
       if ("status" in error && error.status === 404) return null;
     }
 

@@ -61,6 +61,4 @@ export const isPlatform = (platform: string): platform is PlatformName =>
 export type PlatformToChains<P extends PlatformName> = ReturnType<
   typeof platformToChains<P>
 >[number];
-export type ChainToPlatform<C extends ChainName> = ReturnType<
-  typeof chainToPlatform<C>
->;
+export type ChainToPlatform<C extends ChainName> = ReturnType<typeof chainToPlatform<C>>;

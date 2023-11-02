@@ -3,11 +3,7 @@ import { AnyAddress } from "./types";
 
 export interface Relayer<P extends PlatformName> {
   relaySupported(chain: Chain): boolean;
-  getRelayerFee(
-    sourceChain: Chain,
-    destChain: Chain,
-    tokenId: AnyAddress,
-  ): Promise<bigint>;
+  getRelayerFee(sourceChain: Chain, destChain: Chain, tokenId: AnyAddress): Promise<bigint>;
   // TODO: What should this be named?
   // I don't think it should return an UnisgnedTransaction
   // rather it should take some signing callbacks and

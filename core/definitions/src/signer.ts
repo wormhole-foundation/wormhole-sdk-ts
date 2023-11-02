@@ -21,9 +21,7 @@ export interface SignOnlySigner {
   address(): string;
   sign(tx: UnsignedTransaction[]): Promise<SignedTx[]>;
 }
-export function isSignOnlySigner(
-  thing: SignOnlySigner | any,
-): thing is SignOnlySigner {
+export function isSignOnlySigner(thing: SignOnlySigner | any): thing is SignOnlySigner {
   return (
     typeof (<SignOnlySigner>thing).chain === "function" &&
     typeof (<SignOnlySigner>thing).address == "function" &&
@@ -40,9 +38,7 @@ export interface SignAndSendSigner {
   signAndSend(tx: UnsignedTransaction[]): Promise<TxHash[]>;
 }
 
-export function isSignAndSendSigner(
-  thing: SignAndSendSigner | any,
-): thing is SignAndSendSigner {
+export function isSignAndSendSigner(thing: SignAndSendSigner | any): thing is SignAndSendSigner {
   return (
     typeof (<SignAndSendSigner>thing).chain === "function" &&
     typeof (<SignAndSendSigner>thing).address == "function" &&

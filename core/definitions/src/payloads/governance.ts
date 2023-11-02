@@ -69,9 +69,7 @@ const actionTuples = [
           name: "guardians",
           binary: "array",
           lengthSize: 1,
-          layout: [
-            { name: "address", binary: "bytes", size: 20 }, //TODO better (custom) type?
-          ],
+          arrayItem: { binary: "bytes", size: 20 }, //TODO better (custom) type?
         },
       ],
     },
@@ -128,42 +126,46 @@ type Action = (typeof actions)[number];
 const actionMapping = constMap(actionTuples);
 
 const sdkProtocolNameAndGovernanceVaaModuleEntries = [
-  ["CoreBridge", "Core"],
+  ["WormholeCore", "Core"],
   ["TokenBridge", "TokenBridge"],
+  ["AutomaticTokenBridge", "TokenBridge"],
   ["NftBridge", "NFTBridge"],
   ["Relayer", "WormholeRelayer"],
-  ["CCTP", "CircleIntegration"],
+  ["CircleBridge", "CircleIntegration"],
+  ["AutomaticCircleBridge", "CircleIntegration"],
 ] as const satisfies RoArray<readonly [ProtocolName, string]>;
+
+type GovernedProtocols = typeof sdkProtocolNameAndGovernanceVaaModuleEntries[number][0];
 
 const sdkProtocolNameToGovernanceVaaModuleMapping = constMap(
   sdkProtocolNameAndGovernanceVaaModuleEntries
 );
 
-const protocolConversion = <P extends ProtocolName>(protocol: P) =>
-  ({
-    to: protocol,
-    from: ((): Uint8Array => {
-      const moduleBytesSize = 32;
-      const bytes = new Uint8Array(moduleBytesSize);
-      const vaaModule = sdkProtocolNameToGovernanceVaaModuleMapping(protocol);
-      for (let i = 1; i <= vaaModule.length; ++i)
-        bytes[moduleBytesSize - i] = vaaModule.charCodeAt(vaaModule.length - i);
+const protocolConversion = <P extends GovernedProtocols>(protocol: P) =>
+({
+  to: protocol,
+  from: ((): Uint8Array => {
+    const moduleBytesSize = 32;
+    const bytes = new Uint8Array(moduleBytesSize);
+    const vaaModule = sdkProtocolNameToGovernanceVaaModuleMapping(protocol);
+    for (let i = 1; i <= vaaModule.length; ++i)
+      bytes[moduleBytesSize - i] = vaaModule.charCodeAt(vaaModule.length - i);
 
-      return bytes;
-    })(),
-  } as const satisfies FixedConversion<Uint8Array, P>);
+    return bytes;
+  })(),
+} as const satisfies FixedConversion<Uint8Array, P>);
 
 const actionConversion = <A extends Action, N extends number>(
   action: A,
   num: N
 ) =>
-  ({
-    to: action,
-    from: num,
-  } as const satisfies FixedConversion<N, A>);
+({
+  to: action,
+  from: num,
+} as const satisfies FixedConversion<N, A>);
 
 const headerLayout = <
-  P extends ProtocolName,
+  P extends GovernedProtocols,
   A extends Action,
   N extends number
 >(
@@ -187,7 +189,7 @@ const headerLayout = <
   ] as const satisfies Layout;
 
 const governancePayload = <
-  P extends ProtocolName,
+  P extends GovernedProtocols,
   A extends Action,
   N extends number
 >(
@@ -206,11 +208,11 @@ const governancePayload = <
 
 const coreBridgePayloads = [
   //see wormhole ethereum/contracts/GovernanceStructs.sol
-  governancePayload("CoreBridge", "UpgradeContract", 1),
-  governancePayload("CoreBridge", "GuardianSetUpgrade", 2),
-  governancePayload("CoreBridge", "SetMessageFee", 3),
-  governancePayload("CoreBridge", "TransferFees", 4),
-  governancePayload("CoreBridge", "RecoverChainId", 5),
+  governancePayload("WormholeCore", "UpgradeContract", 1),
+  governancePayload("WormholeCore", "GuardianSetUpgrade", 2),
+  governancePayload("WormholeCore", "SetMessageFee", 3),
+  governancePayload("WormholeCore", "TransferFees", 4),
+  governancePayload("WormholeCore", "RecoverChainId", 5),
 ] as const satisfies NamedPayloads;
 
 const tokenBridgePayloads = [
@@ -236,9 +238,9 @@ const relayerPayloads = [
 
 const cctpPayloads = [
   //see wormhole-circle-integration evm/src/circle_integration/CircleIntegrationGovernance.sol
-  governancePayload("CCTP", "UpdateFinality", 1),
-  governancePayload("CCTP", "RegisterEmitterAndDomain", 2),
-  governancePayload("CCTP", "UpgradeContract", 3),
+  governancePayload("AutomaticCircleBridge", "UpdateFinality", 1),
+  governancePayload("AutomaticCircleBridge", "RegisterEmitterAndDomain", 2),
+  governancePayload("AutomaticCircleBridge", "UpgradeContract", 3),
 ] as const satisfies NamedPayloads;
 
 
@@ -246,18 +248,17 @@ const cctpPayloads = [
 declare global {
   namespace Wormhole {
     interface PayloadLiteralToLayoutMapping extends
-      RegisterPayloadTypes<"CoreBridge", typeof coreBridgePayloads>,
+      RegisterPayloadTypes<"WormholeCore", typeof coreBridgePayloads>,
       RegisterPayloadTypes<"TokenBridge", typeof tokenBridgePayloads>,
       RegisterPayloadTypes<"NftBridge", typeof nftBridgePayloads>,
       RegisterPayloadTypes<"Relayer", typeof relayerPayloads>,
-      RegisterPayloadTypes<"CCTP", typeof cctpPayloads>
-    {}
+      RegisterPayloadTypes<"AutomaticCircleBridge", typeof cctpPayloads> { }
   }
 }
 
-registerPayloadTypes("CoreBridge", coreBridgePayloads);
+registerPayloadTypes("WormholeCore", coreBridgePayloads);
 registerPayloadTypes("TokenBridge", tokenBridgePayloads);
 registerPayloadTypes("NftBridge", nftBridgePayloads);
 registerPayloadTypes("Relayer", relayerPayloads);
-registerPayloadTypes("CCTP", cctpPayloads);
+registerPayloadTypes("AutomaticCircleBridge", cctpPayloads);
 

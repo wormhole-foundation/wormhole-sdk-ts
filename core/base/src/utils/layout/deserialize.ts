@@ -1,19 +1,20 @@
 import {
+  Endianness,
   Layout,
-  LayoutItem,
+  NamedLayoutItem,
   LayoutToType,
   FixedPrimitiveBytesLayoutItem,
   FixedValueBytesLayoutItem,
   CustomConversion,
-  UintSizeToPrimitive,
-  UintType,
+  NumSizeToPrimitive,
+  NumType,
   BytesType,
-  isUintType,
+  isNumType,
   isBytesType,
   numberMaxSize,
 } from "./layout";
 
-import { checkUint8ArrayDeeplyEqual, checkUintEquals } from "./utils";
+import { checkUint8ArrayDeeplyEqual, checkNumEquals } from "./utils";
 
 export function deserializeLayout<const L extends Layout>(
   layout: L,
@@ -68,44 +69,57 @@ function updateOffset (
   return newOffset;
 }
 
-function deserializeUint<S extends number>(
+function deserializeNum<S extends number>(
   encoded: Uint8Array,
   offset: number,
-  size: S,
-): readonly [UintSizeToPrimitive<S>, number] {
-  let value = 0n;
-  for (let i = 0; i < size; ++i)
-    value += BigInt(encoded[offset + i]) << BigInt((size - 1 - i) * 8);
+  bytes: S,
+  endianness: Endianness = "big",
+  signed: boolean = false,
+): readonly [NumSizeToPrimitive<S>, number] {
+  let val = 0n;
+  for (let i = 0; i < bytes; ++i)
+    val |= BigInt(encoded[offset + i]) << BigInt(8 * (endianness === "big" ? bytes-i-1 : i));
+
+  //check sign bit if value is indeed signed and adjust accordingly
+  if (signed && (encoded[offset + (endianness === "big" ? 0 : bytes-1)] & 0x80))
+    val -= 1n << BigInt(8 * bytes);
 
   return [
-    ((size > numberMaxSize) ? value : Number(value)) as UintSizeToPrimitive<S>,
-    updateOffset(encoded, offset, size)
+    ((bytes > numberMaxSize) ? val : Number(val)) as NumSizeToPrimitive<S>,
+    updateOffset(encoded, offset, bytes)
   ] as const;
 }
 
 function deserializeLayoutItem(
-  item: LayoutItem,
+  item: NamedLayoutItem,
   encoded: Uint8Array,
   offset: number,
 ): readonly [any, number] {
   try {
     switch (item.binary) {
-      case "object": {
-        return internalDeserializeLayout(item.layout, encoded, offset);
-      }
-      case "array": {
-        let ret = [] as LayoutToType<typeof item.layout>[];
-        if (item.lengthSize !== undefined) {
-          const [length, newOffset] = deserializeUint(encoded, offset, item.lengthSize);
-          offset = newOffset;
-          for (let i = 0; i < length; ++i)
-            [ret[i], offset] = internalDeserializeLayout(item.layout, encoded, offset);
+      case "int":
+      case "uint": {
+        const [value, newOffset] =
+          deserializeNum(encoded, offset, item.size, item.endianness, item.binary === "int");
+
+        if (isNumType(item.custom)) {
+          checkNumEquals(item.custom, value);
+          return [item.custom, newOffset];
         }
-        else {
-          while (offset < encoded.length)
-            [ret[ret.length], offset] = internalDeserializeLayout(item.layout, encoded, offset);
+
+        if (isNumType(item?.custom?.from)) {
+          checkNumEquals(item!.custom!.from, value);
+          return [item!.custom!.to, newOffset];
         }
-        return [ret, offset];
+
+        //narrowing to CustomConver<UintType, any> is a bit hacky here, since the true type
+        //  would be CustomConver<number, any> | CustomConver<bigint, any>, but then we'd have to
+        //  further tease that apart still for no real gain...
+        type narrowedCustom = CustomConversion<NumType, any>;
+        return [
+          item.custom !== undefined ? (item.custom as narrowedCustom).to(value) : value,
+          newOffset
+        ];
       }
       case "bytes": {
         let newOffset;
@@ -129,7 +143,8 @@ function deserializeLayoutItem(
             newOffset = updateOffset(encoded, offset, item.size);
           else if (item.lengthSize !== undefined) {
             let length;
-            [length, offset] = deserializeUint(encoded, offset, item.lengthSize);
+            [length, offset] =
+              deserializeNum(encoded, offset, item.lengthSize, item.lengthEndianness);
             newOffset = updateOffset(encoded, offset, length);
           }
           else
@@ -148,26 +163,58 @@ function deserializeLayoutItem(
           newOffset
         ];
       }
-      case "uint": {
-        const [value, newOffset] = deserializeUint(encoded, offset, item.size);
-
-        if (isUintType(item.custom)) {
-          checkUintEquals(item.custom, value);
-          return [item.custom, newOffset];
+      case "array": {
+        let ret = [] as any[];
+        const { arrayItem } = item;
+        const deserializeArrayItem = (index: number) => {
+          const [deserializedItem, newOffset] = deserializeLayoutItem(
+            { name: `${item.name}[${index}]`, ...arrayItem },
+            encoded,
+            offset
+          );
+          ret.push(deserializedItem);
+          offset = newOffset;
         }
 
-        if (isUintType(item?.custom?.from)) {
-          checkUintEquals(item!.custom!.from, value);
-          return [item!.custom!.to, newOffset];
-        }
+        let length = null;
+        if ("length" in item)
+          length = item.length;
+        else if (item.lengthSize !== undefined)
+          [length, offset] =
+            deserializeNum(encoded, offset, item.lengthSize, item.lengthEndianness);
 
-        //narrowing to CustomConver<UintType, any> is a bit hacky here, since the true type
-        //  would be CustomConver<number, any> | CustomConver<bigint, any>, but then we'd have to
-        //  further tease that apart still for no real gain...
-        type narrowedCustom = CustomConversion<UintType, any>;
+        if (length !== null)
+          for (let i = 0; i < length; ++i)
+            deserializeArrayItem(i);
+        else
+          while (offset < encoded.length)
+            deserializeArrayItem(ret.length);
+
+        return [ret, offset];
+      }
+      case "object": {
+        return internalDeserializeLayout(item.layout, encoded, offset);
+      }
+      case "switch": {
+        const [id, newOffset] = deserializeNum(encoded, offset, item.idSize, item.idEndianness);
+        const {idLayoutPairs} = item;
+        if (idLayoutPairs.length === 0)
+          throw new Error(`switch item '${item.name}' has no idLayoutPairs`);
+
+        const hasPlainIds = typeof idLayoutPairs[0][0] === "number";
+        const pair = (idLayoutPairs as any[]).find(([idOrConversionId]) =>
+          hasPlainIds ? idOrConversionId === id : (idOrConversionId)[0] === id);
+
+        if (pair === undefined)
+          throw new Error(`unknown id value: ${id}`);
+
+        const [idOrConversionId, idLayout] = pair;
+        const [decoded, nextOffset] = internalDeserializeLayout(idLayout, encoded, newOffset);
         return [
-          item.custom !== undefined ? (item.custom as narrowedCustom).to(value) : value,
-          newOffset
+          { [item.idTag ?? "id"]: hasPlainIds ? id : (idOrConversionId as any)[1],
+            ...decoded
+          },
+          nextOffset
         ];
       }
     }

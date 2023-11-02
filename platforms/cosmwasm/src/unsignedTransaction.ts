@@ -6,7 +6,7 @@ import {
   Network,
   encoding,
 } from "@wormhole-foundation/connect-sdk";
-import { MSG_EXECUTE_CONTRACT_TYPE_URL } from "./constants";
+import { MSG_EXECUTE_CONTRACT_TYPE_URL, DEFAULT_FEE } from "./constants";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
 import { CosmwasmPlatform } from "./platform";
 
@@ -17,9 +17,7 @@ export interface CosmwasmTransaction {
 }
 
 export function computeFee(chain: ChainName): StdFee {
-  const denom = CosmwasmPlatform.getNativeDenom(chain);
-  // TODO: dont hardcode ths stuff
-  return calculateFee(1_000_000, `0.1${denom}`);
+  return calculateFee(DEFAULT_FEE, `0.1${CosmwasmPlatform.getNativeDenom(chain)}`);
 }
 
 export function buildExecuteMsg(

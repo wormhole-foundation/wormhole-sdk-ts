@@ -96,4 +96,6 @@ export class EvmAddress implements Address {
   }
 }
 
-registerNative('Evm', EvmAddress);
+try {
+  registerNative('Evm', EvmAddress);
+} catch {}

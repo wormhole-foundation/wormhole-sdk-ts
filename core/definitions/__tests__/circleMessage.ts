@@ -1,9 +1,4 @@
-import {
-  circleChainId,
-  deserializeLayout,
-  usdcContract,
-  encoding,
-} from "@wormhole-foundation/sdk-base";
+import { deserializeLayout, usdcContract, encoding } from "@wormhole-foundation/sdk-base";
 import { circleMessageLayout } from "../src/protocols/cctp";
 import { UniversalAddress } from "../src";
 import { circleContracts } from "@wormhole-foundation/sdk-base/src/constants/contracts";
@@ -39,15 +34,13 @@ describe("Circle Message tests", function () {
     );
 
     const decoded = deserializeLayout(circleMessageLayout, orig);
-    expect(decoded.version).toEqual(0);
-    expect(decoded.sourceDomain).toEqual(circleChainId(fromChain));
-    expect(decoded.destinationDomain).toEqual(circleChainId(toChain));
+    expect(decoded.sourceDomain).toEqual(fromChain);
+    expect(decoded.destinationDomain).toEqual(toChain);
     expect(decoded.nonce).toEqual(235558n);
     expect(decoded.sender.equals(actualSender)).toBeTruthy();
     expect(decoded.recipient.equals(actualReceiver)).toBeTruthy();
 
     const decodedPayload = decoded.payload;
-    expect(decodedPayload.version).toEqual(0);
     expect(decodedPayload.amount).toEqual(1000000n);
     expect(decodedPayload.burnToken.equals(tokenAddress)).toBeTruthy();
     expect(decodedPayload.mintRecipient.equals(accountSender)).toBeTruthy();

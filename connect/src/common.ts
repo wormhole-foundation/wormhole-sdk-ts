@@ -16,8 +16,7 @@ export async function signSendWait(
 ): Promise<TransactionId[]> {
   const txHashes: TxHash[] = [];
 
-  if (!isSigner(signer))
-    throw new Error("Invalid signer, not SignAndSendSigner or SignOnlySigner");
+  if (!isSigner(signer)) throw new Error("Invalid signer, not SignAndSendSigner or SignOnlySigner");
 
   const signSend = async (txns: UnsignedTransaction[]): Promise<TxHash[]> =>
     isSignAndSendSigner(signer)
@@ -38,7 +37,7 @@ export async function signSendWait(
         txHashes.push(...(await signSend(txbuff)));
         txbuff = [];
       }
-      // TODO: it may be possible to group this tx with
+      // Note: it may be possible to group this tx with
       // those in the buffer if there are any but
       // the parallelizable flag alone is not enough to signal
       // if this is safe

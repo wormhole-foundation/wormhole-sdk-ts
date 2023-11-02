@@ -185,15 +185,11 @@ export class CosmwasmAddress implements Address {
       // ibc/hex
       if (this.denomType === "ibc") {
         // NOTE: this is case sensitive, should be `ibc` not `IBC`
-        return `${this.denomType.toLowerCase()}/${encoding.hex
-          .encode(this.address)
-          .toUpperCase()}`;
+        return `${this.denomType.toLowerCase()}/${encoding.hex.encode(this.address).toUpperCase()}`;
       }
 
       // ?/factory/address/denom
-      return `${this.denomType}/${toBech32(this.domain!, this.address)}/${
-        this.denom
-      }`;
+      return `${this.denomType}/${toBech32(this.domain!, this.address)}/${this.denom}`;
     }
 
     // contract or account address
@@ -248,4 +244,6 @@ export class CosmwasmAddress implements Address {
   }
 }
 
-registerNative("Cosmwasm", CosmwasmAddress);
+try {
+  registerNative("Cosmwasm", CosmwasmAddress);
+} catch {}

@@ -103,6 +103,4 @@ export const circleContracts = [
       ],
     ],
   ],
-] as const satisfies RoArray<
-  readonly [Network, RoArray<readonly [ChainName, CircleContracts]>]
->;
+] as const satisfies RoArray<readonly [Network, RoArray<readonly [ChainName, CircleContracts]>]>;

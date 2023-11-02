@@ -18,17 +18,21 @@
  *     (notice the clash with EVM where bridge refers to the token bridge...).
  *
  * With all of this in mind: What should we name modules here?
- * My preferred choice would be ["CoreBridge", "TokenBridge", "NftBridge", "Relayer"]
+ * My preferred choice would be ["Wormholecore", "TokenBridge", "NftBridge", "Relayer"]
  *   but ["Core", "TokenBridge", "NFTBridge", "WormholeRelayer"] seems to be more consistent given
  *   current naming "conventions"
  */
 
 export const protocols = [
-  "CoreBridge",
+  "WormholeCore",
   "TokenBridge",
-  "NftBridge",
+  "AutomaticTokenBridge",
+  "CircleBridge",
+  "AutomaticCircleBridge",
   "Relayer",
-  "CCTP",
+  "IbcBridge",
+  // not implemented
+  "NftBridge",
 ] as const;
 
 export type ProtocolName = (typeof protocols)[number];

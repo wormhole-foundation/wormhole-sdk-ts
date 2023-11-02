@@ -6,6 +6,7 @@ import "./payloads/tokenBridge";
 import "./payloads/bam";
 
 export * from "./address";
+export * from "./protocol";
 export * from "./universalAddress";
 export * from "./unsignedTransaction";
 export * from "./vaa";

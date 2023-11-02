@@ -1,36 +1,34 @@
+import { LayoutItem, UintLayoutItem } from "@wormhole-foundation/sdk-base";
 import {
-  Layout,
-  ShallowMapping,
-  UintLayoutItem,
-  ObjectLayoutItem,
-} from "@wormhole-foundation/sdk-base";
-import {
-  chainItem,
-  universalAddressItem,
-  sequenceItem,
   amountItem,
+  chainItem,
+  circleDomainItem,
+  circleNonceItem,
+  payloadIdItem,
+  sequenceItem,
+  universalAddressItem,
 } from "../layout-items";
 import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../vaa";
+
+const versionByte = <N extends number>(id: N) =>
+  ({
+    name: "version",
+    binary: "uint",
+    size: 1,
+    custom: id,
+    omit: true,
+  } as const satisfies UintLayoutItem & { readonly name: string });
 
 const encodedExecutionInfoItem = {
   binary: "object",
   layout: [
     { name: "size", binary: "uint", size: 4, custom: 3*32, omit: true },
     { name: "waste", binary: "uint", size: 31, custom: 0n, omit: true },
-    { name: "version", binary: "uint", size: 1, custom: 0, omit: true },
+    versionByte(0),
     { name: "gasLimit", ...amountItem },
     { name: "targetChainRefundPerGasUnused", ...amountItem },
   ]
-} as const satisfies Omit<ObjectLayoutItem, "name">;
-
-const payloadIdItem = <N extends number>(id: N) =>
-  ({
-    name: "payloadId",
-    binary: "uint",
-    size: 1,
-    custom: id,
-    omit: true,
-  } as const satisfies UintLayoutItem);
+} as const satisfies LayoutItem;
 
 const addressChainItem = {
   binary: "object",
@@ -38,14 +36,29 @@ const addressChainItem = {
     { name: "chain", ...chainItem() },
     { name: "address", ...universalAddressItem },
   ],
-} as const satisfies Omit<ObjectLayoutItem, "name">;
+} as const satisfies LayoutItem;
 
 const vaaKeyLayout = [
-  { name: "version", binary: "uint", size: 1, custom: { to: "Key", from: 1 } },
   { name: "chain", ...chainItem() },
   { name: "emitterAddress", ...universalAddressItem },
   { name: "sequence", ...sequenceItem },
-] as const satisfies Layout;
+] as const;
+
+const cctpKeyLayout = [
+  { name: "size", binary: "uint", size: 4, custom: 12, omit: true },
+  { name: "domain", ...circleDomainItem },
+  { name: "nonce", ...circleNonceItem },
+] as const;
+
+const messageKeySwitchLayout = {
+  binary: "switch",
+  idSize: 1,
+  idTag: "keyType",
+  idLayoutPairs: [
+    [[1, "VAA"], vaaKeyLayout],
+    [[2, "CCTP"], cctpKeyLayout]
+  ]
+} as const satisfies LayoutItem;
 
 const namedPayloads = [
   [
@@ -61,7 +74,7 @@ const namedPayloads = [
       { name: "refundDeliveryProvider", ...universalAddressItem },
       { name: "sourceDeliveryProvider", ...universalAddressItem },
       { name: "senderAddress", ...universalAddressItem },
-      { name: "vaaKeys", binary: "array", lengthSize: 1, layout: vaaKeyLayout },
+      { name: "messageKeys", binary: "array", lengthSize: 1, arrayItem: messageKeySwitchLayout },
     ],
   ],
   [
@@ -79,7 +92,7 @@ const namedPayloads = [
   [
     "DeliveryOverride",
     [
-      { name: "version", binary: "uint", size: 1, custom: 1, omit: true },
+      versionByte(1),
       { name: "receiverValue", ...amountItem },
       { name: "newExecutionInfo", ...encodedExecutionInfoItem },
       { name: "redeliveryHash", binary: "bytes", size: 32 },

@@ -11,4 +11,4 @@ export const universalAddressItem = {
     to: (val: Uint8Array): UniversalAddress => new UniversalAddress(val),
     from: (val: UniversalAddress): Uint8Array => val.toUint8Array(),
   } satisfies CustomConversion<Uint8Array, UniversalAddress>,
-} as const satisfies Omit<FixedSizeBytesLayoutItem, "name">;
+} as const satisfies FixedSizeBytesLayoutItem;

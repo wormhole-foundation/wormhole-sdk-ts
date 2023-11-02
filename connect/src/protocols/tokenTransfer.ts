@@ -12,11 +12,7 @@ import {
 import { signSendWait } from "../common";
 import { TokenTransferDetails, isTokenTransferDetails } from "../types";
 import { Wormhole } from "../wormhole";
-import {
-  AttestationId,
-  TransferState,
-  WormholeTransfer,
-} from "../wormholeTransfer";
+import { AttestationId, TransferState, WormholeTransfer } from "../wormholeTransfer";
 import { encoding } from "@wormhole-foundation/sdk-base";
 
 export class TokenTransfer implements WormholeTransfer {
@@ -55,13 +51,10 @@ export class TokenTransfer implements WormholeTransfer {
       throw new Error(`Token Bridge not supported on ${transfer.to.chain}`);
 
     if (transfer.automatic && !fromChain.supportsAutomaticTokenBridge())
-      throw new Error(
-        `Automatic Token Bridge not supported on ${transfer.from.chain}`,
-      );
+      throw new Error(`Automatic Token Bridge not supported on ${transfer.from.chain}`);
 
     if (transfer.to.chain === "Sei") {
-      if (transfer.payload)
-        throw new Error("Arbitrary payloads unsupported for Sei");
+      if (transfer.payload) throw new Error("Arbitrary payloads unsupported for Sei");
 
       // For sei, we reserve the payload for a token transfer through the sei bridge.
       transfer.payload = encoding.toUint8Array(
@@ -74,10 +67,7 @@ export class TokenTransfer implements WormholeTransfer {
 
       transfer.to = {
         chain: transfer.to.chain,
-        address: toNative(
-          transfer.to.chain,
-          toChain.platform.conf.Sei?.contracts.translator!,
-        ),
+        address: toNative(transfer.to.chain, toChain.platform.conf.Sei?.contracts.translator!),
       };
     }
 
@@ -91,11 +81,7 @@ export class TokenTransfer implements WormholeTransfer {
     if (!this.vaas || this.vaas.length === 0) return this.state;
 
     const { chain, emitter, sequence } = this.vaas[0].id;
-    const txStatus = await this.wh.getTransactionStatus(
-      chain,
-      emitter,
-      sequence,
-    );
+    const txStatus = await this.wh.getTransactionStatus(chain, emitter, sequence);
 
     if (txStatus.globalTx.destinationTx) {
       switch (txStatus.globalTx.destinationTx.status) {
@@ -110,20 +96,13 @@ export class TokenTransfer implements WormholeTransfer {
   }
 
   // Static initializers for in flight transfers that have not been completed
-  static async from(
-    wh: Wormhole,
-    from: TokenTransferDetails,
-  ): Promise<TokenTransfer>;
+  static async from(wh: Wormhole, from: TokenTransferDetails): Promise<TokenTransfer>;
   static async from(
     wh: Wormhole,
     from: WormholeMessageId,
     timeout?: number,
   ): Promise<TokenTransfer>;
-  static async from(
-    wh: Wormhole,
-    from: TransactionId,
-    timeout?: number,
-  ): Promise<TokenTransfer>;
+  static async from(wh: Wormhole, from: TransactionId, timeout?: number): Promise<TokenTransfer>;
   static async from(
     wh: Wormhole,
     from: TokenTransferDetails | WormholeMessageId | TransactionId,
@@ -134,11 +113,7 @@ export class TokenTransfer implements WormholeTransfer {
       // sent a VAA with the primary address
       if (from.to.chain === "Solana") {
         // Overwrite the dest address with the ATA
-        from.to = await wh.getTokenAccount(
-          from.from.chain,
-          from.token,
-          from.to,
-        );
+        from.to = await wh.getTokenAccount(from.from.chain, from.token, from.to);
       }
 
       return new TokenTransfer(wh, from);
@@ -220,19 +195,14 @@ export class TokenTransfer implements WormholeTransfer {
     if (this.state !== TransferState.Created)
       throw new Error("Invalid state transition in `start`");
 
-    const tokenAddress =
-      this.transfer.token === "native" ? "native" : this.transfer.token.address;
+    const tokenAddress = this.transfer.token === "native" ? "native" : this.transfer.token.address;
 
     const fromChain = this.wh.getChain(this.transfer.from.chain);
 
     let xfer: AsyncGenerator<UnsignedTransaction>;
     if (this.transfer.automatic) {
       const tb = await fromChain.getAutomaticTokenBridge();
-      const fee = await tb.getRelayerFee(
-        this.transfer.from,
-        this.transfer.to,
-        this.transfer.token,
-      );
+      const fee = await tb.getRelayerFee(this.transfer.from, this.transfer.to, this.transfer.token);
 
       xfer = tb.transfer(
         this.transfer.from.address,
@@ -267,10 +237,7 @@ export class TokenTransfer implements WormholeTransfer {
         2) Once available, pull the VAA and parse it
         3) return seq
     */
-    if (
-      this.state < TransferState.Initiated ||
-      this.state > TransferState.Attested
-    )
+    if (this.state < TransferState.Initiated || this.state > TransferState.Attested)
       throw new Error("Invalid state transition in `ready`");
 
     if (!this.vaas || this.vaas.length === 0) {
@@ -279,11 +246,7 @@ export class TokenTransfer implements WormholeTransfer {
 
       // TODO: assuming the _last_ transaction in the list will contain the msg id
       const txid = this.txids[this.txids.length - 1];
-      const msgId = await TokenTransfer.getTransferMessage(
-        this.wh,
-        txid,
-        timeout,
-      );
+      const msgId = await TokenTransfer.getTransferMessage(this.wh, txid, timeout);
       this.vaas = [{ id: msgId }];
     }
 
@@ -291,11 +254,7 @@ export class TokenTransfer implements WormholeTransfer {
       // Check if we already have the VAA
       if (this.vaas[idx].vaa) continue;
 
-      this.vaas[idx].vaa = await TokenTransfer.getTransferVaa(
-        this.wh,
-        this.vaas[idx].id,
-        timeout,
-      );
+      this.vaas[idx].vaa = await TokenTransfer.getTransferVaa(this.wh, this.vaas[idx].id, timeout);
     }
 
     this.state = TransferState.Attested;
@@ -312,9 +271,7 @@ export class TokenTransfer implements WormholeTransfer {
         3) return txid of submission
     */
     if (this.state < TransferState.Attested)
-      throw new Error(
-        "Invalid state transition in `finish`. Be sure to call `fetchAttestation`.",
-      );
+      throw new Error("Invalid state transition in `finish`. Be sure to call `fetchAttestation`.");
 
     if (!this.vaas) throw new Error("No VAA details available");
 
@@ -329,9 +286,7 @@ export class TokenTransfer implements WormholeTransfer {
     let xfer: AsyncGenerator<UnsignedTransaction>;
     if (this.transfer.automatic) {
       if (vaa.payloadName === "Transfer")
-        throw new Error(
-          "VAA is a simple transfer but expected Payload for automatic delivery",
-        );
+        throw new Error("VAA is a simple transfer but expected Payload for automatic delivery");
 
       const tb = await toChain.getAutomaticTokenBridge();
       xfer = tb.redeem(signerAddress, vaa);
@@ -352,8 +307,7 @@ export class TokenTransfer implements WormholeTransfer {
   ): Promise<WormholeMessageId> {
     const { chain, txid } = tx;
     const msgs = await wh.parseMessageFromTx(chain, txid, timeout);
-    if (msgs.length === 0)
-      throw new Error(`No messages found in transaction ${txid}`);
+    if (msgs.length === 0) throw new Error(`No messages found in transaction ${txid}`);
     return msgs[0];
   }
 
@@ -363,7 +317,7 @@ export class TokenTransfer implements WormholeTransfer {
     timeout?: number,
   ): Promise<TokenBridge.VAA<"Transfer" | "TransferWithPayload">> {
     const { chain, emitter, sequence } = whm;
-    const vaa = await wh.getVAA(
+    const vaa = await wh.getVaa(
       chain,
       emitter,
       sequence,

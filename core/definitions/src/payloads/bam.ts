@@ -1,11 +1,11 @@
-import { Layout, UintLayoutItem, LengthPrefixedBytesLayoutItem, ShallowMapping } from "@wormhole-foundation/sdk-base";
+import { Layout, UintLayoutItem, LengthPrefixedBytesLayoutItem } from "@wormhole-foundation/sdk-base";
 import { chainItem, amountItem } from "../layout-items";
 import { RegisterPayloadTypes, NamedPayloads, registerPayloadTypes } from "../vaa";
 
 const bamAddressItem = {
   binary: "bytes",
   lengthSize: 2
-} as const satisfies Omit<LengthPrefixedBytesLayoutItem, "name">;
+} as const satisfies LengthPrefixedBytesLayoutItem;
 
 const customOrEmpty = (custom: any) => custom ? { custom } : {};
 

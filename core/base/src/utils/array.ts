@@ -8,7 +8,7 @@ export type IndexEs = number | RoArray<number>;
 export const range = (length: number) => [...Array(length).keys()];
 
 export type Entries<T extends RoArray> =
-  readonly [...{ [K in keyof T]: K extends `${number}` ? [T[K], ParseNumber<K>] : never }];
+  [...{ [K in keyof T]: K extends `${number}` ? [T[K], ParseNumber<K>] : never }];
 
 export type Flatten<T extends RoArray> =
   T extends readonly [infer Head, ...infer Tail]
@@ -34,7 +34,7 @@ export type IsFlat<T extends RoArray> =
   : true;
 
 export type Unflatten<T extends RoArray> =
-  [...{ [K in keyof T]: K extends `${number}` ? readonly [T[K]] : never }];
+  [...{ [K in keyof T]: K extends `${number}` ? [T[K]] : never }];
 
 export type AllSameLength<T extends RoArray2D, L extends number> =
   T extends readonly [infer Head extends RoArray, ...infer Tail extends RoArray2D]
@@ -62,7 +62,7 @@ export type Zip<A extends RoArray2D> =
   ? A[0] extends infer Head extends RoArray
     ? [...{ [K in keyof Head]:
         K extends `${number}`
-        ? readonly [...{ [K2 in keyof A]: K extends keyof A[K2] ? A[K2][K] : never }]
+        ? [...{ [K2 in keyof A]: K extends keyof A[K2] ? A[K2][K] : never }]
         : never
       }]
     : []
@@ -98,5 +98,5 @@ export type Cartesian<L, R> =
   L extends RoArray
   ? Flatten<[...{ [K in keyof L]: K extends `${number}` ? Cartesian<L[K], R> : never }]>
   : R extends RoArray
-  ? [...{ [K in keyof R]: K extends `${number}` ? readonly [L, R[K]] : never }]
+  ? [...{ [K in keyof R]: K extends `${number}` ? [L, R[K]] : never }]
   : [L, R];

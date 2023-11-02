@@ -18,10 +18,7 @@ export const nftBridgeContracts = [
       ["Acala", "0xb91e3638F82A1fACb28690b37e3aAE45d2c33808"],
       ["Klaytn", "0x3c3c561757BAa0b78c5C025CdEAa4ee24C1dFfEf"],
       ["Celo", "0xA6A377d75ca5c9052c9a77ED1e865Cc25Bd97bf3"],
-      [
-        "Aptos",
-        "0x1bdffae984043833ed7fe223f7af7a3f8902d04129b14f801823e64827da7130",
-      ],
+      ["Aptos", "0x1bdffae984043833ed7fe223f7af7a3f8902d04129b14f801823e64827da7130"],
       ["Moonbeam", "0x453cfbe096c0f8d763e8c5f24b441097d577bde2"],
       ["Arbitrum", "0x3dD14D553cFD986EAC8e3bddF629d82073e188c8"],
       ["Optimism", "0xfE8cD454b4A1CA468B57D79c0cc77Ef5B6f64585"],
@@ -57,12 +54,7 @@ export const nftBridgeContracts = [
       ["Ethereum", "0x26b4afb60d6c903165150c6f0aa14f8016be4aec"],
       ["Terra", "terra1plju286nnfj3z54wgcggd4enwaa9fgf5kgrgzl"],
       ["Bsc", "0x26b4afb60d6c903165150c6f0aa14f8016be4aec"],
-      [
-        "Aptos",
-        "0x46da3d4c569388af61f951bdd1153f4c875f90c2991f6b2d0a38e2161a40852c",
-      ],
+      ["Aptos", "0x46da3d4c569388af61f951bdd1153f4c875f90c2991f6b2d0a38e2161a40852c"],
     ],
   ],
-] as const satisfies RoArray<
-  readonly [Network, RoArray<readonly [ChainName, string]>]
->;
+] as const satisfies RoArray<readonly [Network, RoArray<readonly [ChainName, string]>]>;

@@ -20,9 +20,6 @@ import { DEFAULT_TASK_TIMEOUT } from "./config";
 // In cases where the failure is temporary it should return null
 // (e.g. transaction not complete yet, vaa not available yet, ...)
 
-// TODO: determine if an error is unrecoverable
-// (e.g. http 500, 429 ...)
-
 export type Task<T> = () => Promise<T | null>;
 
 export async function retry<T>(
@@ -65,7 +62,6 @@ export async function isTokenBridgeVaaRedeemed(
     // signaling that we should retry
     return isRedeemed ? isRedeemed : null;
   } catch (e) {
-    // TODO: what types of errors might we catch here? 429? 500?
     console.error(`Caught an error checking if VAA is redeemed: ${e}\n`);
     return null;
   }
@@ -73,22 +69,15 @@ export async function isTokenBridgeVaaRedeemed(
 
 export async function fetchIbcXfer(
   wcIbc: IbcBridge<"Cosmwasm">,
-  msg:
-    | TxHash
-    | TransactionId
-    | IbcMessageId
-    | GatewayTransferMsg
-    | GatewayTransferWithPayloadMsg,
+  msg: TxHash | TransactionId | IbcMessageId | GatewayTransferMsg | GatewayTransferWithPayloadMsg,
 ): Promise<IbcTransferInfo | null> {
   try {
     if (isIbcMessageId(msg)) return await wcIbc.lookupTransferFromIbcMsgId(msg);
-    else if (isTransactionIdentifier(msg))
-      return await wcIbc.lookupTransferFromTx(msg.txid);
+    else if (isTransactionIdentifier(msg)) return await wcIbc.lookupTransferFromTx(msg.txid);
     else if (isGatewayTransferMsg(msg) || isGatewayTransferWithPayloadMsg(msg))
       return await wcIbc.lookupTransferFromMsg(msg);
     else throw new Error("Invalid message type:" + JSON.stringify(msg));
   } catch (e) {
-    // TODO: what type of errors might we catch here? 429? 500?
     console.error("Caught an error looking for ibc transfer: ", e);
   }
   return null;
