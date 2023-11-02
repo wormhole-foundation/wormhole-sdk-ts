@@ -175,14 +175,17 @@ function deserializeLayoutItem(
           ret.push(deserializedItem);
           offset = newOffset;
         }
-        
-        if (item.lengthSize !== undefined) {
-          const [length, newOffset] =
+
+        let length = null;
+        if ("length" in item)
+          length = item.length;
+        else if (item.lengthSize !== undefined)
+          [length, offset] =
             deserializeNum(encoded, offset, item.lengthSize, item.lengthEndianness);
-          offset = newOffset;
+
+        if (length !== null)
           for (let i = 0; i < length; ++i)
             deserializeArrayItem(i);
-        }
         else
           while (offset < encoded.length)
             deserializeArrayItem(ret.length);
@@ -201,7 +204,7 @@ function deserializeLayoutItem(
         const hasPlainIds = typeof idLayoutPairs[0][0] === "number";
         const pair = (idLayoutPairs as any[]).find(([idOrConversionId]) =>
           hasPlainIds ? idOrConversionId === id : (idOrConversionId)[0] === id);
-        
+
         if (pair === undefined)
           throw new Error(`unknown id value: ${id}`);
 

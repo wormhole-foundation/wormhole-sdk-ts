@@ -45,19 +45,16 @@ export const depositWithBytesPayload = <C extends Pick<LengthPrefixedBytesLayout
   { name: "payload", binary: "bytes", lengthSize: 2, ...customPayload }
 ] as const;
 
+export const connectPayload = [
+  payloadIdItem(1),
+  { name: "targetRelayerFee", ...amountItem },
+  { name: "toNativeTokenAmount", ...amountItem },
+  { name: "targetRecipient", ...universalAddressItem },
+] as const;
+
 export const namedPayloads = [
   ["DepositWithPayload", depositWithBytesPayload({})],
-  ["TransferRelay",
-    depositWithSizedLayoutPayload(
-      1 + 3 * 32,
-      [
-        payloadIdItem(1),
-        { name: "targetRelayerFee", ...amountItem },
-        { name: "toNativeTokenAmount", ...amountItem },
-        { name: "targetRecipient", ...universalAddressItem },
-      ] as const
-    )
-  ]
+  ["TransferRelay", depositWithSizedLayoutPayload(1+3*32, connectPayload)],
 ] as const satisfies NamedPayloads;
 
 // factory registration:

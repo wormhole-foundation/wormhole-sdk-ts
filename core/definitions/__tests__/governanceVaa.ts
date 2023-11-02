@@ -142,6 +142,7 @@ describe("Governance VAA tests", function () {
         newContract: new UniversalAddress(new Uint8Array(32)),
       },
     });
+
     expect(vaa.payload.protocol).toEqual("WormholeCore");
     expect(vaa.payload.action).toEqual("UpgradeContract");
   });
