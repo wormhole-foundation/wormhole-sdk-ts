@@ -37,6 +37,7 @@
     "core/base",
     "core/definitions",
     "connect",
+    "platforms/algorand",
     "platforms/evm",
     "platforms/solana",
     "platforms/cosmwasm",
