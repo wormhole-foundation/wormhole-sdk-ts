@@ -1,6 +1,6 @@
 import { ChainName, PlatformName, ProtocolName } from "@wormhole-foundation/sdk-base";
 
-import { NativeAddress } from "./address";
+import { NativeAddress, UniversalOrNative } from "./address";
 import { WormholeMessageId } from "./attestation";
 import { Platform } from "./platform";
 import {

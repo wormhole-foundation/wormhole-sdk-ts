@@ -1,9 +1,11 @@
 import {
   ChainId,
   ChainName,
+  ChainToPlatform,
   PlatformName,
-  toChainId,
   encoding,
+  toChainId,
+  toChainName
 } from "@wormhole-foundation/sdk-base";
 import { ChainAddress, NativeAddress } from "../address";
 import { IbcMessageId, WormholeMessageId } from "../attestation";
@@ -120,7 +122,7 @@ export function gatewayTransferMsg(
     // newly minted tokens
     return makeGatewayTransferMsg(
       gtd.to.chain,
-      gtd.to.address as NativeAddress<"Cosmwasm">,
+      gtd.to.address.toNative(gtd.to.chain),
       gtd.fee,
       gtd.nonce ?? Math.round(Math.random() * 100000),
       _payload,
@@ -130,7 +132,7 @@ export function gatewayTransferMsg(
   // Encode the payload so the gateway contract knows where to forward the
   // newly minted tokens
   return makeGatewayTransferMsg(
-    gtd.chain,
+    toChainName(gtd.chain),
     gtd.recipient,
     BigInt(gtd.fee),
     gtd.nonce,
@@ -138,9 +140,9 @@ export function gatewayTransferMsg(
   );
 }
 
-export function makeGatewayTransferMsg(
-  chain: ChainName | ChainId,
-  recipient: NativeAddress<PlatformName> | string,
+export function makeGatewayTransferMsg<CN extends ChainName>(
+  chain: CN,
+  recipient: NativeAddress<ChainToPlatform<CN>> | string,
   fee: bigint = 0n,
   nonce: number,
   payload?: string,
@@ -150,8 +152,8 @@ export function makeGatewayTransferMsg(
   const address =
     typeof recipient === "string"
       ? recipient
-      : //@ts-ignore
-      encoding.b64.encode(recipient.toString());
+      // @ts-ignore
+      : encoding.b64.encode(recipient.toString());
 
   const common = {
     chain: toChainId(chain),

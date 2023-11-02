@@ -119,11 +119,10 @@ export class CircleTransfer implements WormholeTransfer {
 
     let automatic = false;
     if (wormholeRelayer) {
-      const relayerAddress = toNative(
+      const relayerAddress = nativeChainAddress([
         chain,
         wormholeRelayer,
-        //@ts-ignore
-      ).toUniversalAddress();
+      ]).address.toUniversalAddress();
       automatic = vaa.payloadName === "TransferRelay" && rcvAddress.equals(relayerAddress);
     }
 

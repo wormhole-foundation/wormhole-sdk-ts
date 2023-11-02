@@ -9,6 +9,7 @@ import {
   chainToPlatform,
   PlatformUtils,
   Balances,
+  nativeChainAddress,
 } from "@wormhole-foundation/connect-sdk";
 import {
   IBC_TRANSFER_PORT,
@@ -30,11 +31,7 @@ var _: PlatformUtils<"Cosmwasm"> = CosmwasmUtils;
 export module CosmwasmUtils {
   export function nativeTokenId(chain: ChainName): TokenId {
     if (!isSupportedChain(chain)) throw new Error(`invalid chain for CosmWasm: ${chain}`);
-    return {
-      chain: chain,
-      // @ts-ignore
-      address: new CosmwasmAddress(getNativeDenom(chain)),
-    };
+    return nativeChainAddress([chain, getNativeDenom(chain)]);
   }
 
   export function isSupportedChain(chain: ChainName): boolean {
@@ -100,7 +97,6 @@ export module CosmwasmUtils {
 
   export function getNativeDenom(chain: ChainName): string {
     return chainToNativeDenoms(
-      //@ts-ignore
       CosmwasmPlatform.network,
       chain as PlatformToChains<CosmwasmPlatform.Type>,
     );

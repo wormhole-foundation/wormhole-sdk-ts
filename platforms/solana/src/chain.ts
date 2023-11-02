@@ -1,6 +1,7 @@
 import {
   ChainContext,
   NativeAddress,
+  Platform,
   UniversalOrNative,
   toNative,
 } from '@wormhole-foundation/connect-sdk';
@@ -10,8 +11,7 @@ import { AnySolanaAddress } from './types';
 import { SolanaAddress } from './address';
 
 export class SolanaChain extends ChainContext<'Solana'> {
-  // @ts-ignore
-  readonly platform = SolanaPlatform;
+  readonly platform: Platform<'Solana'> = SolanaPlatform;
 
   async getTokenAccount(
     token: UniversalOrNative<'Solana'> | 'native',

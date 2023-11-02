@@ -107,7 +107,7 @@ export module CosmwasmPlatform {
   export const getQueryClient = (
     rpc: CosmWasmClient,
   ): QueryClient & BankExtension & IbcExtension => {
-    // @ts-ignore
+    // @ts-ignore -- access private attribute
     const tmClient: TendermintClient = rpc.getTmClient()!;
     return QueryClient.withExtensions(tmClient, setupBankExtension, setupIbcExtension);
   };
