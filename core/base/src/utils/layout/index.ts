@@ -2,12 +2,18 @@ export {
   Layout,
   LayoutItem,
   NamedLayoutItem,
+  NumLayoutItem,
+  IntLayoutItem,
   UintLayoutItem,
   BytesLayoutItem,
+  FixedPrimitiveNumLayoutItem,
+  OptionalToFromNumLayoutItem,
   FixedPrimitiveBytesLayoutItem,
   FixedValueBytesLayoutItem,
   FixedSizeBytesLayoutItem,
   LengthPrefixedBytesLayoutItem,
+  FixedSizeArrayLayoutItem,
+  LengthPrefixedArrayLayoutItem,
   ArrayLayoutItem,
   ObjectLayoutItem,
   LayoutToType,
@@ -16,6 +22,7 @@ export {
   CustomConversion,
 } from "./layout";
 
+export { calcLayoutSize } from "./size";
 export { serializeLayout } from "./serialize";
 export { deserializeLayout } from "./deserialize";
 export {

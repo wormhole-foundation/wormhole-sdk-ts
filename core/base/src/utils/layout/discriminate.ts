@@ -89,6 +89,28 @@ function layoutItemMeta(
       return [item.lengthSize !== undefined ? item.lengthSize : 0, Infinity];
     }
     case "array": {
+      if ("length" in item) {
+        let localFixedBytes = [] as FixedBytes;
+        const itemSize = layoutItemMeta(item.arrayItem, 0, localFixedBytes);
+        if (offset !== null) {
+          if (itemSize[0] !== itemSize[1]) {
+            //if the size of an array item is not fixed we can only add the fixed bytes of the
+            //  first item
+            if (item.length > 0)
+              for (const [o, s] of localFixedBytes)
+                fixedBytes.push([offset + o, s]);
+          }
+          else {
+            //otherwise we can add fixed know bytes for each array item
+            for (let i = 0; i < item.length; ++i)
+              for (const [o, s] of localFixedBytes)
+                fixedBytes.push([offset + o + i * itemSize[0], s]);
+          }
+        }
+
+        return [item.length * itemSize[0], item.length * itemSize[1]];
+      }
+
       return [item.lengthSize !== undefined ? item.lengthSize : 0, Infinity];
     }
     case "object": {
@@ -132,7 +154,7 @@ function layoutItemMeta(
 
                 if (curItIndex === curFixedBytes.length)
                   return; //we have exhausted all fixed bytes in at least one case
-                
+
                 itIndexes[caseIndex] = curItIndex;
                 //jump to the next possible bytePos given the fixed bytes of the current case index
                 bytePos = curFixedBytes[curItIndex][0];
@@ -142,7 +164,7 @@ function layoutItemMeta(
               const curByteVal = curSerialized[bytePos - curOffset];
               if (byteVal === null)
                 byteVal = curByteVal;
-              
+
               if (curByteVal !== byteVal)
                 break;
 

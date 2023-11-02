@@ -146,7 +146,7 @@ describe("Layout tests", function () {
       case1DynamicUint: 18,
     }
   } as const;
-  
+
   it("should correctly add fixed values", function () {
     const dynamicValues = {
       dynamicDirectPrimitive: 2,

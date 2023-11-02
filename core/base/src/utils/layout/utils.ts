@@ -1,3 +1,5 @@
+import { isBytesType, BytesLayoutItem, ArrayLayoutItem, SwitchLayoutItem } from "./layout";
+
 export const checkUint8ArraySize = (custom: Uint8Array, size: number): void => {
   if (custom.length !== size)
     throw new Error(
@@ -20,4 +22,24 @@ export const checkUint8ArrayDeeplyEqual = (custom: Uint8Array, data: Uint8Array)
       throw new Error(
         `binary data mismatch: layout value: ${custom}, data value: ${data}`
       );
+}
+
+export function getBytesItemSize(bytesItem: BytesLayoutItem): number | null {
+  if ("size" in bytesItem && bytesItem.size !== undefined)
+    return bytesItem.size;
+
+  if (isBytesType(bytesItem.custom))
+    return bytesItem.custom.length;
+
+  if (isBytesType(bytesItem?.custom?.from))
+    return bytesItem!.custom!.from.length;
+
+  return null;
+}
+
+export function findIdLayoutPair(item: SwitchLayoutItem, data: any) {
+  const id = data[item.idTag ?? "id"];
+  return (item.idLayoutPairs as any[]).find(([idOrConversionId]) =>
+    (Array.isArray(idOrConversionId) ? idOrConversionId[1] : idOrConversionId) == id
+  )!;
 }

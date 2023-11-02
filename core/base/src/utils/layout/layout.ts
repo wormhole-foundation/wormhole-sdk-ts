@@ -40,7 +40,7 @@ interface LayoutItemBase<BL extends BinaryLiterals> {
   readonly binary: BL,
 };
 
-interface PrimitiveFixedCustom<T extends PrimitiveType> {
+interface FixedPrimitiveCustom<T extends PrimitiveType> {
   custom: T,
   omit?: boolean
 };
@@ -56,14 +56,14 @@ interface NumLayoutItemBase<T extends NumType, Signed extends Boolean>
   endianness?: Endianness, //default is big
 };
 
-interface PrimitiveFixedNumLayoutItem<T extends NumType, Signed extends Boolean>
-  extends NumLayoutItemBase<T, Signed>, PrimitiveFixedCustom<T> {};
+export interface FixedPrimitiveNumLayoutItem<T extends NumType, Signed extends Boolean>
+  extends NumLayoutItemBase<T, Signed>, FixedPrimitiveCustom<T> {};
 
-interface OptionalToFromNumLayoutItem<T extends NumType, Signed extends Boolean>
+export interface OptionalToFromNumLayoutItem<T extends NumType, Signed extends Boolean>
   extends NumLayoutItemBase<T, Signed>, OptionalToFromCustom<T> {};
 
 export interface FixedPrimitiveBytesLayoutItem
-  extends LayoutItemBase<"bytes">, PrimitiveFixedCustom<BytesType> {};
+  extends LayoutItemBase<"bytes">, FixedPrimitiveCustom<BytesType> {};
 
 export interface FixedValueBytesLayoutItem extends LayoutItemBase<"bytes"> {
   readonly custom: FixedConversion<BytesType, any>,
@@ -83,10 +83,17 @@ export interface LengthPrefixedBytesLayoutItem extends LayoutItemBase<"bytes"> {
   readonly custom?: CustomConversion<BytesType, any>,
 };
 
-export interface ArrayLayoutItem extends LayoutItemBase<"array"> {
+interface ArrayLayoutItemBase extends LayoutItemBase<"array"> {
+  readonly arrayItem: LayoutItem,
+};
+
+export interface FixedSizeArrayLayoutItem extends ArrayLayoutItemBase {
+  readonly length: number,
+};
+
+export interface LengthPrefixedArrayLayoutItem extends ArrayLayoutItemBase {
   readonly lengthSize?: NumberSize,
   readonly lengthEndianness?: Endianness, //default is big
-  readonly arrayItem: LayoutItem,
 };
 
 export interface ObjectLayoutItem extends LayoutItemBase<"object"> {
@@ -103,64 +110,78 @@ export interface SwitchLayoutItem extends LayoutItemBase<"switch"> {
   readonly idLayoutPairs: readonly IdLayoutPair<PlainId>[] | readonly IdLayoutPair<ConversionId>[],
 }
 
-type NumLayoutItem<Signed extends boolean = boolean> =
-  PrimitiveFixedNumLayoutItem<number, Signed> |
-  OptionalToFromNumLayoutItem<number, Signed> |
-  PrimitiveFixedNumLayoutItem<bigint, Signed> |
-  OptionalToFromNumLayoutItem<bigint, Signed>;
+export type NumLayoutItem<Signed extends boolean = boolean> =
+  //force distribution over union
+  Signed extends infer S extends boolean
+  ? FixedPrimitiveNumLayoutItem<number, S> |
+    OptionalToFromNumLayoutItem<number, S> |
+    FixedPrimitiveNumLayoutItem<bigint, S> |
+    OptionalToFromNumLayoutItem<bigint, S>
+  : never;
 
-export type IntLayoutItem = NumLayoutItem<true>;
 export type UintLayoutItem = NumLayoutItem<false>;
-export type BytesLayoutItem = |
+export type IntLayoutItem = NumLayoutItem<true>;
+export type BytesLayoutItem =
   FixedPrimitiveBytesLayoutItem |
   FixedValueBytesLayoutItem |
   FixedSizeBytesLayoutItem |
   LengthPrefixedBytesLayoutItem;
+export type ArrayLayoutItem = FixedSizeArrayLayoutItem | LengthPrefixedArrayLayoutItem;
 export type LayoutItem =
-  IntLayoutItem | UintLayoutItem | BytesLayoutItem | ArrayLayoutItem | ObjectLayoutItem | SwitchLayoutItem;
+  NumLayoutItem |
+  BytesLayoutItem |
+  ArrayLayoutItem |
+  ObjectLayoutItem |
+  SwitchLayoutItem;
 export type NamedLayoutItem = LayoutItem & { readonly name: string };
 export type Layout = readonly NamedLayoutItem[];
 
 type NameOrOmitted<T extends { name: string }> = T extends {omit: true} ? never : T["name"];
 
 export type LayoutToType<L extends Layout> =
-  { readonly [I in L[number] as NameOrOmitted<I>]: LayoutItemToType<I> };
+  L extends infer LO extends Layout
+  ? { readonly [I in LO[number] as NameOrOmitted<I>]: LayoutItemToType<I> }
+  : never;
 
 type MaybeConvert<Id extends PlainId | ConversionId> =
   Id extends readonly [number, infer Converted] ? Converted : Id;
 
 type IdLayoutPairArray = readonly IdLayoutPair<number>[] | readonly IdLayoutPair<ConversionId>[];
-type IdLayoutPairsToTypeUnion<T extends IdLayoutPairArray, IdTag extends string> =
-  T extends readonly [infer Head,...infer Tail extends IdLayoutPairArray]
-  ? Head extends IdLayoutPair<infer MaybeConversionId, infer L extends Layout>
-    ? MaybeConvert<MaybeConversionId> extends infer Id
-      ? LayoutToType<L> extends infer LT extends object
-        ? { readonly [K in IdTag | keyof LT]: K extends keyof LT ? LT[K] : Id }
-          | IdLayoutPairsToTypeUnion<Tail, IdTag>
+type IdLayoutPairsToTypeUnion<ILA extends IdLayoutPairArray, IdTag extends string> =
+  ILA extends infer V extends IdLayoutPairArray
+  ? V extends readonly [infer Head,...infer Tail extends IdLayoutPairArray]
+    ? Head extends IdLayoutPair<infer MaybeConversionId, infer L extends Layout>
+      ? MaybeConvert<MaybeConversionId> extends infer Id
+        ? LayoutToType<L> extends infer LT extends object
+          ? { readonly [K in IdTag | keyof LT]: K extends keyof LT ? LT[K] : Id }
+            | IdLayoutPairsToTypeUnion<Tail, IdTag>
+          : never
         : never
       : never
     : never
   : never;
 
-export type LayoutItemToType<I extends LayoutItem> =
-  [I] extends [NumLayoutItem]
-  ? I["custom"] extends NumType
-    ? I["custom"]
-    : I["custom"] extends CustomConversion<infer FromType extends NumType, infer ToType>
-    ? ToType
-    : I["custom"] extends FixedConversion<infer FromType extends NumType, infer ToType>
-    ? ToType
-    : NumSizeToPrimitive<I["size"]>
-  : [I] extends [BytesLayoutItem]
-  ? I["custom"] extends CustomConversion<BytesType, infer ToType>
-    ? ToType
-    : I["custom"] extends FixedConversion<BytesType, infer ToType>
-    ? ToType
-    : BytesType //this also covers FixedValueBytesLayoutItem (Uint8Arrays don't support literals)
-  : [I] extends [ArrayLayoutItem]
-  ? readonly LayoutItemToType<I["arrayItem"]>[]
-  : [I] extends [ObjectLayoutItem]
-  ? LayoutToType<I["layout"]>
-  : [I] extends [SwitchLayoutItem]
-  ? IdLayoutPairsToTypeUnion<I["idLayoutPairs"], I["idTag"] extends string ? I["idTag"] : "id">
+export type LayoutItemToType<Item extends LayoutItem> =
+  Item extends infer I extends LayoutItem
+  ? I extends NumLayoutItem
+    ? I["custom"] extends NumType
+      ? I["custom"]
+      : I["custom"] extends CustomConversion<infer FromType extends NumType, infer ToType>
+      ? ToType
+      : I["custom"] extends FixedConversion<infer FromType extends NumType, infer ToType>
+      ? ToType
+      : NumSizeToPrimitive<I["size"]>
+    : I extends BytesLayoutItem
+    ? I["custom"] extends CustomConversion<BytesType, infer ToType>
+      ? ToType
+      : I["custom"] extends FixedConversion<BytesType, infer ToType>
+      ? ToType
+      : BytesType //this also covers FixedValueBytesLayoutItem (Uint8Arrays don't support literals)
+    : I extends ArrayLayoutItem
+    ? readonly LayoutItemToType<I["arrayItem"]>[]
+    : I extends ObjectLayoutItem
+    ? LayoutToType<I["layout"]>
+    : I extends SwitchLayoutItem
+    ? IdLayoutPairsToTypeUnion<I["idLayoutPairs"], I["idTag"] extends string ? I["idTag"] : "id">
+    : never
   : never;
