@@ -57,7 +57,7 @@ function internalDeserializeLayout(
   return [decoded, offset];
 }
 
-function updateOffset (
+function updateOffset(
   encoded: Uint8Array,
   offset: number,
   size: number
@@ -78,10 +78,10 @@ function deserializeNum<S extends number>(
 ): readonly [NumSizeToPrimitive<S>, number] {
   let val = 0n;
   for (let i = 0; i < bytes; ++i)
-    val |= BigInt(encoded[offset + i]) << BigInt(8 * (endianness === "big" ? bytes-i-1 : i));
+    val |= BigInt(encoded[offset + i]) << BigInt(8 * (endianness === "big" ? bytes - i - 1 : i));
 
   //check sign bit if value is indeed signed and adjust accordingly
-  if (signed && (encoded[offset + (endianness === "big" ? 0 : bytes-1)] & 0x80))
+  if (signed && (encoded[offset + (endianness === "big" ? 0 : bytes - 1)] & 0x80))
     val -= 1n << BigInt(8 * bytes);
 
   return [
@@ -141,7 +141,7 @@ function deserializeLayoutItem(
             Exclude<typeof item, FixedPrimitiveBytesLayoutItem | FixedValueBytesLayoutItem>;
           if ("size" in item && item.size !== undefined)
             newOffset = updateOffset(encoded, offset, item.size);
-          else if (item.lengthSize !== undefined) {
+          else if ("lengthSize" in item && item.lengthSize !== undefined) {
             let length;
             [length, offset] =
               deserializeNum(encoded, offset, item.lengthSize, item.lengthEndianness);
@@ -197,7 +197,7 @@ function deserializeLayoutItem(
       }
       case "switch": {
         const [id, newOffset] = deserializeNum(encoded, offset, item.idSize, item.idEndianness);
-        const {idLayoutPairs} = item;
+        const { idLayoutPairs } = item;
         if (idLayoutPairs.length === 0)
           throw new Error(`switch item '${item.name}' has no idLayoutPairs`);
 
@@ -211,7 +211,8 @@ function deserializeLayoutItem(
         const [idOrConversionId, idLayout] = pair;
         const [decoded, nextOffset] = internalDeserializeLayout(idLayout, encoded, newOffset);
         return [
-          { [item.idTag ?? "id"]: hasPlainIds ? id : (idOrConversionId as any)[1],
+          {
+            [item.idTag ?? "id"]: hasPlainIds ? id : (idOrConversionId as any)[1],
             ...decoded
           },
           nextOffset

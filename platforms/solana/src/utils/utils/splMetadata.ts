@@ -195,7 +195,7 @@ export class CreateMetadataAccountArgs extends Data {
     ]);
   }
 
-  serialize() {
+  override serialize() {
     return Buffer.concat([
       super.serialize(),
       Buffer.alloc(1, this.isMutable ? 1 : 0),

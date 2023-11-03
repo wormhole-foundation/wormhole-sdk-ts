@@ -6,7 +6,6 @@ import {
   ChainsConfig,
   Contracts,
   Network,
-  RpcConnection,
   UnsignedTransaction,
   WormholeCore,
   WormholeMessageId,

@@ -52,7 +52,7 @@ export function serializeLayout<const L extends Layout>(
 }
 
 //see numberMaxSize comment in layout.ts
-const maxAllowedNumberVal = 2**(numberMaxSize * 8);
+const maxAllowedNumberVal = 2 ** (numberMaxSize * 8);
 
 export function serializeNum(
   encoded: Uint8Array,
@@ -88,7 +88,7 @@ export function serializeNum(
   //correctly handles both signed and unsigned values
   for (let i = 0; i < bytes; ++i)
     encoded[offset + i] =
-      Number((BigInt(val) >> BigInt(8 * (endianness === "big" ? bytes-i-1 : i)) & 0xffn));
+      Number((BigInt(val) >> BigInt(8 * (endianness === "big" ? bytes - i - 1 : i)) & 0xffn));
 
   return offset + bytes;
 }
@@ -138,7 +138,7 @@ function serializeLayoutItem(
         const ret = item.custom !== undefined ? item.custom.from(data) : data;
         if ("size" in item && item.size !== undefined)
           checkUint8ArraySize(ret, item.size);
-        else if (item.lengthSize !== undefined)
+        else if ("lengthSize" in item && item.lengthSize !== undefined)
           offset =
             serializeNum(encoded, offset, ret.length, item.lengthSize, item.lengthEndianness);
 

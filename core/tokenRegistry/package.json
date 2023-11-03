@@ -34,7 +34,13 @@
   "dependencies": {
     "@wormhole-foundation/connect-sdk": "*",
     "@wormhole-foundation/connect-sdk-evm": "*",
+    "@wormhole-foundation/connect-sdk-evm-core": "*",
+    "@wormhole-foundation/connect-sdk-evm-tokenbridge": "*",
     "@wormhole-foundation/connect-sdk-solana": "*",
-    "@wormhole-foundation/connect-sdk-cosmwasm": "*"
+    "@wormhole-foundation/connect-sdk-solana-core": "*",
+    "@wormhole-foundation/connect-sdk-solana-tokenbridge": "*",
+    "@wormhole-foundation/connect-sdk-cosmwasm": "*",
+    "@wormhole-foundation/connect-sdk-cosmwasm-core": "*",
+    "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge":"*"
   }
 }
