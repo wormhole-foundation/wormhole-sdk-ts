@@ -10,6 +10,7 @@ import {
   PlatformUtils,
   chainToPlatform,
   Balances,
+  nativeChainAddress,
 } from '@wormhole-foundation/connect-sdk';
 import {
   BlockheightBasedTransactionConfirmationStrategy,
@@ -17,11 +18,11 @@ import {
   ParsedAccountData,
   PublicKey,
 } from '@solana/web3.js';
+import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { solGenesisHashToNetworkChainPair } from './constants';
 import { SolanaPlatform } from './platform';
 import { SolanaAddress, SolanaZeroAddress } from './address';
 import { AnySolanaAddress } from './types';
-import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
 // forces SolanaUtils to implement PlatformUtils
 var _: PlatformUtils<'Solana'> = SolanaUtils;
@@ -33,11 +34,7 @@ var _: PlatformUtils<'Solana'> = SolanaUtils;
 export module SolanaUtils {
   export function nativeTokenId(chain: ChainName): TokenId {
     if (!isSupportedChain(chain)) throw new Error(`invalid chain: ${chain}`);
-    return {
-      chain: chain,
-      // @ts-ignore
-      address: new SolanaAddress(SolanaZeroAddress),
-    };
+    return nativeChainAddress([chain, SolanaZeroAddress]);
   }
 
   export function isSupportedChain(chain: ChainName): boolean {

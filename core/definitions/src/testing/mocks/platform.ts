@@ -96,9 +96,9 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
     throw new Error("No configuration available for chain: " + chain);
   }
   getRpc(chain: ChainName): RpcConnection<P> {
-    // @ts-ignore
     return new MockRpc(chain);
   }
+
   getCurrentBlock(rpc: any): Promise<number> {
     throw new Error("Method not implemented");
   }
@@ -140,12 +140,6 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
     throw new Error("Not implemented");
   }
 
-  parseAddress(chain: ChainName, address: string): NativeAddress<P> {
-    if (!nativeIsRegistered(chain)) throw new Error("Chain not registered");
-    //@ts-ignore
-    return toNative(chain, address).toUniversalAddress();
-  }
-
   async sendWait(chain: ChainName, rpc: RpcConnection<P>, stxns: any[]): Promise<TxHash[]> {
     throw new Error("Method not implemented.");
   }
@@ -154,7 +148,6 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
     throw new Error("Method not implemented.");
   }
   async getTokenBridge(rpc: RpcConnection<P>): Promise<TokenBridge<P>> {
-    // @ts-ignore
     return new MockTokenBridge<P>(rpc);
   }
 

@@ -52,7 +52,13 @@ const networkChainCosmwasmChainIds = [
       ["Xpla", "cube_47-5"],
     ],
   ],
-  ["Devnet", []],
+  [
+    "Devnet",
+    [
+      ["Evmos", "evmos_devnet_fake"],
+      ["Injective", "injective_devnet_fake"],
+    ],
+  ],
 ] as const satisfies RoArray<readonly [Network, RoArray<readonly [CosmwasmChainName, string]>]>;
 
 export const cosmwasmChainIdToNetworkChainPair = constMap(networkChainCosmwasmChainIds, [
@@ -109,6 +115,21 @@ const cosmwasmNativeDenom = [
       ["Xpla", "uxpla"],
     ],
   ],
+  [
+    "Devnet",
+    [
+      ["Cosmoshub", "uatom"],
+      ["Evmos", "atevmos"],
+      ["Injective", "inj"],
+      ["Kujira", "kuji"],
+      ["Osmosis", "uosmo"],
+      ["Sei", "usei"],
+      ["Terra", "luna"],
+      ["Terra2", "uluna"],
+      ["Wormchain", "uworm"],
+      ["Xpla", "uxpla"],
+    ],
+  ],
 ] as const satisfies RoArray<readonly [Network, RoArray<readonly [CosmwasmChainName, string]>]>;
 
 export const chainToNativeDenoms = constMap(cosmwasmNativeDenom);
@@ -129,7 +150,13 @@ const cosmwasmNetworkChainRestUrl = [
       ["Evmos", "https://rest.bd.evmos.dev:1317"],
     ],
   ],
-  ["Devnet", []],
+  [
+    "Devnet",
+    [
+      ["Injective", "https://localhost:1234"],
+      ["Evmos", "https://localhost:1233"],
+    ],
+  ],
 ] as const satisfies RoArray<readonly [Network, RoArray<readonly [CosmwasmChainName, string]>]>;
 
 export const cosmwasmNetworkChainToRestUrls = constMap(cosmwasmNetworkChainRestUrl);
@@ -161,4 +188,5 @@ const gatewayConnections = [
 
 export const networkChainToChannels = constMap(gatewayConnections);
 
-export const evmLikeChains = ["Evmos", "Injective"];
+export const evmLikeChains = ["Evmos", "Injective"] as const satisfies RoArray<CosmwasmChainName>;
+export type CosmwasmEvmChain = (typeof evmLikeChains)[number];
