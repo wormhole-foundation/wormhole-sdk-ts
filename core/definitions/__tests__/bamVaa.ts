@@ -48,7 +48,6 @@ describe("BAM VAA tests", function () {
       const { payload } = deserialize(payloadLiteral, vaaBytes);
 
       // TODO: this fn might return a payload somehow, not uint8array?
-      // @ts-ignore
       const serialized: Uint8Array = serializePayload(payloadLiteral, payload);
 
       const serializedHex = encoding.hex.encode(serialized, true);

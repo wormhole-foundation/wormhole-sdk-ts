@@ -56,7 +56,7 @@ export type UniversalOrNative<P extends PlatformName> = UniversalAddress | Nativ
 
 export type ChainAddress<C extends ChainName = ChainName> = {
   readonly chain: C;
-  readonly address: UniversalAddress | NativeAddress<C>;
+  readonly address: UniversalAddress | NativeAddress<ChainToPlatform<C>>;
 };
 
 type NativeAddressCtr = new (ua: UniversalAddress | string | Uint8Array) => Address;

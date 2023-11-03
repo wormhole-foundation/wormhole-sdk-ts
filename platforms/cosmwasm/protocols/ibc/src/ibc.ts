@@ -69,8 +69,7 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
 
     this.gatewayAddress = this.contracts.gateway!;
 
-    // @ts-ignore
-    const channels: IbcChannels = networkChainToChannels(network, chain);
+    const channels: IbcChannels = networkChainToChannels.get(network, chain) ?? {};
 
     for (const [chain, channel] of Object.entries(channels)) {
       this.channelToChain.set(channel, chain as CosmwasmChainName);

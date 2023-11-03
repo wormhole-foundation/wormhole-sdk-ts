@@ -10,6 +10,7 @@ import {
   PlatformUtils,
   Balances,
   encoding,
+  nativeChainAddress,
 } from '@wormhole-foundation/connect-sdk';
 
 import * as ethers_contracts from './ethers-contracts';
@@ -31,11 +32,7 @@ export module EvmUtils {
   export function nativeTokenId(chain: ChainName): TokenId {
     if (!isSupportedChain(chain))
       throw new Error(`invalid chain for EVM: ${chain}`);
-    return {
-      chain: chain,
-      // @ts-ignore
-      address: new EvmAddress(EvmZeroAddress),
-    };
+    return nativeChainAddress([chain, EvmZeroAddress]);
   }
 
   export function isSupportedChain(chain: ChainName): boolean {

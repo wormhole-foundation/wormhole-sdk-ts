@@ -8,12 +8,14 @@ import {
   isTransactionIdentifier,
   isWormholeMessageId,
   toNative,
+  NativeAddress,
+  nativeChainAddress,
 } from "@wormhole-foundation/sdk-definitions";
 import { signSendWait } from "../common";
 import { TokenTransferDetails, isTokenTransferDetails } from "../types";
 import { Wormhole } from "../wormhole";
 import { AttestationId, TransferState, WormholeTransfer } from "../wormholeTransfer";
-import { encoding } from "@wormhole-foundation/sdk-base";
+import { ChainToPlatform, PlatformName, encoding } from "@wormhole-foundation/sdk-base";
 
 export class TokenTransfer implements WormholeTransfer {
   private readonly wh: Wormhole;
@@ -142,8 +144,7 @@ export class TokenTransfer implements WormholeTransfer {
     const { chain, address } = vaa.payload.to;
     const { relayer } = wh.conf.chains[chain]!.contracts;
     const relayerAddress = relayer
-      ? // @ts-ignore
-        toNative(chain, relayer).toUniversalAddress()
+      ? nativeChainAddress([chain, relayer]).address.toUniversalAddress()
       : null;
 
     // Check if its a payload 3 targeted at a relayer on the destination chain

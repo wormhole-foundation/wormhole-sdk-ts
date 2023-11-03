@@ -245,7 +245,6 @@ describe("TokenBridge Tests", () => {
           // const { transaction: xferTransaction } = xferTx;
           // expect(xferTransaction.to).toEqual(tbAddress.toString());
           // expect(xferTransaction.chainId).toEqual(
-          //   // @ts-ignore
           //   evmNetworkChainToEvmChainId(network, chain)
           // );
         });
