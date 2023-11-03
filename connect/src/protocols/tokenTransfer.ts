@@ -1,21 +1,20 @@
+import { encoding } from "@wormhole-foundation/sdk-base";
 import {
   Signer,
+  TokenBridge,
   TransactionId,
   TxHash,
   UnsignedTransaction,
-  TokenBridge,
   WormholeMessageId,
   isTransactionIdentifier,
   isWormholeMessageId,
-  toNative,
-  NativeAddress,
   nativeChainAddress,
+  toNative,
 } from "@wormhole-foundation/sdk-definitions";
 import { signSendWait } from "../common";
 import { TokenTransferDetails, isTokenTransferDetails } from "../types";
 import { Wormhole } from "../wormhole";
 import { AttestationId, TransferState, WormholeTransfer } from "../wormholeTransfer";
-import { ChainToPlatform, PlatformName, encoding } from "@wormhole-foundation/sdk-base";
 
 export class TokenTransfer implements WormholeTransfer {
   private readonly wh: Wormhole;

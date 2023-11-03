@@ -1,4 +1,3 @@
-import { Network } from "@wormhole-foundation/sdk-base";
 import {
   ChainAddress,
   ChainsConfig,

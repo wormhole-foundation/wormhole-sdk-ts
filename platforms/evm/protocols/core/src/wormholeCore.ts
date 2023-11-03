@@ -98,11 +98,11 @@ export class EvmWormholeCore implements WormholeCore<'Evm'> {
         });
         if (parsed === null) return undefined;
 
-        const emitterAddress = toNative(this.chain, parsed.args.sender);
+        const emitterAddress = toNative(this.chain, parsed.args['sender']);
         return {
           chain: this.chain,
           emitter: emitterAddress.toUniversalAddress(),
-          sequence: parsed.args.sequence,
+          sequence: parsed.args['sequence'],
         } as WormholeMessageId;
       })
       .filter(isWormholeMessageId);

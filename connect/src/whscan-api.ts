@@ -1,10 +1,7 @@
-import { ChainName, PlatformName, encoding, toChainId } from "@wormhole-foundation/sdk-base";
+import { encoding, toChainId } from "@wormhole-foundation/sdk-base";
 import {
-  NativeAddress,
   PayloadDiscriminator,
   PayloadLiteral,
-  UniversalAddress,
-  VAA,
   WormholeMessageId,
   deserialize,
 } from "@wormhole-foundation/sdk-definitions";
@@ -72,7 +69,7 @@ export async function getVaaWithRetry<T extends PayloadLiteral | PayloadDiscrimi
   timeout: number = DEFAULT_TASK_TIMEOUT,
 ): Promise<ReturnType<typeof deserialize<T>> | undefined> {
   const vaaBytes = await getVaaBytesWithRetry(apiUrl, whm, timeout);
-  if (vaaBytes === undefined) return;
+  if (vaaBytes === undefined) return undefined;
   return deserialize(decodeAs, vaaBytes);
 }
 

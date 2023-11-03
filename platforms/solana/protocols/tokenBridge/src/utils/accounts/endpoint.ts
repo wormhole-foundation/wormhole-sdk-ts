@@ -22,10 +22,11 @@ export function deriveEndpointKey(
       'emitterChain == CHAIN_ID_SOLANA cannot exist as foreign token bridge emitter',
     );
   }
-  if (typeof emitterAddress == 'string') {
-    const parsedAddress = toNative(toChainName(emitterChain), emitterAddress);
-    emitterAddress = parsedAddress.toUint8Array();
-  }
+  const emitterAddr =
+    typeof emitterAddress === 'string'
+      ? toNative(toChainName(emitterChain), emitterAddress).toUint8Array()
+      : emitterAddress;
+
   return utils.deriveAddress(
     [
       (() => {
@@ -33,7 +34,7 @@ export function deriveEndpointKey(
         buf.writeUInt16BE(emitterChain as number);
         return buf;
       })(),
-      emitterAddress,
+      emitterAddr,
     ],
     tokenBridgeProgramId,
   );

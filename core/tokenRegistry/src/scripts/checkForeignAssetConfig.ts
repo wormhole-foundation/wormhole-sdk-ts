@@ -23,8 +23,15 @@ import { Network } from "@wormhole-foundation/sdk-base";
 import { Wormhole } from "@wormhole-foundation/connect-sdk";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
+
 import { getSuggestedUpdates } from "../foreignAssets";
 import { TokensConfig } from "../types";
+
+import "@wormhole-foundation/connect-sdk-evm-core";
+import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
+
+import "@wormhole-foundation/connect-sdk-solana-core";
+import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 
 const testnetTokens = fs.readFileSync("src/tokens/testnetTokens.json", "utf-8");
 const TESTNET_TOKENS = JSON.parse(testnetTokens) as TokensConfig;

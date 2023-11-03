@@ -1,4 +1,4 @@
-import { ChainName, Network, PlatformName } from "@wormhole-foundation/sdk-base";
+import { ChainName, PlatformName } from "@wormhole-foundation/sdk-base";
 import { ChainConfig, ChainContext, Platform } from "../..";
 import { mockPlatformFactory } from "./platform";
 

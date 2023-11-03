@@ -8,10 +8,10 @@ import {
   TokenBridge,
   TokenId,
   UniversalAddress,
-  chainIdToChain,
   keccak256,
   serialize,
   toChainId,
+  toChainName,
   toNative,
 } from '@wormhole-foundation/connect-sdk';
 import { Provider, TransactionRequest } from 'ethers';
@@ -86,8 +86,9 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
       this.provider,
       token.toString(),
     );
+
     const [chain, address] = await Promise.all([
-      tokenContract.chainId().then(Number).then(toChainId).then(chainIdToChain),
+      tokenContract.chainId().then(Number).then(toChainId).then(toChainName),
       tokenContract.nativeContract().then((addr) => new UniversalAddress(addr)),
     ]);
     return { chain, address };

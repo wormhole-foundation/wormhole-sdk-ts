@@ -1,4 +1,4 @@
-import { isBytesType, BytesLayoutItem, ArrayLayoutItem, SwitchLayoutItem } from "./layout";
+import { BytesLayoutItem, SwitchLayoutItem, isBytesType } from "./layout";
 
 export const checkUint8ArraySize = (custom: Uint8Array, size: number): void => {
   if (custom.length !== size)

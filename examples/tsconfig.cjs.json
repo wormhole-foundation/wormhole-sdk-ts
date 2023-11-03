@@ -3,6 +3,8 @@
   "include": ["src"],
   "compilerOptions": {
     "outDir": "dist/cjs",
-    "rootDir": "src"
+    "rootDir": "src",
+    "allowUnusedLabels": true,
+    "noUnusedLocals": false
   }
 }
