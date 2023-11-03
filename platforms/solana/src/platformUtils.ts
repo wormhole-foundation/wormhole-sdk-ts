@@ -7,7 +7,6 @@ import {
   Network,
   PlatformToChains,
   nativeDecimals,
-  PlatformUtils,
   chainToPlatform,
   Balances,
   nativeChainAddress,
@@ -23,9 +22,6 @@ import { solGenesisHashToNetworkChainPair } from './constants';
 import { SolanaPlatform } from './platform';
 import { SolanaAddress, SolanaZeroAddress } from './address';
 import { AnySolanaAddress } from './types';
-
-// forces SolanaUtils to implement PlatformUtils
-var _: PlatformUtils<'Solana'> = SolanaUtils;
 
 /**
  * @category Solana

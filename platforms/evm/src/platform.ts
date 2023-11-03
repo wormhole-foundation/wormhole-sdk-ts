@@ -6,7 +6,6 @@ import {
   CircleBridge,
   DEFAULT_NETWORK,
   Network,
-  Platform,
   ProtocolInitializer,
   ProtocolName,
   TokenBridge,
@@ -20,9 +19,6 @@ import {
 import { ethers } from 'ethers';
 import { EvmChain } from './chain';
 import { EvmUtils } from './platformUtils';
-
-// forces EvmPlatform to implement Platform
-var _: Platform<'Evm'> = EvmPlatform;
 
 /**
  * @category EVM

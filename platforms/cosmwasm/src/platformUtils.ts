@@ -1,28 +1,24 @@
+import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import {
+  Balances,
   ChainName,
-  TokenId,
-  TxHash,
-  SignedTx,
   Network,
   PlatformToChains,
-  nativeDecimals,
+  SignedTx,
+  TokenId,
+  TxHash,
   chainToPlatform,
-  PlatformUtils,
-  Balances,
   nativeChainAddress,
+  nativeDecimals,
 } from "@wormhole-foundation/connect-sdk";
+import { CosmwasmAddress } from "./address";
 import {
   IBC_TRANSFER_PORT,
   chainToNativeDenoms,
   cosmwasmChainIdToNetworkChainPair,
 } from "./constants";
-import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import { CosmwasmPlatform } from "./platform";
-import { CosmwasmAddress } from "./address";
 import { AnyCosmwasmAddress } from "./types";
-
-// forces CosmwasmUtils to implement PlatformUtils
-var _: PlatformUtils<"Cosmwasm"> = CosmwasmUtils;
 
 /**
  * @category CosmWasm

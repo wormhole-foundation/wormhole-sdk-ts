@@ -1,27 +1,25 @@
 import { ChainName, Network, PlatformName } from "@wormhole-foundation/sdk-base";
 import {
-  ChainContext,
-  Platform,
-  TxHash,
-  RpcConnection,
-  TokenId,
-  AutomaticTokenBridge,
-  TokenBridge,
-  WormholeMessageId,
-  CircleBridge,
-  AutomaticCircleBridge,
-  ChainsConfig,
-  toNative,
-  nativeIsRegistered,
-  NativeAddress,
-  UniversalAddress,
   AnyAddress,
+  AutomaticCircleBridge,
+  AutomaticTokenBridge,
   Balances,
+  ChainContext,
+  ChainsConfig,
+  CircleBridge,
+  NativeAddress,
+  Platform,
+  RpcConnection,
+  TokenBridge,
+  TokenId,
+  TxHash,
+  UniversalAddress,
+  WormholeMessageId,
 } from "../..";
-import { MockRpc } from "./rpc";
-import { MockChain } from "./chain";
-import { MockTokenBridge } from "./tokenBridge";
 import { WormholeCore } from "../../protocols/core";
+import { MockChain } from "./chain";
+import { MockRpc } from "./rpc";
+import { MockTokenBridge } from "./tokenBridge";
 
 export function mockPlatformFactory<P extends PlatformName>(
   network: Network,
@@ -29,7 +27,7 @@ export function mockPlatformFactory<P extends PlatformName>(
   config: ChainsConfig,
 ): Platform<P> {
   class ConcreteMockPlatform extends MockPlatform<P> {
-    readonly platform = p;
+    override platform = p;
   }
   return new ConcreteMockPlatform(network, config);
 }

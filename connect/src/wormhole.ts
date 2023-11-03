@@ -3,7 +3,6 @@ import {
   ChainToPlatform,
   Network,
   PlatformName,
-  chainToPlatform,
   isChain,
   isCircleChain,
   isCircleSupported,
@@ -44,7 +43,6 @@ import {
   TransactionStatus,
   getTransactionStatus,
   getVaaBytesWithRetry,
-  getVaaBytes,
   getVaaWithRetry,
 } from "./whscan-api";
 

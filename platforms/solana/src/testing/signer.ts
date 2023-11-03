@@ -1,8 +1,6 @@
 import { Keypair } from '@solana/web3.js';
 import {
-  ChainContext,
   ChainName,
-  PlatformName,
   RpcConnection,
   SignOnlySigner,
   Signer,

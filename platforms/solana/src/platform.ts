@@ -3,7 +3,6 @@ import {
   ChainsConfig,
   DEFAULT_NETWORK,
   Network,
-  Platform,
   ProtocolInitializer,
   ProtocolName,
   TokenBridge,
@@ -17,9 +16,6 @@ import { SolanaUtils } from './platformUtils';
 
 import { Commitment, Connection } from '@solana/web3.js';
 
-// forces SolanaPlatform to implement Platform
-var _: Platform<'Solana'> = SolanaPlatform;
-
 /**
  * @category Solana
  */
@@ -28,8 +24,6 @@ export module SolanaPlatform {
   export type Type = typeof platform;
   export let network: Network = DEFAULT_NETWORK;
   export let conf: ChainsConfig = networkPlatformConfigs(network, platform);
-
-  const registeredProtocols = new Map<ProtocolName, any>();
 
   export const {
     nativeTokenId,

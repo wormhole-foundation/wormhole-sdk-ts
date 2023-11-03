@@ -1,8 +1,8 @@
 import {
   ChainName,
   PlatformName,
-  toCircleChainName,
   encoding,
+  toCircleChainName,
 } from "@wormhole-foundation/sdk-base";
 import {
   CircleAttestation,
@@ -20,7 +20,6 @@ import {
   isTransactionIdentifier,
   isWormholeMessageId,
   nativeChainAddress,
-  toNative,
 } from "@wormhole-foundation/sdk-definitions";
 
 import { signSendWait } from "../common";

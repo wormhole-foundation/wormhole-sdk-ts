@@ -31,15 +31,13 @@ export class SolanaAddress implements Address {
     if (SolanaAddress.instanceof(address)) {
       const a = address as unknown as SolanaAddress;
       this.address = a.address;
-      return;
-    }
-    if (UniversalAddress.instanceof(address))
-      this.address = new PublicKey(
-        (address as UniversalAddress).toUint8Array(),
-      );
-    if (typeof address === 'string' && encoding.hex.valid(address))
+    } else if (UniversalAddress.instanceof(address)) {
+      this.address = new PublicKey(address.toUint8Array());
+    } else if (typeof address === 'string' && encoding.hex.valid(address)) {
       this.address = new PublicKey(encoding.hex.decode(address));
-    else this.address = new PublicKey(address);
+    } else {
+      this.address = new PublicKey(address);
+    }
   }
 
   unwrap(): PublicKey {

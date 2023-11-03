@@ -7,7 +7,6 @@ import {
   PlatformToChains,
   nativeDecimals,
   chainToPlatform,
-  PlatformUtils,
   Balances,
   encoding,
   nativeChainAddress,
@@ -20,9 +19,6 @@ import { evmChainIdToNetworkChainPair } from './constants';
 import { EvmAddress, EvmZeroAddress } from './address';
 import { EvmPlatform } from './platform';
 import { AnyEvmAddress } from './types';
-
-// forces EvmUtils to implement PlatformUtils
-var _: PlatformUtils<'Evm'> = EvmUtils;
 
 /**
  * @category EVM
