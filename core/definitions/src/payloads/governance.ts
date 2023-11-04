@@ -15,7 +15,7 @@ import {
 } from "../layout-items";
 import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../vaa";
 
-//One thing that's not captures by the payload itself is the fact that governance VAAs should
+//One thing that's not captured by the payload itself is the fact that governance VAAs should
 //  always have Solana as the emitter chain and address bytes32(4) as the emitter address.
 //These values are actually magic values though, because governance VAAs are actually created and
 //  signed off-chain and are not the result of on-chain observations.
@@ -39,11 +39,10 @@ const actionTuples = [
     },
   ],
   //a word on the chainId for RecoverChainId:
-  //The implementation of the contracts accept an arbitrary number when recovering chain ids however
-  //  I don't think you ever want to set the wormhole chain id of a contract (even on a fork) to 0
-  //  since this would mean that afterwards all the checks that use `vaa.chainId == this.chainId` in
-  //  the contract would suddenly accept "broadcast VAAs" which is almost certainly not what's
-  //  intended.
+  //The contracts accept an arbitrary number when recovering chain ids however I don't think you
+  //  ever want to set the wormhole chain id of a contract (even on a fork) to 0 since this would
+  //  mean that afterwards all the checks that use `vaa.chainId == this.chainId` in the contract
+  //  would suddenly accept "broadcast VAAs" which is almost certainly not what's intended.
   [
     "RecoverChainId",
     {
@@ -128,11 +127,9 @@ const actionMapping = constMap(actionTuples);
 const sdkProtocolNameAndGovernanceVaaModuleEntries = [
   ["WormholeCore", "Core"],
   ["TokenBridge", "TokenBridge"],
-  ["AutomaticTokenBridge", "TokenBridge"],
   ["NftBridge", "NFTBridge"],
   ["Relayer", "WormholeRelayer"],
   ["CircleBridge", "CircleIntegration"],
-  ["AutomaticCircleBridge", "CircleIntegration"],
 ] as const satisfies RoArray<readonly [ProtocolName, string]>;
 
 type GovernedProtocols = typeof sdkProtocolNameAndGovernanceVaaModuleEntries[number][0];
@@ -238,9 +235,9 @@ const relayerPayloads = [
 
 const cctpPayloads = [
   //see wormhole-circle-integration evm/src/circle_integration/CircleIntegrationGovernance.sol
-  governancePayload("AutomaticCircleBridge", "UpdateFinality", 1),
-  governancePayload("AutomaticCircleBridge", "RegisterEmitterAndDomain", 2),
-  governancePayload("AutomaticCircleBridge", "UpgradeContract", 3),
+  governancePayload("CircleBridge", "UpdateFinality", 1),
+  governancePayload("CircleBridge", "RegisterEmitterAndDomain", 2),
+  governancePayload("CircleBridge", "UpgradeContract", 3),
 ] as const satisfies NamedPayloads;
 
 
@@ -252,7 +249,7 @@ declare global {
       RegisterPayloadTypes<"TokenBridge", typeof tokenBridgePayloads>,
       RegisterPayloadTypes<"NftBridge", typeof nftBridgePayloads>,
       RegisterPayloadTypes<"Relayer", typeof relayerPayloads>,
-      RegisterPayloadTypes<"AutomaticCircleBridge", typeof cctpPayloads> { }
+      RegisterPayloadTypes<"CircleBridge", typeof cctpPayloads> { }
   }
 }
 
@@ -260,5 +257,5 @@ registerPayloadTypes("WormholeCore", coreBridgePayloads);
 registerPayloadTypes("TokenBridge", tokenBridgePayloads);
 registerPayloadTypes("NftBridge", nftBridgePayloads);
 registerPayloadTypes("Relayer", relayerPayloads);
-registerPayloadTypes("AutomaticCircleBridge", cctpPayloads);
+registerPayloadTypes("CircleBridge", cctpPayloads);
 
