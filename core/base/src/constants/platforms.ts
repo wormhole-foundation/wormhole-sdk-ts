@@ -1,5 +1,5 @@
-import { ChainName } from "./chains";
 import { RoArray, column, constMap } from "../utils";
+import { ChainName } from "./chains";
 
 const platformAndChainsEntries = [
   [
@@ -61,4 +61,5 @@ export const isPlatform = (platform: string): platform is PlatformName =>
 export type PlatformToChains<P extends PlatformName> = ReturnType<
   typeof platformToChains<P>
 >[number];
+//@ts-ignore
 export type ChainToPlatform<C extends ChainName> = ReturnType<typeof chainToPlatform<C>>;

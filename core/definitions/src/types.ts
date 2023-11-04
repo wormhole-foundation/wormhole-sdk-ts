@@ -9,7 +9,6 @@ import { ChainAddress, NativeAddress, toNative } from "./address";
 import { Contracts } from "./contracts";
 import { Signer, isSigner } from "./signer";
 
-import { UnsignedTransaction } from "./unsignedTransaction";
 import { UniversalAddress } from "./universalAddress";
 
 export type TxHash = string;

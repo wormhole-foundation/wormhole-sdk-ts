@@ -1,8 +1,8 @@
 import {
   ChainName,
   PlatformName,
-  toCircleChainName,
   encoding,
+  toCircleChainName,
 } from "@wormhole-foundation/sdk-base";
 import {
   CircleAttestation,
@@ -20,7 +20,6 @@ import {
   isTransactionIdentifier,
   isWormholeMessageId,
   nativeChainAddress,
-  toNative,
 } from "@wormhole-foundation/sdk-definitions";
 
 import { signSendWait } from "../common";
@@ -119,11 +118,10 @@ export class CircleTransfer implements WormholeTransfer {
 
     let automatic = false;
     if (wormholeRelayer) {
-      const relayerAddress = toNative(
+      const relayerAddress = nativeChainAddress([
         chain,
         wormholeRelayer,
-        //@ts-ignore
-      ).toUniversalAddress();
+      ]).address.toUniversalAddress();
       automatic = vaa.payloadName === "TransferRelay" && rcvAddress.equals(relayerAddress);
     }
 

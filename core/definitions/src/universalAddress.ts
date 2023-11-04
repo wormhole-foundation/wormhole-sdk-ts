@@ -4,7 +4,7 @@ import { Address, NativeAddress, toNative } from "./address";
 
 export class UniversalAddress implements Address {
   static readonly byteSize = 32;
-  private readonly type = "Universal";
+  readonly type: string = "Universal";
 
   private readonly address: Uint8Array;
 
@@ -53,7 +53,7 @@ export class UniversalAddress implements Address {
     );
   }
 
-  static instanceof(address: any) {
-    return address.type === "Universal";
+  static instanceof(address: any): address is UniversalAddress {
+    return typeof address === "object" && "type" in address && address.type === "Universal";
   }
 }

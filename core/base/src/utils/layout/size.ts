@@ -32,10 +32,10 @@ function staticCalcItemSize(item: LayoutItem) {
     }
     case "switch": {
       let size = null;
-      if (item.idLayoutPairs.length === 0)
-        throw new Error(`switch item has no idLayoutPairs`);
+      if (item.layouts.length === 0)
+        throw new Error(`switch item has no layouts`);
 
-      for (const [_, layout] of item.idLayoutPairs) {
+      for (const [_, layout] of item.layouts) {
         const layoutSize = calcLayoutSize(layout);
         if (size === null)
           size = layoutSize;
@@ -87,7 +87,7 @@ function calcItemSize(item: LayoutItem, data: any) {
         size += item.lengthSize;
 
       for (let i = 0; i < narrowedData.length; ++i)
-        size += calcItemSize(item.arrayItem, narrowedData[i]);
+        size += calcLayoutSize(item.layout, narrowedData[i]);
 
       return size;
     }
@@ -105,6 +105,15 @@ export function calcLayoutSize(
   layout: Layout,
   data?: LayoutToType<typeof layout>
 ): number {
-  return layout.reduce((acc, item) =>
-    acc + (data !== undefined ? calcItemSize(item, data[item.name]) : staticCalcItemSize(item)), 0);
+  return (Array.isArray(layout))
+    ? layout.reduce((acc, item) =>
+        acc + (
+          data !== undefined
+          ? calcItemSize(item, data[item.name])
+          : staticCalcItemSize(item)),
+          0
+        )
+    : data !== undefined
+    ? calcItemSize(layout as LayoutItem, data)
+    : staticCalcItemSize(layout as LayoutItem);
 }

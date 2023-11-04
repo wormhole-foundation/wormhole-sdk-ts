@@ -14,8 +14,6 @@ import {
   DEFAULT_NETWORK,
   IbcBridge,
   Network,
-  Platform,
-  PlatformToChains,
   ProtocolInitializer,
   ProtocolName,
   TokenBridge,
@@ -27,12 +25,11 @@ import {
 } from "@wormhole-foundation/connect-sdk";
 
 import { CosmwasmChain } from "./chain";
-import { IbcChannels, chainToNativeDenoms, networkChainToChannels } from "./constants";
+import { IbcChannels, networkChainToChannels } from "./constants";
 import { Gateway } from "./gateway";
 import { CosmwasmUtils } from "./platformUtils";
 import { CosmwasmChainName } from "./types";
 
-var _: Platform<"Cosmwasm"> = CosmwasmPlatform;
 /**
  * @category Cosmwasm
  */
@@ -107,7 +104,7 @@ export module CosmwasmPlatform {
   export const getQueryClient = (
     rpc: CosmWasmClient,
   ): QueryClient & BankExtension & IbcExtension => {
-    // @ts-ignore
+    // @ts-ignore -- access private attribute
     const tmClient: TendermintClient = rpc.getTmClient()!;
     return QueryClient.withExtensions(tmClient, setupBankExtension, setupIbcExtension);
   };

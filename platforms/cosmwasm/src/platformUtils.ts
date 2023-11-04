@@ -1,27 +1,24 @@
+import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import {
+  Balances,
   ChainName,
-  TokenId,
-  TxHash,
-  SignedTx,
   Network,
   PlatformToChains,
-  nativeDecimals,
+  SignedTx,
+  TokenId,
+  TxHash,
   chainToPlatform,
-  PlatformUtils,
-  Balances,
+  nativeChainAddress,
+  nativeDecimals,
 } from "@wormhole-foundation/connect-sdk";
+import { CosmwasmAddress } from "./address";
 import {
   IBC_TRANSFER_PORT,
   chainToNativeDenoms,
   cosmwasmChainIdToNetworkChainPair,
 } from "./constants";
-import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import { CosmwasmPlatform } from "./platform";
-import { CosmwasmAddress } from "./address";
 import { AnyCosmwasmAddress } from "./types";
-
-// forces CosmwasmUtils to implement PlatformUtils
-var _: PlatformUtils<"Cosmwasm"> = CosmwasmUtils;
 
 /**
  * @category CosmWasm
@@ -30,11 +27,7 @@ var _: PlatformUtils<"Cosmwasm"> = CosmwasmUtils;
 export module CosmwasmUtils {
   export function nativeTokenId(chain: ChainName): TokenId {
     if (!isSupportedChain(chain)) throw new Error(`invalid chain for CosmWasm: ${chain}`);
-    return {
-      chain: chain,
-      // @ts-ignore
-      address: new CosmwasmAddress(getNativeDenom(chain)),
-    };
+    return nativeChainAddress([chain, getNativeDenom(chain)]);
   }
 
   export function isSupportedChain(chain: ChainName): boolean {
@@ -100,7 +93,6 @@ export module CosmwasmUtils {
 
   export function getNativeDenom(chain: ChainName): string {
     return chainToNativeDenoms(
-      //@ts-ignore
       CosmwasmPlatform.network,
       chain as PlatformToChains<CosmwasmPlatform.Type>,
     );

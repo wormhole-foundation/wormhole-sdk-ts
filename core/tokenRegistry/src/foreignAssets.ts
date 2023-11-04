@@ -42,7 +42,7 @@ export const isSupportedChain = (chain: ChainName) => {
 };
 
 export const createTokenId = (chain: ChainName, address: string) => {
-  if (!isSupportedChain(chain)) return;
+  if (!isSupportedChain(chain)) return undefined;
   return {
     chain,
     address: toNative(chain, address),
@@ -50,7 +50,7 @@ export const createTokenId = (chain: ChainName, address: string) => {
 };
 
 export const getForeignAddress = async (wh: Wormhole, chain: ChainName, tokenId: TokenId) => {
-  if (!isSupportedChain(chain)) return;
+  if (!isSupportedChain(chain)) return undefined;
   let foreignAddress: string | null = null;
   try {
     const foreignId = await wh.getWrappedAsset(chain, tokenId);

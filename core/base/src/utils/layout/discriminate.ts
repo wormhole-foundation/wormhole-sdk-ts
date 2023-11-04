@@ -91,7 +91,7 @@ function layoutItemMeta(
     case "array": {
       if ("length" in item) {
         let localFixedBytes = [] as FixedBytes;
-        const itemSize = layoutItemMeta(item.arrayItem, 0, localFixedBytes);
+        const itemSize = createLayoutMeta(item.layout, 0, localFixedBytes);
         if (offset !== null) {
           if (itemSize[0] !== itemSize[1]) {
             //if the size of an array item is not fixed we can only add the fixed bytes of the
@@ -117,9 +117,9 @@ function layoutItemMeta(
       return createLayoutMeta(item.layout, offset, fixedBytes);
     }
     case "switch": {
-      const caseFixedBytes = item.idLayoutPairs.map(_ => []) as FixedBytes[];
+      const caseFixedBytes = item.layouts.map(_ => []) as FixedBytes[];
       const {idSize, idEndianness} = item;
-      const caseBounds = item.idLayoutPairs.map(([idOrConversionId, layout], caseIndex) => {
+      const caseBounds = item.layouts.map(([idOrConversionId, layout], caseIndex) => {
         const idVal = Array.isArray(idOrConversionId) ? idOrConversionId[0] : idOrConversionId;
         if (offset !== null) {
           const serializedId = new Uint8Array(idSize);
@@ -193,6 +193,9 @@ function createLayoutMeta(
   offset: BytePos | null,
   fixedBytes: FixedBytes
 ): Bounds {
+  if (!Array.isArray(layout))
+    return layoutItemMeta(layout as LayoutItem, offset, fixedBytes);
+
   let bounds = [0, 0] as Bounds;
   for (const item of layout) {
     const itemSize = layoutItemMeta(item, offset, fixedBytes);

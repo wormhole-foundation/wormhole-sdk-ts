@@ -65,13 +65,13 @@ const testLayout = [
     name: "arrayWithOnlyFixed",
     binary: "array",
     lengthSize: 1,
-    arrayItem: { binary: "uint", size: 1, custom: 12 },
+    layout: { binary: "uint", size: 1, custom: 12 },
   },
   {
     name: "arrayWithSomeFixed",
     binary: "array",
     lengthSize: 1,
-    arrayItem: { binary: "object", layout: [
+    layout: { binary: "object", layout: [
       { name: "someDynamicUint", binary: "uint", size: 1 },
       { name: "someFixedUint", binary: "uint", size: 1, custom: 25 },
       {
@@ -85,13 +85,13 @@ const testLayout = [
     name: "arrayWithOnlyDynamic",
     binary: "array",
     lengthSize: 1,
-    arrayItem: { binary: "uint", size: 1 },
+    layout: { binary: "uint", size: 1 },
   },
   {
     name: "switchWithSomeFixed",
     binary: "switch",
     idSize: 2,
-    idLayoutPairs: [
+    layouts: [
       [1, [
         { name: "case1FixedUint", binary: "uint", size: 1, custom: 4 },
         { name: "case1DynamicUint", binary: "uint", size: 1 }
@@ -104,10 +104,12 @@ const testLayout = [
   }
 ] as const satisfies Layout;
 
-//uncomment the following to "test" correct type resolution:
-import { LayoutToType, FixedItemsOfLayout, DynamicItemsOfLayout } from "../src";
-type FixedItems = FixedItemsOfLayout<typeof testLayout>;
-type DynamicItems = LayoutToType<DynamicItemsOfLayout<typeof testLayout>>;
+// uncomment the following to "test" correct type resolution:
+// import { LayoutToType, FixedItemsOfLayout, DynamicItemsOfLayout } from "../src";
+// type FixedItems = FixedItemsOfLayout<typeof testLayout>;
+// type FixedValues = LayoutToType<FixedItems>;
+// type DynamicItems = DynamicItemsOfLayout<typeof testLayout>;
+// type DynamicValues = LayoutToType<DynamicItems>;
 
 describe("Layout tests", function () {
 

@@ -1,12 +1,10 @@
 import {
-  Signer,
   ChainName,
+  RpcConnection,
   SignOnlySigner,
   SignedTx,
+  Signer,
   UnsignedTransaction,
-  ChainContext,
-  PlatformName,
-  RpcConnection,
 } from '@wormhole-foundation/connect-sdk';
 import { ethers } from 'ethers';
 import { EvmPlatform } from '../platform';

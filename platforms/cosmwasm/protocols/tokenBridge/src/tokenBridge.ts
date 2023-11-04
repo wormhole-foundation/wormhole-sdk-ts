@@ -83,8 +83,7 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
       },
     );
 
-    // @ts-ignore
-    return toNative(this.chain, address);
+    return new CosmwasmAddress(address);
   }
 
   async getOriginalAsset(token: AnyCosmwasmAddress): Promise<TokenId> {

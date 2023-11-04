@@ -23,6 +23,7 @@ import {
 } from "@wormhole-foundation/connect-sdk";
 import { TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
 import {
+  CosmwasmEvmChain,
   chainToAddressPrefix,
   cosmwasmNetworkChainToChainId,
   cosmwasmNetworkChainToRestUrls,
@@ -38,7 +39,7 @@ export async function getCosmwasmSigner(
   const [network, chain] = await CosmwasmPlatform.chainFromRpc(rpc);
 
   // Use the EVM signer for Evmos and Injective only
-  if (evmLikeChains.includes(chain)) {
+  if (evmLikeChains.includes(chain as CosmwasmEvmChain)) {
     return new CosmwasmEvmSigner(chain, network, mnemonic);
   }
 
@@ -99,18 +100,10 @@ export class CosmwasmEvmSigner implements SignOnlySigner {
   private _rpc: ChainRestAuthApi;
   constructor(private _chain: ChainName, _network: Network, _mnemonic: string) {
     this._rpc = new ChainRestAuthApi(
-      cosmwasmNetworkChainToRestUrls(
-        _network,
-        //@ts-ignore
-        chain,
-      ),
+      cosmwasmNetworkChainToRestUrls(_network, _chain as CosmwasmEvmChain),
     );
 
-    this._chainId = cosmwasmNetworkChainToChainId(
-      _network,
-      // @ts-ignore
-      chain.chain,
-    );
+    this._chainId = cosmwasmNetworkChainToChainId(_network, _chain as CosmwasmEvmChain);
 
     this.prefix = chainToAddressPrefix(_chain as PlatformToChains<"Cosmwasm">);
     this.key = PrivateKey.fromMnemonic(_mnemonic);

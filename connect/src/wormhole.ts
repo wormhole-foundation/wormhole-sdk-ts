@@ -1,5 +1,6 @@
 import {
   ChainName,
+  ChainToPlatform,
   Network,
   PlatformName,
   isChain,
@@ -42,13 +43,12 @@ import {
   TransactionStatus,
   getTransactionStatus,
   getVaaBytesWithRetry,
-  getVaaBytes,
   getVaaWithRetry,
 } from "./whscan-api";
 
 export class Wormhole {
   protected _platforms: Map<PlatformName, Platform<PlatformName>>;
-  protected _chains: Map<ChainName, ChainContext<PlatformName>>;
+  protected _chains: Map<ChainName, ChainContext<ChainToPlatform<ChainName>>>;
   protected readonly _network: Network;
   readonly conf: WormholeConfig;
 
@@ -182,10 +182,9 @@ export class Wormhole {
    * @returns the chain context class
    * @throws Errors if context is not found
    */
-  getChain(chain: ChainName): ChainContext<PlatformName> {
+  getChain<CN extends ChainName>(chain: CN): ChainContext<ChainToPlatform<CN>> {
     if (!this._chains.has(chain)) this._chains.set(chain, this.getPlatform(chain).getChain(chain));
-
-    return this._chains.get(chain)!;
+    return this._chains.get(chain)! as ChainContext<ChainToPlatform<CN>>;
   }
 
   /**
@@ -286,12 +285,9 @@ export class Wormhole {
 
     const dstTokenBridge = await chain.getTokenBridge();
     const dstNative = await dstTokenBridge.getWrappedAsset(t);
-
-    return {
-      chain: recipient.chain,
-      // @ts-ignore
-      address: await chain.getTokenAccount(dstNative, recipient.address),
-    } as ChainAddress;
+    // @ts-ignore
+    const address = await chain.getTokenAccount(dstNative, recipient.address);
+    return { chain: recipient.chain, address: address };
   }
 
   /**
