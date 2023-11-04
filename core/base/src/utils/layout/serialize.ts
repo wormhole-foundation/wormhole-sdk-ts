@@ -19,36 +19,15 @@ import {
   findIdLayoutPair
 } from "./utils";
 
-export function serializeLayout<const L extends Layout>(
+export function serializeLayout<L extends Layout, E extends Uint8Array | undefined = undefined>(
   layout: L,
   data: LayoutToType<L>,
-): Uint8Array;
-
-export function serializeLayout<const L extends Layout>(
-  layout: L,
-  data: LayoutToType<L>,
-  encoded: Uint8Array,
-  offset?: number,
-): number;
-
-export function serializeLayout<const L extends Layout>(
-  layout: L,
-  data: LayoutToType<L>,
-  encoded?: Uint8Array,
+  encoded?: E,
   offset = 0,
-): Uint8Array | number {
-  let ret = encoded ?? new Uint8Array(calcLayoutSize(layout, data));
-  for (let i = 0; i < layout.length; ++i)
-    try {
-      offset =
-        serializeLayoutItem(layout[i], data[layout[i].name as keyof typeof data], ret, offset);
-    }
-    catch (e: any) {
-      e.message = `when serializing item '${layout[i].name}': ${e.message}`;
-      throw e;
-    }
-
-  return encoded === undefined ? ret : offset;
+) {
+  return (
+    internalSerializeLayout(layout, data, encoded, offset)
+  ) as E extends undefined ? Uint8Array : number;
 }
 
 //see numberMaxSize comment in layout.ts
@@ -93,6 +72,41 @@ export function serializeNum(
   return offset + bytes;
 }
 
+function internalSerializeLayout(
+  layout: Layout,
+  data: any,
+): Uint8Array;
+
+function internalSerializeLayout(
+  layout: Layout,
+  data: any,
+  encoded?: Uint8Array,
+  offset?: number,
+): number;
+
+function internalSerializeLayout(
+  layout: Layout,
+  data: any,
+  encoded?: Uint8Array,
+  offset = 0,
+): Uint8Array | number {
+  let ret = encoded ?? new Uint8Array(calcLayoutSize(layout, data));
+  if (Array.isArray(layout))
+    for (let i = 0; i < layout.length; ++i)
+      try {
+        offset =
+          serializeLayoutItem(layout[i], data[layout[i].name as keyof typeof data], ret, offset);
+      }
+      catch (e: any) {
+        e.message = `when serializing item '${layout[i].name}': ${e.message}`;
+        throw e;
+      }
+  else
+    offset = serializeLayoutItem(layout as LayoutItem, data, ret, offset);
+
+  return encoded === undefined ? ret : offset;
+}
+
 function serializeLayoutItem(
   item: LayoutItem,
   data: any,
@@ -104,7 +118,7 @@ function serializeLayoutItem(
     case "uint": {
       const value = (() => {
         if (isNumType(item.custom)) {
-          if (!(item as { omit?: boolean })?.omit)
+          if (!("omit" in item && item.omit))
             checkNumEquals(item.custom, data);
           return item.custom;
         }
@@ -160,19 +174,19 @@ function serializeLayoutItem(
           serializeNum(encoded, offset, data.length, item.lengthSize, item.lengthEndianness);
 
       for (let i = 0; i < data.length; ++i)
-        offset = serializeLayoutItem(item.arrayItem, data[i], encoded, offset);
+        offset = internalSerializeLayout(item.layout, data[i], encoded, offset);
 
       break;
     }
     case "object": {
-      offset = serializeLayout(item.layout, data, encoded, offset);
+      offset = internalSerializeLayout(item.layout, data, encoded, offset);
       break;
     }
     case "switch": {
       const [idOrConversionId, layout] = findIdLayoutPair(item, data);
       const idNum = (Array.isArray(idOrConversionId) ? idOrConversionId[0] : idOrConversionId);
       offset = serializeNum(encoded, offset, idNum, item.idSize, item.idEndianness);
-      offset = serializeLayout(layout, data, encoded, offset);
+      offset = internalSerializeLayout(layout, data, encoded, offset);
       break;
     }
   }

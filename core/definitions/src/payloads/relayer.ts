@@ -54,7 +54,7 @@ const messageKeySwitchLayout = {
   binary: "switch",
   idSize: 1,
   idTag: "keyType",
-  idLayoutPairs: [
+  layouts: [
     [[1, "VAA"], vaaKeyLayout],
     [[2, "CCTP"], cctpKeyLayout]
   ]
@@ -74,7 +74,7 @@ const namedPayloads = [
       { name: "refundDeliveryProvider", ...universalAddressItem },
       { name: "sourceDeliveryProvider", ...universalAddressItem },
       { name: "senderAddress", ...universalAddressItem },
-      { name: "messageKeys", binary: "array", lengthSize: 1, arrayItem: messageKeySwitchLayout },
+      { name: "messageKeys", binary: "array", lengthSize: 1, layout: messageKeySwitchLayout },
     ],
   ],
   [

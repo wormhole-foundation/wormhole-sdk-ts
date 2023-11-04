@@ -39,7 +39,7 @@ export function getBytesItemSize(bytesItem: BytesLayoutItem): number | null {
 
 export function findIdLayoutPair(item: SwitchLayoutItem, data: any) {
   const id = data[item.idTag ?? "id"];
-  return (item.idLayoutPairs as any[]).find(([idOrConversionId]) =>
+  return (item.layouts as any[]).find(([idOrConversionId]) =>
     (Array.isArray(idOrConversionId) ? idOrConversionId[1] : idOrConversionId) == id
   )!;
 }
