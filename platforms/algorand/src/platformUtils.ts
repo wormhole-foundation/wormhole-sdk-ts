@@ -13,12 +13,7 @@ import {
 } from '@wormhole-foundation/connect-sdk';
 import { AlgorandAddress, AlgorandZeroAddress } from './address';
 import { AlgorandPlatform } from './platform';
-import {
-  Algodv2,
-  bytesToBigInt,
-  decodeSignedTransaction,
-  waitForConfirmation,
-} from 'algosdk';
+import { Algodv2, bytesToBigInt, waitForConfirmation } from 'algosdk';
 import {
   Account,
   AssetHolding,
