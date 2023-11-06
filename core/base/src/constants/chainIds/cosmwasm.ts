@@ -1,4 +1,5 @@
-import { RoArray, constMap, ChainName, Network } from "../../";
+import { ChainName, Network } from "../../constants";
+import { RoArray, constMap } from "../../utils";
 
 const networkChainCosmwasmChainIds = [
   [

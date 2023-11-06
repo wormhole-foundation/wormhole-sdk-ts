@@ -1,4 +1,5 @@
-import { ChainName, Network, RoArray, constMap } from "../..";
+import { ChainName, Network } from '../../constants';
+import { RoArray, constMap } from "../../utils";
 
 const networkChainSolanaGenesisHashes = [
   ["Mainnet", [["Solana", "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"]]],

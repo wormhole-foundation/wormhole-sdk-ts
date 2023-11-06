@@ -1,4 +1,4 @@
-import { solNetworkChainToGenesisHash } from '../../src';
+import { chainIds } from '@wormhole-foundation/connect-sdk';
 
 // Mock the genesis hash call for solana so we dont touch the network
 jest.mock('@solana/web3.js', () => {
@@ -9,7 +9,7 @@ jest.mock('@solana/web3.js', () => {
       return {
         getGenesisHash: jest
           .fn()
-          .mockReturnValue(solNetworkChainToGenesisHash('Mainnet', 'Solana')),
+          .mockReturnValue(chainIds.solNetworkChainToGenesisHash('Mainnet', 'Solana')),
       };
     }),
   };

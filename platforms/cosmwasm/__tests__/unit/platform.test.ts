@@ -17,7 +17,7 @@ describe("Cosmwasm Platform Tests", () => {
   describe("Get Chain", () => {
     test("No conf", () => {
       const p = CosmwasmPlatform.setConfig(network, {});
-      expect(p.conf).toEqual({});
+      expect(p.config).toEqual({});
       expect(() => p.getChain(COSMWASM_CHAINS[0])).toThrow();
     });
 
@@ -32,7 +32,7 @@ describe("Cosmwasm Platform Tests", () => {
   describe("Get RPC Connection", () => {
     test("No conf", async () => {
       const p = CosmwasmPlatform.setConfig(network, {});
-      expect(p.conf).toEqual({});
+      expect(p.config).toEqual({});
 
       // expect getRpc to throw an error since we havent provided
       // the conf to figure out how to connect
