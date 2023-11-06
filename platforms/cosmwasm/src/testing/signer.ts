@@ -20,12 +20,12 @@ import {
   UnsignedTransaction,
   encoding,
   rpcAddress,
+  chainIds,
 } from "@wormhole-foundation/connect-sdk";
 import { TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
 import {
   CosmwasmEvmChain,
   chainToAddressPrefix,
-  cosmwasmNetworkChainToChainId,
   cosmwasmNetworkChainToRestUrls,
   evmLikeChains,
 } from "../constants";
@@ -103,7 +103,7 @@ export class CosmwasmEvmSigner implements SignOnlySigner {
       cosmwasmNetworkChainToRestUrls(_network, _chain as CosmwasmEvmChain),
     );
 
-    this._chainId = cosmwasmNetworkChainToChainId(_network, _chain as CosmwasmEvmChain);
+    this._chainId = chainIds.cosmwasmNetworkChainToChainId(_network, _chain as CosmwasmEvmChain);
 
     this.prefix = chainToAddressPrefix(_chain as PlatformToChains<"Cosmwasm">);
     this.key = PrivateKey.fromMnemonic(_mnemonic);

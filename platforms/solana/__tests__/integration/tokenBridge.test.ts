@@ -186,7 +186,7 @@ describe('TokenBridge Tests', () => {
     const nativeAddress = testing.utils.makeNativeAddress(chain);
 
     const sender = toNative(chain, senderAddress);
-    const tbAddress = p.conf[chain]!.contracts.tokenBridge!;
+    const tbAddress = p.config[chain]!.contracts.tokenBridge!;
 
     test('Create Attestation', async () => {
       const attestation = tb.createAttestation(nativeAddress, sender);
@@ -248,7 +248,7 @@ describe('TokenBridge Tests', () => {
     const recipient = testing.utils.makeChainAddress(destChain);
 
     const amount = 1000n;
-    const payload = undefined;
+    const payload: Uint8Array | undefined = undefined;
 
     describe('Token Transfer Transactions', () => {
       describe('Transfer', () => {

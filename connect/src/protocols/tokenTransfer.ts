@@ -68,7 +68,7 @@ export class TokenTransfer implements WormholeTransfer {
 
       transfer.to = {
         chain: transfer.to.chain,
-        address: toNative(transfer.to.chain, toChain.platform.conf.Sei?.contracts.translator!),
+        address: toNative(transfer.to.chain, toChain.platform.config.Sei?.contracts.translator!),
       };
     }
 
@@ -141,7 +141,7 @@ export class TokenTransfer implements WormholeTransfer {
     const vaa = await TokenTransfer.getTransferVaa(wh, id, timeout);
 
     const { chain, address } = vaa.payload.to;
-    const { relayer } = wh.conf.chains[chain]!.contracts;
+    const { relayer } = wh.config.chains[chain]!.contracts;
     const relayerAddress = relayer
       ? nativeChainAddress([chain, relayer]).address.toUniversalAddress()
       : null;

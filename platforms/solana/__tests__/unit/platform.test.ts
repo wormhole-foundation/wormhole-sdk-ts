@@ -40,7 +40,7 @@ describe('Solana Platform Tests', () => {
   describe('Get Chain', () => {
     test('No conf', () => {
       const p = SolanaPlatform.setConfig(network, {});
-      expect(p.conf).toEqual({});
+      expect(p.config).toEqual({});
       expect(() => p.getChain(SOLANA_CHAINS[0])).toThrow();
     });
 
@@ -55,7 +55,7 @@ describe('Solana Platform Tests', () => {
   describe('Get RPC Connection', () => {
     test('No conf', () => {
       const p = SolanaPlatform.setConfig(network, {});
-      expect(p.conf).toEqual({});
+      expect(p.config).toEqual({});
 
       // expect getRpc to throw an error since we havent provided
       // the conf to figure out how to connect
