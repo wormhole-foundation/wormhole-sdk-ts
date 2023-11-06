@@ -39,8 +39,7 @@ export function getNetworkAndChainName<P extends PlatformName>(
   switch (platform) {
     case "Evm":
       // we may get a hex string or a stringified number
-      if (chainId.includes("0x")) chainId = encoding.bignum.decode(chainId).toString();
-      return evmChainIdToNetworkChainPair.get(chainId);
+      return evmChainIdToNetworkChainPair.get(encoding.bignum.decode(chainId));
     case "Cosmwasm":
       return cosmwasmChainIdToNetworkChainPair.get(chainId);
     case "Solana":
@@ -50,7 +49,7 @@ export function getNetworkAndChainName<P extends PlatformName>(
     case "Near":
       return nearChainIdToNetworkChain.get(chainId);
     case "Aptos":
-      return aptosChainIdToNetworkChain.get(chainId);
+      return aptosChainIdToNetworkChain.get(encoding.bignum.decode(chainId));
     case "Algorand":
       return algorandChainIdToNetworkChain.get(chainId);
   }
