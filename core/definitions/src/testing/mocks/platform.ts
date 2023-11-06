@@ -39,16 +39,16 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
   readonly platform: P;
 
   network: Network;
-  conf: ChainsConfig;
+  config: ChainsConfig;
 
-  constructor(network: Network, conf: ChainsConfig) {
+  constructor(network: Network, config: ChainsConfig) {
     this.network = network;
-    this.conf = conf;
+    this.config = config;
   }
 
   setConfig(network: Network, _conf: ChainsConfig): MockPlatform<P> {
     this.network = network;
-    this.conf = _conf;
+    this.config = _conf;
     return this;
   }
 
@@ -90,7 +90,7 @@ export class MockPlatform<P extends PlatformName> implements Platform<P> {
   }
 
   getChain(chain: ChainName): ChainContext<P> {
-    if (chain in this.conf) return new MockChain<P>(this.conf[chain]!);
+    if (chain in this.config) return new MockChain<P>(this.config[chain]!);
     throw new Error("No configuration available for chain: " + chain);
   }
   getRpc(chain: ChainName): RpcConnection<P> {

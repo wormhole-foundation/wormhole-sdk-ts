@@ -50,11 +50,11 @@ export class Wormhole {
   protected _platforms: Map<PlatformName, Platform<PlatformName>>;
   protected _chains: Map<ChainName, ChainContext<ChainToPlatform<ChainName>>>;
   protected readonly _network: Network;
-  readonly conf: WormholeConfig;
+  readonly config: WormholeConfig;
 
-  constructor(network: Network, platforms: Platform<PlatformName>[], conf?: WormholeConfig) {
+  constructor(network: Network, platforms: Platform<PlatformName>[], config?: WormholeConfig) {
     this._network = network;
-    this.conf = conf ?? CONFIG[network];
+    this.config = config ?? CONFIG[network];
 
     this._chains = new Map();
     this._platforms = new Map();
@@ -159,7 +159,7 @@ export class Wormhole {
    * @returns the contract addresses
    */
   getContracts(chain: ChainName): Contracts | undefined {
-    return this.conf.chains[chain]?.contracts;
+    return this.config.chains[chain]?.contracts;
   }
 
   /**
@@ -169,7 +169,7 @@ export class Wormhole {
    * @throws Errors if platform is not found
    */
   getPlatform(chain: ChainName | PlatformName): Platform<PlatformName> {
-    const platformName = isChain(chain) ? this.conf.chains[chain]!.platform : chain;
+    const platformName = isChain(chain) ? this.config.chains[chain]!.platform : chain;
 
     const platform = this._platforms.get(platformName);
     if (!platform) throw new Error(`Not able to retrieve platform ${platform}`);
@@ -276,11 +276,11 @@ export class Wormhole {
       t = isTokenId(sendingToken)
         ? sendingToken
         : {
-            chain: sendingChain,
-            address: (
-              sendingToken as UniversalAddress | NativeAddress<PlatformName>
-            ).toUniversalAddress(),
-          };
+          chain: sendingChain,
+          address: (
+            sendingToken as UniversalAddress | NativeAddress<PlatformName>
+          ).toUniversalAddress(),
+        };
     }
 
     const dstTokenBridge = await chain.getTokenBridge();
@@ -307,7 +307,7 @@ export class Wormhole {
     timeout: number = DEFAULT_TASK_TIMEOUT,
   ): Promise<Uint8Array | undefined> {
     return getVaaBytesWithRetry(
-      this.conf.api,
+      this.config.api,
       {
         chain,
         sequence,
@@ -334,7 +334,7 @@ export class Wormhole {
     timeout: number = DEFAULT_TASK_TIMEOUT,
   ): Promise<ReturnType<typeof deserialize<T>> | undefined> {
     return getVaaWithRetry(
-      this.conf.api,
+      this.config.api,
       {
         chain,
         sequence,
@@ -349,7 +349,7 @@ export class Wormhole {
     msgHash: string,
     timeout: number = DEFAULT_TASK_TIMEOUT,
   ): Promise<string | null> {
-    const task = () => getCircleAttestation(this.conf.circleAPI, msgHash);
+    const task = () => getCircleAttestation(this.config.circleAPI, msgHash);
     return retry<string>(task, CIRCLE_RETRY_INTERVAL, timeout, "Circle:GetAttestation");
   }
 
@@ -374,7 +374,7 @@ export class Wormhole {
       sequence,
     } as WormholeMessageId;
 
-    const task = () => getTransactionStatus(this.conf.api, whm);
+    const task = () => getTransactionStatus(this.config.api, whm);
 
     const status = await retry<TransactionStatus>(
       task,

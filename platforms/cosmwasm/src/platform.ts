@@ -36,7 +36,7 @@ import { CosmwasmChainName } from "./types";
 export module CosmwasmPlatform {
   export const platform = "Cosmwasm";
   export let network: Network = DEFAULT_NETWORK;
-  export let conf: ChainsConfig = networkPlatformConfigs(network, platform);
+  export let config: ChainsConfig = networkPlatformConfigs(network, platform);
   export type Type = typeof platform;
 
   export const {
@@ -61,19 +61,19 @@ export module CosmwasmPlatform {
     getGatewaySourceChannel,
   } = Gateway;
 
-  export function setConfig(_network: Network, _conf?: ChainsConfig): typeof CosmwasmPlatform {
-    conf = _conf ? _conf : networkPlatformConfigs(network, platform);
+  export function setConfig(_network: Network, _config?: ChainsConfig): typeof CosmwasmPlatform {
+    config = _config ? _config : networkPlatformConfigs(network, platform);
     network = _network;
     return CosmwasmPlatform;
   }
 
   export async function getRpc(chain: ChainName): Promise<CosmWasmClient> {
-    const rpcAddress = conf[chain]!.rpc;
+    const rpcAddress = config[chain]!.rpc;
     return await CosmWasmClient.connect(rpcAddress);
   }
 
   export function getChain(chain: ChainName): CosmwasmChain {
-    if (chain in conf) return new CosmwasmChain(conf[chain]!);
+    if (chain in config) return new CosmwasmChain(config[chain]!);
     throw new Error("No configuration available for chain: " + chain);
   }
 
@@ -82,14 +82,14 @@ export module CosmwasmPlatform {
   }
 
   export async function getWormholeCore(rpc: CosmWasmClient): Promise<WormholeCore<"Cosmwasm">> {
-    return getProtocol("WormholeCore").fromRpc(rpc, conf);
+    return getProtocol("WormholeCore").fromRpc(rpc, config);
   }
   export async function getTokenBridge(rpc: CosmWasmClient): Promise<TokenBridge<"Cosmwasm">> {
-    return getProtocol("TokenBridge").fromRpc(rpc, conf);
+    return getProtocol("TokenBridge").fromRpc(rpc, config);
   }
 
   export async function getIbcBridge(rpc: CosmWasmClient): Promise<IbcBridge<"Cosmwasm">> {
-    return await getProtocol("IbcBridge").fromRpc(rpc, conf);
+    return await getProtocol("IbcBridge").fromRpc(rpc, config);
   }
 
   export async function parseTransaction(
