@@ -112,13 +112,10 @@ export function buildConfig(n: Network): ChainsConfig {
   const cc: ChainsConfig = chains
     .map((c: ChainName): ChainConfig => {
       const platform = chainToPlatform(c);
-
-      // May not have chain ids defined yet for this platform
       let nativeChainId = "";
       try {
-        nativeChainId = chainIds.nativeChainId(n, c);
+        nativeChainId = chainIds.getNativeChainId(n, c);
       } catch {}
-
       return {
         key: c,
         platform,
@@ -128,7 +125,7 @@ export function buildConfig(n: Network): ChainsConfig {
         blockTime: blockTime(c),
         contracts: getContracts(n, c),
         nativeTokenDecimals: nativeDecimals(platform),
-        nativeChainId: nativeChainId,
+        nativeChainId,
         explorer: explorerConfigs(n, c),
         rpc: rpcAddress(n, c),
       };

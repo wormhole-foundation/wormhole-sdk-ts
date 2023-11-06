@@ -14,6 +14,7 @@ const networkChainCosmwasmChainIds = [
       ["Terra2", "phoenix-1"],
       ["Wormchain", "wormchain"],
       ["Xpla", "dimension_37-1"],
+      ["Kujira", "kaiyo-1"],
     ],
   ],
   [
@@ -24,9 +25,11 @@ const networkChainCosmwasmChainIds = [
       ["Injective", "injective-888"],
       ["Osmosis", "osmo-test-5"],
       ["Sei", "atlantic-2"],
+      ["Terra", "bombay-12"],
       ["Terra2", "pisco-1"],
       ["Wormchain", "wormchain-testnet-0"],
       ["Xpla", "cube_47-5"],
+      ["Kujira", "harpoon-4"],
     ],
   ],
   [

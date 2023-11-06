@@ -147,7 +147,10 @@ export module SolanaUtils {
   export function chainFromChainId(
     genesisHash: string,
   ): [Network, PlatformToChains<SolanaPlatform.Type>] {
-    const netChain = chainIds.solGenesisHashToNetworkChainPair.get(genesisHash);
+    const netChain = chainIds.getNetworkAndChainName(
+      SolanaPlatform.platform,
+      genesisHash,
+    );
 
     if (!netChain) {
       // Note: this is required for tilt/ci since it gets a new genesis hash
