@@ -13,6 +13,7 @@ import {
   toChainId,
   toChainName,
   toNative,
+  chainIds,
 } from '@wormhole-foundation/connect-sdk';
 import { Provider, TransactionRequest } from 'ethers';
 
@@ -28,7 +29,6 @@ import {
   EvmZeroAddress,
   addChainId,
   addFrom,
-  evmNetworkChainToEvmChainId,
   unusedArbiterFee,
   unusedNonce,
 } from '@wormhole-foundation/connect-sdk-evm';
@@ -44,7 +44,7 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     readonly provider: Provider,
     readonly contracts: Contracts,
   ) {
-    this.chainId = evmNetworkChainToEvmChainId.get(network, chain)!;
+    this.chainId = chainIds.evmNetworkChainToEvmChainId.get(network, chain)!;
 
     const tokenBridgeAddress = this.contracts.tokenBridge!;
     if (!tokenBridgeAddress)
@@ -98,7 +98,7 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     try {
       await this.getWrappedAsset(token);
       return true;
-    } catch (e) {}
+    } catch (e) { }
     return false;
   }
 
@@ -174,23 +174,23 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     if (typeof token === 'string' && token === 'native') {
       const txReq = await (payload === undefined
         ? this.tokenBridge.wrapAndTransferETH.populateTransaction(
-            recipientChainId,
-            recipientAddress,
-            unusedArbiterFee,
-            unusedNonce,
-            { value: amount },
-          )
+          recipientChainId,
+          recipientAddress,
+          unusedArbiterFee,
+          unusedNonce,
+          { value: amount },
+        )
         : this.tokenBridge.wrapAndTransferETHWithPayload.populateTransaction(
-            recipientChainId,
-            recipientAddress,
-            unusedNonce,
-            payload,
-            { value: amount },
-          ));
+          recipientChainId,
+          recipientAddress,
+          unusedNonce,
+          payload,
+          { value: amount },
+        ));
       yield this.createUnsignedTx(
         addFrom(txReq, senderAddr),
         'TokenBridge.wrapAndTransferETH' +
-          (payload === undefined ? '' : 'WithPayload'),
+        (payload === undefined ? '' : 'WithPayload'),
       );
     } else {
       //TODO check for ERC-2612 (permit) support on token?
@@ -222,19 +222,19 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
       ] as const;
       const txReq = await (payload === undefined
         ? this.tokenBridge.transferTokens.populateTransaction(
-            ...sharedParams,
-            unusedArbiterFee,
-            unusedNonce,
-          )
+          ...sharedParams,
+          unusedArbiterFee,
+          unusedNonce,
+        )
         : this.tokenBridge.transferTokensWithPayload.populateTransaction(
-            ...sharedParams,
-            unusedNonce,
-            payload,
-          ));
+          ...sharedParams,
+          unusedNonce,
+          payload,
+        ));
       yield this.createUnsignedTx(
         addFrom(txReq, senderAddr),
         'TokenBridge.transferTokens' +
-          (payload === undefined ? '' : 'WithPayload'),
+        (payload === undefined ? '' : 'WithPayload'),
       );
     }
   }

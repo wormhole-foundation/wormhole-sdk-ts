@@ -14,6 +14,7 @@ import {
   encoding,
   Contracts,
   ChainsConfig,
+  chainIds,
 } from '@wormhole-foundation/connect-sdk';
 
 import { MessageTransmitter, TokenMessenger } from './ethers-contracts';
@@ -21,7 +22,6 @@ import { MessageTransmitter, TokenMessenger } from './ethers-contracts';
 import { LogDescription, Provider, TransactionRequest } from 'ethers';
 import {
   EvmAddress,
-  evmNetworkChainToEvmChainId,
   EvmPlatform,
   AnyEvmAddress,
   EvmChainName,
@@ -50,7 +50,7 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
     if (network === 'Devnet')
       throw new Error('CircleBridge not supported on Devnet');
 
-    this.chainId = evmNetworkChainToEvmChainId(network, chain);
+    this.chainId = chainIds.evmNetworkChainToEvmChainId(network, chain);
 
     const msgTransmitterAddress = contracts.cctp?.messageTransmitter;
     if (!msgTransmitterAddress)

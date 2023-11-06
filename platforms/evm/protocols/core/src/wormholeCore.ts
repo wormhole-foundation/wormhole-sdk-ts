@@ -7,13 +7,13 @@ import {
   WormholeMessageId,
   isWormholeMessageId,
   toNative,
+  chainIds,
 } from '@wormhole-foundation/connect-sdk';
 import { Provider, TransactionRequest } from 'ethers';
 import { Implementation, ImplementationInterface } from './ethers-contracts';
 import { ethers_contracts } from '.';
 
 import {
-  evmNetworkChainToEvmChainId,
   EvmUnsignedTransaction,
   AnyEvmAddress,
   EvmChainName,
@@ -37,7 +37,7 @@ export class EvmWormholeCore implements WormholeCore<'Evm'> {
     readonly provider: Provider,
     readonly contracts: Contracts,
   ) {
-    this.chainId = evmNetworkChainToEvmChainId.get(network, chain)!;
+    this.chainId = chainIds.evmNetworkChainToEvmChainId.get(network, chain)!;
 
     this.coreIface = ethers_contracts.Implementation__factory.createInterface();
 

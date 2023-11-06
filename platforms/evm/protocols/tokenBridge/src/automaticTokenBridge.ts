@@ -10,9 +10,9 @@ import {
   Contracts,
   ChainsConfig,
   nativeChainAddress,
+  chainIds,
 } from '@wormhole-foundation/connect-sdk';
 import {
-  evmNetworkChainToEvmChainId,
   AnyEvmAddress,
   EvmChainName,
   addChainId,
@@ -39,7 +39,7 @@ export class EvmAutomaticTokenBridge implements AutomaticTokenBridge<'Evm'> {
     if (network === 'Devnet')
       throw new Error('AutomaticTokenBridge not supported on Devnet');
 
-    this.chainId = evmNetworkChainToEvmChainId(network, chain);
+    this.chainId = chainIds.evmNetworkChainToEvmChainId(network, chain);
 
     const tokenBridgeAddress = this.contracts.tokenBridge!;
     if (!tokenBridgeAddress)

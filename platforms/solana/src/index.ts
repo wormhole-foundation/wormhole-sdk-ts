@@ -1,4 +1,3 @@
-export * from './constants';
 export * from './address';
 export * from './platform';
 export * from './chain';
