@@ -463,8 +463,12 @@ const toMapping = <
 const has = <const F extends Function>(f: F) =>
   (...args: WidenParams<F>) => f(...args) !== undefined;
 
+type MaybeReturnType<F extends Function> = ReturnType<F> | null;
+
+
+
 const get = <const F extends Function>(f: F) =>
-  (...args: WidenParams<F>) => f(...args) as Widen<ReturnType<F>>;
+  (...args: WidenParams<F>) => f(...args) as MaybeReturnType<F>;
 
 export function constMap<
   const M extends MappingEntries,
@@ -480,10 +484,10 @@ export function constMap<
       mapping
     )) as ToGenericMappingFunc<M, S>;
 
-  (genericMappingFunc as any)["get"] = get(genericMappingFunc);
-  (genericMappingFunc as any)["has"] = has(genericMappingFunc);
-
-  return genericMappingFunc as ConstMapRet<ToGenericMappingFunc<M, S>>;
+  return Object.assign(genericMappingFunc, {
+    "get": get(genericMappingFunc),
+    "has": has(genericMappingFunc),
+  }) as ConstMapRet<ToGenericMappingFunc<M, S>>;
 }
 
 //--- find a bunch of "tests" below
