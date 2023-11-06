@@ -3,6 +3,7 @@ import { ChainName, Network, contracts } from "@wormhole-foundation/sdk-base";
 export type Contracts = {
   coreBridge?: string;
   tokenBridge?: string;
+  tokenBridgeRelayer?: string;
   nftBridge?: string;
   relayer?: string;
   cctp?: contracts.CircleContracts;
@@ -16,6 +17,7 @@ export function getContracts(n: Network, c: ChainName): Contracts {
     tokenBridge: contracts.tokenBridge.get(n, c),
     nftBridge: contracts.nftBridge.get(n, c),
     relayer: contracts.relayer.get(n, c),
+    tokenBridgeRelayer: contracts.tokenBridgeRelayer.get(n, c),
   };
 
   if (contracts.circleContracts.has(n, c)) {

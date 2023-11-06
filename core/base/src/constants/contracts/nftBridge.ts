@@ -21,6 +21,7 @@ export const nftBridgeContracts = [
       ["Aptos", "0x1bdffae984043833ed7fe223f7af7a3f8902d04129b14f801823e64827da7130"],
       ["Moonbeam", "0x453cfbe096c0f8d763e8c5f24b441097d577bde2"],
       ["Arbitrum", "0x3dD14D553cFD986EAC8e3bddF629d82073e188c8"],
+      ["Base", "0xDA3adC6621B2677BEf9aD26598e6939CF0D92f88"],
       ["Optimism", "0xfE8cD454b4A1CA468B57D79c0cc77Ef5B6f64585"],
     ],
   ],
@@ -45,6 +46,7 @@ export const nftBridgeContracts = [
       ["Optimism", "0x23908A62110e21C04F3A4e011d24F901F911744A"],
       ["Base", "0xF681d1cc5F25a3694E348e7975d7564Aa581db59"],
       ["Sepolia", "0x6a0B52ac198e4870e5F3797d5B403838a5bbFD99"],
+      ["Aptos", "0x1bdffae984043833ed7fe223f7af7a3f8902d04129b14f801823e64827da7130"],
     ],
   ],
   [
