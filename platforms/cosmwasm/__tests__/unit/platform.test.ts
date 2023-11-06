@@ -1,12 +1,12 @@
 import { expect, test } from "@jest/globals";
 import {
   chains,
-  chainConfigs,
+  CONFIG,
 } from "@wormhole-foundation/connect-sdk";
 import { CosmwasmPlatform } from "../../src/platform";
 
 const network = "Testnet"; // DEFAULT_NETWORK;
-const configs = chainConfigs(network);
+const configs = CONFIG[network].chains;
 
 // const COSMWASM_CHAINS = chains.filter(
 //   (c) => chainToPlatform(c) === CosmwasmPlatform.platform

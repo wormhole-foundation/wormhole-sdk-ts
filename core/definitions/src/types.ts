@@ -3,10 +3,19 @@ import {
   ExplorerSettings,
   Network,
   PlatformName,
+  blockTime,
+  chainIds,
+  chainToPlatform,
+  chains,
+  explorerConfigs,
+  finalityThreshold,
   isChain,
+  nativeDecimals,
+  rpcAddress,
+  toChainId,
 } from "@wormhole-foundation/sdk-base";
 import { ChainAddress, NativeAddress, toNative } from "./address";
-import { Contracts } from "./contracts";
+import { Contracts, getContracts } from "./contracts";
 import { Signer, isSigner } from "./signer";
 
 import { UniversalAddress } from "./universalAddress";
@@ -78,16 +87,55 @@ export type ChainConfig = {
   key: ChainName;
   network: Network;
   platform: PlatformName;
+  // Wormhole Chain Id for this chain
+  chainId: number;
+  // Contract addresses for this chain
   contracts: Contracts;
   // Number of blocks before a transaction is considered final
   finalityThreshold: number;
   // Average block time in milliseconds
   blockTime: number;
+  // Number of decimal places for the native gas token (e.g. 18 for ETH)
   nativeTokenDecimals: bigint;
-  explorer?: ExplorerSettings;
+  // Native chain id may be eip155 or genesis hash or network moninker or something else
+  // depending on the platform
+  nativeChainId: string;
   rpc: string;
+  explorer?: ExplorerSettings;
 };
 
 export type ChainsConfig = {
   [K in ChainName]?: ChainConfig;
 };
+
+export function buildConfig(n: Network): ChainsConfig {
+  const cc: ChainsConfig = chains
+    .map((c: ChainName): ChainConfig => {
+      const platform = chainToPlatform(c);
+
+      // May not have chain ids defined yet for this platform
+      let nativeChainId = "";
+      try {
+        nativeChainId = chainIds.nativeChainId(n, c);
+      } catch {}
+
+      return {
+        key: c,
+        platform,
+        network: n,
+        chainId: toChainId(c),
+        finalityThreshold: finalityThreshold.get(n, c) ?? 0,
+        blockTime: blockTime(c),
+        contracts: getContracts(n, c),
+        nativeTokenDecimals: nativeDecimals(platform),
+        nativeChainId: nativeChainId,
+        explorer: explorerConfigs(n, c),
+        rpc: rpcAddress(n, c),
+      };
+    })
+    .reduce((acc, curr) => {
+      return { ...acc, [curr.key]: curr };
+    }, {});
+
+  return cc;
+}
