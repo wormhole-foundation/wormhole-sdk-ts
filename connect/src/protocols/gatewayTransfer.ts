@@ -248,13 +248,13 @@ export class GatewayTransfer implements WormholeTransfer {
     const recipient: ChainAddress =
       chainToPlatform(destChain) === "Cosmwasm"
         ? {
-          chain: destChain,
-          address: toNative(destChain, _recip.toString()),
-        }
+            chain: destChain,
+            address: toNative(destChain, _recip.toString()),
+          }
         : {
-          chain: destChain,
-          address: toNative(destChain, new UniversalAddress(_recip)),
-        };
+            chain: destChain,
+            address: toNative(destChain, new UniversalAddress(_recip)),
+          };
 
     const payload = msg.payload ? encoding.toUint8Array(msg.payload) : undefined;
 
@@ -448,7 +448,7 @@ export class GatewayTransfer implements WormholeTransfer {
       if (!destTransfer)
         throw new Error(
           "IBC Transfer into destination not found after retries exhausted" +
-          JSON.stringify(wcTransfer.id),
+            JSON.stringify(wcTransfer.id),
         );
 
       this.ibcTransfers.push(destTransfer);

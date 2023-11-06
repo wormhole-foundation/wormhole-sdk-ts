@@ -62,7 +62,7 @@ export class CosmwasmSigner implements SignOnlySigner {
     private _chain: ChainName,
     private _signer: SigningCosmWasmClient,
     private _account: string,
-  ) { }
+  ) {}
 
   chain(): ChainName {
     return this._chain;

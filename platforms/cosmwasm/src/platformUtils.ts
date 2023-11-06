@@ -13,10 +13,7 @@ import {
   chainIds,
 } from "@wormhole-foundation/connect-sdk";
 import { CosmwasmAddress } from "./address";
-import {
-  IBC_TRANSFER_PORT,
-  chainToNativeDenoms,
-} from "./constants";
+import { IBC_TRANSFER_PORT, chainToNativeDenoms } from "./constants";
 import { CosmwasmPlatform } from "./platform";
 import { AnyCosmwasmAddress } from "./types";
 
