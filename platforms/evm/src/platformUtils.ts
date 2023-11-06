@@ -10,12 +10,12 @@ import {
   Balances,
   encoding,
   nativeChainAddress,
+  chainIds,
 } from '@wormhole-foundation/connect-sdk';
 
 import * as ethers_contracts from './ethers-contracts';
 
 import { Provider } from 'ethers';
-import { evmChainIdToNetworkChainPair } from './constants';
 import { EvmAddress, EvmZeroAddress } from './address';
 import { EvmPlatform } from './platform';
 import { AnyEvmAddress } from './types';
@@ -119,7 +119,7 @@ export module EvmUtils {
     eip155ChainId: string,
   ): [Network, PlatformToChains<EvmPlatform.Type>] {
     const ci = encoding.bignum.decode(eip155ChainId);
-    const networkChainPair = evmChainIdToNetworkChainPair.get(ci);
+    const networkChainPair = chainIds.evmChainIdToNetworkChainPair.get(ci);
 
     if (networkChainPair === undefined)
       throw new Error(`Unknown EVM chainId ${eip155ChainId}`);

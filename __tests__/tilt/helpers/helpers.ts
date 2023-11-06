@@ -42,10 +42,10 @@ export async function getStuff(
 export type ConfigOverride = {
   [key: string]: Partial<ChainConfig>
 }
-export function overrideChainSetting(conf: WormholeConfig, overrides: ConfigOverride): WormholeConfig {
+export function overrideChainSetting(config: WormholeConfig, overrides: ConfigOverride): WormholeConfig {
   for (const [cn, oride] of Object.entries(overrides)) {
     // @ts-ignore
-    conf.chains[cn] = { ...conf.chains[cn], ...oride }
+    config.chains[cn] = { ...config.chains[cn], ...oride }
   }
-  return conf
+  return config
 }

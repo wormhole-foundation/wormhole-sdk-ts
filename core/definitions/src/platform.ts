@@ -48,11 +48,11 @@ export interface PlatformUtils<P extends PlatformName> {
 // Force passing RPC connection so we don't create a new one with every fn call
 export interface Platform<P extends PlatformName> extends PlatformUtils<P> {
   readonly platform: P;
-  readonly conf: ChainsConfig;
+  readonly config: ChainsConfig;
   readonly network: Network;
 
   // update the config for this platform
-  setConfig(network: Network, _conf?: ChainsConfig): Platform<P>;
+  setConfig(network: Network, _config?: ChainsConfig): Platform<P>;
 
   // Create a new Chain context object
   getChain(chain: ChainName): ChainContext<P>;

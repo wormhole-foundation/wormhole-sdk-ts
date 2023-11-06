@@ -10,13 +10,10 @@ import {
   chainToPlatform,
   nativeChainAddress,
   nativeDecimals,
+  chainIds,
 } from "@wormhole-foundation/connect-sdk";
 import { CosmwasmAddress } from "./address";
-import {
-  IBC_TRANSFER_PORT,
-  chainToNativeDenoms,
-  cosmwasmChainIdToNetworkChainPair,
-} from "./constants";
+import { IBC_TRANSFER_PORT, chainToNativeDenoms } from "./constants";
 import { CosmwasmPlatform } from "./platform";
 import { AnyCosmwasmAddress } from "./types";
 
@@ -124,7 +121,7 @@ export module CosmwasmUtils {
   export function chainFromChainId(
     chainMoniker: string,
   ): [Network, PlatformToChains<CosmwasmPlatform.Type>] {
-    const networkChainPair = cosmwasmChainIdToNetworkChainPair.get(chainMoniker);
+    const networkChainPair = chainIds.cosmwasmChainIdToNetworkChainPair.get(chainMoniker);
 
     if (networkChainPair === undefined) throw new Error(`Unknown Cosmwasm chainId ${chainMoniker}`);
 

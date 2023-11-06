@@ -20,23 +20,23 @@ export module Gateway {
   export const name: "Wormchain" = "Wormchain";
 
   export function gatewayAddress(): string {
-    const { contracts } = CosmwasmPlatform.conf[name]!;
+    const { contracts } = CosmwasmPlatform.config[name]!;
     return contracts.gateway!;
   }
 
   export function tokenBridgeAddress(): string {
-    const { contracts } = CosmwasmPlatform.conf[name]!;
+    const { contracts } = CosmwasmPlatform.config[name]!;
     return contracts.tokenBridge!;
   }
 
   export function coreAddress(): string {
-    const { contracts } = CosmwasmPlatform.conf[name]!;
+    const { contracts } = CosmwasmPlatform.config[name]!;
     return contracts.coreBridge!;
   }
 
   // Returns RPC client for Wormchain
   export async function getRpc(): Promise<CosmWasmClient> {
-    const rpcAddress = CosmwasmPlatform.conf[name]!.rpc;
+    const rpcAddress = CosmwasmPlatform.config[name]!.rpc;
     return await CosmWasmClient.connect(rpcAddress);
   }
 

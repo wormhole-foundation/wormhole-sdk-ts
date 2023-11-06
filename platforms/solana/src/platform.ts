@@ -23,7 +23,7 @@ export module SolanaPlatform {
   export const platform = 'Solana';
   export type Type = typeof platform;
   export let network: Network = DEFAULT_NETWORK;
-  export let conf: ChainsConfig = networkPlatformConfigs(network, platform);
+  export let config: ChainsConfig = networkPlatformConfigs(network, platform);
 
   export const {
     nativeTokenId,
@@ -40,9 +40,9 @@ export module SolanaPlatform {
 
   export function setConfig(
     _network: Network,
-    _conf?: ChainsConfig,
+    _config?: ChainsConfig,
   ): typeof SolanaPlatform {
-    conf = _conf ? _conf : networkPlatformConfigs(network, platform);
+    config = _config ? _config : networkPlatformConfigs(network, platform);
     network = _network;
     return SolanaPlatform;
   }
@@ -51,12 +51,12 @@ export module SolanaPlatform {
     chain: ChainName,
     commitment: Commitment = 'confirmed',
   ): Connection {
-    const rpcAddress = conf[chain]!.rpc;
+    const rpcAddress = config[chain]!.rpc;
     return new Connection(rpcAddress, commitment);
   }
 
   export function getChain(chain: ChainName): SolanaChain {
-    if (chain in conf) return new SolanaChain(conf[chain]!);
+    if (chain in config) return new SolanaChain(config[chain]!);
     throw new Error('No configuration available for chain: ' + chain);
   }
 
@@ -69,13 +69,13 @@ export module SolanaPlatform {
   export async function getWormholeCore(
     rpc: Connection,
   ): Promise<WormholeCore<'Solana'>> {
-    return getProtocol('WormholeCore').fromRpc(rpc, conf);
+    return getProtocol('WormholeCore').fromRpc(rpc, config);
   }
 
   export async function getTokenBridge(
     rpc: Connection,
   ): Promise<TokenBridge<'Solana'>> {
-    return getProtocol('TokenBridge').fromRpc(rpc, conf);
+    return getProtocol('TokenBridge').fromRpc(rpc, config);
   }
 
   export async function parseTransaction(

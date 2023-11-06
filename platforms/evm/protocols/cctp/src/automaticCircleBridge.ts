@@ -8,13 +8,13 @@ import {
   Network,
   chainToChainId,
   usdcContract,
+  chainIds,
 } from '@wormhole-foundation/connect-sdk';
 import { Provider, TransactionRequest } from 'ethers';
 
 import { CircleRelayer } from './ethers-contracts';
 
 import {
-  evmNetworkChainToEvmChainId,
   EvmAddress,
   EvmPlatform,
   AnyEvmAddress,
@@ -40,7 +40,7 @@ export class EvmAutomaticCircleBridge implements AutomaticCircleBridge<'Evm'> {
     if (network === 'Devnet')
       throw new Error('AutomaticCircleBridge not supported on Devnet');
 
-    this.chainId = evmNetworkChainToEvmChainId(network, chain);
+    this.chainId = chainIds.evmNetworkChainToEvmChainId(network, chain);
 
     const relayerAddress = this.contracts.cctp?.wormholeRelayer;
     if (!relayerAddress)

@@ -86,7 +86,7 @@ export class GatewayTransfer implements WormholeTransfer {
       chain: GatewayTransfer.chain,
       address: toNative(
         GatewayTransfer.chain,
-        this.wh.conf.chains[GatewayTransfer.chain]!.contracts.gateway!,
+        this.wh.config.chains[GatewayTransfer.chain]!.contracts.gateway!,
       ),
     };
 

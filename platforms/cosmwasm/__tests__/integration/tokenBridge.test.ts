@@ -138,7 +138,7 @@ describe("TokenBridge Tests", () => {
   });
 
   describe("Create Token Attestation Transactions", () => {
-    const tbAddress = p.conf[chain]!.contracts.tokenBridge!;
+    const tbAddress = p.config[chain]!.contracts.tokenBridge!;
     test("Create Attestation", async () => {
       const attestation = tb.createAttestation(
         nativeTokenAddress,
