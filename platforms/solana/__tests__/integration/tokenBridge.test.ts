@@ -3,7 +3,7 @@ import {
   testing,
   toNative,
   Signature,
-  chainConfigs,
+  CONFIG,
   DEFAULT_NETWORK,
   createVAA,
 } from '@wormhole-foundation/connect-sdk';
@@ -24,7 +24,7 @@ import nock from 'nock';
 import { Keypair } from '@solana/web3.js';
 
 const network = DEFAULT_NETWORK;
-const configs = chainConfigs(network);
+const configs = CONFIG[network].chains;
 
 const TOKEN_ADDRESSES = {
   Mainnet: {

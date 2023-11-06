@@ -1,4 +1,4 @@
-import { Network, PlatformToChains } from '../../constants';
+import { Network, PlatformToChains } from "../../constants";
 import { RoArray, constMap } from "../../utils";
 
 const networkChainEvmCIdEntries = [

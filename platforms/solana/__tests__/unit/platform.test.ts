@@ -3,7 +3,7 @@ import '../mocks/web3';
 
 import {
   DEFAULT_NETWORK,
-  chainConfigs,
+  CONFIG,
   chainToPlatform,
   chains
 } from '@wormhole-foundation/connect-sdk';
@@ -21,7 +21,7 @@ const network = DEFAULT_NETWORK;
 const SOLANA_CHAINS = chains.filter(
   (c) => chainToPlatform(c) === SolanaPlatform.platform,
 );
-const configs = chainConfigs(network);
+const configs = CONFIG[network].chains;
 
 describe('Solana Platform Tests', () => {
   const fakeRpc = getDefaultProvider();

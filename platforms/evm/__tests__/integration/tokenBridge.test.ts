@@ -5,11 +5,11 @@ import {
   UniversalAddress,
   testing,
   toNative,
-  chainConfigs,
   DEFAULT_NETWORK,
   createVAA,
   encoding,
   chainIds,
+  CONFIG,
 } from '@wormhole-foundation/connect-sdk';
 
 import '@wormhole-foundation/connect-sdk-evm-core';
@@ -83,7 +83,7 @@ afterEach(async () => {
 });
 
 const network = DEFAULT_NETWORK;
-const configs = chainConfigs(network);
+const configs = CONFIG[network].chains;
 
 const TOKEN_ADDRESSES = {
   Mainnet: {

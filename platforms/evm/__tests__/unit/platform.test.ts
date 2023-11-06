@@ -4,7 +4,7 @@ import '../mocks/ethers';
 import {
   chainToPlatform,
   chains,
-  chainConfigs,
+  CONFIG,
   DEFAULT_NETWORK,
 } from '@wormhole-foundation/connect-sdk';
 
@@ -20,7 +20,7 @@ const EVM_CHAINS = chains.filter(
 );
 
 const network = DEFAULT_NETWORK;
-const configs = chainConfigs(network);
+const configs = CONFIG[network].chains;
 
 describe('EVM Platform Tests', () => {
   describe('Get Token Bridge', () => {
