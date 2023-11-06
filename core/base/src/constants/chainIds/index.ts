@@ -28,7 +28,7 @@ export function getNativeChainId(n: Network, c: ChainName): string {
     case "Algorand":
       return algorandNetworkChainToChainId.get(n, c);
     case "Btc":
-      return "";
+      throw new Error("unmapped");
   }
 }
 
