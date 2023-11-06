@@ -121,7 +121,10 @@ export module CosmwasmUtils {
   export function chainFromChainId(
     chainMoniker: string,
   ): [Network, PlatformToChains<CosmwasmPlatform.Type>] {
-    const networkChainPair = chainIds.cosmwasmChainIdToNetworkChainPair.get(chainMoniker);
+    const networkChainPair = chainIds.getNetworkAndChainName(
+      CosmwasmPlatform.platform,
+      chainMoniker,
+    );
 
     if (networkChainPair === undefined) throw new Error(`Unknown Cosmwasm chainId ${chainMoniker}`);
 

@@ -118,8 +118,10 @@ export module EvmUtils {
   export function chainFromChainId(
     eip155ChainId: string,
   ): [Network, PlatformToChains<EvmPlatform.Type>] {
-    const ci = encoding.bignum.decode(eip155ChainId);
-    const networkChainPair = chainIds.evmChainIdToNetworkChainPair.get(ci);
+    const networkChainPair = chainIds.getNetworkAndChainName(
+      EvmPlatform.platform,
+      eip155ChainId,
+    );
 
     if (networkChainPair === undefined)
       throw new Error(`Unknown EVM chainId ${eip155ChainId}`);

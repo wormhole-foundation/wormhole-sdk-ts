@@ -50,6 +50,15 @@ export const circleContracts = [
           wormhole: "0x2703483B1a5a7c577e8680de9Df8Be03c6f30e3c",
         },
       ],
+      [
+        "Base",
+        {
+          tokenMessenger: "",
+          messageTransmitter: "",
+          wormholeRelayer: "",
+          wormhole: "0x03faBB06Fa052557143dC28eFCFc63FC12843f1D",
+        },
+      ],
     ],
   ],
 
@@ -98,7 +107,7 @@ export const circleContracts = [
           tokenMessenger: "	0x877b8e8c9e2383077809787ED6F279ce01CB4cc8",
           messageTransmitter: "0x9ff9a4da6f2157A9c82CE756f8fD7E0d75be8895",
           wormholeRelayer: "",
-          wormhole: "",
+          wormhole: "0x2703483B1a5a7c577e8680de9Df8Be03c6f30e3c",
         },
       ],
     ],
