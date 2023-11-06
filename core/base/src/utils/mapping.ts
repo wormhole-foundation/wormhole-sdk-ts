@@ -280,16 +280,37 @@ export type ToMapping<
 
 type Mapped = { [key: PropertyKey]: unknown | Mapped };
 
+// type RecursiveAccess<M extends Mapped, KA extends RoArray<MappableKey>> =
+//   KA extends readonly [infer Head extends MappableKey, ...infer Tail extends RoArray<MappableKey>]
+//   ? M[ToExtPropKey<Head>] extends infer V
+//     ? Tail["length"] extends 0
+//       ? V
+//       : V extends Mapped
+//       ? RecursiveAccess<V, Tail>
+//       : never
+//     : never
+//   : M;
+
+//TODO why does this new, ostensibly better implementation not work when the old, shitty one does?
+//  I suspect it has something to do with with the distribution introduced by infer V but I'm not
+//  sure
+// type RecursiveAccess<M extends Mapped, KA extends RoArray<MappableKey>> =
+//   KA extends readonly [infer Head extends MappableKey, ...infer Tail extends RoArray<MappableKey>]
+//   ? M[ToExtPropKey<Head>] extends infer V extends keyof M
+//     ? V extends Mapped
+//       ? RecursiveAccess<V, Tail>
+//       : V
+//     : never
+//   : M;
+
 type RecursiveAccess<M extends Mapped, KA extends RoArray<MappableKey>> =
   KA extends readonly [infer Head extends MappableKey, ...infer Tail extends RoArray<MappableKey>]
-  ? M[ToExtPropKey<Head>] extends infer V
-    ? Tail["length"] extends 0
-      ? V
-      : V extends Mapped
-      ? RecursiveAccess<V, Tail>
-      : never
+  ? ToExtPropKey<Head> extends keyof M
+    ? M[ToExtPropKey<Head>] extends Mapped
+      ? RecursiveAccess<M[ToExtPropKey<Head>], Tail>
+      : M[ToExtPropKey<Head>]
     : never
-  : never;
+  : M;
 
 //4 layers deep ought to be enough for anyone ;) (couldn't figure out a way to make this recursive
 //  as to avoid having to hardcode arity...)
@@ -326,6 +347,8 @@ type WidenArray<T extends RoArray> =
 
 type WidenParams<F extends Function> = WidenArray<Parameters<F>>;
 
+//TODO neither Parameters<F> nor ReturnType<F> give the right results for GenericMappingFunc and
+//  hence the decuded types of Has and Get are wrong too
 type Has<F extends Function> = Function<WidenParams<F>, boolean>;
 type Get<F extends Function> = (...args: WidenParams<F>) => ReturnType<F> | undefined;
 type ConstMapRet<F extends Function> = F & { get: Get<F>, has: Has<F> };
