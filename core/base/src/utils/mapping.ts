@@ -1,10 +1,70 @@
-//everything in here is really just a band-aid/cover for the fact that TypeScript (despite having
-// capital T type in its name) lacks support for higher-order type functions.
-//find tests/examples at the bottom to get some idea wtf is going on here
+//The intent of this file is probably best explained by an example:
+//
+// const example = [[
+//   "Mainnet", [
+//     ["Ethereum", 1n],
+//     ["Bsc", 56n],
+//     ['Polygon', 137n],
+//   ]], [
+//   "Testnet", [
+//     ["Ethereum", 5n],
+//     ["Sepolia", 11155111n],
+//   ]]
+// ] as const satisfies MappingEntries;
+//
+//Our example variable specifies a relationship between EVM chain ids and their respective chains
+//  and networks. It is a shortened way to specify the full Cartesian product:
+// [
+//   ["Mainnet", "Ethereum", 1n],
+//   ["Mainnet", "Bsc", 56n],
+//   ["Mainnet", 'Polygon', 137n],
+//   ["Testnet", "Ethereum", 5n],
+//   ["Testnet", "Sepolia", 11155111n],
+// ]
+//
+//Using this full cartesian product, we can define a whole host of mappings, the obvious ones being
+//  (network, chain) -> EVM chain id  and its inverse (EVM chain id) -> [network, chain].
+//However, we can also define a mapping (chain) -> [list of EVM chain ids].
+//
+//The purpose of this file is to provide a way to define such mappings in a concise and typesafe
+//  manner.
+//
+//It leverages `as const` specificiations such as the one of example together with a shape parameter
+//  which specifies the columns of our full cartesian set which are used as the keys and values
+//  respectively.
+//The default shape always uses the first n-1 colums as keys and the last column as the value, e.g.
+//  for our example the default shape is [[0,1],2] which maps to (network, chain) -> EVM chain id
+//  while [2, [0,1]] maps to (EVM chain id) -> [network, chain], and [[0,1],[0,1,2]] maps to
+//  (network, chain) -> [network, chain, EVM chain id].
+//
+//To actually define the type-safe default mapping for our example we write:
+//
+// const evmChainIdMapping = constMap(example);
+//
+//Which in turn can then be used to look up EVM chain ids via:
+//
+// const ethereumMainnetId = evmChainIdMapping("Mainnet", "Ethereum");
+//
+//evmChainIdMapping enforces that its first argument is of the union type "Mainnet" | "Testnet",
+//  and in turn the second argument can only be one of the allowed chains conditional on the given
+//  network, i.e. in our case "Ethereum" | "Bsc" | "Polygon". The type of ethereumMainnetId is
+//  in turn is the bigint literal 1n.
+//
+//In short, it behaves exactly as a normal constant object would, but makes it easy to define
+//  multiple such mappings giving a single data spec. Additionally, it natively supports bigint
+//  and boolean keys which are not supported by normal objects (but which are always converted
+//  to strings thus losing the original datatype).
+
+//dev notes
+//K  = key
+//M  = mapping entries (a spec like example)
+//KC = key columns
+//VC = value columns
+//VR = value rows
+
 import {
   IndexEs,
   Flatten,
-  Unflatten,
   InnerFlatten,
   IsRectangular,
   Zip,
@@ -12,11 +72,10 @@ import {
   OnlyIndexes,
   ExcludeIndexes,
   Entries,
-  Column,
   range,
   zip,
 } from "./array";
-import { AssertType, Function, Widen, RoArray, RoArray2D, } from "./metaprogramming";
+import { Function, Widen, RoArray, RoArray2D, } from "./metaprogramming";
 
 export type ShallowMapping<M extends RoArray<readonly [PropertyKey, unknown]>> =
  { readonly [E in M[number] as E[0]]: E[1] };
@@ -28,15 +87,14 @@ function isMappableKey(key: unknown): key is MappableKey {
   return ["string", "number", "symbol", "bigint", "boolean"].includes(typeof key);
 }
 
-type ToExtPropKey<T> =
-  T extends MappableKey
-  ? AssertType<
-      T extends bigint ? `bigint(${T})` :
-      T extends boolean ? `boolean(${T})` :
-      T,
-      PropertyKey
-    >
-  : never;
+type Depth = [never, 0, 1, 2, 3, 4];
+
+type ToExtPropKey<T extends MappableKey> =
+  T extends bigint
+  ? `bigint(${T})`
+  : T extends boolean
+  ? `boolean(${T})`
+  : T;
 
 type FromExtPropKey<T extends PropertyKey> =
   T extends `bigint(${infer V extends bigint})`
@@ -45,45 +103,255 @@ type FromExtPropKey<T extends PropertyKey> =
   ? V
   : T;
 
-type MappingEntry = readonly [MappableKey, unknown];
-type MappingEntries = RoArray<MappingEntry>;
+type MappingEntry<V = unknown> = readonly [MappableKey, V];
+type MappingEntries<V = unknown> = RoArray<MappingEntry<V>>;
 
-type CombineKeyValues<
-  K,
-  T extends MappingEntries,
-  M extends RoArray,
-  U extends MappingEntries = [],
+//Recursively sifts through T combining all row indexes that have key K.
+//Matching rows (i.e. those with key K) have their indexes placed in IA, non-matching (unfiltered)
+//  entries go to U.
+type CombineKeyRowIndexes<
+  K extends MappableKey,
+  T extends MappingEntries<number>,
+  IA extends RoArray<number>, //all values associated with K
+  U extends MappingEntries<number> = [], //rows that have been scanned and are not associated with K
 > =
-  T extends readonly [infer Head extends MappingEntry, ...infer Tail extends MappingEntries]
-  ? Head extends readonly [infer Key extends MappableKey, infer Value]
-    ? Key extends K
-      ? CombineKeyValues<K, Tail, [...M, Value], U>
-      : CombineKeyValues<K, Tail, M, [...U, Head]>
-    : never
-  : [M, U];
+  T extends readonly [infer Head extends MappingEntry<number>, ...infer Tail extends MappingEntries<number>]
+  ? Head[0] extends K
+    ? CombineKeyRowIndexes<K, Tail, [...IA, Head[1]], U>
+    : CombineKeyRowIndexes<K, Tail, IA, [...U, Head]>
+  : [IA, U];
 
-type ToMapEntries<T extends RoArray2D, M extends MappingEntries = []> =
-  T extends readonly [infer Head, ...infer Tail extends MappingEntries]
-  ? Head extends readonly [infer Key extends MappableKey, infer Value]
-    ? CombineKeyValues<Key, Tail, [Value]> extends readonly [
-        infer MK extends RoArray,
-        infer MU extends RoArray2D
+//Takes a key column and its indexes (KCI) and for each key creates the set of all row indices
+//  that have that key
+//In our example for the default shape, it takes the network column and turns
+//  [["Mainnet", 0], ["Mainnet", 1], ["Mainnet", 2], ["Testnet", 3], ["Testnet", 4]]
+//into [["Mainnet", [0,1,2]], ["Testnet", [3,4]]].
+type ToMapEntries<KCI extends MappingEntries<number>, M extends MappingEntries = []> =
+  KCI extends readonly [infer Head, ...infer Tail extends MappingEntries<number>]
+  ? Head extends readonly [infer K extends MappableKey, infer V extends number]
+    ? CombineKeyRowIndexes<K, Tail, [V]> extends readonly [
+        infer IA extends RoArray,
+        infer KCIU extends MappingEntries<number>
       ]
-      ? ToMapEntries<MU, [...M, [Key, MK]]>
+      ? ToMapEntries<KCIU, [...M, [K, IA]]>
       : never
     : never
   : M;
 
-type CartesianRightRecursive<T extends RoArray> =
-  T extends RoArray<readonly [MappableKey, RoArray]>
-  ? Flatten<[...{ [K in keyof T]:
+type CartesianRightRecursive<M extends RoArray> =
+  M extends MappingEntries<RoArray>
+  ? Flatten<[...{ [K in keyof M]:
       K extends `${number}`
-      ? InnerFlatten<Cartesian<T[K][0], CartesianRightRecursive<T[K][1]>>>
+      ? InnerFlatten<Cartesian<M[K][0], CartesianRightRecursive<M[K][1]>>>
       : never
     }]>
-  : T extends readonly [MappableKey, RoArray]
-  ? Cartesian<T[0], T[1]>
-  : T;
+  : M extends MappingEntry<RoArray>
+  ? Cartesian<M[0], M[1]>
+  : M;
+
+type Shape = readonly [IndexEs, IndexEs]; //key columns, value columns
+type CartesianSet<T = unknown> = RoArray2D<T>; //CartesianSet is always rectangular
+type Transpose<T extends RoArray2D> = Zip<T>;
+
+//Takes the first of the reamining key columns and splits it into chunks that share the same key
+//  value. Then invokes itself for each sub-chunk passing along only those value rows that belong
+//  to that chunk.
+//In our example for the default shape, it starts with the network column and splits it into
+//  the "Mainnet" and "Testnet" chunk. The first chunk gets the first 3 rows, the second chunk
+//  gets the last 2. Then the "Mainnet" chunk is recursively split into 3 chunks again, ...
+type ProcessNextKeyColmn<KC extends CartesianSet<MappableKey>, VR extends RoArray> =
+  KC["length"] extends 0
+  ? VR
+  : ExcludeIndexes<KC, 0> extends infer KCR extends CartesianSet<MappableKey>
+  //KRIA = key row indexes array
+  ? ToMapEntries<Entries<KC[0]>> extends infer KRIA extends MappingEntries<RoArray<number>>
+    ? [...{
+        [K in keyof KRIA]: [
+          KRIA[K][0],
+          ProcessNextKeyColmn<
+            Transpose<OnlyIndexes<Transpose<KCR>, KRIA[K][1]>>,
+            OnlyIndexes<VR, KRIA[K][1]>
+          >
+        ]
+      }]
+    : never
+  : never;
+
+//We encode leaf values as tuples of void (which does not constitute a value type and hence can't
+//  come from the user) and the actual value. This allows us to later distinguish wheter a value
+//  is a single (singleton) leaf value and hence whether the mapping is injective (= only one value
+//  per full key group) or not.
+type LeafValue<T = unknown> = readonly [void, T];
+
+//Takes the value columns and combines them into leaf value rows.
+type CombineValueColumnsToLeafValues<VC extends CartesianSet> =
+  //if we only have a single value column, we don't have to use tuples for values
+  (VC["length"] extends 1 ? VC[0] : Transpose<VC>) extends infer VCT extends RoArray
+  ? [...{ [K in keyof VCT]: K extends `${number}` ? LeafValue<VCT[K]> : never }]
+  : never;
+
+//Takes a full cartesian set in row order and splits it into its key and value columns according to
+//  the specified shape.
+type SplitAndReorderKeyValueColumns<R extends CartesianSet, S extends Shape> =
+  Transpose<R> extends infer C extends CartesianSet
+  ? [OnlyIndexes<C, S[0]>, OnlyIndexes<C, S[1]>]
+  : never;
+
+//returns the mapping with "unwrapped" values (i.e. turns the singleton arrays back into their one
+//  constituent element) if all leaves are indeed singletons, otherwise returns void
+type UnwrapValuesIfAllAreSingletons<M extends MappingEntries, D extends Depth[number]> =
+  D extends 1
+  ? M extends MappingEntries<readonly [LeafValue]>
+    ? [...{ [K in keyof M]: K extends `${number}` ? [M[K][0], M[K][1][0][1]] : never }]
+    : void
+  : M extends MappingEntries<MappingEntries>
+  ? [...{ [K in keyof M]: K extends `${number}`
+      ? [M[K][0], UnwrapValuesIfAllAreSingletons<M[K][1], Depth[D]>]
+      : never
+    }] extends infer U extends MappingEntries
+    ? U
+    : void
+  : never;
+
+type MaybeUnwrapValuesIfAllAreSingletons<M extends MappingEntries, D extends Depth[number]> =
+  UnwrapValuesIfAllAreSingletons<M, D> extends infer V extends MappingEntries ? V : M;
+
+//creates the transformed mapping and its key column count
+type TransformMapping<M extends MappingEntries, S extends Shape | void = void> =
+  //check that M has a valid structure for mapping entries
+  CartesianRightRecursive<M> extends infer CRR extends RoArray2D
+  ? IsRectangular<CRR> extends true
+    //ensure CRR is not empty  
+    ? CRR extends readonly [RoArray, ...RoArray2D]
+      ? S extends Shape
+        ? SplitAndReorderKeyValueColumns<CRR, S> extends [
+            infer KC extends CartesianSet<MappableKey>,
+            infer VC extends CartesianSet
+          ]
+          ? KC["length"] extends Depth[number]
+            ? CombineValueColumnsToLeafValues<VC> extends infer VR extends RoArray<LeafValue>
+              ? ProcessNextKeyColmn<KC, VR> extends infer TM extends MappingEntries
+                ? [MaybeUnwrapValuesIfAllAreSingletons<TM, KC["length"]>, KC["length"]]
+                : never
+              : never
+            : never
+          : never
+        //if we don't have an explicit shape, take the first row and subtract 1 (for the value
+        //  column) to determine the count of key columns
+        : CRR[0] extends readonly [...infer KC extends RoArray, unknown]
+        ? KC["length"] extends Depth[number]
+          ? [M, KC["length"]]
+          : never
+        : never
+      : never
+    : never
+  : never;
+
+type ObjectFromMappingEntries<M extends MappingEntries, D extends Depth[number]> = {
+  [K in keyof M as (K extends `${number}` ? ToExtPropKey<M[K][0]> : never)]:
+    M[K][1] extends infer V
+    ? D extends 1
+      ? V extends LeafValue<infer T>
+        ? T
+        : V extends RoArray<LeafValue>
+        ? [...{ [K2 in keyof V]: K2 extends `${number}` ? V[K2][1] : never}]
+        : V
+      : V extends MappingEntries
+      ? ObjectFromMappingEntries<V, Depth[D]>
+      : never
+    : never
+};
+
+export type ToMappingAndDepth<
+  M extends MappingEntries,
+  S extends Shape | void | undefined
+> =
+  TransformMapping<M, S extends undefined ? void : S> extends [
+    infer TM extends MappingEntries,
+    infer D extends Depth[number],
+  ]
+  ? [ObjectFromMappingEntries<TM, D>, D]
+  : never;
+
+export type ToMapping<
+  M extends MappingEntries,
+  S extends Shape | void | undefined = undefined
+> = ToMappingAndDepth<M, S>[0];
+
+type Mapped = { [key: PropertyKey]: unknown | Mapped };
+
+// type RecursiveAccess<M extends Mapped, KA extends RoArray<MappableKey>> =
+//   KA extends readonly [infer Head extends MappableKey, ...infer Tail extends RoArray<MappableKey>]
+//   ? M[ToExtPropKey<Head>] extends infer V
+//     ? Tail["length"] extends 0
+//       ? V
+//       : V extends Mapped
+//       ? RecursiveAccess<V, Tail>
+//       : never
+//     : never
+//   : M;
+
+//TODO why does this new, ostensibly better implementation not work when the old, shitty one does?
+//  I suspect it has something to do with with the distribution introduced by infer V but I'm not
+//  sure
+// type RecursiveAccess<M extends Mapped, KA extends RoArray<MappableKey>> =
+//   KA extends readonly [infer Head extends MappableKey, ...infer Tail extends RoArray<MappableKey>]
+//   ? M[ToExtPropKey<Head>] extends infer V extends keyof M
+//     ? V extends Mapped
+//       ? RecursiveAccess<V, Tail>
+//       : V
+//     : never
+//   : M;
+
+type RecursiveAccess<M extends Mapped, KA extends RoArray<MappableKey>> =
+  KA extends readonly [infer Head extends MappableKey, ...infer Tail extends RoArray<MappableKey>]
+  ? ToExtPropKey<Head> extends keyof M
+    ? M[ToExtPropKey<Head>] extends Mapped
+      ? RecursiveAccess<M[ToExtPropKey<Head>], Tail>
+      : M[ToExtPropKey<Head>]
+    : never
+  : M;
+
+//4 layers deep ought to be enough for anyone ;) (couldn't figure out a way to make this recursive
+//  as to avoid having to hardcode arity...)
+type GenericMappingFunc<M extends Mapped, D extends number> =
+  D extends 1
+  ? <K1 extends FromExtPropKey<keyof M>>(...args: [K1]) =>
+    RecursiveAccess<M, [K1]>
+  : D extends 2
+  ? < K1 extends FromExtPropKey<keyof M>,
+      K2 extends FromExtPropKey<keyof RecursiveAccess<M, [K1]>>,
+    >(...args: [K1, K2]) => RecursiveAccess<M, [K1, K2]>
+  : D extends 3
+  ? < K1 extends FromExtPropKey<keyof M>,
+      K2 extends FromExtPropKey<keyof RecursiveAccess<M, [K1]>>,
+      K3 extends FromExtPropKey<keyof RecursiveAccess<M, [K1, K2]>>,
+    >(...args: [K1, K2, K3]) => RecursiveAccess<M, [K1, K2, K3]>
+  : D extends 4
+  ? < K1 extends FromExtPropKey<keyof M>,
+      K2 extends FromExtPropKey<keyof RecursiveAccess<M, [K1]>>,
+      K3 extends FromExtPropKey<keyof RecursiveAccess<M, [K1, K2]>>,
+      K4 extends FromExtPropKey<keyof RecursiveAccess<M, [K1, K2, K3]>>,
+    >(...args: [K1, K2, K3, K4]) => RecursiveAccess<M, [K1, K2, K3, K4]>
+  : never;
+
+type ToGenericMappingFunc<M extends MappingEntries, S extends Shape | undefined = undefined> =
+  ToMappingAndDepth<M, S> extends [infer TM extends Mapped, infer D extends Depth[number]]
+  ? GenericMappingFunc<TM, D>
+  : never;
+
+type WidenArray<T extends RoArray> =
+  T extends readonly [infer Head, ...infer Tail extends RoArray]
+  ? [Widen<Head>, ...WidenArray<Tail>]
+  : [];
+
+type WidenParams<F extends Function> = WidenArray<Parameters<F>>;
+
+//TODO neither Parameters<F> nor ReturnType<F> give the right results for GenericMappingFunc and
+//  hence the decuded types of Has and Get are wrong too
+type Has<F extends Function> = Function<WidenParams<F>, boolean>;
+type Get<F extends Function> = (...args: WidenParams<F>) => ReturnType<F> | undefined;
+type ConstMapRet<F extends Function> = F & { get: Get<F>, has: Has<F> };
 
 const isRecursiveTuple = (arr: RoArray) =>
   arr.length === 2 && !Array.isArray(arr[0]) && Array.isArray(arr[1]);
@@ -101,106 +369,6 @@ const cartesianRightRecursive = <const T extends RoArray>(arr: T): CartesianRigh
   ? cartesianRightRecursive(arr[1] as RoArray).map((ele: any) => [arr[0], ele])
   : arr
 ) as CartesianRightRecursive<T>;
-
-type Shape = readonly [IndexEs, IndexEs]; //key columns, value columns
-type CartesianSet<T = unknown> = RoArray2D<T>; //CartesianSet is always rectangular
-type Transpose<T extends RoArray2D> = Zip<T>;
-
-type DivideAndConquer<
-  KA extends CartesianSet<MappableKey>,
-  VA extends RoArray,
-  KeyRows extends RoArray<readonly [MappableKey, RoArray<number>]>,
-> =
-  [...{
-    [K in keyof KeyRows]: [
-      KeyRows[K][0],
-      ProcessNextKey<OnlyIndexes<KA, KeyRows[K][1]>, OnlyIndexes<VA, KeyRows[K][1]>>
-    ]
-  }];
-
-type ProcessNextKey<KA extends CartesianSet<MappableKey>, VA extends RoArray> =
-  KA["length"] extends 0
-  ? VA
-  : DivideAndConquer<
-      Transpose<ExcludeIndexes<Transpose<KA>, 0>>,
-      VA,
-      ToMapEntries<Entries<Column<KA, 0>>>
-    >;
-
-type SplitAndReorderKeyAndValueColums<A extends CartesianSet, S extends Shape> =
-  ProcessNextKey<
-    Transpose<OnlyIndexes<Transpose<A>, S[0]>>,
-    Unflatten<
-      S[1] extends number | readonly [number]
-      //if we have a single value column, we can just flatten the result
-      ? Transpose<OnlyIndexes<Transpose<A>, S[1]>>
-      : Unflatten<Transpose<OnlyIndexes<Transpose<A>, S[1]>>>
-    >
-  >;
-
-//we encode leaf values as double singletons to distinguish them from mapping entries and arrays
-//  of leaf values (in case the mapping isn't injective (i.e. a single key has multiple values
-//  associated with it))
-type LeafValue = readonly [readonly [unknown]];
-
-//returns the mapping with unwrapped values if all leaves are indeed singletons
-//  otherwise returns false
-type UnwrapValuesIfAllAreSingletons<M extends MappingEntries> =
-  M extends readonly [infer Head, ...infer Tail extends MappingEntries]
-  ? Head extends readonly [infer K, infer V]
-    ? V extends readonly [LeafValue, LeafValue]
-      ? false
-      : V extends MappingEntries
-        ? UnwrapValuesIfAllAreSingletons<V> extends MappingEntries
-          ? [
-              [K, UnwrapValuesIfAllAreSingletons<V>],
-              ...UnwrapValuesIfAllAreSingletons<Tail>
-            ]
-          : false
-        : V extends readonly [unknown]
-        ? [readonly [K, V[0]], ...UnwrapValuesIfAllAreSingletons<Tail>]
-        : false
-    : never
-  : [];
-
-// type MaybeUnwrapValuesIfAllAreSingletons<T> = T;
-type MaybeUnwrapValuesIfAllAreSingletons<M> =
-  AssertType<
-    UnwrapValuesIfAllAreSingletons<AssertType<M, MappingEntries>> extends false
-    ? M
-    : UnwrapValuesIfAllAreSingletons<AssertType<M, MappingEntries>>,
-    MappingEntries
-  >;
-
-type TransformMapping<M extends MappingEntries, S extends Shape | undefined = undefined> =
-  //check that M has a valid structure for mapping entries
-  IsRectangular<CartesianRightRecursive<M>> extends true
-  ? [S] extends [undefined]
-    ? M
-    : MaybeUnwrapValuesIfAllAreSingletons<
-        SplitAndReorderKeyAndValueColums<
-          CartesianRightRecursive<M>,
-          //why TS doesn't narrow this automatically is beyond me
-          Exclude<S, undefined>
-        >
-      >
-  : never;
-
-export type ObjectFromMappingEntries<M extends MappingEntries> = {
-  [K in keyof M as (K extends `${number}` ? ToExtPropKey<M[K][0]> : never)]:
-    M[K][1] extends readonly [LeafValue, LeafValue]
-    ? Flatten<Flatten<M[K][1]>>
-    : M[K][1] extends MappingEntries
-    ? ObjectFromMappingEntries<M[K][1]>
-    : M[K][1] extends RoArray<LeafValue>
-    ? Flatten<Flatten<M[K][1]>>
-    : M[K][1] extends LeafValue
-    ? M[K][1][0][0]
-    : M[K][1]
-};
-
-export type ToMapping<M extends MappingEntries, S extends Shape | undefined = undefined> =
-  ObjectFromMappingEntries<TransformMapping<M, S>>;
 
 const toMapping = <
   const M extends MappingEntries,
@@ -279,7 +447,6 @@ const toMapping = <
       if (!isMappableKey(key))
         throw new Error(`Invalid key: ${key} in ${keyCol}`);
 
-
   const ret = buildMappingRecursively(
     keyCartesianSet as CartesianSet<MappableKey>,
     zip(leafValues)
@@ -293,74 +460,25 @@ const toMapping = <
   return ret as ToMapping<M, S>;
 }
 
-type Mapped = { [key: PropertyKey]: unknown | Mapped };
-
-type RecursiveAccess<M extends Mapped, KA extends RoArray<MappableKey>> =
-  KA extends readonly [infer Head extends MappableKey, ...infer Tail extends RoArray<MappableKey>]
-  ? ToExtPropKey<Head> extends keyof M
-    ? M[ToExtPropKey<Head>] extends Mapped
-      ? RecursiveAccess<M[ToExtPropKey<Head>], Tail>
-      : M[ToExtPropKey<Head>]
-    : never
-  : M;
-
-//4 layers deep ought to be enough for anyone ;) (couldn't figure out a way to make this recursive
-//  as to avoid having to hardcode arity...)
-type GenericMappingFunc<M extends Mapped, D extends number> =
-  D extends 1
-  ? <K1 extends FromExtPropKey<keyof M>>(...args: [K1]) =>
-    RecursiveAccess<M, [K1]>
-  : D extends 2
-  ? < K1 extends FromExtPropKey<keyof M>,
-      K2 extends FromExtPropKey<keyof RecursiveAccess<M, [K1]>>,
-    >(...args: [K1, K2]) => RecursiveAccess<M, [K1, K2]>
-  : D extends 3
-  ? < K1 extends FromExtPropKey<keyof M>,
-      K2 extends FromExtPropKey<keyof RecursiveAccess<M, [K1]>>,
-      K3 extends FromExtPropKey<keyof RecursiveAccess<M, [K1, K2]>>,
-    >(...args: [K1, K2, K3]) => RecursiveAccess<M, [K1, K2, K3]>
-  : D extends 4
-  ? < K1 extends FromExtPropKey<keyof M>,
-      K2 extends FromExtPropKey<keyof RecursiveAccess<M, [K1]>>,
-      K3 extends FromExtPropKey<keyof RecursiveAccess<M, [K1, K2]>>,
-      K4 extends FromExtPropKey<keyof RecursiveAccess<M, [K1, K2, K3]>>,
-    >(...args: [K1, K2, K3, K4]) => RecursiveAccess<M, [K1, K2, K3, K4]>
-  : never;
-
-//pretty hacky way to determine depth of mapping using the tools we have a hand
-type MappingDepth<M extends MappingEntries, S extends Shape | undefined = undefined> =
-  CartesianRightRecursive<TransformMapping<M, S>> extends RoArray2D
-  ? ExcludeIndexes<CartesianRightRecursive<TransformMapping<M, S>>[0], 0>["length"]
-  : 0;
-
-type WidenArray<T extends RoArray> =
-  T extends readonly [infer Head, ...infer Tail]
-  ? [Widen<Head>, ...WidenArray<Tail>]
-  : [];
-
-type WidenParams<F extends Function> = WidenArray<Parameters<F>>;
-
-type Has<F extends Function> = Function<WidenParams<F>, boolean>;
-type Get<F extends Function> = Function<WidenParams<F>, ReturnType<F> | undefined>;
-
 const has = <const F extends Function>(f: F) =>
   (...args: WidenParams<F>) => f(...args) !== undefined;
 
 const get = <const F extends Function>(f: F) =>
   (...args: WidenParams<F>) => f(...args) as Widen<ReturnType<F>>;
 
-type ToGenericMappingFunc<M extends MappingEntries, S extends Shape | undefined = undefined> =
-  GenericMappingFunc<ToMapping<M, S>, MappingDepth<M, S>>;
-
-type ConstMapRet<F extends Function> = F & { get: Get<F>, has: Has<F> };
-
-export const constMap = <
+export function constMap<
   const M extends MappingEntries,
-  const S extends Shape | undefined = undefined
->(mappingEntries: M, shape?: S): ConstMapRet<ToGenericMappingFunc<M, S>> => {
+  const S extends Shape | undefined = undefined //const type parameter is truly necessary here
+>(
+  mappingEntries: M,
+  shape?: S
+): ConstMapRet<ToGenericMappingFunc<M, S>> {
   const mapping = toMapping(mappingEntries, shape);
   const genericMappingFunc = ((...args: any[]) =>
-    args.reduce((subMapping: any, key) => subMapping?subMapping[key.toString()] ?? undefined:undefined, mapping)) as ToGenericMappingFunc<M, S>;
+    args.reduce((subMapping: any, key) =>
+      subMapping ?subMapping[key.toString()] ?? undefined :undefined,
+      mapping
+    )) as ToGenericMappingFunc<M, S>;
 
   (genericMappingFunc as any)["get"] = get(genericMappingFunc);
   (genericMappingFunc as any)["has"] = has(genericMappingFunc);
@@ -379,6 +497,7 @@ export const constMap = <
 //     "Mainnet", [
 //       ["Ethereum", 1n],
 //       ["Bsc", 56n],
+//       ['Polygon', 137n],
 //     ]
 //   ],
 //   [
@@ -395,6 +514,9 @@ export const constMap = <
 
 // type Test10 = ToMapping<typeof sample, [[0,1],[0,1,2]]>;
 // type Test11 = ToMapping<typeof sample, [[0,1],[2,1,0]]>;
+
+// type Element10 = Test10["Mainnet"]["Ethereum"];
+// type Element11 = Test11["Mainnet"]["Ethereum"];
 
 // type Test20 = ToMapping<typeof sample, [0,1]>;
 // type Test21 = ToMapping<typeof sample, [[0],1]>; //same as Test20
@@ -430,4 +552,3 @@ export const constMap = <
 // const test40Entry1 = test40("Ethereum"); //["Mainnet", "Testnet"]
 // const test40Entry2 = test40("Sepolia"); //["Testnet"]
 // const test40Entry3 = test40("Bsc"); //["Mainnet"]
-

@@ -1,5 +1,3 @@
-export type AssertType<T, U> = T extends U ? T : U;
-
 export type Extends<T, U> = [T] extends [U] ? true : false;
 
 export type Function<P extends any[] = any[], R = any> = (...args: P) => R;

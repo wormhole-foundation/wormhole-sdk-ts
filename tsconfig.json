@@ -11,6 +11,7 @@
     "declarationMap": true,
     "sourceMap": true,
     "skipLibCheck": true,
+    "noErrorTruncation": true,
        // Strict Checks
     "alwaysStrict": true,
     "noImplicitAny": true,
