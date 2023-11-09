@@ -33,8 +33,8 @@ import { TransferStuff, getStuff, waitLog } from "./helpers";
   const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform, CosmwasmPlatform, AptosPlatform]);
 
   // Grab chain Contexts
-  const sendChain = wh.getChain("Avalanche");
-  const rcvChain = wh.getChain("Aptos");
+  const sendChain = wh.getChain("Aptos");
+  const rcvChain = wh.getChain("Avalanche");
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
@@ -44,7 +44,7 @@ import { TransferStuff, getStuff, waitLog } from "./helpers";
   const amt = normalizeAmount("0.01", sendChain.config.nativeTokenDecimals);
 
   // Choose your adventure
-  // await manualTokenTransfer(wh, "native", amt, source, destination);
+  await manualTokenTransfer(wh, "native", amt, source, destination);
 
   // await automaticTokenTransfer(wh, "native", 100_000_000n, source, destination);
   // await automaticTokenTransferWithGasDropoff(
@@ -70,12 +70,13 @@ import { TransferStuff, getStuff, waitLog } from "./helpers";
   // );
 
   // Or pick up where you left off given the source transaction
-  await finishTransfer(
-    wh,
-    sendChain.chain,
-    "0x38a4a7b0ae1ebe4db6385163e900455686a745af1fb377190f76b245857bb7ed",
-    destination.signer,
-  );
+  //await finishTransfer(
+  //  wh,
+  //  sendChain.chain,
+  //  "0xa7d82e92d703663280dab886a6b08f0102001f1248ac7844fa7f1c24f1cfa0cb",
+  //  //"0x38a4a7b0ae1ebe4db6385163e900455686a745af1fb377190f76b245857bb7ed",
+  //  destination.signer,
+  //);
 })();
 
 async function tokenTransfer(

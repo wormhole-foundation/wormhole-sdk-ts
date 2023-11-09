@@ -13,7 +13,7 @@ import {
   nativeDecimals,
 } from "@wormhole-foundation/connect-sdk";
 import { AptosClient, CoinClient, Types } from "aptos";
-import { APTOS_COIN } from "./constants";
+import { APTOS_COIN, APTOS_SEPARATOR } from "./constants";
 import { AptosPlatform } from "./platform";
 import { AnyAptosAddress } from "./types";
 
@@ -51,7 +51,7 @@ export module AptosUtils {
     const decimals = (
       (
         await rpc.getAccountResource(
-          tokenAddr.split('::')[0],
+          tokenAddr.split(APTOS_SEPARATOR)[0],
           coinType,
         )
       ).data as any
@@ -122,28 +122,19 @@ export module AptosUtils {
     rpc: AptosClient,
     stxns: SignedTx[],
   ): Promise<TxHash[]> {
-    // simulate transaction
-    //await rpc.simulateTransaction(sender, rawTx).then((sims) =>
-    //  sims.forEach((tx) => {
-    //    if (!tx.success) {
-    //      throw new Error(
-    //        `Transaction failed: ${tx.vm_status}\n${JSON.stringify(tx, null, 2)}`
-    //      );
-    //    }
-    //  })
-    //);
-
-    // sign & submit transaction
-    //return rpc
-    //  .signTransaction(sender, rawTx)
-    //  .then((signedTx) => rpc.submitTransaction(signedTx))
-    //  .then((pendingTx) => rpc.waitForTransactionWithResult(pendingTx.hash));
-    return [];
+    // TODO: concurrent
+    const txhashes = []
+    for (const stxn of stxns) {
+      const pendingTx = await rpc.submitTransaction(stxn)
+      const res = await rpc.waitForTransactionWithResult(pendingTx.hash);
+      txhashes.push(res.hash);
+    }
+    return txhashes;
   }
 
   export async function getCurrentBlock(rpc: AptosClient): Promise<number> {
-    return 0;
-    // return await rpc.getSlot(rpc.commitment);
+    const li = await rpc.getLedgerInfo()
+    return Number(li.block_height)
   }
 
   export function chainFromChainId(
@@ -151,12 +142,8 @@ export module AptosUtils {
   ): [Network, PlatformToChains<AptosPlatform.Type>] {
     const netChain = canonicalChainIds.getNetworkAndChainName(AptosPlatform.platform, genesisHash);
 
-    if (!netChain) {
-      // Note: this is required for tilt/ci since it gets a new genesis hash
-      if (AptosPlatform.network === "Devnet") return ["Devnet", "Aptos"];
-
+    if (!netChain)
       throw new Error(`No matching genesis hash to determine network and chain: ${genesisHash}`);
-    }
 
     const [network, chain] = netChain;
     return [network, chain];

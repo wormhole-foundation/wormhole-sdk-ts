@@ -8,5 +8,5 @@ export class AptosUnsignedTransaction implements UnsignedTransaction {
     readonly chain: ChainName,
     readonly description: string,
     readonly parallelizable: boolean = false,
-  ) {}
+  ) { }
 }

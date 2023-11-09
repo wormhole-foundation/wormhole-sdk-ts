@@ -1,13 +1,14 @@
 import {
   ChainName,
   RpcConnection,
-  SignOnlySigner,
+  SignAndSendSigner,
   Signer,
+  TxHash,
   UnsignedTransaction,
   encoding,
 } from "@wormhole-foundation/connect-sdk";
+import { AptosAccount, AptosClient, TxnBuilderTypes, Types } from "aptos";
 import { AptosPlatform } from "../platform";
-import { AptosAccount, AptosClient } from "aptos";
 
 // returns a SignOnlySigner for the Aptos platform
 export async function getAptosSigner(
@@ -18,7 +19,7 @@ export async function getAptosSigner(
   return new AptosSigner(chain, new AptosAccount(encoding.hex.decode(privateKey)), rpc);
 }
 
-export class AptosSigner implements SignOnlySigner {
+export class AptosSigner implements SignAndSendSigner {
   constructor(private _chain: ChainName, private _account: AptosAccount, private _rpc: AptosClient) { }
 
   chain(): ChainName {
@@ -29,29 +30,46 @@ export class AptosSigner implements SignOnlySigner {
     return this._account.address().hex();
   }
 
-  async sign(tx: UnsignedTransaction[]): Promise<any[]> {
-    const signed = [];
+  async signAndSend(tx: UnsignedTransaction[]): Promise<TxHash[]> {
+    const txhashes = []
     for (const txn of tx) {
-      const { description, transaction } = txn;
+      const { description, transaction } = txn as { description: string, transaction: Types.EntryFunctionPayload }
       console.log(`Signing: ${description} for ${this.address()}`);
 
-      const rawTx = await this._rpc.generateTransaction(this._account.address(), transaction)
+      // overwriting `max_gas_amount` and `gas_unit_price` defaults
+      // rest of defaults are defined here: https://aptos-labs.github.io/ts-sdk-doc/classes/AptosClient.html#generateTransaction
+      const customOpts = {
+        gas_unit_price: "100",
+        max_gas_amount: "30000",
+        expiration_timestamp_secs: (BigInt(Date.now() + (8 * 60 * 60 * 1000)) / 1000n).toString(),
+      } as Partial<Types.SubmitTransactionRequest>
 
-      // simulate transaction
-      await this._rpc.simulateTransaction(this._account, rawTx).then((sims) =>
-        sims.forEach((tx) => {
-          if (!tx.success) {
-            throw new Error(
-              `Transaction failed: ${tx.vm_status}\n${JSON.stringify(tx, null, 2)}`
-            );
-          }
-        })
-      );
+      const tx = await this._rpc.generateTransaction(this._account.address(), transaction, customOpts)
 
-      // sign the transaction 
-      const signedTx = this._rpc.signTransaction(this._account, rawTx)
-      signed.push(signedTx)
+      const { hash } = await this._simSignSend(tx)
+      txhashes.push(hash)
     }
-    return signed;
+    return txhashes;
   }
+
+  private async _simSignSend(
+    rawTx: TxnBuilderTypes.RawTransaction
+  ): Promise<Types.Transaction> {
+    // simulate transaction
+    await this._rpc.simulateTransaction(this._account, rawTx).then((sims) =>
+      sims.forEach((tx) => {
+        if (!tx.success) {
+          throw new Error(
+            `Transaction failed: ${tx.vm_status}\n${JSON.stringify(tx, null, 2)}`
+          );
+        }
+      })
+    );
+
+    // sign & submit transaction
+    return this._rpc
+      .signTransaction(this._account, rawTx)
+      .then((signedTx) => this._rpc.submitTransaction(signedTx))
+      .then((pendingTx) => this._rpc.waitForTransactionWithResult(pendingTx.hash));
+  };
 }

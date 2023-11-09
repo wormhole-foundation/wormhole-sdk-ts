@@ -4,15 +4,18 @@ import {
   ChainsConfig,
   Contracts,
   Network,
+  UniversalAddress,
   UnsignedTransaction,
   WormholeCore,
   WormholeMessageId,
+  toChainId
 } from "@wormhole-foundation/connect-sdk";
 import { AptosChainName, AptosPlatform } from "@wormhole-foundation/connect-sdk-aptos";
 import { AptosClient, Types } from "aptos";
 
 export class AptosWormholeCore implements WormholeCore<"Aptos"> {
   readonly chainId: ChainId;
+  readonly coreBridge: string
 
   private constructor(
     readonly network: Network,
@@ -20,16 +23,13 @@ export class AptosWormholeCore implements WormholeCore<"Aptos"> {
     readonly connection: AptosClient,
     readonly contracts: Contracts,
   ) {
-    //this.chainId = toChainId(chain);
-    //const coreBridgeAddress = contracts.coreBridge;
-    //if (!coreBridgeAddress)
-    //  throw new Error(
-    //    `CoreBridge contract Address for chain ${chain} not found`,
-    //  );
-    //this.coreBridge = createReadOnlyWormholeProgramInterface(
-    //  coreBridgeAddress,
-    //  connection,
-    //);
+    this.chainId = toChainId(chain);
+    const coreBridgeAddress = contracts.coreBridge;
+    if (!coreBridgeAddress)
+      throw new Error(
+        `CoreBridge contract Address for chain ${chain} not found`,
+      );
+    this.coreBridge = coreBridgeAddress;
   }
 
   static async fromRpc(connection: AptosClient, config: ChainsConfig): Promise<AptosWormholeCore> {
@@ -51,12 +51,14 @@ export class AptosWormholeCore implements WormholeCore<"Aptos"> {
 
     const userTransaction = transaction as Types.UserTransaction;
     const message = userTransaction.events.find((event) => event.type.endsWith("WormholeMessage"));
-
     if (!message || !message.data) {
       throw new Error(`WormholeMessage not found for ${txid}`);
     }
 
-    const { sender, sequence } = message.data;
-    return [{ chain: this.chain, emitter: sender, sequence }] as WormholeMessageId[];
+    const { sender, sequence } = message.data as { sender: string, sequence: string }
+    // TODO: make this work for address
+    const emitter = new UniversalAddress(BigInt(sender).toString(16).padStart(64, '0'))
+
+    return [{ chain: this.chain, emitter, sequence: BigInt(sequence) }] as WormholeMessageId[];
   }
 }

@@ -16,6 +16,8 @@ import {
   toNative
 } from "@wormhole-foundation/connect-sdk";
 import {
+  APTOS_COIN,
+  APTOS_SEPARATOR,
   AnyAptosAddress,
   AptosChainName,
   AptosPlatform,
@@ -173,9 +175,9 @@ export class AptosTokenBridge implements TokenBridge<"Aptos"> {
     // TODO
     const fee = 0n;
     const nonce = 0n;
-    const fullyQualifiedType = token.toString();
+    const fullyQualifiedType = token === "native" ? APTOS_COIN : token.toString();
 
-    const dstAddress = recipient.address.toUniversalAddress().toString();
+    const dstAddress = recipient.address.toUniversalAddress().toUint8Array();
     const dstChain = toChainId(recipient.chain);
     if (payload) {
       yield this.createUnsignedTx(
@@ -221,10 +223,12 @@ export class AptosTokenBridge implements TokenBridge<"Aptos"> {
   }
 
   async getAssetFullyQualifiedType(tokenId: TokenId): Promise<string | null> {
+
     // native asset
     if (tokenId.chain === this.chain) {
       // originAddress should be of form address::module::type
       if (!isValidAptosType(tokenId.address.toString())) {
+        console.log("invalid type")
         return null;
       }
       return tokenId.address.toString();
@@ -243,17 +247,16 @@ export class AptosTokenBridge implements TokenBridge<"Aptos"> {
    * @returns The fully qualified type associated with the given hash
    */
   async getTypeFromExternalAddress(address: string): Promise<string | null> {
-    // get handle
-    const state = (
-      await this.connection.getAccountResource(
-        this.tokenBridgeAddress,
-        `${this.tokenBridgeAddress}::state::State`,
-      )
-    ).data as TokenBridgeState;
-
-    const handle = state.native_infos.handle;
-
     try {
+      // get handle
+      const state = (
+        await this.connection.getAccountResource(
+          this.tokenBridgeAddress,
+          `${this.tokenBridgeAddress}::state::State`,
+        )
+      ).data as TokenBridgeState;
+      const { handle } = state.native_infos;
+
       // get type info
       const typeInfo = await this.connection.getTableItem(handle, {
         key_type: `${this.tokenBridgeAddress}::token_hash::TokenHash`,
@@ -261,11 +264,12 @@ export class AptosTokenBridge implements TokenBridge<"Aptos"> {
         key: { hash: address },
       });
 
-      if (!typeInfo) return null;
+      return typeInfo ? [
+        typeInfo.account_address,
+        encoding.hex.decode(typeInfo.module_name),
+        encoding.hex.decode(typeInfo.struct_name),
+      ].join(APTOS_SEPARATOR) : null;
 
-      const moduleName = encoding.hex.decode(typeInfo.module_name);
-      const structName = encoding.hex.decode(typeInfo.struct_name);
-      return `${typeInfo.account_address}::${moduleName}::${structName}`;
     } catch {
       return null;
     }
@@ -284,7 +288,7 @@ export class AptosTokenBridge implements TokenBridge<"Aptos"> {
       tokenBridgeAddress: toNative(chain, tokenBridgeAddress).toUniversalAddress(),
       tokenId: tokenId.address.toUniversalAddress(),
     })
-    return encoding.hex.encode(sha3_256(data));
+    return encoding.hex.encode(sha3_256(data), true);
   }
 
   private createUnsignedTx(
@@ -295,3 +299,4 @@ export class AptosTokenBridge implements TokenBridge<"Aptos"> {
     return new AptosUnsignedTransaction(txReq, this.network, this.chain, description, parallelizable);
   }
 }
+
