@@ -1,6 +1,12 @@
-import { encoding } from "@wormhole-foundation/sdk-base";
+import { encoding, PlatformAddressFormat, Layout, serializeLayout, throws } from "@wormhole-foundation/sdk-base";
 
 import { Address, NativeAddress, toNative } from "./address";
+import { sha512_256 } from "./utils";
+
+const algorandAppIdLayout = [
+  { name: "appIdPrefix", binary: "bytes", custom: encoding.toUint8Array("appID"), omit: true },
+  { name: "appId", binary: "uint", size: 8 },
+] as const satisfies Layout;
 
 export class UniversalAddress implements Address {
   static readonly byteSize = 32;
@@ -8,18 +14,10 @@ export class UniversalAddress implements Address {
 
   private readonly address: Uint8Array;
 
-  constructor(address: string | Uint8Array) {
-    if (typeof address === "string") {
-      if (!UniversalAddress.isValidAddress(address))
-        throw new Error(
-          `Invalid Wormhole address, expected ${UniversalAddress.byteSize}-byte ` +
-            `hex string but got ${address}`,
-        );
-
-      this.address = encoding.hex.decode(address);
-    } else {
-      this.address = address;
-    }
+  constructor(address: string | Uint8Array, format: PlatformAddressFormat = "hex") {
+    this.address = typeof address === "string"
+      ? UniversalAddress.stringToUint8Array(address, format)
+      : address;
   }
 
   toNative<T extends Parameters<typeof toNative>[0]>(platform: T): NativeAddress<T> {
@@ -40,20 +38,39 @@ export class UniversalAddress implements Address {
   }
 
   equals(other: UniversalAddress): boolean {
-    if (UniversalAddress.instanceof(other)) {
-      return other.toString() === this.toString();
-    }
-    return false;
+    return encoding.equals(this.address, other.address);
   }
 
-  static isValidAddress(address: string) {
-    return (
-      encoding.hex.valid(address) &&
-      encoding.stripPrefix("0x", address).length === UniversalAddress.byteSize * 2
-    );
+  static isValidAddress(address: string, format: PlatformAddressFormat = "hex") {
+    return !throws(() => UniversalAddress.stringToUint8Array(address, format));
   }
 
+  //TODO isn't this quite the code smell? - why would we have to test an any?
   static instanceof(address: any): address is UniversalAddress {
     return typeof address === "object" && "type" in address && address.type === "Universal";
+  }
+
+  private static stringToUint8Array(address: string, format: PlatformAddressFormat): Uint8Array {
+    const decoded = (() => {
+    switch (format) {
+      case "hex":
+        if (![40, 2*this.byteSize].includes(address.length - (address.startsWith("0x") ? 2 : 0)))
+          throw new Error(`string ${address} has invalid length for format ${format}`);
+        return encoding.hex.decode(address);
+      case "base58":
+        return encoding.b58.decode(address);
+      case "bech32":
+        return encoding.bech32.decodeToBytes(address).bytes;
+      case "algorandAppId":
+        return sha512_256(serializeLayout(algorandAppIdLayout, { appId: BigInt(address) }));
+      }
+    })();
+
+    if (decoded.length > UniversalAddress.byteSize)
+      throw new Error(`string ${address} has invalid length for format ${format}`);
+
+    return decoded.length < UniversalAddress.byteSize
+      ? encoding.concat(new Uint8Array(UniversalAddress.byteSize - decoded.length), decoded)
+      : decoded;
   }
 }

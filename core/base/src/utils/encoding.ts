@@ -1,5 +1,7 @@
 import { base16, base64, base58 } from '@scure/base';
 
+export { bech32 } from '@scure/base';
+
 export const stripPrefix = (prefix: string, str: string): string =>
   str.startsWith(prefix) ? str.slice(prefix.length) : str;
 
@@ -41,3 +43,17 @@ export const toUint8Array = (value: string | bigint): Uint8Array =>
 
 export const fromUint8Array = (value: Uint8Array): string =>
   (new TextDecoder()).decode(value);
+
+export const equals = (lhs: Uint8Array, rhs: Uint8Array): boolean =>
+  lhs.length === rhs.length && lhs.every((v, i) => v === rhs[i]);
+
+export const concat = (...args: Uint8Array[]): Uint8Array => {
+  const length = args.reduce((acc, curr) => acc + curr.length, 0);
+  const result = new Uint8Array(length);
+  let offset = 0;
+  args.forEach((arg) => {
+    result.set(arg, offset);
+    offset += arg.length;
+  });
+  return result;
+}
