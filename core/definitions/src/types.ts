@@ -96,7 +96,7 @@ export type ChainConfig = {
   // Average block time in milliseconds
   blockTime: number;
   // Number of decimal places for the native gas token (e.g. 18 for ETH)
-  nativeTokenDecimals: bigint;
+  nativeTokenDecimals: number;
   // Native chain id may be eip155 or genesis hash or network moninker or something else
   // depending on the platform
   nativeChainId: string;

@@ -45,11 +45,13 @@ export const depositWithBytesPayload = <C extends Pick<LengthPrefixedBytesLayout
   { name: "payload", binary: "bytes", lengthSize: 2, ...customPayload }
 ] as const;
 
+//from here:
+//  https://github.com/wormhole-foundation/example-circle-relayer/blob/189becd8d3935decb17383bd2e61b4909cbddc89/evm/src/circle-relayer/CircleRelayerMessages.sol#L16
 export const connectPayload = [
   payloadIdItem(1),
   { name: "targetRelayerFee", ...amountItem },
   { name: "toNativeTokenAmount", ...amountItem },
-  { name: "targetRecipient", ...universalAddressItem },
+  { name: "targetRecipientWallet", ...universalAddressItem },
 ] as const;
 
 export const namedPayloads = [

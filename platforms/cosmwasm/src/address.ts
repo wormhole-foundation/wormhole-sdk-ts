@@ -4,6 +4,7 @@ import {
   Address,
   UniversalAddress,
   registerNative,
+  onlyOnce,
 } from "@wormhole-foundation/connect-sdk";
 import { CosmwasmPlatform } from "./platform";
 import { nativeDenomToChain } from "./constants";
@@ -244,6 +245,4 @@ export class CosmwasmAddress implements Address {
   }
 }
 
-try {
-  registerNative("Cosmwasm", CosmwasmAddress);
-} catch {}
+onlyOnce(registerNative, "Cosmwasm", CosmwasmAddress)();

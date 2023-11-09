@@ -58,10 +58,8 @@ export const chainToPlatform = constMap(platformAndChainsEntries, [1, 0]);
 export const isPlatform = (platform: string): platform is PlatformName =>
   platformToChains.has(platform);
 
-export type PlatformToChains<P extends PlatformName> = ReturnType<
-  typeof platformToChains<P>
->[number];
-//@ts-ignore
+export type PlatformToChains<P extends PlatformName> =
+  ReturnType<typeof platformToChains<P>>[number];
 export type ChainToPlatform<C extends ChainName> = ReturnType<typeof chainToPlatform<C>>;
 
 const platformAddressFormatEntries = [
