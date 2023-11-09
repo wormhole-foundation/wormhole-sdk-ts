@@ -8,6 +8,6 @@ export * from "./explorer";
 export * from "./rpc";
 export * from "./protocols";
 export * from "./circle";
+export * from "./nativeChainIds";
 
-export * as chainIds from "./chainIds";
 export * as contracts from "./contracts";

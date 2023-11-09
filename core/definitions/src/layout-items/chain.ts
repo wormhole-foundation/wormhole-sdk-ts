@@ -9,7 +9,7 @@ import {
   ChainName,
 } from "@wormhole-foundation/sdk-base";
 
-export const chainItemBase = { binary: "uint", size: 2 } as const;
+const chainItemBase = { binary: "uint", size: 2 } as const;
 
 type AllowNull<T, B extends boolean> = B extends true ? T | null : T;
 

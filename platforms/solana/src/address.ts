@@ -4,6 +4,7 @@ import {
   PlatformName,
   registerNative,
   encoding,
+  onlyOnce,
 } from '@wormhole-foundation/connect-sdk';
 
 import { PublicKey } from '@solana/web3.js';
@@ -69,6 +70,4 @@ export class SolanaAddress implements Address {
   }
 }
 
-try {
-  registerNative('Solana', SolanaAddress);
-} catch {}
+onlyOnce(registerNative, 'Solana', SolanaAddress)();
