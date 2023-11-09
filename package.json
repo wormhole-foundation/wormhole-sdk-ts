@@ -51,6 +51,9 @@
     "platforms/cosmwasm/protocols/core",
     "platforms/cosmwasm/protocols/tokenBridge",
     "platforms/cosmwasm/protocols/ibc",
+    "platforms/aptos",
+    "platforms/aptos/protocols/core",
+    "platforms/aptos/protocols/tokenBridge",
     "examples",
     "core/tokenRegistry"
   ]

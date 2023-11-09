@@ -1,26 +1,26 @@
-import {
-  ChainName,
-  TokenId,
-  TxHash,
-  SignedTx,
-  RpcConnection,
-  Network,
-  PlatformToChains,
-  nativeDecimals,
-  chainToPlatform,
-  Balances,
-  nativeChainAddress,
-  chainIds,
-} from '@wormhole-foundation/connect-sdk';
+import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import {
   BlockheightBasedTransactionConfirmationStrategy,
   Connection,
   ParsedAccountData,
   PublicKey,
 } from '@solana/web3.js';
-import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import { SolanaPlatform } from './platform';
+import {
+  Balances,
+  ChainName,
+  Network,
+  PlatformToChains,
+  RpcConnection,
+  SignedTx,
+  TokenId,
+  TxHash,
+  canonicalChainIds,
+  chainToPlatform,
+  nativeChainAddress,
+  nativeDecimals,
+} from '@wormhole-foundation/connect-sdk';
 import { SolanaAddress, SolanaZeroAddress } from './address';
+import { SolanaPlatform } from './platform';
 import { AnySolanaAddress } from './types';
 
 /**
@@ -147,7 +147,7 @@ export module SolanaUtils {
   export function chainFromChainId(
     genesisHash: string,
   ): [Network, PlatformToChains<SolanaPlatform.Type>] {
-    const netChain = chainIds.getNetworkAndChainName(
+    const netChain = canonicalChainIds.getNetworkAndChainName(
       SolanaPlatform.platform,
       genesisHash,
     );

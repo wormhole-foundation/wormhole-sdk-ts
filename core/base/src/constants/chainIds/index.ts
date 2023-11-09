@@ -10,7 +10,7 @@ import { nearChainIdToNetworkChain, nearNetworkChainToChainId } from "./near";
 import { solGenesisHashToNetworkChainPair, solNetworkChainToGenesisHash } from "./solana";
 import { suiChainIdToNetworkChain, suiNetworkChainToChainId } from "./sui";
 
-export function getNativeChainId(n: Network, c: ChainName): string {
+export function getChainId(n: Network, c: ChainName): string {
   const platform = chainToPlatform(c) as PlatformName;
   switch (platform) {
     case "Evm":

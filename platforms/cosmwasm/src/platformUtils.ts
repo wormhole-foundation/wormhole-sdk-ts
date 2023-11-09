@@ -7,10 +7,10 @@ import {
   SignedTx,
   TokenId,
   TxHash,
+  canonicalChainIds,
   chainToPlatform,
   nativeChainAddress,
   nativeDecimals,
-  chainIds,
 } from "@wormhole-foundation/connect-sdk";
 import { CosmwasmAddress } from "./address";
 import { IBC_TRANSFER_PORT, chainToNativeDenoms } from "./constants";
@@ -121,7 +121,7 @@ export module CosmwasmUtils {
   export function chainFromChainId(
     chainMoniker: string,
   ): [Network, PlatformToChains<CosmwasmPlatform.Type>] {
-    const networkChainPair = chainIds.getNetworkAndChainName(
+    const networkChainPair = canonicalChainIds.getNetworkAndChainName(
       CosmwasmPlatform.platform,
       chainMoniker,
     );

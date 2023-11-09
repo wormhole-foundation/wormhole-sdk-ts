@@ -1,16 +1,16 @@
 import {
+  Balances,
   ChainName,
-  TokenId,
-  TxHash,
-  SignedTx,
   Network,
   PlatformToChains,
-  nativeDecimals,
+  SignedTx,
+  TokenId,
+  TxHash,
+  canonicalChainIds,
   chainToPlatform,
-  Balances,
   encoding,
   nativeChainAddress,
-  chainIds,
+  nativeDecimals,
 } from '@wormhole-foundation/connect-sdk';
 
 import * as ethers_contracts from './ethers-contracts';
@@ -118,7 +118,7 @@ export module EvmUtils {
   export function chainFromChainId(
     eip155ChainId: string,
   ): [Network, PlatformToChains<EvmPlatform.Type>] {
-    const networkChainPair = chainIds.getNetworkAndChainName(
+    const networkChainPair = canonicalChainIds.getNetworkAndChainName(
       EvmPlatform.platform,
       eip155ChainId,
     );

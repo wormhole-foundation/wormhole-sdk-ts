@@ -1,34 +1,40 @@
 import {
-  Wormhole,
-  TokenId,
-  TokenTransfer,
   ChainName,
   Signer,
+  TokenId,
+  TokenTransfer,
+  Wormhole,
   normalizeAmount,
 } from "@wormhole-foundation/connect-sdk";
 // Import the platform specific packages
+import { AptosPlatform } from "@wormhole-foundation/connect-sdk-aptos";
+import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
-import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
 //
 
 import "@wormhole-foundation/connect-sdk-evm-core";
 import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
+
 import "@wormhole-foundation/connect-sdk-solana-core";
 import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
+
 import "@wormhole-foundation/connect-sdk-cosmwasm-core";
 import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
+
+import "@wormhole-foundation/connect-sdk-aptos-core";
+import "@wormhole-foundation/connect-sdk-aptos-tokenbridge";
 
 import { TransferStuff, getStuff, waitLog } from "./helpers";
 
 (async function () {
   // init Wormhole object, passing config for which network
   // to use (e.g. Mainnet/Testnet) and what Platforms to support
-  const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform, CosmwasmPlatform]);
+  const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform, CosmwasmPlatform, AptosPlatform]);
 
   // Grab chain Contexts
   const sendChain = wh.getChain("Avalanche");
-  const rcvChain = wh.getChain("Solana");
+  const rcvChain = wh.getChain("Aptos");
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
@@ -38,7 +44,7 @@ import { TransferStuff, getStuff, waitLog } from "./helpers";
   const amt = normalizeAmount("0.01", sendChain.config.nativeTokenDecimals);
 
   // Choose your adventure
-  await manualTokenTransfer(wh, "native", amt, source, destination);
+  // await manualTokenTransfer(wh, "native", amt, source, destination);
 
   // await automaticTokenTransfer(wh, "native", 100_000_000n, source, destination);
   // await automaticTokenTransferWithGasDropoff(
@@ -64,12 +70,12 @@ import { TransferStuff, getStuff, waitLog } from "./helpers";
   // );
 
   // Or pick up where you left off given the source transaction
-  // await finishTransfer(
-  //   wh,
-  //   sendChain.chain,
-  //   "0xaed2eb6361283dab84aeb3d211935458f971c38d1238d29b4c8bae63c76ede00",
-  //   destination.signer,
-  // );
+  await finishTransfer(
+    wh,
+    sendChain.chain,
+    "0x38a4a7b0ae1ebe4db6385163e900455686a745af1fb377190f76b245857bb7ed",
+    destination.signer,
+  );
 })();
 
 async function tokenTransfer(
@@ -123,7 +129,7 @@ async function finishTransfer(
 ): Promise<void> {
   const xfer = await TokenTransfer.from(wh, { chain, txid });
   console.log(xfer);
-  await xfer.completeTransfer(signer);
+  console.log(await xfer.completeTransfer(signer));
 }
 
 async function manualTokenTransfer(

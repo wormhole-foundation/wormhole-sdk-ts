@@ -4,7 +4,7 @@ import {
   Network,
   PlatformName,
   blockTime,
-  chainIds,
+  canonicalChainIds,
   chainToPlatform,
   chains,
   explorerConfigs,
@@ -112,9 +112,9 @@ export function buildConfig(n: Network): ChainsConfig {
   const cc: ChainsConfig = chains
     .map((c: ChainName): ChainConfig => {
       const platform = chainToPlatform(c);
-      let nativeChainId = "";
+      let nativeChainId: string = "";
       try {
-        nativeChainId = chainIds.getNativeChainId(n, c);
+        nativeChainId = canonicalChainIds.getChainId(n, c);
       } catch {}
       return {
         key: c,

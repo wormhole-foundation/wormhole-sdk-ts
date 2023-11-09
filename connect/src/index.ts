@@ -70,6 +70,7 @@ export {
   toCircleChainId,
   toCircleChainName,
   encoding,
+  canonicalChainIds,
 } from "@wormhole-foundation/sdk-base";
 
 export * from "@wormhole-foundation/sdk-definitions";

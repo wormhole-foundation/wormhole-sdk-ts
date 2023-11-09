@@ -8,6 +8,7 @@ import {
   nativeChainAddress,
 } from "@wormhole-foundation/connect-sdk";
 
+import { getAptosSigner } from "@wormhole-foundation/connect-sdk-aptos/src/testing";
 import { getCosmwasmSigner } from "@wormhole-foundation/connect-sdk-cosmwasm/src/testing";
 import { getEvmSigner } from "@wormhole-foundation/connect-sdk-evm/src/testing";
 import { getSolanaSigner } from "@wormhole-foundation/connect-sdk-solana/src/testing";
@@ -44,6 +45,9 @@ export async function getStuff(chain: ChainContext<PlatformName>): Promise<Trans
       break;
     case "Evm":
       signer = await getEvmSigner(await chain.getRpc(), getEnv("ETH_PRIVATE_KEY"));
+      break;
+    case "Aptos":
+      signer = await getAptosSigner(await chain.getRpc(), getEnv("APTOS_PRIVATE_KEY"));
       break;
     default:
       throw new Error("Unrecognized platform: " + chain.platform.platform);

@@ -9,5 +9,5 @@ export * from "./rpc";
 export * from "./protocols";
 export * from "./circle";
 
-export * as chainIds from "./chainIds";
+export * as canonicalChainIds from "./chainIds";
 export * as contracts from "./contracts";

@@ -1,34 +1,34 @@
 import {
   ChainAddress,
+  ChainsConfig,
   CircleBridge,
   CircleChainName,
   CircleNetwork,
   CircleTransferMessage,
+  Contracts,
   Network,
   UnsignedTransaction,
+  canonicalChainIds,
   circleChainId,
   deserializeCircleMessage,
+  encoding,
   nativeChainAddress,
   toCircleChainName,
   usdcContract,
-  encoding,
-  Contracts,
-  ChainsConfig,
-  chainIds,
 } from '@wormhole-foundation/connect-sdk';
 
 import { MessageTransmitter, TokenMessenger } from './ethers-contracts';
 
-import { LogDescription, Provider, TransactionRequest } from 'ethers';
 import {
-  EvmAddress,
-  EvmPlatform,
   AnyEvmAddress,
+  EvmAddress,
   EvmChainName,
+  EvmPlatform,
+  EvmUnsignedTransaction,
   addChainId,
   addFrom,
-  EvmUnsignedTransaction,
 } from '@wormhole-foundation/connect-sdk-evm';
+import { LogDescription, Provider, TransactionRequest } from 'ethers';
 import { ethers_contracts } from '.';
 //https://github.com/circlefin/evm-cctp-contracts
 
@@ -50,7 +50,10 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
     if (network === 'Devnet')
       throw new Error('CircleBridge not supported on Devnet');
 
-    this.chainId = chainIds.evmNetworkChainToEvmChainId(network, chain);
+    this.chainId = canonicalChainIds.evmNetworkChainToEvmChainId(
+      network,
+      chain,
+    );
 
     const msgTransmitterAddress = contracts.cctp?.messageTransmitter;
     if (!msgTransmitterAddress)

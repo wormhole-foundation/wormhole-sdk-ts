@@ -1,25 +1,25 @@
 import {
-  ChainAddress,
   AutomaticTokenBridge,
-  TokenBridge,
-  serialize,
-  TokenId,
-  chainToChainId,
-  toChainId,
-  Network,
-  Contracts,
+  ChainAddress,
   ChainsConfig,
+  Contracts,
+  Network,
+  TokenBridge,
+  TokenId,
+  canonicalChainIds,
+  chainToChainId,
   nativeChainAddress,
-  chainIds,
+  serialize,
+  toChainId,
 } from '@wormhole-foundation/connect-sdk';
 import {
   AnyEvmAddress,
+  EvmAddress,
   EvmChainName,
+  EvmPlatform,
+  EvmUnsignedTransaction,
   addChainId,
   addFrom,
-  EvmUnsignedTransaction,
-  EvmPlatform,
-  EvmAddress,
 } from '@wormhole-foundation/connect-sdk-evm';
 import { Provider, TransactionRequest } from 'ethers';
 
@@ -39,7 +39,10 @@ export class EvmAutomaticTokenBridge implements AutomaticTokenBridge<'Evm'> {
     if (network === 'Devnet')
       throw new Error('AutomaticTokenBridge not supported on Devnet');
 
-    this.chainId = chainIds.evmNetworkChainToEvmChainId(network, chain);
+    this.chainId = canonicalChainIds.evmNetworkChainToEvmChainId(
+      network,
+      chain,
+    );
 
     const tokenBridgeAddress = this.contracts.tokenBridge!;
     if (!tokenBridgeAddress)
