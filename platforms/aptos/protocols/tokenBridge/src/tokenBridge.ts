@@ -13,7 +13,7 @@ import {
   serialize,
   sha3_256,
   toChainId,
-  toNative,
+  toNative
 } from "@wormhole-foundation/connect-sdk";
 import {
   AnyAptosAddress,
@@ -24,6 +24,7 @@ import {
   isValidAptosType,
 } from "@wormhole-foundation/connect-sdk-aptos";
 import { AptosClient, Types } from "aptos";
+import { serializeForeignAddressSeeds } from "./foreignAddress";
 import { TokenBridgeState } from "./types";
 
 export class AptosTokenBridge implements TokenBridge<"Aptos"> {
@@ -230,7 +231,9 @@ export class AptosTokenBridge implements TokenBridge<"Aptos"> {
     }
 
     // non-native asset, derive unique address
-    const wrappedAssetAddress = AptosTokenBridge.getForeignAssetAddress(this.tokenBridgeAddress, tokenId);
+    const wrappedAssetAddress = AptosTokenBridge.getForeignAssetAddress(
+      this.chain, this.tokenBridgeAddress, tokenId
+    );
     return `${wrappedAssetAddress}::coin::T`;
   }
 
@@ -275,20 +278,12 @@ export class AptosTokenBridge implements TokenBridge<"Aptos"> {
    * @param originAddress Native address of asset
    * @returns The module address for the given asset
    */
-  static getForeignAssetAddress(tokenBridgeAddress: string, tokenId: TokenId): string | null {
-    // from https://github.com/aptos-labs/aptos-core/blob/25696fd266498d81d346fe86e01c330705a71465/aptos-move/framework/aptos-framework/sources/account.move#L90-L95
-
-    const DERIVE_RESOURCE_ACCOUNT_SCHEME = new Uint8Array([0xff]);
-
-    const chain = encoding.hex.decode(BigInt(toChainId(tokenId.chain)).toString(16));
-
-    const data = encoding.concat(
-      encoding.hex.decode(tokenBridgeAddress),
-      chain,
-      encoding.toUint8Array("::"),
-      encoding.hex.decode(tokenId.address.toString()),
-      DERIVE_RESOURCE_ACCOUNT_SCHEME,
-    );
+  static getForeignAssetAddress(chain: AptosChainName, tokenBridgeAddress: string, tokenId: TokenId): string {
+    const data = serializeForeignAddressSeeds({
+      chainId: toChainId(tokenId.chain),
+      tokenBridgeAddress: toNative(chain, tokenBridgeAddress).toUniversalAddress(),
+      tokenId: tokenId.address.toUniversalAddress(),
+    })
     return encoding.hex.encode(sha3_256(data));
   }
 
