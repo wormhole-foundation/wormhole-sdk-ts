@@ -63,3 +63,17 @@ export type PlatformToChains<P extends PlatformName> = ReturnType<
 >[number];
 //@ts-ignore
 export type ChainToPlatform<C extends ChainName> = ReturnType<typeof chainToPlatform<C>>;
+
+const platformAddressFormatEntries = [
+  ["Evm", "hex"],
+  ["Solana", "base58"],
+  ["Cosmwasm", "bech32"],
+  ["Btc", "bech32"], //though we currently don't have any btc addresses
+  ["Algorand", "algorandAppId"],
+  ["Sui", "hex"],
+  ["Aptos", "hex"],
+  ["Near", "base58"],
+] as const;
+
+export const platformToAddressFormat = constMap(platformAddressFormatEntries);
+export type PlatformAddressFormat = (typeof platformAddressFormatEntries)[number][1];
