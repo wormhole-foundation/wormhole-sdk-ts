@@ -7,7 +7,7 @@ import { TransactionRequest } from 'ethers';
 export const unusedNonce = 0;
 export const unusedArbiterFee = 0n;
 
-export type EvmChain = PlatformToChains<'Evm'>;
+export type EvmChains = PlatformToChains<'Evm'>;
 export type UniversalOrEvm = UniversalOrNative<'Evm'>;
 export type AnyEvmAddress = UniversalOrEvm | string | Uint8Array;
 

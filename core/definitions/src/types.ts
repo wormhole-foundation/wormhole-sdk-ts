@@ -71,9 +71,6 @@ export function nativeChainAddress<C extends Chain>(
     chain = s.chain;
     address = s.address.toNative(s.chain) as NativeAddress<C>;
   }
-
-  // TODO: cc @andreas
-  // @ts-ignore
   return { chain, address };
 }
 
@@ -116,7 +113,7 @@ export function buildConfig<N extends Network>(n: N): ChainsConfig<N, Platform> 
       let nativeChainId: bigint | string = "";
       try {
         nativeChainId = networkChainToNativeChainId.get(n, c);
-      } catch {}
+      } catch { }
       return {
         key: c,
         platform,

@@ -36,15 +36,15 @@ export interface Address {
 
 declare global {
   namespace Wormhole {
-    export interface PlatformToNativeAddressMapping {}
+    export interface PlatformToNativeAddressMapping { }
   }
 }
 
 export type MappedPlatforms = keyof Wormhole.PlatformToNativeAddressMapping;
 
 type ChainOrPlatformToPlatform<T extends Chain | Platform> = T extends Chain
-  ? ChainToPlatform<T>
-  : T;
+  ? ChainToPlatform<T> : T;
+
 type GetNativeAddress<T extends Platform> = T extends MappedPlatforms
   ? Wormhole.PlatformToNativeAddressMapping[T]
   : never;
@@ -52,11 +52,11 @@ export type NativeAddress<T extends Platform | Chain> = GetNativeAddress<
   ChainOrPlatformToPlatform<T>
 >;
 
-export type UniversalOrNative<P extends Platform> = UniversalAddress | NativeAddress<P>;
+export type UniversalOrNative<T extends Platform | Chain> = UniversalAddress | NativeAddress<T>;
 
 export type ChainAddress<C extends Chain = Chain> = {
   readonly chain: C;
-  readonly address: UniversalOrNative<ChainToPlatform<C>>;
+  readonly address: UniversalOrNative<C>;
 };
 
 type NativeAddressCtr = new (ua: UniversalAddress | string | Uint8Array) => Address;

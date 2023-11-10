@@ -1,6 +1,10 @@
-import { ChainContext, Platform } from '@wormhole-foundation/connect-sdk';
+import { Network, Chain, ChainContext, PlatformUtils, PlatformToChains } from '@wormhole-foundation/connect-sdk';
 import { EvmPlatform } from './platform';
 
-export class EvmChain extends ChainContext<'Evm'> {
-  readonly platform: Platform<'Evm'> = EvmPlatform;
+export class EvmChain<
+  N extends Network = typeof EvmPlatform.network,
+  C extends Chain = PlatformToChains<EvmPlatform.Type>
+> extends ChainContext<N, C> {
+  // @ts-ignore
+  readonly platform: PlatformUtils<N, EvmPlatform.Type> = EvmPlatform;
 }

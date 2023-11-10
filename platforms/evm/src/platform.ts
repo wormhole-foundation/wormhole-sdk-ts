@@ -19,16 +19,16 @@ import {
 import { ethers } from 'ethers';
 import { EvmChain } from './chain';
 import { EvmUtils } from './platformUtils';
+import { EvmChains } from './types';
 
 /**
  * @category EVM
  */
-// Provides runtime concrete value
 export module EvmPlatform {
   export const platform = 'Evm';
-  export let network: Network = DEFAULT_NETWORK;
-  export let config: ChainsConfig = networkPlatformConfigs(network, platform);
   export type Type = typeof platform;
+  export let network: Network = DEFAULT_NETWORK;
+  export let config: ChainsConfig<typeof network, Type> = networkPlatformConfigs(network, platform);
 
   export const {
     nativeTokenId,
@@ -44,22 +44,22 @@ export module EvmPlatform {
     getTokenImplementation,
   } = EvmUtils;
 
-  export function setConfig(
-    _network: Network,
-    _config?: ChainsConfig,
+  export function setConfig<N extends Network>(
+    _network: N,
+    _config?: ChainsConfig<N, Type>,
   ): typeof EvmPlatform {
     config = _config ? _config : networkPlatformConfigs(network, platform);
     network = _network;
     return EvmPlatform;
   }
 
-  export function getRpc(chain: Chain): ethers.Provider {
-    if (chain in config) return ethers.getDefaultProvider(config[chain]!.rpc);
+  export function getRpc<C extends EvmChains>(chain: C): ethers.Provider {
+    if (chain in config) return ethers.getDefaultProvider(config[chain].rpc);
     throw new Error('No configuration available for chain: ' + chain);
   }
 
-  export function getChain(chain: Chain): EvmChain {
-    if (chain in config) return new EvmChain(config[chain]!);
+  export function getChain<C extends EvmChains>(chain: C): EvmChain<typeof network, C> {
+    if (chain in config) return new EvmChain(config[chain]);
     throw new Error('No configuration available for chain: ' + chain);
   }
 
@@ -71,27 +71,27 @@ export module EvmPlatform {
 
   export async function getWormholeCore(
     rpc: ethers.Provider,
-  ): Promise<WormholeCore<'Evm'>> {
+  ): Promise<WormholeCore<Type>> {
     return getProtocol('WormholeCore').fromRpc(rpc, config);
   }
   export async function getTokenBridge(
     rpc: ethers.Provider,
-  ): Promise<TokenBridge<'Evm'>> {
+  ): Promise<TokenBridge<Type>> {
     return getProtocol('TokenBridge').fromRpc(rpc, config);
   }
   export async function getAutomaticTokenBridge(
     rpc: ethers.Provider,
-  ): Promise<AutomaticTokenBridge<'Evm'>> {
+  ): Promise<AutomaticTokenBridge<Type>> {
     return getProtocol('TokenBridge').fromRpc(rpc, config);
   }
   export async function getCircleBridge(
     rpc: ethers.Provider,
-  ): Promise<CircleBridge<'Evm'>> {
+  ): Promise<CircleBridge<Type>> {
     return getProtocol('CircleBridge').fromRpc(rpc, config);
   }
   export async function getAutomaticCircleBridge(
     rpc: ethers.Provider,
-  ): Promise<AutomaticCircleBridge<'Evm'>> {
+  ): Promise<AutomaticCircleBridge<Type>> {
     return getProtocol('AutomaticCircleBridge').fromRpc(rpc, config);
   }
 

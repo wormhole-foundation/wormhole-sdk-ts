@@ -10,7 +10,6 @@ import {
   Balances,
   encoding,
   nativeChainAddress,
-  chainIds,
 } from '@wormhole-foundation/connect-sdk';
 
 import * as ethers_contracts from './ethers-contracts';
@@ -19,6 +18,7 @@ import { Provider } from 'ethers';
 import { EvmAddress, EvmZeroAddress } from './address';
 import { EvmPlatform } from './platform';
 import { AnyEvmAddress } from './types';
+import { protocolNativeChainIdToNetworkChain } from '@wormhole-foundation/sdk-base';
 
 /**
  * @category EVM
@@ -28,7 +28,7 @@ export module EvmUtils {
   export function nativeTokenId(chain: Chain): TokenId {
     if (!isSupportedChain(chain))
       throw new Error(`invalid chain for EVM: ${chain}`);
-    return nativeChainAddress([chain, EvmZeroAddress]);
+    return nativeChainAddress(chain, EvmZeroAddress);
   }
 
   export function isSupportedChain(chain: Chain): boolean {
@@ -47,7 +47,7 @@ export module EvmUtils {
     rpc: Provider,
     token: AnyEvmAddress | 'native',
   ): Promise<bigint> {
-    if (token === 'native') return nativeDecimals(EvmPlatform.platform);
+    if (token === 'native') return BigInt(nativeDecimals(EvmPlatform.platform));
 
     const tokenContract = getTokenImplementation(
       rpc,
@@ -118,9 +118,10 @@ export module EvmUtils {
   export function chainFromChainId(
     eip155ChainId: string,
   ): [Network, PlatformToChains<EvmPlatform.Type>] {
-    const networkChainPair = chainIds.getNetworkAndChain(
+    const networkChainPair = protocolNativeChainIdToNetworkChain(
       EvmPlatform.platform,
-      eip155ChainId,
+      // @ts-ignore
+      BigInt(eip155ChainId),
     );
 
     if (networkChainPair === undefined)

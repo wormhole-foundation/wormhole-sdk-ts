@@ -2,8 +2,6 @@ import {
   encoding,
   Address,
   UniversalAddress,
-  registerNative,
-  onlyOnce,
 } from '@wormhole-foundation/connect-sdk';
 
 import { ethers } from 'ethers';
@@ -97,4 +95,4 @@ export class EvmAddress implements Address {
   }
 }
 
-onlyOnce(registerNative, 'Evm', EvmAddress)();
+// onlyOnce(registerNative, 'Evm', EvmAddress)();
