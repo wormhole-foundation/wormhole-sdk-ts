@@ -10,10 +10,9 @@ import {
   UniversalAddress,
   keccak256,
   serialize,
-  toChainId,
   toChain,
-  toNative,
-  chainIds,
+  toChainId,
+  toNative
 } from '@wormhole-foundation/connect-sdk';
 import { Provider, TransactionRequest } from 'ethers';
 
@@ -23,28 +22,29 @@ import { TokenBridgeContract } from './ethers-contracts';
 import {
   AnyEvmAddress,
   EvmAddress,
-  EvmChain,
+  EvmChains,
   EvmPlatform,
   EvmUnsignedTransaction,
   EvmZeroAddress,
   addChainId,
   addFrom,
   unusedArbiterFee,
-  unusedNonce,
+  unusedNonce
 } from '@wormhole-foundation/connect-sdk-evm';
+import { Chain, Platform, networkChainToNativeChainId } from '@wormhole-foundation/sdk-base';
 
-export class EvmTokenBridge implements TokenBridge<'Evm'> {
+export class EvmTokenBridge<N extends Network, P extends 'Evm' = 'Evm', C extends Chain = EvmChains> implements TokenBridge<P> {
   readonly tokenBridge: TokenBridgeContract;
   readonly tokenBridgeAddress: string;
   readonly chainId: bigint;
 
   private constructor(
-    readonly network: Network,
-    readonly chain: EvmChain,
+    readonly network: N,
+    readonly chain: C,
     readonly provider: Provider,
     readonly contracts: Contracts,
   ) {
-    this.chainId = chainIds.evmNetworkChainToEvmChainId.get(network, chain)!;
+    this.chainId = networkChainToNativeChainId.get(network, chain) as bigint;
 
     const tokenBridgeAddress = this.contracts.tokenBridge!;
     if (!tokenBridgeAddress)
@@ -59,13 +59,13 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     );
   }
 
-  static async fromRpc(
+  static async fromRpc<N extends Network>(
     provider: Provider,
-    config: ChainsConfig,
-  ): Promise<EvmTokenBridge> {
+    config: ChainsConfig<N, Platform>,
+  ): Promise<EvmTokenBridge<N>> {
     const [network, chain] = await EvmPlatform.chainFromRpc(provider);
-    return new EvmTokenBridge(
-      network,
+    return new EvmTokenBridge<N>(
+      network as N,
       chain,
       provider,
       config[chain]!.contracts!,
@@ -98,11 +98,11 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     try {
       await this.getWrappedAsset(token);
       return true;
-    } catch (e) {}
+    } catch (e) { }
     return false;
   }
 
-  async getWrappedAsset(token: TokenId): Promise<NativeAddress<'Evm'>> {
+  async getWrappedAsset(token: TokenId<Chain>): Promise<NativeAddress<P>> {
     const wrappedAddress = await this.tokenBridge.wrappedAsset(
       toChainId(token.chain),
       token.address.toUniversalAddress().toString(),
@@ -111,7 +111,8 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     if (wrappedAddress === EvmZeroAddress)
       throw ErrNotWrapped(token.address.toUniversalAddress().toString());
 
-    return toNative('Evm', wrappedAddress);
+    // @ts-ignore
+    return toNative<P>(this.chain, wrappedAddress);
   }
 
   async isTransferCompleted(
@@ -174,23 +175,23 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     if (typeof token === 'string' && token === 'native') {
       const txReq = await (payload === undefined
         ? this.tokenBridge.wrapAndTransferETH.populateTransaction(
-            recipientChainId,
-            recipientAddress,
-            unusedArbiterFee,
-            unusedNonce,
-            { value: amount },
-          )
+          recipientChainId,
+          recipientAddress,
+          unusedArbiterFee,
+          unusedNonce,
+          { value: amount },
+        )
         : this.tokenBridge.wrapAndTransferETHWithPayload.populateTransaction(
-            recipientChainId,
-            recipientAddress,
-            unusedNonce,
-            payload,
-            { value: amount },
-          ));
+          recipientChainId,
+          recipientAddress,
+          unusedNonce,
+          payload,
+          { value: amount },
+        ));
       yield this.createUnsignedTx(
         addFrom(txReq, senderAddr),
         'TokenBridge.wrapAndTransferETH' +
-          (payload === undefined ? '' : 'WithPayload'),
+        (payload === undefined ? '' : 'WithPayload'),
       );
     } else {
       //TODO check for ERC-2612 (permit) support on token?
@@ -222,19 +223,19 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
       ] as const;
       const txReq = await (payload === undefined
         ? this.tokenBridge.transferTokens.populateTransaction(
-            ...sharedParams,
-            unusedArbiterFee,
-            unusedNonce,
-          )
+          ...sharedParams,
+          unusedArbiterFee,
+          unusedNonce,
+        )
         : this.tokenBridge.transferTokensWithPayload.populateTransaction(
-            ...sharedParams,
-            unusedNonce,
-            payload,
-          ));
+          ...sharedParams,
+          unusedNonce,
+          payload,
+        ));
       yield this.createUnsignedTx(
         addFrom(txReq, senderAddr),
         'TokenBridge.transferTokens' +
-          (payload === undefined ? '' : 'WithPayload'),
+        (payload === undefined ? '' : 'WithPayload'),
       );
     }
   }
@@ -278,9 +279,10 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     }
   }
 
-  async getWrappedNative(): Promise<NativeAddress<'Evm'>> {
+  async getWrappedNative(): Promise<NativeAddress<P>> {
     const address = await this.tokenBridge.WETH();
-    return toNative(this.chain, address);
+    //@ts-ignore
+    return toNative<P>(this.chain, address);
   }
 
   private createUnsignedTx(

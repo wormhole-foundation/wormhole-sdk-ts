@@ -26,7 +26,7 @@ export type TxHash = string;
 export type SequenceId = bigint;
 export type SignedTx = any;
 
-export type TokenAddress<P extends Platform> = UniversalOrNative<P> | "native";
+export type TokenAddress<T extends Chain | Platform> = UniversalOrNative<T> | "native";
 
 export type TokenId<C extends Chain = Chain> = ChainAddress<C>;
 export function isTokenId(thing: any): thing is TokenId<Chain> {

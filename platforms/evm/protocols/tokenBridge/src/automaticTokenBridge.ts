@@ -1,45 +1,47 @@
 import {
-  ChainAddress,
   AutomaticTokenBridge,
+  ChainAddress,
+  ChainsConfig,
+  Contracts,
+  Network,
   TokenBridge,
-  serialize,
   TokenId,
   chainToChainId,
-  toChainId,
-  Network,
-  Contracts,
-  ChainsConfig,
   nativeChainAddress,
-  chainIds,
+  serialize,
+  toChainId
 } from '@wormhole-foundation/connect-sdk';
 import {
   AnyEvmAddress,
-  EvmChain,
-  addChainId,
-  addFrom,
-  EvmUnsignedTransaction,
-  EvmPlatform,
   EvmAddress,
+  EvmChains,
+  EvmPlatform,
+  EvmUnsignedTransaction,
+  UniversalOrEvm,
+  addChainId,
+  addFrom
 } from '@wormhole-foundation/connect-sdk-evm';
 import { Provider, TransactionRequest } from 'ethers';
 
+import { Chain, Platform, networkChainToNativeChainId } from '@wormhole-foundation/sdk-base';
 import { ethers_contracts } from '.';
 
-export class EvmAutomaticTokenBridge implements AutomaticTokenBridge<'Evm'> {
+export class EvmAutomaticTokenBridge<N extends Network, P extends 'Evm' = 'Evm', C extends Chain = EvmChains> implements AutomaticTokenBridge<P> {
   readonly tokenBridgeRelayer: ethers_contracts.TokenBridgeRelayer;
   readonly tokenBridge: ethers_contracts.TokenBridgeContract;
   readonly chainId: bigint;
 
   private constructor(
-    readonly network: Network,
-    readonly chain: EvmChain,
+    readonly network: N,
+    readonly chain: C,
     readonly provider: Provider,
     readonly contracts: Contracts,
   ) {
     if (network === 'Devnet')
       throw new Error('AutomaticTokenBridge not supported on Devnet');
 
-    this.chainId = chainIds.evmNetworkChainToEvmChainId(network, chain);
+
+    this.chainId = networkChainToNativeChainId.get(network, chain) as bigint;
 
     const tokenBridgeAddress = this.contracts.tokenBridge!;
     if (!tokenBridgeAddress)
@@ -80,13 +82,13 @@ export class EvmAutomaticTokenBridge implements AutomaticTokenBridge<'Evm'> {
     );
   }
 
-  static async fromRpc(
+  static async fromRpc<N extends Network>(
     provider: Provider,
-    config: ChainsConfig,
-  ): Promise<EvmAutomaticTokenBridge> {
+    config: ChainsConfig<N, Platform>,
+  ): Promise<EvmAutomaticTokenBridge<N>> {
     const [network, chain] = await EvmPlatform.chainFromRpc(provider);
-    return new EvmAutomaticTokenBridge(
-      network,
+    return new EvmAutomaticTokenBridge<N>(
+      network as N,
       chain,
       provider,
       config[chain]!.contracts!,
@@ -145,13 +147,13 @@ export class EvmAutomaticTokenBridge implements AutomaticTokenBridge<'Evm'> {
   }
 
   async getRelayerFee(
-    sender: ChainAddress,
-    recipient: ChainAddress,
+    sender: UniversalOrEvm,
+    recipient: ChainAddress<Chain>,
     token: TokenId | 'native',
   ): Promise<bigint> {
     const tokenId: TokenId =
       token === 'native'
-        ? nativeChainAddress([this.chain, await this.tokenBridge.WETH()])
+        ? nativeChainAddress(this.chain, await this.tokenBridge.WETH())
         : token;
 
     const destChainId = toChainId(recipient.chain);

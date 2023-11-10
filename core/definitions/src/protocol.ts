@@ -11,24 +11,29 @@ import { ChainsConfig } from "./types";
 
 declare global {
   namespace Wormhole {
-    export interface PlatformToProtocolMapping {}
+    export interface PlatformToProtocolMapping { }
   }
 }
 
-export interface ProtocolInitializer<P extends Platform> {
-  fromRpc(rpc: RpcConnection<P>, config: ChainsConfig<Network, P>): any;
+type MappedProtocols = keyof Wormhole.PlatformToProtocolMapping;
+export type ProtocolImplementation<T extends Platform, PN extends ProtocolName> = T extends MappedProtocols
+  ? Wormhole.PlatformToProtocolMapping[T]
+  : never;
+
+export interface ProtocolInitializer<P extends Platform, PN extends ProtocolName> {
+  fromRpc(rpc: RpcConnection<P>, config: ChainsConfig<Network, P>): ProtocolImplementation<P, PN>;
 }
 
-const protocolFactory = new Map<Platform, Map<ProtocolName, ProtocolInitializer<Platform>>>();
+const protocolFactory = new Map<Platform, Map<ProtocolName, ProtocolInitializer<Platform, ProtocolName>>>();
 
 export function registerProtocol<P extends Platform, PN extends ProtocolName>(
   platform: P,
   protocol: PN,
-  ctr: ProtocolInitializer<P>,
+  ctr: ProtocolInitializer<P, PN>,
 ): void {
   let protocols = protocolFactory.get(platform)!;
 
-  if (!protocols) protocols = new Map<ProtocolName, ProtocolInitializer<Platform>>();
+  if (!protocols) protocols = new Map<ProtocolName, ProtocolInitializer<Platform, ProtocolName>>();
 
   if (protocols.has(protocol))
     throw new Error(`Protocol ${protocol} for platform ${platform} has already registered`);
@@ -52,7 +57,7 @@ export function protocolIsRegistered<T extends Platform | Chain, PN extends Prot
 export function getProtocolInitializer<P extends Platform, PN extends ProtocolName>(
   platform: P,
   protocol: PN,
-): ProtocolInitializer<P> {
+): ProtocolInitializer<P, PN> {
   const protocols = protocolFactory.get(platform);
   if (!protocols) throw new Error(`No protocols registered for platform ${platform}`);
 

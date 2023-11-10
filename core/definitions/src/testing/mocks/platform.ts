@@ -1,4 +1,4 @@
-import { Chain, Network, Platform, PlatformToChains } from "@wormhole-foundation/sdk-base";
+import { Chain, Network, Platform, PlatformToChains, ProtocolName } from "@wormhole-foundation/sdk-base";
 import {
   AutomaticCircleBridge,
   AutomaticTokenBridge,
@@ -6,13 +6,14 @@ import {
   ChainContext,
   ChainsConfig,
   CircleBridge,
-  TokenAddress,
-  PlatformUtils,
+  PlatformContext,
+  ProtocolInitializer,
   RpcConnection,
+  TokenAddress,
   TokenBridge,
   TokenId,
   TxHash,
-  WormholeMessageId,
+  WormholeMessageId
 } from "../..";
 import { WormholeCore } from "../../protocols/core";
 import { MockChain } from "./chain";
@@ -23,9 +24,13 @@ export function mockPlatformFactory<N extends Network, P extends Platform>(
   network: N,
   p: P,
   config: ChainsConfig<N, P>,
-): PlatformUtils<N, P> {
+): PlatformContext<N, P> {
   class ConcreteMockPlatform extends MockPlatform<N, P> {
-    override platform = p;
+    static _platform = p;
+
+    static getProtocolInitializer<PN extends ProtocolName>(protocol: PN): ProtocolInitializer<P, PN> {
+      throw new Error("Method not implemented.");
+    }
   }
 
   return new ConcreteMockPlatform(network, config);
@@ -33,8 +38,8 @@ export function mockPlatformFactory<N extends Network, P extends Platform>(
 
 // Note: don't use this directly, instead create a ConcreteMockPlatform with the
 // mockPlatformFactory
-export class MockPlatform<N extends Network, P extends Platform> implements PlatformUtils<N, P> {
-  // @ts-ignore
+export class MockPlatform<N extends Network, P extends Platform> implements PlatformContext<N, P> {
+
   readonly platform: P;
 
   network: N;
@@ -45,8 +50,17 @@ export class MockPlatform<N extends Network, P extends Platform> implements Plat
     this.config = config;
   }
 
+  Platform(): P {
+    throw new Error("Method not implemented.");
+  }
+
   setConfig<NN extends Network>(network: NN, _conf: ChainsConfig<NN, P>): MockPlatform<NN, P> {
     return new MockPlatform<NN, P>(network, _conf);
+  }
+
+
+  getProtocol<PN extends ProtocolName, T extends any>(protocol: PN): T {
+    throw new Error("Method not implemented.");
   }
 
   nativeTokenId<C extends PlatformToChains<P>>(chain: C): TokenId<C> {
@@ -86,8 +100,8 @@ export class MockPlatform<N extends Network, P extends Platform> implements Plat
     throw new Error("method not implemented");
   }
 
-  getChain<C extends Chain>(chain: C): ChainContext<N, C> {
-    if (chain in this.config) return new MockChain<N, C>(this.config[chain]!);
+  getChain<C extends Chain>(chain: C): ChainContext<N, C, P> {
+    if (chain in this.config) return new MockChain<N, C, P>(this.config[chain]!);
 
     throw new Error("No configuration available for chain: " + chain);
   }

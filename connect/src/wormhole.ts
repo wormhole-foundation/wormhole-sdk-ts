@@ -15,6 +15,7 @@ import {
   NativeAddress,
   PayloadDiscriminator,
   PayloadLiteral,
+  PlatformContext,
   PlatformUtils,
   TokenId,
   TxHash,
@@ -47,7 +48,7 @@ import {
 } from "./whscan-api";
 
 export class Wormhole<N extends Network = Network> {
-  protected _platforms: Map<Platform, PlatformUtils<N, Platform>>;
+  protected _platforms: Map<Platform, PlatformContext<N, Platform>>;
   protected _chains: Map<Chain, ChainContext<N, Chain>>;
   protected readonly _network: N;
   readonly config: WormholeConfig;
@@ -59,9 +60,9 @@ export class Wormhole<N extends Network = Network> {
     this._chains = new Map();
     this._platforms = new Map();
     for (const p of platforms) {
-      const platformName = p.platform;
-      const filteredChains = networkPlatformConfigs(network, platformName);
-      this._platforms.set(platformName, p.setConfig(network, filteredChains));
+      const filteredChains = networkPlatformConfigs(network, p.Platform());
+      const platformCtx = p.setConfig(network, filteredChains)
+      this._platforms.set(p.Platform(), platformCtx);
     }
   }
 
@@ -168,11 +169,11 @@ export class Wormhole<N extends Network = Network> {
    * @returns the platform context class
    * @throws Errors if platform is not found
    */
-  getPlatform<P extends Platform>(chain: P): PlatformUtils<N, P> {
+  getPlatform<P extends Platform>(chain: P): PlatformContext<N, P> {
     const platformName = isChain(chain) ? this.config.chains[chain]!.platform : chain;
     const platform = this._platforms.get(platformName);
     if (!platform) throw new Error(`Not able to retrieve platform ${platform}`);
-    return platform as PlatformUtils<N, P>;
+    return platform as PlatformContext<N, P>;
   }
 
   /**
@@ -277,11 +278,11 @@ export class Wormhole<N extends Network = Network> {
       t = isTokenId(sendingToken)
         ? sendingToken
         : {
-            chain: sendingChain,
-            address: (
-              sendingToken as UniversalAddress | NativeAddress<Platform>
-            ).toUniversalAddress(),
-          };
+          chain: sendingChain,
+          address: (
+            sendingToken as UniversalAddress | NativeAddress<Platform>
+          ).toUniversalAddress(),
+        };
     }
 
     const dstTokenBridge = await chain.getTokenBridge();

@@ -46,17 +46,17 @@ export namespace TokenBridge {
   );
 }
 
-export interface TokenBridge<P extends Platform> {
+export interface TokenBridge<P extends Platform, C extends Chain = PlatformToChains<P>> {
   // checks a native address to see if its a wrapped version
-  isWrappedAsset(nativeAddress: TokenAddress<P>): Promise<boolean>;
+  isWrappedAsset(nativeAddress: TokenAddress<C>): Promise<boolean>;
   // returns the original asset with its foreign chain
-  getOriginalAsset(nativeAddress: TokenAddress<P>): Promise<TokenId<Chain>>;
+  getOriginalAsset(nativeAddress: TokenAddress<C>): Promise<TokenId<Chain>>;
   // returns the wrapped version of the native asset
-  getWrappedNative(): Promise<NativeAddress<P>>;
+  getWrappedNative(): Promise<NativeAddress<C>>;
   // Check to see if a foreign token has a wrapped version
-  hasWrappedAsset(foreignToken: TokenId<PlatformToChains<P>>): Promise<boolean>;
+  hasWrappedAsset(foreignToken: TokenId<Chain>): Promise<boolean>;
   // Returns the address of the native version of this asset
-  getWrappedAsset(foreignToken: TokenId<PlatformToChains<P>>): Promise<NativeAddress<P>>;
+  getWrappedAsset(foreignToken: TokenId<Chain>): Promise<NativeAddress<P>>;
   // Checks if a transfer VAA has been redeemed
   isTransferCompleted(
     vaa: TokenBridge.VAA<"Transfer" | "TransferWithPayload">
@@ -65,20 +65,20 @@ export interface TokenBridge<P extends Platform> {
   // the token that may be submitted to a Token bridge on another chain 
   // to allow it to create a wrapped version of the token
   createAttestation(
-    token_to_attest: TokenAddress<P>,
-    payer?: UniversalOrNative<P>
+    token: TokenAddress<C>,
+    payer?: UniversalOrNative<C>
   ): AsyncGenerator<UnsignedTransaction>;
   // Submit the Token Attestation VAA to the Token bridge
   // to create the wrapped token represented by the data in the VAA
   submitAttestation(
     vaa: TokenBridge.VAA<"AttestMeta">,
-    payer?: UniversalOrNative<P>
+    payer?: UniversalOrNative<C>
   ): AsyncGenerator<UnsignedTransaction>;
   // Initiate a transfer of some token to another chain
   transfer(
-    sender: UniversalOrNative<P>,
+    sender: UniversalOrNative<C>,
     recipient: ChainAddress,
-    token: TokenAddress<P>,
+    token: TokenAddress<C>,
     amount: bigint,
     payload?: Uint8Array
   ): AsyncGenerator<UnsignedTransaction>;
@@ -92,23 +92,23 @@ export interface TokenBridge<P extends Platform> {
   // TODO: preview (receive amount, fees, gas estimates, estimated blocks/time)
 }
 
-export interface AutomaticTokenBridge<P extends Platform> {
+export interface AutomaticTokenBridge<P extends Platform, C extends Chain = PlatformToChains<P>> {
   transfer(
-    sender: UniversalOrNative<P>,
+    sender: UniversalOrNative<C>,
     recipient: ChainAddress,
-    token: TokenAddress<P>,
+    token: TokenAddress<C>,
     amount: bigint,
     relayerFee: bigint,
     nativeGas?: bigint
   ): AsyncGenerator<UnsignedTransaction>;
   redeem(
-    sender: UniversalOrNative<P>,
+    sender: UniversalOrNative<C>,
     vaa: TokenBridge.VAA<"TransferWithPayload">
   ): AsyncGenerator<UnsignedTransaction>;
   getRelayerFee(
-    sender: UniversalOrNative<P>,
+    sender: UniversalOrNative<C>,
     recipient: ChainAddress,
-    token: TokenId<PlatformToChains<P>> | "native"
+    token: TokenId<C> | "native"
   ): Promise<bigint>;
   // the amount of native tokens a user would receive by swapping x amount of sending tokens
   // nativeTokenAmount(
