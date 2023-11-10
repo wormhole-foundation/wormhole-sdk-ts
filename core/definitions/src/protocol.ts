@@ -4,6 +4,7 @@ import {
   Platform,
   chainToPlatform,
   ProtocolName,
+  Network,
 } from "@wormhole-foundation/sdk-base";
 import { RpcConnection } from "./rpc";
 import { ChainsConfig } from "./types";
@@ -15,13 +16,10 @@ declare global {
 }
 
 export interface ProtocolInitializer<P extends Platform> {
-  fromRpc(rpc: RpcConnection<P>, config: ChainsConfig): any;
+  fromRpc(rpc: RpcConnection<P>, config: ChainsConfig<Network, P>): any;
 }
 
-const protocolFactory = new Map<
-  Platform,
-  Map<ProtocolName, ProtocolInitializer<Platform>>
->();
+const protocolFactory = new Map<Platform, Map<ProtocolName, ProtocolInitializer<Platform>>>();
 
 export function registerProtocol<P extends Platform, PN extends ProtocolName>(
   platform: P,

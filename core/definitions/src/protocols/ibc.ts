@@ -7,15 +7,15 @@ import {
   toChainId,
   toChain
 } from "@wormhole-foundation/sdk-base";
-import { ChainAddress, NativeAddress } from "../address";
+import { ChainAddress, NativeAddress, UniversalOrNative } from "../address";
 import { IbcMessageId, WormholeMessageId } from "../attestation";
 import { RpcConnection } from "../rpc";
-import { AnyAddress, TokenId, TxHash } from "../types";
+import { TokenAddress, TokenId, TxHash } from "../types";
 import { UnsignedTransaction } from "../unsignedTransaction";
 
 // Configuration for a transfer through the Gateway
 export type GatewayTransferDetails = {
-  token: TokenId | "native";
+  token: TokenId<Chain> | "native";
   amount: bigint;
   from: ChainAddress;
   to: ChainAddress;
@@ -212,9 +212,9 @@ export function supportsIbcBridge<P extends Platform>(
 export interface IbcBridge<P extends Platform> {
   //alternative naming: initiateTransfer
   transfer(
-    sender: AnyAddress,
+    sender: UniversalOrNative<P>,
     recipient: ChainAddress,
-    token: AnyAddress,
+    token: TokenAddress<P>,
     amount: bigint,
     payload?: Uint8Array,
   ): AsyncGenerator<UnsignedTransaction>;

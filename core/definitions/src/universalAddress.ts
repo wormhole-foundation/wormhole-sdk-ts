@@ -1,4 +1,10 @@
-import { encoding, PlatformAddressFormat, Layout, serializeLayout, throws } from "@wormhole-foundation/sdk-base";
+import {
+  encoding,
+  PlatformAddressFormat,
+  Layout,
+  serializeLayout,
+  throws,
+} from "@wormhole-foundation/sdk-base";
 
 import { Address, NativeAddress, toNative } from "./address";
 import { sha512_256 } from "./utils";
@@ -15,13 +21,12 @@ export class UniversalAddress implements Address {
   private readonly address: Uint8Array;
 
   constructor(address: string | Uint8Array, format: PlatformAddressFormat = "hex") {
-    this.address = typeof address === "string"
-      ? UniversalAddress.stringToUint8Array(address, format)
-      : address;
+    this.address =
+      typeof address === "string" ? UniversalAddress.stringToUint8Array(address, format) : address;
   }
 
-  toNative<T extends Parameters<typeof toNative>[0]>(platform: T): NativeAddress<T> {
-    return toNative(platform, this);
+  toNative<T extends Parameters<typeof toNative>[0]>(chainOrPlatform: T): NativeAddress<T> {
+    return toNative(chainOrPlatform, this);
   }
 
   unwrap(): Uint8Array {
@@ -52,17 +57,19 @@ export class UniversalAddress implements Address {
 
   private static stringToUint8Array(address: string, format: PlatformAddressFormat): Uint8Array {
     const decoded = (() => {
-    switch (format) {
-      case "hex":
-        if (![40, 2*this.byteSize].includes(address.length - (address.startsWith("0x") ? 2 : 0)))
-          throw new Error(`string ${address} has invalid length for format ${format}`);
-        return encoding.hex.decode(address);
-      case "base58":
-        return encoding.b58.decode(address);
-      case "bech32":
-        return encoding.bech32.decodeToBytes(address).bytes;
-      case "algorandAppId":
-        return sha512_256(serializeLayout(algorandAppIdLayout, { appId: BigInt(address) }));
+      switch (format) {
+        case "hex":
+          if (
+            ![40, 2 * this.byteSize].includes(address.length - (address.startsWith("0x") ? 2 : 0))
+          )
+            throw new Error(`string ${address} has invalid length for format ${format}`);
+          return encoding.hex.decode(address);
+        case "base58":
+          return encoding.b58.decode(address);
+        case "bech32":
+          return encoding.bech32.decodeToBytes(address).bytes;
+        case "algorandAppId":
+          return sha512_256(serializeLayout(algorandAppIdLayout, { appId: BigInt(address) }));
       }
     })();
 

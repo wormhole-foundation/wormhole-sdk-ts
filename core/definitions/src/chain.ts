@@ -1,8 +1,8 @@
-import { Chain, Platform } from "@wormhole-foundation/sdk-base";
+import { Chain, ChainToPlatform, Network, Platform } from "@wormhole-foundation/sdk-base";
 
 import { NativeAddress } from "./address";
 import { WormholeMessageId } from "./attestation";
-import { Platform } from "./platform";
+import { PlatformUtils } from "./platformUtils";
 import {
   AutomaticCircleBridge,
   CircleBridge,
@@ -20,10 +20,14 @@ import { RpcConnection } from "./rpc";
 import { ChainConfig, SignedTx } from "./types";
 import { UniversalAddress } from "./universalAddress";
 
-export abstract class ChainContext<P extends Platform> {
-  abstract platform: Platform<P>;
+export abstract class ChainContext<
+  N extends Network,
+  C extends Chain,
+  P extends Platform = ChainToPlatform<C>,
+> {
+  abstract platform: PlatformUtils<N, P>;
 
-  readonly chain: Chain;
+  readonly chain: C;
 
   // Cached Protocol clients
   protected rpc?: RpcConnection<P>;
@@ -33,7 +37,7 @@ export abstract class ChainContext<P extends Platform> {
   protected autoCircleBridge?: AutomaticCircleBridge<P>;
   protected ibcBridge?: IbcBridge<P>;
 
-  constructor(readonly config: ChainConfig) {
+  constructor(readonly config: ChainConfig<N, C>) {
     this.chain = config.key;
   }
 
