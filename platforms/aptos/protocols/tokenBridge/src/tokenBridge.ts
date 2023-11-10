@@ -3,16 +3,20 @@ import {
   ChainId,
   ChainsConfig,
   Contracts,
+  ErrNotWrapped,
   NativeAddress,
   Network,
   RpcConnection,
   TokenBridge,
   TokenId,
+  UniversalAddress,
+  UniversalOrNative,
   encoding,
   nativeChainAddress,
   serialize,
   sha3_256,
   toChainId,
+  toChainName,
   toNative,
 } from "@wormhole-foundation/connect-sdk";
 import {
@@ -27,7 +31,7 @@ import {
 } from "@wormhole-foundation/connect-sdk-aptos";
 import { AptosClient, Types } from "aptos";
 import { serializeForeignAddressSeeds } from "./foreignAddress";
-import { TokenBridgeState } from "./types";
+import { OriginInfo, TokenBridgeState } from "./types";
 
 export class AptosTokenBridge implements TokenBridge<"Aptos"> {
   readonly chainId: ChainId;
@@ -64,11 +68,33 @@ export class AptosTokenBridge implements TokenBridge<"Aptos"> {
   }
 
   async isWrappedAsset(token: AnyAptosAddress): Promise<boolean> {
-    throw new Error("Not implemented");
+    try {
+      await this.getOriginalAsset(token);
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   async getOriginalAsset(token: AnyAptosAddress): Promise<TokenId> {
-    throw new Error("Not implemented");
+    const fqt = token.toString();
+    let originInfo: OriginInfo | undefined;
+
+    originInfo = (
+      await this.connection.getAccountResource(
+        fqt.split("::")[0],
+        `${this.tokenBridgeAddress}::state::OriginInfo`,
+      )
+    ).data as OriginInfo;
+
+    if (!originInfo) throw ErrNotWrapped;
+
+    // wrapped asset
+    const chain = toChainName(parseInt(originInfo.token_chain.number));
+
+    const address = new UniversalAddress(originInfo.token_address.external_address);
+
+    return { chain, address };
   }
 
   async hasWrappedAsset(token: TokenId): Promise<boolean> {
@@ -119,24 +145,27 @@ export class AptosTokenBridge implements TokenBridge<"Aptos"> {
   }
 
   async getWrappedNative(): Promise<NativeAddress<"Aptos">> {
-    throw new Error("Not implemented");
-    //return toNative(this.chain, "0x1::aptos_coin::AptosCoin");
+    return toNative(this.chain, APTOS_COIN);
   }
 
   async *createAttestation(
-    token: AnyAptosAddress,
+    token: UniversalOrNative<"Aptos">,
     payer?: AnyAptosAddress,
   ): AsyncGenerator<AptosUnsignedTransaction> {
+    console.log(token.toString());
     const assetType = await this.getAssetFullyQualifiedType(
       nativeChainAddress([this.chain, token.toString()]),
     );
     if (!assetType) throw new Error("Invalid asset address.");
 
-    return {
-      function: `${this.tokenBridgeAddress}::attest_token::attest_token_entry`,
-      type_arguments: [assetType],
-      arguments: [],
-    };
+    yield this.createUnsignedTx(
+      {
+        function: `${this.tokenBridgeAddress}::attest_token::attest_token_entry`,
+        type_arguments: [assetType],
+        arguments: [],
+      },
+      "Aptos.AttestToken",
+    );
   }
 
   async *submitAttestation(

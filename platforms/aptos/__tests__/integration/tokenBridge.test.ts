@@ -15,8 +15,8 @@ import '@wormhole-foundation/connect-sdk-aptos-tokenbridge'
 import {
   AptosUnsignedTransaction,
   AptosPlatform,
+  APTOS_COIN,
 } from '../../src/';
-
 
 import { expect, describe, test } from '@jest/globals';
 
@@ -28,24 +28,21 @@ const configs = CONFIG[network].chains;
 const TOKEN_ADDRESSES = {
   Mainnet: {
     Aptos: {
-      wsol: 'So11111111111111111111111111111111111111112',
-      wavax: 'KgV1GvrHQmRBY8sHQQeUKwTm2r2h8t4C8qt12Cw1HVE',
+      waptos: APTOS_COIN,
+      wavax: "0xbe8f4301c0b54e870902b9a23eeb95ce74ac190531782aa3262337ceb145401a::coin::T"
     },
   },
 };
 
-//const senderAddress = Keypair.generate().publicKey.toBase58();
-
+const senderAddress = testing.utils.makeNativeAddress('Aptos');
 const bogusAddress = testing.utils.makeNativeAddress('Aptos');
 const realNativeAddress = toNative(
   'Aptos',
-  // @ts-ignore
-  TOKEN_ADDRESSES[network]['Aptos']['wsol'],
+  TOKEN_ADDRESSES["Mainnet"]['Aptos']['waptos'],
 );
 const realWrappedAddress = toNative(
   'Aptos',
-  // @ts-ignore
-  TOKEN_ADDRESSES[network]['Aptos']['wavax'],
+  TOKEN_ADDRESSES["Mainnet"]['Aptos']['wavax'],
 );
 
 // Setup nock to record fixtures
@@ -54,7 +51,7 @@ nockBack.fixtures = __dirname + '/fixtures';
 
 let nockDone: () => void;
 beforeEach(async () => {
-  nockBack.setMode('lockdown');
+  nockBack.setMode('update');
   const fullTestName = expect.getState().currentTestName?.replace(/\s/g, '_');
   const { nockDone: nd } = await nockBack(`${fullTestName}.json`, {
     // Remove the `id` from the request body after preparing it but before
@@ -62,7 +59,7 @@ beforeEach(async () => {
     after: (scope) => {
       scope.filteringRequestBody((body: string) => {
         const o = JSON.parse(body) as { id?: string };
-        delete o.id;
+        if (o.id) delete o.id;
         return JSON.stringify(o);
       });
     },
@@ -70,7 +67,7 @@ beforeEach(async () => {
     afterRecord: (defs) => {
       return defs.map((d: nock.Definition) => {
         const body = d.body as { id?: string };
-        delete body.id;
+        if (body.id) delete body.id;
         d.body = body;
         return d;
       });
@@ -182,32 +179,29 @@ describe('TokenBridge Tests', () => {
 
   describe('Create Token Attestation Transactions', () => {
     const chain = 'Aptos';
-    const nativeAddress = testing.utils.makeNativeAddress(chain);
-
-    const sender = toNative(chain, senderAddress);
     const tbAddress = p.config[chain]!.contracts.tokenBridge!;
 
     test('Create Attestation', async () => {
-      const attestation = tb.createAttestation(nativeAddress, sender);
+      const attestation = tb.createAttestation(realNativeAddress, senderAddress);
       const allTxns: AptosUnsignedTransaction[] = [];
       for await (const atx of attestation) {
         allTxns.push(atx);
       }
-
       expect(allTxns).toHaveLength(1);
+
       const [attestTx] = allTxns;
       expect(attestTx).toBeTruthy();
       expect(attestTx.chain).toEqual(chain);
 
       const { transaction } = attestTx;
-      expect(transaction.instructions).toHaveLength(2);
+      expect(transaction.arguments).toHaveLength(0);
     });
 
     test('Submit Attestation', async () => {
       const vaa = createVAA('TokenBridge:AttestMeta', {
         payload: {
           token: {
-            address: nativeAddress.toUniversalAddress(),
+            address: realNativeAddress.toUniversalAddress(),
             chain: 'Avalanche',
           },
           decimals: 8,
@@ -223,19 +217,13 @@ describe('TokenBridge Tests', () => {
         timestamp: 0,
         nonce: 0,
       });
-      const submitAttestation = tb.submitAttestation(vaa, sender);
+      const submitAttestation = tb.submitAttestation(vaa, senderAddress);
 
       const allTxns: AptosUnsignedTransaction[] = [];
       for await (const atx of submitAttestation) {
         allTxns.push(atx);
       }
-      expect(allTxns).toHaveLength(3);
-
-      const [verifySig, postVaa, create] = allTxns;
-      //
-      expect(verifySig.transaction.instructions).toHaveLength(2)
-      expect(postVaa.transaction.instructions).toHaveLength(1)
-      expect(create.transaction.instructions).toHaveLength(1);
+      expect(allTxns).toHaveLength(2);
     });
   });
 
@@ -243,7 +231,6 @@ describe('TokenBridge Tests', () => {
     const chain = 'Aptos';
     const destChain = 'Ethereum';
 
-    const sender = toNative(chain, senderAddress);
     const recipient = testing.utils.makeChainAddress(destChain);
 
     const amount = 1000n;
@@ -253,7 +240,7 @@ describe('TokenBridge Tests', () => {
       describe('Transfer', () => {
         test('Native', async () => {
           const token = 'native';
-          const xfer = tb.transfer(sender, recipient, token, amount, payload);
+          const xfer = tb.transfer(senderAddress, recipient, token, amount, payload);
           expect(xfer).toBeTruthy();
 
           const allTxns: AptosUnsignedTransaction[] = [];
@@ -267,13 +254,13 @@ describe('TokenBridge Tests', () => {
           expect(xferTx.chain).toEqual(chain);
 
           const { transaction } = xferTx;
-          expect(transaction.instructions).toHaveLength(6);
+          expect(transaction.arguments).toHaveLength(5);
           // ...
         });
 
         test('Token', async () => {
           const xfer = tb.transfer(
-            sender,
+            senderAddress,
             recipient,
             realWrappedAddress,
             amount,
@@ -292,7 +279,8 @@ describe('TokenBridge Tests', () => {
           expect(xferTx.chain).toEqual(chain);
 
           const { transaction } = xferTx;
-          expect(transaction.instructions).toHaveLength(2);
+          expect(transaction.type_arguments).toHaveLength(1);
+          expect(transaction.arguments).toHaveLength(5);
         });
       });
     });

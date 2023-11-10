@@ -1,0 +1,43 @@
+[
+    {
+        "scope": "https://fullnode.testnet.aptoslabs.com:443",
+        "method": "GET",
+        "path": "/v1/accounts/0x1/resource/0x576410486a2da45eee6c949c995670112ddf2fbeedab20350d506328eefc9d4f::state::OriginInfo",
+        "body": "",
+        "status": 404,
+        "response": {
+            "message": "Resource not found by Address(0x1), Struct tag(0x576410486a2da45eee6c949c995670112ddf2fbeedab20350d506328eefc9d4f::state::OriginInfo) and Ledger version(763681307)",
+            "error_code": "resource_not_found",
+            "vm_error_code": null
+        },
+        "rawHeaders": [
+            "content-type",
+            "application/json; charset=utf-8",
+            "x-aptos-chain-id",
+            "2",
+            "x-aptos-ledger-version",
+            "763681307",
+            "x-aptos-ledger-oldest-version",
+            "0",
+            "x-aptos-ledger-timestampusec",
+            "1699633700910574",
+            "x-aptos-epoch",
+            "10258",
+            "x-aptos-block-height",
+            "165848986",
+            "x-aptos-oldest-block-height",
+            "0",
+            "Content-Length",
+            "232",
+            "date",
+            "Fri, 10 Nov 2023 16:28:21 GMT",
+            "Via",
+            "1.1 google",
+            "Alt-Svc",
+            "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
+            "Connection",
+            "close"
+        ],
+        "responseIsBinary": false
+    }
+]

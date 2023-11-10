@@ -1,0 +1,51 @@
+[
+    {
+        "scope": "https://fullnode.testnet.aptoslabs.com:443",
+        "method": "GET",
+        "path": "/v1/",
+        "body": "",
+        "status": 200,
+        "response": {
+            "chain_id": 2,
+            "epoch": "10258",
+            "ledger_version": "763681299",
+            "oldest_ledger_version": "0",
+            "ledger_timestamp": "1699633700368485",
+            "node_role": "full_node",
+            "oldest_block_height": "0",
+            "block_height": "165848983",
+            "git_hash": "c7a2381ace10fd677ce549180a7f16001ef5c58d"
+        },
+        "rawHeaders": [
+            "content-type",
+            "application/json; charset=utf-8",
+            "x-aptos-chain-id",
+            "2",
+            "x-aptos-ledger-version",
+            "763681299",
+            "x-aptos-ledger-oldest-version",
+            "0",
+            "x-aptos-ledger-timestampusec",
+            "1699633700368485",
+            "x-aptos-epoch",
+            "10258",
+            "x-aptos-block-height",
+            "165848983",
+            "x-aptos-oldest-block-height",
+            "0",
+            "Content-Length",
+            "256",
+            "date",
+            "Fri, 10 Nov 2023 16:28:20 GMT",
+            "Via",
+            "1.1 google",
+            "Set-Cookie",
+            "GCLB=CPzqo7GbgfjDywE; path=/; HttpOnly; expires=Sat, 11-Nov-2023 16:28:21 GMT",
+            "Alt-Svc",
+            "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
+            "Connection",
+            "close"
+        ],
+        "responseIsBinary": false
+    }
+]
