@@ -1,11 +1,11 @@
 import {
   ChainId,
-  ChainName,
+  Chain,
   ChainToPlatform,
-  PlatformName,
+  Platform,
   encoding,
   toChainId,
-  toChainName
+  toChain
 } from "@wormhole-foundation/sdk-base";
 import { ChainAddress, NativeAddress } from "../address";
 import { IbcMessageId, WormholeMessageId } from "../attestation";
@@ -132,7 +132,7 @@ export function gatewayTransferMsg(
   // Encode the payload so the gateway contract knows where to forward the
   // newly minted tokens
   return makeGatewayTransferMsg(
-    toChainName(gtd.chain),
+    toChain(gtd.chain),
     gtd.recipient,
     BigInt(gtd.fee),
     gtd.nonce,
@@ -140,7 +140,7 @@ export function gatewayTransferMsg(
   );
 }
 
-export function makeGatewayTransferMsg<CN extends ChainName>(
+export function makeGatewayTransferMsg<CN extends Chain>(
   chain: CN,
   recipient: NativeAddress<ChainToPlatform<CN>> | string,
   fee: bigint = 0n,
@@ -199,17 +199,17 @@ export interface IbcTransferData {
   sender: string;
 }
 
-export interface SupportsIbcBridge<P extends PlatformName> {
+export interface SupportsIbcBridge<P extends Platform> {
   getIbcBridge(rpc: RpcConnection<P>): Promise<IbcBridge<P>>;
 }
 
-export function supportsIbcBridge<P extends PlatformName>(
+export function supportsIbcBridge<P extends Platform>(
   thing: SupportsIbcBridge<P> | any,
 ): thing is SupportsIbcBridge<P> {
   return typeof (<SupportsIbcBridge<P>>thing).getIbcBridge === "function";
 }
 
-export interface IbcBridge<P extends PlatformName> {
+export interface IbcBridge<P extends Platform> {
   //alternative naming: initiateTransfer
   transfer(
     sender: AnyAddress,
@@ -220,10 +220,10 @@ export interface IbcBridge<P extends PlatformName> {
   ): AsyncGenerator<UnsignedTransaction>;
 
   // cached from config
-  getTransferChannel(chain: ChainName): string | null;
+  getTransferChannel(chain: Chain): string | null;
 
   // fetched from contract
-  fetchTransferChannel(chain: ChainName): Promise<string | null>;
+  fetchTransferChannel(chain: Chain): Promise<string | null>;
 
   // Find the wormhole emitted message id for a given IBC transfer
   // if it does not exist, this will return null

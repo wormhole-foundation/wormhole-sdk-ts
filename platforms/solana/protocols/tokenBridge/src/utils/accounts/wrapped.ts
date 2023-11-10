@@ -8,7 +8,7 @@ import { utils } from '@wormhole-foundation/connect-sdk-solana';
 import {
   ChainId,
   toChainId,
-  toChainName,
+  toChain,
   toNative,
 } from '@wormhole-foundation/connect-sdk';
 
@@ -23,7 +23,7 @@ export function deriveWrappedMintKey(
     );
   }
   if (typeof tokenAddress == 'string') {
-    const parsedAddress = toNative(toChainName(tokenChain), tokenAddress);
+    const parsedAddress = toNative(toChain(tokenChain), tokenAddress);
     tokenAddress = parsedAddress.toUint8Array();
   }
   return utils.deriveAddress(

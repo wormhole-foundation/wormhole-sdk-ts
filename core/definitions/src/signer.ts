@@ -1,6 +1,7 @@
-import { ChainName } from "@wormhole-foundation/sdk-base";
+import { Chain, ChainToPlatform } from "@wormhole-foundation/sdk-base";
 import { UnsignedTransaction } from "./unsignedTransaction";
 import { SignedTx, TxHash } from "./types";
+import { UniversalOrNative } from "./address";
 
 // A Signer is an interface that must be provided to certain methods
 // in the SDK to sign transactions. It can be either a SignOnlySigner
@@ -13,35 +14,37 @@ export function isSigner(thing: Signer | any): thing is Signer {
   return isSignOnlySigner(thing) || isSignAndSendSigner(thing);
 }
 
+interface SignerBase<C extends Chain> {
+  chain(): C;
+  address(): UniversalOrNative<ChainToPlatform<C>>;
+}
+
 // A SignOnlySender is for situations where the signer is not
 // connected to the network or does not wish to broadcast the
 // transactions themselves
-export interface SignOnlySigner {
-  chain(): ChainName;
-  address(): string;
-  sign(tx: UnsignedTransaction[]): Promise<SignedTx[]>;
+export interface SignOnlySigner<C extends Chain> extends SignerBase<C>{
+  sign(tx: UnsignedTransaction<C>[]): Promise<SignedTx[]>;
 }
-export function isSignOnlySigner(thing: SignOnlySigner | any): thing is SignOnlySigner {
+
+export function isSignOnlySigner(thing: any): thing is SignOnlySigner<Chain> {
   return (
-    typeof (<SignOnlySigner>thing).chain === "function" &&
-    typeof (<SignOnlySigner>thing).address == "function" &&
-    typeof (<SignOnlySigner>thing).sign === "function"
+      "chain" in thing && typeof thing.chain   === "function" &&
+    "address" in thing && typeof thing.address === "function" &&
+       "sign" in thing && typeof thing.sign    === "function"
   );
 }
 
 // A SignAndSendSigner is for situations where the signer is
 // connected to the network and wishes to broadcast the
 // transactions themselves
-export interface SignAndSendSigner {
-  chain(): ChainName;
-  address(): string;
-  signAndSend(tx: UnsignedTransaction[]): Promise<TxHash[]>;
+export interface SignAndSendSigner<C extends Chain> extends SignerBase<C> {
+  signAndSend(tx: UnsignedTransaction<C>[]): Promise<TxHash[]>;
 }
 
-export function isSignAndSendSigner(thing: SignAndSendSigner | any): thing is SignAndSendSigner {
+export function isSignAndSendSigner(thing: any): thing is SignAndSendSigner<Chain> {
   return (
-    typeof (<SignAndSendSigner>thing).chain === "function" &&
-    typeof (<SignAndSendSigner>thing).address == "function" &&
-    typeof (<SignAndSendSigner>thing).signAndSend === "function"
+          "chain" in thing && typeof thing.chain       === "function" &&
+        "address" in thing && typeof thing.address     === "function" &&
+    "signAndSend" in thing && typeof thing.signAndSend === "function"
   );
 }

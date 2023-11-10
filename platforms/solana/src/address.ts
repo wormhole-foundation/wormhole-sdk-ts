@@ -1,7 +1,7 @@
 import {
   Address,
   UniversalAddress,
-  PlatformName,
+  Platform,
   registerNative,
   encoding,
   onlyOnce,
@@ -24,7 +24,7 @@ export const SolanaZeroAddress = '11111111111111111111111111111111';
 
 export class SolanaAddress implements Address {
   static readonly byteSize = 32;
-  public readonly platform: PlatformName = SolanaPlatform.platform;
+  public readonly platform: Platform = SolanaPlatform.platform;
 
   private readonly address: PublicKey;
 

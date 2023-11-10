@@ -6,7 +6,7 @@ import {
   CustomConversion,
   FixedConversion,
   UintLayoutItem,
-  ChainName,
+  Chain,
 } from "@wormhole-foundation/sdk-base";
 
 const chainItemBase = { binary: "uint", size: 2 } as const;
@@ -14,7 +14,7 @@ const chainItemBase = { binary: "uint", size: 2 } as const;
 type AllowNull<T, B extends boolean> = B extends true ? T | null : T;
 
 export const chainItem = <
-  C extends readonly ChainName[] = typeof chains,
+  C extends readonly Chain[] = typeof chains,
   N extends boolean = false
 >(opts?: {
   allowedChains?: C;
@@ -47,7 +47,7 @@ export const chainItem = <
     } satisfies CustomConversion<number, AllowNull<C[number], N>>,
   } as const satisfies UintLayoutItem);
 
-export const fixedChainItem = <C extends ChainName>(chain: C) =>
+export const fixedChainItem = <C extends Chain>(chain: C) =>
   ({
     ...chainItemBase,
     custom: {

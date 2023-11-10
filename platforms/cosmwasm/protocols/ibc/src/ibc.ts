@@ -4,7 +4,7 @@ import { MsgTransfer } from "cosmjs-types/ibc/applications/transfer/v1/tx";
 
 import {
   ChainAddress,
-  ChainName,
+  Chain,
   GatewayIbcTransferMsg,
   GatewayTransferMsg,
   GatewayTransferWithPayloadMsg,
@@ -39,7 +39,7 @@ import {
   networkChainToChannels,
   Gateway,
   CosmwasmPlatform,
-  CosmwasmChainName,
+  CosmwasmChain,
   AnyCosmwasmAddress,
   CosmwasmTransaction,
   CosmwasmUnsignedTransaction,
@@ -55,12 +55,12 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
   private gatewayAddress: string;
 
   // map the local channel ids to the remote chain
-  private channelToChain: Map<string, CosmwasmChainName> = new Map();
-  private chainToChannel: Map<CosmwasmChainName, string> = new Map();
+  private channelToChain: Map<string, CosmwasmChain> = new Map();
+  private chainToChannel: Map<CosmwasmChain, string> = new Map();
 
   private constructor(
     readonly network: Network,
-    readonly chain: CosmwasmChainName,
+    readonly chain: CosmwasmChain,
     readonly rpc: CosmWasmClient,
     readonly contracts: Contracts,
   ) {
@@ -72,8 +72,8 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
     const channels: IbcChannels = networkChainToChannels.get(network, chain) ?? {};
 
     for (const [chain, channel] of Object.entries(channels)) {
-      this.channelToChain.set(channel, chain as CosmwasmChainName);
-      this.chainToChannel.set(chain as CosmwasmChainName, channel);
+      this.channelToChain.set(channel, chain as CosmwasmChain);
+      this.chainToChannel.set(chain as CosmwasmChain, channel);
     }
   }
 
@@ -82,8 +82,8 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
     return new CosmwasmIbcBridge(network, chain, rpc, config[chain]!.contracts);
   }
 
-  getTransferChannel(chain: ChainName): string | null {
-    return this.chainToChannel.get(chain as CosmwasmChainName) ?? null;
+  getTransferChannel(chain: Chain): string | null {
+    return this.chainToChannel.get(chain as CosmwasmChain) ?? null;
   }
 
   async *transfer(
@@ -327,7 +327,7 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
   }
 
   // Fetches the local channel for the given chain
-  async fetchTransferChannel(chain: CosmwasmChainName): Promise<string> {
+  async fetchTransferChannel(chain: CosmwasmChain): Promise<string> {
     if (this.chain !== Gateway.name)
       throw new Error("Cannot query the transfer channels from a non-gateway chain");
 

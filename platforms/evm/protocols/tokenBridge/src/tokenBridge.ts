@@ -11,7 +11,7 @@ import {
   keccak256,
   serialize,
   toChainId,
-  toChainName,
+  toChain,
   toNative,
   chainIds,
 } from '@wormhole-foundation/connect-sdk';
@@ -23,7 +23,7 @@ import { TokenBridgeContract } from './ethers-contracts';
 import {
   AnyEvmAddress,
   EvmAddress,
-  EvmChainName,
+  EvmChain,
   EvmPlatform,
   EvmUnsignedTransaction,
   EvmZeroAddress,
@@ -40,7 +40,7 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
 
   private constructor(
     readonly network: Network,
-    readonly chain: EvmChainName,
+    readonly chain: EvmChain,
     readonly provider: Provider,
     readonly contracts: Contracts,
   ) {
@@ -88,7 +88,7 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     );
 
     const [chain, address] = await Promise.all([
-      tokenContract.chainId().then(Number).then(toChainId).then(toChainName),
+      tokenContract.chainId().then(Number).then(toChainId).then(toChain),
       tokenContract.nativeContract().then((addr) => new UniversalAddress(addr)),
     ]);
     return { chain, address };

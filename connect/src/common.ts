@@ -7,10 +7,10 @@ import {
   isSignAndSendSigner,
   isSigner,
 } from "@wormhole-foundation/sdk-definitions";
-import { PlatformName } from "@wormhole-foundation/sdk-base";
+import { Platform } from "@wormhole-foundation/sdk-base";
 
 export async function signSendWait(
-  chain: ChainContext<PlatformName>,
+  chain: ChainContext<Platform>,
   xfer: AsyncGenerator<UnsignedTransaction>,
   signer: Signer,
 ): Promise<TransactionId[]> {

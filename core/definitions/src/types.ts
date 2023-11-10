@@ -1,8 +1,8 @@
 import {
-  ChainName,
+  Chain,
   ExplorerSettings,
   Network,
-  PlatformName,
+  Platform,
   blockTime,
   chainIds,
   chainToPlatform,
@@ -22,16 +22,7 @@ import { UniversalAddress } from "./universalAddress";
 
 export type TxHash = string;
 export type SequenceId = bigint;
-
 export type SignedTx = any;
-
-export type AnyAddress =
-  | NativeAddress<PlatformName>
-  | UniversalAddress
-  | string
-  | number
-  | Uint8Array
-  | number[];
 
 export type TokenId = ChainAddress;
 export function isTokenId(thing: TokenId | any): thing is TokenId {
@@ -39,11 +30,17 @@ export function isTokenId(thing: TokenId | any): thing is TokenId {
 }
 
 export type Balances = {
-  [key: string]: BigInt | null;
+  [key: string]: bigint | null;
 };
 
-export function nativeChainAddress(
-  s: Signer | TokenId | [ChainName, UniversalAddress | Uint8Array | string],
+export function nativeChainAddress<C extends Chain>(
+  chain: C,
+  address: UniversalAddress | Uint8Array | string,
+): ChainAddress<C>;
+
+
+export function nativeChainAddress<C extends Chain>(
+  s: Signer | TokenId | [Chain, UniversalAddress | Uint8Array | string],
 ): ChainAddress {
   if (Array.isArray(s)) {
     // We might be passed a universal address as a string
@@ -77,18 +74,18 @@ export function nativeChainAddress(
 }
 
 // Fully qualifier Transaction ID
-export type TransactionId = { chain: ChainName; txid: TxHash };
+export type TransactionId = { chain: Chain; txid: TxHash };
 export function isTransactionIdentifier(thing: TransactionId | any): thing is TransactionId {
   return (<TransactionId>thing).chain !== undefined && (<TransactionId>thing).txid !== undefined;
 }
 
 // Configuration for a given Chain
-export type ChainConfig = {
-  key: ChainName;
-  network: Network;
-  platform: PlatformName;
+export type ChainConfig<C extends Chain, N extends Network> = {
+  key: C;
+  network: N;
+  platform: ChainToPlatform<C>;
   // Wormhole Chain Id for this chain
-  chainId: number;
+  chainId: ;
   // Contract addresses for this chain
   contracts: Contracts;
   // Number of blocks before a transaction is considered final
@@ -105,12 +102,12 @@ export type ChainConfig = {
 };
 
 export type ChainsConfig = {
-  [K in ChainName]?: ChainConfig;
+  [K in Chain]?: ChainConfig;
 };
 
 export function buildConfig(n: Network): ChainsConfig {
   const cc: ChainsConfig = chains
-    .map((c: ChainName): ChainConfig => {
+    .map((c: Chain): ChainConfig => {
       const platform = chainToPlatform(c);
       let nativeChainId = "";
       try {

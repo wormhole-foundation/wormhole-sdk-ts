@@ -1,7 +1,7 @@
 import {
-  ChainName,
+  Chain,
   isChain,
-  PlatformName,
+  Platform,
   chainToPlatform,
   ProtocolName,
 } from "@wormhole-foundation/sdk-base";
@@ -14,23 +14,23 @@ declare global {
   }
 }
 
-export interface ProtocolInitializer<P extends PlatformName> {
+export interface ProtocolInitializer<P extends Platform> {
   fromRpc(rpc: RpcConnection<P>, config: ChainsConfig): any;
 }
 
 const protocolFactory = new Map<
-  PlatformName,
-  Map<ProtocolName, ProtocolInitializer<PlatformName>>
+  Platform,
+  Map<ProtocolName, ProtocolInitializer<Platform>>
 >();
 
-export function registerProtocol<P extends PlatformName, PN extends ProtocolName>(
+export function registerProtocol<P extends Platform, PN extends ProtocolName>(
   platform: P,
   protocol: PN,
   ctr: ProtocolInitializer<P>,
 ): void {
   let protocols = protocolFactory.get(platform)!;
 
-  if (!protocols) protocols = new Map<ProtocolName, ProtocolInitializer<PlatformName>>();
+  if (!protocols) protocols = new Map<ProtocolName, ProtocolInitializer<Platform>>();
 
   if (protocols.has(protocol))
     throw new Error(`Protocol ${protocol} for platform ${platform} has already registered`);
@@ -39,11 +39,11 @@ export function registerProtocol<P extends PlatformName, PN extends ProtocolName
   protocolFactory.set(platform, protocols);
 }
 
-export function protocolIsRegistered<T extends PlatformName | ChainName, PN extends ProtocolName>(
+export function protocolIsRegistered<T extends Platform | Chain, PN extends ProtocolName>(
   chainOrPlatform: T,
   protocol: PN,
 ): boolean {
-  const platform: PlatformName = isChain(chainOrPlatform)
+  const platform: Platform = isChain(chainOrPlatform)
     ? chainToPlatform.get(chainOrPlatform)!
     : chainOrPlatform;
 
@@ -51,7 +51,7 @@ export function protocolIsRegistered<T extends PlatformName | ChainName, PN exte
   return !!protocols && protocols.has(protocol);
 }
 
-export function getProtocolInitializer<P extends PlatformName, PN extends ProtocolName>(
+export function getProtocolInitializer<P extends Platform, PN extends ProtocolName>(
   platform: P,
   protocol: PN,
 ): ProtocolInitializer<P> {

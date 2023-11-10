@@ -1,5 +1,5 @@
 import {
-  ChainName,
+  Chain,
   TokenId,
   TxHash,
   SignedTx,
@@ -25,25 +25,25 @@ import { AnyEvmAddress } from './types';
  */
 // Provides runtime concrete value
 export module EvmUtils {
-  export function nativeTokenId(chain: ChainName): TokenId {
+  export function nativeTokenId(chain: Chain): TokenId {
     if (!isSupportedChain(chain))
       throw new Error(`invalid chain for EVM: ${chain}`);
     return nativeChainAddress([chain, EvmZeroAddress]);
   }
 
-  export function isSupportedChain(chain: ChainName): boolean {
+  export function isSupportedChain(chain: Chain): boolean {
     const platform = chainToPlatform(chain);
     return platform === EvmPlatform.platform;
   }
 
-  export function isNativeTokenId(chain: ChainName, tokenId: TokenId): boolean {
+  export function isNativeTokenId(chain: Chain, tokenId: TokenId): boolean {
     if (!isSupportedChain(chain)) return false;
     if (tokenId.chain !== chain) return false;
     return tokenId.address.toString() === EvmZeroAddress;
   }
 
   export async function getDecimals(
-    chain: ChainName,
+    chain: Chain,
     rpc: Provider,
     token: AnyEvmAddress | 'native',
   ): Promise<bigint> {
@@ -57,7 +57,7 @@ export module EvmUtils {
   }
 
   export async function getBalance(
-    chain: ChainName,
+    chain: Chain,
     rpc: Provider,
     walletAddr: string,
     token: AnyEvmAddress | 'native',
@@ -72,7 +72,7 @@ export module EvmUtils {
   }
 
   export async function getBalances(
-    chain: ChainName,
+    chain: Chain,
     rpc: Provider,
     walletAddr: string,
     tokens: (AnyEvmAddress | 'native')[],
@@ -89,7 +89,7 @@ export module EvmUtils {
   }
 
   export async function sendWait(
-    chain: ChainName,
+    chain: Chain,
     rpc: Provider,
     stxns: SignedTx[],
   ): Promise<TxHash[]> {
@@ -118,7 +118,7 @@ export module EvmUtils {
   export function chainFromChainId(
     eip155ChainId: string,
   ): [Network, PlatformToChains<EvmPlatform.Type>] {
-    const networkChainPair = chainIds.getNetworkAndChainName(
+    const networkChainPair = chainIds.getNetworkAndChain(
       EvmPlatform.platform,
       eip155ChainId,
     );

@@ -1,17 +1,17 @@
-import { ChainName } from "@wormhole-foundation/sdk-base";
+import { Chain } from "@wormhole-foundation/sdk-base";
 
 export type ForeignAssetCache = {
   address: string;
   decimals: number;
 };
 export type ForeignAssetsCache = {
-  [chain in ChainName]?: ForeignAssetCache;
+  [chain in Chain]?: ForeignAssetCache;
 };
 
 export type TokenConfig = {
   name: string;
   symbol: string;
-  nativeChain: ChainName;
+  nativeChain: Chain;
   decimals: number;
   foreignAssets?: ForeignAssetsCache;
 };
@@ -21,5 +21,5 @@ export type TokenEntries = {
 };
 
 export type TokensConfig = {
-  [chain in ChainName]?: TokenEntries;
+  [chain in Chain]?: TokenEntries;
 };

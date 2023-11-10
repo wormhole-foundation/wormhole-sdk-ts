@@ -1,9 +1,9 @@
 import {
-  ChainName,
-  PlatformName,
+  Chain,
+  Platform,
   chainToPlatform,
   encoding,
-  toChainName,
+  toChain,
 } from "@wormhole-foundation/sdk-base";
 import {
   ChainAddress,
@@ -35,14 +35,14 @@ import { Wormhole } from "../wormhole";
 import { AttestationId, TransferState, WormholeTransfer } from "../wormholeTransfer";
 
 export class GatewayTransfer implements WormholeTransfer {
-  static chain: ChainName = "Wormchain";
+  static chain: Chain = "Wormchain";
 
   private readonly wh: Wormhole;
 
   // Wormchain context
-  private readonly gateway: ChainContext<PlatformName>;
+  private readonly gateway: ChainContext<Platform>;
   // Wormchain IBC Bridge
-  private readonly gatewayIbcBridge: IbcBridge<PlatformName>;
+  private readonly gatewayIbcBridge: IbcBridge<Platform>;
   // Contract address
   private readonly gatewayAddress: ChainAddress;
 
@@ -73,8 +73,8 @@ export class GatewayTransfer implements WormholeTransfer {
   private constructor(
     wh: Wormhole,
     transfer: GatewayTransferDetails,
-    gateway: ChainContext<PlatformName>,
-    gatewayIbc: IbcBridge<PlatformName>,
+    gateway: ChainContext<Platform>,
+    gatewayIbc: IbcBridge<Platform>,
   ) {
     this.state = TransferState.Created;
     this.wh = wh;
@@ -181,7 +181,7 @@ export class GatewayTransfer implements WormholeTransfer {
           ? encoding.toUint8Array(maybeWithPayload.payload)
           : undefined;
 
-        const destChain = toChainName(maybeWithPayload.chain);
+        const destChain = toChain(maybeWithPayload.chain);
         const recipientAddress = encoding.b64.decode(maybeWithPayload.recipient);
         to = nativeChainAddress([destChain, recipientAddress]);
       } catch {
@@ -240,7 +240,7 @@ export class GatewayTransfer implements WormholeTransfer {
     } as TokenId;
 
     const msg = toGatewayMsg(xfer.data.memo);
-    const destChain = toChainName(msg.chain);
+    const destChain = toChain(msg.chain);
 
     const _recip = encoding.b64.valid(msg.recipient)
       ? encoding.fromUint8Array(encoding.b64.decode(msg.recipient))

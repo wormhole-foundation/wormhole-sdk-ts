@@ -2,7 +2,7 @@ import {
   AutomaticCircleBridge,
   ChainAddress,
   ChainsConfig,
-  CircleChainName,
+  CircleChain,
   CircleNetwork,
   Contracts,
   Network,
@@ -18,7 +18,7 @@ import {
   EvmAddress,
   EvmPlatform,
   AnyEvmAddress,
-  EvmChainName,
+  EvmChain,
   addChainId,
   addFrom,
   EvmUnsignedTransaction,
@@ -33,7 +33,7 @@ export class EvmAutomaticCircleBridge implements AutomaticCircleBridge<'Evm'> {
 
   private constructor(
     readonly network: Network,
-    readonly chain: EvmChainName,
+    readonly chain: EvmChain,
     readonly provider: Provider,
     readonly contracts: Contracts,
   ) {
@@ -82,7 +82,7 @@ export class EvmAutomaticCircleBridge implements AutomaticCircleBridge<'Evm'> {
 
     const tokenAddr = usdcContract(
       this.network as CircleNetwork,
-      this.chain as CircleChainName,
+      this.chain as CircleChain,
     );
 
     const tokenContract = EvmPlatform.getTokenImplementation(

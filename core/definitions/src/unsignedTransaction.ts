@@ -1,9 +1,12 @@
-import { ChainName, Network } from "@wormhole-foundation/sdk-base";
+import { Chain, Network } from "@wormhole-foundation/sdk-base";
 
-export interface UnsignedTransaction {
+export interface UnsignedTransaction<
+  C extends Chain = Chain,
+  N extends Network = Network
+> {
   readonly transaction: any;
-  readonly network: Network;
-  readonly chain: ChainName;
+  readonly network: N;
+  readonly chain: C;
   readonly description: string;
   // parallelizable describes whether or not the transaction can be
   // executed in parallel with others.

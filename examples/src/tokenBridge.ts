@@ -2,7 +2,7 @@ import {
   Wormhole,
   TokenId,
   TokenTransfer,
-  ChainName,
+  Chain,
   Signer,
   normalizeAmount,
 } from "@wormhole-foundation/connect-sdk";
@@ -117,7 +117,7 @@ async function tokenTransfer(
 // chain and transaction id
 async function finishTransfer(
   wh: Wormhole,
-  chain: ChainName,
+  chain: Chain,
   txid: string,
   signer: Signer,
 ): Promise<void> {

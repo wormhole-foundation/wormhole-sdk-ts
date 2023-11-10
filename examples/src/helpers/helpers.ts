@@ -1,7 +1,7 @@
 import {
   ChainAddress,
   ChainContext,
-  PlatformName,
+  Platform,
   Signer,
   TransferState,
   WormholeTransfer,
@@ -27,12 +27,12 @@ function getEnv(key: string): string {
 }
 
 export interface TransferStuff {
-  chain: ChainContext<PlatformName>;
+  chain: ChainContext<Platform>;
   signer: Signer;
   address: ChainAddress;
 }
 
-export async function getStuff(chain: ChainContext<PlatformName>): Promise<TransferStuff> {
+export async function getStuff(chain: ChainContext<Platform>): Promise<TransferStuff> {
   let signer: Signer;
 
   switch (chain.platform.platform) {

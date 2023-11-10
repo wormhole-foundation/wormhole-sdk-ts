@@ -1,4 +1,4 @@
-import { ChainName, PlatformName } from "@wormhole-foundation/sdk-base";
+import { Chain, Platform } from "@wormhole-foundation/sdk-base";
 
 import { NativeAddress } from "./address";
 import { WormholeMessageId } from "./attestation";
@@ -20,10 +20,10 @@ import { RpcConnection } from "./rpc";
 import { ChainConfig, SignedTx } from "./types";
 import { UniversalAddress } from "./universalAddress";
 
-export abstract class ChainContext<P extends PlatformName> {
+export abstract class ChainContext<P extends Platform> {
   abstract platform: Platform<P>;
 
-  readonly chain: ChainName;
+  readonly chain: Chain;
 
   // Cached Protocol clients
   protected rpc?: RpcConnection<P>;

@@ -2,7 +2,7 @@ import { Coin, EncodeObject } from "@cosmjs/proto-signing";
 import { StdFee, calculateFee } from "@cosmjs/stargate";
 import {
   UnsignedTransaction,
-  ChainName,
+  Chain,
   Network,
   encoding,
 } from "@wormhole-foundation/connect-sdk";
@@ -16,7 +16,7 @@ export interface CosmwasmTransaction {
   memo: string;
 }
 
-export function computeFee(chain: ChainName): StdFee {
+export function computeFee(chain: Chain): StdFee {
   return calculateFee(DEFAULT_FEE, `0.1${CosmwasmPlatform.getNativeDenom(chain)}`);
 }
 
@@ -41,7 +41,7 @@ export class CosmwasmUnsignedTransaction implements UnsignedTransaction {
   constructor(
     readonly transaction: CosmwasmTransaction,
     readonly network: Network,
-    readonly chain: ChainName,
+    readonly chain: Chain,
     readonly description: string,
     readonly parallelizable: boolean = false,
   ) {}

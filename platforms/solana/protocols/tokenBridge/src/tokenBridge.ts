@@ -2,7 +2,7 @@ import {
   ChainId,
   Network,
   toChainId,
-  toChainName,
+  toChain,
   TokenBridge,
   ChainAddress,
   TokenId,
@@ -17,7 +17,7 @@ import {
 import {
   SolanaUnsignedTransaction,
   AnySolanaAddress,
-  SolanaChainName,
+  SolanaChain,
   SolanaPlatform,
   SolanaAddress,
 } from '@wormhole-foundation/connect-sdk-solana';
@@ -69,7 +69,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
 
   private constructor(
     readonly network: Network,
-    readonly chain: SolanaChainName,
+    readonly chain: SolanaChain,
     readonly connection: Connection,
     readonly contracts: Contracts,
   ) {
@@ -140,7 +140,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
         };
 
       return {
-        chain: toChainName(meta.chain as ChainId),
+        chain: toChain(meta.chain as ChainId),
         address: new UniversalAddress(meta.tokenAddress),
       };
     } catch (_) {

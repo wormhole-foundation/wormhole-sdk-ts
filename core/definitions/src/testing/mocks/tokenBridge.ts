@@ -1,4 +1,4 @@
-import { PlatformName } from "@wormhole-foundation/sdk-base";
+import { Platform } from "@wormhole-foundation/sdk-base";
 import {
   AnyAddress,
   ChainAddress,
@@ -9,12 +9,12 @@ import {
 } from "../..";
 
 //export function mockTokenBridgeFactory(
-//  p: PlatformName,
-//): TokenBridge<PlatformName> {
+//  p: Platform,
+//): TokenBridge<Platform> {
 //  return new MockTokenBridge(p);
 //}
 
-export class MockTokenBridge<P extends PlatformName> implements TokenBridge<P> {
+export class MockTokenBridge<P extends Platform> implements TokenBridge<P> {
   constructor(readonly rpc: RpcConnection<P>) {}
 
   isWrappedAsset(token: AnyAddress): Promise<boolean> {

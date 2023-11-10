@@ -1,8 +1,8 @@
 import {
     ChainAddress,
-    ChainName,
+    Chain,
     NativeAddress,
-    PlatformName,
+    Platform,
     Signer,
     TokenBridge,
     TokenId,
@@ -27,7 +27,7 @@ jest.setTimeout(10 * 60 * 1000)
 const network = "Devnet"
 const allPlatforms = [SolanaPlatform, EvmPlatform, CosmwasmPlatform];
 
-const e2es: [ChainName, ChainName, string][] = [
+const e2es: [Chain, Chain, string][] = [
     ["Ethereum", "Solana", "native"],
     ["Ethereum", "Solana", TEST_ERC20],
     ["Solana", "Ethereum", "native"],
@@ -47,16 +47,16 @@ describe("Token Bridge E2E Tests", () => {
         let srcAcct: ChainAddress;
         let dstAcct: ChainAddress;
 
-        let srcTb: TokenBridge<PlatformName>;
-        let dstTb: TokenBridge<PlatformName>;
+        let srcTb: TokenBridge<Platform>;
+        let dstTb: TokenBridge<Platform>;
 
-        let tokenAddress: NativeAddress<PlatformName>;
+        let tokenAddress: NativeAddress<Platform>;
         let token: TokenId;
         let tokenOrNative: TokenId | "native";
 
 
-        let srcBalanceToken: NativeAddress<PlatformName> | "native";
-        let dstBalanceToken: NativeAddress<PlatformName>;
+        let srcBalanceToken: NativeAddress<Platform> | "native";
+        let dstBalanceToken: NativeAddress<Platform>;
 
         beforeAll(async () => {
             const srcStuff = await getStuff(src);
