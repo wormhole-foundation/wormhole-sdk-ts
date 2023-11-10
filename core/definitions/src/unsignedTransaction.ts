@@ -1,6 +1,6 @@
 import { Chain, Network } from "@wormhole-foundation/sdk-base";
 
-export interface UnsignedTransaction<C extends Chain = Chain, N extends Network = Network> {
+export interface UnsignedTransaction<N extends Network = Network, C extends Chain = Chain> {
   readonly transaction: any;
   readonly network: N;
   readonly chain: C;

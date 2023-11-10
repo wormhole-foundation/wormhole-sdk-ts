@@ -1,4 +1,4 @@
-import { Chain } from "@wormhole-foundation/sdk-base";
+import { Network, Chain } from "@wormhole-foundation/sdk-base";
 import { SignedTx, TxHash } from "./types";
 import { UnsignedTransaction } from "./unsignedTransaction";
 
@@ -7,9 +7,11 @@ import { UnsignedTransaction } from "./unsignedTransaction";
 // or a SignAndSendSigner depending on circumstances.
 // A Signer can be implemented by wrapping an existing offline wallet
 // or a web wallet
-export type Signer<C extends Chain> = SignOnlySigner<C> | SignAndSendSigner<C>;
+export type Signer<N extends Network = Network, C extends Chain = Chain> =
+  | SignOnlySigner<N, C>
+  | SignAndSendSigner<N, C>;
 
-export function isSigner(thing: any): thing is Signer<Chain> {
+export function isSigner(thing: any): thing is Signer<Network, Chain> {
   return isSignOnlySigner(thing) || isSignAndSendSigner(thing);
 }
 
@@ -21,11 +23,11 @@ interface SignerBase<C extends Chain> {
 // A SignOnlySender is for situations where the signer is not
 // connected to the network or does not wish to broadcast the
 // transactions themselves
-export interface SignOnlySigner<C extends Chain> extends SignerBase<C> {
-  sign(tx: UnsignedTransaction<C>[]): Promise<SignedTx[]>;
+export interface SignOnlySigner<N extends Network, C extends Chain> extends SignerBase<C> {
+  sign(tx: UnsignedTransaction<N, C>[]): Promise<SignedTx[]>;
 }
 
-export function isSignOnlySigner(thing: any): thing is SignOnlySigner<Chain> {
+export function isSignOnlySigner(thing: any): thing is SignOnlySigner<Network, Chain> {
   return (
     "chain" in thing &&
     typeof thing.chain === "function" &&
@@ -39,11 +41,11 @@ export function isSignOnlySigner(thing: any): thing is SignOnlySigner<Chain> {
 // A SignAndSendSigner is for situations where the signer is
 // connected to the network and wishes to broadcast the
 // transactions themselves
-export interface SignAndSendSigner<C extends Chain> extends SignerBase<C> {
-  signAndSend(tx: UnsignedTransaction<C>[]): Promise<TxHash[]>;
+export interface SignAndSendSigner<N extends Network, C extends Chain> extends SignerBase<C> {
+  signAndSend(tx: UnsignedTransaction<N, C>[]): Promise<TxHash[]>;
 }
 
-export function isSignAndSendSigner(thing: any): thing is SignAndSendSigner<Chain> {
+export function isSignAndSendSigner(thing: any): thing is SignAndSendSigner<Network, Chain> {
   return (
     "chain" in thing &&
     typeof thing.chain === "function" &&

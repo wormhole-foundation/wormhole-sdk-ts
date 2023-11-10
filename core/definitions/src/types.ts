@@ -45,7 +45,7 @@ export function nativeChainAddress<C extends Chain>(
 ): ChainAddress<C>;
 
 export function nativeChainAddress<C extends Chain>(
-  s: Signer<C> | TokenId<C> | [C, UniversalAddress | Uint8Array | string],
+  s: Signer<Network, C> | TokenId<C> | [C, UniversalAddress | Uint8Array | string],
 ): ChainAddress<C> {
   let chain: C;
   let address: NativeAddress<C>;

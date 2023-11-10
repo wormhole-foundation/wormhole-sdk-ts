@@ -1,5 +1,6 @@
 import {
   Chain,
+  Network,
   Platform,
   chainToPlatform,
   encoding,
@@ -40,7 +41,7 @@ export class GatewayTransfer implements WormholeTransfer {
   private readonly wh: Wormhole;
 
   // Wormchain context
-  private readonly gateway: ChainContext<Platform>;
+  private readonly gateway: ChainContext<Network, typeof GatewayTransfer.chain>;
   // Wormchain IBC Bridge
   private readonly gatewayIbcBridge: IbcBridge<Platform>;
   // Contract address
@@ -73,7 +74,7 @@ export class GatewayTransfer implements WormholeTransfer {
   private constructor(
     wh: Wormhole,
     transfer: GatewayTransferDetails,
-    gateway: ChainContext<Platform>,
+    gateway: ChainContext<Network, typeof GatewayTransfer.chain>,
     gatewayIbc: IbcBridge<Platform>,
   ) {
     this.state = TransferState.Created;
@@ -183,7 +184,7 @@ export class GatewayTransfer implements WormholeTransfer {
 
         const destChain = toChain(maybeWithPayload.chain);
         const recipientAddress = encoding.b64.decode(maybeWithPayload.recipient);
-        to = nativeChainAddress([destChain, recipientAddress]);
+        to = nativeChainAddress(destChain, recipientAddress);
       } catch {
         /*Ignoring, throws if not the payload isnt JSON*/
       }

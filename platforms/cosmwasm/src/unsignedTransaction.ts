@@ -1,11 +1,6 @@
 import { Coin, EncodeObject } from "@cosmjs/proto-signing";
 import { StdFee, calculateFee } from "@cosmjs/stargate";
-import {
-  UnsignedTransaction,
-  Chain,
-  Network,
-  encoding,
-} from "@wormhole-foundation/connect-sdk";
+import { UnsignedTransaction, Chain, Network, encoding } from "@wormhole-foundation/connect-sdk";
 import { MSG_EXECUTE_CONTRACT_TYPE_URL, DEFAULT_FEE } from "./constants";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
 import { CosmwasmPlatform } from "./platform";

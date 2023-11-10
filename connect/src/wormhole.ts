@@ -1,8 +1,8 @@
 import {
   Chain,
-  ChainToPlatform,
   Network,
   Platform,
+  chainToPlatform,
   isChain,
   isCircleChain,
   isCircleSupported,
@@ -15,7 +15,7 @@ import {
   NativeAddress,
   PayloadDiscriminator,
   PayloadLiteral,
-  Platform,
+  PlatformUtils,
   TokenId,
   TxHash,
   UniversalAddress,
@@ -46,13 +46,13 @@ import {
   getVaaWithRetry,
 } from "./whscan-api";
 
-export class Wormhole {
-  protected _platforms: Map<Platform, Platform<Platform>>;
-  protected _chains: Map<Chain, ChainContext<ChainToPlatform<Chain>>>;
-  protected readonly _network: Network;
+export class Wormhole<N extends Network = Network> {
+  protected _platforms: Map<Platform, PlatformUtils<N, Platform>>;
+  protected _chains: Map<Chain, ChainContext<N, Chain>>;
+  protected readonly _network: N;
   readonly config: WormholeConfig;
 
-  constructor(network: Network, platforms: Platform<Platform>[], config?: WormholeConfig) {
+  constructor(network: N, platforms: PlatformUtils<N, Platform>[], config?: WormholeConfig) {
     this._network = network;
     this.config = config ?? CONFIG[network];
 
@@ -65,7 +65,7 @@ export class Wormhole {
     }
   }
 
-  get network(): Network {
+  get network(): N {
     return this._network;
   }
 
@@ -168,12 +168,11 @@ export class Wormhole {
    * @returns the platform context class
    * @throws Errors if platform is not found
    */
-  getPlatform(chain: Chain | Platform): Platform<Platform> {
+  getPlatform<P extends Platform>(chain: P): PlatformUtils<N, P> {
     const platformName = isChain(chain) ? this.config.chains[chain]!.platform : chain;
-
     const platform = this._platforms.get(platformName);
     if (!platform) throw new Error(`Not able to retrieve platform ${platform}`);
-    return platform;
+    return platform as PlatformUtils<N, P>;
   }
 
   /**
@@ -182,9 +181,11 @@ export class Wormhole {
    * @returns the chain context class
    * @throws Errors if context is not found
    */
-  getChain<CN extends Chain>(chain: CN): ChainContext<ChainToPlatform<CN>> {
-    if (!this._chains.has(chain)) this._chains.set(chain, this.getPlatform(chain).getChain(chain));
-    return this._chains.get(chain)! as ChainContext<ChainToPlatform<CN>>;
+  getChain<CN extends Chain>(chain: CN): ChainContext<N, CN> {
+    const platform = chainToPlatform(chain);
+    if (!this._chains.has(chain))
+      this._chains.set(chain, this.getPlatform(platform).getChain(chain));
+    return this._chains.get(chain)! as ChainContext<N, CN>;
   }
 
   /**

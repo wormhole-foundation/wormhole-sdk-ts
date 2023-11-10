@@ -143,7 +143,7 @@ export class TokenTransfer implements WormholeTransfer {
     const { chain, address } = vaa.payload.to;
     const { tokenBridgeRelayer } = wh.config.chains[chain]!.contracts;
     const relayerAddress = tokenBridgeRelayer
-      ? nativeChainAddress([chain, tokenBridgeRelayer]).address.toUniversalAddress()
+      ? nativeChainAddress(chain, tokenBridgeRelayer).address.toUniversalAddress()
       : null;
 
     // Check if its a payload 3 targeted at a relayer on the destination chain
@@ -202,7 +202,11 @@ export class TokenTransfer implements WormholeTransfer {
     let xfer: AsyncGenerator<UnsignedTransaction>;
     if (this.transfer.automatic) {
       const tb = await fromChain.getAutomaticTokenBridge();
-      const fee = await tb.getRelayerFee(this.transfer.from, this.transfer.to, this.transfer.token);
+      const fee = await tb.getRelayerFee(
+        this.transfer.from.address,
+        this.transfer.to,
+        this.transfer.token,
+      );
 
       xfer = tb.transfer(
         this.transfer.from.address,

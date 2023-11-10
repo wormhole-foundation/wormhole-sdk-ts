@@ -1,3 +1,4 @@
+import { Chain, Network } from "@wormhole-foundation/sdk-base";
 import {
   ChainContext,
   Signer,
@@ -7,23 +8,22 @@ import {
   isSignAndSendSigner,
   isSigner,
 } from "@wormhole-foundation/sdk-definitions";
-import { Platform } from "@wormhole-foundation/sdk-base";
 
-export async function signSendWait(
-  chain: ChainContext<Platform>,
-  xfer: AsyncGenerator<UnsignedTransaction>,
-  signer: Signer,
+export async function signSendWait<N extends Network, C extends Chain>(
+  chain: ChainContext<N, C>,
+  xfer: AsyncGenerator<UnsignedTransaction<N, C>>,
+  signer: Signer<N, C>,
 ): Promise<TransactionId[]> {
   const txHashes: TxHash[] = [];
 
   if (!isSigner(signer)) throw new Error("Invalid signer, not SignAndSendSigner or SignOnlySigner");
 
-  const signSend = async (txns: UnsignedTransaction[]): Promise<TxHash[]> =>
+  const signSend = async (txns: UnsignedTransaction<N, C>[]): Promise<TxHash[]> =>
     isSignAndSendSigner(signer)
       ? signer.signAndSend(txns)
       : chain.sendWait(await signer.sign(txns));
 
-  let txbuff: UnsignedTransaction[] = [];
+  let txbuff: UnsignedTransaction<N, C>[] = [];
   for await (const tx of xfer) {
     // buffer transactions as long as they are
     // marked as parallelizable

@@ -138,9 +138,7 @@ const gatewayConnections = [
       ["Osmosis", { Wormchain: "channel-1" }],
     ],
   ],
-] as const satisfies RoArray<
-  readonly [Network, RoArray<readonly [CosmwasmChain, IbcChannels]>]
->;
+] as const satisfies RoArray<readonly [Network, RoArray<readonly [CosmwasmChain, IbcChannels]>]>;
 
 export const networkChainToChannels = constMap(gatewayConnections);
 

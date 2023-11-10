@@ -1,9 +1,4 @@
-import {
-  Chain,
-  Platform,
-  encoding,
-  toCircleChain,
-} from "@wormhole-foundation/sdk-base";
+import { Chain, Platform, encoding, toCircleChain } from "@wormhole-foundation/sdk-base";
 import {
   CircleAttestation,
   CircleMessageId,
@@ -118,16 +113,16 @@ export class CircleTransfer implements WormholeTransfer {
 
     let automatic = false;
     if (wormholeRelayer) {
-      const relayerAddress = nativeChainAddress([
+      const relayerAddress = nativeChainAddress(
         chain,
         wormholeRelayer,
-      ]).address.toUniversalAddress();
+      ).address.toUniversalAddress();
       automatic = vaa.payloadName === "TransferRelay" && rcvAddress.equals(relayerAddress);
     }
 
     const details: CircleTransferDetails = {
-      from: nativeChainAddress([from.chain, vaa.payload.caller]),
-      to: nativeChainAddress([rcvChain, rcvAddress]),
+      from: nativeChainAddress(from.chain, vaa.payload.caller),
+      to: nativeChainAddress(rcvChain, rcvAddress),
       amount: vaa.payload.token.amount,
       automatic,
     };
@@ -156,8 +151,8 @@ export class CircleTransfer implements WormholeTransfer {
     const rcvChain = toCircleChain(message.destinationDomain);
 
     const details: CircleTransferDetails = {
-      from: nativeChainAddress([sendChain, xferSender]),
-      to: nativeChainAddress([rcvChain, xferReceiver]),
+      from: nativeChainAddress(sendChain, xferSender),
+      to: nativeChainAddress(rcvChain, xferReceiver),
       amount: burnMessage.amount,
       automatic: false,
     };

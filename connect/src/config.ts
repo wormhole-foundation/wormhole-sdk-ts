@@ -25,12 +25,15 @@ export const CONFIG = {
   },
 } as const satisfies Record<Network, WormholeConfig>;
 
-export function networkPlatformConfigs(network: Network, platform: Platform): ChainsConfig {
+export function networkPlatformConfigs<N extends Network, P extends Platform>(
+  network: N,
+  platform: P,
+): ChainsConfig<N, P> {
   return Object.fromEntries(
     Object.entries(CONFIG[network].chains).filter(([_, v]) => {
       return v.platform == platform;
     }),
-  );
+  ) as ChainsConfig<N, P>;
 }
 
 const inNode = typeof process !== "undefined";
