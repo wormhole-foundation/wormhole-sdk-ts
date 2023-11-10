@@ -41,10 +41,8 @@
     "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo",
     "lint": "npm run prettier && eslint --fix",
     "bump:beta": "bump prerelease",
+    "test": "jest --config ./jest.config.ts",
     "prettier": "prettier --write ./src"
-  },
-  "devDependencies": {
-    "nock": "^13.3.3"
   },
   "dependencies": {
     "@wormhole-foundation/connect-sdk": "*",

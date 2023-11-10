@@ -27,7 +27,7 @@ describe('Aptos Platform Tests', () => {
         [APTOS_CHAINS[0]]: configs[APTOS_CHAINS[0]],
       });
 
-      const client = new AptosClient("")
+      const client = new AptosClient(configs[APTOS_CHAINS[0]].rpc)
       const tb = await p.getTokenBridge(client);
       expect(tb).toBeTruthy();
     });

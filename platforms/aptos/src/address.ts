@@ -21,6 +21,16 @@ declare global {
 
 export const AptosZeroAddress = "0x";
 
+// Sometimes Aptos addresses will be trimmed of leading 0s
+// add them back if necessary
+export function ensureFullAptosAddress(address: string) {
+  if (address.length % 2 !== 0 || address.length < 66) {
+    address = address.startsWith("0x") ? address.slice(2) : address;
+    return "0x" + address.padStart(64, "0");
+  }
+  return address;
+}
+
 export class AptosAddress implements Address {
   static readonly byteSize = 32;
   public readonly platform: PlatformName = AptosPlatform.platform;
@@ -33,16 +43,18 @@ export class AptosAddress implements Address {
       this.address = a.address;
     } else if (UniversalAddress.instanceof(address)) {
       this.address = address.toUint8Array();
-    } else if (typeof address === "string" && encoding.hex.valid(address)) {
-      // A resource or object
+    } else if (typeof address === "string") {
       if (isValidAptosType(address)) {
         const chunks = address.split(APTOS_SEPARATOR);
-        this.address = encoding.hex.decode(chunks[0]);
-      } else {
-        this.address = encoding.hex.decode(address);
+        address = chunks[0];
       }
+      address = ensureFullAptosAddress(address);
+
+      if (!encoding.hex.valid(address)) throw new Error("Invalid Aptos address: " + address);
+
+      this.address = encoding.hex.decode(address);
     } else {
-      this.address = address as Uint8Array;
+      this.address = address;
     }
   }
 
