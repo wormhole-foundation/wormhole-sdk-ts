@@ -7,11 +7,9 @@
   "plugins": ["@typescript-eslint"],
   "extends": [
     "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
-    "prettier"
+    "plugin:@typescript-eslint/recommended"
   ],
   "rules": {
-    "no-constant-binary-expression": ["error"],
     "comma-dangle": ["error", "always-multiline"],
     "semi": ["error", "always"],
     "@typescript-eslint/explicit-module-boundary-types": ["error"],
