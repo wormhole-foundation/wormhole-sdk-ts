@@ -2,7 +2,7 @@ import {
   ChainAddress,
   ChainConfig,
   ChainContext,
-  PlatformName,
+  Platform,
   Signer,
   WormholeConfig,
   nativeChainAddress,
@@ -15,13 +15,13 @@ import { getSolanaSigner } from "@wormhole-foundation/connect-sdk-solana";
 import { ETH_PRIVATE_KEY, SOLANA_PRIVATE_KEY, TERRA_PRIVATE_KEY } from "./consts";
 
 export interface TransferStuff {
-  chain: ChainContext<PlatformName>;
+  chain: ChainContext<Platform>;
   signer: Signer;
   address: ChainAddress;
 }
 
 export async function getStuff(
-  chain: ChainContext<PlatformName>,
+  chain: ChainContext<Platform>,
 ): Promise<TransferStuff> {
   let signer: Signer;
   switch (chain.platform.platform) {

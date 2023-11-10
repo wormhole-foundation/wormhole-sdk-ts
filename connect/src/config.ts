@@ -1,4 +1,4 @@
-import { Network, circleAPI, PlatformName } from "@wormhole-foundation/sdk-base";
+import { Network, circleAPI, Platform } from "@wormhole-foundation/sdk-base";
 import { WormholeConfig } from "./types";
 import { buildConfig, ChainsConfig } from "@wormhole-foundation/sdk-definitions";
 
@@ -25,7 +25,7 @@ export const CONFIG = {
   },
 } as const satisfies Record<Network, WormholeConfig>;
 
-export function networkPlatformConfigs(network: Network, platform: PlatformName): ChainsConfig {
+export function networkPlatformConfigs(network: Network, platform: Platform): ChainsConfig {
   return Object.fromEntries(
     Object.entries(CONFIG[network].chains).filter(([_, v]) => {
       return v.platform == platform;

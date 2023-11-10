@@ -1,4 +1,4 @@
-import { PlatformName } from "@wormhole-foundation/sdk-base";
+import { Platform } from "@wormhole-foundation/sdk-base";
 import {
   GatewayTransferMsg,
   GatewayTransferWithPayloadMsg,
@@ -53,7 +53,7 @@ export async function retry<T>(
 }
 
 export async function isTokenBridgeVaaRedeemed(
-  tb: TokenBridge<PlatformName>,
+  tb: TokenBridge<Platform>,
   vaa: TokenBridge.VAA<"Transfer" | "TransferWithPayload">,
 ): Promise<boolean | null> {
   try {

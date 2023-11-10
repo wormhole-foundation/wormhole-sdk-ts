@@ -1,7 +1,7 @@
 import {
   AutomaticCircleBridge,
   AutomaticTokenBridge,
-  ChainName,
+  Chain,
   ChainsConfig,
   CircleBridge,
   DEFAULT_NETWORK,
@@ -53,12 +53,12 @@ export module EvmPlatform {
     return EvmPlatform;
   }
 
-  export function getRpc(chain: ChainName): ethers.Provider {
+  export function getRpc(chain: Chain): ethers.Provider {
     if (chain in config) return ethers.getDefaultProvider(config[chain]!.rpc);
     throw new Error('No configuration available for chain: ' + chain);
   }
 
-  export function getChain(chain: ChainName): EvmChain {
+  export function getChain(chain: Chain): EvmChain {
     if (chain in config) return new EvmChain(config[chain]!);
     throw new Error('No configuration available for chain: ' + chain);
   }
@@ -96,7 +96,7 @@ export module EvmPlatform {
   }
 
   export async function parseTransaction(
-    chain: ChainName,
+    chain: Chain,
     rpc: ethers.Provider,
     txid: TxHash,
   ): Promise<WormholeMessageId[]> {

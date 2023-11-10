@@ -9,7 +9,7 @@ import {
 import { TendermintClient } from "@cosmjs/tendermint-rpc";
 
 import {
-  ChainName,
+  Chain,
   ChainsConfig,
   DEFAULT_NETWORK,
   IbcBridge,
@@ -28,7 +28,7 @@ import { CosmwasmChain } from "./chain";
 import { IbcChannels, networkChainToChannels } from "./constants";
 import { Gateway } from "./gateway";
 import { CosmwasmUtils } from "./platformUtils";
-import { CosmwasmChainName } from "./types";
+import { CosmwasmChain } from "./types";
 
 /**
  * @category Cosmwasm
@@ -67,12 +67,12 @@ export module CosmwasmPlatform {
     return CosmwasmPlatform;
   }
 
-  export async function getRpc(chain: ChainName): Promise<CosmWasmClient> {
+  export async function getRpc(chain: Chain): Promise<CosmWasmClient> {
     const rpcAddress = config[chain]!.rpc;
     return await CosmWasmClient.connect(rpcAddress);
   }
 
-  export function getChain(chain: ChainName): CosmwasmChain {
+  export function getChain(chain: Chain): CosmwasmChain {
     if (chain in config) return new CosmwasmChain(config[chain]!);
     throw new Error("No configuration available for chain: " + chain);
   }
@@ -93,7 +93,7 @@ export module CosmwasmPlatform {
   }
 
   export async function parseTransaction(
-    chain: ChainName,
+    chain: Chain,
     rpc: CosmWasmClient,
     txid: TxHash,
   ): Promise<WormholeMessageId[]> {
@@ -110,7 +110,7 @@ export module CosmwasmPlatform {
   };
 
   // cached channels from config if available
-  export const getIbcChannels = (chain: CosmwasmChainName): IbcChannels | null => {
+  export const getIbcChannels = (chain: CosmwasmChain): IbcChannels | null => {
     return networkChainToChannels.has(network, chain)
       ? networkChainToChannels.get(network, chain)!
       : null;

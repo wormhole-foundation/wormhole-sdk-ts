@@ -1,5 +1,5 @@
 import {
-  ChainName,
+  Chain,
   ChainsConfig,
   DEFAULT_NETWORK,
   Network,
@@ -48,14 +48,14 @@ export module SolanaPlatform {
   }
 
   export function getRpc(
-    chain: ChainName,
+    chain: Chain,
     commitment: Commitment = 'confirmed',
   ): Connection {
     const rpcAddress = config[chain]!.rpc;
     return new Connection(rpcAddress, commitment);
   }
 
-  export function getChain(chain: ChainName): SolanaChain {
+  export function getChain(chain: Chain): SolanaChain {
     if (chain in config) return new SolanaChain(config[chain]!);
     throw new Error('No configuration available for chain: ' + chain);
   }
@@ -79,7 +79,7 @@ export module SolanaPlatform {
   }
 
   export async function parseTransaction(
-    chain: ChainName,
+    chain: Chain,
     rpc: Connection,
     tx: string,
   ): Promise<WormholeMessageId[]> {

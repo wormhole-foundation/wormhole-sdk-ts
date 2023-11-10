@@ -7,7 +7,7 @@ import {
   TokenId,
   TokenTransferTransaction,
   toNative,
-  toChainName,
+  toChain,
   UniversalAddress,
   toChainId,
   serialize,
@@ -23,7 +23,7 @@ import {
   CosmwasmUnsignedTransaction,
   computeFee,
   AnyCosmwasmAddress,
-  CosmwasmChainName,
+  CosmwasmChain,
   WrappedRegistryResponse,
   CosmwasmPlatform,
   CosmwasmAddress,
@@ -34,7 +34,7 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
   private translator?: string;
   private constructor(
     readonly network: Network,
-    readonly chain: CosmwasmChainName,
+    readonly chain: CosmwasmChain,
     readonly rpc: CosmWasmClient,
     readonly contracts: Contracts,
   ) {
@@ -93,7 +93,7 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
       wrapped_asset_info: {},
     });
 
-    const origChain = toChainName(response.asset_chain);
+    const origChain = toChain(response.asset_chain);
     const origAddress = encoding.b64.decode(response.asset_address);
 
     return {

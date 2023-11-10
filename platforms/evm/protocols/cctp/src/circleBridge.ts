@@ -1,7 +1,7 @@
 import {
   ChainAddress,
   CircleBridge,
-  CircleChainName,
+  CircleChain,
   CircleNetwork,
   CircleTransferMessage,
   Network,
@@ -9,7 +9,7 @@ import {
   circleChainId,
   deserializeCircleMessage,
   nativeChainAddress,
-  toCircleChainName,
+  toCircleChain,
   usdcContract,
   encoding,
   Contracts,
@@ -24,7 +24,7 @@ import {
   EvmAddress,
   EvmPlatform,
   AnyEvmAddress,
-  EvmChainName,
+  EvmChain,
   addChainId,
   addFrom,
   EvmUnsignedTransaction,
@@ -43,7 +43,7 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
 
   private constructor(
     readonly network: Network,
-    readonly chain: EvmChainName,
+    readonly chain: EvmChain,
     readonly provider: Provider,
     readonly contracts: Contracts,
   ) {
@@ -127,7 +127,7 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
 
     const tokenAddr = usdcContract(
       this.network as CircleNetwork,
-      this.chain as CircleChainName,
+      this.chain as CircleChain,
     );
 
     const tokenContract = EvmPlatform.getTokenImplementation(
@@ -154,7 +154,7 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
 
     const txReq = await this.tokenMessenger.depositForBurn.populateTransaction(
       amount,
-      circleChainId(recipient.chain as CircleChainName),
+      circleChainId(recipient.chain as CircleChain),
       recipientAddress,
       tokenAddr,
     );
@@ -202,8 +202,8 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
     const xferSender = body.messageSender;
     const xferReceiver = body.mintRecipient;
 
-    const sendChain = toCircleChainName(circleMsg.sourceDomain);
-    const rcvChain = toCircleChainName(circleMsg.destinationDomain);
+    const sendChain = toCircleChain(circleMsg.sourceDomain);
+    const rcvChain = toCircleChain(circleMsg.destinationDomain);
 
     const token = nativeChainAddress([sendChain, body.burnToken]);
 

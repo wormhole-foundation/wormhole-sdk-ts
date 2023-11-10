@@ -1,4 +1,4 @@
-import { ChainName } from "@wormhole-foundation/sdk-base";
+import { Chain } from "@wormhole-foundation/sdk-base";
 import { SequenceId } from "./types";
 import { UniversalAddress } from "./universalAddress";
 import { VAA } from "./vaa";
@@ -6,7 +6,7 @@ import { VAA } from "./vaa";
 // Wormhole Message Identifier
 // used to fetch a VAA
 export type WormholeMessageId = {
-  chain: ChainName;
+  chain: Chain;
   emitter: UniversalAddress;
   sequence: SequenceId;
 };
@@ -40,7 +40,7 @@ export type getCircleAttestation = (id: CircleMessageId) => Promise<CircleAttest
 // Ibc Message Identifier
 // Used to fetch a Ibc attestation
 export type IbcMessageId = {
-  chain: ChainName;
+  chain: Chain;
   srcPort: string;
   srcChannel: string;
   dstPort: string;

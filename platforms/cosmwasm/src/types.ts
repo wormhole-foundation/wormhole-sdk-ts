@@ -1,7 +1,7 @@
 import { UniversalOrNative, PlatformToChains } from "@wormhole-foundation/connect-sdk";
 import { logs as cosmosLogs } from "@cosmjs/stargate";
 
-export type CosmwasmChainName = PlatformToChains<"Cosmwasm">;
+export type CosmwasmChain = PlatformToChains<"Cosmwasm">;
 export type UniversalOrCosmwasm = UniversalOrNative<"Cosmwasm">;
 export type AnyCosmwasmAddress = UniversalOrCosmwasm | string | Uint8Array;
 

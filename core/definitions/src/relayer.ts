@@ -1,7 +1,7 @@
-import { Chain, PlatformName } from "@wormhole-foundation/sdk-base";
+import { Chain, Platform } from "@wormhole-foundation/sdk-base";
 import { AnyAddress } from "./types";
 
-export interface Relayer<P extends PlatformName> {
+export interface Relayer<P extends Platform> {
   relaySupported(chain: Chain): boolean;
   getRelayerFee(sourceChain: Chain, destChain: Chain, tokenId: AnyAddress): Promise<bigint>;
   // TODO: What should this be named?

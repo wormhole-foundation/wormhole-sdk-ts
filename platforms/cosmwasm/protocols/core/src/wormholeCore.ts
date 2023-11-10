@@ -3,7 +3,7 @@ import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 
 import {
   AnyAddress,
-  ChainName,
+  Chain,
   ChainsConfig,
   Contracts,
   Network,
@@ -12,14 +12,14 @@ import {
   WormholeCore,
   WormholeMessageId,
 } from "@wormhole-foundation/connect-sdk";
-import { CosmwasmChainName, CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
+import { CosmwasmChain, CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
 
 export class CosmwasmWormholeCore implements WormholeCore<"Cosmwasm"> {
   private coreAddress: string;
 
   private constructor(
     readonly network: Network,
-    readonly chain: CosmwasmChainName,
+    readonly chain: CosmwasmChain,
     readonly rpc: CosmWasmClient,
     readonly contracts: Contracts,
   ) {
@@ -50,7 +50,7 @@ export class CosmwasmWormholeCore implements WormholeCore<"Cosmwasm"> {
 
   // TODO: make consts
   static parseWormholeMessage(
-    chain: ChainName,
+    chain: Chain,
     coreAddress: string,
     tx: IndexedTx,
   ): WormholeMessageId {

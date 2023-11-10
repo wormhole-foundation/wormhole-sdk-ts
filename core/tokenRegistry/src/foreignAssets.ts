@@ -18,13 +18,13 @@ console.warn = function (x: any, ...rest: any) {
   }
 };
 
-import { ChainName, chains } from "@wormhole-foundation/sdk-base";
+import { Chain, chains } from "@wormhole-foundation/sdk-base";
 import { ForeignAssetsCache, TokenEntries, TokensConfig } from "./types";
 import { TokenId, Wormhole, toNative } from "@wormhole-foundation/connect-sdk";
 
 // TODO: Question: How do we handle if a user tries to perform an action for a chain/platform which isn't installed??
-// const supportedPlatforms: PlatformName[] = ['Evm', 'Solana'];
-const supportedChains: ChainName[] = [
+// const supportedPlatforms: Platform[] = ['Evm', 'Solana'];
+const supportedChains: Chain[] = [
   "Ethereum",
   "Polygon",
   "Celo",
@@ -37,11 +37,11 @@ const supportedChains: ChainName[] = [
   "Solana",
 ];
 
-export const isSupportedChain = (chain: ChainName) => {
+export const isSupportedChain = (chain: Chain) => {
   return supportedChains.includes(chain);
 };
 
-export const createTokenId = (chain: ChainName, address: string) => {
+export const createTokenId = (chain: Chain, address: string) => {
   if (!isSupportedChain(chain)) return undefined;
   return {
     chain,
@@ -49,7 +49,7 @@ export const createTokenId = (chain: ChainName, address: string) => {
   };
 };
 
-export const getForeignAddress = async (wh: Wormhole, chain: ChainName, tokenId: TokenId) => {
+export const getForeignAddress = async (wh: Wormhole, chain: Chain, tokenId: TokenId) => {
   if (!isSupportedChain(chain)) return undefined;
   let foreignAddress: string | null = null;
   try {
@@ -70,7 +70,7 @@ export const getForeignAddress = async (wh: Wormhole, chain: ChainName, tokenId:
 
 export const getForeignAssetsData = async (
   wh: Wormhole,
-  chain: ChainName,
+  chain: Chain,
   tokenId: TokenId,
   foreignAssetsCache: ForeignAssetsCache | undefined,
 ) => {
@@ -114,11 +114,11 @@ export const getForeignAssetsData = async (
   return updates;
 };
 
-type MaybeUpdate = [ChainName, string, ForeignAssetsCache | undefined];
+type MaybeUpdate = [Chain, string, ForeignAssetsCache | undefined];
 
 export const getForeignAssetsDataForChain = async (
   wh: Wormhole,
-  chain: ChainName,
+  chain: Chain,
   chainTokensConfig: TokenEntries,
 ) => {
   console.log("Checking chain", chain);
@@ -150,7 +150,7 @@ export const getSuggestedUpdates = async (wh: Wormhole, tokensConfig: TokensConf
   const maybeUpdates: MaybeUpdate[] = (
     await Promise.all(
       Object.entries(tokensConfig).map(([chain, chainTokensConfig]) =>
-        getForeignAssetsDataForChain(wh, chain as ChainName, chainTokensConfig),
+        getForeignAssetsDataForChain(wh, chain as Chain, chainTokensConfig),
       ),
     )
   ).flat();

@@ -14,7 +14,7 @@ import {
 } from '@wormhole-foundation/connect-sdk';
 import {
   AnyEvmAddress,
-  EvmChainName,
+  EvmChain,
   addChainId,
   addFrom,
   EvmUnsignedTransaction,
@@ -32,7 +32,7 @@ export class EvmAutomaticTokenBridge implements AutomaticTokenBridge<'Evm'> {
 
   private constructor(
     readonly network: Network,
-    readonly chain: EvmChainName,
+    readonly chain: EvmChain,
     readonly provider: Provider,
     readonly contracts: Contracts,
   ) {

@@ -9,7 +9,7 @@ import {
 } from "@wormhole-foundation/sdk-definitions";
 import {
   Network,
-  PlatformName,
+  Platform,
   platforms,
 } from "@wormhole-foundation/sdk-base";
 import { CONFIG, Wormhole } from "../src";
@@ -26,13 +26,13 @@ describe("Wormhole Tests", () => {
     wh = new Wormhole(network, allPlatformCtrs);
   });
 
-  let p: Platform<PlatformName>;
+  let p: Platform<Platform>;
   test("returns Platform", async () => {
     p = wh.getPlatform("Ethereum");
     expect(p).toBeTruthy();
   });
 
-  let c: ChainContext<PlatformName>;
+  let c: ChainContext<Platform>;
   test("returns chain", async () => {
     c = wh.getChain("Ethereum");
     expect(c).toBeTruthy();
@@ -72,19 +72,19 @@ describe("Wormhole Tests", () => {
 });
 
 describe("Platform Tests", () => {
-  let p: Platform<PlatformName>;
+  let p: Platform<Platform>;
   beforeEach(() => {
     const wh = new Wormhole(network, allPlatformCtrs);
     p = wh.getPlatform("Ethereum");
   });
 
-  let rpc: RpcConnection<PlatformName>;
+  let rpc: RpcConnection<Platform>;
   test("Gets RPC", () => {
     rpc = p.getRpc("Ethereum");
     expect(rpc).toBeTruthy();
   });
 
-  let tb: TokenBridge<PlatformName>;
+  let tb: TokenBridge<Platform>;
   test("Gets Token Bridge", async () => {
     if (!supportsTokenBridge(p)) throw new Error("Fail");
 
@@ -94,13 +94,13 @@ describe("Platform Tests", () => {
 });
 
 describe("Chain Tests", () => {
-  let c: ChainContext<PlatformName>;
+  let c: ChainContext<Platform>;
   beforeEach(() => {
     const wh = new Wormhole(network, allPlatformCtrs);
     c = wh.getChain("Ethereum");
   });
 
-  let rpc: RpcConnection<PlatformName>;
+  let rpc: RpcConnection<Platform>;
   test("Gets RPC", () => {
     rpc = c.getRpc();
     expect(rpc).toBeTruthy();

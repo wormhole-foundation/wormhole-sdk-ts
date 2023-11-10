@@ -1,7 +1,7 @@
 import {
   Layout,
   LayoutToType,
-  PlatformName,
+  Platform,
   deserializeLayout,
   encoding,
 } from "@wormhole-foundation/sdk-base";
@@ -65,7 +65,7 @@ export type CircleTransferMessage = {
   messageId: CircleMessageId;
 };
 
-export interface AutomaticCircleBridge<P extends PlatformName> {
+export interface AutomaticCircleBridge<P extends Platform> {
   transfer(
     sender: AnyAddress,
     recipient: ChainAddress,
@@ -76,7 +76,7 @@ export interface AutomaticCircleBridge<P extends PlatformName> {
 }
 
 // https://github.com/circlefin/evm-cctp-contracts
-export interface CircleBridge<P extends PlatformName> {
+export interface CircleBridge<P extends Platform> {
   redeem(
     sender: AnyAddress,
     message: string,
@@ -90,23 +90,23 @@ export interface CircleBridge<P extends PlatformName> {
   parseTransactionDetails(txid: string): Promise<CircleTransferMessage>;
 }
 
-export interface SupportsCircleBridge<P extends PlatformName> {
+export interface SupportsCircleBridge<P extends Platform> {
   getCircleBridge(rpc: RpcConnection<P>): Promise<CircleBridge<P>>;
 }
 
-export function supportsCircleBridge<P extends PlatformName>(
+export function supportsCircleBridge<P extends Platform>(
   thing: SupportsCircleBridge<P> | any,
 ): thing is SupportsCircleBridge<P> {
   return typeof (<SupportsCircleBridge<P>>thing).getCircleBridge === "function";
 }
 
-export interface SupportsAutomaticCircleBridge<P extends PlatformName> {
+export interface SupportsAutomaticCircleBridge<P extends Platform> {
   getAutomaticCircleBridge(
     rpc: RpcConnection<P>,
   ): Promise<AutomaticCircleBridge<P>>;
 }
 
-export function supportsAutomaticCircleBridge<P extends PlatformName>(
+export function supportsAutomaticCircleBridge<P extends Platform>(
   thing: SupportsAutomaticCircleBridge<P> | any,
 ): thing is SupportsAutomaticCircleBridge<P> {
   return (

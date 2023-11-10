@@ -1,6 +1,6 @@
 import { Keypair } from '@solana/web3.js';
 import {
-  ChainName,
+  Chain,
   RpcConnection,
   SignOnlySigner,
   Signer,
@@ -22,9 +22,9 @@ export async function getSolanaSigner(
 }
 
 export class SolanaSigner implements SignOnlySigner {
-  constructor(private _chain: ChainName, private _keypair: Keypair) {}
+  constructor(private _chain: Chain, private _keypair: Keypair) {}
 
-  chain(): ChainName {
+  chain(): Chain {
     return this._chain;
   }
 

@@ -10,7 +10,7 @@ import {
   createTransaction,
 } from "@injectivelabs/sdk-ts";
 import {
-  ChainName,
+  Chain,
   Network,
   PlatformToChains,
   RpcConnection,
@@ -59,12 +59,12 @@ export async function getCosmwasmSigner(
 
 export class CosmwasmSigner implements SignOnlySigner {
   constructor(
-    private _chain: ChainName,
+    private _chain: Chain,
     private _signer: SigningCosmWasmClient,
     private _account: string,
   ) {}
 
-  chain(): ChainName {
+  chain(): Chain {
     return this._chain;
   }
 
@@ -98,7 +98,7 @@ export class CosmwasmEvmSigner implements SignOnlySigner {
   private key: PrivateKey;
   private prefix: string;
   private _rpc: ChainRestAuthApi;
-  constructor(private _chain: ChainName, _network: Network, _mnemonic: string) {
+  constructor(private _chain: Chain, _network: Network, _mnemonic: string) {
     this._rpc = new ChainRestAuthApi(
       cosmwasmNetworkChainToRestUrls(_network, _chain as CosmwasmEvmChain),
     );

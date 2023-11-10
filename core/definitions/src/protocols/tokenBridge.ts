@@ -1,4 +1,4 @@
-import { PlatformName, lazyInstantiate } from "@wormhole-foundation/sdk-base";
+import { Platform, lazyInstantiate } from "@wormhole-foundation/sdk-base";
 import { NativeAddress, ChainAddress } from "../address";
 import { AnyAddress, TokenId } from "../types";
 import { ProtocolVAA, ProtocolPayload, payloadDiscriminator } from "../vaa";
@@ -9,23 +9,23 @@ import { RpcConnection } from "../rpc";
 export const ErrNotWrapped = (token: string) =>
   new Error(`Token ${token} is not a wrapped asset`);
 
-export interface SupportsTokenBridge<P extends PlatformName> {
+export interface SupportsTokenBridge<P extends Platform> {
   getTokenBridge(rpc: RpcConnection<P>): Promise<TokenBridge<P>>;
 }
 
-export function supportsTokenBridge<P extends PlatformName>(
+export function supportsTokenBridge<P extends Platform>(
   thing: SupportsTokenBridge<P> | any
 ): thing is SupportsTokenBridge<P> {
   return typeof (<SupportsTokenBridge<P>>thing).getTokenBridge === "function";
 }
 
-export interface SupportsAutomaticTokenBridge<P extends PlatformName> {
+export interface SupportsAutomaticTokenBridge<P extends Platform> {
   getAutomaticTokenBridge(
     rpc: RpcConnection<P>
   ): Promise<AutomaticTokenBridge<P>>;
 }
 
-export function supportsAutomaticTokenBridge<P extends PlatformName>(
+export function supportsAutomaticTokenBridge<P extends Platform>(
   thing: SupportsAutomaticTokenBridge<P> | any
 ): thing is SupportsAutomaticTokenBridge<P> {
   return (
@@ -46,7 +46,7 @@ export namespace TokenBridge {
   );
 }
 
-export interface TokenBridge<P extends PlatformName> {
+export interface TokenBridge<P extends Platform> {
   // checks a native address to see if its a wrapped version
   isWrappedAsset(nativeAddress: AnyAddress): Promise<boolean>;
   // returns the original asset with its foreign chain
@@ -92,7 +92,7 @@ export interface TokenBridge<P extends PlatformName> {
   // TODO: preview (receive amount, fees, gas estimates, estimated blocks/time)
 }
 
-export interface AutomaticTokenBridge<P extends PlatformName> {
+export interface AutomaticTokenBridge<P extends Platform> {
   transfer(
     sender: AnyAddress,
     recipient: ChainAddress,
@@ -112,7 +112,7 @@ export interface AutomaticTokenBridge<P extends PlatformName> {
   ): Promise<bigint>;
   // the amount of native tokens a user would receive by swapping x amount of sending tokens
   // nativeTokenAmount(
-  //   destChain: ChainName | ChainId,
+  //   destChain: Chain | ChainId,
   //   token: TokenId,
   //   amount: BigNumber,
   //   walletAddress: string,
@@ -120,7 +120,7 @@ export interface AutomaticTokenBridge<P extends PlatformName> {
 
   // the maximum amount of sending tokens that can be swapped for native tokens
   // maxSwapAmount(
-  //   destChain: ChainName | ChainId,
+  //   destChain: Chain | ChainId,
   //   token: TokenId,
   //   walletAddress: string,
   // ): Promise<BigNumber>;

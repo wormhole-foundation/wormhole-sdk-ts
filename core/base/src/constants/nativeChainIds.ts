@@ -1,18 +1,18 @@
-import { constMap, ToMapping } from "../utils";
-import { ChainName } from "./chains";
+import { MapLevel, constMap, ToMapping } from "../utils";
+import { Chain } from "./chains";
 import { Network } from "./networks";
-import { PlatformName, PlatformToChains, chainToPlatform } from "./platforms";
+import { Platform, PlatformToChains, chainToPlatform } from "./platforms";
 
 const chainNetworkNativeChainIdEntries = [[
   "Aptos", [
     ["Mainnet", 1n],
     ["Testnet", 2n],
-    ["Devnet", 0n],
+    ["Devnet",  0n],
   ]], [
   "Algorand", [
     ["Mainnet", "mainnet-v1.0"],
     ["Testnet", "testnet-v1.0"],
-    ["Devnet", "sandnet-v1.0"],
+    ["Devnet",  "sandnet-v1.0"],
   ]], [
   "Near", [
     ["Mainnet", "mainnet"],
@@ -25,12 +25,12 @@ const chainNetworkNativeChainIdEntries = [[
   "Evmos", [
     ["Mainnet", "evmos_9001-2"],
     ["Testnet", "evmos_9000-4"],
-    ["Devnet", "evmos_devnet_fake"],
+    ["Devnet",  "evmos_devnet_fake"],
   ]], [
   "Injective", [
     ["Mainnet", "injective-1"],
     ["Testnet", "injective-888"],
-    ["Devnet", "injective_devnet_fake"],
+    ["Devnet",  "injective_devnet_fake"],
   ]], [
   "Osmosis", [
     ["Mainnet", "osmosis-1"],
@@ -143,7 +143,7 @@ const chainNetworkNativeChainIdEntries = [[
   "Sepolia", [
     ["Testnet", 11155111n], //actually just another ethereum testnet...
   ]],
-] as const;
+] as const satisfies MapLevel<Chain, MapLevel<Network, bigint | string>>;
 
 export const networkChainToNativeChainId = constMap(chainNetworkNativeChainIdEntries, [[1, 0], 2]);
 
@@ -154,7 +154,7 @@ export const networkChainToNativeChainId = constMap(chainNetworkNativeChainIdEnt
 const nativeChainIdToNetworkChain = constMap(chainNetworkNativeChainIdEntries, [2, [1, 0]]);
 
 type NetworkChainToNativeChainId = ToMapping<typeof chainNetworkNativeChainIdEntries>;
-export type PlatformToNativeChainIds<P extends PlatformName> =
+export type PlatformToNativeChainIds<P extends Platform> =
   PlatformToChains<P> extends infer C
   ? C extends keyof NetworkChainToNativeChainId
     ? NetworkChainToNativeChainId[C][keyof NetworkChainToNativeChainId[C]]
@@ -162,7 +162,7 @@ export type PlatformToNativeChainIds<P extends PlatformName> =
   : never;
 
 export type PlatformNativeChainIdToNetworkChainPair<
-  P extends PlatformName,
+  P extends Platform,
   CI extends PlatformToNativeChainIds<P>
 > = PlatformToChains<P> extends infer C
   ? ReturnType<typeof nativeChainIdToNetworkChain<CI>>[number] extends infer NCP
@@ -173,12 +173,12 @@ export type PlatformNativeChainIdToNetworkChainPair<
   : never;
 
 export function protocolNativeChainIdToNetworkChain<
-  const P extends PlatformName,
+  const P extends Platform,
   const CI extends PlatformToNativeChainIds<P>
 >(platform: P, chainId: CI): PlatformNativeChainIdToNetworkChainPair<P, CI> {
   //typescript really struggles to comprehend the types here so we have to help it out
   const candidates = nativeChainIdToNetworkChain(chainId) as
-    readonly (readonly [Network, ChainName])[];
+    readonly (readonly [Network, Chain])[];
   const mustBeSingleton = candidates.filter(([_, chain]) => chainToPlatform(chain) === platform);
   if (mustBeSingleton.length !== 1)
     throw new Error(`Platform ${platform} has multiple chains with native chain id ${chainId}`);

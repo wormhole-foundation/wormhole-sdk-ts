@@ -1,6 +1,6 @@
 import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import {
-  ChainName,
+  Chain,
   GatewayTransferMsg,
   GatewayTransferWithPayloadMsg,
   IbcBridge,
@@ -14,7 +14,7 @@ import {
 import { CosmwasmAddress } from "./address";
 import { IBC_TRANSFER_PORT } from "./constants";
 import { CosmwasmPlatform } from "./platform";
-import { CosmwasmChainName } from "./types";
+import { CosmwasmChain } from "./types";
 
 export module Gateway {
   export const name: "Wormchain" = "Wormchain";
@@ -65,7 +65,7 @@ export module Gateway {
   }
 
   // Gets the the source channel for outgoing transfers from wormchain
-  export function getGatewaySourceChannel(chain: CosmwasmChainName): string {
+  export function getGatewaySourceChannel(chain: CosmwasmChain): string {
     const channels = CosmwasmPlatform.getIbcChannels(chain);
     if (!channels) throw new Error("No channels configured for chain " + chain);
     if (!(Gateway.name in channels)) throw new Error("No channel configured for chain " + chain);
@@ -74,7 +74,7 @@ export module Gateway {
 
   // derive the ics20 token denom from the
   // wrapped denom and destination channel
-  export function deriveIbcDenom(chain: CosmwasmChainName, denom: string): CosmwasmAddress {
+  export function deriveIbcDenom(chain: CosmwasmChain, denom: string): CosmwasmAddress {
     // Otherwise compute the ibc address from the channel and denom
     const channel = getGatewaySourceChannel(chain);
     const hashData = encoding.toUint8Array(`${IBC_TRANSFER_PORT}/${channel}/${denom}`);
@@ -83,7 +83,7 @@ export module Gateway {
   }
 
   export function makeTransferMsg(
-    chain: ChainName,
+    chain: Chain,
     recipient: CosmwasmAddress,
     fee: bigint = 0n,
     payload?: string,

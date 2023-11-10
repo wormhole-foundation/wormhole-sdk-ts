@@ -1,5 +1,5 @@
 import {
-  ChainName,
+  Chain,
   TokenId,
   TxHash,
   SignedTx,
@@ -28,24 +28,24 @@ import { AnySolanaAddress } from './types';
  */
 // Provides runtime concrete value
 export module SolanaUtils {
-  export function nativeTokenId(chain: ChainName): TokenId {
+  export function nativeTokenId(chain: Chain): TokenId {
     if (!isSupportedChain(chain)) throw new Error(`invalid chain: ${chain}`);
     return nativeChainAddress([chain, SolanaZeroAddress]);
   }
 
-  export function isSupportedChain(chain: ChainName): boolean {
+  export function isSupportedChain(chain: Chain): boolean {
     const platform = chainToPlatform(chain);
     return platform === SolanaPlatform.platform;
   }
 
-  export function isNativeTokenId(chain: ChainName, tokenId: TokenId): boolean {
+  export function isNativeTokenId(chain: Chain, tokenId: TokenId): boolean {
     if (!isSupportedChain(chain)) return false;
     if (tokenId.chain !== chain) return false;
     const native = nativeTokenId(chain);
     return native == tokenId;
   }
   export async function getDecimals(
-    chain: ChainName,
+    chain: Chain,
     rpc: Connection,
     token: AnySolanaAddress | 'native',
   ): Promise<bigint> {
@@ -62,7 +62,7 @@ export module SolanaUtils {
   }
 
   export async function getBalance(
-    chain: ChainName,
+    chain: Chain,
     rpc: Connection,
     walletAddress: string,
     token: AnySolanaAddress | 'native',
@@ -81,7 +81,7 @@ export module SolanaUtils {
   }
 
   export async function getBalances(
-    chain: ChainName,
+    chain: Chain,
     rpc: Connection,
     walletAddress: string,
     tokens: (AnySolanaAddress | 'native')[],
@@ -114,7 +114,7 @@ export module SolanaUtils {
   }
 
   export async function sendWait(
-    chain: ChainName,
+    chain: Chain,
     rpc: Connection,
     stxns: SignedTx[],
   ): Promise<TxHash[]> {
@@ -147,7 +147,7 @@ export module SolanaUtils {
   export function chainFromChainId(
     genesisHash: string,
   ): [Network, PlatformToChains<SolanaPlatform.Type>] {
-    const netChain = chainIds.getNetworkAndChainName(
+    const netChain = chainIds.getNetworkAndChain(
       SolanaPlatform.platform,
       genesisHash,
     );

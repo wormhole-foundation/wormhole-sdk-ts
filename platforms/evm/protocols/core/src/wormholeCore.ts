@@ -16,7 +16,7 @@ import { ethers_contracts } from '.';
 import {
   EvmUnsignedTransaction,
   AnyEvmAddress,
-  EvmChainName,
+  EvmChain,
   addChainId,
   addFrom,
   EvmPlatform,
@@ -33,7 +33,7 @@ export class EvmWormholeCore implements WormholeCore<'Evm'> {
 
   private constructor(
     readonly network: Network,
-    readonly chain: EvmChainName,
+    readonly chain: EvmChain,
     readonly provider: Provider,
     readonly contracts: Contracts,
   ) {

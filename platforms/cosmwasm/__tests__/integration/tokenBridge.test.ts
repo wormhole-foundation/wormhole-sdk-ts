@@ -2,7 +2,7 @@ import {
   toNative,
   CONFIG,
   Signature,
-  ChainName,
+  Chain,
   createVAA,
   encoding,
   TokenBridge,
@@ -19,7 +19,7 @@ import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
 const network = "Testnet"; //DEFAULT_NETWORK;
 const configs = CONFIG[network].chains;
 
-const chain: ChainName = "Sei";
+const chain: Chain = "Sei";
 const realNativeAddress = chainToNativeDenoms(network, chain);
 
 const sender = "sei1x76thkmwy03attv3j28ekkfmkhnyah3qnzwvn4";
@@ -32,7 +32,7 @@ const nativeTokenAddress = toNative(
 );
 
 // Wrapped avax on sei
-const wrappedTokenChain: ChainName = "Avalanche";
+const wrappedTokenChain: Chain = "Avalanche";
 const realWrappedAddress = toNative(
   chain,
   "sei1mgpq67pj7p2acy5x7r5lz7fulxmuxr3uh5f0szyvqgvru3glufzsxk8tnx"
@@ -189,7 +189,7 @@ describe("TokenBridge Tests", () => {
 
   describe("Create TokenBridge Transactions", () => {
     const recipient = {
-      chain: "Cosmoshub" as ChainName,
+      chain: "Cosmoshub" as Chain,
       address: toNative("Cosmoshub", sender).toUniversalAddress(),
     };
     describe("Token Transfer Transactions", () => {

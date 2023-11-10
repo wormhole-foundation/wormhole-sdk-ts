@@ -1,5 +1,5 @@
 import { Network, PlatformToChains, RoArray, constMap } from "@wormhole-foundation/connect-sdk";
-import { CosmwasmChainName } from "./types";
+import { CosmwasmChain } from "./types";
 
 export const DEFAULT_FEE = 1_000_000;
 
@@ -86,7 +86,7 @@ const cosmwasmNativeDenom = [
       ["Xpla", "uxpla"],
     ],
   ],
-] as const satisfies RoArray<readonly [Network, RoArray<readonly [CosmwasmChainName, string]>]>;
+] as const satisfies RoArray<readonly [Network, RoArray<readonly [CosmwasmChain, string]>]>;
 
 export const chainToNativeDenoms = constMap(cosmwasmNativeDenom);
 export const nativeDenomToChain = constMap(cosmwasmNativeDenom, [[0, 2], [1]]);
@@ -113,11 +113,11 @@ const cosmwasmNetworkChainRestUrl = [
       ["Evmos", "https://localhost:1233"],
     ],
   ],
-] as const satisfies RoArray<readonly [Network, RoArray<readonly [CosmwasmChainName, string]>]>;
+] as const satisfies RoArray<readonly [Network, RoArray<readonly [CosmwasmChain, string]>]>;
 
 export const cosmwasmNetworkChainToRestUrls = constMap(cosmwasmNetworkChainRestUrl);
 
-export type IbcChannels = Partial<Record<CosmwasmChainName, string>>;
+export type IbcChannels = Partial<Record<CosmwasmChain, string>>;
 
 // For each chain, add the channel id for each other chain
 const gatewayConnections = [
@@ -139,10 +139,10 @@ const gatewayConnections = [
     ],
   ],
 ] as const satisfies RoArray<
-  readonly [Network, RoArray<readonly [CosmwasmChainName, IbcChannels]>]
+  readonly [Network, RoArray<readonly [CosmwasmChain, IbcChannels]>]
 >;
 
 export const networkChainToChannels = constMap(gatewayConnections);
 
-export const evmLikeChains = ["Evmos", "Injective"] as const satisfies RoArray<CosmwasmChainName>;
+export const evmLikeChains = ["Evmos", "Injective"] as const satisfies RoArray<CosmwasmChain>;
 export type CosmwasmEvmChain = (typeof evmLikeChains)[number];

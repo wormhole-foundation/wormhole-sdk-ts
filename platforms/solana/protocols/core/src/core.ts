@@ -13,7 +13,7 @@ import {
   toNative,
 } from '@wormhole-foundation/connect-sdk';
 import {
-  SolanaChainName,
+  SolanaChain,
   SolanaPlatform,
 } from '@wormhole-foundation/connect-sdk-solana';
 import { Wormhole as WormholeCoreContract } from './types';
@@ -27,7 +27,7 @@ export class SolanaWormholeCore implements WormholeCore<'Solana'> {
 
   private constructor(
     readonly network: Network,
-    readonly chain: SolanaChainName,
+    readonly chain: SolanaChain,
     readonly connection: Connection,
     readonly contracts: Contracts,
   ) {

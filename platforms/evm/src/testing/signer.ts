@@ -1,5 +1,5 @@
 import {
-  ChainName,
+  Chain,
   RpcConnection,
   SignOnlySigner,
   SignedTx,
@@ -23,14 +23,14 @@ export class EvmSigner implements SignOnlySigner {
   _wallet: ethers.Wallet;
 
   constructor(
-    private _chain: ChainName,
+    private _chain: Chain,
     private provider: ethers.Provider,
     privateKey: string,
   ) {
     this._wallet = new ethers.Wallet(privateKey, provider);
   }
 
-  chain(): ChainName {
+  chain(): Chain {
     return this._chain;
   }
 
