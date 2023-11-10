@@ -46,15 +46,10 @@ export module AptosUtils {
   ): Promise<bigint> {
     if (token === "native") return nativeDecimals(AptosPlatform.platform);
 
-    const tokenAddr = token.toString()
+    const tokenAddr = token.toString();
     const coinType = `0x1::coin::CoinInfo<${tokenAddr}>`;
     const decimals = (
-      (
-        await rpc.getAccountResource(
-          tokenAddr.split(APTOS_SEPARATOR)[0],
-          coinType,
-        )
-      ).data as any
+      (await rpc.getAccountResource(tokenAddr.split(APTOS_SEPARATOR)[0], coinType)).data as any
     ).decimals;
 
     return decimals;
@@ -90,7 +85,7 @@ export module AptosUtils {
     walletAddress: string,
     tokens: (AnyAptosAddress | "native")[],
   ): Promise<Balances> {
-    return {}
+    return {};
     // const tb = await AptosPlatform.getTokenBridge(rpc);
     // const addresses = await Promise.all(
     //   tokens.map((tokenId) => await tb.getOriginalAsset(tokenId)),
@@ -123,9 +118,9 @@ export module AptosUtils {
     stxns: SignedTx[],
   ): Promise<TxHash[]> {
     // TODO: concurrent
-    const txhashes = []
+    const txhashes = [];
     for (const stxn of stxns) {
-      const pendingTx = await rpc.submitTransaction(stxn)
+      const pendingTx = await rpc.submitTransaction(stxn);
       const res = await rpc.waitForTransactionWithResult(pendingTx.hash);
       txhashes.push(res.hash);
     }
@@ -133,8 +128,8 @@ export module AptosUtils {
   }
 
   export async function getCurrentBlock(rpc: AptosClient): Promise<number> {
-    const li = await rpc.getLedgerInfo()
-    return Number(li.block_height)
+    const li = await rpc.getLedgerInfo();
+    return Number(li.block_height);
   }
 
   export function chainFromChainId(

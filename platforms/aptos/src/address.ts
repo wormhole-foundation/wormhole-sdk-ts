@@ -19,7 +19,6 @@ declare global {
   }
 }
 
-
 export const AptosZeroAddress = "0x";
 
 export class AptosAddress implements Address {
@@ -35,10 +34,10 @@ export class AptosAddress implements Address {
     } else if (UniversalAddress.instanceof(address)) {
       this.address = address.toUint8Array();
     } else if (typeof address === "string" && encoding.hex.valid(address)) {
-      // A resource or object 
+      // A resource or object
       if (isValidAptosType(address)) {
-        const chunks = address.split(APTOS_SEPARATOR)
-        this.address = encoding.hex.decode(chunks[0])
+        const chunks = address.split(APTOS_SEPARATOR);
+        this.address = encoding.hex.decode(chunks[0]);
       } else {
         this.address = encoding.hex.decode(address);
       }
@@ -78,4 +77,4 @@ export class AptosAddress implements Address {
 
 try {
   registerNative("Aptos", AptosAddress);
-} catch { }
+} catch {}

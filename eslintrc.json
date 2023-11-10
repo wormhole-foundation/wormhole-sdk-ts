@@ -11,6 +11,7 @@
     "prettier"
   ],
   "rules": {
+    "no-constant-binary-expression": "error",
     "comma-dangle": ["error", "always-multiline"],
     "semi": ["error", "always"],
     "@typescript-eslint/explicit-module-boundary-types": ["error"],

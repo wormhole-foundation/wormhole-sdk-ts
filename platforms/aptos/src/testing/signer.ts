@@ -20,7 +20,11 @@ export async function getAptosSigner(
 }
 
 export class AptosSigner implements SignAndSendSigner {
-  constructor(private _chain: ChainName, private _account: AptosAccount, private _rpc: AptosClient) { }
+  constructor(
+    private _chain: ChainName,
+    private _account: AptosAccount,
+    private _rpc: AptosClient,
+  ) {}
 
   chain(): ChainName {
     return this._chain;
@@ -31,9 +35,12 @@ export class AptosSigner implements SignAndSendSigner {
   }
 
   async signAndSend(tx: UnsignedTransaction[]): Promise<TxHash[]> {
-    const txhashes = []
+    const txhashes = [];
     for (const txn of tx) {
-      const { description, transaction } = txn as { description: string, transaction: Types.EntryFunctionPayload }
+      const { description, transaction } = txn as {
+        description: string;
+        transaction: Types.EntryFunctionPayload;
+      };
       console.log(`Signing: ${description} for ${this.address()}`);
 
       // overwriting `max_gas_amount` and `gas_unit_price` defaults
@@ -41,29 +48,29 @@ export class AptosSigner implements SignAndSendSigner {
       const customOpts = {
         gas_unit_price: "100",
         max_gas_amount: "30000",
-        expiration_timestamp_secs: (BigInt(Date.now() + (8 * 60 * 60 * 1000)) / 1000n).toString(),
-      } as Partial<Types.SubmitTransactionRequest>
+        expiration_timestamp_secs: (BigInt(Date.now() + 8 * 60 * 60 * 1000) / 1000n).toString(),
+      } as Partial<Types.SubmitTransactionRequest>;
 
-      const tx = await this._rpc.generateTransaction(this._account.address(), transaction, customOpts)
+      const tx = await this._rpc.generateTransaction(
+        this._account.address(),
+        transaction,
+        customOpts,
+      );
 
-      const { hash } = await this._simSignSend(tx)
-      txhashes.push(hash)
+      const { hash } = await this._simSignSend(tx);
+      txhashes.push(hash);
     }
     return txhashes;
   }
 
-  private async _simSignSend(
-    rawTx: TxnBuilderTypes.RawTransaction
-  ): Promise<Types.Transaction> {
+  private async _simSignSend(rawTx: TxnBuilderTypes.RawTransaction): Promise<Types.Transaction> {
     // simulate transaction
     await this._rpc.simulateTransaction(this._account, rawTx).then((sims) =>
       sims.forEach((tx) => {
         if (!tx.success) {
-          throw new Error(
-            `Transaction failed: ${tx.vm_status}\n${JSON.stringify(tx, null, 2)}`
-          );
+          throw new Error(`Transaction failed: ${tx.vm_status}\n${JSON.stringify(tx, null, 2)}`);
         }
-      })
+      }),
     );
 
     // sign & submit transaction
@@ -71,5 +78,5 @@ export class AptosSigner implements SignAndSendSigner {
       .signTransaction(this._account, rawTx)
       .then((signedTx) => this._rpc.submitTransaction(signedTx))
       .then((pendingTx) => this._rpc.waitForTransactionWithResult(pendingTx.hash));
-  };
+  }
 }

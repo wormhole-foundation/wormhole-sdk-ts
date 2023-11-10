@@ -8,14 +8,14 @@ import {
   UnsignedTransaction,
   WormholeCore,
   WormholeMessageId,
-  toChainId
+  toChainId,
 } from "@wormhole-foundation/connect-sdk";
 import { AptosChainName, AptosPlatform } from "@wormhole-foundation/connect-sdk-aptos";
 import { AptosClient, Types } from "aptos";
 
 export class AptosWormholeCore implements WormholeCore<"Aptos"> {
   readonly chainId: ChainId;
-  readonly coreBridge: string
+  readonly coreBridge: string;
 
   private constructor(
     readonly network: Network,
@@ -26,9 +26,7 @@ export class AptosWormholeCore implements WormholeCore<"Aptos"> {
     this.chainId = toChainId(chain);
     const coreBridgeAddress = contracts.coreBridge;
     if (!coreBridgeAddress)
-      throw new Error(
-        `CoreBridge contract Address for chain ${chain} not found`,
-      );
+      throw new Error(`CoreBridge contract Address for chain ${chain} not found`);
     this.coreBridge = coreBridgeAddress;
   }
 
@@ -55,9 +53,9 @@ export class AptosWormholeCore implements WormholeCore<"Aptos"> {
       throw new Error(`WormholeMessage not found for ${txid}`);
     }
 
-    const { sender, sequence } = message.data as { sender: string, sequence: string }
+    const { sender, sequence } = message.data as { sender: string; sequence: string };
     // TODO: make this work for address
-    const emitter = new UniversalAddress(BigInt(sender).toString(16).padStart(64, '0'))
+    const emitter = new UniversalAddress(BigInt(sender).toString(16).padStart(64, "0"));
 
     return [{ chain: this.chain, emitter, sequence: BigInt(sequence) }] as WormholeMessageId[];
   }

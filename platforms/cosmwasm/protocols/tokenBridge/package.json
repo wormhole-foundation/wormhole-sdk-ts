@@ -50,15 +50,6 @@
     "prettier": "prettier --write ./src",
     "bump:beta": "bump prerelease"
   },
-  "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^5.54.1",
-    "@typescript-eslint/parser": "^5.54.1",
-    "eslint": "^8.35.0",
-    "eslint-config-prettier": "^8.7.0",
-    "lint-staged": "^13.1.2",
-    "prettier": "2.8.4",
-    "typescript": "5.1.6"
-  },
   "dependencies": {
     "@cosmjs/cosmwasm-stargate": "^0.31.0",
     "@cosmjs/stargate": "^0.31.0",

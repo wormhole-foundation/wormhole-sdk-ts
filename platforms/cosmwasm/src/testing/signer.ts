@@ -98,7 +98,11 @@ export class CosmwasmEvmSigner implements SignOnlySigner {
   private key: PrivateKey;
   private prefix: string;
   private _rpc: ChainRestAuthApi;
-  constructor(private _chain: ChainName, _network: Network, _mnemonic: string) {
+  constructor(
+    private _chain: ChainName,
+    _network: Network,
+    _mnemonic: string,
+  ) {
     this._rpc = new ChainRestAuthApi(
       cosmwasmNetworkChainToRestUrls(_network, _chain as CosmwasmEvmChain),
     );

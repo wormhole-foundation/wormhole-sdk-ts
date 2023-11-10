@@ -13,7 +13,7 @@ import {
   serialize,
   sha3_256,
   toChainId,
-  toNative
+  toNative,
 } from "@wormhole-foundation/connect-sdk";
 import {
   APTOS_COIN,
@@ -75,7 +75,7 @@ export class AptosTokenBridge implements TokenBridge<"Aptos"> {
     try {
       await this.getWrappedAsset(token);
       return true;
-    } catch (_) { }
+    } catch (_) {}
     return false;
   }
 
@@ -98,7 +98,7 @@ export class AptosTokenBridge implements TokenBridge<"Aptos"> {
     const state = (
       await this.connection.getAccountResource(
         this.tokenBridgeAddress,
-        `${this.tokenBridgeAddress}::state::State`
+        `${this.tokenBridgeAddress}::state::State`,
       )
     ).data as TokenBridgeState;
 
@@ -223,12 +223,11 @@ export class AptosTokenBridge implements TokenBridge<"Aptos"> {
   }
 
   async getAssetFullyQualifiedType(tokenId: TokenId): Promise<string | null> {
-
     // native asset
     if (tokenId.chain === this.chain) {
       // originAddress should be of form address::module::type
       if (!isValidAptosType(tokenId.address.toString())) {
-        console.log("invalid type")
+        console.log("invalid type");
         return null;
       }
       return tokenId.address.toString();
@@ -236,7 +235,9 @@ export class AptosTokenBridge implements TokenBridge<"Aptos"> {
 
     // non-native asset, derive unique address
     const wrappedAssetAddress = AptosTokenBridge.getForeignAssetAddress(
-      this.chain, this.tokenBridgeAddress, tokenId
+      this.chain,
+      this.tokenBridgeAddress,
+      tokenId,
     );
     return `${wrappedAssetAddress}::coin::T`;
   }
@@ -264,12 +265,13 @@ export class AptosTokenBridge implements TokenBridge<"Aptos"> {
         key: { hash: address },
       });
 
-      return typeInfo ? [
-        typeInfo.account_address,
-        encoding.hex.decode(typeInfo.module_name),
-        encoding.hex.decode(typeInfo.struct_name),
-      ].join(APTOS_SEPARATOR) : null;
-
+      return typeInfo
+        ? [
+            typeInfo.account_address,
+            encoding.hex.decode(typeInfo.module_name),
+            encoding.hex.decode(typeInfo.struct_name),
+          ].join(APTOS_SEPARATOR)
+        : null;
     } catch {
       return null;
     }
@@ -282,12 +284,16 @@ export class AptosTokenBridge implements TokenBridge<"Aptos"> {
    * @param originAddress Native address of asset
    * @returns The module address for the given asset
    */
-  static getForeignAssetAddress(chain: AptosChainName, tokenBridgeAddress: string, tokenId: TokenId): string {
+  static getForeignAssetAddress(
+    chain: AptosChainName,
+    tokenBridgeAddress: string,
+    tokenId: TokenId,
+  ): string {
     const data = serializeForeignAddressSeeds({
       chainId: toChainId(tokenId.chain),
       tokenBridgeAddress: toNative(chain, tokenBridgeAddress).toUniversalAddress(),
       tokenId: tokenId.address.toUniversalAddress(),
-    })
+    });
     return encoding.hex.encode(sha3_256(data), true);
   }
 
@@ -296,7 +302,12 @@ export class AptosTokenBridge implements TokenBridge<"Aptos"> {
     description: string,
     parallelizable: boolean = false,
   ): AptosUnsignedTransaction {
-    return new AptosUnsignedTransaction(txReq, this.network, this.chain, description, parallelizable);
+    return new AptosUnsignedTransaction(
+      txReq,
+      this.network,
+      this.chain,
+      description,
+      parallelizable,
+    );
   }
 }
-

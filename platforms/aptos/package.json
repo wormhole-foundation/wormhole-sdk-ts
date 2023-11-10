@@ -38,21 +38,13 @@
     "build:esm": "tsc -p ./tsconfig.esm.json",
     "build": "npm run build:cjs && npm run build:esm",
     "rebuild": "npm run clean && npm run build:cjs && npm run build:esm",
-    "test": "jest --config ./jest.config.ts",
     "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo",
     "lint": "npm run prettier && eslint --fix",
     "bump:beta": "bump prerelease",
     "prettier": "prettier --write ./src"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^5.54.1",
-    "@typescript-eslint/parser": "^5.54.1",
-    "eslint": "^8.35.0",
-    "eslint-config-prettier": "^8.7.0",
-    "lint-staged": "^13.1.2",
-    "nock": "^13.3.3",
-    "prettier": "2.8.4",
-    "typescript": "5.1.6"
+    "nock": "^13.3.3"
   },
   "dependencies": {
     "@wormhole-foundation/connect-sdk": "*",
