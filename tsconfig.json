@@ -11,6 +11,7 @@
     "declarationMap": true,
     "sourceMap": true,
     "skipLibCheck": true,
+    "noErrorTruncation": true,
        // Strict Checks
     "alwaysStrict": true,
     "noImplicitAny": true,
@@ -24,7 +25,7 @@
      "noUncheckedIndexedAccess": true,
      "exactOptionalPropertyTypes": false,
      // Linter Checks
-     "noImplicitReturns": true,
+     "noImplicitReturns": false,
      "noImplicitOverride": true,
      "forceConsistentCasingInFileNames": true,
      // https://eslint.org/docs/rules/consistent-return ?

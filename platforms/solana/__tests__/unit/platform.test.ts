@@ -3,7 +3,7 @@ import '../mocks/web3';
 
 import {
   DEFAULT_NETWORK,
-  chainConfigs,
+  CONFIG,
   chainToPlatform,
   chains
 } from '@wormhole-foundation/connect-sdk';
@@ -21,7 +21,7 @@ const network = DEFAULT_NETWORK;
 const SOLANA_CHAINS = chains.filter(
   (c) => chainToPlatform(c) === SolanaPlatform.platform,
 );
-const configs = chainConfigs(network);
+const configs = CONFIG[network].chains;
 
 describe('Solana Platform Tests', () => {
   const fakeRpc = getDefaultProvider();
@@ -40,7 +40,7 @@ describe('Solana Platform Tests', () => {
   describe('Get Chain', () => {
     test('No conf', () => {
       const p = SolanaPlatform.setConfig(network, {});
-      expect(p.conf).toEqual({});
+      expect(p.config).toEqual({});
       expect(() => p.getChain(SOLANA_CHAINS[0])).toThrow();
     });
 
@@ -55,7 +55,7 @@ describe('Solana Platform Tests', () => {
   describe('Get RPC Connection', () => {
     test('No conf', () => {
       const p = SolanaPlatform.setConfig(network, {});
-      expect(p.conf).toEqual({});
+      expect(p.config).toEqual({});
 
       // expect getRpc to throw an error since we havent provided
       // the conf to figure out how to connect

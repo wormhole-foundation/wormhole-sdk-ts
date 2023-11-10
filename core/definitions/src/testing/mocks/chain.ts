@@ -11,8 +11,8 @@ export function chainFactory<P extends PlatformName>(
 
 export class MockChain<P extends PlatformName> extends ChainContext<P> {
   readonly platform: Platform<P>;
-  constructor(conf: ChainConfig) {
-    super(conf);
-    this.platform = mockPlatformFactory<P>(conf.network, conf.platform as P, {});
+  constructor(config: ChainConfig) {
+    super(config);
+    this.platform = mockPlatformFactory<P>(config.network, config.platform as P, {});
   }
 }

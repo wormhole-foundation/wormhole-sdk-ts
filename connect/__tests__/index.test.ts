@@ -12,12 +12,12 @@ import {
   PlatformName,
   platforms,
 } from "@wormhole-foundation/sdk-base";
-import { Wormhole, chainConfigs } from "../src";
+import { CONFIG, Wormhole } from "../src";
 import { test, describe, expect } from '@jest/globals';
 
 const network: Network = "Devnet";
 const allPlatformCtrs = platforms.map((p) => {
-  return testing.mocks.mockPlatformFactory(network, p, chainConfigs(network));
+  return testing.mocks.mockPlatformFactory(network, p, CONFIG[network].chains);
 });
 
 describe("Wormhole Tests", () => {

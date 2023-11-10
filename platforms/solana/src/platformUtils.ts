@@ -10,6 +10,7 @@ import {
   chainToPlatform,
   Balances,
   nativeChainAddress,
+  chainIds,
 } from '@wormhole-foundation/connect-sdk';
 import {
   BlockheightBasedTransactionConfirmationStrategy,
@@ -18,7 +19,6 @@ import {
   PublicKey,
 } from '@solana/web3.js';
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import { solGenesisHashToNetworkChainPair } from './constants';
 import { SolanaPlatform } from './platform';
 import { SolanaAddress, SolanaZeroAddress } from './address';
 import { AnySolanaAddress } from './types';
@@ -147,7 +147,10 @@ export module SolanaUtils {
   export function chainFromChainId(
     genesisHash: string,
   ): [Network, PlatformToChains<SolanaPlatform.Type>] {
-    const netChain = solGenesisHashToNetworkChainPair.get(genesisHash);
+    const netChain = chainIds.getNetworkAndChainName(
+      SolanaPlatform.platform,
+      genesisHash,
+    );
 
     if (!netChain) {
       // Note: this is required for tilt/ci since it gets a new genesis hash

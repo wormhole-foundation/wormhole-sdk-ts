@@ -13,6 +13,7 @@ import {
   toChainId,
   toChainName,
   toNative,
+  chainIds,
 } from '@wormhole-foundation/connect-sdk';
 import { Provider, TransactionRequest } from 'ethers';
 
@@ -28,7 +29,6 @@ import {
   EvmZeroAddress,
   addChainId,
   addFrom,
-  evmNetworkChainToEvmChainId,
   unusedArbiterFee,
   unusedNonce,
 } from '@wormhole-foundation/connect-sdk-evm';
@@ -44,7 +44,7 @@ export class EvmTokenBridge implements TokenBridge<'Evm'> {
     readonly provider: Provider,
     readonly contracts: Contracts,
   ) {
-    this.chainId = evmNetworkChainToEvmChainId.get(network, chain)!;
+    this.chainId = chainIds.evmNetworkChainToEvmChainId.get(network, chain)!;
 
     const tokenBridgeAddress = this.contracts.tokenBridge!;
     if (!tokenBridgeAddress)

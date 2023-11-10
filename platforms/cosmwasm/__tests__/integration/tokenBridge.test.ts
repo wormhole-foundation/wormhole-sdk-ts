@@ -1,6 +1,6 @@
 import {
   toNative,
-  chainConfigs,
+  CONFIG,
   Signature,
   ChainName,
   createVAA,
@@ -17,7 +17,7 @@ import "@wormhole-foundation/connect-sdk-cosmwasm-core";
 import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
 
 const network = "Testnet"; //DEFAULT_NETWORK;
-const configs = chainConfigs(network);
+const configs = CONFIG[network].chains;
 
 const chain: ChainName = "Sei";
 const realNativeAddress = chainToNativeDenoms(network, chain);
@@ -138,7 +138,7 @@ describe("TokenBridge Tests", () => {
   });
 
   describe("Create Token Attestation Transactions", () => {
-    const tbAddress = p.conf[chain]!.contracts.tokenBridge!;
+    const tbAddress = p.config[chain]!.contracts.tokenBridge!;
     test("Create Attestation", async () => {
       const attestation = tb.createAttestation(
         nativeTokenAddress,
@@ -195,7 +195,7 @@ describe("TokenBridge Tests", () => {
     describe("Token Transfer Transactions", () => {
       describe("Transfer", () => {
         const amount = 1000n;
-        const payload = undefined;
+        const payload: Uint8Array | undefined = undefined;
 
         test("Native", async () => {
           const token = "native";

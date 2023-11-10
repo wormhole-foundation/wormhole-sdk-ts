@@ -4,7 +4,7 @@ import '../mocks/ethers';
 import {
   chainToPlatform,
   chains,
-  chainConfigs,
+  CONFIG,
   DEFAULT_NETWORK,
 } from '@wormhole-foundation/connect-sdk';
 
@@ -20,7 +20,7 @@ const EVM_CHAINS = chains.filter(
 );
 
 const network = DEFAULT_NETWORK;
-const configs = chainConfigs(network);
+const configs = CONFIG[network].chains;
 
 describe('EVM Platform Tests', () => {
   describe('Get Token Bridge', () => {
@@ -59,7 +59,7 @@ describe('EVM Platform Tests', () => {
   describe('Get Chain', () => {
     test('No conf', () => {
       const p = EvmPlatform.setConfig(network, {});
-      expect(p.conf).toEqual({});
+      expect(p.config).toEqual({});
       expect(() => p.getChain(EVM_CHAINS[0])).toThrow();
     });
 
@@ -74,7 +74,7 @@ describe('EVM Platform Tests', () => {
   describe('Get RPC Connection', () => {
     test('No conf', () => {
       const p = EvmPlatform.setConfig(network, {});
-      expect(p.conf).toEqual({});
+      expect(p.config).toEqual({});
 
       // expect getRpc to throw an error since we havent provided
       // the conf to figure out how to connect

@@ -1,11 +1,12 @@
 {
   "name": "connect-sdk",
-  "version": "0.1.8-beta.9",
+  "version": "0.1.8-beta.10",
   "license": "Apache-2.0",
   "directories": {
     "test": "__tests__"
   },
   "devDependencies": {
+    "@jsdevtools/version-bump-prompt": "^6.1.0",
     "@types/chai": "^4.3.5",
     "@types/jest": "^29.5.3",
     "@types/lodash": "^4.14.197",
@@ -18,9 +19,9 @@
     "ts-jest": "^29.1.1",
     "ts-mocha": "^10.0.0",
     "ts-node": "^10.9.1",
+    "tsd": "^0.29.0",
     "typedoc": "^0.24.8",
-    "typescript": "^5.1.6",
-    "@jsdevtools/version-bump-prompt": "^6.1.0"
+    "typescript": "^5.1.6"
   },
   "scripts": {
     "lint": "npm run lint --workspaces --if-present",

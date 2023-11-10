@@ -4,8 +4,9 @@ import {
   Network,
   PlatformToChains,
   contracts,
+  RoArray,
+  constMap
 } from "../src";
-import { RoArray, constMap } from "../src/utils";
 
 type ComplexConfig = {
   a: string;

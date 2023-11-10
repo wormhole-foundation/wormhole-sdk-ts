@@ -5,17 +5,17 @@ import {
   UniversalAddress,
   testing,
   toNative,
-  chainConfigs,
   DEFAULT_NETWORK,
   createVAA,
   encoding,
+  chainIds,
+  CONFIG,
 } from '@wormhole-foundation/connect-sdk';
 
 import '@wormhole-foundation/connect-sdk-evm-core';
 import '@wormhole-foundation/connect-sdk-evm-tokenbridge';
 
 import {
-  evmNetworkChainToEvmChainId,
   EvmPlatform,
   EvmUnsignedTransaction,
 } from '../../src';
@@ -83,7 +83,7 @@ afterEach(async () => {
 });
 
 const network = DEFAULT_NETWORK;
-const configs = chainConfigs(network);
+const configs = CONFIG[network].chains;
 
 const TOKEN_ADDRESSES = {
   Mainnet: {
@@ -213,7 +213,7 @@ describe('TokenBridge Tests', () => {
     const chain = 'Ethereum';
     const nativeAddress = testing.utils.makeNativeAddress(chain);
 
-    const tbAddress = p.conf[chain]!.contracts.tokenBridge!;
+    const tbAddress = p.config[chain]!.contracts.tokenBridge!;
 
     test('Create Attestation', async () => {
       const attestation = tb.createAttestation(nativeAddress);
@@ -228,8 +228,11 @@ describe('TokenBridge Tests', () => {
 
       const { transaction } = attestTx;
       expect(transaction.chainId).toEqual(
-        // @ts-ignore
-        evmNetworkChainToEvmChainId(network, chain),
+        chainIds.evmNetworkChainToEvmChainId(
+          network,
+          // @ts-ignore
+          chain
+        ),
       );
     });
 
@@ -264,18 +267,18 @@ describe('TokenBridge Tests', () => {
       const { transaction } = attestTx;
       expect(transaction.chainId).toEqual(
         // @ts-ignore
-        evmNetworkChainToEvmChainId(network, chain),
+        chainIds.evmNetworkChainToEvmChainId(network, chain),
       );
     });
   });
 
   describe('Create TokenBridge Transactions', () => {
-    const tbAddress = p.conf[chain]!.contracts.tokenBridge!;
+    const tbAddress = p.config[chain]!.contracts.tokenBridge!;
 
     describe('Token Transfer Transactions', () => {
       describe('Transfer', () => {
         const amount = 1000n;
-        const payload = undefined;
+        const payload: Uint8Array | undefined = undefined;
 
         test('Native', async () => {
           const token = 'native';
@@ -295,7 +298,7 @@ describe('TokenBridge Tests', () => {
           const { transaction } = xferTx;
           expect(transaction.chainId).toEqual(
             // @ts-ignore
-            evmNetworkChainToEvmChainId(network, chain),
+            chainIds.evmNetworkChainToEvmChainId(network, chain),
           );
         });
 
@@ -325,8 +328,11 @@ describe('TokenBridge Tests', () => {
           const { transaction: xferTransaction } = xferTx;
           expect(xferTransaction.to).toEqual(tbAddress.toString());
           expect(xferTransaction.chainId).toEqual(
-            // @ts-ignore
-            evmNetworkChainToEvmChainId(network, chain),
+            chainIds.evmNetworkChainToEvmChainId(
+              network,
+              //@ts-ignore
+              chain
+            ),
           );
         });
       });

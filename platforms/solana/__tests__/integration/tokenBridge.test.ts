@@ -3,7 +3,7 @@ import {
   testing,
   toNative,
   Signature,
-  chainConfigs,
+  CONFIG,
   DEFAULT_NETWORK,
   createVAA,
 } from '@wormhole-foundation/connect-sdk';
@@ -24,7 +24,7 @@ import nock from 'nock';
 import { Keypair } from '@solana/web3.js';
 
 const network = DEFAULT_NETWORK;
-const configs = chainConfigs(network);
+const configs = CONFIG[network].chains;
 
 const TOKEN_ADDRESSES = {
   Mainnet: {
@@ -186,7 +186,7 @@ describe('TokenBridge Tests', () => {
     const nativeAddress = testing.utils.makeNativeAddress(chain);
 
     const sender = toNative(chain, senderAddress);
-    const tbAddress = p.conf[chain]!.contracts.tokenBridge!;
+    const tbAddress = p.config[chain]!.contracts.tokenBridge!;
 
     test('Create Attestation', async () => {
       const attestation = tb.createAttestation(nativeAddress, sender);
@@ -248,7 +248,7 @@ describe('TokenBridge Tests', () => {
     const recipient = testing.utils.makeChainAddress(destChain);
 
     const amount = 1000n;
-    const payload = undefined;
+    const payload: Uint8Array | undefined = undefined;
 
     describe('Token Transfer Transactions', () => {
       describe('Transfer', () => {
