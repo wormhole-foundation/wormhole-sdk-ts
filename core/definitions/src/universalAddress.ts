@@ -10,7 +10,7 @@ import { Address, NativeAddress, toNative } from "./address";
 import { sha512_256 } from "./utils";
 
 const algorandAppIdLayout = [
-  { name: "appIdPrefix", binary: "bytes", custom: encoding.toUint8Array("appID"), omit: true },
+  { name: "appIdPrefix", binary: "bytes", custom: encoding.bytes.encode("appID"), omit: true },
   { name: "appId", binary: "uint", size: 8 },
 ] as const satisfies Layout;
 
@@ -43,7 +43,7 @@ export class UniversalAddress implements Address {
   }
 
   equals(other: UniversalAddress): boolean {
-    return encoding.equals(this.address, other.address);
+    return encoding.bytes.equals(this.address, other.address);
   }
 
   static isValidAddress(address: string, format: PlatformAddressFormat = "hex") {
@@ -77,7 +77,7 @@ export class UniversalAddress implements Address {
       throw new Error(`string ${address} has invalid length for format ${format}`);
 
     return decoded.length < UniversalAddress.byteSize
-      ? encoding.concat(new Uint8Array(UniversalAddress.byteSize - decoded.length), decoded)
+      ? encoding.bytes.zpad(decoded, UniversalAddress.byteSize)
       : decoded;
   }
 }
