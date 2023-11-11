@@ -1,4 +1,4 @@
-import { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
+import { CosmWasmClient, SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
 import {
   ChainRestAuthApi,
@@ -13,7 +13,6 @@ import {
   Chain,
   Network,
   PlatformToChains,
-  RpcConnection,
   SignOnlySigner,
   SignedTx,
   Signer,
@@ -33,7 +32,7 @@ import { CosmwasmPlatform } from "../platform";
 import { CosmwasmUnsignedTransaction } from "../unsignedTransaction";
 
 export async function getCosmwasmSigner(
-  rpc: RpcConnection<"Cosmwasm">,
+  rpc: CosmWasmClient,
   mnemonic: string,
 ): Promise<Signer> {
   const [network, chain] = await CosmwasmPlatform.chainFromRpc(rpc);
@@ -62,7 +61,7 @@ export class CosmwasmSigner implements SignOnlySigner {
     private _chain: Chain,
     private _signer: SigningCosmWasmClient,
     private _account: string,
-  ) {}
+  ) { }
 
   chain(): Chain {
     return this._chain;

@@ -13,7 +13,7 @@ import { Balances, ChainsConfig, SignedTx, TokenId, TxHash } from "./types";
 import { ProtocolInitializer } from "./protocol";
 
 // Utilities for a given Platform. These should be implemented as static methods on the Platform class
-export interface PlatformUtils<N extends Network, P extends Platform> {
+export interface PlatformUtils<N extends Network, P extends Platform = Platform> {
   _platform: P;
 
   // Initialize a new PlatformContext object
@@ -37,7 +37,7 @@ export interface PlatformUtils<N extends Network, P extends Platform> {
 
   // Get the native (gas) token id for a given chain
   nativeTokenId<C extends PlatformToChains<P>>(chain: C): TokenId<C>;
-  isNativeTokenId<C extends PlatformToChains<P>>(chain: C, tokenId: TokenId<C>): boolean;
+  isNativeTokenId<C extends PlatformToChains<P>>(chain: C, tokenId: TokenId): boolean;
 
   // Get the number of decimals for a given token
   getDecimals<C extends PlatformToChains<P>>(
@@ -75,7 +75,6 @@ export interface PlatformUtils<N extends Network, P extends Platform> {
 
 export interface PlatformContext<N extends Network, P extends Platform> {
   readonly network: N;
-  readonly platform: P;
   readonly config: ChainsConfig<N, P>;
 
   // Create a _new_ RPC Connection

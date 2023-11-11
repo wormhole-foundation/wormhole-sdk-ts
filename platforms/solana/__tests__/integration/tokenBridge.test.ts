@@ -88,13 +88,13 @@ afterEach(async () => {
 });
 
 describe('TokenBridge Tests', () => {
-  const p: typeof SolanaPlatform = SolanaPlatform.setConfig(network, configs);
+  const p = SolanaPlatform.fromNetworkConfig(network, configs);
 
   let tb: TokenBridge<'Solana'>;
 
   test('Create TokenBridge', async () => {
     const rpc = p.getRpc('Solana');
-    tb = await p.getTokenBridge(rpc);
+    tb = await p.getProtocol("TokenBridge", rpc);
     expect(tb).toBeTruthy();
   });
 

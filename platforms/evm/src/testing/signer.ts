@@ -1,6 +1,5 @@
 import {
   Chain,
-  RpcConnection,
   SignOnlySigner,
   SignedTx,
   Signer,
@@ -12,7 +11,7 @@ import { EvmPlatform } from '../platform';
 
 // Get a SignOnlySigner for the EVM platform
 export async function getEvmSigner(
-  rpc: RpcConnection<'Evm'>,
+  rpc: ethers.Provider,
   privateKey: string,
 ): Promise<Signer> {
   const [network, chain] = await EvmPlatform.chainFromRpc(rpc);

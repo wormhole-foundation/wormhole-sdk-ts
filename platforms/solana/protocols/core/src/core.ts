@@ -1,33 +1,46 @@
 import { Program } from '@project-serum/anchor';
-import { Connection } from '@solana/web3.js';
+import { Connection, Keypair, Transaction } from '@solana/web3.js';
 import {
-  AnyAddress,
   ChainId,
   ChainsConfig,
   Contracts,
   Network,
+  Platform,
   UnsignedTransaction,
+  VAA,
   WormholeCore,
   WormholeMessageId,
   toChainId,
   toNative,
 } from '@wormhole-foundation/connect-sdk';
 import {
-  SolanaChain,
+  AnySolanaAddress,
+  SolanaAddress,
+  SolanaChains,
   SolanaPlatform,
+  SolanaUnsignedTransaction,
 } from '@wormhole-foundation/connect-sdk-solana';
 import { Wormhole as WormholeCoreContract } from './types';
-import { createReadOnlyWormholeProgramInterface } from './utils';
+import {
+  createPostVaaInstruction,
+  createReadOnlyWormholeProgramInterface,
+  createVerifySignaturesInstructions,
+} from './utils';
 
 const SOLANA_SEQ_LOG = 'Program log: Sequence: ';
 
-export class SolanaWormholeCore implements WormholeCore<'Solana'> {
+export class SolanaWormholeCore<
+  N extends Network,
+  P extends 'Solana' = 'Solana',
+> implements WormholeCore<P>
+{
   readonly chainId: ChainId;
   readonly coreBridge: Program<WormholeCoreContract>;
+  readonly address: string;
 
-  private constructor(
-    readonly network: Network,
-    readonly chain: SolanaChain,
+  constructor(
+    readonly network: N,
+    readonly chain: SolanaChains,
     readonly connection: Connection,
     readonly contracts: Contracts,
   ) {
@@ -39,19 +52,26 @@ export class SolanaWormholeCore implements WormholeCore<'Solana'> {
         `CoreBridge contract Address for chain ${chain} not found`,
       );
 
+    this.address = coreBridgeAddress;
+
     this.coreBridge = createReadOnlyWormholeProgramInterface(
       coreBridgeAddress,
       connection,
     );
   }
 
-  static async fromRpc(
+  static async fromRpc<N extends Network>(
     connection: Connection,
-    config: ChainsConfig,
-  ): Promise<SolanaWormholeCore> {
+    config: ChainsConfig<N, Platform>,
+  ): Promise<SolanaWormholeCore<N>> {
     const [network, chain] = await SolanaPlatform.chainFromRpc(connection);
+    const conf = config[chain];
+    if (conf.network !== network)
+      throw new Error(
+        `Network mismatch for chain ${chain}: ${conf.network} != ${network}`,
+      );
     return new SolanaWormholeCore(
-      network,
+      network as N,
       chain,
       connection,
       config[chain]!.contracts,
@@ -59,10 +79,51 @@ export class SolanaWormholeCore implements WormholeCore<'Solana'> {
   }
 
   publishMessage(
-    sender: AnyAddress,
+    sender: AnySolanaAddress,
     message: string | Uint8Array,
   ): AsyncGenerator<UnsignedTransaction, any, unknown> {
     throw new Error('Method not implemented.');
+  }
+
+  async *postVaa(sender: AnySolanaAddress, vaa: VAA, blockhash: string) {
+    const senderAddr = new SolanaAddress(sender).unwrap();
+    const signatureSet = Keypair.generate();
+
+    const verifySignaturesInstructions =
+      await createVerifySignaturesInstructions(
+        this.connection,
+        this.coreBridge.programId,
+        senderAddr,
+        vaa,
+        signatureSet.publicKey,
+      );
+
+    // Create a new transaction for every 2 signatures we have to Verify
+    for (let i = 0; i < verifySignaturesInstructions.length; i += 2) {
+      const verifySigTx = new Transaction().add(
+        ...verifySignaturesInstructions.slice(i, i + 2),
+      );
+      verifySigTx.recentBlockhash = blockhash;
+      verifySigTx.feePayer = senderAddr;
+      verifySigTx.partialSign(signatureSet);
+
+      yield this.createUnsignedTx(verifySigTx, 'Redeem.VerifySignature', true);
+    }
+
+    // Finally create the VAA posting transaction
+    const postVaaTx = new Transaction().add(
+      createPostVaaInstruction(
+        this.connection,
+        this.coreBridge.programId,
+        senderAddr,
+        vaa,
+        signatureSet.publicKey,
+      ),
+    );
+    postVaaTx.recentBlockhash = blockhash;
+    postVaaTx.feePayer = senderAddr;
+
+    yield this.createUnsignedTx(postVaaTx, 'Redeem.PostVAA');
   }
 
   async parseTransaction(txid: string): Promise<WormholeMessageId[]> {
@@ -103,5 +164,19 @@ export class SolanaWormholeCore implements WormholeCore<'Solana'> {
         sequence: BigInt(sequence),
       },
     ];
+  }
+
+  private createUnsignedTx(
+    txReq: Transaction,
+    description: string,
+    parallelizable: boolean = false,
+  ): SolanaUnsignedTransaction {
+    return new SolanaUnsignedTransaction(
+      txReq,
+      this.network,
+      'Solana',
+      description,
+      parallelizable,
+    );
   }
 }

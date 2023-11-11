@@ -7,67 +7,56 @@ import {
   ProtocolImplementation,
   ProtocolInitializer,
   ProtocolName,
-  RpcConnection,
   SignedTx,
   TokenId,
   TxHash,
   WormholeCore,
   WormholeMessageId,
   chainToPlatform,
+  decimals,
+  encoding,
   getProtocolInitializer,
   nativeChainAddress,
-  decimals,
-  networkPlatformConfigs,
-  encoding,
   nativeChainIds,
+  networkPlatformConfigs,
 } from '@wormhole-foundation/connect-sdk';
 
-import { Provider, ethers } from 'ethers';
+import { Provider, getDefaultProvider } from 'ethers';
+import * as ethers_contracts from './ethers-contracts';
+
 import { EvmAddress, EvmZeroAddress } from './address';
 import { EvmChain } from './chain';
-import * as ethers_contracts from './ethers-contracts';
-import { AnyEvmAddress, EvmChains } from './types';
+import { AnyEvmAddress, EvmChains, EvmPlatformType, _platform } from './types';
 
 /**
  * @category EVM
  */
-export class EvmPlatform<N extends Network, P extends 'Evm' = 'Evm'>
-  implements PlatformContext<N, P>
-{
-  static _platform: 'Evm' = 'Evm';
-  config: ChainsConfig<N, P>;
 
-  constructor(
-    readonly network: N,
-    readonly platform: P,
-    readonly _config?: ChainsConfig<N, P>,
-  ) {
+export class EvmPlatform<N extends Network>
+  implements PlatformContext<N, EvmPlatformType>
+{
+  static _platform: EvmPlatformType = _platform;
+  config: ChainsConfig<N, EvmPlatformType>;
+
+  constructor(readonly network: N, _config?: ChainsConfig<N, EvmPlatformType>) {
     this.config =
       _config ?? networkPlatformConfigs(network, EvmPlatform._platform);
   }
 
-  static fromNetworkConfig<N extends Network>(
-    network: N,
-    config?: ChainsConfig<N, 'Evm'>,
-  ): EvmPlatform<N> {
-    return new EvmPlatform(network, EvmPlatform._platform, config);
-  }
-
-  getRpc<C extends EvmChains>(chain: C): ethers.Provider {
-    if (chain in this.config)
-      return ethers.getDefaultProvider(this.config[chain].rpc);
+  getRpc<C extends EvmChains>(chain: C): Provider {
+    if (chain in this.config) return getDefaultProvider(this.config[chain].rpc);
     throw new Error('No configuration available for chain: ' + chain);
   }
 
-  getChain<C extends EvmChains>(chain: C): EvmChain<N, P, C> {
-    if (chain in this.config) return new EvmChain<N, P, C>(chain, this);
+  getChain<C extends EvmChains>(chain: C): EvmChain<N, C> {
+    if (chain in this.config) return new EvmChain<N, C>(chain, this);
     throw new Error('No configuration available for chain: ' + chain);
   }
 
   async getProtocol<PN extends ProtocolName>(
     protocol: PN,
-    rpc: RpcConnection<P>,
-  ): Promise<ProtocolImplementation<P, PN>> {
+    rpc: Provider,
+  ): Promise<ProtocolImplementation<EvmPlatformType, PN>> {
     return EvmPlatform.getProtocolInitializer(protocol).fromRpc(
       rpc,
       this.config,
@@ -76,28 +65,41 @@ export class EvmPlatform<N extends Network, P extends 'Evm' = 'Evm'>
 
   async parseTransaction(
     chain: Chain,
-    rpc: ethers.Provider,
+    rpc: Provider,
     txid: TxHash,
   ): Promise<WormholeMessageId[]> {
-    const wc: WormholeCore<'Evm'> = await this.getProtocol('WormholeCore', rpc);
+    const wc: WormholeCore<EvmPlatformType> = await this.getProtocol(
+      'WormholeCore',
+      rpc,
+    );
     return wc.parseTransaction(txid);
   }
 
-  static nativeTokenId(chain: Chain): TokenId {
+  static fromNetworkConfig<N extends Network>(
+    network: N,
+    config?: ChainsConfig<N, EvmPlatformType>,
+  ): EvmPlatform<N> {
+    return new EvmPlatform(network, config);
+  }
+
+  static nativeTokenId<C extends EvmChains>(chain: C): TokenId<C> {
     if (!EvmPlatform.isSupportedChain(chain))
       throw new Error(`invalid chain for EVM: ${chain}`);
     return nativeChainAddress(chain, EvmZeroAddress);
   }
 
-  static isSupportedChain(chain: Chain): boolean {
-    const platform = chainToPlatform(chain);
-    return platform === EvmPlatform._platform;
-  }
-
-  static isNativeTokenId(chain: Chain, tokenId: TokenId): boolean {
+  static isNativeTokenId<C extends EvmChains>(
+    chain: C,
+    tokenId: TokenId,
+  ): boolean {
     if (!EvmPlatform.isSupportedChain(chain)) return false;
     if (tokenId.chain !== chain) return false;
     return tokenId.address.toString() === EvmZeroAddress;
+  }
+
+  static isSupportedChain(chain: Chain): boolean {
+    const platform = chainToPlatform(chain);
+    return platform === EvmPlatform._platform;
   }
 
   static async getDecimals(
