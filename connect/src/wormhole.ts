@@ -1,9 +1,9 @@
 import {
   Chain,
+  ChainToPlatform,
   Network,
   Platform,
   chainToPlatform,
-  isChain,
   isCircleChain,
   isCircleSupported,
   normalizeAmount,
@@ -31,7 +31,6 @@ import {
   CONFIG,
   DEFAULT_TASK_TIMEOUT,
   WHSCAN_RETRY_INTERVAL,
-  networkPlatformConfigs,
 } from "./config";
 import { WormholeConfig } from "./types";
 
@@ -49,7 +48,7 @@ import {
 
 export class Wormhole<N extends Network = Network> {
   protected _platforms: Map<Platform, PlatformContext<N, Platform>>;
-  protected _chains: Map<Chain, ChainContext<N, Chain>>;
+  protected _chains: Map<Chain, ChainContext<N, Platform, Chain>>;
   protected readonly _network: N;
   readonly config: WormholeConfig;
 
@@ -60,9 +59,7 @@ export class Wormhole<N extends Network = Network> {
     this._chains = new Map();
     this._platforms = new Map();
     for (const p of platforms) {
-      const filteredChains = networkPlatformConfigs(network, p.Platform());
-      const platformCtx = p.setConfig(network, filteredChains)
-      this._platforms.set(p.Platform(), platformCtx);
+      this._platforms.set(p._platform, p.fromNetworkConfig(network));
     }
   }
 
@@ -169,8 +166,7 @@ export class Wormhole<N extends Network = Network> {
    * @returns the platform context class
    * @throws Errors if platform is not found
    */
-  getPlatform<P extends Platform>(chain: P): PlatformContext<N, P> {
-    const platformName = isChain(chain) ? this.config.chains[chain]!.platform : chain;
+  getPlatform<P extends Platform>(platformName: P): PlatformContext<N, P> {
     const platform = this._platforms.get(platformName);
     if (!platform) throw new Error(`Not able to retrieve platform ${platform}`);
     return platform as PlatformContext<N, P>;
@@ -182,11 +178,11 @@ export class Wormhole<N extends Network = Network> {
    * @returns the chain context class
    * @throws Errors if context is not found
    */
-  getChain<CN extends Chain>(chain: CN): ChainContext<N, CN> {
+  getChain<C extends Chain>(chain: C): ChainContext<N, ChainToPlatform<C>, C> {
     const platform = chainToPlatform(chain);
     if (!this._chains.has(chain))
       this._chains.set(chain, this.getPlatform(platform).getChain(chain));
-    return this._chains.get(chain)! as ChainContext<N, CN>;
+    return this._chains.get(chain)! as ChainContext<N, ChainToPlatform<C>, C>;
   }
 
   /**
@@ -278,11 +274,11 @@ export class Wormhole<N extends Network = Network> {
       t = isTokenId(sendingToken)
         ? sendingToken
         : {
-          chain: sendingChain,
-          address: (
-            sendingToken as UniversalAddress | NativeAddress<Platform>
-          ).toUniversalAddress(),
-        };
+            chain: sendingChain,
+            address: (
+              sendingToken as UniversalAddress | NativeAddress<Platform>
+            ).toUniversalAddress(),
+          };
     }
 
     const dstTokenBridge = await chain.getTokenBridge();

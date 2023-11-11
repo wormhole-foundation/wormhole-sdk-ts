@@ -16,7 +16,7 @@ import {
   rpcAddress,
   toChainId,
 } from "@wormhole-foundation/sdk-base";
-import { ChainAddress, NativeAddress, UniversalOrNative, toNative } from "./address";
+import { ChainAddress, NativeAddress, toNative } from "./address";
 import { Contracts, getContracts } from "./contracts";
 import { Signer, isSigner } from "./signer";
 
@@ -25,8 +25,6 @@ import { UniversalAddress } from "./universalAddress";
 export type TxHash = string;
 export type SequenceId = bigint;
 export type SignedTx = any;
-
-export type TokenAddress<T extends Chain | Platform> = UniversalOrNative<T> | "native";
 
 export type TokenId<C extends Chain = Chain> = ChainAddress<C>;
 export function isTokenId(thing: any): thing is TokenId<Chain> {
@@ -113,7 +111,7 @@ export function buildConfig<N extends Network>(n: N): ChainsConfig<N, Platform> 
       let nativeChainId: bigint | string = "";
       try {
         nativeChainId = networkChainToNativeChainId.get(n, c);
-      } catch { }
+      } catch {}
       return {
         key: c,
         platform,

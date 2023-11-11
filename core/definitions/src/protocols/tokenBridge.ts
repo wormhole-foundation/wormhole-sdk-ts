@@ -1,6 +1,6 @@
 import { Chain, Platform, PlatformToChains, lazyInstantiate } from "@wormhole-foundation/sdk-base";
-import { NativeAddress, ChainAddress, UniversalOrNative } from "../address";
-import { TokenAddress, TokenId } from "../types";
+import { AccountAddress, TokenAddress, NativeAddress, ChainAddress, UniversalOrNative } from "../address";
+import { TokenId } from "../types";
 import { ProtocolVAA, ProtocolPayload, payloadDiscriminator } from "../vaa";
 import { UnsignedTransaction } from "../unsignedTransaction";
 import "../payloads/tokenBridge";
@@ -56,7 +56,7 @@ export interface TokenBridge<P extends Platform, C extends Chain = PlatformToCha
   // Check to see if a foreign token has a wrapped version
   hasWrappedAsset(foreignToken: TokenId<Chain>): Promise<boolean>;
   // Returns the address of the native version of this asset
-  getWrappedAsset(foreignToken: TokenId<Chain>): Promise<NativeAddress<P>>;
+  getWrappedAsset(foreignToken: TokenId<Chain>): Promise<NativeAddress<C>>;
   // Checks if a transfer VAA has been redeemed
   isTransferCompleted(
     vaa: TokenBridge.VAA<"Transfer" | "TransferWithPayload">
@@ -76,7 +76,7 @@ export interface TokenBridge<P extends Platform, C extends Chain = PlatformToCha
   ): AsyncGenerator<UnsignedTransaction>;
   // Initiate a transfer of some token to another chain
   transfer(
-    sender: UniversalOrNative<C>,
+    sender: AccountAddress<C>,
     recipient: ChainAddress,
     token: TokenAddress<C>,
     amount: bigint,
@@ -84,7 +84,7 @@ export interface TokenBridge<P extends Platform, C extends Chain = PlatformToCha
   ): AsyncGenerator<UnsignedTransaction>;
   // Redeem a transfer VAA to receive the tokens on this chain
   redeem(
-    sender: UniversalOrNative<P>,
+    sender: AccountAddress<C>,
     vaa: TokenBridge.VAA<"Transfer" | "TransferWithPayload">,
     unwrapNative?: boolean //default: true
   ): AsyncGenerator<UnsignedTransaction>;
@@ -94,7 +94,7 @@ export interface TokenBridge<P extends Platform, C extends Chain = PlatformToCha
 
 export interface AutomaticTokenBridge<P extends Platform, C extends Chain = PlatformToChains<P>> {
   transfer(
-    sender: UniversalOrNative<C>,
+    sender: AccountAddress<C>,
     recipient: ChainAddress,
     token: TokenAddress<C>,
     amount: bigint,
@@ -102,11 +102,11 @@ export interface AutomaticTokenBridge<P extends Platform, C extends Chain = Plat
     nativeGas?: bigint
   ): AsyncGenerator<UnsignedTransaction>;
   redeem(
-    sender: UniversalOrNative<C>,
+    sender: AccountAddress<C>,
     vaa: TokenBridge.VAA<"TransferWithPayload">
   ): AsyncGenerator<UnsignedTransaction>;
   getRelayerFee(
-    sender: UniversalOrNative<C>,
+    sender: AccountAddress<C>,
     recipient: ChainAddress,
     token: TokenId<C> | "native"
   ): Promise<bigint>;

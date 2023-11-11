@@ -1,10 +1,7 @@
 import {
-  AutomaticCircleBridge,
-  AutomaticTokenBridge,
   Balances,
   Chain,
   ChainsConfig,
-  CircleBridge,
   Network,
   PlatformContext,
   ProtocolImplementation,
@@ -12,7 +9,6 @@ import {
   ProtocolName,
   RpcConnection,
   SignedTx,
-  TokenBridge,
   TokenId,
   TxHash,
   WormholeCore,
@@ -21,10 +17,13 @@ import {
   getProtocolInitializer,
   nativeChainAddress,
   nativeDecimals,
-  networkPlatformConfigs
+  networkPlatformConfigs,
 } from '@wormhole-foundation/connect-sdk';
 
-import { encoding, protocolNativeChainIdToNetworkChain } from '@wormhole-foundation/sdk-base';
+import {
+  encoding,
+  protocolNativeChainIdToNetworkChain,
+} from '@wormhole-foundation/sdk-base';
 import { Provider, ethers } from 'ethers';
 import { EvmAddress, EvmZeroAddress } from './address';
 import { EvmChain } from './chain';
@@ -34,64 +33,47 @@ import { AnyEvmAddress, EvmChains } from './types';
 /**
  * @category EVM
  */
-
-
-export class EvmPlatform<N extends Network, P extends 'Evm' = 'Evm'> implements PlatformContext<N, P> {
+export class EvmPlatform<N extends Network, P extends 'Evm' = 'Evm'>
+  implements PlatformContext<N, P>
+{
   static _platform: 'Evm' = 'Evm';
-  config: ChainsConfig<N, P>
-
-  static Platform(): typeof EvmPlatform._platform {
-    return EvmPlatform._platform;
-  }
-
+  config: ChainsConfig<N, P>;
 
   constructor(
     readonly network: N,
     readonly platform: P,
     readonly _config?: ChainsConfig<N, P>,
   ) {
-    this.config = _config ?? networkPlatformConfigs(network, EvmPlatform._platform);
+    this.config =
+      _config ?? networkPlatformConfigs(network, EvmPlatform._platform);
+  }
+
+  static fromNetworkConfig<N extends Network>(
+    network: N,
+    config?: ChainsConfig<N, 'Evm'>,
+  ): EvmPlatform<N> {
+    return new EvmPlatform(network, EvmPlatform._platform, config);
   }
 
   getRpc<C extends EvmChains>(chain: C): ethers.Provider {
-    if (chain in this.config) return ethers.getDefaultProvider(this.config[chain].rpc);
+    if (chain in this.config)
+      return ethers.getDefaultProvider(this.config[chain].rpc);
     throw new Error('No configuration available for chain: ' + chain);
   }
 
-  getChain<C extends EvmChains>(chain: C): EvmChain<N, C, P> {
-    if (chain in this.config) return new EvmChain<N, C, P>(this.config[chain]);
+  getChain<C extends EvmChains>(chain: C): EvmChain<N, P, C> {
+    if (chain in this.config) return new EvmChain<N, P, C>(chain, this);
     throw new Error('No configuration available for chain: ' + chain);
   }
 
-
-  getProtocol<PN extends ProtocolName,>(protocol: PN, rpc: RpcConnection<P>): ProtocolImplementation<P, PN> {
-    return EvmPlatform.getProtocolInitializer(protocol).fromRpc(rpc, this.config);
-  }
-
-  async getWormholeCore(
-    rpc: ethers.Provider,
-  ): Promise<WormholeCore<P>> {
-    return this.getProtocol('WormholeCore', rpc);
-  }
-  async getTokenBridge(
-    rpc: ethers.Provider,
-  ): Promise<TokenBridge<P>> {
-    return this.getProtocol('TokenBridge', rpc);
-  }
-  async getAutomaticTokenBridge(
-    rpc: ethers.Provider,
-  ): Promise<AutomaticTokenBridge<P>> {
-    return this.getProtocol('TokenBridge', rpc);
-  }
-  async getCircleBridge(
-    rpc: ethers.Provider,
-  ): Promise<CircleBridge<P>> {
-    return this.getProtocol('CircleBridge', rpc);
-  }
-  async getAutomaticCircleBridge(
-    rpc: ethers.Provider,
-  ): Promise<AutomaticCircleBridge<P>> {
-    return this.getProtocol('AutomaticCircleBridge', rpc);
+  async getProtocol<PN extends ProtocolName>(
+    protocol: PN,
+    rpc: RpcConnection<P>,
+  ): Promise<ProtocolImplementation<P, PN>> {
+    return EvmPlatform.getProtocolInitializer(protocol).fromRpc(
+      rpc,
+      this.config,
+    );
   }
 
   async parseTransaction(
@@ -99,10 +81,9 @@ export class EvmPlatform<N extends Network, P extends 'Evm' = 'Evm'> implements 
     rpc: ethers.Provider,
     txid: TxHash,
   ): Promise<WormholeMessageId[]> {
-    const wc = await this.getWormholeCore(rpc);
+    const wc: WormholeCore<'Evm'> = await this.getProtocol('WormholeCore', rpc);
     return wc.parseTransaction(txid);
   }
-
 
   static nativeTokenId(chain: Chain): TokenId {
     if (!EvmPlatform.isSupportedChain(chain))
@@ -126,7 +107,8 @@ export class EvmPlatform<N extends Network, P extends 'Evm' = 'Evm'> implements 
     rpc: Provider,
     token: AnyEvmAddress | 'native',
   ): Promise<bigint> {
-    if (token === 'native') return BigInt(nativeDecimals(EvmPlatform._platform));
+    if (token === 'native')
+      return BigInt(nativeDecimals(EvmPlatform._platform));
 
     const tokenContract = EvmPlatform.getTokenImplementation(
       rpc,
@@ -194,9 +176,7 @@ export class EvmPlatform<N extends Network, P extends 'Evm' = 'Evm'> implements 
   }
 
   // Look up the Wormhole Canonical Network and Chain from the EVM chainId
-  static chainFromChainId(
-    eip155ChainId: string,
-  ): [Network, EvmChains] {
+  static chainFromChainId(eip155ChainId: string): [Network, EvmChains] {
     const networkChainPair = protocolNativeChainIdToNetworkChain(
       EvmPlatform._platform,
       // @ts-ignore
@@ -210,9 +190,7 @@ export class EvmPlatform<N extends Network, P extends 'Evm' = 'Evm'> implements 
     return [network, chain];
   }
 
-  static async chainFromRpc(
-    rpc: Provider,
-  ): Promise<[Network, EvmChains]> {
+  static async chainFromRpc(rpc: Provider): Promise<[Network, EvmChains]> {
     const { chainId } = await rpc.getNetwork();
     return EvmPlatform.chainFromChainId(encoding.bignum.encode(chainId, true));
   }

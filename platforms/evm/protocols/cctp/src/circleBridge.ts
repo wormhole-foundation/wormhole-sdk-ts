@@ -1,38 +1,46 @@
 import {
+  AccountAddress,
   ChainAddress,
+  ChainsConfig,
   CircleBridge,
   CircleChain,
   CircleNetwork,
   CircleTransferMessage,
+  Contracts,
   Network,
   UnsignedTransaction,
   circleChainId,
   deserializeCircleMessage,
+  encoding,
   nativeChainAddress,
   toCircleChain,
   usdcContract,
-  encoding,
-  Contracts,
-  ChainsConfig,
-  chainIds,
 } from '@wormhole-foundation/connect-sdk';
 
 import { MessageTransmitter, TokenMessenger } from './ethers-contracts';
 
-import { LogDescription, Provider, TransactionRequest } from 'ethers';
 import {
-  EvmAddress,
+  EvmChains,
   EvmPlatform,
-  AnyEvmAddress,
-  EvmChain,
+  EvmUnsignedTransaction,
   addChainId,
   addFrom,
-  EvmUnsignedTransaction,
 } from '@wormhole-foundation/connect-sdk-evm';
+import {
+  Chain,
+  Platform,
+  networkChainToNativeChainId,
+} from '@wormhole-foundation/sdk-base';
+import { LogDescription, Provider, TransactionRequest } from 'ethers';
 import { ethers_contracts } from '.';
 //https://github.com/circlefin/evm-cctp-contracts
 
-export class EvmCircleBridge implements CircleBridge<'Evm'> {
+export class EvmCircleBridge<
+  N extends Network,
+  P extends 'Evm' = 'Evm',
+  C extends Chain = EvmChains,
+> implements CircleBridge<P, C>
+{
   readonly chainId: bigint;
   readonly msgTransmitter: MessageTransmitter.MessageTransmitter;
   readonly tokenMessenger: TokenMessenger.TokenMessenger;
@@ -42,15 +50,15 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
   readonly messageReceivedEventHash: string;
 
   private constructor(
-    readonly network: Network,
-    readonly chain: EvmChain,
+    readonly network: N,
+    readonly chain: C,
     readonly provider: Provider,
     readonly contracts: Contracts,
   ) {
     if (network === 'Devnet')
       throw new Error('CircleBridge not supported on Devnet');
 
-    this.chainId = chainIds.evmNetworkChainToEvmChainId(network, chain);
+    this.chainId = networkChainToNativeChainId.get(network, chain) as bigint;
 
     const msgTransmitterAddress = contracts.cctp?.messageTransmitter;
     if (!msgTransmitterAddress)
@@ -84,25 +92,28 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
       this.msgTransmitter.getEvent('MessageReceived').fragment.topicHash;
   }
 
-  static async fromRpc(
+  static async fromRpc<N extends Network>(
     provider: Provider,
-    config: ChainsConfig,
-  ): Promise<EvmCircleBridge> {
+    config: ChainsConfig<N, Platform>,
+  ): Promise<EvmCircleBridge<N>> {
     const [network, chain] = await EvmPlatform.chainFromRpc(provider);
-    return new EvmCircleBridge(
-      network,
+    const conf = config[chain];
+    if (conf.network !== network)
+      throw new Error(`Network mismatch: ${conf.network} != ${network}`);
+    return new EvmCircleBridge<N>(
+      network as N,
       chain,
       provider,
-      config[chain]!.contracts!,
+      conf.contracts,
     );
   }
 
   async *redeem(
-    sender: AnyEvmAddress,
+    sender: AccountAddress<C>,
     message: string,
     attestation: string,
   ): AsyncGenerator<UnsignedTransaction> {
-    const senderAddr = new EvmAddress(sender).toString();
+    const senderAddr = sender.toNative(this.chain).toString();
 
     const txReq = await this.msgTransmitter.receiveMessage.populateTransaction(
       encoding.hex.decode(message),
@@ -116,11 +127,11 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
   }
   //alternative naming: initiateTransfer
   async *transfer(
-    sender: AnyEvmAddress,
+    sender: AccountAddress<C>,
     recipient: ChainAddress,
     amount: bigint,
   ): AsyncGenerator<EvmUnsignedTransaction> {
-    const senderAddr = new EvmAddress(sender).toString();
+    const senderAddr = sender.toNative(this.chain).toString();
     const recipientAddress = recipient.address
       .toUniversalAddress()
       .toUint8Array();
@@ -205,11 +216,11 @@ export class EvmCircleBridge implements CircleBridge<'Evm'> {
     const sendChain = toCircleChain(circleMsg.sourceDomain);
     const rcvChain = toCircleChain(circleMsg.destinationDomain);
 
-    const token = nativeChainAddress([sendChain, body.burnToken]);
+    const token = nativeChainAddress(sendChain, body.burnToken);
 
     return {
-      from: nativeChainAddress([sendChain, xferSender]),
-      to: nativeChainAddress([rcvChain, xferReceiver]),
+      from: nativeChainAddress(sendChain, xferSender),
+      to: nativeChainAddress(rcvChain, xferReceiver),
       token: token,
       amount: body.amount,
       messageId: { message, hash },

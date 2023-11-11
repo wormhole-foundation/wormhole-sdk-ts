@@ -1,4 +1,4 @@
-import { Chain, Network } from "@wormhole-foundation/sdk-base";
+import { Chain, ChainToPlatform, Network } from "@wormhole-foundation/sdk-base";
 import {
   ChainContext,
   Signer,
@@ -10,7 +10,7 @@ import {
 } from "@wormhole-foundation/sdk-definitions";
 
 export async function signSendWait<N extends Network, C extends Chain>(
-  chain: ChainContext<N, C>,
+  chain: ChainContext<N, ChainToPlatform<C>, C>,
   xfer: AsyncGenerator<UnsignedTransaction<N, C>>,
   signer: Signer<N, C>,
 ): Promise<TransactionId[]> {

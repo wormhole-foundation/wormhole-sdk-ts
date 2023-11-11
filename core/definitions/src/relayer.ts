@@ -1,5 +1,5 @@
 import { Chain, Platform } from "@wormhole-foundation/sdk-base";
-import { TokenAddress } from "./types";
+import { TokenAddress } from "./address";
 
 export interface Relayer<P extends Platform> {
   relaySupported(chain: Chain): boolean;

@@ -1,16 +1,23 @@
-import { Chain, Network, Platform, PlatformToChains, ProtocolName } from "@wormhole-foundation/sdk-base";
+import {
+  Chain,
+  Network,
+  Platform,
+  PlatformToChains,
+  ProtocolName,
+} from "@wormhole-foundation/sdk-base";
 import { WormholeMessageId } from "./attestation";
 import { ChainContext } from "./chain";
 import { RpcConnection } from "./rpc";
-import { Balances, ChainsConfig, TokenAddress, SignedTx, TokenId, TxHash } from "./types";
+import { TokenAddress } from "./address";
+import { Balances, ChainsConfig, SignedTx, TokenId, TxHash } from "./types";
 import { ProtocolInitializer } from "./protocol";
 
+// Utilities for a given Platform. These should be implemented as static methods on the Platform class
 export interface PlatformUtils<N extends Network, P extends Platform> {
-
-  Platform(): P
+  _platform: P;
 
   // Initialize a new PlatformContext object
-  setConfig(network: N, config?: ChainsConfig<N, P>): PlatformContext<N, P>;
+  fromNetworkConfig(network: N, config?: ChainsConfig<N, P>): PlatformContext<N, P>;
 
   // Get a protocol name
   getProtocolInitializer<PN extends ProtocolName>(protocol: PN): ProtocolInitializer<P, PN>;
@@ -38,6 +45,7 @@ export interface PlatformUtils<N extends Network, P extends Platform> {
     rpc: RpcConnection<P>,
     token: TokenAddress<C>,
   ): Promise<bigint>;
+
   // Get the balance of a token for a given wallet address
   getBalance<C extends PlatformToChains<P>>(
     chain: C,
@@ -53,6 +61,7 @@ export interface PlatformUtils<N extends Network, P extends Platform> {
     walletAddress: string,
     tokens: TokenAddress<C>[],
   ): Promise<Balances>;
+
   // Look up the latest block
   getCurrentBlock(rpc: RpcConnection<P>): Promise<number>;
 
@@ -62,7 +71,6 @@ export interface PlatformUtils<N extends Network, P extends Platform> {
     rpc: RpcConnection<P>,
     stxns: SignedTx[],
   ): Promise<TxHash[]>;
-
 }
 
 export interface PlatformContext<N extends Network, P extends Platform> {
@@ -70,15 +78,13 @@ export interface PlatformContext<N extends Network, P extends Platform> {
   readonly platform: P;
   readonly config: ChainsConfig<N, P>;
 
-
-  // Create a new Chain context object
-  getChain<C extends PlatformToChains<P>>(chain: C): ChainContext<N, C, P>;
-
   // Create a _new_ RPC Connection
   getRpc<C extends PlatformToChains<P>>(chain: C): RpcConnection<P>;
 
-  // Get a protocol name
-  // Note this overlaps with PlatformUtils.getProtocol
+  // Create a new Chain context object
+  getChain<C extends PlatformToChains<P>>(chain: C): ChainContext<N, P, C>;
+
+  // Create a new Protocol Client instance by protocol name
   getProtocol<PN extends ProtocolName, T>(protocol: PN, rpc: RpcConnection<P>): Promise<T>;
 
   // Look up transaction logs and parse out Wormhole messages
@@ -87,5 +93,4 @@ export interface PlatformContext<N extends Network, P extends Platform> {
     rpc: RpcConnection<P>,
     txid: TxHash,
   ): Promise<WormholeMessageId[]>;
-
 }

@@ -6,7 +6,6 @@ import {
   WormholeCore,
   WormholeMessageId,
   isWormholeMessageId,
-  toNative
 } from '@wormhole-foundation/connect-sdk';
 import { Provider, TransactionRequest } from 'ethers';
 import { ethers_contracts } from '.';
@@ -19,11 +18,16 @@ import {
   EvmPlatform,
   EvmUnsignedTransaction,
   addChainId,
-  addFrom
+  addFrom,
 } from '@wormhole-foundation/connect-sdk-evm';
-import { Platform, networkChainToNativeChainId } from '@wormhole-foundation/sdk-base';
+import {
+  Platform,
+  networkChainToNativeChainId,
+} from '@wormhole-foundation/sdk-base';
 
-export class EvmWormholeCore<N extends Network, P extends 'Evm' = 'Evm'> implements WormholeCore<P> {
+export class EvmWormholeCore<N extends Network, P extends 'Evm' = 'Evm'>
+  implements WormholeCore<P>
+{
   readonly chainId: bigint;
 
   readonly coreAddress: string;
@@ -99,7 +103,7 @@ export class EvmWormholeCore<N extends Network, P extends 'Evm' = 'Evm'> impleme
         });
         if (parsed === null) return undefined;
 
-        const emitterAddress = toNative(this.chain, parsed.args['sender']);
+        const emitterAddress = new EvmAddress(parsed.args['sender']);
         return {
           chain: this.chain,
           emitter: emitterAddress.toUniversalAddress(),

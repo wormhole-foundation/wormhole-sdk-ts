@@ -20,7 +20,9 @@ export async function getEvmSigner(
 }
 
 // EvmSigner implements SignOnlySender
-export class EvmSigner<N extends Network, C extends Chain> implements SignOnlySigner<N, C> {
+export class EvmSigner<N extends Network, C extends Chain>
+  implements SignOnlySigner<N, C>
+{
   _wallet: ethers.Wallet;
 
   constructor(

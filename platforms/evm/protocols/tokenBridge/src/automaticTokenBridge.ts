@@ -9,7 +9,7 @@ import {
   chainToChainId,
   nativeChainAddress,
   serialize,
-  toChainId
+  toChainId,
 } from '@wormhole-foundation/connect-sdk';
 import {
   AnyEvmAddress,
@@ -19,14 +19,23 @@ import {
   EvmUnsignedTransaction,
   UniversalOrEvm,
   addChainId,
-  addFrom
+  addFrom,
 } from '@wormhole-foundation/connect-sdk-evm';
 import { Provider, TransactionRequest } from 'ethers';
 
-import { Chain, Platform, networkChainToNativeChainId } from '@wormhole-foundation/sdk-base';
+import {
+  Chain,
+  Platform,
+  networkChainToNativeChainId,
+} from '@wormhole-foundation/sdk-base';
 import { ethers_contracts } from '.';
 
-export class EvmAutomaticTokenBridge<N extends Network, P extends 'Evm' = 'Evm', C extends Chain = EvmChains> implements AutomaticTokenBridge<P> {
+export class EvmAutomaticTokenBridge<
+  N extends Network,
+  P extends 'Evm' = 'Evm',
+  C extends Chain = EvmChains,
+> implements AutomaticTokenBridge<P>
+{
   readonly tokenBridgeRelayer: ethers_contracts.TokenBridgeRelayer;
   readonly tokenBridge: ethers_contracts.TokenBridgeContract;
   readonly chainId: bigint;
@@ -39,7 +48,6 @@ export class EvmAutomaticTokenBridge<N extends Network, P extends 'Evm' = 'Evm',
   ) {
     if (network === 'Devnet')
       throw new Error('AutomaticTokenBridge not supported on Devnet');
-
 
     this.chainId = networkChainToNativeChainId.get(network, chain) as bigint;
 

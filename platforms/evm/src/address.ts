@@ -1,21 +1,13 @@
 import {
-  encoding,
   Address,
   UniversalAddress,
+  encoding,
+  registerNative,
 } from '@wormhole-foundation/connect-sdk';
 
 import { ethers } from 'ethers';
-import { AnyEvmAddress } from './types';
 import { EvmPlatform } from './platform';
-
-declare global {
-  namespace Wormhole {
-    interface PlatformToNativeAddressMapping {
-      // @ts-ignore
-      Evm: EvmAddress;
-    }
-  }
-}
+import { AnyEvmAddress } from './types';
 
 export const EvmZeroAddress = ethers.ZeroAddress;
 
@@ -94,4 +86,13 @@ export class EvmAddress implements Address {
   }
 }
 
-// onlyOnce(registerNative, 'Evm', EvmAddress)();
+declare global {
+  namespace Wormhole {
+    interface PlatformToNativeAddressMapping {
+      // @ts-ignore
+      Evm: EvmAddress;
+    }
+  }
+}
+
+registerNative('Evm', EvmAddress);

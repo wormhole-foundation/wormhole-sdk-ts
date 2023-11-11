@@ -21,9 +21,7 @@ export interface TypedContractEvent<
   OutputTuple extends Array<any> = any,
   OutputObject = any,
 > {
-  (
-    ...args: Partial<InputTuple>
-  ): TypedDeferredTopicFilter<
+  (...args: Partial<InputTuple>): TypedDeferredTopicFilter<
     TypedContractEvent<InputTuple, OutputTuple, OutputObject>
   >;
   name: string;
@@ -111,9 +109,7 @@ export interface TypedContractMethod<
   R = any,
   S extends StateMutability = 'payable',
 > {
-  (
-    ...args: ContractMethodArgs<A, S>
-  ): S extends 'view'
+  (...args: ContractMethodArgs<A, S>): S extends 'view'
     ? Promise<DefaultReturnType<R>>
     : Promise<ContractTransactionResponse>;
 

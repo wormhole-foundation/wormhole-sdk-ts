@@ -11,20 +11,30 @@ import { ChainsConfig } from "./types";
 
 declare global {
   namespace Wormhole {
-    export interface PlatformToProtocolMapping { }
+    export interface PlatformToProtocolMapping {}
   }
 }
 
-type MappedProtocols = keyof Wormhole.PlatformToProtocolMapping;
-export type ProtocolImplementation<T extends Platform, PN extends ProtocolName> = T extends MappedProtocols
-  ? Wormhole.PlatformToProtocolMapping[T]
+type MappedProtocolPlatforms = keyof Wormhole.PlatformToProtocolMapping;
+type MappedProtocols = keyof Wormhole.PlatformToProtocolMapping[MappedProtocolPlatforms];
+
+export type ProtocolImplementation<
+  T extends Platform,
+  PN extends ProtocolName,
+> = T extends MappedProtocolPlatforms
+  ? PN extends MappedProtocols
+    ? Wormhole.PlatformToProtocolMapping[T][PN]
+    : any
   : never;
 
 export interface ProtocolInitializer<P extends Platform, PN extends ProtocolName> {
   fromRpc(rpc: RpcConnection<P>, config: ChainsConfig<Network, P>): ProtocolImplementation<P, PN>;
 }
 
-const protocolFactory = new Map<Platform, Map<ProtocolName, ProtocolInitializer<Platform, ProtocolName>>>();
+const protocolFactory = new Map<
+  Platform,
+  Map<ProtocolName, ProtocolInitializer<Platform, ProtocolName>>
+>();
 
 export function registerProtocol<P extends Platform, PN extends ProtocolName>(
   platform: P,
@@ -64,5 +74,5 @@ export function getProtocolInitializer<P extends Platform, PN extends ProtocolNa
   const pctr = protocols.get(protocol);
   if (!pctr) throw new Error(`No protocol registered for ${platform}:${protocol}`);
 
-  return pctr;
+  return pctr as ProtocolInitializer<P, PN>;
 }
