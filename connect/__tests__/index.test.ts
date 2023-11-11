@@ -4,7 +4,7 @@ import {
   Chain,
   Network,
   Platform,
-  platforms,
+  platform,
 } from "@wormhole-foundation/sdk-base";
 import {
   ChainContext,
@@ -15,7 +15,7 @@ import {
 import { Wormhole, networkPlatformConfigs } from "../src";
 
 const network: Network = "Testnet";
-const allPlatformCtrs = platforms.map((p) => testing.mocks.mockPlatformFactory(network, p, networkPlatformConfigs(network, p)));
+const allPlatformCtrs = platform.platforms.map((p) => testing.mocks.mockPlatformFactory(network, p, networkPlatformConfigs(network, p)));
 
 describe("Wormhole Tests", () => {
   let wh: Wormhole;

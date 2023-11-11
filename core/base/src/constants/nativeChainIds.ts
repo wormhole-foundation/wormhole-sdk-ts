@@ -172,7 +172,7 @@ export type PlatformNativeChainIdToNetworkChainPair<
   : never
   : never;
 
-export function protocolNativeChainIdToNetworkChain<
+export function platformNativeChainIdToNetworkChain<
   const P extends Platform,
   const CI extends PlatformToNativeChainIds<P>
 >(platform: P, chainId: CI): PlatformNativeChainIdToNetworkChainPair<P, CI> {

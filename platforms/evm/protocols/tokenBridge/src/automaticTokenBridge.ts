@@ -1,40 +1,32 @@
 import {
+  AccountAddress,
   AutomaticTokenBridge,
   ChainAddress,
   ChainsConfig,
   Contracts,
   Network,
+  TokenAddress,
   TokenBridge,
-  TokenId,
   chainToChainId,
-  nativeChainAddress,
   serialize,
-  toChainId,
 } from '@wormhole-foundation/connect-sdk';
 import {
-  AnyEvmAddress,
-  EvmAddress,
   EvmChains,
   EvmPlatform,
   EvmUnsignedTransaction,
-  UniversalOrEvm,
   addChainId,
   addFrom,
 } from '@wormhole-foundation/connect-sdk-evm';
 import { Provider, TransactionRequest } from 'ethers';
 
-import {
-  Chain,
-  Platform,
-  networkChainToNativeChainId,
-} from '@wormhole-foundation/sdk-base';
+import { Chain, Platform, nativeChainIds } from '@wormhole-foundation/sdk-base';
 import { ethers_contracts } from '.';
 
 export class EvmAutomaticTokenBridge<
   N extends Network,
   P extends 'Evm' = 'Evm',
   C extends Chain = EvmChains,
-> implements AutomaticTokenBridge<P>
+> implements AutomaticTokenBridge<P, C>
 {
   readonly tokenBridgeRelayer: ethers_contracts.TokenBridgeRelayer;
   readonly tokenBridge: ethers_contracts.TokenBridgeContract;
@@ -49,7 +41,10 @@ export class EvmAutomaticTokenBridge<
     if (network === 'Devnet')
       throw new Error('AutomaticTokenBridge not supported on Devnet');
 
-    this.chainId = networkChainToNativeChainId.get(network, chain) as bigint;
+    this.chainId = nativeChainIds.networkChainToNativeChainId.get(
+      network,
+      chain,
+    ) as bigint;
 
     const tokenBridgeAddress = this.contracts.tokenBridge!;
     if (!tokenBridgeAddress)
@@ -75,10 +70,10 @@ export class EvmAutomaticTokenBridge<
       );
   }
   async *redeem(
-    sender: AnyEvmAddress,
+    sender: AccountAddress<C>,
     vaa: TokenBridge.VAA<'TransferWithPayload'>,
   ): AsyncGenerator<EvmUnsignedTransaction> {
-    const senderAddr = new EvmAddress(sender).toString();
+    const senderAddr = sender.toNative(this.chain).toString();
     const txReq =
       await this.tokenBridgeRelayer.completeTransferWithRelay.populateTransaction(
         serialize(vaa),
@@ -105,14 +100,14 @@ export class EvmAutomaticTokenBridge<
 
   //alternative naming: initiateTransfer
   async *transfer(
-    sender: AnyEvmAddress,
+    sender: AccountAddress<C>,
     recipient: ChainAddress,
-    token: AnyEvmAddress | 'native',
+    token: TokenAddress<C>,
     amount: bigint,
     relayerFee: bigint,
     nativeGas?: bigint,
   ): AsyncGenerator<EvmUnsignedTransaction> {
-    const senderAddr = new EvmAddress(sender).toString();
+    const senderAddr = sender.toNative(this.chain).toString();
     const recipientChainId = chainToChainId(recipient.chain);
     const recipientAddress = recipient.address
       .toUniversalAddress()
@@ -134,7 +129,7 @@ export class EvmAutomaticTokenBridge<
       );
     } else {
       //TODO check for ERC-2612 (permit) support on token?
-      const tokenAddr = new EvmAddress(token).toString();
+      const tokenAddr = token.toNative(this.chain).toString();
       // TODO: allowance?
 
       const txReq =
@@ -155,32 +150,27 @@ export class EvmAutomaticTokenBridge<
   }
 
   async getRelayerFee(
-    sender: UniversalOrEvm,
-    recipient: ChainAddress<Chain>,
-    token: TokenId | 'native',
+    sender: AccountAddress<C>,
+    recipient: ChainAddress,
+    token: TokenAddress<C>,
   ): Promise<bigint> {
-    const tokenId: TokenId =
-      token === 'native'
-        ? nativeChainAddress(this.chain, await this.tokenBridge.WETH())
-        : token;
+    throw new Error('Not implemented');
+    // const destChainId = toChainId(recipient.chain);
+    // const destTokenAddress = new token.toString(),
+    // ).toString();
 
-    const destChainId = toChainId(recipient.chain);
-    const destTokenAddress = new EvmAddress(
-      tokenId.address.toString(),
-    ).toString();
+    // const tokenContract = EvmPlatform.getTokenImplementation(
+    //   this.provider,
+    //   destTokenAddress,
+    // );
 
-    const tokenContract = EvmPlatform.getTokenImplementation(
-      this.provider,
-      destTokenAddress,
-    );
+    // const decimals = await tokenContract.decimals();
 
-    const decimals = await tokenContract.decimals();
-
-    return await this.tokenBridgeRelayer.calculateRelayerFee(
-      destChainId,
-      destTokenAddress,
-      decimals,
-    );
+    // return await this.tokenBridgeRelayer.calculateRelayerFee(
+    //   destChainId,
+    //   destTokenAddress,
+    //   decimals,
+    // );
   }
 
   private createUnsignedTx(

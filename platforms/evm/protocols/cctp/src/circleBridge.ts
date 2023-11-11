@@ -3,18 +3,17 @@ import {
   ChainAddress,
   ChainsConfig,
   CircleBridge,
-  CircleChain,
-  CircleNetwork,
   CircleTransferMessage,
   Contracts,
   Network,
   UnsignedTransaction,
-  circleChainId,
   deserializeCircleMessage,
   encoding,
   nativeChainAddress,
-  toCircleChain,
-  usdcContract,
+  Chain,
+  Platform,
+  circle,
+  nativeChainIds,
 } from '@wormhole-foundation/connect-sdk';
 
 import { MessageTransmitter, TokenMessenger } from './ethers-contracts';
@@ -26,11 +25,6 @@ import {
   addChainId,
   addFrom,
 } from '@wormhole-foundation/connect-sdk-evm';
-import {
-  Chain,
-  Platform,
-  networkChainToNativeChainId,
-} from '@wormhole-foundation/sdk-base';
 import { LogDescription, Provider, TransactionRequest } from 'ethers';
 import { ethers_contracts } from '.';
 //https://github.com/circlefin/evm-cctp-contracts
@@ -58,7 +52,10 @@ export class EvmCircleBridge<
     if (network === 'Devnet')
       throw new Error('CircleBridge not supported on Devnet');
 
-    this.chainId = networkChainToNativeChainId.get(network, chain) as bigint;
+    this.chainId = nativeChainIds.networkChainToNativeChainId.get(
+      network,
+      chain,
+    ) as bigint;
 
     const msgTransmitterAddress = contracts.cctp?.messageTransmitter;
     if (!msgTransmitterAddress)
@@ -136,9 +133,9 @@ export class EvmCircleBridge<
       .toUniversalAddress()
       .toUint8Array();
 
-    const tokenAddr = usdcContract(
-      this.network as CircleNetwork,
-      this.chain as CircleChain,
+    const tokenAddr = circle.usdcContract(
+      this.network as circle.CircleNetwork,
+      this.chain as circle.CircleChain,
     );
 
     const tokenContract = EvmPlatform.getTokenImplementation(
@@ -165,7 +162,7 @@ export class EvmCircleBridge<
 
     const txReq = await this.tokenMessenger.depositForBurn.populateTransaction(
       amount,
-      circleChainId(recipient.chain as CircleChain),
+      circle.circleChainId(recipient.chain as circle.CircleChain),
       recipientAddress,
       tokenAddr,
     );
@@ -213,8 +210,8 @@ export class EvmCircleBridge<
     const xferSender = body.messageSender;
     const xferReceiver = body.mintRecipient;
 
-    const sendChain = toCircleChain(circleMsg.sourceDomain);
-    const rcvChain = toCircleChain(circleMsg.destinationDomain);
+    const sendChain = circle.toCircleChain(circleMsg.sourceDomain);
+    const rcvChain = circle.toCircleChain(circleMsg.destinationDomain);
 
     const token = nativeChainAddress(sendChain, body.burnToken);
 

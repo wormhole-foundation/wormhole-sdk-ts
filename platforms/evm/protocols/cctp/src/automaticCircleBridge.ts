@@ -3,12 +3,13 @@ import {
   AutomaticCircleBridge,
   ChainAddress,
   ChainsConfig,
-  CircleChain,
-  CircleNetwork,
   Contracts,
   Network,
   chainToChainId,
-  usdcContract,
+  Chain,
+  Platform,
+  circle,
+  nativeChainIds,
 } from '@wormhole-foundation/connect-sdk';
 import { Provider, TransactionRequest } from 'ethers';
 
@@ -21,11 +22,6 @@ import {
   addChainId,
   addFrom,
 } from '@wormhole-foundation/connect-sdk-evm';
-import {
-  Chain,
-  Platform,
-  networkChainToNativeChainId,
-} from '@wormhole-foundation/sdk-base';
 import { ethers_contracts } from '.';
 
 export class EvmAutomaticCircleBridge<
@@ -48,7 +44,10 @@ export class EvmAutomaticCircleBridge<
     if (network === 'Devnet')
       throw new Error('AutomaticCircleBridge not supported on Devnet');
 
-    this.chainId = networkChainToNativeChainId.get(network, chain) as bigint;
+    this.chainId = nativeChainIds.networkChainToNativeChainId.get(
+      network,
+      chain,
+    ) as bigint;
 
     const relayerAddress = this.contracts.cctp?.wormholeRelayer;
     if (!relayerAddress)
@@ -93,9 +92,9 @@ export class EvmAutomaticCircleBridge<
       .toUint8Array();
     const nativeTokenGas = nativeGas ? nativeGas : 0n;
 
-    const tokenAddr = usdcContract(
-      this.network as CircleNetwork,
-      this.chain as CircleChain,
+    const tokenAddr = circle.usdcContract(
+      this.network as circle.CircleNetwork,
+      this.chain as circle.CircleChain,
     );
 
     const tokenContract = EvmPlatform.getTokenImplementation(

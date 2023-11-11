@@ -205,7 +205,7 @@ export class TokenTransfer implements WormholeTransfer {
       const fee = await tb.getRelayerFee(
         this.transfer.from.address,
         this.transfer.to,
-        this.transfer.token,
+        this.transfer.token === "native" ? "native" : this.transfer.token.address,
       );
 
       xfer = tb.transfer(

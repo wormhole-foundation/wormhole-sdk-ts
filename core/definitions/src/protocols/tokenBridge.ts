@@ -108,7 +108,7 @@ export interface AutomaticTokenBridge<P extends Platform, C extends Chain = Plat
   getRelayerFee(
     sender: AccountAddress<C>,
     recipient: ChainAddress,
-    token: TokenId<C> | "native"
+    token: TokenAddress<Chain> | "native",
   ): Promise<bigint>;
   // the amount of native tokens a user would receive by swapping x amount of sending tokens
   // nativeTokenAmount(

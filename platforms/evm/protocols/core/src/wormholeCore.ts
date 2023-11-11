@@ -20,10 +20,7 @@ import {
   addChainId,
   addFrom,
 } from '@wormhole-foundation/connect-sdk-evm';
-import {
-  Platform,
-  networkChainToNativeChainId,
-} from '@wormhole-foundation/sdk-base';
+import { Platform, nativeChainIds } from '@wormhole-foundation/sdk-base';
 
 export class EvmWormholeCore<N extends Network, P extends 'Evm' = 'Evm'>
   implements WormholeCore<P>
@@ -41,7 +38,10 @@ export class EvmWormholeCore<N extends Network, P extends 'Evm' = 'Evm'>
     readonly provider: Provider,
     readonly contracts: Contracts,
   ) {
-    this.chainId = networkChainToNativeChainId.get(network, chain) as bigint;
+    this.chainId = nativeChainIds.networkChainToNativeChainId.get(
+      network,
+      chain,
+    ) as bigint;
 
     this.coreIface = ethers_contracts.Implementation__factory.createInterface();
 

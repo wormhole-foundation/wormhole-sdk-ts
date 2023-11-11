@@ -14,6 +14,9 @@ import {
   serialize,
   toChain,
   toChainId,
+  Chain,
+  Platform,
+  nativeChainIds,
 } from '@wormhole-foundation/connect-sdk';
 import { Provider, TransactionRequest } from 'ethers';
 
@@ -31,11 +34,6 @@ import {
   unusedArbiterFee,
   unusedNonce,
 } from '@wormhole-foundation/connect-sdk-evm';
-import {
-  Chain,
-  Platform,
-  networkChainToNativeChainId,
-} from '@wormhole-foundation/sdk-base';
 
 export class EvmTokenBridge<
   N extends Network,
@@ -53,7 +51,10 @@ export class EvmTokenBridge<
     readonly provider: Provider,
     readonly contracts: Contracts,
   ) {
-    this.chainId = networkChainToNativeChainId.get(network, chain) as bigint;
+    this.chainId = nativeChainIds.networkChainToNativeChainId.get(
+      network,
+      chain,
+    ) as bigint;
 
     const tokenBridgeAddress = this.contracts.tokenBridge!;
     if (!tokenBridgeAddress)

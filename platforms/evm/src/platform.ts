@@ -16,14 +16,12 @@ import {
   chainToPlatform,
   getProtocolInitializer,
   nativeChainAddress,
-  nativeDecimals,
+  decimals,
   networkPlatformConfigs,
+  encoding,
+  nativeChainIds,
 } from '@wormhole-foundation/connect-sdk';
 
-import {
-  encoding,
-  protocolNativeChainIdToNetworkChain,
-} from '@wormhole-foundation/sdk-base';
 import { Provider, ethers } from 'ethers';
 import { EvmAddress, EvmZeroAddress } from './address';
 import { EvmChain } from './chain';
@@ -108,7 +106,7 @@ export class EvmPlatform<N extends Network, P extends 'Evm' = 'Evm'>
     token: AnyEvmAddress | 'native',
   ): Promise<bigint> {
     if (token === 'native')
-      return BigInt(nativeDecimals(EvmPlatform._platform));
+      return BigInt(decimals.nativeDecimals(EvmPlatform._platform));
 
     const tokenContract = EvmPlatform.getTokenImplementation(
       rpc,
@@ -177,7 +175,7 @@ export class EvmPlatform<N extends Network, P extends 'Evm' = 'Evm'>
 
   // Look up the Wormhole Canonical Network and Chain from the EVM chainId
   static chainFromChainId(eip155ChainId: string): [Network, EvmChains] {
-    const networkChainPair = protocolNativeChainIdToNetworkChain(
+    const networkChainPair = nativeChainIds.platformNativeChainIdToNetworkChain(
       EvmPlatform._platform,
       // @ts-ignore
       BigInt(eip155ChainId),

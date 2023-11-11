@@ -8,6 +8,7 @@ import {
   createVAA,
   encoding,
   testing,
+  nativeChainIds,
   toNative
 } from '@wormhole-foundation/connect-sdk';
 
@@ -22,7 +23,6 @@ import {
 
 import { describe, expect, test } from '@jest/globals';
 
-import { networkChainToNativeChainId } from '@wormhole-foundation/sdk-base';
 import nock from 'nock';
 
 // Setup nock to record fixtures
@@ -228,7 +228,7 @@ describe('TokenBridge Tests', () => {
 
       const { transaction } = attestTx;
       expect(transaction.chainId).toEqual(
-        networkChainToNativeChainId.get(
+        nativeChainIds.networkChainToNativeChainId.get(
           network,
           chain
         ),
@@ -265,7 +265,7 @@ describe('TokenBridge Tests', () => {
 
       const { transaction } = attestTx;
       expect(transaction.chainId).toEqual(
-        networkChainToNativeChainId.get(network, chain),
+        nativeChainIds.networkChainToNativeChainId.get(network, chain),
       );
     });
   });
@@ -295,7 +295,7 @@ describe('TokenBridge Tests', () => {
 
           const { transaction } = xferTx;
           expect(transaction.chainId).toEqual(
-            networkChainToNativeChainId.get(network, chain),
+            nativeChainIds.networkChainToNativeChainId.get(network, chain),
           );
         });
 
@@ -325,7 +325,7 @@ describe('TokenBridge Tests', () => {
           const { transaction: xferTransaction } = xferTx;
           expect(xferTransaction.to).toEqual(tbAddress.toString());
           expect(xferTransaction.chainId).toEqual(
-            networkChainToNativeChainId.get(
+            nativeChainIds.networkChainToNativeChainId.get(
               network,
               chain
             ),

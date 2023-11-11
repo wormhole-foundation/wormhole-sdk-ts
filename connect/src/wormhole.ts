@@ -4,8 +4,7 @@ import {
   Network,
   Platform,
   chainToPlatform,
-  isCircleChain,
-  isCircleSupported,
+  circle,
   normalizeAmount,
 } from "@wormhole-foundation/sdk-base";
 import {
@@ -89,10 +88,10 @@ export class Wormhole<N extends Network = Network> {
     if (automatic && payload) throw new Error("Payload with automatic delivery is not supported");
 
     if (
-      !isCircleChain(from.chain) ||
-      !isCircleChain(to.chain) ||
-      !isCircleSupported(this.network, from.chain) ||
-      !isCircleSupported(this.network, to.chain)
+      !circle.isCircleChain(from.chain) ||
+      !circle.isCircleChain(to.chain) ||
+      !circle.isCircleSupported(this.network, from.chain) ||
+      !circle.isCircleSupported(this.network, to.chain)
     )
       throw new Error(`Network and chain not supported: ${this.network} ${from.chain} `);
 
