@@ -63,12 +63,12 @@ export class EvmPlatform<N extends Network>
     );
   }
 
-  async parseTransaction(
-    chain: Chain,
+  async parseTransaction<C extends EvmChains>(
+    chain: C,
     rpc: Provider,
     txid: TxHash,
   ): Promise<WormholeMessageId[]> {
-    const wc: WormholeCore<EvmPlatformType> = await this.getProtocol(
+    const wc: WormholeCore<N, EvmPlatformType, C> = await this.getProtocol(
       'WormholeCore',
       rpc,
     );

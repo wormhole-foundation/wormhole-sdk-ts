@@ -22,7 +22,7 @@ export async function getVaaBytes(
 ): Promise<Uint8Array | null> {
   const { chain, emitter, sequence } = whm;
   const chainId = toChainId(chain);
-  const emitterAddress = encoding.stripPrefix("0x", emitter.toUniversalAddress().toString());
+  const emitterAddress = encoding.stripPrefix("0x", emitter.toString());
 
   const url = `${apiUrl}/v1/signed_vaa/${chainId}/${emitterAddress}/${sequence}`;
 

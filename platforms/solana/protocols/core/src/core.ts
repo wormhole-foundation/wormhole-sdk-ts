@@ -6,7 +6,6 @@ import {
   Contracts,
   Network,
   Platform,
-  UnsignedTransaction,
   VAA,
   WormholeCore,
   WormholeMessageId,
@@ -18,6 +17,7 @@ import {
   SolanaAddress,
   SolanaChains,
   SolanaPlatform,
+  SolanaPlatformType,
   SolanaUnsignedTransaction,
 } from '@wormhole-foundation/connect-sdk-solana';
 import { Wormhole as WormholeCoreContract } from './types';
@@ -29,10 +29,8 @@ import {
 
 const SOLANA_SEQ_LOG = 'Program log: Sequence: ';
 
-export class SolanaWormholeCore<
-  N extends Network,
-  P extends 'Solana' = 'Solana',
-> implements WormholeCore<P>
+export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
+  implements WormholeCore<N, SolanaPlatformType, C>
 {
   readonly chainId: ChainId;
   readonly coreBridge: Program<WormholeCoreContract>;
@@ -40,7 +38,7 @@ export class SolanaWormholeCore<
 
   constructor(
     readonly network: N,
-    readonly chain: SolanaChains,
+    readonly chain: C,
     readonly connection: Connection,
     readonly contracts: Contracts,
   ) {
@@ -63,7 +61,7 @@ export class SolanaWormholeCore<
   static async fromRpc<N extends Network>(
     connection: Connection,
     config: ChainsConfig<N, Platform>,
-  ): Promise<SolanaWormholeCore<N>> {
+  ): Promise<SolanaWormholeCore<N, SolanaChains>> {
     const [network, chain] = await SolanaPlatform.chainFromRpc(connection);
     const conf = config[chain];
     if (conf.network !== network)
@@ -81,7 +79,7 @@ export class SolanaWormholeCore<
   publishMessage(
     sender: AnySolanaAddress,
     message: string | Uint8Array,
-  ): AsyncGenerator<UnsignedTransaction, any, unknown> {
+  ): AsyncGenerator<SolanaUnsignedTransaction<N, C>> {
     throw new Error('Method not implemented.');
   }
 
@@ -170,11 +168,11 @@ export class SolanaWormholeCore<
     txReq: Transaction,
     description: string,
     parallelizable: boolean = false,
-  ): SolanaUnsignedTransaction {
+  ): SolanaUnsignedTransaction<N, C> {
     return new SolanaUnsignedTransaction(
       txReq,
       this.network,
-      'Solana',
+      this.chain,
       description,
       parallelizable,
     );

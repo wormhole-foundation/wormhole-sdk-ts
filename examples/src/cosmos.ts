@@ -1,16 +1,16 @@
-import {
-  GatewayTransfer,
-  GatewayTransferDetails,
-  TokenId,
-  Wormhole,
-  normalizeAmount,
-  toNative,
-} from "@wormhole-foundation/connect-sdk";
-// Import the platform specific packages
-import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
-import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
-
-import { TransferStuff, getStuff } from "./helpers";
+// import {
+//   GatewayTransfer,
+//   GatewayTransferDetails,
+//   TokenId,
+//   Wormhole,
+//   normalizeAmount,
+//   toNative,
+// } from "@wormhole-foundation/connect-sdk";
+// // Import the platform specific packages
+// import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
+// import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
+//
+// import { TransferStuff, getStuff } from "./helpers";
 
 import "@wormhole-foundation/connect-sdk-evm-core";
 import "@wormhole-foundation/connect-sdk-evm-tokenbridge";

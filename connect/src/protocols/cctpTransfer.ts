@@ -1,4 +1,4 @@
-import { Chain, Platform, encoding, circle } from "@wormhole-foundation/sdk-base";
+import { Network, Chain, Platform, encoding, circle } from "@wormhole-foundation/sdk-base";
 import {
   CircleAttestation,
   CircleMessageId,
@@ -28,8 +28,8 @@ export type AutomaticCircleBridgeVAA<PayloadName extends string> = ProtocolVAA<
   PayloadName
 >;
 
-export class CircleTransfer implements WormholeTransfer {
-  private readonly wh: Wormhole;
+export class CircleTransfer<N extends Network> implements WormholeTransfer {
+  private readonly wh: Wormhole<N>;
 
   // state machine tracker
   private state: TransferState;
@@ -52,7 +52,7 @@ export class CircleTransfer implements WormholeTransfer {
     vaa?: AutomaticCircleBridgeVAA<"TransferRelay">;
   }[];
 
-  private constructor(wh: Wormhole, transfer: CircleTransferDetails) {
+  private constructor(wh: Wormhole<N>, transfer: CircleTransferDetails) {
     this.state = TransferState.Created;
     this.wh = wh;
     this.transfer = transfer;
@@ -63,26 +63,37 @@ export class CircleTransfer implements WormholeTransfer {
   }
 
   // Static initializers for in flight transfers that have not been completed
-  static async from(wh: Wormhole, from: CircleTransferDetails): Promise<CircleTransfer>;
-  static async from(
-    wh: Wormhole,
+  static async from<N extends Network>(
+    wh: Wormhole<N>,
+    from: CircleTransferDetails,
+  ): Promise<CircleTransfer<N>>;
+  static async from<N extends Network>(
+    wh: Wormhole<N>,
     from: WormholeMessageId,
     timeout?: number,
-  ): Promise<CircleTransfer>;
-  static async from(wh: Wormhole, from: CircleMessageId, timeout?: number): Promise<CircleTransfer>;
-  static async from(wh: Wormhole, from: TransactionId, timeout?: number): Promise<CircleTransfer>;
-  static async from(
-    wh: Wormhole,
+  ): Promise<CircleTransfer<N>>;
+  static async from<N extends Network>(
+    wh: Wormhole<N>,
+    from: CircleMessageId,
+    timeout?: number,
+  ): Promise<CircleTransfer<N>>;
+  static async from<N extends Network>(
+    wh: Wormhole<N>,
+    from: TransactionId,
+    timeout?: number,
+  ): Promise<CircleTransfer<N>>;
+  static async from<N extends Network>(
+    wh: Wormhole<N>,
     from: CircleTransferDetails | WormholeMessageId | CircleMessageId | TransactionId,
     timeout: number = DEFAULT_TASK_TIMEOUT,
-  ): Promise<CircleTransfer> {
+  ): Promise<CircleTransfer<N>> {
     // This is a new transfer, just return the object
     if (isCircleTransferDetails(from)) {
       return new CircleTransfer(wh, from);
     }
 
     // This is an existing transfer, fetch the details
-    let tt: CircleTransfer | undefined;
+    let tt: CircleTransfer<N> | undefined;
     if (isWormholeMessageId(from)) {
       tt = await CircleTransfer.fromWormholeMessageId(wh, from, timeout);
     } else if (isTransactionIdentifier(from)) {
@@ -98,11 +109,11 @@ export class CircleTransfer implements WormholeTransfer {
   }
 
   // init from the seq id
-  private static async fromWormholeMessageId(
-    wh: Wormhole,
+  private static async fromWormholeMessageId<N extends Network>(
+    wh: Wormhole<N>,
     from: WormholeMessageId,
     timeout: number,
-  ): Promise<CircleTransfer> {
+  ): Promise<CircleTransfer<N>> {
     const { chain, emitter, sequence } = from;
     const vaa = await CircleTransfer.getTransferVaa(wh, chain, emitter, sequence);
 
@@ -134,11 +145,11 @@ export class CircleTransfer implements WormholeTransfer {
     return tt;
   }
 
-  private static async fromCircleMessageId(
-    wh: Wormhole,
+  private static async fromCircleMessageId<N extends Network>(
+    wh: Wormhole<N>,
     messageId: CircleMessageId,
     timeout: number,
-  ): Promise<CircleTransfer> {
+  ): Promise<CircleTransfer<N>> {
     const [message, hash] = deserializeCircleMessage(encoding.hex.decode(messageId.message));
     // If no hash is passed, set to the one we just computed
     if (messageId.hash === "") messageId.hash = hash;
@@ -165,11 +176,11 @@ export class CircleTransfer implements WormholeTransfer {
   }
 
   // init from source tx hash
-  private static async fromTransaction(
-    wh: Wormhole,
+  private static async fromTransaction<N extends Network>(
+    wh: Wormhole<N>,
     from: TransactionId,
     timeout: number,
-  ): Promise<CircleTransfer> {
+  ): Promise<CircleTransfer<N>> {
     const { chain, txid } = from;
     const originChain = wh.getChain(chain);
 
@@ -179,7 +190,7 @@ export class CircleTransfer implements WormholeTransfer {
     const msgIds: WormholeMessageId[] = await originChain.parseTransaction(txid);
 
     // If we found a VAA message, use it
-    let ct: CircleTransfer;
+    let ct: CircleTransfer<N>;
     if (msgIds.length > 0) {
       ct = await CircleTransfer.fromWormholeMessageId(wh, msgIds[0], timeout);
     } else {
@@ -217,7 +228,7 @@ export class CircleTransfer implements WormholeTransfer {
 
     const fromChain = this.wh.getChain(this.transfer.from.chain);
 
-    let xfer: AsyncGenerator<UnsignedTransaction>;
+    let xfer: AsyncGenerator<UnsignedTransaction<N>>;
     if (this.transfer.automatic) {
       const cr = await fromChain.getAutomaticCircleBridge();
       xfer = cr.transfer(
@@ -235,7 +246,7 @@ export class CircleTransfer implements WormholeTransfer {
       );
     }
 
-    this.txids = await signSendWait(fromChain, xfer, signer);
+    this.txids = await signSendWait<N, typeof fromChain.chain>(fromChain, xfer, signer);
     this.state = TransferState.Initiated;
 
     return this.txids.map(({ txid }) => txid);
@@ -353,13 +364,13 @@ export class CircleTransfer implements WormholeTransfer {
     const tb = await toChain.getCircleBridge();
     const xfer = tb.redeem(this.transfer.to.address, id.message, attestation);
 
-    const txids = await signSendWait(toChain, xfer, signer);
+    const txids = await signSendWait<N, typeof toChain.chain>(toChain, xfer, signer);
     this.txids?.push(...txids);
     return txids.map(({ txid }) => txid);
   }
 
-  static async getTransferVaa(
-    wh: Wormhole,
+  static async getTransferVaa<N extends Network>(
+    wh: Wormhole<N>,
     chain: Chain,
     emitter: UniversalAddress | NativeAddress<Platform>,
     sequence: bigint,

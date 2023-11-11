@@ -1,5 +1,4 @@
 import {
-  Chain,
   ChainAddress,
   ChainContext,
   Platform,
@@ -30,8 +29,8 @@ function getEnv(key: string): string {
 }
 
 export interface TransferStuff<
-  N extends Network = "Testnet",
-  P extends Platform = "Evm",
+  N extends Network,
+  P extends Platform,
   C extends PlatformToChains<P> = PlatformToChains<P>,
 > {
   chain: ChainContext<N, P, C>;
@@ -39,9 +38,11 @@ export interface TransferStuff<
   address: ChainAddress<C>;
 }
 
-export async function getStuff<N extends Network, P extends Platform, C extends Chain>(
-  chain: ChainContext<N, P, C>,
-): Promise<TransferStuff<N, P, C>> {
+export async function getStuff<
+  N extends Network,
+  P extends Platform,
+  C extends PlatformToChains<P>,
+>(chain: ChainContext<N, P, C>): Promise<TransferStuff<N, P, C>> {
   let signer: Signer;
 
   switch (chain.platformUtils._platform) {
@@ -58,7 +59,8 @@ export async function getStuff<N extends Network, P extends Platform, C extends 
       throw new Error("Unrecognized platform: " + chain.platformUtils._platform);
   }
 
-  return { chain, signer, address: nativeChainAddress(signer.chain() as C, signer.address()) };
+  // @ts-ignore
+  return { chain, signer, address: nativeChainAddress([signer.chain(), signer.address()]) };
 }
 
 export async function waitLog(xfer: WormholeTransfer): Promise<void> {

@@ -5,26 +5,28 @@ import {
   Chain,
   Signer,
   normalizeAmount,
+  Network,
 } from "@wormhole-foundation/connect-sdk";
 // Import the platform specific packages
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
-import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
+//import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
 //
 
 import "@wormhole-foundation/connect-sdk-evm-core";
 import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
 import "@wormhole-foundation/connect-sdk-solana-core";
 import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
-import "@wormhole-foundation/connect-sdk-cosmwasm-core";
-import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
+// import "@wormhole-foundation/connect-sdk-cosmwasm-core";
+// import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
 
 import { TransferStuff, getStuff, waitLog } from "./helpers";
+import { Platform } from "@wormhole-foundation/sdk-base/src";
 
 (async function () {
   // init Wormhole object, passing config for which network
   // to use (e.g. Mainnet/Testnet) and what Platforms to support
-  const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform, CosmwasmPlatform]);
+  const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform]);
 
   // Grab chain Contexts
   const sendChain = wh.getChain("Avalanche");
@@ -35,7 +37,7 @@ import { TransferStuff, getStuff, waitLog } from "./helpers";
   const source = await getStuff(sendChain);
   const destination = await getStuff(rcvChain);
 
-  const amt = normalizeAmount("0.01", sendChain.config.nativeTokenDecimals);
+  const amt = normalizeAmount("0.01", BigInt(sendChain.config.nativeTokenDecimals));
 
   // Choose your adventure
   await manualTokenTransfer(wh, "native", amt, source, destination);
@@ -73,11 +75,11 @@ import { TransferStuff, getStuff, waitLog } from "./helpers";
 })();
 
 async function tokenTransfer(
-  wh: Wormhole,
+  wh: Wormhole<Network>,
   token: TokenId | "native",
   amount: bigint,
-  src: TransferStuff,
-  dst: TransferStuff,
+  src: TransferStuff<Network, Platform, Chain>,
+  dst: TransferStuff<Network, Platform, Chain>,
   automatic: boolean,
   nativeGas?: bigint,
   payload?: Uint8Array,
@@ -116,7 +118,7 @@ async function tokenTransfer(
 // this method will complete the transfer given the source
 // chain and transaction id
 async function finishTransfer(
-  wh: Wormhole,
+  wh: Wormhole<Network>,
   chain: Chain,
   txid: string,
   signer: Signer,
@@ -127,66 +129,66 @@ async function finishTransfer(
 }
 
 async function manualTokenTransfer(
-  wh: Wormhole,
+  wh: Wormhole<Network>,
   token: TokenId | "native",
   amount: bigint,
-  src: TransferStuff,
-  dst: TransferStuff,
+  src: TransferStuff<Network, Platform, Chain>,
+  dst: TransferStuff<Network, Platform, Chain>,
 ) {
   return tokenTransfer(wh, token, amount, src, dst, false);
 }
 
-async function automaticTokenTransfer(
-  wh: Wormhole,
-  token: TokenId | "native",
-  amount: bigint,
-  src: TransferStuff,
-  dst: TransferStuff,
-) {
-  return tokenTransfer(wh, token, amount, src, dst, true);
-}
-
-async function automaticTokenTransferWithGasDropoff(
-  wh: Wormhole,
-  token: TokenId | "native",
-  amount: bigint,
-  src: TransferStuff,
-  dst: TransferStuff,
-  nativeGas: bigint,
-) {
-  return tokenTransfer(wh, token, amount, src, dst, true, nativeGas);
-}
-
-async function manualTokenTransferWithPayload(
-  wh: Wormhole,
-  token: TokenId | "native",
-  amount: bigint,
-  src: TransferStuff,
-  dst: TransferStuff,
-  payload: Uint8Array,
-) {
-  return tokenTransfer(wh, token, amount, src, dst, false, undefined, payload);
-}
-
-async function automaticTokenTransferWithPayload(
-  wh: Wormhole,
-  token: TokenId | "native",
-  amount: bigint,
-  src: TransferStuff,
-  dst: TransferStuff,
-  payload: Uint8Array,
-) {
-  return tokenTransfer(wh, token, amount, src, dst, true, undefined, payload);
-}
-
-async function automaticTokenTransferWithPayloadAndGasDropoff(
-  wh: Wormhole,
-  token: TokenId | "native",
-  amount: bigint,
-  src: TransferStuff,
-  dst: TransferStuff,
-  nativeGas: bigint,
-  payload: Uint8Array,
-) {
-  return tokenTransfer(wh, token, amount, src, dst, true, nativeGas, payload);
-}
+// async function automaticTokenTransfer(
+//   wh: Wormhole,
+//   token: TokenId | "native",
+//   amount: bigint,
+//   src: TransferStuff,
+//   dst: TransferStuff,
+// ) {
+//   return tokenTransfer(wh, token, amount, src, dst, true);
+// }
+//
+// async function automaticTokenTransferWithGasDropoff(
+//   wh: Wormhole,
+//   token: TokenId | "native",
+//   amount: bigint,
+//   src: TransferStuff,
+//   dst: TransferStuff,
+//   nativeGas: bigint,
+// ) {
+//   return tokenTransfer(wh, token, amount, src, dst, true, nativeGas);
+// }
+//
+// async function manualTokenTransferWithPayload(
+//   wh: Wormhole,
+//   token: TokenId | "native",
+//   amount: bigint,
+//   src: TransferStuff,
+//   dst: TransferStuff,
+//   payload: Uint8Array,
+// ) {
+//   return tokenTransfer(wh, token, amount, src, dst, false, undefined, payload);
+// }
+//
+// async function automaticTokenTransferWithPayload(
+//   wh: Wormhole,
+//   token: TokenId | "native",
+//   amount: bigint,
+//   src: TransferStuff,
+//   dst: TransferStuff,
+//   payload: Uint8Array,
+// ) {
+//   return tokenTransfer(wh, token, amount, src, dst, true, undefined, payload);
+// }
+//
+// async function automaticTokenTransferWithPayloadAndGasDropoff(
+//   wh: Wormhole,
+//   token: TokenId | "native",
+//   amount: bigint,
+//   src: TransferStuff,
+//   dst: TransferStuff,
+//   nativeGas: bigint,
+//   payload: Uint8Array,
+// ) {
+//   return tokenTransfer(wh, token, amount, src, dst, true, nativeGas, payload);
+// }

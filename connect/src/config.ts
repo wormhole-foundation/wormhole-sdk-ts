@@ -30,8 +30,8 @@ export function networkPlatformConfigs<N extends Network, P extends Platform>(
   platform: P,
 ): ChainsConfig<N, P> {
   return Object.fromEntries(
-    Object.entries(CONFIG[network].chains).filter(([_, v]) => {
-      return v.platform == platform;
+    Object.entries(CONFIG[network].chains).filter(([_, c]) => {
+      return c.platform == platform;
     }),
   ) as ChainsConfig<N, P>;
 }

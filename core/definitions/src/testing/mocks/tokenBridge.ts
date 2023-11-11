@@ -1,4 +1,4 @@
-import { Platform } from "@wormhole-foundation/sdk-base";
+import { Network, Platform } from "@wormhole-foundation/sdk-base";
 import {
   TokenAddress,
   ChainAddress,
@@ -7,6 +7,7 @@ import {
   TokenBridge,
   UnsignedTransaction,
 } from "../..";
+import { PlatformToChains } from "@wormhole-foundation/sdk-base/src";
 
 //export function mockTokenBridgeFactory(
 //  p: Platform,
@@ -14,47 +15,49 @@ import {
 //  return new MockTokenBridge(p);
 //}
 
-export class MockTokenBridge<P extends Platform> implements TokenBridge<P> {
+export class MockTokenBridge<N extends Network, P extends Platform, C extends PlatformToChains<P>>
+  implements TokenBridge<N, P, C>
+{
   constructor(readonly rpc: RpcConnection<P>) {}
 
-  isWrappedAsset(token: TokenAddress<P>): Promise<boolean> {
+  isWrappedAsset(token: TokenAddress<C>): Promise<boolean> {
     throw new Error("Method not implemented.");
   }
-  getOriginalAsset(token: TokenAddress<P>): Promise<ChainAddress> {
+  getOriginalAsset(token: TokenAddress<C>): Promise<ChainAddress> {
     throw new Error("Method not implemented.");
   }
   hasWrappedAsset(original: ChainAddress): Promise<boolean> {
     throw new Error("Method not implemented.");
   }
-  async getWrappedAsset(original: ChainAddress): Promise<NativeAddress<P>> {
+  async getWrappedAsset(original: ChainAddress): Promise<NativeAddress<C>> {
     throw new Error("Method not implemented.");
   }
   isTransferCompleted(vaa: TokenBridge.VAA<"Transfer" | "TransferWithPayload">): Promise<boolean> {
     throw new Error("Method not implemented.");
   }
-  createAttestation(address: TokenAddress<P>): AsyncGenerator<UnsignedTransaction> {
+  createAttestation(address: TokenAddress<C>): AsyncGenerator<UnsignedTransaction<N, C>> {
     throw new Error("Method not implemented.");
   }
-  submitAttestation(vaa: TokenBridge.VAA<"AttestMeta">): AsyncGenerator<UnsignedTransaction> {
+  submitAttestation(vaa: TokenBridge.VAA<"AttestMeta">): AsyncGenerator<UnsignedTransaction<N, C>> {
     throw new Error("Method not implemented.");
   }
   transfer(
-    sender: TokenAddress<P>,
+    sender: TokenAddress<C>,
     recipient: ChainAddress,
-    token: TokenAddress<P>,
+    token: TokenAddress<C>,
     amount: bigint,
     payload?: Uint8Array | undefined,
-  ): AsyncGenerator<UnsignedTransaction> {
+  ): AsyncGenerator<UnsignedTransaction<N, C>> {
     throw new Error("Method not implemented.");
   }
   redeem(
-    sender: TokenAddress<P>,
+    sender: TokenAddress<C>,
     vaa: TokenBridge.VAA<"Transfer" | "TransferWithPayload">,
     unwrapNative?: boolean | undefined,
-  ): AsyncGenerator<UnsignedTransaction> {
+  ): AsyncGenerator<UnsignedTransaction<N, C>> {
     throw new Error("Method not implemented.");
   }
-  getWrappedNative(): Promise<NativeAddress<P>> {
+  getWrappedNative(): Promise<NativeAddress<C>> {
     throw new Error("Method not implemented.");
   }
 }

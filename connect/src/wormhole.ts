@@ -46,21 +46,21 @@ import {
   getVaaWithRetry,
 } from "./whscan-api";
 
-export class Wormhole<N extends Network = Network> {
+export class Wormhole<N extends Network> {
   protected readonly _network: N;
   protected _platforms: Map<Platform, PlatformContext<N, Platform>>;
   protected _chains: Map<Chain, ChainContext<N, Platform, Chain>>;
 
   readonly config: WormholeConfig;
 
-  constructor(network: N, platforms: PlatformUtils<N>[], config?: WormholeConfig) {
+  constructor(network: N, platforms: PlatformUtils<N, any>[], config?: WormholeConfig) {
     this._network = network;
     this.config = config ?? CONFIG[network];
 
     this._chains = new Map();
     this._platforms = new Map();
     for (const p of platforms) {
-      this._platforms.set(p._platform, p.fromNetworkConfig(network));
+      this._platforms.set(p._platform, new p(network));
     }
   }
 
@@ -86,7 +86,7 @@ export class Wormhole<N extends Network = Network> {
     automatic: boolean,
     payload?: Uint8Array,
     nativeGas?: bigint,
-  ): Promise<CircleTransfer> {
+  ): Promise<CircleTransfer<N>> {
     if (automatic && payload) throw new Error("Payload with automatic delivery is not supported");
 
     if (
@@ -127,7 +127,7 @@ export class Wormhole<N extends Network = Network> {
     automatic: boolean,
     payload?: Uint8Array,
     nativeGas?: bigint,
-  ): Promise<TokenTransfer> {
+  ): Promise<TokenTransfer<N>> {
     // TODO: check if `toChain` is gateway supported
     // not enough to check if its a Cosmos chain since Terra/Xpla/Sei are not supported
     // if (chainToPlatform(to.chain) === 'Cosmwasm' ) {

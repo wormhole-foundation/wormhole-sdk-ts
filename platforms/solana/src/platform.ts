@@ -56,7 +56,7 @@ export class SolanaPlatform<N extends Network>
 
   static fromNetworkConfig<N extends Network>(
     network: N,
-    config?: ChainsConfig<N, 'Solana'>,
+    config?: ChainsConfig<N, SolanaPlatformType>,
   ): SolanaPlatform<N> {
     return new SolanaPlatform(network, config);
   }
@@ -84,19 +84,19 @@ export class SolanaPlatform<N extends Network>
       this.config,
     );
   }
-  async parseTransaction(
-    chain: Chain,
+  async parseTransaction<C extends SolanaChains>(
+    chain: C,
     rpc: Connection,
     tx: string,
   ): Promise<WormholeMessageId[]> {
-    const wc: WormholeCore<'Solana'> = await this.getProtocol(
+    const wc: WormholeCore<N, SolanaPlatformType, C> = await this.getProtocol(
       'WormholeCore',
       rpc,
     );
     return wc.parseTransaction(tx);
   }
 
-  static nativeTokenId(chain: Chain): TokenId {
+  static nativeTokenId<C extends Chain>(chain: C): TokenId<C> {
     if (!SolanaPlatform.isSupportedChain(chain))
       throw new Error(`invalid chain: ${chain}`);
     return nativeChainAddress(chain, SolanaZeroAddress);
@@ -132,7 +132,7 @@ export class SolanaPlatform<N extends Network>
     return BigInt(numDecimals);
   }
 
-  async getBalance(
+  static async getBalance(
     chain: Chain,
     rpc: Connection,
     walletAddress: string,
@@ -151,7 +151,7 @@ export class SolanaPlatform<N extends Network>
     return BigInt(balance.value.amount);
   }
 
-  async getBalances(
+  static async getBalances(
     chain: Chain,
     rpc: Connection,
     walletAddress: string,

@@ -2,6 +2,7 @@ import {
   Chain,
   Layout,
   LayoutToType,
+  Network,
   Platform,
   PlatformToChains,
   deserializeLayout,
@@ -16,7 +17,6 @@ import {
   universalAddressItem
 } from "../layout-items";
 import "../payloads/connect";
-import { RpcConnection } from "../rpc";
 import { TokenId } from "../types";
 import { UnsignedTransaction } from "../unsignedTransaction";
 import { keccak256 } from "../utils";
@@ -67,52 +67,27 @@ export type CircleTransferMessage = {
   messageId: CircleMessageId;
 };
 
-export interface AutomaticCircleBridge<P extends Platform, C extends Chain = PlatformToChains<P>> {
+export interface AutomaticCircleBridge<N extends Network, P extends Platform, C extends Chain = PlatformToChains<P>> {
   transfer(
     sender: AccountAddress<C>,
     recipient: ChainAddress,
     amount: bigint,
     nativeGas?: bigint,
-  ): AsyncGenerator<UnsignedTransaction>;
+  ): AsyncGenerator<UnsignedTransaction<N, C>>;
   // TODO: events
 }
 
 // https://github.com/circlefin/evm-cctp-contracts
-export interface CircleBridge<P extends Platform, C extends Chain = PlatformToChains<P>> {
+export interface CircleBridge<N extends Network, P extends Platform, C extends PlatformToChains<P>> {
   redeem(
     sender: AccountAddress<C>,
     message: string,
     attestation: string,
-  ): AsyncGenerator<UnsignedTransaction>;
+  ): AsyncGenerator<UnsignedTransaction<N, C>>;
   transfer(
     sender: AccountAddress<C>,
     recipient: ChainAddress,
     amount: bigint,
-  ): AsyncGenerator<UnsignedTransaction>;
+  ): AsyncGenerator<UnsignedTransaction<N, C>>;
   parseTransactionDetails(txid: string): Promise<CircleTransferMessage>;
-}
-
-export interface SupportsCircleBridge<P extends Platform> {
-  getCircleBridge(rpc: RpcConnection<P>): Promise<CircleBridge<P>>;
-}
-
-export function supportsCircleBridge<P extends Platform>(
-  thing: SupportsCircleBridge<P> | any,
-): thing is SupportsCircleBridge<P> {
-  return typeof (<SupportsCircleBridge<P>>thing).getCircleBridge === "function";
-}
-
-export interface SupportsAutomaticCircleBridge<P extends Platform> {
-  getAutomaticCircleBridge(
-    rpc: RpcConnection<P>,
-  ): Promise<AutomaticCircleBridge<P>>;
-}
-
-export function supportsAutomaticCircleBridge<P extends Platform>(
-  thing: SupportsAutomaticCircleBridge<P> | any,
-): thing is SupportsAutomaticCircleBridge<P> {
-  return (
-    typeof (<SupportsAutomaticCircleBridge<P>>thing)
-      .getAutomaticCircleBridge === "function"
-  );
 }

@@ -1,6 +1,5 @@
 import {
   CONFIG,
-  PlatformUtils,
   Wormhole,
   api,
   normalizeAmount,
@@ -14,9 +13,6 @@ import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
 import { getStuff } from "./helpers";
 
 (async function () {
-  const x: PlatformUtils<"Testnet"> = EvmPlatform<"Testnet">;
-  console.log(x);
-
   // Setup
   const wh = new Wormhole("Testnet", [EvmPlatform]);
   const snd = wh.getChain("Avalanche");

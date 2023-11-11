@@ -19,6 +19,7 @@ import {
   SolanaAddress,
   SolanaChains,
   SolanaPlatform,
+  SolanaPlatformType,
   SolanaUnsignedTransaction,
 } from '@wormhole-foundation/connect-sdk-solana';
 import {
@@ -63,15 +64,12 @@ import {
   getWrappedMeta,
 } from './utils';
 
-export class SolanaTokenBridge<
-  N extends Network,
-  P extends 'Solana' = 'Solana',
-  C extends SolanaChains = SolanaChains,
-> implements TokenBridge<P, C>
+export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
+  implements TokenBridge<N, SolanaPlatformType, C>
 {
   readonly chainId: ChainId;
 
-  readonly coreBridge: SolanaWormholeCore<N, P>;
+  readonly coreBridge: SolanaWormholeCore<N, C>;
   readonly tokenBridge: Program<TokenBridgeContract>;
 
   private constructor(
@@ -104,7 +102,7 @@ export class SolanaTokenBridge<
   static async fromRpc<N extends Network>(
     connection: Connection,
     config: ChainsConfig<N, Platform>,
-  ): Promise<SolanaTokenBridge<N>> {
+  ): Promise<SolanaTokenBridge<N, SolanaChains>> {
     const [network, chain] = await SolanaPlatform.chainFromRpc(connection);
     const conf = config[chain];
     if (conf.network !== network)
@@ -206,7 +204,7 @@ export class SolanaTokenBridge<
   async *createAttestation(
     token: AnySolanaAddress,
     payer?: AnySolanaAddress,
-  ): AsyncGenerator<SolanaUnsignedTransaction> {
+  ): AsyncGenerator<SolanaUnsignedTransaction<N, C>> {
     if (!payer) throw new Error('Payer required to create attestation');
     const senderAddress = new SolanaAddress(payer).unwrap();
     // TODO: createNonce().readUInt32LE(0);
@@ -240,7 +238,7 @@ export class SolanaTokenBridge<
   async *submitAttestation(
     vaa: TokenBridge.VAA<'AttestMeta'>,
     payer?: AnySolanaAddress,
-  ): AsyncGenerator<SolanaUnsignedTransaction> {
+  ): AsyncGenerator<SolanaUnsignedTransaction<N, C>> {
     if (!payer) throw new Error('Payer required to create attestation');
     const senderAddress = new SolanaAddress(payer).unwrap();
 
@@ -270,7 +268,7 @@ export class SolanaTokenBridge<
     recipient: ChainAddress,
     amount: bigint,
     payload?: Uint8Array,
-  ): Promise<SolanaUnsignedTransaction> {
+  ): Promise<SolanaUnsignedTransaction<N, C>> {
     //  https://github.com/wormhole-foundation/wormhole-connect/blob/development/sdk/src/contexts/solana/context.ts#L245
 
     const senderAddress = new SolanaAddress(sender).unwrap();
@@ -383,7 +381,7 @@ export class SolanaTokenBridge<
     token: AnySolanaAddress | 'native',
     amount: bigint,
     payload?: Uint8Array,
-  ): AsyncGenerator<SolanaUnsignedTransaction> {
+  ): AsyncGenerator<SolanaUnsignedTransaction<N, C>> {
     // TODO: payer vs sender?? can caller add diff payer later?
 
     if (token === 'native') {
@@ -503,7 +501,7 @@ export class SolanaTokenBridge<
     sender: AnySolanaAddress,
     vaa: TokenBridge.VAA<'Transfer' | 'TransferWithPayload'>,
     unwrapNative: boolean = true,
-  ): AsyncGenerator<SolanaUnsignedTransaction> {
+  ): AsyncGenerator<SolanaUnsignedTransaction<N, C>> {
     // TODO: unwrapNative? check if vaa.payload.token.address is native Sol
 
     const { blockhash } = await this.connection.getLatestBlockhash();
@@ -556,11 +554,11 @@ export class SolanaTokenBridge<
     txReq: Transaction,
     description: string,
     parallelizable: boolean = false,
-  ): SolanaUnsignedTransaction {
+  ): SolanaUnsignedTransaction<N, C> {
     return new SolanaUnsignedTransaction(
       txReq,
       this.network,
-      'Solana',
+      this.chain,
       description,
       parallelizable,
     );

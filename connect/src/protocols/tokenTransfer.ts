@@ -1,4 +1,4 @@
-import { encoding } from "@wormhole-foundation/sdk-base";
+import { Network, encoding } from "@wormhole-foundation/sdk-base";
 import {
   Signer,
   TokenBridge,
@@ -16,8 +16,8 @@ import { TokenTransferDetails, isTokenTransferDetails } from "../types";
 import { Wormhole } from "../wormhole";
 import { AttestationId, TransferState, WormholeTransfer } from "../wormholeTransfer";
 
-export class TokenTransfer implements WormholeTransfer {
-  private readonly wh: Wormhole;
+export class TokenTransfer<N extends Network> implements WormholeTransfer {
+  private readonly wh: Wormhole<N>;
 
   // state machine tracker
   private state: TransferState;
@@ -35,7 +35,7 @@ export class TokenTransfer implements WormholeTransfer {
     vaa?: TokenBridge.VAA<"Transfer" | "TransferWithPayload">;
   }[];
 
-  private constructor(wh: Wormhole, transfer: TokenTransferDetails) {
+  private constructor(wh: Wormhole<N>, transfer: TokenTransferDetails) {
     if (transfer.payload && transfer.automatic)
       throw new Error("Payload with automatic delivery is not supported");
 
@@ -97,18 +97,25 @@ export class TokenTransfer implements WormholeTransfer {
   }
 
   // Static initializers for in flight transfers that have not been completed
-  static async from(wh: Wormhole, from: TokenTransferDetails): Promise<TokenTransfer>;
-  static async from(
-    wh: Wormhole,
+  static async from<N extends Network>(
+    wh: Wormhole<N>,
+    from: TokenTransferDetails,
+  ): Promise<TokenTransfer<N>>;
+  static async from<N extends Network>(
+    wh: Wormhole<N>,
     from: WormholeMessageId,
     timeout?: number,
-  ): Promise<TokenTransfer>;
-  static async from(wh: Wormhole, from: TransactionId, timeout?: number): Promise<TokenTransfer>;
-  static async from(
-    wh: Wormhole,
+  ): Promise<TokenTransfer<N>>;
+  static async from<N extends Network>(
+    wh: Wormhole<N>,
+    from: TransactionId,
+    timeout?: number,
+  ): Promise<TokenTransfer<N>>;
+  static async from<N extends Network>(
+    wh: Wormhole<N>,
     from: TokenTransferDetails | WormholeMessageId | TransactionId,
     timeout: number = 6000,
-  ): Promise<TokenTransfer> {
+  ): Promise<TokenTransfer<N>> {
     if (isTokenTransferDetails(from)) {
       // Bit of (temporary) hackery until solana contracts support being
       // sent a VAA with the primary address
@@ -120,7 +127,7 @@ export class TokenTransfer implements WormholeTransfer {
       return new TokenTransfer(wh, from);
     }
 
-    let tt: TokenTransfer;
+    let tt: TokenTransfer<N>;
     if (isWormholeMessageId(from)) {
       tt = await TokenTransfer.fromIdentifier(wh, from, timeout);
     } else if (isTransactionIdentifier(from)) {
@@ -133,11 +140,11 @@ export class TokenTransfer implements WormholeTransfer {
   }
 
   // init from the seq id
-  private static async fromIdentifier(
-    wh: Wormhole,
+  private static async fromIdentifier<N extends Network>(
+    wh: Wormhole<N>,
     id: WormholeMessageId,
     timeout?: number,
-  ): Promise<TokenTransfer> {
+  ): Promise<TokenTransfer<N>> {
     const vaa = await TokenTransfer.getTransferVaa(wh, id, timeout);
 
     const { chain, address } = vaa.payload.to;
@@ -170,11 +177,11 @@ export class TokenTransfer implements WormholeTransfer {
     return tt;
   }
 
-  private static async fromTransaction(
-    wh: Wormhole,
+  private static async fromTransaction<N extends Network>(
+    wh: Wormhole<N>,
     from: TransactionId,
     timeout: number,
-  ): Promise<TokenTransfer> {
+  ): Promise<TokenTransfer<N>> {
     const msg = await TokenTransfer.getTransferMessage(wh, from, timeout);
     const tt = await TokenTransfer.fromIdentifier(wh, msg, timeout);
     tt.txids = [from];
@@ -199,7 +206,7 @@ export class TokenTransfer implements WormholeTransfer {
 
     const fromChain = this.wh.getChain(this.transfer.from.chain);
 
-    let xfer: AsyncGenerator<UnsignedTransaction>;
+    let xfer: AsyncGenerator<UnsignedTransaction<N>>;
     if (this.transfer.automatic) {
       const tb = await fromChain.getAutomaticTokenBridge();
       const fee = await tb.getRelayerFee(
@@ -227,7 +234,7 @@ export class TokenTransfer implements WormholeTransfer {
       );
     }
 
-    this.txids = await signSendWait(fromChain, xfer, signer);
+    this.txids = await signSendWait<N, typeof fromChain.chain>(fromChain, xfer, signer);
     this.state = TransferState.Initiated;
     return this.txids.map(({ txid }) => txid);
   }
@@ -287,7 +294,7 @@ export class TokenTransfer implements WormholeTransfer {
     const { vaa } = this.vaas[0];
     if (!vaa) throw new Error(`No VAA found for ${this.vaas[0].id.sequence}`);
 
-    let xfer: AsyncGenerator<UnsignedTransaction>;
+    let xfer: AsyncGenerator<UnsignedTransaction<N>>;
     if (this.transfer.automatic) {
       if (vaa.payloadName === "Transfer")
         throw new Error("VAA is a simple transfer but expected Payload for automatic delivery");
@@ -299,13 +306,13 @@ export class TokenTransfer implements WormholeTransfer {
       xfer = tb.redeem(signerAddress, vaa);
     }
 
-    const redeemTxids = await signSendWait(toChain, xfer, signer);
+    const redeemTxids = await signSendWait<N, typeof toChain.chain>(toChain, xfer, signer);
     this.txids.push(...redeemTxids);
     return redeemTxids.map(({ txid }) => txid);
   }
 
-  static async getTransferMessage(
-    wh: Wormhole,
+  static async getTransferMessage<N extends Network>(
+    wh: Wormhole<N>,
     tx: TransactionId,
     timeout?: number,
   ): Promise<WormholeMessageId> {
@@ -315,8 +322,8 @@ export class TokenTransfer implements WormholeTransfer {
     return msgs[0];
   }
 
-  static async getTransferVaa(
-    wh: Wormhole,
+  static async getTransferVaa<N extends Network>(
+    wh: Wormhole<N>,
     whm: WormholeMessageId,
     timeout?: number,
   ): Promise<TokenBridge.VAA<"Transfer" | "TransferWithPayload">> {

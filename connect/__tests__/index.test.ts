@@ -1,10 +1,9 @@
 import * as publicRpcMock from "./mocks/publicrpc"; // Should be first
+
 import { describe, expect, test } from '@jest/globals';
 import {
-  Chain,
-  Network,
   Platform,
-  platform,
+  platform
 } from "@wormhole-foundation/sdk-base";
 import {
   ChainContext,
@@ -14,53 +13,54 @@ import {
 } from "@wormhole-foundation/sdk-definitions";
 import { Wormhole, networkPlatformConfigs } from "../src";
 
-const network: Network = "Testnet";
-const allPlatformCtrs = platform.platforms.map((p) => testing.mocks.mockPlatformFactory(network, p, networkPlatformConfigs(network, p)));
+const network: 'Testnet' = "Testnet";
+type TNet = typeof network
+const allPlatformCtrs = platform.platforms.map((p) => testing.mocks.mockPlatformFactory(p, networkPlatformConfigs(network, p)));
 
 describe("Wormhole Tests", () => {
-  let wh: Wormhole;
+  let wh: Wormhole<TNet>;
   beforeEach(() => {
     wh = new Wormhole(network, allPlatformCtrs);
   });
 
-  let p: PlatformContext<Network, Platform>;
+  let p: PlatformContext<TNet, any>;
   test("returns Platform", async () => {
     p = wh.getPlatform("Evm");
     expect(p).toBeTruthy();
   });
 
-  let c: ChainContext<Network, Platform, Chain>;
+  let c: ChainContext<TNet, 'Evm', 'Ethereum'>;
   test("returns chain", async () => {
     c = wh.getChain("Ethereum");
     expect(c).toBeTruthy();
   });
 
   describe("getVaaBytes", () => {
-    test("returns vaa bytes", async () => {
+    test("returns vaa bytes", async function () {
       const vaa = await wh.getVaaBytes(
         "Arbitrum",
-        testing.utils.makeChainAddress("Arbitrum").address,
+        testing.utils.makeUniversalAddress("Arbitrum"),
         1n,
       );
       expect(vaa).toBeDefined();
     });
 
-    test("returns undefined when vaa bytes not found", async () => {
+    test("returns undefined when vaa bytes not found", async function () {
       publicRpcMock.givenSignedVaaNotFound();
       const vaa = await wh.getVaaBytes(
         "Aptos",
-        testing.utils.makeChainAddress("Aptos").address,
+        testing.utils.makeUniversalAddress("Aptos"),
         1n,
         1,
       );
       expect(vaa).toBeUndefined();
     });
 
-    test("returns after first try fails", async () => {
+    test("returns after first try fails", async function () {
       publicRpcMock.givenSignedVaaRequestWorksAfterRetry();
       const vaa = await wh.getVaaBytes(
         "Base",
-        testing.utils.makeChainAddress("Base").address,
+        testing.utils.makeUniversalAddress("Base"),
         1n,
       );
       expect(vaa).toBeDefined();
@@ -69,7 +69,7 @@ describe("Wormhole Tests", () => {
 });
 
 describe("Platform Tests", () => {
-  let p: PlatformContext<Network, Platform>;
+  let p: PlatformContext<"Testnet", "Evm">;
   beforeEach(() => {
     const wh = new Wormhole(network, allPlatformCtrs);
     p = wh.getPlatform("Evm");
@@ -83,7 +83,7 @@ describe("Platform Tests", () => {
 });
 
 describe("Chain Tests", () => {
-  let c: ChainContext<Network, Platform, Chain>;
+  let c: ChainContext<"Testnet", "Evm", "Ethereum">;
   beforeEach(() => {
     const wh = new Wormhole(network, allPlatformCtrs);
     c = wh.getChain("Ethereum");

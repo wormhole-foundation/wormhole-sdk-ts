@@ -1,23 +1,20 @@
-import { Chain, Network, Platform, PlatformToChains } from "@wormhole-foundation/sdk-base";
+import {
+  Chain,
+  Network,
+  Platform,
+  PlatformToChains,
+  ProtocolName,
+} from "@wormhole-foundation/sdk-base";
 
+import { TokenAddress } from "./address";
 import { WormholeMessageId } from "./attestation";
 import { PlatformContext, PlatformUtils } from "./platform";
-import {
-  AutomaticCircleBridge,
-  CircleBridge,
-  supportsAutomaticCircleBridge,
-  supportsCircleBridge,
-} from "./protocols/cctp";
-import { IbcBridge, supportsIbcBridge } from "./protocols/ibc";
-import {
-  AutomaticTokenBridge,
-  TokenBridge,
-  supportsAutomaticTokenBridge,
-  supportsTokenBridge,
-} from "./protocols/tokenBridge";
+import { AutomaticCircleBridge, CircleBridge } from "./protocols/cctp";
+import { IbcBridge } from "./protocols/ibc";
+import { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge";
+import { protocolIsRegistered } from "./protocol";
 import { RpcConnection } from "./rpc";
 import { ChainConfig, SignedTx } from "./types";
-import { TokenAddress } from "./address";
 
 export abstract class ChainContext<
   N extends Network,
@@ -34,11 +31,11 @@ export abstract class ChainContext<
 
   // Cached Protocol clients
   protected rpc?: RpcConnection<P>;
-  protected tokenBridge?: TokenBridge<P, C>;
-  protected autoTokenBridge?: AutomaticTokenBridge<P, C>;
-  protected circleBridge?: CircleBridge<P, C>;
-  protected autoCircleBridge?: AutomaticCircleBridge<P, C>;
-  protected ibcBridge?: IbcBridge<P, C>;
+  protected tokenBridge?: TokenBridge<N, P, C>;
+  protected autoTokenBridge?: AutomaticTokenBridge<N, P, C>;
+  protected circleBridge?: CircleBridge<N, P, C>;
+  protected autoCircleBridge?: AutomaticCircleBridge<N, P, C>;
+  protected ibcBridge?: IbcBridge<N, P, C>;
 
   constructor(chain: C, platform: PlatformContext<N, P>) {
     this.config = platform.config[chain];
@@ -81,9 +78,12 @@ export abstract class ChainContext<
   // protocols
   //
   //
+  supportsProtocol(protocolName: ProtocolName): boolean {
+    return protocolIsRegistered(this.chain, protocolName);
+  }
 
-  supportsTokenBridge = () => supportsTokenBridge<P>(this.platform);
-  async getTokenBridge(): Promise<TokenBridge<P, C>> {
+  supportsTokenBridge = () => this.supportsProtocol("TokenBridge");
+  async getTokenBridge(): Promise<TokenBridge<N, P, C>> {
     this.tokenBridge = this.tokenBridge
       ? this.tokenBridge
       : await this.platform.getProtocol("TokenBridge", await this.getRpc());
@@ -91,8 +91,8 @@ export abstract class ChainContext<
   }
 
   //
-  supportsAutomaticTokenBridge = () => supportsAutomaticTokenBridge<P>(this.platform);
-  async getAutomaticTokenBridge(): Promise<AutomaticTokenBridge<P, C>> {
+  supportsAutomaticTokenBridge = () => this.supportsProtocol("AutomaticTokenBridge");
+  async getAutomaticTokenBridge(): Promise<AutomaticTokenBridge<N, P, C>> {
     this.autoTokenBridge = this.autoTokenBridge
       ? this.autoTokenBridge
       : await this.platform.getProtocol("AutomaticTokenBridge", await this.getRpc());
@@ -100,8 +100,8 @@ export abstract class ChainContext<
   }
 
   //
-  supportsCircleBridge = () => supportsCircleBridge<P>(this.platform);
-  async getCircleBridge(): Promise<CircleBridge<P, C>> {
+  supportsCircleBridge = () => this.supportsProtocol("CircleBridge");
+  async getCircleBridge(): Promise<CircleBridge<N, P, C>> {
     this.circleBridge = this.circleBridge
       ? this.circleBridge
       : await this.platform.getProtocol("CircleBridge", await this.getRpc());
@@ -109,8 +109,8 @@ export abstract class ChainContext<
   }
 
   //
-  supportsAutomaticCircleBridge = () => supportsAutomaticCircleBridge<P>(this.platform);
-  async getAutomaticCircleBridge(): Promise<AutomaticCircleBridge<P, C>> {
+  supportsAutomaticCircleBridge = () => this.supportsProtocol("AutomaticCircleBridge");
+  async getAutomaticCircleBridge(): Promise<AutomaticCircleBridge<N, P, C>> {
     this.autoCircleBridge = this.autoCircleBridge
       ? this.autoCircleBridge
       : await this.platform.getProtocol("AutomaticCircleBridge", await this.getRpc());
@@ -118,8 +118,8 @@ export abstract class ChainContext<
   }
 
   //
-  supportsIbcBridge = () => supportsIbcBridge<P>(this.platform);
-  async getIbcBridge(): Promise<IbcBridge<P, C>> {
+  supportsIbcBridge = () => this.supportsProtocol("IbcBridge");
+  async getIbcBridge(): Promise<IbcBridge<N, P, C>> {
     this.ibcBridge = this.ibcBridge
       ? this.ibcBridge
       : await this.platform.getProtocol("IbcBridge", await this.getRpc());

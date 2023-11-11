@@ -13,11 +13,11 @@ import { Balances, ChainsConfig, SignedTx, TokenId, TxHash } from "./types";
 import { ProtocolInitializer } from "./protocol";
 
 // Utilities for a given Platform. These should be implemented as static methods on the Platform class
-export interface PlatformUtils<N extends Network, P extends Platform = Platform> {
+export interface PlatformUtils<N extends Network, P extends Platform> {
   _platform: P;
 
   // Initialize a new PlatformContext object
-  fromNetworkConfig(network: N, config?: ChainsConfig<N, P>): PlatformContext<N, P>;
+  new (network: N, config?: ChainsConfig<N, P>): PlatformContext<N, P>;
 
   // Get a protocol name
   getProtocolInitializer<PN extends ProtocolName>(protocol: PN): ProtocolInitializer<P, PN>;
