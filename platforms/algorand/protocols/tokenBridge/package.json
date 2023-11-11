@@ -1,5 +1,5 @@
 {
-  "name": "@wormhole-foundation/connect-sdk-algorand",
+  "name": "@wormhole-foundation/connect-sdk-algorand-tokenbridge",
   "version": "0.1.8-beta.11",
   "repository": {
     "type": "git",
@@ -55,6 +55,7 @@
   },
   "dependencies": {
     "@wormhole-foundation/connect-sdk": "*",
-    "algosdk": "^2.7.0"
+    "algosdk": "^2.7.0",
+    "ethers": "^6.5.1"
   }
 }

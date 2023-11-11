@@ -48,9 +48,9 @@ export namespace TokenBridge {
 
 export interface TokenBridge<P extends PlatformName> {
   // checks a native address to see if its a wrapped version
-  isWrappedAsset(nativeAddress: AnyAddress): Promise<boolean>;
+  isWrappedAsset(nativeAddress: AnyAddress | bigint): Promise<boolean>;
   // returns the original asset with its foreign chain
-  getOriginalAsset(nativeAddress: AnyAddress): Promise<TokenId>;
+  getOriginalAsset(nativeAddress: AnyAddress | bigint): Promise<TokenId>;
   // returns the wrapped version of the native asset
   getWrappedNative(): Promise<NativeAddress<P>>;
   // Check to see if a foreign token has a wrapped version
@@ -65,7 +65,7 @@ export interface TokenBridge<P extends PlatformName> {
   // the token that may be submitted to a Token bridge on another chain 
   // to allow it to create a wrapped version of the token
   createAttestation(
-    token_to_attest: AnyAddress,
+    token_to_attest: AnyAddress | bigint,
     payer?: AnyAddress
   ): AsyncGenerator<UnsignedTransaction>;
   // Submit the Token Attestation VAA to the Token bridge
@@ -78,7 +78,7 @@ export interface TokenBridge<P extends PlatformName> {
   transfer(
     sender: AnyAddress,
     recipient: ChainAddress,
-    token: AnyAddress,
+    token: AnyAddress | bigint,
     amount: bigint,
     payload?: Uint8Array
   ): AsyncGenerator<UnsignedTransaction>;
