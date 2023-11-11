@@ -3,7 +3,6 @@ import {
   ChainsConfig,
   DEFAULT_NETWORK,
   Network,
-  Platform,
   ProtocolInitializer,
   ProtocolName,
   TokenBridge,
@@ -16,9 +15,6 @@ import { AlgorandChain } from './chain';
 import { Algodv2 } from 'algosdk';
 import { AlgorandUtils } from './platformUtils';
 
-// forces AlgorandPlatform to implement Platform
-var _: Platform<'Algorand'> = AlgorandPlatform;
-
 /**
  * @category Algorand
  */
@@ -26,7 +22,7 @@ export module AlgorandPlatform {
   export const platform = 'Algorand';
   export type Type = typeof platform;
   export let network: Network = DEFAULT_NETWORK;
-  export let conf: ChainsConfig = networkPlatformConfigs(network, platform);
+  export let config: ChainsConfig = networkPlatformConfigs(network, platform);
 
   export const {
     nativeTokenId,
@@ -43,20 +39,20 @@ export module AlgorandPlatform {
 
   export function setConfig(
     _network: Network,
-    _conf?: ChainsConfig,
+    _config?: ChainsConfig,
   ): typeof AlgorandPlatform {
-    conf = _conf ? _conf : networkPlatformConfigs(network, platform);
+    config = _config ? _config : networkPlatformConfigs(network, platform);
     network = _network;
     return AlgorandPlatform;
   }
 
   export function getRpc(chain: ChainName): Algodv2 {
-    const rpcAddress = conf[chain]!.rpc;
+    const rpcAddress = config[chain]!.rpc;
     return new Algodv2('', rpcAddress, '');
   }
 
   export function getChain(chain: ChainName): AlgorandChain {
-    if (chain in conf) return new AlgorandChain(conf[chain]!);
+    if (chain in config) return new AlgorandChain(config[chain]!);
     throw new Error('No configuration available for chain: ' + chain);
   }
 
@@ -69,13 +65,13 @@ export module AlgorandPlatform {
   export async function getWormholeCore(
     rpc: Algodv2,
   ): Promise<WormholeCore<'Algorand'>> {
-    return getProtocol('WormholeCore').fromRpc(rpc, conf);
+    return getProtocol('WormholeCore').fromRpc(rpc, config);
   }
 
   export async function getTokenBridge(
     rpc: Algodv2,
   ): Promise<TokenBridge<'Algorand'>> {
-    return getProtocol('TokenBridge').fromRpc(rpc, conf);
+    return getProtocol('TokenBridge').fromRpc(rpc, config);
   }
 
   export async function parseTransaction(

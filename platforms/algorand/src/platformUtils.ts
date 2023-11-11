@@ -7,7 +7,6 @@ import {
   Network,
   PlatformToChains,
   nativeDecimals,
-  PlatformUtils,
   chainToPlatform,
   Balances,
 } from '@wormhole-foundation/connect-sdk';
@@ -20,10 +19,7 @@ import {
   Version,
 } from 'algosdk/dist/types/client/v2/algod/models/types';
 import { algorandGenesisHashToNetworkChainPair } from './constants';
-import { AnyAlgorandAddress } from '../dist/cjs';
-
-// forces AlgorandUtils to implement PlatformUtils
-var _: PlatformUtils<'Algorand'> = AlgorandUtils;
+import { AnyAlgorandAddress } from './types';
 
 /**
  * @category Algorand

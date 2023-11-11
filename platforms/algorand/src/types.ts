@@ -5,4 +5,9 @@ import {
 
 export type AlgorandChainName = PlatformToChains<'Algorand'>;
 export type UniversalOrAlgorand = UniversalOrNative<'Algorand'>;
-export type AnyAlgorandAddress = UniversalOrAlgorand | string | Uint8Array;
+export type AnyAlgorandAddress =
+  | UniversalOrAlgorand
+  | string
+  | number
+  | bigint
+  | Uint8Array;

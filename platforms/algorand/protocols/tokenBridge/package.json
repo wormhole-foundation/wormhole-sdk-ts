@@ -10,7 +10,7 @@
   },
   "homepage": "https://github.com/wormhole-foundation/connect-sdk#readme",
   "directories": {
-    "test": "tests"
+    "test": "__tests__"
   },
   "license": "Apache-2.0",
   "main": "./dist/cjs/index.js",
@@ -53,6 +53,7 @@
     "typescript": "5.1.6"
   },
   "dependencies": {
-    "@wormhole-foundation/connect-sdk": "*"
+    "@wormhole-foundation/connect-sdk": "*",
+    "ethers": "^6.8.1"
   }
 }
