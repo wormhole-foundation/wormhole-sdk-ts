@@ -11,6 +11,7 @@ import {
 import { getCosmwasmSigner } from "@wormhole-foundation/connect-sdk-cosmwasm/src/testing";
 import { getEvmSigner } from "@wormhole-foundation/connect-sdk-evm/src/testing";
 import { getSolanaSigner } from "@wormhole-foundation/connect-sdk-solana/src/testing";
+import { getAlgorandSigner } from "@wormhole-foundation/connect-sdk-algorand/src/testing";
 
 // read in from `.env`
 require("dotenv").config();
@@ -44,6 +45,9 @@ export async function getStuff(chain: ChainContext<PlatformName>): Promise<Trans
       break;
     case "Evm":
       signer = await getEvmSigner(await chain.getRpc(), getEnv("ETH_PRIVATE_KEY"));
+      break;
+    case "Algorand":
+      signer = await getAlgorandSigner(await chain.getRpc(), getEnv("ALGO_MNEMONIC"));
       break;
     default:
       throw new Error("Unrecognized platform: " + chain.platform.platform);
