@@ -54,6 +54,7 @@ export module AlgorandUtils {
     rpc: Algodv2,
     token: AnyAlgorandAddress | 'native',
   ): Promise<bigint> {
+    console.log('Token: ', token);
     if (token === 'native') return nativeDecimals(AlgorandPlatform.platform);
     const asaId = anyAlgorandAddressToAsaId(token);
     const { params } = await rpc.getAssetByID(asaId).do();

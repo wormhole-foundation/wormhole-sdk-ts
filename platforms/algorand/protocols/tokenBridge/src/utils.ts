@@ -185,7 +185,7 @@ export async function getOriginalAssetAlgorand(
   const dls = await decodeLocalState(client, tokenBridgeId, lsa);
   const dlsBuffer: Buffer = Buffer.from(dls);
   retVal.chainId = dlsBuffer.readInt16BE(92) as ChainId;
-  // QUESTION: Is this the right way to resolve the deprecated .slice() method?
+  // QUESTIONBW: Is this the right way to resolve the deprecated .slice() method?
   // retVal.assetAddress = new Uint8Array(dlsBuffer.slice(60, 60 + 32));
   retVal.assetAddress = new Uint8Array(dlsBuffer.subarray(60, 60 + 32));
   return retVal;
@@ -877,8 +877,8 @@ export async function submitVAAHeader(
   // A lot of our logic here depends on parseVAA and knowing what the payload is..
   const parsedVAA = _parseVAAAlgorand(vaa);
   const seq: bigint = parsedVAA.sequence / BigInt(MAX_BITS);
-  const chainRaw: string = parsedVAA.chainRaw; // TODO: this needs to be a hex string
-  const em: string = parsedVAA.emitter; // TODO: this needs to be a hex string
+  const chainRaw: string = parsedVAA.chainRaw; // QUESTIONBW: Does this need to be a hex string?  Comment was in wormhole-sdk
+  const em: string = parsedVAA.emitter; // QUESTIONBW: Does this need to be a hex string?  Comment was in wormhole-sdk
   const index: number = parsedVAA.index;
 
   let txs: TransactionSignerPair[] = [];
@@ -1321,6 +1321,7 @@ export async function transferFromAlgorand(
   let wormhole: boolean = false;
   if (assetId !== BigInt(0)) {
     const assetInfo: Record<string, any> = await client
+      // TODOBW: This fails when the assetId is zero for native, I think
       .getAssetByID(safeBigIntToNumber(assetId))
       .do();
     creator = assetInfo['params']['creator'];
@@ -1509,7 +1510,7 @@ export function textToUint8Array(name: string): Uint8Array {
   return new Uint8Array(Buffer.from(name, 'binary'));
 }
 
-// TODO: This can probably be replaced by something from the platform(Utils)
+// TODOBW: This can probably be replaced by something from the platform(Utils)
 export async function signSendAndConfirmAlgorand(
   algodClient: Algodv2,
   txs: TransactionSignerPair[],

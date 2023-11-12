@@ -11,7 +11,7 @@ export const CHAIN_ID_ALGORAND = 8;
 const networkChainAlgorandGenesisHashes = [
   ['Mainnet', [['Algorand', 'wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8=']]],
   ['Testnet', [['Algorand', 'SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=']]], // Note: this is referred to as `devnet` in sol
-  ['Devnet', [['Algorand', '']]], // Note: this is only for local testing with Tilt QUESTION: Is there a deterministic genesis has for the localnet Tilt creates?
+  ['Devnet', [['Algorand', '']]], // Note: this is only for local testing with Tilt QUESTIONBW: Is there a deterministic genesis has for the localnet Tilt creates?
 ] as const satisfies RoArray<
   readonly [Network, RoArray<readonly [ChainName, string]>]
 >;
