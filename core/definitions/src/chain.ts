@@ -60,8 +60,11 @@ export abstract class ChainContext<
     return this.platformUtils.getBalance(this.chain, await this.getRpc(), walletAddr, token);
   }
 
-  async getCurrentBlock(): Promise<number> {
-    return this.platformUtils.getCurrentBlock(this.getRpc());
+  async getLatestBlock(): Promise<number> {
+    return this.platformUtils.getLatestBlock(this.getRpc());
+  }
+  async getLatestFinalizedBlock(): Promise<number> {
+    return this.platformUtils.getLatestFinalizedBlock(this.getRpc());
   }
 
   // Get details about the transaction

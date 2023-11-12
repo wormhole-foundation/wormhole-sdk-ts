@@ -15,6 +15,7 @@ import { ProtocolInitializer } from "./protocol";
 // PlatformUtils represents the _static_ attributes available on
 // the PlatformContext Class
 export interface PlatformUtils<N extends Network, P extends Platform> {
+  // Value for the Platform so we can access it at runtime
   _platform: P;
 
   // Initialize a new PlatformContext object
@@ -64,9 +65,12 @@ export interface PlatformUtils<N extends Network, P extends Platform> {
   ): Promise<Balances>;
 
   // Look up the latest block
-  getCurrentBlock(rpc: RpcConnection<P>): Promise<number>;
+  getLatestBlock(rpc: RpcConnection<P>): Promise<number>;
+  getLatestFinalizedBlock(rpc: RpcConnection<P>): Promise<number>;
 
-  // Platform interaction utils
+  // Send a set of signed transactions over RPC and wait for
+  // them to be accepted and confirmed
+  // Note: this does not mean the transaction is _final_
   sendWait<C extends PlatformToChains<P>>(
     chain: C,
     rpc: RpcConnection<P>,

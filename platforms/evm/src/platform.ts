@@ -166,8 +166,11 @@ export class EvmPlatform<N extends Network> extends PlatformContext<
     return txhashes;
   }
 
-  static async getCurrentBlock(rpc: Provider): Promise<number> {
+  static async getLatestBlock(rpc: Provider): Promise<number> {
     return await rpc.getBlockNumber();
+  }
+  static async getLatestFinalizedBlock(rpc: Provider): Promise<number> {
+    throw new Error('Not implemented');
   }
 
   // Look up the Wormhole Canonical Network and Chain from the EVM chainId

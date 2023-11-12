@@ -203,7 +203,11 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
     return txhashes;
   }
 
-  static async getCurrentBlock(rpc: Connection): Promise<number> {
+  static async getLatestBlock(rpc: Connection): Promise<number> {
+    return await rpc.getSlot(rpc.commitment);
+  }
+
+  static async getLatestFinalizedBlock(rpc: Connection): Promise<number> {
     return await rpc.getSlot(rpc.commitment);
   }
 

@@ -48,7 +48,6 @@ export module CosmwasmPlatform {
     getBalance,
     getBalances,
     sendWait,
-    getCurrentBlock,
     chainFromChainId,
     chainFromRpc,
     getNativeDenom,

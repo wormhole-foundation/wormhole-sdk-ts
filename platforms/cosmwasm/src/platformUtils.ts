@@ -114,8 +114,11 @@ export module CosmwasmUtils {
     return txhashes;
   }
 
-  export async function getCurrentBlock(rpc: CosmWasmClient): Promise<number> {
+  export async function getLatestBlock(rpc: CosmWasmClient): Promise<number> {
     return rpc.getHeight();
+  }
+  export async function getLatestFinalizedBlock(rpc: CosmWasmClient): Promise<number> {
+    throw new Error("not implemented")
   }
 
   export function chainFromChainId(
