@@ -58,7 +58,7 @@ export class TokenTransfer implements WormholeTransfer {
       if (transfer.payload) throw new Error("Arbitrary payloads unsupported for Sei");
 
       // For sei, we reserve the payload for a token transfer through the sei bridge.
-      transfer.payload = encoding.toUint8Array(
+      transfer.payload = encoding.bytes.encode(
         JSON.stringify({
           basic_recipient: {
             recipient: encoding.b64.encode(transfer.to.address.toString()),

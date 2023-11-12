@@ -101,8 +101,8 @@ export module Gateway {
 
     const msg: GatewayTransferWithPayloadMsg | GatewayTransferMsg = payload
       ? ({
-          gateway_transfer_with_payload: { ...common, payload: payload },
-        } as GatewayTransferWithPayloadMsg)
+        gateway_transfer_with_payload: { ...common, payload: payload },
+      } as GatewayTransferWithPayloadMsg)
       : ({ gateway_transfer: { ...common } } as GatewayTransferMsg);
 
     return msg;
