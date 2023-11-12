@@ -1,5 +1,5 @@
-import { Network, PlatformToChains, RoArray, constMap } from "@wormhole-foundation/connect-sdk";
-import { CosmwasmChain } from "./types";
+import { Network, RoArray, constMap } from "@wormhole-foundation/connect-sdk";
+import { CosmwasmChains } from "./types";
 
 export const DEFAULT_FEE = 1_000_000;
 
@@ -35,7 +35,7 @@ const cosmwasmAddressPrefix = [
   ["Terra2", "terra"],
   ["Wormchain", "wormhole"],
   ["Xpla", "xpla"],
-] as const satisfies RoArray<readonly [PlatformToChains<"Cosmwasm">, string]>;
+] as const satisfies RoArray<readonly [CosmwasmChains, string]>;
 
 export const chainToAddressPrefix = constMap(cosmwasmAddressPrefix);
 export const addressPrefixToChain = constMap(cosmwasmAddressPrefix, [1, [0]]);
@@ -86,7 +86,7 @@ const cosmwasmNativeDenom = [
       ["Xpla", "uxpla"],
     ],
   ],
-] as const satisfies RoArray<readonly [Network, RoArray<readonly [CosmwasmChain, string]>]>;
+] as const satisfies RoArray<readonly [Network, RoArray<readonly [CosmwasmChains, string]>]>;
 
 export const chainToNativeDenoms = constMap(cosmwasmNativeDenom);
 export const nativeDenomToChain = constMap(cosmwasmNativeDenom, [[0, 2], [1]]);
@@ -113,11 +113,11 @@ const cosmwasmNetworkChainRestUrl = [
       ["Evmos", "https://localhost:1233"],
     ],
   ],
-] as const satisfies RoArray<readonly [Network, RoArray<readonly [CosmwasmChain, string]>]>;
+] as const satisfies RoArray<readonly [Network, RoArray<readonly [CosmwasmChains, string]>]>;
 
 export const cosmwasmNetworkChainToRestUrls = constMap(cosmwasmNetworkChainRestUrl);
 
-export type IbcChannels = Partial<Record<CosmwasmChain, string>>;
+export type IbcChannels = Partial<Record<CosmwasmChains, string>>;
 
 // For each chain, add the channel id for each other chain
 const gatewayConnections = [
@@ -138,9 +138,9 @@ const gatewayConnections = [
       ["Osmosis", { Wormchain: "channel-1" }],
     ],
   ],
-] as const satisfies RoArray<readonly [Network, RoArray<readonly [CosmwasmChain, IbcChannels]>]>;
+] as const satisfies RoArray<readonly [Network, RoArray<readonly [CosmwasmChains, IbcChannels]>]>;
 
 export const networkChainToChannels = constMap(gatewayConnections);
 
-export const evmLikeChains = ["Evmos", "Injective"] as const satisfies RoArray<CosmwasmChain>;
+export const evmLikeChains = ["Evmos", "Injective"] as const satisfies RoArray<CosmwasmChains>;
 export type CosmwasmEvmChain = (typeof evmLikeChains)[number];

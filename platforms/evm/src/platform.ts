@@ -208,7 +208,7 @@ export class EvmPlatform<N extends Network> extends PlatformContext<
 
   static getProtocolInitializer<PN extends ProtocolName>(
     protocol: PN,
-  ): ProtocolInitializer<typeof EvmPlatform._platform, PN> {
+  ): ProtocolInitializer<EvmPlatformType, PN> {
     return getProtocolInitializer(this._platform, protocol);
   }
 }
