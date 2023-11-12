@@ -1,40 +1,48 @@
-import { Chain, Platform } from "@wormhole-foundation/sdk-base";
+import {
+  Chain,
+  Network,
+  Platform,
+  PlatformToChains,
+  ProtocolName,
+} from "@wormhole-foundation/sdk-base";
 
-import { NativeAddress } from "./address";
+import { TokenAddress } from "./address";
 import { WormholeMessageId } from "./attestation";
-import { Platform } from "./platform";
-import {
-  AutomaticCircleBridge,
-  CircleBridge,
-  supportsAutomaticCircleBridge,
-  supportsCircleBridge,
-} from "./protocols/cctp";
-import { IbcBridge, supportsIbcBridge } from "./protocols/ibc";
-import {
-  AutomaticTokenBridge,
-  TokenBridge,
-  supportsAutomaticTokenBridge,
-  supportsTokenBridge,
-} from "./protocols/tokenBridge";
+import { PlatformContext, PlatformUtils } from "./platform";
+import { AutomaticCircleBridge, CircleBridge } from "./protocols/cctp";
+import { IbcBridge } from "./protocols/ibc";
+import { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge";
+import { protocolIsRegistered } from "./protocol";
 import { RpcConnection } from "./rpc";
 import { ChainConfig, SignedTx } from "./types";
-import { UniversalAddress } from "./universalAddress";
 
-export abstract class ChainContext<P extends Platform> {
-  abstract platform: Platform<P>;
+export abstract class ChainContext<
+  N extends Network,
+  P extends Platform,
+  C extends Chain = PlatformToChains<P>,
+> {
+  readonly network: N;
 
-  readonly chain: Chain;
+  readonly platform: PlatformContext<N, P>;
+  readonly platformUtils: PlatformUtils<N, P>;
+
+  readonly chain: C;
+  readonly config: ChainConfig<N, C>;
 
   // Cached Protocol clients
   protected rpc?: RpcConnection<P>;
-  protected tokenBridge?: TokenBridge<P>;
-  protected autoTokenBridge?: AutomaticTokenBridge<P>;
-  protected circleBridge?: CircleBridge<P>;
-  protected autoCircleBridge?: AutomaticCircleBridge<P>;
-  protected ibcBridge?: IbcBridge<P>;
+  protected tokenBridge?: TokenBridge<N, P, C>;
+  protected autoTokenBridge?: AutomaticTokenBridge<N, P, C>;
+  protected circleBridge?: CircleBridge<N, P, C>;
+  protected autoCircleBridge?: AutomaticCircleBridge<N, P, C>;
+  protected ibcBridge?: IbcBridge<N, P, C>;
 
-  constructor(readonly config: ChainConfig) {
-    this.chain = config.key;
+  constructor(chain: C, platform: PlatformContext<N, P>) {
+    this.config = platform.config[chain];
+    this.platform = platform;
+    this.platformUtils = platform.constructor as any as PlatformUtils<N, P>;
+    this.chain = this.config.key;
+    this.network = this.config.network;
   }
 
   getRpc(): Promise<RpcConnection<P>> {
@@ -43,20 +51,17 @@ export abstract class ChainContext<P extends Platform> {
   }
 
   // Get the number of decimals for a token
-  async getDecimals(token: NativeAddress<P> | UniversalAddress | "native"): Promise<bigint> {
-    return this.platform.getDecimals(this.chain, this.getRpc(), token);
+  async getDecimals(token: TokenAddress<C>): Promise<bigint> {
+    return this.platformUtils.getDecimals(this.chain, this.getRpc(), token);
   }
 
   // Get the balance of a token for a given address
-  async getBalance(
-    walletAddr: string,
-    token: NativeAddress<P> | UniversalAddress | "native",
-  ): Promise<bigint | null> {
-    return this.platform.getBalance(this.chain, await this.getRpc(), walletAddr, token);
+  async getBalance(walletAddr: string, token: TokenAddress<C>): Promise<bigint | null> {
+    return this.platformUtils.getBalance(this.chain, await this.getRpc(), walletAddr, token);
   }
 
   async getCurrentBlock(): Promise<number> {
-    return this.platform.getCurrentBlock(this.getRpc());
+    return this.platformUtils.getCurrentBlock(this.getRpc());
   }
 
   // Get details about the transaction
@@ -66,70 +71,58 @@ export abstract class ChainContext<P extends Platform> {
 
   // Send a transaction and wait for it to be confirmed
   async sendWait(stxns: SignedTx): Promise<string[]> {
-    return this.platform.sendWait(this.chain, await this.getRpc(), stxns);
+    return this.platformUtils.sendWait(this.chain, await this.getRpc(), stxns);
   }
 
   //
   // protocols
   //
   //
-  supportsTokenBridge = () => supportsTokenBridge<P>(this.platform);
-  async getTokenBridge(): Promise<TokenBridge<P>> {
-    if (!supportsTokenBridge<P>(this.platform))
-      throw new Error("Platform does not support TokenBridge");
+  supportsProtocol(protocolName: ProtocolName): boolean {
+    return protocolIsRegistered(this.chain, protocolName);
+  }
 
+  supportsTokenBridge = () => this.supportsProtocol("TokenBridge");
+  async getTokenBridge(): Promise<TokenBridge<N, P, C>> {
     this.tokenBridge = this.tokenBridge
       ? this.tokenBridge
-      : await this.platform.getTokenBridge(await this.getRpc());
-
+      : await this.platform.getProtocol("TokenBridge", await this.getRpc());
     return this.tokenBridge;
   }
 
   //
-  supportsAutomaticTokenBridge = () => supportsAutomaticTokenBridge<P>(this.platform);
-  async getAutomaticTokenBridge(): Promise<AutomaticTokenBridge<P>> {
-    if (!supportsAutomaticTokenBridge<P>(this.platform))
-      throw new Error("Platform does not support AutomaticTokenBridge");
-
+  supportsAutomaticTokenBridge = () => this.supportsProtocol("AutomaticTokenBridge");
+  async getAutomaticTokenBridge(): Promise<AutomaticTokenBridge<N, P, C>> {
     this.autoTokenBridge = this.autoTokenBridge
       ? this.autoTokenBridge
-      : await this.platform.getAutomaticTokenBridge(await this.getRpc());
+      : await this.platform.getProtocol("AutomaticTokenBridge", await this.getRpc());
     return this.autoTokenBridge;
   }
 
   //
-  supportsCircleBridge = () => supportsCircleBridge<P>(this.platform);
-  async getCircleBridge(): Promise<CircleBridge<P>> {
-    if (!supportsCircleBridge<P>(this.platform))
-      throw new Error("Platform does not support CircleBridge");
-
+  supportsCircleBridge = () => this.supportsProtocol("CircleBridge");
+  async getCircleBridge(): Promise<CircleBridge<N, P, C>> {
     this.circleBridge = this.circleBridge
       ? this.circleBridge
-      : await this.platform.getCircleBridge(await this.getRpc());
+      : await this.platform.getProtocol("CircleBridge", await this.getRpc());
     return this.circleBridge;
   }
 
   //
-  supportsAutomaticCircleBridge = () => supportsAutomaticCircleBridge<P>(this.platform);
-  async getAutomaticCircleBridge(): Promise<AutomaticCircleBridge<P>> {
-    if (!supportsAutomaticCircleBridge<P>(this.platform))
-      throw new Error("Platform does not support AutomaticCircleBridge");
-
+  supportsAutomaticCircleBridge = () => this.supportsProtocol("AutomaticCircleBridge");
+  async getAutomaticCircleBridge(): Promise<AutomaticCircleBridge<N, P, C>> {
     this.autoCircleBridge = this.autoCircleBridge
       ? this.autoCircleBridge
-      : await this.platform.getAutomaticCircleBridge(await this.getRpc());
+      : await this.platform.getProtocol("AutomaticCircleBridge", await this.getRpc());
     return this.autoCircleBridge;
   }
 
   //
-  supportsIbcBridge = () => supportsIbcBridge<P>(this.platform);
-  async getIbcBridge(): Promise<IbcBridge<P>> {
-    if (!supportsIbcBridge<P>(this.platform))
-      throw new Error("Platform does not support AutomaticCircleBridge");
-
+  supportsIbcBridge = () => this.supportsProtocol("IbcBridge");
+  async getIbcBridge(): Promise<IbcBridge<N, P, C>> {
     this.ibcBridge = this.ibcBridge
       ? this.ibcBridge
-      : await this.platform.getIbcBridge(await this.getRpc());
+      : await this.platform.getProtocol("IbcBridge", await this.getRpc());
     return this.ibcBridge;
   }
 }

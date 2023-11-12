@@ -1,3 +1,4 @@
+import { Network, Platform } from "@wormhole-foundation/sdk-base";
 import {
   ChainAddress,
   ChainsConfig,
@@ -6,10 +7,10 @@ import {
   WormholeMessageId,
 } from "@wormhole-foundation/sdk-definitions";
 
-export type WormholeConfig = {
+export type WormholeConfig<N extends Network = Network, P extends Platform = Platform> = {
   api: string;
   circleAPI: string;
-  chains: ChainsConfig;
+  chains: ChainsConfig<N, P>;
 };
 
 export type TokenTransferDetails = {

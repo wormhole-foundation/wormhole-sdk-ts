@@ -49,11 +49,7 @@ export class CosmwasmWormholeCore implements WormholeCore<"Cosmwasm"> {
   }
 
   // TODO: make consts
-  static parseWormholeMessage(
-    chain: Chain,
-    coreAddress: string,
-    tx: IndexedTx,
-  ): WormholeMessageId {
+  static parseWormholeMessage(chain: Chain, coreAddress: string, tx: IndexedTx): WormholeMessageId {
     const events = tx.events.filter(
       (ev) =>
         ev.type === "wasm" &&

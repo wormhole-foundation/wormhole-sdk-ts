@@ -7,43 +7,43 @@ const chainsAndChainIdEntries = [
   //  * avoids awkward "chain but not 'Unset'" checks
   //  * "off" is not a TV channel either
   //Instead we'll use `null` for chain and 0 as the chainId where appropriate (e.g. governance VAAs)
-  ["Solana",       1],
-  ["Ethereum",     2],
-  ["Terra",        3],
-  ["Bsc",          4],
-  ["Polygon",      5],
-  ["Avalanche",    6],
-  ["Oasis",        7],
-  ["Algorand",     8],
-  ["Aurora",       9],
-  ["Fantom",      10],
-  ["Karura",      11],
-  ["Acala",       12],
-  ["Klaytn",      13],
-  ["Celo",        14],
-  ["Near",        15],
-  ["Moonbeam",    16],
-  ["Neon",        17],
-  ["Terra2",      18],
-  ["Injective",   19],
-  ["Osmosis",     20],
-  ["Sui",         21],
-  ["Aptos",       22],
-  ["Arbitrum",    23],
-  ["Optimism",    24],
-  ["Gnosis",      25],
-  ["Pythnet",     26],
-  ["Xpla",        28],
-  ["Btc",         29],
-  ["Base",        30],
-  ["Sei",         32],
-  ["Rootstock",   33],
+  ["Solana", 1],
+  ["Ethereum", 2],
+  ["Terra", 3],
+  ["Bsc", 4],
+  ["Polygon", 5],
+  ["Avalanche", 6],
+  ["Oasis", 7],
+  ["Algorand", 8],
+  ["Aurora", 9],
+  ["Fantom", 10],
+  ["Karura", 11],
+  ["Acala", 12],
+  ["Klaytn", 13],
+  ["Celo", 14],
+  ["Near", 15],
+  ["Moonbeam", 16],
+  ["Neon", 17],
+  ["Terra2", 18],
+  ["Injective", 19],
+  ["Osmosis", 20],
+  ["Sui", 21],
+  ["Aptos", 22],
+  ["Arbitrum", 23],
+  ["Optimism", 24],
+  ["Gnosis", 25],
+  ["Pythnet", 26],
+  ["Xpla", 28],
+  ["Btc", 29],
+  ["Base", 30],
+  ["Sei", 32],
+  ["Rootstock", 33],
   ["Wormchain", 3104],
   ["Cosmoshub", 4000],
-  ["Evmos",     4001],
-  ["Kujira",    4002],
+  ["Evmos", 4001],
+  ["Kujira", 4002],
   // holy cow, how ugly of a hack is that?! - a chainId that's exclusive to a testnet!
-  ["Sepolia",  10002],
+  ["Sepolia", 10002],
 ] as const satisfies MapLevel<string, number>;
 
 export const [chains, chainIds] = zip(chainsAndChainIdEntries);
@@ -70,6 +70,7 @@ export const asChainId = (chainId: number): ChainId => {
   return chainId;
 };
 
+
 export const toChainId = (chain: number | string): ChainId => {
   switch (typeof chain) {
     case "string":
@@ -82,7 +83,7 @@ export const toChainId = (chain: number | string): ChainId => {
   throw Error(`Cannot convert to ChainId: ${chain}`);
 };
 
-export const toChain = (chain: number | string| bigint): Chain => {
+export const toChain = (chain: number | string | bigint): Chain => {
   switch (typeof chain) {
     case "string":
       if (isChain(chain)) return chain;

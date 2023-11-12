@@ -1,18 +1,18 @@
 import {
   Chain,
-  ExplorerSettings,
+  ChainToPlatform,
   Network,
   Platform,
-  blockTime,
-  chainIds,
+  PlatformToChains,
+  finality,
   chainToPlatform,
   chains,
-  explorerConfigs,
-  finalityThreshold,
   isChain,
-  nativeDecimals,
-  rpcAddress,
   toChainId,
+  decimals,
+  explorer,
+  rpc,
+  nativeChainIds,
 } from "@wormhole-foundation/sdk-base";
 import { ChainAddress, NativeAddress, toNative } from "./address";
 import { Contracts, getContracts } from "./contracts";
@@ -24,9 +24,11 @@ export type TxHash = string;
 export type SequenceId = bigint;
 export type SignedTx = any;
 
-export type TokenId = ChainAddress;
-export function isTokenId(thing: TokenId | any): thing is TokenId {
-  return typeof (<TokenId>thing).address !== undefined && isChain((<TokenId>thing).chain);
+export type TokenId<C extends Chain = Chain> = ChainAddress<C>;
+export function isTokenId(thing: any): thing is TokenId<Chain> {
+  return (
+    typeof (<TokenId<Chain>>thing).address !== undefined && isChain((<TokenId<Chain>>thing).chain)
+  );
 }
 
 export type Balances = {
@@ -38,39 +40,34 @@ export function nativeChainAddress<C extends Chain>(
   address: UniversalAddress | Uint8Array | string,
 ): ChainAddress<C>;
 
-
 export function nativeChainAddress<C extends Chain>(
-  s: Signer | TokenId | [Chain, UniversalAddress | Uint8Array | string],
-): ChainAddress {
+  s: Signer<Network, C> | TokenId<C> | [C, UniversalAddress | Uint8Array | string],
+): ChainAddress<C> {
+  let chain: C;
+  let address: NativeAddress<C>;
+
   if (Array.isArray(s)) {
     // We might be passed a universal address as a string
     // First try to decode it as native, otherwise try
     // to decode it as universal and convert it to native
-    let address: NativeAddress<(typeof s)[0]>;
     try {
       address = toNative(s[0], s[1]);
     } catch {
-      address =
-        s[1] instanceof UniversalAddress
-          ? s[1].toNative(s[0])
-          : new UniversalAddress(s[1]).toNative(s[0]);
+      address = UniversalAddress.instanceof(s[1])
+        ? s[1].toNative(s[0])
+        : new UniversalAddress(s[1]).toNative(s[0]);
     }
-    return {
-      chain: s[0],
-      address: address,
-    };
+    chain = s[0];
+    address = address;
+  } else if (isSigner(s)) {
+    chain = s.chain();
+    address = toNative(s.chain(), s.address());
+  } else {
+    // otherwise TokenId
+    chain = s.chain;
+    address = s.address.toNative(s.chain) as NativeAddress<C>;
   }
-
-  if (isSigner(s))
-    return {
-      chain: s.chain(),
-      address: toNative(s.chain(), s.address()),
-    };
-
-  return {
-    chain: s.chain,
-    address: s.address.toNative(s.chain),
-  };
+  return { chain, address };
 }
 
 // Fully qualifier Transaction ID
@@ -80,12 +77,12 @@ export function isTransactionIdentifier(thing: TransactionId | any): thing is Tr
 }
 
 // Configuration for a given Chain
-export type ChainConfig<C extends Chain, N extends Network> = {
+export type ChainConfig<N extends Network, C extends Chain> = {
   key: C;
   network: N;
   platform: ChainToPlatform<C>;
   // Wormhole Chain Id for this chain
-  chainId: ;
+  chainId: number;
   // Contract addresses for this chain
   contracts: Contracts;
   // Number of blocks before a transaction is considered final
@@ -96,35 +93,35 @@ export type ChainConfig<C extends Chain, N extends Network> = {
   nativeTokenDecimals: number;
   // Native chain id may be eip155 or genesis hash or network moninker or something else
   // depending on the platform
-  nativeChainId: string;
+  nativeChainId: string | bigint;
   rpc: string;
-  explorer?: ExplorerSettings;
+  explorer?: explorer.ExplorerSettings;
 };
 
-export type ChainsConfig = {
-  [K in Chain]?: ChainConfig;
+export type ChainsConfig<N extends Network, P extends Platform> = {
+  [K in PlatformToChains<P>]?: ChainConfig<N, K>;
 };
 
-export function buildConfig(n: Network): ChainsConfig {
-  const cc: ChainsConfig = chains
-    .map((c: Chain): ChainConfig => {
+export function buildConfig<N extends Network>(n: N): ChainsConfig<N, Platform> {
+  const cc: ChainsConfig<N, Platform> = chains
+    .map(<C extends Chain>(c: C): ChainConfig<N, C> => {
       const platform = chainToPlatform(c);
-      let nativeChainId = "";
+      let nativeChainId: bigint | string = "";
       try {
-        nativeChainId = chainIds.getNativeChainId(n, c);
+        nativeChainId = nativeChainIds.networkChainToNativeChainId.get(n, c);
       } catch {}
       return {
         key: c,
         platform,
         network: n,
         chainId: toChainId(c),
-        finalityThreshold: finalityThreshold.get(c) ?? 0,
-        blockTime: blockTime(c),
+        finalityThreshold: finality.finalityThreshold.get(c) ?? 0,
+        blockTime: finality.blockTime(c),
         contracts: getContracts(n, c),
-        nativeTokenDecimals: nativeDecimals(platform),
+        nativeTokenDecimals: decimals.nativeDecimals(platform),
         nativeChainId,
-        explorer: explorerConfigs(n, c),
-        rpc: rpcAddress(n, c),
+        explorer: explorer.explorerConfigs(n, c),
+        rpc: rpc.rpcAddress(n, c),
       };
     })
     .reduce((acc, curr) => {

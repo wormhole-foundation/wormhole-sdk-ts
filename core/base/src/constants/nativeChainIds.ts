@@ -7,12 +7,12 @@ const chainNetworkNativeChainIdEntries = [[
   "Aptos", [
     ["Mainnet", 1n],
     ["Testnet", 2n],
-    ["Devnet",  0n],
+    ["Devnet", 0n],
   ]], [
   "Algorand", [
     ["Mainnet", "mainnet-v1.0"],
     ["Testnet", "testnet-v1.0"],
-    ["Devnet",  "sandnet-v1.0"],
+    ["Devnet", "sandnet-v1.0"],
   ]], [
   "Near", [
     ["Mainnet", "mainnet"],
@@ -25,12 +25,12 @@ const chainNetworkNativeChainIdEntries = [[
   "Evmos", [
     ["Mainnet", "evmos_9001-2"],
     ["Testnet", "evmos_9000-4"],
-    ["Devnet",  "evmos_devnet_fake"],
+    ["Devnet", "evmos_devnet_fake"],
   ]], [
   "Injective", [
     ["Mainnet", "injective-1"],
     ["Testnet", "injective-888"],
-    ["Devnet",  "injective_devnet_fake"],
+    ["Devnet", "injective_devnet_fake"],
   ]], [
   "Osmosis", [
     ["Mainnet", "osmosis-1"],
@@ -157,8 +157,8 @@ type NetworkChainToNativeChainId = ToMapping<typeof chainNetworkNativeChainIdEnt
 export type PlatformToNativeChainIds<P extends Platform> =
   PlatformToChains<P> extends infer C
   ? C extends keyof NetworkChainToNativeChainId
-    ? NetworkChainToNativeChainId[C][keyof NetworkChainToNativeChainId[C]]
-    : never
+  ? NetworkChainToNativeChainId[C][keyof NetworkChainToNativeChainId[C]]
+  : never
   : never;
 
 export type PlatformNativeChainIdToNetworkChainPair<
@@ -166,13 +166,13 @@ export type PlatformNativeChainIdToNetworkChainPair<
   CI extends PlatformToNativeChainIds<P>
 > = PlatformToChains<P> extends infer C
   ? ReturnType<typeof nativeChainIdToNetworkChain<CI>>[number] extends infer NCP
-    ? NCP extends readonly [Network, C]
-      ? NCP
-      : never
-    : never
+  ? NCP extends readonly [Network, C]
+  ? NCP
+  : never
+  : never
   : never;
 
-export function protocolNativeChainIdToNetworkChain<
+export function platformNativeChainIdToNetworkChain<
   const P extends Platform,
   const CI extends PlatformToNativeChainIds<P>
 >(platform: P, chainId: CI): PlatformNativeChainIdToNetworkChainPair<P, CI> {

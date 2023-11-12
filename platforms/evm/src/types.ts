@@ -1,14 +1,20 @@
 import {
-  UniversalOrNative,
   PlatformToChains,
+  UniversalOrNative,
 } from '@wormhole-foundation/connect-sdk';
 import { TransactionRequest } from 'ethers';
 
 export const unusedNonce = 0;
 export const unusedArbiterFee = 0n;
 
-export type EvmChain = PlatformToChains<'Evm'>;
-export type UniversalOrEvm = UniversalOrNative<'Evm'>;
+// TODO: can we specify this in 1 place and re-use it everywhere?
+export const _platform: 'Evm' = 'Evm';
+export type EvmPlatformType = typeof _platform;
+
+export type EvmChains<P extends EvmPlatformType = EvmPlatformType> =
+  PlatformToChains<P>;
+export type UniversalOrEvm<P extends EvmPlatformType = EvmPlatformType> =
+  UniversalOrNative<P>;
 export type AnyEvmAddress = UniversalOrEvm | string | Uint8Array;
 
 export const addFrom = (txReq: TransactionRequest, from: string) => ({

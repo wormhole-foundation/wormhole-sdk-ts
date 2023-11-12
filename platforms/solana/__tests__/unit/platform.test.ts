@@ -8,7 +8,7 @@ import {
   chains
 } from '@wormhole-foundation/connect-sdk';
 
-import { SolanaPlatform } from '../../src';
+import { SolanaChains, SolanaPlatform } from '../../src';
 
 import '@wormhole-foundation/connect-sdk-solana-core'
 import '@wormhole-foundation/connect-sdk-solana-tokenbridge'
@@ -19,8 +19,9 @@ import { getDefaultProvider } from '@solana/web3.js';
 const network = DEFAULT_NETWORK;
 
 const SOLANA_CHAINS = chains.filter(
-  (c) => chainToPlatform(c) === SolanaPlatform.platform,
-);
+  (c) => chainToPlatform(c) === SolanaPlatform._platform,
+) as SolanaChains[];
+
 const configs = CONFIG[network].chains;
 
 describe('Solana Platform Tests', () => {
@@ -28,24 +29,24 @@ describe('Solana Platform Tests', () => {
 
   describe('Get Token Bridge', () => {
     test('Hardcoded Genesis mock', async () => {
-      const p = SolanaPlatform.setConfig(network, {
+      const p = new SolanaPlatform(network, {
         [SOLANA_CHAINS[0]]: configs[SOLANA_CHAINS[0]],
       });
 
-      const tb = await p.getTokenBridge(fakeRpc);
+      const tb = await p.getProtocol("TokenBridge", fakeRpc);
       expect(tb).toBeTruthy();
     });
   });
 
   describe('Get Chain', () => {
     test('No conf', () => {
-      const p = SolanaPlatform.setConfig(network, {});
+      const p = new SolanaPlatform(network, {});
       expect(p.config).toEqual({});
       expect(() => p.getChain(SOLANA_CHAINS[0])).toThrow();
     });
 
     test('With conf', () => {
-      const p = SolanaPlatform.setConfig(network, {
+      const p = new SolanaPlatform(network, {
         [SOLANA_CHAINS[0]]: configs[SOLANA_CHAINS[0]],
       });
       expect(() => p.getChain(SOLANA_CHAINS[0])).not.toThrow();
@@ -54,7 +55,7 @@ describe('Solana Platform Tests', () => {
 
   describe('Get RPC Connection', () => {
     test('No conf', () => {
-      const p = SolanaPlatform.setConfig(network, {});
+      const p = new SolanaPlatform(network, {});
       expect(p.config).toEqual({});
 
       // expect getRpc to throw an error since we havent provided
@@ -64,7 +65,7 @@ describe('Solana Platform Tests', () => {
     });
 
     test('With conf', () => {
-      const p = SolanaPlatform.setConfig(network, {
+      const p = new SolanaPlatform(network, {
         [SOLANA_CHAINS[0]]: configs[SOLANA_CHAINS[0]],
       });
       expect(() => p.getRpc(SOLANA_CHAINS[0])).not.toThrow();

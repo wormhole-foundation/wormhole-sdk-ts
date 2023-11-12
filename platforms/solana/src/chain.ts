@@ -1,33 +1,32 @@
+import { getAssociatedTokenAddress } from '@solana/spl-token';
 import {
   ChainContext,
   NativeAddress,
-  Platform,
+  Network,
   UniversalOrNative,
-  toNative,
 } from '@wormhole-foundation/connect-sdk';
-import { getAssociatedTokenAddress } from '@solana/spl-token';
-import { SolanaPlatform } from './platform';
-import { AnySolanaAddress } from './types';
 import { SolanaAddress } from './address';
+import { AnySolanaAddress, SolanaChains, SolanaPlatformType } from './types';
 
-export class SolanaChain extends ChainContext<'Solana'> {
-  readonly platform: Platform<'Solana'> = SolanaPlatform;
-
+export class SolanaChain<
+  N extends Network,
+  C extends SolanaChains = SolanaChains,
+> extends ChainContext<N, SolanaPlatformType, C> {
   async getTokenAccount(
-    token: UniversalOrNative<'Solana'> | 'native',
+    token: UniversalOrNative<C> | 'native',
     address: AnySolanaAddress,
-  ): Promise<NativeAddress<'Solana'>> {
+  ): Promise<NativeAddress<C>> {
     const tb = await this.getTokenBridge();
 
-    const mintAddress: UniversalOrNative<'Solana'> =
+    const mintAddress: NativeAddress<C> =
       token === 'native'
         ? await tb.getWrappedNative()
-        : token.toUniversalAddress();
+        : token.toNative(this.chain);
 
-    const mint = new SolanaAddress(mintAddress.toUint8Array()).unwrap();
+    const mint = mintAddress.unwrap();
     const owner = new SolanaAddress(address).unwrap();
 
     const ata = await getAssociatedTokenAddress(mint, owner);
-    return toNative('Solana', ata.toString());
+    return new SolanaAddress(ata.toString()) as NativeAddress<C>;
   }
 }

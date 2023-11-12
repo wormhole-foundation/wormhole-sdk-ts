@@ -1,69 +1,66 @@
-import * as publicRpcMock from "./mocks/publicrpc";
-import {
-  TokenBridge,
-  Platform,
-  RpcConnection,
-  ChainContext,
-  testing,
-  supportsTokenBridge,
-} from "@wormhole-foundation/sdk-definitions";
-import {
-  Network,
-  Platform,
-  platforms,
-} from "@wormhole-foundation/sdk-base";
-import { CONFIG, Wormhole } from "../src";
-import { test, describe, expect } from '@jest/globals';
+import * as publicRpcMock from "./mocks/publicrpc"; // Should be first
 
-const network: Network = "Devnet";
-const allPlatformCtrs = platforms.map((p) => {
-  return testing.mocks.mockPlatformFactory(network, p, CONFIG[network].chains);
-});
+import { describe, expect, test } from '@jest/globals';
+import {
+  Platform,
+  platform
+} from "@wormhole-foundation/sdk-base";
+import {
+  ChainContext,
+  PlatformContext,
+  RpcConnection,
+  testing
+} from "@wormhole-foundation/sdk-definitions";
+import { Wormhole, networkPlatformConfigs } from "../src";
+
+const network: 'Testnet' = "Testnet";
+type TNet = typeof network
+const allPlatformCtrs = platform.platforms.map((p) => testing.mocks.mockPlatformFactory(p, networkPlatformConfigs(network, p)));
 
 describe("Wormhole Tests", () => {
-  let wh: Wormhole;
+  let wh: Wormhole<TNet>;
   beforeEach(() => {
     wh = new Wormhole(network, allPlatformCtrs);
   });
 
-  let p: Platform<Platform>;
+  let p: PlatformContext<TNet, any>;
   test("returns Platform", async () => {
-    p = wh.getPlatform("Ethereum");
+    p = wh.getPlatform("Evm");
     expect(p).toBeTruthy();
   });
 
-  let c: ChainContext<Platform>;
+  let c: ChainContext<TNet, 'Evm', 'Ethereum'>;
   test("returns chain", async () => {
     c = wh.getChain("Ethereum");
     expect(c).toBeTruthy();
   });
 
   describe("getVaaBytes", () => {
-    test("returns vaa bytes", async () => {
+    test("returns vaa bytes", async function () {
       const vaa = await wh.getVaaBytes(
         "Arbitrum",
-        testing.utils.makeChainAddress("Arbitrum").address,
+        testing.utils.makeUniversalAddress("Arbitrum"),
         1n,
       );
       expect(vaa).toBeDefined();
     });
 
-    test("returns undefined when vaa bytes not found", async () => {
+    test("returns undefined when vaa bytes not found", async function () {
       publicRpcMock.givenSignedVaaNotFound();
       const vaa = await wh.getVaaBytes(
         "Aptos",
-        testing.utils.makeChainAddress("Aptos").address,
+        testing.utils.makeUniversalAddress("Aptos"),
         1n,
         1,
       );
       expect(vaa).toBeUndefined();
     });
 
-    test("returns after first try fails", async () => {
+    test("returns after first try fails", async function () {
       publicRpcMock.givenSignedVaaRequestWorksAfterRetry();
       const vaa = await wh.getVaaBytes(
         "Base",
-        testing.utils.makeChainAddress("Base").address,
+        testing.utils.makeUniversalAddress("Base"),
         1n,
       );
       expect(vaa).toBeDefined();
@@ -72,10 +69,10 @@ describe("Wormhole Tests", () => {
 });
 
 describe("Platform Tests", () => {
-  let p: Platform<Platform>;
+  let p: PlatformContext<"Testnet", "Evm">;
   beforeEach(() => {
     const wh = new Wormhole(network, allPlatformCtrs);
-    p = wh.getPlatform("Ethereum");
+    p = wh.getPlatform("Evm");
   });
 
   let rpc: RpcConnection<Platform>;
@@ -83,18 +80,10 @@ describe("Platform Tests", () => {
     rpc = p.getRpc("Ethereum");
     expect(rpc).toBeTruthy();
   });
-
-  let tb: TokenBridge<Platform>;
-  test("Gets Token Bridge", async () => {
-    if (!supportsTokenBridge(p)) throw new Error("Fail");
-
-    tb = await p.getTokenBridge(rpc);
-    expect(tb).toBeTruthy();
-  });
 });
 
 describe("Chain Tests", () => {
-  let c: ChainContext<Platform>;
+  let c: ChainContext<"Testnet", "Evm", "Ethereum">;
   beforeEach(() => {
     const wh = new Wormhole(network, allPlatformCtrs);
     c = wh.getChain("Ethereum");

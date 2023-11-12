@@ -1,4 +1,4 @@
-import { Platform } from "@wormhole-foundation/sdk-base";
+import { Chain, Network, Platform } from "@wormhole-foundation/sdk-base";
 import {
   GatewayTransferMsg,
   GatewayTransferWithPayloadMsg,
@@ -14,6 +14,7 @@ import {
   isTransactionIdentifier,
 } from "@wormhole-foundation/sdk-definitions";
 import { DEFAULT_TASK_TIMEOUT } from "./config";
+import { PlatformToChains } from "@wormhole-foundation/sdk-base/src";
 
 // A task is a retryable function, it should return a Thing or null for a failure case
 // It should throw on a permanent failure instead of retrying
@@ -52,8 +53,12 @@ export async function retry<T>(
   });
 }
 
-export async function isTokenBridgeVaaRedeemed(
-  tb: TokenBridge<Platform>,
+export async function isTokenBridgeVaaRedeemed<
+  N extends Network,
+  P extends Platform,
+  C extends Chain,
+>(
+  tb: TokenBridge<N, P, C>,
   vaa: TokenBridge.VAA<"Transfer" | "TransferWithPayload">,
 ): Promise<boolean | null> {
   try {
@@ -67,8 +72,8 @@ export async function isTokenBridgeVaaRedeemed(
   }
 }
 
-export async function fetchIbcXfer(
-  wcIbc: IbcBridge<"Cosmwasm">,
+export async function fetchIbcXfer<N extends Network, C extends PlatformToChains<"Cosmwasm">>(
+  wcIbc: IbcBridge<N, "Cosmwasm", C>,
   msg: TxHash | TransactionId | IbcMessageId | GatewayTransferMsg | GatewayTransferWithPayloadMsg,
 ): Promise<IbcTransferInfo | null> {
   try {

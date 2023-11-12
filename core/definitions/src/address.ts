@@ -45,37 +45,40 @@ export type MappedPlatforms = keyof Wormhole.PlatformToNativeAddressMapping;
 type ChainOrPlatformToPlatform<T extends Chain | Platform> = T extends Chain
   ? ChainToPlatform<T>
   : T;
+
 type GetNativeAddress<T extends Platform> = T extends MappedPlatforms
   ? Wormhole.PlatformToNativeAddressMapping[T]
   : never;
+
 export type NativeAddress<T extends Platform | Chain> = GetNativeAddress<
   ChainOrPlatformToPlatform<T>
 >;
 
-export type UniversalOrNative<P extends Platform> = UniversalAddress | NativeAddress<P>;
+export type UniversalOrNative<T extends Platform | Chain> = UniversalAddress | NativeAddress<T>;
+
+export type AccountAddress<T extends Chain | Platform> = UniversalOrNative<T>;
+export type TokenAddress<T extends Chain | Platform> = UniversalOrNative<T> | "native";
 
 export type ChainAddress<C extends Chain = Chain> = {
   readonly chain: C;
-  readonly address: UniversalOrNative<ChainToPlatform<C>>;
+  readonly address: UniversalOrNative<C>;
 };
 
 type NativeAddressCtr = new (ua: UniversalAddress | string | Uint8Array) => Address;
 
 const nativeFactory = new Map<Platform, NativeAddressCtr>();
 
-export function registerNative<P extends MappedPlatforms>(
-  platform: P,
-  ctr: NativeAddressCtr,
-): void {
-  if (nativeFactory.has(platform))
-    throw new Error(`Native address type for platform ${platform} has already registered`);
+export function registerNative<P extends Platform>(platform: P, ctr: NativeAddressCtr): void {
+  if (nativeFactory.has(platform)) {
+    console.error("Native address type for platform %s has already registered", platform);
+    //throw new Error(`Native address type for platform ${platform} has already registered`);
+    return;
+  }
 
   nativeFactory.set(platform, ctr);
 }
 
-export function nativeIsRegistered<T extends Platform | Chain>(
-  chainOrPlatform: T,
-): boolean {
+export function nativeIsRegistered<T extends Platform | Chain>(chainOrPlatform: T): boolean {
   const platform: Platform = isChain(chainOrPlatform)
     ? chainToPlatform.get(chainOrPlatform)!
     : chainOrPlatform;
