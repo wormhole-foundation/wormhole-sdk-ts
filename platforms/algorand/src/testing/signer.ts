@@ -1,19 +1,21 @@
 import {
-  ChainContext,
   ChainName,
-  PlatformName,
+  RpcConnection,
   SignOnlySigner,
   Signer,
   UnsignedTransaction,
 } from '@wormhole-foundation/connect-sdk';
 import { Account, mnemonicToSecretKey } from 'algosdk';
+import { AlgorandPlatform } from '../platform';
 
 // returns a SignOnlySigner for the Algorand platform
-export function getAlgorandSigner(
-  chain: ChainContext<PlatformName>,
+export async function getAlgorandSigner(
+  rpc: RpcConnection<'Algorand'>,
   mnemonic: string, // 25-word Algorand mnemonic
-): Signer {
-  return new AlgorandSigner(chain.chain, mnemonicToSecretKey(mnemonic));
+): Promise<Signer> {
+  const [_, chain] = await AlgorandPlatform.chainFromRpc(rpc);
+
+  return new AlgorandSigner(chain, mnemonicToSecretKey(mnemonic));
 }
 
 export class AlgorandSigner implements SignOnlySigner {

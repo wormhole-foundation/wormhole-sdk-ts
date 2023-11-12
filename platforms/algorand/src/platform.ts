@@ -20,9 +20,9 @@ import { AlgorandUtils } from './platformUtils';
  */
 export module AlgorandPlatform {
   export const platform = 'Algorand';
-  export type Type = typeof platform;
   export let network: Network = DEFAULT_NETWORK;
   export let config: ChainsConfig = networkPlatformConfigs(network, platform);
+  export type Type = typeof platform;
 
   export const {
     nativeTokenId,

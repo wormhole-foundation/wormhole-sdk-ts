@@ -8,6 +8,7 @@ import {
   nativeChainAddress,
 } from "@wormhole-foundation/connect-sdk";
 
+import { getAlgorandSigner } from "@wormhole-foundation/connect-sdk-algorand/src/testing";
 import { getCosmwasmSigner } from "@wormhole-foundation/connect-sdk-cosmwasm/src/testing";
 import { getEvmSigner } from "@wormhole-foundation/connect-sdk-evm/src/testing";
 import { getSolanaSigner } from "@wormhole-foundation/connect-sdk-solana/src/testing";
@@ -36,6 +37,9 @@ export async function getStuff(chain: ChainContext<PlatformName>): Promise<Trans
   let signer: Signer;
 
   switch (chain.platform.platform) {
+    case "Algorand":
+      signer = await getAlgorandSigner(await chain.getRpc(), getEnv("ALGORAND_MNEMONIC"));
+      break;
     case "Solana":
       signer = await getSolanaSigner(await chain.getRpc(), getEnv("SOL_PRIVATE_KEY"));
       break;

@@ -17,7 +17,7 @@
   "module": "./dist/esm/index.js",
   "types": "./dist/esm/index.d.ts",
   "author": "",
-  "description": "SDK for Algorand, used in conjunction with @wormhole-foundation/connect-sdk",
+  "description": "SDK for Algorand TokenBridge, used in conjunction with @wormhole-foundation/connect-sdk-algorand",
   "files": [
     "dist/**/*",
     "src/**/*"
@@ -54,6 +54,7 @@
   },
   "dependencies": {
     "@wormhole-foundation/connect-sdk": "*",
+    "algosdk": "2.7.0",
     "ethers": "^6.8.1"
   }
 }

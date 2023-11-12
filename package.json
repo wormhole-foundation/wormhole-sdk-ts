@@ -41,6 +41,7 @@
     "core/definitions",
     "connect",
     "platforms/algorand",
+    "platforms/algorand/protocols/tokenBridge",
     "platforms/evm",
     "platforms/evm/protocols/core",
     "platforms/evm/protocols/tokenBridge",

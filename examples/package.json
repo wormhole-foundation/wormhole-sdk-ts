@@ -69,6 +69,8 @@
     "@injectivelabs/sdk-ts": "^1.14.0-beta.1",
     "@sei-js/proto": "^3.0.2",
     "@wormhole-foundation/connect-sdk": "*",
+    "@wormhole-foundation/connect-sdk-algorand": "*",
+    "@wormhole-foundation/connect-sdk-algorand-tokenbridge": "*",
     "@wormhole-foundation/connect-sdk-cosmwasm": "*",
     "@wormhole-foundation/connect-sdk-evm": "*",
     "@wormhole-foundation/connect-sdk-evm-cctp": "*",

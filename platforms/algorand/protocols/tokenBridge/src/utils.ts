@@ -774,24 +774,24 @@ export async function decodeLocalState(
   appId: bigint,
   address: string,
 ): Promise<Uint8Array> {
-  let app_state = null;
+  let appState = null;
   const ai = await client.accountInformation(address).do();
   for (const app of ai['apps-local-state']) {
     if (BigInt(app['id']) === appId) {
-      app_state = app['key-value'];
+      appState = app['key-value'];
       break;
     }
   }
 
   let ret = Buffer.alloc(0);
   let empty = Buffer.alloc(0);
-  if (app_state) {
+  if (appState) {
     const e = Buffer.alloc(127);
     const m = Buffer.from('meta');
 
     let sk: string[] = [];
     let vals: Map<string, Buffer> = new Map<string, Buffer>();
-    for (const kv of app_state) {
+    for (const kv of appState) {
       const k = Buffer.from(kv['key'], 'base64');
       const key: number = k.readInt8();
       if (!Buffer.compare(k, m)) {

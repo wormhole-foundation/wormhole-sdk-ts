@@ -4,14 +4,7 @@ import {
   registerNative,
   PlatformName,
 } from '@wormhole-foundation/connect-sdk';
-import {
-  bigIntToBytes,
-  bytesToBigInt,
-  decodeAddress,
-  decodeUint64,
-  encodeAddress,
-  isValidAddress,
-} from 'algosdk';
+import { bigIntToBytes, bytesToBigInt, encodeAddress } from 'algosdk';
 import { AlgorandPlatform } from './platform';
 import { AnyAlgorandAddress } from './types';
 
@@ -38,14 +31,14 @@ export class AlgorandAddress implements Address {
   private readonly address: Uint8Array;
 
   /*
-export type AnyAddress =
-  | NativeAddress<PlatformName> - ???
-  | UniversalAddress - done
-  | string - done
-  | number - done
-  | Uint8Array - done
-  | number[]; - ???
-*/
+  export type AnyAddress =
+    | NativeAddress<PlatformName> - ???
+    | UniversalAddress - done
+    | string - done
+    | number - done
+    | Uint8Array - done
+    | number[]; - ???
+  */
 
   // This may need to handle uint64s that represent a token ASA ID
   constructor(address: AnyAlgorandAddress) {
@@ -54,19 +47,14 @@ export type AnyAddress =
       this.address = a.address;
     } else if (UniversalAddress.instanceof(address)) {
       this.address = address.toUint8Array();
-    } else if (typeof address === 'string' && isValidAddress(address)) {
-      this.address = decodeAddress(address).publicKey;
-    } else if (typeof address === 'number') {
-      this.address = bigIntToBytes(BigInt(address), 32);
-    } else if (typeof address === 'bigint') {
-      this.address = bigIntToBytes(address, 32);
+    } else if (typeof address === 'string') {
+      this.address = new Uint8Array(Buffer.from(address));
     } else if (
       address instanceof Uint8Array &&
-      address.byteLength === AlgorandAddress.byteSize &&
-      isValidAddress(encodeAddress(address))
+      address.byteLength === AlgorandAddress.byteSize
     ) {
       this.address = address;
-    } else if (address instanceof Uint8Array && address.byteLength === 8) {
+    } else if (address instanceof Uint8Array && address.byteLength < 32) {
       this.address = bigIntToBytes(bytesToBigInt(address), 32);
     } else throw new Error(`Invalid Algorand address or ASA ID ${address}`);
   }
@@ -89,12 +77,6 @@ export type AnyAddress =
 
   toUniversalAddress(): UniversalAddress {
     return new UniversalAddress(this.address);
-  }
-
-  // QUESTION: Does this need a warning if an actual address, not a Uint64, is in the class?
-  toBigInt(): bigint {
-    const lastEightBytes = this.address.slice(-8);
-    return decodeUint64(lastEightBytes, 'bigint');
   }
 
   static instanceof(address: any): address is AlgorandAddress {

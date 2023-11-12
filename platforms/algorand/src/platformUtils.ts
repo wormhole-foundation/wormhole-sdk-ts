@@ -12,14 +12,9 @@ import {
 } from '@wormhole-foundation/connect-sdk';
 import { AlgorandAddress, AlgorandZeroAddress } from './address';
 import { AlgorandPlatform } from './platform';
-import { Algodv2, bytesToBigInt, waitForConfirmation } from 'algosdk';
-import {
-  Account,
-  AssetHolding,
-  Version,
-} from 'algosdk/dist/types/client/v2/algod/models/types';
 import { algorandGenesisHashToNetworkChainPair } from './constants';
 import { AnyAlgorandAddress } from './types';
+import { Algodv2, bytesToBigInt, modelsv2, waitForConfirmation } from 'algosdk';
 
 /**
  * @category Algorand
@@ -48,8 +43,8 @@ export module AlgorandUtils {
   }
 
   function anyAlgorandAddressToAsaId(address: AnyAlgorandAddress): number {
-    const a = new AlgorandAddress(address);
-    const lastEightBytes = a.toUint8Array().slice(-8);
+    const addr = new AlgorandAddress(address.toString());
+    const lastEightBytes = addr.toUint8Array().slice(-8);
     const asaId = Number(bytesToBigInt(lastEightBytes));
     return asaId;
   }
@@ -75,12 +70,12 @@ export module AlgorandUtils {
   ): Promise<bigint | null> {
     if (token === 'native') {
       const resp = await rpc.accountInformation(walletAddress).do();
-      const accountInfo = Account.from_obj_for_encoding(resp);
+      const accountInfo = modelsv2.Account.from_obj_for_encoding(resp);
       return BigInt(accountInfo.amount);
     }
     const asaId = anyAlgorandAddressToAsaId(token);
     const resp = await rpc.accountAssetInformation(walletAddress, asaId).do();
-    const accountAssetInfo = AssetHolding.from_obj_for_encoding(resp);
+    const accountAssetInfo = modelsv2.AssetHolding.from_obj_for_encoding(resp);
     return BigInt(accountAssetInfo.amount);
   }
 
@@ -93,7 +88,7 @@ export module AlgorandUtils {
     let native: bigint;
     if (tokens.includes('native')) {
       const resp = await rpc.accountInformation(walletAddress).do();
-      const accountInfo = Account.from_obj_for_encoding(resp);
+      const accountInfo = modelsv2.Account.from_obj_for_encoding(resp);
       native = BigInt(accountInfo.amount);
     }
     const balancesArr = tokens.map(async (token) => {
@@ -102,7 +97,8 @@ export module AlgorandUtils {
       }
       const asaId = anyAlgorandAddressToAsaId(token);
       const resp = await rpc.accountAssetInformation(walletAddress, asaId).do();
-      const accountAssetInfo = AssetHolding.from_obj_for_encoding(resp);
+      const accountAssetInfo =
+        modelsv2.AssetHolding.from_obj_for_encoding(resp);
       return BigInt(accountAssetInfo.amount);
     });
 
@@ -144,7 +140,6 @@ export module AlgorandUtils {
     genesisHash: string,
   ): [Network, PlatformToChains<AlgorandPlatform.Type>] {
     const netChain = algorandGenesisHashToNetworkChainPair.get(genesisHash);
-
     if (!netChain) {
       // Note: this is required for tilt/ci since it gets a new genesis hash
       if (AlgorandPlatform.network === 'Devnet') return ['Devnet', 'Algorand'];
@@ -153,7 +148,6 @@ export module AlgorandUtils {
         `No matching genesis hash to determine network and chain: ${genesisHash}`,
       );
     }
-
     const [network, chain] = netChain;
     return [network, chain];
   }
@@ -163,8 +157,8 @@ export module AlgorandUtils {
   ): Promise<[Network, PlatformToChains<AlgorandPlatform.Type>]> {
     const conn = rpc as Algodv2;
     const resp = await conn.versionsCheck().do();
-    const version = Version.from_obj_for_encoding(resp);
-    const gHash = Buffer.from(version.genesisHashB64).toString('ascii');
-    return chainFromChainId(gHash);
+    const version = modelsv2.Version.from_obj_for_encoding(resp);
+    const genesisHash = Buffer.from(version.genesisHashB64).toString('base64');
+    return chainFromChainId(genesisHash);
   }
 }

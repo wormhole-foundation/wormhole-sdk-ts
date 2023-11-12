@@ -13,14 +13,18 @@ import {
   serialize,
   UnsignedTransaction,
   ChainName,
+  toChainName,
+  UniversalAddress,
+  ChainsConfig,
 } from '@wormhole-foundation/connect-sdk';
 import {
   AlgorandAddress,
   AlgorandChainName,
+  AlgorandPlatform,
   AlgorandUnsignedTransaction,
   AlgorandZeroAddress,
-} from '../../../src';
-import { Algodv2, getApplicationAddress } from 'algosdk';
+} from '@wormhole-foundation/connect-sdk-algorand';
+import { Algodv2, bigIntToBytes, bytesToBigInt, getApplicationAddress } from 'algosdk';
 import {
   attestFromAlgorand,
   getForeignAssetAlgorand,
@@ -30,8 +34,6 @@ import {
   redeemOnAlgorand,
   transferFromAlgorand,
 } from './utils';
-import { toChainName } from '@wormhole-foundation/connect-sdk';
-import { UniversalAddress } from '@wormhole-foundation/connect-sdk';
 
 export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
   readonly chainId: ChainId;
@@ -48,27 +50,40 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
   ) {
     this.chainId = toChainId(chain);
 
-    const tokenBridge = BigInt(contracts.tokenBridge);
-    if (!tokenBridge) {
+    if (!contracts.tokenBridge) {
       throw new Error(
         `TokenBridge contract address for chain ${chain} not found`,
       );
     }
+    const tokenBridge = BigInt(contracts.tokenBridge);
     this.tokenBridgeAppId = tokenBridge;
     this.tokenBridgeAddress = getApplicationAddress(tokenBridge);
 
-    const core = BigInt(contracts.coreBridge);
-    if (!core) {
+    if (!contracts.coreBridge) {
       throw new Error(`Core contract address for chain ${chain} not found`);
     }
+    const core = BigInt(contracts.coreBridge);
     this.coreAppId = core;
     this.coreAppAddress = getApplicationAddress(core);
+  }
+
+  static async fromRpc(
+    rpc: Algodv2,
+    config: ChainsConfig,
+  ): Promise<AlgorandTokenBridge> {
+    const [network, chain] = await AlgorandPlatform.chainFromRpc(rpc);
+    return new AlgorandTokenBridge(
+      network,
+      chain,
+      rpc,
+      config[chain]!.contracts,
+    );
   }
 
   // Checks a native address to see if its a wrapped version
   async isWrappedAsset(nativeAddress: AnyAddress): Promise<boolean> {
     // QUESTION: This has been forced by coercing nativeAddress toString() - better way?
-    const token = new AlgorandAddress(nativeAddress.toString()).toBigInt();
+    const token = bytesToBigInt(new AlgorandAddress(nativeAddress.toString()).toUint8Array());
 
     const isWrapped = await getIsWrappedAssetAlgorand(
       this.connection,
@@ -85,7 +100,7 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
       throw ErrNotWrapped(nativeAddress.toString());
 
     // QUESTION: This has been forced (in multiple places) by coercing nativeAddress toString() - better way?
-    const token = new AlgorandAddress(nativeAddress.toString()).toBigInt();
+    const token = bytesToBigInt(new AlgorandAddress(nativeAddress.toString()).toUint8Array());
 
     const whWrappedInfo = await getOriginalAssetAlgorand(
       this.connection,
@@ -128,7 +143,7 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
   // Returns the address of the native version of this asset
   async getWrappedAsset(
     foreignToken: TokenId,
-  ): Promise<NativeAddress<'Algorand'>> {
+  ): Promise<NativeAddress<AlgorandPlatform.Type>> {
     const assetId = await getForeignAssetAlgorand(
       this.connection,
       this.tokenBridgeAppId,
@@ -136,7 +151,12 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
       foreignToken.address.toString(),
     );
 
-    const nativeAddress = new AlgorandAddress(assetId);
+    if (assetId === null){throw new Error(`Algorand asset ${foreignToken.address} not found`)}
+
+    const nativeAddress = toNative(
+      'Algorand',
+      bigIntToBytes(assetId,8),
+    );
     return nativeAddress;
   }
 
@@ -162,7 +182,7 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
     if (!payer) throw new Error('Payer required to create attestation');
 
     const senderAddr = new AlgorandAddress(payer.toString());
-    const assetId = new AlgorandAddress(token_to_attest.toString()).toBigInt();
+    const assetId = bytesToBigInt(new AlgorandAddress(token_to_attest.toString()).toUint8Array());
     const utxn = await attestFromAlgorand(
       this.connection,
       this.tokenBridgeAppId,
@@ -197,7 +217,7 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
     payload?: Uint8Array,
   ): AsyncGenerator<UnsignedTransaction> {
     const senderAddr = new AlgorandAddress(sender.toString()).toString();
-    const assetId = new AlgorandAddress(token.toString()).toBigInt();
+    const assetId = bytesToBigInt(new AlgorandAddress(token.toString()).toUint8Array());
     const qty = amount;
     const receiver = recipient.address;
     const chain = recipient.chain;
