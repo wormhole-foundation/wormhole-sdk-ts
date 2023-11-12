@@ -69,7 +69,7 @@ import { Network } from "@wormhole-foundation/sdk-base/src";
         600_000,
       )
     : await transferIntoCosmos(wh, token, amount, leg1, leg2);
-  //console.log("Route 1 (External => Cosmos)", route1);
+  console.log("Route 1 (External => Cosmos)", route1);
 
   const { denom } = route1.ibcTransfers![0].data;
   // Lookup the Gateway representation of the wrappd token
@@ -93,7 +93,7 @@ import { Network } from "@wormhole-foundation/sdk-base/src";
         leg2,
         leg3,
       );
-  //console.log("Route 2 (Cosmos -> Cosmos): ", route2);
+  console.log("Route 2 (Cosmos -> Cosmos): ", route2);
 
   fakeIt = false;
   // Transfer Gateway factory token through gateway back to source chain
@@ -113,7 +113,7 @@ import { Network } from "@wormhole-foundation/sdk-base/src";
         leg3,
         leg1,
       );
-  //console.log("Route 3 (Cosmos => External): ", route3);
+  console.log("Route 3 (Cosmos => External): ", route3);
 })();
 
 async function transferIntoCosmos(

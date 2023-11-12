@@ -1,7 +1,25 @@
 {
   "name": "Connect SDK",
   "extends": ["./typedoc.base.json"],
-  "entryPoints": ["connect",  "platforms/solana", "platforms/evm", "platforms/cosmwasm", "core/base", "core/definitions"],
-  "exclude": ["platforms/aptos", "platforms/sui", "platforms/sei"],
-  "entryPointStrategy": "packages",
+  "entryPoints": [
+    "core/base",
+    "core/definitions",
+    "connect",
+    "platforms/evm",
+    "platforms/evm/protocols/core",
+    "platforms/evm/protocols/tokenBridge",
+    "platforms/evm/protocols/cctp",
+    "platforms/solana",
+    "platforms/solana/protocols/core",
+    "platforms/solana/protocols/tokenBridge",
+    "platforms/cosmwasm",
+    "platforms/cosmwasm/protocols/core",
+    "platforms/cosmwasm/protocols/tokenBridge",
+    "platforms/cosmwasm/protocols/ibc",
+    "platforms/aptos",
+    "platforms/aptos/protocols/core",
+    "platforms/aptos/protocols/tokenBridge"
+  ],
+  "exclude": [],
+  "entryPointStrategy": "packages"
 }
