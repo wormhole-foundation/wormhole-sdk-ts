@@ -1,4 +1,4 @@
-import { Chain, Platform, encoding, toCircleChain } from "@wormhole-foundation/sdk-base";
+import { Chain, Platform, encoding, circle } from "@wormhole-foundation/sdk-base";
 import {
   CircleAttestation,
   CircleMessageId,
@@ -107,7 +107,7 @@ export class CircleTransfer implements WormholeTransfer {
     const vaa = await CircleTransfer.getTransferVaa(wh, chain, emitter, sequence);
 
     const rcvAddress = vaa.payload.mintRecipient;
-    const rcvChain = toCircleChain(vaa.payload.targetDomain);
+    const rcvChain = circle.toCircleChain(vaa.payload.targetDomain);
     // Check if its a payload 3 targeted at a relayer on the destination chain
     const { wormholeRelayer } = wh.config.chains[rcvChain]!.contracts.cctp!;
 
@@ -147,8 +147,8 @@ export class CircleTransfer implements WormholeTransfer {
     const xferSender = burnMessage.messageSender;
     const xferReceiver = burnMessage.mintRecipient;
 
-    const sendChain = toCircleChain(message.sourceDomain);
-    const rcvChain = toCircleChain(message.destinationDomain);
+    const sendChain = circle.toCircleChain(message.sourceDomain);
+    const rcvChain = circle.toCircleChain(message.destinationDomain);
 
     const details: CircleTransferDetails = {
       from: nativeChainAddress(sendChain, xferSender),

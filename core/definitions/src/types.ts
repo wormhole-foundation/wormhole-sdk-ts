@@ -1,22 +1,20 @@
 import {
   Chain,
   ChainToPlatform,
-  ExplorerSettings,
   Network,
   Platform,
   PlatformToChains,
-  blockTime,
+  finality,
   chainToPlatform,
   chains,
-  explorerConfigs,
-  finalityThreshold,
   isChain,
-  nativeDecimals,
-  networkChainToNativeChainId,
-  rpcAddress,
   toChainId,
+  decimals,
+  explorer,
+  rpc,
+  nativeChainIds,
 } from "@wormhole-foundation/sdk-base";
-import { ChainAddress, NativeAddress, UniversalOrNative, toNative } from "./address";
+import { ChainAddress, NativeAddress, toNative } from "./address";
 import { Contracts, getContracts } from "./contracts";
 import { Signer, isSigner } from "./signer";
 
@@ -25,8 +23,6 @@ import { UniversalAddress } from "./universalAddress";
 export type TxHash = string;
 export type SequenceId = bigint;
 export type SignedTx = any;
-
-export type TokenAddress<P extends Platform> = UniversalOrNative<P> | "native";
 
 export type TokenId<C extends Chain = Chain> = ChainAddress<C>;
 export function isTokenId(thing: any): thing is TokenId<Chain> {
@@ -99,7 +95,7 @@ export type ChainConfig<N extends Network, C extends Chain> = {
   // depending on the platform
   nativeChainId: string | bigint;
   rpc: string;
-  explorer?: ExplorerSettings;
+  explorer?: explorer.ExplorerSettings;
 };
 
 export type ChainsConfig<N extends Network, P extends Platform> = {
@@ -112,20 +108,20 @@ export function buildConfig<N extends Network>(n: N): ChainsConfig<N, Platform> 
       const platform = chainToPlatform(c);
       let nativeChainId: bigint | string = "";
       try {
-        nativeChainId = networkChainToNativeChainId.get(n, c);
-      } catch { }
+        nativeChainId = nativeChainIds.networkChainToNativeChainId.get(n, c);
+      } catch {}
       return {
         key: c,
         platform,
         network: n,
         chainId: toChainId(c),
-        finalityThreshold: finalityThreshold.get(c) ?? 0,
-        blockTime: blockTime(c),
+        finalityThreshold: finality.finalityThreshold.get(c) ?? 0,
+        blockTime: finality.blockTime(c),
         contracts: getContracts(n, c),
-        nativeTokenDecimals: nativeDecimals(platform),
+        nativeTokenDecimals: decimals.nativeDecimals(platform),
         nativeChainId,
-        explorer: explorerConfigs(n, c),
-        rpc: rpcAddress(n, c),
+        explorer: explorer.explorerConfigs(n, c),
+        rpc: rpc.rpcAddress(n, c),
       };
     })
     .reduce((acc, curr) => {

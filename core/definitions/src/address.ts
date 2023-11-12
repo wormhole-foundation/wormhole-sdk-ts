@@ -36,14 +36,15 @@ export interface Address {
 
 declare global {
   namespace Wormhole {
-    export interface PlatformToNativeAddressMapping { }
+    export interface PlatformToNativeAddressMapping {}
   }
 }
 
 export type MappedPlatforms = keyof Wormhole.PlatformToNativeAddressMapping;
 
 type ChainOrPlatformToPlatform<T extends Chain | Platform> = T extends Chain
-  ? ChainToPlatform<T> : T;
+  ? ChainToPlatform<T>
+  : T;
 
 type GetNativeAddress<T extends Platform> = T extends MappedPlatforms
   ? Wormhole.PlatformToNativeAddressMapping[T]
@@ -54,6 +55,9 @@ export type NativeAddress<T extends Platform | Chain> = GetNativeAddress<
 
 export type UniversalOrNative<T extends Platform | Chain> = UniversalAddress | NativeAddress<T>;
 
+export type AccountAddress<T extends Chain | Platform> = UniversalOrNative<T>;
+export type TokenAddress<T extends Chain | Platform> = UniversalOrNative<T> | "native";
+
 export type ChainAddress<C extends Chain = Chain> = {
   readonly chain: C;
   readonly address: UniversalOrNative<C>;
@@ -63,12 +67,9 @@ type NativeAddressCtr = new (ua: UniversalAddress | string | Uint8Array) => Addr
 
 const nativeFactory = new Map<Platform, NativeAddressCtr>();
 
-export function registerNative<P extends MappedPlatforms>(
-  platform: P,
-  ctr: NativeAddressCtr,
-): void {
-  if (nativeFactory.has(platform))
-    throw new Error(`Native address type for platform ${platform} has already registered`);
+export function registerNative<P extends Platform>(platform: P, ctr: NativeAddressCtr): void {
+  if (nativeFactory.has(platform)) return;
+  //throw new Error(`Native address type for platform ${platform} has already registered`);
 
   nativeFactory.set(platform, ctr);
 }

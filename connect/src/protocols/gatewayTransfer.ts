@@ -1,5 +1,6 @@
 import {
   Chain,
+  ChainToPlatform,
   Network,
   Platform,
   chainToPlatform,
@@ -35,13 +36,18 @@ import { fetchIbcXfer, isTokenBridgeVaaRedeemed, retry } from "../tasks";
 import { Wormhole } from "../wormhole";
 import { AttestationId, TransferState, WormholeTransfer } from "../wormholeTransfer";
 
+type GatewayContext = ChainContext<
+  Network,
+  ChainToPlatform<typeof GatewayTransfer.chain>,
+  typeof GatewayTransfer.chain
+>;
 export class GatewayTransfer implements WormholeTransfer {
   static chain: Chain = "Wormchain";
 
   private readonly wh: Wormhole;
 
   // Wormchain context
-  private readonly gateway: ChainContext<Network, typeof GatewayTransfer.chain>;
+  private readonly gateway: GatewayContext;
   // Wormchain IBC Bridge
   private readonly gatewayIbcBridge: IbcBridge<Platform>;
   // Contract address
@@ -74,7 +80,7 @@ export class GatewayTransfer implements WormholeTransfer {
   private constructor(
     wh: Wormhole,
     transfer: GatewayTransferDetails,
-    gateway: ChainContext<Network, typeof GatewayTransfer.chain>,
+    gateway: GatewayContext,
     gatewayIbc: IbcBridge<Platform>,
   ) {
     this.state = TransferState.Created;

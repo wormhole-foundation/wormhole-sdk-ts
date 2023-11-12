@@ -1,11 +1,10 @@
 import {
   Chain,
+  ChainToPlatform,
   Network,
   Platform,
   chainToPlatform,
-  isChain,
-  isCircleChain,
-  isCircleSupported,
+  circle,
   normalizeAmount,
 } from "@wormhole-foundation/sdk-base";
 import {
@@ -15,6 +14,7 @@ import {
   NativeAddress,
   PayloadDiscriminator,
   PayloadLiteral,
+  PlatformContext,
   PlatformUtils,
   TokenId,
   TxHash,
@@ -30,7 +30,6 @@ import {
   CONFIG,
   DEFAULT_TASK_TIMEOUT,
   WHSCAN_RETRY_INTERVAL,
-  networkPlatformConfigs,
 } from "./config";
 import { WormholeConfig } from "./types";
 
@@ -47,8 +46,8 @@ import {
 } from "./whscan-api";
 
 export class Wormhole<N extends Network = Network> {
-  protected _platforms: Map<Platform, PlatformUtils<N, Platform>>;
-  protected _chains: Map<Chain, ChainContext<N, Chain>>;
+  protected _platforms: Map<Platform, PlatformContext<N, Platform>>;
+  protected _chains: Map<Chain, ChainContext<N, Platform, Chain>>;
   protected readonly _network: N;
   readonly config: WormholeConfig;
 
@@ -59,9 +58,7 @@ export class Wormhole<N extends Network = Network> {
     this._chains = new Map();
     this._platforms = new Map();
     for (const p of platforms) {
-      const platformName = p.platform;
-      const filteredChains = networkPlatformConfigs(network, platformName);
-      this._platforms.set(platformName, p.setConfig(network, filteredChains));
+      this._platforms.set(p._platform, p.fromNetworkConfig(network));
     }
   }
 
@@ -91,10 +88,10 @@ export class Wormhole<N extends Network = Network> {
     if (automatic && payload) throw new Error("Payload with automatic delivery is not supported");
 
     if (
-      !isCircleChain(from.chain) ||
-      !isCircleChain(to.chain) ||
-      !isCircleSupported(this.network, from.chain) ||
-      !isCircleSupported(this.network, to.chain)
+      !circle.isCircleChain(from.chain) ||
+      !circle.isCircleChain(to.chain) ||
+      !circle.isCircleSupported(this.network, from.chain) ||
+      !circle.isCircleSupported(this.network, to.chain)
     )
       throw new Error(`Network and chain not supported: ${this.network} ${from.chain} `);
 
@@ -168,11 +165,10 @@ export class Wormhole<N extends Network = Network> {
    * @returns the platform context class
    * @throws Errors if platform is not found
    */
-  getPlatform<P extends Platform>(chain: P): PlatformUtils<N, P> {
-    const platformName = isChain(chain) ? this.config.chains[chain]!.platform : chain;
+  getPlatform<P extends Platform>(platformName: P): PlatformContext<N, P> {
     const platform = this._platforms.get(platformName);
     if (!platform) throw new Error(`Not able to retrieve platform ${platform}`);
-    return platform as PlatformUtils<N, P>;
+    return platform as PlatformContext<N, P>;
   }
 
   /**
@@ -181,11 +177,11 @@ export class Wormhole<N extends Network = Network> {
    * @returns the chain context class
    * @throws Errors if context is not found
    */
-  getChain<CN extends Chain>(chain: CN): ChainContext<N, CN> {
+  getChain<C extends Chain>(chain: C): ChainContext<N, ChainToPlatform<C>, C> {
     const platform = chainToPlatform(chain);
     if (!this._chains.has(chain))
       this._chains.set(chain, this.getPlatform(platform).getChain(chain));
-    return this._chains.get(chain)! as ChainContext<N, CN>;
+    return this._chains.get(chain)! as ChainContext<N, ChainToPlatform<C>, C>;
   }
 
   /**

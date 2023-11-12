@@ -1,40 +1,52 @@
-import { Chain, Network, Platform, PlatformToChains } from "@wormhole-foundation/sdk-base";
 import {
-  AutomaticCircleBridge,
-  AutomaticTokenBridge,
+  Chain,
+  Network,
+  Platform,
+  PlatformToChains,
+  ProtocolName,
+} from "@wormhole-foundation/sdk-base";
+import {
   Balances,
   ChainContext,
   ChainsConfig,
-  CircleBridge,
-  TokenAddress,
+  PlatformContext,
   PlatformUtils,
+  ProtocolInitializer,
   RpcConnection,
-  TokenBridge,
+  TokenAddress,
   TokenId,
   TxHash,
   WormholeMessageId,
 } from "../..";
-import { WormholeCore } from "../../protocols/core";
 import { MockChain } from "./chain";
 import { MockRpc } from "./rpc";
-import { MockTokenBridge } from "./tokenBridge";
 
 export function mockPlatformFactory<N extends Network, P extends Platform>(
   network: N,
   p: P,
-  config: ChainsConfig<N, P>,
+  conf: ChainsConfig<N, P>,
 ): PlatformUtils<N, P> {
   class ConcreteMockPlatform extends MockPlatform<N, P> {
-    override platform = p;
+    static _platform = p;
+
+    static getProtocolInitializer<PN extends ProtocolName>(
+      protocol: PN,
+    ): ProtocolInitializer<P, PN> {
+      throw new Error("Method not implemented.");
+    }
+
+    static fromNetworkConfig(network: N, _conf?: ChainsConfig<N, P>): MockPlatform<N, P> {
+      return new MockPlatform<N, P>(network, _conf ?? conf);
+    }
   }
 
-  return new ConcreteMockPlatform(network, config);
+  // @ts-ignore
+  return ConcreteMockPlatform;
 }
 
 // Note: don't use this directly, instead create a ConcreteMockPlatform with the
 // mockPlatformFactory
-export class MockPlatform<N extends Network, P extends Platform> implements PlatformUtils<N, P> {
-  // @ts-ignore
+export class MockPlatform<N extends Network, P extends Platform> implements PlatformContext<N, P> {
   readonly platform: P;
 
   network: N;
@@ -45,8 +57,8 @@ export class MockPlatform<N extends Network, P extends Platform> implements Plat
     this.config = config;
   }
 
-  setConfig<NN extends Network>(network: NN, _conf: ChainsConfig<NN, P>): MockPlatform<NN, P> {
-    return new MockPlatform<NN, P>(network, _conf);
+  getProtocol<PN extends ProtocolName, T extends any>(protocol: PN): T {
+    throw new Error("Method not implemented.");
   }
 
   nativeTokenId<C extends PlatformToChains<P>>(chain: C): TokenId<C> {
@@ -86,9 +98,8 @@ export class MockPlatform<N extends Network, P extends Platform> implements Plat
     throw new Error("method not implemented");
   }
 
-  getChain<C extends Chain>(chain: C): ChainContext<N, C> {
-    if (chain in this.config) return new MockChain<N, C>(this.config[chain]!);
-
+  getChain<C extends Chain>(chain: C): ChainContext<N, P, C> {
+    if (chain in this.config) return new MockChain<N, P, C>(chain, this);
     throw new Error("No configuration available for chain: " + chain);
   }
 
@@ -141,26 +152,6 @@ export class MockPlatform<N extends Network, P extends Platform> implements Plat
   }
 
   async sendWait(chain: Chain, rpc: RpcConnection<P>, stxns: any[]): Promise<TxHash[]> {
-    throw new Error("Method not implemented.");
-  }
-
-  async getWormholeCore(rpc: RpcConnection<P>): Promise<WormholeCore<P>> {
-    throw new Error("Method not implemented.");
-  }
-  async getTokenBridge(rpc: RpcConnection<P>): Promise<TokenBridge<P>> {
-    return new MockTokenBridge<P>(rpc);
-  }
-
-  async getAutomaticTokenBridge(rpc: RpcConnection<P>): Promise<AutomaticTokenBridge<P>> {
-    throw new Error("Method not implemented.");
-  }
-  async getCircleBridge(rpc: RpcConnection<P>): Promise<CircleBridge<P>> {
-    throw new Error("Method not implemented.");
-  }
-  async getCircleRelayer(rpc: RpcConnection<P>): Promise<AutomaticCircleBridge<P>> {
-    throw new Error("Method Not implemented.");
-  }
-  async getAutomaticCircleBridge(rpc: RpcConnection<P>): Promise<AutomaticCircleBridge<P>> {
     throw new Error("Method not implemented.");
   }
 }

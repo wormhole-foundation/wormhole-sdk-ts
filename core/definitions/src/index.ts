@@ -12,7 +12,7 @@ export * from "./unsignedTransaction";
 export * from "./vaa";
 export * from "./utils";
 export * from "./relayer";
-export * from "./platformUtils";
+export * from "./platform";
 export * from "./chain";
 export * from "./contracts";
 export * from "./signature";

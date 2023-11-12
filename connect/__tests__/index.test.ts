@@ -1,24 +1,21 @@
-import * as publicRpcMock from "./mocks/publicrpc";
+import * as publicRpcMock from "./mocks/publicrpc"; // Should be first
+import { describe, expect, test } from '@jest/globals';
 import {
-  TokenBridge,
-  Platform,
-  RpcConnection,
-  ChainContext,
-  testing,
-  supportsTokenBridge,
-} from "@wormhole-foundation/sdk-definitions";
-import {
+  Chain,
   Network,
   Platform,
-  platforms,
+  platform,
 } from "@wormhole-foundation/sdk-base";
-import { CONFIG, Wormhole } from "../src";
-import { test, describe, expect } from '@jest/globals';
+import {
+  ChainContext,
+  PlatformContext,
+  RpcConnection,
+  testing
+} from "@wormhole-foundation/sdk-definitions";
+import { Wormhole, networkPlatformConfigs } from "../src";
 
-const network: Network = "Devnet";
-const allPlatformCtrs = platforms.map((p) => {
-  return testing.mocks.mockPlatformFactory(network, p, CONFIG[network].chains);
-});
+const network: Network = "Testnet";
+const allPlatformCtrs = platform.platforms.map((p) => testing.mocks.mockPlatformFactory(network, p, networkPlatformConfigs(network, p)));
 
 describe("Wormhole Tests", () => {
   let wh: Wormhole;
@@ -26,13 +23,13 @@ describe("Wormhole Tests", () => {
     wh = new Wormhole(network, allPlatformCtrs);
   });
 
-  let p: Platform<Platform>;
+  let p: PlatformContext<Network, Platform>;
   test("returns Platform", async () => {
-    p = wh.getPlatform("Ethereum");
+    p = wh.getPlatform("Evm");
     expect(p).toBeTruthy();
   });
 
-  let c: ChainContext<Platform>;
+  let c: ChainContext<Network, Platform, Chain>;
   test("returns chain", async () => {
     c = wh.getChain("Ethereum");
     expect(c).toBeTruthy();
@@ -72,10 +69,10 @@ describe("Wormhole Tests", () => {
 });
 
 describe("Platform Tests", () => {
-  let p: Platform<Platform>;
+  let p: PlatformContext<Network, Platform>;
   beforeEach(() => {
     const wh = new Wormhole(network, allPlatformCtrs);
-    p = wh.getPlatform("Ethereum");
+    p = wh.getPlatform("Evm");
   });
 
   let rpc: RpcConnection<Platform>;
@@ -83,18 +80,10 @@ describe("Platform Tests", () => {
     rpc = p.getRpc("Ethereum");
     expect(rpc).toBeTruthy();
   });
-
-  let tb: TokenBridge<Platform>;
-  test("Gets Token Bridge", async () => {
-    if (!supportsTokenBridge(p)) throw new Error("Fail");
-
-    tb = await p.getTokenBridge(rpc);
-    expect(tb).toBeTruthy();
-  });
 });
 
 describe("Chain Tests", () => {
-  let c: ChainContext<Platform>;
+  let c: ChainContext<Network, Platform, Chain>;
   beforeEach(() => {
     const wh = new Wormhole(network, allPlatformCtrs);
     c = wh.getChain("Ethereum");

@@ -1,28 +1,19 @@
-import {
-  Chain,
-  ChainToPlatform,
-  Network,
-  Platform,
-  PlatformToChains,
-} from "@wormhole-foundation/sdk-base";
-import { ChainConfig, ChainContext, PlatformUtils } from "../..";
-import { mockPlatformFactory } from "./platform";
+import { Chain, Network, Platform, PlatformToChains } from "@wormhole-foundation/sdk-base";
+import { ChainContext, PlatformContext } from "../..";
 
-export function chainFactory<N extends Network, P extends Platform>(
-  p: PlatformUtils<N, P>,
-  chain: PlatformToChains<P>,
-): ChainContext<N, PlatformToChains<P>> {
+export function chainFactory<N extends Network, P extends Platform, C extends PlatformToChains<P>>(
+  p: PlatformContext<N, P>,
+  chain: C,
+): ChainContext<N, P, C> {
   return p.getChain(chain);
 }
 
-export class MockChain<N extends Network, C extends Chain> extends ChainContext<N, C> {
-  readonly platform: PlatformUtils<N, ChainToPlatform<C>>;
-  constructor(config: ChainConfig<N, C>) {
-    super(config);
-    this.platform = mockPlatformFactory<N, ChainToPlatform<C>>(
-      config.network,
-      config.platform as ChainToPlatform<C>,
-      {},
-    );
+export class MockChain<
+  N extends Network,
+  P extends Platform,
+  C extends Chain = PlatformToChains<P>,
+> extends ChainContext<N, P, C> {
+  constructor(chain: C, platform: PlatformContext<N, P>) {
+    super(chain, platform);
   }
 }

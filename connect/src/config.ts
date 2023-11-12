@@ -1,4 +1,4 @@
-import { Network, circleAPI, Platform } from "@wormhole-foundation/sdk-base";
+import { Network, circle, Platform } from "@wormhole-foundation/sdk-base";
 import { WormholeConfig } from "./types";
 import { buildConfig, ChainsConfig } from "@wormhole-foundation/sdk-definitions";
 
@@ -10,12 +10,12 @@ export const WHSCAN_RETRY_INTERVAL = 2000;
 export const CONFIG = {
   Mainnet: {
     api: "https://api.wormholescan.io",
-    circleAPI: circleAPI("Mainnet"),
+    circleAPI: circle.circleAPI("Mainnet"),
     chains: buildConfig("Mainnet"),
   },
   Testnet: {
     api: "https://api.testnet.wormholescan.io",
-    circleAPI: circleAPI("Testnet"),
+    circleAPI: circle.circleAPI("Testnet"),
     chains: buildConfig("Testnet"),
   },
   Devnet: {

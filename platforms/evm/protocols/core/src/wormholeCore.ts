@@ -6,24 +6,25 @@ import {
   WormholeCore,
   WormholeMessageId,
   isWormholeMessageId,
-  toNative,
-  chainIds,
 } from '@wormhole-foundation/connect-sdk';
 import { Provider, TransactionRequest } from 'ethers';
-import { Implementation, ImplementationInterface } from './ethers-contracts';
 import { ethers_contracts } from '.';
+import { Implementation, ImplementationInterface } from './ethers-contracts';
 
 import {
-  EvmUnsignedTransaction,
   AnyEvmAddress,
-  EvmChain,
+  EvmAddress,
+  EvmChains,
+  EvmPlatform,
+  EvmUnsignedTransaction,
   addChainId,
   addFrom,
-  EvmPlatform,
-  EvmAddress,
 } from '@wormhole-foundation/connect-sdk-evm';
+import { Platform, nativeChainIds } from '@wormhole-foundation/sdk-base';
 
-export class EvmWormholeCore implements WormholeCore<'Evm'> {
+export class EvmWormholeCore<N extends Network, P extends 'Evm' = 'Evm'>
+  implements WormholeCore<P>
+{
   readonly chainId: bigint;
 
   readonly coreAddress: string;
@@ -32,12 +33,15 @@ export class EvmWormholeCore implements WormholeCore<'Evm'> {
   readonly coreIface: ImplementationInterface;
 
   private constructor(
-    readonly network: Network,
-    readonly chain: EvmChain,
+    readonly network: N,
+    readonly chain: EvmChains,
     readonly provider: Provider,
     readonly contracts: Contracts,
   ) {
-    this.chainId = chainIds.evmNetworkChainToEvmChainId.get(network, chain)!;
+    this.chainId = nativeChainIds.networkChainToNativeChainId.get(
+      network,
+      chain,
+    ) as bigint;
 
     this.coreIface = ethers_contracts.Implementation__factory.createInterface();
 
@@ -51,16 +55,17 @@ export class EvmWormholeCore implements WormholeCore<'Evm'> {
     );
   }
 
-  static async fromRpc(
+  static async fromRpc<N extends Network>(
     provider: Provider,
-    config: ChainsConfig,
-  ): Promise<EvmWormholeCore> {
+    config: ChainsConfig<N, Platform>,
+  ): Promise<EvmWormholeCore<N>> {
     const [network, chain] = await EvmPlatform.chainFromRpc(provider);
-    return new EvmWormholeCore(
-      network,
+
+    return new EvmWormholeCore<N>(
+      network as N,
       chain,
       provider,
-      config[chain]!.contracts,
+      config[chain].contracts,
     );
   }
 
@@ -98,7 +103,7 @@ export class EvmWormholeCore implements WormholeCore<'Evm'> {
         });
         if (parsed === null) return undefined;
 
-        const emitterAddress = toNative(this.chain, parsed.args['sender']);
+        const emitterAddress = new EvmAddress(parsed.args['sender']);
         return {
           chain: this.chain,
           emitter: emitterAddress.toUniversalAddress(),

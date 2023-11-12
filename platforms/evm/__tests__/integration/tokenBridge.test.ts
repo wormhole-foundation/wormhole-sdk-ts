@@ -1,15 +1,15 @@
 import {
+  CONFIG,
   ChainAddress,
+  DEFAULT_NETWORK,
   Signature,
   TokenBridge,
   UniversalAddress,
-  testing,
-  toNative,
-  DEFAULT_NETWORK,
   createVAA,
   encoding,
-  chainIds,
-  CONFIG,
+  testing,
+  nativeChainIds,
+  toNative
 } from '@wormhole-foundation/connect-sdk';
 
 import '@wormhole-foundation/connect-sdk-evm-core';
@@ -21,7 +21,7 @@ import {
 } from '../../src';
 
 
-import { test, describe, expect } from '@jest/globals';
+import { describe, expect, test } from '@jest/globals';
 
 import nock from 'nock';
 
@@ -117,12 +117,12 @@ const recipient: ChainAddress = {
 };
 
 describe('TokenBridge Tests', () => {
-  const p = EvmPlatform.setConfig(network, configs);
+  const p = EvmPlatform.fromNetworkConfig(network, configs);
   let tb: TokenBridge<'Evm'>;
 
   test('Create TokenBridge', async () => {
     const rpc = p.getRpc('Ethereum');
-    tb = await p.getTokenBridge(rpc)
+    tb = await p.getProtocol("TokenBridge", rpc)
     expect(tb).toBeTruthy();
   });
 
@@ -228,9 +228,8 @@ describe('TokenBridge Tests', () => {
 
       const { transaction } = attestTx;
       expect(transaction.chainId).toEqual(
-        chainIds.evmNetworkChainToEvmChainId(
+        nativeChainIds.networkChainToNativeChainId.get(
           network,
-          // @ts-ignore
           chain
         ),
       );
@@ -266,8 +265,7 @@ describe('TokenBridge Tests', () => {
 
       const { transaction } = attestTx;
       expect(transaction.chainId).toEqual(
-        // @ts-ignore
-        chainIds.evmNetworkChainToEvmChainId(network, chain),
+        nativeChainIds.networkChainToNativeChainId.get(network, chain),
       );
     });
   });
@@ -297,8 +295,7 @@ describe('TokenBridge Tests', () => {
 
           const { transaction } = xferTx;
           expect(transaction.chainId).toEqual(
-            // @ts-ignore
-            chainIds.evmNetworkChainToEvmChainId(network, chain),
+            nativeChainIds.networkChainToNativeChainId.get(network, chain),
           );
         });
 
@@ -328,9 +325,8 @@ describe('TokenBridge Tests', () => {
           const { transaction: xferTransaction } = xferTx;
           expect(xferTransaction.to).toEqual(tbAddress.toString());
           expect(xferTransaction.chainId).toEqual(
-            chainIds.evmNetworkChainToEvmChainId(
+            nativeChainIds.networkChainToNativeChainId.get(
               network,
-              //@ts-ignore
               chain
             ),
           );
