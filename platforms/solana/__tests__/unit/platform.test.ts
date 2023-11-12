@@ -29,7 +29,7 @@ describe('Solana Platform Tests', () => {
 
   describe('Get Token Bridge', () => {
     test('Hardcoded Genesis mock', async () => {
-      const p = SolanaPlatform.fromNetworkConfig(network, {
+      const p = new SolanaPlatform(network, {
         [SOLANA_CHAINS[0]]: configs[SOLANA_CHAINS[0]],
       });
 
@@ -40,13 +40,13 @@ describe('Solana Platform Tests', () => {
 
   describe('Get Chain', () => {
     test('No conf', () => {
-      const p = SolanaPlatform.fromNetworkConfig(network, {});
+      const p = new SolanaPlatform(network, {});
       expect(p.config).toEqual({});
       expect(() => p.getChain(SOLANA_CHAINS[0])).toThrow();
     });
 
     test('With conf', () => {
-      const p = SolanaPlatform.fromNetworkConfig(network, {
+      const p = new SolanaPlatform(network, {
         [SOLANA_CHAINS[0]]: configs[SOLANA_CHAINS[0]],
       });
       expect(() => p.getChain(SOLANA_CHAINS[0])).not.toThrow();
@@ -55,7 +55,7 @@ describe('Solana Platform Tests', () => {
 
   describe('Get RPC Connection', () => {
     test('No conf', () => {
-      const p = SolanaPlatform.fromNetworkConfig(network, {});
+      const p = new SolanaPlatform(network, {});
       expect(p.config).toEqual({});
 
       // expect getRpc to throw an error since we havent provided
@@ -65,7 +65,7 @@ describe('Solana Platform Tests', () => {
     });
 
     test('With conf', () => {
-      const p = SolanaPlatform.fromNetworkConfig(network, {
+      const p = new SolanaPlatform(network, {
         [SOLANA_CHAINS[0]]: configs[SOLANA_CHAINS[0]],
       });
       expect(() => p.getRpc(SOLANA_CHAINS[0])).not.toThrow();

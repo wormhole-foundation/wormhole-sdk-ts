@@ -29,10 +29,6 @@ export function mockPlatformFactory<N extends Network, P extends Platform>(
       super(network, _config ? _config : config);
       this.network = network;
     }
-
-    static fromNetworkConfig(network: N, _conf?: ChainsConfig<N, P>): MockPlatform<N, P> {
-      return new ConcreteMockPlatform(network, _conf);
-    }
   }
   // @ts-ignore
   return ConcreteMockPlatform<N>;

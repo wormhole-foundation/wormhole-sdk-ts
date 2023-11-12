@@ -7,8 +7,8 @@ import {
   UniversalAddress,
   createVAA,
   encoding,
-  testing,
   nativeChainIds,
+  testing,
   toNative
 } from '@wormhole-foundation/connect-sdk';
 
@@ -16,8 +16,8 @@ import '@wormhole-foundation/connect-sdk-evm-core';
 import '@wormhole-foundation/connect-sdk-evm-tokenbridge';
 
 import {
-  EvmPlatform,
-  EvmUnsignedTransaction,
+  EvmChains,
+  EvmPlatform
 } from '../../src';
 
 
@@ -117,8 +117,8 @@ const recipient: ChainAddress = {
 };
 
 describe('TokenBridge Tests', () => {
-  const p = EvmPlatform.fromNetworkConfig(network, configs);
-  let tb: TokenBridge<'Evm'>;
+  const p = new EvmPlatform(network, configs);
+  let tb: TokenBridge<typeof network, 'Evm', EvmChains>;
 
   test('Create TokenBridge', async () => {
     const rpc = p.getRpc('Ethereum');
@@ -217,7 +217,7 @@ describe('TokenBridge Tests', () => {
 
     test('Create Attestation', async () => {
       const attestation = tb.createAttestation(nativeAddress);
-      const allTxns: EvmUnsignedTransaction[] = [];
+      const allTxns = [];
       for await (const atx of attestation) {
         allTxns.push(atx);
       }
@@ -254,7 +254,7 @@ describe('TokenBridge Tests', () => {
       });
       const submitAttestation = tb.submitAttestation(vaa);
 
-      const allTxns: EvmUnsignedTransaction[] = [];
+      const allTxns = [];
       for await (const atx of submitAttestation) {
         allTxns.push(atx);
       }
@@ -283,7 +283,7 @@ describe('TokenBridge Tests', () => {
           const xfer = tb.transfer(sender, recipient, token, amount, payload);
           expect(xfer).toBeTruthy();
 
-          const allTxns: EvmUnsignedTransaction[] = [];
+          const allTxns = [];
           for await (const tx of xfer) {
             allTxns.push(tx);
           }
@@ -309,7 +309,7 @@ describe('TokenBridge Tests', () => {
           );
           expect(xfer).toBeTruthy();
 
-          const allTxns: EvmUnsignedTransaction[] = [];
+          const allTxns = [];
           for await (const tx of xfer) {
             allTxns.push(tx);
           }

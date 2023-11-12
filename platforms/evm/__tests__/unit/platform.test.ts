@@ -29,12 +29,12 @@ const configs = CONFIG[network].chains;
 describe('EVM Platform Tests', () => {
   describe('Get Token Bridge', () => {
     test('No RPC', async () => {
-      const p = EvmPlatform.fromNetworkConfig(network, {});
+      const p = new EvmPlatform(network, {});
       const rpc = getDefaultProvider('');
       expect(() => p.getProtocol("TokenBridge", rpc)).rejects.toThrow();
     });
     test('With RPC', async () => {
-      const p = EvmPlatform.fromNetworkConfig(network, {
+      const p = new EvmPlatform(network, {
         [EVM_CHAINS[0]]: configs[EVM_CHAINS[0]],
       });
 
@@ -46,12 +46,12 @@ describe('EVM Platform Tests', () => {
 
   describe('Get Automatic Token Bridge', () => {
     test('No RPC', async () => {
-      const p = EvmPlatform.fromNetworkConfig(network, {});
+      const p = new EvmPlatform(network, {});
       const rpc = getDefaultProvider('');
       expect(() => p.getProtocol("AutomaticTokenBridge", rpc)).rejects.toThrow();
     });
     test('With RPC', async () => {
-      const p = EvmPlatform.fromNetworkConfig(network, {
+      const p = new EvmPlatform(network, {
         [EVM_CHAINS[0]]: configs[EVM_CHAINS[0]],
       });
       const rpc = getDefaultProvider('');
@@ -62,13 +62,13 @@ describe('EVM Platform Tests', () => {
 
   describe('Get Chain', () => {
     test('No conf', () => {
-      const p = EvmPlatform.fromNetworkConfig(network, {});
+      const p = new EvmPlatform(network, {});
       expect(p.config).toEqual({});
       expect(() => p.getChain(EVM_CHAINS[0])).toThrow();
     });
 
     test('With conf', () => {
-      const p = EvmPlatform.fromNetworkConfig(network, {
+      const p = new EvmPlatform(network, {
         [EVM_CHAINS[0]]: configs[EVM_CHAINS[0]],
       });
       expect(() => p.getChain(EVM_CHAINS[0])).not.toThrow();
@@ -77,7 +77,7 @@ describe('EVM Platform Tests', () => {
 
   describe('Get RPC Connection', () => {
     test('No conf', () => {
-      const p = EvmPlatform.fromNetworkConfig(network, {});
+      const p = new EvmPlatform(network, {});
       expect(p.config).toEqual({});
 
       // expect getRpc to throw an error since we havent provided
@@ -86,7 +86,7 @@ describe('EVM Platform Tests', () => {
     });
 
     test('With conf', () => {
-      const p = EvmPlatform.fromNetworkConfig(network, {
+      const p = new EvmPlatform(network, {
         [EVM_CHAINS[0]]: configs[EVM_CHAINS[0]],
       });
       const C = p.getChain(EVM_CHAINS[0]);

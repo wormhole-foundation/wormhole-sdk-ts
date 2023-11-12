@@ -91,7 +91,7 @@ afterEach(async () => {
 });
 
 describe('TokenBridge Tests', () => {
-  const p = SolanaPlatform.fromNetworkConfig(network, configs);
+  const p = new SolanaPlatform(network, configs);
 
   let tb: TokenBridge<TNet, 'Solana', SolanaChains>;
 
@@ -229,7 +229,7 @@ describe('TokenBridge Tests', () => {
       });
       const submitAttestation = tb.submitAttestation(vaa, sender);
 
-      const allTxns: SolanaUnsignedTransaction<TNet>[] = [];
+      const allTxns = [];
       for await (const atx of submitAttestation) {
         allTxns.push(atx);
       }
@@ -260,7 +260,7 @@ describe('TokenBridge Tests', () => {
           const xfer = tb.transfer(sender, recipient, token, amount, payload);
           expect(xfer).toBeTruthy();
 
-          const allTxns: SolanaUnsignedTransaction<TNet>[] = [];
+          const allTxns = [];
           for await (const tx of xfer) {
             allTxns.push(tx);
           }
@@ -285,7 +285,7 @@ describe('TokenBridge Tests', () => {
           );
           expect(xfer).toBeTruthy();
 
-          const allTxns: SolanaUnsignedTransaction<TNet>[] = [];
+          const allTxns = [];
           for await (const tx of xfer) {
             allTxns.push(tx);
           }

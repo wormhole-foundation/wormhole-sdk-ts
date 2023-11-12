@@ -40,25 +40,17 @@ import {
 /**
  * @category Solana
  */
-export class SolanaPlatform<N extends Network>
-  implements PlatformContext<N, SolanaPlatformType>
-{
+export class SolanaPlatform<N extends Network> extends PlatformContext<
+  N,
+  SolanaPlatformType
+> {
   static _platform = _platform;
-  config: ChainsConfig<N, SolanaPlatformType>;
 
-  constructor(
-    readonly network: N,
-    config?: ChainsConfig<N, SolanaPlatformType>,
-  ) {
-    this.config =
-      config ?? networkPlatformConfigs(network, SolanaPlatform._platform);
-  }
-
-  static fromNetworkConfig<N extends Network>(
-    network: N,
-    config?: ChainsConfig<N, SolanaPlatformType>,
-  ): SolanaPlatform<N> {
-    return new SolanaPlatform(network, config);
+  constructor(network: N, config?: ChainsConfig<N, SolanaPlatformType>) {
+    super(
+      network,
+      config ?? networkPlatformConfigs(network, SolanaPlatform._platform),
+    );
   }
 
   getRpc<C extends SolanaChains>(

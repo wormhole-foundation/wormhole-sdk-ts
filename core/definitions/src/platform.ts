@@ -12,7 +12,8 @@ import { TokenAddress } from "./address";
 import { Balances, ChainsConfig, SignedTx, TokenId, TxHash } from "./types";
 import { ProtocolInitializer } from "./protocol";
 
-// Utilities for a given Platform. These should be implemented as static methods on the Platform class
+// PlatformUtils represents the _static_ attributes available on
+// the PlatformContext Class
 export interface PlatformUtils<N extends Network, P extends Platform> {
   _platform: P;
 
@@ -73,21 +74,24 @@ export interface PlatformUtils<N extends Network, P extends Platform> {
   ): Promise<TxHash[]>;
 }
 
-export interface PlatformContext<N extends Network, P extends Platform> {
-  readonly network: N;
-  readonly config: ChainsConfig<N, P>;
+// PlatformContext is an instance of the class that represents a specific Platform
+export abstract class PlatformContext<N extends Network, P extends Platform> {
+  constructor(
+    readonly network: N,
+    readonly config: ChainsConfig<N, P>,
+  ) {}
 
   // Create a _new_ RPC Connection
-  getRpc<C extends PlatformToChains<P>>(chain: C): RpcConnection<P>;
+  abstract getRpc<C extends PlatformToChains<P>>(chain: C): RpcConnection<P>;
 
   // Create a new Chain context object
-  getChain<C extends PlatformToChains<P>>(chain: C): ChainContext<N, P, C>;
+  abstract getChain<C extends PlatformToChains<P>>(chain: C): ChainContext<N, P, C>;
 
   // Create a new Protocol Client instance by protocol name
-  getProtocol<PN extends ProtocolName, T>(protocol: PN, rpc: RpcConnection<P>): Promise<T>;
+  abstract getProtocol<PN extends ProtocolName, T>(protocol: PN, rpc: RpcConnection<P>): Promise<T>;
 
   // Look up transaction logs and parse out Wormhole messages
-  parseTransaction<C extends PlatformToChains<P>>(
+  abstract parseTransaction<C extends PlatformToChains<P>>(
     chain: C,
     rpc: RpcConnection<P>,
     txid: TxHash,

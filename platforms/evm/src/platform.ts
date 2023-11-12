@@ -32,15 +32,17 @@ import { AnyEvmAddress, EvmChains, EvmPlatformType, _platform } from './types';
  * @category EVM
  */
 
-export class EvmPlatform<N extends Network>
-  implements PlatformContext<N, EvmPlatformType>
-{
+export class EvmPlatform<N extends Network> extends PlatformContext<
+  N,
+  EvmPlatformType
+> {
   static _platform: EvmPlatformType = _platform;
-  config: ChainsConfig<N, EvmPlatformType>;
 
-  constructor(readonly network: N, _config?: ChainsConfig<N, EvmPlatformType>) {
-    this.config =
-      _config ?? networkPlatformConfigs(network, EvmPlatform._platform);
+  constructor(network: N, _config?: ChainsConfig<N, EvmPlatformType>) {
+    super(
+      network,
+      _config ?? networkPlatformConfigs(network, EvmPlatform._platform),
+    );
   }
 
   getRpc<C extends EvmChains>(chain: C): Provider {
@@ -73,13 +75,6 @@ export class EvmPlatform<N extends Network>
       rpc,
     );
     return wc.parseTransaction(txid);
-  }
-
-  static fromNetworkConfig<N extends Network>(
-    network: N,
-    config?: ChainsConfig<N, EvmPlatformType>,
-  ): EvmPlatform<N> {
-    return new EvmPlatform(network, config);
   }
 
   static nativeTokenId<C extends EvmChains>(chain: C): TokenId<C> {
