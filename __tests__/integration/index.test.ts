@@ -1,32 +1,32 @@
 import {
-  TokenBridge,
-  UniversalAddress,
-  Platform,
-  RpcConnection,
   ChainContext,
+  PlatformContext,
+  RpcConnection,
+  TokenBridge,
   testing,
-  supportsTokenBridge,
-} from "@wormhole-foundation/sdk-definitions";
-import { Platform } from "@wormhole-foundation/sdk-base";
-import { Wormhole } from "@wormhole-foundation/connect-sdk";
-import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
+  Network,
+  Platform,
+  Wormhole,
+  Chain,
+} from "@wormhole-foundation/connect-sdk";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
+import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 
 const allPlatformCtrs = [SolanaPlatform, EvmPlatform];
 
 describe("Wormhole Tests", () => {
-  let wh: Wormhole;
+  let wh: Wormhole<Network>;
   beforeEach(() => {
     wh = new Wormhole("Devnet", allPlatformCtrs);
   });
 
-  let p: Platform<Platform>;
+  let p: PlatformContext<Network, Platform>;
   test("returns Platform", async () => {
-    p = wh.getPlatform("Ethereum");
+    p = wh.getPlatform("Evm");
     expect(p).toBeTruthy();
   });
 
-  let c: ChainContext<Platform>;
+  let c: ChainContext<Network, Platform, Chain>;
   test("returns chain", async () => {
     c = wh.getChain("Ethereum");
     expect(c).toBeTruthy();
@@ -48,10 +48,10 @@ describe("Wormhole Tests", () => {
 });
 
 describe("Platform Tests", () => {
-  let p: Platform<"Evm">;
+  let p: PlatformContext<Network, "Evm">;
   beforeEach(() => {
     const wh = new Wormhole("Devnet", allPlatformCtrs);
-    p = wh.getPlatform("Ethereum") as Platform<"Evm">;
+    p = wh.getPlatform("Evm");
   });
 
   let rpc: RpcConnection<Platform>;
@@ -60,18 +60,17 @@ describe("Platform Tests", () => {
     expect(rpc).toBeTruthy();
   });
 
-  let tb: TokenBridge<Platform>;
+  let tb: TokenBridge<"Devnet", "Evm", "Ethereum">;
   test("Gets Token Bridge", async () => {
-    if (supportsTokenBridge(p)) tb = await p.getTokenBridge(rpc);
+    tb = await p.getProtocol("TokenBridge", rpc);
     expect(tb).toBeTruthy();
   });
 });
 
 describe("Chain Tests", () => {
-  let c: ChainContext<Platform>;
+  let c: ChainContext<"Devnet", "Evm", "Ethereum">;
   beforeEach(() => {
-    const wh = new Wormhole("Devnet", allPlatformCtrs);
-    const p = wh.getPlatform("Ethereum");
+    const wh = new Wormhole<"Devnet">("Devnet", allPlatformCtrs);
     c = wh.getChain("Ethereum");
   });
 

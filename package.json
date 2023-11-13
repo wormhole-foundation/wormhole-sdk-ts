@@ -1,6 +1,6 @@
 {
   "name": "connect-sdk",
-  "version": "0.1.8-beta.11",
+  "version": "0.2.0-beta.0",
   "license": "Apache-2.0",
   "directories": {
     "test": "__tests__"
@@ -34,7 +34,7 @@
     "bump:beta": "bump prerelease && npm run bump:beta --workspaces --if-present",
     "test:tilt": "jest --verbose --config ./jest.config.ts --roots ./__tests__/tilt",
     "test": "NETWORK=Mainnet npm run test --workspaces --if-present",
-    "docs": "typedoc"
+    "docs": "NODE_OPTIONS=--max_old_space_size=8192 typedoc --options typedoc.json"
   },
   "workspaces": [
     "core/base",
