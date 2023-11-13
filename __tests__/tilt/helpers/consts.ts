@@ -1,12 +1,12 @@
-const ci = true
+export const ci = true;
 
-export const SOLANA_PRIVATE_KEY = "J2D4pwDred8P9ioyPEZVLPht885AeYpifsFGUyuzVmiKQosAvmZP4EegaKFrSprBC5vVP1xTvu61vYDWsxBNsYx"
-export const ETH_PRIVATE_KEY =
-    "0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d"; // account 0
+export const SOLANA_PRIVATE_KEY =
+  "J2D4pwDred8P9ioyPEZVLPht885AeYpifsFGUyuzVmiKQosAvmZP4EegaKFrSprBC5vVP1xTvu61vYDWsxBNsYx";
+export const ETH_PRIVATE_KEY = "0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d"; // account 0
 export const TERRA_PRIVATE_KEY =
-    "noble width taxi input there patrol clown public spell aunt wish punch moment will misery eight excess arena pen turtle minimum grain vague inmate"; // test7
+  "noble width taxi input there patrol clown public spell aunt wish punch moment will misery eight excess arena pen turtle minimum grain vague inmate"; // test7
 export const TERRA2_PRIVATE_KEY =
-    "symbol force gallery make bulk round subway violin worry mixture penalty kingdom boring survey tool fringe patrol sausage hard admit remember broken alien absorb"; // test3
+  "symbol force gallery make bulk round subway violin worry mixture penalty kingdom boring survey tool fringe patrol sausage hard admit remember broken alien absorb"; // test3
 
 export const TEST_ERC20 = "0x2D8BE6BF0baA74e0A907016679CaE9190e80dD0A";
 export const TEST_SOLANA_TOKEN = "2WDq7wSs9zYrpx2kbHDA4RUTRch2CCTP6ZWaH4GNfnQQ";
@@ -35,29 +35,29 @@ export const TEST_SOLANA_TOKEN = "2WDq7wSs9zYrpx2kbHDA4RUTRch2CCTP6ZWaH4GNfnQQ";
 //     ? "http://terra2-terrad:1317"
 //     : "http://localhost:1318";
 // export const TERRA_CHAIN_ID = "localterra";
-// 
+//
 // export const TERRA_GAS_PRICES_URL = ci
 //     ? "http://terra-fcd:3060/v1/txs/gas_prices"
 //     : "http://localhost:3060/v1/txs/gas_prices";
 // export const TERRA2_GAS_PRICES_URL = ci
 //     ? "http://terra2-fcd:3060/v1/txs/gas_prices"
 //     : "http://localhost:3061/v1/txs/gas_prices";
-// 
+//
 // // NOTE: test1 is used by getIsTransferCompletedTerra, so avoid using it in the integration tests
 // // Accounts from https://github.com/terra-money/LocalTerra/blob/main/README.md#accounts
 // export const TERRA_PRIVATE_KEY2 =
 //     "quality vacuum heart guard buzz spike sight swarm shove special gym robust assume sudden deposit grid alcohol choice devote leader tilt noodle tide penalty"; // test2
-// 
-// 
+//
+//
 // export const TERRA_HOST = {
 //     URL: TERRA_NODE_URL,
 //     chainID: "columbus-5",
 //     name: "localterra",
 //     isClassic: true,
 // };
-// 
+//
 // export const NEAR_NODE_URL = ci ? "http://near:3030" : "http://localhost:3030";
-// 
+//
 // export const APTOS_NODE_URL = ci
 //     ? "http://aptos:8080/v1"
 //     : "http://0.0.0.0:8080/v1";
@@ -66,9 +66,9 @@ export const TEST_SOLANA_TOKEN = "2WDq7wSs9zYrpx2kbHDA4RUTRch2CCTP6ZWaH4GNfnQQ";
 //     : "http://0.0.0.0:8081";
 // export const APTOS_PRIVATE_KEY =
 //     "537c1f91e56891445b491068f519b705f8c0f1a1e66111816dd5d4aa85b8113d";
-// 
+//
 // export const SUI_NODE_URL = ci ? "http://sui:9000" : "http://localhost:9000";
 // export const SUI_FAUCET_URL = ci
 //     ? "http://sui:5003/gas"
 //     : "http://localhost:5003/gas";
-// 
+//

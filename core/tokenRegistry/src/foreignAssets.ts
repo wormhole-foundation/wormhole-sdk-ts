@@ -18,7 +18,7 @@ console.warn = function (x: any, ...rest: any) {
   }
 };
 
-import { Chain, chains } from "@wormhole-foundation/sdk-base";
+import { Chain, Network, chains } from "@wormhole-foundation/sdk-base";
 import { ForeignAssetsCache, TokenEntries, TokensConfig } from "./types";
 import { TokenId, Wormhole, toNative } from "@wormhole-foundation/connect-sdk";
 
@@ -49,7 +49,7 @@ export const createTokenId = (chain: Chain, address: string) => {
   };
 };
 
-export const getForeignAddress = async (wh: Wormhole, chain: Chain, tokenId: TokenId) => {
+export const getForeignAddress = async (wh: Wormhole<Network>, chain: Chain, tokenId: TokenId) => {
   if (!isSupportedChain(chain)) return undefined;
   let foreignAddress: string | null = null;
   try {
@@ -69,7 +69,7 @@ export const getForeignAddress = async (wh: Wormhole, chain: Chain, tokenId: Tok
 };
 
 export const getForeignAssetsData = async (
-  wh: Wormhole,
+  wh: Wormhole<Network>,
   chain: Chain,
   tokenId: TokenId,
   foreignAssetsCache: ForeignAssetsCache | undefined,
@@ -117,7 +117,7 @@ export const getForeignAssetsData = async (
 type MaybeUpdate = [Chain, string, ForeignAssetsCache | undefined];
 
 export const getForeignAssetsDataForChain = async (
-  wh: Wormhole,
+  wh: Wormhole<Network>,
   chain: Chain,
   chainTokensConfig: TokenEntries,
 ) => {
@@ -142,7 +142,7 @@ export const getForeignAssetsDataForChain = async (
   return maybeUpdates;
 };
 
-export const getSuggestedUpdates = async (wh: Wormhole, tokensConfig: TokensConfig) => {
+export const getSuggestedUpdates = async (wh: Wormhole<Network>, tokensConfig: TokensConfig) => {
   let suggestedUpdates: TokensConfig = {};
   let numUpdates = 0;
 
