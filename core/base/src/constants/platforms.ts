@@ -72,7 +72,7 @@ const platformAddressFormatEntries = [
   ["Algorand", "algorandAppId"],
   ["Sui", "hex"],
   ["Aptos", "hex"],
-  ["Near", "base58"],
+  ["Near", "sha256"],
 ] as const;
 
 export const platformToAddressFormat = constMap(platformAddressFormatEntries);
