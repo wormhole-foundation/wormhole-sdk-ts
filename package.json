@@ -52,6 +52,7 @@
     "platforms/cosmwasm/protocols/tokenBridge",
     "platforms/cosmwasm/protocols/ibc",
     "platforms/algorand",
+    "platforms/algorand/protocols/core",
     "platforms/algorand/protocols/tokenBridge",
     "examples",
     "core/tokenRegistry"
