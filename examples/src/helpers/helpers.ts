@@ -59,8 +59,7 @@ export async function getStuff<
       throw new Error("Unrecognized platform: " + chain.platformUtils._platform);
   }
 
-  // @ts-ignore
-  return { chain, signer, address: nativeChainAddress([signer.chain(), signer.address()]) };
+  return { chain, signer, address: nativeChainAddress(chain.chain, signer.address()) };
 }
 
 export async function waitLog(xfer: WormholeTransfer): Promise<void> {

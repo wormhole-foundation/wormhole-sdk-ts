@@ -26,4 +26,5 @@ export * from "./protocols/tokenBridge";
 export * from "./protocols/cctp";
 export * from "./protocols/ibc";
 
+export * as layoutItems from "./layout-items";
 export * as testing from "./testing";

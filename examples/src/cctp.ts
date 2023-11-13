@@ -51,10 +51,14 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
   // This is especially helpful for chains with longer time to finality where you don't want
   // to have to wait for the attestation to be generated.
 
-  //await completeTransfer(wh, {
-  //  chain: "Avalanche",
-  //  txid: "0x4695a5ae7ed2efcf2d585bdb2e64436f6b8bd67fe547789d8b8ba6fab6d9483f",
-  //});
+  // await completeTransfer(
+  //   wh,
+  //   {
+  //     chain: "Avalanche",
+  //     txid: "0x6b6d5f101a32aa6d2f7bf0bf14d72bfbf76a640e1b2fdbbeeac5b82069cda4dd",
+  //   },
+  //   destination.signer,
+  // );
 })();
 
 async function cctpTransfer<N extends Network>(

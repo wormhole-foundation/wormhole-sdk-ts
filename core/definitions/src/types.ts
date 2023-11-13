@@ -4,15 +4,15 @@ import {
   Network,
   Platform,
   PlatformToChains,
-  finality,
   chainToPlatform,
   chains,
-  isChain,
-  toChainId,
   decimals,
   explorer,
-  rpc,
+  finality,
+  isChain,
   nativeChainIds,
+  rpc,
+  toChainId,
 } from "@wormhole-foundation/sdk-base";
 import { ChainAddress, NativeAddress, toNative } from "./address";
 import { Contracts, getContracts } from "./contracts";
@@ -25,9 +25,11 @@ export type SequenceId = bigint;
 export type SignedTx = any;
 
 export type TokenId<C extends Chain = Chain> = ChainAddress<C>;
-export function isTokenId(thing: any): thing is TokenId<Chain> {
+export function isTokenId<C extends Chain>(thing: any): thing is TokenId<C> {
   return (
-    typeof (<TokenId<Chain>>thing).address !== undefined && isChain((<TokenId<Chain>>thing).chain)
+    typeof thing === "object" &&
+    typeof (<TokenId<C>>thing).address !== undefined &&
+    isChain((<TokenId<C>>thing).chain)
   );
 }
 
@@ -41,32 +43,36 @@ export function nativeChainAddress<C extends Chain>(
 ): ChainAddress<C>;
 
 export function nativeChainAddress<C extends Chain>(
-  s: Signer<Network, C> | TokenId<C> | [C, UniversalAddress | Uint8Array | string],
+  s: Signer<Network, C> | TokenId<C> | C,
+  a?: UniversalAddress | Uint8Array | string,
 ): ChainAddress<C> {
   let chain: C;
   let address: NativeAddress<C>;
 
-  if (Array.isArray(s)) {
+  // its a chain address
+  if (a) {
     // We might be passed a universal address as a string
     // First try to decode it as native, otherwise try
     // to decode it as universal and convert it to native
+    chain = s as C;
     try {
-      address = toNative(s[0], s[1]);
+      address = toNative(chain, a);
     } catch {
-      address = UniversalAddress.instanceof(s[1])
-        ? s[1].toNative(s[0])
-        : new UniversalAddress(s[1]).toNative(s[0]);
+      address = UniversalAddress.instanceof(a)
+        ? a.toNative(chain)
+        : new UniversalAddress(a).toNative(chain);
     }
-    chain = s[0];
-    address = address;
   } else if (isSigner(s)) {
     chain = s.chain();
     address = toNative(s.chain(), s.address());
-  } else {
+  } else if (isTokenId(s)) {
     // otherwise TokenId
     chain = s.chain;
     address = s.address.toNative(s.chain) as NativeAddress<C>;
+  } else {
+    throw new Error("Invalid nativeChainAddress parameters");
   }
+
   return { chain, address };
 }
 
