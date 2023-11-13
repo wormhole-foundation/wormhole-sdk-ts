@@ -1,4 +1,5 @@
 import { AlgorandUnsignedTransaction } from '@wormhole-foundation/connect-sdk-algorand';
+import type { Signer } from '@wormhole-foundation/connect-sdk-algorand';
 
 import { Network } from '@wormhole-foundation/connect-sdk';
 
@@ -15,11 +16,6 @@ import { calcLogicSigAccount } from './decode';
 import { accountExistsCache } from './account';
 import { safeBigIntToNumber } from './conversions';
 import { SEED_AMT } from './constants';
-
-type Signer = {
-  addr: string;
-  signTxn(txn: Transaction): Promise<Uint8Array>;
-};
 
 export type TransactionSignerPair = {
   tx: Transaction;
@@ -122,6 +118,7 @@ export function createUnsignedTx(
   txReq: Transaction,
   description: string,
   network: Network,
+  signer: Signer | null,
   parallelizable: boolean = false,
 ): AlgorandUnsignedTransaction {
   return new AlgorandUnsignedTransaction(
@@ -130,5 +127,6 @@ export function createUnsignedTx(
     'Algorand',
     description,
     parallelizable,
+    signer,
   );
 }

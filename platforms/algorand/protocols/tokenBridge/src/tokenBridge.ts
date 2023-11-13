@@ -33,6 +33,7 @@ import {
   AnyAlgorandAddress,
   AlgorandUnsignedTransaction,
   AlgorandAddress,
+  Signer,
 } from '@wormhole-foundation/connect-sdk-algorand';
 
 import {
@@ -507,8 +508,15 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
   private createUnsignedTx(
     txReq: Transaction,
     description: string,
+    signer: Signer | null = null,
     parallelizable: boolean = false,
   ): AlgorandUnsignedTransaction {
-    return createUnsignedTx(txReq, description, this.network, parallelizable);
+    return createUnsignedTx(
+      txReq,
+      description,
+      this.network,
+      signer,
+      parallelizable,
+    );
   }
 }

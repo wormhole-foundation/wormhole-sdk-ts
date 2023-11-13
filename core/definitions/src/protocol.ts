@@ -56,7 +56,10 @@ export function getProtocolInitializer<P extends PlatformName, PN extends Protoc
   protocol: PN,
 ): ProtocolInitializer<P> {
   const protocols = protocolFactory.get(platform);
-  if (!protocols) throw new Error(`No protocols registered for platform ${platform}`);
+  if (!protocols)
+    throw new Error(
+      `No protocols registered for platform ${platform}. You might need to import the relevant modules.`,
+    );
 
   const pctr = protocols.get(protocol);
   if (!pctr) throw new Error(`No protocol registered for ${platform}:${protocol}`);

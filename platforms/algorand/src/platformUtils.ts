@@ -103,18 +103,14 @@ export module AlgorandUtils {
     rpc: Algodv2,
     stxns: SignedTx[],
   ): Promise<TxHash[]> {
-    const txhashes = await Promise.all(
-      stxns.map(async (stxn) => {
-        const response = await rpc.sendRawTransaction(stxn).do();
-        return response.txId;
-      }),
-    );
+    // Based on the pattern followed by:
+    // https://github.com/barnjamin/wormhole-demo/blob/bf02d23558a5271d14bc94c2902bff899b982e86/src/wormhole/chains/algorand.ts#L270
 
-    await Promise.all(
-      txhashes.map((txid) => algosdk.waitForConfirmation(rpc, txid, 4)),
-    );
+    const response = await rpc.sendRawTransaction(stxns).do();
 
-    return txhashes;
+    await algosdk.waitForConfirmation(rpc, response.txid, 4);
+
+    return [response.txid];
   }
 
   export async function getCurrentBlock(rpc: Algodv2): Promise<number> {
