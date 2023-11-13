@@ -9,7 +9,7 @@ export const unusedArbiterFee = 0n;
 
 export const _platform: 'Solana' = 'Solana';
 export type SolanaPlatformType = typeof _platform;
-export type SolanaChains = PlatformToChains<SolanaPlatformType>;
 
+export type SolanaChains = PlatformToChains<SolanaPlatformType>;
 export type UniversalOrSolana = UniversalOrNative<SolanaPlatformType>;
 export type AnySolanaAddress = UniversalOrSolana | PublicKeyInitData;

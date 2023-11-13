@@ -1,14 +1,12 @@
-import { toBech32, fromBech32, fromHex, fromBase64 } from "@cosmjs/encoding";
+import { fromBase64, fromBech32, fromHex, toBech32 } from "@cosmjs/encoding";
 import {
-  encoding,
   Address,
   UniversalAddress,
+  encoding,
   registerNative,
-  onlyOnce,
 } from "@wormhole-foundation/connect-sdk";
 import { CosmwasmPlatform } from "./platform";
-import { nativeDenomToChain } from "./constants";
-import { AnyCosmwasmAddress } from "./types";
+import { AnyCosmwasmAddress, _platform } from "./types";
 
 declare global {
   namespace Wormhole {
@@ -105,7 +103,7 @@ function tryDecode(data: string): { data: Uint8Array; prefix?: string } {
 export class CosmwasmAddress implements Address {
   static readonly contractAddressByteSize = 32;
   static readonly accountAddressByteSize = 20;
-  public readonly platform = CosmwasmPlatform.platform;
+  public readonly platform = CosmwasmPlatform._platform;
 
   // the actual bytes of the address
   private readonly address: Uint8Array;
@@ -126,13 +124,13 @@ export class CosmwasmAddress implements Address {
       this.denomType = a.denomType;
       return;
     }
+
     if (typeof address === "string") {
       // A native denom like "uatom"
-      if (nativeDenomToChain.has(CosmwasmPlatform.network, address)) {
+      if (address.length <= 8) {
         this.address = new Uint8Array(0);
         this.denom = address;
         this.denomType = "native";
-        this.domain = nativeDenomToChain.get(CosmwasmPlatform.network, address);
         return;
       }
 
@@ -233,7 +231,7 @@ export class CosmwasmAddress implements Address {
   }
 
   static instanceof(address: any): address is CosmwasmAddress {
-    return address.platform === CosmwasmPlatform.platform;
+    return address.platform === CosmwasmPlatform._platform;
   }
 
   equals(other: CosmwasmAddress | UniversalAddress): boolean {
@@ -245,4 +243,4 @@ export class CosmwasmAddress implements Address {
   }
 }
 
-onlyOnce(registerNative, "Cosmwasm", CosmwasmAddress)();
+registerNative(_platform, CosmwasmAddress);

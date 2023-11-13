@@ -4,7 +4,8 @@ import { MsgTransfer } from "cosmjs-types/ibc/applications/transfer/v1/tx";
 
 import {
   ChainAddress,
-  Chain,
+  ChainsConfig,
+  Contracts,
   GatewayIbcTransferMsg,
   GatewayTransferMsg,
   GatewayTransferWithPayloadMsg,
@@ -15,15 +16,21 @@ import {
   TxHash,
   WormholeMessageId,
   chainToPlatform,
+  encoding,
   isIbcMessageId,
   isIbcTransferInfo,
   toChainId,
-  encoding,
-  Contracts,
-  ChainsConfig,
 } from "@wormhole-foundation/connect-sdk";
 
 import {
+  AnyCosmwasmAddress,
+  CosmwasmAddress,
+  CosmwasmChains,
+  CosmwasmPlatform,
+  CosmwasmPlatformType,
+  CosmwasmTransaction,
+  CosmwasmUnsignedTransaction,
+  Gateway,
   IBC_MSG_TYPE,
   IBC_PACKET_DATA,
   IBC_PACKET_DST,
@@ -36,31 +43,26 @@ import {
   IBC_TIMEOUT_MILLIS,
   IBC_TRANSFER_PORT,
   IbcChannels,
-  networkChainToChannels,
-  Gateway,
-  CosmwasmPlatform,
-  CosmwasmChain,
-  AnyCosmwasmAddress,
-  CosmwasmTransaction,
-  CosmwasmUnsignedTransaction,
   computeFee,
-  CosmwasmAddress,
+  networkChainToChannels,
 } from "@wormhole-foundation/connect-sdk-cosmwasm";
 
 import { CosmwasmWormholeCore } from "@wormhole-foundation/connect-sdk-cosmwasm-core";
 
 const millisToNano = (seconds: number) => seconds * 1_000_000;
 
-export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
+export class CosmwasmIbcBridge<N extends Network, C extends CosmwasmChains>
+  implements IbcBridge<N, CosmwasmPlatformType, C>
+{
   private gatewayAddress: string;
 
   // map the local channel ids to the remote chain
-  private channelToChain: Map<string, CosmwasmChain> = new Map();
-  private chainToChannel: Map<CosmwasmChain, string> = new Map();
+  private channelToChain: Map<string, CosmwasmChains> = new Map();
+  private chainToChannel: Map<CosmwasmChains, string> = new Map();
 
   private constructor(
-    readonly network: Network,
-    readonly chain: CosmwasmChain,
+    readonly network: N,
+    readonly chain: C,
     readonly rpc: CosmWasmClient,
     readonly contracts: Contracts,
   ) {
@@ -72,18 +74,24 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
     const channels: IbcChannels = networkChainToChannels.get(network, chain) ?? {};
 
     for (const [chain, channel] of Object.entries(channels)) {
-      this.channelToChain.set(channel, chain as CosmwasmChain);
-      this.chainToChannel.set(chain as CosmwasmChain, channel);
+      this.channelToChain.set(channel, chain as CosmwasmChains);
+      this.chainToChannel.set(chain as CosmwasmChains, channel);
     }
   }
 
-  static async fromRpc(rpc: CosmWasmClient, config: ChainsConfig): Promise<CosmwasmIbcBridge> {
+  static async fromRpc<N extends Network>(
+    rpc: CosmWasmClient,
+    config: ChainsConfig<N, CosmwasmPlatformType>,
+  ): Promise<CosmwasmIbcBridge<N, CosmwasmChains>> {
     const [network, chain] = await CosmwasmPlatform.chainFromRpc(rpc);
-    return new CosmwasmIbcBridge(network, chain, rpc, config[chain]!.contracts);
+    const conf = config[chain];
+    if (conf.network !== network)
+      throw new Error("Network mismatch: " + conf.network + " != " + network);
+    return new CosmwasmIbcBridge(network as N, chain, rpc, conf.contracts);
   }
 
-  getTransferChannel(chain: Chain): string | null {
-    return this.chainToChannel.get(chain as CosmwasmChain) ?? null;
+  getTransferChannel<C extends CosmwasmChains>(chain: C): string | null {
+    return this.chainToChannel.get(chain) ?? null;
   }
 
   async *transfer(
@@ -91,7 +99,7 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
     recipient: ChainAddress,
     token: AnyCosmwasmAddress | "native",
     amount: bigint,
-  ): AsyncGenerator<CosmwasmUnsignedTransaction> {
+  ): AsyncGenerator<CosmwasmUnsignedTransaction<N, C>> {
     const senderAddress = new CosmwasmAddress(sender).toString();
     const nonce = Math.round(Math.random() * 10000);
 
@@ -119,15 +127,15 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
 
     const ibcDenom =
       token === "native"
-        ? CosmwasmPlatform.getNativeDenom(this.chain)
-        : Gateway.deriveIbcDenom(this.chain, new CosmwasmAddress(token).toString());
+        ? CosmwasmPlatform.getNativeDenom(this.network, this.chain)
+        : Gateway.deriveIbcDenom(this.network, this.chain, new CosmwasmAddress(token).toString());
     const ibcToken = coin(amount.toString(), ibcDenom.toString());
 
     const ibcMessage: MsgTransferEncodeObject = {
       typeUrl: IBC_MSG_TYPE,
       value: MsgTransfer.fromPartial({
         sourcePort: IBC_TRANSFER_PORT,
-        sourceChannel: this.chainToChannel.get(Gateway.name)!,
+        sourceChannel: this.chainToChannel.get(Gateway.chain)!,
         sender: senderAddress,
         receiver: this.gatewayAddress,
         token: ibcToken,
@@ -139,7 +147,7 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
     yield this.createUnsignedTx(
       {
         msgs: [ibcMessage],
-        fee: computeFee(this.chain),
+        fee: computeFee(this.network, this.chain),
         memo: "Wormhole.TransferToGateway",
       },
       "IBC.transfer",
@@ -165,7 +173,11 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
   async lookupMessageFromIbcMsgId(msg: IbcMessageId): Promise<WormholeMessageId | null> {
     const tx = await this.lookupTxFromIbcMsgId(msg);
     if (!tx) return null;
-    return CosmwasmWormholeCore.parseWormholeMessage(Gateway.name, Gateway.coreAddress(), tx);
+    return CosmwasmWormholeCore.parseWormholeMessage(
+      Gateway.chain,
+      Gateway.coreAddress(this.network),
+      tx,
+    );
   }
 
   // Private because we dont want to expose the IndexedTx type
@@ -327,7 +339,7 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
   }
 
   // Fetches the local channel for the given chain
-  async fetchTransferChannel(chain: CosmwasmChain): Promise<string> {
+  async fetchTransferChannel(chain: CosmwasmChains): Promise<string> {
     if (this.chain !== Gateway.name)
       throw new Error("Cannot query the transfer channels from a non-gateway chain");
 
@@ -341,7 +353,7 @@ export class CosmwasmIbcBridge implements IbcBridge<"Cosmwasm"> {
     txReq: CosmwasmTransaction,
     description: string,
     parallelizable: boolean = false,
-  ): CosmwasmUnsignedTransaction {
+  ): CosmwasmUnsignedTransaction<N, C> {
     return new CosmwasmUnsignedTransaction(
       txReq,
       this.network,

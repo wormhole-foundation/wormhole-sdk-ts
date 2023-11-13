@@ -117,7 +117,7 @@ async function tokenTransfer(
 // If you've started a transfer but not completed it
 // this method will complete the transfer given the source
 // chain and transaction id
-async function finishTransfer(
+export async function finishTransfer(
   wh: Wormhole<Network>,
   chain: Chain,
   txid: string,

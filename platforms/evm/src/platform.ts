@@ -77,13 +77,17 @@ export class EvmPlatform<N extends Network> extends PlatformContext<
     return wc.parseTransaction(txid);
   }
 
-  static nativeTokenId<C extends EvmChains>(chain: C): TokenId<C> {
+  static nativeTokenId<N extends Network, C extends EvmChains>(
+    network: N,
+    chain: C,
+  ): TokenId<C> {
     if (!EvmPlatform.isSupportedChain(chain))
       throw new Error(`invalid chain for EVM: ${chain}`);
     return nativeChainAddress(chain, EvmZeroAddress);
   }
 
-  static isNativeTokenId<C extends EvmChains>(
+  static isNativeTokenId<N extends Network, C extends EvmChains>(
+    network: N,
     chain: C,
     tokenId: TokenId,
   ): boolean {
@@ -208,7 +212,7 @@ export class EvmPlatform<N extends Network> extends PlatformContext<
 
   static getProtocolInitializer<PN extends ProtocolName>(
     protocol: PN,
-  ): ProtocolInitializer<typeof EvmPlatform._platform, PN> {
+  ): ProtocolInitializer<EvmPlatformType, PN> {
     return getProtocolInitializer(this._platform, protocol);
   }
 }

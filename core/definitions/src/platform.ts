@@ -38,8 +38,12 @@ export interface PlatformUtils<N extends Network, P extends Platform> {
   chainFromRpc(rpc: RpcConnection<P>): Promise<[Network, Chain]>;
 
   // Get the native (gas) token id for a given chain
-  nativeTokenId<C extends PlatformToChains<P>>(chain: C): TokenId<C>;
-  isNativeTokenId<C extends PlatformToChains<P>>(chain: C, tokenId: TokenId): boolean;
+  nativeTokenId<N extends Network, C extends PlatformToChains<P>>(network: N, chain: C): TokenId<C>;
+  isNativeTokenId<N extends Network, C extends PlatformToChains<P>>(
+    network: N,
+    chain: C,
+    tokenId: TokenId,
+  ): boolean;
 
   // Get the number of decimals for a given token
   getDecimals<C extends PlatformToChains<P>>(

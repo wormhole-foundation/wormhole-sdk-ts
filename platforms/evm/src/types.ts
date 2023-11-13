@@ -11,10 +11,8 @@ export const unusedArbiterFee = 0n;
 export const _platform: 'Evm' = 'Evm';
 export type EvmPlatformType = typeof _platform;
 
-export type EvmChains<P extends EvmPlatformType = EvmPlatformType> =
-  PlatformToChains<P>;
-export type UniversalOrEvm<P extends EvmPlatformType = EvmPlatformType> =
-  UniversalOrNative<P>;
+export type EvmChains = PlatformToChains<EvmPlatformType>;
+export type UniversalOrEvm = UniversalOrNative<EvmPlatformType>;
 export type AnyEvmAddress = UniversalOrEvm | string | Uint8Array;
 
 export const addFrom = (txReq: TransactionRequest, from: string) => ({

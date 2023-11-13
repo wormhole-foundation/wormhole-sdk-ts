@@ -15,7 +15,7 @@ describe("Cosmwasm Address Tests", () => {
     });
 
     test("An invalid address is rejected", () => {
-      expect(() => new CosmwasmAddress("bogus")).toThrow();
+      expect(() => new CosmwasmAddress("bogusybogusybogus")).toThrow();
     });
   });
 });

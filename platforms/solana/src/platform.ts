@@ -88,10 +88,24 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
     return wc.parseTransaction(tx);
   }
 
-  static nativeTokenId<C extends Chain>(chain: C): TokenId<C> {
+  static nativeTokenId<N extends Network, C extends SolanaChains>(
+    network: N,
+    chain: C,
+  ): TokenId<C> {
     if (!SolanaPlatform.isSupportedChain(chain))
       throw new Error(`invalid chain: ${chain}`);
     return nativeChainAddress(chain, SolanaZeroAddress);
+  }
+
+  static isNativeTokenId<N extends Network, C extends SolanaChains>(
+    network: N,
+    chain: C,
+    tokenId: TokenId,
+  ): boolean {
+    if (!this.isSupportedChain(chain)) return false;
+    if (tokenId.chain !== chain) return false;
+    const native = this.nativeTokenId(network, chain);
+    return native == tokenId;
   }
 
   static isSupportedChain(chain: Chain): boolean {
@@ -99,12 +113,6 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
     return platform === SolanaPlatform._platform;
   }
 
-  static isNativeTokenId(chain: Chain, tokenId: TokenId): boolean {
-    if (!this.isSupportedChain(chain)) return false;
-    if (tokenId.chain !== chain) return false;
-    const native = this.nativeTokenId(chain);
-    return native == tokenId;
-  }
   static async getDecimals(
     chain: Chain,
     rpc: Connection,

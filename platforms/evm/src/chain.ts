@@ -1,7 +1,7 @@
 import { Chain, ChainContext, Network } from '@wormhole-foundation/connect-sdk';
-import { EvmChains } from './types';
+import { EvmChains, EvmPlatformType } from './types';
 
 export class EvmChain<
   N extends Network = Network,
   C extends Chain = EvmChains,
-> extends ChainContext<N, 'Evm', C> {}
+> extends ChainContext<N, EvmPlatformType, C> {}

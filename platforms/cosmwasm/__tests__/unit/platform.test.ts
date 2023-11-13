@@ -4,6 +4,7 @@ import {
   CONFIG,
 } from "@wormhole-foundation/connect-sdk";
 import { CosmwasmPlatform } from "../../src/platform";
+import { CosmwasmChains } from "../../src";
 
 const network = "Testnet"; // DEFAULT_NETWORK;
 const configs = CONFIG[network].chains;
@@ -11,18 +12,18 @@ const configs = CONFIG[network].chains;
 // const COSMWASM_CHAINS = chains.filter(
 //   (c) => chainToPlatform(c) === CosmwasmPlatform.platform
 // );
-const COSMWASM_CHAINS = chains.filter((c) => c === "Cosmoshub");
+const COSMWASM_CHAINS = chains.filter((c) => c === "Cosmoshub") as CosmwasmChains[];
 
 describe("Cosmwasm Platform Tests", () => {
   describe("Get Chain", () => {
     test("No conf", () => {
-      const p = CosmwasmPlatform.setConfig(network, {});
+      const p = new CosmwasmPlatform(network, {});
       expect(p.config).toEqual({});
       expect(() => p.getChain(COSMWASM_CHAINS[0])).toThrow();
     });
 
     test("With conf", () => {
-      const p = CosmwasmPlatform.setConfig(network, {
+      const p = new CosmwasmPlatform(network, {
         [COSMWASM_CHAINS[0]]: configs[COSMWASM_CHAINS[0]],
       });
       expect(() => p.getChain(COSMWASM_CHAINS[0])).not.toThrow();
@@ -31,7 +32,7 @@ describe("Cosmwasm Platform Tests", () => {
 
   describe("Get RPC Connection", () => {
     test("No conf", async () => {
-      const p = CosmwasmPlatform.setConfig(network, {});
+      const p = new CosmwasmPlatform(network, {});
       expect(p.config).toEqual({});
 
       // expect getRpc to throw an error since we havent provided
@@ -41,7 +42,7 @@ describe("Cosmwasm Platform Tests", () => {
     });
 
     test("With conf", async () => {
-      const p = CosmwasmPlatform.setConfig(network, {
+      const p = new CosmwasmPlatform(network, {
         [COSMWASM_CHAINS[0]]: configs[COSMWASM_CHAINS[0]],
       });
       expect(async () => await p.getRpc(COSMWASM_CHAINS[0])).not.toThrow();
