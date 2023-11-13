@@ -1,7 +1,7 @@
 import { encoding, PlatformAddressFormat, Layout, serializeLayout, throws } from "@wormhole-foundation/sdk-base";
 
 import { Address, NativeAddress, toNative } from "./address";
-import { sha512_256 } from "./utils";
+import { sha256, sha512_256 } from "./utils";
 
 const algorandAppIdLayout = [
   { name: "appIdPrefix", binary: "bytes", custom: encoding.toUint8Array("appID"), omit: true },
@@ -63,6 +63,8 @@ export class UniversalAddress implements Address {
         return encoding.bech32.decodeToBytes(address).bytes;
       case "algorandAppId":
         return sha512_256(serializeLayout(algorandAppIdLayout, { appId: BigInt(address) }));
+      case "sha256":
+        return sha256(address);
       }
     })();
 
