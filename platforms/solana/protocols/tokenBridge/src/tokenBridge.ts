@@ -21,8 +21,8 @@ import {
   SolanaPlatform,
   SolanaAddress,
 } from '@wormhole-foundation/connect-sdk-solana';
+// TODO: Replace this
 import { utils } from '@wormhole-foundation/connect-sdk-solana-core';
-
 import {
   Connection,
   Keypair,

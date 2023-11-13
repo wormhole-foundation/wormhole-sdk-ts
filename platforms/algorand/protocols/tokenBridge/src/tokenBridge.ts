@@ -38,9 +38,9 @@ import {
   getIsWrappedAssetAlgorand,
   getOriginalAssetAlgorand,
   redeemOnAlgorand,
-  submitVAAHeader,
   transferFromAlgorand,
-} from './utils';
+} from './functions';
+import { submitVAAHeader } from './vaa';
 
 export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
   readonly chainId: ChainId;

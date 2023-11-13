@@ -1,7 +1,7 @@
 import { Algodv2, LogicSigAccount } from 'algosdk';
 import { id } from 'ethers';
-import { hexToUint8Array } from './utils';
 import { encodeHex } from './BigVarint';
+import { hexToUint8Array } from './utilities';
 
 // This is the data structure to be populated in the call to populate() below
 // Yes, it needs to be filled out before calling populate()
