@@ -1,4 +1,4 @@
-import { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
+import { CosmWasmClient, SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
 import {
   ChainRestAuthApi,
@@ -10,17 +10,15 @@ import {
   createTransaction,
 } from "@injectivelabs/sdk-ts";
 import {
-  ChainName,
   Network,
   PlatformToChains,
-  RpcConnection,
   SignOnlySigner,
   SignedTx,
   Signer,
   UnsignedTransaction,
   encoding,
-  rpcAddress,
-  chainIds,
+  nativeChainIds,
+  rpc as rpcConf,
 } from "@wormhole-foundation/connect-sdk";
 import { TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
 import {
@@ -30,12 +28,10 @@ import {
   evmLikeChains,
 } from "../constants";
 import { CosmwasmPlatform } from "../platform";
+import { CosmwasmChains } from "../types";
 import { CosmwasmUnsignedTransaction } from "../unsignedTransaction";
 
-export async function getCosmwasmSigner(
-  rpc: RpcConnection<"Cosmwasm">,
-  mnemonic: string,
-): Promise<Signer> {
+export async function getCosmwasmSigner(rpc: CosmWasmClient, mnemonic: string): Promise<Signer> {
   const [network, chain] = await CosmwasmPlatform.chainFromRpc(rpc);
 
   // Use the EVM signer for Evmos and Injective only
@@ -50,21 +46,23 @@ export async function getCosmwasmSigner(
 
   const acct = (await signer.getAccounts())[0];
   const signingClient = await SigningCosmWasmClient.connectWithSigner(
-    rpcAddress(network, chain)!,
+    rpcConf.rpcAddress(network, chain)!,
     signer,
   );
 
   return new CosmwasmSigner(chain, signingClient, acct.address);
 }
 
-export class CosmwasmSigner implements SignOnlySigner {
+export class CosmwasmSigner<N extends Network, C extends CosmwasmChains>
+  implements SignOnlySigner<N, C>
+{
   constructor(
-    private _chain: ChainName,
+    private _chain: C,
     private _signer: SigningCosmWasmClient,
     private _account: string,
   ) {}
 
-  chain(): ChainName {
+  chain(): C {
     return this._chain;
   }
 
@@ -75,7 +73,7 @@ export class CosmwasmSigner implements SignOnlySigner {
   async sign(tx: UnsignedTransaction[]): Promise<SignedTx[]> {
     const signed = [];
     for (const txn of tx) {
-      const { description, transaction } = txn as CosmwasmUnsignedTransaction;
+      const { description, transaction } = txn as CosmwasmUnsignedTransaction<N, C>;
       console.log(`Signing: ${description} for ${this.address()}`);
 
       const txRaw = await this._signer.sign(
@@ -93,17 +91,22 @@ export class CosmwasmSigner implements SignOnlySigner {
   }
 }
 
-export class CosmwasmEvmSigner implements SignOnlySigner {
+export class CosmwasmEvmSigner<N extends Network, C extends CosmwasmChains>
+  implements SignOnlySigner<N, C>
+{
   private _chainId: string;
   private key: PrivateKey;
   private prefix: string;
   private _rpc: ChainRestAuthApi;
-  constructor(private _chain: ChainName, _network: Network, _mnemonic: string) {
+  constructor(private _chain: C, _network: Network, _mnemonic: string) {
     this._rpc = new ChainRestAuthApi(
       cosmwasmNetworkChainToRestUrls(_network, _chain as CosmwasmEvmChain),
     );
 
-    this._chainId = chainIds.cosmwasmNetworkChainToChainId(_network, _chain as CosmwasmEvmChain);
+    this._chainId = nativeChainIds.networkChainToNativeChainId(
+      _network,
+      _chain as CosmwasmEvmChain,
+    );
 
     this.prefix = chainToAddressPrefix(_chain as PlatformToChains<"Cosmwasm">);
     this.key = PrivateKey.fromMnemonic(_mnemonic);
@@ -123,14 +126,14 @@ export class CosmwasmEvmSigner implements SignOnlySigner {
 
     const signed: SignedTx[] = [];
     for (const tx of txns) {
-      const { description, transaction } = tx as CosmwasmUnsignedTransaction;
+      const { description, transaction } = tx as CosmwasmUnsignedTransaction<N, C>;
       console.log(`Signing ${description} for ${this.address()}`);
 
       // need to set contractAddress and msg
       const message: Msgs[] = transaction.msgs.map((m) => {
         const f = {
           ...m.value,
-          msg: JSON.parse(encoding.fromUint8Array(m.value.msg)),
+          msg: JSON.parse(encoding.bytes.decode(m.value.msg)),
           contractAddress: m.value.contract,
         };
         return new MsgExecuteContract(f);

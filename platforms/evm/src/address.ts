@@ -1,28 +1,18 @@
 import {
-  encoding,
   Address,
   UniversalAddress,
+  encoding,
   registerNative,
 } from '@wormhole-foundation/connect-sdk';
 
 import { ethers } from 'ethers';
-import { AnyEvmAddress } from './types';
 import { EvmPlatform } from './platform';
-
-declare global {
-  namespace Wormhole {
-    interface PlatformToNativeAddressMapping {
-      // @ts-ignore
-      Evm: EvmAddress;
-    }
-  }
-}
+import { AnyEvmAddress } from './types';
 
 export const EvmZeroAddress = ethers.ZeroAddress;
 
 export class EvmAddress implements Address {
   static readonly byteSize = 20;
-  public readonly platform = EvmPlatform.platform;
 
   // stored as checksum address
   private readonly address: string;
@@ -85,7 +75,7 @@ export class EvmAddress implements Address {
     return ethers.isAddress(address);
   }
   static instanceof(address: any): address is EvmAddress {
-    return address.platform === EvmPlatform.platform;
+    return address.platform === EvmPlatform._platform;
   }
   equals(other: EvmAddress | UniversalAddress): boolean {
     if (EvmAddress.instanceof(other)) {
@@ -96,6 +86,13 @@ export class EvmAddress implements Address {
   }
 }
 
-try {
-  registerNative('Evm', EvmAddress);
-} catch {}
+declare global {
+  namespace Wormhole {
+    interface PlatformToNativeAddressMapping {
+      // @ts-ignore
+      Evm: EvmAddress;
+    }
+  }
+}
+
+registerNative('Evm', EvmAddress);

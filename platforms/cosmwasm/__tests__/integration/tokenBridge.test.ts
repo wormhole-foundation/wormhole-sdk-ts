@@ -1,26 +1,27 @@
 import {
-  toNative,
   CONFIG,
+  Chain,
   Signature,
-  ChainName,
+  TokenBridge,
   createVAA,
   encoding,
-  TokenBridge,
+  toNative,
 } from "@wormhole-foundation/connect-sdk";
 import {
+  CosmwasmChains,
   CosmwasmPlatform,
-  CosmwasmUnsignedTransaction,
-  chainToNativeDenoms,
+  chainToNativeDenoms
 } from "../../src";
 
 import "@wormhole-foundation/connect-sdk-cosmwasm-core";
 import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
 
-const network = "Testnet"; //DEFAULT_NETWORK;
+const network: "Testnet" = "Testnet"; //DEFAULT_NETWORK;
+type TNet = typeof network;
 const configs = CONFIG[network].chains;
 
-const chain: ChainName = "Sei";
-const realNativeAddress = chainToNativeDenoms(network, chain);
+const chain: CosmwasmChains = "Sei";
+const realNativeAddress = toNative(chain, chainToNativeDenoms(network, chain));
 
 const sender = "sei1x76thkmwy03attv3j28ekkfmkhnyah3qnzwvn4";
 const senderAddress = toNative(chain, sender);
@@ -32,7 +33,7 @@ const nativeTokenAddress = toNative(
 );
 
 // Wrapped avax on sei
-const wrappedTokenChain: ChainName = "Avalanche";
+const wrappedTokenChain: Chain = "Avalanche";
 const realWrappedAddress = toNative(
   chain,
   "sei1mgpq67pj7p2acy5x7r5lz7fulxmuxr3uh5f0szyvqgvru3glufzsxk8tnx"
@@ -45,12 +46,12 @@ const bogusAddress = toNative(
 );
 
 describe("TokenBridge Tests", () => {
-  const p = CosmwasmPlatform.setConfig(network, configs);
+  const p = new CosmwasmPlatform(network, configs);
 
-  let tb: TokenBridge<'Cosmwasm'>;
+  let tb: TokenBridge<TNet, 'Cosmwasm', typeof chain>;
   test("Create TokenBridge", async () => {
     const rpc = await p.getRpc(chain);
-    tb = await p.getTokenBridge(rpc)
+    tb = await p.getProtocol("TokenBridge", rpc)
     expect(tb).toBeTruthy();
   });
 
@@ -100,7 +101,7 @@ describe("TokenBridge Tests", () => {
       test("Real Not Wrapped", async () => {
         const hasWrapped = await tb.hasWrappedAsset({
           chain: chain,
-          address: toNative(chain, realNativeAddress),
+          address: realNativeAddress,
         });
         expect(hasWrapped).toBe(false);
       });
@@ -124,7 +125,7 @@ describe("TokenBridge Tests", () => {
       test("Real Not Wrapped", async () => {
         const hasWrapped = tb.getWrappedAsset({
           chain: chain,
-          address: toNative(chain, realNativeAddress),
+          address: realNativeAddress,
         });
         expect(hasWrapped).rejects.toThrow();
       });
@@ -144,7 +145,7 @@ describe("TokenBridge Tests", () => {
         nativeTokenAddress,
         senderAddress
       );
-      const allTxns: CosmwasmUnsignedTransaction[] = [];
+      const allTxns = [];
       for await (const atx of attestation) {
         allTxns.push(atx);
       }
@@ -176,7 +177,7 @@ describe("TokenBridge Tests", () => {
       });
       const submitAttestation = tb.submitAttestation(vaa, senderAddress);
 
-      const allTxns: CosmwasmUnsignedTransaction[] = [];
+      const allTxns = [];
       for await (const atx of submitAttestation) {
         allTxns.push(atx);
       }
@@ -189,7 +190,7 @@ describe("TokenBridge Tests", () => {
 
   describe("Create TokenBridge Transactions", () => {
     const recipient = {
-      chain: "Cosmoshub" as ChainName,
+      chain: "Cosmoshub" as Chain,
       address: toNative("Cosmoshub", sender).toUniversalAddress(),
     };
     describe("Token Transfer Transactions", () => {
@@ -199,10 +200,10 @@ describe("TokenBridge Tests", () => {
 
         test("Native", async () => {
           const token = "native";
-          const xfer = tb.transfer(sender, recipient, token, amount, payload);
+          const xfer = tb.transfer(senderAddress, recipient, token, amount, payload);
           expect(xfer).toBeTruthy();
 
-          const allTxns: CosmwasmUnsignedTransaction[] = [];
+          const allTxns = [];
           for await (const tx of xfer) {
             allTxns.push(tx);
           }
@@ -215,7 +216,7 @@ describe("TokenBridge Tests", () => {
 
         test("Token", async () => {
           const xfer = tb.transfer(
-            sender,
+            senderAddress,
             recipient,
             realWrappedAddress,
             amount,
@@ -223,7 +224,7 @@ describe("TokenBridge Tests", () => {
           );
           expect(xfer).toBeTruthy();
 
-          const allTxns: CosmwasmUnsignedTransaction[] = [];
+          const allTxns = [];
           for await (const tx of xfer) {
             allTxns.push(tx);
           }

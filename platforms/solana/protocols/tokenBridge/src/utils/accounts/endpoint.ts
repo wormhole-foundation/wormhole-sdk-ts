@@ -8,7 +8,7 @@ import { utils } from '@wormhole-foundation/connect-sdk-solana';
 import {
   ChainId,
   toChainId,
-  toChainName,
+  toChain,
   toNative,
 } from '@wormhole-foundation/connect-sdk';
 
@@ -24,7 +24,7 @@ export function deriveEndpointKey(
   }
   const emitterAddr =
     typeof emitterAddress === 'string'
-      ? toNative(toChainName(emitterChain), emitterAddress).toUint8Array()
+      ? toNative(toChain(emitterChain), emitterAddress).toUint8Array()
       : emitterAddress;
 
   return utils.deriveAddress(

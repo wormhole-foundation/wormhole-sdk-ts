@@ -1,46 +1,50 @@
 import {
+  AccountAddress,
   AutomaticCircleBridge,
   ChainAddress,
   ChainsConfig,
-  CircleChainName,
-  CircleNetwork,
   Contracts,
   Network,
+  Platform,
   chainToChainId,
-  usdcContract,
-  chainIds,
+  circle,
+  nativeChainIds,
 } from '@wormhole-foundation/connect-sdk';
 import { Provider, TransactionRequest } from 'ethers';
 
 import { CircleRelayer } from './ethers-contracts';
 
 import {
-  EvmAddress,
+  EvmChains,
   EvmPlatform,
-  AnyEvmAddress,
-  EvmChainName,
+  EvmPlatformType,
+  EvmUnsignedTransaction,
   addChainId,
   addFrom,
-  EvmUnsignedTransaction,
 } from '@wormhole-foundation/connect-sdk-evm';
 import { ethers_contracts } from '.';
 
-export class EvmAutomaticCircleBridge implements AutomaticCircleBridge<'Evm'> {
+export class EvmAutomaticCircleBridge<N extends Network, C extends EvmChains>
+  implements AutomaticCircleBridge<N, EvmPlatformType, C>
+{
   readonly circleRelayer: CircleRelayer;
   readonly chainId: bigint;
 
   // https://github.com/wormhole-foundation/wormhole-connect/blob/development/sdk/src/contexts/eth/context.ts#L379
 
   private constructor(
-    readonly network: Network,
-    readonly chain: EvmChainName,
+    readonly network: N,
+    readonly chain: C,
     readonly provider: Provider,
     readonly contracts: Contracts,
   ) {
     if (network === 'Devnet')
       throw new Error('AutomaticCircleBridge not supported on Devnet');
 
-    this.chainId = chainIds.evmNetworkChainToEvmChainId(network, chain);
+    this.chainId = nativeChainIds.networkChainToNativeChainId.get(
+      network,
+      chain,
+    ) as bigint;
 
     const relayerAddress = this.contracts.cctp?.wormholeRelayer;
     if (!relayerAddress)
@@ -54,35 +58,40 @@ export class EvmAutomaticCircleBridge implements AutomaticCircleBridge<'Evm'> {
     );
   }
 
-  static async fromRpc(
+  static async fromRpc<N extends Network>(
     provider: Provider,
-    config: ChainsConfig,
-  ): Promise<EvmAutomaticCircleBridge> {
+    config: ChainsConfig<N, Platform>,
+  ): Promise<EvmAutomaticCircleBridge<N, EvmChains>> {
     const [network, chain] = await EvmPlatform.chainFromRpc(provider);
+    const conf = config[chain];
+
+    if (conf.network !== network)
+      throw new Error(`Network mismatch: ${conf.network} != ${network}`);
+
     return new EvmAutomaticCircleBridge(
-      network,
+      network as N,
       chain,
       provider,
-      config[chain]!.contracts!,
+      conf.contracts,
     );
   }
 
   async *transfer(
-    sender: AnyEvmAddress,
+    sender: AccountAddress<C>,
     recipient: ChainAddress,
     amount: bigint,
     nativeGas?: bigint,
-  ): AsyncGenerator<EvmUnsignedTransaction> {
-    const senderAddr = new EvmAddress(sender).toString();
+  ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
+    const senderAddr = sender.toNative(this.chain).toString();
     const recipientChainId = chainToChainId(recipient.chain);
     const recipientAddress = recipient.address
       .toUniversalAddress()
       .toUint8Array();
     const nativeTokenGas = nativeGas ? nativeGas : 0n;
 
-    const tokenAddr = usdcContract(
-      this.network as CircleNetwork,
-      this.chain as CircleChainName,
+    const tokenAddr = circle.usdcContract(
+      this.network as circle.CircleNetwork,
+      this.chain as circle.CircleChain,
     );
 
     const tokenContract = EvmPlatform.getTokenImplementation(
@@ -125,7 +134,7 @@ export class EvmAutomaticCircleBridge implements AutomaticCircleBridge<'Evm'> {
     txReq: TransactionRequest,
     description: string,
     parallelizable: boolean = false,
-  ): EvmUnsignedTransaction {
+  ): EvmUnsignedTransaction<N, C> {
     return new EvmUnsignedTransaction(
       addChainId(txReq, this.chainId),
       this.network,

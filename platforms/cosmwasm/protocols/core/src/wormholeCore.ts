@@ -1,25 +1,31 @@
-import { IndexedTx } from "@cosmjs/stargate";
 import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
+import { IndexedTx } from "@cosmjs/stargate";
 
 import {
-  AnyAddress,
-  ChainName,
+  Chain,
   ChainsConfig,
   Contracts,
   Network,
   UniversalAddress,
-  UnsignedTransaction,
   WormholeCore,
   WormholeMessageId,
 } from "@wormhole-foundation/connect-sdk";
-import { CosmwasmChainName, CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
+import {
+  AnyCosmwasmAddress,
+  CosmwasmChains,
+  CosmwasmPlatform,
+  CosmwasmPlatformType,
+  CosmwasmUnsignedTransaction,
+} from "@wormhole-foundation/connect-sdk-cosmwasm";
 
-export class CosmwasmWormholeCore implements WormholeCore<"Cosmwasm"> {
+export class CosmwasmWormholeCore<N extends Network, C extends CosmwasmChains>
+  implements WormholeCore<N, CosmwasmPlatformType, C>
+{
   private coreAddress: string;
 
   private constructor(
-    readonly network: Network,
-    readonly chain: CosmwasmChainName,
+    readonly network: N,
+    readonly chain: C,
     readonly rpc: CosmWasmClient,
     readonly contracts: Contracts,
   ) {
@@ -30,15 +36,21 @@ export class CosmwasmWormholeCore implements WormholeCore<"Cosmwasm"> {
     this.coreAddress = coreAddress;
   }
 
-  static async fromRpc(rpc: CosmWasmClient, config: ChainsConfig): Promise<CosmwasmWormholeCore> {
+  static async fromRpc<N extends Network>(
+    rpc: CosmWasmClient,
+    config: ChainsConfig<N, CosmwasmPlatformType>,
+  ): Promise<CosmwasmWormholeCore<N, CosmwasmChains>> {
     const [network, chain] = await CosmwasmPlatform.chainFromRpc(rpc);
-    return new CosmwasmWormholeCore(network, chain, rpc, config[chain]!.contracts);
+    const conf = config[chain];
+    if (conf.network !== network)
+      throw new Error(`Network mismatch: ${conf.network} != ${network}`);
+    return new CosmwasmWormholeCore(network as N, chain, rpc, conf.contracts);
   }
 
-  publishMessage(
-    sender: AnyAddress,
+  async *publishMessage(
+    sender: AnyCosmwasmAddress,
     message: string | Uint8Array,
-  ): AsyncGenerator<UnsignedTransaction, any, unknown> {
+  ): AsyncGenerator<CosmwasmUnsignedTransaction<N, C>> {
     throw new Error("Method not implemented.");
   }
 
@@ -49,11 +61,7 @@ export class CosmwasmWormholeCore implements WormholeCore<"Cosmwasm"> {
   }
 
   // TODO: make consts
-  static parseWormholeMessage(
-    chain: ChainName,
-    coreAddress: string,
-    tx: IndexedTx,
-  ): WormholeMessageId {
+  static parseWormholeMessage(chain: Chain, coreAddress: string, tx: IndexedTx): WormholeMessageId {
     const events = tx.events.filter(
       (ev) =>
         ev.type === "wasm" &&

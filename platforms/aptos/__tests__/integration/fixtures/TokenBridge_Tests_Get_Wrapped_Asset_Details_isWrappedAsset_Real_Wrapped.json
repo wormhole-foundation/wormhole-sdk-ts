@@ -1,0 +1,49 @@
+[
+    {
+        "scope": "https://fullnode.testnet.aptoslabs.com:443",
+        "method": "GET",
+        "path": "/v1/accounts/0xbe8f4301c0b54e870902b9a23eeb95ce74ac190531782aa3262337ceb145401a/resource/0x576410486a2da45eee6c949c995670112ddf2fbeedab20350d506328eefc9d4f::state::OriginInfo",
+        "body": "",
+        "status": 200,
+        "response": {
+            "type": "0x576410486a2da45eee6c949c995670112ddf2fbeedab20350d506328eefc9d4f::state::OriginInfo",
+            "data": {
+                "token_address": {
+                    "external_address": "0x000000000000000000000000d00ae08403b9bbb9124bb305c09058e32c39a48c"
+                },
+                "token_chain": {
+                    "number": "6"
+                }
+            }
+        },
+        "rawHeaders": [
+            "content-type",
+            "application/json; charset=utf-8",
+            "x-aptos-chain-id",
+            "2",
+            "x-aptos-ledger-version",
+            "768224077",
+            "x-aptos-ledger-oldest-version",
+            "0",
+            "x-aptos-ledger-timestampusec",
+            "1699898998083537",
+            "x-aptos-epoch",
+            "10332",
+            "x-aptos-block-height",
+            "167660317",
+            "x-aptos-oldest-block-height",
+            "0",
+            "Content-Length",
+            "240",
+            "date",
+            "Mon, 13 Nov 2023 18:09:58 GMT",
+            "Via",
+            "1.1 google",
+            "Alt-Svc",
+            "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
+            "Connection",
+            "close"
+        ],
+        "responseIsBinary": false
+    }
+]

@@ -1,21 +1,22 @@
 import {
+  Chain,
   ChainId,
-  ChainName,
   ChainToPlatform,
-  PlatformName,
+  Network,
+  Platform,
+  PlatformToChains,
   encoding,
-  toChainId,
-  toChainName
+  toChain,
+  toChainId
 } from "@wormhole-foundation/sdk-base";
-import { ChainAddress, NativeAddress } from "../address";
+import { AccountAddress, ChainAddress, NativeAddress, TokenAddress } from "../address";
 import { IbcMessageId, WormholeMessageId } from "../attestation";
-import { RpcConnection } from "../rpc";
-import { AnyAddress, TokenId, TxHash } from "../types";
+import { TokenId, TxHash } from "../types";
 import { UnsignedTransaction } from "../unsignedTransaction";
 
 // Configuration for a transfer through the Gateway
 export type GatewayTransferDetails = {
-  token: TokenId | "native";
+  token: TokenId<Chain> | "native";
   amount: bigint;
   from: ChainAddress;
   to: ChainAddress;
@@ -132,7 +133,7 @@ export function gatewayTransferMsg(
   // Encode the payload so the gateway contract knows where to forward the
   // newly minted tokens
   return makeGatewayTransferMsg(
-    toChainName(gtd.chain),
+    toChain(gtd.chain),
     gtd.recipient,
     BigInt(gtd.fee),
     gtd.nonce,
@@ -140,7 +141,7 @@ export function gatewayTransferMsg(
   );
 }
 
-export function makeGatewayTransferMsg<CN extends ChainName>(
+export function makeGatewayTransferMsg<CN extends Chain>(
   chain: CN,
   recipient: NativeAddress<ChainToPlatform<CN>> | string,
   fee: bigint = 0n,
@@ -199,31 +200,21 @@ export interface IbcTransferData {
   sender: string;
 }
 
-export interface SupportsIbcBridge<P extends PlatformName> {
-  getIbcBridge(rpc: RpcConnection<P>): Promise<IbcBridge<P>>;
-}
-
-export function supportsIbcBridge<P extends PlatformName>(
-  thing: SupportsIbcBridge<P> | any,
-): thing is SupportsIbcBridge<P> {
-  return typeof (<SupportsIbcBridge<P>>thing).getIbcBridge === "function";
-}
-
-export interface IbcBridge<P extends PlatformName> {
+export interface IbcBridge<N extends Network, P extends Platform, C extends PlatformToChains<P>> {
   //alternative naming: initiateTransfer
   transfer(
-    sender: AnyAddress,
+    sender: AccountAddress<C>,
     recipient: ChainAddress,
-    token: AnyAddress,
+    token: TokenAddress<C>,
     amount: bigint,
     payload?: Uint8Array,
-  ): AsyncGenerator<UnsignedTransaction>;
+  ): AsyncGenerator<UnsignedTransaction<N, C>>;
 
   // cached from config
-  getTransferChannel(chain: ChainName): string | null;
+  getTransferChannel(chain: Chain): string | null;
 
   // fetched from contract
-  fetchTransferChannel(chain: ChainName): Promise<string | null>;
+  fetchTransferChannel(chain: Chain): Promise<string | null>;
 
   // Find the wormhole emitted message id for a given IBC transfer
   // if it does not exist, this will return null

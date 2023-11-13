@@ -1,21 +1,23 @@
 import {
+  Chain,
   Layout,
   LayoutToType,
-  PlatformName,
+  Network,
+  Platform,
+  PlatformToChains,
   deserializeLayout,
-  encoding,
+  encoding
 } from "@wormhole-foundation/sdk-base";
-import { ChainAddress } from "../address";
+import { AccountAddress, ChainAddress } from "../address";
 import { CircleMessageId } from "../attestation";
 import {
-  universalAddressItem,
   amountItem,
   circleDomainItem,
-  circleNonceItem
+  circleNonceItem,
+  universalAddressItem
 } from "../layout-items";
 import "../payloads/connect";
-import { RpcConnection } from "../rpc";
-import { AnyAddress, TokenId } from "../types";
+import { TokenId } from "../types";
 import { UnsignedTransaction } from "../unsignedTransaction";
 import { keccak256 } from "../utils";
 
@@ -65,52 +67,27 @@ export type CircleTransferMessage = {
   messageId: CircleMessageId;
 };
 
-export interface AutomaticCircleBridge<P extends PlatformName> {
+export interface AutomaticCircleBridge<N extends Network, P extends Platform, C extends Chain = PlatformToChains<P>> {
   transfer(
-    sender: AnyAddress,
+    sender: AccountAddress<C>,
     recipient: ChainAddress,
     amount: bigint,
     nativeGas?: bigint,
-  ): AsyncGenerator<UnsignedTransaction>;
+  ): AsyncGenerator<UnsignedTransaction<N, C>>;
   // TODO: events
 }
 
 // https://github.com/circlefin/evm-cctp-contracts
-export interface CircleBridge<P extends PlatformName> {
+export interface CircleBridge<N extends Network, P extends Platform, C extends PlatformToChains<P>> {
   redeem(
-    sender: AnyAddress,
+    sender: AccountAddress<C>,
     message: string,
     attestation: string,
-  ): AsyncGenerator<UnsignedTransaction>;
+  ): AsyncGenerator<UnsignedTransaction<N, C>>;
   transfer(
-    sender: AnyAddress,
+    sender: AccountAddress<C>,
     recipient: ChainAddress,
     amount: bigint,
-  ): AsyncGenerator<UnsignedTransaction>;
+  ): AsyncGenerator<UnsignedTransaction<N, C>>;
   parseTransactionDetails(txid: string): Promise<CircleTransferMessage>;
-}
-
-export interface SupportsCircleBridge<P extends PlatformName> {
-  getCircleBridge(rpc: RpcConnection<P>): Promise<CircleBridge<P>>;
-}
-
-export function supportsCircleBridge<P extends PlatformName>(
-  thing: SupportsCircleBridge<P> | any,
-): thing is SupportsCircleBridge<P> {
-  return typeof (<SupportsCircleBridge<P>>thing).getCircleBridge === "function";
-}
-
-export interface SupportsAutomaticCircleBridge<P extends PlatformName> {
-  getAutomaticCircleBridge(
-    rpc: RpcConnection<P>,
-  ): Promise<AutomaticCircleBridge<P>>;
-}
-
-export function supportsAutomaticCircleBridge<P extends PlatformName>(
-  thing: SupportsAutomaticCircleBridge<P> | any,
-): thing is SupportsAutomaticCircleBridge<P> {
-  return (
-    typeof (<SupportsAutomaticCircleBridge<P>>thing)
-      .getAutomaticCircleBridge === "function"
-  );
 }

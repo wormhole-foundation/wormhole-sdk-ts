@@ -1,21 +1,22 @@
 import {
-  ChainName,
+  Chain,
   ChainToPlatform,
   Network,
-  PlatformName,
-  isChain,
-  isCircleChain,
-  isCircleSupported,
-  normalizeAmount,
+  Platform,
+  chainToPlatform,
+  circle,
 } from "@wormhole-foundation/sdk-base";
 import {
+  AccountAddress,
   ChainAddress,
   ChainContext,
   Contracts,
   NativeAddress,
   PayloadDiscriminator,
   PayloadLiteral,
-  Platform,
+  PlatformContext,
+  PlatformUtils,
+  TokenAddress,
   TokenId,
   TxHash,
   UniversalAddress,
@@ -30,7 +31,6 @@ import {
   CONFIG,
   DEFAULT_TASK_TIMEOUT,
   WHSCAN_RETRY_INTERVAL,
-  networkPlatformConfigs,
 } from "./config";
 import { WormholeConfig } from "./types";
 
@@ -46,26 +46,25 @@ import {
   getVaaWithRetry,
 } from "./whscan-api";
 
-export class Wormhole {
-  protected _platforms: Map<PlatformName, Platform<PlatformName>>;
-  protected _chains: Map<ChainName, ChainContext<ChainToPlatform<ChainName>>>;
-  protected readonly _network: Network;
+export class Wormhole<N extends Network> {
+  protected readonly _network: N;
+  protected _platforms: Map<Platform, PlatformContext<N, Platform>>;
+  protected _chains: Map<Chain, ChainContext<N, Platform, Chain>>;
+
   readonly config: WormholeConfig;
 
-  constructor(network: Network, platforms: Platform<PlatformName>[], config?: WormholeConfig) {
+  constructor(network: N, platforms: PlatformUtils<N, any>[], config?: WormholeConfig) {
     this._network = network;
     this.config = config ?? CONFIG[network];
 
     this._chains = new Map();
     this._platforms = new Map();
     for (const p of platforms) {
-      const platformName = p.platform;
-      const filteredChains = networkPlatformConfigs(network, platformName);
-      this._platforms.set(platformName, p.setConfig(network, filteredChains));
+      this._platforms.set(p._platform, new p(network));
     }
   }
 
-  get network(): Network {
+  get network(): N {
     return this._network;
   }
 
@@ -87,14 +86,14 @@ export class Wormhole {
     automatic: boolean,
     payload?: Uint8Array,
     nativeGas?: bigint,
-  ): Promise<CircleTransfer> {
+  ): Promise<CircleTransfer<N>> {
     if (automatic && payload) throw new Error("Payload with automatic delivery is not supported");
 
     if (
-      !isCircleChain(from.chain) ||
-      !isCircleChain(to.chain) ||
-      !isCircleSupported(this.network, from.chain) ||
-      !isCircleSupported(this.network, to.chain)
+      !circle.isCircleChain(from.chain) ||
+      !circle.isCircleChain(to.chain) ||
+      !circle.isCircleSupported(this.network, from.chain) ||
+      !circle.isCircleSupported(this.network, to.chain)
     )
       throw new Error(`Network and chain not supported: ${this.network} ${from.chain} `);
 
@@ -128,7 +127,7 @@ export class Wormhole {
     automatic: boolean,
     payload?: Uint8Array,
     nativeGas?: bigint,
-  ): Promise<TokenTransfer> {
+  ): Promise<TokenTransfer<N>> {
     // TODO: check if `toChain` is gateway supported
     // not enough to check if its a Cosmos chain since Terra/Xpla/Sei are not supported
     // if (chainToPlatform(to.chain) === 'Cosmwasm' ) {
@@ -158,7 +157,7 @@ export class Wormhole {
    * @param chain the chain name or chain id
    * @returns the contract addresses
    */
-  getContracts(chain: ChainName): Contracts | undefined {
+  getContracts(chain: Chain): Contracts | undefined {
     return this.config.chains[chain]?.contracts;
   }
 
@@ -168,12 +167,10 @@ export class Wormhole {
    * @returns the platform context class
    * @throws Errors if platform is not found
    */
-  getPlatform(chain: ChainName | PlatformName): Platform<PlatformName> {
-    const platformName = isChain(chain) ? this.config.chains[chain]!.platform : chain;
-
+  getPlatform<P extends Platform>(platformName: P): PlatformContext<N, P> {
     const platform = this._platforms.get(platformName);
     if (!platform) throw new Error(`Not able to retrieve platform ${platform}`);
-    return platform;
+    return platform as PlatformContext<N, P>;
   }
 
   /**
@@ -182,9 +179,11 @@ export class Wormhole {
    * @returns the chain context class
    * @throws Errors if context is not found
    */
-  getChain<CN extends ChainName>(chain: CN): ChainContext<ChainToPlatform<CN>> {
-    if (!this._chains.has(chain)) this._chains.set(chain, this.getPlatform(chain).getChain(chain));
-    return this._chains.get(chain)! as ChainContext<ChainToPlatform<CN>>;
+  getChain<C extends Chain>(chain: C): ChainContext<N, ChainToPlatform<C>, C> {
+    const platform = chainToPlatform(chain);
+    if (!this._chains.has(chain))
+      this._chains.set(chain, this.getPlatform(platform).getChain(chain));
+    return this._chains.get(chain)! as ChainContext<N, ChainToPlatform<C>, C>;
   }
 
   /**
@@ -192,12 +191,12 @@ export class Wormhole {
    *  These are the Wormhole wrapped token addresses, not necessarily
    *  the cannonical version of that token
    *
-   * @param tokenId The Token ID (chain/address)
-   * @param chain The chain name or id
+   * @param chain The chain name or id to get the wrapped token address
+   * @param tokenId The Token ID (chain/address) of the original token
    * @returns The TokenId on the given chain, null if it does not exist
    * @throws Errors if the chain is not supported or the token does not exist
    */
-  async getWrappedAsset(chain: ChainName, token: TokenId): Promise<TokenId> {
+  async getWrappedAsset<C extends Chain>(chain: C, token: TokenId<Chain>): Promise<TokenId<C>> {
     const ctx = this.getChain(chain);
     const tb = await ctx.getTokenBridge();
     return { chain, address: await tb.getWrappedAsset(token) };
@@ -206,34 +205,13 @@ export class Wormhole {
   /**
    * Gets the number of decimals for a token on a given chain
    *
-   * @param tokenId The Token ID (home chain/address)
    * @param chain The chain name or id of the token/representation
+   * @param token The token address
    * @returns The number of decimals
    */
-  async getDecimals(
-    chain: ChainName,
-    token: NativeAddress<PlatformName> | UniversalAddress | "native",
-  ): Promise<bigint> {
+  async getDecimals<C extends Chain>(chain: C, token: TokenAddress<C>): Promise<bigint> {
     const ctx = this.getChain(chain);
     return await ctx.getDecimals(token);
-  }
-
-  /**
-   * Converts a human friendly decimal number to base units for the token passed
-   *
-   * @param chain The chain name
-   * @param tokenId The token ID (its home chain and address on the home chain) or 'native'
-   * @param amount The decimal number as a string to convert into base units
-   * @returns The amount converted to base units as a BigNumber
-   */
-  async normalizeAmount(
-    chain: ChainName,
-    token: UniversalAddress | NativeAddress<PlatformName> | "native",
-    amount: number | string,
-  ): Promise<bigint> {
-    const ctx = this.getChain(chain);
-    let decimals = await ctx.getDecimals(token);
-    return normalizeAmount(amount, decimals);
   }
 
   /**
@@ -244,9 +222,9 @@ export class Wormhole {
    * @param chain The chain name or id
    * @returns The token balance of the wormhole asset as a BigNumber
    */
-  async getBalance(
-    chain: ChainName,
-    token: NativeAddress<PlatformName> | UniversalAddress | "native",
+  async getBalance<C extends Chain>(
+    chain: C,
+    token: TokenAddress<C>,
     walletAddress: string,
   ): Promise<bigint | null> {
     const ctx = this.getChain(chain);
@@ -260,11 +238,11 @@ export class Wormhole {
    * @param recipient the address of the recipient
    * @returns
    */
-  async getTokenAccount(
-    sendingChain: ChainName,
-    sendingToken: UniversalAddress | NativeAddress<PlatformName> | TokenId | "native",
-    recipient: ChainAddress,
-  ): Promise<ChainAddress> {
+  async getTokenAccount<SC extends Chain, RC extends Chain>(
+    sendingChain: SC,
+    sendingToken: TokenAddress<SC> | TokenId<SC>,
+    recipient: ChainAddress<RC>,
+  ): Promise<ChainAddress<RC>> {
     const chain = this.getChain(recipient.chain);
     if (!("getTokenAccount" in chain)) return recipient;
 
@@ -278,7 +256,7 @@ export class Wormhole {
         : {
             chain: sendingChain,
             address: (
-              sendingToken as UniversalAddress | NativeAddress<PlatformName>
+              sendingToken as UniversalAddress | NativeAddress<Platform>
             ).toUniversalAddress(),
           };
     }
@@ -300,9 +278,9 @@ export class Wormhole {
    * @returns The VAA bytes if available
    * @throws Errors if the VAA is not available after the retries
    */
-  async getVaaBytes(
-    chain: ChainName,
-    emitter: UniversalAddress | NativeAddress<PlatformName>,
+  async getVaaBytes<C extends Chain>(
+    chain: C,
+    emitter: AccountAddress<C>,
     sequence: bigint,
     timeout: number = DEFAULT_TASK_TIMEOUT,
   ): Promise<Uint8Array | undefined> {
@@ -326,9 +304,9 @@ export class Wormhole {
    * @returns The VAA if available
    * @throws Errors if the VAA is not available after the retries
    */
-  async getVaa<T extends PayloadLiteral | PayloadDiscriminator>(
-    chain: ChainName,
-    emitter: UniversalAddress | NativeAddress<PlatformName>,
+  async getVaa<T extends PayloadLiteral | PayloadDiscriminator, C extends Chain>(
+    chain: C,
+    emitter: AccountAddress<C>,
     sequence: bigint,
     decodeAs: T,
     timeout: number = DEFAULT_TASK_TIMEOUT,
@@ -363,8 +341,8 @@ export class Wormhole {
    */
 
   async getTransactionStatus(
-    chain: ChainName,
-    emitter: UniversalAddress | NativeAddress<PlatformName>,
+    chain: Chain,
+    emitter: UniversalAddress | NativeAddress<Platform>,
     sequence: bigint,
     timeout = DEFAULT_TASK_TIMEOUT,
   ): Promise<TransactionStatus> {
@@ -392,7 +370,7 @@ export class Wormhole {
    * @param address The native address
    * @returns The address in the universal format
    */
-  parseAddress(chain: ChainName, address: string): NativeAddress<PlatformName> {
+  parseAddress<C extends Chain>(chain: C, address: string): NativeAddress<C> {
     return toNative(chain, address);
   }
 
@@ -404,7 +382,7 @@ export class Wormhole {
    * @returns The parsed WormholeMessageId
    */
   async parseMessageFromTx(
-    chain: ChainName,
+    chain: Chain,
     txid: TxHash,
     timeout?: number,
   ): Promise<WormholeMessageId[]> {

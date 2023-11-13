@@ -1,13 +1,14 @@
 import {
   GatewayTransfer,
   GatewayTransferDetails,
+  Platform,
   TokenId,
   Wormhole,
   normalizeAmount,
   toNative,
 } from "@wormhole-foundation/connect-sdk";
 // Import the platform specific packages
-import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
+import { CosmwasmPlatform, CosmwasmPlatformType } from "@wormhole-foundation/connect-sdk-cosmwasm";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 
 import { TransferStuff, getStuff } from "./helpers";
@@ -17,6 +18,7 @@ import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
 import "@wormhole-foundation/connect-sdk-cosmwasm-core";
 import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
 import "@wormhole-foundation/connect-sdk-cosmwasm-ibc";
+import { Network } from "@wormhole-foundation/sdk-base/src";
 
 // We're going to transfer into, around, and out of the Cosmos ecosystem
 // First on Avalanche, transparently through gateway and over IBC to Cosmoshub
@@ -54,7 +56,7 @@ import "@wormhole-foundation/connect-sdk-cosmwasm-ibc";
 
   // we'll use the native token on the source chain
   const token = "native";
-  const amount = normalizeAmount("0.01", external.config.nativeTokenDecimals);
+  const amount = normalizeAmount("0.01", BigInt(external.config.nativeTokenDecimals));
 
   // Transfer native token from source chain, through gateway, to a cosmos chain
   let route1 = fakeIt
@@ -115,12 +117,12 @@ import "@wormhole-foundation/connect-sdk-cosmwasm-ibc";
 })();
 
 async function transferIntoCosmos(
-  wh: Wormhole,
+  wh: Wormhole<Network>,
   token: TokenId | "native",
   amount: bigint,
-  src: TransferStuff,
-  dst: TransferStuff,
-): Promise<GatewayTransfer> {
+  src: TransferStuff<Network, Platform>,
+  dst: TransferStuff<Network, Platform>,
+): Promise<GatewayTransfer<Network>> {
   console.log(
     `Beginning transfer into Cosmos from ${src.chain.chain}:${src.address.address.toString()} to ${
       dst.chain.chain
@@ -144,13 +146,13 @@ async function transferIntoCosmos(
   return xfer;
 }
 
-async function transferBetweenCosmos(
-  wh: Wormhole,
+async function transferBetweenCosmos<N extends Network>(
+  wh: Wormhole<N>,
   token: TokenId,
   amount: bigint,
-  src: TransferStuff,
-  dst: TransferStuff,
-): Promise<GatewayTransfer> {
+  src: TransferStuff<N, CosmwasmPlatformType>,
+  dst: TransferStuff<N, CosmwasmPlatformType>,
+): Promise<GatewayTransfer<N>> {
   console.log(
     `Beginning transfer within cosmos from ${
       src.chain.chain
@@ -174,13 +176,13 @@ async function transferBetweenCosmos(
   return xfer;
 }
 
-async function transferOutOfCosmos(
-  wh: Wormhole,
+async function transferOutOfCosmos<N extends Network>(
+  wh: Wormhole<N>,
   token: TokenId | "native",
   amount: bigint,
-  src: TransferStuff,
-  dst: TransferStuff,
-): Promise<GatewayTransfer> {
+  src: TransferStuff<N, CosmwasmPlatformType>,
+  dst: TransferStuff<N, Platform>,
+): Promise<GatewayTransfer<N>> {
   console.log(
     `Beginning transfer out of cosmos from ${
       src.chain.chain

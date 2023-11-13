@@ -1,10 +1,11 @@
 import {
-  ChainName,
-  PlatformName,
+  ChainToPlatform,
+  Network,
   chainToPlatform,
   encoding,
-  toChainName,
+  toChain,
 } from "@wormhole-foundation/sdk-base";
+import { PlatformToChains } from "@wormhole-foundation/sdk-base/src";
 import {
   ChainAddress,
   ChainContext,
@@ -19,7 +20,6 @@ import {
   TransactionId,
   TxHash,
   UniversalAddress,
-  UnsignedTransaction,
   WormholeMessageId,
   gatewayTransferMsg,
   isGatewayTransferDetails,
@@ -34,15 +34,21 @@ import { fetchIbcXfer, isTokenBridgeVaaRedeemed, retry } from "../tasks";
 import { Wormhole } from "../wormhole";
 import { AttestationId, TransferState, WormholeTransfer } from "../wormholeTransfer";
 
-export class GatewayTransfer implements WormholeTransfer {
-  static chain: ChainName = "Wormchain";
+type GatewayContext<N extends Network> = ChainContext<
+  N,
+  ChainToPlatform<typeof GatewayTransfer.chain>,
+  typeof GatewayTransfer.chain
+>;
 
-  private readonly wh: Wormhole;
+export class GatewayTransfer<N extends Network> implements WormholeTransfer {
+  static chain: "Wormchain" = "Wormchain";
+
+  private readonly wh: Wormhole<N>;
 
   // Wormchain context
-  private readonly gateway: ChainContext<PlatformName>;
+  private readonly gateway: GatewayContext<N>;
   // Wormchain IBC Bridge
-  private readonly gatewayIbcBridge: IbcBridge<PlatformName>;
+  private readonly gatewayIbcBridge: IbcBridge<N, "Cosmwasm", PlatformToChains<"Cosmwasm">>;
   // Contract address
   private readonly gatewayAddress: ChainAddress;
 
@@ -71,10 +77,10 @@ export class GatewayTransfer implements WormholeTransfer {
   ibcTransfers: IbcTransferInfo[] = [];
 
   private constructor(
-    wh: Wormhole,
+    wh: Wormhole<N>,
     transfer: GatewayTransferDetails,
-    gateway: ChainContext<PlatformName>,
-    gatewayIbc: IbcBridge<PlatformName>,
+    gateway: GatewayContext<N>,
+    gatewayIbc: IbcBridge<N, "Cosmwasm", PlatformToChains<"Cosmwasm">>,
   ) {
     this.state = TransferState.Created;
     this.wh = wh;
@@ -103,18 +109,25 @@ export class GatewayTransfer implements WormholeTransfer {
   }
 
   // Static initializers for in flight transfers that have not been completed
-  static async from(wh: Wormhole, from: GatewayTransferDetails): Promise<GatewayTransfer>;
-  static async from(
-    wh: Wormhole,
+  static async from<N extends Network>(
+    wh: Wormhole<N>,
+    from: GatewayTransferDetails,
+  ): Promise<GatewayTransfer<N>>;
+  static async from<N extends Network>(
+    wh: Wormhole<N>,
     from: WormholeMessageId,
     timeout?: number,
-  ): Promise<GatewayTransfer>;
-  static async from(wh: Wormhole, from: TransactionId, timeout?: number): Promise<GatewayTransfer>;
-  static async from(
-    wh: Wormhole,
+  ): Promise<GatewayTransfer<N>>;
+  static async from<N extends Network>(
+    wh: Wormhole<N>,
+    from: TransactionId,
+    timeout?: number,
+  ): Promise<GatewayTransfer<N>>;
+  static async from<N extends Network>(
+    wh: Wormhole<N>,
     from: GatewayTransferDetails | WormholeMessageId | TransactionId,
     timeout?: number,
-  ): Promise<GatewayTransfer> {
+  ): Promise<GatewayTransfer<N>> {
     // we need this regardless of the type of `from`
     const wc = wh.getChain(GatewayTransfer.chain);
     const wcibc = await wc.getIbcBridge();
@@ -152,8 +165,8 @@ export class GatewayTransfer implements WormholeTransfer {
   }
 
   // Recover Transfer info from VAA details
-  private static async _fromMsgId(
-    wh: Wormhole,
+  private static async _fromMsgId<N extends Network>(
+    wh: Wormhole<N>,
     from: WormholeMessageId,
     timeout?: number,
   ): Promise<GatewayTransferDetails> {
@@ -175,15 +188,15 @@ export class GatewayTransfer implements WormholeTransfer {
     // Otherwise revert to undefined
     if (payload) {
       try {
-        const maybeWithPayload = toGatewayMsg(encoding.fromUint8Array(payload));
+        const maybeWithPayload = toGatewayMsg(encoding.bytes.decode(payload));
         nonce = maybeWithPayload.nonce;
         payload = maybeWithPayload.payload
-          ? encoding.toUint8Array(maybeWithPayload.payload)
+          ? encoding.bytes.encode(maybeWithPayload.payload)
           : undefined;
 
-        const destChain = toChainName(maybeWithPayload.chain);
+        const destChain = toChain(maybeWithPayload.chain);
         const recipientAddress = encoding.b64.decode(maybeWithPayload.recipient);
-        to = nativeChainAddress([destChain, recipientAddress]);
+        to = nativeChainAddress(destChain, recipientAddress);
       } catch {
         /*Ignoring, throws if not the payload isnt JSON*/
       }
@@ -208,8 +221,8 @@ export class GatewayTransfer implements WormholeTransfer {
 
   // Init from source tx hash, depending on the source chain
   // we pull Transfer info from either IBC or a wh message
-  private static async _fromTransaction(
-    wh: Wormhole,
+  private static async _fromTransaction<N extends Network>(
+    wh: Wormhole<N>,
     from: TransactionId,
     timeout?: number,
   ): Promise<GatewayTransferDetails> {
@@ -240,10 +253,10 @@ export class GatewayTransfer implements WormholeTransfer {
     } as TokenId;
 
     const msg = toGatewayMsg(xfer.data.memo);
-    const destChain = toChainName(msg.chain);
+    const destChain = toChain(msg.chain);
 
     const _recip = encoding.b64.valid(msg.recipient)
-      ? encoding.fromUint8Array(encoding.b64.decode(msg.recipient))
+      ? encoding.bytes.decode(encoding.b64.decode(msg.recipient))
       : msg.recipient;
     const recipient: ChainAddress =
       chainToPlatform(destChain) === "Cosmwasm"
@@ -256,7 +269,7 @@ export class GatewayTransfer implements WormholeTransfer {
             address: toNative(destChain, new UniversalAddress(_recip)),
           };
 
-    const payload = msg.payload ? encoding.toUint8Array(msg.payload) : undefined;
+    const payload = msg.payload ? encoding.bytes.encode(msg.payload) : undefined;
 
     const details: GatewayTransferDetails = {
       token,
@@ -301,15 +314,15 @@ export class GatewayTransfer implements WormholeTransfer {
 
     // Build the message needed to send a transfer through the gateway
     const tb = await fromChain.getTokenBridge();
-    const xfer: AsyncGenerator<UnsignedTransaction> = tb.transfer(
+    const xfer = tb.transfer(
       this.transfer.from.address,
       this.gatewayAddress,
       tokenAddress,
       this.transfer.amount,
-      encoding.toUint8Array(JSON.stringify(this.msg)),
+      encoding.bytes.encode(JSON.stringify(this.msg)),
     );
 
-    return signSendWait(fromChain, xfer, signer);
+    return signSendWait<N, typeof fromChain.chain>(fromChain, xfer, signer);
   }
 
   private async _transferIbc(signer: Signer): Promise<TransactionId[]> {
@@ -318,14 +331,14 @@ export class GatewayTransfer implements WormholeTransfer {
     const fromChain = this.wh.getChain(this.transfer.from.chain);
 
     const ibcBridge = await fromChain.getIbcBridge();
-    const xfer: AsyncGenerator<UnsignedTransaction> = ibcBridge.transfer(
+    const xfer = ibcBridge.transfer(
       this.transfer.from.address,
       this.transfer.to,
       this.transfer.token.address,
       this.transfer.amount,
     );
 
-    return signSendWait(fromChain, xfer, signer);
+    return signSendWait<N, typeof fromChain.chain>(fromChain, xfer, signer);
   }
 
   // TODO: track the time elapsed and subtract it from the timeout passed with
@@ -438,6 +451,7 @@ export class GatewayTransfer implements WormholeTransfer {
       // Finally, get the IBC transfer to the destination chain
       const destChain = this.wh.getChain(this.transfer.to.chain);
       const destIbcBridge = await destChain.getIbcBridge();
+      //@ts-ignore
       const destTransferTask = () => fetchIbcXfer(destIbcBridge, wcTransfer.id);
       const destTransfer = await retry<IbcTransferInfo>(
         destTransferTask,
@@ -494,8 +508,8 @@ export class GatewayTransfer implements WormholeTransfer {
     const { vaa } = this.vaas[0];
     if (!vaa) throw new Error(`No VAA found for ${this.vaas[0].id.sequence}`);
 
-    const xfer: AsyncGenerator<UnsignedTransaction> = tb.redeem(toAddress, vaa);
-    const redeemTxs = await signSendWait(toChain, xfer, signer);
+    const xfer = tb.redeem(toAddress, vaa);
+    const redeemTxs = await signSendWait<N, typeof toChain.chain>(toChain, xfer, signer);
     this.transactions.push(...redeemTxs);
 
     this.state = TransferState.Completed;
@@ -503,8 +517,8 @@ export class GatewayTransfer implements WormholeTransfer {
     return redeemTxs.map(({ txid }) => txid);
   }
 
-  static async getTransferVaa(
-    wh: Wormhole,
+  static async getTransferVaa<N extends Network>(
+    wh: Wormhole<N>,
     whm: WormholeMessageId,
     timeout?: number,
   ): Promise<TokenBridge.VAA<"Transfer" | "TransferWithPayload">> {

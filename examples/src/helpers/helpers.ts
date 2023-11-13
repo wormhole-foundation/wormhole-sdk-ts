@@ -1,16 +1,18 @@
 import {
   ChainAddress,
   ChainContext,
-  PlatformName,
+  Platform,
+  PlatformToChains,
   Signer,
   TransferState,
   WormholeTransfer,
   nativeChainAddress,
 } from "@wormhole-foundation/connect-sdk";
 
-import { getCosmwasmSigner } from "@wormhole-foundation/connect-sdk-cosmwasm/src/testing";
+//import { getCosmwasmSigner } from "@wormhole-foundation/connect-sdk-cosmwasm/src/testing";
 import { getEvmSigner } from "@wormhole-foundation/connect-sdk-evm/src/testing";
 import { getSolanaSigner } from "@wormhole-foundation/connect-sdk-solana/src/testing";
+import { Network } from "@wormhole-foundation/sdk-base/src";
 
 // read in from `.env`
 require("dotenv").config();
@@ -26,30 +28,38 @@ function getEnv(key: string): string {
   return val;
 }
 
-export interface TransferStuff {
-  chain: ChainContext<PlatformName>;
+export interface TransferStuff<
+  N extends Network,
+  P extends Platform,
+  C extends PlatformToChains<P> = PlatformToChains<P>,
+> {
+  chain: ChainContext<N, P, C>;
   signer: Signer;
-  address: ChainAddress;
+  address: ChainAddress<C>;
 }
 
-export async function getStuff(chain: ChainContext<PlatformName>): Promise<TransferStuff> {
+export async function getStuff<
+  N extends Network,
+  P extends Platform,
+  C extends PlatformToChains<P>,
+>(chain: ChainContext<N, P, C>): Promise<TransferStuff<N, P, C>> {
   let signer: Signer;
 
-  switch (chain.platform.platform) {
+  switch (chain.platformUtils._platform) {
     case "Solana":
       signer = await getSolanaSigner(await chain.getRpc(), getEnv("SOL_PRIVATE_KEY"));
       break;
-    case "Cosmwasm":
-      signer = await getCosmwasmSigner(await chain.getRpc(), getEnv("COSMOS_MNEMONIC"));
-      break;
+    //case "Cosmwasm":
+    //  signer = await getCosmwasmSigner(await chain.getRpc(), getEnv("COSMOS_MNEMONIC"));
+    //  break;
     case "Evm":
       signer = await getEvmSigner(await chain.getRpc(), getEnv("ETH_PRIVATE_KEY"));
       break;
     default:
-      throw new Error("Unrecognized platform: " + chain.platform.platform);
+      throw new Error("Unrecognized platform: " + chain.platformUtils._platform);
   }
 
-  return { chain, signer, address: nativeChainAddress(signer) };
+  return { chain, signer, address: nativeChainAddress(chain.chain, signer.address()) };
 }
 
 export async function waitLog(xfer: WormholeTransfer): Promise<void> {

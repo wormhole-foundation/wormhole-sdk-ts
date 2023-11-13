@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import {
-  ChainName,
-  PlatformName,
+  Chain,
+  Platform,
   chainToPlatform,
   encoding,
   isPlatform,
@@ -29,7 +29,7 @@ function fake32ByteAddress(): string {
 }
 
 // make a random native address for a given chain
-export function makeNativeAddressHexString(chain: ChainName): string {
+export function makeNativeAddressHexString(chain: Chain): string {
   switch (chainToPlatform(chain)) {
     case "Evm":
       return fake20ByteAddress();
@@ -41,15 +41,24 @@ export function makeNativeAddressHexString(chain: ChainName): string {
 }
 
 // make a random ChainAddress for a given chain
-export function makeChainAddress(chain: ChainName): ChainAddress {
-  const nativeAddress = makeNativeAddressHexString(chain);
-  const address = new UniversalAddress("0x" + nativeAddress.padStart(64, "0"));
+export function makeChainAddress<C extends Chain>(chain: C): ChainAddress<C> {
+  const address = makeUniversalAddress(chain);
+  return { chain, address: address.toNative(chain) };
+}
+
+// make a random ChainAddress for a given chain
+export function makeUniversalChainAddress(chain: Chain): ChainAddress<Chain> {
+  const address = makeUniversalAddress(chain);
   return { chain, address };
 }
 
+export function makeUniversalAddress(chain: Chain): UniversalAddress {
+  const nativeAddress = makeNativeAddressHexString(chain);
+  return new UniversalAddress("0x" + nativeAddress.padStart(64, "0"));
+}
 // make a random NativeAddress for a given chain
-export function makeNativeAddress<T extends ChainName | PlatformName>(chain: T): NativeAddress<T> {
-  let cn: ChainName;
+export function makeNativeAddress<T extends Chain | Platform>(chain: T): NativeAddress<T> {
+  let cn: Chain;
   if (isPlatform(chain)) {
     // just grab the first one
     cn = platformToChains(chain)[0];
