@@ -16,14 +16,20 @@ import {
   EvmAddress,
   EvmChains,
   EvmPlatform,
+  EvmPlatformType,
   EvmUnsignedTransaction,
   addChainId,
   addFrom,
 } from '@wormhole-foundation/connect-sdk-evm';
-import { Platform, nativeChainIds } from '@wormhole-foundation/sdk-base';
+import {
+  PlatformToChains,
+  nativeChainIds,
+} from '@wormhole-foundation/sdk-base';
 
-export class EvmWormholeCore<N extends Network, P extends 'Evm' = 'Evm'>
-  implements WormholeCore<P>
+export class EvmWormholeCore<
+  N extends Network,
+  C extends PlatformToChains<EvmPlatformType>,
+> implements WormholeCore<N, EvmPlatformType, C>
 {
   readonly chainId: bigint;
 
@@ -34,7 +40,7 @@ export class EvmWormholeCore<N extends Network, P extends 'Evm' = 'Evm'>
 
   private constructor(
     readonly network: N,
-    readonly chain: EvmChains,
+    readonly chain: C,
     readonly provider: Provider,
     readonly contracts: Contracts,
   ) {
@@ -57,22 +63,26 @@ export class EvmWormholeCore<N extends Network, P extends 'Evm' = 'Evm'>
 
   static async fromRpc<N extends Network>(
     provider: Provider,
-    config: ChainsConfig<N, Platform>,
-  ): Promise<EvmWormholeCore<N>> {
+    config: ChainsConfig<N, EvmPlatformType>,
+  ): Promise<EvmWormholeCore<N, EvmChains>> {
     const [network, chain] = await EvmPlatform.chainFromRpc(provider);
+    const conf = config[chain];
 
-    return new EvmWormholeCore<N>(
+    if (conf.network !== network)
+      throw new Error(`Network mismatch: ${conf.network} != ${network}`);
+
+    return new EvmWormholeCore<N, typeof chain>(
       network as N,
       chain,
       provider,
-      config[chain].contracts,
+      conf.contracts,
     );
   }
 
   async *publishMessage(
     sender: AnyEvmAddress,
     message: Uint8Array | string,
-  ): AsyncGenerator<EvmUnsignedTransaction> {
+  ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
     const senderAddr = new EvmAddress(sender).toString();
 
     const txReq = await this.core.publishMessage.populateTransaction(
@@ -117,7 +127,7 @@ export class EvmWormholeCore<N extends Network, P extends 'Evm' = 'Evm'>
     txReq: TransactionRequest,
     description: string,
     parallelizable: boolean = false,
-  ): EvmUnsignedTransaction {
+  ): EvmUnsignedTransaction<N, C> {
     return new EvmUnsignedTransaction(
       addChainId(txReq, this.chainId),
       this.network,

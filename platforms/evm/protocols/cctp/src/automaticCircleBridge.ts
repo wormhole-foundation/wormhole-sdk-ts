@@ -5,9 +5,8 @@ import {
   ChainsConfig,
   Contracts,
   Network,
-  chainToChainId,
-  Chain,
   Platform,
+  chainToChainId,
   circle,
   nativeChainIds,
 } from '@wormhole-foundation/connect-sdk';
@@ -18,17 +17,15 @@ import { CircleRelayer } from './ethers-contracts';
 import {
   EvmChains,
   EvmPlatform,
+  EvmPlatformType,
   EvmUnsignedTransaction,
   addChainId,
   addFrom,
 } from '@wormhole-foundation/connect-sdk-evm';
 import { ethers_contracts } from '.';
 
-export class EvmAutomaticCircleBridge<
-  N extends Network,
-  P extends 'Evm' = 'Evm',
-  C extends Chain = EvmChains,
-> implements AutomaticCircleBridge<P, C>
+export class EvmAutomaticCircleBridge<N extends Network, C extends EvmChains>
+  implements AutomaticCircleBridge<N, EvmPlatformType, C>
 {
   readonly circleRelayer: CircleRelayer;
   readonly chainId: bigint;
@@ -64,14 +61,14 @@ export class EvmAutomaticCircleBridge<
   static async fromRpc<N extends Network>(
     provider: Provider,
     config: ChainsConfig<N, Platform>,
-  ): Promise<EvmAutomaticCircleBridge<N>> {
+  ): Promise<EvmAutomaticCircleBridge<N, EvmChains>> {
     const [network, chain] = await EvmPlatform.chainFromRpc(provider);
     const conf = config[chain];
 
     if (conf.network !== network)
       throw new Error(`Network mismatch: ${conf.network} != ${network}`);
 
-    return new EvmAutomaticCircleBridge<N>(
+    return new EvmAutomaticCircleBridge(
       network as N,
       chain,
       provider,
@@ -84,7 +81,7 @@ export class EvmAutomaticCircleBridge<
     recipient: ChainAddress,
     amount: bigint,
     nativeGas?: bigint,
-  ): AsyncGenerator<EvmUnsignedTransaction> {
+  ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
     const senderAddr = sender.toNative(this.chain).toString();
     const recipientChainId = chainToChainId(recipient.chain);
     const recipientAddress = recipient.address
@@ -137,7 +134,7 @@ export class EvmAutomaticCircleBridge<
     txReq: TransactionRequest,
     description: string,
     parallelizable: boolean = false,
-  ): EvmUnsignedTransaction {
+  ): EvmUnsignedTransaction<N, C> {
     return new EvmUnsignedTransaction(
       addChainId(txReq, this.chainId),
       this.network,

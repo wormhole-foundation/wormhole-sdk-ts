@@ -29,6 +29,7 @@ export interface SignOnlySigner<N extends Network, C extends Chain> extends Sign
 
 export function isSignOnlySigner(thing: any): thing is SignOnlySigner<Network, Chain> {
   return (
+    typeof thing === "object" &&
     "chain" in thing &&
     typeof thing.chain === "function" &&
     "address" in thing &&
@@ -47,6 +48,7 @@ export interface SignAndSendSigner<N extends Network, C extends Chain> extends S
 
 export function isSignAndSendSigner(thing: any): thing is SignAndSendSigner<Network, Chain> {
   return (
+    typeof thing === "object" &&
     "chain" in thing &&
     typeof thing.chain === "function" &&
     "address" in thing &&

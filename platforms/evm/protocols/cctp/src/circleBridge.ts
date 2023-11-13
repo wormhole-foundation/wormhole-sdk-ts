@@ -6,13 +6,11 @@ import {
   CircleTransferMessage,
   Contracts,
   Network,
-  UnsignedTransaction,
+  Platform,
+  circle,
   deserializeCircleMessage,
   encoding,
   nativeChainAddress,
-  Chain,
-  Platform,
-  circle,
   nativeChainIds,
 } from '@wormhole-foundation/connect-sdk';
 
@@ -21,6 +19,7 @@ import { MessageTransmitter, TokenMessenger } from './ethers-contracts';
 import {
   EvmChains,
   EvmPlatform,
+  EvmPlatformType,
   EvmUnsignedTransaction,
   addChainId,
   addFrom,
@@ -29,11 +28,8 @@ import { LogDescription, Provider, TransactionRequest } from 'ethers';
 import { ethers_contracts } from '.';
 //https://github.com/circlefin/evm-cctp-contracts
 
-export class EvmCircleBridge<
-  N extends Network,
-  P extends 'Evm' = 'Evm',
-  C extends Chain = EvmChains,
-> implements CircleBridge<P, C>
+export class EvmCircleBridge<N extends Network, C extends EvmChains>
+  implements CircleBridge<N, EvmPlatformType, C>
 {
   readonly chainId: bigint;
   readonly msgTransmitter: MessageTransmitter.MessageTransmitter;
@@ -92,24 +88,19 @@ export class EvmCircleBridge<
   static async fromRpc<N extends Network>(
     provider: Provider,
     config: ChainsConfig<N, Platform>,
-  ): Promise<EvmCircleBridge<N>> {
+  ): Promise<EvmCircleBridge<N, EvmChains>> {
     const [network, chain] = await EvmPlatform.chainFromRpc(provider);
     const conf = config[chain];
     if (conf.network !== network)
       throw new Error(`Network mismatch: ${conf.network} != ${network}`);
-    return new EvmCircleBridge<N>(
-      network as N,
-      chain,
-      provider,
-      conf.contracts,
-    );
+    return new EvmCircleBridge(network as N, chain, provider, conf.contracts);
   }
 
   async *redeem(
     sender: AccountAddress<C>,
     message: string,
     attestation: string,
-  ): AsyncGenerator<UnsignedTransaction> {
+  ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
     const senderAddr = sender.toNative(this.chain).toString();
 
     const txReq = await this.msgTransmitter.receiveMessage.populateTransaction(
@@ -127,7 +118,7 @@ export class EvmCircleBridge<
     sender: AccountAddress<C>,
     recipient: ChainAddress,
     amount: bigint,
-  ): AsyncGenerator<EvmUnsignedTransaction> {
+  ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
     const senderAddr = sender.toNative(this.chain).toString();
     const recipientAddress = recipient.address
       .toUniversalAddress()
@@ -228,7 +219,7 @@ export class EvmCircleBridge<
     txReq: TransactionRequest,
     description: string,
     parallelizable: boolean = false,
-  ): EvmUnsignedTransaction {
+  ): EvmUnsignedTransaction<N, C> {
     return new EvmUnsignedTransaction(
       addChainId(txReq, this.chainId),
       this.network,

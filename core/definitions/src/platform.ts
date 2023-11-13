@@ -17,7 +17,7 @@ export interface PlatformUtils<N extends Network, P extends Platform> {
   _platform: P;
 
   // Initialize a new PlatformContext object
-  fromNetworkConfig(network: N, config?: ChainsConfig<N, P>): PlatformContext<N, P>;
+  new (network: N, config?: ChainsConfig<N, P>): PlatformContext<N, P>;
 
   // Get a protocol name
   getProtocolInitializer<PN extends ProtocolName>(protocol: PN): ProtocolInitializer<P, PN>;
@@ -37,7 +37,7 @@ export interface PlatformUtils<N extends Network, P extends Platform> {
 
   // Get the native (gas) token id for a given chain
   nativeTokenId<C extends PlatformToChains<P>>(chain: C): TokenId<C>;
-  isNativeTokenId<C extends PlatformToChains<P>>(chain: C, tokenId: TokenId<C>): boolean;
+  isNativeTokenId<C extends PlatformToChains<P>>(chain: C, tokenId: TokenId): boolean;
 
   // Get the number of decimals for a given token
   getDecimals<C extends PlatformToChains<P>>(
@@ -75,7 +75,6 @@ export interface PlatformUtils<N extends Network, P extends Platform> {
 
 export interface PlatformContext<N extends Network, P extends Platform> {
   readonly network: N;
-  readonly platform: P;
   readonly config: ChainsConfig<N, P>;
 
   // Create a _new_ RPC Connection

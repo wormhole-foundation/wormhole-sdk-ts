@@ -41,12 +41,21 @@ export function makeNativeAddressHexString(chain: Chain): string {
 }
 
 // make a random ChainAddress for a given chain
-export function makeChainAddress(chain: Chain): ChainAddress {
-  const nativeAddress = makeNativeAddressHexString(chain);
-  const address = new UniversalAddress("0x" + nativeAddress.padStart(64, "0"));
+export function makeChainAddress<C extends Chain>(chain: C): ChainAddress<C> {
+  const address = makeUniversalAddress(chain);
+  return { chain, address: address.toNative(chain) };
+}
+
+// make a random ChainAddress for a given chain
+export function makeUniversalChainAddress(chain: Chain): ChainAddress<Chain> {
+  const address = makeUniversalAddress(chain);
   return { chain, address };
 }
 
+export function makeUniversalAddress(chain: Chain): UniversalAddress {
+  const nativeAddress = makeNativeAddressHexString(chain);
+  return new UniversalAddress("0x" + nativeAddress.padStart(64, "0"));
+}
 // make a random NativeAddress for a given chain
 export function makeNativeAddress<T extends Chain | Platform>(chain: T): NativeAddress<T> {
   let cn: Chain;

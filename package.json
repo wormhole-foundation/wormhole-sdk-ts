@@ -43,7 +43,11 @@
     "platforms/evm",
     "platforms/evm/protocols/core",
     "platforms/evm/protocols/tokenBridge",
-    "platforms/evm/protocols/cctp"
+    "platforms/evm/protocols/cctp",
+    "platforms/solana",
+    "platforms/solana/protocols/core",
+    "platforms/solana/protocols/tokenBridge",
+    "examples"
   ],
   "nothing":[
     "platforms/solana",
@@ -53,7 +57,6 @@
     "platforms/cosmwasm/protocols/core",
     "platforms/cosmwasm/protocols/tokenBridge",
     "platforms/cosmwasm/protocols/ibc",
-    "examples",
     "core/tokenRegistry"
   ]
 }

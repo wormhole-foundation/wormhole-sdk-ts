@@ -3,6 +3,5 @@ import { EvmChains } from './types';
 
 export class EvmChain<
   N extends Network = Network,
-  P extends 'Evm' = 'Evm',
   C extends Chain = EvmChains,
-> extends ChainContext<N, P, C> {}
+> extends ChainContext<N, 'Evm', C> {}

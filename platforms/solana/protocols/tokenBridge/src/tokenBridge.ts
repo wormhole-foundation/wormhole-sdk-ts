@@ -1,36 +1,33 @@
 import {
-  ChainId,
-  Network,
-  toChainId,
-  toChain,
-  TokenBridge,
+  Chain,
   ChainAddress,
-  TokenId,
-  UniversalAddress,
-  toNative,
-  ErrNotWrapped,
-  RpcConnection,
-  NativeAddress,
+  ChainId,
   ChainsConfig,
   Contracts,
+  ErrNotWrapped,
+  NativeAddress,
+  Network,
+  TokenBridge,
+  TokenId,
+  UniversalAddress,
+  toChain,
+  toChainId,
+  toNative,
 } from '@wormhole-foundation/connect-sdk';
 import {
-  SolanaUnsignedTransaction,
   AnySolanaAddress,
-  SolanaChain,
-  SolanaPlatform,
   SolanaAddress,
+  SolanaChains,
+  SolanaPlatform,
+  SolanaPlatformType,
+  SolanaUnsignedTransaction,
 } from '@wormhole-foundation/connect-sdk-solana';
-import { utils } from '@wormhole-foundation/connect-sdk-solana-core';
-
 import {
-  Connection,
-  Keypair,
-  PublicKey,
-  SystemProgram,
-  Transaction,
-  TransactionInstruction,
-} from '@solana/web3.js';
+  SolanaWormholeCore,
+  utils as coreUtils,
+} from '@wormhole-foundation/connect-sdk-solana-core';
+
+import { Program } from '@project-serum/anchor';
 import {
   ACCOUNT_SIZE,
   NATIVE_MINT,
@@ -41,8 +38,16 @@ import {
   getAssociatedTokenAddress,
   getMinimumBalanceForRentExemptAccount,
 } from '@solana/spl-token';
-import { Program } from '@project-serum/anchor';
+import {
+  Connection,
+  Keypair,
+  PublicKey,
+  SystemProgram,
+  Transaction,
+  TransactionInstruction,
+} from '@solana/web3.js';
 
+import { Platform } from '@wormhole-foundation/sdk-base/src';
 import { TokenBridge as TokenBridgeContract } from './types';
 import {
   createApproveAuthoritySignerInstruction,
@@ -59,17 +64,17 @@ import {
   getWrappedMeta,
 } from './utils';
 
-export class SolanaTokenBridge implements TokenBridge<'Solana'> {
+export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
+  implements TokenBridge<N, SolanaPlatformType, C>
+{
   readonly chainId: ChainId;
 
-  readonly tokenBridgeAddress: string;
-  readonly coreAddress: string;
-
+  readonly coreBridge: SolanaWormholeCore<N, C>;
   readonly tokenBridge: Program<TokenBridgeContract>;
 
   private constructor(
-    readonly network: Network,
-    readonly chain: SolanaChain,
+    readonly network: N,
+    readonly chain: C,
     readonly connection: Connection,
     readonly contracts: Contracts,
   ) {
@@ -80,32 +85,36 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
       throw new Error(
         `TokenBridge contract Address for chain ${chain} not found`,
       );
-    this.tokenBridgeAddress = tokenBridgeAddress;
-
-    const coreBridgeAddress = contracts.coreBridge;
-    if (!coreBridgeAddress)
-      throw new Error(
-        `CoreBridge contract Address for chain ${chain} not found`,
-      );
-
-    this.coreAddress = coreBridgeAddress;
 
     this.tokenBridge = createReadOnlyTokenBridgeProgramInterface(
       tokenBridgeAddress,
       connection,
     );
-  }
 
-  static async fromRpc(
-    connection: RpcConnection<'Solana'>,
-    config: ChainsConfig,
-  ): Promise<SolanaTokenBridge> {
-    const [network, chain] = await SolanaPlatform.chainFromRpc(connection);
-    return new SolanaTokenBridge(
+    this.coreBridge = new SolanaWormholeCore(
       network,
       chain,
       connection,
-      config[chain]!.contracts,
+      contracts,
+    );
+  }
+
+  static async fromRpc<N extends Network>(
+    connection: Connection,
+    config: ChainsConfig<N, Platform>,
+  ): Promise<SolanaTokenBridge<N, SolanaChains>> {
+    const [network, chain] = await SolanaPlatform.chainFromRpc(connection);
+    const conf = config[chain];
+    if (conf.network !== network)
+      throw new Error(
+        `Network mismatch for chain ${chain}: ${conf.network} != ${network}`,
+      );
+
+    return new SolanaTokenBridge(
+      network as N,
+      chain,
+      connection,
+      conf.contracts,
     );
   }
 
@@ -156,7 +165,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     return false;
   }
 
-  async getWrappedAsset(token: TokenId): Promise<NativeAddress<'Solana'>> {
+  async getWrappedAsset(token: TokenId<Chain>): Promise<NativeAddress<C>> {
     const mint = deriveWrappedMintKey(
       this.tokenBridge.programId,
       toChainId(token.chain),
@@ -176,7 +185,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
   async isTransferCompleted(
     vaa: TokenBridge.VAA<'Transfer' | 'TransferWithPayload'>,
   ): Promise<boolean> {
-    return utils
+    return coreUtils
       .getClaim(
         this.connection,
         this.tokenBridge.programId,
@@ -185,32 +194,32 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
         vaa.sequence,
         this.connection.commitment,
       )
-      .catch((e) => false);
+      .catch(() => false);
   }
 
-  async getWrappedNative(): Promise<NativeAddress<'Solana'>> {
+  async getWrappedNative(): Promise<NativeAddress<C>> {
     return toNative(this.chain, NATIVE_MINT.toBase58());
   }
 
   async *createAttestation(
     token: AnySolanaAddress,
     payer?: AnySolanaAddress,
-  ): AsyncGenerator<SolanaUnsignedTransaction> {
+  ): AsyncGenerator<SolanaUnsignedTransaction<N, C>> {
     if (!payer) throw new Error('Payer required to create attestation');
     const senderAddress = new SolanaAddress(payer).unwrap();
     // TODO: createNonce().readUInt32LE(0);
     const nonce = 0;
 
-    const transferIx = await utils.createBridgeFeeTransferInstruction(
+    const transferIx = await coreUtils.createBridgeFeeTransferInstruction(
       this.connection,
-      this.coreAddress,
+      this.coreBridge.address,
       senderAddress,
     );
     const messageKey = Keypair.generate();
     const attestIx = createAttestTokenInstruction(
       this.connection,
       this.tokenBridge.programId,
-      this.coreAddress,
+      this.coreBridge.address,
       senderAddress,
       new SolanaAddress(token).toUint8Array(),
       messageKey.publicKey,
@@ -229,21 +238,21 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
   async *submitAttestation(
     vaa: TokenBridge.VAA<'AttestMeta'>,
     payer?: AnySolanaAddress,
-  ): AsyncGenerator<SolanaUnsignedTransaction> {
+  ): AsyncGenerator<SolanaUnsignedTransaction<N, C>> {
     if (!payer) throw new Error('Payer required to create attestation');
     const senderAddress = new SolanaAddress(payer).unwrap();
 
     const { blockhash } = await this.connection.getLatestBlockhash();
 
     // Yield transactions to verify sigs and post the VAA
-    yield* this.postVaa(senderAddress, vaa, blockhash);
+    yield* this.coreBridge.postVaa(senderAddress, vaa, blockhash);
 
     // Now yield the transaction to actually create the token
     const transaction = new Transaction().add(
       createCreateWrappedInstruction(
         this.connection,
         this.tokenBridge.programId,
-        this.coreAddress,
+        this.coreBridge.address,
         senderAddress,
         vaa,
       ),
@@ -259,7 +268,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     recipient: ChainAddress,
     amount: bigint,
     payload?: Uint8Array,
-  ): Promise<SolanaUnsignedTransaction> {
+  ): Promise<SolanaUnsignedTransaction<N, C>> {
     //  https://github.com/wormhole-foundation/wormhole-connect/blob/development/sdk/src/contexts/solana/context.ts#L245
 
     const senderAddress = new SolanaAddress(sender).unwrap();
@@ -316,7 +325,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
       ? createTransferNativeWithPayloadInstruction(
           this.connection,
           this.tokenBridge.programId,
-          this.coreAddress,
+          this.coreBridge.address,
           senderAddress,
           message.publicKey,
           ancillaryKeypair.publicKey,
@@ -330,7 +339,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
       : createTransferNativeInstruction(
           this.connection,
           this.tokenBridge.programId,
-          this.coreAddress,
+          this.coreBridge.address,
           senderAddress,
           message.publicKey,
           ancillaryKeypair.publicKey,
@@ -372,7 +381,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     token: AnySolanaAddress | 'native',
     amount: bigint,
     payload?: Uint8Array,
-  ): AsyncGenerator<SolanaUnsignedTransaction> {
+  ): AsyncGenerator<SolanaUnsignedTransaction<N, C>> {
     // TODO: payer vs sender?? can caller add diff payer later?
 
     if (token === 'native') {
@@ -405,7 +414,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
         ? createTransferNativeWithPayloadInstruction(
             this.connection,
             this.tokenBridge.programId,
-            this.coreAddress,
+            this.coreBridge.address,
             senderAddress,
             message.publicKey,
             senderTokenAddress,
@@ -419,7 +428,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
         : createTransferNativeInstruction(
             this.connection,
             this.tokenBridge.programId,
-            this.coreAddress,
+            this.coreBridge.address,
             senderAddress,
             message.publicKey,
             senderTokenAddress,
@@ -437,7 +446,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
         ? createTransferWrappedWithPayloadInstruction(
             this.connection,
             this.tokenBridge.programId,
-            this.coreAddress,
+            this.coreBridge.address,
             senderAddress,
             message.publicKey,
             senderTokenAddress,
@@ -453,7 +462,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
         : createTransferWrappedInstruction(
             this.connection,
             this.tokenBridge.programId,
-            this.coreAddress,
+            this.coreBridge.address,
             senderAddress,
             message.publicKey,
             senderTokenAddress,
@@ -492,7 +501,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     sender: AnySolanaAddress,
     vaa: TokenBridge.VAA<'Transfer' | 'TransferWithPayload'>,
     unwrapNative: boolean = true,
-  ): AsyncGenerator<SolanaUnsignedTransaction> {
+  ): AsyncGenerator<SolanaUnsignedTransaction<N, C>> {
     // TODO: unwrapNative? check if vaa.payload.token.address is native Sol
 
     const { blockhash } = await this.connection.getLatestBlockhash();
@@ -519,7 +528,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     }
 
     // Yield transactions to verify sigs and post the VAA
-    yield* this.postVaa(sender, vaa, blockhash);
+    yield* this.coreBridge.postVaa(sender, vaa, blockhash);
 
     const createCompleteTransferInstruction =
       vaa.payload.token.chain == this.chain
@@ -530,7 +539,7 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
       createCompleteTransferInstruction(
         this.connection,
         this.tokenBridge.programId,
-        this.coreAddress,
+        this.coreBridge.address,
         senderAddress,
         vaa,
       ),
@@ -541,60 +550,15 @@ export class SolanaTokenBridge implements TokenBridge<'Solana'> {
     yield this.createUnsignedTx(transaction, 'Solana.RedeemTransfer');
   }
 
-  private async *postVaa(
-    sender: AnySolanaAddress,
-    vaa: TokenBridge.VAA<'Transfer' | 'TransferWithPayload' | 'AttestMeta'>,
-    blockhash: string,
-  ) {
-    const senderAddr = new SolanaAddress(sender).unwrap();
-    const signatureSet = Keypair.generate();
-
-    const verifySignaturesInstructions =
-      await utils.createVerifySignaturesInstructions(
-        this.connection,
-        this.coreAddress,
-        senderAddr,
-        vaa,
-        signatureSet.publicKey,
-      );
-
-    // Create a new transaction for every 2 signatures we have to Verify
-    for (let i = 0; i < verifySignaturesInstructions.length; i += 2) {
-      const verifySigTx = new Transaction().add(
-        ...verifySignaturesInstructions.slice(i, i + 2),
-      );
-      verifySigTx.recentBlockhash = blockhash;
-      verifySigTx.feePayer = senderAddr;
-      verifySigTx.partialSign(signatureSet);
-
-      yield this.createUnsignedTx(verifySigTx, 'Redeem.VerifySignature', true);
-    }
-
-    // Finally create the VAA posting transaction
-    const postVaaTx = new Transaction().add(
-      utils.createPostVaaInstruction(
-        this.connection,
-        this.coreAddress,
-        senderAddr,
-        vaa,
-        signatureSet.publicKey,
-      ),
-    );
-    postVaaTx.recentBlockhash = blockhash;
-    postVaaTx.feePayer = senderAddr;
-
-    yield this.createUnsignedTx(postVaaTx, 'Redeem.PostVAA');
-  }
-
   private createUnsignedTx(
     txReq: Transaction,
     description: string,
     parallelizable: boolean = false,
-  ): SolanaUnsignedTransaction {
+  ): SolanaUnsignedTransaction<N, C> {
     return new SolanaUnsignedTransaction(
       txReq,
       this.network,
-      'Solana',
+      this.chain,
       description,
       parallelizable,
     );

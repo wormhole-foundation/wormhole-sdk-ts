@@ -1,29 +1,32 @@
 import {
-  TokenBridge,
-  testing,
-  toNative,
-  Signature,
   CONFIG,
   DEFAULT_NETWORK,
+  Signature,
+  TokenBridge,
   createVAA,
+  testing,
+  toNative,
 } from '@wormhole-foundation/connect-sdk';
 
-import '@wormhole-foundation/connect-sdk-solana-core'
-import '@wormhole-foundation/connect-sdk-solana-tokenbridge'
+import '@wormhole-foundation/connect-sdk-solana-core';
+import '@wormhole-foundation/connect-sdk-solana-tokenbridge';
 
 
 import {
-  SolanaUnsignedTransaction,
+  SolanaChains,
   SolanaPlatform,
+  SolanaUnsignedTransaction
 } from '../../src/';
 
 
-import { expect, describe, test } from '@jest/globals';
+import { describe, expect, test } from '@jest/globals';
 
-import nock from 'nock';
 import { Keypair } from '@solana/web3.js';
+import nock from 'nock';
 
 const network = DEFAULT_NETWORK;
+type TNet = typeof network;
+
 const configs = CONFIG[network].chains;
 
 const TOKEN_ADDRESSES = {
@@ -88,13 +91,13 @@ afterEach(async () => {
 });
 
 describe('TokenBridge Tests', () => {
-  const p: typeof SolanaPlatform = SolanaPlatform.setConfig(network, configs);
+  const p = SolanaPlatform.fromNetworkConfig(network, configs);
 
-  let tb: TokenBridge<'Solana'>;
+  let tb: TokenBridge<TNet, 'Solana', SolanaChains>;
 
   test('Create TokenBridge', async () => {
     const rpc = p.getRpc('Solana');
-    tb = await p.getTokenBridge(rpc);
+    tb = await p.getProtocol("TokenBridge", rpc);
     expect(tb).toBeTruthy();
   });
 
@@ -182,7 +185,7 @@ describe('TokenBridge Tests', () => {
   });
 
   describe('Create Token Attestation Transactions', () => {
-    const chain = 'Solana';
+    const chain: 'Solana' = 'Solana';
     const nativeAddress = testing.utils.makeNativeAddress(chain);
 
     const sender = toNative(chain, senderAddress);
@@ -190,7 +193,7 @@ describe('TokenBridge Tests', () => {
 
     test('Create Attestation', async () => {
       const attestation = tb.createAttestation(nativeAddress, sender);
-      const allTxns: SolanaUnsignedTransaction[] = [];
+      const allTxns: SolanaUnsignedTransaction<TNet>[] = [];
       for await (const atx of attestation) {
         allTxns.push(atx);
       }
@@ -226,7 +229,7 @@ describe('TokenBridge Tests', () => {
       });
       const submitAttestation = tb.submitAttestation(vaa, sender);
 
-      const allTxns: SolanaUnsignedTransaction[] = [];
+      const allTxns: SolanaUnsignedTransaction<TNet>[] = [];
       for await (const atx of submitAttestation) {
         allTxns.push(atx);
       }
@@ -245,7 +248,7 @@ describe('TokenBridge Tests', () => {
     const destChain = 'Ethereum';
 
     const sender = toNative(chain, senderAddress);
-    const recipient = testing.utils.makeChainAddress(destChain);
+    const recipient = testing.utils.makeUniversalChainAddress(destChain);
 
     const amount = 1000n;
     const payload: Uint8Array | undefined = undefined;
@@ -257,7 +260,7 @@ describe('TokenBridge Tests', () => {
           const xfer = tb.transfer(sender, recipient, token, amount, payload);
           expect(xfer).toBeTruthy();
 
-          const allTxns: SolanaUnsignedTransaction[] = [];
+          const allTxns: SolanaUnsignedTransaction<TNet>[] = [];
           for await (const tx of xfer) {
             allTxns.push(tx);
           }
@@ -282,7 +285,7 @@ describe('TokenBridge Tests', () => {
           );
           expect(xfer).toBeTruthy();
 
-          const allTxns: SolanaUnsignedTransaction[] = [];
+          const allTxns: SolanaUnsignedTransaction<TNet>[] = [];
           for await (const tx of xfer) {
             allTxns.push(tx);
           }

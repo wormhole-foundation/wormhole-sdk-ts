@@ -49,6 +49,7 @@ type ChainOrPlatformToPlatform<T extends Chain | Platform> = T extends Chain
 type GetNativeAddress<T extends Platform> = T extends MappedPlatforms
   ? Wormhole.PlatformToNativeAddressMapping[T]
   : never;
+
 export type NativeAddress<T extends Platform | Chain> = GetNativeAddress<
   ChainOrPlatformToPlatform<T>
 >;
@@ -68,8 +69,11 @@ type NativeAddressCtr = new (ua: UniversalAddress | string | Uint8Array) => Addr
 const nativeFactory = new Map<Platform, NativeAddressCtr>();
 
 export function registerNative<P extends Platform>(platform: P, ctr: NativeAddressCtr): void {
-  if (nativeFactory.has(platform)) return;
-  //throw new Error(`Native address type for platform ${platform} has already registered`);
+  if (nativeFactory.has(platform)) {
+    console.error("Native address type for platform %s has already registered", platform);
+    //throw new Error(`Native address type for platform ${platform} has already registered`);
+    return;
+  }
 
   nativeFactory.set(platform, ctr);
 }

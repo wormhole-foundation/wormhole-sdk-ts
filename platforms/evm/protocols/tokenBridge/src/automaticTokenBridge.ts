@@ -13,20 +13,18 @@ import {
 import {
   EvmChains,
   EvmPlatform,
+  EvmPlatformType,
   EvmUnsignedTransaction,
   addChainId,
   addFrom,
 } from '@wormhole-foundation/connect-sdk-evm';
 import { Provider, TransactionRequest } from 'ethers';
 
-import { Chain, Platform, nativeChainIds } from '@wormhole-foundation/sdk-base';
+import { nativeChainIds } from '@wormhole-foundation/sdk-base';
 import { ethers_contracts } from '.';
 
-export class EvmAutomaticTokenBridge<
-  N extends Network,
-  P extends 'Evm' = 'Evm',
-  C extends Chain = EvmChains,
-> implements AutomaticTokenBridge<P, C>
+export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
+  implements AutomaticTokenBridge<N, 'Evm', C>
 {
   readonly tokenBridgeRelayer: ethers_contracts.TokenBridgeRelayer;
   readonly tokenBridge: ethers_contracts.TokenBridgeContract;
@@ -72,7 +70,7 @@ export class EvmAutomaticTokenBridge<
   async *redeem(
     sender: AccountAddress<C>,
     vaa: TokenBridge.VAA<'TransferWithPayload'>,
-  ): AsyncGenerator<EvmUnsignedTransaction> {
+  ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
     const senderAddr = sender.toNative(this.chain).toString();
     const txReq =
       await this.tokenBridgeRelayer.completeTransferWithRelay.populateTransaction(
@@ -87,14 +85,19 @@ export class EvmAutomaticTokenBridge<
 
   static async fromRpc<N extends Network>(
     provider: Provider,
-    config: ChainsConfig<N, Platform>,
-  ): Promise<EvmAutomaticTokenBridge<N>> {
+    config: ChainsConfig<N, EvmPlatformType>,
+  ): Promise<EvmAutomaticTokenBridge<N, EvmChains>> {
     const [network, chain] = await EvmPlatform.chainFromRpc(provider);
-    return new EvmAutomaticTokenBridge<N>(
+
+    const conf = config[chain];
+    if (conf.network !== network)
+      throw new Error(`Network mismatch: ${conf.network} != ${network}`);
+
+    return new EvmAutomaticTokenBridge<N, EvmChains>(
       network as N,
       chain,
       provider,
-      config[chain]!.contracts!,
+      conf.contracts,
     );
   }
 
@@ -106,7 +109,7 @@ export class EvmAutomaticTokenBridge<
     amount: bigint,
     relayerFee: bigint,
     nativeGas?: bigint,
-  ): AsyncGenerator<EvmUnsignedTransaction> {
+  ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
     const senderAddr = sender.toNative(this.chain).toString();
     const recipientChainId = chainToChainId(recipient.chain);
     const recipientAddress = recipient.address
@@ -177,7 +180,7 @@ export class EvmAutomaticTokenBridge<
     txReq: TransactionRequest,
     description: string,
     parallelizable: boolean = false,
-  ): EvmUnsignedTransaction {
+  ): EvmUnsignedTransaction<N, C> {
     return new EvmUnsignedTransaction(
       addChainId(txReq, this.chainId),
       this.network,
