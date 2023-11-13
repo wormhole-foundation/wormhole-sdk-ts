@@ -1,7 +1,15 @@
 {
   "name": "Connect SDK",
   "extends": ["./typedoc.base.json"],
-  "entryPoints": ["connect",  "platforms/solana", "platforms/evm", "platforms/cosmwasm", "core/base", "core/definitions"],
+  "entryPoints": [
+    "connect",
+    "platforms/algorand",
+    "platforms/solana",
+    "platforms/evm",
+    "platforms/cosmwasm",
+    "core/base",
+    "core/definitions"
+  ],
   "exclude": ["platforms/aptos", "platforms/sui", "platforms/sei"],
-  "entryPointStrategy": "packages",
+  "entryPointStrategy": "packages"
 }

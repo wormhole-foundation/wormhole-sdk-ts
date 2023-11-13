@@ -1,6 +1,6 @@
 {
-  "name": "@wormhole-foundation/connect-sdk-examples",
-  "version": "0.1.8-beta.10",
+  "name": "@wormhole-foundation/connect-sdk-algorand-tokenbridge",
+  "version": "0.0.1",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -17,7 +17,7 @@
   "module": "./dist/esm/index.js",
   "types": "./dist/esm/index.d.ts",
   "author": "",
-  "description": "The core package for the Connect SDK, used in conjunction with 1 or more of the chain packages",
+  "description": "SDK for Algorand TokenBridge, used in conjunction with @wormhole-foundation/connect-sdk-algorand",
   "files": [
     "dist/**/*",
     "src/**/*"
@@ -26,57 +26,37 @@
     "wormhole",
     "sdk",
     "typescript",
-    "connect"
+    "connect",
+    "algorand",
+    "avm"
   ],
   "engines": {
-    "node": ">=16",
-    "pnpm": ">=7"
+    "node": ">=16"
   },
   "sideEffects": false,
   "scripts": {
-    "tb": "tsx src/tokenBridge.ts",
-    "cctp": "tsx src/cctp.ts",
-    "demo": "tsx src/index.ts",
-    "cosmos": "tsx src/cosmos.ts",
-    "recosmos": "cd ../platforms/cosmwasm && npm run rebuild && cd - && tsx src/cosmos.ts",
     "build:cjs": "tsc -p ./tsconfig.cjs.json",
     "build:esm": "tsc -p ./tsconfig.esm.json",
     "build": "npm run build:cjs && npm run build:esm",
     "rebuild": "npm run clean && npm run build:cjs && npm run build:esm",
-    "buildall": "cd .. && npm run build && cd -",
     "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo",
     "lint": "npm run prettier && eslint --fix",
-    "prettier": "prettier --write ./src",
-    "bump:beta": "bump prerelease",
-    "coverage": "jest --config ../jest.config.ts --coverage",
-    "docs": "typedoc"
+    "prettier": "prettier --write ./src"
   },
   "devDependencies": {
-    "@types/elliptic": "^6.4.14",
-    "@types/node": "^20.4.4",
     "@typescript-eslint/eslint-plugin": "^5.54.1",
     "@typescript-eslint/parser": "^5.54.1",
-    "dotenv": "^16.3.1",
     "eslint": "^8.35.0",
     "eslint-config-prettier": "^8.7.0",
     "lint-staged": "^13.1.2",
     "prettier": "2.8.4",
-    "tsx": "^3.14.0",
-    "typescript": "^5.1.6"
+    "typescript": "5.1.6"
   },
   "dependencies": {
-    "@hanchon/evmos-signer": "^1.0.0",
-    "@injectivelabs/sdk-ts": "^1.14.0-beta.1",
-    "@sei-js/proto": "^3.0.2",
     "@wormhole-foundation/connect-sdk": "*",
     "@wormhole-foundation/connect-sdk-algorand": "*",
-    "@wormhole-foundation/connect-sdk-algorand-tokenbridge": "*",
-    "@wormhole-foundation/connect-sdk-cosmwasm": "*",
-    "@wormhole-foundation/connect-sdk-evm": "*",
-    "@wormhole-foundation/connect-sdk-evm-cctp": "*",
-    "@wormhole-foundation/connect-sdk-evm-tokenbridge": "*",
-    "@wormhole-foundation/connect-sdk-solana": "*",
-    "bs58": "^5.0.0",
-    "ethers": "^6.7.0"
+    "@wormhole-foundation/connect-sdk-algorand-core": "*",
+    "algosdk": "2.7.0",
+    "ethers": "^6.8.1"
   }
 }

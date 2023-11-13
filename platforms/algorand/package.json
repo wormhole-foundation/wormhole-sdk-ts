@@ -1,0 +1,60 @@
+{
+  "name": "@wormhole-foundation/connect-sdk-algorand",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/wormhole-foundation/connect-sdk/issues"
+  },
+  "homepage": "https://github.com/wormhole-foundation/connect-sdk#readme",
+  "directories": {
+    "test": "__tests__"
+  },
+  "license": "Apache-2.0",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
+  "author": "",
+  "description": "SDK for Algorand, used in conjunction with @wormhole-foundation/connect-sdk",
+  "files": [
+    "dist/**/*",
+    "src/**/*"
+  ],
+  "keywords": [
+    "wormhole",
+    "sdk",
+    "typescript",
+    "connect",
+    "algorand",
+    "avm"
+  ],
+  "engines": {
+    "node": ">=16"
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build:cjs": "tsc -p ./tsconfig.cjs.json",
+    "build:esm": "tsc -p ./tsconfig.esm.json",
+    "build": "npm run build:cjs && npm run build:esm",
+    "rebuild": "npm run clean && npm run build:cjs && npm run build:esm",
+    "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo",
+    "lint": "npm run prettier && eslint --fix",
+    "prettier": "prettier --write ./src",
+    "test": "jest --config ./jest.config.ts"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.54.1",
+    "@typescript-eslint/parser": "^5.54.1",
+    "eslint": "^8.35.0",
+    "eslint-config-prettier": "^8.7.0",
+    "lint-staged": "^13.1.2",
+    "prettier": "2.8.4",
+    "typescript": "5.1.6"
+  },
+  "dependencies": {
+    "@wormhole-foundation/connect-sdk": "*",
+    "algosdk": "^2.7.0"
+  }
+}

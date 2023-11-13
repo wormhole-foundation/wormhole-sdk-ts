@@ -6,6 +6,7 @@ const rpcConfig = [
   [
     "Mainnet",
     [
+      ["Algorand", "https://mainnet-api.algonode.cloud"],
       ["Ethereum", "https://rpc.ankr.com/eth"],
       ["Solana", "https://api.mainnet-beta.solana.com"],
       ["Polygon", "https://rpc.ankr.com/polygon"],
@@ -32,6 +33,7 @@ const rpcConfig = [
   [
     "Testnet",
     [
+      ["Algorand", "https://testnet-api.algonode.cloud"],
       ["Ethereum", "https://rpc.ankr.com/eth_goerli"],
       ["Polygon", "https://polygon-mumbai.blockpi.network/v1/rpc/public"],
       ["Bsc", "https://data-seed-prebsc-1-s3.binance.org:8545"],

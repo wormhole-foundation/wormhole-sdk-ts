@@ -44,7 +44,8 @@ export async function signSendWait(
       txHashes.push(...(await signSend([tx])));
     }
   }
-
+  console.log("txbuff: ", txbuff);
+  console.log("txHashes: ", txHashes);
   if (txbuff.length > 0) {
     txHashes.push(...(await signSend(txbuff)));
   }
