@@ -1,40 +1,44 @@
 import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import {
-  Network,
+  Chain,
   ChainAddress,
-  TokenBridge,
-  TxHash,
-  TokenId,
-  TokenTransferTransaction,
-  toNative,
-  toChainName,
-  UniversalAddress,
-  toChainId,
-  serialize,
-  NativeAddress,
-  encoding,
   ChainsConfig,
   Contracts,
+  NativeAddress,
+  Network,
+  TokenBridge,
+  TokenId,
+  TokenTransferTransaction,
+  TxHash,
+  UniversalAddress,
+  encoding,
+  serialize,
+  toChain,
+  toChainId,
+  toNative,
 } from "@wormhole-foundation/connect-sdk";
 
 import {
-  buildExecuteMsg,
+  AnyCosmwasmAddress,
+  CosmwasmAddress,
+  CosmwasmChains,
+  CosmwasmPlatform,
+  CosmwasmPlatformType,
   CosmwasmTransaction,
   CosmwasmUnsignedTransaction,
-  computeFee,
-  AnyCosmwasmAddress,
-  CosmwasmChainName,
   WrappedRegistryResponse,
-  CosmwasmPlatform,
-  CosmwasmAddress,
+  buildExecuteMsg,
+  computeFee,
 } from "@wormhole-foundation/connect-sdk-cosmwasm";
 
-export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
+export class CosmwasmTokenBridge<N extends Network, C extends CosmwasmChains>
+  implements TokenBridge<N, CosmwasmPlatformType, C>
+{
   private tokenBridge: string;
   private translator?: string;
   private constructor(
-    readonly network: Network,
-    readonly chain: CosmwasmChainName,
+    readonly network: N,
+    readonly chain: C,
     readonly rpc: CosmWasmClient,
     readonly contracts: Contracts,
   ) {
@@ -47,9 +51,15 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
     this.translator = this.contracts.translator;
   }
 
-  static async fromRpc(rpc: CosmWasmClient, config: ChainsConfig): Promise<CosmwasmTokenBridge> {
+  static async fromRpc<N extends Network>(
+    rpc: CosmWasmClient,
+    config: ChainsConfig<N, CosmwasmPlatformType>,
+  ): Promise<CosmwasmTokenBridge<N, CosmwasmChains>> {
     const [network, chain] = await CosmwasmPlatform.chainFromRpc(rpc);
-    return new CosmwasmTokenBridge(network, chain, rpc, config[chain]!.contracts);
+    const conf = config[chain];
+    if (conf.network !== network)
+      throw new Error(`Network mismatch: ${conf.network} != ${network}`);
+    return new CosmwasmTokenBridge(network as N, chain, rpc, config[chain]!.contracts);
   }
 
   async isWrappedAsset(token: AnyCosmwasmAddress): Promise<boolean> {
@@ -68,7 +78,7 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
     return false;
   }
 
-  async getWrappedAsset(token: TokenId): Promise<NativeAddress<CosmwasmPlatform.Type>> {
+  async getWrappedAsset(token: TokenId<Chain>): Promise<NativeAddress<C>> {
     if (token.chain === this.chain) throw new Error(`Expected foreign chain, got ${token.chain}`);
 
     const base64Addr = encoding.b64.encode(token.address.toUniversalAddress().toUint8Array());
@@ -83,7 +93,7 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
       },
     );
 
-    return new CosmwasmAddress(address);
+    return toNative(this.chain, address);
   }
 
   async getOriginalAsset(token: AnyCosmwasmAddress): Promise<TokenId> {
@@ -93,7 +103,7 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
       wrapped_asset_info: {},
     });
 
-    const origChain = toChainName(response.asset_chain);
+    const origChain = toChain(response.asset_chain);
     const origAddress = encoding.b64.decode(response.asset_address);
 
     return {
@@ -115,7 +125,7 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
   async *createAttestation(
     token: AnyCosmwasmAddress | "native",
     payer?: AnyCosmwasmAddress,
-  ): AsyncGenerator<CosmwasmUnsignedTransaction> {
+  ): AsyncGenerator<CosmwasmUnsignedTransaction<N, C>> {
     if (!payer) throw new Error("Payer required to create attestation");
 
     const tokenStr = new CosmwasmAddress(token).toString();
@@ -127,7 +137,7 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
       token === "native"
         ? {
             native_token: {
-              denom: CosmwasmPlatform.getNativeDenom(this.chain),
+              denom: CosmwasmPlatform.getNativeDenom(this.network, this.chain),
             },
           }
         : {
@@ -141,7 +151,7 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
             create_asset_meta: { asset_info: assetInfo, nonce },
           }),
         ],
-        fee: computeFee(this.chain),
+        fee: computeFee(this.network, this.chain),
         memo: "Wormhole - Create Attestation",
       },
       "TokenBridge.createAttestation",
@@ -151,7 +161,7 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
   async *submitAttestation(
     vaa: TokenBridge.VAA<"AttestMeta">,
     payer?: AnyCosmwasmAddress,
-  ): AsyncGenerator<CosmwasmUnsignedTransaction> {
+  ): AsyncGenerator<CosmwasmUnsignedTransaction<N, C>> {
     if (!payer) throw new Error("Payer required to submit attestation");
 
     const payerStr = new CosmwasmAddress(payer).toString();
@@ -163,7 +173,7 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
             submit_vaa: { data: serialize(vaa) },
           }),
         ],
-        fee: computeFee(this.chain),
+        fee: computeFee(this.network, this.chain),
         memo: "Wormhole - Submit Attestation",
       },
       "TokenBridge.submitAttestation",
@@ -176,7 +186,7 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
     token: AnyCosmwasmAddress | "native",
     amount: bigint,
     payload?: Uint8Array,
-  ): AsyncGenerator<CosmwasmUnsignedTransaction> {
+  ): AsyncGenerator<CosmwasmUnsignedTransaction<N, C>> {
     const nonce = Math.round(Math.random() * 100000);
     const relayerFee = "0";
 
@@ -186,7 +196,7 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
       recipient.address.toUniversalAddress().toUint8Array(),
     );
 
-    const denom = CosmwasmPlatform.getNativeDenom(this.chain);
+    const denom = CosmwasmPlatform.getNativeDenom(this.network, this.chain);
 
     const isNative = token === "native";
 
@@ -232,7 +242,7 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
       yield this.createUnsignedTx(
         {
           msgs,
-          fee: computeFee(this.chain),
+          fee: computeFee(this.network, this.chain),
           memo: "Wormhole - Initiate Native Transfer",
         },
         "TokenBridge.transferNative",
@@ -258,20 +268,19 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
       yield this.createUnsignedTx(
         {
           msgs,
-          fee: computeFee(this.chain),
+          fee: computeFee(this.network, this.chain),
           memo: "Wormhole - Initiate Transfer",
         },
         "TokenBridge.transfer",
       );
     }
-    return;
   }
 
   async *redeem(
     sender: AnyCosmwasmAddress,
     vaa: TokenBridge.VAA<"Transfer" | "TransferWithPayload">,
     unwrapNative: boolean = true,
-  ): AsyncGenerator<CosmwasmUnsignedTransaction> {
+  ): AsyncGenerator<CosmwasmUnsignedTransaction<N, C>> {
     // TODO: unwrapNative
 
     const data = encoding.b64.encode(serialize(vaa));
@@ -294,7 +303,7 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
     yield this.createUnsignedTx(
       {
         msgs: [msg],
-        fee: computeFee(this.chain),
+        fee: computeFee(this.network, this.chain),
         memo: "Wormhole - Complete Transfer",
       },
       "TokenBridge.redeem",
@@ -306,15 +315,15 @@ export class CosmwasmTokenBridge implements TokenBridge<"Cosmwasm"> {
     throw new Error("Not implemented");
   }
 
-  async getWrappedNative(): Promise<NativeAddress<CosmwasmPlatform.Type>> {
-    return toNative(this.chain, CosmwasmPlatform.getNativeDenom(this.chain));
+  async getWrappedNative(): Promise<NativeAddress<C>> {
+    return toNative(this.chain, CosmwasmPlatform.getNativeDenom(this.network, this.chain));
   }
 
   private createUnsignedTx(
     txReq: CosmwasmTransaction,
     description: string,
     parallelizable: boolean = false,
-  ): CosmwasmUnsignedTransaction {
+  ): CosmwasmUnsignedTransaction<N, C> {
     return new CosmwasmUnsignedTransaction(
       txReq,
       this.network,

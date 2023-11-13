@@ -4,7 +4,7 @@ describe("UniversalAddress tests", function () {
   it("should correctly construct from a 20 byte hex string without 0x prefix", function () {
     const address = "98f3c9e6E3fAce36bAAd05FE09d375Ef1464288B";
     const ua = new UniversalAddress(address);
-    expect(ua.toString()).toEqual("0x" + "00".repeat(12) + address.toLocaleLowerCase());
+    expect(ua.toString()).toEqual("0x" + "00".repeat(12) + address.toLowerCase());
   });
 
   it("should correctly construct from a 32 byte hex string with 0x prefix", function () {

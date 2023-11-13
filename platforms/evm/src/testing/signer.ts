@@ -1,36 +1,38 @@
 import {
-  ChainName,
-  RpcConnection,
+  Chain,
   SignOnlySigner,
   SignedTx,
   Signer,
   UnsignedTransaction,
+  Network,
 } from '@wormhole-foundation/connect-sdk';
 import { ethers } from 'ethers';
 import { EvmPlatform } from '../platform';
 
 // Get a SignOnlySigner for the EVM platform
 export async function getEvmSigner(
-  rpc: RpcConnection<'Evm'>,
+  rpc: ethers.Provider,
   privateKey: string,
 ): Promise<Signer> {
-  const [_, chain] = await EvmPlatform.chainFromRpc(rpc);
-  return new EvmSigner(chain, rpc, privateKey);
+  const [network, chain] = await EvmPlatform.chainFromRpc(rpc);
+  return new EvmSigner<typeof network, typeof chain>(chain, rpc, privateKey);
 }
 
 // EvmSigner implements SignOnlySender
-export class EvmSigner implements SignOnlySigner {
+export class EvmSigner<N extends Network, C extends Chain>
+  implements SignOnlySigner<N, C>
+{
   _wallet: ethers.Wallet;
 
   constructor(
-    private _chain: ChainName,
+    private _chain: C,
     private provider: ethers.Provider,
     privateKey: string,
   ) {
     this._wallet = new ethers.Wallet(privateKey, provider);
   }
 
-  chain(): ChainName {
+  chain(): C {
     return this._chain;
   }
 

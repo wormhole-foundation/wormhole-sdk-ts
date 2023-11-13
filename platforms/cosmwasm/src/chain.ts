@@ -1,6 +1,7 @@
-import { ChainContext } from "@wormhole-foundation/connect-sdk";
-import { CosmwasmPlatform } from "./platform";
+import { Chain, ChainContext, Network } from "@wormhole-foundation/connect-sdk";
+import { CosmwasmChains, CosmwasmPlatformType } from "./types";
 
-export class CosmwasmChain extends ChainContext<"Cosmwasm"> {
-  readonly platform = CosmwasmPlatform;
-}
+export class CosmwasmChain<
+  N extends Network = Network,
+  C extends Chain = CosmwasmChains,
+> extends ChainContext<N, CosmwasmPlatformType, C> {}

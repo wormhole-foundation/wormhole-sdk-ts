@@ -1,4 +1,4 @@
-import { ChainName, Network, contracts } from "@wormhole-foundation/sdk-base";
+import { Chain, Network, contracts } from "@wormhole-foundation/sdk-base";
 
 export type Contracts = {
   coreBridge?: string;
@@ -11,7 +11,7 @@ export type Contracts = {
   translator?: string;
 };
 
-export function getContracts(n: Network, c: ChainName): Contracts {
+export function getContracts(n: Network, c: Chain): Contracts {
   const ct: Contracts = {
     coreBridge: contracts.coreBridge.get(n, c),
     tokenBridge: contracts.tokenBridge.get(n, c),

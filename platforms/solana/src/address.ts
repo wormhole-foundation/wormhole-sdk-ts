@@ -1,14 +1,14 @@
 import {
   Address,
+  Platform,
   UniversalAddress,
-  PlatformName,
-  registerNative,
   encoding,
+  registerNative,
 } from '@wormhole-foundation/connect-sdk';
 
 import { PublicKey } from '@solana/web3.js';
-import { AnySolanaAddress } from './types';
 import { SolanaPlatform } from './platform';
+import { AnySolanaAddress } from './types';
 
 declare global {
   namespace Wormhole {
@@ -23,7 +23,7 @@ export const SolanaZeroAddress = '11111111111111111111111111111111';
 
 export class SolanaAddress implements Address {
   static readonly byteSize = 32;
-  public readonly platform: PlatformName = SolanaPlatform.platform;
+  public readonly platform: Platform = SolanaPlatform._platform;
 
   private readonly address: PublicKey;
 
@@ -57,7 +57,7 @@ export class SolanaAddress implements Address {
   }
 
   static instanceof(address: any): address is SolanaAddress {
-    return address.platform === SolanaPlatform.platform;
+    return address.platform === SolanaPlatform._platform;
   }
 
   equals(other: SolanaAddress | UniversalAddress): boolean {
@@ -69,6 +69,4 @@ export class SolanaAddress implements Address {
   }
 }
 
-try {
-  registerNative('Solana', SolanaAddress);
-} catch {}
+registerNative('Solana', SolanaAddress);

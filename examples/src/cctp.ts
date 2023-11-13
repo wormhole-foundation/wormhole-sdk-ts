@@ -1,15 +1,17 @@
 import {
   CircleTransfer,
+  Network,
   Signer,
   TransactionId,
   Wormhole,
   normalizeAmount,
+  Platform,
 } from "@wormhole-foundation/connect-sdk";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { TransferStuff, getStuff, waitLog } from "./helpers";
 
-import "@wormhole-foundation/connect-sdk-evm-core";
 import "@wormhole-foundation/connect-sdk-evm-cctp";
+import "@wormhole-foundation/connect-sdk-evm-core";
 
 /*
 Notes:
@@ -49,17 +51,21 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
   // This is especially helpful for chains with longer time to finality where you don't want
   // to have to wait for the attestation to be generated.
 
-  //await completeTransfer(wh, {
-  //  chain: "Avalanche",
-  //  txid: "0x4695a5ae7ed2efcf2d585bdb2e64436f6b8bd67fe547789d8b8ba6fab6d9483f",
-  //});
+  // await completeTransfer(
+  //   wh,
+  //   {
+  //     chain: "Avalanche",
+  //     txid: "0x6b6d5f101a32aa6d2f7bf0bf14d72bfbf76a640e1b2fdbbeeac5b82069cda4dd",
+  //   },
+  //   destination.signer,
+  // );
 })();
 
-async function cctpTransfer(
-  wh: Wormhole,
+async function cctpTransfer<N extends Network>(
+  wh: Wormhole<N>,
   amount: bigint,
-  src: TransferStuff,
-  dst: TransferStuff,
+  src: TransferStuff<N, Platform>,
+  dst: TransferStuff<N, Platform>,
   automatic: boolean,
   nativeGas?: bigint,
 ) {
@@ -88,7 +94,11 @@ async function cctpTransfer(
   console.log(`Completed Transfer: `, dstTxids);
 }
 
-async function completeTransfer(wh: Wormhole, txid: TransactionId, signer: Signer): Promise<void> {
+export async function completeTransfer(
+  wh: Wormhole<Network>,
+  txid: TransactionId,
+  signer: Signer,
+): Promise<void> {
   // Rebuild the transfer from the source txid
   const xfer = await CircleTransfer.from(wh, txid);
 

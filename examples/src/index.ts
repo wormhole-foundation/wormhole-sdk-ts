@@ -1,15 +1,22 @@
-import { CONFIG, api, normalizeAmount, signSendWait } from "@wormhole-foundation/connect-sdk";
+import {
+  CONFIG,
+  Wormhole,
+  api,
+  normalizeAmount,
+  signSendWait,
+} from "@wormhole-foundation/connect-sdk";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 
-import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
 import "@wormhole-foundation/connect-sdk-evm-core";
+import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
 
 import { getStuff } from "./helpers";
 
 (async function () {
   // Setup
-  const snd = EvmPlatform.getChain("Avalanche");
-  const rcv = EvmPlatform.getChain("Ethereum");
+  const wh = new Wormhole("Testnet", [EvmPlatform]);
+  const snd = wh.getChain("Avalanche");
+  const rcv = wh.getChain("Ethereum");
 
   // get signers from local config
   const sender = await getStuff(snd);
@@ -23,7 +30,7 @@ import { getStuff } from "./helpers";
     sender.address.address,
     receiver.address,
     "native",
-    normalizeAmount("0.1", snd.config.nativeTokenDecimals),
+    normalizeAmount("0.1", BigInt(snd.config.nativeTokenDecimals)),
   );
 
   // Sign and send the transaction

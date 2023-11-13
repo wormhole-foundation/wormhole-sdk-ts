@@ -1,11 +1,11 @@
-import { CircleChainName, circleChainId, toCircleChainName } from "@wormhole-foundation/sdk-base";
+import { circle } from "@wormhole-foundation/sdk-base";
 
 export const circleDomainItem = {
   binary: "uint",
   size: 4,
   custom: {
-    to: (id: number) => toCircleChainName(id),
-    from: (name: CircleChainName) => circleChainId(name),
+    to: (id: number) => circle.toCircleChain(id),
+    from: (name: circle.CircleChain) => circle.circleChainId(name),
   },
 } as const;
 

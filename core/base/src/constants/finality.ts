@@ -1,5 +1,5 @@
-import { ChainName } from "./chains";
-import { constMap, RoArray } from "../utils";
+import { MapLevel, constMap } from "../utils";
+import { Chain } from "./chains";
 
 // https://www.notion.so/Finality-in-Wormhole-78ffa423abd44b7cbe38483a16040d83
 
@@ -9,7 +9,7 @@ export enum ConsistencyLevels {
   // SolanaConfirmed = 0,
   Finalized = 1,
   Immediate = 200,
-  Safe = 201,
+  Safe      = 201,
 }
 
 // Number of blocks before a transaction is considered "safe"
@@ -17,77 +17,79 @@ export enum ConsistencyLevels {
 // is completed, the transaction is considered safe
 const safeThresholds = [
   ["Ethereum", 32], // number of rounds in an epoch
-] as const satisfies RoArray<readonly [ChainName, number]>;
+] as const satisfies MapLevel<Chain, number>;
 export const safeThreshold = constMap(safeThresholds);
 
 // Number of blocks before a transaction is considered "final"
 const finalityThresholds = [
-  ["Ethereum", 64],
-  ["Solana", 32],
-  ["Polygon", 512],
-  ["Bsc", 15],
-  ["Fantom", 1],
-  ["Celo", 1],
-  ["Moonbeam", 1],
-  ["Avalanche", 0],
-  ["Sui", 0],
-  ["Algorand", 0],
-  ["Aptos", 0],
-  ["Sei", 0],
-  ["Near", 0],
-  ["Terra", 0],
-  ["Terra2", 0],
-  ["Xpla", 0],
-  ["Injective", 0],
-] as const satisfies RoArray<readonly [ChainName, number]>;
+  ["Ethereum",  64],
+  ["Solana",    32],
+  ["Polygon",  512],
+  ["Bsc",       15],
+  ["Fantom",     1],
+  ["Celo",       1],
+  ["Moonbeam",   1],
+  ["Avalanche",  0],
+  ["Sui",        0],
+  ["Algorand",   0],
+  ["Aptos",      0],
+  ["Sei",        0],
+  ["Near",       0],
+  ["Terra",      0],
+  ["Terra2",     0],
+  ["Xpla",       0],
+  ["Injective",  0],
+] as const satisfies MapLevel<Chain, number>;
+
 export const finalityThreshold = constMap(finalityThresholds);
 
 // number of milliseconds between blocks
 const blockTimeMilliseconds = [
-  ["Acala", 12000],
-  ["Algorand", 3300],
-  ["Aptos", 4000],
-  ["Arbitrum", 300],
-  ["Aurora", 3000],
-  ["Avalanche", 2000],
-  ["Base", 2000],
-  ["Bsc", 3000],
-  ["Celo", 5000],
-  ["Cosmoshub", 5000],
-  ["Ethereum", 15000],
-  ["Evmos", 2000],
-  ["Fantom", 2500],
-  ["Gnosis", 5000],
-  ["Injective", 2500],
-  ["Karura", 12000],
-  ["Klaytn", 1000],
-  ["Kujira", 3000],
-  ["Moonbeam", 12000],
-  ["Near", 1500],
-  ["Neon", 30000],
-  ["Oasis", 6000],
-  ["Optimism", 2000],
-  ["Osmosis", 6000],
-  ["Polygon", 2000],
-  ["Rootstock", 30000],
-  ["Sei", 400],
-  ["Sepolia", 15000],
-  ["Solana", 400],
-  ["Sui", 3000],
-  ["Terra", 6000],
-  ["Terra2", 6000],
-  ["Xpla", 5000],
-  ["Wormchain", 5000],
-  ["Btc", 600000],
-  ["Pythnet", 400],
-] as const satisfies RoArray<readonly [ChainName, number]>;
+  ["Acala",     12_000],
+  ["Algorand",   3_300],
+  ["Aptos",      4_000],
+  ["Arbitrum",     300],
+  ["Aurora",     3_000],
+  ["Avalanche",  2_000],
+  ["Base",       2_000],
+  ["Bsc",        3_000],
+  ["Celo",       5_000],
+  ["Cosmoshub",  5_000],
+  ["Ethereum",  15_000],
+  ["Evmos",      2_000],
+  ["Fantom",     2_500],
+  ["Gnosis",     5_000],
+  ["Injective",  2_500],
+  ["Karura",    12_000],
+  ["Klaytn",     1_000],
+  ["Kujira",     3_000],
+  ["Moonbeam",  12_000],
+  ["Near",       1_500],
+  ["Neon",      30_000],
+  ["Oasis",      6_000],
+  ["Optimism",   2_000],
+  ["Osmosis",    6_000],
+  ["Polygon",    2_000],
+  ["Rootstock", 30_000],
+  ["Sei",          400],
+  ["Sepolia",   15_000],
+  ["Solana",       400],
+  ["Sui",        3_000],
+  ["Terra",      6_000],
+  ["Terra2",     6_000],
+  ["Xpla",       5_000],
+  ["Wormchain",  5_000],
+  ["Btc",      600_000],
+  ["Pythnet",      400],
+] as const satisfies MapLevel<Chain, number>;
+
 export const blockTime = constMap(blockTimeMilliseconds);
 
 // Estimate the block number that a VAA might be available
 // for a given chain, initial block where the tx was submitted
 // and consistency level
 export function consistencyLevelToBlock(
-  chain: ChainName,
+  chain: Chain,
   consistencyLevel: number,
   fromBlock: bigint = 0n,
 ): bigint {

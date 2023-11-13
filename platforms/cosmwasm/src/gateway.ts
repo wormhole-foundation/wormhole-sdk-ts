@@ -1,10 +1,10 @@
-import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import {
-  ChainName,
+  CONFIG,
+  Chain,
+  ChainContext,
   GatewayTransferMsg,
   GatewayTransferWithPayloadMsg,
-  IbcBridge,
-  TokenBridge,
+  Network,
   TokenId,
   encoding,
   sha256,
@@ -14,76 +14,63 @@ import {
 import { CosmwasmAddress } from "./address";
 import { IBC_TRANSFER_PORT } from "./constants";
 import { CosmwasmPlatform } from "./platform";
-import { CosmwasmChainName } from "./types";
+import { CosmwasmChains, CosmwasmPlatformType } from "./types";
 
-export module Gateway {
-  export const name: "Wormchain" = "Wormchain";
+export class Gateway<N extends Network> extends ChainContext<
+  N,
+  CosmwasmPlatformType,
+  typeof Gateway.chain
+> {
+  static chain: "Wormchain" = "Wormchain";
 
-  export function gatewayAddress(): string {
-    const { contracts } = CosmwasmPlatform.config[name]!;
-    return contracts.gateway!;
-  }
-
-  export function tokenBridgeAddress(): string {
-    const { contracts } = CosmwasmPlatform.config[name]!;
-    return contracts.tokenBridge!;
-  }
-
-  export function coreAddress(): string {
-    const { contracts } = CosmwasmPlatform.config[name]!;
-    return contracts.coreBridge!;
-  }
-
-  // Returns RPC client for Wormchain
-  export async function getRpc(): Promise<CosmWasmClient> {
-    const rpcAddress = CosmwasmPlatform.config[name]!.rpc;
-    return await CosmWasmClient.connect(rpcAddress);
-  }
-
-  export async function getTokenBridge(rpc?: CosmWasmClient): Promise<TokenBridge<"Cosmwasm">> {
-    rpc = rpc ? rpc : await getRpc();
-    return CosmwasmPlatform.getTokenBridge(rpc);
-  }
-
-  export async function getIbcBridge(rpc?: CosmWasmClient): Promise<IbcBridge<"Cosmwasm">> {
-    rpc = rpc ? rpc : await getRpc();
-    return CosmwasmPlatform.getIbcBridge(rpc);
-  }
+  static gatewayAddress = (network: Network): string =>
+    CONFIG[network].chains[Gateway.chain].contracts.gateway;
+  static tokenBridgeAddress = (network: Network): string =>
+    CONFIG[network].chains[Gateway.chain].contracts.tokenBridge;
+  static coreAddress = (network: Network): string =>
+    CONFIG[network].chains[Gateway.chain].contracts.coreBridge;
 
   // Get the wrapped version of an asset created on wormchain
   // for a given chain
-  export async function getWrappedAsset(token: TokenId): Promise<CosmwasmAddress> {
-    const tb = await getTokenBridge();
+  async getWrappedAsset(token: TokenId): Promise<CosmwasmAddress> {
+    const tb = await this.getTokenBridge();
     const wrappedAsset = await tb.getWrappedAsset(token);
 
     // Encode the original address to base58 and add it
     // to the factory address for cw20 style factory token address
     const encodedAddress = encoding.b58.encode(wrappedAsset.toUniversalAddress().toUint8Array());
-    const factoryAddress = `factory/${gatewayAddress()}/${encodedAddress}`;
+    const factoryAddress = `factory/${Gateway.gatewayAddress(this.network)}/${encodedAddress}`;
 
     return new CosmwasmAddress(factoryAddress);
   }
 
   // Gets the the source channel for outgoing transfers from wormchain
-  export function getGatewaySourceChannel(chain: CosmwasmChainName): string {
-    const channels = CosmwasmPlatform.getIbcChannels(chain);
+  static getGatewaySourceChannel<N extends Network, C extends CosmwasmChains>(
+    network: N,
+    chain: C,
+  ): string {
+    const channels = CosmwasmPlatform.getIbcChannels(network, chain);
     if (!channels) throw new Error("No channels configured for chain " + chain);
     if (!(Gateway.name in channels)) throw new Error("No channel configured for chain " + chain);
-    return channels[Gateway.name]!;
+    return channels[Gateway.chain];
   }
 
   // derive the ics20 token denom from the
   // wrapped denom and destination channel
-  export function deriveIbcDenom(chain: CosmwasmChainName, denom: string): CosmwasmAddress {
+  static deriveIbcDenom<N extends Network, C extends CosmwasmChains>(
+    network: N,
+    chain: C,
+    denom: string,
+  ): CosmwasmAddress {
     // Otherwise compute the ibc address from the channel and denom
-    const channel = getGatewaySourceChannel(chain);
-    const hashData = encoding.toUint8Array(`${IBC_TRANSFER_PORT}/${channel}/${denom}`);
+    const channel = this.getGatewaySourceChannel(network, chain);
+    const hashData = encoding.bytes.encode(`${IBC_TRANSFER_PORT}/${channel}/${denom}`);
     const hash = encoding.hex.encode(sha256(hashData));
     return new CosmwasmAddress(`ibc/${hash.toUpperCase()}`);
   }
 
-  export function makeTransferMsg(
-    chain: ChainName,
+  static makeTransferMsg(
+    chain: Chain,
     recipient: CosmwasmAddress,
     fee: bigint = 0n,
     payload?: string,

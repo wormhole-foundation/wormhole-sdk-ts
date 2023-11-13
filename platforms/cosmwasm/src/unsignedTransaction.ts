@@ -1,14 +1,10 @@
 import { Coin, EncodeObject } from "@cosmjs/proto-signing";
 import { StdFee, calculateFee } from "@cosmjs/stargate";
-import {
-  UnsignedTransaction,
-  ChainName,
-  Network,
-  encoding,
-} from "@wormhole-foundation/connect-sdk";
-import { MSG_EXECUTE_CONTRACT_TYPE_URL, DEFAULT_FEE } from "./constants";
+import { Network, UnsignedTransaction, encoding } from "@wormhole-foundation/connect-sdk";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
+import { DEFAULT_FEE, MSG_EXECUTE_CONTRACT_TYPE_URL } from "./constants";
 import { CosmwasmPlatform } from "./platform";
+import { CosmwasmChains } from "./types";
 
 export interface CosmwasmTransaction {
   fee: StdFee;
@@ -16,8 +12,11 @@ export interface CosmwasmTransaction {
   memo: string;
 }
 
-export function computeFee(chain: ChainName): StdFee {
-  return calculateFee(DEFAULT_FEE, `0.1${CosmwasmPlatform.getNativeDenom(chain)}`);
+export function computeFee<N extends Network, C extends CosmwasmChains>(
+  network: N,
+  chain: C,
+): StdFee {
+  return calculateFee(DEFAULT_FEE, `0.1${CosmwasmPlatform.getNativeDenom(network, chain)}`);
 }
 
 export function buildExecuteMsg(
@@ -31,17 +30,19 @@ export function buildExecuteMsg(
     value: MsgExecuteContract.fromPartial({
       sender: sender,
       contract: contract,
-      msg: encoding.toUint8Array(JSON.stringify(msg)),
+      msg: encoding.bytes.encode(JSON.stringify(msg)),
       funds,
     }),
   };
 }
 
-export class CosmwasmUnsignedTransaction implements UnsignedTransaction {
+export class CosmwasmUnsignedTransaction<N extends Network, C extends CosmwasmChains>
+  implements UnsignedTransaction<N, C>
+{
   constructor(
     readonly transaction: CosmwasmTransaction,
-    readonly network: Network,
-    readonly chain: ChainName,
+    readonly network: N,
+    readonly chain: C,
     readonly description: string,
     readonly parallelizable: boolean = false,
   ) {}

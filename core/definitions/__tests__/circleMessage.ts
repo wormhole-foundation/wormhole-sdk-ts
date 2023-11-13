@@ -1,4 +1,4 @@
-import { deserializeLayout, usdcContract, encoding } from "@wormhole-foundation/sdk-base";
+import { deserializeLayout, circle, encoding } from "@wormhole-foundation/sdk-base";
 import { circleMessageLayout } from "../src/protocols/cctp";
 import { UniversalAddress } from "../src";
 import { circleContracts } from "@wormhole-foundation/sdk-base/src/constants/contracts";
@@ -30,7 +30,7 @@ describe("Circle Message tests", function () {
     );
 
     const tokenAddress = ethAddressToUniversal(
-      usdcContract("Testnet", fromChain),
+      circle.usdcContract("Testnet", fromChain),
     );
 
     const decoded = deserializeLayout(circleMessageLayout, orig);

@@ -1,4 +1,4 @@
-import { LayoutItem, UintLayoutItem } from "@wormhole-foundation/sdk-base";
+import { LayoutItem } from "@wormhole-foundation/sdk-base";
 import {
   amountItem,
   chainItem,
@@ -10,21 +10,12 @@ import {
 } from "../layout-items";
 import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../vaa";
 
-const versionByte = <N extends number>(id: N) =>
-  ({
-    name: "version",
-    binary: "uint",
-    size: 1,
-    custom: id,
-    omit: true,
-  } as const satisfies UintLayoutItem & { readonly name: string });
-
 const encodedExecutionInfoItem = {
   binary: "object",
   layout: [
     { name: "size", binary: "uint", size: 4, custom: 3*32, omit: true },
     { name: "waste", binary: "uint", size: 31, custom: 0n, omit: true },
-    versionByte(0),
+    { name: "version", binary: "uint", size: 1, custom: 0, omit: true },
     { name: "gasLimit", ...amountItem },
     { name: "targetChainRefundPerGasUnused", ...amountItem },
   ]
@@ -87,15 +78,6 @@ const namedPayloads = [
       { name: "newEncodedExecutionInfo", ...encodedExecutionInfoItem },
       { name: "newSourceDeliveryProvider", ...universalAddressItem },
       { name: "newSenderAddress", ...universalAddressItem },
-    ],
-  ],
-  [
-    "DeliveryOverride",
-    [
-      versionByte(1),
-      { name: "receiverValue", ...amountItem },
-      { name: "newExecutionInfo", ...encodedExecutionInfoItem },
-      { name: "redeliveryHash", binary: "bytes", size: 32 },
     ],
   ],
 ] as const satisfies NamedPayloads;
