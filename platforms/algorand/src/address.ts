@@ -4,7 +4,12 @@ import {
   registerNative,
   PlatformName,
 } from '@wormhole-foundation/connect-sdk';
-import { bigIntToBytes, bytesToBigInt, encodeAddress } from 'algosdk';
+import {
+  bigIntToBytes,
+  bytesToBigInt,
+  decodeAddress,
+  encodeAddress,
+} from 'algosdk';
 import { AlgorandPlatform } from './platform';
 import { AnyAlgorandAddress } from './types';
 
@@ -42,13 +47,14 @@ export class AlgorandAddress implements Address {
 
   // This may need to handle uint64s that represent a token ASA ID
   constructor(address: AnyAlgorandAddress) {
+    console.log('Constructing AlgorandAddress with address: ', address);
     if (AlgorandAddress.instanceof(address)) {
       const a = address as AlgorandAddress;
       this.address = a.address;
     } else if (UniversalAddress.instanceof(address)) {
       this.address = address.toUint8Array();
     } else if (typeof address === 'string') {
-      this.address = new Uint8Array(Buffer.from(address));
+      this.address = decodeAddress(address).publicKey;
     } else if (
       address instanceof Uint8Array &&
       address.byteLength === AlgorandAddress.byteSize
@@ -59,7 +65,7 @@ export class AlgorandAddress implements Address {
     } else throw new Error(`Invalid Algorand address or ASA ID ${address}`);
   }
 
-  unwrap(): AnyAlgorandAddress {
+  unwrap(): Uint8Array {
     return this.address;
   }
 

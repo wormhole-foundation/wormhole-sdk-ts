@@ -14,7 +14,14 @@ import { AlgorandAddress, AlgorandZeroAddress } from './address';
 import { AlgorandPlatform } from './platform';
 import { algorandGenesisHashToNetworkChainPair } from './constants';
 import { AnyAlgorandAddress } from './types';
-import { Algodv2, bytesToBigInt, modelsv2, waitForConfirmation } from 'algosdk';
+import {
+  Algodv2,
+  SignedTransaction,
+  bytesToBigInt,
+  decodeSignedTransaction,
+  modelsv2,
+  waitForConfirmation,
+} from 'algosdk';
 
 /**
  * @category Algorand
@@ -111,22 +118,31 @@ export module AlgorandUtils {
     rpc: Algodv2,
     stxns: SignedTx[],
   ): Promise<TxHash[]> {
-    const rounds = 4;
-    const sentTransaction = await rpc.sendRawTransaction(stxns).do();
-    if (!sentTransaction) {
+    const rounds = 10;
+
+    const decodedStxns: SignedTransaction[] = stxns.map((val, idx) => {
+      const decodedStxn: SignedTransaction = decodeSignedTransaction(val);
+      return decodedStxn;
+    });
+
+    const txIds: string[] = decodedStxns.map((val, idx) => {
+      const id: string = val.txn.txID();
+      return id;
+    });
+
+    const { txId } = await rpc.sendRawTransaction(stxns).do();
+    if (!txId) {
       throw new Error('Transaction(s) failed to send');
     }
-    const confirmedTransaction = await waitForConfirmation(
-      rpc,
-      sentTransaction.txId,
-      rounds,
-    );
-    if (!confirmedTransaction['round-number']) {
+    const confirmedTransaction = await waitForConfirmation(rpc, txId, rounds);
+    if (!confirmedTransaction['confirmed-round']) {
       throw new Error(
         `Transaction(s) could not be confirmed in ${rounds} rounds`,
       );
     }
-    return sentTransaction.txId;
+
+    console.log('txIds: ', txIds);
+    return txIds;
   }
 
   export async function getCurrentBlock(rpc: Algodv2): Promise<number> {

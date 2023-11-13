@@ -15,7 +15,6 @@ export async function getSolanaSigner(
   privateKey: string,
 ): Promise<Signer> {
   const [_, chain] = await SolanaPlatform.chainFromRpc(rpc);
-  console.log('Solana privateKey: ', privateKey);
   return new SolanaSigner(
     chain,
     Keypair.fromSecretKey(encoding.b58.decode(privateKey)),

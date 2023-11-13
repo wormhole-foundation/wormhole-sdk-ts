@@ -12,6 +12,7 @@ import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 //
 
+import "@wormhole-foundation/connect-sdk-algorand-core";
 import "@wormhole-foundation/connect-sdk-algorand-tokenbridge";
 import "@wormhole-foundation/connect-sdk-evm-core";
 import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
@@ -102,13 +103,23 @@ async function tokenTransfer(
 
   // 2) wait for the VAA to be signed and ready (not required for auto transfer)
   console.log("Getting Attestation");
-  const attestIds = await xfer.fetchAttestation(60_000);
+  const attestIds = await xfer.fetchAttestation(100_000);
   console.log(`Got Attestation: `, attestIds);
 
   // 3) redeem the VAA on the dest chain
   console.log("Completing Transfer");
   const destTxids = await xfer.completeTransfer(dst.signer);
   console.log(`Completed Transfer: `, destTxids);
+}
+
+async function manualTokenTransfer(
+  wh: Wormhole,
+  token: TokenId | "native",
+  amount: bigint,
+  src: TransferStuff,
+  dst: TransferStuff,
+) {
+  return tokenTransfer(wh, token, amount, src, dst, false);
 }
 
 // If you've started a transfer but not completed it
@@ -123,16 +134,6 @@ async function finishTransfer(
   const xfer = await TokenTransfer.from(wh, { chain, txid });
   console.log(xfer);
   await xfer.completeTransfer(signer);
-}
-
-async function manualTokenTransfer(
-  wh: Wormhole,
-  token: TokenId | "native",
-  amount: bigint,
-  src: TransferStuff,
-  dst: TransferStuff,
-) {
-  return tokenTransfer(wh, token, amount, src, dst, false);
 }
 
 async function automaticTokenTransfer(

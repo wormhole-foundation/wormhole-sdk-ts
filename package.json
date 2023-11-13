@@ -34,13 +34,15 @@
     "bump:beta": "bump prerelease && npm run bump:beta --workspaces --if-present",
     "test:tilt": "jest --verbose --config ./jest.config.ts --roots ./__tests__/tilt",
     "test": "NETWORK=Mainnet npm run test --workspaces --if-present",
-    "docs": "typedoc"
+    "docs": "typedoc",
+    "reset examples": "rm -rf ./examples/node_modules && npm run rebuild && npm i"
   },
   "workspaces": [
     "core/base",
     "core/definitions",
     "connect",
     "platforms/algorand",
+    "platforms/algorand/protocols/core",
     "platforms/algorand/protocols/tokenBridge",
     "platforms/evm",
     "platforms/evm/protocols/core",

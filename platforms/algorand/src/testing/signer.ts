@@ -3,10 +3,10 @@ import {
   RpcConnection,
   SignOnlySigner,
   Signer,
-  UnsignedTransaction,
 } from '@wormhole-foundation/connect-sdk';
-import { Account, mnemonicToSecretKey } from 'algosdk';
+import { Account, assignGroupID, mnemonicToSecretKey } from 'algosdk';
 import { AlgorandPlatform } from '../platform';
+import { AlgorandUnsignedTransaction } from '../unsignedTransaction';
 
 // returns a SignOnlySigner for the Algorand platform
 export async function getAlgorandSigner(
@@ -29,15 +29,34 @@ export class AlgorandSigner implements SignOnlySigner {
     return this._account.addr;
   }
 
-  async sign(tx: UnsignedTransaction[]): Promise<any[]> {
-    const signed = [];
-    for (const txn of tx) {
-      const { description, transaction } = txn;
-      console.log(`Signing: ${description} for ${this.address()}`);
+  async sign(
+    algoUnsignedTxns: AlgorandUnsignedTransaction[],
+  ): Promise<Uint8Array[]> {
+    const signed: Uint8Array[] = [];
+    const ungrouped = algoUnsignedTxns.map((val, idx) => {
+      return val.transaction.tx;
+    });
+    const grouped = assignGroupID(ungrouped);
 
-      const stxn = transaction.signTxn(this._account.sk);
-      signed.push(stxn);
+    // Replace the ungrouped Transactions with grouped Transactions
+    const groupedAlgoUnsignedTxns = algoUnsignedTxns.map((val, idx) => {
+      val.transaction.tx = grouped[idx];
+      return val;
+    });
+
+    for (const algoUnsignedTxn of groupedAlgoUnsignedTxns) {
+      const { description, transaction: tsp } = algoUnsignedTxn;
+      const { tx, signer } = tsp;
+      console.log(
+        `Signing: ${description} transaction ${tx._getDictForDisplay()} with signer ${signer} for address ${this.address()}`,
+      );
+      if (signer) {
+        signed.push(await signer.signTxn(tx));
+      } else {
+        signed.push(tx.signTxn(this._account.sk));
+      }
     }
+
     return signed;
   }
 }

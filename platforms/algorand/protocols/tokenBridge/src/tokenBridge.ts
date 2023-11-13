@@ -12,7 +12,6 @@ import {
   ErrNotWrapped,
   serialize,
   UnsignedTransaction,
-  ChainName,
   toChainName,
   UniversalAddress,
   ChainsConfig,
@@ -23,6 +22,8 @@ import {
   AlgorandPlatform,
   AlgorandUnsignedTransaction,
   AlgorandZeroAddress,
+  AnyAlgorandAddress,
+  TransactionSignerPair,
 } from '@wormhole-foundation/connect-sdk-algorand';
 import {
   Algodv2,
@@ -37,6 +38,7 @@ import {
   getIsWrappedAssetAlgorand,
   getOriginalAssetAlgorand,
   redeemOnAlgorand,
+  submitVAAHeader,
   transferFromAlgorand,
 } from './utils';
 
@@ -184,15 +186,15 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
   // to allow it to create a wrapped version of the token
   async *createAttestation(
     token_to_attest: AnyAddress,
-    payer?: AnyAddress,
+    payer?: AnyAlgorandAddress,
   ): AsyncGenerator<UnsignedTransaction> {
     if (!payer) throw new Error('Payer required to create attestation');
 
-    const senderAddr = new AlgorandAddress(payer.toString());
+    const senderAddr = payer.toString();
     const assetId = bytesToBigInt(
       new AlgorandAddress(token_to_attest.toString()).toUint8Array(),
     );
-    const utxn = await attestFromAlgorand(
+    const utxns = await attestFromAlgorand(
       this.connection,
       this.tokenBridgeAppId,
       this.coreAppId,
@@ -200,12 +202,13 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
       assetId,
     );
 
-    yield this.createUnsignedTransaction(
-      utxn,
-      this.network,
-      this.chain,
-      'Algorand.TokenBridge.createAttestation',
-    );
+    for (const utxn of utxns) {
+      yield this.createUnsignedTransaction(
+        utxn,
+        'Algorand.TokenBridge.createAttestation',
+        true,
+      );
+    }
   }
 
   // Submits the Token Attestation VAA to the Token bridge
@@ -213,45 +216,73 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
   async *submitAttestation(
     vaa: TokenBridge.VAA<'AttestMeta'>,
     payer?: AnyAddress,
-  ): AsyncGenerator<UnsignedTransaction> {
+  ): AsyncGenerator<AlgorandUnsignedTransaction> {
     if (!payer) throw new Error('Payer required to create attestation');
+
+    const senderAddr = payer.toString();
+    const { txs } = await submitVAAHeader(
+      this.connection,
+      this.tokenBridgeAppId,
+      vaa.hash,
+      senderAddr,
+      this.coreAppId,
+    );
+
+    for (const utxn of txs) {
+      yield this.createUnsignedTransaction(
+        utxn,
+        'Algorand.TokenBridge.submitAttestation',
+        true,
+      );
+    }
   }
 
-  // Initiates a transfer of some token to another chain
+  // Initiates a transfer of some token from Algorand to another chain
   async *transfer(
-    sender: AnyAddress,
+    sender: AnyAlgorandAddress,
     recipient: ChainAddress,
-    token: AnyAddress,
+    token: AnyAlgorandAddress | 'native',
     amount: bigint,
     payload?: Uint8Array,
   ): AsyncGenerator<UnsignedTransaction> {
-    const senderAddr = new AlgorandAddress(sender.toString()).toString();
-    const assetId = bytesToBigInt(
-      new AlgorandAddress(token.toString()).toUint8Array(),
-    );
+    const senderAddr = sender.toString();
+    const assetId =
+      token === 'native'
+        ? BigInt(0)
+        : bytesToBigInt(new AlgorandAddress(token).toUint8Array());
     const qty = amount;
-    const receiver = recipient.address;
     const chain = recipient.chain;
+    const receiver = recipient.address.toUniversalAddress().toString();
     const fee = BigInt(0);
-    const utxn = await transferFromAlgorand(
+    console.log(
+      'About to transferFromAlgorand: ',
+      senderAddr,
+      assetId,
+      qty,
+      receiver,
+      chain,
+      fee,
+    );
+    const utxns = await transferFromAlgorand(
       this.connection,
       this.tokenBridgeAppId,
       this.coreAppId,
       senderAddr,
       assetId,
       qty,
-      receiver.toString(),
+      receiver,
       chain,
       fee,
       payload,
     );
 
-    yield this.createUnsignedTransaction(
-      utxn,
-      this.network,
-      this.chain,
-      'Algorand.TokenBridge.transfer',
-    );
+    for (const utxn of utxns) {
+      yield this.createUnsignedTransaction(
+        utxn,
+        'Algorand.TokenBridge.transfer',
+        true,
+      );
+    }
   }
 
   // Redeems a transfer VAA to receive the tokens on this chain
@@ -262,7 +293,7 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
   ): AsyncGenerator<UnsignedTransaction> {
     const senderAddr = new AlgorandAddress(sender.toString()).toString();
 
-    const utxn = redeemOnAlgorand(
+    const utxns = await redeemOnAlgorand(
       this.connection,
       this.tokenBridgeAppId,
       this.coreAppId,
@@ -270,26 +301,24 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
       senderAddr,
     );
 
-    yield this.createUnsignedTransaction(
-      utxn,
-      this.network,
-      this.chain,
-      'Algorand.TokenBridge.redeem',
-    );
+    for (const utxn of utxns) {
+      yield this.createUnsignedTransaction(
+        utxn,
+        'Algorand.TokenBridge.redeem',
+        true,
+      );
+    }
   }
 
   private createUnsignedTransaction(
-    transaction: any,
-    network: Network,
-    chain: ChainName,
+    transaction: TransactionSignerPair,
     description: string,
-    parallelizable: boolean = false,
+    parallelizable: boolean = true, // Default true for Algorand atomic transaction grouping
   ): AlgorandUnsignedTransaction {
     return new AlgorandUnsignedTransaction(
-      // TODOBW: On Algorand, "transaction" is going to need to be a group
       transaction,
-      network,
-      chain,
+      this.network,
+      this.chain,
       description,
       parallelizable,
     );

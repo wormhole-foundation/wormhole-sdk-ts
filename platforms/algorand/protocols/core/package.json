@@ -1,5 +1,5 @@
 {
-  "name": "@wormhole-foundation/connect-sdk-algorand-tokenbridge",
+  "name": "@wormhole-foundation/connect-sdk-algorand-core",
   "version": "0.0.1",
   "repository": {
     "type": "git",
@@ -17,7 +17,7 @@
   "module": "./dist/esm/index.js",
   "types": "./dist/esm/index.d.ts",
   "author": "",
-  "description": "SDK for Algorand TokenBridge, used in conjunction with @wormhole-foundation/connect-sdk-algorand",
+  "description": "SDK for Algorand, used in conjunction with @wormhole-foundation/connect-sdk",
   "files": [
     "dist/**/*",
     "src/**/*"
@@ -41,6 +41,7 @@
     "rebuild": "npm run clean && npm run build:cjs && npm run build:esm",
     "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo",
     "lint": "npm run prettier && eslint --fix",
+    "bump:beta": "bump prerelease",
     "prettier": "prettier --write ./src"
   },
   "devDependencies": {
@@ -54,9 +55,6 @@
   },
   "dependencies": {
     "@wormhole-foundation/connect-sdk": "*",
-    "@wormhole-foundation/connect-sdk-algorand": "*",
-    "@wormhole-foundation/connect-sdk-algorand-core": "*",
-    "algosdk": "2.7.0",
-    "ethers": "^6.8.1"
+    "@wormhole-foundation/connect-sdk-algorand": "*"
   }
 }

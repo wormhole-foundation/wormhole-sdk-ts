@@ -1,12 +1,13 @@
-/*
-This file contains content adapted from @certusone/wormhole-sdk
-*/
+// This file contains content adapted from @certusone/wormhole-sdk
 
-import { ChainName, ChainId } from '@wormhole-foundation/connect-sdk';
+import {
+  ChainName,
+  ChainId,
+  toChainId,
+} from '@wormhole-foundation/connect-sdk';
+import { TransactionSignerPair } from '@wormhole-foundation/connect-sdk-algorand';
 import abi, {
-  Account,
   Algodv2,
-  assignGroupID,
   bigIntToBytes,
   bytesToBigInt,
   decodeAddress,
@@ -21,11 +22,9 @@ import abi, {
   signLogicSigTransaction,
   SuggestedParams,
   Transaction,
-  waitForConfirmation,
 } from 'algosdk';
 import { keccak256 } from 'ethers';
 import { PopulateData, TmplSig } from './TmplSig';
-import { toChainId } from '@wormhole-foundation/connect-sdk';
 
 const CHAIN_ID_ALGORAND = 8;
 
@@ -55,16 +54,6 @@ const ALGO_VERIFY = new Uint8Array([
 ]);
 
 const accountExistsCache = new Set<[bigint, string]>();
-
-type Signer = {
-  addr: string;
-  signTxn(txn: Transaction): Promise<Uint8Array>;
-};
-
-export type TransactionSignerPair = {
-  tx: Transaction;
-  signer: Signer | null;
-};
 
 export type OptInResult = {
   addr: string;
@@ -100,6 +89,13 @@ export async function createWrappedOnAlgorand(
   );
 }
 
+/**
+ * Returns a boolean if the asset is wrapped
+ * @param client Algodv2 client
+ * @param tokenBridgeId Application ID of the token bridge
+ * @param assetId Algorand asset index
+ * @returns Promise with True if wrapped, False otherwise
+ */
 export async function getIsWrappedAssetAlgorand(
   client: Algodv2,
   tokenBridgeId: bigint,
@@ -159,7 +155,7 @@ export async function getForeignAssetAlgorand(
  * @param client Algodv2 client
  * @param tokenBridgeId Application ID of the token bridge
  * @param assetId Algorand asset index
- * @returns Wrapped wormhole information structure
+ * @returns Wrapped Wormhole information structure
  */
 export async function getOriginalAssetAlgorand(
   client: Algodv2,
@@ -192,12 +188,12 @@ export async function getOriginalAssetAlgorand(
 }
 
 /**
- * This function is used to check if a VAA has been redeemed by looking at a specific bit.
+ * This function is used to check if a VAA has been redeemed by looking at a specific bit
  * @param client AlgodV2 client
  * @param appId Application Id
- * @param addr Wallet address. Someone has to pay for this.
+ * @param addr Wallet address. Someone has to pay for this
  * @param seq The sequence number of the redemption
- * @returns true, if the bit was set and VAA was redeemed, false otherwise.
+ * @returns True, if the bit was set and VAA was redeemed, False otherwise
  */
 async function checkBitsSet(
   client: Algodv2,
@@ -241,11 +237,11 @@ async function checkBitsSet(
 }
 
 /**
- * <p>Returns true if this transfer was completed on Algorand</p>
+ * Returns true if this transfer was completed on Algorand
  * @param client AlgodV2 client
  * @param appId Most likely the Token bridge ID
  * @param signedVAA VAA to check
- * @returns true if VAA has been redeemed, false otherwise
+ * @returns True if VAA has been redeemed, False otherwise
  */
 export async function getIsTransferCompletedAlgorand(
   client: Algodv2,
@@ -383,7 +379,7 @@ export async function attestFromAlgorand(
  * Return the message fee for the core bridge
  * @param client An Algodv2 client
  * @param bridgeId The application ID of the core bridge
- * @returns The message fee for the core bridge
+ * @returns Promise with the message fee for the core bridge
  */
 export async function getMessageFee(
   client: Algodv2,
@@ -409,7 +405,7 @@ export async function getMessageFee(
  * @param client An Algodv2 client
  * @param appId Application ID
  * @param acctAddr Account address to check
- * @returns true, if account exists for application.  Otherwise, returns false
+ * @returns True, if account exists for application, False otherwise
  */
 export async function accountExists(
   client: Algodv2,
@@ -447,7 +443,7 @@ export type LogicSigAccountInfo = {
  * @param appId Application ID
  * @param appIndex Application index
  * @param emitterId Emitter address
- * @returns LogicSigAccountInfo
+ * @returns Promise with LogicSigAccountInfo
  */
 export async function calcLogicSigAccount(
   client: Algodv2,
@@ -535,15 +531,6 @@ export async function optin(
   };
 }
 
-function extract3(buffer: Uint8Array, start: number, size: number) {
-  return buffer.slice(start, start + size);
-}
-
-/**
- * Parses the VAA into a Map
- * @param vaa The VAA to be parsed
- * @returns The ParsedVAA containing the parsed elements of the VAA
- */
 export type ParsedVAA = {
   version: number;
   index: number;
@@ -592,6 +579,11 @@ export type ParsedVAA = {
   uri?: string;
 };
 
+/**
+ * Parses the VAA into a Map
+ * @param vaa The VAA to be parsed
+ * @returns The ParsedVAA containing the parsed elements of the VAA
+ */
 export function _parseVAAAlgorand(vaa: Uint8Array): ParsedVAA {
   let ret = {} as ParsedVAA;
   let buf = Buffer.from(vaa);
@@ -740,6 +732,11 @@ export function _parseVAAAlgorand(vaa: Uint8Array): ParsedVAA {
 
 export const METADATA_REPLACE = new RegExp('\u0000', 'g');
 
+/**
+ * Parses the VAA into a Map
+ * @param vaa The VAA to be parsed
+ * @returns The ParsedVAA containing the parsed elements of the VAA
+ */
 export function _parseNFTAlgorand(vaa: Uint8Array): ParsedVAA {
   let ret = _parseVAAAlgorand(vaa);
 
@@ -767,7 +764,7 @@ export function _parseNFTAlgorand(vaa: Uint8Array): ParsedVAA {
  * @param client Algodv2 client
  * @param appId Application ID of interest
  * @param address Address of the account
- * @returns Uint8Array of data squirreled away
+ * @returns Promise with Uint8Array of data squirreled away
  */
 export async function decodeLocalState(
   client: Algodv2,
@@ -818,7 +815,7 @@ export async function decodeLocalState(
  * @param client Algodv2 client
  * @param asset Algorand asset index
  * @param receiver Account address
- * @returns True if the asset was opted in, else false
+ * @returns Promise with True if the asset was opted in, False otherwise
  */
 export async function assetOptinCheck(
   client: Algodv2,
@@ -860,12 +857,11 @@ class SubmitVAAState {
 /**
  * Submits just the header of the VAA
  * @param client AlgodV2 client
- * @param bridgeId Application ID of the core b
- * ridge
+ * @param bridgeId Application ID of the core b * ridge
  * @param vaa The VAA (Just the header is used)
  * @param senderAddr Sending account address
  * @param appid Application ID
- * @returns Current VAA state
+ * @returns Promise with current VAA state
  */
 export async function submitVAAHeader(
   client: Algodv2,
@@ -874,7 +870,7 @@ export async function submitVAAHeader(
   senderAddr: string,
   appid: bigint,
 ): Promise<SubmitVAAState> {
-  // A lot of our logic here depends on parseVAA and knowing what the payload is..
+  // A lot of our logic here depends on parseVAA and knowing what the payload is
   const parsedVAA = _parseVAAAlgorand(vaa);
   const seq: bigint = parsedVAA.sequence / BigInt(MAX_BITS);
   const chainRaw: string = parsedVAA.chainRaw; // QUESTIONBW: Does this need to be a hex string?  Comment was in wormhole-sdk
@@ -914,7 +910,7 @@ export async function submitVAAHeader(
 
   const params: SuggestedParams = await client.getTransactionParams().do();
 
-  // We don't pass the entire payload in but instead just pass it pre digested.  This gets around size
+  // We don't pass the entire payload in but instead just pass it pre-digested.  This gets around size
   // limitations with lsigs AND reduces the cost of the entire operation on a congested network by reducing the
   // bytes passed into the transaction
   // This is a 2 pass digest
@@ -993,7 +989,7 @@ export async function submitVAAHeader(
  * @param bridgeId Application ID of the core bridge
  * @param vaa The VAA to be submitted
  * @param senderAddr Sending account address
- * @returns Confirmation log
+ * @returns Promise with an array of TransactionSignerPair
  */
 export async function _submitVAAAlgorand(
   client: Algodv2,
@@ -1282,14 +1278,14 @@ export async function _submitVAAAlgorand(
  * @param client AlgodV2 client
  * @param tokenBridgeId Application ID of the token bridge
  * @param bridgeId Application ID of the core bridge
- * @param sender Sending account
+ * @param senderAddr Sending account
  * @param assetId Asset index
  * @param qty Quantity to transfer
  * @param receiver Receiving account
  * @param chain Reeiving chain
  * @param fee Transfer fee
  * @param payload payload for payload3 transfers
- * @returns Sequence number of confirmation
+ * @returns Promise with array of TransactionSignerPair
  */
 export async function transferFromAlgorand(
   client: Algodv2,
@@ -1321,7 +1317,6 @@ export async function transferFromAlgorand(
   let wormhole: boolean = false;
   if (assetId !== BigInt(0)) {
     const assetInfo: Record<string, any> = await client
-      // TODOBW: This fails when the assetId is zero for native, I think
       .getAssetByID(safeBigIntToNumber(assetId))
       .do();
     creator = assetInfo['params']['creator'];
@@ -1420,6 +1415,7 @@ export async function transferFromAlgorand(
     bigIntToBytes(recipientChainId, 8),
     bigIntToBytes(fee, 8),
   ];
+  console.log('args: ', args);
   if (payload !== null) {
     args.push(payload);
   }
@@ -1445,7 +1441,7 @@ export async function transferFromAlgorand(
  * @param bridgeId Core bridge ID
  * @param vaa The VAA to be redeemed
  * @param acct Sending account
- * @returns Transaction ID(s)
+ * @returns Promise with array of TransactionSignerPair
  */
 export async function redeemOnAlgorand(
   client: Algodv2,
@@ -1463,6 +1459,10 @@ export async function redeemOnAlgorand(
   );
 }
 
+function extract3(buffer: Uint8Array, start: number, size: number) {
+  return buffer.slice(start, start + size);
+}
+
 export function safeBigIntToNumber(b: bigint): number {
   if (
     b < BigInt(Number.MIN_SAFE_INTEGER) ||
@@ -1473,7 +1473,6 @@ export function safeBigIntToNumber(b: bigint): number {
   return Number(b);
 }
 
-//TODO: All these need to be reviewed
 export function uint8ArrayToNativeStringAlgorand(a: Uint8Array): string {
   return encodeAddress(a);
 }
@@ -1494,8 +1493,9 @@ export function hexToNativeAssetStringAlgorand(s: string): string {
   return uint8ArrayToNativeStringAlgorand(hexToUint8Array(s));
 }
 
-export const uint8ArrayToHex = (a: Uint8Array): string =>
-  Buffer.from(a).toString('hex');
+export const uint8ArrayToHex = (a: Uint8Array): string => {
+  return Buffer.from(a).toString('hex');
+};
 
 export const hexToUint8Array = (h: string): Uint8Array => {
   if (h.startsWith('0x')) h = h.slice(2);
@@ -1508,28 +1508,4 @@ export function textToHexString(name: string): string {
 
 export function textToUint8Array(name: string): Uint8Array {
   return new Uint8Array(Buffer.from(name, 'binary'));
-}
-
-// TODOBW: This can probably be replaced by something from the platform(Utils)
-export async function signSendAndConfirmAlgorand(
-  algodClient: Algodv2,
-  txs: TransactionSignerPair[],
-  wallet: Account,
-) {
-  assignGroupID(txs.map((tx) => tx.tx));
-  const signedTxns: Uint8Array[] = [];
-  for (const tx of txs) {
-    if (tx.signer) {
-      signedTxns.push(await tx.signer.signTxn(tx.tx));
-    } else {
-      signedTxns.push(tx.tx.signTxn(wallet.sk));
-    }
-  }
-  await algodClient.sendRawTransaction(signedTxns).do();
-  const result = await waitForConfirmation(
-    algodClient,
-    txs[txs.length - 1].tx.txID(),
-    4,
-  );
-  return result;
 }
