@@ -24,7 +24,6 @@ import {
   ALGO_VERIFY_HASH,
   MAX_BITS,
   MAX_SIGS_PER_TXN,
-  METADATA_REPLACE,
   ZERO_PAD_BYTES,
 } from './constants';
 import {
@@ -180,7 +179,7 @@ export async function submitVAAHeader(
     onComplete: OnApplicationComplete.NoOpOC,
     suggestedParams: params,
   });
-  appTxn.fee = appTxn.fee * (1 + numTxns);
+  appTxn.fee = appTxn.fee * (2 + numTxns); // Was 1
   txs.push({ tx: appTxn, signer: null });
 
   return new SubmitVAAState(parsedVAA, accts, txs, guardianAddr);
@@ -372,7 +371,7 @@ export async function _submitVAAAlgorand(
       }),
       signer: null,
     });
-    txs[txs.length - 1].tx.fee = txs[txs.length - 1].tx.fee * 2;
+    txs[txs.length - 1].tx.fee = txs[txs.length - 1].tx.fee * 2; // QUESTIONBW: There are like 3 different ways of adjusting fees in various functions--this should be standardized
   }
 
   if (
@@ -626,29 +625,30 @@ export function _parseVAAAlgorand(vaa: Uint8Array): ParsedVAA {
   return ret;
 }
 
+// QUESTIONBW: Can this be removed entirely?
 /**
  * Parses the VAA into a Map
  * @param vaa The VAA to be parsed
  * @returns The ParsedVAA containing the parsed elements of the VAA
  */
-export function _parseNFTAlgorand(vaa: Uint8Array): ParsedVAA {
-  let ret = _parseVAAAlgorand(vaa);
+// export function _parseNFTAlgorand(vaa: Uint8Array): ParsedVAA {
+//   let ret = _parseVAAAlgorand(vaa);
 
-  let arr = Buffer.from(ret.Body as Uint8Array);
+//   let arr = Buffer.from(ret.Body as Uint8Array);
 
-  ret.action = arr.readUInt8(0);
-  ret.Contract = arr.slice(1, 1 + 32).toString('hex');
-  ret.FromChain = arr.readUInt16BE(33);
-  ret.Symbol = Buffer.from(arr.slice(35, 35 + 32));
-  ret.Name = Buffer.from(arr.slice(67, 67 + 32));
-  ret.TokenId = arr.slice(99, 99 + 32);
-  let uri_len = arr.readUInt8(131);
-  ret.uri = Buffer.from(arr.slice(132, 132 + uri_len))
-    .toString('utf8')
-    .replace(METADATA_REPLACE, '');
-  let target_offset = 132 + uri_len;
-  ret.ToAddress = arr.slice(target_offset, target_offset + 32);
-  ret.ToChain = arr.readUInt16BE(target_offset + 32);
+//   ret.action = arr.readUInt8(0);
+//   ret.Contract = arr.slice(1, 1 + 32).toString('hex');
+//   ret.FromChain = arr.readUInt16BE(33);
+//   ret.Symbol = Buffer.from(arr.slice(35, 35 + 32));
+//   ret.Name = Buffer.from(arr.slice(67, 67 + 32));
+//   ret.TokenId = arr.slice(99, 99 + 32);
+//   let uri_len = arr.readUInt8(131);
+//   ret.uri = Buffer.from(arr.slice(132, 132 + uri_len))
+//     .toString('utf8')
+//     .replace(METADATA_REPLACE, '');
+//   let target_offset = 132 + uri_len;
+//   ret.ToAddress = arr.slice(target_offset, target_offset + 32);
+//   ret.ToChain = arr.readUInt16BE(target_offset + 32);
 
-  return ret;
-}
+//   return ret;
+// }

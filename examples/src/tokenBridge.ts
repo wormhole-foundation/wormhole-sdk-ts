@@ -5,6 +5,7 @@ import {
   ChainName,
   Signer,
   normalizeAmount,
+  UniversalAddress,
 } from "@wormhole-foundation/connect-sdk";
 // Import the platform specific packages
 import { AlgorandAddress, AlgorandPlatform } from "@wormhole-foundation/connect-sdk-algorand";
@@ -28,8 +29,8 @@ import { bigIntToBytes } from "algosdk";
   const wh = new Wormhole("Testnet", [AlgorandPlatform, EvmPlatform, SolanaPlatform]);
 
   // Grab chain Contexts
-  const sendChain = wh.getChain("Algorand");
-  const rcvChain = wh.getChain("Solana");
+  const sendChain = wh.getChain("Avalanche");
+  const rcvChain = wh.getChain("Algorand");
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
@@ -39,16 +40,24 @@ import { bigIntToBytes } from "algosdk";
 
   // Choose your adventure
 
-  //Test native
+  // Test native Algo outbound
   // const amt = normalizeAmount("0.01", sendChain.config.nativeTokenDecimals);
   // await manualTokenTransfer(wh, "native", amt, source, destination);
 
-  //Test ASA
+  //Test Algorand ASA outbound
+  // const asa: TokenId = {
+  //   chain: "Algorand",
+  //   address: new AlgorandAddress(bigIntToBytes(BigInt(10458941), 32)), // Testnet USDC
+  // };
+  // const amt = normalizeAmount("0.01", BigInt(6));
+  // await manualTokenTransfer(wh, asa, amt, source, destination);
+
+  // Test token inbound to Algorand
   const asa: TokenId = {
-    chain: "Algorand",
-    address: new AlgorandAddress(bigIntToBytes(BigInt(10458941), 32)),
+    chain: "Avalanche",
+    address: new UniversalAddress("0x12EB0d635FD4C5692d779755Ba82b33F6439fc73", "hex"), // Testnet Wrapped USDC from Algorand
   };
-  const amt = normalizeAmount("0.01", BigInt(6));
+  const amt = normalizeAmount("0.0001", BigInt(6));
   await manualTokenTransfer(wh, asa, amt, source, destination);
 
   // await automaticTokenTransfer(wh, "native", 100_000_000n, source, destination);
@@ -78,7 +87,7 @@ import { bigIntToBytes } from "algosdk";
   // await finishTransfer(
   //   wh,
   //   sendChain.chain,
-  //   "CMZTCMOGQXJ6ENEI5F3PBXI2KMUQYNUA22Y3EIXH5HJ6QRKTTLQA",
+  //   "0x667f7cb46bc5c76c19d196118cda79319b22748d42379e9f6f60448c29f25b6e",
   //   destination.signer,
   // );
 })();

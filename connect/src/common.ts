@@ -25,6 +25,8 @@ export async function signSendWait(
 
   let txbuff: UnsignedTransaction[] = [];
   for await (const tx of xfer) {
+    console.log("UnsignedTransaction: ", tx.transaction);
+
     // buffer transactions as long as they are
     // marked as parallelizable
     if (tx.parallelizable) {
@@ -44,8 +46,7 @@ export async function signSendWait(
       txHashes.push(...(await signSend([tx])));
     }
   }
-  console.log("txbuff: ", txbuff);
-  console.log("txHashes: ", txHashes);
+  console.log("Complete txbuff: ", txbuff);
   if (txbuff.length > 0) {
     txHashes.push(...(await signSend(txbuff)));
   }

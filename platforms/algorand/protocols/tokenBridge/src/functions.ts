@@ -69,7 +69,7 @@ export async function createWrappedOnAlgorand(
  * @param assetId Algorand asset index
  * @returns Promise with True if wrapped, False otherwise
  */
-export async function getIsWrappedAssetAlgorand(
+export async function getIsWrappedAssetOnAlgorand(
   client: Algodv2,
   tokenBridgeId: bigint,
   assetId: bigint,
@@ -85,7 +85,6 @@ export async function getIsWrappedAssetAlgorand(
   return wormhole;
 }
 
-// TODO: Rename stuff to original and wrapped
 /**
  * Returns an origin chain and asset address on {originChain} for a provided Wormhole wrapped address
  * @param client Algodv2 client
@@ -93,7 +92,7 @@ export async function getIsWrappedAssetAlgorand(
  * @param assetId Algorand asset index
  * @returns Promise with the Algorand asset index or null
  */
-export async function getForeignAssetAlgorand( // TODO: gets wrapped version on Algorand - rename as getWrappedAssetOnAlgorand
+export async function getWrappedAssetOnAlgorand(
   client: Algodv2,
   tokenBridgeId: bigint,
   chain: ChainId | ChainName,
@@ -131,7 +130,7 @@ export async function getForeignAssetAlgorand( // TODO: gets wrapped version on 
  * @param assetId Algorand asset index
  * @returns Wrapped Wormhole information structure
  */
-export async function getOriginalAssetAlgorand( // TODO: Taking wrapped on Algorand and
+export async function getOriginalAssetOffAlgorand(
   client: Algodv2,
   tokenBridgeId: bigint,
   assetId: bigint,
@@ -141,7 +140,7 @@ export async function getOriginalAssetAlgorand( // TODO: Taking wrapped on Algor
     chainId: CHAIN_ID_ALGORAND,
     assetAddress: new Uint8Array(),
   };
-  retVal.isWrapped = await getIsWrappedAssetAlgorand(
+  retVal.isWrapped = await getIsWrappedAssetOnAlgorand(
     client,
     tokenBridgeId,
     assetId,
@@ -370,6 +369,7 @@ export async function getMessageFee(
       return;
     }
   });
+  console.log('Message Fee: ', ret);
   return ret;
 }
 
@@ -602,7 +602,6 @@ export async function transferFromAlgorand(
   assetId: bigint,
   qty: bigint,
   receiver: UniversalAddress,
-  // receiver: string,
   chain: ChainId | ChainName,
   fee: bigint,
   payload: Uint8Array | null = null,

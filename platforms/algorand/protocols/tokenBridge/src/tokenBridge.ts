@@ -33,10 +33,10 @@ import {
 } from 'algosdk';
 import {
   attestFromAlgorand,
-  getForeignAssetAlgorand,
+  getWrappedAssetOnAlgorand,
   getIsTransferCompletedAlgorand,
-  getIsWrappedAssetAlgorand,
-  getOriginalAssetAlgorand,
+  getIsWrappedAssetOnAlgorand,
+  getOriginalAssetOffAlgorand,
   redeemOnAlgorand,
   transferFromAlgorand,
 } from './functions';
@@ -93,7 +93,7 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
       new AlgorandAddress(nativeAddress.toString()).toUint8Array(),
     );
 
-    const isWrapped = await getIsWrappedAssetAlgorand(
+    const isWrapped = await getIsWrappedAssetOnAlgorand(
       this.connection,
       this.tokenBridgeAppId,
       token,
@@ -110,7 +110,7 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
       new AlgorandAddress(nativeAddress.toString()).toUint8Array(),
     );
 
-    const whWrappedInfo = await getOriginalAssetAlgorand(
+    const whWrappedInfo = await getOriginalAssetOffAlgorand(
       this.connection,
       this.tokenBridgeAppId,
       token,
@@ -132,7 +132,7 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
 
   // Checks to see if a foreign token has a wrapped version on Algorand
   async hasWrappedAsset(foreignToken: TokenId): Promise<boolean> {
-    const mirror = await getForeignAssetAlgorand(
+    const mirror = await getWrappedAssetOnAlgorand(
       this.connection,
       this.tokenBridgeAppId,
       foreignToken.chain,
@@ -148,7 +148,7 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
   async getWrappedAsset(
     foreignToken: TokenId,
   ): Promise<NativeAddress<AlgorandPlatform.Type>> {
-    const assetId = await getForeignAssetAlgorand(
+    const assetId = await getWrappedAssetOnAlgorand(
       this.connection,
       this.tokenBridgeAppId,
       foreignToken.chain,
@@ -205,7 +205,7 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
     }
   }
 
-  // Submits the Token Attestation VAA to the Token bridge
+  // Submits the Token Attestation VAA to the Token Bridge
   // to create the wrapped token represented by the data in the VAA
   async *submitAttestation(
     vaa: TokenBridge.VAA<'AttestMeta'>,
