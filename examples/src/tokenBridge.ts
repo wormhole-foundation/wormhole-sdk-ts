@@ -40,7 +40,24 @@ import { Platform } from "@wormhole-foundation/sdk-base/src";
   const amt = normalizeAmount("0.01", BigInt(sendChain.config.nativeTokenDecimals));
 
   // Choose your adventure
-  await manualTokenTransfer(wh, "native", amt, source, destination);
+  const xfer = await manualTokenTransfer(wh, "native", amt, source, destination);
+  console.log(xfer);
+
+  // How about round trip?
+  // Figure out what token to transfer back given the VAA  details
+  // const { vaa } = xfer.vaas.pop()!;
+  // const destinationToken = {
+  //   chain: destination.chain.chain,
+  //   address: await (await destination.chain.getTokenBridge()).getWrappedAsset(vaa.payload.token),
+  // };
+  // const xferBack = await manualTokenTransfer(
+  //   wh,
+  //   destinationToken,
+  //   vaa.payload.token.amount,
+  //   destination,
+  //   source,
+  // );
+  // console.log(xferBack);
 
   // await automaticTokenTransfer(wh, "native", 100_000_000n, source, destination);
   // await automaticTokenTransferWithGasDropoff(
@@ -65,7 +82,9 @@ import { Platform } from "@wormhole-foundation/sdk-base/src";
   //   payload
   // );
 
-  // Or pick up where you left off given the source transaction
+  // Or, if you have an incomplete transfer, pick up from where you
+  // left off given the source transaction
+
   // await finishTransfer(
   //   wh,
   //   sendChain.chain,
@@ -74,16 +93,16 @@ import { Platform } from "@wormhole-foundation/sdk-base/src";
   // );
 })();
 
-async function tokenTransfer(
-  wh: Wormhole<Network>,
+async function tokenTransfer<N extends Network>(
+  wh: Wormhole<N>,
   token: TokenId | "native",
   amount: bigint,
-  src: TransferStuff<Network, Platform, Chain>,
-  dst: TransferStuff<Network, Platform, Chain>,
+  src: TransferStuff<N, Platform, Chain>,
+  dst: TransferStuff<N, Platform, Chain>,
   automatic: boolean,
   nativeGas?: bigint,
   payload?: Uint8Array,
-) {
+): Promise<TokenTransfer<N>> {
   const xfer = await wh.tokenTransfer(
     token,
     amount,
@@ -101,7 +120,10 @@ async function tokenTransfer(
   console.log(`Started transfer: `, srcTxids);
 
   // If automatic, we're done
-  if (automatic) return waitLog(xfer);
+  if (automatic) {
+    await waitLog(xfer);
+    return xfer;
+  }
 
   // 2) wait for the VAA to be signed and ready (not required for auto transfer)
   console.log("Getting Attestation");
@@ -112,6 +134,8 @@ async function tokenTransfer(
   console.log("Completing Transfer");
   const destTxids = await xfer.completeTransfer(dst.signer);
   console.log(`Completed Transfer: `, destTxids);
+
+  return xfer;
 }
 
 // If you've started a transfer but not completed it
@@ -128,12 +152,12 @@ export async function finishTransfer(
   await xfer.completeTransfer(signer);
 }
 
-async function manualTokenTransfer(
-  wh: Wormhole<Network>,
+async function manualTokenTransfer<N extends Network>(
+  wh: Wormhole<N>,
   token: TokenId | "native",
   amount: bigint,
-  src: TransferStuff<Network, Platform, Chain>,
-  dst: TransferStuff<Network, Platform, Chain>,
+  src: TransferStuff<N, Platform, Chain>,
+  dst: TransferStuff<N, Platform, Chain>,
 ) {
   return tokenTransfer(wh, token, amount, src, dst, false);
 }
