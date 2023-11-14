@@ -57,6 +57,13 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
   ) {
     this.chainId = toChainId(chain);
 
+    if (!contracts.coreBridge) {
+      throw new Error(`Core contract address for chain ${chain} not found`);
+    }
+    const core = BigInt(contracts.coreBridge);
+    this.coreAppId = core;
+    this.coreAppAddress = getApplicationAddress(core);
+
     if (!contracts.tokenBridge) {
       throw new Error(
         `TokenBridge contract address for chain ${chain} not found`,
@@ -65,13 +72,6 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
     const tokenBridge = BigInt(contracts.tokenBridge);
     this.tokenBridgeAppId = tokenBridge;
     this.tokenBridgeAddress = getApplicationAddress(tokenBridge);
-
-    if (!contracts.coreBridge) {
-      throw new Error(`Core contract address for chain ${chain} not found`);
-    }
-    const core = BigInt(contracts.coreBridge);
-    this.coreAppId = core;
-    this.coreAppAddress = getApplicationAddress(core);
   }
 
   static async fromRpc(
@@ -89,7 +89,6 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
 
   // Checks a native address to see if its a wrapped version
   async isWrappedAsset(nativeAddress: AnyAddress): Promise<boolean> {
-    // QUESTIONBW: This has been forced by coercing nativeAddress toString() - better way?
     const token = bytesToBigInt(
       new AlgorandAddress(nativeAddress.toString()).toUint8Array(),
     );
@@ -97,7 +96,6 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
     const isWrapped = await getIsWrappedAssetAlgorand(
       this.connection,
       this.tokenBridgeAppId,
-      // QUESTIONBW: This has been forced by coercing nativeAddress toString() - better way?
       token,
     );
     return isWrapped;
@@ -108,7 +106,6 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
     if (!(await this.isWrappedAsset(nativeAddress)))
       throw ErrNotWrapped(nativeAddress.toString());
 
-    // QUESTIONBW: This has been forced (in multiple places) by coercing nativeAddress toString() - better way?
     const token = bytesToBigInt(
       new AlgorandAddress(nativeAddress.toString()).toUint8Array(),
     );
@@ -127,21 +124,18 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
 
   // Returns the wrapped version of the native asset
   async getWrappedNative(): Promise<NativeAddress<'Algorand'>> {
-    // QUESTIONBW: Is this right?  What represented the Algorand native asset?
     return toNative(
       this.chain,
       new AlgorandAddress(AlgorandZeroAddress).toString(),
     );
   }
 
-  // Checks to see if a foreign token has a wrapped version
+  // Checks to see if a foreign token has a wrapped version on Algorand
   async hasWrappedAsset(foreignToken: TokenId): Promise<boolean> {
-    // QUESTIONBW: Why does TS think that mirror will only be bigint?
     const mirror = await getForeignAssetAlgorand(
       this.connection,
       this.tokenBridgeAppId,
       foreignToken.chain,
-      // QUESTIONBW: Just added .toString() here.  Does this work?
       foreignToken.address.toString(),
     );
     // Even a bigint of 0 would be valid?  So have to avoid the falsiness of BigInt(0)
@@ -223,7 +217,7 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
     const { txs } = await submitVAAHeader(
       this.connection,
       this.tokenBridgeAppId,
-      vaa.hash,
+      serialize(vaa), // TODO: serialize(vaa) instead of vaa.hash here
       senderAddr,
       this.coreAppId,
     );
@@ -252,7 +246,28 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
         : bytesToBigInt(new AlgorandAddress(token).toUint8Array());
     const qty = amount;
     const chain = recipient.chain;
-    const receiver = recipient.address.toUniversalAddress().toString();
+
+    // Address debugging
+    console.log('Address debugging');
+    console.log('recipient', recipient.address);
+    console.log('recipient', recipient.address.toNative('Solana'));
+    console.log('recipient', recipient.address.toString());
+    console.log('recipient', recipient.address.unwrap());
+    console.log('recipient', recipient.address.toUint8Array());
+    console.log('recipient', recipient.address.toUniversalAddress());
+    console.log(
+      'recipient',
+      recipient.address.toUniversalAddress().toNative('Solana'),
+    );
+    console.log('recipient', recipient.address.toUniversalAddress().toString());
+    console.log('recipient', recipient.address.toUniversalAddress().unwrap());
+    console.log(
+      'recipient',
+      recipient.address.toUniversalAddress().toUint8Array(),
+    );
+
+    const receiver = recipient.address.toUniversalAddress();
+
     const fee = BigInt(0);
     console.log(
       'About to transferFromAlgorand: ',

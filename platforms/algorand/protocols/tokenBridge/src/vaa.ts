@@ -77,8 +77,8 @@ export async function submitVAAHeader(
   // A lot of our logic here depends on parseVAA and knowing what the payload is
   const parsedVAA = _parseVAAAlgorand(vaa);
   const seq: bigint = parsedVAA.sequence / BigInt(MAX_BITS);
-  const chainRaw: string = parsedVAA.chainRaw; // QUESTIONBW: Does this need to be a hex string?  Comment was in wormhole-sdk
-  const em: string = parsedVAA.emitter; // QUESTIONBW: Does this need to be a hex string?  Comment was in wormhole-sdk
+  const chainRaw: string = parsedVAA.chainRaw;
+  const em: string = parsedVAA.emitter;
   const index: number = parsedVAA.index;
 
   let txs: TransactionSignerPair[] = [];
@@ -622,6 +622,7 @@ export function _parseVAAAlgorand(vaa: Uint8Array): ParsedVAA {
     ret.Payload = vaa.slice(off);
   }
 
+  console.log('Parsed VAA: ', ret);
   return ret;
 }
 

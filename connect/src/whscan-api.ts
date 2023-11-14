@@ -25,6 +25,7 @@ export async function getVaaBytes(
   const emitterAddress = encoding.stripPrefix("0x", emitter.toUniversalAddress().toString());
 
   const url = `${apiUrl}/v1/signed_vaa/${chainId}/${emitterAddress}/${sequence}`;
+  console.log("URL: ", url);
 
   try {
     const {

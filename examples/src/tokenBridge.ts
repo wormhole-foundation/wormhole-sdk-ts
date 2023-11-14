@@ -7,7 +7,7 @@ import {
   normalizeAmount,
 } from "@wormhole-foundation/connect-sdk";
 // Import the platform specific packages
-import { AlgorandPlatform } from "@wormhole-foundation/connect-sdk-algorand";
+import { AlgorandAddress, AlgorandPlatform } from "@wormhole-foundation/connect-sdk-algorand";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 //
@@ -20,6 +20,7 @@ import "@wormhole-foundation/connect-sdk-solana-core";
 import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 
 import { TransferStuff, getStuff, waitLog } from "./helpers";
+import { bigIntToBytes } from "algosdk";
 
 (async function () {
   // init Wormhole object, passing config for which network
@@ -28,17 +29,27 @@ import { TransferStuff, getStuff, waitLog } from "./helpers";
 
   // Grab chain Contexts
   const sendChain = wh.getChain("Algorand");
-  const rcvChain = wh.getChain("Avalanche");
+  const rcvChain = wh.getChain("Solana");
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
   const source = await getStuff(sendChain);
   const destination = await getStuff(rcvChain);
-
-  const amt = normalizeAmount("0.01", sendChain.config.nativeTokenDecimals);
+  console.log("Destination stuff address: ", destination.address.address.toString());
 
   // Choose your adventure
-  await manualTokenTransfer(wh, "native", amt, source, destination);
+
+  //Test native
+  // const amt = normalizeAmount("0.01", sendChain.config.nativeTokenDecimals);
+  // await manualTokenTransfer(wh, "native", amt, source, destination);
+
+  //Test ASA
+  const asa: TokenId = {
+    chain: "Algorand",
+    address: new AlgorandAddress(bigIntToBytes(BigInt(10458941), 32)),
+  };
+  const amt = normalizeAmount("0.01", BigInt(6));
+  await manualTokenTransfer(wh, asa, amt, source, destination);
 
   // await automaticTokenTransfer(wh, "native", 100_000_000n, source, destination);
   // await automaticTokenTransferWithGasDropoff(
@@ -67,7 +78,7 @@ import { TransferStuff, getStuff, waitLog } from "./helpers";
   // await finishTransfer(
   //   wh,
   //   sendChain.chain,
-  //   "0xaed2eb6361283dab84aeb3d211935458f971c38d1238d29b4c8bae63c76ede00",
+  //   "CMZTCMOGQXJ6ENEI5F3PBXI2KMUQYNUA22Y3EIXH5HJ6QRKTTLQA",
   //   destination.signer,
   // );
 })();

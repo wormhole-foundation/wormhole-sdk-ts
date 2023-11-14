@@ -26,6 +26,8 @@ export class AlgorandWormholeCore implements WormholeCore<'Algorand'> {
   readonly chainId: ChainId;
   readonly coreAppId: bigint;
   readonly coreAppAddress: string;
+  readonly tokenBridgeAppId: bigint;
+  readonly tokenBridgeAddress: string;
 
   private constructor(
     readonly network: Network,
@@ -41,6 +43,15 @@ export class AlgorandWormholeCore implements WormholeCore<'Algorand'> {
     const core = BigInt(contracts.coreBridge);
     this.coreAppId = core;
     this.coreAppAddress = getApplicationAddress(core);
+
+    if (!contracts.tokenBridge) {
+      throw new Error(
+        `TokenBridge contract address for chain ${chain} not found`,
+      );
+    }
+    const tokenBridge = BigInt(contracts.tokenBridge);
+    this.tokenBridgeAppId = tokenBridge;
+    this.tokenBridgeAddress = getApplicationAddress(tokenBridge);
   }
 
   static async fromRpc(
@@ -70,10 +81,11 @@ export class AlgorandWormholeCore implements WormholeCore<'Algorand'> {
       .do();
     console.log('Result: ', result);
 
+    // QUESTIONBW: To make this work, I had to use the tokenBridgeAppId.  Expected?
     const emitterAddr = new UniversalAddress(
-      this.getEmitterAddressAlgorand(this.coreAppId),
+      this.getEmitterAddressAlgorand(this.tokenBridgeAppId),
     );
-    console.log('emitterAddr: ', emitterAddr);
+    console.log('parseTransaction emitterAddr: ', emitterAddr);
 
     const sequence = this.parseSequenceFromLogAlgorand(result);
     console.log('sequence: ', sequence);
@@ -89,8 +101,9 @@ export class AlgorandWormholeCore implements WormholeCore<'Algorand'> {
   private getEmitterAddressAlgorand(appId: bigint): string {
     const appAddr: string = getApplicationAddress(appId);
     const decAppAddr: Uint8Array = decodeAddress(appAddr).publicKey;
-    const aa: string = Buffer.from(decAppAddr).toString('hex');
-    return aa;
+    const hexAppAddr: string = Buffer.from(decAppAddr).toString('hex');
+    console.log('core.ts Emitter address: ', hexAppAddr);
+    return hexAppAddr;
   }
 
   private parseSequenceFromLogAlgorand(result: Record<string, any>): bigint {

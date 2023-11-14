@@ -40,7 +40,9 @@
   "workspaces": [
     "core/base",
     "core/definitions",
+    "core/tokenRegistry",
     "connect",
+    "examples",
     "platforms/algorand",
     "platforms/algorand/protocols/core",
     "platforms/algorand/protocols/tokenBridge",
@@ -54,8 +56,6 @@
     "platforms/cosmwasm",
     "platforms/cosmwasm/protocols/core",
     "platforms/cosmwasm/protocols/tokenBridge",
-    "platforms/cosmwasm/protocols/ibc",
-    "examples",
-    "core/tokenRegistry"
+    "platforms/cosmwasm/protocols/ibc"
   ]
 }

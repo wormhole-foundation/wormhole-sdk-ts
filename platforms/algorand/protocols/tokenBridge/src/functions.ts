@@ -2,6 +2,7 @@ import {
   ChainName,
   ChainId,
   toChainId,
+  UniversalAddress,
 } from '@wormhole-foundation/connect-sdk';
 import {
   CHAIN_ID_ALGORAND,
@@ -25,7 +26,6 @@ import {
 import { SEED_AMT, BITS_PER_KEY, MAX_BITS } from './constants';
 import {
   hexToNativeAssetBigIntAlgorand,
-  hexToUint8Array,
   safeBigIntToNumber,
   textToHexString,
   textToUint8Array,
@@ -38,10 +38,12 @@ import { _parseVAAAlgorand, _submitVAAAlgorand } from './vaa';
 const accountExistsCache = new Set<[bigint, string]>();
 
 export function getEmitterAddressAlgorand(appId: bigint): string {
+  console.log('appId: ', appId);
   const appAddr: string = getApplicationAddress(appId);
   const decAppAddr: Uint8Array = decodeAddress(appAddr).publicKey;
-  const aa: string = uint8ArrayToHex(decAppAddr);
-  return aa;
+  const hexAppAddr: string = uint8ArrayToHex(decAppAddr);
+  console.log('functions.ts Emitter address: ', hexAppAddr);
+  return hexAppAddr;
 }
 
 export async function createWrappedOnAlgorand(
@@ -83,6 +85,7 @@ export async function getIsWrappedAssetAlgorand(
   return wormhole;
 }
 
+// TODO: Rename stuff to original and wrapped
 /**
  * Returns an origin chain and asset address on {originChain} for a provided Wormhole wrapped address
  * @param client Algodv2 client
@@ -90,7 +93,7 @@ export async function getIsWrappedAssetAlgorand(
  * @param assetId Algorand asset index
  * @returns Promise with the Algorand asset index or null
  */
-export async function getForeignAssetAlgorand(
+export async function getForeignAssetAlgorand( // TODO: gets wrapped version on Algorand - rename as getWrappedAssetOnAlgorand
   client: Algodv2,
   tokenBridgeId: bigint,
   chain: ChainId | ChainName,
@@ -128,7 +131,7 @@ export async function getForeignAssetAlgorand(
  * @param assetId Algorand asset index
  * @returns Wrapped Wormhole information structure
  */
-export async function getOriginalAssetAlgorand(
+export async function getOriginalAssetAlgorand( // TODO: Taking wrapped on Algorand and
   client: Algodv2,
   tokenBridgeId: bigint,
   assetId: bigint,
@@ -152,7 +155,6 @@ export async function getOriginalAssetAlgorand(
   const dls = await decodeLocalState(client, tokenBridgeId, lsa);
   const dlsBuffer: Buffer = Buffer.from(dls);
   retVal.chainId = dlsBuffer.readInt16BE(92) as ChainId;
-  // QUESTIONBW: Is this the right way to resolve the deprecated .slice() method?
   // retVal.assetAddress = new Uint8Array(dlsBuffer.slice(60, 60 + 32));
   retVal.assetAddress = new Uint8Array(dlsBuffer.subarray(60, 60 + 32));
   return retVal;
@@ -219,7 +221,7 @@ export async function getIsTransferCompletedAlgorand(
   appId: bigint,
   signedVAA: Uint8Array,
 ): Promise<boolean> {
-  const parsedVAA = _parseVAAAlgorand(signedVAA);
+  const parsedVAA = _parseVAAAlgorand(signedVAA); // TODO: rip this out and look for deserialize('TokenBridge:Attestation', bytes)
   const seq: bigint = parsedVAA.sequence;
   const chainRaw: string = parsedVAA.chainRaw; // this needs to be a hex string
   const em: string = parsedVAA.emitter; // this needs to be a hex string
@@ -599,7 +601,8 @@ export async function transferFromAlgorand(
   senderAddr: string,
   assetId: bigint,
   qty: bigint,
-  receiver: string,
+  receiver: UniversalAddress,
+  // receiver: string,
   chain: ChainId | ChainName,
   fee: bigint,
   payload: Uint8Array | null = null,
@@ -712,15 +715,19 @@ export async function transferFromAlgorand(
     txs.push({ tx: t, signer: null });
     accounts = [emitterAddr, creator, creatorAcctInfo['address']];
   }
+  console.log('transferFromAlgorand receiver: ', receiver);
+  const receiverBytes = new Uint8Array(receiver.toUint8Array());
+  console.log('receiverBytes: ', receiverBytes);
+
   let args = [
     textToUint8Array('sendTransfer'),
     bigIntToBytes(assetId, 8),
     bigIntToBytes(qty, 8),
-    hexToUint8Array(receiver),
+    receiverBytes,
     bigIntToBytes(recipientChainId, 8),
     bigIntToBytes(fee, 8),
   ];
-  console.log('args: ', args);
+  console.log('Args: ', args);
   if (payload !== null) {
     args.push(payload);
   }
