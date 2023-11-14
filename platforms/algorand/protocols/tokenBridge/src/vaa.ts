@@ -74,7 +74,7 @@ export async function submitVAAHeader(
   appid: bigint,
 ): Promise<SubmitVAAState> {
   // A lot of our logic here depends on parseVAA and knowing what the payload is
-  const parsedVAA = _parseVAAAlgorand(vaa);
+  const parsedVAA = _parseVAAAlgorand(vaa); // TODO: Replace with deserialize()
   const seq: bigint = parsedVAA.sequence / BigInt(MAX_BITS);
   const chainRaw: string = parsedVAA.chainRaw;
   const em: string = parsedVAA.emitter;

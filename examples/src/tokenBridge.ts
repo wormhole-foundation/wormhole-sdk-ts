@@ -52,13 +52,17 @@ import { bigIntToBytes } from "algosdk";
   // const amt = normalizeAmount("0.01", BigInt(6));
   // await manualTokenTransfer(wh, asa, amt, source, destination);
 
+  // Test native inbound to Algorand
+  const amt = normalizeAmount("0.001", BigInt(8));
+  await manualTokenTransfer(wh, "native", amt, source, destination);
+
   // Test token inbound to Algorand
-  const asa: TokenId = {
-    chain: "Avalanche",
-    address: new UniversalAddress("0x12EB0d635FD4C5692d779755Ba82b33F6439fc73", "hex"), // Testnet Wrapped USDC from Algorand
-  };
-  const amt = normalizeAmount("0.0001", BigInt(6));
-  await manualTokenTransfer(wh, asa, amt, source, destination);
+  // const asa: TokenId = {
+  //   chain: "Avalanche",
+  //   address: new UniversalAddress("0x12EB0d635FD4C5692d779755Ba82b33F6439fc73", "hex"), // Testnet Wrapped USDC from Algorand
+  // };
+  // const amt = normalizeAmount("0.001", BigInt(6));
+  // await manualTokenTransfer(wh, asa, amt, source, destination);
 
   // await automaticTokenTransfer(wh, "native", 100_000_000n, source, destination);
   // await automaticTokenTransferWithGasDropoff(

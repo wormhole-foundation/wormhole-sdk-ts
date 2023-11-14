@@ -3,6 +3,7 @@ import {
   ChainId,
   toChainId,
   UniversalAddress,
+  deserialize,
 } from '@wormhole-foundation/connect-sdk';
 import {
   CHAIN_ID_ALGORAND,
@@ -224,6 +225,7 @@ export async function getIsTransferCompletedAlgorand(
   const seq: bigint = parsedVAA.sequence;
   const chainRaw: string = parsedVAA.chainRaw; // this needs to be a hex string
   const em: string = parsedVAA.emitter; // this needs to be a hex string
+
   const { doesExist, lsa } = await calcLogicSigAccount(
     client,
     appId,
@@ -761,6 +763,7 @@ export async function redeemOnAlgorand(
   vaa: Uint8Array,
   senderAddr: string,
 ): Promise<TransactionSignerPair[]> {
+  // _submitVAAAlgorand -> submitVAAHeader -> _parseVAAAlgorand
   return await _submitVAAAlgorand(
     client,
     tokenBridgeId,
