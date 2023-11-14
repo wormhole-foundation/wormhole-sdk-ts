@@ -15,13 +15,13 @@ const LIMIT = BigInt(0x7f);
  */
 export async function decodeLocalState(
   client: Algodv2,
-  appId: string,
+  appId: bigint,
   address: string,
 ): Promise<Uint8Array> {
   let app_state = null;
   const ai = await client.accountInformation(address).do();
   for (const app of ai['apps-local-state']) {
-    if (app['id'] === appId) {
+    if (BigInt(app['id']) === appId) {
       app_state = app['key-value'];
       break;
     }

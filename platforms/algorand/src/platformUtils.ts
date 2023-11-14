@@ -108,9 +108,9 @@ export module AlgorandUtils {
 
     const response = await rpc.sendRawTransaction(stxns).do();
 
-    await algosdk.waitForConfirmation(rpc, response.txid, 4);
+    await algosdk.waitForConfirmation(rpc, response.txId, 4);
 
-    return [response.txid];
+    return [response.txId];
   }
 
   export async function getCurrentBlock(rpc: Algodv2): Promise<number> {

@@ -1,6 +1,10 @@
-import { Chain, toChainId, Network } from '@wormhole-foundation/connect-sdk';
-
-import { AlgorandUnsignedTransaction } from '@wormhole-foundation/connect-sdk-algorand';
+import {
+  Chain,
+  toChainId,
+  TokenBridge,
+  Network,
+  serialize,
+} from '@wormhole-foundation/connect-sdk';
 
 import { keccak256 } from 'ethers';
 
@@ -26,12 +30,7 @@ import {
   ALGO_VERIFY_HASH,
   MAX_SIGS_PER_TXN,
 } from './constants';
-import {
-  optin,
-  assetOptinCheck,
-  createUnsignedTx,
-  TransactionSignerPair,
-} from './transaction';
+import { optin, assetOptinCheck, TransactionSignerPair } from './transaction';
 import {
   uint8ArrayToHex,
   safeBigIntToNumber,
@@ -320,12 +319,12 @@ export async function checkBitsSet(
 export async function submitVAAHeader(
   client: Algodv2,
   bridgeId: bigint,
-  vaa: Uint8Array,
+  vaa: TokenBridge.VAA<'Transfer' | 'TransferWithPayload' | 'AttestMeta'>,
   senderAddr: string,
   appid: bigint,
 ): Promise<SubmitVAAState> {
   // A lot of our logic here depends on parseVAA and knowing what the payload is..
-  const parsedVAA = _parseVAAAlgorand(vaa);
+  const parsedVAA = _parseVAAAlgorand(serialize(vaa));
   const seq: bigint = parsedVAA.sequence / BigInt(MAX_BITS);
   const chainRaw: string = parsedVAA.chainRaw; // TODO: this needs to be a hex string
   const em: string = parsedVAA.emitter; // TODO: this needs to be a hex string
@@ -342,6 +341,7 @@ export async function submitVAAHeader(
   );
   txs.push(...seqOptInTxs);
   const guardianPgmName = textToHexString('guardian');
+
   // And then the signatures to help us verify the vaa_s
   // "guardianAddr"
   const { addr: guardianAddr, txs: guardianOptInTxs } = await optin(
@@ -358,7 +358,7 @@ export async function submitVAAHeader(
   // mirror the other way as well
   const keys: Uint8Array = await decodeLocalState(
     client,
-    bridgeId.toString(),
+    bridgeId,
     guardianAddr,
   );
 
@@ -423,7 +423,7 @@ export async function submitVAAHeader(
     });
   }
   const appTxn = makeApplicationCallTxnFromObject({
-    appArgs: [textToUint8Array('verifyVAA'), vaa],
+    appArgs: [textToUint8Array('verifyVAA'), serialize(vaa)],
     accounts: accts,
     appIndex: safeBigIntToNumber(bridgeId),
     from: senderAddr,
@@ -445,15 +445,15 @@ export async function submitVAAHeader(
  * @param senderAddr Sending account address
  * @returns Confirmation log
  */
-export async function* _submitVAAAlgorand(
+export async function _submitVAAAlgorand(
   client: Algodv2,
   tokenBridgeId: bigint,
   bridgeId: bigint,
-  vaa: Uint8Array,
+  vaa: TokenBridge.VAA<'Transfer' | 'TransferWithPayload'>,
   senderAddr: string,
   chain: Chain,
   network: Network,
-): AsyncGenerator<AlgorandUnsignedTransaction> {
+): Promise<TransactionSignerPair[]> {
   let sstate = await submitVAAHeader(
     client,
     bridgeId,
@@ -462,7 +462,7 @@ export async function* _submitVAAAlgorand(
     tokenBridgeId,
   );
 
-  let parsedVAA = sstate.vaaMap;
+  let parsedVAA = _parseVAAAlgorand(serialize(vaa));
   let accts = sstate.accounts;
   let txs = sstate.txs;
 
@@ -528,7 +528,7 @@ export async function* _submitVAAAlgorand(
   if (meta === 'CoreGovernance') {
     txs.push({
       tx: makeApplicationCallTxnFromObject({
-        appArgs: [textToUint8Array('governance'), vaa],
+        appArgs: [textToUint8Array('governance'), serialize(vaa)],
         accounts: accts,
         appIndex: safeBigIntToNumber(bridgeId),
         from: senderAddr,
@@ -554,7 +554,7 @@ export async function* _submitVAAAlgorand(
   ) {
     txs.push({
       tx: makeApplicationCallTxnFromObject({
-        appArgs: [textToUint8Array('governance'), vaa],
+        appArgs: [textToUint8Array('governance'), serialize(vaa)],
         accounts: accts,
         appIndex: safeBigIntToNumber(tokenBridgeId),
         foreignApps: [safeBigIntToNumber(bridgeId)],
@@ -569,7 +569,7 @@ export async function* _submitVAAAlgorand(
   if (meta === 'TokenBridge Attest') {
     let asset: Uint8Array = await decodeLocalState(
       client,
-      tokenBridgeId.toString(),
+      BigInt(tokenBridgeId),
       chainAddr,
     );
     let foreignAssets: number[] = [];
@@ -615,7 +615,7 @@ export async function* _submitVAAAlgorand(
     txs.push({
       tx: makeApplicationCallTxnFromObject({
         accounts: accts,
-        appArgs: [textToUint8Array('receiveAttest'), vaa],
+        appArgs: [textToUint8Array('receiveAttest'), serialize(vaa)],
         appIndex: safeBigIntToNumber(tokenBridgeId),
         foreignAssets: foreignAssets,
         from: senderAddr,
@@ -637,7 +637,7 @@ export async function* _submitVAAAlgorand(
     if (parsedVAA.FromChain !== toChainId(chain)) {
       let asset = await decodeLocalState(
         client,
-        tokenBridgeId.toString(),
+        BigInt(tokenBridgeId),
         chainAddr,
       );
 
@@ -690,7 +690,7 @@ export async function* _submitVAAAlgorand(
     txs.push({
       tx: makeApplicationCallTxnFromObject({
         accounts: accts,
-        appArgs: [textToUint8Array('completeTransfer'), vaa],
+        appArgs: [textToUint8Array('completeTransfer'), serialize(vaa)],
         appIndex: safeBigIntToNumber(tokenBridgeId),
         foreignAssets: foreignAssets,
         from: senderAddr,
@@ -717,7 +717,7 @@ export async function* _submitVAAAlgorand(
         tx: makeApplicationCallTxnFromObject({
           appArgs: [
             m.getSelector(),
-            (m.args[0].type as abi.ABIType).encode(vaa),
+            (m.args[0].type as abi.ABIType).encode(serialize(vaa)),
           ],
           appIndex: aid,
           foreignAssets: foreignAssets,
@@ -730,7 +730,5 @@ export async function* _submitVAAAlgorand(
     }
   }
 
-  for (const stx of txs) {
-    yield createUnsignedTx(stx.tx, '', network);
-  }
+  return txs;
 }

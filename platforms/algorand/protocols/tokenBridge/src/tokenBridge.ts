@@ -130,7 +130,7 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
     const lsa = assetInfo['params'].creator;
     const dls = await decodeLocalState(
       this.connection,
-      this.tokenBridgeAddress,
+      BigInt(this.tokenBridgeAddress),
       lsa,
     );
     const dlsBuffer: Buffer = Buffer.from(dls);
@@ -313,7 +313,7 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
     const { txs } = await submitVAAHeader(
       this.connection,
       BigInt(this.tokenBridgeAddress),
-      vaa.hash,
+      vaa,
       senderAddr,
       BigInt(this.coreAddress),
     );
@@ -490,18 +490,34 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
     unwrapNative?: boolean, //default: true
   ): AsyncGenerator<AlgorandUnsignedTransaction> {
     const senderAddr = sender.toString();
-    const txs = _submitVAAAlgorand(
+    const txs = await _submitVAAAlgorand(
       this.connection,
       BigInt(this.tokenBridgeAddress),
       BigInt(this.coreAddress),
-      vaa.hash,
+      vaa,
       senderAddr,
       this.chain,
       this.network,
     );
 
+    let i = 0;
     for await (const tx of txs) {
-      yield tx;
+      if (tx.signer) {
+        yield this.createUnsignedTx(
+          tx.tx,
+          `Redeem ${i.toString()}`,
+          tx.signer,
+          true,
+        );
+      } else {
+        yield this.createUnsignedTx(
+          tx.tx,
+          `Redeem ${i.toString()}`,
+          null,
+          true,
+        );
+      }
+      i++;
     }
   }
 
