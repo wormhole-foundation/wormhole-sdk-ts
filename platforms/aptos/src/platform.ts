@@ -1,14 +1,4 @@
-import {
-  Chain,
-  Network,
-  PlatformContext,
-  ProtocolImplementation,
-  ProtocolInitializer,
-  ProtocolName,
-  WormholeCore,
-  WormholeMessageId,
-  getProtocolInitializer,
-} from "@wormhole-foundation/connect-sdk";
+import { Chain, Network, PlatformContext } from "@wormhole-foundation/connect-sdk";
 import { AptosClient } from "aptos";
 import { AptosChain } from "./chain";
 import { AptosChains, AptosPlatformType, _platform } from "./types";
@@ -43,22 +33,6 @@ export class AptosPlatform<N extends Network> extends PlatformContext<N, AptosPl
     throw new Error("No configuration available for chain: " + chain);
   }
 
-  async getProtocol<PN extends ProtocolName>(
-    protocol: PN,
-    rpc: AptosClient,
-  ): Promise<ProtocolImplementation<AptosPlatformType, PN>> {
-    return AptosPlatform.getProtocolInitializer(protocol).fromRpc(rpc, this.config);
-  }
-
-  async parseTransaction<C extends AptosChains>(
-    chain: C,
-    rpc: AptosClient,
-    tx: string,
-  ): Promise<WormholeMessageId[]> {
-    const core: WormholeCore<N, AptosPlatformType, C> = await this.getProtocol("WormholeCore", rpc);
-    return core.parseTransaction(tx);
-  }
-
   static nativeTokenId<N extends Network, C extends AptosChains>(network: N, chain: C): TokenId<C> {
     if (!this.isSupportedChain(chain)) throw new Error(`invalid chain: ${chain}`);
     return nativeChainAddress(chain, APTOS_COIN);
@@ -80,7 +54,7 @@ export class AptosPlatform<N extends Network> extends PlatformContext<N, AptosPl
     return platform === AptosPlatform._platform;
   }
 
-  async getDecimals(
+  static async getDecimals(
     chain: Chain,
     rpc: AptosClient,
     token: AnyAptosAddress | "native",
@@ -96,7 +70,7 @@ export class AptosPlatform<N extends Network> extends PlatformContext<N, AptosPl
     return decimals;
   }
 
-  async getBalance(
+  static async getBalance(
     chain: Chain,
     rpc: AptosClient,
     walletAddress: string,
@@ -120,7 +94,7 @@ export class AptosPlatform<N extends Network> extends PlatformContext<N, AptosPl
     }
   }
 
-  async getBalances(
+  static async getBalances(
     chain: Chain,
     rpc: AptosClient,
     walletAddress: string,
@@ -192,11 +166,5 @@ export class AptosPlatform<N extends Network> extends PlatformContext<N, AptosPl
     const conn = rpc as AptosClient;
     const ci = await conn.getChainId();
     return this.chainFromChainId(ci.toString());
-  }
-
-  static getProtocolInitializer<PN extends ProtocolName>(
-    protocol: PN,
-  ): ProtocolInitializer<AptosPlatformType, PN> {
-    return getProtocolInitializer(this._platform, protocol);
   }
 }
