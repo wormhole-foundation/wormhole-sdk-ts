@@ -29,7 +29,7 @@ export class AlgorandAddress implements Address {
   // stored as checksum address
   private readonly address: string;
 
-  constructor(address: AnyAlgorandAddress) {
+  constructor(address: AnyAlgorandAddress | bigint) {
     if (AlgorandAddress.instanceof(address)) {
       const a = address as unknown as AlgorandAddress;
       this.address = a.address;
@@ -38,17 +38,23 @@ export class AlgorandAddress implements Address {
     if (typeof address === 'string') {
       if (!AlgorandAddress.isValidAddress(address))
         throw new Error(
-          `Invalid Algorand address, expected ${AlgorandAddress.byteSize}-byte (+2 checksum bytes), base32-encoded string of 58 characters but got ${address}`,
+          `Invalid Algorand address, expected ${AlgorandAddress.byteSize}-byte (+2 checksum bytes), base32-encoded string of 58 characters but got ${address.length} characters`,
         );
       this.address = address;
     } else if (address instanceof Uint8Array) {
       if (address.length !== AlgorandAddress.byteSize)
         throw new Error(
-          `Invalid Algorand address, expected ${AlgorandAddress.byteSize} bytes but got ${address.length}`,
+          `Invalid Algorand address, expected ${AlgorandAddress.byteSize} bytes but got ${address.length} bytes`,
         );
       this.address = algosdk.encodeAddress(address);
     } else if (UniversalAddress.instanceof(address)) {
       this.address = algosdk.encodeAddress(address.toUint8Array());
+    } else if (typeof address === 'bigint') {
+      if (address === 0n)
+        throw new Error(
+          `Invalid Algorand address; use "native" for the native token`,
+        );
+      this.address = address.toString();
     } else throw new Error(`Invalid Algorand address ${address}`);
   }
 

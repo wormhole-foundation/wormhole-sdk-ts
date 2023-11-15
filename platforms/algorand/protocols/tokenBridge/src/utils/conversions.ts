@@ -20,6 +20,8 @@ export function textToUint8Array(name: string): Uint8Array {
 }
 
 export function hexToNativeAssetBigIntAlgorand(s: string): bigint {
+  // in case not in hex format
+  s = s.slice(0, 2) !== '0x' ? '0x' + s : s;
   return BigInt(s);
 }
 

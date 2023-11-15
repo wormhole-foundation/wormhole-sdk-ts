@@ -189,11 +189,18 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
    * submit it.. then you can transfer from algorand to that target chain
    */
   async *createAttestation(
-    token: AlgorandAssetId,
+    token: AlgorandAddress,
     payer?: AnyAlgorandAddress,
   ): AsyncGenerator<AlgorandUnsignedTransaction> {
     if (!payer) throw new Error('Payer required to create attestation');
     const senderAddr = new AlgorandAddress(payer).unwrap();
+
+    let assetId = BigInt(0);
+    if (token.toString() === 'native') {
+      assetId = BigInt(0);
+    } else {
+      assetId = BigInt(token.toString());
+    }
 
     const tbAddr: string = getApplicationAddress(
       BigInt(this.tokenBridgeAddress),
@@ -218,9 +225,9 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
     let creatorAcctInfo;
     const bPgmName: Uint8Array = textToUint8Array('attestToken');
 
-    if (token !== BigInt(0)) {
+    if (assetId !== BigInt(0)) {
       const assetInfo = await this.connection
-        .getAssetByID(safeBigIntToNumber(token))
+        .getAssetByID(safeBigIntToNumber(assetId))
         .do();
       creatorAcctInfo = await this.connection
         .accountInformation(assetInfo['params'].creator)
@@ -234,7 +241,7 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
       this.connection,
       senderAddr,
       BigInt(this.tokenBridgeAddress),
-      token,
+      assetId,
       textToHexString('native'),
     );
     creatorAddr = result.addr;
@@ -280,11 +287,11 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
     }
 
     let appTxn = makeApplicationCallTxnFromObject({
-      appArgs: [bPgmName, bigIntToBytes(token, 8)],
+      appArgs: [bPgmName, bigIntToBytes(assetId, 8)],
       accounts: accts,
       appIndex: safeBigIntToNumber(BigInt(this.tokenBridgeAddress)),
       foreignApps: [safeBigIntToNumber(BigInt(this.coreAddress))],
-      foreignAssets: [safeBigIntToNumber(token)],
+      foreignAssets: [safeBigIntToNumber(assetId)],
       from: senderAddr,
       onComplete: OnApplicationComplete.NoOpOC,
       suggestedParams: suggParams,
@@ -323,14 +330,15 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
   async *transfer(
     sender: AnyAlgorandAddress,
     recipient: ChainAddress,
-    token: AlgorandAssetId,
+    token: AlgorandAddress,
     amount: bigint,
     payload?: Uint8Array,
   ): AsyncGenerator<AlgorandUnsignedTransaction> {
-    if (typeof token === 'string' && token === 'native') {
-      token = BigInt(0);
-    } else if (typeof token === 'string') {
-      throw new Error(`Token should be "native" or the ASA ID as bigint`);
+    let assetId = BigInt(0);
+    if (token.toString() === 'native') {
+      assetId = BigInt(0);
+    } else {
+      assetId = BigInt(token.toString());
     }
 
     const fee = BigInt(0);
@@ -339,7 +347,7 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
       BigInt(this.tokenBridgeAddress),
       BigInt(this.coreAddress),
       sender.toString(),
-      token,
+      assetId,
       amount,
       recipient.address.toString(),
       recipient.chain,
