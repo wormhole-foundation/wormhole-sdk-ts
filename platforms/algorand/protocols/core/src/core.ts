@@ -24,6 +24,7 @@ import {
 export class AlgorandWormholeCore implements WormholeCore<'Algorand'> {
   readonly chainId: ChainId;
   readonly coreBridgeAddress: AlgorandAddress;
+  readonly tokenBridgeAddress: AlgorandAddress;
 
   private constructor(
     readonly network: Network,
@@ -41,6 +42,15 @@ export class AlgorandWormholeCore implements WormholeCore<'Algorand'> {
       throw new Error(
         `CoreBridge contract Address for chain ${chain} not found`,
       );
+
+    const tokenBridgeAddress = contracts.tokenBridge;
+    if (!tokenBridgeAddress)
+      throw new Error(
+        `TokenBridge contract Address for chain ${chain} not found`,
+      );
+    this.tokenBridgeAddress = new AlgorandAddress(
+      getApplicationAddress(BigInt(tokenBridgeAddress)),
+    );
   }
 
   static async fromRpc(
@@ -77,10 +87,7 @@ export class AlgorandWormholeCore implements WormholeCore<'Algorand'> {
         txn: { txn: [Object] } | undefined;
       }
       innerTxns.forEach((txn: iTxn) => {
-        console.log(txn);
         if (txn.logs) {
-          console.log('LOGS');
-          console.log(txn.logs);
           sequence = BigInt(
             '0x' + Buffer.from(txn.logs[0].slice(0, 8)).toString('hex'),
           );
@@ -91,7 +98,7 @@ export class AlgorandWormholeCore implements WormholeCore<'Algorand'> {
     return [
       {
         chain: this.chain,
-        emitter: this.coreBridgeAddress.toUniversalAddress(),
+        emitter: this.tokenBridgeAddress.toUniversalAddress(),
         sequence: sequence,
       },
     ];

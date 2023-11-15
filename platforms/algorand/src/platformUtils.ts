@@ -12,7 +12,7 @@ import {
   nativeChainAddress,
   chainIds,
 } from '@wormhole-foundation/connect-sdk';
-import algosdk, { Algodv2 } from 'algosdk';
+import algosdk from 'algosdk';
 
 import { AlgorandZeroAddress } from './address';
 import { AlgorandPlatform } from './platform';
@@ -42,7 +42,7 @@ export module AlgorandUtils {
 
   export async function getDecimals(
     chain: ChainName,
-    rpc: Algodv2,
+    rpc: algosdk.Algodv2,
     token: AnyAlgorandAddress | 'native',
   ): Promise<bigint> {
     if (token === 'native') return nativeDecimals(AlgorandPlatform.platform);
@@ -56,7 +56,7 @@ export module AlgorandUtils {
 
   export async function getBalance(
     chain: ChainName,
-    rpc: Algodv2,
+    rpc: algosdk.Algodv2,
     walletAddr: string,
     token: AnyAddress | 'native',
   ): Promise<bigint | null> {
@@ -84,7 +84,7 @@ export module AlgorandUtils {
 
   export async function getBalances(
     chain: ChainName,
-    rpc: Algodv2,
+    rpc: algosdk.Algodv2,
     walletAddr: string,
     tokens: (AnyAddress | 'native')[],
   ): Promise<Balances> {
@@ -100,7 +100,7 @@ export module AlgorandUtils {
 
   export async function sendWait(
     chain: ChainName,
-    rpc: Algodv2,
+    rpc: algosdk.Algodv2,
     stxns: SignedTx[],
   ): Promise<TxHash[]> {
     // Based on the pattern followed by:
@@ -110,10 +110,15 @@ export module AlgorandUtils {
 
     await algosdk.waitForConfirmation(rpc, response.txId, 4);
 
-    return [response.txId];
+    const txHashes = stxns.map((txn) => {
+      const tx = algosdk.decodeSignedTransaction(txn);
+      return tx.txn.txID().toString();
+    });
+
+    return txHashes;
   }
 
-  export async function getCurrentBlock(rpc: Algodv2): Promise<number> {
+  export async function getCurrentBlock(rpc: algosdk.Algodv2): Promise<number> {
     const clientStatus = await rpc.status().do();
     return clientStatus['last-round'];
   }
@@ -132,7 +137,7 @@ export module AlgorandUtils {
   }
 
   export async function chainFromRpc(
-    rpc: Algodv2,
+    rpc: algosdk.Algodv2,
   ): Promise<[Network, PlatformToChains<AlgorandPlatform.Type>]> {
     const versionsDetails = await rpc.versionsCheck().do();
     return chainFromChainId(versionsDetails['genesis_id']);

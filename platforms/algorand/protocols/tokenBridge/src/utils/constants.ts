@@ -1,4 +1,11 @@
-import { Network } from '@wormhole-foundation/connect-sdk';
+import {
+  isChain,
+  ChainId,
+  ChainName,
+  toChainId,
+  Network,
+  toChainName,
+} from '@wormhole-foundation/connect-sdk';
 
 export const SEED_AMT: number = 1002000;
 
@@ -39,4 +46,12 @@ export function getXAlgoNative(network: Network) {
   } else {
     throw new Error('xALGO not on Devnet');
   }
+}
+
+export function coalesceChainId(chain: ChainId | ChainName): ChainId {
+  // this is written in a way that for invalid inputs (coming from vanilla
+  // javascript or someone doing type casting) it will always return undefined.
+  return typeof chain === 'number' && isChain(toChainName(chain))
+    ? chain
+    : toChainId(chain);
 }

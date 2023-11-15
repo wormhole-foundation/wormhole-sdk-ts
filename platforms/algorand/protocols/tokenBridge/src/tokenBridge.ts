@@ -21,7 +21,6 @@ import {
   SuggestedParams,
   makeApplicationCallTxnFromObject,
   makePaymentTxnWithSuggestedParamsFromObject,
-  makeAssetTransferTxnWithSuggestedParamsFromObject,
   OnApplicationComplete,
   Transaction,
 } from 'algosdk';
@@ -41,21 +40,18 @@ import {
   checkBitsSet,
   decodeLocalState,
   textToUint8Array,
-  hexToUint8Array,
   getXAlgoNative,
   _parseVAAAlgorand,
   _submitVAAAlgorand,
   safeBigIntToNumber,
-  TransactionSignerPair,
   uint8ArrayToHex,
   textToHexString,
   optin,
-  assetOptinCheck,
   createUnsignedTx,
   getMessageFee,
-  getEmitterAddressAlgorand,
   MAX_BITS,
   submitVAAHeader,
+  transferFromAlgorand,
 } from './utils';
 
 // Functionality of the AlgoranTokenBridge follows similar logic to the one
@@ -331,156 +327,45 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
     amount: bigint,
     payload?: Uint8Array,
   ): AsyncGenerator<AlgorandUnsignedTransaction> {
-    const senderAddr = sender.toString();
+    if (typeof token === 'string' && token === 'native') {
+      token = BigInt(0);
+    } else if (typeof token === 'string') {
+      throw new Error(`Token should be "native" or the ASA ID as bigint`);
+    }
 
-    const mfee = await getMessageFee(
+    const fee = BigInt(0);
+    const txs = await transferFromAlgorand(
       this.connection,
       BigInt(this.tokenBridgeAddress),
-    );
-
-    const recipientChainId = toChainId(recipient.chain);
-
-    const tokenAddr: string = getApplicationAddress(
-      BigInt(this.tokenBridgeAddress),
-    );
-    const applAddr: string = getEmitterAddressAlgorand(
-      BigInt(this.tokenBridgeAddress),
-    );
-    const txs: TransactionSignerPair[] = [];
-    // "transferAsset"
-    const { addr: emitterAddr, txs: emitterOptInTxs } = await optin(
-      this.connection,
-      senderAddr,
       BigInt(this.coreAddress),
-      BigInt(0),
-      applAddr,
+      sender.toString(),
+      token,
+      amount,
+      recipient.address.toString(),
+      recipient.chain,
+      fee,
+      payload,
     );
-    txs.push(...emitterOptInTxs);
-    let creator;
-    let creatorAcctInfo: any;
-    let wormhole: boolean = false;
-    if (token !== BigInt(0)) {
-      const assetInfo: Record<string, any> = await this.connection
-        .getAssetByID(safeBigIntToNumber(token))
-        .do();
-      creator = assetInfo['params']['creator'];
-      creatorAcctInfo = await this.connection.accountInformation(creator).do();
-      const authAddr: string = creatorAcctInfo['auth-addr'];
-      if (authAddr === tokenAddr) {
-        wormhole = true;
+
+    let i = 0;
+    for await (const tx of txs) {
+      if (tx.signer) {
+        yield this.createUnsignedTx(
+          tx.tx,
+          `Transfer ${i.toString()}`,
+          tx.signer,
+          true,
+        );
+      } else {
+        yield this.createUnsignedTx(
+          tx.tx,
+          `Transfer ${i.toString()}`,
+          null,
+          true,
+        );
       }
+      i++;
     }
-
-    const params: SuggestedParams = await this.connection
-      .getTransactionParams()
-      .do();
-    const msgFee: bigint = await getMessageFee(
-      this.connection,
-      BigInt(this.coreAddress),
-    );
-    if (msgFee > 0) {
-      const payTxn: Transaction = makePaymentTxnWithSuggestedParamsFromObject({
-        from: senderAddr,
-        suggestedParams: params,
-        to: getApplicationAddress(BigInt(this.tokenBridgeAddress)),
-        amount: msgFee,
-      });
-      txs.push({ tx: payTxn, signer: null });
-    }
-    if (!wormhole) {
-      const bNat = Buffer.from('native', 'binary').toString('hex');
-      // "creator"
-      const result = await optin(
-        this.connection,
-        senderAddr,
-        BigInt(this.tokenBridgeAddress),
-        token,
-        bNat,
-      );
-      creator = result.addr;
-      txs.push(...result.txs);
-    }
-    if (
-      token !== BigInt(0) &&
-      !(await assetOptinCheck(this.connection, token, creator))
-    ) {
-      // Looks like we need to optin
-      const payTxn: Transaction = makePaymentTxnWithSuggestedParamsFromObject({
-        from: senderAddr,
-        to: creator,
-        amount: 100000,
-        suggestedParams: params,
-      });
-      txs.push({ tx: payTxn, signer: null });
-      // The tokenid app needs to do the optin since it has signature authority
-      const bOptin: Uint8Array = textToUint8Array('optin');
-      let txn = makeApplicationCallTxnFromObject({
-        from: senderAddr,
-        appIndex: safeBigIntToNumber(BigInt(this.tokenBridgeAddress)),
-        onComplete: OnApplicationComplete.NoOpOC,
-        appArgs: [bOptin, bigIntToBytes(token, 8)],
-        foreignAssets: [safeBigIntToNumber(token)],
-        accounts: [creator],
-        suggestedParams: params,
-      });
-      txn.fee *= 2;
-      txs.push({ tx: txn, signer: null });
-    }
-    const t = makeApplicationCallTxnFromObject({
-      from: senderAddr,
-      appIndex: safeBigIntToNumber(BigInt(this.tokenBridgeAddress)),
-      onComplete: OnApplicationComplete.NoOpOC,
-      appArgs: [textToUint8Array('nop')],
-      suggestedParams: params,
-    });
-    txs.push({ tx: t, signer: null });
-
-    let accounts: string[] = [];
-    if (token === BigInt(0)) {
-      const t = makePaymentTxnWithSuggestedParamsFromObject({
-        from: senderAddr,
-        to: creator,
-        amount: amount,
-        suggestedParams: params,
-      });
-      txs.push({ tx: t, signer: null });
-      accounts = [emitterAddr, creator, creator];
-    } else {
-      const t = makeAssetTransferTxnWithSuggestedParamsFromObject({
-        from: senderAddr,
-        to: creator,
-        suggestedParams: params,
-        amount: amount,
-        assetIndex: safeBigIntToNumber(token),
-      });
-      txs.push({ tx: t, signer: null });
-      accounts = [emitterAddr, creator, creatorAcctInfo['address']];
-    }
-
-    let args = [
-      textToUint8Array('sendTransfer'),
-      bigIntToBytes(token, 8),
-      bigIntToBytes(amount, 8),
-      hexToUint8Array(recipient.address.toString()),
-      bigIntToBytes(recipientChainId, 8),
-      bigIntToBytes(mfee, 8),
-    ];
-    if (payload !== null) {
-      args.push(payload);
-    }
-    let acTxn = makeApplicationCallTxnFromObject({
-      from: senderAddr,
-      appIndex: safeBigIntToNumber(BigInt(this.tokenBridgeAddress)),
-      onComplete: OnApplicationComplete.NoOpOC,
-      appArgs: args,
-      foreignApps: [safeBigIntToNumber(BigInt(this.coreAddress))],
-      foreignAssets: [safeBigIntToNumber(token)],
-      accounts: accounts,
-      suggestedParams: params,
-    });
-    acTxn.fee *= 2;
-    txs.push({ tx: acTxn, signer: null });
-    return txs;
   }
 
   // Redeem a transfer VAA to receive the tokens on this chain
