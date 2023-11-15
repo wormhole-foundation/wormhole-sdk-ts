@@ -56,6 +56,9 @@
     "platforms/algorand",
     "platforms/algorand/protocols/core",
     "platforms/algorand/protocols/tokenBridge",
+    "platforms/sui",
+    "platforms/sui/protocols/core",
+    "platforms/sui/protocols/tokenBridge",
     "examples"
   ],
   "unreleased": [
