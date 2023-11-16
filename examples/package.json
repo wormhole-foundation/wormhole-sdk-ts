@@ -35,6 +35,7 @@
   "sideEffects": false,
   "scripts": {
     "tb": "tsx src/tokenBridge.ts",
+    "tba": "tsx src/tokenBridgeAttest.ts",
     "cctp": "tsx src/cctp.ts",
     "demo": "tsx src/index.ts",
     "cosmos": "tsx src/cosmos.ts",

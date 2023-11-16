@@ -1,4 +1,11 @@
-import { encoding } from "@wormhole-foundation/sdk-base";
+// Similar to ./tokenTransfer.ts but for committing attestations about the
+// a token's Metadata on the Origin chain so that the Destination chain can
+// commit the data before the token is able to be transferred.
+//
+// Most of the code is copied from ./tokenTransfer.ts so some functionality
+// hasn't been tested.
+//
+
 import {
   Signer,
   TokenBridge,
@@ -8,22 +15,20 @@ import {
   WormholeMessageId,
   isTransactionIdentifier,
   isWormholeMessageId,
-  nativeChainAddress,
-  toNative,
 } from "@wormhole-foundation/sdk-definitions";
 import { signSendWait } from "../common";
-import { TokenTransferDetails, isTokenTransferDetails } from "../types";
+import { AttestationTransferDetails, isAttestationTransferDetails } from "../types";
 import { Wormhole } from "../wormhole";
 import { AttestationId, TransferState, WormholeTransfer } from "../wormholeTransfer";
 
-export class TokenTransfer implements WormholeTransfer {
+export class AttestationTransfer implements WormholeTransfer {
   private readonly wh: Wormhole;
 
   // state machine tracker
   private state: TransferState;
 
   // transfer details
-  transfer: TokenTransferDetails;
+  transfer: AttestationTransferDetails;
 
   // txids, populated once transactions are submitted
   txids: TransactionId[] = [];
@@ -32,14 +37,11 @@ export class TokenTransfer implements WormholeTransfer {
   // on the source chain (if its been completed and finalized)
   vaas?: {
     id: WormholeMessageId;
-    vaa?: TokenBridge.VAA<"Transfer" | "TransferWithPayload">;
+    vaa?: TokenBridge.VAA<"AttestMeta">;
   }[];
 
-  private constructor(wh: Wormhole, transfer: TokenTransferDetails) {
-    if (transfer.payload && transfer.automatic)
-      throw new Error("Payload with automatic delivery is not supported");
-
-    if (transfer.nativeGas && !transfer.automatic)
+  private constructor(wh: Wormhole, transfer: AttestationTransferDetails) {
+    if (transfer.nativeGas)
       throw new Error("Gas Dropoff is only supported for automatic transfers");
 
     const fromChain = wh.getChain(transfer.from.chain);
@@ -51,34 +53,12 @@ export class TokenTransfer implements WormholeTransfer {
     if (!toChain.supportsTokenBridge())
       throw new Error(`Token Bridge not supported on ${transfer.to.chain}`);
 
-    if (transfer.automatic && !fromChain.supportsAutomaticTokenBridge())
-      throw new Error(`Automatic Token Bridge not supported on ${transfer.from.chain}`);
-
-    if (transfer.to.chain === "Sei") {
-      if (transfer.payload) throw new Error("Arbitrary payloads unsupported for Sei");
-
-      // For sei, we reserve the payload for a token transfer through the sei bridge.
-      transfer.payload = encoding.toUint8Array(
-        JSON.stringify({
-          basic_recipient: {
-            recipient: encoding.b64.encode(transfer.to.address.toString()),
-          },
-        }),
-      );
-
-      transfer.to = {
-        chain: transfer.to.chain,
-        address: toNative(transfer.to.chain, toChain.platform.config.Sei?.contracts.translator!),
-      };
-    }
-
     this.state = TransferState.Created;
     this.wh = wh;
     this.transfer = transfer;
   }
 
   async getTransferState(): Promise<TransferState> {
-    if (!this.transfer.automatic) return this.state;
     if (!this.vaas || this.vaas.length === 0) return this.state;
 
     const { chain, emitter, sequence } = this.vaas[0].id;
@@ -97,19 +77,24 @@ export class TokenTransfer implements WormholeTransfer {
   }
 
   // Static initializers for in flight transfers that have not been completed
-  static async from(wh: Wormhole, from: TokenTransferDetails): Promise<TokenTransfer>;
+  static async from(wh: Wormhole, from: AttestationTransferDetails): Promise<AttestationTransfer>;
   static async from(
     wh: Wormhole,
     from: WormholeMessageId,
     timeout?: number,
-  ): Promise<TokenTransfer>;
-  static async from(wh: Wormhole, from: TransactionId, timeout?: number): Promise<TokenTransfer>;
+  ): Promise<AttestationTransfer>;
   static async from(
     wh: Wormhole,
-    from: TokenTransferDetails | WormholeMessageId | TransactionId,
+    from: TransactionId,
+    timeout?: number,
+  ): Promise<AttestationTransfer>;
+  static async from(
+    wh: Wormhole,
+    from: AttestationTransferDetails | WormholeMessageId | TransactionId,
     timeout: number = 6000,
-  ): Promise<TokenTransfer> {
-    if (isTokenTransferDetails(from)) {
+  ): Promise<AttestationTransfer> {
+    if (isAttestationTransferDetails(from)) {
+      // NOTE: Hasn't tested whether this is necessary for the atte
       // Bit of (temporary) hackery until solana contracts support being
       // sent a VAA with the primary address
       if (from.to.chain === "Solana") {
@@ -117,16 +102,17 @@ export class TokenTransfer implements WormholeTransfer {
         from.to = await wh.getTokenAccount(from.from.chain, from.token, from.to);
       }
 
-      return new TokenTransfer(wh, from);
+      return new AttestationTransfer(wh, from);
     }
 
-    let tt: TokenTransfer;
+    // TODO: Not tested yet
+    let tt: AttestationTransfer;
     if (isWormholeMessageId(from)) {
-      tt = await TokenTransfer.fromIdentifier(wh, from, timeout);
+      tt = await AttestationTransfer.fromIdentifier(wh, from, timeout);
     } else if (isTransactionIdentifier(from)) {
-      tt = await TokenTransfer.fromTransaction(wh, from, timeout);
+      tt = await AttestationTransfer.fromTransaction(wh, from, timeout);
     } else {
-      throw new Error("Invalid `from` parameter for TokenTransfer");
+      throw new Error("Invalid `from` parameter for AttestationTransfer");
     }
     await tt.fetchAttestation(timeout);
     return tt;
@@ -137,46 +123,37 @@ export class TokenTransfer implements WormholeTransfer {
     wh: Wormhole,
     id: WormholeMessageId,
     timeout?: number,
-  ): Promise<TokenTransfer> {
-    const vaa = await TokenTransfer.getTransferVaa(wh, id, timeout);
+  ): Promise<AttestationTransfer> {
+    throw new Error("Not fully implemented and tested yet.");
+    // const vaa = await AttestationTransfer.getAttestationVaa(wh, id, timeout);
 
-    const { chain, address } = vaa.payload.to;
-    const { tokenBridgeRelayer } = wh.config.chains[chain]!.contracts;
-    const relayerAddress = tokenBridgeRelayer
-      ? nativeChainAddress([chain, tokenBridgeRelayer]).address.toUniversalAddress()
-      : null;
+    // const { token } = vaa.payload;
+    // const { tokenBridgeRelayer } = wh.config.chains[chain]!.contracts;
+    // const relayerAddress = tokenBridgeRelayer
+    //   ? nativeChainAddress([chain, tokenBridgeRelayer]).address.toUniversalAddress()
+    //   : null;
 
-    // Check if its a payload 3 targeted at a relayer on the destination chain
-    const automatic =
-      vaa.payloadName === "TransferWithPayload" &&
-      !!relayerAddress &&
-      address.equals(relayerAddress);
+    // const details: AttestationTransferDetails = {
+    //   token: { chain: token.chain, address: token.address },
+    //   from: { chain: id.chain, address: id.emitter },
+    //   decimals: vaa.payload.decimals,
+    //   symbol: vaa.payload.symbol,
+    //   name: vaa.payload.name,
+    // };
 
-    const token = vaa.payload.token;
-
-    const details: TokenTransferDetails = {
-      token: { chain: token.chain, address: token.address },
-      amount: token.amount,
-      // TODO: the `from.address` here is a lie, but we don't
-      // immediately have enough info to get the _correct_ one
-      from: { chain: id.chain, address: id.emitter },
-      to: { ...vaa.payload.to },
-      automatic,
-    };
-
-    const tt = new TokenTransfer(wh, details);
-    tt.vaas = [{ id: id, vaa }];
-    tt.state = TransferState.Attested;
-    return tt;
+    // const tt = new AttestationTransfer(wh, details);
+    // tt.vaas = [{ id: id, vaa }];
+    // tt.state = TransferState.Attested;
+    // return tt;
   }
 
   private static async fromTransaction(
     wh: Wormhole,
     from: TransactionId,
     timeout: number,
-  ): Promise<TokenTransfer> {
-    const msg = await TokenTransfer.getTransferMessage(wh, from, timeout);
-    const tt = await TokenTransfer.fromIdentifier(wh, msg, timeout);
+  ): Promise<AttestationTransfer> {
+    const msg = await AttestationTransfer.getTransferMessage(wh, from, timeout);
+    const tt = await AttestationTransfer.fromIdentifier(wh, msg, timeout);
     tt.txids = [from];
     return tt;
   }
@@ -198,32 +175,13 @@ export class TokenTransfer implements WormholeTransfer {
     const tokenAddress = this.transfer.token === "native" ? "native" : this.transfer.token.address;
 
     const fromChain = this.wh.getChain(this.transfer.from.chain);
-
     let xfer: AsyncGenerator<UnsignedTransaction>;
-    if (this.transfer.automatic) {
-      const tb = await fromChain.getAutomaticTokenBridge();
-      const fee = await tb.getRelayerFee(this.transfer.from, this.transfer.to, this.transfer.token);
 
-      xfer = tb.transfer(
-        this.transfer.from.address,
-        this.transfer.to,
-        tokenAddress,
-        this.transfer.amount,
-        fee,
-        this.transfer.nativeGas,
-      );
-    } else {
-      const tb = await fromChain.getTokenBridge();
-      xfer = tb.transfer(
-        this.transfer.from.address,
-        this.transfer.to,
-        tokenAddress,
-        this.transfer.amount,
-        this.transfer.payload,
-      );
-    }
+    const tb = await fromChain.getTokenBridge();
+    xfer = tb.createAttestation(tokenAddress, signer.address());
 
     this.txids = await signSendWait(fromChain, xfer, signer);
+
     this.state = TransferState.Initiated;
     return this.txids.map(({ txid }) => txid);
   }
@@ -246,8 +204,9 @@ export class TokenTransfer implements WormholeTransfer {
 
       // TODO: assuming the _last_ transaction in the list will contain the msg id
       const txid = this.txids[this.txids.length - 1];
+
       // parse transaction and fetch the message
-      const msgId = await TokenTransfer.getTransferMessage(this.wh, txid, timeout);
+      const msgId = await AttestationTransfer.getTransferMessage(this.wh, txid, timeout);
       this.vaas = [{ id: msgId }];
     }
 
@@ -255,7 +214,11 @@ export class TokenTransfer implements WormholeTransfer {
       // Check if we already have the VAA
       if (this.vaas[idx].vaa) continue;
 
-      this.vaas[idx].vaa = await TokenTransfer.getTransferVaa(this.wh, this.vaas[idx].id, timeout);
+      this.vaas[idx].vaa = await AttestationTransfer.getAttestationVaa(
+        this.wh,
+        this.vaas[idx].id,
+        timeout,
+      );
     }
 
     this.state = TransferState.Attested;
@@ -278,23 +241,14 @@ export class TokenTransfer implements WormholeTransfer {
 
     const toChain = this.wh.getChain(this.transfer.to.chain);
 
-    const signerAddress = toNative(signer.chain(), signer.address());
-
     // TODO: when do we get >1?
     const { vaa } = this.vaas[0];
     if (!vaa) throw new Error(`No VAA found for ${this.vaas[0].id.sequence}`);
 
     let xfer: AsyncGenerator<UnsignedTransaction>;
-    if (this.transfer.automatic) {
-      if (vaa.payloadName === "Transfer")
-        throw new Error("VAA is a simple transfer but expected Payload for automatic delivery");
 
-      const tb = await toChain.getAutomaticTokenBridge();
-      xfer = tb.redeem(signerAddress, vaa);
-    } else {
-      const tb = await toChain.getTokenBridge();
-      xfer = tb.redeem(signerAddress, vaa);
-    }
+    const tb = await toChain.getTokenBridge();
+    xfer = tb.submitAttestation(vaa, signer.address());
 
     const redeemTxids = await signSendWait(toChain, xfer, signer);
     this.txids.push(...redeemTxids);
@@ -312,11 +266,11 @@ export class TokenTransfer implements WormholeTransfer {
     return msgs[0];
   }
 
-  static async getTransferVaa(
+  static async getAttestationVaa(
     wh: Wormhole,
     whm: WormholeMessageId,
     timeout?: number,
-  ): Promise<TokenBridge.VAA<"Transfer" | "TransferWithPayload">> {
+  ): Promise<TokenBridge.VAA<"AttestMeta">> {
     const { chain, emitter, sequence } = whm;
     const vaa = (await wh.getVaa(
       chain,
@@ -324,9 +278,7 @@ export class TokenTransfer implements WormholeTransfer {
       sequence,
       TokenBridge.getTransferDiscriminator(),
       timeout,
-    )) as
-      | TokenBridge.VAA<"TokenBridge:Transfer">
-      | TokenBridge.VAA<"TokenBridge:TranferWithPayload">;
+    )) as TokenBridge.VAA<"TokenBridge:AttestMeta">;
     if (!vaa) throw new Error(`No VAA available after retries exhausted`);
     return vaa;
   }

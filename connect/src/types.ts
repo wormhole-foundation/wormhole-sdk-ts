@@ -31,6 +31,16 @@ export type CircleTransferDetails = {
   nativeGas?: bigint;
 };
 
+export type AttestationTransferDetails = {
+  token: TokenId | "native";
+  from: ChainAddress;
+  to: ChainAddress;
+  decimals: number;
+  symbol: string;
+  name: string;
+  nativeGas?: bigint;
+};
+
 export type WormholeMessage = {
   tx: TransactionId;
   msg: WormholeMessageId;
@@ -60,6 +70,18 @@ export function isTokenTransferDetails(
     (<TokenTransferDetails>thing).amount !== undefined &&
     (<TokenTransferDetails>thing).from !== undefined &&
     (<TokenTransferDetails>thing).to !== undefined
+  );
+}
+
+export function isAttestationTransferDetails(
+  thing: AttestationTransferDetails | any,
+): thing is AttestationTransferDetails {
+  return (
+    (<AttestationTransferDetails>thing).token !== undefined &&
+    (<AttestationTransferDetails>thing).from !== undefined &&
+    (<AttestationTransferDetails>thing).to !== undefined &&
+    (<AttestationTransferDetails>thing).decimals !== undefined &&
+    (<AttestationTransferDetails>thing).symbol !== undefined
   );
 }
 

@@ -42,7 +42,7 @@ export namespace TokenBridge {
   // export type TransferPayloadNames = typeof transferPayloadNames[number];
 
   export const getTransferDiscriminator = lazyInstantiate(
-    () => payloadDiscriminator(["TokenBridge", ["Transfer", "TransferWithPayload"]])
+    () => payloadDiscriminator(["TokenBridge", ["Transfer", "TransferWithPayload", "AttestMeta"]])
   );
 }
 

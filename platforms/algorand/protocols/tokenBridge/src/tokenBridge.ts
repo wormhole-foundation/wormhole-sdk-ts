@@ -28,7 +28,6 @@ import {
 import {
   AlgorandChainName,
   AlgorandPlatform,
-  AlgorandAssetId,
   AnyAlgorandAddress,
   AlgorandUnsignedTransaction,
   AlgorandAddress,
@@ -52,6 +51,7 @@ import {
   MAX_BITS,
   submitVAAHeader,
   transferFromAlgorand,
+  TransactionSignerPair,
 } from './utils';
 
 // Functionality of the AlgoranTokenBridge follows similar logic to the one
@@ -100,13 +100,13 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
     );
   }
 
-  async isWrappedAsset(token: AlgorandAssetId): Promise<boolean> {
-    if (token === BigInt(0)) {
+  async isWrappedAsset(token: AlgorandAddress): Promise<boolean> {
+    if (token.toString() === 'native') {
       return false;
     }
 
     const assetInfo = await this.connection
-      .getAssetByID(safeBigIntToNumber(token))
+      .getAssetByID(safeBigIntToNumber(BigInt(token.toString())))
       .do();
     const creatorAddr = assetInfo['params'].creator;
     const creatorAcctInfo = await this.connection
@@ -116,12 +116,12 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
     return creatorAcctInfo['auth-addr'] === this.tokenBridgeAddress;
   }
 
-  async getOriginalAsset(token: AlgorandAssetId): Promise<TokenId> {
+  async getOriginalAsset(token: AlgorandAddress): Promise<TokenId> {
     if (!(await this.isWrappedAsset(token)))
       throw ErrNotWrapped(token.toString());
 
     const assetInfo = await this.connection
-      .getAssetByID(safeBigIntToNumber(token))
+      .getAssetByID(safeBigIntToNumber(BigInt(token.toString())))
       .do();
     const lsa = assetInfo['params'].creator;
     const dls = await decodeLocalState(
@@ -195,6 +195,8 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
     if (!payer) throw new Error('Payer required to create attestation');
     const senderAddr = new AlgorandAddress(payer).unwrap();
 
+    let txs: TransactionSignerPair[] = [];
+
     let assetId = BigInt(0);
     if (token.toString() === 'native') {
       assetId = BigInt(0);
@@ -216,10 +218,7 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
       BigInt(0),
       aa,
     );
-    // txs.push(...emitterOptInTxs);
-    for (const tx of emitterOptInTxs) {
-      yield this.createUnsignedTx(tx.tx, 'Algorand.AttestTokenOptin');
-    }
+    txs.push(...emitterOptInTxs);
 
     let creatorAddr = '';
     let creatorAcctInfo;
@@ -245,10 +244,7 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
       textToHexString('native'),
     );
     creatorAddr = result.addr;
-    // txs.push(...result.txs);
-    for (const tx of result.txs) {
-      yield this.createUnsignedTx(tx.tx, 'Algorand.AttestTokenOptin');
-    }
+    txs.push(...result.txs);
 
     const suggParams: SuggestedParams = await this.connection
       .getTransactionParams()
@@ -261,8 +257,7 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
       appArgs: [textToUint8Array('nop')],
       suggestedParams: suggParams,
     });
-    // txs.push({ tx: firstTxn, signer: null });
-    yield this.createUnsignedTx(firstTxn, 'Algorand.AttestTokenStart');
+    txs.push({ tx: firstTxn, signer: null });
 
     const mfee = await getMessageFee(this.connection, BigInt(this.coreAddress));
     if (mfee > BigInt(0)) {
@@ -272,8 +267,7 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
         to: getApplicationAddress(BigInt(this.tokenBridgeAddress)),
         amount: mfee,
       });
-      // txs.push({ tx: feeTxn, signer: null });
-      yield this.createUnsignedTx(feeTxn, 'Algorand.AttestTokenFee');
+      txs.push({ tx: feeTxn, signer: null });
     }
 
     let accts: string[] = [
@@ -302,8 +296,27 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
       appTxn.fee *= 2;
     }
 
-    // txs.push({ tx: appTxn, signer: null });
-    yield this.createUnsignedTx(appTxn, 'Algorand.AttestToken');
+    txs.push({ tx: appTxn, signer: null });
+
+    let i = 0;
+    for (const tx of txs) {
+      if (tx.signer) {
+        yield this.createUnsignedTx(
+          tx.tx,
+          `Create Attestation ${i.toString()}`,
+          tx.signer,
+          true,
+        );
+      } else {
+        yield this.createUnsignedTx(
+          tx.tx,
+          `Create Attestation ${i.toString()}`,
+          null,
+          true,
+        );
+      }
+      i++;
+    }
   }
 
   // Submit the Token Attestation VAA to the Token bridge
@@ -315,14 +328,30 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
     const senderAddr = new AlgorandAddress(payer).unwrap();
     const { txs } = await submitVAAHeader(
       this.connection,
-      BigInt(this.tokenBridgeAddress),
+      BigInt(this.coreAddress),
       vaa,
       senderAddr,
-      BigInt(this.coreAddress),
+      BigInt(this.tokenBridgeAddress),
     );
 
-    for (const stx of txs) {
-      yield this.createUnsignedTx(stx.tx, '');
+    let i = 0;
+    for (const tx of txs) {
+      if (tx.signer) {
+        yield this.createUnsignedTx(
+          tx.tx,
+          `Submit Attestation ${i.toString()}`,
+          tx.signer,
+          true,
+        );
+      } else {
+        yield this.createUnsignedTx(
+          tx.tx,
+          `Submit Attestation ${i.toString()}`,
+          null,
+          true,
+        );
+      }
+      i++;
     }
   }
 

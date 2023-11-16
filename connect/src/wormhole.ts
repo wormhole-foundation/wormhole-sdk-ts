@@ -36,6 +36,7 @@ import { WormholeConfig } from "./types";
 
 import { CircleTransfer } from "./protocols/cctpTransfer";
 import { TokenTransfer } from "./protocols/tokenTransfer";
+import { AttestationTransfer } from "./protocols/attestationTransfer";
 
 import { getCircleAttestation } from "./circle-api";
 import { retry } from "./tasks";
@@ -149,6 +150,52 @@ export class Wormhole {
       to,
       automatic,
       payload,
+      nativeGas,
+    });
+  }
+
+  /**
+   * Creates a AttestationTransfer object to move a token from one chain to another
+   * @param token the token to attest
+   * @param from the address to transfer from
+   * @param to the address to transfer to
+   * @param decimals the number of decimals of the token in the original chain
+   * @param symbol the symbol of the token in the original chain; max 32 bytes
+   * @param name the name of the token in the original chain; max 32 bytes
+   * @param nativeGas the amount of native gas to send with the transfer
+   * @returns the TokenTransfer object
+   * @throws Errors if the chain or protocol is not supported
+   * @warning the data contained may truncate multibyte unicode characters; more on: https://docs.wormhole.com/wormhole/explore-wormhole/vaa#attestation
+   */
+  async tokenAttestation(
+    token: TokenId | "native",
+    from: ChainAddress,
+    to: ChainAddress,
+    decimals: number,
+    symbol: string,
+    name: string,
+    nativeGas?: bigint,
+  ): Promise<AttestationTransfer> {
+    // TODO: check if `toChain` is gateway supported
+    // not enough to check if its a Cosmos chain since Terra/Xpla/Sei are not supported
+    // if (chainToPlatform(to.chain) === 'Cosmwasm' ) {
+    //   return await GatewayTransfer.from(this, {
+    //     token,
+    //     amount,
+    //     from,
+    //     to,
+    //     payload,
+    //     nativeGas,
+    //   });
+    // }
+
+    return await AttestationTransfer.from(this, {
+      token,
+      from,
+      to,
+      decimals,
+      symbol,
+      name,
       nativeGas,
     });
   }

@@ -278,7 +278,7 @@ export class GatewayTransfer implements WormholeTransfer {
   async initiateTransfer(signer: Signer): Promise<TxHash[]> {
     /*
         0) Check current `state` is valid to call this (eg: state == Created)
-        1) Figure out where to call and issue transactions  
+        1) Figure out where to call and issue transactions
         2) Update state
         3) return transaction ids
     */
@@ -510,13 +510,15 @@ export class GatewayTransfer implements WormholeTransfer {
   ): Promise<TokenBridge.VAA<"Transfer" | "TransferWithPayload">> {
     const { chain, emitter, sequence } = whm;
 
-    const vaa = await wh.getVaa(
+    const vaa = (await wh.getVaa(
       chain,
       emitter,
       sequence,
       TokenBridge.getTransferDiscriminator(),
       timeout,
-    );
+    )) as
+      | TokenBridge.VAA<"TokenBridge:Transfer">
+      | TokenBridge.VAA<"TokenBridge:TranferWithPayload">;
 
     if (!vaa) throw new Error(`No VAA Available: ${chain}/${emitter}/${sequence}`);
 
