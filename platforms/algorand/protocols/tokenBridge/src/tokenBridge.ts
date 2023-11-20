@@ -13,17 +13,7 @@ import {
   ChainsConfig,
   Contracts,
 } from '@wormhole-foundation/connect-sdk';
-import {
-  Algodv2,
-  bigIntToBytes,
-  decodeAddress,
-  getApplicationAddress,
-  SuggestedParams,
-  makeApplicationCallTxnFromObject,
-  makePaymentTxnWithSuggestedParamsFromObject,
-  OnApplicationComplete,
-  Transaction,
-} from 'algosdk';
+import { Algodv2, getApplicationAddress, Transaction } from 'algosdk';
 
 import {
   AlgorandChainName,
@@ -35,22 +25,17 @@ import {
 } from '@wormhole-foundation/connect-sdk-algorand';
 
 import {
+  attestFromAlgorand,
   calcLogicSigAccount,
   checkBitsSet,
   decodeLocalState,
-  textToUint8Array,
   getXAlgoNative,
   _parseVAAAlgorand,
   _submitVAAAlgorand,
   safeBigIntToNumber,
-  uint8ArrayToHex,
-  textToHexString,
-  optin,
   createUnsignedTx,
-  getMessageFee,
   MAX_BITS,
   transferFromAlgorand,
-  TransactionSignerPair,
 } from './utils';
 
 // Functionality of the AlgoranTokenBridge follows similar logic to the one
@@ -194,108 +179,13 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
     if (!payer) throw new Error('Payer required to create attestation');
     const senderAddr = new AlgorandAddress(payer).unwrap();
 
-    let txs: TransactionSignerPair[] = [];
-
-    let assetId = BigInt(0);
-    if (token.toString() === 'native') {
-      assetId = BigInt(0);
-    } else {
-      assetId = BigInt(token.toString());
-    }
-
-    const tbAddr: string = getApplicationAddress(
-      BigInt(this.tokenBridgeAddress),
-    );
-    const decTbAddr: Uint8Array = decodeAddress(tbAddr).publicKey;
-    const aa: string = uint8ArrayToHex(decTbAddr);
-
-    // "attestFromAlgorand::emitterAddr"
-    const { addr: emitterAddr, txs: emitterOptInTxs } = await optin(
+    const txs = await attestFromAlgorand(
       this.connection,
-      senderAddr,
+      BigInt(this.tokenBridgeAddress),
       BigInt(this.coreAddress),
-      BigInt(0),
-      aa,
-    );
-    txs.push(...emitterOptInTxs);
-
-    let creatorAddr = '';
-    let creatorAcctInfo;
-    const bPgmName: Uint8Array = textToUint8Array('attestToken');
-
-    if (assetId !== BigInt(0)) {
-      const assetInfo = await this.connection
-        .getAssetByID(safeBigIntToNumber(assetId))
-        .do();
-      creatorAcctInfo = await this.connection
-        .accountInformation(assetInfo['params'].creator)
-        .do();
-      if (creatorAcctInfo['auth-addr'] === tbAddr) {
-        throw new Error('Cannot re-attest wormhole assets');
-      }
-    }
-
-    const result = await optin(
-      this.connection,
       senderAddr,
-      BigInt(this.tokenBridgeAddress),
-      assetId,
-      textToHexString('native'),
+      BigInt(token.toString()),
     );
-    creatorAddr = result.addr;
-    txs.push(...result.txs);
-
-    const suggParams: SuggestedParams = await this.connection
-      .getTransactionParams()
-      .do();
-
-    const firstTxn = makeApplicationCallTxnFromObject({
-      from: senderAddr,
-      appIndex: safeBigIntToNumber(BigInt(this.tokenBridgeAddress)),
-      onComplete: OnApplicationComplete.NoOpOC,
-      appArgs: [textToUint8Array('nop')],
-      suggestedParams: suggParams,
-    });
-    txs.push({ tx: firstTxn, signer: null });
-
-    const mfee = await getMessageFee(this.connection, BigInt(this.coreAddress));
-    if (mfee > BigInt(0)) {
-      const feeTxn = makePaymentTxnWithSuggestedParamsFromObject({
-        from: senderAddr,
-        suggestedParams: suggParams,
-        to: getApplicationAddress(BigInt(this.tokenBridgeAddress)),
-        amount: mfee,
-      });
-      txs.push({ tx: feeTxn, signer: null });
-    }
-
-    let accts: string[] = [
-      emitterAddr,
-      creatorAddr,
-      getApplicationAddress(BigInt(this.coreAddress)),
-    ];
-
-    if (creatorAcctInfo) {
-      accts.push(creatorAcctInfo['address']);
-    }
-
-    let appTxn = makeApplicationCallTxnFromObject({
-      appArgs: [bPgmName, bigIntToBytes(assetId, 8)],
-      accounts: accts,
-      appIndex: safeBigIntToNumber(BigInt(this.tokenBridgeAddress)),
-      foreignApps: [safeBigIntToNumber(BigInt(this.coreAddress))],
-      foreignAssets: [safeBigIntToNumber(assetId)],
-      from: senderAddr,
-      onComplete: OnApplicationComplete.NoOpOC,
-      suggestedParams: suggParams,
-    });
-    if (mfee > BigInt(0)) {
-      appTxn.fee *= 3;
-    } else {
-      appTxn.fee *= 2;
-    }
-
-    txs.push({ tx: appTxn, signer: null });
 
     let i = 0;
     for (const tx of txs) {

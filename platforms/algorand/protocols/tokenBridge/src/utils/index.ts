@@ -1,4 +1,5 @@
 export * from './account';
+export * from './attestation';
 export * from './bridge';
 export * from './constants';
 export * from './conversions';
