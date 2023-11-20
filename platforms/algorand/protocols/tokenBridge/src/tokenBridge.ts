@@ -49,7 +49,6 @@ import {
   createUnsignedTx,
   getMessageFee,
   MAX_BITS,
-  submitVAAHeader,
   transferFromAlgorand,
   TransactionSignerPair,
 } from './utils';
@@ -326,12 +325,15 @@ export class AlgorandTokenBridge implements TokenBridge<'Algorand'> {
     payer?: AnyAlgorandAddress,
   ): AsyncGenerator<AlgorandUnsignedTransaction> {
     const senderAddr = new AlgorandAddress(payer).unwrap();
-    const { txs } = await submitVAAHeader(
+
+    const txs = await _submitVAAAlgorand(
       this.connection,
+      BigInt(this.tokenBridgeAddress),
       BigInt(this.coreAddress),
       vaa,
       senderAddr,
-      BigInt(this.tokenBridgeAddress),
+      this.chain,
+      this.network,
     );
 
     let i = 0;

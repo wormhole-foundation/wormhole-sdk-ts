@@ -7,6 +7,7 @@ export * from "./common";
 export * from "./protocols/tokenTransfer";
 export * from "./protocols/cctpTransfer";
 export * from "./protocols/gatewayTransfer";
+export * from "./protocols/attestationTransfer";
 
 export * as circle from "./circle-api";
 export * as api from "./whscan-api";
