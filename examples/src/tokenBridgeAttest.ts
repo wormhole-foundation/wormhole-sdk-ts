@@ -57,7 +57,7 @@ import { TransferStuff, getStuff, waitLog } from "./helpers";
 (async function () {
   // init Wormhole object, passing config for which network
   // to use (e.g. Mainnet/Testnet) and what Platforms to support
-  const wh = new Wormhole("Mainnet", [
+  const wh = new Wormhole("Testnet", [
     AlgorandPlatform,
     EvmPlatform,
     SolanaPlatform,
@@ -66,7 +66,7 @@ import { TransferStuff, getStuff, waitLog } from "./helpers";
 
   // Grab chain Contexts
   const sendChain = wh.getChain("Avalanche");
-  const rcvChain = wh.getChain("Solana");
+  const rcvChain = wh.getChain("Algorand");
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
@@ -76,7 +76,7 @@ import { TransferStuff, getStuff, waitLog } from "./helpers";
   // Choose the Token you want to bridge or "native" for the native token
   const tk: TokenId = {
     chain: "Avalanche",
-    address: new EvmAddress("0xa4FB4F0Ff2431262D236778495145EcBC975c38B"),
+    address: new EvmAddress("0x8EBe82C117d9704E3207d3e86b2F62086fdfCA2A"),
   };
 
   // max 32 bytes
@@ -154,25 +154,23 @@ async function tokenAttestation(
     name,
     nativeGas,
   );
-  console.log("----- WORMHOLE XFER -----");
-  console.log(xfer);
 
   // 1) Submit the transactions to the source chain, passing a signer to sign any txns
-  console.log(">>> Starting transfer");
+  console.log(">>> Starting Attestation Meta Transfer");
   const srcTxids = await xfer.initiateTransfer(src.signer);
-  console.log(`>>> Started transfer: `, srcTxids);
+  console.log(">>> Started Attestation Meta Transfer with txhashes: ", srcTxids);
 
   // 2) wait for the VAA to be signed and ready (not required for auto transfer)
-  console.log(">>> Getting Attestation");
+  console.log(">>> Getting 'AttestMeta' Attestation");
   const attestIds = await xfer.fetchAttestation(60_000);
-  console.log(`>>> Got Attestation: `, attestIds);
+  console.log(">>> Got 'AttestMeta' Attestation : ", attestIds);
   const first = attestIds[0];
-  console.log(`>>> Attestation by: `, first);
+  console.log(">>> Attestation 'AttestMeta': ", first);
 
   // 3) redeem the VAA on the dest chain
-  console.log(">>> Completing Transfer");
+  console.log(">>> Completing Attestation Transfer");
   const destTxids = await xfer.completeTransfer(dst.signer);
-  console.log(`>>> Completed Transfer: `, destTxids);
+  console.log(">>> Completed Attestation Transfer with txhashes:", destTxids);
 }
 
 async function tokenTransfer(
@@ -194,28 +192,26 @@ async function tokenTransfer(
     payload,
     nativeGas,
   );
-  console.log("----- WORMHOLE XFER -----");
-  console.log(xfer);
 
   // 1) Submit the transactions to the source chain, passing a signer to sign any txns
-  console.log(">>> Starting transfer");
+  console.log(">>> Starting Token Transfer");
   const srcTxids = await xfer.initiateTransfer(src.signer);
-  console.log(`>>> Started transfer: `, srcTxids);
+  console.log(">>> Started Token Transfer txhashes: ", srcTxids);
 
   // If automatic, we're done
   if (automatic) return waitLog(xfer);
 
   // 2) wait for the VAA to be signed and ready (not required for auto transfer)
-  console.log(">>> Getting Attestation");
+  console.log(">>> Getting 'Transfer' Attestation");
   const attestIds = await xfer.fetchAttestation(60_000);
-  console.log(`>>> Got Attestation: `, attestIds);
+  console.log(">>> Got 'Transfer' Attestation: ", attestIds);
   const first = attestIds[0];
-  console.log(`>>> Attestation by: `, first);
+  console.log(">>> Attestation 'Transfer' by: ", first);
 
   // 3) redeem the VAA on the dest chain
-  console.log(">>> Completing Transfer");
+  console.log(">>> Completing Token Transfer");
   const destTxids = await xfer.completeTransfer(dst.signer);
-  console.log(`>>> Completed Transfer: `, destTxids);
+  console.log(">>> Completed Token Transfer with txhashes: ", destTxids);
 }
 
 // If you've started a transfer but not completed it

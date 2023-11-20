@@ -19,6 +19,15 @@ declare global {
 
 export const AlgorandZeroAddress = algosdk.getApplicationAddress(0);
 
+function isValidBigInt(value: string): boolean {
+  try {
+    BigInt(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export class AlgorandAddress implements Address {
   // Public key in Algorand is a 32 byte array (users see 58 character string
   // of base32 encoding of the public key + checksum).
@@ -27,15 +36,32 @@ export class AlgorandAddress implements Address {
   public readonly platform = AlgorandPlatform.platform;
 
   // stored as checksum address
-  private readonly address: string;
+  private readonly address?: string;
 
-  constructor(address: AnyAlgorandAddress | bigint) {
+  private readonly id?: string;
+
+  constructor(address: AnyAlgorandAddress | bigint, isAssetId = false) {
+    if (isAssetId) {
+      this.id = address.toString();
+      return;
+    }
+
     if (AlgorandAddress.instanceof(address)) {
       const a = address as unknown as AlgorandAddress;
       this.address = a.address;
       return;
     }
-    if (typeof address === 'string') {
+
+    if (
+      typeof address === 'bigint' ||
+      (typeof address === 'string' && isValidBigInt(address))
+    ) {
+      if (address === 0n)
+        throw new Error(
+          `Invalid Algorand address; use "native" for the native token`,
+        );
+      this.address = address.toString();
+    } else if (typeof address === 'string') {
       if (!AlgorandAddress.isValidAddress(address))
         throw new Error(
           `Invalid Algorand address, expected ${AlgorandAddress.byteSize}-byte (+2 checksum bytes), base32-encoded string of 58 characters but got ${address.length} characters`,
@@ -49,28 +75,29 @@ export class AlgorandAddress implements Address {
       this.address = algosdk.encodeAddress(address);
     } else if (UniversalAddress.instanceof(address)) {
       this.address = algosdk.encodeAddress(address.toUint8Array());
-    } else if (typeof address === 'bigint') {
-      if (address === 0n)
-        throw new Error(
-          `Invalid Algorand address; use "native" for the native token`,
-        );
-      this.address = address.toString();
     } else throw new Error(`Invalid Algorand address ${address}`);
   }
 
   unwrap(): string {
-    return this.address;
+    return this.address ? this.address : this.id;
   }
   toString() {
-    return this.address;
+    return this.address ? this.address : this.id;
   }
   toNative() {
     return this;
   }
   toUint8Array() {
+    if (this.id) {
+      return algosdk.bigIntToBytes(BigInt(this.id), 8);
+    }
     return algosdk.decodeAddress(this.address).publicKey;
   }
   toUniversalAddress() {
+    if (this.id) {
+      // return new UniversalAddress(algosdk.bigIntToBytes(BigInt(this.id), 8));
+      return new UniversalAddress(this.id, 'algorandAppId');
+    }
     return new UniversalAddress(algosdk.decodeAddress(this.address).publicKey);
   }
   static isValidAddress(address: string) {
