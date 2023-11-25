@@ -6,7 +6,7 @@ import {
   ProtocolName,
 } from "@wormhole-foundation/sdk-base";
 
-import { TokenAddress } from "./address";
+import { ChainAddress, TokenAddress, UniversalOrNative } from "./address";
 import { WormholeMessageId } from "./attestation";
 import { PlatformContext } from "./platform";
 import { protocolIsRegistered } from "./protocol";
@@ -14,7 +14,7 @@ import { AutomaticCircleBridge, CircleBridge } from "./protocols/cctp";
 import { IbcBridge } from "./protocols/ibc";
 import { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge";
 import { RpcConnection } from "./rpc";
-import { ChainConfig, SignedTx } from "./types";
+import { ChainConfig, SignedTx, TokenId } from "./types";
 
 export abstract class ChainContext<
   N extends Network,
@@ -74,6 +74,20 @@ export abstract class ChainContext<
   // Send a transaction and wait for it to be confirmed
   async sendWait(stxns: SignedTx): Promise<string[]> {
     return this.platform.utils().sendWait(this.chain, await this.getRpc(), stxns);
+  }
+
+  async getNativeWrappedTokenId(): Promise<TokenId<C>> {
+    const tb = await this.getTokenBridge();
+    return { chain: this.chain, address: await tb.getWrappedNative() };
+  }
+
+  // Get the token account for a given address
+  async getTokenAccount(
+    address: UniversalOrNative<C>,
+    token: TokenId<C>,
+  ): Promise<ChainAddress<C>> {
+    // Noop by default, override in implementation if necessary
+    return { chain: this.chain, address };
   }
 
   //

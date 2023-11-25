@@ -8,6 +8,7 @@ import {
   WormholeTransfer,
   nativeChainAddress,
 } from "@wormhole-foundation/connect-sdk";
+import { getCosmwasmSigner } from "@wormhole-foundation/connect-sdk-cosmwasm/src/testing";
 
 //import { getCosmwasmSigner } from "@wormhole-foundation/connect-sdk-cosmwasm/src/testing";
 import { getEvmSigner } from "@wormhole-foundation/connect-sdk-evm/src/testing";
@@ -49,9 +50,9 @@ export async function getStuff<
     case "Solana":
       signer = await getSolanaSigner(await chain.getRpc(), getEnv("SOL_PRIVATE_KEY"));
       break;
-    //case "Cosmwasm":
-    //  signer = await getCosmwasmSigner(await chain.getRpc(), getEnv("COSMOS_MNEMONIC"));
-    //  break;
+    case "Cosmwasm":
+      signer = await getCosmwasmSigner(await chain.getRpc(), getEnv("COSMOS_MNEMONIC"));
+      break;
     case "Evm":
       signer = await getEvmSigner(await chain.getRpc(), getEnv("ETH_PRIVATE_KEY"));
       break;

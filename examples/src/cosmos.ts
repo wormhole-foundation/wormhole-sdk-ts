@@ -95,7 +95,6 @@ import { Network } from "@wormhole-foundation/sdk-base/src";
       );
   console.log("Route 2 (Cosmos -> Cosmos): ", route2);
 
-  fakeIt = false;
   // Transfer Gateway factory token through gateway back to source chain
   let route3 = fakeIt
     ? await GatewayTransfer.from(

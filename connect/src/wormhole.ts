@@ -22,7 +22,6 @@ import {
   UniversalAddress,
   WormholeMessageId,
   deserialize,
-  isTokenId,
   toNative,
 } from "@wormhole-foundation/sdk-definitions";
 
@@ -233,39 +232,22 @@ export class Wormhole<N extends Network> {
 
   /**
    * Gets the associated token account for chains that require it (only Solana currently).
-   * @param sendingChain the chain name of the source token
-   * @param sendingToken the TokenId or address of the source token
-   * @param recipient the address of the recipient
+   * @param token the TokenId of the token to get the token account for
+   * @param recipient the address of the primary account that may require a separate token account
    * @returns
    */
   async getTokenAccount<SC extends Chain, RC extends Chain>(
-    sendingChain: SC,
-    sendingToken: TokenAddress<SC> | TokenId<SC>,
     recipient: ChainAddress<RC>,
+    token: TokenId<SC>,
   ): Promise<ChainAddress<RC>> {
     const chain = this.getChain(recipient.chain);
-    if (!("getTokenAccount" in chain)) return recipient;
+    const tb = await chain.getTokenBridge();
+    const recipientLocal = {
+      chain: recipient.chain,
+      address: await tb.getWrappedAsset(token),
+    };
 
-    let t: TokenId;
-    if (sendingToken === "native") {
-      const srcTb = await this.getChain(sendingChain).getTokenBridge();
-      t = { chain: sendingChain, address: await srcTb.getWrappedNative() };
-    } else {
-      t = isTokenId(sendingToken)
-        ? sendingToken
-        : {
-            chain: sendingChain,
-            address: (
-              sendingToken as UniversalAddress | NativeAddress<Platform>
-            ).toUniversalAddress(),
-          };
-    }
-
-    const dstTokenBridge = await chain.getTokenBridge();
-    const dstNative = await dstTokenBridge.getWrappedAsset(t);
-    // @ts-ignore
-    const address = await chain.getTokenAccount(dstNative, recipient.address);
-    return { chain: recipient.chain, address: address };
+    return chain.getTokenAccount(recipient.address, recipientLocal);
   }
 
   /**

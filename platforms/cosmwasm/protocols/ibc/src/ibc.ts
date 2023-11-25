@@ -122,7 +122,7 @@ export class CosmwasmIbcBridge<N extends Network, C extends CosmwasmChains>
       },
     };
 
-    const timeout = millisToNano(Date.now() + IBC_TIMEOUT_MILLIS);
+    const timeout = BigInt(millisToNano(Date.now() + IBC_TIMEOUT_MILLIS));
     const memo = JSON.stringify(payload);
 
     const ibcDenom =

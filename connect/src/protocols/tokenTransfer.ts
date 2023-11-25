@@ -2,6 +2,7 @@ import { Network, encoding } from "@wormhole-foundation/sdk-base";
 import {
   Signer,
   TokenBridge,
+  TokenId,
   TransactionId,
   TxHash,
   UnsignedTransaction,
@@ -120,8 +121,12 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
       // Bit of (temporary) hackery until solana contracts support being
       // sent a VAA with the primary address
       if (from.to.chain === "Solana") {
-        // Overwrite the dest address with the ATA
-        from.to = await wh.getTokenAccount(from.from.chain, from.token, from.to);
+        // source token id
+        const token: TokenId =
+          from.token === "native"
+            ? await wh.getChain(from.from.chain).getNativeWrappedTokenId()
+            : from.token;
+        from.to = await wh.getTokenAccount(from.to, token);
       }
 
       return new TokenTransfer(wh, from);
