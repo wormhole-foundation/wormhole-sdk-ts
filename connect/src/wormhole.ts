@@ -96,6 +96,15 @@ export class Wormhole<N extends Network> {
     )
       throw new Error(`Network and chain not supported: ${this.network} ${from.chain} `);
 
+    // ensure the amount is > fee + native gas
+    if (automatic) {
+      const acb = await this.getChain(from.chain).getAutomaticCircleBridge();
+      const relayerFee = await acb.getRelayerFee(to.chain);
+      const minAmount = relayerFee + (nativeGas ? nativeGas : 0n);
+      if (amount < minAmount)
+        throw new Error(`Amount must be > ${minAmount} (relayerFee + nativeGas)`);
+    }
+
     return await CircleTransfer.from(this, {
       amount,
       from,

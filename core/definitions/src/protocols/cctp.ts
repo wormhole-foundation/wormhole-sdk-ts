@@ -6,7 +6,7 @@ import {
   Platform,
   PlatformToChains,
   deserializeLayout,
-  encoding
+  encoding,
 } from "@wormhole-foundation/sdk-base";
 import { AccountAddress, ChainAddress } from "../address";
 import { CircleMessageId } from "../attestation";
@@ -14,7 +14,7 @@ import {
   amountItem,
   circleDomainItem,
   circleNonceItem,
-  universalAddressItem
+  universalAddressItem,
 } from "../layout-items";
 import "../payloads/connect";
 import { TokenId } from "../types";
@@ -67,7 +67,14 @@ export type CircleTransferMessage = {
   messageId: CircleMessageId;
 };
 
-export interface AutomaticCircleBridge<N extends Network, P extends Platform, C extends Chain = PlatformToChains<P>> {
+export interface AutomaticCircleBridge<
+  N extends Network,
+  P extends Platform,
+  C extends Chain = PlatformToChains<P>,
+> {
+  // Return the fee required by the relayer to cover the costs
+  // of redemption on the destination chain
+  getRelayerFee(destination: Chain): Promise<bigint>;
   transfer(
     sender: AccountAddress<C>,
     recipient: ChainAddress,
@@ -78,7 +85,11 @@ export interface AutomaticCircleBridge<N extends Network, P extends Platform, C 
 }
 
 // https://github.com/circlefin/evm-cctp-contracts
-export interface CircleBridge<N extends Network, P extends Platform, C extends PlatformToChains<P>> {
+export interface CircleBridge<
+  N extends Network,
+  P extends Platform,
+  C extends PlatformToChains<P>,
+> {
   redeem(
     sender: AccountAddress<C>,
     message: string,

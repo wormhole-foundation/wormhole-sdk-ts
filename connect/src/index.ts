@@ -8,6 +8,7 @@ export * from "./protocols/tokenTransfer";
 export * from "./protocols/cctpTransfer";
 export * from "./protocols/gatewayTransfer";
 
+export * as tasks from "./tasks";
 export * as circleApi from "./circle-api";
 export * as api from "./whscan-api";
 

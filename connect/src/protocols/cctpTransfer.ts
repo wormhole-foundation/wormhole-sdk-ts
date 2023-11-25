@@ -59,6 +59,11 @@ export class CircleTransfer<N extends Network> implements WormholeTransfer {
   }
 
   async getTransferState(): Promise<TransferState> {
+    //if (this.transfer.automatic) {
+    //  const { chain, emitter, sequence } = this.vaas[0].id;
+    //  const transactionStatus = await this.wh.getTransactionStatus(chain, emitter, sequence);
+    //  // https://relayer.dev.stable.io/v1/relays?txHash=0xbe8396debdcf3bfd94c51e59abbd9e68f856a408b972d52417c41763f8eb2c0c
+    //}
     return this.state;
   }
 

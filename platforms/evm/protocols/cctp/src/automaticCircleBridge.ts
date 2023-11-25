@@ -1,6 +1,7 @@
 import {
   AccountAddress,
   AutomaticCircleBridge,
+  Chain,
   ChainAddress,
   ChainsConfig,
   Contracts,
@@ -9,6 +10,7 @@ import {
   chainToChainId,
   circle,
   nativeChainIds,
+  toChainId,
 } from '@wormhole-foundation/connect-sdk';
 import { Provider, TransactionRequest } from 'ethers';
 
@@ -74,6 +76,14 @@ export class EvmAutomaticCircleBridge<N extends Network, C extends EvmChains>
       provider,
       conf.contracts,
     );
+  }
+
+  async getRelayerFee(destination: Chain): Promise<bigint> {
+    const tokenAddr = circle.usdcContract(
+      this.network as circle.CircleNetwork,
+      this.chain as circle.CircleChain,
+    );
+    return this.circleRelayer.relayerFee(toChainId(destination), tokenAddr);
   }
 
   async *transfer(

@@ -8,7 +8,7 @@ import {
   Platform,
 } from "@wormhole-foundation/connect-sdk";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
-import { TransferStuff, getStuff, waitLog } from "./helpers";
+import { TransferStuff, getStuff, waitForRelay } from "./helpers";
 
 import "@wormhole-foundation/connect-sdk-evm-cctp";
 import "@wormhole-foundation/connect-sdk-evm-core";
@@ -27,24 +27,29 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
 
   // Grab chain Contexts
   const sendChain = wh.getChain("Avalanche");
-  const rcvChain = wh.getChain("Ethereum");
+  const rcvChain = wh.getChain("Optimism");
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
   const source = await getStuff(sendChain);
   const destination = await getStuff(rcvChain);
 
-  // 6 decimals for USDC (mosltly)
+  // 6 decimals for USDC (mostly?)
   const amount = normalizeAmount("0.01", 6n);
 
   // Manual Circle USDC CCTP Transfer
-  await cctpTransfer(wh, amount, source, destination, false);
+  // await cctpTransfer(wh, amount, source, destination, false);
 
   // Automatic Circle USDC CCTP Transfer
-  // await cctpTransfer(wh, 19_000_000n, source, destination, true);
+  const fee = await sendChain
+    .getAutomaticCircleBridge()
+    .then((acb) => acb.getRelayerFee(rcvChain.chain));
+
+  await cctpTransfer(wh, amount + fee, source, destination, true);
 
   // Automatic Circle USDC CCTP Transfer With Gas Dropoff
-  // await cctpTransfer(wh, 2_100_000n, source, destination, true, 1_000_000n);
+  // const nativeGasAmt = 1_000_000n
+  // await cctpTransfer(wh, amount + fee, source, destination, true, nativeGasAmt);
 
   // Note: you can pick up a partial transfer from the origin chain name and txid
   // once created, you can call `fetchAttestations` and `completeTransfer` assuming its a manual transfer.
@@ -54,8 +59,8 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
   // await completeTransfer(
   //   wh,
   //   {
-  //     chain: "Avalanche",
-  //     txid: "0x6b6d5f101a32aa6d2f7bf0bf14d72bfbf76a640e1b2fdbbeeac5b82069cda4dd",
+  //     chain: "Optimism",
+  //     txid: "0x3c0d774218efefdd274a09972475cb016fc4f13525b1bba59c56c87fe7f6f964",
   //   },
   //   destination.signer,
   // );
@@ -83,7 +88,11 @@ async function cctpTransfer<N extends Network>(
   const srcTxids = await xfer.initiateTransfer(src.signer);
   console.log(`Started Transfer: `, srcTxids);
 
-  if (automatic) return waitLog(xfer);
+  if (automatic) {
+    const relayStatus = await waitForRelay(srcTxids[srcTxids.length - 1]);
+    console.log(`Finished relay: `, relayStatus);
+    return;
+  }
 
   console.log("Waiting for Attestation");
   const attestIds = await xfer.fetchAttestation();

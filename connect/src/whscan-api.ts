@@ -73,35 +73,6 @@ export async function getVaaWithRetry<T extends PayloadLiteral | PayloadDiscrimi
   return deserialize(decodeAs, vaaBytes);
 }
 
-/**
- * Gets the status for a transaction given WormholeMessageId or `null` if the VAA is not available yet.
- * @param rpcUrl the url of the wormholescan API
- * @param whm the WormholeMessageId
- * @returns a TransactionStatus or `null` if it's not available yet
- * @throws Errors if the service throws an unrecoverable error (e.g. 500)
- */
-export async function getTransactionStatus(
-  rpcUrl: string,
-  whm: WormholeMessageId,
-): Promise<TransactionStatus | null> {
-  const { chain, emitter, sequence } = whm;
-  const chainId = toChainId(chain);
-  const emitterAddress = emitter.toUniversalAddress().toString();
-  const url = `${rpcUrl}/api/v1/transactions/${chainId}/${emitterAddress}/${sequence}`;
-
-  try {
-    const response = await axios.get<TransactionStatus>(url);
-    return response.data;
-  } catch (error) {
-    // This is a 404 error, which means the VAA is not yet available
-    // since its not available yet, we return null signaling it can be tried again
-    if (!(axios.isAxiosError(error) && error?.response?.status === 404)) {
-      return null;
-    }
-    throw error;
-  }
-}
-
 // TransactionStatus returned by wormholescan
 export interface TransactionStatus {
   id: string;
@@ -155,4 +126,97 @@ export interface TransactionStatus {
       updatedAt: string;
     };
   };
+}
+
+/**
+ * Gets the status for a transaction given WormholeMessageId or `null` if the VAA is not available yet.
+ * @param rpcUrl the url of the wormholescan API
+ * @param whm the WormholeMessageId
+ * @returns a TransactionStatus or `null` if it's not available yet
+ * @throws Errors if the service throws an unrecoverable error (e.g. 500)
+ */
+export async function getTransactionStatus(
+  rpcUrl: string,
+  whm: WormholeMessageId,
+): Promise<TransactionStatus | null> {
+  const { chain, emitter, sequence } = whm;
+  const chainId = toChainId(chain);
+  const emitterAddress = emitter.toUniversalAddress().toString();
+  const url = `${rpcUrl}/api/v1/transactions/${chainId}/${emitterAddress}/${sequence}`;
+
+  try {
+    const response = await axios.get<TransactionStatus>(url);
+    return response.data;
+  } catch (error) {
+    if (!error) return null;
+
+    if (typeof error === "object") {
+      // A 404 error means the VAA is not yet available
+      // since its not available yet, we return null signaling it can be tried again
+      if (axios.isAxiosError(error) && error.response?.status === 404) return null;
+      if ("status" in error && error.status === 404) return null;
+    }
+
+    throw error;
+  }
+}
+
+export interface RelayData {
+  from: {
+    chain: string;
+    chainId: number;
+    txHash: string;
+    senderAddress: string;
+    symbol: string;
+    amountSent: number;
+    amountToSwap: number;
+    estimatedNativeAssetAmount: number;
+  };
+  vaa: string;
+  status: string;
+  fee: {
+    amount: number;
+    symbol: string;
+  };
+  error: any;
+  to: {
+    chain: string;
+    chainId: number;
+    recipientAddress: string;
+    txHash: string;
+    gasUsed: number;
+    nativeAssetSymbol: string;
+    nativeAssetReceived: number;
+  };
+  metrics: {
+    receivedAt: string;
+    completedAt: string;
+    failedAt: any;
+    attempts: number;
+    maxAttempts: number;
+    waitingForTxInMs: number;
+    waitingForWalletInMs: number;
+  };
+}
+
+export async function getRelayStatus(rpcUrl: string, txid: string): Promise<RelayData | null> {
+  const url = `${rpcUrl}/v1/relays?txHash=${txid}`;
+
+  try {
+    const response = await axios.get<{ data: RelayData }>(url);
+    if (response.data.data.to.txHash) return response.data.data;
+  } catch (error) {
+    if (!error) return null;
+
+    if (typeof error === "object") {
+      // A 404 error means the VAA is not yet available
+      // since its not available yet, we return null signaling it can be tried again
+      if (axios.isAxiosError(error) && error.response?.status === 404) return null;
+      if ("status" in error && error.status === 404) return null;
+    }
+
+    throw error;
+  }
+
+  return null;
 }
