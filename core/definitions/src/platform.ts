@@ -5,12 +5,13 @@ import {
   PlatformToChains,
   ProtocolName,
 } from "@wormhole-foundation/sdk-base";
+import { WormholeCore } from ".";
+import { TokenAddress } from "./address";
 import { WormholeMessageId } from "./attestation";
 import { ChainContext } from "./chain";
+import { create } from "./protocol";
 import { RpcConnection } from "./rpc";
-import { TokenAddress } from "./address";
 import { Balances, ChainsConfig, SignedTx, TokenId, TxHash } from "./types";
-import { ProtocolInitializer } from "./protocol";
 
 // PlatformUtils represents the _static_ attributes available on
 // the PlatformContext Class
@@ -20,9 +21,6 @@ export interface PlatformUtils<N extends Network, P extends Platform> {
 
   // Initialize a new PlatformContext object
   new (network: N, config?: ChainsConfig<N, P>): PlatformContext<N, P>;
-
-  // Get a protocol name
-  getProtocolInitializer<PN extends ProtocolName>(protocol: PN): ProtocolInitializer<P, PN>;
 
   // Check if this chain is supported by this platform
   // Note: purposely not adding generic parameters
@@ -89,6 +87,11 @@ export abstract class PlatformContext<N extends Network, P extends Platform> {
     readonly config: ChainsConfig<N, P>,
   ) {}
 
+  // provides access to the static attributes of the PlatformContext class
+  utils(): PlatformUtils<N, P> {
+    return this.constructor as any;
+  }
+
   // Create a _new_ RPC Connection
   abstract getRpc<C extends PlatformToChains<P>>(chain: C): RpcConnection<P>;
 
@@ -96,12 +99,17 @@ export abstract class PlatformContext<N extends Network, P extends Platform> {
   abstract getChain<C extends PlatformToChains<P>>(chain: C): ChainContext<N, P, C>;
 
   // Create a new Protocol Client instance by protocol name
-  abstract getProtocol<PN extends ProtocolName, T>(protocol: PN, rpc: RpcConnection<P>): Promise<T>;
+  getProtocol<PN extends ProtocolName, T>(protocol: PN, rpc: RpcConnection<P>): Promise<T> {
+    return create(this.utils()._platform, protocol, rpc, this.config);
+  }
 
   // Look up transaction logs and parse out Wormhole messages
-  abstract parseTransaction<C extends PlatformToChains<P>>(
+  async parseWormholeMessages<C extends PlatformToChains<P>>(
     chain: C,
     rpc: RpcConnection<P>,
     txid: TxHash,
-  ): Promise<WormholeMessageId[]>;
+  ): Promise<WormholeMessageId[]> {
+    const wc: WormholeCore<N, P, C> = await this.getProtocol("WormholeCore", rpc);
+    return wc.parseTransaction(txid);
+  }
 }

@@ -8,11 +8,11 @@ import {
 
 import { TokenAddress } from "./address";
 import { WormholeMessageId } from "./attestation";
-import { PlatformContext, PlatformUtils } from "./platform";
+import { PlatformContext } from "./platform";
+import { protocolIsRegistered } from "./protocol";
 import { AutomaticCircleBridge, CircleBridge } from "./protocols/cctp";
 import { IbcBridge } from "./protocols/ibc";
 import { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge";
-import { protocolIsRegistered } from "./protocol";
 import { RpcConnection } from "./rpc";
 import { ChainConfig, SignedTx } from "./types";
 
@@ -24,7 +24,6 @@ export abstract class ChainContext<
   readonly network: N;
 
   readonly platform: PlatformContext<N, P>;
-  readonly platformUtils: PlatformUtils<N, P>;
 
   readonly chain: C;
   readonly config: ChainConfig<N, C>;
@@ -40,7 +39,6 @@ export abstract class ChainContext<
   constructor(chain: C, platform: PlatformContext<N, P>) {
     this.config = platform.config[chain];
     this.platform = platform;
-    this.platformUtils = platform.constructor as any as PlatformUtils<N, P>;
     this.chain = this.config.key;
     this.network = this.config.network;
   }
@@ -52,29 +50,30 @@ export abstract class ChainContext<
 
   // Get the number of decimals for a token
   async getDecimals(token: TokenAddress<C>): Promise<bigint> {
-    return this.platformUtils.getDecimals(this.chain, this.getRpc(), token);
+    return this.platform.utils().getDecimals(this.chain, this.getRpc(), token);
   }
 
   // Get the balance of a token for a given address
   async getBalance(walletAddr: string, token: TokenAddress<C>): Promise<bigint | null> {
-    return this.platformUtils.getBalance(this.chain, await this.getRpc(), walletAddr, token);
+    return this.platform.utils().getBalance(this.chain, await this.getRpc(), walletAddr, token);
   }
 
   async getLatestBlock(): Promise<number> {
-    return this.platformUtils.getLatestBlock(this.getRpc());
+    return this.platform.utils().getLatestBlock(this.getRpc());
   }
+
   async getLatestFinalizedBlock(): Promise<number> {
-    return this.platformUtils.getLatestFinalizedBlock(this.getRpc());
+    return this.platform.utils().getLatestFinalizedBlock(this.getRpc());
   }
 
   // Get details about the transaction
   async parseTransaction(txid: string): Promise<WormholeMessageId[]> {
-    return this.platform.parseTransaction(this.chain, await this.getRpc(), txid);
+    return this.platform.parseWormholeMessages(this.chain, await this.getRpc(), txid);
   }
 
   // Send a transaction and wait for it to be confirmed
   async sendWait(stxns: SignedTx): Promise<string[]> {
-    return this.platformUtils.sendWait(this.chain, await this.getRpc(), stxns);
+    return this.platform.utils().sendWait(this.chain, await this.getRpc(), stxns);
   }
 
   //

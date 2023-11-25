@@ -4,18 +4,12 @@ import {
   ChainsConfig,
   Network,
   PlatformContext,
-  ProtocolImplementation,
-  ProtocolInitializer,
-  ProtocolName,
   SignedTx,
   TokenId,
   TxHash,
-  WormholeCore,
-  WormholeMessageId,
   chainToPlatform,
   decimals,
   encoding,
-  getProtocolInitializer,
   nativeChainAddress,
   nativeChainIds,
   networkPlatformConfigs,
@@ -53,28 +47,6 @@ export class EvmPlatform<N extends Network> extends PlatformContext<
   getChain<C extends EvmChains>(chain: C): EvmChain<N, C> {
     if (chain in this.config) return new EvmChain<N, C>(chain, this);
     throw new Error('No configuration available for chain: ' + chain);
-  }
-
-  async getProtocol<PN extends ProtocolName>(
-    protocol: PN,
-    rpc: Provider,
-  ): Promise<ProtocolImplementation<EvmPlatformType, PN>> {
-    return EvmPlatform.getProtocolInitializer(protocol).fromRpc(
-      rpc,
-      this.config,
-    );
-  }
-
-  async parseTransaction<C extends EvmChains>(
-    chain: C,
-    rpc: Provider,
-    txid: TxHash,
-  ): Promise<WormholeMessageId[]> {
-    const wc: WormholeCore<N, EvmPlatformType, C> = await this.getProtocol(
-      'WormholeCore',
-      rpc,
-    );
-    return wc.parseTransaction(txid);
   }
 
   static nativeTokenId<N extends Network, C extends EvmChains>(
@@ -208,11 +180,5 @@ export class EvmPlatform<N extends Network> extends PlatformContext<
     if (!ti)
       throw new Error(`No token implementation available for: ${address}`);
     return ti;
-  }
-
-  static getProtocolInitializer<PN extends ProtocolName>(
-    protocol: PN,
-  ): ProtocolInitializer<EvmPlatformType, PN> {
-    return getProtocolInitializer(this._platform, protocol);
   }
 }

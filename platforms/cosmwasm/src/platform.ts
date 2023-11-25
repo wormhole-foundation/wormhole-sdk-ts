@@ -13,15 +13,9 @@ import {
   ChainsConfig,
   Network,
   PlatformContext,
-  ProtocolImplementation,
-  ProtocolInitializer,
-  ProtocolName,
   SignedTx,
   TxHash,
-  WormholeCore,
-  WormholeMessageId,
   decimals,
-  getProtocolInitializer,
   nativeChainIds,
   networkPlatformConfigs,
 } from "@wormhole-foundation/connect-sdk";
@@ -65,25 +59,6 @@ export class CosmwasmPlatform<N extends Network> extends PlatformContext<N, Cosm
   getChain<C extends CosmwasmChains>(chain: C): CosmwasmChain<N, C> {
     if (chain in this.config) return new CosmwasmChain<N, C>(chain, this);
     throw new Error("No configuration available for chain: " + chain);
-  }
-
-  async getProtocol<PN extends ProtocolName>(
-    protocol: PN,
-    rpc: CosmWasmClient,
-  ): Promise<ProtocolImplementation<CosmwasmPlatformType, PN>> {
-    return CosmwasmPlatform.getProtocolInitializer(protocol).fromRpc(rpc, this.config);
-  }
-
-  async parseTransaction<C extends CosmwasmChains>(
-    chain: C,
-    rpc: CosmWasmClient,
-    txid: TxHash,
-  ): Promise<WormholeMessageId[]> {
-    const core: WormholeCore<N, CosmwasmPlatformType, C> = await this.getProtocol(
-      "WormholeCore",
-      rpc,
-    );
-    return core.parseTransaction(txid);
   }
 
   static getQueryClient = (rpc: CosmWasmClient): QueryClient & BankExtension & IbcExtension => {
@@ -224,11 +199,5 @@ export class CosmwasmPlatform<N extends Network> extends PlatformContext<N, Cosm
     const queryClient = CosmwasmPlatform.getQueryClient(rpc);
     const conn = await queryClient.ibc.channel.channel(IBC_TRANSFER_PORT, sourceChannel);
     return conn.channel?.counterparty?.channelId ?? null;
-  }
-
-  static getProtocolInitializer<PN extends ProtocolName>(
-    protocol: PN,
-  ): ProtocolInitializer<CosmwasmPlatformType, PN> {
-    return getProtocolInitializer(this._platform, protocol);
   }
 }

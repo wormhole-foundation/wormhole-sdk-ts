@@ -44,8 +44,8 @@ export async function getStuff<
   C extends PlatformToChains<P>,
 >(chain: ChainContext<N, P, C>): Promise<TransferStuff<N, P, C>> {
   let signer: Signer;
-
-  switch (chain.platformUtils._platform) {
+  const platform = chain.platform.utils()._platform;
+  switch (platform) {
     case "Solana":
       signer = await getSolanaSigner(await chain.getRpc(), getEnv("SOL_PRIVATE_KEY"));
       break;
@@ -56,7 +56,7 @@ export async function getStuff<
       signer = await getEvmSigner(await chain.getRpc(), getEnv("ETH_PRIVATE_KEY"));
       break;
     default:
-      throw new Error("Unrecognized platform: " + chain.platformUtils._platform);
+      throw new Error("Unrecognized platform: " + platform);
   }
 
   return { chain, signer, address: nativeChainAddress(chain.chain, signer.address()) };

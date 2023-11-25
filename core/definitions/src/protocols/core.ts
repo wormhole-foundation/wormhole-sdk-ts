@@ -4,10 +4,14 @@ import { AccountAddress } from "../address";
 import { WormholeMessageId } from "../attestation";
 import { TxHash } from "../types";
 import { UnsignedTransaction } from "../unsignedTransaction";
-export interface WormholeCore<N extends Network, P extends Platform, C extends PlatformToChains<P>> {
+export interface WormholeCore<
+  N extends Network,
+  P extends Platform,
+  C extends PlatformToChains<P>,
+> {
   publishMessage(
     sender: AccountAddress<C>,
-    message: string | Uint8Array
+    message: string | Uint8Array,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
   parseTransaction(txid: TxHash): Promise<WormholeMessageId[]>;
   // TODO: events?

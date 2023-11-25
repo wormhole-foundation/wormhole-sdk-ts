@@ -9,6 +9,8 @@ export type WormholeMessageId = {
   chain: Chain;
   emitter: UniversalAddress;
   sequence: SequenceId;
+  // TODO
+  vaa?: VAA;
 };
 export function isWormholeMessageId(thing: WormholeMessageId | any): thing is WormholeMessageId {
   return (

@@ -4,17 +4,11 @@ import {
   ChainsConfig,
   Network,
   PlatformContext,
-  ProtocolImplementation,
-  ProtocolInitializer,
-  ProtocolName,
   SignedTx,
   TokenId,
   TxHash,
-  WormholeCore,
-  WormholeMessageId,
   chainToPlatform,
   decimals,
-  getProtocolInitializer,
   nativeChainAddress,
   nativeChainIds,
   networkPlatformConfigs,
@@ -65,27 +59,6 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
   getChain<C extends SolanaChains>(chain: C): SolanaChain<N, C> {
     if (chain in this.config) return new SolanaChain<N, C>(chain, this);
     throw new Error('No configuration available for chain: ' + chain);
-  }
-
-  async getProtocol<PN extends ProtocolName>(
-    protocol: PN,
-    rpc: Connection,
-  ): Promise<ProtocolImplementation<SolanaPlatformType, PN>> {
-    return SolanaPlatform.getProtocolInitializer(protocol).fromRpc(
-      rpc,
-      this.config,
-    );
-  }
-  async parseTransaction<C extends SolanaChains>(
-    chain: C,
-    rpc: Connection,
-    tx: string,
-  ): Promise<WormholeMessageId[]> {
-    const wc: WormholeCore<N, SolanaPlatformType, C> = await this.getProtocol(
-      'WormholeCore',
-      rpc,
-    );
-    return wc.parseTransaction(tx);
   }
 
   static nativeTokenId<N extends Network, C extends SolanaChains>(
@@ -216,7 +189,8 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
   }
 
   static async getLatestFinalizedBlock(rpc: Connection): Promise<number> {
-    return await rpc.getSlot(rpc.commitment);
+    throw new Error('Not implemented');
+    //return await rpc.getSlot(rpc.commitment);
   }
 
   static chainFromChainId(genesisHash: string): [Network, SolanaChains] {
@@ -236,14 +210,7 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
   }
 
   static async chainFromRpc(rpc: Connection): Promise<[Network, SolanaChains]> {
-    const conn = rpc as Connection;
-    const gh = await conn.getGenesisHash();
+    const gh = await rpc.getGenesisHash();
     return SolanaPlatform.chainFromChainId(gh);
-  }
-
-  static getProtocolInitializer<PN extends ProtocolName>(
-    protocol: PN,
-  ): ProtocolInitializer<typeof SolanaPlatform._platform, PN> {
-    return getProtocolInitializer(this._platform, protocol);
   }
 }

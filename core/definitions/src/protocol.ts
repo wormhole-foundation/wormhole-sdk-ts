@@ -1,10 +1,10 @@
 import {
   Chain,
-  isChain,
-  Platform,
-  chainToPlatform,
-  ProtocolName,
   Network,
+  Platform,
+  ProtocolName,
+  chainToPlatform,
+  isChain,
 } from "@wormhole-foundation/sdk-base";
 import { RpcConnection } from "./rpc";
 import { ChainsConfig } from "./types";
@@ -76,3 +76,13 @@ export function getProtocolInitializer<P extends Platform, PN extends ProtocolNa
 
   return pctr as ProtocolInitializer<P, PN>;
 }
+
+export const create = <N extends Network, P extends Platform, PN extends ProtocolName, T>(
+  platform: P,
+  protocol: PN,
+  rpc: RpcConnection<P>,
+  config: ChainsConfig<N, P>,
+): Promise<T> => {
+  const pctr = getProtocolInitializer(platform, protocol);
+  return pctr.fromRpc(rpc, config) as Promise<T>;
+};

@@ -13,8 +13,6 @@ import {
   RpcConnection,
   TokenAddress,
   TokenId,
-  TxHash,
-  WormholeMessageId,
 } from "../..";
 import { MockChain } from "./chain";
 import { MockRpc } from "./rpc";
@@ -27,22 +25,17 @@ export function mockPlatformFactory<N extends Network, P extends Platform>(
     static _platform: P = platform;
     constructor(network: N, _config?: ChainsConfig<N, P>) {
       super(network, _config ? _config : config);
-      this.network = network;
     }
   }
   // @ts-ignore
-  return ConcreteMockPlatform<N>;
+  return ConcreteMockPlatform;
 }
 
 // Note: don't use this directly, instead create a ConcreteMockPlatform with the
 // mockPlatformFactory
-export class MockPlatform<N extends Network, P extends Platform> implements PlatformContext<N, P> {
-  network: N;
-  config: ChainsConfig<N, P>;
-
+export class MockPlatform<N extends Network, P extends Platform> extends PlatformContext<N, P> {
   constructor(network: N, config: ChainsConfig<N, P>) {
-    this.network = network;
-    this.config = config;
+    super(network, config);
   }
 
   static getProtocol<PN extends ProtocolName, T extends any>(protocol: PN): T {
@@ -127,18 +120,6 @@ export class MockPlatform<N extends Network, P extends Platform> implements Plat
   }
   async getNativeBalance(rpc: RpcConnection<P>, walletAddr: string): Promise<bigint> {
     return 0n;
-  }
-
-  async parseTransaction<C extends PlatformToChains<P>>(
-    chain: C,
-    rpc: RpcConnection<P>,
-    txid: TxHash,
-  ): Promise<WormholeMessageId[]> {
-    throw new Error("Method not implemented");
-  }
-
-  getProtocol<PN extends ProtocolName, T extends any>(protocol: PN): T {
-    throw new Error("Method not implemented.");
   }
 
   getDecimals<C extends PlatformToChains<P>>(

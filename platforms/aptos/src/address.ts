@@ -96,6 +96,4 @@ export class AptosAddress implements Address {
   }
 }
 
-try {
-  registerNative("Aptos", AptosAddress);
-} catch {}
+registerNative("Aptos", AptosAddress);
