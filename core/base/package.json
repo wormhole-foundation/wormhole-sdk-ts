@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-base",
-  "version": "0.2.0-beta.3",
+  "version": "0.2.0-beta.4",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -17,8 +17,7 @@
   "module": "./dist/esm/index.js",
   "types": "./dist/esm/index.d.ts",
   "files": [
-    "dist/**/*",
-    "src/**/*"
+    "dist/**/*"
   ],
   "dependencies": {
     "@scure/base": "^1.1.3"

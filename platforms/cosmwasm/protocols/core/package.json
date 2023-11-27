@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/connect-sdk-cosmwasm-core",
-  "version": "0.2.0-beta.3",
+  "version": "0.2.0-beta.4",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -19,8 +19,7 @@
   "author": "",
   "description": "SDK for EVM chains, used in conjunction with @wormhole-foundation/connect-sdk",
   "files": [
-    "dist/**/*",
-    "src/**/*"
+    "dist/**/*"
   ],
   "keywords": [
     "wormhole",
@@ -50,8 +49,8 @@
     "prettier": "prettier --write ./src"
   },
   "dependencies": {
-    "@wormhole-foundation/connect-sdk": "^0.2.0-beta.3",
-    "@wormhole-foundation/connect-sdk-cosmwasm": "^0.2.0-beta.3",
+    "@wormhole-foundation/connect-sdk": "^0.2.0-beta.4",
+    "@wormhole-foundation/connect-sdk-cosmwasm": "^0.2.0-beta.4",
     "@cosmjs/cosmwasm-stargate": "^0.32.0",
     "@cosmjs/stargate": "^0.32.0",
     "cosmjs-types": "^0.9.0"

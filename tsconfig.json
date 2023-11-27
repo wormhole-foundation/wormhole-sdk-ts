@@ -7,6 +7,7 @@
     "strict": true,
     "resolveJsonModule": true,
     "moduleResolution": "node",
+    "incremental": true,
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -17,13 +18,13 @@
     "noImplicitAny": true,
     "strictNullChecks": true,
     "useUnknownInCatchVariables": true,
-    "strictPropertyInitialization": false,
+    "strictPropertyInitialization": true,
     "strictFunctionTypes": true,
     "noImplicitThis": true,
     "strictBindCallApply": true,
     "noPropertyAccessFromIndexSignature": true,
     "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": false,
+    //"exactOptionalPropertyTypes": false,
     // Linter Checks
     "noImplicitReturns": false,
     "noImplicitOverride": true,
@@ -43,6 +44,6 @@
     "noImplicitUseStrict": false,
     "suppressExcessPropertyErrors": false,
     "suppressImplicitAnyIndexErrors": false,
-    "noStrictGenericChecks": false
+    "noStrictGenericChecks": false,
   }
 }
