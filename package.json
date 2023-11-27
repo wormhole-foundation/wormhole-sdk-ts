@@ -6,7 +6,6 @@
     "test": "__tests__"
   },
   "devDependencies": {
-    "@jsdevtools/version-bump-prompt": "^6.1.0",
     "@types/chai": "^4.3.5",
     "@types/jest": "^29.5.3",
     "@types/lodash": "^4.14.197",
@@ -24,6 +23,7 @@
     "typescript": "^5.1.6"
   },
   "scripts": {
+    "sync":"tsx syncVersion.ts",
     "lint": "npm run lint --workspaces --if-present",
     "build": "npm run build --workspaces --if-present",
     "rebuild": "npm run rebuild --workspaces --if-present",
@@ -31,7 +31,6 @@
     "coverage": "npm run coverage --workspaces --if-present",
     "clean": "npm run clean --workspaces --if-present",
     "prettier": "npm run prettier --workspaces --if-present",
-    "bump:beta": "bump prerelease && npm run bump:beta --workspaces --if-present",
     "test:tilt": "jest --verbose --config ./jest.config.ts --roots ./__tests__/tilt",
     "test": "NETWORK=Mainnet npm run test --workspaces --if-present",
     "docs": "NODE_OPTIONS=--max_old_space_size=8192 typedoc --options typedoc.json"
@@ -50,13 +49,13 @@
     "platforms/cosmwasm",
     "platforms/cosmwasm/protocols/core",
     "platforms/cosmwasm/protocols/tokenBridge",
-    "platforms/cosmwasm/protocols/ibc",
+    "platforms/cosmwasm/protocols/ibc"
+  ],
+  "unreleased": [
+    "core/tokenRegistry",
     "platforms/aptos",
     "platforms/aptos/protocols/core",
     "platforms/aptos/protocols/tokenBridge",
     "examples"
-  ],
-  "nothing": [
-    "core/tokenRegistry"
   ]
 }

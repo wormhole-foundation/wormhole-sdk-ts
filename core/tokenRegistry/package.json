@@ -27,7 +27,6 @@
     "rebuild": "npm run clean && npm run build:cjs && npm run build:esm",
     "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo",
     "lint": "npm run prettier && eslint --fix",
-    "bump:beta": "bump prerelease",
     "prettier": "prettier --write ./src",
     "updateForeignAssets": "npx ts-node ./src/scripts/updateForeignAssetConfig"
   },

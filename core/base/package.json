@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-base",
-  "version": "0.2.0-beta.1",
+  "version": "0.2.0-beta.2",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -33,7 +33,6 @@
     "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo",
     "typecheck": "cp ./__tests__/typechecks/index.test-d.ts ./dist/esm/ && tsd",
     "lint": "npm run prettier && eslint --fix",
-    "bump:beta": "bump prerelease",
     "prettier": "prettier --write ./src"
   }
 }

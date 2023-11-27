@@ -70,7 +70,7 @@ const nativeFactory = new Map<Platform, NativeAddressCtr>();
 
 export function registerNative<P extends Platform>(platform: P, ctr: NativeAddressCtr): void {
   if (nativeFactory.has(platform)) {
-    console.error("Native address type for platform %s has already registered", platform);
+    console.warn("Native address type for platform %s has already registered", platform);
     //throw new Error(`Native address type for platform ${platform} has already registered`);
     return;
   }

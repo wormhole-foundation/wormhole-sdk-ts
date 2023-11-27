@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/connect-sdk-examples",
-  "version": "0.2.0-beta.1",
+  "version": "0.2.0-beta.2",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -46,7 +46,6 @@
     "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo",
     "lint": "npm run prettier && eslint --fix",
     "prettier": "prettier --write ./src",
-    "bump:beta": "bump prerelease",
     "coverage": "jest --config ../jest.config.ts --coverage",
     "docs": "typedoc"
   },
@@ -54,14 +53,14 @@
     "dotenv": "^16.3.1"
   },
   "dependencies": {
-    "@wormhole-foundation/connect-sdk": "*",
-    "@wormhole-foundation/connect-sdk-solana": "*",
-    "@wormhole-foundation/connect-sdk-evm": "*",
-    "@wormhole-foundation/connect-sdk-cosmwasm": "*",
-    "@wormhole-foundation/connect-sdk-evm-tokenbridge": "*",
-    "@wormhole-foundation/connect-sdk-evm-cctp": "*",
-    "@wormhole-foundation/connect-sdk-cosmwasm-core": "*",
-    "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge": "*",
-    "@wormhole-foundation/connect-sdk-cosmwasm-ibc": "*"
+    "@wormhole-foundation/connect-sdk": "^0.2.0-beta.2",
+    "@wormhole-foundation/connect-sdk-solana": "^0.2.0-beta.2",
+    "@wormhole-foundation/connect-sdk-evm": "^0.2.0-beta.2",
+    "@wormhole-foundation/connect-sdk-cosmwasm": "^0.2.0-beta.2",
+    "@wormhole-foundation/connect-sdk-evm-tokenbridge": "^0.2.0-beta.2",
+    "@wormhole-foundation/connect-sdk-evm-cctp": "^0.2.0-beta.2",
+    "@wormhole-foundation/connect-sdk-cosmwasm-core": "^0.2.0-beta.2",
+    "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge": "^0.2.0-beta.2",
+    "@wormhole-foundation/connect-sdk-cosmwasm-ibc": "^0.2.0-beta.2"
   }
 }
