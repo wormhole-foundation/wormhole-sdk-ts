@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/connect-sdk-evm-tokenbridge",
-  "version": "0.2.0-beta.0",
+  "version": "0.2.0-beta.1",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -49,15 +49,6 @@
     "lint": "npm run prettier && eslint --fix",
     "bump:beta": "bump prerelease",
     "prettier": "prettier --write ./src"
-  },
-  "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^5.54.1",
-    "@typescript-eslint/parser": "^5.54.1",
-    "eslint": "^8.35.0",
-    "eslint-config-prettier": "^8.7.0",
-    "lint-staged": "^13.1.2",
-    "prettier": "2.8.4",
-    "typescript": "5.1.6"
   },
   "dependencies": {
     "@wormhole-foundation/connect-sdk": "*",

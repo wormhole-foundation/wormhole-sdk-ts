@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/connect-sdk",
-  "version": "0.2.0-beta.0",
+  "version": "0.2.0-beta.1",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -29,8 +29,7 @@
     "connect"
   ],
   "engines": {
-    "node": ">=16",
-    "pnpm": ">=7"
+    "node": ">=16"
   },
   "sideEffects": false,
   "scripts": {
@@ -46,20 +45,9 @@
     "bump:beta": "bump prerelease",
     "docs": "typedoc"
   },
-  "devDependencies": {
-    "@types/elliptic": "^6.4.14",
-    "@types/node": "^20.4.4",
-    "@typescript-eslint/eslint-plugin": "^5.54.1",
-    "@typescript-eslint/parser": "^5.54.1",
-    "eslint": "^8.35.0",
-    "eslint-config-prettier": "^8.7.0",
-    "lint-staged": "^13.1.2",
-    "prettier": "2.8.4",
-    "typescript": "^5.1.6"
-  },
   "dependencies": {
     "axios": "^1.4.0",
-    "@wormhole-foundation/sdk-base": "^0.2.0-beta.0",
-    "@wormhole-foundation/sdk-definitions": "^0.2.0-beta.0"
+    "@wormhole-foundation/sdk-base": "^0.2.0-beta.1",
+    "@wormhole-foundation/sdk-definitions": "^0.2.0-beta.1"
   }
 }
