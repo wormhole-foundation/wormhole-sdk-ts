@@ -56,8 +56,11 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
     throw new Error('No configuration available for chain: ' + chain);
   }
 
-  getChain<C extends SolanaChains>(chain: C): SolanaChain<N, C> {
-    if (chain in this.config) return new SolanaChain<N, C>(chain, this);
+  getChain<C extends SolanaChains>(
+    chain: C,
+    rpc?: Connection,
+  ): SolanaChain<N, C> {
+    if (chain in this.config) return new SolanaChain<N, C>(chain, this, rpc);
     throw new Error('No configuration available for chain: ' + chain);
   }
 

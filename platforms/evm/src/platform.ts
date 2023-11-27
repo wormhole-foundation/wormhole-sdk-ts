@@ -45,8 +45,8 @@ export class EvmPlatform<N extends Network> extends PlatformContext<
     throw new Error('No configuration available for chain: ' + chain);
   }
 
-  getChain<C extends EvmChains>(chain: C): EvmChain<N, C> {
-    if (chain in this.config) return new EvmChain<N, C>(chain, this);
+  getChain<C extends EvmChains>(chain: C, rpc?: Provider): EvmChain<N, C> {
+    if (chain in this.config) return new EvmChain<N, C>(chain, this, rpc);
     throw new Error('No configuration available for chain: ' + chain);
   }
 

@@ -96,7 +96,10 @@ export abstract class PlatformContext<N extends Network, P extends Platform> {
   abstract getRpc<C extends PlatformToChains<P>>(chain: C): RpcConnection<P>;
 
   // Create a new Chain context object
-  abstract getChain<C extends PlatformToChains<P>>(chain: C): ChainContext<N, P, C>;
+  abstract getChain<C extends PlatformToChains<P>>(
+    chain: C,
+    rpc?: RpcConnection<P>,
+  ): ChainContext<N, P, C>;
 
   // Create a new Protocol Client instance by protocol name
   getProtocol<PN extends ProtocolName, T>(protocol: PN, rpc: RpcConnection<P>): Promise<T> {

@@ -28,7 +28,7 @@ export class AptosPlatform<N extends Network> extends PlatformContext<N, AptosPl
     throw new Error("No configuration available for chain: " + chain);
   }
 
-  getChain<C extends AptosChains>(chain: C): AptosChain<N, C> {
+  getChain<C extends AptosChains>(chain: C, rpc?: AptosClient): AptosChain<N, C> {
     if (chain in this.config) return new AptosChain(chain, this);
     throw new Error("No configuration available for chain: " + chain);
   }

@@ -36,11 +36,12 @@ export abstract class ChainContext<
   protected autoCircleBridge?: AutomaticCircleBridge<N, P, C>;
   protected ibcBridge?: IbcBridge<N, P, C>;
 
-  constructor(chain: C, platform: PlatformContext<N, P>) {
+  constructor(chain: C, platform: PlatformContext<N, P>, rpc?: RpcConnection<P>) {
     this.config = platform.config[chain]!;
     this.platform = platform;
     this.chain = this.config.key;
     this.network = this.config.network;
+    this.rpc = rpc;
   }
 
   getRpc(): Promise<RpcConnection<P>> {
