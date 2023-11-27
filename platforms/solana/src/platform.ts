@@ -52,7 +52,7 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
     commitment: Commitment = 'confirmed',
   ): Connection {
     if (chain in this.config)
-      return new Connection(this.config[chain].rpc, commitment);
+      return new Connection(this.config[chain]!.rpc, commitment);
     throw new Error('No configuration available for chain: ' + chain);
   }
 

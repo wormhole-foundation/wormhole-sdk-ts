@@ -14,7 +14,7 @@ const fixedLengthStringItem = {
   custom: {
     to: (val: Uint8Array) =>
       range(val.byteLength)
-        .map((i) => String.fromCharCode(val[i]))
+        .map((i) => String.fromCharCode(val[i]!))
         .join(""),
     from: (str: string) =>
       new Uint8Array(str.split("").map((c) => c.charCodeAt(0))),

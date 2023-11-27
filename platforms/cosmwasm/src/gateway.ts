@@ -24,11 +24,11 @@ export class Gateway<N extends Network> extends ChainContext<
   static chain: "Wormchain" = "Wormchain";
 
   static gatewayAddress = (network: Network): string =>
-    CONFIG[network].chains[Gateway.chain].contracts.gateway;
+    CONFIG[network].chains[Gateway.chain]!.contracts.gateway!;
   static tokenBridgeAddress = (network: Network): string =>
-    CONFIG[network].chains[Gateway.chain].contracts.tokenBridge;
+    CONFIG[network].chains[Gateway.chain]!.contracts.tokenBridge!;
   static coreAddress = (network: Network): string =>
-    CONFIG[network].chains[Gateway.chain].contracts.coreBridge;
+    CONFIG[network].chains[Gateway.chain]!.contracts.coreBridge!;
 
   // Get the wrapped version of an asset created on wormchain
   // for a given chain
@@ -52,7 +52,7 @@ export class Gateway<N extends Network> extends ChainContext<
     const channels = CosmwasmPlatform.getIbcChannels(network, chain);
     if (!channels) throw new Error("No channels configured for chain " + chain);
     if (!(Gateway.name in channels)) throw new Error("No channel configured for chain " + chain);
-    return channels[Gateway.chain];
+    return channels[Gateway.chain]!;
   }
 
   // derive the ics20 token denom from the

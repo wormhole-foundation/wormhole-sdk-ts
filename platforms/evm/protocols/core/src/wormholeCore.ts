@@ -66,7 +66,7 @@ export class EvmWormholeCore<
     config: ChainsConfig<N, EvmPlatformType>,
   ): Promise<EvmWormholeCore<N, EvmChains>> {
     const [network, chain] = await EvmPlatform.chainFromRpc(provider);
-    const conf = config[chain];
+    const conf = config[chain]!;
 
     if (conf.network !== network)
       throw new Error(`Network mismatch: ${conf.network} != ${network}`);

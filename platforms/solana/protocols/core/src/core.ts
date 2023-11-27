@@ -63,7 +63,7 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
     config: ChainsConfig<N, Platform>,
   ): Promise<SolanaWormholeCore<N, SolanaChains>> {
     const [network, chain] = await SolanaPlatform.chainFromRpc(connection);
-    const conf = config[chain];
+    const conf = config[chain]!;
     if (conf.network !== network)
       throw new Error(
         `Network mismatch for chain ${chain}: ${conf.network} != ${network}`,
@@ -126,7 +126,7 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
 
   async parseTransaction(txid: string): Promise<WormholeMessageId[]> {
     const response = await this.connection.getTransaction(txid);
-    if (!response || !response.meta?.innerInstructions![0].instructions)
+    if (!response || !response.meta?.innerInstructions![0]?.instructions)
       throw new Error('transaction not found');
 
     const instructions = response.meta?.innerInstructions![0].instructions;
@@ -134,7 +134,7 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
 
     // find the instruction where the programId equals the Wormhole ProgramId and the emitter equals the Token Bridge
     const bridgeInstructions = instructions.filter((i) => {
-      const programId = accounts[i.programIdIndex].toString();
+      const programId = accounts[i.programIdIndex]!.toString();
       const wormholeCore = this.coreBridge.programId.toString();
       return programId === wormholeCore;
     });
@@ -144,8 +144,8 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
 
     // TODO: unsure about the single bridge instruction and the [2] index, will this always be the case?
     const [logmsg] = bridgeInstructions;
-    const emitterAcct = accounts[logmsg.accounts[2]];
-    const emitter = toNative(this.chain, emitterAcct.toString());
+    const emitterAcct = accounts[logmsg!.accounts[2]!];
+    const emitter = toNative(this.chain, emitterAcct!.toString());
 
     const sequence = response.meta?.logMessages
       ?.filter((msg) => msg.startsWith(SOLANA_SEQ_LOG))?.[0]

@@ -5,10 +5,7 @@
  * @param decimals the number of decimals to normalize to
  * @returns The amount converted to base units as a BigNumber
  */
-export function normalizeAmount(
-  amount: number | string,
-  decimals: bigint,
-): bigint {
+export function normalizeAmount(amount: number | string, decimals: bigint): bigint {
   // If we're passed a number, convert it to a string first
   // so we can do everything as bigints
   if (typeof amount === "number") amount = amount.toPrecision();
@@ -20,11 +17,12 @@ export function normalizeAmount(
   if (!amount.includes(".")) amount += ".0";
 
   // some slightly sketchy
-  const [whole, partial] = amount.split(".");
-  if (partial.length > decimals)
-    throw new Error(
-      `Overspecified decimal amount: ${partial.length} > ${decimals}`,
-    );
+  let [whole, partial] = amount.split(".");
+  if (partial && partial.length > decimals)
+    throw new Error(`Overspecified decimal amount: ${partial.length} > ${decimals}`);
+
+  if (!whole) whole = "0";
+  if (!partial) partial = "0";
 
   // combine whole and partial without decimals
   const amt = BigInt(whole + partial);

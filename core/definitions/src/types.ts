@@ -114,7 +114,7 @@ export function buildConfig<N extends Network>(n: N): ChainsConfig<N, Platform> 
       const platform = chainToPlatform(c);
       let nativeChainId: bigint | string = "";
       try {
-        nativeChainId = nativeChainIds.networkChainToNativeChainId.get(n, c);
+        nativeChainId = nativeChainIds.networkChainToNativeChainId.get(n, c)!;
       } catch {}
       return {
         key: c,

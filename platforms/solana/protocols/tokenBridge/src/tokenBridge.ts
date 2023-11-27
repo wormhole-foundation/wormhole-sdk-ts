@@ -104,7 +104,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
     config: ChainsConfig<N, Platform>,
   ): Promise<SolanaTokenBridge<N, SolanaChains>> {
     const [network, chain] = await SolanaPlatform.chainFromRpc(connection);
-    const conf = config[chain];
+    const conf = config[chain]!;
     if (conf.network !== network)
       throw new Error(
         `Network mismatch for chain ${chain}: ${conf.network} != ${network}`,

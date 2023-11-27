@@ -242,7 +242,7 @@ export class GatewayTransfer<N extends Network> implements WormholeTransfer {
 
     // Otherwise grab the vaa details from the origin tx
     const [whMsgId] = await originChain.parseTransaction(txid);
-    return await GatewayTransfer._fromMsgId(wh, whMsgId, timeout);
+    return await GatewayTransfer._fromMsgId(wh, whMsgId!, timeout);
   }
 
   // Recover transfer info the first step in the transfer
@@ -379,7 +379,7 @@ export class GatewayTransfer<N extends Network> implements WormholeTransfer {
         // If we're leaving cosmos, grab the VAA from the gateway
         // now find the corresponding wormchain transaction given the ibcTransfer info
         const retryInterval = 5000;
-        const task = () => this.gatewayIbcBridge.lookupMessageFromIbcMsgId(xfer.id);
+        const task = () => this.gatewayIbcBridge.lookupMessageFromIbcMsgId(xfer!.id);
         const whm = await retry<WormholeMessageId>(
           task,
           retryInterval,
@@ -396,7 +396,7 @@ export class GatewayTransfer<N extends Network> implements WormholeTransfer {
         // Otherwise we need to get the transfer on the destination chain
         const dstChain = this.wh.getChain(this.transfer.to.chain);
         const dstIbcBridge = await dstChain.getIbcBridge();
-        const ibcXfer = await dstIbcBridge.lookupTransferFromIbcMsgId(xfer.id);
+        const ibcXfer = await dstIbcBridge.lookupTransferFromIbcMsgId(xfer!.id);
         this.ibcTransfers.push(ibcXfer);
       }
     } else {
@@ -404,12 +404,12 @@ export class GatewayTransfer<N extends Network> implements WormholeTransfer {
       // we need to find the wormchain ibc transaction information
       // by searching for the transaction containing the
       // GatewayTransferMsg
-      const { chain, txid } = this.transactions[this.transactions.length - 1];
+      const { chain, txid } = this.transactions[this.transactions.length - 1]!;
       const [whm] = await this.wh.parseMessageFromTx(chain, txid);
-      const vaa = await GatewayTransfer.getTransferVaa(this.wh, whm);
-      this.vaas = [{ id: whm, vaa }];
+      const vaa = await GatewayTransfer.getTransferVaa(this.wh, whm!);
+      this.vaas = [{ id: whm!, vaa }];
 
-      attestations.push(whm);
+      attestations.push(whm!);
 
       // TODO: conf for these settings? how do we choose them?
       const vaaRedeemedRetryInterval = 2000;
@@ -491,7 +491,7 @@ export class GatewayTransfer<N extends Network> implements WormholeTransfer {
 
     if (this.toGateway())
       // TODO: assuming the last transaction captured is the one from gateway to the destination
-      return [this.transactions[this.transactions.length - 1].txid];
+      return [this.transactions[this.transactions.length - 1]!.txid];
 
     if (!this.vaas) throw new Error("No VAA details available to redeem");
     if (this.vaas.length > 1) throw new Error("Expected 1 vaa");
@@ -505,8 +505,8 @@ export class GatewayTransfer<N extends Network> implements WormholeTransfer {
 
     const tb = await toChain.getTokenBridge();
 
-    const { vaa } = this.vaas[0];
-    if (!vaa) throw new Error(`No VAA found for ${this.vaas[0].id.sequence}`);
+    const { vaa } = this.vaas[0]!;
+    if (!vaa) throw new Error(`No VAA found for ${this.vaas[0]!.id.sequence}`);
 
     const xfer = tb.redeem(toAddress, vaa);
     const redeemTxs = await signSendWait<N, typeof toChain.chain>(toChain, xfer, signer);

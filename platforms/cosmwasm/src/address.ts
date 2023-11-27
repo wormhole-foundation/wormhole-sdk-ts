@@ -141,13 +141,13 @@ export class CosmwasmAddress implements Address {
         // It's a `transfer/...` denom
         if (chunks.length >= 3) {
           // Address will be second from the last
-          const { data, prefix } = tryDecode(chunks[chunks.length - 2]);
+          const { data, prefix } = tryDecode(chunks[chunks.length - 2]!);
           this.address = data;
           this.domain = prefix;
           this.denom = chunks[chunks.length - 1];
           this.denomType = chunks.slice(0, chunks.length - 2).join("/");
         } else {
-          const { data } = tryDecode(chunks[1]);
+          const { data } = tryDecode(chunks[1]!);
           this.address = data;
           this.denomType = chunks[0];
         }

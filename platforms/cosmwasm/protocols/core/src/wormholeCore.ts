@@ -41,7 +41,7 @@ export class CosmwasmWormholeCore<N extends Network, C extends CosmwasmChains>
     config: ChainsConfig<N, CosmwasmPlatformType>,
   ): Promise<CosmwasmWormholeCore<N, CosmwasmChains>> {
     const [network, chain] = await CosmwasmPlatform.chainFromRpc(rpc);
-    const conf = config[chain];
+    const conf = config[chain]!;
     if (conf.network !== network)
       throw new Error(`Network mismatch: ${conf.network} != ${network}`);
     return new CosmwasmWormholeCore(network as N, chain, rpc, conf.contracts);
@@ -65,8 +65,8 @@ export class CosmwasmWormholeCore<N extends Network, C extends CosmwasmChains>
     const events = tx.events.filter(
       (ev) =>
         ev.type === "wasm" &&
-        ev.attributes[0].key === "_contract_address" &&
-        ev.attributes[0].value === coreAddress,
+        ev.attributes[0]!.key === "_contract_address" &&
+        ev.attributes[0]!.value === coreAddress,
     );
 
     if (events.length === 0) throw new Error("No wormhole message found in tx");
@@ -74,11 +74,11 @@ export class CosmwasmWormholeCore<N extends Network, C extends CosmwasmChains>
 
     const [wasm] = events;
 
-    const sequence = wasm.attributes.find((e) => {
+    const sequence = wasm!.attributes.find((e) => {
       return e.key === "message.sequence";
     })!.value;
 
-    const emitter = wasm.attributes.find((e) => {
+    const emitter = wasm!.attributes.find((e) => {
       return e.key === "message.sender";
     })!.value;
 

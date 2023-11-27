@@ -162,7 +162,7 @@ export function deserialize<T extends PayloadLiteral | PayloadDiscriminator>(
   //ensure that guardian signature indicies are unique and in ascending order - see:
   //https://github.com/wormhole-foundation/wormhole/blob/8e0cf4c31f39b5ba06b0f6cdb6e690d3adf3d6a3/ethereum/contracts/Messages.sol#L121
   for (let i = 1; i < header.signatures.length; ++i)
-    if (header.signatures[i].guardianIndex <= header.signatures[i - 1].guardianIndex)
+    if (header.signatures[i]!.guardianIndex <= header.signatures[i - 1]!.guardianIndex)
       throw new Error("Guardian signatures must be in ascending order of guardian set index");
 
   const [envelope, payloadOffset] = deserializeLayout(envelopeLayout, data, envelopeOffset, false);
@@ -243,7 +243,7 @@ export const blindDeserializePayload = (() => {
     const candidates = discriminator(data).map((c) => layoutLiterals[c]);
     return candidates.reduce((acc, literal) => {
       try {
-        acc.push([literal, deserializePayload(literal, data)] as DeserializedPair);
+        acc.push([literal, deserializePayload(literal!, data)] as DeserializedPair);
       } catch {}
       return acc;
     }, [] as DeserializedPair[]);

@@ -52,7 +52,7 @@ export class CosmwasmPlatform<N extends Network> extends PlatformContext<N, Cosm
   // } = Gateway;
 
   async getRpc<C extends CosmwasmChains>(chain: C): Promise<CosmWasmClient> {
-    if (chain in this.config) return await CosmWasmClient.connect(this.config[chain].rpc);
+    if (chain in this.config) return await CosmWasmClient.connect(this.config[chain]!.rpc);
     throw new Error("No configuration available for chain: " + chain);
   }
 
@@ -73,7 +73,7 @@ export class CosmwasmPlatform<N extends Network> extends PlatformContext<N, Cosm
     chain: C,
   ): IbcChannels | null {
     return networkChainToChannels.has(network, chain)
-      ? networkChainToChannels.get(network, chain)
+      ? networkChainToChannels.get(network, chain)!
       : null;
   }
 

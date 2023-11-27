@@ -65,11 +65,9 @@ export class EvmAutomaticCircleBridge<N extends Network, C extends EvmChains>
     config: ChainsConfig<N, Platform>,
   ): Promise<EvmAutomaticCircleBridge<N, EvmChains>> {
     const [network, chain] = await EvmPlatform.chainFromRpc(provider);
-    const conf = config[chain];
-
+    const conf = config[chain]!;
     if (conf.network !== network)
       throw new Error(`Network mismatch: ${conf.network} != ${network}`);
-
     return new EvmAutomaticCircleBridge(
       network as N,
       chain,

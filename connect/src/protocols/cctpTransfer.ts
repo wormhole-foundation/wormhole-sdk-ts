@@ -197,7 +197,7 @@ export class CircleTransfer<N extends Network> implements WormholeTransfer {
     // If we found a VAA message, use it
     let ct: CircleTransfer<N>;
     if (msgIds.length > 0) {
-      ct = await CircleTransfer.fromWormholeMessageId(wh, msgIds[0], timeout);
+      ct = await CircleTransfer.fromWormholeMessageId(wh, msgIds[0]!, timeout);
     } else {
       // Otherwise try to parse out a circle message
       const cb = await originChain.getCircleBridge();
@@ -263,13 +263,13 @@ export class CircleTransfer<N extends Network> implements WormholeTransfer {
     // Check if we already have the VAA
     for (const idx in this.vaas) {
       // already got it
-      if (this.vaas[idx].vaa) continue;
+      if (this.vaas[idx]!.vaa) continue;
 
-      this.vaas[idx].vaa = await CircleTransfer.getTransferVaa(
+      this.vaas[idx]!.vaa = await CircleTransfer.getTransferVaa(
         this.wh,
         this.transfer.from.chain,
-        this.vaas[idx].id.emitter,
-        this.vaas[idx].id.sequence,
+        this.vaas[idx]!.id.emitter,
+        this.vaas[idx]!.id.sequence,
       );
     }
 
@@ -289,18 +289,18 @@ export class CircleTransfer<N extends Network> implements WormholeTransfer {
       const fromChain = this.wh.getChain(this.transfer.from.chain);
 
       const cb = await fromChain.getCircleBridge();
-      const circleMessage = await cb.parseTransactionDetails(txid.txid);
+      const circleMessage = await cb.parseTransactionDetails(txid!.txid);
       this.circleAttestations = [{ id: circleMessage.messageId }];
     }
 
     for (const idx in this.circleAttestations) {
-      const ca = this.circleAttestations[idx];
+      const ca = this.circleAttestations[idx]!;
       if (ca.attestation) continue; // already got it
 
       const attestation = await this.wh.getCircleAttestation(ca.id.hash, timeout);
       if (attestation === null) throw new Error("No attestation available after timeout exhausted");
 
-      this.circleAttestations[idx].attestation = attestation;
+      this.circleAttestations[idx]!.attestation = attestation;
     }
 
     return this.circleAttestations.map((v) => v.id);
@@ -344,7 +344,7 @@ export class CircleTransfer<N extends Network> implements WormholeTransfer {
       if (!this.vaas) throw new Error("No VAA details available");
       if (this.vaas.length > 1) throw new Error(`Expected a VAA, found ${this.vaas.length}`);
 
-      const { vaa } = this.vaas[0];
+      const { vaa } = this.vaas[0]!;
       if (!vaa) throw new Error("No VAA found");
 
       //const tb = await toChain.getAutomaticCircleBridge();
@@ -362,7 +362,7 @@ export class CircleTransfer<N extends Network> implements WormholeTransfer {
 
     const toChain = this.wh.getChain(this.transfer.to.chain);
 
-    const { id, attestation } = this.circleAttestations[0];
+    const { id, attestation } = this.circleAttestations[0]!;
 
     if (!attestation) throw new Error(`No Circle Attestation for ${id.hash}`);
 

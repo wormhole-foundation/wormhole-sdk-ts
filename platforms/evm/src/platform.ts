@@ -40,7 +40,8 @@ export class EvmPlatform<N extends Network> extends PlatformContext<
   }
 
   getRpc<C extends EvmChains>(chain: C): Provider {
-    if (chain in this.config) return getDefaultProvider(this.config[chain].rpc);
+    if (chain in this.config)
+      return getDefaultProvider(this.config[chain]!.rpc);
     throw new Error('No configuration available for chain: ' + chain);
   }
 

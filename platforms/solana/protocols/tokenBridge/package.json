@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/connect-sdk-solana-tokenbridge",
-  "version": "0.2.0-beta.2",
+  "version": "0.2.0-beta.3",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -32,7 +32,7 @@
   "engines": {
     "node": ">=16"
   },
-  "sideEffects": false,
+  "sideEffects": true,
   "scripts": {
     "build:cjs": "tsc -p ./tsconfig.cjs.json",
     "build:esm": "tsc -p ./tsconfig.esm.json",
@@ -46,9 +46,9 @@
     "nock": "^13.3.3"
   },
   "dependencies": {
-    "@wormhole-foundation/connect-sdk": "^0.2.0-beta.2",
-    "@wormhole-foundation/connect-sdk-solana": "^0.2.0-beta.2",
-    "@wormhole-foundation/connect-sdk-solana-core": "^0.2.0-beta.2",
+    "@wormhole-foundation/connect-sdk": "^0.2.0-beta.3",
+    "@wormhole-foundation/connect-sdk-solana": "^0.2.0-beta.3",
+    "@wormhole-foundation/connect-sdk-solana-core": "^0.2.0-beta.3",
     "@coral-xyz/borsh": "0.2.6",
     "@project-serum/anchor": "0.25.0",
     "@project-serum/borsh": "0.2.5",

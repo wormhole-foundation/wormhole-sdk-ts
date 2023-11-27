@@ -83,7 +83,7 @@ function typeSize(idl: Idl, ty: IdlType): number {
         if (filtered.length !== 1) {
           throw new IdlError(`Type not found: ${JSON.stringify(ty)}`);
         }
-        let typeDef = filtered[0];
+        let typeDef = filtered[0]!;
 
         return accountSize(idl, typeDef);
       }

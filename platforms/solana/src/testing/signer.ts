@@ -24,7 +24,10 @@ export async function getSolanaSigner(
 export class SolanaSigner<N extends Network, C extends SolanaChains = 'Solana'>
   implements SignOnlySigner<N, C>
 {
-  constructor(private _chain: C, private _keypair: Keypair) {}
+  constructor(
+    private _chain: C,
+    private _keypair: Keypair,
+  ) {}
 
   chain(): C {
     return this._chain;

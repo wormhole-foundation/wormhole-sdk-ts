@@ -84,7 +84,7 @@ export class CosmwasmIbcBridge<N extends Network, C extends CosmwasmChains>
     config: ChainsConfig<N, CosmwasmPlatformType>,
   ): Promise<CosmwasmIbcBridge<N, CosmwasmChains>> {
     const [network, chain] = await CosmwasmPlatform.chainFromRpc(rpc);
-    const conf = config[chain];
+    const conf = config[chain]!;
     if (conf.network !== network)
       throw new Error("Network mismatch: " + conf.network + " != " + network);
     return new CosmwasmIbcBridge(network as N, chain, rpc, conf.contracts);
@@ -167,7 +167,7 @@ export class CosmwasmIbcBridge<N extends Network, C extends CosmwasmChains>
     if (xfers.length === 0) throw new Error("No transfers found for tx: " + txid);
     if (xfers.length > 1) console.error(">1 xfer in tx; why");
 
-    return xfers[0];
+    return xfers[0]!;
   }
 
   async lookupMessageFromIbcMsgId(msg: IbcMessageId): Promise<WormholeMessageId | null> {
@@ -219,7 +219,7 @@ export class CosmwasmIbcBridge<N extends Network, C extends CosmwasmChains>
       console.error(`Expected 1 transaction, got ${txResults.length} found for IbcMsgid: ${msg}`);
 
     const [tx] = txResults;
-    return tx;
+    return tx!;
   }
 
   async lookupTransferFromIbcMsgId(msg: IbcMessageId): Promise<IbcTransferInfo> {
@@ -233,7 +233,7 @@ export class CosmwasmIbcBridge<N extends Network, C extends CosmwasmChains>
 
     if (xfers.length > 1) throw new Error(`Found ${xfers.length} transfers, expected 1`);
 
-    return xfers[0];
+    return xfers[0]!;
   }
 
   // Returns the IBC Transfer message content and IBC transfer information
@@ -256,14 +256,14 @@ export class CosmwasmIbcBridge<N extends Network, C extends CosmwasmChains>
     if (txResults.length !== 1) console.error("Expected 1 tx, got: ", txResults.length);
 
     const [tx] = txResults;
-    const xfers = await this.fetchTransferInfo(tx);
+    const xfers = await this.fetchTransferInfo(tx!);
 
     if (xfers.length === 0)
       throw new Error(`Found no transactions for payload: ` + JSON.stringify(encodedPayload));
 
     if (xfers.length !== 1) console.error("Expected 1 xfer, got: ", xfers.length);
 
-    return xfers[0];
+    return xfers[0]!;
   }
 
   private parseIbcTransferInfo(tx: IndexedTx): IbcTransferInfo[] {

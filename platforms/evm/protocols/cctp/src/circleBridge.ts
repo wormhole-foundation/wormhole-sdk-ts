@@ -90,7 +90,7 @@ export class EvmCircleBridge<N extends Network, C extends EvmChains>
     config: ChainsConfig<N, Platform>,
   ): Promise<EvmCircleBridge<N, EvmChains>> {
     const [network, chain] = await EvmPlatform.chainFromRpc(provider);
-    const conf = config[chain];
+    const conf = config[chain]!;
     if (conf.network !== network)
       throw new Error(`Network mismatch: ${conf.network} != ${network}`);
     return new EvmCircleBridge(network as N, chain, provider, conf.contracts);
@@ -192,7 +192,7 @@ export class EvmCircleBridge<N extends Network, C extends EvmChains>
       );
 
     const [messageLog] = messageLogs;
-    const { message } = messageLog.args;
+    const { message } = messageLog!.args;
     const [circleMsg, hash] = deserializeCircleMessage(
       encoding.hex.decode(message),
     );

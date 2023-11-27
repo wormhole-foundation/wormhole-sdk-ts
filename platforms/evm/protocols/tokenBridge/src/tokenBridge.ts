@@ -73,7 +73,7 @@ export class EvmTokenBridge<N extends Network, C extends EvmChains>
   ): Promise<EvmTokenBridge<N, EvmChains>> {
     const [network, chain] = await EvmPlatform.chainFromRpc(provider);
 
-    const conf = config[chain];
+    const conf = config[chain]!;
     if (conf.network !== network)
       throw new Error(`Network mismatch: ${conf.network} != ${network}`);
 

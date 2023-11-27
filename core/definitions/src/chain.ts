@@ -37,7 +37,7 @@ export abstract class ChainContext<
   protected ibcBridge?: IbcBridge<N, P, C>;
 
   constructor(chain: C, platform: PlatformContext<N, P>) {
-    this.config = platform.config[chain];
+    this.config = platform.config[chain]!;
     this.platform = platform;
     this.chain = this.config.key;
     this.network = this.config.network;

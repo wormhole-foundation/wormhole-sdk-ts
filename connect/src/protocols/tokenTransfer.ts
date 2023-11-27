@@ -82,7 +82,7 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
     if (!this.transfer.automatic) return this.state;
     if (!this.vaas || this.vaas.length === 0) return this.state;
 
-    const { chain, emitter, sequence } = this.vaas[0].id;
+    const { chain, emitter, sequence } = this.vaas[0]!.id;
     const txStatus = await this.wh.getTransactionStatus(chain, emitter, sequence);
 
     if (txStatus.globalTx.destinationTx) {
@@ -261,16 +261,20 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
         throw new Error("No VAAs set and txids available to look them up");
 
       // TODO: assuming the _last_ transaction in the list will contain the msg id
-      const txid = this.txids[this.txids.length - 1];
+      const txid = this.txids[this.txids.length - 1]!;
       const msgId = await TokenTransfer.getTransferMessage(this.wh, txid, timeout);
       this.vaas = [{ id: msgId }];
     }
 
     for (const idx in this.vaas) {
       // Check if we already have the VAA
-      if (this.vaas[idx].vaa) continue;
+      if (this.vaas[idx]!.vaa) continue;
 
-      this.vaas[idx].vaa = await TokenTransfer.getTransferVaa(this.wh, this.vaas[idx].id, timeout);
+      this.vaas[idx]!.vaa = await TokenTransfer.getTransferVaa(
+        this.wh,
+        this.vaas[idx]!.id,
+        timeout,
+      );
     }
 
     this.state = TransferState.Attested;
@@ -296,8 +300,8 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
     const signerAddress = toNative(signer.chain(), signer.address());
 
     // TODO: when do we get >1?
-    const { vaa } = this.vaas[0];
-    if (!vaa) throw new Error(`No VAA found for ${this.vaas[0].id.sequence}`);
+    const { vaa } = this.vaas[0]!;
+    if (!vaa) throw new Error(`No VAA found for ${this.vaas[0]!.id.sequence}`);
 
     let xfer: AsyncGenerator<UnsignedTransaction<N>>;
     if (this.transfer.automatic) {
@@ -324,7 +328,7 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
     const { chain, txid } = tx;
     const msgs = await wh.parseMessageFromTx(chain, txid, timeout);
     if (msgs.length === 0) throw new Error(`No messages found in transaction ${txid}`);
-    return msgs[0];
+    return msgs[0]!;
   }
 
   static async getTransferVaa<N extends Network>(

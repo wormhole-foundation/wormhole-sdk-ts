@@ -44,7 +44,7 @@ export async function getCosmwasmSigner(rpc: CosmWasmClient, mnemonic: string): 
     prefix: chainToAddressPrefix(chain as PlatformToChains<"Cosmwasm">),
   });
 
-  const acct = (await signer.getAccounts())[0];
+  const acct = (await signer.getAccounts())[0]!;
   const signingClient = await SigningCosmWasmClient.connectWithSigner(
     rpcConf.rpcAddress(network, chain)!,
     signer,
@@ -98,7 +98,11 @@ export class CosmwasmEvmSigner<N extends Network, C extends CosmwasmChains>
   private key: PrivateKey;
   private prefix: string;
   private _rpc: ChainRestAuthApi;
-  constructor(private _chain: C, _network: Network, _mnemonic: string) {
+  constructor(
+    private _chain: C,
+    _network: Network,
+    _mnemonic: string,
+  ) {
     this._rpc = new ChainRestAuthApi(
       cosmwasmNetworkChainToRestUrls(_network, _chain as CosmwasmEvmChain),
     );

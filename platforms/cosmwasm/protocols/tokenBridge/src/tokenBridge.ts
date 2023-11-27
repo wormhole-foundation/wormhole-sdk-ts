@@ -56,7 +56,7 @@ export class CosmwasmTokenBridge<N extends Network, C extends CosmwasmChains>
     config: ChainsConfig<N, CosmwasmPlatformType>,
   ): Promise<CosmwasmTokenBridge<N, CosmwasmChains>> {
     const [network, chain] = await CosmwasmPlatform.chainFromRpc(rpc);
-    const conf = config[chain];
+    const conf = config[chain]!;
     if (conf.network !== network)
       throw new Error(`Network mismatch: ${conf.network} != ${network}`);
     return new CosmwasmTokenBridge(network as N, chain, rpc, config[chain]!.contracts);
