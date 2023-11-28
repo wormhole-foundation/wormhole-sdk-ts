@@ -12,9 +12,10 @@ import {
   nativeChainIds,
   toChainId,
 } from '@wormhole-foundation/connect-sdk';
-import { Provider, TransactionRequest } from 'ethers';
 
+import { Provider, TransactionRequest } from 'ethers';
 import { CircleRelayer } from './ethers-contracts';
+import { ethers_contracts } from '.';
 
 import {
   EvmChains,
@@ -24,7 +25,8 @@ import {
   addChainId,
   addFrom,
 } from '@wormhole-foundation/connect-sdk-evm';
-import { ethers_contracts } from '.';
+
+import '@wormhole-foundation/connect-sdk-evm-core';
 
 export class EvmAutomaticCircleBridge<N extends Network, C extends EvmChains>
   implements AutomaticCircleBridge<N, EvmPlatformType, C>

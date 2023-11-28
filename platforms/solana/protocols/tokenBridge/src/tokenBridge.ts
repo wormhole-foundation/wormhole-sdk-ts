@@ -64,6 +64,8 @@ import {
   getWrappedMeta,
 } from './utils';
 
+import '@wormhole-foundation/connect-sdk-solana-core';
+
 export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
   implements TokenBridge<N, SolanaPlatformType, C>
 {

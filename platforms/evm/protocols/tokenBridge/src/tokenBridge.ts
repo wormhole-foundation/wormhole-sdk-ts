@@ -36,6 +36,8 @@ import {
   unusedNonce,
 } from '@wormhole-foundation/connect-sdk-evm';
 
+import '@wormhole-foundation/connect-sdk-evm-core';
+
 export class EvmTokenBridge<N extends Network, C extends EvmChains>
   implements TokenBridge<N, EvmPlatformType, C>
 {

@@ -23,6 +23,8 @@ import { Provider, TransactionRequest } from 'ethers';
 import { nativeChainIds } from '@wormhole-foundation/sdk-base';
 import { ethers_contracts } from '.';
 
+import '@wormhole-foundation/connect-sdk-evm-core';
+
 export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
   implements AutomaticTokenBridge<N, 'Evm', C>
 {

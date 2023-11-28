@@ -31,6 +31,8 @@ import {
   computeFee,
 } from "@wormhole-foundation/connect-sdk-cosmwasm";
 
+import "@wormhole-foundation/connect-sdk-cosmwasm-core";
+
 export class CosmwasmTokenBridge<N extends Network, C extends CosmwasmChains>
   implements TokenBridge<N, CosmwasmPlatformType, C>
 {
