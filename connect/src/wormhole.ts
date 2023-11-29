@@ -16,7 +16,6 @@ import {
   PayloadLiteral,
   PlatformContext,
   PlatformUtils,
-  RpcConnection,
   TokenAddress,
   TokenId,
   TxHash,
@@ -188,14 +187,11 @@ export class Wormhole<N extends Network> {
    * @returns the chain context class
    * @throws Errors if context is not found
    */
-  getChain<C extends Chain>(
-    chain: C,
-    rpc?: RpcConnection<ChainToPlatform<C>>,
-  ): ChainContext<N, ChainToPlatform<C>, C> {
+  getChain<C extends Chain, P extends ChainToPlatform<C>>(chain: C): ChainContext<N, P, C> {
     const platform = chainToPlatform(chain);
     if (!this._chains.has(chain))
-      this._chains.set(chain, this.getPlatform(platform).getChain(chain, rpc));
-    return this._chains.get(chain)! as ChainContext<N, ChainToPlatform<C>, C>;
+      this._chains.set(chain, this.getPlatform(platform).getChain(chain));
+    return this._chains.get(chain)! as ChainContext<N, P, C>;
   }
 
   /**

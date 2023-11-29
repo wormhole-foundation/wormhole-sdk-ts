@@ -1,6 +1,9 @@
-import { Network, encoding } from "@wormhole-foundation/sdk-base";
+import { Chain, Network, encoding } from "@wormhole-foundation/sdk-base";
+import { ChainToPlatform } from "@wormhole-foundation/sdk-base/src";
 import {
+  ChainContext,
   Signer,
+  TokenAddress,
   TokenBridge,
   TokenId,
   TransactionId,
@@ -37,42 +40,6 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
   }[];
 
   private constructor(wh: Wormhole<N>, transfer: TokenTransferDetails) {
-    if (transfer.payload && transfer.automatic)
-      throw new Error("Payload with automatic delivery is not supported");
-
-    if (transfer.nativeGas && !transfer.automatic)
-      throw new Error("Gas Dropoff is only supported for automatic transfers");
-
-    const fromChain = wh.getChain(transfer.from.chain);
-    const toChain = wh.getChain(transfer.to.chain);
-
-    if (!fromChain.supportsTokenBridge())
-      throw new Error(`Token Bridge not supported on ${transfer.from.chain}`);
-
-    if (!toChain.supportsTokenBridge())
-      throw new Error(`Token Bridge not supported on ${transfer.to.chain}`);
-
-    if (transfer.automatic && !fromChain.supportsAutomaticTokenBridge())
-      throw new Error(`Automatic Token Bridge not supported on ${transfer.from.chain}`);
-
-    if (transfer.to.chain === "Sei") {
-      if (transfer.payload) throw new Error("Arbitrary payloads unsupported for Sei");
-
-      // For sei, we reserve the payload for a token transfer through the sei bridge.
-      transfer.payload = encoding.bytes.encode(
-        JSON.stringify({
-          basic_recipient: {
-            recipient: encoding.b64.encode(transfer.to.address.toString()),
-          },
-        }),
-      );
-
-      transfer.to = {
-        chain: transfer.to.chain,
-        address: toNative(transfer.to.chain, toChain.platform.config.Sei?.contracts.translator!),
-      };
-    }
-
     this.state = TransferState.Created;
     this.wh = wh;
     this.transfer = transfer;
@@ -118,6 +85,8 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
     timeout: number = 6000,
   ): Promise<TokenTransfer<N>> {
     if (isTokenTransferDetails(from)) {
+      await TokenTransfer.validateTransferDetails(wh, from);
+
       // Bit of (temporary) hackery until solana contracts support being
       // sent a VAA with the primary address
       if (from.to.chain === "Solana") {
@@ -127,6 +96,19 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
             ? await wh.getChain(from.from.chain).getNativeWrappedTokenId()
             : from.token;
         from.to = await wh.getTokenAccount(from.to, token);
+      }
+
+      if (from.to.chain === "Sei") {
+        // For sei, we reserve the payload for a token transfer through the sei bridge.
+        from.payload = encoding.bytes.encode(
+          JSON.stringify({
+            basic_recipient: {
+              recipient: encoding.b64.encode(from.to.address.toString()),
+            },
+          }),
+        );
+
+        from.to = nativeChainAddress(from.to.chain, wh.getContracts("Sei")!.translator!);
       }
 
       return new TokenTransfer(wh, from);
@@ -207,39 +189,12 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
     if (this.state !== TransferState.Created)
       throw new Error("Invalid state transition in `start`");
 
-    const tokenAddress = this.transfer.token === "native" ? "native" : this.transfer.token.address;
+    this.txids = await TokenTransfer.transfer(
+      this.wh.getChain(this.transfer.from.chain),
+      this.transfer,
+      signer,
+    );
 
-    const fromChain = this.wh.getChain(this.transfer.from.chain);
-
-    let xfer: AsyncGenerator<UnsignedTransaction<N>>;
-    if (this.transfer.automatic) {
-      const tb = await fromChain.getAutomaticTokenBridge();
-      const fee = await tb.getRelayerFee(
-        this.transfer.from.address,
-        this.transfer.to,
-        this.transfer.token === "native" ? "native" : this.transfer.token.address,
-      );
-
-      xfer = tb.transfer(
-        this.transfer.from.address,
-        this.transfer.to,
-        tokenAddress,
-        this.transfer.amount,
-        fee,
-        this.transfer.nativeGas,
-      );
-    } else {
-      const tb = await fromChain.getTokenBridge();
-      xfer = tb.transfer(
-        this.transfer.from.address,
-        this.transfer.to,
-        tokenAddress,
-        this.transfer.amount,
-        this.transfer.payload,
-      );
-    }
-
-    this.txids = await signSendWait<N, typeof fromChain.chain>(fromChain, xfer, signer);
     this.state = TransferState.Initiated;
     return this.txids.map(({ txid }) => txid);
   }
@@ -295,16 +250,67 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
 
     if (!this.vaas) throw new Error("No VAA details available");
 
-    const toChain = this.wh.getChain(this.transfer.to.chain);
-
-    const signerAddress = toNative(signer.chain(), signer.address());
-
     // TODO: when do we get >1?
     const { vaa } = this.vaas[0]!;
     if (!vaa) throw new Error(`No VAA found for ${this.vaas[0]!.id.sequence}`);
 
-    let xfer: AsyncGenerator<UnsignedTransaction<N>>;
-    if (this.transfer.automatic) {
+    const toChain = this.wh.getChain(this.transfer.to.chain);
+    const redeemTxids = await TokenTransfer.redeem(toChain, vaa, signer, this.transfer.automatic);
+
+    this.txids.push(...redeemTxids);
+    return redeemTxids.map(({ txid }) => txid);
+  }
+
+  // Static method to perform the transfer so a custom RPC may be used
+  // Note: this assumes the transfer has already been validated with `validateTransfer`
+  static async transfer<N extends Network, C extends Chain, P extends ChainToPlatform<C>>(
+    fromChain: ChainContext<N, P, C>,
+    transfer: TokenTransferDetails,
+    signer: Signer<N, C>,
+  ): Promise<TransactionId[]> {
+    const senderAddress = toNative(signer.chain(), signer.address());
+
+    const tokenAddress =
+      transfer.token === "native" ? "native" : (transfer.token.address as TokenAddress<C>);
+
+    let xfer: AsyncGenerator<UnsignedTransaction<N, C>>;
+    if (transfer.automatic) {
+      const tb = await fromChain.getAutomaticTokenBridge();
+      const fee = await tb.getRelayerFee(senderAddress, transfer.to, tokenAddress);
+
+      xfer = tb.transfer(
+        senderAddress,
+        transfer.to,
+        tokenAddress,
+        transfer.amount,
+        fee,
+        transfer.nativeGas,
+      );
+    } else {
+      const tb = await fromChain.getTokenBridge();
+      xfer = tb.transfer(
+        senderAddress,
+        transfer.to,
+        tokenAddress,
+        transfer.amount,
+        transfer.payload,
+      );
+    }
+
+    return signSendWait<N, C>(fromChain, xfer, signer);
+  }
+
+  // Static method to allow passing a custom RPC
+  static async redeem<N extends Network, C extends Chain, P extends ChainToPlatform<C>>(
+    toChain: ChainContext<N, P, C>,
+    vaa: TokenBridge.VAA<"Transfer" | "TransferWithPayload">,
+    signer: Signer<N, C>,
+    automatic?: boolean,
+  ): Promise<TransactionId[]> {
+    const signerAddress = toNative(signer.chain(), signer.address());
+
+    let xfer: AsyncGenerator<UnsignedTransaction<N, C>>;
+    if (automatic) {
       if (vaa.payloadName === "Transfer")
         throw new Error("VAA is a simple transfer but expected Payload for automatic delivery");
 
@@ -315,9 +321,7 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
       xfer = tb.redeem(signerAddress, vaa);
     }
 
-    const redeemTxids = await signSendWait<N, typeof toChain.chain>(toChain, xfer, signer);
-    this.txids.push(...redeemTxids);
-    return redeemTxids.map(({ txid }) => txid);
+    return signSendWait<N, typeof toChain.chain>(toChain, xfer, signer);
   }
 
   static async getTransferMessage<N extends Network>(
@@ -346,5 +350,38 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
     );
     if (!vaa) throw new Error(`No VAA available after retries exhausted`);
     return vaa;
+  }
+
+  static async validateTransferDetails<N extends Network>(
+    wh: Wormhole<N>,
+    transfer: TokenTransferDetails,
+  ): Promise<void> {
+    if (transfer.payload && transfer.automatic)
+      throw new Error("Payload with automatic delivery is not supported");
+
+    if (transfer.nativeGas && !transfer.automatic)
+      throw new Error("Gas Dropoff is only supported for automatic transfers");
+
+    const fromChain = wh.getChain(transfer.from.chain);
+    const toChain = wh.getChain(transfer.to.chain);
+
+    if (!fromChain.supportsTokenBridge())
+      throw new Error(`Token Bridge not supported on ${transfer.from.chain}`);
+
+    if (!toChain.supportsTokenBridge())
+      throw new Error(`Token Bridge not supported on ${transfer.to.chain}`);
+
+    if (transfer.automatic && !fromChain.supportsAutomaticTokenBridge())
+      throw new Error(`Automatic Token Bridge not supported on ${transfer.from.chain}`);
+
+    if (transfer.to.chain === "Sei" && transfer.payload)
+      throw new Error("Arbitrary payloads unsupported for Sei");
+
+    if (transfer.amount === 0n) throw new Error("Amount cannot be 0");
+
+    // TODO: Make sure the token exists on the destination chain
+    // const token: TokenId =
+    //   transfer.token === "native" ? await fromChain.getNativeWrappedTokenId() : transfer.token;
+    // await wh.getWrappedAsset(transfer.to.chain, token);
   }
 }

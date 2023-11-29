@@ -89,7 +89,7 @@ async function cctpTransfer<N extends Network>(
   console.log(`Started Transfer: `, srcTxids);
 
   if (automatic) {
-    const relayStatus = await waitForRelay(srcTxids[srcTxids.length - 1]);
+    const relayStatus = await waitForRelay(srcTxids[srcTxids.length - 1]!);
     console.log(`Finished relay: `, relayStatus);
     return;
   }

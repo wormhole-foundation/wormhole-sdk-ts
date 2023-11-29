@@ -38,11 +38,16 @@ import { getStuff } from "./helpers";
   console.log("Sent: ", txids);
 
   // Get the wormhole message id from the transaction
-  const [whm] = await snd.parseTransaction(txids[txids.length - 1].txid);
+  const [whm] = await snd.parseTransaction(txids[txids.length - 1]!.txid);
   console.log("Wormhole Messages: ", whm);
 
   // Get the VAA from the wormhole message id
-  const vaa = await api.getVaaWithRetry(CONFIG["Testnet"].api, whm, "TokenBridge:Transfer", 60_000);
+  const vaa = await api.getVaaWithRetry(
+    CONFIG["Testnet"].api,
+    whm!,
+    "TokenBridge:Transfer",
+    60_000,
+  );
 
   // Now get the token bridge on the redeem side
   const rcvTb = await rcv.getTokenBridge();

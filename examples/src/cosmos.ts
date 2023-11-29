@@ -71,7 +71,7 @@ import { Network } from "@wormhole-foundation/sdk-base/src";
     : await transferIntoCosmos(wh, token, amount, leg1, leg2);
   console.log("Route 1 (External => Cosmos)", route1);
 
-  const { denom } = route1.ibcTransfers![0].data;
+  const { denom } = route1.ibcTransfers![0]!.data;
   // Lookup the Gateway representation of the wrappd token
   const cosmosTokenAddress = toNative("Wormchain", denom);
   //console.log("Wrapped Token: ", cosmosTokenAddress.toString());
