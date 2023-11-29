@@ -1,8 +1,8 @@
 import {
   Chain,
-  ChainToPlatform,
   Network,
   Platform,
+  PlatformToChains,
   chainToPlatform,
   circle,
 } from "@wormhole-foundation/sdk-base";
@@ -187,7 +187,7 @@ export class Wormhole<N extends Network> {
    * @returns the chain context class
    * @throws Errors if context is not found
    */
-  getChain<C extends Chain, P extends ChainToPlatform<C>>(chain: C): ChainContext<N, P, C> {
+  getChain<P extends Platform, C extends PlatformToChains<P>>(chain: C): ChainContext<N, P, C> {
     const platform = chainToPlatform(chain);
     if (!this._chains.has(chain))
       this._chains.set(chain, this.getPlatform(platform).getChain(chain));
@@ -368,19 +368,17 @@ export class Wormhole<N extends Network> {
   /**
    * Parses all relevant information from a transaction given the sending tx hash and sending chain
    *
+   * @param chain The sending chain name or context
    * @param tx The sending transaction hash
-   * @param chain The sending chain name or id
    * @returns The parsed WormholeMessageId
    */
-  async parseMessageFromTx(
-    chain: Chain,
-    txid: TxHash,
-    timeout?: number,
-  ): Promise<WormholeMessageId[]> {
-    const originChain = this.getChain(chain);
-
+  static async parseMessageFromTx<
+    N extends Network,
+    P extends Platform,
+    C extends PlatformToChains<P>,
+  >(chain: ChainContext<N, P, C>, txid: TxHash, timeout?: number): Promise<WormholeMessageId[]> {
     const task = async () => {
-      const msgs = await originChain.parseTransaction(txid);
+      const msgs = await chain.parseTransaction(txid);
       // possible the node we hit does not have this data yet
       // return null to signal retry
       if (msgs.length === 0) return null;
@@ -389,7 +387,7 @@ export class Wormhole<N extends Network> {
 
     const parsed = await retry<WormholeMessageId[]>(
       task,
-      originChain.config.blockTime,
+      chain.config.blockTime,
       timeout,
       "WormholeCore:ParseMessageFromTransaction",
     );

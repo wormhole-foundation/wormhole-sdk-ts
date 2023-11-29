@@ -352,11 +352,11 @@ export class GatewayTransfer<N extends Network> implements WormholeTransfer {
 
     const attestations: AttestationId[] = [];
 
+    const chain = this.wh.getChain(this.transfer.from.chain);
     // collect ibc transfers and additional transaction ids
     if (this.fromGateway()) {
       // assume all the txs are from the same chain
       // and get the ibc bridge once
-      const chain = this.wh.getChain(this.transfer.from.chain);
       const originIbcbridge = await chain.getIbcBridge();
 
       // Ultimately we need to find the corresponding Wormchain transaction
@@ -404,8 +404,8 @@ export class GatewayTransfer<N extends Network> implements WormholeTransfer {
       // we need to find the wormchain ibc transaction information
       // by searching for the transaction containing the
       // GatewayTransferMsg
-      const { chain, txid } = this.transactions[this.transactions.length - 1]!;
-      const [whm] = await this.wh.parseMessageFromTx(chain, txid);
+      const transferTransaction = this.transactions[this.transactions.length - 1]!;
+      const [whm] = await Wormhole.parseMessageFromTx(chain, transferTransaction.txid);
       const vaa = await GatewayTransfer.getTransferVaa(this.wh, whm!);
       this.vaas = [{ id: whm!, vaa }];
 

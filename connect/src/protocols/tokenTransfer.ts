@@ -1,5 +1,5 @@
-import { Chain, Network, encoding } from "@wormhole-foundation/sdk-base";
-import { ChainToPlatform } from "@wormhole-foundation/sdk-base/src";
+import { Network, PlatformToChains, encoding } from "@wormhole-foundation/sdk-base";
+import { Platform } from "@wormhole-foundation/sdk-base/dist/cjs";
 import {
   ChainContext,
   Signer,
@@ -169,7 +169,7 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
     from: TransactionId,
     timeout: number,
   ): Promise<TokenTransfer<N>> {
-    const msg = await TokenTransfer.getTransferMessage(wh, from, timeout);
+    const msg = await TokenTransfer.getTransferMessage(wh.getChain(from.chain), from, timeout);
     const tt = await TokenTransfer.fromIdentifier(wh, msg, timeout);
     tt.txids = [from];
     return tt;
@@ -217,7 +217,11 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
 
       // TODO: assuming the _last_ transaction in the list will contain the msg id
       const txid = this.txids[this.txids.length - 1]!;
-      const msgId = await TokenTransfer.getTransferMessage(this.wh, txid, timeout);
+      const msgId = await TokenTransfer.getTransferMessage(
+        this.wh.getChain(txid.chain),
+        txid,
+        timeout,
+      );
       this.vaas = [{ id: msgId }];
     }
 
@@ -263,7 +267,7 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
 
   // Static method to perform the transfer so a custom RPC may be used
   // Note: this assumes the transfer has already been validated with `validateTransfer`
-  static async transfer<N extends Network, C extends Chain, P extends ChainToPlatform<C>>(
+  static async transfer<N extends Network, P extends Platform, C extends PlatformToChains<P>>(
     fromChain: ChainContext<N, P, C>,
     transfer: TokenTransferDetails,
     signer: Signer<N, C>,
@@ -301,7 +305,7 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
   }
 
   // Static method to allow passing a custom RPC
-  static async redeem<N extends Network, C extends Chain, P extends ChainToPlatform<C>>(
+  static async redeem<N extends Network, P extends Platform, C extends PlatformToChains<P>>(
     toChain: ChainContext<N, P, C>,
     vaa: TokenBridge.VAA<"Transfer" | "TransferWithPayload">,
     signer: Signer<N, C>,
@@ -321,18 +325,17 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
       xfer = tb.redeem(signerAddress, vaa);
     }
 
-    return signSendWait<N, typeof toChain.chain>(toChain, xfer, signer);
+    return signSendWait<N, C>(toChain, xfer, signer);
   }
 
-  static async getTransferMessage<N extends Network>(
-    wh: Wormhole<N>,
-    tx: TransactionId,
-    timeout?: number,
-  ): Promise<WormholeMessageId> {
-    const { chain, txid } = tx;
-    const msgs = await wh.parseMessageFromTx(chain, txid, timeout);
-    if (msgs.length === 0) throw new Error(`No messages found in transaction ${txid}`);
-    return msgs[0]!;
+  static async getTransferMessage<
+    N extends Network,
+    P extends Platform,
+    C extends PlatformToChains<P>,
+  >(chain: ChainContext<N, P, C>, tx: TransactionId, timeout?: number): Promise<WormholeMessageId> {
+    // A Single wormhole message will be returned for a standard token transfer
+    const whm = await Wormhole.parseMessageFromTx(chain, tx.txid, timeout);
+    return whm[0]!;
   }
 
   static async getTransferVaa<N extends Network>(
