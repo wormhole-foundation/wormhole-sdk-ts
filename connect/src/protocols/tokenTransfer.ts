@@ -169,7 +169,7 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
     from: TransactionId,
     timeout: number,
   ): Promise<TokenTransfer<N>> {
-    const msg = await TokenTransfer.getTransferMessage(wh.getChain(from.chain), from, timeout);
+    const msg = await TokenTransfer.getTransferMessage(wh.getChain(from.chain), from.txid, timeout);
     const tt = await TokenTransfer.fromIdentifier(wh, msg, timeout);
     tt.txids = [from];
     return tt;
@@ -219,7 +219,7 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
       const txid = this.txids[this.txids.length - 1]!;
       const msgId = await TokenTransfer.getTransferMessage(
         this.wh.getChain(txid.chain),
-        txid,
+        txid.txid,
         timeout,
       );
       this.vaas = [{ id: msgId }];
@@ -332,9 +332,9 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
     N extends Network,
     P extends Platform,
     C extends PlatformToChains<P>,
-  >(chain: ChainContext<N, P, C>, tx: TransactionId, timeout?: number): Promise<WormholeMessageId> {
+  >(chain: ChainContext<N, P, C>, txid: TxHash, timeout?: number): Promise<WormholeMessageId> {
     // A Single wormhole message will be returned for a standard token transfer
-    const whm = await Wormhole.parseMessageFromTx(chain, tx.txid, timeout);
+    const whm = await Wormhole.parseMessageFromTx(chain, txid, timeout);
     return whm[0]!;
   }
 

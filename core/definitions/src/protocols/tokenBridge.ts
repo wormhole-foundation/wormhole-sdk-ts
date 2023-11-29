@@ -1,13 +1,23 @@
-import { Chain, Network, Platform, PlatformToChains, lazyInstantiate } from "@wormhole-foundation/sdk-base";
-import { AccountAddress, ChainAddress, NativeAddress, TokenAddress, UniversalOrNative } from "../address";
+import {
+  Chain,
+  Network,
+  Platform,
+  PlatformToChains,
+  lazyInstantiate,
+} from "@wormhole-foundation/sdk-base";
+import {
+  AccountAddress,
+  ChainAddress,
+  NativeAddress,
+  TokenAddress,
+  UniversalOrNative,
+} from "../address";
 import "../payloads/tokenBridge";
 import { TokenId } from "../types";
 import { UnsignedTransaction } from "../unsignedTransaction";
 import { ProtocolPayload, ProtocolVAA, payloadDiscriminator } from "../vaa";
 
-export const ErrNotWrapped = (token: string) =>
-  new Error(`Token ${token} is not a wrapped asset`);
-
+export const ErrNotWrapped = (token: string) => new Error(`Token ${token} is not a wrapped asset`);
 
 export namespace TokenBridge {
   export type VAA<PayloadName extends string> = ProtocolVAA<"TokenBridge", PayloadName>;
@@ -16,8 +26,8 @@ export namespace TokenBridge {
   // export const transferPayloadNames = ["Transfer", "TransferWithPayload"] as const;
   // export type TransferPayloadNames = typeof transferPayloadNames[number];
 
-  export const getTransferDiscriminator = lazyInstantiate(
-    () => payloadDiscriminator(["TokenBridge", ["Transfer", "TransferWithPayload"]])
+  export const getTransferDiscriminator = lazyInstantiate(() =>
+    payloadDiscriminator(["TokenBridge", ["Transfer", "TransferWithPayload"]]),
   );
 }
 
@@ -33,21 +43,19 @@ export interface TokenBridge<N extends Network, P extends Platform, C extends Pl
   // Returns the address of the native version of this asset
   getWrappedAsset(foreignToken: TokenId<Chain>): Promise<NativeAddress<C>>;
   // Checks if a transfer VAA has been redeemed
-  isTransferCompleted(
-    vaa: TokenBridge.VAA<"Transfer" | "TransferWithPayload">
-  ): Promise<boolean>;
+  isTransferCompleted(vaa: TokenBridge.VAA<"Transfer" | "TransferWithPayload">): Promise<boolean>;
   // Create a Token Attestation VAA containing metadata about
-  // the token that may be submitted to a Token bridge on another chain 
+  // the token that may be submitted to a Token bridge on another chain
   // to allow it to create a wrapped version of the token
   createAttestation(
     token: TokenAddress<C>,
-    payer?: UniversalOrNative<C>
+    payer?: UniversalOrNative<C>,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
   // Submit the Token Attestation VAA to the Token bridge
   // to create the wrapped token represented by the data in the VAA
   submitAttestation(
     vaa: TokenBridge.VAA<"AttestMeta">,
-    payer?: UniversalOrNative<C>
+    payer?: UniversalOrNative<C>,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
   // Initiate a transfer of some token to another chain
   transfer(
@@ -55,30 +63,34 @@ export interface TokenBridge<N extends Network, P extends Platform, C extends Pl
     recipient: ChainAddress,
     token: TokenAddress<C>,
     amount: bigint,
-    payload?: Uint8Array
+    payload?: Uint8Array,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
   // Redeem a transfer VAA to receive the tokens on this chain
   redeem(
     sender: AccountAddress<C>,
     vaa: TokenBridge.VAA<"Transfer" | "TransferWithPayload">,
-    unwrapNative?: boolean //default: true
+    unwrapNative?: boolean, //TODO: set default to true
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
 
   // TODO: preview (receive amount, fees, gas estimates, estimated blocks/time)
 }
 
-export interface AutomaticTokenBridge<N extends Network, P extends Platform, C extends PlatformToChains<P>> {
+export interface AutomaticTokenBridge<
+  N extends Network,
+  P extends Platform,
+  C extends PlatformToChains<P>,
+> {
   transfer(
     sender: AccountAddress<C>,
     recipient: ChainAddress,
     token: TokenAddress<C>,
     amount: bigint,
     relayerFee: bigint,
-    nativeGas?: bigint
+    nativeGas?: bigint,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
   redeem(
     sender: AccountAddress<C>,
-    vaa: TokenBridge.VAA<"TransferWithPayload">
+    vaa: TokenBridge.VAA<"TransferWithPayload">,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
   getRelayerFee(
     sender: AccountAddress<C>,

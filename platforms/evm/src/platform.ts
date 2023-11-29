@@ -15,7 +15,7 @@ import {
   networkPlatformConfigs,
 } from '@wormhole-foundation/connect-sdk';
 
-import { Provider, getDefaultProvider } from 'ethers';
+import { JsonRpcProvider, Provider } from 'ethers';
 import * as ethers_contracts from './ethers-contracts';
 
 import { EvmAddress, EvmZeroAddress } from './address';
@@ -41,7 +41,7 @@ export class EvmPlatform<N extends Network> extends PlatformContext<
 
   getRpc<C extends EvmChains>(chain: C): Provider {
     if (chain in this.config)
-      return getDefaultProvider(this.config[chain]!.rpc);
+      return new JsonRpcProvider(this.config[chain]!.rpc);
     throw new Error('No configuration available for chain: ' + chain);
   }
 

@@ -43,7 +43,8 @@ const rpcConfig = [[
     ["Cosmoshub", "https://rpc.sentry-02.theta-testnet.polypore.xyz"],
     ["Evmos",     "https://evmos-testnet-rpc.polkachu.com"],
     ["Wormchain", "https://wormchain-testnet.jumpisolated.com"],
-    ["Xpla",      "https://cube-rpc.xpla.dev	"],
+    ["Xpla",      "https://cube-rpc.xpla.dev"],
+    ["Sepolia",   "https://ethereum-sepolia.publicnode.com"]
   ]], [
   "Devnet", [
     ["Ethereum",  "http://eth-devnet:8545"],
