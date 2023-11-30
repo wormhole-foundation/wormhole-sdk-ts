@@ -85,7 +85,7 @@ export abstract class ChainContext<
   // Get the token account for a given address
   async getTokenAccount(
     address: UniversalOrNative<C>,
-    token: TokenId<C>,
+    token: UniversalOrNative<C>,
   ): Promise<ChainAddress<C>> {
     // Noop by default, override in implementation if necessary
     return { chain: this.chain, address };

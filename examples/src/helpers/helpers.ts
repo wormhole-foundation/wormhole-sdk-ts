@@ -38,7 +38,7 @@ export interface TransferStuff<
   C extends PlatformToChains<P> = PlatformToChains<P>,
 > {
   chain: ChainContext<N, P, C>;
-  signer: Signer;
+  signer: Signer<N, C>;
   address: ChainAddress<C>;
 }
 
@@ -63,7 +63,11 @@ export async function getStuff<
       throw new Error("Unrecognized platform: " + platform);
   }
 
-  return { chain, signer, address: nativeChainAddress(chain.chain, signer.address()) };
+  return {
+    chain,
+    signer: signer as Signer<N, C>,
+    address: nativeChainAddress(chain.chain, signer.address()),
+  };
 }
 
 export async function waitLog(xfer: WormholeTransfer): Promise<void> {

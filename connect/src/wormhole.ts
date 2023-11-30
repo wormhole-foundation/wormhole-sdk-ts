@@ -7,7 +7,6 @@ import {
   circle,
 } from "@wormhole-foundation/sdk-base";
 import {
-  AccountAddress,
   ChainAddress,
   ChainContext,
   Contracts,
@@ -19,31 +18,26 @@ import {
   TokenAddress,
   TokenId,
   TxHash,
-  UniversalAddress,
   WormholeMessageId,
   deserialize,
   toNative,
 } from "@wormhole-foundation/sdk-definitions";
 
-import {
-  CIRCLE_RETRY_INTERVAL,
-  CONFIG,
-  DEFAULT_TASK_TIMEOUT,
-  WHSCAN_RETRY_INTERVAL,
-} from "./config";
+import { CONFIG, DEFAULT_TASK_TIMEOUT } from "./config";
 import { WormholeConfig } from "./types";
 
 import { CircleTransfer } from "./protocols/cctpTransfer";
 import { TokenTransfer } from "./protocols/tokenTransfer";
 
-import { getCircleAttestation } from "./circle-api";
+import { getCircleAttestationWithRetry } from "./circle-api";
 import { retry } from "./tasks";
 import {
   TransactionStatus,
-  getTransactionStatus,
+  getTransactionStatusWithRetry,
   getVaaBytesWithRetry,
   getVaaWithRetry,
 } from "./whscan-api";
+import { ChainToPlatform } from "@wormhole-foundation/sdk-base/src";
 
 export class Wormhole<N extends Network> {
   protected readonly _network: N;
@@ -187,7 +181,7 @@ export class Wormhole<N extends Network> {
    * @returns the chain context class
    * @throws Errors if context is not found
    */
-  getChain<P extends Platform, C extends PlatformToChains<P>>(chain: C): ChainContext<N, P, C> {
+  getChain<C extends Chain, P extends ChainToPlatform<C>>(chain: C): ChainContext<N, P, C> {
     const platform = chainToPlatform(chain);
     if (!this._chains.has(chain))
       this._chains.set(chain, this.getPlatform(platform).getChain(chain));
@@ -251,75 +245,45 @@ export class Wormhole<N extends Network> {
   ): Promise<ChainAddress<RC>> {
     const chain = this.getChain(recipient.chain);
     const tb = await chain.getTokenBridge();
-    const recipientLocal = {
-      chain: recipient.chain,
-      address: await tb.getWrappedAsset(token),
-    };
-
+    const recipientLocal = await tb.getWrappedAsset(token);
     return chain.getTokenAccount(recipient.address, recipientLocal);
   }
 
   /**
    * Gets the Raw VAA Bytes from the API or Guardian RPC, finality must be met before the VAA will be available.
-   * @param chain The chain name
-   * @param emitter The emitter address
-   * @param sequence The sequence number
-   * @param retries The number of times to retry
-   * @param opts The options for the request. Timeouts must be set in ms.
+   * @param wormholeMessageId The WormholeMessageId corresponding to the VAA to be fetched
+   * @param timeout The total amount of time to wait for the VAA to be available
    * @returns The VAA bytes if available
    * @throws Errors if the VAA is not available after the retries
    */
-  async getVaaBytes<C extends Chain>(
-    chain: C,
-    emitter: AccountAddress<C>,
-    sequence: bigint,
+  async getVaaBytes(
+    wormholeMessageId: WormholeMessageId,
     timeout: number = DEFAULT_TASK_TIMEOUT,
-  ): Promise<Uint8Array | undefined> {
-    return getVaaBytesWithRetry(
-      this.config.api,
-      {
-        chain,
-        sequence,
-        emitter: emitter.toUniversalAddress(),
-      },
-      timeout,
-    );
+  ): Promise<Uint8Array | null> {
+    return await getVaaBytesWithRetry(this.config.api, wormholeMessageId, timeout);
   }
 
   /**
    * Gets a VAA from the API or Guardian RPC, finality must be met before the VAA will be available.
-   * @param chain The chain name
-   * @param emitter The emitter address
-   * @param sequence The sequence number
+   * @param wormholeMessageId The WormholeMessageId corresponding to the VAA to be fetched
+   * @param decodeAs The VAA type to decode the bytes as
    * @param timeout The total amount of time to wait for the VAA to be available
    * @returns The VAA if available
    * @throws Errors if the VAA is not available after the retries
    */
-  async getVaa<T extends PayloadLiteral | PayloadDiscriminator, C extends Chain>(
-    chain: C,
-    emitter: AccountAddress<C>,
-    sequence: bigint,
+  async getVaa<T extends PayloadLiteral | PayloadDiscriminator>(
+    wormholeMessageId: WormholeMessageId,
     decodeAs: T,
     timeout: number = DEFAULT_TASK_TIMEOUT,
-  ): Promise<ReturnType<typeof deserialize<T>> | undefined> {
-    return getVaaWithRetry(
-      this.config.api,
-      {
-        chain,
-        sequence,
-        emitter: emitter.toUniversalAddress(),
-      },
-      decodeAs,
-      timeout,
-    );
+  ): Promise<ReturnType<typeof deserialize<T>> | null> {
+    return await getVaaWithRetry(this.config.api, wormholeMessageId, decodeAs, timeout);
   }
 
   async getCircleAttestation(
     msgHash: string,
     timeout: number = DEFAULT_TASK_TIMEOUT,
   ): Promise<string | null> {
-    const task = () => getCircleAttestation(this.config.circleAPI, msgHash);
-    return retry<string>(task, CIRCLE_RETRY_INTERVAL, timeout, "Circle:GetAttestation");
+    return getCircleAttestationWithRetry(this.config.circleAPI, msgHash, timeout);
   }
 
   /**
@@ -332,27 +296,10 @@ export class Wormhole<N extends Network> {
    */
 
   async getTransactionStatus(
-    chain: Chain,
-    emitter: UniversalAddress | NativeAddress<Platform>,
-    sequence: bigint,
+    wormholeMessageId: WormholeMessageId,
     timeout = DEFAULT_TASK_TIMEOUT,
-  ): Promise<TransactionStatus> {
-    const whm = {
-      chain,
-      emitter,
-      sequence,
-    } as WormholeMessageId;
-
-    const task = () => getTransactionStatus(this.config.api, whm);
-
-    const status = await retry<TransactionStatus>(
-      task,
-      WHSCAN_RETRY_INTERVAL,
-      timeout,
-      "Wormholescan:TransactionStatus",
-    );
-    if (!status) throw new Error(`No data available for : ${whm}`);
-    return status;
+  ): Promise<TransactionStatus | null> {
+    return getTransactionStatusWithRetry(this.config.api, wormholeMessageId, timeout);
   }
 
   /**
@@ -361,7 +308,7 @@ export class Wormhole<N extends Network> {
    * @param address The native address
    * @returns The address in the universal format
    */
-  parseAddress<C extends Chain>(chain: C, address: string): NativeAddress<C> {
+  static parseAddress<C extends Chain>(chain: C, address: string): NativeAddress<C> {
     return toNative(chain, address);
   }
 

@@ -511,9 +511,7 @@ export class GatewayTransfer<N extends Network> implements WormholeTransfer {
     const xfer = tb.redeem(toAddress, vaa);
     const redeemTxs = await signSendWait<N, typeof toChain.chain>(toChain, xfer, signer);
     this.transactions.push(...redeemTxs);
-
     this.state = TransferState.Completed;
-
     return redeemTxs.map(({ txid }) => txid);
   }
 
@@ -522,18 +520,8 @@ export class GatewayTransfer<N extends Network> implements WormholeTransfer {
     whm: WormholeMessageId,
     timeout?: number,
   ): Promise<TokenBridge.VAA<"Transfer" | "TransferWithPayload">> {
-    const { chain, emitter, sequence } = whm;
-
-    const vaa = await wh.getVaa(
-      chain,
-      emitter,
-      sequence,
-      TokenBridge.getTransferDiscriminator(),
-      timeout,
-    );
-
-    if (!vaa) throw new Error(`No VAA Available: ${chain}/${emitter}/${sequence}`);
-
+    const vaa = await wh.getVaa(whm, TokenBridge.getTransferDiscriminator(), timeout);
+    if (!vaa) throw new Error(`No VAA Available: ${whm.chain}/${whm.emitter}/${whm.sequence}`);
     return vaa;
   }
 

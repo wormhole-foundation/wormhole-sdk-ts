@@ -49,10 +49,8 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
     if (!this.transfer.automatic) return this.state;
     if (!this.vaas || this.vaas.length === 0) return this.state;
 
-    const { chain, emitter, sequence } = this.vaas[0]!.id;
-    const txStatus = await this.wh.getTransactionStatus(chain, emitter, sequence);
-
-    if (txStatus.globalTx.destinationTx) {
+    const txStatus = await this.wh.getTransactionStatus(this.vaas[0]!.id);
+    if (txStatus && txStatus.globalTx.destinationTx) {
       switch (txStatus.globalTx.destinationTx.status) {
         case "completed":
           this.state = TransferState.Completed;
@@ -343,14 +341,7 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
     whm: WormholeMessageId,
     timeout?: number,
   ): Promise<TokenBridge.VAA<"Transfer" | "TransferWithPayload">> {
-    const { chain, emitter, sequence } = whm;
-    const vaa = await wh.getVaa(
-      chain,
-      emitter,
-      sequence,
-      TokenBridge.getTransferDiscriminator(),
-      timeout,
-    );
+    const vaa = await wh.getVaa(whm, TokenBridge.getTransferDiscriminator(), timeout);
     if (!vaa) throw new Error(`No VAA available after retries exhausted`);
     return vaa;
   }

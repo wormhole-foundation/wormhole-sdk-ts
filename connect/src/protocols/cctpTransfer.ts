@@ -1,13 +1,11 @@
-import { Network, Chain, Platform, encoding, circle } from "@wormhole-foundation/sdk-base";
+import { Network, circle, encoding } from "@wormhole-foundation/sdk-base";
 import {
   CircleAttestation,
   CircleMessageId,
-  NativeAddress,
   ProtocolVAA,
   Signer,
   TransactionId,
   TxHash,
-  UniversalAddress,
   UnsignedTransaction,
   WormholeMessageId,
   deserializeCircleMessage,
@@ -119,8 +117,8 @@ export class CircleTransfer<N extends Network> implements WormholeTransfer {
     from: WormholeMessageId,
     timeout: number,
   ): Promise<CircleTransfer<N>> {
-    const { chain, emitter, sequence } = from;
-    const vaa = await CircleTransfer.getTransferVaa(wh, chain, emitter, sequence);
+    const { chain, emitter } = from;
+    const vaa = await CircleTransfer.getTransferVaa(wh, from);
 
     const rcvAddress = vaa.payload.mintRecipient;
     const rcvChain = circle.toCircleChain(vaa.payload.targetDomain);
@@ -264,13 +262,7 @@ export class CircleTransfer<N extends Network> implements WormholeTransfer {
     for (const idx in this.vaas) {
       // already got it
       if (this.vaas[idx]!.vaa) continue;
-
-      this.vaas[idx]!.vaa = await CircleTransfer.getTransferVaa(
-        this.wh,
-        this.transfer.from.chain,
-        this.vaas[idx]!.id.emitter,
-        this.vaas[idx]!.id.sequence,
-      );
+      this.vaas[idx]!.vaa = await CircleTransfer.getTransferVaa(this.wh, this.vaas[idx]!.id);
     }
 
     return this.vaas.map((v) => v.id);
@@ -376,20 +368,11 @@ export class CircleTransfer<N extends Network> implements WormholeTransfer {
 
   static async getTransferVaa<N extends Network>(
     wh: Wormhole<N>,
-    chain: Chain,
-    emitter: UniversalAddress | NativeAddress<Platform>,
-    sequence: bigint,
+    wormholeMessageId: WormholeMessageId,
     timeout?: number,
   ): Promise<AutomaticCircleBridgeVAA<"TransferRelay">> {
-    const vaa = await wh.getVaa(
-      chain,
-      emitter,
-      sequence,
-      "AutomaticCircleBridge:TransferRelay",
-      timeout,
-    );
+    const vaa = await wh.getVaa(wormholeMessageId, "AutomaticCircleBridge:TransferRelay", timeout);
     if (!vaa) throw new Error(`No VAA available after timeout exhausted`);
-
     return vaa;
   }
 }

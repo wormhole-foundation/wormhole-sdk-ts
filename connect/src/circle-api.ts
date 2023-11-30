@@ -1,4 +1,6 @@
 import axios from "axios";
+import { CIRCLE_RETRY_INTERVAL } from "./config";
+import { retry } from "./tasks";
 
 // Note: mostly ripped off from https://github.com/circlefin/cctp-sample-app/blob/master/src/services/attestationService.ts
 
@@ -41,4 +43,13 @@ export async function getCircleAttestation(
 
     throw error;
   }
+}
+
+export async function getCircleAttestationWithRetry(
+  circleApi: string,
+  msgHash: string,
+  timeout: number,
+): Promise<string | null> {
+  const task = () => getCircleAttestation(circleApi, msgHash);
+  return retry<string>(task, CIRCLE_RETRY_INTERVAL, timeout, "Circle:GetAttestation");
 }

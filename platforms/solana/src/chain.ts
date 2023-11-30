@@ -4,7 +4,6 @@ import {
   ChainContext,
   NativeAddress,
   Network,
-  TokenId,
   UniversalOrNative,
 } from '@wormhole-foundation/connect-sdk';
 import { SolanaAddress } from './address';
@@ -16,9 +15,9 @@ export class SolanaChain<
 > extends ChainContext<N, SolanaPlatformType, C> {
   override async getTokenAccount(
     address: UniversalOrNative<C>,
-    token: TokenId<C>,
+    token: UniversalOrNative<C>,
   ): Promise<ChainAddress<C>> {
-    const mint = token.address.toNative(this.chain).unwrap();
+    const mint = token.toNative(this.chain).unwrap();
     const owner = new SolanaAddress(address).unwrap();
     const ata = await getAssociatedTokenAddress(mint, owner);
     return {
