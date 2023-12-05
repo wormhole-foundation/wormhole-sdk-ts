@@ -34,6 +34,7 @@ import { retry } from "./tasks";
 import {
   TransactionStatus,
   getTransactionStatusWithRetry,
+  getVaaByTxHashWithRetry,
   getVaaBytesWithRetry,
   getVaaWithRetry,
 } from "./whscan-api";
@@ -239,14 +240,11 @@ export class Wormhole<N extends Network> {
    * @param recipient the address of the primary account that may require a separate token account
    * @returns
    */
-  async getTokenAccount<SC extends Chain, RC extends Chain>(
-    recipient: ChainAddress<RC>,
-    token: TokenId<SC>,
-  ): Promise<ChainAddress<RC>> {
-    const chain = this.getChain(recipient.chain);
-    const tb = await chain.getTokenBridge();
-    const recipientLocal = await tb.getWrappedAsset(token);
-    return chain.getTokenAccount(recipient.address, recipientLocal);
+  async getTokenAccount<C extends Chain>(
+    recipient: ChainAddress<C>,
+    token: TokenId<C>,
+  ): Promise<ChainAddress<C>> {
+    return this.getChain(recipient.chain).getTokenAccount(recipient.address, token.address);
   }
 
   /**
@@ -279,6 +277,29 @@ export class Wormhole<N extends Network> {
     return await getVaaWithRetry(this.config.api, wormholeMessageId, decodeAs, timeout);
   }
 
+  /**
+   * Gets a VAA from the API or Guardian RPC, finality must be met before the VAA will be available.
+   * @param txid The Transaction Hash corresponding to the transaction that cause the wormhole core contract to emit a vaa
+   * @param decodeAs The VAA type to decode the bytes as
+   * @param timeout The total amount of time to wait for the VAA to be available
+   * @returns The VAA if available
+   * @throws Errors if the VAA is not available after the retries
+   */
+  async getVaaByTxHash<T extends PayloadLiteral | PayloadDiscriminator>(
+    txid: TxHash,
+    decodeAs: T,
+    timeout: number = DEFAULT_TASK_TIMEOUT,
+  ): Promise<ReturnType<typeof deserialize<T>> | null> {
+    return await getVaaByTxHashWithRetry(this.config.api, txid, decodeAs, timeout);
+  }
+
+  /**
+   * Gets the CircleAttestation corresponding to the message hash logged in the transfer transaction.
+   * @param msgHash  The keccak256 hash of the message emitted by the circle contract
+   * @param timeout The total amount of time to wait for the VAA to be available
+   * @returns The CircleAttestation as a string, if available
+   * @throws Errors if the CircleAttestation is not available after the retries
+   */
   async getCircleAttestation(
     msgHash: string,
     timeout: number = DEFAULT_TASK_TIMEOUT,
@@ -289,12 +310,9 @@ export class Wormhole<N extends Network> {
   /**
    * Get the status of a transaction, identified by the chain, emitter address, and sequence number
    *
-   * @param chain the chain name
-   * @param emitter the emitter address
-   * @param sequence the sequence number
+   * @param wormholeMessageId the message id for the Wormhole Message to get transaction status for
    * @returns the TransactionStatus
    */
-
   async getTransactionStatus(
     wormholeMessageId: WormholeMessageId,
     timeout = DEFAULT_TASK_TIMEOUT,
@@ -305,8 +323,9 @@ export class Wormhole<N extends Network> {
   /**
    * Parse an address to a universal address
    *
-   * @param address The native address
-   * @returns The address in the universal format
+   * @param chain The chain the address is for
+   * @param address The native address in canonical string format
+   * @returns The address in the NativeAddress format
    */
   static parseAddress<C extends Chain>(chain: C, address: string): NativeAddress<C> {
     return toNative(chain, address);

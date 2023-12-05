@@ -84,31 +84,8 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
   ): Promise<TokenTransfer<N>> {
     if (isTokenTransferDetails(from)) {
       await TokenTransfer.validateTransferDetails(wh, from);
-
-      // Bit of (temporary) hackery until solana contracts support being
-      // sent a VAA with the primary address
-      if (from.to.chain === "Solana") {
-        // source token id
-        const token: TokenId =
-          from.token === "native"
-            ? await wh.getChain(from.from.chain).getNativeWrappedTokenId()
-            : from.token;
-        from.to = await wh.getTokenAccount(from.to, token);
-      }
-
-      if (from.to.chain === "Sei") {
-        // For sei, we reserve the payload for a token transfer through the sei bridge.
-        from.payload = encoding.bytes.encode(
-          JSON.stringify({
-            basic_recipient: {
-              recipient: encoding.b64.encode(from.to.address.toString()),
-            },
-          }),
-        );
-
-        from.to = nativeChainAddress(from.to.chain, wh.getContracts("Sei")!.translator!);
-      }
-
+      // Apply hackery
+      from = { ...from, ...(await TokenTransfer.destinationOverrides(wh, from)) };
       return new TokenTransfer(wh, from);
     }
 
@@ -132,32 +109,25 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
   ): Promise<TokenTransfer<N>> {
     const vaa = await TokenTransfer.getTransferVaa(wh, id, timeout);
 
-    const { chain, address } = vaa.payload.to;
-    const { tokenBridgeRelayer } = wh.config.chains[chain]!.contracts;
-    const relayerAddress = tokenBridgeRelayer
-      ? nativeChainAddress(chain, tokenBridgeRelayer).address.toUniversalAddress()
-      : null;
-
     // Check if its a payload 3 targeted at a relayer on the destination chain
-    const automatic =
-      vaa.payloadName === "TransferWithPayload" &&
-      !!relayerAddress &&
-      address.equals(relayerAddress);
+    const automatic = TokenTransfer.isAutomatic(wh, vaa);
 
-    const token = vaa.payload.token;
+    // TODO: the `from.address` here is a lie, but we don't
+    // immediately have enough info to get the _correct_ one
+    // TODO: grab at least the init tx from the api
+    const from = { chain: vaa.emitterChain, address: vaa.emitterAddress };
 
+    const { token, to } = vaa.payload;
     const details: TokenTransferDetails = {
-      token: { chain: token.chain, address: token.address },
       amount: token.amount,
-      // TODO: the `from.address` here is a lie, but we don't
-      // immediately have enough info to get the _correct_ one
-      from: { chain: id.chain, address: id.emitter },
-      to: { ...vaa.payload.to },
+      token,
+      from,
+      to,
       automatic,
     };
 
     const tt = new TokenTransfer(wh, details);
-    tt.vaas = [{ id: id, vaa }];
+    tt.vaas = [{ id, vaa }];
     tt.state = TransferState.Attested;
     return tt;
   }
@@ -187,12 +157,8 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
     if (this.state !== TransferState.Created)
       throw new Error("Invalid state transition in `start`");
 
-    this.txids = await TokenTransfer.transfer(
-      this.wh.getChain(this.transfer.from.chain),
-      this.transfer,
-      signer,
-    );
-
+    const fromChain = this.wh.getChain(this.transfer.from.chain);
+    this.txids = await TokenTransfer.transfer(fromChain, this.transfer, signer);
     this.state = TransferState.Initiated;
     return this.txids.map(({ txid }) => txid);
   }
@@ -326,6 +292,18 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
     return signSendWait<N, C>(toChain, xfer, signer);
   }
 
+  static async isTransferComplete<
+    N extends Network,
+    P extends Platform,
+    C extends PlatformToChains<P>,
+  >(
+    toChain: ChainContext<N, P, C>,
+    vaa: TokenBridge.VAA<"Transfer" | "TransferWithPayload">,
+  ): Promise<boolean> {
+    const tb = await toChain.getTokenBridge();
+    return tb.isTransferCompleted(vaa);
+  }
+
   static async getTransferMessage<
     N extends Network,
     P extends Platform,
@@ -333,17 +311,68 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
   >(chain: ChainContext<N, P, C>, txid: TxHash, timeout?: number): Promise<WormholeMessageId> {
     // A Single wormhole message will be returned for a standard token transfer
     const whm = await Wormhole.parseMessageFromTx(chain, txid, timeout);
+    if (whm.length !== 1) throw new Error("Expected a single Wormhole Message, got: " + whm.length);
     return whm[0]!;
   }
 
   static async getTransferVaa<N extends Network>(
     wh: Wormhole<N>,
-    whm: WormholeMessageId,
+    key: WormholeMessageId | TxHash,
     timeout?: number,
   ): Promise<TokenBridge.VAA<"Transfer" | "TransferWithPayload">> {
-    const vaa = await wh.getVaa(whm, TokenBridge.getTransferDiscriminator(), timeout);
+    const vaa =
+      typeof key === "string"
+        ? await wh.getVaaByTxHash(key, TokenBridge.getTransferDiscriminator(), timeout)
+        : await wh.getVaa(key, TokenBridge.getTransferDiscriminator(), timeout);
+
     if (!vaa) throw new Error(`No VAA available after retries exhausted`);
     return vaa;
+  }
+
+  static async lookupDestinationToken<N extends Network>(
+    wh: Wormhole<N>,
+    transfer: TokenTransferDetails,
+  ): Promise<TokenId> {
+    // that will be minted when the transfer is redeemed
+    let lookup: TokenId;
+    if (transfer.token === "native") {
+      // if native, get the wrapped asset id
+      lookup = await wh.getChain(transfer.from.chain).getNativeWrappedTokenId();
+    } else {
+      try {
+        // otherwise, check to see if it is a wrapped token locally
+        lookup = await wh.getWrappedAsset(transfer.from.chain, transfer.token);
+      } catch {
+        // not a from-chain native wormhole-wrapped one
+        lookup = transfer.token;
+      }
+    }
+
+    // if the token id is actually native to the destination, return it
+    if (lookup.chain === transfer.to.chain) {
+      return lookup;
+    }
+    // otherwise, figure out what the token address representing the wormhole-wrapped token we're transferring
+    return await wh.getWrappedAsset(transfer.to.chain, lookup);
+  }
+
+  static isAutomatic<N extends Network>(
+    wh: Wormhole<N>,
+    vaa: TokenBridge.VAA<"Transfer" | "TransferWithPayload">,
+  ) {
+    // Check if its a payload 3 targeted at a relayer on the destination chain
+    const { chain, address } = vaa.payload.to;
+    const { tokenBridgeRelayer } = wh.config.chains[chain]!.contracts;
+
+    const relayerAddress = tokenBridgeRelayer
+      ? nativeChainAddress(chain, tokenBridgeRelayer).address.toUniversalAddress()
+      : null;
+
+    return (
+      vaa.payloadName === "TransferWithPayload" &&
+      !!relayerAddress &&
+      address.equals(relayerAddress)
+    );
   }
 
   static async validateTransferDetails<N extends Network>(
@@ -368,14 +397,39 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
     if (transfer.automatic && !fromChain.supportsAutomaticTokenBridge())
       throw new Error(`Automatic Token Bridge not supported on ${transfer.from.chain}`);
 
-    if (transfer.to.chain === "Sei" && transfer.payload)
-      throw new Error("Arbitrary payloads unsupported for Sei");
-
     if (transfer.amount === 0n) throw new Error("Amount cannot be 0");
+  }
 
-    // TODO: Make sure the token exists on the destination chain
-    // const token: TokenId =
-    //   transfer.token === "native" ? await fromChain.getNativeWrappedTokenId() : transfer.token;
-    // await wh.getWrappedAsset(transfer.to.chain, token);
+  static async destinationOverrides<N extends Network>(
+    wh: Wormhole<N>,
+    _transfer: TokenTransferDetails,
+  ): Promise<TokenTransferDetails> {
+    const transfer = { ..._transfer };
+
+    // Bit of (temporary) hackery until solana contracts support being
+    // sent a VAA with the primary address
+    if (transfer.to.chain === "Solana") {
+      // TODO: check for native
+      const destinationToken = await TokenTransfer.lookupDestinationToken(wh, transfer);
+      transfer.to = await wh.getTokenAccount(transfer.to, destinationToken);
+    }
+
+    if (transfer.to.chain === "Sei") {
+      if (transfer.to.chain === "Sei" && transfer.payload)
+        throw new Error("Arbitrary payloads unsupported for Sei");
+
+      // For sei, we reserve the payload for a token transfer through the sei bridge.
+      transfer.payload = encoding.bytes.encode(
+        JSON.stringify({
+          basic_recipient: {
+            recipient: encoding.b64.encode(transfer.to.address.toString()),
+          },
+        }),
+      );
+
+      transfer.to = nativeChainAddress(transfer.to.chain, wh.getContracts("Sei")!.translator!);
+    }
+
+    return transfer;
   }
 }

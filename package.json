@@ -1,6 +1,6 @@
 {
   "name": "connect-sdk",
-  "version": "0.2.1-beta.0",
+  "version": "0.2.1-beta.2",
   "license": "Apache-2.0",
   "directories": {
     "test": "__tests__"
@@ -49,10 +49,10 @@
     "platforms/cosmwasm",
     "platforms/cosmwasm/protocols/core",
     "platforms/cosmwasm/protocols/tokenBridge",
-    "platforms/cosmwasm/protocols/ibc",
-    "examples"
+    "platforms/cosmwasm/protocols/ibc"
   ],
   "unreleased": [
+    "examples",
     "core/tokenRegistry",
     "platforms/aptos",
     "platforms/aptos/protocols/core",

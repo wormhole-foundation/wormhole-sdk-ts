@@ -111,7 +111,6 @@ async function tokenTransfer<N extends Network>(
     payload,
     nativeGas,
   );
-  console.log(xfer);
 
   // 1) Submit the transactions to the source chain, passing a signer to sign any txns
   console.log("Starting transfer");

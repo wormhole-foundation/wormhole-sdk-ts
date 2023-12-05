@@ -260,30 +260,37 @@ export async function getRelayStatusWithRetry(
 
 export async function getVaaByTxHash(rpcUrl: string, txid: string): Promise<ApiVaa | null> {
   const url = `${rpcUrl}/v1/vaas?txHash=${txid}`;
-
   try {
     const response = await axios.get<{ data: ApiVaa[] }>(url);
     if (response.data.data.length > 0) return response.data.data[0]!;
   } catch (error) {
     if (!error) return null;
-
     if (typeof error === "object") {
       // A 404 error means the VAA is not yet available
       // since its not available yet, we return null signaling it can be tried again
       if (axios.isAxiosError(error) && error.response?.status === 404) return null;
       if ("status" in error && error.status === 404) return null;
     }
-
     throw error;
   }
-
   return null;
 }
-export async function getVaaByTxHashWithRetry(
+
+export async function getVaaByTxHashWithRetry<T extends PayloadLiteral | PayloadDiscriminator>(
   rpcUrl: string,
   txid: TxHash,
+  decodeAs: T,
   timeout: number,
-): Promise<ApiVaa | null> {
+): Promise<ReturnType<typeof deserialize<T>> | null> {
   const task = () => getVaaByTxHash(rpcUrl, txid);
-  return await retry<ApiVaa>(task, WHSCAN_RETRY_INTERVAL, timeout, "Wormholescan:GetRelayStatus");
+  const vaa = await retry<ApiVaa>(
+    task,
+    WHSCAN_RETRY_INTERVAL,
+    timeout,
+    "Wormholescan:GetVaaByTxHash",
+  );
+
+  if (!vaa) return null;
+
+  return deserialize(decodeAs, encoding.b64.decode(vaa.vaa));
 }
