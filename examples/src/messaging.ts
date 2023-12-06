@@ -31,4 +31,11 @@ import { Connection } from "@solana/web3.js";
     signer,
   );
   console.log(postedTxs);
+
+  const rePostedTxs = await signSendWait(
+    solChain,
+    coreBridge.postVaa(address.address, vaa!, blockhash),
+    signer,
+  );
+  console.log(rePostedTxs);
 })();
