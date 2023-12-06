@@ -1,8 +1,9 @@
 import { Program } from '@project-serum/anchor';
 import {
   Connection,
-  GetVersionedTransactionConfig,
   Keypair,
+  MessageAccountKeys,
+  MessageCompiledInstruction,
   Transaction,
   VersionedTransactionResponse,
 } from '@solana/web3.js';
@@ -129,36 +130,83 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
   }
 
   async parseTransaction(txid: string): Promise<WormholeMessageId[]> {
-    const config: GetVersionedTransactionConfig = {
-      maxSupportedTransactionVersion: 0,
-    };
-
     const response: VersionedTransactionResponse | null =
-      await this.connection.getTransaction(txid, config);
+      await this.connection.getTransaction(txid, {
+        maxSupportedTransactionVersion: 0,
+      });
 
-    if (!response || !response.meta?.innerInstructions![0]?.instructions)
+    if (!response || !response.meta || !response.meta.innerInstructions)
       throw new Error('transaction not found');
 
-    const instructions = response.meta?.innerInstructions![0].instructions;
-    const accounts = response.transaction.message.getAccountKeys();
+    // Resolve any LUT accounts if necessary
+    let accounts: MessageAccountKeys;
+    // a string type is indicative of a 'legacy' transaction
+    if (typeof response.transaction.message.version !== 'string') {
+      if (response.meta.loadedAddresses) {
+        accounts = response.transaction.message.getAccountKeys({
+          accountKeysFromLookups: response.meta.loadedAddresses,
+        });
+      } else {
+        const atls = await Promise.all(
+          response.transaction.message.addressTableLookups.map(async (atl) => {
+            const lut = await this.connection.getAddressLookupTable(
+              atl.accountKey,
+            );
+
+            if (!lut || !lut.value)
+              throw new Error(
+                'Could not resolve lookup table: ' + atl.accountKey.toBase58(),
+              );
+
+            return lut.value;
+          }),
+        );
+        accounts = response.transaction.message.getAccountKeys({
+          addressLookupTableAccounts: atls,
+        });
+      }
+    } else {
+      accounts = response.transaction.message.getAccountKeys();
+    }
 
     // find the instruction where the programId equals the Wormhole ProgramId
-    const bridgeInstructions = instructions.filter((i) => {
+    const iix = response.meta.innerInstructions[0]!.instructions.filter((i) => {
       const programId = accounts.get(i.programIdIndex)!.toString();
       const wormholeCore = this.coreBridge.programId.toString();
+      console.log(programId, wormholeCore);
       return programId === wormholeCore;
+    }).map((ix) => {
+      // map over inner ixs to put it in the same format as the compiled instructions
+      // from the message
+      return {
+        programIdIndex: ix.programIdIndex,
+        accountKeyIndexes: ix.accounts,
+      } as MessageCompiledInstruction;
     });
 
-    if (bridgeInstructions.length === 0)
+    const cix = response.transaction.message.compiledInstructions.filter(
+      (i) => {
+        const programId = accounts.get(i.programIdIndex)!.toString();
+        const wormholeCore = this.coreBridge.programId.toString();
+        console.log(programId, wormholeCore);
+        return programId === wormholeCore;
+      },
+    );
+
+    // find the instruction where the programId equals the Wormhole ProgramId
+    const bridgeInstructions = [...iix, ...cix];
+    if (!bridgeInstructions || bridgeInstructions.length === 0)
       throw new Error('no bridge messages found');
 
     const messagePromises = bridgeInstructions.map(async (bi) => {
-      const messageAcct = accounts.get(bi.accounts[1]!);
-      const emitterAcct = accounts.get(bi.accounts[2]!);
-      const emitter = toNative(this.chain, emitterAcct!.toString());
+      const messageAcct = accounts.get(bi.accountKeyIndexes[1]!);
 
       const acctInfo = await this.connection.getAccountInfo(messageAcct!);
       const sequence = acctInfo!.data.readBigUInt64LE(49);
+
+      const emitterAddr = new Uint8Array(acctInfo!.data.subarray(59, 91));
+      const emitter = toNative(this.chain, emitterAddr);
+
       return {
         chain: this.chain,
         emitter: emitter.toUniversalAddress(),
