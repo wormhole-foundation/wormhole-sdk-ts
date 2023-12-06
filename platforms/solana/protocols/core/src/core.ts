@@ -1,5 +1,11 @@
 import { Program } from '@project-serum/anchor';
-import { Connection, Keypair, Transaction } from '@solana/web3.js';
+import {
+  Connection,
+  GetVersionedTransactionConfig,
+  Keypair,
+  Transaction,
+  VersionedTransactionResponse,
+} from '@solana/web3.js';
 import {
   ChainId,
   ChainsConfig,
@@ -26,8 +32,6 @@ import {
   createReadOnlyWormholeProgramInterface,
   createVerifySignaturesInstructions,
 } from './utils';
-
-const SOLANA_SEQ_LOG = 'Program log: Sequence: ';
 
 export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
   implements WormholeCore<N, SolanaPlatformType, C>
@@ -125,16 +129,22 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
   }
 
   async parseTransaction(txid: string): Promise<WormholeMessageId[]> {
-    const response = await this.connection.getTransaction(txid);
+    const config: GetVersionedTransactionConfig = {
+      maxSupportedTransactionVersion: 0,
+    };
+
+    const response: VersionedTransactionResponse | null =
+      await this.connection.getTransaction(txid, config);
+
     if (!response || !response.meta?.innerInstructions![0]?.instructions)
       throw new Error('transaction not found');
 
     const instructions = response.meta?.innerInstructions![0].instructions;
-    const accounts = response.transaction.message.accountKeys;
+    const accounts = response.transaction.message.getAccountKeys();
 
-    // find the instruction where the programId equals the Wormhole ProgramId and the emitter equals the Token Bridge
+    // find the instruction where the programId equals the Wormhole ProgramId
     const bridgeInstructions = instructions.filter((i) => {
-      const programId = accounts[i.programIdIndex]!.toString();
+      const programId = accounts.get(i.programIdIndex)!.toString();
       const wormholeCore = this.coreBridge.programId.toString();
       return programId === wormholeCore;
     });
@@ -142,26 +152,21 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
     if (bridgeInstructions.length === 0)
       throw new Error('no bridge messages found');
 
-    // TODO: unsure about the single bridge instruction and the [2] index, will this always be the case?
-    const [logmsg] = bridgeInstructions;
-    const emitterAcct = accounts[logmsg!.accounts[2]!];
-    const emitter = toNative(this.chain, emitterAcct!.toString());
+    const messagePromises = bridgeInstructions.map(async (bi) => {
+      const messageAcct = accounts.get(bi.accounts[1]!);
+      const emitterAcct = accounts.get(bi.accounts[2]!);
+      const emitter = toNative(this.chain, emitterAcct!.toString());
 
-    const sequence = response.meta?.logMessages
-      ?.filter((msg) => msg.startsWith(SOLANA_SEQ_LOG))?.[0]
-      ?.replace(SOLANA_SEQ_LOG, '');
-
-    if (!sequence) {
-      throw new Error('sequence not found');
-    }
-
-    return [
-      {
+      const acctInfo = await this.connection.getAccountInfo(messageAcct!);
+      const sequence = acctInfo!.data.readBigUInt64LE(49);
+      return {
         chain: this.chain,
         emitter: emitter.toUniversalAddress(),
         sequence: BigInt(sequence),
-      },
-    ];
+      };
+    });
+
+    return await Promise.all(messagePromises);
   }
 
   private createUnsignedTx(
