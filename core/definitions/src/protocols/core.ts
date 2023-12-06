@@ -12,6 +12,8 @@ export interface WormholeCore<
   publishMessage(
     sender: AccountAddress<C>,
     message: string | Uint8Array,
+    nonce: number,
+    consistencyLevel: number,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
   parseTransaction(txid: TxHash): Promise<WormholeMessageId[]>;
   // TODO: events?

@@ -81,7 +81,9 @@ export class EvmWormholeCore<
 
   async *publishMessage(
     sender: AnyEvmAddress,
-    message: Uint8Array | string,
+    message: Uint8Array,
+    nonce: number,
+    consistencyLevel: number,
   ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
     const senderAddr = new EvmAddress(sender).toString();
 

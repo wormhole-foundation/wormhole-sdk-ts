@@ -49,7 +49,9 @@ export class CosmwasmWormholeCore<N extends Network, C extends CosmwasmChains>
 
   async *publishMessage(
     sender: AnyCosmwasmAddress,
-    message: string | Uint8Array,
+    message: Uint8Array,
+    nonce: number,
+    consistencyLevel: number,
   ): AsyncGenerator<CosmwasmUnsignedTransaction<N, C>> {
     throw new Error("Method not implemented.");
   }

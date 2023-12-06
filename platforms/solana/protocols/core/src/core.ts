@@ -82,7 +82,12 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
     );
   }
 
-  async *publishMessage(sender: AnySolanaAddress, message: Uint8Array) {
+  async *publishMessage(
+    sender: AnySolanaAddress,
+    message: Uint8Array,
+    nonce: number,
+    consistencyLevel: number,
+  ) {
     const messageAccount = Keypair.generate();
     const payer = new SolanaAddress(sender).unwrap();
     const postMsgIx = createPostMessageInstruction(
@@ -91,8 +96,8 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
       payer,
       messageAccount.publicKey,
       message,
-      0,
-      1,
+      nonce,
+      consistencyLevel,
     );
 
     const { blockhash } = await this.connection.getLatestBlockhash();
@@ -105,7 +110,10 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
     yield this.createUnsignedTx(transaction, 'Core.PublishMessage');
   }
 
-  async *postVaa(sender: AnySolanaAddress, vaa: VAA, blockhash: string) {
+  async *postVaa(sender: AnySolanaAddress, vaa: VAA, blockhash?: string) {
+    if (!blockhash)
+      ({ blockhash } = await this.connection.getLatestBlockhash());
+
     const senderAddr = new SolanaAddress(sender).unwrap();
     const signatureSet = Keypair.generate();
 
@@ -129,6 +137,9 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
 
       yield this.createUnsignedTx(verifySigTx, 'Core.VerifySignature', true);
     }
+
+    // TODO: if VAA is already posted, just, like, dont post it again man
+    // if(this.connection.getAccountInfo(postedVaaAddress))
 
     // Finally create the VAA posting transaction
     const postVaaTx = new Transaction().add(
