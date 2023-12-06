@@ -1,15 +1,18 @@
 import {
+  Connection,
   PublicKey,
   PublicKeyInitData,
   SYSVAR_CLOCK_PUBKEY,
   SYSVAR_RENT_PUBKEY,
   SystemProgram,
+  TransactionInstruction,
 } from '@solana/web3.js';
 import {
   deriveWormholeBridgeDataKey,
   deriveFeeCollectorKey,
-  getEmitterKeys,
+  deriveEmitterSequenceKey,
 } from '../accounts';
+import { createReadOnlyWormholeProgramInterface } from '../program';
 
 /** All accounts required to make a cross-program invocation with the Core Bridge program */
 export interface PostMessageAccounts {
@@ -24,20 +27,46 @@ export interface PostMessageAccounts {
   systemProgram: PublicKey;
 }
 
+export function createPostMessageInstruction(
+  connection: Connection,
+  wormholeProgramId: PublicKeyInitData,
+  payer: PublicKeyInitData,
+  messageAccount: PublicKeyInitData,
+  payload: Uint8Array,
+  nonce: number,
+  consistencyLevel: number,
+): TransactionInstruction {
+  const methods = createReadOnlyWormholeProgramInterface(
+    wormholeProgramId,
+    connection,
+  ).methods.postMessage(nonce, Buffer.from(payload), consistencyLevel);
+
+  // @ts-ignore
+  return methods._ixFn(...methods._args, {
+    accounts: getPostMessageAccounts(
+      wormholeProgramId,
+      payer,
+      payer,
+      messageAccount,
+    ),
+    signers: undefined,
+    remainingAccounts: undefined,
+    preInstructions: undefined,
+    postInstructions: undefined,
+  });
+}
+
 export function getPostMessageAccounts(
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  emitterProgramId: PublicKeyInitData,
+  emitter: PublicKeyInitData,
   message: PublicKeyInitData,
 ): PostMessageAccounts {
-  const { emitter, sequence } = getEmitterKeys(
-    emitterProgramId,
-    wormholeProgramId,
-  );
+  const sequence = deriveEmitterSequenceKey(emitter, wormholeProgramId);
   return {
     bridge: deriveWormholeBridgeDataKey(wormholeProgramId),
     message: new PublicKey(message),
-    emitter,
+    emitter: new PublicKey(emitter),
     sequence,
     payer: new PublicKey(payer),
     feeCollector: deriveFeeCollectorKey(wormholeProgramId),

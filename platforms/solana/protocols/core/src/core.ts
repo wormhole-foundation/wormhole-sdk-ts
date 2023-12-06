@@ -29,6 +29,7 @@ import {
 } from '@wormhole-foundation/connect-sdk-solana';
 import { Wormhole as WormholeCoreContract } from './types';
 import {
+  createPostMessageInstruction,
   createPostVaaInstruction,
   createReadOnlyWormholeProgramInterface,
   createVerifySignaturesInstructions,
@@ -81,11 +82,27 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
     );
   }
 
-  publishMessage(
-    sender: AnySolanaAddress,
-    message: string | Uint8Array,
-  ): AsyncGenerator<SolanaUnsignedTransaction<N, C>> {
-    throw new Error('Method not implemented.');
+  async *publishMessage(sender: AnySolanaAddress, message: Uint8Array) {
+    const messageAccount = Keypair.generate();
+    const payer = new SolanaAddress(sender).unwrap();
+    const postMsgIx = createPostMessageInstruction(
+      this.connection,
+      this.coreBridge.programId,
+      payer,
+      messageAccount.publicKey,
+      message,
+      0,
+      1,
+    );
+
+    const { blockhash } = await this.connection.getLatestBlockhash();
+    const transaction = new Transaction();
+    transaction.recentBlockhash = blockhash;
+    transaction.feePayer = payer;
+    transaction.add(postMsgIx);
+    transaction.partialSign(messageAccount);
+
+    yield this.createUnsignedTx(transaction, 'Core.PublishMessage');
   }
 
   async *postVaa(sender: AnySolanaAddress, vaa: VAA, blockhash: string) {
@@ -110,7 +127,7 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
       verifySigTx.feePayer = senderAddr;
       verifySigTx.partialSign(signatureSet);
 
-      yield this.createUnsignedTx(verifySigTx, 'Redeem.VerifySignature', true);
+      yield this.createUnsignedTx(verifySigTx, 'Core.VerifySignature', true);
     }
 
     // Finally create the VAA posting transaction
@@ -126,7 +143,7 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
     postVaaTx.recentBlockhash = blockhash;
     postVaaTx.feePayer = senderAddr;
 
-    yield this.createUnsignedTx(postVaaTx, 'Redeem.PostVAA');
+    yield this.createUnsignedTx(postVaaTx, 'Core.PostVAA');
   }
 
   async parseTransaction(txid: string): Promise<WormholeMessageId[]> {
@@ -173,7 +190,6 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
     const iix = response.meta.innerInstructions[0]!.instructions.filter((i) => {
       const programId = accounts.get(i.programIdIndex)!.toString();
       const wormholeCore = this.coreBridge.programId.toString();
-      console.log(programId, wormholeCore);
       return programId === wormholeCore;
     }).map((ix) => {
       // map over inner ixs to put it in the same format as the compiled instructions
@@ -188,7 +204,6 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
       (i) => {
         const programId = accounts.get(i.programIdIndex)!.toString();
         const wormholeCore = this.coreBridge.programId.toString();
-        console.log(programId, wormholeCore);
         return programId === wormholeCore;
       },
     );

@@ -43,20 +43,20 @@ export class SolanaSigner<N extends Network, C extends SolanaChains = 'Solana'>
       const { description, transaction } = txn;
       console.log(`Signing: ${description} for ${this.address()}`);
 
-      transaction.partialSign(this._keypair);
-      signed.push(transaction.serialize());
-
       // Uncomment for debug
       // const st = transaction as Transaction;
       // console.log(st.signatures);
       // console.log(st.feePayer);
       // st.instructions.forEach((ix) => {
-      //     console.log("Program", ix.programId.toBase58());
-      //     console.log("Data: ", ix.data.toString("hex"));
-      //     ix.keys.forEach((k) => {
-      //         console.log(k.pubkey.toBase58());
-      //     });
+      //   console.log('Program', ix.programId.toBase58());
+      //   console.log('Data: ', ix.data.toString('hex'));
+      //   ix.keys.forEach((k) => {
+      //     console.log(k, k.pubkey.toBase58());
+      //   });
       // });
+
+      transaction.partialSign(this._keypair);
+      signed.push(transaction.serialize());
     }
     return signed;
   }

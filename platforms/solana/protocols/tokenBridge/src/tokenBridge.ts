@@ -374,7 +374,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
     );
     transaction.partialSign(message, ancillaryKeypair);
 
-    return this.createUnsignedTx(transaction, 'Solana.TransferNative');
+    return this.createUnsignedTx(transaction, 'TokenBridge.TransferNative');
   }
 
   async *transfer(
@@ -496,7 +496,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
     transaction.feePayer = senderAddress;
     transaction.partialSign(message);
 
-    yield this.createUnsignedTx(transaction, 'Solana.TransferTokens');
+    yield this.createUnsignedTx(transaction, 'TokenBridge.TransferTokens');
   }
 
   async *redeem(

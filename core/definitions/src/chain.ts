@@ -15,6 +15,7 @@ import { IbcBridge } from "./protocols/ibc";
 import { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge";
 import { RpcConnection } from "./rpc";
 import { ChainConfig, SignedTx, TokenId } from "./types";
+import { WormholeCore } from "./protocols/core";
 
 export abstract class ChainContext<
   N extends Network,
@@ -30,6 +31,7 @@ export abstract class ChainContext<
 
   // Cached Protocol clients
   protected rpc?: RpcConnection<P>;
+  protected coreBridge?: WormholeCore<N, P, C>;
   protected tokenBridge?: TokenBridge<N, P, C>;
   protected autoTokenBridge?: AutomaticTokenBridge<N, P, C>;
   protected circleBridge?: CircleBridge<N, P, C>;
@@ -97,6 +99,14 @@ export abstract class ChainContext<
   //
   supportsProtocol(protocolName: ProtocolName): boolean {
     return protocolIsRegistered(this.chain, protocolName);
+  }
+
+  supportsWormholeCore = () => this.supportsProtocol("WormholeCore");
+  async getWormholeCore(): Promise<WormholeCore<N, P, C>> {
+    this.coreBridge = this.coreBridge
+      ? this.coreBridge
+      : await this.platform.getProtocol("WormholeCore", await this.getRpc());
+    return this.coreBridge;
   }
 
   supportsTokenBridge = () => this.supportsProtocol("TokenBridge");

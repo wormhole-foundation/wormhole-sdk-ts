@@ -38,6 +38,7 @@
     "demo": "tsx src/index.ts",
     "cosmos": "tsx src/cosmos.ts",
     "retb": "cd .. && npm run build && cd - && npm run tb",
+    "msg": "tsx src/messaging.ts",
     "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo",
     "lint": "npm run prettier && eslint --fix",
     "prettier": "prettier --write ./src",
