@@ -9,12 +9,12 @@ export const WHSCAN_RETRY_INTERVAL = 2000;
 
 export const CONFIG = {
   Mainnet: {
-    api: "https://api.wormholescan.io",
+    api: "https://api.wormholescan.io/api",
     circleAPI: circle.circleAPI("Mainnet"),
     chains: buildConfig("Mainnet"),
   },
   Testnet: {
-    api: "https://api.testnet.wormholescan.io",
+    api: "https://api.testnet.wormholescan.io/api",
     circleAPI: circle.circleAPI("Testnet"),
     chains: buildConfig("Testnet"),
   },

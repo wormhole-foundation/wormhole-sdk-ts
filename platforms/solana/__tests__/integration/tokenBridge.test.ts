@@ -3,6 +3,7 @@ import {
   DEFAULT_NETWORK,
   Signature,
   TokenBridge,
+  UniversalAddress,
   createVAA,
   testing,
   toNative,
@@ -11,17 +12,14 @@ import {
 import '@wormhole-foundation/connect-sdk-solana-core';
 import '@wormhole-foundation/connect-sdk-solana-tokenbridge';
 
-
 import {
   SolanaChains,
   SolanaPlatform,
-  SolanaUnsignedTransaction
+  SolanaUnsignedTransaction,
 } from '../../src/';
-
 
 import { describe, expect, test } from '@jest/globals';
 
-import { Keypair } from '@solana/web3.js';
 import nock from 'nock';
 
 const network = DEFAULT_NETWORK;
@@ -37,10 +35,14 @@ const TOKEN_ADDRESSES = {
     },
   },
 };
+const senderAddress = '4ppT6RCHUHtCDuB51And9Ys8UgWMCq4KC5WEyzburwcU';
+console.log(senderAddress);
 
-const senderAddress = Keypair.generate().publicKey.toBase58();
+const bogusAddress = toNative(
+  'Solana',
+  'GvC3f13VUj1UiPpQY1myWpQsKNeu29jYJRfrLx5wfjHF',
+);
 
-const bogusAddress = testing.utils.makeNativeAddress('Solana');
 const realNativeAddress = toNative(
   'Solana',
   // @ts-ignore
@@ -97,7 +99,7 @@ describe('TokenBridge Tests', () => {
 
   test('Create TokenBridge', async () => {
     const rpc = p.getRpc('Solana');
-    tb = await p.getProtocol("TokenBridge", rpc);
+    tb = await p.getProtocol('TokenBridge', rpc);
     expect(tb).toBeTruthy();
   });
 
@@ -186,13 +188,12 @@ describe('TokenBridge Tests', () => {
 
   describe('Create Token Attestation Transactions', () => {
     const chain: 'Solana' = 'Solana';
-    const nativeAddress = testing.utils.makeNativeAddress(chain);
 
     const sender = toNative(chain, senderAddress);
     const tbAddress = p.config[chain]!.contracts.tokenBridge!;
 
     test('Create Attestation', async () => {
-      const attestation = tb.createAttestation(nativeAddress, sender);
+      const attestation = tb.createAttestation(bogusAddress, sender);
       const allTxns: SolanaUnsignedTransaction<TNet>[] = [];
       for await (const atx of attestation) {
         allTxns.push(atx);
@@ -211,8 +212,8 @@ describe('TokenBridge Tests', () => {
       const vaa = createVAA('TokenBridge:AttestMeta', {
         payload: {
           token: {
-            address: nativeAddress.toUniversalAddress(),
             chain: 'Avalanche',
+            address: new UniversalAddress('0x' + '0F'.repeat(32)),
           },
           decimals: 8,
           symbol: Buffer.from(new Uint8Array(16)).toString('hex'),
@@ -237,8 +238,8 @@ describe('TokenBridge Tests', () => {
 
       const [verifySig, postVaa, create] = allTxns;
       //
-      expect(verifySig.transaction.instructions).toHaveLength(2)
-      expect(postVaa.transaction.instructions).toHaveLength(1)
+      expect(verifySig.transaction.instructions).toHaveLength(2);
+      expect(postVaa.transaction.instructions).toHaveLength(1);
       expect(create.transaction.instructions).toHaveLength(1);
     });
   });
@@ -268,7 +269,7 @@ describe('TokenBridge Tests', () => {
 
           const [xferTx] = allTxns;
           expect(xferTx).toBeTruthy();
-          expect(xferTx.chain).toEqual(chain);
+          expect(xferTx!.chain).toEqual(chain);
 
           const { transaction } = xferTx;
           expect(transaction.instructions).toHaveLength(6);
