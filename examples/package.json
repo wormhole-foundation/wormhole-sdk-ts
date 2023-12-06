@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/connect-sdk-examples",
-  "version": "0.2.1-beta.2",
+  "version": "0.2.2-beta.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -37,12 +37,7 @@
     "cctp": "tsx src/cctp.ts",
     "demo": "tsx src/index.ts",
     "cosmos": "tsx src/cosmos.ts",
-    "recosmos": "cd ../platforms/cosmwasm && npm run rebuild && cd - && tsx src/cosmos.ts",
-    "build:cjs": "tsc -p ./tsconfig.cjs.json",
-    "build:esm": "tsc -p ./tsconfig.esm.json",
-    "build": "npm run build:cjs && npm run build:esm",
-    "rebuild": "npm run clean && npm run build:cjs && npm run build:esm",
-    "buildall": "cd .. && npm run build && cd -",
+    "retb": "cd .. && npm run build && cd - && npm run tb",
     "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo",
     "lint": "npm run prettier && eslint --fix",
     "prettier": "prettier --write ./src",
@@ -53,14 +48,14 @@
     "dotenv": "^16.3.1"
   },
   "dependencies": {
-    "@wormhole-foundation/connect-sdk": "^0.2.1-beta.2",
-    "@wormhole-foundation/connect-sdk-solana": "^0.2.1-beta.2",
-    "@wormhole-foundation/connect-sdk-evm": "^0.2.1-beta.2",
-    "@wormhole-foundation/connect-sdk-cosmwasm": "^0.2.1-beta.2",
-    "@wormhole-foundation/connect-sdk-evm-tokenbridge": "^0.2.1-beta.2",
-    "@wormhole-foundation/connect-sdk-evm-cctp": "^0.2.1-beta.2",
-    "@wormhole-foundation/connect-sdk-cosmwasm-core": "^0.2.1-beta.2",
-    "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge": "^0.2.1-beta.2",
-    "@wormhole-foundation/connect-sdk-cosmwasm-ibc": "^0.2.1-beta.2"
+    "@wormhole-foundation/connect-sdk": "^0.2.2-beta.0",
+    "@wormhole-foundation/connect-sdk-solana": "^0.2.2-beta.0",
+    "@wormhole-foundation/connect-sdk-evm": "^0.2.2-beta.0",
+    "@wormhole-foundation/connect-sdk-cosmwasm": "^0.2.2-beta.0",
+    "@wormhole-foundation/connect-sdk-evm-tokenbridge": "^0.2.2-beta.0",
+    "@wormhole-foundation/connect-sdk-evm-cctp": "^0.2.2-beta.0",
+    "@wormhole-foundation/connect-sdk-cosmwasm-core": "^0.2.2-beta.0",
+    "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge": "^0.2.2-beta.0",
+    "@wormhole-foundation/connect-sdk-cosmwasm-ibc": "^0.2.2-beta.0"
   }
 }
