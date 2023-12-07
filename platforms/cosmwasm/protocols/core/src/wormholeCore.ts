@@ -7,6 +7,7 @@ import {
   Contracts,
   Network,
   UniversalAddress,
+  VAA,
   WormholeCore,
   WormholeMessageId,
 } from "@wormhole-foundation/connect-sdk";
@@ -54,6 +55,10 @@ export class CosmwasmWormholeCore<N extends Network, C extends CosmwasmChains>
     consistencyLevel: number,
   ): AsyncGenerator<CosmwasmUnsignedTransaction<N, C>> {
     throw new Error("Method not implemented.");
+  }
+
+  async *verifyMessage(sender: AnyCosmwasmAddress, vaa: VAA) {
+    throw new Error("Not implemented.");
   }
 
   async parseTransaction(txid: string): Promise<WormholeMessageId[]> {

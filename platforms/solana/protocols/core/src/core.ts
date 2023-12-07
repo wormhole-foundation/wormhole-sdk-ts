@@ -115,6 +115,10 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
     yield this.createUnsignedTx(transaction, 'Core.PublishMessage');
   }
 
+  async *verifyMessage(sender: AnySolanaAddress, vaa: VAA) {
+    yield* this.postVaa(sender, vaa);
+  }
+
   async *postVaa(sender: AnySolanaAddress, vaa: VAA, blockhash?: string) {
     if (!blockhash)
       ({ blockhash } = await this.connection.getLatestBlockhash());

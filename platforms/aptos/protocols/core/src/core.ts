@@ -5,6 +5,7 @@ import {
   Network,
   UniversalAddress,
   UnsignedTransaction,
+  VAA,
   WormholeCore,
   WormholeMessageId,
   toChainId,
@@ -52,6 +53,9 @@ export class AptosWormholeCore<N extends Network, C extends AptosChains>
     message: string | Uint8Array,
   ): AsyncGenerator<UnsignedTransaction<N, C>> {
     throw new Error("Method not implemented.");
+  }
+  async *verifyMessage(sender: AnyAptosAddress, vaa: VAA) {
+    throw new Error("Not implemented.");
   }
 
   async parseTransaction(txid: string): Promise<WormholeMessageId[]> {

@@ -3,6 +3,7 @@ import {
   Contracts,
   Network,
   TxHash,
+  VAA,
   WormholeCore,
   WormholeMessageId,
   isWormholeMessageId,
@@ -84,19 +85,23 @@ export class EvmWormholeCore<
     message: Uint8Array,
     nonce: number,
     consistencyLevel: number,
-  ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
+  ) {
     const senderAddr = new EvmAddress(sender).toString();
 
     const txReq = await this.core.publishMessage.populateTransaction(
-      0,
+      nonce,
       message,
-      200, // TODO: lookup finality
+      consistencyLevel,
     );
 
     yield this.createUnsignedTx(
       addFrom(txReq, senderAddr),
       'WormholeCore.publishMessage',
     );
+  }
+
+  async *verifyMessage(sender: AnyEvmAddress, vaa: VAA) {
+    throw new Error('Not implemented.');
   }
 
   async parseTransaction(txid: TxHash): Promise<WormholeMessageId[]> {
