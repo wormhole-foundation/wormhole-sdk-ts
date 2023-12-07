@@ -206,13 +206,12 @@ export class Wormhole<N extends Network> {
   }
 
   /**
-   *  Gets the TokenId for a token representation on any chain
+   *  Taking a  the original TokenId for some wrapped token  chain
    *  These are the Wormhole wrapped token addresses, not necessarily
    *  the cannonical version of that token
    *
-   * @param chain The chain name to query about the original token address
-   * @param tokenId The Token ID (chain/address) of the token
-   * @returns The TokenId on the given chain, null if it does not exist
+   * @param tokenId The Token ID of the token we're looking up the original asset for
+   * @returns The Original TokenId corresponding to the token id passed,
    * @throws Errors if the chain is not supported or the token does not exist
    */
   async getOriginalAsset<C extends Chain>(token: TokenId<C>): Promise<TokenId<Chain>> {
@@ -337,14 +336,25 @@ export class Wormhole<N extends Network> {
   }
 
   /**
-   * Parse an address to a universal address
+   * Parse an address from its canonincal string format to a NativeAddress
    *
    * @param chain The chain the address is for
-   * @param address The native address in canonical string format
+   * @param address The address in canonical string format
    * @returns The address in the NativeAddress format
    */
   static parseAddress<C extends Chain>(chain: C, address: string): NativeAddress<C> {
     return toNative(chain, address);
+  }
+
+  /**
+   * Parse an address from its canonincal string format to a NativeAddress
+   *
+   * @param chain The chain the address is for
+   * @param address The native address in canonical string format
+   * @returns The ChainAddress
+   */
+  static chainAddress<C extends Chain>(chain: C, address: string): ChainAddress<C> {
+    return { chain, address: toNative(chain, address) };
   }
 
   /**

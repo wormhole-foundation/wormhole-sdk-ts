@@ -7,7 +7,6 @@ import {
   TokenTransfer,
   TransactionId,
   Wormhole,
-  nativeChainAddress,
   normalizeAmount,
 } from "@wormhole-foundation/connect-sdk";
 // Import the platform specific packages
@@ -27,28 +26,39 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   // to use (e.g. Mainnet/Testnet) and what Platforms to support
   const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform, CosmwasmPlatform]);
 
-  // Grab chain Contexts
-  const sendChain = wh.getChain("Solana");
-  const rcvChain = wh.getChain("Avalanche");
+  // Grab chain Contexts -- these hold a reference to a cached rpc client
+  const sendChain = wh.getChain("Avalanche");
+  const rcvChain = wh.getChain("Solana");
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
   const source = await getStuff(sendChain);
   const destination = await getStuff(rcvChain);
 
-  const amt = normalizeAmount("0.01", BigInt(sendChain.config.nativeTokenDecimals));
+  let amt = normalizeAmount("0.01", BigInt(sendChain.config.nativeTokenDecimals));
 
-  // Choose your adventure
-
+  // perform a manual transfer from source to destination of the native gas token
+  // on the destination side, a wrapped version of the token will be minted
+  // to the address specified in the transfer VAA
   const xfer = await manualTokenTransfer(wh, "native", amt, source, destination);
   console.log(xfer);
 
-  // what token did we mint? we want to send it back
-  // const destToken = await TokenTransfer.lookupDestinationToken(wh, xfer.transfer);
-  // console.log(destToken);
+  // We can look up the destination asset for this transfer given the context of
+  // the sending chain and token and destination chain
+  const destToken = await TokenTransfer.lookupDestinationToken(wh, xfer.transfer);
+  console.log(destToken);
 
-  // const xferBack = await manualTokenTransfer(wh, destToken, amt, destination, source);
-  // console.log(xferBack);
+  //
+  // We can also send this token back to the original chain
+  //
+
+  // The wrapped token may have a different number of decimals
+  // to make things easy, lets just send the amount from the VAA back
+  amt = xfer.vaas![0]!.vaa!.payload.token.amount;
+
+  // Return to sender (address known)
+  const xferBack = await manualTokenTransfer(wh, destToken, amt, destination, source);
+  console.log(xferBack);
 
   // await automaticTokenTransfer(wh, "native", 100_000_000n, source, destination);
   // await automaticTokenTransferWithGasDropoff(

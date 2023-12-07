@@ -179,7 +179,8 @@ export class EvmTokenBridge<N extends Network, C extends EvmChains>
     const recipientAddress = recipient.address
       .toUniversalAddress()
       .toUint8Array();
-    if (typeof token === 'string' && token === 'native') {
+
+    if (token === 'native') {
       const txReq = await (payload === undefined
         ? this.tokenBridge.wrapAndTransferETH.populateTransaction(
             recipientChainId,
@@ -195,6 +196,7 @@ export class EvmTokenBridge<N extends Network, C extends EvmChains>
             payload,
             { value: amount },
           ));
+
       yield this.createUnsignedTx(
         addFrom(txReq, senderAddr),
         'TokenBridge.wrapAndTransferETH' +
@@ -219,7 +221,7 @@ export class EvmTokenBridge<N extends Network, C extends EvmChains>
         );
         yield this.createUnsignedTx(
           addFrom(txReq, senderAddr),
-          'ERC20.approve of TokenBridge',
+          'TokenBridge.Approve',
         );
       }
       const sharedParams = [
