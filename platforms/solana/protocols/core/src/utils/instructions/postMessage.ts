@@ -11,6 +11,7 @@ import {
   deriveWormholeBridgeDataKey,
   deriveFeeCollectorKey,
   deriveEmitterSequenceKey,
+  getEmitterKeys,
 } from '../accounts';
 import { createReadOnlyWormholeProgramInterface } from '../program';
 
@@ -43,12 +44,7 @@ export function createPostMessageInstruction(
 
   // @ts-ignore
   return methods._ixFn(...methods._args, {
-    accounts: getPostMessageAccounts(
-      wormholeProgramId,
-      payer,
-      payer,
-      messageAccount,
-    ),
+    accounts: getPostMessageAccounts(wormholeProgramId, payer, messageAccount),
     signers: undefined,
     remainingAccounts: undefined,
     preInstructions: undefined,
@@ -59,10 +55,16 @@ export function createPostMessageInstruction(
 export function getPostMessageAccounts(
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  emitter: PublicKeyInitData,
   message: PublicKeyInitData,
+  emitter?: PublicKeyInitData,
 ): PostMessageAccounts {
-  const sequence = deriveEmitterSequenceKey(emitter, wormholeProgramId);
+  let sequence;
+  if (emitter) {
+    ({ emitter, sequence } = getEmitterKeys(emitter, wormholeProgramId));
+  } else {
+    emitter = payer;
+    sequence = deriveEmitterSequenceKey(emitter, wormholeProgramId);
+  }
   return {
     bridge: deriveWormholeBridgeDataKey(wormholeProgramId),
     message: new PublicKey(message),

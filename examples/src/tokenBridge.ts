@@ -6,21 +6,19 @@ import {
   Signer,
   normalizeAmount,
   Network,
+  Platform,
 } from "@wormhole-foundation/connect-sdk";
 // Import the platform specific packages
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
 
+import { TransferStuff, getStuff, waitLog } from "./helpers";
+
 import "@wormhole-foundation/connect-sdk-evm-core";
 import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
 import "@wormhole-foundation/connect-sdk-solana-core";
 import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
-import "@wormhole-foundation/connect-sdk-cosmwasm-core";
-import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
-
-import { TransferStuff, getStuff, waitLog } from "./helpers";
-import { Platform } from "@wormhole-foundation/sdk-base/src";
 
 (async function () {
   // init Wormhole object, passing config for which network

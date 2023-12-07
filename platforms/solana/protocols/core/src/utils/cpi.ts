@@ -73,8 +73,8 @@ export function getPostMessageCpiAccounts(
   const accounts = getPostMessageAccounts(
     wormholeProgramId,
     payer,
-    cpiProgramId,
     message,
+    cpiProgramId,
   );
   return {
     payer: accounts.payer,
