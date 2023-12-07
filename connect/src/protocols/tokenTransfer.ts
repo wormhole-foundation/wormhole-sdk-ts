@@ -341,7 +341,7 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
     } else {
       try {
         // otherwise, check to see if it is a wrapped token locally
-        lookup = await wh.getWrappedAsset(transfer.from.chain, transfer.token);
+        lookup = await wh.getOriginalAsset(transfer.token);
       } catch {
         // not a from-chain native wormhole-wrapped one
         lookup = transfer.token;
