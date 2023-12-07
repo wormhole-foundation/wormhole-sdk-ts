@@ -338,18 +338,22 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
     if (transfer.token === "native") {
       // if native, get the wrapped asset id
       lookup = await wh.getChain(transfer.from.chain).getNativeWrappedTokenId();
+      console.log("NATIVE", lookup);
     } else {
       try {
         // otherwise, check to see if it is a wrapped token locally
-        lookup = await wh.getWrappedAsset(transfer.from.chain, transfer.token);
+        lookup = await wh.getOriginalAsset(transfer.from.chain, transfer.token);
+        console.log("GOT ORIGINAL: ", lookup);
       } catch {
         // not a from-chain native wormhole-wrapped one
         lookup = transfer.token;
+        console.log("NOT WRAPPED", lookup);
       }
     }
 
     // if the token id is actually native to the destination, return it
     if (lookup.chain === transfer.to.chain) {
+      console.log("NATIVE ON DEST", lookup);
       return lookup;
     }
     // otherwise, figure out what the token address representing the wormhole-wrapped token we're transferring
@@ -411,6 +415,7 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
     if (transfer.to.chain === "Solana") {
       // TODO: check for native
       const destinationToken = await TokenTransfer.lookupDestinationToken(wh, transfer);
+      console.log(destinationToken);
       transfer.to = await wh.getTokenAccount(transfer.to, destinationToken);
     }
 

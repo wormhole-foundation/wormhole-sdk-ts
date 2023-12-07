@@ -1,17 +1,19 @@
 import {
-  Wormhole,
-  TokenId,
-  TokenTransfer,
   Chain,
-  Signer,
-  normalizeAmount,
   Network,
   Platform,
+  Signer,
+  TokenId,
+  TokenTransfer,
+  TransactionId,
+  Wormhole,
+  nativeChainAddress,
+  normalizeAmount,
 } from "@wormhole-foundation/connect-sdk";
 // Import the platform specific packages
+import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
-import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
 
 import { TransferStuff, getStuff, waitLog } from "./helpers";
 
@@ -37,23 +39,15 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   const amt = normalizeAmount("0.01", BigInt(sendChain.config.nativeTokenDecimals));
 
   // Choose your adventure
+
   const xfer = await manualTokenTransfer(wh, "native", amt, source, destination);
   console.log(xfer);
 
-  // How about round trip?
-  // Figure out what token to transfer back given the VAA  details
-  // const { vaa } = xfer.vaas.pop()!;
-  // const destinationToken = {
-  //   chain: destination.chain.chain,
-  //   address: await (await destination.chain.getTokenBridge()).getWrappedAsset(vaa.payload.token),
-  // };
-  // const xferBack = await manualTokenTransfer(
-  //   wh,
-  //   destinationToken,
-  //   vaa.payload.token.amount,
-  //   destination,
-  //   source,
-  // );
+  // what token did we mint? we want to send it back
+  // const destToken = await TokenTransfer.lookupDestinationToken(wh, xfer.transfer);
+  // console.log(destToken);
+
+  // const xferBack = await manualTokenTransfer(wh, destToken, amt, destination, source);
   // console.log(xferBack);
 
   // await automaticTokenTransfer(wh, "native", 100_000_000n, source, destination);
@@ -137,15 +131,15 @@ async function tokenTransfer<N extends Network>(
 // If you've started a transfer but not completed it
 // this method will complete the transfer given the source
 // chain and transaction id
-export async function finishTransfer(
+export async function finishTransfer<N extends Network, C extends Chain>(
   wh: Wormhole<Network>,
-  chain: Chain,
-  txid: string,
+  txid: TransactionId,
   signer: Signer,
-): Promise<void> {
-  const xfer = await TokenTransfer.from(wh, { chain, txid });
+): Promise<TokenTransfer<N>> {
+  const xfer = await TokenTransfer.from(wh, txid);
   console.log(xfer);
-  await xfer.completeTransfer(signer);
+  console.log("Completion txids: ", await xfer.completeTransfer(signer));
+  return xfer;
 }
 
 async function manualTokenTransfer<N extends Network>(
