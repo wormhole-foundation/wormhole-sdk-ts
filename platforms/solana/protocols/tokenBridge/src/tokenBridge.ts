@@ -10,6 +10,7 @@ import {
   TokenBridge,
   TokenId,
   UniversalAddress,
+  encoding,
   toChain,
   toChainId,
   toNative,
@@ -35,8 +36,10 @@ import {
   createAssociatedTokenAccountInstruction,
   createCloseAccountInstruction,
   createInitializeAccountInstruction,
+  createTransferInstruction,
   getAssociatedTokenAddress,
   getMinimumBalanceForRentExemptAccount,
+  getMint,
 } from '@solana/spl-token';
 import {
   Connection,
@@ -499,38 +502,142 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
     yield this.createUnsignedTx(transaction, 'TokenBridge.TransferTokens');
   }
 
-  async *redeem(
+  private async *redeemAndUnwrap(
     sender: AnySolanaAddress,
     vaa: TokenBridge.VAA<'Transfer' | 'TransferWithPayload'>,
-    unwrapNative: boolean = true,
-  ): AsyncGenerator<SolanaUnsignedTransaction<N, C>> {
-    // TODO: unwrapNative? check if vaa.payload.token.address is native Sol
+    blockhash: string,
+  ) {
+    // sender, fee payer
+    const payerPublicKey = new SolanaAddress(sender).unwrap();
 
-    const { blockhash } = await this.connection.getLatestBlockhash();
+    // (maybe) ATA for this account
+    const targetPublicKey = vaa.payload.to.address
+      .toNative(this.chain)
+      .unwrap();
+
+    const targetAmount = await getMint(this.connection, NATIVE_MINT).then(
+      (info) =>
+        vaa.payload.token.amount * BigInt(Math.pow(10, info.decimals - 8)),
+    );
+
+    const rentBalance = await getMinimumBalanceForRentExemptAccount(
+      this.connection,
+    );
+
+    const ancillaryKeypair = Keypair.generate();
+
+    const completeTransferIx = createCompleteTransferNativeInstruction(
+      this.connection,
+      this.tokenBridge.programId,
+      this.coreBridge.address,
+      payerPublicKey,
+      vaa,
+    );
+
+    //This will create a temporary account where the wSOL will be moved
+    const createAncillaryAccountIx = SystemProgram.createAccount({
+      fromPubkey: payerPublicKey,
+      newAccountPubkey: ancillaryKeypair.publicKey,
+      lamports: rentBalance, //spl token accounts need rent exemption
+      space: ACCOUNT_SIZE,
+      programId: TOKEN_PROGRAM_ID,
+    });
+
+    //Initialize the account as a WSOL account, with the original payerAddress as owner
+    const initAccountIx = createInitializeAccountInstruction(
+      ancillaryKeypair.publicKey,
+      NATIVE_MINT,
+      payerPublicKey,
+    );
+
+    //Send in the amount of wSOL which we want converted to SOL
+    const balanceTransferIx = createTransferInstruction(
+      targetPublicKey,
+      ancillaryKeypair.publicKey,
+      payerPublicKey,
+      targetAmount.valueOf(),
+    );
+
+    //Close the ancillary account for cleanup. Payer address receives any remaining funds
+    const closeAccountIx = createCloseAccountInstruction(
+      ancillaryKeypair.publicKey, //account to close
+      payerPublicKey, //Remaining funds destination
+      payerPublicKey, //authority
+    );
+
+    const transaction = new Transaction();
+    transaction.recentBlockhash = blockhash;
+    transaction.feePayer = payerPublicKey;
+    transaction.add(
+      completeTransferIx,
+      createAncillaryAccountIx,
+      initAccountIx,
+      balanceTransferIx,
+      closeAccountIx,
+    );
+    transaction.partialSign(ancillaryKeypair);
+    yield this.createUnsignedTx(transaction, 'TokenBridge.RedeemAndUnwrap');
+  }
+
+  private async *createAta(
+    sender: AnySolanaAddress,
+    token: AnySolanaAddress,
+    blockhash: string,
+  ) {
     const senderAddress = new SolanaAddress(sender).unwrap();
-    const ataAddress = new SolanaAddress(
-      vaa.payload.to.address.toUint8Array(),
-    ).unwrap();
-    const wrappedToken = await this.getWrappedAsset(vaa.payload.token);
+    const tokenAddress = new SolanaAddress(token).unwrap();
+
+    const ata = await getAssociatedTokenAddress(tokenAddress, senderAddress);
 
     // If the ata doesn't exist yet, create it
-    const acctInfo = await this.connection.getAccountInfo(ataAddress);
+    const acctInfo = await this.connection.getAccountInfo(ata);
     if (acctInfo === null) {
       const ataCreationTx = new Transaction().add(
         createAssociatedTokenAccountInstruction(
           senderAddress,
-          ataAddress,
+          ata,
           senderAddress,
-          new PublicKey(wrappedToken.toUint8Array()),
+          tokenAddress,
         ),
       );
       ataCreationTx.feePayer = senderAddress;
       ataCreationTx.recentBlockhash = blockhash;
       yield this.createUnsignedTx(ataCreationTx, 'Redeem.CreateATA');
     }
+  }
 
-    // Yield transactions to verify sigs and post the VAA
+  async *redeem(
+    sender: AnySolanaAddress,
+    vaa: TokenBridge.VAA<'Transfer' | 'TransferWithPayload'>,
+    unwrapNative: boolean = false,
+  ) {
+    const { blockhash } = await this.connection.getLatestBlockhash();
+
+    // Find the token address local to this chain
+    let nativeAddress =
+      vaa.payload.token.chain === this.chain
+        ? vaa.payload.token.address
+        : (await this.getWrappedAsset(vaa.payload.token)).toUniversalAddress();
+
+    // Create an ATA if necessary
+    yield* this.createAta(sender, nativeAddress, blockhash);
+
+    // Post the VAA if necessary
     yield* this.coreBridge.postVaa(sender, vaa, blockhash);
+
+    // Check if this is native wrapped sol
+    const isNativeToken = encoding.bytes.equals(
+      nativeAddress.toUint8Array(),
+      (await this.getWrappedNative()).toUint8Array(),
+    );
+
+    // redeem vaa and unwrap to native sol from wrapped sol
+    if (unwrapNative && isNativeToken) {
+      yield* this.redeemAndUnwrap(sender, vaa, blockhash);
+      return;
+    }
+
+    const senderAddress = new SolanaAddress(sender).unwrap();
 
     const createCompleteTransferInstruction =
       vaa.payload.token.chain == this.chain

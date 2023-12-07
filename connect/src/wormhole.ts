@@ -206,6 +206,22 @@ export class Wormhole<N extends Network> {
   }
 
   /**
+   *  Gets the TokenId for a token representation on any chain
+   *  These are the Wormhole wrapped token addresses, not necessarily
+   *  the cannonical version of that token
+   *
+   * @param chain The chain name to query about the original token address
+   * @param tokenId The Token ID (chain/address) of the token
+   * @returns The TokenId on the given chain, null if it does not exist
+   * @throws Errors if the chain is not supported or the token does not exist
+   */
+  async getOriginalAsset<C extends Chain>(token: TokenId<C>): Promise<TokenId<Chain>> {
+    const ctx = this.getChain(token.chain);
+    const tb = await ctx.getTokenBridge();
+    return await tb.getOriginalAsset(token.address);
+  }
+
+  /**
    * Gets the number of decimals for a token on a given chain
    *
    * @param chain The chain name or id of the token/representation
