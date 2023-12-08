@@ -7,10 +7,10 @@ import {
   Network,
   TokenAddress,
   TokenBridge,
-  chainToChainId,
   serialize,
 } from '@wormhole-foundation/connect-sdk';
 import {
+  EvmAddress,
   EvmChains,
   EvmPlatform,
   EvmPlatformType,
@@ -20,7 +20,7 @@ import {
 } from '@wormhole-foundation/connect-sdk-evm';
 import { Provider, TransactionRequest } from 'ethers';
 
-import { nativeChainIds } from '@wormhole-foundation/sdk-base';
+import { nativeChainIds, toChainId } from '@wormhole-foundation/sdk-base';
 import { ethers_contracts } from '.';
 
 import '@wormhole-foundation/connect-sdk-evm-core';
@@ -57,7 +57,7 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
       provider,
     );
 
-    const relayerAddress = this.contracts.relayer;
+    const relayerAddress = this.contracts.tokenBridgeRelayer;
     if (!relayerAddress)
       throw new Error(
         `Wormhole Token Bridge Relayer contract for domain ${chain} not found`,
@@ -109,15 +109,19 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
     recipient: ChainAddress,
     token: TokenAddress<C>,
     amount: bigint,
-    relayerFee: bigint,
     nativeGas?: bigint,
   ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
     const senderAddr = sender.toNative(this.chain).toString();
-    const recipientChainId = chainToChainId(recipient.chain);
+    const recipientChainId = toChainId(recipient.chain);
+
     const recipientAddress = recipient.address
       .toUniversalAddress()
       .toUint8Array();
+
     const nativeTokenGas = nativeGas ? nativeGas : 0n;
+
+    const fee = await this.getRelayerFee(sender, recipient, token);
+    const sendAmount = amount + fee + nativeTokenGas;
 
     if (token === 'native') {
       const txReq =
@@ -126,8 +130,9 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
           recipientChainId,
           recipientAddress,
           0, // skip batching
-          { value: relayerFee + amount + nativeTokenGas },
+          { value: sendAmount },
         );
+
       yield this.createUnsignedTx(
         addFrom(txReq, senderAddr),
         'TokenBridgeRelayer.wrapAndTransferETHWithRelay',
@@ -135,12 +140,31 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
     } else {
       //TODO check for ERC-2612 (permit) support on token?
       const tokenAddr = token.toNative(this.chain).toString();
-      // TODO: allowance?
+
+      const tokenContract = EvmPlatform.getTokenImplementation(
+        this.provider,
+        tokenAddr,
+      );
+      const allowance = await tokenContract.allowance(
+        senderAddr,
+        this.tokenBridgeRelayer.target,
+      );
+
+      if (allowance < sendAmount) {
+        const txReq = await tokenContract.approve.populateTransaction(
+          this.tokenBridgeRelayer.target,
+          sendAmount,
+        );
+        yield this.createUnsignedTx(
+          addFrom(txReq, senderAddr),
+          'AutomaticTokenBridge.Approve',
+        );
+      }
 
       const txReq =
         await this.tokenBridgeRelayer.transferTokensWithRelay.populateTransaction(
           tokenAddr,
-          amount,
+          sendAmount,
           nativeTokenGas,
           recipientChainId,
           recipientAddress,
@@ -149,7 +173,7 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
 
       yield this.createUnsignedTx(
         addFrom(txReq, senderAddr),
-        'TokenBridgeRelayer.transferTokensWithRelay',
+        'TokenBridgeRelayer.TransferTokensWithRelay',
       );
     }
   }
@@ -159,23 +183,23 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
     recipient: ChainAddress,
     token: TokenAddress<C>,
   ): Promise<bigint> {
-    throw new Error('Not implemented');
-    // const destChainId = toChainId(recipient.chain);
-    // const destTokenAddress = new token.toString(),
-    // ).toString();
+    const destChainId = toChainId(recipient.chain);
+    const srcTokenAddress =
+      token === 'native'
+        ? await this.tokenBridge.WETH()
+        : new EvmAddress(token).toString();
 
-    // const tokenContract = EvmPlatform.getTokenImplementation(
-    //   this.provider,
-    //   destTokenAddress,
-    // );
+    const tokenContract = EvmPlatform.getTokenImplementation(
+      this.provider,
+      srcTokenAddress,
+    );
 
-    // const decimals = await tokenContract.decimals();
-
-    // return await this.tokenBridgeRelayer.calculateRelayerFee(
-    //   destChainId,
-    //   destTokenAddress,
-    //   decimals,
-    // );
+    const decimals = await tokenContract.decimals();
+    return await this.tokenBridgeRelayer.calculateRelayerFee(
+      destChainId,
+      srcTokenAddress,
+      decimals,
+    );
   }
 
   private createUnsignedTx(

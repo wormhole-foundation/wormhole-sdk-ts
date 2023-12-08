@@ -51,7 +51,7 @@ import {
 } from '@solana/web3.js';
 
 import { Platform } from '@wormhole-foundation/sdk-base/src';
-import { TokenBridge as TokenBridgeContract } from './types';
+import { TokenBridge as TokenBridgeContract } from './tokenBridgeType';
 import {
   createApproveAuthoritySignerInstruction,
   createAttestTokenInstruction,
@@ -77,7 +77,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
   readonly coreBridge: SolanaWormholeCore<N, C>;
   readonly tokenBridge: Program<TokenBridgeContract>;
 
-  private constructor(
+  constructor(
     readonly network: N,
     readonly chain: C,
     readonly connection: Connection,

@@ -46,10 +46,21 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
   }
 
   async getTransferState(): Promise<TransferState> {
+    // nothing happening we aren't making happen, return state
     if (!this.transfer.automatic) return this.state;
-    if (!this.vaas || this.vaas.length === 0) return this.state;
 
-    const txStatus = await this.wh.getTransactionStatus(this.vaas[0]!.id);
+    // If we've got a VAA, use it since its faster
+    if (!this.vaas || this.vaas.length === 0) {
+      if (this.txids.length > 0) {
+        const fromChain = this.wh.getChain(this.transfer.from.chain);
+        const [whm] = await fromChain.parseTransaction(this.txids[this.txids.length - 1]!.txid);
+        this.vaas = [{ id: whm! }];
+      } else {
+        return this.state;
+      }
+    }
+
+    const txStatus = await this.wh.getTransactionStatus(this.vaas![0]!.id);
     if (txStatus && txStatus.globalTx.destinationTx) {
       switch (txStatus.globalTx.destinationTx.status) {
         case "completed":
@@ -84,8 +95,10 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
   ): Promise<TokenTransfer<N>> {
     if (isTokenTransferDetails(from)) {
       await TokenTransfer.validateTransferDetails(wh, from);
+
       // Apply hackery
       from = { ...from, ...(await TokenTransfer.destinationOverrides(wh, from)) };
+
       return new TokenTransfer(wh, from);
     }
 
@@ -160,6 +173,7 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
     const fromChain = this.wh.getChain(this.transfer.from.chain);
     this.txids = await TokenTransfer.transfer(fromChain, this.transfer, signer);
     this.state = TransferState.Initiated;
+
     return this.txids.map(({ txid }) => txid);
   }
 
@@ -238,31 +252,16 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
   ): Promise<TransactionId[]> {
     const senderAddress = toNative(signer.chain(), signer.address());
 
-    const tokenAddress =
+    const token =
       transfer.token === "native" ? "native" : (transfer.token.address as TokenAddress<C>);
 
     let xfer: AsyncGenerator<UnsignedTransaction<N, C>>;
     if (transfer.automatic) {
       const tb = await fromChain.getAutomaticTokenBridge();
-      const fee = await tb.getRelayerFee(senderAddress, transfer.to, tokenAddress);
-
-      xfer = tb.transfer(
-        senderAddress,
-        transfer.to,
-        tokenAddress,
-        transfer.amount,
-        fee,
-        transfer.nativeGas,
-      );
+      xfer = tb.transfer(senderAddress, transfer.to, token, transfer.amount, transfer.nativeGas);
     } else {
       const tb = await fromChain.getTokenBridge();
-      xfer = tb.transfer(
-        senderAddress,
-        transfer.to,
-        tokenAddress,
-        transfer.amount,
-        transfer.payload,
-      );
+      xfer = tb.transfer(senderAddress, transfer.to, token, transfer.amount, transfer.payload);
     }
 
     return signSendWait<N, C>(fromChain, xfer, signer);
@@ -408,7 +407,8 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
 
     // Bit of (temporary) hackery until solana contracts support being
     // sent a VAA with the primary address
-    if (transfer.to.chain === "Solana") {
+    // Do _not_ override if automatic
+    if (transfer.to.chain === "Solana" && !transfer.automatic) {
       // TODO: check for native
       const destinationToken = await TokenTransfer.lookupDestinationToken(wh, transfer);
       transfer.to = await wh.getTokenAccount(transfer.to, destinationToken);

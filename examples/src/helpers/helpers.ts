@@ -76,6 +76,7 @@ export async function waitLog(xfer: WormholeTransfer): Promise<void> {
     console.log("Not yet...");
     await new Promise((f) => setTimeout(f, 5000));
   }
+  console.log("All done");
 }
 
 // Note: This API may change but it is currently the best place to pull

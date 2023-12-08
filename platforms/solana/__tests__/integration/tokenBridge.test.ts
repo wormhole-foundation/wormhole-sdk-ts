@@ -36,7 +36,6 @@ const TOKEN_ADDRESSES = {
   },
 };
 const senderAddress = '4ppT6RCHUHtCDuB51And9Ys8UgWMCq4KC5WEyzburwcU';
-console.log(senderAddress);
 
 const bogusAddress = toNative(
   'Solana',

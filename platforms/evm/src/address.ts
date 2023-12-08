@@ -6,14 +6,13 @@ import {
 } from '@wormhole-foundation/connect-sdk';
 
 import { ethers } from 'ethers';
-import { EvmPlatform } from './platform';
-import { AnyEvmAddress } from './types';
+import { AnyEvmAddress, _platform } from './types';
 
 export const EvmZeroAddress = ethers.ZeroAddress;
 
 export class EvmAddress implements Address {
   static readonly byteSize = 20;
-
+  static readonly platform = _platform;
   // stored as checksum address
   private readonly address: string;
 
@@ -23,6 +22,7 @@ export class EvmAddress implements Address {
       this.address = a.address;
       return;
     }
+
     if (typeof address === 'string') {
       if (!EvmAddress.isValidAddress(address))
         throw new Error(
@@ -75,7 +75,7 @@ export class EvmAddress implements Address {
     return ethers.isAddress(address);
   }
   static instanceof(address: any): address is EvmAddress {
-    return address.platform === EvmPlatform._platform;
+    return address.constructor.platform === EvmAddress.platform;
   }
   equals(other: EvmAddress | UniversalAddress): boolean {
     if (EvmAddress.instanceof(other)) {

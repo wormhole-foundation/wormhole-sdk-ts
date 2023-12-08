@@ -260,7 +260,6 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
     if (tokenId.chain === this.chain) {
       // originAddress should be of form address::module::type
       if (!isValidAptosType(tokenId.address.toString())) {
-        console.log("invalid type");
         return null;
       }
       return tokenId.address.toString();
