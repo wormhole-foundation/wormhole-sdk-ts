@@ -121,13 +121,7 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
     const nativeTokenGas = nativeGas ? nativeGas : 0n;
 
     const fee = await this.getRelayerFee(sender, recipient, token);
-    console.log(
-      senderAddr,
-      recipientChainId,
-      recipientAddress,
-      nativeTokenGas,
-      fee,
-    );
+    const sendAmount = amount + fee + nativeTokenGas;
 
     if (token === 'native') {
       const txReq =
@@ -136,9 +130,9 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
           recipientChainId,
           recipientAddress,
           0, // skip batching
-          { value: amount + fee + nativeTokenGas },
+          { value: sendAmount },
         );
-      console.log(txReq);
+
       yield this.createUnsignedTx(
         addFrom(txReq, senderAddr),
         'TokenBridgeRelayer.wrapAndTransferETHWithRelay',
@@ -146,12 +140,31 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
     } else {
       //TODO check for ERC-2612 (permit) support on token?
       const tokenAddr = token.toNative(this.chain).toString();
-      // TODO: allowance?
+
+      const tokenContract = EvmPlatform.getTokenImplementation(
+        this.provider,
+        tokenAddr,
+      );
+      const allowance = await tokenContract.allowance(
+        senderAddr,
+        this.tokenBridgeRelayer.target,
+      );
+
+      if (allowance < sendAmount) {
+        const txReq = await tokenContract.approve.populateTransaction(
+          this.tokenBridgeRelayer.target,
+          sendAmount,
+        );
+        yield this.createUnsignedTx(
+          addFrom(txReq, senderAddr),
+          'AutomaticTokenBridge.Approve',
+        );
+      }
 
       const txReq =
         await this.tokenBridgeRelayer.transferTokensWithRelay.populateTransaction(
           tokenAddr,
-          amount,
+          sendAmount,
           nativeTokenGas,
           recipientChainId,
           recipientAddress,
@@ -160,7 +173,7 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
 
       yield this.createUnsignedTx(
         addFrom(txReq, senderAddr),
-        'TokenBridgeRelayer.transferTokensWithRelay',
+        'TokenBridgeRelayer.TransferTokensWithRelay',
       );
     }
   }

@@ -127,7 +127,6 @@ export class SolanaAutomaticTokenBridge<
       } catch (e: any) {
         if (e instanceof TokenAccountNotFoundError) {
           // the relayer expects the wSOL associated token account to exist
-          console.log('OK!');
           const createAccountInst = createAssociatedTokenAccountInstruction(
             senderAddress,
             ata,

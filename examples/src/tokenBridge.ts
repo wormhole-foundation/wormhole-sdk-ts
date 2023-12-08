@@ -23,8 +23,23 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform]);
 
   // Grab chain Contexts -- these hold a reference to a cached rpc client
-  const sendChain = wh.getChain("Solana");
-  const rcvChain = wh.getChain("Avalanche");
+  const sendChain = wh.getChain("Avalanche");
+  const rcvChain = wh.getChain("Solana");
+
+  // TODO: Solana _slow_ to show up if ever?
+  // await waitLog(
+  //   await TokenTransfer.from(wh, {
+  //     chain: "Avalanche",
+  //     txid: "0x6405d3454c82e0f877350967a191f80e44ad1a30846fe46c52624c487c4c9b72",
+  //   }),
+  // );
+
+  //const token = "native"
+  const token = await wh.getWrappedAsset("Avalanche", await rcvChain.getNativeWrappedTokenId());
+  // const token = Wormhole.chainAddress(
+  //   sendChain.chain,
+  //   "3Ftc5hTz9sG4huk79onufGiebJNDMZNL8HYgdMJ9E7JR",
+  // );
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
@@ -32,7 +47,12 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   const destination = await getStuff(rcvChain);
 
   // Normalize the amount to account for the tokens decimals
-  const amount = normalizeAmount("0.01", BigInt(sendChain.config.nativeTokenDecimals));
+  const decimals =
+    typeof token === "string" && token === "native"
+      ? BigInt(sendChain.config.nativeTokenDecimals)
+      : await wh.getDecimals(token.chain, token.address);
+
+  const amount = normalizeAmount("0.01", decimals);
 
   //
   // Manual Transfer
@@ -46,13 +66,17 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   //
   // Automatic Transfer
   //
-  const nativeGas = normalizeAmount("0.01", BigInt(sendChain.config.nativeTokenDecimals));
+
+  // The automatic relayer has the ability to deliver some native gas funds to the destination account
+  // The amount specified for native gas will be swapped for the native gas token according
+  // to the swap rate provided by the contract, denominated in native gas tokens
+  const nativeGas = normalizeAmount("0.01", decimals);
 
   // Perform an automatic token transfer
   // set the native gas variable above to also transfer some native
   // gas to the receiver on the destination chain
   const xfer = await tokenTransfer(wh, {
-    token: "native",
+    token,
     amount,
     source,
     destination,

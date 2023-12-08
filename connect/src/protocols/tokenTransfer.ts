@@ -46,10 +46,21 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
   }
 
   async getTransferState(): Promise<TransferState> {
+    // nothing happening we aren't making happen, return state
     if (!this.transfer.automatic) return this.state;
-    if (!this.vaas || this.vaas.length === 0) return this.state;
 
-    const txStatus = await this.wh.getTransactionStatus(this.vaas[0]!.id);
+    // If we've got a VAA, use it since its faster
+    if (!this.vaas || this.vaas.length === 0) {
+      if (this.txids.length > 0) {
+        const fromChain = this.wh.getChain(this.transfer.from.chain);
+        const [whm] = await fromChain.parseTransaction(this.txids[this.txids.length - 1]!.txid);
+        this.vaas = [{ id: whm! }];
+      } else {
+        return this.state;
+      }
+    }
+
+    const txStatus = await this.wh.getTransactionStatus(this.vaas![0]!.id);
     if (txStatus && txStatus.globalTx.destinationTx) {
       switch (txStatus.globalTx.destinationTx.status) {
         case "completed":
@@ -162,6 +173,7 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
     const fromChain = this.wh.getChain(this.transfer.from.chain);
     this.txids = await TokenTransfer.transfer(fromChain, this.transfer, signer);
     this.state = TransferState.Initiated;
+
     return this.txids.map(({ txid }) => txid);
   }
 
