@@ -238,31 +238,16 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
   ): Promise<TransactionId[]> {
     const senderAddress = toNative(signer.chain(), signer.address());
 
-    const tokenAddress =
+    const token =
       transfer.token === "native" ? "native" : (transfer.token.address as TokenAddress<C>);
 
     let xfer: AsyncGenerator<UnsignedTransaction<N, C>>;
     if (transfer.automatic) {
       const tb = await fromChain.getAutomaticTokenBridge();
-      const fee = await tb.getRelayerFee(senderAddress, transfer.to, tokenAddress);
-
-      xfer = tb.transfer(
-        senderAddress,
-        transfer.to,
-        tokenAddress,
-        transfer.amount,
-        fee,
-        transfer.nativeGas,
-      );
+      xfer = tb.transfer(senderAddress, transfer.to, token, transfer.amount, transfer.nativeGas);
     } else {
       const tb = await fromChain.getTokenBridge();
-      xfer = tb.transfer(
-        senderAddress,
-        transfer.to,
-        tokenAddress,
-        transfer.amount,
-        transfer.payload,
-      );
+      xfer = tb.transfer(senderAddress, transfer.to, token, transfer.amount, transfer.payload);
     }
 
     return signSendWait<N, C>(fromChain, xfer, signer);

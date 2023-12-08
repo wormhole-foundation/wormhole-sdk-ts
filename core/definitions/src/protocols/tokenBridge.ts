@@ -85,7 +85,6 @@ export interface AutomaticTokenBridge<
     recipient: ChainAddress,
     token: TokenAddress<C>,
     amount: bigint,
-    relayerFee: bigint,
     nativeGas?: bigint,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
   redeem(
@@ -95,7 +94,7 @@ export interface AutomaticTokenBridge<
   getRelayerFee(
     sender: AccountAddress<C>,
     recipient: ChainAddress,
-    token: TokenAddress<Chain> | "native",
+    token: TokenAddress<C> | "native",
   ): Promise<bigint>;
   // the amount of native tokens a user would receive by swapping x amount of sending tokens
   // nativeTokenAmount(

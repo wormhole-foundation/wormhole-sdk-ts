@@ -2,23 +2,20 @@ import {
   Chain,
   Network,
   Platform,
-  Signer,
   TokenId,
   TokenTransfer,
-  TransactionId,
   Wormhole,
   normalizeAmount,
 } from "@wormhole-foundation/connect-sdk";
+import { TransferStuff, getStuff, waitLog } from "./helpers";
+
 // Import the platform specific packages
 import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 
-import { TransferStuff, getStuff, waitLog } from "./helpers";
-
-import "@wormhole-foundation/connect-sdk-evm-core";
+// Register the protocols
 import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
-import "@wormhole-foundation/connect-sdk-solana-core";
 import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 
 (async function () {
@@ -35,92 +32,73 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   const source = await getStuff(sendChain);
   const destination = await getStuff(rcvChain);
 
-  let amt = normalizeAmount("0.01", BigInt(sendChain.config.nativeTokenDecimals));
+  // Normalize the amount to account for the tokens decimals
+  const amount = normalizeAmount("0.01", BigInt(sendChain.config.nativeTokenDecimals));
 
   // perform a manual transfer from source to destination of the native gas token
   // on the destination side, a wrapped version of the token will be minted
   // to the address specified in the transfer VAA
-  const xfer = await manualTokenTransfer(wh, "native", amt, source, destination);
+
+  //const xfer = await tokenTransfer(wh, { token: "native", amount, source, destination });
+  //console.log(xfer);
+
+  // Perform an automatic token transfer
+  // const xfer = await tokenTransfer(wh, {
+  //   token: "native",
+  //   amount,
+  //   source,
+  //   destination,
+  //   delivery: { automatic: true },
+  // });
+  // console.log(xfer);
+
+  // Perform an automatic token transfer but also transfer some naive
+  // gas to the receiver on the destination chain
+  const xfer = await tokenTransfer(wh, {
+    token: "native",
+    amount,
+    source,
+    destination,
+    delivery: {
+      automatic: true,
+      nativeGas: normalizeAmount("0.01", BigInt(sendChain.config.nativeTokenDecimals)),
+    },
+  });
   console.log(xfer);
-
-  // We can look up the destination asset for this transfer given the context of
-  // the sending chain and token and destination chain
-  const destToken = await TokenTransfer.lookupDestinationToken(wh, xfer.transfer);
-  console.log(destToken);
-
-  //
-  // We can also send this token back to the original chain
-  //
-
-  // The wrapped token may have a different number of decimals
-  // to make things easy, lets just send the amount from the VAA back
-  amt = xfer.vaas![0]!.vaa!.payload.token.amount;
-
-  // Return to sender (address known)
-  const xferBack = await manualTokenTransfer(wh, destToken, amt, destination, source);
-  console.log(xferBack);
-
-  // await automaticTokenTransfer(wh, "native", 100_000_000n, source, destination);
-  // await automaticTokenTransferWithGasDropoff(
-  //   wh,
-  //   "native",
-  //   100_000_000n,
-  //   source,
-  //   destination,
-  //   2_000_000_000_000n
-  // );
-
-  // const payload = encoding.toUint8Array("hai")
-  // await manualTokenTransferWithPayload(wh, "native", 100_000_000n, source, destination, payload);
-  // await automaticTokenTransferWithPayload(wh, "native", 100_000_000n, source, destination, payload);
-  // await automaticTokenTransferWithPayloadAndGasDropoff(
-  //   wh,
-  //   "native",
-  //   100_000_000n,
-  //   source,
-  //   destination,
-  //   2_000_000_000_000n,
-  //   payload
-  // );
-
-  // Or, if you have an incomplete transfer, pick up from where you
-  // left off given the source transaction
-
-  // await finishTransfer(
-  //   wh,
-  //   sendChain.chain,
-  //   "0xaed2eb6361283dab84aeb3d211935458f971c38d1238d29b4c8bae63c76ede00",
-  //   destination.signer,
-  // );
 })();
 
 async function tokenTransfer<N extends Network>(
   wh: Wormhole<N>,
-  token: TokenId | "native",
-  amount: bigint,
-  src: TransferStuff<N, Platform, Chain>,
-  dst: TransferStuff<N, Platform, Chain>,
-  automatic: boolean,
-  nativeGas?: bigint,
-  payload?: Uint8Array,
+  route: {
+    token: TokenId | "native";
+    amount: bigint;
+    source: TransferStuff<N, Platform, Chain>;
+    destination: TransferStuff<N, Platform, Chain>;
+    delivery?: {
+      automatic: boolean;
+      nativeGas?: bigint;
+    };
+    payload?: Uint8Array;
+  },
+  roundTrip?: boolean,
 ): Promise<TokenTransfer<N>> {
   const xfer = await wh.tokenTransfer(
-    token,
-    amount,
-    src.address,
-    dst.address,
-    automatic,
-    payload,
-    nativeGas,
+    route.token,
+    route.amount,
+    route.source.address,
+    route.destination.address,
+    route.delivery?.automatic ?? false,
+    route.payload,
+    route.delivery?.nativeGas,
   );
 
   // 1) Submit the transactions to the source chain, passing a signer to sign any txns
   console.log("Starting transfer");
-  const srcTxids = await xfer.initiateTransfer(src.signer);
+  const srcTxids = await xfer.initiateTransfer(route.source.signer);
   console.log(`Started transfer: `, srcTxids);
 
   // If automatic, we're done
-  if (automatic) {
+  if (route.delivery?.automatic) {
     await waitLog(xfer);
     return xfer;
   }
@@ -132,34 +110,28 @@ async function tokenTransfer<N extends Network>(
 
   // 3) redeem the VAA on the dest chain
   console.log("Completing Transfer");
-  const destTxids = await xfer.completeTransfer(dst.signer);
+  const destTxids = await xfer.completeTransfer(route.destination.signer);
   console.log(`Completed Transfer: `, destTxids);
 
-  return xfer;
-}
+  if (!roundTrip) {
+    return xfer;
+  }
 
-// If you've started a transfer but not completed it
-// this method will complete the transfer given the source
-// chain and transaction id
-export async function finishTransfer<N extends Network, C extends Chain>(
-  wh: Wormhole<Network>,
-  txid: TransactionId,
-  signer: Signer,
-): Promise<TokenTransfer<N>> {
-  const xfer = await TokenTransfer.from(wh, txid);
-  console.log(xfer);
-  console.log("Completion txids: ", await xfer.completeTransfer(signer));
-  return xfer;
-}
+  // We can look up the destination asset for this transfer given the context of
+  // the sending chain and token and destination chain
+  const destToken = await TokenTransfer.lookupDestinationToken(wh, xfer.transfer);
+  console.log(destToken);
 
-async function manualTokenTransfer<N extends Network>(
-  wh: Wormhole<N>,
-  token: TokenId | "native",
-  amount: bigint,
-  src: TransferStuff<N, Platform, Chain>,
-  dst: TransferStuff<N, Platform, Chain>,
-) {
-  return tokenTransfer(wh, token, amount, src, dst, false);
+  // The wrapped token may have a different number of decimals
+  // to make things easy, lets just send the amount from the VAA back
+  const amount = xfer.vaas![0]!.vaa!.payload.token.amount;
+  return await tokenTransfer(wh, {
+    ...route,
+    token: destToken,
+    amount,
+    source: route.destination,
+    destination: route.source,
+  });
 }
 
 // async function automaticTokenTransfer(
