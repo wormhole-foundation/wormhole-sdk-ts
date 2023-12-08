@@ -84,8 +84,10 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
   ): Promise<TokenTransfer<N>> {
     if (isTokenTransferDetails(from)) {
       await TokenTransfer.validateTransferDetails(wh, from);
+
       // Apply hackery
       from = { ...from, ...(await TokenTransfer.destinationOverrides(wh, from)) };
+
       return new TokenTransfer(wh, from);
     }
 
@@ -393,7 +395,8 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
 
     // Bit of (temporary) hackery until solana contracts support being
     // sent a VAA with the primary address
-    if (transfer.to.chain === "Solana") {
+    // Do _not_ override if automatic
+    if (transfer.to.chain === "Solana" && !transfer.automatic) {
       // TODO: check for native
       const destinationToken = await TokenTransfer.lookupDestinationToken(wh, transfer);
       transfer.to = await wh.getTokenAccount(transfer.to, destinationToken);

@@ -29,14 +29,21 @@ import {
   RedeemerConfig,
   RegisteredToken,
   createTokenBridgeRelayerProgramInterface,
+  createTransferNativeTokensWithRelayInstruction,
+  createTransferWrappedTokensWithRelayInstruction,
   deriveForeignContractAddress,
   deriveRedeemerConfigAddress,
   deriveRegisteredTokenAddress,
 } from './utils/automaticTokenBridge';
 
+import {
+  NATIVE_MINT,
+  TokenAccountNotFoundError,
+  createAssociatedTokenAccountInstruction,
+  getAccount,
+  getAssociatedTokenAddressSync,
+} from '@solana/spl-token';
 import '@wormhole-foundation/connect-sdk-solana-core';
-import { NATIVE_MINT } from '@solana/spl-token';
-import { SolanaTokenBridge } from './tokenBridge';
 
 const SOL_DECIMALS = 9;
 const TEN = new BN(10);
@@ -49,7 +56,8 @@ export class SolanaAutomaticTokenBridge<
 {
   readonly chainId: ChainId;
 
-  readonly tokenBridge: SolanaTokenBridge<N, C>;
+  readonly coreBridgeProgramId: PublicKey;
+  readonly tokenBridgeProgramId: PublicKey;
   readonly tokenBridgeRelayer: Program<TokenBridgeRelayerContract>;
 
   private constructor(
@@ -71,12 +79,8 @@ export class SolanaAutomaticTokenBridge<
       connection,
     );
 
-    this.tokenBridge = new SolanaTokenBridge(
-      network,
-      chain,
-      connection,
-      contracts,
-    );
+    this.tokenBridgeProgramId = new PublicKey(contracts.tokenBridge!);
+    this.coreBridgeProgramId = new PublicKey(contracts.coreBridge!);
   }
   static async fromRpc<N extends Network>(
     connection: Connection,
@@ -104,8 +108,82 @@ export class SolanaAutomaticTokenBridge<
     amount: bigint,
     nativeGas?: bigint | undefined,
   ) {
-    throw new Error('Method not implemented.');
+    const nonce = 0;
+    const senderAddress = sender.toNative(this.chain).unwrap();
+    const recipientAddress = recipient.address
+      .toUniversalAddress()
+      .toUint8Array();
+
+    const tokenMint =
+      token === 'native'
+        ? new PublicKey(NATIVE_MINT)
+        : new SolanaAddress(token).unwrap();
+
+    const transaction = new Transaction();
+    if (token === 'native') {
+      const ata = getAssociatedTokenAddressSync(tokenMint, senderAddress);
+      try {
+        await getAccount(this.connection, ata);
+      } catch (e: any) {
+        if (e instanceof TokenAccountNotFoundError) {
+          // the relayer expects the wSOL associated token account to exist
+          console.log('OK!');
+          const createAccountInst = createAssociatedTokenAccountInstruction(
+            senderAddress,
+            ata,
+            senderAddress,
+            tokenMint,
+          );
+          transaction.add(createAccountInst);
+        } else {
+          throw e;
+        }
+      }
+    }
+
+    const fee = await this.getRelayerFee(sender, recipient, token);
+
+    const nativeGasAmount = nativeGas ? nativeGas : 0n;
+
+    const transferIx =
+      token === 'native'
+        ? await createTransferNativeTokensWithRelayInstruction(
+            this.connection,
+            this.tokenBridgeRelayer.programId,
+            senderAddress,
+            this.tokenBridgeProgramId,
+            this.coreBridgeProgramId,
+            tokenMint,
+            amount + fee + nativeGasAmount,
+            nativeGasAmount,
+            recipientAddress,
+            recipient.chain,
+            nonce,
+            token === 'native',
+          )
+        : await createTransferWrappedTokensWithRelayInstruction(
+            this.connection,
+            this.tokenBridgeRelayer.programId,
+            senderAddress,
+            this.tokenBridgeProgramId,
+            this.coreBridgeProgramId,
+            tokenMint,
+            amount + fee + nativeGasAmount,
+            nativeGasAmount,
+            recipientAddress,
+            recipient.chain,
+            nonce,
+          );
+
+    const { blockhash } = await this.connection.getLatestBlockhash();
+
+    transaction.add(transferIx);
+    transaction.recentBlockhash = blockhash;
+    transaction.feePayer = senderAddress;
+
+    yield this.createUnsignedTx(transaction, 'AutomaticTokenBridge.Transfer');
   }
+
   async *redeem(
     sender: AccountAddress<C>,
     vaa: VAA<'TokenBridge:TransferWithPayload'>,
@@ -119,7 +197,10 @@ export class SolanaAutomaticTokenBridge<
     recipient: ChainAddress,
     token: TokenAddress<C>,
   ): Promise<bigint> {
-    const tokenAddress = new SolanaAddress(token).unwrap();
+    const tokenAddress =
+      token === 'native'
+        ? new PublicKey(NATIVE_MINT)
+        : token.toNative(this.chain).unwrap();
 
     const [{ fee }, { swapRate }, { relayerFeePrecision }] = await Promise.all([
       this.getForeignContract(recipient.chain),
