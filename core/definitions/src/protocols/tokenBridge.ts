@@ -69,10 +69,8 @@ export interface TokenBridge<N extends Network, P extends Platform, C extends Pl
   redeem(
     sender: AccountAddress<C>,
     vaa: TokenBridge.VAA<"Transfer" | "TransferWithPayload">,
-    unwrapNative?: boolean, //TODO: set default to true
+    unwrapNative?: boolean,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
-
-  // TODO: preview (receive amount, fees, gas estimates, estimated blocks/time)
 }
 
 export interface AutomaticTokenBridge<
@@ -80,6 +78,7 @@ export interface AutomaticTokenBridge<
   P extends Platform,
   C extends PlatformToChains<P>,
 > {
+  // Initiate the transfer over the automatic bridge
   transfer(
     sender: AccountAddress<C>,
     recipient: ChainAddress,
@@ -87,28 +86,20 @@ export interface AutomaticTokenBridge<
     amount: bigint,
     nativeGas?: bigint,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
+  // Manually redeem a transfer, should not be used unless
+  // necessary to take over some stalled transfer
   redeem(
     sender: AccountAddress<C>,
     vaa: TokenBridge.VAA<"TransferWithPayload">,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
+  // Fee charged to relay
   getRelayerFee(
     sender: AccountAddress<C>,
     recipient: ChainAddress,
-    token: TokenAddress<C> | "native",
+    token: TokenAddress<C>,
   ): Promise<bigint>;
-  // the amount of native tokens a user would receive by swapping x amount of sending tokens
-  // nativeTokenAmount(
-  //   destChain: Chain | ChainId,
-  //   token: TokenId,
-  //   amount: BigNumber,
-  //   walletAddress: string,
-  // ): Promise<BigNumber>;
-
-  // the maximum amount of sending tokens that can be swapped for native tokens
-  // maxSwapAmount(
-  //   destChain: Chain | ChainId,
-  //   token: TokenId,
-  //   walletAddress: string,
-  // ): Promise<BigNumber>;
-  // TODO: events (Redeem, Swap)
+  // Amount of native tokens a user would receive by swapping x amount of sending tokens
+  nativeTokenAmount(token: TokenAddress<C>, amount: bigint): Promise<bigint>;
+  // Maximum amount of sending tokens that can be swapped for native tokens
+  maxSwapAmount(token: TokenAddress<C>): Promise<bigint>;
 }

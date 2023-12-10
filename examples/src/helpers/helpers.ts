@@ -70,13 +70,13 @@ export async function getStuff<
   };
 }
 
-export async function waitLog(xfer: WormholeTransfer): Promise<void> {
+export async function waitLog(xfer: WormholeTransfer): Promise<WormholeTransfer> {
   console.log("Checking for complete status");
   while ((await xfer.getTransferState()) < TransferState.Completed) {
     console.log("Not yet...");
     await new Promise((f) => setTimeout(f, 5000));
   }
-  console.log("All done");
+  return xfer;
 }
 
 // Note: This API may change but it is currently the best place to pull

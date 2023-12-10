@@ -191,6 +191,7 @@ export class SolanaAutomaticTokenBridge<
     yield this.createUnsignedTx(redeemTx, 'AutomaticTokenBridge.Redeem');
     throw new Error('Method not implemented.');
   }
+
   async getRelayerFee(
     sender: AccountAddress<C>,
     recipient: ChainAddress,
@@ -219,46 +220,22 @@ export class SolanaAutomaticTokenBridge<
     return BigInt(relayerFee.toString());
   }
 
-  async isAcceptedToken(mint: string): Promise<boolean> {
-    try {
-      await this.getRegisteredToken(new PublicKey(mint));
-      return true;
-    } catch (e: any) {
-      if (e.message?.includes('Account does not exist')) {
-        // the token is not registered
-        return false;
-      }
-      throw e;
-    }
-  }
+  async maxSwapAmount(token: TokenAddress<C>): Promise<bigint> {
+    const mint =
+      token === 'native'
+        ? new PublicKey(NATIVE_MINT)
+        : token.toNative(this.chain).unwrap();
 
-  async calculateRelayerFee(
-    targetChain: Chain,
-    mint: PublicKey,
-    decimals: number,
-  ): Promise<bigint> {
-    const [{ fee }, { swapRate }, { relayerFeePrecision }] = await Promise.all([
-      this.getForeignContract(targetChain),
-      this.getRegisteredToken(mint),
-      this.getRedeemerConfig(),
-    ]);
-    const relayerFee = TEN.pow(new BN(decimals))
-      .mul(fee)
-      .mul(SWAP_RATE_PRECISION)
-      .div(new BN(relayerFeePrecision).mul(swapRate));
-
-    return BigInt(relayerFee.toString());
-  }
-
-  async calculateMaxSwapAmountIn(
-    mint: PublicKey,
-    decimals: number,
-  ): Promise<bigint> {
     const [{ swapRate, maxNativeSwapAmount }, { swapRate: solSwapRate }] =
       await Promise.all([
         this.getRegisteredToken(mint),
         this.getRegisteredToken(NATIVE_MINT),
       ]);
+
+    const decimals = Number(
+      await SolanaPlatform.getDecimals(this.chain, this.connection, token),
+    );
+
     const nativeSwapRate = this.calculateNativeSwapRate(solSwapRate, swapRate);
     const maxSwapAmountIn =
       decimals > SOL_DECIMALS
@@ -275,14 +252,21 @@ export class SolanaAutomaticTokenBridge<
     return BigInt(maxSwapAmountIn.toString());
   }
 
-  async calculateNativeSwapAmountOut(
-    mint: PublicKey,
-    toNativeAmount: bigint,
-    decimals: number,
+  async nativeTokenAmount(
+    token: TokenAddress<C>,
+    amount: bigint,
   ): Promise<bigint> {
-    if (toNativeAmount === 0n) {
-      return 0n;
-    }
+    if (amount === 0n) return 0n;
+
+    const mint =
+      token === 'native'
+        ? new PublicKey(NATIVE_MINT)
+        : token.toNative(this.chain).unwrap();
+
+    const decimals = Number(
+      await SolanaPlatform.getDecimals(this.chain, this.connection, token),
+    );
+
     const [{ swapRate }, { swapRate: solSwapRate }] = await Promise.all([
       this.getRegisteredToken(mint),
       this.getRegisteredToken(NATIVE_MINT),
@@ -290,14 +274,32 @@ export class SolanaAutomaticTokenBridge<
     const nativeSwapRate = this.calculateNativeSwapRate(solSwapRate, swapRate);
     const swapAmountOut =
       decimals > SOL_DECIMALS
-        ? SWAP_RATE_PRECISION.mul(new BN(toNativeAmount.toString())).div(
+        ? SWAP_RATE_PRECISION.mul(new BN(amount.toString())).div(
             nativeSwapRate.mul(TEN.pow(new BN(decimals - SOL_DECIMALS))),
           )
-        : SWAP_RATE_PRECISION.mul(new BN(toNativeAmount.toString()))
+        : SWAP_RATE_PRECISION.mul(new BN(amount.toString()))
             .mul(TEN.pow(new BN(SOL_DECIMALS - decimals)))
             .div(nativeSwapRate);
 
     return BigInt(swapAmountOut.toString());
+  }
+
+  async isAcceptedToken(token: TokenAddress<C>): Promise<boolean> {
+    const mint =
+      token === 'native'
+        ? new PublicKey(NATIVE_MINT)
+        : token.toNative(this.chain).unwrap();
+
+    try {
+      await this.getRegisteredToken(mint);
+      return true;
+    } catch (e: any) {
+      if (e.message?.includes('Account does not exist')) {
+        // the token is not registered
+        return false;
+      }
+      throw e;
+    }
   }
 
   private calculateNativeSwapRate(solSwapRate: BN, swapRate: BN): BN {

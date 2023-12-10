@@ -5,6 +5,7 @@ import {
   TokenId,
   TokenTransfer,
   Wormhole,
+  displayAmount,
   normalizeAmount,
 } from "@wormhole-foundation/connect-sdk";
 import { TransferStuff, getStuff, waitLog } from "./helpers";
@@ -26,20 +27,8 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   const sendChain = wh.getChain("Avalanche");
   const rcvChain = wh.getChain("Solana");
 
-  // TODO: Solana _slow_ to show up if ever?
-  // await waitLog(
-  //   await TokenTransfer.from(wh, {
-  //     chain: "Avalanche",
-  //     txid: "0x6405d3454c82e0f877350967a191f80e44ad1a30846fe46c52624c487c4c9b72",
-  //   }),
-  // );
-
-  //const token = "native"
-  const token = await wh.getWrappedAsset("Avalanche", await rcvChain.getNativeWrappedTokenId());
-  // const token = Wormhole.chainAddress(
-  //   sendChain.chain,
-  //   "3Ftc5hTz9sG4huk79onufGiebJNDMZNL8HYgdMJ9E7JR",
-  // );
+  // shortcut to allow transferring native gas token
+  const token: TokenId | "native" = "native";
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
@@ -48,43 +37,36 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 
   // Normalize the amount to account for the tokens decimals
   const decimals =
-    typeof token === "string" && token === "native"
+    token === "native"
       ? BigInt(sendChain.config.nativeTokenDecimals)
-      : await wh.getDecimals(token.chain, token.address);
-
+      : await wh.getDecimals(sendChain.chain, token);
   const amount = normalizeAmount("0.01", decimals);
 
-  //
-  // Manual Transfer
-  //
-  // perform a manual transfer from source to destination of the native gas token
-  // on the destination side, a wrapped version of the token will be minted
+  // With automatic set to false, perform a manual transfer from source to destination
+  // of the token
+  // On the destination side, a wrapped version of the token will be minted
   // to the address specified in the transfer VAA
-  //const xfer = await tokenTransfer(wh, { token: "native", amount, source, destination });
-  //console.log(xfer);
-
-  //
-  // Automatic Transfer
-  //
+  const automatic = true;
 
   // The automatic relayer has the ability to deliver some native gas funds to the destination account
   // The amount specified for native gas will be swapped for the native gas token according
   // to the swap rate provided by the contract, denominated in native gas tokens
-  const nativeGas = normalizeAmount("0.01", decimals);
+  const nativeGas = automatic ? normalizeAmount("0.01", decimals) : undefined;
 
-  // Perform an automatic token transfer
-  // set the native gas variable above to also transfer some native
-  // gas to the receiver on the destination chain
+  //0x29640db56ae35fe4453fc55031e72cefe57d7d8b7087857bdec1fbf663944337
+  // Perform the token transfer
   const xfer = await tokenTransfer(wh, {
     token,
     amount,
     source,
     destination,
     delivery: {
-      automatic: true,
+      automatic,
       nativeGas,
     },
   });
+
+  // Log out the results
   console.log(xfer);
 })();
 
@@ -103,7 +85,8 @@ async function tokenTransfer<N extends Network>(
   },
   roundTrip?: boolean,
 ): Promise<TokenTransfer<N>> {
-  // Create a TokenTransfer obj to track the state over time
+  // Create a TokenTransfer object to track the state of
+  // the transfer over time
   const xfer = await wh.tokenTransfer(
     route.token,
     route.amount,
@@ -114,16 +97,40 @@ async function tokenTransfer<N extends Network>(
     route.delivery?.nativeGas,
   );
 
+  if (xfer.transfer.automatic) {
+    const quote = await TokenTransfer.quoteTransfer(
+      route.source.chain,
+      route.destination.chain,
+      xfer.transfer,
+    );
+    console.log(
+      "Send amount: ",
+      quote.sourceToken.token.address.toString(),
+      quote.sourceToken.amount,
+    );
+    console.log(
+      "Token to be Received: ",
+      quote.destinationToken.token.address.toString(),
+      quote.destinationToken.amount,
+    );
+    console.log(
+      "Fee charged: ",
+      displayAmount(
+        quote.relayFee!.amount,
+        BigInt(route.source.chain.config.nativeTokenDecimals),
+        3n,
+      ),
+    );
+    //return xfer;
+  }
+
   // 1) Submit the transactions to the source chain, passing a signer to sign any txns
   console.log("Starting transfer");
   const srcTxids = await xfer.initiateTransfer(route.source.signer);
   console.log(`Started transfer: `, srcTxids);
 
   // If automatic, we're done
-  if (route.delivery?.automatic) {
-    await waitLog(xfer);
-    return xfer;
-  }
+  if (route.delivery?.automatic) return (await waitLog(xfer)) as TokenTransfer<N>;
 
   // 2) wait for the VAA to be signed and ready (not required for auto transfer)
   console.log("Getting Attestation");
@@ -135,21 +142,24 @@ async function tokenTransfer<N extends Network>(
   const destTxids = await xfer.completeTransfer(route.destination.signer);
   console.log(`Completed Transfer: `, destTxids);
 
+  // No need to send back, dip
   if (!roundTrip) return xfer;
-
-  // We're sending _back_ to the origin
 
   // We can look up the destination asset for this transfer given the context of
   // the sending chain and token and destination chain
-  const destToken = await TokenTransfer.lookupDestinationToken(wh, xfer.transfer);
-  console.log(destToken);
+  const token = await TokenTransfer.lookupDestinationToken(
+    route.source.chain,
+    route.destination.chain,
+    xfer.transfer,
+  );
+  console.log(token);
 
   // The wrapped token may have a different number of decimals
   // to make things easy, lets just send the amount from the VAA back
   const amount = xfer.vaas![0]!.vaa!.payload.token.amount;
   return await tokenTransfer(wh, {
     ...route,
-    token: destToken,
+    token,
     amount,
     source: route.destination,
     destination: route.source,

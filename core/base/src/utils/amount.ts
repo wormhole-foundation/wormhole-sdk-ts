@@ -34,3 +34,19 @@ export function normalizeAmount(amount: number | string, decimals: bigint): bigi
   // finally, produce the number in base units
   return amt * 10n ** decimals;
 }
+
+/**
+ * Converts a bigint amount to a friendly decimal number as a string
+ *
+ * @param amount The number of units as a bigint to convert into the display amount
+ * @param decimals the number of decimals in the displayAmount
+ * @returns The amount converted to a nice display string
+ */
+export function displayAmount(amount: bigint, decimals: bigint, displayDecimals: bigint): string {
+  // first scale to remove any partial amounts but allowing for full
+  // precision required by displayDecimals
+  const amt = amount / 10n ** (decimals - displayDecimals);
+  const numDec = Number(displayDecimals);
+  // Final scaling then use the builtin `Number.tofixed` for formatting display amount
+  return (Number(amt) / 10 ** numDec).toFixed(numDec);
+}

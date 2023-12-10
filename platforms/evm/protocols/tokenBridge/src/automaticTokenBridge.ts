@@ -202,6 +202,31 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
     );
   }
 
+  // Return the amount of native gas that will be
+  // received when the incoming bridge transfer is redeemed
+  // Note: for a quote, this should be called on the destination chain
+  async nativeTokenAmount(
+    token: TokenAddress<C>,
+    amount: bigint,
+  ): Promise<bigint> {
+    const address =
+      token === 'native'
+        ? await this.tokenBridge.WETH()
+        : new EvmAddress(token).toString();
+    return this.tokenBridgeRelayer.calculateNativeSwapAmountOut(
+      address,
+      amount,
+    );
+  }
+
+  async maxSwapAmount(token: TokenAddress<C>): Promise<bigint> {
+    const address =
+      token === 'native'
+        ? await this.tokenBridge.WETH()
+        : new EvmAddress(token).toString();
+    return this.tokenBridgeRelayer.maxNativeSwapAmount(address);
+  }
+
   private createUnsignedTx(
     txReq: TransactionRequest,
     description: string,

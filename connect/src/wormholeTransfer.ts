@@ -4,6 +4,7 @@ import {
   WormholeMessageId,
   CircleMessageId,
   IbcMessageId,
+  TokenId,
 } from "@wormhole-foundation/sdk-definitions";
 
 // Could be VAA or Circle or ..?
@@ -11,12 +12,40 @@ export type AttestationId = WormholeMessageId | CircleMessageId | IbcMessageId;
 
 // Transfer state machine states
 export enum TransferState {
+  Failed = -1,
   Created = 1, // Will be set after the TokenTransfer object is created
   Initiated, // Will be set after source chain transactions are submitted
   Attested, // Will be set after VAA  or Circle Attestation is available
   Completed, // Will be set after Attestation is submitted to destination chain
   Finalized, // Will be set after the transaction is finalized on the destination chain
 }
+
+// Quote with optional relayer fees if the transfer
+// is requested to be automatic
+export type TransferQuote = {
+  // How much of what token will be deducted from sender
+  // Note: This will include native gas and fees charged for a full
+  // estimate of the amount taken from the sender
+  sourceToken: {
+    token: TokenId;
+    amount: bigint;
+  };
+  // How much of what token will be minted to the receiver
+  // Note: This will _not_ include native gas
+  destinationToken: {
+    token: TokenId;
+    amount: bigint;
+  };
+  // If the transfer being quoted is automatic
+  // a relayer fee may apply
+  relayFee?: {
+    token: TokenId;
+    amount: bigint;
+  };
+  // If the transfer being quoted asked for native gas dropoff
+  // this will contain the amount of native gas that is minted
+  destinationNativeGas?: bigint;
+};
 
 // WormholeTransfer abstracts the process and state transitions
 // for things like TokenTransfers, NFTTransfers, Circle (with VAA), etc...
