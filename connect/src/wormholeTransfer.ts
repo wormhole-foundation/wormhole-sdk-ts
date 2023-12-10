@@ -24,14 +24,14 @@ export enum TransferState {
 // is requested to be automatic
 export type TransferQuote = {
   // How much of what token will be deducted from sender
-  // Note: This will include native gas and fees charged for a full
+  // Note: This will include fees charged for a full
   // estimate of the amount taken from the sender
   sourceToken: {
     token: TokenId;
     amount: bigint;
   };
   // How much of what token will be minted to the receiver
-  // Note: This will _not_ include native gas
+  // Note: This will _not_ include native gas if requested
   destinationToken: {
     token: TokenId;
     amount: bigint;
@@ -43,7 +43,8 @@ export type TransferQuote = {
     amount: bigint;
   };
   // If the transfer being quoted asked for native gas dropoff
-  // this will contain the amount of native gas that is minted
+  // this will contain the amount of native gas that is to be minted
+  // on the destination chain given the current swap rates
   destinationNativeGas?: bigint;
 };
 

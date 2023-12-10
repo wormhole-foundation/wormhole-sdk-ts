@@ -8,6 +8,7 @@ import {
   TokenId,
   TransactionId,
   TxHash,
+  UniversalAddress,
   UnsignedTransaction,
   WormholeMessageId,
   isTransactionIdentifier,
@@ -134,12 +135,31 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
     const from = { chain: vaa.emitterChain, address: vaa.emitterAddress };
 
     const { token, to } = vaa.payload;
+
+    const { address, chain } = token;
+    const decimals = await wh.getDecimals(token.chain, token.address);
+    const rescale = (amt: bigint, decimals: bigint) => amt * 10n ** (decimals - 8n);
+
+    const _amount = rescale(token.amount, decimals);
+
+    let nativeGasAmount: bigint = 0n;
+    if (automatic) {
+      const relayerPayload = (vaa as TokenBridge.VAA<"TransferWithPayload">).payload.payload;
+      // TODO: how do we not have a payload for this yet
+      const type = relayerPayload.slice(0, 1);
+      const fee = rescale(encoding.bignum.decode(relayerPayload.slice(1, 33)), decimals);
+      nativeGasAmount = rescale(encoding.bignum.decode(relayerPayload.slice(33, 65)), decimals);
+      const receiver = new UniversalAddress(relayerPayload.slice(65, 97));
+      console.log(type, fee, nativeGasAmount, receiver.toString());
+    }
+
     const details: TokenTransferDetails = {
-      amount: token.amount,
-      token,
+      token: { address, chain },
+      amount: _amount,
       from,
       to,
       automatic,
+      nativeGas: nativeGasAmount,
     };
 
     const tt = new TokenTransfer(wh, details);
@@ -430,11 +450,19 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
     const dstDecimals = await dstChain.getDecimals(dstToken.address);
     const srcDecimals = await srcChain.getDecimals(srcToken.address);
 
+    // truncate the amount for over-the-wire max representation
+    const truncate = (amt: bigint, decimals: bigint) => amt / 10n ** (decimals - 8n);
+    // scale by number of decimals, pair with truncate
+    const scale = (amt: bigint, decimals: bigint) => amt * 10n ** decimals;
+    // dedust for source using the number of decimals on the source chain
+    // but scale back to original decimals
+    const dedust = (amt: bigint) => scale(truncate(amt, srcDecimals), srcDecimals);
+    // truncate and rescale to fit destination token
+    const mintable = (amt: bigint) => scale(truncate(amt, srcDecimals), dstDecimals);
+
     // dedust for transfer over the bridge which truncates to 8 decimals
-    const dedusted = transfer.amount / 10n ** (srcDecimals - 8n);
-    // then scale back to the full amount given the destination token decimals
-    const dstAmount = dedusted * 10n ** dstDecimals;
-    const srcAmount = dedusted * 10n ** srcDecimals;
+    let srcAmount = dedust(transfer.amount);
+    let dstAmount = mintable(transfer.amount);
 
     if (!transfer.automatic) {
       return {
@@ -443,22 +471,29 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
       };
     }
 
+    // Otherwise automatic
+
+    // If a native gas dropoff is requested, remove that from the amount they'll get
+    const _nativeGas = transfer.nativeGas ? mintable(transfer.nativeGas) : 0n;
+    dstAmount -= _nativeGas;
+
+    // The fee is also removed from the amount transferred
+    // quoted on the source chain
     const stb = await srcChain.getAutomaticTokenBridge();
     const fee = await stb.getRelayerFee(transfer.from.address, transfer.to, srcToken.address);
+    dstAmount -= mintable(fee);
 
+    // The expected destination gas can be pulled from the destination token bridge
     let destinationNativeGas = 0n;
     if (transfer.nativeGas) {
-      // dedust for transfer over the bridge which truncates to 8 decimals
-      const dedustedNativeGasIn =
-        (transfer.nativeGas / 10n ** (srcDecimals - 8n)) * 10n ** srcDecimals;
       const dtb = await dstChain.getAutomaticTokenBridge();
-      destinationNativeGas = await dtb.nativeTokenAmount(dstToken.address, dedustedNativeGasIn);
+      destinationNativeGas = await dtb.nativeTokenAmount(dstToken.address, _nativeGas);
     }
 
     return {
       sourceToken: {
         token: srcToken,
-        amount: srcAmount + (transfer.nativeGas ?? 0n) + fee,
+        amount: srcAmount + fee,
       },
       destinationToken: { token: dstToken, amount: dstAmount },
       relayFee: { token: srcToken, amount: fee },

@@ -121,7 +121,7 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
     const nativeTokenGas = nativeGas ? nativeGas : 0n;
 
     const fee = await this.getRelayerFee(sender, recipient, token);
-    const sendAmount = amount + fee + nativeTokenGas;
+    const sendAmount = amount + fee;
 
     if (token === 'native') {
       const txReq =
