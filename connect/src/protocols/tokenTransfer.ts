@@ -62,7 +62,7 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
     }
 
     const txStatus = await this.wh.getTransactionStatus(this.vaas![0]!.id);
-    if (txStatus && txStatus.globalTx.destinationTx) {
+    if (txStatus && txStatus.globalTx && txStatus.globalTx.destinationTx) {
       switch (txStatus.globalTx.destinationTx.status) {
         case "completed":
           this.state = TransferState.Completed;
@@ -134,7 +134,7 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
     // TODO: grab at least the init tx from the api
     const from = { chain: vaa.emitterChain, address: vaa.emitterAddress };
 
-    const { token, to } = vaa.payload;
+    let { token, to } = vaa.payload;
 
     const { address, chain } = token;
     const decimals = await wh.getDecimals(token.chain, token.address);
@@ -146,11 +146,15 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
     if (automatic) {
       const relayerPayload = (vaa as TokenBridge.VAA<"TransferWithPayload">).payload.payload;
       // TODO: how do we not have a payload for this yet
-      const type = relayerPayload.slice(0, 1);
-      const fee = rescale(encoding.bignum.decode(relayerPayload.slice(1, 33)), decimals);
+      // const type = relayerPayload.slice(0, 1);
+      // const fee = rescale(encoding.bignum.decode(relayerPayload.slice(1, 33)), decimals);
+
+      // Scale gas to account for truncated VAA amount
       nativeGasAmount = rescale(encoding.bignum.decode(relayerPayload.slice(33, 65)), decimals);
+      // actual receiver
       const receiver = new UniversalAddress(relayerPayload.slice(65, 97));
-      console.log(type, fee, nativeGasAmount, receiver.toString());
+      // Overwrite the receiver
+      to = { chain: vaa.payload.to.chain, address: receiver };
     }
 
     const details: TokenTransferDetails = {
@@ -453,7 +457,7 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
     // truncate the amount for over-the-wire max representation
     const truncate = (amt: bigint, decimals: bigint) => amt / 10n ** (decimals - 8n);
     // scale by number of decimals, pair with truncate
-    const scale = (amt: bigint, decimals: bigint) => amt * 10n ** decimals;
+    const scale = (amt: bigint, decimals: bigint) => amt * 10n ** (decimals - 8n);
     // dedust for source using the number of decimals on the source chain
     // but scale back to original decimals
     const dedust = (amt: bigint) => scale(truncate(amt, srcDecimals), srcDecimals);

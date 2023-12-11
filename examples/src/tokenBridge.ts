@@ -23,8 +23,8 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform]);
 
   // Grab chain Contexts -- these hold a reference to a cached rpc client
-  const sendChain = wh.getChain("Avalanche");
-  const rcvChain = wh.getChain("Solana");
+  const sendChain = wh.getChain("Solana");
+  const rcvChain = wh.getChain("Avalanche");
 
   // shortcut to allow transferring native gas token
   const token: TokenId | "native" = "native";
@@ -62,8 +62,9 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 
   // Set this to the transfer txid of the initiating transaction to recover a token transfer
   // and attempt to fetch details about its progress.
-  //const recoverTxid = undefined;
-  const recoverTxid = "0x06c940d642fa577e2f6507ffbc4560a76a3b757db6c07ff11c8635c014c5639d";
+  let recoverTxid = undefined;
+  recoverTxid =
+    "2daoPz9KyVkG8WGztfatMRx3EKbiRSUVGKAoCST9286eGrzXg5xowafBUUKfd3JrHzvd4AwoH57ujWaJ72k6oiCY";
 
   const _amount = normalizeAmount(amount, decimals);
   const _nativeGas = nativeGas ? normalizeAmount(nativeGas, decimals) : undefined;
@@ -123,26 +124,10 @@ async function tokenTransfer<N extends Network>(
       xfer.transfer,
     );
     console.log(quote);
-    if (quote.destinationToken.amount < 0) throw "wtf?";
-    //console.log(
-    //  "Send amount: ",
-    //  quote.sourceToken.token.address.toString(),
-    //  quote.sourceToken.amount,
-    //);
-    //console.log(
-    //  "Token to be Received: ",
-    //  quote.destinationToken.token.address.toString(),
-    //  quote.destinationToken.amount,
-    //);
-    //console.log(
-    //  "Fee charged: ",
-    //  displayAmount(
-    //    quote.relayFee!.amount,
-    //    BigInt(route.source.chain.config.nativeTokenDecimals),
-    //    3n,
-    //  ),
-    //);
-    //return xfer;
+    if (quote.destinationToken.amount < 0) {
+      console.log("The amount requested is too low to cover the fee and any native gas requested.");
+      return xfer;
+    }
   }
 
   // 1) Submit the transactions to the source chain, passing a signer to sign any txns

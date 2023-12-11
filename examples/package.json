@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/connect-sdk-examples",
-  "version": "0.2.5-beta.0",
+  "version": "0.2.5-beta.1",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -49,14 +49,14 @@
     "dotenv": "^16.3.1"
   },
   "dependencies": {
-    "@wormhole-foundation/connect-sdk": "^0.2.5-beta.0",
-    "@wormhole-foundation/connect-sdk-solana": "^0.2.5-beta.0",
-    "@wormhole-foundation/connect-sdk-evm": "^0.2.5-beta.0",
-    "@wormhole-foundation/connect-sdk-cosmwasm": "^0.2.5-beta.0",
-    "@wormhole-foundation/connect-sdk-evm-tokenbridge": "^0.2.5-beta.0",
-    "@wormhole-foundation/connect-sdk-evm-cctp": "^0.2.5-beta.0",
-    "@wormhole-foundation/connect-sdk-cosmwasm-core": "^0.2.5-beta.0",
-    "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge": "^0.2.5-beta.0",
-    "@wormhole-foundation/connect-sdk-cosmwasm-ibc": "^0.2.5-beta.0"
+    "@wormhole-foundation/connect-sdk": "^0.2.5-beta.1",
+    "@wormhole-foundation/connect-sdk-solana": "^0.2.5-beta.1",
+    "@wormhole-foundation/connect-sdk-evm": "^0.2.5-beta.1",
+    "@wormhole-foundation/connect-sdk-cosmwasm": "^0.2.5-beta.1",
+    "@wormhole-foundation/connect-sdk-evm-tokenbridge": "^0.2.5-beta.1",
+    "@wormhole-foundation/connect-sdk-evm-cctp": "^0.2.5-beta.1",
+    "@wormhole-foundation/connect-sdk-cosmwasm-core": "^0.2.5-beta.1",
+    "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge": "^0.2.5-beta.1",
+    "@wormhole-foundation/connect-sdk-cosmwasm-ibc": "^0.2.5-beta.1"
   }
 }

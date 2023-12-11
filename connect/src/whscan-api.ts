@@ -44,7 +44,7 @@ export interface TransactionStatus {
     tokenAddress: string;
     tokenChain: number;
   };
-  globalTx: {
+  globalTx?: {
     id: string;
     originTx: {
       txHash: string;

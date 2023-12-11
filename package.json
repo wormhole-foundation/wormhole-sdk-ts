@@ -1,6 +1,6 @@
 {
   "name": "connect-sdk",
-  "version": "0.2.5-beta.0",
+  "version": "0.2.5-beta.1",
   "license": "Apache-2.0",
   "directories": {
     "test": "__tests__"
@@ -23,7 +23,7 @@
     "typescript": "^5.1.1"
   },
   "scripts": {
-    "sync": "tsx syncVersion.ts",
+    "sync": "tsx syncVersion.ts && npm install && npm run build",
     "lint": "npm run lint --workspaces --if-present",
     "build": "npm run build --workspaces --if-present",
     "rebuild": "npm run rebuild --workspaces --if-present",
@@ -49,8 +49,7 @@
     "platforms/cosmwasm",
     "platforms/cosmwasm/protocols/core",
     "platforms/cosmwasm/protocols/tokenBridge",
-    "platforms/cosmwasm/protocols/ibc",
-    "examples"
+    "platforms/cosmwasm/protocols/ibc"
   ],
   "unreleased": [
     "examples",
