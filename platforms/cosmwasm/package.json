@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/connect-sdk-cosmwasm",
-  "version": "0.2.5-beta.1",
+  "version": "0.2.5-beta.2",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -50,7 +50,7 @@
     "test": "jest --config ./jest.config.ts"
   },
   "dependencies": {
-    "@wormhole-foundation/connect-sdk": "^0.2.5-beta.1",
+    "@wormhole-foundation/connect-sdk": "^0.2.5-beta.2",
     "@cosmjs/cosmwasm-stargate": "^0.32.0",
     "@cosmjs/proto-signing": "^0.32.0",
     "@cosmjs/stargate": "^0.32.0",

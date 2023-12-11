@@ -29,12 +29,11 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   // shortcut to allow transferring native gas token
   const token: TokenId | "native" = "native";
 
-  // Normalized given token decimals later
-  // but can just pass bigints as base units
+  // Normalized given token decimals later but can just pass bigints as base units
   // Note: The Token bridge will dedust past 8 decimals
   // this means any amount specified past that point will be returned
   // to the caller
-  const amount = "0.02";
+  const amount = "0.15";
 
   // With automatic set to true, perform an automatic transfer. This will invoke a relayer
   // contract intermediary that knows to pick up the transfers
@@ -54,7 +53,7 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   const source = await getStuff(sendChain);
   const destination = await getStuff(rcvChain);
 
-  // Normalize the amount to account for the tokens decimals
+  // Used to normalize the amount to account for the tokens decimals
   const decimals =
     token === "native"
       ? BigInt(sendChain.config.nativeTokenDecimals)
@@ -63,31 +62,30 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   // Set this to the transfer txid of the initiating transaction to recover a token transfer
   // and attempt to fetch details about its progress.
   let recoverTxid = undefined;
-  recoverTxid =
-    "2daoPz9KyVkG8WGztfatMRx3EKbiRSUVGKAoCST9286eGrzXg5xowafBUUKfd3JrHzvd4AwoH57ujWaJ72k6oiCY";
+  // recoverTxid =
+  //   "2daoPz9KyVkG8WGztfatMRx3EKbiRSUVGKAoCST9286eGrzXg5xowafBUUKfd3JrHzvd4AwoH57ujWaJ72k6oiCY";
 
-  const _amount = normalizeAmount(amount, decimals);
-  const _nativeGas = nativeGas ? normalizeAmount(nativeGas, decimals) : undefined;
+  // Finally create and perform the transfer given the parameters set above
   const xfer = !recoverTxid
     ? // Perform the token transfer
       await tokenTransfer(wh, {
         token,
-        amount: _amount,
+        amount: normalizeAmount(amount, decimals),
         source,
         destination,
         delivery: {
           automatic,
-          nativeGas: _nativeGas,
+          nativeGas: nativeGas ? normalizeAmount(nativeGas, decimals) : undefined,
         },
       })
-    : await TokenTransfer.from(wh, {
+    : // Recover the transfer from the originating txid
+      await TokenTransfer.from(wh, {
         chain: source.chain.chain,
         txid: recoverTxid,
       });
 
   // Log out the results
-  console.log(xfer.transfer);
-  console.log(await TokenTransfer.quoteTransfer(source.chain, destination.chain, xfer.transfer));
+  console.log(xfer);
 })();
 
 async function tokenTransfer<N extends Network>(
@@ -124,10 +122,9 @@ async function tokenTransfer<N extends Network>(
       xfer.transfer,
     );
     console.log(quote);
-    if (quote.destinationToken.amount < 0) {
-      console.log("The amount requested is too low to cover the fee and any native gas requested.");
-      return xfer;
-    }
+
+    if (quote.destinationToken.amount < 0)
+      throw "The amount requested is too low to cover the fee and any native gas requested.";
   }
 
   // 1) Submit the transactions to the source chain, passing a signer to sign any txns

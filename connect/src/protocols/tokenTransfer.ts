@@ -497,7 +497,7 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
     return {
       sourceToken: {
         token: srcToken,
-        amount: srcAmount + fee,
+        amount: srcAmount,
       },
       destinationToken: { token: dstToken, amount: dstAmount },
       relayFee: { token: srcToken, amount: fee },

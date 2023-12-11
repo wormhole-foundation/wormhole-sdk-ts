@@ -120,9 +120,6 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
 
     const nativeTokenGas = nativeGas ? nativeGas : 0n;
 
-    const fee = await this.getRelayerFee(sender, recipient, token);
-    const sendAmount = amount + fee;
-
     if (token === 'native') {
       const txReq =
         await this.tokenBridgeRelayer.wrapAndTransferEthWithRelay.populateTransaction(
@@ -130,7 +127,7 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
           recipientChainId,
           recipientAddress,
           0, // skip batching
-          { value: sendAmount },
+          { value: amount },
         );
 
       yield this.createUnsignedTx(
@@ -150,10 +147,10 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
         this.tokenBridgeRelayer.target,
       );
 
-      if (allowance < sendAmount) {
+      if (allowance < amount) {
         const txReq = await tokenContract.approve.populateTransaction(
           this.tokenBridgeRelayer.target,
-          sendAmount,
+          amount,
         );
         yield this.createUnsignedTx(
           addFrom(txReq, senderAddr),
@@ -164,7 +161,7 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
       const txReq =
         await this.tokenBridgeRelayer.transferTokensWithRelay.populateTransaction(
           tokenAddr,
-          sendAmount,
+          amount,
           nativeTokenGas,
           recipientChainId,
           recipientAddress,

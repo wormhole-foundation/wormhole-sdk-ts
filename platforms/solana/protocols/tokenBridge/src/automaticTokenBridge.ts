@@ -140,8 +140,6 @@ export class SolanaAutomaticTokenBridge<
       }
     }
 
-    const fee = await this.getRelayerFee(sender, recipient, token);
-
     const nativeGasAmount = nativeGas ? nativeGas : 0n;
 
     const transferIx =
@@ -153,7 +151,7 @@ export class SolanaAutomaticTokenBridge<
             this.tokenBridgeProgramId,
             this.coreBridgeProgramId,
             tokenMint,
-            amount + fee,
+            amount,
             nativeGasAmount,
             recipientAddress,
             recipient.chain,
@@ -167,7 +165,7 @@ export class SolanaAutomaticTokenBridge<
             this.tokenBridgeProgramId,
             this.coreBridgeProgramId,
             tokenMint,
-            amount + fee,
+            amount,
             nativeGasAmount,
             recipientAddress,
             recipient.chain,
