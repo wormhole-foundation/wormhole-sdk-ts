@@ -45,7 +45,7 @@ export async function retry<T>(
         clearInterval(intervalId);
         resolve(result);
       } else if (title) {
-        console.log(`Retrying ${title}, attempt ${retries}/${maxRetries} `);
+        console.debug(`Retrying ${title}, attempt ${retries}/${maxRetries} `);
       }
 
       retries++;

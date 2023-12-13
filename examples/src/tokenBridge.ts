@@ -62,8 +62,8 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   // Set this to the transfer txid of the initiating transaction to recover a token transfer
   // and attempt to fetch details about its progress.
   let recoverTxid = undefined;
-  // recoverTxid =
-  //   "2daoPz9KyVkG8WGztfatMRx3EKbiRSUVGKAoCST9286eGrzXg5xowafBUUKfd3JrHzvd4AwoH57ujWaJ72k6oiCY";
+  recoverTxid =
+    "2gzMCCHpPBJ4yjQB4EZzNDYVUb2rnyfB5AyshYwDHkxxM46AbVPRfn95bf7JR1GyD6NjxRFr9NYCvATa9PG4Lin3";
 
   // Finally create and perform the transfer given the parameters set above
   const xfer = !recoverTxid
@@ -85,6 +85,8 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
       });
 
   // Log out the results
+  console.log(await waitLog(wh, xfer));
+
   console.log(xfer);
 })();
 
@@ -131,7 +133,7 @@ async function tokenTransfer<N extends Network>(
   console.log(`Started transfer: `, srcTxids);
 
   // If automatic, we're done
-  if (route.delivery?.automatic) return (await waitLog(xfer)) as TokenTransfer<N>;
+  if (route.delivery?.automatic) return xfer;
 
   // 2) wait for the VAA to be signed and ready (not required for auto transfer)
   console.log("Getting Attestation");

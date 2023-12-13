@@ -1,14 +1,26 @@
+import { Chain } from "@wormhole-foundation/sdk-base";
 import {
   CircleMessageId,
   IbcMessageId,
+  PayloadLiteral,
   Signer,
   TokenId,
+  TransactionId,
   TxHash,
   WormholeMessageId,
 } from "@wormhole-foundation/sdk-definitions";
 
-// Could be VAA or Circle or ..?
 export type AttestationId = WormholeMessageId | CircleMessageId | IbcMessageId;
+
+//
+export type Receipt<PL extends PayloadLiteral> = {
+  state: TransferState;
+  from: Chain;
+  to: Chain;
+  originTxs: TransactionId[];
+  destinationTxs: TransactionId[];
+  attestation?: WormholeMessageId<PL>;
+};
 
 // Transfer state machine states
 export enum TransferState {
@@ -52,8 +64,7 @@ export type TransferQuote = {
 // WormholeTransfer abstracts the process and state transitions
 // for things like TokenTransfers, NFTTransfers, Circle (with VAA), etc...
 export interface WormholeTransfer {
-  // may reach out to an external service to get the transfer state
-  // return the state of this transfer
+  // Return the current transfer state
   getTransferState(): TransferState;
 
   // Initiate the WormholeTransfer by submitting transactions to the source chain
@@ -67,9 +78,4 @@ export interface WormholeTransfer {
   // finish the WormholeTransfer by submitting transactions to the destination chain
   // returns a transaction hashes
   completeTransfer(signer: Signer): Promise<TxHash[]>;
-
-  // how many blocks until source is final
-  // sourceFinalized(): Promise<bigint>;
-  // how many blocks until destination is final
-  // destinationFinalized(): Promise<bigint>;
 }

@@ -1,16 +1,15 @@
 import { Chain } from "@wormhole-foundation/sdk-base";
 import { SequenceId } from "./types";
 import { UniversalAddress } from "./universalAddress";
-import { VAA } from "./vaa";
+import { PayloadLiteral, VAA } from "./vaa";
 
 // Wormhole Message Identifier
 // used to fetch a VAA
-export type WormholeMessageId = {
+export type WormholeMessageId<PL extends PayloadLiteral = PayloadLiteral> = {
   chain: Chain;
   emitter: UniversalAddress;
   sequence: SequenceId;
-  // TODO
-  vaa?: VAA;
+  vaa?: VAA<PL>;
 };
 export function isWormholeMessageId(thing: WormholeMessageId | any): thing is WormholeMessageId {
   return (
