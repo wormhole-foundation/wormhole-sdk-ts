@@ -115,17 +115,15 @@ async function tokenTransfer<N extends Network>(
     route.delivery?.nativeGas,
   );
 
-  if (xfer.transfer.automatic) {
-    const quote = await TokenTransfer.quoteTransfer(
-      route.source.chain,
-      route.destination.chain,
-      xfer.transfer,
-    );
-    console.log(quote);
+  const quote = await TokenTransfer.quoteTransfer(
+    route.source.chain,
+    route.destination.chain,
+    xfer.transfer,
+  );
+  console.log(quote);
 
-    if (quote.destinationToken.amount < 0)
-      throw "The amount requested is too low to cover the fee and any native gas requested.";
-  }
+  if (xfer.transfer.automatic && quote.destinationToken.amount < 0)
+    throw "The amount requested is too low to cover the fee and any native gas requested.";
 
   // 1) Submit the transactions to the source chain, passing a signer to sign any txns
   console.log("Starting transfer");
@@ -148,22 +146,11 @@ async function tokenTransfer<N extends Network>(
   // No need to send back, dip
   if (!roundTrip) return xfer;
 
-  // We can look up the destination asset for this transfer given the context of
-  // the sending chain and token and destination chain
-  const token = await TokenTransfer.lookupDestinationToken(
-    route.source.chain,
-    route.destination.chain,
-    xfer.transfer,
-  );
-  console.log(token);
-
-  // The wrapped token may have a different number of decimals
-  // to make things easy, lets just send the amount from the VAA back
-  const amount = xfer.vaas![0]!.vaa!.payload.token.amount;
+  const { destinationToken: token } = quote;
   return await tokenTransfer(wh, {
     ...route,
-    token,
-    amount,
+    token: token.token,
+    amount: token.amount,
     source: route.destination,
     destination: route.source,
   });
