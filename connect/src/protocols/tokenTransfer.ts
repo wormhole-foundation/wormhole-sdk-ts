@@ -97,12 +97,6 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
     if (isTokenTransferDetails(from)) {
       await TokenTransfer.validateTransferDetails(wh, from);
 
-      const fromChain = wh.getChain(from.from.chain);
-      const toChain = wh.getChain(from.to.chain);
-
-      // Apply hackery
-      from = { ...from, ...(await TokenTransfer.destinationOverrides(fromChain, toChain, from)) };
-
       return new TokenTransfer(wh, from);
     }
 
@@ -198,7 +192,15 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
       throw new Error("Invalid state transition in `start`");
 
     const fromChain = this.wh.getChain(this.transfer.from.chain);
-    this.txids = await TokenTransfer.transfer<N>(fromChain, this.transfer, signer);
+    const toChain = this.wh.getChain(this.transfer.to.chain);
+
+    // Apply hackery
+    const transfer = {
+      ...this.transfer,
+      ...(await TokenTransfer.destinationOverrides(fromChain, toChain, this.transfer)),
+    };
+
+    this.txids = await TokenTransfer.transfer<N>(fromChain, transfer, signer);
     this.state = TransferState.Initiated;
 
     return this.txids.map(({ txid }) => txid);

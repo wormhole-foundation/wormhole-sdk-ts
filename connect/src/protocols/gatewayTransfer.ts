@@ -195,7 +195,10 @@ export class GatewayTransfer<N extends Network> implements WormholeTransfer {
           : undefined;
 
         const destChain = toChain(maybeWithPayload.chain);
-        const recipientAddress = encoding.b64.decode(maybeWithPayload.recipient);
+        // b64 decode the address to its string representation
+        const recipientAddress = encoding.bytes.decode(
+          encoding.b64.decode(maybeWithPayload.recipient),
+        );
         to = nativeChainAddress(destChain, recipientAddress);
       } catch {
         /*Ignoring, throws if not the payload isnt JSON*/

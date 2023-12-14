@@ -64,7 +64,7 @@ import { Network } from "@wormhole-foundation/sdk-base/src";
         wh,
         {
           chain: external.chain,
-          txid: "0x7302c7bca282676a2ba19d7453b94c4c5b09f73b9be0c871dfccddfb012818cb",
+          txid: "0xb743ba030d731fe4a02a4f56cb3719fb83e8590f108ed78df67bfc7fdd4b61d6",
         },
         600_000,
       )
