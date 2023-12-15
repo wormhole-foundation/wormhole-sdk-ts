@@ -30,7 +30,7 @@ export class CircleTransfer<N extends Network> implements WormholeTransfer {
   private readonly wh: Wormhole<N>;
 
   // state machine tracker
-  private state: TransferState;
+  private _state: TransferState;
 
   // transfer details
   transfer: CircleTransferDetails;
@@ -51,18 +51,13 @@ export class CircleTransfer<N extends Network> implements WormholeTransfer {
   }[];
 
   private constructor(wh: Wormhole<N>, transfer: CircleTransferDetails) {
-    this.state = TransferState.Created;
+    this._state = TransferState.Created;
     this.wh = wh;
     this.transfer = transfer;
   }
 
-  async getTransferState(): Promise<TransferState> {
-    //if (this.transfer.automatic) {
-    //  const { chain, emitter, sequence } = this.vaas[0].id;
-    //  const transactionStatus = await this.wh.getTransactionStatus(chain, emitter, sequence);
-    //  // https://relayer.dev.stable.io/v1/relays?txHash=0xbe8396debdcf3bfd94c51e59abbd9e68f856a408b972d52417c41763f8eb2c0c
-    //}
-    return this.state;
+  getTransferState(): TransferState {
+    return this._state;
   }
 
   // Static initializers for in flight transfers that have not been completed
@@ -143,7 +138,7 @@ export class CircleTransfer<N extends Network> implements WormholeTransfer {
 
     const tt = new CircleTransfer(wh, details);
     tt.vaas = [{ id: { emitter, sequence: vaa.sequence, chain: chain }, vaa }];
-    tt.state = TransferState.Initiated;
+    tt._state = TransferState.Attested;
 
     return tt;
   }
@@ -173,7 +168,7 @@ export class CircleTransfer<N extends Network> implements WormholeTransfer {
 
     const xfer = new CircleTransfer(wh, details);
     xfer.circleAttestations = [{ id: messageId }];
-    xfer.state = TransferState.Initiated;
+    xfer._state = TransferState.SourceInitiated;
 
     return xfer;
   }
@@ -210,7 +205,7 @@ export class CircleTransfer<N extends Network> implements WormholeTransfer {
       ct.circleAttestations = [{ id: circleMessage.messageId }];
     }
 
-    ct.state = TransferState.Initiated;
+    ct._state = TransferState.SourceInitiated;
     ct.txids = [from];
     return ct;
   }
@@ -226,7 +221,7 @@ export class CircleTransfer<N extends Network> implements WormholeTransfer {
         4) return transaction id
     */
 
-    if (this.state !== TransferState.Created)
+    if (this._state !== TransferState.Created)
       throw new Error("Invalid state transition in `start`");
 
     const fromChain = this.wh.getChain(this.transfer.from.chain);
@@ -250,7 +245,7 @@ export class CircleTransfer<N extends Network> implements WormholeTransfer {
     }
 
     this.txids = await signSendWait<N, typeof fromChain.chain>(fromChain, xfer, signer);
-    this.state = TransferState.Initiated;
+    this._state = TransferState.SourceInitiated;
 
     return this.txids.map(({ txid }) => txid);
   }
@@ -307,14 +302,14 @@ export class CircleTransfer<N extends Network> implements WormholeTransfer {
         2) Once available, pull the VAA and parse it
         3) return seq
     */
-    if (this.state < TransferState.Initiated || this.state > TransferState.Attested)
+    if (this._state < TransferState.SourceInitiated || this._state > TransferState.Attested)
       throw new Error("Invalid state transition in `fetchAttestation`");
 
     const ids: AttestationId[] = this.transfer.automatic
       ? await this._fetchWormholeAttestation(timeout)
       : await this._fetchCircleAttestation(timeout);
 
-    this.state = TransferState.Attested;
+    this._state = TransferState.Attested;
 
     return ids;
   }
@@ -328,7 +323,7 @@ export class CircleTransfer<N extends Network> implements WormholeTransfer {
         2) submit the VAA and transactions on chain
         3) return txid of submission
     */
-    if (this.state < TransferState.Attested)
+    if (this._state < TransferState.Attested)
       throw new Error("Invalid state transition in `finish`");
 
     // If its automatic, this does not need to be called

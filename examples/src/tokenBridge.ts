@@ -23,8 +23,8 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform]);
 
   // Grab chain Contexts -- these hold a reference to a cached rpc client
-  const sendChain = wh.getChain("Solana");
-  const rcvChain = wh.getChain("Avalanche");
+  const sendChain = wh.getChain("Avalanche");
+  const rcvChain = wh.getChain("Solana");
 
   // shortcut to allow transferring native gas token
   const token: TokenId | "native" = "native";
@@ -41,7 +41,7 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   // of the token
   // On the destination side, a wrapped version of the token will be minted
   // to the address specified in the transfer VAA
-  const automatic = true;
+  const automatic = false;
 
   // The automatic relayer has the ability to deliver some native gas funds to the destination account
   // The amount specified for native gas will be swapped for the native gas token according

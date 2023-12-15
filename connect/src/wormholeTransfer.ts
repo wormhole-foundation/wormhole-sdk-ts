@@ -14,10 +14,11 @@ export type AttestationId = WormholeMessageId | CircleMessageId | IbcMessageId;
 export enum TransferState {
   Failed = -1,
   Created = 1, // Will be set after the TokenTransfer object is created
-  Initiated, // Will be set after source chain transactions are submitted
+  SourceInitiated, // Will be set after source chain transactions are submitted
+  SourceFinalized, // Will be set after source chain transactions are finalized
   Attested, // Will be set after VAA  or Circle Attestation is available
-  Completed, // Will be set after Attestation is submitted to destination chain
-  Finalized, // Will be set after the transaction is finalized on the destination chain
+  DestinationInitiated, // Will be set after Attestation is submitted to destination chain
+  DestinationFinalized, // Will be set after the transaction is finalized on the destination chain
 }
 
 // Quote with optional relayer fees if the transfer
@@ -53,7 +54,7 @@ export type TransferQuote = {
 export interface WormholeTransfer {
   // may reach out to an external service to get the transfer state
   // return the state of this transfer
-  getTransferState(): Promise<TransferState>;
+  getTransferState(): TransferState;
 
   // Initiate the WormholeTransfer by submitting transactions to the source chain
   // returns an array transaction hashes

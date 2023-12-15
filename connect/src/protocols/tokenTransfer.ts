@@ -25,7 +25,7 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
   private readonly wh: Wormhole<N>;
 
   // state machine tracker
-  private state: TransferState;
+  private _state: TransferState;
 
   // transfer details
   transfer: TokenTransferDetails;
@@ -41,37 +41,13 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
   }[];
 
   private constructor(wh: Wormhole<N>, transfer: TokenTransferDetails) {
-    this.state = TransferState.Created;
+    this._state = TransferState.Created;
     this.wh = wh;
     this.transfer = transfer;
   }
 
-  async getTransferState(): Promise<TransferState> {
-    // nothing happening we aren't making happen, return state
-    if (!this.transfer.automatic) return this.state;
-
-    // If we've got a VAA, use it since its faster
-    if (!this.vaas || this.vaas.length === 0) {
-      if (this.txids.length > 0) {
-        const fromChain = this.wh.getChain(this.transfer.from.chain);
-        const [whm] = await fromChain.parseTransaction(this.txids[this.txids.length - 1]!.txid);
-        this.vaas = [{ id: whm! }];
-      } else {
-        return this.state;
-      }
-    }
-
-    const txStatus = await this.wh.getTransactionStatus(this.vaas![0]!.id);
-    if (txStatus && txStatus.globalTx && txStatus.globalTx.destinationTx) {
-      switch (txStatus.globalTx.destinationTx.status) {
-        case "completed":
-          this.state = TransferState.Completed;
-          break;
-        // ... more?
-      }
-    }
-
-    return this.state;
+  getTransferState(): TransferState {
+    return this._state;
   }
 
   // Static initializers for in flight transfers that have not been completed
@@ -96,6 +72,14 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
   ): Promise<TokenTransfer<N>> {
     if (isTokenTransferDetails(from)) {
       await TokenTransfer.validateTransferDetails(wh, from);
+      const fromChain = wh.getChain(from.from.chain);
+      const toChain = wh.getChain(from.to.chain);
+
+      // Apply hackery
+      from = {
+        ...from,
+        ...(await TokenTransfer.destinationOverrides(fromChain, toChain, from)),
+      };
 
       return new TokenTransfer(wh, from);
     }
@@ -162,7 +146,7 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
 
     const tt = new TokenTransfer(wh, details);
     tt.vaas = [{ id, vaa }];
-    tt.state = TransferState.Attested;
+    tt._state = TransferState.Attested;
     return tt;
   }
 
@@ -188,20 +172,12 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
         4) return transaction id
     */
 
-    if (this.state !== TransferState.Created)
+    if (this._state !== TransferState.Created)
       throw new Error("Invalid state transition in `start`");
 
     const fromChain = this.wh.getChain(this.transfer.from.chain);
-    const toChain = this.wh.getChain(this.transfer.to.chain);
-
-    // Apply hackery
-    const transfer = {
-      ...this.transfer,
-      ...(await TokenTransfer.destinationOverrides(fromChain, toChain, this.transfer)),
-    };
-
-    this.txids = await TokenTransfer.transfer<N>(fromChain, transfer, signer);
-    this.state = TransferState.Initiated;
+    this.txids = await TokenTransfer.transfer<N>(fromChain, this.transfer, signer);
+    this._state = TransferState.SourceInitiated;
 
     return this.txids.map(({ txid }) => txid);
   }
@@ -215,7 +191,7 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
         2) Once available, pull the VAA and parse it
         3) return seq
     */
-    if (this.state < TransferState.Initiated || this.state > TransferState.Attested)
+    if (this._state < TransferState.SourceInitiated || this._state > TransferState.Attested)
       throw new Error("Invalid state transition in `ready`");
 
     if (!this.vaas || this.vaas.length === 0) {
@@ -243,7 +219,7 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
       );
     }
 
-    this.state = TransferState.Attested;
+    this._state = TransferState.Attested;
     return this.vaas.map((v) => v.id);
   }
 
@@ -256,7 +232,7 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
         2) submit the VAA and transactions on chain
         3) return txid of submission
     */
-    if (this.state < TransferState.Attested)
+    if (this._state < TransferState.Attested)
       throw new Error("Invalid state transition in `finish`. Be sure to call `fetchAttestation`.");
 
     if (!this.vaas) throw new Error("No VAA details available");

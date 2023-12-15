@@ -53,7 +53,7 @@ export class GatewayTransfer<N extends Network> implements WormholeTransfer {
   private readonly gatewayAddress: ChainAddress;
 
   // state machine tracker
-  private state: TransferState;
+  private _state: TransferState;
 
   // cached message derived from transfer details
   // note: we dont want to create multiple different ones since
@@ -82,7 +82,7 @@ export class GatewayTransfer<N extends Network> implements WormholeTransfer {
     gateway: GatewayContext<N>,
     gatewayIbc: IbcBridge<N, "Cosmwasm", PlatformToChains<"Cosmwasm">>,
   ) {
-    this.state = TransferState.Created;
+    this._state = TransferState.Created;
     this.wh = wh;
     this.transfer = transfer;
 
@@ -104,8 +104,8 @@ export class GatewayTransfer<N extends Network> implements WormholeTransfer {
     this.msg = gatewayTransferMsg(this.transfer);
   }
 
-  async getTransferState(): Promise<TransferState> {
-    return this.state;
+  getTransferState(): TransferState {
+    return this._state;
   }
 
   // Static initializers for in flight transfers that have not been completed
@@ -156,7 +156,7 @@ export class GatewayTransfer<N extends Network> implements WormholeTransfer {
 
     // Since we're picking up from somewhere we can move the
     // state maching to initiated
-    gt.state = TransferState.Initiated;
+    gt._state = TransferState.SourceInitiated;
 
     // Wait for what _can_ complete to complete
     await gt.fetchAttestation(timeout);
@@ -298,7 +298,7 @@ export class GatewayTransfer<N extends Network> implements WormholeTransfer {
         2) Update state
         3) return transaction ids
     */
-    if (this.state !== TransferState.Created)
+    if (this._state !== TransferState.Created)
       throw new Error("Invalid state transition in `start`");
 
     this.transactions = await (this.fromGateway()
@@ -306,7 +306,7 @@ export class GatewayTransfer<N extends Network> implements WormholeTransfer {
       : this._transfer(signer));
 
     // Update State Machine
-    this.state = TransferState.Initiated;
+    this._state = TransferState.SourceInitiated;
     return this.transactions.map((tx) => tx.txid);
   }
 
@@ -350,7 +350,7 @@ export class GatewayTransfer<N extends Network> implements WormholeTransfer {
   async fetchAttestation(timeout?: number): Promise<AttestationId[]> {
     // Note: this method probably does too much
 
-    if (this.state < TransferState.Initiated || this.state > TransferState.Attested)
+    if (this._state < TransferState.SourceInitiated || this._state > TransferState.Attested)
       throw new Error("Invalid state transition in `fetchAttestation`");
 
     const attestations: AttestationId[] = [];
@@ -475,7 +475,7 @@ export class GatewayTransfer<N extends Network> implements WormholeTransfer {
     // Note: there is no ordering guarantee here
     attestations.push(...this.ibcTransfers.map((xfer) => xfer.id));
 
-    this.state = TransferState.Attested;
+    this._state = TransferState.Attested;
 
     return attestations;
   }
@@ -489,7 +489,7 @@ export class GatewayTransfer<N extends Network> implements WormholeTransfer {
         2) submit the VAA and transactions on chain
         3) return txid of submission
     */
-    if (this.state < TransferState.Attested)
+    if (this._state < TransferState.Attested)
       throw new Error("Invalid state transition in `finish`. Be sure to call `fetchAttestation`.");
 
     if (this.toGateway())
@@ -514,7 +514,7 @@ export class GatewayTransfer<N extends Network> implements WormholeTransfer {
     const xfer = tb.redeem(toAddress, vaa);
     const redeemTxs = await signSendWait<N, typeof toChain.chain>(toChain, xfer, signer);
     this.transactions.push(...redeemTxs);
-    this.state = TransferState.Completed;
+    this._state = TransferState.DestinationInitiated;
     return redeemTxs.map(({ txid }) => txid);
   }
 

@@ -1,7 +1,4 @@
-import {
-  TokenOwnerOffCurveError,
-  getAssociatedTokenAddress,
-} from '@solana/spl-token';
+import { getAssociatedTokenAddress } from '@solana/spl-token';
 import {
   ChainAddress,
   ChainContext,
@@ -23,18 +20,10 @@ export class SolanaChain<
     const mint = token.toNative(this.chain).unwrap();
     const owner = new SolanaAddress(address).unwrap();
 
-    try {
-      const ata = await getAssociatedTokenAddress(mint, owner);
-      return {
-        chain: this.chain,
-        address: new SolanaAddress(ata.toString()) as NativeAddress<C>,
-      };
-    } catch (e) {
-      if (e instanceof TokenOwnerOffCurveError) {
-        // We were probably passed the ATA directly
-        return { chain: this.chain, address };
-      }
-      throw e;
-    }
+    const ata = await getAssociatedTokenAddress(mint, owner);
+    return {
+      chain: this.chain,
+      address: new SolanaAddress(ata.toString()) as NativeAddress<C>,
+    };
   }
 }
