@@ -1,32 +1,11 @@
-// patch out annoying logs
-const info = console.info;
-console.info = function (x: any, ...rest: any) {
-  if (x !== "secp256k1 unavailable, reverting to browser version") {
-    info(x, ...rest);
-  }
-};
-const warn = console.warn;
-console.warn = function (x: any, ...rest: any) {
-  if (
-    !x
-      .toString()
-      .startsWith(
-        "Error: Error: RPC Validation Error: The response returned from RPC server does not match the TypeScript definition. This is likely because the SDK version is not compatible with the RPC server.",
-      )
-  ) {
-    warn(x, ...rest);
-  }
-};
-
 import * as fs from "fs";
 import { Network } from "@wormhole-foundation/sdk-base";
 import { Wormhole } from "@wormhole-foundation/connect-sdk";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
-
-import { getSuggestedUpdates } from "../foreignAssets";
+import { getSuggestedUpdates } from "./foreignAssets";
 import { TokensConfig } from "../types";
-import { tokenFilePath } from "./utils";
+import { mergeDeep, tokenFilePath } from "./utils";
 
 import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
 import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
@@ -41,15 +20,10 @@ const MAINNET_TOKENS = JSON.parse(mainnetTokens) as TokensConfig;
 const checkEnvConfig = async (env: Network, tokensConfig: TokensConfig) => {
   const wh = new Wormhole(env, [EvmPlatform, SolanaPlatform]);
 
-  const [numUpdates, suggestedUpdates] = await getSuggestedUpdates(wh, tokensConfig);
-  if ((numUpdates as number) > 0) {
-    console.log(`
-      ${numUpdates} updates available. To update, run:\n
-      npm run updateForeignAssets`);
-    console.log(JSON.stringify(suggestedUpdates, null, 4));
-  } else {
-    console.log("Up to date");
-  }
+  const data = await getSuggestedUpdates(wh, tokensConfig);
+  const suggestedUpdates = data[1] as TokensConfig;
+  const newConfig = mergeDeep(tokensConfig, suggestedUpdates);
+  fs.writeFileSync(tokenFilePath(env), JSON.stringify(newConfig, null, 2));
 };
 
 (async () => {

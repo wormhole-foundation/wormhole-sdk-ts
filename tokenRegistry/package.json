@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-token-registry",
-  "version": "0.2.6-beta.0",
+  "version": "0.2.6-beta.1",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -16,11 +16,10 @@
   "module": "./dist/esm/index.js",
   "types": "./dist/esm/index.d.ts",
   "files": [
-    "dist/**/*",
-    "src/**/*"
+    "dist/**/*"
   ],
   "scripts": {
-    "test": "jest --config ../../jest.config.ts __tests__/*.ts",
+    "test": "jest --config ../jest.config.ts __tests__/*.ts",
     "build:cjs": "tsc -p ./tsconfig.cjs.json",
     "build:esm": "tsc -p ./tsconfig.esm.json",
     "build": "npm run build:cjs && npm run build:esm",
@@ -32,15 +31,15 @@
     "updateForeignAssets": "npx ts-node ./src/scripts/updateForeignAssetConfig"
   },
   "dependencies": {
-    "@wormhole-foundation/connect-sdk": "^0.2.6-beta.0",
-    "@wormhole-foundation/connect-sdk-evm": "^0.2.6-beta.0",
-    "@wormhole-foundation/connect-sdk-evm-core": "^0.2.6-beta.0",
-    "@wormhole-foundation/connect-sdk-evm-tokenbridge": "^0.2.6-beta.0",
-    "@wormhole-foundation/connect-sdk-solana": "^0.2.6-beta.0",
-    "@wormhole-foundation/connect-sdk-solana-core": "^0.2.6-beta.0",
-    "@wormhole-foundation/connect-sdk-solana-tokenbridge": "^0.2.6-beta.0",
-    "@wormhole-foundation/connect-sdk-cosmwasm": "^0.2.6-beta.0",
-    "@wormhole-foundation/connect-sdk-cosmwasm-core": "^0.2.6-beta.0",
-    "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge": "^0.2.6-beta.0"
+    "@wormhole-foundation/connect-sdk": "^0.2.6-beta.1",
+    "@wormhole-foundation/connect-sdk-evm": "^0.2.6-beta.1",
+    "@wormhole-foundation/connect-sdk-evm-core": "^0.2.6-beta.1",
+    "@wormhole-foundation/connect-sdk-evm-tokenbridge": "^0.2.6-beta.1",
+    "@wormhole-foundation/connect-sdk-solana": "^0.2.6-beta.1",
+    "@wormhole-foundation/connect-sdk-solana-core": "^0.2.6-beta.1",
+    "@wormhole-foundation/connect-sdk-solana-tokenbridge": "^0.2.6-beta.1",
+    "@wormhole-foundation/connect-sdk-cosmwasm": "^0.2.6-beta.1",
+    "@wormhole-foundation/connect-sdk-cosmwasm-core": "^0.2.6-beta.1",
+    "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge": "^0.2.6-beta.1"
   }
 }

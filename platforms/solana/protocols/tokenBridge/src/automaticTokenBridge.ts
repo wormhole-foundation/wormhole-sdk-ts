@@ -302,8 +302,6 @@ export class SolanaAutomaticTokenBridge<
 
   async getRegisteredTokens(): Promise<TokenAddress<C>[]> {
     return [];
-    // const tokens = await this.tokenBridgeRelayer.();
-    // return tokens.map((address) => toNative(this.chain, address));
   }
 
   private calculateNativeSwapRate(solSwapRate: BN, swapRate: BN): BN {
