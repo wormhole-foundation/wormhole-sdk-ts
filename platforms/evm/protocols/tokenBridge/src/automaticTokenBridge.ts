@@ -8,6 +8,7 @@ import {
   TokenAddress,
   TokenBridge,
   serialize,
+  toNative,
 } from '@wormhole-foundation/connect-sdk';
 import {
   EvmAddress,
@@ -222,6 +223,19 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
         ? await this.tokenBridge.WETH()
         : new EvmAddress(token).toString();
     return this.tokenBridgeRelayer.maxNativeSwapAmount(address);
+  }
+
+  async getRegisteredTokens(): Promise<TokenAddress<C>[]> {
+    const tokens = await this.tokenBridgeRelayer.getAcceptedTokensList();
+    return tokens.map((address) => toNative(this.chain, address));
+  }
+
+  async isRegisteredToken(token: TokenAddress<C>): Promise<boolean> {
+    const address =
+      token === 'native'
+        ? await this.tokenBridge.WETH()
+        : new EvmAddress(token).toString();
+    return await this.tokenBridgeRelayer.isAcceptedToken(address);
   }
 
   private createUnsignedTx(

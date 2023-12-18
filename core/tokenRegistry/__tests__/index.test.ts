@@ -1,19 +1,19 @@
-import * as fs from 'fs';
-import { TokensConfig } from '../src/types';
-import { Network } from '@wormhole-foundation/connect-sdk';
+import * as fs from "fs";
+import { TokensConfig } from "../src/types";
+import { Network } from "@wormhole-foundation/connect-sdk";
 
-const testnetTokens = fs.readFileSync('src/tokens/testnetTokens.json', 'utf-8');
+const testnetTokens = fs.readFileSync("src/tokens/TestnetTokens.json", "utf-8");
 const TESTNET_TOKENS = JSON.parse(testnetTokens) as TokensConfig;
-const mainnetTokens = fs.readFileSync('src/tokens/mainnetTokens.json', 'utf-8');
+const mainnetTokens = fs.readFileSync("src/tokens/MainnetTokens.json", "utf-8");
 const MAINNET_TOKENS = JSON.parse(mainnetTokens) as TokensConfig;
 
 const getTokens = (network: Network) => {
-  return network === 'Mainnet' ? MAINNET_TOKENS : TESTNET_TOKENS;
-}
+  return network === "Mainnet" ? MAINNET_TOKENS : TESTNET_TOKENS;
+};
 
-describe('token config format', () => {
-  const networks: Network[] = ['Mainnet', 'Testnet'];
-  networks.forEach(network => {
+describe("token config format", () => {
+  const networks: Network[] = ["Mainnet", "Testnet"];
+  networks.forEach((network) => {
     const tokens = getTokens(network);
     describe(`All ${network} token details are set`, () => {
       for (const [chain, chainTokens] of Object.entries(tokens)) {
@@ -27,5 +27,5 @@ describe('token config format', () => {
         }
       }
     });
-  })
+  });
 });

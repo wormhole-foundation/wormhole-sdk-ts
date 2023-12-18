@@ -285,6 +285,10 @@
         "Sei": {
           "address": "sei1vccw9g60mphsaj9t96vru53mjje3vmxcl49lg8lfqdh0zgmq6zsqf03y9n",
           "decimals": 6
+        },
+        "Solana": {
+          "address": "2ihQfgFiZnqEMrFuk4rUUoLvtEjAuza5TaysK4oc7rPK",
+          "decimals": 6
         }
       }
     }
@@ -510,6 +514,10 @@
         },
         "Arbitrum": {
           "address": "0xa507f7566B8aDE000E886166B95964677ef3b3Ef",
+          "decimals": 18
+        },
+        "Optimism": {
+          "address": "0x81BA80f5820273AA965086e710042d737993f12c",
           "decimals": 18
         }
       }
@@ -835,6 +843,10 @@
         "Sei": {
           "address": "sei1pf5j3dgngm8yj2xkwmvmvt87g4vyc0szpjz92q8ly9erh23ytn4s983htv",
           "decimals": 8
+        },
+        "Solana": {
+          "address": "9HYoDvrfW78o1D76W7EZjH2gLmwj49NCXYEZxi6bnyeK",
+          "decimals": 8
         }
       }
     },
@@ -850,6 +862,14 @@
         },
         "Celo": {
           "address": "0x0C4AbF95Ff3d82d1F02f55e65050eA5bA062606E",
+          "decimals": 6
+        },
+        "Solana": {
+          "address": "HXP6ryMWK85mvMDr1fPkTV8Ubd4dqWLvWkRct35cwK8V",
+          "decimals": 6
+        },
+        "Bsc": {
+          "address": "0xe3aA397cb6d93Cce4fAd9Cc9E796CCa5E50FB5ED",
           "decimals": 6
         }
       }
@@ -881,6 +901,10 @@
         "Arbitrum": {
           "address": "0xFd903eA23Bf65f26FdAf2eeb589cf007b108882E",
           "decimals": 18
+        },
+        "Solana": {
+          "address": "6Se2vsuTRSWVRMPxU7a7w91piSwUNMPWt5CuMvpB8YKj",
+          "decimals": 8
         }
       }
     },
@@ -892,6 +916,14 @@
       "foreignAssets": {
         "Fantom": {
           "address": "0x685B29e17440c42758Ab3F80FD3603EF01bebe9A",
+          "decimals": 6
+        },
+        "Solana": {
+          "address": "5q4ZoWHn5zvySxmev1PHH143tQ8fFnYWzmMWHit87KwZ",
+          "decimals": 6
+        },
+        "Moonbeam": {
+          "address": "0xf98E630a3DD4F21Cab7a37Bb01209cb62959169D",
           "decimals": 6
         }
       }

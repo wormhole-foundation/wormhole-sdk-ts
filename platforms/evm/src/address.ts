@@ -13,6 +13,8 @@ export const EvmZeroAddress = ethers.ZeroAddress;
 export class EvmAddress implements Address {
   static readonly byteSize = 20;
   static readonly platform = _platform;
+  readonly type: string = 'Native';
+
   // stored as checksum address
   private readonly address: string;
 
