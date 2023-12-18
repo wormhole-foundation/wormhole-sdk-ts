@@ -6,10 +6,12 @@ import {
   ChainId,
   ChainsConfig,
   Contracts,
+  NativeAddress,
   Network,
   TokenAddress,
   VAA,
   toChainId,
+  toNative,
 } from '@wormhole-foundation/connect-sdk';
 import {
   SolanaAddress,
@@ -301,9 +303,9 @@ export class SolanaAutomaticTokenBridge<
     }
   }
 
-  async getRegisteredTokens(): Promise<TokenAddress<C>[]> {
-    return registeredTokens[this.network].map(
-      (addr) => new SolanaAddress(addr) as TokenAddress<C>,
+  async getRegisteredTokens(): Promise<NativeAddress<C>[]> {
+    return registeredTokens[this.network].map((addr) =>
+      toNative(this.chain, addr),
     );
   }
 

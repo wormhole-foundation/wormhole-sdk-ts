@@ -101,7 +101,7 @@ export interface AutomaticTokenBridge<
   // Check if a given token is in the registered token list
   isRegisteredToken(token: TokenAddress<C>): Promise<boolean>;
   // Get the list of tokens that are registered and acceptable to send
-  getRegisteredTokens(): Promise<TokenAddress<C>[]>;
+  getRegisteredTokens(): Promise<NativeAddress<C>[]>;
   // Amount of native tokens a user would receive by swapping x amount of sending tokens
   nativeTokenAmount(token: TokenAddress<C>, amount: bigint): Promise<bigint>;
   // Maximum amount of sending tokens that can be swapped for native tokens

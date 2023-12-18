@@ -4,6 +4,7 @@ import {
   ChainAddress,
   ChainsConfig,
   Contracts,
+  NativeAddress,
   Network,
   TokenAddress,
   TokenBridge,
@@ -225,7 +226,7 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
     return this.tokenBridgeRelayer.maxNativeSwapAmount(address);
   }
 
-  async getRegisteredTokens(): Promise<TokenAddress<C>[]> {
+  async getRegisteredTokens(): Promise<NativeAddress<C>[]> {
     const tokens = await this.tokenBridgeRelayer.getAcceptedTokensList();
     return tokens.map((address) => toNative(this.chain, address));
   }
