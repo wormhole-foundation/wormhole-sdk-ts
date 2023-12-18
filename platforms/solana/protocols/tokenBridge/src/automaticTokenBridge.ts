@@ -44,6 +44,7 @@ import {
   getAssociatedTokenAddressSync,
 } from '@solana/spl-token';
 import '@wormhole-foundation/connect-sdk-solana-core';
+import { registeredTokens } from './consts';
 
 const SOL_DECIMALS = 9;
 const TEN = new BN(10);
@@ -301,7 +302,9 @@ export class SolanaAutomaticTokenBridge<
   }
 
   async getRegisteredTokens(): Promise<TokenAddress<C>[]> {
-    return [];
+    return registeredTokens[this.network].map(
+      (addr) => new SolanaAddress(addr) as TokenAddress<C>,
+    );
   }
 
   private calculateNativeSwapRate(solSwapRate: BN, swapRate: BN): BN {

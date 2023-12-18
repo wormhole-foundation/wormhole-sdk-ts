@@ -49,11 +49,11 @@
     "platforms/cosmwasm",
     "platforms/cosmwasm/protocols/core",
     "platforms/cosmwasm/protocols/tokenBridge",
-    "platforms/cosmwasm/protocols/ibc",
-    "tokenRegistry",
-    "examples"
+    "platforms/cosmwasm/protocols/ibc"
   ],
   "unreleased": [
+    "tokenRegistry",
+    "examples",
     "platforms/aptos",
     "platforms/aptos/protocols/core",
     "platforms/aptos/protocols/tokenBridge"

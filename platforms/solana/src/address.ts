@@ -24,6 +24,8 @@ export class SolanaAddress implements Address {
   static readonly byteSize = 32;
   static readonly platform: Platform = _platform;
 
+  readonly type: string = 'Native';
+
   private readonly address: PublicKey;
 
   constructor(address: AnySolanaAddress) {
