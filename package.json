@@ -50,10 +50,10 @@
     "platforms/cosmwasm/protocols/core",
     "platforms/cosmwasm/protocols/tokenBridge",
     "platforms/cosmwasm/protocols/ibc",
+    "core/tokenRegistry",
     "examples"
   ],
   "unreleased": [
-    "core/tokenRegistry",
     "platforms/aptos",
     "platforms/aptos/protocols/core",
     "platforms/aptos/protocols/tokenBridge"

@@ -26,16 +26,14 @@ import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 
 import { getSuggestedUpdates } from "../foreignAssets";
 import { TokensConfig } from "../types";
+import { tokenFilePath } from "./utils";
 
-import "@wormhole-foundation/connect-sdk-evm-core";
 import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
-
-import "@wormhole-foundation/connect-sdk-solana-core";
 import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 
-const testnetTokens = fs.readFileSync("src/tokens/testnetTokens.json", "utf-8");
+const testnetTokens = fs.readFileSync(tokenFilePath("Testnet"), "utf-8");
 const TESTNET_TOKENS = JSON.parse(testnetTokens) as TokensConfig;
-const mainnetTokens = fs.readFileSync("src/tokens/mainnetTokens.json", "utf-8");
+const mainnetTokens = fs.readFileSync(tokenFilePath("Mainnet"), "utf-8");
 const MAINNET_TOKENS = JSON.parse(mainnetTokens) as TokensConfig;
 
 // warning: be careful optimizing the RPC calls in this script, you may 429 yourself

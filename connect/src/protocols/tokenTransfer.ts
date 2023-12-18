@@ -20,6 +20,7 @@ import { signSendWait } from "../common";
 import { TokenTransferDetails, isTokenTransferDetails } from "../types";
 import { Wormhole } from "../wormhole";
 import { AttestationId, TransferQuote, TransferState, WormholeTransfer } from "../wormholeTransfer";
+import { ChainToPlatform } from "@wormhole-foundation/sdk-base/src";
 
 export class TokenTransfer<N extends Network> implements WormholeTransfer {
   private readonly wh: Wormhole<N>;
@@ -340,40 +341,39 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
     return vaa;
   }
 
-  static async lookupDestinationToken<N extends Network>(
-    srcChain: ChainContext<N, Platform, Chain>,
-    dstChain: ChainContext<N, Platform, Chain>,
-    transfer: TokenTransferDetails,
-  ): Promise<TokenId> {
-    // make sure we are passed the correct params
-    if (srcChain.chain !== transfer.from.chain || dstChain.chain !== transfer.to.chain)
-      throw "Invalid parameters passed to lookup destination token";
-
+  // Lookup the token id for the destination chain given the source chain
+  // and token id
+  static async lookupDestinationToken<N extends Network, SC extends Chain, DC extends Chain>(
+    srcChain: ChainContext<N, ChainToPlatform<SC>, SC>,
+    dstChain: ChainContext<N, ChainToPlatform<DC>, DC>,
+    token: TokenId<SC> | "native",
+  ): Promise<TokenId<DC>> {
     // that will be minted when the transfer is redeemed
     let lookup: TokenId;
-    if (transfer.token === "native") {
+    if (token === "native") {
       // if native, get the wrapped asset id
       lookup = await srcChain.getNativeWrappedTokenId();
     } else {
       try {
         const tb = await srcChain.getTokenBridge();
         // otherwise, check to see if it is a wrapped token locally
-        lookup = await tb.getOriginalAsset(transfer.token.address);
+        lookup = await tb.getOriginalAsset(token.address);
       } catch {
         // not a from-chain native wormhole-wrapped one
-        lookup = transfer.token;
+        lookup = token;
       }
     }
 
     // if the token id is actually native to the destination, return it
-    if (lookup.chain === transfer.to.chain) {
-      return lookup;
+    if (lookup.chain === dstChain.chain) {
+      const { chain, address } = lookup;
+      return { chain, address: address.toNative(chain) } as TokenId<DC>;
     }
 
     // otherwise, figure out what the token address representing the wormhole-wrapped token we're transferring
     const dstTb = await dstChain.getTokenBridge();
     const dstAddress = await dstTb.getWrappedAsset(lookup);
-    return { chain: transfer.to.chain, address: dstAddress };
+    return { chain: dstChain.chain, address: dstAddress };
   }
 
   static isAutomatic<N extends Network>(
@@ -425,7 +425,7 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
     dstChain: ChainContext<N, Platform, Chain>,
     transfer: TokenTransferDetails,
   ): Promise<TransferQuote> {
-    const dstToken = await this.lookupDestinationToken(srcChain, dstChain, transfer);
+    const dstToken = await this.lookupDestinationToken(srcChain, dstChain, transfer.token);
     const srcToken =
       transfer.token === "native" ? await srcChain.getNativeWrappedTokenId() : transfer.token;
 
@@ -498,7 +498,7 @@ export class TokenTransfer<N extends Network> implements WormholeTransfer {
       const destinationToken = await TokenTransfer.lookupDestinationToken(
         srcChain,
         dstChain,
-        _transfer,
+        _transfer.token,
       );
       // TODO: If the token is native, no need to overwrite the destination address check for native
       //if (!destinationToken.address.equals((await dstChain.getNativeWrappedTokenId()).address))

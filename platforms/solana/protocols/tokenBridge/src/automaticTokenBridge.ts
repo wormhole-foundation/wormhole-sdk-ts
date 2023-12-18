@@ -282,7 +282,7 @@ export class SolanaAutomaticTokenBridge<
     return BigInt(swapAmountOut.toString());
   }
 
-  async isAcceptedToken(token: TokenAddress<C>): Promise<boolean> {
+  async isRegisteredToken(token: TokenAddress<C>): Promise<boolean> {
     const mint =
       token === 'native'
         ? new PublicKey(NATIVE_MINT)
@@ -298,6 +298,12 @@ export class SolanaAutomaticTokenBridge<
       }
       throw e;
     }
+  }
+
+  async getRegisteredTokens(): Promise<TokenAddress<C>[]> {
+    return [];
+    // const tokens = await this.tokenBridgeRelayer.();
+    // return tokens.map((address) => toNative(this.chain, address));
   }
 
   private calculateNativeSwapRate(solSwapRate: BN, swapRate: BN): BN {

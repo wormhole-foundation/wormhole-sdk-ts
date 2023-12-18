@@ -17,6 +17,14 @@
         "Solana": {
           "address": "ZScHuTtqZukUrtZS43teTKGs2VqkKL8k4QCouR2n6Uo",
           "decimals": 8
+        },
+        "Bsc": {
+          "address": "0xad80E1A9B5824234afA9dE1F3bbDb8a994796169",
+          "decimals": 18
+        },
+        "Optimism": {
+          "address": "0x855CFcEEe998c8ca34F9c914F584AbF72dC88B87",
+          "decimals": 18
         }
       }
     },
@@ -56,6 +64,18 @@
         },
         "Optimism": {
           "address": "0xeC0a755664271b87002dDa33CA2484B24aF68912",
+          "decimals": 18
+        },
+        "Bsc": {
+          "address": "0x94c97dd3Bde5bC1406BCe82E7941A6365968521D",
+          "decimals": 18
+        },
+        "Avalanche": {
+          "address": "0x3F531c038A0D2d9c7D19FC3554cd0439791526c4",
+          "decimals": 18
+        },
+        "Celo": {
+          "address": "0xFaED7314060FCEc652ED91D9eac6c980DCA9D3B8",
           "decimals": 18
         }
       }
@@ -277,6 +297,10 @@
         "Arbitrum": {
           "address": "0xE4728F3E48E94C6DA2B53610E677cc241DAFB134",
           "decimals": 6
+        },
+        "Optimism": {
+          "address": "0xf6B4185FCf8aF291c0E3927fbEab7046b4f6A8CA",
+          "decimals": 6
         }
       }
     },
@@ -415,6 +439,10 @@
         "Arbitrum": {
           "address": "0x3ab0E28C3F56616aD7061b4db38aE337E3809AEA",
           "decimals": 18
+        },
+        "Optimism": {
+          "address": "0x8f02B6a32cebcAe44D2Fd17d87966f5B5dD14c6d",
+          "decimals": 18
         }
       }
     },
@@ -520,6 +548,10 @@
         },
         "Arbitrum": {
           "address": "0x7AF00405916D823eDb1121546EfA6F4972B51b84",
+          "decimals": 18
+        },
+        "Optimism": {
+          "address": "0x6A09fE65ACa27C12573F04aAFa290bD75497E1BC",
           "decimals": 18
         }
       }
@@ -1079,6 +1111,10 @@
         "Optimism": {
           "address": "0xa6252F56cc6eEA21165d56744C795F91c8a3Cf68",
           "decimals": 6
+        },
+        "Fantom": {
+          "address": "0x2228703672906fEe5eD681Ec28e42B4506b8c336",
+          "decimals": 6
         }
       }
     }
@@ -1113,6 +1149,26 @@
         "Arbitrum": {
           "address": "0xB1fC645a86fB5085e12D8BDDb77702F728D2A26F",
           "decimals": 18
+        },
+        "Ethereum": {
+          "address": "0x8B5653Ae095529155462eDa8CF664eD96773F557",
+          "decimals": 18
+        },
+        "Bsc": {
+          "address": "0x94AEc09B5e2CE591e39DC6aa58A3A6E85Ed45265",
+          "decimals": 18
+        },
+        "Polygon": {
+          "address": "0x8182De59485Bb646542Db8C7E5958148Dc699319",
+          "decimals": 18
+        },
+        "Avalanche": {
+          "address": "0xDf11535274c0FD2Fe41A88bd1bBF802D72296037",
+          "decimals": 18
+        },
+        "Moonbeam": {
+          "address": "0xd4870F7F5AD8Ae5139E1a5D8AD4ac55204aE4490",
+          "decimals": 18
         }
       }
     },
@@ -1136,6 +1192,30 @@
         },
         "Base": {
           "address": "0xc6bfBeb3002aD563D2d1f72614C61C83Bf147Acd",
+          "decimals": 6
+        },
+        "Solana": {
+          "address": "J8kcD4Wnd1ehne1dpL8WNtgZQR6Jpui2cTZcrmg5ybAa",
+          "decimals": 6
+        },
+        "Ethereum": {
+          "address": "0xe77C99b64414e0fd9aeEA48AFFBBD2E97A895020",
+          "decimals": 6
+        },
+        "Bsc": {
+          "address": "0xa41ae127D04F7ee73B5058E2C60Fb7c7A2D21F79",
+          "decimals": 6
+        },
+        "Polygon": {
+          "address": "0x31F12aCb60C3c32EE884F3894a873347C097D925",
+          "decimals": 6
+        },
+        "Avalanche": {
+          "address": "0xBe04f76A0ba2100c3F2d6Aa1FD8484F415469573",
+          "decimals": 6
+        },
+        "Arbitrum": {
+          "address": "0x3A5C2Da9E30741cb59a5e9446A23A86886fC9DC2",
           "decimals": 6
         }
       }
@@ -1340,6 +1420,14 @@
         },
         "Arbitrum": {
           "address": "0x09199d9A5F4448D0848e4395D065e1ad9c4a1F74",
+          "decimals": 5
+        },
+        "Fantom": {
+          "address": "0x3fEcdF1248fe7642d29f879a75CFC0339659ab93",
+          "decimals": 5
+        },
+        "Celo": {
+          "address": "0x3fc50bc066aE2ee280876EeefADfdAbF6cA02894",
           "decimals": 5
         }
       }
