@@ -12,8 +12,8 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 const checkEnvConfig = async (env: Network, tokensConfig: TokensConfig) => {
   const wh = new Wormhole(env, [EvmPlatform, SolanaPlatform]);
 
-  const src: Chain = "Ethereum";
   // Use Ethereum to get the primary list we intend to look up
+  const src: Chain = "Ethereum";
   const srcCtx = wh.getChain(src);
   const tb = await srcCtx.getTokenBridge();
   const atb = await srcCtx.getAutomaticTokenBridge();

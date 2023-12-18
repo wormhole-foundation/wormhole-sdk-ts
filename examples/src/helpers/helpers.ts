@@ -72,7 +72,7 @@ export async function getStuff<
 
 export async function waitLog(xfer: WormholeTransfer): Promise<WormholeTransfer> {
   console.log("Checking for complete status");
-  while ((await xfer.getTransferState()) < TransferState.Completed) {
+  while (xfer.getTransferState() < TransferState.DestinationInitiated) {
     console.log("Not yet...");
     await new Promise((f) => setTimeout(f, 5000));
   }
