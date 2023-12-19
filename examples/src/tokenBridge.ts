@@ -5,6 +5,7 @@ import {
   TokenId,
   TokenTransfer,
   Wormhole,
+  isTokenId,
   normalizeAmount,
 } from "@wormhole-foundation/connect-sdk";
 import { TransferStuff, getStuff, waitLog } from "./helpers";
@@ -27,17 +28,14 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   const rcvChain = wh.getChain("Solana");
 
   // shortcut to allow transferring native gas token
-  const token: TokenId | "native" = "native";
+  const token: TokenId<"Avalanche"> | "native" = "native";
 
   // A TokenId is just a `{chain, address}` pair and an alias for ChainAddress
   // The `address` field must be a parsed address.
   // You can get a TokenId (or ChainAddress) prepared for you
   // by calling the static `chainAddress` method on the Wormhole class.
   // e.g.
-  // const weth: TokenId = Wormhole.chainAddress(
-  //   "Avalanche",
-  //   "0xd00ae08403B9bbb9124bB305C09058E32C39A48c",
-  // );
+  // const token = Wormhole.chainAddress("Avalanche", "0xd00ae08403B9bbb9124bB305C09058E32C39A48c"); // TokenId<"Avalanche">
 
   // Normalized given token decimals later but can just pass bigints as base units
   // Note: The Token bridge will dedust past 8 decimals
@@ -64,10 +62,9 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   const destination = await getStuff(rcvChain);
 
   // Used to normalize the amount to account for the tokens decimals
-  const decimals =
-    token === "native"
-      ? BigInt(sendChain.config.nativeTokenDecimals)
-      : await wh.getDecimals(sendChain.chain, token);
+  const decimals = isTokenId(token)
+    ? await wh.getDecimals(token.chain, token.address)
+    : BigInt(sendChain.config.nativeTokenDecimals);
 
   // Set this to the transfer txid of the initiating transaction to recover a token transfer
   // and attempt to fetch details about its progress.

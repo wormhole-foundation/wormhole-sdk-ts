@@ -17,6 +17,7 @@ import {
 import { MessageTransmitter, TokenMessenger } from './ethers-contracts';
 
 import {
+  EvmAddress,
   EvmChains,
   EvmPlatform,
   EvmPlatformType,
@@ -101,7 +102,7 @@ export class EvmCircleBridge<N extends Network, C extends EvmChains>
     message: string,
     attestation: string,
   ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
-    const senderAddr = sender.toNative(this.chain).toString();
+    const senderAddr = new EvmAddress(sender).toString();
 
     const txReq = await this.msgTransmitter.receiveMessage.populateTransaction(
       encoding.hex.decode(message),
@@ -119,15 +120,12 @@ export class EvmCircleBridge<N extends Network, C extends EvmChains>
     recipient: ChainAddress,
     amount: bigint,
   ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
-    const senderAddr = sender.toNative(this.chain).toString();
+    const senderAddr = new EvmAddress(sender).toString();
     const recipientAddress = recipient.address
       .toUniversalAddress()
       .toUint8Array();
 
-    const tokenAddr = circle.usdcContract(
-      this.network as circle.CircleNetwork,
-      this.chain as circle.CircleChain,
-    );
+    const tokenAddr = circle.usdcContract.get(this.network, this.chain);
 
     const tokenContract = EvmPlatform.getTokenImplementation(
       this.provider,

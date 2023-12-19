@@ -23,8 +23,7 @@ import {
   SolanaPlatformType,
   SolanaUnsignedTransaction,
 } from '@wormhole-foundation/connect-sdk-solana';
-import { MessageTransmitter } from './messageTransmitter';
-import { TokenMessenger } from './tokenMessenger';
+import { MessageTransmitter, TokenMessenger } from '.';
 import {
   createReadOnlyMessageTransmitterProgramInterface,
   createReadOnlyTokenMessengerProgramInterface,

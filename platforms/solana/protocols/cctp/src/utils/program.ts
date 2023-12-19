@@ -2,9 +2,7 @@ import { Connection, PublicKey, PublicKeyInitData } from '@solana/web3.js';
 import { Program, Provider } from '@project-serum/anchor';
 
 import { utils } from '@wormhole-foundation/connect-sdk-solana';
-import { idl } from '../index';
-import { TokenMessenger } from '../tokenMessenger';
-import { MessageTransmitter } from '../messageTransmitter';
+import { idl, TokenMessenger, MessageTransmitter } from '../';
 
 export function createTokenMessengerProgramInterface(
   programId: PublicKeyInitData,
