@@ -51,9 +51,9 @@ export const circleMessageLayout = [
   { name: "payload", binary: "object", layout: circleBurnMessageLayout },
 ] as const satisfies Layout;
 
-export const deserializeCircleMessage = (
-  data: Uint8Array,
-): [LayoutToType<typeof circleMessageLayout>, string] => {
+export type CircleMessage = LayoutToType<typeof circleMessageLayout>;
+
+export const deserializeCircleMessage = (data: Uint8Array): [CircleMessage, string] => {
   const msg = deserializeLayout(circleMessageLayout, data);
   const messsageHash = encoding.hex.encode(keccak256(data), true);
   return [msg, messsageHash];

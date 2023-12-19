@@ -8,10 +8,11 @@ import {
   Platform,
 } from "@wormhole-foundation/connect-sdk";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
+import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 import { TransferStuff, getStuff, waitForRelay } from "./helpers";
 
 import "@wormhole-foundation/connect-sdk-evm-cctp";
-import "@wormhole-foundation/connect-sdk-evm-core";
+import "@wormhole-foundation/connect-sdk-solana-cctp";
 
 /*
 Notes:
@@ -23,11 +24,11 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
 (async function () {
   // init Wormhole object, passing config for which network
   // to use (e.g. Mainnet/Testnet) and what Platforms to support
-  const wh = new Wormhole("Testnet", [EvmPlatform]);
+  const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform]);
 
   // Grab chain Contexts
-  const sendChain = wh.getChain("Avalanche");
-  const rcvChain = wh.getChain("Optimism");
+  const sendChain = wh.getChain("Solana");
+  const rcvChain = wh.getChain("Avalanche");
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
@@ -40,12 +41,17 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
   // Manual Circle USDC CCTP Transfer
   // await cctpTransfer(wh, amount, source, destination, false);
 
-  // Automatic Circle USDC CCTP Transfer
-  const fee = await sendChain
-    .getAutomaticCircleBridge()
-    .then((acb) => acb.getRelayerFee(rcvChain.chain));
+  const automatic = false;
 
-  await cctpTransfer(wh, amount + fee, source, destination, true);
+  // Automatic Circle USDC CCTP Transfer
+  const fee = !automatic
+    ? 0n
+    : await sendChain.getAutomaticCircleBridge().then((acb) => acb.getRelayerFee(rcvChain.chain));
+
+  await cctpTransfer(wh, source, destination, {
+    amount: amount + fee,
+    automatic: false,
+  });
 
   // Automatic Circle USDC CCTP Transfer With Gas Dropoff
   // const nativeGasAmt = 1_000_000n
@@ -59,8 +65,8 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
   // await completeTransfer(
   //   wh,
   //   {
-  //     chain: "Optimism",
-  //     txid: "0x3c0d774218efefdd274a09972475cb016fc4f13525b1bba59c56c87fe7f6f964",
+  //     chain: sendChain.chain,
+  //     txid: "0xfe374b6e3ea032c05eb244e5c310047bc779f5cc389a2a0e3fccbf07fb2ae8a2",
   //   },
   //   destination.signer,
   // );
@@ -68,19 +74,21 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
 
 async function cctpTransfer<N extends Network>(
   wh: Wormhole<N>,
-  amount: bigint,
   src: TransferStuff<N, Platform>,
   dst: TransferStuff<N, Platform>,
-  automatic: boolean,
-  nativeGas?: bigint,
+  req: {
+    amount: bigint;
+    automatic: boolean;
+    nativeGas?: bigint;
+  },
 ) {
   const xfer = await wh.circleTransfer(
-    amount,
+    req.amount,
     src.address,
     dst.address,
-    automatic,
+    req.automatic,
     undefined,
-    nativeGas,
+    req.nativeGas,
   );
   console.log(xfer);
 
@@ -88,7 +96,7 @@ async function cctpTransfer<N extends Network>(
   const srcTxids = await xfer.initiateTransfer(src.signer);
   console.log(`Started Transfer: `, srcTxids);
 
-  if (automatic) {
+  if (req.automatic) {
     const relayStatus = await waitForRelay(srcTxids[srcTxids.length - 1]!);
     console.log(`Finished relay: `, relayStatus);
     return;
