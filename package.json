@@ -49,6 +49,12 @@
     "platforms/solana",
     "platforms/solana/protocols/core",
     "platforms/solana/protocols/tokenBridge",
+    "platforms/solana/protocols/cctp",
+    "examples"
+  ],
+  "unreleased": [
+    "tokenRegistry",
+    "examples",
     "platforms/cosmwasm",
     "platforms/cosmwasm/protocols/core",
     "platforms/cosmwasm/protocols/tokenBridge",
@@ -56,9 +62,5 @@
     "platforms/aptos",
     "platforms/aptos/protocols/core",
     "platforms/aptos/protocols/tokenBridge"
-  ],
-  "unreleased": [
-    "tokenRegistry",
-    "examples"
   ]
 }

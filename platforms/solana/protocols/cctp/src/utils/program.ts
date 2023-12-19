@@ -41,8 +41,8 @@ export function createMessageTransmitterProgramInterface(
 export function createReadOnlyMessageTransmitterProgramInterface(
   programId: PublicKeyInitData,
   connection?: Connection,
-): Program<TokenMessenger> {
-  return createTokenMessengerProgramInterface(
+): Program<MessageTransmitter> {
+  return createMessageTransmitterProgramInterface(
     programId,
     utils.createReadOnlyProvider(connection),
   );

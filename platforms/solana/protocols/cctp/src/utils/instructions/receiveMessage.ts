@@ -1,50 +1,50 @@
-import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from '@solana/spl-token';
 import {
   AccountMeta,
   PublicKey,
   PublicKeyInitData,
   SystemProgram,
 } from '@solana/web3.js';
-import { CircleTransferMessage } from '@wormhole-foundation/connect-sdk';
+import {
+  CircleAttestation,
+  CircleMessage,
+  circle,
+  encoding,
+} from '@wormhole-foundation/connect-sdk';
 import { findProgramAddress } from '../accounts';
 import { createMessageTransmitterProgramInterface } from '../program';
 
-const CCTP_NONCE_OFFSET = 12;
-
-export function createReceiveMessageInstruction(
+export async function createReceiveMessageInstruction(
   messageTransmitterProgramId: PublicKey,
   tokenMessengerProgramId: PublicKey,
-  message: CircleTransferMessage,
+  usdcAddress: PublicKey,
+  circleMessage: CircleMessage,
+  message: string,
+  attestation: CircleAttestation,
   payer?: PublicKeyInitData,
 ) {
-  const messageBytes = Buffer.from(
-    message.messageId.message.replace('0x', ''),
-    'hex',
+  const messageBytes = Buffer.from(encoding.hex.decode(message));
+  const attestationBytes = Buffer.from(encoding.hex.decode(attestation));
+
+  const solanaUsdcAddress = new PublicKey(usdcAddress);
+
+  const sourceUsdcAddress = new PublicKey(
+    circleMessage.payload.burnToken.toUint8Array(),
   );
 
-  const attestationBytes = Buffer.from(
-    message.attestation.replace('0x', ''),
-    'hex',
-  );
-  const nonce = ;
+  const receiver = circleMessage.payload.mintRecipient
+    .toNative('Solana')
+    .unwrap() as PublicKey;
 
-  const remoteDomain = getDomainCCTP(message.fromChain);
-  const tokenKey = getNativeVersionOfToken('USDC', 'solana');
-  const tokenConfig = TOKENS[tokenKey];
-  if (!tokenConfig || !tokenConfig.tokenId)
-    throw new Error('Invalid USDC token');
-
-  const solanaUsdcAddress = new PublicKey(tokenConfig.tokenId.address);
-  const sourceUsdcAddress = new PublicKey(message.token.address.toString());
-
-  const payerPubkey = payer
-    ? new PublicKey(payer)
-    : message.to.address.unwrap();
+  const payerPubkey = payer ? new PublicKey(payer) : receiver;
 
   const userTokenAccount = await getAssociatedTokenAddress(
     solanaUsdcAddress,
-    new PublicKey(message.recipient),
+    receiver,
   );
+  const srcDomain = circle
+    .toCircleChainId(circleMessage.sourceDomain)
+    .toString();
 
   // Find pdas
   const messageTransmitterAccount = findProgramAddress(
@@ -67,10 +67,10 @@ export function createReceiveMessageInstruction(
   const remoteTokenMessengerKey = findProgramAddress(
     'remote_token_messenger',
     tokenMessengerProgramId,
-    [remoteDomain.toString()],
+    [srcDomain],
   );
   const tokenPair = findProgramAddress('token_pair', tokenMessengerProgramId, [
-    remoteDomain.toString(),
+    srcDomain,
     sourceUsdcAddress,
   ]);
   const custodyTokenAccount = findProgramAddress(
@@ -84,16 +84,20 @@ export function createReceiveMessageInstruction(
   ).publicKey;
 
   // Calculate the nonce PDA.
-  const maxNoncesPerAccount = 6400;
+  const maxNoncesPerAccount = 6400n;
   const firstNonce =
-    ((nonce - BigInt(1)) / BigInt(maxNoncesPerAccount)) *
-      BigInt(maxNoncesPerAccount) +
+    ((circleMessage.nonce - BigInt(1)) / maxNoncesPerAccount) *
+      maxNoncesPerAccount +
     BigInt(1);
+  console.log(circleMessage.nonce);
+  console.log(firstNonce.toString());
+
   const usedNonces = findProgramAddress(
     'used_nonces',
     messageTransmitterProgramId,
-    [remoteDomain.toString(), firstNonce.toString()],
+    [srcDomain, firstNonce.toString()],
   ).publicKey;
+  console.log(usedNonces.toBase58());
 
   // Build the accountMetas list. These are passed as remainingAccounts for the TokenMessengerMinter CPI
   const accountMetas: AccountMeta[] = [];
