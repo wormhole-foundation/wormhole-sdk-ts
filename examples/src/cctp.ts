@@ -12,7 +12,6 @@ import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 import { TransferStuff, getStuff, waitForRelay } from "./helpers";
 
 import "@wormhole-foundation/connect-sdk-evm-cctp";
-import "@wormhole-foundation/connect-sdk-evm-core";
 import "@wormhole-foundation/connect-sdk-solana-cctp";
 
 /*
@@ -28,8 +27,8 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
   const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform]);
 
   // Grab chain Contexts
-  const sendChain = wh.getChain("Avalanche");
-  const rcvChain = wh.getChain("Solana");
+  const sendChain = wh.getChain("Solana");
+  const rcvChain = wh.getChain("Avalanche");
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
@@ -45,14 +44,14 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
   const automatic = false;
 
   // Automatic Circle USDC CCTP Transfer
-  const fee = automatic
+  const fee = !automatic
     ? 0n
     : await sendChain.getAutomaticCircleBridge().then((acb) => acb.getRelayerFee(rcvChain.chain));
 
-  // await cctpTransfer(wh, source, destination, {
-  //   amount: amount + fee,
-  //   automatic: false,
-  // });
+  await cctpTransfer(wh, source, destination, {
+    amount: amount + fee,
+    automatic: false,
+  });
 
   // Automatic Circle USDC CCTP Transfer With Gas Dropoff
   // const nativeGasAmt = 1_000_000n
@@ -63,14 +62,14 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
   // This is especially helpful for chains with longer time to finality where you don't want
   // to have to wait for the attestation to be generated.
 
-  await completeTransfer(
-    wh,
-    {
-      chain: sendChain.chain,
-      txid: "0xfe374b6e3ea032c05eb244e5c310047bc779f5cc389a2a0e3fccbf07fb2ae8a2",
-    },
-    destination.signer,
-  );
+  // await completeTransfer(
+  //   wh,
+  //   {
+  //     chain: sendChain.chain,
+  //     txid: "0xfe374b6e3ea032c05eb244e5c310047bc779f5cc389a2a0e3fccbf07fb2ae8a2",
+  //   },
+  //   destination.signer,
+  // );
 })();
 
 async function cctpTransfer<N extends Network>(

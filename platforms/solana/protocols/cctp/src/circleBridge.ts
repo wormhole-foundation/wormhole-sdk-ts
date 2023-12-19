@@ -134,9 +134,7 @@ export class SolanaCircleBridge<N extends Network, C extends SolanaChains>
     const senderATA = getAssociatedTokenAddressSync(usdc, senderPk);
 
     const destinationDomain = circle.circleChainId.get(recipient.chain);
-    const destinationAddress = recipient.address
-      .toUniversalAddress()
-      .toString();
+    const destinationAddress = recipient.address.toUniversalAddress();
 
     const ix = await createDepositForBurnInstruction(
       this.messageTransmitter.programId,

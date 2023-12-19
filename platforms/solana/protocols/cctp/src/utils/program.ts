@@ -2,7 +2,7 @@ import { Connection, PublicKey, PublicKeyInitData } from '@solana/web3.js';
 import { Program, Provider } from '@project-serum/anchor';
 
 import { utils } from '@wormhole-foundation/connect-sdk-solana';
-import { idl } from '../anchor-idl';
+import { idl } from '../index';
 import { TokenMessenger } from '../tokenMessenger';
 import { MessageTransmitter } from '../messageTransmitter';
 
@@ -11,7 +11,7 @@ export function createTokenMessengerProgramInterface(
   provider?: Provider,
 ): Program<TokenMessenger> {
   return new Program<TokenMessenger>(
-    idl.TokenMessenger as TokenMessenger,
+    idl.TokenMessengerIdl as TokenMessenger,
     new PublicKey(programId),
     provider === undefined ? ({ connection: null } as any) : provider,
   );
@@ -32,7 +32,7 @@ export function createMessageTransmitterProgramInterface(
   provider?: Provider,
 ): Program<MessageTransmitter> {
   return new Program<MessageTransmitter>(
-    idl.MessageTransmitter as MessageTransmitter,
+    idl.MessageTransmitterIdl as MessageTransmitter,
     new PublicKey(programId),
     provider === undefined ? ({ connection: null } as any) : provider,
   );

@@ -11,8 +11,16 @@ declare global {
 
 registerProtocol('Solana', 'CircleBridge', SolanaCircleBridge);
 
-export * from './anchor-idl';
+import { TokenMessenger, TokenMessengerIdl } from './tokenMessenger';
+import {
+  MessageTransmitter,
+  MessageTransmitterIdl,
+} from './messageTransmitter';
 
-export * from './tokenMessenger';
-export * from './messageTransmitter';
+export const idl = {
+  TokenMessengerIdl,
+  MessageTransmitterIdl,
+};
+
+export { MessageTransmitter, TokenMessenger };
 export * from './circleBridge';

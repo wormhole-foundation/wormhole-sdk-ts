@@ -89,15 +89,11 @@ export async function createReceiveMessageInstruction(
     ((circleMessage.nonce - BigInt(1)) / maxNoncesPerAccount) *
       maxNoncesPerAccount +
     BigInt(1);
-  console.log(circleMessage.nonce);
-  console.log(firstNonce.toString());
-
   const usedNonces = findProgramAddress(
     'used_nonces',
     messageTransmitterProgramId,
     [srcDomain, firstNonce.toString()],
   ).publicKey;
-  console.log(usedNonces.toBase58());
 
   // Build the accountMetas list. These are passed as remainingAccounts for the TokenMessengerMinter CPI
   const accountMetas: AccountMeta[] = [];

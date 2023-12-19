@@ -3,6 +3,7 @@ import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { PublicKey, TransactionInstruction } from '@solana/web3.js';
 import { findProgramAddress } from '../accounts';
 import { createTokenMessengerProgramInterface } from '../program';
+import { UniversalAddress } from '@wormhole-foundation/connect-sdk';
 
 export function createDepositForBurnInstruction(
   messageTransmitterProgramId: PublicKey,
@@ -11,7 +12,7 @@ export function createDepositForBurnInstruction(
   destinationDomain: number,
   senderAddress: PublicKey,
   senderAssociatedTokenAccountAddress: PublicKey,
-  recipient: string,
+  recipient: UniversalAddress,
   amount: bigint,
 ): Promise<TransactionInstruction> {
   // Find pdas
@@ -50,7 +51,7 @@ export function createDepositForBurnInstruction(
     .depositForBurn({
       amount: new BN(amount.toString()),
       destinationDomain,
-      mintRecipient: new PublicKey(recipient),
+      mintRecipient: new PublicKey(recipient.toUint8Array()),
     })
     .accounts({
       owner: senderAddress,

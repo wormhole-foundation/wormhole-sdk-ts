@@ -25,7 +25,6 @@ export async function signSendWait<N extends Network, C extends Chain>(
 
   let txbuff: UnsignedTransaction<N, C>[] = [];
   for await (const tx of xfer) {
-    console.log("xfer:", tx);
     // buffer transactions as long as they are
     // marked as parallelizable
     if (tx.parallelizable) {

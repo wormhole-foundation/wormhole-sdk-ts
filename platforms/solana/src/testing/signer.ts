@@ -1,4 +1,4 @@
-import { Connection, Keypair, Transaction } from '@solana/web3.js';
+import { Connection, Keypair } from '@solana/web3.js';
 import {
   SignOnlySigner,
   Signer,
@@ -44,16 +44,16 @@ export class SolanaSigner<N extends Network, C extends SolanaChains = 'Solana'>
       console.log(`Signing: ${description} for ${this.address()}`);
 
       // Uncomment for debug
-      const st = transaction as Transaction;
-      console.log(st.signatures);
-      console.log(st.feePayer);
-      st.instructions.forEach((ix) => {
-        console.log('Program', ix.programId.toBase58());
-        console.log('Data: ', ix.data.toString('hex'));
-        ix.keys.forEach((k) => {
-          console.log(k, k.pubkey.toBase58());
-        });
-      });
+      // const st = transaction as Transaction;
+      // console.log(st.signatures);
+      // console.log(st.feePayer);
+      // st.instructions.forEach((ix) => {
+      //   console.log('Program', ix.programId.toBase58());
+      //   console.log('Data: ', ix.data.toString('hex'));
+      //   ix.keys.forEach((k) => {
+      //     console.log(k, k.pubkey.toBase58());
+      //   });
+      // });
 
       transaction.partialSign(this._keypair);
       signed.push(transaction.serialize());
