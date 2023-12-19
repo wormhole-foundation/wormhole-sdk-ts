@@ -29,6 +29,16 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   // shortcut to allow transferring native gas token
   const token: TokenId | "native" = "native";
 
+  // A TokenId is just a `{chain, address}` pair and an alias for ChainAddress
+  // The `address` field must be a parsed address.
+  // You can get a TokenId (or ChainAddress) prepared for you
+  // by calling the static `chainAddress` method on the Wormhole class.
+  // e.g.
+  // const weth: TokenId = Wormhole.chainAddress(
+  //   "Avalanche",
+  //   "0xd00ae08403B9bbb9124bB305C09058E32C39A48c",
+  // );
+
   // Normalized given token decimals later but can just pass bigints as base units
   // Note: The Token bridge will dedust past 8 decimals
   // this means any amount specified past that point will be returned

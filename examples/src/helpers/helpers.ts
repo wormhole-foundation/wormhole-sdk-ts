@@ -8,7 +8,7 @@ import {
   TxHash,
   WormholeTransfer,
   api,
-  nativeChainAddress,
+  Wormhole,
   tasks,
 } from "@wormhole-foundation/connect-sdk";
 import { getCosmwasmSigner } from "@wormhole-foundation/connect-sdk-cosmwasm/src/testing";
@@ -66,7 +66,7 @@ export async function getStuff<
   return {
     chain,
     signer: signer as Signer<N, C>,
-    address: nativeChainAddress(chain.chain, signer.address()),
+    address: Wormhole.chainAddress(chain.chain, signer.address()),
   };
 }
 
