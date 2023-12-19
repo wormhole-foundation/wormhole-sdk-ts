@@ -34,8 +34,9 @@
     "test": "NETWORK=Mainnet npm run test --workspaces --if-present",
     "docs": "NODE_OPTIONS=--max_old_space_size=8192 typedoc --options typedoc.json",
     "sync": "tsx syncVersion.ts && npm install && npm run build",
-    "publish:beta": "npm publish --access public --tag beta --workspace core --workspace connect --workspace platforms --workspace platforms/evm/protocols --workspace platforms/solana/protocols --workspace platforms/cosmwasm/protocols",
-    "publish": "npm publish --access public --tag latest --workspace core --workspace connect --workspace platforms --workspace platforms/evm/protocols --workspace platforms/solana/protocols --workspace platforms/cosmwasm/protocols"
+    "publish": "npm publish --access public --tag $TAG --workspace core --workspace connect --workspace platforms --workspace platforms/evm/protocols --workspace platforms/solana/protocols --workspace platforms/cosmwasm/protocols",
+    "pub:beta": "TAG=beta npm run publish",
+    "pub:latest": "TAG=latest npm run publish"
   },
   "workspaces": [
     "core/base",
@@ -52,12 +53,12 @@
     "platforms/cosmwasm/protocols/core",
     "platforms/cosmwasm/protocols/tokenBridge",
     "platforms/cosmwasm/protocols/ibc",
-    "examples"
-  ],
-  "unreleased": [
-    "tokenRegistry",
     "platforms/aptos",
     "platforms/aptos/protocols/core",
     "platforms/aptos/protocols/tokenBridge"
+  ],
+  "unreleased": [
+    "tokenRegistry",
+    "examples"
   ]
 }

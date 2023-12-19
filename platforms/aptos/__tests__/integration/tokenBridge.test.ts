@@ -159,9 +159,9 @@ describe("TokenBridge Tests", () => {
 
       const [attestTx] = allTxns;
       expect(attestTx).toBeTruthy();
-      expect(attestTx.chain).toEqual(chain);
+      expect(attestTx!.chain).toEqual(chain);
 
-      const { transaction } = attestTx;
+      const { transaction } = attestTx!;
       expect(transaction.arguments).toHaveLength(0);
     });
 
@@ -219,9 +219,9 @@ describe("TokenBridge Tests", () => {
 
           const [xferTx] = allTxns;
           expect(xferTx).toBeTruthy();
-          expect(xferTx.chain).toEqual(chain);
+          expect(xferTx!.chain).toEqual(chain);
 
-          const { transaction } = xferTx;
+          const { transaction } = xferTx!;
           expect(transaction.arguments).toHaveLength(5);
           // ...
         });
@@ -238,9 +238,9 @@ describe("TokenBridge Tests", () => {
 
           const [xferTx] = allTxns;
           expect(xferTx).toBeTruthy();
-          expect(xferTx.chain).toEqual(chain);
+          expect(xferTx!.chain).toEqual(chain);
 
-          const { transaction } = xferTx;
+          const { transaction } = xferTx!;
           expect(transaction.type_arguments).toHaveLength(1);
           expect(transaction.arguments).toHaveLength(5);
         });

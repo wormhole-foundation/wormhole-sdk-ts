@@ -24,12 +24,11 @@ const checkEnvConfig = async (env: Network, tokensConfig: TokensConfig) => {
   // chains
   const originalTokens = await Promise.all(
     tokens.map(async (token) => {
-      const _token = token === "native" ? await tb.getWrappedNative() : token;
       try {
         const orig = await tb.getOriginalAsset(token);
         return orig;
       } catch {}
-      return { chain: src, address: _token };
+      return { chain: src, address: token };
     }),
   );
 

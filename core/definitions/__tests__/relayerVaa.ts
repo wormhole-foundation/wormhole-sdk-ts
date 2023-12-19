@@ -32,10 +32,10 @@ describe("Relayer Payload serialization tests", function () {
     expect(vaa.payload.target.chain).toBe("Optimism");
     expect(vaa.payload.refund.chain).toBe("Optimism");
     expect(vaa.payload.messageKeys.length).toBe(1);
-    expect(vaa.payload.messageKeys[0].keyType).toBe("CCTP");
-    if (vaa.payload.messageKeys[0].keyType === "CCTP") {
-      expect(vaa.payload.messageKeys[0].domain).toBe("Avalanche");
-      expect(vaa.payload.messageKeys[0].nonce).toBe(298648n);
+    expect(vaa.payload.messageKeys[0]!.keyType).toBe("CCTP");
+    if (vaa.payload.messageKeys[0]!.keyType === "CCTP") {
+      expect(vaa.payload.messageKeys[0]!.domain).toBe("Avalanche");
+      expect(vaa.payload.messageKeys[0]!.nonce).toBe(298648n);
     }
     const encoded = serialize(vaa);
     expect(encoded).toEqual(encoding.hex.decode(deliveryInstructionVAAwithCCTP));
