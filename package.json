@@ -1,6 +1,6 @@
 {
   "name": "connect-sdk",
-  "version": "0.2.6",
+  "version": "0.2.7-beta.0",
   "license": "Apache-2.0",
   "directories": {
     "test": "__tests__"
@@ -50,15 +50,15 @@
     "platforms/solana/protocols/core",
     "platforms/solana/protocols/tokenBridge",
     "platforms/solana/protocols/cctp",
+    "platforms/cosmwasm",
+    "platforms/cosmwasm/protocols/core",
+    "platforms/cosmwasm/protocols/tokenBridge",
+    "platforms/cosmwasm/protocols/ibc",
     "examples"
   ],
   "unreleased": [
     "tokenRegistry",
     "examples",
-    "platforms/cosmwasm",
-    "platforms/cosmwasm/protocols/core",
-    "platforms/cosmwasm/protocols/tokenBridge",
-    "platforms/cosmwasm/protocols/ibc",
     "platforms/aptos",
     "platforms/aptos/protocols/core",
     "platforms/aptos/protocols/tokenBridge"
