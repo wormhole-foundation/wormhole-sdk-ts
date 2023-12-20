@@ -17,12 +17,13 @@ import {
   isWormholeMessageId,
   nativeChainAddress,
   serializeCircleMessage,
+  AttestationId,
 } from "@wormhole-foundation/sdk-definitions";
 
 import { signSendWait } from "../common";
 import { DEFAULT_TASK_TIMEOUT } from "../config";
 import { Wormhole } from "../wormhole";
-import { AttestationId, TransferState, WormholeTransfer } from "../wormholeTransfer";
+import { TransferState, WormholeTransfer } from "../wormholeTransfer";
 
 export type AutomaticCircleBridgeVAA<PayloadName extends string> = ProtocolVAA<
   "AutomaticCircleBridge",

@@ -1,36 +1,23 @@
-import { Wormhole } from "./wormhole";
 import {
+  Chain,
   Network,
   Platform,
-  Chain,
   PlatformToChains,
   ProtocolName,
 } from "@wormhole-foundation/sdk-base";
 import {
   ChainContext,
-  CircleMessageId,
   CircleTransferDetails,
   GatewayTransferDetails,
-  IbcMessageId,
   Signer,
   TokenId,
   TokenTransferDetails,
   TransactionId,
   TxHash,
   VAA,
-  WormholeMessageId,
+  AttestationId,
 } from "@wormhole-foundation/sdk-definitions";
-
-// Could be VAA or Circle or ..?
-export type AttestationId<PN extends ProtocolName = ProtocolName> = PN extends
-  | "TokenBridge"
-  | "AutomaticTokenBridge"
-  ? WormholeMessageId
-  : PN extends "CircleBridge" | "AutomaticCircleBridge"
-  ? CircleMessageId
-  : PN extends "IbcBridge"
-  ? IbcMessageId
-  : never;
+import { Wormhole } from "./wormhole";
 
 export type TransferRequest<PN extends ProtocolName = ProtocolName> = PN extends
   | "TokenBridge"
@@ -53,7 +40,11 @@ export enum TransferState {
   DestinationFinalized, // Will be set after the transaction is finalized on the destination chain
 }
 
-export type Receipt<PN extends ProtocolName, SC extends Chain = Chain, DC extends Chain = Chain> = {
+export type TransferReceipt<
+  PN extends ProtocolName,
+  SC extends Chain = Chain,
+  DC extends Chain = Chain,
+> = {
   state: TransferState;
   from: SC;
   to: DC;
@@ -99,12 +90,12 @@ export interface TransferProtocol<PN extends ProtocolName> {
   isAutomatic<N extends Network>(wh: Wormhole<N>, vaa: VAA): boolean;
   //validateTransfer<N extends Network>(wh: Wormhole<N>, transfer: )
   quoteTransfer(xfer: WormholeTransfer<PN>): Promise<TransferQuote>;
-  getReceipt(xfer: WormholeTransfer<PN>): Receipt<PN>;
+  getReceipt(xfer: WormholeTransfer<PN>): TransferReceipt<PN>;
   track<N extends Network>(
     wh: Wormhole<N>,
     xfer: WormholeTransfer<PN>,
     timeout: number,
-  ): AsyncGenerator<TransferState, Receipt<PN>, unknown>;
+  ): AsyncGenerator<TransferState, TransferReceipt<PN>, unknown>;
 }
 
 // WormholeTransfer abstracts the process and state transitions

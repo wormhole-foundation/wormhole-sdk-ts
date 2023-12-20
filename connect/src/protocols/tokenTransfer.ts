@@ -18,13 +18,13 @@ import {
   isWormholeMessageId,
   nativeChainAddress,
   toNative,
+  AttestationId,
 } from "@wormhole-foundation/sdk-definitions";
 import { signSendWait } from "../common";
 import { DEFAULT_TASK_TIMEOUT } from "../config";
 import { Wormhole } from "../wormhole";
 import {
-  AttestationId,
-  Receipt,
+  TransferReceipt,
   TransferQuote,
   TransferState,
   WormholeTransfer,
@@ -619,7 +619,7 @@ export class TokenTransfer<N extends Network = Network>
 
   static getReceipt<N extends Network>(
     xfer: TokenTransfer<N>,
-  ): Receipt<
+  ): TransferReceipt<
     "TokenBridge" | "AutomaticTokenBridge",
     typeof xfer.transfer.from.chain,
     typeof xfer.transfer.to.chain
