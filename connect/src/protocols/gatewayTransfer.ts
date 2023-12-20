@@ -40,9 +40,7 @@ type GatewayContext<N extends Network> = ChainContext<
   typeof GatewayTransfer.chain
 >;
 
-export class GatewayTransfer<N extends Network = Network>
-  implements WormholeTransfer<GatewayTransferDetails>
-{
+export class GatewayTransfer<N extends Network = Network> implements WormholeTransfer<"IbcBridge"> {
   static chain: "Wormchain" = "Wormchain";
 
   private readonly wh: Wormhole<N>;

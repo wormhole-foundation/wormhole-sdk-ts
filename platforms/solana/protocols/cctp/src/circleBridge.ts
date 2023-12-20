@@ -187,7 +187,8 @@ export class SolanaCircleBridge<N extends Network, C extends SolanaChains>
       to: nativeChainAddress(rcvChain, xferReceiver),
       token: token,
       amount: body.amount,
-      messageId: { message: encoding.hex.encode(message), hash },
+      message: msg,
+      id: { hash },
     };
   }
 

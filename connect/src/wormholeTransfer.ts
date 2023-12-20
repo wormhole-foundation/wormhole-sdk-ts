@@ -22,7 +22,15 @@ import {
 } from "@wormhole-foundation/sdk-definitions";
 
 // Could be VAA or Circle or ..?
-export type AttestationId = WormholeMessageId | CircleMessageId | IbcMessageId;
+export type AttestationId<PN extends ProtocolName = ProtocolName> = PN extends
+  | "TokenBridge"
+  | "AutomaticTokenBridge"
+  ? WormholeMessageId
+  : PN extends "CircleBridge" | "AutomaticCircleBridge"
+  ? CircleMessageId
+  : PN extends "IbcBridge"
+  ? IbcMessageId
+  : never;
 
 export type TransferRequest<PN extends ProtocolName = ProtocolName> = PN extends
   | "TokenBridge"
@@ -45,13 +53,13 @@ export enum TransferState {
   DestinationFinalized, // Will be set after the transaction is finalized on the destination chain
 }
 
-export type Receipt<SC extends Chain = Chain, DC extends Chain = Chain> = {
+export type Receipt<PN extends ProtocolName, SC extends Chain = Chain, DC extends Chain = Chain> = {
   state: TransferState;
   from: SC;
   to: DC;
   originTxs: TransactionId<SC>[];
   destinationTxs: TransactionId<DC>[];
-  attestation?: WormholeMessageId;
+  attestation?: AttestationId<PN>;
 };
 
 // Quote with optional relayer fees if the transfer
@@ -83,26 +91,26 @@ export type TransferQuote = {
 };
 
 // Static methods on the Transfer protocol types
-export interface TransferProtocol {
+export interface TransferProtocol<PN extends ProtocolName> {
   isTransferComplete<N extends Network, P extends Platform, C extends PlatformToChains<P>>(
     toChain: ChainContext<N, P, C>,
     vaa: VAA,
   ): Promise<boolean>;
   isAutomatic<N extends Network>(wh: Wormhole<N>, vaa: VAA): boolean;
   //validateTransfer<N extends Network>(wh: Wormhole<N>, transfer: )
-  quoteTransfer(xfer: WormholeTransfer): Promise<TransferQuote>;
-  getReceipt(xfer: WormholeTransfer): Receipt;
+  quoteTransfer(xfer: WormholeTransfer<PN>): Promise<TransferQuote>;
+  getReceipt(xfer: WormholeTransfer<PN>): Receipt<PN>;
   track<N extends Network>(
     wh: Wormhole<N>,
-    xfer: WormholeTransfer,
+    xfer: WormholeTransfer<PN>,
     timeout: number,
-  ): AsyncGenerator<TransferState, Receipt, unknown>;
+  ): AsyncGenerator<TransferState, Receipt<PN>, unknown>;
 }
 
 // WormholeTransfer abstracts the process and state transitions
 // for things like TokenTransfers, NFTTransfers, Circle (with VAA), etc...
-export interface WormholeTransfer<T extends TransferRequest = TransferRequest> {
-  transfer: T;
+export interface WormholeTransfer<PN extends ProtocolName> {
+  transfer: TransferRequest<PN>;
 
   // may reach out to an external service to get the transfer state
   // return the state of this transfer

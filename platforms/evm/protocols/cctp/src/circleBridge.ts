@@ -209,7 +209,8 @@ export class EvmCircleBridge<N extends Network, C extends EvmChains>
       to: nativeChainAddress(rcvChain, xferReceiver),
       token: token,
       amount: body.amount,
-      messageId: { message, hash },
+      message: circleMsg,
+      id: { hash },
     };
   }
 
