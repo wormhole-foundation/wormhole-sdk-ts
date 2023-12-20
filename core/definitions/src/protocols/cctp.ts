@@ -7,6 +7,7 @@ import {
   PlatformToChains,
   deserializeLayout,
   encoding,
+  serializeLayout,
 } from "@wormhole-foundation/sdk-base";
 import { AccountAddress, ChainAddress } from "../address";
 import { CircleMessageId } from "../attestation";
@@ -59,12 +60,17 @@ export const deserializeCircleMessage = (data: Uint8Array): [CircleMessage, stri
   return [msg, messsageHash];
 };
 
+export const serializeCircleMessage = (msg: CircleMessage): Uint8Array => {
+  return serializeLayout(circleMessageLayout, msg);
+};
+
 export type CircleTransferMessage = {
   from: ChainAddress;
   to: ChainAddress;
   token: TokenId;
   amount: bigint;
-  messageId: CircleMessageId;
+  message: CircleMessage;
+  id: CircleMessageId;
 };
 
 export type CircleTransferDetails = {
@@ -109,7 +115,7 @@ export interface CircleBridge<
 > {
   redeem(
     sender: AccountAddress<C>,
-    message: string,
+    message: CircleMessage,
     attestation: string,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
   transfer(
