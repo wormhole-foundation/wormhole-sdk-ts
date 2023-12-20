@@ -67,6 +67,23 @@ export type CircleTransferMessage = {
   messageId: CircleMessageId;
 };
 
+export type CircleTransferDetails = {
+  amount: bigint;
+  from: ChainAddress;
+  to: ChainAddress;
+  automatic?: boolean;
+  payload?: Uint8Array;
+  nativeGas?: bigint;
+};
+
+export function isCircleTransferDetails(thing: any): thing is CircleTransferDetails {
+  return (
+    (<CircleTransferDetails>thing).amount !== undefined &&
+    (<CircleTransferDetails>thing).from !== undefined &&
+    (<CircleTransferDetails>thing).to !== undefined
+  );
+}
+
 export interface AutomaticCircleBridge<
   N extends Network,
   P extends Platform,

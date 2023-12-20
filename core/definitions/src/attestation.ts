@@ -5,8 +5,8 @@ import { VAA } from "./vaa";
 
 // Wormhole Message Identifier
 // used to fetch a VAA
-export type WormholeMessageId = {
-  chain: Chain;
+export type WormholeMessageId<C extends Chain = Chain> = {
+  chain: C;
   emitter: UniversalAddress;
   sequence: SequenceId;
   // TODO

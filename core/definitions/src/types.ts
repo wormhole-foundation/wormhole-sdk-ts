@@ -77,7 +77,7 @@ export function nativeChainAddress<C extends Chain>(
 }
 
 // Fully qualifier Transaction ID
-export type TransactionId = { chain: Chain; txid: TxHash };
+export type TransactionId<C extends Chain = Chain> = { chain: C; txid: TxHash };
 export function isTransactionIdentifier(thing: TransactionId | any): thing is TransactionId {
   return (<TransactionId>thing).chain !== undefined && (<TransactionId>thing).txid !== undefined;
 }

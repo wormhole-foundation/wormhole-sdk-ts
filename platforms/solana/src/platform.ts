@@ -199,7 +199,6 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
   static chainFromChainId(genesisHash: string): [Network, SolanaChains] {
     const netChain = nativeChainIds.platformNativeChainIdToNetworkChain(
       SolanaPlatform._platform,
-      // @ts-ignore
       genesisHash,
     );
 

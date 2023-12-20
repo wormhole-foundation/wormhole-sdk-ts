@@ -152,8 +152,7 @@ export class CosmwasmPlatform<N extends Network> extends PlatformContext<N, Cosm
   }
 
   static getNativeDenom<N extends Network, C extends CosmwasmChains>(network: N, chain: C): string {
-    // @ts-ignore
-    return chainToNativeDenoms(network, chain);
+    return chainToNativeDenoms.get(network, chain);
   }
 
   static async sendWait(chain: Chain, rpc: CosmWasmClient, stxns: SignedTx[]): Promise<TxHash[]> {
@@ -177,7 +176,6 @@ export class CosmwasmPlatform<N extends Network> extends PlatformContext<N, Cosm
   static chainFromChainId(chainMoniker: string): [Network, CosmwasmChains] {
     const networkChainPair = nativeChainIds.platformNativeChainIdToNetworkChain(
       CosmwasmPlatform._platform,
-      // @ts-ignore
       chainMoniker,
     );
 
