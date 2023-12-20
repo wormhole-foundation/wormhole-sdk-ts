@@ -35,13 +35,18 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
   const source = await getStuff(sendChain);
   const destination = await getStuff(rcvChain);
 
-  // 6 decimals for USDC (mostly?)
+  // 6 decimals for USDC (except for bsc, so check decimals before using this)
   const amount = normalizeAmount("0.01", 6n);
 
-  // Manual Circle USDC CCTP Transfer
-  // await cctpTransfer(wh, amount, source, destination, false);
-
+  // Choose whether or not to have the attestation delivered for you
   const automatic = false;
+
+  // If the transfer is requested to be automatic, you can also request that
+  // during redemption, the receiver gets some amount of native gas transferred to them
+  // so that they may pay for subsequent transactions
+  // The amount specified here is denominated in the token being transferred (USDC here)
+  const _nativeGasAmt = "0.01";
+  const nativeGas = automatic ? normalizeAmount(_nativeGasAmt, 6n) : 0n;
 
   // Automatic Circle USDC CCTP Transfer
   const fee = !automatic
@@ -50,18 +55,14 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
 
   await cctpTransfer(wh, source, destination, {
     amount: amount + fee,
-    automatic: false,
+    automatic,
+    nativeGas,
   });
-
-  // Automatic Circle USDC CCTP Transfer With Gas Dropoff
-  // const nativeGasAmt = 1_000_000n
-  // await cctpTransfer(wh, amount + fee, source, destination, true, nativeGasAmt);
 
   // Note: you can pick up a partial transfer from the origin chain name and txid
   // once created, you can call `fetchAttestations` and `completeTransfer` assuming its a manual transfer.
   // This is especially helpful for chains with longer time to finality where you don't want
   // to have to wait for the attestation to be generated.
-
   // await completeTransfer(
   //   wh,
   //   {
@@ -91,6 +92,9 @@ async function cctpTransfer<N extends Network>(
     req.nativeGas,
   );
   console.log(xfer);
+
+  const quote = await CircleTransfer.quoteTransfer(src.chain, dst.chain, xfer.transfer);
+  console.log("Quote", quote);
 
   console.log("Starting Transfer");
   const srcTxids = await xfer.initiateTransfer(src.signer);

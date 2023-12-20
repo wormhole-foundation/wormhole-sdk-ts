@@ -1,5 +1,7 @@
-import { Network, circle, encoding } from "@wormhole-foundation/sdk-base";
+import { Chain, Network, Platform, circle, encoding } from "@wormhole-foundation/sdk-base";
 import {
+  AttestationId,
+  ChainContext,
   CircleAttestation,
   CircleMessage,
   CircleMessageId,
@@ -16,14 +18,12 @@ import {
   isTransactionIdentifier,
   isWormholeMessageId,
   nativeChainAddress,
-  serializeCircleMessage,
-  AttestationId,
 } from "@wormhole-foundation/sdk-definitions";
 
 import { signSendWait } from "../common";
 import { DEFAULT_TASK_TIMEOUT } from "../config";
 import { Wormhole } from "../wormhole";
-import { TransferState, WormholeTransfer } from "../wormholeTransfer";
+import { TransferQuote, TransferState, WormholeTransfer } from "../wormholeTransfer";
 
 export type AutomaticCircleBridgeVAA<PayloadName extends string> = ProtocolVAA<
   "AutomaticCircleBridge",
@@ -359,15 +359,63 @@ export class CircleTransfer<N extends Network = Network>
     if (!attestation) throw new Error(`No Circle Attestation for ${id.hash}`);
 
     const tb = await toChain.getCircleBridge();
-    const xfer = tb.redeem(
-      this.transfer.to.address,
-      encoding.hex.encode(serializeCircleMessage(message)),
-      attestation,
-    );
+    const xfer = tb.redeem(this.transfer.to.address, message, attestation);
 
     const txids = await signSendWait<N, typeof toChain.chain>(toChain, xfer, signer);
     this.txids?.push(...txids);
     return txids.map(({ txid }) => txid);
+  }
+
+  static async quoteTransfer<N extends Network>(
+    srcChain: ChainContext<N, Platform, Chain>,
+    dstChain: ChainContext<N, Platform, Chain>,
+    transfer: CircleTransferDetails,
+  ): Promise<TransferQuote> {
+    const dstUsdcAddress = circle.usdcContract.get(dstChain.network, dstChain.chain);
+    if (!dstUsdcAddress) throw "Invalid transfer, no USDC contract on destination";
+
+    const srcUsdcAddress = circle.usdcContract.get(srcChain.network, srcChain.chain);
+    if (!srcUsdcAddress) throw "Invalid transfer, no USDC contract on source";
+
+    const dstToken = Wormhole.chainAddress(dstChain.chain, dstUsdcAddress);
+    const srcToken = Wormhole.chainAddress(srcChain.chain, srcUsdcAddress);
+
+    if (!transfer.automatic) {
+      return {
+        sourceToken: { token: srcToken, amount: transfer.amount },
+        destinationToken: { token: dstToken, amount: transfer.amount },
+      };
+    }
+
+    // Otherwise automatic
+    let dstAmount = transfer.amount;
+
+    // If a native gas dropoff is requested, remove that from the amount they'll get
+    const _nativeGas = transfer.nativeGas ? transfer.nativeGas : 0n;
+    dstAmount -= _nativeGas;
+
+    // The fee is also removed from the amount transferred
+    // quoted on the source chain
+    const stb = await srcChain.getAutomaticCircleBridge();
+    const fee = await stb.getRelayerFee(dstChain.chain);
+    dstAmount -= fee;
+
+    // The expected destination gas can be pulled from the destination token bridge
+    let destinationNativeGas = 0n;
+    if (transfer.nativeGas) {
+      const dtb = await dstChain.getAutomaticTokenBridge();
+      destinationNativeGas = await dtb.nativeTokenAmount(dstToken.address, _nativeGas);
+    }
+
+    return {
+      sourceToken: {
+        token: srcToken,
+        amount: transfer.amount,
+      },
+      destinationToken: { token: dstToken, amount: dstAmount },
+      relayFee: { token: srcToken, amount: fee },
+      destinationNativeGas,
+    };
   }
 
   static async getTransferVaa<N extends Network>(

@@ -10,6 +10,7 @@ import {
   CircleMessage,
   circle,
   encoding,
+  serializeCircleMessage,
 } from '@wormhole-foundation/connect-sdk';
 import { findProgramAddress } from '../accounts';
 import { createMessageTransmitterProgramInterface } from '../program';
@@ -19,11 +20,10 @@ export async function createReceiveMessageInstruction(
   tokenMessengerProgramId: PublicKey,
   usdcAddress: PublicKey,
   circleMessage: CircleMessage,
-  message: string,
   attestation: CircleAttestation,
   payer?: PublicKeyInitData,
 ) {
-  const messageBytes = Buffer.from(encoding.hex.decode(message));
+  const messageBytes = Buffer.from(serializeCircleMessage(circleMessage));
   const attestationBytes = Buffer.from(encoding.hex.decode(attestation));
 
   const solanaUsdcAddress = new PublicKey(usdcAddress);

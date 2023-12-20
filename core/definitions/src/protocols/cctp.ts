@@ -115,7 +115,7 @@ export interface CircleBridge<
 > {
   redeem(
     sender: AccountAddress<C>,
-    message: string,
+    message: CircleMessage,
     attestation: string,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
   transfer(
