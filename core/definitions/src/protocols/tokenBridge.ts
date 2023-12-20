@@ -31,6 +31,27 @@ export namespace TokenBridge {
   );
 }
 
+export type TokenTransferDetails = {
+  token: TokenId | "native";
+  amount: bigint;
+  from: ChainAddress;
+  to: ChainAddress;
+  automatic?: boolean;
+  payload?: Uint8Array;
+  nativeGas?: bigint;
+};
+
+export function isTokenTransferDetails(
+  thing: TokenTransferDetails | any,
+): thing is TokenTransferDetails {
+  return (
+    (<TokenTransferDetails>thing).token !== undefined &&
+    (<TokenTransferDetails>thing).amount !== undefined &&
+    (<TokenTransferDetails>thing).from !== undefined &&
+    (<TokenTransferDetails>thing).to !== undefined
+  );
+}
+
 export interface TokenBridge<N extends Network, P extends Platform, C extends PlatformToChains<P>> {
   // checks a native address to see if its a wrapped version
   isWrappedAsset(nativeAddress: TokenAddress<C>): Promise<boolean>;

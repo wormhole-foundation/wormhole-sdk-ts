@@ -8,7 +8,6 @@ import {
   Network,
   TokenBridge,
   TokenId,
-  TokenTransferTransaction,
   TxHash,
   UniversalAddress,
   encoding,
@@ -313,7 +312,7 @@ export class CosmwasmTokenBridge<N extends Network, C extends CosmwasmChains>
     return;
   }
 
-  async parseTransactionDetails(txid: TxHash): Promise<TokenTransferTransaction[]> {
+  async parseTransactionDetails(txid: TxHash) {
     throw new Error("Not implemented");
   }
 

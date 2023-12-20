@@ -2,6 +2,7 @@ import { Network, circle, encoding } from "@wormhole-foundation/sdk-base";
 import {
   CircleAttestation,
   CircleMessageId,
+  CircleTransferDetails,
   ProtocolVAA,
   Signer,
   TransactionId,
@@ -10,6 +11,7 @@ import {
   WormholeMessageId,
   deserializeCircleMessage,
   isCircleMessageId,
+  isCircleTransferDetails,
   isTransactionIdentifier,
   isWormholeMessageId,
   nativeChainAddress,
@@ -17,7 +19,6 @@ import {
 
 import { signSendWait } from "../common";
 import { DEFAULT_TASK_TIMEOUT } from "../config";
-import { CircleTransferDetails, isCircleTransferDetails } from "../types";
 import { Wormhole } from "../wormhole";
 import { AttestationId, TransferState, WormholeTransfer } from "../wormholeTransfer";
 
@@ -26,7 +27,9 @@ export type AutomaticCircleBridgeVAA<PayloadName extends string> = ProtocolVAA<
   PayloadName
 >;
 
-export class CircleTransfer<N extends Network> implements WormholeTransfer {
+export class CircleTransfer<N extends Network = Network>
+  implements WormholeTransfer<CircleTransferDetails>
+{
   private readonly wh: Wormhole<N>;
 
   // state machine tracker

@@ -22,13 +22,9 @@ import {
   deserialize,
   toNative,
 } from "@wormhole-foundation/sdk-definitions";
-
-import { CONFIG, DEFAULT_TASK_TIMEOUT } from "./config";
-import { WormholeConfig } from "./types";
-
+import { WormholeConfig, CONFIG, DEFAULT_TASK_TIMEOUT } from "./config";
 import { CircleTransfer } from "./protocols/cctpTransfer";
 import { TokenTransfer } from "./protocols/tokenTransfer";
-
 import { getCircleAttestationWithRetry } from "./circle-api";
 import { retry } from "./tasks";
 import {
@@ -40,10 +36,16 @@ import {
 } from "./whscan-api";
 import { ChainToPlatform } from "@wormhole-foundation/sdk-base/src";
 
+type PlatformMap<N extends Network, P extends Platform = Platform> = Map<P, PlatformContext<N, P>>;
+type ChainMap<N extends Network, C extends Chain = Chain> = Map<
+  C,
+  ChainContext<N, ChainToPlatform<C>, C>
+>;
+
 export class Wormhole<N extends Network> {
   protected readonly _network: N;
-  protected _platforms: Map<Platform, PlatformContext<N, Platform>>;
-  protected _chains: Map<Chain, ChainContext<N, Platform, Chain>>;
+  protected _platforms: PlatformMap<N>;
+  protected _chains: ChainMap<N>;
 
   readonly config: WormholeConfig;
 

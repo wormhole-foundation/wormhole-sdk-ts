@@ -4,11 +4,11 @@ import {
   Platform,
   PlatformToChains,
   Signer,
+  TokenTransfer,
   TransferState,
   TxHash,
-  WormholeTransfer,
-  api,
   Wormhole,
+  api,
   tasks,
 } from "@wormhole-foundation/connect-sdk";
 import { getCosmwasmSigner } from "@wormhole-foundation/connect-sdk-cosmwasm/src/testing";
@@ -70,13 +70,12 @@ export async function getStuff<
   };
 }
 
-export async function waitLog(xfer: WormholeTransfer): Promise<WormholeTransfer> {
-  console.log("Checking for complete status");
-  while (xfer.getTransferState() < TransferState.DestinationInitiated) {
-    console.log("Not yet...");
-    await new Promise((f) => setTimeout(f, 5000));
-  }
-  return xfer;
+export async function waitLog(wh: Wormhole<Network>, xfer: TokenTransfer) {
+  const it = TokenTransfer.track(wh, xfer);
+  let res;
+  for (res = await it.next(); !res.done; res = await it.next())
+    console.log("Current Transfer State: ", TransferState[res.value as TransferState]);
+  return res.value;
 }
 
 // Note: This API may change but it is currently the best place to pull

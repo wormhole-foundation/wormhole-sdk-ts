@@ -49,7 +49,7 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   // of the token
   // On the destination side, a wrapped version of the token will be minted
   // to the address specified in the transfer VAA
-  const automatic = false;
+  const automatic = true;
 
   // The automatic relayer has the ability to deliver some native gas funds to the destination account
   // The amount specified for native gas will be swapped for the native gas token according
@@ -91,8 +91,9 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
         txid: recoverTxid,
       });
 
+  const receipt = await waitLog(wh, xfer);
   // Log out the results
-  console.log(xfer);
+  console.log(receipt);
 })();
 
 async function tokenTransfer<N extends Network>(
@@ -138,7 +139,7 @@ async function tokenTransfer<N extends Network>(
   console.log(`Started transfer: `, srcTxids);
 
   // If automatic, we're done
-  if (route.delivery?.automatic) return (await waitLog(xfer)) as TokenTransfer<N>;
+  if (route.delivery?.automatic) return xfer;
 
   // 2) wait for the VAA to be signed and ready (not required for auto transfer)
   console.log("Getting Attestation");
