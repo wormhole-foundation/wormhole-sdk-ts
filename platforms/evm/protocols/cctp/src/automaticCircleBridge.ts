@@ -18,6 +18,7 @@ import { CircleRelayer } from './ethers-contracts';
 import { ethers_contracts } from '.';
 
 import {
+  EvmAddress,
   EvmChains,
   EvmPlatform,
   EvmPlatformType,
@@ -92,7 +93,7 @@ export class EvmAutomaticCircleBridge<N extends Network, C extends EvmChains>
     amount: bigint,
     nativeGas?: bigint,
   ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
-    const senderAddr = sender.toNative(this.chain).toString();
+    const senderAddr = new EvmAddress(sender).toString();
     const recipientChainId = chainToChainId(recipient.chain);
     const recipientAddress = recipient.address
       .toUniversalAddress()

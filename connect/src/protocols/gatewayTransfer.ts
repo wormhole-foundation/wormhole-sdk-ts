@@ -4,8 +4,8 @@ import {
   chainToPlatform,
   encoding,
   toChain,
+  PlatformToChains,
 } from "@wormhole-foundation/sdk-base";
-import { PlatformToChains } from "@wormhole-foundation/sdk-base/src";
 import {
   ChainAddress,
   ChainContext,
@@ -25,7 +25,6 @@ import {
   isGatewayTransferDetails,
   isTransactionIdentifier,
   isWormholeMessageId,
-  nativeChainAddress,
   toGatewayMsg,
   toNative,
   AttestationId,
@@ -200,7 +199,7 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
         const recipientAddress = encoding.bytes.decode(
           encoding.b64.decode(maybeWithPayload.recipient),
         );
-        to = nativeChainAddress(destChain, recipientAddress);
+        to = Wormhole.chainAddress(destChain, recipientAddress);
       } catch {
         /*Ignoring, throws if not the payload isnt JSON*/
       }

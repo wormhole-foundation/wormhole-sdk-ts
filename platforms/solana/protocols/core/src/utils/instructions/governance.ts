@@ -17,7 +17,7 @@ import {
   derivePostedVaaKey,
   deriveUpgradeAuthorityKey,
 } from '../accounts';
-import { utils } from '@wormhole-foundation/connect-sdk-solana';
+import { SolanaAddress, utils } from '@wormhole-foundation/connect-sdk-solana';
 
 export function createSetFeesInstruction(
   connection: Connection,
@@ -244,7 +244,7 @@ export function getUpgradeContractAccounts(
     ),
     upgradeAuthority: deriveUpgradeAuthorityKey(wormholeProgramId),
     spill: new PublicKey(spill === undefined ? payer : spill),
-    implementation: newContract.toNative('Solana').unwrap(),
+    implementation: new SolanaAddress(newContract).unwrap(),
     programData: utils.deriveUpgradeableProgramKey(wormholeProgramId),
     wormholeProgram: new PublicKey(wormholeProgramId),
     rent: SYSVAR_RENT_PUBKEY,

@@ -18,6 +18,7 @@ export {
   isPlatform,
   platformToChains,
   chainToPlatform,
+  platformToAddressFormat,
 } from "./platforms";
 
 export * as platform from "./platforms";

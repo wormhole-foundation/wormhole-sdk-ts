@@ -15,6 +15,7 @@ import {
   PlatformContext,
   SignedTx,
   TxHash,
+  Wormhole,
   decimals,
   nativeChainIds,
   networkPlatformConfigs,
@@ -24,12 +25,7 @@ import { CosmwasmChain } from "./chain";
 import { IbcChannels, chainToNativeDenoms, networkChainToChannels } from "./constants";
 import { CosmwasmChains, CosmwasmPlatformType, _platform } from "./types";
 
-import {
-  Balances,
-  TokenId,
-  chainToPlatform,
-  nativeChainAddress,
-} from "@wormhole-foundation/connect-sdk";
+import { Balances, TokenId, chainToPlatform } from "@wormhole-foundation/connect-sdk";
 import { CosmwasmAddress } from "./address";
 import { IBC_TRANSFER_PORT } from "./constants";
 import { AnyCosmwasmAddress } from "./types";
@@ -79,7 +75,7 @@ export class CosmwasmPlatform<N extends Network> extends PlatformContext<N, Cosm
 
   static nativeTokenId<C extends CosmwasmChains>(network: Network, chain: C): TokenId<C> {
     if (!this.isSupportedChain(chain)) throw new Error(`invalid chain for CosmWasm: ${chain}`);
-    return nativeChainAddress(chain, this.getNativeDenom(network, chain));
+    return Wormhole.chainAddress(chain, this.getNativeDenom(network, chain));
   }
 
   static isSupportedChain(chain: Chain): boolean {

@@ -1,3 +1,4 @@
+import { _platform } from '@wormhole-foundation/connect-sdk-solana';
 import { registerProtocol } from '@wormhole-foundation/connect-sdk';
 import { SolanaWormholeCore } from './core';
 
@@ -9,7 +10,7 @@ declare global {
   }
 }
 
-registerProtocol('Solana', 'WormholeCore', SolanaWormholeCore);
+registerProtocol(_platform, 'WormholeCore', SolanaWormholeCore);
 
 export * from './core';
 export * from './types';

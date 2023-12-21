@@ -97,4 +97,4 @@ declare global {
   }
 }
 
-registerNative('Evm', EvmAddress);
+registerNative(_platform, EvmAddress);

@@ -43,10 +43,7 @@ export const isSupportedChain = (chain: Chain) => {
 
 export const createTokenId = (chain: Chain, address: string) => {
   if (!isSupportedChain(chain)) return undefined;
-  return {
-    chain,
-    address: toNative(chain, address),
-  };
+  return Wormhole.chainAddress(chain, address);
 };
 
 export const getForeignAddress = async (wh: Wormhole<Network>, chain: Chain, tokenId: TokenId) => {

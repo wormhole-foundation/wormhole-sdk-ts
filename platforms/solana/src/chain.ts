@@ -17,7 +17,7 @@ export class SolanaChain<
     address: UniversalOrNative<C>,
     token: UniversalOrNative<C>,
   ): Promise<ChainAddress<C>> {
-    const mint = token.toNative(this.chain).unwrap();
+    const mint = new SolanaAddress(token).unwrap();
     const owner = new SolanaAddress(address).unwrap();
 
     const ata = await getAssociatedTokenAddress(mint, owner);

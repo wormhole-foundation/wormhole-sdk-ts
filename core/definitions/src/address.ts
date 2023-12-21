@@ -1,9 +1,9 @@
 import {
   Chain,
-  isChain,
+  ChainToPlatform,
   Platform,
   chainToPlatform,
-  ChainToPlatform,
+  platformToAddressFormat,
 } from "@wormhole-foundation/sdk-base";
 
 //TODO BRRRR circular include!!
@@ -42,22 +42,16 @@ declare global {
 
 export type MappedPlatforms = keyof WormholeNamespace.PlatformToNativeAddressMapping;
 
-type ChainOrPlatformToPlatform<T extends Chain | Platform> = T extends Chain
-  ? ChainToPlatform<T>
-  : T;
-
 type GetNativeAddress<T extends Platform> = T extends MappedPlatforms
   ? WormholeNamespace.PlatformToNativeAddressMapping[T]
   : never;
 
-export type NativeAddress<T extends Platform | Chain> = GetNativeAddress<
-  ChainOrPlatformToPlatform<T>
->;
+export type NativeAddress<C extends Chain> = GetNativeAddress<ChainToPlatform<C>>;
 
-export type UniversalOrNative<T extends Platform | Chain> = UniversalAddress | NativeAddress<T>;
+export type UniversalOrNative<T extends Chain> = UniversalAddress | NativeAddress<T>;
 
-export type AccountAddress<T extends Chain | Platform> = UniversalOrNative<T>;
-export type TokenAddress<T extends Chain | Platform> = UniversalOrNative<T> | "native";
+export type AccountAddress<T extends Chain> = UniversalOrNative<T>;
+export type TokenAddress<T extends Chain> = UniversalOrNative<T> | "native";
 
 export type ChainAddress<C extends Chain = Chain> = {
   readonly chain: C;
@@ -78,24 +72,25 @@ export function registerNative<P extends Platform>(platform: P, ctr: NativeAddre
   nativeFactory.set(platform, ctr);
 }
 
-export function nativeIsRegistered<T extends Platform | Chain>(chainOrPlatform: T): boolean {
-  const platform: Platform = isChain(chainOrPlatform)
-    ? chainToPlatform.get(chainOrPlatform)!
-    : chainOrPlatform;
-
+export function nativeIsRegistered<C extends Chain>(chain: C): boolean {
+  const platform: Platform = chainToPlatform.get(chain);
   return nativeFactory.has(platform);
 }
 
-export function toNative<T extends Platform | Chain>(
-  chainOrPlatform: T,
+export function toNative<C extends Chain>(
+  chain: C,
   ua: UniversalAddress | string | Uint8Array,
-): NativeAddress<T> {
-  const platform: Platform = isChain(chainOrPlatform)
-    ? chainToPlatform.get(chainOrPlatform)!
-    : chainOrPlatform;
-
+): NativeAddress<C> {
+  const platform: Platform = chainToPlatform.get(chain);
   const nativeCtr = nativeFactory.get(platform);
   if (!nativeCtr) throw new Error(`No native address type registered for platform ${platform}`);
+  return new nativeCtr(ua) as unknown as NativeAddress<C>;
+}
 
-  return new nativeCtr(ua) as unknown as NativeAddress<T>;
+export function toUniversal<C extends Chain>(
+  chain: C,
+  address: string | Uint8Array,
+): UniversalAddress {
+  const platform: Platform = chainToPlatform.get(chain);
+  return new UniversalAddress(address, platformToAddressFormat.get(platform));
 }

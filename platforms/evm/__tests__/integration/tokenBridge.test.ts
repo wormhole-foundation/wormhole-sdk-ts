@@ -9,17 +9,13 @@ import {
   encoding,
   nativeChainIds,
   testing,
-  toNative
+  toNative,
 } from '@wormhole-foundation/connect-sdk';
 
 import '@wormhole-foundation/connect-sdk-evm-core';
 import '@wormhole-foundation/connect-sdk-evm-tokenbridge';
 
-import {
-  EvmChains,
-  EvmPlatform
-} from '../../src';
-
+import { EvmChains, EvmPlatform } from '../../src';
 
 import { describe, expect, test } from '@jest/globals';
 
@@ -95,22 +91,22 @@ const TOKEN_ADDRESSES = {
 };
 
 const bogusAddress = toNative(
-  'Evm',
+  'Ethereum',
   '0x0000c581f595b53c5cb19bd0b3f8da6c935e2ca0',
 );
 const realNativeAddress = toNative(
-  'Evm',
+  'Ethereum',
   TOKEN_ADDRESSES['Mainnet']['Ethereum']['wsteth'],
 );
 const realWrappedAddress = toNative(
-  'Evm',
+  'Ethereum',
   TOKEN_ADDRESSES['Mainnet']['Ethereum']['wavax'],
 );
 
 const chain = 'Ethereum';
 const destChain = 'Avalanche';
 
-const sender = toNative('Evm', new Uint8Array(20));
+const sender = toNative('Ethereum', new Uint8Array(20));
 const recipient: ChainAddress = {
   chain: destChain,
   address: new UniversalAddress(new Uint8Array(32)),
@@ -122,7 +118,7 @@ describe('TokenBridge Tests', () => {
 
   test('Create TokenBridge', async () => {
     const rpc = p.getRpc('Ethereum');
-    tb = await p.getProtocol("TokenBridge", rpc)
+    tb = await p.getProtocol('TokenBridge', rpc);
     expect(tb).toBeTruthy();
   });
 
@@ -228,10 +224,7 @@ describe('TokenBridge Tests', () => {
 
       const { transaction } = attestTx;
       expect(transaction.chainId).toEqual(
-        nativeChainIds.networkChainToNativeChainId.get(
-          network,
-          chain
-        ),
+        nativeChainIds.networkChainToNativeChainId.get(network, chain),
       );
     });
 
@@ -325,10 +318,7 @@ describe('TokenBridge Tests', () => {
           const { transaction: xferTransaction } = xferTx;
           expect(xferTransaction.to).toEqual(tbAddress.toString());
           expect(xferTransaction.chainId).toEqual(
-            nativeChainIds.networkChainToNativeChainId.get(
-              network,
-              chain
-            ),
+            nativeChainIds.networkChainToNativeChainId.get(network, chain),
           );
         });
       });

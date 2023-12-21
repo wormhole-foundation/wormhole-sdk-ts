@@ -1,4 +1,4 @@
-import { Network, Platform } from "@wormhole-foundation/sdk-base";
+import { PlatformToChains, Network, Platform } from "@wormhole-foundation/sdk-base";
 import {
   TokenAddress,
   ChainAddress,
@@ -7,7 +7,6 @@ import {
   TokenBridge,
   UnsignedTransaction,
 } from "../..";
-import { PlatformToChains } from "@wormhole-foundation/sdk-base/src";
 
 //export function mockTokenBridgeFactory(
 //  p: Platform,

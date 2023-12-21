@@ -4,7 +4,6 @@ import {
   ChainsConfig,
   Contracts,
   ErrNotWrapped,
-  NativeAddress,
   Network,
   TokenBridge,
   TokenId,
@@ -109,7 +108,7 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
     return false;
   }
 
-  async getWrappedAsset(token: TokenId): Promise<NativeAddress<C>> {
+  async getWrappedAsset(token: TokenId) {
     const assetFullyQualifiedType = await this.getAssetFullyQualifiedType(token);
 
     // check to see if we can get origin info from asset address
@@ -148,7 +147,7 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
     }
   }
 
-  async getWrappedNative(): Promise<NativeAddress<C>> {
+  async getWrappedNative() {
     return toNative(this.chain, APTOS_COIN);
   }
 
@@ -323,7 +322,7 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
   ): string {
     const data = serializeForeignAddressSeeds({
       chain: tokenId.chain,
-      tokenBridgeAddress: toNative(chain, tokenBridgeAddress).toUniversalAddress(),
+      tokenBridgeAddress: new AptosAddress(tokenBridgeAddress).toUniversalAddress(),
       tokenId: tokenId.address.toUniversalAddress(),
     });
     return encoding.hex.encode(sha3_256(data), true);

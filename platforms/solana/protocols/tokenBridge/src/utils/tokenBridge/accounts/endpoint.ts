@@ -1,16 +1,15 @@
 import {
+  Commitment,
   Connection,
   PublicKey,
-  Commitment,
   PublicKeyInitData,
 } from '@solana/web3.js';
-import { utils } from '@wormhole-foundation/connect-sdk-solana';
 import {
   ChainId,
+  UniversalAddress,
   toChainId,
-  toChain,
-  toNative,
 } from '@wormhole-foundation/connect-sdk';
+import { utils } from '@wormhole-foundation/connect-sdk-solana';
 
 export function deriveEndpointKey(
   tokenBridgeProgramId: PublicKeyInitData,
@@ -24,7 +23,7 @@ export function deriveEndpointKey(
   }
   const emitterAddr =
     typeof emitterAddress === 'string'
-      ? toNative(toChain(emitterChain), emitterAddress).toUint8Array()
+      ? new UniversalAddress(emitterAddress).toUint8Array()
       : emitterAddress;
 
   return utils.deriveAddress(

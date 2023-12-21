@@ -1,4 +1,4 @@
-import { Chain, Network, PlatformContext } from "@wormhole-foundation/connect-sdk";
+import { Chain, Network, PlatformContext, Wormhole } from "@wormhole-foundation/connect-sdk";
 import { AptosClient } from "aptos";
 import { AptosChain } from "./chain";
 import { AptosChains, AptosPlatformType, _platform } from "./types";
@@ -9,7 +9,6 @@ import {
   TokenId,
   TxHash,
   chainToPlatform,
-  nativeChainAddress,
   nativeChainIds,
   decimals as nativeDecimals,
 } from "@wormhole-foundation/connect-sdk";
@@ -35,7 +34,7 @@ export class AptosPlatform<N extends Network> extends PlatformContext<N, AptosPl
 
   static nativeTokenId<N extends Network, C extends AptosChains>(network: N, chain: C): TokenId<C> {
     if (!this.isSupportedChain(chain)) throw new Error(`invalid chain: ${chain}`);
-    return nativeChainAddress(chain, APTOS_COIN);
+    return Wormhole.chainAddress(chain, APTOS_COIN);
   }
 
   static isNativeTokenId<N extends Network, C extends AptosChains>(

@@ -28,7 +28,10 @@ export type ProtocolImplementation<
   : never;
 
 export interface ProtocolInitializer<P extends Platform, PN extends ProtocolName> {
-  fromRpc(rpc: RpcConnection<P>, config: ChainsConfig<Network, P>): ProtocolImplementation<P, PN>;
+  fromRpc(
+    rpc: RpcConnection<P>,
+    config: ChainsConfig<Network, P>,
+  ): Promise<ProtocolImplementation<P, PN>>;
 }
 
 const protocolFactory = new Map<
@@ -74,7 +77,7 @@ export function getProtocolInitializer<P extends Platform, PN extends ProtocolNa
   const pctr = protocols.get(protocol);
   if (!pctr) throw new Error(`No protocol registered for ${platform}:${protocol}`);
 
-  return pctr as ProtocolInitializer<P, PN>;
+  return pctr;
 }
 
 export const create = <N extends Network, P extends Platform, PN extends ProtocolName, T>(
@@ -84,5 +87,5 @@ export const create = <N extends Network, P extends Platform, PN extends Protoco
   config: ChainsConfig<N, P>,
 ): Promise<T> => {
   const pctr = getProtocolInitializer(platform, protocol);
-  return pctr.fromRpc(rpc, config) as Promise<T>;
+  return pctr.fromRpc(rpc, config);
 };

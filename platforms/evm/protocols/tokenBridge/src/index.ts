@@ -1,4 +1,5 @@
 import { registerProtocol } from '@wormhole-foundation/connect-sdk';
+import { _platform } from '@wormhole-foundation/connect-sdk-evm';
 import { EvmTokenBridge } from './tokenBridge';
 import { EvmAutomaticTokenBridge } from './automaticTokenBridge';
 
@@ -10,8 +11,8 @@ declare global {
   }
 }
 
-registerProtocol('Evm', 'TokenBridge', EvmTokenBridge);
-registerProtocol('Evm', 'AutomaticTokenBridge', EvmAutomaticTokenBridge);
+registerProtocol(_platform, 'TokenBridge', EvmTokenBridge);
+registerProtocol(_platform, 'AutomaticTokenBridge', EvmAutomaticTokenBridge);
 
 export * as ethers_contracts from './ethers-contracts';
 export * from './tokenBridge';

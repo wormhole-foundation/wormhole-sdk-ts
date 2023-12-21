@@ -57,10 +57,9 @@
     "examples"
   ],
   "unreleased": [
-    "tokenRegistry",
-    "examples",
     "platforms/aptos",
     "platforms/aptos/protocols/core",
-    "platforms/aptos/protocols/tokenBridge"
+    "platforms/aptos/protocols/tokenBridge",
+    "tokenRegistry"
   ]
 }
