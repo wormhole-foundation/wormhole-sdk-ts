@@ -1,11 +1,11 @@
 import {
   CircleTransfer,
   Network,
+  Platform,
   Signer,
   TransactionId,
   Wormhole,
   normalizeAmount,
-  Platform,
 } from "@wormhole-foundation/connect-sdk";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
@@ -48,13 +48,8 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
   const _nativeGasAmt = "0.01";
   const nativeGas = automatic ? normalizeAmount(_nativeGasAmt, 6n) : 0n;
 
-  // Automatic Circle USDC CCTP Transfer
-  const fee = !automatic
-    ? 0n
-    : await sendChain.getAutomaticCircleBridge().then((acb) => acb.getRelayerFee(rcvChain.chain));
-
   await cctpTransfer(wh, source, destination, {
-    amount: amount + fee,
+    amount,
     automatic,
     nativeGas,
   });
@@ -93,6 +88,10 @@ async function cctpTransfer<N extends Network>(
   );
   console.log(xfer);
 
+  // Note, if the transfer is requested to be Automatic, a fee for performing the relay
+  // will be present in the quote. The fee comes out of the amount requested to be sent.
+  // If the user wants to receive 1.0 on the destination, the amount to send should be 1.0 + fee.
+  // The same applies for native gas dropoff
   const quote = await CircleTransfer.quoteTransfer(src.chain, dst.chain, xfer.transfer);
   console.log("Quote", quote);
 
