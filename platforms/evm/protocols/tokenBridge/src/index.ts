@@ -3,7 +3,7 @@ import { EvmTokenBridge } from './tokenBridge';
 import { EvmAutomaticTokenBridge } from './automaticTokenBridge';
 
 declare global {
-  namespace Wormhole {
+  namespace WormholeNamespace {
     export interface PlatformToProtocolMapping {
       Evm: {};
     }

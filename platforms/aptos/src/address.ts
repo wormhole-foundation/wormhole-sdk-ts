@@ -11,7 +11,7 @@ import { AptosPlatform } from "./platform";
 import { AnyAptosAddress, isValidAptosType } from "./types";
 
 declare global {
-  namespace Wormhole {
+  namespace WormholeNamespace {
     interface PlatformToNativeAddressMapping {
       // @ts-ignore
       Aptos: AptosAddress;

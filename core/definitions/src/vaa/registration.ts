@@ -7,18 +7,18 @@ import { Layout } from "@wormhole-foundation/sdk-base";
 //  payloads and their respective layouts in a single place (which, besides being a terrible code
 //  smell, would also prevent users of the SDK to register their own payload types!)
 declare global {
-  namespace Wormhole {
+  namespace WormholeNamespace {
     //effective type: Record<string, Layout>
     interface PayloadLiteralToLayoutMapping {}
   }
 }
 
-export type LayoutLiteral = keyof Wormhole.PayloadLiteralToLayoutMapping & string;
+export type LayoutLiteral = keyof WormholeNamespace.PayloadLiteralToLayoutMapping & string;
 
 export type PayloadLiteral = LayoutLiteral | "Uint8Array";
 
 export type LayoutOf<LL extends LayoutLiteral> = LL extends infer V extends LayoutLiteral
-  ? Wormhole.PayloadLiteralToLayoutMapping[V]
+  ? WormholeNamespace.PayloadLiteralToLayoutMapping[V]
   : never;
 
 //we aren't enforcing that Protocol is actually a protocol as to keep things user-extensible

@@ -3,7 +3,7 @@ import { SolanaTokenBridge } from './tokenBridge';
 import { SolanaAutomaticTokenBridge } from './automaticTokenBridge';
 
 declare global {
-  namespace Wormhole {
+  namespace WormholeNamespace {
     export interface PlatformToProtocolMapping {
       Solana: {};
     }

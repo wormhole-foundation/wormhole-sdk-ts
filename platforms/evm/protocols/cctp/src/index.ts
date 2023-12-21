@@ -3,7 +3,7 @@ import { EvmCircleBridge } from './circleBridge';
 import { EvmAutomaticCircleBridge } from './automaticCircleBridge';
 
 declare global {
-  namespace Wormhole {
+  namespace WormholeNamespace {
     export interface PlatformToProtocolMapping {
       Evm: {};
     }

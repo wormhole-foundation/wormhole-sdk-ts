@@ -35,19 +35,19 @@ export interface Address {
 }
 
 declare global {
-  namespace Wormhole {
+  namespace WormholeNamespace {
     export interface PlatformToNativeAddressMapping {}
   }
 }
 
-export type MappedPlatforms = keyof Wormhole.PlatformToNativeAddressMapping;
+export type MappedPlatforms = keyof WormholeNamespace.PlatformToNativeAddressMapping;
 
 type ChainOrPlatformToPlatform<T extends Chain | Platform> = T extends Chain
   ? ChainToPlatform<T>
   : T;
 
 type GetNativeAddress<T extends Platform> = T extends MappedPlatforms
-  ? Wormhole.PlatformToNativeAddressMapping[T]
+  ? WormholeNamespace.PlatformToNativeAddressMapping[T]
   : never;
 
 export type NativeAddress<T extends Platform | Chain> = GetNativeAddress<

@@ -16,19 +16,17 @@ const fixedLengthStringItem = {
       range(val.byteLength)
         .map((i) => String.fromCharCode(val[i]!))
         .join(""),
-    from: (str: string) =>
-      new Uint8Array(str.split("").map((c) => c.charCodeAt(0))),
+    from: (str: string) => new Uint8Array(str.split("").map((c) => c.charCodeAt(0))),
   } satisfies CustomConversion<Uint8Array, string>,
 } as const satisfies FixedSizeBytesLayoutItem;
 
-export const transferWithPayloadLayout = <P extends LayoutItem>(
-  customPayload: P
-) => ([
-  payloadIdItem(3),
-  ...transferCommonLayout,
-  { name: "from", ...universalAddressItem },
-  { name: "payload", ...customPayload },
-] as const);
+export const transferWithPayloadLayout = <P extends LayoutItem>(customPayload: P) =>
+  [
+    payloadIdItem(3),
+    ...transferCommonLayout,
+    { name: "from", ...universalAddressItem },
+    { name: "payload", ...customPayload },
+  ] as const;
 
 const transferCommonLayout = [
   {
@@ -68,20 +66,14 @@ export const namedPayloads = [
       { name: "name", ...fixedLengthStringItem },
     ],
   ],
-  [
-    "Transfer",
-    [payloadIdItem(1), ...transferCommonLayout, { name: "fee", ...amountItem }],
-  ],
-  [
-    "TransferWithPayload",
-    transferWithPayloadLayout({ binary: "bytes" }),
-  ],
+  ["Transfer", [payloadIdItem(1), ...transferCommonLayout, { name: "fee", ...amountItem }]],
+  ["TransferWithPayload", transferWithPayloadLayout({ binary: "bytes" })],
 ] as const satisfies NamedPayloads;
 
 // factory registration:
 
 declare global {
-  namespace Wormhole {
+  namespace WormholeNamespace {
     interface PayloadLiteralToLayoutMapping
       extends RegisterPayloadTypes<"TokenBridge", typeof namedPayloads> {}
   }

@@ -9,7 +9,7 @@ import { CosmwasmPlatform } from "./platform";
 import { AnyCosmwasmAddress, _platform } from "./types";
 
 declare global {
-  namespace Wormhole {
+  namespace WormholeNamespace {
     interface PlatformToNativeAddressMapping {
       // @ts-ignore
       Cosmwasm: CosmwasmAddress;

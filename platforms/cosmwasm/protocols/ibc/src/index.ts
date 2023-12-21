@@ -2,7 +2,7 @@ import { registerProtocol } from "@wormhole-foundation/connect-sdk";
 import { CosmwasmIbcBridge } from "./ibc";
 
 declare global {
-  namespace Wormhole {
+  namespace WormholeNamespace {
     export interface PlatformToProtocolMapping {
       Cosmwasm: {};
     }

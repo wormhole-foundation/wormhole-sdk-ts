@@ -2,7 +2,7 @@ import { registerProtocol } from '@wormhole-foundation/connect-sdk';
 import { SolanaCircleBridge } from './circleBridge';
 
 declare global {
-  namespace Wormhole {
+  namespace WormholeNamespace {
     export interface PlatformToProtocolMapping {
       Solana: {};
     }

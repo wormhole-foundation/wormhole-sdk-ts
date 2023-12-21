@@ -10,7 +10,7 @@ import { PublicKey } from '@solana/web3.js';
 import { AnySolanaAddress, _platform } from './types';
 
 declare global {
-  namespace Wormhole {
+  namespace WormholeNamespace {
     interface PlatformToNativeAddressMapping {
       // @ts-ignore
       Solana: SolanaAddress;
