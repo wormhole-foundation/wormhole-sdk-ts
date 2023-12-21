@@ -527,9 +527,11 @@ export class TokenTransfer<N extends Network = Network>
     const srcDecimals = await srcChain.getDecimals(srcToken.address);
 
     // truncate the amount for over-the-wire max representation
-    const truncate = (amt: bigint, decimals: bigint) => amt / 10n ** (decimals - 8n);
+    const truncate = (amt: bigint, decimals: bigint) =>
+      decimals > 8 ? amt / 10n ** (decimals - 8n) : amt;
     // scale by number of decimals, pair with truncate
-    const scale = (amt: bigint, decimals: bigint) => amt * 10n ** (decimals - 8n);
+    const scale = (amt: bigint, decimals: bigint) =>
+      decimals > 8 ? amt * 10n ** (decimals - 8n) : amt;
     // dedust for source using the number of decimals on the source chain
     // but scale back to original decimals
     const dedust = (amt: bigint) => scale(truncate(amt, srcDecimals), srcDecimals);
