@@ -1,7 +1,14 @@
-import { Chain, Network, PlatformToChains, encoding, toChain } from "@wormhole-foundation/sdk-base";
-import { Platform } from "@wormhole-foundation/sdk-base/dist/cjs";
-import { ChainToPlatform } from "@wormhole-foundation/sdk-base/src";
 import {
+  ChainToPlatform,
+  Platform,
+  Chain,
+  Network,
+  PlatformToChains,
+  encoding,
+  toChain,
+} from "@wormhole-foundation/sdk-base";
+import {
+  AttestationId,
   ChainContext,
   Signer,
   TokenAddress,
@@ -16,16 +23,15 @@ import {
   isTokenTransferDetails,
   isTransactionIdentifier,
   isWormholeMessageId,
-  nativeChainAddress,
   toNative,
-  AttestationId,
+  toUniversal,
 } from "@wormhole-foundation/sdk-definitions";
 import { signSendWait } from "../common";
 import { DEFAULT_TASK_TIMEOUT } from "../config";
 import { Wormhole } from "../wormhole";
 import {
-  TransferReceipt,
   TransferQuote,
+  TransferReceipt,
   TransferState,
   WormholeTransfer,
 } from "../wormholeTransfer";
@@ -285,7 +291,8 @@ export class TokenTransfer<N extends Network = Network>
 
     const receipt = TokenTransfer.getReceipt(xfer);
     if (receipt.state === TransferState.SourceInitiated) {
-      if (receipt.originTxs.length === 0) throw "Invalid state transition";
+      if (receipt.originTxs.length === 0)
+        throw "Invalid state transition: no originating transactions";
 
       if (!receipt.attestation || !receipt.attestation?.emitter) {
         const initTx = receipt.originTxs[receipt.originTxs.length - 1]!;
@@ -302,7 +309,8 @@ export class TokenTransfer<N extends Network = Network>
 
     let vaa = undefined;
     if (receipt.state == TransferState.SourceFinalized) {
-      if (!receipt.attestation || !receipt.attestation.emitter) throw "Invalid state transition";
+      if (!receipt.attestation || !receipt.attestation.emitter)
+        throw "Invalid state transition: no attestation id";
 
       vaa = xfer.vaas && xfer.vaas.length > 0 && xfer.vaas[0]!.vaa ? xfer.vaas[0].vaa : undefined;
       // we need to get the attestation so we can deliver it
@@ -463,8 +471,7 @@ export class TokenTransfer<N extends Network = Network>
 
     // if the token id is actually native to the destination, return it
     if (lookup.chain === dstChain.chain) {
-      const { chain, address } = lookup;
-      return { chain, address: address.toNative(chain) } as TokenId<DC>;
+      return lookup as TokenId<typeof dstChain.chain>;
     }
 
     // otherwise, figure out what the token address representing the wormhole-wrapped token we're transferring
@@ -478,9 +485,7 @@ export class TokenTransfer<N extends Network = Network>
     const { chain, address } = vaa.payload.to;
     const { tokenBridgeRelayer } = wh.config.chains[chain]!.contracts;
 
-    const relayerAddress = tokenBridgeRelayer
-      ? nativeChainAddress(chain, tokenBridgeRelayer).address.toUniversalAddress()
-      : null;
+    const relayerAddress = tokenBridgeRelayer ? toUniversal(chain, tokenBridgeRelayer) : null;
 
     return (
       vaa.payloadName === "TransferWithPayload" &&
@@ -613,7 +618,10 @@ export class TokenTransfer<N extends Network = Network>
           },
         }),
       );
-      _transfer.to = nativeChainAddress(_transfer.to.chain, dstChain.config.contracts!.translator!);
+      _transfer.to = Wormhole.chainAddress(
+        _transfer.to.chain,
+        dstChain.config.contracts!.translator!,
+      );
     }
 
     return _transfer;

@@ -5,7 +5,6 @@ import {
   ChainsConfig,
   Contracts,
   ErrNotWrapped,
-  NativeAddress,
   Network,
   TokenBridge,
   TokenId,
@@ -150,7 +149,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
       if (meta === null)
         return {
           chain: this.chain,
-          address: toNative(this.chain, mint.toBytes()),
+          address: new SolanaAddress(mint.toBytes()).toUniversalAddress(),
         };
 
       return {
@@ -170,7 +169,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
     return false;
   }
 
-  async getWrappedAsset(token: TokenId<Chain>): Promise<NativeAddress<C>> {
+  async getWrappedAsset(token: TokenId<Chain>) {
     const mint = deriveWrappedMintKey(
       this.tokenBridge.programId,
       toChainId(token.chain),
@@ -202,7 +201,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
       .catch(() => false);
   }
 
-  async getWrappedNative(): Promise<NativeAddress<C>> {
+  async getWrappedNative() {
     return toNative(this.chain, NATIVE_MINT.toBase58());
   }
 
@@ -511,9 +510,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
     const payerPublicKey = new SolanaAddress(sender).unwrap();
 
     // (maybe) ATA for this account
-    const targetPublicKey = vaa.payload.to.address
-      .toNative(this.chain)
-      .unwrap();
+    const targetPublicKey = new SolanaAddress(vaa.payload.to.address).unwrap();
 
     const targetAmount = await getMint(this.connection, NATIVE_MINT).then(
       (info) =>
@@ -614,7 +611,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
     const { blockhash } = await this.connection.getLatestBlockhash();
 
     // Find the token address local to this chain
-    let nativeAddress =
+    const nativeAddress =
       vaa.payload.token.chain === this.chain
         ? vaa.payload.token.address
         : (await this.getWrappedAsset(vaa.payload.token)).toUniversalAddress();
@@ -626,9 +623,10 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
     yield* this.coreBridge.postVaa(sender, vaa, blockhash);
 
     // Check if this is native wrapped sol
+    const wrappedNative = new SolanaAddress(await this.getWrappedNative());
     const isNativeToken = encoding.bytes.equals(
       nativeAddress.toUint8Array(),
-      (await this.getWrappedNative()).toUint8Array(),
+      wrappedNative.toUint8Array(),
     );
 
     // redeem vaa and unwrap to native sol from wrapped sol

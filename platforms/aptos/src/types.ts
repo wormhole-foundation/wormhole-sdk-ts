@@ -6,8 +6,7 @@ export const unusedArbiterFee = 0n;
 export const _platform: "Aptos" = "Aptos";
 export type AptosPlatformType = typeof _platform;
 export type AptosChains = PlatformToChains<AptosPlatformType>;
-
-export type UniversalOrAptos = UniversalOrNative<AptosPlatformType>;
+export type UniversalOrAptos = UniversalOrNative<AptosChains>;
 export type AnyAptosAddress = UniversalOrAptos | string | Uint8Array;
 
 export type CurrentCoinBalancesResponse = {

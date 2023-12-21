@@ -11,7 +11,6 @@ import {
   circle,
   deserializeCircleMessage,
   encoding,
-  nativeChainAddress,
   nativeChainIds,
   serializeCircleMessage,
 } from '@wormhole-foundation/connect-sdk';
@@ -204,11 +203,11 @@ export class EvmCircleBridge<N extends Network, C extends EvmChains>
     const sendChain = circle.toCircleChain(circleMsg.sourceDomain);
     const rcvChain = circle.toCircleChain(circleMsg.destinationDomain);
 
-    const token = nativeChainAddress(sendChain, body.burnToken);
+    const token = { chain: sendChain, address: body.burnToken };
 
     return {
-      from: nativeChainAddress(sendChain, xferSender),
-      to: nativeChainAddress(rcvChain, xferReceiver),
+      from: { chain: sendChain, address: xferSender },
+      to: { chain: rcvChain, address: xferReceiver },
       token: token,
       amount: body.amount,
       message: circleMsg,

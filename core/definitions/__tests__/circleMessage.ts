@@ -1,7 +1,6 @@
-import { deserializeLayout, circle, encoding } from "@wormhole-foundation/sdk-base";
+import { deserializeLayout, circle, encoding, contracts } from "@wormhole-foundation/sdk-base";
 import { circleMessageLayout } from "../src/protocols/cctp";
 import { UniversalAddress } from "../src";
-import { circleContracts } from "@wormhole-foundation/sdk-base/src/constants/contracts";
 
 const ethAddressToUniversal = (address: string) => {
   return new UniversalAddress("00".repeat(12) + address.slice(2));
@@ -18,20 +17,16 @@ describe("Circle Message tests", function () {
     const toChain = "Avalanche";
 
     // same sender and receiver
-    const accountSender = ethAddressToUniversal(
-      "0x6603b4a7e29dfbdb6159c395a915e74757c1fb13",
-    );
+    const accountSender = ethAddressToUniversal("0x6603b4a7e29dfbdb6159c395a915e74757c1fb13");
 
     const actualSender = ethAddressToUniversal(
-      circleContracts("Testnet", fromChain).tokenMessenger,
+      contracts.circleContracts("Testnet", fromChain).tokenMessenger,
     );
     const actualReceiver = ethAddressToUniversal(
-      circleContracts("Testnet", toChain).tokenMessenger,
+      contracts.circleContracts("Testnet", toChain).tokenMessenger,
     );
 
-    const tokenAddress = ethAddressToUniversal(
-      circle.usdcContract("Testnet", fromChain),
-    );
+    const tokenAddress = ethAddressToUniversal(circle.usdcContract("Testnet", fromChain));
 
     const decoded = deserializeLayout(circleMessageLayout, orig);
     expect(decoded.sourceDomain).toEqual(fromChain);

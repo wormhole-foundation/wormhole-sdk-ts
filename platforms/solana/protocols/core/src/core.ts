@@ -9,6 +9,14 @@ import {
   VersionedTransactionResponse,
 } from '@solana/web3.js';
 import {
+  SolanaAddress,
+  AnySolanaAddress,
+  SolanaChains,
+  SolanaPlatform,
+  SolanaPlatformType,
+  SolanaUnsignedTransaction,
+} from '@wormhole-foundation/connect-sdk-solana';
+import {
   ChainId,
   ChainsConfig,
   Contracts,
@@ -19,16 +27,7 @@ import {
   WormholeCore,
   WormholeMessageId,
   toChainId,
-  toNative,
 } from '@wormhole-foundation/connect-sdk';
-import {
-  AnySolanaAddress,
-  SolanaAddress,
-  SolanaChains,
-  SolanaPlatform,
-  SolanaPlatformType,
-  SolanaUnsignedTransaction,
-} from '@wormhole-foundation/connect-sdk-solana';
 import { Wormhole as WormholeCoreContract } from './types';
 import {
   createPostMessageInstruction,
@@ -72,7 +71,7 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
   static async fromRpc<N extends Network>(
     connection: Connection,
     config: ChainsConfig<N, Platform>,
-  ): Promise<SolanaWormholeCore<N, SolanaChains>> {
+  ) {
     const [network, chain] = await SolanaPlatform.chainFromRpc(connection);
     const conf = config[chain]!;
     if (conf.network !== network)
@@ -296,7 +295,7 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
       const sequence = acctInfo!.data.readBigUInt64LE(49);
 
       const emitterAddr = new Uint8Array(acctInfo!.data.subarray(59, 91));
-      const emitter = toNative(this.chain, emitterAddr);
+      const emitter = new SolanaAddress(emitterAddr);
 
       return {
         chain: this.chain,

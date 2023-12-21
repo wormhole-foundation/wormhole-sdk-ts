@@ -1,4 +1,5 @@
 import { registerProtocol } from '@wormhole-foundation/connect-sdk';
+import { _platform } from '@wormhole-foundation/connect-sdk-evm';
 import { EvmCircleBridge } from './circleBridge';
 import { EvmAutomaticCircleBridge } from './automaticCircleBridge';
 
@@ -10,8 +11,8 @@ declare global {
   }
 }
 
-registerProtocol('Evm', 'CircleBridge', EvmCircleBridge);
-registerProtocol('Evm', 'AutomaticCircleBridge', EvmAutomaticCircleBridge);
+registerProtocol(_platform, 'CircleBridge', EvmCircleBridge);
+registerProtocol(_platform, 'AutomaticCircleBridge', EvmAutomaticCircleBridge);
 
 export * as ethers_contracts from './ethers-contracts';
 export * from './circleBridge';

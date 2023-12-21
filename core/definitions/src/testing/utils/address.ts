@@ -1,12 +1,11 @@
-import crypto from "crypto";
 import {
   Chain,
-  Platform,
   chainToPlatform,
   encoding,
   isPlatform,
   platformToChains,
 } from "@wormhole-foundation/sdk-base";
+import crypto from "crypto";
 import { ChainAddress, NativeAddress, UniversalAddress, toNative } from "../../";
 
 // return a random buffer of length n
@@ -57,7 +56,7 @@ export function makeUniversalAddress(chain: Chain): UniversalAddress {
   return new UniversalAddress("0x" + nativeAddress.padStart(64, "0"));
 }
 // make a random NativeAddress for a given chain
-export function makeNativeAddress<T extends Chain | Platform>(chain: T): NativeAddress<T> {
+export function makeNativeAddress<T extends Chain>(chain: T): NativeAddress<T> {
   let cn: Chain;
   if (isPlatform(chain)) {
     // just grab the first one

@@ -5,6 +5,7 @@ import {
   PlatformToChains,
   chainToPlatform,
   circle,
+  ChainToPlatform,
 } from "@wormhole-foundation/sdk-base";
 import {
   ChainAddress,
@@ -22,10 +23,10 @@ import {
   deserialize,
   toNative,
 } from "@wormhole-foundation/sdk-definitions";
-import { WormholeConfig, CONFIG, DEFAULT_TASK_TIMEOUT } from "./config";
+import { getCircleAttestationWithRetry } from "./circle-api";
+import { CONFIG, DEFAULT_TASK_TIMEOUT, WormholeConfig } from "./config";
 import { CircleTransfer } from "./protocols/cctpTransfer";
 import { TokenTransfer } from "./protocols/tokenTransfer";
-import { getCircleAttestationWithRetry } from "./circle-api";
 import { retry } from "./tasks";
 import {
   TransactionStatus,
@@ -34,7 +35,6 @@ import {
   getVaaBytesWithRetry,
   getVaaWithRetry,
 } from "./whscan-api";
-import { ChainToPlatform } from "@wormhole-foundation/sdk-base/src";
 
 type PlatformMap<N extends Network, P extends Platform = Platform> = Map<P, PlatformContext<N, P>>;
 type ChainMap<N extends Network, C extends Chain = Chain> = Map<
@@ -356,7 +356,7 @@ export class Wormhole<N extends Network> {
    * @returns The ChainAddress
    */
   static chainAddress<C extends Chain>(chain: C, address: string): ChainAddress<C> {
-    return { chain, address: toNative(chain, address) };
+    return { chain, address: Wormhole.parseAddress(chain, address) };
   }
 
   /**

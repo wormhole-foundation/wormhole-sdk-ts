@@ -34,7 +34,7 @@ export class Gateway<N extends Network> extends ChainContext<
   // for a given chain
   async getWrappedAsset(token: TokenId): Promise<CosmwasmAddress> {
     const tb = await this.getTokenBridge();
-    const wrappedAsset = await tb.getWrappedAsset(token);
+    const wrappedAsset = new CosmwasmAddress(await tb.getWrappedAsset(token));
 
     // Encode the original address to base58 and add it
     // to the factory address for cw20 style factory token address

@@ -12,6 +12,7 @@ import {
   encoding,
   serializeCircleMessage,
 } from '@wormhole-foundation/connect-sdk';
+import { SolanaAddress } from '@wormhole-foundation/connect-sdk-solana';
 import { findProgramAddress } from '../accounts';
 import { createMessageTransmitterProgramInterface } from '../program';
 
@@ -32,9 +33,9 @@ export async function createReceiveMessageInstruction(
     circleMessage.payload.burnToken.toUint8Array(),
   );
 
-  const receiver = circleMessage.payload.mintRecipient
-    .toNative('Solana')
-    .unwrap() as PublicKey;
+  const receiver = new SolanaAddress(
+    circleMessage.payload.mintRecipient,
+  ).unwrap();
 
   const payerPubkey = payer ? new PublicKey(payer) : receiver;
 

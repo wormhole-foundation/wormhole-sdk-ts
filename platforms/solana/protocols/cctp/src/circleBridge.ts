@@ -11,7 +11,6 @@ import {
   Platform,
   circle,
   deserializeCircleMessage,
-  nativeChainAddress,
 } from '@wormhole-foundation/connect-sdk';
 
 import { EventParser, Program } from '@project-serum/anchor';
@@ -175,11 +174,11 @@ export class SolanaCircleBridge<N extends Network, C extends SolanaChains>
     const sendChain = circle.toCircleChain(msg.sourceDomain);
     const rcvChain = circle.toCircleChain(msg.destinationDomain);
 
-    const token = nativeChainAddress(sendChain, body.burnToken);
+    const token = { chain: sendChain, address: body.burnToken };
 
     return {
-      from: nativeChainAddress(sendChain, xferSender),
-      to: nativeChainAddress(rcvChain, xferReceiver),
+      from: { chain: sendChain, address: xferSender },
+      to: { chain: rcvChain, address: xferReceiver },
       token: token,
       amount: body.amount,
       message: msg,

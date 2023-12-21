@@ -1,4 +1,5 @@
 import {
+  Network,
   ChainAddress,
   ChainContext,
   Platform,
@@ -11,12 +12,11 @@ import {
   api,
   tasks,
 } from "@wormhole-foundation/connect-sdk";
-import { getCosmwasmSigner } from "@wormhole-foundation/connect-sdk-cosmwasm/src/testing";
 
-//import { getCosmwasmSigner } from "@wormhole-foundation/connect-sdk-cosmwasm/src/testing";
+// Importing from src so we dont have to rebuild to see debug stuff in signer
+import { getCosmwasmSigner } from "@wormhole-foundation/connect-sdk-cosmwasm/src/testing";
 import { getEvmSigner } from "@wormhole-foundation/connect-sdk-evm/src/testing";
 import { getSolanaSigner } from "@wormhole-foundation/connect-sdk-solana/src/testing";
-import { Network } from "@wormhole-foundation/sdk-base/src";
 
 // read in from `.env`
 require("dotenv").config();

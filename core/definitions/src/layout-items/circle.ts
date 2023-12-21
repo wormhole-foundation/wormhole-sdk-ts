@@ -1,6 +1,4 @@
-import { circle } from "@wormhole-foundation/sdk-base";
-import { UintLayoutItem } from "@wormhole-foundation/sdk-base/dist/cjs";
-import { CustomConversion } from "@wormhole-foundation/sdk-base/src";
+import { UintLayoutItem, CustomConversion, circle } from "@wormhole-foundation/sdk-base";
 
 export const circleDomainItem = {
   binary: "uint",

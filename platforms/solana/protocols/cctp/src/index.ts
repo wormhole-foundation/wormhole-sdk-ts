@@ -1,5 +1,6 @@
 import { registerProtocol } from '@wormhole-foundation/connect-sdk';
 import { SolanaCircleBridge } from './circleBridge';
+import { _platform } from '@wormhole-foundation/connect-sdk-solana';
 
 declare global {
   namespace WormholeNamespace {
@@ -9,7 +10,7 @@ declare global {
   }
 }
 
-registerProtocol('Solana', 'CircleBridge', SolanaCircleBridge);
+registerProtocol(_platform, 'CircleBridge', SolanaCircleBridge);
 
 import { TokenMessenger, TokenMessengerIdl } from './anchor-idl/tokenMessenger';
 import {
