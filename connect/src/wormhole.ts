@@ -370,7 +370,11 @@ export class Wormhole<N extends Network> {
     N extends Network,
     P extends Platform,
     C extends PlatformToChains<P>,
-  >(chain: ChainContext<N, P, C>, txid: TxHash, timeout?: number): Promise<WormholeMessageId[]> {
+  >(
+    chain: ChainContext<N, P, C>,
+    txid: TxHash,
+    timeout: number = DEFAULT_TASK_TIMEOUT,
+  ): Promise<WormholeMessageId[]> {
     const task = async () => {
       const msgs = await chain.parseTransaction(txid);
       // possible the node we hit does not have this data yet
@@ -387,8 +391,6 @@ export class Wormhole<N extends Network> {
     );
 
     if (!parsed) throw new Error(`No WormholeMessageId found for ${txid}`);
-    if (parsed.length != 1) throw new Error(`Expected a single VAA, got ${parsed.length}`);
-
     return parsed;
   }
 }
