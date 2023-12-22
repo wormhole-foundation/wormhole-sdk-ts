@@ -7,10 +7,9 @@ import {
 } from '@solana/web3.js';
 import {
   CircleAttestation,
-  CircleMessage,
+  CircleBridge,
   circle,
   encoding,
-  serializeCircleMessage,
 } from '@wormhole-foundation/connect-sdk';
 import { SolanaAddress } from '@wormhole-foundation/connect-sdk-solana';
 import { findProgramAddress } from '../accounts';
@@ -20,11 +19,11 @@ export async function createReceiveMessageInstruction(
   messageTransmitterProgramId: PublicKey,
   tokenMessengerProgramId: PublicKey,
   usdcAddress: PublicKey,
-  circleMessage: CircleMessage,
+  circleMessage: CircleBridge.Message,
   attestation: CircleAttestation,
   payer?: PublicKeyInitData,
 ) {
-  const messageBytes = Buffer.from(serializeCircleMessage(circleMessage));
+  const messageBytes = Buffer.from(CircleBridge.serialize(circleMessage));
   const attestationBytes = Buffer.from(encoding.hex.decode(attestation));
 
   const solanaUsdcAddress = new PublicKey(usdcAddress);

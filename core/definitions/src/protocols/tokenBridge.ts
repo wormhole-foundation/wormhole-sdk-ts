@@ -13,6 +13,7 @@ import {
   UniversalOrNative,
 } from "../address";
 import "../payloads/tokenBridge";
+import "../payloads/automaticTokenBridge";
 import { TokenId } from "../types";
 import { UnsignedTransaction } from "../unsignedTransaction";
 import { ProtocolPayload, ProtocolVAA, payloadDiscriminator } from "../vaa";
@@ -20,15 +21,58 @@ import { ProtocolPayload, ProtocolVAA, payloadDiscriminator } from "../vaa";
 export const ErrNotWrapped = (token: string) => new Error(`Token ${token} is not a wrapped asset`);
 
 export namespace TokenBridge {
-  export type VAA<PayloadName extends string> = ProtocolVAA<"TokenBridge", PayloadName>;
-  export type Payload<PayloadName extends string> = ProtocolPayload<"TokenBridge", PayloadName>;
+  const _protocol = "TokenBridge";
+  export type ProtocolName = typeof _protocol;
 
-  // export const transferPayloadNames = ["Transfer", "TransferWithPayload"] as const;
-  // export type TransferPayloadNames = typeof transferPayloadNames[number];
+  const _transferPayloads = ["Transfer", "TransferWithPayload"] as const;
+  const _attestPayloads = ["AttestMeta"] as const;
+  const _payloads = [..._transferPayloads, ..._attestPayloads] as const;
+
+  export type TransferPayloadNames = (typeof _transferPayloads)[number];
+  export type AttestPayloadNames = (typeof _attestPayloads)[number];
+  export type PayloadNames = (typeof _payloads)[number];
+
+  export type TransferVAA<PayloadName extends TransferPayloadNames = TransferPayloadNames> =
+    ProtocolVAA<ProtocolName, PayloadName>;
+  export type AttestVAA<PayloadName extends AttestPayloadNames = AttestPayloadNames> = ProtocolVAA<
+    ProtocolName,
+    PayloadName
+  >;
+  export type VAA<PayloadName extends PayloadNames = PayloadNames> = ProtocolVAA<
+    ProtocolName,
+    PayloadName
+  >;
+
+  export type TransfePayload<PayloadName extends TransferPayloadNames = TransferPayloadNames> =
+    ProtocolPayload<ProtocolName, PayloadName>;
+  export type AttestPayload<PayloadName extends AttestPayloadNames = AttestPayloadNames> =
+    ProtocolPayload<ProtocolName, PayloadName>;
+  export type Payload<PayloadName extends PayloadNames = PayloadNames> = ProtocolPayload<
+    ProtocolName,
+    PayloadName
+  >;
 
   export const getTransferDiscriminator = lazyInstantiate(() =>
-    payloadDiscriminator(["TokenBridge", ["Transfer", "TransferWithPayload"]]),
+    payloadDiscriminator([_protocol, _transferPayloads]),
   );
+}
+
+export namespace AutomaticTokenBridge {
+  const _protocol = "AutomaticTokenBridge";
+  export type ProtocolName = typeof _protocol;
+
+  const _payloads = ["TransferWithRelay"] as const;
+
+  export type PayloadNames = (typeof _payloads)[number];
+
+  export type VAA<PayloadName extends PayloadNames = PayloadNames> = ProtocolVAA<
+    ProtocolName,
+    PayloadName
+  >;
+  export type Payload<PayloadName extends PayloadNames = PayloadNames> = ProtocolPayload<
+    ProtocolName,
+    PayloadName
+  >;
 }
 
 export type TokenTransferDetails = {
@@ -64,7 +108,7 @@ export interface TokenBridge<N extends Network, P extends Platform, C extends Pl
   // Returns the address of the native version of this asset
   getWrappedAsset(foreignToken: TokenId<Chain>): Promise<NativeAddress<C>>;
   // Checks if a transfer VAA has been redeemed
-  isTransferCompleted(vaa: TokenBridge.VAA<"Transfer" | "TransferWithPayload">): Promise<boolean>;
+  isTransferCompleted(vaa: TokenBridge.TransferVAA): Promise<boolean>;
   // Create a Token Attestation VAA containing metadata about
   // the token that may be submitted to a Token bridge on another chain
   // to allow it to create a wrapped version of the token
@@ -75,7 +119,7 @@ export interface TokenBridge<N extends Network, P extends Platform, C extends Pl
   // Submit the Token Attestation VAA to the Token bridge
   // to create the wrapped token represented by the data in the VAA
   submitAttestation(
-    vaa: TokenBridge.VAA<"AttestMeta">,
+    vaa: TokenBridge.AttestVAA,
     payer?: UniversalOrNative<C>,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
   // Initiate a transfer of some token to another chain
@@ -89,7 +133,7 @@ export interface TokenBridge<N extends Network, P extends Platform, C extends Pl
   // Redeem a transfer VAA to receive the tokens on this chain
   redeem(
     sender: AccountAddress<C>,
-    vaa: TokenBridge.VAA<"Transfer" | "TransferWithPayload">,
+    vaa: TokenBridge.TransferVAA,
     unwrapNative?: boolean,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
 }
@@ -111,7 +155,7 @@ export interface AutomaticTokenBridge<
   // necessary to take over some stalled transfer
   redeem(
     sender: AccountAddress<C>,
-    vaa: TokenBridge.VAA<"TransferWithPayload">,
+    vaa: AutomaticTokenBridge.VAA,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
   // Fee charged to relay
   getRelayerFee(

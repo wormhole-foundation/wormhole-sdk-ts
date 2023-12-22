@@ -3,16 +3,13 @@ import {
   ChainAddress,
   ChainsConfig,
   CircleBridge,
-  CircleMessage,
   CircleTransferMessage,
   Contracts,
   Network,
   Platform,
   circle,
-  deserializeCircleMessage,
   encoding,
   nativeChainIds,
-  serializeCircleMessage,
 } from '@wormhole-foundation/connect-sdk';
 
 import { MessageTransmitter, TokenMessenger } from './ethers-contracts';
@@ -100,13 +97,13 @@ export class EvmCircleBridge<N extends Network, C extends EvmChains>
 
   async *redeem(
     sender: AccountAddress<C>,
-    message: CircleMessage,
+    message: CircleBridge.Message,
     attestation: string,
   ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
     const senderAddr = new EvmAddress(sender).toString();
 
     const txReq = await this.msgTransmitter.receiveMessage.populateTransaction(
-      serializeCircleMessage(message),
+      CircleBridge.serialize(message),
       encoding.hex.decode(attestation),
     );
 
@@ -192,7 +189,7 @@ export class EvmCircleBridge<N extends Network, C extends EvmChains>
 
     const [messageLog] = messageLogs;
     const { message } = messageLog!.args;
-    const [circleMsg, hash] = deserializeCircleMessage(
+    const [circleMsg, hash] = CircleBridge.deserialize(
       encoding.hex.decode(message),
     );
     const { payload: body } = circleMsg;

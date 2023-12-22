@@ -1,18 +1,17 @@
 import { Chain, Network, Platform, circle, encoding } from "@wormhole-foundation/sdk-base";
 import {
   AttestationId,
+  AutomaticCircleBridge,
   ChainContext,
   CircleAttestation,
-  CircleMessage,
+  CircleBridge,
   CircleMessageId,
   CircleTransferDetails,
-  ProtocolVAA,
   Signer,
   TransactionId,
   TxHash,
   UnsignedTransaction,
   WormholeMessageId,
-  deserializeCircleMessage,
   isCircleMessageId,
   isCircleTransferDetails,
   isTransactionIdentifier,
@@ -23,11 +22,6 @@ import { signSendWait } from "../common";
 import { DEFAULT_TASK_TIMEOUT } from "../config";
 import { Wormhole } from "../wormhole";
 import { TransferQuote, TransferState, WormholeTransfer } from "../wormholeTransfer";
-
-export type AutomaticCircleBridgeVAA<PayloadName extends string> = ProtocolVAA<
-  "AutomaticCircleBridge",
-  PayloadName
->;
 
 export class CircleTransfer<N extends Network = Network>
   implements WormholeTransfer<"CircleBridge" | "AutomaticCircleBridge">
@@ -46,14 +40,14 @@ export class CircleTransfer<N extends Network = Network>
   // Populated if !automatic and after initialized
   circleAttestations?: {
     id: CircleMessageId;
-    message: CircleMessage;
+    message: CircleBridge.Message;
     attestation?: CircleAttestation;
   }[];
 
   // Populated if automatic and after initialized
   vaas?: {
     id: WormholeMessageId;
-    vaa?: AutomaticCircleBridgeVAA<"TransferRelay">;
+    vaa?: AutomaticCircleBridge.VAA;
   }[];
 
   private constructor(wh: Wormhole<N>, transfer: CircleTransferDetails) {
@@ -132,7 +126,7 @@ export class CircleTransfer<N extends Network = Network>
         chain,
         wormholeRelayer,
       ).address.toUniversalAddress();
-      automatic = vaa.payloadName === "TransferRelay" && rcvAddress.equals(relayerAddress);
+      automatic = vaa.payloadName === "TransferWithRelay" && rcvAddress.equals(relayerAddress);
     }
 
     const details: CircleTransferDetails = {
@@ -154,7 +148,7 @@ export class CircleTransfer<N extends Network = Network>
     message: string,
     timeout: number,
   ): Promise<CircleTransfer<N>> {
-    const [msg, hash] = deserializeCircleMessage(encoding.hex.decode(message));
+    const [msg, hash] = CircleBridge.deserialize(encoding.hex.decode(message));
 
     const { payload: burnMessage } = msg;
     const xferSender = burnMessage.messageSender;
@@ -421,8 +415,12 @@ export class CircleTransfer<N extends Network = Network>
     wh: Wormhole<N>,
     wormholeMessageId: WormholeMessageId,
     timeout?: number,
-  ): Promise<AutomaticCircleBridgeVAA<"TransferRelay">> {
-    const vaa = await wh.getVaa(wormholeMessageId, "AutomaticCircleBridge:TransferRelay", timeout);
+  ): Promise<AutomaticCircleBridge.VAA> {
+    const vaa = await wh.getVaa(
+      wormholeMessageId,
+      "AutomaticCircleBridge:TransferWithRelay",
+      timeout,
+    );
     if (!vaa) throw new Error(`No VAA available after timeout exhausted`);
     return vaa;
   }

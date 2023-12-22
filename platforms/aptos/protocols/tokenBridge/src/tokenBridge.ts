@@ -121,9 +121,7 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
     return toNative(this.chain, assetFullyQualifiedType);
   }
 
-  async isTransferCompleted(
-    vaa: TokenBridge.VAA<"Transfer" | "TransferWithPayload">,
-  ): Promise<boolean> {
+  async isTransferCompleted(vaa: TokenBridge.TransferVAA): Promise<boolean> {
     const state = (
       await this.connection.getAccountResource(
         this.tokenBridgeAddress,
@@ -172,7 +170,7 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
   }
 
   async *submitAttestation(
-    vaa: TokenBridge.VAA<"AttestMeta">,
+    vaa: TokenBridge.AttestVAA,
     payer?: AnyAptosAddress,
   ): AsyncGenerator<AptosUnsignedTransaction<N, C>> {
     yield this.createUnsignedTx(
@@ -234,7 +232,7 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
 
   async *redeem(
     sender: AnyAptosAddress,
-    vaa: TokenBridge.VAA<"Transfer" | "TransferWithPayload">,
+    vaa: TokenBridge.TransferVAA,
     unwrapNative: boolean = true,
   ): AsyncGenerator<AptosUnsignedTransaction<N, C>> {
     const assetType =

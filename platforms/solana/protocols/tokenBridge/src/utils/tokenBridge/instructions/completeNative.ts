@@ -22,7 +22,7 @@ export function createCompleteTransferNativeInstruction(
   tokenBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: TokenBridge.VAA<'Transfer' | 'TransferWithPayload'>,
+  vaa: TokenBridge.TransferVAA,
   feeRecipient?: PublicKeyInitData,
 ): TransactionInstruction {
   const methods = createReadOnlyTokenBridgeProgramInterface(
@@ -67,7 +67,7 @@ export function getCompleteTransferNativeAccounts(
   tokenBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: TokenBridge.VAA<'Transfer' | 'TransferWithPayload'>,
+  vaa: TokenBridge.TransferVAA,
   feeRecipient?: PublicKeyInitData,
 ): CompleteTransferNativeAccounts {
   const mint = new PublicKey(vaa.payload.token.address.toUint8Array());

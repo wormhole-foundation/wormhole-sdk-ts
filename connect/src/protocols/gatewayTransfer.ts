@@ -70,7 +70,7 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
   // on the source chain (if it came from outside cosmos and if its been completed and finalized)
   vaas?: {
     id: WormholeMessageId;
-    vaa?: TokenBridge.VAA<"Transfer" | "TransferWithPayload">;
+    vaa?: TokenBridge.TransferVAA;
   }[];
 
   // Any transfers we do over ibc
@@ -522,7 +522,7 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
     wh: Wormhole<N>,
     whm: WormholeMessageId,
     timeout?: number,
-  ): Promise<TokenBridge.VAA<"Transfer" | "TransferWithPayload">> {
+  ): Promise<TokenBridge.TransferVAA> {
     const vaa = await wh.getVaa(whm, TokenBridge.getTransferDiscriminator(), timeout);
     if (!vaa) throw new Error(`No VAA Available: ${whm.chain}/${whm.emitter}/${whm.sequence}`);
     return vaa;

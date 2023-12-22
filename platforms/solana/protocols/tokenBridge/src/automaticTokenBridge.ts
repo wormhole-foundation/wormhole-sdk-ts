@@ -8,7 +8,6 @@ import {
   Contracts,
   Network,
   TokenAddress,
-  VAA,
   toChainId,
   toNative,
 } from '@wormhole-foundation/connect-sdk';
@@ -183,10 +182,7 @@ export class SolanaAutomaticTokenBridge<
     yield this.createUnsignedTx(transaction, 'AutomaticTokenBridge.Transfer');
   }
 
-  async *redeem(
-    sender: AccountAddress<C>,
-    vaa: VAA<'TokenBridge:TransferWithPayload'>,
-  ) {
+  async *redeem(sender: AccountAddress<C>, vaa: AutomaticTokenBridge.VAA) {
     const redeemTx = new Transaction();
     yield this.createUnsignedTx(redeemTx, 'AutomaticTokenBridge.Redeem');
     throw new Error('Method not implemented.');

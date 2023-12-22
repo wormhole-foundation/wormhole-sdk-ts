@@ -6,17 +6,17 @@ import {
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction,
 } from '@solana/web3.js';
-import { createReadOnlyTokenBridgeProgramInterface } from '../program';
-import { utils as CoreUtils } from '@wormhole-foundation/connect-sdk-solana-core';
+import { toChainId, VAA } from '@wormhole-foundation/connect-sdk';
 import { utils } from '@wormhole-foundation/connect-sdk-solana';
+import { utils as CoreUtils } from '@wormhole-foundation/connect-sdk-solana-core';
 import { deriveEndpointKey, deriveTokenBridgeConfigKey } from '../accounts';
-import { TokenBridge, toChainId } from '@wormhole-foundation/connect-sdk';
+import { createReadOnlyTokenBridgeProgramInterface } from '../program';
 
 export function createRegisterChainInstruction(
   tokenBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: TokenBridge.VAA<'RegisterChain'>,
+  vaa: VAA<'TokenBridge:RegisterChain'>,
 ): TransactionInstruction {
   const methods =
     createReadOnlyTokenBridgeProgramInterface(
@@ -53,7 +53,7 @@ export function getRegisterChainAccounts(
   tokenBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: TokenBridge.VAA<'RegisterChain'>,
+  vaa: VAA<'TokenBridge:RegisterChain'>,
 ): RegisterChainAccounts {
   return {
     payer: new PublicKey(payer),
@@ -80,7 +80,7 @@ export function createUpgradeContractInstruction(
   tokenBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: TokenBridge.VAA<'UpgradeContract'>,
+  vaa: VAA<'TokenBridge:UpgradeContract'>,
   spill?: PublicKeyInitData,
 ): TransactionInstruction {
   const methods =
@@ -123,7 +123,7 @@ export function getUpgradeContractAccounts(
   tokenBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: TokenBridge.VAA<'UpgradeContract'>,
+  vaa: VAA<'TokenBridge:UpgradeContract'>,
   spill?: PublicKeyInitData,
 ): UpgradeContractAccounts {
   return {

@@ -8,12 +8,6 @@ import {
   UnsignedTransaction,
 } from "../..";
 
-//export function mockTokenBridgeFactory(
-//  p: Platform,
-//): TokenBridge<Platform> {
-//  return new MockTokenBridge(p);
-//}
-
 export class MockTokenBridge<N extends Network, P extends Platform, C extends PlatformToChains<P>>
   implements TokenBridge<N, P, C>
 {
@@ -31,13 +25,13 @@ export class MockTokenBridge<N extends Network, P extends Platform, C extends Pl
   async getWrappedAsset(original: ChainAddress): Promise<NativeAddress<C>> {
     throw new Error("Method not implemented.");
   }
-  isTransferCompleted(vaa: TokenBridge.VAA<"Transfer" | "TransferWithPayload">): Promise<boolean> {
+  isTransferCompleted(vaa: TokenBridge.TransferVAA): Promise<boolean> {
     throw new Error("Method not implemented.");
   }
   createAttestation(address: TokenAddress<C>): AsyncGenerator<UnsignedTransaction<N, C>> {
     throw new Error("Method not implemented.");
   }
-  submitAttestation(vaa: TokenBridge.VAA<"AttestMeta">): AsyncGenerator<UnsignedTransaction<N, C>> {
+  submitAttestation(vaa: TokenBridge.AttestVAA): AsyncGenerator<UnsignedTransaction<N, C>> {
     throw new Error("Method not implemented.");
   }
   transfer(
@@ -51,7 +45,7 @@ export class MockTokenBridge<N extends Network, P extends Platform, C extends Pl
   }
   redeem(
     sender: TokenAddress<C>,
-    vaa: TokenBridge.VAA<"Transfer" | "TransferWithPayload">,
+    vaa: TokenBridge.TransferVAA,
     unwrapNative?: boolean | undefined,
   ): AsyncGenerator<UnsignedTransaction<N, C>> {
     throw new Error("Method not implemented.");

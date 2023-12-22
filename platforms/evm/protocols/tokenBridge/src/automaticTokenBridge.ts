@@ -7,7 +7,6 @@ import {
   NativeAddress,
   Network,
   TokenAddress,
-  TokenBridge,
   serialize,
   toNative,
 } from '@wormhole-foundation/connect-sdk';
@@ -28,7 +27,7 @@ import { ethers_contracts } from '.';
 import '@wormhole-foundation/connect-sdk-evm-core';
 
 export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
-  implements AutomaticTokenBridge<N, 'Evm', C>
+  implements AutomaticTokenBridge<N, EvmPlatformType, C>
 {
   readonly tokenBridgeRelayer: ethers_contracts.TokenBridgeRelayer;
   readonly tokenBridge: ethers_contracts.TokenBridgeContract;
@@ -73,7 +72,7 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
   }
   async *redeem(
     sender: AccountAddress<C>,
-    vaa: TokenBridge.VAA<'TransferWithPayload'>,
+    vaa: AutomaticTokenBridge.VAA,
   ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
     const senderAddr = new EvmAddress(sender).toString();
     const txReq =
