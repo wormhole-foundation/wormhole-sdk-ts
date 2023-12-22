@@ -135,7 +135,8 @@ export class TokenTransfer<N extends Network = Network>
 
     const { address, chain } = token;
     const decimals = await wh.getDecimals(token.chain, token.address);
-    const rescale = (amt: bigint, decimals: bigint) => amt * 10n ** (decimals - 8n);
+    const rescale = (amt: bigint, decimals: bigint) =>
+      decimals > 8 ? amt * 10n ** (decimals - 8n) : amt;
 
     const _amount = rescale(token.amount, decimals);
 
