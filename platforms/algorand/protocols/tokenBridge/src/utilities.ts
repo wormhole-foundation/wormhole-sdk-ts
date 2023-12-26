@@ -7,6 +7,7 @@ export function safeBigIntToNumber(b: bigint): number {
   return Number(b);
 }
 
+// TODO: Remove - VAA encoding/decoding can be done by the serialize/deserialize functions
 export function extract3(buffer: Uint8Array, start: number, size: number) {
   return buffer.slice(start, start + size);
 }
@@ -23,6 +24,7 @@ export function extract3(buffer: Uint8Array, start: number, size: number) {
 //   return uint8ArrayToHex(decodeAddress(s).publicKey);
 // }
 
+// TODO: If the string is a hex string, this can be replaced by bigname.decode()
 export function hexToNativeAssetBigIntAlgorand(s: string): bigint {
   return bytesToBigInt(hexToUint8Array(s));
 }
@@ -36,11 +38,13 @@ export const uint8ArrayToHex = (a: Uint8Array): string => {
   return Buffer.from(a).toString("hex");
 };
 
+// hex.decode
 export const hexToUint8Array = (h: string): Uint8Array => {
   if (h.startsWith("0x")) h = h.slice(2);
   return new Uint8Array(Buffer.from(h, "hex"));
 };
 
+// TODO
 export function textToHexString(name: string): string {
   return Buffer.from(name, "binary").toString("hex");
 }

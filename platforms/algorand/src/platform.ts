@@ -7,9 +7,9 @@ import {
   SignedTx,
   TokenId,
   TxHash,
+  Wormhole,
   chainToPlatform,
   decimals,
-  nativeChainAddress,
   nativeChainIds,
   networkPlatformConfigs,
 } from "@wormhole-foundation/connect-sdk";
@@ -19,7 +19,7 @@ import {
   bytesToBigInt,
   decodeSignedTransaction,
   waitForConfirmation,
-  modelsv2
+  modelsv2,
 } from "algosdk";
 import { AlgorandChain } from "./chain";
 import { AlgorandChains, AlgorandPlatformType, AnyAlgorandAddress, _platform } from "./types";
@@ -51,7 +51,7 @@ export class AlgorandPlatform<N extends Network> extends PlatformContext<N, Algo
   ): TokenId<C> {
     if (!AlgorandPlatform.isSupportedChain(chain))
       throw new Error(`invalid chain for ${_platform}: ${chain}`);
-    return nativeChainAddress(chain, AlgorandZeroAddress);
+    return Wormhole.chainAddress(chain, AlgorandZeroAddress);
   }
 
   static isNativeTokenId<N extends Network, C extends AlgorandChains>(
