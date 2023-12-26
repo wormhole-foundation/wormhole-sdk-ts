@@ -5,6 +5,7 @@ import {
   TokenId,
   TokenTransfer,
   Wormhole,
+  isTokenId,
   normalizeAmount,
 } from "@wormhole-foundation/connect-sdk";
 import { TransferStuff, getStuff, waitLog } from "./helpers";
@@ -23,11 +24,18 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform]);
 
   // Grab chain Contexts -- these hold a reference to a cached rpc client
-  const sendChain = wh.getChain("Solana");
-  const rcvChain = wh.getChain("Avalanche");
+  const sendChain = wh.getChain("Avalanche");
+  const rcvChain = wh.getChain("Solana");
 
   // shortcut to allow transferring native gas token
-  const token: TokenId | "native" = "native";
+  const token: TokenId<"Avalanche"> | "native" = "native";
+
+  // A TokenId is just a `{chain, address}` pair and an alias for ChainAddress
+  // The `address` field must be a parsed address.
+  // You can get a TokenId (or ChainAddress) prepared for you
+  // by calling the static `chainAddress` method on the Wormhole class.
+  // e.g.
+  // const token = Wormhole.chainAddress("Avalanche", "0xd00ae08403B9bbb9124bB305C09058E32C39A48c"); // TokenId<"Avalanche">
 
   // Normalized given token decimals later but can just pass bigints as base units
   // Note: The Token bridge will dedust past 8 decimals
@@ -41,7 +49,7 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   // of the token
   // On the destination side, a wrapped version of the token will be minted
   // to the address specified in the transfer VAA
-  const automatic = true;
+  const automatic = false;
 
   // The automatic relayer has the ability to deliver some native gas funds to the destination account
   // The amount specified for native gas will be swapped for the native gas token according
@@ -54,10 +62,9 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   const destination = await getStuff(rcvChain);
 
   // Used to normalize the amount to account for the tokens decimals
-  const decimals =
-    token === "native"
-      ? BigInt(sendChain.config.nativeTokenDecimals)
-      : await wh.getDecimals(sendChain.chain, token);
+  const decimals = isTokenId(token)
+    ? await wh.getDecimals(token.chain, token.address)
+    : BigInt(sendChain.config.nativeTokenDecimals);
 
   // Set this to the transfer txid of the initiating transaction to recover a token transfer
   // and attempt to fetch details about its progress.
@@ -84,8 +91,9 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
         txid: recoverTxid,
       });
 
+  const receipt = await waitLog(wh, xfer);
   // Log out the results
-  console.log(xfer);
+  console.log(receipt);
 })();
 
 async function tokenTransfer<N extends Network>(
@@ -115,17 +123,15 @@ async function tokenTransfer<N extends Network>(
     route.delivery?.nativeGas,
   );
 
-  if (xfer.transfer.automatic) {
-    const quote = await TokenTransfer.quoteTransfer(
-      route.source.chain,
-      route.destination.chain,
-      xfer.transfer,
-    );
-    console.log(quote);
+  const quote = await TokenTransfer.quoteTransfer(
+    route.source.chain,
+    route.destination.chain,
+    xfer.transfer,
+  );
+  console.log(quote);
 
-    if (quote.destinationToken.amount < 0)
-      throw "The amount requested is too low to cover the fee and any native gas requested.";
-  }
+  if (xfer.transfer.automatic && quote.destinationToken.amount < 0)
+    throw "The amount requested is too low to cover the fee and any native gas requested.";
 
   // 1) Submit the transactions to the source chain, passing a signer to sign any txns
   console.log("Starting transfer");
@@ -133,7 +139,7 @@ async function tokenTransfer<N extends Network>(
   console.log(`Started transfer: `, srcTxids);
 
   // If automatic, we're done
-  if (route.delivery?.automatic) return (await waitLog(xfer)) as TokenTransfer<N>;
+  if (route.delivery?.automatic) return xfer;
 
   // 2) wait for the VAA to be signed and ready (not required for auto transfer)
   console.log("Getting Attestation");
@@ -148,22 +154,11 @@ async function tokenTransfer<N extends Network>(
   // No need to send back, dip
   if (!roundTrip) return xfer;
 
-  // We can look up the destination asset for this transfer given the context of
-  // the sending chain and token and destination chain
-  const token = await TokenTransfer.lookupDestinationToken(
-    route.source.chain,
-    route.destination.chain,
-    xfer.transfer,
-  );
-  console.log(token);
-
-  // The wrapped token may have a different number of decimals
-  // to make things easy, lets just send the amount from the VAA back
-  const amount = xfer.vaas![0]!.vaa!.payload.token.amount;
+  const { destinationToken: token } = quote;
   return await tokenTransfer(wh, {
     ...route,
-    token,
-    amount,
+    token: token.token,
+    amount: token.amount,
     source: route.destination,
     destination: route.source,
   });

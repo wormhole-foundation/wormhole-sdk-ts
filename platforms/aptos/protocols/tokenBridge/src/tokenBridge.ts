@@ -109,7 +109,7 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
     return false;
   }
 
-  async getWrappedAsset(token: TokenId): Promise<NativeAddress<C>> {
+  async getWrappedAsset(token: TokenId) {
     const assetFullyQualifiedType = await this.getAssetFullyQualifiedType(token);
 
     // check to see if we can get origin info from asset address
@@ -119,7 +119,7 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
     );
 
     // if successful, we can just return the computed address
-    return toNative(this.chain, assetFullyQualifiedType);
+    return new AptosAddress(assetFullyQualifiedType);
   }
 
   async isTransferCompleted(
@@ -148,8 +148,8 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
     }
   }
 
-  async getWrappedNative(): Promise<NativeAddress<C>> {
-    return toNative(this.chain, APTOS_COIN);
+  async getWrappedNative() {
+    return new AptosAddress(APTOS_COIN);
   }
 
   async *createAttestation(
@@ -323,7 +323,7 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
   ): string {
     const data = serializeForeignAddressSeeds({
       chain: tokenId.chain,
-      tokenBridgeAddress: toNative(chain, tokenBridgeAddress).toUniversalAddress(),
+      tokenBridgeAddress: new AptosAddress(tokenBridgeAddress).toUniversalAddress(),
       tokenId: tokenId.address.toUniversalAddress(),
     });
     return encoding.hex.encode(sha3_256(data), true);

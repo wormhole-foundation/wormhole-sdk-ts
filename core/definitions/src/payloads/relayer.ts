@@ -13,12 +13,12 @@ import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../va
 const encodedExecutionInfoItem = {
   binary: "object",
   layout: [
-    { name: "size", binary: "uint", size: 4, custom: 3*32, omit: true },
+    { name: "size", binary: "uint", size: 4, custom: 3 * 32, omit: true },
     { name: "waste", binary: "uint", size: 31, custom: 0n, omit: true },
     { name: "version", binary: "uint", size: 1, custom: 0, omit: true },
     { name: "gasLimit", ...amountItem },
     { name: "targetChainRefundPerGasUnused", ...amountItem },
-  ]
+  ],
 } as const satisfies LayoutItem;
 
 const addressChainItem = {
@@ -47,8 +47,8 @@ const messageKeySwitchLayout = {
   idTag: "keyType",
   layouts: [
     [[1, "VAA"], vaaKeyLayout],
-    [[2, "CCTP"], cctpKeyLayout]
-  ]
+    [[2, "CCTP"], cctpKeyLayout],
+  ],
 } as const satisfies LayoutItem;
 
 const namedPayloads = [
@@ -85,7 +85,7 @@ const namedPayloads = [
 // factory registration:
 
 declare global {
-  namespace Wormhole {
+  namespace WormholeNamespace {
     interface PayloadLiteralToLayoutMapping
       extends RegisterPayloadTypes<"Relayer", typeof namedPayloads> {}
   }

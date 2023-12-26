@@ -1,4 +1,4 @@
-import { Chain, Network, Platform } from "@wormhole-foundation/sdk-base";
+import { PlatformToChains, Chain, Network, Platform } from "@wormhole-foundation/sdk-base";
 import {
   GatewayTransferMsg,
   GatewayTransferWithPayloadMsg,
@@ -14,7 +14,6 @@ import {
   isTransactionIdentifier,
 } from "@wormhole-foundation/sdk-definitions";
 import { DEFAULT_TASK_TIMEOUT } from "./config";
-import { PlatformToChains } from "@wormhole-foundation/sdk-base/src";
 
 // A task is a retryable function, it should return a Thing or null for a failure case
 // It should throw on a permanent failure instead of retrying
@@ -33,23 +32,30 @@ export async function retry<T>(
 
   let retries = 0;
   return new Promise<T | null>((resolve, reject) => {
-    const intervalId = setInterval(async () => {
-      if (retries >= maxRetries) {
-        clearInterval(intervalId);
-        resolve(null);
+    task().then((result) => {
+      if (result !== null) {
+        resolve(result);
         return;
       }
 
-      const result = await task();
-      if (result !== null) {
-        clearInterval(intervalId);
-        resolve(result);
-      } else if (title) {
-        console.log(`Retrying ${title}, attempt ${retries}/${maxRetries} `);
-      }
+      let intervalId = setInterval(async () => {
+        if (retries >= maxRetries) {
+          clearInterval(intervalId);
+          resolve(null);
+          return;
+        }
 
-      retries++;
-    }, interval);
+        const result = await task();
+        if (result !== null) {
+          clearInterval(intervalId);
+          resolve(result);
+        } else if (title) {
+          console.log(`Retrying ${title}, attempt ${retries}/${maxRetries} `);
+        }
+
+        retries++;
+      }, interval);
+    });
   });
 }
 

@@ -148,15 +148,14 @@ export class AptosPlatform<N extends Network> extends PlatformContext<N, AptosPl
     return Number(li.block_height);
   }
 
-  static chainFromChainId(genesisHash: string): [Network, AptosChains] {
+  static chainFromChainId(chainId: number): [Network, AptosChains] {
     const netChain = nativeChainIds.platformNativeChainIdToNetworkChain(
       AptosPlatform._platform,
-      //@ts-ignore
-      genesisHash,
+      BigInt(chainId),
     );
 
     if (!netChain)
-      throw new Error(`No matching genesis hash to determine network and chain: ${genesisHash}`);
+      throw new Error(`No matching chainId to determine network and chain: ${chainId}`);
 
     const [network, chain] = netChain;
     return [network, chain];
@@ -165,6 +164,6 @@ export class AptosPlatform<N extends Network> extends PlatformContext<N, AptosPl
   static async chainFromRpc(rpc: AptosClient): Promise<[Network, AptosChains]> {
     const conn = rpc as AptosClient;
     const ci = await conn.getChainId();
-    return this.chainFromChainId(ci.toString());
+    return this.chainFromChainId(ci);
   }
 }

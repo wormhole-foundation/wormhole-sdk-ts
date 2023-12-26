@@ -14,11 +14,8 @@ import {
   rpc,
   toChainId,
 } from "@wormhole-foundation/sdk-base";
-import { ChainAddress, NativeAddress, toNative } from "./address";
+import { ChainAddress } from "./address";
 import { Contracts, getContracts } from "./contracts";
-import { Signer, isSigner } from "./signer";
-
-import { UniversalAddress } from "./universalAddress";
 
 export type TxHash = string;
 export type SequenceId = bigint;
@@ -37,47 +34,8 @@ export type Balances = {
   [key: string]: bigint | null;
 };
 
-export function nativeChainAddress<C extends Chain>(
-  chain: C,
-  address: UniversalAddress | Uint8Array | string,
-): ChainAddress<C>;
-
-export function nativeChainAddress<C extends Chain>(
-  s: Signer<Network, C> | TokenId<C> | C,
-  a?: UniversalAddress | Uint8Array | string,
-): ChainAddress<C> {
-  let chain: C;
-  let address: NativeAddress<C>;
-
-  // its a chain address
-  if (a) {
-    // We might be passed a universal address as a string
-    // First try to decode it as native, otherwise try
-    // to decode it as universal and convert it to native
-    chain = s as C;
-    try {
-      address = toNative(chain, a);
-    } catch {
-      address = UniversalAddress.instanceof(a)
-        ? a.toNative(chain)
-        : new UniversalAddress(a).toNative(chain);
-    }
-  } else if (isSigner(s)) {
-    chain = s.chain();
-    address = toNative(s.chain(), s.address());
-  } else if (isTokenId(s)) {
-    // otherwise TokenId
-    chain = s.chain;
-    address = s.address.toNative(s.chain) as NativeAddress<C>;
-  } else {
-    throw new Error("Invalid nativeChainAddress parameters");
-  }
-
-  return { chain, address };
-}
-
 // Fully qualifier Transaction ID
-export type TransactionId = { chain: Chain; txid: TxHash };
+export type TransactionId<C extends Chain = Chain> = { chain: C; txid: TxHash };
 export function isTransactionIdentifier(thing: TransactionId | any): thing is TransactionId {
   return (<TransactionId>thing).chain !== undefined && (<TransactionId>thing).txid !== undefined;
 }

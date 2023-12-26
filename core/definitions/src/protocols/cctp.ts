@@ -7,6 +7,7 @@ import {
   PlatformToChains,
   deserializeLayout,
   encoding,
+  serializeLayout,
 } from "@wormhole-foundation/sdk-base";
 import { AccountAddress, ChainAddress } from "../address";
 import { CircleMessageId } from "../attestation";
@@ -51,12 +52,16 @@ export const circleMessageLayout = [
   { name: "payload", binary: "object", layout: circleBurnMessageLayout },
 ] as const satisfies Layout;
 
-export const deserializeCircleMessage = (
-  data: Uint8Array,
-): [LayoutToType<typeof circleMessageLayout>, string] => {
+export type CircleMessage = LayoutToType<typeof circleMessageLayout>;
+
+export const deserializeCircleMessage = (data: Uint8Array): [CircleMessage, string] => {
   const msg = deserializeLayout(circleMessageLayout, data);
   const messsageHash = encoding.hex.encode(keccak256(data), true);
   return [msg, messsageHash];
+};
+
+export const serializeCircleMessage = (msg: CircleMessage): Uint8Array => {
+  return serializeLayout(circleMessageLayout, msg);
 };
 
 export type CircleTransferMessage = {
@@ -64,8 +69,26 @@ export type CircleTransferMessage = {
   to: ChainAddress;
   token: TokenId;
   amount: bigint;
-  messageId: CircleMessageId;
+  message: CircleMessage;
+  id: CircleMessageId;
 };
+
+export type CircleTransferDetails = {
+  amount: bigint;
+  from: ChainAddress;
+  to: ChainAddress;
+  automatic?: boolean;
+  payload?: Uint8Array;
+  nativeGas?: bigint;
+};
+
+export function isCircleTransferDetails(thing: any): thing is CircleTransferDetails {
+  return (
+    (<CircleTransferDetails>thing).amount !== undefined &&
+    (<CircleTransferDetails>thing).from !== undefined &&
+    (<CircleTransferDetails>thing).to !== undefined
+  );
+}
 
 export interface AutomaticCircleBridge<
   N extends Network,
@@ -92,7 +115,7 @@ export interface CircleBridge<
 > {
   redeem(
     sender: AccountAddress<C>,
-    message: string,
+    message: CircleMessage,
     attestation: string,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
   transfer(

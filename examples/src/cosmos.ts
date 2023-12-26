@@ -1,11 +1,11 @@
 import {
+  Network,
   GatewayTransfer,
   GatewayTransferDetails,
   Platform,
   TokenId,
   Wormhole,
   normalizeAmount,
-  toNative,
 } from "@wormhole-foundation/connect-sdk";
 // Import the platform specific packages
 import { CosmwasmPlatform, CosmwasmPlatformType } from "@wormhole-foundation/connect-sdk-cosmwasm";
@@ -13,12 +13,11 @@ import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 
 import { TransferStuff, getStuff } from "./helpers";
 
+import "@wormhole-foundation/connect-sdk-cosmwasm-core";
+import "@wormhole-foundation/connect-sdk-cosmwasm-ibc";
+import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
 import "@wormhole-foundation/connect-sdk-evm-core";
 import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
-import "@wormhole-foundation/connect-sdk-cosmwasm-core";
-import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
-import "@wormhole-foundation/connect-sdk-cosmwasm-ibc";
-import { Network } from "@wormhole-foundation/sdk-base/src";
 
 // We're going to transfer into, around, and out of the Cosmos ecosystem
 // First on Avalanche, transparently through gateway and over IBC to Cosmoshub
@@ -64,7 +63,7 @@ import { Network } from "@wormhole-foundation/sdk-base/src";
         wh,
         {
           chain: external.chain,
-          txid: "0x7302c7bca282676a2ba19d7453b94c4c5b09f73b9be0c871dfccddfb012818cb",
+          txid: "0xb743ba030d731fe4a02a4f56cb3719fb83e8590f108ed78df67bfc7fdd4b61d6",
         },
         600_000,
       )
@@ -73,7 +72,7 @@ import { Network } from "@wormhole-foundation/sdk-base/src";
 
   const { denom } = route1.ibcTransfers![0]!.data;
   // Lookup the Gateway representation of the wrappd token
-  const cosmosTokenAddress = toNative("Wormchain", denom);
+  const cosmosTokenAddress = Wormhole.parseAddress("Wormchain", denom);
   //console.log("Wrapped Token: ", cosmosTokenAddress.toString());
 
   // Transfer Gateway factory tokens over IBC through gateway to another Cosmos chain

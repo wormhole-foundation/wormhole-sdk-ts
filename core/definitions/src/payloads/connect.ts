@@ -4,7 +4,7 @@ import {
   universalAddressItem,
   amountItem,
   circleDomainItem,
-  circleNonceItem
+  circleNonceItem,
 } from "../layout-items";
 import { RegisterPayloadTypes, NamedPayloads, registerPayloadTypes } from "../vaa";
 
@@ -32,18 +32,20 @@ const depositWithPayloadBase = [
 export const depositWithSizedLayoutPayload = <S extends number, L extends Layout>(
   byteSize: S,
   layout: L,
-) => [
-  ...depositWithPayloadBase,
-  { name: "payloadSize", binary: "uint", size: 2, custom: byteSize, omit: true },
-  { name: "payload", binary: "object", layout }
-] as const;
+) =>
+  [
+    ...depositWithPayloadBase,
+    { name: "payloadSize", binary: "uint", size: 2, custom: byteSize, omit: true },
+    { name: "payload", binary: "object", layout },
+  ] as const;
 
 export const depositWithBytesPayload = <C extends Pick<LengthPrefixedBytesLayoutItem, "custom">>(
-  customPayload: C
-) => [
-  ...depositWithPayloadBase,
-  { name: "payload", binary: "bytes", lengthSize: 2, ...customPayload }
-] as const;
+  customPayload: C,
+) =>
+  [
+    ...depositWithPayloadBase,
+    { name: "payload", binary: "bytes", lengthSize: 2, ...customPayload },
+  ] as const;
 
 //from here:
 //  https://github.com/wormhole-foundation/example-circle-relayer/blob/189becd8d3935decb17383bd2e61b4909cbddc89/evm/src/circle-relayer/CircleRelayerMessages.sol#L16
@@ -56,15 +58,15 @@ export const connectPayload = [
 
 export const namedPayloads = [
   ["DepositWithPayload", depositWithBytesPayload({})],
-  ["TransferRelay", depositWithSizedLayoutPayload(1+3*32, connectPayload)],
+  ["TransferRelay", depositWithSizedLayoutPayload(1 + 3 * 32, connectPayload)],
 ] as const satisfies NamedPayloads;
 
 // factory registration:
 
 declare global {
-  namespace Wormhole {
+  namespace WormholeNamespace {
     interface PayloadLiteralToLayoutMapping
-      extends RegisterPayloadTypes<"AutomaticCircleBridge", typeof namedPayloads> { }
+      extends RegisterPayloadTypes<"AutomaticCircleBridge", typeof namedPayloads> {}
   }
 }
 

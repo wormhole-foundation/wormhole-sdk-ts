@@ -1,31 +1,23 @@
 import {
+  Commitment,
   Connection,
   PublicKey,
-  Commitment,
   PublicKeyInitData,
 } from '@solana/web3.js';
+import { ChainId, toChainId } from '@wormhole-foundation/connect-sdk';
 import { utils } from '@wormhole-foundation/connect-sdk-solana';
-import {
-  ChainId,
-  toChainId,
-  toChain,
-  toNative,
-} from '@wormhole-foundation/connect-sdk';
 
 export function deriveWrappedMintKey(
   tokenBridgeProgramId: PublicKeyInitData,
   tokenChain: number | ChainId,
-  tokenAddress: Buffer | Uint8Array | string,
+  tokenAddress: Buffer | Uint8Array,
 ): PublicKey {
   if (tokenChain == toChainId('Solana')) {
     throw new Error(
       'tokenChain == CHAIN_ID_SOLANA does not have wrapped mint key',
     );
   }
-  if (typeof tokenAddress == 'string') {
-    const parsedAddress = toNative(toChain(tokenChain), tokenAddress);
-    tokenAddress = parsedAddress.toUint8Array();
-  }
+
   return utils.deriveAddress(
     [
       Buffer.from('wrapped'),

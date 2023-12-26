@@ -17,6 +17,7 @@ import {
   Chain,
   Platform,
   nativeChainIds,
+  toNative,
 } from '@wormhole-foundation/connect-sdk';
 import { Provider, TransactionRequest } from 'ethers';
 
@@ -174,7 +175,7 @@ export class EvmTokenBridge<N extends Network, C extends EvmChains>
     amount: bigint,
     payload?: Uint8Array,
   ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
-    const senderAddr = sender.toNative(this.chain).toString();
+    const senderAddr = new EvmAddress(sender).toString();
     const recipientChainId = toChainId(recipient.chain);
     const recipientAddress = recipient.address
       .toUniversalAddress()
@@ -204,7 +205,7 @@ export class EvmTokenBridge<N extends Network, C extends EvmChains>
       );
     } else {
       //TODO check for ERC-2612 (permit) support on token?
-      const tokenAddr = token.toNative(this.chain).toString();
+      const tokenAddr = new EvmAddress(token).toString();
       const tokenContract = EvmPlatform.getTokenImplementation(
         this.provider,
         tokenAddr,
@@ -254,12 +255,12 @@ export class EvmTokenBridge<N extends Network, C extends EvmChains>
     vaa: TokenBridge.VAA<'Transfer' | 'TransferWithPayload'>,
     unwrapNative: boolean = true,
   ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
-    const senderAddr = sender.toNative(this.chain).toString();
+    const senderAddr = new EvmAddress(sender).toString();
     if (
       vaa.payloadName === 'TransferWithPayload' &&
       vaa.payload.token.chain !== this.chain
     ) {
-      const fromAddr = vaa.payload.from.toNative(this.chain).unwrap();
+      const fromAddr = new EvmAddress(vaa.payload.from).unwrap();
       if (fromAddr !== senderAddr)
         throw new Error(
           `VAA.from (${fromAddr}) does not match sender (${senderAddr})`,
@@ -267,7 +268,7 @@ export class EvmTokenBridge<N extends Network, C extends EvmChains>
     }
 
     const wrappedNativeAddr = await this.tokenBridge.WETH();
-    const tokenAddr = vaa.payload.token.address.toNative(this.chain).unwrap();
+    const tokenAddr = new EvmAddress(vaa.payload.token.address).unwrap();
     if (tokenAddr === wrappedNativeAddr && unwrapNative) {
       const txReq =
         await this.tokenBridge.completeTransferAndUnwrapETH.populateTransaction(
@@ -288,9 +289,9 @@ export class EvmTokenBridge<N extends Network, C extends EvmChains>
     }
   }
 
-  async getWrappedNative(): Promise<NativeAddress<C>> {
+  async getWrappedNative() {
     const address = await this.tokenBridge.WETH();
-    return new EvmAddress(address) as NativeAddress<C>;
+    return toNative(this.chain, address);
   }
 
   private createUnsignedTx(

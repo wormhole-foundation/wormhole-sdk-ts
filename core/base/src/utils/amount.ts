@@ -13,16 +13,16 @@ export function normalizeAmount(amount: number | string, decimals: bigint): bigi
   // punting
   if (amount.includes("e")) throw new Error(`Exponential detected:  ${amount}`);
 
-  // If its a whole number, just add a decimal place to normalize
-  if (!amount.includes(".")) amount += ".0";
+  // some slightly sketchy string manip
 
-  // some slightly sketchy
-  let [whole, partial] = amount.split(".");
+  const chunks = amount.split(".");
+  if (chunks.length > 2) throw "Too many decimals";
+
+  const [whole, partial] =
+    chunks.length === 0 ? ["0", ""] : chunks.length === 1 ? [chunks[0], ""] : chunks;
+
   if (partial && partial.length > decimals)
     throw new Error(`Overspecified decimal amount: ${partial.length} > ${decimals}`);
-
-  if (!whole) whole = "0";
-  if (!partial) partial = "0";
 
   // combine whole and partial without decimals
   const amt = BigInt(whole + partial);

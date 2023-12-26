@@ -36,7 +36,7 @@ describe("Wormhole Tests", () => {
     const chain = "Ethereum";
     const address = testing.utils.makeNativeAddress(chain);
 
-    const result = wh.parseAddress(chain, address.toString());
+    const result = Wormhole.parseAddress(chain, address.toString());
     expect(result).toBeTruthy();
   });
 

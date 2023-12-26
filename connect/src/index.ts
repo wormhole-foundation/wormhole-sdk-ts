@@ -1,5 +1,4 @@
 export * from "./wormhole";
-export * from "./types";
 export * from "./config";
 export * from "./wormholeTransfer";
 export * from "./common";

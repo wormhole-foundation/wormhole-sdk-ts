@@ -4,10 +4,12 @@ import {
   ChainAddress,
   ChainsConfig,
   Contracts,
+  NativeAddress,
   Network,
   TokenAddress,
   TokenBridge,
   serialize,
+  toNative,
 } from '@wormhole-foundation/connect-sdk';
 import {
   EvmAddress,
@@ -73,7 +75,7 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
     sender: AccountAddress<C>,
     vaa: TokenBridge.VAA<'TransferWithPayload'>,
   ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
-    const senderAddr = sender.toNative(this.chain).toString();
+    const senderAddr = new EvmAddress(sender).toString();
     const txReq =
       await this.tokenBridgeRelayer.completeTransferWithRelay.populateTransaction(
         serialize(vaa),
@@ -111,7 +113,7 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
     amount: bigint,
     nativeGas?: bigint,
   ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
-    const senderAddr = sender.toNative(this.chain).toString();
+    const senderAddr = new EvmAddress(sender).toString();
     const recipientChainId = toChainId(recipient.chain);
 
     const recipientAddress = recipient.address
@@ -136,7 +138,7 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
       );
     } else {
       //TODO check for ERC-2612 (permit) support on token?
-      const tokenAddr = token.toNative(this.chain).toString();
+      const tokenAddr = new EvmAddress(token).toString();
 
       const tokenContract = EvmPlatform.getTokenImplementation(
         this.provider,
@@ -222,6 +224,19 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
         ? await this.tokenBridge.WETH()
         : new EvmAddress(token).toString();
     return this.tokenBridgeRelayer.maxNativeSwapAmount(address);
+  }
+
+  async getRegisteredTokens(): Promise<NativeAddress<C>[]> {
+    const tokens = await this.tokenBridgeRelayer.getAcceptedTokensList();
+    return tokens.map((address) => toNative(this.chain, address));
+  }
+
+  async isRegisteredToken(token: TokenAddress<C>): Promise<boolean> {
+    const address =
+      token === 'native'
+        ? await this.tokenBridge.WETH()
+        : new EvmAddress(token).toString();
+    return await this.tokenBridgeRelayer.isAcceptedToken(address);
   }
 
   private createUnsignedTx(

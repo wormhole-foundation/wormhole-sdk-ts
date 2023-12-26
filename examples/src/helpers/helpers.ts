@@ -1,22 +1,23 @@
 import {
+  Network,
   ChainAddress,
   ChainContext,
   Platform,
   PlatformToChains,
   Signer,
+  TokenTransfer,
   TransferState,
   TxHash,
-  WormholeTransfer,
+  Wormhole,
   api,
-  nativeChainAddress,
   tasks,
 } from "@wormhole-foundation/connect-sdk";
-import { getCosmwasmSigner } from "@wormhole-foundation/connect-sdk-cosmwasm/src/testing";
+// import { getCosmwasmSigner } from "@wormhole-foundation/connect-sdk-cosmwasm/src/testing";
 
 //import { getCosmwasmSigner } from "@wormhole-foundation/connect-sdk-cosmwasm/src/testing";
+import { getAlgorandSigner } from "@wormhole-foundation/connect-sdk-algorand/src/testing";
 import { getEvmSigner } from "@wormhole-foundation/connect-sdk-evm/src/testing";
 import { getSolanaSigner } from "@wormhole-foundation/connect-sdk-solana/src/testing";
-import { Network } from "@wormhole-foundation/sdk-base/src";
 
 // read in from `.env`
 require("dotenv").config();
@@ -50,12 +51,15 @@ export async function getStuff<
   let signer: Signer;
   const platform = chain.platform.utils()._platform;
   switch (platform) {
+    case "Algorand":
+      signer = await getAlgorandSigner(await chain.getRpc(), getEnv("ALGORAND_MNEMONIC"));
+      break;
     case "Solana":
       signer = await getSolanaSigner(await chain.getRpc(), getEnv("SOL_PRIVATE_KEY"));
       break;
-    case "Cosmwasm":
-      signer = await getCosmwasmSigner(await chain.getRpc(), getEnv("COSMOS_MNEMONIC"));
-      break;
+    // case "Cosmwasm":
+    //   signer = await getCosmwasmSigner(await chain.getRpc(), getEnv("COSMOS_MNEMONIC"));
+    //   break;
     case "Evm":
       signer = await getEvmSigner(await chain.getRpc(), getEnv("ETH_PRIVATE_KEY"));
       break;
@@ -66,17 +70,16 @@ export async function getStuff<
   return {
     chain,
     signer: signer as Signer<N, C>,
-    address: nativeChainAddress(chain.chain, signer.address()),
+    address: Wormhole.chainAddress(chain.chain, signer.address()),
   };
 }
 
-export async function waitLog(xfer: WormholeTransfer): Promise<WormholeTransfer> {
-  console.log("Checking for complete status");
-  while ((await xfer.getTransferState()) < TransferState.Completed) {
-    console.log("Not yet...");
-    await new Promise((f) => setTimeout(f, 5000));
-  }
-  return xfer;
+export async function waitLog(wh: Wormhole<Network>, xfer: TokenTransfer) {
+  const it = TokenTransfer.track(wh, xfer);
+  let res;
+  for (res = await it.next(); !res.done; res = await it.next())
+    console.log("Current Transfer State: ", TransferState[res.value as TransferState]);
+  return res.value;
 }
 
 // Note: This API may change but it is currently the best place to pull

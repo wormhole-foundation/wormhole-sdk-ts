@@ -1,17 +1,18 @@
 import {
   CircleTransfer,
   Network,
+  Platform,
   Signer,
   TransactionId,
   Wormhole,
   normalizeAmount,
-  Platform,
 } from "@wormhole-foundation/connect-sdk";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
+import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 import { TransferStuff, getStuff, waitForRelay } from "./helpers";
 
 import "@wormhole-foundation/connect-sdk-evm-cctp";
-import "@wormhole-foundation/connect-sdk-evm-core";
+import "@wormhole-foundation/connect-sdk-solana-cctp";
 
 /*
 Notes:
@@ -23,44 +24,45 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
 (async function () {
   // init Wormhole object, passing config for which network
   // to use (e.g. Mainnet/Testnet) and what Platforms to support
-  const wh = new Wormhole("Testnet", [EvmPlatform]);
+  const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform]);
 
   // Grab chain Contexts
-  const sendChain = wh.getChain("Avalanche");
-  const rcvChain = wh.getChain("Optimism");
+  const sendChain = wh.getChain("Solana");
+  const rcvChain = wh.getChain("Avalanche");
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
   const source = await getStuff(sendChain);
   const destination = await getStuff(rcvChain);
 
-  // 6 decimals for USDC (mostly?)
+  // 6 decimals for USDC (except for bsc, so check decimals before using this)
   const amount = normalizeAmount("0.01", 6n);
 
-  // Manual Circle USDC CCTP Transfer
-  // await cctpTransfer(wh, amount, source, destination, false);
+  // Choose whether or not to have the attestation delivered for you
+  const automatic = false;
 
-  // Automatic Circle USDC CCTP Transfer
-  const fee = await sendChain
-    .getAutomaticCircleBridge()
-    .then((acb) => acb.getRelayerFee(rcvChain.chain));
+  // If the transfer is requested to be automatic, you can also request that
+  // during redemption, the receiver gets some amount of native gas transferred to them
+  // so that they may pay for subsequent transactions
+  // The amount specified here is denominated in the token being transferred (USDC here)
+  const _nativeGasAmt = "0.01";
+  const nativeGas = automatic ? normalizeAmount(_nativeGasAmt, 6n) : 0n;
 
-  await cctpTransfer(wh, amount + fee, source, destination, true);
-
-  // Automatic Circle USDC CCTP Transfer With Gas Dropoff
-  // const nativeGasAmt = 1_000_000n
-  // await cctpTransfer(wh, amount + fee, source, destination, true, nativeGasAmt);
+  await cctpTransfer(wh, source, destination, {
+    amount,
+    automatic,
+    nativeGas,
+  });
 
   // Note: you can pick up a partial transfer from the origin chain name and txid
   // once created, you can call `fetchAttestations` and `completeTransfer` assuming its a manual transfer.
   // This is especially helpful for chains with longer time to finality where you don't want
   // to have to wait for the attestation to be generated.
-
   // await completeTransfer(
   //   wh,
   //   {
-  //     chain: "Optimism",
-  //     txid: "0x3c0d774218efefdd274a09972475cb016fc4f13525b1bba59c56c87fe7f6f964",
+  //     chain: sendChain.chain,
+  //     txid: "0xfe374b6e3ea032c05eb244e5c310047bc779f5cc389a2a0e3fccbf07fb2ae8a2",
   //   },
   //   destination.signer,
   // );
@@ -68,27 +70,36 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
 
 async function cctpTransfer<N extends Network>(
   wh: Wormhole<N>,
-  amount: bigint,
   src: TransferStuff<N, Platform>,
   dst: TransferStuff<N, Platform>,
-  automatic: boolean,
-  nativeGas?: bigint,
+  req: {
+    amount: bigint;
+    automatic: boolean;
+    nativeGas?: bigint;
+  },
 ) {
   const xfer = await wh.circleTransfer(
-    amount,
+    req.amount,
     src.address,
     dst.address,
-    automatic,
+    req.automatic,
     undefined,
-    nativeGas,
+    req.nativeGas,
   );
   console.log(xfer);
+
+  // Note, if the transfer is requested to be Automatic, a fee for performing the relay
+  // will be present in the quote. The fee comes out of the amount requested to be sent.
+  // If the user wants to receive 1.0 on the destination, the amount to send should be 1.0 + fee.
+  // The same applies for native gas dropoff
+  const quote = await CircleTransfer.quoteTransfer(src.chain, dst.chain, xfer.transfer);
+  console.log("Quote", quote);
 
   console.log("Starting Transfer");
   const srcTxids = await xfer.initiateTransfer(src.signer);
   console.log(`Started Transfer: `, srcTxids);
 
-  if (automatic) {
+  if (req.automatic) {
     const relayStatus = await waitForRelay(srcTxids[srcTxids.length - 1]!);
     console.log(`Finished relay: `, relayStatus);
     return;

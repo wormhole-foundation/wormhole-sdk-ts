@@ -6,17 +6,18 @@ import {
   signSendWait,
 } from "@wormhole-foundation/connect-sdk";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
+import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 
-import "@wormhole-foundation/connect-sdk-evm-core";
 import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
+import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 
 import { getStuff } from "./helpers";
 
 (async function () {
   // Setup
-  const wh = new Wormhole("Testnet", [EvmPlatform]);
-  const snd = wh.getChain("Avalanche");
-  const rcv = wh.getChain("Ethereum");
+  const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform]);
+  const snd = wh.getChain("Sepolia");
+  const rcv = wh.getChain("Solana");
 
   // get signers from local config
   const sender = await getStuff(snd);

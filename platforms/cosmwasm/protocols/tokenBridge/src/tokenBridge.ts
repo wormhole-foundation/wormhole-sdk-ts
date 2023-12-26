@@ -8,7 +8,6 @@ import {
   Network,
   TokenBridge,
   TokenId,
-  TokenTransferTransaction,
   TxHash,
   UniversalAddress,
   encoding,
@@ -290,7 +289,7 @@ export class CosmwasmTokenBridge<N extends Network, C extends CosmwasmChains>
 
     const toTranslator =
       this.translator &&
-      toNative(this.chain, this.translator).toUniversalAddress().equals(vaa.payload.to.address);
+      new CosmwasmAddress(this.translator).toUniversalAddress().equals(vaa.payload.to.address);
 
     const msg = toTranslator
       ? buildExecuteMsg(senderAddress, this.translator!, {
@@ -313,7 +312,7 @@ export class CosmwasmTokenBridge<N extends Network, C extends CosmwasmChains>
     return;
   }
 
-  async parseTransactionDetails(txid: TxHash): Promise<TokenTransferTransaction[]> {
+  async parseTransactionDetails(txid: TxHash) {
     throw new Error("Not implemented");
   }
 

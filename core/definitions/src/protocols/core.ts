@@ -1,10 +1,10 @@
-import { Network, Platform } from "@wormhole-foundation/sdk-base";
-import { PlatformToChains } from "@wormhole-foundation/sdk-base/src";
+import { PlatformToChains, Network, Platform } from "@wormhole-foundation/sdk-base";
 import { AccountAddress } from "../address";
 import { WormholeMessageId } from "../attestation";
 import { TxHash } from "../types";
 import { UnsignedTransaction } from "../unsignedTransaction";
 import { VAA } from "../vaa";
+
 export interface WormholeCore<
   N extends Network,
   P extends Platform,

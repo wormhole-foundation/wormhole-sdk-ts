@@ -1,16 +1,25 @@
-import { Chain } from "@wormhole-foundation/sdk-base";
+import { Chain, ProtocolName } from "@wormhole-foundation/sdk-base";
 import { SequenceId } from "./types";
 import { UniversalAddress } from "./universalAddress";
 import { VAA } from "./vaa";
 
-// Wormhole Message Identifier
-// used to fetch a VAA
+// Could be VAA or Circle or ..?
+export type AttestationId<PN extends ProtocolName = ProtocolName> = PN extends
+  | "TokenBridge"
+  | "AutomaticTokenBridge"
+  ? WormholeMessageId
+  : PN extends "CircleBridge" | "AutomaticCircleBridge"
+  ? CircleMessageId
+  : PN extends "IbcBridge"
+  ? IbcMessageId
+  : never;
+
+// Wormhole Message Identifier used to fetch a VAA
+// Possibly with a VAA already set
 export type WormholeMessageId = {
   chain: Chain;
   emitter: UniversalAddress;
   sequence: SequenceId;
-  // TODO
-  vaa?: VAA;
 };
 export function isWormholeMessageId(thing: WormholeMessageId | any): thing is WormholeMessageId {
   return (
@@ -25,13 +34,10 @@ export type getWormholeAttestation = (id: WormholeMessageId) => Promise<VAA>;
 // Circle Message Identifier
 // Used to fetch a Circle attestation
 export type CircleMessageId = {
-  message: string;
   hash: string;
 };
 export function isCircleMessageId(thing: CircleMessageId | any): thing is CircleMessageId {
-  return (
-    (<CircleMessageId>thing).message !== undefined && (<CircleMessageId>thing).hash !== undefined
-  );
+  return (<CircleMessageId>thing).hash !== undefined;
 }
 
 // Raw payload from circle

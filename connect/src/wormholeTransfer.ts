@@ -1,24 +1,57 @@
 import {
-  CircleMessageId,
-  IbcMessageId,
+  Chain,
+  Network,
+  Platform,
+  PlatformToChains,
+  ProtocolName,
+} from "@wormhole-foundation/sdk-base";
+import {
+  ChainContext,
+  CircleTransferDetails,
+  GatewayTransferDetails,
   Signer,
   TokenId,
+  TokenTransferDetails,
+  TransactionId,
   TxHash,
-  WormholeMessageId,
+  VAA,
+  AttestationId,
 } from "@wormhole-foundation/sdk-definitions";
+import { Wormhole } from "./wormhole";
 
-// Could be VAA or Circle or ..?
-export type AttestationId = WormholeMessageId | CircleMessageId | IbcMessageId;
+export type TransferRequest<PN extends ProtocolName = ProtocolName> = PN extends
+  | "TokenBridge"
+  | "AutomaticTokenBridge"
+  ? TokenTransferDetails
+  : PN extends "CircleBridge" | "AutomaticCircleBridge"
+  ? CircleTransferDetails
+  : PN extends "IbcBridge"
+  ? GatewayTransferDetails
+  : never;
 
 // Transfer state machine states
 export enum TransferState {
   Failed = -1,
   Created = 1, // Will be set after the TokenTransfer object is created
-  Initiated, // Will be set after source chain transactions are submitted
+  SourceInitiated, // Will be set after source chain transactions are submitted
+  SourceFinalized, // Will be set after source chain transactions are finalized
   Attested, // Will be set after VAA  or Circle Attestation is available
-  Completed, // Will be set after Attestation is submitted to destination chain
-  Finalized, // Will be set after the transaction is finalized on the destination chain
+  DestinationInitiated, // Will be set after Attestation is submitted to destination chain
+  DestinationFinalized, // Will be set after the transaction is finalized on the destination chain
 }
+
+export type TransferReceipt<
+  PN extends ProtocolName,
+  SC extends Chain = Chain,
+  DC extends Chain = Chain,
+> = {
+  state: TransferState;
+  from: SC;
+  to: DC;
+  originTxs: TransactionId<SC>[];
+  destinationTxs: TransactionId<DC>[];
+  attestation?: AttestationId<PN>;
+};
 
 // Quote with optional relayer fees if the transfer
 // is requested to be automatic
@@ -48,12 +81,31 @@ export type TransferQuote = {
   destinationNativeGas?: bigint;
 };
 
+// Static methods on the Transfer protocol types
+export interface TransferProtocol<PN extends ProtocolName> {
+  isTransferComplete<N extends Network, P extends Platform, C extends PlatformToChains<P>>(
+    toChain: ChainContext<N, P, C>,
+    vaa: VAA,
+  ): Promise<boolean>;
+  isAutomatic<N extends Network>(wh: Wormhole<N>, vaa: VAA): boolean;
+  //validateTransfer<N extends Network>(wh: Wormhole<N>, transfer: )
+  quoteTransfer(xfer: WormholeTransfer<PN>): Promise<TransferQuote>;
+  getReceipt(xfer: WormholeTransfer<PN>): TransferReceipt<PN>;
+  track<N extends Network>(
+    wh: Wormhole<N>,
+    xfer: WormholeTransfer<PN>,
+    timeout: number,
+  ): AsyncGenerator<TransferState, TransferReceipt<PN>, unknown>;
+}
+
 // WormholeTransfer abstracts the process and state transitions
 // for things like TokenTransfers, NFTTransfers, Circle (with VAA), etc...
-export interface WormholeTransfer {
+export interface WormholeTransfer<PN extends ProtocolName> {
+  transfer: TransferRequest<PN>;
+
   // may reach out to an external service to get the transfer state
   // return the state of this transfer
-  getTransferState(): Promise<TransferState>;
+  getTransferState(): TransferState;
 
   // Initiate the WormholeTransfer by submitting transactions to the source chain
   // returns an array transaction hashes

@@ -7,9 +7,9 @@ import {
   SignedTx,
   TokenId,
   TxHash,
+  Wormhole,
   chainToPlatform,
   decimals,
-  nativeChainAddress,
   nativeChainIds,
   networkPlatformConfigs,
 } from '@wormhole-foundation/connect-sdk';
@@ -70,7 +70,7 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
   ): TokenId<C> {
     if (!SolanaPlatform.isSupportedChain(chain))
       throw new Error(`invalid chain: ${chain}`);
-    return nativeChainAddress(chain, SolanaZeroAddress);
+    return Wormhole.chainAddress(chain, SolanaZeroAddress);
   }
 
   static isNativeTokenId<N extends Network, C extends SolanaChains>(
@@ -199,7 +199,6 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
   static chainFromChainId(genesisHash: string): [Network, SolanaChains] {
     const netChain = nativeChainIds.platformNativeChainIdToNetworkChain(
       SolanaPlatform._platform,
-      // @ts-ignore
       genesisHash,
     );
 

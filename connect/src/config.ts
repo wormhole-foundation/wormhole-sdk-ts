@@ -1,11 +1,16 @@
 import { Network, circle, Platform } from "@wormhole-foundation/sdk-base";
-import { WormholeConfig } from "./types";
 import { buildConfig, ChainsConfig } from "@wormhole-foundation/sdk-definitions";
 
 export const DEFAULT_TASK_TIMEOUT = 60 * 1000; // 1 minute in milliseconds
 
 export const CIRCLE_RETRY_INTERVAL = 2000;
 export const WHSCAN_RETRY_INTERVAL = 2000;
+
+export type WormholeConfig<N extends Network = Network, P extends Platform = Platform> = {
+  api: string;
+  circleAPI: string;
+  chains: ChainsConfig<N, P>;
+};
 
 export const CONFIG = {
   Mainnet: {

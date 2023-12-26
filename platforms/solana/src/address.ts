@@ -9,20 +9,13 @@ import {
 import { PublicKey } from '@solana/web3.js';
 import { AnySolanaAddress, _platform } from './types';
 
-declare global {
-  namespace Wormhole {
-    interface PlatformToNativeAddressMapping {
-      // @ts-ignore
-      Solana: SolanaAddress;
-    }
-  }
-}
-
 export const SolanaZeroAddress = '11111111111111111111111111111111';
 
 export class SolanaAddress implements Address {
   static readonly byteSize = 32;
   static readonly platform: Platform = _platform;
+
+  readonly type: string = 'Native';
 
   private readonly address: PublicKey;
 
@@ -68,4 +61,15 @@ export class SolanaAddress implements Address {
   }
 }
 
-registerNative('Solana', SolanaAddress);
+// This is required to make `type Z = NativeAddress<"Solana">;` resolve to SolanaAddress
+// but outside this module it does _not_ resolve correctly
+declare global {
+  namespace WormholeNamespace {
+    export interface PlatformToNativeAddressMapping {
+      // @ts-ignore
+      Solana: SolanaAddress;
+    }
+  }
+}
+
+registerNative(_platform, SolanaAddress);

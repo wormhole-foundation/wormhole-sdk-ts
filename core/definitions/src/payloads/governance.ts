@@ -8,11 +8,7 @@ import {
   RoArray,
 } from "@wormhole-foundation/sdk-base";
 
-import {
-  chainItem,
-  universalAddressItem,
-  guardianSetItem,
-} from "../layout-items";
+import { chainItem, universalAddressItem, guardianSetItem } from "../layout-items";
 import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../vaa";
 
 //One thing that's not captured by the payload itself is the fact that governance VAAs should
@@ -105,19 +101,17 @@ const actionTuples = [
         { name: "emitterChain", ...chainItem() },
         { name: "emitterAddress", ...universalAddressItem },
         { name: "domain", binary: "uint", size: 4 },
-      ]
-    }
+      ],
+    },
   ],
   [
     "UpdateFinality",
     {
       allowNull: false,
-      layout: [{ name: "finality", binary: "uint", size: 1 }]
-    }
+      layout: [{ name: "finality", binary: "uint", size: 1 }],
+    },
   ],
-] as const satisfies RoArray<
-  readonly [string, { allowNull: boolean; layout: Layout }]
->;
+] as const satisfies RoArray<readonly [string, { allowNull: boolean; layout: Layout }]>;
 
 const actions = column(actionTuples, 0);
 type Action = (typeof actions)[number];
@@ -132,43 +126,36 @@ const sdkProtocolNameAndGovernanceVaaModuleEntries = [
   ["CircleBridge", "CircleIntegration"],
 ] as const satisfies RoArray<readonly [ProtocolName, string]>;
 
-type GovernedProtocols = typeof sdkProtocolNameAndGovernanceVaaModuleEntries[number][0];
+type GovernedProtocols = (typeof sdkProtocolNameAndGovernanceVaaModuleEntries)[number][0];
 
 const sdkProtocolNameToGovernanceVaaModuleMapping = constMap(
-  sdkProtocolNameAndGovernanceVaaModuleEntries
+  sdkProtocolNameAndGovernanceVaaModuleEntries,
 );
 
 const protocolConversion = <P extends GovernedProtocols>(protocol: P) =>
-({
-  to: protocol,
-  from: ((): Uint8Array => {
-    const moduleBytesSize = 32;
-    const bytes = new Uint8Array(moduleBytesSize);
-    const vaaModule = sdkProtocolNameToGovernanceVaaModuleMapping(protocol);
-    for (let i = 1; i <= vaaModule.length; ++i)
-      bytes[moduleBytesSize - i] = vaaModule.charCodeAt(vaaModule.length - i);
+  ({
+    to: protocol,
+    from: ((): Uint8Array => {
+      const moduleBytesSize = 32;
+      const bytes = new Uint8Array(moduleBytesSize);
+      const vaaModule = sdkProtocolNameToGovernanceVaaModuleMapping(protocol);
+      for (let i = 1; i <= vaaModule.length; ++i)
+        bytes[moduleBytesSize - i] = vaaModule.charCodeAt(vaaModule.length - i);
 
-    return bytes;
-  })(),
-} as const satisfies FixedConversion<Uint8Array, P>);
+      return bytes;
+    })(),
+  }) as const satisfies FixedConversion<Uint8Array, P>;
 
-const actionConversion = <A extends Action, N extends number>(
-  action: A,
-  num: N
-) =>
-({
-  to: action,
-  from: num,
-} as const satisfies FixedConversion<N, A>);
+const actionConversion = <A extends Action, N extends number>(action: A, num: N) =>
+  ({
+    to: action,
+    from: num,
+  }) as const satisfies FixedConversion<N, A>;
 
-const headerLayout = <
-  P extends GovernedProtocols,
-  A extends Action,
-  N extends number
->(
+const headerLayout = <P extends GovernedProtocols, A extends Action, N extends number>(
   protocol: P,
   action: A,
-  num: N
+  num: N,
 ) =>
   [
     {
@@ -185,23 +172,20 @@ const headerLayout = <
     { name: "chain", ...chainItem(actionMapping(action)) },
   ] as const satisfies Layout;
 
-const governancePayload = <
-  P extends GovernedProtocols,
-  A extends Action,
-  N extends number
->(
+const governancePayload = <P extends GovernedProtocols, A extends Action, N extends number>(
   protocol: P,
   action: A,
-  num: N
-) => [
-  action,
+  num: N,
+) =>
   [
-    ...headerLayout(protocol, action, num),
-    //TODO why is this insane cast necessary here?!
-    //     why isn't typescript deducing the return type correctly by itself?
-    ...actionMapping(action).layout as ReturnType<typeof actionMapping<A>>["layout"]
-  ],
-] as const;
+    action,
+    [
+      ...headerLayout(protocol, action, num),
+      //TODO why is this insane cast necessary here?!
+      //     why isn't typescript deducing the return type correctly by itself?
+      ...(actionMapping(action).layout as ReturnType<typeof actionMapping<A>>["layout"]),
+    ],
+  ] as const;
 
 const coreBridgePayloads = [
   //see wormhole ethereum/contracts/GovernanceStructs.sol
@@ -240,16 +224,15 @@ const cctpPayloads = [
   governancePayload("CircleBridge", "UpgradeContract", 3),
 ] as const satisfies NamedPayloads;
 
-
 // factory registration:
 declare global {
-  namespace Wormhole {
-    interface PayloadLiteralToLayoutMapping extends
-      RegisterPayloadTypes<"WormholeCore", typeof coreBridgePayloads>,
-      RegisterPayloadTypes<"TokenBridge", typeof tokenBridgePayloads>,
-      RegisterPayloadTypes<"NftBridge", typeof nftBridgePayloads>,
-      RegisterPayloadTypes<"Relayer", typeof relayerPayloads>,
-      RegisterPayloadTypes<"CircleBridge", typeof cctpPayloads> { }
+  namespace WormholeNamespace {
+    interface PayloadLiteralToLayoutMapping
+      extends RegisterPayloadTypes<"WormholeCore", typeof coreBridgePayloads>,
+        RegisterPayloadTypes<"TokenBridge", typeof tokenBridgePayloads>,
+        RegisterPayloadTypes<"NftBridge", typeof nftBridgePayloads>,
+        RegisterPayloadTypes<"Relayer", typeof relayerPayloads>,
+        RegisterPayloadTypes<"CircleBridge", typeof cctpPayloads> {}
   }
 }
 
@@ -258,4 +241,3 @@ registerPayloadTypes("TokenBridge", tokenBridgePayloads);
 registerPayloadTypes("NftBridge", nftBridgePayloads);
 registerPayloadTypes("Relayer", relayerPayloads);
 registerPayloadTypes("CircleBridge", cctpPayloads);
-

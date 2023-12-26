@@ -5,7 +5,7 @@ export const _platform: "Cosmwasm" = "Cosmwasm";
 export type CosmwasmPlatformType = typeof _platform;
 
 export type CosmwasmChains = PlatformToChains<CosmwasmPlatformType>;
-export type UniversalOrCosmwasm = UniversalOrNative<CosmwasmPlatformType>;
+export type UniversalOrCosmwasm = UniversalOrNative<CosmwasmChains>;
 export type AnyCosmwasmAddress = UniversalOrCosmwasm | string | Uint8Array;
 
 export interface WrappedRegistryResponse {

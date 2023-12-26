@@ -10,15 +10,6 @@ import { APTOS_SEPARATOR } from "./constants";
 import { AptosPlatform } from "./platform";
 import { AnyAptosAddress, isValidAptosType } from "./types";
 
-declare global {
-  namespace Wormhole {
-    interface PlatformToNativeAddressMapping {
-      // @ts-ignore
-      Aptos: AptosAddress;
-    }
-  }
-}
-
 export const AptosZeroAddress = "0x";
 
 // Sometimes Aptos addresses will be trimmed of leading 0s
@@ -92,6 +83,15 @@ export class AptosAddress implements Address {
       return other.unwrap() === this.unwrap();
     } else {
       return this.toUniversalAddress().equals(other);
+    }
+  }
+}
+
+declare global {
+  namespace WormholeNamespace {
+    interface PlatformToNativeAddressMapping {
+      // @ts-ignore
+      Aptos: AptosAddress;
     }
   }
 }

@@ -1,7 +1,11 @@
-import { Network, circle, encoding } from "@wormhole-foundation/sdk-base";
+import { Chain, Network, Platform, circle, encoding } from "@wormhole-foundation/sdk-base";
 import {
+  AttestationId,
+  ChainContext,
   CircleAttestation,
+  CircleMessage,
   CircleMessageId,
+  CircleTransferDetails,
   ProtocolVAA,
   Signer,
   TransactionId,
@@ -10,27 +14,28 @@ import {
   WormholeMessageId,
   deserializeCircleMessage,
   isCircleMessageId,
+  isCircleTransferDetails,
   isTransactionIdentifier,
   isWormholeMessageId,
-  nativeChainAddress,
 } from "@wormhole-foundation/sdk-definitions";
 
 import { signSendWait } from "../common";
 import { DEFAULT_TASK_TIMEOUT } from "../config";
-import { CircleTransferDetails, isCircleTransferDetails } from "../types";
 import { Wormhole } from "../wormhole";
-import { AttestationId, TransferState, WormholeTransfer } from "../wormholeTransfer";
+import { TransferQuote, TransferState, WormholeTransfer } from "../wormholeTransfer";
 
 export type AutomaticCircleBridgeVAA<PayloadName extends string> = ProtocolVAA<
   "AutomaticCircleBridge",
   PayloadName
 >;
 
-export class CircleTransfer<N extends Network> implements WormholeTransfer {
+export class CircleTransfer<N extends Network = Network>
+  implements WormholeTransfer<"CircleBridge" | "AutomaticCircleBridge">
+{
   private readonly wh: Wormhole<N>;
 
   // state machine tracker
-  private state: TransferState;
+  private _state: TransferState;
 
   // transfer details
   transfer: CircleTransferDetails;
@@ -41,6 +46,7 @@ export class CircleTransfer<N extends Network> implements WormholeTransfer {
   // Populated if !automatic and after initialized
   circleAttestations?: {
     id: CircleMessageId;
+    message: CircleMessage;
     attestation?: CircleAttestation;
   }[];
 
@@ -51,18 +57,13 @@ export class CircleTransfer<N extends Network> implements WormholeTransfer {
   }[];
 
   private constructor(wh: Wormhole<N>, transfer: CircleTransferDetails) {
-    this.state = TransferState.Created;
+    this._state = TransferState.Created;
     this.wh = wh;
     this.transfer = transfer;
   }
 
-  async getTransferState(): Promise<TransferState> {
-    //if (this.transfer.automatic) {
-    //  const { chain, emitter, sequence } = this.vaas[0].id;
-    //  const transactionStatus = await this.wh.getTransactionStatus(chain, emitter, sequence);
-    //  // https://relayer.dev.stable.io/v1/relays?txHash=0xbe8396debdcf3bfd94c51e59abbd9e68f856a408b972d52417c41763f8eb2c0c
-    //}
-    return this.state;
+  getTransferState(): TransferState {
+    return this._state;
   }
 
   // Static initializers for in flight transfers that have not been completed
@@ -77,7 +78,7 @@ export class CircleTransfer<N extends Network> implements WormholeTransfer {
   ): Promise<CircleTransfer<N>>;
   static async from<N extends Network>(
     wh: Wormhole<N>,
-    from: CircleMessageId,
+    from: string, // CircleMessage hex encoded
     timeout?: number,
   ): Promise<CircleTransfer<N>>;
   static async from<N extends Network>(
@@ -87,7 +88,7 @@ export class CircleTransfer<N extends Network> implements WormholeTransfer {
   ): Promise<CircleTransfer<N>>;
   static async from<N extends Network>(
     wh: Wormhole<N>,
-    from: CircleTransferDetails | WormholeMessageId | CircleMessageId | TransactionId,
+    from: CircleTransferDetails | WormholeMessageId | string | TransactionId,
     timeout: number = DEFAULT_TASK_TIMEOUT,
   ): Promise<CircleTransfer<N>> {
     // This is a new transfer, just return the object
@@ -102,7 +103,7 @@ export class CircleTransfer<N extends Network> implements WormholeTransfer {
     } else if (isTransactionIdentifier(from)) {
       tt = await CircleTransfer.fromTransaction(wh, from, timeout);
     } else if (isCircleMessageId(from)) {
-      tt = await CircleTransfer.fromCircleMessageId(wh, from, timeout);
+      tt = await CircleTransfer.fromCircleMessage(wh, from, timeout);
     } else {
       throw new Error("Invalid `from` parameter for CircleTransfer");
     }
@@ -127,7 +128,7 @@ export class CircleTransfer<N extends Network> implements WormholeTransfer {
 
     let automatic = false;
     if (wormholeRelayer) {
-      const relayerAddress = nativeChainAddress(
+      const relayerAddress = Wormhole.chainAddress(
         chain,
         wormholeRelayer,
       ).address.toUniversalAddress();
@@ -135,45 +136,43 @@ export class CircleTransfer<N extends Network> implements WormholeTransfer {
     }
 
     const details: CircleTransferDetails = {
-      from: nativeChainAddress(from.chain, vaa.payload.caller),
-      to: nativeChainAddress(rcvChain, rcvAddress),
+      from: { chain: from.chain, address: vaa.payload.caller },
+      to: { chain: rcvChain, address: rcvAddress },
       amount: vaa.payload.token.amount,
       automatic,
     };
 
     const tt = new CircleTransfer(wh, details);
     tt.vaas = [{ id: { emitter, sequence: vaa.sequence, chain: chain }, vaa }];
-    tt.state = TransferState.Initiated;
+    tt._state = TransferState.Attested;
 
     return tt;
   }
 
-  private static async fromCircleMessageId<N extends Network>(
+  private static async fromCircleMessage<N extends Network>(
     wh: Wormhole<N>,
-    messageId: CircleMessageId,
+    message: string,
     timeout: number,
   ): Promise<CircleTransfer<N>> {
-    const [message, hash] = deserializeCircleMessage(encoding.hex.decode(messageId.message));
-    // If no hash is passed, set to the one we just computed
-    if (messageId.hash === "") messageId.hash = hash;
+    const [msg, hash] = deserializeCircleMessage(encoding.hex.decode(message));
 
-    const { payload: burnMessage } = message;
+    const { payload: burnMessage } = msg;
     const xferSender = burnMessage.messageSender;
     const xferReceiver = burnMessage.mintRecipient;
 
-    const sendChain = circle.toCircleChain(message.sourceDomain);
-    const rcvChain = circle.toCircleChain(message.destinationDomain);
+    const sendChain = circle.toCircleChain(msg.sourceDomain);
+    const rcvChain = circle.toCircleChain(msg.destinationDomain);
 
     const details: CircleTransferDetails = {
-      from: nativeChainAddress(sendChain, xferSender),
-      to: nativeChainAddress(rcvChain, xferReceiver),
+      from: { chain: sendChain, address: xferSender },
+      to: { chain: rcvChain, address: xferReceiver },
       amount: burnMessage.amount,
       automatic: false,
     };
 
     const xfer = new CircleTransfer(wh, details);
-    xfer.circleAttestations = [{ id: messageId }];
-    xfer.state = TransferState.Initiated;
+    xfer.circleAttestations = [{ id: { hash }, message: msg }];
+    xfer._state = TransferState.SourceInitiated;
 
     return xfer;
   }
@@ -207,10 +206,10 @@ export class CircleTransfer<N extends Network> implements WormholeTransfer {
       };
 
       ct = new CircleTransfer(wh, details);
-      ct.circleAttestations = [{ id: circleMessage.messageId }];
+      ct.circleAttestations = [{ id: circleMessage.id, message: circleMessage.message }];
     }
 
-    ct.state = TransferState.Initiated;
+    ct._state = TransferState.SourceInitiated;
     ct.txids = [from];
     return ct;
   }
@@ -226,7 +225,7 @@ export class CircleTransfer<N extends Network> implements WormholeTransfer {
         4) return transaction id
     */
 
-    if (this.state !== TransferState.Created)
+    if (this._state !== TransferState.Created)
       throw new Error("Invalid state transition in `start`");
 
     const fromChain = this.wh.getChain(this.transfer.from.chain);
@@ -250,7 +249,7 @@ export class CircleTransfer<N extends Network> implements WormholeTransfer {
     }
 
     this.txids = await signSendWait<N, typeof fromChain.chain>(fromChain, xfer, signer);
-    this.state = TransferState.Initiated;
+    this._state = TransferState.SourceInitiated;
 
     return this.txids.map(({ txid }) => txid);
   }
@@ -282,7 +281,7 @@ export class CircleTransfer<N extends Network> implements WormholeTransfer {
 
       const cb = await fromChain.getCircleBridge();
       const circleMessage = await cb.parseTransactionDetails(txid!.txid);
-      this.circleAttestations = [{ id: circleMessage.messageId }];
+      this.circleAttestations = [{ id: circleMessage.id, message: circleMessage.message }];
     }
 
     for (const idx in this.circleAttestations) {
@@ -307,14 +306,14 @@ export class CircleTransfer<N extends Network> implements WormholeTransfer {
         2) Once available, pull the VAA and parse it
         3) return seq
     */
-    if (this.state < TransferState.Initiated || this.state > TransferState.Attested)
+    if (this._state < TransferState.SourceInitiated || this._state > TransferState.Attested)
       throw new Error("Invalid state transition in `fetchAttestation`");
 
     const ids: AttestationId[] = this.transfer.automatic
       ? await this._fetchWormholeAttestation(timeout)
       : await this._fetchCircleAttestation(timeout);
 
-    this.state = TransferState.Attested;
+    this._state = TransferState.Attested;
 
     return ids;
   }
@@ -328,7 +327,7 @@ export class CircleTransfer<N extends Network> implements WormholeTransfer {
         2) submit the VAA and transactions on chain
         3) return txid of submission
     */
-    if (this.state < TransferState.Attested)
+    if (this._state < TransferState.Attested)
       throw new Error("Invalid state transition in `finish`");
 
     // If its automatic, this does not need to be called
@@ -354,16 +353,68 @@ export class CircleTransfer<N extends Network> implements WormholeTransfer {
 
     const toChain = this.wh.getChain(this.transfer.to.chain);
 
-    const { id, attestation } = this.circleAttestations[0]!;
+    const { id, message, attestation } = this.circleAttestations[0]!;
 
     if (!attestation) throw new Error(`No Circle Attestation for ${id.hash}`);
 
     const tb = await toChain.getCircleBridge();
-    const xfer = tb.redeem(this.transfer.to.address, id.message, attestation);
+    const xfer = tb.redeem(this.transfer.to.address, message, attestation);
 
     const txids = await signSendWait<N, typeof toChain.chain>(toChain, xfer, signer);
     this.txids?.push(...txids);
     return txids.map(({ txid }) => txid);
+  }
+
+  static async quoteTransfer<N extends Network>(
+    srcChain: ChainContext<N, Platform, Chain>,
+    dstChain: ChainContext<N, Platform, Chain>,
+    transfer: CircleTransferDetails,
+  ): Promise<TransferQuote> {
+    const dstUsdcAddress = circle.usdcContract.get(dstChain.network, dstChain.chain);
+    if (!dstUsdcAddress) throw "Invalid transfer, no USDC contract on destination";
+
+    const srcUsdcAddress = circle.usdcContract.get(srcChain.network, srcChain.chain);
+    if (!srcUsdcAddress) throw "Invalid transfer, no USDC contract on source";
+
+    const dstToken = Wormhole.chainAddress(dstChain.chain, dstUsdcAddress);
+    const srcToken = Wormhole.chainAddress(srcChain.chain, srcUsdcAddress);
+
+    if (!transfer.automatic) {
+      return {
+        sourceToken: { token: srcToken, amount: transfer.amount },
+        destinationToken: { token: dstToken, amount: transfer.amount },
+      };
+    }
+
+    // Otherwise automatic
+    let dstAmount = transfer.amount;
+
+    // If a native gas dropoff is requested, remove that from the amount they'll get
+    const _nativeGas = transfer.nativeGas ? transfer.nativeGas : 0n;
+    dstAmount -= _nativeGas;
+
+    // The fee is also removed from the amount transferred
+    // quoted on the source chain
+    const stb = await srcChain.getAutomaticCircleBridge();
+    const fee = await stb.getRelayerFee(dstChain.chain);
+    dstAmount -= fee;
+
+    // The expected destination gas can be pulled from the destination token bridge
+    let destinationNativeGas = 0n;
+    if (transfer.nativeGas) {
+      const dtb = await dstChain.getAutomaticTokenBridge();
+      destinationNativeGas = await dtb.nativeTokenAmount(dstToken.address, _nativeGas);
+    }
+
+    return {
+      sourceToken: {
+        token: srcToken,
+        amount: transfer.amount,
+      },
+      destinationToken: { token: dstToken, amount: dstAmount },
+      relayFee: { token: srcToken, amount: fee },
+      destinationNativeGas,
+    };
   }
 
   static async getTransferVaa<N extends Network>(

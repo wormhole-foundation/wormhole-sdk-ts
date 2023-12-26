@@ -12,7 +12,7 @@ export const _platform: 'Evm' = 'Evm';
 export type EvmPlatformType = typeof _platform;
 
 export type EvmChains = PlatformToChains<EvmPlatformType>;
-export type UniversalOrEvm = UniversalOrNative<EvmPlatformType>;
+export type UniversalOrEvm = UniversalOrNative<EvmChains>;
 export type AnyEvmAddress = UniversalOrEvm | string | Uint8Array;
 
 export const addFrom = (txReq: TransactionRequest, from: string) => ({

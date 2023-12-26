@@ -8,15 +8,6 @@ import {
 import { CosmwasmPlatform } from "./platform";
 import { AnyCosmwasmAddress, _platform } from "./types";
 
-declare global {
-  namespace Wormhole {
-    interface PlatformToNativeAddressMapping {
-      // @ts-ignore
-      Cosmwasm: CosmwasmAddress;
-    }
-  }
-}
-
 /*
 Categories:
 
@@ -239,6 +230,15 @@ export class CosmwasmAddress implements Address {
       return this.toString() === other.toString();
     } else {
       return other.equals(this.toUniversalAddress());
+    }
+  }
+}
+
+declare global {
+  namespace WormholeNamespace {
+    interface PlatformToNativeAddressMapping {
+      // @ts-ignore
+      Cosmwasm: CosmwasmAddress;
     }
   }
 }

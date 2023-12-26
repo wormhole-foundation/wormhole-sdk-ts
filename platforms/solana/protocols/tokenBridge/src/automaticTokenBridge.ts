@@ -10,6 +10,7 @@ import {
   TokenAddress,
   VAA,
   toChainId,
+  toNative,
 } from '@wormhole-foundation/connect-sdk';
 import {
   SolanaAddress,
@@ -44,6 +45,7 @@ import {
   getAssociatedTokenAddressSync,
 } from '@solana/spl-token';
 import '@wormhole-foundation/connect-sdk-solana-core';
+import { registeredTokens } from './consts';
 
 const SOL_DECIMALS = 9;
 const TEN = new BN(10);
@@ -109,7 +111,7 @@ export class SolanaAutomaticTokenBridge<
     nativeGas?: bigint | undefined,
   ) {
     const nonce = 0;
-    const senderAddress = sender.toNative(this.chain).unwrap();
+    const senderAddress = new SolanaAddress(sender).unwrap();
     const recipientAddress = recipient.address
       .toUniversalAddress()
       .toUint8Array();
@@ -198,7 +200,7 @@ export class SolanaAutomaticTokenBridge<
     const tokenAddress =
       token === 'native'
         ? new PublicKey(NATIVE_MINT)
-        : token.toNative(this.chain).unwrap();
+        : new SolanaAddress(token).unwrap();
 
     const [{ fee }, { swapRate }, { relayerFeePrecision }] = await Promise.all([
       this.getForeignContract(recipient.chain),
@@ -222,7 +224,7 @@ export class SolanaAutomaticTokenBridge<
     const mint =
       token === 'native'
         ? new PublicKey(NATIVE_MINT)
-        : token.toNative(this.chain).unwrap();
+        : new SolanaAddress(token).unwrap();
 
     const [{ swapRate, maxNativeSwapAmount }, { swapRate: solSwapRate }] =
       await Promise.all([
@@ -259,7 +261,7 @@ export class SolanaAutomaticTokenBridge<
     const mint =
       token === 'native'
         ? new PublicKey(NATIVE_MINT)
-        : token.toNative(this.chain).unwrap();
+        : new SolanaAddress(token).unwrap();
 
     const decimals = Number(
       await SolanaPlatform.getDecimals(this.chain, this.connection, token),
@@ -282,11 +284,11 @@ export class SolanaAutomaticTokenBridge<
     return BigInt(swapAmountOut.toString());
   }
 
-  async isAcceptedToken(token: TokenAddress<C>): Promise<boolean> {
+  async isRegisteredToken(token: TokenAddress<C>): Promise<boolean> {
     const mint =
       token === 'native'
         ? new PublicKey(NATIVE_MINT)
-        : token.toNative(this.chain).unwrap();
+        : new SolanaAddress(token).unwrap();
 
     try {
       await this.getRegisteredToken(mint);
@@ -298,6 +300,12 @@ export class SolanaAutomaticTokenBridge<
       }
       throw e;
     }
+  }
+
+  async getRegisteredTokens() {
+    return registeredTokens[this.network].map((addr) =>
+      toNative(this.chain, addr),
+    );
   }
 
   private calculateNativeSwapRate(solSwapRate: BN, swapRate: BN): BN {

@@ -1,14 +1,15 @@
 import { registerProtocol } from "@wormhole-foundation/connect-sdk";
+import { _platform } from "@wormhole-foundation/connect-sdk-cosmwasm";
 import { CosmwasmWormholeCore } from "./wormholeCore";
 
 declare global {
-  namespace Wormhole {
+  namespace WormholeNamespace {
     export interface PlatformToProtocolMapping {
       Cosmwasm: {};
     }
   }
 }
 
-registerProtocol("Cosmwasm", "WormholeCore", CosmwasmWormholeCore);
+registerProtocol(_platform, "WormholeCore", CosmwasmWormholeCore);
 
 export * from "./wormholeCore";

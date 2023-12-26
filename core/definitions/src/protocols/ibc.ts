@@ -1,13 +1,12 @@
 import {
   Chain,
   ChainId,
-  ChainToPlatform,
   Network,
   Platform,
   PlatformToChains,
   encoding,
   toChain,
-  toChainId
+  toChainId,
 } from "@wormhole-foundation/sdk-base";
 import { AccountAddress, ChainAddress, NativeAddress, TokenAddress } from "../address";
 import { IbcMessageId, WormholeMessageId } from "../attestation";
@@ -51,33 +50,23 @@ export interface GatewayTransferWithPayloadMsg {
 // GatewayIBCTransferMsg is the message sent in the memo of an IBC transfer
 // to be decoded and executed by the Gateway contract.
 export interface GatewayIbcTransferMsg {
-  gateway_ibc_token_bridge_payload:
-  | GatewayTransferMsg
-  | GatewayTransferWithPayloadMsg;
+  gateway_ibc_token_bridge_payload: GatewayTransferMsg | GatewayTransferWithPayloadMsg;
 }
 
-export function isGatewayTransferMsg(
-  thing: GatewayTransferMsg | any,
-): thing is GatewayTransferMsg {
+export function isGatewayTransferMsg(thing: GatewayTransferMsg | any): thing is GatewayTransferMsg {
   return (<GatewayTransferMsg>thing).gateway_transfer !== undefined;
 }
 
 export function isGatewayTransferWithPayloadMsg(
   thing: GatewayTransferWithPayloadMsg | any,
 ): thing is GatewayTransferWithPayloadMsg {
-  return (
-    (<GatewayTransferWithPayloadMsg>thing).gateway_transfer_with_payload !==
-    undefined
-  );
+  return (<GatewayTransferWithPayloadMsg>thing).gateway_transfer_with_payload !== undefined;
 }
 
 export function isGatewayIbcTransferMsg(
   thing: GatewayIbcTransferMsg | any,
 ): thing is GatewayIbcTransferMsg {
-  return (
-    (<GatewayIbcTransferMsg>thing).gateway_ibc_token_bridge_payload !==
-    undefined
-  );
+  return (<GatewayIbcTransferMsg>thing).gateway_ibc_token_bridge_payload !== undefined;
 }
 
 export function isGatewayTransferDetails(
@@ -94,18 +83,13 @@ export function isGatewayTransferDetails(
 // Get the underlying payload from a gateway message
 // without prefix
 export function toGatewayMsg(
-  msg:
-    | GatewayTransferMsg
-    | GatewayTransferWithPayloadMsg
-    | GatewayIbcTransferMsg
-    | string,
+  msg: GatewayTransferMsg | GatewayTransferWithPayloadMsg | GatewayIbcTransferMsg | string,
 ): GatewayMsg {
   if (typeof msg === "string") msg = JSON.parse(msg);
 
   if (isGatewayIbcTransferMsg(msg)) msg = msg.gateway_ibc_token_bridge_payload;
   if (isGatewayTransferMsg(msg)) return msg.gateway_transfer;
-  if (isGatewayTransferWithPayloadMsg(msg))
-    return msg.gateway_transfer_with_payload;
+  if (isGatewayTransferWithPayloadMsg(msg)) return msg.gateway_transfer_with_payload;
 
   throw new Error(`Unrecognized payload: ${msg}`);
 }
@@ -115,9 +99,7 @@ export function gatewayTransferMsg(
 ): GatewayTransferMsg | GatewayTransferWithPayloadMsg {
   if (isGatewayTransferDetails(gtd)) {
     // If we've already got a payload, b64 encode it so it works in json
-    const _payload = gtd.payload
-      ? encoding.b64.encode(gtd.payload)
-      : undefined;
+    const _payload = gtd.payload ? encoding.b64.encode(gtd.payload) : undefined;
 
     // Encode the payload so the gateway contract knows where to forward the
     // newly minted tokens
@@ -143,7 +125,7 @@ export function gatewayTransferMsg(
 
 export function makeGatewayTransferMsg<CN extends Chain>(
   chain: CN,
-  recipient: NativeAddress<ChainToPlatform<CN>> | string,
+  recipient: NativeAddress<CN> | string,
   fee: bigint = 0n,
   nonce: number,
   payload?: string,
@@ -153,8 +135,8 @@ export function makeGatewayTransferMsg<CN extends Chain>(
   const address =
     typeof recipient === "string"
       ? recipient
-      // @ts-ignore
-      : encoding.b64.encode(recipient.toString());
+      : // @ts-ignore
+        encoding.b64.encode(recipient.toString());
 
   const common = {
     chain: toChainId(chain),
@@ -165,8 +147,8 @@ export function makeGatewayTransferMsg<CN extends Chain>(
 
   const msg: GatewayTransferWithPayloadMsg | GatewayTransferMsg = payload
     ? ({
-      gateway_transfer_with_payload: { ...common, payload: payload },
-    } as GatewayTransferWithPayloadMsg)
+        gateway_transfer_with_payload: { ...common, payload: payload },
+      } as GatewayTransferWithPayloadMsg)
     : ({ gateway_transfer: { ...common } } as GatewayTransferMsg);
 
   return msg;
@@ -181,9 +163,7 @@ export interface IbcTransferInfo {
   pending: boolean;
 }
 
-export function isIbcTransferInfo(
-  thing: IbcTransferInfo | any,
-): thing is IbcTransferInfo {
+export function isIbcTransferInfo(thing: IbcTransferInfo | any): thing is IbcTransferInfo {
   return (
     (<IbcTransferInfo>thing).id !== undefined &&
     (<IbcTransferInfo>thing).pending !== undefined &&
@@ -218,9 +198,7 @@ export interface IbcBridge<N extends Network, P extends Platform, C extends Plat
 
   // Find the wormhole emitted message id for a given IBC transfer
   // if it does not exist, this will return null
-  lookupMessageFromIbcMsgId(
-    msg: IbcMessageId,
-  ): Promise<WormholeMessageId | null>;
+  lookupMessageFromIbcMsgId(msg: IbcMessageId): Promise<WormholeMessageId | null>;
 
   // Get IbcTransferInfo
   // TODO: overload

@@ -3,6 +3,7 @@ import {
   ChainAddress,
   ChainsConfig,
   CircleBridge,
+  CircleMessage,
   CircleTransferMessage,
   Contracts,
   Network,
@@ -10,13 +11,14 @@ import {
   circle,
   deserializeCircleMessage,
   encoding,
-  nativeChainAddress,
   nativeChainIds,
+  serializeCircleMessage,
 } from '@wormhole-foundation/connect-sdk';
 
 import { MessageTransmitter, TokenMessenger } from './ethers-contracts';
 
 import {
+  EvmAddress,
   EvmChains,
   EvmPlatform,
   EvmPlatformType,
@@ -98,13 +100,13 @@ export class EvmCircleBridge<N extends Network, C extends EvmChains>
 
   async *redeem(
     sender: AccountAddress<C>,
-    message: string,
+    message: CircleMessage,
     attestation: string,
   ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
-    const senderAddr = sender.toNative(this.chain).toString();
+    const senderAddr = new EvmAddress(sender).toString();
 
     const txReq = await this.msgTransmitter.receiveMessage.populateTransaction(
-      encoding.hex.decode(message),
+      serializeCircleMessage(message),
       encoding.hex.decode(attestation),
     );
 
@@ -119,15 +121,12 @@ export class EvmCircleBridge<N extends Network, C extends EvmChains>
     recipient: ChainAddress,
     amount: bigint,
   ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
-    const senderAddr = sender.toNative(this.chain).toString();
+    const senderAddr = new EvmAddress(sender).toString();
     const recipientAddress = recipient.address
       .toUniversalAddress()
       .toUint8Array();
 
-    const tokenAddr = circle.usdcContract(
-      this.network as circle.CircleNetwork,
-      this.chain as circle.CircleChain,
-    );
+    const tokenAddr = circle.usdcContract.get(this.network, this.chain);
 
     const tokenContract = EvmPlatform.getTokenImplementation(
       this.provider,
@@ -204,14 +203,15 @@ export class EvmCircleBridge<N extends Network, C extends EvmChains>
     const sendChain = circle.toCircleChain(circleMsg.sourceDomain);
     const rcvChain = circle.toCircleChain(circleMsg.destinationDomain);
 
-    const token = nativeChainAddress(sendChain, body.burnToken);
+    const token = { chain: sendChain, address: body.burnToken };
 
     return {
-      from: nativeChainAddress(sendChain, xferSender),
-      to: nativeChainAddress(rcvChain, xferReceiver),
+      from: { chain: sendChain, address: xferSender },
+      to: { chain: rcvChain, address: xferReceiver },
       token: token,
       amount: body.amount,
-      messageId: { message, hash },
+      message: circleMsg,
+      id: { hash },
     };
   }
 

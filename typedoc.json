@@ -15,11 +15,12 @@
     "platforms/cosmwasm",
     "platforms/cosmwasm/protocols/core",
     "platforms/cosmwasm/protocols/tokenBridge",
-    "platforms/cosmwasm/protocols/ibc",
+    "platforms/cosmwasm/protocols/ibc"
+  ],
+  "exclude": [
     "platforms/aptos",
     "platforms/aptos/protocols/core",
     "platforms/aptos/protocols/tokenBridge"
   ],
-  "exclude": [],
   "entryPointStrategy": "packages"
 }

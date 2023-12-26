@@ -1,6 +1,6 @@
 {
   "name": "connect-sdk",
-  "version": "0.2.5-beta.2",
+  "version": "0.3.0-beta.3",
   "license": "Apache-2.0",
   "directories": {
     "test": "__tests__"
@@ -23,7 +23,6 @@
     "typescript": "^5.1.1"
   },
   "scripts": {
-    "sync": "tsx syncVersion.ts && npm install && npm run build",
     "lint": "npm run lint --workspaces --if-present",
     "build": "npm run build --workspaces --if-present",
     "rebuild": "npm run rebuild --workspaces --if-present",
@@ -33,12 +32,17 @@
     "prettier": "npm run prettier --workspaces --if-present",
     "test:tilt": "jest --verbose --config ./jest.config.ts --roots ./__tests__/tilt",
     "test": "NETWORK=Mainnet npm run test --workspaces --if-present",
-    "docs": "NODE_OPTIONS=--max_old_space_size=8192 typedoc --options typedoc.json"
+    "docs": "NODE_OPTIONS=--max_old_space_size=8192 typedoc --options typedoc.json",
+    "sync": "tsx syncVersion.ts && npm install && npm run build",
+    "publish": "npm publish --access public --tag $TAG --workspace core --workspace connect --workspace platforms --workspace platforms/evm/protocols --workspace platforms/solana/protocols --workspace platforms/cosmwasm/protocols",
+    "pub:beta": "TAG=beta npm run publish",
+    "pub:latest": "TAG=latest npm run publish"
   },
   "workspaces": [
     "core/base",
     "core/definitions",
     "connect",
+    "examples",
     "platforms/evm",
     "platforms/evm/protocols/core",
     "platforms/evm/protocols/tokenBridge",
@@ -46,16 +50,16 @@
     "platforms/solana",
     "platforms/solana/protocols/core",
     "platforms/solana/protocols/tokenBridge",
-    "platforms/cosmwasm",
-    "platforms/cosmwasm/protocols/core",
-    "platforms/cosmwasm/protocols/tokenBridge",
-    "platforms/cosmwasm/protocols/ibc"
+    "platforms/algorand",
+    "platforms/algorand/protocols/core",
+    "platforms/algorand/protocols/tokenBridge"
   ],
   "unreleased": [
     "examples",
     "core/tokenRegistry",
-    "platforms/aptos",
-    "platforms/aptos/protocols/core",
-    "platforms/aptos/protocols/tokenBridge"
+    "platforms/cosmwasm",
+    "platforms/cosmwasm/protocols/core",
+    "platforms/cosmwasm/protocols/tokenBridge",
+    "platforms/cosmwasm/protocols/ibc"
   ]
 }

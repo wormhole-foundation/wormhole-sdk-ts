@@ -13,6 +13,8 @@ export const EvmZeroAddress = ethers.ZeroAddress;
 export class EvmAddress implements Address {
   static readonly byteSize = 20;
   static readonly platform = _platform;
+  readonly type: string = 'Native';
+
   // stored as checksum address
   private readonly address: string;
 
@@ -87,7 +89,7 @@ export class EvmAddress implements Address {
 }
 
 declare global {
-  namespace Wormhole {
+  namespace WormholeNamespace {
     interface PlatformToNativeAddressMapping {
       // @ts-ignore
       Evm: EvmAddress;
@@ -95,4 +97,4 @@ declare global {
   }
 }
 
-registerNative('Evm', EvmAddress);
+registerNative(_platform, EvmAddress);

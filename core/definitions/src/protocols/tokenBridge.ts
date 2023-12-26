@@ -31,6 +31,27 @@ export namespace TokenBridge {
   );
 }
 
+export type TokenTransferDetails = {
+  token: TokenId | "native";
+  amount: bigint;
+  from: ChainAddress;
+  to: ChainAddress;
+  automatic?: boolean;
+  payload?: Uint8Array;
+  nativeGas?: bigint;
+};
+
+export function isTokenTransferDetails(
+  thing: TokenTransferDetails | any,
+): thing is TokenTransferDetails {
+  return (
+    (<TokenTransferDetails>thing).token !== undefined &&
+    (<TokenTransferDetails>thing).amount !== undefined &&
+    (<TokenTransferDetails>thing).from !== undefined &&
+    (<TokenTransferDetails>thing).to !== undefined
+  );
+}
+
 export interface TokenBridge<N extends Network, P extends Platform, C extends PlatformToChains<P>> {
   // checks a native address to see if its a wrapped version
   isWrappedAsset(nativeAddress: TokenAddress<C>): Promise<boolean>;
@@ -98,6 +119,10 @@ export interface AutomaticTokenBridge<
     recipient: ChainAddress,
     token: TokenAddress<C>,
   ): Promise<bigint>;
+  // Check if a given token is in the registered token list
+  isRegisteredToken(token: TokenAddress<C>): Promise<boolean>;
+  // Get the list of tokens that are registered and acceptable to send
+  getRegisteredTokens(): Promise<NativeAddress<C>[]>;
   // Amount of native tokens a user would receive by swapping x amount of sending tokens
   nativeTokenAmount(token: TokenAddress<C>, amount: bigint): Promise<bigint>;
   // Maximum amount of sending tokens that can be swapped for native tokens

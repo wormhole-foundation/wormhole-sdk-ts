@@ -5,6 +5,7 @@ import {
   PlatformToChains,
   chainToPlatform,
   circle,
+  ChainToPlatform,
 } from "@wormhole-foundation/sdk-base";
 import {
   ChainAddress,
@@ -22,14 +23,10 @@ import {
   deserialize,
   toNative,
 } from "@wormhole-foundation/sdk-definitions";
-
-import { CONFIG, DEFAULT_TASK_TIMEOUT } from "./config";
-import { WormholeConfig } from "./types";
-
+import { getCircleAttestationWithRetry } from "./circle-api";
+import { CONFIG, DEFAULT_TASK_TIMEOUT, WormholeConfig } from "./config";
 import { CircleTransfer } from "./protocols/cctpTransfer";
 import { TokenTransfer } from "./protocols/tokenTransfer";
-
-import { getCircleAttestationWithRetry } from "./circle-api";
 import { retry } from "./tasks";
 import {
   TransactionStatus,
@@ -38,12 +35,17 @@ import {
   getVaaBytesWithRetry,
   getVaaWithRetry,
 } from "./whscan-api";
-import { ChainToPlatform } from "@wormhole-foundation/sdk-base/src";
+
+type PlatformMap<N extends Network, P extends Platform = Platform> = Map<P, PlatformContext<N, P>>;
+type ChainMap<N extends Network, C extends Chain = Chain> = Map<
+  C,
+  ChainContext<N, ChainToPlatform<C>, C>
+>;
 
 export class Wormhole<N extends Network> {
   protected readonly _network: N;
-  protected _platforms: Map<Platform, PlatformContext<N, Platform>>;
-  protected _chains: Map<Chain, ChainContext<N, Platform, Chain>>;
+  protected _platforms: PlatformMap<N>;
+  protected _chains: ChainMap<N>;
 
   readonly config: WormholeConfig;
 
@@ -354,7 +356,7 @@ export class Wormhole<N extends Network> {
    * @returns The ChainAddress
    */
   static chainAddress<C extends Chain>(chain: C, address: string): ChainAddress<C> {
-    return { chain, address: toNative(chain, address) };
+    return { chain, address: Wormhole.parseAddress(chain, address) };
   }
 
   /**
@@ -368,7 +370,11 @@ export class Wormhole<N extends Network> {
     N extends Network,
     P extends Platform,
     C extends PlatformToChains<P>,
-  >(chain: ChainContext<N, P, C>, txid: TxHash, timeout?: number): Promise<WormholeMessageId[]> {
+  >(
+    chain: ChainContext<N, P, C>,
+    txid: TxHash,
+    timeout: number = DEFAULT_TASK_TIMEOUT,
+  ): Promise<WormholeMessageId[]> {
     const task = async () => {
       const msgs = await chain.parseTransaction(txid);
       // possible the node we hit does not have this data yet
@@ -385,8 +391,6 @@ export class Wormhole<N extends Network> {
     );
 
     if (!parsed) throw new Error(`No WormholeMessageId found for ${txid}`);
-    if (parsed.length != 1) throw new Error(`Expected a single VAA, got ${parsed.length}`);
-
     return parsed;
   }
 }

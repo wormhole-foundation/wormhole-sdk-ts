@@ -7,10 +7,10 @@ import {
   SignedTx,
   TokenId,
   TxHash,
+  Wormhole,
   chainToPlatform,
   decimals,
   encoding,
-  nativeChainAddress,
   nativeChainIds,
   networkPlatformConfigs,
 } from '@wormhole-foundation/connect-sdk';
@@ -56,7 +56,7 @@ export class EvmPlatform<N extends Network> extends PlatformContext<
   ): TokenId<C> {
     if (!EvmPlatform.isSupportedChain(chain))
       throw new Error(`invalid chain for EVM: ${chain}`);
-    return nativeChainAddress(chain, EvmZeroAddress);
+    return Wormhole.chainAddress(chain, EvmZeroAddress);
   }
 
   static isNativeTokenId<N extends Network, C extends EvmChains>(
@@ -154,7 +154,6 @@ export class EvmPlatform<N extends Network> extends PlatformContext<
   static chainFromChainId(eip155ChainId: string): [Network, EvmChains] {
     const networkChainPair = nativeChainIds.platformNativeChainIdToNetworkChain(
       EvmPlatform._platform,
-      // @ts-ignore
       BigInt(eip155ChainId),
     );
 

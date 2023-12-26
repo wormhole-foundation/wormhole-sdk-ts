@@ -1,17 +1,18 @@
+import { _platform } from '@wormhole-foundation/connect-sdk-solana';
 import { registerProtocol } from '@wormhole-foundation/connect-sdk';
 import { SolanaTokenBridge } from './tokenBridge';
 import { SolanaAutomaticTokenBridge } from './automaticTokenBridge';
 
 declare global {
-  namespace Wormhole {
+  namespace WormholeNamespace {
     export interface PlatformToProtocolMapping {
       Solana: {};
     }
   }
 }
 
-registerProtocol('Solana', 'TokenBridge', SolanaTokenBridge);
-registerProtocol('Solana', 'AutomaticTokenBridge', SolanaAutomaticTokenBridge);
+registerProtocol(_platform, 'TokenBridge', SolanaTokenBridge);
+registerProtocol(_platform, 'AutomaticTokenBridge', SolanaAutomaticTokenBridge);
 
 export * from './tokenBridgeType';
 export * from './automaticTokenBridgeType';
