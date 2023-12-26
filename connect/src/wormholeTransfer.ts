@@ -6,6 +6,8 @@ import {
   ProtocolName,
 } from "@wormhole-foundation/sdk-base";
 import {
+  Attestation,
+  AttestationId,
   ChainContext,
   CircleTransferDetails,
   GatewayTransferDetails,
@@ -15,7 +17,6 @@ import {
   TransactionId,
   TxHash,
   VAA,
-  AttestationId,
 } from "@wormhole-foundation/sdk-definitions";
 import { Wormhole } from "./wormhole";
 
@@ -50,7 +51,10 @@ export type TransferReceipt<
   to: DC;
   originTxs: TransactionId<SC>[];
   destinationTxs: TransactionId<DC>[];
-  attestation?: AttestationId<PN>;
+  attestation?: {
+    id: AttestationId<PN>;
+    attestation?: Attestation<PN>;
+  };
 };
 
 // Quote with optional relayer fees if the transfer

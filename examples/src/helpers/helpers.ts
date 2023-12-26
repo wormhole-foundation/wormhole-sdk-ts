@@ -71,7 +71,7 @@ export async function getStuff<
 }
 
 export async function waitLog(wh: Wormhole<Network>, xfer: TokenTransfer) {
-  const it = TokenTransfer.track(wh, xfer);
+  const it = TokenTransfer.track(wh, TokenTransfer.getReceipt(xfer));
   let res;
   for (res = await it.next(); !res.done; res = await it.next())
     console.log("Current Transfer State: ", TransferState[res.value as TransferState]);

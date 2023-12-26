@@ -38,10 +38,11 @@ import {
   WormholeTransfer,
 } from "../wormholeTransfer";
 
+type TransferProtocol = "TokenBridge" | "AutomaticTokenBridge";
 type TransferVAA = TokenBridge.TransferVAA | AutomaticTokenBridge.VAA;
 
 export class TokenTransfer<N extends Network = Network>
-  implements WormholeTransfer<"TokenBridge" | "AutomaticTokenBridge">
+  implements WormholeTransfer<TransferProtocol>
 {
   private readonly wh: Wormhole<N>;
 
@@ -264,61 +265,64 @@ export class TokenTransfer<N extends Network = Network>
   // as it takes until the destination is finalized
   static async *track<N extends Network>(
     wh: Wormhole<N>,
-    xfer: TokenTransfer<N>,
+    receipt: TransferReceipt<TransferProtocol>,
     timeout: number = DEFAULT_TASK_TIMEOUT,
+    // Optional parameters to override chain context (typically for custom rpc)
+    _fromChain?: ChainContext<N, ChainToPlatform<typeof receipt.from>, typeof receipt.from>,
+    _toChain?: ChainContext<N, ChainToPlatform<typeof receipt.to>, typeof receipt.to>,
   ) {
     const start = Date.now();
     const leftover = (start: number, max: number) => Math.max(max - (Date.now() - start), 0);
 
-    const _fromChain = wh.getChain(xfer.transfer.from.chain);
-    const _toChain = wh.getChain(xfer.transfer.to.chain);
+    _fromChain = _fromChain ?? wh.getChain(receipt.from);
+    _toChain = _toChain ?? wh.getChain(receipt.to);
 
-    const receipt = TokenTransfer.getReceipt(xfer);
+    // Check the source chain for initiation transaction
+    // and capture the message id
     if (receipt.state === TransferState.SourceInitiated) {
       if (receipt.originTxs.length === 0)
         throw "Invalid state transition: no originating transactions";
 
-      if (!receipt.attestation || !receipt.attestation?.emitter) {
+      if (!receipt.attestation || !receipt.attestation.id.emitter) {
         const initTx = receipt.originTxs[receipt.originTxs.length - 1]!;
         const xfermsg = await TokenTransfer.getTransferMessage(
           _fromChain,
           initTx.txid,
           leftover(start, timeout),
         );
-        receipt.attestation = { ...xfermsg };
+        receipt.attestation = { id: xfermsg };
         receipt.state = TransferState.SourceFinalized;
         yield receipt.state;
       }
     }
 
-    let vaa = undefined;
     if (receipt.state == TransferState.SourceFinalized) {
-      if (!receipt.attestation || !receipt.attestation.emitter)
-        throw "Invalid state transition: no attestation id";
+      if (!receipt.attestation) throw "Invalid state transition: no attestation id";
 
-      vaa = xfer.vaas && xfer.vaas.length > 0 && xfer.vaas[0]!.vaa ? xfer.vaas[0].vaa : undefined;
       // we need to get the attestation so we can deliver it
       // we can use the message id we parsed out of the logs, if we have them
       // or try to fetch it from the last origin transaction
+      let vaa = receipt.attestation.attestation ? receipt.attestation.attestation : undefined;
       if (!vaa) {
         vaa = await TokenTransfer.getTransferVaa(
           wh,
-          { ...receipt.attestation },
+          { ...receipt.attestation.id },
           leftover(start, timeout),
         );
+        receipt.attestation.attestation = vaa;
         receipt.state = TransferState.Attested;
         yield receipt.state;
       }
     }
 
     if (receipt.state == TransferState.Attested) {
-      if (!receipt.attestation || !vaa) throw "Invalid state transition";
+      if (!receipt.attestation) throw "Invalid state transition";
 
       // First try to grab the tx status from the API
       // Note: this requires a subsequent async step on the backend
       // to have the dest txid populated, so it may be delayed by some time
       const txStatus = await wh.getTransactionStatus(
-        receipt.attestation!,
+        receipt.attestation.id!,
         leftover(start, timeout),
       );
       if (!txStatus) return receipt;
@@ -338,7 +342,15 @@ export class TokenTransfer<N extends Network = Network>
       }
 
       // Fall back to asking the destination chain if this VAA has been redeemed
-      if ((await TokenTransfer.isTransferComplete(_toChain, vaa), leftover(start, timeout))) {
+      // assuming we have the full attestation
+      if (
+        receipt.attestation.attestation &&
+        (await TokenTransfer.isTransferComplete(
+          _toChain,
+          receipt.attestation.attestation as TransferVAA,
+        ),
+        leftover(start, timeout))
+      ) {
         receipt.state = TransferState.DestinationFinalized;
         yield receipt.state;
       }
@@ -614,17 +626,21 @@ export class TokenTransfer<N extends Network = Network>
     typeof xfer.transfer.to.chain
   > {
     const att = xfer.vaas && xfer.vaas.length > 0 ? xfer.vaas![0]! : undefined;
+
+    const attestation = att && att.id.emitter ? { id: att.id, attestation: att.vaa } : undefined;
+
     const receipt = {
       from: xfer.transfer.from.chain,
       to: xfer.transfer.to.chain,
       state: TransferState.SourceInitiated,
       originTxs: xfer.txids.filter((txid) => txid.chain === xfer.transfer.from.chain),
       destinationTxs: xfer.txids.filter((txid) => txid.chain === xfer.transfer.to.chain),
-      attestation: att && att.id.emitter ? { ...att.id } : undefined,
+      attestation,
     };
 
     if (receipt.originTxs.length > 0) receipt.state = TransferState.SourceInitiated;
-    if (receipt.attestation && receipt.attestation.emitter) receipt.state = TransferState.Attested;
+    if (receipt.attestation && receipt.attestation.attestation)
+      receipt.state = TransferState.Attested;
     if (receipt.destinationTxs.length > 0) receipt.state = TransferState.DestinationInitiated;
 
     return receipt;
