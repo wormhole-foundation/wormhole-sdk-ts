@@ -53,16 +53,15 @@ export const connectPayload = [
   payloadIdItem(1),
   { name: "targetRelayerFee", ...amountItem },
   { name: "toNativeTokenAmount", ...amountItem },
-  { name: "targetRecipientWallet", ...universalAddressItem },
+  { name: "targetRecipient", ...universalAddressItem },
 ] as const;
 
 export const namedPayloads = [
   ["DepositWithPayload", depositWithBytesPayload({})],
-  ["TransferRelay", depositWithSizedLayoutPayload(1 + 3 * 32, connectPayload)],
+  ["TransferWithRelay", depositWithSizedLayoutPayload(1 + 3 * 32, connectPayload)],
 ] as const satisfies NamedPayloads;
 
 // factory registration:
-
 declare global {
   namespace WormholeNamespace {
     interface PayloadLiteralToLayoutMapping

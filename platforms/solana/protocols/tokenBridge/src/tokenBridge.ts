@@ -186,9 +186,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
     throw ErrNotWrapped(token.address.toUniversalAddress().toString());
   }
 
-  async isTransferCompleted(
-    vaa: TokenBridge.VAA<'Transfer' | 'TransferWithPayload'>,
-  ): Promise<boolean> {
+  async isTransferCompleted(vaa: TokenBridge.TransferVAA): Promise<boolean> {
     return coreUtils
       .getClaim(
         this.connection,
@@ -240,7 +238,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
   }
 
   async *submitAttestation(
-    vaa: TokenBridge.VAA<'AttestMeta'>,
+    vaa: TokenBridge.AttestVAA,
     payer?: AnySolanaAddress,
   ): AsyncGenerator<SolanaUnsignedTransaction<N, C>> {
     if (!payer) throw new Error('Payer required to create attestation');
@@ -503,7 +501,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
 
   private async *redeemAndUnwrap(
     sender: AnySolanaAddress,
-    vaa: TokenBridge.VAA<'Transfer' | 'TransferWithPayload'>,
+    vaa: TokenBridge.TransferVAA,
     blockhash: string,
   ) {
     // sender, fee payer
@@ -605,7 +603,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
 
   async *redeem(
     sender: AnySolanaAddress,
-    vaa: TokenBridge.VAA<'Transfer' | 'TransferWithPayload'>,
+    vaa: TokenBridge.TransferVAA,
     unwrapNative: boolean = false,
   ) {
     const { blockhash } = await this.connection.getLatestBlockhash();

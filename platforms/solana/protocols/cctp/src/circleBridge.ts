@@ -4,13 +4,11 @@ import {
   ChainAddress,
   ChainsConfig,
   CircleBridge,
-  CircleMessage,
   CircleTransferMessage,
   Contracts,
   Network,
   Platform,
   circle,
-  deserializeCircleMessage,
 } from '@wormhole-foundation/connect-sdk';
 
 import { EventParser, Program } from '@project-serum/anchor';
@@ -87,7 +85,7 @@ export class SolanaCircleBridge<N extends Network, C extends SolanaChains>
 
   async *redeem(
     sender: AccountAddress<C>,
-    message: CircleMessage,
+    message: CircleBridge.Message,
     attestation: string,
   ): AsyncGenerator<SolanaUnsignedTransaction<N, C>> {
     const usdc = new PublicKey(
@@ -164,7 +162,7 @@ export class SolanaCircleBridge<N extends Network, C extends SolanaChains>
       ...messageTransmitterParser.parseLogs(tx.meta.logMessages || []),
     ];
     const message = new Uint8Array(messageLogs[0].data['message'] as Buffer);
-    const [msg, hash] = deserializeCircleMessage(message);
+    const [msg, hash] = CircleBridge.deserialize(message);
 
     const { payload: body } = msg;
 

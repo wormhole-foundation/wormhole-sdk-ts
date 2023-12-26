@@ -113,9 +113,7 @@ export class CosmwasmTokenBridge<N extends Network, C extends CosmwasmChains>
     };
   }
 
-  async isTransferCompleted(
-    vaa: TokenBridge.VAA<"Transfer" | "TransferWithPayload">,
-  ): Promise<boolean> {
+  async isTransferCompleted(vaa: TokenBridge.TransferVAA): Promise<boolean> {
     const data = encoding.b64.encode(serialize(vaa));
     const result = await this.rpc.queryContractSmart(this.tokenBridge, {
       is_vaa_redeemed: { vaa: data },
@@ -160,7 +158,7 @@ export class CosmwasmTokenBridge<N extends Network, C extends CosmwasmChains>
   }
 
   async *submitAttestation(
-    vaa: TokenBridge.VAA<"AttestMeta">,
+    vaa: TokenBridge.AttestVAA,
     payer?: AnyCosmwasmAddress,
   ): AsyncGenerator<CosmwasmUnsignedTransaction<N, C>> {
     if (!payer) throw new Error("Payer required to submit attestation");
@@ -279,7 +277,7 @@ export class CosmwasmTokenBridge<N extends Network, C extends CosmwasmChains>
 
   async *redeem(
     sender: AnyCosmwasmAddress,
-    vaa: TokenBridge.VAA<"Transfer" | "TransferWithPayload">,
+    vaa: TokenBridge.TransferVAA,
     unwrapNative: boolean = true,
   ): AsyncGenerator<CosmwasmUnsignedTransaction<N, C>> {
     // TODO: unwrapNative

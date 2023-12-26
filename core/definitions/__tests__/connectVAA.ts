@@ -1,4 +1,4 @@
-import "../src/payloads/connect";
+import "../src/payloads/automaticCircleBridge";
 import { encoding } from "@wormhole-foundation/sdk-base";
 import { deserialize, deserializePayload } from "../src/vaa";
 
@@ -13,7 +13,7 @@ describe("Circle Transfer VAA tests", function () {
 
       const parsed = deserialize("Uint8Array", vaaBytes);
 
-      const x = deserializePayload("AutomaticCircleBridge:TransferRelay", parsed.payload);
+      const x = deserializePayload("AutomaticCircleBridge:TransferWithRelay", parsed.payload);
       expect(x).toBeTruthy();
       // ...
     }

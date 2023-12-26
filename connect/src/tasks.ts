@@ -63,10 +63,7 @@ export async function isTokenBridgeVaaRedeemed<
   N extends Network,
   P extends Platform,
   C extends Chain,
->(
-  tb: TokenBridge<N, P, C>,
-  vaa: TokenBridge.VAA<"Transfer" | "TransferWithPayload">,
-): Promise<boolean | null> {
+>(tb: TokenBridge<N, P, C>, vaa: TokenBridge.TransferVAA): Promise<boolean | null> {
   try {
     const isRedeemed = await tb.isTransferCompleted(vaa);
     // Only return a real value if its true, otherwise return null

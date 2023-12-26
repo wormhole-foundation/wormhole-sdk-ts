@@ -23,7 +23,7 @@ export function createCompleteTransferWrappedInstruction(
   tokenBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: TokenBridge.VAA<'Transfer' | 'TransferWithPayload'>,
+  vaa: TokenBridge.TransferVAA,
   feeRecipient?: PublicKeyInitData,
 ): TransactionInstruction {
   const methods = createReadOnlyTokenBridgeProgramInterface(
@@ -68,7 +68,7 @@ export function getCompleteTransferWrappedAccounts(
   tokenBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: TokenBridge.VAA<'Transfer' | 'TransferWithPayload'>,
+  vaa: TokenBridge.TransferVAA,
   feeRecipient?: PublicKeyInitData,
 ): CompleteTransferWrappedAccounts {
   const mint = deriveWrappedMintKey(

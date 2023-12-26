@@ -123,9 +123,7 @@ export class EvmTokenBridge<N extends Network, C extends EvmChains>
     return new EvmAddress(wrappedAddress) as NativeAddress<C>;
   }
 
-  async isTransferCompleted(
-    vaa: TokenBridge.VAA<'Transfer' | 'TransferWithPayload'>,
-  ): Promise<boolean> {
+  async isTransferCompleted(vaa: TokenBridge.TransferVAA): Promise<boolean> {
     //The double keccak here is neccessary due to a fuckup in the original implementation of the
     //  EVM core bridge:
     //Guardians don't sign messages (bodies) but explicitly hash them via keccak256 first.
@@ -155,7 +153,7 @@ export class EvmTokenBridge<N extends Network, C extends EvmChains>
   }
 
   async *submitAttestation(
-    vaa: TokenBridge.VAA<'AttestMeta'>,
+    vaa: TokenBridge.AttestVAA,
   ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
     const func = (await this.hasWrappedAsset({
       ...vaa.payload.token,
@@ -252,7 +250,7 @@ export class EvmTokenBridge<N extends Network, C extends EvmChains>
 
   async *redeem(
     sender: AccountAddress<C>,
-    vaa: TokenBridge.VAA<'Transfer' | 'TransferWithPayload'>,
+    vaa: TokenBridge.TransferVAA,
     unwrapNative: boolean = true,
   ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
     const senderAddr = new EvmAddress(sender).toString();

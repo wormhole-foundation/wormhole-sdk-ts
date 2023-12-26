@@ -1,14 +1,15 @@
 import {
-  ChainToPlatform,
-  Platform,
   Chain,
+  ChainToPlatform,
   Network,
+  Platform,
   PlatformToChains,
   encoding,
   toChain,
 } from "@wormhole-foundation/sdk-base";
 import {
   AttestationId,
+  AutomaticTokenBridge,
   ChainContext,
   Signer,
   TokenAddress,
@@ -17,12 +18,13 @@ import {
   TokenTransferDetails,
   TransactionId,
   TxHash,
-  UniversalAddress,
   UnsignedTransaction,
   WormholeMessageId,
+  deserialize,
   isTokenTransferDetails,
   isTransactionIdentifier,
   isWormholeMessageId,
+  serialize,
   toNative,
   toUniversal,
 } from "@wormhole-foundation/sdk-definitions";
@@ -36,7 +38,7 @@ import {
   WormholeTransfer,
 } from "../wormholeTransfer";
 
-type TokenTransferVAA = TokenBridge.VAA<"Transfer" | "TransferWithPayload">;
+type TransferVAA = TokenBridge.TransferVAA | AutomaticTokenBridge.VAA;
 
 export class TokenTransfer<N extends Network = Network>
   implements WormholeTransfer<"TokenBridge" | "AutomaticTokenBridge">
@@ -56,7 +58,7 @@ export class TokenTransfer<N extends Network = Network>
   // on the source chain (if its been completed and finalized)
   vaas?: {
     id: WormholeMessageId;
-    vaa?: TokenTransferVAA;
+    vaa?: TransferVAA;
   }[];
 
   private constructor(wh: Wormhole<N>, transfer: TokenTransferDetails) {
@@ -122,48 +124,34 @@ export class TokenTransfer<N extends Network = Network>
     timeout?: number,
   ): Promise<TokenTransfer<N>> {
     const vaa = await TokenTransfer.getTransferVaa(wh, id, timeout);
-
-    // Check if its a payload 3 targeted at a relayer on the destination chain
-    const automatic = TokenTransfer.isAutomatic(wh, vaa);
+    const automatic = vaa.protocolName === "AutomaticTokenBridge";
 
     // TODO: the `from.address` here is a lie, but we don't
     // immediately have enough info to get the _correct_ one
-    // TODO: grab at least the init tx from the api
-    const from = { chain: vaa.emitterChain, address: vaa.emitterAddress };
-
+    let from = { chain: vaa.emitterChain, address: vaa.emitterAddress };
     let { token, to } = vaa.payload;
 
-    const { address, chain } = token;
-    const decimals = await wh.getDecimals(token.chain, token.address);
     const rescale = (amt: bigint, decimals: bigint) =>
       decimals > 8 ? amt * 10n ** (decimals - 8n) : amt;
-
-    const _amount = rescale(token.amount, decimals);
+    const amount = rescale(token.amount, await wh.getDecimals(token.chain, token.address));
 
     let nativeGasAmount: bigint = 0n;
     if (automatic) {
-      const relayerPayload = (vaa as TokenBridge.VAA<"TransferWithPayload">).payload.payload;
-      // TODO: how do we not have a payload for this yet
-      // const type = relayerPayload.slice(0, 1);
-      // const fee = rescale(encoding.bignum.decode(relayerPayload.slice(1, 33)), decimals);
-
-      // Scale gas to account for truncated VAA amount
-      nativeGasAmount = rescale(encoding.bignum.decode(relayerPayload.slice(33, 65)), decimals);
-      // actual receiver
-      const receiver = new UniversalAddress(relayerPayload.slice(65, 97));
-      // Overwrite the receiver
-      to = { chain: vaa.payload.to.chain, address: receiver };
+      nativeGasAmount = vaa.payload.payload.toNativeTokenAmount;
+      from = { chain: vaa.emitterChain, address: vaa.payload.from };
+      to = { chain: vaa.payload.to.chain, address: vaa.payload.payload.targetRecipient };
     }
 
     const details: TokenTransferDetails = {
-      token: { address, chain },
-      amount: _amount,
+      token: token,
+      amount,
       from,
       to,
       automatic,
       nativeGas: nativeGasAmount,
     };
 
+    // TODO: grab at least the init tx from the api
     const tt = new TokenTransfer(wh, details);
     tt.vaas = [{ id: id, vaa }];
     tt._state = TransferState.Attested;
@@ -262,12 +250,7 @@ export class TokenTransfer<N extends Network = Network>
     if (!vaa) throw new Error(`No VAA found for ${this.vaas[0]!.id.sequence}`);
 
     const toChain = this.wh.getChain(this.transfer.to.chain);
-    const redeemTxids = await TokenTransfer.redeem<N>(
-      toChain,
-      vaa as TokenTransferVAA,
-      signer,
-      this.transfer.automatic,
-    );
+    const redeemTxids = await TokenTransfer.redeem<N>(toChain, vaa, signer);
 
     this.txids.push(...redeemTxids);
     return redeemTxids.map(({ txid }) => txid);
@@ -392,23 +375,15 @@ export class TokenTransfer<N extends Network = Network>
   // Static method to allow passing a custom RPC
   static async redeem<N extends Network>(
     toChain: ChainContext<N, Platform, Chain>,
-    vaa: TokenTransferVAA,
+    vaa: TokenBridge.TransferVAA | AutomaticTokenBridge.VAA,
     signer: Signer<N, Chain>,
-    automatic?: boolean,
   ): Promise<TransactionId[]> {
     const signerAddress = toNative(signer.chain(), signer.address());
 
-    let xfer: AsyncGenerator<UnsignedTransaction<N, Chain>>;
-    if (automatic) {
-      if (vaa.payloadName === "Transfer")
-        throw new Error("VAA is a simple transfer but expected Payload for automatic delivery");
-
-      const tb = await toChain.getAutomaticTokenBridge();
-      xfer = tb.redeem(signerAddress, vaa);
-    } else {
-      const tb = await toChain.getTokenBridge();
-      xfer = tb.redeem(signerAddress, vaa);
-    }
+    const xfer =
+      vaa.protocolName === "AutomaticTokenBridge"
+        ? (await toChain.getAutomaticTokenBridge()).redeem(signerAddress, vaa)
+        : (await toChain.getTokenBridge()).redeem(signerAddress, vaa);
 
     return signSendWait<N, Chain>(toChain, xfer, signer);
   }
@@ -417,7 +392,11 @@ export class TokenTransfer<N extends Network = Network>
     N extends Network,
     P extends Platform,
     C extends PlatformToChains<P>,
-  >(toChain: ChainContext<N, P, C>, vaa: TokenTransferVAA): Promise<boolean> {
+  >(toChain: ChainContext<N, P, C>, vaa: TransferVAA): Promise<boolean> {
+    // TODO: converter?
+    if (vaa.protocolName === "AutomaticTokenBridge")
+      vaa = deserialize("TokenBridge:TransferWithPayload", serialize(vaa));
+
     const tb = await toChain.getTokenBridge();
     return tb.isTransferCompleted(vaa);
   }
@@ -437,13 +416,26 @@ export class TokenTransfer<N extends Network = Network>
     wh: Wormhole<N>,
     key: WormholeMessageId | TxHash,
     timeout?: number,
-  ): Promise<TokenTransferVAA> {
+  ): Promise<TransferVAA> {
     const vaa =
       typeof key === "string"
         ? await wh.getVaaByTxHash(key, TokenBridge.getTransferDiscriminator(), timeout)
         : await wh.getVaa(key, TokenBridge.getTransferDiscriminator(), timeout);
 
     if (!vaa) throw new Error(`No VAA available after retries exhausted`);
+
+    // TODO: converter
+    // Check if its automatic and re-de-serialize
+    if (vaa.payloadName === "TransferWithPayload") {
+      const { chain, address } = vaa.payload.to;
+      const { tokenBridgeRelayer } = wh.config.chains[chain]!.contracts;
+      const relayerAddress = tokenBridgeRelayer ? toUniversal(chain, tokenBridgeRelayer) : null;
+      // If the target address is the relayer address, expect its an automatic token bridge vaa
+      if (!!relayerAddress && address.equals(relayerAddress)) {
+        return deserialize("AutomaticTokenBridge:TransferWithRelay", serialize(vaa));
+      }
+    }
+
     return vaa;
   }
 
@@ -479,20 +471,6 @@ export class TokenTransfer<N extends Network = Network>
     const dstTb = await dstChain.getTokenBridge();
     const dstAddress = await dstTb.getWrappedAsset(lookup);
     return { chain: dstChain.chain, address: dstAddress };
-  }
-
-  static isAutomatic<N extends Network>(wh: Wormhole<N>, vaa: TokenTransferVAA) {
-    // Check if its a payload 3 targeted at a relayer on the destination chain
-    const { chain, address } = vaa.payload.to;
-    const { tokenBridgeRelayer } = wh.config.chains[chain]!.contracts;
-
-    const relayerAddress = tokenBridgeRelayer ? toUniversal(chain, tokenBridgeRelayer) : null;
-
-    return (
-      vaa.payloadName === "TransferWithPayload" &&
-      !!relayerAddress &&
-      address.equals(relayerAddress)
-    );
   }
 
   static async validateTransferDetails<N extends Network>(

@@ -342,7 +342,7 @@ export function getCompleteTransferNativeWithPayloadCpiAccounts(
   tokenBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: TokenBridge.VAA<'Transfer' | 'TransferWithPayload'>,
+  vaa: TokenBridge.TransferVAA,
   toTokenAccount: PublicKeyInitData,
 ): CompleteTransferNativeWithPayloadCpiAccounts {
   const mint = new PublicKey(vaa.payload.token.address.toUint8Array());
@@ -429,7 +429,7 @@ export function getCompleteTransferWrappedWithPayloadCpiAccounts(
   tokenBridgeProgramId: PublicKeyInitData,
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  vaa: TokenBridge.VAA<'Transfer' | 'TransferWithPayload'>,
+  vaa: TokenBridge.TransferVAA,
   toTokenAccount: PublicKeyInitData,
 ): CompleteTransferWrappedWithPayloadCpiAccounts {
   const mint = deriveWrappedMintKey(

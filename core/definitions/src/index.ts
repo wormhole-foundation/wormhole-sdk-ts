@@ -1,5 +1,5 @@
 // Make sure payloads are registered
-import "./payloads/connect";
+import "./payloads/automaticCircleBridge";
 import "./payloads/relayer";
 import "./payloads/governance";
 import "./payloads/tokenBridge";
@@ -23,7 +23,7 @@ export * from "./types";
 
 export * from "./protocols/core";
 export * from "./protocols/tokenBridge";
-export * from "./protocols/cctp";
+export * from "./protocols/circleBridge";
 export * from "./protocols/ibc";
 
 export * as layoutItems from "./layout-items";
