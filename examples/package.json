@@ -33,6 +33,7 @@
   },
   "sideEffects": false,
   "scripts": {
+    "algo": "tsx src/algoTokenBridge.ts",
     "tb": "tsx src/tokenBridge.ts",
     "cctp": "tsx src/cctp.ts",
     "demo": "tsx src/index.ts",
@@ -50,17 +51,25 @@
   },
   "dependencies": {
     "@wormhole-foundation/connect-sdk": "^0.3.0-beta.5",
+
     "@wormhole-foundation/connect-sdk-solana": "^0.3.0-beta.5",
     "@wormhole-foundation/connect-sdk-evm": "^0.3.0-beta.5",
     "@wormhole-foundation/connect-sdk-cosmwasm": "^0.3.0-beta.5",
+    "@wormhole-foundation/connect-sdk-algorand": "^0.3.0-beta.5",
+
     "@wormhole-foundation/connect-sdk-evm-core": "^0.3.0-beta.5",
     "@wormhole-foundation/connect-sdk-solana-core": "^0.3.0-beta.5",
     "@wormhole-foundation/connect-sdk-cosmwasm-core": "^0.3.0-beta.5",
+    "@wormhole-foundation/connect-sdk-algorand-core": "^0.3.0-beta.5",
+
     "@wormhole-foundation/connect-sdk-evm-tokenbridge": "^0.3.0-beta.5",
     "@wormhole-foundation/connect-sdk-solana-tokenbridge": "^0.3.0-beta.5",
     "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge": "^0.3.0-beta.5",
+    "@wormhole-foundation/connect-sdk-algorand-tokenbridge": "^0.3.0-beta.5",
+
     "@wormhole-foundation/connect-sdk-evm-cctp": "^0.3.0-beta.5",
     "@wormhole-foundation/connect-sdk-solana-cctp": "^0.3.0-beta.5",
+
     "@wormhole-foundation/connect-sdk-cosmwasm-ibc": "^0.3.0-beta.5"
   }
 }

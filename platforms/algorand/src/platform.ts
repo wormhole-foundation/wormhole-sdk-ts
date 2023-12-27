@@ -4,29 +4,32 @@ import {
   ChainsConfig,
   Network,
   PlatformContext,
-  ProtocolInitializer,
-  ProtocolName,
   SignedTx,
   TokenId,
   TxHash,
-  WormholeCore,
-  WormholeMessageId,
+  Wormhole,
   chainToPlatform,
-  getProtocolInitializer,
+  decimals,
   nativeChainIds,
   networkPlatformConfigs,
 } from "@wormhole-foundation/connect-sdk";
-
-import { Algodv2 } from "algosdk";
+import {
+  Algodv2,
+  SignedTransaction,
+  bytesToBigInt,
+  decodeSignedTransaction,
+  waitForConfirmation,
+  modelsv2,
+} from "algosdk";
 import { AlgorandChain } from "./chain";
 import { AlgorandChains, AlgorandPlatformType, AnyAlgorandAddress, _platform } from "./types";
+import { AlgorandAddress, AlgorandZeroAddress } from "./address";
 
 /**
  * @category Algorand
  */
-
 export class AlgorandPlatform<N extends Network> extends PlatformContext<N, AlgorandPlatformType> {
-  static _platform: AlgorandPlatformType = _platform;
+  static _platform = _platform;
 
   constructor(network: N, _config?: ChainsConfig<N, AlgorandPlatformType>) {
     super(network, _config ?? networkPlatformConfigs(network, AlgorandPlatform._platform));
@@ -42,25 +45,13 @@ export class AlgorandPlatform<N extends Network> extends PlatformContext<N, Algo
     throw new Error("No configuration available for chain: " + chain);
   }
 
-  async parseTransaction<C extends AlgorandChains>(
-    chain: C,
-    rpc: Algodv2,
-    txid: TxHash,
-  ): Promise<WormholeMessageId[]> {
-    const wc: WormholeCore<N, AlgorandPlatformType, C> = await this.getProtocol(
-      "WormholeCore",
-      rpc,
-    );
-    return wc.parseTransaction(txid);
-  }
-
   static nativeTokenId<N extends Network, C extends AlgorandChains>(
     network: N,
     chain: C,
   ): TokenId<C> {
     if (!AlgorandPlatform.isSupportedChain(chain))
       throw new Error(`invalid chain for ${_platform}: ${chain}`);
-    throw new Error("Not implemented");
+    return Wormhole.chainAddress(chain, AlgorandZeroAddress);
   }
 
   static isNativeTokenId<N extends Network, C extends AlgorandChains>(
@@ -70,7 +61,8 @@ export class AlgorandPlatform<N extends Network> extends PlatformContext<N, Algo
   ): boolean {
     if (!AlgorandPlatform.isSupportedChain(chain)) return false;
     if (tokenId.chain !== chain) return false;
-    throw new Error("Not implemented");
+    const native = this.nativeTokenId(network, chain);
+    return native == tokenId;
   }
 
   static isSupportedChain(chain: Chain): boolean {
@@ -78,12 +70,24 @@ export class AlgorandPlatform<N extends Network> extends PlatformContext<N, Algo
     return platform === AlgorandPlatform._platform;
   }
 
+  static anyAlgorandAddressToAsaId(address: AnyAlgorandAddress): number {
+    const addr = new AlgorandAddress(address.toString());
+    const lastEightBytes = addr.toUint8Array().slice(-8);
+    const asaId = Number(bytesToBigInt(lastEightBytes));
+    return asaId;
+  }
+
   static async getDecimals(
     chain: Chain,
     rpc: Algodv2,
     token: AnyAlgorandAddress | "native",
   ): Promise<bigint> {
-    throw new Error("Not implemented");
+    if (token === "native") return BigInt(decimals.nativeDecimals(AlgorandPlatform._platform));
+    const asaId = this.anyAlgorandAddressToAsaId(token);
+    const assetResp = await rpc.getAssetByID(asaId).do();
+    const asset = modelsv2.Asset.from_obj_for_encoding(assetResp);
+    if (!asset.params || !asset.params.decimals) throw new Error("Could not fetch token details");
+    return BigInt(asset.params.decimals);
   }
 
   static async getBalance(
@@ -92,7 +96,15 @@ export class AlgorandPlatform<N extends Network> extends PlatformContext<N, Algo
     walletAddr: string,
     token: AnyAlgorandAddress | "native",
   ): Promise<bigint | null> {
-    throw new Error("Not  implemented");
+    if (token === "native") {
+      const resp = await rpc.accountInformation(walletAddr).do();
+      const accountInfo = modelsv2.Account.from_obj_for_encoding(resp);
+      return BigInt(accountInfo.amount);
+    }
+    const asaId = this.anyAlgorandAddressToAsaId(token);
+    const acctAssetInfoResp = await rpc.accountAssetInformation(walletAddr, asaId).do();
+    const accountAssetInfo = modelsv2.AssetHolding.from_obj_for_encoding(acctAssetInfoResp);
+    return BigInt(accountAssetInfo.amount);
   }
 
   static async getBalances(
@@ -101,40 +113,87 @@ export class AlgorandPlatform<N extends Network> extends PlatformContext<N, Algo
     walletAddr: string,
     tokens: (AnyAlgorandAddress | "native")[],
   ): Promise<Balances> {
-    throw new Error("Not implemented");
+    let native: bigint;
+    if (tokens.includes("native")) {
+      const acctInfoResp = await rpc.accountInformation(walletAddr).do();
+      const accountInfo = modelsv2.Account.from_obj_for_encoding(acctInfoResp);
+      native = BigInt(accountInfo.amount);
+    }
+    const balancesArr = tokens.map(async (token) => {
+      if (token === "native") {
+        return { ["native"]: native };
+      }
+      const asaId = this.anyAlgorandAddressToAsaId(token);
+      const acctAssetInfoResp = await rpc.accountAssetInformation(walletAddr, asaId).do();
+      const accountAssetInfo = modelsv2.AssetHolding.from_obj_for_encoding(acctAssetInfoResp);
+      return BigInt(accountAssetInfo.amount);
+    });
+
+    return balancesArr.reduce((obj, item) => Object.assign(obj, item), {});
   }
 
   static async sendWait(chain: Chain, rpc: Algodv2, stxns: SignedTx[]): Promise<TxHash[]> {
-    throw new Error("Not implemented");
+    const rounds = 4;
+
+    const decodedStxns: SignedTransaction[] = stxns.map((val, idx) => {
+      const decodedStxn: SignedTransaction = decodeSignedTransaction(val);
+      return decodedStxn;
+    });
+
+    const txIds: string[] = decodedStxns.map((val, idx) => {
+      const id: string = val.txn.txID();
+      return id;
+    });
+
+    const { txId } = await rpc.sendRawTransaction(stxns).do();
+    if (!txId) {
+      throw new Error("Transaction(s) failed to send");
+    }
+    const confirmResp = await waitForConfirmation(rpc, txId, rounds);
+    const ptr = modelsv2.PendingTransactionResponse.from_obj_for_encoding(confirmResp);
+    if (!ptr.confirmedRound) {
+      throw new Error(`Transaction(s) could not be confirmed in ${rounds} rounds`);
+    }
+
+    console.log("txIds: ", txIds);
+    return txIds;
   }
 
   static async getLatestBlock(rpc: Algodv2): Promise<number> {
-    throw new Error("Not implemented");
-  }
-  static async getLatestFinalizedBlock(rpc: Algodv2): Promise<number> {
-    throw new Error("Not implemented");
+    const statusResp = await rpc.status().do();
+    const status = modelsv2.NodeStatusResponse.from_obj_for_encoding(statusResp);
+    if (!status.lastRound) {
+      throw new Error("Error getting status from node");
+    }
+    return Number(status.lastRound);
   }
 
-  static chainFromChainId(genesisHash: string): [Network, AlgorandChains] {
+  static async getLatestFinalizedBlock(rpc: Algodv2): Promise<number> {
+    const statusResp = await rpc.status().do();
+    const status = modelsv2.NodeStatusResponse.from_obj_for_encoding(statusResp);
+    if (!status.lastRound) {
+      throw new Error("Error getting status from node");
+    }
+    return Number(status.lastRound);
+  }
+
+  static chainFromChainId(genesisId: string): [Network, AlgorandChains] {
     const networkChainPair = nativeChainIds.platformNativeChainIdToNetworkChain(
       AlgorandPlatform._platform,
       // @ts-ignore
-      genesisHash,
+      genesisId,
     );
 
-    if (networkChainPair === undefined) throw new Error(`Unknown native chain id ${genesisHash}`);
+    if (networkChainPair === undefined) throw new Error(`Unknown native chain id ${genesisId}`);
 
     const [network, chain] = networkChainPair;
     return [network, chain];
   }
 
   static async chainFromRpc(rpc: Algodv2): Promise<[Network, AlgorandChains]> {
-    throw new Error("Not implemented");
-  }
-
-  static getProtocolInitializer<PN extends ProtocolName>(
-    protocol: PN,
-  ): ProtocolInitializer<AlgorandPlatformType, PN> {
-    return getProtocolInitializer(this._platform, protocol);
+    const versionResp = await rpc.versionsCheck().do();
+    const version = modelsv2.Version.from_obj_for_encoding(versionResp);
+    // const genesisHash = Buffer.from(version.genesisHashB64).toString("base64");
+    return this.chainFromChainId(version.genesisId);
   }
 }

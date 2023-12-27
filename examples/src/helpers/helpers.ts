@@ -14,9 +14,10 @@ import {
 } from "@wormhole-foundation/connect-sdk";
 
 // Importing from src so we dont have to rebuild to see debug stuff in signer
-import { getCosmwasmSigner } from "@wormhole-foundation/connect-sdk-cosmwasm/src/testing";
 import { getEvmSigner } from "@wormhole-foundation/connect-sdk-evm/src/testing";
 import { getSolanaSigner } from "@wormhole-foundation/connect-sdk-solana/src/testing";
+import { getCosmwasmSigner } from "@wormhole-foundation/connect-sdk-cosmwasm/src/testing";
+import { getAlgorandSigner } from "@wormhole-foundation/connect-sdk-algorand/src/testing";
 
 // read in from `.env`
 require("dotenv").config();
@@ -58,6 +59,9 @@ export async function getStuff<
       break;
     case "Evm":
       signer = await getEvmSigner(await chain.getRpc(), getEnv("ETH_PRIVATE_KEY"));
+      break;
+    case "Algorand":
+      signer = await getAlgorandSigner(await chain.getRpc(), getEnv("ALGORAND_MNEMONIC"));
       break;
     default:
       throw new Error("Unrecognized platform: " + platform);
