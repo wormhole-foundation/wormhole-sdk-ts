@@ -1,4 +1,4 @@
-import { Chain, ChainId, toChainId } from "@wormhole-foundation/connect-sdk";
+import { ChainId } from "@wormhole-foundation/connect-sdk";
 import {
   CHAIN_ID_ALGORAND,
   TransactionSignerPair,
@@ -7,20 +7,15 @@ import {
   Algodv2,
   Transaction,
   bigIntToBytes,
-  bytesToBigInt,
   getApplicationAddress,
   makeApplicationOptInTxnFromObject,
   makePaymentTxnWithSuggestedParamsFromObject,
+  modelsv2,
   signLogicSigTransaction,
-  modelsv2
 } from "algosdk";
-import { OptInResult, WormholeWrappedInfo } from "./types";
-import { safeBigIntToNumber } from "./utilities";
-import { calcLogicSigAccount, decodeLocalState } from "./apps";
-import { hex } from "@wormhole-foundation/sdk-base/src/utils/encoding";
-import { SEED_AMT } from "./constants";
-
-const accountExistsCache = new Set<[bigint, string]>();
+import { StorageLsig } from "./storage";
+import { TransactionSet, WormholeWrappedInfo } from "./types";
+import { SEED_AMT, decodeLocalState, safeBigIntToNumber } from "./utilities";
 
 /**
  * Returns a boolean if the asset is wrapped
@@ -80,40 +75,6 @@ export async function getOriginalAssetOffAlgorand(
 }
 
 /**
- * Returns an origin chain and asset address on {originChain} for a provided Wormhole wrapped address
- * @param client Algodv2 client
- * @param tokenBridgeId Application ID of the token bridge
- * @param assetId Algorand asset index
- * @returns Promise with the Algorand asset index or null
- */
-export async function getWrappedAssetOnAlgorand(
-  client: Algodv2,
-  tokenBridgeId: bigint,
-  chain: ChainId | Chain,
-  contract: string,
-): Promise<bigint | null> {
-  const chainId = toChainId(chain);
-  if (chainId === CHAIN_ID_ALGORAND) {
-    return bytesToBigInt(hex.decode(contract));
-  } else {
-    let { lsa, doesExist } = await calcLogicSigAccount(
-      client,
-      tokenBridgeId,
-      BigInt(chainId),
-      contract,
-    );
-    if (!doesExist) {
-      return null;
-    }
-    let asset: Uint8Array = await decodeLocalState(client, tokenBridgeId, lsa.address());
-    if (asset.length > 8) {
-      const tmp = Buffer.from(asset.slice(0, 8));
-      return tmp.readBigUInt64BE(0);
-    } else return null;
-  }
-}
-
-/**
  * Calculates the logic sig account for the application
  * @param client An Algodv2 client
  * @param senderAddr Sender address
@@ -122,32 +83,38 @@ export async function getWrappedAssetOnAlgorand(
  * @param emitterId Emitter address
  * @returns Address and array of TransactionSignerPairs
  */
-export async function optIn(
+export async function maybeOptInTx(
   client: Algodv2,
   senderAddr: string,
   appId: bigint,
-  appIndex: bigint,
-  emitterId: string,
-): Promise<OptInResult> {
+  storage: StorageLsig,
+): Promise<TransactionSet> {
   const appAddr: string = getApplicationAddress(appId);
 
-  // Check to see if we need to create this
-  const { doesExist, lsa } = await calcLogicSigAccount(client, appId, appIndex, emitterId);
-  const sigAddr: string = lsa.address();
+  const lsa = storage.lsig();
+  const storageAddress = lsa.address();
+
+  let exists = false;
+  try {
+    // TODO: check
+    await client.accountInformation(storageAddress).do();
+    exists = true;
+  } catch {}
+
   let txs: TransactionSignerPair[] = [];
-  if (!doesExist) {
+  if (!exists) {
     // These are the suggested params from the system
     const params = await client.getTransactionParams().do();
     const seedTxn = makePaymentTxnWithSuggestedParamsFromObject({
       from: senderAddr,
-      to: sigAddr,
+      to: storageAddress,
       amount: SEED_AMT,
       suggestedParams: params,
     });
     seedTxn.fee = seedTxn.fee * 2;
     txs.push({ tx: seedTxn, signer: null });
     const optinTxn = makeApplicationOptInTxnFromObject({
-      from: sigAddr,
+      from: storageAddress,
       suggestedParams: params,
       appIndex: safeBigIntToNumber(appId),
       rekeyTo: appAddr,
@@ -160,11 +127,10 @@ export async function optIn(
         signTxn: (txn: Transaction) => Promise.resolve(signLogicSigTransaction(txn, lsa).blob),
       },
     });
-
-    accountExistsCache.add([appId, lsa.address()]);
   }
+
   return {
-    addr: sigAddr,
+    address: storageAddress,
     txs,
   };
 }

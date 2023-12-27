@@ -26,8 +26,8 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   const wh = new Wormhole("Testnet", [AlgorandPlatform, SolanaPlatform, EvmPlatform]);
 
   // Grab chain Contexts -- these hold a reference to a cached rpc client
-  const sendChain = wh.getChain("Avalanche");
-  const rcvChain = wh.getChain("Algorand");
+  const sendChain = wh.getChain("Algorand");
+  const rcvChain = wh.getChain("Avalanche");
 
   // shortcut to allow transferring native gas token
   const token: TokenId | "native" = "native";
@@ -64,7 +64,7 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 
   // Set this to the transfer txid of the initiating transaction to recover a token transfer
   // and attempt to fetch details about its progress.
-  let recoverTxid = "0x191ffc4682aa0713d1010cff9fa5921c7941871cc9bd0ef431b7154d719825fa";
+  let recoverTxid = undefined;
   // recoverTxid =
   //   "2daoPz9KyVkG8WGztfatMRx3EKbiRSUVGKAoCST9286eGrzXg5xowafBUUKfd3JrHzvd4AwoH57ujWaJ72k6oiCY";
 
@@ -87,12 +87,11 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
         txid: recoverTxid,
       });
 
-  // Log out the results
   console.log(xfer);
-
-  if (xfer.getTransferState() <= TransferState.DestinationInitiated) {
-    console.log(await xfer.completeTransfer(destination.signer));
-  }
+  // Log out the results
+  // if (xfer.getTransferState() <= TransferState.DestinationInitiated) {
+  //   console.log(await xfer.completeTransfer(destination.signer));
+  // }
 })();
 
 async function tokenTransfer<N extends Network>(

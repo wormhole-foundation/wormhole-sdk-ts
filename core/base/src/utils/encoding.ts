@@ -34,14 +34,22 @@ export const b58 = {
 export const bignum = {
   decode: (input: string | Uint8Array) =>
     typeof input === "string" ? BigInt(input) : BigInt(hex.encode(input, true)),
-  encode: (input: bigint, prefix: boolean = false) => (prefix ? "0x" : "") + input.toString(16),
+  encode: (input: bigint, prefix: boolean = false) => bignum.toString(input, prefix),
+  toString: (input: bigint, prefix: boolean = false) => {
+    let str = input.toString(16);
+    str = str.length % 2 === 1 ? (str = "0" + str) : str;
+    if (prefix) return "0x" + str;
+    return str;
+  },
+  toBytes: (input: bigint, length?: number) => {
+    const b = hex.decode(bignum.toString(input));
+    if (!length) return b;
+    return bytes.zpad(b, length);
+  },
 };
 
 export const bytes = {
-  encode: (value: string | bigint): Uint8Array =>
-    typeof value === "bigint"
-      ? bytes.encode(bignum.encode(value))
-      : new TextEncoder().encode(value),
+  encode: (value: string): Uint8Array => new TextEncoder().encode(value),
   decode: (value: Uint8Array): string => new TextDecoder().decode(value),
   equals: (lhs: Uint8Array, rhs: Uint8Array): boolean =>
     lhs.length === rhs.length && lhs.every((v, i) => v === rhs[i]),
