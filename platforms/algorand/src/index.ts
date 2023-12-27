@@ -1,7 +1,8 @@
-export * from './address';
-export * from './unsignedTransaction';
-export * from './platform';
-export * from './types';
-export * from './chain';
+export * from "./address";
+export * from "./chain";
+export * from "./constants";
+export * from "./platform";
+export * from "./types";
+export * from "./unsignedTransaction";
 
-export * as testing from './testing';
+export * as testing from "./testing";

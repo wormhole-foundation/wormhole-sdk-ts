@@ -1,32 +1,75 @@
 import {
-  Chain,
   Network,
   SignOnlySigner,
   SignedTx,
   Signer,
   UnsignedTransaction,
 } from "@wormhole-foundation/connect-sdk";
-import { Algodv2 } from "algosdk";
+import { Account, Algodv2, assignGroupID, mnemonicToSecretKey } from "algosdk";
+import { AlgorandChains } from "../types";
 import { AlgorandPlatform } from "../platform";
 
-export async function getAlgorandSigner(rpc: Algodv2, privateKey: string): Promise<Signer> {
+export async function getAlgorandSigner(
+  rpc: Algodv2,
+  mnemonic: string, // 25-word Algorand mnemonic
+): Promise<Signer> {
   const [network, chain] = await AlgorandPlatform.chainFromRpc(rpc);
-  return new AlgorandSigner<typeof network, typeof chain>(chain, rpc, privateKey);
+  return new AlgorandSigner<typeof network, typeof chain>(chain, rpc, mnemonic);
 }
 
 // AlgorandSigner implements SignOnlySender
-export class AlgorandSigner<N extends Network, C extends Chain> implements SignOnlySigner<N, C> {
-  constructor(private _chain: C, _rpc: Algodv2, privateKey: string) {}
+export class AlgorandSigner<N extends Network, C extends AlgorandChains = "Algorand">
+  implements SignOnlySigner<N, C>
+{
+  _account: Account;
+  constructor(
+    private _chain: C,
+    _rpc: Algodv2,
+    mnemonic: string,
+  ) {
+    this._account = mnemonicToSecretKey(mnemonic);
+  }
 
   chain(): C {
     return this._chain;
   }
 
   address(): string {
-    return "";
+    return this._account.addr;
   }
 
   async sign(tx: UnsignedTransaction[]): Promise<SignedTx[]> {
-    throw new Error("Not implemented");
+    const signed: Uint8Array[] = [];
+    const ungrouped = tx.map((val, idx) => {
+      return val.transaction.tx;
+    });
+    const grouped = assignGroupID(ungrouped);
+
+    // Replace the ungrouped Transactions with grouped Transactions
+    const groupedAlgoUnsignedTxns = tx.map((val, idx) => {
+      val.transaction.tx = grouped[idx];
+      return val;
+    });
+
+    for (const algoUnsignedTxn of groupedAlgoUnsignedTxns) {
+      const { description, transaction: tsp } = algoUnsignedTxn;
+      const { tx, signer } = tsp;
+
+      if (signer) {
+        console.log(
+          `Signing: ${description} transaction ${tx._getDictForDisplay()} with signer ${
+            signer.addr
+          } for address ${this.address()}`,
+        );
+        signed.push(await signer.signTxn(tx));
+      } else {
+        console.log(
+          `Signing: ${description} transaction ${tx._getDictForDisplay()} with signer ${this.address()} for address ${this.address()}`,
+        );
+        signed.push(tx.signTxn(this._account.sk));
+      }
+    }
+
+    return signed;
   }
 }

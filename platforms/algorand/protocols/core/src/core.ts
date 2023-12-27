@@ -5,6 +5,7 @@ import {
   Contracts,
   Network,
   PayloadLiteral,
+  UniversalAddress,
   UnsignedTransaction,
   VAA,
   WormholeCore,
@@ -15,15 +16,19 @@ import {
   AlgorandChains,
   AlgorandPlatform,
   AlgorandPlatformType,
+  AlgorandUnsignedTransaction,
   AnyAlgorandAddress,
 } from "@wormhole-foundation/connect-sdk-algorand";
-import { Algodv2 } from "algosdk";
+import { Algodv2, bytesToBigInt, decodeAddress, getApplicationAddress, modelsv2 } from "algosdk";
 
 export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
   implements WormholeCore<N, AlgorandPlatformType, C>
 {
   readonly chainId: ChainId;
-  readonly coreBridge: string;
+  readonly coreAppId: bigint;
+  readonly coreAppAddress: string;
+  readonly tokenBridgeAppId: bigint;
+  readonly tokenBridgeAppAddress: string;
 
   private constructor(
     readonly network: N,
@@ -32,11 +37,22 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
     readonly contracts: Contracts,
   ) {
     this.chainId = toChainId(chain);
-    const coreBridgeAddress = contracts.coreBridge;
-    if (!coreBridgeAddress)
-      throw new Error(`CoreBridge contract Address for chain ${chain} not found`);
-    this.coreBridge = coreBridgeAddress;
+
+    if (!contracts.coreBridge) {
+      throw new Error(`Core contract address for chain ${chain} not found`);
+    }
+    const core = BigInt(contracts.coreBridge);
+    this.coreAppId = core;
+    this.coreAppAddress = getApplicationAddress(core);
+
+    if (!contracts.tokenBridge) {
+      throw new Error(`TokenBridge contract address for chain ${chain} not found`);
+    }
+    const tokenBridge = BigInt(contracts.tokenBridge);
+    this.tokenBridgeAppId = tokenBridge;
+    this.tokenBridgeAppAddress = getApplicationAddress(tokenBridge);
   }
+
   verifyMessage(
     sender: AccountAddress<C>,
     vaa: VAA<PayloadLiteral>,
@@ -58,11 +74,52 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
   async *publishMessage(
     sender: AnyAlgorandAddress,
     message: string | Uint8Array,
-  ): AsyncGenerator<UnsignedTransaction<N, C>> {
+  ): AsyncGenerator<AlgorandUnsignedTransaction<N, C>> {
     throw new Error("Method not implemented.");
   }
 
   async parseTransaction(txid: string): Promise<WormholeMessageId[]> {
-    throw new Error("Not implemented");
+    console.log("Txid: ", txid);
+    const result = await this.connection.pendingTransactionInformation(txid).do();
+    console.log("Result: ", result);
+
+    // QUESTIONBW: To make this work, I had to use the tokenBridgeAppId.  Expected?
+    const emitterAddr = new UniversalAddress(this.getEmitterAddressAlgorand(this.tokenBridgeAppId));
+    console.log("parseTransaction emitterAddr: ", emitterAddr);
+
+    const sequence = this.parseSequenceFromLogAlgorand(result);
+    console.log("sequence: ", sequence);
+    return [
+      {
+        chain: this.chain,
+        emitter: emitterAddr,
+        sequence,
+      } as WormholeMessageId,
+    ];
+  }
+
+  private getEmitterAddressAlgorand(appId: bigint): string {
+    const appAddr: string = getApplicationAddress(appId);
+    const decAppAddr: Uint8Array = decodeAddress(appAddr).publicKey;
+    const hexAppAddr: string = Buffer.from(decAppAddr).toString("hex");
+    console.log("core.ts Emitter address: ", hexAppAddr);
+    return hexAppAddr;
+  }
+
+  private parseSequenceFromLogAlgorand(result: Record<string, any>): bigint {
+    let sequence: bigint | undefined;
+    const ptr = modelsv2.PendingTransactionResponse.from_obj_for_encoding(result);
+    if (ptr.innerTxns) {
+      const innerTxns = ptr.innerTxns;
+      innerTxns.forEach((txn) => {
+        if (txn?.logs && txn.logs.length > 0 && txn.logs[0]) {
+          sequence = bytesToBigInt(txn.logs[0].subarray(0, 8));
+        }
+      });
+    }
+    if (!sequence) {
+      throw new Error("Sequence not found");
+    }
+    return sequence;
   }
 }

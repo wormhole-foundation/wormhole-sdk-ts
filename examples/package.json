@@ -33,6 +33,7 @@
   },
   "sideEffects": false,
   "scripts": {
+    "algo": "tsx src/algoTokenBridge.ts",
     "tb": "tsx src/tokenBridge.ts",
     "cctp": "tsx src/cctp.ts",
     "demo": "tsx src/index.ts",
