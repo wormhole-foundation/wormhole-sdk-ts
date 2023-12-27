@@ -5,7 +5,7 @@ import {
   Signer,
   UnsignedTransaction,
 } from "@wormhole-foundation/connect-sdk";
-import { Account, Algodv2, assignGroupID, mnemonicToSecretKey } from "algosdk";
+import { Account, Algodv2, Transaction, assignGroupID, mnemonicToSecretKey } from "algosdk";
 import { AlgorandChains } from "../types";
 import { AlgorandPlatform } from "../platform";
 
@@ -53,19 +53,19 @@ export class AlgorandSigner<N extends Network, C extends AlgorandChains = "Algor
 
     for (const algoUnsignedTxn of groupedAlgoUnsignedTxns) {
       const { description, transaction: tsp } = algoUnsignedTxn;
-      const { tx, signer } = tsp;
+      const { tx, signer } = tsp as {
+        tx: Transaction;
+        signer: { addr: string; signTxn: (tx: Transaction) => any };
+      };
 
+      //console.log(tx.txID());
       if (signer) {
         console.log(
-          `Signing: ${description} transaction ${tx._getDictForDisplay()} with signer ${
-            signer.addr
-          } for address ${this.address()}`,
+          `Signing: ${description} with signer ${signer.addr} for address ${this.address()}`,
         );
         signed.push(await signer.signTxn(tx));
       } else {
-        console.log(
-          `Signing: ${description} transaction ${tx._getDictForDisplay()} with signer ${this.address()} for address ${this.address()}`,
-        );
+        console.log(`Signing: ${description} for address ${this.address()}`);
         signed.push(tx.signTxn(this._account.sk));
       }
     }

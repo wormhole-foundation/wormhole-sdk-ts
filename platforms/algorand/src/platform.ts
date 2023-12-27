@@ -180,7 +180,6 @@ export class AlgorandPlatform<N extends Network> extends PlatformContext<N, Algo
   static chainFromChainId(genesisId: string): [Network, AlgorandChains] {
     const networkChainPair = nativeChainIds.platformNativeChainIdToNetworkChain(
       AlgorandPlatform._platform,
-      // @ts-ignore
       genesisId,
     );
 
@@ -193,7 +192,6 @@ export class AlgorandPlatform<N extends Network> extends PlatformContext<N, Algo
   static async chainFromRpc(rpc: Algodv2): Promise<[Network, AlgorandChains]> {
     const versionResp = await rpc.versionsCheck().do();
     const version = modelsv2.Version.from_obj_for_encoding(versionResp);
-    // const genesisHash = Buffer.from(version.genesisHashB64).toString("base64");
     return this.chainFromChainId(version.genesisId);
   }
 }
