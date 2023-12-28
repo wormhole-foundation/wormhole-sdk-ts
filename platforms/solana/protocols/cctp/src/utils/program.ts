@@ -9,7 +9,7 @@ export function createTokenMessengerProgramInterface(
   provider?: Provider,
 ): Program<TokenMessenger> {
   return new Program<TokenMessenger>(
-    idl.TokenMessengerIdl as TokenMessenger,
+    idl.TokenMessengerIdl,
     new PublicKey(programId),
     provider === undefined ? ({ connection: null } as any) : provider,
   );
@@ -30,7 +30,7 @@ export function createMessageTransmitterProgramInterface(
   provider?: Provider,
 ): Program<MessageTransmitter> {
   return new Program<MessageTransmitter>(
-    idl.MessageTransmitterIdl as MessageTransmitter,
+    idl.MessageTransmitterIdl,
     new PublicKey(programId),
     provider === undefined ? ({ connection: null } as any) : provider,
   );

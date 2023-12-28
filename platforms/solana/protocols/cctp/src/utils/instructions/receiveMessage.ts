@@ -15,6 +15,29 @@ import { SolanaAddress } from '@wormhole-foundation/connect-sdk-solana';
 import { findProgramAddress } from '../accounts';
 import { createMessageTransmitterProgramInterface } from '../program';
 
+const MAX_NONCES_PER_ACCOUNT = 6400n;
+
+export function calculateFirstNonce(nonce: bigint) {
+  return (
+    ((nonce - BigInt(1)) / MAX_NONCES_PER_ACCOUNT) * MAX_NONCES_PER_ACCOUNT +
+    BigInt(1)
+  );
+}
+export function nonceAccount(
+  nonce: bigint,
+  sourceChain: circle.CircleChain,
+  messageTransmitterProgramId: PublicKey,
+) {
+  const srcDomain = circle.toCircleChainId(sourceChain).toString();
+  const usedNonces = findProgramAddress(
+    'used_nonces',
+    messageTransmitterProgramId,
+    [srcDomain, calculateFirstNonce(nonce).toString()],
+  ).publicKey;
+
+  return usedNonces;
+}
+
 export async function createReceiveMessageInstruction(
   messageTransmitterProgramId: PublicKey,
   tokenMessengerProgramId: PublicKey,
@@ -84,16 +107,11 @@ export async function createReceiveMessageInstruction(
   ).publicKey;
 
   // Calculate the nonce PDA.
-  const maxNoncesPerAccount = 6400n;
-  const firstNonce =
-    ((circleMessage.nonce - BigInt(1)) / maxNoncesPerAccount) *
-      maxNoncesPerAccount +
-    BigInt(1);
-  const usedNonces = findProgramAddress(
-    'used_nonces',
+  const usedNonces = nonceAccount(
+    circleMessage.nonce,
+    circleMessage.sourceDomain,
     messageTransmitterProgramId,
-    [srcDomain, firstNonce.toString()],
-  ).publicKey;
+  );
 
   // Build the accountMetas list. These are passed as remainingAccounts for the TokenMessengerMinter CPI
   const accountMetas: AccountMeta[] = [];

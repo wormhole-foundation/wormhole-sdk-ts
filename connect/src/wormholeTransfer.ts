@@ -16,7 +16,6 @@ import {
   TokenTransferDetails,
   TransactionId,
   TxHash,
-  VAA,
 } from "@wormhole-foundation/sdk-definitions";
 import { Wormhole } from "./wormhole";
 
@@ -89,7 +88,7 @@ export type TransferQuote = {
 export interface TransferProtocol<PN extends ProtocolName> {
   isTransferComplete<N extends Network, P extends Platform, C extends PlatformToChains<P>>(
     toChain: ChainContext<N, P, C>,
-    vaa: VAA,
+    attestation: AttestationId<PN>,
   ): Promise<boolean>;
   validateTransferDetails<N extends Network>(
     wh: Wormhole<N>,

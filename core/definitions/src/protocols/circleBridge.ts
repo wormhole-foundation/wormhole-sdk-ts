@@ -108,6 +108,7 @@ export interface CircleBridge<
     recipient: ChainAddress,
     amount: bigint,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
+  isTransferCompleted(message: CircleBridge.Message): Promise<boolean>;
   parseTransactionDetails(txid: string): Promise<CircleTransferMessage>;
 }
 

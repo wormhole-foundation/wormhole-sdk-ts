@@ -434,7 +434,15 @@ export class CircleTransfer<N extends Network = Network>
     toChain: ChainContext<N, Platform, Chain>,
     attestation: Attestation<CircleTransferProtocol>,
   ) {
-    throw new Error("Not implemented");
+    // TODO: inferring from fields what type this is, we should
+    // have typeguards or require another argument to better deterimine
+    if ("message" in attestation) {
+      const cb = await toChain.getCircleBridge();
+      return cb.isTransferCompleted(attestation.message);
+    }
+    throw new Error("Not implemented for automatic circle bridge");
+    // const acb = await toChain.getAutomaticCircleBridge();
+    // return acb.isTransferCompleted(attestation);
   }
 
   static async getTransferVaa<N extends Network>(

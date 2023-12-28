@@ -11,7 +11,7 @@ import {
   circle,
 } from '@wormhole-foundation/connect-sdk';
 
-import { EventParser, Program } from '@project-serum/anchor';
+import { BN, EventParser, Program } from '@project-serum/anchor';
 import { getAssociatedTokenAddressSync } from '@solana/spl-token';
 import {
   SolanaAddress,
@@ -26,8 +26,10 @@ import {
   createReadOnlyTokenMessengerProgramInterface,
 } from './utils';
 import {
+  calculateFirstNonce,
   createDepositForBurnInstruction,
   createReceiveMessageInstruction,
+  nonceAccount,
 } from './utils/instructions';
 
 export class SolanaCircleBridge<N extends Network, C extends SolanaChains>
@@ -145,6 +147,35 @@ export class SolanaCircleBridge<N extends Network, C extends SolanaChains>
     transaction.add(ix);
 
     yield this.createUnsignedTx(transaction, 'CircleBridge.Transfer');
+  }
+
+  async isTransferCompleted(message: CircleBridge.Message): Promise<boolean> {
+    const usedNoncesAddress = nonceAccount(
+      message.nonce,
+      message.sourceDomain,
+      this.messageTransmitter.programId,
+    );
+
+    const firstNonce = calculateFirstNonce(message.nonce);
+
+    // usedNonces should be a [u64;100] where each bit is a nonce flag
+    const { usedNonces } =
+      // @ts-ignore --
+      await this.messageTransmitter.account.usedNonces.fetch(usedNoncesAddress);
+
+    // get the nonce index based on the account's first nonce
+    const nonceIndex = Number(message.nonce - firstNonce);
+
+    // get the the u64 the nonce's flag is in
+    const nonceElement = usedNonces[Math.floor(nonceIndex / 64)];
+    if (!nonceElement) throw new Error('Invalid nonce byte index');
+
+    // get the nonce flag index and build a bitmask
+    const nonceBitIndex = nonceIndex % 64;
+    const mask = new BN(1 << nonceBitIndex);
+
+    // If the flag is 0 it is _not_ used
+    return !nonceElement.and(mask).isZero();
   }
 
   // Fetch the transaction logs and parse the CircleTransferMessage
