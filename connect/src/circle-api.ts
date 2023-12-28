@@ -1,8 +1,8 @@
 import axios from "axios";
-import { CIRCLE_RETRY_INTERVAL } from "./config";
 import { retry } from "./tasks";
 
 // Note: mostly ripped off from https://github.com/circlefin/cctp-sample-app/blob/master/src/services/attestationService.ts
+export const CIRCLE_RETRY_INTERVAL = 2000;
 
 export enum CircleAttestationStatus {
   complete = "complete",

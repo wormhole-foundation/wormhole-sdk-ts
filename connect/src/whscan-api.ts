@@ -7,8 +7,9 @@ import {
   deserialize,
 } from "@wormhole-foundation/sdk-definitions";
 import axios from "axios";
-import { WHSCAN_RETRY_INTERVAL } from "./config";
 import { retry } from "./tasks";
+
+export const WHSCAN_RETRY_INTERVAL = 2000;
 
 // TransactionStatus returned by wormholescan
 export interface TransactionStatus {
@@ -136,9 +137,7 @@ export async function getVaaBytes(
   try {
     const {
       data: { vaaBytes },
-    } = await axios.get<{ vaaBytes: string }>(url, {
-      timeout: 2000,
-    });
+    } = await axios.get<{ vaaBytes: string }>(url);
     return encoding.b64.decode(vaaBytes);
   } catch (error) {
     if (!error) return null;
