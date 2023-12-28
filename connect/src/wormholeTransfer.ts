@@ -86,20 +86,23 @@ export type TransferQuote = {
 };
 
 // Static methods on the Transfer protocol types
+// e.g. `TokenTransfer.constructor`
 export interface TransferProtocol<PN extends ProtocolName> {
   isTransferComplete<N extends Network, P extends Platform, C extends PlatformToChains<P>>(
     toChain: ChainContext<N, P, C>,
     vaa: VAA,
   ): Promise<boolean>;
-  isAutomatic<N extends Network>(wh: Wormhole<N>, vaa: VAA): boolean;
-  //validateTransfer<N extends Network>(wh: Wormhole<N>, transfer: )
+  validateTransferDetails<N extends Network>(
+    wh: Wormhole<N>,
+    transfer: TransferRequest<PN>,
+  ): Promise<void>;
   quoteTransfer(xfer: WormholeTransfer<PN>): Promise<TransferQuote>;
   getReceipt(xfer: WormholeTransfer<PN>): TransferReceipt<PN>;
   track<N extends Network>(
     wh: Wormhole<N>,
     xfer: WormholeTransfer<PN>,
     timeout: number,
-  ): AsyncGenerator<TransferState, TransferReceipt<PN>, unknown>;
+  ): AsyncGenerator<TransferReceipt<PN>, unknown, unknown>;
 }
 
 // WormholeTransfer abstracts the process and state transitions

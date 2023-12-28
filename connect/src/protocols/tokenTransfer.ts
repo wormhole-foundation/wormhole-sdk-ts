@@ -38,11 +38,11 @@ import {
   WormholeTransfer,
 } from "../wormholeTransfer";
 
-type TransferProtocol = "TokenBridge" | "AutomaticTokenBridge";
-type TransferVAA = TokenBridge.TransferVAA | AutomaticTokenBridge.VAA;
+type TokenTransferProtocol = "TokenBridge" | "AutomaticTokenBridge";
+type TokenTransferVAA = TokenBridge.TransferVAA | AutomaticTokenBridge.VAA;
 
 export class TokenTransfer<N extends Network = Network>
-  implements WormholeTransfer<TransferProtocol>
+  implements WormholeTransfer<TokenTransferProtocol>
 {
   private readonly wh: Wormhole<N>;
 
@@ -59,7 +59,7 @@ export class TokenTransfer<N extends Network = Network>
   // on the source chain (if its been completed and finalized)
   vaas?: {
     id: WormholeMessageId;
-    vaa?: TransferVAA;
+    vaa?: TokenTransferVAA;
   }[];
 
   private constructor(wh: Wormhole<N>, transfer: TokenTransferDetails) {
@@ -257,15 +257,13 @@ export class TokenTransfer<N extends Network = Network>
     return redeemTxids.map(({ txid }) => txid);
   }
 
-  // Async fn that produces status updates through an async generator
+  // AsyncGenerator fn that produces status updates through an async generator
   // eventually producing a receipt
   // can be called repeatedly so the receipt is updated as it moves through the
   // steps of the transfer
-  // Note: it should be possible to call this fn as many times
-  // as it takes until the destination is finalized
   static async *track<N extends Network>(
     wh: Wormhole<N>,
-    receipt: TransferReceipt<TransferProtocol>,
+    receipt: TransferReceipt<TokenTransferProtocol>,
     timeout: number = DEFAULT_TASK_TIMEOUT,
     // Optional parameters to override chain context (typically for custom rpc)
     _fromChain?: ChainContext<N, ChainToPlatform<typeof receipt.from>, typeof receipt.from>,
@@ -292,7 +290,7 @@ export class TokenTransfer<N extends Network = Network>
         );
         receipt.attestation = { id: xfermsg };
         receipt.state = TransferState.SourceFinalized;
-        yield receipt.state;
+        yield receipt;
       }
     }
 
@@ -311,7 +309,7 @@ export class TokenTransfer<N extends Network = Network>
         );
         receipt.attestation.attestation = vaa;
         receipt.state = TransferState.Attested;
-        yield receipt.state;
+        yield receipt;
       }
     }
 
@@ -325,7 +323,10 @@ export class TokenTransfer<N extends Network = Network>
         receipt.attestation.id!,
         leftover(start, timeout),
       );
-      if (!txStatus) return receipt;
+      if (!txStatus) {
+        yield receipt;
+        return;
+      }
 
       if (txStatus.globalTx?.destinationTx?.txHash) {
         const { chainId, txHash } = txStatus.globalTx.destinationTx;
@@ -338,7 +339,7 @@ export class TokenTransfer<N extends Network = Network>
         ];
 
         receipt.state = TransferState.DestinationFinalized;
-        yield receipt.state;
+        yield receipt;
       }
 
       // Fall back to asking the destination chain if this VAA has been redeemed
@@ -347,15 +348,16 @@ export class TokenTransfer<N extends Network = Network>
         receipt.attestation.attestation &&
         (await TokenTransfer.isTransferComplete(
           _toChain,
-          receipt.attestation.attestation as TransferVAA,
+          receipt.attestation.attestation as TokenTransferVAA,
         ),
         leftover(start, timeout))
       ) {
         receipt.state = TransferState.DestinationFinalized;
-        yield receipt.state;
+        yield receipt;
       }
     }
-    return receipt;
+    yield receipt;
+    return;
   }
 
   // Static method to perform the transfer so a custom RPC may be used
@@ -387,7 +389,7 @@ export class TokenTransfer<N extends Network = Network>
   // Static method to allow passing a custom RPC
   static async redeem<N extends Network>(
     toChain: ChainContext<N, Platform, Chain>,
-    vaa: TokenBridge.TransferVAA | AutomaticTokenBridge.VAA,
+    vaa: TokenTransferVAA,
     signer: Signer<N, Chain>,
   ): Promise<TransactionId[]> {
     const signerAddress = toNative(signer.chain(), signer.address());
@@ -404,7 +406,7 @@ export class TokenTransfer<N extends Network = Network>
     N extends Network,
     P extends Platform,
     C extends PlatformToChains<P>,
-  >(toChain: ChainContext<N, P, C>, vaa: TransferVAA): Promise<boolean> {
+  >(toChain: ChainContext<N, P, C>, vaa: TokenTransferVAA): Promise<boolean> {
     // TODO: converter?
     if (vaa.protocolName === "AutomaticTokenBridge")
       vaa = deserialize("TokenBridge:TransferWithPayload", serialize(vaa));
@@ -428,7 +430,7 @@ export class TokenTransfer<N extends Network = Network>
     wh: Wormhole<N>,
     key: WormholeMessageId | TxHash,
     timeout?: number,
-  ): Promise<TransferVAA> {
+  ): Promise<TokenTransferVAA> {
     const vaa =
       typeof key === "string"
         ? await wh.getVaaByTxHash(key, TokenBridge.getTransferDiscriminator(), timeout)
