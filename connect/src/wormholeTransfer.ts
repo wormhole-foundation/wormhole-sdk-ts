@@ -6,8 +6,8 @@ import {
   ProtocolName,
 } from "@wormhole-foundation/sdk-base";
 import {
-  Attestation,
   AttestationId,
+  AttestationReceipt,
   ChainContext,
   CircleTransferDetails,
   GatewayTransferDetails,
@@ -46,15 +46,14 @@ export type TransferReceipt<
   SC extends Chain = Chain,
   DC extends Chain = Chain,
 > = {
+  readonly protocol: PN;
+  readonly request: TransferRequest<PN>;
+  readonly from: SC;
+  readonly to: DC;
   state: TransferState;
-  from: SC;
-  to: DC;
   originTxs: TransactionId<SC>[];
   destinationTxs: TransactionId<DC>[];
-  attestation?: {
-    id: AttestationId<PN>;
-    attestation?: Attestation<PN>;
-  };
+  attestation?: AttestationReceipt<PN>;
 };
 
 // Quote with optional relayer fees if the transfer
