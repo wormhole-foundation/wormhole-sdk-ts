@@ -6,14 +6,14 @@ export type AlgorandPlatformType = typeof _platform;
 
 export type AlgorandChains = PlatformToChains<AlgorandPlatformType>;
 export type UniversalOrAlgorand = UniversalOrNative<AlgorandChains>;
-export type AnyAlgorandAddress = UniversalOrAlgorand | string | Uint8Array;
+export type AnyAlgorandAddress = UniversalOrAlgorand | string | Uint8Array | bigint;
 
-export type LsigSigner = {
+export type Signer = {
   addr: string;
   signTxn(txn: Transaction): Promise<Uint8Array>;
 };
 
 export type TransactionSignerPair = {
   tx: Transaction;
-  signer?: LsigSigner;
+  signer?: Signer;
 };

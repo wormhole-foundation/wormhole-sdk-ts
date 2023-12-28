@@ -39,6 +39,7 @@ export const varint = {
 
     return array;
   },
+
   decode: (data: Uint8Array, offset = 0) => {
     let i = BigInt(0);
     let n = 0;
@@ -54,6 +55,7 @@ export const varint = {
     } while (0x80 <= b);
     return i;
   },
+
   encodeHex: (i: bigint | number, buffer?: ArrayBuffer, byteOffset?: number) => {
     return encoding.hex.encode(varint.encode(i, buffer, byteOffset));
   },

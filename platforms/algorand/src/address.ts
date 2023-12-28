@@ -23,7 +23,9 @@ export class AlgorandAddress implements Address {
 
   constructor(address: AnyAlgorandAddress) {
     if (AlgorandAddress.instanceof(address)) {
-      this.address = address.address;
+      const a = address as unknown as AlgorandAddress;
+      this.address = a.address;
+      return;
     } else if (UniversalAddress.instanceof(address)) {
       this.address = encodeAddress(address.toUint8Array());
     } else if (typeof address === "string" && isValidAddress(address)) {
@@ -33,6 +35,8 @@ export class AlgorandAddress implements Address {
     } else if (address instanceof Uint8Array && address.byteLength === 8) {
       // ASA IDs are 8 bytes; this is padded to 32 bytes like addresses
       this.address = encodeAddress(encoding.bytes.zpad(address, AlgorandAddress.byteSize));
+    } else if (typeof address === "bigint") {
+      this.address = encodeAddress(encoding.bignum.toBytes(address, AlgorandAddress.byteSize));
     } else throw new Error(`Invalid Algorand address or ASA ID: ${address}`);
   }
 

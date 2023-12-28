@@ -1,0 +1,159 @@
+ *  Executing task: npm run algo 
+
+
+> @wormhole-foundation/connect-sdk-examples@0.3.0-beta.5 algo
+> tsx src/algoTokenBridge.ts
+
+Native address type for platform Algorand has already registered
+Native address type for platform Evm has already registered
+(node:18028) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Starting transfer
+Signing: TokenBridge.wrapAndTransferETH for 0xBA3B58B8EF2EDf9D8e50a25C4e11138Afa372688
+Started transfer:  [
+  '0x97b28abc5906e7d3ff20594b77148fda5d7d52ccc4554e0eba48b50d06d79199'
+]
+Getting Attestation
+Got Attestation:  [
+  {
+    chain: 'Avalanche',
+    emitter: UniversalAddress { type: 'Universal', address: [Uint8Array] },
+    sequence: 15303n
+  }
+]
+Completing Transfer
+vaa:  {
+  protocolName: 'TokenBridge',
+  payloadName: 'Transfer',
+  payloadLiteral: 'TokenBridge:Transfer',
+  guardianSet: 0,
+  signatures: [ { guardianIndex: 0, signature: [Signature] } ],
+  timestamp: 1703790280,
+  nonce: 0,
+  emitterChain: 'Avalanche',
+  emitterAddress: UniversalAddress {
+    type: 'Universal',
+    address: Uint8Array(32) [
+        0,   0,   0,   0,   0,   0,   0,   0,   0,
+        0,   0,   0,  97, 228,  78,  80, 108, 165,
+      101, 158, 108,  11, 186, 155, 103, 133, 134,
+      250,  45, 114, 151,  86
+    ]
+  },
+  sequence: 15303n,
+  consistencyLevel: 1,
+  payload: {
+    token: { amount: 10000n, address: [UniversalAddress], chain: 'Avalanche' },
+    to: { address: [UniversalAddress], chain: 'Algorand' },
+    fee: 0n
+  },
+  hash: Uint8Array(32) [
+    196,   4, 161, 240, 184,  25, 174,  93,
+    138, 251,   8, 180, 118,  43,  74,  43,
+    207,   2,  48, 103, 183, 146, 241,  69,
+     14,  90, 112, 208, 174, 229, 233, 155
+  ]
+}
+accounts:  [
+  'VMPR6NWIIQCZ4F3F7DA5S64ATYDNJRI4JPT3NQHUW37X4HZCN5D6ZQBAKM',
+  'Z7AISPXE4YFESMU35JXBEM6JZSKTVGPASEUQXLM7XTEKVUHOYTRVQHVYVQ'
+]
+txs:  [
+  {
+    tx: Transaction {
+      name: 'Transaction',
+      tag: <Buffer 54 58>,
+      type: 'appl',
+      from: [Object],
+      appIndex: 86525623,
+      appOnComplete: 0,
+      appArgs: [Array],
+      appAccounts: [Array],
+      note: Uint8Array(0) [],
+      lease: Uint8Array(0) [],
+      flatFee: false,
+      genesisHash: <Buffer 48 63 b5 18 a4 b3 c8 4e c8 10 f2 2d 4f 10 81 cb 0f 71 f0 59 a7 ac 20 de c6 2f 7f 70 e5 09 3a 22>,
+      fee: 0,
+      firstRound: 35741742,
+      lastRound: 35742742,
+      genesisID: 'testnet-v1.0',
+      group: undefined
+    },
+    signer: {
+      addr: 'EZATROXX2HISIRZDRGXW4LRQ46Z6IUJYYIHU3PJGP7P5IQDPKVX42N767A',
+      signTxn: [Function: signTxn]
+    }
+  },
+  {
+    tx: Transaction {
+      name: 'Transaction',
+      tag: <Buffer 54 58>,
+      type: 'appl',
+      from: [Object],
+      appIndex: 86525623,
+      appOnComplete: 0,
+      appArgs: [Array],
+      appAccounts: [Array],
+      note: Uint8Array(0) [],
+      lease: Uint8Array(0) [],
+      flatFee: false,
+      genesisHash: <Buffer 48 63 b5 18 a4 b3 c8 4e c8 10 f2 2d 4f 10 81 cb 0f 71 f0 59 a7 ac 20 de c6 2f 7f 70 e5 09 3a 22>,
+      fee: 3000,
+      firstRound: 35741742,
+      lastRound: 35742742,
+      genesisID: 'testnet-v1.0',
+      group: undefined
+    },
+    signer: null
+  }
+]
+Signing: TokenBridge.redeem with signer EZATROXX2HISIRZDRGXW4LRQ46Z6IUJYYIHU3PJGP7P5IQDPKVX42N767A for address KKPWL6OFVUFOAVQGGURJ2EGNZYZZDPEQ37CHEFLLIAFYTCVLP7UZPSV3ME
+Signing: TokenBridge.redeem without signer for address KKPWL6OFVUFOAVQGGURJ2EGNZYZZDPEQ37CHEFLLIAFYTCVLP7UZPSV3ME
+Signing: TokenBridge.redeem without signer for address KKPWL6OFVUFOAVQGGURJ2EGNZYZZDPEQ37CHEFLLIAFYTCVLP7UZPSV3ME
+Completed Transfer:  [
+  '3F4EJTW2S53TQ5THXIQWGESIQKW35QTPPKBJHBN44AZ3MKNZO5XQ',
+  '5DXF3G2HRCMSUFVMCAUKY35F4D77O45UM7VCP43FLLYZJTCCFYLQ',
+  'PCY7Q2RPLNJYHTFLZUGKGVBTXBC5F3A2F5OMTJVCV3PWIRLXBXCQ'
+]
+TokenTransfer {
+  wh: Wormhole {
+    _network: 'Testnet',
+    _platforms: Map(2) { 'Algorand' => [AlgorandPlatform], 'Evm' => [EvmPlatform] },
+    _chains: Map(2) { 'Avalanche' => [EvmChain], 'Algorand' => [AlgorandChain] },
+    config: {
+      api: 'https://api.testnet.wormholescan.io',
+      circleAPI: 'https://iris-api-sandbox.circle.com/v1/attestations',
+      chains: [Object]
+    }
+  },
+  _state: 4,
+  transfer: {
+    token: 'native',
+    amount: 100000000000000n,
+    from: { chain: 'Avalanche', address: [EvmAddress] },
+    to: { chain: 'Algorand', address: [AlgorandAddress] },
+    automatic: false,
+    payload: undefined,
+    nativeGas: undefined
+  },
+  txids: [
+    {
+      chain: 'Avalanche',
+      txid: '0x97b28abc5906e7d3ff20594b77148fda5d7d52ccc4554e0eba48b50d06d79199'
+    },
+    {
+      chain: 'Algorand',
+      txid: '3F4EJTW2S53TQ5THXIQWGESIQKW35QTPPKBJHBN44AZ3MKNZO5XQ'
+    },
+    {
+      chain: 'Algorand',
+      txid: '5DXF3G2HRCMSUFVMCAUKY35F4D77O45UM7VCP43FLLYZJTCCFYLQ'
+    },
+    {
+      chain: 'Algorand',
+      txid: 'PCY7Q2RPLNJYHTFLZUGKGVBTXBC5F3A2F5OMTJVCV3PWIRLXBXCQ'
+    }
+  ],
+  vaas: [ { id: [Object], vaa: [Object] } ]
+}
+ *  Terminal will be reused by tasks, press any key to close it. 

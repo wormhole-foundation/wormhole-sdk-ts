@@ -70,10 +70,23 @@ export class AlgorandPlatform<N extends Network> extends PlatformContext<N, Algo
     return platform === AlgorandPlatform._platform;
   }
 
+  static hexToUint8Array = (h: string): Uint8Array => {
+    if (h.startsWith("0x")) h = h.slice(2);
+    return new Uint8Array(Buffer.from(h, "hex"));
+  };
+
   static anyAlgorandAddressToAsaId(address: AnyAlgorandAddress): number {
+    /* 
+    QUESTIONBW: Redeeming on Algorand an incoming Avalanche USDC transfer is failing here.
+    It seems like I need to use the StorageLsig class to get the storage contract and then decode its state,
+    but this module is in the tokenBridge module, which I shouldn't need to import here in the platform itself
+    */
+    console.log("addressArg", address);
     const addr = new AlgorandAddress(address.toString());
+    console.log("addr", addr);
     const lastEightBytes = addr.toUint8Array().slice(-8);
     const asaId = Number(bytesToBigInt(lastEightBytes));
+    console.log("asaId", asaId);
     return asaId;
   }
 
@@ -145,6 +158,11 @@ export class AlgorandPlatform<N extends Network> extends PlatformContext<N, Algo
       return id;
     });
 
+    // Simulation
+    const resp = await rpc.simulateRawTransactions(stxns).do();
+    console.log("Simulation Response: ", JSON.stringify(resp, null, 2));
+    // End simulation
+
     const { txId } = await rpc.sendRawTransaction(stxns).do();
     if (!txId) {
       throw new Error("Transaction(s) failed to send");
@@ -155,7 +173,6 @@ export class AlgorandPlatform<N extends Network> extends PlatformContext<N, Algo
       throw new Error(`Transaction(s) could not be confirmed in ${rounds} rounds`);
     }
 
-    console.log("txIds: ", txIds);
     return txIds;
   }
 

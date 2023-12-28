@@ -10,6 +10,7 @@ import {
   VAA,
   WormholeCore,
   WormholeMessageId,
+  encoding,
   toChainId,
 } from "@wormhole-foundation/connect-sdk";
 import {
@@ -78,17 +79,10 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
     throw new Error("Method not implemented.");
   }
 
-  async parseTransaction(txid: string): Promise<WormholeMessageId[]> {
-    console.log("Txid: ", txid);
-    const result = await this.connection.pendingTransactionInformation(txid).do();
-    console.log("Result: ", result);
-
-    // QUESTIONBW: To make this work, I had to use the tokenBridgeAppId.  Expected?
+  async parseTransaction(txId: string): Promise<WormholeMessageId[]> {
+    const result = await this.connection.pendingTransactionInformation(txId).do();
     const emitterAddr = new UniversalAddress(this.getEmitterAddressAlgorand(this.tokenBridgeAppId));
-    console.log("parseTransaction emitterAddr: ", emitterAddr);
-
     const sequence = this.parseSequenceFromLogAlgorand(result);
-    console.log("sequence: ", sequence);
     return [
       {
         chain: this.chain,
@@ -100,9 +94,8 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
 
   private getEmitterAddressAlgorand(appId: bigint): string {
     const appAddr: string = getApplicationAddress(appId);
-    const decAppAddr: Uint8Array = decodeAddress(appAddr).publicKey;
-    const hexAppAddr: string = Buffer.from(decAppAddr).toString("hex");
-    console.log("core.ts Emitter address: ", hexAppAddr);
+    const decodedAppAddr: Uint8Array = decodeAddress(appAddr).publicKey;
+    const hexAppAddr: string = encoding.hex.encode(decodedAppAddr);
     return hexAppAddr;
   }
 
@@ -118,7 +111,7 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
       });
     }
     if (!sequence) {
-      throw new Error("Sequence not found");
+      throw new Error("parseSequenceFromLogAlgorand - Sequence not found");
     }
     return sequence;
   }

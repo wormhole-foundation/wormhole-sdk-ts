@@ -5,6 +5,7 @@ import {
 } from "@wormhole-foundation/connect-sdk-algorand";
 import {
   Algodv2,
+  SuggestedParams,
   Transaction,
   bigIntToBytes,
   getApplicationAddress,
@@ -13,9 +14,12 @@ import {
   modelsv2,
   signLogicSigTransaction,
 } from "algosdk";
-import { StorageLsig } from "./storage";
+import { StorageLogicSig } from "./storage";
 import { TransactionSet, WormholeWrappedInfo } from "./types";
 import { SEED_AMT, decodeLocalState, safeBigIntToNumber } from "./utilities";
+import { varint } from "./bigVarint";
+
+const accountExistsCache = new Set<[bigint, string]>();
 
 /**
  * Returns a boolean if the asset is wrapped
@@ -67,27 +71,58 @@ export async function getOriginalAssetOffAlgorand(
   const assetInfoResp = await client.getAssetByID(safeBigIntToNumber(assetId)).do();
   const assetInfo = modelsv2.Asset.from_obj_for_encoding(assetInfoResp);
   const lsa = assetInfo.params.creator;
-  const dls = await decodeLocalState(client, tokenBridgeId, lsa);
-  const dlsBuffer: Buffer = Buffer.from(dls);
-  retVal.chainId = dlsBuffer.readInt16BE(92) as ChainId;
-  retVal.assetAddress = new Uint8Array(dlsBuffer.subarray(60, 60 + 32));
+  const decodedLocalState = await decodeLocalState(client, tokenBridgeId, lsa);
+  retVal.chainId = Number(varint.decode(decodedLocalState, 92)) as ChainId;
+  retVal.assetAddress = new Uint8Array(decodedLocalState.subarray(60, 60 + 32));
   return retVal;
 }
 
 /**
- * Calculates the logic sig account for the application
+ * Checks to see if the account exists for the application
+ * @param client An Algodv2 client
+ * @param appId Application ID
+ * @param acctAddr Account address to check
+ * @returns True, if account exists for application, False otherwise
+ */
+export async function accountExists(
+  client: Algodv2,
+  appId: bigint,
+  acctAddr: string,
+): Promise<boolean> {
+  if (accountExistsCache.has([appId, acctAddr])) return true;
+
+  let ret = false;
+  try {
+    const acctInfoResp = await client.accountInformation(acctAddr).do();
+    const acctInfo = modelsv2.Account.from_obj_for_encoding(acctInfoResp);
+    const als = acctInfo.appsLocalState;
+    if (!als) {
+      return ret;
+    }
+    als.forEach((app) => {
+      if (BigInt(app.id) === appId) {
+        accountExistsCache.add([appId, acctAddr]);
+        ret = true;
+        return;
+      }
+    });
+  } catch (e) {}
+  return ret;
+}
+
+/**
+ * Constructs opt in transactions
  * @param client An Algodv2 client
  * @param senderAddr Sender address
  * @param appId Application ID
- * @param appIndex Application index
- * @param emitterId Emitter address
+ * @param storage StorageLogicSig
  * @returns Address and array of TransactionSignerPairs
  */
 export async function maybeOptInTx(
   client: Algodv2,
   senderAddr: string,
   appId: bigint,
-  storage: StorageLsig,
+  storage: StorageLogicSig,
 ): Promise<TransactionSet> {
   const appAddr: string = getApplicationAddress(appId);
 
@@ -96,26 +131,24 @@ export async function maybeOptInTx(
 
   let exists = false;
   try {
-    // TODO: check
-    await client.accountInformation(storageAddress).do();
-    exists = true;
+    // QUESTIONBW: Is this was you had in mind?
+    exists = await accountExists(client, appId, storageAddress);
   } catch {}
 
   let txs: TransactionSignerPair[] = [];
   if (!exists) {
-    // These are the suggested params from the system
-    const params = await client.getTransactionParams().do();
+    const suggestedParams: SuggestedParams = await client.getTransactionParams().do();
     const seedTxn = makePaymentTxnWithSuggestedParamsFromObject({
       from: senderAddr,
       to: storageAddress,
       amount: SEED_AMT,
-      suggestedParams: params,
+      suggestedParams,
     });
     seedTxn.fee = seedTxn.fee * 2;
     txs.push({ tx: seedTxn, signer: null });
     const optinTxn = makeApplicationOptInTxnFromObject({
       from: storageAddress,
-      suggestedParams: params,
+      suggestedParams,
       appIndex: safeBigIntToNumber(appId),
       rekeyTo: appAddr,
     });

@@ -52,7 +52,7 @@ import {
   getOriginalAssetOffAlgorand,
   maybeOptInTx,
 } from "./assets";
-import { StorageLsig } from "./storage";
+import { StorageLogicSig } from "./storage";
 import { decodeLocalState, safeBigIntToNumber, checkBitsSet, getMessageFee } from "./utilities";
 import { submitVAAHeader } from "./vaa";
 
@@ -135,7 +135,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
 
   // Returns the address of the native version of this asset
   async getWrappedAsset(token: TokenId<Chain>): Promise<NativeAddress<C>> {
-    const storageAccount = StorageLsig.forWrappedAsset(this.tokenBridgeAppId, token);
+    const storageAccount = StorageLogicSig.forWrappedAsset(this.tokenBridgeAppId, token);
     const lsa = storageAccount.lsig();
 
     let asset: Uint8Array = await decodeLocalState(
@@ -168,7 +168,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
       chain: vaa.emitterChain,
       emitter: vaa.emitterAddress,
     };
-    const sl = StorageLsig.forMessageId(this.tokenBridgeAppId, whm);
+    const sl = StorageLogicSig.forMessageId(this.tokenBridgeAppId, whm);
     try {
       const isBitSet = await checkBitsSet(
         this.connection,
@@ -193,9 +193,10 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
 
     const senderAddr = payer.toString();
     const assetId = bytesToBigInt(new AlgorandAddress(token_to_attest.toString()).toUint8Array());
+    console.log("assetId3: ", assetId);
     const txs: TransactionSignerPair[] = [];
 
-    const tbs = StorageLsig.fromData({
+    const tbs = StorageLogicSig.fromData({
       appId: this.coreAppId,
       appAddress: decodeAddress(this.coreAppAddress).publicKey,
       idx: BigInt(0),
@@ -226,7 +227,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
       }
     }
 
-    const nativeStorageAcct = StorageLsig.forNativeAsset(this.tokenBridgeAppId, assetId);
+    const nativeStorageAcct = StorageLogicSig.forNativeAsset(this.tokenBridgeAppId, assetId);
     const txns = await maybeOptInTx(
       this.connection,
       senderAddr,
@@ -236,14 +237,14 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
     creatorAddr = txns.address;
     txs.push(...txns.txs);
 
-    const suggParams: SuggestedParams = await this.connection.getTransactionParams().do();
+    const suggestedParams: SuggestedParams = await this.connection.getTransactionParams().do();
 
     const firstTxn = makeApplicationCallTxnFromObject({
       from: senderAddr,
       appIndex: safeBigIntToNumber(this.tokenBridgeAppId),
       onComplete: OnApplicationComplete.NoOpOC,
       appArgs: [encoding.bytes.encode("nop")],
-      suggestedParams: suggParams,
+      suggestedParams,
     });
     txs.push({ tx: firstTxn, signer: null });
 
@@ -251,7 +252,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
     if (mfee > BigInt(0)) {
       const feeTxn = makePaymentTxnWithSuggestedParamsFromObject({
         from: senderAddr,
-        suggestedParams: suggParams,
+        suggestedParams,
         to: this.tokenBridgeAddress,
         amount: mfee,
       });
@@ -272,7 +273,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
       foreignAssets: [safeBigIntToNumber(assetId)],
       from: senderAddr,
       onComplete: OnApplicationComplete.NoOpOC,
-      suggestedParams: suggParams,
+      suggestedParams,
     });
     if (mfee > BigInt(0)) {
       appTxn.fee *= 3;
@@ -291,14 +292,14 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
   async *submitAttestation(
     vaa: TokenBridge.AttestVAA,
     sender?: AnyAlgorandAddress,
-    params?: SuggestedParams,
+    suggestedParams?: SuggestedParams,
   ): AsyncGenerator<AlgorandUnsignedTransaction<N, C>> {
     if (!sender) throw new Error("Payer required to create attestation");
-    if (!params) params = await this.connection.getTransactionParams().do();
+    if (!suggestedParams) suggestedParams = await this.connection.getTransactionParams().do();
 
     const senderAddr = sender.toString();
 
-    const tokenStorage = StorageLsig.forWrappedAsset(this.tokenBridgeAppId, vaa.payload.token);
+    const tokenStorage = StorageLogicSig.forWrappedAsset(this.tokenBridgeAppId, vaa.payload.token);
     const tokenStorageAddress = tokenStorage.lsig().address();
 
     const txs: TransactionSignerPair[] = [];
@@ -321,7 +322,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
         from: senderAddr,
         to: tokenStorageAddress,
         amount: 100000,
-        suggestedParams: params,
+        suggestedParams,
       }),
     });
     let buf: Uint8Array = new Uint8Array(1);
@@ -332,7 +333,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
         appIndex: safeBigIntToNumber(this.tokenBridgeAppId),
         from: senderAddr,
         onComplete: OnApplicationComplete.NoOpOC,
-        suggestedParams: params,
+        suggestedParams,
       }),
     });
 
@@ -344,7 +345,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
         appIndex: safeBigIntToNumber(this.tokenBridgeAppId),
         from: senderAddr,
         onComplete: OnApplicationComplete.NoOpOC,
-        suggestedParams: params,
+        suggestedParams,
       }),
     });
     const receiveAttestSelector = encoding.bytes.encode("receiveAttest");
@@ -356,7 +357,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
         foreignAssets: foreignAssets,
         from: senderAddr,
         onComplete: OnApplicationComplete.NoOpOC,
-        suggestedParams: params,
+        suggestedParams,
       }),
     });
 
@@ -386,7 +387,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
 
     const recipientChainId = toChainId(chain);
 
-    const tbs = StorageLsig.fromData({
+    const tbs = StorageLogicSig.fromData({
       appId: this.coreAppId,
       appAddress: decodeAddress(this.coreAppAddress).publicKey,
       idx: BigInt(0),
@@ -418,26 +419,26 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
       wormhole = creatorAcct.authAddr === this.tokenBridgeAddress.toString();
     }
 
-    const params: SuggestedParams = await this.connection.getTransactionParams().do();
+    const suggestedParams: SuggestedParams = await this.connection.getTransactionParams().do();
     const msgFee: bigint = await getMessageFee(this.connection, this.coreAppId);
     if (msgFee > 0)
       txs.push({
         tx: makePaymentTxnWithSuggestedParamsFromObject({
           from: senderAddr,
-          suggestedParams: params,
           to: this.tokenBridgeAddress,
           amount: msgFee,
+          suggestedParams,
         }),
         signer: null,
       });
 
     if (!wormhole) {
-      const storage = StorageLsig.forNativeAsset(this.tokenBridgeAppId, assetId);
+      const nativeStorageAccount = StorageLogicSig.forNativeAsset(this.tokenBridgeAppId, assetId);
       const { address, txs } = await maybeOptInTx(
         this.connection,
         senderAddr,
         this.tokenBridgeAppId,
-        storage,
+        nativeStorageAccount,
       );
       creator = address;
       txs.push(...txs);
@@ -449,7 +450,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
         from: senderAddr,
         to: creator,
         amount: 100000,
-        suggestedParams: params,
+        suggestedParams,
       });
       txs.push({ tx: payTxn, signer: null });
       // The tokenid app needs to do the optin since it has signature authority
@@ -461,7 +462,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
         appArgs: [bOptin, bigIntToBytes(assetId, 8)],
         foreignAssets: [safeBigIntToNumber(assetId)],
         accounts: [creator],
-        suggestedParams: params,
+        suggestedParams,
       });
       txn.fee *= 2;
       txs.push({ tx: txn, signer: null });
@@ -472,7 +473,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
       appIndex: safeBigIntToNumber(this.tokenBridgeAppId),
       onComplete: OnApplicationComplete.NoOpOC,
       appArgs: [encoding.bytes.encode("nop")],
-      suggestedParams: params,
+      suggestedParams,
     });
     txs.push({ tx: t, signer: null });
 
@@ -482,7 +483,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
         from: senderAddr,
         to: creator,
         amount: qty,
-        suggestedParams: params,
+        suggestedParams,
       });
       txs.push({ tx: t, signer: null });
       accounts = [emitterAddr, creator, creator];
@@ -490,7 +491,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
       const t = makeAssetTransferTxnWithSuggestedParamsFromObject({
         from: senderAddr,
         to: creator,
-        suggestedParams: params,
+        suggestedParams,
         amount: qty,
         assetIndex: safeBigIntToNumber(assetId),
       });
@@ -520,7 +521,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
       foreignApps: [safeBigIntToNumber(this.coreAppId)],
       foreignAssets: [safeBigIntToNumber(assetId)],
       accounts: accounts,
-      suggestedParams: params,
+      suggestedParams,
     });
     acTxn.fee *= 2;
     txs.push({ tx: acTxn, signer: null });
@@ -534,10 +535,12 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
     sender: AnyAlgorandAddress,
     vaa: TokenBridge.TransferVAA,
     unwrapNative: boolean = true,
-    params?: SuggestedParams,
+    suggestedParams?: SuggestedParams,
   ) {
-    if (!params) params = await this.connection.getTransactionParams().do();
+    if (!suggestedParams) suggestedParams = await this.connection.getTransactionParams().do();
 
+    console.log("vaa: ", vaa);
+    console.log("vaa payload token: ", vaa.payload.token.address.toString());
     const senderAddr = new AlgorandAddress(sender).toString();
     let { accounts, txs } = await submitVAAHeader(
       this.connection,
@@ -546,8 +549,10 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
       vaa,
       senderAddr,
     );
+    console.log("accounts: ", accounts);
+    console.log("txs: ", txs);
 
-    const tokenStorage = StorageLsig.forWrappedAsset(this.tokenBridgeAppId, vaa.payload.token);
+    const tokenStorage = StorageLogicSig.forWrappedAsset(this.tokenBridgeAppId, vaa.payload.token);
     const tokenStorageAddress = tokenStorage.lsig().address();
 
     let foreignAssets: number[] = [];
@@ -561,9 +566,11 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
       if (asset.length > 8) {
         const tmp = Buffer.from(asset.slice(0, 8));
         assetId = safeBigIntToNumber(tmp.readBigUInt64BE(0));
+        console.log("assetId1: ", assetId);
       }
     } else {
       assetId = parseInt(vaa.payload.token.address.toString().slice(2), 16);
+      console.log("assetId2: ", assetId);
     }
     accounts.push(tokenStorageAddress);
 
@@ -580,7 +587,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
       foreignAssets.push(assetId);
       if (!(await assetOptinCheck(this.connection, BigInt(assetId), addr))) {
         if (senderAddr != addr) {
-          throw new Error("cannot ASA optin for somebody else (asset " + assetId.toString() + ")");
+          throw new Error("Cannot ASA optin for somebody else (asset " + assetId.toString() + ")");
         }
 
         txs.unshift({
@@ -588,7 +595,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
             amount: 0,
             assetIndex: assetId,
             from: senderAddr,
-            suggestedParams: params,
+            suggestedParams,
             to: senderAddr,
           }),
           signer: null,
@@ -597,16 +604,18 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
     }
 
     accounts.push(addr);
+    const appCallObj = {
+      accounts: accounts,
+      appArgs: [encoding.bytes.encode("completeTransfer"), serialize(vaa)],
+      appIndex: safeBigIntToNumber(this.tokenBridgeAppId),
+      foreignAssets: foreignAssets,
+      from: senderAddr,
+      onComplete: OnApplicationComplete.NoOpOC,
+      suggestedParams,
+    };
+    console.log("appCallObj: ", appCallObj);
     txs.push({
-      tx: makeApplicationCallTxnFromObject({
-        accounts: accounts,
-        appArgs: [encoding.bytes.encode("completeTransfer"), serialize(vaa)],
-        appIndex: safeBigIntToNumber(this.tokenBridgeAppId),
-        foreignAssets: foreignAssets,
-        from: senderAddr,
-        onComplete: OnApplicationComplete.NoOpOC,
-        suggestedParams: params,
-      }),
+      tx: makeApplicationCallTxnFromObject(appCallObj),
       signer: null,
     });
 
@@ -629,7 +638,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
           foreignAssets: foreignAssets,
           from: senderAddr,
           onComplete: OnApplicationComplete.NoOpOC,
-          suggestedParams: params,
+          suggestedParams,
         }),
         signer: null,
       });
