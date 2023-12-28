@@ -1,11 +1,11 @@
 import {
   Chain,
+  ChainToPlatform,
   Network,
   Platform,
   PlatformToChains,
   chainToPlatform,
   circle,
-  ChainToPlatform,
 } from "@wormhole-foundation/sdk-base";
 import {
   ChainAddress,
@@ -24,7 +24,7 @@ import {
   toNative,
 } from "@wormhole-foundation/sdk-definitions";
 import { getCircleAttestationWithRetry } from "./circle-api";
-import { CONFIG, DEFAULT_TASK_TIMEOUT, WormholeConfig } from "./config";
+import { ConfigOverrides, DEFAULT_TASK_TIMEOUT, WormholeConfig, applyOverrides } from "./config";
 import { CircleTransfer } from "./protocols/cctpTransfer";
 import { TokenTransfer } from "./protocols/tokenTransfer";
 import { retry } from "./tasks";
@@ -49,9 +49,9 @@ export class Wormhole<N extends Network> {
 
   readonly config: WormholeConfig;
 
-  constructor(network: N, platforms: PlatformUtils<N, any>[], config?: WormholeConfig) {
+  constructor(network: N, platforms: PlatformUtils<N, any>[], config?: ConfigOverrides) {
     this._network = network;
-    this.config = config ?? CONFIG[network];
+    this.config = applyOverrides(network, config);
 
     this._chains = new Map();
     this._platforms = new Map();
