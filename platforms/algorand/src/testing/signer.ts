@@ -26,6 +26,7 @@ export class AlgorandSigner<N extends Network, C extends AlgorandChains = "Algor
     private _chain: C,
     _rpc: Algodv2,
     mnemonic: string,
+    private _debug: boolean = true,
   ) {
     this._account = mnemonicToSecretKey(mnemonic);
   }
@@ -55,13 +56,20 @@ export class AlgorandSigner<N extends Network, C extends AlgorandChains = "Algor
       const { description, transaction: tsp } = algoUnsignedTxn;
       const { tx, signer } = tsp as TransactionSignerPair;
 
+      if (this._debug) {
+        console.log(tx._getDictForDisplay());
+        console.log(tx.txID());
+      }
+
       if (signer) {
-        console.log(
-          `Signing: ${description} with signer ${signer.address} for address ${this.address()}`,
-        );
+        if (this._debug)
+          console.log(
+            `Signing: ${description} with signer ${signer.address} for address ${this.address()}`,
+          );
         signed.push(await signer.signTxn(tx));
       } else {
-        console.log(`Signing: ${description} without signer for address ${this.address()}`);
+        if (this._debug)
+          console.log(`Signing: ${description} without signer for address ${this.address()}`);
         signed.push(tx.signTxn(this._account.sk));
       }
     }

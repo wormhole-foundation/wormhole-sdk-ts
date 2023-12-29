@@ -37,16 +37,14 @@ export class AlgorandAddress implements Address {
       this.address = encoding.bytes.zpad(
         encoding.bignum.toBytes(BigInt(address), 8),
         AlgorandAddress.byteSize,
-        false,
       );
     } else if (typeof address === "bigint") {
       this.address = encoding.bytes.zpad(
         encoding.bignum.toBytes(address, 8),
         AlgorandAddress.byteSize,
-        false,
       );
     } else if (address instanceof Uint8Array && address.byteLength === 8) {
-      this.address = encoding.bytes.zpad(address, AlgorandAddress.byteSize, false);
+      this.address = encoding.bytes.zpad(address, AlgorandAddress.byteSize);
     } else throw new Error(`Invalid Algorand address or ASA ID: ${address}`);
   }
 
@@ -67,7 +65,7 @@ export class AlgorandAddress implements Address {
   }
 
   toBigInt(): bigint {
-    return encoding.bignum.decode(this.toUint8Array().slice(0, 8));
+    return encoding.bignum.decode(this.toUint8Array().slice(24, 32));
   }
 
   toInt(): number {

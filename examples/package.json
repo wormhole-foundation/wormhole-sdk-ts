@@ -34,6 +34,7 @@
   "sideEffects": false,
   "scripts": {
     "algo": "cd ../platforms/algorand/protocols/tokenBridge && npm run build && cd - && tsx src/algoTokenBridge.ts",
+    "wrapped": "cd ../platforms/algorand/protocols/tokenBridge && npm run build && cd - && tsx src/createWrapped.ts",
     "tb": "tsx src/tokenBridge.ts",
     "cctp": "tsx src/cctp.ts",
     "demo": "tsx src/index.ts",
@@ -64,6 +65,6 @@
     "@wormhole-foundation/connect-sdk-evm-cctp": "^0.3.0-beta.6",
     "@wormhole-foundation/connect-sdk-solana-cctp": "^0.3.0-beta.6",
     "@wormhole-foundation/connect-sdk-cosmwasm-ibc": "^0.3.0-beta.6",
-    "algosdk":"^2.7.0"
+    "algosdk": "^2.7.0"
   }
 }

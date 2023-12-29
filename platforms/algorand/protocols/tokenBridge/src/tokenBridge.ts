@@ -148,7 +148,10 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
       assetInfo.params.creator,
     );
 
-    const chainId = encoding.bignum.decode(decodedLocalState.slice(92, 94));
+    if (decodedLocalState.length < 94) throw new Error("Invalid local state data");
+
+    const chainBytes = decodedLocalState.slice(92, 94);
+    const chainId = encoding.bignum.decode(chainBytes);
     const assetAddress = decodedLocalState.slice(60, 60 + 32);
 
     return {
@@ -402,6 +405,8 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
     const chainId = toChainId(recipient.chain);
     const receiver = recipient.address.toUniversalAddress().toUint8Array();
 
+    const suggestedParams: SuggestedParams = await this.connection.getTransactionParams().do();
+
     const fee = BigInt(0);
 
     const tbs = StorageLogicSig.fromData({
@@ -415,7 +420,13 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
     const {
       accounts: [emitterAddr],
       txs: emitterOptInTxs,
-    } = await maybeCreateStorageTx(this.connection, senderAddr, this.coreAppId, tbs);
+    } = await maybeCreateStorageTx(
+      this.connection,
+      senderAddr,
+      this.coreAppId,
+      tbs,
+      suggestedParams,
+    );
     txs.push(...emitterOptInTxs);
 
     // Check that the auth address of the creator
@@ -427,12 +438,12 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
       const assetInfoResp: Record<string, any> = await this.connection.getAssetByID(assetId).do();
       const asset = modelsv2.Asset.from_obj_for_encoding(assetInfoResp);
       creator = asset.params.creator;
+
       const creatorAcctInfoResp = await this.connection.accountInformation(creator).do();
       creatorAcct = modelsv2.Account.from_obj_for_encoding(creatorAcctInfoResp);
       wormhole = creatorAcct.authAddr === this.tokenBridgeAddress.toString();
     }
 
-    const suggestedParams: SuggestedParams = await this.connection.getTransactionParams().do();
     const msgFee: bigint = await getMessageFee(this.connection, this.coreAppId);
     if (msgFee > 0)
       txs.push({
@@ -458,6 +469,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
         senderAddr,
         this.tokenBridgeAppId,
         nativeStorageAccount,
+        suggestedParams,
       );
       creator = address;
       txs.push(...txs);
@@ -471,7 +483,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
         amount: 100000,
         suggestedParams,
       });
-      txs.push({ tx: payTxn, signer: null });
+      txs.unshift({ tx: payTxn, signer: null });
       // The tokenid app needs to do the optin since it has signature authority
       let txn = makeApplicationCallTxnFromObject({
         from: senderAddr,
@@ -483,7 +495,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
         suggestedParams,
       });
       txn.fee *= 2;
-      txs.push({ tx: txn, signer: null });
+      txs.unshift({ tx: txn, signer: null });
     }
 
     const t = makeApplicationCallTxnFromObject({
