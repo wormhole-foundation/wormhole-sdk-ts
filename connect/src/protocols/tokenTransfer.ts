@@ -368,7 +368,6 @@ export class TokenTransfer<N extends Network = Network>
         // otherwise, check to see if it is a wrapped token locally
         lookup = await tb.getOriginalAsset(token.address);
       } catch (e) {
-        console.error(e);
         // not a from-chain native wormhole-wrapped one
         lookup = token;
       }

@@ -32,8 +32,11 @@ export const b58 = {
 };
 
 export const bignum = {
-  decode: (input: string | Uint8Array) =>
-    typeof input === "string" ? BigInt(input) : BigInt(hex.encode(input, true)),
+  decode: (input: string | Uint8Array) => {
+    if (typeof input !== "string") input = hex.encode(input, true);
+    if (input === "" || input === "0x") return 0n;
+    return BigInt(input);
+  },
   encode: (input: bigint, prefix: boolean = false) => bignum.toString(input, prefix),
   toString: (input: bigint, prefix: boolean = false) => {
     let str = input.toString(16);

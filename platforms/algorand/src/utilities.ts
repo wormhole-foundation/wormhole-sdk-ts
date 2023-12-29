@@ -121,7 +121,7 @@ export async function decodeLocalState(
     const ai = await client.accountApplicationInformation(address, safeBigIntToNumber(appId)).do();
     const acctAppInfo = modelsv2.AccountApplicationResponse.from_obj_for_encoding(ai);
     appState = acctAppInfo.appLocalState;
-  } catch {
+  } catch (e) {
     return new Uint8Array();
   }
 

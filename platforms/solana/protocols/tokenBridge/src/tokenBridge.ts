@@ -183,7 +183,9 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
       return toNative(this.chain, mint.toBase58());
     } catch (_) {}
 
-    throw ErrNotWrapped(token.address.toUniversalAddress().toString());
+    throw ErrNotWrapped(
+      `${mint}: ${token.address.toUniversalAddress().toString()}`,
+    );
   }
 
   async isTransferCompleted(vaa: TokenBridge.TransferVAA): Promise<boolean> {

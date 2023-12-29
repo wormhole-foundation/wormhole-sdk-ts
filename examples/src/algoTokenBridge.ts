@@ -6,6 +6,7 @@ import {
   TokenTransfer,
   TransferState,
   Wormhole,
+  encoding,
   isTokenId,
   normalizeAmount,
 } from "@wormhole-foundation/connect-sdk";
@@ -20,6 +21,8 @@ import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 import "@wormhole-foundation/connect-sdk-algorand-tokenbridge";
 import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
 import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
+import algosdk, { Algodv2 } from "algosdk";
+import { AlgorandSigner } from "@wormhole-foundation/connect-sdk-algorand/src/testing";
 
 /*
 #  Scenario                                                       | Status | TxID
@@ -39,13 +42,14 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   const wh = new Wormhole("Testnet", [AlgorandPlatform, EvmPlatform, SolanaPlatform]);
 
   // Grab chain Contexts -- these hold a reference to a cached rpc client
-  const sendChain = wh.getChain("Avalanche");
-  const rcvChain = wh.getChain("Algorand");
+  const sendChain = wh.getChain("Algorand");
+  const rcvChain = wh.getChain("Solana");
 
   // Shortcut to allow transferring native gas token
   // const token: TokenId | "native" = "native";
-  // const token = Wormhole.chainAddress("Algorand", "10458941"); // USDC on Algorand
-  const token = Wormhole.chainAddress("Avalanche", "0x12EB0d635FD4C5692d779755Ba82b33F6439fc73"); // wUSDC on Avalanche
+
+  const token = Wormhole.chainAddress("Algorand", "10458941"); // USDC on Algorand
+  // const token = Wormhole.chainAddress("Avalanche", "0x12EB0d635FD4C5692d779755Ba82b33F6439fc73"); // wUSDC on Avalanche
   // const token = Wormhole.chainAddress("Algorand", "86897238"); // wSOL on Algorand
   // const token = Wormhole.chainAddress("Solana", "9rU2jFrzA5zDDmt9yR7vEABvXCUNJ1YgGigdTb9oCaTv"); // wALGO on Solana
 
