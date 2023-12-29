@@ -41,8 +41,8 @@ export const bignum = {
     if (prefix) return "0x" + str;
     return str;
   },
-  toBytes: (input: bigint, length?: number) => {
-    const b = hex.decode(bignum.toString(input));
+  toBytes: (input: bigint | number, length?: number) => {
+    const b = hex.decode(bignum.toString(typeof input === "number" ? BigInt(input) : input));
     if (!length) return b;
     return bytes.zpad(b, length);
   },
@@ -53,8 +53,10 @@ export const bytes = {
   decode: (value: Uint8Array): string => new TextDecoder().decode(value),
   equals: (lhs: Uint8Array, rhs: Uint8Array): boolean =>
     lhs.length === rhs.length && lhs.every((v, i) => v === rhs[i]),
-  zpad: (arr: Uint8Array, length: number): Uint8Array =>
-    bytes.concat(new Uint8Array(length - arr.length), arr),
+  zpad: (arr: Uint8Array, length: number, padStart: boolean = true): Uint8Array =>
+    padStart
+      ? bytes.concat(new Uint8Array(length - arr.length), arr)
+      : bytes.concat(arr, new Uint8Array(length - arr.length)),
   concat: (...args: Uint8Array[]): Uint8Array => {
     const length = args.reduce((acc, curr) => acc + curr.length, 0);
     const result = new Uint8Array(length);

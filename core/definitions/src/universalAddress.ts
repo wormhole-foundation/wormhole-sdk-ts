@@ -16,7 +16,7 @@ const algorandAppIdLayout = [
 
 export class UniversalAddress implements Address {
   static readonly byteSize = 32;
-  readonly type: string = "Universal";
+  static readonly type: string = "Universal";
 
   private readonly address: Uint8Array;
 
@@ -50,9 +50,12 @@ export class UniversalAddress implements Address {
     return !throws(() => UniversalAddress.stringToUint8Array(address, format));
   }
 
-  //TODO isn't this quite the code smell? - why would we have to test an any?
   static instanceof(address: any): address is UniversalAddress {
-    return typeof address === "object" && "type" in address && address.type === "Universal";
+    return (
+      typeof address === "object" &&
+      "constructor" in address &&
+      address.constructor.type === "Universal"
+    );
   }
 
   private static stringToUint8Array(address: string, format: PlatformAddressFormat): Uint8Array {

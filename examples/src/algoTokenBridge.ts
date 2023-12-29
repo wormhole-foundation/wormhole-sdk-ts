@@ -5,6 +5,7 @@ import {
   TokenId,
   TokenTransfer,
   TransferState,
+  UniversalAddress,
   Wormhole,
   isTokenId,
   normalizeAmount,
@@ -14,10 +15,12 @@ import { TransferStuff, getStuff } from "./helpers";
 // Import the platform specific packages
 import { AlgorandPlatform } from "@wormhole-foundation/connect-sdk-algorand";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
+import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 
 // Register the protocols
 import "@wormhole-foundation/connect-sdk-algorand-tokenbridge";
 import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
+import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 
 /*
 1. Algorand native to other chain
@@ -33,16 +36,16 @@ import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
 (async function () {
   // Init Wormhole object, passing config for which network
   // to use (e.g. Mainnet/Testnet) and what Platforms to support
-  const wh = new Wormhole("Testnet", [AlgorandPlatform, EvmPlatform]);
+  const wh = new Wormhole("Testnet", [AlgorandPlatform, EvmPlatform, SolanaPlatform]);
 
   // Grab chain Contexts -- these hold a reference to a cached rpc client
   const sendChain = wh.getChain("Algorand");
-  const rcvChain = wh.getChain("Avalanche");
+  const rcvChain = wh.getChain("Solana");
 
   // Shortcut to allow transferring native gas token
-  //const token: TokenId | "native" = "native";
+  const token: TokenId | "native" = "native";
 
-  const token = Wormhole.chainAddress("Algorand", "86783266");
+  // const token = Wormhole.chainAddress("Algorand", "86783266");
 
   // Normalized given token decimals later but can just pass bigints as base units
   // Note: The Token bridge will dedust past 8 decimals
@@ -77,6 +80,7 @@ import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
   // Set this to the transfer txid of the initiating transaction to recover a token transfer
   // and attempt to fetch details about its progress.
   let recoverTxid = undefined;
+  // recoverTxid = "BCAAZRCXAVTKKPIOTUE32GH6LQCW3CSCR3HAEM3I65KNH7PUUPKA";
 
   // Finally create and perform the transfer given the parameters set above
   const xfer = !recoverTxid

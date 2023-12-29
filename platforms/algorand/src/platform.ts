@@ -23,7 +23,6 @@ import {
 import { AlgorandAddress, AlgorandZeroAddress } from "./address";
 import { AlgorandChain } from "./chain";
 import { AlgorandChains, AlgorandPlatformType, AnyAlgorandAddress, _platform } from "./types";
-import { safeBigIntToNumber } from "./utilities";
 
 /**
  * @category Algorand
@@ -75,18 +74,13 @@ export class AlgorandPlatform<N extends Network> extends PlatformContext<N, Algo
     return new Uint8Array(Buffer.from(h, "hex"));
   };
 
-  static anyAlgorandAddressToAsaId(address: AnyAlgorandAddress): number {
-    const addr = new AlgorandAddress(address);
-    return safeBigIntToNumber(addr.toInt());
-  }
-
   static async getDecimals(
     chain: Chain,
     rpc: Algodv2,
     token: AnyAlgorandAddress | "native",
   ): Promise<bigint> {
     // It may come in as a universal address
-    const assetId = token === "native" ? 0 : this.anyAlgorandAddressToAsaId(token);
+    const assetId = token === "native" ? 0 : new AlgorandAddress(token).toInt();
 
     if (assetId === 0) return BigInt(decimals.nativeDecimals(AlgorandPlatform._platform));
 
@@ -102,15 +96,14 @@ export class AlgorandPlatform<N extends Network> extends PlatformContext<N, Algo
     walletAddr: string,
     token: AnyAlgorandAddress | "native",
   ): Promise<bigint | null> {
-    const asaId = token === "native" ? 0 : this.anyAlgorandAddressToAsaId(token);
-
-    if (asaId === 0) {
+    const assetId = token === "native" ? 0 : new AlgorandAddress(token).toInt();
+    if (assetId === 0) {
       const resp = await rpc.accountInformation(walletAddr).do();
       const accountInfo = modelsv2.Account.from_obj_for_encoding(resp);
       return BigInt(accountInfo.amount);
     }
 
-    const acctAssetInfoResp = await rpc.accountAssetInformation(walletAddr, asaId).do();
+    const acctAssetInfoResp = await rpc.accountAssetInformation(walletAddr, assetId).do();
     const accountAssetInfo = modelsv2.AssetHolding.from_obj_for_encoding(acctAssetInfoResp);
     return BigInt(accountAssetInfo.amount);
   }
@@ -131,7 +124,7 @@ export class AlgorandPlatform<N extends Network> extends PlatformContext<N, Algo
       if (token === "native") {
         return { ["native"]: native };
       }
-      const asaId = this.anyAlgorandAddressToAsaId(token);
+      const asaId = new AlgorandAddress(token).toInt();
       const acctAssetInfoResp = await rpc.accountAssetInformation(walletAddr, asaId).do();
       const accountAssetInfo = modelsv2.AssetHolding.from_obj_for_encoding(acctAssetInfoResp);
       return BigInt(accountAssetInfo.amount);

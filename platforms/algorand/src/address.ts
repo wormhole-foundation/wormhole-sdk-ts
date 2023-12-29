@@ -9,8 +9,12 @@ import {
 import { AlgorandPlatform } from "./platform";
 import { _platform, AnyAlgorandAddress } from "./types";
 import { decodeAddress, encodeAddress, isValidAddress } from "algosdk";
+import { safeBigIntToNumber } from "./utilities";
 
 export const AlgorandZeroAddress = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ";
+
+// Note: for ASA/App IDs we encode them as 8 bytes at the start of
+// the 32 byte adddress bytes.
 
 export class AlgorandAddress implements Address {
   static readonly byteSize = 32;
@@ -25,16 +29,24 @@ export class AlgorandAddress implements Address {
       this.address = address.address;
     } else if (UniversalAddress.instanceof(address)) {
       this.address = address.toUint8Array();
+    } else if (address instanceof Uint8Array && address.byteLength === AlgorandAddress.byteSize) {
+      this.address = address;
     } else if (typeof address === "string" && isValidAddress(address)) {
       this.address = decodeAddress(address).publicKey;
     } else if (typeof address === "string" && !isNaN(parseInt(address))) {
-      this.address = encoding.bignum.toBytes(BigInt(address), AlgorandAddress.byteSize);
-    } else if (address instanceof Uint8Array && address.byteLength === AlgorandAddress.byteSize) {
-      this.address = address;
-    } else if (address instanceof Uint8Array && address.byteLength === 8) {
-      this.address = encoding.bytes.zpad(address, AlgorandAddress.byteSize);
+      this.address = encoding.bytes.zpad(
+        encoding.bignum.toBytes(BigInt(address), 8),
+        AlgorandAddress.byteSize,
+        false,
+      );
     } else if (typeof address === "bigint") {
-      this.address = encoding.bignum.toBytes(address, AlgorandAddress.byteSize);
+      this.address = encoding.bytes.zpad(
+        encoding.bignum.toBytes(address, 8),
+        AlgorandAddress.byteSize,
+        false,
+      );
+    } else if (address instanceof Uint8Array && address.byteLength === 8) {
+      this.address = encoding.bytes.zpad(address, AlgorandAddress.byteSize, false);
     } else throw new Error(`Invalid Algorand address or ASA ID: ${address}`);
   }
 
@@ -53,9 +65,15 @@ export class AlgorandAddress implements Address {
   toUniversalAddress() {
     return new UniversalAddress(this.toUint8Array());
   }
-  toInt(): bigint {
-    return encoding.bignum.decode(this.toUint8Array());
+
+  toBigInt(): bigint {
+    return encoding.bignum.decode(this.toUint8Array().slice(0, 8));
   }
+
+  toInt(): number {
+    return safeBigIntToNumber(this.toBigInt());
+  }
+
   equals(other: AlgorandAddress | UniversalAddress): boolean {
     if (AlgorandAddress.instanceof(other)) {
       return other.address === this.address;
