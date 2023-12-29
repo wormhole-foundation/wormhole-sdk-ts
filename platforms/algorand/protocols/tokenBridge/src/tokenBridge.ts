@@ -27,7 +27,6 @@ import {
   AlgorandUnsignedTransaction,
   AnyAlgorandAddress,
   TransactionSignerPair,
-  isOptedIn,
   safeBigIntToNumber,
 } from "@wormhole-foundation/connect-sdk-algorand";
 import {
@@ -464,7 +463,10 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
       txs.push(...txs);
     }
 
-    if (assetId !== 0 && !(await isOptedIn(this.connection, creator, assetId))) {
+    if (
+      assetId !== 0 &&
+      !(await AlgorandTokenBridge.isOptedInToAsset(this.connection, creator, assetId))
+    ) {
       // Looks like we need to optin
       const payTxn = makePaymentTxnWithSuggestedParamsFromObject({
         from: senderAddr,
@@ -596,7 +598,9 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
 
     if (assetId !== 0) {
       foreignAssets.push(assetId);
-      if (!(await isOptedIn(this.connection, receiverAddress, assetId))) {
+      if (
+        !(await AlgorandTokenBridge.isOptedInToAsset(this.connection, receiverAddress, assetId))
+      ) {
         if (senderAddr != receiverAddress) {
           throw new Error("Cannot ASA optin for somebody else (asset " + assetId.toString() + ")");
         }
@@ -659,6 +663,22 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
     for (const utxn of txs) {
       yield this.createUnsignedTx(utxn, "TokenBridge.redeem", true);
     }
+  }
+
+  /**
+   * Checks if the asset has been opted in by the receiver
+   * @param client Algodv2 client
+   * @param asset Algorand asset index
+   * @param receiver Account address
+   * @returns Promise with True if the asset was opted in, False otherwise
+   */
+  static async isOptedInToAsset(client: Algodv2, address: string, asset: number): Promise<boolean> {
+    try {
+      const acctInfoResp = await client.accountAssetInformation(address, asset).do();
+      const acctInfo = modelsv2.AccountAssetResponse.from_obj_for_encoding(acctInfoResp);
+      return acctInfo.assetHolding.amount > 0;
+    } catch {}
+    return false;
   }
 
   private createUnsignedTx(

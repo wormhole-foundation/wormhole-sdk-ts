@@ -22,3 +22,10 @@ export type TransactionSet = {
   accounts: string[];
   txs: TransactionSignerPair[];
 };
+
+export function safeBigIntToNumber(b: bigint): number {
+  if (b < BigInt(Number.MIN_SAFE_INTEGER) || b > BigInt(Number.MAX_SAFE_INTEGER)) {
+    throw new Error("Integer is unsafe");
+  }
+  return Number(b);
+}

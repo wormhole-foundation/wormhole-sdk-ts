@@ -7,9 +7,8 @@ import {
 } from "@wormhole-foundation/connect-sdk";
 
 import { AlgorandPlatform } from "./platform";
-import { _platform, AnyAlgorandAddress } from "./types";
+import { _platform, AnyAlgorandAddress, safeBigIntToNumber } from "./types";
 import { decodeAddress, encodeAddress, isValidAddress } from "algosdk";
-import { safeBigIntToNumber } from "./utilities";
 
 export const AlgorandZeroAddress = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ";
 

@@ -6,7 +6,7 @@ import {
   toChainId,
 } from "@wormhole-foundation/connect-sdk";
 import { Algodv2, LogicSigAccount, decodeAddress, getApplicationAddress, modelsv2 } from "algosdk";
-import { safeBigIntToNumber, varint } from "@wormhole-foundation/connect-sdk-algorand";
+import { safeBigIntToNumber } from "@wormhole-foundation/connect-sdk-algorand";
 
 export const SEED_AMT: number = 1002000;
 export const MAX_KEYS: number = 15;
@@ -22,6 +22,52 @@ export interface PopulateData {
   address: Uint8Array;
   idx: bigint;
 }
+
+// Useful for encoding numbers as varints to patch TEAL binary
+export const varint = {
+  // Forever grateful to https://github.com/joeltg/big-varint/blob/main/src/unsigned.ts
+  _limit: 0x7f,
+  encodingLength: (value: number) => {
+    let i = 0;
+    for (; value >= 0x80; i++) value >>= 7;
+    return i + 1;
+  },
+  encode: (i: bigint | number, buffer?: ArrayBuffer, byteOffset?: number) => {
+    if (typeof i === "bigint") i = safeBigIntToNumber(i);
+
+    if (i < 0) throw new RangeError("value must be unsigned");
+
+    const byteLength = varint.encodingLength(i);
+    buffer = buffer || new ArrayBuffer(byteLength);
+    byteOffset = byteOffset || 0;
+
+    if (buffer.byteLength < byteOffset + byteLength)
+      throw new RangeError("the buffer is too small to encode the number at the offset");
+
+    const array = new Uint8Array(buffer, byteOffset);
+
+    let offset = 0;
+    while (varint._limit < i) {
+      array[offset++] = (i & varint._limit) | 0x80;
+      i >>= 7;
+    }
+    array[offset] = Number(i);
+    return array;
+  },
+  decode: (data: Uint8Array, offset = 0) => {
+    let i = 0;
+    let n = 0;
+    let b: number | undefined;
+    do {
+      b = data[offset + n];
+      if (b === undefined) throw new RangeError("offset out of range");
+
+      i += (b & varint._limit) << (n * 7);
+      n++;
+    } while (0x80 <= b);
+    return i;
+  },
+};
 
 export const StorageLogicSig = {
   // Get the storage lsig for a Wormhole message ID
