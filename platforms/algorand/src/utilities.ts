@@ -1,4 +1,5 @@
-import { Algodv2, bigIntToBytes, modelsv2, decodeAddress, getApplicationAddress } from "algosdk";
+import { encoding } from "@wormhole-foundation/connect-sdk";
+import { Algodv2, bigIntToBytes, modelsv2 } from "algosdk";
 
 export const SEED_AMT: number = 1002000;
 
@@ -98,24 +99,9 @@ export async function getMessageFee(client: Algodv2, bridgeId: bigint): Promise<
     .getApplicationByID(safeBigIntToNumber(bridgeId))
     .do();
   const appInfo = modelsv2.Application.from_obj_for_encoding(applInfoResp);
-  const globalState = appInfo.params.globalState;
-  const key: string = Buffer.from("MessageFee", "binary").toString("base64");
-  let ret = BigInt(0);
-  globalState &&
-    globalState.forEach((kv) => {
-      if (kv.key === key) {
-        ret = BigInt(kv.value.uint);
-        return;
-      }
-    });
-  return ret;
-}
-
-// Convert an id to the 32 byte Uint8array representing
-// the bytes of the derived app address
-export function idToAddressBytes(id: bigint): Uint8Array {
-  const appAddr: string = getApplicationAddress(id);
-  return decodeAddress(appAddr).publicKey;
+  const key: string = encoding.b64.encode("MessageFee");
+  const val = appInfo.params.globalState.find((kv) => kv.key === key);
+  return val ? BigInt(val.value.uint) : 0n;
 }
 
 /**
@@ -130,44 +116,38 @@ export async function decodeLocalState(
   appId: bigint,
   address: string,
 ): Promise<Uint8Array> {
-  let appState;
-  const ai = await client.accountInformation(address).do();
-  const acctInfo = modelsv2.Account.from_obj_for_encoding(ai);
-  for (const app of acctInfo.appsLocalState!) {
-    if (BigInt(app.id) === appId) {
-      appState = app.keyValue;
-      break;
-    }
+  let appState: modelsv2.ApplicationLocalState | undefined;
+  try {
+    const ai = await client.accountApplicationInformation(address, safeBigIntToNumber(appId)).do();
+    const acctAppInfo = modelsv2.AccountApplicationResponse.from_obj_for_encoding(ai);
+    appState = acctAppInfo.appLocalState;
+  } catch {
+    return new Uint8Array();
   }
 
-  let ret = Buffer.alloc(0);
-  let empty = Buffer.alloc(0);
-  if (appState) {
-    const e = Buffer.alloc(127);
-    const m = Buffer.from("meta");
+  const metaKey = encoding.b64.encode("meta");
 
-    let sk: string[] = [];
-    let vals: Map<string, Buffer> = new Map<string, Buffer>();
-    for (const kv of appState) {
-      const k = Buffer.from(kv.key, "base64");
-      const key: number = k.readInt8();
-      if (!Buffer.compare(k, m)) {
-        continue;
-      }
-      const v: Buffer = Buffer.from(kv.value.bytes, "base64");
-      if (Buffer.compare(v, e)) {
-        vals.set(key.toString(), v);
-        sk.push(key.toString());
-      }
-    }
+  // We don't want the data in the `meta` key
+  // and we want to make sure the sequences come back in order
+  // so first put them in a map by numeric key
+  // then iterate over keys to concat them in the right order
+  let vals = new Map<number, Uint8Array>();
+  for (const kv of appState.keyValue) {
+    if (kv.key === metaKey) continue;
 
-    sk.sort((a, b) => a.localeCompare(b, "en", { numeric: true }));
-
-    sk.forEach((v) => {
-      ret = Buffer.concat([ret, vals.get(v) || empty]);
-    });
+    // Take the first byte off the key to be the
+    // numeric index
+    const key = encoding.b64.decode(kv.key)[0];
+    const value = encoding.b64.decode(kv.value.bytes);
+    vals.set(key, value);
   }
-  return new Uint8Array(ret);
+
+  const byteArrays: Uint8Array[] = [];
+  for (let i = 0; i < MAX_KEYS; i++) {
+    if (vals.has(i)) byteArrays.push(vals.get(i));
+  }
+
+  return encoding.bytes.concat(...byteArrays);
 }
 
 /**
