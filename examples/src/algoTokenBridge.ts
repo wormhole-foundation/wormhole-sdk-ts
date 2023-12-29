@@ -43,9 +43,8 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   const rcvChain = wh.getChain("Solana");
 
   // Shortcut to allow transferring native gas token
-  const token: TokenId | "native" = "native";
-
-  // const token = Wormhole.chainAddress("Algorand", "86783266");
+  //const token: TokenId | "native" = "native";
+  const token = Wormhole.chainAddress("Algorand", "86897238");
 
   // Normalized given token decimals later but can just pass bigints as base units
   // Note: The Token bridge will dedust past 8 decimals

@@ -33,7 +33,6 @@ import {
   getMessageFee,
   isOptedIn,
   safeBigIntToNumber,
-  varint,
 } from "@wormhole-foundation/connect-sdk-algorand";
 import {
   AlgorandWormholeCore,
@@ -139,15 +138,18 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
 
   // Returns the original asset with its foreign chain
   async getOriginalAsset(token: TokenAddress<C>): Promise<TokenId> {
-    const assetId = bytesToBigInt(new AlgorandAddress(token.toString()).toUint8Array());
+    const assetId = new AlgorandAddress(token).toInt();
 
-    const assetInfoResp = await this.connection.getAssetByID(safeBigIntToNumber(assetId)).do();
+    const assetInfoResp = await this.connection.getAssetByID(assetId).do();
     const assetInfo = modelsv2.Asset.from_obj_for_encoding(assetInfoResp);
-    const lsa = assetInfo.params.creator;
-    const decodedLocalState = await decodeLocalState(this.connection, this.tokenBridgeAppId, lsa);
+    const decodedLocalState = await decodeLocalState(
+      this.connection,
+      this.tokenBridgeAppId,
+      assetInfo.params.creator,
+    );
 
-    const chainId = Number(varint.decode(decodedLocalState, 92)) as ChainId;
-    const assetAddress = new Uint8Array(decodedLocalState.subarray(60, 60 + 32));
+    const chainId = encoding.bignum.decode(decodedLocalState.slice(92, 94));
+    const assetAddress = decodedLocalState.slice(60, 60 + 32);
 
     return {
       chain: toChain(chainId),
