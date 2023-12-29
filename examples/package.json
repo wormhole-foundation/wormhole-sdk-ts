@@ -64,6 +64,6 @@
     "@wormhole-foundation/connect-sdk-evm-cctp": "^0.3.0-beta.6",
     "@wormhole-foundation/connect-sdk-solana-cctp": "^0.3.0-beta.6",
     "@wormhole-foundation/connect-sdk-cosmwasm-ibc": "^0.3.0-beta.6",
-    "algosdk":"^2.7.0"
+    "algosdk": "^2.7.0"
   }
 }

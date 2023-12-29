@@ -5,7 +5,6 @@ import {
   TokenId,
   TokenTransfer,
   TransferState,
-  UniversalAddress,
   Wormhole,
   isTokenId,
   normalizeAmount,
@@ -23,14 +22,15 @@ import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
 import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 
 /*
-1. Algorand native to other chain
-2. Return wrapped ALGO from other chain to Algorand native
-3. Algorand ASA to other chain
-4. Return wrapped ASA from other chain to Algorand ASA
-5. Other chain native to Algorand wrapped token
-6. Return Algorand wrapped token to other chain native
-7. Other chain token to Algorand wrapped token
-8. Return Algorand wrapped token to other chain token
+#  Scenario                                                       | Status | TxID
+1. Algorand native ALGO to other chain                            | OK     | NK7DK5CLRU2HWNHFNBNFCLM5RLNBVICBUYEW6FBEQVMCVFBBG7JA
+2. Return wrapped ALGO from other chain to Algorand native ALGO   | FAIL   | 4JGo9dwVv8XVTyf9CDXzX5QD4aBc4ZB6sHF7wFqw5LNLstqkRFmumwvu8HATddBVDcybKAAvrACfw1UEw3TD122b
+3. Algorand ASA to other chain                                    | OK_Ava | BNRWXLRWR7FVYMBBWHNWWCF65YQBDJAHVA5AMWADEC6K3WH76VYQ
+4. Return wrapped token from other chain to original Algorand ASA | FAIL   | 0x0dc8e8a052de3c62cda7d8a8211ac49c3c2c43d8841ee462e309c3d1abccbda4
+5. Other chain native asset orand wrapped token                   | OK     | 4wapEufhVAtv8oRqdrRzEovBHKkJDDD3m2pf1Jq3XtpvFwqA2YUijFqFufrGNyxY54vohmy3tsXCb2frcuBNa61T
+6. Return Algorand wrapped token to other chain native asset      | OK     | TD5OWVV6BED5VFAGXBUWVITW6EX3KYOPXEJQLGMFIXM3JJ75HULQ
+7. Other chain token to Algorand wrapped token                    |        | 
+8. Return Algorand wrapped token to other chain token             |        | 
 */
 
 (async function () {
@@ -39,18 +39,21 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   const wh = new Wormhole("Testnet", [AlgorandPlatform, EvmPlatform, SolanaPlatform]);
 
   // Grab chain Contexts -- these hold a reference to a cached rpc client
-  const sendChain = wh.getChain("Algorand");
-  const rcvChain = wh.getChain("Solana");
+  const sendChain = wh.getChain("Avalanche");
+  const rcvChain = wh.getChain("Algorand");
 
   // Shortcut to allow transferring native gas token
-  const token: TokenId | "native" = "native";
-  // const token = Wormhole.chainAddress("Algorand", "86897238");
+  // const token: TokenId | "native" = "native";
+  // const token = Wormhole.chainAddress("Algorand", "10458941"); // USDC on Algorand
+  const token = Wormhole.chainAddress("Avalanche", "0x12EB0d635FD4C5692d779755Ba82b33F6439fc73"); // wUSDC on Avalanche
+  // const token = Wormhole.chainAddress("Algorand", "86897238"); // wSOL on Algorand
+  // const token = Wormhole.chainAddress("Solana", "9rU2jFrzA5zDDmt9yR7vEABvXCUNJ1YgGigdTb9oCaTv"); // wALGO on Solana
 
   // Normalized given token decimals later but can just pass bigints as base units
   // Note: The Token bridge will dedust past 8 decimals
   // this means any amount specified past that point will be returned
   // to the caller
-  const amount = "0.0001";
+  const amount = "0.00001";
 
   // With automatic set to true, perform an automatic transfer. This will invoke a relayer
   // contract intermediary that knows to pick up the transfers
@@ -79,7 +82,10 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   // Set this to the transfer txid of the initiating transaction to recover a token transfer
   // and attempt to fetch details about its progress.
   let recoverTxid = undefined;
-  // recoverTxid = "BCAAZRCXAVTKKPIOTUE32GH6LQCW3CSCR3HAEM3I65KNH7PUUPKA";
+  // recoverTxid =
+  //   "4JGo9dwVv8XVTyf9CDXzX5QD4aBc4ZB6sHF7wFqw5LNLstqkRFmumwvu8HATddBVDcybKAAvrACfw1UEw3TD122b"; // Recover scenario 2
+  // recoverTxid =
+  //   "0x0dc8e8a052de3c62cda7d8a8211ac49c3c2c43d8841ee462e309c3d1abccbda4"; // Recover scenario 4
 
   // Finally create and perform the transfer given the parameters set above
   const xfer = !recoverTxid
