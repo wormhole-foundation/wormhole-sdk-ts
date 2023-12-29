@@ -3,7 +3,6 @@ import {
   ChainsConfig,
   Contracts,
   Network,
-  UniversalAddress,
   VAA,
   WormholeCore,
   WormholeMessageId,
@@ -17,9 +16,18 @@ import {
   AlgorandPlatformType,
   AlgorandUnsignedTransaction,
   AnyAlgorandAddress,
+  StorageLogicSig,
   TransactionSignerPair,
+  safeBigIntToNumber,
 } from "@wormhole-foundation/connect-sdk-algorand";
-import { Algodv2, bytesToBigInt, decodeAddress, getApplicationAddress, modelsv2 } from "algosdk";
+import {
+  Algodv2,
+  OnApplicationComplete,
+  getApplicationAddress,
+  makeApplicationCallTxnFromObject,
+  modelsv2,
+} from "algosdk";
+import { maybeCreateStorageTx } from "./storage";
 import { submitVAAHeader } from "./vaa";
 
 export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
@@ -30,6 +38,13 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
   readonly coreAppAddress: string;
   readonly tokenBridgeAppId: bigint;
   readonly tokenBridgeAppAddress: string;
+
+  // method selector for verifying a VAA
+  static verifyVaa = encoding.bytes.encode("verifyVAA");
+  // method selector for verifying signatures of a VAA
+  static verifySigs = encoding.bytes.encode("verifySigs");
+  // method selector string for publishing a message
+  static publishMessage = encoding.bytes.encode("publishMessage");
 
   constructor(
     readonly network: N,
@@ -55,9 +70,14 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
   }
 
   async *verifyMessage(sender: AnyAlgorandAddress, vaa: VAA) {
-    const appId = 0n;
     const address = new AlgorandAddress(sender).toString();
-    const txset = await submitVAAHeader(this.connection, this.coreAppId, appId, vaa, address);
+    const txset = await submitVAAHeader(
+      this.connection,
+      this.coreAppId,
+      this.coreAppId,
+      vaa,
+      address,
+    );
     for (const tx of txset.txs) {
       yield this.createUnsignedTx(tx, "Core.verifyMessage");
     }
@@ -74,49 +94,64 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
     return new AlgorandWormholeCore(network as N, chain, connection, conf.contracts);
   }
 
-  async *publishMessage(
-    sender: AnyAlgorandAddress,
-    message: string | Uint8Array,
-  ): AsyncGenerator<AlgorandUnsignedTransaction<N, C>> {
-    throw new Error("Method not implemented.");
+  async *publishMessage(sender: AnyAlgorandAddress, message: Uint8Array) {
+    // Call core bridge to publish message
+    const _sender = new AlgorandAddress(sender);
+    const address = _sender.toString();
+    const suggestedParams = await this.connection.getTransactionParams().do();
+
+    const storage = StorageLogicSig.forEmitter(this.coreAppId, _sender.toUint8Array());
+
+    const {
+      accounts: [storageAddress],
+      txs,
+    } = await maybeCreateStorageTx(
+      this.connection,
+      address,
+      this.coreAppId,
+      storage,
+      suggestedParams,
+    );
+
+    for (const tx of txs) {
+      yield this.createUnsignedTx(tx, "Core.publishMessage", true);
+    }
+
+    const act = makeApplicationCallTxnFromObject({
+      from: address,
+      appIndex: safeBigIntToNumber(this.coreAppId),
+      appArgs: [AlgorandWormholeCore.publishMessage, message, encoding.bignum.toBytes(0n, 8)],
+      accounts: [storageAddress],
+      onComplete: OnApplicationComplete.NoOpOC,
+      suggestedParams,
+    });
+
+    yield this.createUnsignedTx({ tx: act }, "Core.publishMessage", true);
   }
 
   async parseTransaction(txId: string): Promise<WormholeMessageId[]> {
     const result = await this.connection.pendingTransactionInformation(txId).do();
-    const emitterAddr = new UniversalAddress(this.getEmitterAddressAlgorand(this.tokenBridgeAppId));
-    const sequence = this.parseSequenceFromLogAlgorand(result);
-    return [
-      {
-        chain: this.chain,
-        emitter: emitterAddr,
-        sequence,
-      } as WormholeMessageId,
-    ];
-  }
-
-  private getEmitterAddressAlgorand(appId: bigint): string {
-    const appAddr: string = getApplicationAddress(appId);
-    const decodedAppAddr: Uint8Array = decodeAddress(appAddr).publicKey;
-    const hexAppAddr: string = encoding.hex.encode(decodedAppAddr);
-    return hexAppAddr;
-  }
-
-  private parseSequenceFromLogAlgorand(result: Record<string, any>): bigint {
-    let sequence: bigint | undefined;
     const ptr = modelsv2.PendingTransactionResponse.from_obj_for_encoding(result);
-    if (ptr.innerTxns) {
-      const innerTxns = ptr.innerTxns;
-      innerTxns.forEach((txn) => {
-        if (txn?.logs && txn.logs.length > 0 && txn.logs[0]) {
-          sequence = bytesToBigInt(txn.logs[0].subarray(0, 8));
-        }
-      });
-    }
-    if (!sequence) {
-      throw new Error("parseSequenceFromLogAlgorand - Sequence not found");
-    }
-    return sequence;
+
+    // Expect target is core app
+    if (BigInt(ptr.txn.txn.apid) !== this.coreAppId) throw new Error("Invalid app id");
+
+    // Expect publish messeage as first arg
+    const args = ptr.txn.txn.apaa;
+    if (
+      args.length !== 3 ||
+      !encoding.bytes.equals(new Uint8Array(args[0]), AlgorandWormholeCore.publishMessage)
+    )
+      throw new Error("Invalid transaction arguments");
+
+    if (!ptr.logs || ptr.logs.length === 0) throw new Error("No logs found to parse sequence");
+
+    const sequence = encoding.bignum.decode(ptr.logs[0]);
+    const emitter = new AlgorandAddress(ptr.txn.txn.snd).toUniversalAddress();
+
+    return [{ chain: this.chain, emitter, sequence }];
   }
+
   private createUnsignedTx(
     txReq: TransactionSignerPair,
     description: string,

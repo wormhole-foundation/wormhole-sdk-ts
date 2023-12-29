@@ -159,8 +159,8 @@ export class AlgorandPlatform<N extends Network> extends PlatformContext<N, Algo
     });
 
     // Simulation
-    const resp = await rpc.simulateRawTransactions(stxns).do();
-    console.log("Simulation Response: ", JSON.stringify(resp, null, 2));
+    // const resp = await rpc.simulateRawTransactions(stxns).do();
+    // console.log("Simulation Response: ", JSON.stringify(resp, null, 2));
     // End simulation
 
     const { txId } = await rpc.sendRawTransaction(stxns).do();

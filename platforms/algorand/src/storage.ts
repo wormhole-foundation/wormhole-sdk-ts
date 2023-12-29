@@ -65,6 +65,16 @@ export const StorageLogicSig = {
     });
   },
 
+  forEmitter: (appId: bigint, emitter: Uint8Array) => {
+    const appAddress = decodeAddress(getApplicationAddress(appId)).publicKey;
+    return StorageLogicSig.fromData({
+      appId,
+      appAddress,
+      idx: 0n,
+      address: emitter,
+    });
+  },
+
   fromData: (data: PopulateData) => {
     // This patches the binary of the TEAL program used to store data
     // to produce a logic sig that can be used to sign transactions

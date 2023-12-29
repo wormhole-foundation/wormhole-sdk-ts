@@ -19,6 +19,7 @@ import {
   signLogicSigTransaction,
 } from "algosdk";
 import { maybeCreateStorageTx } from "./storage";
+import { AlgorandWormholeCore } from "./core";
 
 /**
  * Submits just the header of the VAA
@@ -35,7 +36,10 @@ export async function submitVAAHeader(
   appid: bigint,
   vaa: VAA,
   senderAddr: string,
+  suggestedParams?: SuggestedParams,
 ): Promise<TransactionSet> {
+  suggestedParams = suggestedParams ?? (await client.getTransactionParams().do());
+
   let txs: TransactionSignerPair[] = [];
 
   // Get storage acct for message ID
@@ -47,7 +51,7 @@ export async function submitVAAHeader(
   const {
     accounts: [seqAddr],
     txs: seqOptInTxs,
-  } = await maybeCreateStorageTx(client, senderAddr, appid, msgStorage);
+  } = await maybeCreateStorageTx(client, senderAddr, appid, msgStorage, suggestedParams);
   txs.push(...seqOptInTxs);
 
   // Get storage account for Guardian set
@@ -55,15 +59,13 @@ export async function submitVAAHeader(
   const {
     accounts: [guardianAddr],
     txs: guardianOptInTxs,
-  } = await maybeCreateStorageTx(client, senderAddr, coreId, gsStorage);
+  } = await maybeCreateStorageTx(client, senderAddr, coreId, gsStorage, suggestedParams);
   txs.push(...guardianOptInTxs);
 
   let accts: string[] = [seqAddr, guardianAddr];
 
   // Get the Guardian keys
   const keys: Uint8Array = await decodeLocalState(client, coreId, guardianAddr);
-
-  const suggestedParams: SuggestedParams = await client.getTransactionParams().do();
 
   // We don't pass the entire payload in but instead just pass it pre-digested.  This gets around size
   // limitations with lsigs AND reduces the cost of the entire operation on a congested network by reducing the
@@ -78,7 +80,6 @@ export async function submitVAAHeader(
 
   const SIG_LEN: number = 66;
   const GuardianKeyLen: number = 20;
-  const verifySigArg: Uint8Array = encoding.bytes.encode("verifySigs");
   const lsa = new LogicSigAccount(ALGO_VERIFY);
 
   for (let nt = 0; nt < numTxns; nt++) {
@@ -103,7 +104,7 @@ export async function submitVAAHeader(
 
     const appTxn = makeApplicationCallTxnFromObject({
       appArgs: [
-        verifySigArg,
+        AlgorandWormholeCore.verifySigs,
         encoding.bytes.concat(
           ...sigs.map((s) =>
             encoding.bytes.concat(new Uint8Array([s.guardianIndex]), s.signature.encode()),
@@ -128,7 +129,7 @@ export async function submitVAAHeader(
     });
   }
   const appTxn = makeApplicationCallTxnFromObject({
-    appArgs: [encoding.bytes.encode("verifyVAA"), serialize(vaa)],
+    appArgs: [AlgorandWormholeCore.verifyVaa, serialize(vaa)],
     accounts: accts,
     appIndex: safeBigIntToNumber(coreId),
     from: senderAddr,

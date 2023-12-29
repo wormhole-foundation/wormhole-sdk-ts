@@ -28,11 +28,11 @@ export async function storageAccountExists(
   appId: bigint,
 ): Promise<boolean> {
   try {
-    const acctAppInfo = client
+    const acctAppInfo = await client
       .accountApplicationInformation(address, safeBigIntToNumber(appId))
       .do();
     return Object.keys(acctAppInfo).length > 0;
-  } catch (e) {}
+  } catch {}
   return false;
 }
 
@@ -56,13 +56,12 @@ export async function maybeCreateStorageTx(
 
   const txs: TransactionSignerPair[] = [];
 
-  try {
-    const exists = await storageAccountExists(client, storageAddress, appId);
-    if (exists) return { accounts: [storageAddress], txs };
-  } catch {}
+  if (await storageAccountExists(client, storageAddress, appId))
+    return { accounts: [storageAddress], txs };
 
   suggestedParams = suggestedParams ?? (await client.getTransactionParams().do());
 
+  // Pay the storage account some ALGO to min balance requirements
   const seedTxn = makePaymentTxnWithSuggestedParamsFromObject({
     from: senderAddr,
     to: storageAddress,
@@ -72,11 +71,13 @@ export async function maybeCreateStorageTx(
   seedTxn.fee = seedTxn.fee * 2;
   txs.push({ tx: seedTxn, signer: null });
 
+  // Opt in to the app and rekey to the app address that is using
+  // this as storage
   const optinTxn = makeApplicationOptInTxnFromObject({
     from: storageAddress,
-    suggestedParams,
     appIndex: safeBigIntToNumber(appId),
     rekeyTo: appAddr,
+    suggestedParams,
   });
   optinTxn.fee = 0;
   txs.push({

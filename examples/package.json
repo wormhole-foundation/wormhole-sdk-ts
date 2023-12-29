@@ -39,7 +39,7 @@
     "demo": "tsx src/index.ts",
     "cosmos": "tsx src/cosmos.ts",
     "retb": "cd .. && npm run build && cd - && npm run tb",
-    "msg": "tsx src/messaging.ts",
+    "msg": "cd ../platforms/algorand/protocols/core && npm run build && cd - && tsx src/messaging.ts",
     "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo",
     "lint": "npm run prettier && eslint --fix",
     "prettier": "prettier --write ./src",
@@ -63,6 +63,7 @@
     "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge": "^0.3.0-beta.6",
     "@wormhole-foundation/connect-sdk-evm-cctp": "^0.3.0-beta.6",
     "@wormhole-foundation/connect-sdk-solana-cctp": "^0.3.0-beta.6",
-    "@wormhole-foundation/connect-sdk-cosmwasm-ibc": "^0.3.0-beta.6"
+    "@wormhole-foundation/connect-sdk-cosmwasm-ibc": "^0.3.0-beta.6",
+    "algosdk":"^2.7.0"
   }
 }
