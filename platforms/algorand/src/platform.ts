@@ -16,14 +16,14 @@ import {
 import {
   Algodv2,
   SignedTransaction,
-  bytesToBigInt,
   decodeSignedTransaction,
-  waitForConfirmation,
   modelsv2,
+  waitForConfirmation,
 } from "algosdk";
+import { AlgorandAddress, AlgorandZeroAddress } from "./address";
 import { AlgorandChain } from "./chain";
 import { AlgorandChains, AlgorandPlatformType, AnyAlgorandAddress, _platform } from "./types";
-import { AlgorandAddress, AlgorandZeroAddress } from "./address";
+import { safeBigIntToNumber } from "./utilities";
 
 /**
  * @category Algorand
@@ -76,18 +76,8 @@ export class AlgorandPlatform<N extends Network> extends PlatformContext<N, Algo
   };
 
   static anyAlgorandAddressToAsaId(address: AnyAlgorandAddress): number {
-    /* 
-    QUESTIONBW: Redeeming on Algorand an incoming Avalanche USDC transfer is failing here.
-    It seems like I need to use the StorageLsig class to get the storage contract and then decode its state,
-    but this module is in the tokenBridge module, which I shouldn't need to import here in the platform itself
-    */
-    console.log("addressArg", address);
-    const addr = new AlgorandAddress(address.toString());
-    console.log("addr", addr);
-    const lastEightBytes = addr.toUint8Array().slice(-8);
-    const asaId = Number(bytesToBigInt(lastEightBytes));
-    console.log("asaId", asaId);
-    return asaId;
+    const addr = new AlgorandAddress(address);
+    return safeBigIntToNumber(addr.toInt());
   }
 
   static async getDecimals(
@@ -95,9 +85,12 @@ export class AlgorandPlatform<N extends Network> extends PlatformContext<N, Algo
     rpc: Algodv2,
     token: AnyAlgorandAddress | "native",
   ): Promise<bigint> {
-    if (token === "native") return BigInt(decimals.nativeDecimals(AlgorandPlatform._platform));
-    const asaId = this.anyAlgorandAddressToAsaId(token);
-    const assetResp = await rpc.getAssetByID(asaId).do();
+    // It may come in as a universal address
+    const assetId = token === "native" ? 0 : this.anyAlgorandAddressToAsaId(token);
+
+    if (assetId === 0) return BigInt(decimals.nativeDecimals(AlgorandPlatform._platform));
+
+    const assetResp = await rpc.getAssetByID(assetId).do();
     const asset = modelsv2.Asset.from_obj_for_encoding(assetResp);
     if (!asset.params || !asset.params.decimals) throw new Error("Could not fetch token details");
     return BigInt(asset.params.decimals);
@@ -109,12 +102,14 @@ export class AlgorandPlatform<N extends Network> extends PlatformContext<N, Algo
     walletAddr: string,
     token: AnyAlgorandAddress | "native",
   ): Promise<bigint | null> {
-    if (token === "native") {
+    const asaId = token === "native" ? 0 : this.anyAlgorandAddressToAsaId(token);
+
+    if (asaId === 0) {
       const resp = await rpc.accountInformation(walletAddr).do();
       const accountInfo = modelsv2.Account.from_obj_for_encoding(resp);
       return BigInt(accountInfo.amount);
     }
-    const asaId = this.anyAlgorandAddressToAsaId(token);
+
     const acctAssetInfoResp = await rpc.accountAssetInformation(walletAddr, asaId).do();
     const accountAssetInfo = modelsv2.AssetHolding.from_obj_for_encoding(acctAssetInfoResp);
     return BigInt(accountAssetInfo.amount);
@@ -157,11 +152,6 @@ export class AlgorandPlatform<N extends Network> extends PlatformContext<N, Algo
       const id: string = val.txn.txID();
       return id;
     });
-
-    // Simulation
-    // const resp = await rpc.simulateRawTransactions(stxns).do();
-    // console.log("Simulation Response: ", JSON.stringify(resp, null, 2));
-    // End simulation
 
     const { txId } = await rpc.sendRawTransaction(stxns).do();
     if (!txId) {

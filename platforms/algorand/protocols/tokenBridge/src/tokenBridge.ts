@@ -203,7 +203,6 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
 
     const senderAddr = payer.toString();
     const assetId = bytesToBigInt(new AlgorandAddress(token_to_attest.toString()).toUint8Array());
-    console.log("assetId3: ", assetId);
     const txs: TransactionSignerPair[] = [];
 
     const suggestedParams: SuggestedParams = await this.connection.getTransactionParams().do();
@@ -554,8 +553,6 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
   ) {
     if (!suggestedParams) suggestedParams = await this.connection.getTransactionParams().do();
 
-    console.log("vaa: ", vaa);
-    console.log("vaa payload token: ", vaa.payload.token.address.toString());
     const senderAddr = new AlgorandAddress(sender).toString();
 
     const { accounts, txs } = await submitVAAHeader(
@@ -628,7 +625,6 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
       suggestedParams,
     };
 
-    console.log("appCallObj: ", appCallObj);
     txs.push({
       tx: makeApplicationCallTxnFromObject(appCallObj),
       signer: null,

@@ -133,9 +133,21 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
   async parseTransaction(txId: string): Promise<WormholeMessageId[]> {
     const result = await this.connection.pendingTransactionInformation(txId).do();
     const ptr = modelsv2.PendingTransactionResponse.from_obj_for_encoding(result);
+    return this.parseTx(ptr);
+  }
+
+  private parseTx(ptr: modelsv2.PendingTransactionResponse): WormholeMessageId[] {
+    const msgs: WormholeMessageId[] = [];
+
+    if (ptr.innerTxns && ptr.innerTxns.length > 0) {
+      msgs.push(...ptr.innerTxns.flatMap((tx) => this.parseTx(tx)));
+    }
 
     // Expect target is core app
-    if (BigInt(ptr.txn.txn.apid) !== this.coreAppId) throw new Error("Invalid app id");
+    if (BigInt(ptr.txn.txn.apid) !== this.coreAppId) return msgs;
+
+    // Expect logs
+    if (!ptr.logs || ptr.logs.length === 0) return msgs;
 
     // Expect publish messeage as first arg
     const args = ptr.txn.txn.apaa;
@@ -143,14 +155,13 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
       args.length !== 3 ||
       !encoding.bytes.equals(new Uint8Array(args[0]), AlgorandWormholeCore.publishMessage)
     )
-      throw new Error("Invalid transaction arguments");
-
-    if (!ptr.logs || ptr.logs.length === 0) throw new Error("No logs found to parse sequence");
+      return msgs;
 
     const sequence = encoding.bignum.decode(ptr.logs[0]);
     const emitter = new AlgorandAddress(ptr.txn.txn.snd).toUniversalAddress();
+    msgs.push({ chain: this.chain, emitter, sequence });
 
-    return [{ chain: this.chain, emitter, sequence }];
+    return msgs;
   }
 
   private createUnsignedTx(

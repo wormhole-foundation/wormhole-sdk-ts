@@ -18,54 +18,53 @@ export class AlgorandAddress implements Address {
 
   readonly type: string = "Native";
 
-  // stored as checksum address
-  private readonly address: string;
+  private readonly address: Uint8Array;
 
   constructor(address: AnyAlgorandAddress) {
     if (AlgorandAddress.instanceof(address)) {
-      const a = address as unknown as AlgorandAddress;
-      this.address = a.address;
-      return;
+      this.address = address.address;
     } else if (UniversalAddress.instanceof(address)) {
-      this.address = encodeAddress(address.toUint8Array());
+      this.address = address.toUint8Array();
     } else if (typeof address === "string" && isValidAddress(address)) {
-      this.address = address;
+      this.address = decodeAddress(address).publicKey;
+    } else if (typeof address === "string" && !isNaN(parseInt(address))) {
+      this.address = encoding.bignum.toBytes(BigInt(address), AlgorandAddress.byteSize);
     } else if (address instanceof Uint8Array && address.byteLength === AlgorandAddress.byteSize) {
-      this.address = encodeAddress(address);
+      this.address = address;
     } else if (address instanceof Uint8Array && address.byteLength === 8) {
-      // ASA IDs are 8 bytes; this is padded to 32 bytes like addresses
-      this.address = encodeAddress(encoding.bytes.zpad(address, AlgorandAddress.byteSize));
+      this.address = encoding.bytes.zpad(address, AlgorandAddress.byteSize);
     } else if (typeof address === "bigint") {
-      this.address = encodeAddress(encoding.bignum.toBytes(address, AlgorandAddress.byteSize));
+      this.address = encoding.bignum.toBytes(address, AlgorandAddress.byteSize);
     } else throw new Error(`Invalid Algorand address or ASA ID: ${address}`);
   }
 
   unwrap(): string {
-    return this.address;
+    return this.toString();
   }
   toString() {
-    return this.address;
+    return encodeAddress(this.address);
   }
   toNative() {
     return this;
   }
   toUint8Array() {
-    return decodeAddress(this.address).publicKey;
+    return this.address;
   }
   toUniversalAddress() {
     return new UniversalAddress(this.toUint8Array());
   }
-
-  static instanceof(address: any): address is AlgorandAddress {
-    return address.constructor.platform === AlgorandPlatform._platform;
+  toInt(): bigint {
+    return encoding.bignum.decode(this.toUint8Array());
   }
-
   equals(other: AlgorandAddress | UniversalAddress): boolean {
     if (AlgorandAddress.instanceof(other)) {
       return other.address === this.address;
     } else {
       return this.toUniversalAddress().equals(other);
     }
+  }
+  static instanceof(address: any): address is AlgorandAddress {
+    return address.constructor.platform === AlgorandPlatform._platform;
   }
 }
 

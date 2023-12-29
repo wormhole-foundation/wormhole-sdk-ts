@@ -33,7 +33,7 @@
   },
   "sideEffects": false,
   "scripts": {
-    "algo": "cd ../platforms/algorand/protocols/tokenBridge && npm run build && cd - && tsx src/algoTokenBridge.ts",
+    "algo": "cd ../platforms/algorand/protocols/core && npm run build && cd - && tsx src/algoTokenBridge.ts",
     "tb": "tsx src/tokenBridge.ts",
     "cctp": "tsx src/cctp.ts",
     "demo": "tsx src/index.ts",
