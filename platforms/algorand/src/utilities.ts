@@ -29,8 +29,6 @@ export const ALGO_VERIFY = new Uint8Array([
   8, 53, 3, 52, 4, 37, 8, 53, 4, 66, 255, 180, 34, 137,
 ]);
 
-export const METADATA_REPLACE = new RegExp("\u0000", "g");
-
 export function safeBigIntToNumber(b: bigint): number {
   if (b < BigInt(Number.MIN_SAFE_INTEGER) || b > BigInt(Number.MAX_SAFE_INTEGER)) {
     throw new Error("Integer is unsafe");

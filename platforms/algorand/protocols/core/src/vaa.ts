@@ -1,12 +1,13 @@
-import { TokenBridge, encoding, keccak256, serialize } from "@wormhole-foundation/connect-sdk";
+import { VAA, encoding, keccak256, serialize } from "@wormhole-foundation/connect-sdk";
 import {
-  TransactionSignerPair,
   ALGO_VERIFY,
   ALGO_VERIFY_HASH,
   MAX_SIGS_PER_TXN,
-  safeBigIntToNumber,
-  decodeLocalState,
   StorageLogicSig,
+  TransactionSet,
+  TransactionSignerPair,
+  decodeLocalState,
+  safeBigIntToNumber,
 } from "@wormhole-foundation/connect-sdk-algorand";
 import {
   Algodv2,
@@ -17,12 +18,7 @@ import {
   makeApplicationCallTxnFromObject,
   signLogicSigTransaction,
 } from "algosdk";
-import { maybeOptInTx } from "./assets";
-
-type SubmitVAAState = {
-  accounts: string[];
-  txs: TransactionSignerPair[];
-};
+import { maybeCreateStorageTx } from "./storage";
 
 /**
  * Submits just the header of the VAA
@@ -37,9 +33,9 @@ export async function submitVAAHeader(
   client: Algodv2,
   coreId: bigint,
   appid: bigint,
-  vaa: TokenBridge.VAA,
+  vaa: VAA,
   senderAddr: string,
-): Promise<SubmitVAAState> {
+): Promise<TransactionSet> {
   let txs: TransactionSignerPair[] = [];
 
   // Get storage acct for message ID
@@ -48,22 +44,18 @@ export async function submitVAAHeader(
     sequence: vaa.sequence,
     emitter: vaa.emitterAddress,
   });
-  const { address: seqAddr, txs: seqOptInTxs } = await maybeOptInTx(
-    client,
-    senderAddr,
-    appid,
-    msgStorage,
-  );
+  const {
+    accounts: [seqAddr],
+    txs: seqOptInTxs,
+  } = await maybeCreateStorageTx(client, senderAddr, appid, msgStorage);
   txs.push(...seqOptInTxs);
 
   // Get storage account for Guardian set
   const gsStorage = StorageLogicSig.forGuardianSet(coreId, vaa.guardianSet);
-  const { address: guardianAddr, txs: guardianOptInTxs } = await maybeOptInTx(
-    client,
-    senderAddr,
-    coreId,
-    gsStorage,
-  );
+  const {
+    accounts: [guardianAddr],
+    txs: guardianOptInTxs,
+  } = await maybeCreateStorageTx(client, senderAddr, coreId, gsStorage);
   txs.push(...guardianOptInTxs);
 
   let accts: string[] = [seqAddr, guardianAddr];
@@ -130,7 +122,7 @@ export async function submitVAAHeader(
     txs.push({
       tx: appTxn,
       signer: {
-        addr: lsa.address(),
+        address: lsa.address(),
         signTxn: (txn: Transaction) => Promise.resolve(signLogicSigTransaction(txn, lsa).blob),
       },
     });

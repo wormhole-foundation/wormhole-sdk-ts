@@ -15,5 +15,3 @@ registerProtocol(_platform, "TokenBridge", AlgorandTokenBridge);
 export * from "./assets";
 export * from "./tokenBridge";
 export * from "./tokenBridge";
-export * from "./types";
-export * from "./vaa";

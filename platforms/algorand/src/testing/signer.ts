@@ -57,7 +57,7 @@ export class AlgorandSigner<N extends Network, C extends AlgorandChains = "Algor
 
       if (signer) {
         console.log(
-          `Signing: ${description} with signer ${signer.addr} for address ${this.address()}`,
+          `Signing: ${description} with signer ${signer.address} for address ${this.address()}`,
         );
         signed.push(await signer.signTxn(tx));
       } else {

@@ -1,12 +1,9 @@
 import {
-  AccountAddress,
   ChainId,
   ChainsConfig,
   Contracts,
   Network,
-  PayloadLiteral,
   UniversalAddress,
-  UnsignedTransaction,
   VAA,
   WormholeCore,
   WormholeMessageId,
@@ -14,13 +11,16 @@ import {
   toChainId,
 } from "@wormhole-foundation/connect-sdk";
 import {
+  AlgorandAddress,
   AlgorandChains,
   AlgorandPlatform,
   AlgorandPlatformType,
   AlgorandUnsignedTransaction,
   AnyAlgorandAddress,
+  TransactionSignerPair,
 } from "@wormhole-foundation/connect-sdk-algorand";
 import { Algodv2, bytesToBigInt, decodeAddress, getApplicationAddress, modelsv2 } from "algosdk";
+import { submitVAAHeader } from "./vaa";
 
 export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
   implements WormholeCore<N, AlgorandPlatformType, C>
@@ -31,7 +31,7 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
   readonly tokenBridgeAppId: bigint;
   readonly tokenBridgeAppAddress: string;
 
-  private constructor(
+  constructor(
     readonly network: N,
     readonly chain: C,
     readonly connection: Algodv2,
@@ -54,11 +54,13 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
     this.tokenBridgeAppAddress = getApplicationAddress(tokenBridge);
   }
 
-  verifyMessage(
-    sender: AccountAddress<C>,
-    vaa: VAA<PayloadLiteral>,
-  ): AsyncGenerator<UnsignedTransaction<N, C>, any, unknown> {
-    throw new Error("Method not implemented.");
+  async *verifyMessage(sender: AnyAlgorandAddress, vaa: VAA) {
+    const appId = 0n;
+    const address = new AlgorandAddress(sender).toString();
+    const txset = await submitVAAHeader(this.connection, this.coreAppId, appId, vaa, address);
+    for (const tx of txset.txs) {
+      yield this.createUnsignedTx(tx, "Core.verifyMessage");
+    }
   }
 
   static async fromRpc<N extends Network>(
@@ -114,5 +116,18 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
       throw new Error("parseSequenceFromLogAlgorand - Sequence not found");
     }
     return sequence;
+  }
+  private createUnsignedTx(
+    txReq: TransactionSignerPair,
+    description: string,
+    parallelizable: boolean = true, // Default true for Algorand atomic transaction grouping
+  ): AlgorandUnsignedTransaction<N, C> {
+    return new AlgorandUnsignedTransaction(
+      txReq,
+      this.network,
+      this.chain,
+      description,
+      parallelizable,
+    );
   }
 }
