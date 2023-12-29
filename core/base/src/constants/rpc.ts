@@ -23,6 +23,7 @@ const rpcConfig = [[
     ["Wormchain", "https://wormchain-rpc.quickapi.com"],
     ["Xpla",      "https://dimension-rpc.xpla.dev"],
     ["Sei",       "https://sei-rpc.polkachu.com/"],
+    ["Algorand", "https://mainnet-api.algonode.cloud"],
   ]], [
   "Testnet", [
     ["Ethereum",  "https://rpc.ankr.com/eth_goerli"],
@@ -44,7 +45,8 @@ const rpcConfig = [[
     ["Evmos",     "https://evmos-testnet-rpc.polkachu.com"],
     ["Wormchain", "https://gateway.testnet.xlabs.xyz/"],
     ["Xpla",      "https://cube-rpc.xpla.dev"],
-    ["Sepolia",   "https://ethereum-sepolia.publicnode.com"]
+    ["Sepolia",   "https://ethereum-sepolia.publicnode.com"],
+    ["Algorand", "https://testnet-api.algonode.cloud"],
   ]], [
   "Devnet", [
     ["Ethereum",  "http://eth-devnet:8545"],

@@ -1,5 +1,5 @@
 {
-  "name": "@wormhole-foundation/connect-sdk-solana-core",
+  "name": "@wormhole-foundation/connect-sdk-algorand-tokenbridge",
   "version": "0.3.0-beta.6",
   "repository": {
     "type": "git",
@@ -10,14 +10,14 @@
   },
   "homepage": "https://github.com/wormhole-foundation/connect-sdk#readme",
   "directories": {
-    "test": "__tests__"
+    "test": "tests"
   },
   "license": "Apache-2.0",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/esm/index.d.ts",
   "author": "",
-  "description": "SDK for Solana, used in conjunction with @wormhole-foundation/connect-sdk",
+  "description": "SDK for Algorand, used in conjunction with @wormhole-foundation/connect-sdk",
   "files": [
     "dist/**/*"
   ],
@@ -26,12 +26,12 @@
     "sdk",
     "typescript",
     "connect",
-    "solana"
+    "algorand"
   ],
   "engines": {
     "node": ">=16"
   },
-  "sideEffects": true,
+  "sideEffects": false,
   "scripts": {
     "build:cjs": "tsc -p ./tsconfig.cjs.json",
     "build:esm": "tsc -p ./tsconfig.esm.json",
@@ -41,18 +41,9 @@
     "lint": "npm run prettier && eslint --fix",
     "prettier": "prettier --write ./src"
   },
-  "devDependencies": {
-    "@types/bn.js": "^5.1.5",
-    "nock": "^13.3.3"
-  },
   "dependencies": {
     "@wormhole-foundation/connect-sdk": "^0.3.0-beta.6",
-    "@wormhole-foundation/connect-sdk-solana": "^0.3.0-beta.6",
-    "@coral-xyz/borsh": "0.2.6",
-    "@project-serum/anchor": "0.25.0",
-    "@project-serum/borsh": "0.2.5",
-    "@solana/spl-token": "0.3.5",
-    "@solana/web3.js": "1.66.2",
-    "lodash": "^4.17.21"
+    "@wormhole-foundation/connect-sdk-algorand": "^0.3.0-beta.6",
+    "@wormhole-foundation/connect-sdk-algorand-core": "^0.3.0-beta.6"
   }
 }

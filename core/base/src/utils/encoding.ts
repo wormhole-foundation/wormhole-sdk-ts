@@ -32,21 +32,34 @@ export const b58 = {
 };
 
 export const bignum = {
-  decode: (input: string | Uint8Array) =>
-    typeof input === "string" ? BigInt(input) : BigInt(hex.encode(input, true)),
-  encode: (input: bigint, prefix: boolean = false) => (prefix ? "0x" : "") + input.toString(16),
+  decode: (input: string | Uint8Array) => {
+    if (typeof input !== "string") input = hex.encode(input, true);
+    if (input === "" || input === "0x") return 0n;
+    return BigInt(input);
+  },
+  encode: (input: bigint, prefix: boolean = false) => bignum.toString(input, prefix),
+  toString: (input: bigint, prefix: boolean = false) => {
+    let str = input.toString(16);
+    str = str.length % 2 === 1 ? (str = "0" + str) : str;
+    if (prefix) return "0x" + str;
+    return str;
+  },
+  toBytes: (input: bigint | number, length?: number) => {
+    const b = hex.decode(bignum.toString(typeof input === "number" ? BigInt(input) : input));
+    if (!length) return b;
+    return bytes.zpad(b, length);
+  },
 };
 
 export const bytes = {
-  encode: (value: string | bigint): Uint8Array =>
-    typeof value === "bigint"
-      ? bytes.encode(bignum.encode(value))
-      : new TextEncoder().encode(value),
+  encode: (value: string): Uint8Array => new TextEncoder().encode(value),
   decode: (value: Uint8Array): string => new TextDecoder().decode(value),
   equals: (lhs: Uint8Array, rhs: Uint8Array): boolean =>
     lhs.length === rhs.length && lhs.every((v, i) => v === rhs[i]),
-  zpad: (arr: Uint8Array, length: number): Uint8Array =>
-    bytes.concat(new Uint8Array(length - arr.length), arr),
+  zpad: (arr: Uint8Array, length: number, padStart: boolean = true): Uint8Array =>
+    padStart
+      ? bytes.concat(new Uint8Array(length - arr.length), arr)
+      : bytes.concat(arr, new Uint8Array(length - arr.length)),
   concat: (...args: Uint8Array[]): Uint8Array => {
     const length = args.reduce((acc, curr) => acc + curr.length, 0);
     const result = new Uint8Array(length);

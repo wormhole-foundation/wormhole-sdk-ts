@@ -21,8 +21,7 @@ export class SolanaAddress implements Address {
 
   constructor(address: AnySolanaAddress) {
     if (SolanaAddress.instanceof(address)) {
-      const a = address as unknown as SolanaAddress;
-      this.address = a.address;
+      this.address = address.address;
     } else if (UniversalAddress.instanceof(address)) {
       this.address = new PublicKey(address.toUint8Array());
     } else if (typeof address === 'string' && encoding.hex.valid(address)) {
@@ -39,13 +38,13 @@ export class SolanaAddress implements Address {
     return this.address.toBase58();
   }
   toUint8Array() {
-    return this.address.toBytes();
+    return new Uint8Array(this.address.toBytes());
   }
   toNative() {
     return this;
   }
   toUniversalAddress() {
-    return new UniversalAddress(this.address.toBytes());
+    return new UniversalAddress(this.toUint8Array());
   }
 
   static instanceof(address: any): address is SolanaAddress {

@@ -13,22 +13,26 @@ import { TransferStuff, getStuff, waitLog } from "./helpers";
 // Import the platform specific packages
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
+import { AlgorandPlatform } from "@wormhole-foundation/connect-sdk-algorand";
 
 // Register the protocols
 import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
 import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
+import "@wormhole-foundation/connect-sdk-algorand-tokenbridge";
 
 (async function () {
   // init Wormhole object, passing config for which network
   // to use (e.g. Mainnet/Testnet) and what Platforms to support
-  const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform]);
+  const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform, AlgorandPlatform]);
 
   // Grab chain Contexts -- these hold a reference to a cached rpc client
-  const sendChain = wh.getChain("Avalanche");
+  const sendChain = wh.getChain("Algorand");
   const rcvChain = wh.getChain("Solana");
 
   // shortcut to allow transferring native gas token
-  const token: TokenId<"Avalanche"> | "native" = "native";
+  const token: TokenId | "native" = "native";
+
+  // const token = Wormhole.chainAddress("Algorand", "10458941"); // USDC on Algorand
 
   // A TokenId is just a `{chain, address}` pair and an alias for ChainAddress
   // The `address` field must be a parsed address.
@@ -41,7 +45,7 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   // Note: The Token bridge will dedust past 8 decimals
   // this means any amount specified past that point will be returned
   // to the caller
-  const amount = "0.15";
+  const amount = "0.001";
 
   // With automatic set to true, perform an automatic transfer. This will invoke a relayer
   // contract intermediary that knows to pick up the transfers
