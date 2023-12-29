@@ -26,18 +26,13 @@ import {
   AlgorandPlatformType,
   AlgorandUnsignedTransaction,
   AnyAlgorandAddress,
-  StorageLogicSig,
   TransactionSignerPair,
-  checkBitsSet,
-  decodeLocalState,
-  getMessageFee,
   isOptedIn,
   safeBigIntToNumber,
 } from "@wormhole-foundation/connect-sdk-algorand";
 import {
   AlgorandWormholeCore,
-  maybeCreateStorageTx,
-  submitVAAHeader,
+  StorageLogicSig,
 } from "@wormhole-foundation/connect-sdk-algorand-core";
 import {
   ABIMethod,
@@ -46,7 +41,6 @@ import {
   OnApplicationComplete,
   SuggestedParams,
   bigIntToBytes,
-  bytesToBigInt,
   decodeAddress,
   getApplicationAddress,
   makeApplicationCallTxnFromObject,
@@ -117,22 +111,20 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
 
   // Checks a native address to see if it's a wrapped version
   async isWrappedAsset(token: TokenAddress<C>): Promise<boolean> {
-    const assetId = bytesToBigInt(new AlgorandAddress(token.toString()).toUint8Array());
+    const assetId = new AlgorandAddress(token).toInt();
 
-    if (assetId === BigInt(0)) {
-      return false;
-    }
+    if (assetId === 0) return false;
 
-    const tbAddr: string = getApplicationAddress(this.tokenBridgeAppId);
-    const assetInfoResp = await this.connection.getAssetByID(Number(assetId)).do();
+    const assetInfoResp = await this.connection.getAssetByID(assetId).do();
     const asset = modelsv2.Asset.from_obj_for_encoding(assetInfoResp);
+
     const creatorAddr = asset.params.creator;
     const creatorAcctInfoResp = await this.connection
       .accountInformation(creatorAddr)
       .exclude("all")
       .do();
     const creator = modelsv2.Account.from_obj_for_encoding(creatorAcctInfoResp);
-    const isWrapped: boolean = creator?.authAddr === tbAddr;
+    const isWrapped: boolean = creator?.authAddr === this.tokenBridgeAddress;
     return isWrapped;
   }
 
@@ -142,7 +134,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
 
     const assetInfoResp = await this.connection.getAssetByID(assetId).do();
     const assetInfo = modelsv2.Asset.from_obj_for_encoding(assetInfoResp);
-    const decodedLocalState = await decodeLocalState(
+    const decodedLocalState = await StorageLogicSig.decodeLocalState(
       this.connection,
       this.tokenBridgeAppId,
       assetInfo.params.creator,
@@ -151,20 +143,16 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
     if (decodedLocalState.length < 94) throw new Error("Invalid local state data");
 
     const chainBytes = decodedLocalState.slice(92, 94);
-    const chainId = encoding.bignum.decode(chainBytes);
-    const assetAddress = decodedLocalState.slice(60, 60 + 32);
+    const chain = toChain(encoding.bignum.decode(chainBytes));
+    const address = new UniversalAddress(decodedLocalState.slice(60, 60 + 32));
 
-    return {
-      chain: toChain(chainId),
-      address: new UniversalAddress(assetAddress),
-    };
+    return { chain, address };
   }
 
   // Returns the address of the native version of this asset
   async getWrappedAsset(token: TokenId<Chain>): Promise<NativeAddress<C>> {
     const storageAccount = StorageLogicSig.forWrappedAsset(this.tokenBridgeAppId, token);
-
-    const data = await decodeLocalState(
+    const data = await StorageLogicSig.decodeLocalState(
       this.connection,
       this.tokenBridgeAppId,
       storageAccount.address(),
@@ -189,13 +177,18 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
   }
 
   async isTransferCompleted(vaa: TokenBridge.TransferVAA): Promise<boolean> {
-    const sl = StorageLogicSig.forMessageId(this.tokenBridgeAppId, {
+    const messageStorage = StorageLogicSig.forMessageId(this.tokenBridgeAppId, {
       sequence: vaa.sequence,
       chain: vaa.emitterChain,
       emitter: vaa.emitterAddress,
     });
     try {
-      return await checkBitsSet(this.connection, this.tokenBridgeAppId, sl.address(), vaa.sequence);
+      return await StorageLogicSig.checkBitsSet(
+        this.connection,
+        this.tokenBridgeAppId,
+        messageStorage.address(),
+        vaa.sequence,
+      );
     } catch {}
     return false;
   }
@@ -205,30 +198,26 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
   // to allow it to create a wrapped version of the token
   async *createAttestation(
     token: AnyAlgorandAddress,
-    payer?: AnyAlgorandAddress,
+    payer: AnyAlgorandAddress,
   ): AsyncGenerator<UnsignedTransaction<N, C>> {
     if (!payer) throw new Error("Payer required to create attestation");
 
-    const senderAddr = payer.toString();
-
-    const assetAddress = new AlgorandAddress(token);
-    const assetId = assetAddress.toInt();
+    const senderAddr = new AlgorandAddress(payer).toString();
+    const assetId = new AlgorandAddress(token).toInt();
 
     const txs: TransactionSignerPair[] = [];
 
     const suggestedParams: SuggestedParams = await this.connection.getTransactionParams().do();
 
-    const tbs = StorageLogicSig.fromData({
-      appId: this.coreAppId,
-      appAddress: decodeAddress(this.coreAppAddress).publicKey,
-      idx: BigInt(0),
-      address: decodeAddress(this.tokenBridgeAddress).publicKey,
-    });
+    const tbs = StorageLogicSig.forEmitter(
+      this.coreAppId,
+      new AlgorandAddress(this.tokenBridgeAddress).toUint8Array(),
+    );
 
     const {
       accounts: [emitterAddr],
       txs: emitterOptInTxs,
-    } = await maybeCreateStorageTx(
+    } = await AlgorandWormholeCore.maybeCreateStorageTx(
       this.connection,
       senderAddr,
       this.coreAppId,
@@ -256,7 +245,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
       this.tokenBridgeAppId,
       BigInt(assetId),
     );
-    const txns = await maybeCreateStorageTx(
+    const txns = await AlgorandWormholeCore.maybeCreateStorageTx(
       this.connection,
       senderAddr,
       this.tokenBridgeAppId,
@@ -274,7 +263,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
     });
     txs.push({ tx: firstTxn, signer: null });
 
-    const mfee = await getMessageFee(this.connection, this.coreAppId);
+    const mfee = await this.coreBridge.getMessageFee();
     if (mfee > BigInt(0)) {
       const feeTxn = makePaymentTxnWithSuggestedParamsFromObject({
         from: senderAddr,
@@ -330,7 +319,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
     const txs: TransactionSignerPair[] = [];
     const foreignAssets: number[] = [];
 
-    const data: Uint8Array = await decodeLocalState(
+    const data: Uint8Array = await StorageLogicSig.decodeLocalState(
       this.connection,
       this.tokenBridgeAppId,
       tokenStorageAddress,
@@ -420,7 +409,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
     const {
       accounts: [emitterAddr],
       txs: emitterOptInTxs,
-    } = await maybeCreateStorageTx(
+    } = await AlgorandWormholeCore.maybeCreateStorageTx(
       this.connection,
       senderAddr,
       this.coreAppId,
@@ -444,7 +433,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
       wormhole = creatorAcct.authAddr === this.tokenBridgeAddress.toString();
     }
 
-    const msgFee: bigint = await getMessageFee(this.connection, this.coreAppId);
+    const msgFee: bigint = await this.coreBridge.getMessageFee();
     if (msgFee > 0)
       txs.push({
         tx: makePaymentTxnWithSuggestedParamsFromObject({
@@ -464,7 +453,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
       const {
         accounts: [address],
         txs,
-      } = await maybeCreateStorageTx(
+      } = await AlgorandWormholeCore.maybeCreateStorageTx(
         this.connection,
         senderAddr,
         this.tokenBridgeAppId,
@@ -570,7 +559,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
 
     const senderAddr = new AlgorandAddress(sender).toString();
 
-    const { accounts, txs } = await submitVAAHeader(
+    const { accounts, txs } = await AlgorandWormholeCore.submitVAAHeader(
       this.connection,
       this.coreAppId,
       this.tokenBridgeAppId,
@@ -584,7 +573,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
     let foreignAssets: number[] = [];
     let assetId: number = 0;
     if (vaa.payload.token.chain !== this.chain) {
-      const data = await decodeLocalState(
+      const data = await StorageLogicSig.decodeLocalState(
         this.connection,
         this.tokenBridgeAppId,
         tokenStorageAddress,

@@ -13,5 +13,4 @@ declare global {
 registerProtocol(_platform, "WormholeCore", AlgorandWormholeCore);
 
 export * from "./core";
-export * from "./vaa";
 export * from "./storage";

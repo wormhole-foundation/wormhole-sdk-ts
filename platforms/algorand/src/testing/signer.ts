@@ -26,7 +26,7 @@ export class AlgorandSigner<N extends Network, C extends AlgorandChains = "Algor
     private _chain: C,
     _rpc: Algodv2,
     mnemonic: string,
-    private _debug: boolean = true,
+    private _debug: boolean = false,
   ) {
     this._account = mnemonicToSecretKey(mnemonic);
   }
@@ -62,14 +62,12 @@ export class AlgorandSigner<N extends Network, C extends AlgorandChains = "Algor
       }
 
       if (signer) {
-        if (this._debug)
-          console.log(
-            `Signing: ${description} with signer ${signer.address} for address ${this.address()}`,
-          );
+        console.log(
+          `Signing: ${description} with signer ${signer.address} for address ${this.address()}`,
+        );
         signed.push(await signer.signTxn(tx));
       } else {
-        if (this._debug)
-          console.log(`Signing: ${description} without signer for address ${this.address()}`);
+        console.log(`Signing: ${description} without signer for address ${this.address()}`);
         signed.push(tx.signTxn(this._account.sk));
       }
     }
