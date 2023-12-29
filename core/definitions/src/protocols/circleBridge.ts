@@ -28,6 +28,11 @@ export namespace CircleBridge {
 
   export type Message = LayoutToType<typeof circleMessageLayout>;
 
+  export type Attestation = {
+    message: Message;
+    attestation?: string;
+  };
+
   export const deserialize = (data: Uint8Array): [CircleBridge.Message, string] => {
     const msg = deserializeLayout(circleMessageLayout, data);
     const messsageHash = encoding.hex.encode(keccak256(data), true);
@@ -103,6 +108,7 @@ export interface CircleBridge<
     recipient: ChainAddress,
     amount: bigint,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
+  isTransferCompleted(message: CircleBridge.Message): Promise<boolean>;
   parseTransactionDetails(txid: string): Promise<CircleTransferMessage>;
 }
 

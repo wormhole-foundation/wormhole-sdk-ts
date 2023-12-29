@@ -3,7 +3,7 @@ import { SequenceId } from "./types";
 import { UniversalAddress } from "./universalAddress";
 import { VAA } from "./vaa";
 import { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge";
-import { AutomaticCircleBridge } from "./protocols/circleBridge";
+import { AutomaticCircleBridge, CircleBridge } from "./protocols/circleBridge";
 import { IbcTransferData } from "./protocols/ibc";
 
 // Could be VAA or Circle or ..?
@@ -25,10 +25,17 @@ export type Attestation<PN extends ProtocolName = ProtocolName> = PN extends
   : PN extends "AutomaticCircleBridge"
   ? AutomaticCircleBridge.VAA
   : PN extends "CircleBridge"
-  ? CircleAttestation
+  ? CircleBridge.Attestation
   : PN extends "IbcBridge"
   ? IbcTransferData
   : never;
+
+// Attestation Receipt contains the Id to lookup the attestation
+// and possibly a cached/parsed attestation
+export type AttestationReceipt<PN extends ProtocolName = ProtocolName> = {
+  id: AttestationId<PN>;
+  attestation?: Attestation<PN>;
+};
 
 // Wormhole Message Identifier used to fetch a VAA
 // Possibly with a VAA already set

@@ -23,7 +23,7 @@ import {
   addChainId,
   addFrom,
 } from '@wormhole-foundation/connect-sdk-evm';
-import { LogDescription, Provider, TransactionRequest } from 'ethers';
+import { LogDescription, Provider, TransactionRequest, ethers } from 'ethers';
 import { ethers_contracts } from '.';
 //https://github.com/circlefin/evm-cctp-contracts
 
@@ -158,6 +158,15 @@ export class EvmCircleBridge<N extends Network, C extends EvmChains>
       addFrom(txReq, senderAddr),
       'CircleBridge.transfer',
     );
+  }
+
+  async isTransferCompleted(message: CircleBridge.Message): Promise<boolean> {
+    const cctpDomain = circle.circleChainId(message.sourceDomain);
+    const hash = ethers.keccak256(
+      ethers.solidityPacked(['uint32', 'uint64'], [cctpDomain, message.nonce]),
+    );
+    const result = this.msgTransmitter.usedNonces.staticCall(hash);
+    return result.toString() === '1';
   }
 
   // Fetch the transaction logs and parse the CircleTransferMessage

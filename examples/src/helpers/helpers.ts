@@ -11,6 +11,7 @@ import {
   Wormhole,
   api,
   tasks,
+  DEFAULT_TASK_TIMEOUT,
 } from "@wormhole-foundation/connect-sdk";
 
 // Importing from src so we dont have to rebuild to see debug stuff in signer
@@ -70,12 +71,18 @@ export async function getStuff<
   };
 }
 
-export async function waitLog(wh: Wormhole<Network>, xfer: TokenTransfer) {
-  const it = TokenTransfer.track(wh, TokenTransfer.getReceipt(xfer));
-  let res;
-  for (res = await it.next(); !res.done; res = await it.next())
-    console.log("Current Transfer State: ", TransferState[res.value as TransferState]);
-  return res.value;
+export async function waitLog<N extends Network = Network>(
+  wh: Wormhole<N>,
+  xfer: TokenTransfer<N>,
+  tag: string = "WaitLog",
+  timeout: number = DEFAULT_TASK_TIMEOUT,
+) {
+  const tracker = TokenTransfer.track(wh, TokenTransfer.getReceipt(xfer), timeout);
+  let receipt;
+  for await (receipt of tracker) {
+    console.log(`${tag}: Current trasfer state: `, TransferState[receipt.state]);
+  }
+  return receipt;
 }
 
 // Note: This API may change but it is currently the best place to pull

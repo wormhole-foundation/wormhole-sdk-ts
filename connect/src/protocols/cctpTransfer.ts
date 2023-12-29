@@ -1,9 +1,18 @@
-import { Chain, Network, Platform, circle, encoding } from "@wormhole-foundation/sdk-base";
 import {
+  Chain,
+  ChainToPlatform,
+  Network,
+  Platform,
+  circle,
+  encoding,
+  toChain,
+} from "@wormhole-foundation/sdk-base";
+import {
+  Attestation,
   AttestationId,
+  AttestationReceipt,
   AutomaticCircleBridge,
   ChainContext,
-  CircleAttestation,
   CircleBridge,
   CircleMessageId,
   CircleTransferDetails,
@@ -21,10 +30,17 @@ import {
 import { signSendWait } from "../common";
 import { DEFAULT_TASK_TIMEOUT } from "../config";
 import { Wormhole } from "../wormhole";
-import { TransferQuote, TransferState, WormholeTransfer } from "../wormholeTransfer";
+import {
+  TransferQuote,
+  TransferReceipt,
+  TransferState,
+  WormholeTransfer,
+} from "../wormholeTransfer";
+
+type CircleTransferProtocol = "CircleBridge" | "AutomaticCircleBridge";
 
 export class CircleTransfer<N extends Network = Network>
-  implements WormholeTransfer<"CircleBridge" | "AutomaticCircleBridge">
+  implements WormholeTransfer<CircleTransferProtocol>
 {
   private readonly wh: Wormhole<N>;
 
@@ -37,18 +53,7 @@ export class CircleTransfer<N extends Network = Network>
   // Populated after Initialized
   txids: TransactionId[] = [];
 
-  // Populated if !automatic and after initialized
-  circleAttestations?: {
-    id: CircleMessageId;
-    message: CircleBridge.Message;
-    attestation?: CircleAttestation;
-  }[];
-
-  // Populated if automatic and after initialized
-  vaas?: {
-    id: WormholeMessageId;
-    vaa?: AutomaticCircleBridge.VAA;
-  }[];
+  attestations?: AttestationReceipt<CircleTransferProtocol>[];
 
   private constructor(wh: Wormhole<N>, transfer: CircleTransferDetails) {
     this._state = TransferState.Created;
@@ -137,7 +142,7 @@ export class CircleTransfer<N extends Network = Network>
     };
 
     const tt = new CircleTransfer(wh, details);
-    tt.vaas = [{ id: { emitter, sequence: vaa.sequence, chain: chain }, vaa }];
+    tt.attestations = [{ id: { emitter, sequence: vaa.sequence, chain: chain }, attestation: vaa }];
     tt._state = TransferState.Attested;
 
     return tt;
@@ -165,7 +170,7 @@ export class CircleTransfer<N extends Network = Network>
     };
 
     const xfer = new CircleTransfer(wh, details);
-    xfer.circleAttestations = [{ id: { hash }, message: msg }];
+    xfer.attestations = [{ id: { hash }, attestation: { message: msg } }];
     xfer._state = TransferState.SourceInitiated;
 
     return xfer;
@@ -200,7 +205,7 @@ export class CircleTransfer<N extends Network = Network>
       };
 
       ct = new CircleTransfer(wh, details);
-      ct.circleAttestations = [{ id: circleMessage.id, message: circleMessage.message }];
+      ct.attestations = [{ id: circleMessage.id, attestation: { message: circleMessage.message } }];
     }
 
     ct._state = TransferState.SourceInitiated;
@@ -249,20 +254,27 @@ export class CircleTransfer<N extends Network = Network>
   }
 
   private async _fetchWormholeAttestation(timeout?: number): Promise<WormholeMessageId[]> {
-    if (!this.vaas || this.vaas.length == 0) throw new Error("No VAA details available");
+    let attestations = (this.attestations ?? []) as AttestationReceipt<"AutomaticCircleBridge">[];
+    if (!attestations || attestations.length == 0) throw new Error("No VAA details available");
 
     // Check if we already have the VAA
-    for (const idx in this.vaas) {
-      // already got it
-      if (this.vaas[idx]!.vaa) continue;
-      this.vaas[idx]!.vaa = await CircleTransfer.getTransferVaa(this.wh, this.vaas[idx]!.id);
-    }
+    for (const idx in attestations) {
+      if (attestations[idx]!.attestation) continue;
 
-    return this.vaas.map((v) => v.id);
+      attestations[idx]!.attestation = await CircleTransfer.getTransferVaa(
+        this.wh,
+        attestations[idx]!.id,
+        timeout,
+      );
+    }
+    this.attestations = attestations;
+
+    return attestations.map((v) => v.id);
   }
 
   private async _fetchCircleAttestation(timeout?: number): Promise<CircleMessageId[]> {
-    if (!this.circleAttestations || this.circleAttestations.length == 0) {
+    let attestations = (this.attestations ?? []) as AttestationReceipt<"CircleBridge">[];
+    if (!attestations || attestations.length == 0) {
       // If we dont have any circle attestations yet, we need to start by
       // fetching the transaction details from the source chain
       if (this.txids.length === 0)
@@ -275,20 +287,22 @@ export class CircleTransfer<N extends Network = Network>
 
       const cb = await fromChain.getCircleBridge();
       const circleMessage = await cb.parseTransactionDetails(txid!.txid);
-      this.circleAttestations = [{ id: circleMessage.id, message: circleMessage.message }];
+      attestations = [{ id: circleMessage.id, attestation: { message: circleMessage.message } }];
     }
 
-    for (const idx in this.circleAttestations) {
-      const ca = this.circleAttestations[idx]!;
-      if (ca.attestation) continue; // already got it
+    for (const idx in attestations) {
+      const ca = attestations[idx]!;
+      if (ca.attestation.attestation) continue; // already got it
 
       const attestation = await this.wh.getCircleAttestation(ca.id.hash, timeout);
       if (attestation === null) throw new Error("No attestation available after timeout exhausted");
 
-      this.circleAttestations[idx]!.attestation = attestation;
+      attestations[idx].attestation.attestation = attestation;
     }
 
-    return this.circleAttestations.map((v) => v.id);
+    this.attestations = attestations;
+
+    return attestations.map((v) => v.id);
   }
 
   // wait for the VAA to be ready
@@ -326,10 +340,10 @@ export class CircleTransfer<N extends Network = Network>
 
     // If its automatic, this does not need to be called
     if (this.transfer.automatic) {
-      if (!this.vaas) throw new Error("No VAA details available");
-      if (this.vaas.length > 1) throw new Error(`Expected a VAA, found ${this.vaas.length}`);
-
-      const { vaa } = this.vaas[0]!;
+      if (!this.attestations) throw new Error("No VAA details available");
+      const vaa = this.attestations.find((a) =>
+        isWormholeMessageId(a.id),
+      ) as AttestationReceipt<"AutomaticCircleBridge">;
       if (!vaa) throw new Error("No VAA found");
 
       //const tb = await toChain.getAutomaticCircleBridge();
@@ -338,16 +352,21 @@ export class CircleTransfer<N extends Network = Network>
       throw new Error("No method to redeem auto circle bridge tx (yet)");
     }
 
-    if (!this.circleAttestations) throw new Error("No Circle Attestations found");
+    if (!this.attestations) throw new Error("No Circle Attestations found");
 
-    if (this.circleAttestations.length > 1)
-      throw new Error(
-        `Expected a single circle attestation, found ${this.circleAttestations.length}`,
-      );
+    const circleAttestations = this.attestations.filter((a) =>
+      isCircleMessageId(a.id),
+    ) as AttestationReceipt<"CircleBridge">[];
+
+    if (circleAttestations.length > 1)
+      throw new Error(`Expected a single circle attestation, found ${circleAttestations.length}`);
 
     const toChain = this.wh.getChain(this.transfer.to.chain);
 
-    const { id, message, attestation } = this.circleAttestations[0]!;
+    const {
+      id,
+      attestation: { message, attestation },
+    } = circleAttestations[0]!;
 
     if (!attestation) throw new Error(`No Circle Attestation for ${id.hash}`);
 
@@ -411,6 +430,21 @@ export class CircleTransfer<N extends Network = Network>
     };
   }
 
+  static async isTransferComplete<N extends Network>(
+    toChain: ChainContext<N, Platform, Chain>,
+    attestation: Attestation<CircleTransferProtocol>,
+  ) {
+    // TODO: inferring from fields what type this is, we should
+    // have typeguards or require another argument to better deterimine
+    if ("message" in attestation) {
+      const cb = await toChain.getCircleBridge();
+      return cb.isTransferCompleted(attestation.message);
+    }
+    throw new Error("Not implemented for automatic circle bridge");
+    // const acb = await toChain.getAutomaticCircleBridge();
+    // return acb.isTransferCompleted(attestation);
+  }
+
   static async getTransferVaa<N extends Network>(
     wh: Wormhole<N>,
     wormholeMessageId: WormholeMessageId,
@@ -423,5 +457,148 @@ export class CircleTransfer<N extends Network = Network>
     );
     if (!vaa) throw new Error(`No VAA available after timeout exhausted`);
     return vaa;
+  }
+
+  static async getTransferMessage<N extends Network>(
+    fromChain: ChainContext<N, Platform, Chain>,
+    txid: TxHash,
+  ) {
+    const cb = await fromChain.getCircleBridge();
+    const circleMessage = await cb.parseTransactionDetails(txid);
+    return circleMessage.id;
+  }
+
+  static getReceipt<N extends Network>(
+    xfer: CircleTransfer<N>,
+  ): TransferReceipt<CircleTransferProtocol> {
+    const { from, to } = xfer.transfer;
+
+    const att = xfer.attestations.filter((a) =>
+      isWormholeMessageId(a.id),
+    ) as AttestationReceipt<"AutomaticCircleBridge">[];
+
+    const ctt = xfer.attestations.filter((a) =>
+      isCircleMessageId(a.id),
+    ) as AttestationReceipt<"CircleBridge">[];
+
+    // This attestation may be either the auto relay vaa or the circle attestation
+    // depending on the request
+    const attestation = att.length > 0 ? att[0]! : ctt.length > 0 ? ctt[0]! : undefined;
+
+    const receipt: TransferReceipt<CircleTransferProtocol> = {
+      protocol: xfer.transfer.automatic ? "AutomaticCircleBridge" : "CircleBridge",
+      from: from.chain,
+      to: to.chain,
+      state: TransferState.Created,
+      originTxs: xfer.txids.filter((txid) => txid.chain === xfer.transfer.from.chain),
+      destinationTxs: xfer.txids.filter((txid) => txid.chain === xfer.transfer.to.chain),
+      request: xfer.transfer,
+      attestation,
+    };
+
+    if (receipt.originTxs.length > 0) receipt.state = TransferState.SourceInitiated;
+    if (receipt.attestation && receipt.attestation.attestation)
+      receipt.state = TransferState.Attested;
+    if (receipt.destinationTxs.length > 0) receipt.state = TransferState.DestinationInitiated;
+
+    return receipt;
+  }
+
+  // AsyncGenerator fn that produces status updates through an async generator
+  // eventually producing a receipt
+  // can be called repeatedly so the receipt is updated as it moves through the
+  // steps of the transfer
+  static async *track<N extends Network>(
+    wh: Wormhole<N>,
+    receipt: TransferReceipt<CircleTransferProtocol>,
+    timeout: number = DEFAULT_TASK_TIMEOUT,
+    // Optional parameters to override chain context (typically for custom rpc)
+    _fromChain?: ChainContext<N, ChainToPlatform<typeof receipt.from>, typeof receipt.from>,
+    _toChain?: ChainContext<N, ChainToPlatform<typeof receipt.to>, typeof receipt.to>,
+  ) {
+    const start = Date.now();
+    const leftover = (start: number, max: number) => Math.max(max - (Date.now() - start), 0);
+
+    _fromChain = _fromChain ?? wh.getChain(receipt.from);
+    _toChain = _toChain ?? wh.getChain(receipt.to);
+
+    // Check the source chain for initiation transaction
+    // and capture the message id
+    if (receipt.state === TransferState.SourceInitiated) {
+      if (receipt.originTxs.length === 0)
+        throw "Invalid state transition: no originating transactions";
+
+      if (!receipt.attestation || !receipt.attestation.id) {
+        const initTx = receipt.originTxs[receipt.originTxs.length - 1]!;
+        const xfermsg = await CircleTransfer.getTransferMessage(_fromChain, initTx.txid);
+        receipt.attestation = { id: xfermsg };
+        receipt.state = TransferState.SourceFinalized;
+        yield receipt;
+      }
+    }
+
+    if (receipt.state == TransferState.SourceFinalized) {
+      if (!receipt.attestation) throw "Invalid state transition: no attestation id";
+
+      if (receipt.protocol === "AutomaticCircleBridge") {
+        // we need to get the attestation so we can deliver it
+        // we can use the message id we parsed out of the logs, if we have them
+        // or try to fetch it from the last origin transaction
+        let vaa = receipt.attestation.attestation ? receipt.attestation.attestation : undefined;
+        if (!vaa) {
+          vaa = await CircleTransfer.getTransferVaa(
+            wh,
+            receipt.attestation.id as WormholeMessageId,
+            leftover(start, timeout),
+          );
+          receipt.attestation.attestation = vaa;
+          receipt.state = TransferState.Attested;
+          yield receipt;
+        }
+      }
+    }
+
+    if (receipt.state == TransferState.Attested) {
+      if (!receipt.attestation) throw "Invalid state transition";
+
+      // First try to grab the tx status from the API
+      // Note: this requires a subsequent async step on the backend
+      // to have the dest txid populated, so it may be delayed by some time
+      const txStatus = await wh.getTransactionStatus(
+        receipt.attestation.id as WormholeMessageId,
+        leftover(start, timeout),
+      );
+      if (!txStatus) {
+        yield receipt;
+        return;
+      }
+
+      if (txStatus.globalTx?.destinationTx?.txHash) {
+        const { chainId, txHash } = txStatus.globalTx.destinationTx;
+
+        receipt.destinationTxs = [
+          {
+            chain: toChain(chainId),
+            txid: txHash,
+          },
+        ];
+
+        receipt.state = TransferState.DestinationFinalized;
+        yield receipt;
+      }
+
+      // Fall back to asking the destination chain if this VAA has been redeemed
+      // assuming we have the full attestation
+      if (
+        receipt.attestation.attestation &&
+        (await CircleTransfer.isTransferComplete(_toChain, receipt.attestation.attestation),
+        leftover(start, timeout))
+      ) {
+        receipt.state = TransferState.DestinationFinalized;
+        yield receipt;
+      }
+    }
+    yield receipt;
+    return;
   }
 }
