@@ -6,12 +6,13 @@ import {
   TokenTransfer,
   TransferState,
   Wormhole,
+  isTokenId,
   normalizeAmount,
 } from "@wormhole-foundation/connect-sdk";
 import { TransferStuff, getStuff } from "./helpers";
 
 // Import the platform specific packages
-import { AlgorandAddress, AlgorandPlatform } from "@wormhole-foundation/connect-sdk-algorand";
+import { AlgorandPlatform } from "@wormhole-foundation/connect-sdk-algorand";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 
 // Register the protocols
@@ -75,11 +76,10 @@ import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
   const destination = await getStuff(rcvChain);
 
   // Used to normalize the amount to account for the tokens decimals
-  const decimals =
-    // @ts-ignore
-    token === "native"
-      ? BigInt(sendChain.config.nativeTokenDecimals)
-      : await wh.getDecimals(sendChain.chain, token.address);
+  // Used to normalize the amount to account for the tokens decimals
+  const decimals = isTokenId(token)
+    ? await wh.getDecimals(token.chain, token.address)
+    : BigInt(sendChain.config.nativeTokenDecimals);
 
   // Set this to the transfer txid of the initiating transaction to recover a token transfer
   // and attempt to fetch details about its progress.

@@ -1,10 +1,14 @@
-import { ChainId } from "@wormhole-foundation/connect-sdk";
+import { ChainId, toChainId } from "@wormhole-foundation/connect-sdk";
 import {
-  CHAIN_ID_ALGORAND,
+  SEED_AMT,
   TransactionSignerPair,
+  decodeLocalState,
+  safeBigIntToNumber,
+  varint,
 } from "@wormhole-foundation/connect-sdk-algorand";
 import {
   Algodv2,
+  LogicSigAccount,
   SuggestedParams,
   Transaction,
   bigIntToBytes,
@@ -14,10 +18,7 @@ import {
   modelsv2,
   signLogicSigTransaction,
 } from "algosdk";
-import { StorageLogicSig } from "./storage";
 import { TransactionSet, WormholeWrappedInfo } from "./types";
-import { SEED_AMT, decodeLocalState, safeBigIntToNumber } from "./utilities";
-import { varint } from "./bigVarint";
 
 const accountExistsCache = new Set<[bigint, string]>();
 
@@ -60,7 +61,7 @@ export async function getOriginalAssetOffAlgorand(
 ): Promise<WormholeWrappedInfo> {
   let retVal: WormholeWrappedInfo = {
     isWrapped: false,
-    chainId: CHAIN_ID_ALGORAND,
+    chainId: toChainId("Algorand"),
     assetAddress: new Uint8Array(),
   };
   retVal.isWrapped = await getIsWrappedAssetOnAlgorand(client, tokenBridgeId, assetId);
@@ -122,12 +123,11 @@ export async function maybeOptInTx(
   client: Algodv2,
   senderAddr: string,
   appId: bigint,
-  storage: StorageLogicSig,
+  storage: LogicSigAccount,
 ): Promise<TransactionSet> {
   const appAddr: string = getApplicationAddress(appId);
 
-  const lsa = storage.lsig();
-  const storageAddress = lsa.address();
+  const storageAddress = storage.address();
 
   let exists = false;
   try {
@@ -156,8 +156,8 @@ export async function maybeOptInTx(
     txs.push({
       tx: optinTxn,
       signer: {
-        addr: lsa.address(),
-        signTxn: (txn: Transaction) => Promise.resolve(signLogicSigTransaction(txn, lsa).blob),
+        addr: storage.address(),
+        signTxn: (txn: Transaction) => Promise.resolve(signLogicSigTransaction(txn, storage).blob),
       },
     });
   }

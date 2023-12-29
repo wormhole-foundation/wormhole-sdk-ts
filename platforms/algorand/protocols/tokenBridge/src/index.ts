@@ -13,9 +13,7 @@ declare global {
 registerProtocol(_platform, "TokenBridge", AlgorandTokenBridge);
 
 export * from "./assets";
-export * from "./storage";
 export * from "./tokenBridge";
 export * from "./tokenBridge";
 export * from "./types";
-export * from "./utilities";
 export * from "./vaa";

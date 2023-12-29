@@ -1,5 +1,13 @@
 import { TokenBridge, encoding, keccak256, serialize } from "@wormhole-foundation/connect-sdk";
-import { TransactionSignerPair } from "@wormhole-foundation/connect-sdk-algorand";
+import {
+  TransactionSignerPair,
+  ALGO_VERIFY,
+  ALGO_VERIFY_HASH,
+  MAX_SIGS_PER_TXN,
+  safeBigIntToNumber,
+  decodeLocalState,
+  StorageLogicSig,
+} from "@wormhole-foundation/connect-sdk-algorand";
 import {
   Algodv2,
   LogicSigAccount,
@@ -10,14 +18,6 @@ import {
   signLogicSigTransaction,
 } from "algosdk";
 import { maybeOptInTx } from "./assets";
-import { StorageLogicSig } from "./storage";
-import {
-  ALGO_VERIFY,
-  ALGO_VERIFY_HASH,
-  MAX_SIGS_PER_TXN,
-  safeBigIntToNumber,
-  decodeLocalState,
-} from "./utilities";
 
 type SubmitVAAState = {
   accounts: string[];

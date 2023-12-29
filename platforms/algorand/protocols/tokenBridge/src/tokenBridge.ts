@@ -29,6 +29,11 @@ import {
   AlgorandZeroAddress,
   AnyAlgorandAddress,
   TransactionSignerPair,
+  decodeLocalState,
+  safeBigIntToNumber,
+  checkBitsSet,
+  getMessageFee,
+  StorageLogicSig,
 } from "@wormhole-foundation/connect-sdk-algorand";
 import {
   ABIMethod,
@@ -52,8 +57,6 @@ import {
   getOriginalAssetOffAlgorand,
   maybeOptInTx,
 } from "./assets";
-import { StorageLogicSig } from "./storage";
-import { decodeLocalState, safeBigIntToNumber, checkBitsSet, getMessageFee } from "./utilities";
 import { submitVAAHeader } from "./vaa";
 
 import "@wormhole-foundation/connect-sdk-algorand-core";
@@ -136,12 +139,11 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
   // Returns the address of the native version of this asset
   async getWrappedAsset(token: TokenId<Chain>): Promise<NativeAddress<C>> {
     const storageAccount = StorageLogicSig.forWrappedAsset(this.tokenBridgeAppId, token);
-    const lsa = storageAccount.lsig();
 
     let asset: Uint8Array = await decodeLocalState(
       this.connection,
       this.tokenBridgeAppId,
-      lsa.address(),
+      storageAccount.address(),
     );
 
     if (asset.length < 8) throw new Error("Invalid wrapped asset data");
@@ -173,7 +175,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
       const isBitSet = await checkBitsSet(
         this.connection,
         this.tokenBridgeAppId,
-        sl.lsig().address(),
+        sl.address(),
         whm.sequence,
       );
       return isBitSet;
@@ -300,7 +302,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
     const senderAddr = sender.toString();
 
     const tokenStorage = StorageLogicSig.forWrappedAsset(this.tokenBridgeAppId, vaa.payload.token);
-    const tokenStorageAddress = tokenStorage.lsig().address();
+    const tokenStorageAddress = tokenStorage.address();
 
     const txs: TransactionSignerPair[] = [];
 
@@ -553,7 +555,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
     console.log("txs: ", txs);
 
     const tokenStorage = StorageLogicSig.forWrappedAsset(this.tokenBridgeAppId, vaa.payload.token);
-    const tokenStorageAddress = tokenStorage.lsig().address();
+    const tokenStorageAddress = tokenStorage.address();
 
     let foreignAssets: number[] = [];
     let assetId: number = 0;

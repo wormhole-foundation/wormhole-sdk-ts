@@ -16,16 +16,9 @@ export interface PopulateData {
   idx: bigint;
 }
 
-export class StorageLogicSig {
-  // Used only to cache the compiled bytecode
-  constructor(private bytecode: Uint8Array) {}
-
-  lsig() {
-    return new LogicSigAccount(this.bytecode);
-  }
-
+export const StorageLogicSig = {
   // Get the storage lsig for a Wormhole message ID
-  static forMessageId(appId: bigint, whm: WormholeMessageId): StorageLogicSig {
+  forMessageId: (appId: bigint, whm: WormholeMessageId) => {
     const appAddress = decodeAddress(getApplicationAddress(appId)).publicKey;
     const emitterAddr = whm.emitter.toUniversalAddress().toUint8Array();
     const chainIdBytes = encoding.bignum.toBytes(BigInt(toChainId(whm.chain)), 2);
@@ -37,10 +30,10 @@ export class StorageLogicSig {
       idx: whm.sequence / BigInt(MAX_BITS),
       address,
     });
-  }
+  },
 
   // Get the storage lsig for a wrapped asset
-  static forWrappedAsset(appId: bigint, token: TokenId<Chain>): StorageLogicSig {
+  forWrappedAsset: (appId: bigint, token: TokenId<Chain>) => {
     const appAddress = decodeAddress(getApplicationAddress(appId)).publicKey;
     return StorageLogicSig.fromData({
       appId,
@@ -48,10 +41,10 @@ export class StorageLogicSig {
       idx: BigInt(toChainId(token.chain)),
       address: token.address.toUniversalAddress().toUint8Array(),
     });
-  }
+  },
 
   // Get the storage lsig for a native asset
-  static forNativeAsset(appId: bigint, tokenId: bigint): StorageLogicSig {
+  forNativeAsset: (appId: bigint, tokenId: bigint) => {
     const appAddress = decodeAddress(getApplicationAddress(appId)).publicKey;
     return StorageLogicSig.fromData({
       appId,
@@ -59,10 +52,10 @@ export class StorageLogicSig {
       idx: tokenId,
       address: encoding.bytes.encode("native"),
     });
-  }
+  },
 
   // Get the storage lsig for the guardian set
-  static forGuardianSet(appId: bigint, idx: bigint | number): StorageLogicSig {
+  forGuardianSet: (appId: bigint, idx: bigint | number) => {
     const appAddress = decodeAddress(getApplicationAddress(appId)).publicKey;
     return StorageLogicSig.fromData({
       appId,
@@ -70,9 +63,9 @@ export class StorageLogicSig {
       idx: BigInt(idx),
       address: encoding.bytes.encode("guardian"),
     });
-  }
+  },
 
-  static fromData(data: PopulateData): StorageLogicSig {
+  fromData: (data: PopulateData) => {
     // This patches the binary of the TEAL program used to store data
     // to produce a logic sig that can be used to sign transactions
     // to store data in the its account local state for a given app
@@ -89,6 +82,8 @@ export class StorageLogicSig {
       encoding.hex.encode(data.appAddress),
       "124431018100124431093203124431153203124422",
     ];
-    return new StorageLogicSig(encoding.hex.decode(byteStrings.join("")));
-  }
-}
+
+    const bytecode = encoding.hex.decode(byteStrings.join(""));
+    return new LogicSigAccount(bytecode);
+  },
+};
