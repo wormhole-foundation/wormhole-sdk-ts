@@ -36,11 +36,11 @@ import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
   const wh = new Wormhole("Testnet", [AlgorandPlatform, EvmPlatform]);
 
   // Grab chain Contexts -- these hold a reference to a cached rpc client
-  const sendChain = wh.getChain("Algorand");
-  const rcvChain = wh.getChain("Avalanche");
+  const sendChain = wh.getChain("Avalanche");
+  const rcvChain = wh.getChain("Algorand");
 
   // Shortcut to allow transferring native gas token - worked 12-28-23
-  // const token: TokenId | "native" = "native";
+  const token: TokenId | "native" = "native";
 
   // Test Algorand native ASA outbound with Testnet USDC 10458941 - worked 12-28-23
   // const token = Wormhole.chainAddress("Algorand", new AlgorandAddress(BigInt(10458941)).toString());
@@ -49,7 +49,7 @@ import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
   // const token = Wormhole.chainAddress("Algorand", new AlgorandAddress(BigInt(86783266)).toString());
 
   // Test other chain wrapped token back to Algorand ASA with Avalanche wUSDC 0x12EB0d635FD4C5692d779755Ba82b33F6439fc73 - Failing on redeem 12-28-23
-  const token = Wormhole.chainAddress("Avalanche", "0x12EB0d635FD4C5692d779755Ba82b33F6439fc73");
+  // const token = Wormhole.chainAddress("Avalanche", "0x12EB0d635FD4C5692d779755Ba82b33F6439fc73");
 
   // Normalized given token decimals later but can just pass bigints as base units
   // Note: The Token bridge will dedust past 8 decimals
@@ -83,8 +83,9 @@ import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
 
   // Set this to the transfer txid of the initiating transaction to recover a token transfer
   // and attempt to fetch details about its progress.
-  // let recoverTxid = undefined;
-  let recoverTxid = "0xdab98de823cd9e2ec3975bf366503dcd896a47a7ce3764fb964cc84b54f7159c"; // Avalanche-->Algorand
+  let recoverTxid = undefined;
+  // let recoverTxid = "0xdab98de823cd9e2ec3975bf366503dcd896a47a7ce3764fb964cc84b54f7159c"; // Avalanche-->Algorand
+  // recoverTxid = "0x83b4438b9135eef05734beea4fd4e41d644b1d07196c491e9576bf0ed24a9797";
 
   // Finally create and perform the transfer given the parameters set above
   const xfer = !recoverTxid
@@ -107,7 +108,7 @@ import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
 
   console.log("xfer: ", xfer);
   // Log out the results
-  if (xfer.getTransferState() <= TransferState.DestinationInitiated) {
+  if (xfer.getTransferState() < TransferState.DestinationInitiated) {
     console.log(await xfer.completeTransfer(destination.signer));
   }
 })();
@@ -125,7 +126,6 @@ async function tokenTransfer<N extends Network>(
     };
     payload?: Uint8Array;
   },
-  roundTrip?: boolean,
 ): Promise<TokenTransfer<N>> {
   // Create a TokenTransfer object to track the state of
   // the transfer over time
@@ -170,26 +170,4 @@ async function tokenTransfer<N extends Network>(
   console.log(`Completed Transfer: `, destTxids);
 
   return xfer;
-  // // No need to send back, dip
-  // if (!roundTrip) return xfer;
-
-  // // We can look up the destination asset for this transfer given the context of
-  // // the sending chain and token and destination chain
-  // const token = await TokenTransfer.lookupDestinationToken(
-  //   route.source.chain,
-  //   route.destination.chain,
-  //   xfer.transfer,
-  // );
-  // console.log(token);
-
-  // // The wrapped token may have a different number of decimals
-  // // to make things easy, lets just send the amount from the VAA back
-  // const amount = xfer.vaas![0]!.vaa!.payload.token.amount;
-  // return await tokenTransfer(wh, {
-  //   ...route,
-  //   token,
-  //   amount,
-  //   source: route.destination,
-  //   destination: route.source,
-  // });
 }

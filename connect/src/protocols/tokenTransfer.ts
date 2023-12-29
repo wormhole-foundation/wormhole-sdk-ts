@@ -185,7 +185,6 @@ export class TokenTransfer<N extends Network = Network>
     const fromChain = this.wh.getChain(this.transfer.from.chain);
     this.txids = await TokenTransfer.transfer<N>(fromChain, this.transfer, signer);
     this._state = TransferState.SourceInitiated;
-
     return this.txids.map(({ txid }) => txid);
   }
 
@@ -225,7 +224,6 @@ export class TokenTransfer<N extends Network = Network>
         timeout,
       );
     }
-
     this._state = TransferState.Attested;
     return this.attestations.map((vaa) => vaa.id);
   }
@@ -254,8 +252,8 @@ export class TokenTransfer<N extends Network = Network>
       attestation as TokenTransferVAA,
       signer,
     );
-
     this.txids.push(...redeemTxids);
+    this._state = TransferState.DestinationInitiated;
     return redeemTxids.map(({ txid }) => txid);
   }
 

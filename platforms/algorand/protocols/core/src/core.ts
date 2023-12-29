@@ -69,15 +69,16 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
     this.tokenBridgeAppAddress = getApplicationAddress(tokenBridge);
   }
 
-  async *verifyMessage(sender: AnyAlgorandAddress, vaa: VAA) {
+  async *verifyMessage(sender: AnyAlgorandAddress, vaa: VAA, appId?: bigint) {
     const address = new AlgorandAddress(sender).toString();
     const txset = await submitVAAHeader(
       this.connection,
       this.coreAppId,
-      this.coreAppId,
+      appId ?? this.coreAppId,
       vaa,
       address,
     );
+
     for (const tx of txset.txs) {
       yield this.createUnsignedTx(tx, "Core.verifyMessage");
     }

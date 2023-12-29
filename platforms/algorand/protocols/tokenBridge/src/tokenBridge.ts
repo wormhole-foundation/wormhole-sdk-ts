@@ -33,9 +33,16 @@ import {
   decodeLocalState,
   getMessageFee,
   safeBigIntToNumber,
+  isOptedIn,
   varint,
 } from "@wormhole-foundation/connect-sdk-algorand";
 import {
+  AlgorandWormholeCore,
+  maybeCreateStorageTx,
+  submitVAAHeader,
+} from "@wormhole-foundation/connect-sdk-algorand-core";
+import {
+  ABIMethod,
   ABIType,
   Algodv2,
   OnApplicationComplete,
@@ -49,14 +56,7 @@ import {
   makeAssetTransferTxnWithSuggestedParamsFromObject,
   makePaymentTxnWithSuggestedParamsFromObject,
   modelsv2,
-  ABIMethod,
 } from "algosdk";
-import { isOptedIn } from "./assets";
-import { submitVAAHeader } from "@wormhole-foundation/connect-sdk-algorand-core/src/vaa";
-import {
-  AlgorandWormholeCore,
-  maybeCreateStorageTx,
-} from "@wormhole-foundation/connect-sdk-algorand-core";
 
 import "@wormhole-foundation/connect-sdk-algorand-core";
 
@@ -73,6 +73,8 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
 
   readonly tokenBridgeAppId: bigint;
   readonly tokenBridgeAddress: string;
+
+  static completeTransfer = encoding.bytes.encode("completeTransfer");
 
   constructor(
     readonly network: N,
@@ -556,43 +558,40 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
     console.log("vaa payload token: ", vaa.payload.token.address.toString());
     const senderAddr = new AlgorandAddress(sender).toString();
 
-    //yield *this.coreBridge.verifyMessage(senderAddr, vaa);
-    let { accounts, txs } = await submitVAAHeader(
+    const { accounts, txs } = await submitVAAHeader(
       this.connection,
       this.coreAppId,
       this.tokenBridgeAppId,
       vaa,
       senderAddr,
     );
-    console.log("accounts: ", accounts);
-    console.log("txs: ", txs);
 
     const tokenStorage = StorageLogicSig.forWrappedAsset(this.tokenBridgeAppId, vaa.payload.token);
     const tokenStorageAddress = tokenStorage.address();
 
     let foreignAssets: number[] = [];
     let assetId: number = 0;
-    if (vaa.payload.token.chain !== "Algorand") {
+    if (vaa.payload.token.chain !== this.chain) {
       let asset = await decodeLocalState(
         this.connection,
         this.tokenBridgeAppId,
         tokenStorageAddress,
       );
-      if (asset.length > 8) {
-        const tmp = Buffer.from(asset.slice(0, 8));
-        assetId = safeBigIntToNumber(tmp.readBigUInt64BE(0));
-        console.log("assetId1: ", assetId);
-      }
+      assetId = safeBigIntToNumber(encoding.bignum.decode(asset.slice(0, 8)));
     } else {
-      assetId = parseInt(vaa.payload.token.address.toString().slice(2), 16);
-      console.log("assetId2: ", assetId);
+      assetId = safeBigIntToNumber(
+        encoding.bignum.decode(vaa.payload.token.address.toUint8Array().slice(0, 8)),
+      );
     }
+
     accounts.push(tokenStorageAddress);
 
     let aid = 0;
     let addr = "";
     if (vaa.payloadName === "TransferWithPayload") {
-      aid = Number(bytesToBigInt(vaa.payload.to.address.toUint8Array()));
+      aid = safeBigIntToNumber(
+        encoding.bignum.decode(vaa.payload.to.address.toUint8Array().slice(0, 8)),
+      );
       addr = getApplicationAddress(aid);
     } else {
       addr = encodeAddress(vaa.payload.to.address.toUint8Array());
@@ -621,13 +620,14 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
     accounts.push(addr);
     const appCallObj = {
       accounts: accounts,
-      appArgs: [encoding.bytes.encode("completeTransfer"), serialize(vaa)],
+      appArgs: [AlgorandTokenBridge.completeTransfer, serialize(vaa)],
       appIndex: safeBigIntToNumber(this.tokenBridgeAppId),
       foreignAssets: foreignAssets,
       from: senderAddr,
       onComplete: OnApplicationComplete.NoOpOC,
       suggestedParams,
     };
+
     console.log("appCallObj: ", appCallObj);
     txs.push({
       tx: makeApplicationCallTxnFromObject(appCallObj),
@@ -635,11 +635,11 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
     });
 
     // We need to cover the inner transactions
-    if (vaa.payloadName === "Transfer" && vaa.payload.fee !== undefined && vaa.payload.fee === 0n) {
-      txs[txs.length - 1].tx.fee = txs[txs.length - 1].tx.fee * 2;
-    } else {
-      txs[txs.length - 1].tx.fee = txs[txs.length - 1].tx.fee * 3;
-    }
+    txs[txs.length - 1].tx.fee =
+      txs[txs.length - 1].tx.fee *
+      (vaa.payloadName === "Transfer" && vaa.payload.fee !== undefined && vaa.payload.fee === 0n
+        ? 2
+        : 3);
 
     if (vaa.payloadName === "TransferWithPayload") {
       txs[txs.length - 1].tx.appForeignApps = [aid];
