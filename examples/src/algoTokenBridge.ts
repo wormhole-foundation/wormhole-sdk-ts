@@ -11,32 +11,50 @@ import {
 import { TransferStuff, getStuff } from "./helpers";
 
 // Import the platform specific packages
-import { AlgorandPlatform } from "@wormhole-foundation/connect-sdk-algorand";
+import { AlgorandAddress, AlgorandPlatform } from "@wormhole-foundation/connect-sdk-algorand";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
-import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 
 // Register the protocols
 import "@wormhole-foundation/connect-sdk-algorand-tokenbridge";
 import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
-import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
+
+/*
+1. Algorand native to other chain
+2. Return wrapped ALGO from other chain to Algorand native
+3. Algorand ASA to other chain
+4. Return wrapped ASA from other chain to Algorand ASA
+5. Other chain native to Algorand wrapped token
+6. Return Algorand wrapped token to other chain native
+7. Other chain token to Algorand wrapped token
+8. Return Algorand wrapped token to other chain token
+*/
 
 (async function () {
-  // init Wormhole object, passing config for which network
+  // Init Wormhole object, passing config for which network
   // to use (e.g. Mainnet/Testnet) and what Platforms to support
-  const wh = new Wormhole("Testnet", [AlgorandPlatform, SolanaPlatform, EvmPlatform]);
+  const wh = new Wormhole("Testnet", [AlgorandPlatform, EvmPlatform]);
 
   // Grab chain Contexts -- these hold a reference to a cached rpc client
   const sendChain = wh.getChain("Algorand");
   const rcvChain = wh.getChain("Avalanche");
 
-  // shortcut to allow transferring native gas token
-  const token: TokenId | "native" = "native";
+  // Shortcut to allow transferring native gas token - worked 12-28-23
+  // const token: TokenId | "native" = "native";
+
+  // Test Algorand native ASA outbound with Testnet USDC 10458941 - worked 12-28-23
+  // const token = Wormhole.chainAddress("Algorand", new AlgorandAddress(BigInt(10458941)).toString());
+
+  // Test Algorand wrapped ASA outbound with Testnet wAVAX 86783266 - worked 12-28-23
+  // const token = Wormhole.chainAddress("Algorand", new AlgorandAddress(BigInt(86783266)).toString());
+
+  // Test other chain wrapped token back to Algorand ASA with Avalanche wUSDC 0x12EB0d635FD4C5692d779755Ba82b33F6439fc73 - Failing on redeem 12-28-23
+  const token = Wormhole.chainAddress("Avalanche", "0x12EB0d635FD4C5692d779755Ba82b33F6439fc73");
 
   // Normalized given token decimals later but can just pass bigints as base units
   // Note: The Token bridge will dedust past 8 decimals
   // this means any amount specified past that point will be returned
   // to the caller
-  const amount = "0.1";
+  const amount = "0.0001";
 
   // With automatic set to true, perform an automatic transfer. This will invoke a relayer
   // contract intermediary that knows to pick up the transfers
@@ -58,15 +76,15 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 
   // Used to normalize the amount to account for the tokens decimals
   const decimals =
+    // @ts-ignore
     token === "native"
       ? BigInt(sendChain.config.nativeTokenDecimals)
-      : await wh.getDecimals(sendChain.chain, token);
+      : await wh.getDecimals(sendChain.chain, token.address);
 
   // Set this to the transfer txid of the initiating transaction to recover a token transfer
   // and attempt to fetch details about its progress.
-  let recoverTxid = undefined;
-  // recoverTxid =
-  //   "2daoPz9KyVkG8WGztfatMRx3EKbiRSUVGKAoCST9286eGrzXg5xowafBUUKfd3JrHzvd4AwoH57ujWaJ72k6oiCY";
+  // let recoverTxid = undefined;
+  let recoverTxid = "0xdab98de823cd9e2ec3975bf366503dcd896a47a7ce3764fb964cc84b54f7159c"; // Avalanche-->Algorand
 
   // Finally create and perform the transfer given the parameters set above
   const xfer = !recoverTxid
@@ -87,11 +105,11 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
         txid: recoverTxid,
       });
 
-  console.log(xfer);
+  console.log("xfer: ", xfer);
   // Log out the results
-  // if (xfer.getTransferState() <= TransferState.DestinationInitiated) {
-  //   console.log(await xfer.completeTransfer(destination.signer));
-  // }
+  if (xfer.getTransferState() <= TransferState.DestinationInitiated) {
+    console.log(await xfer.completeTransfer(destination.signer));
+  }
 })();
 
 async function tokenTransfer<N extends Network>(
