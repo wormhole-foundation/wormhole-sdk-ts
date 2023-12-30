@@ -1,6 +1,6 @@
 {
   "name": "connect-sdk",
-  "version": "0.3.0-beta.6",
+  "version": "0.3.0-beta.7",
   "license": "Apache-2.0",
   "directories": {
     "test": "__tests__"
@@ -34,7 +34,7 @@
     "test": "NETWORK=Mainnet npm run test --workspaces --if-present",
     "docs": "NODE_OPTIONS=--max_old_space_size=8192 typedoc --options typedoc.json",
     "sync": "tsx syncVersion.ts && npm install && npm run build",
-    "publish": "npm publish --access public --tag $TAG --workspace core --workspace connect --workspace platforms --workspace platforms/evm/protocols --workspace platforms/solana/protocols --workspace platforms/cosmwasm/protocols",
+    "publish": "npm publish --access public --tag $TAG --workspace core --workspace connect --workspace platforms --workspace platforms/evm/protocols --workspace platforms/solana/protocols --workspace platforms/cosmwasm/protocols --workspace platforms/algorand/protocols",
     "pub:beta": "TAG=beta npm run publish",
     "pub:latest": "TAG=latest npm run publish"
   },
@@ -49,6 +49,7 @@
     "platforms/solana",
     "platforms/solana/protocols/core",
     "platforms/solana/protocols/tokenBridge",
+    "platforms/solana/protocols/cctp",
     "platforms/cosmwasm",
     "platforms/cosmwasm/protocols/core",
     "platforms/cosmwasm/protocols/tokenBridge",

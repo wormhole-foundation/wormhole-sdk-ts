@@ -69,11 +69,6 @@ export class AlgorandPlatform<N extends Network> extends PlatformContext<N, Algo
     return platform === AlgorandPlatform._platform;
   }
 
-  static hexToUint8Array = (h: string): Uint8Array => {
-    if (h.startsWith("0x")) h = h.slice(2);
-    return new Uint8Array(Buffer.from(h, "hex"));
-  };
-
   static async getDecimals(
     chain: Chain,
     rpc: Algodv2,
