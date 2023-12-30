@@ -37,6 +37,7 @@ import {
   ABIMethod,
   ABIType,
   Algodv2,
+  LogicSigAccount,
   OnApplicationComplete,
   SuggestedParams,
   bigIntToBytes,
@@ -569,12 +570,15 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
       senderAddr,
     );
 
-    const tokenStorage = StorageLogicSig.forWrappedAsset(this.tokenBridgeAppId, vaa.payload.token);
-    const tokenStorageAddress = tokenStorage.address();
-
+    // A critical routing step occurs here
+    let tokenStorage: LogicSigAccount | undefined = undefined;
+    let tokenStorageAddress: string = "";
     let foreignAssets: number[] = [];
     let assetId: number = 0;
     if (vaa.payload.token.chain !== this.chain) {
+      // If the token is from elsewhere we get the storage lsig for a wrapped asset
+      tokenStorage = StorageLogicSig.forWrappedAsset(this.tokenBridgeAppId, vaa.payload.token);
+      tokenStorageAddress = tokenStorage.address();
       const data = await StorageLogicSig.decodeLocalState(
         this.connection,
         this.tokenBridgeAppId,
@@ -582,7 +586,11 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
       );
       assetId = new AlgorandAddress(data.slice(0, 8)).toInt();
     } else {
-      assetId = new AlgorandAddress(vaa.payload.token.address).toInt();
+      // Otherwise we get the storage lsig for a native asset, including ALGO (0)
+      const nativeTokenId = new AlgorandAddress(vaa.payload.token.address).toBigInt();
+      tokenStorage = StorageLogicSig.forNativeAsset(this.tokenBridgeAppId, nativeTokenId);
+      tokenStorageAddress = tokenStorage.address();
+      assetId = safeBigIntToNumber(nativeTokenId);
     }
     accounts.push(tokenStorageAddress);
 
@@ -605,7 +613,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
           throw new Error("Cannot ASA optin for somebody else (asset " + assetId.toString() + ")");
         }
 
-        // push asset opt in to the front
+        // Push asset opt in to the front
         txs.unshift({
           tx: makeAssetTransferTxnWithSuggestedParamsFromObject({
             amount: 0,

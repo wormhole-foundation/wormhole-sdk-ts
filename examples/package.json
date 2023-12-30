@@ -35,6 +35,7 @@
   "scripts": {
     "wrapped": "tsx src/createWrapped.ts",
     "tb": "tsx src/tokenBridge.ts",
+    "mtb": "cd ../platforms/algorand/protocols/tokenBridge && npm run rebuild && cd - && tsx src/multiTokenBridge.ts",
     "cctp": "tsx src/cctp.ts",
     "demo": "tsx src/index.ts",
     "cosmos": "tsx src/cosmos.ts",
@@ -48,7 +49,8 @@
   },
   "devDependencies": {
     "dotenv": "^16.3.1",
-    "tsx": "^4.7.0"
+    "tsx": "^4.7.0",
+    "algosdk": "^2.7.0"
   },
   "dependencies": {
     "@wormhole-foundation/connect-sdk": "^0.3.0-beta.7",
@@ -63,7 +65,6 @@
     "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge": "^0.3.0-beta.7",
     "@wormhole-foundation/connect-sdk-evm-cctp": "^0.3.0-beta.7",
     "@wormhole-foundation/connect-sdk-solana-cctp": "^0.3.0-beta.7",
-    "@wormhole-foundation/connect-sdk-cosmwasm-ibc": "^0.3.0-beta.7",
-    "algosdk": "^2.7.0"
+    "@wormhole-foundation/connect-sdk-cosmwasm-ibc": "^0.3.0-beta.7"
   }
 }
