@@ -1,7 +1,8 @@
 import {
-  Network,
   ChainAddress,
   ChainContext,
+  DEFAULT_TASK_TIMEOUT,
+  Network,
   Platform,
   PlatformToChains,
   Signer,
@@ -11,18 +12,13 @@ import {
   Wormhole,
   api,
   tasks,
-  DEFAULT_TASK_TIMEOUT,
-  Chain,
-  TokenId,
-  TransferReceipt,
 } from "@wormhole-foundation/connect-sdk";
 
 // Importing from src so we dont have to rebuild to see debug stuff in signer
+import { getAlgorandSigner } from "@wormhole-foundation/connect-sdk-algorand/src/testing";
+import { getCosmwasmSigner } from "@wormhole-foundation/connect-sdk-cosmwasm/src/testing";
 import { getEvmSigner } from "@wormhole-foundation/connect-sdk-evm/src/testing";
 import { getSolanaSigner } from "@wormhole-foundation/connect-sdk-solana/src/testing";
-import { getCosmwasmSigner } from "@wormhole-foundation/connect-sdk-cosmwasm/src/testing";
-import { getAlgorandSigner } from "@wormhole-foundation/connect-sdk-algorand/src/testing";
-import { TokenTransferProtocol } from "@wormhole-foundation/connect-sdk";
 
 // read in from `.env`
 require("dotenv").config();
@@ -36,19 +32,6 @@ function getEnv(key: string): string {
   if (!val) throw new Error(`Missing env var ${key}, did you forget to set valies in '.env'?`);
 
   return val;
-}
-
-export interface BridgingInputs {
-  fromChain: Chain;
-  asset: TokenId | "native";
-  quantity: string;
-  toChain: Chain;
-  roundTrip?: boolean;
-  recoverTxId?: string | undefined;
-}
-
-export interface BridgingResult extends BridgingInputs {
-  result: TransferReceipt<TokenTransferProtocol>;
 }
 
 export interface TransferStuff<

@@ -4,11 +4,13 @@ import {
   Platform,
   TokenId,
   TokenTransfer,
+  TokenTransferProtocol,
+  TransferReceipt,
   Wormhole,
   isTokenId,
   normalizeAmount,
 } from "@wormhole-foundation/connect-sdk";
-import { BridgingInputs, BridgingResult, TransferStuff, getStuff, waitLog } from "./helpers";
+import { TransferStuff, getStuff, waitLog } from "./helpers";
 import { inspect } from "util";
 
 // Import the platform specific packages
@@ -20,6 +22,19 @@ import { AlgorandPlatform } from "@wormhole-foundation/connect-sdk-algorand";
 import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
 import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 import "@wormhole-foundation/connect-sdk-algorand-tokenbridge";
+
+interface BridgingInputs {
+  fromChain: Chain;
+  asset: TokenId | "native";
+  quantity: string;
+  toChain: Chain;
+  roundTrip?: boolean;
+  recoverTxId?: string | undefined;
+}
+
+interface BridgingResult extends BridgingInputs {
+  result: TransferReceipt<TokenTransferProtocol>;
+}
 
 (async function multipleBridges() {
   const scenarios: BridgingInputs[] = [
