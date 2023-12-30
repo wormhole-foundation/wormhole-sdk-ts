@@ -39,8 +39,8 @@ import {
   WormholeTransfer,
 } from "../wormholeTransfer";
 
-type TokenTransferProtocol = "TokenBridge" | "AutomaticTokenBridge";
-type TokenTransferVAA = TokenBridge.TransferVAA | AutomaticTokenBridge.VAA;
+export type TokenTransferProtocol = "TokenBridge" | "AutomaticTokenBridge";
+export type TokenTransferVAA = TokenBridge.TransferVAA | AutomaticTokenBridge.VAA;
 
 export class TokenTransfer<N extends Network = Network>
   implements WormholeTransfer<TokenTransferProtocol>

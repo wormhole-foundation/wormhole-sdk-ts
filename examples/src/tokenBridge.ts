@@ -26,26 +26,25 @@ import "@wormhole-foundation/connect-sdk-algorand-tokenbridge";
   const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform, AlgorandPlatform]);
 
   // Grab chain Contexts -- these hold a reference to a cached rpc client
-  const sendChain = wh.getChain("Algorand");
-  const rcvChain = wh.getChain("Solana");
+  const sendChain = wh.getChain("Avalanche");
+  const rcvChain = wh.getChain("Algorand");
 
-  // shortcut to allow transferring native gas token
-  const token: TokenId | "native" = "native";
-
-  // const token = Wormhole.chainAddress("Algorand", "10458941"); // USDC on Algorand
+  // Shortcut to allow transferring native gas token
+  // const token: TokenId | "native" = "native";
 
   // A TokenId is just a `{chain, address}` pair and an alias for ChainAddress
   // The `address` field must be a parsed address.
   // You can get a TokenId (or ChainAddress) prepared for you
   // by calling the static `chainAddress` method on the Wormhole class.
   // e.g.
-  // const token = Wormhole.chainAddress("Avalanche", "0xd00ae08403B9bbb9124bB305C09058E32C39A48c"); // TokenId<"Avalanche">
+  // const token = Wormhole.chainAddress("Solana", "9rU2jFrzA5zDDmt9yR7vEABvXCUNJ1YgGigdTb9oCaTv");
+  const token = Wormhole.chainAddress("Avalanche", "0x3bE4bce46442F5E85c47257145578E724E40cF97");
 
   // Normalized given token decimals later but can just pass bigints as base units
   // Note: The Token bridge will dedust past 8 decimals
   // this means any amount specified past that point will be returned
   // to the caller
-  const amount = "0.001";
+  const amount = "0.0001";
 
   // With automatic set to true, perform an automatic transfer. This will invoke a relayer
   // contract intermediary that knows to pick up the transfers
@@ -70,25 +69,31 @@ import "@wormhole-foundation/connect-sdk-algorand-tokenbridge";
     ? await wh.getDecimals(token.chain, token.address)
     : BigInt(sendChain.config.nativeTokenDecimals);
 
+  // Set this to true if you want to perform a round trip transfer
+  const roundTrip: boolean = false;
+
   // Set this to the transfer txid of the initiating transaction to recover a token transfer
   // and attempt to fetch details about its progress.
   let recoverTxid = undefined;
-  // recoverTxid =
-  //   "2daoPz9KyVkG8WGztfatMRx3EKbiRSUVGKAoCST9286eGrzXg5xowafBUUKfd3JrHzvd4AwoH57ujWaJ72k6oiCY";
+  // recoverTxid = "0xa4e0a2c1c994fe3298b5646dfd5ce92596dc1a589f42e241b7f07501a5a5a39f";
 
   // Finally create and perform the transfer given the parameters set above
   const xfer = !recoverTxid
     ? // Perform the token transfer
-      await tokenTransfer(wh, {
-        token,
-        amount: normalizeAmount(amount, decimals),
-        source,
-        destination,
-        delivery: {
-          automatic,
-          nativeGas: nativeGas ? normalizeAmount(nativeGas, decimals) : undefined,
+      await tokenTransfer(
+        wh,
+        {
+          token,
+          amount: normalizeAmount(amount, decimals),
+          source,
+          destination,
+          delivery: {
+            automatic,
+            nativeGas: nativeGas ? normalizeAmount(nativeGas, decimals) : undefined,
+          },
         },
-      })
+        roundTrip,
+      )
     : // Recover the transfer from the originating txid
       await TokenTransfer.from(wh, {
         chain: source.chain.chain,
