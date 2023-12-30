@@ -32,7 +32,7 @@ export type TransferRequest<PN extends ProtocolName = ProtocolName> = PN extends
 // Transfer state machine states
 export enum TransferState {
   Failed = -1,
-  Created = 1, // Will be set after the TokenTransfer object is created
+  Created = 0, // Will be set after the TokenTransfer object is created
   SourceInitiated, // Will be set after source chain transactions are submitted
   SourceFinalized, // Will be set after source chain transactions are finalized
   Attested, // Will be set after VAA  or Circle Attestation is available
@@ -40,20 +40,65 @@ export enum TransferState {
   DestinationFinalized, // Will be set after the transaction is finalized on the destination chain
 }
 
+// Base type for common properties
+interface BaseTransferReceipt<PN extends ProtocolName, SC extends Chain, DC extends Chain> {
+  protocol: PN;
+  from: SC;
+  to: DC;
+  state: TransferState;
+  request: TransferRequest<PN>;
+}
+
+export interface SourceInitiatedTransferReceipt<
+  PN extends ProtocolName,
+  SC extends Chain,
+  DC extends Chain,
+> extends BaseTransferReceipt<PN, SC, DC> {
+  originTxs: TransactionId<SC>[];
+}
+export interface SourceFinalizedTransferReceipt<
+  PN extends ProtocolName,
+  SC extends Chain,
+  DC extends Chain,
+> extends SourceInitiatedTransferReceipt<PN, SC, DC> {
+  attestation: AttestationReceipt<PN>;
+}
+export interface AttestedTransferReceipt<
+  PN extends ProtocolName,
+  SC extends Chain,
+  DC extends Chain,
+> extends SourceFinalizedTransferReceipt<PN, SC, DC> {
+  attestation: Required<AttestationReceipt<PN>>;
+}
+export interface CompletedTransferReceipt<
+  PN extends ProtocolName,
+  SC extends Chain,
+  DC extends Chain,
+> extends AttestedTransferReceipt<PN, SC, DC> {
+  destinationTxs: TransactionId<DC>[];
+}
+
+export function hasReachedState<PN extends ProtocolName, TS extends TransferState>(
+  receipt: TransferReceipt<PN, Chain, Chain, TransferState>,
+  state: TS,
+): receipt is TransferReceipt<PN, Chain, Chain, TS> {
+  return receipt.state === state;
+}
+
 export type TransferReceipt<
   PN extends ProtocolName,
   SC extends Chain = Chain,
   DC extends Chain = Chain,
-> = {
-  readonly protocol: PN;
-  readonly request: TransferRequest<PN>;
-  readonly from: SC;
-  readonly to: DC;
-  state: TransferState;
-  originTxs: TransactionId<SC>[];
-  destinationTxs: TransactionId<DC>[];
-  attestation?: AttestationReceipt<PN>;
-};
+  TS extends TransferState = TransferState,
+> = TS extends TransferState.DestinationInitiated
+  ? CompletedTransferReceipt<PN, SC, DC>
+  : TS extends TransferState.Attested
+  ? AttestedTransferReceipt<PN, SC, DC>
+  : TS extends TransferState.SourceFinalized
+  ? SourceFinalizedTransferReceipt<PN, SC, DC>
+  : TS extends TransferState.SourceInitiated
+  ? SourceInitiatedTransferReceipt<PN, SC, DC>
+  : never;
 
 // Quote with optional relayer fees if the transfer
 // is requested to be automatic
