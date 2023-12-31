@@ -364,7 +364,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
 
     txs.push({
       tx: makeApplicationCallTxnFromObject({
-        accounts: [], // TODO:
+        accounts: [],
         appArgs: [AlgorandTokenBridge.receiveAttest, serialize(vaa)],
         appIndex: safeBigIntToNumber(this.tokenBridgeAppId),
         foreignAssets: foreignAssets,
@@ -374,7 +374,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
       }),
     });
 
-    txs[txs.length - 1].tx.fee = txs[txs.length - 1].tx.fee * 2; // QUESTIONBW: There are like 3 different ways of adjusting fees in various functions--this should be standardized
+    txs[txs.length - 1].tx.fee = txs[txs.length - 1].tx.fee * 2;
 
     for (const utxn of txs) {
       yield this.createUnsignedTx(utxn, "TokenBridge.submitAttestation", true);
@@ -418,8 +418,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
     );
     txs.push(...emitterOptInTxs);
 
-    // Check that the auth address of the creator
-    // is the token bridge
+    // Check that the auth address of the creator is the token bridge
     let creator = "";
     let creatorAcct: modelsv2.Account | undefined;
     let wormhole: boolean = false;
