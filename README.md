@@ -226,7 +226,7 @@ The most familiar protocol built on Wormhole is the Token Bridge.
 
 Every chain has a `TokenBridge` protocol client that provides a consistent interface for interacting with the Token Bridge. This includes methods to generate the transactions required to transfer tokens, as well as methods to generate and redeem attestations.
 
-Using the `Wormhole` object's abstractions is the recommended way to interact with these protocols but it is possible to use them directly
+Using the `WormholeTransfer` abstractions is the recommended way to interact with these protocols but it is possible to use them directly
 
 ```ts
 import { signSendWait } from "@wormhole-foundation/connect-sdk";

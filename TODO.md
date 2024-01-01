@@ -2,7 +2,6 @@
 
 Chains:
 
-- [x] Add support for Algorand chains
 - [ ] Add support for Aptos chains
 - [ ] Add support for Sui chains
 - [ ] Add support for Near chains
