@@ -13,7 +13,7 @@ import {
 import { TransferStuff, getStuff, waitLog } from "./helpers";
 import { inspect } from "util";
 
-// Import the platform specific packages
+// Import the platform-specific packages
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 import { AlgorandPlatform } from "@wormhole-foundation/connect-sdk-algorand";
@@ -35,6 +35,9 @@ interface BridgingInputs {
 interface BridgingResult extends BridgingInputs {
   result: TransferReceipt<TokenTransferProtocol>;
 }
+
+// Use .env.example as a template for your .env file and populate it with secrets
+// for funded accounts on the relevant chain+network combos to run the example
 
 (async function multipleBridges() {
   const scenarios: BridgingInputs[] = [
@@ -205,17 +208,17 @@ async function tokenTransfer<N extends Network>(
   // If automatic, we're done
   if (route.delivery?.automatic) return xfer;
 
-  // 2) wait for the VAA to be signed and ready (not required for auto transfer)
+  // 2) Wait for the VAA to be signed and ready (not required for auto transfer)
   console.log("Getting Attestation");
   const attestIds = await xfer.fetchAttestation(60_000);
   console.log(`Got Attestation: `, attestIds);
 
-  // 3) redeem the VAA on the dest chain
+  // 3) Redeem the VAA on the dest chain
   console.log("Completing Transfer");
   const destTxids = await xfer.completeTransfer(route.destination.signer);
   console.log(`Completed Transfer: `, destTxids);
 
-  // No need to send back, dip
+  // If no need to send back, dip
   if (!roundTrip) return xfer;
 
   const { destinationToken: token } = quote;

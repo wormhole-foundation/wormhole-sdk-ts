@@ -20,7 +20,10 @@ import { getCosmwasmSigner } from "@wormhole-foundation/connect-sdk-cosmwasm/src
 import { getEvmSigner } from "@wormhole-foundation/connect-sdk-evm/src/testing";
 import { getSolanaSigner } from "@wormhole-foundation/connect-sdk-solana/src/testing";
 
-// read in from `.env`
+// Use .env.example as a template for your .env file and populate it with secrets
+// for funded accounts on the relevant chain+network combos to run the example
+
+// Read in from `.env`
 require("dotenv").config();
 
 function getEnv(key: string): string {
