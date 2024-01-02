@@ -105,7 +105,7 @@ export class SolanaCircleBridge<N extends Network, C extends SolanaChains>
       senderPk,
     );
 
-    const { blockhash } = await SolanaPlatform.latestBlockhash(this.connection);
+    const { blockhash } = await SolanaPlatform.latestBlock(this.connection);
     const transaction = new Transaction();
     transaction.recentBlockhash = blockhash;
     transaction.feePayer = senderPk;
@@ -140,7 +140,7 @@ export class SolanaCircleBridge<N extends Network, C extends SolanaChains>
       amount,
     );
 
-    const { blockhash } = await SolanaPlatform.latestBlockhash(this.connection);
+    const { blockhash } = await SolanaPlatform.latestBlock(this.connection);
     const transaction = new Transaction();
     transaction.recentBlockhash = blockhash;
     transaction.feePayer = senderPk;

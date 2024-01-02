@@ -165,13 +165,13 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
     rpc: Connection,
     stxns: SignedTx[],
   ): Promise<TxHash[]> {
+    const { blockhash, lastValidBlockHeight } = await this.latestBlock(rpc);
+
     const txhashes = await Promise.all(
       stxns.map((stxn) => {
         return rpc.sendRawTransaction(stxn);
       }),
     );
-
-    const { blockhash, lastValidBlockHeight } = await this.latestBlockhash(rpc);
 
     await Promise.all(
       txhashes.map((txid) => {
@@ -187,7 +187,7 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
     return txhashes;
   }
 
-  static async latestBlockhash(
+  static async latestBlock(
     rpc: Connection,
     commitment?: Commitment,
   ): Promise<{ blockhash: string; lastValidBlockHeight: number }> {
@@ -195,15 +195,12 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
   }
 
   static async getLatestBlock(rpc: Connection): Promise<number> {
-    const { lastValidBlockHeight } = await this.latestBlockhash(rpc);
+    const { lastValidBlockHeight } = await this.latestBlock(rpc);
     return lastValidBlockHeight;
   }
 
   static async getLatestFinalizedBlock(rpc: Connection): Promise<number> {
-    const { lastValidBlockHeight } = await this.latestBlockhash(
-      rpc,
-      'finalized',
-    );
+    const { lastValidBlockHeight } = await this.latestBlock(rpc, 'finalized');
     return lastValidBlockHeight;
   }
 

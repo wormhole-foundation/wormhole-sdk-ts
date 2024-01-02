@@ -104,7 +104,7 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
       consistencyLevel,
     );
 
-    const { blockhash } = await SolanaPlatform.latestBlockhash(this.connection);
+    const { blockhash } = await SolanaPlatform.latestBlock(this.connection);
     const transaction = new Transaction();
     transaction.recentBlockhash = blockhash;
     transaction.feePayer = payer;
@@ -120,7 +120,7 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
 
   async *postVaa(sender: AnySolanaAddress, vaa: VAA, blockhash?: string) {
     if (!blockhash)
-      ({ blockhash } = await SolanaPlatform.latestBlockhash(this.connection));
+      ({ blockhash } = await SolanaPlatform.latestBlock(this.connection));
 
     const postedVaaAddress = derivePostedVaaKey(
       this.coreBridge.programId,
@@ -143,7 +143,7 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
         signatureSet.publicKey,
       );
 
-    // Create a new transaction for every 2 signatures we have to Verify
+    // Create a new transaction for every 2 instructions
     for (let i = 0; i < verifySignaturesInstructions.length; i += 2) {
       const verifySigTx = new Transaction().add(
         ...verifySignaturesInstructions.slice(i, i + 2),
@@ -154,9 +154,6 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
 
       yield this.createUnsignedTx(verifySigTx, 'Core.VerifySignature', true);
     }
-
-    // TODO: if VAA is already posted, just, like, dont post it again man
-    // if(this.connection.getAccountInfo(postedVaaAddress))
 
     // Finally create the VAA posting transaction
     const postVaaTx = new Transaction().add(

@@ -231,7 +231,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
     );
 
     const transaction = new Transaction().add(transferIx, attestIx);
-    const { blockhash } = await SolanaPlatform.latestBlockhash(this.connection);
+    const { blockhash } = await SolanaPlatform.latestBlock(this.connection);
     transaction.recentBlockhash = blockhash;
     transaction.feePayer = senderAddress;
     transaction.partialSign(messageKey);
@@ -246,7 +246,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
     if (!payer) throw new Error('Payer required to create attestation');
     const senderAddress = new SolanaAddress(payer).unwrap();
 
-    const { blockhash } = await SolanaPlatform.latestBlockhash(this.connection);
+    const { blockhash } = await SolanaPlatform.latestBlock(this.connection);
 
     // Yield transactions to verify sigs and post the VAA
     yield* this.coreBridge.postVaa(senderAddress, vaa, blockhash);
@@ -362,7 +362,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
       payerPublicKey, //authority
     );
 
-    const { blockhash } = await SolanaPlatform.latestBlockhash(this.connection);
+    const { blockhash } = await SolanaPlatform.latestBlock(this.connection);
     const transaction = new Transaction();
     transaction.recentBlockhash = blockhash;
     transaction.feePayer = payerPublicKey;
@@ -493,7 +493,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
       tokenBridgeTransferIx,
     );
 
-    const { blockhash } = await SolanaPlatform.latestBlockhash(this.connection);
+    const { blockhash } = await SolanaPlatform.latestBlock(this.connection);
     transaction.recentBlockhash = blockhash;
     transaction.feePayer = senderAddress;
     transaction.partialSign(message);
@@ -608,7 +608,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
     vaa: TokenBridge.TransferVAA,
     unwrapNative: boolean = true,
   ) {
-    const { blockhash } = await SolanaPlatform.latestBlockhash(this.connection);
+    const { blockhash } = await SolanaPlatform.latestBlock(this.connection);
 
     // Find the token address local to this chain
     const nativeAddress =
