@@ -6,7 +6,6 @@ import {
   setupBankExtension,
   setupIbcExtension,
 } from "@cosmjs/stargate";
-import { TendermintClient } from "@cosmjs/tendermint-rpc";
 
 import {
   Chain,
@@ -58,9 +57,7 @@ export class CosmwasmPlatform<N extends Network> extends PlatformContext<N, Cosm
   }
 
   static getQueryClient = (rpc: CosmWasmClient): QueryClient & BankExtension & IbcExtension => {
-    // @ts-ignore -- access private attribute
-    const tmClient: TendermintClient = rpc.getTmClient()!;
-    return QueryClient.withExtensions(tmClient, setupBankExtension, setupIbcExtension);
+    return QueryClient.withExtensions(rpc["cometClient"], setupBankExtension, setupIbcExtension);
   };
 
   // cached channels from config if available
