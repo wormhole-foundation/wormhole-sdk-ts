@@ -5,8 +5,8 @@ import {
   TransactionInstruction,
 } from '@solana/web3.js';
 import { createReadOnlyTokenBridgeProgramInterface } from '../program';
-import { utils as CoreUtils } from '@wormhole-foundation/connect-sdk-solana-core';
-import { utils } from '@wormhole-foundation/connect-sdk-solana';
+import { utils as coreUtils } from '@wormhole-foundation/connect-sdk-solana-core';
+import { deriveSplTokenMetadataKey } from '../../splMetadata';
 import { deriveTokenBridgeConfigKey, deriveWrappedMetaKey } from '../accounts';
 
 export function createAttestTokenInstruction(
@@ -71,7 +71,7 @@ export function getAttestTokenAccounts(
     clock,
     rent,
     systemProgram,
-  } = CoreUtils.getPostMessageAccounts(
+  } = coreUtils.getPostMessageAccounts(
     wormholeProgramId,
     payer,
     tokenBridgeProgramId,
@@ -82,7 +82,7 @@ export function getAttestTokenAccounts(
     config: deriveTokenBridgeConfigKey(tokenBridgeProgramId),
     mint: new PublicKey(mint),
     wrappedMeta: deriveWrappedMetaKey(tokenBridgeProgramId, mint),
-    splMetadata: utils.deriveSplTokenMetadataKey(mint),
+    splMetadata: deriveSplTokenMetadataKey(mint),
     wormholeBridge,
     wormholeMessage: new PublicKey(message),
     wormholeEmitter,

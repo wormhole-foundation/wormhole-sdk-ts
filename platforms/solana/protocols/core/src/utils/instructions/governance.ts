@@ -7,17 +7,17 @@ import {
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction,
 } from '@solana/web3.js';
-import { VAA, toChainId } from '@wormhole-foundation/connect-sdk';
-import { createReadOnlyWormholeProgramInterface } from '../program';
+import { toChainId, VAA } from '@wormhole-foundation/connect-sdk';
+import { SolanaAddress, utils } from '@wormhole-foundation/connect-sdk-solana';
 import {
-  deriveWormholeBridgeDataKey,
   deriveClaimKey,
   deriveFeeCollectorKey,
   deriveGuardianSetKey,
   derivePostedVaaKey,
   deriveUpgradeAuthorityKey,
+  deriveWormholeBridgeDataKey,
 } from '../accounts';
-import { SolanaAddress, utils } from '@wormhole-foundation/connect-sdk-solana';
+import { createReadOnlyWormholeProgramInterface } from '../program';
 
 export function createSetFeesInstruction(
   connection: Connection,

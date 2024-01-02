@@ -104,7 +104,7 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
       consistencyLevel,
     );
 
-    const { blockhash } = await this.connection.getLatestBlockhash();
+    const { blockhash } = await SolanaPlatform.latestBlockhash(this.connection);
     const transaction = new Transaction();
     transaction.recentBlockhash = blockhash;
     transaction.feePayer = payer;
@@ -120,7 +120,7 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
 
   async *postVaa(sender: AnySolanaAddress, vaa: VAA, blockhash?: string) {
     if (!blockhash)
-      ({ blockhash } = await this.connection.getLatestBlockhash());
+      ({ blockhash } = await SolanaPlatform.latestBlockhash(this.connection));
 
     const postedVaaAddress = derivePostedVaaKey(
       this.coreBridge.programId,

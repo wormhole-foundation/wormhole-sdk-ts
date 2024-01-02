@@ -8,12 +8,7 @@ import {
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction,
 } from '@solana/web3.js';
-import {
-  deriveAddress,
-  getAccountData,
-  newAccountMeta,
-  newReadOnlyAccountMeta,
-} from './account';
+import { utils } from '@wormhole-foundation/connect-sdk-solana';
 
 export class Creator {
   address: PublicKey;
@@ -231,13 +226,13 @@ export class SplTokenMetadataProgram {
     metadataAccount: PublicKey = deriveSplTokenMetadataKey(mint),
   ): TransactionInstruction {
     const keys: AccountMeta[] = [
-      newAccountMeta(metadataAccount, false),
-      newReadOnlyAccountMeta(mint, false),
-      newReadOnlyAccountMeta(mintAuthority, true),
-      newReadOnlyAccountMeta(payer, true),
-      newReadOnlyAccountMeta(updateAuthority, updateAuthorityIsSigner),
-      newReadOnlyAccountMeta(SystemProgram.programId, false),
-      newReadOnlyAccountMeta(SYSVAR_RENT_PUBKEY, false),
+      utils.newAccountMeta(metadataAccount, false),
+      utils.newReadOnlyAccountMeta(mint, false),
+      utils.newReadOnlyAccountMeta(mintAuthority, true),
+      utils.newReadOnlyAccountMeta(payer, true),
+      utils.newReadOnlyAccountMeta(updateAuthority, updateAuthorityIsSigner),
+      utils.newReadOnlyAccountMeta(SystemProgram.programId, false),
+      utils.newReadOnlyAccountMeta(SYSVAR_RENT_PUBKEY, false),
     ];
     const data = CreateMetadataAccountArgs.serializeInstructionData(
       name,
@@ -256,7 +251,7 @@ export class SplTokenMetadataProgram {
 }
 
 export function deriveSplTokenMetadataKey(mint: PublicKeyInitData): PublicKey {
-  return deriveAddress(
+  return utils.deriveAddress(
     [
       Buffer.from('metadata'),
       SplTokenMetadataProgram.programId.toBuffer(),
@@ -327,5 +322,5 @@ export async function getMetadata(
 ): Promise<Metadata> {
   return connection
     .getAccountInfo(deriveSplTokenMetadataKey(mint), commitment)
-    .then((info) => Metadata.deserialize(getAccountData(info)));
+    .then((info) => Metadata.deserialize(utils.getAccountData(info)));
 }

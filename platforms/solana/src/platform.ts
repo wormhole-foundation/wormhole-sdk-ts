@@ -166,12 +166,12 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
     stxns: SignedTx[],
   ): Promise<TxHash[]> {
     const txhashes = await Promise.all(
-      stxns.map((stxn) => rpc.sendRawTransaction(stxn)),
+      stxns.map((stxn) => {
+        return rpc.sendRawTransaction(stxn);
+      }),
     );
 
-    const { blockhash, lastValidBlockHeight } = await rpc.getLatestBlockhash(
-      rpc.commitment,
-    );
+    const { blockhash, lastValidBlockHeight } = await this.latestBlockhash(rpc);
 
     await Promise.all(
       txhashes.map((txid) => {
@@ -187,13 +187,24 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
     return txhashes;
   }
 
+  static async latestBlockhash(
+    rpc: Connection,
+    commitment?: Commitment,
+  ): Promise<{ blockhash: string; lastValidBlockHeight: number }> {
+    return rpc.getLatestBlockhash(commitment ?? rpc.commitment);
+  }
+
   static async getLatestBlock(rpc: Connection): Promise<number> {
-    return await rpc.getSlot(rpc.commitment);
+    const { lastValidBlockHeight } = await this.latestBlockhash(rpc);
+    return lastValidBlockHeight;
   }
 
   static async getLatestFinalizedBlock(rpc: Connection): Promise<number> {
-    throw new Error('Not implemented');
-    //return await rpc.getSlot(rpc.commitment);
+    const { lastValidBlockHeight } = await this.latestBlockhash(
+      rpc,
+      'finalized',
+    );
+    return lastValidBlockHeight;
   }
 
   static chainFromChainId(genesisHash: string): [Network, SolanaChains] {

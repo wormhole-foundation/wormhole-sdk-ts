@@ -8,7 +8,6 @@ import {
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction,
 } from '@solana/web3.js';
-import { utils } from '@wormhole-foundation/connect-sdk-solana';
 import {
   getGuardianSet,
   deriveGuardianSetKey,
@@ -16,6 +15,7 @@ import {
 } from '../accounts';
 import { createReadOnlyWormholeProgramInterface } from '../program';
 import { VAA } from '@wormhole-foundation/connect-sdk';
+import { createSecp256k1Instruction } from './secp256k1';
 
 const MAX_LEN_GUARDIAN_KEYS = 19;
 
@@ -83,7 +83,7 @@ export async function createVerifySignaturesInstructions(
     }
 
     instructions.push(
-      utils.createSecp256k1Instruction(signatures, keys, Buffer.from(vaa.hash)),
+      createSecp256k1Instruction(signatures, keys, Buffer.from(vaa.hash)),
     );
 
     instructions.push(

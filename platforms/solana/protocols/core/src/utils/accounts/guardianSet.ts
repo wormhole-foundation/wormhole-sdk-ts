@@ -4,6 +4,7 @@ import {
   Commitment,
   PublicKeyInitData,
 } from '@solana/web3.js';
+import { ETHEREUM_KEY_LENGTH } from '../instructions/secp256k1';
 import { utils } from '@wormhole-foundation/connect-sdk-solana';
 
 export function deriveGuardianSetKey(
@@ -55,14 +56,14 @@ export class GuardianSetData {
   static deserialize(data: Buffer): GuardianSetData {
     const index = data.readUInt32LE(0);
     const keysLen = data.readUInt32LE(4);
-    const keysEnd = 8 + keysLen * utils.ETHEREUM_KEY_LENGTH;
+    const keysEnd = 8 + keysLen * ETHEREUM_KEY_LENGTH;
     const creationTime = data.readUInt32LE(keysEnd);
     const expirationTime = data.readUInt32LE(4 + keysEnd);
 
     const keys = [];
     for (let i = 0; i < keysLen; ++i) {
-      const start = 8 + i * utils.ETHEREUM_KEY_LENGTH;
-      keys.push(data.subarray(start, start + utils.ETHEREUM_KEY_LENGTH));
+      const start = 8 + i * ETHEREUM_KEY_LENGTH;
+      keys.push(data.subarray(start, start + ETHEREUM_KEY_LENGTH));
     }
     return new GuardianSetData(index, keys, creationTime, expirationTime);
   }

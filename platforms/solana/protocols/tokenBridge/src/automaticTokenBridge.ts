@@ -173,7 +173,7 @@ export class SolanaAutomaticTokenBridge<
             nonce,
           );
 
-    const { blockhash } = await this.connection.getLatestBlockhash();
+    const { blockhash } = await SolanaPlatform.latestBlockhash(this.connection);
 
     transaction.add(transferIx);
     transaction.recentBlockhash = blockhash;

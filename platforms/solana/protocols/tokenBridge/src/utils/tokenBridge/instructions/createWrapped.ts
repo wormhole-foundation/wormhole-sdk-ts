@@ -1,3 +1,4 @@
+import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import {
   Connection,
   PublicKey,
@@ -6,18 +7,20 @@ import {
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction,
 } from '@solana/web3.js';
-import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import { createReadOnlyTokenBridgeProgramInterface } from '../program';
+import { toChainId, TokenBridge } from '@wormhole-foundation/connect-sdk';
 import { utils as CoreUtils } from '@wormhole-foundation/connect-sdk-solana-core';
-import { utils } from '@wormhole-foundation/connect-sdk-solana';
+import {
+  deriveSplTokenMetadataKey,
+  SplTokenMetadataProgram,
+} from '../../splMetadata';
 import {
   deriveEndpointKey,
   deriveMintAuthorityKey,
-  deriveWrappedMetaKey,
   deriveTokenBridgeConfigKey,
+  deriveWrappedMetaKey,
   deriveWrappedMintKey,
 } from '../accounts';
-import { TokenBridge, toChainId } from '@wormhole-foundation/connect-sdk';
+import { createReadOnlyTokenBridgeProgramInterface } from '../program';
 
 export function createCreateWrappedInstruction(
   connection: Connection,
@@ -91,12 +94,12 @@ export function getCreateWrappedAccounts(
     ),
     mint,
     wrappedMeta: deriveWrappedMetaKey(tokenBridgeProgramId, mint),
-    splMetadata: utils.deriveSplTokenMetadataKey(mint),
+    splMetadata: deriveSplTokenMetadataKey(mint),
     mintAuthority: deriveMintAuthorityKey(tokenBridgeProgramId),
     rent: SYSVAR_RENT_PUBKEY,
     systemProgram: SystemProgram.programId,
     tokenProgram: TOKEN_PROGRAM_ID,
-    splMetadataProgram: utils.SplTokenMetadataProgram.programId,
+    splMetadataProgram: SplTokenMetadataProgram.programId,
     wormholeProgram: new PublicKey(wormholeProgramId),
   };
 }
