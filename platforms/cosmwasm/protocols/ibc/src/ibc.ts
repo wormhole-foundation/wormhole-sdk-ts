@@ -99,7 +99,7 @@ export class CosmwasmIbcBridge<N extends Network, C extends CosmwasmChains>
     recipient: ChainAddress,
     token: AnyCosmwasmAddress | "native",
     amount: bigint,
-  ): AsyncGenerator<CosmwasmUnsignedTransaction<N, C>> {
+  ) {
     const senderAddress = new CosmwasmAddress(sender).toString();
     const nonce = Math.round(Math.random() * 10000);
 

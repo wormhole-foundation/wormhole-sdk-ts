@@ -564,10 +564,9 @@ export class TokenTransfer<N extends Network = Network>
     return receipt as TransferReceipt<TokenTransferProtocol>;
   }
 
-  // AsyncGenerator fn that produces status updates through an async generator
-  // eventually producing a receipt
-  // can be called repeatedly so the receipt is updated as it moves through the
-  // steps of the transfer
+  // Track the state of a transfer over time given its receipt.
+  // A copy of the receipt will be returned for every state change we look for
+  // It is safe to call this multiple times at the expense possibly redundant RPC calls
   static async *track<N extends Network, SC extends Chain, DC extends Chain>(
     wh: Wormhole<N>,
     receipt: TransferReceipt<TokenTransferProtocol, SC, DC>,

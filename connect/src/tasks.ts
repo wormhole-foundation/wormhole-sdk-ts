@@ -75,8 +75,8 @@ export async function isTokenBridgeVaaRedeemed<
   }
 }
 
-export async function fetchIbcXfer<N extends Network, C extends PlatformToChains<"Cosmwasm">>(
-  wcIbc: IbcBridge<N, "Cosmwasm", C>,
+export async function fetchIbcXfer<N extends Network>(
+  wcIbc: IbcBridge<N, "Cosmwasm", PlatformToChains<"Cosmwasm">>,
   msg: TxHash | TransactionId | IbcMessageId | GatewayTransferMsg | GatewayTransferWithPayloadMsg,
 ): Promise<IbcTransferInfo | null> {
   try {
