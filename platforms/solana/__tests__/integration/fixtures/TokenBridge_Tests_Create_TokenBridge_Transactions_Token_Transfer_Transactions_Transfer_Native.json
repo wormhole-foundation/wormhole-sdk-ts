@@ -4,32 +4,31 @@
         "method": "POST",
         "path": "/",
         "body": {
-            "method": "getMinimumBalanceForRentExemption",
+            "method": "getLatestBlockhash",
             "jsonrpc": "2.0",
             "params": [
-                165,
                 {
-                    "commitment": "confirmed"
+                    "commitment": "finalized"
                 }
             ]
         },
         "status": 200,
         "response": [
-            "1f8b08000000000004030dc94b0e40301000d0bd63ccba23d3afa9dbb465122248cb4adc9db77d0facedd8eb596004d31328a873bbb70b4643361a2605cbf49f644d03db82941da373a2318a674c294a0a3e7090086ff701578cdfd74f000000"
+            "1f8b08000000000004031d8d3d6fc2301445f7fe8c3793c87e76bed8a0a530d00e1d4257c77910532b8e62274245f9ef75ba5de9de73ee13eedef5e3a0610b9832d8c0487eb201b64fd0ae0ff4f88f6a30358ddeb83eee78caf31479dc7aeb628da2ca98ccb15836302b3bd10a37d6e99f4ef92e026277367b3ebdbe5df8f77068b270a4ba9fdde57ca75f7a5cdd211c775ff387ffccdf4fd16a950fb5b2a6ddaf8e13995bb7be20cbca0a395fe28d69a3b6604ac8acc04448d626b2143269ae4c241a35c38a54596884e5e50f8b2177afe3000000"
         ],
         "rawHeaders": [
             "content-type",
             "application/json; charset=utf-8",
             "date",
-            "Thu, 07 Dec 2023 00:17:14 GMT",
+            "Tue, 02 Jan 2024 18:50:58 GMT",
             "x-rpc-node",
-            "pit37",
+            "nyc115",
             "x-ratelimit-tier",
             "free",
             "x-ratelimit-method-limit",
-            "40",
+            "25",
             "x-ratelimit-method-remaining",
-            "39",
+            "22",
             "x-ratelimit-rps-limit",
             "100",
             "x-ratelimit-rps-remaining",
@@ -37,7 +36,7 @@
             "x-ratelimit-endpoint-limit",
             "unlimited",
             "x-ratelimit-endpoint-remaining",
-            "-419",
+            "-199",
             "x-ratelimit-conn-limit",
             "40",
             "x-ratelimit-conn-remaining",
@@ -74,9 +73,10 @@
         "method": "POST",
         "path": "/",
         "body": {
-            "method": "getLatestBlockhash",
+            "method": "getMinimumBalanceForRentExemption",
             "jsonrpc": "2.0",
             "params": [
+                165,
                 {
                     "commitment": "confirmed"
                 }
@@ -84,21 +84,21 @@
         },
         "status": 200,
         "response": [
-            "1f8b08000000000004031d8eb10e82301884771fe39f85d0525a61038d6154078d638122854a2b05351adedde276c9dd77775f68adee07534202d80f600d83b0931a21f942a9fb51bcff921b79168395ba7739e423eaa38dcb5aa59d8d43427084a2705ec393ab492c70a174d935dc360ed873fb32cffbc9ec7abc15c7ae8bf5d5a6e61d5ef2ba6de4e15eeb4f3cee3293660fd7aab81dcf5cc92a5b3a72216fcdb282a298e188b1d9cdc86af91b708148c03d5206cc23b4c65e41abd06388140cd1d8fda230af7ee91512a3e3000000"
+            "1f8b08000000000004030dc93b0e80201005c0de63bc1accca77f13a2c241aa306b432de5da79d076b3ff67666cc302341a1957e6f1766433619268545fe13a92158c9da7bf2dac5523517161d13314597834d13dee103a16f3ec74f000000"
         ],
         "rawHeaders": [
             "content-type",
             "application/json; charset=utf-8",
             "date",
-            "Thu, 07 Dec 2023 00:17:13 GMT",
+            "Tue, 02 Jan 2024 18:50:59 GMT",
             "x-rpc-node",
-            "pit37",
+            "nyc115",
             "x-ratelimit-tier",
             "free",
             "x-ratelimit-method-limit",
-            "25",
+            "40",
             "x-ratelimit-method-remaining",
-            "22",
+            "39",
             "x-ratelimit-rps-limit",
             "100",
             "x-ratelimit-rps-remaining",
@@ -106,7 +106,7 @@
             "x-ratelimit-endpoint-limit",
             "unlimited",
             "x-ratelimit-endpoint-remaining",
-            "-420",
+            "-199",
             "x-ratelimit-conn-limit",
             "40",
             "x-ratelimit-conn-remaining",

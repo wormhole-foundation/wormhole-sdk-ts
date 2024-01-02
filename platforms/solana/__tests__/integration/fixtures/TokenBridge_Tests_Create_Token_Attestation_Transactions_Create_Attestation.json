@@ -4,33 +4,31 @@
         "method": "POST",
         "path": "/",
         "body": {
-            "method": "getAccountInfo",
+            "method": "getLatestBlockhash",
             "jsonrpc": "2.0",
             "params": [
-                "2yVjuQwpsvdsrywzsJJVs9Ueh4zayyo5DYJbBNc3DDpn",
                 {
-                    "encoding": "base64",
-                    "commitment": "confirmed"
+                    "commitment": "finalized"
                 }
             ]
         },
         "status": 200,
         "response": [
-            "1f8b08000000000004031d8f4b6f83301084effd197b06845f347073a524bda46aaa5245a97a30605e7530b20da48af2dfeb70598db4b3b3dfdca0b77a30630919e02886008cb4937290dda0d48393d7558ab1fb92c6767af03e14a124421befb54afb352694628618be07300b35c9c771259c80ec1bf8c2397f5f4e45937bc179b3dbbef0fd71d58fe1530a616542e127007995e5e444a17c442d949501287119b571163214b3e714c701e86590c6732cda5cf059eff16f5ed179776ae7be4d499ebfb234117f1f7573c487a67f3b7cba76ed35b8eda8cb16329220cf3e8ad2bfc1f4eeb1bbcae7d52ca684c52824154321a5711a6e98a4614270215145eb0a63b83ffd038d856f0c33010000"
+            "1f8b08000000000004031d8dcd6e83301084ef7d8c3d07c4da7128b925cddf21ed2107d2eb024b716261840d8a12f1ee31bd8c469a996f5e7073b6edbb12d620e20416d0b31b8c87f50b4adb7a7efc5bea74cebdd3b60d3d8c318d71ee3a63432c64a692e54aa4d302463203cfe3c2d8f2de906bc2406ece7a8bc3d7ee8abfddbe50fec8793bdaebf9c64f7ed476ef8f9bcbf8ed7e568753a01a723e27a3abedcc38b1fe6be61791a8cf4c204ee14657015b639d4a411c2d955441388d88ab24421205a98264860aa68f371234dcbee3000000"
         ],
         "rawHeaders": [
             "content-type",
             "application/json; charset=utf-8",
             "date",
-            "Thu, 07 Dec 2023 00:17:13 GMT",
+            "Tue, 02 Jan 2024 18:50:59 GMT",
             "x-rpc-node",
-            "pit37",
+            "nyc115",
             "x-ratelimit-tier",
             "free",
             "x-ratelimit-method-limit",
-            "40",
+            "25",
             "x-ratelimit-method-remaining",
-            "22",
+            "24",
             "x-ratelimit-rps-limit",
             "100",
             "x-ratelimit-rps-remaining",
@@ -38,7 +36,7 @@
             "x-ratelimit-endpoint-limit",
             "unlimited",
             "x-ratelimit-endpoint-remaining",
-            "-420",
+            "-197",
             "x-ratelimit-conn-limit",
             "40",
             "x-ratelimit-conn-remaining",
@@ -75,31 +73,33 @@
         "method": "POST",
         "path": "/",
         "body": {
-            "method": "getLatestBlockhash",
+            "method": "getAccountInfo",
             "jsonrpc": "2.0",
             "params": [
+                "2yVjuQwpsvdsrywzsJJVs9Ueh4zayyo5DYJbBNc3DDpn",
                 {
+                    "encoding": "base64",
                     "commitment": "confirmed"
                 }
             ]
         },
         "status": 200,
         "response": [
-            "1f8b08000000000004031d8dcb0e82301444f77ec65d0bb1851670271ae3525d685cd6f622954a2bc54734fcbbc5dd2433e7cc17aedeb69d9330071acf600a1dfa87e961fe0569db1edfff289c3e60e7b56dc38ec484c7240f5b6f6ca86992a69411960c53780af3c0113e1b2b9b5af83a006be15fee79dbbb554b97b86b9ac29efcc2bd93e3a6bad67a7babeca7e857a55b94f76035c2f70761b42a47c706f5a51e5f082b32cab26c08375a056d2e2b548c6394114ea334615554a8591e7126149394538508c3e4077ec21a92e3000000"
+            "1f8b08000000000004031d8fcd6e83301084ef7d8c3d03b28d313137b7cacf259552952a6dd5830127401d8c6c93a48a78f73ab9acbed5cececedea07766b0630d059004410456b9497b286e509bc1abeb03e5d87d28eb3a33041d4e304b080e5aa74d18939467883296cd119ca59ed47db9915e42f10de2228478d9e3cdee338010c7d5f259ac770fbe97e05249a718859f08d455d59397950e1607a99d8a40cbd368ac77506094e59ca008cc655036e4b8187b225f664d7ecb869e57fbf6dcb73c2dcb4dc699fc7b3b1c77647bec5fb7efbe7dfc35f8e568ea168a94e1907d94753843e81c62774df0a3692eb95ca098a1058f6986163147398e798d51e8283a5429cc4fff5705368233010000"
         ],
         "rawHeaders": [
             "content-type",
             "application/json; charset=utf-8",
             "date",
-            "Thu, 07 Dec 2023 00:17:13 GMT",
+            "Tue, 02 Jan 2024 18:50:58 GMT",
             "x-rpc-node",
-            "pit37",
+            "nyc115",
             "x-ratelimit-tier",
             "free",
             "x-ratelimit-method-limit",
-            "25",
+            "40",
             "x-ratelimit-method-remaining",
-            "24",
+            "22",
             "x-ratelimit-rps-limit",
             "100",
             "x-ratelimit-rps-remaining",
@@ -107,7 +107,7 @@
             "x-ratelimit-endpoint-limit",
             "unlimited",
             "x-ratelimit-endpoint-remaining",
-            "-417",
+            "-197",
             "x-ratelimit-conn-limit",
             "40",
             "x-ratelimit-conn-remaining",
