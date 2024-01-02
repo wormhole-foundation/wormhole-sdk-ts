@@ -33,7 +33,7 @@ import "@wormhole-foundation/connect-sdk-algorand-tokenbridge";
   const rcvChain = wh.getChain("Solana");
 
   // Shortcut to allow transferring native gas token
-  //const token: TokenId | "native" = "native";
+  const token: TokenId | "native" = "native";
 
   // A TokenId is just a `{chain, address}` pair and an alias for ChainAddress
   // The `address` field must be a parsed address.
@@ -42,9 +42,8 @@ import "@wormhole-foundation/connect-sdk-algorand-tokenbridge";
   // e.g.
   // wAvax on Solana
   // const token = Wormhole.chainAddress("Solana", "3Ftc5hTz9sG4huk79onufGiebJNDMZNL8HYgdMJ9E7JR");
-
   // wSol on Avax
-  const token = Wormhole.chainAddress("Avalanche", "0xb10563644a6AB8948ee6d7f5b0a1fb15AaEa1E03");
+  // const token = Wormhole.chainAddress("Avalanche", "0xb10563644a6AB8948ee6d7f5b0a1fb15AaEa1E03");
 
   // Normalized given token decimals later but can just pass bigints as base units
   // Note: The Token bridge will dedust past 8 decimals

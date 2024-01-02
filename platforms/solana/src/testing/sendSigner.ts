@@ -1,4 +1,4 @@
-import { Connection, Keypair, Transaction } from '@solana/web3.js';
+import { Connection, Keypair } from '@solana/web3.js';
 import {
   SignAndSendSigner,
   UnsignedTransaction,
@@ -29,10 +29,10 @@ export class SolanaSendSigner<
   }
 
   async signAndSend(tx: UnsignedTransaction[]): Promise<any[]> {
-    const txids: string[] = [];
-
     const { blockhash, lastValidBlockHeight } =
-      await SolanaPlatform.latestBlock(this._rpc);
+      await SolanaPlatform.latestBlock(this._rpc, 'finalized');
+
+    const txPromises: Promise<string>[] = [];
 
     for (const txn of tx) {
       const { description, transaction } = txn as SolanaUnsignedTransaction<
@@ -42,10 +42,9 @@ export class SolanaSendSigner<
       console.log(`Signing: ${description} for ${this.address()}`);
 
       if (this._debug) {
-        const st = transaction as Transaction;
-        console.log(st.signatures);
-        console.log(st.feePayer);
-        st.instructions.forEach((ix) => {
+        console.log(transaction.signatures);
+        console.log(transaction.feePayer);
+        transaction.instructions.forEach((ix) => {
           console.log('Program', ix.programId.toBase58());
           console.log('Data: ', ix.data.toString('hex'));
           console.log(
@@ -57,21 +56,21 @@ export class SolanaSendSigner<
 
       transaction.partialSign(this._keypair);
 
-      const txid = await this._rpc.sendRawTransaction(transaction.serialize(), {
-        // skipPreflight: true,
-        // preflightCommitment: this._rpc.commitment,
-        maxRetries: 5,
-      });
+      txPromises.push(
+        this._rpc.sendRawTransaction(transaction.serialize(), {
+          preflightCommitment: this._rpc.commitment,
+        }),
+      );
+    }
+    const txids = await Promise.all(txPromises);
 
-      console.log(`Sent: ${description} for ${this.address()}`);
-
+    // Wait for finalization
+    for (const signature of txids) {
       await this._rpc.confirmTransaction({
-        signature: txid,
+        signature,
         blockhash,
         lastValidBlockHeight,
       });
-
-      txids.push(txid);
     }
 
     return txids;

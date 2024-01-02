@@ -1,4 +1,5 @@
 import {
+  Platform,
   Chain,
   ChainAddress,
   ChainId,
@@ -49,7 +50,6 @@ import {
   TransactionInstruction,
 } from '@solana/web3.js';
 
-import { Platform } from '@wormhole-foundation/sdk-base/src';
 import { TokenBridge as TokenBridgeContract } from './tokenBridgeType';
 import {
   createApproveAuthoritySignerInstruction,
@@ -210,6 +210,8 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
     payer?: AnySolanaAddress,
   ): AsyncGenerator<SolanaUnsignedTransaction<N, C>> {
     if (!payer) throw new Error('Payer required to create attestation');
+
+    const { blockhash } = await SolanaPlatform.latestBlock(this.connection);
     const senderAddress = new SolanaAddress(payer).unwrap();
     // TODO: createNonce().readUInt32LE(0);
     const nonce = 0;
@@ -231,7 +233,6 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
     );
 
     const transaction = new Transaction().add(transferIx, attestIx);
-    const { blockhash } = await SolanaPlatform.latestBlock(this.connection);
     transaction.recentBlockhash = blockhash;
     transaction.feePayer = senderAddress;
     transaction.partialSign(messageKey);
@@ -244,9 +245,9 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
     payer?: AnySolanaAddress,
   ): AsyncGenerator<SolanaUnsignedTransaction<N, C>> {
     if (!payer) throw new Error('Payer required to create attestation');
-    const senderAddress = new SolanaAddress(payer).unwrap();
 
     const { blockhash } = await SolanaPlatform.latestBlock(this.connection);
+    const senderAddress = new SolanaAddress(payer).unwrap();
 
     // Yield transactions to verify sigs and post the VAA
     yield* this.coreBridge.postVaa(senderAddress, vaa, blockhash);
@@ -275,7 +276,9 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
   ): Promise<SolanaUnsignedTransaction<N, C>> {
     //  https://github.com/wormhole-foundation/wormhole-connect/blob/development/sdk/src/contexts/solana/context.ts#L245
 
+    const { blockhash } = await SolanaPlatform.latestBlock(this.connection);
     const senderAddress = new SolanaAddress(sender).unwrap();
+
     // TODO: the payer can actually be different from the sender. We need to allow the user to pass in an optional payer
     const payerPublicKey = senderAddress;
 
@@ -362,7 +365,6 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
       payerPublicKey, //authority
     );
 
-    const { blockhash } = await SolanaPlatform.latestBlock(this.connection);
     const transaction = new Transaction();
     transaction.recentBlockhash = blockhash;
     transaction.feePayer = payerPublicKey;
@@ -393,8 +395,8 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
       return;
     }
 
+    const { blockhash } = await SolanaPlatform.latestBlock(this.connection);
     const tokenAddress = new SolanaAddress(token).unwrap();
-
     const senderAddress = new SolanaAddress(sender).unwrap();
     const senderTokenAddress = await getAssociatedTokenAddress(
       tokenAddress,
@@ -493,7 +495,6 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
       tokenBridgeTransferIx,
     );
 
-    const { blockhash } = await SolanaPlatform.latestBlock(this.connection);
     transaction.recentBlockhash = blockhash;
     transaction.feePayer = senderAddress;
     transaction.partialSign(message);

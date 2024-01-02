@@ -17,11 +17,11 @@ import { SolanaChain } from './chain';
 
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import {
-  BlockheightBasedTransactionConfirmationStrategy,
   Commitment,
   Connection,
   ParsedAccountData,
   PublicKey,
+  SendOptions,
 } from '@solana/web3.js';
 import { SolanaAddress, SolanaZeroAddress } from './address';
 import {
@@ -164,23 +164,30 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
     chain: Chain,
     rpc: Connection,
     stxns: SignedTx[],
+    opts?: SendOptions,
   ): Promise<TxHash[]> {
     const { blockhash, lastValidBlockHeight } = await this.latestBlock(rpc);
 
+    // Set the commitment level to match the rpc commitment level
+    // otherwise, it defaults to finalized
+    if (!opts) opts = { preflightCommitment: rpc.commitment };
+
     const txhashes = await Promise.all(
       stxns.map((stxn) => {
-        return rpc.sendRawTransaction(stxn);
+        return rpc.sendRawTransaction(stxn, opts);
       }),
     );
 
     await Promise.all(
-      txhashes.map((txid) => {
-        const bhs: BlockheightBasedTransactionConfirmationStrategy = {
-          signature: txid,
-          blockhash,
-          lastValidBlockHeight,
-        };
-        return rpc.confirmTransaction(bhs, rpc.commitment);
+      txhashes.map((signature) => {
+        return rpc.confirmTransaction(
+          {
+            signature,
+            blockhash,
+            lastValidBlockHeight,
+          },
+          rpc.commitment,
+        );
       }),
     );
 
@@ -191,7 +198,7 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
     rpc: Connection,
     commitment?: Commitment,
   ): Promise<{ blockhash: string; lastValidBlockHeight: number }> {
-    return rpc.getLatestBlockhash(commitment ?? rpc.commitment);
+    return rpc.getLatestBlockhash(commitment ?? 'finalized');
   }
 
   static async getLatestBlock(rpc: Connection): Promise<number> {
