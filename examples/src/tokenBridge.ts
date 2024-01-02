@@ -30,24 +30,27 @@ import "@wormhole-foundation/connect-sdk-algorand-tokenbridge";
 
   // Grab chain Contexts -- these hold a reference to a cached rpc client
   const sendChain = wh.getChain("Avalanche");
-  const rcvChain = wh.getChain("Algorand");
+  const rcvChain = wh.getChain("Solana");
 
   // Shortcut to allow transferring native gas token
-  // const token: TokenId | "native" = "native";
+  //const token: TokenId | "native" = "native";
 
   // A TokenId is just a `{chain, address}` pair and an alias for ChainAddress
   // The `address` field must be a parsed address.
   // You can get a TokenId (or ChainAddress) prepared for you
   // by calling the static `chainAddress` method on the Wormhole class.
   // e.g.
-  // const token = Wormhole.chainAddress("Solana", "9rU2jFrzA5zDDmt9yR7vEABvXCUNJ1YgGigdTb9oCaTv");
-  const token = Wormhole.chainAddress("Avalanche", "0x3bE4bce46442F5E85c47257145578E724E40cF97");
+  // wAvax on Solana
+  // const token = Wormhole.chainAddress("Solana", "3Ftc5hTz9sG4huk79onufGiebJNDMZNL8HYgdMJ9E7JR");
+
+  // wSol on Avax
+  const token = Wormhole.chainAddress("Avalanche", "0xb10563644a6AB8948ee6d7f5b0a1fb15AaEa1E03");
 
   // Normalized given token decimals later but can just pass bigints as base units
   // Note: The Token bridge will dedust past 8 decimals
   // this means any amount specified past that point will be returned
   // to the caller
-  const amount = "0.0001";
+  const amount = "0.001";
 
   // With automatic set to true, perform an automatic transfer. This will invoke a relayer
   // contract intermediary that knows to pick up the transfers

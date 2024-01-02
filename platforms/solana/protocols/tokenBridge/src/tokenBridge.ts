@@ -606,7 +606,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
   async *redeem(
     sender: AnySolanaAddress,
     vaa: TokenBridge.TransferVAA,
-    unwrapNative: boolean = false,
+    unwrapNative: boolean = true,
   ) {
     const { blockhash } = await SolanaPlatform.latestBlockhash(this.connection);
 
@@ -622,17 +622,19 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
     // Post the VAA if necessary
     yield* this.coreBridge.postVaa(sender, vaa, blockhash);
 
-    // Check if this is native wrapped sol
-    const wrappedNative = new SolanaAddress(await this.getWrappedNative());
-    const isNativeToken = encoding.bytes.equals(
-      nativeAddress.toUint8Array(),
-      wrappedNative.toUint8Array(),
-    );
-
     // redeem vaa and unwrap to native sol from wrapped sol
-    if (unwrapNative && isNativeToken) {
-      yield* this.redeemAndUnwrap(sender, vaa, blockhash);
-      return;
+    if (unwrapNative) {
+      // Check if this is native wrapped sol
+      const wrappedNative = new SolanaAddress(await this.getWrappedNative());
+      if (
+        encoding.bytes.equals(
+          nativeAddress.toUint8Array(),
+          wrappedNative.toUint8Array(),
+        )
+      ) {
+        yield* this.redeemAndUnwrap(sender, vaa, blockhash);
+        return;
+      }
     }
 
     const senderAddress = new SolanaAddress(sender).unwrap();
