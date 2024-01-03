@@ -218,7 +218,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
 
     const msgFee = await this.coreBridge.getMessageFee();
     const transferIx = coreUtils.createBridgeFeeTransferInstruction(
-      this.coreBridge.address,
+      this.coreBridge.coreBridge.programId,
       senderAddress,
       msgFee,
     );

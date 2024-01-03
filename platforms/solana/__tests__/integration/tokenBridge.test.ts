@@ -204,7 +204,7 @@ describe('TokenBridge Tests', () => {
       expect(attestTx.chain).toEqual(chain);
 
       const { transaction } = attestTx;
-      expect(transaction.instructions).toHaveLength(2);
+      expect(transaction.transaction.instructions).toHaveLength(2);
     });
 
     test('Submit Attestation', async () => {
@@ -229,7 +229,7 @@ describe('TokenBridge Tests', () => {
       });
       const submitAttestation = tb.submitAttestation(vaa, sender);
 
-      const allTxns = [];
+      const allTxns: SolanaUnsignedTransaction<TNet>[] = [];
       for await (const atx of submitAttestation) {
         allTxns.push(atx);
       }
@@ -237,9 +237,9 @@ describe('TokenBridge Tests', () => {
 
       const [verifySig, postVaa, create] = allTxns;
       //
-      expect(verifySig.transaction.instructions).toHaveLength(2);
-      expect(postVaa.transaction.instructions).toHaveLength(1);
-      expect(create.transaction.instructions).toHaveLength(1);
+      expect(verifySig.transaction.transaction.instructions).toHaveLength(2);
+      expect(postVaa.transaction.transaction.instructions).toHaveLength(1);
+      expect(create.transaction.transaction.instructions).toHaveLength(1);
     });
   });
 
@@ -260,7 +260,7 @@ describe('TokenBridge Tests', () => {
           const xfer = tb.transfer(sender, recipient, token, amount, payload);
           expect(xfer).toBeTruthy();
 
-          const allTxns = [];
+          const allTxns: SolanaUnsignedTransaction<TNet>[] = [];
           for await (const tx of xfer) {
             allTxns.push(tx);
           }
@@ -271,7 +271,7 @@ describe('TokenBridge Tests', () => {
           expect(xferTx!.chain).toEqual(chain);
 
           const { transaction } = xferTx;
-          expect(transaction.instructions).toHaveLength(6);
+          expect(transaction.transaction.instructions).toHaveLength(6);
           // ...
         });
 
@@ -285,7 +285,7 @@ describe('TokenBridge Tests', () => {
           );
           expect(xfer).toBeTruthy();
 
-          const allTxns = [];
+          const allTxns: SolanaUnsignedTransaction<TNet>[] = [];
           for await (const tx of xfer) {
             allTxns.push(tx);
           }
@@ -296,7 +296,7 @@ describe('TokenBridge Tests', () => {
           expect(xferTx.chain).toEqual(chain);
 
           const { transaction } = xferTx;
-          expect(transaction.instructions).toHaveLength(2);
+          expect(transaction.transaction.instructions).toHaveLength(2);
         });
       });
     });

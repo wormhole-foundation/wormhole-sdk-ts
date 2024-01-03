@@ -31,8 +31,6 @@ import {
 } from '@wormhole-foundation/connect-sdk';
 import { Wormhole as WormholeCoreContract } from './types';
 import {
-  BridgeData,
-  createBridgeFeeTransferInstruction,
   createPostMessageInstruction,
   createPostVaaInstruction,
   createReadOnlyWormholeProgramInterface,
