@@ -41,11 +41,12 @@ export enum TransferState {
 }
 
 // Base type for common properties
-interface BaseTransferReceipt<PN extends ProtocolName, SC extends Chain, DC extends Chain> {
+export interface BaseTransferReceipt<PN extends ProtocolName, SC extends Chain, DC extends Chain> {
   protocol: PN;
   from: SC;
   to: DC;
   request: TransferRequest<PN>;
+  state: TransferState;
 }
 
 export interface SourceInitiatedTransferReceipt<
@@ -79,21 +80,37 @@ export interface CompletedTransferReceipt<
   SC extends Chain,
   DC extends Chain,
 > extends BaseTransferReceipt<PN, SC, DC> {
-  state: TransferState.DestinationInitiated;
+  state: TransferState.DestinationInitiated | TransferState.DestinationFinalized;
   originTxs: TransactionId<SC>[];
   attestation: Required<AttestationReceipt<PN>>;
   destinationTxs: TransactionId<DC>[];
 }
 
-export function hasReachedState<PN extends ProtocolName, TS extends TransferState>(
+export function isAttested<PN extends ProtocolName>(
   receipt: TransferReceipt<PN, Chain, Chain>,
-  state: TS,
-): boolean {
-  return receipt.state === state;
+): receipt is AttestedTransferReceipt<PN, Chain, Chain> {
+  return receipt.state === TransferState.Attested;
 }
 
-export type TransferReceipt<PN, SC, DC> =
-  | SourceFinalizedTransferReceipt<PN, SC, DC>
+export function isSourceInitiated<PN extends ProtocolName>(
+  receipt: TransferReceipt<PN, Chain, Chain>,
+): receipt is SourceInitiatedTransferReceipt<PN, Chain, Chain> {
+  return receipt.state === TransferState.SourceInitiated;
+}
+
+export function isSourceFinalized<PN extends ProtocolName>(
+  receipt: TransferReceipt<PN, Chain, Chain>,
+): receipt is SourceFinalizedTransferReceipt<PN, Chain, Chain> {
+  return receipt.state === TransferState.SourceFinalized;
+}
+
+export type TransferReceipt<
+  PN extends ProtocolName,
+  SC extends Chain = Chain,
+  DC extends Chain = Chain,
+> =
+  | BaseTransferReceipt<PN, SC, DC>
+  | SourceInitiatedTransferReceipt<PN, SC, DC>
   | SourceFinalizedTransferReceipt<PN, SC, DC>
   | AttestedTransferReceipt<PN, SC, DC>
   | CompletedTransferReceipt<PN, SC, DC>;

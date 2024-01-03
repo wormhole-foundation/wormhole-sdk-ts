@@ -37,7 +37,9 @@ import {
   TransferReceipt,
   TransferState,
   WormholeTransfer,
-  hasReachedState,
+  isAttested,
+  isSourceFinalized,
+  isSourceInitiated,
 } from "../wormholeTransfer";
 
 export type TokenTransferProtocol = "TokenBridge" | "AutomaticTokenBridge";
@@ -584,7 +586,7 @@ export class TokenTransfer<N extends Network = Network>
 
     // Check the source chain for initiation transaction
     // and capture the message id
-    if (hasReachedState(receipt, TransferState.SourceInitiated)) {
+    if (isSourceInitiated(receipt)) {
       if (receipt.originTxs.length === 0) throw "Origin transactions required to fetch message id";
       const { txid } = receipt.originTxs[receipt.originTxs.length - 1]!;
       const msg = await TokenTransfer.getTransferMessage(
@@ -599,7 +601,7 @@ export class TokenTransfer<N extends Network = Network>
     // If the source is finalized, we need to fetch the signed attestation
     // so that we may deliver it to the destination chain
     // or at least track the transfer through its progress
-    if (hasReachedState(receipt, TransferState.SourceFinalized)) {
+    if (isSourceFinalized(receipt)) {
       if (!receipt.attestation.id) throw "Attestation id required to fetch attestation";
       const { id } = receipt.attestation;
       const attestation = await TokenTransfer.getTransferVaa(wh, id, leftover(start, timeout));
@@ -610,10 +612,7 @@ export class TokenTransfer<N extends Network = Network>
     // First try to grab the tx status from the API
     // Note: this requires a subsequent async step on the backend
     // to have the dest txid populated, so it may be delayed by some time
-    if (
-      hasReachedState(receipt, TransferState.Attested) ||
-      hasReachedState(receipt, TransferState.SourceFinalized)
-    ) {
+    if (isAttested(receipt) || isSourceFinalized(receipt)) {
       if (!receipt.attestation.id) throw "Attestation id required to fetch redeem tx";
       const { id } = receipt.attestation;
       const txStatus = await wh.getTransactionStatus(id, leftover(start, timeout));
@@ -630,7 +629,7 @@ export class TokenTransfer<N extends Network = Network>
 
     // Fall back to asking the destination chain if this VAA has been redeemed
     // Note: We do not get any destinationTxs with this method
-    if (hasReachedState(receipt, TransferState.Attested)) {
+    if (isAttested(receipt)) {
       if (!receipt.attestation.attestation) throw "Signed Attestation required to check for redeem";
       receipt = {
         ...receipt,
