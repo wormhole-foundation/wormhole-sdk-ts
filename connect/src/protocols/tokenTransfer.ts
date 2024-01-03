@@ -33,6 +33,7 @@ import { signSendWait } from "../common";
 import { DEFAULT_TASK_TIMEOUT } from "../config";
 import { Wormhole } from "../wormhole";
 import {
+  AttestedTransferReceipt,
   CompletedTransferReceipt,
   TransferQuote,
   TransferReceipt,
@@ -552,7 +553,7 @@ export class TokenTransfer<N extends Network = Network>
         ...receipt,
         state: TransferState.Attested,
         attestation: attestation,
-      };
+      } as AttestedTransferReceipt<TokenTransferProtocol>;
     }
 
     const destinationTxs = xfer.txids.filter((txid) => txid.chain === transfer.to.chain);
@@ -595,8 +596,7 @@ export class TokenTransfer<N extends Network = Network>
         txid,
         leftover(start, timeout),
       );
-      receipt = { ...receipt, state: TransferState.SourceFinalized, attestation: { id: msg } };
-      yield receipt;
+      yield { ...receipt, state: TransferState.SourceFinalized, attestation: { id: msg } };
     }
 
     // If the source is finalized, we need to fetch the signed attestation
@@ -606,8 +606,7 @@ export class TokenTransfer<N extends Network = Network>
       if (!receipt.attestation.id) throw "Attestation id required to fetch attestation";
       const { id } = receipt.attestation;
       const attestation = await TokenTransfer.getTransferVaa(wh, id, leftover(start, timeout));
-      receipt = { ...receipt, attestation: { id, attestation }, state: TransferState.Attested };
-      yield receipt;
+      yield { ...receipt, attestation: { id, attestation }, state: TransferState.Attested };
     }
 
     // First try to grab the tx status from the API

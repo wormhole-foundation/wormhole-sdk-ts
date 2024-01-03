@@ -543,12 +543,11 @@ export class CircleTransfer<N extends Network = Network>
 
       const initTx = receipt.originTxs[receipt.originTxs.length - 1]!;
       const xfermsg = await CircleTransfer.getTransferMessage(_fromChain, initTx.txid);
-      receipt = {
+      yield {
         ...receipt,
         attestation: { id: xfermsg },
         state: TransferState.SourceFinalized,
       } as SourceFinalizedTransferReceipt<CircleTransferProtocol, SC, DC>;
-      yield receipt;
     }
 
     if (isSourceFinalized(receipt)) {
@@ -565,12 +564,11 @@ export class CircleTransfer<N extends Network = Network>
             receipt.attestation.id as WormholeMessageId,
             leftover(start, timeout),
           );
-          receipt = {
+          yield {
             ...receipt,
             attestation: { id: receipt.attestation.id, attestation: vaa },
             state: TransferState.Attested,
           } as AttestedTransferReceipt<CircleTransferProtocol, SC, DC>;
-          yield receipt;
         }
       }
     }
@@ -588,18 +586,17 @@ export class CircleTransfer<N extends Network = Network>
 
       if (txStatus && txStatus.globalTx?.destinationTx?.txHash) {
         const { chainId, txHash } = txStatus.globalTx.destinationTx;
-        receipt = {
+        yield {
           ...receipt,
           destinationTxs: [{ chain: toChain(chainId) as DC, txid: txHash }],
           state: TransferState.DestinationFinalized,
         } as CompletedTransferReceipt<CircleTransferProtocol, SC, DC>;
-        yield receipt;
       }
 
       // Fall back to asking the destination chain if this VAA has been redeemed
       // assuming we have the full attestation
       if (isAttested(receipt)) {
-        receipt = {
+        yield {
           ...receipt,
           state: (await CircleTransfer.isTransferComplete(
             _toChain,
@@ -608,7 +605,6 @@ export class CircleTransfer<N extends Network = Network>
             ? TransferState.DestinationFinalized
             : TransferState.Attested,
         } as AttestedTransferReceipt<CircleTransferProtocol, SC, DC>;
-        yield receipt;
       }
     }
   }
