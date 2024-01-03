@@ -1,24 +1,16 @@
 import {
-  Commitment,
-  Connection,
   PublicKey,
   PublicKeyInitData,
   SystemProgram,
   TransactionInstruction,
 } from '@solana/web3.js';
-import { deriveFeeCollectorKey, getWormholeBridgeData } from '../accounts';
+import { deriveFeeCollectorKey } from '../accounts';
 
-export async function createBridgeFeeTransferInstruction(
-  connection: Connection,
+export function createBridgeFeeTransferInstruction(
   wormholeProgramId: PublicKeyInitData,
   payer: PublicKeyInitData,
-  commitment?: Commitment,
-): Promise<TransactionInstruction> {
-  const fee = await getWormholeBridgeData(
-    connection,
-    wormholeProgramId,
-    commitment,
-  ).then((data) => data.config.fee);
+  fee: bigint,
+): TransactionInstruction {
   return SystemProgram.transfer({
     fromPubkey: new PublicKey(payer),
     toPubkey: deriveFeeCollectorKey(wormholeProgramId),

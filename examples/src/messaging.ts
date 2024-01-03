@@ -1,14 +1,14 @@
 import { Wormhole, encoding, signSendWait } from "@wormhole-foundation/connect-sdk";
-import { AlgorandPlatform } from "@wormhole-foundation/connect-sdk-algorand";
+import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 import { getStuff } from "./helpers";
 
 // register the protocol
-import "@wormhole-foundation/connect-sdk-algorand-core";
+import "@wormhole-foundation/connect-sdk-solana-core";
 
 (async function () {
-  const wh = new Wormhole("Testnet", [AlgorandPlatform]);
+  const wh = new Wormhole("Testnet", [SolanaPlatform]);
 
-  const chain = wh.getChain("Algorand");
+  const chain = wh.getChain("Solana");
   const { signer, address } = await getStuff(chain);
 
   // Get a reference to the core messaging bridge

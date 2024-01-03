@@ -216,10 +216,11 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
     // TODO: createNonce().readUInt32LE(0);
     const nonce = 0;
 
+    const msgFee = await this.coreBridge.getMessageFee();
     const transferIx = await coreUtils.createBridgeFeeTransferInstruction(
-      this.connection,
       this.coreBridge.address,
       senderAddress,
+      msgFee,
     );
     const messageKey = Keypair.generate();
     const attestIx = createAttestTokenInstruction(

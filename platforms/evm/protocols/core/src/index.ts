@@ -1,6 +1,6 @@
 import { registerProtocol } from '@wormhole-foundation/connect-sdk';
 import { _platform } from '@wormhole-foundation/connect-sdk-evm';
-import { EvmWormholeCore } from './wormholeCore';
+import { EvmWormholeCore } from './core';
 
 declare global {
   namespace WormholeNamespace {
@@ -13,4 +13,4 @@ declare global {
 registerProtocol(_platform, 'WormholeCore', EvmWormholeCore);
 
 export * as ethers_contracts from './ethers-contracts';
-export * from './wormholeCore';
+export * from './core';

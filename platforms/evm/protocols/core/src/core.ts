@@ -62,6 +62,10 @@ export class EvmWormholeCore<
     );
   }
 
+  async getMessageFee(): Promise<bigint> {
+    return await this.core.messageFee.staticCall();
+  }
+
   static async fromRpc<N extends Network>(
     provider: Provider,
     config: ChainsConfig<N, EvmPlatformType>,

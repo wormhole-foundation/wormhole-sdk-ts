@@ -1,6 +1,6 @@
 import { registerProtocol } from "@wormhole-foundation/connect-sdk";
 import { _platform } from "@wormhole-foundation/connect-sdk-cosmwasm";
-import { CosmwasmWormholeCore } from "./wormholeCore";
+import { CosmwasmWormholeCore } from "./core";
 
 declare global {
   namespace WormholeNamespace {
@@ -12,4 +12,4 @@ declare global {
 
 registerProtocol(_platform, "WormholeCore", CosmwasmWormholeCore);
 
-export * from "./wormholeCore";
+export * from "./core";
