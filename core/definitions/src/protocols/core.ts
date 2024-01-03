@@ -10,6 +10,7 @@ export interface WormholeCore<
   P extends Platform,
   C extends PlatformToChains<P>,
 > {
+  getMessageFee(): Promise<bigint>;
   publishMessage(
     sender: AccountAddress<C>,
     message: string | Uint8Array,

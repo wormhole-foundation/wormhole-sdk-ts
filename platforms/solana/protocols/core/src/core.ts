@@ -30,11 +30,14 @@ import {
 } from '@wormhole-foundation/connect-sdk';
 import { Wormhole as WormholeCoreContract } from './types';
 import {
+  BridgeData,
+  createBridgeFeeTransferInstruction,
   createPostMessageInstruction,
   createPostVaaInstruction,
   createReadOnlyWormholeProgramInterface,
   createVerifySignaturesInstructions,
   derivePostedVaaKey,
+  getWormholeBridgeData,
 } from './utils';
 
 const SOLANA_SEQ_LOG = 'Program log: Sequence: ';
@@ -45,6 +48,7 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
   readonly chainId: ChainId;
   readonly coreBridge: Program<WormholeCoreContract>;
   readonly address: string;
+  protected bridgeData?: BridgeData;
 
   constructor(
     readonly network: N,
@@ -86,6 +90,17 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
     );
   }
 
+  async getMessageFee(): Promise<bigint> {
+    // cache lookups since this should not change frequently
+    if (!this.bridgeData)
+      this.bridgeData = await getWormholeBridgeData(
+        this.connection,
+        this.coreBridge.programId,
+      );
+
+    return this.bridgeData.config.fee;
+  }
+
   async *publishMessage(
     sender: AnySolanaAddress,
     message: Uint8Array,
@@ -104,11 +119,18 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
       consistencyLevel,
     );
 
+    const fee = await this.getMessageFee();
+    const feeTransferIx = createBridgeFeeTransferInstruction(
+      this.coreBridge.programId,
+      payer,
+      fee,
+    );
+
     const { blockhash } = await SolanaPlatform.latestBlock(this.connection);
     const transaction = new Transaction();
     transaction.recentBlockhash = blockhash;
     transaction.feePayer = payer;
-    transaction.add(postMsgIx);
+    transaction.add(feeTransferIx, postMsgIx);
     transaction.partialSign(messageAccount);
 
     yield this.createUnsignedTx(transaction, 'Core.PublishMessage');

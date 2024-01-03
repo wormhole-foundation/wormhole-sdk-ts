@@ -37,6 +37,10 @@ export class CosmwasmWormholeCore<N extends Network, C extends CosmwasmChains>
     this.coreAddress = coreAddress;
   }
 
+  getMessageFee(): Promise<bigint> {
+    throw new Error("Method not implemented.");
+  }
+
   static async fromRpc<N extends Network>(
     rpc: CosmWasmClient,
     config: ChainsConfig<N, CosmwasmPlatformType>,
