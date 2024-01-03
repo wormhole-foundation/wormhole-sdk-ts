@@ -41,7 +41,7 @@ export enum TransferState {
 }
 
 // Base type for common properties
-export interface BaseTransferReceipt<PN extends ProtocolName, SC extends Chain, DC extends Chain> {
+interface BaseTransferReceipt<PN extends ProtocolName, SC extends Chain, DC extends Chain> {
   protocol: PN;
   from: SC;
   to: DC;
@@ -49,18 +49,26 @@ export interface BaseTransferReceipt<PN extends ProtocolName, SC extends Chain, 
   state: TransferState;
 }
 
+export interface CreatedTransferReceipt<
+  PN extends ProtocolName,
+  SC extends Chain = Chain,
+  DC extends Chain = Chain,
+> extends BaseTransferReceipt<PN, SC, DC> {
+  state: TransferState.Created;
+}
+
 export interface SourceInitiatedTransferReceipt<
   PN extends ProtocolName,
-  SC extends Chain,
-  DC extends Chain,
+  SC extends Chain = Chain,
+  DC extends Chain = Chain,
 > extends BaseTransferReceipt<PN, SC, DC> {
   state: TransferState.SourceInitiated;
   originTxs: TransactionId<SC>[];
 }
 export interface SourceFinalizedTransferReceipt<
   PN extends ProtocolName,
-  SC extends Chain,
-  DC extends Chain,
+  SC extends Chain = Chain,
+  DC extends Chain = Chain,
 > extends BaseTransferReceipt<PN, SC, DC> {
   state: TransferState.SourceFinalized;
   originTxs: TransactionId<SC>[];
@@ -68,8 +76,8 @@ export interface SourceFinalizedTransferReceipt<
 }
 export interface AttestedTransferReceipt<
   PN extends ProtocolName,
-  SC extends Chain,
-  DC extends Chain,
+  SC extends Chain = Chain,
+  DC extends Chain = Chain,
 > extends BaseTransferReceipt<PN, SC, DC> {
   state: TransferState.Attested;
   originTxs: TransactionId<SC>[];
@@ -77,13 +85,13 @@ export interface AttestedTransferReceipt<
 }
 export interface CompletedTransferReceipt<
   PN extends ProtocolName,
-  SC extends Chain,
-  DC extends Chain,
+  SC extends Chain = Chain,
+  DC extends Chain = Chain,
 > extends BaseTransferReceipt<PN, SC, DC> {
   state: TransferState.DestinationInitiated | TransferState.DestinationFinalized;
   originTxs: TransactionId<SC>[];
   attestation: Required<AttestationReceipt<PN>>;
-  destinationTxs: TransactionId<DC>[];
+  destinationTxs?: TransactionId<DC>[];
 }
 
 export function isAttested<PN extends ProtocolName>(
@@ -109,7 +117,7 @@ export type TransferReceipt<
   SC extends Chain = Chain,
   DC extends Chain = Chain,
 > =
-  | BaseTransferReceipt<PN, SC, DC>
+  | CreatedTransferReceipt<PN, SC, DC>
   | SourceInitiatedTransferReceipt<PN, SC, DC>
   | SourceFinalizedTransferReceipt<PN, SC, DC>
   | AttestedTransferReceipt<PN, SC, DC>

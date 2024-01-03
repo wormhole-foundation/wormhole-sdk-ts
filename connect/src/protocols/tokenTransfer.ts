@@ -33,6 +33,7 @@ import { signSendWait } from "../common";
 import { DEFAULT_TASK_TIMEOUT } from "../config";
 import { Wormhole } from "../wormhole";
 import {
+  CompletedTransferReceipt,
   TransferQuote,
   TransferReceipt,
   TransferState,
@@ -560,7 +561,7 @@ export class TokenTransfer<N extends Network = Network>
         ...receipt,
         state: TransferState.DestinationInitiated,
         destinationTxs: destinationTxs,
-      };
+      } as CompletedTransferReceipt<TokenTransferProtocol>;
     }
 
     return receipt as TransferReceipt<TokenTransferProtocol>;
@@ -622,7 +623,7 @@ export class TokenTransfer<N extends Network = Network>
           ...receipt,
           destinationTxs: [{ chain: toChain(chainId) as DC, txid: txHash }],
           state: TransferState.DestinationFinalized,
-        };
+        } as CompletedTransferReceipt<TokenTransferProtocol, SC, DC>;
       }
       yield receipt;
     }
@@ -631,16 +632,20 @@ export class TokenTransfer<N extends Network = Network>
     // Note: We do not get any destinationTxs with this method
     if (isAttested(receipt)) {
       if (!receipt.attestation.attestation) throw "Signed Attestation required to check for redeem";
-      receipt = {
-        ...receipt,
-        state: (await TokenTransfer.isTransferComplete(
-          _toChain,
-          receipt.attestation.attestation as TokenTransferVAA,
-        ))
-          ? TransferState.DestinationFinalized
-          : TransferState.Attested,
-      };
-      yield receipt;
+
+      let isComplete = await TokenTransfer.isTransferComplete(
+        _toChain,
+        receipt.attestation.attestation as TokenTransferVAA,
+      );
+
+      if (isComplete) {
+        yield {
+          ...receipt,
+          state: TransferState.DestinationFinalized,
+        } as CompletedTransferReceipt<TokenTransferProtocol, SC, DC>;
+      } else {
+        yield receipt;
+      }
     }
 
     yield receipt;
