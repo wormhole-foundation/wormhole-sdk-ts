@@ -27,10 +27,7 @@ export class SolanaSigner<N extends Network, C extends SolanaChains = 'Solana'>
   }
 
   async sign(tx: UnsignedTransaction[]): Promise<any[]> {
-    const { blockhash } = await SolanaPlatform.latestBlock(
-      this._rpc,
-      'finalized',
-    );
+    const { blockhash } = await SolanaPlatform.latestBlock(this._rpc);
 
     const signed = [];
     for (const txn of tx) {

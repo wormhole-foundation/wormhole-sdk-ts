@@ -209,13 +209,11 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
     rpc: Connection,
     commitment?: Commitment,
   ): Promise<{ blockhash: string; lastValidBlockHeight: number }> {
-    // Use finalized to prevent blockhash not found errors
-    // Note: this may mean we have less time to submit transactions?
-    return rpc.getLatestBlockhash(commitment ?? 'finalized');
+    return rpc.getLatestBlockhash(commitment ?? rpc.commitment);
   }
 
   static async getLatestBlock(rpc: Connection): Promise<number> {
-    const { lastValidBlockHeight } = await this.latestBlock(rpc, 'confirmed');
+    const { lastValidBlockHeight } = await this.latestBlock(rpc);
     return lastValidBlockHeight;
   }
 

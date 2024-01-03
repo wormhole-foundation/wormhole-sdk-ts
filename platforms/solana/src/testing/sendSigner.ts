@@ -1,4 +1,5 @@
 import {
+  ComputeBudgetProgram,
   Connection,
   Keypair,
   SendOptions,
@@ -15,6 +16,9 @@ import { SolanaChains } from '../types';
 import { SolanaUnsignedTransaction } from '../unsignedTransaction';
 import { logTxDetails } from './debug';
 
+// Number of blocks to wait before considering a transaction expired
+const SOLANA_EXPIRED_BLOCKHEIGHT = 150;
+
 export class SolanaSendSigner<
   N extends Network,
   C extends SolanaChains = 'Solana',
@@ -26,6 +30,7 @@ export class SolanaSendSigner<
     private _keypair: Keypair,
     private _debug: boolean = false,
     private _sendOpts?: SendOptions,
+    private _priotifyFeeAmount?: bigint,
   ) {
     this._sendOpts = this._sendOpts ?? {
       preflightCommitment: this._rpc.commitment,
@@ -42,6 +47,7 @@ export class SolanaSendSigner<
 
   // Handles retrying a Transaction if the error is deemed to be
   // recoverable. Currently handles:
+  // - Transaction expired
   // - Blockhash not found
   // - Not enough bytes (storage account not seen yet)
   private retryable(e: any): boolean {
@@ -75,7 +81,6 @@ export class SolanaSendSigner<
   async signAndSend(tx: UnsignedTransaction[]): Promise<any[]> {
     let { blockhash, lastValidBlockHeight } = await SolanaPlatform.latestBlock(
       this._rpc,
-      'finalized',
     );
 
     const txids: string[] = [];
@@ -86,10 +91,18 @@ export class SolanaSendSigner<
       } = txn as SolanaUnsignedTransaction<N, C>;
       console.log(`Signing: ${description} for ${this.address()}`);
 
+      if (this._priotifyFeeAmount)
+        transaction.add(
+          ComputeBudgetProgram.setComputeUnitPrice({
+            microLamports: this._priotifyFeeAmount,
+          }),
+        );
+
       if (this._debug) logTxDetails(transaction);
 
       // Try to send the transaction up to 5 times
-      for (let i = 0; i < 5; i++) {
+      const maxRetries = 5;
+      for (let i = 0; i < maxRetries; i++) {
         try {
           transaction.recentBlockhash = blockhash;
           transaction.partialSign(this._keypair, ...(extraSigners ?? []));
@@ -101,11 +114,28 @@ export class SolanaSendSigner<
           txids.push(txid);
           break;
         } catch (e) {
+          // No point checking if retryable if we're on the last retry
+          if (i === maxRetries - 1) throw e;
+
+          // If it's not retryable, throw
           if (!this.retryable(e)) throw e;
 
-          // If it is retryable, we should grab a new block hash
-          ({ blockhash, lastValidBlockHeight } =
-            await SolanaPlatform.latestBlock(this._rpc, 'finalized'));
+          // If it is retryable, we need to grab a new block hash
+          const {
+            blockhash: newBlockhash,
+            lastValidBlockHeight: newBlockHeight,
+          } = await SolanaPlatform.latestBlock(this._rpc);
+
+          // But we should _not_ submit if the blockhash hasnt expired
+          if (
+            newBlockHeight - lastValidBlockHeight <
+            SOLANA_EXPIRED_BLOCKHEIGHT
+          ) {
+            throw e;
+          }
+
+          lastValidBlockHeight = newBlockHeight;
+          blockhash = newBlockhash;
         }
       }
     }
