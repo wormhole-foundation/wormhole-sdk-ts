@@ -31,6 +31,10 @@ import { signSendWait } from "../common";
 import { DEFAULT_TASK_TIMEOUT } from "../config";
 import { Wormhole } from "../wormhole";
 import {
+  AttestedTransferReceipt,
+  CompletedTransferReceipt,
+  SourceInitiatedTransferReceipt,
+  SourceFinalizedTransferReceipt,
   TransferQuote,
   TransferReceipt,
   TransferState,
@@ -38,7 +42,6 @@ import {
   isSourceInitiated,
   isSourceFinalized,
   isAttested,
-  AttestedTransferReceipt,
 } from "../wormholeTransfer";
 
 type CircleTransferProtocol = "CircleBridge" | "AutomaticCircleBridge";
@@ -486,7 +489,9 @@ export class CircleTransfer<N extends Network = Network>
 
     const originTxs = xfer.txids.filter((txid) => txid.chain === xfer.transfer.from.chain);
     if (originTxs.length > 0) {
-      receipt = { ...receipt, state: TransferState.SourceInitiated, originTxs };
+      receipt = { ...receipt, state: TransferState.SourceInitiated, originTxs } as Partial<
+        SourceInitiatedTransferReceipt<CircleTransferProtocol, Chain, Chain>
+      >;
     }
 
     const att = xfer.attestations?.filter((a) => isWormholeMessageId(a.id)) ?? [];
@@ -506,7 +511,7 @@ export class CircleTransfer<N extends Network = Network>
         ...receipt,
         state: TransferState.DestinationInitiated,
         destinationTxs,
-      };
+      } as CompletedTransferReceipt<CircleTransferProtocol, Chain, Chain>;
     }
 
     return receipt as TransferReceipt<CircleTransferProtocol>;
@@ -542,7 +547,7 @@ export class CircleTransfer<N extends Network = Network>
         ...receipt,
         attestation: { id: xfermsg },
         state: TransferState.SourceFinalized,
-      };
+      } as SourceFinalizedTransferReceipt<CircleTransferProtocol, SC, DC>;
       yield receipt;
     }
 
@@ -564,7 +569,7 @@ export class CircleTransfer<N extends Network = Network>
             ...receipt,
             attestation: { id: receipt.attestation.id, attestation: vaa },
             state: TransferState.Attested,
-          };
+          } as AttestedTransferReceipt<CircleTransferProtocol, SC, DC>;
           yield receipt;
         }
       }
@@ -587,7 +592,7 @@ export class CircleTransfer<N extends Network = Network>
           ...receipt,
           destinationTxs: [{ chain: toChain(chainId) as DC, txid: txHash }],
           state: TransferState.DestinationFinalized,
-        };
+        } as CompletedTransferReceipt<CircleTransferProtocol, SC, DC>;
         yield receipt;
       }
 
@@ -602,7 +607,7 @@ export class CircleTransfer<N extends Network = Network>
           ))
             ? TransferState.DestinationFinalized
             : TransferState.Attested,
-        };
+        } as AttestedTransferReceipt<CircleTransferProtocol, SC, DC>;
         yield receipt;
       }
     }
