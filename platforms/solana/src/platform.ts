@@ -166,10 +166,9 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
   // recoverable. Currently handles:
   // - Blockhash not found (blockhash too new for the node we submitted to)
   // - Not enough bytes (storage account not seen yet)
-
   private static async sendWithRetry(
     rpc: Connection,
-    stxns: SignedTx,
+    stxn: SignedTx,
     opts: SendOptions,
     retries: number = 3,
   ): Promise<string> {
@@ -177,7 +176,7 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
     if (!retries) throw new Error('Too many retries');
 
     try {
-      const txid = await rpc.sendRawTransaction(stxns.tx, opts);
+      const txid = await rpc.sendRawTransaction(stxn, opts);
       return txid;
     } catch (e) {
       retries -= 1;
@@ -195,7 +194,7 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
 
       // Blockhash not found _yet_
       if (emsg.includes('Blockhash not found'))
-        return this.sendWithRetry(rpc, stxns, opts, retries);
+        return this.sendWithRetry(rpc, stxn, opts, retries);
 
       // Find the log message with the error details
       const loggedErr = e.logs.find((log) =>
@@ -204,7 +203,9 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
 
       // Probably caused by storage account not seen yet
       if (loggedErr && loggedErr.includes('Not enough bytes'))
-        return this.sendWithRetry(rpc, stxns, opts, retries);
+        return this.sendWithRetry(rpc, stxn, opts, retries);
+
+      throw e;
     }
   }
 

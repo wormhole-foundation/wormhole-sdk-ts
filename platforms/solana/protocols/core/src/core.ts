@@ -36,8 +36,10 @@ import {
   createPostVaaInstruction,
   createReadOnlyWormholeProgramInterface,
   createVerifySignaturesInstructions,
+  createBridgeFeeTransferInstruction,
   derivePostedVaaKey,
   getWormholeBridgeData,
+  BridgeData,
 } from './utils';
 
 const SOLANA_SEQ_LOG = 'Program log: Sequence: ';
@@ -82,6 +84,7 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
       throw new Error(
         `Network mismatch for chain ${chain}: ${conf.network} != ${network}`,
       );
+
     return new SolanaWormholeCore(
       network as N,
       chain,
