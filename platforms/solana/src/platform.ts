@@ -22,6 +22,8 @@ import {
   ParsedAccountData,
   PublicKey,
   SendOptions,
+  SendTransactionError,
+  TransactionExpiredBlockheightExceededError,
 } from '@solana/web3.js';
 import { SolanaAddress, SolanaZeroAddress } from './address';
 import {
@@ -160,6 +162,52 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
     return balancesArr.reduce((obj, item) => Object.assign(obj, item), {});
   }
 
+  // Handles retrying a Transaction if the error is deemed to be
+  // recoverable. Currently handles:
+  // - Blockhash not found (blockhash too new for the node we submitted to)
+  // - Not enough bytes (storage account not seen yet)
+
+  private static async sendWithRetry(
+    rpc: Connection,
+    stxns: SignedTx,
+    opts: SendOptions,
+    retries: number = 3,
+  ): Promise<string> {
+    // Shouldnt get hit but just in case
+    if (!retries) throw new Error('Too many retries');
+
+    try {
+      const txid = await rpc.sendRawTransaction(stxns.tx, opts);
+      return txid;
+    } catch (e) {
+      retries -= 1;
+      if (!retries) throw e;
+
+      // Would require re-signing, for now bail
+      if (e instanceof TransactionExpiredBlockheightExceededError) throw e;
+
+      // Only handle SendTransactionError
+      if (!(e instanceof SendTransactionError)) throw e;
+      const emsg = e.message;
+
+      // Only handle simulation errors
+      if (!emsg.includes('Transaction simulation failed')) throw e;
+
+      // Blockhash not found _yet_
+      if (emsg.includes('Blockhash not found'))
+        return this.sendWithRetry(rpc, stxns, opts, retries);
+
+      // Find the log message with the error details
+      const loggedErr = e.logs.find((log) =>
+        log.startsWith('Program log: Error: '),
+      );
+
+      // Probably caused by storage account not seen yet
+      if (loggedErr && loggedErr.includes('Not enough bytes'))
+        return this.sendWithRetry(rpc, stxns, opts, retries);
+    }
+  }
+
   static async sendWait(
     chain: Chain,
     rpc: Connection,
@@ -168,14 +216,16 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
   ): Promise<TxHash[]> {
     const { blockhash, lastValidBlockHeight } = await this.latestBlock(rpc);
 
-    // Set the commitment level to match the rpc commitment level
-    // otherwise, it defaults to finalized
-    if (!opts) opts = { preflightCommitment: rpc.commitment };
-
     const txhashes = await Promise.all(
-      stxns.map((stxn) => {
-        return rpc.sendRawTransaction(stxn, opts);
-      }),
+      stxns.map((stxn) =>
+        this.sendWithRetry(
+          rpc,
+          stxn,
+          // Set the commitment level to match the rpc commitment level
+          // otherwise, it defaults to finalized
+          opts ?? { preflightCommitment: rpc.commitment },
+        ),
+      ),
     );
 
     await Promise.all(
@@ -198,11 +248,13 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
     rpc: Connection,
     commitment?: Commitment,
   ): Promise<{ blockhash: string; lastValidBlockHeight: number }> {
+    // Use finalized to prevent blockhash not found errors
+    // Note: this may mean we have less time to submit transactions?
     return rpc.getLatestBlockhash(commitment ?? 'finalized');
   }
 
   static async getLatestBlock(rpc: Connection): Promise<number> {
-    const { lastValidBlockHeight } = await this.latestBlock(rpc);
+    const { lastValidBlockHeight } = await this.latestBlock(rpc, 'confirmed');
     return lastValidBlockHeight;
   }
 
