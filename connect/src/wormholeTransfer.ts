@@ -45,7 +45,6 @@ interface BaseTransferReceipt<PN extends ProtocolName, SC extends Chain, DC exte
   protocol: PN;
   from: SC;
   to: DC;
-  state: TransferState;
   request: TransferRequest<PN>;
 }
 
@@ -54,51 +53,50 @@ export interface SourceInitiatedTransferReceipt<
   SC extends Chain,
   DC extends Chain,
 > extends BaseTransferReceipt<PN, SC, DC> {
+  state: TransferState.SourceInitiated;
   originTxs: TransactionId<SC>[];
 }
 export interface SourceFinalizedTransferReceipt<
   PN extends ProtocolName,
   SC extends Chain,
   DC extends Chain,
-> extends SourceInitiatedTransferReceipt<PN, SC, DC> {
+> extends BaseTransferReceipt<PN, SC, DC> {
+  state: TransferState.SourceFinalized;
+  originTxs: TransactionId<SC>[];
   attestation: AttestationReceipt<PN>;
 }
 export interface AttestedTransferReceipt<
   PN extends ProtocolName,
   SC extends Chain,
   DC extends Chain,
-> extends SourceFinalizedTransferReceipt<PN, SC, DC> {
+> extends BaseTransferReceipt<PN, SC, DC> {
+  state: TransferState.Attested;
+  originTxs: TransactionId<SC>[];
   attestation: Required<AttestationReceipt<PN>>;
 }
 export interface CompletedTransferReceipt<
   PN extends ProtocolName,
   SC extends Chain,
   DC extends Chain,
-> extends AttestedTransferReceipt<PN, SC, DC> {
+> extends BaseTransferReceipt<PN, SC, DC> {
+  state: TransferState.DestinationInitiated;
+  originTxs: TransactionId<SC>[];
+  attestation: Required<AttestationReceipt<PN>>;
   destinationTxs: TransactionId<DC>[];
 }
 
 export function hasReachedState<PN extends ProtocolName, TS extends TransferState>(
-  receipt: TransferReceipt<PN, Chain, Chain, TransferState>,
+  receipt: TransferReceipt<PN, Chain, Chain>,
   state: TS,
-): receipt is TransferReceipt<PN, Chain, Chain, TS> {
+): boolean {
   return receipt.state === state;
 }
 
-export type TransferReceipt<
-  PN extends ProtocolName,
-  SC extends Chain = Chain,
-  DC extends Chain = Chain,
-  TS extends TransferState = TransferState,
-> = TS extends TransferState.DestinationInitiated
-  ? CompletedTransferReceipt<PN, SC, DC>
-  : TS extends TransferState.Attested
-  ? AttestedTransferReceipt<PN, SC, DC>
-  : TS extends TransferState.SourceFinalized
-  ? SourceFinalizedTransferReceipt<PN, SC, DC>
-  : TS extends TransferState.SourceInitiated
-  ? SourceInitiatedTransferReceipt<PN, SC, DC>
-  : never;
+export type TransferReceipt<PN, SC, DC> =
+  | SourceFinalizedTransferReceipt<PN, SC, DC>
+  | SourceFinalizedTransferReceipt<PN, SC, DC>
+  | AttestedTransferReceipt<PN, SC, DC>
+  | CompletedTransferReceipt<PN, SC, DC>;
 
 // Quote with optional relayer fees if the transfer
 // is requested to be automatic
