@@ -15,6 +15,7 @@ import {
   SolanaPlatform,
   SolanaPlatformType,
   SolanaUnsignedTransaction,
+  SolanaTransaction,
 } from '@wormhole-foundation/connect-sdk-solana';
 import {
   ChainId,
@@ -129,24 +130,20 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
       fee,
     );
 
-    const { blockhash } = await SolanaPlatform.latestBlock(this.connection);
     const transaction = new Transaction();
-    transaction.recentBlockhash = blockhash;
     transaction.feePayer = payer;
     transaction.add(feeTransferIx, postMsgIx);
-    transaction.partialSign(messageAccount);
-
-    yield this.createUnsignedTx(transaction, 'Core.PublishMessage');
+    yield this.createUnsignedTx(
+      { transaction, signers: [messageAccount] },
+      'Core.PublishMessage',
+    );
   }
 
   async *verifyMessage(sender: AnySolanaAddress, vaa: VAA) {
     yield* this.postVaa(sender, vaa);
   }
 
-  async *postVaa(sender: AnySolanaAddress, vaa: VAA, blockhash?: string) {
-    if (!blockhash)
-      ({ blockhash } = await SolanaPlatform.latestBlock(this.connection));
-
+  async *postVaa(sender: AnySolanaAddress, vaa: VAA) {
     const postedVaaAddress = derivePostedVaaKey(
       this.coreBridge.programId,
       Buffer.from(vaa.hash),
@@ -173,11 +170,12 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
       const verifySigTx = new Transaction().add(
         ...verifySignaturesInstructions.slice(i, i + 2),
       );
-      verifySigTx.recentBlockhash = blockhash;
       verifySigTx.feePayer = senderAddr;
-      verifySigTx.partialSign(signatureSet);
-
-      yield this.createUnsignedTx(verifySigTx, 'Core.VerifySignature', true);
+      yield this.createUnsignedTx(
+        { transaction: verifySigTx, signers: [signatureSet] },
+        'Core.VerifySignature',
+        true,
+      );
     }
 
     // Finally create the VAA posting transaction
@@ -190,10 +188,9 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
         signatureSet.publicKey,
       ),
     );
-    postVaaTx.recentBlockhash = blockhash;
     postVaaTx.feePayer = senderAddr;
 
-    yield this.createUnsignedTx(postVaaTx, 'Core.PostVAA');
+    yield this.createUnsignedTx({ transaction: postVaaTx }, 'Core.PostVAA');
   }
 
   static parseSequenceFromLog(
@@ -330,7 +327,7 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
   }
 
   private createUnsignedTx(
-    txReq: Transaction,
+    txReq: SolanaTransaction,
     description: string,
     parallelizable: boolean = false,
   ): SolanaUnsignedTransaction<N, C> {

@@ -18,6 +18,7 @@ import {
   SolanaChains,
   SolanaPlatform,
   SolanaPlatformType,
+  SolanaTransaction,
   SolanaUnsignedTransaction,
 } from '@wormhole-foundation/connect-sdk-solana';
 import { MessageTransmitter, TokenMessenger } from '.';
@@ -105,13 +106,10 @@ export class SolanaCircleBridge<N extends Network, C extends SolanaChains>
       senderPk,
     );
 
-    const { blockhash } = await SolanaPlatform.latestBlock(this.connection);
     const transaction = new Transaction();
-    transaction.recentBlockhash = blockhash;
     transaction.feePayer = senderPk;
     transaction.add(ix);
-
-    yield this.createUnsignedTx(transaction, 'CircleBridge.Redeem');
+    yield this.createUnsignedTx({ transaction }, 'CircleBridge.Redeem');
   }
 
   async *transfer(
@@ -140,13 +138,11 @@ export class SolanaCircleBridge<N extends Network, C extends SolanaChains>
       amount,
     );
 
-    const { blockhash } = await SolanaPlatform.latestBlock(this.connection);
     const transaction = new Transaction();
-    transaction.recentBlockhash = blockhash;
     transaction.feePayer = senderPk;
     transaction.add(ix);
 
-    yield this.createUnsignedTx(transaction, 'CircleBridge.Transfer');
+    yield this.createUnsignedTx({ transaction }, 'CircleBridge.Transfer');
   }
 
   async isTransferCompleted(message: CircleBridge.Message): Promise<boolean> {
@@ -216,7 +212,7 @@ export class SolanaCircleBridge<N extends Network, C extends SolanaChains>
   }
 
   private createUnsignedTx(
-    txReq: Transaction,
+    txReq: SolanaTransaction,
     description: string,
     parallelizable: boolean = false,
   ): SolanaUnsignedTransaction<N, C> {

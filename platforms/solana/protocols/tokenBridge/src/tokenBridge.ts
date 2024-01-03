@@ -21,6 +21,7 @@ import {
   SolanaChains,
   SolanaPlatform,
   SolanaPlatformType,
+  SolanaTransaction,
   SolanaUnsignedTransaction,
 } from '@wormhole-foundation/connect-sdk-solana';
 import {
@@ -211,7 +212,6 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
   ): AsyncGenerator<SolanaUnsignedTransaction<N, C>> {
     if (!payer) throw new Error('Payer required to create attestation');
 
-    const { blockhash } = await SolanaPlatform.latestBlock(this.connection);
     const senderAddress = new SolanaAddress(payer).unwrap();
     // TODO: createNonce().readUInt32LE(0);
     const nonce = 0;
@@ -235,11 +235,11 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
     );
 
     const transaction = new Transaction().add(transferIx, attestIx);
-    transaction.recentBlockhash = blockhash;
     transaction.feePayer = senderAddress;
-    transaction.partialSign(messageKey);
-
-    yield this.createUnsignedTx(transaction, 'Solana.AttestToken');
+    yield this.createUnsignedTx(
+      { transaction, signers: [messageKey] },
+      'Solana.AttestToken',
+    );
   }
 
   async *submitAttestation(
@@ -248,11 +248,10 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
   ): AsyncGenerator<SolanaUnsignedTransaction<N, C>> {
     if (!payer) throw new Error('Payer required to create attestation');
 
-    const { blockhash } = await SolanaPlatform.latestBlock(this.connection);
     const senderAddress = new SolanaAddress(payer).unwrap();
 
     // Yield transactions to verify sigs and post the VAA
-    yield* this.coreBridge.postVaa(senderAddress, vaa, blockhash);
+    yield* this.coreBridge.postVaa(senderAddress, vaa);
 
     // Now yield the transaction to actually create the token
     const transaction = new Transaction().add(
@@ -264,10 +263,9 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
         vaa,
       ),
     );
-    transaction.recentBlockhash = blockhash;
     transaction.feePayer = senderAddress;
 
-    yield this.createUnsignedTx(transaction, 'Solana.CreateWrapped');
+    yield this.createUnsignedTx({ transaction }, 'Solana.CreateWrapped');
   }
 
   private async transferSol(
@@ -278,7 +276,6 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
   ): Promise<SolanaUnsignedTransaction<N, C>> {
     //  https://github.com/wormhole-foundation/wormhole-connect/blob/development/sdk/src/contexts/solana/context.ts#L245
 
-    const { blockhash } = await SolanaPlatform.latestBlock(this.connection);
     const senderAddress = new SolanaAddress(sender).unwrap();
 
     // TODO: the payer can actually be different from the sender. We need to allow the user to pass in an optional payer
@@ -368,7 +365,6 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
     );
 
     const transaction = new Transaction();
-    transaction.recentBlockhash = blockhash;
     transaction.feePayer = payerPublicKey;
     transaction.add(
       createAncillaryAccountIx,
@@ -378,9 +374,10 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
       tokenBridgeTransferIx,
       closeAccountIx,
     );
-    transaction.partialSign(message, ancillaryKeypair);
-
-    return this.createUnsignedTx(transaction, 'TokenBridge.TransferNative');
+    return this.createUnsignedTx(
+      { transaction, signers: [message, ancillaryKeypair] },
+      'TokenBridge.TransferNative',
+    );
   }
 
   async *transfer(
@@ -397,7 +394,6 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
       return;
     }
 
-    const { blockhash } = await SolanaPlatform.latestBlock(this.connection);
     const tokenAddress = new SolanaAddress(token).unwrap();
     const senderAddress = new SolanaAddress(sender).unwrap();
     const senderTokenAddress = await getAssociatedTokenAddress(
@@ -497,17 +493,16 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
       tokenBridgeTransferIx,
     );
 
-    transaction.recentBlockhash = blockhash;
     transaction.feePayer = senderAddress;
-    transaction.partialSign(message);
-
-    yield this.createUnsignedTx(transaction, 'TokenBridge.TransferTokens');
+    yield this.createUnsignedTx(
+      { transaction, signers: [message] },
+      'TokenBridge.TransferTokens',
+    );
   }
 
   private async *redeemAndUnwrap(
     sender: AnySolanaAddress,
     vaa: TokenBridge.TransferVAA,
-    blockhash: string,
   ) {
     // sender, fee payer
     const payerPublicKey = new SolanaAddress(sender).unwrap();
@@ -566,7 +561,6 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
     );
 
     const transaction = new Transaction();
-    transaction.recentBlockhash = blockhash;
     transaction.feePayer = payerPublicKey;
     transaction.add(
       completeTransferIx,
@@ -575,15 +569,13 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
       balanceTransferIx,
       closeAccountIx,
     );
-    transaction.partialSign(ancillaryKeypair);
-    yield this.createUnsignedTx(transaction, 'TokenBridge.RedeemAndUnwrap');
+    yield this.createUnsignedTx(
+      { transaction, signers: [ancillaryKeypair] },
+      'TokenBridge.RedeemAndUnwrap',
+    );
   }
 
-  private async *createAta(
-    sender: AnySolanaAddress,
-    token: AnySolanaAddress,
-    blockhash: string,
-  ) {
+  private async *createAta(sender: AnySolanaAddress, token: AnySolanaAddress) {
     const senderAddress = new SolanaAddress(sender).unwrap();
     const tokenAddress = new SolanaAddress(token).unwrap();
 
@@ -592,7 +584,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
     // If the ata doesn't exist yet, create it
     const acctInfo = await this.connection.getAccountInfo(ata);
     if (acctInfo === null) {
-      const ataCreationTx = new Transaction().add(
+      const transaction = new Transaction().add(
         createAssociatedTokenAccountInstruction(
           senderAddress,
           ata,
@@ -600,9 +592,8 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
           tokenAddress,
         ),
       );
-      ataCreationTx.feePayer = senderAddress;
-      ataCreationTx.recentBlockhash = blockhash;
-      yield this.createUnsignedTx(ataCreationTx, 'Redeem.CreateATA');
+      transaction.feePayer = senderAddress;
+      yield this.createUnsignedTx({ transaction }, 'Redeem.CreateATA');
     }
   }
 
@@ -611,8 +602,6 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
     vaa: TokenBridge.TransferVAA,
     unwrapNative: boolean = true,
   ) {
-    const { blockhash } = await SolanaPlatform.latestBlock(this.connection);
-
     // Find the token address local to this chain
     const nativeAddress =
       vaa.payload.token.chain === this.chain
@@ -620,10 +609,10 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
         : (await this.getWrappedAsset(vaa.payload.token)).toUniversalAddress();
 
     // Create an ATA if necessary
-    yield* this.createAta(sender, nativeAddress, blockhash);
+    yield* this.createAta(sender, nativeAddress);
 
     // Post the VAA if necessary
-    yield* this.coreBridge.postVaa(sender, vaa, blockhash);
+    yield* this.coreBridge.postVaa(sender, vaa);
 
     // redeem vaa and unwrap to native sol from wrapped sol
     if (unwrapNative) {
@@ -635,7 +624,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
           wrappedNative.toUint8Array(),
         )
       ) {
-        yield* this.redeemAndUnwrap(sender, vaa, blockhash);
+        yield* this.redeemAndUnwrap(sender, vaa);
         return;
       }
     }
@@ -656,14 +645,12 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
         vaa,
       ),
     );
-
-    transaction.recentBlockhash = blockhash;
     transaction.feePayer = senderAddress;
-    yield this.createUnsignedTx(transaction, 'Solana.RedeemTransfer');
+    yield this.createUnsignedTx({ transaction }, 'Solana.RedeemTransfer');
   }
 
   private createUnsignedTx(
-    txReq: Transaction,
+    txReq: SolanaTransaction,
     description: string,
     parallelizable: boolean = false,
   ): SolanaUnsignedTransaction<N, C> {

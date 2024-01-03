@@ -13,6 +13,7 @@ export async function getSolanaSigner(
   return new SolanaSigner(
     chain,
     Keypair.fromSecretKey(encoding.b58.decode(privateKey)),
+    rpc,
   );
 }
 

@@ -1,6 +1,11 @@
-import { Transaction } from '@solana/web3.js';
+import { Keypair, Transaction } from '@solana/web3.js';
 import { Network, UnsignedTransaction } from '@wormhole-foundation/connect-sdk';
 import { SolanaChains } from './types';
+
+export type SolanaTransaction = {
+  transaction: Transaction;
+  signers?: Keypair[];
+};
 
 export class SolanaUnsignedTransaction<
   N extends Network,
@@ -8,7 +13,7 @@ export class SolanaUnsignedTransaction<
 > implements UnsignedTransaction
 {
   constructor(
-    readonly transaction: Transaction,
+    readonly transaction: SolanaTransaction,
     readonly network: N,
     readonly chain: C,
     readonly description: string,

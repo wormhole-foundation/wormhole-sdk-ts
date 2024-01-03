@@ -19,11 +19,10 @@ import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import {
   Commitment,
   Connection,
+  ConnectionConfig,
   ParsedAccountData,
   PublicKey,
   SendOptions,
-  SendTransactionError,
-  TransactionExpiredBlockheightExceededError,
 } from '@solana/web3.js';
 import { SolanaAddress, SolanaZeroAddress } from './address';
 import {
@@ -51,10 +50,13 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
 
   getRpc<C extends SolanaChains>(
     chain: C,
-    commitment: Commitment = 'confirmed',
+    config: ConnectionConfig = {
+      commitment: 'confirmed',
+      disableRetryOnRateLimit: true,
+    },
   ): Connection {
     if (chain in this.config)
-      return new Connection(this.config[chain]!.rpc, commitment);
+      return new Connection(this.config[chain]!.rpc, config);
     throw new Error('No configuration available for chain: ' + chain);
   }
 
@@ -162,53 +164,6 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
     return balancesArr.reduce((obj, item) => Object.assign(obj, item), {});
   }
 
-  // Handles retrying a Transaction if the error is deemed to be
-  // recoverable. Currently handles:
-  // - Blockhash not found (blockhash too new for the node we submitted to)
-  // - Not enough bytes (storage account not seen yet)
-  private static async sendWithRetry(
-    rpc: Connection,
-    stxn: SignedTx,
-    opts: SendOptions,
-    retries: number = 3,
-  ): Promise<string> {
-    // Shouldnt get hit but just in case
-    if (!retries) throw new Error('Too many retries');
-
-    try {
-      const txid = await rpc.sendRawTransaction(stxn, opts);
-      return txid;
-    } catch (e) {
-      retries -= 1;
-      if (!retries) throw e;
-
-      // Would require re-signing, for now bail
-      if (e instanceof TransactionExpiredBlockheightExceededError) throw e;
-
-      // Only handle SendTransactionError
-      if (!(e instanceof SendTransactionError)) throw e;
-      const emsg = e.message;
-
-      // Only handle simulation errors
-      if (!emsg.includes('Transaction simulation failed')) throw e;
-
-      // Blockhash not found _yet_
-      if (emsg.includes('Blockhash not found'))
-        return this.sendWithRetry(rpc, stxn, opts, retries);
-
-      // Find the log message with the error details
-      const loggedErr = e.logs.find((log) =>
-        log.startsWith('Program log: Error: '),
-      );
-
-      // Probably caused by storage account not seen yet
-      if (loggedErr && loggedErr.includes('Not enough bytes'))
-        return this.sendWithRetry(rpc, stxn, opts, retries);
-
-      throw e;
-    }
-  }
-
   static async sendWait(
     chain: Chain,
     rpc: Connection,
@@ -216,11 +171,9 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
     opts?: SendOptions,
   ): Promise<TxHash[]> {
     const { blockhash, lastValidBlockHeight } = await this.latestBlock(rpc);
-
     const txhashes = await Promise.all(
       stxns.map((stxn) =>
-        this.sendWithRetry(
-          rpc,
+        rpc.sendRawTransaction(
           stxn,
           // Set the commitment level to match the rpc commitment level
           // otherwise, it defaults to finalized
@@ -229,7 +182,7 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
       ),
     );
 
-    await Promise.all(
+    const results = await Promise.all(
       txhashes.map((signature) => {
         return rpc.confirmTransaction(
           {
@@ -241,6 +194,13 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
         );
       }),
     );
+
+    const erroredTxs = results
+      .filter((result) => result.value.err)
+      .map((result) => result.value.err);
+
+    if (erroredTxs.length > 0)
+      throw new Error(`Failed to confirm transaction: ${erroredTxs}`);
 
     return txhashes;
   }

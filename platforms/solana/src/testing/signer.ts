@@ -1,10 +1,12 @@
-import { Keypair, Transaction } from '@solana/web3.js';
+import { Connection, Keypair } from '@solana/web3.js';
 import {
   SignOnlySigner,
   UnsignedTransaction,
 } from '@wormhole-foundation/connect-sdk';
 import { Network } from '@wormhole-foundation/sdk-base/src';
+import { SolanaPlatform } from '../platform';
 import { SolanaChains } from '../types';
+import { logTxDetails } from './debug';
 
 export class SolanaSigner<N extends Network, C extends SolanaChains = 'Solana'>
   implements SignOnlySigner<N, C>
@@ -12,6 +14,7 @@ export class SolanaSigner<N extends Network, C extends SolanaChains = 'Solana'>
   constructor(
     private _chain: C,
     private _keypair: Keypair,
+    private _rpc: Connection,
     private _debug: boolean = false,
   ) {}
 
@@ -24,25 +27,24 @@ export class SolanaSigner<N extends Network, C extends SolanaChains = 'Solana'>
   }
 
   async sign(tx: UnsignedTransaction[]): Promise<any[]> {
+    const { blockhash } = await SolanaPlatform.latestBlock(
+      this._rpc,
+      'finalized',
+    );
+
     const signed = [];
     for (const txn of tx) {
-      const { description, transaction } = txn;
+      const {
+        description,
+        transaction: { transaction, signers: extraSigners },
+      } = txn;
+
       console.log(`Signing: ${description} for ${this.address()}`);
 
-      if (this._debug) {
-        const st = transaction as Transaction;
-        console.log(st.signatures);
-        console.log(st.feePayer);
-        st.instructions.forEach((ix) => {
-          console.log('Program', ix.programId.toBase58());
-          console.log('Data: ', ix.data.toString('hex'));
-          ix.keys.forEach((k) => {
-            console.log(k, k.pubkey.toBase58());
-          });
-        });
-      }
+      if (this._debug) logTxDetails(transaction);
 
-      transaction.partialSign(this._keypair);
+      transaction.recentBlockhash = blockhash;
+      transaction.partialSign(this._keypair, ...(extraSigners ?? []));
       signed.push(transaction.serialize());
     }
     return signed;
