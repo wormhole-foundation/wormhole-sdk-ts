@@ -16,6 +16,7 @@ import {
   SolanaChains,
   SolanaPlatform,
   SolanaPlatformType,
+  SolanaTransaction,
   SolanaUnsignedTransaction,
 } from '@wormhole-foundation/connect-sdk-solana';
 
@@ -173,18 +174,18 @@ export class SolanaAutomaticTokenBridge<
             nonce,
           );
 
-    const { blockhash } = await SolanaPlatform.latestBlock(this.connection);
-
     transaction.add(transferIx);
-    transaction.recentBlockhash = blockhash;
     transaction.feePayer = senderAddress;
 
-    yield this.createUnsignedTx(transaction, 'AutomaticTokenBridge.Transfer');
+    yield this.createUnsignedTx(
+      { transaction },
+      'AutomaticTokenBridge.Transfer',
+    );
   }
 
   async *redeem(sender: AccountAddress<C>, vaa: AutomaticTokenBridge.VAA) {
-    const redeemTx = new Transaction();
-    yield this.createUnsignedTx(redeemTx, 'AutomaticTokenBridge.Redeem');
+    const transaction = new Transaction();
+    yield this.createUnsignedTx({ transaction }, 'AutomaticTokenBridge.Redeem');
     throw new Error('Method not implemented.');
   }
 
@@ -327,7 +328,7 @@ export class SolanaAutomaticTokenBridge<
   }
 
   private createUnsignedTx(
-    txReq: Transaction,
+    txReq: SolanaTransaction,
     description: string,
     parallelizable: boolean = false,
   ): SolanaUnsignedTransaction<N, C> {

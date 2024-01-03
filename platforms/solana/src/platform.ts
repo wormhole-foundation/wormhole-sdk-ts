@@ -19,6 +19,7 @@ import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import {
   Commitment,
   Connection,
+  ConnectionConfig,
   ParsedAccountData,
   PublicKey,
   SendOptions,
@@ -49,10 +50,13 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
 
   getRpc<C extends SolanaChains>(
     chain: C,
-    commitment: Commitment = 'confirmed',
+    config: ConnectionConfig = {
+      commitment: 'confirmed',
+      disableRetryOnRateLimit: true,
+    },
   ): Connection {
     if (chain in this.config)
-      return new Connection(this.config[chain]!.rpc, commitment);
+      return new Connection(this.config[chain]!.rpc, config);
     throw new Error('No configuration available for chain: ' + chain);
   }
 
@@ -167,18 +171,18 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
     opts?: SendOptions,
   ): Promise<TxHash[]> {
     const { blockhash, lastValidBlockHeight } = await this.latestBlock(rpc);
-
-    // Set the commitment level to match the rpc commitment level
-    // otherwise, it defaults to finalized
-    if (!opts) opts = { preflightCommitment: rpc.commitment };
-
     const txhashes = await Promise.all(
-      stxns.map((stxn) => {
-        return rpc.sendRawTransaction(stxn, opts);
-      }),
+      stxns.map((stxn) =>
+        rpc.sendRawTransaction(
+          stxn,
+          // Set the commitment level to match the rpc commitment level
+          // otherwise, it defaults to finalized
+          opts ?? { preflightCommitment: rpc.commitment },
+        ),
+      ),
     );
 
-    await Promise.all(
+    const results = await Promise.all(
       txhashes.map((signature) => {
         return rpc.confirmTransaction(
           {
@@ -191,6 +195,13 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
       }),
     );
 
+    const erroredTxs = results
+      .filter((result) => result.value.err)
+      .map((result) => result.value.err);
+
+    if (erroredTxs.length > 0)
+      throw new Error(`Failed to confirm transaction: ${erroredTxs}`);
+
     return txhashes;
   }
 
@@ -198,7 +209,7 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
     rpc: Connection,
     commitment?: Commitment,
   ): Promise<{ blockhash: string; lastValidBlockHeight: number }> {
-    return rpc.getLatestBlockhash(commitment ?? 'finalized');
+    return rpc.getLatestBlockhash(commitment ?? rpc.commitment);
   }
 
   static async getLatestBlock(rpc: Connection): Promise<number> {
