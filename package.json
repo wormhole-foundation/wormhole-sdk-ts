@@ -1,6 +1,6 @@
 {
   "name": "connect-sdk",
-  "version": "0.3.0-beta.12",
+  "version": "0.3.0-beta.13",
   "license": "Apache-2.0",
   "directories": {
     "test": "__tests__"
@@ -62,5 +62,8 @@
     "platforms/aptos",
     "platforms/aptos/protocols/core",
     "platforms/aptos/protocols/tokenBridge"
-  ]
+  ],
+  "dependencies": {
+    "npm": "^10.2.5"
+  }
 }
