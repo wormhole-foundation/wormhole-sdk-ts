@@ -36,7 +36,7 @@ function updateVersionsInWorkspaces(version: string) {
 function getVersion(): string {
   const versionFilePath = path.join(__dirname, "VERSION");
   const v = fs.readFileSync(versionFilePath);
-  return v.toString();
+  return v.toString().replace('\n', '');
 }
 
 updateVersionsInWorkspaces(getVersion());
