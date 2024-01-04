@@ -123,7 +123,7 @@ export class EvmCircleBridge<N extends Network, C extends EvmChains>
       .toUniversalAddress()
       .toUint8Array();
 
-    const tokenAddr = circle.usdcContract.get(this.network, this.chain);
+    const tokenAddr = circle.usdcContract.get(this.network, this.chain)!;
 
     const tokenContract = EvmPlatform.getTokenImplementation(
       this.provider,
@@ -149,7 +149,7 @@ export class EvmCircleBridge<N extends Network, C extends EvmChains>
 
     const txReq = await this.tokenMessenger.depositForBurn.populateTransaction(
       amount,
-      circle.circleChainId(recipient.chain as circle.CircleChain),
+      circle.circleChainId.get(recipient.chain)!,
       recipientAddress,
       tokenAddr,
     );

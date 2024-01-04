@@ -12,7 +12,6 @@ import {
   TokenBridge,
   TokenId,
   UniversalAddress,
-  UnsignedTransaction,
   encoding,
   serialize,
   toChain,
@@ -196,10 +195,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
   // Creates a Token Attestation VAA containing metadata about
   // the token that may be submitted to a Token Bridge on another chain
   // to allow it to create a wrapped version of the token
-  async *createAttestation(
-    token: AnyAlgorandAddress,
-    payer: AnyAlgorandAddress,
-  ): AsyncGenerator<UnsignedTransaction<N, C>> {
+  async *createAttestation(token: TokenAddress<C>, payer?: AnyAlgorandAddress) {
     if (!payer) throw new Error("Payer required to create attestation");
 
     const senderAddr = new AlgorandAddress(payer).toString();
@@ -261,7 +257,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
       appArgs: [AlgorandTokenBridge.noop],
       suggestedParams,
     });
-    txs.push({ tx: firstTxn, signer: null });
+    txs.push({ tx: firstTxn });
 
     const mfee = await this.coreBridge.getMessageFee();
     if (mfee > BigInt(0)) {
@@ -271,10 +267,10 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
         to: this.tokenBridgeAddress,
         amount: mfee,
       });
-      txs.push({ tx: feeTxn, signer: null });
+      txs.push({ tx: feeTxn });
     }
 
-    let accts: string[] = [emitterAddr, creatorAddr, this.coreAppAddress];
+    let accts: string[] = [emitterAddr!, creatorAddr, this.coreAppAddress];
 
     if (creatorAcctInfo) {
       accts.push(creatorAcctInfo.address);
@@ -295,7 +291,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
     } else {
       appTxn.fee *= 2;
     }
-    txs.push({ tx: appTxn, signer: null });
+    txs.push({ tx: appTxn });
 
     for (const utxn of txs) {
       yield this.createUnsignedTx(utxn, "TokenBridge.createAttestation", true);
@@ -306,9 +302,10 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
   // to create the wrapped token represented by the data in the VAA
   async *submitAttestation(
     vaa: TokenBridge.AttestVAA,
-    sender: AnyAlgorandAddress,
+    sender?: AnyAlgorandAddress,
     suggestedParams?: SuggestedParams,
   ): AsyncGenerator<AlgorandUnsignedTransaction<N, C>> {
+    if (!sender) throw new Error("Sender required to submit attestation");
     if (!suggestedParams) suggestedParams = await this.connection.getTransactionParams().do();
 
     const senderAddr = sender.toString();
@@ -374,7 +371,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
       }),
     });
 
-    txs[txs.length - 1].tx.fee = txs[txs.length - 1].tx.fee * 2;
+    txs[txs.length - 1]!.tx.fee = txs[txs.length - 1]!.tx.fee * 2;
 
     for (const utxn of txs) {
       yield this.createUnsignedTx(utxn, "TokenBridge.submitAttestation", true);
@@ -441,7 +438,6 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
           amount: msgFee,
           suggestedParams,
         }),
-        signer: null,
       });
 
     if (!wormhole) {
@@ -459,7 +455,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
         nativeStorageAccount,
         suggestedParams,
       );
-      creator = address;
+      creator = address!;
       txs.push(...txs);
     }
 
@@ -474,7 +470,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
         amount: 100000,
         suggestedParams,
       });
-      txs.unshift({ tx: payTxn, signer: null });
+      txs.unshift({ tx: payTxn });
       // The tokenid app needs to do the optin since it has signature authority
       let txn = makeApplicationCallTxnFromObject({
         from: senderAddr,
@@ -486,7 +482,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
         suggestedParams,
       });
       txn.fee *= 2;
-      txs.unshift({ tx: txn, signer: null });
+      txs.unshift({ tx: txn });
     }
 
     const t = makeApplicationCallTxnFromObject({
@@ -496,7 +492,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
       appArgs: [AlgorandTokenBridge.noop],
       suggestedParams,
     });
-    txs.push({ tx: t, signer: null });
+    txs.push({ tx: t });
 
     let accounts: string[] = [];
     if (assetId === 0) {
@@ -506,8 +502,8 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
         amount: qty,
         suggestedParams,
       });
-      txs.push({ tx: t, signer: null });
-      accounts = [emitterAddr, creator, creator];
+      txs.push({ tx: t });
+      accounts = [emitterAddr!, creator, creator];
     } else {
       const t = makeAssetTransferTxnWithSuggestedParamsFromObject({
         from: senderAddr,
@@ -516,10 +512,10 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
         assetIndex: assetId,
         suggestedParams,
       });
-      txs.push({ tx: t, signer: null });
+      txs.push({ tx: t });
       accounts = creatorAcct?.address
-        ? [emitterAddr, creator, creatorAcct.address]
-        : [emitterAddr, creator];
+        ? [emitterAddr!, creator, creatorAcct.address]
+        : [emitterAddr!, creator];
     }
 
     const args = [
@@ -544,7 +540,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
       suggestedParams,
     });
     acTxn.fee *= 2;
-    txs.push({ tx: acTxn, signer: null });
+    txs.push({ tx: acTxn });
 
     for (const utxn of txs) {
       yield this.createUnsignedTx(utxn, "TokenBridge.transfer", true);
@@ -621,7 +617,6 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
             suggestedParams,
             to: senderAddr,
           }),
-          signer: null,
         });
       }
     }
@@ -638,24 +633,23 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
 
     txs.push({
       tx: makeApplicationCallTxnFromObject(appCallObj),
-      signer: null,
     });
 
     // We need to cover the inner transactions
-    txs[txs.length - 1].tx.fee =
-      txs[txs.length - 1].tx.fee *
+    txs[txs.length - 1]!.tx.fee =
+      txs[txs.length - 1]!.tx.fee *
       (vaa.payloadName === "Transfer" && vaa.payload.fee !== undefined && vaa.payload.fee === 0n
         ? 2
         : 3);
 
     if (vaa.payloadName === "TransferWithPayload") {
-      txs[txs.length - 1].tx.appForeignApps = [appId];
+      txs[txs.length - 1]!.tx.appForeignApps = [appId];
 
       txs.push({
         tx: makeApplicationCallTxnFromObject({
           appArgs: [
             TransferMethodSelector.getSelector(),
-            (TransferMethodSelector.args[0].type as ABIType).encode(serialize(vaa)),
+            (TransferMethodSelector.args[0]!.type as ABIType).encode(serialize(vaa)),
           ],
           appIndex: appId,
           foreignAssets: foreignAssets,
@@ -663,7 +657,6 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
           onComplete: OnApplicationComplete.NoOpOC,
           suggestedParams,
         }),
-        signer: null,
       });
     }
 
@@ -683,7 +676,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
     try {
       const acctInfoResp = await client.accountAssetInformation(address, asset).do();
       const acctInfo = modelsv2.AccountAssetResponse.from_obj_for_encoding(acctInfoResp);
-      return acctInfo.assetHolding.amount > 0;
+      return (acctInfo.assetHolding?.amount ?? 0) > 0;
     } catch {}
     return false;
   }

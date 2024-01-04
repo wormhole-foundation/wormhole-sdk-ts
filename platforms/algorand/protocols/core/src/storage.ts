@@ -155,13 +155,13 @@ export const StorageLogicSig = {
    * @returns Promise with Uint8Array of data squirreled away
    */
   decodeLocalState: async (client: Algodv2, appId: bigint, address: string) => {
-    let appState: modelsv2.ApplicationLocalState | undefined;
+    let appState: modelsv2.ApplicationLocalState;
     try {
       const ai = await client
         .accountApplicationInformation(address, safeBigIntToNumber(appId))
         .do();
       const acctAppInfo = modelsv2.AccountApplicationResponse.from_obj_for_encoding(ai);
-      appState = acctAppInfo.appLocalState;
+      appState = acctAppInfo.appLocalState!;
     } catch (e) {
       return new Uint8Array();
     }
@@ -173,19 +173,19 @@ export const StorageLogicSig = {
     // so first put them in a map by numeric key
     // then iterate over keys to concat them in the right order
     let vals = new Map<number, Uint8Array>();
-    for (const kv of appState.keyValue) {
+    for (const kv of appState!.keyValue!) {
       if (kv.key === metaKey) continue;
 
       // Take the first byte off the key to be the
       // numeric index
-      const key = encoding.b64.decode(kv.key)[0];
+      const key = encoding.b64.decode(kv.key)[0]!;
       const value = encoding.b64.decode(kv.value.bytes);
       vals.set(key, value);
     }
 
     const byteArrays: Uint8Array[] = [];
     for (let i = 0; i < MAX_KEYS; i++) {
-      if (vals.has(i)) byteArrays.push(vals.get(i));
+      if (vals.has(i)) byteArrays.push(vals.get(i)!);
     }
 
     return encoding.bytes.concat(...byteArrays);

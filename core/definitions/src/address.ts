@@ -73,7 +73,7 @@ export function registerNative<P extends Platform>(platform: P, ctr: NativeAddre
 }
 
 export function nativeIsRegistered<C extends Chain>(chain: C): boolean {
-  const platform: Platform = chainToPlatform.get(chain);
+  const platform: Platform = chainToPlatform.get(chain)!;
   return nativeFactory.has(platform);
 }
 
@@ -81,7 +81,7 @@ export function toNative<C extends Chain>(
   chain: C,
   ua: UniversalAddress | string | Uint8Array,
 ): NativeAddress<C> {
-  const platform: Platform = chainToPlatform.get(chain);
+  const platform: Platform = chainToPlatform.get(chain)!;
   const nativeCtr = nativeFactory.get(platform);
   if (!nativeCtr) throw new Error(`No native address type registered for platform ${platform}`);
   return new nativeCtr(ua) as unknown as NativeAddress<C>;
@@ -91,6 +91,6 @@ export function toUniversal<C extends Chain>(
   chain: C,
   address: string | Uint8Array,
 ): UniversalAddress {
-  const platform: Platform = chainToPlatform.get(chain);
-  return new UniversalAddress(address, platformToAddressFormat.get(platform));
+  const platform: Platform = chainToPlatform.get(chain)!;
+  return new UniversalAddress(address, platformToAddressFormat.get(platform)!);
 }

@@ -124,10 +124,7 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
 
     const storage = StorageLogicSig.forEmitter(this.coreAppId, _sender.toUint8Array());
 
-    const {
-      accounts: [storageAddress],
-      txs,
-    } = await AlgorandWormholeCore.maybeCreateStorageTx(
+    const { accounts, txs } = await AlgorandWormholeCore.maybeCreateStorageTx(
       this.connection,
       address,
       this.coreAppId,
@@ -143,7 +140,7 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
       from: address,
       appIndex: safeBigIntToNumber(this.coreAppId),
       appArgs: [AlgorandWormholeCore.publishMessage, message, encoding.bignum.toBytes(0n, 8)],
-      accounts: [storageAddress],
+      accounts: accounts,
       onComplete: OnApplicationComplete.NoOpOC,
       suggestedParams,
     });
@@ -162,7 +159,7 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
       .getApplicationByID(safeBigIntToNumber(this.coreAppId))
       .do();
     const appInfo = modelsv2.Application.from_obj_for_encoding(applInfoResp);
-    const val = appInfo.params.globalState.find((kv) => kv.key === AlgorandWormholeCore.feeKey);
+    const val = appInfo.params.globalState?.find((kv) => kv.key === AlgorandWormholeCore.feeKey);
     return val ? BigInt(val.value.uint) : 0n;
   }
 
@@ -180,20 +177,20 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
     }
 
     // Expect target is core app
-    if (BigInt(ptr.txn.txn.apid) !== this.coreAppId) return msgs;
+    if (BigInt(ptr.txn.txn.apid ?? 0) !== this.coreAppId) return msgs;
 
     // Expect logs
     if (!ptr.logs || ptr.logs.length === 0) return msgs;
 
     // Expect publish messeage as first arg
-    const args = ptr.txn.txn.apaa;
+    const args = ptr.txn.txn.apaa ?? [];
     if (
       args.length !== 3 ||
-      !encoding.bytes.equals(new Uint8Array(args[0]), AlgorandWormholeCore.publishMessage)
+      !encoding.bytes.equals(new Uint8Array(args[0]!), AlgorandWormholeCore.publishMessage)
     )
       return msgs;
 
-    const sequence = encoding.bignum.decode(ptr.logs[0]);
+    const sequence = encoding.bignum.decode(ptr.logs[0]!);
     const emitter = new AlgorandAddress(ptr.txn.txn.snd).toUniversalAddress();
     msgs.push({ chain: this.chain, emitter, sequence });
 
@@ -233,7 +230,7 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
       suggestedParams,
     });
     seedTxn.fee = seedTxn.fee * 2;
-    txs.push({ tx: seedTxn, signer: null });
+    txs.push({ tx: seedTxn });
 
     // Opt in to the app and rekey to the app address that is using
     // this as storage
@@ -285,10 +282,7 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
       sequence: vaa.sequence,
       emitter: vaa.emitterAddress,
     });
-    const {
-      accounts: [seqAddr],
-      txs: seqOptInTxs,
-    } = await AlgorandWormholeCore.maybeCreateStorageTx(
+    const { accounts: seqAddr, txs: seqOptInTxs } = await AlgorandWormholeCore.maybeCreateStorageTx(
       client,
       senderAddr,
       appid,
@@ -299,22 +293,24 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
 
     // Get storage account for Guardian set
     const gsStorage = StorageLogicSig.forGuardianSet(coreId, vaa.guardianSet);
-    const {
-      accounts: [guardianAddr],
-      txs: guardianOptInTxs,
-    } = await AlgorandWormholeCore.maybeCreateStorageTx(
-      client,
-      senderAddr,
-      coreId,
-      gsStorage,
-      suggestedParams,
-    );
+    const { accounts: guardianAddr, txs: guardianOptInTxs } =
+      await AlgorandWormholeCore.maybeCreateStorageTx(
+        client,
+        senderAddr,
+        coreId,
+        gsStorage,
+        suggestedParams,
+      );
     txs.push(...guardianOptInTxs);
 
-    let accts: string[] = [seqAddr, guardianAddr];
+    let accts: string[] = [...seqAddr, ...guardianAddr];
 
     // Get the Guardian keys
-    const keys: Uint8Array = await StorageLogicSig.decodeLocalState(client, coreId, guardianAddr);
+    const keys: Uint8Array = await StorageLogicSig.decodeLocalState(
+      client,
+      coreId,
+      guardianAddr[0]!,
+    );
 
     // We don't pass the entire payload in but instead just pass it pre-digested.  This gets around size
     // limitations with lsigs AND reduces the cost of the entire operation on a congested network by reducing the
@@ -343,7 +339,7 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
       for (let i = 0; i < sigs.length; i++) {
         // The first byte of the sig is the relative index of that signature in the signatures array
         // Use that index to get the appropriate Guardian key
-        const sig = sigs[i * SIG_LEN];
+        const sig = sigs[i * SIG_LEN]!;
         const key = keys.slice(
           sig.guardianIndex * GuardianKeyLen + 1,
           (sig.guardianIndex + 1) * GuardianKeyLen + 1,
@@ -386,7 +382,7 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
       suggestedParams,
     });
     appTxn.fee = appTxn.fee * (2 + numTxns); // Was 1
-    txs.push({ tx: appTxn, signer: null });
+    txs.push({ tx: appTxn });
 
     return { accounts: accts, txs };
   }

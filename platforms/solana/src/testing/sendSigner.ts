@@ -64,7 +64,7 @@ export class SolanaSendSigner<
     if (e.message.includes('Blockhash not found')) return true;
 
     // Find the log message with the error details
-    const loggedErr = e.logs.find((log) =>
+    const loggedErr = e.logs?.find((log) =>
       log.startsWith('Program log: Error: '),
     );
 

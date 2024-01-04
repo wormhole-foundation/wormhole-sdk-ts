@@ -92,7 +92,7 @@ export class SolanaCircleBridge<N extends Network, C extends SolanaChains>
     attestation: string,
   ): AsyncGenerator<SolanaUnsignedTransaction<N, C>> {
     const usdc = new PublicKey(
-      circle.usdcContract.get(this.network, this.chain),
+      circle.usdcContract.get(this.network, this.chain)!,
     );
 
     const senderPk = new SolanaAddress(sender).unwrap();
@@ -118,13 +118,13 @@ export class SolanaCircleBridge<N extends Network, C extends SolanaChains>
     amount: bigint,
   ): AsyncGenerator<SolanaUnsignedTransaction<N, C>> {
     const usdc = new PublicKey(
-      circle.usdcContract.get(this.network, this.chain),
+      circle.usdcContract.get(this.network, this.chain)!,
     );
 
     const senderPk = new SolanaAddress(sender).unwrap();
     const senderATA = getAssociatedTokenAddressSync(usdc, senderPk);
 
-    const destinationDomain = circle.circleChainId.get(recipient.chain);
+    const destinationDomain = circle.circleChainId.get(recipient.chain)!;
     const destinationAddress = recipient.address.toUniversalAddress();
 
     const ix = await createDepositForBurnInstruction(
@@ -188,7 +188,11 @@ export class SolanaCircleBridge<N extends Network, C extends SolanaChains>
     const messageLogs = [
       ...messageTransmitterParser.parseLogs(tx.meta.logMessages || []),
     ];
-    const message = new Uint8Array(messageLogs[0].data['message'] as Buffer);
+
+    if (messageLogs.length === 0)
+      throw new Error('No CircleTransferMessage found');
+
+    const message = new Uint8Array(messageLogs[0]!.data['message'] as Buffer);
     const [msg, hash] = CircleBridge.deserialize(message);
 
     const { payload: body } = msg;

@@ -293,12 +293,12 @@ export class CircleTransfer<N extends Network = Network>
 
     for (const idx in attestations) {
       const ca = attestations[idx]!;
-      if (ca.attestation.attestation) continue; // already got it
+      if (ca.attestation?.attestation) continue; // already got it
 
       const attestation = await this.wh.getCircleAttestation(ca.id.hash, timeout);
       if (attestation === null) throw new Error("No attestation available after timeout exhausted");
 
-      attestations[idx].attestation.attestation = attestation;
+      attestations[idx]!.attestation!.attestation = attestation;
     }
 
     this.attestations = attestations;
@@ -355,24 +355,20 @@ export class CircleTransfer<N extends Network = Network>
 
     if (!this.attestations) throw new Error("No Circle Attestations found");
 
-    const circleAttestations = this.attestations.filter((a) =>
-      isCircleMessageId(a.id),
-    ) as AttestationReceipt<"CircleBridge">[];
-
+    const circleAttestations = this.attestations.filter((a) => isCircleMessageId(a.id));
     if (circleAttestations.length > 1)
       throw new Error(`Expected a single circle attestation, found ${circleAttestations.length}`);
 
-    const toChain = this.wh.getChain(this.transfer.to.chain);
-
-    const {
-      id,
-      attestation: { message, attestation },
-    } = circleAttestations[0]!;
-
+    const { id, attestation } = circleAttestations[0]! as AttestationReceipt<"CircleBridge">;
     if (!attestation) throw new Error(`No Circle Attestation for ${id.hash}`);
 
+    const { message, attestation: signatures } = attestation;
+    if (!signatures) throw new Error(`No Circle Attestation for ${id.hash}`);
+
+    const toChain = this.wh.getChain(this.transfer.to.chain);
     const tb = await toChain.getCircleBridge();
-    const xfer = tb.redeem(this.transfer.to.address, message, attestation);
+
+    const xfer = tb.redeem(this.transfer.to.address, message, signatures!);
 
     const txids = await signSendWait<N, typeof toChain.chain>(toChain, xfer, signer);
     this.txids?.push(...txids);
@@ -490,14 +486,8 @@ export class CircleTransfer<N extends Network = Network>
       receipt = { ...receipt, state: TransferState.SourceInitiated, originTxs };
     }
 
-    const att = xfer.attestations.filter((a) =>
-      isWormholeMessageId(a.id),
-    ) as AttestationReceipt<"AutomaticCircleBridge">[];
-
-    const ctt = xfer.attestations.filter((a) =>
-      isCircleMessageId(a.id),
-    ) as AttestationReceipt<"CircleBridge">[];
-
+    const att = xfer.attestations?.filter((a) => isWormholeMessageId(a.id)) ?? [];
+    const ctt = xfer.attestations?.filter((a) => isCircleMessageId(a.id)) ?? [];
     const attestation = att.length > 0 ? att[0]! : ctt.length > 0 ? ctt[0]! : undefined;
     if (attestation && attestation.attestation) {
       receipt = { ...receipt, state: TransferState.Attested, attestation: attestation };
