@@ -33,11 +33,17 @@ import { signSendWait } from "../common";
 import { DEFAULT_TASK_TIMEOUT } from "../config";
 import { Wormhole } from "../wormhole";
 import {
+  AttestedTransferReceipt,
+  CompletedTransferReceipt,
+  SourceFinalizedTransferReceipt,
+  SourceInitiatedTransferReceipt,
   TransferQuote,
   TransferReceipt,
   TransferState,
   WormholeTransfer,
-  hasReachedState,
+  isAttested,
+  isSourceFinalized,
+  isSourceInitiated,
 } from "../wormholeTransfer";
 
 export type TokenTransferProtocol = "TokenBridge" | "AutomaticTokenBridge";
@@ -527,7 +533,7 @@ export class TokenTransfer<N extends Network = Network>
     const from = transfer.from.chain;
     const to = transfer.to.chain;
 
-    let receipt: Partial<TransferReceipt<TokenTransferProtocol>> = {
+    let receipt: TransferReceipt<TokenTransferProtocol> = {
       protocol,
       request: transfer,
       from: from,
@@ -537,31 +543,44 @@ export class TokenTransfer<N extends Network = Network>
 
     const originTxs = xfer.txids.filter((txid) => txid.chain === transfer.from.chain);
     if (originTxs.length > 0) {
-      receipt = { ...receipt, state: TransferState.SourceInitiated, originTxs: originTxs };
+      receipt = {
+        ...receipt,
+        state: TransferState.SourceInitiated,
+        originTxs: originTxs,
+      } satisfies SourceInitiatedTransferReceipt<TokenTransferProtocol>;
     }
 
     const att =
       xfer.attestations && xfer.attestations.length > 0 ? xfer.attestations![0]! : undefined;
-    const attestation =
-      att && att.id.emitter ? { id: att.id, attestation: att.attestation } : undefined;
-    if (attestation && attestation.attestation) {
-      receipt = {
-        ...receipt,
-        state: TransferState.Attested,
-        attestation: attestation,
-      };
+    const attestation = att && att.id ? { id: att.id, attestation: att.attestation } : undefined;
+    if (attestation) {
+      if (attestation.id) {
+        receipt = {
+          ...(receipt as SourceInitiatedTransferReceipt<TokenTransferProtocol>),
+          state: TransferState.SourceFinalized,
+          attestation: { id: attestation.id },
+        } satisfies SourceFinalizedTransferReceipt<TokenTransferProtocol>;
+
+        if (attestation.attestation) {
+          receipt = {
+            ...receipt,
+            state: TransferState.Attested,
+            attestation: { id: attestation.id, attestation: attestation.attestation },
+          } satisfies AttestedTransferReceipt<TokenTransferProtocol>;
+        }
+      }
     }
 
     const destinationTxs = xfer.txids.filter((txid) => txid.chain === transfer.to.chain);
     if (destinationTxs.length > 0) {
       receipt = {
-        ...receipt,
+        ...(receipt as AttestedTransferReceipt<TokenTransferProtocol>),
         state: TransferState.DestinationInitiated,
         destinationTxs: destinationTxs,
-      };
+      } satisfies CompletedTransferReceipt<TokenTransferProtocol>;
     }
 
-    return receipt as TransferReceipt<TokenTransferProtocol>;
+    return receipt;
   }
 
   // AsyncGenerator fn that produces status updates through an async generator
@@ -584,7 +603,7 @@ export class TokenTransfer<N extends Network = Network>
 
     // Check the source chain for initiation transaction
     // and capture the message id
-    if (hasReachedState(receipt, TransferState.SourceInitiated)) {
+    if (isSourceInitiated(receipt)) {
       if (receipt.originTxs.length === 0) throw "Origin transactions required to fetch message id";
       const { txid } = receipt.originTxs[receipt.originTxs.length - 1]!;
       const msg = await TokenTransfer.getTransferMessage(
@@ -592,28 +611,33 @@ export class TokenTransfer<N extends Network = Network>
         txid,
         leftover(start, timeout),
       );
-      receipt = { ...receipt, state: TransferState.SourceFinalized, attestation: { id: msg } };
+      receipt = {
+        ...receipt,
+        state: TransferState.SourceFinalized,
+        attestation: { id: msg },
+      } satisfies SourceFinalizedTransferReceipt<TokenTransferProtocol>;
       yield receipt;
     }
 
     // If the source is finalized, we need to fetch the signed attestation
     // so that we may deliver it to the destination chain
     // or at least track the transfer through its progress
-    if (hasReachedState(receipt, TransferState.SourceFinalized)) {
+    if (isSourceFinalized(receipt)) {
       if (!receipt.attestation.id) throw "Attestation id required to fetch attestation";
       const { id } = receipt.attestation;
       const attestation = await TokenTransfer.getTransferVaa(wh, id, leftover(start, timeout));
-      receipt = { ...receipt, attestation: { id, attestation }, state: TransferState.Attested };
+      receipt = {
+        ...receipt,
+        attestation: { id, attestation },
+        state: TransferState.Attested,
+      } satisfies AttestedTransferReceipt<TokenTransferProtocol>;
       yield receipt;
     }
 
     // First try to grab the tx status from the API
     // Note: this requires a subsequent async step on the backend
     // to have the dest txid populated, so it may be delayed by some time
-    if (
-      hasReachedState(receipt, TransferState.Attested) ||
-      hasReachedState(receipt, TransferState.SourceFinalized)
-    ) {
+    if (isAttested(receipt) || isSourceFinalized(receipt)) {
       if (!receipt.attestation.id) throw "Attestation id required to fetch redeem tx";
       const { id } = receipt.attestation;
       const txStatus = await wh.getTransactionStatus(id, leftover(start, timeout));
@@ -623,24 +647,28 @@ export class TokenTransfer<N extends Network = Network>
           ...receipt,
           destinationTxs: [{ chain: toChain(chainId) as DC, txid: txHash }],
           state: TransferState.DestinationFinalized,
-        };
+        } satisfies CompletedTransferReceipt<TokenTransferProtocol>;
       }
       yield receipt;
     }
 
     // Fall back to asking the destination chain if this VAA has been redeemed
     // Note: We do not get any destinationTxs with this method
-    if (hasReachedState(receipt, TransferState.Attested)) {
+    if (isAttested(receipt)) {
       if (!receipt.attestation.attestation) throw "Signed Attestation required to check for redeem";
-      receipt = {
-        ...receipt,
-        state: (await TokenTransfer.isTransferComplete(
-          _toChain,
-          receipt.attestation.attestation as TokenTransferVAA,
-        ))
-          ? TransferState.DestinationFinalized
-          : TransferState.Attested,
-      };
+
+      let isComplete = await TokenTransfer.isTransferComplete(
+        _toChain,
+        receipt.attestation.attestation as TokenTransferVAA,
+      );
+
+      if (isComplete) {
+        receipt = {
+          ...receipt,
+          state: TransferState.DestinationFinalized,
+        } satisfies CompletedTransferReceipt<TokenTransferProtocol>;
+      }
+
       yield receipt;
     }
 
