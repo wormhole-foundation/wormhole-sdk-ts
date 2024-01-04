@@ -90,7 +90,7 @@ export interface CompletedTransferReceipt<
 > extends BaseTransferReceipt<PN, SC, DC> {
   state: TransferState.DestinationInitiated | TransferState.DestinationFinalized;
   originTxs: TransactionId<SC>[];
-  attestation: Required<AttestationReceipt<PN>>;
+  attestation: AttestationReceipt<PN>;
   destinationTxs?: TransactionId<DC>[];
 }
 

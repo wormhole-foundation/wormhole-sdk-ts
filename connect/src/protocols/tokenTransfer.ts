@@ -35,6 +35,8 @@ import { Wormhole } from "../wormhole";
 import {
   AttestedTransferReceipt,
   CompletedTransferReceipt,
+  SourceFinalizedTransferReceipt,
+  SourceInitiatedTransferReceipt,
   TransferQuote,
   TransferReceipt,
   TransferState,
@@ -541,19 +543,32 @@ export class TokenTransfer<N extends Network = Network>
 
     const originTxs = xfer.txids.filter((txid) => txid.chain === transfer.from.chain);
     if (originTxs.length > 0) {
-      receipt = { ...receipt, state: TransferState.SourceInitiated, originTxs: originTxs };
+      receipt = {
+        ...receipt,
+        state: TransferState.SourceInitiated,
+        originTxs: originTxs,
+      } as SourceInitiatedTransferReceipt<TokenTransferProtocol>;
     }
 
     const att =
       xfer.attestations && xfer.attestations.length > 0 ? xfer.attestations![0]! : undefined;
-    const attestation =
-      att && att.id.emitter ? { id: att.id, attestation: att.attestation } : undefined;
-    if (attestation && attestation.attestation) {
-      receipt = {
-        ...receipt,
-        state: TransferState.Attested,
-        attestation: attestation,
-      } as AttestedTransferReceipt<TokenTransferProtocol>;
+    const attestation = att && att.id ? { id: att.id, attestation: att.attestation } : undefined;
+    if (attestation) {
+      if (attestation.id) {
+        receipt = {
+          ...receipt,
+          state: TransferState.SourceFinalized,
+          attestation: { id: attestation.id },
+        } as SourceFinalizedTransferReceipt<TokenTransferProtocol>;
+      }
+
+      if (attestation.attestation) {
+        receipt = {
+          ...receipt,
+          state: TransferState.Attested,
+          attestation: { id: attestation.id, attestation: attestation.attestation },
+        } as AttestedTransferReceipt<TokenTransferProtocol>;
+      }
     }
 
     const destinationTxs = xfer.txids.filter((txid) => txid.chain === transfer.to.chain);
@@ -596,7 +611,12 @@ export class TokenTransfer<N extends Network = Network>
         txid,
         leftover(start, timeout),
       );
-      yield { ...receipt, state: TransferState.SourceFinalized, attestation: { id: msg } };
+      receipt = {
+        ...receipt,
+        state: TransferState.SourceFinalized,
+        attestation: { id: msg },
+      } as SourceFinalizedTransferReceipt<TokenTransferProtocol, SC, DC>;
+      yield receipt;
     }
 
     // If the source is finalized, we need to fetch the signed attestation
@@ -606,7 +626,12 @@ export class TokenTransfer<N extends Network = Network>
       if (!receipt.attestation.id) throw "Attestation id required to fetch attestation";
       const { id } = receipt.attestation;
       const attestation = await TokenTransfer.getTransferVaa(wh, id, leftover(start, timeout));
-      yield { ...receipt, attestation: { id, attestation }, state: TransferState.Attested };
+      receipt = {
+        ...receipt,
+        attestation: { id, attestation },
+        state: TransferState.Attested,
+      } as AttestedTransferReceipt<TokenTransferProtocol, SC, DC>;
+      yield receipt;
     }
 
     // First try to grab the tx status from the API
@@ -638,13 +663,13 @@ export class TokenTransfer<N extends Network = Network>
       );
 
       if (isComplete) {
-        yield {
+        receipt = {
           ...receipt,
           state: TransferState.DestinationFinalized,
         } as CompletedTransferReceipt<TokenTransferProtocol, SC, DC>;
-      } else {
-        yield receipt;
       }
+
+      yield receipt;
     }
 
     yield receipt;
