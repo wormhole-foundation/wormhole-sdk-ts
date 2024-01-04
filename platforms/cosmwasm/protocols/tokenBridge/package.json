@@ -19,7 +19,7 @@
   "author": "",
   "description": "SDK for EVM chains, used in conjunction with @wormhole-foundation/connect-sdk",
   "files": [
-    "dist/**/*"
+    "dist"
   ],
   "keywords": [
     "wormhole",

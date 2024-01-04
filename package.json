@@ -33,6 +33,7 @@
     "sync": "tsx syncVersion.ts && npm install && npm run build",
     "publish": "npm publish --access public --tag $TAG --workspace core --workspace connect --workspace platforms --workspace platforms/evm/protocols --workspace platforms/solana/protocols --workspace platforms/cosmwasm/protocols --workspace platforms/algorand/protocols",
     "pub:beta": "TAG=beta npm run publish",
+    "pub:beta:dryrun": "TAG=beta npm run publish --dry-run",
     "pub:latest": "TAG=latest npm run publish",
     "test:tilt": "jest --verbose --config ./jest.config.ts --roots ./__tests__/tilt"
   },

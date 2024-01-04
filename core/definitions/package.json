@@ -16,7 +16,7 @@
   "module": "./dist/esm/index.js",
   "types": "./dist/esm/index.d.ts",
   "files": [
-    "dist/**/*"
+    "dist"
   ],
   "scripts": {
     "test": "jest --config ../../jest.config.ts __tests__/*.ts",
