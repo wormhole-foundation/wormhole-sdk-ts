@@ -19,8 +19,7 @@
   "author": "",
   "description": "SDK for Solana, used in conjunction with @wormhole-foundation/connect-sdk",
   "files": [
-    "dist",
-    "src/**/*"
+    "dist"
   ],
   "keywords": [
     "wormhole",

@@ -63,8 +63,5 @@
     "platforms/aptos",
     "platforms/aptos/protocols/core",
     "platforms/aptos/protocols/tokenBridge"
-  ],
-  "dependencies": {
-    "npm": "^10.2.5"
-  }
+  ]
 }
