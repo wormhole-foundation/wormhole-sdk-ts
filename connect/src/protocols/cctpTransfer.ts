@@ -33,15 +33,15 @@ import { Wormhole } from "../wormhole";
 import {
   AttestedTransferReceipt,
   CompletedTransferReceipt,
-  SourceInitiatedTransferReceipt,
   SourceFinalizedTransferReceipt,
+  SourceInitiatedTransferReceipt,
   TransferQuote,
   TransferReceipt,
   TransferState,
   WormholeTransfer,
-  isSourceInitiated,
-  isSourceFinalized,
   isAttested,
+  isSourceFinalized,
+  isSourceInitiated,
 } from "../wormholeTransfer";
 
 type CircleTransferProtocol = "CircleBridge" | "AutomaticCircleBridge";
@@ -479,7 +479,7 @@ export class CircleTransfer<N extends Network = Network>
     // This attestation may be either the auto relay vaa or the circle attestation
     // depending on the request
 
-    let receipt: Partial<TransferReceipt<CircleTransferProtocol>> = {
+    let receipt: TransferReceipt<CircleTransferProtocol> = {
       protocol: xfer.transfer.automatic ? "AutomaticCircleBridge" : "CircleBridge",
       request: xfer.transfer,
       from: from.chain,
@@ -493,7 +493,7 @@ export class CircleTransfer<N extends Network = Network>
         ...receipt,
         state: TransferState.SourceInitiated,
         originTxs,
-      } as SourceInitiatedTransferReceipt<CircleTransferProtocol>;
+      } satisfies SourceInitiatedTransferReceipt<CircleTransferProtocol>;
     }
 
     const att = xfer.attestations?.filter((a) => isWormholeMessageId(a.id)) ?? [];
@@ -502,30 +502,31 @@ export class CircleTransfer<N extends Network = Network>
     if (attestation) {
       if (attestation.id) {
         receipt = {
-          ...receipt,
+          ...(receipt as SourceInitiatedTransferReceipt<CircleTransferProtocol>),
           state: TransferState.SourceFinalized,
           attestation: attestation,
-        } as SourceFinalizedTransferReceipt<CircleTransferProtocol>;
-      }
+        } satisfies SourceFinalizedTransferReceipt<CircleTransferProtocol>;
 
-      if (attestation.attestation)
-        receipt = {
-          ...receipt,
-          state: TransferState.Attested,
-          attestation: { id: attestation.id, attestation: attestation.attestation },
-        } as AttestedTransferReceipt<CircleTransferProtocol>;
+        if (attestation.attestation) {
+          receipt = {
+            ...receipt,
+            state: TransferState.Attested,
+            attestation: { id: attestation.id, attestation: attestation.attestation },
+          } satisfies AttestedTransferReceipt<CircleTransferProtocol>;
+        }
+      }
     }
 
     const destinationTxs = xfer.txids.filter((txid) => txid.chain === xfer.transfer.to.chain);
     if (destinationTxs.length > 0) {
       receipt = {
-        ...receipt,
+        ...(receipt as AttestedTransferReceipt<CircleTransferProtocol>),
         state: TransferState.DestinationInitiated,
         destinationTxs,
-      } as CompletedTransferReceipt<CircleTransferProtocol>;
+      } satisfies CompletedTransferReceipt<CircleTransferProtocol>;
     }
 
-    return receipt as TransferReceipt<CircleTransferProtocol>;
+    return receipt;
   }
 
   // AsyncGenerator fn that produces status updates through an async generator
@@ -558,7 +559,7 @@ export class CircleTransfer<N extends Network = Network>
         ...receipt,
         attestation: { id: xfermsg },
         state: TransferState.SourceFinalized,
-      } as SourceFinalizedTransferReceipt<CircleTransferProtocol, SC, DC>;
+      } satisfies SourceFinalizedTransferReceipt<CircleTransferProtocol, SC, DC>;
       yield receipt;
     }
 
@@ -580,7 +581,7 @@ export class CircleTransfer<N extends Network = Network>
             ...receipt,
             attestation: { id: receipt.attestation.id, attestation: vaa },
             state: TransferState.Attested,
-          } as AttestedTransferReceipt<CircleTransferProtocol, SC, DC>;
+          } satisfies AttestedTransferReceipt<CircleTransferProtocol, SC, DC>;
           yield receipt;
         }
       }
@@ -602,7 +603,7 @@ export class CircleTransfer<N extends Network = Network>
           ...receipt,
           destinationTxs: [{ chain: toChain(chainId) as DC, txid: txHash }],
           state: TransferState.DestinationFinalized,
-        } as CompletedTransferReceipt<CircleTransferProtocol, SC, DC>;
+        } satisfies CompletedTransferReceipt<CircleTransferProtocol, SC, DC>;
         yield receipt;
       }
     }

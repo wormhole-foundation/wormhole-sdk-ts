@@ -533,7 +533,7 @@ export class TokenTransfer<N extends Network = Network>
     const from = transfer.from.chain;
     const to = transfer.to.chain;
 
-    let receipt: Partial<TransferReceipt<TokenTransferProtocol>> = {
+    let receipt: TransferReceipt<TokenTransferProtocol> = {
       protocol,
       request: transfer,
       from: from,
@@ -547,7 +547,7 @@ export class TokenTransfer<N extends Network = Network>
         ...receipt,
         state: TransferState.SourceInitiated,
         originTxs: originTxs,
-      } as SourceInitiatedTransferReceipt<TokenTransferProtocol>;
+      } satisfies SourceInitiatedTransferReceipt<TokenTransferProtocol>;
     }
 
     const att =
@@ -556,31 +556,31 @@ export class TokenTransfer<N extends Network = Network>
     if (attestation) {
       if (attestation.id) {
         receipt = {
-          ...receipt,
+          ...(receipt as SourceInitiatedTransferReceipt<TokenTransferProtocol>),
           state: TransferState.SourceFinalized,
           attestation: { id: attestation.id },
-        } as SourceFinalizedTransferReceipt<TokenTransferProtocol>;
-      }
+        } satisfies SourceFinalizedTransferReceipt<TokenTransferProtocol>;
 
-      if (attestation.attestation) {
-        receipt = {
-          ...receipt,
-          state: TransferState.Attested,
-          attestation: { id: attestation.id, attestation: attestation.attestation },
-        } as AttestedTransferReceipt<TokenTransferProtocol>;
+        if (attestation.attestation) {
+          receipt = {
+            ...receipt,
+            state: TransferState.Attested,
+            attestation: { id: attestation.id, attestation: attestation.attestation },
+          } satisfies AttestedTransferReceipt<TokenTransferProtocol>;
+        }
       }
     }
 
     const destinationTxs = xfer.txids.filter((txid) => txid.chain === transfer.to.chain);
     if (destinationTxs.length > 0) {
       receipt = {
-        ...receipt,
+        ...(receipt as AttestedTransferReceipt<TokenTransferProtocol>),
         state: TransferState.DestinationInitiated,
         destinationTxs: destinationTxs,
-      } as CompletedTransferReceipt<TokenTransferProtocol>;
+      } satisfies CompletedTransferReceipt<TokenTransferProtocol>;
     }
 
-    return receipt as TransferReceipt<TokenTransferProtocol>;
+    return receipt;
   }
 
   // AsyncGenerator fn that produces status updates through an async generator
@@ -615,7 +615,7 @@ export class TokenTransfer<N extends Network = Network>
         ...receipt,
         state: TransferState.SourceFinalized,
         attestation: { id: msg },
-      } as SourceFinalizedTransferReceipt<TokenTransferProtocol, SC, DC>;
+      } satisfies SourceFinalizedTransferReceipt<TokenTransferProtocol>;
       yield receipt;
     }
 
@@ -630,7 +630,7 @@ export class TokenTransfer<N extends Network = Network>
         ...receipt,
         attestation: { id, attestation },
         state: TransferState.Attested,
-      } as AttestedTransferReceipt<TokenTransferProtocol, SC, DC>;
+      } satisfies AttestedTransferReceipt<TokenTransferProtocol>;
       yield receipt;
     }
 
@@ -647,7 +647,7 @@ export class TokenTransfer<N extends Network = Network>
           ...receipt,
           destinationTxs: [{ chain: toChain(chainId) as DC, txid: txHash }],
           state: TransferState.DestinationFinalized,
-        } as CompletedTransferReceipt<TokenTransferProtocol, SC, DC>;
+        } satisfies CompletedTransferReceipt<TokenTransferProtocol>;
       }
       yield receipt;
     }
@@ -666,7 +666,7 @@ export class TokenTransfer<N extends Network = Network>
         receipt = {
           ...receipt,
           state: TransferState.DestinationFinalized,
-        } as CompletedTransferReceipt<TokenTransferProtocol, SC, DC>;
+        } satisfies CompletedTransferReceipt<TokenTransferProtocol>;
       }
 
       yield receipt;
