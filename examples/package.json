@@ -19,7 +19,7 @@
   "author": "",
   "description": "The core package for the Connect SDK, used in conjunction with 1 or more of the chain packages",
   "files": [
-    "dist/**/*",
+    "dist",
     "src/**/*"
   ],
   "keywords": [

@@ -19,7 +19,7 @@
   "author": "",
   "description": "SDK for Algorand, used in conjunction with @wormhole-foundation/connect-sdk",
   "files": [
-    "dist/**/*"
+    "dist"
   ],
   "keywords": [
     "wormhole",
