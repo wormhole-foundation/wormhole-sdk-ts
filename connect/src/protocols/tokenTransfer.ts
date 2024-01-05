@@ -395,6 +395,9 @@ export class TokenTransfer<N extends Network = Network>
     wh: Wormhole<N>,
     transfer: TokenTransferDetails,
   ): Promise<void> {
+    if (transfer.from.chain === transfer.to.chain)
+      throw new Error("Cannot transfer to the same chain");
+
     if (transfer.payload && transfer.automatic)
       throw new Error("Payload with automatic delivery is not supported");
 
