@@ -2,6 +2,7 @@ import { MapLevel, constMap } from "../utils";
 import { Network } from "./networks";
 import { Chain } from "./chains";
 
+// prettier-ignore
 const rpcConfig = [[
   "Mainnet", [
     ["Ethereum",  "https://rpc.ankr.com/eth"],
@@ -16,6 +17,7 @@ const rpcConfig = [[
     ["Aptos",     "https://fullnode.mainnet.aptoslabs.com/v1"],
     ["Arbitrum",  "https://arb1.arbitrum.io/rpc"],
     ["Optimism",  "https://mainnet.optimism.io"],
+    ["Base",      "https://mainnet.base.org"],
     ["Osmosis",   "https://osmosis-rpc.polkachu.com"],
     ["Cosmoshub", "https://cosmos-rpc.polkachu.com"],
     ["Evmos",     "https://evmos-rpc.polkachu.com"],
@@ -39,6 +41,7 @@ const rpcConfig = [[
     ["Sei",       "https://sei-testnet-rpc.polkachu.com"],
     ["Arbitrum",  "https://arbitrum-goerli.publicnode.com"],
     ["Optimism",  "https://optimism-goerli.publicnode.com"],
+    ["Base",      "https://goerli.base.org"],
     ["Injective", "https://testnet.sentry.tm.injective.network"],
     ["Osmosis",   "https://rpc.testnet.osmosis.zone"],
     ["Cosmoshub", "https://rpc.sentry-02.theta-testnet.polypore.xyz"],
