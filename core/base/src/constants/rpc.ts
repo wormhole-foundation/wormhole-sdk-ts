@@ -25,7 +25,9 @@ const rpcConfig = [[
     ["Wormchain", "https://wormchain-rpc.quickapi.com"],
     ["Xpla",      "https://dimension-rpc.xpla.dev"],
     ["Sei",       "https://sei-rpc.polkachu.com/"],
-    ["Algorand", "https://mainnet-api.algonode.cloud"],
+    ["Algorand",  "https://mainnet-api.algonode.cloud"],
+    ["Terra",     "https://terra-classic-rpc.publicnode.com"],
+    ["Terra2",    "https://terra-rpc.polkachu.com"],
   ]], [
   "Testnet", [
     ["Ethereum",  "https://rpc.ankr.com/eth_goerli"],
@@ -49,7 +51,9 @@ const rpcConfig = [[
     ["Wormchain", "https://gateway.testnet.xlabs.xyz/"],
     ["Xpla",      "https://cube-rpc.xpla.dev"],
     ["Sepolia",   "https://ethereum-sepolia.publicnode.com"],
-    ["Algorand", "https://testnet-api.algonode.cloud"],
+    ["Algorand",  "https://testnet-api.algonode.cloud"],
+    ["Terra",     "https://bombay.stakesystems.io"],
+    ["Terra2",    "https://terra-testnet-rpc.polkachu.com"],
   ]], [
   "Devnet", [
     ["Ethereum",  "http://eth-devnet:8545"],
