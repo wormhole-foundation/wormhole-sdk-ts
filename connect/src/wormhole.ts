@@ -31,6 +31,7 @@ import { retry } from "./tasks";
 import {
   TransactionStatus,
   getTransactionStatusWithRetry,
+  getTxsByAddress,
   getVaaByTxHashWithRetry,
   getVaaBytesWithRetry,
   getVaaWithRetry,
@@ -335,6 +336,16 @@ export class Wormhole<N extends Network> {
     timeout = DEFAULT_TASK_TIMEOUT,
   ): Promise<TransactionStatus | null> {
     return getTransactionStatusWithRetry(this.config.api, wormholeMessageId, timeout);
+  }
+
+  /**
+   * Get recent transactions for an address
+   *
+   * @param address the string formatted address to get transactions for
+   * @returns the TransactionStatus
+   */
+  async getTransactionsForAddress(address: string): Promise<TransactionStatus[] | null> {
+    return getTxsByAddress(this.config.api, address);
   }
 
   /**

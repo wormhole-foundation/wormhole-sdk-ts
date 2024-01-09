@@ -293,3 +293,24 @@ export async function getVaaByTxHashWithRetry<T extends PayloadLiteral | Payload
 
   return deserialize(decodeAs, encoding.b64.decode(vaa.vaa));
 }
+
+export async function getTxsByAddress(
+  rpcUrl: string,
+  address: string,
+): Promise<TransactionStatus[] | null> {
+  const url = `${rpcUrl}/api/v1/transactions?address=${address}`;
+  try {
+    const response = await axios.get<{ transactions: TransactionStatus[] }>(url);
+    if (response.data.transactions.length > 0) return response.data.transactions;
+  } catch (error) {
+    if (!error) return null;
+    if (typeof error === "object") {
+      // A 404 error means the VAA is not yet available
+      // since its not available yet, we return null signaling it can be tried again
+      if (axios.isAxiosError(error) && error.response?.status === 404) return null;
+      if ("status" in error && error.status === 404) return null;
+    }
+    throw error;
+  }
+  return null;
+}
