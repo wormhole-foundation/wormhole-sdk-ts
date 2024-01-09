@@ -1,0 +1,69 @@
+{
+  "name": "@wormhole-foundation/connect-sdk-examples",
+  "version": "0.3.0-beta.13",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/wormhole-foundation/connect-sdk/issues"
+  },
+  "homepage": "https://github.com/wormhole-foundation/connect-sdk#readme",
+  "directories": {
+    "test": "__tests__"
+  },
+  "license": "Apache-2.0",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
+  "author": "",
+  "description": "The core package for the Connect SDK, used in conjunction with 1 or more of the chain packages",
+  "files": [
+    "dist",
+    "src/**/*"
+  ],
+  "keywords": [
+    "wormhole",
+    "sdk",
+    "typescript",
+    "connect"
+  ],
+  "engines": {
+    "node": ">=16"
+  },
+  "sideEffects": false,
+  "scripts": {
+    "wrapped": "tsx src/createWrapped.ts",
+    "tb": "tsx src/tokenBridge.ts",
+    "cctp": "tsx src/cctp.ts",
+    "demo": "tsx src/index.ts",
+    "cosmos": "tsx src/cosmos.ts",
+    "retb": "cd .. && npm run build && cd - && npm run tb",
+    "msg": "tsx src/messaging.ts",
+    "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo",
+    "lint": "npm run prettier && eslint --fix",
+    "prettier": "prettier --write ./src",
+    "coverage": "jest --config ../jest.config.ts --coverage",
+    "docs": "typedoc"
+  },
+  "devDependencies": {
+    "dotenv": "^16.3.1",
+    "tsx": "^4.7.0",
+    "algosdk": "^2.7.0"
+  },
+  "dependencies": {
+    "@wormhole-foundation/connect-sdk": "^0.3.0-beta.13",
+    "@wormhole-foundation/connect-sdk-solana": "^0.3.0-beta.13",
+    "@wormhole-foundation/connect-sdk-evm": "^0.3.0-beta.13",
+    "@wormhole-foundation/connect-sdk-cosmwasm": "^0.3.0-beta.13",
+    "@wormhole-foundation/connect-sdk-evm-core": "^0.3.0-beta.13",
+    "@wormhole-foundation/connect-sdk-solana-core": "^0.3.0-beta.13",
+    "@wormhole-foundation/connect-sdk-cosmwasm-core": "^0.3.0-beta.13",
+    "@wormhole-foundation/connect-sdk-evm-tokenbridge": "^0.3.0-beta.13",
+    "@wormhole-foundation/connect-sdk-solana-tokenbridge": "^0.3.0-beta.13",
+    "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge": "^0.3.0-beta.13",
+    "@wormhole-foundation/connect-sdk-evm-cctp": "^0.3.0-beta.13",
+    "@wormhole-foundation/connect-sdk-solana-cctp": "^0.3.0-beta.13",
+    "@wormhole-foundation/connect-sdk-cosmwasm-ibc": "^0.3.0-beta.13"
+  }
+}

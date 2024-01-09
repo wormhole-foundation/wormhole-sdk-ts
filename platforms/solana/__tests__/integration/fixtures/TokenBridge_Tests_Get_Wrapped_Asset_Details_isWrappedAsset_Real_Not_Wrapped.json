@@ -1,0 +1,73 @@
+[
+    {
+        "scope": "https://api.mainnet-beta.solana.com:443",
+        "method": "POST",
+        "path": "/",
+        "body": {
+            "method": "getAccountInfo",
+            "jsonrpc": "2.0",
+            "params": [
+                "GUnByXK3ELsrohtFt9PYGDEzd2KXXCDaFzkgX4FwZsNB",
+                {
+                    "encoding": "base64",
+                    "commitment": "confirmed"
+                }
+            ]
+        },
+        "status": 200,
+        "response": [
+            "1f8b08000000000004031dca410e83201085e17d8f316b210ea8140ed23dc290d01030224d13e3dd8bddbd3fef3be15d4bde370706041f61809d6a4b0798135cc9077dffd36ef1457b8d2577871c15c7dbd654fa2da49ec76959e435c0c7a64660724ba957f437d76ac579f54c39146c224d4c07a1995514d093b4cf20e17afc004abb5c778a000000"
+        ],
+        "rawHeaders": [
+            "content-type",
+            "application/json; charset=utf-8",
+            "date",
+            "Tue, 02 Jan 2024 18:50:58 GMT",
+            "x-rpc-node",
+            "nyc115",
+            "x-ratelimit-tier",
+            "free",
+            "x-ratelimit-method-limit",
+            "40",
+            "x-ratelimit-method-remaining",
+            "38",
+            "x-ratelimit-rps-limit",
+            "100",
+            "x-ratelimit-rps-remaining",
+            "97",
+            "x-ratelimit-endpoint-limit",
+            "unlimited",
+            "x-ratelimit-endpoint-remaining",
+            "-173",
+            "x-ratelimit-conn-limit",
+            "40",
+            "x-ratelimit-conn-remaining",
+            "39",
+            "x-ratelimit-connrate-limit",
+            "40",
+            "x-ratelimit-connrate-remaining",
+            "39",
+            "x-ratelimit-pubsub-limit",
+            "5",
+            "x-ratelimit-pubsub-remaining",
+            "5",
+            "access-control-allow-origin",
+            "backend_traffic",
+            "access-control-allow-methods",
+            "OPTIONS, POST, GET",
+            "access-control-allow-headers",
+            "authorization, *",
+            "access-control-max-age",
+            "86400",
+            "allow",
+            "OPTIONS, POST, GET",
+            "transfer-encoding",
+            "chunked",
+            "vary",
+            "Accept-Encoding",
+            "content-encoding",
+            "gzip"
+        ],
+        "responseIsBinary": false
+    }
+]

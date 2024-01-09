@@ -1,0 +1,49 @@
+{
+  "name": "@wormhole-foundation/connect-sdk-aptos",
+  "version": "0.3.0-beta.3",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/wormhole-foundation/connect-sdk/issues"
+  },
+  "homepage": "https://github.com/wormhole-foundation/connect-sdk#readme",
+  "directories": {
+    "test": "__tests__"
+  },
+  "license": "Apache-2.0",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
+  "author": "",
+  "description": "SDK for Solana, used in conjunction with @wormhole-foundation/connect-sdk",
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "wormhole",
+    "sdk",
+    "typescript",
+    "connect",
+    "solana"
+  ],
+  "engines": {
+    "node": ">=16"
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build:cjs": "tsc -p ./tsconfig.cjs.json",
+    "build:esm": "tsc -p ./tsconfig.esm.json",
+    "build": "npm run build:cjs && npm run build:esm",
+    "rebuild": "npm run clean && npm run build:cjs && npm run build:esm",
+    "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo",
+    "lint": "npm run prettier && eslint --fix",
+    "test": "jest --config ./jest.config.ts",
+    "prettier": "prettier --write ./src"
+  },
+  "dependencies": {
+    "@wormhole-foundation/connect-sdk": "^0.3.0-beta.3",
+    "aptos": "1.5.0"
+  }
+}

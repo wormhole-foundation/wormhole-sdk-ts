@@ -1,0 +1,239 @@
+[
+    {
+        "scope": "https://rpc.ankr.com:443",
+        "method": "POST",
+        "path": "/eth",
+        "body": [
+            {
+                "method": "eth_call",
+                "params": [
+                    {
+                        "to": "0x3ee18b2214aff97000d974cf647e7c347e8fa585",
+                        "data": "0x1ff1e28600000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000c581f595b53c5cb19bd0b3f8da6c935e2ca0"
+                    },
+                    "latest"
+                ],
+                "jsonrpc": "2.0"
+            },
+            {
+                "method": "eth_chainId",
+                "params": [],
+                "jsonrpc": "2.0"
+            },
+            {
+                "method": "eth_call",
+                "params": [
+                    {
+                        "to": "0x3ee18b2214aff97000d974cf647e7c347e8fa585",
+                        "data": "0x1ff1e28600000000000000000000000000000000000000000000000000000000000000060000000000000000000000007f39c581f595b53c5cb19bd0b3f8da6c935e2ca0"
+                    },
+                    "latest"
+                ],
+                "jsonrpc": "2.0"
+            },
+            {
+                "method": "eth_chainId",
+                "params": [],
+                "jsonrpc": "2.0"
+            },
+            {
+                "method": "eth_call",
+                "params": [
+                    {
+                        "to": "0x3ee18b2214aff97000d974cf647e7c347e8fa585",
+                        "data": "0x1a2be4da00000000000000000000000085f138bfee4ef8e540890cfb48f620571d67eda3"
+                    },
+                    "latest"
+                ],
+                "jsonrpc": "2.0"
+            },
+            {
+                "method": "eth_chainId",
+                "params": [],
+                "jsonrpc": "2.0"
+            }
+        ],
+        "status": 200,
+        "response": [
+            "1f8b08000000000000038aae56ca2acecf2b2a4856b25232d23350d251ca4c51b23236d4512a4a2d2ecd2951b25232a830a01028d5eae0b0c7949af618e2b6c708c51e3c0a8de9e47113621d6486ae3016000000ffff",
+            "03008a4cf67cb4010000"
+        ],
+        "rawHeaders": [
+            "Date",
+            "Wed, 25 Oct 2023 15:29:26 GMT",
+            "Content-Type",
+            "application/json",
+            "Transfer-Encoding",
+            "chunked",
+            "Connection",
+            "close",
+            "CF-Cache-Status",
+            "DYNAMIC",
+            "Access-Control-Allow-Origin",
+            "*",
+            "Cache-Control",
+            "public, max-age=2",
+            "Access-Control-Allow-Headers",
+            "Content-Type,Authorization",
+            "Access-Control-Allow-Methods",
+            "GET,POST,DELETE,OPTIONS",
+            "Access-Control-Max-Age",
+            "86400",
+            "x-multirpc-response-type",
+            "1",
+            "X-Robots-Tag",
+            "noindex, nofollow",
+            "Vary",
+            "Accept-Encoding",
+            "Server",
+            "cloudflare",
+            "CF-RAY",
+            "81bb7ebb1bcb41a9-EWR",
+            "Content-Encoding",
+            "gzip"
+        ],
+        "responseIsBinary": false
+    },
+    {
+        "scope": "https://rpc.ankr.com:443",
+        "method": "POST",
+        "path": "/eth",
+        "body": [
+            {
+                "method": "eth_call",
+                "params": [
+                    {
+                        "to": "0x85f138bfee4ef8e540890cfb48f620571d67eda3",
+                        "data": "0x9a8a0592"
+                    },
+                    "latest"
+                ],
+                "jsonrpc": "2.0"
+            },
+            {
+                "method": "eth_chainId",
+                "params": [],
+                "jsonrpc": "2.0"
+            },
+            {
+                "method": "eth_call",
+                "params": [
+                    {
+                        "to": "0x85f138bfee4ef8e540890cfb48f620571d67eda3",
+                        "data": "0x3d6c043b"
+                    },
+                    "latest"
+                ],
+                "jsonrpc": "2.0"
+            },
+            {
+                "method": "eth_chainId",
+                "params": [],
+                "jsonrpc": "2.0"
+            }
+        ],
+        "status": 200,
+        "response": [
+            "1f8b0800000000000003000000ffff",
+            "8aae56ca2acecf2b2a4856b25232d23350d251ca4c51b23236d7512a4a2d2ecd2951b25232a830a00c9829d5eae0b0c702c51e43dc0a2d89725092b1619a995962a271b261aab985a9b199719a8185b969a26192b949aa91799285695a8a9959b2394e7b4c0cd01d140b000000ffff0300e7c2440823010000"
+        ],
+        "rawHeaders": [
+            "Date",
+            "Wed, 25 Oct 2023 15:29:26 GMT",
+            "Content-Type",
+            "application/json",
+            "Transfer-Encoding",
+            "chunked",
+            "Connection",
+            "close",
+            "CF-Cache-Status",
+            "DYNAMIC",
+            "Access-Control-Allow-Origin",
+            "*",
+            "Cache-Control",
+            "public, max-age=2",
+            "Access-Control-Allow-Headers",
+            "Content-Type,Authorization",
+            "Access-Control-Allow-Methods",
+            "GET,POST,DELETE,OPTIONS",
+            "Access-Control-Max-Age",
+            "86400",
+            "x-multirpc-response-type",
+            "1",
+            "X-Robots-Tag",
+            "noindex, nofollow",
+            "Vary",
+            "Accept-Encoding",
+            "Server",
+            "cloudflare",
+            "CF-RAY",
+            "81bb7ebdbc8e8cca-EWR",
+            "Content-Encoding",
+            "gzip"
+        ],
+        "responseIsBinary": false
+    },
+    {
+        "scope": "https://rpc.ankr.com:443",
+        "method": "POST",
+        "path": "/eth",
+        "body": [
+            {
+                "method": "eth_call",
+                "params": [
+                    {
+                        "to": "0x3ee18b2214aff97000d974cf647e7c347e8fa585",
+                        "data": "0x1ff1e2860000000000000000000000000000000000000000000000000000000000000006000000000000000000000000b31f66aa3c1e785363f0875a1b74e27b85fd66c7"
+                    },
+                    "latest"
+                ],
+                "jsonrpc": "2.0"
+            },
+            {
+                "method": "eth_chainId",
+                "params": [],
+                "jsonrpc": "2.0"
+            }
+        ],
+        "status": 200,
+        "response": [
+            "1f8b0800000000000003000000ffff",
+            "74cd4d0e40301006d0bb7ceb46a6d5327a15b140671222889f4422ee6e6de15de0d537c67d99b7b54784cb08064342f4d66093fd9c0e44d0453f38a8cdb953112fca123c7145bd769eb570144a9b8a52529be3313f8ffb3c164ff3020000ffff03002fad529792000000"
+        ],
+        "rawHeaders": [
+            "Date",
+            "Wed, 25 Oct 2023 15:29:27 GMT",
+            "Content-Type",
+            "application/json",
+            "Transfer-Encoding",
+            "chunked",
+            "Connection",
+            "close",
+            "CF-Cache-Status",
+            "DYNAMIC",
+            "Access-Control-Allow-Origin",
+            "*",
+            "Cache-Control",
+            "public, max-age=2",
+            "Access-Control-Allow-Headers",
+            "Content-Type,Authorization",
+            "Access-Control-Allow-Methods",
+            "GET,POST,DELETE,OPTIONS",
+            "Access-Control-Max-Age",
+            "86400",
+            "x-multirpc-response-type",
+            "1",
+            "X-Robots-Tag",
+            "noindex, nofollow",
+            "Vary",
+            "Accept-Encoding",
+            "Server",
+            "cloudflare",
+            "CF-RAY",
+            "81bb7ebf98dd8c53-EWR",
+            "Content-Encoding",
+            "gzip"
+        ],
+        "responseIsBinary": false
+    }
+]

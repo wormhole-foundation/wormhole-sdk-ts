@@ -1,0 +1,24 @@
+kind: Job
+apiVersion: batch/v1
+metadata:
+  name: connect-sdk-ci-tests
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: connect-sdk-ci-tests
+          image: connect-sdk-test
+          command:
+            - /bin/sh
+            - -c
+            - "bash /app/testing/wait-run.sh && touch /app/testing/success"
+          readinessProbe:
+            exec:
+              command:
+                - test
+                - -e
+                - "/app/testing/success"
+            initialDelaySeconds: 60
+            periodSeconds: 15

@@ -1,0 +1,51 @@
+[
+    {
+        "scope": "https://rpc.ankr.com:443",
+        "method": "POST",
+        "path": "/eth",
+        "body": {
+            "method": "eth_chainId",
+            "params": [],
+            "jsonrpc": "2.0"
+        },
+        "status": 200,
+        "response": {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "result": "0x1"
+        },
+        "rawHeaders": [
+            "Date",
+            "Wed, 25 Oct 2023 15:29:23 GMT",
+            "Content-Type",
+            "application/json",
+            "Content-Length",
+            "39",
+            "Connection",
+            "close",
+            "CF-Cache-Status",
+            "DYNAMIC",
+            "Access-Control-Allow-Origin",
+            "*",
+            "Cache-Control",
+            "public, max-age=2",
+            "Access-Control-Allow-Headers",
+            "Content-Type,Authorization",
+            "Access-Control-Allow-Methods",
+            "GET,POST,DELETE,OPTIONS",
+            "Access-Control-Max-Age",
+            "86400",
+            "x-multirpc-response-type",
+            "1",
+            "X-Robots-Tag",
+            "noindex, nofollow",
+            "Vary",
+            "Accept-Encoding",
+            "Server",
+            "cloudflare",
+            "CF-RAY",
+            "81bb7ea68f464405-EWR"
+        ],
+        "responseIsBinary": false
+    }
+]

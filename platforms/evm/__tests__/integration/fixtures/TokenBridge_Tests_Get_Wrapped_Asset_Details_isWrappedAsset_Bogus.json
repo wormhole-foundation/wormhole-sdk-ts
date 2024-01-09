@@ -1,0 +1,70 @@
+[
+    {
+        "scope": "https://rpc.ankr.com:443",
+        "method": "POST",
+        "path": "/eth",
+        "body": [
+            {
+                "method": "eth_chainId",
+                "params": [],
+                "jsonrpc": "2.0"
+            },
+            {
+                "method": "eth_call",
+                "params": [
+                    {
+                        "to": "0x3ee18b2214aff97000d974cf647e7c347e8fa585",
+                        "data": "0x1a2be4da0000000000000000000000000000c581f595b53c5cb19bd0b3f8da6c935e2ca0"
+                    },
+                    "latest"
+                ],
+                "jsonrpc": "2.0"
+            },
+            {
+                "method": "eth_chainId",
+                "params": [],
+                "jsonrpc": "2.0"
+            }
+        ],
+        "status": 200,
+        "response": [
+            "1f8b08000000000000038aae56ca2acecf2b2a4856b25232d23350d251ca4c51b232d2512a4a2d2ecd2951b25232a83054aad5c1aece18459d018500a73526e8ce8905000000ffff",
+            "030092dedb6db8000000"
+        ],
+        "rawHeaders": [
+            "Date",
+            "Wed, 25 Oct 2023 15:29:23 GMT",
+            "Content-Type",
+            "application/json",
+            "Transfer-Encoding",
+            "chunked",
+            "Connection",
+            "close",
+            "CF-Cache-Status",
+            "DYNAMIC",
+            "Access-Control-Allow-Origin",
+            "*",
+            "Cache-Control",
+            "public, max-age=2",
+            "Access-Control-Allow-Headers",
+            "Content-Type,Authorization",
+            "Access-Control-Allow-Methods",
+            "GET,POST,DELETE,OPTIONS",
+            "Access-Control-Max-Age",
+            "86400",
+            "x-multirpc-response-type",
+            "1",
+            "X-Robots-Tag",
+            "noindex, nofollow",
+            "Vary",
+            "Accept-Encoding",
+            "Server",
+            "cloudflare",
+            "CF-RAY",
+            "81bb7ea81ec01885-EWR",
+            "Content-Encoding",
+            "gzip"
+        ],
+        "responseIsBinary": false
+    }
+]

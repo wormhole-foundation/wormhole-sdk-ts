@@ -1,2 +1,8 @@
+.turbo/
+build/
+dist/
 node_modules/
 .env
+tsconfig-build.tsbuildinfo
+tsconfig.tsbuildinfo
+__tests__/staging

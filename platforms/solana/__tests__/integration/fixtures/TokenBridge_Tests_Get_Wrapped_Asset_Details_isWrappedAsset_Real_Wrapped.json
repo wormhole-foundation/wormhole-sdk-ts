@@ -1,0 +1,73 @@
+[
+    {
+        "scope": "https://api.mainnet-beta.solana.com:443",
+        "method": "POST",
+        "path": "/",
+        "body": {
+            "method": "getAccountInfo",
+            "jsonrpc": "2.0",
+            "params": [
+                "F6ZZBNoi2XaguDJyzW2MdawdzFrLTgUjoi4fznPLNejE",
+                {
+                    "encoding": "base64",
+                    "commitment": "confirmed"
+                }
+            ]
+        },
+        "status": 200,
+        "response": [
+            "1f8b08000000000004035d8f4d4f83401086effe8c3943c37eb69078e887a912a33569edc178d85d065a0516584a894dffbb6b8fce699279e799792ef0e56cdd350612a0930802e8d09dca1e920b185bf738de5ad51cdfb173475bfb1c991039a1c4675d69fd98b258445c4a7e0d6050e509ff9633d52b483e6051ccffd5f2e791aa76b3107c4737e703b13a7b4da7879c54e3f874efa95a39941c3e03c011cda957baf4c85c950e032855d5d8ae779010c2389f4501d8738d9dffeb6cbb6ab5dda572bedfbc0cdf221ed66f7a35acd3aad5ab6d56ec8b796b9e17cb62a76f9e75ffd05873808449e25d1a65fc1926ae5ee398791e23b9c83562c8d994865c300c158d4d8842cd669cebc8600cd7bb5f3c51133543010000"
+        ],
+        "rawHeaders": [
+            "content-type",
+            "application/json; charset=utf-8",
+            "date",
+            "Tue, 02 Jan 2024 18:50:58 GMT",
+            "x-rpc-node",
+            "nyc115",
+            "x-ratelimit-tier",
+            "free",
+            "x-ratelimit-method-limit",
+            "40",
+            "x-ratelimit-method-remaining",
+            "37",
+            "x-ratelimit-rps-limit",
+            "100",
+            "x-ratelimit-rps-remaining",
+            "96",
+            "x-ratelimit-endpoint-limit",
+            "unlimited",
+            "x-ratelimit-endpoint-remaining",
+            "-173",
+            "x-ratelimit-conn-limit",
+            "40",
+            "x-ratelimit-conn-remaining",
+            "39",
+            "x-ratelimit-connrate-limit",
+            "40",
+            "x-ratelimit-connrate-remaining",
+            "39",
+            "x-ratelimit-pubsub-limit",
+            "5",
+            "x-ratelimit-pubsub-remaining",
+            "5",
+            "access-control-allow-origin",
+            "backend_traffic",
+            "access-control-allow-methods",
+            "OPTIONS, POST, GET",
+            "access-control-allow-headers",
+            "authorization, *",
+            "access-control-max-age",
+            "86400",
+            "allow",
+            "OPTIONS, POST, GET",
+            "transfer-encoding",
+            "chunked",
+            "vary",
+            "Accept-Encoding",
+            "content-encoding",
+            "gzip"
+        ],
+        "responseIsBinary": false
+    }
+]
