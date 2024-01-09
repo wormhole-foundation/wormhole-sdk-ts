@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/connect-sdk-examples",
-  "version": "0.3.0-beta.13",
+  "version": "0.3.0-beta.14",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -52,18 +52,18 @@
     "algosdk": "^2.7.0"
   },
   "dependencies": {
-    "@wormhole-foundation/connect-sdk": "^0.3.0-beta.13",
-    "@wormhole-foundation/connect-sdk-solana": "^0.3.0-beta.13",
-    "@wormhole-foundation/connect-sdk-evm": "^0.3.0-beta.13",
-    "@wormhole-foundation/connect-sdk-cosmwasm": "^0.3.0-beta.13",
-    "@wormhole-foundation/connect-sdk-evm-core": "^0.3.0-beta.13",
-    "@wormhole-foundation/connect-sdk-solana-core": "^0.3.0-beta.13",
-    "@wormhole-foundation/connect-sdk-cosmwasm-core": "^0.3.0-beta.13",
-    "@wormhole-foundation/connect-sdk-evm-tokenbridge": "^0.3.0-beta.13",
-    "@wormhole-foundation/connect-sdk-solana-tokenbridge": "^0.3.0-beta.13",
-    "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge": "^0.3.0-beta.13",
-    "@wormhole-foundation/connect-sdk-evm-cctp": "^0.3.0-beta.13",
-    "@wormhole-foundation/connect-sdk-solana-cctp": "^0.3.0-beta.13",
-    "@wormhole-foundation/connect-sdk-cosmwasm-ibc": "^0.3.0-beta.13"
+    "@wormhole-foundation/connect-sdk": "^0.3.0-beta.14",
+    "@wormhole-foundation/connect-sdk-solana": "^0.3.0-beta.14",
+    "@wormhole-foundation/connect-sdk-evm": "^0.3.0-beta.14",
+    "@wormhole-foundation/connect-sdk-cosmwasm": "^0.3.0-beta.14",
+    "@wormhole-foundation/connect-sdk-evm-core": "^0.3.0-beta.14",
+    "@wormhole-foundation/connect-sdk-solana-core": "^0.3.0-beta.14",
+    "@wormhole-foundation/connect-sdk-cosmwasm-core": "^0.3.0-beta.14",
+    "@wormhole-foundation/connect-sdk-evm-tokenbridge": "^0.3.0-beta.14",
+    "@wormhole-foundation/connect-sdk-solana-tokenbridge": "^0.3.0-beta.14",
+    "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge": "^0.3.0-beta.14",
+    "@wormhole-foundation/connect-sdk-evm-cctp": "^0.3.0-beta.14",
+    "@wormhole-foundation/connect-sdk-solana-cctp": "^0.3.0-beta.14",
+    "@wormhole-foundation/connect-sdk-cosmwasm-ibc": "^0.3.0-beta.14"
   }
 }
