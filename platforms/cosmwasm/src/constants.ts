@@ -121,7 +121,13 @@ export type IbcChannels = Partial<Record<CosmwasmChains, string>>;
 
 // For each chain, add the channel id for each other chain
 const gatewayConnections = [
-  ["Mainnet", [["Wormchain", { Cosmoshub: "channel-5", Osmosis: "channel-4" }]]],
+  [
+    "Mainnet",
+    [
+      ["Wormchain", { Cosmoshub: "channel-5", Osmosis: "channel-3" }],
+      ["Osmosis", { Wormchain: "channel-6" }],
+    ],
+  ],
   [
     "Testnet",
     [

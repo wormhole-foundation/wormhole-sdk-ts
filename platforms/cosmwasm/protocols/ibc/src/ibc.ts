@@ -340,7 +340,7 @@ export class CosmwasmIbcBridge<N extends Network, C extends CosmwasmChains>
 
   // Fetches the local channel for the given chain
   async fetchTransferChannel(chain: CosmwasmChains): Promise<string> {
-    if (this.chain !== Gateway.name)
+    if (this.chain !== Gateway.chain)
       throw new Error("Cannot query the transfer channels from a non-gateway chain");
 
     const { channel } = await this.rpc.queryContractSmart(this.gatewayAddress, {

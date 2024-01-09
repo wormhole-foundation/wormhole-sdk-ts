@@ -51,7 +51,7 @@ export class Gateway<N extends Network> extends ChainContext<
   ): string {
     const channels = CosmwasmPlatform.getIbcChannels(network, chain);
     if (!channels) throw new Error("No channels configured for chain " + chain);
-    if (!(Gateway.name in channels)) throw new Error("No channel configured for chain " + chain);
+    if (!(Gateway.chain in channels)) throw new Error("No channel configured for chain " + chain);
     return channels[Gateway.chain]!;
   }
 
