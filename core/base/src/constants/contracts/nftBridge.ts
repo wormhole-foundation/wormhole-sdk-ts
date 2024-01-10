@@ -2,6 +2,7 @@ import { MapLevel } from "../../utils";
 import { Network } from "../networks";
 import { Chain } from "../chains";
 
+// prettier-ignore
 export const nftBridgeContracts = [[
   "Mainnet", [
     ["Solana",    "WnFt12ZrnzZrFZkt2xsNsaNWoQribnuQ5B5FrDbwDhD"],
@@ -23,25 +24,29 @@ export const nftBridgeContracts = [[
     ["Optimism",  "0xfE8cD454b4A1CA468B57D79c0cc77Ef5B6f64585"],
   ]], [
   "Testnet", [
-    ["Solana",    "2rHhojZ7hpu1zA91nvZmT8TqWWvMcKmmNBCr2mKTtMq4"],
-    ["Ethereum",  "0xD8E4C2DbDd2e2bd8F1336EA691dBFF6952B1a6eB"],
-    ["Bsc",       "0xcD16E5613EF35599dc82B24Cb45B5A93D779f1EE"],
-    ["Polygon",   "0x51a02d0dcb5e52F5b92bdAA38FA013C91c7309A9"],
-    ["Avalanche", "0xD601BAf2EEE3C028344471684F6b27E789D9075D"],
-    ["Oasis",     "0xC5c25B41AB0b797571620F5204Afa116A44c0ebA"],
-    ["Aurora",    "0x8F399607E9BA2405D87F5f3e1B78D950b44b2e24"],
-    ["Fantom",    "0x63eD9318628D26BdCB15df58B53BB27231D1B227"],
-    ["Karura",    "0x0A693c2D594292B6Eb89Cb50EFe4B0b63Dd2760D"],
-    ["Acala",     "0x96f1335e0AcAB3cfd9899B30b2374e25a2148a6E"],
-    ["Klaytn",    "0x94c994fC51c13101062958b567e743f1a04432dE"],
-    ["Celo",      "0xaCD8190F647a31E56A656748bC30F69259f245Db"],
-    ["Moonbeam",  "0x98A0F4B96972b32Fcb3BD03cAeB66A44a6aB9Edb"],
-    ["Neon",      "0x66E5BcFD45D2F3f166c567ADa663f9d2ffb292B4"],
-    ["Arbitrum",  "0xEe3dB83916Ccdc3593b734F7F2d16D630F39F1D0"],
-    ["Optimism",  "0x23908A62110e21C04F3A4e011d24F901F911744A"],
-    ["Base",      "0xF681d1cc5F25a3694E348e7975d7564Aa581db59"],
-    ["Sepolia",   "0x6a0B52ac198e4870e5F3797d5B403838a5bbFD99"],
-    ["Aptos",     "0x1bdffae984043833ed7fe223f7af7a3f8902d04129b14f801823e64827da7130"],
+    ["Solana",          "2rHhojZ7hpu1zA91nvZmT8TqWWvMcKmmNBCr2mKTtMq4"],
+    ["Ethereum",        "0xD8E4C2DbDd2e2bd8F1336EA691dBFF6952B1a6eB"],
+    ["Bsc",             "0xcD16E5613EF35599dc82B24Cb45B5A93D779f1EE"],
+    ["Polygon",         "0x51a02d0dcb5e52F5b92bdAA38FA013C91c7309A9"],
+    ["Avalanche",       "0xD601BAf2EEE3C028344471684F6b27E789D9075D"],
+    ["Oasis",           "0xC5c25B41AB0b797571620F5204Afa116A44c0ebA"],
+    ["Aurora",          "0x8F399607E9BA2405D87F5f3e1B78D950b44b2e24"],
+    ["Fantom",          "0x63eD9318628D26BdCB15df58B53BB27231D1B227"],
+    ["Karura",          "0x0A693c2D594292B6Eb89Cb50EFe4B0b63Dd2760D"],
+    ["Acala",           "0x96f1335e0AcAB3cfd9899B30b2374e25a2148a6E"],
+    ["Klaytn",          "0x94c994fC51c13101062958b567e743f1a04432dE"],
+    ["Celo",            "0xaCD8190F647a31E56A656748bC30F69259f245Db"],
+    ["Moonbeam",        "0x98A0F4B96972b32Fcb3BD03cAeB66A44a6aB9Edb"],
+    ["Neon",            "0x66E5BcFD45D2F3f166c567ADa663f9d2ffb292B4"],
+    ["Arbitrum",        "0xEe3dB83916Ccdc3593b734F7F2d16D630F39F1D0"],
+    ["Optimism",        "0x23908A62110e21C04F3A4e011d24F901F911744A"],
+    ["Base",            "0xF681d1cc5F25a3694E348e7975d7564Aa581db59"],
+    ["Sepolia",         "0x6a0B52ac198e4870e5F3797d5B403838a5bbFD99"],
+    ["Aptos",           "0x1bdffae984043833ed7fe223f7af7a3f8902d04129b14f801823e64827da7130"],
+    ["ArbitrumSepolia", "0x23908A62110e21C04F3A4e011d24F901F911744A"],
+    ["BaseSepolia",     "0x268557122Ffd64c85750d630b716471118F323c8"],
+    ["OptimismSepolia", "0x27812285fbe85BA1DF242929B906B31EE3dd1b9f"],
+    ["Holesky",         "0xc8941d483c45eF8FB72E4d1F9dDE089C95fF8171"],
   ]], [
   "Devnet", [
     ["Solana",    "NFTWqJR8YnRVqPDvTJrYuLrQDitTG5AScqbeghi4zSA"],
