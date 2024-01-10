@@ -297,8 +297,10 @@ export async function getVaaByTxHashWithRetry<T extends PayloadLiteral | Payload
 export async function getTxsByAddress(
   rpcUrl: string,
   address: string,
+  pageSize: number = 50,
+  page: number = 0,
 ): Promise<TransactionStatus[] | null> {
-  const url = `${rpcUrl}/api/v1/transactions?address=${address}`;
+  const url = `${rpcUrl}/api/v1/transactions?address=${address}&pageSize=${pageSize}&page=${page}`;
   try {
     const response = await axios.get<{ transactions: TransactionStatus[] }>(url);
     if (response.data.transactions.length > 0) return response.data.transactions;
