@@ -322,8 +322,6 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
     // There are likely upwards of 19 signatures.  So, we ned to split things up
     const numSigs: number = vaa.signatures.length;
     const numTxns: number = Math.floor(numSigs / AlgorandWormholeCore.MAX_SIGS_PER_TXN) + 1;
-
-    const SIG_LEN: number = 66;
     const GuardianKeyLen: number = 20;
     const lsa = new LogicSigAccount(AlgorandWormholeCore.ALGO_VERIFY);
 
@@ -339,7 +337,7 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
       for (let i = 0; i < sigs.length; i++) {
         // The first byte of the sig is the relative index of that signature in the signatures array
         // Use that index to get the appropriate Guardian key
-        const sig = sigs[i * SIG_LEN]!;
+        const sig = sigs[i]!;
         const key = keys.slice(
           sig.guardianIndex * GuardianKeyLen + 1,
           (sig.guardianIndex + 1) * GuardianKeyLen + 1,
