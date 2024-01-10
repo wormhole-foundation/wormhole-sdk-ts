@@ -1,6 +1,7 @@
 import { MapLevel, RoArray, column, constMap } from "../utils";
 import { Chain } from "./chains";
 
+// prettier-ignore
 const platformAndChainsEntries = [[
   "Evm", [
     "Acala",
@@ -22,6 +23,10 @@ const platformAndChainsEntries = [[
     "Polygon",
     "Rootstock",
     "Sepolia",
+    "ArbitrumSepolia",
+    "BaseSepolia",
+    "OptimismSepolia",
+    "Holesky",
   ]], [
   "Solana", [
     "Solana",

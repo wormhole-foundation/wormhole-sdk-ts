@@ -239,12 +239,11 @@ const chainNetworkNativeChainIdEntries = [
       ["Testnet", 31n],
     ],
   ],
-  [
-    "Sepolia",
-    [
-      ["Testnet", 11155111n], //actually just another ethereum testnet...
-    ],
-  ],
+  ["Sepolia", [["Testnet", 11155111n]]],
+  ["ArbitrumSepolia", [["Testnet", 421614n]]],
+  ["BaseSepolia", [["Testnet", 84532n]]],
+  ["OptimismSepolia", [["Testnet", 11155420n]]],
+  ["Holesky", [["Testnet", 11155420n]]],
 ] as const satisfies MapLevel<Chain, MapLevel<Network, bigint | string>>;
 
 export const networkChainToNativeChainId = constMap(chainNetworkNativeChainIdEntries, [[1, 0], 2]);
