@@ -43,7 +43,7 @@ export namespace TokenBridge {
     PayloadName
   >;
 
-  export type TransfePayload<PayloadName extends TransferPayloadNames = TransferPayloadNames> =
+  export type TransferPayload<PayloadName extends TransferPayloadNames = TransferPayloadNames> =
     ProtocolPayload<ProtocolName, PayloadName>;
   export type AttestPayload<PayloadName extends AttestPayloadNames = AttestPayloadNames> =
     ProtocolPayload<ProtocolName, PayloadName>;
