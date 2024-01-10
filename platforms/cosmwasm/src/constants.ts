@@ -124,8 +124,17 @@ const gatewayConnections = [
   [
     "Mainnet",
     [
-      ["Wormchain", { Cosmoshub: "channel-5", Osmosis: "channel-3" }],
-      ["Osmosis", { Wormchain: "channel-6" }],
+      [
+        "Wormchain",
+        {
+          Osmosis: "channel-3",
+          Evmos: "channel-5",
+          Kujira: "channel-9",
+        },
+      ],
+      ["Osmosis", { Wormchain: "channel-2186" }],
+      ["Evmos", { Wormchain: "channel-94" }],
+      ["Kujira", { Wormchain: "channel-113" }],
     ],
   ],
   [
