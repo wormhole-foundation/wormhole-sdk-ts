@@ -344,8 +344,12 @@ export class Wormhole<N extends Network> {
    * @param address the string formatted address to get transactions for
    * @returns the TransactionStatus
    */
-  async getTransactionsForAddress(address: string): Promise<TransactionStatus[] | null> {
-    return getTxsByAddress(this.config.api, address);
+  async getTransactionsForAddress(
+    address: string,
+    pageSize: number = 50,
+    page: number = 0,
+  ): Promise<TransactionStatus[] | null> {
+    return getTxsByAddress(this.config.api, address, pageSize, page);
   }
 
   /**
