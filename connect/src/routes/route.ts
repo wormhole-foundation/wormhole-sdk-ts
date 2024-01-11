@@ -1,17 +1,13 @@
 import {
-  Chain,
-  ChainAddress,
-} from "@wormhole-foundation/sdk-base";
-
-import {
   TokenId,
   Signer,
-  TxHash,
+  TransactionId,
+  ChainAddress,
 } from "@wormhole-foundation/sdk-definitions";
 
-interface TransferRequest
-  from: ChainAddress,
-  to: ChainAddress,
+interface TransferRequest {
+  from: ChainAddress;
+  to: ChainAddress;
   source: TokenId;
   destination: TokenId;
   amount: bigint;
@@ -21,13 +17,15 @@ export type Result<T, E = Error> = { result: T } | { error: E };
 
 export type ValidationError = 'Amount too small' | 'Some other error';
 
-export abstract class Route<OPT> {
+export abstract class Route {
+  request: TransferRequest;
+
   abstract readonly NATIVE_GAS_DROPOFF_SUPPORTED: boolean;
 
   // true means this is a one-transaction route (using a relayer)
   abstract readonly IS_AUTOMATIC: boolean;
 
-  public constructor(request: TransferRequest): Route {
+  public constructor(request: TransferRequest) {
     this.request = request;
   }
 
@@ -35,8 +33,38 @@ export abstract class Route<OPT> {
 
   public abstract isAvailable(): Promise<boolean>;
 
-  public abstract validate(): Result<boolean, ValidationError>;
+  public abstract validate(): Promise<Result<boolean, ValidationError>>;
 
-  public abstract execute(sender: Signer, options: OPT): TxHash[];
+  public abstract execute(sender: Signer, options: any): Promise<TransactionId[]>;
+
+}
+
+// --- example:
+
+interface MayanOptions {
+  gasdropoff: number;
+  slipper: number;
+}
+
+export class MayanSwapRoute extends Route {
+
+  NATIVE_GAS_DROPOFF_SUPPORTED = true;
+  IS_AUTOMATIC = true;
+
+  async isSupported(): Promise<boolean> {
+    return true
+  }
+
+  async isAvailable(): Promise<boolean> {
+    return true
+  }
+
+  async validate(): Promise<Result<boolean, ValidationError>> {
+    return { result: true }
+  }
+
+  async execute(signer: Signer, options: MayanOptions): Promise<TransactionId[]> {
+    return []
+  }
 
 }
