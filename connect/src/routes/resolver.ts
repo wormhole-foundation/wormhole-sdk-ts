@@ -18,9 +18,11 @@ export class RouteResolver<N extends Network> {
     // Could do this faster in parallel using Promise.all
     return this.routeConstructors
       .map((rc) => new rc(this.wh, request))
-      .filter(async (route) =>
-        (await route.isSupported()) && (!isAutomatic(route) || (await route.isAvailable()))
-      );
+      .filter(async (route) => {
+        if (!(await route.isSupported())) return false;
+        if (isAutomatic(route) && !(await route.isAvailable())) return false;
+        return true;
+      });
   }
 
   async sortRoutes(
