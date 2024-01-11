@@ -293,24 +293,22 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
 
     // Get storage account for Guardian set
     const gsStorage = StorageLogicSig.forGuardianSet(coreId, vaa.guardianSet);
-    const { accounts: guardianAddr, txs: guardianOptInTxs } =
-      await AlgorandWormholeCore.maybeCreateStorageTx(
-        client,
-        senderAddr,
-        coreId,
-        gsStorage,
-        suggestedParams,
-      );
+    const {
+      accounts: [storageAddr],
+      txs: guardianOptInTxs,
+    } = await AlgorandWormholeCore.maybeCreateStorageTx(
+      client,
+      senderAddr,
+      coreId,
+      gsStorage,
+      suggestedParams,
+    );
     txs.push(...guardianOptInTxs);
 
-    let accts: string[] = [...seqAddr, ...guardianAddr];
+    let accts: string[] = [...seqAddr, storageAddr!];
 
     // Get the Guardian keys
-    const keys: Uint8Array = await StorageLogicSig.decodeLocalState(
-      client,
-      coreId,
-      guardianAddr[0]!,
-    );
+    const keys: Uint8Array = await StorageLogicSig.decodeLocalState(client, coreId, storageAddr!);
 
     // We don't pass the entire payload in but instead just pass it pre-digested.  This gets around size
     // limitations with lsigs AND reduces the cost of the entire operation on a congested network by reducing the
@@ -321,18 +319,20 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
     // How many signatures can we process in a single txn... we can do 6!
     // There are likely upwards of 19 signatures.  So, we ned to split things up
     const numSigs: number = vaa.signatures.length;
-    const numTxns: number = Math.floor(numSigs / AlgorandWormholeCore.MAX_SIGS_PER_TXN) + 1;
+
+    const numTxns: number = Math.ceil(numSigs / AlgorandWormholeCore.MAX_SIGS_PER_TXN);
     const GuardianKeyLen: number = 20;
     const lsa = new LogicSigAccount(AlgorandWormholeCore.ALGO_VERIFY);
 
     for (let nt = 0; nt < numTxns; nt++) {
-      let sigs = vaa.signatures.slice(nt, nt + AlgorandWormholeCore.MAX_SIGS_PER_TXN);
+      const step = nt * AlgorandWormholeCore.MAX_SIGS_PER_TXN;
+      const sigs = vaa.signatures.slice(step, step + AlgorandWormholeCore.MAX_SIGS_PER_TXN);
 
       // The keyset is the set of Guardians that correspond
       // to the current set of signatures in this loop.
       // Each signature in 20 bytes and comes from decodeLocalState()
-      let arraySize: number = sigs.length * GuardianKeyLen;
-      let keySet: Uint8Array = new Uint8Array(arraySize);
+      const arraySize: number = sigs.length * GuardianKeyLen;
+      const keySet: Uint8Array = new Uint8Array(arraySize);
 
       for (let i = 0; i < sigs.length; i++) {
         // The first byte of the sig is the relative index of that signature in the signatures array
@@ -371,6 +371,7 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
         },
       });
     }
+
     const appTxn = makeApplicationCallTxnFromObject({
       appArgs: [AlgorandWormholeCore.verifyVaa, serialize(vaa)],
       accounts: accts,
@@ -379,7 +380,7 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
       onComplete: OnApplicationComplete.NoOpOC,
       suggestedParams,
     });
-    appTxn.fee = appTxn.fee * (2 + numTxns); // Was 1
+    appTxn.fee = appTxn.fee * (2 + numTxns);
     txs.push({ tx: appTxn });
 
     return { accounts: accts, txs };
