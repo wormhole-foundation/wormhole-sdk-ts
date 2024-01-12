@@ -1,13 +1,17 @@
+import { Network } from "@wormhole-foundation/sdk-base";
+import { Wormhole } from "../wormhole";
 import { Route, TransferRequest } from './route';
 
 type RouteConstructor = {
   new(request: TransferRequest): Route
 };
 
-export class RouteResolver {
+export class RouteResolver<N extends Network> {
+  wh: Wormhole<N>
   routeConstructors: RouteConstructor[];
 
-  constructor(routeConstructors: RouteConstructor[]) {
+  constructor(wh: Wormhole<N>, routeConstructors: RouteConstructor[]) {
+    this.wh = wh;
     this.routeConstructors = routeConstructors;
   }
 
