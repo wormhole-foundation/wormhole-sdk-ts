@@ -5,7 +5,7 @@ import {
   ChainAddress,
 } from "@wormhole-foundation/sdk-definitions";
 
-interface TransferRequest {
+export interface TransferRequest {
   from: ChainAddress;
   to: ChainAddress;
   source: TokenId;
@@ -13,7 +13,7 @@ interface TransferRequest {
   amount: bigint;
 }
 
-export type Result<T, E = Error> = { result: T } | { error: E };
+export type ValidationResult<T, E = Error> = { valid: T } | { valid: false, error: E };
 
 export type ValidationError = 'Amount too small' | 'Some other error';
 
@@ -33,7 +33,7 @@ export abstract class Route {
 
   public abstract isAvailable(): Promise<boolean>;
 
-  public abstract validate(): Promise<Result<boolean, ValidationError>>;
+  public abstract validate(): Promise<ValidationResult<boolean, ValidationError>>;
 
   public abstract execute(sender: Signer, options: any): Promise<TransactionId[]>;
 
@@ -59,12 +59,11 @@ export class MayanSwapRoute extends Route {
     return true
   }
 
-  async validate(): Promise<Result<boolean, ValidationError>> {
-    return { result: true }
+  async validate(): Promise<ValidationResult<boolean, ValidationError>> {
+    return { valid: true }
   }
 
   async execute(signer: Signer, options: MayanOptions): Promise<TransactionId[]> {
     return []
   }
-
 }
