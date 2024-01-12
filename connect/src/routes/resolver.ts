@@ -2,23 +2,23 @@ import { Network } from "@wormhole-foundation/sdk-base";
 import { Wormhole } from "../wormhole";
 import { Route, TransferRequest } from './route';
 
-type RouteConstructor = {
-  new(request: TransferRequest): Route
+type RouteConstructor<N extends Network> = {
+  new(wh: Wormhole<N>, request: TransferRequest): Route<N>
 };
 
 export class RouteResolver<N extends Network> {
   wh: Wormhole<N>
-  routeConstructors: RouteConstructor[];
+  routeConstructors: RouteConstructor<N>[];
 
-  constructor(wh: Wormhole<N>, routeConstructors: RouteConstructor[]) {
+  constructor(wh: Wormhole<N>, routeConstructors: RouteConstructor<N>[]) {
     this.wh = wh;
     this.routeConstructors = routeConstructors;
   }
 
-  async findRoutes(request: TransferRequest): Promise<Route[]> {
+  async findRoutes(request: TransferRequest): Promise<Route<N>[]> {
     // Could do this faster in parallel using Promise.all
     return this.routeConstructors.map((rc) => {
-      return new rc(request);
+      return new rc(this.wh, request);
     }).filter(async (route) => {
       return await route.isSupported() && await route.isAvailable()
     });
