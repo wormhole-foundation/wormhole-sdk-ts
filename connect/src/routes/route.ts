@@ -1,9 +1,13 @@
+import { Wormhole } from "../wormhole";
+
 import {
   TokenId,
   Signer,
   TransactionId,
   ChainAddress,
 } from "@wormhole-foundation/sdk-definitions";
+
+import { Network } from "@wormhole-foundation/sdk-base";
 
 export interface TransferRequest {
   from: ChainAddress;
@@ -17,7 +21,8 @@ export type ValidationResult<T, E = Error> = { valid: T } | { valid: false, erro
 
 export type ValidationError = 'Amount too small' | 'Some other error';
 
-export abstract class Route {
+export abstract class Route<N extends Network> {
+  wh: Wormhole<N>;
   request: TransferRequest;
 
   abstract readonly NATIVE_GAS_DROPOFF_SUPPORTED: boolean;
@@ -25,7 +30,8 @@ export abstract class Route {
   // true means this is a one-transaction route (using a relayer)
   abstract readonly IS_AUTOMATIC: boolean;
 
-  public constructor(request: TransferRequest) {
+  public constructor(wh: Wormhole<N>, request: TransferRequest) {
+    this.wh = wh;
     this.request = request;
   }
 
@@ -46,7 +52,7 @@ interface MayanOptions {
   slipper: number;
 }
 
-export class MayanSwapRoute extends Route {
+export class MayanSwapRoute<N extends Network> extends Route<N> {
 
   NATIVE_GAS_DROPOFF_SUPPORTED = true;
   IS_AUTOMATIC = true;
