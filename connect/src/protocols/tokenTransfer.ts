@@ -416,8 +416,17 @@ export class TokenTransfer<N extends Network = Network>
     if (!toChain.supportsTokenBridge())
       throw new Error(`Token Bridge not supported on ${transfer.to.chain}`);
 
-    if (transfer.automatic && !fromChain.supportsAutomaticTokenBridge())
-      throw new Error(`Automatic Token Bridge not supported on ${transfer.from.chain}`);
+    if (transfer.automatic) {
+      if (!fromChain.supportsAutomaticTokenBridge())
+        throw new Error(`Automatic Token Bridge not supported on ${transfer.from.chain}`);
+      if (!toChain.supportsAutomaticTokenBridge())
+        throw new Error(`Automatic Token Bridge not supported on ${transfer.to.chain}`);
+
+      const atb = await fromChain.getAutomaticTokenBridge();
+      const tokenAddress = isTokenId(transfer.token) ? transfer.token.address : transfer.token;
+      const fee = await atb.getRelayerFee(transfer.from.address, transfer.to, tokenAddress);
+      if (transfer.amount <= fee) throw new Error(`Amount must be greater than fee (${fee})`);
+    }
 
     if (transfer.amount === 0n) throw new Error("Amount cannot be 0");
   }
