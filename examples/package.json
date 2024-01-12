@@ -33,6 +33,7 @@
   },
   "sideEffects": false,
   "scripts": {
+    "router": "tsx src/router.ts",
     "wrapped": "tsx src/createWrapped.ts",
     "tb": "tsx src/tokenBridge.ts",
     "cctp": "tsx src/cctp.ts",
