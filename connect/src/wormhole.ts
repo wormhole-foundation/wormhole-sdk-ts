@@ -28,8 +28,8 @@ import { ConfigOverrides, DEFAULT_TASK_TIMEOUT, WormholeConfig, applyOverrides }
 import { CircleTransfer } from "./protocols/cctpTransfer";
 import { TokenTransfer } from "./protocols/tokenTransfer";
 import { RouteConstructor, RouteResolver } from "./routes/resolver";
-import { TokenBridgeRoute } from "./routes/tokenBridgeRoute";
-import { AutomaticTokenBridgeRoute } from "./routes/automaticTokenBridgeRoute";
+import { TokenBridgeRoute } from "./routes/tokenBridge/manual";
+import { AutomaticTokenBridgeRoute } from "./routes/tokenBridge/automatic";
 import { retry } from "./tasks";
 import {
   TransactionStatus,

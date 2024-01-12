@@ -2,30 +2,39 @@ import { Network } from "@wormhole-foundation/sdk-base";
 import {
   Signer,
   TokenTransferDetails,
-  TransactionId,
   isSameToken,
+  isTokenId,
 } from "@wormhole-foundation/sdk-definitions";
-import { TokenTransfer } from "../protocols/tokenTransfer";
-import { TransferReceipt, TransferState, isSourceFinalized } from "../wormholeTransfer";
-import { ManualRoute, ValidationResult } from "./route";
+import { TokenTransfer } from "../../protocols/tokenTransfer";
+import { TransferReceipt, TransferState } from "../../wormholeTransfer";
+import { AutomaticRoute, ValidationResult } from "../route";
 
-export namespace TokenBridgeRoute {
+export namespace AutomaticTokenBridgeRoute {
   export type Options = {
-    payload?: Uint8Array;
+    nativeGasDropoff?: bigint;
   };
 }
 
-export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, TokenBridgeRoute.Options> {
+export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute<
+  N,
+  AutomaticTokenBridgeRoute.Options
+> {
+  NATIVE_GAS_DROPOFF_SUPPORTED = true;
+
   async isSupported(): Promise<boolean> {
     // No transfers to same chain
     if (this.request.from.chain === this.request.to.chain) return false;
 
     // No transfers to unsupported chains
     const fromChain = this.wh.getChain(this.request.from.chain);
-    if (!fromChain.supportsTokenBridge()) return false;
+    if (!fromChain.supportsAutomaticTokenBridge()) return false;
 
     const toChain = this.wh.getChain(this.request.to.chain);
-    if (!toChain.supportsTokenBridge()) return false;
+    if (!toChain.supportsAutomaticTokenBridge()) return false;
+
+    const atb = await fromChain.getAutomaticTokenBridge();
+    if (isTokenId(this.request.source) && !atb.isRegisteredToken(this.request.source.address))
+      return false;
 
     // If the destination token was set, and its different than what
     // we'd get from a token bridge transfer, then this route is not supported
@@ -41,7 +50,16 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, TokenBri
     return true;
   }
 
-  async validate(options: TokenBridgeRoute.Options): Promise<ValidationResult<Error>> {
+  async isAvailable(): Promise<boolean> {
+    // TODO
+    return true;
+  }
+
+  getDefaultOptions(): AutomaticTokenBridgeRoute.Options {
+    return { nativeGasDropoff: 0n };
+  }
+
+  async validate(options: AutomaticTokenBridgeRoute.Options): Promise<ValidationResult<Error>> {
     const transfer = this.toTransferDetails(options);
     try {
       await TokenTransfer.validateTransferDetails(this.wh, transfer);
@@ -51,21 +69,16 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, TokenBri
     }
   }
 
-  getDefaultOptions(): TokenBridgeRoute.Options {
-    return { payload: undefined };
-  }
-
   async initiate(
     signer: Signer,
-    options: TokenBridgeRoute.Options,
-  ): Promise<TransferReceipt<"TokenBridge">> {
+    options: AutomaticTokenBridgeRoute.Options,
+  ): Promise<TransferReceipt<"AutomaticTokenBridge">> {
     const fromChain = this.wh.getChain(this.request.from.chain);
     const transfer = this.toTransferDetails(options);
     const txids = await TokenTransfer.transfer<N>(fromChain, transfer, signer);
     const msg = await TokenTransfer.getTransferMessage(fromChain, txids[txids.length - 1]!.txid);
-
     return {
-      protocol: "TokenBridge",
+      protocol: "AutomaticTokenBridge",
       from: transfer.from.chain,
       to: transfer.to.chain,
       state: TransferState.SourceFinalized,
@@ -75,30 +88,19 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, TokenBri
     };
   }
 
-  async complete(
-    signer: Signer,
-    receipt: TransferReceipt<"TokenBridge">,
-  ): Promise<TransactionId[]> {
-    if (!isSourceFinalized(receipt))
-      throw new Error("The source must be finalized in order to complete the transfer");
-
-    const toChain = this.wh.getChain(this.request.to.chain);
-    const vaa = await TokenTransfer.getTransferVaa(this.wh, receipt.attestation.id);
-    return await TokenTransfer.redeem<N>(toChain, vaa, signer);
-  }
-
   async *track(
-    receipt: TransferReceipt<"TokenBridge">,
-  ): AsyncGenerator<TransferReceipt<"TokenBridge">> {
+    receipt: TransferReceipt<"AutomaticTokenBridge">,
+  ): AsyncGenerator<TransferReceipt<"AutomaticTokenBridge">> {
     return TokenTransfer.track(this.wh, receipt);
   }
 
-  private toTransferDetails(options: TokenBridgeRoute.Options): TokenTransferDetails {
+  private toTransferDetails(options: AutomaticTokenBridgeRoute.Options): TokenTransferDetails {
     return {
       token: this.request.source,
       amount: this.request.amount,
       from: this.request.from,
       to: this.request.to,
+      automatic: true,
       ...options,
     };
   }

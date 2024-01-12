@@ -52,6 +52,9 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   // track the transfer until the destination is initiated
   while (receipt.state <= TransferState.DestinationInitiated) {
     const tracker = bestRoute.track(receipt);
-    console.log("IN WAIT ", await trackLog(tracker));
+    for await (const _receipt of tracker) {
+      console.log("Current transfer state: ", TransferState[receipt.state]);
+      receipt = _receipt;
+    }
   }
 })();
