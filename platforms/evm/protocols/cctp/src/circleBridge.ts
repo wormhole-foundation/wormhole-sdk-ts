@@ -31,6 +31,8 @@ export class EvmCircleBridge<N extends Network, C extends EvmChains>
   implements CircleBridge<N, EvmPlatformType, C>
 {
   readonly chainId: bigint;
+  readonly circleChainId: number;
+
   readonly msgTransmitter: MessageTransmitter.MessageTransmitter;
   readonly tokenMessenger: TokenMessenger.TokenMessenger;
 
@@ -51,6 +53,11 @@ export class EvmCircleBridge<N extends Network, C extends EvmChains>
       network,
       chain,
     ) as bigint;
+
+    const circleChainId = circle.circleChainId.get(network, chain);
+    if (!circleChainId)
+      throw new Error(`Circle chain id not found for ${network} ${chain}`);
+    this.circleChainId = circleChainId;
 
     const msgTransmitterAddress = contracts.cctp?.messageTransmitter;
     if (!msgTransmitterAddress)
@@ -149,7 +156,7 @@ export class EvmCircleBridge<N extends Network, C extends EvmChains>
 
     const txReq = await this.tokenMessenger.depositForBurn.populateTransaction(
       amount,
-      circle.circleChainId.get(recipient.chain)!,
+      this.circleChainId,
       recipientAddress,
       tokenAddr,
     );
@@ -161,9 +168,11 @@ export class EvmCircleBridge<N extends Network, C extends EvmChains>
   }
 
   async isTransferCompleted(message: CircleBridge.Message): Promise<boolean> {
-    const cctpDomain = circle.circleChainId(message.sourceDomain);
     const hash = ethers.keccak256(
-      ethers.solidityPacked(['uint32', 'uint64'], [cctpDomain, message.nonce]),
+      ethers.solidityPacked(
+        ['uint32', 'uint64'],
+        [message.sourceDomain, message.nonce],
+      ),
     );
     const result = this.msgTransmitter.usedNonces.staticCall(hash);
     return result.toString() === '1';
@@ -206,8 +215,14 @@ export class EvmCircleBridge<N extends Network, C extends EvmChains>
     const xferSender = body.messageSender;
     const xferReceiver = body.mintRecipient;
 
-    const sendChain = circle.toCircleChain(circleMsg.sourceDomain);
-    const rcvChain = circle.toCircleChain(circleMsg.destinationDomain);
+    const sendChain = circle.toCircleChain(
+      this.network,
+      circleMsg.sourceDomain,
+    );
+    const rcvChain = circle.toCircleChain(
+      this.network,
+      circleMsg.destinationDomain,
+    );
 
     const token = { chain: sendChain, address: body.burnToken };
 

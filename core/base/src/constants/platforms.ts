@@ -73,16 +73,17 @@ export const isPlatform = (platform: string): platform is Platform =>
 export type PlatformToChains<P extends Platform> = ReturnType<typeof platformToChains<P>>[number];
 export type ChainToPlatform<C extends Chain> = ReturnType<typeof chainToPlatform<C>>;
 
+// prettier-ignore
 const platformAddressFormatEntries = [
-  ["Evm", "hex"],
-  ["Solana", "base58"],
-  ["Cosmwasm", "bech32"],
-  ["Btc", "bech32"], //though we currently don't have any btc addresses
-  ["Algorand", "algorandAppId"],
-  ["Sui", "hex"],
-  ["Aptos", "hex"],
-  ["Near", "sha256"],
-] as const satisfies MapLevel<Platform, string>;
+  ["Evm",       "hex"],
+  ["Solana",    "base58"],
+  ["Cosmwasm",  "bech32"],
+  ["Btc",       "bech32"], //though we currently don't have any btc addresses
+  ["Algorand",  "algorandAppId"],
+  ["Sui",       "hex"],
+  ["Aptos",     "hex"],
+  ["Near",      "sha256"],
+] as const;
 
 export const platformToAddressFormat = constMap(platformAddressFormatEntries);
 export type PlatformAddressFormat = (typeof platformAddressFormatEntries)[number][1];

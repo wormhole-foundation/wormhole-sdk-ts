@@ -161,7 +161,7 @@ export class CircleTransfer<N extends Network = Network>
     const vaa = await CircleTransfer.getTransferVaa(wh, from);
 
     const rcvAddress = vaa.payload.mintRecipient;
-    const rcvChain = circle.toCircleChain(vaa.payload.targetDomain);
+    const rcvChain = circle.toCircleChain(wh.network, vaa.payload.targetDomain);
     // Check if its a payload 3 targeted at a relayer on the destination chain
     const { wormholeRelayer } = wh.config.chains[rcvChain]!.contracts.cctp!;
 
@@ -198,8 +198,8 @@ export class CircleTransfer<N extends Network = Network>
     const xferSender = burnMessage.messageSender;
     const xferReceiver = burnMessage.mintRecipient;
 
-    const sendChain = circle.toCircleChain(msg.sourceDomain);
-    const rcvChain = circle.toCircleChain(msg.destinationDomain);
+    const sendChain = circle.toCircleChain(wh.network, msg.sourceDomain);
+    const rcvChain = circle.toCircleChain(wh.network, msg.destinationDomain);
 
     const details: CircleTransferDetails = {
       from: { chain: sendChain, address: xferSender },
