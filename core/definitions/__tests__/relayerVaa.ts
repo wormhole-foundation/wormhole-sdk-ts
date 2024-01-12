@@ -1,6 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 
-import { encoding } from "@wormhole-foundation/sdk-base";
+import { circle, encoding } from "@wormhole-foundation/sdk-base";
 import { serializePayload, deserializePayload, serialize, deserialize } from "../src/vaa";
 import "../src/payloads/relayer";
 
@@ -33,8 +33,11 @@ describe("Relayer Payload serialization tests", function () {
     expect(vaa.payload.refund.chain).toBe("Optimism");
     expect(vaa.payload.messageKeys.length).toBe(1);
     expect(vaa.payload.messageKeys[0]!.keyType).toBe("CCTP");
+
+    const circleDomain = circle.circleChainId("Testnet", "Avalanche");
+
     if (vaa.payload.messageKeys[0]!.keyType === "CCTP") {
-      expect(vaa.payload.messageKeys[0]!.domain).toBe("Avalanche");
+      expect(vaa.payload.messageKeys[0]!.domain).toBe(circleDomain);
       expect(vaa.payload.messageKeys[0]!.nonce).toBe(298648n);
     }
     const encoded = serialize(vaa);

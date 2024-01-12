@@ -92,8 +92,8 @@ export class Wormhole<N extends Network> {
     if (automatic && payload) throw new Error("Payload with automatic delivery is not supported");
 
     if (
-      !circle.isCircleChain(from.chain) ||
-      !circle.isCircleChain(to.chain) ||
+      !circle.isCircleChain(this.network, from.chain) ||
+      !circle.isCircleChain(this.network, to.chain) ||
       !circle.isCircleSupported(this.network, from.chain) ||
       !circle.isCircleSupported(this.network, to.chain)
     )
