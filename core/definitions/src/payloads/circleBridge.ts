@@ -33,7 +33,6 @@ export const circleMessageLayout = [
   { name: "sender", ...universalAddressItem },
   { name: "recipient", ...universalAddressItem },
   { name: "destinationCaller", ...universalAddressItem },
-  // TODO: is this the only message body we'll get?
   { name: "payload", binary: "object", layout: circleBurnMessageLayout },
 ] as const satisfies Layout;
 

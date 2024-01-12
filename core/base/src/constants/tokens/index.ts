@@ -49,6 +49,22 @@ export function getTokensBySymbol<N extends Network, C extends Chain>(
   return foundTokens;
 }
 
+export function getNativeTokenBySymbol<N extends Network, C extends Chain>(
+  network: N,
+  chain: C,
+  symbol: TokenSymbol,
+): Token | undefined {
+  const tokenMap = getTokenMap(network, chain);
+  if (!tokenMap) return;
+  const foundToken = Object.entries(tokenMap).find(
+    ([_, token]) =>
+      token.symbol === symbol && token.chain === chain && token.original === undefined,
+  );
+
+  if (!foundToken) return;
+  return foundToken[1];
+}
+
 export function getTokenByKey<N extends Network, C extends Chain>(
   network: N,
   chain: C,
