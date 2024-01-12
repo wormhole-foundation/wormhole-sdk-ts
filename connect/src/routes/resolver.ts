@@ -1,27 +1,44 @@
 import { Network } from "@wormhole-foundation/sdk-base";
 import { Wormhole } from "../wormhole";
-import { Route, TransferRequest } from './route';
+import { Route, RouteTransferRequest, isAutomatic } from "./route";
 
-type RouteConstructor<N extends Network> = {
-  new(wh: Wormhole<N>, request: TransferRequest): Route<N>
+export type RouteConstructor<N extends Network, OP, IR> = {
+  new (wh: Wormhole<N>, request: RouteTransferRequest): Route<N, OP, IR>;
 };
 
-export class RouteResolver<N extends Network> {
-  wh: Wormhole<N>
-  routeConstructors: RouteConstructor<N>[];
+export type RouteSortOptions = "cost" | "speed";
 
-  constructor(wh: Wormhole<N>, routeConstructors: RouteConstructor<N>[]) {
+export type UnknownRouteConstructor<N extends Network> = RouteConstructor<N, unknown, unknown>;
+export type UnknownRoute<N extends Network> = Route<N, unknown, unknown>;
+
+export class RouteResolver<N extends Network> {
+  wh: Wormhole<N>;
+  routeConstructors: UnknownRouteConstructor<N>[];
+
+  constructor(wh: Wormhole<N>, routeConstructors: UnknownRouteConstructor<N>[]) {
     this.wh = wh;
     this.routeConstructors = routeConstructors;
   }
 
-  async findRoutes(request: TransferRequest): Promise<Route<N>[]> {
+  async findRoutes(request: RouteTransferRequest): Promise<UnknownRoute<N>[]> {
     // Could do this faster in parallel using Promise.all
-    return this.routeConstructors.map((rc) => {
-      return new rc(this.wh, request);
-    }).filter(async (route) => {
-      return await route.isSupported() && await route.isAvailable()
-    });
+    return this.routeConstructors
+      .map((rc) => {
+        return new rc(this.wh, request);
+      })
+      .filter(async (route) => {
+        if (!(await route.isSupported())) return false;
+        if (isAutomatic(route)) return await route.isAvailable();
+        return true;
+      });
+  }
+
+  async sortRoutes(
+    routes: UnknownRoute<N>[],
+    sortBy: RouteSortOptions,
+  ): Promise<UnknownRoute<N>[]> {
+    // TODO: actually sort
+    return routes;
   }
 }
 

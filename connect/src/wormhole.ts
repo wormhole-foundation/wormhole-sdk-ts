@@ -27,6 +27,8 @@ import { getCircleAttestationWithRetry } from "./circle-api";
 import { ConfigOverrides, DEFAULT_TASK_TIMEOUT, WormholeConfig, applyOverrides } from "./config";
 import { CircleTransfer } from "./protocols/cctpTransfer";
 import { TokenTransfer } from "./protocols/tokenTransfer";
+import { RouteConstructor, RouteResolver } from "./routes/resolver";
+import { TokenBridgeRoute } from "./routes/tokenBridgeRoute";
 import { retry } from "./tasks";
 import {
   TransactionStatus,
@@ -156,6 +158,10 @@ export class Wormhole<N extends Network> {
       payload,
       nativeGas,
     });
+  }
+
+  resolver(extraRoutes: RouteConstructor<N, unknown, unknown>[] = []) {
+    return new RouteResolver(this, [TokenBridgeRoute, ...extraRoutes]);
   }
 
   /**
