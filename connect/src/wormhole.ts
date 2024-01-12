@@ -28,7 +28,8 @@ import { ConfigOverrides, DEFAULT_TASK_TIMEOUT, WormholeConfig, applyOverrides }
 import { CircleTransfer } from "./protocols/cctpTransfer";
 import { TokenTransfer } from "./protocols/tokenTransfer";
 import { RouteConstructor, RouteResolver } from "./routes/resolver";
-import { TokenBridgeRoute } from "./routes/tokenBridgeRoute";
+import { TokenBridgeRoute } from "./routes/tokenBridge/manual";
+import { AutomaticTokenBridgeRoute } from "./routes/tokenBridge/automatic";
 import { retry } from "./tasks";
 import {
   TransactionStatus,
@@ -160,8 +161,8 @@ export class Wormhole<N extends Network> {
     });
   }
 
-  resolver(extraRoutes: RouteConstructor<N, unknown, unknown>[] = []) {
-    return new RouteResolver(this, [TokenBridgeRoute, ...extraRoutes]);
+  resolver(extraRoutes: RouteConstructor<N, unknown>[] = []) {
+    return new RouteResolver(this, [TokenBridgeRoute, AutomaticTokenBridgeRoute, ...extraRoutes]);
   }
 
   /**
