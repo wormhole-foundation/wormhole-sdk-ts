@@ -1,8 +1,8 @@
-import { routes, Wormhole } from "@wormhole-foundation/connect-sdk";
+import { routes, TransferState, Wormhole } from "@wormhole-foundation/connect-sdk";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 
-import { getStuff } from "./helpers";
+import { getStuff, trackLog } from "./helpers";
 
 import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
 import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
@@ -18,8 +18,8 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   const tr: routes.RouteTransferRequest = {
     from: sender.address,
     to: receiver.address,
-    amount: 100000n,
-    source: await sender.chain.getNativeWrappedTokenId(),
+    amount: 35000000n,
+    source: "native",
   };
 
   // create new resolver
@@ -27,21 +27,34 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 
   // resolve the transfer request to a set of routes that can perform it
   const foundRoutes = await resolver.findRoutes(tr);
+  console.log("For the transfer parameters, we found these routes: ", foundRoutes);
 
   // Sort the routes given some input (not required for mvp)
-  const bestRoute = (await resolver.sortRoutes(foundRoutes, "cost"))[0]!;
+  // const bestRoute = (await resolver.sortRoutes(foundRoutes, "cost"))[0]!;
+  const bestRoute = foundRoutes.filter((route) => routes.isAutomatic(route))[0]!;
 
-  // grab a quote from the route to make sure it looks ok
-  //console.log("Best route quoted at: ", bestRoute.quote(opts));
+  const validated = await bestRoute.validate(bestRoute.getDefaultOptions());
+  if (!validated.valid) throw validated.error;
 
-  // riggity run it
+  // // grab a quote from the route to make sure it looks ok
+  // console.log("Best route quoted at: ", bestRoute.quote(opts));
 
-  const opts: routes.TokenBridgeRoute.Options = {};
-  const result = await bestRoute.initiate(sender.signer, opts);
-  console.log("Initiated transfer with txids: ", result);
+  // initiate the transfer
+  let receipt = await bestRoute.initiate(sender.signer, bestRoute.getDefaultOptions());
+  console.log("Initiated transfer with receipt: ", receipt);
 
+  // if the route is one we need to complete, do it
   if (routes.isCompletable(bestRoute)) {
-    const completedTxids = await bestRoute.complete(receiver.signer, result);
+    const completedTxids = await bestRoute.complete(receiver.signer, receipt);
     console.log("Completed transfer with txids: ", completedTxids);
+  }
+
+  // track the transfer until the destination is initiated
+  while (receipt.state <= TransferState.DestinationInitiated) {
+    const tracker = bestRoute.track(receipt);
+    for await (const _receipt of tracker) {
+      console.log("Current transfer state: ", TransferState[receipt.state]);
+      receipt = _receipt;
+    }
   }
 })();

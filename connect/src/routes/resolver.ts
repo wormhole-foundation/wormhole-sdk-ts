@@ -2,14 +2,14 @@ import { Network } from "@wormhole-foundation/sdk-base";
 import { Wormhole } from "../wormhole";
 import { Route, RouteTransferRequest, isAutomatic } from "./route";
 
-export type RouteConstructor<N extends Network, OP, IR> = {
-  new (wh: Wormhole<N>, request: RouteTransferRequest): Route<N, OP, IR>;
+export type RouteConstructor<N extends Network, OP> = {
+  new (wh: Wormhole<N>, request: RouteTransferRequest): Route<N, OP>;
 };
 
 export type RouteSortOptions = "cost" | "speed";
 
-export type UnknownRouteConstructor<N extends Network> = RouteConstructor<N, unknown, unknown>;
-export type UnknownRoute<N extends Network> = Route<N, unknown, unknown>;
+export type UnknownRouteConstructor<N extends Network> = RouteConstructor<N, unknown>;
+export type UnknownRoute<N extends Network> = Route<N, unknown>;
 
 export class RouteResolver<N extends Network> {
   wh: Wormhole<N>;
