@@ -30,6 +30,11 @@ export function isTokenId<C extends Chain>(thing: any): thing is TokenId<C> {
     isChain((<TokenId<C>>thing).chain)
   );
 }
+export function isSameToken(a: TokenId, b: TokenId): boolean {
+  if (a.chain !== b.chain) return false;
+  // @ts-ignore
+  return a.address.equals(b.address);
+}
 
 export type Balances = {
   [key: string]: bigint | null;
