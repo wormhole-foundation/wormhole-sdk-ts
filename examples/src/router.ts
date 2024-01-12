@@ -20,6 +20,7 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
     to: receiver.address,
     amount: 35000000n,
     source: "native",
+    destination: "native",
   };
 
   // create new resolver

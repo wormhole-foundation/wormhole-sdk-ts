@@ -9,7 +9,7 @@ export interface RouteTransferRequest {
   to: ChainAddress;
   amount: bigint;
   source: TokenId | "native";
-  destination?: TokenId;
+  destination?: TokenId | "native";
 }
 
 export type ValidationResult<E = Error> = { valid: true } | { valid: false; error: E };
