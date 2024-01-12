@@ -3,27 +3,19 @@ import {
   Signer,
   TokenTransferDetails,
   TransactionId,
-  WormholeMessageId,
   isSameToken,
 } from "@wormhole-foundation/sdk-definitions";
-import { TokenTransfer } from "../protocols/tokenTransfer";
-import { ManualRoute, ValidationError, ValidationResult } from "./route";
+import { TokenTransfer } from "../../protocols/tokenTransfer";
+import { TransferReceipt, TransferState, isSourceFinalized } from "../../wormholeTransfer";
+import { ManualRoute, ValidationResult } from "../route";
 
 export namespace TokenBridgeRoute {
   export type Options = {
     payload?: Uint8Array;
   };
-  export type InitiateResult = {
-    txids: TransactionId[];
-    message: WormholeMessageId;
-  };
 }
 
-export class TokenBridgeRoute<N extends Network> extends ManualRoute<
-  N,
-  TokenBridgeRoute.Options,
-  TokenBridgeRoute.InitiateResult
-> {
+export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, TokenBridgeRoute.Options> {
   async isSupported(): Promise<boolean> {
     // No transfers to same chain
     if (this.request.from.chain === this.request.to.chain) return false;
@@ -49,36 +41,56 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<
     return true;
   }
 
-  async validate(
-    options: TokenBridgeRoute.Options,
-  ): Promise<ValidationResult<boolean, ValidationError>> {
+  async validate(options: TokenBridgeRoute.Options): Promise<ValidationResult<Error>> {
     const transfer = this.toTransferDetails(options);
     try {
       await TokenTransfer.validateTransferDetails(this.wh, transfer);
       return { valid: true };
     } catch (e) {
-      return { valid: false, error: "Some other error" };
+      return { valid: false, error: e as Error };
     }
+  }
+
+  getDefaultOptions(): TokenBridgeRoute.Options {
+    return { payload: undefined };
   }
 
   async initiate(
     signer: Signer,
     options: TokenBridgeRoute.Options,
-  ): Promise<TokenBridgeRoute.InitiateResult> {
+  ): Promise<TransferReceipt<"TokenBridge">> {
     const fromChain = this.wh.getChain(this.request.from.chain);
     const transfer = this.toTransferDetails(options);
     const txids = await TokenTransfer.transfer<N>(fromChain, transfer, signer);
     const msg = await TokenTransfer.getTransferMessage(fromChain, txids[txids.length - 1]!.txid);
-    return { txids: txids, message: msg };
+
+    return {
+      protocol: "TokenBridge",
+      from: transfer.from.chain,
+      to: transfer.to.chain,
+      state: TransferState.SourceFinalized,
+      request: transfer,
+      originTxs: txids,
+      attestation: { id: msg },
+    };
   }
 
   async complete(
     signer: Signer,
-    initiateResult: TokenBridgeRoute.InitiateResult,
+    receipt: TransferReceipt<"TokenBridge">,
   ): Promise<TransactionId[]> {
+    if (!isSourceFinalized(receipt))
+      throw new Error("The source must be finalized in order to complete the transfer");
+
     const toChain = this.wh.getChain(this.request.to.chain);
-    const vaa = await TokenTransfer.getTransferVaa(this.wh, initiateResult.message);
+    const vaa = await TokenTransfer.getTransferVaa(this.wh, receipt.attestation.id);
     return await TokenTransfer.redeem<N>(toChain, vaa, signer);
+  }
+
+  async *track(
+    receipt: TransferReceipt<"TokenBridge">,
+  ): AsyncGenerator<TransferReceipt<"TokenBridge">> {
+    return TokenTransfer.track(this.wh, receipt);
   }
 
   private toTransferDetails(options: TokenBridgeRoute.Options): TokenTransferDetails {
