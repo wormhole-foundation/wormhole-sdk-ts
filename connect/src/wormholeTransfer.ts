@@ -166,9 +166,9 @@ export interface TransferProtocol<PN extends ProtocolName> {
   getReceipt(xfer: WormholeTransfer<PN>): TransferReceipt<PN>;
   track<N extends Network>(
     wh: Wormhole<N>,
-    xfer: WormholeTransfer<PN>,
+    xfer: TransferReceipt<PN>,
     timeout: number,
-  ): AsyncGenerator<TransferReceipt<PN>, unknown, unknown>;
+  ): AsyncGenerator<TransferReceipt<PN>>;
 }
 
 // WormholeTransfer abstracts the process and state transitions

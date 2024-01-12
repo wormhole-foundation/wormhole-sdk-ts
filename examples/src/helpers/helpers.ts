@@ -5,8 +5,10 @@ import {
   Network,
   Platform,
   PlatformToChains,
+  ProtocolName,
   Signer,
   TokenTransfer,
+  TransferReceipt,
   TransferState,
   TxHash,
   Wormhole,
@@ -56,7 +58,9 @@ export async function getStuff<
   const platform = chain.platform.utils()._platform;
   switch (platform) {
     case "Solana":
-      signer = await getSolanaSignAndSendSigner(await chain.getRpc(), getEnv("SOL_PRIVATE_KEY"));
+      signer = await getSolanaSignAndSendSigner(await chain.getRpc(), getEnv("SOL_PRIVATE_KEY"), {
+        computeLimit: 500_000n,
+      });
       break;
     case "Cosmwasm":
       signer = await getCosmwasmSigner(await chain.getRpc(), getEnv("COSMOS_MNEMONIC"));
@@ -90,6 +94,18 @@ export async function waitLog<N extends Network = Network>(
     console.log(`${tag}: Current trasfer state: `, TransferState[receipt.state]);
   }
   return receipt;
+}
+
+export async function trackLog(
+  tracker: AsyncGenerator<TransferReceipt<ProtocolName>>,
+  tag: string = "TrackLog",
+) {
+  let receipt: TransferReceipt<ProtocolName>;
+  for await (const _receipt of tracker) {
+    console.log(`${tag}: Current trasfer state: `, TransferState[_receipt.state]);
+    receipt = _receipt;
+  }
+  return receipt!;
 }
 
 // Note: This API may change but it is currently the best place to pull
