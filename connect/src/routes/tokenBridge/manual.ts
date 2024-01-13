@@ -33,8 +33,12 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
     return true;
   }
 
+  static getDefaultOptions(): TokenBridgeRoute.Options {
+    return { payload: undefined };
+  }
+
   async validate(options?: Op): Promise<ValidationResult<Op>> {
-    options = options ?? this.getDefaultOptions();
+    options = options ?? TokenBridgeRoute.getDefaultOptions();
     try {
       const quote = await this.quote(options);
       // If the destination token was set, and its different than what
@@ -62,10 +66,6 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
       this.toChain,
       this.toTransferDetails(options),
     );
-  }
-
-  getDefaultOptions(): TokenBridgeRoute.Options {
-    return { payload: undefined };
   }
 
   async initiate(

@@ -31,6 +31,8 @@ export type RouteConstructor<N extends Network, OP> = {
   // Check if this route is supported for the given transfer request
   // e.g. check if the protocols on the specific chains are supported
   isSupported(fromChain: ChainContext<N, Platform>, toChain: ChainContext<N, Platform>): boolean;
+  // Get the default options for this route, useful to prepopulate a form
+  getDefaultOptions(): OP;
 };
 
 export type UnknownRouteConstructor<N extends Network> = RouteConstructor<N, unknown>;
@@ -61,11 +63,10 @@ export abstract class Route<N extends Network, OP> {
   }
 
   // Validte the transfer request after applying any options
+  // return a quote and suggested options
   public abstract validate(options?: OP): Promise<ValidationResult<OP>>;
   // Initiate the transfer with the transfer request and passed options
   public abstract initiate(sender: Signer, options: OP): Promise<TransferReceipt<ProtocolName>>;
-  // Get the default options for this route, useful to prepopulate a form
-  public abstract getDefaultOptions(): OP;
   // Get a quote for the transfer with the given options
   public abstract quote(options: OP): Promise<TransferQuote>;
   // Track the progress of the transfer over time

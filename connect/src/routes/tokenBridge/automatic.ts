@@ -33,6 +33,9 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
 
     return true;
   }
+  static getDefaultOptions(): Op {
+    return { nativeGas: 0n };
+  }
 
   async isAvailable(): Promise<boolean> {
     const atb = await this.fromChain.getAutomaticTokenBridge();
@@ -43,12 +46,8 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
     return true;
   }
 
-  getDefaultOptions(): Op {
-    return { nativeGas: 0n };
-  }
-
   async validate(options?: Op): Promise<ValidationResult<Op>> {
-    options = options ?? this.getDefaultOptions();
+    options = options ?? AutomaticTokenBridgeRoute.getDefaultOptions();
 
     try {
       const { amount, destination } = this.request;
