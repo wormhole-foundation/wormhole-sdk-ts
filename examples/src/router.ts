@@ -1,4 +1,10 @@
-import { routes, TransferState, Wormhole } from "@wormhole-foundation/connect-sdk";
+import {
+  ProtocolName,
+  routes,
+  TransferReceipt,
+  TransferState,
+  Wormhole,
+} from "@wormhole-foundation/connect-sdk";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 
@@ -20,11 +26,10 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
     to: receiver.address,
     amount: 35000000n,
     source: "native",
-    destination: "native",
   };
 
   // create new resolver
-  const resolver = wh.resolver();
+  const resolver = wh.resolver([routes.TokenBridgeRoute]);
 
   // resolve the transfer request to a set of routes that can perform it
   const foundRoutes = await resolver.findRoutes(tr);
@@ -32,34 +37,48 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 
   // Sort the routes given some input (not required for mvp)
   // const bestRoute = (await resolver.sortRoutes(foundRoutes, "cost"))[0]!;
-  const bestRoute = foundRoutes.filter((route) => routes.isAutomatic(route))[0]!;
+  //const bestRoute = foundRoutes.filter((route) => routes.isAutomatic(route))[0]!;
+  const bestRoute = foundRoutes[0]!;
 
-  const opts = bestRoute.getDefaultOptions();
-  console.log(opts);
+  const opts = bestRoute.getDefaultOptions() as routes.AutomaticTokenBridgeRoute.Options;
 
-  const validated = await bestRoute.validate(opts);
-  if (!validated.valid) throw validated.error;
+  // hax to set it correctly, should validate return a modified thing? or
+  // fees or a quote?
+  const quote = await bestRoute.quote(opts);
+  console.log("Quote: ", quote);
+  //opts.nativeGas = tr.amount - quote.relayFee!.amount;
 
-  // grab a quote from the route to make sure it looks ok
-  const quote = bestRoute.quote(opts);
-  console.log("Best route quoted at: ", quote);
+  let validationResult = await bestRoute.validate(opts);
+  if (!validationResult.valid) throw validationResult.error;
 
   // initiate the transfer
-  let receipt = await bestRoute.initiate(sender.signer, bestRoute.getDefaultOptions());
+  const receipt = await bestRoute.initiate(sender.signer, opts);
   console.log("Initiated transfer with receipt: ", receipt);
 
-  // if the route is one we need to complete, do it
-  if (routes.isCompletable(bestRoute)) {
-    const completedTxids = await bestRoute.complete(receiver.signer, receipt);
-    console.log("Completed transfer with txids: ", completedTxids);
-  }
-
   // track the transfer until the destination is initiated
-  while (receipt.state <= TransferState.DestinationInitiated) {
-    const tracker = bestRoute.track(receipt);
-    for await (const _receipt of tracker) {
-      console.log("Current transfer state: ", TransferState[receipt.state]);
-      receipt = _receipt;
+  const checkAndComplete = async (receipt: TransferReceipt<ProtocolName>) => {
+    console.log("Checking transfer state...");
+    // overwrite receipt var
+    for await (receipt of bestRoute.track(receipt, 120 * 1000)) {
+      console.log("Transfer State:", TransferState[receipt.state]);
     }
-  }
+
+    // gucci
+    if (receipt.state >= TransferState.DestinationFinalized) return;
+
+    // if the route is one we need to complete, do it
+    if (receipt.state === TransferState.Attested) {
+      if (routes.isCompletable(bestRoute)) {
+        const completedTxids = await bestRoute.complete(receiver.signer, receipt);
+        console.log("Completed transfer with txids: ", completedTxids);
+      }
+    }
+
+    // give it time to breath and try again
+    const wait = 2 * 1000;
+    console.log(`Transfer not complete, trying again in a ${wait}ms...`);
+    setTimeout(() => checkAndComplete(receipt), wait);
+  };
+
+  await checkAndComplete(receipt);
 })();

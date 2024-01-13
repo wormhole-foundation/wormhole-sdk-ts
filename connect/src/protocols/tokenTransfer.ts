@@ -392,43 +392,42 @@ export class TokenTransfer<N extends Network = Network>
     return { chain: dstChain.chain, address: dstAddress };
   }
 
-  static async validateTransferDetails<N extends Network>(
+  static validateTransferDetails<N extends Network>(
     wh: Wormhole<N>,
     transfer: TokenTransferDetails,
     fromChain?: ChainContext<N, Platform, Chain>,
     toChain?: ChainContext<N, Platform, Chain>,
-  ): Promise<void> {
+  ): void {
+    if (transfer.amount === 0n) throw new Error("Amount cannot be 0");
+
     if (transfer.from.chain === transfer.to.chain)
       throw new Error("Cannot transfer to the same chain");
-
-    if (transfer.payload && transfer.automatic)
-      throw new Error("Payload with automatic delivery is not supported");
-
-    if (transfer.nativeGas && !transfer.automatic)
-      throw new Error("Gas Dropoff is only supported for automatic transfers");
 
     fromChain = fromChain ?? wh.getChain(transfer.from.chain);
     toChain = toChain ?? wh.getChain(transfer.to.chain);
 
-    if (!fromChain.supportsTokenBridge())
-      throw new Error(`Token Bridge not supported on ${transfer.from.chain}`);
-
-    if (!toChain.supportsTokenBridge())
-      throw new Error(`Token Bridge not supported on ${transfer.to.chain}`);
-
     if (transfer.automatic) {
+      if (transfer.payload) throw new Error("Payload with automatic delivery is not supported");
+
       if (!fromChain.supportsAutomaticTokenBridge())
         throw new Error(`Automatic Token Bridge not supported on ${transfer.from.chain}`);
+
       if (!toChain.supportsAutomaticTokenBridge())
         throw new Error(`Automatic Token Bridge not supported on ${transfer.to.chain}`);
 
-      const atb = await fromChain.getAutomaticTokenBridge();
-      const tokenAddress = isTokenId(transfer.token) ? transfer.token.address : transfer.token;
-      const fee = await atb.getRelayerFee(transfer.from.address, transfer.to, tokenAddress);
-      if (transfer.amount <= fee) throw new Error(`Amount must be greater than fee (${fee})`);
-    }
+      const nativeGas = transfer.nativeGas ?? 0n;
+      if (nativeGas > transfer.amount)
+        throw new Error(`Native gas amount  > amount (${nativeGas} > ${transfer.amount})`);
+    } else {
+      if (transfer.nativeGas)
+        throw new Error("Gas Dropoff is only supported for automatic transfers");
 
-    if (transfer.amount === 0n) throw new Error("Amount cannot be 0");
+      if (!fromChain.supportsTokenBridge())
+        throw new Error(`Token Bridge not supported on ${transfer.from.chain}`);
+
+      if (!toChain.supportsTokenBridge())
+        throw new Error(`Token Bridge not supported on ${transfer.to.chain}`);
+    }
   }
 
   static async quoteTransfer<N extends Network>(
@@ -608,7 +607,7 @@ export class TokenTransfer<N extends Network = Network>
     timeout: number = DEFAULT_TASK_TIMEOUT,
     fromChain?: ChainContext<N, ChainToPlatform<SC>, SC>,
     toChain?: ChainContext<N, ChainToPlatform<DC>, DC>,
-  ) {
+  ): AsyncGenerator<TransferReceipt<TokenTransferProtocol, SC, DC>> {
     const start = Date.now();
     const leftover = (start: number, max: number) => Math.max(max - (Date.now() - start), 0);
 

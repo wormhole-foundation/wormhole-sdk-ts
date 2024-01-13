@@ -50,6 +50,7 @@ export class Wormhole<N extends Network> {
   protected readonly _network: N;
   protected _platforms: PlatformMap<N>;
   protected _chains: ChainMap<N>;
+  protected _routes: RouteConstructor<N, unknown>[] = [TokenBridgeRoute, AutomaticTokenBridgeRoute];
 
   readonly config: WormholeConfig;
 
@@ -161,8 +162,8 @@ export class Wormhole<N extends Network> {
     });
   }
 
-  resolver(extraRoutes: RouteConstructor<N, unknown>[] = []) {
-    return new RouteResolver(this, [TokenBridgeRoute, AutomaticTokenBridgeRoute, ...extraRoutes]);
+  resolver(routes?: RouteConstructor<N, unknown>[]) {
+    return new RouteResolver(this, routes ?? this._routes);
   }
 
   /**

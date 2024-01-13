@@ -1,4 +1,5 @@
 import { Network } from "@wormhole-foundation/sdk-base";
+import { Platform } from "@wormhole-foundation/sdk-base/src";
 import {
   ChainContext,
   Signer,
@@ -7,14 +8,13 @@ import {
   isTokenId,
 } from "@wormhole-foundation/sdk-definitions";
 import { TokenTransfer } from "../../protocols/tokenTransfer";
+import { Wormhole } from "../../wormhole";
 import { TransferReceipt, TransferState } from "../../wormholeTransfer";
 import { AutomaticRoute, RouteTransferRequest, ValidationResult } from "../route";
-import { Wormhole } from "../../wormhole";
-import { Platform } from "@wormhole-foundation/sdk-base/src";
 
 export namespace AutomaticTokenBridgeRoute {
   export type Options = {
-    nativeGasDropoff?: bigint;
+    nativeGas?: bigint;
   };
 }
 
@@ -32,66 +32,76 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
     this.toChain = this.wh.getChain(this.request.to.chain);
   }
 
-  async isSupported(): Promise<boolean> {
+  isSupported(): boolean {
     // No transfers to same chain
     if (this.request.from.chain === this.request.to.chain) return false;
 
     // No transfers to unsupported chains
     if (!this.fromChain.supportsAutomaticTokenBridge()) return false;
-
-    const toChain = this.wh.getChain(this.request.to.chain);
-    if (!toChain.supportsAutomaticTokenBridge()) return false;
-
-    const atb = await this.fromChain.getAutomaticTokenBridge();
-    if (isTokenId(this.request.source) && !atb.isRegisteredToken(this.request.source.address))
-      return false;
+    if (!this.toChain.supportsAutomaticTokenBridge()) return false;
 
     return true;
   }
 
   async isAvailable(): Promise<boolean> {
-    // TODO
+    const atb = await this.fromChain.getAutomaticTokenBridge();
+
+    if (isTokenId(this.request.source))
+      return await atb.isRegisteredToken(this.request.source.address);
+
     return true;
   }
 
   getDefaultOptions(): AutomaticTokenBridgeRoute.Options {
-    return { nativeGasDropoff: 0n };
+    return { nativeGas: 0n };
   }
 
   async validate(options: AutomaticTokenBridgeRoute.Options): Promise<ValidationResult<Error>> {
     try {
-      // If the destination token was set, and its different than what
-      // we'd get from a token bridge transfer, then this route is not supported
-      if (this.request.destination) {
-        if (this.request.destination === "native") {
-          if (!this.NATIVE_GAS_DROPOFF_SUPPORTED)
-            throw new Error("Native gas dropoff not supported");
+      // If the destination set and is set to native, then the native gas dropoff feature
+      // can be used.
 
-          if (options.nativeGasDropoff !== undefined) {
-            throw new Error(
-              "Overspecification, either do not specify destination asset or do not specify native gas dropoff",
-            );
-          }
+      const { source, amount, destination, to, from } = this.request;
+      const nativeGas = options.nativeGas ?? 0n;
 
-          options.nativeGasDropoff = this.request.amount;
-        }
+      const transferableAmount = amount - nativeGas;
+      if (transferableAmount < 0n) throw new Error("Native gas cannot be greater than amount");
 
-        const destToken = await TokenTransfer.lookupDestinationToken(
-          this.fromChain,
-          this.toChain,
-          this.request.source,
+      const tokenAddress = isTokenId(source) ? source.address : source;
+
+      const atb = await this.fromChain.getAutomaticTokenBridge();
+      const fee = await atb.getRelayerFee(from.address, to, tokenAddress);
+      if (!(transferableAmount >= fee))
+        throw new Error(
+          `Amount - native gas requested must be greater than fee:  ${transferableAmount} >= ${fee})`,
         );
-        if (
-          isTokenId(this.request.destination) &&
-          !isSameToken(destToken, this.request.destination)
-        )
-          throw new Error(
-            `Cannot convert to source to destination token: ${this.request.source} : ${destToken}`,
+
+      if (destination) {
+        if (destination === "native") {
+          // if the full amount is consumed, then the destination token is not needed
+          const fullyConsumed = transferableAmount - fee === 0n;
+          if (!fullyConsumed)
+            // But if they also specified nativeGasDropoff, and its not exactly the same as the amount
+            // somebody is confused
+            throw new Error(
+              "Overspecified: either do not specify destination asset or do not specify native gas dropoff",
+            );
+        } else {
+          const destToken = await TokenTransfer.lookupDestinationToken(
+            this.fromChain,
+            this.toChain,
+            this.request.source,
           );
+          if (
+            isTokenId(this.request.destination) &&
+            !isSameToken(destToken, this.request.destination)
+          )
+            throw new Error("Cannot convert between these tokens");
+        }
       }
 
       const transfer = this.toTransferDetails(options);
-      await TokenTransfer.validateTransferDetails(this.wh, transfer);
+      TokenTransfer.validateTransferDetails(this.wh, transfer);
 
       return { valid: true };
     } catch (e) {
@@ -100,9 +110,11 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
   }
 
   async quote(options: AutomaticTokenBridgeRoute.Options) {
-    const fromChain = this.wh.getChain(this.request.from.chain);
-    const toChain = this.wh.getChain(this.request.to.chain);
-    return await TokenTransfer.quoteTransfer(fromChain, toChain, this.toTransferDetails(options));
+    return await TokenTransfer.quoteTransfer(
+      this.fromChain,
+      this.toChain,
+      this.toTransferDetails(options),
+    );
   }
 
   async initiate(
@@ -126,10 +138,8 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
     };
   }
 
-  async *track(
-    receipt: TransferReceipt<"AutomaticTokenBridge">,
-  ): AsyncGenerator<TransferReceipt<"AutomaticTokenBridge">> {
-    return TokenTransfer.track(this.wh, receipt);
+  public override async *track(receipt: TransferReceipt<"AutomaticTokenBridge">, timeout?: number) {
+    yield* TokenTransfer.track(this.wh, receipt, timeout, this.fromChain, this.toChain);
   }
 
   private toTransferDetails(options: AutomaticTokenBridgeRoute.Options): TokenTransferDetails {
@@ -142,16 +152,6 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
       automatic: true,
       ...options,
     };
-
-    // The only way this is supported is if the source token is
-    // wrapped e
-    // with native gas dropoff
-    // override native gas dropoff amount to the amount specified
-    // in source tokens
-    if (this.request.destination === "native") {
-      transfer.nativeGasDropoff = amount;
-    }
-
     return transfer;
   }
 }

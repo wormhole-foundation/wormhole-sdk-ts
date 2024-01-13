@@ -30,7 +30,8 @@ export abstract class Route<N extends Network, OP> {
   }
 
   // Check if this route is supported for the given transfer request
-  public abstract isSupported(): Promise<boolean>;
+  // e.g. check if the protocols on the specific chains are supported
+  public abstract isSupported(): boolean;
   // Validte the transfer request after applying any options
   public abstract validate(options: OP): Promise<ValidationResult<Error>>;
   // Initiate the transfer with the transfer request and passed options
@@ -42,6 +43,7 @@ export abstract class Route<N extends Network, OP> {
   // Track the progress of the transfer over time
   public abstract track(
     receipt: TransferReceipt<ProtocolName>,
+    timeout?: number,
   ): AsyncGenerator<TransferReceipt<ProtocolName>, unknown, unknown>;
 }
 
