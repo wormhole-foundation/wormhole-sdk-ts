@@ -2,7 +2,7 @@ import { routes, TransferState, Wormhole } from "@wormhole-foundation/connect-sd
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 
-import { getStuff, trackLog } from "./helpers";
+import { getStuff } from "./helpers";
 
 import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
 import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
@@ -34,11 +34,15 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   // const bestRoute = (await resolver.sortRoutes(foundRoutes, "cost"))[0]!;
   const bestRoute = foundRoutes.filter((route) => routes.isAutomatic(route))[0]!;
 
-  const validated = await bestRoute.validate(bestRoute.getDefaultOptions());
+  const opts = bestRoute.getDefaultOptions();
+  console.log(opts);
+
+  const validated = await bestRoute.validate(opts);
   if (!validated.valid) throw validated.error;
 
-  // // grab a quote from the route to make sure it looks ok
-  // console.log("Best route quoted at: ", bestRoute.quote(opts));
+  // grab a quote from the route to make sure it looks ok
+  const quote = bestRoute.quote(opts);
+  console.log("Best route quoted at: ", quote);
 
   // initiate the transfer
   let receipt = await bestRoute.initiate(sender.signer, bestRoute.getDefaultOptions());

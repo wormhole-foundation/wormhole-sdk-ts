@@ -4,6 +4,7 @@ import {
   TokenTransferDetails,
   TransactionId,
   isSameToken,
+  isTokenId,
 } from "@wormhole-foundation/sdk-definitions";
 import { TokenTransfer } from "../../protocols/tokenTransfer";
 import { TransferReceipt, TransferState, isSourceFinalized } from "../../wormholeTransfer";
@@ -30,14 +31,16 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, TokenBri
     // If the destination token was set, and its different than what
     // we'd get from a token bridge transfer, then this route is not supported
     if (this.request.destination) {
+      if (this.request.destination === "native") return this.NATIVE_GAS_DROPOFF_SUPPORTED;
+
       const destToken = await TokenTransfer.lookupDestinationToken(
         fromChain,
         toChain,
         this.request.source,
       );
-      if (!isSameToken(destToken, this.request.destination)) return false;
+      if (isTokenId(this.request.destination) && !isSameToken(destToken, this.request.destination))
+        return false;
     }
-
     return true;
   }
 
@@ -49,6 +52,12 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, TokenBri
     } catch (e) {
       return { valid: false, error: e as Error };
     }
+  }
+
+  async quote(options: TokenBridgeRoute.Options) {
+    const fromChain = this.wh.getChain(this.request.from.chain);
+    const toChain = this.wh.getChain(this.request.to.chain);
+    return await TokenTransfer.quoteTransfer(fromChain, toChain, this.toTransferDetails(options));
   }
 
   getDefaultOptions(): TokenBridgeRoute.Options {

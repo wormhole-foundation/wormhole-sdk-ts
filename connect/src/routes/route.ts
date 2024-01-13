@@ -1,7 +1,7 @@
 import { Network, ProtocolName } from "@wormhole-foundation/sdk-base";
 import { ChainAddress, Signer, TokenId, TransactionId } from "@wormhole-foundation/sdk-definitions";
 import { Wormhole } from "../wormhole";
-import { TransferReceipt } from "../wormholeTransfer";
+import { TransferQuote, TransferReceipt } from "../wormholeTransfer";
 import { UnknownRoute } from "./resolver";
 
 export interface RouteTransferRequest {
@@ -37,6 +37,8 @@ export abstract class Route<N extends Network, OP> {
   public abstract initiate(sender: Signer, options: OP): Promise<TransferReceipt<ProtocolName>>;
   // Get the default options for this route, useful to prepopulate a form
   public abstract getDefaultOptions(): OP;
+  // Get a quote for the transfer with the given options
+  public abstract quote(options: OP): Promise<TransferQuote>;
   // Track the progress of the transfer over time
   public abstract track(
     receipt: TransferReceipt<ProtocolName>,
