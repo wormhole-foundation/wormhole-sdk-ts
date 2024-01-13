@@ -8,9 +8,8 @@ import {
   isTokenId,
 } from "@wormhole-foundation/sdk-definitions";
 import { TokenTransfer, TokenTransferVAA } from "../../protocols/tokenTransfer";
-import { Wormhole } from "../../wormhole";
 import { TransferReceipt, TransferState, isAttested } from "../../wormholeTransfer";
-import { ManualRoute, RouteTransferRequest, ValidationResult } from "../route";
+import { ManualRoute, ValidationResult } from "../route";
 
 export namespace TokenBridgeRoute {
   export type Options = {
@@ -18,52 +17,42 @@ export namespace TokenBridgeRoute {
   };
 }
 
-export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, TokenBridgeRoute.Options> {
-  fromChain: ChainContext<N, Platform>;
-  toChain: ChainContext<N, Platform>;
-
-  constructor(wh: Wormhole<N>, request: RouteTransferRequest) {
-    super(wh, request);
-    this.fromChain = this.wh.getChain(this.request.from.chain);
-    this.toChain = this.wh.getChain(this.request.to.chain);
-  }
-
-  isSupported(): boolean {
+type Op = TokenBridgeRoute.Options;
+export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
+  static isSupported<N extends Network>(
+    fromChain: ChainContext<N, Platform>,
+    toChain: ChainContext<N, Platform>,
+  ): boolean {
     // No transfers to same chain
-    if (this.request.from.chain === this.request.to.chain) return false;
+    if (fromChain.chain === toChain.chain) return false;
 
     // No transfers to unsupported chains
-    if (!this.fromChain.supportsTokenBridge()) return false;
-    if (!this.toChain.supportsTokenBridge()) return false;
+    if (!fromChain.supportsTokenBridge()) return false;
+    if (!toChain.supportsTokenBridge()) return false;
 
     return true;
   }
 
-  async validate(options: TokenBridgeRoute.Options): Promise<ValidationResult<Error>> {
+  async validate(options?: Op): Promise<ValidationResult<Op>> {
+    options = options ?? this.getDefaultOptions();
     try {
+      const quote = await this.quote(options);
       // If the destination token was set, and its different than what
       // we'd get from a token bridge transfer, then this route is not supported
       if (this.request.destination) {
+        // TODO: yes we can, if the origin is the wrapped native token
         if (this.request.destination === "native")
           throw new Error("Cannot convert to native token");
 
-        const destToken = await TokenTransfer.lookupDestinationToken(
-          this.fromChain,
-          this.toChain,
-          this.request.source,
-        );
         if (
           isTokenId(this.request.destination) &&
-          !isSameToken(destToken, this.request.destination)
+          !isSameToken(quote.destinationToken.token, this.request.destination)
         )
           throw new Error("Cannot convert to a different token");
       }
-
-      const transfer = this.toTransferDetails(options);
-      TokenTransfer.validateTransferDetails(this.wh, transfer);
-      return { valid: true };
+      return { valid: true, quote, options };
     } catch (e) {
-      return { valid: false, error: e as Error };
+      return { valid: false, options, error: e as Error };
     }
   }
 

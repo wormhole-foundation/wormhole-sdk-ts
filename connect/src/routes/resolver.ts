@@ -1,15 +1,8 @@
 import { Network } from "@wormhole-foundation/sdk-base";
 import { Wormhole } from "../wormhole";
-import { Route, RouteTransferRequest, isAutomatic } from "./route";
-
-export type RouteConstructor<N extends Network, OP> = {
-  new (wh: Wormhole<N>, request: RouteTransferRequest): Route<N, OP>;
-};
+import { RouteTransferRequest, UnknownRoute, UnknownRouteConstructor, isAutomatic } from "./route";
 
 export type RouteSortOptions = "cost" | "speed";
-
-export type UnknownRouteConstructor<N extends Network> = RouteConstructor<N, unknown>;
-export type UnknownRoute<N extends Network> = Route<N, unknown>;
 
 export class RouteResolver<N extends Network> {
   wh: Wormhole<N>;
@@ -22,15 +15,13 @@ export class RouteResolver<N extends Network> {
 
   async findRoutes(request: RouteTransferRequest): Promise<UnknownRoute<N>[]> {
     // Could do this faster in parallel using Promise.all
+    const fromChain = this.wh.getChain(request.from.chain);
+    const toChain = this.wh.getChain(request.to.chain);
+
     return this.routeConstructors
-      .map((rc) => {
-        return new rc(this.wh, request);
-      })
-      .filter(async (route) => {
-        if (!(await route.isSupported())) return false;
-        if (isAutomatic(route)) return await route.isAvailable();
-        return true;
-      });
+      .filter((rc) => rc.isSupported(fromChain, toChain))
+      .map((rc) => new rc(this.wh, request, fromChain, toChain))
+      .filter(async (route) => (isAutomatic(route) ? await route.isAvailable() : true));
   }
 
   async sortRoutes(

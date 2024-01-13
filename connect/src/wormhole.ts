@@ -27,7 +27,7 @@ import { getCircleAttestationWithRetry } from "./circle-api";
 import { ConfigOverrides, DEFAULT_TASK_TIMEOUT, WormholeConfig, applyOverrides } from "./config";
 import { CircleTransfer } from "./protocols/cctpTransfer";
 import { TokenTransfer } from "./protocols/tokenTransfer";
-import { RouteConstructor, RouteResolver } from "./routes/resolver";
+import { RouteResolver } from "./routes/resolver";
 import { TokenBridgeRoute } from "./routes/tokenBridge/manual";
 import { AutomaticTokenBridgeRoute } from "./routes/tokenBridge/automatic";
 import { retry } from "./tasks";
@@ -39,6 +39,7 @@ import {
   getVaaBytesWithRetry,
   getVaaWithRetry,
 } from "./whscan-api";
+import { RouteConstructor } from "./routes";
 
 type PlatformMap<N extends Network, P extends Platform = Platform> = Map<P, PlatformContext<N, P>>;
 type ChainMap<N extends Network, C extends Chain = Chain> = Map<

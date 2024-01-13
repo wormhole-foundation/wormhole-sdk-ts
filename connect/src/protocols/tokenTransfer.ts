@@ -122,7 +122,7 @@ export class TokenTransfer<N extends Network = Network>
       toChain = toChain ?? wh.getChain(from.to.chain);
 
       // throws if invalid
-      await TokenTransfer.validateTransferDetails(wh, from, fromChain, toChain);
+      TokenTransfer.validateTransferDetails(wh, from, fromChain, toChain);
 
       // Apply hackery
       from = {

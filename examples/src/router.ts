@@ -26,10 +26,11 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
     to: receiver.address,
     amount: 35000000n,
     source: "native",
+    destination: "native",
   };
 
   // create new resolver
-  const resolver = wh.resolver([routes.TokenBridgeRoute]);
+  const resolver = wh.resolver([routes.AutomaticTokenBridgeRoute]);
 
   // resolve the transfer request to a set of routes that can perform it
   const foundRoutes = await resolver.findRoutes(tr);
@@ -40,19 +41,11 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   //const bestRoute = foundRoutes.filter((route) => routes.isAutomatic(route))[0]!;
   const bestRoute = foundRoutes[0]!;
 
-  const opts = bestRoute.getDefaultOptions() as routes.AutomaticTokenBridgeRoute.Options;
-
-  // hax to set it correctly, should validate return a modified thing? or
-  // fees or a quote?
-  const quote = await bestRoute.quote(opts);
-  console.log("Quote: ", quote);
-  //opts.nativeGas = tr.amount - quote.relayFee!.amount;
-
-  let validationResult = await bestRoute.validate(opts);
-  if (!validationResult.valid) throw validationResult.error;
+  let validated = await bestRoute.validate();
+  if (!validated.valid) throw validated.error;
 
   // initiate the transfer
-  const receipt = await bestRoute.initiate(sender.signer, opts);
+  const receipt = await bestRoute.initiate(sender.signer, validated.options);
   console.log("Initiated transfer with receipt: ", receipt);
 
   // track the transfer until the destination is initiated
@@ -68,7 +61,7 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 
     // if the route is one we need to complete, do it
     if (receipt.state === TransferState.Attested) {
-      if (routes.isCompletable(bestRoute)) {
+      if (routes.isManual(bestRoute)) {
         const completedTxids = await bestRoute.complete(receiver.signer, receipt);
         console.log("Completed transfer with txids: ", completedTxids);
       }

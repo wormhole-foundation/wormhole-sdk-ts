@@ -1,5 +1,4 @@
 import { Network } from "@wormhole-foundation/sdk-base";
-import { Platform } from "@wormhole-foundation/sdk-base/src";
 import {
   ChainContext,
   Signer,
@@ -8,9 +7,8 @@ import {
   isTokenId,
 } from "@wormhole-foundation/sdk-definitions";
 import { TokenTransfer } from "../../protocols/tokenTransfer";
-import { Wormhole } from "../../wormhole";
 import { TransferReceipt, TransferState } from "../../wormholeTransfer";
-import { AutomaticRoute, RouteTransferRequest, ValidationResult } from "../route";
+import { AutomaticRoute, ValidationResult } from "../route";
 
 export namespace AutomaticTokenBridgeRoute {
   export type Options = {
@@ -18,27 +16,20 @@ export namespace AutomaticTokenBridgeRoute {
   };
 }
 
-export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute<
-  N,
-  AutomaticTokenBridgeRoute.Options
-> {
+type Op = AutomaticTokenBridgeRoute.Options;
+export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute<N, Op> {
   NATIVE_GAS_DROPOFF_SUPPORTED = true;
-  fromChain: ChainContext<N, Platform>;
-  toChain: ChainContext<N, Platform>;
 
-  constructor(wh: Wormhole<N>, request: RouteTransferRequest) {
-    super(wh, request);
-    this.fromChain = this.wh.getChain(this.request.from.chain);
-    this.toChain = this.wh.getChain(this.request.to.chain);
-  }
-
-  isSupported(): boolean {
+  static isSupported<N extends Network>(
+    fromChain: ChainContext<N>,
+    toChain: ChainContext<N>,
+  ): boolean {
     // No transfers to same chain
-    if (this.request.from.chain === this.request.to.chain) return false;
+    if (fromChain.chain === toChain.chain) return false;
 
     // No transfers to unsupported chains
-    if (!this.fromChain.supportsAutomaticTokenBridge()) return false;
-    if (!this.toChain.supportsAutomaticTokenBridge()) return false;
+    if (!fromChain.supportsAutomaticTokenBridge()) return false;
+    if (!toChain.supportsAutomaticTokenBridge()) return false;
 
     return true;
   }
@@ -52,60 +43,53 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
     return true;
   }
 
-  getDefaultOptions(): AutomaticTokenBridgeRoute.Options {
+  getDefaultOptions(): Op {
     return { nativeGas: 0n };
   }
 
-  async validate(options: AutomaticTokenBridgeRoute.Options): Promise<ValidationResult<Error>> {
+  async validate(options?: Op): Promise<ValidationResult<Op>> {
+    options = options ?? this.getDefaultOptions();
+
     try {
-      // If the destination set and is set to native, then the native gas dropoff feature
-      // can be used.
+      const { amount, destination } = this.request;
 
-      const { source, amount, destination, to, from } = this.request;
-      const nativeGas = options.nativeGas ?? 0n;
+      const quote = await this.quote(options);
+      const { amount: fee } = quote.relayFee!;
 
-      const transferableAmount = amount - nativeGas;
-      if (transferableAmount < 0n) throw new Error("Native gas cannot be greater than amount");
+      if (amount < fee) throw new Error(`Amount must be greater than fee:  ${amount} > ${fee}`);
 
-      const tokenAddress = isTokenId(source) ? source.address : source;
-
-      const atb = await this.fromChain.getAutomaticTokenBridge();
-      const fee = await atb.getRelayerFee(from.address, to, tokenAddress);
-      if (!(transferableAmount >= fee))
-        throw new Error(
-          `Amount - native gas requested must be greater than fee:  ${transferableAmount} >= ${fee})`,
-        );
+      options.nativeGas = options.nativeGas ?? 0n;
 
       if (destination) {
-        if (destination === "native") {
-          // if the full amount is consumed, then the destination token is not needed
-          const fullyConsumed = transferableAmount - fee === 0n;
-          if (!fullyConsumed)
-            // But if they also specified nativeGasDropoff, and its not exactly the same as the amount
-            // somebody is confused
-            throw new Error(
-              "Overspecified: either do not specify destination asset or do not specify native gas dropoff",
-            );
-        } else {
-          const destToken = await TokenTransfer.lookupDestinationToken(
-            this.fromChain,
-            this.toChain,
-            this.request.source,
-          );
-          if (
-            isTokenId(this.request.destination) &&
-            !isSameToken(destToken, this.request.destination)
-          )
+        if (isTokenId(destination)) {
+          if (!isSameToken(quote.destinationToken.token, destination))
             throw new Error("Cannot convert between these tokens");
+        } else {
+          // considered unset for our purposes
+          // they've asked for native gas dropoff implicitly
+          // max out native gas. This value may be negative but we check that later
+          if (options.nativeGas === 0n) options.nativeGas = amount - fee;
+          // strict equality from here,
+          //  if it came in set
+          //  and they specified native dest token
+          //  then nativeGas must be exactly the same as amount - fee
+          if (options.nativeGas !== amount - fee)
+            throw new Error("Native gas cannot be greater than amount - fee");
         }
       }
 
-      const transfer = this.toTransferDetails(options);
-      TokenTransfer.validateTransferDetails(this.wh, transfer);
+      if (options.nativeGas < 0n) throw new Error("Native gas cannot be negative");
 
-      return { valid: true };
+      const transferableAmount = amount - options.nativeGas;
+      if (transferableAmount < 0n) throw new Error("Native gas cannot be greater than amount");
+      if (transferableAmount < fee)
+        throw new Error(
+          `Amount - native gas requested must be greater than fee:  ${transferableAmount} > ${fee}`,
+        );
+
+      return { valid: true, quote, options };
     } catch (e) {
-      return { valid: false, error: e as Error };
+      return { valid: false, options, error: e as Error };
     }
   }
 
