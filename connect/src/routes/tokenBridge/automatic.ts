@@ -1,6 +1,5 @@
 import { Network } from "@wormhole-foundation/sdk-base";
 import {
-  ChainContext,
   Signer,
   TokenTransferDetails,
   isSameToken,
@@ -20,16 +19,28 @@ type Op = AutomaticTokenBridgeRoute.Options;
 export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute<N, Op> {
   NATIVE_GAS_DROPOFF_SUPPORTED = true;
 
-  static isSupported<N extends Network>(
-    fromChain: ChainContext<N>,
-    toChain: ChainContext<N>,
-  ): boolean {
+  async isSupported(): Promise<boolean> {
     // No transfers to same chain
-    if (fromChain.chain === toChain.chain) return false;
+    if (this.fromChain.chain === this.toChain.chain) return false;
 
     // No transfers to unsupported chains
-    if (!fromChain.supportsAutomaticTokenBridge()) return false;
-    if (!toChain.supportsAutomaticTokenBridge()) return false;
+    if (!this.fromChain.supportsAutomaticTokenBridge()) return false;
+    if (!this.toChain.supportsAutomaticTokenBridge()) return false;
+
+    // Ensure source and destination tokens are equivalent, if destination is set
+    const { source, destination } = this.request;
+    if (destination && isTokenId(destination)) {
+      // If destination token was provided, check that it's the equivalent one for the source token
+      let equivalentToken = await TokenTransfer.lookupDestinationToken(
+        this.fromChain,
+        this.toChain,
+        source,
+      );
+
+      if (!isSameToken(equivalentToken, destination)) {
+        return false;
+      }
+    }
 
     return true;
   }
@@ -46,35 +57,31 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
     return true;
   }
 
-  async validate(options?: Op): Promise<ValidationResult<Op>> {
-    options = options ?? AutomaticTokenBridgeRoute.getDefaultOptions();
-
+  async validate(
+    amount: bigint,
+    options: Op = AutomaticTokenBridgeRoute.getDefaultOptions(),
+  ): Promise<ValidationResult<Op>> {
     try {
-      const { amount, destination } = this.request;
+      const { destination } = this.request;
 
-      const quote = await this.quote(options);
+      const quote = await this.quote(amount, options);
       const { amount: fee } = quote.relayFee!;
 
       if (amount < fee) throw new Error(`Amount must be greater than fee:  ${amount} > ${fee}`);
 
       options.nativeGas = options.nativeGas ?? 0n;
 
-      if (destination) {
-        if (isTokenId(destination)) {
-          if (!isSameToken(quote.destinationToken.token, destination))
-            throw new Error("Cannot convert between these tokens");
-        } else {
-          // considered unset for our purposes
-          // they've asked for native gas dropoff implicitly
-          // max out native gas. This value may be negative but we check that later
-          if (options.nativeGas === 0n) options.nativeGas = amount - fee;
-          // strict equality from here,
-          //  if it came in set
-          //  and they specified native dest token
-          //  then nativeGas must be exactly the same as amount - fee
-          if (options.nativeGas !== amount - fee)
-            throw new Error("Native gas cannot be greater than amount - fee");
-        }
+      if (destination && !isTokenId(destination)) {
+        // considered unset for our purposes
+        // they've asked for native gas dropoff implicitly
+        // max out native gas. This value may be negative but we check that later
+        if (options.nativeGas === 0n) options.nativeGas = amount - fee;
+        // strict equality from here,
+        //  if it came in set
+        //  and they specified native dest token
+        //  then nativeGas must be exactly the same as amount - fee
+        if (options.nativeGas !== amount - fee)
+          throw new Error("Native gas cannot be greater than amount - fee");
       }
 
       if (options.nativeGas < 0n) throw new Error("Native gas cannot be negative");
@@ -86,25 +93,26 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
           `Amount - native gas requested must be greater than fee:  ${transferableAmount} > ${fee}`,
         );
 
-      return { valid: true, quote, options };
+      return { valid: true, amount, quote, options };
     } catch (e) {
       return { valid: false, options, error: e as Error };
     }
   }
 
-  async quote(options: AutomaticTokenBridgeRoute.Options) {
+  async quote(amount: bigint, options: AutomaticTokenBridgeRoute.Options) {
     return await TokenTransfer.quoteTransfer(
       this.fromChain,
       this.toChain,
-      this.toTransferDetails(options),
+      this.toTransferDetails(amount, options),
     );
   }
 
   async initiate(
     signer: Signer,
+    amount: bigint,
     options: AutomaticTokenBridgeRoute.Options,
   ): Promise<TransferReceipt<"AutomaticTokenBridge">> {
-    const transfer = this.toTransferDetails(options);
+    const transfer = this.toTransferDetails(amount, options);
     const txids = await TokenTransfer.transfer<N>(this.fromChain, transfer, signer);
     const msg = await TokenTransfer.getTransferMessage(
       this.fromChain,
@@ -125,8 +133,11 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
     yield* TokenTransfer.track(this.wh, receipt, timeout, this.fromChain, this.toChain);
   }
 
-  private toTransferDetails(options: AutomaticTokenBridgeRoute.Options): TokenTransferDetails {
-    const { source, amount, from, to } = this.request;
+  private toTransferDetails(
+    amount: bigint,
+    options: AutomaticTokenBridgeRoute.Options,
+  ): TokenTransferDetails {
+    const { source, from, to } = this.request;
     const transfer = {
       from,
       to,

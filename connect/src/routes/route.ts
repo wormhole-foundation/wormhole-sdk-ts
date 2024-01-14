@@ -1,4 +1,4 @@
-import { Network, Platform, ProtocolName } from "@wormhole-foundation/sdk-base";
+import { Network, ProtocolName } from "@wormhole-foundation/sdk-base";
 import {
   ChainAddress,
   ChainContext,
@@ -12,25 +12,16 @@ import { TransferQuote, TransferReceipt } from "../wormholeTransfer";
 export interface RouteTransferRequest {
   from: ChainAddress;
   to: ChainAddress;
-  amount: bigint;
   source: TokenId | "native";
   destination?: TokenId | "native";
 }
 
 export type ValidationResult<T> =
-  | { quote: TransferQuote; options: T; valid: true }
+  | { quote: TransferQuote; amount: bigint; options: T; valid: true }
   | { options: T; valid: false; error: Error };
 
 export type RouteConstructor<N extends Network, OP> = {
-  new (
-    wh: Wormhole<N>,
-    request: RouteTransferRequest,
-    fromChain?: ChainContext<N>,
-    toChain?: ChainContext<N>,
-  ): Route<N, OP>;
-  // Check if this route is supported for the given transfer request
-  // e.g. check if the protocols on the specific chains are supported
-  isSupported(fromChain: ChainContext<N, Platform>, toChain: ChainContext<N, Platform>): boolean;
+  new (wh: Wormhole<N>, request: RouteTransferRequest): Route<N, OP>;
   // Get the default options for this route, useful to prepopulate a form
   getDefaultOptions(): OP;
 };
@@ -50,25 +41,29 @@ export abstract class Route<N extends Network, OP> {
   // true means this is a one-transaction route (using a relayer)
   abstract readonly IS_AUTOMATIC: boolean;
 
-  public constructor(
-    wh: Wormhole<N>,
-    request: RouteTransferRequest,
-    fromChain?: ChainContext<N>,
-    toChain?: ChainContext<N>,
-  ) {
+  public constructor(wh: Wormhole<N>, request: RouteTransferRequest) {
     this.wh = wh;
     this.request = request;
-    this.fromChain = fromChain ?? this.wh.getChain(this.request.from.chain);
-    this.toChain = toChain ?? this.wh.getChain(this.request.to.chain);
+    this.fromChain = this.wh.getChain(this.request.from.chain);
+    this.toChain = this.wh.getChain(this.request.to.chain);
   }
+
+  // Check if this route is supported for the given transfer request
+  // e.g. check if the protocols on the specific chains are supported
+  // check if the tokens are supported, etc
+  public abstract isSupported(): Promise<boolean>;
 
   // Validte the transfer request after applying any options
   // return a quote and suggested options
-  public abstract validate(options?: OP): Promise<ValidationResult<OP>>;
+  public abstract validate(amount: bigint, options?: OP): Promise<ValidationResult<OP>>;
   // Initiate the transfer with the transfer request and passed options
-  public abstract initiate(sender: Signer, options: OP): Promise<TransferReceipt<ProtocolName>>;
+  public abstract initiate(
+    sender: Signer,
+    amount: bigint,
+    options: OP,
+  ): Promise<TransferReceipt<ProtocolName>>;
   // Get a quote for the transfer with the given options
-  public abstract quote(options: OP): Promise<TransferQuote>;
+  public abstract quote(amount: bigint, options: OP): Promise<TransferQuote>;
   // Track the progress of the transfer over time
   public abstract track(
     receipt: TransferReceipt<ProtocolName>,

@@ -1,4 +1,5 @@
 import {
+  normalizeAmount,
   ProtocolName,
   routes,
   TransferReceipt,
@@ -18,13 +19,16 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform]);
 
   // get signers from local config
-  const sender = await getStuff(wh.getChain("Solana"));
+  const sendChain = wh.getChain("Solana")
+  const sender = await getStuff(sendChain);
   const receiver = await getStuff(wh.getChain("Avalanche"));
+
+  const decimals = BigInt(sendChain.config.nativeTokenDecimals);
+  const amount = normalizeAmount('0.35', decimals);
 
   const tr: routes.RouteTransferRequest = {
     from: sender.address,
     to: receiver.address,
-    amount: 35000000n,
     source: "native",
     destination: "native",
   };
@@ -41,11 +45,11 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   //const bestRoute = foundRoutes.filter((route) => routes.isAutomatic(route))[0]!;
   const bestRoute = foundRoutes[0]!;
 
-  let validated = await bestRoute.validate();
+  let validated = await bestRoute.validate(amount);
   if (!validated.valid) throw validated.error;
 
   // initiate the transfer
-  const receipt = await bestRoute.initiate(sender.signer, validated.options);
+  const receipt = await bestRoute.initiate(sender.signer, amount, validated.options);
   console.log("Initiated transfer with receipt: ", receipt);
 
   // track the transfer until the destination is initiated

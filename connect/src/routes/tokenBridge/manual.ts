@@ -1,6 +1,5 @@
-import { Network, Platform } from "@wormhole-foundation/sdk-base";
+import { Network } from "@wormhole-foundation/sdk-base";
 import {
-  ChainContext,
   Signer,
   TokenTransferDetails,
   TransactionId,
@@ -19,28 +18,25 @@ export namespace TokenBridgeRoute {
 
 type Op = TokenBridgeRoute.Options;
 export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
-  static isSupported<N extends Network>(
-    fromChain: ChainContext<N, Platform>,
-    toChain: ChainContext<N, Platform>,
-  ): boolean {
-    // No transfers to same chain
-    if (fromChain.chain === toChain.chain) return false;
-
-    // No transfers to unsupported chains
-    if (!fromChain.supportsTokenBridge()) return false;
-    if (!toChain.supportsTokenBridge()) return false;
-
-    return true;
-  }
-
   static getDefaultOptions(): TokenBridgeRoute.Options {
     return { payload: undefined };
   }
 
-  async validate(options?: Op): Promise<ValidationResult<Op>> {
+  async isSupported(): Promise<boolean> {
+    // No transfers to same chain
+    if (this.fromChain.chain === this.toChain.chain) return false;
+
+    // No transfers to unsupported chains
+    if (!this.fromChain.supportsTokenBridge()) return false;
+    if (!this.toChain.supportsTokenBridge()) return false;
+
+    return true;
+  }
+
+  async validate(amount: bigint, options?: Op): Promise<ValidationResult<Op>> {
     options = options ?? TokenBridgeRoute.getDefaultOptions();
     try {
-      const quote = await this.quote(options);
+      const quote = await this.quote(amount, options);
       // If the destination token was set, and its different than what
       // we'd get from a token bridge transfer, then this route is not supported
       if (this.request.destination) {
@@ -54,25 +50,26 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
         )
           throw new Error("Cannot convert to a different token");
       }
-      return { valid: true, quote, options };
+      return { valid: true, amount, quote, options };
     } catch (e) {
       return { valid: false, options, error: e as Error };
     }
   }
 
-  async quote(options: TokenBridgeRoute.Options) {
+  async quote(amount: bigint, options: TokenBridgeRoute.Options) {
     return await TokenTransfer.quoteTransfer(
       this.fromChain,
       this.toChain,
-      this.toTransferDetails(options),
+      this.toTransferDetails(amount, options),
     );
   }
 
   async initiate(
     signer: Signer,
+    amount: bigint,
     options: TokenBridgeRoute.Options,
   ): Promise<TransferReceipt<"TokenBridge">> {
-    const transfer = this.toTransferDetails(options);
+    const transfer = this.toTransferDetails(amount, options);
     const txids = await TokenTransfer.transfer<N>(this.fromChain, transfer, signer);
     const msg = await TokenTransfer.getTransferMessage(
       this.fromChain,
@@ -108,12 +105,15 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
     yield* TokenTransfer.track(this.wh, receipt, timeout, this.fromChain, this.toChain);
   }
 
-  private toTransferDetails(options: TokenBridgeRoute.Options): TokenTransferDetails {
+  private toTransferDetails(
+    amount: bigint,
+    options: TokenBridgeRoute.Options,
+  ): TokenTransferDetails {
     return {
       token: this.request.source,
-      amount: this.request.amount,
       from: this.request.from,
       to: this.request.to,
+      amount,
       ...options,
     };
   }
