@@ -1,5 +1,4 @@
 import {
-  normalizeAmount,
   ProtocolName,
   routes,
   TransferReceipt,
