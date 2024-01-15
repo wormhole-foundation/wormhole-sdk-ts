@@ -16,9 +16,14 @@ export interface RouteTransferRequest {
   destination?: TokenId | "native";
 }
 
-export type ValidationResult<T> =
-  | { quote: TransferQuote; amount: bigint; options: T; valid: true }
-  | { options: T; valid: false; error: Error };
+export interface TransferParams<OP> {
+  amount: string;
+  options?: OP;
+}
+
+export type ValidationResult<OP> =
+  | { params: TransferParams<OP>; valid: true }
+  | { params: TransferParams<OP>; valid: false; error: Error };
 
 export type RouteConstructor<N extends Network, OP> = {
   new (wh: Wormhole<N>, request: RouteTransferRequest): Route<N, OP>;
@@ -55,15 +60,14 @@ export abstract class Route<N extends Network, OP> {
 
   // Validte the transfer request after applying any options
   // return a quote and suggested options
-  public abstract validate(amount: bigint, options?: OP): Promise<ValidationResult<OP>>;
+  public abstract validate(params: TransferParams<OP>): Promise<ValidationResult<OP>>;
   // Initiate the transfer with the transfer request and passed options
   public abstract initiate(
     sender: Signer,
-    amount: bigint,
-    options: OP,
+    params: TransferParams<OP>,
   ): Promise<TransferReceipt<ProtocolName>>;
   // Get a quote for the transfer with the given options
-  public abstract quote(amount: bigint, options: OP): Promise<TransferQuote>;
+  public abstract quote(params: TransferParams<OP>): Promise<TransferQuote>;
   // Track the progress of the transfer over time
   public abstract track(
     receipt: TransferReceipt<ProtocolName>,

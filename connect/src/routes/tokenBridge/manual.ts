@@ -1,4 +1,4 @@
-import { Network } from "@wormhole-foundation/sdk-base";
+import { Network, normalizeAmount } from "@wormhole-foundation/sdk-base";
 import {
   Signer,
   TokenTransferDetails,
@@ -8,7 +8,7 @@ import {
 } from "@wormhole-foundation/sdk-definitions";
 import { TokenTransfer, TokenTransferVAA } from "../../protocols/tokenTransfer";
 import { TransferReceipt, TransferState, isAttested } from "../../wormholeTransfer";
-import { ManualRoute, ValidationResult } from "../route";
+import { ManualRoute, ValidationResult, TransferParams } from "../route";
 
 export namespace TokenBridgeRoute {
   export type Options = {
@@ -30,46 +30,46 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
     if (!this.fromChain.supportsTokenBridge()) return false;
     if (!this.toChain.supportsTokenBridge()) return false;
 
+    // Ensure the destination token is the equivalent wrapped token
+    let { source, destination } = this.request;
+    if (destination && isTokenId(destination)) {
+      let equivalentToken = await TokenTransfer.lookupDestinationToken(
+        this.fromChain,
+        this.toChain,
+        source,
+      );
+
+      if (!isSameToken(equivalentToken, destination)) {
+        return false;
+      }
+    } else if (destination === "native") {
+      return false;
+    }
+
     return true;
   }
 
-  async validate(amount: bigint, options?: Op): Promise<ValidationResult<Op>> {
-    options = options ?? TokenBridgeRoute.getDefaultOptions();
-    try {
-      const quote = await this.quote(amount, options);
-      // If the destination token was set, and its different than what
-      // we'd get from a token bridge transfer, then this route is not supported
-      if (this.request.destination) {
-        // TODO: yes we can, if the origin is the wrapped native token
-        if (this.request.destination === "native")
-          throw new Error("Cannot convert to native token");
-
-        if (
-          isTokenId(this.request.destination) &&
-          !isSameToken(quote.destinationToken.token, this.request.destination)
-        )
-          throw new Error("Cannot convert to a different token");
-      }
-      return { valid: true, amount, quote, options };
-    } catch (e) {
-      return { valid: false, options, error: e as Error };
+  async validate(params: TransferParams<Op>): Promise<ValidationResult<Op>> {
+    if (BigInt(params.amount) <= 0n) {
+      return { valid: false, params, error: new Error("Amount has to be positive") };
     }
+
+    return { valid: true, params };
   }
 
-  async quote(amount: bigint, options: TokenBridgeRoute.Options) {
+  async quote(params: TransferParams<Op>) {
     return await TokenTransfer.quoteTransfer(
       this.fromChain,
       this.toChain,
-      this.toTransferDetails(amount, options),
+      await this.toTransferDetails(params),
     );
   }
 
   async initiate(
     signer: Signer,
-    amount: bigint,
-    options: TokenBridgeRoute.Options,
+    params: TransferParams<Op>,
   ): Promise<TransferReceipt<"TokenBridge">> {
-    const transfer = this.toTransferDetails(amount, options);
+    const transfer = await this.toTransferDetails(params);
     const txids = await TokenTransfer.transfer<N>(this.fromChain, transfer, signer);
     const msg = await TokenTransfer.getTransferMessage(
       this.fromChain,
@@ -105,16 +105,24 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
     yield* TokenTransfer.track(this.wh, receipt, timeout, this.fromChain, this.toChain);
   }
 
-  private toTransferDetails(
-    amount: bigint,
-    options: TokenBridgeRoute.Options,
-  ): TokenTransferDetails {
+  private async stringToBigInt(amount: string = "0"): Promise<bigint> {
+    const { from } = this.request;
+    let decimals = isTokenId(this.request.source)
+      ? await this.wh.getDecimals(from.chain, from.address)
+      : BigInt(this.fromChain.config.nativeTokenDecimals);
+
+    return normalizeAmount(amount, decimals);
+  }
+
+  private async toTransferDetails(params: TransferParams<Op>): Promise<TokenTransferDetails> {
+    let amount = await this.stringToBigInt(params.amount);
+
     return {
       token: this.request.source,
       from: this.request.from,
       to: this.request.to,
       amount,
-      ...options,
+      ...params.options,
     };
   }
 }

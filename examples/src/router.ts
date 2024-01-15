@@ -19,12 +19,11 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform]);
 
   // get signers from local config
-  const sendChain = wh.getChain("Solana")
+  const sendChain = wh.getChain("Solana");
   const sender = await getStuff(sendChain);
   const receiver = await getStuff(wh.getChain("Avalanche"));
 
-  const decimals = BigInt(sendChain.config.nativeTokenDecimals);
-  const amount = normalizeAmount('0.35', decimals);
+  const amount = "0.35";
 
   const tr: routes.RouteTransferRequest = {
     from: sender.address,
