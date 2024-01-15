@@ -24,18 +24,18 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
 
   async isSupported(): Promise<boolean> {
     // No transfers to same chain
-    if (this.fromChain.chain === this.toChain.chain) return false;
+    if (this.configs.from.context.chain === this.configs.to.context.chain) return false;
 
     // No transfers to unsupported chains
-    if (!this.fromChain.supportsTokenBridge()) return false;
-    if (!this.toChain.supportsTokenBridge()) return false;
+    if (!this.configs.from.context.supportsTokenBridge()) return false;
+    if (!this.configs.to.context.supportsTokenBridge()) return false;
 
     // Ensure the destination token is the equivalent wrapped token
     let { source, destination } = this.request;
     if (destination && isTokenId(destination)) {
       let equivalentToken = await TokenTransfer.lookupDestinationToken(
-        this.fromChain,
-        this.toChain,
+        this.configs.from.context,
+        this.configs.to.context,
         source,
       );
 
@@ -59,8 +59,8 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
 
   async quote(params: TransferParams<Op>) {
     return await TokenTransfer.quoteTransfer(
-      this.fromChain,
-      this.toChain,
+      this.configs.from.context,
+      this.configs.to.context,
       await this.toTransferDetails(params),
     );
   }
@@ -70,9 +70,9 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
     params: TransferParams<Op>,
   ): Promise<TransferReceipt<"TokenBridge">> {
     const transfer = await this.toTransferDetails(params);
-    const txids = await TokenTransfer.transfer<N>(this.fromChain, transfer, signer);
+    const txids = await TokenTransfer.transfer<N>(this.configs.from.context, transfer, signer);
     const msg = await TokenTransfer.getTransferMessage(
-      this.fromChain,
+      this.configs.from.context,
       txids[txids.length - 1]!.txid,
     );
 
@@ -94,7 +94,7 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
     if (!isAttested(receipt))
       throw new Error("The source must be finalized in order to complete the transfer");
     return await TokenTransfer.redeem<N>(
-      this.toChain,
+      this.configs.to.context,
       // todo: ew?
       receipt.attestation.attestation as TokenTransferVAA,
       signer,
@@ -102,20 +102,17 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
   }
 
   public override async *track(receipt: TransferReceipt<"TokenBridge">, timeout?: number) {
-    yield* TokenTransfer.track(this.wh, receipt, timeout, this.fromChain, this.toChain);
-  }
-
-  private async stringToBigInt(amount: string = "0"): Promise<bigint> {
-    const { from } = this.request;
-    let decimals = isTokenId(this.request.source)
-      ? await this.wh.getDecimals(from.chain, from.address)
-      : BigInt(this.fromChain.config.nativeTokenDecimals);
-
-    return normalizeAmount(amount, decimals);
+    yield* TokenTransfer.track(
+      this.wh,
+      receipt,
+      timeout,
+      this.configs.from.context,
+      this.configs.to.context,
+    );
   }
 
   private async toTransferDetails(params: TransferParams<Op>): Promise<TokenTransferDetails> {
-    let amount = await this.stringToBigInt(params.amount);
+    const amount = normalizeAmount(params.amount, this.configs.from.decimals);
 
     return {
       token: this.request.source,

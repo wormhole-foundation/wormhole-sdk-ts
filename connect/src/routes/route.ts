@@ -21,12 +21,22 @@ export interface TransferParams<OP> {
   options?: OP;
 }
 
+export interface ChainConfig<N extends Network> {
+  context: ChainContext<N>;
+  decimals: bigint;
+}
+
+export interface ChainConfigs<N extends Network> {
+  from: ChainConfig<N>;
+  to: ChainConfig<N>;
+}
+
 export type ValidationResult<OP> =
   | { params: TransferParams<OP>; valid: true }
   | { params: TransferParams<OP>; valid: false; error: Error };
 
 export type RouteConstructor<N extends Network, OP> = {
-  new (wh: Wormhole<N>, request: RouteTransferRequest): Route<N, OP>;
+  new (wh: Wormhole<N>, request: RouteTransferRequest, configs: ChainConfigs<N>): Route<N, OP>;
   // Get the default options for this route, useful to prepopulate a form
   getDefaultOptions(): OP;
 };
@@ -38,19 +48,17 @@ export type UnknownRoute<N extends Network> = Route<N, unknown>;
 export abstract class Route<N extends Network, OP> {
   wh: Wormhole<N>;
   request: RouteTransferRequest;
-  fromChain: ChainContext<N>;
-  toChain: ChainContext<N>;
+  configs: ChainConfigs<N>;
 
   // true means this route supports native gas dropoff
   abstract readonly NATIVE_GAS_DROPOFF_SUPPORTED: boolean;
   // true means this is a one-transaction route (using a relayer)
   abstract readonly IS_AUTOMATIC: boolean;
 
-  public constructor(wh: Wormhole<N>, request: RouteTransferRequest) {
+  public constructor(wh: Wormhole<N>, request: RouteTransferRequest, configs: ChainConfigs<N>) {
     this.wh = wh;
     this.request = request;
-    this.fromChain = this.wh.getChain(this.request.from.chain);
-    this.toChain = this.wh.getChain(this.request.to.chain);
+    this.configs = configs;
   }
 
   // Check if this route is supported for the given transfer request

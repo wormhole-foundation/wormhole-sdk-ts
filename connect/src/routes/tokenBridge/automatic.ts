@@ -23,19 +23,19 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
 
   async isSupported(): Promise<boolean> {
     // No transfers to same chain
-    if (this.fromChain.chain === this.toChain.chain) return false;
+    if (this.configs.from.context.chain === this.configs.to.context.chain) return false;
 
     // No transfers to unsupported chains
-    if (!this.fromChain.supportsAutomaticTokenBridge()) return false;
-    if (!this.toChain.supportsAutomaticTokenBridge()) return false;
+    if (!this.configs.from.context.supportsAutomaticTokenBridge()) return false;
+    if (!this.configs.to.context.supportsAutomaticTokenBridge()) return false;
 
     // Ensure source and destination tokens are equivalent, if destination is set
     const { source, destination } = this.request;
     if (destination && isTokenId(destination)) {
       // If destination token was provided, check that it's the equivalent one for the source token
       let equivalentToken = await TokenTransfer.lookupDestinationToken(
-        this.fromChain,
-        this.toChain,
+        this.configs.from.context,
+        this.configs.to.context,
         source,
       );
 
@@ -51,7 +51,7 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
   }
 
   async isAvailable(): Promise<boolean> {
-    const atb = await this.fromChain.getAutomaticTokenBridge();
+    const atb = await this.configs.from.context.getAutomaticTokenBridge();
 
     if (isTokenId(this.request.source))
       return await atb.isRegisteredToken(this.request.source.address);
@@ -94,8 +94,8 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
 
   async quote(params: TransferParams<Op>) {
     return await TokenTransfer.quoteTransfer(
-      this.fromChain,
-      this.toChain,
+      this.configs.from.context,
+      this.configs.to.context,
       await this.toTransferDetails(params),
     );
   }
@@ -105,9 +105,9 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
     params: TransferParams<Op>,
   ): Promise<TransferReceipt<"AutomaticTokenBridge">> {
     const transfer = await this.toTransferDetails(params);
-    const txids = await TokenTransfer.transfer<N>(this.fromChain, transfer, signer);
+    const txids = await TokenTransfer.transfer<N>(this.configs.from.context, transfer, signer);
     const msg = await TokenTransfer.getTransferMessage(
-      this.fromChain,
+      this.configs.from.context,
       txids[txids.length - 1]!.txid,
     );
     return {
@@ -122,21 +122,18 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
   }
 
   public override async *track(receipt: TransferReceipt<"AutomaticTokenBridge">, timeout?: number) {
-    yield* TokenTransfer.track(this.wh, receipt, timeout, this.fromChain, this.toChain);
-  }
-
-  private async stringToBigInt(amount: string = "0"): Promise<bigint> {
-    const { from } = this.request;
-    let decimals = isTokenId(this.request.source)
-      ? await this.wh.getDecimals(from.chain, from.address)
-      : BigInt(this.fromChain.config.nativeTokenDecimals);
-
-    return normalizeAmount(amount, decimals);
+    yield* TokenTransfer.track(
+      this.wh,
+      receipt,
+      timeout,
+      this.configs.from.context,
+      this.configs.to.context,
+    );
   }
 
   private async toTransferDetails(params: TransferParams<Op>): Promise<TokenTransferDetails> {
     const { source, from, to } = this.request;
-    const amount = await this.stringToBigInt(params.amount);
+    const amount = normalizeAmount(params.amount, this.configs.from.decimals);
     let options = params.options ?? AutomaticTokenBridgeRoute.getDefaultOptions();
 
     // Determine nativeGas
