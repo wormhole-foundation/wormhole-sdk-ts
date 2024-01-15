@@ -111,7 +111,7 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
     );
   }
 
-  private async toTransferDetails(params: TransferParams<Op>): Promise<TokenTransferDetails> {
+  private toTransferDetails(params: TransferParams<Op>): TokenTransferDetails {
     const amount = normalizeAmount(params.amount, this.configs.from.decimals);
 
     return {

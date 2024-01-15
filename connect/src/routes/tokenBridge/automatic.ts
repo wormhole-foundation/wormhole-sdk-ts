@@ -141,8 +141,12 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
 
     // Calculate nativeGas in base units if options.nativeGas isn't 0
     if (options && options.nativeGas > 0) {
-      const quote = await this.quote(params);
-      const { amount: fee } = quote.relayFee!;
+      const atb = await this.configs.from.context.getAutomaticTokenBridge();
+      const fee = await atb.getRelayerFee(
+        this.request.from.address,
+        this.request.to,
+        this.request.from.address,
+      );
 
       // Scaling up and down with 100 means we don't support fractional percentages
       const percScale = 100;
