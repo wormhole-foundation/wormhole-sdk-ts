@@ -163,9 +163,7 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
       amount,
       token: source,
       automatic: true,
-      options: {
-        nativeGas,
-      },
+      nativeGas,
     };
     return transfer;
   }
