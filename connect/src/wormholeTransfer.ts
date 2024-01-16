@@ -1,10 +1,4 @@
-import {
-  Chain,
-  Network,
-  Platform,
-  PlatformToChains,
-  ProtocolName,
-} from "@wormhole-foundation/sdk-base";
+import { Chain, Network, Platform, PlatformToChains } from "@wormhole-foundation/sdk-base";
 import {
   AttestationId,
   AttestationReceipt,
@@ -16,6 +10,7 @@ import {
   TokenTransferDetails,
   TransactionId,
   TxHash,
+  ProtocolName,
 } from "@wormhole-foundation/sdk-definitions";
 import { Wormhole } from "./wormhole";
 

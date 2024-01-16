@@ -1,5 +1,4 @@
 export { Network } from "./networks";
-export { ProtocolName } from "./protocols";
 export {
   Chain,
   ChainId,

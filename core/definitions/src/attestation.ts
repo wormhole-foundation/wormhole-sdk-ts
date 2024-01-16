@@ -1,10 +1,11 @@
-import { Chain, ProtocolName } from "@wormhole-foundation/sdk-base";
+import { Chain } from "@wormhole-foundation/sdk-base";
 import { SequenceId } from "./types";
 import { UniversalAddress } from "./universalAddress";
 import { VAA } from "./vaa";
 import { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge";
 import { AutomaticCircleBridge, CircleBridge } from "./protocols/circleBridge";
 import { IbcTransferData } from "./protocols/ibc";
+import { ProtocolName } from "./protocol";
 
 // Could be VAA or Circle or ..?
 export type AttestationId<PN extends ProtocolName = ProtocolName> = PN extends

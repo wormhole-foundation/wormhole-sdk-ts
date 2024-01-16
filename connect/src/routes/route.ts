@@ -1,5 +1,5 @@
-import { Network, ProtocolName } from "@wormhole-foundation/sdk-base";
-import { Signer, TransactionId } from "@wormhole-foundation/sdk-definitions";
+import { Network } from "@wormhole-foundation/sdk-base";
+import { Signer, ProtocolName, TransactionId } from "@wormhole-foundation/sdk-definitions";
 import { Wormhole } from "../wormhole";
 import { TransferReceipt } from "../wormholeTransfer";
 import { RouteTransferRequest } from "./request";
