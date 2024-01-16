@@ -1,4 +1,4 @@
-import { Network, normalizeAmount } from "@wormhole-foundation/sdk-base";
+import { Network } from "@wormhole-foundation/sdk-base";
 import {
   Signer,
   TokenTransferDetails,
@@ -8,16 +8,26 @@ import {
 } from "@wormhole-foundation/sdk-definitions";
 import { TokenTransfer, TokenTransferVAA } from "../../protocols/tokenTransfer";
 import { TransferReceipt, TransferState, isAttested } from "../../wormholeTransfer";
-import { ManualRoute, ValidationResult, TransferParams } from "../route";
+import { ManualRoute, TransferParams, ValidatedTransferParams, ValidationResult } from "../route";
 
 export namespace TokenBridgeRoute {
   export type Options = {
     payload?: Uint8Array;
   };
+
+  export type NormalizedParams = {
+    amount: bigint;
+  };
 }
 
 type Op = TokenBridgeRoute.Options;
-export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
+type Np = TokenBridgeRoute.NormalizedParams;
+
+type Tp = TransferParams<Op, Np>;
+type Vtp = ValidatedTransferParams<Op, Np>;
+type Vr = ValidationResult<Op, Np>;
+
+export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op, Np> {
   static getDefaultOptions(): TokenBridgeRoute.Options {
     return { payload: undefined };
   }
@@ -49,15 +59,22 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
     return true;
   }
 
-  async validate(params: TransferParams<Op>): Promise<ValidationResult<Op>> {
+  async validate(params: Tp): Promise<Vr> {
     const amt = this.request.normalizeAmount(params.amount);
     if (amt <= 0n) {
       return { valid: false, params, error: new Error("Amount has to be positive") };
     }
-    return { valid: true, params };
+
+    const validatedParams = {
+      amount: params.amount,
+      normalizedParams: { amount: amt },
+      options: {},
+    } satisfies ValidatedTransferParams<Op, Np>;
+
+    return { valid: true, params: validatedParams };
   }
 
-  async quote(params: TransferParams<Op>) {
+  async quote(params: Vtp) {
     return await TokenTransfer.quoteTransfer(
       this.request.fromChain,
       this.request.toChain,
@@ -65,11 +82,8 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
     );
   }
 
-  async initiate(
-    signer: Signer,
-    params: TransferParams<Op>,
-  ): Promise<TransferReceipt<"TokenBridge">> {
-    const transfer = await this.toTransferDetails(params);
+  async initiate(signer: Signer, params: Vtp): Promise<TransferReceipt<"TokenBridge">> {
+    const transfer = this.toTransferDetails(params);
     const txids = await TokenTransfer.transfer<N>(this.request.fromChain, transfer, signer);
     const msg = await TokenTransfer.getTransferMessage(
       this.request.fromChain,
@@ -111,14 +125,12 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
     );
   }
 
-  private toTransferDetails(params: TransferParams<Op>): TokenTransferDetails {
-    const amount = normalizeAmount(params.amount, this.request.source.decimals);
-
+  private toTransferDetails(params: Vtp): TokenTransferDetails {
     return {
       token: this.request.source.id,
       from: this.request.from,
       to: this.request.to,
-      amount,
+      amount: params.normalizedParams.amount,
       ...params.options,
     };
   }
