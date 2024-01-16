@@ -1,15 +1,9 @@
 import { Network } from "@wormhole-foundation/sdk-base";
 import { Wormhole } from "../wormhole";
-import { Route, RouteTransferRequest, isAutomatic } from "./route";
-
-export type RouteConstructor<N extends Network, OP> = {
-  new (wh: Wormhole<N>, request: RouteTransferRequest): Route<N, OP>;
-};
+import { UnknownRoute, UnknownRouteConstructor, isAutomatic } from "./route";
+import { RouteTransferRequest } from "./request";
 
 export type RouteSortOptions = "cost" | "speed";
-
-export type UnknownRouteConstructor<N extends Network> = RouteConstructor<N, unknown>;
-export type UnknownRoute<N extends Network> = Route<N, unknown>;
 
 export class RouteResolver<N extends Network> {
   wh: Wormhole<N>;
@@ -20,15 +14,13 @@ export class RouteResolver<N extends Network> {
     this.routeConstructors = routeConstructors;
   }
 
-  async findRoutes(request: RouteTransferRequest): Promise<UnknownRoute<N>[]> {
+  async findRoutes(request: RouteTransferRequest<N>): Promise<UnknownRoute<N>[]> {
     // Could do this faster in parallel using Promise.all
     return this.routeConstructors
-      .map((rc) => {
-        return new rc(this.wh, request);
-      })
+      .map((rc) => new rc(this.wh, request))
       .filter(async (route) => {
         if (!(await route.isSupported())) return false;
-        if (isAutomatic(route)) return await route.isAvailable();
+        if (isAutomatic(route) && !(await route.isAvailable())) return false;
         return true;
       });
   }
@@ -41,18 +33,3 @@ export class RouteResolver<N extends Network> {
     return routes;
   }
 }
-
-/*
-
-let resolver = new RouteResolver([
-  MayanSwapRoute,
-  ...DEFAULT_RESOLVERS
-]);
-
-let request = TransferRequest {
-  ...
-}
-
-let routes = resolver.findRoutes(request)
-
-*/
