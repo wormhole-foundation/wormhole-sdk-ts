@@ -27,7 +27,7 @@ export type TransferRequest<PN extends ProtocolName = ProtocolName> = PN extends
   ? CircleTransferDetails
   : PN extends "IbcBridge"
   ? GatewayTransferDetails
-  : never;
+  : any;
 
 // Transfer state machine states
 export enum TransferState {
@@ -94,12 +94,6 @@ export interface CompletedTransferReceipt<
   destinationTxs?: TransactionId<DC>[];
 }
 
-export function isAttested<PN extends ProtocolName>(
-  receipt: TransferReceipt<PN, Chain, Chain>,
-): receipt is AttestedTransferReceipt<PN, Chain, Chain> {
-  return receipt.state === TransferState.Attested;
-}
-
 export function isSourceInitiated<PN extends ProtocolName>(
   receipt: TransferReceipt<PN, Chain, Chain>,
 ): receipt is SourceInitiatedTransferReceipt<PN, Chain, Chain> {
@@ -110,6 +104,18 @@ export function isSourceFinalized<PN extends ProtocolName>(
   receipt: TransferReceipt<PN, Chain, Chain>,
 ): receipt is SourceFinalizedTransferReceipt<PN, Chain, Chain> {
   return receipt.state === TransferState.SourceFinalized;
+}
+
+export function isAttested<PN extends ProtocolName>(
+  receipt: TransferReceipt<PN, Chain, Chain>,
+): receipt is AttestedTransferReceipt<PN, Chain, Chain> {
+  return receipt.state === TransferState.Attested;
+}
+
+export function isCompleted<PN extends ProtocolName>(
+  receipt: TransferReceipt<PN, Chain, Chain>,
+): receipt is CompletedTransferReceipt<PN, Chain, Chain> {
+  return receipt.state > TransferState.Attested;
 }
 
 export type TransferReceipt<
