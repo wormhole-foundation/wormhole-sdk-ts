@@ -152,7 +152,7 @@ export type TransferQuote = {
 };
 
 // Static methods on the Transfer protocol types
-// e.g. `TokenTransfer.constructor`
+// e.g. `TokenTransfer`
 export interface TransferProtocol<PN extends ProtocolName> {
   isTransferComplete<N extends Network, P extends Platform, C extends PlatformToChains<P>>(
     toChain: ChainContext<N, P, C>,
