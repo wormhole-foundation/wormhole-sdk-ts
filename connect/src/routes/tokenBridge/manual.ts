@@ -18,13 +18,11 @@ export namespace TokenBridgeRoute {
   export type NormalizedParams = {
     amount: bigint;
   };
-
-  export type ValidatedTransferParams = {
-    amount: string;
-    options: Options;
-    normalizedParams: NormalizedParams;
-  };
 }
+
+interface ValidatedTransferParams<Op> extends Required<TransferParams<Op>> {
+  normalizedParams: TokenBridgeRoute.NormalizedParams;
+};
 
 type Op = TokenBridgeRoute.Options;
 type Tp = TransferParams<Op>;
@@ -68,7 +66,7 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
       return { valid: false, params, error: new Error("Amount has to be positive") };
     }
 
-    const validatedParams: TokenBridgeRoute.ValidatedTransferParams = {
+    const validatedParams: ValidatedTransferParams<Op> = {
       amount: params.amount,
       normalizedParams: { amount: amt },
       options: {},
@@ -77,7 +75,7 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
     return { valid: true, params: validatedParams };
   }
 
-  async quote(params: TokenBridgeRoute.ValidatedTransferParams) {
+  async quote(params: ValidatedTransferParams<Op>) {
     return await TokenTransfer.quoteTransfer(
       this.request.fromChain,
       this.request.toChain,
@@ -87,7 +85,7 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
 
   async initiate(
     signer: Signer,
-    params: TokenBridgeRoute.ValidatedTransferParams,
+    params: ValidatedTransferParams<Op>,
   ): Promise<TransferReceipt<"TokenBridge">> {
     const transfer = this.toTransferDetails(params);
     const txids = await TokenTransfer.transfer<N>(this.request.fromChain, transfer, signer);
@@ -132,7 +130,7 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
   }
 
   private toTransferDetails(
-    params: TokenBridgeRoute.ValidatedTransferParams,
+    params: ValidatedTransferParams<Op>,
   ): TokenTransferDetails {
     return {
       token: this.request.source.id,
