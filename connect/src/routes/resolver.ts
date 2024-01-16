@@ -4,10 +4,9 @@ import {
   RouteTransferRequest,
   UnknownRoute,
   UnknownRouteConstructor,
-  ChainConfig,
+  getChainConfig,
   isAutomatic,
 } from "./route";
-import { ChainAddress, isTokenId } from "@wormhole-foundation/sdk-definitions";
 
 export type RouteSortOptions = "cost" | "speed";
 
@@ -23,8 +22,8 @@ export class RouteResolver<N extends Network> {
   async findRoutes(request: RouteTransferRequest): Promise<UnknownRoute<N>[]> {
     // Cache chain context and decimal precision level
     const chainConfigs = {
-      from: await this.getChainConfig(request.from),
-      to: await this.getChainConfig(request.to),
+      from: await getChainConfig(this.wh, request.from),
+      to: await getChainConfig(this.wh, request.to),
     };
 
     // Could do this faster in parallel using Promise.all
@@ -44,29 +43,4 @@ export class RouteResolver<N extends Network> {
     // TODO: actually sort
     return routes;
   }
-
-  // TODO move this somewhere else?
-  private async getChainConfig(target: ChainAddress): Promise<ChainConfig<N>> {
-    const context = this.wh.getChain(target.chain);
-    const decimals = isTokenId(target)
-      ? await this.wh.getDecimals(target.chain, target.address)
-      : BigInt(context.config.nativeTokenDecimals);
-
-    return { context, decimals };
-  }
 }
-
-/*
-
-let resolver = new RouteResolver([
-  MayanSwapRoute,
-  ...DEFAULT_RESOLVERS
-]);
-
-let request = TransferRequest {
-  ...
-}
-
-let routes = resolver.findRoutes(request)
-
-*/

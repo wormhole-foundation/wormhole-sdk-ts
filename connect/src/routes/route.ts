@@ -5,6 +5,7 @@ import {
   Signer,
   TokenId,
   TransactionId,
+  isTokenId,
 } from "@wormhole-foundation/sdk-definitions";
 import { Wormhole } from "../wormhole";
 import { TransferQuote, TransferReceipt } from "../wormholeTransfer";
@@ -24,6 +25,15 @@ export interface TransferParams<OP> {
 export interface ChainConfig<N extends Network> {
   context: ChainContext<N>;
   decimals: bigint;
+}
+
+export async function getChainConfig<N extends Network>(wh: Wormhole<N>, target: ChainAddress): Promise<ChainConfig<N>> {
+  const context = wh.getChain(target.chain);
+  const decimals = isTokenId(target)
+    ? await wh.getDecimals(target.chain, target.address)
+    : BigInt(context.config.nativeTokenDecimals);
+
+  return { context, decimals };
 }
 
 export interface ChainConfigs<N extends Network> {
@@ -74,8 +84,10 @@ export abstract class Route<N extends Network, OP> {
     sender: Signer,
     params: TransferParams<OP>,
   ): Promise<TransferReceipt<ProtocolName>>;
+
   // Get a quote for the transfer with the given options
   public abstract quote(params: TransferParams<OP>): Promise<TransferQuote>;
+
   // Track the progress of the transfer over time
   public abstract track(
     receipt: TransferReceipt<ProtocolName>,
