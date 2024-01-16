@@ -543,12 +543,10 @@ export class TokenTransfer<N extends Network = Network>
   ): TransferReceipt<TokenTransferProtocol> {
     const { transfer } = xfer;
 
-    const protocol = transfer.automatic ? "AutomaticTokenBridge" : "TokenBridge";
     const from = transfer.from.chain;
     const to = transfer.to.chain;
 
     let receipt: TransferReceipt<TokenTransferProtocol> = {
-      protocol,
       request: transfer,
       from: from,
       to: to,

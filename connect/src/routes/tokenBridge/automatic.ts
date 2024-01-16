@@ -162,7 +162,6 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
       txids[txids.length - 1]!.txid,
     );
     return {
-      protocol: "AutomaticTokenBridge",
       from: transfer.from.chain,
       to: transfer.to.chain,
       state: TransferState.SourceFinalized,

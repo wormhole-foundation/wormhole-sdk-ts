@@ -96,7 +96,6 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op, Q> {
     );
 
     return {
-      protocol: "TokenBridge",
       from: transfer.from.chain,
       to: transfer.to.chain,
       state: TransferState.SourceFinalized,

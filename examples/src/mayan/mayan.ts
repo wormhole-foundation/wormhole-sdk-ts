@@ -8,26 +8,37 @@ import {
 } from "@mayanfinance/swap-sdk";
 
 import {
+  CompletedTransferReceipt,
   TransferReceipt,
   TransferState,
   isSourceInitiated,
   routes,
 } from "@wormhole-foundation/connect-sdk";
-import { Network, ProtocolName } from "@wormhole-foundation/sdk-base";
-import { Signer, canonicalAddress, isTokenId } from "@wormhole-foundation/sdk-definitions";
+import { ValidatedTransferParams } from "@wormhole-foundation/connect-sdk/src/routes";
+import { Network, ProtocolName, encoding } from "@wormhole-foundation/sdk-base";
 import {
+  AttestationReceipt,
+  Signer,
+  WormholeMessageId,
+  canonicalAddress,
+  deserialize,
+  isTokenId,
+} from "@wormhole-foundation/sdk-definitions";
+import {
+  MayanTransactionGoal,
+  MayanTransactionStatus,
   NATIVE_CONTRACT_ADDRESS,
   getTransactionStatus,
   mayanEvmSigner,
   mayanSolanaSigner,
   toMayanChainName,
 } from "./utils";
-import { ValidatedTransferParams } from "@wormhole-foundation/connect-sdk/src/routes";
 
 export namespace MayanRoute {
   export type Options = {
     gasDrop: number;
     slippage: number;
+    deadlineInSeconds: number;
   };
   export type NormalizedParams = {
     //
@@ -46,6 +57,9 @@ type Tp = routes.TransferParams<Op>;
 type Vr = routes.ValidationResult<Op>;
 
 export class MayanRoute<N extends Network> extends routes.AutomaticRoute<N, Op, Q> {
+  MIN_DEADLINE = 60;
+  MAX_SLIPPAGE = 100;
+
   NATIVE_GAS_DROPOFF_SUPPORTED = true;
   tokenList?: Token[];
 
@@ -84,13 +98,18 @@ export class MayanRoute<N extends Network> extends routes.AutomaticRoute<N, Op, 
   }
 
   static getDefaultOptions(): Op {
-    return { gasDrop: 0, slippage: 3 };
+    return { gasDrop: 0, slippage: 3, deadlineInSeconds: 60 * 10 };
   }
 
   async validate(params: Tp): Promise<Vr> {
     try {
-      // TODO: ...
       params.options = params.options ?? MayanRoute.getDefaultOptions();
+
+      if (params.options.slippage > this.MAX_SLIPPAGE)
+        throw new Error("Slippage must be less than 100%");
+      if (params.options.deadlineInSeconds < this.MIN_DEADLINE)
+        throw new Error("Deadline must be at least 60 seconds");
+
       return { valid: true, params } as Vr;
     } catch (e) {
       return { valid: false, params, error: e as Error };
@@ -122,8 +141,6 @@ export class MayanRoute<N extends Network> extends routes.AutomaticRoute<N, Op, 
   }
 
   async initiate(signer: Signer, params: Vp): Promise<TransferReceipt<ProtocolName>> {
-    const deadlineInSeconds = 60;
-
     const originAddress = canonicalAddress(this.request.from);
     const destinationAddress = canonicalAddress(this.request.to);
 
@@ -137,7 +154,7 @@ export class MayanRoute<N extends Network> extends routes.AutomaticRoute<N, Op, 
           quote,
           originAddress,
           destinationAddress,
-          deadlineInSeconds,
+          params.options.deadlineInSeconds,
           undefined,
           mayanSolanaSigner(signer),
           rpc,
@@ -146,7 +163,7 @@ export class MayanRoute<N extends Network> extends routes.AutomaticRoute<N, Op, 
         const txres = await swapFromEvm(
           quote,
           destinationAddress,
-          deadlineInSeconds,
+          params.options.deadlineInSeconds,
           undefined,
           rpc,
           mayanEvmSigner(signer),
@@ -156,7 +173,6 @@ export class MayanRoute<N extends Network> extends routes.AutomaticRoute<N, Op, 
       }
 
       return {
-        protocol: "WormholeCore", // TODO: this is a lie
         from: this.request.from.chain,
         to: this.request.to.chain,
         state: TransferState.SourceInitiated,
@@ -169,11 +185,65 @@ export class MayanRoute<N extends Network> extends routes.AutomaticRoute<N, Op, 
     }
   }
 
-  public override async *track(receipt: TransferReceipt<"WormholeCore">, timeout?: number) {
+  public override async *track(receipt: TransferReceipt<"TokenBridge">, timeout?: number) {
     if (isSourceInitiated(receipt)) {
       const txstatus = await getTransactionStatus(receipt.originTxs[receipt.originTxs.length - 1]!);
       if (!txstatus) return;
+
       console.log(txstatus);
+      const destinationTxs = txstatus.txs
+        .filter((tx) => {
+          return tx.goals.some((goal) => {
+            return goal === MayanTransactionGoal.Settle;
+          });
+        })
+        .map((tx) => {
+          return { chain: receipt.to, txid: tx.txHash };
+        });
+
+      let attestation: AttestationReceipt<"TokenBridge"> | undefined;
+      if (txstatus.redeemSignedVaa) {
+        const vaa = deserialize("Uint8Array", encoding.b64.decode(txstatus.redeemSignedVaa));
+        const msgid: WormholeMessageId = {
+          chain: vaa.emitterChain,
+          sequence: vaa.sequence,
+          emitter: vaa.emitterAddress,
+        };
+        attestation = {
+          id: msgid,
+          // @ts-ignore
+          vaa: vaa,
+        };
+      }
+
+      switch (txstatus.status) {
+        case MayanTransactionStatus.SETTLED_ON_SOLANA:
+          yield {
+            ...receipt,
+            destinationTxs,
+            state: TransferState.DestinationInitiated,
+            attestation: attestation!,
+          } satisfies CompletedTransferReceipt<"TokenBridge">;
+          return;
+        case MayanTransactionStatus.REDEEMED_ON_EVM:
+          yield {
+            ...receipt,
+            destinationTxs,
+            attestation: attestation!,
+            state: TransferState.DestinationInitiated,
+          } satisfies CompletedTransferReceipt<"TokenBridge">;
+          return;
+        // TODO: ...
+        case MayanTransactionStatus.REFUNDED_ON_EVM:
+          // yield { ...receipt, state: TransferState.Failed };
+          return;
+        case MayanTransactionStatus.REFUNDED_ON_SOLANA:
+          // yield { ...receipt, state: TransferState.Failed };
+          return;
+        default:
+          // pending
+          return;
+      }
     }
   }
 }
