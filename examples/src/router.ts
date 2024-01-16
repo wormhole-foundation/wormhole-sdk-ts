@@ -22,17 +22,17 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   const sender = await getStuff(sendChain);
   const receiver = await getStuff(wh.getChain("Avalanche"));
 
-  const amount = "0.35";
+  const amount = "0.0015";
 
-  const tr: routes.RouteTransferRequest = {
+  const tr = await routes.RouteTransferRequest.create(wh, {
     from: sender.address,
     to: receiver.address,
     source: "native",
     destination: "native",
-  };
+  });
 
   // create new resolver
-  const resolver = wh.resolver([routes.AutomaticTokenBridgeRoute]);
+  const resolver = wh.resolver();
 
   // resolve the transfer request to a set of routes that can perform it
   const foundRoutes = await resolver.findRoutes(tr);
@@ -43,11 +43,16 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   //const bestRoute = foundRoutes.filter((route) => routes.isAutomatic(route))[0]!;
   const bestRoute = foundRoutes[0]!;
 
-  let validated = await bestRoute.validate(amount);
+  const transferParams = {
+    amount: amount,
+    options: {},
+  };
+
+  let validated = await bestRoute.validate(transferParams);
   if (!validated.valid) throw validated.error;
 
   // initiate the transfer
-  const receipt = await bestRoute.initiate(sender.signer, amount, validated.options);
+  const receipt = await bestRoute.initiate(sender.signer, transferParams);
   console.log("Initiated transfer with receipt: ", receipt);
 
   // track the transfer until the destination is initiated

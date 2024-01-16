@@ -24,25 +24,25 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
 
   async isSupported(): Promise<boolean> {
     // No transfers to same chain
-    if (this.configs.from.context.chain === this.configs.to.context.chain) return false;
+    if (this.request.fromChain.chain === this.request.toChain.chain) return false;
 
     // No transfers to unsupported chains
-    if (!this.configs.from.context.supportsTokenBridge()) return false;
-    if (!this.configs.to.context.supportsTokenBridge()) return false;
+    if (!this.request.fromChain.supportsTokenBridge()) return false;
+    if (!this.request.toChain.supportsTokenBridge()) return false;
 
     // Ensure the destination token is the equivalent wrapped token
     let { source, destination } = this.request;
-    if (destination && isTokenId(destination)) {
+    if (destination && isTokenId(destination.id)) {
       let equivalentToken = await TokenTransfer.lookupDestinationToken(
-        this.configs.from.context,
-        this.configs.to.context,
-        source,
+        this.request.fromChain,
+        this.request.toChain,
+        source.id,
       );
 
-      if (!isSameToken(equivalentToken, destination)) {
+      if (!isSameToken(equivalentToken, destination.id)) {
         return false;
       }
-    } else if (destination === "native") {
+    } else if (destination && destination.id === "native") {
       return false;
     }
 
@@ -50,18 +50,18 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
   }
 
   async validate(params: TransferParams<Op>): Promise<ValidationResult<Op>> {
-    if (BigInt(params.amount) <= 0n) {
+    const amt = this.request.normalizeAmount(params.amount);
+    if (amt <= 0n) {
       return { valid: false, params, error: new Error("Amount has to be positive") };
     }
-
     return { valid: true, params };
   }
 
   async quote(params: TransferParams<Op>) {
     return await TokenTransfer.quoteTransfer(
-      this.configs.from.context,
-      this.configs.to.context,
-      await this.toTransferDetails(params),
+      this.request.fromChain,
+      this.request.toChain,
+      this.toTransferDetails(params),
     );
   }
 
@@ -70,9 +70,9 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
     params: TransferParams<Op>,
   ): Promise<TransferReceipt<"TokenBridge">> {
     const transfer = await this.toTransferDetails(params);
-    const txids = await TokenTransfer.transfer<N>(this.configs.from.context, transfer, signer);
+    const txids = await TokenTransfer.transfer<N>(this.request.fromChain, transfer, signer);
     const msg = await TokenTransfer.getTransferMessage(
-      this.configs.from.context,
+      this.request.fromChain,
       txids[txids.length - 1]!.txid,
     );
 
@@ -94,7 +94,7 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
     if (!isAttested(receipt))
       throw new Error("The source must be finalized in order to complete the transfer");
     return await TokenTransfer.redeem<N>(
-      this.configs.to.context,
+      this.request.toChain,
       // todo: ew?
       receipt.attestation.attestation as TokenTransferVAA,
       signer,
@@ -106,16 +106,16 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
       this.wh,
       receipt,
       timeout,
-      this.configs.from.context,
-      this.configs.to.context,
+      this.request.fromChain,
+      this.request.toChain,
     );
   }
 
   private toTransferDetails(params: TransferParams<Op>): TokenTransferDetails {
-    const amount = normalizeAmount(params.amount, this.configs.from.decimals);
+    const amount = normalizeAmount(params.amount, this.request.source.decimals);
 
     return {
-      token: this.request.source,
+      token: this.request.source.id,
       from: this.request.from,
       to: this.request.to,
       amount,

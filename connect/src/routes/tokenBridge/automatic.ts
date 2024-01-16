@@ -1,4 +1,4 @@
-import { Network, normalizeAmount } from "@wormhole-foundation/sdk-base";
+import { Network } from "@wormhole-foundation/sdk-base";
 import {
   Signer,
   TokenTransferDetails,
@@ -7,12 +7,12 @@ import {
 } from "@wormhole-foundation/sdk-definitions";
 import { TokenTransfer } from "../../protocols/tokenTransfer";
 import { TransferReceipt, TransferState } from "../../wormholeTransfer";
-import { AutomaticRoute, ValidationResult, TransferParams } from "../route";
+import { AutomaticRoute, TransferParams, ValidationResult } from "../route";
 
 export namespace AutomaticTokenBridgeRoute {
   export type Options = {
     // Expressed in percentage terms
-    // 1.0 = 100%
+    // e.g. 1.0 = 100%
     nativeGas: number;
   };
 }
@@ -23,38 +23,39 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
 
   async isSupported(): Promise<boolean> {
     // No transfers to same chain
-    if (this.configs.from.context.chain === this.configs.to.context.chain) return false;
+    if (this.request.fromChain.chain === this.request.toChain.chain) return false;
 
     // No transfers to unsupported chains
-    if (!this.configs.from.context.supportsAutomaticTokenBridge()) return false;
-    if (!this.configs.to.context.supportsAutomaticTokenBridge()) return false;
+    if (!this.request.fromChain.supportsAutomaticTokenBridge()) return false;
+    if (!this.request.toChain.supportsAutomaticTokenBridge()) return false;
 
     // Ensure source and destination tokens are equivalent, if destination is set
     const { source, destination } = this.request;
-    if (destination && isTokenId(destination)) {
+    if (destination && isTokenId(destination.id)) {
       // If destination token was provided, check that it's the equivalent one for the source token
       let equivalentToken = await TokenTransfer.lookupDestinationToken(
-        this.configs.from.context,
-        this.configs.to.context,
-        source,
+        this.request.fromChain,
+        this.request.toChain,
+        source.id,
       );
 
-      if (!isSameToken(equivalentToken, destination)) {
+      if (!isSameToken(equivalentToken, destination.id)) {
         return false;
       }
     }
 
     return true;
   }
+
   static getDefaultOptions(): Op {
     return { nativeGas: 0.0 };
   }
 
   async isAvailable(): Promise<boolean> {
-    const atb = await this.configs.from.context.getAutomaticTokenBridge();
+    const atb = await this.request.fromChain.getAutomaticTokenBridge();
 
-    if (isTokenId(this.request.source))
-      return await atb.isRegisteredToken(this.request.source.address);
+    if (isTokenId(this.request.source.id))
+      return await atb.isRegisteredToken(this.request.source.id.address);
 
     return true;
   }
@@ -64,29 +65,19 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
 
     try {
       const { destination } = this.request;
-      if (destination && !isTokenId(destination)) {
-        // considered unset for our purposes
-        // they've asked for native gas dropoff implicitly
-        // max out native gas. This value may be negative but we check that later
+      if (destination && !isTokenId(destination.id)) {
         if (nativeGas === 0.0) {
           nativeGas = 1.0;
         }
-        // strict equality from here,
-        //  if it came in set
-        //  and they specified native dest token
-        //  then nativeGas must be exactly the same as amount - fee
       }
 
       if (nativeGas > 1.0 || nativeGas < 0.0) {
-        throw new Error("Native gas must be between 0% and 100%");
+        throw new Error("Native gas must be between 0.0 and 1.0 (0% and 100%)");
       }
 
       params.options = { nativeGas };
 
-      return {
-        valid: true,
-        params,
-      };
+      return { valid: true, params };
     } catch (e) {
       return { valid: false, params, error: e as Error };
     }
@@ -94,8 +85,8 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
 
   async quote(params: TransferParams<Op>) {
     return await TokenTransfer.quoteTransfer(
-      this.configs.from.context,
-      this.configs.to.context,
+      this.request.fromChain,
+      this.request.toChain,
       await this.toTransferDetails(params),
     );
   }
@@ -105,9 +96,9 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
     params: TransferParams<Op>,
   ): Promise<TransferReceipt<"AutomaticTokenBridge">> {
     const transfer = await this.toTransferDetails(params);
-    const txids = await TokenTransfer.transfer<N>(this.configs.from.context, transfer, signer);
+    const txids = await TokenTransfer.transfer<N>(this.request.fromChain, transfer, signer);
     const msg = await TokenTransfer.getTransferMessage(
-      this.configs.from.context,
+      this.request.fromChain,
       txids[txids.length - 1]!.txid,
     );
     return {
@@ -126,14 +117,14 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
       this.wh,
       receipt,
       timeout,
-      this.configs.from.context,
-      this.configs.to.context,
+      this.request.fromChain,
+      this.request.toChain,
     );
   }
 
   private async toTransferDetails(params: TransferParams<Op>): Promise<TokenTransferDetails> {
     const { source, from, to } = this.request;
-    const amount = normalizeAmount(params.amount, this.configs.from.decimals);
+    const amount = this.request.normalizeAmount(params.amount);
     let options = params.options ?? AutomaticTokenBridgeRoute.getDefaultOptions();
 
     // Determine nativeGas
@@ -141,12 +132,10 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
 
     // Calculate nativeGas in base units if options.nativeGas isn't 0
     if (options && options.nativeGas > 0) {
-      const atb = await this.configs.from.context.getAutomaticTokenBridge();
-      const fee = await atb.getRelayerFee(
-        this.request.from.address,
-        this.request.to,
-        this.request.from.address,
-      );
+      const atb = await this.request.fromChain.getAutomaticTokenBridge();
+
+      const inputToken = source.id === "native" ? source.nativeWrapped! : source.id;
+      const fee = await atb.getRelayerFee(from.address, to, inputToken.address);
 
       // Scaling up and down with 100 means we don't support fractional percentages
       const percScale = 100;
@@ -161,10 +150,11 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
       from,
       to,
       amount,
-      token: source,
+      token: source.id,
       automatic: true,
       nativeGas,
     };
+
     return transfer;
   }
 }

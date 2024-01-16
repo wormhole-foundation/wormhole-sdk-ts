@@ -1,12 +1,7 @@
 import { Network } from "@wormhole-foundation/sdk-base";
 import { Wormhole } from "../wormhole";
-import {
-  RouteTransferRequest,
-  UnknownRoute,
-  UnknownRouteConstructor,
-  getChainConfig,
-  isAutomatic,
-} from "./route";
+import { UnknownRoute, UnknownRouteConstructor, isAutomatic } from "./route";
+import { RouteTransferRequest } from "./request";
 
 export type RouteSortOptions = "cost" | "speed";
 
@@ -19,16 +14,10 @@ export class RouteResolver<N extends Network> {
     this.routeConstructors = routeConstructors;
   }
 
-  async findRoutes(request: RouteTransferRequest): Promise<UnknownRoute<N>[]> {
-    // Cache chain context and decimal precision level
-    const chainConfigs = {
-      from: await getChainConfig(this.wh, request.from),
-      to: await getChainConfig(this.wh, request.to),
-    };
-
+  async findRoutes(request: RouteTransferRequest<N>): Promise<UnknownRoute<N>[]> {
     // Could do this faster in parallel using Promise.all
     return this.routeConstructors
-      .map((rc) => new rc(this.wh, request, chainConfigs))
+      .map((rc) => new rc(this.wh, request))
       .filter(async (route) => {
         if (!(await route.isSupported())) return false;
         if (isAutomatic(route) && !(await route.isAvailable())) return false;
