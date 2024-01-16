@@ -121,7 +121,7 @@ const actionMapping = constMap(actionTuples);
 const sdkProtocolNameAndGovernanceVaaModuleEntries = [
   ["WormholeCore", "Core"],
   ["TokenBridge", "TokenBridge"],
-  ["NftBridge", "NFTBridge"],
+  ["NftBridge", "NftBridge"],
   ["Relayer", "WormholeRelayer"],
   ["CircleBridge", "CircleIntegration"],
 ] as const satisfies RoArray<readonly [ProtocolName, string]>;
