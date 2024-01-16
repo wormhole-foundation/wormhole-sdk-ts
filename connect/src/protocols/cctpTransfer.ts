@@ -42,7 +42,7 @@ import {
   isSourceFinalized,
   isSourceInitiated,
   AttestationReceipt,
-} from "../wormholeTransfer";
+} from "./wormholeTransfer";
 
 type CircleTransferProtocol = "CircleBridge" | "AutomaticCircleBridge";
 

@@ -1,7 +1,7 @@
 import { Network } from "@wormhole-foundation/sdk-base";
 import { Signer, ProtocolName, TransactionId } from "@wormhole-foundation/sdk-definitions";
 import { Wormhole } from "../wormhole";
-import { TransferQuote, TransferReceipt } from "../wormholeTransfer";
+import { TransferQuote, TransferReceipt } from "../protocols/wormholeTransfer";
 import { RouteTransferRequest } from "./request";
 
 export interface TransferParams<OP> {
@@ -9,7 +9,7 @@ export interface TransferParams<OP> {
   options?: OP;
 }
 
-export interface ValidatedTransferParams<OP> extends Required<TransferParams<OP>> {};
+export interface ValidatedTransferParams<OP> extends Required<TransferParams<OP>> {}
 
 export type ValidationResult<OP> =
   | { params: ValidatedTransferParams<OP>; valid: true }

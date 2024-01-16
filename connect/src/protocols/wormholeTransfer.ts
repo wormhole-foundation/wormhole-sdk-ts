@@ -12,7 +12,7 @@ import {
   ProtocolName,
   Attestation,
 } from "@wormhole-foundation/sdk-definitions";
-import { Wormhole } from "./wormhole";
+import { Wormhole } from "../wormhole";
 
 // Attestation Receipt contains the Id to lookup the attestation
 // and possibly a cached/parsed attestation

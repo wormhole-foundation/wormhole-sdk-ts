@@ -32,7 +32,7 @@ import {
 import { signSendWait } from "../common";
 import { fetchIbcXfer, isTokenBridgeVaaRedeemed, retry } from "../tasks";
 import { Wormhole } from "../wormhole";
-import { TransferState, WormholeTransfer } from "../wormholeTransfer";
+import { TransferState, WormholeTransfer } from "./wormholeTransfer";
 
 type GatewayContext<N extends Network> = ChainContext<
   N,

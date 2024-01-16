@@ -6,7 +6,7 @@ import {
   isTokenId,
 } from "@wormhole-foundation/sdk-definitions";
 import { TokenTransfer } from "../../protocols/tokenTransfer";
-import { TransferReceipt, TransferState } from "../../wormholeTransfer";
+import { TransferReceipt, TransferState } from "../../protocols/wormholeTransfer";
 import {
   AutomaticRoute,
   TransferParams,

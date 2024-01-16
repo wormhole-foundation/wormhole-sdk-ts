@@ -44,7 +44,7 @@ import {
   isAttested,
   isSourceFinalized,
   isSourceInitiated,
-} from "../wormholeTransfer";
+} from "./wormholeTransfer";
 
 export type TokenTransferProtocol = "TokenBridge" | "AutomaticTokenBridge";
 export type TokenTransferVAA = TokenBridge.TransferVAA | AutomaticTokenBridge.VAA;
