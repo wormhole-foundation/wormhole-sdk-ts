@@ -12,6 +12,15 @@ import { AccountAddress, ChainAddress, NativeAddress, TokenAddress } from "../ad
 import { IbcMessageId, WormholeMessageId } from "../attestation";
 import { TokenId, TxHash } from "../types";
 import { UnsignedTransaction } from "../unsignedTransaction";
+import { EmptyPlatformMap } from "../protocol";
+
+declare global {
+  namespace WormholeNamespace {
+    export interface ProtocolToPlatformMapping {
+      IbcBridge: EmptyPlatformMap<Platform, "IbcBridge">;
+    }
+  }
+}
 
 // Configuration for a transfer through the Gateway
 export type GatewayTransferDetails = {
