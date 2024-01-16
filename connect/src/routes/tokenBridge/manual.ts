@@ -30,8 +30,10 @@ type Vp = TokenBridgeRoute.ValidatedParams;
 type Tp = TransferParams<Op>;
 type Vr = ValidationResult<Op>;
 
-export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
-  static getDefaultOptions(): Op {
+type Q = TransferQuote;
+
+export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op, Q> {
+  static getDefaultOptions(): TokenBridgeRoute.Options {
     return { payload: undefined };
   }
 

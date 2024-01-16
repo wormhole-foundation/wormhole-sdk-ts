@@ -48,23 +48,25 @@
     "docs": "typedoc"
   },
   "devDependencies": {
+    "algosdk": "^2.7.0",
     "dotenv": "^16.3.1",
-    "tsx": "^4.7.0",
-    "algosdk": "^2.7.0"
+    "tsx": "^4.7.0"
   },
   "dependencies": {
+    "@mayanfinance/swap-sdk": "^4.5.1",
     "@wormhole-foundation/connect-sdk": "^0.3.0-beta.16",
-    "@wormhole-foundation/connect-sdk-solana": "^0.3.0-beta.16",
-    "@wormhole-foundation/connect-sdk-evm": "^0.3.0-beta.16",
     "@wormhole-foundation/connect-sdk-cosmwasm": "^0.3.0-beta.16",
-    "@wormhole-foundation/connect-sdk-evm-core": "^0.3.0-beta.16",
-    "@wormhole-foundation/connect-sdk-solana-core": "^0.3.0-beta.16",
     "@wormhole-foundation/connect-sdk-cosmwasm-core": "^0.3.0-beta.16",
-    "@wormhole-foundation/connect-sdk-evm-tokenbridge": "^0.3.0-beta.16",
-    "@wormhole-foundation/connect-sdk-solana-tokenbridge": "^0.3.0-beta.16",
+    "@wormhole-foundation/connect-sdk-cosmwasm-ibc": "^0.3.0-beta.16",
     "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge": "^0.3.0-beta.16",
+    "@wormhole-foundation/connect-sdk-evm": "^0.3.0-beta.16",
     "@wormhole-foundation/connect-sdk-evm-cctp": "^0.3.0-beta.16",
+    "@wormhole-foundation/connect-sdk-evm-core": "^0.3.0-beta.16",
+    "@wormhole-foundation/connect-sdk-evm-tokenbridge": "^0.3.0-beta.16",
+    "@wormhole-foundation/connect-sdk-solana": "^0.3.0-beta.16",
     "@wormhole-foundation/connect-sdk-solana-cctp": "^0.3.0-beta.16",
-    "@wormhole-foundation/connect-sdk-cosmwasm-ibc": "^0.3.0-beta.16"
+    "@wormhole-foundation/connect-sdk-solana-core": "^0.3.0-beta.16",
+    "@wormhole-foundation/connect-sdk-solana-tokenbridge": "^0.3.0-beta.16",
+    "axios": "^1.6.5"
   }
 }

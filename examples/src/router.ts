@@ -7,6 +7,7 @@ import {
 } from "@wormhole-foundation/connect-sdk";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
+import { MayanRoute } from "./mayan/mayan";
 
 import { getStuff } from "./helpers";
 
@@ -15,7 +16,7 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 
 (async function () {
   // Setup
-  const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform]);
+  const wh = new Wormhole("Mainnet", [EvmPlatform, SolanaPlatform]);
 
   // get signers from local config
   const sendChain = wh.getChain("Solana");
@@ -23,7 +24,7 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   const receiver = await getStuff(wh.getChain("Avalanche"));
 
   // create new resolver
-  const resolver = wh.resolver();
+  const resolver = wh.resolver([MayanRoute]);
 
   // Creating a transfer request fetches token details
   // since all routes will need to know about the tokens
@@ -45,11 +46,15 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 
   // Specify the amount as a decimal string
   const transferParams = {
-    amount: "0.0015",
+    amount: "0.0315",
   };
 
   let validated = await bestRoute.validate(transferParams);
-  if (!validated.valid) throw validated.error;
+  if (!validated.valid) {
+    console.error(validated.error);
+    return;
+  }
+  console.log("Validated: ", validated);
 
   // initiate the transfer
   const receipt = await bestRoute.initiate(sender.signer, validated.params);
