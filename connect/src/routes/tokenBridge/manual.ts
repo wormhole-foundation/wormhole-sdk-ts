@@ -68,11 +68,11 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
       return { valid: false, params, error: new Error("Amount has to be positive") };
     }
 
-    const validatedParams = {
+    const validatedParams: TokenBridgeRoute.ValidatedTransferParams = {
       amount: params.amount,
       normalizedParams: { amount: amt },
       options: {},
-    } satisfies TokenBridgeRoute.ValidatedTransferParams;
+    };
 
     return { valid: true, params: validatedParams };
   }

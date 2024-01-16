@@ -95,7 +95,7 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
         amount: params.amount,
         options: { ...params.options, nativeGas: nativeGasPerc },
         normalizedParams: await this.normalizeTransferParams(params),
-      } satisfies AutomaticTokenBridgeRoute.ValidatedTransferParams<Op>;
+      };
 
       return { valid: true, params: validatedParams };
     } catch (e) {
