@@ -18,22 +18,24 @@ export namespace TokenBridgeRoute {
   export type NormalizedParams = {
     amount: bigint;
   };
+
+  export interface ValidatedParams extends ValidatedTransferParams<Options> {
+    normalizedParams: NormalizedParams;
+  }
 }
 
-export interface ValidatedParams<Op> extends ValidatedTransferParams<Op> {
-  normalizedParams: TokenBridgeRoute.NormalizedParams;
-};
-
 type Op = TokenBridgeRoute.Options;
+type Vp = TokenBridgeRoute.ValidatedParams;
+
 type Tp = TransferParams<Op>;
 type Vr = ValidationResult<Op>;
 
 export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
-  static getDefaultOptions(): TokenBridgeRoute.Options {
+  static getDefaultOptions(): Op {
     return { payload: undefined };
   }
 
-  async isSupported(): Promise<boolean> {
+  async isSupported() {
     // No transfers to same chain
     if (this.request.fromChain.chain === this.request.toChain.chain) return false;
 
@@ -66,7 +68,7 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
       return { valid: false, params, error: new Error("Amount has to be positive") };
     }
 
-    const validatedParams: ValidatedParams<Op> = {
+    const validatedParams: Vp = {
       amount: params.amount,
       normalizedParams: { amount: amt },
       options: {},
@@ -75,7 +77,7 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
     return { valid: true, params: validatedParams };
   }
 
-  async quote(params: ValidatedParams<Op>) {
+  async quote(params: Vp) {
     return await TokenTransfer.quoteTransfer(
       this.request.fromChain,
       this.request.toChain,
@@ -83,10 +85,7 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
     );
   }
 
-  async initiate(
-    signer: Signer,
-    params: ValidatedParams<Op>,
-  ): Promise<TransferReceipt<"TokenBridge">> {
+  async initiate(signer: Signer, params: Vp): Promise<TransferReceipt<"TokenBridge">> {
     const transfer = this.toTransferDetails(params);
     const txids = await TokenTransfer.transfer<N>(this.request.fromChain, transfer, signer);
     const msg = await TokenTransfer.getTransferMessage(
@@ -129,9 +128,7 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
     );
   }
 
-  private toTransferDetails(
-    params: ValidatedParams<Op>,
-  ): TokenTransferDetails {
+  private toTransferDetails(params: Vp): TokenTransferDetails {
     return {
       token: this.request.source.id,
       from: this.request.from,
