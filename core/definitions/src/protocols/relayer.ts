@@ -1,5 +1,5 @@
 import { Platform } from "@wormhole-foundation/sdk-base";
-import { EmptyPlatformMap, registerProtocolName } from "../protocol";
+import { EmptyPlatformMap } from "../protocol";
 
 declare global {
   namespace WormholeNamespace {
@@ -8,4 +8,3 @@ declare global {
     }
   }
 }
-registerProtocolName("Relayer");

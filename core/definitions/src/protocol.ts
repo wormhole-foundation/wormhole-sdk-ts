@@ -38,8 +38,6 @@ export type ProtocolFactoryMap<
 > = Map<PN, Map<P, ProtocolInitializer<P, PN>>>;
 const protocolFactory: ProtocolFactoryMap = new Map();
 
-export function registerProtocolName<PN extends ProtocolName>(protocol: PN): void {}
-
 export function registerProtocol<P extends Platform, PN extends ProtocolName>(
   platform: P,
   protocol: PN,

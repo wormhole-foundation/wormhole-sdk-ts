@@ -18,7 +18,7 @@ import "../payloads/automaticCircleBridge";
 import { circleMessageLayout } from "../payloads/circleBridge";
 import { keccak256 } from "../utils";
 import { ProtocolPayload, ProtocolVAA, payloadDiscriminator } from "../vaa";
-import { EmptyPlatformMap, registerProtocolName } from "../protocol";
+import { EmptyPlatformMap } from "../protocol";
 
 declare global {
   namespace WormholeNamespace {
@@ -32,8 +32,6 @@ declare global {
 export namespace CircleBridge {
   const _protocol = "CircleBridge";
   export type ProtocolName = typeof _protocol;
-
-  registerProtocolName(_protocol);
 
   const _payloads = ["Message"] as const;
   export type PayloadNames = (typeof _payloads)[number];
@@ -59,8 +57,6 @@ export namespace CircleBridge {
 export namespace AutomaticCircleBridge {
   const _protocol = "AutomaticCircleBridge";
   export type ProtocolName = typeof _protocol;
-
-  registerProtocolName(_protocol);
 
   const _payloads = ["DepositWithPayload", "TransferWithRelay"] as const;
   export type PayloadNames = (typeof _payloads)[number];
