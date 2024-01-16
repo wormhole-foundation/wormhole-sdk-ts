@@ -52,81 +52,126 @@ export function mayanEvmSigner(signer: Signer): ethers.Signer {
   return w as ethers.Signer;
 }
 
+export enum MayanTransactionStatus {
+  SETTLED_ON_SOLANA = "SETTLED_ON_SOLANA",
+  REDEEMED_ON_EVM = "REDEEMED_ON_EVM",
+  REFUNDED_ON_EVM = "REFUNDED_ON_EVM",
+  REFUNDED_ON_SOLANA = "REFUNDED_ON_SOLANA",
+}
+
+export enum MayanTransactionGoal {
+  // send from evm to solana
+  Send = "SEND",
+  // bridge to destination chain
+  Bridge = "BRIDGE",
+  // perform the swap
+  Swap = "SWAP",
+  // register for auction
+  Register = "REGISTER",
+  // settle on destination
+  Settle = "SETTLE",
+}
+
 export interface TransactionStatus {
   id: string;
   trader: string;
+
+  sourceChain: string;
   sourceTxHash: string;
   sourceTxBlockNo: number;
-  status: string;
-  transferSequence: any;
-  swapSequence: any;
-  redeemSequence: any;
-  refundSequence: any;
-  fulfillSequence: any;
+  status: MayanTransactionStatus;
+
+  transferSequence: string;
+  swapSequence: string;
+  redeemSequence: string;
+  refundSequence: string;
+  fulfillSequence: string;
+
   deadline: string;
-  sourceChain: string;
+
   swapChain: string;
+
   destChain: string;
   destAddress: string;
+
   fromTokenAddress: string;
   fromTokenChain: string;
   fromTokenSymbol: string;
   fromAmount: string;
   fromAmount64: any;
+
   toTokenAddress: string;
   toTokenChain: string;
   toTokenSymbol: string;
+
   stateAddr: string;
   stateNonce: string;
+
   toAmount: any;
-  transferSignedVaa: any;
-  swapSignedVaa: any;
-  redeemSignedVaa: any;
-  refundSignedVaa: any;
-  fulfillSignedVaa: any;
+
+  transferSignedVaa: string;
+  swapSignedVaa: string;
+  redeemSignedVaa: string;
+  refundSignedVaa: string;
+  fulfillSignedVaa: string;
+
   savedAt: string;
   initiatedAt: string;
   completedAt: string;
   insufficientFees: boolean;
   retries: number;
+
   swapRelayerFee: string;
   redeemRelayerFee: string;
   refundRelayerFee: string;
-  statusUpdatedAt: string;
-  syncRequestedAt: any;
   bridgeFee: string;
-  redeemTxHash: any;
-  refundTxHash: any;
-  fulfillTxHash: any;
-  auctionAddress: string;
+
+  statusUpdatedAt: string;
+
+  redeemTxHash: string;
+  refundTxHash: string;
+  fulfillTxHash: string;
+
   unwrapRedeem: boolean;
   unwrapRefund: boolean;
+
+  auctionAddress: string;
   driverAddress: string;
-  posAddress: string;
   mayanAddress: string;
   referrerAddress: string;
-  unlockRecipient: any;
+  auctionStateAddr: any;
+
+  auctionStateNonce: any;
+
   gasDrop: string;
   gasDrop64: any;
+
   payloadId: number;
-  orderHash: any;
-  randomKey: any;
-  auctionStateAddr: any;
-  auctionStateNonce: any;
+  orderHash: string;
+
   minAmountOut: any;
   minAmountOut64: any;
+
   service: string;
+
   refundAmount: string;
+
+  posAddress: string;
+
+  unlockRecipient: any;
+
   fromTokenLogoUri: string;
   toTokenLogoUri: string;
+
   fromTokenScannerUrl: string;
   toTokenScannerUrl: string;
+
   txs: Tx[];
 }
 
 export interface Tx {
   txHash: string;
-  goals: string[];
+  goals: MayanTransactionGoal[];
   scannerUrl: string;
 }
 

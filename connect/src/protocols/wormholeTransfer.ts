@@ -44,7 +44,6 @@ export enum TransferState {
 
 // Base type for common properties
 interface BaseTransferReceipt<PN extends ProtocolName, SC extends Chain, DC extends Chain> {
-  protocol: PN;
   from: SC;
   to: DC;
   request: TransferRequest<PN>;

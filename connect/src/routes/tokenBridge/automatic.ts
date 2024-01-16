@@ -6,7 +6,7 @@ import {
   isTokenId,
 } from "@wormhole-foundation/sdk-definitions";
 import { TokenTransfer } from "../../protocols/tokenTransfer";
-import { TransferReceipt, TransferState } from "../../protocols/wormholeTransfer";
+import { TransferQuote, TransferReceipt, TransferState } from "../../protocols/wormholeTransfer";
 import {
   AutomaticRoute,
   TransferParams,
@@ -162,7 +162,6 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
       txids[txids.length - 1]!.txid,
     );
     return {
-      protocol: "AutomaticTokenBridge",
       from: transfer.from.chain,
       to: transfer.to.chain,
       state: TransferState.SourceFinalized,
