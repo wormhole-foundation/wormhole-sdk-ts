@@ -1,7 +1,6 @@
 import { Chain, Network, Platform, PlatformToChains } from "@wormhole-foundation/sdk-base";
 import {
   AttestationId,
-  AttestationReceipt,
   ChainContext,
   CircleTransferDetails,
   GatewayTransferDetails,
@@ -11,8 +10,16 @@ import {
   TransactionId,
   TxHash,
   ProtocolName,
+  Attestation,
 } from "@wormhole-foundation/sdk-definitions";
 import { Wormhole } from "./wormhole";
+
+// Attestation Receipt contains the Id to lookup the attestation
+// and possibly a cached/parsed attestation
+export type AttestationReceipt<PN extends ProtocolName = ProtocolName> = {
+  id: AttestationId<PN>;
+  attestation?: Attestation<PN>;
+};
 
 export type TransferRequest<PN extends ProtocolName = ProtocolName> = PN extends
   | "TokenBridge"

@@ -31,13 +31,6 @@ export type Attestation<PN extends ProtocolName = ProtocolName> = PN extends
   ? IbcTransferData
   : never;
 
-// Attestation Receipt contains the Id to lookup the attestation
-// and possibly a cached/parsed attestation
-export type AttestationReceipt<PN extends ProtocolName = ProtocolName> = {
-  id: AttestationId<PN>;
-  attestation?: Attestation<PN>;
-};
-
 // Wormhole Message Identifier used to fetch a VAA
 // Possibly with a VAA already set
 export type WormholeMessageId = {
