@@ -7,12 +7,7 @@ import {
 } from "@wormhole-foundation/sdk-definitions";
 import { TokenTransfer } from "../../protocols/tokenTransfer";
 import { TransferReceipt, TransferState } from "../../wormholeTransfer";
-import {
-  AutomaticRoute,
-  TransferParams,
-  ValidatedTransferParams,
-  ValidationResult,
-} from "../route";
+import { AutomaticRoute, TransferParams, ValidationResult } from "../route";
 
 export namespace AutomaticTokenBridgeRoute {
   export type InputOptions = {
@@ -26,14 +21,21 @@ export namespace AutomaticTokenBridgeRoute {
     amount: bigint;
     nativeGasAmount: bigint;
   };
+
+  export interface ValidatedTransferParams<Op> {
+    amount: string;
+    options: Op;
+    normalizedParams: NormalizedParams;
+  }
 }
 
 type Op = AutomaticTokenBridgeRoute.InputOptions;
 type Np = AutomaticTokenBridgeRoute.NormalizedParams;
-type Tp = TransferParams<Op, Np>;
-type Vtp = ValidatedTransferParams<Op, Np>;
-type Vr = ValidationResult<Op, Np>;
-export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute<N, Op, Np> {
+type Tp = TransferParams<Op>;
+type Vtp = AutomaticTokenBridgeRoute.ValidatedTransferParams<Op>;
+
+type Vr = ValidationResult<Op>;
+export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute<N, Op> {
   NATIVE_GAS_DROPOFF_SUPPORTED = true;
 
   async isSupported(): Promise<boolean> {
@@ -89,11 +91,11 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
       // If destination is native, max out the nativeGas requested
       if (destination && destination.id === "native" && nativeGasPerc === 0.0) nativeGasPerc = 1.0;
 
-      const validatedParams: ValidatedTransferParams<Op, Np> = {
+      const validatedParams: AutomaticTokenBridgeRoute.ValidatedTransferParams<Op> = {
         amount: params.amount,
         options: { ...params.options, nativeGas: nativeGasPerc },
         normalizedParams: await this.normalizeTransferParams(params),
-      } satisfies ValidatedTransferParams<Op, Np>;
+      } satisfies AutomaticTokenBridgeRoute.ValidatedTransferParams<Op>;
 
       return { valid: true, params: validatedParams };
     } catch (e) {

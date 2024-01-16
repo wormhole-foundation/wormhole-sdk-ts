@@ -8,7 +8,7 @@ import {
 } from "@wormhole-foundation/sdk-definitions";
 import { TokenTransfer, TokenTransferVAA } from "../../protocols/tokenTransfer";
 import { TransferReceipt, TransferState, isAttested } from "../../wormholeTransfer";
-import { ManualRoute, TransferParams, ValidatedTransferParams, ValidationResult } from "../route";
+import { ManualRoute, TransferParams, ValidationResult } from "../route";
 
 export namespace TokenBridgeRoute {
   export type Options = {
@@ -18,16 +18,19 @@ export namespace TokenBridgeRoute {
   export type NormalizedParams = {
     amount: bigint;
   };
+
+  export type ValidatedTransferParams = {
+    amount: string;
+    options: Options;
+    normalizedParams: NormalizedParams;
+  };
 }
 
 type Op = TokenBridgeRoute.Options;
-type Np = TokenBridgeRoute.NormalizedParams;
+type Tp = TransferParams<Op>;
+type Vr = ValidationResult<Op>;
 
-type Tp = TransferParams<Op, Np>;
-type Vtp = ValidatedTransferParams<Op, Np>;
-type Vr = ValidationResult<Op, Np>;
-
-export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op, Np> {
+export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
   static getDefaultOptions(): TokenBridgeRoute.Options {
     return { payload: undefined };
   }
@@ -69,12 +72,12 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op, Np> 
       amount: params.amount,
       normalizedParams: { amount: amt },
       options: {},
-    } satisfies ValidatedTransferParams<Op, Np>;
+    } satisfies TokenBridgeRoute.ValidatedTransferParams;
 
     return { valid: true, params: validatedParams };
   }
 
-  async quote(params: Vtp) {
+  async quote(params: TokenBridgeRoute.ValidatedTransferParams) {
     return await TokenTransfer.quoteTransfer(
       this.request.fromChain,
       this.request.toChain,
@@ -82,7 +85,10 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op, Np> 
     );
   }
 
-  async initiate(signer: Signer, params: Vtp): Promise<TransferReceipt<"TokenBridge">> {
+  async initiate(
+    signer: Signer,
+    params: TokenBridgeRoute.ValidatedTransferParams,
+  ): Promise<TransferReceipt<"TokenBridge">> {
     const transfer = this.toTransferDetails(params);
     const txids = await TokenTransfer.transfer<N>(this.request.fromChain, transfer, signer);
     const msg = await TokenTransfer.getTransferMessage(
@@ -125,7 +131,9 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op, Np> 
     );
   }
 
-  private toTransferDetails(params: Vtp): TokenTransferDetails {
+  private toTransferDetails(
+    params: TokenBridgeRoute.ValidatedTransferParams,
+  ): TokenTransferDetails {
     return {
       token: this.request.source.id,
       from: this.request.from,
