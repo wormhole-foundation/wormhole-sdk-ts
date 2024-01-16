@@ -15,7 +15,7 @@ import {
 } from "../route";
 
 export namespace AutomaticTokenBridgeRoute {
-  export type InputOptions = {
+  export type Options = {
     // Expressed in percentage terms
     // e.g. 1.0 = 100%
     nativeGas: number;
@@ -26,17 +26,26 @@ export namespace AutomaticTokenBridgeRoute {
     amount: bigint;
     nativeGasAmount: bigint;
   };
+
+  export interface ValidatedParams extends ValidatedTransferParams<Options> {
+    normalizedParams: NormalizedParams;
+  }
 }
 
-type Op = AutomaticTokenBridgeRoute.InputOptions;
-type Np = AutomaticTokenBridgeRoute.NormalizedParams;
-type Tp = TransferParams<Op, Np>;
-type Vtp = ValidatedTransferParams<Op, Np>;
-type Vr = ValidationResult<Op, Np>;
-export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute<N, Op, Np> {
+type Op = AutomaticTokenBridgeRoute.Options;
+type Vp = AutomaticTokenBridgeRoute.ValidatedParams;
+
+type Tp = TransferParams<Op>;
+type Vr = ValidationResult<Op>;
+
+export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute<N, Op> {
   NATIVE_GAS_DROPOFF_SUPPORTED = true;
 
-  async isSupported(): Promise<boolean> {
+  static getDefaultOptions(): Op {
+    return { nativeGas: 0.0 };
+  }
+
+  async isSupported() {
     // No transfers to same chain
     if (this.request.fromChain.chain === this.request.toChain.chain) return false;
 
@@ -62,10 +71,6 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
     return true;
   }
 
-  static getDefaultOptions(): Op {
-    return { nativeGas: 0.0 };
-  }
-
   async isAvailable(): Promise<boolean> {
     const atb = await this.request.fromChain.getAutomaticTokenBridge();
 
@@ -89,11 +94,11 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
       // If destination is native, max out the nativeGas requested
       if (destination && destination.id === "native" && nativeGasPerc === 0.0) nativeGasPerc = 1.0;
 
-      const validatedParams: ValidatedTransferParams<Op, Np> = {
+      const validatedParams: Vp = {
         amount: params.amount,
         options: { ...params.options, nativeGas: nativeGasPerc },
         normalizedParams: await this.normalizeTransferParams(params),
-      } satisfies ValidatedTransferParams<Op, Np>;
+      };
 
       return { valid: true, params: validatedParams };
     } catch (e) {
@@ -101,7 +106,7 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
     }
   }
 
-  async normalizeTransferParams(params: Tp): Promise<Np> {
+  async normalizeTransferParams(params: Tp) {
     const amount = this.request.normalizeAmount(params.amount);
 
     const inputToken =
@@ -140,7 +145,7 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
     return { fee, amount, nativeGasAmount };
   }
 
-  async quote(params: Vtp) {
+  async quote(params: Vp) {
     return await TokenTransfer.quoteTransfer(
       this.request.fromChain,
       this.request.toChain,
@@ -148,7 +153,7 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
     );
   }
 
-  async initiate(signer: Signer, params: Vtp): Promise<TransferReceipt<"AutomaticTokenBridge">> {
+  async initiate(signer: Signer, params: Vp): Promise<TransferReceipt<"AutomaticTokenBridge">> {
     const transfer = this.toTransferDetails(params);
     const txids = await TokenTransfer.transfer<N>(this.request.fromChain, transfer, signer);
     const msg = await TokenTransfer.getTransferMessage(
@@ -176,7 +181,7 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
     );
   }
 
-  private toTransferDetails(params: Vtp): TokenTransferDetails {
+  private toTransferDetails(params: Vp): TokenTransferDetails {
     const transfer = {
       automatic: true,
       from: this.request.from,
