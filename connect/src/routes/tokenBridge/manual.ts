@@ -8,7 +8,7 @@ import {
 } from "@wormhole-foundation/sdk-definitions";
 import { TokenTransfer, TokenTransferVAA } from "../../protocols/tokenTransfer";
 import { TransferReceipt, TransferState, isAttested } from "../../wormholeTransfer";
-import { ManualRoute, TransferParams, ValidationResult } from "../route";
+import { ManualRoute, TransferParams, ValidatedTransferParams, ValidationResult } from "../route";
 
 export namespace TokenBridgeRoute {
   export type Options = {
@@ -20,7 +20,7 @@ export namespace TokenBridgeRoute {
   };
 }
 
-interface ValidatedTransferParams<Op> extends Required<TransferParams<Op>> {
+export interface ValidatedParams<Op> extends ValidatedTransferParams<Op> {
   normalizedParams: TokenBridgeRoute.NormalizedParams;
 };
 
@@ -66,7 +66,7 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
       return { valid: false, params, error: new Error("Amount has to be positive") };
     }
 
-    const validatedParams: ValidatedTransferParams<Op> = {
+    const validatedParams: ValidatedParams<Op> = {
       amount: params.amount,
       normalizedParams: { amount: amt },
       options: {},
@@ -75,7 +75,7 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
     return { valid: true, params: validatedParams };
   }
 
-  async quote(params: ValidatedTransferParams<Op>) {
+  async quote(params: ValidatedParams<Op>) {
     return await TokenTransfer.quoteTransfer(
       this.request.fromChain,
       this.request.toChain,
@@ -85,7 +85,7 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
 
   async initiate(
     signer: Signer,
-    params: ValidatedTransferParams<Op>,
+    params: ValidatedParams<Op>,
   ): Promise<TransferReceipt<"TokenBridge">> {
     const transfer = this.toTransferDetails(params);
     const txids = await TokenTransfer.transfer<N>(this.request.fromChain, transfer, signer);
@@ -130,7 +130,7 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
   }
 
   private toTransferDetails(
-    params: ValidatedTransferParams<Op>,
+    params: ValidatedParams<Op>,
   ): TokenTransferDetails {
     return {
       token: this.request.source.id,
