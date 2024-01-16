@@ -20,7 +20,7 @@ import { WormholeCore } from "./protocols/core";
 
 export abstract class ChainContext<
   N extends Network,
-  P extends Platform,
+  P extends Platform = Platform,
   C extends Chain = PlatformToChains<P>,
 > {
   readonly network: N;

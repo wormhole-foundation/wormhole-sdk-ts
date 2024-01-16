@@ -4,65 +4,91 @@ import {
   TokenTransferDetails,
   TransactionId,
   isSameToken,
+  isTokenId,
 } from "@wormhole-foundation/sdk-definitions";
-import { TokenTransfer } from "../../protocols/tokenTransfer";
-import { TransferReceipt, TransferState, isSourceFinalized } from "../../wormholeTransfer";
-import { ManualRoute, ValidationResult } from "../route";
+import { TokenTransfer, TokenTransferVAA } from "../../protocols/tokenTransfer";
+import { TransferReceipt, TransferState, isAttested } from "../../wormholeTransfer";
+import { ManualRoute, TransferParams, ValidatedTransferParams, ValidationResult } from "../route";
 
 export namespace TokenBridgeRoute {
   export type Options = {
     payload?: Uint8Array;
   };
+
+  export type NormalizedParams = {
+    amount: bigint;
+  };
 }
 
-export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, TokenBridgeRoute.Options> {
+type Op = TokenBridgeRoute.Options;
+type Np = TokenBridgeRoute.NormalizedParams;
+
+type Tp = TransferParams<Op, Np>;
+type Vtp = ValidatedTransferParams<Op, Np>;
+type Vr = ValidationResult<Op, Np>;
+
+export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op, Np> {
+  static getDefaultOptions(): TokenBridgeRoute.Options {
+    return { payload: undefined };
+  }
+
   async isSupported(): Promise<boolean> {
     // No transfers to same chain
-    if (this.request.from.chain === this.request.to.chain) return false;
+    if (this.request.fromChain.chain === this.request.toChain.chain) return false;
 
     // No transfers to unsupported chains
-    const fromChain = this.wh.getChain(this.request.from.chain);
-    if (!fromChain.supportsTokenBridge()) return false;
+    if (!this.request.fromChain.supportsTokenBridge()) return false;
+    if (!this.request.toChain.supportsTokenBridge()) return false;
 
-    const toChain = this.wh.getChain(this.request.to.chain);
-    if (!toChain.supportsTokenBridge()) return false;
-
-    // If the destination token was set, and its different than what
-    // we'd get from a token bridge transfer, then this route is not supported
-    if (this.request.destination) {
-      const destToken = await TokenTransfer.lookupDestinationToken(
-        fromChain,
-        toChain,
-        this.request.source,
+    // Ensure the destination token is the equivalent wrapped token
+    let { source, destination } = this.request;
+    if (destination && isTokenId(destination.id)) {
+      let equivalentToken = await TokenTransfer.lookupDestinationToken(
+        this.request.fromChain,
+        this.request.toChain,
+        source.id,
       );
-      if (!isSameToken(destToken, this.request.destination)) return false;
+
+      if (!isSameToken(equivalentToken, destination.id)) {
+        return false;
+      }
+    } else if (destination && destination.id === "native") {
+      return false;
     }
 
     return true;
   }
 
-  async validate(options: TokenBridgeRoute.Options): Promise<ValidationResult<Error>> {
-    const transfer = this.toTransferDetails(options);
-    try {
-      await TokenTransfer.validateTransferDetails(this.wh, transfer);
-      return { valid: true };
-    } catch (e) {
-      return { valid: false, error: e as Error };
+  async validate(params: Tp): Promise<Vr> {
+    const amt = this.request.normalizeAmount(params.amount);
+    if (amt <= 0n) {
+      return { valid: false, params, error: new Error("Amount has to be positive") };
     }
+
+    const validatedParams = {
+      amount: params.amount,
+      normalizedParams: { amount: amt },
+      options: {},
+    } satisfies ValidatedTransferParams<Op, Np>;
+
+    return { valid: true, params: validatedParams };
   }
 
-  getDefaultOptions(): TokenBridgeRoute.Options {
-    return { payload: undefined };
+  async quote(params: Vtp) {
+    return await TokenTransfer.quoteTransfer(
+      this.request.fromChain,
+      this.request.toChain,
+      this.toTransferDetails(params),
+    );
   }
 
-  async initiate(
-    signer: Signer,
-    options: TokenBridgeRoute.Options,
-  ): Promise<TransferReceipt<"TokenBridge">> {
-    const fromChain = this.wh.getChain(this.request.from.chain);
-    const transfer = this.toTransferDetails(options);
-    const txids = await TokenTransfer.transfer<N>(fromChain, transfer, signer);
-    const msg = await TokenTransfer.getTransferMessage(fromChain, txids[txids.length - 1]!.txid);
+  async initiate(signer: Signer, params: Vtp): Promise<TransferReceipt<"TokenBridge">> {
+    const transfer = this.toTransferDetails(params);
+    const txids = await TokenTransfer.transfer<N>(this.request.fromChain, transfer, signer);
+    const msg = await TokenTransfer.getTransferMessage(
+      this.request.fromChain,
+      txids[txids.length - 1]!.txid,
+    );
 
     return {
       protocol: "TokenBridge",
@@ -79,27 +105,33 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, TokenBri
     signer: Signer,
     receipt: TransferReceipt<"TokenBridge">,
   ): Promise<TransactionId[]> {
-    if (!isSourceFinalized(receipt))
+    if (!isAttested(receipt))
       throw new Error("The source must be finalized in order to complete the transfer");
-
-    const toChain = this.wh.getChain(this.request.to.chain);
-    const vaa = await TokenTransfer.getTransferVaa(this.wh, receipt.attestation.id);
-    return await TokenTransfer.redeem<N>(toChain, vaa, signer);
+    return await TokenTransfer.redeem<N>(
+      this.request.toChain,
+      // todo: ew?
+      receipt.attestation.attestation as TokenTransferVAA,
+      signer,
+    );
   }
 
-  async *track(
-    receipt: TransferReceipt<"TokenBridge">,
-  ): AsyncGenerator<TransferReceipt<"TokenBridge">> {
-    return TokenTransfer.track(this.wh, receipt);
+  public override async *track(receipt: TransferReceipt<"TokenBridge">, timeout?: number) {
+    yield* TokenTransfer.track(
+      this.wh,
+      receipt,
+      timeout,
+      this.request.fromChain,
+      this.request.toChain,
+    );
   }
 
-  private toTransferDetails(options: TokenBridgeRoute.Options): TokenTransferDetails {
+  private toTransferDetails(params: Vtp): TokenTransferDetails {
     return {
-      token: this.request.source,
-      amount: this.request.amount,
+      token: this.request.source.id,
       from: this.request.from,
       to: this.request.to,
-      ...options,
+      amount: params.normalizedParams.amount,
+      ...params.options,
     };
   }
 }
