@@ -18,6 +18,16 @@ import "../payloads/automaticCircleBridge";
 import { circleMessageLayout } from "../payloads/circleBridge";
 import { keccak256 } from "../utils";
 import { ProtocolPayload, ProtocolVAA, payloadDiscriminator } from "../vaa";
+import { EmptyPlatformMap } from "../protocol";
+
+declare global {
+  namespace WormholeNamespace {
+    export interface ProtocolToPlatformMapping {
+      CircleBridge: EmptyPlatformMap<Platform, CircleBridge.ProtocolName>;
+      AutomaticCircleBridge: EmptyPlatformMap<Platform, AutomaticCircleBridge.ProtocolName>;
+    }
+  }
+}
 
 export namespace CircleBridge {
   const _protocol = "CircleBridge";

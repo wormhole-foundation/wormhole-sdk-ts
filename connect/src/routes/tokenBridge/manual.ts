@@ -7,7 +7,7 @@ import {
   isTokenId,
 } from "@wormhole-foundation/sdk-definitions";
 import { TokenTransfer, TokenTransferVAA } from "../../protocols/tokenTransfer";
-import { TransferReceipt, TransferState, isAttested } from "../../wormholeTransfer";
+import { TransferReceipt, TransferState, isAttested } from "../../protocols/wormholeTransfer";
 import { ManualRoute, TransferParams, ValidatedTransferParams, ValidationResult } from "../route";
 
 export namespace TokenBridgeRoute {
