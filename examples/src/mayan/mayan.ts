@@ -1,20 +1,4 @@
 import {
-  CompletedTransferReceipt,
-  TransferReceipt,
-  TransferState,
-  isSourceInitiated,
-  routes,
-  AttestationReceipt,
-  Signer,
-  WormholeMessageId,
-  canonicalAddress,
-  deserialize,
-  isTokenId,
-  Network,
-  ProtocolName,
-  encoding,
-} from "@wormhole-foundation/connect-sdk";
-import {
   Quote,
   Token,
   fetchQuote,
@@ -23,9 +7,18 @@ import {
   swapFromSolana,
 } from "@mayanfinance/swap-sdk";
 import {
-  MayanTransactionGoal,
-  MayanTransactionStatus,
+  Chain,
+  Network,
+  Signer,
+  TransactionId,
+  TransferState,
+  canonicalAddress,
+  isTokenId,
+  routes,
+} from "@wormhole-foundation/connect-sdk";
+import {
   NATIVE_CONTRACT_ADDRESS,
+  TransactionStatus,
   getTransactionStatus,
   mayanEvmSigner,
   mayanSolanaSigner,
@@ -44,16 +37,25 @@ export namespace MayanRoute {
   export interface ValidatedParams extends routes.ValidatedTransferParams<Options> {
     normalizedParams: NormalizedParams;
   }
+
+  export type MayanReceipt<N extends Network> = {
+    from: Chain;
+    to: Chain;
+    request: routes.RouteTransferRequest<N>;
+    originTxs: TransactionId[];
+    txstatus?: TransactionStatus;
+  };
 }
 
 type Q = Quote;
 type Op = MayanRoute.Options;
 type Vp = MayanRoute.ValidatedParams;
+type R<N extends Network> = MayanRoute.MayanReceipt<N>;
 
 type Tp = routes.TransferParams<Op>;
 type Vr = routes.ValidationResult<Op>;
 
-export class MayanRoute<N extends Network> extends routes.AutomaticRoute<N, Op, Q> {
+export class MayanRoute<N extends Network> extends routes.AutomaticRoute<N, Op, R<N>, Q> {
   MIN_DEADLINE = 60;
   MAX_SLIPPAGE = 100;
 
@@ -137,7 +139,7 @@ export class MayanRoute<N extends Network> extends routes.AutomaticRoute<N, Op, 
     return await fetchQuote(quoteOpts);
   }
 
-  async initiate(signer: Signer, params: Vp): Promise<TransferReceipt<ProtocolName>> {
+  async initiate(signer: Signer, params: Vp) {
     const originAddress = canonicalAddress(this.request.from);
     const destinationAddress = canonicalAddress(this.request.to);
 
@@ -145,9 +147,9 @@ export class MayanRoute<N extends Network> extends routes.AutomaticRoute<N, Op, 
       const quote = await this.quote(params);
 
       const rpc = await this.request.fromChain.getRpc();
-      let txid: string;
+      let txhash: string;
       if (this.request.from.chain === "Solana") {
-        txid = await swapFromSolana(
+        txhash = await swapFromSolana(
           quote,
           originAddress,
           destinationAddress,
@@ -166,15 +168,17 @@ export class MayanRoute<N extends Network> extends routes.AutomaticRoute<N, Op, 
           mayanEvmSigner(signer),
         );
 
-        txid = txres.hash;
+        txhash = txres.hash;
       }
+
+      const txid = { chain: this.request.from.chain, txid: txhash };
 
       return {
         from: this.request.from.chain,
         to: this.request.to.chain,
         state: TransferState.SourceInitiated,
         request: this.request,
-        originTxs: [{ chain: this.request.from.chain, txid }],
+        originTxs: [txid],
       };
     } catch (e) {
       console.error(e);
@@ -182,65 +186,9 @@ export class MayanRoute<N extends Network> extends routes.AutomaticRoute<N, Op, 
     }
   }
 
-  public override async *track(receipt: TransferReceipt<"TokenBridge">, timeout?: number) {
-    if (isSourceInitiated(receipt)) {
-      const txstatus = await getTransactionStatus(receipt.originTxs[receipt.originTxs.length - 1]!);
-      if (!txstatus) return;
-
-      console.log(txstatus);
-      const destinationTxs = txstatus.txs
-        .filter((tx) => {
-          return tx.goals.some((goal) => {
-            return goal === MayanTransactionGoal.Settle;
-          });
-        })
-        .map((tx) => {
-          return { chain: receipt.to, txid: tx.txHash };
-        });
-
-      let attestation: AttestationReceipt<"TokenBridge"> | undefined;
-      if (txstatus.redeemSignedVaa) {
-        const vaa = deserialize("Uint8Array", encoding.b64.decode(txstatus.redeemSignedVaa));
-        const msgid: WormholeMessageId = {
-          chain: vaa.emitterChain,
-          sequence: vaa.sequence,
-          emitter: vaa.emitterAddress,
-        };
-        attestation = {
-          id: msgid,
-          // @ts-ignore
-          vaa: vaa,
-        };
-      }
-
-      switch (txstatus.status) {
-        case MayanTransactionStatus.SETTLED_ON_SOLANA:
-          yield {
-            ...receipt,
-            destinationTxs,
-            state: TransferState.DestinationInitiated,
-            attestation: attestation!,
-          } satisfies CompletedTransferReceipt<"TokenBridge">;
-          return;
-        case MayanTransactionStatus.REDEEMED_ON_EVM:
-          yield {
-            ...receipt,
-            destinationTxs,
-            attestation: attestation!,
-            state: TransferState.DestinationInitiated,
-          } satisfies CompletedTransferReceipt<"TokenBridge">;
-          return;
-        // TODO: ...
-        case MayanTransactionStatus.REFUNDED_ON_EVM:
-          // yield { ...receipt, state: TransferState.Failed };
-          return;
-        case MayanTransactionStatus.REFUNDED_ON_SOLANA:
-          // yield { ...receipt, state: TransferState.Failed };
-          return;
-        default:
-          // pending
-          return;
-      }
-    }
+  public override async *track(receipt: R<N>, timeout?: number) {
+    const txstatus = await getTransactionStatus(receipt.originTxs[receipt.originTxs.length - 1]!);
+    if (!txstatus) return;
+    yield { ...receipt, txstatus };
   }
 }
