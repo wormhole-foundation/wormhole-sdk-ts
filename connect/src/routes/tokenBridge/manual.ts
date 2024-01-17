@@ -7,7 +7,12 @@ import {
   isTokenId,
 } from "@wormhole-foundation/sdk-definitions";
 import { TokenTransfer, TokenTransferVAA } from "../../protocols/tokenTransfer";
-import { TransferReceipt, TransferState, isAttested } from "../../protocols/wormholeTransfer";
+import {
+  TransferQuote,
+  TransferReceipt,
+  TransferState,
+  isAttested,
+} from "../../protocols/wormholeTransfer";
 import { ManualRoute, TransferParams, ValidatedTransferParams, ValidationResult } from "../route";
 
 export namespace TokenBridgeRoute {
@@ -30,8 +35,11 @@ type Vp = TokenBridgeRoute.ValidatedParams;
 type Tp = TransferParams<Op>;
 type Vr = ValidationResult<Op>;
 
-export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
-  static getDefaultOptions(): Op {
+type Q = TransferQuote;
+type R = TransferReceipt<"TokenBridge">;
+
+export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op, R, Q> {
+  static getDefaultOptions(): TokenBridgeRoute.Options {
     return { payload: undefined };
   }
 
@@ -94,7 +102,6 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op> {
     );
 
     return {
-      protocol: "TokenBridge",
       from: transfer.from.chain,
       to: transfer.to.chain,
       state: TransferState.SourceFinalized,
