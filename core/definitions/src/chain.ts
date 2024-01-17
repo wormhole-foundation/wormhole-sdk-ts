@@ -1,15 +1,9 @@
-import {
-  ProtocolName,
-  Chain,
-  Network,
-  Platform,
-  PlatformToChains,
-  tokens,
-} from "@wormhole-foundation/sdk-base";
+import { Chain, Network, Platform, PlatformToChains, tokens } from "@wormhole-foundation/sdk-base";
+
 import { ChainAddress, TokenAddress, UniversalOrNative, toNative } from "./address";
 import { WormholeMessageId } from "./attestation";
 import { PlatformContext } from "./platform";
-import { protocolIsRegistered } from "./protocol";
+import { ProtocolName, protocolIsRegistered } from "./protocol";
 import { AutomaticCircleBridge, CircleBridge } from "./protocols/circleBridge";
 import { WormholeCore } from "./protocols/core";
 import { IbcBridge } from "./protocols/ibc";
