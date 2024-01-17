@@ -1,4 +1,20 @@
 import {
+  CompletedTransferReceipt,
+  TransferReceipt,
+  TransferState,
+  isSourceInitiated,
+  routes,
+  AttestationReceipt,
+  Signer,
+  WormholeMessageId,
+  canonicalAddress,
+  deserialize,
+  isTokenId,
+  Network,
+  ProtocolName,
+  encoding,
+} from "@wormhole-foundation/connect-sdk";
+import {
   Quote,
   Token,
   fetchQuote,
@@ -6,24 +22,6 @@ import {
   swapFromEvm,
   swapFromSolana,
 } from "@mayanfinance/swap-sdk";
-
-import {
-  CompletedTransferReceipt,
-  TransferReceipt,
-  TransferState,
-  isSourceInitiated,
-  routes,
-} from "@wormhole-foundation/connect-sdk";
-import { ValidatedTransferParams } from "@wormhole-foundation/connect-sdk/src/routes";
-import { Network, ProtocolName, encoding } from "@wormhole-foundation/sdk-base";
-import {
-  AttestationReceipt,
-  Signer,
-  WormholeMessageId,
-  canonicalAddress,
-  deserialize,
-  isTokenId,
-} from "@wormhole-foundation/sdk-definitions";
 import {
   MayanTransactionGoal,
   MayanTransactionStatus,
@@ -43,8 +41,7 @@ export namespace MayanRoute {
   export type NormalizedParams = {
     //
   };
-
-  export interface ValidatedParams extends ValidatedTransferParams<Options> {
+  export interface ValidatedParams extends routes.ValidatedTransferParams<Options> {
     normalizedParams: NormalizedParams;
   }
 }

@@ -36,8 +36,9 @@ type Tp = TransferParams<Op>;
 type Vr = ValidationResult<Op>;
 
 type Q = TransferQuote;
+type R = TransferReceipt<"TokenBridge">;
 
-export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op, Q> {
+export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op, R, Q> {
   static getDefaultOptions(): TokenBridgeRoute.Options {
     return { payload: undefined };
   }

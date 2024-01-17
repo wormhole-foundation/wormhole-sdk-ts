@@ -38,8 +38,9 @@ type Vp = AutomaticTokenBridgeRoute.ValidatedParams;
 type Tp = TransferParams<Op>;
 type Vr = ValidationResult<Op>;
 type Q = TransferQuote;
+type R = TransferReceipt<"AutomaticTokenBridge">;
 
-export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute<N, Op, Q> {
+export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute<N, Op, R, Q> {
   NATIVE_GAS_DROPOFF_SUPPORTED = true;
 
   static getDefaultOptions(): Op {
