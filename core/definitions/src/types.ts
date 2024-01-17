@@ -14,7 +14,7 @@ import {
   rpc,
   toChainId,
 } from "@wormhole-foundation/sdk-base";
-import { ChainAddress } from "./address";
+import { ChainAddress, toNative } from "./address";
 import { Contracts, getContracts } from "./contracts";
 
 export type TxHash = string;
@@ -32,8 +32,12 @@ export function isTokenId<C extends Chain>(thing: any): thing is TokenId<C> {
 }
 export function isSameToken(a: TokenId, b: TokenId): boolean {
   if (a.chain !== b.chain) return false;
+  return canonicalAddress(a) === canonicalAddress(b);
+}
+
+export function canonicalAddress(ca: ChainAddress): string {
   // @ts-ignore
-  return a.address.equals(b.address);
+  return toNative(ca.chain, ca.address.toUint8Array()).toString();
 }
 
 export type Balances = {
