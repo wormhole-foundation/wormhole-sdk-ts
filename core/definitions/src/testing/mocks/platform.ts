@@ -1,10 +1,4 @@
-import {
-  Chain,
-  Network,
-  Platform,
-  PlatformToChains,
-  ProtocolName,
-} from "@wormhole-foundation/sdk-base";
+import { Chain, Network, Platform, PlatformToChains } from "@wormhole-foundation/sdk-base";
 import {
   ChainContext,
   ChainsConfig,
@@ -13,6 +7,7 @@ import {
   RpcConnection,
   TokenAddress,
   TokenId,
+  ProtocolName,
 } from "../..";
 import { MockChain } from "./chain";
 import { MockRpc } from "./rpc";
