@@ -503,7 +503,6 @@ export class CircleTransfer<N extends Network = Network>
     // depending on the request
 
     let receipt: TransferReceipt<CircleTransferProtocol> = {
-      protocol: xfer.transfer.automatic ? "AutomaticCircleBridge" : "CircleBridge",
       request: xfer.transfer,
       from: from.chain,
       to: to.chain,
@@ -589,7 +588,7 @@ export class CircleTransfer<N extends Network = Network>
     if (isSourceFinalized(receipt)) {
       if (!receipt.attestation) throw "Invalid state transition: no attestation id";
 
-      if (receipt.protocol === "AutomaticCircleBridge") {
+      if (receipt.request.automatic) {
         // we need to get the attestation so we can deliver it
         // we can use the message id we parsed out of the logs, if we have them
         // or try to fetch it from the last origin transaction
