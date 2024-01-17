@@ -13,6 +13,7 @@ import {
   nativeChainIds,
   rpc,
   toChainId,
+  tokens,
 } from "@wormhole-foundation/sdk-base";
 import { ChainAddress } from "./address";
 import { Contracts, getContracts } from "./contracts";
@@ -59,6 +60,8 @@ export type ChainConfig<N extends Network, C extends Chain> = {
   // depending on the platform
   nativeChainId: string | bigint;
   rpc: string;
+  tokenMap?: tokens.ChainTokens;
+  wrappedNative?: tokens.Token;
   explorer?: explorer.ExplorerSettings;
 };
 
@@ -74,6 +77,14 @@ export function buildConfig<N extends Network>(n: N): ChainsConfig<N, Platform> 
       try {
         nativeChainId = nativeChainIds.networkChainToNativeChainId.get(n, c)!;
       } catch {}
+      const tokenMap = tokens.getTokenMap(n, c);
+
+      const nativeToken = tokenMap
+        ? Object.values(tokenMap).find((token) => token.address === "native" && token.wrapped)
+        : undefined;
+
+      const wrappedNative = nativeToken ? tokenMap![nativeToken.wrapped!.address] : undefined;
+
       return {
         key: c,
         platform,
@@ -84,6 +95,8 @@ export function buildConfig<N extends Network>(n: N): ChainsConfig<N, Platform> 
         contracts: getContracts(n, c),
         nativeTokenDecimals: decimals.nativeDecimals(platform),
         nativeChainId,
+        tokenMap,
+        wrappedNative,
         explorer: explorer.explorerConfigs(n, c),
         rpc: rpc.rpcAddress(n, c),
       };
