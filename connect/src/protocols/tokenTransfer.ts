@@ -9,7 +9,6 @@ import {
 } from "@wormhole-foundation/sdk-base";
 import {
   AttestationId,
-  AttestationReceipt,
   AutomaticTokenBridge,
   ChainContext,
   Signer,
@@ -34,6 +33,7 @@ import { DEFAULT_TASK_TIMEOUT } from "../config";
 import { Wormhole } from "../wormhole";
 import {
   AttestedTransferReceipt,
+  AttestationReceipt,
   CompletedTransferReceipt,
   SourceFinalizedTransferReceipt,
   SourceInitiatedTransferReceipt,
@@ -44,7 +44,7 @@ import {
   isAttested,
   isSourceFinalized,
   isSourceInitiated,
-} from "../wormholeTransfer";
+} from "./wormholeTransfer";
 
 export type TokenTransferProtocol = "TokenBridge" | "AutomaticTokenBridge";
 export type TokenTransferVAA = TokenBridge.TransferVAA | AutomaticTokenBridge.VAA;

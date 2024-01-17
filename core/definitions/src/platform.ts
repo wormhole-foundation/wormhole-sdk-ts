@@ -1,15 +1,9 @@
-import {
-  Chain,
-  Network,
-  Platform,
-  PlatformToChains,
-  ProtocolName,
-} from "@wormhole-foundation/sdk-base";
+import { Chain, Network, Platform, PlatformToChains } from "@wormhole-foundation/sdk-base";
 import { WormholeCore } from ".";
 import { TokenAddress } from "./address";
 import { WormholeMessageId } from "./attestation";
 import { ChainContext } from "./chain";
-import { create } from "./protocol";
+import { ProtocolName, create } from "./protocol";
 import { RpcConnection } from "./rpc";
 import { Balances, ChainsConfig, SignedTx, TokenId, TxHash } from "./types";
 
