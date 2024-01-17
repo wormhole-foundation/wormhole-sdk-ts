@@ -3,14 +3,6 @@ import { _platform } from '@wormhole-foundation/connect-sdk-evm';
 import { EvmCircleBridge } from './circleBridge';
 import { EvmAutomaticCircleBridge } from './automaticCircleBridge';
 
-declare global {
-  namespace WormholeNamespace {
-    export interface PlatformToProtocolMapping {
-      Evm: {};
-    }
-  }
-}
-
 registerProtocol(_platform, 'CircleBridge', EvmCircleBridge);
 registerProtocol(_platform, 'AutomaticCircleBridge', EvmAutomaticCircleBridge);
 
