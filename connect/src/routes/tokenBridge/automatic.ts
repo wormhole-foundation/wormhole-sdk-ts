@@ -6,7 +6,7 @@ import {
   isTokenId,
 } from "@wormhole-foundation/sdk-definitions";
 import { TokenTransfer } from "../../protocols/tokenTransfer";
-import { TransferReceipt, TransferState } from "../../protocols/wormholeTransfer";
+import { TransferQuote, TransferReceipt, TransferState } from "../../protocols/wormholeTransfer";
 import {
   AutomaticRoute,
   TransferParams,
@@ -37,8 +37,10 @@ type Vp = AutomaticTokenBridgeRoute.ValidatedParams;
 
 type Tp = TransferParams<Op>;
 type Vr = ValidationResult<Op>;
+type Q = TransferQuote;
+type R = TransferReceipt<"AutomaticTokenBridge">;
 
-export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute<N, Op> {
+export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute<N, Op, R, Q> {
   NATIVE_GAS_DROPOFF_SUPPORTED = true;
 
   static getDefaultOptions(): Op {
@@ -161,7 +163,6 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
       txids[txids.length - 1]!.txid,
     );
     return {
-      protocol: "AutomaticTokenBridge",
       from: transfer.from.chain,
       to: transfer.to.chain,
       state: TransferState.SourceFinalized,

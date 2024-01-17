@@ -44,7 +44,6 @@ export enum TransferState {
 
 // Base type for common properties
 interface BaseTransferReceipt<PN extends ProtocolName, SC extends Chain, DC extends Chain> {
-  protocol: PN;
   from: SC;
   to: DC;
   request: TransferRequest<PN>;
@@ -96,12 +95,6 @@ export interface CompletedTransferReceipt<
   destinationTxs?: TransactionId<DC>[];
 }
 
-export function isAttested<PN extends ProtocolName>(
-  receipt: TransferReceipt<PN, Chain, Chain>,
-): receipt is AttestedTransferReceipt<PN, Chain, Chain> {
-  return receipt.state === TransferState.Attested;
-}
-
 export function isSourceInitiated<PN extends ProtocolName>(
   receipt: TransferReceipt<PN, Chain, Chain>,
 ): receipt is SourceInitiatedTransferReceipt<PN, Chain, Chain> {
@@ -112,6 +105,18 @@ export function isSourceFinalized<PN extends ProtocolName>(
   receipt: TransferReceipt<PN, Chain, Chain>,
 ): receipt is SourceFinalizedTransferReceipt<PN, Chain, Chain> {
   return receipt.state === TransferState.SourceFinalized;
+}
+
+export function isAttested<PN extends ProtocolName>(
+  receipt: TransferReceipt<PN, Chain, Chain>,
+): receipt is AttestedTransferReceipt<PN, Chain, Chain> {
+  return receipt.state === TransferState.Attested;
+}
+
+export function isCompleted<PN extends ProtocolName>(
+  receipt: TransferReceipt<PN, Chain, Chain>,
+): receipt is CompletedTransferReceipt<PN, Chain, Chain> {
+  return receipt.state > TransferState.Attested;
 }
 
 export type TransferReceipt<
