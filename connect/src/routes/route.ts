@@ -9,7 +9,7 @@ export interface TransferParams<OP> {
   options?: OP;
 }
 
-export interface ValidatedTransferParams<OP> extends Required<TransferParams<OP>> {};
+export interface ValidatedTransferParams<OP> extends Required<TransferParams<OP>> {}
 
 export type ValidationResult<OP> =
   | { params: ValidatedTransferParams<OP>; valid: true }
