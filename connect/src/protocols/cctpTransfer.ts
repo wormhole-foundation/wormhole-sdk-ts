@@ -10,7 +10,6 @@ import {
 import {
   Attestation,
   AttestationId,
-  AttestationReceipt,
   AutomaticCircleBridge,
   ChainContext,
   CircleBridge,
@@ -42,7 +41,8 @@ import {
   isAttested,
   isSourceFinalized,
   isSourceInitiated,
-} from "../wormholeTransfer";
+  AttestationReceipt,
+} from "./wormholeTransfer";
 
 type CircleTransferProtocol = "CircleBridge" | "AutomaticCircleBridge";
 
