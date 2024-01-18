@@ -470,7 +470,6 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
         amount: 100000,
         suggestedParams,
       });
-      txs.unshift({ tx: payTxn });
       // The tokenid app needs to do the optin since it has signature authority
       let txn = makeApplicationCallTxnFromObject({
         from: senderAddr,
@@ -482,7 +481,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
         suggestedParams,
       });
       txn.fee *= 2;
-      txs.unshift({ tx: txn });
+      txs.unshift(...[{ tx: payTxn }, { tx: txn }]);
     }
 
     const t = makeApplicationCallTxnFromObject({
