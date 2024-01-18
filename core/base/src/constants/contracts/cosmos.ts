@@ -10,7 +10,7 @@ export const gatewayContracts = [[
   "Testnet", [
     ["Wormchain", "wormhole1ctnjk7an90lz5wjfvr3cf6x984a8cjnv8dpmztmlpcq4xteaa2xs9pwmzk"]
   ]],
-] as const satisfies  MapLevels<[Network, Chain, string]>;
+] as const satisfies MapLevels<[Network, Chain, string]>;
 
 // prettier-ignore
 export const translatorContracts = [[
@@ -20,4 +20,4 @@ export const translatorContracts = [[
   "Testnet", [
     ["Sei", "sei1dkdwdvknx0qav5cp5kw68mkn3r99m3svkyjfvkztwh97dv2lm0ksj6xrak"]
   ]],
-] as const satisfies  MapLevels<[Network, Chain, string]>;
+] as const satisfies MapLevels<[Network, Chain, string]>;
