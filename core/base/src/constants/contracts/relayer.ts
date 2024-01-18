@@ -35,4 +35,4 @@ export const relayerContracts = [[
     ["Ethereum",  "0xE66C1Bc1b369EF4F376b84373E3Aa004E8F4C083"],
     ["Bsc",       "0xE66C1Bc1b369EF4F376b84373E3Aa004E8F4C083"],
   ]],
-] as const satisfies  MapLevels<[Network, Chain, string]>;
+] as const satisfies MapLevels<[Network, Chain, string]>;
