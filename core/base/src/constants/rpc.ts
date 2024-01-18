@@ -1,4 +1,4 @@
-import { MapLevel, constMap } from "../utils";
+import { MapLevels, constMap } from "../utils";
 import { Network } from "./networks";
 import { Chain } from "./chains";
 
@@ -63,7 +63,7 @@ const rpcConfig = [[
     ["Bsc",       "http://eth-devnet2:8546"],
     ["Solana",    "http://solana-devnet:8899"],
   ]],
-] as const satisfies MapLevel<Network, MapLevel<Chain, string>>;
+] as const satisfies MapLevels<[Network, Chain, string]>;
 
 const rpc = constMap(rpcConfig);
 export const rpcAddress = (network: Network, chain: Chain) => rpc.get(network, chain) ?? "";

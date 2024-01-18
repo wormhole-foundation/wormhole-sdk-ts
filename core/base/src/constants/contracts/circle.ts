@@ -1,7 +1,8 @@
-import { MapLevel } from "../../utils";
+import { MapLevels } from "../../utils";
 import { Chain } from "../chains";
 import { Network } from "../networks";
 
+// prettier-ignore
 export type CircleContracts = {
   tokenMessenger:     string;
   messageTransmitter: string;
@@ -9,6 +10,7 @@ export type CircleContracts = {
   wormhole:           string;
 };
 
+// prettier-ignore
 export const circleContracts = [[
   "Mainnet", [[
     "Arbitrum", {
@@ -81,4 +83,4 @@ export const circleContracts = [[
         wormhole:""
     }]
   ]],
-] as const satisfies MapLevel<Network, MapLevel<Chain, CircleContracts>>;
+] as const satisfies MapLevels<[Network, Chain, CircleContracts]>;
