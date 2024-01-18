@@ -45,7 +45,7 @@ export abstract class Route<N extends Network, OP, R, Q> {
   // check if the tokens are supported, etc
   public abstract isSupported(): Promise<boolean>;
 
-  // Validte the transfer request after applying any options
+  // Validate the transfer request after applying any options
   // return a quote and suggested options
   public abstract validate(params: TransferParams<OP>): Promise<ValidationResult<OP>>;
 
