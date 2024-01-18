@@ -82,7 +82,7 @@ const platformAddressFormatEntries = [
   ["Sui", "hex"],
   ["Aptos", "hex"],
   ["Near", "sha256"],
-] as const;
+] as const satisfies MapLevel<Platform, string>;
 
 export const platformToAddressFormat = constMap(platformAddressFormatEntries);
 export type PlatformAddressFormat = (typeof platformAddressFormatEntries)[number][1];
