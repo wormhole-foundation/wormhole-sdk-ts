@@ -4,9 +4,10 @@ import {
   Platform,
   PlatformToChains,
   ProtocolName,
+  tokens,
 } from "@wormhole-foundation/sdk-base";
 
-import { ChainAddress, TokenAddress, UniversalOrNative } from "./address";
+import { ChainAddress, TokenAddress, UniversalOrNative, toNative } from "./address";
 import { WormholeMessageId } from "./attestation";
 import { PlatformContext } from "./platform";
 import { protocolIsRegistered } from "./protocol";
@@ -79,7 +80,20 @@ export abstract class ChainContext<
     return this.platform.utils().sendWait(this.chain, await this.getRpc(), stxns);
   }
 
+  getToken(symbol: tokens.TokenSymbol): tokens.Token | undefined {
+    if (!this.config.tokenMap) return;
+    if (!(symbol in this.config.tokenMap)) return;
+    return this.config.tokenMap[symbol];
+  }
+
   async getNativeWrappedTokenId(): Promise<TokenId<C>> {
+    // see if we have it configured
+    if (this.config.wrappedNative) {
+      const { address } = this.config.wrappedNative;
+      return { chain: this.chain, address: toNative(this.chain, address) };
+    }
+
+    // otherwise grab it from the token bridge fn
     const tb = await this.getTokenBridge();
     return { chain: this.chain, address: await tb.getWrappedNative() };
   }

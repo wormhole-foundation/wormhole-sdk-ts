@@ -21,6 +21,8 @@ export {
   platformToAddressFormat,
 } from "./platforms";
 
+export * as tokens from "./tokens";
+
 export * as platform from "./platforms";
 export * as chain from "./chains";
 export * as network from "./networks";
