@@ -1,6 +1,7 @@
 import { MapLevel, constMap } from "../utils";
 import { Platform } from "./platforms";
 
+// prettier-ignore
 const nativeDecimalEntries = [
   ["Evm",     18],
   ["Solana",   9],
