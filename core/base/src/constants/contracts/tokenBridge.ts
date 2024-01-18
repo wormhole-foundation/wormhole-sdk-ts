@@ -78,4 +78,4 @@ export const tokenBridgeContracts = [[
     ["Terra2",    "terra1nc5tatafv6eyq7llkr2gv50ff9e22mnf70qgjlv737ktmt4eswrquka9l6"],
     ["Wormchain", "wormhole1ghd753shjuwexxywmgs4xz7x2q732vcnkm6h2pyv9s6ah3hylvrqtm7t3h"],
   ]],
-] as const satisfies  MapLevels<[Network, Chain, string]>;
+] as const satisfies MapLevels<[Network, Chain, string]>;
