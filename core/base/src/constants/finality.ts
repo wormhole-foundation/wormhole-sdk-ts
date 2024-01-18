@@ -21,23 +21,24 @@ const safeThresholds = [
 export const safeThreshold = constMap(safeThresholds);
 
 // Number of blocks before a transaction is considered "final"
+// prettier-ignore
 const finalityThresholds = [
   ["Ethereum", 64],
-  ["Solana", 32],
+  ["Solana",   32],
   ["Polygon", 512],
-  ["Bsc", 15],
-  ["Fantom", 1],
-  ["Celo", 1],
-  ["Moonbeam", 1],
+  ["Bsc",      15],
+  ["Fantom",    1],
+  ["Celo",      1],
+  ["Moonbeam",  1],
   ["Avalanche", 0],
-  ["Sui", 0],
-  ["Algorand", 0],
-  ["Aptos", 0],
-  ["Sei", 0],
-  ["Near", 0],
-  ["Terra", 0],
-  ["Terra2", 0],
-  ["Xpla", 0],
+  ["Sui",       0],
+  ["Algorand",  0],
+  ["Aptos",     0],
+  ["Sei",       0],
+  ["Near",      0],
+  ["Terra",     0],
+  ["Terra2",    0],
+  ["Xpla",      0],
   ["Injective", 0],
 ] as const satisfies MapLevel<Chain, number>;
 

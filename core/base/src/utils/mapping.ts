@@ -89,6 +89,14 @@ function isMappableKey(key: unknown): key is MappableKey {
 
 export type MapLevel<K extends MappableKey, V> = RoArray<RoPair<K, V>>;
 
+type MapLevelsTuple = readonly [MappableKey, ...RoArray<MappableKey>, unknown];
+export type MapLevels<T extends MapLevelsTuple> =
+  T extends readonly [infer Head extends MappableKey, ...infer Tail extends RoArray<unknown>]
+  ? Tail extends MapLevelsTuple
+    ? MapLevel<Head, MapLevels<Tail>>
+    : MapLevel<Head, Tail[0]>
+  : never;
+
 type Depth = [never, 0, 1, 2, 3, 4];
 
 type ToExtPropKey<T extends MappableKey> =
@@ -361,19 +369,21 @@ type ConstMapRet<F extends Function> = F & { get: Get<F>, has: Has<F> };
 const isRecursiveTuple = (arr: RoArray) =>
   arr.length === 2 && !Array.isArray(arr[0]) && Array.isArray(arr[1]);
 
-const cartesianRightRecursive = <const T extends RoArray>(arr: T): CartesianRightRecursive<T> => (
-  arr.length === 0
-    ? []
-    : Array.isArray(arr[0])
-      ? (arr as MappingEntries).map(([key, val]) =>
-        Array.isArray(val)
-          ? (isRecursiveTuple(val) ? cartesianRightRecursive(val) : val).map(ele => [key, ele].flat())
-          : [[key, val]]
-      ).flat()
-      : isRecursiveTuple(arr)
-        ? cartesianRightRecursive(arr[1] as RoArray).map((ele: any) => [arr[0], ele])
-        : arr
-) as CartesianRightRecursive<T>;
+export const cartesianRightRecursive =
+  <const T extends RoArray>(arr: T): CartesianRightRecursive<T> => (
+    arr.length === 0
+      ? []
+      : Array.isArray(arr[0])
+        ? (arr as MappingEntries).map(([key, val]) =>
+          Array.isArray(val)
+            ? (isRecursiveTuple(val) ? cartesianRightRecursive(val) : val)
+              .map(ele => [key, ele].flat())
+            : [[key, val]]
+        ).flat()
+        : isRecursiveTuple(arr)
+          ? cartesianRightRecursive(arr[1] as RoArray).map((ele: any) => [arr[0], ele])
+          : arr
+  ) as CartesianRightRecursive<T>;
 
 const toMapping = <
   const M extends MappingEntries,
