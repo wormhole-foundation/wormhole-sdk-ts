@@ -28,4 +28,4 @@ export const tokenBridgeRelayerContracts = [[
     ["Moonbeam",  "0x9563a59c15842a6f322b10f69d1dd88b41f2e97b"],
     ["Solana",    "3bPRWXqtSfUaCw3S4wdgvypQtsSzcmvDeaqSqPDkncrg"],
   ]],
-] as const satisfies  MapLevels<[Network, Chain, string]>;
+] as const satisfies MapLevels<[Network, Chain, string]>;
