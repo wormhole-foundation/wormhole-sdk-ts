@@ -1,4 +1,4 @@
-import { Network, normalizeAmount } from "@wormhole-foundation/sdk-base";
+import { Network, normalizeAmount, displayAmount } from "@wormhole-foundation/sdk-base";
 import {
   ChainAddress,
   ChainContext,
@@ -34,6 +34,10 @@ export class RouteTransferRequest<N extends Network> {
 
   normalizeAmount(amount: string): bigint {
     return normalizeAmount(amount, this.source.decimals);
+  }
+
+  displayAmount(amount: bigint): string {
+    return displayAmount(amount, this.source.decimals, this.source.decimals);
   }
 
   static async create<N extends Network>(
