@@ -32,6 +32,10 @@ export class CCTPRoute<N extends Network> extends ManualRoute<N, Op> {
   }
 
   async isSupported(): Promise<boolean> {
+    if (!this.request.toChain.supportsCircleBridge() || !this.request.fromChain.supportsCircleBridge()) {
+      return false;
+    }
+
     if (!circle.usdcContract.get(this.wh.network, this.request.from.chain)) {
       return false;
     }
