@@ -3,7 +3,12 @@ import { ManualRoute, TransferParams, ValidatedTransferParams, ValidationResult 
 import { CircleTransfer, CircleTransferProtocol } from "../../protocols/cctpTransfer";
 import { signSendWait } from "../../common";
 import { Network, circle, normalizeAmount, Chain } from "@wormhole-foundation/sdk-base";
-import {  TransferReceipt, TransferState, isAttested , TransferQuote} from "../../protocols/wormholeTransfer";
+import {
+  TransferReceipt,
+  TransferState,
+  isAttested,
+  TransferQuote,
+} from "../../protocols/wormholeTransfer";
 
 export namespace CCTPRoute {
   export type Options = {
@@ -35,7 +40,10 @@ export class CCTPRoute<N extends Network> extends ManualRoute<N, Op, R, Q> {
   }
 
   async isSupported(): Promise<boolean> {
-    if (!this.request.toChain.supportsCircleBridge() || !this.request.fromChain.supportsCircleBridge()) {
+    if (
+      !this.request.toChain.supportsCircleBridge() ||
+      !this.request.fromChain.supportsCircleBridge()
+    ) {
       return false;
     }
 

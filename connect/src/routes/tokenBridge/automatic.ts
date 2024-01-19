@@ -108,7 +108,7 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
     }
   }
 
-  async normalizeTransferParams(params: Tp) {
+  private async normalizeTransferParams(params: Tp) {
     const amount = this.request.normalizeAmount(params.amount);
 
     const inputToken =
