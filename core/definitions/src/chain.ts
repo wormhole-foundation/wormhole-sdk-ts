@@ -1,26 +1,25 @@
 import {
+  ProtocolName,
   Chain,
   Network,
   Platform,
   PlatformToChains,
-  ProtocolName,
   tokens,
 } from "@wormhole-foundation/sdk-base";
-
 import { ChainAddress, TokenAddress, UniversalOrNative, toNative } from "./address";
 import { WormholeMessageId } from "./attestation";
 import { PlatformContext } from "./platform";
 import { protocolIsRegistered } from "./protocol";
 import { AutomaticCircleBridge, CircleBridge } from "./protocols/circleBridge";
+import { WormholeCore } from "./protocols/core";
 import { IbcBridge } from "./protocols/ibc";
 import { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge";
 import { RpcConnection } from "./rpc";
 import { ChainConfig, SignedTx, TokenId } from "./types";
-import { WormholeCore } from "./protocols/core";
 
 export abstract class ChainContext<
   N extends Network,
-  P extends Platform,
+  P extends Platform = Platform,
   C extends Chain = PlatformToChains<P>,
 > {
   readonly network: N;
@@ -54,6 +53,12 @@ export abstract class ChainContext<
 
   // Get the number of decimals for a token
   async getDecimals(token: TokenAddress<C>): Promise<bigint> {
+    // try to find it in the token cache first
+    if (this.config.tokenMap) {
+      const found = tokens.getTokenByAddress(this.network, this.chain, token.toString());
+      if (found) return BigInt(found.decimals);
+    }
+
     return this.platform.utils().getDecimals(this.chain, this.getRpc(), token);
   }
 

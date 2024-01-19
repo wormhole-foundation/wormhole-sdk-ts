@@ -79,15 +79,14 @@ const pathToConst = (network: Network) =>
 const tokenListConstTemplate = (network: Network, tokenArr: any[]) => `
 import { MapLevel, constMap } from "../../utils";
 import { Chain } from "../chains";
-import { TokenSymbol, Token } from "./types";
+import { TokenSymbol, TokenConst } from "./types";
 
 const ${network.toLowerCase()}TokenEntries = ${JSON.stringify(
   tokenArr,
   null,
   2,
-)} as const satisfies MapLevel<Chain, MapLevel<TokenSymbol, Token>>;
+)} as const satisfies MapLevel<Chain, MapLevel<TokenSymbol, TokenConst>>;
 
-export const ${network.toLowerCase()}Tokens = constMap(${network.toLowerCase()}TokenEntries, [[0, 1], 2]);
 export const ${network.toLowerCase()}ChainTokens = constMap(${network.toLowerCase()}TokenEntries, [0, [1, 2]]);
 `;
 
@@ -130,14 +129,16 @@ async function fetchAndRemapConnectTokens(network: Network): Promise<[any, any]>
       ? undefined
       : {
           decimals: decimals.default,
-          address: wrappedAsset!,
+          symbol: wrappedAsset!,
         };
 
     const address = tokenId ? tokenId.address : "native";
-    const tokenEntry: tokens.Token = {
+    const tokenEntry = {
+      key: key,
       symbol: token.symbol,
       decimals: decimals.default,
       address: address,
+      chain: nativeChain,
       wrapped,
     };
 
@@ -148,14 +149,14 @@ async function fetchAndRemapConnectTokens(network: Network): Promise<[any, any]>
 
       const _token = foreignAssets[_chain]!;
 
-      const original = { chain: nativeChain, address, decimals: decimals.default };
-
       reg[chain] = reg[chain] ?? [];
       reg[chain]!.push({
+        key: key,
+        chain,
         symbol: token.symbol,
         decimals: _token.decimals,
         address: _token.address,
-        original,
+        original: nativeChain,
       });
     }
   }
@@ -172,9 +173,12 @@ function makeTokenDetails(network: Network, token: TokenConfig): tokens.TokenDet
 function flattenRegistry(registry: TokensByChain) {
   return Object.entries(registry).map(([_chain, reg]) => {
     const tokenMap = reg.map((_token) => {
-      const { symbol } = _token;
-      delete _token.symbol;
-      return [symbol, _token];
+      const { key } = _token;
+      // @ts-ignore
+      delete _token.key;
+      // @ts-ignore
+      delete _token.chain;
+      return [key, _token];
     });
     return [_chain, tokenMap];
   });
