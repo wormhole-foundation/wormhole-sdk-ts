@@ -113,8 +113,9 @@ export class AutomaticCCTPRoute<N extends Network> extends AutomaticRoute<N, Op,
     const ctb = await this.request.fromChain.getAutomaticCircleBridge();
     const fee = await ctb.getRelayerFee(this.request.to.chain);
 
-    if (amount < fee) {
-      throw new Error(`Amount must be at least ${fee}`);
+    const minAmount = (fee * 105n) / 100n;
+    if (amount < minAmount) {
+       throw new Error(`Minimum amount is ${this.request.displayAmount(minAmount)}`);
     }
 
     const transferableAmount = amount - fee;
