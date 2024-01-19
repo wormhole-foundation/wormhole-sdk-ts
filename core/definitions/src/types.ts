@@ -83,7 +83,7 @@ export function buildConfig<N extends Network>(n: N): ChainsConfig<N, Platform> 
         ? Object.values(tokenMap).find((token) => token.address === "native" && token.wrapped)
         : undefined;
 
-      const wrappedNative = nativeToken ? tokenMap![nativeToken.wrapped!.address] : undefined;
+      const wrappedNative = nativeToken ? tokenMap![nativeToken.wrapped!.symbol] : undefined;
 
       return {
         key: c,
