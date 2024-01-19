@@ -1,4 +1,4 @@
-import { Network, normalizeAmount, displayAmount, tokens } from "@wormhole-foundation/sdk-base";
+import { Network, displayAmount, normalizeAmount } from "@wormhole-foundation/sdk-base";
 import {
   ChainAddress,
   ChainContext,
@@ -34,11 +34,15 @@ export class RouteTransferRequest<N extends Network> {
   }
 
   normalizeAmount(amount: string): bigint {
-    return normalizeAmount(amount, BigInt(this.source.decimals));
+    return normalizeAmount(amount, BigInt(this.source.token.decimals));
   }
 
   displayAmount(amount: bigint): string {
-    return displayAmount(amount, BigInt(this.source.decimals), BigInt(this.source.decimals));
+    return displayAmount(
+      amount,
+      BigInt(this.source.token.decimals),
+      BigInt(this.source.token.decimals),
+    );
   }
 
   static async create<N extends Network>(
@@ -76,16 +80,10 @@ export class RouteTransferRequest<N extends Network> {
 
 export interface TokenDetails {
   id: TokenId | "native";
-  decimals: number;
-  // If this is a native gas token, the native wrapped token equivalent
-  // for bridging
-  nativeWrapped?: TokenId;
-  // If this is a wrapped token, the original chain and token
-  original?: TokenId;
-  // Ticker symbol
-  symbol?: string;
-  // Logo URL
-  logo?: string;
+  token: {
+    decimals: number;
+    wrapped?: TokenId;
+  };
 }
 
 async function getTokenDetails<N extends Network>(
@@ -93,24 +91,18 @@ async function getTokenDetails<N extends Network>(
   token: TokenId | "native",
 ): Promise<TokenDetails> {
   const tokenAddress = isTokenId(token) ? canonicalAddress(token) : token;
-  const _token = tokens.getTokenByAddress(chain.network, chain.chain, tokenAddress);
 
-  const decimals = _token
-    ? _token.decimals
-    : isTokenId(token)
-    ? Number(await chain.getDecimals(token.address))
-    : chain.config.nativeTokenDecimals;
+  const decimals = Number(await chain.getDecimals(isTokenId(token) ? token.address : token));
+  let wrapped: TokenId | undefined;
+  if (tokenAddress === "native") {
+    wrapped = await chain.getNativeWrappedTokenId();
+  }
 
-  const symbol = _token ? _token.symbol : undefined;
-
-  const td: TokenDetails = {
+  return {
     id: token,
-    decimals: decimals,
-    nativeWrapped: token === "native" ? await chain.getNativeWrappedTokenId() : undefined,
-    symbol,
-
-    // TODO: find other details
+    token: {
+      decimals,
+      wrapped,
+    },
   };
-
-  return td;
 }

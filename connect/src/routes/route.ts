@@ -25,9 +25,9 @@ export type UnknownRoute<
 
 export abstract class Route<
   N extends Network,
-  OP extends Options,
-  R extends Receipt,
-  Q extends Quote,
+  OP extends Options = Options,
+  R extends Receipt = Receipt,
+  Q extends Quote = Quote,
 > {
   wh: Wormhole<N>;
   request: RouteTransferRequest<N>;

@@ -1,4 +1,10 @@
-import { routes, TransferState, Wormhole } from "@wormhole-foundation/connect-sdk";
+import {
+  isAttested,
+  isCompleted,
+  routes,
+  TransferState,
+  Wormhole,
+} from "@wormhole-foundation/connect-sdk";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 
@@ -52,20 +58,20 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   // track the transfer until the destination is initiated
   const checkAndComplete = async (receipt: routes.Receipt) => {
     console.log("Checking transfer state...");
-    // overwrite receipt var
+
+    // overwrite receipt var as we receive updates, will return when it's complete
+    // but can be called again if the destination is not finalized
     for await (receipt of bestRoute.track(receipt, 120 * 1000)) {
       console.log("Transfer State:", TransferState[receipt.state]);
     }
 
     // gucci
-    if (receipt.state >= TransferState.DestinationFinalized) return;
+    if (isCompleted(receipt)) return;
 
     // if the route is one we need to complete, do it
-    if (receipt.state === TransferState.Attested) {
-      if (routes.isManual(bestRoute)) {
-        const completedTxids = await bestRoute.complete(receiver.signer, receipt);
-        console.log("Completed transfer with txids: ", completedTxids);
-      }
+    if (routes.isManual(bestRoute) && isAttested(receipt)) {
+      const completedTxids = await bestRoute.complete(receiver.signer, receipt);
+      console.log("Completed transfer with txids: ", completedTxids);
     }
 
     // give it time to breath and try again
