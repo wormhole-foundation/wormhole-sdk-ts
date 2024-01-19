@@ -7,12 +7,8 @@ import {
 } from "@wormhole-foundation/sdk-definitions";
 import { TokenTransfer } from "../../protocols/tokenTransfer";
 import { TransferQuote, TransferReceipt, TransferState } from "../../protocols/wormholeTransfer";
-import {
-  AutomaticRoute,
-  TransferParams,
-  ValidatedTransferParams,
-  ValidationResult,
-} from "../route";
+import { AutomaticRoute } from "../route";
+import { TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
 
 export namespace AutomaticTokenBridgeRoute {
   export type Options = {
@@ -43,7 +39,7 @@ type R = TransferReceipt<"AutomaticTokenBridge">;
 export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute<N, Op, R, Q> {
   NATIVE_GAS_DROPOFF_SUPPORTED = true;
 
-  static getDefaultOptions(): Op {
+  getDefaultOptions(): Op {
     return { nativeGas: 0.0 };
   }
 
@@ -85,7 +81,7 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
 
   async validate(params: Tp): Promise<Vr> {
     try {
-      const options = params.options ?? AutomaticTokenBridgeRoute.getDefaultOptions();
+      const options = params.options ?? this.getDefaultOptions();
 
       const { destination } = this.request;
       let nativeGasPerc = options.nativeGas ?? 0.0;
@@ -126,13 +122,13 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
     // Min amount is fee + 5%
     const minAmount = (fee * 105n) / 100n;
     if (amount < minAmount) {
-       throw new Error(`Minimum amount is ${this.request.displayAmount(amount)}`);
+      throw new Error(`Minimum amount is ${this.request.displayAmount(amount)}`);
     }
 
     const transferableAmount = amount - fee;
 
     const { destination } = this.request;
-    const options = params.options ?? AutomaticTokenBridgeRoute.getDefaultOptions();
+    const options = params.options ?? this.getDefaultOptions();
 
     let nativeGasPerc = options.nativeGas ?? 0.0;
     // If destination is native, max out the nativeGas requested

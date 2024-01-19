@@ -2,31 +2,33 @@ import { Network } from "@wormhole-foundation/sdk-base";
 import { Signer, TransactionId } from "@wormhole-foundation/sdk-definitions";
 import { Wormhole } from "../wormhole";
 import { RouteTransferRequest } from "./request";
+import {
+  Options,
+  Quote,
+  Receipt,
+  TransferParams,
+  ValidatedTransferParams,
+  ValidationResult,
+} from "./types";
 
-export interface TransferParams<OP> {
-  amount: string;
-  options?: OP;
-}
-
-export interface ValidatedTransferParams<OP> extends Required<TransferParams<OP>> {}
-
-export type ValidationResult<OP> =
-  | { params: ValidatedTransferParams<OP>; valid: true }
-  | { params: TransferParams<OP>; valid: false; error: Error };
-
-export type RouteConstructor<N extends Network, OP> = {
+export type UnknownRouteConstructor<N extends Network> = RouteConstructor<N>;
+export type RouteConstructor<N extends Network> = {
   new (wh: Wormhole<N>, request: RouteTransferRequest<N>): UnknownRoute<N>;
-  // Get the default options for this route, useful to prepopulate a form
-  getDefaultOptions(): OP;
 };
 
-export type UnknownRouteConstructor<N extends Network> = RouteConstructor<N, unknown>;
-export type UnknownRoute<N extends Network> = Route<N, unknown, unknown, unknown>;
+export type UnknownRoute<
+  N extends Network,
+  OP extends Options = Options,
+  R extends Receipt = Receipt,
+  Q extends Quote = Quote,
+> = Route<N, OP, R, Q>;
 
-// OP - Options passed to the route
-// R - Reciept of the transfer
-// Q - Quote for the transfer given the options
-export abstract class Route<N extends Network, OP, R, Q> {
+export abstract class Route<
+  N extends Network,
+  OP extends Options,
+  R extends Receipt,
+  Q extends Quote,
+> {
   wh: Wormhole<N>;
   request: RouteTransferRequest<N>;
 
@@ -56,31 +58,37 @@ export abstract class Route<N extends Network, OP, R, Q> {
   public abstract quote(params: ValidatedTransferParams<OP>): Promise<Q>;
 
   // Track the progress of the transfer over time
-  public abstract track(receipt: R, timeout?: number): AsyncGenerator<R, unknown, unknown>;
+  public abstract track(receipt: R, timeout?: number): AsyncGenerator<R>;
+
+  // Get the default options for this route, useful to prepopulate a form
+  public abstract getDefaultOptions(): OP;
 }
 
-export abstract class AutomaticRoute<N extends Network, OP, R, Q> extends Route<N, OP, R, Q> {
+export abstract class AutomaticRoute<
+  N extends Network,
+  OP extends Options = Options,
+  R extends Receipt = Receipt,
+  Q extends Quote = Quote,
+> extends Route<N, OP, R, Q> {
   IS_AUTOMATIC = true;
   public abstract isAvailable(): Promise<boolean>;
 }
 
-export function isAutomatic<N extends Network>(
-  route: UnknownRoute<N>,
-): route is AutomaticRoute<N, unknown, unknown, unknown> {
-  return (
-    (route as AutomaticRoute<N, unknown, unknown, unknown>).isAvailable !== undefined &&
-    route.IS_AUTOMATIC
-  );
+export function isAutomatic<N extends Network>(route: UnknownRoute<N>): route is AutomaticRoute<N> {
+  return (route as AutomaticRoute<N>).isAvailable !== undefined && route.IS_AUTOMATIC;
 }
 
-export abstract class ManualRoute<N extends Network, OP, R, Q> extends Route<N, OP, R, Q> {
+export abstract class ManualRoute<
+  N extends Network,
+  OP extends Options = Options,
+  R extends Receipt = Receipt,
+  Q extends Quote = Quote,
+> extends Route<N, OP, R, Q> {
   NATIVE_GAS_DROPOFF_SUPPORTED = false;
   IS_AUTOMATIC = false;
   public abstract complete(sender: Signer, receipt: R): Promise<TransactionId[]>;
 }
 
-export function isManual<N extends Network>(
-  route: UnknownRoute<N>,
-): route is ManualRoute<N, unknown, unknown, unknown> {
-  return (route as ManualRoute<N, unknown, unknown, unknown>).complete !== undefined;
+export function isManual<N extends Network>(route: UnknownRoute<N>): route is ManualRoute<N> {
+  return (route as ManualRoute<N>).complete !== undefined;
 }

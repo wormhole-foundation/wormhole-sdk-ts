@@ -13,7 +13,8 @@ import {
   TransferState,
   isAttested,
 } from "../../protocols/wormholeTransfer";
-import { ManualRoute, TransferParams, ValidatedTransferParams, ValidationResult } from "../route";
+import { ManualRoute } from "../route";
+import { TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
 
 export namespace TokenBridgeRoute {
   export type Options = {
@@ -39,7 +40,7 @@ type Q = TransferQuote;
 type R = TransferReceipt<"TokenBridge">;
 
 export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op, R, Q> {
-  static getDefaultOptions(): TokenBridgeRoute.Options {
+  getDefaultOptions(): TokenBridgeRoute.Options {
     return { payload: undefined };
   }
 

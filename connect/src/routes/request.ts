@@ -1,8 +1,9 @@
-import { Network, normalizeAmount, displayAmount } from "@wormhole-foundation/sdk-base";
+import { Network, normalizeAmount, displayAmount, tokens } from "@wormhole-foundation/sdk-base";
 import {
   ChainAddress,
   ChainContext,
   TokenId,
+  canonicalAddress,
   isTokenId,
 } from "@wormhole-foundation/sdk-definitions";
 import { Wormhole } from "../wormhole";
@@ -33,11 +34,11 @@ export class RouteTransferRequest<N extends Network> {
   }
 
   normalizeAmount(amount: string): bigint {
-    return normalizeAmount(amount, this.source.decimals);
+    return normalizeAmount(amount, BigInt(this.source.decimals));
   }
 
   displayAmount(amount: bigint): string {
-    return displayAmount(amount, this.source.decimals, this.source.decimals);
+    return displayAmount(amount, BigInt(this.source.decimals), BigInt(this.source.decimals));
   }
 
   static async create<N extends Network>(
@@ -54,10 +55,10 @@ export class RouteTransferRequest<N extends Network> {
     fromChain = fromChain ?? wh.getChain(params.from.chain);
     toChain = toChain ?? wh.getChain(params.to.chain);
 
-    const sourceDetails = await getTokenDetails(params.source, fromChain);
+    const sourceDetails = await getTokenDetails(fromChain, params.source);
 
     const destDetails = params.destination
-      ? await getTokenDetails(params.destination, toChain)
+      ? await getTokenDetails(toChain, params.destination)
       : undefined;
 
     const rtr = new RouteTransferRequest(
@@ -75,14 +76,12 @@ export class RouteTransferRequest<N extends Network> {
 
 export interface TokenDetails {
   id: TokenId | "native";
-  decimals: bigint;
+  decimals: number;
   // If this is a native gas token, the native wrapped token equivalent
   // for bridging
   nativeWrapped?: TokenId;
   // If this is a wrapped token, the original chain and token
   original?: TokenId;
-  // Full name
-  name?: string;
   // Ticker symbol
   symbol?: string;
   // Logo URL
@@ -90,17 +89,26 @@ export interface TokenDetails {
 }
 
 async function getTokenDetails<N extends Network>(
-  token: TokenId | "native",
   chain: ChainContext<N>,
+  token: TokenId | "native",
 ): Promise<TokenDetails> {
-  const decimals = isTokenId(token)
-    ? await chain.getDecimals(token.address)
-    : BigInt(chain.config.nativeTokenDecimals);
+  const tokenAddress = isTokenId(token) ? canonicalAddress(token) : token;
+  const _token = tokens.getTokenByAddress(chain.network, chain.chain, tokenAddress);
+
+  const decimals = _token
+    ? _token.decimals
+    : isTokenId(token)
+    ? Number(await chain.getDecimals(token.address))
+    : chain.config.nativeTokenDecimals;
+
+  const symbol = _token ? _token.symbol : undefined;
 
   const td: TokenDetails = {
     id: token,
     decimals: decimals,
     nativeWrapped: token === "native" ? await chain.getNativeWrappedTokenId() : undefined,
+    symbol,
+
     // TODO: find other details
   };
 

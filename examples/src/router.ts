@@ -1,10 +1,4 @@
-import {
-  ProtocolName,
-  routes,
-  TransferReceipt,
-  TransferState,
-  Wormhole,
-} from "@wormhole-foundation/connect-sdk";
+import { routes, TransferState, Wormhole } from "@wormhole-foundation/connect-sdk";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 
@@ -56,7 +50,7 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   console.log("Initiated transfer with receipt: ", receipt);
 
   // track the transfer until the destination is initiated
-  const checkAndComplete = async (receipt: TransferReceipt<ProtocolName>) => {
+  const checkAndComplete = async (receipt: routes.Receipt) => {
     console.log("Checking transfer state...");
     // overwrite receipt var
     for await (receipt of bestRoute.track(receipt, 120 * 1000)) {
