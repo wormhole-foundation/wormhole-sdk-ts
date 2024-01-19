@@ -68,11 +68,6 @@ export class AutomaticCCTPRoute<N extends Network> extends AutomaticRoute<N, Op,
   async validate(params: Tp): Promise<Vr> {
     try {
       const options = params.options ?? AutomaticCCTPRoute.getDefaultOptions();
-      const nativeGasPerc = options.nativeGas ?? 0.0;
-
-      if (nativeGasPerc > 1.0 || nativeGasPerc < 0.0)
-        throw new Error("Native gas must be between 0.0 and 1.0 (0% and 100%)");
-
       const normalizedParams = await this.normalizeTransferParams(params);
 
       if (normalizedParams.amount <= 0n) {
@@ -115,16 +110,22 @@ export class AutomaticCCTPRoute<N extends Network> extends AutomaticRoute<N, Op,
 
     const minAmount = (fee * 105n) / 100n;
     if (amount < minAmount) {
-       throw new Error(`Minimum amount is ${this.request.displayAmount(minAmount)}`);
+      throw new Error(`Minimum amount is ${this.request.displayAmount(minAmount)}`);
     }
 
     const transferableAmount = amount - fee;
+
     const options = params.options ?? AutomaticCCTPRoute.getDefaultOptions();
+
+    const nativeGasPerc = options.nativeGas ?? 0.0;
+    if (nativeGasPerc > 1.0 || nativeGasPerc < 0.0)
+      throw new Error("Native gas must be between 0.0 and 1.0 (0% and 100%)");
+
     let nativeGasAmount = 0n;
 
-    if (options.nativeGas) {
+    if (nativeGasPerc > 0.0) {
       const scale = 10000;
-      const scaledGas = BigInt(options.nativeGas * scale);
+      const scaledGas = BigInt(nativeGasPerc * scale);
       nativeGasAmount = (transferableAmount * scaledGas) / BigInt(scale);
     }
 
