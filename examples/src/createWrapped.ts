@@ -46,7 +46,7 @@ import "@wormhole-foundation/connect-sdk-algorand-tokenbridge";
     );
     const txids = await signSendWait(origChain, attestTxns, origSigner);
     console.log("txids: ", inspect(txids, { depth: null }));
-    txid = txids[0].txid;
+    txid = txids[0]!.txid;
     console.log("Created attestation (save this): ", txid);
   }
 
@@ -56,7 +56,7 @@ import "@wormhole-foundation/connect-sdk-algorand-tokenbridge";
 
   // Get the Signed VAA from the API
   const timeout = 60_000; // 60 seconds
-  const vaa = await wh.getVaa(msgs[0], "TokenBridge:AttestMeta", timeout);
+  const vaa = await wh.getVaa(msgs[0]!, "TokenBridge:AttestMeta", timeout);
   if (!vaa) throw new Error("VAA not found after retries exhausted, try extending the timeout");
 
   console.log(vaa.payload.token.address);

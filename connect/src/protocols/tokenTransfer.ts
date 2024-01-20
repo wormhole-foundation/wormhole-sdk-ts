@@ -30,24 +30,30 @@ import {
 } from "@wormhole-foundation/sdk-definitions";
 import { signSendWait } from "../common";
 import { DEFAULT_TASK_TIMEOUT } from "../config";
-import { Wormhole } from "../wormhole";
 import {
-  AttestedTransferReceipt,
   AttestationReceipt,
+  AttestedTransferReceipt,
   CompletedTransferReceipt,
   SourceFinalizedTransferReceipt,
   SourceInitiatedTransferReceipt,
   TransferQuote,
   TransferReceipt,
   TransferState,
-  WormholeTransfer,
   isAttested,
   isSourceFinalized,
   isSourceInitiated,
-} from "./wormholeTransfer";
+} from "../types";
+import { Wormhole } from "../wormhole";
+import { WormholeTransfer } from "./wormholeTransfer";
 
 export type TokenTransferProtocol = "TokenBridge" | "AutomaticTokenBridge";
 export type TokenTransferVAA = TokenBridge.TransferVAA | AutomaticTokenBridge.VAA;
+
+export type TokenTransferAttestationReceipt = AttestationReceipt<TokenTransferProtocol>;
+export type TokenTransferReceipt<
+  SC extends Chain = Chain,
+  DC extends Chain = Chain,
+> = TransferReceipt<TokenTransferAttestationReceipt, SC, DC>;
 
 export class TokenTransfer<N extends Network = Network>
   implements WormholeTransfer<TokenTransferProtocol>
@@ -538,16 +544,13 @@ export class TokenTransfer<N extends Network = Network>
     return _transfer;
   }
 
-  static getReceipt<N extends Network>(
-    xfer: TokenTransfer<N>,
-  ): TransferReceipt<TokenTransferProtocol> {
+  static getReceipt<N extends Network>(xfer: TokenTransfer<N>): TokenTransferReceipt {
     const { transfer } = xfer;
 
     const from = transfer.from.chain;
     const to = transfer.to.chain;
 
-    let receipt: TransferReceipt<TokenTransferProtocol> = {
-      request: transfer,
+    let receipt: TokenTransferReceipt = {
       from: from,
       to: to,
       state: TransferState.Created,
@@ -559,7 +562,7 @@ export class TokenTransfer<N extends Network = Network>
         ...receipt,
         state: TransferState.SourceInitiated,
         originTxs: originTxs,
-      } satisfies SourceInitiatedTransferReceipt<TokenTransferProtocol>;
+      } satisfies SourceInitiatedTransferReceipt;
     }
 
     const att =
@@ -568,17 +571,17 @@ export class TokenTransfer<N extends Network = Network>
     if (attestation) {
       if (attestation.id) {
         receipt = {
-          ...(receipt as SourceInitiatedTransferReceipt<TokenTransferProtocol>),
+          ...(receipt as SourceInitiatedTransferReceipt),
           state: TransferState.SourceFinalized,
           attestation: { id: attestation.id },
-        } satisfies SourceFinalizedTransferReceipt<TokenTransferProtocol>;
+        } satisfies SourceFinalizedTransferReceipt<TokenTransferAttestationReceipt>;
 
         if (attestation.attestation) {
           receipt = {
             ...receipt,
             state: TransferState.Attested,
             attestation: { id: attestation.id, attestation: attestation.attestation },
-          } satisfies AttestedTransferReceipt<TokenTransferProtocol>;
+          } satisfies AttestedTransferReceipt<TokenTransferAttestationReceipt>;
         }
       }
     }
@@ -586,10 +589,10 @@ export class TokenTransfer<N extends Network = Network>
     const destinationTxs = xfer.txids.filter((txid) => txid.chain === transfer.to.chain);
     if (destinationTxs.length > 0) {
       receipt = {
-        ...(receipt as AttestedTransferReceipt<TokenTransferProtocol>),
+        ...(receipt as AttestedTransferReceipt<TokenTransferAttestationReceipt>),
         state: TransferState.DestinationInitiated,
         destinationTxs: destinationTxs,
-      } satisfies CompletedTransferReceipt<TokenTransferProtocol>;
+      } satisfies CompletedTransferReceipt<TokenTransferAttestationReceipt>;
     }
 
     return receipt;
@@ -601,11 +604,11 @@ export class TokenTransfer<N extends Network = Network>
   // steps of the transfer
   static async *track<N extends Network, SC extends Chain, DC extends Chain>(
     wh: Wormhole<N>,
-    receipt: TransferReceipt<TokenTransferProtocol, SC, DC>,
+    receipt: TokenTransferReceipt<SC, DC>,
     timeout: number = DEFAULT_TASK_TIMEOUT,
     fromChain?: ChainContext<N, ChainToPlatform<SC>, SC>,
     toChain?: ChainContext<N, ChainToPlatform<DC>, DC>,
-  ): AsyncGenerator<TransferReceipt<TokenTransferProtocol, SC, DC>> {
+  ): AsyncGenerator<TokenTransferReceipt<SC, DC>> {
     const start = Date.now();
     const leftover = (start: number, max: number) => Math.max(max - (Date.now() - start), 0);
 
@@ -622,7 +625,7 @@ export class TokenTransfer<N extends Network = Network>
         ...receipt,
         state: TransferState.SourceFinalized,
         attestation: { id: msg },
-      } satisfies SourceFinalizedTransferReceipt<TokenTransferProtocol>;
+      } satisfies SourceFinalizedTransferReceipt<TokenTransferAttestationReceipt>;
       yield receipt;
     }
 
@@ -637,7 +640,7 @@ export class TokenTransfer<N extends Network = Network>
         ...receipt,
         attestation: { id, attestation },
         state: TransferState.Attested,
-      } satisfies AttestedTransferReceipt<TokenTransferProtocol>;
+      } satisfies AttestedTransferReceipt<TokenTransferAttestationReceipt>;
       yield receipt;
     }
 
@@ -654,7 +657,7 @@ export class TokenTransfer<N extends Network = Network>
           ...receipt,
           destinationTxs: [{ chain: toChainName(chainId) as DC, txid: txHash }],
           state: TransferState.DestinationFinalized,
-        } satisfies CompletedTransferReceipt<TokenTransferProtocol>;
+        } satisfies CompletedTransferReceipt<TokenTransferAttestationReceipt>;
       }
       yield receipt;
     }
@@ -673,7 +676,7 @@ export class TokenTransfer<N extends Network = Network>
         receipt = {
           ...receipt,
           state: TransferState.DestinationFinalized,
-        } satisfies CompletedTransferReceipt<TokenTransferProtocol>;
+        } satisfies CompletedTransferReceipt<TokenTransferAttestationReceipt>;
       }
 
       yield receipt;

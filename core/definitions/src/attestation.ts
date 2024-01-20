@@ -12,6 +12,7 @@ export type AttestationId<PN extends ProtocolName = ProtocolName> = PN extends
   | "TokenBridge"
   | "AutomaticTokenBridge"
   | "AutomaticCircleBridge"
+  | "WormholeCore"
   ? WormholeMessageId
   : PN extends "CircleBridge"
   ? CircleMessageId
@@ -29,6 +30,8 @@ export type Attestation<PN extends ProtocolName = ProtocolName> = PN extends
   ? CircleBridge.Attestation
   : PN extends "IbcBridge"
   ? IbcTransferData
+  : PN extends "WormholeCore"
+  ? VAA<"Uint8Array">
   : never;
 
 // Wormhole Message Identifier used to fetch a VAA
