@@ -1,5 +1,5 @@
 import {
-  Quote,
+  Quote as MayanQuote,
   Token,
   fetchQuote,
   fetchTokenList,
@@ -7,18 +7,19 @@ import {
   swapFromSolana,
 } from "@mayanfinance/swap-sdk";
 import {
-  Chain,
   Network,
   Signer,
-  TransactionId,
+  SourceInitiatedTransferReceipt,
+  TransferQuote,
   TransferState,
+  Wormhole,
   canonicalAddress,
+  isSourceInitiated,
   isTokenId,
   routes,
 } from "@wormhole-foundation/connect-sdk";
 import {
   NATIVE_CONTRACT_ADDRESS,
-  TransactionStatus,
   getTransactionStatus,
   mayanEvmSigner,
   mayanSolanaSigner,
@@ -32,35 +33,36 @@ export namespace MayanRoute {
     deadlineInSeconds: number;
   };
   export type NormalizedParams = {
+    amount: bigint;
     //
   };
   export interface ValidatedParams extends routes.ValidatedTransferParams<Options> {
     normalizedParams: NormalizedParams;
   }
 
-  export type MayanReceipt<N extends Network> = {
-    from: Chain;
-    to: Chain;
-    request: routes.RouteTransferRequest<N>;
-    originTxs: TransactionId[];
-    txstatus?: TransactionStatus;
-  };
+  export interface Quote extends TransferQuote {
+    quote: MayanQuote;
+  }
 }
 
-type Q = Quote;
+type Q = MayanRoute.Quote;
 type Op = MayanRoute.Options;
 type Vp = MayanRoute.ValidatedParams;
-type R<N extends Network> = MayanRoute.MayanReceipt<N>;
+type R = routes.Receipt;
 
 type Tp = routes.TransferParams<Op>;
 type Vr = routes.ValidationResult<Op>;
 
-export class MayanRoute<N extends Network> extends routes.AutomaticRoute<N, Op, R<N>, Q> {
+export class MayanRoute<N extends Network> extends routes.AutomaticRoute<N, Op, R, Q> {
   MIN_DEADLINE = 60;
   MAX_SLIPPAGE = 100;
 
   NATIVE_GAS_DROPOFF_SUPPORTED = true;
   tokenList?: Token[];
+
+  getDefaultOptions(): Op {
+    return { gasDrop: 0, slippage: 3, deadlineInSeconds: 60 * 10 };
+  }
 
   async isSupported(): Promise<boolean> {
     try {
@@ -96,13 +98,9 @@ export class MayanRoute<N extends Network> extends routes.AutomaticRoute<N, Op, 
     return true;
   }
 
-  static getDefaultOptions(): Op {
-    return { gasDrop: 0, slippage: 3, deadlineInSeconds: 60 * 10 };
-  }
-
   async validate(params: Tp): Promise<Vr> {
     try {
-      params.options = params.options ?? MayanRoute.getDefaultOptions();
+      params.options = params.options ?? this.getDefaultOptions();
 
       if (params.options.slippage > this.MAX_SLIPPAGE)
         throw new Error("Slippage must be less than 100%");
@@ -136,15 +134,33 @@ export class MayanRoute<N extends Network> extends routes.AutomaticRoute<N, Op, 
       ...params.options,
     };
 
-    return await fetchQuote(quoteOpts);
+    const q = await fetchQuote(quoteOpts);
+    // TODO: use more from q
+    const fullQuote: Q = {
+      sourceToken: {
+        token: Wormhole.chainAddress(from.chain, sourceTokenAddress),
+        amount: params.normalizedParams.amount,
+      },
+      destinationToken: {
+        token: Wormhole.chainAddress(from.chain, destTokenAddress),
+        amount: BigInt(q.expectedAmountOut),
+      },
+      relayFee: {
+        token: Wormhole.chainAddress(from.chain, sourceTokenAddress),
+        amount: BigInt(q.redeemRelayerFee),
+      },
+      destinationNativeGas: BigInt(q.gasDrop),
+      quote: q,
+    };
+    return fullQuote;
   }
 
-  async initiate(signer: Signer, params: Vp) {
+  async initiate(signer: Signer<N>, params: Vp) {
     const originAddress = canonicalAddress(this.request.from);
     const destinationAddress = canonicalAddress(this.request.to);
 
     try {
-      const quote = await this.quote(params);
+      const { quote } = await this.quote(params);
 
       const rpc = await this.request.fromChain.getRpc();
       let txhash: string;
@@ -177,16 +193,16 @@ export class MayanRoute<N extends Network> extends routes.AutomaticRoute<N, Op, 
         from: this.request.from.chain,
         to: this.request.to.chain,
         state: TransferState.SourceInitiated,
-        request: this.request,
         originTxs: [txid],
-      };
+      } satisfies SourceInitiatedTransferReceipt;
     } catch (e) {
       console.error(e);
       throw e;
     }
   }
 
-  public override async *track(receipt: R<N>, timeout?: number) {
+  public override async *track(receipt: R, timeout?: number) {
+    if (!isSourceInitiated(receipt)) throw new Error("Transfer not initiated");
     const txstatus = await getTransactionStatus(receipt.originTxs[receipt.originTxs.length - 1]!);
     if (!txstatus) return;
     yield { ...receipt, txstatus };
