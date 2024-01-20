@@ -95,20 +95,20 @@ const pathToDetails = (network: Network) =>
   `../core/base/src/constants/tokens/${network.toLowerCase()}Details.ts`;
 const tokenDetailsConstTemplate = (network: Network, tokenArr: any[]) => `
 import { MapLevel, constMap } from "../../utils";
-import { TokenSymbol, TokenDetails } from "./types";
+import { TokenSymbol, TokenExtraDetails } from "./types";
 
 const ${network.toLowerCase()}Tokens = ${JSON.stringify(
   tokenArr,
   null,
   2,
-)} as const satisfies MapLevel<TokenSymbol, TokenDetails>;
+)} as const satisfies MapLevel<TokenSymbol, TokenExtraDetails>;
 
 export const ${network.toLowerCase()}TokenDetails = constMap(${network.toLowerCase()}Tokens);
 
 `;
 
 type TokensByChain = { [chain in Chain]?: tokens.Token[] };
-type Deets = Record<string, tokens.TokenDetails>;
+type Deets = Record<string, tokens.TokenExtraDetails>;
 async function fetchAndRemapConnectTokens(network: Network): Promise<[any, any]> {
   const tc: TokensConfig = await getNetworkTokensConfig(network);
 
@@ -164,7 +164,7 @@ async function fetchAndRemapConnectTokens(network: Network): Promise<[any, any]>
   return [flattenRegistry(reg), flattenDeets(deets)];
 }
 
-function makeTokenDetails(network: Network, token: TokenConfig): tokens.TokenDetails {
+function makeTokenDetails(network: Network, token: TokenConfig): tokens.TokenExtraDetails {
   const { key, symbol, displayName, nativeChain: _nativeChain, coinGeckoId } = token;
   const nativeChain = mapConnectChainToChain(network, _nativeChain);
   return { key, symbol, displayName, coinGeckoId, nativeChain };
