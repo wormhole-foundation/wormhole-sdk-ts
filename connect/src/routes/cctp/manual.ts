@@ -1,16 +1,15 @@
-import { Signer, CircleTransferDetails, TransactionId } from "@wormhole-foundation/sdk-definitions";
-import { TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
-import {  ManualRoute } from '../route';
-import { CircleTransfer } from "../../protocols/cctpTransfer";
-import { signSendWait } from "../../common";
-import { Network, circle, Chain } from "@wormhole-foundation/sdk-base";
+import { Chain, Network, circle } from "@wormhole-foundation/sdk-base";
 import {
-  AttestationReceipt,
-  TransferState,
-  TransferReceipt,
-  isAttested,
-  TransferQuote,
-} from "../../types";
+  CircleBridge,
+  CircleTransferDetails,
+  Signer,
+  TransactionId,
+} from "@wormhole-foundation/sdk-definitions";
+import { signSendWait } from "../../common";
+import { CircleAttestationReceipt, CircleTransfer } from "../../protocols/cctpTransfer";
+import { TransferQuote, TransferReceipt, TransferState, isAttested } from "../../types";
+import { ManualRoute } from "../route";
+import { TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
 
 export namespace CCTPRoute {
   export type Options = {
@@ -33,7 +32,7 @@ type Tp = TransferParams<Op>;
 type Vr = ValidationResult<Op>;
 
 type Q = TransferQuote;
-type R = TransferReceipt<AttestationReceipt<"CircleBridge">>;
+type R = TransferReceipt<CircleAttestationReceipt>;
 
 export class CCTPRoute<N extends Network> extends ManualRoute<N, Op, R, Q> {
   getDefaultOptions(): Op {
@@ -107,23 +106,22 @@ export class CCTPRoute<N extends Network> extends ManualRoute<N, Op, R, Q> {
     };
   }
 
-  async complete(
-    signer: Signer,
-    receipt: R,
-  ): Promise<TransactionId[]> {
+  async complete(signer: Signer, receipt: R): Promise<TransactionId[]> {
     if (!isAttested(receipt))
       throw new Error("The source must be finalized in order to complete the transfer");
 
-    const { id } = receipt.attestation;
-    const vaa = receipt.attestation.attestation;
-    const { message, attestation: signatures } = vaa;
+    const { id, attestation: att } = receipt.attestation;
+    if (CircleBridge.isCircleAttestation(att)) {
+      const { message, attestation } = att;
+      if (!attestation) throw new Error(`No Circle attestation for ${id}`);
 
-    if (!signatures) throw new Error(`No Circle attestation for ${id.hash}`);
-
-    let cb = await this.request.toChain.getCircleBridge();
-    let xfer = cb.redeem(this.request.to.address, message, signatures);
-
-    return await signSendWait<N, Chain>(this.request.toChain, xfer, signer);
+      let cb = await this.request.toChain.getCircleBridge();
+      let xfer = cb.redeem(this.request.to.address, message, attestation);
+      return await signSendWait<N, Chain>(this.request.toChain, xfer, signer);
+    } else {
+      //
+      return [];
+    }
   }
 
   public override async *track(receipt: R, timeout?: number) {

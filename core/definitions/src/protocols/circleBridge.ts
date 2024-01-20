@@ -43,6 +43,10 @@ export namespace CircleBridge {
     attestation?: string;
   };
 
+  export const isCircleAttestation = (thing: any): thing is Attestation => {
+    return (<Attestation>thing).message !== undefined;
+  };
+
   export const deserialize = (data: Uint8Array): [CircleBridge.Message, string] => {
     const msg = deserializeLayout(circleMessageLayout, data);
     const messsageHash = encoding.hex.encode(keccak256(data), true);
