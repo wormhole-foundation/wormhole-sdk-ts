@@ -5,10 +5,8 @@ import {
   Network,
   Platform,
   PlatformToChains,
-  ProtocolName,
   Signer,
   TokenTransfer,
-  TransferReceipt,
   TransferState,
   TxHash,
   Wormhole,
@@ -94,18 +92,6 @@ export async function waitLog<N extends Network = Network>(
     console.log(`${tag}: Current trasfer state: `, TransferState[receipt.state]);
   }
   return receipt;
-}
-
-export async function trackLog(
-  tracker: AsyncGenerator<TransferReceipt<ProtocolName>>,
-  tag: string = "TrackLog",
-) {
-  let receipt: TransferReceipt<ProtocolName>;
-  for await (const _receipt of tracker) {
-    console.log(`${tag}: Current trasfer state: `, TransferState[_receipt.state]);
-    receipt = _receipt;
-  }
-  return receipt!;
 }
 
 // Note: This API may change but it is currently the best place to pull

@@ -8,12 +8,14 @@ import {
 } from "@wormhole-foundation/sdk-definitions";
 import { TokenTransfer, TokenTransferVAA } from "../../protocols/tokenTransfer";
 import {
+  AttestationReceipt,
   TransferQuote,
   TransferReceipt,
   TransferState,
   isAttested,
-} from "../../protocols/wormholeTransfer";
-import { ManualRoute, TransferParams, ValidatedTransferParams, ValidationResult } from "../route";
+} from "../../types";
+import { ManualRoute } from "../route";
+import { TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
 
 export namespace TokenBridgeRoute {
   export type Options = {
@@ -36,10 +38,10 @@ type Tp = TransferParams<Op>;
 type Vr = ValidationResult<Op>;
 
 type Q = TransferQuote;
-type R = TransferReceipt<"TokenBridge">;
+type R = TransferReceipt<AttestationReceipt<"TokenBridge">>;
 
 export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op, R, Q> {
-  static getDefaultOptions(): TokenBridgeRoute.Options {
+  getDefaultOptions(): TokenBridgeRoute.Options {
     return { payload: undefined };
   }
 
@@ -93,7 +95,7 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op, R, Q
     );
   }
 
-  async initiate(signer: Signer, params: Vp): Promise<TransferReceipt<"TokenBridge">> {
+  async initiate(signer: Signer, params: Vp): Promise<R> {
     const transfer = this.toTransferDetails(params);
     const txids = await TokenTransfer.transfer<N>(this.request.fromChain, transfer, signer);
     const msg = await TokenTransfer.getTransferMessage(
@@ -105,16 +107,12 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op, R, Q
       from: transfer.from.chain,
       to: transfer.to.chain,
       state: TransferState.SourceFinalized,
-      request: transfer,
       originTxs: txids,
       attestation: { id: msg },
     };
   }
 
-  async complete(
-    signer: Signer,
-    receipt: TransferReceipt<"TokenBridge">,
-  ): Promise<TransactionId[]> {
+  async complete(signer: Signer, receipt: R): Promise<TransactionId[]> {
     if (!isAttested(receipt))
       throw new Error("The source must be finalized in order to complete the transfer");
     return await TokenTransfer.redeem<N>(
@@ -125,7 +123,7 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op, R, Q
     );
   }
 
-  public override async *track(receipt: TransferReceipt<"TokenBridge">, timeout?: number) {
+  public override async *track(receipt: R, timeout?: number) {
     yield* TokenTransfer.track(
       this.wh,
       receipt,
