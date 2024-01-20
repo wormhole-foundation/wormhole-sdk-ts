@@ -31,7 +31,7 @@ export type Token = {
 
 export type TokenConst = Omit<Token, "chain" | "key">;
 
-export type TokenDetails = {
+export type TokenExtraDetails = {
   key: string;
   symbol: TokenSymbol;
   nativeChain: Chain;

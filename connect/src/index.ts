@@ -1,6 +1,7 @@
 export * from "./wormhole";
 export * from "./config";
 export * from "./common";
+export * from "./types";
 
 export * from "./protocols/wormholeTransfer";
 export * from "./protocols/tokenTransfer";

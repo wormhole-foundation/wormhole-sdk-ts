@@ -1,5 +1,5 @@
 import { MapLevel, constMap } from "../../utils";
-import { TokenSymbol, TokenDetails } from "./types";
+import { TokenSymbol, TokenExtraDetails } from "./types";
 
 const mainnetTokens = [
   [
@@ -501,6 +501,6 @@ const mainnetTokens = [
       nativeChain: "Solana",
     },
   ],
-] as const satisfies MapLevel<TokenSymbol, TokenDetails>;
+] as const satisfies MapLevel<TokenSymbol, TokenExtraDetails>;
 
 export const mainnetTokenDetails = constMap(mainnetTokens);
