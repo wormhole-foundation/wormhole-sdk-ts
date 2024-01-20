@@ -18,6 +18,7 @@ import {
   Signer,
   TransactionId,
   TxHash,
+  UniversalOrNative,
   UnsignedTransaction,
   WormholeMessageId,
   isCircleMessageId,
@@ -272,8 +273,8 @@ export class CircleTransfer<N extends Network = Network>
     return this.txids.map(({ txid }) => txid);
   }
 
-  static async transfer<N extends Network>(
-    fromChain: ChainContext<N, Platform, Chain>,
+  static async transfer<N extends Network, C extends Chain = Chain>(
+    fromChain: ChainContext<N, Platform, C>,
     transfer: CircleTransferDetails,
     signer: Signer<N, Chain>,
   ): Promise<TransactionId[]> {
@@ -281,7 +282,7 @@ export class CircleTransfer<N extends Network = Network>
     if (transfer.automatic) {
       const cr = await fromChain.getAutomaticCircleBridge();
       xfer = cr.transfer(
-        transfer.from.address,
+        transfer.from.address as UniversalOrNative<C>,
         { chain: transfer.to.chain, address: transfer.to.address },
         transfer.amount,
         transfer.nativeGas,
@@ -289,7 +290,7 @@ export class CircleTransfer<N extends Network = Network>
     } else {
       const cb = await fromChain.getCircleBridge();
       xfer = cb.transfer(
-        transfer.from.address,
+        transfer.from.address as UniversalOrNative<C>,
         { chain: transfer.to.chain, address: transfer.to.address },
         transfer.amount,
       );

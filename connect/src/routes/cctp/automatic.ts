@@ -1,20 +1,9 @@
-import { Signer, CircleTransferDetails } from "@wormhole-foundation/sdk-definitions";
-import {
-  AutomaticRoute,
-} from "../route";
-import {
-  TransferParams,
-  ValidatedTransferParams,
-  ValidationResult,
-} from "../types";
-import { CircleTransfer } from "../../protocols/cctpTransfer";
 import { Network, circle } from "@wormhole-foundation/sdk-base";
-import {
-  AttestationReceipt,
-  TransferQuote,
-  TransferReceipt,
-  TransferState,
-} from "../../types";
+import { CircleTransferDetails, Signer } from "@wormhole-foundation/sdk-definitions";
+import { CircleAttestationReceipt, CircleTransfer } from "../../protocols/cctpTransfer";
+import { TransferQuote, TransferState } from "../../types";
+import { AutomaticRoute } from "../route";
+import { Receipt, TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
 
 export namespace AutomaticCCTPRoute {
   export type Options = {
@@ -40,7 +29,7 @@ type Tp = TransferParams<Op>;
 type Vr = ValidationResult<Op>;
 
 type Q = TransferQuote;
-type R = TransferReceipt<AttestationReceipt<"AutomaticCircleBridge">>;
+type R = Receipt<CircleAttestationReceipt>;
 
 export class AutomaticCCTPRoute<N extends Network> extends AutomaticRoute<N, Op, R, Q> {
   NATIVE_GAS_DROPOFF_SUPPORTED = true;
@@ -75,7 +64,7 @@ export class AutomaticCCTPRoute<N extends Network> extends AutomaticRoute<N, Op,
 
   async validate(params: Tp): Promise<Vr> {
     try {
-      const options = params.options ?? AutomaticCCTPRoute.getDefaultOptions();
+      const options = params.options ?? this.getDefaultOptions();
       const normalizedParams = await this.normalizeTransferParams(params);
 
       if (normalizedParams.amount <= 0n) {
@@ -152,26 +141,25 @@ export class AutomaticCCTPRoute<N extends Network> extends AutomaticRoute<N, Op,
 
   async initiate(signer: Signer, params: Vp): Promise<R> {
     let transfer = this.toTransferDetails(params);
-    let txids = await CircleTransfer.transfer(this.request.fromChain, transfer, signer);
-    const msg = await CircleTransfer.getTransferMessage(
-      this.request.fromChain,
-      txids[txids.length - 1]!.txid,
-    );
+    let txids = await CircleTransfer.transfer<N>(this.request.fromChain, transfer, signer);
+
+    // const msg = await CircleTransfer.getTransferMessage(
+    //   this.request.fromChain,
+    //   txids[txids.length - 1]!.txid,
+    // );
+
+    const [msgid] = await this.request.fromChain.parseTransaction(txids[txids.length - 1]!.txid);
 
     return {
       from: transfer.from.chain,
       to: transfer.to.chain,
       state: TransferState.SourceFinalized,
-      request: transfer,
       originTxs: txids,
-      attestation: { id: msg },
+      attestation: { id: msgid! },
     };
   }
 
-  public override async *track(
-    receipt: R,
-    timeout?: number,
-  ) {
+  public override async *track(receipt: R, timeout?: number) {
     yield* CircleTransfer.track(
       this.wh,
       receipt,
