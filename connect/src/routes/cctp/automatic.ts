@@ -8,7 +8,7 @@ import {
   ValidationResult,
 } from "../types";
 import { CircleTransfer } from "../../protocols/cctpTransfer";
-import { Network, circle, normalizeAmount } from "@wormhole-foundation/sdk-base";
+import { Network, circle } from "@wormhole-foundation/sdk-base";
 import {
   AttestationReceipt,
   TransferQuote,

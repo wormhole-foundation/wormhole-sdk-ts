@@ -266,28 +266,36 @@ export class CircleTransfer<N extends Network = Network>
     if (this._state !== TransferState.Created)
       throw new Error("Invalid state transition in `start`");
 
-    let xfer: AsyncGenerator<UnsignedTransaction<N>>;
-    if (this.transfer.automatic) {
-      const cr = await this.fromChain.getAutomaticCircleBridge();
-      xfer = cr.transfer(
-        this.transfer.from.address,
-        { chain: this.transfer.to.chain, address: this.transfer.to.address },
-        this.transfer.amount,
-        this.transfer.nativeGas,
-      );
-    } else {
-      const cb = await this.fromChain.getCircleBridge();
-      xfer = cb.transfer(
-        this.transfer.from.address,
-        { chain: this.transfer.to.chain, address: this.transfer.to.address },
-        this.transfer.amount,
-      );
-    }
-
-    this.txids = await signSendWait<N, Chain>(this.fromChain, xfer, signer);
+    this.txids = await CircleTransfer.transfer<N>(this.fromChain, this.transfer, signer);
     this._state = TransferState.SourceInitiated;
 
     return this.txids.map(({ txid }) => txid);
+  }
+
+  static async transfer<N extends Network>(
+    fromChain: ChainContext<N, Platform, Chain>,
+    transfer: CircleTransferDetails,
+    signer: Signer<N, Chain>,
+  ): Promise<TransactionId[]> {
+    let xfer: AsyncGenerator<UnsignedTransaction<N>>;
+    if (transfer.automatic) {
+      const cr = await fromChain.getAutomaticCircleBridge();
+      xfer = cr.transfer(
+        transfer.from.address,
+        { chain: transfer.to.chain, address: transfer.to.address },
+        transfer.amount,
+        transfer.nativeGas,
+      );
+    } else {
+      const cb = await fromChain.getCircleBridge();
+      xfer = cb.transfer(
+        transfer.from.address,
+        { chain: transfer.to.chain, address: transfer.to.address },
+        transfer.amount,
+      );
+    }
+
+    return await signSendWait<N, Chain>(fromChain, xfer, signer);
   }
 
   private async _fetchWormholeAttestation(timeout?: number): Promise<WormholeMessageId[]> {
