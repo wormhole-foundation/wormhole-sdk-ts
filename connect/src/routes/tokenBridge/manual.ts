@@ -41,7 +41,7 @@ type Q = TransferQuote;
 type R = TransferReceipt<AttestationReceipt<"TokenBridge">>;
 
 export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op, R, Q> {
-  getDefaultOptions(): TokenBridgeRoute.Options {
+  getDefaultOptions(): Op {
     return { payload: undefined };
   }
 

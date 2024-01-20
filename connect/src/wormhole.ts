@@ -51,7 +51,7 @@ export class Wormhole<N extends Network> {
   protected readonly _network: N;
   protected _platforms: PlatformMap<N>;
   protected _chains: ChainMap<N>;
-  protected _routes: UnknownRouteConstructor<N>[] = [TokenBridgeRoute, AutomaticTokenBridgeRoute];
+  protected _routes: UnknownRouteConstructor<N>[] = [TokenBridgeRoute, AutomaticTokenBridgeRoute, CCTPRoute, AutomaticCCTPRoute];
 
   readonly config: WormholeConfig;
 

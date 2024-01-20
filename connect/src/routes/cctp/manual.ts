@@ -1,13 +1,13 @@
 import { Signer, CircleTransferDetails, TransactionId } from "@wormhole-foundation/sdk-definitions";
 import { TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
-import { ManualRoute } from '../route';
+import {  ManualRoute } from '../route';
 import { CircleTransfer } from "../../protocols/cctpTransfer";
 import { signSendWait } from "../../common";
 import { Network, circle, Chain } from "@wormhole-foundation/sdk-base";
 import {
   AttestationReceipt,
-  TransferReceipt,
   TransferState,
+  TransferReceipt,
   isAttested,
   TransferQuote,
 } from "../../types";
@@ -28,6 +28,7 @@ export namespace CCTPRoute {
 
 type Op = CCTPRoute.Options;
 type Vp = CCTPRoute.ValidatedParams;
+
 type Tp = TransferParams<Op>;
 type Vr = ValidationResult<Op>;
 
@@ -91,7 +92,7 @@ export class CCTPRoute<N extends Network> extends ManualRoute<N, Op, R, Q> {
 
   async initiate(signer: Signer, params: Vp): Promise<R> {
     let transfer = this.toTransferDetails(params);
-    let txids = await CircleTransfer.transfer(this.request.fromChain, transfer, signer);
+    let txids = await CircleTransfer.transfer<N>(this.request.fromChain, transfer, signer);
     const msg = await CircleTransfer.getTransferMessage(
       this.request.fromChain,
       txids[txids.length - 1]!.txid,
@@ -114,7 +115,8 @@ export class CCTPRoute<N extends Network> extends ManualRoute<N, Op, R, Q> {
       throw new Error("The source must be finalized in order to complete the transfer");
 
     const { id } = receipt.attestation;
-    const { message, attestation: signatures } = receipt.attestation.attestation;
+    const vaa = receipt.attestation.attestation;
+    const { message, attestation: signatures } = vaa;
 
     if (!signatures) throw new Error(`No Circle attestation for ${id.hash}`);
 
@@ -124,7 +126,7 @@ export class CCTPRoute<N extends Network> extends ManualRoute<N, Op, R, Q> {
     return await signSendWait<N, Chain>(this.request.toChain, xfer, signer);
   }
 
-  public async *track(receipt: R, timeout?: number) {
+  public override async *track(receipt: R, timeout?: number) {
     yield* CircleTransfer.track(
       this.wh,
       receipt,

@@ -574,7 +574,7 @@ export class CircleTransfer<N extends Network = Network>
     // Optional parameters to override chain context (typically for custom rpc)
     _fromChain?: ChainContext<N, ChainToPlatform<SC>, SC>,
     _toChain?: ChainContext<N, ChainToPlatform<DC>, DC>,
-  ) {
+  ): AsyncGenerator<CircleTransferReceipt<SC, DC>> {
     const start = Date.now();
     const leftover = (start: number, max: number) => Math.max(max - (Date.now() - start), 0);
 
