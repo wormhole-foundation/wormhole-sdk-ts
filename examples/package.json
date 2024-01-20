@@ -34,6 +34,7 @@
   "sideEffects": false,
   "scripts": {
     "router": "tsx src/router.ts",
+    "routerCCTP": "tsx src/routerCCTP.ts",
     "wrapped": "tsx src/createWrapped.ts",
     "tb": "tsx src/tokenBridge.ts",
     "cctp": "tsx src/cctp.ts",
