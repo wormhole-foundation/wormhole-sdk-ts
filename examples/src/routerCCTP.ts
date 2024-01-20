@@ -2,6 +2,7 @@ import {
   ProtocolName,
   routes,
   TokenId,
+  AttestationReceipt,
   TransferReceipt,
   TransferState,
   Wormhole,
@@ -74,7 +75,7 @@ import "@wormhole-foundation/connect-sdk-evm-cctp";
   console.log("Initiated transfer with receipt: ", receipt);
 
   // track the transfer until the destination is initiated
-  const checkAndComplete = async (receipt: TransferReceipt<ProtocolName>) => {
+  const checkAndComplete = async (receipt: TransferReceipt<AttestationReceipt<ProtocolName>>) => {
     console.log("Checking transfer state...");
     // overwrite receipt var
     for await (receipt of bestRoute.track(receipt, 120 * 1000)) {
