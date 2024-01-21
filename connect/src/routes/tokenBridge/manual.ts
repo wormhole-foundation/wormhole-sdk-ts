@@ -46,26 +46,30 @@ export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op, R, Q
   }
 
   async isSupported() {
-    // No transfers to same chain
-    if (this.request.fromChain.chain === this.request.toChain.chain) return false;
+    try {
+      // No transfers to same chain
+      if (this.request.fromChain.chain === this.request.toChain.chain) return false;
 
-    // No transfers to unsupported chains
-    if (!this.request.fromChain.supportsTokenBridge()) return false;
-    if (!this.request.toChain.supportsTokenBridge()) return false;
+      // No transfers to unsupported chains
+      if (!this.request.fromChain.supportsTokenBridge()) return false;
+      if (!this.request.toChain.supportsTokenBridge()) return false;
 
-    // Ensure the destination token is the equivalent wrapped token
-    let { source, destination } = this.request;
-    if (destination && isTokenId(destination.id)) {
-      let equivalentToken = await TokenTransfer.lookupDestinationToken(
-        this.request.fromChain,
-        this.request.toChain,
-        source.id,
-      );
+      // Ensure the destination token is the equivalent wrapped token
+      let { source, destination } = this.request;
+      if (destination && isTokenId(destination.id)) {
+        let equivalentToken = await TokenTransfer.lookupDestinationToken(
+          this.request.fromChain,
+          this.request.toChain,
+          source.id,
+        );
 
-      if (!isSameToken(equivalentToken, destination.id)) {
+        if (!isSameToken(equivalentToken, destination.id)) {
+          return false;
+        }
+      } else if (destination && destination.id === "native") {
         return false;
       }
-    } else if (destination && destination.id === "native") {
+    } catch (e) {
       return false;
     }
 

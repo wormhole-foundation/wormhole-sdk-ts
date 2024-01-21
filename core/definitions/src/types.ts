@@ -26,8 +26,8 @@ export type TokenId<C extends Chain = Chain> = ChainAddress<C>;
 export function isTokenId<C extends Chain>(thing: any): thing is TokenId<C> {
   return (
     typeof thing === "object" &&
-    typeof (<TokenId<C>>thing).address !== undefined &&
-    typeof (<TokenId<C>>thing).chain !== undefined &&
+    (<TokenId<C>>thing).address !== undefined &&
+    (<TokenId<C>>thing).chain !== undefined &&
     isChain((<TokenId<C>>thing).chain)
   );
 }
