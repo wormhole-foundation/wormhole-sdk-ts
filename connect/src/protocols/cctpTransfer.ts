@@ -480,10 +480,10 @@ export class CircleTransfer<N extends Network = Network>
     if ("message" in attestation) {
       const cb = await toChain.getCircleBridge();
       return cb.isTransferCompleted(attestation.message);
+    } else {
+      const acb = await toChain.getAutomaticCircleBridge();
+      return acb.isTransferCompleted(attestation);
     }
-    throw new Error("Not implemented for automatic circle bridge");
-    // const acb = await toChain.getAutomaticCircleBridge();
-    // return acb.isTransferCompleted(attestation);
   }
 
   static async getTransferVaa<N extends Network>(

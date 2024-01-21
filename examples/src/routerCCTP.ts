@@ -1,16 +1,14 @@
 import {
-  ProtocolName,
-  routes,
-  TokenId,
   AttestationReceipt,
+  ProtocolName,
+  TokenId,
   TransferReceipt,
   TransferState,
   Wormhole,
+  routes,
 } from "@wormhole-foundation/connect-sdk";
-import {
-  circle
-} from "@wormhole-foundation/sdk-base";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
+import { circle } from "@wormhole-foundation/sdk-base";
 
 import { getStuff } from "./helpers";
 
@@ -30,8 +28,14 @@ import "@wormhole-foundation/connect-sdk-evm-cctp";
 
   console.log(resolver.routeConstructors.length);
 
-  const usdcAvalanche: TokenId = Wormhole.chainAddress("Avalanche", circle.usdcContract.get("Testnet", "Avalanche")!);
-  const usdcPolygon: TokenId = Wormhole.chainAddress("Optimism", circle.usdcContract.get("Testnet", "Optimism")!);
+  const usdcAvalanche: TokenId = Wormhole.chainAddress(
+    "Avalanche",
+    circle.usdcContract.get("Testnet", "Avalanche")!,
+  );
+  const usdcPolygon: TokenId = Wormhole.chainAddress(
+    "Optimism",
+    circle.usdcContract.get("Testnet", "Optimism")!,
+  );
 
   console.log(sender.address, receiver.address);
 
@@ -59,7 +63,7 @@ import "@wormhole-foundation/connect-sdk-evm-cctp";
   const transferParams = {
     amount: "0.20",
     options: {
-      nativeGas: 0.10,
+      nativeGas: 0.1,
     },
   };
 
@@ -101,4 +105,3 @@ import "@wormhole-foundation/connect-sdk-evm-cctp";
 
   await checkAndComplete(receipt);
 })();
-

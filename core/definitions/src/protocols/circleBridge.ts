@@ -140,4 +140,5 @@ export interface AutomaticCircleBridge<
     amount: bigint,
     nativeGas?: bigint,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
+  isTransferCompleted(vaa: AutomaticCircleBridge.VAA): Promise<boolean>;
 }
