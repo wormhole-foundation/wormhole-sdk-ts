@@ -44,28 +44,31 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
   }
 
   async isSupported() {
-    // No transfers to same chain
-    if (this.request.fromChain.chain === this.request.toChain.chain) return false;
+    try {
+      // No transfers to same chain
+      if (this.request.fromChain.chain === this.request.toChain.chain) return false;
 
-    // No transfers to unsupported chains
-    if (!this.request.fromChain.supportsAutomaticTokenBridge()) return false;
-    if (!this.request.toChain.supportsAutomaticTokenBridge()) return false;
+      // No transfers to unsupported chains
+      if (!this.request.fromChain.supportsAutomaticTokenBridge()) return false;
+      if (!this.request.toChain.supportsAutomaticTokenBridge()) return false;
 
-    // Ensure source and destination tokens are equivalent, if destination is set
-    const { source, destination } = this.request;
-    if (destination && isTokenId(destination.id)) {
-      // If destination token was provided, check that it's the equivalent one for the source token
-      let equivalentToken = await TokenTransfer.lookupDestinationToken(
-        this.request.fromChain,
-        this.request.toChain,
-        source.id,
-      );
+      // Ensure source and destination tokens are equivalent, if destination is set
+      const { source, destination } = this.request;
+      if (destination && isTokenId(destination.id)) {
+        // If destination token was provided, check that it's the equivalent one for the source token
+        let equivalentToken = await TokenTransfer.lookupDestinationToken(
+          this.request.fromChain,
+          this.request.toChain,
+          source.id,
+        );
 
-      if (!isSameToken(equivalentToken, destination.id)) {
-        return false;
+        if (!isSameToken(equivalentToken, destination.id)) {
+          return false;
+        }
       }
+    } catch (e) {
+      return false;
     }
-
     return true;
   }
 
