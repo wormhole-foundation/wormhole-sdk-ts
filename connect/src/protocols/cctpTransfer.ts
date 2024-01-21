@@ -18,6 +18,7 @@ import {
   Signer,
   TransactionId,
   TxHash,
+  UniversalOrNative,
   UnsignedTransaction,
   WormholeMessageId,
   isCircleMessageId,
@@ -266,28 +267,36 @@ export class CircleTransfer<N extends Network = Network>
     if (this._state !== TransferState.Created)
       throw new Error("Invalid state transition in `start`");
 
-    let xfer: AsyncGenerator<UnsignedTransaction<N>>;
-    if (this.transfer.automatic) {
-      const cr = await this.fromChain.getAutomaticCircleBridge();
-      xfer = cr.transfer(
-        this.transfer.from.address,
-        { chain: this.transfer.to.chain, address: this.transfer.to.address },
-        this.transfer.amount,
-        this.transfer.nativeGas,
-      );
-    } else {
-      const cb = await this.fromChain.getCircleBridge();
-      xfer = cb.transfer(
-        this.transfer.from.address,
-        { chain: this.transfer.to.chain, address: this.transfer.to.address },
-        this.transfer.amount,
-      );
-    }
-
-    this.txids = await signSendWait<N, Chain>(this.fromChain, xfer, signer);
+    this.txids = await CircleTransfer.transfer<N>(this.fromChain, this.transfer, signer);
     this._state = TransferState.SourceInitiated;
 
     return this.txids.map(({ txid }) => txid);
+  }
+
+  static async transfer<N extends Network, C extends Chain = Chain>(
+    fromChain: ChainContext<N, Platform, C>,
+    transfer: CircleTransferDetails,
+    signer: Signer<N, Chain>,
+  ): Promise<TransactionId[]> {
+    let xfer: AsyncGenerator<UnsignedTransaction<N>>;
+    if (transfer.automatic) {
+      const cr = await fromChain.getAutomaticCircleBridge();
+      xfer = cr.transfer(
+        transfer.from.address as UniversalOrNative<C>,
+        { chain: transfer.to.chain, address: transfer.to.address },
+        transfer.amount,
+        transfer.nativeGas,
+      );
+    } else {
+      const cb = await fromChain.getCircleBridge();
+      xfer = cb.transfer(
+        transfer.from.address as UniversalOrNative<C>,
+        { chain: transfer.to.chain, address: transfer.to.address },
+        transfer.amount,
+      );
+    }
+
+    return await signSendWait<N, Chain>(fromChain, xfer, signer);
   }
 
   private async _fetchWormholeAttestation(timeout?: number): Promise<WormholeMessageId[]> {
@@ -471,10 +480,10 @@ export class CircleTransfer<N extends Network = Network>
     if ("message" in attestation) {
       const cb = await toChain.getCircleBridge();
       return cb.isTransferCompleted(attestation.message);
+    } else {
+      const acb = await toChain.getAutomaticCircleBridge();
+      return acb.isTransferCompleted(attestation);
     }
-    throw new Error("Not implemented for automatic circle bridge");
-    // const acb = await toChain.getAutomaticCircleBridge();
-    // return acb.isTransferCompleted(attestation);
   }
 
   static async getTransferVaa<N extends Network>(
@@ -565,7 +574,7 @@ export class CircleTransfer<N extends Network = Network>
     // Optional parameters to override chain context (typically for custom rpc)
     _fromChain?: ChainContext<N, ChainToPlatform<SC>, SC>,
     _toChain?: ChainContext<N, ChainToPlatform<DC>, DC>,
-  ) {
+  ): AsyncGenerator<CircleTransferReceipt<SC, DC>> {
     const start = Date.now();
     const leftover = (start: number, max: number) => Math.max(max - (Date.now() - start), 0);
 
