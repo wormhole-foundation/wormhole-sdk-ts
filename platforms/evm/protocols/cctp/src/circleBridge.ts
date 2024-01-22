@@ -156,7 +156,7 @@ export class EvmCircleBridge<N extends Network, C extends EvmChains>
 
     const txReq = await this.tokenMessenger.depositForBurn.populateTransaction(
       amount,
-      this.circleChainId,
+      circle.circleChainId.get(this.network, recipient.chain)!,
       recipientAddress,
       tokenAddr,
     );
