@@ -628,9 +628,6 @@ export class CircleTransfer<N extends Network = Network>
         const cb = await _fromChain.getCircleBridge();
         const message = await cb.parseTransactionDetails(initTx.txid);
 
-        console.log('attestation is', attestation);
-        console.log('message is', message);
-
         if (attestation) {
           receipt = {
             ...receipt,
@@ -651,7 +648,7 @@ export class CircleTransfer<N extends Network = Network>
     // to have the dest txid populated, so it may be delayed by some time
     if (isAttested(receipt) || isSourceFinalized(receipt)) {
       if (!receipt.attestation) throw "Invalid state transition";
-      
+
       if (isWormholeMessageId(receipt.attestation.id)) {
         const txStatus = await wh.getTransactionStatus(
           receipt.attestation.id,
