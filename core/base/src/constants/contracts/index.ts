@@ -18,5 +18,8 @@ export const gateway = constMap(g.gatewayContracts);
 export const translator = constMap(g.translatorContracts);
 export const rollupContracts = constMap(rollup.rollupContractAddresses);
 
+export const tokenBridgeChains = constMap(tb.tokenBridgeContracts, [0, 1]);
+export const tokenBridgeRelayerChains = constMap(tbr.tokenBridgeRelayerContracts, [0, 1]);
+
 export { CircleContracts } from "./circle";
 export const circleContracts = constMap(circle.circleContracts);

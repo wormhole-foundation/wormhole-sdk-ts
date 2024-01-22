@@ -29,8 +29,7 @@ import { CircleTransfer } from "./protocols/cctpTransfer";
 import { TokenTransfer } from "./protocols/tokenTransfer";
 import { UnknownRouteConstructor } from "./routes";
 import { RouteResolver } from "./routes/resolver";
-import { TokenBridgeRoute, AutomaticTokenBridgeRoute } from "./routes/tokenBridge";
-import { CCTPRoute, AutomaticCCTPRoute } from "./routes/cctp";
+import { AutomaticTokenBridgeRoute, TokenBridgeRoute } from "./routes/tokenBridge";
 import { retry } from "./tasks";
 import {
   TransactionStatus,
@@ -51,7 +50,7 @@ export class Wormhole<N extends Network> {
   protected readonly _network: N;
   protected _platforms: PlatformMap<N>;
   protected _chains: ChainMap<N>;
-  protected _routes: UnknownRouteConstructor<N>[] = [TokenBridgeRoute, AutomaticTokenBridgeRoute, CCTPRoute, AutomaticCCTPRoute];
+  protected _routes: UnknownRouteConstructor<N>[] = [TokenBridgeRoute, AutomaticTokenBridgeRoute];
 
   readonly config: WormholeConfig;
 

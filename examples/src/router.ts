@@ -2,6 +2,7 @@ import {
   isAttested,
   isCompleted,
   routes,
+  toChain,
   TransferState,
   Wormhole,
 } from "@wormhole-foundation/connect-sdk";
@@ -19,8 +20,9 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 
   // get signers from local config
   const sendChain = wh.getChain("Solana");
+  const destChain = wh.getChain("Avalanche");
   const sender = await getStuff(sendChain);
-  const receiver = await getStuff(wh.getChain("Avalanche"));
+  const receiver = await getStuff(destChain);
 
   // create new resolver
   const resolver = wh.resolver();
@@ -34,10 +36,16 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
     destination: "native",
   });
 
+  console.log(await resolver.supportedSourceTokens(sendChain));
+  console.log(
+    await resolver.supportedDestinationTokens(tr.destination!.wrapped!, sendChain, destChain),
+  );
+
   // resolve the transfer request to a set of routes that can perform it
   const foundRoutes = await resolver.findRoutes(tr);
   console.log("For the transfer parameters, we found these routes: ", foundRoutes);
 
+  return;
   // Sort the routes given some input (not required for mvp)
   // const bestRoute = (await resolver.sortRoutes(foundRoutes, "cost"))[0]!;
   //const bestRoute = foundRoutes.filter((route) => routes.isAutomatic(route))[0]!;
