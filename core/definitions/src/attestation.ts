@@ -1,11 +1,12 @@
 import { Chain } from "@wormhole-foundation/sdk-base";
+import { ProtocolName } from "./protocol";
+import { AutomaticCircleBridge, CircleBridge } from "./protocols/circleBridge";
+import { IbcTransferData } from "./protocols/ibc";
+import { PorticoBridge } from "./protocols/portico";
+import { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge";
 import { SequenceId } from "./types";
 import { UniversalAddress } from "./universalAddress";
 import { VAA } from "./vaa";
-import { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge";
-import { AutomaticCircleBridge, CircleBridge } from "./protocols/circleBridge";
-import { IbcTransferData } from "./protocols/ibc";
-import { ProtocolName } from "./protocol";
 
 // Could be VAA or Circle or ..?
 export type AttestationId<PN extends ProtocolName = ProtocolName> = PN extends
@@ -13,6 +14,7 @@ export type AttestationId<PN extends ProtocolName = ProtocolName> = PN extends
   | "AutomaticTokenBridge"
   | "AutomaticCircleBridge"
   | "WormholeCore"
+  | "PorticoBridge"
   ? WormholeMessageId
   : PN extends "CircleBridge"
   ? CircleMessageId
@@ -32,6 +34,8 @@ export type Attestation<PN extends ProtocolName = ProtocolName> = PN extends
   ? IbcTransferData
   : PN extends "WormholeCore"
   ? VAA<"Uint8Array">
+  : PN extends "PorticoBridge"
+  ? PorticoBridge.VAA
   : never;
 
 // Wormhole Message Identifier used to fetch a VAA
