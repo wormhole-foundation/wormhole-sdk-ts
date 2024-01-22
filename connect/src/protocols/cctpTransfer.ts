@@ -506,7 +506,7 @@ export class CircleTransfer<N extends Network = Network>
   ) {
     const cb = await fromChain.getCircleBridge();
     const circleMessage = await cb.parseTransactionDetails(txid);
-    return circleMessage.id;
+    return circleMessage;
   }
 
   static getReceipt<N extends Network>(xfer: CircleTransfer<N>): CircleTransferReceipt {
@@ -591,7 +591,7 @@ export class CircleTransfer<N extends Network = Network>
       const xfermsg = await CircleTransfer.getTransferMessage(_fromChain, initTx.txid);
       receipt = {
         ...receipt,
-        attestation: { id: xfermsg },
+        attestation: { id: xfermsg.id },
         state: TransferState.SourceFinalized,
       } satisfies SourceFinalizedTransferReceipt<CircleAttestationReceipt>;
       yield receipt;
@@ -600,8 +600,9 @@ export class CircleTransfer<N extends Network = Network>
     if (isSourceFinalized(receipt)) {
       if (!receipt.attestation) throw "Invalid state transition: no attestation id";
 
-      // Automatic
-      if (!isCircleMessageId(receipt.attestation.id)) {
+      if (isWormholeMessageId(receipt.attestation.id)) {
+        // Automatic tx
+
         // we need to get the attestation so we can deliver it
         // we can use the message id we parsed out of the logs, if we have them
         // or try to fetch it from the last origin transaction
@@ -609,12 +610,35 @@ export class CircleTransfer<N extends Network = Network>
         if (!vaa) {
           vaa = await CircleTransfer.getTransferVaa(
             wh,
-            receipt.attestation.id as WormholeMessageId,
+            receipt.attestation.id,
             leftover(start, timeout),
           );
           receipt = {
             ...receipt,
             attestation: { id: receipt.attestation.id, attestation: vaa },
+            state: TransferState.Attested,
+          } satisfies AttestedTransferReceipt<CircleAttestationReceipt>;
+          yield receipt;
+        }
+      } else if (isCircleMessageId(receipt.attestation.id)) {
+        // Manual tx
+        const attestation = await wh.getCircleAttestation(receipt.attestation.id.hash, timeout);
+
+        const initTx = receipt.originTxs[receipt.originTxs.length - 1]!;
+        const cb = await _fromChain.getCircleBridge();
+        const message = await cb.parseTransactionDetails(initTx.txid);
+
+        console.log('attestation is', attestation);
+        console.log('message is', message);
+
+        if (attestation) {
+          receipt = {
+            ...receipt,
+            attestation: { id: receipt.attestation.id, attestation: {
+              attestation,
+              message: message.message,
+            }
+            },
             state: TransferState.Attested,
           } satisfies AttestedTransferReceipt<CircleAttestationReceipt>;
           yield receipt;
@@ -627,19 +651,22 @@ export class CircleTransfer<N extends Network = Network>
     // to have the dest txid populated, so it may be delayed by some time
     if (isAttested(receipt) || isSourceFinalized(receipt)) {
       if (!receipt.attestation) throw "Invalid state transition";
-      const txStatus = await wh.getTransactionStatus(
-        receipt.attestation.id as WormholeMessageId,
-        leftover(start, timeout),
-      );
+      
+      if (isWormholeMessageId(receipt.attestation.id)) {
+        const txStatus = await wh.getTransactionStatus(
+          receipt.attestation.id,
+          leftover(start, timeout),
+        );
 
-      if (txStatus && txStatus.globalTx?.destinationTx?.txHash) {
-        const { chainId, txHash } = txStatus.globalTx.destinationTx;
-        receipt = {
-          ...receipt,
-          destinationTxs: [{ chain: toChain(chainId) as DC, txid: txHash }],
-          state: TransferState.DestinationFinalized,
-        } satisfies CompletedTransferReceipt<CircleAttestationReceipt>;
-        yield receipt;
+        if (txStatus && txStatus.globalTx?.destinationTx?.txHash) {
+          const { chainId, txHash } = txStatus.globalTx.destinationTx;
+          receipt = {
+            ...receipt,
+            destinationTxs: [{ chain: toChain(chainId) as DC, txid: txHash }],
+            state: TransferState.DestinationFinalized,
+          } satisfies CompletedTransferReceipt<CircleAttestationReceipt>;
+          yield receipt;
+        }
       }
     }
 
