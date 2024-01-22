@@ -1,5 +1,5 @@
-import { Network } from "@wormhole-foundation/sdk-base";
-import { Signer, TransactionId } from "@wormhole-foundation/sdk-definitions";
+import { Chain, Network } from "@wormhole-foundation/sdk-base";
+import { Signer, TokenId, TransactionId } from "@wormhole-foundation/sdk-definitions";
 import { Wormhole } from "../wormhole";
 import { RouteTransferRequest } from "./request";
 import {
@@ -14,6 +14,15 @@ import {
 export type UnknownRouteConstructor<N extends Network> = RouteConstructor<N>;
 export type RouteConstructor<N extends Network> = {
   new (wh: Wormhole<N>, request: RouteTransferRequest<N>): UnknownRoute<N>;
+  // get the list of chains this route supports
+  supportedChains(): Chain[];
+  // get the list of source tokens that are possible to send
+  supportedSourceTokens<C extends Chain>(fromChain: C): Promise<TokenId<C>[]>;
+  // get the liist of destination tokens that may be recieved on the destination chain
+  supportedDestinationTokens<C extends Chain>(
+    sourceToken: TokenId,
+    toChain: C,
+  ): Promise<TokenId<C>[]>;
 };
 
 export type UnknownRoute<
