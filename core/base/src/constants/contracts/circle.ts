@@ -97,7 +97,7 @@ export const circleContracts = [
           tokenMessenger: "0x9f3B8679c73C2Fef8b59B4f3444d4e156fb70AA5",
           messageTransmitter: "0x7865fAfC2db2093669d92c0F33AeEF291086BEFD",
           wormholeRelayer: "0x4cb69FaE7e7Af841e44E1A1c30Af640739378bb2",
-          wormhole: "0x68b7Cd0d27a6F04b2F65e11DD06182EFb255c9f0",
+          wormhole: "0x2703483B1a5a7c577e8680de9Df8Be03c6f30e3c",
         },
       ],
       [
@@ -106,7 +106,7 @@ export const circleContracts = [
           tokenMessenger: "0x9f3B8679c73C2Fef8b59B4f3444d4e156fb70AA5",
           messageTransmitter: "0x7865fAfC2db2093669d92c0F33AeEF291086BEFD",
           wormholeRelayer: "0x4cb69FaE7e7Af841e44E1A1c30Af640739378bb2",
-          wormhole: "0xA404B69582bac287a7455FFf315938CCd92099c1",
+          wormhole: "0x2703483B1a5a7c577e8680de9Df8Be03c6f30e3c",
         },
       ],
       [
@@ -115,7 +115,7 @@ export const circleContracts = [
           tokenMessenger: "0x9f3B8679c73C2Fef8b59B4f3444d4e156fb70AA5",
           messageTransmitter: "0x7865fAfC2db2093669d92c0F33AeEF291086BEFD",
           wormholeRelayer: "0x4cb69FaE7e7Af841e44E1A1c30Af640739378bb2",
-          wormhole: "0xA404B69582bac287a7455FFf315938CCd92099c1",
+          wormhole: "0x2703483B1a5a7c577e8680de9Df8Be03c6f30e3c",
         },
       ],
     ],
