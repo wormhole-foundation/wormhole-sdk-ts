@@ -18,9 +18,11 @@
     "platforms/cosmwasm/protocols/ibc"
   ],
   "exclude": [
+    "examples",
     "platforms/aptos",
     "platforms/aptos/protocols/core",
     "platforms/aptos/protocols/tokenBridge"
   ],
-  "entryPointStrategy": "packages"
+  "skipErrorChecking": true,
+  "entryPointStrategy": "packages" 
 }

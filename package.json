@@ -56,10 +56,10 @@
     "platforms/algorand",
     "platforms/algorand/protocols/core",
     "platforms/algorand/protocols/tokenBridge",
-    "tokenRegistry",
     "examples"
   ],
   "unreleased": [
+    "tokenRegistry",
     "platforms/aptos",
     "platforms/aptos/protocols/core",
     "platforms/aptos/protocols/tokenBridge"
