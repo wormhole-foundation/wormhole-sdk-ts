@@ -1,8 +1,9 @@
-import { tokens, Chain, Network, isChain } from "@wormhole-foundation/connect-sdk";
+import { Chain, Network, chainToPlatform, isChain, tokens } from "@wormhole-foundation/connect-sdk";
+import { Platform } from "@wormhole-foundation/sdk-base/src";
 import axios from "axios";
+import fs from "fs";
 import * as prettier from "prettier";
 import * as ts from "typescript";
-import fs from "fs";
 
 const tokenConfigUrl = (network: string) =>
   `https://raw.githubusercontent.com/wormhole-foundation/wormhole-connect/development/wormhole-connect/src/config/${network}/tokens.ts`;
@@ -59,6 +60,16 @@ function mapConnectChainToChain(network: Network, chain: string): Chain {
   }
 
   throw "Unsupported network: " + network;
+}
+
+function platformToConnectPlatform(platform: Platform): string {
+  switch (platform) {
+    case "Evm":
+      return "Ethereum";
+    case "Cosmwasm":
+      return "Cosmos";
+  }
+  return platform;
 }
 
 // Fetch the tokens config from the connect repo and parse it into a TokensConfig object
@@ -125,10 +136,14 @@ async function fetchAndRemapConnectTokens(network: Network): Promise<[any, any]>
 
     reg[nativeChain] = reg[nativeChain] ?? [];
 
+    const platform = platformToConnectPlatform(chainToPlatform(nativeChain));
+
+    const _decimals = platform in decimals ? decimals[platform] : decimals.default;
+
     const wrapped = tokenId
       ? undefined
       : {
-          decimals: decimals.default,
+          decimals: _decimals!,
           symbol: wrappedAsset!,
         };
 
@@ -136,7 +151,7 @@ async function fetchAndRemapConnectTokens(network: Network): Promise<[any, any]>
     const tokenEntry = {
       key: key,
       symbol: token.symbol,
-      decimals: decimals.default,
+      decimals: _decimals!,
       address: address,
       chain: nativeChain,
       wrapped,

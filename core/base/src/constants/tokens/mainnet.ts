@@ -10,10 +10,10 @@ const mainnetTokenEntries = [
         "ETH",
         {
           symbol: "ETH",
-          decimals: 8,
+          decimals: 18,
           address: "native",
           wrapped: {
-            decimals: 8,
+            decimals: 18,
             symbol: "WETH",
           },
         },
@@ -22,7 +22,7 @@ const mainnetTokenEntries = [
         "WETH",
         {
           symbol: "WETH",
-          decimals: 8,
+          decimals: 18,
           address: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
         },
       ],
@@ -54,7 +54,7 @@ const mainnetTokenEntries = [
         "DAI",
         {
           symbol: "DAI",
-          decimals: 8,
+          decimals: 18,
           address: "0x6b175474e89094c44da98b954eedeac495271d0f",
         },
       ],
@@ -62,7 +62,7 @@ const mainnetTokenEntries = [
         "BUSD",
         {
           symbol: "BUSD",
-          decimals: 8,
+          decimals: 18,
           address: "0x4fabb145d64652a948d72533023f6e7a623c7c53",
         },
       ],
@@ -214,7 +214,7 @@ const mainnetTokenEntries = [
         "tBTC",
         {
           symbol: "tBTC",
-          decimals: 8,
+          decimals: 18,
           address: "0x18084fbA666a33d37592fA2633fD49a74DD93a88",
         },
       ],
@@ -258,7 +258,7 @@ const mainnetTokenEntries = [
         "wstETH",
         {
           symbol: "wstETH",
-          decimals: 8,
+          decimals: 18,
           address: "0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0",
         },
       ],
@@ -361,10 +361,10 @@ const mainnetTokenEntries = [
         "BNB",
         {
           symbol: "BNB",
-          decimals: 8,
+          decimals: 18,
           address: "native",
           wrapped: {
-            decimals: 8,
+            decimals: 18,
             symbol: "WBNB",
           },
         },
@@ -373,7 +373,7 @@ const mainnetTokenEntries = [
         "WBNB",
         {
           symbol: "WBNB",
-          decimals: 8,
+          decimals: 18,
           address: "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c",
         },
       ],
@@ -381,7 +381,7 @@ const mainnetTokenEntries = [
         "USDCbnb",
         {
           symbol: "USDC",
-          decimals: 8,
+          decimals: 18,
           address: "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",
         },
       ],
@@ -506,7 +506,7 @@ const mainnetTokenEntries = [
         "WETHbsc",
         {
           symbol: "WETH",
-          decimals: 8,
+          decimals: 18,
           address: "0x2170Ed0880ac9A755fd29B2688956BD959F933F8",
         },
       ],
@@ -627,10 +627,10 @@ const mainnetTokenEntries = [
         "MATIC",
         {
           symbol: "MATIC",
-          decimals: 8,
+          decimals: 18,
           address: "native",
           wrapped: {
-            decimals: 8,
+            decimals: 18,
             symbol: "WMATIC",
           },
         },
@@ -639,7 +639,7 @@ const mainnetTokenEntries = [
         "WMATIC",
         {
           symbol: "WMATIC",
-          decimals: 8,
+          decimals: 18,
           address: "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270",
         },
       ],
@@ -647,7 +647,7 @@ const mainnetTokenEntries = [
         "WETHpolygon",
         {
           symbol: "WETH",
-          decimals: 8,
+          decimals: 18,
           address: "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619",
         },
       ],
@@ -825,7 +825,7 @@ const mainnetTokenEntries = [
         "tBTCpolygon",
         {
           symbol: "tBTC",
-          decimals: 8,
+          decimals: 18,
           address: "0x236aa50979D5f3De3Bd1Eeb40E81137F22ab794b",
         },
       ],
@@ -860,7 +860,7 @@ const mainnetTokenEntries = [
         "wstETHpolygon",
         {
           symbol: "wstETH",
-          decimals: 8,
+          decimals: 18,
           address: "0x03b54A6e9a984069379fae1a4fC4dBAE93B3bCCD",
         },
       ],
@@ -972,10 +972,10 @@ const mainnetTokenEntries = [
         "AVAX",
         {
           symbol: "AVAX",
-          decimals: 8,
+          decimals: 18,
           address: "native",
           wrapped: {
-            decimals: 8,
+            decimals: 18,
             symbol: "WAVAX",
           },
         },
@@ -984,7 +984,7 @@ const mainnetTokenEntries = [
         "WAVAX",
         {
           symbol: "WAVAX",
-          decimals: 8,
+          decimals: 18,
           address: "0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7",
         },
       ],
@@ -1000,7 +1000,7 @@ const mainnetTokenEntries = [
         "WETHavax",
         {
           symbol: "WETH",
-          decimals: 8,
+          decimals: 18,
           address: "0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab",
         },
       ],
@@ -1256,10 +1256,10 @@ const mainnetTokenEntries = [
         "FTM",
         {
           symbol: "FTM",
-          decimals: 8,
+          decimals: 18,
           address: "native",
           wrapped: {
-            decimals: 8,
+            decimals: 18,
             symbol: "WFTM",
           },
         },
@@ -1268,7 +1268,7 @@ const mainnetTokenEntries = [
         "WFTM",
         {
           symbol: "WFTM",
-          decimals: 8,
+          decimals: 18,
           address: "0x21be370d5312f44cb42ce377bc9b8a0cef1a4c83",
         },
       ],
@@ -1533,7 +1533,7 @@ const mainnetTokenEntries = [
         "CELO",
         {
           symbol: "CELO",
-          decimals: 8,
+          decimals: 18,
           address: "0x471ece3750da237f93b8e339c536989b8978a438",
         },
       ],
@@ -1807,10 +1807,10 @@ const mainnetTokenEntries = [
         "GLMR",
         {
           symbol: "GLMR",
-          decimals: 8,
+          decimals: 18,
           address: "native",
           wrapped: {
-            decimals: 8,
+            decimals: 18,
             symbol: "WGLMR",
           },
         },
@@ -1819,7 +1819,7 @@ const mainnetTokenEntries = [
         "WGLMR",
         {
           symbol: "WGLMR",
-          decimals: 8,
+          decimals: 18,
           address: "0xAcc15dC74880C9944775448304B263D191c6077F",
         },
       ],
@@ -2048,10 +2048,10 @@ const mainnetTokenEntries = [
         "SOL",
         {
           symbol: "SOL",
-          decimals: 8,
+          decimals: 9,
           address: "native",
           wrapped: {
-            decimals: 8,
+            decimals: 9,
             symbol: "WSOL",
           },
         },
@@ -2060,7 +2060,7 @@ const mainnetTokenEntries = [
         "WSOL",
         {
           symbol: "WSOL",
-          decimals: 8,
+          decimals: 9,
           address: "So11111111111111111111111111111111111111112",
         },
       ],
@@ -2336,7 +2336,7 @@ const mainnetTokenEntries = [
         "SUI",
         {
           symbol: "SUI",
-          decimals: 8,
+          decimals: 9,
           address: "0x2::sui::SUI",
         },
       ],
@@ -2930,10 +2930,10 @@ const mainnetTokenEntries = [
         "ETHbase",
         {
           symbol: "ETH",
-          decimals: 8,
+          decimals: 18,
           address: "native",
           wrapped: {
-            decimals: 8,
+            decimals: 18,
             symbol: "WETHbase",
           },
         },
@@ -2942,7 +2942,7 @@ const mainnetTokenEntries = [
         "WETHbase",
         {
           symbol: "WETH",
-          decimals: 8,
+          decimals: 18,
           address: "0x4200000000000000000000000000000000000006",
         },
       ],
@@ -2958,7 +2958,7 @@ const mainnetTokenEntries = [
         "wstETHbase",
         {
           symbol: "wstETH",
-          decimals: 8,
+          decimals: 18,
           address: "0xc1CBa3fCea344f92D9239c08C0568f6F2F0ee452",
         },
       ],
@@ -2984,7 +2984,7 @@ const mainnetTokenEntries = [
         "tBTCbase",
         {
           symbol: "tBTC",
-          decimals: 8,
+          decimals: 18,
           address: "0x236aa50979D5f3De3Bd1Eeb40E81137F22ab794b",
         },
       ],
@@ -3186,10 +3186,10 @@ const mainnetTokenEntries = [
         "ETHarbitrum",
         {
           symbol: "ETH",
-          decimals: 8,
+          decimals: 18,
           address: "native",
           wrapped: {
-            decimals: 8,
+            decimals: 18,
             symbol: "WETHarbitrum",
           },
         },
@@ -3198,7 +3198,7 @@ const mainnetTokenEntries = [
         "WETHarbitrum",
         {
           symbol: "WETH",
-          decimals: 8,
+          decimals: 18,
           address: "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
         },
       ],
@@ -3277,7 +3277,7 @@ const mainnetTokenEntries = [
         "tBTCarbitrum",
         {
           symbol: "tBTC",
-          decimals: 8,
+          decimals: 18,
           address: "0x6c84a8f1c29108F47a79964b5Fe888D4f4D0dE40",
         },
       ],
@@ -3294,7 +3294,7 @@ const mainnetTokenEntries = [
         "wstETHarbitrum",
         {
           symbol: "wstETH",
-          decimals: 8,
+          decimals: 18,
           address: "0x5979D7b546E38E414F7E9822514be443A4800529",
         },
       ],
@@ -3505,10 +3505,10 @@ const mainnetTokenEntries = [
         "ETHoptimism",
         {
           symbol: "ETH",
-          decimals: 8,
+          decimals: 18,
           address: "native",
           wrapped: {
-            decimals: 8,
+            decimals: 18,
             symbol: "WETHoptimism",
           },
         },
@@ -3517,7 +3517,7 @@ const mainnetTokenEntries = [
         "WETHoptimism",
         {
           symbol: "WETH",
-          decimals: 8,
+          decimals: 18,
           address: "0x4200000000000000000000000000000000000006",
         },
       ],
@@ -3569,7 +3569,7 @@ const mainnetTokenEntries = [
         "tBTCoptimism",
         {
           symbol: "tBTC",
-          decimals: 8,
+          decimals: 18,
           address: "0x6c84a8f1c29108F47a79964b5Fe888D4f4D0dE40",
         },
       ],
@@ -3595,7 +3595,7 @@ const mainnetTokenEntries = [
         "wstETHoptimism",
         {
           symbol: "wstETH",
-          decimals: 8,
+          decimals: 18,
           address: "0x1F32b1c2345538c0c6f582fCB022739c4A194Ebb",
         },
       ],
@@ -4215,7 +4215,7 @@ const mainnetTokenEntries = [
         "EVMOS",
         {
           symbol: "EVMOS",
-          decimals: 8,
+          decimals: 18,
           address: "aevmos",
         },
       ],

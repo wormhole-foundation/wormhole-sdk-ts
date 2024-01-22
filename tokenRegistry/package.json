@@ -27,6 +27,7 @@
     "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo",
     "lint": "npm run prettier && eslint --fix",
     "prettier": "prettier --write ./src",
+    "importConnect":"tsx src/scripts/importConnect.ts",
     "automatics": "npx ts-node ./src/scripts/updateAutomaticRegisteredTokens",
     "updateForeignAssets": "npx ts-node ./src/scripts/updateForeignAssetConfig"
   },
