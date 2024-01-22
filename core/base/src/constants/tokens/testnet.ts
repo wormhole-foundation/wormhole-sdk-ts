@@ -10,10 +10,10 @@ const testnetTokenEntries = [
         "ETH",
         {
           symbol: "ETH",
-          decimals: 8,
+          decimals: 18,
           address: "native",
           wrapped: {
-            decimals: 8,
+            decimals: 18,
             symbol: "WETH",
           },
         },
@@ -22,7 +22,7 @@ const testnetTokenEntries = [
         "WETH",
         {
           symbol: "WETH",
-          decimals: 8,
+          decimals: 18,
           address: "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
         },
       ],
@@ -54,7 +54,7 @@ const testnetTokenEntries = [
         "DAI",
         {
           symbol: "DAI",
-          decimals: 8,
+          decimals: 18,
           address: "0x11fE4B6AE13d2a6055C8D9cF65c55bac32B5d844",
         },
       ],
@@ -179,7 +179,7 @@ const testnetTokenEntries = [
         "tBTC",
         {
           symbol: "tBTC",
-          decimals: 8,
+          decimals: 18,
           address: "0x679874fBE6D4E7Cc54A59e315FF1eB266686a937",
         },
       ],
@@ -205,7 +205,7 @@ const testnetTokenEntries = [
         "wstETH",
         {
           symbol: "wstETH",
-          decimals: 8,
+          decimals: 18,
           address: "0x6320cD32aA674d2898A68ec82e869385Fc5f7E2f",
         },
       ],
@@ -263,10 +263,10 @@ const testnetTokenEntries = [
         "MATIC",
         {
           symbol: "MATIC",
-          decimals: 8,
+          decimals: 18,
           address: "native",
           wrapped: {
-            decimals: 8,
+            decimals: 18,
             symbol: "WMATIC",
           },
         },
@@ -275,7 +275,7 @@ const testnetTokenEntries = [
         "WMATIC",
         {
           symbol: "WMATIC",
-          decimals: 8,
+          decimals: 18,
           address: "0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889",
         },
       ],
@@ -399,7 +399,7 @@ const testnetTokenEntries = [
         "tBTCpolygon",
         {
           symbol: "tBTC",
-          decimals: 8,
+          decimals: 18,
           address: "0xBcD7917282E529BAA6f232DdDc75F3901245A492",
         },
       ],
@@ -466,10 +466,10 @@ const testnetTokenEntries = [
         "BNB",
         {
           symbol: "BNB",
-          decimals: 8,
+          decimals: 18,
           address: "native",
           wrapped: {
-            decimals: 8,
+            decimals: 18,
             symbol: "WBNB",
           },
         },
@@ -478,7 +478,7 @@ const testnetTokenEntries = [
         "WBNB",
         {
           symbol: "WBNB",
-          decimals: 8,
+          decimals: 18,
           address: "0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd",
         },
       ],
@@ -662,10 +662,10 @@ const testnetTokenEntries = [
         "AVAX",
         {
           symbol: "AVAX",
-          decimals: 8,
+          decimals: 18,
           address: "native",
           wrapped: {
-            decimals: 8,
+            decimals: 18,
             symbol: "WAVAX",
           },
         },
@@ -674,7 +674,7 @@ const testnetTokenEntries = [
         "WAVAX",
         {
           symbol: "WAVAX",
-          decimals: 8,
+          decimals: 18,
           address: "0xd00ae08403B9bbb9124bB305C09058E32C39A48c",
         },
       ],
@@ -875,10 +875,10 @@ const testnetTokenEntries = [
         "FTM",
         {
           symbol: "FTM",
-          decimals: 8,
+          decimals: 18,
           address: "native",
           wrapped: {
-            decimals: 8,
+            decimals: 18,
             symbol: "WFTM",
           },
         },
@@ -887,7 +887,7 @@ const testnetTokenEntries = [
         "WFTM",
         {
           symbol: "WFTM",
-          decimals: 8,
+          decimals: 18,
           address: "0xf1277d1Ed8AD466beddF92ef448A132661956621",
         },
       ],
@@ -1062,7 +1062,7 @@ const testnetTokenEntries = [
         "CELO",
         {
           symbol: "CELO",
-          decimals: 8,
+          decimals: 18,
           address: "0xF194afDf50B03e69Bd7D057c1Aa9e10c9954E4C9",
         },
       ],
@@ -1237,10 +1237,10 @@ const testnetTokenEntries = [
         "GLMR",
         {
           symbol: "GLMR",
-          decimals: 8,
+          decimals: 18,
           address: "native",
           wrapped: {
-            decimals: 8,
+            decimals: 18,
             symbol: "WGLMR",
           },
         },
@@ -1249,7 +1249,7 @@ const testnetTokenEntries = [
         "WGLMR",
         {
           symbol: "WGLMR",
-          decimals: 8,
+          decimals: 18,
           address: "0xD909178CC99d318e4D46e7E66a972955859670E1",
         },
       ],
@@ -1415,10 +1415,10 @@ const testnetTokenEntries = [
         "SOL",
         {
           symbol: "SOL",
-          decimals: 8,
+          decimals: 9,
           address: "native",
           wrapped: {
-            decimals: 8,
+            decimals: 9,
             symbol: "WSOL",
           },
         },
@@ -1427,7 +1427,7 @@ const testnetTokenEntries = [
         "WSOL",
         {
           symbol: "WSOL",
-          decimals: 8,
+          decimals: 9,
           address: "So11111111111111111111111111111111111111112",
         },
       ],
@@ -1620,7 +1620,7 @@ const testnetTokenEntries = [
         "SUI",
         {
           symbol: "SUI",
-          decimals: 8,
+          decimals: 9,
           address: "0x2::sui::SUI",
         },
       ],
@@ -2001,10 +2001,10 @@ const testnetTokenEntries = [
         "ETHbase",
         {
           symbol: "ETH",
-          decimals: 8,
+          decimals: 18,
           address: "native",
           wrapped: {
-            decimals: 8,
+            decimals: 18,
             symbol: "WETHbase",
           },
         },
@@ -2013,7 +2013,7 @@ const testnetTokenEntries = [
         "WETHbase",
         {
           symbol: "WETH",
-          decimals: 8,
+          decimals: 18,
           address: "0x4200000000000000000000000000000000000006",
         },
       ],
@@ -2038,7 +2038,7 @@ const testnetTokenEntries = [
         "tBTCbase",
         {
           symbol: "tBTC",
-          decimals: 8,
+          decimals: 18,
           address: "0x783349cd20f26CE12e747b1a17bC38D252c9e119",
         },
       ],
@@ -2350,10 +2350,10 @@ const testnetTokenEntries = [
         "ETHarbitrum",
         {
           symbol: "ETH",
-          decimals: 8,
+          decimals: 18,
           address: "native",
           wrapped: {
-            decimals: 8,
+            decimals: 18,
             symbol: "WETHarbitrum",
           },
         },
@@ -2362,7 +2362,7 @@ const testnetTokenEntries = [
         "WETHarbitrum",
         {
           symbol: "WETH",
-          decimals: 8,
+          decimals: 18,
           address: "0xee01c0cd76354c383b8c7b4e65ea88d00b06f36f",
         },
       ],
@@ -2405,7 +2405,7 @@ const testnetTokenEntries = [
         "tBTCarbitrum",
         {
           symbol: "tBTC",
-          decimals: 8,
+          decimals: 18,
           address: "0x85727F4725A4B2834e00Db1AA8e1b843a188162F",
         },
       ],
@@ -2490,10 +2490,10 @@ const testnetTokenEntries = [
         "ETHoptimism",
         {
           symbol: "ETH",
-          decimals: 8,
+          decimals: 18,
           address: "native",
           wrapped: {
-            decimals: 8,
+            decimals: 18,
             symbol: "WETHoptimism",
           },
         },
@@ -2502,7 +2502,7 @@ const testnetTokenEntries = [
         "WETHoptimism",
         {
           symbol: "WETH",
-          decimals: 8,
+          decimals: 18,
           address: "0x4200000000000000000000000000000000000006",
         },
       ],
@@ -2545,7 +2545,7 @@ const testnetTokenEntries = [
         "tBTCoptimism",
         {
           symbol: "tBTC",
-          decimals: 8,
+          decimals: 18,
           address: "0x1a53759DE2eADf73bd0b05c07a4F1F5B7912dA3d",
         },
       ],
@@ -3268,7 +3268,7 @@ const testnetTokenEntries = [
         "EVMOS",
         {
           symbol: "EVMOS",
-          decimals: 8,
+          decimals: 18,
           address: "atevmos",
         },
       ],
