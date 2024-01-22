@@ -21,20 +21,18 @@ import "@wormhole-foundation/connect-sdk-evm-cctp";
   // get signers from local config
   const sendChain = wh.getChain("Avalanche");
   const sender = await getStuff(sendChain);
-  const receiver = await getStuff(wh.getChain("Optimism"));
+  const receiver = await getStuff(wh.getChain("OptimismSepolia"));
 
   // create new resolver
   const resolver = wh.resolver();
-
-  console.log(resolver.routeConstructors.length);
 
   const usdcAvalanche: TokenId = Wormhole.chainAddress(
     "Avalanche",
     circle.usdcContract.get("Testnet", "Avalanche")!,
   );
   const usdcPolygon: TokenId = Wormhole.chainAddress(
-    "Optimism",
-    circle.usdcContract.get("Testnet", "Optimism")!,
+    "OptimismSepolia",
+    circle.usdcContract.get("Testnet", "OptimismSepolia")!,
   );
 
   console.log(sender.address, receiver.address);
@@ -55,7 +53,7 @@ import "@wormhole-foundation/connect-sdk-evm-cctp";
   // Sort the routes given some input (not required for mvp)
   // const bestRoute = (await resolver.sortRoutes(foundRoutes, "cost"))[0]!;
   //const bestRoute = foundRoutes.filter((route) => routes.isAutomatic(route))[0]!;
-  const bestRoute = foundRoutes[3]!;
+  const bestRoute = foundRoutes[2]!;
 
   console.log(bestRoute);
 
@@ -94,6 +92,7 @@ import "@wormhole-foundation/connect-sdk-evm-cctp";
       if (routes.isManual(bestRoute)) {
         const completedTxids = await bestRoute.complete(receiver.signer, receipt);
         console.log("Completed transfer with txids: ", completedTxids);
+        return;
       }
     }
 
