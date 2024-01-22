@@ -1,4 +1,4 @@
-import { Network, displayAmount, normalizeAmount } from "@wormhole-foundation/sdk-base";
+import { Network, displayAmount, normalizeAmount, tokens } from "@wormhole-foundation/sdk-base";
 import {
   ChainAddress,
   ChainContext,
@@ -34,15 +34,11 @@ export class RouteTransferRequest<N extends Network> {
   }
 
   normalizeAmount(amount: string): bigint {
-    return normalizeAmount(amount, BigInt(this.source.token.decimals));
+    return normalizeAmount(amount, BigInt(this.source.decimals));
   }
 
   displayAmount(amount: bigint): string {
-    return displayAmount(
-      amount,
-      BigInt(this.source.token.decimals),
-      BigInt(this.source.token.decimals),
-    );
+    return displayAmount(amount, BigInt(this.source.decimals), BigInt(this.source.decimals));
   }
 
   static async create<N extends Network>(
@@ -80,29 +76,29 @@ export class RouteTransferRequest<N extends Network> {
 
 export interface TokenDetails {
   id: TokenId | "native";
-  token: {
-    decimals: number;
-    wrapped?: TokenId;
-  };
+  decimals: number;
+  symbol?: tokens.TokenSymbol;
+  wrapped?: TokenId;
 }
 
 async function getTokenDetails<N extends Network>(
   chain: ChainContext<N>,
   token: TokenId | "native",
 ): Promise<TokenDetails> {
-  const tokenAddress = isTokenId(token) ? canonicalAddress(token) : token;
+  const address = isTokenId(token) ? canonicalAddress(token) : token;
 
+  const details = chain.config.tokenMap
+    ? tokens.filters.byAddress(chain.config.tokenMap!, address)
+    : undefined;
+
+  const symbol = details ? details.symbol : undefined;
+  const wrapped = token === "native" ? await chain.getNativeWrappedTokenId() : undefined;
   const decimals = Number(await chain.getDecimals(isTokenId(token) ? token.address : token));
-  let wrapped: TokenId | undefined;
-  if (tokenAddress === "native") {
-    wrapped = await chain.getNativeWrappedTokenId();
-  }
 
   return {
     id: token,
-    token: {
-      decimals,
-      wrapped,
-    },
+    decimals,
+    wrapped,
+    symbol,
   };
 }

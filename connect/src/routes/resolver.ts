@@ -15,12 +15,16 @@ export class RouteResolver<N extends Network> {
   }
 
   async findRoutes(request: RouteTransferRequest<N>): Promise<UnknownRoute<N>[]> {
-    // Could do this faster in parallel using Promise.all
-    return this.routeConstructors
-      .map((rc) => new rc(this.wh, request))
-      .filter(async (route) =>
-        (await route.isSupported()) && (!isAutomatic(route) || (await route.isAvailable()))
-      );
+    const matches = await Promise.all(
+      this.routeConstructors
+        .map((rc) => new rc(this.wh, request))
+        .map(async (route) => {
+          const match =
+            (await route.isSupported()) && (!isAutomatic(route) || (await route.isAvailable()));
+          return [match, match ? route : undefined] as [boolean, UnknownRoute<N>];
+        }),
+    );
+    return matches.filter(([match]) => match).map(([, route]) => route!);
   }
 
   async sortRoutes(

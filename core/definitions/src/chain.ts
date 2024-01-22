@@ -10,6 +10,7 @@ import { IbcBridge } from "./protocols/ibc";
 import { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge";
 import { RpcConnection } from "./rpc";
 import { ChainConfig, SignedTx, TokenId } from "./types";
+import { PorticoBridge } from "./protocols/portico";
 
 export abstract class ChainContext<
   N extends Network,
@@ -31,6 +32,7 @@ export abstract class ChainContext<
   protected circleBridge?: CircleBridge<N, P, C>;
   protected autoCircleBridge?: AutomaticCircleBridge<N, P, C>;
   protected ibcBridge?: IbcBridge<N, P, C>;
+  protected porticoBridge?: PorticoBridge<N, P, C>;
 
   constructor(chain: C, platform: PlatformContext<N, P>, rpc?: RpcConnection<P>) {
     this.config = platform.config[chain]!;
@@ -164,5 +166,14 @@ export abstract class ChainContext<
       ? this.ibcBridge
       : await this.platform.getProtocol("IbcBridge", await this.getRpc());
     return this.ibcBridge;
+  }
+
+  //
+  supportsPorticoBridge = () => this.supportsProtocol("PorticoBridge");
+  async getPorticoBridge(): Promise<PorticoBridge<N, P, C>> {
+    this.porticoBridge = this.porticoBridge
+      ? this.porticoBridge
+      : await this.platform.getProtocol("PorticoBridge", await this.getRpc());
+    return this.porticoBridge;
   }
 }
