@@ -11,9 +11,8 @@ import {
   ValidationResult,
 } from "./types";
 
-export type UnknownRouteConstructor<N extends Network> = RouteConstructor<N>;
 export type RouteConstructor<N extends Network> = {
-  new (wh: Wormhole<N>, request: RouteTransferRequest<N>): UnknownRoute<N>;
+  new (wh: Wormhole<N>, request: RouteTransferRequest<N>): Route<N>;
 
   // get the list of networks this route supports
   supportedNetworks(): Network[];
@@ -21,7 +20,7 @@ export type RouteConstructor<N extends Network> = {
   supportedChains(network: Network): Chain[];
   // get the list of source tokens that are possible to send
   supportedSourceTokens(fromChain: ChainContext<Network>): Promise<(TokenId | "native")[]>;
-  // get the liist of destination tokens that may be recieved on the destination chain
+  // get the list of destination tokens that may be recieved on the destination chain
   supportedDestinationTokens<N extends Network>(
     token: TokenId,
     fromChain: ChainContext<N>,
@@ -32,13 +31,6 @@ export type RouteConstructor<N extends Network> = {
     toChain: ChainContext<N>,
   ): boolean;
 };
-
-export type UnknownRoute<
-  N extends Network,
-  OP extends Options = Options,
-  R extends Receipt = Receipt,
-  Q extends Quote = Quote,
-> = Route<N, OP, R, Q>;
 
 export abstract class Route<
   N extends Network,
@@ -86,7 +78,7 @@ export abstract class AutomaticRoute<
   public abstract isAvailable(): Promise<boolean>;
 }
 
-export function isAutomatic<N extends Network>(route: UnknownRoute<N>): route is AutomaticRoute<N> {
+export function isAutomatic<N extends Network>(route: Route<N>): route is AutomaticRoute<N> {
   return (route as AutomaticRoute<N>).isAvailable !== undefined && route.IS_AUTOMATIC;
 }
 
@@ -101,6 +93,6 @@ export abstract class ManualRoute<
   public abstract complete(sender: Signer, receipt: R): Promise<TransactionId[]>;
 }
 
-export function isManual<N extends Network>(route: UnknownRoute<N>): route is ManualRoute<N> {
+export function isManual<N extends Network>(route: Route<N>): route is ManualRoute<N> {
   return (route as ManualRoute<N>).complete !== undefined;
 }

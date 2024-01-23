@@ -2,16 +2,16 @@ import { Network } from "@wormhole-foundation/sdk-base";
 import { ChainContext, TokenId, resolveWrappedToken } from "@wormhole-foundation/sdk-definitions";
 import { Wormhole } from "../wormhole";
 import { RouteTransferRequest } from "./request";
-import { UnknownRoute, UnknownRouteConstructor, isAutomatic } from "./route";
+import { RouteConstructor, isAutomatic, Route } from "./route";
 
 export type RouteSortOptions = "cost" | "speed";
 
 export class RouteResolver<N extends Network> {
   wh: Wormhole<N>;
-  routeConstructors: UnknownRouteConstructor<N>[];
+  routeConstructors: RouteConstructor<N>[];
   inputTokenList?: (TokenId | "native")[];
 
-  constructor(wh: Wormhole<N>, routeConstructors: UnknownRouteConstructor<N>[]) {
+  constructor(wh: Wormhole<N>, routeConstructors: RouteConstructor<N>[]) {
     this.wh = wh;
     this.routeConstructors = routeConstructors;
   }
@@ -42,7 +42,7 @@ export class RouteResolver<N extends Network> {
     return tokens.flat();
   }
 
-  async findRoutes(request: RouteTransferRequest<N>): Promise<UnknownRoute<N>[]> {
+  async findRoutes(request: RouteTransferRequest<N>): Promise<Route<N>[]> {
     const matches = await Promise.all(
       this.routeConstructors
         .filter(
@@ -55,16 +55,13 @@ export class RouteResolver<N extends Network> {
         .map((rc) => new rc(this.wh, request))
         .map(async (route) => {
           const match = isAutomatic(route) ? await route.isAvailable() : true;
-          return [match, match ? route : undefined] as [true, UnknownRoute<N>] | [false, undefined];
+          return [match, match ? route : undefined] as [true, Route<N>] | [false, undefined];
         }),
     );
     return matches.filter(([match]) => match).map(([, route]) => route!);
   }
 
-  async sortRoutes(
-    routes: UnknownRoute<N>[],
-    sortBy: RouteSortOptions,
-  ): Promise<UnknownRoute<N>[]> {
+  async sortRoutes(routes: Route<N>[], sortBy: RouteSortOptions): Promise<Route<N>[]> {
     // TODO: actually sort
     return routes;
   }
