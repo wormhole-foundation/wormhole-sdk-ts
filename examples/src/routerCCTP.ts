@@ -53,7 +53,7 @@ import "@wormhole-foundation/connect-sdk-evm-cctp";
   // Sort the routes given some input (not required for mvp)
   // const bestRoute = (await resolver.sortRoutes(foundRoutes, "cost"))[0]!;
   //const bestRoute = foundRoutes.filter((route) => routes.isAutomatic(route))[0]!;
-  const bestRoute = foundRoutes[2]!;
+  const bestRoute = foundRoutes[1]!;
 
   console.log(bestRoute);
 

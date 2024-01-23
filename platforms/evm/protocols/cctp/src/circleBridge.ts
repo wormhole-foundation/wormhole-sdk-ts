@@ -174,7 +174,7 @@ export class EvmCircleBridge<N extends Network, C extends EvmChains>
         [message.sourceDomain, message.nonce],
       ),
     );
-    const result = this.msgTransmitter.usedNonces.staticCall(hash);
+    const result = await this.msgTransmitter.usedNonces.staticCall(hash);
     return result.toString() === '1';
   }
 

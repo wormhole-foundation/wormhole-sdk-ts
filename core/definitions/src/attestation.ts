@@ -12,10 +12,12 @@ import { VAA } from "./vaa";
 export type AttestationId<PN extends ProtocolName = ProtocolName> = PN extends
   | "TokenBridge"
   | "AutomaticTokenBridge"
-  | "AutomaticCircleBridge"
   | "WormholeCore"
   | "PorticoBridge"
+  | "AutomaticCircleBridge"
   ? WormholeMessageId
+  : PN extends "AutomaticCircleBridge"
+  ? WormholeMessageId | CircleMessageId
   : PN extends "CircleBridge"
   ? CircleMessageId
   : PN extends "IbcBridge"
@@ -27,7 +29,7 @@ export type Attestation<PN extends ProtocolName = ProtocolName> = PN extends
   | "AutomaticTokenBridge"
   ? AutomaticTokenBridge.VAA | TokenBridge.VAA
   : PN extends "AutomaticCircleBridge"
-  ? AutomaticCircleBridge.VAA
+  ? AutomaticCircleBridge.VAA | CircleBridge.Attestation
   : PN extends "CircleBridge"
   ? CircleBridge.Attestation
   : PN extends "IbcBridge"

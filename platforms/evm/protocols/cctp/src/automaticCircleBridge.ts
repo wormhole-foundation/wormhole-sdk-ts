@@ -13,7 +13,7 @@ import {
   toChainId,
 } from '@wormhole-foundation/connect-sdk';
 
-import { Provider, TransactionRequest, keccak256 } from 'ethers';
+import { Provider, TransactionRequest } from 'ethers';
 import { ethers_contracts } from '.';
 import { CircleRelayer } from './ethers-contracts';
 
@@ -27,7 +27,6 @@ import {
   addFrom,
 } from '@wormhole-foundation/connect-sdk-evm';
 
-import { ethers_contracts as tb_contracts } from '@wormhole-foundation/connect-sdk-evm-tokenbridge';
 import '@wormhole-foundation/connect-sdk-evm-core';
 import '@wormhole-foundation/connect-sdk-evm-tokenbridge';
 
@@ -36,7 +35,6 @@ export class EvmAutomaticCircleBridge<N extends Network, C extends EvmChains>
 {
   readonly circleRelayer: CircleRelayer;
   readonly chainId: bigint;
-  readonly tokenBridge: tb_contracts.TokenBridgeContract;
   readonly tokenAddr: string;
 
   // https://github.com/wormhole-foundation/wormhole-connect/blob/development/sdk/src/contexts/eth/context.ts#L379
@@ -66,14 +64,6 @@ export class EvmAutomaticCircleBridge<N extends Network, C extends EvmChains>
       provider,
     );
 
-    const tbAddress = this.contracts.tokenBridge;
-    if (!tbAddress)
-      throw new Error(`TokenBridge contract not found for ${chain}`);
-
-    this.tokenBridge = tb_contracts.Bridge__factory.connect(
-      tbAddress,
-      provider,
-    );
     const tokenAddr = circle.usdcContract.get(
       this.network as circle.CircleNetwork,
       this.chain as circle.CircleChain,
@@ -108,10 +98,6 @@ export class EvmAutomaticCircleBridge<N extends Network, C extends EvmChains>
       toChainId(destination),
       this.tokenAddr,
     );
-  }
-
-  async isTransferCompleted(vaa: AutomaticCircleBridge.VAA): Promise<boolean> {
-    return this.tokenBridge.isTransferCompleted(keccak256(vaa.hash));
   }
 
   async *transfer(
