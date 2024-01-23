@@ -68,13 +68,10 @@ export class PorticoApi {
     amount: bigint,
     destToken: TokenId | 'native',
     quote: PorticoBridge.Quote,
+    nonce: number,
   ): Promise<CreateOrderResponse> {
     try {
       const { minAmountStart, minAmountFinish } = quote.swapAmounts;
-      if (minAmountStart === 0n) throw new Error('Invalid min swap amount');
-      if (minAmountFinish === 0n) throw new Error('Invalid min swap amount');
-
-      //const senderAddress = new EvmAddress(sender).toString();
 
       const receiverAddress = canonicalAddress(receiver);
 
@@ -120,17 +117,17 @@ export class PorticoApi {
         destinationChainId: Number(destinationChainId),
         destinationToken: finalTokenAddress.toLowerCase(),
         destinationAddress: receiverAddress,
-        shouldWrapNative: isStartTokenNative,
-        shouldUnwrapNative: isFinalTokenNative,
         porticoAddress: sourcePorticoAddress,
         destinationPorticoAddress: destinationPorticoAddress,
         startingTokenAmount: amount.toString(),
         minAmountStart: minAmountStart.toString(),
         minAmountEnd: minAmountFinish.toString(),
-        bridgeNonce: new Date().valueOf(),
+        bridgeNonce: nonce,
         relayerFee: quote.relayerFee.toString(),
         feeTierStart: FEE_TIER,
         feeTierEnd: FEE_TIER,
+        shouldWrapNative: isStartTokenNative,
+        shouldUnwrapNative: isFinalTokenNative,
       };
 
       const response = await axios.post<CreateOrderResponse>(

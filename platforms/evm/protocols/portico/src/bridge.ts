@@ -8,10 +8,13 @@ import {
   PorticoBridge,
   TokenAddress,
   TokenId,
+  Wormhole,
   canonicalAddress,
+  contracts,
   nativeChainIds,
   resolveWrappedToken,
   serialize,
+  toChainId,
   tokens,
 } from '@wormhole-foundation/connect-sdk';
 import {
@@ -117,18 +120,55 @@ export class EvmPorticoBridge<
       this.chain,
       token,
     );
+
+    const [isFinalTokenNative, finalToken] = resolveWrappedToken(
+      this.network,
+      receiver.chain,
+      destToken,
+    );
+
     const startTokenAddress = canonicalAddress(startToken);
 
-    // Create the order
-    const createOrderResult = await PorticoApi.createOrder(
-      this.network,
-      this.chain,
-      receiver,
-      token,
-      amount,
-      destToken,
-      quote,
+    const cannonTokenAddress = canonicalAddress(
+      this.getTransferrableToken(startTokenAddress),
     );
+
+    const receiverAddress = canonicalAddress(receiver);
+
+    const finalTokenAddress = canonicalAddress(finalToken);
+
+    const destinationPorticoAddress = contracts.portico.get(
+      this.network,
+      receiver.chain,
+    )!.portico;
+
+    const nonce = new Date().valueOf() % 2 ** 4;
+    const flags = PorticoBridge.serializeFlagSet({
+      flags: {
+        shouldWrapNative: isStartTokenNative,
+        shouldUnwrapNative: isFinalTokenNative,
+      },
+      recipientChain: toChainId(receiver.chain),
+      bridgeNonce: nonce,
+      feeTierStart: FEE_TIER,
+      feeTierFinish: FEE_TIER,
+      padding: new Uint8Array(19),
+    });
+
+    const transactionData = porticoAbi.encodeFunctionData('start', [
+      [
+        flags,
+        startTokenAddress.toLowerCase(),
+        cannonTokenAddress,
+        finalTokenAddress.toLowerCase(),
+        receiverAddress,
+        destinationPorticoAddress,
+        amount.toString(),
+        minAmountStart.toString(),
+        minAmountFinish.toString(),
+        quote.relayerFee.toString(),
+      ],
+    ]);
 
     // Approve the token if necessary
     if (!isStartTokenNative)
@@ -143,7 +183,7 @@ export class EvmPorticoBridge<
 
     const tx = {
       to: this.porticoAddress,
-      data: createOrderResult.transactionData,
+      data: transactionData,
       value: messageFee + (isStartTokenNative ? amount : 0n),
     };
     yield this.createUnsignedTransaction(
@@ -197,6 +237,31 @@ export class EvmPorticoBridge<
 
   async quoteRelay(startToken: TokenAddress<C>, endToken: TokenAddress<C>) {
     return await PorticoApi.quoteRelayer(this.chain, startToken, endToken);
+  }
+
+  // For a given token, return the corresponding
+  // Wormhole wrapped token that originated on Ethereum
+  getTransferrableToken(address: string): TokenId {
+    if (this.chain === 'Ethereum')
+      return Wormhole.chainAddress('Ethereum', address);
+
+    // get the nativeTokenDetails
+    const nToken = tokens.getTokenByAddress(this.network, this.chain, address);
+    if (!nToken) throw new Error('Unsupported source token: ' + address);
+
+    // find the same token by symbol with an origin of Ethereum
+    // this is the token we standardize for transfer
+    const xToken = tokens
+      .getTokensBySymbol(this.network, this.chain, nToken.symbol)
+      ?.find((orig) => {
+        return orig.original === 'Ethereum';
+      });
+    if (!xToken)
+      throw new Error(
+        `Unsupported symbol for chain ${nToken.symbol}: ${this.chain} `,
+      );
+
+    return Wormhole.chainAddress(xToken.chain, xToken.address);
   }
 
   private async *approve(
