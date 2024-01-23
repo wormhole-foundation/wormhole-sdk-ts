@@ -34,9 +34,9 @@ Getting started is simple, just import and pass in the [Platform](#platforms) mo
 
 ```ts
 import { Wormhole, Signer } from "@wormhole-foundation/connect-sdk";
-import { EvmContext } from "@wormhole-foundation/connect-sdk-evm";
-import { SolanaContext } from "@wormhole-foundation/connect-sdk-solana";
-import { AlgorandContext } from "@wormhole-foundation/connect-sdk-algorand";
+import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
+import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
+import { AlgorandPlatform } from "@wormhole-foundation/connect-sdk-algorand";
 
 // Include the protocols you wish to use
 import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
@@ -48,12 +48,12 @@ const wh = new Wormhole(network, [EvmPlatform, SolanaPlatform, AlgorandPlatform]
 
 // Get a ChainContext object for a specific chain
 // Useful to do things like get the rpc client, make Protocol clients,
-// look up configuration parameters or  even parse addresses
+// look up configuration parameters or  even fetch balances
 const srcChain = wh.getChain("Ethereum");
 
-srcChain.parseAddress("0xdeadbeef..."); // => NativeAddress<'Evm'>
+const balance = await srcChain.getBalance( "0xdeadbeef...", "native" ) // => BigInt
 await srcChain.getTokenBridge(); // => TokenBridge<'Evm'>
-srcChain.getRpcClient(); // => RpcClient<'Evm'>
+srcChain.getRpc(); // => RpcConnection<'Evm'>
 ```
 
 ### Wormhole Transfer
@@ -313,8 +313,8 @@ ethAddr.toUniversalAddresS();
 
 // A common type in the SDK is the `ChainAddress`.
 // A helper exists to provide a ChainAddress for a signer, or [ChainName, string address]
-const senderAddress: ChainAddress = nativeChainAddress(sender);
-const receiverAddress: ChainAddress = nativeChainAddress(receiver);
+const senderAddress: ChainAddress = Wormhole.chainAddress("Ethereum","0xbeef...");
+const receiverAddress: ChainAddress = Wormhole.chainAddress("Solana","Sol1111...");
 ```
 
 ## See also
