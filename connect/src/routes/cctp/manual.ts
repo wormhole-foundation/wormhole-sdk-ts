@@ -10,7 +10,7 @@ import {
 import { signSendWait } from "../../common";
 import { CircleAttestationReceipt, CircleTransfer } from "../../protocols/cctpTransfer";
 import { TransferQuote, TransferReceipt, TransferState, isAttested } from "../../types";
-import { ManualRoute } from "../route";
+import { ManualRoute, RouteConstructor } from "../route";
 import { TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
 import { Wormhole } from "../../wormhole";
 
@@ -165,3 +165,5 @@ export class CCTPRoute<N extends Network> extends ManualRoute<N, Op, R, Q> {
     };
   }
 }
+
+CCTPRoute satisfies RouteConstructor<Network>;
