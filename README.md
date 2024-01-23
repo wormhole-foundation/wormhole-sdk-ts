@@ -51,7 +51,7 @@ const wh = new Wormhole(network, [EvmPlatform, SolanaPlatform, AlgorandPlatform]
 // look up configuration parameters or  even fetch balances
 const srcChain = wh.getChain("Ethereum");
 
-await srcChain.getBalance( "0xdeadbeef...", "native" ), // => BigInt
+const balance = await srcChain.getBalance( "0xdeadbeef...", "native" ) // => BigInt
 await srcChain.getTokenBridge(); // => TokenBridge<'Evm'>
 srcChain.getRpc(); // => RpcConnection<'Evm'>
 ```
