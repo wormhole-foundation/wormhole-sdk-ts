@@ -2,7 +2,6 @@ import {
   isAttested,
   isCompleted,
   routes,
-  toChain,
   TransferState,
   Wormhole,
 } from "@wormhole-foundation/connect-sdk";
@@ -11,49 +10,51 @@ import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 
 import { getStuff } from "./helpers";
 
+import "@wormhole-foundation/connect-sdk-evm-portico";
 import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
 import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 
 (async function () {
   // Setup
-  const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform]);
+  const wh = new Wormhole("Mainnet", [EvmPlatform, SolanaPlatform]);
 
   // get signers from local config
-  const sendChain = wh.getChain("Solana");
+  const sendChain = wh.getChain("Polygon");
   const destChain = wh.getChain("Avalanche");
   const sender = await getStuff(sendChain);
   const receiver = await getStuff(destChain);
 
-  // create new resolver
-  const resolver = wh.resolver();
+  // create new resolver, overriding the default routes
+  const resolver = wh.resolver([routes.AutomaticPorticoRoute]);
+
+  const possibleSourceTokens = await resolver.supportedSourceTokens(sendChain);
+  console.log(`Supported source tokens for ${sendChain.chain}`, possibleSourceTokens);
+  const sendingToken = possibleSourceTokens.pop()!;
+
+  const destTokens = await resolver.supportedDestinationTokens(sendingToken, sendChain, destChain);
+  const destToken = destTokens[0]!;
+  console.log(`Supported destination tokens for ${sendingToken.toString()}`, destTokens);
 
   // Creating a transfer request fetches token details
   // since all routes will need to know about the tokens
   const tr = await routes.RouteTransferRequest.create(wh, {
     from: sender.address,
     to: receiver.address,
-    source: "native",
-    destination: "native",
+    source: sendingToken,
+    destination: destToken,
   });
-
-  console.log(await resolver.supportedSourceTokens(sendChain));
-  console.log(
-    await resolver.supportedDestinationTokens(tr.destination!.wrapped!, sendChain, destChain),
-  );
 
   // resolve the transfer request to a set of routes that can perform it
   const foundRoutes = await resolver.findRoutes(tr);
   console.log("For the transfer parameters, we found these routes: ", foundRoutes);
 
-  return;
   // Sort the routes given some input (not required for mvp)
   // const bestRoute = (await resolver.sortRoutes(foundRoutes, "cost"))[0]!;
-  //const bestRoute = foundRoutes.filter((route) => routes.isAutomatic(route))[0]!;
   const bestRoute = foundRoutes[0]!;
 
   // Specify the amount as a decimal string
   const transferParams = {
-    amount: "0.0015",
+    amount: "0.001",
   };
 
   let validated = await bestRoute.validate(transferParams);

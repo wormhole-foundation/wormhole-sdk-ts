@@ -1,21 +1,26 @@
 import {
   AttestationReceipt,
+  Chain,
+  ChainContext,
   Network,
   PorticoBridge,
   Signer,
   SourceInitiatedTransferReceipt,
   TokenId,
+  TokenTransfer,
   TransactionId,
   TransferQuote,
   TransferState,
   Wormhole,
   canonicalAddress,
   chainToPlatform,
+  contracts,
   isAttested,
   isSourceInitiated,
   isTokenId,
   resolveWrappedToken,
   signSendWait,
+  tokens,
 } from "../..";
 import { AutomaticRoute } from "../route";
 import { Receipt, TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
@@ -55,24 +60,96 @@ type VP = PorticoRoute.ValidatedParams;
 type VR = ValidationResult<OP>;
 type TP = TransferParams<OP>;
 
-export class PorticoRoute<N extends Network> extends AutomaticRoute<N, OP, R, Q> {
+export class AutomaticPorticoRoute<N extends Network> extends AutomaticRoute<N, OP, R, Q> {
   NATIVE_GAS_DROPOFF_SUPPORTED = false;
 
-  readonly supportedTokens = ["ETH", "wstETH"];
+  static readonly _supportedTokens = ["WETH", "WSTETH"];
 
-  async isSupported(): Promise<boolean> {
-    // destination asset must be specified
-    if (!this.request.destination) return false;
+  static supportedNetworks(): Network[] {
+    return ["Mainnet"];
+  }
 
-    const srcSupported = this.supportedTokens.includes(this.request.source.symbol!);
-    const dstSupported = this.supportedTokens.includes(this.request.destination!.symbol!);
+  static supportedChains(network: Network): Chain[] {
+    if (contracts.porticoContractChains.has(network)) {
+      return contracts.porticoContractChains.get(network)!;
+    }
+    return [];
+  }
 
-    return (
-      srcSupported &&
-      dstSupported &&
-      this.request.fromChain.supportsPorticoBridge() &&
-      this.request.toChain.supportsPorticoBridge()
+  static async supportedSourceTokens(
+    fromChain: ChainContext<Network>,
+  ): Promise<(TokenId | "native")[]> {
+    const supported = this._supportedTokens
+      .map((symbol) => {
+        return tokens.filters.bySymbol(fromChain.config.tokenMap!, symbol) ?? [];
+      })
+      .flat()
+      .filter((td) => {
+        const localOrEth = !td.original || td.original === "Ethereum";
+        const isAvax = fromChain.chain === "Avalanche" && td.address === "native";
+        return localOrEth && !isAvax;
+      });
+
+    return supported.map((td) => {
+      if (td.address === "native") return "native";
+      return Wormhole.chainAddress(fromChain.chain, td.address);
+    });
+  }
+
+  static async supportedDestinationTokens<N extends Network>(
+    sourceToken: TokenId,
+    fromChain: ChainContext<N>,
+    toChain: ChainContext<N>,
+  ): Promise<(TokenId | "native")[]> {
+    const tokenAddress = canonicalAddress(sourceToken);
+
+    // The token that will be used to bridge
+    const transferrableToken = getTransferrableToken(
+      fromChain.network,
+      fromChain.chain,
+      tokenAddress,
     );
+
+    // The tokens that _will_ be received on redemption
+    const redeemToken = await TokenTransfer.lookupDestinationToken(
+      fromChain,
+      toChain,
+      transferrableToken,
+    );
+
+    // Grab the symbol for the token that gets redeemed
+    const redeemTokenDetails = tokens.filters.byAddress(
+      toChain.config.tokenMap!,
+      canonicalAddress(redeemToken),
+    )!;
+
+    // Find the local/native version of the same token by symbol
+    const locallyRedeemable = (
+      tokens.filters.bySymbol(toChain.config.tokenMap!, redeemTokenDetails.symbol) ?? []
+    )
+      .filter((td) => {
+        return !td.original;
+      })
+      .map((td) => {
+        switch (td.symbol) {
+          case "ETH":
+          case "WETH":
+            return Wormhole.chainAddress(toChain.chain, td.address);
+          case "WSTETH":
+            return Wormhole.chainAddress(toChain.chain, td.address);
+          default:
+            throw new Error("Unknown symbol: " + redeemTokenDetails.symbol);
+        }
+      });
+
+    return locallyRedeemable;
+  }
+
+  static isProtocolSupported<N extends Network>(
+    fromChain: ChainContext<N>,
+    toChain: ChainContext<N>,
+  ): boolean {
+    return fromChain.supportsPorticoBridge() && toChain.supportsPorticoBridge();
   }
 
   async isAvailable(): Promise<boolean> {
@@ -128,7 +205,7 @@ export class PorticoRoute<N extends Network> extends AutomaticRoute<N, OP, R, Q>
 
       if (quote.destinationToken.amount < 0) {
         throw new Error(
-          "Amount too low for slippage and fee, would result in negative destination amount",
+          `Amount too low for slippage and fee, would result in negative destination amount (${quote.destinationToken.amount})`,
         );
       }
 
@@ -142,10 +219,12 @@ export class PorticoRoute<N extends Network> extends AutomaticRoute<N, OP, R, Q>
 
   async quote(params: VP): Promise<Q> {
     const swapAmounts = await this.quoteUniswap(params);
-    const fromPorticoBridge = await this.request.fromChain.getPorticoBridge();
-    const fee = await fromPorticoBridge.quoteRelay(
+
+    const pb = await this.request.toChain.getPorticoBridge();
+
+    const fee = await pb.quoteRelay(
       params.normalizedParams.canonicalDestinationToken.address,
-      params.normalizedParams.destinationToken,
+      params.normalizedParams.destinationToken.address,
     );
 
     const quote: PorticoBridge.Quote = {

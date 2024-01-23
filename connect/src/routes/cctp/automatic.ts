@@ -1,9 +1,15 @@
-import { Network, circle } from "@wormhole-foundation/sdk-base";
-import { CircleTransferDetails, Signer } from "@wormhole-foundation/sdk-definitions";
+import { Chain, Network, circle, contracts } from "@wormhole-foundation/sdk-base";
+import {
+  ChainContext,
+  CircleTransferDetails,
+  Signer,
+  TokenId,
+} from "@wormhole-foundation/sdk-definitions";
 import { CircleAttestationReceipt, CircleTransfer } from "../../protocols/cctpTransfer";
 import { TransferQuote, TransferState } from "../../types";
 import { AutomaticRoute } from "../route";
 import { Receipt, TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
+import { Wormhole } from "../../wormhole";
 
 export namespace AutomaticCCTPRoute {
   export type Options = {
@@ -34,28 +40,46 @@ type R = Receipt<CircleAttestationReceipt>;
 export class AutomaticCCTPRoute<N extends Network> extends AutomaticRoute<N, Op, R, Q> {
   NATIVE_GAS_DROPOFF_SUPPORTED = true;
 
+  static supportedNetworks(): Network[] {
+    return ["Mainnet", "Testnet"];
+  }
+  // get the list of chains this route supports
+  static supportedChains(network: Network): Chain[] {
+    if (contracts.circleContractChains.has(network)) {
+      return contracts.circleContractChains.get(network)!;
+    }
+    return [];
+  }
+
+  // get the list of source tokens that are possible to send
+  static async supportedSourceTokens(fromChain: ChainContext<Network>): Promise<TokenId[]> {
+    const { network, chain } = fromChain;
+    if (!circle.usdcContract.has(network, chain)) return [];
+    return [Wormhole.chainAddress(chain, circle.usdcContract.get(network, chain)!)];
+  }
+
+  // get the liist of destination tokens that may be recieved on the destination chain
+  static async supportedDestinationTokens<N extends Network>(
+    sourceToken: TokenId,
+    fromChain: ChainContext<N>,
+    toChain: ChainContext<N>,
+  ): Promise<(TokenId | "native")[]> {
+    const { network, chain } = toChain;
+    if (!circle.usdcContract.has(network, chain)) return [];
+    return ["native", Wormhole.chainAddress(chain, circle.usdcContract.get(network, chain)!)];
+  }
+
+  static isProtocolSupported<N extends Network>(
+    fromChain: ChainContext<N>,
+    toChain: ChainContext<N>,
+  ): boolean {
+    return fromChain.supportsAutomaticCircleBridge() && toChain.supportsAutomaticCircleBridge();
+  }
+
   getDefaultOptions(): Op {
     return {
       nativeGas: 0.0,
     };
-  }
-
-  async isSupported(): Promise<boolean> {
-    if (
-      !this.request.toChain.supportsCircleBridge() ||
-      !this.request.fromChain.supportsCircleBridge()
-    ) {
-      return false;
-    }
-
-    if (!circle.usdcContract.get(this.wh.network, this.request.from.chain)) {
-      return false;
-    }
-    if (!circle.usdcContract.get(this.wh.network, this.request.to.chain)) {
-      return false;
-    }
-
-    return true;
   }
 
   async isAvailable(): Promise<boolean> {

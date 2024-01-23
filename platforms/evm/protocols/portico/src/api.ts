@@ -1,10 +1,12 @@
 import {
+  Chain,
   ChainAddress,
   Network,
   PorticoBridge,
   TokenAddress,
   TokenId,
   canonicalAddress,
+  contracts,
   encoding,
   nativeChainIds,
   resolveWrappedToken,
@@ -14,7 +16,7 @@ import {
 import { EvmChains } from '@wormhole-foundation/connect-sdk-evm';
 import axios from 'axios';
 import { porticoAbi } from './abis';
-import { FEE_TIER, getContracts } from './consts';
+import { FEE_TIER } from './consts';
 
 export const RELAYER_FEE_API_URL =
   'https://gfx.relayers.xlabs.xyz/api/v1/swap/quote';
@@ -92,8 +94,15 @@ export class PorticoApi {
       const startTokenAddress = canonicalAddress(startToken);
       const finalTokenAddress = canonicalAddress(finalToken);
 
-      const sourcePorticoAddress = getContracts(receiver.chain).portico;
-      const destinationPorticoAddress = getContracts(receiver.chain).portico;
+      const sourcePorticoAddress = contracts.portico.get(
+        network,
+        chain,
+      )!.portico;
+
+      const destinationPorticoAddress = contracts.portico.get(
+        network,
+        receiver.chain,
+      )!.portico;
 
       const startingChainId = nativeChainIds.networkChainToNativeChainId.get(
         network,
@@ -273,16 +282,25 @@ export class PorticoApi {
     }
   };
 
-  static async quoteRelayer(from: TokenId, to: TokenId): Promise<bigint> {
-    const targetChain = toChainId(to.chain);
+  static async quoteRelayer<C extends Chain>(
+    chain: Chain,
+    from: TokenAddress<C>,
+    to: TokenAddress<C>,
+  ): Promise<bigint> {
+    if (from === 'native' || to === 'native')
+      throw new Error('how did you get here tho?');
+
     const sourceToken = encoding.hex.encode(
-      from.address.toUniversalAddress().toUint8Array(),
+      from.toUniversalAddress().toUint8Array(),
       false,
     );
+
     const targetToken = encoding.hex.encode(
-      to.address.toUniversalAddress().toUint8Array(),
+      to.toUniversalAddress().toUint8Array(),
       false,
     );
+
+    const targetChain = toChainId(chain);
 
     const request = { targetChain, sourceToken, targetToken };
     try {

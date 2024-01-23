@@ -1,5 +1,5 @@
 import { Network } from "@wormhole-foundation/sdk-base";
-import { ChainContext, TokenId } from "@wormhole-foundation/sdk-definitions";
+import { ChainContext, TokenId, resolveWrappedToken } from "@wormhole-foundation/sdk-definitions";
 import { Wormhole } from "../wormhole";
 import { RouteTransferRequest } from "./request";
 import { UnknownRoute, UnknownRouteConstructor, isAutomatic } from "./route";
@@ -29,13 +29,14 @@ export class RouteResolver<N extends Network> {
   }
 
   async supportedDestinationTokens(
-    inputToken: TokenId,
+    inputToken: TokenId | "native",
     fromChain: ChainContext<Network>,
     toChain: ChainContext<Network>,
   ): Promise<(TokenId | "native")[]> {
+    const [, inputTokenId] = resolveWrappedToken(fromChain.network, fromChain.chain, inputToken);
     const tokens = await Promise.all(
       this.routeConstructors.map(async (rc) =>
-        rc.supportedDestinationTokens(inputToken, fromChain, toChain),
+        rc.supportedDestinationTokens(inputTokenId, fromChain, toChain),
       ),
     );
     return tokens.flat();
