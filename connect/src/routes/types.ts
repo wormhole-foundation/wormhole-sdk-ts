@@ -15,7 +15,7 @@ export type Receipt<AT extends AttestationReceipt = AttestationReceipt> = Transf
 
 // Quote containing expected details
 // of the transfer
-export interface Quote extends TransferQuote {}
+export type Quote = TransferQuote<bigint | string | number>;
 
 // Transfer params after being validated.
 // Will contain populated options as well

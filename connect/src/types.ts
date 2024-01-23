@@ -102,28 +102,28 @@ export type TransferReceipt<AT, SC extends Chain = Chain, DC extends Chain = Cha
 
 // Quote with optional relayer fees if the transfer
 // is requested to be automatic
-export interface TransferQuote {
+export interface TransferQuote<NUM = bigint> {
   // How much of what token will be deducted from sender
   // Note: This will include fees charged for a full
   // estimate of the amount taken from the sender
   sourceToken: {
     token: TokenId;
-    amount: bigint;
+    amount: NUM;
   };
   // How much of what token will be minted to the receiver
   // Note: This will _not_ include native gas if requested
   destinationToken: {
     token: TokenId;
-    amount: bigint;
+    amount: NUM;
   };
   // If the transfer being quoted is automatic
   // a relayer fee may apply
   relayFee?: {
     token: TokenId;
-    amount: bigint;
+    amount: NUM;
   };
   // If the transfer being quoted asked for native gas dropoff
   // this will contain the amount of native gas that is to be minted
   // on the destination chain given the current swap rates
-  destinationNativeGas?: bigint;
+  destinationNativeGas?: NUM;
 }

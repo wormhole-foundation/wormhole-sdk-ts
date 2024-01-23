@@ -61,6 +61,7 @@ export type RouteConstructor = {
     fromChain: ChainContext<N>,
     toChain: ChainContext<N>,
   ): Promise<(TokenId | "native")[]>;
+
   isProtocolSupported<N extends Network>(
     fromChain: ChainContext<N>,
     toChain: ChainContext<N>,
