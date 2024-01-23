@@ -9,7 +9,7 @@ import {
 } from "@wormhole-foundation/sdk-definitions";
 import { TokenTransfer } from "../../protocols/tokenTransfer";
 import { AttestationReceipt, TransferQuote, TransferState } from "../../types";
-import { AutomaticRoute } from "../route";
+import { AutomaticRoute, StaticRouteMethods } from "../route";
 import { Receipt, TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
 
 export namespace AutomaticTokenBridgeRoute {
@@ -38,7 +38,10 @@ type Vr = ValidationResult<Op>;
 type Q = TransferQuote;
 type R = Receipt<AttestationReceipt<"AutomaticTokenBridge">>;
 
-export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute<N, Op, R, Q> {
+export class AutomaticTokenBridgeRoute<N extends Network>
+  extends AutomaticRoute<N, Op, R, Q>
+  implements StaticRouteMethods<typeof AutomaticTokenBridgeRoute>
+{
   NATIVE_GAS_DROPOFF_SUPPORTED = true;
 
   static supportedNetworks(): Network[] {

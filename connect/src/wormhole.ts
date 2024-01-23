@@ -51,7 +51,7 @@ export class Wormhole<N extends Network> {
   protected readonly _network: N;
   protected _platforms: PlatformMap<N>;
   protected _chains: ChainMap<N>;
-  protected _routes: RouteConstructor<N>[] = [
+  protected _routes: RouteConstructor[] = [
     TokenBridgeRoute,
     AutomaticTokenBridgeRoute,
     CCTPRoute,
@@ -61,7 +61,7 @@ export class Wormhole<N extends Network> {
 
   readonly config: WormholeConfig;
 
-  constructor(network: N, platforms: PlatformUtils<N, any>[], config?: ConfigOverrides) {
+  constructor(network: N, platforms: PlatformUtils<Platform>[], config?: ConfigOverrides) {
     this._network = network;
     this.config = applyOverrides(network, config);
 
@@ -169,7 +169,7 @@ export class Wormhole<N extends Network> {
     });
   }
 
-  resolver(routes?: RouteConstructor<N>[]) {
+  resolver(routes?: RouteConstructor[]) {
     return new RouteResolver(this, routes ?? this._routes);
   }
 

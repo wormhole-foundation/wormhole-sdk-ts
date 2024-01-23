@@ -22,7 +22,7 @@ import {
   signSendWait,
   tokens,
 } from "../..";
-import { AutomaticRoute } from "../route";
+import { AutomaticRoute, StaticRouteMethods } from "../route";
 import { Receipt, TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
 
 export const SLIPPAGE_BPS = 15n; // 0.15%
@@ -59,7 +59,10 @@ type VP = PorticoRoute.ValidatedParams;
 type VR = ValidationResult<OP>;
 type TP = TransferParams<OP>;
 
-export class AutomaticPorticoRoute<N extends Network> extends AutomaticRoute<N, OP, R, Q> {
+export class AutomaticPorticoRoute<N extends Network>
+  extends AutomaticRoute<N, OP, R, Q>
+  implements StaticRouteMethods<typeof AutomaticPorticoRoute>
+{
   NATIVE_GAS_DROPOFF_SUPPORTED = false;
 
   static readonly _supportedTokens = ["WETH", "WSTETH"];

@@ -11,27 +11,6 @@ import {
   ValidationResult,
 } from "./types";
 
-export type RouteConstructor<N extends Network> = {
-  new (wh: Wormhole<N>, request: RouteTransferRequest<N>): Route<N>;
-
-  // get the list of networks this route supports
-  supportedNetworks(): Network[];
-  // get the list of chains this route supports
-  supportedChains(network: Network): Chain[];
-  // get the list of source tokens that are possible to send
-  supportedSourceTokens(fromChain: ChainContext<Network>): Promise<(TokenId | "native")[]>;
-  // get the list of destination tokens that may be recieved on the destination chain
-  supportedDestinationTokens<N extends Network>(
-    token: TokenId,
-    fromChain: ChainContext<N>,
-    toChain: ChainContext<N>,
-  ): Promise<(TokenId | "native")[]>;
-  isProtocolSupported<N extends Network>(
-    fromChain: ChainContext<N>,
-    toChain: ChainContext<N>,
-  ): boolean;
-};
-
 export abstract class Route<
   N extends Network,
   OP extends Options = Options,
@@ -67,6 +46,29 @@ export abstract class Route<
   // Get the default options for this route, useful to prepopulate a form
   public abstract getDefaultOptions(): OP;
 }
+
+export type RouteConstructor = {
+  new <N extends Network>(wh: Wormhole<N>, request: RouteTransferRequest<N>): Route<N>;
+  // get the list of networks this route supports
+  supportedNetworks(): Network[];
+  // get the list of chains this route supports
+  supportedChains(network: Network): Chain[];
+  // get the list of source tokens that are possible to send
+  supportedSourceTokens(fromChain: ChainContext<Network>): Promise<(TokenId | "native")[]>;
+  // get the list of destination tokens that may be recieved on the destination chain
+  supportedDestinationTokens<N extends Network>(
+    token: TokenId,
+    fromChain: ChainContext<N>,
+    toChain: ChainContext<N>,
+  ): Promise<(TokenId | "native")[]>;
+  isProtocolSupported<N extends Network>(
+    fromChain: ChainContext<N>,
+    toChain: ChainContext<N>,
+  ): boolean;
+};
+
+// Use this to ensure the static methods defined in the RouteConstructor
+export type StaticRouteMethods<I extends RouteConstructor> = InstanceType<I>;
 
 export abstract class AutomaticRoute<
   N extends Network,

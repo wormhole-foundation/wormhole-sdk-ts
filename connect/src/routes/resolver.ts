@@ -8,10 +8,10 @@ export type RouteSortOptions = "cost" | "speed";
 
 export class RouteResolver<N extends Network> {
   wh: Wormhole<N>;
-  routeConstructors: RouteConstructor<N>[];
+  routeConstructors: RouteConstructor[];
   inputTokenList?: (TokenId | "native")[];
 
-  constructor(wh: Wormhole<N>, routeConstructors: RouteConstructor<N>[]) {
+  constructor(wh: Wormhole<N>, routeConstructors: RouteConstructor[]) {
     this.wh = wh;
     this.routeConstructors = routeConstructors;
   }
