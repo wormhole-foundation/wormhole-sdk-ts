@@ -102,7 +102,7 @@ export class CCTPRoute<N extends Network> extends ManualRoute<N, Op, R, Q> {
       to: transfer.to.chain,
       state: TransferState.SourceFinalized,
       originTxs: txids,
-      attestation: { id: msg.id },
+      attestation: { id: msg.id, attestation: { message: msg.message } },
     };
   }
 

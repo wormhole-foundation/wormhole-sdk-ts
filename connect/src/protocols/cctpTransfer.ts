@@ -364,7 +364,12 @@ export class CircleTransfer<N extends Network = Network>
       throw new Error("Invalid state transition in `fetchAttestation`");
 
     const ids: AttestationId[] = this.transfer.automatic
-      ? await this._fetchWormholeAttestation(timeout)
+      ? (
+          await Promise.all([
+            this._fetchWormholeAttestation(timeout),
+            this._fetchCircleAttestation(timeout),
+          ])
+        ).flat()
       : await this._fetchCircleAttestation(timeout);
 
     this._state = TransferState.Attested;
@@ -475,15 +480,10 @@ export class CircleTransfer<N extends Network = Network>
     toChain: ChainContext<N, Platform, Chain>,
     attestation: Attestation<CircleTransferProtocol>,
   ) {
-    // TODO: inferring from fields what type this is, we should
-    // have typeguards or require another argument to better deterimine
-    if ("message" in attestation) {
-      const cb = await toChain.getCircleBridge();
-      return cb.isTransferCompleted(attestation.message);
-    } else {
-      const acb = await toChain.getAutomaticCircleBridge();
-      return acb.isTransferCompleted(attestation);
-    }
+    if (!CircleBridge.isCircleAttestation(attestation))
+      throw new Error("Must check for completion with circle message");
+    const cb = await toChain.getCircleBridge();
+    return cb.isTransferCompleted(attestation.message);
   }
 
   static async getTransferVaa<N extends Network>(
@@ -532,7 +532,7 @@ export class CircleTransfer<N extends Network = Network>
 
     const att = xfer.attestations?.filter((a) => isWormholeMessageId(a.id)) ?? [];
     const ctt = xfer.attestations?.filter((a) => isCircleMessageId(a.id)) ?? [];
-    const attestation = att.length > 0 ? att[0]! : ctt.length > 0 ? ctt[0]! : undefined;
+    const attestation = ctt.length > 0 ? ctt[0]! : att.length > 0 ? att[0]! : undefined;
     if (attestation) {
       if (attestation.id) {
         receipt = {
@@ -588,10 +588,10 @@ export class CircleTransfer<N extends Network = Network>
         throw "Invalid state transition: no originating transactions";
 
       const initTx = receipt.originTxs[receipt.originTxs.length - 1]!;
-      const xfermsg = await CircleTransfer.getTransferMessage(_fromChain, initTx.txid);
+      const msg = await CircleTransfer.getTransferMessage(_fromChain, initTx.txid);
       receipt = {
         ...receipt,
-        attestation: { id: xfermsg.id },
+        attestation: { id: msg.id, attestation: { message: msg.message } },
         state: TransferState.SourceFinalized,
       } satisfies SourceFinalizedTransferReceipt<CircleAttestationReceipt>;
       yield receipt;
@@ -631,10 +631,12 @@ export class CircleTransfer<N extends Network = Network>
         if (attestation) {
           receipt = {
             ...receipt,
-            attestation: { id: receipt.attestation.id, attestation: {
-              attestation,
-              message: message.message,
-            }
+            attestation: {
+              id: receipt.attestation.id,
+              attestation: {
+                attestation,
+                message: message.message,
+              },
             },
             state: TransferState.Attested,
           } satisfies AttestedTransferReceipt<CircleAttestationReceipt>;
@@ -669,6 +671,7 @@ export class CircleTransfer<N extends Network = Network>
 
     // Fall back to asking the destination chain if this VAA has been redeemed
     // assuming we have the full attestation
+
     if (isAttested(receipt)) {
       const isComplete = await CircleTransfer.isTransferComplete(
         _toChain,
