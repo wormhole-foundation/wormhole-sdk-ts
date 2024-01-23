@@ -22,6 +22,7 @@ export type TxHash = string;
 export type SequenceId = bigint;
 export type SignedTx = any;
 
+export type Token = TokenId | "native";
 export type TokenId<C extends Chain = Chain> = ChainAddress<C>;
 export function isTokenId<C extends Chain>(thing: any): thing is TokenId<C> {
   return (
