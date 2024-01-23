@@ -1,10 +1,10 @@
-import { Network } from "@wormhole-foundation/sdk-base";
+import { Chain, Network, contracts } from "@wormhole-foundation/sdk-base";
 import {
+  ChainContext,
   Signer,
+  TokenId,
   TokenTransferDetails,
   TransactionId,
-  isSameToken,
-  isTokenId,
 } from "@wormhole-foundation/sdk-definitions";
 import { TokenTransfer, TokenTransferVAA } from "../../protocols/tokenTransfer";
 import {
@@ -14,6 +14,7 @@ import {
   TransferState,
   isAttested,
 } from "../../types";
+import { Wormhole } from "../../wormhole";
 import { ManualRoute } from "../route";
 import { TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
 
@@ -41,39 +42,43 @@ type Q = TransferQuote;
 type R = TransferReceipt<AttestationReceipt<"TokenBridge">>;
 
 export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op, R, Q> {
-  getDefaultOptions(): Op {
-    return { payload: undefined };
+  static supportedNetworks(): Network[] {
+    return ["Mainnet", "Testnet"];
+  }
+  // get the list of chains this route supports
+  static supportedChains(network: Network): Chain[] {
+    return contracts.tokenBridgeChains(network);
   }
 
-  async isSupported() {
-    try {
-      // No transfers to same chain
-      if (this.request.fromChain.chain === this.request.toChain.chain) return false;
+  // get the list of source tokens that are possible to send
+  static async supportedSourceTokens(
+    fromChain: ChainContext<Network>,
+  ): Promise<(TokenId | "native")[]> {
+    // Default list for the chain
+    return Object.values(fromChain.config.tokenMap!).map((td) => {
+      if (td.address === "native") return "native";
+      return Wormhole.chainAddress(td.chain, td.address);
+    });
+  }
 
-      // No transfers to unsupported chains
-      if (!this.request.fromChain.supportsTokenBridge()) return false;
-      if (!this.request.toChain.supportsTokenBridge()) return false;
+  // get the liist of destination tokens that may be recieved on the destination chain
+  static async supportedDestinationTokens<N extends Network>(
+    sourceToken: TokenId,
+    fromChain: ChainContext<N>,
+    toChain: ChainContext<N>,
+  ): Promise<TokenId[]> {
+    return [await TokenTransfer.lookupDestinationToken(fromChain, toChain, sourceToken)];
+  }
 
-      // Ensure the destination token is the equivalent wrapped token
-      let { source, destination } = this.request;
-      if (destination && isTokenId(destination.id)) {
-        let equivalentToken = await TokenTransfer.lookupDestinationToken(
-          this.request.fromChain,
-          this.request.toChain,
-          source.id,
-        );
+  static isProtocolSupported<N extends Network>(
+    fromChain: ChainContext<N>,
+    toChain: ChainContext<N>,
+  ): boolean {
+    return fromChain.supportsTokenBridge() && toChain.supportsTokenBridge();
+  }
 
-        if (!isSameToken(equivalentToken, destination.id)) {
-          return false;
-        }
-      } else if (destination && destination.id === "native") {
-        return false;
-      }
-    } catch (e) {
-      return false;
-    }
-
-    return true;
+  getDefaultOptions(): Op {
+    return { payload: undefined };
   }
 
   async validate(params: Tp): Promise<Vr> {

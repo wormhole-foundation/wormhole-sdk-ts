@@ -1,5 +1,5 @@
-import { Network } from "@wormhole-foundation/sdk-base";
-import { Signer, TransactionId } from "@wormhole-foundation/sdk-definitions";
+import { Chain, Network } from "@wormhole-foundation/sdk-base";
+import { ChainContext, Signer, TokenId, TransactionId } from "@wormhole-foundation/sdk-definitions";
 import { Wormhole } from "../wormhole";
 import { RouteTransferRequest } from "./request";
 import {
@@ -14,6 +14,23 @@ import {
 export type UnknownRouteConstructor<N extends Network> = RouteConstructor<N>;
 export type RouteConstructor<N extends Network> = {
   new (wh: Wormhole<N>, request: RouteTransferRequest<N>): UnknownRoute<N>;
+
+  // get the list of networks this route supports
+  supportedNetworks(): Network[];
+  // get the list of chains this route supports
+  supportedChains(network: Network): Chain[];
+  // get the list of source tokens that are possible to send
+  supportedSourceTokens(fromChain: ChainContext<Network>): Promise<(TokenId | "native")[]>;
+  // get the liist of destination tokens that may be recieved on the destination chain
+  supportedDestinationTokens<N extends Network>(
+    token: TokenId,
+    fromChain: ChainContext<N>,
+    toChain: ChainContext<N>,
+  ): Promise<(TokenId | "native")[]>;
+  isProtocolSupported<N extends Network>(
+    fromChain: ChainContext<N>,
+    toChain: ChainContext<N>,
+  ): boolean;
 };
 
 export type UnknownRoute<
@@ -41,11 +58,6 @@ export abstract class Route<
     this.wh = wh;
     this.request = request;
   }
-
-  // Check if this route is supported for the given transfer request
-  // e.g. check if the protocols on the specific chains are supported
-  // check if the tokens are supported, etc
-  public abstract isSupported(): Promise<boolean>;
 
   // Validate the transfer request after applying any options
   // return a quote and suggested options

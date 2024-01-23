@@ -25,7 +25,7 @@ import {
 import { Provider, TransactionRequest, ethers } from 'ethers';
 import { porticoAbi, uniswapQuoterV2Abi } from './abis';
 import { PorticoApi } from './api';
-import { FEE_TIER, getContracts } from './consts';
+import { FEE_TIER } from './consts';
 
 import { EvmWormholeCore } from '@wormhole-foundation/connect-sdk-evm-core';
 
@@ -50,9 +50,14 @@ export class EvmPorticoBridge<
     readonly contracts: Contracts,
     readonly core: EvmWormholeCore<N, C>,
   ) {
-    const { portico, uniswapQuoterV2 } = getContracts(chain);
-    this.porticoAddress = portico;
-    this.uniswapAddress = uniswapQuoterV2;
+    if (!contracts.portico)
+      throw new Error('Unsupported chain, no contract addresses for: ' + chain);
+
+    const { portico: porticoAddress, uniswapQuoterV2: uniswapAddress } =
+      contracts.portico;
+
+    this.porticoAddress = porticoAddress;
+    this.uniswapAddress = uniswapAddress;
 
     this.chainId = nativeChainIds.networkChainToNativeChainId.get(
       network,
@@ -190,9 +195,8 @@ export class EvmPorticoBridge<
     return result[0];
   }
 
-  async quoteRelay(token: TokenAddress<C>, destination: TokenId) {
-    const [, startToken] = resolveWrappedToken(this.network, this.chain, token);
-    return await PorticoApi.quoteRelayer(startToken, destination);
+  async quoteRelay(startToken: TokenAddress<C>, endToken: TokenAddress<C>) {
+    return await PorticoApi.quoteRelayer(this.chain, startToken, endToken);
   }
 
   private async *approve(

@@ -42,15 +42,12 @@ export const filters = {
     );
     return foundToken ? foundToken[1] : undefined;
   },
-  bySymbol: (tokenMap: ChainTokens, symbol: TokenSymbol) => {
-    const foundTokens = Object.entries(tokenMap)
-      .filter(([_, token]) => token.symbol === symbol)
-      .map((t) => t[1]);
-
-    return foundTokens && foundTokens.length > 0 ? foundTokens : undefined;
-  },
   native: (tokenMap: ChainTokens) => {
     return filters.byAddress(tokenMap, "native");
+  },
+  bySymbol: (tokenMap: ChainTokens, symbol: TokenSymbol) => {
+    const foundTokens = Object.values(tokenMap).filter((token) => token.symbol === symbol);
+    return foundTokens && foundTokens.length > 0 ? foundTokens : undefined;
   },
   byKey: (tokenMap: ChainTokens, key: TokenKey) => {
     const foundToken = Object.entries(tokenMap).find(([_key]) => key === _key);
