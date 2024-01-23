@@ -9,61 +9,49 @@ const circleAPIs = [
 export const circleAPI = constMap(circleAPIs);
 
 // prettier-ignore
-const usdcContracts = [
-  [
-    "Mainnet",
-    [
-      ["Ethereum",  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"],
-      ["Avalanche", "0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e"],
-      ["Arbitrum",  "0xaf88d065e77c8cC2239327C5EDb3A432268e5831"],
-      ["Optimism",  "0x179522635726710dd7d2035a81d856de4aa7836c"],
-      ["Base",      "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"],
-      ["Solana",    "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"],
-    ],
-  ],
-  [
-    "Testnet",
-    [
-      ["Avalanche",       "0x5425890298aed601595a70AB815c96711a31Bc65"],
-      ["Arbitrum",        "0xfd064A18f3BF249cf1f87FC203E90D8f650f2d63"],
-      ["Ethereum",        "0x07865c6e87b9f70255377e024ace6630c1eaa37f"],
-      ["Optimism",        "0xe05606174bac4A6364B31bd0eCA4bf4dD368f8C6"],
-      ["Base",            "0xf175520c52418dfe19c8098071a252da48cd1c19"],
-      ["Sepolia",         "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"],
-      ["ArbitrumSepolia", "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d"],
-      ["BaseSepolia",     "0x036CbD53842c5426634e7929541eC2318f3dCF7e"],
-      ["OptimismSepolia", "0x5fd84259d66Cd46123540766Be93DFE6D43130D7"],
-      ["Solana",          "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU"],
-    ],
-  ],
+const usdcContracts = [[
+  "Mainnet", [
+    ["Ethereum",  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"],
+    ["Avalanche", "0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e"],
+    ["Optimism",  "0x179522635726710dd7d2035a81d856de4aa7836c"],
+    ["Arbitrum",  "0xaf88d065e77c8cC2239327C5EDb3A432268e5831"],
+    ["Solana",    "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"],
+    ["Base",      "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"],
+    ["Polygon",   "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359"],
+  ]], [
+  "Testnet", [
+    ["Sepolia",         "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"],
+    ["Avalanche",       "0x5425890298aed601595a70AB815c96711a31Bc65"],
+    ["OptimismSepolia", "0x5fd84259d66Cd46123540766Be93DFE6D43130D7"],
+    ["ArbitrumSepolia", "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d"],
+    ["Solana",          "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU"],
+    ["BaseSepolia",     "0x036CbD53842c5426634e7929541eC2318f3dCF7e"],
+    ["Polygon",         "0x9999f7fea5938fd3b1e26a12c3f2fb024e194f97"],
+  ]],
 ] as const satisfies MapLevel<Network, MapLevel<Chain, string>>;
 export const usdcContract = constMap(usdcContracts);
 
 // prettier-ignore
 // https://developers.circle.com/stablecoin/docs/cctp-technical-reference#domain-list
-const circleDomains = [
-  [
-    "Mainnet",
-    [
-      ["Ethereum",  0],
-      ["Avalanche", 1],
-      ["Optimism",  2],
-      ["Arbitrum",  3],
-      ["Solana",    5],
-      ["Base",      6],
-    ],
-  ],
-  [
-    "Testnet", 
-    [
-      ["Sepolia",         0],
-      ["Avalanche",       1],
-      ["OptimismSepolia", 2],
-      ["ArbitrumSepolia", 3],
-      ["Solana",          5],
-      ["BaseSepolia",     6],
-    ],
-  ],
+const circleDomains = [[
+  "Mainnet", [
+    ["Ethereum",  0],
+    ["Avalanche", 1],
+    ["Optimism",  2],
+    ["Arbitrum",  3],
+    ["Solana",    5],
+    ["Base",      6],
+    ["Polygon",   7],
+  ]], [
+  "Testnet", [
+    ["Sepolia",         0],
+    ["Avalanche",       1],
+    ["OptimismSepolia", 2],
+    ["ArbitrumSepolia", 3],
+    ["Solana",          5],
+    ["BaseSepolia",     6],
+    ["Polygon",         7],
+  ]],
 ] as const satisfies MapLevel<Network, MapLevel<Chain, number>>;
 
 export const circleChainId = constMap(circleDomains, [[0, 1], 2]);

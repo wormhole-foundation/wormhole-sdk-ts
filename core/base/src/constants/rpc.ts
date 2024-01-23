@@ -54,15 +54,9 @@ const rpcConfig = [[
     ["Algorand",        "https://testnet-api.algonode.cloud"],
     ["Terra",           "https://bombay.stakesystems.io"],
     ["Terra2",          "https://terra-testnet-rpc.polkachu.com"],
-<<<<<<< HEAD
-    ["ArbitrumSepolia", "https://sepolia.base.org"],
-    ["OptimismSepolia", "https://sepolia.optimism.io"],
-    ["BaseSepolia",     "https://arbitrum-sepolia.blockpi.network/v1/rpc/public"],
-=======
     ["ArbitrumSepolia", "https://sepolia-rollup.arbitrum.io/rpc"],
     ["OptimismSepolia", "https://sepolia.optimism.io"],
     ["BaseSepolia",     "https://sepolia.base.org"],
->>>>>>> 72a24b67 (add sepolia testnets for cctp)
   ]], [
   "Devnet", [
     ["Ethereum",  "http://eth-devnet:8545"],
