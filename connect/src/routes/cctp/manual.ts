@@ -10,7 +10,7 @@ import {
 import { signSendWait } from "../../common";
 import { CircleAttestationReceipt, CircleTransfer } from "../../protocols/cctpTransfer";
 import { TransferQuote, TransferReceipt, TransferState, isAttested } from "../../types";
-import { ManualRoute } from "../route";
+import { ManualRoute, StaticRouteMethods } from "../route";
 import { TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
 import { Wormhole } from "../../wormhole";
 
@@ -37,7 +37,10 @@ type Vr = ValidationResult<Op>;
 type Q = TransferQuote;
 type R = TransferReceipt<CircleAttestationReceipt>;
 
-export class CCTPRoute<N extends Network> extends ManualRoute<N, Op, R, Q> {
+export class CCTPRoute<N extends Network>
+  extends ManualRoute<N, Op, R, Q>
+  implements StaticRouteMethods<typeof CCTPRoute>
+{
   static supportedNetworks(): Network[] {
     return ["Mainnet", "Testnet"];
   }

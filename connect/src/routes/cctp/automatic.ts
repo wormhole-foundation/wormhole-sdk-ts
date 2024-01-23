@@ -7,7 +7,7 @@ import {
 } from "@wormhole-foundation/sdk-definitions";
 import { CircleAttestationReceipt, CircleTransfer } from "../../protocols/cctpTransfer";
 import { TransferQuote, TransferState } from "../../types";
-import { AutomaticRoute } from "../route";
+import { AutomaticRoute, StaticRouteMethods } from "../route";
 import { Receipt, TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
 import { Wormhole } from "../../wormhole";
 
@@ -37,7 +37,10 @@ type Vr = ValidationResult<Op>;
 type Q = TransferQuote;
 type R = Receipt<CircleAttestationReceipt>;
 
-export class AutomaticCCTPRoute<N extends Network> extends AutomaticRoute<N, Op, R, Q> {
+export class AutomaticCCTPRoute<N extends Network>
+  extends AutomaticRoute<N, Op, R, Q>
+  implements StaticRouteMethods<typeof AutomaticCCTPRoute>
+{
   NATIVE_GAS_DROPOFF_SUPPORTED = true;
 
   static supportedNetworks(): Network[] {

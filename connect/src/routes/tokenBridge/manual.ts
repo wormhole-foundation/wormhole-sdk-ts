@@ -15,7 +15,7 @@ import {
   isAttested,
 } from "../../types";
 import { Wormhole } from "../../wormhole";
-import { ManualRoute } from "../route";
+import { ManualRoute, StaticRouteMethods } from "../route";
 import { TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
 
 export namespace TokenBridgeRoute {
@@ -41,7 +41,10 @@ type Vr = ValidationResult<Op>;
 type Q = TransferQuote;
 type R = TransferReceipt<AttestationReceipt<"TokenBridge">>;
 
-export class TokenBridgeRoute<N extends Network> extends ManualRoute<N, Op, R, Q> {
+export class TokenBridgeRoute<N extends Network>
+  extends ManualRoute<N, Op, R, Q>
+  implements StaticRouteMethods<typeof TokenBridgeRoute>
+{
   static supportedNetworks(): Network[] {
     return ["Mainnet", "Testnet"];
   }

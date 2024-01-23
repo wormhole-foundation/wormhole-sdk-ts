@@ -27,7 +27,8 @@ import { getCircleAttestationWithRetry } from "./circle-api";
 import { ConfigOverrides, DEFAULT_TASK_TIMEOUT, WormholeConfig, applyOverrides } from "./config";
 import { CircleTransfer } from "./protocols/cctpTransfer";
 import { TokenTransfer } from "./protocols/tokenTransfer";
-import { AutomaticPorticoRoute, UnknownRouteConstructor } from "./routes";
+import { AutomaticPorticoRoute, RouteConstructor } from "./routes";
+import { AutomaticCCTPRoute, CCTPRoute } from "./routes/cctp";
 import { RouteResolver } from "./routes/resolver";
 import { AutomaticTokenBridgeRoute, TokenBridgeRoute } from "./routes/tokenBridge";
 import { retry } from "./tasks";
@@ -39,7 +40,6 @@ import {
   getVaaBytesWithRetry,
   getVaaWithRetry,
 } from "./whscan-api";
-import { AutomaticCCTPRoute, CCTPRoute } from "./routes/cctp";
 
 type PlatformMap<N extends Network, P extends Platform = Platform> = Map<P, PlatformContext<N, P>>;
 type ChainMap<N extends Network, C extends Chain = Chain> = Map<
@@ -51,7 +51,7 @@ export class Wormhole<N extends Network> {
   protected readonly _network: N;
   protected _platforms: PlatformMap<N>;
   protected _chains: ChainMap<N>;
-  protected _routes: UnknownRouteConstructor<N>[] = [
+  protected _routes: RouteConstructor[] = [
     TokenBridgeRoute,
     AutomaticTokenBridgeRoute,
     CCTPRoute,
@@ -61,7 +61,7 @@ export class Wormhole<N extends Network> {
 
   readonly config: WormholeConfig;
 
-  constructor(network: N, platforms: PlatformUtils<N, any>[], config?: ConfigOverrides) {
+  constructor(network: N, platforms: PlatformUtils<Platform>[], config?: ConfigOverrides) {
     this._network = network;
     this.config = applyOverrides(network, config);
 
@@ -169,7 +169,7 @@ export class Wormhole<N extends Network> {
     });
   }
 
-  resolver(routes?: UnknownRouteConstructor<N>[]) {
+  resolver(routes?: RouteConstructor[]) {
     return new RouteResolver(this, routes ?? this._routes);
   }
 

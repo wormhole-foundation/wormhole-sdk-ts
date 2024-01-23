@@ -15,7 +15,7 @@ import { MockRpc } from "./rpc";
 export function mockPlatformFactory<N extends Network, P extends Platform>(
   platform: P,
   config: ChainsConfig<N, P>,
-): PlatformUtils<N, P> {
+): PlatformUtils<P> {
   class ConcreteMockPlatform extends MockPlatform<N, P> {
     static _platform: P = platform;
     constructor(network: N, _config?: ChainsConfig<N, P>) {
