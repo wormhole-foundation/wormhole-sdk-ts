@@ -59,7 +59,7 @@ export class AutomaticCCTPRoute<N extends Network> extends AutomaticRoute<N, Op,
   }
 
   async isAvailable(): Promise<boolean> {
-    return false;
+    return true;
   }
 
   async validate(params: Tp): Promise<Vr> {
@@ -143,19 +143,17 @@ export class AutomaticCCTPRoute<N extends Network> extends AutomaticRoute<N, Op,
     let transfer = this.toTransferDetails(params);
     let txids = await CircleTransfer.transfer<N>(this.request.fromChain, transfer, signer);
 
-    // const msg = await CircleTransfer.getTransferMessage(
-    //   this.request.fromChain,
-    //   txids[txids.length - 1]!.txid,
-    // );
-
-    const [msgid] = await this.request.fromChain.parseTransaction(txids[txids.length - 1]!.txid);
+    const msg = await CircleTransfer.getTransferMessage(
+      this.request.fromChain,
+      txids[txids.length - 1]!.txid,
+    );
 
     return {
       from: transfer.from.chain,
       to: transfer.to.chain,
       state: TransferState.SourceFinalized,
       originTxs: txids,
-      attestation: { id: msgid! },
+      attestation: { id: msg.id, attestation: { message: msg.message } },
     };
   }
 
