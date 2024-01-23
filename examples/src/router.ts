@@ -19,8 +19,8 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   const wh = new Wormhole("Mainnet", [EvmPlatform, SolanaPlatform]);
 
   // get signers from local config
-  const sendChain = wh.getChain("Polygon");
-  const destChain = wh.getChain("Avalanche");
+  const sendChain = wh.getChain("Ethereum");
+  const destChain = wh.getChain("Polygon");
   const sender = await getStuff(sendChain);
   const receiver = await getStuff(destChain);
 

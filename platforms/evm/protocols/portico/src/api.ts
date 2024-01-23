@@ -60,7 +60,6 @@ export interface RelayerQuoteResponse {
 
 export class PorticoApi {
   // Post the order to the portico API
-
   static async createOrder<N extends Network, C extends EvmChains>(
     network: N,
     chain: C,
@@ -118,18 +117,13 @@ export class PorticoApi {
       const orderRequest: CreateOrderRequest = {
         startingChainId: Number(startingChainId),
         startingToken: startTokenAddress.toLowerCase(),
-
         destinationChainId: Number(destinationChainId),
         destinationToken: finalTokenAddress.toLowerCase(),
-
         destinationAddress: receiverAddress,
-
         shouldWrapNative: isStartTokenNative,
         shouldUnwrapNative: isFinalTokenNative,
-
         porticoAddress: sourcePorticoAddress,
         destinationPorticoAddress: destinationPorticoAddress,
-
         startingTokenAmount: amount.toString(),
         minAmountStart: minAmountStart.toString(),
         minAmountEnd: minAmountFinish.toString(),
@@ -185,13 +179,10 @@ export class PorticoApi {
       throw new Error('flag set length mismatch');
     }
 
-    const { recipientChain, feeTierStart, feeTierFinish, bitset } =
+    const { recipientChain, feeTierStart, feeTierFinish, flags } =
       PorticoBridge.deserializeFlagSet(flagSetBuffer);
 
-    const [shouldWrapNative, shouldUnwrapNative] = [
-      bitset & (1 << 0),
-      bitset & (1 << 1),
-    ];
+    const { shouldWrapNative, shouldUnwrapNative } = flags;
 
     const [_, expectedChain] =
       nativeChainIds.platformNativeChainIdToNetworkChain(
