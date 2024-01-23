@@ -62,6 +62,10 @@ export namespace PorticoBridge {
   export const deserializeFlagSet = (data: Uint8Array): FlagSet => {
     return deserializeLayout(porticoFlagSetLayout, data);
   };
+
+  export const serializeFlagSet = (flags: FlagSet): Uint8Array => {
+    return serializeLayout(porticoFlagSetLayout, flags);
+  };
 }
 
 export interface PorticoBridge<
@@ -92,4 +96,7 @@ export interface PorticoBridge<
   quoteSwap(input: TokenAddress<C>, output: TokenAddress<C>, amount: bigint): Promise<bigint>;
   // quote relay on destination with conversion
   quoteRelay(token: TokenAddress<C>, destination: TokenAddress<C>): Promise<bigint>;
+
+  //
+  getTransferrableToken(address: string): TokenId;
 }

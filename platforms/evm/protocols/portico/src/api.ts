@@ -60,7 +60,6 @@ export interface RelayerQuoteResponse {
 
 export class PorticoApi {
   // Post the order to the portico API
-
   static async createOrder<N extends Network, C extends EvmChains>(
     network: N,
     chain: C,
@@ -69,13 +68,10 @@ export class PorticoApi {
     amount: bigint,
     destToken: TokenId | 'native',
     quote: PorticoBridge.Quote,
+    nonce: number,
   ): Promise<CreateOrderResponse> {
     try {
       const { minAmountStart, minAmountFinish } = quote.swapAmounts;
-      if (minAmountStart === 0n) throw new Error('Invalid min swap amount');
-      if (minAmountFinish === 0n) throw new Error('Invalid min swap amount');
-
-      //const senderAddress = new EvmAddress(sender).toString();
 
       const receiverAddress = canonicalAddress(receiver);
 
@@ -118,25 +114,20 @@ export class PorticoApi {
       const orderRequest: CreateOrderRequest = {
         startingChainId: Number(startingChainId),
         startingToken: startTokenAddress.toLowerCase(),
-
         destinationChainId: Number(destinationChainId),
         destinationToken: finalTokenAddress.toLowerCase(),
-
         destinationAddress: receiverAddress,
-
-        shouldWrapNative: isStartTokenNative,
-        shouldUnwrapNative: isFinalTokenNative,
-
         porticoAddress: sourcePorticoAddress,
         destinationPorticoAddress: destinationPorticoAddress,
-
         startingTokenAmount: amount.toString(),
         minAmountStart: minAmountStart.toString(),
         minAmountEnd: minAmountFinish.toString(),
-        bridgeNonce: new Date().valueOf(),
+        bridgeNonce: nonce,
         relayerFee: quote.relayerFee.toString(),
         feeTierStart: FEE_TIER,
         feeTierEnd: FEE_TIER,
+        shouldWrapNative: isStartTokenNative,
+        shouldUnwrapNative: isFinalTokenNative,
       };
 
       const response = await axios.post<CreateOrderResponse>(
@@ -185,13 +176,10 @@ export class PorticoApi {
       throw new Error('flag set length mismatch');
     }
 
-    const { recipientChain, feeTierStart, feeTierFinish, bitset } =
+    const { recipientChain, feeTierStart, feeTierFinish, flags } =
       PorticoBridge.deserializeFlagSet(flagSetBuffer);
 
-    const [shouldWrapNative, shouldUnwrapNative] = [
-      bitset & (1 << 0),
-      bitset & (1 << 1),
-    ];
+    const { shouldWrapNative, shouldUnwrapNative } = flags;
 
     const [_, expectedChain] =
       nativeChainIds.platformNativeChainIdToNetworkChain(

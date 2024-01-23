@@ -1,4 +1,4 @@
-import { Layout } from "@wormhole-foundation/sdk-base";
+import { Layout, bitsetItem } from "@wormhole-foundation/sdk-base";
 import { amountItem, universalAddressItem } from "../layout-items";
 import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../vaa";
 
@@ -8,7 +8,7 @@ export const porticoFlagSetLayout = [
   { name: "feeTierStart", binary: "uint", endianness: "little", size: 3 },
   { name: "feeTierFinish", binary: "uint", endianness: "little", size: 3 },
   { name: "padding", binary: "bytes", size: 19 },
-  { name: "bitset", binary: "uint", size: 1 },
+  { name: "flags", ...bitsetItem(["shouldWrapNative", "shouldUnwrapNative"]) },
 ] as const satisfies Layout;
 
 export const porticoTransferLayout = [

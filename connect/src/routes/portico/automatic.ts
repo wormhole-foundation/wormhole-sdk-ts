@@ -24,7 +24,6 @@ import {
 } from "../..";
 import { AutomaticRoute } from "../route";
 import { Receipt, TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
-import { getTransferrableToken } from "./utils";
 
 export const SLIPPAGE_BPS = 15n; // 0.15%
 export const BPS_PER_HUNDRED_PERCENT = 10000n;
@@ -104,11 +103,8 @@ export class AutomaticPorticoRoute<N extends Network> extends AutomaticRoute<N, 
     const tokenAddress = canonicalAddress(sourceToken);
 
     // The token that will be used to bridge
-    const transferrableToken = getTransferrableToken(
-      fromChain.network,
-      fromChain.chain,
-      tokenAddress,
-    );
+    const pb = await fromChain.getPorticoBridge();
+    const transferrableToken = pb.getTransferrableToken(tokenAddress);
 
     // The tokens that _will_ be received on redemption
     const redeemToken = await TokenTransfer.lookupDestinationToken(
@@ -177,15 +173,12 @@ export class AutomaticPorticoRoute<N extends Network> extends AutomaticRoute<N, 
       const [, sourceToken] = resolveWrappedToken(network, fromChain.chain, source.id);
       const [, destinationToken] = resolveWrappedToken(network, toChain.chain, destination!.id);
 
-      const canonicalSourceToken = getTransferrableToken(
-        network,
-        sourceToken.chain,
-        canonicalAddress(sourceToken),
-      );
+      const fromPb = await fromChain.getPorticoBridge();
+      const toPb = await toChain.getPorticoBridge();
 
-      const canonicalDestinationToken = getTransferrableToken(
-        network,
-        destinationToken.chain,
+      const canonicalSourceToken = fromPb.getTransferrableToken(canonicalAddress(sourceToken));
+
+      const canonicalDestinationToken = toPb.getTransferrableToken(
         canonicalAddress(destinationToken),
       );
 
