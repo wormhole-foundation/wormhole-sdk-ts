@@ -38,7 +38,7 @@ export function isSameToken(a: TokenId, b: TokenId): boolean {
 
 export function canonicalAddress(ca: ChainAddress): string {
   // @ts-ignore
-  return toNative(ca.chain, ca.address.toUint8Array()).toString();
+  return ca.address.toNative(ca.chain).toString();
 }
 
 // Given a token id, address, or the const string 'native' return

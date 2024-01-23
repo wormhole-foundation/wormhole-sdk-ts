@@ -1,8 +1,10 @@
-import { Chain, Network, circle } from "@wormhole-foundation/sdk-base";
+import { Chain, Network, circle, contracts } from "@wormhole-foundation/sdk-base";
 import {
+  ChainContext,
   CircleBridge,
   CircleTransferDetails,
   Signer,
+  TokenId,
   TransactionId,
 } from "@wormhole-foundation/sdk-definitions";
 import { signSendWait } from "../../common";
@@ -10,6 +12,7 @@ import { CircleAttestationReceipt, CircleTransfer } from "../../protocols/cctpTr
 import { TransferQuote, TransferReceipt, TransferState, isAttested } from "../../types";
 import { ManualRoute } from "../route";
 import { TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
+import { Wormhole } from "../../wormhole";
 
 export namespace CCTPRoute {
   export type Options = {
@@ -35,28 +38,46 @@ type Q = TransferQuote;
 type R = TransferReceipt<CircleAttestationReceipt>;
 
 export class CCTPRoute<N extends Network> extends ManualRoute<N, Op, R, Q> {
+  static supportedNetworks(): Network[] {
+    return ["Mainnet", "Testnet"];
+  }
+  // get the list of chains this route supports
+  static supportedChains(network: Network): Chain[] {
+    if (contracts.circleContractChains.has(network)) {
+      return contracts.circleContractChains.get(network)!;
+    }
+    return [];
+  }
+
+  // get the list of source tokens that are possible to send
+  static async supportedSourceTokens(fromChain: ChainContext<Network>): Promise<TokenId[]> {
+    const { network, chain } = fromChain;
+    if (!circle.usdcContract.has(network, chain)) return [];
+    return [Wormhole.chainAddress(chain, circle.usdcContract.get(network, chain)!)];
+  }
+
+  // get the liist of destination tokens that may be recieved on the destination chain
+  static async supportedDestinationTokens<N extends Network>(
+    sourceToken: TokenId,
+    fromChain: ChainContext<N>,
+    toChain: ChainContext<N>,
+  ): Promise<TokenId[]> {
+    const { network, chain } = toChain;
+    if (!circle.usdcContract.has(network, chain)) return [];
+    return [Wormhole.chainAddress(chain, circle.usdcContract.get(network, chain)!)];
+  }
+
+  static isProtocolSupported<N extends Network>(
+    fromChain: ChainContext<N>,
+    toChain: ChainContext<N>,
+  ): boolean {
+    return fromChain.supportsCircleBridge() && toChain.supportsCircleBridge();
+  }
+
   getDefaultOptions(): Op {
     return {
       payload: undefined,
     };
-  }
-
-  async isSupported(): Promise<boolean> {
-    if (
-      !this.request.toChain.supportsCircleBridge() ||
-      !this.request.fromChain.supportsCircleBridge()
-    ) {
-      return false;
-    }
-
-    if (!circle.usdcContract.get(this.wh.network, this.request.from.chain)) {
-      return false;
-    }
-    if (!circle.usdcContract.get(this.wh.network, this.request.to.chain)) {
-      return false;
-    }
-
-    return true;
   }
 
   async validate(params: Tp): Promise<Vr> {

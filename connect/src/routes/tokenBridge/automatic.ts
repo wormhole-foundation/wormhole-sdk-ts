@@ -1,6 +1,8 @@
-import { Network } from "@wormhole-foundation/sdk-base";
+import { Chain, Network, contracts } from "@wormhole-foundation/sdk-base";
 import {
+  ChainContext,
   Signer,
+  TokenId,
   TokenTransferDetails,
   isSameToken,
   isTokenId,
@@ -38,6 +40,47 @@ type R = Receipt<AttestationReceipt<"AutomaticTokenBridge">>;
 
 export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute<N, Op, R, Q> {
   NATIVE_GAS_DROPOFF_SUPPORTED = true;
+
+  static supportedNetworks(): Network[] {
+    return ["Mainnet", "Testnet"];
+  }
+  // get the list of chains this route supports
+  static supportedChains(network: Network): Chain[] {
+    if (contracts.tokenBridgeRelayerChains.has(network)) {
+      return contracts.tokenBridgeRelayerChains.get(network)!;
+    }
+    return [];
+  }
+
+  // get the list of source tokens that are possible to send
+  static async supportedSourceTokens(
+    fromChain: ChainContext<Network>,
+  ): Promise<(TokenId | "native")[]> {
+    const atb = await fromChain.getAutomaticTokenBridge();
+    const registered = await atb.getRegisteredTokens();
+    return [
+      "native",
+      ...registered.map((v) => {
+        return { chain: fromChain.chain, address: v };
+      }),
+    ];
+  }
+
+  // get the liist of destination tokens that may be recieved on the destination chain
+  static async supportedDestinationTokens<N extends Network>(
+    sourceToken: TokenId,
+    fromChain: ChainContext<N>,
+    toChain: ChainContext<N>,
+  ): Promise<(TokenId | "native")[]> {
+    return ["native", await TokenTransfer.lookupDestinationToken(fromChain, toChain, sourceToken)];
+  }
+
+  static isProtocolSupported<N extends Network>(
+    fromChain: ChainContext<N>,
+    toChain: ChainContext<N>,
+  ): boolean {
+    return fromChain.supportsAutomaticTokenBridge() && toChain.supportsAutomaticTokenBridge();
+  }
 
   getDefaultOptions(): Op {
     return { nativeGas: 0.0 };
@@ -125,7 +168,7 @@ export class AutomaticTokenBridgeRoute<N extends Network> extends AutomaticRoute
     // Min amount is fee + 5%
     const minAmount = (fee * 105n) / 100n;
     if (amount < minAmount) {
-       throw new Error(`Minimum amount is ${this.request.displayAmount(amount)}`);
+      throw new Error(`Minimum amount is ${this.request.displayAmount(amount)}`);
     }
 
     const transferableAmount = amount - fee;

@@ -90,6 +90,6 @@ export interface PorticoBridge<
 
   // quote token conversion
   quoteSwap(input: TokenAddress<C>, output: TokenAddress<C>, amount: bigint): Promise<bigint>;
-  // quote token conversion
-  quoteRelay(token: TokenAddress<C>, destination: TokenId): Promise<bigint>;
+  // quote relay on destination with conversion
+  quoteRelay(token: TokenAddress<C>, destination: TokenAddress<C>): Promise<bigint>;
 }

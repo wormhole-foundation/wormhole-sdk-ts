@@ -9,6 +9,7 @@ export type Contracts = {
   cctp?: contracts.CircleContracts;
   gateway?: string;
   translator?: string;
+  portico?: contracts.PorticoContracts;
 };
 
 export function getContracts(n: Network, c: Chain): Contracts {
@@ -30,6 +31,10 @@ export function getContracts(n: Network, c: Chain): Contracts {
 
   if (contracts.translator.has(n, c)) {
     ct.translator = contracts.translator.get(n, c);
+  }
+
+  if (contracts.portico.has(n, c)) {
+    ct.portico = contracts.portico.get(n, c);
   }
 
   return ct;
