@@ -99,7 +99,7 @@ const destTxids = await manualXfer.completeTransfer(dst.signer);
 
 Internally, this uses the [TokenBridge](#token-bridge) protocol client to transfer tokens. The `TokenBridge` protocol, like other Protocols, provides a consistent set of methods across all chains to generate a set of transactions for that specific chain.
 
-See the example [here](https://github.com/wormhole-foundation/connect-sdk/blob/develop/examples/src/tokenBridge.ts).
+See the example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/tokenBridge.ts).
 
 ### Native USDC Transfers
 
@@ -127,7 +127,7 @@ const attestIds = await usdcXfer.fetchAttestation(timeout);
 const destTxids = await usdcXfer.completeTransfer(dst.signer);
 ```
 
-See the [example here](https://github.com/wormhole-foundation/connect-sdk/blob/develop/examples/src/cctp.ts).
+See the [example here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/cctp.ts).
 
 ### Automatic Transfers
 
@@ -153,7 +153,7 @@ if (automatic) return waitLog(automaticXfer);
 
 Gateway transfers are transfers that are passed through the Wormhole Gateway to or from Cosmos chains.
 
-See the example [here](https://github.com/wormhole-foundation/connect-sdk/blob/develop/examples/src/cosmos.ts).
+See the example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/cosmos.ts).
 
 ### Recovering Transfers
 
@@ -242,7 +242,7 @@ const txGenerator = tb.createAttestation(token); // => AsyncGenerator<UnsignedTr
 const txids = await signSendWait(srcChain, txGenerator, src.signer); // => TxHash[]
 ```
 
-Supported protocols are defined in the [definitions module](https://github.com/wormhole-foundation/connect-sdk/tree/develop/core/definitions/src/protocols).
+Supported protocols are defined in the [definitions module](https://github.com/wormhole-foundation/connect-sdk/tree/main/core/definitions/src/protocols).
 
 ### Signers
 
@@ -284,7 +284,7 @@ export interface SignAndSendSigner {
 }
 ```
 
-See the testing signers ([Evm](https://github.com/wormhole-foundation/connect-sdk/blob/develop/platforms/evm/src/testing/signer.ts), [Solana](https://github.com/wormhole-foundation/connect-sdk/blob/develop/platforms/solana/src/testing/signer.ts), ...) for an example of how to implement a signer for a specific chain or platform.
+See the testing signers ([Evm](https://github.com/wormhole-foundation/connect-sdk/blob/main/platforms/evm/src/testing/signer.ts), [Solana](https://github.com/wormhole-foundation/connect-sdk/blob/main/platforms/solana/src/testing/signer.ts), ...) for an example of how to implement a signer for a specific chain or platform.
 
 ```ts
 // Create a signer for the source and destination chains
