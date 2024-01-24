@@ -57,7 +57,8 @@
     "platforms/algorand",
     "platforms/algorand/protocols/core",
     "platforms/algorand/protocols/tokenBridge",
-    "examples"
+    "examples",
+    "scripts"
   ],
   "unreleased": [
     "tokenRegistry",

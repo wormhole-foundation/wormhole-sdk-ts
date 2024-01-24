@@ -44,6 +44,10 @@ export class AutomaticCCTPRoute<N extends Network>
 {
   NATIVE_GAS_DROPOFF_SUPPORTED = true;
 
+  static meta = {
+    name: "AutomaticCCTP",
+  };
+
   static supportedNetworks(): Network[] {
     return ["Mainnet", "Testnet"];
   }
@@ -76,11 +80,8 @@ export class AutomaticCCTPRoute<N extends Network>
     ];
   }
 
-  static isProtocolSupported<N extends Network>(
-    fromChain: ChainContext<N>,
-    toChain: ChainContext<N>,
-  ): boolean {
-    return fromChain.supportsAutomaticCircleBridge() && toChain.supportsAutomaticCircleBridge();
+  static isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean {
+    return chain.supportsAutomaticCircleBridge();
   }
 
   getDefaultOptions(): Op {
@@ -99,11 +100,7 @@ export class AutomaticCCTPRoute<N extends Network>
       const normalizedParams = await this.normalizeTransferParams(params);
 
       if (normalizedParams.amount <= 0n) {
-        return {
-          valid: false,
-          params,
-          error: new Error("Amount must be positive"),
-        };
+        throw new Error("Amount must be positive");
       }
 
       const validatedParams: Vp = {
