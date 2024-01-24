@@ -32,6 +32,7 @@ import {
   SolanaPlatformType,
   _platform,
 } from './types';
+import { isNative } from 'lodash';
 
 /**
  * @category Solana
@@ -97,9 +98,9 @@ export class SolanaPlatform<N extends Network>
   static async getDecimals(
     chain: Chain,
     rpc: Connection,
-    token: AnySolanaAddress | 'native',
+    token: AnySolanaAddress,
   ): Promise<bigint> {
-    if (token === 'native')
+    if (isNative(token))
       return BigInt(decimals.nativeDecimals(SolanaPlatform._platform));
 
     let mint = await rpc.getParsedAccountInfo(
@@ -117,9 +118,9 @@ export class SolanaPlatform<N extends Network>
     chain: Chain,
     rpc: Connection,
     walletAddress: string,
-    token: AnySolanaAddress | 'native',
+    token: AnySolanaAddress,
   ): Promise<bigint | null> {
-    if (token === 'native')
+    if (isNative(token))
       return BigInt(await rpc.getBalance(new PublicKey(walletAddress)));
 
     const splToken = await rpc.getTokenAccountsByOwner(
@@ -136,7 +137,7 @@ export class SolanaPlatform<N extends Network>
     chain: Chain,
     rpc: Connection,
     walletAddress: string,
-    tokens: (AnySolanaAddress | 'native')[],
+    tokens: AnySolanaAddress[],
   ): Promise<Balances> {
     let native: bigint;
     if (tokens.includes('native')) {
@@ -151,7 +152,7 @@ export class SolanaPlatform<N extends Network>
     );
 
     const balancesArr = tokens.map((token) => {
-      if (token === 'native') {
+      if (isNative(token)) {
         return { ['native']: native };
       }
       const addrString = new SolanaAddress(token).toString();
