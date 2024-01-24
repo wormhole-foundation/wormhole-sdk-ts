@@ -47,8 +47,18 @@ export abstract class Route<
   public abstract getDefaultOptions(): OP;
 }
 
-export type RouteConstructor = {
+export interface RouteMeta {
+  // Common name for the route,
+  //eg "Wormhole Token Bridge" or "CCTP"
+  name: string;
+  // Url to logo route provider
+  logo?: string;
+}
+
+export interface RouteConstructor {
   new <N extends Network>(wh: Wormhole<N>, request: RouteTransferRequest<N>): Route<N>;
+  // Details about the route provided by the implementation
+  readonly meta?: RouteMeta;
   // get the list of networks this route supports
   supportedNetworks(): Network[];
   // get the list of chains this route supports
@@ -65,7 +75,7 @@ export type RouteConstructor = {
     fromChain: ChainContext<N>,
     toChain: ChainContext<N>,
   ): boolean;
-};
+}
 
 // Use this to ensure the static methods defined in the RouteConstructor
 export type StaticRouteMethods<I extends RouteConstructor> = InstanceType<I>;
