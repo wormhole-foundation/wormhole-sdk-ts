@@ -12,6 +12,7 @@ import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 import { TransferStuff, getStuff, waitForRelay } from "./helpers";
 
 import "@wormhole-foundation/connect-sdk-evm-cctp";
+import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
 import "@wormhole-foundation/connect-sdk-solana-cctp";
 
 /*
@@ -27,8 +28,8 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
   const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform]);
 
   // Grab chain Contexts
-  const sendChain = wh.getChain("Solana");
-  const rcvChain = wh.getChain("Avalanche");
+  const sendChain = wh.getChain("Avalanche");
+  const rcvChain = wh.getChain("BaseSepolia");
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
@@ -36,10 +37,10 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
   const destination = await getStuff(rcvChain);
 
   // 6 decimals for USDC (except for bsc, so check decimals before using this)
-  const amount = normalizeAmount("0.01", 6n);
+  const amount = normalizeAmount("0.2", 6n);
 
   // Choose whether or not to have the attestation delivered for you
-  const automatic = false;
+  const automatic = true;
 
   // If the transfer is requested to be automatic, you can also request that
   // during redemption, the receiver gets some amount of native gas transferred to them

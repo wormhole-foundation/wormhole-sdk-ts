@@ -1,10 +1,4 @@
-import {
-  Chain,
-  Network,
-  Platform,
-  PlatformToChains,
-  ProtocolName,
-} from "@wormhole-foundation/sdk-base";
+import { Chain, Network, Platform, PlatformToChains } from "@wormhole-foundation/sdk-base";
 import {
   ChainContext,
   ChainsConfig,
@@ -13,6 +7,7 @@ import {
   RpcConnection,
   TokenAddress,
   TokenId,
+  ProtocolName,
 } from "../..";
 import { MockChain } from "./chain";
 import { MockRpc } from "./rpc";
@@ -20,7 +15,7 @@ import { MockRpc } from "./rpc";
 export function mockPlatformFactory<N extends Network, P extends Platform>(
   platform: P,
   config: ChainsConfig<N, P>,
-): PlatformUtils<N, P> {
+): PlatformUtils<P> {
   class ConcreteMockPlatform extends MockPlatform<N, P> {
     static _platform: P = platform;
     constructor(network: N, _config?: ChainsConfig<N, P>) {

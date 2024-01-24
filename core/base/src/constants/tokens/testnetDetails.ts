@@ -1,5 +1,5 @@
 import { MapLevel, constMap } from "../../utils";
-import { TokenSymbol, TokenDetails } from "./types";
+import { TokenSymbol, TokenExtraDetails } from "./types";
 
 const testnetTokens = [
   [
@@ -413,6 +413,6 @@ const testnetTokens = [
       nativeChain: "Kujira",
     },
   ],
-] as const satisfies MapLevel<TokenSymbol, TokenDetails>;
+] as const satisfies MapLevel<TokenSymbol, TokenExtraDetails>;
 
 export const testnetTokenDetails = constMap(testnetTokens);

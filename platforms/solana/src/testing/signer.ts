@@ -1,12 +1,10 @@
 import { Connection, Keypair } from '@solana/web3.js';
-import {
-  SignOnlySigner,
-  UnsignedTransaction,
-} from '@wormhole-foundation/connect-sdk';
+import { SignOnlySigner } from '@wormhole-foundation/connect-sdk';
 import { Network } from '@wormhole-foundation/sdk-base/src';
 import { SolanaPlatform } from '../platform';
 import { SolanaChains } from '../types';
 import { logTxDetails } from './debug';
+import { SolanaUnsignedTransaction } from '../unsignedTransaction';
 
 export class SolanaSigner<N extends Network, C extends SolanaChains = 'Solana'>
   implements SignOnlySigner<N, C>
@@ -26,7 +24,7 @@ export class SolanaSigner<N extends Network, C extends SolanaChains = 'Solana'>
     return this._keypair.publicKey.toBase58();
   }
 
-  async sign(tx: UnsignedTransaction[]): Promise<any[]> {
+  async sign(tx: SolanaUnsignedTransaction<N>[]): Promise<Buffer[]> {
     const { blockhash } = await SolanaPlatform.latestBlock(this._rpc);
 
     const signed = [];

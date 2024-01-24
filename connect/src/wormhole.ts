@@ -27,6 +27,10 @@ import { getCircleAttestationWithRetry } from "./circle-api";
 import { ConfigOverrides, DEFAULT_TASK_TIMEOUT, WormholeConfig, applyOverrides } from "./config";
 import { CircleTransfer } from "./protocols/cctpTransfer";
 import { TokenTransfer } from "./protocols/tokenTransfer";
+import { AutomaticPorticoRoute, RouteConstructor } from "./routes";
+import { AutomaticCCTPRoute, CCTPRoute } from "./routes/cctp";
+import { RouteResolver } from "./routes/resolver";
+import { AutomaticTokenBridgeRoute, TokenBridgeRoute } from "./routes/tokenBridge";
 import { retry } from "./tasks";
 import {
   TransactionStatus,
@@ -47,10 +51,17 @@ export class Wormhole<N extends Network> {
   protected readonly _network: N;
   protected _platforms: PlatformMap<N>;
   protected _chains: ChainMap<N>;
+  protected _routes: RouteConstructor[] = [
+    TokenBridgeRoute,
+    AutomaticTokenBridgeRoute,
+    CCTPRoute,
+    AutomaticCCTPRoute,
+    AutomaticPorticoRoute,
+  ];
 
   readonly config: WormholeConfig;
 
-  constructor(network: N, platforms: PlatformUtils<N, any>[], config?: ConfigOverrides) {
+  constructor(network: N, platforms: PlatformUtils<Platform>[], config?: ConfigOverrides) {
     this._network = network;
     this.config = applyOverrides(network, config);
 
@@ -87,8 +98,8 @@ export class Wormhole<N extends Network> {
     if (automatic && payload) throw new Error("Payload with automatic delivery is not supported");
 
     if (
-      !circle.isCircleChain(from.chain) ||
-      !circle.isCircleChain(to.chain) ||
+      !circle.isCircleChain(this.network, from.chain) ||
+      !circle.isCircleChain(this.network, to.chain) ||
       !circle.isCircleSupported(this.network, from.chain) ||
       !circle.isCircleSupported(this.network, to.chain)
     )
@@ -156,6 +167,10 @@ export class Wormhole<N extends Network> {
       payload,
       nativeGas,
     });
+  }
+
+  resolver(routes?: RouteConstructor[]) {
+    return new RouteResolver(this, routes ?? this._routes);
   }
 
   /**

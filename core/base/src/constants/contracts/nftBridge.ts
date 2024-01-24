@@ -1,4 +1,4 @@
-import { MapLevel } from "../../utils";
+import { MapLevels } from "../../utils";
 import { Network } from "../networks";
 import { Chain } from "../chains";
 
@@ -55,4 +55,4 @@ export const nftBridgeContracts = [[
     ["Bsc",       "0x26b4afb60d6c903165150c6f0aa14f8016be4aec"],
     ["Aptos",     "0x46da3d4c569388af61f951bdd1153f4c875f90c2991f6b2d0a38e2161a40852c"],
   ]],
-] as const satisfies MapLevel<Network, MapLevel<Chain, string>>;
+] as const satisfies MapLevels<[Network, Chain, string]>;

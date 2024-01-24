@@ -1,17 +1,23 @@
-import { Chain, ProtocolName } from "@wormhole-foundation/sdk-base";
+import { Chain } from "@wormhole-foundation/sdk-base";
+import { ProtocolName } from "./protocol";
+import { AutomaticCircleBridge, CircleBridge } from "./protocols/circleBridge";
+import { IbcTransferData } from "./protocols/ibc";
+import { PorticoBridge } from "./protocols/portico";
+import { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge";
 import { SequenceId } from "./types";
 import { UniversalAddress } from "./universalAddress";
 import { VAA } from "./vaa";
-import { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge";
-import { AutomaticCircleBridge, CircleBridge } from "./protocols/circleBridge";
-import { IbcTransferData } from "./protocols/ibc";
 
 // Could be VAA or Circle or ..?
 export type AttestationId<PN extends ProtocolName = ProtocolName> = PN extends
   | "TokenBridge"
   | "AutomaticTokenBridge"
+  | "WormholeCore"
+  | "PorticoBridge"
   | "AutomaticCircleBridge"
   ? WormholeMessageId
+  : PN extends "AutomaticCircleBridge"
+  ? WormholeMessageId | CircleMessageId
   : PN extends "CircleBridge"
   ? CircleMessageId
   : PN extends "IbcBridge"
@@ -23,19 +29,16 @@ export type Attestation<PN extends ProtocolName = ProtocolName> = PN extends
   | "AutomaticTokenBridge"
   ? AutomaticTokenBridge.VAA | TokenBridge.VAA
   : PN extends "AutomaticCircleBridge"
-  ? AutomaticCircleBridge.VAA
+  ? AutomaticCircleBridge.VAA | CircleBridge.Attestation
   : PN extends "CircleBridge"
   ? CircleBridge.Attestation
   : PN extends "IbcBridge"
   ? IbcTransferData
+  : PN extends "WormholeCore"
+  ? VAA<"Uint8Array">
+  : PN extends "PorticoBridge"
+  ? PorticoBridge.VAA
   : never;
-
-// Attestation Receipt contains the Id to lookup the attestation
-// and possibly a cached/parsed attestation
-export type AttestationReceipt<PN extends ProtocolName = ProtocolName> = {
-  id: AttestationId<PN>;
-  attestation?: Attestation<PN>;
-};
 
 // Wormhole Message Identifier used to fetch a VAA
 // Possibly with a VAA already set

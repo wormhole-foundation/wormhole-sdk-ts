@@ -5,7 +5,8 @@ import {
   serializeLayout,
   deserializeLayout,
   addFixedValues,
-  layoutDiscriminator
+  layoutDiscriminator,
+  bitsetItem,
 } from "../src";
 
 const testLayout = [
@@ -190,6 +191,34 @@ describe("Layout tests", function () {
     expect(encoded).toEqual(new Uint8Array([0xff, 0xfe]));
     const decoded = deserializeLayout(layout, encoded);
     expect(decoded).toEqual({ fixedSignedInt: -257 });
+  });
+
+  describe("Bitset tests", function () {
+    const names = ["first",,"third", "fourth",,,,, "ninth"] as const;
+    const converted = {
+      first: true,
+      third: false,
+      fourth: true,
+      ninth: true
+    } as const;
+
+    it("should correctly serialize and deserialize Bitset items with default size", function () {
+      const bitset = bitsetItem(names);
+      
+      const encoded = serializeLayout(bitset, converted);
+      expect(encoded).toEqual(new Uint8Array([0x01, 0x09]));
+      const decoded = deserializeLayout(bitset, encoded);
+      expect(decoded).toEqual(converted);
+    });
+
+    it("should correctly serialize and deserialize Bitset items with manual size", function () {
+      const bitset = bitsetItem(names, 3);
+      
+      const encoded = serializeLayout(bitset, converted);
+      expect(encoded).toEqual(new Uint8Array([0x00, 0x01, 0x09]));
+      const decoded = deserializeLayout(bitset, encoded);
+      expect(decoded).toEqual(converted);
+    });
   });
 
   it("should serialize and deserialze correctly", function () {

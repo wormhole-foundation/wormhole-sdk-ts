@@ -1,4 +1,4 @@
-import { MapLevel } from "../../utils";
+import { MapLevels } from "../../utils";
 import { Network } from "../networks";
 import { Chain } from "../chains";
 
@@ -85,4 +85,4 @@ export const coreBridgeContracts = [[
     ["Terra2",    "terra14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9ssrc8au"],
     ["Wormchain", "wormhole17p9rzwnnfxcjp32un9ug7yhhzgtkhvl9jfksztgw5uh69wac2pgshdnj3k"],
   ]],
-] as const satisfies MapLevel<Network, MapLevel<Chain, string>>;
+] as const satisfies MapLevels<[Network, Chain, string]>;

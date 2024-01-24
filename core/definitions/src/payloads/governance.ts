@@ -1,6 +1,5 @@
 import {
   platformToChains,
-  ProtocolName,
   FixedConversion,
   column,
   constMap,
@@ -10,6 +9,7 @@ import {
 
 import { chainItem, universalAddressItem, guardianSetItem } from "../layout-items";
 import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../vaa";
+import { ProtocolName } from "../protocol";
 
 //One thing that's not captured by the payload itself is the fact that governance VAAs should
 //  always have Solana as the emitter chain and address bytes32(4) as the emitter address.
@@ -121,7 +121,7 @@ const actionMapping = constMap(actionTuples);
 const sdkProtocolNameAndGovernanceVaaModuleEntries = [
   ["WormholeCore", "Core"],
   ["TokenBridge", "TokenBridge"],
-  ["NftBridge", "NFTBridge"],
+  ["NftBridge", "NftBridge"],
   ["Relayer", "WormholeRelayer"],
   ["CircleBridge", "CircleIntegration"],
 ] as const satisfies RoArray<readonly [ProtocolName, string]>;
