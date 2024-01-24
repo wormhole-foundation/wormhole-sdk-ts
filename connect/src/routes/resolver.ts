@@ -9,14 +9,14 @@ export type RouteSortOptions = "cost" | "speed";
 export class RouteResolver<N extends Network> {
   wh: Wormhole<N>;
   routeConstructors: RouteConstructor[];
-  inputTokenList?: (TokenId | "native")[];
+  inputTokenList?: TokenId[];
 
   constructor(wh: Wormhole<N>, routeConstructors: RouteConstructor[]) {
     this.wh = wh;
     this.routeConstructors = routeConstructors;
   }
 
-  async supportedSourceTokens(chain: ChainContext<Network>): Promise<(TokenId | "native")[]> {
+  async supportedSourceTokens(chain: ChainContext<Network>): Promise<TokenId[]> {
     // TODO: make this a set to dedupe?
     this.inputTokenList =
       this.inputTokenList ??
@@ -29,10 +29,10 @@ export class RouteResolver<N extends Network> {
   }
 
   async supportedDestinationTokens(
-    inputToken: TokenId | "native",
+    inputToken: TokenId,
     fromChain: ChainContext<Network>,
     toChain: ChainContext<Network>,
-  ): Promise<(TokenId | "native")[]> {
+  ): Promise<TokenId[]> {
     const [, inputTokenId] = resolveWrappedToken(fromChain.network, fromChain.chain, inputToken);
     const tokens = await Promise.all(
       this.routeConstructors.map(async (rc) =>

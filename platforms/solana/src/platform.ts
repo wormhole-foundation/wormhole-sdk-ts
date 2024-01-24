@@ -5,6 +5,7 @@ import {
   Network,
   PlatformContext,
   SignedTx,
+  StaticPlatformMethods,
   TokenId,
   TxHash,
   Wormhole,
@@ -35,10 +36,10 @@ import {
 /**
  * @category Solana
  */
-export class SolanaPlatform<N extends Network> extends PlatformContext<
-  N,
-  SolanaPlatformType
-> {
+export class SolanaPlatform<N extends Network>
+  extends PlatformContext<N, SolanaPlatformType>
+  implements StaticPlatformMethods<typeof _platform, typeof SolanaPlatform>
+{
   static _platform = _platform;
 
   constructor(network: N, config?: ChainsConfig<N, SolanaPlatformType>) {

@@ -52,10 +52,10 @@
 //
 //         let tokenAddress: NativeAddress<Platform>;
 //         let token: TokenId;
-//         let tokenOrNative: TokenId | "native";
+//         let tokenOrNative: TokenId;
 //
 //
-//         let srcBalanceToken: NativeAddress<Platform> | "native";
+//         let srcBalanceToken: NativeAddress<Platform>;
 //         let dstBalanceToken: NativeAddress<Platform>;
 //
 //         beforeAll(async () => {
