@@ -56,7 +56,9 @@ export async function getStuff<
   const platform = chain.platform.utils()._platform;
   switch (platform) {
     case "Solana":
-      signer = await getSolanaSignAndSendSigner(await chain.getRpc(), getEnv("SOL_PRIVATE_KEY"));
+      signer = await getSolanaSignAndSendSigner(await chain.getRpc(), getEnv("SOL_PRIVATE_KEY"), {
+        computeLimit: 500_000n,
+      });
       break;
     case "Cosmwasm":
       signer = await getCosmwasmSigner(await chain.getRpc(), getEnv("COSMOS_MNEMONIC"));

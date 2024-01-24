@@ -9,7 +9,6 @@ import {
 } from "@wormhole-foundation/sdk-base";
 import {
   AttestationId,
-  AttestationReceipt,
   AutomaticTokenBridge,
   ChainContext,
   Signer,
@@ -31,8 +30,8 @@ import {
 } from "@wormhole-foundation/sdk-definitions";
 import { signSendWait } from "../common";
 import { DEFAULT_TASK_TIMEOUT } from "../config";
-import { Wormhole } from "../wormhole";
 import {
+  AttestationReceipt,
   AttestedTransferReceipt,
   CompletedTransferReceipt,
   SourceFinalizedTransferReceipt,
@@ -40,14 +39,21 @@ import {
   TransferQuote,
   TransferReceipt,
   TransferState,
-  WormholeTransfer,
   isAttested,
   isSourceFinalized,
   isSourceInitiated,
-} from "../wormholeTransfer";
+} from "../types";
+import { Wormhole } from "../wormhole";
+import { WormholeTransfer } from "./wormholeTransfer";
 
 export type TokenTransferProtocol = "TokenBridge" | "AutomaticTokenBridge";
 export type TokenTransferVAA = TokenBridge.TransferVAA | AutomaticTokenBridge.VAA;
+
+export type TokenTransferAttestationReceipt = AttestationReceipt<TokenTransferProtocol>;
+export type TokenTransferReceipt<
+  SC extends Chain = Chain,
+  DC extends Chain = Chain,
+> = TransferReceipt<TokenTransferAttestationReceipt, SC, DC>;
 
 export class TokenTransfer<N extends Network = Network>
   implements WormholeTransfer<TokenTransferProtocol>
@@ -122,7 +128,7 @@ export class TokenTransfer<N extends Network = Network>
       toChain = toChain ?? wh.getChain(from.to.chain);
 
       // throws if invalid
-      await TokenTransfer.validateTransferDetails(wh, from, fromChain, toChain);
+      TokenTransfer.validateTransferDetails(wh, from, fromChain, toChain);
 
       // Apply hackery
       from = {
@@ -392,34 +398,42 @@ export class TokenTransfer<N extends Network = Network>
     return { chain: dstChain.chain, address: dstAddress };
   }
 
-  static async validateTransferDetails<N extends Network>(
+  static validateTransferDetails<N extends Network>(
     wh: Wormhole<N>,
     transfer: TokenTransferDetails,
     fromChain?: ChainContext<N, Platform, Chain>,
     toChain?: ChainContext<N, Platform, Chain>,
-  ): Promise<void> {
+  ): void {
+    if (transfer.amount === 0n) throw new Error("Amount cannot be 0");
+
     if (transfer.from.chain === transfer.to.chain)
       throw new Error("Cannot transfer to the same chain");
-
-    if (transfer.payload && transfer.automatic)
-      throw new Error("Payload with automatic delivery is not supported");
-
-    if (transfer.nativeGas && !transfer.automatic)
-      throw new Error("Gas Dropoff is only supported for automatic transfers");
 
     fromChain = fromChain ?? wh.getChain(transfer.from.chain);
     toChain = toChain ?? wh.getChain(transfer.to.chain);
 
-    if (!fromChain.supportsTokenBridge())
-      throw new Error(`Token Bridge not supported on ${transfer.from.chain}`);
+    if (transfer.automatic) {
+      if (transfer.payload) throw new Error("Payload with automatic delivery is not supported");
 
-    if (!toChain.supportsTokenBridge())
-      throw new Error(`Token Bridge not supported on ${transfer.to.chain}`);
+      if (!fromChain.supportsAutomaticTokenBridge())
+        throw new Error(`Automatic Token Bridge not supported on ${transfer.from.chain}`);
 
-    if (transfer.automatic && !fromChain.supportsAutomaticTokenBridge())
-      throw new Error(`Automatic Token Bridge not supported on ${transfer.from.chain}`);
+      if (!toChain.supportsAutomaticTokenBridge())
+        throw new Error(`Automatic Token Bridge not supported on ${transfer.to.chain}`);
 
-    if (transfer.amount === 0n) throw new Error("Amount cannot be 0");
+      const nativeGas = transfer.nativeGas ?? 0n;
+      if (nativeGas > transfer.amount)
+        throw new Error(`Native gas amount  > amount (${nativeGas} > ${transfer.amount})`);
+    } else {
+      if (transfer.nativeGas)
+        throw new Error("Gas Dropoff is only supported for automatic transfers");
+
+      if (!fromChain.supportsTokenBridge())
+        throw new Error(`Token Bridge not supported on ${transfer.from.chain}`);
+
+      if (!toChain.supportsTokenBridge())
+        throw new Error(`Token Bridge not supported on ${transfer.to.chain}`);
+    }
   }
 
   static async quoteTransfer<N extends Network>(
@@ -532,18 +546,13 @@ export class TokenTransfer<N extends Network = Network>
     return _transfer;
   }
 
-  static getReceipt<N extends Network>(
-    xfer: TokenTransfer<N>,
-  ): TransferReceipt<TokenTransferProtocol> {
+  static getReceipt<N extends Network>(xfer: TokenTransfer<N>): TokenTransferReceipt {
     const { transfer } = xfer;
 
-    const protocol = transfer.automatic ? "AutomaticTokenBridge" : "TokenBridge";
     const from = transfer.from.chain;
     const to = transfer.to.chain;
 
-    let receipt: TransferReceipt<TokenTransferProtocol> = {
-      protocol,
-      request: transfer,
+    let receipt: TokenTransferReceipt = {
       from: from,
       to: to,
       state: TransferState.Created,
@@ -555,7 +564,7 @@ export class TokenTransfer<N extends Network = Network>
         ...receipt,
         state: TransferState.SourceInitiated,
         originTxs: originTxs,
-      } satisfies SourceInitiatedTransferReceipt<TokenTransferProtocol>;
+      } satisfies SourceInitiatedTransferReceipt;
     }
 
     const att =
@@ -564,17 +573,17 @@ export class TokenTransfer<N extends Network = Network>
     if (attestation) {
       if (attestation.id) {
         receipt = {
-          ...(receipt as SourceInitiatedTransferReceipt<TokenTransferProtocol>),
+          ...(receipt as SourceInitiatedTransferReceipt),
           state: TransferState.SourceFinalized,
           attestation: { id: attestation.id },
-        } satisfies SourceFinalizedTransferReceipt<TokenTransferProtocol>;
+        } satisfies SourceFinalizedTransferReceipt<TokenTransferAttestationReceipt>;
 
         if (attestation.attestation) {
           receipt = {
             ...receipt,
             state: TransferState.Attested,
             attestation: { id: attestation.id, attestation: attestation.attestation },
-          } satisfies AttestedTransferReceipt<TokenTransferProtocol>;
+          } satisfies AttestedTransferReceipt<TokenTransferAttestationReceipt>;
         }
       }
     }
@@ -582,10 +591,10 @@ export class TokenTransfer<N extends Network = Network>
     const destinationTxs = xfer.txids.filter((txid) => txid.chain === transfer.to.chain);
     if (destinationTxs.length > 0) {
       receipt = {
-        ...(receipt as AttestedTransferReceipt<TokenTransferProtocol>),
+        ...(receipt as AttestedTransferReceipt<TokenTransferAttestationReceipt>),
         state: TransferState.DestinationInitiated,
         destinationTxs: destinationTxs,
-      } satisfies CompletedTransferReceipt<TokenTransferProtocol>;
+      } satisfies CompletedTransferReceipt<TokenTransferAttestationReceipt>;
     }
 
     return receipt;
@@ -597,11 +606,11 @@ export class TokenTransfer<N extends Network = Network>
   // steps of the transfer
   static async *track<N extends Network, SC extends Chain, DC extends Chain>(
     wh: Wormhole<N>,
-    receipt: TransferReceipt<TokenTransferProtocol, SC, DC>,
+    receipt: TokenTransferReceipt<SC, DC>,
     timeout: number = DEFAULT_TASK_TIMEOUT,
     fromChain?: ChainContext<N, ChainToPlatform<SC>, SC>,
     toChain?: ChainContext<N, ChainToPlatform<DC>, DC>,
-  ) {
+  ): AsyncGenerator<TokenTransferReceipt<SC, DC>> {
     const start = Date.now();
     const leftover = (start: number, max: number) => Math.max(max - (Date.now() - start), 0);
 
@@ -618,7 +627,7 @@ export class TokenTransfer<N extends Network = Network>
         ...receipt,
         state: TransferState.SourceFinalized,
         attestation: { id: msg },
-      } satisfies SourceFinalizedTransferReceipt<TokenTransferProtocol>;
+      } satisfies SourceFinalizedTransferReceipt<TokenTransferAttestationReceipt>;
       yield receipt;
     }
 
@@ -633,7 +642,7 @@ export class TokenTransfer<N extends Network = Network>
         ...receipt,
         attestation: { id, attestation },
         state: TransferState.Attested,
-      } satisfies AttestedTransferReceipt<TokenTransferProtocol>;
+      } satisfies AttestedTransferReceipt<TokenTransferAttestationReceipt>;
       yield receipt;
     }
 
@@ -650,7 +659,7 @@ export class TokenTransfer<N extends Network = Network>
           ...receipt,
           destinationTxs: [{ chain: toChainName(chainId) as DC, txid: txHash }],
           state: TransferState.DestinationFinalized,
-        } satisfies CompletedTransferReceipt<TokenTransferProtocol>;
+        } satisfies CompletedTransferReceipt<TokenTransferAttestationReceipt>;
       }
       yield receipt;
     }
@@ -669,7 +678,7 @@ export class TokenTransfer<N extends Network = Network>
         receipt = {
           ...receipt,
           state: TransferState.DestinationFinalized,
-        } satisfies CompletedTransferReceipt<TokenTransferProtocol>;
+        } satisfies CompletedTransferReceipt<TokenTransferAttestationReceipt>;
       }
 
       yield receipt;
