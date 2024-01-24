@@ -51,7 +51,6 @@ export type NativeAddress<C extends Chain> = GetNativeAddress<ChainToPlatform<C>
 export type UniversalOrNative<C extends Chain> = UniversalAddress | NativeAddress<C>;
 
 export type AccountAddress<C extends Chain> = UniversalOrNative<C>;
-export type TokenAddress<C extends Chain> = UniversalOrNative<C> | "native";
 
 export type ChainAddress<C extends Chain = Chain> = {
   readonly chain: C;

@@ -20,7 +20,10 @@ import {
   TokenId,
   TxHash,
   WormholeMessageId,
+  canonicalAddress,
   deserialize,
+  isNative,
+  nativeTokenId,
   toNative,
 } from "@wormhole-foundation/sdk-definitions";
 import { getCircleAttestationWithRetry } from "./circle-api";
@@ -61,7 +64,7 @@ export class Wormhole<N extends Network> {
 
   readonly config: WormholeConfig;
 
-  constructor(network: N, platforms: PlatformUtils<Platform>[], config?: ConfigOverrides) {
+  constructor(network: N, platforms: PlatformUtils<any>[], config?: ConfigOverrides) {
     this._network = network;
     this.config = applyOverrides(network, config);
 
@@ -137,7 +140,7 @@ export class Wormhole<N extends Network> {
    * @throws Errors if the chain or protocol is not supported
    */
   async tokenTransfer(
-    token: TokenId | "native",
+    token: TokenId,
     amount: bigint,
     from: ChainAddress,
     to: ChainAddress,
@@ -379,6 +382,17 @@ export class Wormhole<N extends Network> {
   }
 
   /**
+   * Return a string in the canonical chain format representing the address
+   * of a token or account
+   *
+   * @param chainAddress The ChainAddress or TokenId to get a string address
+   * @returns The string address in canonical format for the chain
+   */
+  static canonicalAddress(chainAddress: ChainAddress | TokenId): string {
+    return canonicalAddress(chainAddress);
+  }
+
+  /**
    * Parse an address from its canonincal string format to a NativeAddress
    *
    * @param chain The chain the address is for
@@ -387,6 +401,17 @@ export class Wormhole<N extends Network> {
    */
   static chainAddress<C extends Chain>(chain: C, address: string): ChainAddress<C> {
     return { chain, address: Wormhole.parseAddress(chain, address) };
+  }
+
+  /**
+   * Parse an address from its canonincal string format to a NativeAddress
+   *
+   * @param chain The chain the address is for
+   * @param address The native address in canonical string format or the string "native"
+   * @returns The ChainAddress
+   */
+  static tokenId<C extends Chain>(chain: C, address: string): TokenId<C> {
+    return isNative(address) ? nativeTokenId(chain) : this.chainAddress(chain, address);
   }
 
   /**

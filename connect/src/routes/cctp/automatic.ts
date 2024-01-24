@@ -4,6 +4,7 @@ import {
   CircleTransferDetails,
   Signer,
   TokenId,
+  nativeTokenId,
 } from "@wormhole-foundation/sdk-definitions";
 import { CircleAttestationReceipt, CircleTransfer } from "../../protocols/cctpTransfer";
 import { TransferQuote, TransferState } from "../../types";
@@ -66,10 +67,13 @@ export class AutomaticCCTPRoute<N extends Network>
     sourceToken: TokenId,
     fromChain: ChainContext<N>,
     toChain: ChainContext<N>,
-  ): Promise<(TokenId | "native")[]> {
+  ): Promise<TokenId[]> {
     const { network, chain } = toChain;
     if (!circle.usdcContract.has(network, chain)) return [];
-    return ["native", Wormhole.chainAddress(chain, circle.usdcContract.get(network, chain)!)];
+    return [
+      nativeTokenId(chain),
+      Wormhole.chainAddress(chain, circle.usdcContract.get(network, chain)!),
+    ];
   }
 
   static isProtocolSupported<N extends Network>(

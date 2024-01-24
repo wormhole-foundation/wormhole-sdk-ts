@@ -15,11 +15,16 @@ import {
 import { CoinClient, Types } from "aptos";
 import { APTOS_COIN, APTOS_SEPARATOR } from "./constants";
 import { AnyAptosAddress } from "./types";
+import { StaticPlatformMethods } from "@wormhole-foundation/sdk-definitions/src";
+import { isNative } from "lodash";
 
 /**
  * @category Aptos
  */
-export class AptosPlatform<N extends Network> extends PlatformContext<N, AptosPlatformType> {
+export class AptosPlatform<N extends Network>
+  extends PlatformContext<N, AptosPlatformType>
+  implements StaticPlatformMethods<typeof AptosPlatform>
+{
   static _platform = _platform;
 
   getRpc<C extends AptosChains>(chain: C): AptosClient {
@@ -34,7 +39,7 @@ export class AptosPlatform<N extends Network> extends PlatformContext<N, AptosPl
 
   static nativeTokenId<N extends Network, C extends AptosChains>(network: N, chain: C): TokenId<C> {
     if (!this.isSupportedChain(chain)) throw new Error(`invalid chain: ${chain}`);
-    return Wormhole.chainAddress(chain, APTOS_COIN);
+    return Wormhole.tokenId(chain, APTOS_COIN);
   }
 
   static isNativeTokenId<N extends Network, C extends AptosChains>(
@@ -56,9 +61,9 @@ export class AptosPlatform<N extends Network> extends PlatformContext<N, AptosPl
   static async getDecimals(
     chain: Chain,
     rpc: AptosClient,
-    token: AnyAptosAddress | "native",
+    token: AnyAptosAddress,
   ): Promise<bigint> {
-    if (token === "native") return BigInt(nativeDecimals.nativeDecimals(AptosPlatform._platform));
+    if (isNative(token)) return BigInt(nativeDecimals.nativeDecimals(AptosPlatform._platform));
 
     const tokenAddr = token.toString();
     const coinType = `0x1::coin::CoinInfo<${tokenAddr}>`;
@@ -73,9 +78,9 @@ export class AptosPlatform<N extends Network> extends PlatformContext<N, AptosPl
     chain: Chain,
     rpc: AptosClient,
     walletAddress: string,
-    token: AnyAptosAddress | "native",
+    token: AnyAptosAddress,
   ): Promise<bigint | null> {
-    const tokenAddress = token === "native" ? APTOS_COIN : token.toString();
+    const tokenAddress = isNative(token) ? APTOS_COIN : token.toString();
     const cc = new CoinClient(rpc);
     try {
       const balance = await cc.checkBalance(walletAddress, {
@@ -97,7 +102,7 @@ export class AptosPlatform<N extends Network> extends PlatformContext<N, AptosPl
     chain: Chain,
     rpc: AptosClient,
     walletAddress: string,
-    tokens: (AnyAptosAddress | "native")[],
+    tokens: AnyAptosAddress[],
   ): Promise<Balances> {
     return {};
     // const tb = await AptosPlatform.getTokenBridge(rpc);

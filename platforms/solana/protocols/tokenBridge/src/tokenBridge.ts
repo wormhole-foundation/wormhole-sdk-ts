@@ -1,12 +1,11 @@
 import {
-  Platform,
-  Chain,
   ChainAddress,
   ChainId,
   ChainsConfig,
   Contracts,
   ErrNotWrapped,
   Network,
+  Platform,
   TokenBridge,
   TokenId,
   UniversalAddress,
@@ -170,7 +169,10 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
     return false;
   }
 
-  async getWrappedAsset(token: TokenId<Chain>) {
+  async getWrappedAsset(token: TokenId) {
+    if (token.address === 'native')
+      throw new Error('Native cannot be a wrapped asset');
+
     const mint = deriveWrappedMintKey(
       this.tokenBridge.programId,
       toChainId(token.chain),
@@ -445,6 +447,8 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
           );
     } else {
       const originAsset = await this.getOriginalAsset(token);
+      if (originAsset.address === 'native')
+        throw new Error('Native cannot be an original asset');
 
       tokenBridgeTransferIx = payload
         ? createTransferWrappedWithPayloadInstruction(
