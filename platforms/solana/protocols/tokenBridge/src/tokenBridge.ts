@@ -10,6 +10,7 @@ import {
   TokenId,
   UniversalAddress,
   encoding,
+  isNative,
   toChain,
   toChainId,
   toNative,
@@ -170,7 +171,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
   }
 
   async getWrappedAsset(token: TokenId) {
-    if (token.address === 'native')
+    if (isNative(token.address))
       throw new Error('Native cannot be a wrapped asset');
 
     const mint = deriveWrappedMintKey(
@@ -385,13 +386,13 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
   async *transfer(
     sender: AnySolanaAddress,
     recipient: ChainAddress,
-    token: AnySolanaAddress | 'native',
+    token: AnySolanaAddress,
     amount: bigint,
     payload?: Uint8Array,
   ): AsyncGenerator<SolanaUnsignedTransaction<N, C>> {
     // TODO: payer vs sender?? can caller add diff payer later?
 
-    if (token === 'native') {
+    if (isNative(token)) {
       yield await this.transferSol(sender, recipient, amount, payload);
       return;
     }
@@ -447,7 +448,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
           );
     } else {
       const originAsset = await this.getOriginalAsset(token);
-      if (originAsset.address === 'native')
+      if (isNative(originAsset.address))
         throw new Error('Native cannot be an original asset');
 
       tokenBridgeTransferIx = payload
