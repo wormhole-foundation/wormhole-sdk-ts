@@ -1,4 +1,4 @@
-import { MapLevel, constMap } from "../utils";
+import { MapLevels, constMap } from "../utils";
 import { Network } from "./networks";
 import { Chain } from "./chains";
 
@@ -213,7 +213,7 @@ const explorerConfig = [[
       },
     }],
   ]],
-] as const satisfies MapLevel<"Mainnet" | "Testnet", MapLevel<Chain, ExplorerSettings>>;
+] as const satisfies MapLevels<["Mainnet" | "Testnet", Chain, ExplorerSettings]>;
 
 export const explorerConfs = constMap(explorerConfig);
 

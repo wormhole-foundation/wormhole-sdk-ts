@@ -31,6 +31,7 @@ export class SolanaSendSigner<
     private _debug: boolean = false,
     private _sendOpts?: SendOptions,
     private _priotifyFeeAmount?: bigint,
+    private _computeUnitLimit?: bigint,
   ) {
     this._sendOpts = this._sendOpts ?? {
       preflightCommitment: this._rpc.commitment,
@@ -95,6 +96,13 @@ export class SolanaSendSigner<
         transaction.add(
           ComputeBudgetProgram.setComputeUnitPrice({
             microLamports: this._priotifyFeeAmount,
+          }),
+        );
+
+      if (this._computeUnitLimit)
+        transaction.add(
+          ComputeBudgetProgram.setComputeUnitLimit({
+            units: Number(this._computeUnitLimit),
           }),
         );
 

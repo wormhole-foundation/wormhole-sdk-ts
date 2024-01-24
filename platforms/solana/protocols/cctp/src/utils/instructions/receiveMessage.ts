@@ -25,10 +25,10 @@ export function calculateFirstNonce(nonce: bigint) {
 }
 export function nonceAccount(
   nonce: bigint,
-  sourceChain: circle.CircleChain,
+  sourceChain: circle.CircleChainId,
   messageTransmitterProgramId: PublicKey,
 ) {
-  const srcDomain = circle.toCircleChainId(sourceChain).toString();
+  const srcDomain = sourceChain.toString();
   const usedNonces = findProgramAddress(
     'used_nonces',
     messageTransmitterProgramId,
@@ -65,9 +65,7 @@ export async function createReceiveMessageInstruction(
     solanaUsdcAddress,
     receiver,
   );
-  const srcDomain = circle
-    .toCircleChainId(circleMessage.sourceDomain)
-    .toString();
+  const srcDomain = circleMessage.sourceDomain.toString();
 
   // Find pdas
   const messageTransmitterAccount = findProgramAddress(
@@ -109,7 +107,7 @@ export async function createReceiveMessageInstruction(
   // Calculate the nonce PDA.
   const usedNonces = nonceAccount(
     circleMessage.nonce,
-    circleMessage.sourceDomain,
+    circleMessage.sourceDomain as circle.CircleChainId,
     messageTransmitterProgramId,
   );
 

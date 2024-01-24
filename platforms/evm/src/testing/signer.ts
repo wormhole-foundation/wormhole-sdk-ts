@@ -1,13 +1,13 @@
 import {
-  Chain,
+  Network,
   SignOnlySigner,
   SignedTx,
   Signer,
   UnsignedTransaction,
-  Network,
 } from '@wormhole-foundation/connect-sdk';
 import { ethers } from 'ethers';
 import { EvmPlatform } from '../platform';
+import { EvmChains } from '../types';
 
 // Get a SignOnlySigner for the EVM platform
 export async function getEvmSigner(
@@ -19,7 +19,7 @@ export async function getEvmSigner(
 }
 
 // EvmSigner implements SignOnlySender
-export class EvmSigner<N extends Network, C extends Chain>
+export class EvmSigner<N extends Network, C extends EvmChains = EvmChains>
   implements SignOnlySigner<N, C>
 {
   _wallet: ethers.Wallet;

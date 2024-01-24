@@ -35,43 +35,68 @@ export const isEqualCaseInsensitive = (a: string, b: string): boolean => {
   return a.toLowerCase() === b.toLowerCase();
 };
 
+export const filters = {
+  byAddress: (tokenMap: ChainTokens, address: string) => {
+    const foundToken = Object.entries(tokenMap).find(([, token]) =>
+      isEqualCaseInsensitive(token.address, address),
+    );
+    return foundToken ? foundToken[1] : undefined;
+  },
+  native: (tokenMap: ChainTokens) => {
+    return filters.byAddress(tokenMap, "native");
+  },
+  bySymbol: (tokenMap: ChainTokens, symbol: TokenSymbol) => {
+    const foundTokens = Object.values(tokenMap).filter((token) => token.symbol === symbol);
+    return foundTokens && foundTokens.length > 0 ? foundTokens : undefined;
+  },
+  byKey: (tokenMap: ChainTokens, key: TokenKey) => {
+    const foundToken = Object.entries(tokenMap).find(([_key]) => key === _key);
+    return foundToken ? foundToken[1] : undefined;
+  },
+};
+
+// The token that represents the native gas token on a given chain
+// also represented as the string 'native' where applicable
+export function getNative<N extends Network, C extends Chain>(
+  network: N,
+  chain: C,
+): Token | undefined {
+  const tokenMap = getTokenMap(network, chain);
+  return tokenMap ? filters.native(tokenMap) : undefined;
+}
+
+// Finds the (first) unique token key for a given chain and address
+export function getTokenByAddress<N extends Network, C extends Chain>(
+  network: N,
+  chain: C,
+  address: string,
+): Token | undefined {
+  const tokenMap = getTokenMap(network, chain);
+  return tokenMap ? filters.byAddress(tokenMap, address) : undefined;
+}
+
 export function getTokensBySymbol<N extends Network, C extends Chain>(
   network: N,
   chain: C,
   symbol: TokenSymbol,
 ): Token[] | undefined {
   const tokenMap = getTokenMap(network, chain);
-  if (!tokenMap) return;
-  const foundTokens = Object.entries(tokenMap)
-    .filter(([_, token]) => token.symbol === symbol)
-    .map((t) => t[1]);
-  if (!foundTokens || foundTokens.length === 0) return;
-  return foundTokens;
+  return tokenMap ? filters.bySymbol(tokenMap, symbol) : undefined;
 }
 
+// Finds the (first) unique token key for a given chain and symbol
 export function getTokenByKey<N extends Network, C extends Chain>(
   network: N,
   chain: C,
   key: TokenKey,
 ): Token | undefined {
   const tokenMap = getTokenMap(network, chain);
-  if (!tokenMap) return;
-  const foundToken = Object.entries(tokenMap).find(([_key]) => key === _key);
-  if (!foundToken) return;
-  return foundToken[1];
+  return tokenMap ? filters.byKey(tokenMap, key) : undefined;
 }
 
-export function getNativeToken<N extends Network, C extends Chain>(
-  network: N,
-  chain: C,
-): Token | undefined {
-  const tokenMap = getTokenMap(network, chain);
-  if (!tokenMap) return;
-  const nativeTokenEntry = Object.entries(tokenMap).find(([, token]) => token.address === "native");
-  if (!nativeTokenEntry) return;
-  return nativeTokenEntry[1];
-}
-
+// The Canonical token is the token that the input key resolves to
+// from its original chain. For example, if the input key is
+// USDCeth, the canonical token is USDC on ETH
 export function getCanonicalToken<N extends Network, C extends Chain>(
   network: N,
   chain: C,
@@ -86,19 +111,4 @@ export function getCanonicalToken<N extends Network, C extends Chain>(
 
   // return the the token with this symbol where no `original` field exists
   return original.find((t) => !t.original);
-}
-
-// Finds the unique token key for a given chain and address
-export function getTokenByAddress<N extends Network, C extends Chain>(
-  network: N,
-  chain: C,
-  address: string,
-): Token | undefined {
-  const tokenMap = getTokenMap(network, chain);
-  if (!tokenMap) return;
-  const foundToken = Object.entries(tokenMap).find(([, token]) =>
-    isEqualCaseInsensitive(token.address, address),
-  );
-  if (!foundToken) return;
-  return foundToken[1];
 }

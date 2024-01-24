@@ -42,16 +42,16 @@ declare global {
 
 export type MappedPlatforms = keyof WormholeNamespace.PlatformToNativeAddressMapping;
 
-type GetNativeAddress<T extends Platform> = T extends MappedPlatforms
-  ? WormholeNamespace.PlatformToNativeAddressMapping[T]
+type GetNativeAddress<P extends Platform> = P extends MappedPlatforms
+  ? WormholeNamespace.PlatformToNativeAddressMapping[P]
   : never;
 
 export type NativeAddress<C extends Chain> = GetNativeAddress<ChainToPlatform<C>>;
 
-export type UniversalOrNative<T extends Chain> = UniversalAddress | NativeAddress<T>;
+export type UniversalOrNative<C extends Chain> = UniversalAddress | NativeAddress<C>;
 
-export type AccountAddress<T extends Chain> = UniversalOrNative<T>;
-export type TokenAddress<T extends Chain> = UniversalOrNative<T> | "native";
+export type AccountAddress<C extends Chain> = UniversalOrNative<C>;
+export type TokenAddress<C extends Chain> = UniversalOrNative<C> | "native";
 
 export type ChainAddress<C extends Chain = Chain> = {
   readonly chain: C;
