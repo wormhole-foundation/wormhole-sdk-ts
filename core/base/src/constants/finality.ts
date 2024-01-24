@@ -24,7 +24,7 @@ export const safeThreshold = constMap(safeThresholds);
 const finalityThresholds = [
   ["Ethereum", 64],
   ["Solana", 32],
-  ["Polygon", 512],
+  ["Polygon", 32],
   ["Bsc", 15],
   ["Fantom", 1],
   ["Celo", 1],
