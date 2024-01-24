@@ -106,7 +106,7 @@ export class EvmPorticoBridge<
     receiver: ChainAddress,
     token: TokenAddress<C>,
     amount: bigint,
-    destToken: TokenId | 'native',
+    destToken: TokenId,
     quote: PorticoBridge.Quote,
   ) {
     const { minAmountStart, minAmountFinish } = quote.swapAmounts;
