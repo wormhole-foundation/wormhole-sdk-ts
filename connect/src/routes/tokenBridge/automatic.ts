@@ -46,6 +46,10 @@ export class AutomaticTokenBridgeRoute<N extends Network>
 {
   NATIVE_GAS_DROPOFF_SUPPORTED = true;
 
+  static meta = {
+    name: "AutomaticTokenBridge",
+  };
+
   static supportedNetworks(): Network[] {
     return ["Mainnet", "Testnet"];
   }
@@ -81,11 +85,8 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     ];
   }
 
-  static isProtocolSupported<N extends Network>(
-    fromChain: ChainContext<N>,
-    toChain: ChainContext<N>,
-  ): boolean {
-    return fromChain.supportsAutomaticTokenBridge() && toChain.supportsAutomaticTokenBridge();
+  static isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean {
+    return chain.supportsAutomaticTokenBridge();
   }
 
   getDefaultOptions(): Op {

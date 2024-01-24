@@ -50,7 +50,8 @@ export class RouteResolver<N extends Network> {
             rc.supportedNetworks().includes(this.wh.network) &&
             rc.supportedChains(this.wh.network).includes(request.to.chain) &&
             rc.supportedChains(this.wh.network).includes(request.from.chain) &&
-            rc.isProtocolSupported(request.fromChain, request.toChain),
+            rc.isProtocolSupported(request.fromChain) &&
+            rc.isProtocolSupported(request.toChain),
         )
         .map((rc) => new rc(this.wh, request))
         .map(async (route) => {
