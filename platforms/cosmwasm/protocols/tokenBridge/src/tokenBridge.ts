@@ -1,6 +1,5 @@
 import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import {
-  Chain,
   ChainAddress,
   ChainsConfig,
   Contracts,
@@ -11,6 +10,7 @@ import {
   TxHash,
   UniversalAddress,
   encoding,
+  isNative,
   serialize,
   toChain,
   toChainId,
@@ -82,8 +82,9 @@ export class CosmwasmTokenBridge<N extends Network, C extends CosmwasmChains>
     return false;
   }
 
-  async getWrappedAsset(token: TokenId<Chain>): Promise<NativeAddress<C>> {
+  async getWrappedAsset(token: TokenId): Promise<NativeAddress<C>> {
     if (token.chain === this.chain) throw new Error(`Expected foreign chain, got ${token.chain}`);
+    if (isNative(token.address)) throw new Error("Native asset cannot be a wrapped asset");
 
     const base64Addr = encoding.b64.encode(token.address.toUniversalAddress().toUint8Array());
 
@@ -125,7 +126,7 @@ export class CosmwasmTokenBridge<N extends Network, C extends CosmwasmChains>
   }
 
   async *createAttestation(
-    token: AnyCosmwasmAddress | "native",
+    token: AnyCosmwasmAddress,
     payer?: AnyCosmwasmAddress,
   ): AsyncGenerator<CosmwasmUnsignedTransaction<N, C>> {
     if (!payer) throw new Error("Payer required to create attestation");
@@ -135,16 +136,15 @@ export class CosmwasmTokenBridge<N extends Network, C extends CosmwasmChains>
 
     // TODO nonce?
     const nonce = 0;
-    const assetInfo =
-      token === "native"
-        ? {
-            native_token: {
-              denom: CosmwasmPlatform.getNativeDenom(this.network, this.chain),
-            },
-          }
-        : {
-            token: { contract_addr: tokenStr },
-          };
+    const assetInfo = isNative(token)
+      ? {
+          native_token: {
+            denom: CosmwasmPlatform.getNativeDenom(this.network, this.chain),
+          },
+        }
+      : {
+          token: { contract_addr: tokenStr },
+        };
 
     yield this.createUnsignedTx(
       {
@@ -185,7 +185,7 @@ export class CosmwasmTokenBridge<N extends Network, C extends CosmwasmChains>
   async *transfer(
     sender: AnyCosmwasmAddress,
     recipient: ChainAddress,
-    token: AnyCosmwasmAddress | "native",
+    token: AnyCosmwasmAddress,
     amount: bigint,
     payload?: Uint8Array,
   ): AsyncGenerator<CosmwasmUnsignedTransaction<N, C>> {
@@ -200,9 +200,9 @@ export class CosmwasmTokenBridge<N extends Network, C extends CosmwasmChains>
 
     const denom = CosmwasmPlatform.getNativeDenom(this.network, this.chain);
 
-    const isNative = token === "native";
+    const isNativeToken = isNative(token);
 
-    const tokenAddress = isNative ? denom : token.toString();
+    const tokenAddress = isNativeToken ? denom : token.toString();
 
     const senderAddress = new CosmwasmAddress(sender).toString();
 
@@ -227,7 +227,7 @@ export class CosmwasmTokenBridge<N extends Network, C extends CosmwasmChains>
           };
     };
 
-    if (isNative) {
+    if (isNativeToken) {
       const msgs = [
         buildExecuteMsg(senderAddress, this.tokenBridge, { deposit_tokens: {} }, [
           { amount: amount.toString(), denom: tokenAddress },

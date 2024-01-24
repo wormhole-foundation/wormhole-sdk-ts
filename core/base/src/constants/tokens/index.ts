@@ -37,10 +37,7 @@ export const isEqualCaseInsensitive = (a: string, b: string): boolean => {
 
 export const filters = {
   byAddress: (tokenMap: ChainTokens, address: string) => {
-    const foundToken = Object.entries(tokenMap).find(([, token]) =>
-      isEqualCaseInsensitive(token.address, address),
-    );
-    return foundToken ? foundToken[1] : undefined;
+    return Object.values(tokenMap).find((token) => isEqualCaseInsensitive(token.address, address));
   },
   native: (tokenMap: ChainTokens) => {
     return filters.byAddress(tokenMap, "native");

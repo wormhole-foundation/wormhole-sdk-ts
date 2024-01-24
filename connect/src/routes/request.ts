@@ -4,6 +4,7 @@ import {
   ChainContext,
   TokenId,
   canonicalAddress,
+  isNative,
   isTokenId,
 } from "@wormhole-foundation/sdk-definitions";
 import { Wormhole } from "../wormhole";
@@ -46,8 +47,8 @@ export class RouteTransferRequest<N extends Network> {
     params: {
       from: ChainAddress;
       to: ChainAddress;
-      source: TokenId | "native";
-      destination?: TokenId | "native";
+      source: TokenId;
+      destination?: TokenId;
     },
     fromChain?: ChainContext<N>,
     toChain?: ChainContext<N>,
@@ -75,7 +76,7 @@ export class RouteTransferRequest<N extends Network> {
 }
 
 export interface TokenDetails {
-  id: TokenId | "native";
+  id: TokenId;
   decimals: number;
   symbol?: tokens.TokenSymbol;
   wrapped?: TokenId;
@@ -83,7 +84,7 @@ export interface TokenDetails {
 
 async function getTokenDetails<N extends Network>(
   chain: ChainContext<N>,
-  token: TokenId | "native",
+  token: TokenId,
 ): Promise<TokenDetails> {
   const address = isTokenId(token) ? canonicalAddress(token) : token;
 
@@ -92,7 +93,7 @@ async function getTokenDetails<N extends Network>(
     : undefined;
 
   const symbol = details ? details.symbol : undefined;
-  const wrapped = token === "native" ? await chain.getNativeWrappedTokenId() : undefined;
+  const wrapped = isNative(token.address) ? await chain.getNativeWrappedTokenId() : undefined;
   const decimals = Number(await chain.getDecimals(isTokenId(token) ? token.address : token));
 
   return {

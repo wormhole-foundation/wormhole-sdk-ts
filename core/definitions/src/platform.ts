@@ -1,11 +1,10 @@
 import { Chain, Network, Platform, PlatformToChains } from "@wormhole-foundation/sdk-base";
 import { WormholeCore } from ".";
-import { TokenAddress } from "./address";
 import { WormholeMessageId } from "./attestation";
 import { ChainContext } from "./chain";
 import { ProtocolName, create } from "./protocol";
 import { RpcConnection } from "./rpc";
-import { Balances, ChainsConfig, SignedTx, TokenId, TxHash } from "./types";
+import { Balances, ChainsConfig, SignedTx, TokenId, TxHash, TokenAddress } from "./types";
 
 // PlatformUtils represents the _static_ attributes available on
 // the PlatformContext Class
@@ -73,6 +72,9 @@ export interface PlatformUtils<P extends Platform> {
     stxns: SignedTx[],
   ): Promise<TxHash[]>;
 }
+
+// Use this to ensure the static methods defined in the PlatformContext
+export type StaticPlatformMethods<P extends Platform, I extends PlatformUtils<P>> = InstanceType<I>;
 
 // PlatformContext is an instance of the class that represents a specific Platform
 export abstract class PlatformContext<N extends Network, P extends Platform> {

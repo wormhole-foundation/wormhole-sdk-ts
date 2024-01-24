@@ -17,6 +17,7 @@ import {
   toChain,
   toChainId,
   toNative,
+  isNative,
 } from "@wormhole-foundation/connect-sdk";
 import {
   AlgorandAddress,
@@ -386,7 +387,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
     payload?: Uint8Array,
   ): AsyncGenerator<AlgorandUnsignedTransaction<N, C>> {
     const senderAddr = sender.toString();
-    const assetId = token === "native" ? 0 : new AlgorandAddress(token).toInt();
+    const assetId = isNative(token) ? 0 : new AlgorandAddress(token).toInt();
     const qty = amount;
     const chainId = toChainId(recipient.chain);
     const receiver = recipient.address.toUniversalAddress().toUint8Array();

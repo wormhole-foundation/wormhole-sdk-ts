@@ -3,6 +3,7 @@ import {
   TokenId,
   WormholeMessageId,
   encoding,
+  isNative,
   toChainId,
 } from "@wormhole-foundation/connect-sdk";
 import { Algodv2, LogicSigAccount, decodeAddress, getApplicationAddress, modelsv2 } from "algosdk";
@@ -86,6 +87,7 @@ export const StorageLogicSig = {
   },
   // Get the storage lsig for a wrapped asset
   forWrappedAsset: (appId: bigint, token: TokenId<Chain>) => {
+    if (isNative(token.address)) throw new Error("native asset cannot be a wrapped asset");
     const appAddress = decodeAddress(getApplicationAddress(appId)).publicKey;
     return StorageLogicSig.fromData({
       appId,
