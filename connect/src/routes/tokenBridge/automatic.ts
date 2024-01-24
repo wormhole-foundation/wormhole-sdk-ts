@@ -4,8 +4,10 @@ import {
   Signer,
   TokenId,
   TokenTransferDetails,
+  isNative,
   isSameToken,
   isTokenId,
+  nativeTokenId,
 } from "@wormhole-foundation/sdk-definitions";
 import { TokenTransfer } from "../../protocols/tokenTransfer";
 import { AttestationReceipt, TransferQuote, TransferState } from "../../types";
@@ -60,7 +62,7 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     const atb = await fromChain.getAutomaticTokenBridge();
     const registered = await atb.getRegisteredTokens();
     return [
-      { chain: fromChain.chain, address: "native" },
+      nativeTokenId(fromChain.chain),
       ...registered.map((v) => {
         return { chain: fromChain.chain, address: v };
       }),
@@ -74,7 +76,7 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     toChain: ChainContext<N>,
   ): Promise<TokenId[]> {
     return [
-      { chain: fromChain.chain, address: "native" },
+      nativeTokenId(toChain.chain),
       await TokenTransfer.lookupDestinationToken(fromChain, toChain, sourceToken),
     ];
   }
@@ -140,7 +142,7 @@ export class AutomaticTokenBridgeRoute<N extends Network>
         throw new Error("Native gas must be between 0.0 and 1.0 (0% and 100%)");
 
       // If destination is native, max out the nativeGas requested
-      if (destination && destination.id.address === "native" && nativeGasPerc === 0.0)
+      if (destination && isNative(destination.id.address) && nativeGasPerc === 0.0)
         nativeGasPerc = 1.0;
 
       const validatedParams: Vp = {
@@ -158,10 +160,9 @@ export class AutomaticTokenBridgeRoute<N extends Network>
   async normalizeTransferParams(params: Tp) {
     const amount = this.request.normalizeAmount(params.amount);
 
-    const inputToken =
-      this.request.source.id.address === "native"
-        ? await this.request.fromChain.getNativeWrappedTokenId()
-        : this.request.source.id;
+    const inputToken = isNative(this.request.source.id.address)
+      ? await this.request.fromChain.getNativeWrappedTokenId()
+      : this.request.source.id;
 
     const atb = await this.request.fromChain.getAutomaticTokenBridge();
     const fee = await atb.getRelayerFee(
@@ -183,7 +184,7 @@ export class AutomaticTokenBridgeRoute<N extends Network>
 
     let nativeGasPerc = options.nativeGas ?? 0.0;
     // If destination is native, max out the nativeGas requested
-    if (destination && destination.id.address === "native" && nativeGasPerc === 0.0)
+    if (destination && isNative(destination.id.address) && nativeGasPerc === 0.0)
       nativeGasPerc = 1.0;
     if (nativeGasPerc > 1.0 || nativeGasPerc < 0.0) {
       throw new Error("Native gas must be between 0.0 and 1.0 (0% and 100%)");

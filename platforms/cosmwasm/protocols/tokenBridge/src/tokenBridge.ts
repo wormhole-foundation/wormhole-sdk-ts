@@ -10,6 +10,7 @@ import {
   TxHash,
   UniversalAddress,
   encoding,
+  isNative,
   serialize,
   toChain,
   toChainId,
@@ -80,7 +81,7 @@ export class CosmwasmTokenBridge<N extends Network, C extends CosmwasmChains>
 
   async getWrappedAsset(token: TokenId): Promise<NativeAddress<C>> {
     if (token.chain === this.chain) throw new Error(`Expected foreign chain, got ${token.chain}`);
-    if (token.address === "native") throw new Error("Native asset cannot be a wrapped asset");
+    if (isNative(token.address)) throw new Error("Native asset cannot be a wrapped asset");
 
     const base64Addr = encoding.b64.encode(token.address.toUniversalAddress().toUint8Array());
 
@@ -132,16 +133,15 @@ export class CosmwasmTokenBridge<N extends Network, C extends CosmwasmChains>
 
     // TODO nonce?
     const nonce = 0;
-    const assetInfo =
-      token === "native"
-        ? {
-            native_token: {
-              denom: CosmwasmPlatform.getNativeDenom(this.network, this.chain),
-            },
-          }
-        : {
-            token: { contract_addr: tokenStr },
-          };
+    const assetInfo = isNative(token)
+      ? {
+          native_token: {
+            denom: CosmwasmPlatform.getNativeDenom(this.network, this.chain),
+          },
+        }
+      : {
+          token: { contract_addr: tokenStr },
+        };
 
     yield this.createUnsignedTx(
       {
@@ -197,9 +197,9 @@ export class CosmwasmTokenBridge<N extends Network, C extends CosmwasmChains>
 
     const denom = CosmwasmPlatform.getNativeDenom(this.network, this.chain);
 
-    const isNative = token === "native";
+    const isNativeToken = isNative(token);
 
-    const tokenAddress = isNative ? denom : token.toString();
+    const tokenAddress = isNativeToken ? denom : token.toString();
 
     const senderAddress = new CosmwasmAddress(sender).toString();
 
@@ -224,7 +224,7 @@ export class CosmwasmTokenBridge<N extends Network, C extends CosmwasmChains>
           };
     };
 
-    if (isNative) {
+    if (isNativeToken) {
       const msgs = [
         buildExecuteMsg(senderAddress, this.tokenBridge, { deposit_tokens: {} }, [
           { amount: amount.toString(), denom: tokenAddress },

@@ -9,6 +9,7 @@ import {
   TokenId,
   UniversalAddress,
   encoding,
+  isNative,
   serialize,
   sha3_256,
   toChain,
@@ -64,7 +65,7 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
     config: ChainsConfig<N, AptosPlatformType>,
   ): Promise<AptosTokenBridge<N, AptosChains>> {
     const [network, chain] = await AptosPlatform.chainFromRpc(connection);
-    const conf = config[chain];
+    const conf = config[chain]!;
     if (conf.network !== network)
       throw new Error("Network mismatch " + conf.network + " !== " + network);
     return new AptosTokenBridge(network as N, chain, connection, conf.contracts);
@@ -205,7 +206,7 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
     // TODO
     const fee = 0n;
     const nonce = 0n;
-    const fullyQualifiedType = token === "native" ? APTOS_COIN : token.toString();
+    const fullyQualifiedType = isNative(token) ? APTOS_COIN : token.toString();
 
     const dstAddress = recipient.address.toUniversalAddress().toUint8Array();
     const dstChain = toChainId(recipient.chain);

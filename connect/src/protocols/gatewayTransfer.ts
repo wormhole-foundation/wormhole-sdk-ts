@@ -1,12 +1,13 @@
 import {
   ChainToPlatform,
   Network,
+  PlatformToChains,
   chainToPlatform,
   encoding,
   toChain,
-  PlatformToChains,
 } from "@wormhole-foundation/sdk-base";
 import {
+  AttestationId,
   ChainAddress,
   ChainContext,
   GatewayTransferDetails,
@@ -23,17 +24,17 @@ import {
   WormholeMessageId,
   gatewayTransferMsg,
   isGatewayTransferDetails,
+  isNative,
   isTransactionIdentifier,
   isWormholeMessageId,
   toGatewayMsg,
   toNative,
-  AttestationId,
 } from "@wormhole-foundation/sdk-definitions";
 import { signSendWait } from "../common";
 import { fetchIbcXfer, isTokenBridgeVaaRedeemed, retry } from "../tasks";
+import { TransferState } from "../types";
 import { Wormhole } from "../wormhole";
 import { WormholeTransfer } from "./wormholeTransfer";
-import { TransferState } from "../types";
 
 type GatewayContext<N extends Network> = ChainContext<
   N,
@@ -312,9 +313,7 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
   }
 
   private async _transfer(signer: Signer): Promise<TransactionId[]> {
-    const tokenAddress =
-      this.transfer.token.address === "native" ? "native" : this.transfer.token.address;
-
+    const tokenAddress = this.transfer.token.address;
     const fromChain = this.wh.getChain(this.transfer.from.chain);
 
     // Build the message needed to send a transfer through the gateway
@@ -331,7 +330,7 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
   }
 
   private async _transferIbc(signer: Signer): Promise<TransactionId[]> {
-    if (this.transfer.token.address === "native")
+    if (isNative(this.transfer.token.address))
       throw new Error("Native not supported for IBC transfers");
 
     const fromChain = this.wh.getChain(this.transfer.from.chain);

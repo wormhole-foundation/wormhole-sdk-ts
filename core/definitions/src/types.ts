@@ -23,8 +23,19 @@ export type SequenceId = bigint;
 export type SignedTx = any;
 
 export type TokenAddress<C extends Chain> = UniversalOrNative<C> | "native";
-export type TokenId<C extends Chain = Chain> = { chain: C; address: TokenAddress<C> };
 
+// Typeguard to check if the token address is the string "native" representing the gas token
+// on a given chain
+export function isNative(thing: any): thing is "native" {
+  return typeof thing === "string" && thing === "native";
+}
+
+// Utility to create a TokenId with the address set to the string "native"
+export function nativeTokenId<C extends Chain>(chain: C): TokenId<C> {
+  return { chain, address: "native" };
+}
+
+export type TokenId<C extends Chain = Chain> = { chain: C; address: TokenAddress<C> };
 export function isTokenId<C extends Chain>(thing: any): thing is TokenId<C> {
   return (
     typeof thing === "object" &&
@@ -36,12 +47,12 @@ export function isTokenId<C extends Chain>(thing: any): thing is TokenId<C> {
 
 export function isSameToken(a: TokenId, b: TokenId): boolean {
   if (a.chain !== b.chain) return false;
-  if (a.address === "native" && b.address === "native") return true;
+  if (isNative(a.address) && isNative(b.address)) return true;
   return canonicalAddress(a) === canonicalAddress(b);
 }
 
 export function canonicalAddress(ca: ChainAddress | TokenId): string {
-  if (isTokenId(ca) && ca.address === "native") return "native";
+  if (isTokenId(ca) && isNative(ca.address)) return ca.address;
   // @ts-ignore -- `toNative` will eval to 'never' until platforms are registered
   return ca.address.toNative(ca.chain).toString();
 }
@@ -56,15 +67,13 @@ export function resolveWrappedToken<N extends Network, C extends Chain>(
   let tokenAddr: TokenAddress<C>;
 
   if (isTokenId(token)) {
-    if (token.address !== "native") {
-      return [false, token];
-    }
+    if (!isNative(token.address)) return [false, token];
     tokenAddr = token.address;
   } else {
     tokenAddr = token;
   }
 
-  if (tokenAddr === "native") {
+  if (isNative(tokenAddr)) {
     const nativeToken = tokens.getNative(network, chain);
     if (!nativeToken) throw new Error("Invalid destination token");
 
@@ -130,7 +139,7 @@ export function buildConfig<N extends Network>(n: N): ChainsConfig<N, Platform> 
       const tokenMap = tokens.getTokenMap(n, c);
 
       const nativeToken = tokenMap
-        ? Object.values(tokenMap).find((token) => token.address === "native" && token.wrapped)
+        ? Object.values(tokenMap).find((token) => isNative(token.address) && token.wrapped)
         : undefined;
 
       const wrappedNative = nativeToken ? tokenMap![nativeToken.wrapped!.symbol] : undefined;

@@ -183,7 +183,3 @@ export class EvmPlatform<N extends Network>
     return ti;
   }
 }
-
-// EvmPlatform satisfies PlatformCtr<'Evm'>;
-// EvmPlatform satisfies PlatformUtils<'Evm'>;
-// EvmPlatform satisfies PlatformUtils<Platform>;

@@ -22,6 +22,8 @@ import {
   WormholeMessageId,
   canonicalAddress,
   deserialize,
+  isNative,
+  nativeTokenId,
   toNative,
 } from "@wormhole-foundation/sdk-definitions";
 import { getCircleAttestationWithRetry } from "./circle-api";
@@ -409,10 +411,7 @@ export class Wormhole<N extends Network> {
    * @returns The ChainAddress
    */
   static tokenId<C extends Chain>(chain: C, address: string): TokenId<C> {
-    return {
-      chain,
-      address: address === "native" ? "native" : Wormhole.parseAddress(chain, address),
-    };
+    return isNative(address) ? nativeTokenId(chain) : this.chainAddress(chain, address);
   }
 
   /**

@@ -20,6 +20,7 @@ import {
   UnsignedTransaction,
   WormholeMessageId,
   deserialize,
+  isNative,
   isTokenId,
   isTokenTransferDetails,
   isTransactionIdentifier,
@@ -373,7 +374,7 @@ export class TokenTransfer<N extends Network = Network>
   ): Promise<TokenId<DC>> {
     // that will be minted when the transfer is redeemed
     let lookup: TokenId;
-    if (token.address === "native") {
+    if (isNative(token.address)) {
       // if native, get the wrapped asset id
       lookup = await srcChain.getNativeWrappedTokenId();
     } else {
@@ -442,10 +443,9 @@ export class TokenTransfer<N extends Network = Network>
     transfer: TokenTransferDetails,
   ): Promise<TransferQuote> {
     const dstToken = await this.lookupDestinationToken(srcChain, dstChain, transfer.token);
-    const srcToken =
-      transfer.token.address === "native"
-        ? await srcChain.getNativeWrappedTokenId()
-        : transfer.token;
+    const srcToken = isNative(transfer.token.address)
+      ? await srcChain.getNativeWrappedTokenId()
+      : transfer.token;
 
     const dstDecimals = await dstChain.getDecimals(dstToken.address);
     const srcDecimals = await srcChain.getDecimals(srcToken.address);

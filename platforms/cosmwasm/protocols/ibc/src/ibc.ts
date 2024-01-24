@@ -19,6 +19,7 @@ import {
   encoding,
   isIbcMessageId,
   isIbcTransferInfo,
+  isNative,
   toChainId,
 } from "@wormhole-foundation/connect-sdk";
 
@@ -125,10 +126,9 @@ export class CosmwasmIbcBridge<N extends Network, C extends CosmwasmChains>
     const timeout = BigInt(millisToNano(Date.now() + IBC_TIMEOUT_MILLIS));
     const memo = JSON.stringify(payload);
 
-    const ibcDenom =
-      token === "native"
-        ? CosmwasmPlatform.getNativeDenom(this.network, this.chain)
-        : Gateway.deriveIbcDenom(this.network, this.chain, new CosmwasmAddress(token).toString());
+    const ibcDenom = isNative(token)
+      ? CosmwasmPlatform.getNativeDenom(this.network, this.chain)
+      : Gateway.deriveIbcDenom(this.network, this.chain, new CosmwasmAddress(token).toString());
     const ibcToken = coin(amount.toString(), ibcDenom.toString());
 
     const ibcMessage: MsgTransferEncodeObject = {

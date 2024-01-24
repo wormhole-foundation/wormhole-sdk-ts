@@ -55,7 +55,7 @@ import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
 
   // we'll use the native token on the source chain
 
-  const token: TokenId = { chain: external.chain, address: "native" };
+  const token: TokenId = Wormhole.tokenId(external.chain, "native");
   const amount = normalizeAmount("0.01", BigInt(external.config.nativeTokenDecimals));
 
   // Transfer native token from source chain, through gateway, to a cosmos chain

@@ -16,8 +16,8 @@ import {
   chainToPlatform,
   contracts,
   isAttested,
+  isNative,
   isSourceInitiated,
-  isTokenId,
   resolveWrappedToken,
   signSendWait,
   tokens,
@@ -87,14 +87,11 @@ export class AutomaticPorticoRoute<N extends Network>
       .flat()
       .filter((td) => {
         const localOrEth = !td.original || td.original === "Ethereum";
-        const isAvax = chain === "Avalanche" && td.address === "native";
+        const isAvax = chain === "Avalanche" && isNative(td.address);
         return localOrEth && !isAvax;
       });
 
-    return supported.map((td) => {
-      if (td.address === "native") return { chain, address: "native" };
-      return Wormhole.chainAddress(chain, td.address);
-    });
+    return supported.map((td) => Wormhole.tokenId(chain, td.address));
   }
 
   static async supportedDestinationTokens<N extends Network>(
@@ -132,9 +129,9 @@ export class AutomaticPorticoRoute<N extends Network>
         switch (td.symbol) {
           case "ETH":
           case "WETH":
-            return Wormhole.chainAddress(toChain.chain, td.address);
+            return Wormhole.tokenId(toChain.chain, td.address);
           case "WSTETH":
-            return Wormhole.chainAddress(toChain.chain, td.address);
+            return Wormhole.tokenId(toChain.chain, td.address);
           default:
             throw new Error("Unknown symbol: " + redeemTokenDetails.symbol);
         }
@@ -245,13 +242,8 @@ export class AutomaticPorticoRoute<N extends Network>
   }
 
   async initiate(sender: Signer<N>, params: VP) {
-    const sourceToken = isTokenId(this.request.source.id)
-      ? this.request.source.id.address
-      : this.request.source.id;
-
-    const destToken = isTokenId(this.request.destination!.id)
-      ? this.request.destination?.id
-      : this.request.destination!.id;
+    const sourceToken = this.request.source.id.address;
+    const destToken = this.request.destination!.id;
 
     const fromPorticoBridge = await this.request.fromChain.getPorticoBridge();
     const xfer = fromPorticoBridge.transfer(
