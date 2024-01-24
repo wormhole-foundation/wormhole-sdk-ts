@@ -18,6 +18,16 @@ import "../payloads/automaticCircleBridge";
 import { circleMessageLayout } from "../payloads/circleBridge";
 import { keccak256 } from "../utils";
 import { ProtocolPayload, ProtocolVAA, payloadDiscriminator } from "../vaa";
+import { EmptyPlatformMap } from "../protocol";
+
+declare global {
+  namespace WormholeNamespace {
+    export interface ProtocolToPlatformMapping {
+      CircleBridge: EmptyPlatformMap<Platform, CircleBridge.ProtocolName>;
+      AutomaticCircleBridge: EmptyPlatformMap<Platform, AutomaticCircleBridge.ProtocolName>;
+    }
+  }
+}
 
 export namespace CircleBridge {
   const _protocol = "CircleBridge";
@@ -31,6 +41,10 @@ export namespace CircleBridge {
   export type Attestation = {
     message: Message;
     attestation?: string;
+  };
+
+  export const isCircleAttestation = (thing: any): thing is Attestation => {
+    return (<Attestation>thing).message !== undefined;
   };
 
   export const deserialize = (data: Uint8Array): [CircleBridge.Message, string] => {

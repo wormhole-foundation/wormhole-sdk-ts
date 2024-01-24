@@ -1,4 +1,4 @@
-import { MapLevel, constMap } from "../utils";
+import { MapLevels, constMap } from "../utils";
 import { Network } from "./networks";
 import { Chain } from "./chains";
 
@@ -56,9 +56,9 @@ const rpcConfig = [[
     ["Algorand",        "https://testnet-api.algonode.cloud"],
     ["Terra",           "https://bombay.stakesystems.io"],
     ["Terra2",          "https://terra-testnet-rpc.polkachu.com"],
-    ["ArbitrumSepolia", "https://sepolia.base.org"],
+    ["ArbitrumSepolia", "https://sepolia-rollup.arbitrum.io/rpc"],
     ["OptimismSepolia", "https://sepolia.optimism.io"],
-    ["BaseSepolia",     "https://arbitrum-sepolia.blockpi.network/v1/rpc/public"],
+    ["BaseSepolia",     "https://sepolia.base.org"],
     ["Karura",          "https://eth-rpc-karura-testnet.aca-staging.network"],
     ["Acala",           "https://eth-rpc-acala-testnet.aca-staging.network"],
   ]], [
@@ -67,7 +67,7 @@ const rpcConfig = [[
     ["Bsc",       "http://eth-devnet2:8546"],
     ["Solana",    "http://solana-devnet:8899"],
   ]],
-] as const satisfies MapLevel<Network, MapLevel<Chain, string>>;
+] as const satisfies MapLevels<[Network, Chain, string]>;
 
 const rpc = constMap(rpcConfig);
 export const rpcAddress = (network: Network, chain: Chain) => rpc.get(network, chain) ?? "";

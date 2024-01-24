@@ -124,7 +124,10 @@ export class SolanaCircleBridge<N extends Network, C extends SolanaChains>
     const senderPk = new SolanaAddress(sender).unwrap();
     const senderATA = getAssociatedTokenAddressSync(usdc, senderPk);
 
-    const destinationDomain = circle.circleChainId.get(recipient.chain)!;
+    const destinationDomain = circle.circleChainId.get(
+      this.network,
+      recipient.chain,
+    )!;
     const destinationAddress = recipient.address.toUniversalAddress();
 
     const ix = await createDepositForBurnInstruction(
@@ -148,7 +151,7 @@ export class SolanaCircleBridge<N extends Network, C extends SolanaChains>
   async isTransferCompleted(message: CircleBridge.Message): Promise<boolean> {
     const usedNoncesAddress = nonceAccount(
       message.nonce,
-      message.sourceDomain,
+      message.sourceDomain as circle.CircleChainId,
       this.messageTransmitter.programId,
     );
 
@@ -200,8 +203,8 @@ export class SolanaCircleBridge<N extends Network, C extends SolanaChains>
     const xferSender = body.messageSender;
     const xferReceiver = body.mintRecipient;
 
-    const sendChain = circle.toCircleChain(msg.sourceDomain);
-    const rcvChain = circle.toCircleChain(msg.destinationDomain);
+    const sendChain = circle.toCircleChain(this.network, msg.sourceDomain);
+    const rcvChain = circle.toCircleChain(this.network, msg.destinationDomain);
 
     const token = { chain: sendChain, address: body.burnToken };
 

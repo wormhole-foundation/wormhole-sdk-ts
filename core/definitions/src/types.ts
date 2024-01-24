@@ -15,7 +15,7 @@ import {
   toChainId,
   tokens,
 } from "@wormhole-foundation/sdk-base";
-import { ChainAddress } from "./address";
+import { ChainAddress, TokenAddress, toNative } from "./address";
 import { Contracts, getContracts } from "./contracts";
 
 export type TxHash = string;
@@ -26,9 +26,43 @@ export type TokenId<C extends Chain = Chain> = ChainAddress<C>;
 export function isTokenId<C extends Chain>(thing: any): thing is TokenId<C> {
   return (
     typeof thing === "object" &&
-    typeof (<TokenId<C>>thing).address !== undefined &&
+    (<TokenId<C>>thing).address !== undefined &&
+    (<TokenId<C>>thing).chain !== undefined &&
     isChain((<TokenId<C>>thing).chain)
   );
+}
+export function isSameToken(a: TokenId, b: TokenId): boolean {
+  if (a.chain !== b.chain) return false;
+  return canonicalAddress(a) === canonicalAddress(b);
+}
+
+export function canonicalAddress(ca: ChainAddress): string {
+  // @ts-ignore
+  return ca.address.toNative(ca.chain).toString();
+}
+
+// Given a token id, address, or the const string 'native' return
+// a TokenId representing either the token itself or the wrapped version
+export function resolveWrappedToken<N extends Network, C extends Chain>(
+  network: N,
+  chain: C,
+  token: TokenId<C> | TokenAddress<C> | "native",
+): [boolean, TokenId<C>] {
+  if (isTokenId(token)) return [false, token];
+
+  if (token === "native") {
+    const nativeToken = tokens.getNative(network, chain);
+    if (!nativeToken) throw new Error("Invalid destination token");
+
+    const wrappedKey = nativeToken.wrapped!;
+    const wrappedToken = tokens.getTokenByKey(network, chain, wrappedKey.symbol);
+    if (!wrappedToken) throw new Error("Invalid wrapped token key: " + wrappedKey);
+    const destNativeWrapped = { chain, address: toNative(chain, wrappedToken.address) };
+
+    return [true, destNativeWrapped];
+  }
+
+  return [false, { chain, address: token }];
 }
 
 export type Balances = {
