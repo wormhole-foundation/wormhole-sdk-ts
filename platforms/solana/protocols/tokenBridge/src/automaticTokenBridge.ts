@@ -8,6 +8,7 @@ import {
   Contracts,
   Network,
   TokenAddress,
+  isNative,
   toChainId,
   toNative,
 } from '@wormhole-foundation/connect-sdk';
@@ -116,13 +117,10 @@ export class SolanaAutomaticTokenBridge<
       .toUniversalAddress()
       .toUint8Array();
 
-    const tokenMint =
-      token === 'native'
-        ? new PublicKey(NATIVE_MINT)
-        : new SolanaAddress(token).unwrap();
+    const tokenMint = this.mintAddress(token);
 
     const transaction = new Transaction();
-    if (token === 'native') {
+    if (isNative(token)) {
       const ata = getAssociatedTokenAddressSync(tokenMint, senderAddress);
       try {
         await getAccount(this.connection, ata);
@@ -144,35 +142,36 @@ export class SolanaAutomaticTokenBridge<
 
     const nativeGasAmount = nativeGas ? nativeGas : 0n;
 
-    const transferIx =
-      token === 'native'
-        ? await createTransferNativeTokensWithRelayInstruction(
-            this.connection,
-            this.tokenBridgeRelayer.programId,
-            senderAddress,
-            this.tokenBridgeProgramId,
-            this.coreBridgeProgramId,
-            tokenMint,
-            amount,
-            nativeGasAmount,
-            recipientAddress,
-            recipient.chain,
-            nonce,
-            token === 'native',
-          )
-        : await createTransferWrappedTokensWithRelayInstruction(
-            this.connection,
-            this.tokenBridgeRelayer.programId,
-            senderAddress,
-            this.tokenBridgeProgramId,
-            this.coreBridgeProgramId,
-            tokenMint,
-            amount,
-            nativeGasAmount,
-            recipientAddress,
-            recipient.chain,
-            nonce,
-          );
+    const tokenIsNative = isNative(token);
+
+    const transferIx = tokenIsNative
+      ? await createTransferNativeTokensWithRelayInstruction(
+          this.connection,
+          this.tokenBridgeRelayer.programId,
+          senderAddress,
+          this.tokenBridgeProgramId,
+          this.coreBridgeProgramId,
+          tokenMint,
+          amount,
+          nativeGasAmount,
+          recipientAddress,
+          recipient.chain,
+          nonce,
+          tokenIsNative,
+        )
+      : await createTransferWrappedTokensWithRelayInstruction(
+          this.connection,
+          this.tokenBridgeRelayer.programId,
+          senderAddress,
+          this.tokenBridgeProgramId,
+          this.coreBridgeProgramId,
+          tokenMint,
+          amount,
+          nativeGasAmount,
+          recipientAddress,
+          recipient.chain,
+          nonce,
+        );
 
     transaction.add(transferIx);
     transaction.feePayer = senderAddress;
@@ -194,11 +193,7 @@ export class SolanaAutomaticTokenBridge<
     recipient: ChainAddress,
     token: TokenAddress<C>,
   ): Promise<bigint> {
-    const tokenAddress =
-      token === 'native'
-        ? new PublicKey(NATIVE_MINT)
-        : new SolanaAddress(token).unwrap();
-
+    const tokenAddress = this.mintAddress(token);
     const [{ fee }, { swapRate }, { relayerFeePrecision }] = await Promise.all([
       this.getForeignContract(recipient.chain),
       this.getRegisteredToken(tokenAddress),
@@ -218,10 +213,7 @@ export class SolanaAutomaticTokenBridge<
   }
 
   async maxSwapAmount(token: TokenAddress<C>): Promise<bigint> {
-    const mint =
-      token === 'native'
-        ? new PublicKey(NATIVE_MINT)
-        : new SolanaAddress(token).unwrap();
+    const mint = this.mintAddress(token);
 
     const [{ swapRate, maxNativeSwapAmount }, { swapRate: solSwapRate }] =
       await Promise.all([
@@ -255,10 +247,7 @@ export class SolanaAutomaticTokenBridge<
   ): Promise<bigint> {
     if (amount === 0n) return 0n;
 
-    const mint =
-      token === 'native'
-        ? new PublicKey(NATIVE_MINT)
-        : new SolanaAddress(token).unwrap();
+    const mint = this.mintAddress(token);
 
     const decimals = Number(
       await SolanaPlatform.getDecimals(this.chain, this.connection, token),
@@ -282,10 +271,7 @@ export class SolanaAutomaticTokenBridge<
   }
 
   async isRegisteredToken(token: TokenAddress<C>): Promise<boolean> {
-    const mint =
-      token === 'native'
-        ? new PublicKey(NATIVE_MINT)
-        : new SolanaAddress(token).unwrap();
+    const mint = this.mintAddress(token);
 
     try {
       await this.getRegisteredToken(mint);
@@ -297,6 +283,12 @@ export class SolanaAutomaticTokenBridge<
       }
       throw e;
     }
+  }
+
+  private mintAddress(token: TokenAddress<C>): PublicKey {
+    return isNative(token)
+      ? new PublicKey(NATIVE_MINT)
+      : new SolanaAddress(token).unwrap();
   }
 
   async getRegisteredTokens() {
