@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.esm.json",
+  "include": ["src"],
+  "compilerOptions": {
+    "outDir": "dist/esm",
+    "rootDir": "src",
+    "allowUnusedLabels": true,
+    "noUnusedLocals": false
+  }
+}

@@ -65,7 +65,11 @@ export class AutomaticPorticoRoute<N extends Network>
 {
   NATIVE_GAS_DROPOFF_SUPPORTED = false;
 
-  static readonly _supportedTokens = ["WETH", "WSTETH"];
+  static meta = {
+    name: "AutomaticPortico",
+  };
+
+  private static _supportedTokens = ["WETH", "WSTETH"];
 
   static supportedNetworks(): Network[] {
     return ["Mainnet"];
@@ -140,11 +144,8 @@ export class AutomaticPorticoRoute<N extends Network>
     return locallyRedeemable;
   }
 
-  static isProtocolSupported<N extends Network>(
-    fromChain: ChainContext<N>,
-    toChain: ChainContext<N>,
-  ): boolean {
-    return fromChain.supportsPorticoBridge() && toChain.supportsPorticoBridge();
+  static isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean {
+    return chain.supportsPorticoBridge();
   }
 
   async isAvailable(): Promise<boolean> {
