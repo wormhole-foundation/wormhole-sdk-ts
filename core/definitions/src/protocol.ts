@@ -71,12 +71,15 @@ export function getProtocolInitializer<P extends Platform, PN extends ProtocolNa
   protocol: PN,
 ): ProtocolInitializer<P, PN> {
   const platforms = protocolFactory.get(protocol);
-  if (!platforms) throw new Error(`No protocols registered for platform ${platforms}`);
-
-  const pctr = platforms.get(platform);
-  if (!pctr) throw new Error(`No protocol registered for ${platform}:${protocol}`);
-
-  return pctr as ProtocolInitializer<P, PN>;
+  if (platforms) {
+    const pctr = platforms.get(platform);
+    if (pctr) return pctr as ProtocolInitializer<P, PN>;
+  }
+  throw new Error(
+    `No protocols registered for ${platform}:${protocol}. ` +
+      `This may be because the platform specific protocol implementation is not registered (by installing and importing it)` +
+      ` or no implementation exists for this platform`,
+  );
 }
 
 export const create = <N extends Network, P extends Platform, PN extends ProtocolName, T>(
