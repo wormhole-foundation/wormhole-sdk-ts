@@ -6,11 +6,11 @@ import {
   deserializeLayout,
   serializeLayout,
 } from "@wormhole-foundation/sdk-base";
-import { AccountAddress, ChainAddress, TokenAddress } from "../address";
+import { AccountAddress, ChainAddress } from "../address";
 import "../payloads/portico";
 import { porticoFlagSetLayout, porticoPayloadLayout } from "../payloads/portico";
 import { EmptyPlatformMap } from "../protocol";
-import { TokenId } from "../types";
+import { TokenId, TokenAddress } from "../types";
 import { UnsignedTransaction } from "../unsignedTransaction";
 import { ProtocolVAA } from "../vaa";
 
@@ -82,7 +82,7 @@ export interface PorticoBridge<
     recipient: ChainAddress,
     token: TokenAddress<C>,
     amount: bigint,
-    destToken: TokenId | "native",
+    destToken: TokenId,
     quote: PorticoBridge.Quote,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
 
