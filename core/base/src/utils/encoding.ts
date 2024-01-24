@@ -71,3 +71,21 @@ export const bytes = {
     return result;
   },
 };
+
+export const json = {
+  encode: (obj: any) => {
+    return JSON.stringify(obj, (key: string, value: any) => {
+      if (typeof value === "bigint") return { _t: "bigint", _v: value.toString() };
+      if (value.constructor === Uint8Array) return { _t: "bytes", _v: hex.encode(value) };
+      return value;
+    });
+  },
+
+  decode: (s: string) => {
+    return JSON.parse(s, (key: string, value: any) => {
+      if (value && value._t == "bigint") return BigInt(value._v);
+      if (value && value._t == "bytes") return hex.decode(value._v);
+      return value;
+    });
+  },
+};
