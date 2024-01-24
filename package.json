@@ -1,6 +1,6 @@
 {
   "name": "connect-sdk",
-  "version": "0.3.1",
+  "version": "0.4.0-beta.0",
   "license": "Apache-2.0",
   "directories": {
     "test": "__tests__"
@@ -19,7 +19,7 @@
     "ts-mocha": "^10.0.0",
     "ts-node": "^10.9.1",
     "tsd": "^0.29.0",
-    "turbo": "^1.11.2",
+    "turbo": "^1.11.3",
     "typedoc": "^0.24.8",
     "typescript": "^5.1.1"
   },
@@ -45,6 +45,7 @@
     "platforms/evm/protocols/core",
     "platforms/evm/protocols/tokenBridge",
     "platforms/evm/protocols/cctp",
+    "platforms/evm/protocols/portico",
     "platforms/solana",
     "platforms/solana/protocols/core",
     "platforms/solana/protocols/tokenBridge",

@@ -1,26 +1,20 @@
-import {
-  Chain,
-  Network,
-  Platform,
-  PlatformToChains,
-  ProtocolName,
-} from "@wormhole-foundation/sdk-base";
+import { Chain, Network, Platform, PlatformToChains } from "@wormhole-foundation/sdk-base";
 import { WormholeCore } from ".";
 import { TokenAddress } from "./address";
 import { WormholeMessageId } from "./attestation";
 import { ChainContext } from "./chain";
-import { create } from "./protocol";
+import { ProtocolName, create } from "./protocol";
 import { RpcConnection } from "./rpc";
 import { Balances, ChainsConfig, SignedTx, TokenId, TxHash } from "./types";
 
 // PlatformUtils represents the _static_ attributes available on
 // the PlatformContext Class
-export interface PlatformUtils<N extends Network, P extends Platform> {
+export interface PlatformUtils<P extends Platform> {
   // Value for the Platform so we can access it at runtime
   _platform: P;
 
   // Initialize a new PlatformContext object
-  new (network: N, config?: ChainsConfig<N, P>): PlatformContext<N, P>;
+  new <N extends Network>(network: N, config?: ChainsConfig<N, P>): PlatformContext<N, P>;
 
   // Check if this chain is supported by this platform
   // Note: purposely not adding generic parameters
@@ -88,7 +82,7 @@ export abstract class PlatformContext<N extends Network, P extends Platform> {
   ) {}
 
   // provides access to the static attributes of the PlatformContext class
-  utils(): PlatformUtils<N, P> {
+  utils(): PlatformUtils<P> {
     return this.constructor as any;
   }
 

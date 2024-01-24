@@ -2,60 +2,60 @@ import { MapLevel, zip } from "../utils";
 import { constMap } from "../utils/mapping";
 
 // prettier-ignore
-const chainsAndChainIdEntries = [
+const chainIdAndChainEntries = [
   //Unlike the old sdk, we are not including an "Unset" chain with chainId 0 here because:
   //  * no other types would be associated with it (such as contracts or a platform)
   //  * avoids awkward "chain but not 'Unset'" checks
   //  * "off" is not a TV channel either
   //Instead we'll use `null` for chain and 0 as the chainId where appropriate (e.g. governance VAAs)
-  ["Solana",             1],
-  ["Ethereum",           2],
-  ["Terra",              3],
-  ["Bsc",                4],
-  ["Polygon",            5],
-  ["Avalanche",          6],
-  ["Oasis",              7],
-  ["Algorand",           8],
-  ["Aurora",             9],
-  ["Fantom",            10],
-  ["Karura",            11],
-  ["Acala",             12],
-  ["Klaytn",            13],
-  ["Celo",              14],
-  ["Near",              15],
-  ["Moonbeam",          16],
-  ["Neon",              17],
-  ["Terra2",            18],
-  ["Injective",         19],
-  ["Osmosis",           20],
-  ["Sui",               21],
-  ["Aptos",             22],
-  ["Arbitrum",          23],
-  ["Optimism",          24],
-  ["Gnosis",            25],
-  ["Pythnet",           26],
-  ["Xpla",              28],
-  ["Btc",               29],
-  ["Base",              30],
-  ["Sei",               32],
-  ["Rootstock",         33],
-  ["Wormchain",       3104],
-  ["Cosmoshub",       4000],
-  ["Evmos",           4001],
-  ["Kujira",          4002],
-  ["Sepolia",        10002], 
-  ["ArbitrumSepolia",10003],
-  ["BaseSepolia",    10004],
-  ["OptimismSepolia",10005],
-  ["Holesky",        10006],
-] as const satisfies MapLevel<string, number>;
+  [    1, "Solana"         ],
+  [    2, "Ethereum"       ],
+  [    3, "Terra"          ],
+  [    4, "Bsc"            ],
+  [    5, "Polygon"        ],
+  [    6, "Avalanche"      ],
+  [    7, "Oasis"          ],
+  [    8, "Algorand"       ],
+  [    9, "Aurora"         ],
+  [   10, "Fantom"         ],
+  [   11, "Karura"         ],
+  [   12, "Acala"          ],
+  [   13, "Klaytn"         ],
+  [   14, "Celo"           ],
+  [   15, "Near"           ],
+  [   16, "Moonbeam"       ],
+  [   17, "Neon"           ],
+  [   18, "Terra2"         ],
+  [   19, "Injective"      ],
+  [   20, "Osmosis"        ],
+  [   21, "Sui"            ],
+  [   22, "Aptos"          ],
+  [   23, "Arbitrum"       ],
+  [   24, "Optimism"       ],
+  [   25, "Gnosis"         ],
+  [   26, "Pythnet"        ],
+  [   28, "Xpla"           ],
+  [   29, "Btc"            ],
+  [   30, "Base"           ],
+  [   32, "Sei"            ],
+  [   33, "Rootstock"      ],
+  [ 3104, "Wormchain"      ],
+  [ 4000, "Cosmoshub"      ],
+  [ 4001, "Evmos"          ],
+  [ 4002, "Kujira"         ],
+  [10002, "Sepolia"        ],
+  [10003, "ArbitrumSepolia"],
+  [10004, "BaseSepolia"    ],
+  [10005, "OptimismSepolia"],
+  [10006, "Holesky"        ],
+] as const satisfies MapLevel<number, string>;
 
-export const [chains, chainIds] = zip(chainsAndChainIdEntries);
+export const [chainIds, chains] = zip(chainIdAndChainEntries);
 export type Chain = (typeof chains)[number];
 export type ChainId = (typeof chainIds)[number];
 
-export const chainToChainId = constMap(chainsAndChainIdEntries);
-export const chainIdToChain = constMap(chainsAndChainIdEntries, [1, 0]);
+export const chainToChainId = constMap(chainIdAndChainEntries, [1, 0]);
+export const chainIdToChain = constMap(chainIdAndChainEntries);
 
 export const isChain = (chain: string): chain is Chain => chainToChainId.has(chain);
 export const isChainId = (chainId: number): chainId is ChainId => chainIdToChain.has(chainId);

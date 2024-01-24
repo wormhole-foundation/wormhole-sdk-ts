@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/connect-sdk-examples",
-  "version": "0.3.1",
+  "version": "0.4.0-beta.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -33,12 +33,16 @@
   },
   "sideEffects": false,
   "scripts": {
+    "re": "cd .. && npm run build && cd -",
+    "portico": "tsx src/portico.ts",
+    "router": "tsx src/router.ts",
+    "routerCCTP": "tsx src/routerCCTP.ts",
     "wrapped": "tsx src/createWrapped.ts",
     "tb": "tsx src/tokenBridge.ts",
     "cctp": "tsx src/cctp.ts",
     "demo": "tsx src/index.ts",
     "cosmos": "tsx src/cosmos.ts",
-    "retb": "cd .. && npm run build && cd - && npm run tb",
+    "retb": "npm run re && npm run tb",
     "msg": "tsx src/messaging.ts",
     "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo",
     "lint": "npm run prettier && eslint --fix",
@@ -47,23 +51,23 @@
     "docs": "typedoc"
   },
   "devDependencies": {
+    "algosdk": "^2.7.0",
     "dotenv": "^16.3.1",
-    "tsx": "^4.7.0",
-    "algosdk": "^2.7.0"
+    "tsx": "^4.7.0"
   },
   "dependencies": {
-    "@wormhole-foundation/connect-sdk": "^0.3.1",
-    "@wormhole-foundation/connect-sdk-solana": "^0.3.1",
-    "@wormhole-foundation/connect-sdk-evm": "^0.3.1",
-    "@wormhole-foundation/connect-sdk-cosmwasm": "^0.3.1",
-    "@wormhole-foundation/connect-sdk-evm-core": "^0.3.1",
-    "@wormhole-foundation/connect-sdk-solana-core": "^0.3.1",
-    "@wormhole-foundation/connect-sdk-cosmwasm-core": "^0.3.1",
-    "@wormhole-foundation/connect-sdk-evm-tokenbridge": "^0.3.1",
-    "@wormhole-foundation/connect-sdk-solana-tokenbridge": "^0.3.1",
-    "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge": "^0.3.1",
-    "@wormhole-foundation/connect-sdk-evm-cctp": "^0.3.1",
-    "@wormhole-foundation/connect-sdk-solana-cctp": "^0.3.1",
-    "@wormhole-foundation/connect-sdk-cosmwasm-ibc": "^0.3.1"
+    "@wormhole-foundation/connect-sdk": "^0.4.0-beta.0",
+    "@wormhole-foundation/connect-sdk-solana": "^0.4.0-beta.0",
+    "@wormhole-foundation/connect-sdk-evm": "^0.4.0-beta.0",
+    "@wormhole-foundation/connect-sdk-cosmwasm": "^0.4.0-beta.0",
+    "@wormhole-foundation/connect-sdk-evm-core": "^0.4.0-beta.0",
+    "@wormhole-foundation/connect-sdk-solana-core": "^0.4.0-beta.0",
+    "@wormhole-foundation/connect-sdk-cosmwasm-core": "^0.4.0-beta.0",
+    "@wormhole-foundation/connect-sdk-evm-tokenbridge": "^0.4.0-beta.0",
+    "@wormhole-foundation/connect-sdk-solana-tokenbridge": "^0.4.0-beta.0",
+    "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge": "^0.4.0-beta.0",
+    "@wormhole-foundation/connect-sdk-evm-cctp": "^0.4.0-beta.0",
+    "@wormhole-foundation/connect-sdk-solana-cctp": "^0.4.0-beta.0",
+    "@wormhole-foundation/connect-sdk-cosmwasm-ibc": "^0.4.0-beta.0"
   }
 }

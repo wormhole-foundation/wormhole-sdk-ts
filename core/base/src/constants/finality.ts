@@ -3,13 +3,14 @@ import { Chain } from "./chains";
 
 // https://www.notion.so/Finality-in-Wormhole-78ffa423abd44b7cbe38483a16040d83
 
+// prettier-ignore
 // Recognized Consistency Levels for determining when a guardian
 // may sign a VAA for a given wormhole message
 export enum ConsistencyLevels {
   // SolanaConfirmed = 0,
   Finalized = 1,
   Immediate = 200,
-  Safe = 201,
+  Safe      = 201,
 }
 
 // Number of blocks before a transaction is considered "safe"
@@ -20,31 +21,33 @@ const safeThresholds = [
 ] as const satisfies MapLevel<Chain, number>;
 export const safeThreshold = constMap(safeThresholds);
 
+// prettier-ignore
 // Number of blocks before a transaction is considered "final"
+// prettier-ignore
 const finalityThresholds = [
   ["Ethereum", 64],
-  ["Solana", 32],
+  ["Solana",   32],
   ["Polygon", 512],
-  ["Bsc", 15],
-  ["Fantom", 1],
-  ["Celo", 1],
-  ["Moonbeam", 1],
+  ["Bsc",      15],
+  ["Fantom",    1],
+  ["Celo",      1],
+  ["Moonbeam",  1],
   ["Avalanche", 0],
-  ["Sui", 0],
-  ["Algorand", 0],
-  ["Aptos", 0],
-  ["Sei", 0],
-  ["Near", 0],
-  ["Terra", 0],
-  ["Terra2", 0],
-  ["Xpla", 0],
+  ["Sui",       0],
+  ["Algorand",  0],
+  ["Aptos",     0],
+  ["Sei",       0],
+  ["Near",      0],
+  ["Terra",     0],
+  ["Terra2",    0],
+  ["Xpla",      0],
   ["Injective", 0],
 ] as const satisfies MapLevel<Chain, number>;
 
 export const finalityThreshold = constMap(finalityThresholds);
 
-// number of milliseconds between blocks
 // prettier-ignore
+// number of milliseconds between blocks
 const blockTimeMilliseconds = [
   ["Acala",            12_000],
   ["Algorand",          3_300],
