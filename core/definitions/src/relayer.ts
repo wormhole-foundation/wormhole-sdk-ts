@@ -1,5 +1,5 @@
 import { Chain } from "@wormhole-foundation/sdk-base";
-import { TokenAddress } from "./address";
+import { TokenAddress } from "./types";
 
 export interface Relayer {
   relaySupported(chain: Chain): boolean;

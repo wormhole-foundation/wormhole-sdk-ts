@@ -112,6 +112,9 @@ export class EvmTokenBridge<N extends Network, C extends EvmChains>
   }
 
   async getWrappedAsset(token: TokenId<Chain>): Promise<NativeAddress<C>> {
+    if (token.address === 'native')
+      throw new Error('native asset cannot be a wrapped asset');
+
     const wrappedAddress = await this.tokenBridge.wrappedAsset(
       toChainId(token.chain),
       token.address.toUniversalAddress().toString(),

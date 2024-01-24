@@ -12,7 +12,7 @@ export type ChainTokens = {
 export type Token = {
   key: TokenKey;
   decimals: number;
-  address: string | "native";
+  address: string;
   chain: Chain;
   // Common symbol/ticker
   symbol: TokenSymbol;

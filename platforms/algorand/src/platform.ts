@@ -5,11 +5,13 @@ import {
   Network,
   PlatformContext,
   SignedTx,
+  StaticPlatformMethods,
   TokenId,
   TxHash,
   Wormhole,
   chainToPlatform,
   decimals,
+  isNative,
   nativeChainIds,
   networkPlatformConfigs,
 } from "@wormhole-foundation/connect-sdk";
@@ -27,7 +29,10 @@ import { AlgorandChains, AlgorandPlatformType, AnyAlgorandAddress, _platform } f
 /**
  * @category Algorand
  */
-export class AlgorandPlatform<N extends Network> extends PlatformContext<N, AlgorandPlatformType> {
+export class AlgorandPlatform<N extends Network>
+  extends PlatformContext<N, AlgorandPlatformType>
+  implements StaticPlatformMethods<typeof _platform, typeof AlgorandPlatform>
+{
   static _platform = _platform;
 
   constructor(network: N, _config?: ChainsConfig<N, AlgorandPlatformType>) {
@@ -69,13 +74,9 @@ export class AlgorandPlatform<N extends Network> extends PlatformContext<N, Algo
     return platform === AlgorandPlatform._platform;
   }
 
-  static async getDecimals(
-    chain: Chain,
-    rpc: Algodv2,
-    token: AnyAlgorandAddress | "native",
-  ): Promise<bigint> {
+  static async getDecimals(chain: Chain, rpc: Algodv2, token: AnyAlgorandAddress): Promise<bigint> {
     // It may come in as a universal address
-    const assetId = token === "native" ? 0 : new AlgorandAddress(token).toInt();
+    const assetId = isNative(token) ? 0 : new AlgorandAddress(token).toInt();
 
     if (assetId === 0) return BigInt(decimals.nativeDecimals(AlgorandPlatform._platform));
 
@@ -89,9 +90,9 @@ export class AlgorandPlatform<N extends Network> extends PlatformContext<N, Algo
     chain: Chain,
     rpc: Algodv2,
     walletAddr: string,
-    token: AnyAlgorandAddress | "native",
+    token: AnyAlgorandAddress,
   ): Promise<bigint | null> {
-    const assetId = token === "native" ? 0 : new AlgorandAddress(token).toInt();
+    const assetId = isNative(token) ? 0 : new AlgorandAddress(token).toInt();
     if (assetId === 0) {
       const resp = await rpc.accountInformation(walletAddr).do();
       const accountInfo = modelsv2.Account.from_obj_for_encoding(resp);
@@ -107,7 +108,7 @@ export class AlgorandPlatform<N extends Network> extends PlatformContext<N, Algo
     chain: Chain,
     rpc: Algodv2,
     walletAddr: string,
-    tokens: (AnyAlgorandAddress | "native")[],
+    tokens: AnyAlgorandAddress[],
   ): Promise<Balances> {
     let native: bigint;
     if (tokens.includes("native")) {
@@ -116,7 +117,7 @@ export class AlgorandPlatform<N extends Network> extends PlatformContext<N, Algo
       native = BigInt(accountInfo.amount);
     }
     const balancesArr = tokens.map(async (token) => {
-      if (token === "native") {
+      if (isNative(token)) {
         return { ["native"]: native };
       }
       const asaId = new AlgorandAddress(token).toInt();

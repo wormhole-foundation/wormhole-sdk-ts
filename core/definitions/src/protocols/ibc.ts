@@ -8,9 +8,9 @@ import {
   toChain,
   toChainId,
 } from "@wormhole-foundation/sdk-base";
-import { AccountAddress, ChainAddress, NativeAddress, TokenAddress } from "../address";
+import { AccountAddress, ChainAddress, NativeAddress } from "../address";
 import { IbcMessageId, WormholeMessageId } from "../attestation";
-import { TokenId, TxHash } from "../types";
+import { TokenId, TxHash, TokenAddress } from "../types";
 import { UnsignedTransaction } from "../unsignedTransaction";
 import { EmptyPlatformMap } from "../protocol";
 
@@ -24,7 +24,7 @@ declare global {
 
 // Configuration for a transfer through the Gateway
 export type GatewayTransferDetails = {
-  token: TokenId<Chain> | "native";
+  token: TokenId<Chain>;
   amount: bigint;
   from: ChainAddress;
   to: ChainAddress;
