@@ -45,6 +45,10 @@ export class TokenBridgeRoute<N extends Network>
   extends ManualRoute<N, Op, R, Q>
   implements StaticRouteMethods<typeof TokenBridgeRoute>
 {
+  static meta = {
+    name: "ManualTokenBridge",
+  };
+
   static supportedNetworks(): Network[] {
     return ["Mainnet", "Testnet"];
   }
@@ -70,11 +74,8 @@ export class TokenBridgeRoute<N extends Network>
     return [await TokenTransfer.lookupDestinationToken(fromChain, toChain, sourceToken)];
   }
 
-  static isProtocolSupported<N extends Network>(
-    fromChain: ChainContext<N>,
-    toChain: ChainContext<N>,
-  ): boolean {
-    return fromChain.supportsTokenBridge() && toChain.supportsTokenBridge();
+  static isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean {
+    return chain.supportsTokenBridge();
   }
 
   getDefaultOptions(): Op {

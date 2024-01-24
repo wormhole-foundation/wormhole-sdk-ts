@@ -41,6 +41,10 @@ export class CCTPRoute<N extends Network>
   extends ManualRoute<N, Op, R, Q>
   implements StaticRouteMethods<typeof CCTPRoute>
 {
+  static meta = {
+    name: "ManualCCTP",
+  };
+
   static supportedNetworks(): Network[] {
     return ["Mainnet", "Testnet"];
   }
@@ -70,11 +74,8 @@ export class CCTPRoute<N extends Network>
     return [Wormhole.chainAddress(chain, circle.usdcContract.get(network, chain)!)];
   }
 
-  static isProtocolSupported<N extends Network>(
-    fromChain: ChainContext<N>,
-    toChain: ChainContext<N>,
-  ): boolean {
-    return fromChain.supportsCircleBridge() && toChain.supportsCircleBridge();
+  static isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean {
+    return chain.supportsCircleBridge();
   }
 
   getDefaultOptions(): Op {

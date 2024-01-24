@@ -49,20 +49,26 @@ export abstract class Route<
 
 export interface RouteMeta {
   // Common name for the route,
-  //eg "Wormhole Token Bridge" or "CCTP"
+  //eg "TokenBridge" or "CCTP"
   name: string;
   // Url to logo route provider
   logo?: string;
+  // If people have trouble, where should they go?
+  support?: string;
+  // Github link
+  source?: string;
 }
 
 export interface RouteConstructor {
   new <N extends Network>(wh: Wormhole<N>, request: RouteTransferRequest<N>): Route<N>;
   // Details about the route provided by the implementation
-  readonly meta?: RouteMeta;
+  readonly meta: RouteMeta;
   // get the list of networks this route supports
   supportedNetworks(): Network[];
   // get the list of chains this route supports
   supportedChains(network: Network): Chain[];
+  // make sure the underlying protocols are supported
+  isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean;
   // get the list of source tokens that are possible to send
   supportedSourceTokens(fromChain: ChainContext<Network>): Promise<TokenId[]>;
   // get the list of destination tokens that may be recieved on the destination chain
@@ -71,10 +77,6 @@ export interface RouteConstructor {
     fromChain: ChainContext<N>,
     toChain: ChainContext<N>,
   ): Promise<TokenId[]>;
-  isProtocolSupported<N extends Network>(
-    fromChain: ChainContext<N>,
-    toChain: ChainContext<N>,
-  ): boolean;
 }
 
 // Use this to ensure the static methods defined in the RouteConstructor
