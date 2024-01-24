@@ -33,7 +33,7 @@ import "@wormhole-foundation/connect-sdk-algorand-tokenbridge";
   const rcvChain = wh.getChain("Solana");
 
   // Shortcut to allow transferring native gas token
-  const token: TokenId | "native" = "native";
+  const token: TokenId = { chain: sendChain.chain, address: "native" };
 
   // A TokenId is just a `{chain, address}` pair and an alias for ChainAddress
   // The `address` field must be a parsed address.
@@ -113,7 +113,7 @@ import "@wormhole-foundation/connect-sdk-algorand-tokenbridge";
 async function tokenTransfer<N extends Network>(
   wh: Wormhole<N>,
   route: {
-    token: TokenId | "native";
+    token: TokenId;
     amount: bigint;
     source: TransferStuff<N, Platform, Chain>;
     destination: TransferStuff<N, Platform, Chain>;

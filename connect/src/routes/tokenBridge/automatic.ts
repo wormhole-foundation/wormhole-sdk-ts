@@ -56,13 +56,11 @@ export class AutomaticTokenBridgeRoute<N extends Network>
   }
 
   // get the list of source tokens that are possible to send
-  static async supportedSourceTokens(
-    fromChain: ChainContext<Network>,
-  ): Promise<(TokenId | "native")[]> {
+  static async supportedSourceTokens(fromChain: ChainContext<Network>): Promise<TokenId[]> {
     const atb = await fromChain.getAutomaticTokenBridge();
     const registered = await atb.getRegisteredTokens();
     return [
-      "native",
+      { chain: fromChain.chain, address: "native" },
       ...registered.map((v) => {
         return { chain: fromChain.chain, address: v };
       }),
@@ -74,8 +72,11 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     sourceToken: TokenId,
     fromChain: ChainContext<N>,
     toChain: ChainContext<N>,
-  ): Promise<(TokenId | "native")[]> {
-    return ["native", await TokenTransfer.lookupDestinationToken(fromChain, toChain, sourceToken)];
+  ): Promise<TokenId[]> {
+    return [
+      { chain: fromChain.chain, address: "native" },
+      await TokenTransfer.lookupDestinationToken(fromChain, toChain, sourceToken),
+    ];
   }
 
   static isProtocolSupported<N extends Network>(
@@ -139,7 +140,8 @@ export class AutomaticTokenBridgeRoute<N extends Network>
         throw new Error("Native gas must be between 0.0 and 1.0 (0% and 100%)");
 
       // If destination is native, max out the nativeGas requested
-      if (destination && destination.id === "native" && nativeGasPerc === 0.0) nativeGasPerc = 1.0;
+      if (destination && destination.id.address === "native" && nativeGasPerc === 0.0)
+        nativeGasPerc = 1.0;
 
       const validatedParams: Vp = {
         amount: params.amount,
@@ -157,7 +159,7 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     const amount = this.request.normalizeAmount(params.amount);
 
     const inputToken =
-      this.request.source.id === "native"
+      this.request.source.id.address === "native"
         ? await this.request.fromChain.getNativeWrappedTokenId()
         : this.request.source.id;
 
@@ -181,7 +183,8 @@ export class AutomaticTokenBridgeRoute<N extends Network>
 
     let nativeGasPerc = options.nativeGas ?? 0.0;
     // If destination is native, max out the nativeGas requested
-    if (destination && destination.id === "native" && nativeGasPerc === 0.0) nativeGasPerc = 1.0;
+    if (destination && destination.id.address === "native" && nativeGasPerc === 0.0)
+      nativeGasPerc = 1.0;
     if (nativeGasPerc > 1.0 || nativeGasPerc < 0.0) {
       throw new Error("Native gas must be between 0.0 and 1.0 (0% and 100%)");
     }

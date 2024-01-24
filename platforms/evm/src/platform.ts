@@ -5,6 +5,7 @@ import {
   Network,
   PlatformContext,
   SignedTx,
+  StaticPlatformMethods,
   TokenId,
   TxHash,
   Wormhole,
@@ -26,10 +27,10 @@ import { AnyEvmAddress, EvmChains, EvmPlatformType, _platform } from './types';
  * @category EVM
  */
 
-export class EvmPlatform<N extends Network> extends PlatformContext<
-  N,
-  EvmPlatformType
-> {
+export class EvmPlatform<N extends Network>
+  extends PlatformContext<N, EvmPlatformType>
+  implements StaticPlatformMethods<EvmPlatformType, typeof EvmPlatform>
+{
   static _platform: EvmPlatformType = _platform;
 
   constructor(network: N, _config?: ChainsConfig<N, EvmPlatformType>) {
@@ -56,13 +57,13 @@ export class EvmPlatform<N extends Network> extends PlatformContext<
   ): TokenId<C> {
     if (!EvmPlatform.isSupportedChain(chain))
       throw new Error(`invalid chain for EVM: ${chain}`);
-    return Wormhole.chainAddress(chain, EvmZeroAddress);
+    return Wormhole.tokenId(chain, EvmZeroAddress);
   }
 
   static isNativeTokenId<N extends Network, C extends EvmChains>(
     network: N,
     chain: C,
-    tokenId: TokenId,
+    tokenId: TokenId<C>,
   ): boolean {
     if (!EvmPlatform.isSupportedChain(chain)) return false;
     if (tokenId.chain !== chain) return false;
@@ -182,3 +183,7 @@ export class EvmPlatform<N extends Network> extends PlatformContext<
     return ti;
   }
 }
+
+// EvmPlatform satisfies PlatformCtr<'Evm'>;
+// EvmPlatform satisfies PlatformUtils<'Evm'>;
+// EvmPlatform satisfies PlatformUtils<Platform>;

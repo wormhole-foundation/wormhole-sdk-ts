@@ -78,9 +78,8 @@ export class AutomaticPorticoRoute<N extends Network>
     return [];
   }
 
-  static async supportedSourceTokens(
-    fromChain: ChainContext<Network>,
-  ): Promise<(TokenId | "native")[]> {
+  static async supportedSourceTokens(fromChain: ChainContext<Network>): Promise<TokenId[]> {
+    const { chain } = fromChain;
     const supported = this._supportedTokens
       .map((symbol) => {
         return tokens.filters.bySymbol(fromChain.config.tokenMap!, symbol) ?? [];
@@ -88,13 +87,13 @@ export class AutomaticPorticoRoute<N extends Network>
       .flat()
       .filter((td) => {
         const localOrEth = !td.original || td.original === "Ethereum";
-        const isAvax = fromChain.chain === "Avalanche" && td.address === "native";
+        const isAvax = chain === "Avalanche" && td.address === "native";
         return localOrEth && !isAvax;
       });
 
     return supported.map((td) => {
-      if (td.address === "native") return "native";
-      return Wormhole.chainAddress(fromChain.chain, td.address);
+      if (td.address === "native") return { chain, address: "native" };
+      return Wormhole.chainAddress(chain, td.address);
     });
   }
 
@@ -102,7 +101,7 @@ export class AutomaticPorticoRoute<N extends Network>
     sourceToken: TokenId,
     fromChain: ChainContext<N>,
     toChain: ChainContext<N>,
-  ): Promise<(TokenId | "native")[]> {
+  ): Promise<TokenId[]> {
     const tokenAddress = canonicalAddress(sourceToken);
 
     // The token that will be used to bridge

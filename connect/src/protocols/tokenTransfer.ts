@@ -369,11 +369,11 @@ export class TokenTransfer<N extends Network = Network>
   static async lookupDestinationToken<N extends Network, SC extends Chain, DC extends Chain>(
     srcChain: ChainContext<N, ChainToPlatform<SC>, SC>,
     dstChain: ChainContext<N, ChainToPlatform<DC>, DC>,
-    token: TokenId<SC> | "native",
+    token: TokenId<SC>,
   ): Promise<TokenId<DC>> {
     // that will be minted when the transfer is redeemed
     let lookup: TokenId;
-    if (token === "native") {
+    if (token.address === "native") {
       // if native, get the wrapped asset id
       lookup = await srcChain.getNativeWrappedTokenId();
     } else {
@@ -443,7 +443,9 @@ export class TokenTransfer<N extends Network = Network>
   ): Promise<TransferQuote> {
     const dstToken = await this.lookupDestinationToken(srcChain, dstChain, transfer.token);
     const srcToken =
-      transfer.token === "native" ? await srcChain.getNativeWrappedTokenId() : transfer.token;
+      transfer.token.address === "native"
+        ? await srcChain.getNativeWrappedTokenId()
+        : transfer.token;
 
     const dstDecimals = await dstChain.getDecimals(dstToken.address);
     const srcDecimals = await srcChain.getDecimals(srcToken.address);

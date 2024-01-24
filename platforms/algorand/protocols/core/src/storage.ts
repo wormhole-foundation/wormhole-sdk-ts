@@ -86,6 +86,7 @@ export const StorageLogicSig = {
   },
   // Get the storage lsig for a wrapped asset
   forWrappedAsset: (appId: bigint, token: TokenId<Chain>) => {
+    if (token.address === "native") throw new Error("native asset cannot be a wrapped asset");
     const appAddress = decodeAddress(getApplicationAddress(appId)).publicKey;
     return StorageLogicSig.fromData({
       appId,

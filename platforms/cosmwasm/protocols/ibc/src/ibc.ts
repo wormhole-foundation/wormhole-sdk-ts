@@ -97,7 +97,7 @@ export class CosmwasmIbcBridge<N extends Network, C extends CosmwasmChains>
   async *transfer(
     sender: AnyCosmwasmAddress,
     recipient: ChainAddress,
-    token: AnyCosmwasmAddress | "native",
+    token: AnyCosmwasmAddress,
     amount: bigint,
   ): AsyncGenerator<CosmwasmUnsignedTransaction<N, C>> {
     const senderAddress = new CosmwasmAddress(sender).toString();

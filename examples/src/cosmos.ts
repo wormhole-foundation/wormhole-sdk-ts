@@ -54,7 +54,8 @@ import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
   const leg3 = await getStuff(cosmos2);
 
   // we'll use the native token on the source chain
-  const token = "native";
+
+  const token: TokenId = { chain: external.chain, address: "native" };
   const amount = normalizeAmount("0.01", BigInt(external.config.nativeTokenDecimals));
 
   // Transfer native token from source chain, through gateway, to a cosmos chain
@@ -116,7 +117,7 @@ import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
 
 async function transferIntoCosmos(
   wh: Wormhole<Network>,
-  token: TokenId | "native",
+  token: TokenId,
   amount: bigint,
   src: TransferStuff<Network, Platform>,
   dst: TransferStuff<Network, Platform>,
@@ -176,7 +177,7 @@ async function transferBetweenCosmos<N extends Network>(
 
 async function transferOutOfCosmos<N extends Network>(
   wh: Wormhole<N>,
-  token: TokenId | "native",
+  token: TokenId,
   amount: bigint,
   src: TransferStuff<N, CosmwasmPlatformType>,
   dst: TransferStuff<N, Platform>,

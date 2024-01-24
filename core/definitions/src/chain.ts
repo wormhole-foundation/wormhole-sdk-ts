@@ -1,6 +1,5 @@
 import { Chain, Network, Platform, PlatformToChains, tokens } from "@wormhole-foundation/sdk-base";
-
-import { ChainAddress, TokenAddress, UniversalOrNative, toNative } from "./address";
+import { ChainAddress, UniversalOrNative, toNative } from "./address";
 import { WormholeMessageId } from "./attestation";
 import { PlatformContext } from "./platform";
 import { ProtocolName, protocolIsRegistered } from "./protocol";
@@ -9,7 +8,7 @@ import { WormholeCore } from "./protocols/core";
 import { IbcBridge } from "./protocols/ibc";
 import { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge";
 import { RpcConnection } from "./rpc";
-import { ChainConfig, SignedTx, TokenId } from "./types";
+import { ChainConfig, SignedTx, TokenId, TokenAddress } from "./types";
 import { PorticoBridge } from "./protocols/portico";
 
 export abstract class ChainContext<
@@ -102,7 +101,7 @@ export abstract class ChainContext<
   // Get the token account for a given address
   async getTokenAccount(
     address: UniversalOrNative<C>,
-    token: UniversalOrNative<C>,
+    token: TokenAddress<C>,
   ): Promise<ChainAddress<C>> {
     // Noop by default, override in implementation if necessary
     return { chain: this.chain, address };

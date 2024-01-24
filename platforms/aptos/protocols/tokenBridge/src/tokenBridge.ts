@@ -198,7 +198,7 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
   async *transfer(
     sender: AnyAptosAddress,
     recipient: ChainAddress,
-    token: AnyAptosAddress | "native",
+    token: AnyAptosAddress,
     amount: bigint,
     payload?: Uint8Array,
   ): AsyncGenerator<AptosUnsignedTransaction<N, C>> {

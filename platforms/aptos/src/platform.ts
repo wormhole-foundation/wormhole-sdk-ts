@@ -15,11 +15,15 @@ import {
 import { CoinClient, Types } from "aptos";
 import { APTOS_COIN, APTOS_SEPARATOR } from "./constants";
 import { AnyAptosAddress } from "./types";
+import { StaticPlatformMethods } from "@wormhole-foundation/sdk-definitions/src";
 
 /**
  * @category Aptos
  */
-export class AptosPlatform<N extends Network> extends PlatformContext<N, AptosPlatformType> {
+export class AptosPlatform<N extends Network>
+  extends PlatformContext<N, AptosPlatformType>
+  implements StaticPlatformMethods<typeof AptosPlatform>
+{
   static _platform = _platform;
 
   getRpc<C extends AptosChains>(chain: C): AptosClient {
@@ -56,7 +60,7 @@ export class AptosPlatform<N extends Network> extends PlatformContext<N, AptosPl
   static async getDecimals(
     chain: Chain,
     rpc: AptosClient,
-    token: AnyAptosAddress | "native",
+    token: AnyAptosAddress,
   ): Promise<bigint> {
     if (token === "native") return BigInt(nativeDecimals.nativeDecimals(AptosPlatform._platform));
 
@@ -73,7 +77,7 @@ export class AptosPlatform<N extends Network> extends PlatformContext<N, AptosPl
     chain: Chain,
     rpc: AptosClient,
     walletAddress: string,
-    token: AnyAptosAddress | "native",
+    token: AnyAptosAddress,
   ): Promise<bigint | null> {
     const tokenAddress = token === "native" ? APTOS_COIN : token.toString();
     const cc = new CoinClient(rpc);
@@ -97,7 +101,7 @@ export class AptosPlatform<N extends Network> extends PlatformContext<N, AptosPl
     chain: Chain,
     rpc: AptosClient,
     walletAddress: string,
-    tokens: (AnyAptosAddress | "native")[],
+    tokens: AnyAptosAddress[],
   ): Promise<Balances> {
     return {};
     // const tb = await AptosPlatform.getTokenBridge(rpc);

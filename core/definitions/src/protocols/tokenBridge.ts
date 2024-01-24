@@ -5,16 +5,10 @@ import {
   PlatformToChains,
   lazyInstantiate,
 } from "@wormhole-foundation/sdk-base";
-import {
-  AccountAddress,
-  ChainAddress,
-  NativeAddress,
-  TokenAddress,
-  UniversalOrNative,
-} from "../address";
+import { AccountAddress, ChainAddress, NativeAddress, UniversalOrNative } from "../address";
 import "../payloads/automaticTokenBridge";
 import "../payloads/tokenBridge";
-import { TokenId } from "../types";
+import { TokenAddress, TokenId } from "../types";
 import { UnsignedTransaction } from "../unsignedTransaction";
 import { ProtocolPayload, ProtocolVAA, payloadDiscriminator } from "../vaa";
 import { EmptyPlatformMap } from "../protocol";
@@ -86,7 +80,7 @@ export namespace AutomaticTokenBridge {
 }
 
 export type TokenTransferDetails = {
-  token: TokenId | "native";
+  token: TokenId;
   amount: bigint;
   from: ChainAddress;
   to: ChainAddress;

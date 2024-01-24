@@ -1,6 +1,5 @@
 import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import {
-  Chain,
   ChainAddress,
   ChainsConfig,
   Contracts,
@@ -79,8 +78,9 @@ export class CosmwasmTokenBridge<N extends Network, C extends CosmwasmChains>
     return false;
   }
 
-  async getWrappedAsset(token: TokenId<Chain>): Promise<NativeAddress<C>> {
+  async getWrappedAsset(token: TokenId): Promise<NativeAddress<C>> {
     if (token.chain === this.chain) throw new Error(`Expected foreign chain, got ${token.chain}`);
+    if (token.address === "native") throw new Error("Native asset cannot be a wrapped asset");
 
     const base64Addr = encoding.b64.encode(token.address.toUniversalAddress().toUint8Array());
 
@@ -122,7 +122,7 @@ export class CosmwasmTokenBridge<N extends Network, C extends CosmwasmChains>
   }
 
   async *createAttestation(
-    token: AnyCosmwasmAddress | "native",
+    token: AnyCosmwasmAddress,
     payer?: AnyCosmwasmAddress,
   ): AsyncGenerator<CosmwasmUnsignedTransaction<N, C>> {
     if (!payer) throw new Error("Payer required to create attestation");
@@ -182,7 +182,7 @@ export class CosmwasmTokenBridge<N extends Network, C extends CosmwasmChains>
   async *transfer(
     sender: AnyCosmwasmAddress,
     recipient: ChainAddress,
-    token: AnyCosmwasmAddress | "native",
+    token: AnyCosmwasmAddress,
     amount: bigint,
     payload?: Uint8Array,
   ): AsyncGenerator<CosmwasmUnsignedTransaction<N, C>> {

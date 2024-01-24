@@ -64,13 +64,13 @@ export interface RouteConstructor {
   // get the list of chains this route supports
   supportedChains(network: Network): Chain[];
   // get the list of source tokens that are possible to send
-  supportedSourceTokens(fromChain: ChainContext<Network>): Promise<(TokenId | "native")[]>;
+  supportedSourceTokens(fromChain: ChainContext<Network>): Promise<TokenId[]>;
   // get the list of destination tokens that may be recieved on the destination chain
   supportedDestinationTokens<N extends Network>(
     token: TokenId,
     fromChain: ChainContext<N>,
     toChain: ChainContext<N>,
-  ): Promise<(TokenId | "native")[]>;
+  ): Promise<TokenId[]>;
   isProtocolSupported<N extends Network>(
     fromChain: ChainContext<N>,
     toChain: ChainContext<N>,

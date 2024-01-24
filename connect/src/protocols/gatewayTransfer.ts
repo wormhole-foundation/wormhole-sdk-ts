@@ -312,7 +312,8 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
   }
 
   private async _transfer(signer: Signer): Promise<TransactionId[]> {
-    const tokenAddress = this.transfer.token === "native" ? "native" : this.transfer.token.address;
+    const tokenAddress =
+      this.transfer.token.address === "native" ? "native" : this.transfer.token.address;
 
     const fromChain = this.wh.getChain(this.transfer.from.chain);
 
@@ -330,7 +331,8 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
   }
 
   private async _transferIbc(signer: Signer): Promise<TransactionId[]> {
-    if (this.transfer.token === "native") throw new Error("Native not supported for IBC transfers");
+    if (this.transfer.token.address === "native")
+      throw new Error("Native not supported for IBC transfers");
 
     const fromChain = this.wh.getChain(this.transfer.from.chain);
 

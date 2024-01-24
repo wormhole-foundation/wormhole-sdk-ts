@@ -13,6 +13,7 @@ import {
   Network,
   PlatformContext,
   SignedTx,
+  StaticPlatformMethods,
   TxHash,
   Wormhole,
   decimals,
@@ -32,7 +33,10 @@ import { AnyCosmwasmAddress } from "./types";
 /**
  * @category Cosmwasm
  */
-export class CosmwasmPlatform<N extends Network> extends PlatformContext<N, CosmwasmPlatformType> {
+export class CosmwasmPlatform<N extends Network>
+  extends PlatformContext<N, CosmwasmPlatformType>
+  implements StaticPlatformMethods<typeof _platform, typeof CosmwasmPlatform>
+{
   static _platform: CosmwasmPlatformType = _platform;
 
   constructor(network: N, _config?: ChainsConfig<N, CosmwasmPlatformType>) {
@@ -94,7 +98,7 @@ export class CosmwasmPlatform<N extends Network> extends PlatformContext<N, Cosm
   static async getDecimals<C extends CosmwasmChains>(
     chain: C,
     rpc: CosmWasmClient,
-    token: AnyCosmwasmAddress | "native",
+    token: AnyCosmwasmAddress,
   ): Promise<bigint> {
     if (token === "native") return BigInt(decimals.nativeDecimals(CosmwasmPlatform._platform));
 
@@ -109,7 +113,7 @@ export class CosmwasmPlatform<N extends Network> extends PlatformContext<N, Cosm
     chain: C,
     rpc: CosmWasmClient,
     walletAddress: string,
-    token: AnyCosmwasmAddress | "native",
+    token: AnyCosmwasmAddress,
   ): Promise<bigint | null> {
     if (token === "native") {
       const [network, _] = await CosmwasmPlatform.chainFromRpc(rpc);
@@ -126,7 +130,7 @@ export class CosmwasmPlatform<N extends Network> extends PlatformContext<N, Cosm
     chain: C,
     rpc: CosmWasmClient,
     walletAddress: string,
-    tokens: (AnyCosmwasmAddress | "native")[],
+    tokens: AnyCosmwasmAddress[],
   ): Promise<Balances> {
     const client = CosmwasmPlatform.getQueryClient(rpc);
     const allBalances = await client.bank.allBalances(walletAddress);

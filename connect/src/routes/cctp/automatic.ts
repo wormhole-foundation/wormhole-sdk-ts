@@ -66,10 +66,16 @@ export class AutomaticCCTPRoute<N extends Network>
     sourceToken: TokenId,
     fromChain: ChainContext<N>,
     toChain: ChainContext<N>,
-  ): Promise<(TokenId | "native")[]> {
+  ): Promise<TokenId[]> {
     const { network, chain } = toChain;
     if (!circle.usdcContract.has(network, chain)) return [];
-    return ["native", Wormhole.chainAddress(chain, circle.usdcContract.get(network, chain)!)];
+    return [
+      {
+        chain,
+        address: "native",
+      },
+      Wormhole.chainAddress(chain, circle.usdcContract.get(network, chain)!),
+    ];
   }
 
   static isProtocolSupported<N extends Network>(

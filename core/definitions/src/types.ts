@@ -15,14 +15,16 @@ import {
   toChainId,
   tokens,
 } from "@wormhole-foundation/sdk-base";
-import { ChainAddress, TokenAddress, toNative } from "./address";
+import { ChainAddress, UniversalOrNative, toNative } from "./address";
 import { Contracts, getContracts } from "./contracts";
 
 export type TxHash = string;
 export type SequenceId = bigint;
 export type SignedTx = any;
 
-export type TokenId<C extends Chain = Chain> = ChainAddress<C>;
+export type TokenAddress<C extends Chain> = UniversalOrNative<C> | "native";
+export type TokenId<C extends Chain = Chain> = { chain: C; address: TokenAddress<C> };
+
 export function isTokenId<C extends Chain>(thing: any): thing is TokenId<C> {
   return (
     typeof thing === "object" &&
@@ -31,13 +33,16 @@ export function isTokenId<C extends Chain>(thing: any): thing is TokenId<C> {
     isChain((<TokenId<C>>thing).chain)
   );
 }
+
 export function isSameToken(a: TokenId, b: TokenId): boolean {
   if (a.chain !== b.chain) return false;
+  if (a.address === "native" && b.address === "native") return true;
   return canonicalAddress(a) === canonicalAddress(b);
 }
 
-export function canonicalAddress(ca: ChainAddress): string {
-  // @ts-ignore
+export function canonicalAddress(ca: ChainAddress | TokenId): string {
+  if (isTokenId(ca) && ca.address === "native") return "native";
+  // @ts-ignore -- `toNative` will eval to 'never' until platforms are registered
   return ca.address.toNative(ca.chain).toString();
 }
 
@@ -46,11 +51,20 @@ export function canonicalAddress(ca: ChainAddress): string {
 export function resolveWrappedToken<N extends Network, C extends Chain>(
   network: N,
   chain: C,
-  token: TokenId<C> | TokenAddress<C> | "native",
+  token: TokenId<C> | TokenAddress<C>,
 ): [boolean, TokenId<C>] {
-  if (isTokenId(token)) return [false, token];
+  let tokenAddr: TokenAddress<C>;
 
-  if (token === "native") {
+  if (isTokenId(token)) {
+    if (token.address !== "native") {
+      return [false, token];
+    }
+    tokenAddr = token.address;
+  } else {
+    tokenAddr = token;
+  }
+
+  if (tokenAddr === "native") {
     const nativeToken = tokens.getNative(network, chain);
     if (!nativeToken) throw new Error("Invalid destination token");
 
@@ -62,7 +76,9 @@ export function resolveWrappedToken<N extends Network, C extends Chain>(
     return [true, destNativeWrapped];
   }
 
-  return [false, { chain, address: token }];
+  const tid: TokenId<C> = { chain, address: tokenAddr };
+
+  return [false, tid];
 }
 
 export type Balances = {
