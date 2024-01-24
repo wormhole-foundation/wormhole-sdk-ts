@@ -12,6 +12,7 @@ import {
   chainToPlatform,
   decimals,
   encoding,
+  isNative,
   nativeChainIds,
   networkPlatformConfigs,
 } from '@wormhole-foundation/connect-sdk';
@@ -78,9 +79,9 @@ export class EvmPlatform<N extends Network>
   static async getDecimals(
     chain: Chain,
     rpc: Provider,
-    token: AnyEvmAddress | 'native',
+    token: AnyEvmAddress,
   ): Promise<bigint> {
-    if (token === 'native')
+    if (isNative(token))
       return BigInt(decimals.nativeDecimals(EvmPlatform._platform));
 
     const tokenContract = EvmPlatform.getTokenImplementation(
@@ -94,9 +95,9 @@ export class EvmPlatform<N extends Network>
     chain: Chain,
     rpc: Provider,
     walletAddr: string,
-    token: AnyEvmAddress | 'native',
+    token: AnyEvmAddress,
   ): Promise<bigint | null> {
-    if (token === 'native') return rpc.getBalance(walletAddr);
+    if (isNative(token)) return rpc.getBalance(walletAddr);
 
     const tokenImpl = EvmPlatform.getTokenImplementation(
       rpc,
@@ -109,13 +110,14 @@ export class EvmPlatform<N extends Network>
     chain: Chain,
     rpc: Provider,
     walletAddr: string,
-    tokens: (AnyEvmAddress | 'native')[],
+    tokens: AnyEvmAddress[],
   ): Promise<Balances> {
     const balancesArr = await Promise.all(
       tokens.map(async (token) => {
         const balance = await this.getBalance(chain, rpc, walletAddr, token);
-        const address =
-          token === 'native' ? 'native' : new EvmAddress(token).toString();
+        const address = isNative(token)
+          ? 'native'
+          : new EvmAddress(token).toString();
         return { [address]: balance };
       }),
     );

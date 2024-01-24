@@ -8,6 +8,7 @@ import {
   canonicalAddress,
   contracts,
   encoding,
+  isNative,
   nativeChainIds,
   resolveWrappedToken,
   toChainId,
@@ -66,7 +67,7 @@ export class PorticoApi {
     receiver: ChainAddress,
     token: TokenAddress<C>,
     amount: bigint,
-    destToken: TokenId | 'native',
+    destToken: TokenId,
     quote: PorticoBridge.Quote,
     nonce: number,
   ): Promise<CreateOrderResponse> {
@@ -275,7 +276,7 @@ export class PorticoApi {
     from: TokenAddress<C>,
     to: TokenAddress<C>,
   ): Promise<bigint> {
-    if (from === 'native' || to === 'native')
+    if (isNative(from) || isNative(to))
       throw new Error('how did you get here tho?');
 
     const sourceToken = encoding.hex.encode(

@@ -7,6 +7,7 @@ import {
   NativeAddress,
   Network,
   TokenAddress,
+  isNative,
   serialize,
   toNative,
 } from '@wormhole-foundation/connect-sdk';
@@ -121,7 +122,7 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
 
     const nativeTokenGas = nativeGas ? nativeGas : 0n;
 
-    if (token === 'native') {
+    if (isNative(token)) {
       const txReq =
         await this.tokenBridgeRelayer.wrapAndTransferEthWithRelay.populateTransaction(
           nativeTokenGas,
@@ -182,10 +183,7 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
     token: TokenAddress<C>,
   ): Promise<bigint> {
     const destChainId = toChainId(recipient.chain);
-    const srcTokenAddress =
-      token === 'native'
-        ? await this.tokenBridge.WETH()
-        : new EvmAddress(token).toString();
+    const srcTokenAddress = await this.tokenAddress(token);
 
     const tokenContract = EvmPlatform.getTokenImplementation(
       this.provider,
@@ -207,10 +205,7 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
     token: TokenAddress<C>,
     amount: bigint,
   ): Promise<bigint> {
-    const address =
-      token === 'native'
-        ? await this.tokenBridge.WETH()
-        : new EvmAddress(token).toString();
+    const address = await this.tokenAddress(token);
     return this.tokenBridgeRelayer.calculateNativeSwapAmountOut(
       address,
       amount,
@@ -218,10 +213,7 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
   }
 
   async maxSwapAmount(token: TokenAddress<C>): Promise<bigint> {
-    const address =
-      token === 'native'
-        ? await this.tokenBridge.WETH()
-        : new EvmAddress(token).toString();
+    const address = await this.tokenAddress(token);
     return this.tokenBridgeRelayer.maxNativeSwapAmount(address);
   }
 
@@ -231,11 +223,14 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
   }
 
   async isRegisteredToken(token: TokenAddress<C>): Promise<boolean> {
-    const address =
-      token === 'native'
-        ? await this.tokenBridge.WETH()
-        : new EvmAddress(token).toString();
+    const address = await this.tokenAddress(token);
     return await this.tokenBridgeRelayer.isAcceptedToken(address);
+  }
+
+  private async tokenAddress(token: TokenAddress<C>): Promise<string> {
+    return isNative(token)
+      ? await this.tokenBridge.WETH()
+      : new EvmAddress(token).toString();
   }
 
   private createUnsignedTx(
