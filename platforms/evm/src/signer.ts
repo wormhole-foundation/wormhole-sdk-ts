@@ -6,8 +6,8 @@ import {
   UnsignedTransaction,
 } from '@wormhole-foundation/connect-sdk';
 import { ethers } from 'ethers';
-import { EvmPlatform } from '../platform';
-import { EvmChains } from '../types';
+import { EvmPlatform } from './platform';
+import { EvmChains } from './types';
 
 // Get a SignOnlySigner for the EVM platform
 export async function getEvmSigner(

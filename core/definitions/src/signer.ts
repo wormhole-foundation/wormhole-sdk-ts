@@ -57,3 +57,8 @@ export function isSignAndSendSigner(thing: any): thing is SignAndSendSigner<Netw
     typeof thing.signAndSend === "function"
   );
 }
+
+export abstract class PlatformNativeSigner<N extends Network, C extends Chain> {
+  constructor(private signer: any) {}
+  abstract unwrap(): typeof this.signer;
+}

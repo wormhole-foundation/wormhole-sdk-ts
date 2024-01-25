@@ -5,5 +5,4 @@ export * from "./chain";
 export * from "./types";
 export * from "./platform";
 export * from "./gateway";
-
-export * as testing from "./testing";
+export * from "./signer";
