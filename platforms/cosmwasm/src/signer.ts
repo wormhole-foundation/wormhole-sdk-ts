@@ -26,10 +26,10 @@ import {
   chainToAddressPrefix,
   cosmwasmNetworkChainToRestUrls,
   evmLikeChains,
-} from "../constants";
-import { CosmwasmPlatform } from "../platform";
-import { CosmwasmChains } from "../types";
-import { CosmwasmUnsignedTransaction } from "../unsignedTransaction";
+} from "./constants";
+import { CosmwasmPlatform } from "./platform";
+import { CosmwasmChains } from "./types";
+import { CosmwasmUnsignedTransaction } from "./unsignedTransaction";
 
 export async function getCosmwasmSigner(rpc: CosmWasmClient, mnemonic: string): Promise<Signer> {
   const [network, chain] = await CosmwasmPlatform.chainFromRpc(rpc);

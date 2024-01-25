@@ -1,49 +1,50 @@
 import {
   Network,
+  PlatformNativeSigner,
   SignOnlySigner,
   SignedTx,
   Signer,
   UnsignedTransaction,
 } from '@wormhole-foundation/connect-sdk';
 import { ethers } from 'ethers';
-import { EvmPlatform } from '../platform';
-import { EvmChains } from '../types';
+import { EvmPlatform } from './platform';
+import { EvmChains } from './types';
 
 // Get a SignOnlySigner for the EVM platform
-export async function getEvmSigner(
+export async function getEvmSignerForKey(
   rpc: ethers.Provider,
   privateKey: string,
 ): Promise<Signer> {
-  const [network, chain] = await EvmPlatform.chainFromRpc(rpc);
-  return new EvmSigner<typeof network, typeof chain>(chain, rpc, privateKey);
+  const [_, chain] = await EvmPlatform.chainFromRpc(rpc);
+  const _signer = new ethers.Wallet(privateKey, rpc);
+  return getEvmSignerForSigner(chain, _signer);
 }
 
-// EvmSigner implements SignOnlySender
-export class EvmSigner<N extends Network, C extends EvmChains = EvmChains>
+// Get a SignOnlySigner for the EVM platform
+export async function getEvmSignerForSigner(
+  chain: EvmChains,
+  signer: ethers.Signer,
+): Promise<Signer> {
+  const address = await signer.getAddress();
+  return new EvmNativeSigner(chain, address, signer);
+}
+
+export class EvmNativeSigner<N extends Network, C extends EvmChains = EvmChains>
+  extends PlatformNativeSigner<ethers.Signer, N, C>
   implements SignOnlySigner<N, C>
 {
-  _wallet: ethers.Wallet;
-
-  constructor(
-    private _chain: C,
-    private provider: ethers.Provider,
-    privateKey: string,
-  ) {
-    this._wallet = new ethers.Wallet(privateKey, provider);
-  }
-
   chain(): C {
     return this._chain;
   }
 
   address(): string {
-    return this._wallet.address;
+    return this._address;
   }
 
-  async sign(tx: UnsignedTransaction[]): Promise<SignedTx[]> {
+  async sign(tx: UnsignedTransaction<N, C>[]): Promise<SignedTx[]> {
     const signed = [];
 
-    let nonce = await this.provider.getTransactionCount(this.address());
+    let nonce = await this._signer.getNonce();
 
     // TODO: Better gas estimation/limits
     let gasLimit = 500_000n;
@@ -51,8 +52,8 @@ export class EvmSigner<N extends Network, C extends EvmChains = EvmChains>
     let maxPriorityFeePerGas = 100_000_000n; // 0.1gwei
 
     // Celo does not support this call
-    if (this._chain !== 'Celo') {
-      const feeData = await this.provider.getFeeData();
+    if (this.chain() !== 'Celo') {
+      const feeData = await this._signer.provider!.getFeeData();
       maxFeePerGas = feeData.maxFeePerGas ?? maxFeePerGas;
       maxPriorityFeePerGas =
         feeData.maxPriorityFeePerGas ?? maxPriorityFeePerGas;
@@ -76,7 +77,7 @@ export class EvmSigner<N extends Network, C extends EvmChains = EvmChains>
       // const estimate = await this.provider.estimateGas(t)
       // t.gasLimit = estimate
 
-      signed.push(await this._wallet.signTransaction(t));
+      signed.push(await this._signer.signTransaction(t));
 
       nonce += 1;
     }
