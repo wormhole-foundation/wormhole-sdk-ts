@@ -31,7 +31,7 @@ const rpcConfig = [[
   ]], [
   "Testnet", [
     ["Ethereum",        "https://rpc.ankr.com/eth_goerli"],
-    ["Polygon",         "https://polygon-mumbai.blockpi.network/v1/rpc/public"],
+    ["Polygon",         "https://polygon-mumbai-bor.publicnode.com"],
     ["Bsc",             "https://data-seed-prebsc-1-s3.binance.org:8545"],
     ["Avalanche",       "https://api.avax-test.network/ext/bc/C/rpc"],
     ["Fantom",          "https://rpc.ankr.com/fantom_testnet"],
