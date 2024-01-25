@@ -16,32 +16,24 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 
 (async function () {
   // Setup
-  const wh = new Wormhole("Mainnet", [EvmPlatform, SolanaPlatform]);
+  const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform]);
 
   // get signers from local config
-  const sendChain = wh.getChain("Ethereum");
-  const destChain = wh.getChain("Polygon");
+  const sendChain = wh.getChain("Polygon");
+  const destChain = wh.getChain("Avalanche");
   const sender = await getStuff(sendChain);
   const receiver = await getStuff(destChain);
 
   // create new resolver, overriding the default routes
-  const resolver = wh.resolver([routes.AutomaticPorticoRoute]);
-
-  const possibleSourceTokens = await resolver.supportedSourceTokens(sendChain);
-  console.log(`Supported source tokens for ${sendChain.chain}`, possibleSourceTokens);
-  const sendingToken = possibleSourceTokens.pop()!;
-
-  const destTokens = await resolver.supportedDestinationTokens(sendingToken, sendChain, destChain);
-  const destToken = destTokens[0]!;
-  console.log(`Supported destination tokens for ${sendingToken.toString()}`, destTokens);
+  const resolver = wh.resolver();
 
   // Creating a transfer request fetches token details
   // since all routes will need to know about the tokens
   const tr = await routes.RouteTransferRequest.create(wh, {
     from: sender.address,
     to: receiver.address,
-    source: sendingToken,
-    destination: destToken,
+    source: Wormhole.tokenId(sendChain.chain, "native"),
+    destination: Wormhole.tokenId(destChain.chain, "native"),
   });
 
   // resolve the transfer request to a set of routes that can perform it
@@ -51,6 +43,7 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   // Sort the routes given some input (not required for mvp)
   // const bestRoute = (await resolver.sortRoutes(foundRoutes, "cost"))[0]!;
   const bestRoute = foundRoutes[0]!;
+  console.log("Selected: ", bestRoute);
 
   // Specify the amount as a decimal string
   const transferParams = {
