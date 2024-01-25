@@ -4,17 +4,96 @@ import {
   Keypair,
   SendOptions,
   SendTransactionError,
+  Transaction,
   TransactionExpiredBlockheightExceededError,
 } from '@solana/web3.js';
 import {
   SignAndSendSigner,
+  SignOnlySigner,
   UnsignedTransaction,
+  Signer,
+  encoding,
 } from '@wormhole-foundation/connect-sdk';
 import { Network } from '@wormhole-foundation/sdk-base/src';
-import { SolanaPlatform } from '../platform';
-import { SolanaChains } from '../types';
-import { SolanaUnsignedTransaction } from '../unsignedTransaction';
-import { logTxDetails } from './debug';
+import { SolanaPlatform } from './platform';
+import { SolanaChains } from './types';
+import { SolanaUnsignedTransaction } from './unsignedTransaction';
+
+// returns a SignOnlySigner for the Solana platform
+export async function getSolanaSigner(
+  rpc: Connection,
+  privateKey: string,
+): Promise<Signer> {
+  const [_, chain] = await SolanaPlatform.chainFromRpc(rpc);
+  return new SolanaSigner(
+    chain,
+    Keypair.fromSecretKey(encoding.b58.decode(privateKey)),
+    rpc,
+  );
+}
+
+// returns a SignAndSendSigner for the Solana platform
+export async function getSolanaSignAndSendSigner(
+  rpc: Connection,
+  privateKey: string,
+  opts?: {
+    debug?: boolean;
+    sendOpts?: SendOptions;
+    priorityFeeAmount?: bigint;
+    computeLimit?: bigint;
+  },
+): Promise<Signer> {
+  const [_, chain] = await SolanaPlatform.chainFromRpc(rpc);
+  return new SolanaSendSigner(
+    rpc,
+    chain,
+    Keypair.fromSecretKey(encoding.b58.decode(privateKey)),
+    opts?.debug ?? false,
+    opts?.sendOpts,
+    opts?.priorityFeeAmount,
+    opts?.computeLimit,
+  );
+}
+
+export class SolanaSigner<N extends Network, C extends SolanaChains = 'Solana'>
+  implements SignOnlySigner<N, C>
+{
+  constructor(
+    private _chain: C,
+    private _keypair: Keypair,
+    private _rpc: Connection,
+    private _debug: boolean = false,
+  ) {}
+
+  chain(): C {
+    return this._chain;
+  }
+
+  address(): string {
+    return this._keypair.publicKey.toBase58();
+  }
+
+  async sign(tx: SolanaUnsignedTransaction<N>[]): Promise<Buffer[]> {
+    const { blockhash } = await SolanaPlatform.latestBlock(this._rpc);
+
+    const signed = [];
+    for (const txn of tx) {
+      const {
+        description,
+        transaction: { transaction, signers: extraSigners },
+      } = txn;
+
+      console.log(`Signing: ${description} for ${this.address()}`);
+
+      if (this._debug) logTxDetails(transaction);
+
+      transaction.recentBlockhash = blockhash;
+      transaction.partialSign(this._keypair, ...(extraSigners ?? []));
+      signed.push(transaction.serialize());
+    }
+    return signed;
+  }
+}
 
 // Number of blocks to wait before considering a transaction expired
 const SOLANA_EXPIRED_BLOCKHEIGHT = 150;
@@ -171,4 +250,17 @@ export class SolanaSendSigner<
 
     return txids;
   }
+}
+
+export function logTxDetails(transaction: Transaction) {
+  console.log(transaction.signatures);
+  console.log(transaction.feePayer);
+  transaction.instructions.forEach((ix) => {
+    console.log('Program', ix.programId.toBase58());
+    console.log('Data: ', ix.data.toString('hex'));
+    console.log(
+      'Keys: ',
+      ix.keys.map((k) => [k, k.pubkey.toBase58()]),
+    );
+  });
 }

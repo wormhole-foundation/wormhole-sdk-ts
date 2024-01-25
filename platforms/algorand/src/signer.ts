@@ -6,8 +6,8 @@ import {
   UnsignedTransaction,
 } from "@wormhole-foundation/connect-sdk";
 import { Account, Algodv2, assignGroupID, mnemonicToSecretKey } from "algosdk";
-import { AlgorandChains, TransactionSignerPair } from "../types";
-import { AlgorandPlatform } from "../platform";
+import { AlgorandChains, TransactionSignerPair } from "./types";
+import { AlgorandPlatform } from "./platform";
 
 export async function getAlgorandSigner(
   rpc: Algodv2,
