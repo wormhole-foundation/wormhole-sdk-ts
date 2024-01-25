@@ -1,5 +1,11 @@
 import fs from "fs";
-import { Chain, Network, Wormhole, chains } from "@wormhole-foundation/connect-sdk";
+import {
+  Chain,
+  Network,
+  Wormhole,
+  chains,
+  platformToChains,
+} from "@wormhole-foundation/connect-sdk";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
@@ -20,6 +26,7 @@ import "@wormhole-foundation/connect-sdk-cosmwasm-ibc";
 
 import "@wormhole-foundation/connect-sdk-algorand-core";
 import "@wormhole-foundation/connect-sdk-algorand-tokenbridge";
+import { platforms } from "@wormhole-foundation/sdk-base/src/constants/platforms";
 
 type SupportedProtocols = Record<string, Record<string, boolean>>;
 
@@ -32,23 +39,49 @@ function supportedCheck(sp: SupportedProtocols, proto: string, chain: string): s
   const supportedTestnetProtos = getSupportmatrix("Testnet");
   const supportedMainnetProtos = getSupportmatrix("Mainnet");
 
-  const allProtos = new Set([
-    ...Object.keys(supportedTestnetProtos),
-    ...Object.keys(supportedMainnetProtos),
-  ]);
+  const allProtos = Array.from(
+    new Set([...Object.keys(supportedTestnetProtos), ...Object.keys(supportedMainnetProtos)]),
+  );
+  const tables = [];
 
-  const rows = ["| Chain | Route | Mainnet | Testnet |", "| -- | -- | -- | -- |"];
-  for (const chain of chains) {
-    for (const proto of allProtos) {
-      const mainnetSupported = supportedCheck(supportedMainnetProtos, proto, chain);
-      const testnetSupported = supportedCheck(supportedTestnetProtos, proto, chain);
+  const mainnetSupported = getSupportTables(allProtos, supportedMainnetProtos);
+  tables.push(`# Mainnet `);
+  for (const [k, v] of Object.entries(mainnetSupported)) {
+    tables.push(`
+## ${k}
 
-      rows.push(`| ${chain} | ${proto} | ${mainnetSupported} | ${testnetSupported} |`);
-    }
+${v}
+`);
   }
-  const supportTable = rows.join("\n");
-  fs.writeFileSync("SUPPORT_MATRIX.md", supportTable);
+
+  const testnetSupported = getSupportTables(allProtos, supportedTestnetProtos);
+  tables.push(`# Testnet `);
+  for (const [k, v] of Object.entries(testnetSupported)) {
+    tables.push(`
+## ${k}
+
+${v}
+`);
+  }
+
+  fs.writeFileSync("SUPPORT_MATRIX.md", `${tables.join("\n")}`);
 })();
+
+function getSupportTables(protos: string[], supported: SupportedProtocols): Record<string, string> {
+  const platformSupport: Record<string, string> = {};
+  for (const platform of platforms) {
+    const _chains = platformToChains(platform);
+    const rows = ["| Chain | Route | Supported? |", "| -- | -- | -- |"];
+    for (const chain of _chains) {
+      for (const proto of protos) {
+        const isSupported = supportedCheck(supported, proto, chain);
+        rows.push(`| ${chain} | ${proto} | ${isSupported} |`);
+      }
+    }
+    platformSupport[platform] = rows.join("\n");
+  }
+  return platformSupport;
+}
 
 function getSupportmatrix(n: Network) {
   // Setup
