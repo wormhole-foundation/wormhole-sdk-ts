@@ -20,7 +20,8 @@
   },
   "sideEffects": false,
   "scripts": {
-    "features": "tsx src/features.ts"
+    "features": "tsx src/features.ts",
+    "sync": "tsx src/syncVersion.ts"
   },
   "devDependencies": {
     "algosdk": "^2.7.0",

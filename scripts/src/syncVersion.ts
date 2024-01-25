@@ -10,8 +10,8 @@ function updateVersionInPackageJson(dirPath: string, version: string) {
     packageJson.dependencies = Object.fromEntries(
       Object.entries(packageJson.dependencies).map((entry) => {
         const [k, v] = entry as [string, string];
-        // Note: this may be wrong if we start importing packages outside the workspaces
-        // in this repo
+        // Note: this may be wrong if we start importing
+        // packages outside the workspaces in this repo
         if (k.startsWith("@wormhole-foundation")) {
           return [k, `^${version}`];
         }
@@ -22,21 +22,26 @@ function updateVersionInPackageJson(dirPath: string, version: string) {
   fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
 }
 
-function updateVersionsInWorkspaces(version: string) {
-  updateVersionInPackageJson(__dirname, version);
+function rootDir(): string {
+  return path.join(__dirname, "..", "..");
+}
 
-  const rootPackageJsonPath = path.join(__dirname, "package.json");
+function updateVersionsInWorkspaces(version: string) {
+  const dir = rootDir();
+  updateVersionInPackageJson(dir, version);
+
+  const rootPackageJsonPath = path.join(dir, "package.json");
   const rootPackageJson = require(rootPackageJsonPath);
   rootPackageJson.workspaces.forEach((workspaceDir: string) => {
-    const workspacePackageDir = path.join(__dirname, workspaceDir);
+    const workspacePackageDir = path.join(dir, workspaceDir);
     updateVersionInPackageJson(workspacePackageDir, version);
   });
 }
 
 function getVersion(): string {
-  const versionFilePath = path.join(__dirname, "VERSION");
+  const versionFilePath = path.join(rootDir(), "VERSION");
   const v = fs.readFileSync(versionFilePath);
-  return v.toString().replace('\n', '');
+  return v.toString().replace("\n", "");
 }
 
 updateVersionsInWorkspaces(getVersion());
