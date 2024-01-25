@@ -17,7 +17,7 @@ import {
 // Importing from src so we dont have to rebuild to see debug stuff in signer
 import { getAlgorandSigner } from "@wormhole-foundation/connect-sdk-algorand/src";
 import { getCosmwasmSigner } from "@wormhole-foundation/connect-sdk-cosmwasm/src";
-import { getEvmSigner } from "@wormhole-foundation/connect-sdk-evm/src";
+import { getEvmSignerForKey } from "@wormhole-foundation/connect-sdk-evm/src";
 import { getSolanaSignAndSendSigner } from "@wormhole-foundation/connect-sdk-solana/src";
 
 // Use .env.example as a template for your .env file and populate it with secrets
@@ -64,7 +64,7 @@ export async function getStuff<
       signer = await getCosmwasmSigner(await chain.getRpc(), getEnv("COSMOS_MNEMONIC"));
       break;
     case "Evm":
-      signer = await getEvmSigner(await chain.getRpc(), getEnv("ETH_PRIVATE_KEY"));
+      signer = await getEvmSignerForKey(await chain.getRpc(), getEnv("ETH_PRIVATE_KEY"));
       break;
     case "Algorand":
       signer = await getAlgorandSigner(await chain.getRpc(), getEnv("ALGORAND_MNEMONIC"));
