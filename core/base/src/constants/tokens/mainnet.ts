@@ -12,10 +12,7 @@ const mainnetTokenEntries = [
           symbol: "ETH",
           decimals: 18,
           address: "native",
-          wrapped: {
-            decimals: 18,
-            symbol: "WETH",
-          },
+          wrappedKey: "WETH",
         },
       ],
       [
@@ -363,10 +360,7 @@ const mainnetTokenEntries = [
           symbol: "BNB",
           decimals: 18,
           address: "native",
-          wrapped: {
-            decimals: 18,
-            symbol: "WBNB",
-          },
+          wrappedKey: "WBNB",
         },
       ],
       [
@@ -629,10 +623,7 @@ const mainnetTokenEntries = [
           symbol: "MATIC",
           decimals: 18,
           address: "native",
-          wrapped: {
-            decimals: 18,
-            symbol: "WMATIC",
-          },
+          wrappedKey: "WMATIC",
         },
       ],
       [
@@ -974,10 +965,7 @@ const mainnetTokenEntries = [
           symbol: "AVAX",
           decimals: 18,
           address: "native",
-          wrapped: {
-            decimals: 18,
-            symbol: "WAVAX",
-          },
+          wrappedKey: "WAVAX",
         },
       ],
       [
@@ -1258,10 +1246,7 @@ const mainnetTokenEntries = [
           symbol: "FTM",
           decimals: 18,
           address: "native",
-          wrapped: {
-            decimals: 18,
-            symbol: "WFTM",
-          },
+          wrappedKey: "WFTM",
         },
       ],
       [
@@ -1809,10 +1794,7 @@ const mainnetTokenEntries = [
           symbol: "GLMR",
           decimals: 18,
           address: "native",
-          wrapped: {
-            decimals: 18,
-            symbol: "WGLMR",
-          },
+          wrappedKey: "WGLMR",
         },
       ],
       [
@@ -2050,10 +2032,7 @@ const mainnetTokenEntries = [
           symbol: "SOL",
           decimals: 9,
           address: "native",
-          wrapped: {
-            decimals: 9,
-            symbol: "WSOL",
-          },
+          wrappedKey: "WSOL",
         },
       ],
       [
@@ -2932,10 +2911,7 @@ const mainnetTokenEntries = [
           symbol: "ETH",
           decimals: 18,
           address: "native",
-          wrapped: {
-            decimals: 18,
-            symbol: "WETHbase",
-          },
+          wrappedKey: "WETHbase",
         },
       ],
       [
@@ -3188,10 +3164,7 @@ const mainnetTokenEntries = [
           symbol: "ETH",
           decimals: 18,
           address: "native",
-          wrapped: {
-            decimals: 18,
-            symbol: "WETHarbitrum",
-          },
+          wrappedKey: "WETHarbitrum",
         },
       ],
       [
@@ -3507,10 +3480,7 @@ const mainnetTokenEntries = [
           symbol: "ETH",
           decimals: 18,
           address: "native",
-          wrapped: {
-            decimals: 18,
-            symbol: "WETHoptimism",
-          },
+          wrappedKey: "WETHoptimism",
         },
       ],
       [
