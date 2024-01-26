@@ -13,8 +13,8 @@ import {
   UnsignedTransaction,
   Signer,
   encoding,
+  Network,
 } from '@wormhole-foundation/connect-sdk';
-import { Network } from '@wormhole-foundation/sdk-base/src';
 import { SolanaPlatform } from './platform';
 import { SolanaChains } from './types';
 import { SolanaUnsignedTransaction } from './unsignedTransaction';

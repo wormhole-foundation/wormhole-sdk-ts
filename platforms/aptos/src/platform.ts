@@ -1,4 +1,10 @@
-import { Chain, Network, PlatformContext, Wormhole } from "@wormhole-foundation/connect-sdk";
+import {
+  StaticPlatformMethods,
+  Chain,
+  Network,
+  PlatformContext,
+  Wormhole,
+} from "@wormhole-foundation/connect-sdk";
 import { AptosClient } from "aptos";
 import { AptosChain } from "./chain";
 import { AptosChains, AptosPlatformType, _platform } from "./types";
@@ -15,7 +21,6 @@ import {
 import { CoinClient, Types } from "aptos";
 import { APTOS_COIN, APTOS_SEPARATOR } from "./constants";
 import { AnyAptosAddress } from "./types";
-import { StaticPlatformMethods } from "@wormhole-foundation/sdk-definitions/src";
 import { isNative } from "lodash";
 
 /**
