@@ -164,8 +164,9 @@ export class CosmwasmPlatform<N extends Network>
   }
 
   static async getLatestBlock(rpc: CosmWasmClient): Promise<number> {
-    return rpc.getHeight();
+    return await rpc.getHeight();
   }
+
   static async getLatestFinalizedBlock(rpc: CosmWasmClient): Promise<number> {
     throw new Error("not implemented");
   }

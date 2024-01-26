@@ -215,8 +215,7 @@ export class SolanaPlatform<N extends Network>
   }
 
   static async getLatestBlock(rpc: Connection): Promise<number> {
-    const { lastValidBlockHeight } = await this.latestBlock(rpc);
-    return lastValidBlockHeight;
+    return await rpc.getSlot();
   }
 
   static async getLatestFinalizedBlock(rpc: Connection): Promise<number> {

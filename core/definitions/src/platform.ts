@@ -89,7 +89,9 @@ export abstract class PlatformContext<N extends Network, P extends Platform> {
   }
 
   // Create a _new_ RPC Connection
-  abstract getRpc<C extends PlatformToChains<P>>(chain: C): RpcConnection<P>;
+  abstract getRpc<C extends PlatformToChains<P>>(
+    chain: C,
+  ): RpcConnection<P> | Promise<RpcConnection<P>>;
 
   // Create a new Chain context object
   abstract getChain<C extends PlatformToChains<P>>(
