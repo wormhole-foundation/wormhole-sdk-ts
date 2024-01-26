@@ -1,30 +1,6 @@
-import { Network, Chain } from "@wormhole-foundation/sdk-base";
+import { Chain, Network } from "@wormhole-foundation/sdk-base";
 import { SignedTx, TxHash } from "./types";
 import { UnsignedTransaction } from "./unsignedTransaction";
-
-export type NativeSigner = any;
-
-export abstract class PlatformNativeSigner<
-  NS extends NativeSigner,
-  N extends Network,
-  C extends Chain,
-> {
-  constructor(
-    protected _chain: C,
-    protected _address: string,
-    protected _signer: NS,
-  ) {}
-  unwrap(): NS {
-    return this._signer;
-  }
-
-  // implement SignerBase
-  abstract chain(): C;
-  abstract address(): string;
-
-  // implement Signer
-  abstract sign(tx: UnsignedTransaction<N, C>[]): Promise<SignedTx[]>;
-}
 
 // A Signer is an interface that must be provided to certain methods
 // in the SDK to sign transactions. It can be either a SignOnlySigner
@@ -80,4 +56,32 @@ export function isSignAndSendSigner(thing: any): thing is SignAndSendSigner<Netw
     "signAndSend" in thing &&
     typeof thing.signAndSend === "function"
   );
+}
+
+export type NativeSigner = any;
+
+export abstract class PlatformNativeSigner<
+  NS extends NativeSigner,
+  N extends Network = Network,
+  C extends Chain = Chain,
+> {
+  constructor(
+    protected _chain: C,
+    protected _address: string,
+    protected _signer: NS,
+  ) {}
+  unwrap(): NS {
+    return this._signer;
+  }
+
+  // implement SignerBase
+  abstract chain(): C;
+  abstract address(): string;
+
+  // implement Signer
+  abstract sign(tx: UnsignedTransaction<N, C>[]): Promise<SignedTx[]>;
+}
+
+export function isNativeSigner(thing: any): thing is PlatformNativeSigner<any> {
+  return isSigner(thing) && "unwrap" in thing && typeof thing.unwrap === "function";
 }
