@@ -19,14 +19,24 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform]);
 
   // get signers from local config
-  const sendChain = wh.getChain("Polygon");
+  const sendChain = wh.getChain("Solana");
   const destChain = wh.getChain("Avalanche");
   const sender = await getStuff(sendChain);
   const receiver = await getStuff(destChain);
 
   // create new resolver, overriding the default routes
-  const resolver = wh.resolver();
+  const resolver = wh.resolver([routes.TokenBridgeRoute, routes.AutomaticTokenBridgeRoute]);
 
+  console.log(await resolver.supportedSourceTokens(sendChain));
+  console.log(
+    await resolver.supportedDestinationTokens(
+      Wormhole.tokenId(sendChain.chain, "native"),
+      sendChain,
+      destChain,
+    ),
+  );
+
+  return;
   // Creating a transfer request fetches token details
   // since all routes will need to know about the tokens
   const tr = await routes.RouteTransferRequest.create(wh, {
