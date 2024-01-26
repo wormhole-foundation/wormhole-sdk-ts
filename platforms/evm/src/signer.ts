@@ -5,10 +5,12 @@ import {
   SignedTx,
   Signer,
   UnsignedTransaction,
+  chainToPlatform,
+  isNativeSigner,
 } from '@wormhole-foundation/connect-sdk';
 import { ethers } from 'ethers';
 import { EvmPlatform } from './platform';
-import { EvmChains } from './types';
+import { EvmChains, _platform } from './types';
 
 // Get a SignOnlySigner for the EVM platform
 export async function getEvmSignerForKey(
@@ -83,4 +85,18 @@ export class EvmNativeSigner<N extends Network, C extends EvmChains = EvmChains>
     }
     return signed;
   }
+}
+
+export function isEvmNativeSigner<N extends Network>(
+  signer: Signer<N>,
+): signer is EvmNativeSigner<N> {
+  return (
+    isNativeSigner(signer) &&
+    chainToPlatform(signer.chain()) === _platform &&
+    isEthersSigner(signer.unwrap())
+  );
+}
+
+function isEthersSigner(thing: any): thing is ethers.Signer {
+  return thing instanceof ethers.AbstractSigner;
 }

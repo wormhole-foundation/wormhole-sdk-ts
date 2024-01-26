@@ -9,14 +9,13 @@ import {
 import { TokenTransfer, TokenTransferVAA } from "../../protocols/tokenTransfer";
 import {
   AttestationReceipt,
-  TransferQuote,
   TransferReceipt,
   TransferState,
   isAttested,
 } from "../../types";
 import { Wormhole } from "../../wormhole";
 import { ManualRoute, StaticRouteMethods } from "../route";
-import { TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
+import { Quote, TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
 
 export namespace TokenBridgeRoute {
   export type Options = {
@@ -38,7 +37,7 @@ type Vp = TokenBridgeRoute.ValidatedParams;
 type Tp = TransferParams<Op>;
 type Vr = ValidationResult<Op>;
 
-type Q = TransferQuote;
+type Q = Quote;
 type R = TransferReceipt<AttestationReceipt<"TokenBridge">>;
 
 export class TokenBridgeRoute<N extends Network>
@@ -98,11 +97,11 @@ export class TokenBridgeRoute<N extends Network>
   }
 
   async quote(params: Vp) {
-    return await TokenTransfer.quoteTransfer(
+    return this.request.displayQuote(await TokenTransfer.quoteTransfer(
       this.request.fromChain,
       this.request.toChain,
       this.toTransferDetails(params),
-    );
+    ));
   }
 
   async initiate(signer: Signer, params: Vp): Promise<R> {
