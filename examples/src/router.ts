@@ -27,7 +27,9 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   // create new resolver, overriding the default routes
   const resolver = wh.resolver([routes.TokenBridgeRoute, routes.AutomaticTokenBridgeRoute]);
 
+  // What tokens are available on the source chain?
   console.log(await resolver.supportedSourceTokens(sendChain));
+  // If we send "native" (gas token), what can we possibly get on the destination chain?
   console.log(
     await resolver.supportedDestinationTokens(
       Wormhole.tokenId(sendChain.chain, "native"),
@@ -36,7 +38,6 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
     ),
   );
 
-  return;
   // Creating a transfer request fetches token details
   // since all routes will need to know about the tokens
   const tr = await routes.RouteTransferRequest.create(wh, {

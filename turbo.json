@@ -9,7 +9,6 @@
     "test": {
       "dependsOn": ["build"],
       "inputs": ["src/**", "__test__/**/*.ts"]
-
     },
     "lint": {},
     "dev": { "cache": false, "persistent": true }
