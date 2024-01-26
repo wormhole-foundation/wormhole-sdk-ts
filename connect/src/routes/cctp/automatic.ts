@@ -7,9 +7,9 @@ import {
   nativeTokenId,
 } from "@wormhole-foundation/sdk-definitions";
 import { CircleAttestationReceipt, CircleTransfer } from "../../protocols/cctpTransfer";
-import { TransferQuote, TransferState } from "../../types";
+import { TransferState } from "../../types";
 import { AutomaticRoute, StaticRouteMethods } from "../route";
-import { Receipt, TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
+import { Quote, Receipt, TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
 import { Wormhole } from "../../wormhole";
 
 export namespace AutomaticCCTPRoute {
@@ -35,7 +35,7 @@ type Vp = AutomaticCCTPRoute.ValidatedParams;
 type Tp = TransferParams<Op>;
 type Vr = ValidationResult<Op>;
 
-type Q = TransferQuote;
+type Q = Quote;
 type R = Receipt<CircleAttestationReceipt>;
 
 export class AutomaticCCTPRoute<N extends Network>
@@ -120,11 +120,11 @@ export class AutomaticCCTPRoute<N extends Network>
   }
 
   async quote(params: Vp) {
-    return await CircleTransfer.quoteTransfer(
+    return this.request.displayQuote(await CircleTransfer.quoteTransfer(
       this.request.fromChain,
       this.request.toChain,
       this.toTransferDetails(params),
-    );
+    ));
   }
 
   private async normalizeTransferParams(params: Tp) {

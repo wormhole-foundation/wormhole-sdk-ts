@@ -9,7 +9,6 @@ import {
   TokenId,
   TokenTransfer,
   TransactionId,
-  TransferQuote,
   TransferState,
   Wormhole,
   canonicalAddress,
@@ -23,7 +22,7 @@ import {
   tokens,
 } from "../..";
 import { AutomaticRoute, StaticRouteMethods } from "../route";
-import { Receipt, TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
+import { Quote, Receipt, TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
 
 export const SLIPPAGE_BPS = 15n; // 0.15%
 export const BPS_PER_HUNDRED_PERCENT = 10000n;
@@ -31,7 +30,7 @@ export const BPS_PER_HUNDRED_PERCENT = 10000n;
 export namespace PorticoRoute {
   export type Options = {};
 
-  export interface Quote extends TransferQuote {
+  export interface PorticoQuote extends Quote {
     quote: PorticoBridge.Quote;
   }
 
@@ -47,11 +46,11 @@ export namespace PorticoRoute {
 
   export interface ValidatedParams extends ValidatedTransferParams<Options> {
     normalizedParams: NormalizedParams;
-    quote?: Quote;
+    quote?: PorticoQuote;
   }
 }
 
-type Q = PorticoRoute.Quote;
+type Q = PorticoRoute.PorticoQuote;
 type OP = PorticoRoute.Options;
 type R = Receipt<AttestationReceipt<"PorticoBridge">>;
 type VP = PorticoRoute.ValidatedParams;
@@ -196,7 +195,7 @@ export class AutomaticPorticoRoute<N extends Network>
 
       const quote = await this.quote(validatedParams);
 
-      if (quote.destinationToken.amount < 0) {
+      if (Number(quote.destinationToken.amount) < 0) {
         throw new Error(
           `Amount too low for slippage and fee, would result in negative destination amount (${quote.destinationToken.amount})`,
         );
@@ -225,7 +224,7 @@ export class AutomaticPorticoRoute<N extends Network>
       relayerFee: fee,
     };
 
-    return {
+    return { quote, ...this.request.displayQuote({
       sourceToken: {
         token: params.normalizedParams.sourceToken,
         amount: params.normalizedParams.amount,
@@ -238,8 +237,7 @@ export class AutomaticPorticoRoute<N extends Network>
         token: params.normalizedParams.destinationToken,
         amount: fee,
       },
-      quote,
-    };
+    }) };
   }
 
   async initiate(sender: Signer<N>, params: VP) {

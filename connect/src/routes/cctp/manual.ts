@@ -9,9 +9,9 @@ import {
 } from "@wormhole-foundation/sdk-definitions";
 import { signSendWait } from "../../common";
 import { CircleAttestationReceipt, CircleTransfer } from "../../protocols/cctpTransfer";
-import { TransferQuote, TransferReceipt, TransferState, isAttested } from "../../types";
+import { TransferReceipt, TransferState, isAttested } from "../../types";
 import { ManualRoute, StaticRouteMethods } from "../route";
-import { TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
+import { Quote, TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
 import { Wormhole } from "../../wormhole";
 
 export namespace CCTPRoute {
@@ -34,7 +34,7 @@ type Vp = CCTPRoute.ValidatedParams;
 type Tp = TransferParams<Op>;
 type Vr = ValidationResult<Op>;
 
-type Q = TransferQuote;
+type Q = Quote;
 type R = TransferReceipt<CircleAttestationReceipt>;
 
 export class CCTPRoute<N extends Network>
@@ -107,11 +107,11 @@ export class CCTPRoute<N extends Network>
   }
 
   async quote(params: Vp) {
-    return await CircleTransfer.quoteTransfer(
+    return this.request.displayQuote(await CircleTransfer.quoteTransfer(
       this.request.fromChain,
       this.request.toChain,
       this.toTransferDetails(params),
-    );
+    ));
   }
 
   async initiate(signer: Signer, params: Vp): Promise<R> {
