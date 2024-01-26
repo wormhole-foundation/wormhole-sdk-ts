@@ -1,7 +1,14 @@
 import { Network, displayAmount, normalizeAmount } from "@wormhole-foundation/sdk-base";
-import { ChainAddress, ChainContext, TokenId } from "@wormhole-foundation/sdk-definitions";
+import {
+  ChainAddress,
+  ChainContext,
+  TokenId,
+  isSameToken,
+} from "@wormhole-foundation/sdk-definitions";
+import { TransferQuote } from "../types";
 import { Wormhole } from "../wormhole";
 import { TokenDetails, getTokenDetails } from "./token";
+import { Quote } from "./types";
 
 export class RouteTransferRequest<N extends Network> {
   from: ChainAddress;
@@ -34,6 +41,56 @@ export class RouteTransferRequest<N extends Network> {
 
   displayAmount(amount: bigint): string {
     return displayAmount(amount, BigInt(this.source.decimals), BigInt(this.source.decimals));
+  }
+
+  displayQuote(quote: TransferQuote): Quote {
+    let dq: Quote = {
+      sourceToken: {
+        token: quote.sourceToken.token,
+        amount: displayAmount(
+          quote.sourceToken.amount,
+          BigInt(this.source.decimals),
+          BigInt(this.source.decimals),
+        ),
+      },
+      destinationToken: {
+        token: quote.destinationToken.token,
+        amount: displayAmount(
+          quote.destinationToken.amount,
+          BigInt(this.destination!.decimals),
+          BigInt(this.destination!.decimals),
+        ),
+      },
+    };
+
+    if (quote.relayFee) {
+      let amount = isSameToken(quote.relayFee.token, quote.sourceToken.token)
+        ? displayAmount(
+            quote.sourceToken.amount,
+            BigInt(this.source.decimals),
+            BigInt(this.source.decimals),
+          )
+        : displayAmount(
+            quote.destinationToken.amount,
+            BigInt(this.destination!.decimals),
+            BigInt(this.destination!.decimals),
+          );
+
+      dq.relayFee = {
+        token: quote.relayFee.token,
+        amount,
+      };
+    }
+
+    if (quote.destinationNativeGas) {
+      dq.destinationNativeGas = displayAmount(
+        quote.destinationNativeGas,
+        BigInt(this.destination!.decimals),
+        BigInt(this.destination!.decimals),
+      );
+    }
+
+    return dq;
   }
 
   static async create<N extends Network>(
