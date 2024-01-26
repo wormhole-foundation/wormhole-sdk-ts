@@ -33,6 +33,8 @@ export class EvmNativeSigner<N extends Network, C extends EvmChains = EvmChains>
   extends PlatformNativeSigner<ethers.Signer, N, C>
   implements SignOnlySigner<N, C>
 {
+  readonly IS_EVM_SIGNER = true;
+
   chain(): C {
     return this._chain;
   }
@@ -83,4 +85,8 @@ export class EvmNativeSigner<N extends Network, C extends EvmChains = EvmChains>
     }
     return signed;
   }
+}
+
+export function isEvmNativeSigner<N extends Network>(signer: Signer<N>): signer is EvmNativeSigner<N> {
+  return signer.hasOwnProperty('IS_EVM_SIGNER')
 }
