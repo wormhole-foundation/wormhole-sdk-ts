@@ -30,10 +30,8 @@ import { getCircleAttestationWithRetry } from "./circle-api";
 import { ConfigOverrides, DEFAULT_TASK_TIMEOUT, WormholeConfig, applyOverrides } from "./config";
 import { CircleTransfer } from "./protocols/cctpTransfer";
 import { TokenTransfer } from "./protocols/tokenTransfer";
-import { AutomaticPorticoRoute, RouteConstructor } from "./routes";
-import { AutomaticCCTPRoute, CCTPRoute } from "./routes/cctp";
+import { RouteConstructor } from "./routes";
 import { RouteResolver } from "./routes/resolver";
-import { AutomaticTokenBridgeRoute, TokenBridgeRoute } from "./routes/tokenBridge";
 import { retry } from "./tasks";
 import {
   TransactionStatus,
@@ -54,13 +52,6 @@ export class Wormhole<N extends Network> {
   protected readonly _network: N;
   protected _platforms: PlatformMap<N>;
   protected _chains: ChainMap<N>;
-  protected _routes: RouteConstructor[] = [
-    TokenBridgeRoute,
-    AutomaticTokenBridgeRoute,
-    CCTPRoute,
-    AutomaticCCTPRoute,
-    AutomaticPorticoRoute,
-  ];
 
   readonly config: WormholeConfig;
 
@@ -172,8 +163,8 @@ export class Wormhole<N extends Network> {
     });
   }
 
-  resolver(routes?: RouteConstructor[]) {
-    return new RouteResolver(this, routes ?? this._routes);
+  resolver(routes: RouteConstructor[]) {
+    return new RouteResolver(this, routes);
   }
 
   /**

@@ -5,3 +5,4 @@ export * from "./types";
 
 export * from "./tokenBridge";
 export * from "./portico";
+export * from "./cctp";
