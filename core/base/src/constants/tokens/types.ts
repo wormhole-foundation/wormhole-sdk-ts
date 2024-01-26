@@ -23,10 +23,7 @@ export type Token = {
   // Set if this is a native gas token
   // or a token that should be wrapped before bridging
   // represents the wrapped token on its native chain
-  wrapped?: {
-    symbol: string;
-    decimals: number;
-  };
+  wrappedKey?: TokenKey;
 };
 
 export type TokenConst = Omit<Token, "chain" | "key">;

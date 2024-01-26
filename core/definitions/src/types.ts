@@ -77,8 +77,8 @@ export function resolveWrappedToken<N extends Network, C extends Chain>(
     const nativeToken = tokens.getNative(network, chain);
     if (!nativeToken) throw new Error("Invalid destination token");
 
-    const wrappedKey = nativeToken.wrapped!;
-    const wrappedToken = tokens.getTokenByKey(network, chain, wrappedKey.symbol);
+    const wrappedKey = nativeToken.wrappedKey!;
+    const wrappedToken = tokens.getTokenByKey(network, chain, wrappedKey);
     if (!wrappedToken) throw new Error("Invalid wrapped token key: " + wrappedKey);
     const destNativeWrapped = { chain, address: toNative(chain, wrappedToken.address) };
 
@@ -139,10 +139,10 @@ export function buildConfig<N extends Network>(n: N): ChainsConfig<N, Platform> 
       const tokenMap = tokens.getTokenMap(n, c);
 
       const nativeToken = tokenMap
-        ? Object.values(tokenMap).find((token) => isNative(token.address) && token.wrapped)
+        ? Object.values(tokenMap).find((token) => isNative(token.address) && token.wrappedKey)
         : undefined;
 
-      const wrappedNative = nativeToken ? tokenMap![nativeToken.wrapped!.symbol] : undefined;
+      const wrappedNative = nativeToken ? tokenMap![nativeToken.wrappedKey!] : undefined;
 
       return {
         key: c,

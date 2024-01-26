@@ -125,7 +125,7 @@ export const ${network.toLowerCase()}TokenDetails = constMap(${network.toLowerCa
 `;
 
 type TokensByChain = { [chain in Chain]?: tokens.Token[] };
-type Deets = Record<string, tokens.TokenExtraDetails>;
+type Deets = Record<string, tokens.TokenDetails>;
 async function fetchAndRemapConnectTokens(network: Network): Promise<[any, any]> {
   const tc: TokensConfig = await getNetworkTokensConfig(network);
 
@@ -146,12 +146,7 @@ async function fetchAndRemapConnectTokens(network: Network): Promise<[any, any]>
 
     const _decimals = platform in decimals ? decimals[platform] : decimals.default;
 
-    const wrapped = tokenId
-      ? undefined
-      : {
-          decimals: _decimals!,
-          symbol: wrappedAsset!,
-        };
+    const wrappedKey = tokenId ? undefined : wrappedAsset!;
 
     const address = tokenId ? tokenId.address : "native";
     const tokenEntry = {
@@ -160,7 +155,7 @@ async function fetchAndRemapConnectTokens(network: Network): Promise<[any, any]>
       decimals: _decimals!,
       address: address,
       chain: nativeChain,
-      wrapped,
+      wrappedKey,
     };
 
     reg[nativeChain]!.push(tokenEntry);
@@ -185,7 +180,7 @@ async function fetchAndRemapConnectTokens(network: Network): Promise<[any, any]>
   return [flattenRegistry(reg), flattenDeets(deets)];
 }
 
-function makeTokenDetails(network: Network, token: TokenConfig): tokens.TokenExtraDetails {
+function makeTokenDetails(network: Network, token: TokenConfig): tokens.TokenDetails {
   const { key, symbol, displayName, nativeChain: _nativeChain, coinGeckoId } = token;
   const nativeChain = mapConnectChainToChain(network, _nativeChain);
   return { key, symbol, displayName, coinGeckoId, nativeChain };
