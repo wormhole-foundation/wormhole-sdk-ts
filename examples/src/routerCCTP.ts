@@ -24,7 +24,7 @@ import "@wormhole-foundation/connect-sdk-evm-cctp";
   const receiver = await getStuff(wh.getChain("OptimismSepolia"));
 
   // create new resolver
-  const resolver = wh.resolver();
+  const resolver = wh.resolver([routes.CCTPRoute, routes.AutomaticCCTPRoute]);
 
   const usdcAvalanche: TokenId = Wormhole.chainAddress(
     "Avalanche",
