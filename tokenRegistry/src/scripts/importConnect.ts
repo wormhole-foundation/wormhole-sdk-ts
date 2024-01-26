@@ -1,5 +1,11 @@
-import { Chain, Network, chainToPlatform, isChain, tokens } from "@wormhole-foundation/connect-sdk";
-import { Platform } from "@wormhole-foundation/sdk-base/src";
+import {
+  Platform,
+  Chain,
+  Network,
+  chainToPlatform,
+  isChain,
+  tokens,
+} from "@wormhole-foundation/connect-sdk";
 import axios from "axios";
 import fs from "fs";
 import * as prettier from "prettier";
