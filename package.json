@@ -1,6 +1,6 @@
 {
   "name": "connect-sdk",
-  "version": "0.4.0-beta.1",
+  "version": "0.4.0-beta.2",
   "license": "Apache-2.0",
   "directories": {
     "test": "__tests__"
@@ -56,8 +56,7 @@
     "platforms/algorand",
     "platforms/algorand/protocols/core",
     "platforms/algorand/protocols/tokenBridge",
-    "examples",
-    "scripts"
+    "examples"
   ],
   "unreleased": [
     "tokenRegistry",
