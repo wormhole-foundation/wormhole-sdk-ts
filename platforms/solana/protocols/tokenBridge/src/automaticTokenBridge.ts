@@ -1,4 +1,5 @@
 import {
+  Platform,
   AccountAddress,
   AutomaticTokenBridge,
   Chain,
@@ -24,7 +25,6 @@ import {
 import { BN, Program } from '@project-serum/anchor';
 import { Connection, PublicKey, Transaction } from '@solana/web3.js';
 
-import { Platform } from '@wormhole-foundation/sdk-base/src';
 import { TokenBridgeRelayer as TokenBridgeRelayerContract } from './automaticTokenBridgeType';
 import {
   ForeignContract,
