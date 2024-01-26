@@ -28,6 +28,8 @@ const rpcConfig = [[
     ["Algorand",  "https://mainnet-api.algonode.cloud"],
     ["Terra",     "https://terra-classic-rpc.publicnode.com"],
     ["Terra2",    "https://terra-rpc.polkachu.com"],
+    ["Karura",    "https://eth-rpc-karura.aca-api.network"],
+    ["Acala",     "https://eth-rpc-acala.aca-api.network"],
   ]], [
   "Testnet", [
     ["Ethereum",        "https://rpc.ankr.com/eth_goerli"],
@@ -57,6 +59,8 @@ const rpcConfig = [[
     ["ArbitrumSepolia", "https://sepolia.base.org"],
     ["OptimismSepolia", "https://sepolia.optimism.io"],
     ["BaseSepolia",     "https://arbitrum-sepolia.blockpi.network/v1/rpc/public"],
+    ["Karura",          "https://eth-rpc-karura-testnet.aca-staging.network"],
+    ["Acala",           "https://eth-rpc-acala-testnet.aca-staging.network"],
   ]], [
   "Devnet", [
     ["Ethereum",  "http://eth-devnet:8545"],

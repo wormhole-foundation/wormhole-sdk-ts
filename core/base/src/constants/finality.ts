@@ -39,6 +39,8 @@ const finalityThresholds = [
   ["Terra2", 0],
   ["Xpla", 0],
   ["Injective", 0],
+  ["Karura", 1],
+  ["Acala", 1],
 ] as const satisfies MapLevel<Chain, number>;
 
 export const finalityThreshold = constMap(finalityThresholds);
