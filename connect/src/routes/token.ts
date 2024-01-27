@@ -4,7 +4,6 @@ import {
   TokenId,
   canonicalAddress,
   isNative,
-  isTokenId,
 } from "@wormhole-foundation/sdk-definitions";
 import { Wormhole } from "../wormhole";
 
@@ -35,7 +34,7 @@ export async function getTokenDetails<N extends Network>(
   chain: ChainContext<N>,
   token: TokenId,
 ): Promise<TokenDetails> {
-  const address = isTokenId(token) ? canonicalAddress(token) : token;
+  const address = canonicalAddress(token);
 
   const details = chain.config.tokenMap
     ? tokens.filters.byAddress(chain.config.tokenMap!, address)
@@ -43,7 +42,7 @@ export async function getTokenDetails<N extends Network>(
 
   const symbol = details ? details.symbol : undefined;
   const wrapped = isNative(token.address) ? await chain.getNativeWrappedTokenId() : undefined;
-  const decimals = Number(await chain.getDecimals(isTokenId(token) ? token.address : token));
+  const decimals = Number(await chain.getDecimals(token.address));
 
   return {
     id: token,
