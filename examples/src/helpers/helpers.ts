@@ -6,7 +6,9 @@ import {
   Platform,
   PlatformToChains,
   Signer,
+  SourceInitiatedTransferReceipt,
   TokenTransfer,
+  TokenTransferUtils,
   TransferState,
   TxHash,
   Wormhole,
@@ -86,7 +88,11 @@ export async function waitLog<N extends Network = Network>(
   tag: string = "WaitLog",
   timeout: number = DEFAULT_TASK_TIMEOUT,
 ) {
-  const tracker = TokenTransfer.track(wh, TokenTransfer.getReceipt(xfer), timeout);
+  const tracker = TokenTransferUtils.track(
+    wh,
+    xfer.receipt as SourceInitiatedTransferReceipt,
+    timeout,
+  );
   let receipt;
   for await (receipt of tracker) {
     console.log(`${tag}: Current trasfer state: `, TransferState[receipt.state]);

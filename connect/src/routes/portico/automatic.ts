@@ -7,7 +7,7 @@ import {
   Signer,
   SourceInitiatedTransferReceipt,
   TokenId,
-  TokenTransfer,
+  TokenTransferUtils,
   TransactionId,
   TransferState,
   Wormhole,
@@ -22,7 +22,13 @@ import {
   tokens,
 } from "../..";
 import { AutomaticRoute, StaticRouteMethods } from "../route";
-import { Quote, Receipt, TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
+import {
+  Quote,
+  Receipt,
+  TransferParams,
+  ValidatedTransferParams,
+  ValidationResult,
+} from "../types";
 
 export const SLIPPAGE_BPS = 15n; // 0.15%
 export const BPS_PER_HUNDRED_PERCENT = 10000n;
@@ -109,7 +115,7 @@ export class AutomaticPorticoRoute<N extends Network>
     const transferrableToken = pb.getTransferrableToken(tokenAddress);
 
     // The tokens that _will_ be received on redemption
-    const redeemToken = await TokenTransfer.lookupDestinationToken(
+    const redeemToken = await TokenTransferUtils.lookupDestinationToken(
       fromChain,
       toChain,
       transferrableToken,
@@ -224,20 +230,23 @@ export class AutomaticPorticoRoute<N extends Network>
       relayerFee: fee,
     };
 
-    return { quote, ...this.request.displayQuote({
-      sourceToken: {
-        token: params.normalizedParams.sourceToken,
-        amount: params.normalizedParams.amount,
-      },
-      destinationToken: {
-        token: params.normalizedParams.destinationToken,
-        amount: quote.swapAmounts.minAmountFinish - fee,
-      },
-      relayFee: {
-        token: params.normalizedParams.destinationToken,
-        amount: fee,
-      },
-    }) };
+    return {
+      quote,
+      ...this.request.displayQuote({
+        sourceToken: {
+          token: params.normalizedParams.sourceToken,
+          amount: params.normalizedParams.amount,
+        },
+        destinationToken: {
+          token: params.normalizedParams.destinationToken,
+          amount: quote.swapAmounts.minAmountFinish - fee,
+        },
+        relayFee: {
+          token: params.normalizedParams.destinationToken,
+          amount: fee,
+        },
+      }),
+    };
   }
 
   async initiate(sender: Signer<N>, params: VP) {

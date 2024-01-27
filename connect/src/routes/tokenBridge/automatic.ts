@@ -9,7 +9,7 @@ import {
   isTokenId,
   nativeTokenId,
 } from "@wormhole-foundation/sdk-definitions";
-import { TokenTransfer } from "../../protocols/tokenbridge/tokenTransfer";
+import { AutomaticTokenTransfer } from "../../protocols/tokenBridge/automatic";
 import { AttestationReceipt, TransferState } from "../../types";
 import { AutomaticRoute, StaticRouteMethods } from "../route";
 import {
@@ -19,6 +19,7 @@ import {
   ValidatedTransferParams,
   ValidationResult,
 } from "../types";
+import { TokenTransferUtils } from "../../protocols";
 
 export namespace AutomaticTokenBridgeRoute {
   export type Options = {
@@ -87,7 +88,7 @@ export class AutomaticTokenBridgeRoute<N extends Network>
   ): Promise<TokenId[]> {
     return [
       nativeTokenId(toChain.chain),
-      await TokenTransfer.lookupDestinationToken(fromChain, toChain, sourceToken),
+      await TokenTransferUtils.lookupDestinationToken(fromChain, toChain, sourceToken),
     ];
   }
 
@@ -112,7 +113,7 @@ export class AutomaticTokenBridgeRoute<N extends Network>
       const { source, destination } = this.request;
       if (destination && isTokenId(destination.id)) {
         // If destination token was provided, check that it's the equivalent one for the source token
-        let equivalentToken = await TokenTransfer.lookupDestinationToken(
+        let equivalentToken = await TokenTransferUtils.lookupDestinationToken(
           this.request.fromChain,
           this.request.toChain,
           source.id,
@@ -211,7 +212,7 @@ export class AutomaticTokenBridgeRoute<N extends Network>
 
   async quote(params: Vp) {
     return this.request.displayQuote(
-      await TokenTransfer.quoteTransfer(
+      await TokenTransferUtils.quoteTransfer(
         this.request.fromChain,
         this.request.toChain,
         this.toTransferDetails(params),
@@ -221,8 +222,12 @@ export class AutomaticTokenBridgeRoute<N extends Network>
 
   async initiate(signer: Signer, params: Vp): Promise<R> {
     const transfer = this.toTransferDetails(params);
-    const txids = await TokenTransfer.transfer<N>(this.request.fromChain, transfer, signer);
-    const msg = await TokenTransfer.getTransferMessage(
+    const txids = await AutomaticTokenTransfer.transfer<N>(
+      this.request.fromChain,
+      transfer,
+      signer,
+    );
+    const msg = await TokenTransferUtils.getTransferMessage(
       this.request.fromChain,
       txids[txids.length - 1]!.txid,
     );
@@ -236,7 +241,7 @@ export class AutomaticTokenBridgeRoute<N extends Network>
   }
 
   public override async *track(receipt: R, timeout?: number) {
-    yield* TokenTransfer.track(
+    yield* TokenTransferUtils.track(
       this.wh,
       receipt,
       timeout,

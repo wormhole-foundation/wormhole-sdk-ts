@@ -29,7 +29,8 @@ import {
 import { getCircleAttestationWithRetry } from "./circle-api";
 import { ConfigOverrides, DEFAULT_TASK_TIMEOUT, WormholeConfig, applyOverrides } from "./config";
 import { CircleTransfer } from "./protocols/cctp/cctpTransfer";
-import { TokenTransfer } from "./protocols/tokenbridge/tokenTransfer";
+import { TokenTransfer } from "./protocols/tokenBridge/tokenTransfer";
+import { TokenTransferUtils } from "./protocols/tokenBridge/utils";
 import { RouteConstructor } from "./routes";
 import { RouteResolver } from "./routes/resolver";
 import { retry } from "./tasks";
@@ -152,7 +153,7 @@ export class Wormhole<N extends Network> {
     //   });
     // }
 
-    return await TokenTransfer.from(this, {
+    return await TokenTransferUtils.from(this, {
       token,
       amount,
       from,

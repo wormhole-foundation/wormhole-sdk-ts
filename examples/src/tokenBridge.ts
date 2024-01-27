@@ -4,6 +4,7 @@ import {
   Platform,
   TokenId,
   TokenTransfer,
+  TokenTransferUtils,
   Wormhole,
   isTokenId,
   normalizeAmount,
@@ -100,7 +101,7 @@ import "@wormhole-foundation/connect-sdk-algorand-tokenbridge";
         roundTrip,
       )
     : // Recover the transfer from the originating txid
-      await TokenTransfer.from(wh, {
+      await TokenTransferUtils.from(wh, {
         chain: source.chain.chain,
         txid: recoverTxid,
       });
@@ -136,7 +137,7 @@ async function tokenTransfer<N extends Network>(
     route.delivery?.nativeGas,
   );
 
-  const quote = await TokenTransfer.quoteTransfer(
+  const quote = await TokenTransferUtils.quoteTransfer(
     route.source.chain,
     route.destination.chain,
     xfer.transfer,

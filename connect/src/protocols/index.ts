@@ -1,4 +1,4 @@
 export * from "./cctp";
 export * from "./gateway";
-export * from "./tokenbridge";
+export * from "./tokenBridge";
 export * from "./wormholeTransfer";

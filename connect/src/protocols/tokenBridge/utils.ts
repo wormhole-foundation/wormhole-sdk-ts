@@ -3,38 +3,31 @@ import {
   ChainToPlatform,
   Network,
   Platform,
-  PlatformToChains,
   encoding,
   toChain as toChainName,
 } from "@wormhole-foundation/sdk-base";
 import {
-  AttestationId,
-  AutomaticTokenBridge,
   ChainContext,
-  Signer,
   TokenBridge,
   TokenId,
   TokenTransferDetails,
   TransactionId,
   TxHash,
-  UnsignedTransaction,
   WormholeMessageId,
   deserialize,
   isNative,
-  isTokenId,
   isTokenTransferDetails,
   isTransactionIdentifier,
   isWormholeMessageId,
   serialize,
-  toNative,
   toUniversal,
 } from "@wormhole-foundation/sdk-definitions";
-import { signSendWait } from "../../common";
 import { DEFAULT_TASK_TIMEOUT } from "../../config";
 import {
   AttestationReceipt,
   AttestedTransferReceipt,
   CompletedTransferReceipt,
+  ErrInvalidStateTransition,
   SourceFinalizedTransferReceipt,
   SourceInitiatedTransferReceipt,
   TransferQuote,
@@ -45,57 +38,34 @@ import {
   isSourceInitiated,
 } from "../../types";
 import { Wormhole } from "../../wormhole";
-import { WormholeTransfer } from "../wormholeTransfer";
+import { TransferProtocol } from "../wormholeTransfer";
+import { AutomaticTokenTransfer } from "./automatic";
+import { ManualTokenTransfer } from "./manual";
+import {
+  TokenTransfer,
+  TokenTransferAttestationReceipt,
+  TokenTransferProtocol,
+  TokenTransferReceipt,
+  TokenTransferVAA,
+} from "./tokenTransfer";
 
-export type TokenTransferProtocol = "TokenBridge" | "AutomaticTokenBridge";
-export type TokenTransferVAA = TokenBridge.TransferVAA | AutomaticTokenBridge.VAA;
+// truncate the amount for over-the-wire max representation
+export const truncate = (amt: bigint, decimals: bigint) =>
+  decimals > 8 ? amt / 10n ** (decimals - 8n) : amt;
+// scale by number of decimals, pair with truncate
+export const scale = (amt: bigint, decimals: bigint) =>
+  decimals > 8 ? amt * 10n ** (decimals - 8n) : amt;
 
-export type TokenTransferAttestationReceipt = AttestationReceipt<TokenTransferProtocol>;
-export type TokenTransferReceipt<
-  SC extends Chain = Chain,
-  DC extends Chain = Chain,
-> = TransferReceipt<TokenTransferAttestationReceipt, SC, DC>;
+// dedust for source using the number of decimals on the source chain
+// but scale back to original decimals
+export const _dedust = (decimals: bigint) => (amt: bigint) =>
+  scale(truncate(amt, decimals), decimals);
 
-export class TokenTransfer<N extends Network = Network>
-  implements WormholeTransfer<TokenTransferProtocol>
-{
-  private readonly wh: Wormhole<N>;
-
-  fromChain: ChainContext<N, Platform, Chain>;
-  toChain: ChainContext<N, Platform, Chain>;
-
-  // state machine tracker
-  private _state: TransferState;
-
-  // transfer details
-  transfer: TokenTransferDetails;
-
-  // txids, populated once transactions are submitted
-  txids: TransactionId[] = [];
-
-  // The corresponding vaa representing the TokenTransfer
-  // on the source chain (if its been completed and finalized)
-  attestations?: AttestationReceipt<TokenTransferProtocol>[];
-
-  private constructor(
-    wh: Wormhole<N>,
-    transfer: TokenTransferDetails,
-    fromChain?: ChainContext<N, Platform, Chain>,
-    toChain?: ChainContext<N, Platform, Chain>,
-  ) {
-    this._state = TransferState.Created;
-    this.wh = wh;
-    this.transfer = transfer;
-
-    this.fromChain = fromChain ?? wh.getChain(transfer.from.chain);
-    this.toChain = toChain ?? wh.getChain(transfer.to.chain);
-  }
-
-  getTransferState(): TransferState {
-    return this._state;
-  }
-
-  // Static initializers for in flight transfers that have not been completed
+// truncate and rescale to fit destination token
+export const _mintable = (srcDecimals: bigint, dstDecimals: bigint) => (amt: bigint) =>
+  scale(truncate(amt, srcDecimals), dstDecimals);
+export class TokenTransferUtils {
+  // Static initializers for new transfer
   static async from<N extends Network>(
     wh: Wormhole<N>,
     from: TokenTransferDetails,
@@ -103,6 +73,7 @@ export class TokenTransfer<N extends Network = Network>
     fromChain?: ChainContext<N, Platform, Chain>,
     toChain?: ChainContext<N, Platform, Chain>,
   ): Promise<TokenTransfer<N>>;
+  // Static initializers for in flight transfers that have not been completed
   static async from<N extends Network>(
     wh: Wormhole<N>,
     from: WormholeMessageId,
@@ -129,22 +100,26 @@ export class TokenTransfer<N extends Network = Network>
       toChain = toChain ?? wh.getChain(from.to.chain);
 
       // throws if invalid
-      TokenTransfer.validateTransferDetails(wh, from, fromChain, toChain);
+      this.validateTransferDetails(wh, from, fromChain, toChain);
 
       // Apply hackery
       from = {
         ...from,
-        ...(await TokenTransfer.destinationOverrides(fromChain, toChain, from)),
+        ...(await this.destinationOverrides(fromChain, toChain, from)),
       };
 
-      return new TokenTransfer(wh, from, fromChain, toChain);
+      if (from.automatic) {
+        return new AutomaticTokenTransfer(wh, from, fromChain, toChain);
+      } else {
+        return new ManualTokenTransfer(wh, from, fromChain, toChain);
+      }
     }
 
     let tt: TokenTransfer<N>;
     if (isWormholeMessageId(from)) {
-      tt = await TokenTransfer.fromIdentifier(wh, from, timeout);
+      tt = await this.fromIdentifier(wh, from, timeout);
     } else if (isTransactionIdentifier(from)) {
-      tt = await TokenTransfer.fromTransaction(wh, from, timeout, fromChain);
+      tt = await this.fromTransaction(wh, from, timeout, fromChain);
     } else {
       throw new Error("Invalid `from` parameter for TokenTransfer");
     }
@@ -162,7 +137,7 @@ export class TokenTransfer<N extends Network = Network>
     id: WormholeMessageId,
     timeout?: number,
   ): Promise<TokenTransfer<N>> {
-    const vaa = await TokenTransfer.getTransferVaa(wh, id, timeout);
+    const vaa = await this.getTransferVaa(wh, id, timeout);
     const automatic = vaa.protocolName === "AutomaticTokenBridge";
 
     // TODO: the `from.address` here is a lie, but we don't
@@ -182,7 +157,7 @@ export class TokenTransfer<N extends Network = Network>
     }
 
     const details: TokenTransferDetails = {
-      token: token,
+      token,
       amount,
       from,
       to,
@@ -190,10 +165,19 @@ export class TokenTransfer<N extends Network = Network>
       nativeGas: nativeGasAmount,
     };
 
-    // TODO: grab at least the init tx from the api
-    const tt = new TokenTransfer(wh, details);
-    tt.attestations = [{ id: id, attestation: vaa }];
-    tt._state = TransferState.Attested;
+    let tt: TokenTransfer<N>;
+    if (automatic) {
+      tt = new AutomaticTokenTransfer(wh, details);
+    } else {
+      tt = new ManualTokenTransfer(wh, details);
+    }
+
+    tt.receipt = {
+      ...(tt.receipt as SourceInitiatedTransferReceipt),
+      state: TransferState.Attested,
+      attestation: { id: id, attestation: vaa },
+    };
+
     return tt;
   }
 
@@ -204,135 +188,15 @@ export class TokenTransfer<N extends Network = Network>
     fromChain?: ChainContext<N, Platform, Chain>,
   ): Promise<TokenTransfer<N>> {
     fromChain = fromChain ?? wh.getChain(from.chain);
-    const msg = await TokenTransfer.getTransferMessage(fromChain, from.txid, timeout);
-    const tt = await TokenTransfer.fromIdentifier(wh, msg, timeout);
-    tt.txids = [from];
-    return tt;
+    const msg = await this.getTransferMessage(fromChain, from.txid, timeout);
+    return await this.fromIdentifier(wh, msg, timeout);
   }
 
-  // start the WormholeTransfer by submitting transactions to the source chain
-  // returns a transaction hash
-  async initiateTransfer(signer: Signer): Promise<TxHash[]> {
-    if (this._state !== TransferState.Created)
-      throw new Error("Invalid state transition in `initiateTransfer`");
-
-    this.txids = await TokenTransfer.transfer<N>(this.fromChain, this.transfer, signer);
-    this._state = TransferState.SourceInitiated;
-    return this.txids.map(({ txid }) => txid);
-  }
-
-  // wait for the VAA to be ready
-  // returns the sequence number
-  async fetchAttestation(timeout?: number): Promise<AttestationId[]> {
-    if (this._state < TransferState.SourceInitiated || this._state > TransferState.Attested)
-      throw new Error(
-        "Invalid state transition in `fetchAttestation`, expected at least `SourceInitiated`",
-      );
-
-    if (!this.attestations || this.attestations.length === 0) {
-      if (this.txids.length === 0)
-        throw new Error("No VAAs set and txids available to look them up");
-
-      // TODO: assuming the _last_ transaction in the list will contain the msg id
-      const txid = this.txids[this.txids.length - 1]!;
-      const msgId = await TokenTransfer.getTransferMessage(this.fromChain, txid.txid, timeout);
-      this.attestations = [{ id: msgId }];
-    }
-
-    for (const idx in this.attestations) {
-      // Check if we already have the VAA
-      if (this.attestations[idx]!.attestation) continue;
-
-      this.attestations[idx]!.attestation = await TokenTransfer.getTransferVaa(
-        this.wh,
-        this.attestations[idx]!.id,
-        timeout,
-      );
-    }
-    this._state = TransferState.Attested;
-    return this.attestations.map((vaa) => vaa.id);
-  }
-
-  // finish the WormholeTransfer by submitting transactions to the destination chain
-  // returns a transaction hash
-  async completeTransfer(signer: Signer): Promise<TxHash[]> {
-    if (this._state < TransferState.Attested)
-      throw new Error(
-        "Invalid state transition, must be attested prior to calling `completeTransfer`.",
-      );
-
-    if (!this.attestations) throw new Error("No VAA details available");
-
-    const { attestation } = this.attestations[0]!;
-    if (!attestation) throw new Error(`No VAA found for ${this.attestations[0]!.id.sequence}`);
-
-    const redeemTxids = await TokenTransfer.redeem<N>(
-      this.toChain,
-      attestation as TokenTransferVAA,
-      signer,
-    );
-    this.txids.push(...redeemTxids);
-    this._state = TransferState.DestinationInitiated;
-    return redeemTxids.map(({ txid }) => txid);
-  }
-
-  // Static method to perform the transfer so a custom RPC may be used
-  // Note: this assumes the transfer has already been validated with `validateTransfer`
-  static async transfer<N extends Network>(
-    fromChain: ChainContext<N, Platform, Chain>,
-    transfer: TokenTransferDetails,
-    signer: Signer<N, Chain>,
-  ): Promise<TransactionId[]> {
-    const senderAddress = toNative(signer.chain(), signer.address());
-
-    const token = isTokenId(transfer.token) ? transfer.token.address : transfer.token;
-    let xfer: AsyncGenerator<UnsignedTransaction<N>>;
-    if (transfer.automatic) {
-      const tb = await fromChain.getAutomaticTokenBridge();
-      xfer = tb.transfer(senderAddress, transfer.to, token, transfer.amount, transfer.nativeGas);
-    } else {
-      const tb = await fromChain.getTokenBridge();
-      xfer = tb.transfer(senderAddress, transfer.to, token, transfer.amount, transfer.payload);
-    }
-
-    return signSendWait<N, Chain>(fromChain, xfer, signer);
-  }
-
-  // Static method to allow passing a custom RPC
-  static async redeem<N extends Network>(
-    toChain: ChainContext<N, Platform, Chain>,
-    vaa: TokenTransferVAA,
-    signer: Signer<N, Chain>,
-  ): Promise<TransactionId[]> {
-    const signerAddress = toNative(signer.chain(), signer.address());
-
-    const xfer =
-      vaa.protocolName === "AutomaticTokenBridge"
-        ? (await toChain.getAutomaticTokenBridge()).redeem(signerAddress, vaa)
-        : (await toChain.getTokenBridge()).redeem(signerAddress, vaa);
-
-    return signSendWait<N, Chain>(toChain, xfer, signer);
-  }
-
-  static async isTransferComplete<
-    N extends Network,
-    P extends Platform,
-    C extends PlatformToChains<P>,
-  >(toChain: ChainContext<N, P, C>, vaa: TokenTransferVAA): Promise<boolean> {
-    // TODO: converter?
-    if (vaa.protocolName === "AutomaticTokenBridge")
-      vaa = deserialize("TokenBridge:TransferWithPayload", serialize(vaa));
-
-    const tb = await toChain.getTokenBridge();
-    return tb.isTransferCompleted(vaa);
-  }
-
-  static async getTransferMessage<
-    N extends Network,
-    P extends Platform,
-    C extends PlatformToChains<P>,
-  >(chain: ChainContext<N, P, C>, txid: TxHash, timeout?: number): Promise<WormholeMessageId> {
-    // A Single wormhole message will be returned for a standard token transfer
+  static async getTransferMessage<N extends Network>(
+    chain: ChainContext<N, Platform, Chain>,
+    txid: TxHash,
+    timeout?: number,
+  ): Promise<WormholeMessageId> {
     const whm = await Wormhole.parseMessageFromTx(chain, txid, timeout);
     if (whm.length !== 1) throw new Error("Expected a single Wormhole Message, got: " + whm.length);
     return whm[0]!;
@@ -350,7 +214,6 @@ export class TokenTransfer<N extends Network = Network>
 
     if (!vaa) throw new Error(`No VAA available after retries exhausted`);
 
-    // TODO: converter
     // Check if its automatic and re-de-serialize
     if (vaa.payloadName === "TransferWithPayload") {
       const { chain, address } = vaa.payload.to;
@@ -450,17 +313,8 @@ export class TokenTransfer<N extends Network = Network>
     const dstDecimals = await dstChain.getDecimals(dstToken.address);
     const srcDecimals = await srcChain.getDecimals(srcToken.address);
 
-    // truncate the amount for over-the-wire max representation
-    const truncate = (amt: bigint, decimals: bigint) =>
-      decimals > 8 ? amt / 10n ** (decimals - 8n) : amt;
-    // scale by number of decimals, pair with truncate
-    const scale = (amt: bigint, decimals: bigint) =>
-      decimals > 8 ? amt * 10n ** (decimals - 8n) : amt;
-    // dedust for source using the number of decimals on the source chain
-    // but scale back to original decimals
-    const dedust = (amt: bigint) => scale(truncate(amt, srcDecimals), srcDecimals);
-    // truncate and rescale to fit destination token
-    const mintable = (amt: bigint) => scale(truncate(amt, srcDecimals), dstDecimals);
+    const dedust = _dedust(srcDecimals);
+    const mintable = _mintable(srcDecimals, dstDecimals);
 
     // dedust for transfer over the bridge which truncates to 8 decimals
     let srcAmount = dedust(transfer.amount);
@@ -503,101 +357,18 @@ export class TokenTransfer<N extends Network = Network>
     };
   }
 
-  static async destinationOverrides<N extends Network>(
-    srcChain: ChainContext<N, Platform, Chain>,
-    dstChain: ChainContext<N, Platform, Chain>,
-    transfer: TokenTransferDetails,
-  ): Promise<TokenTransferDetails> {
-    const _transfer = { ...transfer };
+  static async isTransferComplete<N extends Network>(
+    toChain: ChainContext<N, Platform, Chain>,
+    receipt: TransferReceipt<AttestationReceipt<TokenTransferProtocol>>,
+  ): Promise<boolean> {
+    if (!isAttested(receipt)) return false;
 
-    // Bit of (temporary) hackery until solana contracts support being
-    // sent a VAA with the primary address
-    // Note: Do _not_ override if automatic or if the destination token is native
-    // gas token
-    if (transfer.to.chain === "Solana" && !_transfer.automatic) {
-      const destinationToken = await TokenTransfer.lookupDestinationToken(
-        srcChain,
-        dstChain,
-        _transfer.token,
-      );
-      // TODO: If the token is native, no need to overwrite the destination address check for native
-      //if (!destinationToken.address.equals((await dstChain.getNativeWrappedTokenId()).address))
-      _transfer.to = await dstChain.getTokenAccount(_transfer.to.address, destinationToken.address);
-    }
-
-    if (_transfer.to.chain === "Sei") {
-      if (_transfer.to.chain === "Sei" && _transfer.payload)
-        throw new Error("Arbitrary payloads unsupported for Sei");
-
-      // For sei, we reserve the payload for a token transfer through the sei bridge.
-      _transfer.payload = encoding.bytes.encode(
-        JSON.stringify({
-          basic_recipient: {
-            recipient: encoding.b64.encode(_transfer.to.address.toString()),
-          },
-        }),
-      );
-      _transfer.to = Wormhole.chainAddress(
-        _transfer.to.chain,
-        dstChain.config.contracts!.translator!,
-      );
-    }
-
-    return _transfer;
-  }
-
-  static getReceipt<N extends Network>(xfer: TokenTransfer<N>): TokenTransferReceipt {
-    const { transfer } = xfer;
-
-    const from = transfer.from.chain;
-    const to = transfer.to.chain;
-
-    let receipt: TokenTransferReceipt = {
-      from: from,
-      to: to,
-      state: TransferState.Created,
-    };
-
-    const originTxs = xfer.txids.filter((txid) => txid.chain === transfer.from.chain);
-    if (originTxs.length > 0) {
-      receipt = {
-        ...receipt,
-        state: TransferState.SourceInitiated,
-        originTxs: originTxs,
-      } satisfies SourceInitiatedTransferReceipt;
-    }
-
-    const att =
-      xfer.attestations && xfer.attestations.length > 0 ? xfer.attestations![0]! : undefined;
-    const attestation = att && att.id ? { id: att.id, attestation: att.attestation } : undefined;
-    if (attestation) {
-      if (attestation.id) {
-        receipt = {
-          ...(receipt as SourceInitiatedTransferReceipt),
-          state: TransferState.SourceFinalized,
-          attestation: { id: attestation.id },
-        } satisfies SourceFinalizedTransferReceipt<TokenTransferAttestationReceipt>;
-
-        if (attestation.attestation) {
-          receipt = {
-            ...receipt,
-            state: TransferState.Attested,
-            attestation: { id: attestation.id, attestation: attestation.attestation },
-          } satisfies AttestedTransferReceipt<TokenTransferAttestationReceipt>;
-        }
-      }
-    }
-
-    const destinationTxs = xfer.txids.filter((txid) => txid.chain === transfer.to.chain);
-    if (destinationTxs.length > 0) {
-      receipt = {
-        ...(receipt as AttestedTransferReceipt<TokenTransferAttestationReceipt>),
-        state: TransferState.DestinationInitiated,
-        destinationTxs: destinationTxs,
-      } satisfies CompletedTransferReceipt<TokenTransferAttestationReceipt>;
-    }
-
-    return receipt;
+    const vaa = deserialize(
+      "TokenBridge:TransferWithPayload",
+      serialize(receipt.attestation.attestation),
+    );
+    const tb = await toChain.getTokenBridge();
+    return tb.isTransferCompleted(vaa);
   }
 
   // AsyncGenerator fn that produces status updates through an async generator
@@ -622,7 +393,7 @@ export class TokenTransfer<N extends Network = Network>
     if (isSourceInitiated(receipt)) {
       if (receipt.originTxs.length === 0) throw "Origin transactions required to fetch message id";
       const { txid } = receipt.originTxs[receipt.originTxs.length - 1]!;
-      const msg = await TokenTransfer.getTransferMessage(fromChain, txid, leftover(start, timeout));
+      const msg = await this.getTransferMessage(fromChain, txid, leftover(start, timeout));
       receipt = {
         ...receipt,
         state: TransferState.SourceFinalized,
@@ -637,7 +408,7 @@ export class TokenTransfer<N extends Network = Network>
     if (isSourceFinalized(receipt)) {
       if (!receipt.attestation.id) throw "Attestation id required to fetch attestation";
       const { id } = receipt.attestation;
-      const attestation = await TokenTransfer.getTransferVaa(wh, id, leftover(start, timeout));
+      const attestation = await this.getTransferVaa(wh, id, leftover(start, timeout));
       receipt = {
         ...receipt,
         attestation: { id, attestation },
@@ -667,12 +438,10 @@ export class TokenTransfer<N extends Network = Network>
     // Fall back to asking the destination chain if this VAA has been redeemed
     // Note: We do not get any destinationTxs with this method
     if (isAttested(receipt)) {
-      if (!receipt.attestation.attestation) throw "Signed Attestation required to check for redeem";
+      if (!receipt.attestation.attestation)
+        throw ErrInvalidStateTransition("Signed Attestation required to check for redeem");
 
-      let isComplete = await TokenTransfer.isTransferComplete(
-        toChain,
-        receipt.attestation.attestation as TokenTransferVAA,
-      );
+      let isComplete = await this.isTransferComplete(toChain, receipt);
 
       if (isComplete) {
         receipt = {
@@ -686,4 +455,49 @@ export class TokenTransfer<N extends Network = Network>
 
     yield receipt;
   }
+
+  static async destinationOverrides<N extends Network>(
+    srcChain: ChainContext<N, Platform, Chain>,
+    dstChain: ChainContext<N, Platform, Chain>,
+    transfer: TokenTransferDetails,
+  ): Promise<TokenTransferDetails> {
+    const _transfer = { ...transfer };
+
+    // Bit of (temporary) hackery until solana contracts support being
+    // sent a VAA with the primary address
+    // Note: Do _not_ override if automatic or if the destination token is native
+    // gas token
+    if (transfer.to.chain === "Solana" && !_transfer.automatic) {
+      const destinationToken = await this.lookupDestinationToken(
+        srcChain,
+        dstChain,
+        _transfer.token,
+      );
+      // TODO: If the token is native, no need to overwrite the destination address check for native
+      //if (!destinationToken.address.equals((await dstChain.getNativeWrappedTokenId()).address))
+      _transfer.to = await dstChain.getTokenAccount(_transfer.to.address, destinationToken.address);
+    }
+
+    if (_transfer.to.chain === "Sei") {
+      if (_transfer.to.chain === "Sei" && _transfer.payload)
+        throw new Error("Arbitrary payloads unsupported for Sei");
+
+      // For sei, we reserve the payload for a token transfer through the sei bridge.
+      _transfer.payload = encoding.bytes.encode(
+        JSON.stringify({
+          basic_recipient: {
+            recipient: encoding.b64.encode(_transfer.to.address.toString()),
+          },
+        }),
+      );
+      _transfer.to = Wormhole.chainAddress(
+        _transfer.to.chain,
+        dstChain.config.contracts!.translator!,
+      );
+    }
+
+    return _transfer;
+  }
 }
+
+TokenTransferUtils satisfies TransferProtocol<TokenTransferProtocol>;

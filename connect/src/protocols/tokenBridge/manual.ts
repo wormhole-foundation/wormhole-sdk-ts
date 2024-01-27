@@ -11,10 +11,8 @@ import {
 } from "@wormhole-foundation/sdk-definitions";
 import { signSendWait } from "../../common";
 import {
-  AttestationReceipt,
   ErrInvalidStateTransition,
   SourceInitiatedTransferReceipt,
-  TransferReceipt,
   TransferState,
   hasAttested,
   hasSourceFinalized,
@@ -22,41 +20,15 @@ import {
   isAttested,
   isCreated,
 } from "../../types";
-import { Wormhole } from "../../wormhole";
 import { WormholeTransfer } from "../wormholeTransfer";
 import { TokenTransfer } from "./tokenTransfer";
+import { TokenTransferUtils } from "./utils";
 
 type PN = "TokenBridge";
-export class ManualTokenTransfer<N extends Network> implements WormholeTransfer<PN> {
-  private readonly wh: Wormhole<N>;
-
-  fromChain: ChainContext<N, Platform, Chain>;
-  toChain: ChainContext<N, Platform, Chain>;
-
-  // transfer details
-  transfer: TokenTransferDetails;
-
-  receipt: TransferReceipt<AttestationReceipt<PN>>;
-
-  constructor(
-    wh: Wormhole<N>,
-    transfer: TokenTransferDetails,
-    fromChain?: ChainContext<N, Platform, Chain>,
-    toChain?: ChainContext<N, Platform, Chain>,
-  ) {
-    this.wh = wh;
-    this.transfer = transfer;
-
-    this.receipt = {
-      from: transfer.from.chain,
-      to: transfer.to.chain,
-      state: TransferState.Created,
-    };
-
-    this.fromChain = fromChain ?? wh.getChain(transfer.from.chain);
-    this.toChain = toChain ?? wh.getChain(transfer.to.chain);
-  }
-
+export class ManualTokenTransfer<N extends Network>
+  extends TokenTransfer<N, PN>
+  implements WormholeTransfer<PN>
+{
   getTransferState(): TransferState {
     return this.receipt.state;
   }
@@ -83,7 +55,7 @@ export class ManualTokenTransfer<N extends Network> implements WormholeTransfer<
     if (!hasSourceFinalized(this.receipt)) {
       const { originTxs } = this.receipt;
       const txid = originTxs[originTxs.length - 1]!;
-      const msgId = await TokenTransfer.getTransferMessage(this.fromChain, txid.txid, timeout);
+      const msgId = await TokenTransferUtils.getTransferMessage(this.fromChain, txid.txid, timeout);
       this.receipt = {
         ...this.receipt,
         state: TransferState.SourceFinalized,
@@ -93,7 +65,11 @@ export class ManualTokenTransfer<N extends Network> implements WormholeTransfer<
 
     // No signed attestation yet, try to grab it
     if (!hasAttested(this.receipt)) {
-      const vaa = await TokenTransfer.getTransferVaa(this.wh, this.receipt.attestation.id, timeout);
+      const vaa = await TokenTransferUtils.getTransferVaa(
+        this.wh,
+        this.receipt.attestation.id,
+        timeout,
+      );
       this.receipt = {
         ...this.receipt,
         state: TransferState.Attested,
