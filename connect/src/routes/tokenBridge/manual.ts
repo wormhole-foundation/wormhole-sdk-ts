@@ -1,18 +1,13 @@
 import { Chain, Network, contracts } from "@wormhole-foundation/sdk-base";
 import {
-  ChainContext,
+  Ctx,
   Signer,
   TokenId,
   TokenTransferDetails,
   TransactionId,
 } from "@wormhole-foundation/sdk-definitions";
 import { TokenTransfer, TokenTransferVAA } from "../../protocols/tokenTransfer";
-import {
-  AttestationReceipt,
-  TransferReceipt,
-  TransferState,
-  isAttested,
-} from "../../types";
+import { AttestationReceipt, TransferReceipt, TransferState, isAttested } from "../../types";
 import { Wormhole } from "../../wormhole";
 import { ManualRoute, StaticRouteMethods } from "../route";
 import { Quote, TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
@@ -57,7 +52,7 @@ export class TokenBridgeRoute<N extends Network>
   }
 
   // get the list of source tokens that are possible to send
-  static async supportedSourceTokens(fromChain: ChainContext<Network>): Promise<TokenId[]> {
+  static async supportedSourceTokens(fromChain: Ctx): Promise<TokenId[]> {
     // Default list for the chain
     return Object.values(fromChain.config.tokenMap!).map((td) =>
       Wormhole.tokenId(td.chain, td.address),
@@ -67,13 +62,13 @@ export class TokenBridgeRoute<N extends Network>
   // get the liist of destination tokens that may be recieved on the destination chain
   static async supportedDestinationTokens<N extends Network>(
     sourceToken: TokenId,
-    fromChain: ChainContext<N>,
-    toChain: ChainContext<N>,
+    fromChain: Ctx<N>,
+    toChain: Ctx<N>,
   ): Promise<TokenId[]> {
     return [await TokenTransfer.lookupDestinationToken(fromChain, toChain, sourceToken)];
   }
 
-  static isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean {
+  static isProtocolSupported(chain: Ctx): boolean {
     return chain.supportsTokenBridge();
   }
 
@@ -97,11 +92,13 @@ export class TokenBridgeRoute<N extends Network>
   }
 
   async quote(params: Vp) {
-    return this.request.displayQuote(await TokenTransfer.quoteTransfer(
-      this.request.fromChain,
-      this.request.toChain,
-      this.toTransferDetails(params),
-    ));
+    return this.request.displayQuote(
+      await TokenTransfer.quoteTransfer(
+        this.request.fromChain,
+        this.request.toChain,
+        this.toTransferDetails(params),
+      ),
+    );
   }
 
   async initiate(signer: Signer, params: Vp): Promise<R> {

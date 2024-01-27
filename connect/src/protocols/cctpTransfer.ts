@@ -1,20 +1,12 @@
-import {
-  Chain,
-  ChainToPlatform,
-  Network,
-  Platform,
-  circle,
-  encoding,
-  toChain,
-} from "@wormhole-foundation/sdk-base";
+import { Chain, Network, circle, encoding, toChain } from "@wormhole-foundation/sdk-base";
 import {
   Attestation,
   AttestationId,
   AutomaticCircleBridge,
-  ChainContext,
   CircleBridge,
   CircleMessageId,
   CircleTransferDetails,
+  Ctx,
   Signer,
   TransactionId,
   TxHash,
@@ -58,8 +50,8 @@ export class CircleTransfer<N extends Network = Network>
 {
   private readonly wh: Wormhole<N>;
 
-  fromChain: ChainContext<N, Platform, Chain>;
-  toChain: ChainContext<N, Platform, Chain>;
+  fromChain: Ctx<N, Chain>;
+  toChain: Ctx<N, Chain>;
 
   // state machine tracker
   private _state: TransferState;
@@ -75,8 +67,8 @@ export class CircleTransfer<N extends Network = Network>
   private constructor(
     wh: Wormhole<N>,
     transfer: CircleTransferDetails,
-    fromChain?: ChainContext<N, Platform, Chain>,
-    toChain?: ChainContext<N, Platform, Chain>,
+    fromChain?: Ctx<N, Chain>,
+    toChain?: Ctx<N, Chain>,
   ) {
     this._state = TransferState.Created;
     this.wh = wh;
@@ -95,36 +87,36 @@ export class CircleTransfer<N extends Network = Network>
     wh: Wormhole<N>,
     from: CircleTransferDetails,
     timeout?: number,
-    fromChain?: ChainContext<N, Platform, Chain>,
-    toChain?: ChainContext<N, Platform, Chain>,
+    fromChain?: Ctx<N, Chain>,
+    toChain?: Ctx<N, Chain>,
   ): Promise<CircleTransfer<N>>;
   static async from<N extends Network>(
     wh: Wormhole<N>,
     from: WormholeMessageId,
     timeout?: number,
-    fromChain?: ChainContext<N, Platform, Chain>,
-    toChain?: ChainContext<N, Platform, Chain>,
+    fromChain?: Ctx<N, Chain>,
+    toChain?: Ctx<N, Chain>,
   ): Promise<CircleTransfer<N>>;
   static async from<N extends Network>(
     wh: Wormhole<N>,
     from: string, // CircleMessage hex encoded
     timeout?: number,
-    fromChain?: ChainContext<N, Platform, Chain>,
-    toChain?: ChainContext<N, Platform, Chain>,
+    fromChain?: Ctx<N, Chain>,
+    toChain?: Ctx<N, Chain>,
   ): Promise<CircleTransfer<N>>;
   static async from<N extends Network>(
     wh: Wormhole<N>,
     from: TransactionId,
     timeout?: number,
-    fromChain?: ChainContext<N, Platform, Chain>,
-    toChain?: ChainContext<N, Platform, Chain>,
+    fromChain?: Ctx<N, Chain>,
+    toChain?: Ctx<N, Chain>,
   ): Promise<CircleTransfer<N>>;
   static async from<N extends Network>(
     wh: Wormhole<N>,
     from: CircleTransferDetails | WormholeMessageId | string | TransactionId,
     timeout: number = DEFAULT_TASK_TIMEOUT,
-    fromChain?: ChainContext<N, Platform, Chain>,
-    toChain?: ChainContext<N, Platform, Chain>,
+    fromChain?: Ctx<N, Chain>,
+    toChain?: Ctx<N, Chain>,
   ): Promise<CircleTransfer<N>> {
     // This is a new transfer, just return the object
     if (isCircleTransferDetails(from)) {
@@ -220,7 +212,7 @@ export class CircleTransfer<N extends Network = Network>
     wh: Wormhole<N>,
     from: TransactionId,
     timeout: number,
-    fromChain?: ChainContext<N, Platform, Chain>,
+    fromChain?: Ctx<N, Chain>,
   ): Promise<CircleTransfer<N>> {
     const { chain, txid } = from;
     fromChain = fromChain ?? wh.getChain(chain);
@@ -274,7 +266,7 @@ export class CircleTransfer<N extends Network = Network>
   }
 
   static async transfer<N extends Network, C extends Chain = Chain>(
-    fromChain: ChainContext<N, Platform, C>,
+    fromChain: Ctx<N, C>,
     transfer: CircleTransferDetails,
     signer: Signer<N, Chain>,
   ): Promise<TransactionId[]> {
@@ -425,8 +417,8 @@ export class CircleTransfer<N extends Network = Network>
   }
 
   static async quoteTransfer<N extends Network>(
-    srcChain: ChainContext<N, Platform, Chain>,
-    dstChain: ChainContext<N, Platform, Chain>,
+    srcChain: Ctx<N, Chain>,
+    dstChain: Ctx<N, Chain>,
     transfer: CircleTransferDetails,
   ): Promise<TransferQuote> {
     const dstUsdcAddress = circle.usdcContract.get(dstChain.network, dstChain.chain);
@@ -477,7 +469,7 @@ export class CircleTransfer<N extends Network = Network>
   }
 
   static async isTransferComplete<N extends Network>(
-    toChain: ChainContext<N, Platform, Chain>,
+    toChain: Ctx<N, Chain>,
     attestation: Attestation<CircleTransferProtocol>,
   ) {
     if (!CircleBridge.isCircleAttestation(attestation))
@@ -500,10 +492,7 @@ export class CircleTransfer<N extends Network = Network>
     return vaa;
   }
 
-  static async getTransferMessage<N extends Network>(
-    fromChain: ChainContext<N, Platform, Chain>,
-    txid: TxHash,
-  ) {
+  static async getTransferMessage<N extends Network>(fromChain: Ctx<N, Chain>, txid: TxHash) {
     const cb = await fromChain.getCircleBridge();
     const circleMessage = await cb.parseTransactionDetails(txid);
     return circleMessage;
@@ -572,8 +561,8 @@ export class CircleTransfer<N extends Network = Network>
     receipt: CircleTransferReceipt<SC, DC>,
     timeout: number = DEFAULT_TASK_TIMEOUT,
     // Optional parameters to override chain context (typically for custom rpc)
-    _fromChain?: ChainContext<N, ChainToPlatform<SC>, SC>,
-    _toChain?: ChainContext<N, ChainToPlatform<DC>, DC>,
+    _fromChain?: Ctx<N, SC>,
+    _toChain?: Ctx<N, DC>,
   ): AsyncGenerator<CircleTransferReceipt<SC, DC>> {
     const start = Date.now();
     const leftover = (start: number, max: number) => Math.max(max - (Date.now() - start), 0);

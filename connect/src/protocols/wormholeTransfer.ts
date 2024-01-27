@@ -1,8 +1,8 @@
-import { Network, Platform, PlatformToChains } from "@wormhole-foundation/sdk-base";
+import { Chain, Network } from "@wormhole-foundation/sdk-base";
 import {
   AttestationId,
-  ChainContext,
   CircleTransferDetails,
+  Ctx,
   GatewayTransferDetails,
   ProtocolName,
   Signer,
@@ -25,8 +25,8 @@ export type TransferRequest<PN extends ProtocolName = ProtocolName> = PN extends
 // Static methods on the Transfer protocol types
 // e.g. `TokenTransfer`
 export interface TransferProtocol<PN extends ProtocolName> {
-  isTransferComplete<N extends Network, P extends Platform, C extends PlatformToChains<P>>(
-    toChain: ChainContext<N, P, C>,
+  isTransferComplete<N extends Network, C extends Chain>(
+    toChain: Ctx<N, C>,
     attestation: AttestationId<PN>,
   ): Promise<boolean>;
   validateTransferDetails<N extends Network>(

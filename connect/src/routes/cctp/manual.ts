@@ -1,8 +1,8 @@
 import { Chain, Network, circle, contracts } from "@wormhole-foundation/sdk-base";
 import {
-  ChainContext,
   CircleBridge,
   CircleTransferDetails,
+  Ctx,
   Signer,
   TokenId,
   TransactionId,
@@ -10,9 +10,9 @@ import {
 import { signSendWait } from "../../common";
 import { CircleAttestationReceipt, CircleTransfer } from "../../protocols/cctpTransfer";
 import { TransferReceipt, TransferState, isAttested } from "../../types";
+import { Wormhole } from "../../wormhole";
 import { ManualRoute, StaticRouteMethods } from "../route";
 import { Quote, TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
-import { Wormhole } from "../../wormhole";
 
 export namespace CCTPRoute {
   export type Options = {
@@ -57,7 +57,7 @@ export class CCTPRoute<N extends Network>
   }
 
   // get the list of source tokens that are possible to send
-  static async supportedSourceTokens(fromChain: ChainContext<Network>): Promise<TokenId[]> {
+  static async supportedSourceTokens(fromChain: Ctx): Promise<TokenId[]> {
     const { network, chain } = fromChain;
     if (!circle.usdcContract.has(network, chain)) return [];
     return [Wormhole.chainAddress(chain, circle.usdcContract.get(network, chain)!)];
@@ -66,15 +66,15 @@ export class CCTPRoute<N extends Network>
   // get the liist of destination tokens that may be recieved on the destination chain
   static async supportedDestinationTokens<N extends Network>(
     sourceToken: TokenId,
-    fromChain: ChainContext<N>,
-    toChain: ChainContext<N>,
+    fromChain: Ctx<N>,
+    toChain: Ctx<N>,
   ): Promise<TokenId[]> {
     const { network, chain } = toChain;
     if (!circle.usdcContract.has(network, chain)) return [];
     return [Wormhole.chainAddress(chain, circle.usdcContract.get(network, chain)!)];
   }
 
-  static isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean {
+  static isProtocolSupported(chain: Ctx): boolean {
     return chain.supportsCircleBridge();
   }
 
@@ -107,11 +107,13 @@ export class CCTPRoute<N extends Network>
   }
 
   async quote(params: Vp) {
-    return this.request.displayQuote(await CircleTransfer.quoteTransfer(
-      this.request.fromChain,
-      this.request.toChain,
-      this.toTransferDetails(params),
-    ));
+    return this.request.displayQuote(
+      await CircleTransfer.quoteTransfer(
+        this.request.fromChain,
+        this.request.toChain,
+        this.toTransferDetails(params),
+      ),
+    );
   }
 
   async initiate(signer: Signer, params: Vp): Promise<R> {

@@ -1,7 +1,7 @@
 import {
   Chain,
-  ChainContext,
   CompletedTransferReceipt,
+  Ctx,
   Network,
   Signer,
   SourceInitiatedTransferReceipt,
@@ -44,20 +44,20 @@ export class AutomaticMockRoute<N extends Network>
   static supportedChains(network: Network): Chain[] {
     return ["Solana", "Ethereum"];
   }
-  static async supportedSourceTokens(fromChain: ChainContext<Network>): Promise<TokenId[]> {
+  static async supportedSourceTokens(fromChain: Ctx): Promise<TokenId[]> {
     await delay(250);
     return [nativeTokenId(fromChain.chain)];
   }
   static async supportedDestinationTokens<N extends Network>(
     sourceToken: TokenId,
-    fromChain: ChainContext<N>,
-    toChain: ChainContext<N>,
+    fromChain: Ctx<N>,
+    toChain: Ctx<N>,
   ): Promise<TokenId[]> {
     await delay(250);
     return [nativeTokenId(toChain.chain)];
   }
 
-  static isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean {
+  static isProtocolSupported(chain: Ctx): boolean {
     return true;
   }
 

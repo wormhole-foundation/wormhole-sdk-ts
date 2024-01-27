@@ -1,10 +1,5 @@
 import { Chain, Network, tokens } from "@wormhole-foundation/sdk-base";
-import {
-  ChainContext,
-  TokenId,
-  canonicalAddress,
-  isNative,
-} from "@wormhole-foundation/sdk-definitions";
+import { Ctx, TokenId, canonicalAddress, isNative } from "@wormhole-foundation/sdk-definitions";
 import { Wormhole } from "../wormhole";
 
 export interface TokenDetails {
@@ -31,7 +26,7 @@ export function tokenAddresses(tokens: TokenId[]): string[] {
 }
 
 export async function getTokenDetails<N extends Network>(
-  chain: ChainContext<N>,
+  chain: Ctx<N>,
   token: TokenId,
 ): Promise<TokenDetails> {
   const address = canonicalAddress(token);

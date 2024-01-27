@@ -1,5 +1,4 @@
 import {
-  ChainToPlatform,
   Network,
   PlatformToChains,
   chainToPlatform,
@@ -9,7 +8,7 @@ import {
 import {
   AttestationId,
   ChainAddress,
-  ChainContext,
+  Ctx,
   GatewayTransferDetails,
   GatewayTransferMsg,
   GatewayTransferWithPayloadMsg,
@@ -36,11 +35,7 @@ import { TransferState } from "../types";
 import { Wormhole } from "../wormhole";
 import { WormholeTransfer } from "./wormholeTransfer";
 
-type GatewayContext<N extends Network> = ChainContext<
-  N,
-  ChainToPlatform<typeof GatewayTransfer.chain>,
-  typeof GatewayTransfer.chain
->;
+type GatewayContext<N extends Network> = Ctx<N, typeof GatewayTransfer.chain>;
 
 export class GatewayTransfer<N extends Network = Network> implements WormholeTransfer<"IbcBridge"> {
   static chain: "Wormchain" = "Wormchain";

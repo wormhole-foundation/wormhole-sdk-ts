@@ -1,7 +1,7 @@
 import {
   AttestationReceipt,
   Chain,
-  ChainContext,
+  Ctx,
   Network,
   PorticoBridge,
   Signer,
@@ -22,7 +22,13 @@ import {
   tokens,
 } from "../..";
 import { AutomaticRoute, StaticRouteMethods } from "../route";
-import { Quote, Receipt, TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
+import {
+  Quote,
+  Receipt,
+  TransferParams,
+  ValidatedTransferParams,
+  ValidationResult,
+} from "../types";
 
 export const SLIPPAGE_BPS = 15n; // 0.15%
 export const BPS_PER_HUNDRED_PERCENT = 10000n;
@@ -81,7 +87,7 @@ export class AutomaticPorticoRoute<N extends Network>
     return [];
   }
 
-  static async supportedSourceTokens(fromChain: ChainContext<Network>): Promise<TokenId[]> {
+  static async supportedSourceTokens(fromChain: Ctx): Promise<TokenId[]> {
     const { chain } = fromChain;
     const supported = this._supportedTokens
       .map((symbol) => {
@@ -99,8 +105,8 @@ export class AutomaticPorticoRoute<N extends Network>
 
   static async supportedDestinationTokens<N extends Network>(
     sourceToken: TokenId,
-    fromChain: ChainContext<N>,
-    toChain: ChainContext<N>,
+    fromChain: Ctx<N>,
+    toChain: Ctx<N>,
   ): Promise<TokenId[]> {
     const tokenAddress = canonicalAddress(sourceToken);
 
@@ -143,7 +149,7 @@ export class AutomaticPorticoRoute<N extends Network>
     return locallyRedeemable;
   }
 
-  static isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean {
+  static isProtocolSupported(chain: Ctx): boolean {
     return chain.supportsPorticoBridge();
   }
 
@@ -224,20 +230,23 @@ export class AutomaticPorticoRoute<N extends Network>
       relayerFee: fee,
     };
 
-    return { quote, ...this.request.displayQuote({
-      sourceToken: {
-        token: params.normalizedParams.sourceToken,
-        amount: params.normalizedParams.amount,
-      },
-      destinationToken: {
-        token: params.normalizedParams.destinationToken,
-        amount: quote.swapAmounts.minAmountFinish - fee,
-      },
-      relayFee: {
-        token: params.normalizedParams.destinationToken,
-        amount: fee,
-      },
-    }) };
+    return {
+      quote,
+      ...this.request.displayQuote({
+        sourceToken: {
+          token: params.normalizedParams.sourceToken,
+          amount: params.normalizedParams.amount,
+        },
+        destinationToken: {
+          token: params.normalizedParams.destinationToken,
+          amount: quote.swapAmounts.minAmountFinish - fee,
+        },
+        relayFee: {
+          token: params.normalizedParams.destinationToken,
+          amount: fee,
+        },
+      }),
+    };
   }
 
   async initiate(sender: Signer<N>, params: VP) {

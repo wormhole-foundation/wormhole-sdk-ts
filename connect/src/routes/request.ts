@@ -1,10 +1,5 @@
 import { Network, displayAmount, normalizeAmount } from "@wormhole-foundation/sdk-base";
-import {
-  ChainAddress,
-  ChainContext,
-  TokenId,
-  isSameToken,
-} from "@wormhole-foundation/sdk-definitions";
+import { ChainAddress, Ctx, TokenId, isSameToken } from "@wormhole-foundation/sdk-definitions";
 import { TransferQuote } from "../types";
 import { Wormhole } from "../wormhole";
 import { TokenDetails, getTokenDetails } from "./token";
@@ -16,14 +11,14 @@ export class RouteTransferRequest<N extends Network> {
   source: TokenDetails;
   destination?: TokenDetails;
 
-  fromChain: ChainContext<N>;
-  toChain: ChainContext<N>;
+  fromChain: Ctx<N>;
+  toChain: Ctx<N>;
 
   private constructor(
     from: ChainAddress,
     to: ChainAddress,
-    fromChain: ChainContext<N>,
-    toChain: ChainContext<N>,
+    fromChain: Ctx<N>,
+    toChain: Ctx<N>,
     source: TokenDetails,
     destination?: TokenDetails,
   ) {
@@ -101,8 +96,8 @@ export class RouteTransferRequest<N extends Network> {
       source: TokenId;
       destination?: TokenId;
     },
-    fromChain?: ChainContext<N>,
-    toChain?: ChainContext<N>,
+    fromChain?: Ctx<N>,
+    toChain?: Ctx<N>,
   ) {
     fromChain = fromChain ?? wh.getChain(params.from.chain);
     toChain = toChain ?? wh.getChain(params.to.chain);

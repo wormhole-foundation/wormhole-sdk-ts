@@ -1,16 +1,22 @@
 import { Chain, Network, circle, contracts } from "@wormhole-foundation/sdk-base";
 import {
-  ChainContext,
   CircleTransferDetails,
+  Ctx,
   Signer,
   TokenId,
   nativeTokenId,
 } from "@wormhole-foundation/sdk-definitions";
 import { CircleAttestationReceipt, CircleTransfer } from "../../protocols/cctpTransfer";
 import { TransferState } from "../../types";
-import { AutomaticRoute, StaticRouteMethods } from "../route";
-import { Quote, Receipt, TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
 import { Wormhole } from "../../wormhole";
+import { AutomaticRoute, StaticRouteMethods } from "../route";
+import {
+  Quote,
+  Receipt,
+  TransferParams,
+  ValidatedTransferParams,
+  ValidationResult,
+} from "../types";
 
 export namespace AutomaticCCTPRoute {
   export type Options = {
@@ -60,7 +66,7 @@ export class AutomaticCCTPRoute<N extends Network>
   }
 
   // get the list of source tokens that are possible to send
-  static async supportedSourceTokens(fromChain: ChainContext<Network>): Promise<TokenId[]> {
+  static async supportedSourceTokens(fromChain: Ctx): Promise<TokenId[]> {
     const { network, chain } = fromChain;
     if (!circle.usdcContract.has(network, chain)) return [];
     return [Wormhole.chainAddress(chain, circle.usdcContract.get(network, chain)!)];
@@ -69,8 +75,8 @@ export class AutomaticCCTPRoute<N extends Network>
   // get the liist of destination tokens that may be recieved on the destination chain
   static async supportedDestinationTokens<N extends Network>(
     sourceToken: TokenId,
-    fromChain: ChainContext<N>,
-    toChain: ChainContext<N>,
+    fromChain: Ctx<N>,
+    toChain: Ctx<N>,
   ): Promise<TokenId[]> {
     const { network, chain } = toChain;
     if (!circle.usdcContract.has(network, chain)) return [];
@@ -80,7 +86,7 @@ export class AutomaticCCTPRoute<N extends Network>
     ];
   }
 
-  static isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean {
+  static isProtocolSupported(chain: Ctx): boolean {
     return chain.supportsAutomaticCircleBridge();
   }
 
@@ -120,11 +126,13 @@ export class AutomaticCCTPRoute<N extends Network>
   }
 
   async quote(params: Vp) {
-    return this.request.displayQuote(await CircleTransfer.quoteTransfer(
-      this.request.fromChain,
-      this.request.toChain,
-      this.toTransferDetails(params),
-    ));
+    return this.request.displayQuote(
+      await CircleTransfer.quoteTransfer(
+        this.request.fromChain,
+        this.request.toChain,
+        this.toTransferDetails(params),
+      ),
+    );
   }
 
   private async normalizeTransferParams(params: Tp) {

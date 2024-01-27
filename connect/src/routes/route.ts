@@ -1,5 +1,5 @@
 import { Chain, Network } from "@wormhole-foundation/sdk-base";
-import { ChainContext, Signer, TokenId, TransactionId } from "@wormhole-foundation/sdk-definitions";
+import { Ctx, Signer, TokenId, TransactionId } from "@wormhole-foundation/sdk-definitions";
 import { Wormhole } from "../wormhole";
 import { RouteTransferRequest } from "./request";
 import {
@@ -68,14 +68,14 @@ export interface RouteConstructor {
   // get the list of chains this route supports
   supportedChains(network: Network): Chain[];
   // make sure the underlying protocols are supported
-  isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean;
+  isProtocolSupported(chain: Ctx): boolean;
   // get the list of source tokens that are possible to send
-  supportedSourceTokens(fromChain: ChainContext<Network>): Promise<TokenId[]>;
+  supportedSourceTokens(fromChain: Ctx): Promise<TokenId[]>;
   // get the list of destination tokens that may be recieved on the destination chain
   supportedDestinationTokens<N extends Network>(
     token: TokenId,
-    fromChain: ChainContext<N>,
-    toChain: ChainContext<N>,
+    fromChain: Ctx<N>,
+    toChain: Ctx<N>,
   ): Promise<TokenId[]>;
 }
 

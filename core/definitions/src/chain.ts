@@ -1,4 +1,11 @@
-import { Chain, Network, Platform, PlatformToChains, tokens } from "@wormhole-foundation/sdk-base";
+import {
+  ChainToPlatform,
+  Chain,
+  Network,
+  Platform,
+  PlatformToChains,
+  tokens,
+} from "@wormhole-foundation/sdk-base";
 import { ChainAddress, UniversalOrNative, toNative } from "./address";
 import { WormholeMessageId } from "./attestation";
 import { PlatformContext } from "./platform";
@@ -10,6 +17,13 @@ import { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge";
 import { RpcConnection } from "./rpc";
 import { ChainConfig, SignedTx, TokenId, TokenAddress } from "./types";
 import { PorticoBridge } from "./protocols/portico";
+
+// Utility type to ease generic parameter setting
+export type Ctx<N extends Network = Network, C extends Chain = Chain> = ChainContext<
+  N,
+  ChainToPlatform<C>,
+  C
+>;
 
 export abstract class ChainContext<
   N extends Network,

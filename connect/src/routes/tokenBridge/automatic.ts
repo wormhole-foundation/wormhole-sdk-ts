@@ -1,6 +1,6 @@
 import { Chain, Network, contracts } from "@wormhole-foundation/sdk-base";
 import {
-  ChainContext,
+  Ctx,
   Signer,
   TokenId,
   TokenTransferDetails,
@@ -12,7 +12,13 @@ import {
 import { TokenTransfer } from "../../protocols/tokenTransfer";
 import { AttestationReceipt, TransferState } from "../../types";
 import { AutomaticRoute, StaticRouteMethods } from "../route";
-import { Quote, Receipt, TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
+import {
+  Quote,
+  Receipt,
+  TransferParams,
+  ValidatedTransferParams,
+  ValidationResult,
+} from "../types";
 
 export namespace AutomaticTokenBridgeRoute {
   export type Options = {
@@ -62,7 +68,7 @@ export class AutomaticTokenBridgeRoute<N extends Network>
   }
 
   // get the list of source tokens that are possible to send
-  static async supportedSourceTokens(fromChain: ChainContext<Network>): Promise<TokenId[]> {
+  static async supportedSourceTokens(fromChain: Ctx): Promise<TokenId[]> {
     const atb = await fromChain.getAutomaticTokenBridge();
     const registered = await atb.getRegisteredTokens();
     return [
@@ -76,8 +82,8 @@ export class AutomaticTokenBridgeRoute<N extends Network>
   // get the liist of destination tokens that may be recieved on the destination chain
   static async supportedDestinationTokens<N extends Network>(
     sourceToken: TokenId,
-    fromChain: ChainContext<N>,
-    toChain: ChainContext<N>,
+    fromChain: Ctx<N>,
+    toChain: Ctx<N>,
   ): Promise<TokenId[]> {
     return [
       nativeTokenId(toChain.chain),
@@ -85,7 +91,7 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     ];
   }
 
-  static isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean {
+  static isProtocolSupported(chain: Ctx): boolean {
     return chain.supportsAutomaticTokenBridge();
   }
 
@@ -204,11 +210,13 @@ export class AutomaticTokenBridgeRoute<N extends Network>
   }
 
   async quote(params: Vp) {
-    return this.request.displayQuote(await TokenTransfer.quoteTransfer(
-      this.request.fromChain,
-      this.request.toChain,
-      this.toTransferDetails(params),
-    ));
+    return this.request.displayQuote(
+      await TokenTransfer.quoteTransfer(
+        this.request.fromChain,
+        this.request.toChain,
+        this.toTransferDetails(params),
+      ),
+    );
   }
 
   async initiate(signer: Signer, params: Vp): Promise<R> {
