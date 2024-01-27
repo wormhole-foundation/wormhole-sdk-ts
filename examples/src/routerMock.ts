@@ -19,7 +19,7 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   const receiver = await getStuff(destChain);
 
   // create new resolver, overriding the default routes
-  const resolver = wh.resolver([routes.AutomaticMockRoute]);
+  const resolver = wh.resolver([routes.AutomaticMockRoute, routes.ManualMockRoute]);
 
   // What tokens are available on the source chain?
   console.log(await resolver.supportedSourceTokens(sendChain));
