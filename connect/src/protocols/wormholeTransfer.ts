@@ -25,6 +25,8 @@ export type TransferRequest<PN extends ProtocolName = ProtocolName> = PN extends
 // Static methods on the Transfer protocol types
 // e.g. `TokenTransfer`
 export interface TransferProtocol<PN extends ProtocolName> {
+  new (...args: any): WormholeTransfer<PN>;
+
   isTransferComplete<N extends Network, P extends Platform, C extends PlatformToChains<P>>(
     toChain: ChainContext<N, P, C>,
     attestation: AttestationId<PN>,
@@ -41,6 +43,9 @@ export interface TransferProtocol<PN extends ProtocolName> {
     timeout: number,
   ): AsyncGenerator<TransferReceipt<AttestationReceipt<PN>>>;
 }
+
+// Use this to ensure the static methods defined in the RouteConstructor
+export type StaticTransferMethods<I extends TransferProtocol<ProtocolName>> = InstanceType<I>;
 
 // WormholeTransfer abstracts the process and state transitions
 // for things like TokenTransfers, NFTTransfers, Circle (with VAA), etc...

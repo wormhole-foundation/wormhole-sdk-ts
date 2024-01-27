@@ -9,10 +9,16 @@ import {
   isTokenId,
   nativeTokenId,
 } from "@wormhole-foundation/sdk-definitions";
-import { TokenTransfer } from "../../protocols/tokenTransfer";
+import { TokenTransfer } from "../../protocols/tokenbridge/tokenTransfer";
 import { AttestationReceipt, TransferState } from "../../types";
 import { AutomaticRoute, StaticRouteMethods } from "../route";
-import { Quote, Receipt, TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
+import {
+  Quote,
+  Receipt,
+  TransferParams,
+  ValidatedTransferParams,
+  ValidationResult,
+} from "../types";
 
 export namespace AutomaticTokenBridgeRoute {
   export type Options = {
@@ -204,11 +210,13 @@ export class AutomaticTokenBridgeRoute<N extends Network>
   }
 
   async quote(params: Vp) {
-    return this.request.displayQuote(await TokenTransfer.quoteTransfer(
-      this.request.fromChain,
-      this.request.toChain,
-      this.toTransferDetails(params),
-    ));
+    return this.request.displayQuote(
+      await TokenTransfer.quoteTransfer(
+        this.request.fromChain,
+        this.request.toChain,
+        this.toTransferDetails(params),
+      ),
+    );
   }
 
   async initiate(signer: Signer, params: Vp): Promise<R> {

@@ -30,11 +30,11 @@ import {
   toGatewayMsg,
   toNative,
 } from "@wormhole-foundation/sdk-definitions";
-import { signSendWait } from "../common";
-import { fetchIbcXfer, isTokenBridgeVaaRedeemed, retry } from "../tasks";
-import { TransferState } from "../types";
-import { Wormhole } from "../wormhole";
-import { WormholeTransfer } from "./wormholeTransfer";
+import { signSendWait } from "../../common";
+import { fetchIbcXfer, isTokenBridgeVaaRedeemed, retry } from "../../tasks";
+import { TransferState } from "../../types";
+import { Wormhole } from "../../wormhole";
+import { WormholeTransfer } from "../wormholeTransfer";
 
 type GatewayContext<N extends Network> = ChainContext<
   N,

@@ -18,6 +18,9 @@ export enum TransferState {
   DestinationFinalized, // Destination transaction is finalized
 }
 
+export const ErrInvalidStateTransition = (msg: string) =>
+  new Error(`Invalid state transition: ${msg}`);
+
 // Attestation Receipt contains
 // the id to lookup the attestation
 // and possibly a cached attestation
@@ -69,10 +72,24 @@ export interface CompletedTransferReceipt<AT, SC extends Chain = Chain, DC exten
   destinationTxs?: TransactionId<DC>[];
 }
 
+export function isCreated(receipt: TransferReceipt<any>): receipt is CreatedTransferReceipt {
+  return receipt.state === TransferState.Created;
+}
+
 export function isSourceInitiated<AT>(
   receipt: TransferReceipt<AT>,
 ): receipt is SourceInitiatedTransferReceipt {
   return receipt.state === TransferState.SourceInitiated;
+}
+
+export function hasSourceInitiated<AT>(
+  receipt: TransferReceipt<AT>,
+): receipt is
+  | SourceInitiatedTransferReceipt
+  | SourceFinalizedTransferReceipt<AT>
+  | AttestedTransferReceipt<AT>
+  | CompletedTransferReceipt<AT> {
+  return receipt.state >= TransferState.SourceInitiated;
 }
 
 export function isSourceFinalized<AT>(
@@ -81,10 +98,25 @@ export function isSourceFinalized<AT>(
   return receipt.state === TransferState.SourceFinalized;
 }
 
+export function hasSourceFinalized<AT>(
+  receipt: TransferReceipt<AT>,
+): receipt is
+  | SourceFinalizedTransferReceipt<AT>
+  | AttestedTransferReceipt<AT>
+  | CompletedTransferReceipt<AT> {
+  return receipt.state >= TransferState.SourceFinalized;
+}
+
 export function isAttested<AT>(
   receipt: TransferReceipt<AT>,
 ): receipt is AttestedTransferReceipt<AT> {
   return receipt.state === TransferState.Attested;
+}
+
+export function hasAttested<AT>(
+  receipt: TransferReceipt<AT>,
+): receipt is AttestedTransferReceipt<AT> | CompletedTransferReceipt<AT> {
+  return receipt.state >= TransferState.Attested;
 }
 
 export function isCompleted<AT>(

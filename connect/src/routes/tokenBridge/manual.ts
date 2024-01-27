@@ -6,13 +6,8 @@ import {
   TokenTransferDetails,
   TransactionId,
 } from "@wormhole-foundation/sdk-definitions";
-import { TokenTransfer, TokenTransferVAA } from "../../protocols/tokenTransfer";
-import {
-  AttestationReceipt,
-  TransferReceipt,
-  TransferState,
-  isAttested,
-} from "../../types";
+import { TokenTransfer, TokenTransferVAA } from "../../protocols/tokenbridge/tokenTransfer";
+import { AttestationReceipt, TransferReceipt, TransferState, isAttested } from "../../types";
 import { Wormhole } from "../../wormhole";
 import { ManualRoute, StaticRouteMethods } from "../route";
 import { Quote, TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
@@ -97,11 +92,13 @@ export class TokenBridgeRoute<N extends Network>
   }
 
   async quote(params: Vp) {
-    return this.request.displayQuote(await TokenTransfer.quoteTransfer(
-      this.request.fromChain,
-      this.request.toChain,
-      this.toTransferDetails(params),
-    ));
+    return this.request.displayQuote(
+      await TokenTransfer.quoteTransfer(
+        this.request.fromChain,
+        this.request.toChain,
+        this.toTransferDetails(params),
+      ),
+    );
   }
 
   async initiate(signer: Signer, params: Vp): Promise<R> {

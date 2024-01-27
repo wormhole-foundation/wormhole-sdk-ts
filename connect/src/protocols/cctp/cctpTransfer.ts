@@ -27,8 +27,8 @@ import {
   isWormholeMessageId,
 } from "@wormhole-foundation/sdk-definitions";
 
-import { signSendWait } from "../common";
-import { DEFAULT_TASK_TIMEOUT } from "../config";
+import { signSendWait } from "../../common";
+import { DEFAULT_TASK_TIMEOUT } from "../../config";
 import {
   AttestationReceipt,
   AttestedTransferReceipt,
@@ -41,9 +41,9 @@ import {
   isAttested,
   isSourceFinalized,
   isSourceInitiated,
-} from "../types";
-import { Wormhole } from "../wormhole";
-import { WormholeTransfer } from "./wormholeTransfer";
+} from "../../types";
+import { Wormhole } from "../../wormhole";
+import { WormholeTransfer } from "../wormholeTransfer";
 
 type CircleTransferProtocol = "CircleBridge" | "AutomaticCircleBridge";
 

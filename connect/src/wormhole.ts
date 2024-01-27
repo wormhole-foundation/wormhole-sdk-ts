@@ -28,8 +28,8 @@ import {
 } from "@wormhole-foundation/sdk-definitions";
 import { getCircleAttestationWithRetry } from "./circle-api";
 import { ConfigOverrides, DEFAULT_TASK_TIMEOUT, WormholeConfig, applyOverrides } from "./config";
-import { CircleTransfer } from "./protocols/cctpTransfer";
-import { TokenTransfer } from "./protocols/tokenTransfer";
+import { CircleTransfer } from "./protocols/cctp/cctpTransfer";
+import { TokenTransfer } from "./protocols/tokenbridge/tokenTransfer";
 import { RouteConstructor } from "./routes";
 import { RouteResolver } from "./routes/resolver";
 import { retry } from "./tasks";

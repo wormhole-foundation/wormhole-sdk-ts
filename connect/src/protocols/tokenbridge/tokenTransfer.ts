@@ -29,8 +29,8 @@ import {
   toNative,
   toUniversal,
 } from "@wormhole-foundation/sdk-definitions";
-import { signSendWait } from "../common";
-import { DEFAULT_TASK_TIMEOUT } from "../config";
+import { signSendWait } from "../../common";
+import { DEFAULT_TASK_TIMEOUT } from "../../config";
 import {
   AttestationReceipt,
   AttestedTransferReceipt,
@@ -43,9 +43,9 @@ import {
   isAttested,
   isSourceFinalized,
   isSourceInitiated,
-} from "../types";
-import { Wormhole } from "../wormhole";
-import { WormholeTransfer } from "./wormholeTransfer";
+} from "../../types";
+import { Wormhole } from "../../wormhole";
+import { WormholeTransfer } from "../wormholeTransfer";
 
 export type TokenTransferProtocol = "TokenBridge" | "AutomaticTokenBridge";
 export type TokenTransferVAA = TokenBridge.TransferVAA | AutomaticTokenBridge.VAA;
