@@ -75,7 +75,7 @@ const token = "native";
 // Format it for base units
 const amount = normalizeAmount(1, BigInt(srcChain.config.nativeTokenDecimals));
 
-// Create a TokenTransfer object, allowing us to shepard the transfer through the process and get updates on its status
+// Create a TokenTransfer object, allowing us to shepherd the transfer through the process and get updates on its status
 const manualXfer = wh.tokenTransfer(
   token, // TokenId of the token to transfer or 'native'
   amount, // Amount in base units
@@ -201,7 +201,7 @@ Each platform can be installed separately so that dependencies can stay as minim
 
 ### Chain Context
 
-The `Wormhole` class provides a `getChain` method that returns a `ChainContext` object for a given chain. This object provides access to the chain specific methods and utilities. Much of the functionality in the `ChainContext` is provided by the `Platform` methods but the specific chain may have overriden methods.
+The `Wormhole` class provides a `getChain` method that returns a `ChainContext` object for a given chain. This object provides access to the chain specific methods and utilities. Much of the functionality in the `ChainContext` is provided by the `Platform` methods but the specific chain may have overridden methods.
 
 The ChainContext object is also responsible for holding a cached rpc client and protocol clients.
 
@@ -297,7 +297,7 @@ const receiver: Signer = // ...
 
 Within the Wormhole context, addresses are [normalized](https://docs.wormhole.com/wormhole/blockchain-environments/evm#addresses) to 32 bytes and referred to in this SDK as a `UniversalAddresses`.
 
-Each platform comes with an address type that understands the native address formats, unsuprisingly referred to a NativeAddress. This abstraction allows the SDK to work with addresses in a consistent way regardless of the underlying chain.
+Each platform comes with an address type that understands the native address formats, unsurprisingly referred to as NativeAddress. This abstraction allows the SDK to work with addresses in a consistent way regardless of the underlying chain.
 
 ```ts
 // Convert a string address to its Native address
@@ -309,7 +309,7 @@ const algoAddr: NativeAddress<"Algorand"> = toNative("Solana", "TRYALGO...");
 ethAddr.toString(); // => '0xbeef...'
 
 // Convert a Native address to a UniversalAddress
-ethAddr.toUniversalAddresS();
+ethAddr.toUniversalAddress();
 
 // A common type in the SDK is the `ChainAddress`.
 // A helper exists to provide a ChainAddress for a signer, or [ChainName, string address]
