@@ -59,8 +59,8 @@ export interface Amount {
   decimals: number;
 };
 
-export function amount(amount: string | number) {
-  validateAmountInput(amount);
+export function amount(amount: string | number, decimals: number) {
+  validateAmountInput(amount, decimals);
 
   amount = amount.toString();
 
@@ -74,11 +74,8 @@ export function amount(amount: string | number) {
     chunks.length === 0 ? ["0", ""] : chunks.length === 1 ? [chunks[0], ""] : chunks;
 
   // Strip trailing zeroes
-  while (partial.endsWith('0')) {
-    partial = partial.substring(0, partial.length-1);
-  }
+  while (partial.length < decimals) partial += '0';
 
-  let decimals = partial.length;
   let amountStr = whole + partial;
 
   while (amountStr!.length > 1 && amountStr?.startsWith('0')) {
@@ -88,19 +85,12 @@ export function amount(amount: string | number) {
   return { amount: amountStr, decimals }
 }
 
-export function baseUnits(amount: Amount, decimals: number): bigint {
+export function baseUnits(amount: Amount): bigint {
   validateAmount(amount);
-
-  if (decimals === amount.decimals) {
-    return BigInt(amount.amount);
-  } else if (decimals < amount.decimals) {
-    throw new Error(`Cannot convert to base units; decimals too low. Amount requires ${amount.decimals}`);
-  } else {
-    return BigInt(amount.amount) * 10n ** BigInt(decimals - amount.decimals);
-  }
+  return BigInt(amount.amount) * 10n ** BigInt(amount.decimals);
 }
 
-export function displayAmount(amount: Amount, precision: number): string {
+export function displayAmount(amount: Amount, precision?: number): string {
   validateAmount(amount);
 
   let whole = amount.amount.substring(0, amount.amount.length - amount.decimals);
@@ -110,8 +100,10 @@ export function displayAmount(amount: Amount, precision: number): string {
     partial = '0' + partial;
   }
 
-  while (precision > partial.length) {
-    partial += '0';
+  if (typeof precision === 'number') {
+    while (precision > partial.length) {
+      partial += '0';
+    }
   }
 
   if (whole.length === 0) whole = '0';
@@ -123,14 +115,17 @@ export function displayAmount(amount: Amount, precision: number): string {
   }
 }
 
-function validateAmountInput(amount: number | string): void {
+function validateAmountInput(amount: number | string, decimals: number): void {
   if (typeof amount === 'number') {
-    if (isNaN(amount)) throw new Error("Amount: can't be NaN");
-    if (!isFinite(amount)) throw new Error("Amount: can't be infinite");
+    if (!isFinite(amount)) throw new Error("Amount: invalid input. Amount must be finite");
   } else {
     if (!/^[0-9\.]*$/.test(amount)) {
       throw new Error('Amount: invalid input. Must only contain digits.');
     }
+  }
+
+  if (!isFinite(decimals)) {
+    throw new Error('Amount: invalid input. Decimals must be finite');
   }
 }
 
@@ -141,7 +136,7 @@ function validateAmount(amount: Amount): void {
   if (amount.decimals < 0) {
     throw new Error('Amount: invalid input. Decimals must be >= 0');
   }
-  if (!isFinite(amount.decimals) || isNaN(amount.decimals)) {
+  if (!isFinite(amount.decimals)) {
     throw new Error('Amount: invalid input. Decimals must be a finite number.');
   }
 }

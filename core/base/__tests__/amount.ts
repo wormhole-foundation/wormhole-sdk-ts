@@ -39,35 +39,36 @@ describe("Amount Tests", function () {
   });
 
 
-  const parseCases: [number | string, Amount][] = [
-    [4051.00,            { amount: '4051', decimals: 0 }],
-    ['0.00000000000001', { amount: '1', decimals: 14 }],
-    ['000050', { amount: '50', decimals: 0 }],
-    ['90.9999', { amount: '909999', decimals: 4 }],
-    ['0', { amount: '0', decimals: 0 }],
-    [0, { amount: '0', decimals: 0 }],
+  const parseCases: [number | string, number, Amount][] = [
+    [4051.00, 18, { amount: '4051000000000000000000', decimals: 18 }],
+    ['0.00000000000001', 14, { amount: '1', decimals: 14 }],
+    ['000050', 2, { amount: '5000', decimals: 2 }],
+    ['90.9999', 4, { amount: '909999', decimals: 4 }],
+    ['0', 14, { amount: '0', decimals: 14 }],
+    [10.0005, 6, { amount: '10000500', decimals: 6 }],
   ];
 
   it("should parse a number or string value", function () {
-    for (const [input, expected] of parseCases) {
-      expect(amount(input)).toEqual(expected)
+    for (const [input, decimals, expected] of parseCases) {
+      expect(amount(input, decimals)).toEqual(expected)
     }
   });
 
   it("rejects invalid parse requests", function () {
-    expect(() => { amount(NaN) }).toThrow();
-    expect(() => { amount(Infinity) }).toThrow();
-    expect(() => { amount(-Infinity) }).toThrow();
-    expect(() => { amount('milady') }).toThrow();
-    expect(() => { amount('405.X') }).toThrow();
+    expect(() => { amount(NaN, 18) }).toThrow();
+    expect(() => { amount(Infinity, 18) }).toThrow();
+    expect(() => { amount(-Infinity, 18) }).toThrow();
+    expect(() => { amount('milady', 18) }).toThrow();
+    expect(() => { amount('405.X', 18) }).toThrow();
+    expect(() => { amount('405.0', NaN) }).toThrow();
   });
 
-  const baseUnitCases: [Amount, number, bigint][] = [
-    [{ amount: '0', decimals: 0 }, 18, 0n],
-    [{ amount: '1', decimals: 18 }, 18, 1n],
-    [{ amount: '50', decimals: 2 }, 4, 5000n],
-    [{ amount: '10', decimals: 0 }, 18, 10000000000000000000n],
-    [{ amount: '55', decimals: 4 }, 4, 55n],
+  const baseUnitCases: [Amount, bigint][] = [
+    [{ amount: '0', decimals: 0 }, 0n],
+    [{ amount: '1', decimals: 18 }, 1000000000000000000n],
+    [{ amount: '50', decimals: 2 }, 5000n],
+    [{ amount: '10', decimals: 0 }, 10n],
+    [{ amount: '55', decimals: 4 }, 550000n],
   ];
 
   const invalidAmounts: Amount[] = [
@@ -80,25 +81,23 @@ describe("Amount Tests", function () {
   ]
 
   it("should convert Amounts to base units as bigint", function () {
-    for (const [input, decimals, expected] of baseUnitCases) {
-      expect(baseUnits(input, decimals)).toEqual(expected);
+    for (const [input, expected] of baseUnitCases) {
+      expect(baseUnits(input)).toEqual(expected);
     }
   });
 
   it("should reject invalid baseUnit requests", function () {
     for (const amount of invalidAmounts) {
-      expect(() => { baseUnits(amount, 2) }).toThrow();
+      expect(() => { baseUnits(amount) }).toThrow();
     }
-
-    // Can't convert 0.0055 to a 1 or 3 decimal base unit because 0.0055 requires 4 levels of precision
-    expect(() => { baseUnits({ amount: '55', decimals: 4 }, 1) }).toThrow();
-    expect(() => { baseUnits({ amount: '55', decimals: 4 }, 3) }).toThrow();
   });
 
-  const displayCases: [Amount, number, string][] = [
+  const displayCases: [Amount, number | undefined, string][] = [
+    [{ amount: '1', decimals: 18 }, undefined, '0.000000000000000001'],
     [{ amount: '1', decimals: 18 }, 0, '0.000000000000000001'],
     [{ amount: '5020', decimals: 2 }, 0, '50.20'],
     [{ amount: '5020', decimals: 2 }, 4, '50.2000'],
+    [{ amount: '5020', decimals: 2 }, undefined, '50.20'],
     [{ amount: '1', decimals: 0 }, 0, '1'],
   ];
 
