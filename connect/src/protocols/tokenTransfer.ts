@@ -521,10 +521,12 @@ export class TokenTransfer<N extends Network = Network>
           },
         }),
       );
-      _transfer.to = Wormhole.chainAddress(
-        _transfer.to.chain,
-        dstChain.config.contracts!.translator!,
-      );
+      const translator = dstChain.config.contracts!.translator;
+
+      if (translator === undefined || translator === "")
+        throw new Error("Unexpected empty translator address");
+
+      _transfer.to = Wormhole.chainAddress(_transfer.to.chain, translator);
     }
 
     return _transfer;
