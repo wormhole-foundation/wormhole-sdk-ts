@@ -87,7 +87,7 @@ export function amount(amount: string | number, decimals: number) {
 
 export function baseUnits(amount: Amount): bigint {
   validateAmount(amount);
-  return BigInt(amount.amount) * 10n ** BigInt(amount.decimals);
+  return BigInt(amount.amount)
 }
 
 export function displayAmount(amount: Amount, precision?: number): string {

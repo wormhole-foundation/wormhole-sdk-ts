@@ -65,10 +65,10 @@ describe("Amount Tests", function () {
 
   const baseUnitCases: [Amount, bigint][] = [
     [{ amount: '0', decimals: 0 }, 0n],
-    [{ amount: '1', decimals: 18 }, 1000000000000000000n],
-    [{ amount: '50', decimals: 2 }, 5000n],
+    [{ amount: '1', decimals: 18 }, 1n],
+    [{ amount: '50', decimals: 2 }, 50n],
     [{ amount: '10', decimals: 0 }, 10n],
-    [{ amount: '55', decimals: 4 }, 550000n],
+    [{ amount: '55', decimals: 4 }, 55n],
   ];
 
   const invalidAmounts: Amount[] = [
