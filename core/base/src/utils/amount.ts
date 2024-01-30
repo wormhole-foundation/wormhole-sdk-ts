@@ -29,29 +29,33 @@ export function parseAmount(amount: string | number, decimals: number): Amount {
   let [whole, partial] =
     chunks.length === 0 ? ["0", ""] : chunks.length === 1 ? [chunks[0], ""] : chunks;
 
-  if (decimals < partial.length) {
-    if (partial.substring(decimals) != "0".repeat(partial.length - decimals)) {
+  partial = partial.padEnd(decimals, "0");
+
+  if (partial.length > decimals) {
+    // if we'd be cutting off non-zero decimals, throw
+    if (BigInt(partial.substring(decimals)) !== 0n)
       throw new Error("Amount: invalid input. Decimals too low.");
-    } else {
-      partial = partial.substring(0, decimals);
-    }
+
+    // otherwise, truncate the partial to exactly the number of decimals
+    partial = partial.substring(0, decimals);
   }
 
-  // Add trailing zeroes
-  while (partial.length < decimals) partial += "0";
-
-  let amountStr = whole + partial;
-
-  while (amountStr!.length > 1 && amountStr?.startsWith("0")) {
-    amountStr = amountStr.substring(1);
-  }
-
+  const amountStr = BigInt(whole + partial).toString();
   return { amount: amountStr, decimals };
 }
+/**
+ * A utility function to truncate an amount to some max decimal
+ *
+ * This is useful for things like the TokenBridge, where we want to truncate
+ * the amount to represent a maximum of 8 decimals
+ *
+ * @param amount the Amount to truncate
+ * @param maxDecimals the max number of decimals we want to keep, zeroing out the rest
+ * @returns the truncated Amount
+ */
 
 export function truncateAmount(amount: Amount, maxDecimals: number): Amount {
   if (amount.decimals <= maxDecimals) return amount;
-
   const delta = BigInt(amount.decimals - maxDecimals);
   // first scale down to maxDecimals, this will truncate the amount
   const scaledAmount = baseUnits(amount) / 10n ** delta;
@@ -64,41 +68,42 @@ export function truncateAmount(amount: Amount, maxDecimals: number): Amount {
   };
 }
 
+/**
+ * Utility function to scale some amount to a given number of decimals
+ *
+ * This is useful for things like the TokenBridge, where we want to scale
+ * the amount from some the over-the-wire 8 decimals
+ *
+ * @param amount the amount to scale
+ * @param toDecimals the number of decimals to scale to
+ * @returns the scaled amount
+ */
 export function scaleAmount(amount: Amount, toDecimals: number): Amount {
-  const decimalsDelta = toDecimals - amount.decimals;
+  if (amount.decimals === toDecimals) return amount;
+  if (amount.amount === "0") return { amount: amount.amount, decimals: toDecimals };
 
-  if (amount.amount === "0") {
-    return { amount: amount.amount, decimals: toDecimals };
-  }
-
-  if (decimalsDelta === 0) {
-    // Nothing to do
-    return amount;
-  }
-  if (decimalsDelta > 0) {
-    // Scaling up is easy; simply add zeroes to the base units value
+  const delta = toDecimals - amount.decimals;
+  // Scaling up is easy; simply add zeroes to the base units value
+  if (delta > 0)
     return {
-      amount: amount.amount + "0".repeat(decimalsDelta),
+      amount: amount.amount + "0".repeat(delta),
       decimals: toDecimals,
     };
-  } else {
-    // Scaling down is trickier; we have to make sure we're not altering the amount. This should be done
-    // explicitly using truncateAmount to avoid bugs.
-    if (
-      amount.amount.substring(amount.amount.length + decimalsDelta) === "0".repeat(-decimalsDelta)
-    ) {
-      return {
-        amount: amount.amount.substring(0, amount.amount.length + decimalsDelta),
-        decimals: toDecimals,
-      };
-    } else {
-      throw new Error(
-        `scaleAmount(${JSON.stringify(
-          amount,
-        )}, ${toDecimals}) would result in altered amount. Use truncateAmount first if you intended to truncate it.`,
-      );
-    }
+
+  // Scaling down is trickier; we have to make sure we're not altering the amount.
+  // This should be done explicitly using truncateAmount to avoid bugs.
+  if (BigInt(amount.amount.substring(amount.amount.length + delta)) === 0n) {
+    return {
+      amount: amount.amount.substring(0, amount.amount.length + delta),
+      decimals: toDecimals,
+    };
   }
+
+  throw new Error(
+    `scaleAmount(${JSON.stringify(
+      amount,
+    )}, ${toDecimals}) would result in altered amount. Use truncateAmount first if you intended to truncate it.`,
+  );
 }
 
 /**
