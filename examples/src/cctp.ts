@@ -37,7 +37,7 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
   const destination = await getStuff(rcvChain);
 
   // 6 decimals for USDC (except for bsc, so check decimals before using this)
-  const amount = normalizeAmount("0.2", 6n);
+  const amount = normalizeAmount("0.2", 6);
 
   // Choose whether or not to have the attestation delivered for you
   const automatic = true;
@@ -47,7 +47,7 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
   // so that they may pay for subsequent transactions
   // The amount specified here is denominated in the token being transferred (USDC here)
   const _nativeGasAmt = "0.01";
-  const nativeGas = automatic ? normalizeAmount(_nativeGasAmt, 6n) : 0n;
+  const nativeGas = automatic ? normalizeAmount(_nativeGasAmt, 6) : 0n;
 
   await cctpTransfer(wh, source, destination, {
     amount,
