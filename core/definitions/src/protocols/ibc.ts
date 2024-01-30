@@ -22,7 +22,7 @@ declare global {
   }
 }
 
-// Configuration for a transfer through the Gateway
+/** Configuration for a transfer through the Gateway */
 export type GatewayTransferDetails = {
   token: TokenId<Chain>;
   amount: bigint;
@@ -34,8 +34,10 @@ export type GatewayTransferDetails = {
   nativeGas?: bigint;
 };
 
-// Holds the data of a gateway message without
-// special keys required by cosmos contracts
+/**
+ * Holds the data of a gateway message without
+ * special keys required by cosmos contracts
+ */
 export interface GatewayMsg {
   chain: ChainId;
   recipient: string;
@@ -180,7 +182,9 @@ export function isIbcTransferInfo(thing: IbcTransferInfo | any): thing is IbcTra
   );
 }
 
-// The expected payload sent as a string over IBC
+/**
+ * The expected payload sent as a string over IBC
+ */
 export interface IbcTransferData {
   amount: string;
   denom: string;
@@ -189,8 +193,13 @@ export interface IbcTransferData {
   sender: string;
 }
 
+/**
+ * IbcBridge provides an interface to use the IBC token transfer protocol
+ *
+ * See more here {@link https://tutorials.cosmos.network/academy/3-ibc/7-token-transfer.html}
+ *
+ */
 export interface IbcBridge<N extends Network, P extends Platform, C extends PlatformToChains<P>> {
-  //alternative naming: initiateTransfer
   transfer(
     sender: AccountAddress<C>,
     recipient: ChainAddress,

@@ -24,8 +24,12 @@ declare global {
   }
 }
 
+/**
+ * @namespace TokenBridge
+ */
 export namespace TokenBridge {
   const _protocol = "TokenBridge";
+  /** The compile time type of the TokenBridge protocol */
   export type ProtocolName = typeof _protocol;
 
   const _transferPayloads = ["Transfer", "TransferWithPayload"] as const;
@@ -42,6 +46,8 @@ export namespace TokenBridge {
     ProtocolName,
     PayloadName
   >;
+
+  /** The VAAs emitted from the TokenBridge protocol */
   export type VAA<PayloadName extends PayloadNames = PayloadNames> = ProtocolVAA<
     ProtocolName,
     PayloadName
@@ -63,12 +69,14 @@ export namespace TokenBridge {
 
 export namespace AutomaticTokenBridge {
   const _protocol = "AutomaticTokenBridge";
+  /** The compile time type of the AutomaticTokenBridge protocol */
   export type ProtocolName = typeof _protocol;
 
   const _payloads = ["TransferWithRelay"] as const;
 
   export type PayloadNames = (typeof _payloads)[number];
 
+  /** The VAAs emitted from the AutomaticTokenBridge protocol */
   export type VAA<PayloadName extends PayloadNames = PayloadNames> = ProtocolVAA<
     ProtocolName,
     PayloadName
@@ -79,6 +87,9 @@ export namespace AutomaticTokenBridge {
   >;
 }
 
+/**
+ * Details of a token transfer, used to initiate a transfer
+ */
 export type TokenTransferDetails = {
   token: TokenId;
   amount: bigint;
@@ -99,34 +110,92 @@ export function isTokenTransferDetails(
     (<TokenTransferDetails>thing).to !== undefined
   );
 }
+/**
+ * TokenBridge protocol definition, providing a consistent client interface
+ * for the TokenBridge protocol
+ *
+ * Find details on the TokenBridge protocol here: {@link https://github.com/wormhole-foundation/wormhole/blob/main/whitepapers/0003_token_bridge.md}
+ *
+ */
 
 export interface TokenBridge<N extends Network, P extends Platform, C extends PlatformToChains<P>> {
-  // checks a native address to see if its a wrapped version
+  /** Checks a native address to see if its a wrapped version
+   *
+   * @param nativeAddress The address to check
+   * @returns true if the address is a wrapped version of a foreign token
+   */
   isWrappedAsset(nativeAddress: TokenAddress<C>): Promise<boolean>;
-  // returns the original asset with its foreign chain
+  /**
+   * returns the original asset with its foreign chain
+   *
+   * @param nativeAddress The wrapped address to check
+   * @returns The TokenId corresponding to the original asset and chain
+   */
   getOriginalAsset(nativeAddress: TokenAddress<C>): Promise<TokenId<Chain>>;
-  // returns the wrapped version of the native asset
+  /**
+   * returns the wrapped version of the native asset
+   *
+   * @returns The address of the native gas token that has been wrapped
+   * for use where the gas token is not possible to use (e.g. bridging)
+   */
   getWrappedNative(): Promise<NativeAddress<C>>;
-  // Check to see if a foreign token has a wrapped version
+  /**
+   * Check to see if a foreign token has a wrapped version
+   *
+   * @param foreignToken The token to check
+   * @returns true if the token has a wrapped version
+   */
   hasWrappedAsset(foreignToken: TokenId<Chain>): Promise<boolean>;
-  // Returns the address of the native version of this asset
+  /**
+   * Returns the address of the native version of this asset
+   *
+   * @param foreignToken The token to check
+   * @returns The address of the native version of this asset
+   */
   getWrappedAsset(foreignToken: TokenId<Chain>): Promise<NativeAddress<C>>;
-  // Checks if a transfer VAA has been redeemed
+  /**
+   * Checks if a transfer VAA has been redeemed
+   *
+   * @param vaa The transfer VAA to check
+   * @returns true if the transfer has been redeemed
+   */
   isTransferCompleted(vaa: TokenBridge.TransferVAA): Promise<boolean>;
-  // Create a Token Attestation VAA containing metadata about
-  // the token that may be submitted to a Token bridge on another chain
-  // to allow it to create a wrapped version of the token
+  /**
+   * Create a Token Attestation VAA containing metadata about
+   * the token that may be submitted to a Token bridge on another chain
+   * to allow it to create a wrapped version of the token
+   *
+   * @param token The token to create an attestation for
+   * @param payer The payer of the transaction
+   * @returns An AsyncGenerator that produces transactions to sign and send
+   */
   createAttestation(
     token: TokenAddress<C>,
     payer?: UniversalOrNative<C>,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
-  // Submit the Token Attestation VAA to the Token bridge
-  // to create the wrapped token represented by the data in the VAA
+
+  /**
+   * Submit the Token Attestation VAA to the Token bridge
+   * to create the wrapped token represented by the data in the VAA
+   * @param vaa The attestation VAA to submit
+   * @param payer The payer of the transaction
+   * @returns An AsyncGenerator that produces transactions to sign and send
+   */
   submitAttestation(
     vaa: TokenBridge.AttestVAA,
     payer?: UniversalOrNative<C>,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
-  // Initiate a transfer of some token to another chain
+
+  /**
+   * Initiate a transfer of some token to another chain
+   *
+   * @param sender The sender of the transfer
+   * @param recipient The recipient of the transfer as a ChainAddress so we know what the destination chain should be
+   * @param token The token to transfer
+   * @param amount The amount of the token to transfer
+   * @param payload Optional payload to include in the transfer
+   * @returns An AsyncGenerator that produces transactions to sign and send
+   */
   transfer(
     sender: AccountAddress<C>,
     recipient: ChainAddress,
@@ -134,7 +203,15 @@ export interface TokenBridge<N extends Network, P extends Platform, C extends Pl
     amount: bigint,
     payload?: Uint8Array,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
-  // Redeem a transfer VAA to receive the tokens on this chain
+
+  /**
+   * Redeem a transfer VAA to receive the tokens on this chain
+   *
+   * @param sender The sender of the transfer
+   * @param vaa The transfer VAA to redeem
+   * @param unwrapNative Whether to unwrap the native token if it is a wrapped token
+   * @returns An AsyncGenerator that produces transactions to sign and send
+   */
   redeem(
     sender: AccountAddress<C>,
     vaa: TokenBridge.TransferVAA,
@@ -142,12 +219,17 @@ export interface TokenBridge<N extends Network, P extends Platform, C extends Pl
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
 }
 
+/**
+ *  AutomaticTokenBridge provides a consistent interface to the
+ *  TokenBridge with Automatic redemption on the destination chain
+ */
+
 export interface AutomaticTokenBridge<
   N extends Network,
   P extends Platform,
   C extends PlatformToChains<P>,
 > {
-  // Initiate the transfer over the automatic bridge
+  /** Initiate the transfer over the automatic bridge */
   transfer(
     sender: AccountAddress<C>,
     recipient: ChainAddress,
@@ -155,24 +237,26 @@ export interface AutomaticTokenBridge<
     amount: bigint,
     nativeGas?: bigint,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
-  // Manually redeem a transfer, should not be used unless
-  // necessary to take over some stalled transfer
+  /**
+   * Manually redeem a transfer, should not be used unless
+   * necessary to take over some stalled transfer
+   */
   redeem(
     sender: AccountAddress<C>,
     vaa: AutomaticTokenBridge.VAA,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
-  // Fee charged to relay
+  /** Fee charged to relay */
   getRelayerFee(
     sender: AccountAddress<C>,
     recipient: ChainAddress,
     token: TokenAddress<C>,
   ): Promise<bigint>;
-  // Check if a given token is in the registered token list
+  /** Check if a given token is in the registered token list */
   isRegisteredToken(token: TokenAddress<C>): Promise<boolean>;
-  // Get the list of tokens that are registered and acceptable to send
+  /**  Get the list of tokens that are registered and acceptable to send */
   getRegisteredTokens(): Promise<NativeAddress<C>[]>;
-  // Amount of native tokens a user would receive by swapping x amount of sending tokens
+  /** Amount of native tokens a user would receive by swapping x amount of sending tokens */
   nativeTokenAmount(token: TokenAddress<C>, amount: bigint): Promise<bigint>;
-  // Maximum amount that can be swapped for native tokens on the destination chain
+  /** Maximum amount of sending tokens that can be swapped for native tokens */
   maxSwapAmount(token: TokenAddress<C>): Promise<bigint>;
 }

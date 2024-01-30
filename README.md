@@ -134,11 +134,6 @@ const strAddress = Wormhole.canonicalAddress(senderAddress); // => '0xbeef...'
 ```
 
 
-### Amounts
-
-This SDK takes efforts to 
-
-
 ### Signers
 
 In order to sign transactions, an object that fulfils the `Signer` interface is required. This is a simple interface that can be implemented by wrapping a web wallet or other signing mechanism.

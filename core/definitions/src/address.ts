@@ -16,22 +16,26 @@ import {
 //  things under the rug by not separating them out.
 import { UniversalAddress } from "./universalAddress";
 
+/**
+ * Address is the base interface all address types must implement.
+ *
+ * Represents a parsed address
+ */
 export interface Address {
-  //unwrap returns the underlying native address type, e.g.:
-  //  * a Uint8Array for UniversalAddress
-  //  * a checksum hex string string for EVM(ethers)
-  //  * a PublicKey for Solana
-  //  * etc.
+  /**
+   * unwrap returns the underlying native address type, e.g.:
+   * a Uint8Array for UniversalAddress
+   * a checksum hex string string for EVM(ethers)
+   * a PublicKey for Solana
+   * etc.
+   */
   unwrap(): unknown;
+  /** Return the address in its canonical string format */
   toString(): string;
+  /** Return the bytes for the address */
   toUint8Array(): Uint8Array;
+  /** Return an Address that has been converted to its Universal representation */
   toUniversalAddress(): UniversalAddress;
-  //static isValidAddress(str: string): boolean;
-
-  //other ideas:
-  //zeroAddress
-  //verify(message: Uint8Array, signature: Uint8Array): boolean;
-  //static byteSize(): number;
 }
 
 declare global {
@@ -42,16 +46,24 @@ declare global {
 
 export type MappedPlatforms = keyof WormholeNamespace.PlatformToNativeAddressMapping;
 
+/** Utility type to map platform to its native address implementation */
 type GetNativeAddress<P extends Platform> = P extends MappedPlatforms
   ? WormholeNamespace.PlatformToNativeAddressMapping[P]
   : never;
 
+/** An address that has been parsed into its Nativfe Address type */
 export type NativeAddress<C extends Chain> = GetNativeAddress<ChainToPlatform<C>>;
 
+/** A union type representing a parsed address */
 export type UniversalOrNative<C extends Chain> = UniversalAddress | NativeAddress<C>;
 
+/** An address that represents an account  */
 export type AccountAddress<C extends Chain> = UniversalOrNative<C>;
 
+/**
+ * ChainAddress represents the parsed address for a given chain
+ * and comes with the context of which chain its relevant for
+ */
 export type ChainAddress<C extends Chain = Chain> = {
   readonly chain: C;
   readonly address: UniversalOrNative<C>;
@@ -71,6 +83,7 @@ export function nativeIsRegistered<C extends Chain>(chain: C): boolean {
   return nativeFactory.has(platform);
 }
 
+/** Parse an address into its NativeAddress representation */
 export function toNative<C extends Chain>(
   chain: C,
   ua: UniversalAddress | string | Uint8Array,

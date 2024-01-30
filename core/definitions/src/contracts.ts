@@ -1,5 +1,6 @@
 import { Chain, Network, contracts } from "@wormhole-foundation/sdk-base";
 
+/** The Contract addresses set in configuration for a given chain */
 export type Contracts = {
   coreBridge?: string;
   tokenBridge?: string;
@@ -12,6 +13,14 @@ export type Contracts = {
   portico?: contracts.PorticoContracts;
 };
 
+/**
+ *
+ * Get the contracts for a given network and chain
+ *
+ * @param n the network to get contracts for
+ * @param c the chain to get contracts for
+ * @returns the contracts for the given network and chain
+ */
 export function getContracts(n: Network, c: Chain): Contracts {
   const ct: Contracts = {
     coreBridge: contracts.coreBridge.get(n, c),

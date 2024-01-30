@@ -24,6 +24,7 @@ declare global {
 
 export namespace PorticoBridge {
   const _protocol = "PorticoBridge";
+  /** The compile time protocol name type for Portico Bridge */
   export type ProtocolName = typeof _protocol;
 
   export interface SwapAmounts {
@@ -43,6 +44,7 @@ export namespace PorticoBridge {
   export type TransferPayloadNames = (typeof _transferPayloads)[number];
   export type PayloadNames = (typeof _payloads)[number];
 
+  /** The VAA types emitted by the PorticoBridge protocol */
   export type VAA<PayloadName extends PayloadNames = PayloadNames> = ProtocolVAA<
     ProtocolName,
     PayloadName
@@ -68,6 +70,10 @@ export namespace PorticoBridge {
   };
 }
 
+/**
+ * PorticoBridge provides a consistent interface to interact with
+ * the Portico bridge contracts.
+ */
 export interface PorticoBridge<
   N extends Network,
   P extends Platform,

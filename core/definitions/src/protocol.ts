@@ -8,6 +8,7 @@ declare global {
   }
 }
 
+/** A string type representing the name of a protocol */
 export type ProtocolName = keyof WormholeNamespace.ProtocolToPlatformMapping;
 type MappedProtocolPlatforms = keyof WormholeNamespace.ProtocolToPlatformMapping[ProtocolName];
 

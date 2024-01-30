@@ -14,6 +14,12 @@ declare global {
   }
 }
 
+/**
+ * WormholeCore provides a consistent interface to interact
+ * with the Wormhole core messaging protocol.
+ *
+ */
+
 export interface WormholeCore<
   N extends Network,
   P extends Platform,
@@ -28,5 +34,4 @@ export interface WormholeCore<
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
   verifyMessage(sender: AccountAddress<C>, vaa: VAA): AsyncGenerator<UnsignedTransaction<N, C>>;
   parseTransaction(txid: TxHash): Promise<WormholeMessageId[]>;
-  // TODO: events?
 }

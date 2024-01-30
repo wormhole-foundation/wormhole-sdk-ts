@@ -31,6 +31,7 @@ declare global {
 
 export namespace CircleBridge {
   const _protocol = "CircleBridge";
+  /** The compile time type for the CircleBridge protocol */
   export type ProtocolName = typeof _protocol;
 
   const _payloads = ["Message"] as const;
@@ -38,6 +39,7 @@ export namespace CircleBridge {
 
   export type Message = LayoutToType<typeof circleMessageLayout>;
 
+  /** Circle message and attestation if available */
   export type Attestation = {
     message: Message;
     attestation?: string;
@@ -65,6 +67,7 @@ export namespace AutomaticCircleBridge {
   const _payloads = ["DepositWithPayload", "TransferWithRelay"] as const;
   export type PayloadNames = (typeof _payloads)[number];
 
+  /** The VAA types that are emitted from the AutomaticCirlceBridge protocol */
   export type VAA<PayloadName extends PayloadNames = PayloadNames> = ProtocolVAA<
     ProtocolName,
     PayloadName
@@ -106,7 +109,13 @@ export function isCircleTransferDetails(thing: any): thing is CircleTransferDeta
   );
 }
 
-// https://github.com/circlefin/evm-cctp-contracts
+/**
+ * CircleBridge protocol definition, providing a consistent client
+ * interface to the CircleBridge protocol (CCTP).
+ *
+ * Find the source contracts here: ${@link https://github.com/circlefin/evm-cctp-contracts}
+ *
+ */
 export interface CircleBridge<
   N extends Network,
   P extends Platform,
@@ -126,6 +135,10 @@ export interface CircleBridge<
   parseTransactionDetails(txid: string): Promise<CircleTransferMessage>;
 }
 
+/**
+ * AutomaticCircleBridge protocol definition, providing a consistent client
+ * interface for the CircleBridge protocol with Automatic delivery.
+ */
 export interface AutomaticCircleBridge<
   N extends Network,
   P extends Platform,

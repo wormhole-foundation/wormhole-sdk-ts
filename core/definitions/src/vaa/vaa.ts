@@ -58,6 +58,13 @@ export const envelopeLayout = [
 export const baseLayout = [...headerLayout, ...envelopeLayout] as const;
 type VAABase = LayoutToType<typeof baseLayout>;
 
+/**
+ * A VAA is a Verifiable Action Assertion, a signed message that contains
+ * information about an action that has occurred on a chain.
+ *
+ * See {@link https://docs.wormhole.com/wormhole/explore-wormhole/vaa | this link} for more.
+ *
+ */
 export interface VAA<PL extends PayloadLiteral = PayloadLiteral> extends VAABase {
   readonly protocolName: DecomposeLiteral<PL>[0];
   readonly payloadName: DecomposeLiteral<PL>[1];
@@ -87,6 +94,7 @@ export type DistributiveVAA<PL extends PayloadLiteral> = PL extends PayloadLiter
   ? VAA<PL>
   : never;
 
+/** A  utility type that maps a protocol and payload name to its defined structure */
 export type ProtocolVAA<PN extends ProtocolName, PayloadName extends string> = ComposeLiteral<
   PN,
   PayloadName,
