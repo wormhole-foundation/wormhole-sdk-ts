@@ -31,7 +31,7 @@ export function parseAmount(amount: string | number, decimals: number): Amount {
 
   if (decimals < partial.length) throw new Error('Amount: invalid input. Decimals too low.');
 
-  // Strip trailing zeroes
+  // Add trailing zeroes
   while (partial.length < decimals) partial += '0';
 
   let amountStr = whole + partial;
