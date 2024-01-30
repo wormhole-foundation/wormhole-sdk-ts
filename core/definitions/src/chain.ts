@@ -47,11 +47,11 @@ export abstract class ChainContext<
   }
 
   // Get the number of decimals for a token
-  async getDecimals(token: TokenAddress<C>): Promise<bigint> {
+  async getDecimals(token: TokenAddress<C>): Promise<number> {
     // try to find it in the token cache first
     if (this.config.tokenMap) {
       const found = tokens.getTokenByAddress(this.network, this.chain, token.toString());
-      if (found) return BigInt(found.decimals);
+      if (found) return found.decimals;
     }
 
     return this.platform.utils().getDecimals(this.chain, await this.getRpc(), token);

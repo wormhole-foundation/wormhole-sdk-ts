@@ -90,6 +90,7 @@ describe("Amount Tests", function () {
 
   const scaleCases: [Amount, number, Amount][] = [
     // 0.1234 can be scaled up to 0.12340000 without altering the value
+    [ amountFromBaseUnits(0n, 4), 8, amountFromBaseUnits(0n, 8) ],
     [ amountFromBaseUnits(1234n, 4), 8, amountFromBaseUnits(12340000n, 8) ],
     // 12.30 can be scaled down to 12.3 without altering the value
     [ amountFromBaseUnits(1230n, 2), 1, amountFromBaseUnits(123n, 1) ],

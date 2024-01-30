@@ -60,6 +60,10 @@ export function truncateAmount(amount: Amount, maxDecimals: number): Amount {
 export function scaleAmount(amount: Amount, toDecimals: number): Amount {
   const decimalsDelta = toDecimals - amount.decimals;
 
+  if (amount.amount === '0') {
+    return { amount: amount.amount, decimals: toDecimals };
+  }
+
   if (decimalsDelta === 0) {
     // Nothing to do
     return amount;

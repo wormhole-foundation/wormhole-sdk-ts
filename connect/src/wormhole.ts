@@ -239,7 +239,7 @@ export class Wormhole<N extends Network> {
    * @param token The token address
    * @returns The number of decimals
    */
-  async getDecimals<C extends Chain>(chain: C, token: TokenAddress<C>): Promise<bigint> {
+  async getDecimals<C extends Chain>(chain: C, token: TokenAddress<C>): Promise<number> {
     const ctx = this.getChain(chain);
     return await ctx.getDecimals(token);
   }
