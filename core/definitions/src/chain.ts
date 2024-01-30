@@ -1,21 +1,15 @@
-import {
-  ProtocolName,
-  Chain,
-  Network,
-  Platform,
-  PlatformToChains,
-  tokens,
-} from "@wormhole-foundation/sdk-base";
-import { ChainAddress, TokenAddress, UniversalOrNative, toNative } from "./address";
+import { Chain, Network, Platform, PlatformToChains, tokens } from "@wormhole-foundation/sdk-base";
+import { ChainAddress, UniversalOrNative, toNative } from "./address";
 import { WormholeMessageId } from "./attestation";
 import { PlatformContext } from "./platform";
-import { protocolIsRegistered } from "./protocol";
+import { ProtocolName, protocolIsRegistered } from "./protocol";
 import { AutomaticCircleBridge, CircleBridge } from "./protocols/circleBridge";
 import { WormholeCore } from "./protocols/core";
 import { IbcBridge } from "./protocols/ibc";
 import { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge";
 import { RpcConnection } from "./rpc";
-import { ChainConfig, SignedTx, TokenId } from "./types";
+import { ChainConfig, SignedTx, TokenId, TokenAddress } from "./types";
+import { PorticoBridge } from "./protocols/portico";
 
 export abstract class ChainContext<
   N extends Network,
@@ -37,6 +31,7 @@ export abstract class ChainContext<
   protected circleBridge?: CircleBridge<N, P, C>;
   protected autoCircleBridge?: AutomaticCircleBridge<N, P, C>;
   protected ibcBridge?: IbcBridge<N, P, C>;
+  protected porticoBridge?: PorticoBridge<N, P, C>;
 
   constructor(chain: C, platform: PlatformContext<N, P>, rpc?: RpcConnection<P>) {
     this.config = platform.config[chain]!;
@@ -52,14 +47,14 @@ export abstract class ChainContext<
   }
 
   // Get the number of decimals for a token
-  async getDecimals(token: TokenAddress<C>): Promise<bigint> {
+  async getDecimals(token: TokenAddress<C>): Promise<number> {
     // try to find it in the token cache first
     if (this.config.tokenMap) {
       const found = tokens.getTokenByAddress(this.network, this.chain, token.toString());
-      if (found) return BigInt(found.decimals);
+      if (found) return found.decimals;
     }
 
-    return this.platform.utils().getDecimals(this.chain, this.getRpc(), token);
+    return this.platform.utils().getDecimals(this.chain, await this.getRpc(), token);
   }
 
   // Get the balance of a token for a given address
@@ -68,11 +63,11 @@ export abstract class ChainContext<
   }
 
   async getLatestBlock(): Promise<number> {
-    return this.platform.utils().getLatestBlock(this.getRpc());
+    return this.platform.utils().getLatestBlock(await this.getRpc());
   }
 
   async getLatestFinalizedBlock(): Promise<number> {
-    return this.platform.utils().getLatestFinalizedBlock(this.getRpc());
+    return this.platform.utils().getLatestFinalizedBlock(await this.getRpc());
   }
 
   // Get details about the transaction
@@ -106,7 +101,7 @@ export abstract class ChainContext<
   // Get the token account for a given address
   async getTokenAccount(
     address: UniversalOrNative<C>,
-    token: UniversalOrNative<C>,
+    token: TokenAddress<C>,
   ): Promise<ChainAddress<C>> {
     // Noop by default, override in implementation if necessary
     return { chain: this.chain, address };
@@ -170,5 +165,14 @@ export abstract class ChainContext<
       ? this.ibcBridge
       : await this.platform.getProtocol("IbcBridge", await this.getRpc());
     return this.ibcBridge;
+  }
+
+  //
+  supportsPorticoBridge = () => this.supportsProtocol("PorticoBridge");
+  async getPorticoBridge(): Promise<PorticoBridge<N, P, C>> {
+    this.porticoBridge = this.porticoBridge
+      ? this.porticoBridge
+      : await this.platform.getProtocol("PorticoBridge", await this.getRpc());
+    return this.porticoBridge;
   }
 }

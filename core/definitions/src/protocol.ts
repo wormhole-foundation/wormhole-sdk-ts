@@ -1,29 +1,27 @@
-import {
-  Chain,
-  Network,
-  Platform,
-  ProtocolName,
-  chainToPlatform,
-  isChain,
-} from "@wormhole-foundation/sdk-base";
+import { Chain, Network, Platform, chainToPlatform, isChain } from "@wormhole-foundation/sdk-base";
 import { RpcConnection } from "./rpc";
 import { ChainsConfig } from "./types";
 
 declare global {
   namespace WormholeNamespace {
-    export interface PlatformToProtocolMapping {}
+    export interface ProtocolToPlatformMapping {}
   }
 }
 
-type MappedProtocolPlatforms = keyof WormholeNamespace.PlatformToProtocolMapping;
-type MappedProtocols = keyof WormholeNamespace.PlatformToProtocolMapping[MappedProtocolPlatforms];
+export type ProtocolName = keyof WormholeNamespace.ProtocolToPlatformMapping;
+type MappedProtocolPlatforms = keyof WormholeNamespace.ProtocolToPlatformMapping[ProtocolName];
+
+export type EmptyPlatformMap<P extends Platform, PN extends ProtocolName> = Map<
+  P,
+  ProtocolInitializer<P, PN>
+>;
 
 export type ProtocolImplementation<
   T extends Platform,
   PN extends ProtocolName,
-> = T extends MappedProtocolPlatforms
-  ? PN extends MappedProtocols
-    ? WormholeNamespace.PlatformToProtocolMapping[T][PN]
+> = PN extends ProtocolName
+  ? T extends MappedProtocolPlatforms
+    ? WormholeNamespace.ProtocolToPlatformMapping[PN][T]
     : any
   : never;
 
@@ -34,25 +32,26 @@ export interface ProtocolInitializer<P extends Platform, PN extends ProtocolName
   ): Promise<ProtocolImplementation<P, PN>>;
 }
 
-const protocolFactory = new Map<
-  Platform,
-  Map<ProtocolName, ProtocolInitializer<Platform, ProtocolName>>
->();
+export type ProtocolFactoryMap<
+  PN extends ProtocolName = ProtocolName,
+  P extends Platform = Platform,
+> = Map<PN, Map<P, ProtocolInitializer<P, PN>>>;
+const protocolFactory: ProtocolFactoryMap = new Map();
 
 export function registerProtocol<P extends Platform, PN extends ProtocolName>(
   platform: P,
   protocol: PN,
   ctr: ProtocolInitializer<P, PN>,
 ): void {
-  let protocols = protocolFactory.get(platform)!;
+  let platforms = protocolFactory.get(protocol)!;
 
-  if (!protocols) protocols = new Map<ProtocolName, ProtocolInitializer<Platform, ProtocolName>>();
+  if (!platforms) platforms = new Map<Platform, ProtocolInitializer<Platform, ProtocolName>>();
 
-  if (protocols.has(protocol))
-    throw new Error(`Protocol ${protocol} for platform ${platform} has already registered`);
+  if (platforms.has(platform))
+    throw new Error(`Protocol ${platform} for protocol ${protocol} has already registered`);
 
-  protocols.set(protocol, ctr);
-  protocolFactory.set(platform, protocols);
+  platforms.set(platform, ctr);
+  protocolFactory.set(protocol, platforms);
 }
 
 export function protocolIsRegistered<T extends Platform | Chain, PN extends ProtocolName>(
@@ -63,21 +62,24 @@ export function protocolIsRegistered<T extends Platform | Chain, PN extends Prot
     ? chainToPlatform.get(chainOrPlatform)!
     : chainOrPlatform;
 
-  const protocols = protocolFactory.get(platform);
-  return !!protocols && protocols.has(protocol);
+  const platforms = protocolFactory.get(protocol);
+  return !!platforms && platforms.has(platform);
 }
 
 export function getProtocolInitializer<P extends Platform, PN extends ProtocolName>(
   platform: P,
   protocol: PN,
 ): ProtocolInitializer<P, PN> {
-  const protocols = protocolFactory.get(platform);
-  if (!protocols) throw new Error(`No protocols registered for platform ${platform}`);
-
-  const pctr = protocols.get(protocol);
-  if (!pctr) throw new Error(`No protocol registered for ${platform}:${protocol}`);
-
-  return pctr;
+  const platforms = protocolFactory.get(protocol);
+  if (platforms) {
+    const pctr = platforms.get(platform);
+    if (pctr) return pctr as ProtocolInitializer<P, PN>;
+  }
+  throw new Error(
+    `No protocols registered for ${platform}:${protocol}. ` +
+      `This may be because the platform specific protocol implementation is not registered (by installing and importing it)` +
+      ` or no implementation exists for this platform`,
+  );
 }
 
 export const create = <N extends Network, P extends Platform, PN extends ProtocolName, T>(

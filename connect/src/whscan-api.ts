@@ -316,3 +316,32 @@ export async function getTxsByAddress(
   }
   return null;
 }
+
+export type GuardianHeartbeat = {
+  p2pNodeAddr: string;
+  rawHeartbeat: {
+    bootTimestamp: string;
+    counter: string;
+    features: string[];
+    guardianAddr: string;
+    networks: {
+      contractAddress: string;
+      errorCount: string;
+      height: string;
+      id: number;
+    }[];
+    nodeName: string;
+    timestamp: string;
+    version: string;
+  };
+  verifiedGuardianAddr: string;
+};
+
+export async function getGuardianHeartbeats(rpcUrl: string): Promise<GuardianHeartbeat[] | null> {
+  const url = `${rpcUrl}/v1/heartbeats`;
+  try {
+    const response = await axios.get<{ entries: GuardianHeartbeat[] }>(url);
+    if (response.data && response.data.entries.length > 0) return response.data.entries;
+  } catch {}
+  return null;
+}

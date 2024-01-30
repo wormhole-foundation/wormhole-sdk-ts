@@ -12,10 +12,7 @@ const testnetTokenEntries = [
           symbol: "ETH",
           decimals: 18,
           address: "native",
-          wrapped: {
-            decimals: 18,
-            symbol: "WETH",
-          },
+          wrappedKey: "WETH",
         },
       ],
       [
@@ -265,10 +262,7 @@ const testnetTokenEntries = [
           symbol: "MATIC",
           decimals: 18,
           address: "native",
-          wrapped: {
-            decimals: 18,
-            symbol: "WMATIC",
-          },
+          wrappedKey: "WMATIC",
         },
       ],
       [
@@ -468,10 +462,7 @@ const testnetTokenEntries = [
           symbol: "BNB",
           decimals: 18,
           address: "native",
-          wrapped: {
-            decimals: 18,
-            symbol: "WBNB",
-          },
+          wrappedKey: "WBNB",
         },
       ],
       [
@@ -664,10 +655,7 @@ const testnetTokenEntries = [
           symbol: "AVAX",
           decimals: 18,
           address: "native",
-          wrapped: {
-            decimals: 18,
-            symbol: "WAVAX",
-          },
+          wrappedKey: "WAVAX",
         },
       ],
       [
@@ -877,10 +865,7 @@ const testnetTokenEntries = [
           symbol: "FTM",
           decimals: 18,
           address: "native",
-          wrapped: {
-            decimals: 18,
-            symbol: "WFTM",
-          },
+          wrappedKey: "WFTM",
         },
       ],
       [
@@ -1239,10 +1224,7 @@ const testnetTokenEntries = [
           symbol: "GLMR",
           decimals: 18,
           address: "native",
-          wrapped: {
-            decimals: 18,
-            symbol: "WGLMR",
-          },
+          wrappedKey: "WGLMR",
         },
       ],
       [
@@ -1417,10 +1399,7 @@ const testnetTokenEntries = [
           symbol: "SOL",
           decimals: 9,
           address: "native",
-          wrapped: {
-            decimals: 9,
-            symbol: "WSOL",
-          },
+          wrappedKey: "WSOL",
         },
       ],
       [
@@ -2003,10 +1982,7 @@ const testnetTokenEntries = [
           symbol: "ETH",
           decimals: 18,
           address: "native",
-          wrapped: {
-            decimals: 18,
-            symbol: "WETHbase",
-          },
+          wrappedKey: "WETHbase",
         },
       ],
       [
@@ -2352,10 +2328,7 @@ const testnetTokenEntries = [
           symbol: "ETH",
           decimals: 18,
           address: "native",
-          wrapped: {
-            decimals: 18,
-            symbol: "WETHarbitrum",
-          },
+          wrappedKey: "WETHarbitrum",
         },
       ],
       [
@@ -2492,10 +2465,7 @@ const testnetTokenEntries = [
           symbol: "ETH",
           decimals: 18,
           address: "native",
-          wrapped: {
-            decimals: 18,
-            symbol: "WETHoptimism",
-          },
+          wrappedKey: "WETHoptimism",
         },
       ],
       [

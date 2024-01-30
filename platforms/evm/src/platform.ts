@@ -5,12 +5,14 @@ import {
   Network,
   PlatformContext,
   SignedTx,
+  StaticPlatformMethods,
   TokenId,
   TxHash,
   Wormhole,
   chainToPlatform,
   decimals,
   encoding,
+  isNative,
   nativeChainIds,
   networkPlatformConfigs,
 } from '@wormhole-foundation/connect-sdk';
@@ -26,10 +28,10 @@ import { AnyEvmAddress, EvmChains, EvmPlatformType, _platform } from './types';
  * @category EVM
  */
 
-export class EvmPlatform<N extends Network> extends PlatformContext<
-  N,
-  EvmPlatformType
-> {
+export class EvmPlatform<N extends Network>
+  extends PlatformContext<N, EvmPlatformType>
+  implements StaticPlatformMethods<EvmPlatformType, typeof EvmPlatform>
+{
   static _platform: EvmPlatformType = _platform;
 
   constructor(network: N, _config?: ChainsConfig<N, EvmPlatformType>) {
@@ -40,7 +42,7 @@ export class EvmPlatform<N extends Network> extends PlatformContext<
   }
 
   getRpc<C extends EvmChains>(chain: C): Provider {
-    if (chain in this.config)
+    if (chain in this.config && this.config[chain]!.rpc)
       return new JsonRpcProvider(this.config[chain]!.rpc);
     throw new Error('No configuration available for chain: ' + chain);
   }
@@ -56,13 +58,13 @@ export class EvmPlatform<N extends Network> extends PlatformContext<
   ): TokenId<C> {
     if (!EvmPlatform.isSupportedChain(chain))
       throw new Error(`invalid chain for EVM: ${chain}`);
-    return Wormhole.chainAddress(chain, EvmZeroAddress);
+    return Wormhole.tokenId(chain, EvmZeroAddress);
   }
 
   static isNativeTokenId<N extends Network, C extends EvmChains>(
     network: N,
     chain: C,
-    tokenId: TokenId,
+    tokenId: TokenId<C>,
   ): boolean {
     if (!EvmPlatform.isSupportedChain(chain)) return false;
     if (tokenId.chain !== chain) return false;
@@ -77,25 +79,24 @@ export class EvmPlatform<N extends Network> extends PlatformContext<
   static async getDecimals(
     chain: Chain,
     rpc: Provider,
-    token: AnyEvmAddress | 'native',
-  ): Promise<bigint> {
-    if (token === 'native')
-      return BigInt(decimals.nativeDecimals(EvmPlatform._platform));
+    token: AnyEvmAddress,
+  ): Promise<number> {
+    if (isNative(token)) return decimals.nativeDecimals(EvmPlatform._platform);
 
     const tokenContract = EvmPlatform.getTokenImplementation(
       rpc,
       new EvmAddress(token).toString(),
     );
-    return tokenContract.decimals();
+    return Number(tokenContract.decimals());
   }
 
   static async getBalance(
     chain: Chain,
     rpc: Provider,
     walletAddr: string,
-    token: AnyEvmAddress | 'native',
+    token: AnyEvmAddress,
   ): Promise<bigint | null> {
-    if (token === 'native') return rpc.getBalance(walletAddr);
+    if (isNative(token)) return rpc.getBalance(walletAddr);
 
     const tokenImpl = EvmPlatform.getTokenImplementation(
       rpc,
@@ -108,13 +109,14 @@ export class EvmPlatform<N extends Network> extends PlatformContext<
     chain: Chain,
     rpc: Provider,
     walletAddr: string,
-    tokens: (AnyEvmAddress | 'native')[],
+    tokens: AnyEvmAddress[],
   ): Promise<Balances> {
     const balancesArr = await Promise.all(
       tokens.map(async (token) => {
         const balance = await this.getBalance(chain, rpc, walletAddr, token);
-        const address =
-          token === 'native' ? 'native' : new EvmAddress(token).toString();
+        const address = isNative(token)
+          ? 'native'
+          : new EvmAddress(token).toString();
         return { [address]: balance };
       }),
     );

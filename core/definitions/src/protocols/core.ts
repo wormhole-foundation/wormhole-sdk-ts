@@ -4,6 +4,15 @@ import { WormholeMessageId } from "../attestation";
 import { TxHash } from "../types";
 import { UnsignedTransaction } from "../unsignedTransaction";
 import { VAA } from "../vaa";
+import { EmptyPlatformMap } from "../protocol";
+
+declare global {
+  namespace WormholeNamespace {
+    export interface ProtocolToPlatformMapping {
+      WormholeCore: EmptyPlatformMap<Platform, "WormholeCore">;
+    }
+  }
+}
 
 export interface WormholeCore<
   N extends Network,

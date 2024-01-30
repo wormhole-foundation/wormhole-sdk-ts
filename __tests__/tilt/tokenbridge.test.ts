@@ -10,7 +10,8 @@
 //     Wormhole,
 //     WormholeMessageId,
 //     isWormholeMessageId,
-//     normalizeAmount,
+//     baseUnits,
+//     parseAmount,
 //     signSendWait,
 // } from "@wormhole-foundation/connect-sdk";
 // import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
@@ -52,10 +53,10 @@
 //
 //         let tokenAddress: NativeAddress<Platform>;
 //         let token: TokenId;
-//         let tokenOrNative: TokenId | "native";
+//         let tokenOrNative: TokenId;
 //
 //
-//         let srcBalanceToken: NativeAddress<Platform> | "native";
+//         let srcBalanceToken: NativeAddress<Platform>;
 //         let dstBalanceToken: NativeAddress<Platform>;
 //
 //         beforeAll(async () => {
@@ -124,7 +125,7 @@
 //             let xfer: TokenTransfer;
 //             test(`Create transfer: ${srcChain} to ${dstChain}`, async () => {
 //                 const decimals = await wh.getDecimals(srcChain, srcBalanceToken)
-//                 amt = normalizeAmount("1", decimals)
+//                 amt = baseUnits(parseAmount(("1", Number(decimals)))
 //                 // scale the amt by the difference in number of decimals for balance checks
 //                 // Since ethereum allows >8 decimals, we have to get the decimals from the dst chain
 //                 const bridgedDecimals = await wh.getDecimals(dstChain, dstBalanceToken)

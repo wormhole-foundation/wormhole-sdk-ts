@@ -5,20 +5,24 @@ import {
   PlatformToChains,
   lazyInstantiate,
 } from "@wormhole-foundation/sdk-base";
-import {
-  AccountAddress,
-  ChainAddress,
-  NativeAddress,
-  TokenAddress,
-  UniversalOrNative,
-} from "../address";
-import "../payloads/tokenBridge";
+import { AccountAddress, ChainAddress, NativeAddress, UniversalOrNative } from "../address";
 import "../payloads/automaticTokenBridge";
-import { TokenId } from "../types";
+import "../payloads/tokenBridge";
+import { TokenAddress, TokenId } from "../types";
 import { UnsignedTransaction } from "../unsignedTransaction";
 import { ProtocolPayload, ProtocolVAA, payloadDiscriminator } from "../vaa";
+import { EmptyPlatformMap } from "../protocol";
 
 export const ErrNotWrapped = (token: string) => new Error(`Token ${token} is not a wrapped asset`);
+
+declare global {
+  namespace WormholeNamespace {
+    export interface ProtocolToPlatformMapping {
+      TokenBridge: EmptyPlatformMap<Platform, TokenBridge.ProtocolName>;
+      AutomaticTokenBridge: EmptyPlatformMap<Platform, AutomaticTokenBridge.ProtocolName>;
+    }
+  }
+}
 
 export namespace TokenBridge {
   const _protocol = "TokenBridge";
@@ -76,7 +80,7 @@ export namespace AutomaticTokenBridge {
 }
 
 export type TokenTransferDetails = {
-  token: TokenId | "native";
+  token: TokenId;
   amount: bigint;
   from: ChainAddress;
   to: ChainAddress;

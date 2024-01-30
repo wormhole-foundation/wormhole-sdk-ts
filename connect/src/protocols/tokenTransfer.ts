@@ -4,12 +4,15 @@ import {
   Network,
   Platform,
   PlatformToChains,
+  amountFromBaseUnits,
+  baseUnits,
   encoding,
+  scaleAmount,
   toChain as toChainName,
+  truncateAmount,
 } from "@wormhole-foundation/sdk-base";
 import {
   AttestationId,
-  AttestationReceipt,
   AutomaticTokenBridge,
   ChainContext,
   Signer,
@@ -21,6 +24,7 @@ import {
   UnsignedTransaction,
   WormholeMessageId,
   deserialize,
+  isNative,
   isTokenId,
   isTokenTransferDetails,
   isTransactionIdentifier,
@@ -31,8 +35,8 @@ import {
 } from "@wormhole-foundation/sdk-definitions";
 import { signSendWait } from "../common";
 import { DEFAULT_TASK_TIMEOUT } from "../config";
-import { Wormhole } from "../wormhole";
 import {
+  AttestationReceipt,
   AttestedTransferReceipt,
   CompletedTransferReceipt,
   SourceFinalizedTransferReceipt,
@@ -40,14 +44,24 @@ import {
   TransferQuote,
   TransferReceipt,
   TransferState,
-  WormholeTransfer,
   isAttested,
   isSourceFinalized,
   isSourceInitiated,
-} from "../wormholeTransfer";
+} from "../types";
+import { Wormhole } from "../wormhole";
+import { WormholeTransfer } from "./wormholeTransfer";
 
 export type TokenTransferProtocol = "TokenBridge" | "AutomaticTokenBridge";
 export type TokenTransferVAA = TokenBridge.TransferVAA | AutomaticTokenBridge.VAA;
+
+export type TokenTransferAttestationReceipt = AttestationReceipt<TokenTransferProtocol>;
+export type TokenTransferReceipt<
+  SC extends Chain = Chain,
+  DC extends Chain = Chain,
+> = TransferReceipt<TokenTransferAttestationReceipt, SC, DC>;
+
+// 8 is maximum precision supported by the token bridge VAA
+const TOKEN_BRIDGE_MAX_DECIMALS = 8;
 
 export class TokenTransfer<N extends Network = Network>
   implements WormholeTransfer<TokenTransferProtocol>
@@ -122,7 +136,7 @@ export class TokenTransfer<N extends Network = Network>
       toChain = toChain ?? wh.getChain(from.to.chain);
 
       // throws if invalid
-      await TokenTransfer.validateTransferDetails(wh, from, fromChain, toChain);
+      TokenTransfer.validateTransferDetails(wh, from, fromChain, toChain);
 
       // Apply hackery
       from = {
@@ -163,9 +177,10 @@ export class TokenTransfer<N extends Network = Network>
     let from = { chain: vaa.emitterChain, address: vaa.emitterAddress };
     let { token, to } = vaa.payload;
 
-    const rescale = (amt: bigint, decimals: bigint) =>
-      decimals > 8 ? amt * 10n ** (decimals - 8n) : amt;
-    const amount = rescale(token.amount, await wh.getDecimals(token.chain, token.address));
+    const scaledAmount = scaleAmount(
+      amountFromBaseUnits(token.amount, TOKEN_BRIDGE_MAX_DECIMALS),
+      await wh.getDecimals(token.chain, token.address),
+    );
 
     let nativeGasAmount: bigint = 0n;
     if (automatic) {
@@ -176,7 +191,7 @@ export class TokenTransfer<N extends Network = Network>
 
     const details: TokenTransferDetails = {
       token: token,
-      amount,
+      amount: baseUnits(scaledAmount),
       from,
       to,
       automatic,
@@ -363,11 +378,11 @@ export class TokenTransfer<N extends Network = Network>
   static async lookupDestinationToken<N extends Network, SC extends Chain, DC extends Chain>(
     srcChain: ChainContext<N, ChainToPlatform<SC>, SC>,
     dstChain: ChainContext<N, ChainToPlatform<DC>, DC>,
-    token: TokenId<SC> | "native",
+    token: TokenId<SC>,
   ): Promise<TokenId<DC>> {
     // that will be minted when the transfer is redeemed
     let lookup: TokenId;
-    if (token === "native") {
+    if (isNative(token.address)) {
       // if native, get the wrapped asset id
       lookup = await srcChain.getNativeWrappedTokenId();
     } else {
@@ -392,34 +407,42 @@ export class TokenTransfer<N extends Network = Network>
     return { chain: dstChain.chain, address: dstAddress };
   }
 
-  static async validateTransferDetails<N extends Network>(
+  static validateTransferDetails<N extends Network>(
     wh: Wormhole<N>,
     transfer: TokenTransferDetails,
     fromChain?: ChainContext<N, Platform, Chain>,
     toChain?: ChainContext<N, Platform, Chain>,
-  ): Promise<void> {
+  ): void {
+    if (transfer.amount === 0n) throw new Error("Amount cannot be 0");
+
     if (transfer.from.chain === transfer.to.chain)
       throw new Error("Cannot transfer to the same chain");
-
-    if (transfer.payload && transfer.automatic)
-      throw new Error("Payload with automatic delivery is not supported");
-
-    if (transfer.nativeGas && !transfer.automatic)
-      throw new Error("Gas Dropoff is only supported for automatic transfers");
 
     fromChain = fromChain ?? wh.getChain(transfer.from.chain);
     toChain = toChain ?? wh.getChain(transfer.to.chain);
 
-    if (!fromChain.supportsTokenBridge())
-      throw new Error(`Token Bridge not supported on ${transfer.from.chain}`);
+    if (transfer.automatic) {
+      if (transfer.payload) throw new Error("Payload with automatic delivery is not supported");
 
-    if (!toChain.supportsTokenBridge())
-      throw new Error(`Token Bridge not supported on ${transfer.to.chain}`);
+      if (!fromChain.supportsAutomaticTokenBridge())
+        throw new Error(`Automatic Token Bridge not supported on ${transfer.from.chain}`);
 
-    if (transfer.automatic && !fromChain.supportsAutomaticTokenBridge())
-      throw new Error(`Automatic Token Bridge not supported on ${transfer.from.chain}`);
+      if (!toChain.supportsAutomaticTokenBridge())
+        throw new Error(`Automatic Token Bridge not supported on ${transfer.to.chain}`);
 
-    if (transfer.amount === 0n) throw new Error("Amount cannot be 0");
+      const nativeGas = transfer.nativeGas ?? 0n;
+      if (nativeGas > transfer.amount)
+        throw new Error(`Native gas amount  > amount (${nativeGas} > ${transfer.amount})`);
+    } else {
+      if (transfer.nativeGas)
+        throw new Error("Gas Dropoff is only supported for automatic transfers");
+
+      if (!fromChain.supportsTokenBridge())
+        throw new Error(`Token Bridge not supported on ${transfer.from.chain}`);
+
+      if (!toChain.supportsTokenBridge())
+        throw new Error(`Token Bridge not supported on ${transfer.to.chain}`);
+    }
   }
 
   static async quoteTransfer<N extends Network>(
@@ -428,60 +451,63 @@ export class TokenTransfer<N extends Network = Network>
     transfer: TokenTransferDetails,
   ): Promise<TransferQuote> {
     const dstToken = await this.lookupDestinationToken(srcChain, dstChain, transfer.token);
-    const srcToken =
-      transfer.token === "native" ? await srcChain.getNativeWrappedTokenId() : transfer.token;
+    const srcToken = isNative(transfer.token.address)
+      ? await srcChain.getNativeWrappedTokenId()
+      : transfer.token;
 
-    const dstDecimals = await dstChain.getDecimals(dstToken.address);
     const srcDecimals = await srcChain.getDecimals(srcToken.address);
+    const dstDecimals = await dstChain.getDecimals(dstToken.address);
 
-    // truncate the amount for over-the-wire max representation
-    const truncate = (amt: bigint, decimals: bigint) =>
-      decimals > 8 ? amt / 10n ** (decimals - 8n) : amt;
-    // scale by number of decimals, pair with truncate
-    const scale = (amt: bigint, decimals: bigint) =>
-      decimals > 8 ? amt * 10n ** (decimals - 8n) : amt;
-    // dedust for source using the number of decimals on the source chain
-    // but scale back to original decimals
-    const dedust = (amt: bigint) => scale(truncate(amt, srcDecimals), srcDecimals);
-    // truncate and rescale to fit destination token
-    const mintable = (amt: bigint) => scale(truncate(amt, srcDecimals), dstDecimals);
+    const srcAmount = amountFromBaseUnits(transfer.amount, srcDecimals);
 
-    // dedust for transfer over the bridge which truncates to 8 decimals
-    let srcAmount = dedust(transfer.amount);
-    let dstAmount = mintable(transfer.amount);
+    const srcAmountTruncated = truncateAmount(srcAmount, TOKEN_BRIDGE_MAX_DECIMALS);
+    const dstAmountTruncated = scaleAmount(srcAmountTruncated, dstDecimals);
 
     if (!transfer.automatic) {
       return {
-        sourceToken: { token: srcToken, amount: srcAmount },
-        destinationToken: { token: dstToken, amount: dstAmount },
+        sourceToken: { token: srcToken, amount: baseUnits(srcAmountTruncated) },
+        destinationToken: { token: dstToken, amount: baseUnits(dstAmountTruncated) },
       };
     }
 
     // Otherwise automatic
 
     // If a native gas dropoff is requested, remove that from the amount they'll get
-    const _nativeGas = transfer.nativeGas ? mintable(transfer.nativeGas) : 0n;
-    dstAmount -= _nativeGas;
+    const dstNativeGasAmount = scaleAmount(
+      truncateAmount(
+        amountFromBaseUnits(transfer.nativeGas ?? 0n, srcDecimals),
+        TOKEN_BRIDGE_MAX_DECIMALS,
+      ),
+      dstDecimals,
+    );
+    const dstNativeGasBaseUnits = baseUnits(dstNativeGasAmount);
+
+    let dstAmountBaseUnits = baseUnits(dstAmountTruncated) - dstNativeGasBaseUnits;
 
     // The fee is also removed from the amount transferred
     // quoted on the source chain
     const stb = await srcChain.getAutomaticTokenBridge();
     const fee = await stb.getRelayerFee(transfer.from.address, transfer.to, srcToken.address);
-    dstAmount -= mintable(fee);
+
+    const feeAmountDest = scaleAmount(
+      truncateAmount(amountFromBaseUnits(fee, srcDecimals), TOKEN_BRIDGE_MAX_DECIMALS),
+      dstDecimals,
+    );
+    dstAmountBaseUnits -= baseUnits(feeAmountDest);
 
     // The expected destination gas can be pulled from the destination token bridge
     let destinationNativeGas = 0n;
     if (transfer.nativeGas) {
       const dtb = await dstChain.getAutomaticTokenBridge();
-      destinationNativeGas = await dtb.nativeTokenAmount(dstToken.address, _nativeGas);
+      destinationNativeGas = await dtb.nativeTokenAmount(dstToken.address, dstNativeGasBaseUnits);
     }
 
     return {
       sourceToken: {
         token: srcToken,
-        amount: srcAmount,
+        amount: baseUnits(srcAmountTruncated),
       },
-      destinationToken: { token: dstToken, amount: dstAmount },
+      destinationToken: { token: dstToken, amount: dstAmountBaseUnits },
       relayFee: { token: srcToken, amount: fee },
       destinationNativeGas,
     };
@@ -532,18 +558,13 @@ export class TokenTransfer<N extends Network = Network>
     return _transfer;
   }
 
-  static getReceipt<N extends Network>(
-    xfer: TokenTransfer<N>,
-  ): TransferReceipt<TokenTransferProtocol> {
+  static getReceipt<N extends Network>(xfer: TokenTransfer<N>): TokenTransferReceipt {
     const { transfer } = xfer;
 
-    const protocol = transfer.automatic ? "AutomaticTokenBridge" : "TokenBridge";
     const from = transfer.from.chain;
     const to = transfer.to.chain;
 
-    let receipt: TransferReceipt<TokenTransferProtocol> = {
-      protocol,
-      request: transfer,
+    let receipt: TokenTransferReceipt = {
       from: from,
       to: to,
       state: TransferState.Created,
@@ -555,7 +576,7 @@ export class TokenTransfer<N extends Network = Network>
         ...receipt,
         state: TransferState.SourceInitiated,
         originTxs: originTxs,
-      } satisfies SourceInitiatedTransferReceipt<TokenTransferProtocol>;
+      } satisfies SourceInitiatedTransferReceipt;
     }
 
     const att =
@@ -564,17 +585,17 @@ export class TokenTransfer<N extends Network = Network>
     if (attestation) {
       if (attestation.id) {
         receipt = {
-          ...(receipt as SourceInitiatedTransferReceipt<TokenTransferProtocol>),
+          ...(receipt as SourceInitiatedTransferReceipt),
           state: TransferState.SourceFinalized,
           attestation: { id: attestation.id },
-        } satisfies SourceFinalizedTransferReceipt<TokenTransferProtocol>;
+        } satisfies SourceFinalizedTransferReceipt<TokenTransferAttestationReceipt>;
 
         if (attestation.attestation) {
           receipt = {
             ...receipt,
             state: TransferState.Attested,
             attestation: { id: attestation.id, attestation: attestation.attestation },
-          } satisfies AttestedTransferReceipt<TokenTransferProtocol>;
+          } satisfies AttestedTransferReceipt<TokenTransferAttestationReceipt>;
         }
       }
     }
@@ -582,10 +603,10 @@ export class TokenTransfer<N extends Network = Network>
     const destinationTxs = xfer.txids.filter((txid) => txid.chain === transfer.to.chain);
     if (destinationTxs.length > 0) {
       receipt = {
-        ...(receipt as AttestedTransferReceipt<TokenTransferProtocol>),
+        ...(receipt as AttestedTransferReceipt<TokenTransferAttestationReceipt>),
         state: TransferState.DestinationInitiated,
         destinationTxs: destinationTxs,
-      } satisfies CompletedTransferReceipt<TokenTransferProtocol>;
+      } satisfies CompletedTransferReceipt<TokenTransferAttestationReceipt>;
     }
 
     return receipt;
@@ -597,11 +618,11 @@ export class TokenTransfer<N extends Network = Network>
   // steps of the transfer
   static async *track<N extends Network, SC extends Chain, DC extends Chain>(
     wh: Wormhole<N>,
-    receipt: TransferReceipt<TokenTransferProtocol, SC, DC>,
+    receipt: TokenTransferReceipt<SC, DC>,
     timeout: number = DEFAULT_TASK_TIMEOUT,
     fromChain?: ChainContext<N, ChainToPlatform<SC>, SC>,
     toChain?: ChainContext<N, ChainToPlatform<DC>, DC>,
-  ) {
+  ): AsyncGenerator<TokenTransferReceipt<SC, DC>> {
     const start = Date.now();
     const leftover = (start: number, max: number) => Math.max(max - (Date.now() - start), 0);
 
@@ -618,7 +639,7 @@ export class TokenTransfer<N extends Network = Network>
         ...receipt,
         state: TransferState.SourceFinalized,
         attestation: { id: msg },
-      } satisfies SourceFinalizedTransferReceipt<TokenTransferProtocol>;
+      } satisfies SourceFinalizedTransferReceipt<TokenTransferAttestationReceipt>;
       yield receipt;
     }
 
@@ -633,7 +654,7 @@ export class TokenTransfer<N extends Network = Network>
         ...receipt,
         attestation: { id, attestation },
         state: TransferState.Attested,
-      } satisfies AttestedTransferReceipt<TokenTransferProtocol>;
+      } satisfies AttestedTransferReceipt<TokenTransferAttestationReceipt>;
       yield receipt;
     }
 
@@ -650,7 +671,7 @@ export class TokenTransfer<N extends Network = Network>
           ...receipt,
           destinationTxs: [{ chain: toChainName(chainId) as DC, txid: txHash }],
           state: TransferState.DestinationFinalized,
-        } satisfies CompletedTransferReceipt<TokenTransferProtocol>;
+        } satisfies CompletedTransferReceipt<TokenTransferAttestationReceipt>;
       }
       yield receipt;
     }
@@ -669,7 +690,7 @@ export class TokenTransfer<N extends Network = Network>
         receipt = {
           ...receipt,
           state: TransferState.DestinationFinalized,
-        } satisfies CompletedTransferReceipt<TokenTransferProtocol>;
+        } satisfies CompletedTransferReceipt<TokenTransferAttestationReceipt>;
       }
 
       yield receipt;

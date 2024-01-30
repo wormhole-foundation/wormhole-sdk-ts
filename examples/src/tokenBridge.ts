@@ -6,7 +6,8 @@ import {
   TokenTransfer,
   Wormhole,
   isTokenId,
-  normalizeAmount,
+  baseUnits,
+  parseAmount,
 } from "@wormhole-foundation/connect-sdk";
 import { TransferStuff, getStuff, waitLog } from "./helpers";
 
@@ -33,7 +34,7 @@ import "@wormhole-foundation/connect-sdk-algorand-tokenbridge";
   const rcvChain = wh.getChain("Solana");
 
   // Shortcut to allow transferring native gas token
-  const token: TokenId | "native" = "native";
+  const token: TokenId = Wormhole.tokenId(sendChain.chain, "native");
 
   // A TokenId is just a `{chain, address}` pair and an alias for ChainAddress
   // The `address` field must be a parsed address.
@@ -71,8 +72,8 @@ import "@wormhole-foundation/connect-sdk-algorand-tokenbridge";
 
   // Used to normalize the amount to account for the tokens decimals
   const decimals = isTokenId(token)
-    ? await wh.getDecimals(token.chain, token.address)
-    : BigInt(sendChain.config.nativeTokenDecimals);
+    ? Number(await wh.getDecimals(token.chain, token.address))
+    : sendChain.config.nativeTokenDecimals;
 
   // Set this to true if you want to perform a round trip transfer
   const roundTrip: boolean = false;
@@ -89,12 +90,12 @@ import "@wormhole-foundation/connect-sdk-algorand-tokenbridge";
         wh,
         {
           token,
-          amount: normalizeAmount(amount, decimals),
+          amount: baseUnits(parseAmount(amount, decimals)),
           source,
           destination,
           delivery: {
             automatic,
-            nativeGas: nativeGas ? normalizeAmount(nativeGas, decimals) : undefined,
+            nativeGas: nativeGas ? baseUnits(parseAmount(nativeGas, decimals)) : undefined,
           },
         },
         roundTrip,
@@ -113,7 +114,7 @@ import "@wormhole-foundation/connect-sdk-algorand-tokenbridge";
 async function tokenTransfer<N extends Network>(
   wh: Wormhole<N>,
   route: {
-    token: TokenId | "native";
+    token: TokenId;
     amount: bigint;
     source: TransferStuff<N, Platform, Chain>;
     destination: TransferStuff<N, Platform, Chain>;

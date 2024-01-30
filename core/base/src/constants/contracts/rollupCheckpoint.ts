@@ -1,10 +1,11 @@
-import { MapLevel } from "../../utils";
+import { MapLevels } from "../../utils";
 import { Network } from "../networks";
 import { Chain } from "../chains";
 
 // Some chains are required to post proof of their blocks to other chains
 // and the transaction containing that proof must be finalized
 // before a transaction contained in one of those blocks is considered final
+// prettier-ignore
 export const rollupContractAddresses = [[
   "Mainnet", [
     ["Polygon",  ["Ethereum", "0x86E4Dc95c7FBdBf52e33D563BbDB00823894C287"]],
@@ -16,4 +17,4 @@ export const rollupContractAddresses = [[
     ["Optimism", ["Ethereum", "0xe6dfba0953616bacab0c9a8ecb3a9bba77fc15c0"]],
     ["Arbitrum", ["Ethereum", "0x45af9ed1d03703e480ce7d328fb684bb67da5049"]], // TODO double check
   ]],
-] as const satisfies MapLevel<Network, MapLevel<Chain, readonly [Chain, string]>>;
+] as const satisfies MapLevels<[Network, Chain, readonly [Chain, string]]>;

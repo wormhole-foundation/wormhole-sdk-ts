@@ -73,7 +73,7 @@ We can create a new `Wormhole` object and use it to to create `TokenTransfer`, `
 const token = "native";
 
 // Format it for base units
-const amount = normalizeAmount(1, BigInt(srcChain.config.nativeTokenDecimals));
+const amount = baseUnits(parseAmount(1, srcChain.config.nativeTokenDecimals));
 
 // Create a TokenTransfer object, allowing us to shepherd the transfer through the process and get updates on its status
 const manualXfer = wh.tokenTransfer(

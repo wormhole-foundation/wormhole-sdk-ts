@@ -18,6 +18,7 @@ import {
   Platform,
   nativeChainIds,
   toNative,
+  isNative,
 } from '@wormhole-foundation/connect-sdk';
 import { Provider, TransactionRequest } from 'ethers';
 
@@ -112,6 +113,9 @@ export class EvmTokenBridge<N extends Network, C extends EvmChains>
   }
 
   async getWrappedAsset(token: TokenId<Chain>): Promise<NativeAddress<C>> {
+    if (isNative(token.address))
+      throw new Error('native asset cannot be a wrapped asset');
+
     const wrappedAddress = await this.tokenBridge.wrappedAsset(
       toChainId(token.chain),
       token.address.toUniversalAddress().toString(),
@@ -179,7 +183,7 @@ export class EvmTokenBridge<N extends Network, C extends EvmChains>
       .toUniversalAddress()
       .toUint8Array();
 
-    if (token === 'native') {
+    if (isNative(token)) {
       const txReq = await (payload === undefined
         ? this.tokenBridge.wrapAndTransferETH.populateTransaction(
             recipientChainId,

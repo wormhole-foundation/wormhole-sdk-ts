@@ -1,5 +1,11 @@
-import { Chain, Network, chainToPlatform, isChain, tokens } from "@wormhole-foundation/connect-sdk";
-import { Platform } from "@wormhole-foundation/sdk-base/src";
+import {
+  Platform,
+  Chain,
+  Network,
+  chainToPlatform,
+  isChain,
+  tokens,
+} from "@wormhole-foundation/connect-sdk";
 import axios from "axios";
 import fs from "fs";
 import * as prettier from "prettier";
@@ -106,13 +112,13 @@ const pathToDetails = (network: Network) =>
   `../core/base/src/constants/tokens/${network.toLowerCase()}Details.ts`;
 const tokenDetailsConstTemplate = (network: Network, tokenArr: any[]) => `
 import { MapLevel, constMap } from "../../utils";
-import { TokenSymbol, TokenDetails } from "./types";
+import { TokenSymbol, TokenExtraDetails } from "./types";
 
 const ${network.toLowerCase()}Tokens = ${JSON.stringify(
   tokenArr,
   null,
   2,
-)} as const satisfies MapLevel<TokenSymbol, TokenDetails>;
+)} as const satisfies MapLevel<TokenSymbol, TokenExtraDetails>;
 
 export const ${network.toLowerCase()}TokenDetails = constMap(${network.toLowerCase()}Tokens);
 
@@ -140,12 +146,7 @@ async function fetchAndRemapConnectTokens(network: Network): Promise<[any, any]>
 
     const _decimals = platform in decimals ? decimals[platform] : decimals.default;
 
-    const wrapped = tokenId
-      ? undefined
-      : {
-          decimals: _decimals!,
-          symbol: wrappedAsset!,
-        };
+    const wrappedKey = tokenId ? undefined : wrappedAsset!;
 
     const address = tokenId ? tokenId.address : "native";
     const tokenEntry = {
@@ -154,7 +155,7 @@ async function fetchAndRemapConnectTokens(network: Network): Promise<[any, any]>
       decimals: _decimals!,
       address: address,
       chain: nativeChain,
-      wrapped,
+      wrappedKey,
     };
 
     reg[nativeChain]!.push(tokenEntry);

@@ -25,6 +25,7 @@ export * from "./protocols/core";
 export * from "./protocols/tokenBridge";
 export * from "./protocols/circleBridge";
 export * from "./protocols/ibc";
+export * from "./protocols/portico";
 
 export * as layoutItems from "./layout-items";
 export * as testing from "./testing";

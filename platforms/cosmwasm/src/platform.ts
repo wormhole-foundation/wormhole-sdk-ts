@@ -13,9 +13,11 @@ import {
   Network,
   PlatformContext,
   SignedTx,
+  StaticPlatformMethods,
   TxHash,
   Wormhole,
   decimals,
+  isNative,
   nativeChainIds,
   networkPlatformConfigs,
 } from "@wormhole-foundation/connect-sdk";
@@ -32,22 +34,19 @@ import { AnyCosmwasmAddress } from "./types";
 /**
  * @category Cosmwasm
  */
-export class CosmwasmPlatform<N extends Network> extends PlatformContext<N, CosmwasmPlatformType> {
+export class CosmwasmPlatform<N extends Network>
+  extends PlatformContext<N, CosmwasmPlatformType>
+  implements StaticPlatformMethods<typeof _platform, typeof CosmwasmPlatform>
+{
   static _platform: CosmwasmPlatformType = _platform;
 
   constructor(network: N, _config?: ChainsConfig<N, CosmwasmPlatformType>) {
     super(network, _config ?? networkPlatformConfigs(network, CosmwasmPlatform._platform));
   }
 
-  // export const {
-  //   getRpc: getGatewayRpc,
-  //   getWrappedAsset: getGatewayWrappedAsset,
-  //   gatewayAddress,
-  //   getGatewaySourceChannel,
-  // } = Gateway;
-
   async getRpc<C extends CosmwasmChains>(chain: C): Promise<CosmWasmClient> {
-    if (chain in this.config) return await CosmWasmClient.connect(this.config[chain]!.rpc);
+    if (chain in this.config && this.config[chain]!.rpc)
+      return await CosmWasmClient.connect(this.config[chain]!.rpc);
     throw new Error("No configuration available for chain: " + chain);
   }
 
@@ -94,9 +93,9 @@ export class CosmwasmPlatform<N extends Network> extends PlatformContext<N, Cosm
   static async getDecimals<C extends CosmwasmChains>(
     chain: C,
     rpc: CosmWasmClient,
-    token: AnyCosmwasmAddress | "native",
-  ): Promise<bigint> {
-    if (token === "native") return BigInt(decimals.nativeDecimals(CosmwasmPlatform._platform));
+    token: AnyCosmwasmAddress,
+  ): Promise<number> {
+    if (isNative(token)) return decimals.nativeDecimals(CosmwasmPlatform._platform);
 
     const addrStr = new CosmwasmAddress(token).toString();
     const { decimals: numDecimals } = await rpc.queryContractSmart(addrStr, {
@@ -109,9 +108,9 @@ export class CosmwasmPlatform<N extends Network> extends PlatformContext<N, Cosm
     chain: C,
     rpc: CosmWasmClient,
     walletAddress: string,
-    token: AnyCosmwasmAddress | "native",
+    token: AnyCosmwasmAddress,
   ): Promise<bigint | null> {
-    if (token === "native") {
+    if (isNative(token)) {
       const [network, _] = await CosmwasmPlatform.chainFromRpc(rpc);
       const { amount } = await rpc.getBalance(walletAddress, this.getNativeDenom(network, chain));
       return BigInt(amount);
@@ -126,16 +125,15 @@ export class CosmwasmPlatform<N extends Network> extends PlatformContext<N, Cosm
     chain: C,
     rpc: CosmWasmClient,
     walletAddress: string,
-    tokens: (AnyCosmwasmAddress | "native")[],
+    tokens: AnyCosmwasmAddress[],
   ): Promise<Balances> {
     const client = CosmwasmPlatform.getQueryClient(rpc);
     const allBalances = await client.bank.allBalances(walletAddress);
     const [network, _] = await CosmwasmPlatform.chainFromRpc(rpc);
     const balancesArr = tokens.map((token) => {
-      const address =
-        token === "native"
-          ? this.getNativeDenom(network, chain)
-          : new CosmwasmAddress(token).toString();
+      const address = isNative(token)
+        ? this.getNativeDenom(network, chain)
+        : new CosmwasmAddress(token).toString();
       const balance = allBalances.find((balance) => balance.denom === address);
       const balanceBigInt = balance ? BigInt(balance.amount) : null;
       return { [address]: balanceBigInt };
@@ -160,8 +158,9 @@ export class CosmwasmPlatform<N extends Network> extends PlatformContext<N, Cosm
   }
 
   static async getLatestBlock(rpc: CosmWasmClient): Promise<number> {
-    return rpc.getHeight();
+    return await rpc.getHeight();
   }
+
   static async getLatestFinalizedBlock(rpc: CosmWasmClient): Promise<number> {
     throw new Error("not implemented");
   }

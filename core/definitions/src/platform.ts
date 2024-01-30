@@ -1,26 +1,19 @@
-import {
-  Chain,
-  Network,
-  Platform,
-  PlatformToChains,
-  ProtocolName,
-} from "@wormhole-foundation/sdk-base";
+import { Chain, Network, Platform, PlatformToChains } from "@wormhole-foundation/sdk-base";
 import { WormholeCore } from ".";
-import { TokenAddress } from "./address";
 import { WormholeMessageId } from "./attestation";
 import { ChainContext } from "./chain";
-import { create } from "./protocol";
+import { ProtocolName, create } from "./protocol";
 import { RpcConnection } from "./rpc";
-import { Balances, ChainsConfig, SignedTx, TokenId, TxHash } from "./types";
+import { Balances, ChainsConfig, SignedTx, TokenId, TxHash, TokenAddress } from "./types";
 
 // PlatformUtils represents the _static_ attributes available on
 // the PlatformContext Class
-export interface PlatformUtils<N extends Network, P extends Platform> {
+export interface PlatformUtils<P extends Platform> {
   // Value for the Platform so we can access it at runtime
   _platform: P;
 
   // Initialize a new PlatformContext object
-  new (network: N, config?: ChainsConfig<N, P>): PlatformContext<N, P>;
+  new <N extends Network>(network: N, config?: ChainsConfig<N, P>): PlatformContext<N, P>;
 
   // Check if this chain is supported by this platform
   // Note: purposely not adding generic parameters
@@ -48,7 +41,7 @@ export interface PlatformUtils<N extends Network, P extends Platform> {
     chain: C,
     rpc: RpcConnection<P>,
     token: TokenAddress<C>,
-  ): Promise<bigint>;
+  ): Promise<number>;
 
   // Get the balance of a token for a given wallet address
   getBalance<C extends PlatformToChains<P>>(
@@ -80,6 +73,9 @@ export interface PlatformUtils<N extends Network, P extends Platform> {
   ): Promise<TxHash[]>;
 }
 
+// Use this to ensure the static methods defined in the PlatformContext
+export type StaticPlatformMethods<P extends Platform, I extends PlatformUtils<P>> = InstanceType<I>;
+
 // PlatformContext is an instance of the class that represents a specific Platform
 export abstract class PlatformContext<N extends Network, P extends Platform> {
   constructor(
@@ -88,12 +84,14 @@ export abstract class PlatformContext<N extends Network, P extends Platform> {
   ) {}
 
   // provides access to the static attributes of the PlatformContext class
-  utils(): PlatformUtils<N, P> {
+  utils(): PlatformUtils<P> {
     return this.constructor as any;
   }
 
   // Create a _new_ RPC Connection
-  abstract getRpc<C extends PlatformToChains<P>>(chain: C): RpcConnection<P>;
+  abstract getRpc<C extends PlatformToChains<P>>(
+    chain: C,
+  ): RpcConnection<P> | Promise<RpcConnection<P>>;
 
   // Create a new Chain context object
   abstract getChain<C extends PlatformToChains<P>>(

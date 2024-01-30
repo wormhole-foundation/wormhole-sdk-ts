@@ -12,7 +12,7 @@ export type ChainTokens = {
 export type Token = {
   key: TokenKey;
   decimals: number;
-  address: string | "native";
+  address: string;
   chain: Chain;
   // Common symbol/ticker
   symbol: TokenSymbol;
@@ -23,15 +23,12 @@ export type Token = {
   // Set if this is a native gas token
   // or a token that should be wrapped before bridging
   // represents the wrapped token on its native chain
-  wrapped?: {
-    symbol: string;
-    decimals: number;
-  };
+  wrappedKey?: TokenKey;
 };
 
 export type TokenConst = Omit<Token, "chain" | "key">;
 
-export type TokenDetails = {
+export type TokenExtraDetails = {
   key: string;
   symbol: TokenSymbol;
   nativeChain: Chain;

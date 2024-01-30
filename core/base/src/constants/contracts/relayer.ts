@@ -1,7 +1,8 @@
-import { MapLevel } from "../../utils";
+import { MapLevels } from "../../utils";
 import { Network } from "../networks";
 import { Chain } from "../chains";
 
+// prettier-ignore
 export const relayerContracts = [[
   "Mainnet", [
     ["Ethereum",  "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"],
@@ -34,4 +35,4 @@ export const relayerContracts = [[
     ["Ethereum",  "0xE66C1Bc1b369EF4F376b84373E3Aa004E8F4C083"],
     ["Bsc",       "0xE66C1Bc1b369EF4F376b84373E3Aa004E8F4C083"],
   ]],
-] as const satisfies MapLevel<Network, MapLevel<Chain, string>>;
+] as const satisfies MapLevels<[Network, Chain, string]>;

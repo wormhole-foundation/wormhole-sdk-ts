@@ -5,6 +5,7 @@ import {
   Network,
   PlatformContext,
   SignedTx,
+  StaticPlatformMethods,
   TokenId,
   TxHash,
   Wormhole,
@@ -31,14 +32,15 @@ import {
   SolanaPlatformType,
   _platform,
 } from './types';
+import { isNative } from 'lodash';
 
 /**
  * @category Solana
  */
-export class SolanaPlatform<N extends Network> extends PlatformContext<
-  N,
-  SolanaPlatformType
-> {
+export class SolanaPlatform<N extends Network>
+  extends PlatformContext<N, SolanaPlatformType>
+  implements StaticPlatformMethods<typeof _platform, typeof SolanaPlatform>
+{
   static _platform = _platform;
 
   constructor(network: N, config?: ChainsConfig<N, SolanaPlatformType>) {
@@ -96,10 +98,10 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
   static async getDecimals(
     chain: Chain,
     rpc: Connection,
-    token: AnySolanaAddress | 'native',
-  ): Promise<bigint> {
-    if (token === 'native')
-      return BigInt(decimals.nativeDecimals(SolanaPlatform._platform));
+    token: AnySolanaAddress,
+  ): Promise<number> {
+    if (isNative(token))
+      return decimals.nativeDecimals(SolanaPlatform._platform);
 
     let mint = await rpc.getParsedAccountInfo(
       new SolanaAddress(token).unwrap(),
@@ -109,16 +111,16 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
 
     const { decimals: numDecimals } = (mint.value.data as ParsedAccountData)
       .parsed.info;
-    return BigInt(numDecimals);
+    return numDecimals;
   }
 
   static async getBalance(
     chain: Chain,
     rpc: Connection,
     walletAddress: string,
-    token: AnySolanaAddress | 'native',
+    token: AnySolanaAddress,
   ): Promise<bigint | null> {
-    if (token === 'native')
+    if (isNative(token))
       return BigInt(await rpc.getBalance(new PublicKey(walletAddress)));
 
     const splToken = await rpc.getTokenAccountsByOwner(
@@ -135,7 +137,7 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
     chain: Chain,
     rpc: Connection,
     walletAddress: string,
-    tokens: (AnySolanaAddress | 'native')[],
+    tokens: AnySolanaAddress[],
   ): Promise<Balances> {
     let native: bigint;
     if (tokens.includes('native')) {
@@ -150,7 +152,7 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
     );
 
     const balancesArr = tokens.map((token) => {
-      if (token === 'native') {
+      if (isNative(token)) {
         return { ['native']: native };
       }
       const addrString = new SolanaAddress(token).toString();
@@ -213,8 +215,7 @@ export class SolanaPlatform<N extends Network> extends PlatformContext<
   }
 
   static async getLatestBlock(rpc: Connection): Promise<number> {
-    const { lastValidBlockHeight } = await this.latestBlock(rpc);
-    return lastValidBlockHeight;
+    return await rpc.getSlot();
   }
 
   static async getLatestFinalizedBlock(rpc: Connection): Promise<number> {

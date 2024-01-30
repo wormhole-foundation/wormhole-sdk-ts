@@ -4,9 +4,6 @@ const jestConfig: JestConfigWithTsJest = {
   preset: "ts-jest",
   verbose: true,
   modulePathIgnorePatterns: ["mocks"],
-  moduleNameMapper: {
-    "@noble/secp256k1": require.resolve("@noble/secp256k1"),
-  },
   transform: {
     "^.+\\.tsx?$": [
       "ts-jest",

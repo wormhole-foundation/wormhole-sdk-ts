@@ -14,8 +14,8 @@ import {
 } from '@wormhole-foundation/connect-sdk';
 
 import { Provider, TransactionRequest } from 'ethers';
-import { CircleRelayer } from './ethers-contracts';
 import { ethers_contracts } from '.';
+import { CircleRelayer } from './ethers-contracts';
 
 import {
   EvmAddress,
@@ -28,12 +28,14 @@ import {
 } from '@wormhole-foundation/connect-sdk-evm';
 
 import '@wormhole-foundation/connect-sdk-evm-core';
+import '@wormhole-foundation/connect-sdk-evm-tokenbridge';
 
 export class EvmAutomaticCircleBridge<N extends Network, C extends EvmChains>
   implements AutomaticCircleBridge<N, EvmPlatformType, C>
 {
   readonly circleRelayer: CircleRelayer;
   readonly chainId: bigint;
+  readonly tokenAddr: string;
 
   // https://github.com/wormhole-foundation/wormhole-connect/blob/development/sdk/src/contexts/eth/context.ts#L379
 
@@ -61,6 +63,18 @@ export class EvmAutomaticCircleBridge<N extends Network, C extends EvmChains>
       relayerAddress,
       provider,
     );
+
+    const tokenAddr = circle.usdcContract.get(
+      this.network as circle.CircleNetwork,
+      this.chain as circle.CircleChain,
+    );
+
+    if (!tokenAddr)
+      throw new Error(
+        `USDC contract not found for ${this.network} ${this.chain}`,
+      );
+
+    this.tokenAddr = tokenAddr;
   }
 
   static async fromRpc<N extends Network>(
@@ -80,11 +94,10 @@ export class EvmAutomaticCircleBridge<N extends Network, C extends EvmChains>
   }
 
   async getRelayerFee(destination: Chain): Promise<bigint> {
-    const tokenAddr = circle.usdcContract(
-      this.network as circle.CircleNetwork,
-      this.chain as circle.CircleChain,
+    return this.circleRelayer.relayerFee(
+      toChainId(destination),
+      this.tokenAddr,
     );
-    return this.circleRelayer.relayerFee(toChainId(destination), tokenAddr);
   }
 
   async *transfer(
@@ -100,14 +113,9 @@ export class EvmAutomaticCircleBridge<N extends Network, C extends EvmChains>
       .toUint8Array();
     const nativeTokenGas = nativeGas ? nativeGas : 0n;
 
-    const tokenAddr = circle.usdcContract(
-      this.network as circle.CircleNetwork,
-      this.chain as circle.CircleChain,
-    );
-
     const tokenContract = EvmPlatform.getTokenImplementation(
       this.provider,
-      tokenAddr,
+      this.tokenAddr,
     );
 
     const allowance = await tokenContract.allowance(
@@ -128,7 +136,7 @@ export class EvmAutomaticCircleBridge<N extends Network, C extends EvmChains>
 
     const txReq =
       await this.circleRelayer.transferTokensWithRelay.populateTransaction(
-        tokenAddr,
+        this.tokenAddr,
         amount,
         nativeTokenGas,
         recipientChainId,
