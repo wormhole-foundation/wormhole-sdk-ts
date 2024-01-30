@@ -1,17 +1,11 @@
-/**
- * Converts a human friendly decimal number to base units as an integer
- *
- * @param amount The decimal number as a string to convert into base units
- * @param decimals the number of decimals to normalize to
- * @returns The amount converted to base units as a BigNumber
- */
-export function normalizeAmount(amount: number | string, decimals: number | bigint): bigint {
-  return baseUnits(parseAmount(amount, Number(decimals)));
-}
-
+/*
+ * Amount is a number of base units and decimal precision,
+ * expressed using a string for  JSON-compatibility
+ * */
 export interface Amount {
-  // This is stored as a string as opposed to bigint so that Amount is JSON-compatible 🙃
+  /* Amount expressed in base units */
   amount: string;
+  /* Number of decimal places in amount */
   decimals: number;
 };
 

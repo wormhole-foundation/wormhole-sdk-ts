@@ -2,7 +2,8 @@ import {
   CONFIG,
   Wormhole,
   api,
-  normalizeAmount,
+  baseUnits,
+  parseAmount,
   signSendWait,
 } from "@wormhole-foundation/connect-sdk";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
@@ -31,7 +32,7 @@ import { getStuff } from "./helpers";
     sender.address.address,
     receiver.address,
     "native",
-    normalizeAmount("0.1", BigInt(snd.config.nativeTokenDecimals)),
+    baseUnits(parseAmount("0.1", snd.config.nativeTokenDecimals)),
   );
 
   // Sign and send the transaction

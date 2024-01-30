@@ -5,7 +5,8 @@ import {
   Platform,
   TokenId,
   Wormhole,
-  normalizeAmount,
+  baseUnits,
+  parseAmount,
 } from "@wormhole-foundation/connect-sdk";
 // Import the platform specific packages
 import { CosmwasmPlatform, CosmwasmPlatformType } from "@wormhole-foundation/connect-sdk-cosmwasm";
@@ -56,7 +57,7 @@ import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
   // we'll use the native token on the source chain
 
   const token: TokenId = Wormhole.tokenId(external.chain, "native");
-  const amount = normalizeAmount("0.01", external.config.nativeTokenDecimals);
+  const amount = baseUnits(parseAmount("0.01", external.config.nativeTokenDecimals));
 
   // Transfer native token from source chain, through gateway, to a cosmos chain
   let route1 = fakeIt
