@@ -10,10 +10,17 @@ export function normalizeAmount(amount: number | string, decimals: number | bigi
 }
 
 export interface Amount {
+  // This is stored as a string as opposed to bigint so that Amount is JSON-compatible 🙃
   amount: string;
   decimals: number;
 };
 
+/**
+ * Parses a string or number into an Amount, given a decimal level
+ * @param amount The string or number to parse
+ * @param decimals The number of decimals for the token this amount is of
+ * @returns An Amount, expressed as base units and decimals
+ */
 export function parseAmount(amount: string | number, decimals: number): Amount {
   validateAmountInput(amount, decimals);
 
@@ -40,15 +47,32 @@ export function parseAmount(amount: string | number, decimals: number): Amount {
   return { amount: amountStr, decimals }
 }
 
+/**
+ * Directly creates an Amount given the base units and decimal level
+ * @param amount Amount expressed as base units
+ * @param decimals The number of decimals for the token this amount is of
+ * @returns An Amount, expressed as base units and decimals
+ */
 export function amountFromBaseUnits(amount: bigint, decimals: number): Amount {
   return { amount: amount.toString(), decimals }
 }
 
+/**
+ * Returns the base units from an Amount, as a bigint
+ * @param amount An Amount
+ * @returns A bigint, representing the base units for the Amount
+ */
 export function baseUnits(amount: Amount): bigint {
   validateAmount(amount);
   return BigInt(amount.amount)
 }
 
+/**
+ * Formats an Amount as a human-readable string
+ * @param amount An Amount
+ * @param precision Number of decimal places to render
+ * @returns A string representing the Amount as a fixed point number
+ */
 export function displayAmount(amount: Amount, precision?: number): string {
   validateAmount(amount);
 
