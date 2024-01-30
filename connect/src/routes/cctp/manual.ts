@@ -1,4 +1,11 @@
-import { Chain, Network, circle, contracts } from "@wormhole-foundation/sdk-base";
+import {
+  Amount,
+  Chain,
+  Network,
+  baseUnits,
+  circle,
+  contracts,
+} from "@wormhole-foundation/sdk-base";
 import {
   ChainContext,
   CircleBridge,
@@ -20,7 +27,7 @@ export namespace CCTPRoute {
   };
 
   export type NormalizedParams = {
-    amount: bigint;
+    amount: Amount;
   };
 
   export interface ValidatedParams extends ValidatedTransferParams<Options> {
@@ -85,15 +92,7 @@ export class CCTPRoute<N extends Network>
   }
 
   async validate(params: Tp): Promise<Vr> {
-    const amount = this.request.normalizeAmount(params.amount);
-
-    if (amount < 0n) {
-      return {
-        valid: false,
-        params,
-        error: new Error("Amount must be positive"),
-      };
-    }
+    const amount = this.request.parseAmount(params.amount);
 
     const validatedParams: Vp = {
       normalizedParams: {
@@ -107,11 +106,13 @@ export class CCTPRoute<N extends Network>
   }
 
   async quote(params: Vp) {
-    return this.request.displayQuote(await CircleTransfer.quoteTransfer(
-      this.request.fromChain,
-      this.request.toChain,
-      this.toTransferDetails(params),
-    ));
+    return this.request.displayQuote(
+      await CircleTransfer.quoteTransfer(
+        this.request.fromChain,
+        this.request.toChain,
+        this.toTransferDetails(params),
+      ),
+    );
   }
 
   async initiate(signer: Signer, params: Vp): Promise<R> {
@@ -163,7 +164,7 @@ export class CCTPRoute<N extends Network>
     return {
       from: this.request.from,
       to: this.request.to,
-      amount: params.normalizedParams.amount,
+      amount: baseUnits(params.normalizedParams.amount),
       automatic: false,
       ...params.options,
     };

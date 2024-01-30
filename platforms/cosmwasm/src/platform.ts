@@ -94,8 +94,8 @@ export class CosmwasmPlatform<N extends Network>
     chain: C,
     rpc: CosmWasmClient,
     token: AnyCosmwasmAddress,
-  ): Promise<bigint> {
-    if (isNative(token)) return BigInt(decimals.nativeDecimals(CosmwasmPlatform._platform));
+  ): Promise<number> {
+    if (isNative(token)) return decimals.nativeDecimals(CosmwasmPlatform._platform);
 
     const addrStr = new CosmwasmAddress(token).toString();
     const { decimals: numDecimals } = await rpc.queryContractSmart(addrStr, {

@@ -74,16 +74,16 @@ export class AlgorandPlatform<N extends Network>
     return platform === AlgorandPlatform._platform;
   }
 
-  static async getDecimals(chain: Chain, rpc: Algodv2, token: AnyAlgorandAddress): Promise<bigint> {
+  static async getDecimals(chain: Chain, rpc: Algodv2, token: AnyAlgorandAddress): Promise<number> {
     // It may come in as a universal address
     const assetId = isNative(token) ? 0 : new AlgorandAddress(token).toInt();
 
-    if (assetId === 0) return BigInt(decimals.nativeDecimals(AlgorandPlatform._platform));
+    if (assetId === 0) return decimals.nativeDecimals(AlgorandPlatform._platform);
 
     const assetResp = await rpc.getAssetByID(assetId).do();
     const asset = modelsv2.Asset.from_obj_for_encoding(assetResp);
     if (!asset.params || !asset.params.decimals) throw new Error("Could not fetch token details");
-    return BigInt(asset.params.decimals);
+    return Number(asset.params.decimals);
   }
 
   static async getBalance(

@@ -41,7 +41,7 @@ export interface PlatformUtils<P extends Platform> {
     chain: C,
     rpc: RpcConnection<P>,
     token: TokenAddress<C>,
-  ): Promise<bigint>;
+  ): Promise<number>;
 
   // Get the balance of a token for a given wallet address
   getBalance<C extends PlatformToChains<P>>(

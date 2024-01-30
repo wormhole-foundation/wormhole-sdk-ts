@@ -1,4 +1,5 @@
 import {
+  Amount,
   AttestationReceipt,
   Chain,
   ChainContext,
@@ -11,6 +12,7 @@ import {
   TransactionId,
   TransferState,
   Wormhole,
+  baseUnits,
   canonicalAddress,
   chainToPlatform,
   contracts,
@@ -22,7 +24,13 @@ import {
   tokens,
 } from "../..";
 import { AutomaticRoute, StaticRouteMethods } from "../route";
-import { Quote, Receipt, TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
+import {
+  Quote,
+  Receipt,
+  TransferParams,
+  ValidatedTransferParams,
+  ValidationResult,
+} from "../types";
 
 export const SLIPPAGE_BPS = 15n; // 0.15%
 export const BPS_PER_HUNDRED_PERCENT = 10000n;
@@ -35,7 +43,7 @@ export namespace PorticoRoute {
   }
 
   export type NormalizedParams = {
-    amount: bigint;
+    amount: Amount;
 
     canonicalSourceToken: TokenId;
     canonicalDestinationToken: TokenId;
@@ -185,7 +193,7 @@ export class AutomaticPorticoRoute<N extends Network>
         amount: params.amount,
         options: params.options ?? this.getDefaultOptions(),
         normalizedParams: {
-          amount: this.request.normalizeAmount(params.amount),
+          amount: this.request.parseAmount(params.amount),
           canonicalSourceToken,
           canonicalDestinationToken,
           sourceToken,
@@ -224,20 +232,23 @@ export class AutomaticPorticoRoute<N extends Network>
       relayerFee: fee,
     };
 
-    return { quote, ...this.request.displayQuote({
-      sourceToken: {
-        token: params.normalizedParams.sourceToken,
-        amount: params.normalizedParams.amount,
-      },
-      destinationToken: {
-        token: params.normalizedParams.destinationToken,
-        amount: quote.swapAmounts.minAmountFinish - fee,
-      },
-      relayFee: {
-        token: params.normalizedParams.destinationToken,
-        amount: fee,
-      },
-    }) };
+    return {
+      quote,
+      ...this.request.displayQuote({
+        sourceToken: {
+          token: params.normalizedParams.sourceToken,
+          amount: baseUnits(params.normalizedParams.amount),
+        },
+        destinationToken: {
+          token: params.normalizedParams.destinationToken,
+          amount: quote.swapAmounts.minAmountFinish - fee,
+        },
+        relayFee: {
+          token: params.normalizedParams.destinationToken,
+          amount: fee,
+        },
+      }),
+    };
   }
 
   async initiate(sender: Signer<N>, params: VP) {
@@ -249,7 +260,7 @@ export class AutomaticPorticoRoute<N extends Network>
       this.request.from.address,
       this.request.to,
       sourceToken,
-      params.normalizedParams.amount,
+      baseUnits(params.normalizedParams.amount),
       destToken!,
       params.quote!.quote,
     );
@@ -289,7 +300,7 @@ export class AutomaticPorticoRoute<N extends Network>
     const startQuote = await fromPorticoBridge.quoteSwap(
       params.normalizedParams.sourceToken.address,
       params.normalizedParams.canonicalSourceToken.address,
-      params.normalizedParams.amount,
+      baseUnits(params.normalizedParams.amount),
     );
     const startSlippage = (startQuote * SLIPPAGE_BPS) / BPS_PER_HUNDRED_PERCENT;
 

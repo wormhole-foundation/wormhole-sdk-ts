@@ -4,8 +4,12 @@ import {
   Network,
   Platform,
   PlatformToChains,
+  amountFromBaseUnits,
+  baseUnits,
   encoding,
+  scaleAmount,
   toChain as toChainName,
+  truncateAmount,
 } from "@wormhole-foundation/sdk-base";
 import {
   AttestationId,
@@ -55,6 +59,9 @@ export type TokenTransferReceipt<
   SC extends Chain = Chain,
   DC extends Chain = Chain,
 > = TransferReceipt<TokenTransferAttestationReceipt, SC, DC>;
+
+// 8 is maximum precision supported by the token bridge VAA
+const TOKEN_BRIDGE_MAX_DECIMALS = 8;
 
 export class TokenTransfer<N extends Network = Network>
   implements WormholeTransfer<TokenTransferProtocol>
@@ -170,9 +177,10 @@ export class TokenTransfer<N extends Network = Network>
     let from = { chain: vaa.emitterChain, address: vaa.emitterAddress };
     let { token, to } = vaa.payload;
 
-    const rescale = (amt: bigint, decimals: bigint) =>
-      decimals > 8 ? amt * 10n ** (decimals - 8n) : amt;
-    const amount = rescale(token.amount, await wh.getDecimals(token.chain, token.address));
+    const scaledAmount = scaleAmount(
+      amountFromBaseUnits(token.amount, TOKEN_BRIDGE_MAX_DECIMALS),
+      await wh.getDecimals(token.chain, token.address),
+    );
 
     let nativeGasAmount: bigint = 0n;
     if (automatic) {
@@ -183,7 +191,7 @@ export class TokenTransfer<N extends Network = Network>
 
     const details: TokenTransferDetails = {
       token: token,
-      amount,
+      amount: baseUnits(scaledAmount),
       from,
       to,
       automatic,
@@ -447,57 +455,59 @@ export class TokenTransfer<N extends Network = Network>
       ? await srcChain.getNativeWrappedTokenId()
       : transfer.token;
 
-    const dstDecimals = await dstChain.getDecimals(dstToken.address);
     const srcDecimals = await srcChain.getDecimals(srcToken.address);
+    const dstDecimals = await dstChain.getDecimals(dstToken.address);
 
-    // truncate the amount for over-the-wire max representation
-    const truncate = (amt: bigint, decimals: bigint) =>
-      decimals > 8 ? amt / 10n ** (decimals - 8n) : amt;
-    // scale by number of decimals, pair with truncate
-    const scale = (amt: bigint, decimals: bigint) =>
-      decimals > 8 ? amt * 10n ** (decimals - 8n) : amt;
-    // dedust for source using the number of decimals on the source chain
-    // but scale back to original decimals
-    const dedust = (amt: bigint) => scale(truncate(amt, srcDecimals), srcDecimals);
-    // truncate and rescale to fit destination token
-    const mintable = (amt: bigint) => scale(truncate(amt, srcDecimals), dstDecimals);
+    const srcAmount = amountFromBaseUnits(transfer.amount, srcDecimals);
 
-    // dedust for transfer over the bridge which truncates to 8 decimals
-    let srcAmount = dedust(transfer.amount);
-    let dstAmount = mintable(transfer.amount);
+    const srcAmountTruncated = truncateAmount(srcAmount, TOKEN_BRIDGE_MAX_DECIMALS);
+    const dstAmountTruncated = scaleAmount(srcAmountTruncated, dstDecimals);
 
     if (!transfer.automatic) {
       return {
-        sourceToken: { token: srcToken, amount: srcAmount },
-        destinationToken: { token: dstToken, amount: dstAmount },
+        sourceToken: { token: srcToken, amount: baseUnits(srcAmountTruncated) },
+        destinationToken: { token: dstToken, amount: baseUnits(dstAmountTruncated) },
       };
     }
 
     // Otherwise automatic
 
     // If a native gas dropoff is requested, remove that from the amount they'll get
-    const _nativeGas = transfer.nativeGas ? mintable(transfer.nativeGas) : 0n;
-    dstAmount -= _nativeGas;
+    const dstNativeGasAmount = scaleAmount(
+      truncateAmount(
+        amountFromBaseUnits(transfer.nativeGas ?? 0n, srcDecimals),
+        TOKEN_BRIDGE_MAX_DECIMALS,
+      ),
+      dstDecimals,
+    );
+    const dstNativeGasBaseUnits = baseUnits(dstNativeGasAmount);
+
+    let dstAmountBaseUnits = baseUnits(dstAmountTruncated) - dstNativeGasBaseUnits;
 
     // The fee is also removed from the amount transferred
     // quoted on the source chain
     const stb = await srcChain.getAutomaticTokenBridge();
     const fee = await stb.getRelayerFee(transfer.from.address, transfer.to, srcToken.address);
-    dstAmount -= mintable(fee);
+
+    const feeAmountDest = scaleAmount(
+      truncateAmount(amountFromBaseUnits(fee, srcDecimals), TOKEN_BRIDGE_MAX_DECIMALS),
+      dstDecimals,
+    );
+    dstAmountBaseUnits -= baseUnits(feeAmountDest);
 
     // The expected destination gas can be pulled from the destination token bridge
     let destinationNativeGas = 0n;
     if (transfer.nativeGas) {
       const dtb = await dstChain.getAutomaticTokenBridge();
-      destinationNativeGas = await dtb.nativeTokenAmount(dstToken.address, _nativeGas);
+      destinationNativeGas = await dtb.nativeTokenAmount(dstToken.address, dstNativeGasBaseUnits);
     }
 
     return {
       sourceToken: {
         token: srcToken,
-        amount: srcAmount,
+        amount: baseUnits(srcAmountTruncated),
       },
-      destinationToken: { token: dstToken, amount: dstAmount },
+      destinationToken: { token: dstToken, amount: dstAmountBaseUnits },
       relayFee: { token: srcToken, amount: fee },
       destinationNativeGas,
     };

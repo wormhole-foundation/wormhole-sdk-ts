@@ -1,4 +1,11 @@
-import { Chain, Network, contracts } from "@wormhole-foundation/sdk-base";
+import {
+  Amount,
+  Chain,
+  Network,
+  baseUnits,
+  contracts,
+  parseAmount,
+} from "@wormhole-foundation/sdk-base";
 import {
   ChainContext,
   Signer,
@@ -7,12 +14,7 @@ import {
   TransactionId,
 } from "@wormhole-foundation/sdk-definitions";
 import { TokenTransfer, TokenTransferVAA } from "../../protocols/tokenTransfer";
-import {
-  AttestationReceipt,
-  TransferReceipt,
-  TransferState,
-  isAttested,
-} from "../../types";
+import { AttestationReceipt, TransferReceipt, TransferState, isAttested } from "../../types";
 import { Wormhole } from "../../wormhole";
 import { ManualRoute, StaticRouteMethods } from "../route";
 import { Quote, TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
@@ -23,7 +25,7 @@ export namespace TokenBridgeRoute {
   };
 
   export type NormalizedParams = {
-    amount: bigint;
+    amount: Amount;
   };
 
   export interface ValidatedParams extends ValidatedTransferParams<Options> {
@@ -82,10 +84,7 @@ export class TokenBridgeRoute<N extends Network>
   }
 
   async validate(params: Tp): Promise<Vr> {
-    const amt = this.request.normalizeAmount(params.amount);
-    if (amt <= 0n) {
-      return { valid: false, params, error: new Error("Amount has to be positive") };
-    }
+    const amt = parseAmount(params.amount, this.request.source.decimals);
 
     const validatedParams: Vp = {
       amount: params.amount,
@@ -97,11 +96,13 @@ export class TokenBridgeRoute<N extends Network>
   }
 
   async quote(params: Vp) {
-    return this.request.displayQuote(await TokenTransfer.quoteTransfer(
-      this.request.fromChain,
-      this.request.toChain,
-      this.toTransferDetails(params),
-    ));
+    return this.request.displayQuote(
+      await TokenTransfer.quoteTransfer(
+        this.request.fromChain,
+        this.request.toChain,
+        this.toTransferDetails(params),
+      ),
+    );
   }
 
   async initiate(signer: Signer, params: Vp): Promise<R> {
@@ -147,7 +148,7 @@ export class TokenBridgeRoute<N extends Network>
       token: this.request.source.id,
       from: this.request.from,
       to: this.request.to,
-      amount: params.normalizedParams.amount,
+      amount: baseUnits(params.normalizedParams.amount),
       ...params.options,
     };
   }
