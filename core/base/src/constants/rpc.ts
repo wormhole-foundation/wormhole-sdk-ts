@@ -19,7 +19,7 @@ const rpcConfig = [[
     ["Optimism",  "https://mainnet.optimism.io"],
     ["Base",      "https://mainnet.base.org"],
     ["Osmosis",   "https://osmosis-rpc.polkachu.com"],
-    ["Cosmoshub", "https://cosmos-rest.publicnode.com"],
+    ["Cosmoshub", "https://cosmos-rpc.publicnode.com:443"],
     ["Evmos",     "https://evmos-rpc.polkachu.com"],
     ["Injective", "https://sentry.tm.injective.network"],
     ["Wormchain", "https://wormchain-rpc.quickapi.com"],

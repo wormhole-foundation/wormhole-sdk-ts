@@ -21,44 +21,35 @@ type Status = {
 type HeightsByChain = Record<string, Record<string, bigint>>;
 
 const skipChains = [
-  "Terra",
   "Pythnet",
   "Evmos",
-  "Injective",
   "Osmosis",
-  "Terra2",
   "Kujira",
   "Klaytn",
   "Wormchain",
   "Near",
   "Sui",
   "Xpla",
-  "Sei",
   "Aptos",
+  "Cosmoshub",
 ];
 
-const dontSkipChains = ["Cosmoshub"];
 (async function () {
-  const wh = new Wormhole(
-    "Mainnet",
-    [EvmPlatform, SolanaPlatform, CosmwasmPlatform, AlgorandPlatform],
-    {
-      chains: {
-        Cosmoshub: {
-          rpc: "https://cosmos-rest.publicnode.com",
-        },
-      },
-    },
-  );
+  const wh = new Wormhole("Mainnet", [
+    EvmPlatform,
+    SolanaPlatform,
+    CosmwasmPlatform,
+    AlgorandPlatform,
+  ]);
 
-  const hbc = await getHeartbeats();
+  const hbc = await getHeartbeats(wh.config.api);
   for (const [chain, heights] of Object.entries(hbc)) {
-    if (!dontSkipChains.includes(chain)) continue;
+    if (skipChains.includes(chain)) continue;
+
     try {
       const ctx = wh.getChain(chain as Chain);
-      const r = await ctx.getRpc();
-      console.log(r.forceGetCometClient());
-
+      // ..
+      await ctx.getRpc();
       const chainLatest = await ctx.getLatestBlock();
       const stats = getStats(Object.values(heights));
       console.log(chain, BigInt(chainLatest) - stats.quorum);
@@ -68,8 +59,8 @@ const dontSkipChains = ["Cosmoshub"];
   }
 })();
 
-async function getHeartbeats(): Promise<HeightsByChain> {
-  const hbs = await api.getGuardianHeartbeats();
+async function getHeartbeats(apiUrl: string): Promise<HeightsByChain> {
+  const hbs = await api.getGuardianHeartbeats(apiUrl);
   const nets = hbs!
     .map((hb) => {
       return hb.rawHeartbeat.networks

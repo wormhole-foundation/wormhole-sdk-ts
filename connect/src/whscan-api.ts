@@ -337,8 +337,8 @@ export type GuardianHeartbeat = {
   verifiedGuardianAddr: string;
 };
 
-export async function getGuardianHeartbeats(): Promise<GuardianHeartbeat[] | null> {
-  const url = "https://api.wormholescan.io/v1/heartbeats";
+export async function getGuardianHeartbeats(rpcUrl: string): Promise<GuardianHeartbeat[] | null> {
+  const url = `${rpcUrl}/v1/heartbeats`;
   try {
     const response = await axios.get<{ entries: GuardianHeartbeat[] }>(url);
     if (response.data && response.data.entries.length > 0) return response.data.entries;
