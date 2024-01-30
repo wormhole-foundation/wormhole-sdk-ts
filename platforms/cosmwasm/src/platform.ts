@@ -44,15 +44,9 @@ export class CosmwasmPlatform<N extends Network>
     super(network, _config ?? networkPlatformConfigs(network, CosmwasmPlatform._platform));
   }
 
-  // export const {
-  //   getRpc: getGatewayRpc,
-  //   getWrappedAsset: getGatewayWrappedAsset,
-  //   gatewayAddress,
-  //   getGatewaySourceChannel,
-  // } = Gateway;
-
   async getRpc<C extends CosmwasmChains>(chain: C): Promise<CosmWasmClient> {
-    if (chain in this.config) return await CosmWasmClient.connect(this.config[chain]!.rpc);
+    if (chain in this.config && this.config[chain]!.rpc)
+      return await CosmWasmClient.connect(this.config[chain]!.rpc);
     throw new Error("No configuration available for chain: " + chain);
   }
 
@@ -164,8 +158,9 @@ export class CosmwasmPlatform<N extends Network>
   }
 
   static async getLatestBlock(rpc: CosmWasmClient): Promise<number> {
-    return rpc.getHeight();
+    return await rpc.getHeight();
   }
+
   static async getLatestFinalizedBlock(rpc: CosmWasmClient): Promise<number> {
     throw new Error("not implemented");
   }

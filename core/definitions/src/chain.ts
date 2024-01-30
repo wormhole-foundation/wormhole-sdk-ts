@@ -54,7 +54,7 @@ export abstract class ChainContext<
       if (found) return BigInt(found.decimals);
     }
 
-    return this.platform.utils().getDecimals(this.chain, this.getRpc(), token);
+    return this.platform.utils().getDecimals(this.chain, await this.getRpc(), token);
   }
 
   // Get the balance of a token for a given address
@@ -63,11 +63,11 @@ export abstract class ChainContext<
   }
 
   async getLatestBlock(): Promise<number> {
-    return this.platform.utils().getLatestBlock(this.getRpc());
+    return this.platform.utils().getLatestBlock(await this.getRpc());
   }
 
   async getLatestFinalizedBlock(): Promise<number> {
-    return this.platform.utils().getLatestFinalizedBlock(this.getRpc());
+    return this.platform.utils().getLatestFinalizedBlock(await this.getRpc());
   }
 
   // Get details about the transaction
