@@ -130,6 +130,13 @@ export function displayAmount(amount: Amount, precision?: number): string {
   }
 
   if (typeof precision === 'number') {
+    while (precision < partial.length) {
+      if (partial[partial.length-1] === '0') {
+        partial = partial.substring(0, partial.length-1);
+      } else {
+        break;
+      }
+    }
     while (precision > partial.length) {
       partial += '0';
     }

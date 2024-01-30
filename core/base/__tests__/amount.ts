@@ -60,7 +60,8 @@ describe("Amount Tests", function () {
   const displayCases: [Amount, number | undefined, string][] = [
     [{ amount: '1', decimals: 18 }, undefined, '0.000000000000000001'],
     [{ amount: '1', decimals: 18 }, 0, '0.000000000000000001'],
-    [{ amount: '5020', decimals: 2 }, 0, '50.20'],
+    [{ amount: '1', decimals: 18 }, 20, '0.00000000000000000100'],
+    [{ amount: '5020', decimals: 2 }, 0, '50.2'],
     [{ amount: '5020', decimals: 2 }, 4, '50.2000'],
     [{ amount: '5020', decimals: 2 }, undefined, '50.20'],
     [{ amount: '1', decimals: 0 }, 0, '1'],
