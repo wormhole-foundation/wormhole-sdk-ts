@@ -15,7 +15,7 @@ export const gatewayContracts = [[
 // prettier-ignore
 export const translatorContracts = [[
   "Mainnet", [
-    ["Sei", ""], // TODO
+    ["Sei", "sei189adguawugk3e55zn63z8r9ll29xrjwca636ra7v7gxuzn98sxyqwzt47l"],
   ]], [
   "Testnet", [
     ["Sei", "sei1dkdwdvknx0qav5cp5kw68mkn3r99m3svkyjfvkztwh97dv2lm0ksj6xrak"]
