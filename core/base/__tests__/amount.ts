@@ -8,6 +8,8 @@ describe("Amount Tests", function () {
     ['90.9999', 4, { amount: '909999', decimals: 4 }],
     ['0', 14, { amount: '0', decimals: 14 }],
     [10.0005, 6, { amount: '10000500', decimals: 6 }],
+    ['00000010.5', 2, { amount: '1050', decimals: 2 }],
+    ['00000010.55000000', 2, { amount: '1055', decimals: 2 }],
   ];
 
   it("should parse a number or string value", function () {

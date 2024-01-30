@@ -29,7 +29,13 @@ export function parseAmount(amount: string | number, decimals: number): Amount {
   let [whole, partial] =
     chunks.length === 0 ? ["0", ""] : chunks.length === 1 ? [chunks[0], ""] : chunks;
 
-  if (decimals < partial.length) throw new Error('Amount: invalid input. Decimals too low.');
+  if (decimals < partial.length) {
+    if (partial.substring(decimals) != '0'.repeat(partial.length - decimals)) {
+      throw new Error('Amount: invalid input. Decimals too low.');
+    } else {
+      partial = partial.substring(0, decimals);
+    }
+  }
 
   // Add trailing zeroes
   while (partial.length < decimals) partial += '0';
