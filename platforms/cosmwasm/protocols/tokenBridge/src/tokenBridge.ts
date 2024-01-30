@@ -50,6 +50,9 @@ export class CosmwasmTokenBridge<N extends Network, C extends CosmwasmChains>
     this.tokenBridge = tokenBridgeAddress;
     // May be undefined, thats ok
     this.translator = this.contracts.translator;
+    // But it cannot be an empty string (misconfiguration)
+    if (this.translator !== undefined && this.translator === "")
+      throw new Error("Translator address may be undefined but not empty string");
   }
 
   static async fromRpc<N extends Network>(
