@@ -348,10 +348,7 @@ export class TokenTransfer<N extends Network = Network>
     key: WormholeMessageId | TxHash,
     timeout?: number,
   ): Promise<TokenTransferVAA> {
-    const vaa =
-      typeof key === "string"
-        ? await wh.getVaaByTxHash(key, TokenBridge.getTransferDiscriminator(), timeout)
-        : await wh.getVaa(key, TokenBridge.getTransferDiscriminator(), timeout);
+    const vaa = await wh.getVaa(key, TokenBridge.getTransferDiscriminator(), timeout);
 
     if (!vaa) throw new Error(`No VAA available after retries exhausted`);
 

@@ -1,7 +1,13 @@
 import { UniversalOrNative, PlatformToChains } from "@wormhole-foundation/connect-sdk";
 import { logs as cosmosLogs } from "@cosmjs/stargate";
 
+/**
+ * Runtime value for the Cosmwasm Platform
+ */
 export const _platform: "Cosmwasm" = "Cosmwasm";
+/**
+ * Compile time type for Cosmwasm Platform
+ */
 export type CosmwasmPlatformType = typeof _platform;
 
 export type CosmwasmChains = PlatformToChains<CosmwasmPlatformType>;

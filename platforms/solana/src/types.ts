@@ -7,7 +7,13 @@ import {
 export const unusedNonce = 0;
 export const unusedArbiterFee = 0n;
 
+/**
+ * Runtime value for the Solana Platform
+ */
 export const _platform: 'Solana' = 'Solana';
+/**
+ * Type for the Solana Platform
+ */
 export type SolanaPlatformType = typeof _platform;
 
 export type SolanaChains = PlatformToChains<SolanaPlatformType>;

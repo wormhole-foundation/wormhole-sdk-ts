@@ -278,7 +278,7 @@ export class AutomaticPorticoRoute<N extends Network>
     if (!isSourceInitiated(receipt)) throw new Error("Source must be initiated");
 
     const { txid } = receipt.originTxs[receipt.originTxs.length - 1]!;
-    const vaa = await this.wh.getVaaByTxHash(txid, "TokenBridge:TransferWithPayload", timeout);
+    const vaa = await this.wh.getVaa(txid, "TokenBridge:TransferWithPayload", timeout);
     if (!vaa) throw new Error("No VAA found for transaction: " + txid);
 
     const parsed = PorticoBridge.deserializePayload(vaa.payload.payload);

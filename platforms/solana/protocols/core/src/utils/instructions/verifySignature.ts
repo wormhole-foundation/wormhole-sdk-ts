@@ -20,8 +20,6 @@ import { createSecp256k1Instruction } from './secp256k1';
 const MAX_LEN_GUARDIAN_KEYS = 19;
 
 /**
- * This is used in {@link createPostSignedVaaTransactions}'s initial transactions.
- *
  * Signatures are batched in groups of 7 due to instruction
  * data limits. These signatures are passed through to the Secp256k1
  * program to verify that the guardian public keys can be recovered.
@@ -36,7 +34,7 @@ const MAX_LEN_GUARDIAN_KEYS = 19;
  * @param {Connection} connection - Solana web3 connection
  * @param {PublicKeyInitData} wormholeProgramId - wormhole program address
  * @param {PublicKeyInitData} payer - transaction signer address
- * @param {SignedVaa | ParsedVaa} vaa - either signed VAA bytes or parsed VAA (use {@link parseVaa} on signed VAA)
+ * @param {SignedVaa | ParsedVaa} vaa - either signed VAA bytes or parsed VAA
  * @param {PublicKeyInitData} signatureSet - address to account of verified signatures
  * @param {web3.ConfirmOptions} [options] - Solana confirmation options
  */
@@ -111,7 +109,7 @@ export async function createVerifySignaturesInstructions(
  *
  * @param {PublicKeyInitData} wormholeProgramId - wormhole program address
  * @param {PublicKeyInitData} payer - transaction signer address
- * @param {SignedVaa | ParsedVaa} vaa - either signed VAA (Buffer) or parsed VAA (use {@link parseVaa} on signed VAA)
+ * @param {SignedVaa | ParsedVaa} vaa - either signed VAA (Buffer) or parsed VAA
  * @param {PublicKeyInitData} signatureSet - key for signature set account
  * @param {Buffer} signatureStatus - array of guardian indices
  *

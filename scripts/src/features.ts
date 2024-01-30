@@ -54,7 +54,7 @@ function getSupportmatrix(n: Network) {
   // Setup
   const wh = new Wormhole(n, [EvmPlatform, SolanaPlatform, CosmwasmPlatform, AlgorandPlatform]);
 
-  const resolver = wh.resolver();
+  const resolver = wh.resolver([]);
 
   const protoSupport: SupportedProtocols = {};
   for (const rc of resolver.routeConstructors) {
