@@ -80,15 +80,14 @@ export class EvmPlatform<N extends Network>
     chain: Chain,
     rpc: Provider,
     token: AnyEvmAddress,
-  ): Promise<bigint> {
-    if (isNative(token))
-      return BigInt(decimals.nativeDecimals(EvmPlatform._platform));
+  ): Promise<number> {
+    if (isNative(token)) return decimals.nativeDecimals(EvmPlatform._platform);
 
     const tokenContract = EvmPlatform.getTokenImplementation(
       rpc,
       new EvmAddress(token).toString(),
     );
-    return tokenContract.decimals();
+    return Number(tokenContract.decimals());
   }
 
   static async getBalance(

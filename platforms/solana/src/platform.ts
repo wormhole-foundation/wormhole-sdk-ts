@@ -99,9 +99,9 @@ export class SolanaPlatform<N extends Network>
     chain: Chain,
     rpc: Connection,
     token: AnySolanaAddress,
-  ): Promise<bigint> {
+  ): Promise<number> {
     if (isNative(token))
-      return BigInt(decimals.nativeDecimals(SolanaPlatform._platform));
+      return decimals.nativeDecimals(SolanaPlatform._platform);
 
     let mint = await rpc.getParsedAccountInfo(
       new SolanaAddress(token).unwrap(),
@@ -111,7 +111,7 @@ export class SolanaPlatform<N extends Network>
 
     const { decimals: numDecimals } = (mint.value.data as ParsedAccountData)
       .parsed.info;
-    return BigInt(numDecimals);
+    return numDecimals;
   }
 
   static async getBalance(

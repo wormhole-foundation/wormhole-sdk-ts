@@ -60,6 +60,9 @@ export type TokenTransferReceipt<
   DC extends Chain = Chain,
 > = TransferReceipt<TokenTransferAttestationReceipt, SC, DC>;
 
+// 8 is maximum precision supported by the token bridge VAA
+const TOKEN_BRIDGE_MAX_DECIMALS = 8;
+
 export class TokenTransfer<N extends Network = Network>
   implements WormholeTransfer<TokenTransferProtocol>
 {
@@ -174,9 +177,10 @@ export class TokenTransfer<N extends Network = Network>
     let from = { chain: vaa.emitterChain, address: vaa.emitterAddress };
     let { token, to } = vaa.payload;
 
-    const rescale = (amt: bigint, decimals: bigint) =>
-      decimals > 8 ? amt * 10n ** (decimals - 8n) : amt;
-    const amount = rescale(token.amount, await wh.getDecimals(token.chain, token.address));
+    const scaledAmount = scaleAmount(
+      amountFromBaseUnits(token.amount, TOKEN_BRIDGE_MAX_DECIMALS),
+      await wh.getDecimals(token.chain, token.address),
+    );
 
     let nativeGasAmount: bigint = 0n;
     if (automatic) {
@@ -187,7 +191,7 @@ export class TokenTransfer<N extends Network = Network>
 
     const details: TokenTransferDetails = {
       token: token,
-      amount,
+      amount: baseUnits(scaledAmount),
       from,
       to,
       automatic,
@@ -454,10 +458,9 @@ export class TokenTransfer<N extends Network = Network>
     const srcDecimals = await srcChain.getDecimals(srcToken.address);
     const dstDecimals = await dstChain.getDecimals(dstToken.address);
 
-    const srcAmount = amountFromBaseUnits(transfer.amount, srcDecimals)
+    const srcAmount = amountFromBaseUnits(transfer.amount, srcDecimals);
 
-    // 8 is maximum precision supported by the token bridge VAA
-    const srcAmountTruncated = truncateAmount(srcAmount, 8);
+    const srcAmountTruncated = truncateAmount(srcAmount, TOKEN_BRIDGE_MAX_DECIMALS);
     const dstAmountTruncated = scaleAmount(srcAmountTruncated, dstDecimals);
 
     if (!transfer.automatic) {
@@ -470,7 +473,13 @@ export class TokenTransfer<N extends Network = Network>
     // Otherwise automatic
 
     // If a native gas dropoff is requested, remove that from the amount they'll get
-    const dstNativeGasAmount = scaleAmount(truncateAmount(amountFromBaseUnits(transfer.nativeGas ?? 0n, srcDecimals), 8), dstDecimals);
+    const dstNativeGasAmount = scaleAmount(
+      truncateAmount(
+        amountFromBaseUnits(transfer.nativeGas ?? 0n, srcDecimals),
+        TOKEN_BRIDGE_MAX_DECIMALS,
+      ),
+      dstDecimals,
+    );
     const dstNativeGasBaseUnits = baseUnits(dstNativeGasAmount);
 
     let dstAmountBaseUnits = baseUnits(dstAmountTruncated) - dstNativeGasBaseUnits;
@@ -480,7 +489,10 @@ export class TokenTransfer<N extends Network = Network>
     const stb = await srcChain.getAutomaticTokenBridge();
     const fee = await stb.getRelayerFee(transfer.from.address, transfer.to, srcToken.address);
 
-    const feeAmountDest = scaleAmount(truncateAmount(amountFromBaseUnits(fee, srcDecimals), 8), dstDecimals);
+    const feeAmountDest = scaleAmount(
+      truncateAmount(amountFromBaseUnits(fee, srcDecimals), TOKEN_BRIDGE_MAX_DECIMALS),
+      dstDecimals,
+    );
     dstAmountBaseUnits -= baseUnits(feeAmountDest);
 
     // The expected destination gas can be pulled from the destination token bridge
