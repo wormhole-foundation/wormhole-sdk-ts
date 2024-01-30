@@ -29,6 +29,8 @@ export function parseAmount(amount: string | number, decimals: number): Amount {
   let [whole, partial] =
     chunks.length === 0 ? ["0", ""] : chunks.length === 1 ? [chunks[0], ""] : chunks;
 
+  if (decimals < partial.length) throw new Error('Amount: invalid input. Decimals too low.');
+
   // Strip trailing zeroes
   while (partial.length < decimals) partial += '0';
 
@@ -40,6 +42,46 @@ export function parseAmount(amount: string | number, decimals: number): Amount {
 
   return { amount: amountStr, decimals }
 }
+
+export function truncateAmount(amount: Amount, maxDecimals: number): Amount {
+  const len = amount.amount.length;
+  if (len > maxDecimals) {
+    const decimalsDelta = amount.decimals - maxDecimals;
+    const truncated = amount.amount.substring(0, decimalsDelta);
+    return {
+      amount: truncated + '0'.repeat(decimalsDelta),
+      decimals: amount.decimals,
+    }
+  } else {
+    return amount;
+  }
+}
+
+export function scaleAmount(amount: Amount, toDecimals: number): Amount {
+  const decimalsDelta = toDecimals - amount.decimals;
+
+  if (decimalsDelta === 0) {
+    // Nothing to do
+    return amount;
+  } if (decimalsDelta > 0) {
+    // Scaling up is easy; simply add zeroes to the base units value
+    return {
+      amount: amount.amount + '0'.repeat(decimalsDelta), decimals: toDecimals
+    }
+  } else {
+    // Scaling down is trickier; we have to make sure we're not altering the amount. This should be done
+    // explicitly using truncateAmount to avoid bugs.
+    if (amount.amount.substring(amount.amount.length + decimalsDelta) === '0'.repeat(-decimalsDelta)) {
+      return {
+        amount: amount.amount.substring(0, amount.amount.length  + decimalsDelta),
+        decimals: toDecimals,
+      }
+    } else {
+      throw new Error(`scaleAmount(${JSON.stringify(amount)}, ${toDecimals}) would result in altered amount. Use truncateAmount first if you intended to truncate it.`);
+    }
+  }
+}
+
 
 /**
  * Directly creates an Amount given the base units and decimal level

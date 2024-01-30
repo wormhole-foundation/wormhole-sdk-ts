@@ -1,4 +1,4 @@
-import { baseUnits, displayAmount, Amount, parseAmount } from "../src/";
+import { baseUnits, displayAmount, Amount, parseAmount, truncateAmount, amountFromBaseUnits, scaleAmount } from "../src/";
 
 describe("Amount Tests", function () {
   const parseCases: [number | string, number, Amount][] = [
@@ -17,7 +17,8 @@ describe("Amount Tests", function () {
   });
 
   it("rejects invalid parse requests", function () {
-    expect(() => { parseAmount(NaN, 18) }).toThrow();
+    expect(() => { parseAmount('405.22', 1) }).toThrow(); // Inadequate decimals
+    expect(() => { parseAmount(NaN, 18) }).toThrow();     // Invalid inputs:
     expect(() => { parseAmount(Infinity, 18) }).toThrow();
     expect(() => { parseAmount(-Infinity, 18) }).toThrow();
     expect(() => { parseAmount('milady', 18) }).toThrow();
@@ -74,5 +75,46 @@ describe("Amount Tests", function () {
       expect(() => { displayAmount(amount, 2) }).toThrow();
     }
     // displayAmount cannot fail otherwise; but sometimes precision might be ignored if it's invalid
+  });
+
+  const truncateCases: [Amount, number, Amount][] = [
+    [ amountFromBaseUnits(1234n, 4), 2, amountFromBaseUnits(1200n, 4) ], // Loses last two digits
+    [ amountFromBaseUnits(1234n, 4), 6, amountFromBaseUnits(1234n, 4) ], // Remains unchanged
+  ];
+
+  it("truncates amounts to a maximum decimal level", function () {
+    for (const [input, decimals, expected] of truncateCases) {
+      expect(truncateAmount(input, decimals)).toEqual(expected);
+    }
+  });
+
+  const scaleCases: [Amount, number, Amount][] = [
+    // 0.1234 can be scaled up to 0.12340000 without altering the value
+    [ amountFromBaseUnits(1234n, 4), 8, amountFromBaseUnits(12340000n, 8) ],
+    // 12.30 can be scaled down to 12.3 without altering the value
+    [ amountFromBaseUnits(1230n, 2), 1, amountFromBaseUnits(123n, 1) ],
+    // 1000.0001 can be scaled up to 1000.000100 without altering the value
+    [ amountFromBaseUnits(10000001n, 4), 6, amountFromBaseUnits(1000000100n, 6) ],
+  ];
+
+ it("scales amounts to a given decimal level", function () {
+    for (const [input, decimals, expected] of scaleCases) {
+      expect(scaleAmount(input, decimals)).toEqual(expected);
+    }
+  });
+
+  const invalidScaleCases: [Amount, number][] = [
+    // Can't scale 1234.5678 down to just 1234.56 because it alters the amount
+    [ amountFromBaseUnits(12345678n, 4), 2 ],
+    // Can't scale 0.12 down to just 0.1 because it alters the amount
+    [ amountFromBaseUnits(12n, 2), 1 ],
+    // Can't scale 1200.0101 down to just 1200.01 because it alters the amount
+    [ amountFromBaseUnits(12000101n, 4), 2 ]
+  ];
+
+ it("refuses to scale where that alters the amount", function () {
+    for (const [input, decimals] of invalidScaleCases) {
+      expect(() => { scaleAmount(input, decimals) }).toThrow()
+    }
   });
 });
