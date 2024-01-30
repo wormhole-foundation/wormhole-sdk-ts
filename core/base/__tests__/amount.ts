@@ -50,17 +50,17 @@ describe("Amount Tests", function () {
 
   it("should parse a number or string value", function () {
     for (const [input, decimals, expected] of parseCases) {
-      expect(amount(input, decimals)).toEqual(expected)
+      expect(parseAmount(input, decimals)).toEqual(expected)
     }
   });
 
   it("rejects invalid parse requests", function () {
-    expect(() => { amount(NaN, 18) }).toThrow();
-    expect(() => { amount(Infinity, 18) }).toThrow();
-    expect(() => { amount(-Infinity, 18) }).toThrow();
-    expect(() => { amount('milady', 18) }).toThrow();
-    expect(() => { amount('405.X', 18) }).toThrow();
-    expect(() => { amount('405.0', NaN) }).toThrow();
+    expect(() => { parseAmount(NaN, 18) }).toThrow();
+    expect(() => { parseAmount(Infinity, 18) }).toThrow();
+    expect(() => { parseAmount(-Infinity, 18) }).toThrow();
+    expect(() => { parseAmount('milady', 18) }).toThrow();
+    expect(() => { parseAmount('405.X', 18) }).toThrow();
+    expect(() => { parseAmount('405.0', NaN) }).toThrow();
   });
 
   const baseUnitCases: [Amount, bigint][] = [

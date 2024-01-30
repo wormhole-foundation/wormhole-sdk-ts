@@ -1,6 +1,4 @@
-import {
-  TokenId,
-} from "@wormhole-foundation/sdk-definitions";
+import { TokenId } from "@wormhole-foundation/sdk-definitions";
 import { AttestationReceipt, TransferReceipt } from "../types";
 
 // Extend Options to provide custom options

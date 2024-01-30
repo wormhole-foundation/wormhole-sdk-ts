@@ -1,18 +1,31 @@
-import { Chain, Network, contracts } from "@wormhole-foundation/sdk-base";
+import {
+  Chain,
+  Network,
+  contracts,
+  Amount,
+  baseUnits,
+  displayAmount,
+} from "@wormhole-foundation/sdk-base";
 import {
   ChainContext,
   Signer,
   TokenId,
   TokenTransferDetails,
   isNative,
-  isSameToken,
   isTokenId,
   nativeTokenId,
 } from "@wormhole-foundation/sdk-definitions";
 import { TokenTransfer } from "../../protocols/tokenTransfer";
 import { AttestationReceipt, TransferState } from "../../types";
 import { AutomaticRoute, StaticRouteMethods } from "../route";
-import { Quote, Receipt, TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
+import {
+  Quote,
+  Receipt,
+  TransferParams,
+  ValidatedTransferParams,
+  ValidationResult,
+} from "../types";
+import { amountFromBaseUnits } from "@wormhole-foundation/sdk-base/src";
 
 export namespace AutomaticTokenBridgeRoute {
   export type Options = {
@@ -22,9 +35,9 @@ export namespace AutomaticTokenBridgeRoute {
   };
 
   export type NormalizedParams = {
-    fee: bigint;
-    amount: bigint;
-    nativeGasAmount: bigint;
+    fee: Amount;
+    amount: Amount;
+    nativeGasAmount: Amount;
   };
 
   export interface ValidatedParams extends ValidatedTransferParams<Options> {
@@ -93,35 +106,6 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     return { nativeGas: 0.0 };
   }
 
-  async isSupported() {
-    try {
-      // No transfers to same chain
-      if (this.request.fromChain.chain === this.request.toChain.chain) return false;
-
-      // No transfers to unsupported chains
-      if (!this.request.fromChain.supportsAutomaticTokenBridge()) return false;
-      if (!this.request.toChain.supportsAutomaticTokenBridge()) return false;
-
-      // Ensure source and destination tokens are equivalent, if destination is set
-      const { source, destination } = this.request;
-      if (destination && isTokenId(destination.id)) {
-        // If destination token was provided, check that it's the equivalent one for the source token
-        let equivalentToken = await TokenTransfer.lookupDestinationToken(
-          this.request.fromChain,
-          this.request.toChain,
-          source.id,
-        );
-
-        if (!isSameToken(equivalentToken, destination.id)) {
-          return false;
-        }
-      }
-    } catch (e) {
-      return false;
-    }
-    return true;
-  }
-
   async isAvailable(): Promise<boolean> {
     const atb = await this.request.fromChain.getAutomaticTokenBridge();
 
@@ -158,15 +142,15 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     }
   }
 
-  async normalizeTransferParams(params: Tp) {
-    const amount = this.request.normalizeAmount(params.amount);
+  async normalizeTransferParams(params: Tp): Promise<AutomaticTokenBridgeRoute.NormalizedParams> {
+    const amount = this.request.parseAmount(params.amount);
 
     const inputToken = isNative(this.request.source.id.address)
       ? await this.request.fromChain.getNativeWrappedTokenId()
       : this.request.source.id;
 
     const atb = await this.request.fromChain.getAutomaticTokenBridge();
-    const fee = await atb.getRelayerFee(
+    const fee: bigint = await atb.getRelayerFee(
       this.request.from.address,
       this.request.to,
       inputToken.address,
@@ -174,11 +158,11 @@ export class AutomaticTokenBridgeRoute<N extends Network>
 
     // Min amount is fee + 5%
     const minAmount = (fee * 105n) / 100n;
-    if (amount < minAmount) {
-      throw new Error(`Minimum amount is ${this.request.displayAmount(amount)}`);
+    if (baseUnits(amount) < minAmount) {
+      throw new Error(`Minimum amount is ${displayAmount(amount)}`);
     }
 
-    const transferableAmount = amount - fee;
+    const transferableAmount = baseUnits(amount) - fee;
 
     const { destination } = this.request;
     const options = params.options ?? this.getDefaultOptions();
@@ -200,15 +184,21 @@ export class AutomaticTokenBridgeRoute<N extends Network>
       nativeGasAmount = (transferableAmount * scaledGas) / BigInt(scale);
     }
 
-    return { fee, amount, nativeGasAmount };
+    return {
+      fee: amountFromBaseUnits(fee, this.request.source.decimals),
+      amount,
+      nativeGasAmount: amountFromBaseUnits(nativeGasAmount, this.request.source.decimals),
+    };
   }
 
   async quote(params: Vp) {
-    return this.request.displayQuote(await TokenTransfer.quoteTransfer(
-      this.request.fromChain,
-      this.request.toChain,
-      this.toTransferDetails(params),
-    ));
+    return this.request.displayQuote(
+      await TokenTransfer.quoteTransfer(
+        this.request.fromChain,
+        this.request.toChain,
+        this.toTransferDetails(params),
+      ),
+    );
   }
 
   async initiate(signer: Signer, params: Vp): Promise<R> {
@@ -242,9 +232,9 @@ export class AutomaticTokenBridgeRoute<N extends Network>
       automatic: true,
       from: this.request.from,
       to: this.request.to,
-      amount: params.normalizedParams.amount,
+      amount: baseUnits(params.normalizedParams.amount),
       token: this.request.source.id,
-      nativeGas: params.normalizedParams.nativeGasAmount,
+      nativeGas: baseUnits(params.normalizedParams.nativeGasAmount),
     };
 
     return transfer;

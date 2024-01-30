@@ -1,10 +1,11 @@
-import { Network, displayAmount, normalizeAmount } from "@wormhole-foundation/sdk-base";
+import { Network, amountFromBaseUnits, displayAmount } from "@wormhole-foundation/sdk-base";
 import {
   ChainAddress,
   ChainContext,
   TokenId,
   isSameToken,
 } from "@wormhole-foundation/sdk-definitions";
+import { Amount, parseAmount } from "@wormhole-foundation/sdk-base";
 import { TransferQuote } from "../types";
 import { Wormhole } from "../wormhole";
 import { TokenDetails, getTokenDetails } from "./token";
@@ -14,7 +15,7 @@ export class RouteTransferRequest<N extends Network> {
   from: ChainAddress;
   to: ChainAddress;
   source: TokenDetails;
-  destination?: TokenDetails;
+  destination: TokenDetails;
 
   fromChain: ChainContext<N>;
   toChain: ChainContext<N>;
@@ -25,7 +26,7 @@ export class RouteTransferRequest<N extends Network> {
     fromChain: ChainContext<N>,
     toChain: ChainContext<N>,
     source: TokenDetails,
-    destination?: TokenDetails,
+    destination: TokenDetails,
   ) {
     this.from = from;
     this.fromChain = fromChain;
@@ -35,45 +36,33 @@ export class RouteTransferRequest<N extends Network> {
     this.destination = destination;
   }
 
-  normalizeAmount(amount: string): bigint {
-    return normalizeAmount(amount, BigInt(this.source.decimals));
+  parseAmount(amt: string): Amount {
+    return parseAmount(amt, this.source.decimals);
   }
 
-  displayAmount(amount: bigint): string {
-    return displayAmount(amount, BigInt(this.source.decimals), BigInt(this.source.decimals));
+  amountFromBaseUnits(amt: bigint): Amount {
+    return amountFromBaseUnits(amt, this.source.decimals);
   }
 
   displayQuote(quote: TransferQuote): Quote {
     let dq: Quote = {
       sourceToken: {
         token: quote.sourceToken.token,
-        amount: displayAmount(
-          quote.sourceToken.amount,
-          BigInt(this.source.decimals),
-          BigInt(this.source.decimals),
-        ),
+        amount: displayAmount(amountFromBaseUnits(quote.sourceToken.amount, this.source.decimals)),
       },
       destinationToken: {
         token: quote.destinationToken.token,
         amount: displayAmount(
-          quote.destinationToken.amount,
-          BigInt(this.destination!.decimals),
-          BigInt(this.destination!.decimals),
+          amountFromBaseUnits(quote.destinationToken.amount, this.destination.decimals),
         ),
       },
     };
 
     if (quote.relayFee) {
       let amount = isSameToken(quote.relayFee.token, quote.sourceToken.token)
-        ? displayAmount(
-            quote.sourceToken.amount,
-            BigInt(this.source.decimals),
-            BigInt(this.source.decimals),
-          )
+        ? displayAmount(amountFromBaseUnits(quote.sourceToken.amount, this.source.decimals))
         : displayAmount(
-            quote.destinationToken.amount,
-            BigInt(this.destination!.decimals),
-            BigInt(this.destination!.decimals),
+            amountFromBaseUnits(quote.destinationToken.amount, this.destination.decimals),
           );
 
       dq.relayFee = {
@@ -84,9 +73,7 @@ export class RouteTransferRequest<N extends Network> {
 
     if (quote.destinationNativeGas) {
       dq.destinationNativeGas = displayAmount(
-        quote.destinationNativeGas,
-        BigInt(this.destination!.decimals),
-        BigInt(this.destination!.decimals),
+        amountFromBaseUnits(quote.destinationNativeGas, this.source.decimals),
       );
     }
 
@@ -99,7 +86,7 @@ export class RouteTransferRequest<N extends Network> {
       from: ChainAddress;
       to: ChainAddress;
       source: TokenId;
-      destination?: TokenId;
+      destination: TokenId;
     },
     fromChain?: ChainContext<N>,
     toChain?: ChainContext<N>,
@@ -108,10 +95,7 @@ export class RouteTransferRequest<N extends Network> {
     toChain = toChain ?? wh.getChain(params.to.chain);
 
     const sourceDetails = await getTokenDetails(fromChain, params.source);
-
-    const destDetails = params.destination
-      ? await getTokenDetails(toChain, params.destination)
-      : undefined;
+    const destDetails = await getTokenDetails(toChain, params.destination);
 
     const rtr = new RouteTransferRequest(
       params.from,

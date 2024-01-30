@@ -59,7 +59,7 @@ export interface Amount {
   decimals: number;
 };
 
-export function amount(amount: string | number, decimals: number) {
+export function parseAmount(amount: string | number, decimals: number) {
   validateAmountInput(amount, decimals);
 
   amount = amount.toString();
@@ -83,6 +83,10 @@ export function amount(amount: string | number, decimals: number) {
   }
 
   return { amount: amountStr, decimals }
+}
+
+export function amountFromBaseUnits(amount: bigint, decimals: number) {
+  return { amount: amount.toString(), decimals }
 }
 
 export function baseUnits(amount: Amount): bigint {
@@ -118,6 +122,7 @@ export function displayAmount(amount: Amount, precision?: number): string {
 function validateAmountInput(amount: number | string, decimals: number): void {
   if (typeof amount === 'number') {
     if (!isFinite(amount)) throw new Error("Amount: invalid input. Amount must be finite");
+    if (amount < 0) throw new Error('Amount: invalid input. Amount cannot be negative');
   } else {
     if (!/^[0-9\.]*$/.test(amount)) {
       throw new Error('Amount: invalid input. Must only contain digits.');

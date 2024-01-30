@@ -1,4 +1,12 @@
-import { Chain, Network, circle, contracts } from "@wormhole-foundation/sdk-base";
+import {
+  Amount,
+  Chain,
+  Network,
+  baseUnits,
+  circle,
+  contracts,
+  displayAmount,
+} from "@wormhole-foundation/sdk-base";
 import {
   ChainContext,
   CircleTransferDetails,
@@ -9,7 +17,13 @@ import {
 import { CircleAttestationReceipt, CircleTransfer } from "../../protocols/cctpTransfer";
 import { TransferState } from "../../types";
 import { AutomaticRoute, StaticRouteMethods } from "../route";
-import { Quote, Receipt, TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
+import {
+  Quote,
+  Receipt,
+  TransferParams,
+  ValidatedTransferParams,
+  ValidationResult,
+} from "../types";
 import { Wormhole } from "../../wormhole";
 
 export namespace AutomaticCCTPRoute {
@@ -19,9 +33,9 @@ export namespace AutomaticCCTPRoute {
   };
 
   export type NormalizedParams = {
-    amount: bigint;
-    fee: bigint;
-    nativeGasAmount: bigint;
+    amount: Amount;
+    fee: Amount;
+    nativeGasAmount: Amount;
   };
 
   export interface ValidatedParams extends ValidatedTransferParams<Options> {
@@ -99,10 +113,6 @@ export class AutomaticCCTPRoute<N extends Network>
       const options = params.options ?? this.getDefaultOptions();
       const normalizedParams = await this.normalizeTransferParams(params);
 
-      if (normalizedParams.amount <= 0n) {
-        throw new Error("Amount must be positive");
-      }
-
       const validatedParams: Vp = {
         normalizedParams,
         options,
@@ -120,25 +130,29 @@ export class AutomaticCCTPRoute<N extends Network>
   }
 
   async quote(params: Vp) {
-    return this.request.displayQuote(await CircleTransfer.quoteTransfer(
-      this.request.fromChain,
-      this.request.toChain,
-      this.toTransferDetails(params),
-    ));
+    return this.request.displayQuote(
+      await CircleTransfer.quoteTransfer(
+        this.request.fromChain,
+        this.request.toChain,
+        this.toTransferDetails(params),
+      ),
+    );
   }
 
-  private async normalizeTransferParams(params: Tp) {
-    const amount = this.request.normalizeAmount(params.amount);
+  private async normalizeTransferParams(params: Tp): Promise<AutomaticCCTPRoute.NormalizedParams> {
+    const amount = this.request.parseAmount(params.amount);
 
     const ctb = await this.request.fromChain.getAutomaticCircleBridge();
     const fee = await ctb.getRelayerFee(this.request.to.chain);
 
     const minAmount = (fee * 105n) / 100n;
-    if (amount < minAmount) {
-      throw new Error(`Minimum amount is ${this.request.displayAmount(minAmount)}`);
+    if (baseUnits(amount) < minAmount) {
+      throw new Error(
+        `Minimum amount is ${displayAmount(this.request.amountFromBaseUnits(minAmount))}`,
+      );
     }
 
-    const transferableAmount = amount - fee;
+    const transferableAmount = baseUnits(amount) - fee;
 
     const options = params.options ?? this.getDefaultOptions();
 
@@ -154,16 +168,20 @@ export class AutomaticCCTPRoute<N extends Network>
       nativeGasAmount = (transferableAmount * scaledGas) / BigInt(scale);
     }
 
-    return { fee, amount, nativeGasAmount };
+    return {
+      fee: this.request.amountFromBaseUnits(fee),
+      amount,
+      nativeGasAmount: this.request.amountFromBaseUnits(nativeGasAmount),
+    };
   }
 
   private toTransferDetails(params: Vp): CircleTransferDetails {
     return {
       from: this.request.from,
       to: this.request.to,
-      amount: params.normalizedParams.amount,
+      amount: baseUnits(params.normalizedParams.amount),
       automatic: true,
-      nativeGas: params.normalizedParams.nativeGasAmount,
+      nativeGas: baseUnits(params.normalizedParams.nativeGasAmount),
     };
   }
 
