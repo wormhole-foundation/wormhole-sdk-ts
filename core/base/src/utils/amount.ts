@@ -135,33 +135,20 @@ export function baseUnits(amount: Amount): bigint {
 export function displayAmount(amount: Amount, precision?: number): string {
   validateAmount(amount);
 
-  let whole = amount.amount.substring(0, amount.amount.length - amount.decimals);
-  let partial = amount.amount.substring(amount.amount.length - amount.decimals);
+  let whole = amount.amount.substring(0, amount.amount.length - amount.decimals).padStart(1, "0");
+  let partial = amount.amount
+    .substring(amount.amount.length - amount.decimals)
+    .padStart(amount.decimals, "0");
 
-  while (partial.length < amount.decimals) {
-    partial = "0" + partial;
-  }
-
-  if (typeof precision === "number") {
-    while (precision < partial.length) {
-      if (partial[partial.length - 1] === "0") {
-        partial = partial.substring(0, partial.length - 1);
-      } else {
-        break;
-      }
+  if (precision !== undefined) {
+    while (partial.length > precision) {
+      if (partial[partial.length - 1] !== "0") break;
+      partial = partial.substring(0, partial.length - 1);
     }
-    while (precision > partial.length) {
-      partial += "0";
-    }
+    partial = partial.padEnd(precision, "0");
   }
 
-  if (whole.length === 0) whole = "0";
-
-  if (partial.length > 0) {
-    return `${whole}.${partial}`;
-  } else {
-    return whole;
-  }
+  return partial.length > 0 ? `${whole}.${partial}` : whole;
 }
 
 function validateAmountInput(amount: number | string, decimals: number): void {
