@@ -39,7 +39,7 @@ import { isNative } from 'lodash';
  */
 export class SolanaPlatform<N extends Network>
   extends PlatformContext<N, SolanaPlatformType>
-  implements StaticPlatformMethods<typeof _platform, typeof SolanaPlatform>
+  implements StaticPlatformMethods<SolanaPlatformType, typeof SolanaPlatform>
 {
   static _platform = _platform;
 

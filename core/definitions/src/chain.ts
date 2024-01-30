@@ -11,6 +11,11 @@ import { RpcConnection } from "./rpc";
 import { ChainConfig, SignedTx, TokenId, TokenAddress } from "./types";
 import { PorticoBridge } from "./protocols/portico";
 
+/**
+ * A ChainContext provides a consistent interface for interacting with a chain.
+ * It holds the configuration for the chain and cached RPC and protocol clients.
+ *
+ */
 export abstract class ChainContext<
   N extends Network,
   P extends Platform = Platform,
@@ -41,12 +46,23 @@ export abstract class ChainContext<
     this.rpc = rpc;
   }
 
+  /**
+   * Get an RPC connection for this chain, uses the configuration passed in
+   * the initial constructor
+   *
+   * @returns the RPC connection for this chain
+   */
   getRpc(): Promise<RpcConnection<P>> {
     this.rpc = this.rpc ? this.rpc : this.platform.getRpc(this.chain);
     return this.rpc;
   }
 
-  // Get the number of decimals for a token
+  /**
+   *  Get the number of decimals for a token
+   *
+   *  @param token the token to get the decimals for
+   *  @returns the number of decimals for the token
+   */
   async getDecimals(token: TokenAddress<C>): Promise<number> {
     // try to find it in the token cache first
     if (this.config.tokenMap) {
@@ -57,34 +73,72 @@ export abstract class ChainContext<
     return this.platform.utils().getDecimals(this.chain, await this.getRpc(), token);
   }
 
-  // Get the balance of a token for a given address
+  /**
+   * Get the balance of a token for a given address
+   *
+   * @param walletAddr the address to get the balance for
+   * @param token the token to get the balance for
+   * @returns the balance of the token for the address
+   *
+   */
   async getBalance(walletAddr: string, token: TokenAddress<C>): Promise<bigint | null> {
     return this.platform.utils().getBalance(this.chain, await this.getRpc(), walletAddr, token);
   }
 
+  /**
+   * Get the latest block number seen by the chain according to the RPC
+   *
+   * @returns the latest block number
+   */
   async getLatestBlock(): Promise<number> {
     return this.platform.utils().getLatestBlock(await this.getRpc());
   }
 
+  /**
+   * Get the latest _finalized_ block number seen by the chain according to the RPC
+   *
+   * @returns the latest finalized block number
+   */
   async getLatestFinalizedBlock(): Promise<number> {
     return this.platform.utils().getLatestFinalizedBlock(await this.getRpc());
   }
 
-  // Get details about the transaction
+  /**
+   * Parse the Wormhole Core messages from a transaction
+   *
+   * @param txid the transaction to parse
+   * @returns the Wormhole Core messages emitted by the transaction
+   */
   async parseTransaction(txid: string): Promise<WormholeMessageId[]> {
     return this.platform.parseWormholeMessages(this.chain, await this.getRpc(), txid);
   }
 
-  // Send a transaction and wait for it to be confirmed
-  async sendWait(stxns: SignedTx): Promise<string[]> {
+  /**
+   *  Send a transaction and wait for it to be confirmed
+   *
+   * @param stxns the signed transaction to send
+   * @returns the transaction hashes of the sent transactions
+   */
+  async sendWait(stxns: SignedTx[]): Promise<string[]> {
     return this.platform.utils().sendWait(this.chain, await this.getRpc(), stxns);
   }
 
+  /**
+   * Get the token data from the local cache if available
+   * @param symbol the symbol of the token to get
+   * @returns the token data if available
+   */
   getToken(symbol: tokens.TokenSymbol): tokens.Token | undefined {
     if (!this.config.tokenMap) return;
     if (!(symbol in this.config.tokenMap)) return;
     return this.config.tokenMap[symbol];
   }
+
+  /**
+   * Get the token id of the wrapped token for the native gas token
+   *
+   * @returns the wrapped token for the native gas token
+   */
 
   async getNativeWrappedTokenId(): Promise<TokenId<C>> {
     // see if we have it configured
@@ -98,7 +152,17 @@ export abstract class ChainContext<
     return { chain: this.chain, address: await tb.getWrappedNative() };
   }
 
-  // Get the token account for a given address
+  /**
+   * Get the token account for a given address and token
+   *
+   * @remarks
+   * This is really only useful in the context of Solana but in order
+   * to provide a consistent interface, we provide it here.
+   *
+   * @param address the address to get the token account for
+   * @param token the token to get the token account for
+   * @returns the token account for the address and token
+   */
   async getTokenAccount(
     address: UniversalOrNative<C>,
     token: TokenAddress<C>,
@@ -107,15 +171,27 @@ export abstract class ChainContext<
     return { chain: this.chain, address };
   }
 
-  //
-  // protocols
-  //
-  //
+  /**
+   * Check to see if a given protocol is supported by this chain
+   * by checking if it is registered in the platform and the configuration
+   * is available and correct
+   *
+   * @param protocolName the name of the Protocol to check for support
+   * @returns a boolean indicating if this protocol is supported
+   */
   supportsProtocol(protocolName: ProtocolName): boolean {
     return protocolIsRegistered(this.chain, protocolName);
   }
 
+  /**
+   * Check to see if the Wormhole Core protocol is supported by this chain
+   * @returns a boolean indicating if this chain supports the Wormhole Core protocol
+   */
   supportsWormholeCore = () => this.supportsProtocol("WormholeCore");
+  /**
+   * Get the Wormhole Core protocol client for this chain
+   * @returns the Wormhole Core protocol client for this chain
+   */
   async getWormholeCore(): Promise<WormholeCore<N, P, C>> {
     this.coreBridge = this.coreBridge
       ? this.coreBridge
@@ -123,7 +199,15 @@ export abstract class ChainContext<
     return this.coreBridge;
   }
 
+  /**
+   * Check to see if the Token Bridge protocol is supported by this chain
+   * @returns a boolean indicating if this chain supports the Token Bridge protocol
+   */
   supportsTokenBridge = () => this.supportsProtocol("TokenBridge");
+  /**
+   * Get the Token Bridge protocol client for this chain
+   * @returns the Token Bridge protocol client for this chain
+   */
   async getTokenBridge(): Promise<TokenBridge<N, P, C>> {
     this.tokenBridge = this.tokenBridge
       ? this.tokenBridge
@@ -131,8 +215,15 @@ export abstract class ChainContext<
     return this.tokenBridge;
   }
 
-  //
+  /**
+   * Check to see if the Automatic Token Bridge protocol is supported by this chain
+   * @returns  a boolean indicating if this chain supports the Automatic Token Bridge protocol
+   */
   supportsAutomaticTokenBridge = () => this.supportsProtocol("AutomaticTokenBridge");
+  /**
+   * Get the Automatic Token Bridge protocol client for this chain
+   * @returns the Automatic Token Bridge protocol client for this chain
+   */
   async getAutomaticTokenBridge(): Promise<AutomaticTokenBridge<N, P, C>> {
     this.autoTokenBridge = this.autoTokenBridge
       ? this.autoTokenBridge
@@ -140,8 +231,15 @@ export abstract class ChainContext<
     return this.autoTokenBridge;
   }
 
-  //
+  /**
+   * Check to see if the Circle Bridge protocol is supported by this chain
+   * @returns a boolean indicating if this chain supports the Circle Bridge protocol
+   */
   supportsCircleBridge = () => this.supportsProtocol("CircleBridge");
+  /**
+   * Get the Circle Bridge protocol client for this chain
+   * @returns the Circle Bridge protocol client for this chain
+   */
   async getCircleBridge(): Promise<CircleBridge<N, P, C>> {
     this.circleBridge = this.circleBridge
       ? this.circleBridge
@@ -149,8 +247,15 @@ export abstract class ChainContext<
     return this.circleBridge;
   }
 
-  //
+  /**
+   * Check to see if the Automatic Circle Bridge protocol is supported by this chain
+   * @returns a boolean indicating if this chain supports the Automatic Circle Bridge protocol
+   */
   supportsAutomaticCircleBridge = () => this.supportsProtocol("AutomaticCircleBridge");
+  /**
+   * Get the Automatic Circle Bridge protocol client for this chain
+   * @returns the Automatic Circle Bridge protocol client for this chain
+   */
   async getAutomaticCircleBridge(): Promise<AutomaticCircleBridge<N, P, C>> {
     this.autoCircleBridge = this.autoCircleBridge
       ? this.autoCircleBridge
@@ -158,8 +263,15 @@ export abstract class ChainContext<
     return this.autoCircleBridge;
   }
 
-  //
+  /**
+   * Check to see if the IBC Bridge protocol is supported by this chain
+   * @returns a boolean indicating if this chain supports the IBC Bridge protocol
+   */
   supportsIbcBridge = () => this.supportsProtocol("IbcBridge");
+  /**
+   * Get the IBC Bridge protocol client for this chain
+   * @returns the IBC Bridge protocol client for this chain
+   */
   async getIbcBridge(): Promise<IbcBridge<N, P, C>> {
     this.ibcBridge = this.ibcBridge
       ? this.ibcBridge
@@ -167,8 +279,15 @@ export abstract class ChainContext<
     return this.ibcBridge;
   }
 
-  //
+  /**
+   * Check to see if the Portico Bridge protocol is supported by this chain
+   * @returns a boolean indicating if this chain supports the Portico Bridge protocol
+   */
   supportsPorticoBridge = () => this.supportsProtocol("PorticoBridge");
+  /**
+   * Get the Portico Bridge protocol client for this chain
+   * @returns the Portico Bridge protocol client for this chain
+   */
   async getPorticoBridge(): Promise<PorticoBridge<N, P, C>> {
     this.porticoBridge = this.porticoBridge
       ? this.porticoBridge

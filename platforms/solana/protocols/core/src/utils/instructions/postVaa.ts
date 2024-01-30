@@ -23,7 +23,6 @@ import BN from 'bn.js';
 /**
  * Make {@link TransactionInstruction} for `post_vaa` instruction.
  *
- * This is used in {@link createPostSignedVaaTransactions}'s last transaction.
  * `signatureSet` is a {@link @solana/web3.Keypair} generated outside of this method, which was used
  * to write signatures and the message hash to.
  *
@@ -31,7 +30,7 @@ import BN from 'bn.js';
  *
  * @param {PublicKeyInitData} wormholeProgramId - wormhole program address
  * @param {PublicKeyInitData} payer - transaction signer address
- * @param {SignedVaa | ParsedVaa} vaa - either signed VAA bytes or parsed VAA (use {@link parseVaa} on signed VAA)
+ * @param {SignedVaa | ParsedVaa} vaa - either signed VAA bytes or parsed VAA
  * @param {PublicKeyInitData} signatureSet - key for signature set account
  */
 export function createPostVaaInstruction(

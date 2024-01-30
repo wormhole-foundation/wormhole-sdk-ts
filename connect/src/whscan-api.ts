@@ -11,7 +11,11 @@ import { retry } from "./tasks";
 
 export const WHSCAN_RETRY_INTERVAL = 2000;
 
-// TransactionStatus returned by wormholescan
+/**
+ * The status of a transaction
+ *
+ * contains information about the transaction and the global transaction if it was relayed
+ */
 export interface TransactionStatus {
   id: string;
   timestamp: string;
