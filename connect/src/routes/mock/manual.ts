@@ -73,14 +73,17 @@ export class ManualMockRoute<N extends Network>
     const fakeQuote: Q = {
       sourceToken: {
         token: this.request.source.id,
+        // @ts-ignore
         amount: params.amount,
       },
       destinationToken: {
         token: this.request.destination!.id,
+        // @ts-ignore
         amount: params.amount,
       },
       relayFee: {
         token: this.request.source.id,
+        // @ts-ignore
         amount: "0.01",
       },
     };

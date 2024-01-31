@@ -1,5 +1,6 @@
 import { TokenId } from "@wormhole-foundation/sdk-definitions";
 import { AttestationReceipt, TransferReceipt } from "../types";
+import { Amount } from "@wormhole-foundation/sdk-base";
 
 // Extend Options to provide custom options
 // to use for the transfer
@@ -19,23 +20,23 @@ export type Receipt<AT extends AttestationReceipt = AttestationReceipt> = Transf
 export interface Quote {
   sourceToken: {
     token: TokenId;
-    amount: string;
+    amount: Amount;
   };
 
   destinationToken: {
     token: TokenId;
-    amount: string;
+    amount: Amount;
   };
   // If the transfer being quoted is automatic
   // a relayer fee may apply
   relayFee?: {
     token: TokenId;
-    amount: string;
+    amount: Amount;
   };
   // If the transfer being quoted asked for native gas dropoff
   // this will contain the amount of native gas that is to be minted
   // on the destination chain given the current swap rates
-  destinationNativeGas?: string;
+  destinationNativeGas?: Amount;
 }
 
 // Transfer params after being validated.
