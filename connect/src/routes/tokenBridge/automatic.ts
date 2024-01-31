@@ -4,6 +4,7 @@ import {
   contracts,
   Amount,
   baseUnits,
+  amountFromBaseUnits,
   displayAmount,
 } from "@wormhole-foundation/sdk-base";
 import {
@@ -25,7 +26,6 @@ import {
   ValidatedTransferParams,
   ValidationResult,
 } from "../types";
-import { amountFromBaseUnits } from "@wormhole-foundation/sdk-base/src";
 
 export namespace AutomaticTokenBridgeRoute {
   export type Options = {
