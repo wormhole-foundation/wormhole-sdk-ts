@@ -159,7 +159,12 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     // Min amount is fee + 5%
     const minAmount = (fee * 105n) / 100n;
     if (baseUnits(amount) < minAmount) {
-      throw new Error(`Minimum amount is ${displayAmount(amount)}`);
+      throw new Error(
+        `Minimum amount is ${displayAmount({
+          amount: minAmount.toString(),
+          decimals: amount.decimals,
+        })}`,
+      );
     }
 
     const transferableAmount = baseUnits(amount) - fee;

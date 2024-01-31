@@ -1,11 +1,11 @@
-import { Network, amountFromBaseUnits, displayAmount } from "@wormhole-foundation/sdk-base";
 import {
-  ChainAddress,
-  ChainContext,
-  TokenId,
-  isSameToken,
-} from "@wormhole-foundation/sdk-definitions";
-import { Amount, parseAmount } from "@wormhole-foundation/sdk-base";
+  Amount,
+  Network,
+  amountFromBaseUnits,
+  displayAmount,
+  parseAmount,
+} from "@wormhole-foundation/sdk-base";
+import { ChainAddress, ChainContext, TokenId } from "@wormhole-foundation/sdk-definitions";
 import { TransferQuote } from "../types";
 import { Wormhole } from "../wormhole";
 import { TokenDetails, getTokenDetails } from "./token";
@@ -59,15 +59,9 @@ export class RouteTransferRequest<N extends Network> {
     };
 
     if (quote.relayFee) {
-      let amount = isSameToken(quote.relayFee.token, quote.sourceToken.token)
-        ? displayAmount(amountFromBaseUnits(quote.sourceToken.amount, this.source.decimals))
-        : displayAmount(
-            amountFromBaseUnits(quote.destinationToken.amount, this.destination.decimals),
-          );
-
       dq.relayFee = {
         token: quote.relayFee.token,
-        amount,
+        amount: displayAmount(amountFromBaseUnits(quote.relayFee.amount, this.source.decimals)),
       };
     }
 
