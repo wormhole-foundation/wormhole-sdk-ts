@@ -10,6 +10,7 @@ import {
   WormholeMessageId,
   encoding,
   nativeTokenId,
+  parseAmount,
 } from "../..";
 import { AutomaticRoute, StaticRouteMethods } from "../route";
 import {
@@ -78,18 +79,15 @@ export class AutomaticMockRoute<N extends Network>
     const fakeQuote: Q = {
       sourceToken: {
         token: this.request.source.id,
-        // @ts-ignore
-        amount: params.amount,
+        amount: parseAmount(params.amount, this.request.source.decimals),
       },
       destinationToken: {
         token: this.request.destination!.id,
-        // @ts-ignore
-        amount: params.amount,
+        amount: parseAmount(params.amount, this.request.destination.decimals),
       },
       relayFee: {
         token: this.request.source.id,
-        // @ts-ignore
-        amount: "0.01",
+        amount: parseAmount("0.01", this.request.source.decimals),
       },
     };
     return fakeQuote;

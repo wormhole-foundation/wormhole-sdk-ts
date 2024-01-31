@@ -173,6 +173,6 @@ export interface AutomaticTokenBridge<
   getRegisteredTokens(): Promise<NativeAddress<C>[]>;
   // Amount of native tokens a user would receive by swapping x amount of sending tokens
   nativeTokenAmount(token: TokenAddress<C>, amount: bigint): Promise<bigint>;
-  // Maximum amount of sending tokens that can be swapped for native tokens
+  // Maximum amount that can be swapped for native tokens on the destination chain
   maxSwapAmount(token: TokenAddress<C>): Promise<bigint>;
 }

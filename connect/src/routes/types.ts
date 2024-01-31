@@ -22,7 +22,6 @@ export interface Quote {
     token: TokenId;
     amount: Amount;
   };
-
   destinationToken: {
     token: TokenId;
     amount: Amount;

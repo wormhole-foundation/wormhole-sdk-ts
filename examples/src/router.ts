@@ -1,4 +1,6 @@
 import {
+  deserialize,
+  encoding,
   isAttested,
   isCompleted,
   routes,
@@ -14,18 +16,45 @@ import "@wormhole-foundation/connect-sdk-evm-portico";
 import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
 import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 
+//
+// {
+//   amount: '0.2',
+//   options: { nativeGas: 1 },
+//   normalizedParams: {
+//     fee: { amount: '13951187', decimals: 9 },
+//     amount: { amount: '200000000', decimals: 9 },
+//     nativeGasAmount: { amount: '186048813', decimals: 18 }
+//   }
+// }
+// 0n 200000000n 186048813n 13951187n
+// {
+//   sourceToken: {
+//     token: { chain: 'Solana', address: [SolanaAddress] },
+//     amount: { amount: '200000000', decimals: 9 }
+//   },
+//   destinationToken: {
+//     token: { chain: 'Ethereum', address: [EvmAddress] },
+//     amount: { amount: '0', decimals: 18 }
+//   },
+//   relayFee: {
+//     token: { chain: 'Solana', address: [SolanaAddress] },
+//     amount: { amount: '13951187', decimals: 9 }
+//   },
+//   destinationNativeGas: { amount: '8078310718883405', decimals: 18 }
+// }
+
 (async function () {
   // Setup
   const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform]);
 
   // get signers from local config
-  const sendChain = wh.getChain("Solana");
-  const destChain = wh.getChain("Avalanche");
+  const sendChain = wh.getChain("Ethereum");
+  const destChain = wh.getChain("Solana");
   const sender = await getStuff(sendChain);
   const receiver = await getStuff(destChain);
 
   // create new resolver, overriding the default routes
-  const resolver = wh.resolver([routes.TokenBridgeRoute, routes.AutomaticTokenBridgeRoute]);
+  const resolver = wh.resolver([routes.AutomaticTokenBridgeRoute]);
 
   // What tokens are available on the source chain?
   console.log(await resolver.supportedSourceTokens(sendChain));
@@ -58,11 +87,23 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 
   // Specify the amount as a decimal string
   const transferParams = {
-    amount: "0.001",
+    amount: "0.2",
   };
 
   let validated = await bestRoute.validate(transferParams);
   if (!validated.valid) throw validated.error;
+
+  console.log(validated.params);
+  const quote = await bestRoute.quote(validated.params);
+  console.log(quote);
+
+  const dtb = await destChain.getAutomaticTokenBridge();
+  const maxSwapAmt = await dtb.maxSwapAmount(
+    Wormhole.parseAddress("Solana", "7VPWjBhCXrpYYBiRKZh1ubh9tLZZNkZGp2ReRphEV4Mc"),
+  );
+  console.log(maxSwapAmt);
+
+  return;
 
   // initiate the transfer
   const receipt = await bestRoute.initiate(sender.signer, validated.params);

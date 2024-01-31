@@ -6,3 +6,4 @@ node_modules/
 tsconfig-build.tsbuildinfo
 tsconfig.tsbuildinfo
 __tests__/staging
+wormhole-foundation-*.tgz
