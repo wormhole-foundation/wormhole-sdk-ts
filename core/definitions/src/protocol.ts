@@ -47,8 +47,7 @@ export function registerProtocol<P extends Platform, PN extends ProtocolName>(
 
   if (!platforms) platforms = new Map<Platform, ProtocolInitializer<Platform, ProtocolName>>();
 
-  if (platforms.has(platform))
-    throw new Error(`Protocol ${platform} for protocol ${protocol} has already registered`);
+  if (platforms.has(platform)) return; //throw new Error(`Protocol ${platform} for protocol ${protocol} has already registered`);
 
   platforms.set(platform, ctr);
   protocolFactory.set(protocol, platforms);

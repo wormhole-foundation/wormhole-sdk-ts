@@ -461,53 +461,57 @@ export class TokenTransfer<N extends Network = Network>
     const srcAmount = amountFromBaseUnits(transfer.amount, srcDecimals);
 
     const srcAmountTruncated = truncateAmount(srcAmount, TOKEN_BRIDGE_MAX_DECIMALS);
-    const dstAmountTruncated = scaleAmount(srcAmountTruncated, dstDecimals);
+    const dstAmountReceivable = scaleAmount(srcAmountTruncated, dstDecimals);
 
     if (!transfer.automatic) {
       return {
         sourceToken: { token: srcToken, amount: baseUnits(srcAmountTruncated) },
-        destinationToken: { token: dstToken, amount: baseUnits(dstAmountTruncated) },
+        destinationToken: { token: dstToken, amount: baseUnits(dstAmountReceivable) },
       };
     }
 
     // Otherwise automatic
 
-    // If a native gas dropoff is requested, remove that from the amount they'll get
-    const dstNativeGasAmount = scaleAmount(
-      truncateAmount(
-        amountFromBaseUnits(transfer.nativeGas ?? 0n, srcDecimals),
-        TOKEN_BRIDGE_MAX_DECIMALS,
-      ),
-      dstDecimals,
-    );
-    const dstNativeGasBaseUnits = baseUnits(dstNativeGasAmount);
-
-    let dstAmountBaseUnits = baseUnits(dstAmountTruncated) - dstNativeGasBaseUnits;
-
-    // The fee is also removed from the amount transferred
+    // The fee is removed from the amount transferred
     // quoted on the source chain
     const stb = await srcChain.getAutomaticTokenBridge();
     const fee = await stb.getRelayerFee(transfer.from.address, transfer.to, srcToken.address);
-
     const feeAmountDest = scaleAmount(
       truncateAmount(amountFromBaseUnits(fee, srcDecimals), TOKEN_BRIDGE_MAX_DECIMALS),
       dstDecimals,
     );
-    dstAmountBaseUnits -= baseUnits(feeAmountDest);
+
+    let dstNativeGasAmountRequested = transfer.nativeGas ?? 0n;
 
     // The expected destination gas can be pulled from the destination token bridge
     let destinationNativeGas = 0n;
     if (transfer.nativeGas) {
       const dtb = await dstChain.getAutomaticTokenBridge();
-      destinationNativeGas = await dtb.nativeTokenAmount(dstToken.address, dstNativeGasBaseUnits);
+
+      // There is a limit applied to the amount of the source
+      // token that may be swapped for native gas on the destination
+      const maxNativeAmountIn = await dtb.maxSwapAmount(dstToken.address);
+      dstNativeGasAmountRequested =
+        dstNativeGasAmountRequested > maxNativeAmountIn
+          ? maxNativeAmountIn
+          : dstNativeGasAmountRequested;
+
+      // Get the actual amount we should receive
+      destinationNativeGas = await dtb.nativeTokenAmount(
+        dstToken.address,
+        dstNativeGasAmountRequested,
+      );
     }
+
+    const destAmountLessFee =
+      baseUnits(dstAmountReceivable) - dstNativeGasAmountRequested - baseUnits(feeAmountDest);
 
     return {
       sourceToken: {
         token: srcToken,
         amount: baseUnits(srcAmountTruncated),
       },
-      destinationToken: { token: dstToken, amount: dstAmountBaseUnits },
+      destinationToken: { token: dstToken, amount: destAmountLessFee },
       relayFee: { token: srcToken, amount: fee },
       destinationNativeGas,
     };

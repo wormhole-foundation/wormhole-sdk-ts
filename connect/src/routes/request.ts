@@ -1,11 +1,5 @@
-import { Network, amountFromBaseUnits, displayAmount } from "@wormhole-foundation/sdk-base";
-import {
-  ChainAddress,
-  ChainContext,
-  TokenId,
-  isSameToken,
-} from "@wormhole-foundation/sdk-definitions";
-import { Amount, parseAmount } from "@wormhole-foundation/sdk-base";
+import { Amount, Network, amountFromBaseUnits, parseAmount } from "@wormhole-foundation/sdk-base";
+import { ChainAddress, ChainContext, TokenId } from "@wormhole-foundation/sdk-definitions";
 import { TransferQuote } from "../types";
 import { Wormhole } from "../wormhole";
 import { TokenDetails, getTokenDetails } from "./token";
@@ -44,36 +38,35 @@ export class RouteTransferRequest<N extends Network> {
     return amountFromBaseUnits(amt, this.source.decimals);
   }
 
-  displayQuote(quote: TransferQuote): Quote {
+  async displayQuote(quote: TransferQuote): Promise<Quote> {
+    // If we have a destination native gas
+    // since the dest token is `native` on the dest chain
+    const dstDecimals = quote.destinationNativeGas
+      ? await this.toChain.getDecimals(quote.destinationToken.token.address)
+      : this.destination.decimals;
+
     let dq: Quote = {
       sourceToken: {
         token: quote.sourceToken.token,
-        amount: displayAmount(amountFromBaseUnits(quote.sourceToken.amount, this.source.decimals)),
+        amount: amountFromBaseUnits(quote.sourceToken.amount, this.source.decimals),
       },
       destinationToken: {
         token: quote.destinationToken.token,
-        amount: displayAmount(
-          amountFromBaseUnits(quote.destinationToken.amount, this.destination.decimals),
-        ),
+        amount: amountFromBaseUnits(quote.destinationToken.amount, dstDecimals),
       },
     };
 
     if (quote.relayFee) {
-      let amount = isSameToken(quote.relayFee.token, quote.sourceToken.token)
-        ? displayAmount(amountFromBaseUnits(quote.sourceToken.amount, this.source.decimals))
-        : displayAmount(
-            amountFromBaseUnits(quote.destinationToken.amount, this.destination.decimals),
-          );
-
       dq.relayFee = {
         token: quote.relayFee.token,
-        amount,
+        amount: amountFromBaseUnits(quote.relayFee.amount, this.source.decimals),
       };
     }
 
     if (quote.destinationNativeGas) {
-      dq.destinationNativeGas = displayAmount(
-        amountFromBaseUnits(quote.destinationNativeGas, this.source.decimals),
+      dq.destinationNativeGas = amountFromBaseUnits(
+        quote.destinationNativeGas,
+        this.destination.decimals,
       );
     }
 

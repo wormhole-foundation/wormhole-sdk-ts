@@ -11,6 +11,7 @@ import {
   WormholeMessageId,
   encoding,
   nativeTokenId,
+  parseAmount,
 } from "../..";
 import { ManualRoute, StaticRouteMethods } from "../route";
 import {
@@ -73,15 +74,15 @@ export class ManualMockRoute<N extends Network>
     const fakeQuote: Q = {
       sourceToken: {
         token: this.request.source.id,
-        amount: params.amount,
+        amount: parseAmount(params.amount, this.request.destination.decimals),
       },
       destinationToken: {
         token: this.request.destination!.id,
-        amount: params.amount,
+        amount: parseAmount(params.amount, this.request.destination.decimals),
       },
       relayFee: {
         token: this.request.source.id,
-        amount: "0.01",
+        amount: parseAmount("0.01", this.request.source.decimals),
       },
     };
     return fakeQuote;

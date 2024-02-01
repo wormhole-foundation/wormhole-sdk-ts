@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/connect-sdk-algorand-tokenbridge",
-  "version": "0.4.0-beta.5",
+  "version": "0.4.0-beta.8",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -42,8 +42,8 @@
     "prettier": "prettier --write ./src"
   },
   "dependencies": {
-    "@wormhole-foundation/connect-sdk": "^0.4.0-beta.5",
-    "@wormhole-foundation/connect-sdk-algorand": "^0.4.0-beta.5",
-    "@wormhole-foundation/connect-sdk-algorand-core": "^0.4.0-beta.5"
+    "@wormhole-foundation/connect-sdk": "^0.4.0-beta.8",
+    "@wormhole-foundation/connect-sdk-algorand": "^0.4.0-beta.8",
+    "@wormhole-foundation/connect-sdk-algorand-core": "^0.4.0-beta.8"
   }
 }

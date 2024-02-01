@@ -1,10 +1,10 @@
 import {
+  Amount,
   Chain,
   Network,
-  contracts,
-  Amount,
-  baseUnits,
   amountFromBaseUnits,
+  baseUnits,
+  contracts,
   displayAmount,
 } from "@wormhole-foundation/sdk-base";
 import {
@@ -86,7 +86,7 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     ];
   }
 
-  // get the liist of destination tokens that may be recieved on the destination chain
+  // get the list of destination tokens that may be recieved on the destination chain
   static async supportedDestinationTokens<N extends Network>(
     sourceToken: TokenId,
     fromChain: ChainContext<N>,
@@ -120,20 +120,17 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     try {
       const options = params.options ?? this.getDefaultOptions();
 
-      const { destination } = this.request;
-      let nativeGasPerc = options.nativeGas ?? 0.0;
-
-      if (nativeGasPerc > 1.0 || nativeGasPerc < 0.0)
+      if (options.nativeGas && (options.nativeGas > 1.0 || options.nativeGas < 0.0))
         throw new Error("Native gas must be between 0.0 and 1.0 (0% and 100%)");
 
       // If destination is native, max out the nativeGas requested
-      if (destination && isNative(destination.id.address) && nativeGasPerc === 0.0)
-        nativeGasPerc = 1.0;
+      const { destination } = this.request;
+      if (isNative(destination.id.address) && options.nativeGas === 0.0) options.nativeGas = 1.0;
 
+      const updatedParams = { ...params, options };
       const validatedParams: Vp = {
-        amount: params.amount,
-        options: { ...params.options, nativeGas: nativeGasPerc },
-        normalizedParams: await this.normalizeTransferParams(params),
+        ...updatedParams,
+        normalizedParams: await this.normalizeTransferParams(updatedParams),
       };
 
       return { valid: true, params: validatedParams };
@@ -142,7 +139,9 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     }
   }
 
-  async normalizeTransferParams(params: Tp): Promise<AutomaticTokenBridgeRoute.NormalizedParams> {
+  private async normalizeTransferParams(
+    params: Tp,
+  ): Promise<AutomaticTokenBridgeRoute.NormalizedParams> {
     const amount = this.request.parseAmount(params.amount);
 
     const inputToken = isNative(this.request.source.id.address)
@@ -159,29 +158,22 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     // Min amount is fee + 5%
     const minAmount = (fee * 105n) / 100n;
     if (baseUnits(amount) < minAmount) {
-      throw new Error(`Minimum amount is ${displayAmount(amount)}`);
+      throw new Error(
+        `Minimum amount is ${displayAmount({
+          amount: minAmount.toString(),
+          decimals: amount.decimals,
+        })}`,
+      );
     }
 
-    const transferableAmount = baseUnits(amount) - fee;
-
-    const { destination } = this.request;
-    const options = params.options ?? this.getDefaultOptions();
-
-    let nativeGasPerc = options.nativeGas ?? 0.0;
-    // If destination is native, max out the nativeGas requested
-    if (destination && isNative(destination.id.address) && nativeGasPerc === 0.0)
-      nativeGasPerc = 1.0;
-    if (nativeGasPerc > 1.0 || nativeGasPerc < 0.0) {
-      throw new Error("Native gas must be between 0.0 and 1.0 (0% and 100%)");
-    }
+    const redeemableAmount = baseUnits(amount) - fee;
 
     // Determine nativeGas
     let nativeGasAmount = 0n;
-    if (nativeGasPerc > 0) {
-      // TODO: currently supporting 2 decimals of the percentage requested
+    if (params.options && params.options.nativeGas > 0) {
       const scale = 10000;
-      const scaledGas = BigInt(options.nativeGas * scale);
-      nativeGasAmount = (transferableAmount * scaledGas) / BigInt(scale);
+      const scaledGas = BigInt(params.options.nativeGas * scale);
+      nativeGasAmount = (redeemableAmount * scaledGas) / BigInt(scale);
     }
 
     return {

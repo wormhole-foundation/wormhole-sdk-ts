@@ -62,12 +62,7 @@ type NativeAddressCtr = new (ua: UniversalAddress | string | Uint8Array) => Addr
 const nativeFactory = new Map<Platform, NativeAddressCtr>();
 
 export function registerNative<P extends Platform>(platform: P, ctr: NativeAddressCtr): void {
-  if (nativeFactory.has(platform)) {
-    console.warn("Native address type for platform %s has already registered", platform);
-    //throw new Error(`Native address type for platform ${platform} has already registered`);
-    return;
-  }
-
+  if (nativeFactory.has(platform)) return; //throw new Error(`Native address type for platform ${platform} has already registered`);
   nativeFactory.set(platform, ctr);
 }
 

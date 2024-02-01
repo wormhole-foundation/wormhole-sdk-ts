@@ -214,7 +214,7 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
 
   async maxSwapAmount(token: TokenAddress<C>): Promise<bigint> {
     const address = await this.tokenAddress(token);
-    return this.tokenBridgeRelayer.maxNativeSwapAmount(address);
+    return this.tokenBridgeRelayer.calculateMaxSwapAmountIn(address);
   }
 
   async getRegisteredTokens(): Promise<NativeAddress<C>[]> {

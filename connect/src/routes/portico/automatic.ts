@@ -234,7 +234,7 @@ export class AutomaticPorticoRoute<N extends Network>
 
     return {
       quote,
-      ...this.request.displayQuote({
+      ...(await this.request.displayQuote({
         sourceToken: {
           token: params.normalizedParams.sourceToken,
           amount: baseUnits(params.normalizedParams.amount),
@@ -247,7 +247,7 @@ export class AutomaticPorticoRoute<N extends Network>
           token: params.normalizedParams.destinationToken,
           amount: fee,
         },
-      }),
+      })),
     };
   }
 
