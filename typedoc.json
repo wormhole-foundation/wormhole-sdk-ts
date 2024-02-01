@@ -7,8 +7,6 @@
     "core/definitions",
     "connect",
     "platforms/evm",
-  ],
-  "exclude": [
     "platforms/evm/protocols/core",
     "platforms/evm/protocols/tokenBridge",
     "platforms/evm/protocols/cctp",
