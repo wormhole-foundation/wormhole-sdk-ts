@@ -11,7 +11,6 @@ export * from "./universalAddress";
 export * from "./unsignedTransaction";
 export * from "./vaa";
 export * from "./utils";
-export * from "./relayer";
 export * from "./platform";
 export * from "./chain";
 export * from "./contracts";
@@ -26,6 +25,7 @@ export * from "./protocols/tokenBridge";
 export * from "./protocols/circleBridge";
 export * from "./protocols/ibc";
 export * from "./protocols/portico";
+export * from "./protocols/relayer";
 
 export * as layoutItems from "./layout-items";
 export * as testing from "./testing";

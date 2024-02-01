@@ -63,14 +63,17 @@ export function isSameToken(a: TokenId, b: TokenId): boolean {
   return canonicalAddress(a) === canonicalAddress(b);
 }
 
+/** Utility function to return the string representation of a ChainAddress or TokenId */
 export function canonicalAddress(ca: ChainAddress | TokenId): string {
   if (isTokenId(ca) && isNative(ca.address)) return ca.address;
   // @ts-ignore -- `toNative` will eval to 'never' until platforms are registered
   return ca.address.toNative(ca.chain).toString();
 }
 
-// Given a token id, address, or the const string 'native' return
-// a TokenId representing either the token itself or the wrapped version
+/**
+ * Given a token id, address, or the const string 'native' return
+ * a TokenId representing either the token itself or the wrapped version
+ */
 export function resolveWrappedToken<N extends Network, C extends Chain>(
   network: N,
   chain: C,
@@ -106,7 +109,7 @@ export type Balances = {
   [key: string]: bigint | null;
 };
 
-/**  Fully qualifier Transaction ID */
+/**  Fully qualified Transaction ID */
 export type TransactionId<C extends Chain = Chain> = { chain: C; txid: TxHash };
 export function isTransactionIdentifier(thing: TransactionId | any): thing is TransactionId {
   return (<TransactionId>thing).chain !== undefined && (<TransactionId>thing).txid !== undefined;
