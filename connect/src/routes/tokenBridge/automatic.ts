@@ -93,7 +93,6 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     toChain: ChainContext<N>,
   ): Promise<TokenId[]> {
     return [
-      nativeTokenId(toChain.chain),
       await TokenTransfer.lookupDestinationToken(fromChain, toChain, sourceToken),
     ];
   }
