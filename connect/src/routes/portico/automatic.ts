@@ -1,5 +1,4 @@
 import {
-  Amount,
   AttestationReceipt,
   Chain,
   ChainContext,
@@ -12,7 +11,6 @@ import {
   TransactionId,
   TransferState,
   Wormhole,
-  baseUnits,
   canonicalAddress,
   chainToPlatform,
   contracts,
@@ -22,6 +20,7 @@ import {
   resolveWrappedToken,
   signSendWait,
   tokens,
+  amount,
 } from "../..";
 import { AutomaticRoute, StaticRouteMethods } from "../route";
 import {
@@ -43,7 +42,7 @@ export namespace PorticoRoute {
   }
 
   export type NormalizedParams = {
-    amount: Amount;
+    amount: amount.Amount;
 
     canonicalSourceToken: TokenId;
     canonicalDestinationToken: TokenId;
@@ -237,7 +236,7 @@ export class AutomaticPorticoRoute<N extends Network>
       ...(await this.request.displayQuote({
         sourceToken: {
           token: params.normalizedParams.sourceToken,
-          amount: baseUnits(params.normalizedParams.amount),
+          amount: amount.units(params.normalizedParams.amount),
         },
         destinationToken: {
           token: params.normalizedParams.destinationToken,
@@ -260,7 +259,7 @@ export class AutomaticPorticoRoute<N extends Network>
       this.request.from.address,
       this.request.to,
       sourceToken,
-      baseUnits(params.normalizedParams.amount),
+      amount.units(params.normalizedParams.amount),
       destToken!,
       params.quote!.quote,
     );
@@ -300,7 +299,7 @@ export class AutomaticPorticoRoute<N extends Network>
     const startQuote = await fromPorticoBridge.quoteSwap(
       params.normalizedParams.sourceToken.address,
       params.normalizedParams.canonicalSourceToken.address,
-      baseUnits(params.normalizedParams.amount),
+      amount.units(params.normalizedParams.amount),
     );
     const startSlippage = (startQuote * SLIPPAGE_BPS) / BPS_PER_HUNDRED_PERCENT;
 

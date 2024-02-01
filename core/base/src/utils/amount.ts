@@ -15,7 +15,7 @@ export interface Amount {
  * @param decimals The number of decimals for the token this amount is of
  * @returns An Amount, expressed as base units and decimals
  */
-export function parseAmount(amount: string | number, decimals: number): Amount {
+export function parse(amount: string | number, decimals: number): Amount {
   validateAmountInput(amount, decimals);
 
   amount = amount.toString();
@@ -54,11 +54,11 @@ export function parseAmount(amount: string | number, decimals: number): Amount {
  * @returns the truncated Amount
  */
 
-export function truncateAmount(amount: Amount, maxDecimals: number): Amount {
+export function truncate(amount: Amount, maxDecimals: number): Amount {
   if (amount.decimals <= maxDecimals) return amount;
   const delta = BigInt(amount.decimals - maxDecimals);
   // first scale down to maxDecimals, this will truncate the amount
-  const scaledAmount = baseUnits(amount) / 10n ** delta;
+  const scaledAmount = units(amount) / 10n ** delta;
   // then scale back to original decimals
   const amt = scaledAmount * 10n ** delta;
 
@@ -78,7 +78,7 @@ export function truncateAmount(amount: Amount, maxDecimals: number): Amount {
  * @param toDecimals the number of decimals to scale to
  * @returns the scaled amount
  */
-export function scaleAmount(amount: Amount, toDecimals: number): Amount {
+export function scale(amount: Amount, toDecimals: number): Amount {
   if (amount.decimals === toDecimals) return amount;
   if (amount.amount === "0") return { amount: amount.amount, decimals: toDecimals };
 
@@ -112,7 +112,7 @@ export function scaleAmount(amount: Amount, toDecimals: number): Amount {
  * @param decimals The number of decimals for the token this amount is of
  * @returns An Amount, expressed as base units and decimals
  */
-export function amountFromBaseUnits(amount: bigint, decimals: number): Amount {
+export function fromBaseUnits(amount: bigint, decimals: number): Amount {
   return { amount: amount.toString(), decimals };
 }
 
@@ -121,7 +121,7 @@ export function amountFromBaseUnits(amount: bigint, decimals: number): Amount {
  * @param amount An Amount
  * @returns A bigint, representing the base units for the Amount
  */
-export function baseUnits(amount: Amount): bigint {
+export function units(amount: Amount): bigint {
   validateAmount(amount);
   return BigInt(amount.amount);
 }
@@ -132,7 +132,7 @@ export function baseUnits(amount: Amount): bigint {
  * @param precision Number of decimal places to render
  * @returns A string representing the Amount as a fixed point number
  */
-export function displayAmount(amount: Amount, precision?: number): string {
+export function display(amount: Amount, precision?: number): string {
   validateAmount(amount);
 
   let whole = amount.amount.substring(0, amount.amount.length - amount.decimals).padStart(1, "0");

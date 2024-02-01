@@ -1,12 +1,4 @@
-import {
-  Amount,
-  Chain,
-  Network,
-  baseUnits,
-  circle,
-  contracts,
-  displayAmount,
-} from "@wormhole-foundation/sdk-base";
+import { Chain, Network, circle, contracts, amount } from "@wormhole-foundation/sdk-base";
 import {
   ChainContext,
   CircleTransferDetails,
@@ -33,9 +25,9 @@ export namespace AutomaticCCTPRoute {
   };
 
   export type NormalizedParams = {
-    amount: Amount;
-    fee: Amount;
-    nativeGasAmount: Amount;
+    amount: amount.Amount;
+    fee: amount.Amount;
+    nativeGasAmount: amount.Amount;
   };
 
   export interface ValidatedParams extends ValidatedTransferParams<Options> {
@@ -140,19 +132,19 @@ export class AutomaticCCTPRoute<N extends Network>
   }
 
   private async normalizeTransferParams(params: Tp): Promise<AutomaticCCTPRoute.NormalizedParams> {
-    const amount = this.request.parseAmount(params.amount);
+    const amt = this.request.parseAmount(params.amount);
 
     const ctb = await this.request.fromChain.getAutomaticCircleBridge();
     const fee = await ctb.getRelayerFee(this.request.to.chain);
 
     const minAmount = (fee * 105n) / 100n;
-    if (baseUnits(amount) < minAmount) {
+    if (amount.units(amt) < minAmount) {
       throw new Error(
-        `Minimum amount is ${displayAmount(this.request.amountFromBaseUnits(minAmount))}`,
+        `Minimum amount is ${amount.display(this.request.amountFromBaseUnits(minAmount))}`,
       );
     }
 
-    const transferableAmount = baseUnits(amount) - fee;
+    const transferableAmount = amount.units(amt) - fee;
 
     const options = params.options ?? this.getDefaultOptions();
 
@@ -170,7 +162,7 @@ export class AutomaticCCTPRoute<N extends Network>
 
     return {
       fee: this.request.amountFromBaseUnits(fee),
-      amount,
+      amount: amt,
       nativeGasAmount: this.request.amountFromBaseUnits(nativeGasAmount),
     };
   }
@@ -179,9 +171,9 @@ export class AutomaticCCTPRoute<N extends Network>
     return {
       from: this.request.from,
       to: this.request.to,
-      amount: baseUnits(params.normalizedParams.amount),
+      amount: amount.units(params.normalizedParams.amount),
       automatic: true,
-      nativeGas: baseUnits(params.normalizedParams.nativeGasAmount),
+      nativeGas: amount.units(params.normalizedParams.nativeGasAmount),
     };
   }
 

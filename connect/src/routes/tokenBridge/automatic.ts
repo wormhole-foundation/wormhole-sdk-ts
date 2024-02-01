@@ -1,12 +1,4 @@
-import {
-  Amount,
-  Chain,
-  Network,
-  amountFromBaseUnits,
-  baseUnits,
-  contracts,
-  displayAmount,
-} from "@wormhole-foundation/sdk-base";
+import { Chain, Network, contracts, amount } from "@wormhole-foundation/sdk-base";
 import {
   ChainContext,
   Signer,
@@ -35,9 +27,9 @@ export namespace AutomaticTokenBridgeRoute {
   };
 
   export type NormalizedParams = {
-    fee: Amount;
-    amount: Amount;
-    nativeGasAmount: Amount;
+    fee: amount.Amount;
+    amount: amount.Amount;
+    nativeGasAmount: amount.Amount;
   };
 
   export interface ValidatedParams extends ValidatedTransferParams<Options> {
@@ -92,9 +84,7 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     fromChain: ChainContext<N>,
     toChain: ChainContext<N>,
   ): Promise<TokenId[]> {
-    return [
-      await TokenTransfer.lookupDestinationToken(fromChain, toChain, sourceToken),
-    ];
+    return [await TokenTransfer.lookupDestinationToken(fromChain, toChain, sourceToken)];
   }
 
   static isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean {
@@ -141,7 +131,7 @@ export class AutomaticTokenBridgeRoute<N extends Network>
   private async normalizeTransferParams(
     params: Tp,
   ): Promise<AutomaticTokenBridgeRoute.NormalizedParams> {
-    const amount = this.request.parseAmount(params.amount);
+    const amt = this.request.parseAmount(params.amount);
 
     const inputToken = isNative(this.request.source.id.address)
       ? await this.request.fromChain.getNativeWrappedTokenId()
@@ -156,16 +146,16 @@ export class AutomaticTokenBridgeRoute<N extends Network>
 
     // Min amount is fee + 5%
     const minAmount = (fee * 105n) / 100n;
-    if (baseUnits(amount) < minAmount) {
+    if (amount.units(amt) < minAmount) {
       throw new Error(
-        `Minimum amount is ${displayAmount({
+        `Minimum amount is ${amount.display({
           amount: minAmount.toString(),
-          decimals: amount.decimals,
+          decimals: amt.decimals,
         })}`,
       );
     }
 
-    const redeemableAmount = baseUnits(amount) - fee;
+    const redeemableAmount = amount.units(amt) - fee;
 
     // Determine nativeGas
     let nativeGasAmount = 0n;
@@ -176,9 +166,9 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     }
 
     return {
-      fee: amountFromBaseUnits(fee, this.request.source.decimals),
-      amount,
-      nativeGasAmount: amountFromBaseUnits(nativeGasAmount, this.request.source.decimals),
+      fee: amount.fromBaseUnits(fee, this.request.source.decimals),
+      amount: amt,
+      nativeGasAmount: amount.fromBaseUnits(nativeGasAmount, this.request.source.decimals),
     };
   }
 
@@ -223,9 +213,9 @@ export class AutomaticTokenBridgeRoute<N extends Network>
       automatic: true,
       from: this.request.from,
       to: this.request.to,
-      amount: baseUnits(params.normalizedParams.amount),
+      amount: amount.units(params.normalizedParams.amount),
       token: this.request.source.id,
-      nativeGas: baseUnits(params.normalizedParams.nativeGasAmount),
+      nativeGas: amount.units(params.normalizedParams.nativeGasAmount),
     };
 
     return transfer;

@@ -1,11 +1,4 @@
-import {
-  Amount,
-  Chain,
-  Network,
-  baseUnits,
-  circle,
-  contracts,
-} from "@wormhole-foundation/sdk-base";
+import { Chain, Network, circle, contracts, amount } from "@wormhole-foundation/sdk-base";
 import {
   ChainContext,
   CircleBridge,
@@ -27,7 +20,7 @@ export namespace CCTPRoute {
   };
 
   export type NormalizedParams = {
-    amount: Amount;
+    amount: amount.Amount;
   };
 
   export interface ValidatedParams extends ValidatedTransferParams<Options> {
@@ -164,7 +157,7 @@ export class CCTPRoute<N extends Network>
     return {
       from: this.request.from,
       to: this.request.to,
-      amount: baseUnits(params.normalizedParams.amount),
+      amount: amount.units(params.normalizedParams.amount),
       automatic: false,
       ...params.options,
     };

@@ -4,12 +4,9 @@ import {
   Network,
   Platform,
   PlatformToChains,
-  amountFromBaseUnits,
-  baseUnits,
   encoding,
-  scaleAmount,
+  amount,
   toChain as toChainName,
-  truncateAmount,
 } from "@wormhole-foundation/sdk-base";
 import {
   AttestationId,
@@ -177,8 +174,8 @@ export class TokenTransfer<N extends Network = Network>
     let from = { chain: vaa.emitterChain, address: vaa.emitterAddress };
     let { token, to } = vaa.payload;
 
-    const scaledAmount = scaleAmount(
-      amountFromBaseUnits(token.amount, TOKEN_BRIDGE_MAX_DECIMALS),
+    const scaledAmount = amount.scale(
+      amount.fromBaseUnits(token.amount, TOKEN_BRIDGE_MAX_DECIMALS),
       await wh.getDecimals(token.chain, token.address),
     );
 
@@ -191,7 +188,7 @@ export class TokenTransfer<N extends Network = Network>
 
     const details: TokenTransferDetails = {
       token: token,
-      amount: baseUnits(scaledAmount),
+      amount: amount.units(scaledAmount),
       from,
       to,
       automatic,
@@ -458,15 +455,15 @@ export class TokenTransfer<N extends Network = Network>
     const srcDecimals = await srcChain.getDecimals(srcToken.address);
     const dstDecimals = await dstChain.getDecimals(dstToken.address);
 
-    const srcAmount = amountFromBaseUnits(transfer.amount, srcDecimals);
+    const srcAmount = amount.fromBaseUnits(transfer.amount, srcDecimals);
 
-    const srcAmountTruncated = truncateAmount(srcAmount, TOKEN_BRIDGE_MAX_DECIMALS);
-    const dstAmountReceivable = scaleAmount(srcAmountTruncated, dstDecimals);
+    const srcAmountTruncated = amount.truncate(srcAmount, TOKEN_BRIDGE_MAX_DECIMALS);
+    const dstAmountReceivable = amount.scale(srcAmountTruncated, dstDecimals);
 
     if (!transfer.automatic) {
       return {
-        sourceToken: { token: srcToken, amount: baseUnits(srcAmountTruncated) },
-        destinationToken: { token: dstToken, amount: baseUnits(dstAmountReceivable) },
+        sourceToken: { token: srcToken, amount: amount.units(srcAmountTruncated) },
+        destinationToken: { token: dstToken, amount: amount.units(dstAmountReceivable) },
       };
     }
 
@@ -476,8 +473,8 @@ export class TokenTransfer<N extends Network = Network>
     // quoted on the source chain
     const stb = await srcChain.getAutomaticTokenBridge();
     const fee = await stb.getRelayerFee(transfer.from.address, transfer.to, srcToken.address);
-    const feeAmountDest = scaleAmount(
-      truncateAmount(amountFromBaseUnits(fee, srcDecimals), TOKEN_BRIDGE_MAX_DECIMALS),
+    const feeAmountDest = amount.scale(
+      amount.truncate(amount.fromBaseUnits(fee, srcDecimals), TOKEN_BRIDGE_MAX_DECIMALS),
       dstDecimals,
     );
 
@@ -504,12 +501,12 @@ export class TokenTransfer<N extends Network = Network>
     }
 
     const destAmountLessFee =
-      baseUnits(dstAmountReceivable) - dstNativeGasAmountRequested - baseUnits(feeAmountDest);
+      amount.units(dstAmountReceivable) - dstNativeGasAmountRequested - amount.units(feeAmountDest);
 
     return {
       sourceToken: {
         token: srcToken,
-        amount: baseUnits(srcAmountTruncated),
+        amount: amount.units(srcAmountTruncated),
       },
       destinationToken: { token: dstToken, amount: destAmountLessFee },
       relayFee: { token: srcToken, amount: fee },
