@@ -1,8 +1,6 @@
-// Signature represents the secp256k1 signature of a Guardian
-
 import { signatureItem } from "./layout-items";
 
-// use layout-items/signature.ts to serialize/deserialize
+/** Signature represents the secp256k1 signature of a Guardian */
 export class Signature {
   constructor(
     readonly r: bigint,

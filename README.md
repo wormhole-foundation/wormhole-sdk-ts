@@ -2,6 +2,10 @@
 
 The Connect SDK is a TypeScript SDK for interacting with the chains Wormhole supports and the [protocols](#protocols) built on top of Wormhole.
 
+## Warning 
+
+:warning: This package is a Work in Progress so the interface may change and there are likely bugs. Please [report](https://github.com/wormhole-foundation/connect-sdk/issues) any issues you find. :warning:
+
 ## Installation
 
 Install the primary package
@@ -39,6 +43,8 @@ import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 import { AlgorandPlatform } from "@wormhole-foundation/connect-sdk-algorand";
 
 // Include the protocols you wish to use
+// these imports register the protocol to be used by higher level abstractions
+// like WormholeTransfers 
 import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
 import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 import "@wormhole-foundation/connect-sdk-algorand-tokenbridge";
@@ -51,10 +57,179 @@ const wh = new Wormhole(network, [EvmPlatform, SolanaPlatform, AlgorandPlatform]
 // look up configuration parameters or  even fetch balances
 const srcChain = wh.getChain("Ethereum");
 
+// In this SDK, the string literal `'native'` is an alias for the gas token
+// native to the chain
 const balance = await srcChain.getBalance( "0xdeadbeef...", "native" ) // => BigInt
+
+// returns a TokenBridge client for `srcChain` 
 await srcChain.getTokenBridge(); // => TokenBridge<'Evm'>
+// util to grab an RPC client, cached after the first call  
 srcChain.getRpc(); // => RpcConnection<'Evm'>
 ```
+
+## Concepts
+
+Understanding several higher level concepts of the SDK will help in using it effectively.
+
+### Platforms
+
+Every chain is its own special snowflake but many of them share similar functionality. The `Platform` modules provide a consistent interface for interacting with the chains that share a platform.
+
+Each platform can be installed separately so that dependencies can stay as minimal as possible.
+
+### Chain Context
+
+The `Wormhole` class provides a `getChain` method that returns a `ChainContext` object for a given chain. This object provides access to the chain specific methods and utilities. Much of the functionality in the `ChainContext` is provided by the `Platform` methods but the specific chain may have overridden methods.
+
+The ChainContext object is also responsible for holding a cached rpc client and protocol clients.
+
+```ts
+// Get the chain context for the source and destination chains
+// This is useful to grab direct clients for the protocols
+const srcChain = wh.getChain(senderAddress.chain);
+const dstChain = wh.getChain(receiverAddress.chain);
+
+const tb = await srcChain.getTokenBridge(); // => TokenBridge<'Evm'>
+srcChain.getRpcClient(); // => RpcClient<'Evm'>
+```
+
+
+### Addresses
+
+Within the Wormhole context, addresses are often [normalized](https://docs.wormhole.com/wormhole/blockchain-environments/evm#addresses) to 32 bytes and referred to in this SDK as a `UniversalAddresses`.
+
+Each platform comes with an address type that understands the native address formats, unsurprisingly referred to as NativeAddress. This abstraction allows the SDK to work with addresses in a consistent way regardless of the underlying chain.
+
+```ts
+// Its possible to convert a string address to its Native address
+const ethAddr: NativeAddress<"Evm"> = toNative("Ethereum", "0xbeef...");
+
+// A common type in the SDK is the `ChainAddress` which provides
+// the additional context of the `Chain` this address is relevant for.
+const senderAddress: ChainAddress = Wormhole.chainAddress("Ethereum","0xbeef...");
+const receiverAddress: ChainAddress = Wormhole.chainAddress("Solana","Sol1111...");
+
+// Convert the ChainAddress back to its canonical string address format
+const strAddress = Wormhole.canonicalAddress(senderAddress); // => '0xbeef...'
+
+// Or if the ethAddr above is for an emitter and you need the UniversalAddress
+const emitterAddr = ethAddr.toUniversalAddress().toString()
+```
+
+### Tokens 
+
+Similar to the `ChainAddress` type, the `TokenId` type provides the Chain and Address of a given Token.
+
+```ts
+// Returns a TokenId 
+const sourceToken: TokenId = Wormhole.tokenId("Ethereum","0xbeef...");
+
+// Whereas the ChainAddress is limited to valid addresses, a TokenId may
+// have the string literal 'native' to consistently denote the native
+// gas token of the chain
+const gasToken: TokenId = Wormhole.tokenId("Ethereum","native");
+
+// the same method can be used to convert the TokenId back to its canonical string address format
+const strAddress = Wormhole.canonicalAddress(senderAddress); // => '0xbeef...'
+```
+
+
+### Signers
+
+In order to sign transactions, an object that fulfils the `Signer` interface is required. This is a simple interface that can be implemented by wrapping a web wallet or other signing mechanism.
+
+```ts
+// A Signer is an interface that must be provided to certain methods
+// in the SDK to sign transactions. It can be either a SignOnlySigner
+// or a SignAndSendSigner depending on circumstances.
+// A Signer can be implemented by wrapping an existing offline wallet
+// or a web wallet
+export type Signer = SignOnlySigner | SignAndSendSigner;
+
+// A SignOnlySender is for situations where the signer is not
+// connected to the network or does not wish to broadcast the
+// transactions themselves
+export interface SignOnlySigner {
+  chain(): ChainName;
+  address(): string;
+  // Accept an array of unsigned transactions and return
+  // an array of signed and serialized transactions.
+  // The transactions may be inspected or altered before
+  // signing.
+  // Note: The serialization is chain specific, if in doubt,
+  // see the example implementations linked below
+  sign(tx: UnsignedTransaction[]): Promise<SignedTx[]>;
+}
+
+// A SignAndSendSigner is for situations where the signer is
+// connected to the network and wishes to broadcast the
+// transactions themselves
+export interface SignAndSendSigner {
+  chain(): ChainName;
+  address(): string;
+  // Accept an array of unsigned transactions and return
+  // an array of transaction ids in the same order as the
+  // UnsignedTransactions array.
+  signAndSend(tx: UnsignedTransaction[]): Promise<TxHash[]>;
+}
+```
+
+See the testing signers ([Evm](https://github.com/wormhole-foundation/connect-sdk/blob/main/platforms/evm/src/signer.ts), [Solana](https://github.com/wormhole-foundation/connect-sdk/blob/main/platforms/solana/src/signer.ts), ...) for an example of how to implement a signer for a specific chain or platform.
+
+### Protocols
+
+While Wormhole itself is a Generic Message Passing protocol, a number of protocols have been built on top of it to provide specific functionality.
+
+Each Protocol, if available, will have a Platform specific implementation. These implementations provide methods to generate transactions or read state from the contract on-chain.
+
+#### Wormhole Core
+
+The protocol that underlies all Wormhole activity is the Core protocol. This protocol is responsible for emitting the message containing the information necessary to perform bridging including [Emitter address](https://docs.wormhole.com/wormhole/reference/glossary#emitter), the [Sequence number](https://docs.wormhole.com/wormhole/reference/glossary#sequence) for the message and the Payload of the message itself.
+
+```ts
+//  ...
+// register the protocol
+import "@wormhole-foundation/connect-sdk-solana-core";
+
+// ...
+
+// get chain context
+const chain = wh.getChain("Solana");
+// Get the core brige client for Solana
+const coreBridge = await chain.getWormholeCore();
+// Generate transactions necessary to simply publish a message
+const publishTxs = coreBridge.publishMessage(address.address, encoding.bytes.encode("lol"), 0, 0);
+
+// ... posibly later, after fetching the signed VAA, generate the transactions to verify the VAA
+const verifyTxs = coreBridge.verifyMessage(address.address, vaa);
+```
+
+Within the payload is the information necessary to perform whatever action is required based on the Protocol that uses it.
+
+#### Token Bridge
+
+The most familiar protocol built on Wormhole is the Token Bridge.
+
+Every chain has a `TokenBridge` protocol client that provides a consistent interface for interacting with the Token Bridge. This includes methods to generate the transactions required to transfer tokens, as well as methods to generate and redeem attestations.
+
+Using the `WormholeTransfer` abstractions is the recommended way to interact with these protocols but it is possible to use them directly
+
+```ts
+import { signSendWait } from "@wormhole-foundation/connect-sdk";
+
+import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
+
+// ...
+
+const tb = await srcChain.getTokenBridge(); // => TokenBridge<'Evm'>
+
+const token = "0xdeadbeef...";
+const txGenerator = tb.createAttestation(token); // => AsyncGenerator<UnsignedTransaction, ...>
+const txids = await signSendWait(srcChain, txGenerator, src.signer); // => TxHash[]
+```
+
+Supported protocols are defined in the [definitions module](https://github.com/wormhole-foundation/connect-sdk/tree/main/core/definitions/src/protocols).
+
 
 ### Wormhole Transfer
 
@@ -189,138 +364,7 @@ const xfer = await TokenTransfer.from({
 const dstTxIds = await xfer.completeTransfer(dst.signer);
 ```
 
-## Concepts
-
-Understanding several higher level concepts of the SDK will help in using it effectively.
-
-### Platforms
-
-Every chain is its own special snowflake but many of them share similar functionality. The `Platform` modules provide a consistent interface for interacting with the chains that share a platform.
-
-Each platform can be installed separately so that dependencies can stay as minimal as possible.
-
-### Chain Context
-
-The `Wormhole` class provides a `getChain` method that returns a `ChainContext` object for a given chain. This object provides access to the chain specific methods and utilities. Much of the functionality in the `ChainContext` is provided by the `Platform` methods but the specific chain may have overridden methods.
-
-The ChainContext object is also responsible for holding a cached rpc client and protocol clients.
-
-```ts
-// Get the chain context for the source and destination chains
-// This is useful to grab direct clients for the protocols
-const srcChain = wh.getChain(senderAddress.chain);
-const dstChain = wh.getChain(receiverAddress.chain);
-
-srcChain.parseAddress("0xdeadbeef..."); // => NativeAddress<'Evm'>
-await srcChain.getTokenBridge(); // => TokenBridge<'Evm'>
-srcChain.getRpcClient(); // => RpcClient<'Evm'>
-```
-
-### Protocols
-
-While Wormhole itself is a Generic Message Passing protocol, a number of protocols have been built on top of it to provide specific functionality.
-
-#### Token Bridge
-
-The most familiar protocol built on Wormhole is the Token Bridge.
-
-Every chain has a `TokenBridge` protocol client that provides a consistent interface for interacting with the Token Bridge. This includes methods to generate the transactions required to transfer tokens, as well as methods to generate and redeem attestations.
-
-Using the `WormholeTransfer` abstractions is the recommended way to interact with these protocols but it is possible to use them directly
-
-```ts
-import { signSendWait } from "@wormhole-foundation/connect-sdk";
-
-import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
-
-// ...
-
-const tb = await srcChain.getTokenBridge(); // => TokenBridge<'Evm'>
-
-const token = "0xdeadbeef...";
-const txGenerator = tb.createAttestation(token); // => AsyncGenerator<UnsignedTransaction, ...>
-const txids = await signSendWait(srcChain, txGenerator, src.signer); // => TxHash[]
-```
-
-Supported protocols are defined in the [definitions module](https://github.com/wormhole-foundation/connect-sdk/tree/main/core/definitions/src/protocols).
-
-### Signers
-
-In order to sign transactions, an object that fulfils the `Signer` interface is required. This is a simple interface that can be implemented by wrapping a web wallet or other signing mechanism.
-
-```ts
-// A Signer is an interface that must be provided to certain methods
-// in the SDK to sign transactions. It can be either a SignOnlySigner
-// or a SignAndSendSigner depending on circumstances.
-// A Signer can be implemented by wrapping an existing offline wallet
-// or a web wallet
-export type Signer = SignOnlySigner | SignAndSendSigner;
-
-// A SignOnlySender is for situations where the signer is not
-// connected to the network or does not wish to broadcast the
-// transactions themselves
-export interface SignOnlySigner {
-  chain(): ChainName;
-  address(): string;
-  // Accept an array of unsigned transactions and return
-  // an array of signed and serialized transactions.
-  // The transactions may be inspected or altered before
-  // signing.
-  // Note: The serialization is chain specific, if in doubt,
-  // see the example implementations linked below
-  sign(tx: UnsignedTransaction[]): Promise<SignedTx[]>;
-}
-
-// A SignAndSendSigner is for situations where the signer is
-// connected to the network and wishes to broadcast the
-// transactions themselves
-export interface SignAndSendSigner {
-  chain(): ChainName;
-  address(): string;
-  // Accept an array of unsigned transactions and return
-  // an array of transaction ids in the same order as the
-  // UnsignedTransactions array.
-  signAndSend(tx: UnsignedTransaction[]): Promise<TxHash[]>;
-}
-```
-
-See the testing signers ([Evm](https://github.com/wormhole-foundation/connect-sdk/blob/main/platforms/evm/src/testing/signer.ts), [Solana](https://github.com/wormhole-foundation/connect-sdk/blob/main/platforms/solana/src/testing/signer.ts), ...) for an example of how to implement a signer for a specific chain or platform.
-
-```ts
-// Create a signer for the source and destination chains
-const sender: Signer =  // ...
-const receiver: Signer = // ...
-
-```
-
-### Addresses
-
-Within the Wormhole context, addresses are [normalized](https://docs.wormhole.com/wormhole/blockchain-environments/evm#addresses) to 32 bytes and referred to in this SDK as a `UniversalAddresses`.
-
-Each platform comes with an address type that understands the native address formats, unsurprisingly referred to as NativeAddress. This abstraction allows the SDK to work with addresses in a consistent way regardless of the underlying chain.
-
-```ts
-// Convert a string address to its Native address
-const ethAddr: NativeAddress<"Evm"> = toNative("Ethereum", "0xbeef...");
-const solAddr: NativeAddress<"Solana"> = toNative("Solana", "Sol1111...");
-const algoAddr: NativeAddress<"Algorand"> = toNative("Solana", "TRYALGO...");
-
-// Convert a Native address to its string address
-ethAddr.toString(); // => '0xbeef...'
-
-// Convert a Native address to a UniversalAddress
-ethAddr.toUniversalAddress();
-
-// A common type in the SDK is the `ChainAddress`.
-// A helper exists to provide a ChainAddress for a signer, or [ChainName, string address]
-const senderAddress: ChainAddress = Wormhole.chainAddress("Ethereum","0xbeef...");
-const receiverAddress: ChainAddress = Wormhole.chainAddress("Solana","Sol1111...");
-```
 
 ## See also
 
 The tsdoc is available [here](https://wormhole-foundation.github.io/connect-sdk/)
-
-## WIP
-
-:warning: This package is a Work in Progress so the interface may change and there are likely bugs. Please [report](https://github.com/wormhole-foundation/connect-sdk/issues) any issues you find. :warning:

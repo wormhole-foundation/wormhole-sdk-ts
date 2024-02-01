@@ -7,10 +7,19 @@ import { TransactionRequest } from 'ethers';
 export const unusedNonce = 0;
 export const unusedArbiterFee = 0n;
 
-// TODO: can we specify this in 1 place and re-use it everywhere?
+/**
+ * Runtime value for the EVM Platform
+ * */
 export const _platform: 'Evm' = 'Evm';
+
+/**
+ * Type for the EVM Platform
+ */
 export type EvmPlatformType = typeof _platform;
 
+/**
+ * Type representing a union of the EVM Chains
+ */
 export type EvmChains = PlatformToChains<EvmPlatformType>;
 export type UniversalOrEvm = UniversalOrNative<EvmChains>;
 export type AnyEvmAddress = UniversalOrEvm | string | Uint8Array;

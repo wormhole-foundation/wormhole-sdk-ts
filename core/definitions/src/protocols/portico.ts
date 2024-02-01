@@ -24,6 +24,7 @@ declare global {
 
 export namespace PorticoBridge {
   const _protocol = "PorticoBridge";
+  /** The compile time protocol name type for Portico Bridge */
   export type ProtocolName = typeof _protocol;
 
   export interface SwapAmounts {
@@ -43,6 +44,7 @@ export namespace PorticoBridge {
   export type TransferPayloadNames = (typeof _transferPayloads)[number];
   export type PayloadNames = (typeof _payloads)[number];
 
+  /** The VAA types emitted by the PorticoBridge protocol */
   export type VAA<PayloadName extends PayloadNames = PayloadNames> = ProtocolVAA<
     ProtocolName,
     PayloadName
@@ -68,6 +70,10 @@ export namespace PorticoBridge {
   };
 }
 
+/**
+ * PorticoBridge provides a consistent interface to interact with
+ * the Portico bridge contracts.
+ */
 export interface PorticoBridge<
   N extends Network,
   P extends Platform,
@@ -76,7 +82,7 @@ export interface PorticoBridge<
   // Checks if a transfer VAA has been redeemed
   //isTransferCompleted(vaa: PorticoBridge.VAA): Promise<boolean>;
 
-  // Initiate a transfer of some token to another chain
+  /** Initiate a transfer of some token to another chain */
   transfer(
     sender: AccountAddress<C>,
     recipient: ChainAddress,
@@ -86,17 +92,16 @@ export interface PorticoBridge<
     quote: PorticoBridge.Quote,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
 
-  // Redeem a transfer VAA to receive the tokens on this chain
+  /** Redeem a transfer VAA to receive the tokens on this chain */
   redeem(
     sender: AccountAddress<C>,
     vaa: PorticoBridge.VAA,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
 
-  // quote token conversion
+  /** quote token conversion */
   quoteSwap(input: TokenAddress<C>, output: TokenAddress<C>, amount: bigint): Promise<bigint>;
-  // quote relay on destination with conversion
+  /** quote relay on destination with conversion */
   quoteRelay(token: TokenAddress<C>, destination: TokenAddress<C>): Promise<bigint>;
 
-  //
   getTransferrableToken(address: string): TokenId;
 }

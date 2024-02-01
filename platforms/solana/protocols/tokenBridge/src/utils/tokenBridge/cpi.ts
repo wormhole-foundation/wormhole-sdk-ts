@@ -24,6 +24,9 @@ import {
 } from './instructions';
 import { TokenBridge, toChainId } from '@wormhole-foundation/connect-sdk';
 
+/**
+ * Base Config Account for Token Bridge program.
+ */
 export interface TokenBridgeBaseDerivedAccounts {
   /**
    * seeds = ["config"], seeds::program = tokenBridgeProgram
@@ -31,6 +34,9 @@ export interface TokenBridgeBaseDerivedAccounts {
   tokenBridgeConfig: PublicKey;
 }
 
+/**
+ * Accounts derived from Token Bridge program for native assets.
+ */
 export interface TokenBridgeBaseNativeDerivedAccounts
   extends TokenBridgeBaseDerivedAccounts {
   /**
@@ -94,6 +100,9 @@ export interface TokenBridgeWrappedRedeemerDerivedAccounts
   tokenBridgeMintAuthority: PublicKey;
 }
 
+/**
+ * Accounts derived from Token Bridge program.
+ */
 export interface TokenBridgeDerivedAccounts
   extends TokenBridgeNativeSenderDerivedAccounts,
     TokenBridgeWrappedSenderDerivedAccounts,
@@ -133,6 +142,9 @@ export function getTokenBridgeDerivedAccounts(
   };
 }
 
+/**
+ * Accounts needed to perform `transfer_native_with_payload` instruction.
+ */
 export interface TransferNativeWithPayloadCpiAccounts
   extends TokenBridgeNativeSenderDerivedAccounts {
   payer: PublicKey;
@@ -206,6 +218,9 @@ export function getTransferNativeWithPayloadCpiAccounts(
   };
 }
 
+/**
+ * Accounts needed to perform `transfer_wrapped_with_payload` instruction.
+ */
 export interface TransferWrappedWithPayloadCpiAccounts
   extends TokenBridgeWrappedSenderDerivedAccounts {
   payer: PublicKey;
@@ -292,6 +307,9 @@ export function getTransferWrappedWithPayloadCpiAccounts(
   };
 }
 
+/**
+ * Accounts needed to perform `complete_native_with_payload` instruction.
+ */
 export interface CompleteTransferNativeWithPayloadCpiAccounts
   extends TokenBridgeNativeRedeemerDerivedAccounts {
   payer: PublicKey;
@@ -376,6 +394,9 @@ export function getCompleteTransferNativeWithPayloadCpiAccounts(
   };
 }
 
+/**
+ * Accounts needed to perform `complete_wrapped_with_payload` instruction.
+ */
 export interface CompleteTransferWrappedWithPayloadCpiAccounts
   extends TokenBridgeWrappedRedeemerDerivedAccounts {
   payer: PublicKey;

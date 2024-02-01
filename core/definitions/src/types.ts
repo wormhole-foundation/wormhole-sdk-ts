@@ -18,10 +18,17 @@ import {
 import { ChainAddress, UniversalOrNative, toNative } from "./address";
 import { Contracts, getContracts } from "./contracts";
 
+/** Alias for string, used to look up transaction details */
 export type TxHash = string;
+/** The sequence number assigned to a given message by the core bridge */
 export type SequenceId = bigint;
+/** A signed transaction in its canonical format */
 export type SignedTx = any;
 
+/**
+ * An address representing an asset
+ * @remarks the string literal 'native' is used to represent the native gas token
+ */
 export type TokenAddress<C extends Chain> = UniversalOrNative<C> | "native";
 
 // Typeguard to check if the token address is the string "native" representing the gas token
@@ -30,11 +37,16 @@ export function isNative(thing: any): thing is "native" {
   return typeof thing === "string" && thing === "native";
 }
 
-// Utility to create a TokenId with the address set to the string "native"
+/**  Utility to create a TokenId with the address set to the string "native" */
 export function nativeTokenId<C extends Chain>(chain: C): TokenId<C> {
   return { chain, address: "native" };
 }
 
+/**
+ * A TokenId is a unique identifier for a token on a given chain
+ *
+ * @interface TokenId
+ */
 export type TokenId<C extends Chain = Chain> = { chain: C; address: TokenAddress<C> };
 export function isTokenId<C extends Chain>(thing: any): thing is TokenId<C> {
   return (
@@ -51,14 +63,17 @@ export function isSameToken(a: TokenId, b: TokenId): boolean {
   return canonicalAddress(a) === canonicalAddress(b);
 }
 
+/** Utility function to return the string representation of a ChainAddress or TokenId */
 export function canonicalAddress(ca: ChainAddress | TokenId): string {
   if (isTokenId(ca) && isNative(ca.address)) return ca.address;
   // @ts-ignore -- `toNative` will eval to 'never' until platforms are registered
   return ca.address.toNative(ca.chain).toString();
 }
 
-// Given a token id, address, or the const string 'native' return
-// a TokenId representing either the token itself or the wrapped version
+/**
+ * Given a token id, address, or the const string 'native' return
+ * a TokenId representing either the token itself or the wrapped version
+ */
 export function resolveWrappedToken<N extends Network, C extends Chain>(
   network: N,
   chain: C,
@@ -94,30 +109,35 @@ export type Balances = {
   [key: string]: bigint | null;
 };
 
-// Fully qualifier Transaction ID
+/**  Fully qualified Transaction ID */
 export type TransactionId<C extends Chain = Chain> = { chain: C; txid: TxHash };
 export function isTransactionIdentifier(thing: TransactionId | any): thing is TransactionId {
   return (<TransactionId>thing).chain !== undefined && (<TransactionId>thing).txid !== undefined;
 }
 
-// Configuration for a given Chain
+/** Configuration for a given Chain */
 export type ChainConfig<N extends Network, C extends Chain> = {
   key: C;
   network: N;
   platform: ChainToPlatform<C>;
-  // Wormhole Chain Id for this chain
+  /** Wormhole Chain Id for this chain */
   chainId: number;
-  // Contract addresses for this chain
+  /** Contract addresses for this chain */
   contracts: Contracts;
-  // Number of blocks before a transaction is considered final
+  /** Number of blocks before a transaction is considered final */
   finalityThreshold: number;
-  // Average block time in milliseconds
+  /** Average block time in milliseconds */
   blockTime: number;
-  // Number of decimal places for the native gas token (e.g. 18 for ETH)
+  /** Number of decimal places for the native gas token (e.g. 18 for ETH) */
   nativeTokenDecimals: number;
-  // Native chain id may be eip155 or genesis hash or network moninker or something else
-  // depending on the platform
+  /**
+   * Native chain id may be eip155 or genesis hash or network moninker or something else
+   * depending on the platform
+   */
   nativeChainId: string | bigint;
+  /**
+   * Rpc address for this chain
+   */
   rpc: string;
   tokenMap?: tokens.ChainTokens;
   wrappedNative?: tokens.Token;

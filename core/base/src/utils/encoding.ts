@@ -2,10 +2,13 @@ import { base16, base64, base58 } from "@scure/base";
 
 export { bech32 } from "@scure/base";
 
+/** Utility method to strip a given prefix, frequently used to remove '0x' from an address */
 export const stripPrefix = (prefix: string, str: string): string =>
   str.startsWith(prefix) ? str.slice(prefix.length) : str;
 
 const isHexRegex = /^(?:0x)?[0-9a-fA-F]+$/;
+
+/** Base16/Hex encoding and decoding utilities */
 export const hex = {
   valid: (input: string) => isHexRegex.test(input),
   decode: (input: string) => base16.decode(stripPrefix("0x", input).toUpperCase()),
@@ -18,6 +21,8 @@ export const hex = {
 // regex string to check if the input could possibly be base64 encoded.
 // WARNING: There are clear text strings that are NOT base64 encoded that will pass this check.
 const isB64Regex = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
+
+/** Base64 encoding and decoding utilities */
 export const b64 = {
   valid: (input: string) => isB64Regex.test(input),
   decode: base64.decode,
@@ -25,12 +30,14 @@ export const b64 = {
     base64.encode(typeof input === "string" ? bytes.encode(input) : input),
 };
 
+/** Base58 encoding and decoding utilities */
 export const b58 = {
   decode: base58.decode,
   encode: (input: string | Uint8Array) =>
     base58.encode(typeof input === "string" ? bytes.encode(input) : input),
 };
 
+/** BigInt encoding and decoding utilities */
 export const bignum = {
   decode: (input: string | Uint8Array) => {
     if (typeof input !== "string") input = hex.encode(input, true);
@@ -51,6 +58,7 @@ export const bignum = {
   },
 };
 
+/** Uint8Array encoding and decoding utilities */
 export const bytes = {
   encode: (value: string): Uint8Array => new TextEncoder().encode(value),
   decode: (value: Uint8Array): string => new TextDecoder().decode(value),

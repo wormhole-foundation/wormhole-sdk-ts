@@ -71,4 +71,6 @@ const rpcConfig = [[
 ] as const satisfies MapLevels<[Network, Chain, string]>;
 
 const rpc = constMap(rpcConfig);
+
+/** Default RPC Addresses by network and chain */
 export const rpcAddress = (network: Network, chain: Chain) => rpc.get(network, chain) ?? "";

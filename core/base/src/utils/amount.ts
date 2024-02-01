@@ -1,11 +1,11 @@
-/*
+/**
  * Amount is a number of base units and decimal precision,
  * expressed using a string for  JSON-compatibility
- * */
+ */
 export interface Amount {
-  /* Amount expressed in base units */
+  /** Amount expressed in base units */
   amount: string;
-  /* Number of decimal places in amount */
+  /** Number of decimal places in amount */
   decimals: number;
 }
 

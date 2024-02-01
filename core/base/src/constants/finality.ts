@@ -23,7 +23,6 @@ export const safeThreshold = constMap(safeThresholds);
 
 // prettier-ignore
 // Number of blocks before a transaction is considered "final"
-// prettier-ignore
 const finalityThresholds = [
   ["Ethereum", 64],
   ["Solana",   32],
@@ -42,10 +41,14 @@ const finalityThresholds = [
   ["Terra2",    0],
   ["Xpla",      0],
   ["Injective", 0],
-  ["Karura", 1],
-  ["Acala", 1],
+  ["Karura",    1],
+  ["Acala",     1],
 ] as const satisfies MapLevel<Chain, number>;
 
+/**
+ * The number of blocks before a transaction may be considered "final" and
+ * will not be rolled back
+ */
 export const finalityThreshold = constMap(finalityThresholds);
 
 // prettier-ignore
@@ -93,11 +96,14 @@ const blockTimeMilliseconds = [
   ["Pythnet",             400],
 ] as const satisfies MapLevel<Chain, number>;
 
+/** The amount of time between block production, in milliseconds  */
 export const blockTime = constMap(blockTimeMilliseconds);
 
-// Estimate the block number that a VAA might be available
-// for a given chain, initial block where the tx was submitted
-// and consistency level
+/**
+ * Estimate the block number that a VAA might be available
+ * for a given chain, initial block where the tx was submitted
+ * and consistency level
+ */
 export function consistencyLevelToBlock(
   chain: Chain,
   consistencyLevel: number,

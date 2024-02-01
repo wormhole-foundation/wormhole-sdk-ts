@@ -139,19 +139,6 @@ export class Wormhole<N extends Network> {
     payload?: Uint8Array,
     nativeGas?: bigint,
   ): Promise<TokenTransfer<N>> {
-    // TODO: check if `toChain` is gateway supported
-    // not enough to check if its a Cosmos chain since Terra/Xpla/Sei are not supported
-    // if (chainToPlatform(to.chain) === 'Cosmwasm' ) {
-    //   return await GatewayTransfer.from(this, {
-    //     token,
-    //     amount,
-    //     from,
-    //     to,
-    //     payload,
-    //     nativeGas,
-    //   });
-    // }
-
     return await TokenTransfer.from(this, {
       token,
       amount,
@@ -163,13 +150,18 @@ export class Wormhole<N extends Network> {
     });
   }
 
+  /**
+   * Gets a RouteResolver configured with the routes passed
+   * @param routes the list RouteConstructors to use
+   * @returns the RouteResolver
+   */
   resolver(routes: RouteConstructor[]) {
     return new RouteResolver(this, routes);
   }
 
   /**
    * Gets the contract addresses for a given chain
-   * @param chain the chain name or chain id
+   * @param chain the chain name
    * @returns the contract addresses
    */
   getContracts(chain: Chain): Contracts | undefined {
@@ -178,7 +170,7 @@ export class Wormhole<N extends Network> {
 
   /**
    * Returns the platform object, i.e. the class with platform-specific logic and methods
-   * @param chain the chain name or platform name
+   * @param chain the platform name
    * @returns the platform context class
    * @throws Errors if platform is not found
    */
@@ -206,7 +198,7 @@ export class Wormhole<N extends Network> {
    *  These are the Wormhole wrapped token addresses, not necessarily
    *  the cannonical version of that token
    *
-   * @param chain The chain name or id to get the wrapped token address
+   * @param chain The chain name to get the wrapped token address
    * @param tokenId The Token ID (chain/address) of the original token
    * @returns The TokenId on the given chain, null if it does not exist
    * @throws Errors if the chain is not supported or the token does not exist
@@ -218,7 +210,7 @@ export class Wormhole<N extends Network> {
   }
 
   /**
-   *  Taking a  the original TokenId for some wrapped token  chain
+   *  Taking the original TokenId for some wrapped token chain
    *  These are the Wormhole wrapped token addresses, not necessarily
    *  the cannonical version of that token
    *
@@ -263,6 +255,7 @@ export class Wormhole<N extends Network> {
 
   /**
    * Gets the associated token account for chains that require it (only Solana currently).
+   *
    * @param token the TokenId of the token to get the token account for
    * @param recipient the address of the primary account that may require a separate token account
    * @returns
@@ -276,6 +269,7 @@ export class Wormhole<N extends Network> {
 
   /**
    * Gets the Raw VAA Bytes from the API or Guardian RPC, finality must be met before the VAA will be available.
+   *
    * @param wormholeMessageId The WormholeMessageId corresponding to the VAA to be fetched
    * @param timeout The total amount of time to wait for the VAA to be available
    * @returns The VAA bytes if available
@@ -290,34 +284,22 @@ export class Wormhole<N extends Network> {
 
   /**
    * Gets a VAA from the API or Guardian RPC, finality must be met before the VAA will be available.
-   * @param wormholeMessageId The WormholeMessageId corresponding to the VAA to be fetched
+   *
+   * @param id The WormholeMessageId or Transaction hash corresponding to the VAA to be fetched
    * @param decodeAs The VAA type to decode the bytes as
    * @param timeout The total amount of time to wait for the VAA to be available
    * @returns The VAA if available
    * @throws Errors if the VAA is not available after the retries
    */
   async getVaa<T extends PayloadLiteral | PayloadDiscriminator>(
-    wormholeMessageId: WormholeMessageId,
+    id: WormholeMessageId | TxHash,
     decodeAs: T,
     timeout: number = DEFAULT_TASK_TIMEOUT,
   ): Promise<ReturnType<typeof deserialize<T>> | null> {
-    return await getVaaWithRetry(this.config.api, wormholeMessageId, decodeAs, timeout);
-  }
+    if (typeof id === "string")
+      return await getVaaByTxHashWithRetry(this.config.api, id, decodeAs, timeout);
 
-  /**
-   * Gets a VAA from the API or Guardian RPC, finality must be met before the VAA will be available.
-   * @param txid The Transaction Hash corresponding to the transaction that cause the wormhole core contract to emit a vaa
-   * @param decodeAs The VAA type to decode the bytes as
-   * @param timeout The total amount of time to wait for the VAA to be available
-   * @returns The VAA if available
-   * @throws Errors if the VAA is not available after the retries
-   */
-  async getVaaByTxHash<T extends PayloadLiteral | PayloadDiscriminator>(
-    txid: TxHash,
-    decodeAs: T,
-    timeout: number = DEFAULT_TASK_TIMEOUT,
-  ): Promise<ReturnType<typeof deserialize<T>> | null> {
-    return await getVaaByTxHashWithRetry(this.config.api, txid, decodeAs, timeout);
+    return await getVaaWithRetry(this.config.api, id, decodeAs, timeout);
   }
 
   /**
@@ -337,14 +319,24 @@ export class Wormhole<N extends Network> {
   /**
    * Get the status of a transaction, identified by the chain, emitter address, and sequence number
    *
-   * @param wormholeMessageId the message id for the Wormhole Message to get transaction status for
+   * @param id the message id for the Wormhole Message to get transaction status for or originating Transaction hash
    * @returns the TransactionStatus
    */
   async getTransactionStatus(
-    wormholeMessageId: WormholeMessageId,
+    id: WormholeMessageId | TxHash,
     timeout = DEFAULT_TASK_TIMEOUT,
   ): Promise<TransactionStatus | null> {
-    return getTransactionStatusWithRetry(this.config.api, wormholeMessageId, timeout);
+    let msgid: WormholeMessageId;
+    // No txid endpoint exists to get the status by txhash yet
+    if (typeof id === "string") {
+      const vaa = await getVaaByTxHashWithRetry(this.config.api, id, "Uint8Array", timeout);
+      if (!vaa) return null;
+      msgid = { emitter: vaa.emitterAddress, chain: vaa.emitterChain, sequence: vaa.sequence };
+    } else {
+      msgid = id;
+    }
+
+    return await getTransactionStatusWithRetry(this.config.api, msgid, timeout);
   }
 
   /**

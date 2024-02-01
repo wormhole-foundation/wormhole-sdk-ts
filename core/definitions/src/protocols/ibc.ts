@@ -22,7 +22,7 @@ declare global {
   }
 }
 
-// Configuration for a transfer through the Gateway
+/** Configuration for a transfer through the Gateway */
 export type GatewayTransferDetails = {
   token: TokenId<Chain>;
   amount: bigint;
@@ -34,8 +34,10 @@ export type GatewayTransferDetails = {
   nativeGas?: bigint;
 };
 
-// Holds the data of a gateway message without
-// special keys required by cosmos contracts
+/**
+ * Holds the data of a gateway message without
+ * special keys required by cosmos contracts
+ */
 export interface GatewayMsg {
   chain: ChainId;
   recipient: string;
@@ -180,7 +182,9 @@ export function isIbcTransferInfo(thing: IbcTransferInfo | any): thing is IbcTra
   );
 }
 
-// The expected payload sent as a string over IBC
+/**
+ * The expected payload sent as a string over IBC
+ */
 export interface IbcTransferData {
   amount: string;
   denom: string;
@@ -189,8 +193,14 @@ export interface IbcTransferData {
   sender: string;
 }
 
+/**
+ * IbcBridge provides an interface to use the IBC token transfer protocol
+ *
+ * See more here {@link https://tutorials.cosmos.network/academy/3-ibc/7-token-transfer.html}
+ *
+ */
 export interface IbcBridge<N extends Network, P extends Platform, C extends PlatformToChains<P>> {
-  //alternative naming: initiateTransfer
+  /** Initiate an IBC token transfer */
   transfer(
     sender: AccountAddress<C>,
     recipient: ChainAddress,
@@ -199,20 +209,23 @@ export interface IbcBridge<N extends Network, P extends Platform, C extends Plat
     payload?: Uint8Array,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
 
-  // cached from config
+  /** Get the transfer channel for a remote chain, pulled from local cache */
   getTransferChannel(chain: Chain): string | null;
 
-  // fetched from contract
+  /** Get the transfer channel for a remote chain, pulled from contract */
   fetchTransferChannel(chain: Chain): Promise<string | null>;
 
-  // Find the wormhole emitted message id for a given IBC transfer
-  // if it does not exist, this will return null
+  /**
+   * Find the wormhole emitted message id for a given IBC transfer
+   * if it does not exist, this will return null
+   */
   lookupMessageFromIbcMsgId(msg: IbcMessageId): Promise<WormholeMessageId | null>;
 
-  // Get IbcTransferInfo
-  // TODO: overload
+  /** Find the IBCTransferInfo given a transaction id */
   lookupTransferFromTx(txid: TxHash): Promise<IbcTransferInfo>;
+  /** Find the IBCTransferInfo from a message id */
   lookupTransferFromIbcMsgId(msg: IbcMessageId): Promise<IbcTransferInfo>;
+  /** Find the IBCTransferInfo from a gateway transfer message */
   lookupTransferFromMsg(
     payload: GatewayTransferMsg | GatewayTransferWithPayloadMsg,
   ): Promise<IbcTransferInfo>;

@@ -32,7 +32,7 @@ export class EvmPlatform<N extends Network>
   extends PlatformContext<N, EvmPlatformType>
   implements StaticPlatformMethods<EvmPlatformType, typeof EvmPlatform>
 {
-  static _platform: EvmPlatformType = _platform;
+  static _platform = _platform;
 
   constructor(network: N, _config?: ChainsConfig<N, EvmPlatformType>) {
     super(

@@ -6,6 +6,9 @@ import {
 } from './accounts';
 import { getPostMessageAccounts } from './instructions';
 
+/**
+ * Accounts derived from Wormhole program.
+ */
 export interface WormholeDerivedAccounts {
   /**
    * seeds = ["Bridge"], seeds::program = wormholeProgram
@@ -46,6 +49,9 @@ export function getWormholeDerivedAccounts(
   };
 }
 
+/**
+ * Accounts needed to perform `post_message` instruction.
+ */
 export interface PostMessageCpiAccounts extends WormholeDerivedAccounts {
   payer: PublicKey;
   wormholeMessage: PublicKey;

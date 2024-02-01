@@ -1,5 +1,9 @@
 import { Chain, Network } from "@wormhole-foundation/sdk-base";
 
+/**
+ * An unsigned transaction is a transaction that has not been signed
+ * along with details about the transaction
+ */
 export interface UnsignedTransaction<N extends Network = Network, C extends Chain = Chain> {
   readonly transaction: any;
   readonly network: N;

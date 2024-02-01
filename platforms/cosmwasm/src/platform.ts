@@ -36,9 +36,9 @@ import { AnyCosmwasmAddress } from "./types";
  */
 export class CosmwasmPlatform<N extends Network>
   extends PlatformContext<N, CosmwasmPlatformType>
-  implements StaticPlatformMethods<typeof _platform, typeof CosmwasmPlatform>
+  implements StaticPlatformMethods<CosmwasmPlatformType, typeof CosmwasmPlatform>
 {
-  static _platform: CosmwasmPlatformType = _platform;
+  static _platform = _platform;
 
   constructor(network: N, _config?: ChainsConfig<N, CosmwasmPlatformType>) {
     super(network, _config ?? networkPlatformConfigs(network, CosmwasmPlatform._platform));

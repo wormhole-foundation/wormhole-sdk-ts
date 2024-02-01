@@ -14,6 +14,10 @@ const algorandAppIdLayout = [
   { name: "appId", binary: "uint", size: 8 },
 ] as const satisfies Layout;
 
+/**
+ * The UniversalAddress represents an address that has been parsed into its
+ * byte representation and possibly modified to ensure it is exactly 32 bytes long
+ */
 export class UniversalAddress implements Address {
   static readonly byteSize = 32;
   static readonly type: string = "Universal";

@@ -13,4 +13,5 @@ const nativeDecimalEntries = [
   ["Near",    12],
 ] as const satisfies MapLevel<Platform, number>;
 
+/** Number of decimals for the native token on a given platform */
 export const nativeDecimals = constMap(nativeDecimalEntries);

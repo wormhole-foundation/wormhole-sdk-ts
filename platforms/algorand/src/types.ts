@@ -1,7 +1,13 @@
 import { PlatformToChains, UniversalOrNative } from "@wormhole-foundation/connect-sdk";
 import { Transaction } from "algosdk";
 
+/**
+ * Runtime value for the Algorand Platform
+ */
 export const _platform: "Algorand" = "Algorand";
+/**
+ * Compile time Type for the Algorand Platform
+ */
 export type AlgorandPlatformType = typeof _platform;
 
 export type AlgorandChains = PlatformToChains<AlgorandPlatformType>;

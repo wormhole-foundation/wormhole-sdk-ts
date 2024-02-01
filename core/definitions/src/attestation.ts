@@ -8,7 +8,9 @@ import { SequenceId } from "./types";
 import { UniversalAddress } from "./universalAddress";
 import { VAA } from "./vaa";
 
-// Could be VAA or Circle or ..?
+/**
+ * The Identifier of an attestation, useful to look up the full attestation
+ */
 export type AttestationId<PN extends ProtocolName = ProtocolName> = PN extends
   | "TokenBridge"
   | "AutomaticTokenBridge"
@@ -24,6 +26,9 @@ export type AttestationId<PN extends ProtocolName = ProtocolName> = PN extends
   ? IbcMessageId
   : never;
 
+/**
+ * The full attestation that represents evidence of a transaction
+ */
 export type Attestation<PN extends ProtocolName = ProtocolName> = PN extends
   | "TokenBridge"
   | "AutomaticTokenBridge"
@@ -40,8 +45,9 @@ export type Attestation<PN extends ProtocolName = ProtocolName> = PN extends
   ? PorticoBridge.VAA
   : never;
 
-// Wormhole Message Identifier used to fetch a VAA
-// Possibly with a VAA already set
+/**
+ * Wormhole Message Identifier used to fetch a VAA
+ */
 export type WormholeMessageId = {
   chain: Chain;
   emitter: UniversalAddress;
@@ -57,8 +63,10 @@ export function isWormholeMessageId(thing: WormholeMessageId | any): thing is Wo
 
 export type getWormholeAttestation = (id: WormholeMessageId) => Promise<VAA>;
 
-// Circle Message Identifier
-// Used to fetch a Circle attestation
+/**
+ * Circle Message Identifier
+ * Used to fetch a Circle attestation
+ */
 export type CircleMessageId = {
   hash: string;
 };
@@ -66,13 +74,15 @@ export function isCircleMessageId(thing: CircleMessageId | any): thing is Circle
   return (<CircleMessageId>thing).hash !== undefined;
 }
 
-// Raw payload from circle
+/** Attestation from circle attestation api */
 export type CircleAttestation = string;
 
 export type getCircleAttestation = (id: CircleMessageId) => Promise<CircleAttestation>;
 
-// Ibc Message Identifier
-// Used to fetch a Ibc attestation
+/**
+ * Ibc Message Identifier
+ * Used to fetch a Ibc attestation
+ */
 export type IbcMessageId = {
   chain: Chain;
   srcPort: string;
