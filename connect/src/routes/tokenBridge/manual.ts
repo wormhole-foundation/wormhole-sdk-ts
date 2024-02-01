@@ -1,11 +1,4 @@
-import {
-  Amount,
-  Chain,
-  Network,
-  baseUnits,
-  contracts,
-  parseAmount,
-} from "@wormhole-foundation/sdk-base";
+import { Chain, Network, amount, contracts } from "@wormhole-foundation/sdk-base";
 import {
   ChainContext,
   Signer,
@@ -25,7 +18,7 @@ export namespace TokenBridgeRoute {
   };
 
   export type NormalizedParams = {
-    amount: Amount;
+    amount: amount.Amount;
   };
 
   export interface ValidatedParams extends ValidatedTransferParams<Options> {
@@ -84,7 +77,7 @@ export class TokenBridgeRoute<N extends Network>
   }
 
   async validate(params: Tp): Promise<Vr> {
-    const amt = parseAmount(params.amount, this.request.source.decimals);
+    const amt = amount.parse(params.amount, this.request.source.decimals);
 
     const validatedParams: Vp = {
       amount: params.amount,
@@ -148,7 +141,7 @@ export class TokenBridgeRoute<N extends Network>
       token: this.request.source.id,
       from: this.request.from,
       to: this.request.to,
-      amount: baseUnits(params.normalizedParams.amount),
+      amount: amount.units(params.normalizedParams.amount),
       ...params.options,
     };
   }

@@ -1,4 +1,4 @@
-import { Amount, Network, amountFromBaseUnits, parseAmount } from "@wormhole-foundation/sdk-base";
+import { Network, amount } from "@wormhole-foundation/sdk-base";
 import { ChainAddress, ChainContext, TokenId } from "@wormhole-foundation/sdk-definitions";
 import { TransferQuote } from "../types";
 import { Wormhole } from "../wormhole";
@@ -30,12 +30,12 @@ export class RouteTransferRequest<N extends Network> {
     this.destination = destination;
   }
 
-  parseAmount(amt: string): Amount {
-    return parseAmount(amt, this.source.decimals);
+  parseAmount(amt: string): amount.Amount {
+    return amount.parse(amt, this.source.decimals);
   }
 
-  amountFromBaseUnits(amt: bigint): Amount {
-    return amountFromBaseUnits(amt, this.source.decimals);
+  amountFromBaseUnits(amt: bigint): amount.Amount {
+    return amount.fromBaseUnits(amt, this.source.decimals);
   }
 
   async displayQuote(quote: TransferQuote): Promise<Quote> {
@@ -48,23 +48,23 @@ export class RouteTransferRequest<N extends Network> {
     let dq: Quote = {
       sourceToken: {
         token: quote.sourceToken.token,
-        amount: amountFromBaseUnits(quote.sourceToken.amount, this.source.decimals),
+        amount: amount.fromBaseUnits(quote.sourceToken.amount, this.source.decimals),
       },
       destinationToken: {
         token: quote.destinationToken.token,
-        amount: amountFromBaseUnits(quote.destinationToken.amount, dstDecimals),
+        amount: amount.fromBaseUnits(quote.destinationToken.amount, dstDecimals),
       },
     };
 
     if (quote.relayFee) {
       dq.relayFee = {
         token: quote.relayFee.token,
-        amount: amountFromBaseUnits(quote.relayFee.amount, this.source.decimals),
+        amount: amount.fromBaseUnits(quote.relayFee.amount, this.source.decimals),
       };
     }
 
     if (quote.destinationNativeGas) {
-      dq.destinationNativeGas = amountFromBaseUnits(
+      dq.destinationNativeGas = amount.fromBaseUnits(
         quote.destinationNativeGas,
         this.destination.decimals,
       );
