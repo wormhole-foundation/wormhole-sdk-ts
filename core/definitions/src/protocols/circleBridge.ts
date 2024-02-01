@@ -121,17 +121,45 @@ export interface CircleBridge<
   P extends Platform,
   C extends PlatformToChains<P>,
 > {
+  /**
+   * Redeem a circle transfer against the Circle Bridge
+   *
+   * @param sender The address of the sender
+   * @param message The Circle message to redeem
+   * @param attestation The attestation, from the Circle attestation service
+   *
+   * @returns a stream of unsigned transactions to be signed and submitted on chain
+   */
   redeem(
     sender: AccountAddress<C>,
     message: CircleBridge.Message,
     attestation: string,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
+  /**
+   * Initiate a transfer through the Circle CCTP Bridge
+   *
+   * @param sender the sender of the transaction
+   * @param recipient the chain and address of the recipient of the transfer
+   * @param amount how much to send in base units
+   */
   transfer(
     sender: AccountAddress<C>,
     recipient: ChainAddress,
     amount: bigint,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
+  /**
+   * Check if a transfer has been completed according to the bridge contract
+   *
+   * @param message The message to check
+   */
   isTransferCompleted(message: CircleBridge.Message): Promise<boolean>;
+  /**
+   * Grabs the logs from the transaction and parse the circle message
+   *
+   * @param txid The transaction hash from which to parse a message
+   *
+   * @returns The parsed CircleTransferMessage
+   */
   parseTransactionDetails(txid: string): Promise<CircleTransferMessage>;
 }
 
@@ -144,9 +172,20 @@ export interface AutomaticCircleBridge<
   P extends Platform,
   C extends Chain = PlatformToChains<P>,
 > {
-  // Return the fee required by the relayer to cover the costs
-  // of redemption on the destination chain
+  /**
+   * Get the fee required by the relayer to cover the costs of redemption on the destination chain
+   *
+   * @param destination The destination chain for which to get a fee quote
+   * @returns the fee required by the relayer to cover the costs of redemption on the destination chain
+   */
   getRelayerFee(destination: Chain): Promise<bigint>;
+  /**
+   *
+   * @param sender address of the transaction sender
+   * @param recipient address of the destination chain recipient
+   * @param amount how much to send, in base units
+   * @param nativeGas if set, determines how much native gas should be received by the recipient
+   */
   transfer(
     sender: AccountAddress<C>,
     recipient: ChainAddress,

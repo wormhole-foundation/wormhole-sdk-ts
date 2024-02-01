@@ -110,6 +110,7 @@ export function isTokenTransferDetails(
     (<TokenTransferDetails>thing).to !== undefined
   );
 }
+
 /**
  * TokenBridge protocol definition, providing a consistent client interface
  * for the TokenBridge protocol
@@ -117,7 +118,6 @@ export function isTokenTransferDetails(
  * Find details on the TokenBridge protocol here: {@link https://github.com/wormhole-foundation/wormhole/blob/main/whitepapers/0003_token_bridge.md}
  *
  */
-
 export interface TokenBridge<N extends Network, P extends Platform, C extends PlatformToChains<P>> {
   /** Checks a native address to see if its a wrapped version
    *
@@ -223,7 +223,6 @@ export interface TokenBridge<N extends Network, P extends Platform, C extends Pl
  *  AutomaticTokenBridge provides a consistent interface to the
  *  TokenBridge with Automatic redemption on the destination chain
  */
-
 export interface AutomaticTokenBridge<
   N extends Network,
   P extends Platform,

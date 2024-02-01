@@ -82,7 +82,7 @@ export interface PorticoBridge<
   // Checks if a transfer VAA has been redeemed
   //isTransferCompleted(vaa: PorticoBridge.VAA): Promise<boolean>;
 
-  // Initiate a transfer of some token to another chain
+  /** Initiate a transfer of some token to another chain */
   transfer(
     sender: AccountAddress<C>,
     recipient: ChainAddress,
@@ -92,17 +92,16 @@ export interface PorticoBridge<
     quote: PorticoBridge.Quote,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
 
-  // Redeem a transfer VAA to receive the tokens on this chain
+  /** Redeem a transfer VAA to receive the tokens on this chain */
   redeem(
     sender: AccountAddress<C>,
     vaa: PorticoBridge.VAA,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
 
-  // quote token conversion
+  /** quote token conversion */
   quoteSwap(input: TokenAddress<C>, output: TokenAddress<C>, amount: bigint): Promise<bigint>;
-  // quote relay on destination with conversion
+  /** quote relay on destination with conversion */
   quoteRelay(token: TokenAddress<C>, destination: TokenAddress<C>): Promise<bigint>;
 
-  //
   getTransferrableToken(address: string): TokenId;
 }
