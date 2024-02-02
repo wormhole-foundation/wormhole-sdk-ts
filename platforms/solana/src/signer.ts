@@ -8,12 +8,12 @@ import {
   TransactionExpiredBlockheightExceededError,
 } from '@solana/web3.js';
 import {
+  Network,
   SignAndSendSigner,
   SignOnlySigner,
-  UnsignedTransaction,
   Signer,
+  UnsignedTransaction,
   encoding,
-  Network,
 } from '@wormhole-foundation/connect-sdk';
 import { SolanaPlatform } from './platform';
 import { SolanaChains } from './types';
@@ -94,9 +94,6 @@ export class SolanaSigner<N extends Network, C extends SolanaChains = 'Solana'>
     return signed;
   }
 }
-
-// Number of blocks to wait before considering a transaction expired
-const SOLANA_EXPIRED_BLOCKHEIGHT = 150;
 
 export class SolanaSendSigner<
   N extends Network,
@@ -212,14 +209,6 @@ export class SolanaSendSigner<
             blockhash: newBlockhash,
             lastValidBlockHeight: newBlockHeight,
           } = await SolanaPlatform.latestBlock(this._rpc);
-
-          // But we should _not_ submit if the blockhash hasnt expired
-          if (
-            newBlockHeight - lastValidBlockHeight <
-            SOLANA_EXPIRED_BLOCKHEIGHT
-          ) {
-            throw e;
-          }
 
           lastValidBlockHeight = newBlockHeight;
           blockhash = newBlockhash;
