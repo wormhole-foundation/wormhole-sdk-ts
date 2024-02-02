@@ -23,11 +23,9 @@ export abstract class ChainContext<
   P extends Platform = ChainToPlatform<C>,
 > {
   readonly network: N;
-
-  readonly platform: PlatformContext<N, P>;
-
   readonly chain: C;
   readonly config: ChainConfig<N, C>;
+  readonly platform: PlatformContext<N, P>;
 
   // Cached Protocol clients
   protected rpc?: RpcConnection<P>;
