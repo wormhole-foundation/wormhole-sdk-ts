@@ -46,7 +46,7 @@ export function makeChainAddress<C extends Chain>(chain: C): ChainAddress<C> {
 }
 
 // make a random ChainAddress for a given chain
-export function makeUniversalChainAddress(chain: Chain): ChainAddress<Chain> {
+export function makeUniversalChainAddress<C extends Chain>(chain: C): ChainAddress<C> {
   const address = makeUniversalAddress(chain);
   return { chain, address };
 }

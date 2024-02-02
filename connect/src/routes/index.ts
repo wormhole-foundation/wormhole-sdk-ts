@@ -7,5 +7,3 @@ export * from "./common";
 export * from "./tokenBridge";
 export * from "./portico";
 export * from "./cctp";
-
-export * from "./mock";

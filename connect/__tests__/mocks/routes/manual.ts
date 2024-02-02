@@ -6,20 +6,21 @@ import {
   Signer,
   SourceInitiatedTransferReceipt,
   TokenId,
+  TransactionId,
   TransferState,
   WormholeMessageId,
   encoding,
   nativeTokenId,
   amount,
-} from "../..";
-import { AutomaticRoute, StaticRouteMethods } from "../route";
+} from "../../../src";
+import { ManualRoute, StaticRouteMethods } from "../../../src/routes/route";
 import {
   Quote,
   Receipt,
   TransferParams,
   ValidatedTransferParams,
   ValidationResult,
-} from "../types";
+} from "../../../src/routes/types";
 
 async function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -29,14 +30,12 @@ type Op = {};
 type R = Receipt;
 type Q = Quote;
 
-export class AutomaticMockRoute<N extends Network>
-  extends AutomaticRoute<N, Op, R, Q>
-  implements StaticRouteMethods<typeof AutomaticMockRoute>
+export class ManualMockRoute<N extends Network>
+  extends ManualRoute<N, Op, R, Q>
+  implements StaticRouteMethods<typeof ManualMockRoute>
 {
-  NATIVE_GAS_DROPOFF_SUPPORTED = true;
-
   static meta = {
-    name: "AutomaticFauxBridge",
+    name: "ManualFauxBridge",
   };
 
   static supportedNetworks(): Network[] {
@@ -62,10 +61,6 @@ export class AutomaticMockRoute<N extends Network>
     return true;
   }
 
-  async isAvailable(): Promise<boolean> {
-    return true;
-  }
-
   async validate(params: TransferParams<Op>): Promise<ValidationResult<Op>> {
     await delay(250);
     return {
@@ -79,7 +74,7 @@ export class AutomaticMockRoute<N extends Network>
     const fakeQuote: Q = {
       sourceToken: {
         token: this.request.source.id,
-        amount: amount.parse(params.amount, this.request.source.decimals),
+        amount: amount.parse(params.amount, this.request.destination.decimals),
       },
       destinationToken: {
         token: this.request.destination!.id,
@@ -125,6 +120,10 @@ export class AutomaticMockRoute<N extends Network>
       typeof this.request.to.chain
     >;
     yield fakeReceipt;
+  }
+
+  async complete(sender: Signer, receipt: R): Promise<TransactionId[]> {
+    return [];
   }
 
   getDefaultOptions() {

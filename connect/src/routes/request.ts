@@ -1,4 +1,4 @@
-import { Network, amount } from "@wormhole-foundation/sdk-base";
+import { Chain, ChainToPlatform, Network, amount } from "@wormhole-foundation/sdk-base";
 import { ChainAddress, ChainContext, TokenId } from "@wormhole-foundation/sdk-definitions";
 import { TransferQuote } from "../types";
 import { Wormhole } from "../wormhole";
@@ -39,12 +39,6 @@ export class RouteTransferRequest<N extends Network> {
   }
 
   async displayQuote(quote: TransferQuote): Promise<Quote> {
-    // If we have a destination native gas
-    // since the dest token is `native` on the dest chain
-    const dstDecimals = quote.destinationNativeGas
-      ? await this.toChain.getDecimals(quote.destinationToken.token.address)
-      : this.destination.decimals;
-
     let dq: Quote = {
       sourceToken: {
         token: quote.sourceToken.token,
@@ -52,7 +46,7 @@ export class RouteTransferRequest<N extends Network> {
       },
       destinationToken: {
         token: quote.destinationToken.token,
-        amount: amount.fromBaseUnits(quote.destinationToken.amount, dstDecimals),
+        amount: amount.fromBaseUnits(quote.destinationToken.amount, this.destination.decimals),
       },
     };
 
@@ -64,25 +58,23 @@ export class RouteTransferRequest<N extends Network> {
     }
 
     if (quote.destinationNativeGas) {
-      dq.destinationNativeGas = amount.fromBaseUnits(
-        quote.destinationNativeGas,
-        this.destination.decimals,
-      );
+      const dstDecimals = await this.toChain.getDecimals("native");
+      dq.destinationNativeGas = amount.fromBaseUnits(quote.destinationNativeGas, dstDecimals);
     }
 
     return dq;
   }
 
-  static async create<N extends Network>(
+  static async create<N extends Network, FC extends Chain, TC extends Chain>(
     wh: Wormhole<N>,
     params: {
-      from: ChainAddress;
-      to: ChainAddress;
-      source: TokenId;
-      destination: TokenId;
+      from: ChainAddress<FC>;
+      to: ChainAddress<TC>;
+      source: TokenId<FC>;
+      destination: TokenId<TC>;
     },
-    fromChain?: ChainContext<N>,
-    toChain?: ChainContext<N>,
+    fromChain?: ChainContext<N, ChainToPlatform<FC>, FC>,
+    toChain?: ChainContext<N, ChainToPlatform<TC>, TC>,
   ) {
     fromChain = fromChain ?? wh.getChain(params.from.chain);
     toChain = toChain ?? wh.getChain(params.to.chain);
