@@ -215,7 +215,7 @@ export class SolanaSendSigner<
 
           // But we should _not_ submit if the blockhash hasnt expired
           if (
-            newBlockHeight - lastValidBlockHeight <
+            newBlockHeight - lastValidBlockHeight >
             SOLANA_EXPIRED_BLOCKHEIGHT
           ) {
             throw e;

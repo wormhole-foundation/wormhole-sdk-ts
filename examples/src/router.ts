@@ -23,8 +23,8 @@ import { Network } from "@wormhole-foundation/sdk-base/src";
   const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform]);
 
   // get signers from local config
-  const sendChain = wh.getChain("Ethereum");
-  const destChain = wh.getChain("Solana");
+  const sendChain = wh.getChain("Solana");
+  const destChain = wh.getChain("Ethereum");
   const sender = await getStuff(sendChain);
   const receiver = await getStuff(destChain);
 
@@ -66,7 +66,7 @@ import { Network } from "@wormhole-foundation/sdk-base/src";
   const bestRoute = foundRoutes[0]!;
   console.log("Selected: ", bestRoute);
 
-  console.log("This route offers the following options", bestRoute.getDefaultOptions());
+  console.log("This route offers the following default options", bestRoute.getDefaultOptions());
   // Create the transfer params for this request
   // Specify the amount as a decimal string
   const transferParams = { amount: "0.2", options: { nativeGas: 0.1 } };
@@ -80,9 +80,7 @@ import { Network } from "@wormhole-foundation/sdk-base/src";
     console.log("Destination native gas: ", amount.display(quote.destinationNativeGas, 4));
   }
 
-  return;
-
-  //await execute(bestRoute, sender.signer, receiver.signer, validated.params);
+  await execute(bestRoute, sender.signer, receiver.signer, validated.params);
 })();
 
 async function execute<N extends Network>(
