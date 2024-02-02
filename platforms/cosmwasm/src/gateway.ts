@@ -14,13 +14,9 @@ import {
 import { CosmwasmAddress } from "./address";
 import { IBC_TRANSFER_PORT } from "./constants";
 import { CosmwasmPlatform } from "./platform";
-import { CosmwasmChains, CosmwasmPlatformType } from "./types";
+import { CosmwasmChains } from "./types";
 
-export class Gateway<N extends Network> extends ChainContext<
-  N,
-  CosmwasmPlatformType,
-  typeof Gateway.chain
-> {
+export class Gateway<N extends Network> extends ChainContext<N, typeof Gateway.chain> {
   static chain: "Wormchain" = "Wormchain";
 
   static gatewayAddress = (network: Network): string =>

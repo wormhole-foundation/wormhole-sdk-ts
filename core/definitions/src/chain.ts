@@ -1,4 +1,5 @@
-import { Chain, Network, Platform, PlatformToChains, tokens } from "@wormhole-foundation/sdk-base";
+import { Chain, Network, Platform, tokens } from "@wormhole-foundation/sdk-base";
+import { ChainToPlatform } from "@wormhole-foundation/sdk-base/src";
 import { ChainAddress, UniversalOrNative, toNative } from "./address";
 import { WormholeMessageId } from "./attestation";
 import { PlatformContext } from "./platform";
@@ -6,10 +7,10 @@ import { ProtocolName, protocolIsRegistered } from "./protocol";
 import { AutomaticCircleBridge, CircleBridge } from "./protocols/circleBridge";
 import { WormholeCore } from "./protocols/core";
 import { IbcBridge } from "./protocols/ibc";
+import { PorticoBridge } from "./protocols/portico";
 import { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge";
 import { RpcConnection } from "./rpc";
-import { ChainConfig, SignedTx, TokenId, TokenAddress } from "./types";
-import { PorticoBridge } from "./protocols/portico";
+import { ChainConfig, SignedTx, TokenAddress, TokenId } from "./types";
 
 /**
  * A ChainContext provides a consistent interface for interacting with a chain.
@@ -18,8 +19,8 @@ import { PorticoBridge } from "./protocols/portico";
  */
 export abstract class ChainContext<
   N extends Network,
-  P extends Platform = Platform,
-  C extends Chain = PlatformToChains<P>,
+  C extends Chain = Chain,
+  P extends Platform = ChainToPlatform<C>,
 > {
   readonly network: N;
 

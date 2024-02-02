@@ -1,13 +1,13 @@
-import { Chain, Network, Platform, PlatformToChains } from "@wormhole-foundation/sdk-base";
+import { Network, Platform, PlatformToChains } from "@wormhole-foundation/sdk-base";
 import {
   ChainContext,
   ChainsConfig,
   PlatformContext,
   PlatformUtils,
+  ProtocolName,
   RpcConnection,
   TokenAddress,
   TokenId,
-  ProtocolName,
 } from "../..";
 import { MockChain } from "./chain";
 import { MockRpc } from "./rpc";
@@ -91,8 +91,9 @@ export class MockPlatform<N extends Network, P extends Platform> extends Platfor
   //   throw new Error("Method not implemented.");
   // }
 
-  getChain<C extends Chain>(chain: C): ChainContext<N, P, C> {
-    if (chain in this.config) return new MockChain<N, P, C>(chain, this);
+  getChain<C extends PlatformToChains<P>>(chain: C): ChainContext<N, C> {
+    // @ts-ignore
+    if (chain in this.config) return new MockChain<N, C>(chain, this);
     throw new Error("No configuration available for chain: " + chain);
   }
 

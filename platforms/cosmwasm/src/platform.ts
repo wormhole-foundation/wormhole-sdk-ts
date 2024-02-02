@@ -51,6 +51,7 @@ export class CosmwasmPlatform<N extends Network>
   }
 
   getChain<C extends CosmwasmChains>(chain: C, rpc?: CosmWasmClient): CosmwasmChain<N, C> {
+    // @ts-ignore
     if (chain in this.config) return new CosmwasmChain<N, C>(chain, this, rpc);
     throw new Error("No configuration available for chain: " + chain);
   }

@@ -48,6 +48,7 @@ export class EvmPlatform<N extends Network>
   }
 
   getChain<C extends EvmChains>(chain: C, rpc?: Provider): EvmChain<N, C> {
+    // @ts-ignore
     if (chain in this.config) return new EvmChain<N, C>(chain, this, rpc);
     throw new Error('No configuration available for chain: ' + chain);
   }
