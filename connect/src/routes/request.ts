@@ -1,4 +1,4 @@
-import { Chain, Network, amount } from "@wormhole-foundation/sdk-base";
+import { Chain, ChainToPlatform, Network, amount } from "@wormhole-foundation/sdk-base";
 import { ChainAddress, ChainContext, TokenId } from "@wormhole-foundation/sdk-definitions";
 import { TransferQuote } from "../types";
 import { Wormhole } from "../wormhole";
@@ -81,8 +81,8 @@ export class RouteTransferRequest<N extends Network> {
       source: TokenId<FC>;
       destination: TokenId<TC>;
     },
-    fromChain?: ChainContext<N, FC>,
-    toChain?: ChainContext<N, TC>,
+    fromChain?: ChainContext<N, ChainToPlatform<FC>, FC>,
+    toChain?: ChainContext<N, ChainToPlatform<TC>, TC>,
   ) {
     fromChain = fromChain ?? wh.getChain(params.from.chain);
     toChain = toChain ?? wh.getChain(params.to.chain);
