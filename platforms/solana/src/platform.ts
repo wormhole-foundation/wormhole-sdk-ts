@@ -66,7 +66,6 @@ export class SolanaPlatform<N extends Network>
     chain: C,
     rpc?: Connection,
   ): SolanaChain<N, C> {
-    // @ts-ignore
     if (chain in this.config) return new SolanaChain<N, C>(chain, this, rpc);
     throw new Error('No configuration available for chain: ' + chain);
   }
