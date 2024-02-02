@@ -71,9 +71,7 @@ export const isPlatform = (platform: string): platform is Platform =>
   platformToChains.has(platform);
 
 export type PlatformToChains<P extends Platform> = ReturnType<typeof platformToChains<P>>[number];
-export type ChainToPlatform<C extends Chain> = NonNullable<
-  ReturnType<(typeof chainToPlatform<C>)["get"]>
->;
+export type ChainToPlatform<C extends Chain> = ReturnType<typeof chainToPlatform<C>>;
 
 // prettier-ignore
 const platformAddressFormatEntries = [
