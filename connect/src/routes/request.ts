@@ -39,12 +39,6 @@ export class RouteTransferRequest<N extends Network> {
   }
 
   async displayQuote(quote: TransferQuote): Promise<Quote> {
-    // If we have a destination native gas
-    // since the dest token is `native` on the dest chain
-    const dstDecimals = quote.destinationNativeGas
-      ? await this.toChain.getDecimals(quote.destinationToken.token.address)
-      : this.destination.decimals;
-
     let dq: Quote = {
       sourceToken: {
         token: quote.sourceToken.token,
@@ -52,7 +46,7 @@ export class RouteTransferRequest<N extends Network> {
       },
       destinationToken: {
         token: quote.destinationToken.token,
-        amount: amount.fromBaseUnits(quote.destinationToken.amount, dstDecimals),
+        amount: amount.fromBaseUnits(quote.destinationToken.amount, this.destination.decimals),
       },
     };
 
@@ -64,10 +58,8 @@ export class RouteTransferRequest<N extends Network> {
     }
 
     if (quote.destinationNativeGas) {
-      dq.destinationNativeGas = amount.fromBaseUnits(
-        quote.destinationNativeGas,
-        this.destination.decimals,
-      );
+      const dstDecimals = await this.toChain.getDecimals("native");
+      dq.destinationNativeGas = amount.fromBaseUnits(quote.destinationNativeGas, dstDecimals);
     }
 
     return dq;
