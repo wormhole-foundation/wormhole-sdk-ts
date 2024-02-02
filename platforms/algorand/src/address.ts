@@ -7,7 +7,7 @@ import {
 } from "@wormhole-foundation/connect-sdk";
 
 import { AlgorandPlatform } from "./platform";
-import { _platform, AnyAlgorandAddress, safeBigIntToNumber } from "./types";
+import { AnyAlgorandAddress, safeBigIntToNumber } from "./types";
 import { decodeAddress, encodeAddress, isValidAddress } from "algosdk";
 
 export const AlgorandZeroAddress = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ";
@@ -17,7 +17,7 @@ export const AlgorandZeroAddress = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
 export class AlgorandAddress implements Address {
   static readonly byteSize = 32;
-  static readonly platform: Platform = _platform;
+  static readonly platform: Platform = "Algorand";
 
   readonly type: string = "Native";
 
@@ -92,4 +92,4 @@ declare global {
   }
 }
 
-registerNative(_platform, AlgorandAddress);
+registerNative("Algorand", AlgorandAddress);

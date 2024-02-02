@@ -24,18 +24,18 @@ import {
 } from "algosdk";
 import { AlgorandAddress, AlgorandZeroAddress } from "./address";
 import { AlgorandChain } from "./chain";
-import { AlgorandChains, AlgorandPlatformType, AnyAlgorandAddress, _platform } from "./types";
+import { AlgorandChains, AnyAlgorandAddress } from "./types";
 
 /**
  * @category Algorand
  */
 export class AlgorandPlatform<N extends Network>
-  extends PlatformContext<N, AlgorandPlatformType>
-  implements StaticPlatformMethods<typeof _platform, typeof AlgorandPlatform>
+  extends PlatformContext<N, "Algorand">
+  implements StaticPlatformMethods<"Algorand", typeof AlgorandPlatform>
 {
-  static _platform = _platform;
+  static _platform: "Algorand" = "Algorand";
 
-  constructor(network: N, _config?: ChainsConfig<N, AlgorandPlatformType>) {
+  constructor(network: N, _config?: ChainsConfig<N, "Algorand">) {
     super(network, _config ?? networkPlatformConfigs(network, AlgorandPlatform._platform));
   }
 
@@ -54,7 +54,7 @@ export class AlgorandPlatform<N extends Network>
     chain: C,
   ): TokenId<C> {
     if (!AlgorandPlatform.isSupportedChain(chain))
-      throw new Error(`invalid chain for ${_platform}: ${chain}`);
+      throw new Error(`invalid chain for Algorand: ${chain}`);
     return Wormhole.chainAddress(chain, AlgorandZeroAddress);
   }
 
