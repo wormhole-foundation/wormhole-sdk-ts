@@ -6,21 +6,20 @@ import {
   Signer,
   SourceInitiatedTransferReceipt,
   TokenId,
-  TransactionId,
   TransferState,
   WormholeMessageId,
   encoding,
   nativeTokenId,
   amount,
-} from "../..";
-import { ManualRoute, StaticRouteMethods } from "../route";
+} from "../../../src";
+import { AutomaticRoute, StaticRouteMethods } from "../../../src/routes/route";
 import {
   Quote,
   Receipt,
   TransferParams,
   ValidatedTransferParams,
   ValidationResult,
-} from "../types";
+} from "../../../src/routes/types";
 
 async function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -30,12 +29,14 @@ type Op = {};
 type R = Receipt;
 type Q = Quote;
 
-export class ManualMockRoute<N extends Network>
-  extends ManualRoute<N, Op, R, Q>
-  implements StaticRouteMethods<typeof ManualMockRoute>
+export class AutomaticMockRoute<N extends Network>
+  extends AutomaticRoute<N, Op, R, Q>
+  implements StaticRouteMethods<typeof AutomaticMockRoute>
 {
+  NATIVE_GAS_DROPOFF_SUPPORTED = true;
+
   static meta = {
-    name: "ManualFauxBridge",
+    name: "AutomaticFauxBridge",
   };
 
   static supportedNetworks(): Network[] {
@@ -61,6 +62,10 @@ export class ManualMockRoute<N extends Network>
     return true;
   }
 
+  async isAvailable(): Promise<boolean> {
+    return true;
+  }
+
   async validate(params: TransferParams<Op>): Promise<ValidationResult<Op>> {
     await delay(250);
     return {
@@ -74,7 +79,7 @@ export class ManualMockRoute<N extends Network>
     const fakeQuote: Q = {
       sourceToken: {
         token: this.request.source.id,
-        amount: amount.parse(params.amount, this.request.destination.decimals),
+        amount: amount.parse(params.amount, this.request.source.decimals),
       },
       destinationToken: {
         token: this.request.destination!.id,
@@ -120,10 +125,6 @@ export class ManualMockRoute<N extends Network>
       typeof this.request.to.chain
     >;
     yield fakeReceipt;
-  }
-
-  async complete(sender: Signer, receipt: R): Promise<TransactionId[]> {
-    return [];
   }
 
   getDefaultOptions() {
