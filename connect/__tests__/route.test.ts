@@ -1,9 +1,10 @@
 import { describe } from "@jest/globals";
 import { platform } from "@wormhole-foundation/sdk-base";
 import { testing } from "@wormhole-foundation/sdk-definitions";
+import { makeUniversalChainAddress } from "@wormhole-foundation/sdk-definitions/src/testing/utils";
 import { Wormhole, networkPlatformConfigs } from "../src";
 import { RouteResolver, RouteTransferRequest } from "../src/routes";
-import { ManualMockRoute, AutomaticMockRoute } from "./mocks/routes/";
+import { AutomaticMockRoute, ManualMockRoute } from "./mocks/routes/";
 
 const network: "Testnet" = "Testnet";
 type TNet = typeof network;
@@ -16,8 +17,8 @@ async function createRequest(wh: Wormhole<TNet>): Promise<RouteTransferRequest<T
   const toChain = wh.getChain("Ethereum");
 
   const req = {
-    from: Wormhole.chainAddress("Solana", "0x1234"),
-    to: Wormhole.chainAddress("Ethereum", "0x123"),
+    from: makeUniversalChainAddress("Solana"),
+    to: makeUniversalChainAddress("Ethereum"),
     source: Wormhole.tokenId("Solana", "native"),
     destination: Wormhole.tokenId("Ethereum", "native"),
   };
@@ -33,9 +34,10 @@ describe("Wormhole Tests", () => {
   test("nothing", () => {
     expect(true).toBe(true);
   });
-  //test("Creates route resolver", async () => {
-  //  const r: RouteResolver<TNet> = wh.resolver([ManualMockRoute, AutomaticMockRoute]);
-  //  const req = await createRequest(wh);
-  //  r.findRoutes(req);
-  //});
+  test("Creates route resolver", async () => {
+    const r: RouteResolver<TNet> = wh.resolver([ManualMockRoute, AutomaticMockRoute]);
+    const req = await createRequest(wh);
+    const routes = await r.findRoutes(req);
+    expect(routes).toHaveLength(2);
+  });
 });
