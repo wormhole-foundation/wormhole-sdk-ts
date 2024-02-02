@@ -43,6 +43,11 @@ export abstract class Route<
   // Track the progress of the transfer over time
   public abstract track(receipt: R, timeout?: number): AsyncGenerator<R>;
 
+  // Get the url to view the transfer on the explorer for the route provider
+  transferUrl(txid: string): string {
+    return `https://wormholescan.io/#/tx/${txid}?network=${this.wh.network}`;
+  }
+
   // Get the default options for this route, useful to prepopulate a form
   public abstract getDefaultOptions(): OP;
 }
