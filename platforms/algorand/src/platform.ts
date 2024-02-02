@@ -45,7 +45,6 @@ export class AlgorandPlatform<N extends Network>
   }
 
   getChain<C extends AlgorandChains>(chain: C): AlgorandChain<N, C> {
-    // @ts-ignore
     if (chain in this.config) return new AlgorandChain<N, C>(chain, this);
     throw new Error("No configuration available for chain: " + chain);
   }

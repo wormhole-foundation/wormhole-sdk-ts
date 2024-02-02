@@ -7,12 +7,12 @@ import {
   UniversalOrNative,
 } from '@wormhole-foundation/connect-sdk';
 import { SolanaAddress } from './address';
-import { SolanaChains } from './types';
+import { SolanaChains, SolanaPlatformType } from './types';
 
 export class SolanaChain<
   N extends Network,
   C extends SolanaChains = SolanaChains,
-> extends ChainContext<N, C> {
+> extends ChainContext<N, SolanaPlatformType, C> {
   override async getTokenAccount(
     address: UniversalOrNative<C>,
     token: UniversalOrNative<C>,

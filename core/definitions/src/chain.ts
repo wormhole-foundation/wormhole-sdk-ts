@@ -1,5 +1,4 @@
-import { Chain, Network, Platform, tokens } from "@wormhole-foundation/sdk-base";
-import { ChainToPlatform } from "@wormhole-foundation/sdk-base/src";
+import { Chain, Network, Platform, PlatformToChains, tokens } from "@wormhole-foundation/sdk-base";
 import { ChainAddress, UniversalOrNative, toNative } from "./address";
 import { WormholeMessageId } from "./attestation";
 import { PlatformContext } from "./platform";
@@ -7,10 +6,10 @@ import { ProtocolName, protocolIsRegistered } from "./protocol";
 import { AutomaticCircleBridge, CircleBridge } from "./protocols/circleBridge";
 import { WormholeCore } from "./protocols/core";
 import { IbcBridge } from "./protocols/ibc";
-import { PorticoBridge } from "./protocols/portico";
 import { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge";
 import { RpcConnection } from "./rpc";
-import { ChainConfig, SignedTx, TokenAddress, TokenId } from "./types";
+import { ChainConfig, SignedTx, TokenId, TokenAddress } from "./types";
+import { PorticoBridge } from "./protocols/portico";
 
 /**
  * A ChainContext provides a consistent interface for interacting with a chain.
@@ -19,13 +18,15 @@ import { ChainConfig, SignedTx, TokenAddress, TokenId } from "./types";
  */
 export abstract class ChainContext<
   N extends Network,
-  C extends Chain = Chain,
-  P extends Platform = ChainToPlatform<C>,
+  P extends Platform = Platform,
+  C extends Chain = PlatformToChains<P>,
 > {
   readonly network: N;
+
+  readonly platform: PlatformContext<N, P>;
+
   readonly chain: C;
   readonly config: ChainConfig<N, C>;
-  readonly platform: PlatformContext<N, P>;
 
   // Cached Protocol clients
   protected rpc?: RpcConnection<P>;

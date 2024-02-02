@@ -27,6 +27,7 @@ import { AnyEvmAddress, EvmChains, EvmPlatformType, _platform } from './types';
 /**
  * @category EVM
  */
+
 export class EvmPlatform<N extends Network>
   extends PlatformContext<N, EvmPlatformType>
   implements StaticPlatformMethods<EvmPlatformType, typeof EvmPlatform>
@@ -47,8 +48,6 @@ export class EvmPlatform<N extends Network>
   }
 
   getChain<C extends EvmChains>(chain: C, rpc?: Provider): EvmChain<N, C> {
-    // TODO
-    // @ts-ignore
     if (chain in this.config) return new EvmChain<N, C>(chain, this, rpc);
     throw new Error('No configuration available for chain: ' + chain);
   }
