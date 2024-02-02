@@ -15,7 +15,6 @@ import {
   AlgorandAddress,
   AlgorandChains,
   AlgorandPlatform,
-  AlgorandPlatformType,
   AlgorandUnsignedTransaction,
   AnyAlgorandAddress,
   TransactionSet,
@@ -39,7 +38,7 @@ import {
 import { SEED_AMT, StorageLogicSig } from "./storage";
 
 export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
-  implements WormholeCore<N, AlgorandPlatformType, C>
+  implements WormholeCore<N, "Algorand", C>
 {
   readonly chainId: ChainId;
   readonly coreAppId: bigint;
@@ -107,7 +106,7 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
 
   static async fromRpc<N extends Network>(
     connection: Algodv2,
-    config: ChainsConfig<N, AlgorandPlatformType>,
+    config: ChainsConfig<N, "Algorand">,
   ): Promise<AlgorandWormholeCore<N, AlgorandChains>> {
     const [network, chain] = await AlgorandPlatform.chainFromRpc(connection);
     const conf = config[chain]!;
