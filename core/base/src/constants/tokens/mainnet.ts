@@ -277,6 +277,15 @@ const mainnetTokenEntries = [
           original: "Solana",
         },
       ],
+      [
+        "BSKT",
+        {
+          symbol: "BSKT",
+          decimals: 6,
+          address: "0xbC0899E527007f1B8Ced694508FCb7a2b9a46F53",
+          original: "Solana",
+        },
+      ],
     ],
   ],
   [
@@ -555,6 +564,15 @@ const mainnetTokenEntries = [
           symbol: "PYTH",
           decimals: 6,
           address: "0xb0188B0bb2cD4a6D2744637fC83C94a284B247Da",
+          original: "Solana",
+        },
+      ],
+      [
+        "BSKT",
+        {
+          symbol: "BSKT",
+          decimals: 6,
+          address: "0xaF42A5df3C1C1427DA8FC0326bD7b030A9367e78",
           original: "Solana",
         },
       ],
@@ -873,6 +891,15 @@ const mainnetTokenEntries = [
           original: "Solana",
         },
       ],
+      [
+        "BSKT",
+        {
+          symbol: "BSKT",
+          decimals: 6,
+          address: "0x9a6a40CdF21a0AF417F1b815223FD92c85636c58",
+          original: "Solana",
+        },
+      ],
     ],
   ],
   [
@@ -1133,6 +1160,15 @@ const mainnetTokenEntries = [
           symbol: "PYTH",
           decimals: 6,
           address: "0x8A0691e602B7a5FCc51a27E4a08376dE50889B42",
+          original: "Solana",
+        },
+      ],
+      [
+        "BSKT",
+        {
+          symbol: "BSKT",
+          decimals: 6,
+          address: "0x6Ac048ae05E7E015accA2aA7Abd0Ec013e8E3a59",
           original: "Solana",
         },
       ],
@@ -2156,6 +2192,14 @@ const mainnetTokenEntries = [
           address: "HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3",
         },
       ],
+      [
+        "BSKT",
+        {
+          symbol: "BSKT",
+          decimals: 6,
+          address: "6gnCPhXtLnUD76HjQuSYPENLSZdG8RvDB1pTLM5aLSJA",
+        },
+      ],
     ],
   ],
   [
@@ -2416,6 +2460,16 @@ const mainnetTokenEntries = [
           decimals: 6,
           address:
             "0x9c6d76eb273e6b5ba2ec8d708b7fa336a5531f6be59f326b5be8d4d8b12348a4::coin::COIN",
+          original: "Solana",
+        },
+      ],
+      [
+        "BSKT",
+        {
+          symbol: "BSKT",
+          decimals: 5,
+          address:
+            "0xd4d52a6bf452401c0c70a1d19ff6cec2933f22a548eae552f3e514f64f61703a::coin::COIN",
           original: "Solana",
         },
       ],
@@ -2991,6 +3045,15 @@ const mainnetTokenEntries = [
           original: "Solana",
         },
       ],
+      [
+        "BSKT",
+        {
+          symbol: "BSKT",
+          decimals: 5,
+          address: "0x7CCDbA6198db389cF37b714FD6573b73F3670236",
+          original: "Solana",
+        },
+      ],
     ],
   ],
   [
@@ -3286,6 +3349,15 @@ const mainnetTokenEntries = [
           symbol: "PYTH",
           decimals: 6,
           address: "0xE4D5c6aE46ADFAF04313081e8C0052A30b6Dd724",
+          original: "Solana",
+        },
+      ],
+      [
+        "BSKT",
+        {
+          symbol: "BSKT",
+          decimals: 5,
+          address: "0xa3210cd727fE6DAf8386af5623ba51A367E46263",
           original: "Solana",
         },
       ],

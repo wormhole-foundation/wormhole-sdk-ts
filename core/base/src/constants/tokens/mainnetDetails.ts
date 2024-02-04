@@ -501,6 +501,15 @@ const mainnetTokens = [
       nativeChain: "Solana",
     },
   ],
+  [
+    "BSKT",
+    {
+      key: "BSKT",
+      symbol: "BSKT",
+      coinGeckoId: "basket",
+      nativeChain: "Solana",
+    },
+  ],
 ] as const satisfies MapLevel<TokenSymbol, TokenExtraDetails>;
 
 export const mainnetTokenDetails = constMap(mainnetTokens);
