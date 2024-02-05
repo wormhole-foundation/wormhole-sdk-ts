@@ -1,5 +1,4 @@
 import {
-  Platform,
   AccountAddress,
   AutomaticTokenBridge,
   Chain,
@@ -8,6 +7,7 @@ import {
   ChainsConfig,
   Contracts,
   Network,
+  Platform,
   TokenAddress,
   isNative,
   toChainId,
@@ -17,7 +17,6 @@ import {
   SolanaAddress,
   SolanaChains,
   SolanaPlatform,
-  SolanaPlatformType,
   SolanaTransaction,
   SolanaUnsignedTransaction,
 } from '@wormhole-foundation/connect-sdk-solana';
@@ -55,7 +54,7 @@ const SWAP_RATE_PRECISION = new BN(100_000_000);
 export class SolanaAutomaticTokenBridge<
   N extends Network,
   C extends SolanaChains,
-> implements AutomaticTokenBridge<N, SolanaPlatformType, C>
+> implements AutomaticTokenBridge<N, C>
 {
   readonly chainId: ChainId;
 

@@ -33,7 +33,7 @@ import {
 import "@wormhole-foundation/connect-sdk-cosmwasm-core";
 
 export class CosmwasmTokenBridge<N extends Network, C extends CosmwasmChains>
-  implements TokenBridge<N, CosmwasmPlatformType, C>
+  implements TokenBridge<N, C>
 {
   private tokenBridge: string;
   private translator?: string;

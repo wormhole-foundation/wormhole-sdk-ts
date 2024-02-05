@@ -9,15 +9,6 @@ import {
   VersionedTransactionResponse,
 } from '@solana/web3.js';
 import {
-  SolanaAddress,
-  AnySolanaAddress,
-  SolanaChains,
-  SolanaPlatform,
-  SolanaPlatformType,
-  SolanaUnsignedTransaction,
-  SolanaTransaction,
-} from '@wormhole-foundation/connect-sdk-solana';
-import {
   ChainId,
   ChainsConfig,
   Contracts,
@@ -29,22 +20,30 @@ import {
   WormholeMessageId,
   toChainId,
 } from '@wormhole-foundation/connect-sdk';
+import {
+  AnySolanaAddress,
+  SolanaAddress,
+  SolanaChains,
+  SolanaPlatform,
+  SolanaTransaction,
+  SolanaUnsignedTransaction,
+} from '@wormhole-foundation/connect-sdk-solana';
 import { Wormhole as WormholeCoreContract } from './types';
 import {
+  BridgeData,
+  createBridgeFeeTransferInstruction,
   createPostMessageInstruction,
   createPostVaaInstruction,
   createReadOnlyWormholeProgramInterface,
   createVerifySignaturesInstructions,
-  createBridgeFeeTransferInstruction,
   derivePostedVaaKey,
   getWormholeBridgeData,
-  BridgeData,
 } from './utils';
 
 const SOLANA_SEQ_LOG = 'Program log: Sequence: ';
 
 export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
-  implements WormholeCore<N, SolanaPlatformType, C>
+  implements WormholeCore<N, C>
 {
   readonly chainId: ChainId;
   readonly coreBridge: Program<WormholeCoreContract>;

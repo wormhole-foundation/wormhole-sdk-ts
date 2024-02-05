@@ -21,7 +21,6 @@ import {
   EvmAddress,
   EvmChains,
   EvmPlatform,
-  EvmPlatformType,
   EvmUnsignedTransaction,
   addChainId,
   addFrom,
@@ -31,7 +30,7 @@ import '@wormhole-foundation/connect-sdk-evm-core';
 import '@wormhole-foundation/connect-sdk-evm-tokenbridge';
 
 export class EvmAutomaticCircleBridge<N extends Network, C extends EvmChains>
-  implements AutomaticCircleBridge<N, EvmPlatformType, C>
+  implements AutomaticCircleBridge<N, C>
 {
   readonly circleRelayer: CircleRelayer;
   readonly chainId: bigint;

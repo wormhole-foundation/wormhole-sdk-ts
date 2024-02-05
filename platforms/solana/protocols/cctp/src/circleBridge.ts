@@ -17,7 +17,6 @@ import {
   SolanaAddress,
   SolanaChains,
   SolanaPlatform,
-  SolanaPlatformType,
   SolanaTransaction,
   SolanaUnsignedTransaction,
 } from '@wormhole-foundation/connect-sdk-solana';
@@ -34,7 +33,7 @@ import {
 } from './utils/instructions';
 
 export class SolanaCircleBridge<N extends Network, C extends SolanaChains>
-  implements CircleBridge<N, SolanaPlatformType, C>
+  implements CircleBridge<N, C>
 {
   readonly tokenMessenger: Program<TokenMessenger>;
   readonly messageTransmitter: Program<MessageTransmitter>;

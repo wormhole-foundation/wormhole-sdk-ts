@@ -37,7 +37,7 @@ import '@wormhole-foundation/connect-sdk-evm-tokenbridge';
 export class EvmPorticoBridge<
   N extends Network,
   C extends EvmChains = EvmChains,
-> implements PorticoBridge<N, 'Evm', C>
+> implements PorticoBridge<N, C>
 {
   chainId: bigint;
   porticoAddress: string;

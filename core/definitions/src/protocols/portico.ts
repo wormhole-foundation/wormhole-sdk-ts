@@ -1,8 +1,8 @@
 import {
+  Chain,
   LayoutToType,
   Network,
   Platform,
-  PlatformToChains,
   deserializeLayout,
   serializeLayout,
 } from "@wormhole-foundation/sdk-base";
@@ -10,7 +10,7 @@ import { AccountAddress, ChainAddress } from "../address";
 import "../payloads/portico";
 import { porticoFlagSetLayout, porticoPayloadLayout } from "../payloads/portico";
 import { EmptyPlatformMap } from "../protocol";
-import { TokenId, TokenAddress } from "../types";
+import { TokenAddress, TokenId } from "../types";
 import { UnsignedTransaction } from "../unsignedTransaction";
 import { ProtocolVAA } from "../vaa";
 
@@ -74,11 +74,7 @@ export namespace PorticoBridge {
  * PorticoBridge provides a consistent interface to interact with
  * the Portico bridge contracts.
  */
-export interface PorticoBridge<
-  N extends Network,
-  P extends Platform,
-  C extends PlatformToChains<P>,
-> {
+export interface PorticoBridge<N extends Network, C extends Chain> {
   // Checks if a transfer VAA has been redeemed
   //isTransferCompleted(vaa: PorticoBridge.VAA): Promise<boolean>;
 

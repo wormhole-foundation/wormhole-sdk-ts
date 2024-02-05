@@ -1,6 +1,4 @@
 import {
-  keccak256,
-  serialize,
   ChainId,
   ChainsConfig,
   Contracts,
@@ -9,6 +7,8 @@ import {
   WormholeCore,
   WormholeMessageId,
   encoding,
+  keccak256,
+  serialize,
   toChainId,
 } from "@wormhole-foundation/connect-sdk";
 import {
@@ -38,7 +38,7 @@ import {
 import { SEED_AMT, StorageLogicSig } from "./storage";
 
 export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
-  implements WormholeCore<N, "Algorand", C>
+  implements WormholeCore<N, C>
 {
   readonly chainId: ChainId;
   readonly coreAppId: bigint;

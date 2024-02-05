@@ -20,7 +20,6 @@ import {
   SolanaAddress,
   SolanaChains,
   SolanaPlatform,
-  SolanaPlatformType,
   SolanaTransaction,
   SolanaUnsignedTransaction,
 } from '@wormhole-foundation/connect-sdk-solana';
@@ -70,7 +69,7 @@ import {
 import '@wormhole-foundation/connect-sdk-solana-core';
 
 export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
-  implements TokenBridge<N, SolanaPlatformType, C>
+  implements TokenBridge<N, C>
 {
   readonly chainId: ChainId;
 

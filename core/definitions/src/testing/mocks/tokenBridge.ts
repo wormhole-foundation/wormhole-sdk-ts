@@ -1,15 +1,15 @@
-import { PlatformToChains, Network, Platform } from "@wormhole-foundation/sdk-base";
+import { Network, Platform, PlatformToChains } from "@wormhole-foundation/sdk-base";
 import {
-  TokenAddress,
   ChainAddress,
   NativeAddress,
   RpcConnection,
+  TokenAddress,
   TokenBridge,
   UnsignedTransaction,
 } from "../..";
 
 export class MockTokenBridge<N extends Network, P extends Platform, C extends PlatformToChains<P>>
-  implements TokenBridge<N, P, C>
+  implements TokenBridge<N, C>
 {
   constructor(readonly rpc: RpcConnection<P>) {}
 

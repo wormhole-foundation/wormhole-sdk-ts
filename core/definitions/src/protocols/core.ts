@@ -1,10 +1,10 @@
-import { PlatformToChains, Network, Platform } from "@wormhole-foundation/sdk-base";
+import { Chain, Network, Platform } from "@wormhole-foundation/sdk-base";
 import { AccountAddress } from "../address";
 import { WormholeMessageId } from "../attestation";
+import { EmptyPlatformMap } from "../protocol";
 import { TxHash } from "../types";
 import { UnsignedTransaction } from "../unsignedTransaction";
 import { VAA } from "../vaa";
-import { EmptyPlatformMap } from "../protocol";
 
 declare global {
   namespace WormholeNamespace {
@@ -19,11 +19,7 @@ declare global {
  * with the Wormhole core messaging protocol.
  *
  */
-export interface WormholeCore<
-  N extends Network,
-  P extends Platform,
-  C extends PlatformToChains<P>,
-> {
+export interface WormholeCore<N extends Network, C extends Chain> {
   /** Get the fee for publishing a message */
   getMessageFee(): Promise<bigint>;
   /**

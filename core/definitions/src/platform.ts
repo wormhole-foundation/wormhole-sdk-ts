@@ -121,7 +121,7 @@ export abstract class PlatformContext<N extends Network, P extends Platform> {
     rpc: RpcConnection<P>,
     txid: TxHash,
   ): Promise<WormholeMessageId[]> {
-    const wc: WormholeCore<N, P, C> = await this.getProtocol("WormholeCore", rpc);
+    const wc: WormholeCore<N, C> = await this.getProtocol("WormholeCore", rpc);
     return wc.parseTransaction(txid);
   }
 }

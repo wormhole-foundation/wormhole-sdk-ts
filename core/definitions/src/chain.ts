@@ -29,13 +29,13 @@ export abstract class ChainContext<
 
   // Cached Protocol clients
   protected rpc?: RpcConnection<P>;
-  protected coreBridge?: WormholeCore<N, P, C>;
-  protected tokenBridge?: TokenBridge<N, P, C>;
-  protected autoTokenBridge?: AutomaticTokenBridge<N, P, C>;
-  protected circleBridge?: CircleBridge<N, P, C>;
-  protected autoCircleBridge?: AutomaticCircleBridge<N, P, C>;
-  protected ibcBridge?: IbcBridge<N, P, C>;
-  protected porticoBridge?: PorticoBridge<N, P, C>;
+  protected coreBridge?: WormholeCore<N, C>;
+  protected tokenBridge?: TokenBridge<N, C>;
+  protected autoTokenBridge?: AutomaticTokenBridge<N, C>;
+  protected circleBridge?: CircleBridge<N, C>;
+  protected autoCircleBridge?: AutomaticCircleBridge<N, C>;
+  protected ibcBridge?: IbcBridge<N, C>;
+  protected porticoBridge?: PorticoBridge<N, C>;
 
   constructor(chain: C, platform: PlatformContext<N, P>, rpc?: RpcConnection<P>) {
     this.config = platform.config[chain]!;
@@ -191,7 +191,7 @@ export abstract class ChainContext<
    * Get the Wormhole Core protocol client for this chain
    * @returns the Wormhole Core protocol client for this chain
    */
-  async getWormholeCore(): Promise<WormholeCore<N, P, C>> {
+  async getWormholeCore(): Promise<WormholeCore<N, C>> {
     this.coreBridge = this.coreBridge
       ? this.coreBridge
       : await this.platform.getProtocol("WormholeCore", await this.getRpc());
@@ -207,7 +207,7 @@ export abstract class ChainContext<
    * Get the Token Bridge protocol client for this chain
    * @returns the Token Bridge protocol client for this chain
    */
-  async getTokenBridge(): Promise<TokenBridge<N, P, C>> {
+  async getTokenBridge(): Promise<TokenBridge<N, C>> {
     this.tokenBridge = this.tokenBridge
       ? this.tokenBridge
       : await this.platform.getProtocol("TokenBridge", await this.getRpc());
@@ -223,7 +223,7 @@ export abstract class ChainContext<
    * Get the Automatic Token Bridge protocol client for this chain
    * @returns the Automatic Token Bridge protocol client for this chain
    */
-  async getAutomaticTokenBridge(): Promise<AutomaticTokenBridge<N, P, C>> {
+  async getAutomaticTokenBridge(): Promise<AutomaticTokenBridge<N, C>> {
     this.autoTokenBridge = this.autoTokenBridge
       ? this.autoTokenBridge
       : await this.platform.getProtocol("AutomaticTokenBridge", await this.getRpc());
@@ -239,7 +239,7 @@ export abstract class ChainContext<
    * Get the Circle Bridge protocol client for this chain
    * @returns the Circle Bridge protocol client for this chain
    */
-  async getCircleBridge(): Promise<CircleBridge<N, P, C>> {
+  async getCircleBridge(): Promise<CircleBridge<N, C>> {
     this.circleBridge = this.circleBridge
       ? this.circleBridge
       : await this.platform.getProtocol("CircleBridge", await this.getRpc());
@@ -255,7 +255,7 @@ export abstract class ChainContext<
    * Get the Automatic Circle Bridge protocol client for this chain
    * @returns the Automatic Circle Bridge protocol client for this chain
    */
-  async getAutomaticCircleBridge(): Promise<AutomaticCircleBridge<N, P, C>> {
+  async getAutomaticCircleBridge(): Promise<AutomaticCircleBridge<N, C>> {
     this.autoCircleBridge = this.autoCircleBridge
       ? this.autoCircleBridge
       : await this.platform.getProtocol("AutomaticCircleBridge", await this.getRpc());
@@ -271,7 +271,7 @@ export abstract class ChainContext<
    * Get the IBC Bridge protocol client for this chain
    * @returns the IBC Bridge protocol client for this chain
    */
-  async getIbcBridge(): Promise<IbcBridge<N, P, C>> {
+  async getIbcBridge(): Promise<IbcBridge<N, C>> {
     this.ibcBridge = this.ibcBridge
       ? this.ibcBridge
       : await this.platform.getProtocol("IbcBridge", await this.getRpc());
@@ -287,7 +287,7 @@ export abstract class ChainContext<
    * Get the Portico Bridge protocol client for this chain
    * @returns the Portico Bridge protocol client for this chain
    */
-  async getPorticoBridge(): Promise<PorticoBridge<N, P, C>> {
+  async getPorticoBridge(): Promise<PorticoBridge<N, C>> {
     this.porticoBridge = this.porticoBridge
       ? this.porticoBridge
       : await this.platform.getProtocol("PorticoBridge", await this.getRpc());

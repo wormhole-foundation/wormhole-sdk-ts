@@ -53,7 +53,7 @@ import { CosmwasmWormholeCore } from "@wormhole-foundation/connect-sdk-cosmwasm-
 const millisToNano = (seconds: number) => seconds * 1_000_000;
 
 export class CosmwasmIbcBridge<N extends Network, C extends CosmwasmChains>
-  implements IbcBridge<N, CosmwasmPlatformType, C>
+  implements IbcBridge<N, C>
 {
   private gatewayAddress: string;
 

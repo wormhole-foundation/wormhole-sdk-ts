@@ -3,7 +3,6 @@ import {
   LayoutToType,
   Network,
   Platform,
-  PlatformToChains,
   deserializeLayout,
   encoding,
   lazyInstantiate,
@@ -16,9 +15,9 @@ import { UnsignedTransaction } from "../unsignedTransaction";
 
 import "../payloads/automaticCircleBridge";
 import { circleMessageLayout } from "../payloads/circleBridge";
+import { EmptyPlatformMap } from "../protocol";
 import { keccak256 } from "../utils";
 import { ProtocolPayload, ProtocolVAA, payloadDiscriminator } from "../vaa";
-import { EmptyPlatformMap } from "../protocol";
 
 declare global {
   namespace WormholeNamespace {
@@ -116,11 +115,7 @@ export function isCircleTransferDetails(thing: any): thing is CircleTransferDeta
  * Find the source contracts here: ${@link https://github.com/circlefin/evm-cctp-contracts}
  *
  */
-export interface CircleBridge<
-  N extends Network,
-  P extends Platform,
-  C extends PlatformToChains<P>,
-> {
+export interface CircleBridge<N extends Network, C extends Chain> {
   /**
    * Redeem a circle transfer against the Circle Bridge
    *
@@ -167,11 +162,7 @@ export interface CircleBridge<
  * AutomaticCircleBridge protocol definition, providing a consistent client
  * interface for the CircleBridge protocol with Automatic delivery.
  */
-export interface AutomaticCircleBridge<
-  N extends Network,
-  P extends Platform,
-  C extends Chain = PlatformToChains<P>,
-> {
+export interface AutomaticCircleBridge<N extends Network, C extends Chain> {
   /**
    * Get the fee required by the relayer to cover the costs of redemption on the destination chain
    *
