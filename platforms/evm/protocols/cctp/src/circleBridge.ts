@@ -18,7 +18,6 @@ import {
   EvmAddress,
   EvmChains,
   EvmPlatform,
-  EvmPlatformType,
   EvmUnsignedTransaction,
   addChainId,
   addFrom,
@@ -28,7 +27,7 @@ import { ethers_contracts } from '.';
 //https://github.com/circlefin/evm-cctp-contracts
 
 export class EvmCircleBridge<N extends Network, C extends EvmChains>
-  implements CircleBridge<N, EvmPlatformType, C>
+  implements CircleBridge<N, C>
 {
   readonly chainId: bigint;
   readonly circleChainId: number;

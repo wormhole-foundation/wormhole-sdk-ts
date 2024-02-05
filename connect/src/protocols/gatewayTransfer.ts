@@ -1,5 +1,4 @@
 import {
-  ChainToPlatform,
   Network,
   PlatformToChains,
   chainToPlatform,
@@ -36,11 +35,7 @@ import { TransferState } from "../types";
 import { Wormhole } from "../wormhole";
 import { WormholeTransfer } from "./wormholeTransfer";
 
-type GatewayContext<N extends Network> = ChainContext<
-  N,
-  ChainToPlatform<typeof GatewayTransfer.chain>,
-  typeof GatewayTransfer.chain
->;
+type GatewayContext<N extends Network> = ChainContext<N, typeof GatewayTransfer.chain>;
 
 export class GatewayTransfer<N extends Network = Network> implements WormholeTransfer<"IbcBridge"> {
   static chain: "Wormchain" = "Wormchain";
@@ -50,7 +45,7 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
   // Wormchain context
   private readonly gateway: GatewayContext<N>;
   // Wormchain IBC Bridge
-  private readonly gatewayIbcBridge: IbcBridge<N, "Cosmwasm", PlatformToChains<"Cosmwasm">>;
+  private readonly gatewayIbcBridge: IbcBridge<N, PlatformToChains<"Cosmwasm">>;
   // Contract address
   private readonly gatewayAddress: ChainAddress;
 
@@ -82,7 +77,7 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
     wh: Wormhole<N>,
     transfer: GatewayTransferDetails,
     gateway: GatewayContext<N>,
-    gatewayIbc: IbcBridge<N, "Cosmwasm", PlatformToChains<"Cosmwasm">>,
+    gatewayIbc: IbcBridge<N, PlatformToChains<"Cosmwasm">>,
   ) {
     this._state = TransferState.Created;
     this.wh = wh;

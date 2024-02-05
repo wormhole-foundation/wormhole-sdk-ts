@@ -1,17 +1,11 @@
-import {
-  Chain,
-  Network,
-  Platform,
-  PlatformToChains,
-  lazyInstantiate,
-} from "@wormhole-foundation/sdk-base";
+import { Chain, Network, Platform, lazyInstantiate } from "@wormhole-foundation/sdk-base";
 import { AccountAddress, ChainAddress, NativeAddress, UniversalOrNative } from "../address";
 import "../payloads/automaticTokenBridge";
 import "../payloads/tokenBridge";
+import { EmptyPlatformMap } from "../protocol";
 import { TokenAddress, TokenId } from "../types";
 import { UnsignedTransaction } from "../unsignedTransaction";
 import { ProtocolPayload, ProtocolVAA, payloadDiscriminator } from "../vaa";
-import { EmptyPlatformMap } from "../protocol";
 
 export const ErrNotWrapped = (token: string) => new Error(`Token ${token} is not a wrapped asset`);
 
@@ -118,7 +112,7 @@ export function isTokenTransferDetails(
  * Find details on the TokenBridge protocol here: {@link https://github.com/wormhole-foundation/wormhole/blob/main/whitepapers/0003_token_bridge.md}
  *
  */
-export interface TokenBridge<N extends Network, P extends Platform, C extends PlatformToChains<P>> {
+export interface TokenBridge<N extends Network, C extends Chain> {
   /** Checks a native address to see if its a wrapped version
    *
    * @param nativeAddress The address to check
@@ -223,11 +217,7 @@ export interface TokenBridge<N extends Network, P extends Platform, C extends Pl
  *  AutomaticTokenBridge provides a consistent interface to the
  *  TokenBridge with Automatic redemption on the destination chain
  */
-export interface AutomaticTokenBridge<
-  N extends Network,
-  P extends Platform,
-  C extends PlatformToChains<P>,
-> {
+export interface AutomaticTokenBridge<N extends Network, C extends Chain> {
   /** Initiate the transfer over the automatic bridge */
   transfer(
     sender: AccountAddress<C>,

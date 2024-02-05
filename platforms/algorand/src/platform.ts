@@ -31,7 +31,7 @@ import { AlgorandChains, AlgorandPlatformType, AnyAlgorandAddress, _platform } f
  */
 export class AlgorandPlatform<N extends Network>
   extends PlatformContext<N, AlgorandPlatformType>
-  implements StaticPlatformMethods<typeof _platform, typeof AlgorandPlatform>
+  implements StaticPlatformMethods<AlgorandPlatformType, typeof AlgorandPlatform>
 {
   static _platform = _platform;
 
@@ -45,7 +45,7 @@ export class AlgorandPlatform<N extends Network>
   }
 
   getChain<C extends AlgorandChains>(chain: C): AlgorandChain<N, C> {
-    if (chain in this.config) return new AlgorandChain<N, C>(chain, this);
+    if (chain in this.config) return new AlgorandChain(chain, this);
     throw new Error("No configuration available for chain: " + chain);
   }
 
@@ -54,7 +54,7 @@ export class AlgorandPlatform<N extends Network>
     chain: C,
   ): TokenId<C> {
     if (!AlgorandPlatform.isSupportedChain(chain))
-      throw new Error(`invalid chain for ${_platform}: ${chain}`);
+      throw new Error(`invalid chain for Algorand: ${chain}`);
     return Wormhole.chainAddress(chain, AlgorandZeroAddress);
   }
 

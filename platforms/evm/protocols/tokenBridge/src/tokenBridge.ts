@@ -1,24 +1,24 @@
 import {
   AccountAddress,
+  Chain,
   ChainAddress,
   ChainsConfig,
   Contracts,
   ErrNotWrapped,
   NativeAddress,
   Network,
+  Platform,
   TokenAddress,
   TokenBridge,
   TokenId,
   UniversalAddress,
+  isNative,
   keccak256,
+  nativeChainIds,
   serialize,
   toChain,
   toChainId,
-  Chain,
-  Platform,
-  nativeChainIds,
   toNative,
-  isNative,
 } from '@wormhole-foundation/connect-sdk';
 import { Provider, TransactionRequest } from 'ethers';
 
@@ -29,7 +29,6 @@ import {
   EvmAddress,
   EvmChains,
   EvmPlatform,
-  EvmPlatformType,
   EvmUnsignedTransaction,
   EvmZeroAddress,
   addChainId,
@@ -41,7 +40,7 @@ import {
 import '@wormhole-foundation/connect-sdk-evm-core';
 
 export class EvmTokenBridge<N extends Network, C extends EvmChains>
-  implements TokenBridge<N, EvmPlatformType, C>
+  implements TokenBridge<N, C>
 {
   readonly tokenBridge: TokenBridgeContract;
   readonly tokenBridgeAddress: string;

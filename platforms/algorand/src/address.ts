@@ -6,9 +6,9 @@ import {
   registerNative,
 } from "@wormhole-foundation/connect-sdk";
 
-import { AlgorandPlatform } from "./platform";
-import { _platform, AnyAlgorandAddress, safeBigIntToNumber } from "./types";
 import { decodeAddress, encodeAddress, isValidAddress } from "algosdk";
+import { AlgorandPlatform } from "./platform";
+import { AnyAlgorandAddress, _platform, safeBigIntToNumber } from "./types";
 
 export const AlgorandZeroAddress = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ";
 

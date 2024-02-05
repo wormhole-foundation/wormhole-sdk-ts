@@ -28,7 +28,7 @@ import { ethers_contracts } from '.';
 import '@wormhole-foundation/connect-sdk-evm-core';
 
 export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
-  implements AutomaticTokenBridge<N, EvmPlatformType, C>
+  implements AutomaticTokenBridge<N, C>
 {
   readonly tokenBridgeRelayer: ethers_contracts.TokenBridgeRelayer;
   readonly tokenBridge: ethers_contracts.TokenBridgeContract;

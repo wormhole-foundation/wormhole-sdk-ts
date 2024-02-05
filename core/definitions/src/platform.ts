@@ -108,7 +108,7 @@ export abstract class PlatformContext<N extends Network, P extends Platform> {
   abstract getChain<C extends PlatformToChains<P>>(
     chain: C,
     rpc?: RpcConnection<P>,
-  ): ChainContext<N, P, C>;
+  ): ChainContext<N, C>;
 
   /** Create a new Protocol Client instance by protocol name */
   getProtocol<PN extends ProtocolName, T>(protocol: PN, rpc: RpcConnection<P>): Promise<T> {
@@ -121,7 +121,7 @@ export abstract class PlatformContext<N extends Network, P extends Platform> {
     rpc: RpcConnection<P>,
     txid: TxHash,
   ): Promise<WormholeMessageId[]> {
-    const wc: WormholeCore<N, P, C> = await this.getProtocol("WormholeCore", rpc);
+    const wc: WormholeCore<N, C> = await this.getProtocol("WormholeCore", rpc);
     return wc.parseTransaction(txid);
   }
 }

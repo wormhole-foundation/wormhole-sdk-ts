@@ -1,12 +1,4 @@
-import {
-  Chain,
-  ChainToPlatform,
-  Network,
-  Platform,
-  PlatformToChains,
-  chainToPlatform,
-  circle,
-} from "@wormhole-foundation/sdk-base";
+import { Chain, Network, Platform, chainToPlatform, circle } from "@wormhole-foundation/sdk-base";
 import {
   ChainAddress,
   ChainContext,
@@ -43,10 +35,7 @@ import {
 } from "./whscan-api";
 
 type PlatformMap<N extends Network, P extends Platform = Platform> = Map<P, PlatformContext<N, P>>;
-type ChainMap<N extends Network, C extends Chain = Chain> = Map<
-  C,
-  ChainContext<N, ChainToPlatform<C>, C>
->;
+type ChainMap<N extends Network, C extends Chain = Chain> = Map<C, ChainContext<N, C>>;
 
 export class Wormhole<N extends Network> {
   protected readonly _network: N;
@@ -186,11 +175,11 @@ export class Wormhole<N extends Network> {
    * @returns the chain context class
    * @throws Errors if context is not found
    */
-  getChain<C extends Chain, P extends ChainToPlatform<C>>(chain: C): ChainContext<N, P, C> {
+  getChain<C extends Chain>(chain: C): ChainContext<N, C> {
     const platform = chainToPlatform(chain);
     if (!this._chains.has(chain))
       this._chains.set(chain, this.getPlatform(platform).getChain(chain));
-    return this._chains.get(chain)! as ChainContext<N, P, C>;
+    return this._chains.get(chain)! as ChainContext<N, C>;
   }
 
   /**
@@ -404,12 +393,8 @@ export class Wormhole<N extends Network> {
    * @param tx The sending transaction hash
    * @returns The parsed WormholeMessageId
    */
-  static async parseMessageFromTx<
-    N extends Network,
-    P extends Platform,
-    C extends PlatformToChains<P>,
-  >(
-    chain: ChainContext<N, P, C>,
+  static async parseMessageFromTx<N extends Network, C extends Chain>(
+    chain: ChainContext<N, C>,
     txid: TxHash,
     timeout: number = DEFAULT_TASK_TIMEOUT,
   ): Promise<WormholeMessageId[]> {

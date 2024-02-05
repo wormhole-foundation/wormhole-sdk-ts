@@ -22,15 +22,10 @@ import {
   addChainId,
   addFrom,
 } from '@wormhole-foundation/connect-sdk-evm';
-import {
-  PlatformToChains,
-  nativeChainIds,
-} from '@wormhole-foundation/sdk-base';
+import { nativeChainIds } from '@wormhole-foundation/sdk-base';
 
-export class EvmWormholeCore<
-  N extends Network,
-  C extends PlatformToChains<EvmPlatformType>,
-> implements WormholeCore<N, EvmPlatformType, C>
+export class EvmWormholeCore<N extends Network, C extends EvmChains>
+  implements WormholeCore<N, C>
 {
   readonly chainId: bigint;
 

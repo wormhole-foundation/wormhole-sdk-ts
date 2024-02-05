@@ -20,7 +20,7 @@ import {
 } from "@wormhole-foundation/connect-sdk-cosmwasm";
 
 export class CosmwasmWormholeCore<N extends Network, C extends CosmwasmChains>
-  implements WormholeCore<N, CosmwasmPlatformType, C>
+  implements WormholeCore<N, C>
 {
   private coreAddress: string;
 

@@ -13,17 +13,16 @@ import {
   TokenId,
   UniversalAddress,
   encoding,
+  isNative,
   serialize,
   toChain,
   toChainId,
   toNative,
-  isNative,
 } from "@wormhole-foundation/connect-sdk";
 import {
   AlgorandAddress,
   AlgorandChains,
   AlgorandPlatform,
-  AlgorandPlatformType,
   AlgorandUnsignedTransaction,
   AnyAlgorandAddress,
   TransactionSignerPair,
@@ -54,7 +53,7 @@ import "@wormhole-foundation/connect-sdk-algorand-core";
 export const TransferMethodSelector = ABIMethod.fromSignature("portal_transfer(byte[])byte[]");
 
 export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
-  implements TokenBridge<N, AlgorandPlatformType, C>
+  implements TokenBridge<N, C>
 {
   readonly chainId: ChainId;
 

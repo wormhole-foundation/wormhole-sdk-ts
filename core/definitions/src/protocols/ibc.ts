@@ -3,16 +3,15 @@ import {
   ChainId,
   Network,
   Platform,
-  PlatformToChains,
   encoding,
   toChain,
   toChainId,
 } from "@wormhole-foundation/sdk-base";
 import { AccountAddress, ChainAddress, NativeAddress } from "../address";
 import { IbcMessageId, WormholeMessageId } from "../attestation";
-import { TokenId, TxHash, TokenAddress } from "../types";
-import { UnsignedTransaction } from "../unsignedTransaction";
 import { EmptyPlatformMap } from "../protocol";
+import { TokenAddress, TokenId, TxHash } from "../types";
+import { UnsignedTransaction } from "../unsignedTransaction";
 
 declare global {
   namespace WormholeNamespace {
@@ -199,7 +198,7 @@ export interface IbcTransferData {
  * See more here {@link https://tutorials.cosmos.network/academy/3-ibc/7-token-transfer.html}
  *
  */
-export interface IbcBridge<N extends Network, P extends Platform, C extends PlatformToChains<P>> {
+export interface IbcBridge<N extends Network, C extends Chain> {
   /** Initiate an IBC token transfer */
   transfer(
     sender: AccountAddress<C>,

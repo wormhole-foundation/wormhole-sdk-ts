@@ -27,7 +27,6 @@ import { AnyEvmAddress, EvmChains, EvmPlatformType, _platform } from './types';
 /**
  * @category EVM
  */
-
 export class EvmPlatform<N extends Network>
   extends PlatformContext<N, EvmPlatformType>
   implements StaticPlatformMethods<EvmPlatformType, typeof EvmPlatform>

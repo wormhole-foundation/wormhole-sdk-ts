@@ -19,7 +19,7 @@ import {
 import { AptosClient, Types } from "aptos";
 
 export class AptosWormholeCore<N extends Network, C extends AptosChains>
-  implements WormholeCore<N, AptosPlatformType, C>
+  implements WormholeCore<N, C>
 {
   readonly chainId: ChainId;
   readonly coreBridge: string;

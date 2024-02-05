@@ -33,7 +33,7 @@ import { serializeForeignAddressSeeds } from "./foreignAddress";
 import { OriginInfo, TokenBridgeState } from "./types";
 
 export class AptosTokenBridge<N extends Network, C extends AptosChains>
-  implements TokenBridge<N, AptosPlatformType, C>
+  implements TokenBridge<N, C>
 {
   readonly chainId: ChainId;
 
