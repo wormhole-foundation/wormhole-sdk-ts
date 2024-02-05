@@ -28,10 +28,10 @@ async function delay(ms: number): Promise<void> {
 
 type Op = {};
 type R = Receipt;
-type Q = Quote;
+type Q = Quote<Op>;
 
 export class ManualMockRoute<N extends Network>
-  extends ManualRoute<N, Op, R, Q>
+  extends ManualRoute<N, Op, R>
   implements StaticRouteMethods<typeof ManualMockRoute>
 {
   static meta = {
@@ -72,6 +72,7 @@ export class ManualMockRoute<N extends Network>
   async quote(params: ValidatedTransferParams<Op>): Promise<Q> {
     await delay(1000);
     const fakeQuote: Q = {
+      success: true,
       sourceToken: {
         token: this.request.source.id,
         amount: amount.parse(params.amount, this.request.destination.decimals),
@@ -84,11 +85,12 @@ export class ManualMockRoute<N extends Network>
         token: this.request.source.id,
         amount: amount.parse("0.01", this.request.source.decimals),
       },
+      params,
     };
     return fakeQuote;
   }
 
-  async initiate(sender: Signer, params: ValidatedTransferParams<Op>): Promise<R> {
+  async initiate(sender: Signer, _quote: Q): Promise<R> {
     await delay(1000);
 
     const fakeTxId =

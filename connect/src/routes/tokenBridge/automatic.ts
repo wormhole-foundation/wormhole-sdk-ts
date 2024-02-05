@@ -13,6 +13,7 @@ import { AttestationReceipt, TransferState } from "../../types";
 import { AutomaticRoute, StaticRouteMethods } from "../route";
 import {
   Quote,
+  QuoteResult,
   Receipt,
   TransferParams,
   ValidatedTransferParams,
@@ -42,11 +43,12 @@ type Vp = AutomaticTokenBridgeRoute.ValidatedParams;
 
 type Tp = TransferParams<Op>;
 type Vr = ValidationResult<Op>;
-type Q = Quote;
 type R = Receipt<AttestationReceipt<"AutomaticTokenBridge">>;
+type QR = QuoteResult<Op, Vp>;
+type Q = Quote<Op, Vp>;
 
 export class AutomaticTokenBridgeRoute<N extends Network>
-  extends AutomaticRoute<N, Op, R, Q>
+  extends AutomaticRoute<N, Op, R>
   implements StaticRouteMethods<typeof AutomaticTokenBridgeRoute>
 {
   NATIVE_GAS_DROPOFF_SUPPORTED = true;
@@ -172,17 +174,24 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     };
   }
 
-  async quote(params: Vp) {
-    return this.request.displayQuote(
-      await TokenTransfer.quoteTransfer(
+  async quote(params: Vp): Promise<QR> {
+    try {
+      let quote = await TokenTransfer.quoteTransfer(
         this.request.fromChain,
         this.request.toChain,
         this.toTransferDetails(params),
-      ),
-    );
+      );
+      return this.request.displayQuote(quote, params);
+    } catch (e) {
+      return {
+        success: false,
+        error: e as Error,
+      };
+    }
   }
 
-  async initiate(signer: Signer, params: Vp): Promise<R> {
+  async initiate(signer: Signer, quote: Q): Promise<R> {
+    const { params } = quote;
     const transfer = this.toTransferDetails(params);
     const txids = await TokenTransfer.transfer<N>(this.request.fromChain, transfer, signer);
     const msg = await TokenTransfer.getTransferMessage(

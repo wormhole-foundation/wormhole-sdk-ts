@@ -25,6 +25,7 @@ import {
 import { AutomaticRoute, StaticRouteMethods } from "../route";
 import {
   Quote,
+  QuoteResult,
   Receipt,
   TransferParams,
   ValidatedTransferParams,
@@ -36,10 +37,6 @@ export const BPS_PER_HUNDRED_PERCENT = 10000n;
 
 export namespace PorticoRoute {
   export type Options = {};
-
-  export interface PorticoQuote extends Quote {
-    quote: PorticoBridge.Quote;
-  }
 
   export type NormalizedParams = {
     amount: amount.Amount;
@@ -53,11 +50,9 @@ export namespace PorticoRoute {
 
   export interface ValidatedParams extends ValidatedTransferParams<Options> {
     normalizedParams: NormalizedParams;
-    quote?: PorticoQuote;
   }
 }
 
-type Q = PorticoRoute.PorticoQuote;
 type OP = PorticoRoute.Options;
 type R = Receipt<AttestationReceipt<"PorticoBridge">>;
 type VP = PorticoRoute.ValidatedParams;
@@ -65,8 +60,11 @@ type VP = PorticoRoute.ValidatedParams;
 type VR = ValidationResult<OP>;
 type TP = TransferParams<OP>;
 
+type Q = Quote<OP, VP, PorticoBridge.Quote>;
+type QR = QuoteResult<OP, VP, PorticoBridge.Quote>;
+
 export class AutomaticPorticoRoute<N extends Network>
-  extends AutomaticRoute<N, OP, R, Q>
+  extends AutomaticRoute<N, OP, R>
   implements StaticRouteMethods<typeof AutomaticPorticoRoute>
 {
   NATIVE_GAS_DROPOFF_SUPPORTED = false;
@@ -200,23 +198,13 @@ export class AutomaticPorticoRoute<N extends Network>
         },
       };
 
-      const quote = await this.quote(validatedParams);
-
-      if (Number(quote.destinationToken.amount) < 0) {
-        throw new Error(
-          `Amount too low for slippage and fee, would result in negative destination amount (${quote.destinationToken.amount})`,
-        );
-      }
-
-      validatedParams.quote = quote;
-
       return { valid: true, params: validatedParams };
     } catch (e) {
       return { valid: false, error: e as Error, params: params };
     }
   }
 
-  async quote(params: VP): Promise<Q> {
+  async quote(params: VP): Promise<QR> {
     const swapAmounts = await this.quoteUniswap(params);
 
     const pb = await this.request.toChain.getPorticoBridge();
@@ -226,42 +214,57 @@ export class AutomaticPorticoRoute<N extends Network>
       params.normalizedParams.destinationToken.address,
     );
 
-    const quote: PorticoBridge.Quote = {
+    const details: PorticoBridge.Quote = {
       swapAmounts,
       relayerFee: fee,
     };
 
-    return {
-      quote,
-      ...(await this.request.displayQuote({
+    let destinationAmount = details.swapAmounts.minAmountFinish - fee;
+
+    if (Number(destinationAmount) < 0) {
+      return {
+        success: false,
+        error: new Error(
+          `Amount too low for slippage and fee, would result in negative destination amount (${destinationAmount})`,
+        ),
+      };
+    }
+
+    return (await this.request.displayQuote(
+      {
         sourceToken: {
           token: params.normalizedParams.sourceToken,
           amount: amount.units(params.normalizedParams.amount),
         },
         destinationToken: {
           token: params.normalizedParams.destinationToken,
-          amount: quote.swapAmounts.minAmountFinish - fee,
+          amount: details.swapAmounts.minAmountFinish - fee,
         },
         relayFee: {
           token: params.normalizedParams.destinationToken,
           amount: fee,
         },
-      })),
-    };
+      },
+      params,
+      details,
+    )) as Q;
   }
 
-  async initiate(sender: Signer<N>, params: VP) {
+  async initiate(sender: Signer<N>, quote: Q) {
+    const { params, details } = quote;
+
     const sourceToken = this.request.source.id.address;
     const destToken = this.request.destination!.id;
 
     const fromPorticoBridge = await this.request.fromChain.getPorticoBridge();
+
     const xfer = fromPorticoBridge.transfer(
       this.request.from.address,
       this.request.to,
       sourceToken,
       amount.units(params.normalizedParams.amount),
       destToken!,
-      params.quote!.quote,
+      details!,
     );
 
     const txids = await signSendWait(this.request.fromChain, xfer, sender);

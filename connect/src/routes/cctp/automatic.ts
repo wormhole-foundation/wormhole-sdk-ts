@@ -11,6 +11,7 @@ import { TransferState } from "../../types";
 import { AutomaticRoute, StaticRouteMethods } from "../route";
 import {
   Quote,
+  QuoteResult,
   Receipt,
   TransferParams,
   ValidatedTransferParams,
@@ -41,11 +42,12 @@ type Vp = AutomaticCCTPRoute.ValidatedParams;
 type Tp = TransferParams<Op>;
 type Vr = ValidationResult<Op>;
 
-type Q = Quote;
+type Q = Quote<Op, Vp>;
+type QR = QuoteResult<Op, Vp>;
 type R = Receipt<CircleAttestationReceipt>;
 
 export class AutomaticCCTPRoute<N extends Network>
-  extends AutomaticRoute<N, Op, R, Q>
+  extends AutomaticRoute<N, Op, R>
   implements StaticRouteMethods<typeof AutomaticCCTPRoute>
 {
   NATIVE_GAS_DROPOFF_SUPPORTED = true;
@@ -121,13 +123,14 @@ export class AutomaticCCTPRoute<N extends Network>
     }
   }
 
-  async quote(params: Vp) {
+  async quote(params: Vp): Promise<QR> {
     return this.request.displayQuote(
       await CircleTransfer.quoteTransfer(
         this.request.fromChain,
         this.request.toChain,
         this.toTransferDetails(params),
       ),
+      params,
     );
   }
 
@@ -177,7 +180,8 @@ export class AutomaticCCTPRoute<N extends Network>
     };
   }
 
-  async initiate(signer: Signer, params: Vp): Promise<R> {
+  async initiate(signer: Signer, quote: Q): Promise<R> {
+    const { params } = quote;
     let transfer = this.toTransferDetails(params);
     let txids = await CircleTransfer.transfer<N>(this.request.fromChain, transfer, signer);
 
