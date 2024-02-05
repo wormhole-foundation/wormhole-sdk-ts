@@ -10,7 +10,13 @@ import { TokenTransfer, TokenTransferVAA } from "../../protocols/tokenTransfer";
 import { AttestationReceipt, TransferReceipt, TransferState, isAttested } from "../../types";
 import { Wormhole } from "../../wormhole";
 import { ManualRoute, StaticRouteMethods } from "../route";
-import { Quote, TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
+import {
+  Quote,
+  QuoteResult,
+  TransferParams,
+  ValidatedTransferParams,
+  ValidationResult,
+} from "../types";
 
 export namespace TokenBridgeRoute {
   export type Options = {
@@ -32,11 +38,12 @@ type Vp = TokenBridgeRoute.ValidatedParams;
 type Tp = TransferParams<Op>;
 type Vr = ValidationResult<Op>;
 
-type Q = Quote;
+type QR = QuoteResult<Op, Vp>;
+type Q = Quote<Op, Vp>;
 type R = TransferReceipt<AttestationReceipt<"TokenBridge">>;
 
 export class TokenBridgeRoute<N extends Network>
-  extends ManualRoute<N, Op, R, Q>
+  extends ManualRoute<N, Op, Vp, R>
   implements StaticRouteMethods<typeof TokenBridgeRoute>
 {
   static meta = {
@@ -88,17 +95,26 @@ export class TokenBridgeRoute<N extends Network>
     return { valid: true, params: validatedParams };
   }
 
-  async quote(params: Vp) {
-    return this.request.displayQuote(
-      await TokenTransfer.quoteTransfer(
-        this.request.fromChain,
-        this.request.toChain,
-        this.toTransferDetails(params),
-      ),
-    );
+  async quote(params: Vp): Promise<QR> {
+    try {
+      return this.request.displayQuote(
+        await TokenTransfer.quoteTransfer(
+          this.request.fromChain,
+          this.request.toChain,
+          this.toTransferDetails(params),
+        ),
+        params,
+      );
+    } catch (e) {
+      return {
+        success: false,
+        error: e as Error,
+      };
+    }
   }
 
-  async initiate(signer: Signer, params: Vp): Promise<R> {
+  async initiate(signer: Signer, quote: Q): Promise<R> {
+    const { params } = quote;
     const transfer = this.toTransferDetails(params);
     const txids = await TokenTransfer.transfer<N>(this.request.fromChain, transfer, signer);
     const msg = await TokenTransfer.getTransferMessage(

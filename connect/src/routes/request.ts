@@ -3,7 +3,7 @@ import { ChainAddress, ChainContext, TokenId } from "@wormhole-foundation/sdk-de
 import { TransferQuote } from "../types";
 import { Wormhole } from "../wormhole";
 import { TokenDetails, getTokenDetails } from "./token";
-import { Quote } from "./types";
+import { Quote, ValidatedTransferParams } from "./types";
 
 export class RouteTransferRequest<N extends Network> {
   from: ChainAddress;
@@ -38,8 +38,13 @@ export class RouteTransferRequest<N extends Network> {
     return amount.fromBaseUnits(amt, this.source.decimals);
   }
 
-  async displayQuote(quote: TransferQuote): Promise<Quote> {
-    let dq: Quote = {
+  async displayQuote<OP, VP extends ValidatedTransferParams<OP> = ValidatedTransferParams<OP>>(
+    quote: TransferQuote,
+    params: VP,
+    details?: any,
+  ): Promise<Quote<OP, VP>> {
+    let dq: Quote<OP, VP> = {
+      success: true,
       sourceToken: {
         token: quote.sourceToken.token,
         amount: amount.fromBaseUnits(quote.sourceToken.amount, this.source.decimals),
@@ -48,6 +53,7 @@ export class RouteTransferRequest<N extends Network> {
         token: quote.destinationToken.token,
         amount: amount.fromBaseUnits(quote.destinationToken.amount, this.destination.decimals),
       },
+      params,
     };
 
     if (quote.relayFee) {
@@ -60,6 +66,10 @@ export class RouteTransferRequest<N extends Network> {
     if (quote.destinationNativeGas) {
       const dstDecimals = await this.toChain.getDecimals("native");
       dq.destinationNativeGas = amount.fromBaseUnits(quote.destinationNativeGas, dstDecimals);
+    }
+
+    if (details) {
+      dq.details = details;
     }
 
     return dq;

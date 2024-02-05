@@ -11,7 +11,13 @@ import { signSendWait } from "../../common";
 import { CircleAttestationReceipt, CircleTransfer } from "../../protocols/cctpTransfer";
 import { TransferReceipt, TransferState, isAttested } from "../../types";
 import { ManualRoute, StaticRouteMethods } from "../route";
-import { Quote, TransferParams, ValidatedTransferParams, ValidationResult } from "../types";
+import {
+  Quote,
+  QuoteResult,
+  TransferParams,
+  ValidatedTransferParams,
+  ValidationResult,
+} from "../types";
 import { Wormhole } from "../../wormhole";
 
 export namespace CCTPRoute {
@@ -34,11 +40,12 @@ type Vp = CCTPRoute.ValidatedParams;
 type Tp = TransferParams<Op>;
 type Vr = ValidationResult<Op>;
 
-type Q = Quote;
+type Q = Quote<Op, Vp>;
+type QR = QuoteResult<Op, Vp>;
 type R = TransferReceipt<CircleAttestationReceipt>;
 
 export class CCTPRoute<N extends Network>
-  extends ManualRoute<N, Op, R, Q>
+  extends ManualRoute<N, Op, Vp, R>
   implements StaticRouteMethods<typeof CCTPRoute>
 {
   static meta = {
@@ -98,17 +105,26 @@ export class CCTPRoute<N extends Network>
     return { valid: true, params: validatedParams };
   }
 
-  async quote(params: Vp) {
-    return this.request.displayQuote(
-      await CircleTransfer.quoteTransfer(
-        this.request.fromChain,
-        this.request.toChain,
-        this.toTransferDetails(params),
-      ),
-    );
+  async quote(params: Vp): Promise<QR> {
+    try {
+      return this.request.displayQuote(
+        await CircleTransfer.quoteTransfer(
+          this.request.fromChain,
+          this.request.toChain,
+          this.toTransferDetails(params),
+        ),
+        params,
+      );
+    } catch (e) {
+      return {
+        success: false,
+        error: e as Error,
+      };
+    }
   }
 
-  async initiate(signer: Signer, params: Vp): Promise<R> {
+  async initiate(signer: Signer, quote: Q): Promise<R> {
+    const { params } = quote;
     let transfer = this.toTransferDetails(params);
     let txids = await CircleTransfer.transfer<N>(this.request.fromChain, transfer, signer);
     const msg = await CircleTransfer.getTransferMessage(
