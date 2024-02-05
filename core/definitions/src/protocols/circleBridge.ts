@@ -21,7 +21,7 @@ import { ProtocolPayload, ProtocolVAA, payloadDiscriminator } from "../vaa";
 import { EmptyPlatformMap } from "../protocol";
 
 declare global {
-  namespace WormholeNamespace {
+  namespace Wormhole {
     export interface ProtocolToPlatformMapping {
       CircleBridge: EmptyPlatformMap<Platform, CircleBridge.ProtocolName>;
       AutomaticCircleBridge: EmptyPlatformMap<Platform, AutomaticCircleBridge.ProtocolName>;

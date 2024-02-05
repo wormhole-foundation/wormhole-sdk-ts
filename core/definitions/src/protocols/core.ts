@@ -7,7 +7,7 @@ import { VAA } from "../vaa";
 import { EmptyPlatformMap } from "../protocol";
 
 declare global {
-  namespace WormholeNamespace {
+  namespace Wormhole {
     export interface ProtocolToPlatformMapping {
       WormholeCore: EmptyPlatformMap<Platform, "WormholeCore">;
     }

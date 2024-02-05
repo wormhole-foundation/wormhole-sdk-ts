@@ -3,14 +3,14 @@ import { RpcConnection } from "./rpc";
 import { ChainsConfig } from "./types";
 
 declare global {
-  namespace WormholeNamespace {
+  namespace Wormhole {
     export interface ProtocolToPlatformMapping {}
   }
 }
 
 /** A string type representing the name of a protocol */
-export type ProtocolName = keyof WormholeNamespace.ProtocolToPlatformMapping;
-type MappedProtocolPlatforms = keyof WormholeNamespace.ProtocolToPlatformMapping[ProtocolName];
+export type ProtocolName = keyof Wormhole.ProtocolToPlatformMapping;
+type MappedProtocolPlatforms = keyof Wormhole.ProtocolToPlatformMapping[ProtocolName];
 
 export type EmptyPlatformMap<P extends Platform, PN extends ProtocolName> = Map<
   P,
@@ -22,7 +22,7 @@ export type ProtocolImplementation<
   PN extends ProtocolName,
 > = PN extends ProtocolName
   ? T extends MappedProtocolPlatforms
-    ? WormholeNamespace.ProtocolToPlatformMapping[PN][T]
+    ? Wormhole.ProtocolToPlatformMapping[PN][T]
     : any
   : never;
 

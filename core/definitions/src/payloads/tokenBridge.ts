@@ -73,7 +73,7 @@ export const namedPayloads = [
 // factory registration:
 
 declare global {
-  namespace WormholeNamespace {
+  namespace Wormhole {
     interface PayloadLiteralToLayoutMapping
       extends RegisterPayloadTypes<"TokenBridge", typeof namedPayloads> {}
   }

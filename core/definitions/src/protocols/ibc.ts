@@ -15,7 +15,7 @@ import { UnsignedTransaction } from "../unsignedTransaction";
 import { EmptyPlatformMap } from "../protocol";
 
 declare global {
-  namespace WormholeNamespace {
+  namespace Wormhole {
     export interface ProtocolToPlatformMapping {
       IbcBridge: EmptyPlatformMap<Platform, "IbcBridge">;
     }
