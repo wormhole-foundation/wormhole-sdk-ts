@@ -4,7 +4,7 @@ import { Wormhole } from "../wormhole";
 import { RouteTransferRequest } from "./request";
 import { Route, RouteConstructor, isAutomatic } from "./route";
 import { uniqueTokens } from "./token";
-import { Receipt, Options } from "./types";
+import { Receipt, Options, ValidatedTransferParams } from "./types";
 
 export type RouteSortOptions = "cost" | "speed";
 
@@ -77,11 +77,15 @@ export class RouteResolver<N extends Network> {
     // Next, we make sure all supported routes are available. For relayed routes, this will ping
     // the relayer to make sure it's online.
     return await Promise.all(
-      supportedRoutes.map(async (rc): Promise<[Route<N, Options, Receipt>, boolean]> => {
-        const route = new rc(this.wh, request);
-        const available = isAutomatic(route) ? await route.isAvailable() : true;
-        return [route, available];
-      }),
+      supportedRoutes.map(
+        async (
+          rc,
+        ): Promise<[Route<N, Options, ValidatedTransferParams<Options>, Receipt>, boolean]> => {
+          const route = new rc(this.wh, request);
+          const available = isAutomatic(route) ? await route.isAvailable() : true;
+          return [route, available];
+        },
+      ),
     )
       .then((availableRoutes) => availableRoutes.filter(([_, available]) => available))
       .then((availableRoutes) => availableRoutes.map(([route, _]) => route!));

@@ -47,7 +47,7 @@ type QR = QuoteResult<Op, Vp>;
 type R = Receipt<CircleAttestationReceipt>;
 
 export class AutomaticCCTPRoute<N extends Network>
-  extends AutomaticRoute<N, Op, R>
+  extends AutomaticRoute<N, Op, Vp, R>
   implements StaticRouteMethods<typeof AutomaticCCTPRoute>
 {
   NATIVE_GAS_DROPOFF_SUPPORTED = true;

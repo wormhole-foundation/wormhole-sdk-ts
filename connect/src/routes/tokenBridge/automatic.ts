@@ -48,7 +48,7 @@ type QR = QuoteResult<Op, Vp>;
 type Q = Quote<Op, Vp>;
 
 export class AutomaticTokenBridgeRoute<N extends Network>
-  extends AutomaticRoute<N, Op, R>
+  extends AutomaticRoute<N, Op, Vp, R>
   implements StaticRouteMethods<typeof AutomaticTokenBridgeRoute>
 {
   NATIVE_GAS_DROPOFF_SUPPORTED = true;

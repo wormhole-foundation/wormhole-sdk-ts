@@ -43,7 +43,7 @@ type Q = Quote<Op, Vp>;
 type R = TransferReceipt<AttestationReceipt<"TokenBridge">>;
 
 export class TokenBridgeRoute<N extends Network>
-  extends ManualRoute<N, Op, R>
+  extends ManualRoute<N, Op, Vp, R>
   implements StaticRouteMethods<typeof TokenBridgeRoute>
 {
   static meta = {

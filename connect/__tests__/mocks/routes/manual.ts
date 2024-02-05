@@ -29,9 +29,10 @@ async function delay(ms: number): Promise<void> {
 type Op = {};
 type R = Receipt;
 type Q = Quote<Op>;
+type Vp = ValidatedTransferParams<Op>;
 
 export class ManualMockRoute<N extends Network>
-  extends ManualRoute<N, Op, R>
+  extends ManualRoute<N, Op, Vp, R>
   implements StaticRouteMethods<typeof ManualMockRoute>
 {
   static meta = {

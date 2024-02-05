@@ -15,6 +15,7 @@ import {
 export abstract class Route<
   N extends Network,
   OP extends Options = Options,
+  VP extends ValidatedTransferParams<OP> = ValidatedTransferParams<OP>,
   R extends Receipt = Receipt,
 > {
   wh: Wormhole<N>;
@@ -35,10 +36,10 @@ export abstract class Route<
   public abstract validate(params: TransferParams<OP>): Promise<ValidationResult<OP>>;
 
   // Get a quote for the transfer with the given options
-  public abstract quote(params: ValidatedTransferParams<OP>): Promise<QuoteResult<OP>>;
+  public abstract quote(params: ValidatedTransferParams<OP>): Promise<QuoteResult<OP, VP>>;
 
   // Initiate the transfer with the transfer request and passed options
-  public abstract initiate(sender: Signer, quote: Quote<OP>): Promise<R>;
+  public abstract initiate(sender: Signer, quote: Quote<OP, VP>): Promise<R>;
 
   // Track the progress of the transfer over time
   public abstract track(receipt: R, timeout?: number): AsyncGenerator<R>;
@@ -90,8 +91,9 @@ export type StaticRouteMethods<I extends RouteConstructor> = InstanceType<I>;
 export abstract class AutomaticRoute<
   N extends Network,
   OP extends Options = Options,
+  VP extends ValidatedTransferParams<OP> = ValidatedTransferParams<OP>,
   R extends Receipt = Receipt,
-> extends Route<N, OP, R> {
+> extends Route<N, OP, VP, R> {
   IS_AUTOMATIC = true;
   public abstract isAvailable(): Promise<boolean>;
 }
@@ -103,8 +105,9 @@ export function isAutomatic<N extends Network>(route: Route<N>): route is Automa
 export abstract class ManualRoute<
   N extends Network,
   OP extends Options = Options,
+  VP extends ValidatedTransferParams<OP> = ValidatedTransferParams<OP>,
   R extends Receipt = Receipt,
-> extends Route<N, OP, R> {
+> extends Route<N, OP, VP, R> {
   NATIVE_GAS_DROPOFF_SUPPORTED = false;
   IS_AUTOMATIC = false;
   public abstract complete(sender: Signer, receipt: R): Promise<TransactionId[]>;

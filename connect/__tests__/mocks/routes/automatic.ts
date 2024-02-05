@@ -28,9 +28,10 @@ async function delay(ms: number): Promise<void> {
 type Op = {};
 type R = Receipt;
 type Q = Quote<Op>;
+type Vp = ValidatedTransferParams<Op>;
 
 export class AutomaticMockRoute<N extends Network>
-  extends AutomaticRoute<N, Op, R>
+  extends AutomaticRoute<N, Op, Vp, R>
   implements StaticRouteMethods<typeof AutomaticMockRoute>
 {
   NATIVE_GAS_DROPOFF_SUPPORTED = true;

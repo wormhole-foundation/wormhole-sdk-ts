@@ -64,7 +64,7 @@ type Q = Quote<OP, VP, PorticoBridge.Quote>;
 type QR = QuoteResult<OP, VP, PorticoBridge.Quote>;
 
 export class AutomaticPorticoRoute<N extends Network>
-  extends AutomaticRoute<N, OP, R>
+  extends AutomaticRoute<N, OP, VP, R>
   implements StaticRouteMethods<typeof AutomaticPorticoRoute>
 {
   NATIVE_GAS_DROPOFF_SUPPORTED = false;

@@ -45,7 +45,7 @@ type QR = QuoteResult<Op, Vp>;
 type R = TransferReceipt<CircleAttestationReceipt>;
 
 export class CCTPRoute<N extends Network>
-  extends ManualRoute<N, Op, R>
+  extends ManualRoute<N, Op, Vp, R>
   implements StaticRouteMethods<typeof CCTPRoute>
 {
   static meta = {
