@@ -40,7 +40,7 @@ const guardianSignatureLayout = [
 ] as const satisfies Layout;
 
 export const headerLayout = [
-  { name: "version", binary: "uint", size: 1, custom: 1, omit: true },
+  { name: "version", binary: "uint", size: 1, custom: 1 },
   { name: "guardianSet", ...guardianSetItem },
   { name: "signatures", binary: "array", lengthSize: 1, layout: guardianSignatureLayout },
 ] as const satisfies Layout;
