@@ -205,49 +205,56 @@ export class AutomaticPorticoRoute<N extends Network>
   }
 
   async quote(params: VP): Promise<QR> {
-    const swapAmounts = await this.quoteUniswap(params);
+    try {
+      const swapAmounts = await this.quoteUniswap(params);
 
-    const pb = await this.request.toChain.getPorticoBridge();
+      const pb = await this.request.toChain.getPorticoBridge();
 
-    const fee = await pb.quoteRelay(
-      params.normalizedParams.canonicalDestinationToken.address,
-      params.normalizedParams.destinationToken.address,
-    );
+      const fee = await pb.quoteRelay(
+        params.normalizedParams.canonicalDestinationToken.address,
+        params.normalizedParams.destinationToken.address,
+      );
 
-    const details: PorticoBridge.Quote = {
-      swapAmounts,
-      relayerFee: fee,
-    };
+      const details: PorticoBridge.Quote = {
+        swapAmounts,
+        relayerFee: fee,
+      };
 
-    let destinationAmount = details.swapAmounts.minAmountFinish - fee;
+      let destinationAmount = details.swapAmounts.minAmountFinish - fee;
 
-    if (Number(destinationAmount) < 0) {
+      if (Number(destinationAmount) < 0) {
+        return {
+          success: false,
+          error: new Error(
+            `Amount too low for slippage and fee, would result in negative destination amount (${destinationAmount})`,
+          ),
+        };
+      }
+
+      return (await this.request.displayQuote(
+        {
+          sourceToken: {
+            token: params.normalizedParams.sourceToken,
+            amount: amount.units(params.normalizedParams.amount),
+          },
+          destinationToken: {
+            token: params.normalizedParams.destinationToken,
+            amount: details.swapAmounts.minAmountFinish - fee,
+          },
+          relayFee: {
+            token: params.normalizedParams.destinationToken,
+            amount: fee,
+          },
+        },
+        params,
+        details,
+      )) as Q;
+    } catch (e) {
       return {
         success: false,
-        error: new Error(
-          `Amount too low for slippage and fee, would result in negative destination amount (${destinationAmount})`,
-        ),
+        error: e as Error,
       };
     }
-
-    return (await this.request.displayQuote(
-      {
-        sourceToken: {
-          token: params.normalizedParams.sourceToken,
-          amount: amount.units(params.normalizedParams.amount),
-        },
-        destinationToken: {
-          token: params.normalizedParams.destinationToken,
-          amount: details.swapAmounts.minAmountFinish - fee,
-        },
-        relayFee: {
-          token: params.normalizedParams.destinationToken,
-          amount: fee,
-        },
-      },
-      params,
-      details,
-    )) as Q;
   }
 
   async initiate(sender: Signer<N>, quote: Q) {

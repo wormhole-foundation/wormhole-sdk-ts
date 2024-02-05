@@ -124,14 +124,21 @@ export class AutomaticCCTPRoute<N extends Network>
   }
 
   async quote(params: Vp): Promise<QR> {
-    return this.request.displayQuote(
-      await CircleTransfer.quoteTransfer(
-        this.request.fromChain,
-        this.request.toChain,
-        this.toTransferDetails(params),
-      ),
-      params,
-    );
+    try {
+      return this.request.displayQuote(
+        await CircleTransfer.quoteTransfer(
+          this.request.fromChain,
+          this.request.toChain,
+          this.toTransferDetails(params),
+        ),
+        params,
+      );
+    } catch (e) {
+      return {
+        success: false,
+        error: e as Error,
+      };
+    }
   }
 
   private async normalizeTransferParams(params: Tp): Promise<AutomaticCCTPRoute.NormalizedParams> {
