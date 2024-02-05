@@ -18,7 +18,7 @@ export async function getAlgorandSigner(
 }
 
 // AlgorandSigner implements SignOnlySender
-export class AlgorandSigner<N extends Network, C extends AlgorandChains = "Algorand">
+export class AlgorandSigner<N extends Network, C extends AlgorandChains>
   implements SignOnlySigner<N, C>
 {
   _account: Account;

@@ -24,18 +24,18 @@ import {
 } from "algosdk";
 import { AlgorandAddress, AlgorandZeroAddress } from "./address";
 import { AlgorandChain } from "./chain";
-import { AlgorandChains, AnyAlgorandAddress } from "./types";
+import { AlgorandChains, AlgorandPlatformType, AnyAlgorandAddress, _platform } from "./types";
 
 /**
  * @category Algorand
  */
 export class AlgorandPlatform<N extends Network>
-  extends PlatformContext<N, "Algorand">
-  implements StaticPlatformMethods<"Algorand", typeof AlgorandPlatform>
+  extends PlatformContext<N, AlgorandPlatformType>
+  implements StaticPlatformMethods<AlgorandPlatformType, typeof AlgorandPlatform>
 {
-  static _platform: "Algorand" = "Algorand";
+  static _platform = _platform;
 
-  constructor(network: N, _config?: ChainsConfig<N, "Algorand">) {
+  constructor(network: N, _config?: ChainsConfig<N, AlgorandPlatformType>) {
     super(network, _config ?? networkPlatformConfigs(network, AlgorandPlatform._platform));
   }
 
