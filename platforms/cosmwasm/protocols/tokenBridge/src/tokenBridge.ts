@@ -220,7 +220,7 @@ export class CosmwasmTokenBridge<N extends Network, C extends CosmwasmChains>
 
       return payload
         ? {
-            initiate_transfer_with_payload: { ...common, payload },
+            initiate_transfer_with_payload: { ...common, payload: encoding.b64.encode(payload) },
           }
         : {
             initiate_transfer: common,
