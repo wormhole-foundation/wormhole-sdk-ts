@@ -6,8 +6,6 @@ import { Route, RouteConstructor, isAutomatic } from "./route";
 import { uniqueTokens } from "./token";
 import { Receipt, Options, ValidatedTransferParams } from "./types";
 
-export type RouteSortOptions = "cost" | "speed";
-
 export class RouteResolver<N extends Network> {
   wh: Wormhole<N>;
   routeConstructors: RouteConstructor[];
@@ -110,10 +108,5 @@ export class RouteResolver<N extends Network> {
     )
       .then((availableRoutes) => availableRoutes.filter(([_, available]) => available))
       .then((availableRoutes) => availableRoutes.map(([route, _]) => route!));
-  }
-
-  async sortRoutes(routes: Route<N>[], sortBy: RouteSortOptions): Promise<Route<N>[]> {
-    // TODO: actually sort
-    return routes;
   }
 }
