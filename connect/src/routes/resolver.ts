@@ -23,7 +23,7 @@ export class RouteResolver<N extends Network> {
         try {
           return await rc.supportedSourceTokens(chain);
         } catch (e) {
-          console.error(`Failed to get supported tokens for ${rc.meta.name}: `, e);
+          console.error(`Failed to get supported source tokens for ${rc.meta.name}: `, e);
           return [];
         }
       }),
@@ -43,7 +43,7 @@ export class RouteResolver<N extends Network> {
         try {
           return await rc.supportedDestinationTokens(inputTokenId, fromChain, toChain);
         } catch (e) {
-          console.error(`Failed to get supported tokens for ${rc.meta.name}: `, e);
+          console.error(`Failed to get supported destination tokens for ${rc.meta.name}: `, e);
           return [];
         }
       }),
@@ -81,6 +81,7 @@ export class RouteResolver<N extends Network> {
 
           return protocolSupported && sourceTokenSupported && destinationTokenSupported;
         } catch (e) {
+          console.error(`failed to find routes for ${rc.meta.name}: `, e);
           return false;
         }
       }),
@@ -100,7 +101,7 @@ export class RouteResolver<N extends Network> {
             const available = isAutomatic(route) ? await route.isAvailable() : true;
             return [route, available];
           } catch (e) {
-            console.error(`Failed to get route for ${rc.meta.name}: `, e);
+            console.error(`failed to check if route is available for ${rc.meta.name}: `, e);
             return [route, false];
           }
         },
