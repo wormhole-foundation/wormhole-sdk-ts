@@ -177,6 +177,7 @@ export class AutomaticTokenBridgeRoute<N extends Network>
   async quote(params: Vp): Promise<QR> {
     try {
       let quote = await TokenTransfer.quoteTransfer(
+        this.wh,
         this.request.fromChain,
         this.request.toChain,
         this.toTransferDetails(params),

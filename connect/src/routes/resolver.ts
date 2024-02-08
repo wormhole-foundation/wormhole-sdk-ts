@@ -4,7 +4,7 @@ import { Wormhole } from "../wormhole";
 import { RouteTransferRequest } from "./request";
 import { Route, RouteConstructor, isAutomatic } from "./route";
 import { uniqueTokens } from "./token";
-import { Receipt, Options, ValidatedTransferParams } from "./types";
+import { Options, Receipt, ValidatedTransferParams } from "./types";
 
 export class RouteResolver<N extends Network> {
   wh: Wormhole<N>;

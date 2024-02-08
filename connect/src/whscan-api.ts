@@ -1,4 +1,4 @@
-import { encoding, toChainId } from "@wormhole-foundation/sdk-base";
+import { Chain, encoding, toChain, toChainId } from "@wormhole-foundation/sdk-base";
 import {
   PayloadDiscriminator,
   PayloadLiteral,
@@ -356,13 +356,22 @@ type GovernorTokenListEntry = {
   price: number;
 };
 
-export async function getGovernorTokenList(
-  rpcUrl: string,
-): Promise<GovernorTokenListEntry[] | null> {
+export type GovernedTokens = {
+  [chain in Chain]?: Record<string, number>;
+};
+
+export async function getGovernedTokens(rpcUrl: string): Promise<GovernedTokens | null> {
   const url = `${rpcUrl}/v1/governor/token_list`;
   try {
     const response = await axios.get<{ entries: GovernorTokenListEntry[] }>(url);
-    if (response.data && response.data.entries.length > 0) return response.data.entries;
+    if (response.data && response.data.entries.length > 0) {
+      return response.data.entries.reduce((acc, entry) => {
+        const chain = toChain(entry.originChainId);
+        acc[chain] = acc[chain] || {};
+        acc[chain]![entry.originAddress] = entry.price;
+        return acc;
+      }, {} as GovernedTokens);
+    }
   } catch {}
   return null;
 }
@@ -374,13 +383,31 @@ type GovernorAvailableNotionalEntry = {
   bigTransactionSize: string;
 };
 
-export async function getGovernorAvailableNotional(
-  rpcUrl: string,
-): Promise<GovernorAvailableNotionalEntry[] | null> {
+type GovernorChainLimit = {
+  // amount in usd
+  available: number;
+  // amount in usd
+  limit: number;
+  maxSize: number;
+};
+export type GovernorLimits = {
+  [chain in Chain]?: GovernorChainLimit;
+};
+
+export async function getGovernorLimits(rpcUrl: string): Promise<GovernorLimits | null> {
   const url = `${rpcUrl}/v1/governor/available_notional_by_chain`;
   try {
     const response = await axios.get<{ entries: GovernorAvailableNotionalEntry[] }>(url);
-    if (response.data && response.data.entries.length > 0) return response.data.entries;
+    if (response.data && response.data.entries.length > 0) {
+      return response.data.entries.reduce((acc, entry) => {
+        acc[toChain(entry.chainId)] = {
+          available: Number(entry.remainingAvailableNotional) / 10 ** 2,
+          limit: Number(entry.notionalLimit) / 10 ** 2,
+          maxSize: Number(entry.bigTransactionSize) / 10 ** 2,
+        };
+        return acc;
+      }, {} as GovernorLimits);
+    }
   } catch {}
   return null;
 }

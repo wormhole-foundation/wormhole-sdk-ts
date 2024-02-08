@@ -151,6 +151,15 @@ export function display(amount: Amount, precision?: number): string {
   return partial.length > 0 ? `${whole}.${partial}` : whole;
 }
 
+/**
+ * Returns the decimal amount as a number (may lose precision)
+ * @param amount An Amount
+ * @returns A number, representing the decimal amount for the Amount
+ */
+export function whole(amount: Amount): number {
+  return Number(display(amount));
+}
+
 function validateAmountInput(amount: number | string, decimals: number): void {
   if (typeof amount === "number") {
     if (!isFinite(amount)) throw new Error("Amount: invalid input. Amount must be finite");
