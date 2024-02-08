@@ -1,11 +1,4 @@
-import {
-  CONFIG,
-  Wormhole,
-  api,
-  baseUnits,
-  parseAmount,
-  signSendWait,
-} from "@wormhole-foundation/connect-sdk";
+import { CONFIG, Wormhole, amount, api, signSendWait } from "@wormhole-foundation/connect-sdk";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 
@@ -32,7 +25,7 @@ import { getStuff } from "./helpers";
     sender.address.address,
     receiver.address,
     "native",
-    baseUnits(parseAmount("0.1", snd.config.nativeTokenDecimals)),
+    amount.units(amount.parse("0.1", snd.config.nativeTokenDecimals)),
   );
 
   // Sign and send the transaction

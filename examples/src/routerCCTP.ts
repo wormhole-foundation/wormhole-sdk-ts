@@ -6,9 +6,9 @@ import {
   TransferState,
   Wormhole,
   routes,
+  circle,
 } from "@wormhole-foundation/connect-sdk";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
-import { circle } from "@wormhole-foundation/sdk-base";
 
 import { getStuff } from "./helpers";
 
@@ -72,8 +72,14 @@ import "@wormhole-foundation/connect-sdk-evm-cctp";
   }
   console.log("Validated: ", validated);
 
+  const quote = await bestRoute.quote(validated.params);
+  if (!quote.success) {
+    console.error(quote.error);
+    return;
+  }
+
   // initiate the transfer
-  const receipt = await bestRoute.initiate(sender.signer, validated.params);
+  const receipt = await bestRoute.initiate(sender.signer, quote);
   console.log("Initiated transfer with receipt: ", receipt);
 
   // track the transfer until the destination is initiated
