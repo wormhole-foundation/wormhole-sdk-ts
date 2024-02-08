@@ -6,8 +6,6 @@ import { Route, RouteConstructor, isAutomatic } from "./route";
 import { uniqueTokens } from "./token";
 import { Receipt, Options, ValidatedTransferParams } from "./types";
 
-export type RouteSortOptions = "cost" | "speed";
-
 export class RouteResolver<N extends Network> {
   wh: Wormhole<N>;
   routeConstructors: RouteConstructor[];
@@ -21,7 +19,14 @@ export class RouteResolver<N extends Network> {
   async supportedSourceTokens(chain: ChainContext<Network>): Promise<TokenId[]> {
     if (this.inputTokenList) return this.inputTokenList;
     const itl = await Promise.all(
-      this.routeConstructors.map(async (rc) => rc.supportedSourceTokens(chain)),
+      this.routeConstructors.map(async (rc) => {
+        try {
+          return await rc.supportedSourceTokens(chain);
+        } catch (e) {
+          console.error(`Failed to get supported source tokens for ${rc.meta.name}: `, e);
+          return [];
+        }
+      }),
     );
     this.inputTokenList = uniqueTokens(itl.flat());
     return this.inputTokenList!;
@@ -34,9 +39,14 @@ export class RouteResolver<N extends Network> {
   ): Promise<TokenId[]> {
     const [, inputTokenId] = resolveWrappedToken(fromChain.network, fromChain.chain, inputToken);
     const tokens = await Promise.all(
-      this.routeConstructors.map(async (rc) =>
-        rc.supportedDestinationTokens(inputTokenId, fromChain, toChain),
-      ),
+      this.routeConstructors.map(async (rc) => {
+        try {
+          return await rc.supportedDestinationTokens(inputTokenId, fromChain, toChain);
+        } catch (e) {
+          console.error(`Failed to get supported destination tokens for ${rc.meta.name}: `, e);
+          return [];
+        }
+      }),
     );
     return uniqueTokens(tokens.flat());
   }
@@ -45,30 +55,35 @@ export class RouteResolver<N extends Network> {
     // First we find all routes which support the request inputs (network, chains, and tokens)
     const supportedRoutes = await Promise.all(
       this.routeConstructors.map(async (rc) => {
-        let protocolSupported =
-          rc.supportedNetworks().includes(this.wh.network) &&
-          rc.supportedChains(this.wh.network).includes(request.to.chain) &&
-          rc.supportedChains(this.wh.network).includes(request.from.chain) &&
-          rc.isProtocolSupported(request.fromChain) &&
-          rc.isProtocolSupported(request.toChain);
+        try {
+          const protocolSupported =
+            rc.supportedNetworks().includes(this.wh.network) &&
+            rc.supportedChains(this.wh.network).includes(request.to.chain) &&
+            rc.supportedChains(this.wh.network).includes(request.from.chain) &&
+            rc.isProtocolSupported(request.fromChain) &&
+            rc.isProtocolSupported(request.toChain);
 
-        let sourceTokenSupported =
-          (await rc.supportedSourceTokens(request.fromChain)).filter((tokenId: TokenId) => {
-            return tokenId.address.toString() === request.source.id.address.toString();
-          }).length > 0;
+          const sourceTokenSupported =
+            (await rc.supportedSourceTokens(request.fromChain)).filter((tokenId: TokenId) => {
+              return tokenId.address.toString() === request.source.id.address.toString();
+            }).length > 0;
 
-        let destinationTokenSupported =
-          (
-            await rc.supportedDestinationTokens(
-              request.source.id,
-              request.fromChain,
-              request.toChain,
-            )
-          ).filter((tokenId: TokenId) => {
-            return tokenId.address.toString() === request.destination.id.address.toString();
-          }).length > 0;
+          const destinationTokenSupported =
+            (
+              await rc.supportedDestinationTokens(
+                request.source.id,
+                request.fromChain,
+                request.toChain,
+              )
+            ).filter((tokenId: TokenId) => {
+              return tokenId.address.toString() === request.destination.id.address.toString();
+            }).length > 0;
 
-        return protocolSupported && sourceTokenSupported && destinationTokenSupported;
+          return protocolSupported && sourceTokenSupported && destinationTokenSupported;
+        } catch (e) {
+          console.error(`failed to find routes for ${rc.meta.name}: `, e);
+          return false;
+        }
       }),
     ).then((routesSupported) =>
       this.routeConstructors.filter((_, index) => routesSupported[index]),
@@ -82,17 +97,17 @@ export class RouteResolver<N extends Network> {
           rc,
         ): Promise<[Route<N, Options, ValidatedTransferParams<Options>, Receipt>, boolean]> => {
           const route = new rc(this.wh, request);
-          const available = isAutomatic(route) ? await route.isAvailable() : true;
-          return [route, available];
+          try {
+            const available = isAutomatic(route) ? await route.isAvailable() : true;
+            return [route, available];
+          } catch (e) {
+            console.error(`failed to check if route is available for ${rc.meta.name}: `, e);
+            return [route, false];
+          }
         },
       ),
     )
       .then((availableRoutes) => availableRoutes.filter(([_, available]) => available))
       .then((availableRoutes) => availableRoutes.map(([route, _]) => route!));
-  }
-
-  async sortRoutes(routes: Route<N>[], sortBy: RouteSortOptions): Promise<Route<N>[]> {
-    // TODO: actually sort
-    return routes;
   }
 }
