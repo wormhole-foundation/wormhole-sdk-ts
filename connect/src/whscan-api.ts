@@ -349,3 +349,54 @@ export async function getGuardianHeartbeats(rpcUrl: string): Promise<GuardianHea
   } catch {}
   return null;
 }
+
+type GovernorTokenListEntry = {
+  originChainId: number;
+  originAddress: string;
+  price: number;
+};
+
+export async function getGovernorTokenList(
+  rpcUrl: string,
+): Promise<GovernorTokenListEntry[] | null> {
+  const url = `${rpcUrl}/v1/governor/token_list`;
+  try {
+    const response = await axios.get<{ entries: GovernorTokenListEntry[] }>(url);
+    if (response.data && response.data.entries.length > 0) return response.data.entries;
+  } catch {}
+  return null;
+}
+
+type GovernorAvailableNotionalEntry = {
+  chainId: number;
+  remainingAvailableNotional: string;
+  notionalLimit: string;
+  bigTransactionSize: string;
+};
+
+export async function getGovernorAvailableNotional(
+  rpcUrl: string,
+): Promise<GovernorAvailableNotionalEntry[] | null> {
+  const url = `${rpcUrl}/v1/governor/available_notional_by_chain`;
+  try {
+    const response = await axios.get<{ entries: GovernorAvailableNotionalEntry[] }>(url);
+    if (response.data && response.data.entries.length > 0) return response.data.entries;
+  } catch {}
+  return null;
+}
+
+// TODO: returning bool or null is asking for trouble
+export async function getIsVaaEnqueued(
+  rpcUrl: string,
+  whm: WormholeMessageId,
+): Promise<boolean | null> {
+  const { chain, emitter, sequence } = whm;
+  const chainId = toChainId(chain);
+  const emitterAddress = emitter.toUniversalAddress().toString();
+  const url = `${rpcUrl}/v1/governor/is_vaa_enqueued/${chainId}/${emitterAddress}/${sequence}`;
+  try {
+    const response = await axios.get<{ isEnqueued: boolean }>(url);
+    return response.data.isEnqueued;
+  } catch {}
+  return null;
+}
