@@ -89,7 +89,7 @@ export class EvmAddress implements Address {
 }
 
 declare global {
-  namespace WormholeNamespace {
+  namespace Wormhole {
     interface PlatformToNativeAddressMapping {
       // @ts-ignore
       Evm: EvmAddress;

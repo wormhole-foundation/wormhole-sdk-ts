@@ -14,7 +14,7 @@ import { TokenAddress, TokenId, TxHash } from "../types";
 import { UnsignedTransaction } from "../unsignedTransaction";
 
 declare global {
-  namespace WormholeNamespace {
+  namespace Wormhole {
     export interface ProtocolToPlatformMapping {
       IbcBridge: EmptyPlatformMap<Platform, "IbcBridge">;
     }

@@ -39,16 +39,16 @@ export interface Address {
 }
 
 declare global {
-  namespace WormholeNamespace {
+  namespace Wormhole {
     export interface PlatformToNativeAddressMapping {}
   }
 }
 
-export type MappedPlatforms = keyof WormholeNamespace.PlatformToNativeAddressMapping;
+export type MappedPlatforms = keyof Wormhole.PlatformToNativeAddressMapping;
 
 /** Utility type to map platform to its native address implementation */
 type GetNativeAddress<P extends Platform> = P extends MappedPlatforms
-  ? WormholeNamespace.PlatformToNativeAddressMapping[P]
+  ? Wormhole.PlatformToNativeAddressMapping[P]
   : never;
 
 /** An address that has been parsed into its Nativfe Address type */

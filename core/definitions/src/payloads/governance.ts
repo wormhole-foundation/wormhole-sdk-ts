@@ -226,7 +226,7 @@ const cctpPayloads = [
 
 // factory registration:
 declare global {
-  namespace WormholeNamespace {
+  namespace Wormhole {
     interface PayloadLiteralToLayoutMapping
       extends RegisterPayloadTypes<"WormholeCore", typeof coreBridgePayloads>,
         RegisterPayloadTypes<"TokenBridge", typeof tokenBridgePayloads>,

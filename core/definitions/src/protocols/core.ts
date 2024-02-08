@@ -7,7 +7,7 @@ import { UnsignedTransaction } from "../unsignedTransaction";
 import { VAA } from "../vaa";
 
 declare global {
-  namespace WormholeNamespace {
+  namespace Wormhole {
     export interface ProtocolToPlatformMapping {
       WormholeCore: EmptyPlatformMap<Platform, "WormholeCore">;
     }

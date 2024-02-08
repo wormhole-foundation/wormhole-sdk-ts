@@ -40,7 +40,7 @@ export const namedPayloads = [["Message", circleMessageLayout]] as const satisfi
 
 // factory registration:
 declare global {
-  namespace WormholeNamespace {
+  namespace Wormhole {
     interface PayloadLiteralToLayoutMapping
       extends RegisterPayloadTypes<"CircleBridge", typeof namedPayloads> {}
   }

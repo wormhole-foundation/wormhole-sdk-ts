@@ -63,7 +63,7 @@ export class SolanaAddress implements Address {
 // This is required to make `type Z = NativeAddress<"Solana">;` resolve to SolanaAddress
 // but outside this module it does _not_ resolve correctly
 declare global {
-  namespace WormholeNamespace {
+  namespace Wormhole {
     export interface PlatformToNativeAddressMapping {
       // @ts-ignore
       Solana: SolanaAddress;

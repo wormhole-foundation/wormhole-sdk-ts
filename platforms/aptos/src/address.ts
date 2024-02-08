@@ -88,7 +88,7 @@ export class AptosAddress implements Address {
 }
 
 declare global {
-  namespace WormholeNamespace {
+  namespace Wormhole {
     interface PlatformToNativeAddressMapping {
       // @ts-ignore
       Aptos: AptosAddress;

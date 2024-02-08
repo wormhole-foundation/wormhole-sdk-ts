@@ -84,7 +84,7 @@ export class AlgorandAddress implements Address {
 }
 
 declare global {
-  namespace WormholeNamespace {
+  namespace Wormhole {
     interface PlatformToNativeAddressMapping {
       // @ts-ignore
       Algorand: AlgorandAddress;

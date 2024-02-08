@@ -10,7 +10,7 @@ import { ProtocolPayload, ProtocolVAA, payloadDiscriminator } from "../vaa";
 export const ErrNotWrapped = (token: string) => new Error(`Token ${token} is not a wrapped asset`);
 
 declare global {
-  namespace WormholeNamespace {
+  namespace Wormhole {
     export interface ProtocolToPlatformMapping {
       TokenBridge: EmptyPlatformMap<Platform, TokenBridge.ProtocolName>;
       AutomaticTokenBridge: EmptyPlatformMap<Platform, AutomaticTokenBridge.ProtocolName>;

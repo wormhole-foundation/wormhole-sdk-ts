@@ -15,7 +15,7 @@ import { UnsignedTransaction } from "../unsignedTransaction";
 import { ProtocolVAA } from "../vaa";
 
 declare global {
-  namespace WormholeNamespace {
+  namespace Wormhole {
     export interface ProtocolToPlatformMapping {
       PorticoBridge: EmptyPlatformMap<Platform, PorticoBridge.ProtocolName>;
     }
