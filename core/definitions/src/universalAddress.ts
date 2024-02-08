@@ -22,7 +22,7 @@ export class UniversalAddress implements Address {
   static readonly byteSize = 32;
   static readonly type: string = "Universal";
 
-  private readonly address: Uint8Array;
+  readonly address: Uint8Array;
 
   constructor(address: string | Uint8Array, format: PlatformAddressFormat = "hex") {
     this.address =

@@ -97,14 +97,14 @@ export class CosmwasmAddress implements Address {
   public readonly platform = CosmwasmPlatform._platform;
 
   // the actual bytes of the address
-  private readonly address: Uint8Array;
+  readonly address: Uint8Array;
 
   // The domain is the prefix for the address, like "cosmos" or "ibc"
-  private readonly domain?: string;
+  readonly domain?: string;
   // The denom is the token name, like "uatom" or "usdc"
-  private readonly denom?: string;
+  readonly denom?: string;
   // The denomType is "native", "ibc", or "factory"
-  private readonly denomType?: string;
+  readonly denomType?: string;
 
   constructor(address: AnyCosmwasmAddress) {
     if (CosmwasmAddress.instanceof(address)) {
@@ -237,7 +237,6 @@ export class CosmwasmAddress implements Address {
 declare global {
   namespace Wormhole {
     interface PlatformToNativeAddressMapping {
-      // @ts-ignore
       Cosmwasm: CosmwasmAddress;
     }
   }

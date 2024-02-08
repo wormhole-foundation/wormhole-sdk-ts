@@ -16,7 +16,7 @@ export class EvmAddress implements Address {
   readonly type: string = 'Native';
 
   // stored as checksum address
-  private readonly address: string;
+  readonly address: string;
 
   constructor(address: AnyEvmAddress) {
     if (EvmAddress.instanceof(address)) {
@@ -91,7 +91,6 @@ export class EvmAddress implements Address {
 declare global {
   namespace Wormhole {
     interface PlatformToNativeAddressMapping {
-      // @ts-ignore
       Evm: EvmAddress;
     }
   }

@@ -17,7 +17,7 @@ export class SolanaAddress implements Address {
 
   readonly type: string = 'Native';
 
-  private readonly address: PublicKey;
+  readonly address: PublicKey;
 
   constructor(address: AnySolanaAddress) {
     if (SolanaAddress.instanceof(address)) {
@@ -65,7 +65,6 @@ export class SolanaAddress implements Address {
 declare global {
   namespace Wormhole {
     export interface PlatformToNativeAddressMapping {
-      // @ts-ignore
       Solana: SolanaAddress;
     }
   }
