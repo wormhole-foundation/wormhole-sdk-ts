@@ -27,7 +27,7 @@ export class AptosAddress implements Address {
   public readonly platform: Platform = AptosPlatform._platform;
 
   // Full 32 bytes of Address
-  private readonly address: Uint8Array;
+  readonly address: Uint8Array;
   // Optional module and contract name
   private readonly module: string | undefined;
 

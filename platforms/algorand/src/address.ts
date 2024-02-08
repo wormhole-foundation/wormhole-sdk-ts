@@ -21,7 +21,7 @@ export class AlgorandAddress implements Address {
 
   readonly type: string = "Native";
 
-  private readonly address: Uint8Array;
+  readonly address: Uint8Array;
 
   constructor(address: AnyAlgorandAddress) {
     if (AlgorandAddress.instanceof(address)) {
@@ -86,7 +86,6 @@ export class AlgorandAddress implements Address {
 declare global {
   namespace Wormhole {
     interface PlatformToNativeAddressMapping {
-      // @ts-ignore
       Algorand: AlgorandAddress;
     }
   }
