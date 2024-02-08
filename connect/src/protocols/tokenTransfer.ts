@@ -17,6 +17,7 @@ import {
   TxHash,
   UnsignedTransaction,
   WormholeMessageId,
+  canonicalAddress,
   deserialize,
   isNative,
   isTokenId,
@@ -42,6 +43,7 @@ import {
   isSourceFinalized,
   isSourceInitiated,
 } from "../types";
+import { getGovernedTokens, getGovernorLimits } from "../whscan-api";
 import { Wormhole } from "../wormhole";
 import { WormholeTransfer } from "./wormholeTransfer";
 
@@ -436,21 +438,49 @@ export class TokenTransfer<N extends Network = Network>
   }
 
   static async quoteTransfer<N extends Network>(
+    wh: Wormhole<N>,
     srcChain: ChainContext<N, Chain>,
     dstChain: ChainContext<N, Chain>,
     transfer: TokenTransferDetails,
   ): Promise<TransferQuote> {
-    const dstToken = await this.lookupDestinationToken(srcChain, dstChain, transfer.token);
     const srcToken = isNative(transfer.token.address)
       ? await srcChain.getNativeWrappedTokenId()
       : transfer.token;
 
     const srcDecimals = await srcChain.getDecimals(srcToken.address);
-    const dstDecimals = await dstChain.getDecimals(dstToken.address);
-
     const srcAmount = amount.fromBaseUnits(transfer.amount, srcDecimals);
-
     const srcAmountTruncated = amount.truncate(srcAmount, TOKEN_BRIDGE_MAX_DECIMALS);
+    const srcTokenAddress = canonicalAddress(srcToken);
+
+    // Ensure the transfer would not violate governor transfer limits
+    const [tokens, limits] = await Promise.all([
+      getGovernedTokens(wh.config.api),
+      getGovernorLimits(wh.config.api),
+    ]);
+    if (
+      limits !== null &&
+      srcChain.chain in limits &&
+      tokens !== null &&
+      srcChain.chain in tokens &&
+      srcTokenAddress in tokens[srcChain.chain]!
+    ) {
+      const limit = limits[srcChain.chain]!;
+      const tokenPrice = tokens[srcChain.chain]![srcTokenAddress]!;
+      const notionalTransferAmt = tokenPrice * amount.whole(srcAmountTruncated);
+
+      if (notionalTransferAmt > limit.maxSize)
+        throw new Error(
+          `Transfer amount exceeds maximum size: ${notionalTransferAmt} > ${limit.maxSize}`,
+        );
+
+      if (notionalTransferAmt > limit.available)
+        throw new Error(
+          `Transfer amount exceeds available governed amount: ${notionalTransferAmt} > ${limit.available}`,
+        );
+    }
+
+    const dstToken = await this.lookupDestinationToken(srcChain, dstChain, transfer.token);
+    const dstDecimals = await dstChain.getDecimals(dstToken.address);
     const dstAmountReceivable = amount.scale(srcAmountTruncated, dstDecimals);
 
     if (!transfer.automatic) {
