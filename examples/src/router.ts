@@ -1,12 +1,13 @@
 import {
+  Network,
+  Signer,
+  TransferState,
+  Wormhole,
   amount,
   canonicalAddress,
   isAttested,
   isCompleted,
   routes,
-  Signer,
-  TransferState,
-  Wormhole,
 } from "@wormhole-foundation/connect-sdk";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
@@ -16,7 +17,6 @@ import { getStuff } from "./helpers";
 import "@wormhole-foundation/connect-sdk-evm-portico";
 import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
 import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
-import { Network } from "@wormhole-foundation/sdk-base/src";
 
 (async function () {
   // Setup

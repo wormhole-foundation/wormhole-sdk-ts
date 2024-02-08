@@ -6,9 +6,9 @@ import {
   TransferState,
   Wormhole,
   routes,
+  circle,
 } from "@wormhole-foundation/connect-sdk";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
-import { circle } from "@wormhole-foundation/sdk-base";
 
 import { getStuff } from "./helpers";
 
