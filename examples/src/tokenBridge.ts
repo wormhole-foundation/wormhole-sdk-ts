@@ -1,25 +1,23 @@
 import {
   Chain,
   Network,
-  Platform,
   TokenId,
   TokenTransfer,
   Wormhole,
+  amount,
   isTokenId,
-  baseUnits,
-  parseAmount,
 } from "@wormhole-foundation/connect-sdk";
 import { TransferStuff, getStuff, waitLog } from "./helpers";
 
 // Import the platform-specific packages
+import { AlgorandPlatform } from "@wormhole-foundation/connect-sdk-algorand";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
-import { AlgorandPlatform } from "@wormhole-foundation/connect-sdk-algorand";
 
 // Register the protocols
+import "@wormhole-foundation/connect-sdk-algorand-tokenbridge";
 import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
 import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
-import "@wormhole-foundation/connect-sdk-algorand-tokenbridge";
 
 // Use .env.example as a template for your .env file and populate it with secrets
 // for funded accounts on the relevant chain+network combos to run the example
@@ -50,7 +48,7 @@ import "@wormhole-foundation/connect-sdk-algorand-tokenbridge";
   // Note: The Token bridge will dedust past 8 decimals
   // this means any amount specified past that point will be returned
   // to the caller
-  const amount = "0.001";
+  const amt = "0.001";
 
   // With automatic set to true, perform an automatic transfer. This will invoke a relayer
   // contract intermediary that knows to pick up the transfers
@@ -90,12 +88,12 @@ import "@wormhole-foundation/connect-sdk-algorand-tokenbridge";
         wh,
         {
           token,
-          amount: baseUnits(parseAmount(amount, decimals)),
+          amount: amount.units(amount.parse(amt, decimals)),
           source,
           destination,
           delivery: {
             automatic,
-            nativeGas: nativeGas ? baseUnits(parseAmount(nativeGas, decimals)) : undefined,
+            nativeGas: nativeGas ? amount.units(amount.parse(nativeGas, decimals)) : undefined,
           },
         },
         roundTrip,
@@ -116,8 +114,8 @@ async function tokenTransfer<N extends Network>(
   route: {
     token: TokenId;
     amount: bigint;
-    source: TransferStuff<N, Platform, Chain>;
-    destination: TransferStuff<N, Platform, Chain>;
+    source: TransferStuff<N, Chain>;
+    destination: TransferStuff<N, Chain>;
     delivery?: {
       automatic: boolean;
       nativeGas?: bigint;

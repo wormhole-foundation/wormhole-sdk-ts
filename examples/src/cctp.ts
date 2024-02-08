@@ -1,12 +1,11 @@
 import {
+  Chain,
   CircleTransfer,
   Network,
-  Platform,
   Signer,
   TransactionId,
   Wormhole,
-  baseUnits,
-  parseAmount,
+  amount,
 } from "@wormhole-foundation/connect-sdk";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
@@ -38,7 +37,7 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
   const destination = await getStuff(rcvChain);
 
   // 6 decimals for USDC (except for bsc, so check decimals before using this)
-  const amount = baseUnits(parseAmount("0.2", 6));
+  const amt = amount.units(amount.parse("0.2", 6));
 
   // Choose whether or not to have the attestation delivered for you
   const automatic = true;
@@ -48,10 +47,10 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
   // so that they may pay for subsequent transactions
   // The amount specified here is denominated in the token being transferred (USDC here)
   const _nativeGasAmt = "0.01";
-  const nativeGas = automatic ? baseUnits(parseAmount(_nativeGasAmt, 6)) : 0n;
+  const nativeGas = automatic ? amount.units(amount.parse(_nativeGasAmt, 6)) : 0n;
 
   await cctpTransfer(wh, source, destination, {
-    amount,
+    amount: amt,
     automatic,
     nativeGas,
   });
@@ -72,8 +71,8 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
 
 async function cctpTransfer<N extends Network>(
   wh: Wormhole<N>,
-  src: TransferStuff<N, Platform>,
-  dst: TransferStuff<N, Platform>,
+  src: TransferStuff<N, Chain>,
+  dst: TransferStuff<N, Chain>,
   req: {
     amount: bigint;
     automatic: boolean;

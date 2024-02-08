@@ -74,20 +74,22 @@ import { Network } from "@wormhole-foundation/sdk-base/src";
   if (!validated.valid) throw validated.error;
 
   const quote = await bestRoute.quote(validated.params);
+  if (!quote.success) throw quote.error;
+
   console.log("Best route quote: ", quote);
 
   if (quote.destinationNativeGas) {
     console.log("Destination native gas: ", amount.display(quote.destinationNativeGas, 4));
   }
 
-  await execute(bestRoute, sender.signer, receiver.signer, validated.params);
+  await execute(bestRoute, sender.signer, receiver.signer, quote);
 })();
 
 async function execute<N extends Network>(
   route: routes.Route<N>,
   sender: Signer<N>,
   receiver: Signer<N>,
-  validated: routes.ValidatedTransferParams<routes.Options>,
+  validated: routes.Quote<routes.Options>,
 ) {
   // initiate the transfer
   const receipt = await route.initiate(sender, validated);
