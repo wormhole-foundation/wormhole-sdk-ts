@@ -153,7 +153,12 @@ export class CosmwasmEvmSigner<N extends Network, C extends CosmwasmChains>
         accountNumber,
         chainId: this._chainId,
         memo: transaction.memo,
-        fee: { ...transaction.fee },
+        fee: {
+          ...transaction.fee,
+          amount: transaction.fee.amount.map((c) => {
+            return { ...c, amount: "160000000000000" };
+          }),
+        },
       });
       // @ts-ignore -- sign wants a `Buffer` but we give it uint8array
       txRaw.signatures = [await this.key.sign(signBytes)];

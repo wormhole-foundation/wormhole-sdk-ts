@@ -16,7 +16,6 @@ import {
   IbcTransferInfo,
   Signer,
   TokenBridge,
-  TokenId,
   TransactionId,
   TxHash,
   UniversalAddress,
@@ -247,26 +246,18 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
 
   // Recover transfer info the first step in the transfer
   private static ibcTransfertoGatewayTransfer(xfer: IbcTransferInfo): GatewayTransferDetails {
-    const token = {
-      chain: xfer.id.chain,
-      address: toNative(xfer.id.chain, xfer.data.denom),
-    } as TokenId;
+    const token = Wormhole.tokenId(xfer.id.chain, xfer.data.denom);
 
     const msg = toGatewayMsg(xfer.data.memo);
     const destChain = toChain(msg.chain);
+    const _recip = encoding.b64.decode(msg.recipient);
 
-    const _recip = encoding.b64.valid(msg.recipient)
-      ? encoding.bytes.decode(encoding.b64.decode(msg.recipient))
-      : msg.recipient;
     const recipient: ChainAddress =
       chainToPlatform(destChain) === "Cosmwasm"
-        ? {
-            chain: destChain,
-            address: toNative(destChain, _recip.toString()),
-          }
+        ? Wormhole.chainAddress(destChain, encoding.bytes.decode(_recip))
         : {
             chain: destChain,
-            address: toNative(destChain, new UniversalAddress(_recip)),
+            address: new UniversalAddress(_recip).toNative(destChain),
           };
 
     const payload = msg.payload ? encoding.bytes.encode(msg.payload) : undefined;

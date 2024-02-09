@@ -95,7 +95,6 @@ import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
         leg3,
       );
   console.log("Route 2 (Cosmos -> Cosmos): ", route2);
-  fakeIt = false;
 
   // Transfer Gateway factory token through gateway back to source chain
   let route3 = fakeIt
@@ -103,7 +102,7 @@ import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
         wh,
         {
           chain: cosmos2.chain,
-          txid: "2DD7887DB74E47753E4A05DC15D76252FA3BA073B3BF0D9402ED5C313FF773EE",
+          txid: "10A0426BA956CAACCDAA933DD84283F42C287D7095356C5F31C76221C36FC9FF",
         },
         600_000,
       )
