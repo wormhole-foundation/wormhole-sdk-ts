@@ -159,6 +159,14 @@ export function display(amount: Amount, precision?: number): string {
 export function whole(amount: Amount): number {
   return Number(display(amount));
 }
+/**
+ *
+ * @param amount
+ * @param decimals
+ */
+export function fmt(amount: bigint, decimals: number): string {
+  return display(fromBaseUnits(amount, decimals));
+}
 
 function validateAmountInput(amount: number | string, decimals: number): void {
   if (typeof amount === "number") {
