@@ -2,9 +2,7 @@ import { CosmWasmClient, SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate
 import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
 import {
   ChainRestAuthApi,
-  DEFAULT_STD_FEE,
-  MsgExecuteContract,
-  Msgs,
+  MsgTransfer,
   PrivateKey,
   TxClient,
   createTransaction,
@@ -133,24 +131,29 @@ export class CosmwasmEvmSigner<N extends Network, C extends CosmwasmChains>
       const { description, transaction } = tx as CosmwasmUnsignedTransaction<N, C>;
       console.log(`Signing ${description} for ${this.address()}`);
 
-      // need to set contractAddress and msg
-      const message: Msgs[] = transaction.msgs.map((m) => {
-        const f = {
-          ...m.value,
-          msg: JSON.parse(encoding.bytes.decode(m.value.msg)),
-          contractAddress: m.value.contract,
-        };
-        return new MsgExecuteContract(f);
-      });
+      console.log(transaction);
+      console.log(transaction.msgs);
+      console.log(transaction.msgs[0]!.value.token);
 
       const { signBytes, txRaw } = createTransaction({
-        message,
+        message: transaction.msgs.map((eo) =>
+          MsgTransfer.fromJSON({
+            port: eo.value.sourcePort,
+            amount: eo.value.token,
+            memo: eo.value.memo,
+            sender: eo.value.sender,
+            receiver: eo.value.receiver,
+            channelId: eo.value.sourceChannel,
+            timeout: eo.value.timeoutTimestamp,
+            height: eo.value.timeoutHeight,
+          }),
+        ),
         pubKey,
         sequence,
         accountNumber,
         chainId: this._chainId,
         memo: transaction.memo,
-        fee: DEFAULT_STD_FEE,
+        fee: { ...transaction.fee },
       });
       // @ts-ignore -- sign wants a `Buffer` but we give it uint8array
       txRaw.signatures = [await this.key.sign(signBytes)];

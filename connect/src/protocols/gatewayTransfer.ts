@@ -236,8 +236,8 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
     if (chainToPlatform(chain) === "Cosmwasm") {
       // Get the ibc tx info from the origin
       const ibcBridge = await originChain.getIbcBridge();
-      const xfer = await ibcBridge.lookupTransferFromTx(from.txid);
-      return GatewayTransfer.ibcTransfertoGatewayTransfer(xfer);
+      const [xfer] = await ibcBridge.lookupTransferFromTx(from.txid);
+      return GatewayTransfer.ibcTransfertoGatewayTransfer(xfer!);
     }
 
     // Otherwise grab the vaa details from the origin tx
@@ -397,9 +397,15 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
       } else {
         // Otherwise we need to get the transfer on the destination chain
         const dstChain = this.wh.getChain(this.transfer.to.chain);
+
+        const gatewayIbcTransfers = await this.gatewayIbcBridge.lookupTransferFromIbcMsgId(
+          xfer!.id,
+        );
+        const toDestChainIbcTransfer = gatewayIbcTransfers[1]!;
+
         const dstIbcBridge = await dstChain.getIbcBridge();
-        const ibcXfer = await dstIbcBridge.lookupTransferFromIbcMsgId(xfer!.id);
-        this.ibcTransfers.push(ibcXfer);
+        const [ibcXfer] = await dstIbcBridge.lookupTransferFromIbcMsgId(toDestChainIbcTransfer.id);
+        this.ibcTransfers.push(ibcXfer!);
       }
     } else {
       // Otherwise, we're coming from outside cosmos and
@@ -436,26 +442,27 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
       // there is a possibility of dupe messages being returned
       // using a nonce should help
       const wcTransferTask = () => fetchIbcXfer(this.gatewayIbcBridge, this.msg);
-      const wcTransfer = await retry<IbcTransferInfo>(
+      const wcTransfers = await retry<IbcTransferInfo[]>(
         wcTransferTask,
         vaaRedeemedRetryInterval,
         timeout,
         "Gateway:IbcBridge:WormchainTransferInitiated",
       );
-      if (!wcTransfer) throw new Error("Wormchain transfer not found after retries exhausted");
+      if (!wcTransfers) throw new Error("Wormchain transfer not found after retries exhausted");
 
-      if (wcTransfer.pending) {
+      const [wcTransfer] = wcTransfers;
+      if (wcTransfer!.pending) {
         // TODO: check if pending and bail(?) if so
       }
 
-      this.ibcTransfers.push(wcTransfer);
+      this.ibcTransfers.push(wcTransfer!);
 
       // Finally, get the IBC transfer to the destination chain
       const destChain = this.wh.getChain(this.transfer.to.chain);
       const destIbcBridge = await destChain.getIbcBridge();
       //@ts-ignore
       const destTransferTask = () => fetchIbcXfer(destIbcBridge, wcTransfer.id);
-      const destTransfer = await retry<IbcTransferInfo>(
+      const destTransfer = await retry<IbcTransferInfo[]>(
         destTransferTask,
         transferCompleteInterval,
         timeout,
@@ -464,10 +471,10 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
       if (!destTransfer)
         throw new Error(
           "IBC Transfer into destination not found after retries exhausted" +
-            JSON.stringify(wcTransfer.id),
+            JSON.stringify(wcTransfer),
         );
 
-      this.ibcTransfers.push(destTransfer);
+      this.ibcTransfers.push(destTransfer[0]!);
     }
 
     // Add transfers to attestations we return

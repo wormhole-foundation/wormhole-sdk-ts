@@ -45,7 +45,7 @@ import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
   // Grab chain Contexts for each leg of our journey
   const external = wh.getChain("Solana");
   const cosmos1 = wh.getChain("Osmosis");
-  const cosmos2 = wh.getChain("Cosmoshub");
+  const cosmos2 = wh.getChain("Injective");
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
@@ -83,7 +83,7 @@ import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
         wh,
         {
           chain: cosmos1.chain,
-          txid: "6EE401DE18DB33C1ED645EDB4E8D14994020BE4356F605490DAE2F8227DA6528",
+          txid: "EBC56661860D390C2CD211888FB0BDA2D16850A07881ACC4941E88421A2491AF",
         },
         600_000,
       )

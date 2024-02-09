@@ -78,7 +78,7 @@ export async function isTokenBridgeVaaRedeemed<
 export async function fetchIbcXfer<N extends Network, C extends PlatformToChains<"Cosmwasm">>(
   wcIbc: IbcBridge<N, C>,
   msg: TxHash | TransactionId | IbcMessageId | GatewayTransferMsg | GatewayTransferWithPayloadMsg,
-): Promise<IbcTransferInfo | null> {
+): Promise<IbcTransferInfo[] | null> {
   try {
     if (isIbcMessageId(msg)) return await wcIbc.lookupTransferFromIbcMsgId(msg);
     else if (isTransactionIdentifier(msg)) return await wcIbc.lookupTransferFromTx(msg.txid);

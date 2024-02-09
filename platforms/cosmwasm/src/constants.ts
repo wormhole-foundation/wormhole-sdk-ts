@@ -130,11 +130,13 @@ const gatewayConnections = [
           Osmosis: "channel-3",
           Evmos: "channel-5",
           Kujira: "channel-9",
+          Injective: "channel-13",
         },
       ],
       ["Osmosis", { Wormchain: "channel-2186" }],
       ["Evmos", { Wormchain: "channel-94" }],
       ["Kujira", { Wormchain: "channel-113" }],
+      ["Injective", { Wormchain: "channel-183" }],
     ],
   ],
   [
