@@ -10,14 +10,14 @@ import {
 // Import the platform specific packages
 import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
+import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 
 import { TransferStuff, getStuff } from "./helpers";
 
-import "@wormhole-foundation/connect-sdk-cosmwasm-core";
+import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
+import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 import "@wormhole-foundation/connect-sdk-cosmwasm-ibc";
 import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
-import "@wormhole-foundation/connect-sdk-evm-core";
-import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
 
 // We're going to transfer into, around, and out of the Cosmos ecosystem
 // First on Avalanche, transparently through gateway and over IBC to Cosmoshub
@@ -37,13 +37,13 @@ import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
 (async function () {
   // init Wormhole object, passing config for which network
   // to use (e.g. Mainnet/Testnet) and what Platforms to support
-  const wh = new Wormhole("Testnet", [EvmPlatform, CosmwasmPlatform]);
+  const wh = new Wormhole("Mainnet", [EvmPlatform, SolanaPlatform, CosmwasmPlatform]);
 
   // Pick up where you left off by updating the txids as you go
   let fakeIt = false;
 
   // Grab chain Contexts for each leg of our journey
-  const external = wh.getChain("Avalanche");
+  const external = wh.getChain("Solana");
   const cosmos1 = wh.getChain("Osmosis");
   const cosmos2 = wh.getChain("Cosmoshub");
 
@@ -56,15 +56,16 @@ import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
   // we'll use the native token on the source chain
 
   const token: TokenId = Wormhole.tokenId(external.chain, "native");
-  const amt = amount.units(amount.parse("0.01", external.config.nativeTokenDecimals));
+  const amt = amount.units(amount.parse("0.001", external.config.nativeTokenDecimals));
 
   // Transfer native token from source chain, through gateway, to a cosmos chain
+  fakeIt = true;
   let route1 = fakeIt
     ? await GatewayTransfer.from(
         wh,
         {
           chain: external.chain,
-          txid: "0xb743ba030d731fe4a02a4f56cb3719fb83e8590f108ed78df67bfc7fdd4b61d6",
+          txid: "n84EkbduFpGT5H7hPQUfDM6KB54UroAs2BnowSCsX48DrZtDeNa1j1PUkAKx9TLjMLg9GLqGkFrvy9TQMnJYQdb",
         },
         600_000,
       )
@@ -82,7 +83,7 @@ import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
         wh,
         {
           chain: cosmos1.chain,
-          txid: "E016E2C7AB5F38925AFE3696598CD880B9E801519D4BD348D3F48B7ECD1FC129",
+          txid: "6EE401DE18DB33C1ED645EDB4E8D14994020BE4356F605490DAE2F8227DA6528",
         },
         600_000,
       )
@@ -94,6 +95,7 @@ import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
         leg3,
       );
   console.log("Route 2 (Cosmos -> Cosmos): ", route2);
+  fakeIt = false;
 
   // Transfer Gateway factory token through gateway back to source chain
   let route3 = fakeIt

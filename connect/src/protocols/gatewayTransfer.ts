@@ -379,6 +379,8 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
         // If we're leaving cosmos, grab the VAA from the gateway
         // now find the corresponding wormchain transaction given the ibcTransfer info
         const retryInterval = 5000;
+        console.log(this.ibcTransfers);
+        console.log(xfer);
         const task = () => this.gatewayIbcBridge.lookupMessageFromIbcMsgId(xfer!.id);
         const whm = await retry<WormholeMessageId>(
           task,

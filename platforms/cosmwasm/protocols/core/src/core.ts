@@ -73,6 +73,10 @@ export class CosmwasmWormholeCore<N extends Network, C extends CosmwasmChains>
 
   // TODO: make consts
   static parseWormholeMessage(chain: Chain, coreAddress: string, tx: IndexedTx): WormholeMessageId {
+    for (const ev of tx.events) {
+      console.log(ev.type, ev.attributes);
+    }
+
     const events = tx.events.filter(
       (ev) =>
         ev.type === "wasm" &&

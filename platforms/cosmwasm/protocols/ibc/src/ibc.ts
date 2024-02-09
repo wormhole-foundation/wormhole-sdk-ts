@@ -70,7 +70,7 @@ export class CosmwasmIbcBridge<N extends Network, C extends CosmwasmChains>
     if (!networkChainToChannels.has(network, chain))
       throw new Error("Unsupported IBC Chain, no channels available: " + chain);
 
-    this.gatewayAddress = this.contracts.gateway!;
+    this.gatewayAddress = Gateway.gatewayAddress(network);
 
     const channels: IbcChannels = networkChainToChannels.get(network, chain) ?? {};
 
@@ -211,10 +211,6 @@ export class CosmwasmIbcBridge<N extends Network, C extends CosmwasmChains>
     ]);
 
     if (txResults.length === 0) return null;
-    //throw new Error(
-    //  `Found no transactions for message: ` + JSON.stringify(msg),
-    //);
-
     if (txResults.length > 1)
       console.error(`Expected 1 transaction, got ${txResults.length} found for IbcMsgid: ${msg}`);
 
@@ -326,11 +322,11 @@ export class CosmwasmIbcBridge<N extends Network, C extends CosmwasmChains>
         );
         xfer.pending = true;
       } catch (e) {
-        // TODO: catch http errors unrelated to no commitment in flight
-        // otherwise we might lie about pending = false
+        const notPending = (e as Error).message.includes(
+          "packet commitment hash not found: key not found",
+        );
+        if (!notPending) throw e;
       }
-
-      // TODO other states of packet in-flight-ness?
 
       transfers.push(xfer);
     }
