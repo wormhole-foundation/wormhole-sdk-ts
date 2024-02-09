@@ -1,4 +1,4 @@
-import { Chain, encoding, toChain, toChainId } from "@wormhole-foundation/sdk-base";
+import { Chain, amount, encoding, toChain, toChainId } from "@wormhole-foundation/sdk-base";
 import {
   PayloadDiscriminator,
   PayloadLiteral,
@@ -353,10 +353,12 @@ export async function getGuardianHeartbeats(rpcUrl: string): Promise<GuardianHea
 type GovernorTokenListEntry = {
   originChainId: number;
   originAddress: string;
+  // price for 1 whole token
   price: number;
 };
 
 export type GovernedTokens = {
+  // chain => address => price
   [chain in Chain]?: Record<string, number>;
 };
 
@@ -383,12 +385,13 @@ type GovernorAvailableNotionalEntry = {
   bigTransactionSize: string;
 };
 
-type GovernorChainLimit = {
+export type GovernorChainLimit = {
   // amount in usd
   available: number;
   // amount in usd
   limit: number;
-  maxSize: number;
+  // amount in usd
+  maxSize?: number;
 };
 export type GovernorLimits = {
   [chain in Chain]?: GovernorChainLimit;
@@ -399,11 +402,18 @@ export async function getGovernorLimits(rpcUrl: string): Promise<GovernorLimits 
   try {
     const response = await axios.get<{ entries: GovernorAvailableNotionalEntry[] }>(url);
     if (response.data && response.data.entries.length > 0) {
+      console.log(response);
       return response.data.entries.reduce((acc, entry) => {
+        // if 0 consider it no limit
+        const maxSize =
+          entry.bigTransactionSize === "0"
+            ? undefined
+            : amount.whole(amount.parse(entry.bigTransactionSize, 2));
+
         acc[toChain(entry.chainId)] = {
-          available: Number(entry.remainingAvailableNotional) / 10 ** 2,
-          limit: Number(entry.notionalLimit) / 10 ** 2,
-          maxSize: Number(entry.bigTransactionSize) / 10 ** 2,
+          available: amount.whole(amount.parse(entry.remainingAvailableNotional, 2)),
+          limit: amount.whole(amount.parse(entry.notionalLimit, 2)),
+          maxSize,
         };
         return acc;
       }, {} as GovernorLimits);

@@ -17,7 +17,6 @@ import {
   TxHash,
   UnsignedTransaction,
   WormholeMessageId,
-  canonicalAddress,
   deserialize,
   isNative,
   isTokenId,
@@ -27,6 +26,7 @@ import {
   serialize,
   toNative,
   toUniversal,
+  universalAddress,
 } from "@wormhole-foundation/sdk-definitions";
 import { signSendWait } from "../common";
 import { DEFAULT_TASK_TIMEOUT } from "../config";
@@ -450,25 +450,28 @@ export class TokenTransfer<N extends Network = Network>
     const srcDecimals = await srcChain.getDecimals(srcToken.address);
     const srcAmount = amount.fromBaseUnits(transfer.amount, srcDecimals);
     const srcAmountTruncated = amount.truncate(srcAmount, TOKEN_BRIDGE_MAX_DECIMALS);
-    const srcTokenAddress = canonicalAddress(srcToken);
+    const srcTokenUniversalAddress = universalAddress(srcToken);
 
     // Ensure the transfer would not violate governor transfer limits
     const [tokens, limits] = await Promise.all([
       getGovernedTokens(wh.config.api),
       getGovernorLimits(wh.config.api),
     ]);
+
+    console.log(tokens);
+    console.log(srcTokenUniversalAddress);
     if (
       limits !== null &&
       srcChain.chain in limits &&
       tokens !== null &&
       srcChain.chain in tokens &&
-      srcTokenAddress in tokens[srcChain.chain]!
+      srcTokenUniversalAddress in tokens[srcChain.chain]!
     ) {
       const limit = limits[srcChain.chain]!;
-      const tokenPrice = tokens[srcChain.chain]![srcTokenAddress]!;
+      const tokenPrice = tokens[srcChain.chain]![srcTokenUniversalAddress]!;
       const notionalTransferAmt = tokenPrice * amount.whole(srcAmountTruncated);
 
-      if (notionalTransferAmt > limit.maxSize)
+      if (limit.maxSize && notionalTransferAmt > limit.maxSize)
         throw new Error(
           `Transfer amount exceeds maximum size: ${notionalTransferAmt} > ${limit.maxSize}`,
         );
@@ -501,7 +504,7 @@ export class TokenTransfer<N extends Network = Network>
       dstDecimals,
     );
 
-    let dstNativeGasAmountRequested = transfer.nativeGas ?? 0n;
+    const dstNativeGasAmountRequested = transfer.nativeGas ?? 0n;
 
     // The expected destination gas can be pulled from the destination token bridge
     let destinationNativeGas = 0n;
@@ -510,17 +513,21 @@ export class TokenTransfer<N extends Network = Network>
 
       // There is a limit applied to the amount of the source
       // token that may be swapped for native gas on the destination
-      const maxNativeAmountIn = await dtb.maxSwapAmount(dstToken.address);
-      dstNativeGasAmountRequested =
-        dstNativeGasAmountRequested > maxNativeAmountIn
-          ? maxNativeAmountIn
-          : dstNativeGasAmountRequested;
+      const [maxNativeAmountIn, _destinationNativeGas] = await Promise.all([
+        dtb.maxSwapAmount(dstToken.address),
+        // Get the actual amount we should receive
+        dtb.nativeTokenAmount(dstToken.address, dstNativeGasAmountRequested),
+      ]);
 
-      // Get the actual amount we should receive
-      destinationNativeGas = await dtb.nativeTokenAmount(
-        dstToken.address,
-        dstNativeGasAmountRequested,
-      );
+      if (dstNativeGasAmountRequested > maxNativeAmountIn)
+        throw new Error(
+          `Native gas amount exceeds maximum swap amount: ${amount.fmt(
+            dstNativeGasAmountRequested,
+            dstDecimals,
+          )}>${amount.fmt(maxNativeAmountIn, dstDecimals)}`,
+        );
+
+      destinationNativeGas = _destinationNativeGas;
     }
 
     const destAmountLessFee =

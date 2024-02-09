@@ -1,14 +1,4 @@
-import {
-  Network,
-  Signer,
-  TransferState,
-  Wormhole,
-  amount,
-  canonicalAddress,
-  isAttested,
-  isCompleted,
-  routes,
-} from "@wormhole-foundation/connect-sdk";
+import { Wormhole, canonicalAddress, routes } from "@wormhole-foundation/connect-sdk";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 
@@ -20,7 +10,7 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 
 (async function () {
   // Setup
-  const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform]);
+  const wh = new Wormhole("Mainnet", [EvmPlatform, SolanaPlatform]);
 
   // get signers from local config
   const sendChain = wh.getChain("Solana");
@@ -67,58 +57,34 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   console.log("Selected: ", bestRoute);
 
   console.log("This route offers the following default options", bestRoute.getDefaultOptions());
-  // Create the transfer params for this request
   // Specify the amount as a decimal string
-  const transferParams = { amount: "0.2", options: { nativeGas: 0.1 } };
-  let validated = await bestRoute.validate(transferParams);
-  if (!validated.valid) throw validated.error;
+  const amt = "0.5";
+  // Create the transfer params for this request
+  const transferParams = { amount: amt, options: { nativeGas: 0.1 } };
 
+  // validate the transfer params passed, this returns a new type of ValidatedTransferParams
+  // which (believe it or not) is a validated version of the input params
+  // this new var must be passed to the next step, quote
+  const validated = await bestRoute.validate(transferParams);
+  if (!validated.valid) throw validated.error;
+  console.log("Validated parameters: ", validated.params);
+
+  // get a quote for the transfer, this too returns a new type that must
+  // be passed to the next step, execute (if you like the quote)
   const quote = await bestRoute.quote(validated.params);
   if (!quote.success) throw quote.error;
-
   console.log("Best route quote: ", quote);
 
-  if (quote.destinationNativeGas) {
-    console.log("Destination native gas: ", amount.display(quote.destinationNativeGas, 4));
+  // If you're sure you want to do this, set this to true
+  const imSure = false;
+  if (imSure) {
+    // Now the transfer may be initiated
+    // A receipt will be returned, guess what you gotta do with that?
+    const receipt = await bestRoute.initiate(sender.signer, quote);
+    console.log("Initiated transfer with receipt: ", receipt);
+
+    // Kick off a wait log, if there is an opportunity to complete, this function will do it
+    // see the implementation for how this works
+    await routes.checkAndCompleteTransfer(bestRoute, receipt, receiver.signer);
   }
-
-  await execute(bestRoute, sender.signer, receiver.signer, quote);
 })();
-
-async function execute<N extends Network>(
-  route: routes.Route<N>,
-  sender: Signer<N>,
-  receiver: Signer<N>,
-  validated: routes.Quote<routes.Options>,
-) {
-  // initiate the transfer
-  const receipt = await route.initiate(sender, validated);
-  console.log("Initiated transfer with receipt: ", receipt);
-
-  // track the transfer until the destination is initiated
-  const checkAndComplete = async (receipt: routes.Receipt) => {
-    console.log("Checking transfer state...");
-
-    // overwrite receipt var as we receive updates, will return when it's complete
-    // but can be called again if the destination is not finalized
-    for await (receipt of route.track(receipt, 120 * 1000)) {
-      console.log("Transfer State:", TransferState[receipt.state]);
-    }
-
-    // gucci
-    if (isCompleted(receipt)) return;
-
-    // if the route is one we need to complete, do it
-    if (routes.isManual(route) && isAttested(receipt)) {
-      const completedTxids = await route.complete(receiver, receipt);
-      console.log("Completed transfer with txids: ", completedTxids);
-    }
-
-    // give it time to breath and try again
-    const wait = 2 * 1000;
-    console.log(`Transfer not complete, trying again in a ${wait}ms...`);
-    setTimeout(() => checkAndComplete(receipt), wait);
-  };
-
-  await checkAndComplete(receipt);
-}
