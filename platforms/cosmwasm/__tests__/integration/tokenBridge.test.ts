@@ -10,7 +10,7 @@ import {
 import {
   CosmwasmChains,
   CosmwasmPlatform,
-  chainToNativeDenoms
+  chainToNativeDenoms,
 } from "../../src";
 
 import "@wormhole-foundation/connect-sdk-cosmwasm-core";
@@ -51,7 +51,7 @@ describe("TokenBridge Tests", () => {
   let tb: TokenBridge<TNet, 'Cosmwasm', typeof chain>;
   test("Create TokenBridge", async () => {
     const rpc = await p.getRpc(chain);
-    tb = await p.getProtocol("TokenBridge", rpc)
+    tb = await p.getProtocol("TokenBridge", rpc);
     expect(tb).toBeTruthy();
   });
 

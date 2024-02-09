@@ -182,7 +182,7 @@ function layoutItemMeta(
 
       return [
         Math.min(...caseBounds.map(([lower]) => lower)),
-        Math.max(...caseBounds.map(([_, upper]) => upper))
+        Math.max(...caseBounds.map(([_, upper]) => upper)),
       ] as Bounds;
     }
   }
@@ -318,7 +318,7 @@ function generateLayoutDiscriminator(
   };
 
   const fixedKnownBytes: readonly ((readonly [ByteVal, LayoutIndex])[])[] = Array.from({length:
-    Math.max(...fixedKnown.map(fkb => fkb.length > 0 ? fkb.at(-1)![0] + fkb.at(-1)![1].length : 0))
+    Math.max(...fixedKnown.map(fkb => fkb.length > 0 ? fkb.at(-1)![0] + fkb.at(-1)![1].length : 0)),
   }).map(() => []);
 
   for (let i = 0; i < fixedKnown.length; ++i)
@@ -366,7 +366,7 @@ function generateLayoutDiscriminator(
             encoded.length <= bytePos
             ? outOfBoundsLayouts
             : distinctValues.get(encoded[bytePos]!) ?? emptySet
-          )
+          ),
       ];
 
     bestBytes.push([power, bytePos, outOfBoundsLayouts, distinctValues, anyValueLayouts] as const);
@@ -404,7 +404,7 @@ function generateLayoutDiscriminator(
     for (const candidate of bitsetToArray(candidates)) {
       const lower = sizeBounds[candidate]![0];
       const overlap = ascendingBounds.get(lower)! & candidates;
-      narrowedBounds.set(lower, overlap)
+      narrowedBounds.set(lower, overlap);
       sizePower = Math.max(sizePower, count(overlap));
     }
     sizePower = count(candidates) - sizePower;
@@ -443,7 +443,7 @@ function generateLayoutDiscriminator(
         bytePos,
         narrowedOutOfBoundsLayouts,
         narrowedDistinctValues,
-        anyValueLayouts & candidates
+        anyValueLayouts & candidates,
       ] as const);
     }
 
@@ -477,7 +477,7 @@ function generateLayoutDiscriminator(
 
     addStrategy(candidates, "indistinguishable");
     distinguishable = false;
-  }
+  };
 
   recursivelyBuildStrategy(allLayouts, bestBytes);
 

@@ -30,7 +30,7 @@ const platformAndChainsEntries = [[
   ]], [
   "Solana", [
     "Solana",
-    "Pythnet"
+    "Pythnet",
   ]], [
   "Cosmwasm", [
     "Cosmoshub",
@@ -45,19 +45,19 @@ const platformAndChainsEntries = [[
     "Xpla",
   ]], [
     "Btc", [
-      "Btc"
+      "Btc",
   ]], [
     "Algorand", [
-      "Algorand"
+      "Algorand",
   ]], [
     "Sui", [
-      "Sui"
+      "Sui",
   ]], [
     "Aptos", [
-      "Aptos"
+      "Aptos",
   ]], [
     "Near", [
-      "Near"
+      "Near",
   ]],
 ] as const satisfies MapLevel<string, RoArray<Chain>>;
 

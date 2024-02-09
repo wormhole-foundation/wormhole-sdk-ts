@@ -10,7 +10,7 @@
       "dependsOn": ["build"],
       "inputs": ["src/**", "__test__/**/*.ts"]
     },
-    "lint": {},
+    "lint": { },
     "dev": { "cache": false, "persistent": true }
   }
 }

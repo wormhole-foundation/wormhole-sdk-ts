@@ -25,8 +25,8 @@ const guardianKeyAndNameEntries = [[
     ["0x6FbEBc898F403E4773E95feB15E80C9A99c8348d", "StakingFacilities"],
   ]], [
   "Testnet", [
-    ["0x13947Bd48b18E53fdAeEe77F3473391aC727C638", "Testnet guardian"]
-  ]]
+    ["0x13947Bd48b18E53fdAeEe77F3473391aC727C638", "Testnet guardian"],
+  ]],
 ] as const satisfies MapLevels<[Network, string, string]>;
 
 export const guardianKeys = column(cartesianRightRecursive(guardianKeyAndNameEntries), 1);

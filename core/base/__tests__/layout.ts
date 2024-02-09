@@ -95,14 +95,14 @@ const testLayout = [
     layouts: [
       [1, [
         { name: "case1FixedUint", binary: "uint", size: 1, custom: 4 },
-        { name: "case1DynamicUint", binary: "uint", size: 1 }
+        { name: "case1DynamicUint", binary: "uint", size: 1 },
       ]],
       [3, [
         { name: "case2FixedBytes", binary: "bytes", custom: new Uint8Array(2) },
-        { name: "case2DynamicBytes", binary: "bytes", size: 2 }
+        { name: "case2DynamicBytes", binary: "bytes", size: 2 },
       ]],
     ],
-  }
+  },
 ] as const satisfies Layout;
 
 // uncomment the following to "test" correct type resolution:
@@ -147,7 +147,7 @@ describe("Layout tests", function () {
       id: 1,
       case1FixedUint: 4,
       case1DynamicUint: 18,
-    }
+    },
   } as const;
 
   it("should correctly add fixed values", function () {
@@ -168,7 +168,7 @@ describe("Layout tests", function () {
       switchWithSomeFixed: {
         id: 1,
         case1DynamicUint: 18,
-      }
+      },
     } as const;
 
     const complete = addFixedValues(testLayout, dynamicValues);
@@ -199,7 +199,7 @@ describe("Layout tests", function () {
       first: true,
       third: false,
       fourth: true,
-      ninth: true
+      ninth: true,
     } as const;
 
     it("should correctly serialize and deserialize Bitset items with default size", function () {
@@ -309,7 +309,7 @@ describe("Layout tests", function () {
          {name: "data", binary: "uint", size: 1}],
         [{name: "type", binary: "uint", size: 1, custom: 1},
          {name: "data", binary: "uint", size: 1},
-         {name: "dat2", binary: "uint", size: 1}]
+         {name: "dat2", binary: "uint", size: 1}],
       ]);
 
       expect(discriminator(Uint8Array.from([0, 0]))).toBe(0);
@@ -325,10 +325,10 @@ describe("Layout tests", function () {
         [{name: "type", binary: "uint", size: 1}],
         [
           {name: "type", binary: "uint", size: 1},
-          {name: "data", binary: "uint", size: 1}
+          {name: "data", binary: "uint", size: 1},
         ],
       ] as readonly Layout[];
-      expect (()=>layoutDiscriminator(layouts, false)).toThrow()
+      expect (()=>layoutDiscriminator(layouts, false)).toThrow();
 
       const discriminator = layoutDiscriminator(layouts, true);
       expect(discriminator(Uint8Array.from([0]))).toEqual([0, 1]);

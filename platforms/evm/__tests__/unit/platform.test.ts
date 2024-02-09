@@ -5,7 +5,7 @@ import {
   CONFIG,
   DEFAULT_NETWORK,
   chainToPlatform,
-  chains
+  chains,
 } from '@wormhole-foundation/connect-sdk';
 
 import '@wormhole-foundation/connect-sdk-evm-core';

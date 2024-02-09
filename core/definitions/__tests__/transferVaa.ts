@@ -1,4 +1,4 @@
-import { encoding } from '@wormhole-foundation/sdk-base'
+import { encoding } from '@wormhole-foundation/sdk-base';
 import { payloadDiscriminator, deserialize } from "../src/vaa";
 import "../src/payloads/tokenBridge";
 

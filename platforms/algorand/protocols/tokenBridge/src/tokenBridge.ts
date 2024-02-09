@@ -270,13 +270,13 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
       txs.push({ tx: feeTxn });
     }
 
-    let accts: string[] = [emitterAddr!, creatorAddr, this.coreAppAddress];
+    const accts: string[] = [emitterAddr!, creatorAddr, this.coreAppAddress];
 
     if (creatorAcctInfo) {
       accts.push(creatorAcctInfo.address);
     }
 
-    let appTxn = makeApplicationCallTxnFromObject({
+    const appTxn = makeApplicationCallTxnFromObject({
       appArgs: [AlgorandTokenBridge.attestToken, encoding.bignum.toBytes(assetId, 8)],
       accounts: accts,
       appIndex: safeBigIntToNumber(this.tokenBridgeAppId),
@@ -471,7 +471,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
         suggestedParams,
       });
       // The tokenid app needs to do the optin since it has signature authority
-      let txn = makeApplicationCallTxnFromObject({
+      const txn = makeApplicationCallTxnFromObject({
         from: senderAddr,
         appIndex: safeBigIntToNumber(this.tokenBridgeAppId),
         onComplete: OnApplicationComplete.NoOpOC,
@@ -567,7 +567,7 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
     // A critical routing step occurs here
     let tokenStorage: LogicSigAccount | undefined = undefined;
     let tokenStorageAddress: string = "";
-    let foreignAssets: number[] = [];
+    const foreignAssets: number[] = [];
     let assetId: number = 0;
     if (vaa.payload.token.chain !== this.chain) {
       // If the token is from elsewhere we get the storage lsig for a wrapped asset

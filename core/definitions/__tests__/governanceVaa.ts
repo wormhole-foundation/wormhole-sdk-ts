@@ -110,20 +110,20 @@ const guardianSetUpgrade =
 describe("Governance VAA tests", function () {
   const governanceDiscriminator = payloadDiscriminator([
     ["WormholeCore",
-      ["UpgradeContract", "GuardianSetUpgrade", "SetMessageFee", "TransferFees", "RecoverChainId"]
+      ["UpgradeContract", "GuardianSetUpgrade", "SetMessageFee", "TransferFees", "RecoverChainId"],
     ],
     ["TokenBridge",
-      ["RegisterChain", "UpgradeContract", "RecoverChainId"]
+      ["RegisterChain", "UpgradeContract", "RecoverChainId"],
     ],
     ["NftBridge",
-      ["RegisterChain", "UpgradeContract", "RecoverChainId"]
+      ["RegisterChain", "UpgradeContract", "RecoverChainId"],
     ],
     ["Relayer",
-      ["RegisterChain", "UpgradeContract", "UpdateDefaultProvider"]
+      ["RegisterChain", "UpgradeContract", "UpdateDefaultProvider"],
     ],
     ["CircleBridge",
-      ["UpdateFinality", "RegisterEmitterAndDomain", "UpgradeContract"]
-    ]
+      ["UpdateFinality", "RegisterEmitterAndDomain", "UpgradeContract"],
+    ],
   ]);
 
   it("should create an empty VAA from an object with omitted fixed values", function () {

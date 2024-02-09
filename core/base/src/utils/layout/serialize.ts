@@ -16,7 +16,7 @@ import {
   checkUint8ArrayDeeplyEqual,
   checkUint8ArraySize,
   checkNumEquals,
-  findIdLayoutPair
+  findIdLayoutPair,
 } from "./utils";
 
 export function serializeLayout<L extends Layout, E extends Uint8Array | undefined = undefined>(
@@ -57,7 +57,7 @@ export function serializeNum(
     }
   }
 
-  const bound = 2n ** BigInt(bytes * 8)
+  const bound = 2n ** BigInt(bytes * 8);
   if (val >= bound)
     throw new Error(`Value ${val} is too large for ${bytes} bytes`);
 

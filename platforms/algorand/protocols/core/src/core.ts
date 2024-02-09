@@ -273,7 +273,7 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
   ): Promise<TransactionSet> {
     suggestedParams = suggestedParams ?? (await client.getTransactionParams().do());
 
-    let txs: TransactionSignerPair[] = [];
+    const txs: TransactionSignerPair[] = [];
 
     // Get storage acct for message ID
     const msgStorage = StorageLogicSig.forMessageId(appid, {
@@ -304,7 +304,7 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
     );
     txs.push(...guardianOptInTxs);
 
-    let accts: string[] = [...seqAddr, storageAddr!];
+    const accts: string[] = [...seqAddr, storageAddr!];
 
     // Get the Guardian keys
     const keys: Uint8Array = await StorageLogicSig.decodeLocalState(client, coreId, storageAddr!);

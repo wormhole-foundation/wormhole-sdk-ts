@@ -409,7 +409,7 @@ const toMapping = <
       const valuesSubset = rows.map(i => values[i]!);
       return [
         key,
-        buildMappingRecursively(keyCartesianSubset as CartesianSet<MappableKey>, valuesSubset)
+        buildMappingRecursively(keyCartesianSubset as CartesianSet<MappableKey>, valuesSubset),
       ];
     }));
   };
@@ -448,7 +448,7 @@ const toMapping = <
         leafObj[key] = leafObj[key][0];
 
   return ret as ToMapping<M, S>;
-}
+};
 
 const has = <const F extends Function>(f: F) =>
   (...args: WidenParams<F>) => f(...args) !== undefined;

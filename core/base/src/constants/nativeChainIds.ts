@@ -142,19 +142,19 @@ const chainNetworkNativeChainIdEntries = [[
     ["Testnet", 31n],
   ]], [
   "Sepolia", [
-    ["Testnet", 11155111n]
+    ["Testnet", 11155111n],
   ]], [
   "ArbitrumSepolia", [
-    ["Testnet", 421614n]
+    ["Testnet", 421614n],
   ]], [
   "BaseSepolia", [
-    ["Testnet", 84532n]
+    ["Testnet", 84532n],
   ]], [
   "OptimismSepolia", [
-    ["Testnet", 11155420n]
+    ["Testnet", 11155420n],
   ]], [
   "Holesky", [
-    ["Testnet", 17000n]
+    ["Testnet", 17000n],
   ]],
 ] as const satisfies MapLevels<[Chain, Network, bigint | string]>;
 

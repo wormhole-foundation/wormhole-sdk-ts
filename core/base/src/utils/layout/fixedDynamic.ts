@@ -169,7 +169,7 @@ function internalAddFixedValuesItem(item: LayoutItem, dynamicValue: any): any {
       )!;
       return {
         [item.idTag ?? "id"]: id,
-        ...internalAddFixedValues(idLayout, dynamicValue)
+        ...internalAddFixedValues(idLayout, dynamicValue),
       };
     }
   }

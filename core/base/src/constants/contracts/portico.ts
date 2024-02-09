@@ -40,5 +40,5 @@ export const porticoContracts = [
         portico: '0x610d4DFAC3EC32e0be98D18DDb280DACD76A1889',
         uniswapQuoterV2: '0x3d4e44Eb1374240CE5F1B871ab261CD16335B76a',
       }],
-    ]
-]] as const satisfies MapLevels<[Network, Chain, PorticoContracts]>
+    ],
+]] as const satisfies MapLevels<[Network, Chain, PorticoContracts]>;

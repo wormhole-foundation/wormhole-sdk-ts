@@ -32,7 +32,7 @@
     "rebuild": "npm run clean && npm run build:cjs && npm run build:esm",
     "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo",
     "typecheck": "cp ./__tests__/typechecks/index.test-d.ts ./dist/esm/ && tsd",
-    "lint": "npm run prettier && eslint --fix",
+    "lint": "npm run prettier && eslint --fix . --ext .ts",
     "prettier": "prettier --write ./src"
   }
 }

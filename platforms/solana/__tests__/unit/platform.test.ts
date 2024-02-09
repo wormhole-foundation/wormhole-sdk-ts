@@ -5,13 +5,13 @@ import {
   DEFAULT_NETWORK,
   CONFIG,
   chainToPlatform,
-  chains
+  chains,
 } from '@wormhole-foundation/connect-sdk';
 
 import { SolanaChains, SolanaPlatform } from '../../src';
 
-import '@wormhole-foundation/connect-sdk-solana-core'
-import '@wormhole-foundation/connect-sdk-solana-tokenbridge'
+import '@wormhole-foundation/connect-sdk-solana-core';
+import '@wormhole-foundation/connect-sdk-solana-tokenbridge';
 
 // @ts-ignore -- this is the mock we import above
 import { getDefaultProvider } from '@solana/web3.js';

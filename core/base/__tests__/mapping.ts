@@ -5,7 +5,7 @@ import {
   PlatformToChains,
   contracts,
   RoArray,
-  constMap
+  constMap,
 } from "../src";
 
 type ComplexConfig = {

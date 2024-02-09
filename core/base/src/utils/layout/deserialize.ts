@@ -83,7 +83,7 @@ function deserializeNum<S extends number>(
 
   return [
     ((bytes > numberMaxSize) ? val : Number(val)) as NumSizeToPrimitive<S>,
-    updateOffset(encoded, offset, bytes)
+    updateOffset(encoded, offset, bytes),
   ] as const;
 }
 
@@ -114,7 +114,7 @@ function deserializeLayoutItem(
       type narrowedCustom = CustomConversion<NumType, any>;
       return [
         item.custom !== undefined ? (item.custom as narrowedCustom).to(value) : value,
-        newOffset
+        newOffset,
       ];
     }
     case "bytes": {
@@ -156,7 +156,7 @@ function deserializeLayoutItem(
       type narrowedCustom = CustomConversion<BytesType, any>;
       return [
         item.custom !== undefined ? (item.custom as narrowedCustom).to(value) : value,
-        newOffset
+        newOffset,
       ];
     }
     case "array": {
@@ -166,7 +166,7 @@ function deserializeLayoutItem(
         const [deserializedItem, newOffset] = internalDeserializeLayout(layout, encoded, offset);
         ret.push(deserializedItem);
         offset = newOffset;
-      }
+      };
 
       let length = null;
       if ("length" in item)
@@ -204,9 +204,9 @@ function deserializeLayoutItem(
       const [decoded, nextOffset] = internalDeserializeLayout(idLayout, encoded, newOffset);
       return [
         { [item.idTag ?? "id"]: hasPlainIds ? id : (idOrConversionId as any)[1],
-          ...decoded
+          ...decoded,
         },
-        nextOffset
+        nextOffset,
       ];
     }
   }

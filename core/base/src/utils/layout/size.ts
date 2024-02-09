@@ -92,7 +92,7 @@ function calcItemSize(item: LayoutItem, data: any) {
       return size;
     }
     case "object": {
-      return calcLayoutSize(item.layout, data as LayoutItemToType<typeof item>)
+      return calcLayoutSize(item.layout, data as LayoutItemToType<typeof item>);
     }
     case "switch": {
       const [_, layout] = findIdLayoutPair(item, data);

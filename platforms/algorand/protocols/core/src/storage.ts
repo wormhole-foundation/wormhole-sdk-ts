@@ -174,7 +174,7 @@ export const StorageLogicSig = {
     // and we want to make sure the sequences come back in order
     // so first put them in a map by numeric key
     // then iterate over keys to concat them in the right order
-    let vals = new Map<number, Uint8Array>();
+    const vals = new Map<number, Uint8Array>();
     for (const kv of appState!.keyValue!) {
       if (kv.key === metaKey) continue;
 

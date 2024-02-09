@@ -5,14 +5,14 @@ export const checkUint8ArraySize = (custom: Uint8Array, size: number): void => {
     throw new Error(
       `binary size mismatch: layout size: ${custom.length}, data size: ${size}`
     );
-}
+};
 
 export const checkNumEquals = (custom: number | bigint, data: number | bigint): void => {
   if (custom != data)
     throw new Error(
       `value mismatch: (constant) layout value: ${custom}, data value: ${data}`
     );
-}
+};
 
 export const checkUint8ArrayDeeplyEqual = (custom: Uint8Array, data: Uint8Array): void => {
   checkUint8ArraySize(custom, data.length);
@@ -22,7 +22,7 @@ export const checkUint8ArrayDeeplyEqual = (custom: Uint8Array, data: Uint8Array)
       throw new Error(
         `binary data mismatch: layout value: ${custom}, data value: ${data}`
       );
-}
+};
 
 export function getBytesItemSize(bytesItem: BytesLayoutItem): number | null {
   if ("size" in bytesItem && bytesItem.size !== undefined)

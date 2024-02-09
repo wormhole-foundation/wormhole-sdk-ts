@@ -33,6 +33,6 @@ describe("UniversalAddress tests", function () {
     const appId = "86525641";
     const appAddress = "0x6241ffdc032b693bfb8544858f0403dec86f2e1720af9f34f8d65fe574b6238c";
     const ua = new UniversalAddress(appId, "algorandAppId");
-    expect(ua.toString()).toEqual(appAddress)
+    expect(ua.toString()).toEqual(appAddress);
   });
 });

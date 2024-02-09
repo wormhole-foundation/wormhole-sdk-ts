@@ -7,7 +7,7 @@ import { Chain } from "../src";
 const chainTokenTable: [Chain, TokenSymbol, string][] = [
     ["Ethereum", "ETH", "native"],
     ["Polygon", "MATIC", "native"],
-    ["Ethereum", "USDC", "0x07865c6e87b9f70255377e024ace6630c1eaa37f"]
+    ["Ethereum", "USDC", "0x07865c6e87b9f70255377e024ace6630c1eaa37f"],
 ];
 
 // prettier-ignore

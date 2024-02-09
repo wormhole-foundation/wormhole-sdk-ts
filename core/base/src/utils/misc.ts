@@ -4,7 +4,7 @@ export function lazyInstantiate<T>(factory: () => T): () => T {
     if (!instance)
       instance = factory();
     return instance;
-  }
+  };
 }
 
 export function onlyOnce<T extends []>(fn: (...args: T) => any, ...args: T): () => void {
@@ -14,7 +14,7 @@ export function onlyOnce<T extends []>(fn: (...args: T) => any, ...args: T): () 
       called = true;
       fn(...args);
     }
-  }
+  };
 }
 
 export function throws(fn: () => any): boolean {
