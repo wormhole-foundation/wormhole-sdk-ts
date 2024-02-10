@@ -7,7 +7,13 @@ import {
   TransactionId,
 } from "@wormhole-foundation/sdk-definitions";
 import { TokenTransfer, TokenTransferVAA } from "../../protocols/tokenTransfer";
-import { AttestationReceipt, TransferReceipt, TransferState, isAttested } from "../../types";
+import {
+  AttestationReceipt,
+  SourceInitiatedTransferReceipt,
+  TransferReceipt,
+  TransferState,
+  isAttested,
+} from "../../types";
 import { Wormhole } from "../../wormhole";
 import { ManualRoute, StaticRouteMethods } from "../route";
 import {
@@ -117,18 +123,12 @@ export class TokenBridgeRoute<N extends Network>
     const { params } = quote;
     const transfer = this.toTransferDetails(params);
     const txids = await TokenTransfer.transfer<N>(this.request.fromChain, transfer, signer);
-    const msg = await TokenTransfer.getTransferMessage(
-      this.request.fromChain,
-      txids[txids.length - 1]!.txid,
-    );
-
     return {
       from: transfer.from.chain,
       to: transfer.to.chain,
-      state: TransferState.SourceFinalized,
+      state: TransferState.SourceInitiated,
       originTxs: txids,
-      attestation: { id: msg },
-    };
+    } satisfies SourceInitiatedTransferReceipt;
   }
 
   async complete(signer: Signer, receipt: R): Promise<TransactionId[]> {

@@ -1,4 +1,4 @@
-import { Chain, Network, contracts, amount } from "@wormhole-foundation/sdk-base";
+import { Chain, Network, amount, contracts } from "@wormhole-foundation/sdk-base";
 import {
   ChainContext,
   Signer,
@@ -9,7 +9,7 @@ import {
   nativeTokenId,
 } from "@wormhole-foundation/sdk-definitions";
 import { TokenTransfer } from "../../protocols/tokenTransfer";
-import { AttestationReceipt, TransferState } from "../../types";
+import { AttestationReceipt, SourceInitiatedTransferReceipt, TransferState } from "../../types";
 import { AutomaticRoute, StaticRouteMethods } from "../route";
 import {
   Quote,
@@ -194,27 +194,26 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     const { params } = quote;
     const transfer = this.toTransferDetails(params);
     const txids = await TokenTransfer.transfer<N>(this.request.fromChain, transfer, signer);
-    const msg = await TokenTransfer.getTransferMessage(
-      this.request.fromChain,
-      txids[txids.length - 1]!.txid,
-    );
     return {
       from: transfer.from.chain,
       to: transfer.to.chain,
-      state: TransferState.SourceFinalized,
+      state: TransferState.SourceInitiated,
       originTxs: txids,
-      attestation: { id: msg },
-    };
+    } satisfies SourceInitiatedTransferReceipt;
   }
 
   public override async *track(receipt: R, timeout?: number) {
-    yield* TokenTransfer.track(
-      this.wh,
-      receipt,
-      timeout,
-      this.request.fromChain,
-      this.request.toChain,
-    );
+    try {
+      yield* TokenTransfer.track(
+        this.wh,
+        receipt,
+        timeout,
+        this.request.fromChain,
+        this.request.toChain,
+      );
+    } catch (e) {
+      throw e;
+    }
   }
 
   private toTransferDetails(params: Vp): TokenTransferDetails {
