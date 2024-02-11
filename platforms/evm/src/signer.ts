@@ -97,6 +97,21 @@ export function isEvmNativeSigner<N extends Network>(
   );
 }
 
+// No type guard provided by ethers, instanceof checks will fail on even slightly different versions of ethers
 function isEthersSigner(thing: any): thing is ethers.Signer {
-  return thing instanceof ethers.AbstractSigner;
+  return (
+    'provider' in thing &&
+    typeof thing.connect === 'function' &&
+    typeof thing.getAddress === 'function' &&
+    typeof thing.getNonce === 'function' &&
+    typeof thing.populateCall === 'function' &&
+    typeof thing.populateTransaction === 'function' &&
+    typeof thing.estimateGas === 'function' &&
+    typeof thing.call === 'function' &&
+    typeof thing.resolveName === 'function' &&
+    typeof thing.signTransaction === 'function' &&
+    typeof thing.sendTransaction === 'function' &&
+    typeof thing.signMessage === 'function' &&
+    typeof thing.signTypedData === 'function'
+  );
 }
