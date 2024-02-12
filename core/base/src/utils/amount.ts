@@ -10,6 +10,17 @@ export interface Amount {
 }
 
 /**
+ * Removes potential floating point noise from input amount beyond given decimal level
+ * denoise(9.535695950000001, 9) -> 9.535695950
+ * @param amount The string or number to denoise
+ * @param decimals The number of decimals for the token this amount is of
+ * @returns A number, with no floating point noise
+ */
+export function denoise(amount: string | number, decimals: number): number {
+  return Number(Number(amount).toFixed(decimals));
+}
+
+/**
  * Parses a string or number into an Amount, given a decimal level
  * @param amount The string or number to parse
  * @param decimals The number of decimals for the token this amount is of

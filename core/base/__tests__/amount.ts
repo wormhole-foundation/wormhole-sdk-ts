@@ -141,4 +141,10 @@ describe("Amount Tests", function () {
       }).toThrow();
     }
   });
+
+
+  it("removes floating point noise", function () {
+    expect(amount.denoise(0.025, 18)).toEqual(0.025);
+    expect(amount.denoise(9.535695950000001, 9)).toEqual(9.535695950);
+  });
 });
