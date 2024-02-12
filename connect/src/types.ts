@@ -69,6 +69,15 @@ export interface CompletedTransferReceipt<AT, SC extends Chain = Chain, DC exten
   destinationTxs?: TransactionId<DC>[];
 }
 
+export interface FailedTransferReceipt<AT, SC extends Chain = Chain, DC extends Chain = Chain>
+  extends BaseTransferReceipt<SC, DC> {
+  state: TransferState.Failed;
+  originTxs: TransactionId<SC>[];
+  destinationTxs?: TransactionId<DC>[];
+  attestation?: AT;
+  error: string;
+}
+
 export function isSourceInitiated<AT>(
   receipt: TransferReceipt<AT>,
 ): receipt is SourceInitiatedTransferReceipt {
@@ -93,7 +102,12 @@ export function isCompleted<AT>(
   return receipt.state > TransferState.Attested;
 }
 
+export function isFailed<AT>(receipt: TransferReceipt<AT>): receipt is FailedTransferReceipt<AT> {
+  return receipt.state < 0;
+}
+
 export type TransferReceipt<AT, SC extends Chain = Chain, DC extends Chain = Chain> =
+  | FailedTransferReceipt<AT, SC, DC>
   | CreatedTransferReceipt<SC, DC>
   | SourceInitiatedTransferReceipt<SC, DC>
   | SourceFinalizedTransferReceipt<AT, SC, DC>
