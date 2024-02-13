@@ -4,11 +4,16 @@ import {
   GatewayTransferDetails,
   Network,
   TokenId,
+  TokenTransfer,
   Wormhole,
   amount,
 } from "@wormhole-foundation/connect-sdk";
 // Import the platform specific packages
-import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
+import {
+  CosmwasmAddress,
+  CosmwasmPlatform,
+  Gateway,
+} from "@wormhole-foundation/connect-sdk-cosmwasm";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 
@@ -40,7 +45,7 @@ import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
   const wh = new Wormhole("Mainnet", [EvmPlatform, SolanaPlatform, CosmwasmPlatform]);
 
   // Pick up where you left off by updating the txids as you go
-  let fakeIt = false;
+  let fakeIt = true;
 
   // Grab chain Contexts for each leg of our journey
   const external = wh.getChain("Solana");
@@ -53,29 +58,46 @@ import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
   const leg2 = await getStuff(cosmos1);
   const leg3 = await getStuff(cosmos2);
 
-  // we'll use the native token on the source chain
+  // Lookup the Gateway representation of the wrappd token
+  const denom =
+    "factory/wormhole14ejqjyq8um4p3xfqj74yld5waqljf88fz25yxnma0cngspxe3les00fpjx/8sYgCzLRJC3J7qPn2bNbx6PiGcarhyx8rBhVaNnfvHCA";
+  console.log(denom);
 
+  const cosmosTokenAddress = Wormhole.parseAddress("Wormchain", denom);
+  console.log(cosmosTokenAddress);
+
+  const c = wh.getChain("Wormchain") as Gateway<Network>;
+  const tb = await c.getTokenBridge();
+  const oa = await tb.getOriginalAsset(cosmosTokenAddress.toUniversalAddress());
+  console.log(oa);
+
+  // https://github.com/wormhole-foundation/wormhole/blob/main/cosmwasm/contracts/token-bridge/src/token_address.rs#L26
+
+  return;
+
+  // we'll use the native token on the source chain
   const token: TokenId = Wormhole.tokenId(external.chain, "native");
   const amt = amount.units(amount.parse("0.001", external.config.nativeTokenDecimals));
 
   // Transfer native token from source chain, through gateway, to a cosmos chain
-  fakeIt = true;
   let route1 = fakeIt
     ? await GatewayTransfer.from(
         wh,
         {
           chain: external.chain,
-          txid: "n84EkbduFpGT5H7hPQUfDM6KB54UroAs2BnowSCsX48DrZtDeNa1j1PUkAKx9TLjMLg9GLqGkFrvy9TQMnJYQdb",
+          txid: "2JmrNRmKYdPFrv9kAmnzEvmsxGtqHmYyGw4HXD2gpyxSnTNB5K7jdK9Ua295mqBXjk3Sazu3SkxDc5Qs9tL4QMkD",
         },
         600_000,
       )
     : await transferIntoCosmos(wh, token, amt, leg1, leg2);
   console.log("Route 1 (External => Cosmos)", route1);
 
-  const { denom } = route1.ibcTransfers![0]!.data;
   // Lookup the Gateway representation of the wrappd token
-  const cosmosTokenAddress = Wormhole.parseAddress("Wormchain", denom);
-  //console.log("Wrapped Token: ", cosmosTokenAddress.toString());
+  ("factory/wormhole14ejqjyq8um4p3xfqj74yld5waqljf88fz25yxnma0cngspxe3les00fpjx/8sYgCzLRJC3J7qPn2bNbx6PiGcarhyx8rBhVaNnfvHCA");
+  // const { denom } = route1.ibcTransfers![0]!.data;
+  //const cosmosTokenAddress = Wormhole.parseAddress("Wormchain", denom);
+
+  return;
 
   // Transfer Gateway factory tokens over IBC through gateway to another Cosmos chain
   let route2 = fakeIt
@@ -83,7 +105,7 @@ import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
         wh,
         {
           chain: cosmos1.chain,
-          txid: "EBC56661860D390C2CD211888FB0BDA2D16850A07881ACC4941E88421A2491AF",
+          txid: "DEDB881D4BA44255A96956FD9097E5A7DD63E4DDD23CD107A8E51B85E0927724",
         },
         600_000,
       )
@@ -96,13 +118,15 @@ import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
       );
   console.log("Route 2 (Cosmos -> Cosmos): ", route2);
 
+  fakeIt = false;
+
   // Transfer Gateway factory token through gateway back to source chain
   let route3 = fakeIt
     ? await GatewayTransfer.from(
         wh,
         {
           chain: cosmos2.chain,
-          txid: "10A0426BA956CAACCDAA933DD84283F42C287D7095356C5F31C76221C36FC9FF",
+          txid: "10BB9FFB310D1F7F80AE1B142D2B14909E2AAB6E969FA12A7A108CEB6FFB2F0C",
         },
         600_000,
       )

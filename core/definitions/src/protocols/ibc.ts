@@ -23,7 +23,7 @@ declare global {
 
 /** Configuration for a transfer through the Gateway */
 export type GatewayTransferDetails = {
-  token: TokenId<Chain>;
+  token: TokenId;
   amount: bigint;
   from: ChainAddress;
   to: ChainAddress;

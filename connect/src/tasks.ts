@@ -1,4 +1,4 @@
-import { Chain, Network, Platform, PlatformToChains } from "@wormhole-foundation/sdk-base";
+import { Chain, Network, Platform } from "@wormhole-foundation/sdk-base";
 import {
   GatewayTransferMsg,
   GatewayTransferWithPayloadMsg,
@@ -75,7 +75,7 @@ export async function isTokenBridgeVaaRedeemed<
   }
 }
 
-export async function fetchIbcXfer<N extends Network, C extends PlatformToChains<"Cosmwasm">>(
+export async function fetchIbcXfer<N extends Network, C extends Chain>(
   wcIbc: IbcBridge<N, C>,
   msg: TxHash | TransactionId | IbcMessageId | GatewayTransferMsg | GatewayTransferWithPayloadMsg,
 ): Promise<IbcTransferInfo[] | null> {

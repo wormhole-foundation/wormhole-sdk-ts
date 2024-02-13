@@ -1,7 +1,6 @@
 import {
   CONFIG,
   Chain,
-  ChainContext,
   GatewayTransferMsg,
   GatewayTransferWithPayloadMsg,
   Network,
@@ -12,11 +11,12 @@ import {
 } from "@wormhole-foundation/connect-sdk";
 
 import { CosmwasmAddress } from "./address";
+import { CosmwasmChain } from "./chain";
 import { IBC_TRANSFER_PORT } from "./constants";
 import { CosmwasmPlatform } from "./platform";
 import { CosmwasmChains } from "./types";
 
-export class Gateway<N extends Network> extends ChainContext<N, typeof Gateway.chain> {
+export class Gateway<N extends Network> extends CosmwasmChain<N, "Wormchain"> {
   static chain: "Wormchain" = "Wormchain";
 
   static gatewayAddress = (network: Network): string =>
@@ -27,7 +27,6 @@ export class Gateway<N extends Network> extends ChainContext<N, typeof Gateway.c
     CONFIG[network].chains[Gateway.chain]!.contracts.coreBridge!;
 
   // Get the wrapped version of an asset created on wormchain
-  // for a given chain
   async getWrappedAsset(token: TokenId): Promise<CosmwasmAddress> {
     const tb = await this.getTokenBridge();
     const wrappedAsset = new CosmwasmAddress(await tb.getWrappedAsset(token));

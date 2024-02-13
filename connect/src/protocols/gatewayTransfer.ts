@@ -1,4 +1,5 @@
 import {
+  Chain,
   Network,
   PlatformToChains,
   chainToPlatform,
@@ -16,6 +17,7 @@ import {
   IbcTransferInfo,
   Signer,
   TokenBridge,
+  TokenId,
   TransactionId,
   TxHash,
   UniversalAddress,
@@ -130,6 +132,12 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
 
     // Fresh new transfer
     if (isGatewayTransferDetails(from)) {
+      const fromChain = wh.getChain(from.from.chain);
+      const toChain = wh.getChain(from.to.chain);
+      const overrides = await GatewayTransfer.destinationOverrides(fromChain, toChain, wc, from);
+
+      // Override transfer params if necessary
+      from = { ...from, ...overrides };
       return new GatewayTransfer(wh, from, wc, wcibc);
     }
 
@@ -370,8 +378,6 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
         // If we're leaving cosmos, grab the VAA from the gateway
         // now find the corresponding wormchain transaction given the ibcTransfer info
         const retryInterval = 5000;
-        console.log(this.ibcTransfers);
-        console.log(xfer);
         const task = () => this.gatewayIbcBridge.lookupMessageFromIbcMsgId(xfer!.id);
         const whm = await retry<WormholeMessageId>(
           task,
@@ -387,16 +393,31 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
         attestations.push(whm);
       } else {
         // Otherwise we need to get the transfer on the destination chain
-        const dstChain = this.wh.getChain(this.transfer.to.chain);
-
-        const gatewayIbcTransfers = await this.gatewayIbcBridge.lookupTransferFromIbcMsgId(
-          xfer!.id,
+        // using the transfer from wormchain
+        const gatewayTransferTask = () => fetchIbcXfer(this.gatewayIbcBridge, xfer!.id);
+        const gatewayIbcTransfers = await retry<IbcTransferInfo[]>(
+          gatewayTransferTask,
+          5000,
+          timeout,
+          "Gateway:IbcBridge:LookupWormchainIbcTransfer",
         );
+        if (gatewayIbcTransfers === null)
+          throw new Error("Gateway IBC transfer not found after retries exhausted");
         const toDestChainIbcTransfer = gatewayIbcTransfers[1]!;
 
+        const dstChain = this.wh.getChain(this.transfer.to.chain);
         const dstIbcBridge = await dstChain.getIbcBridge();
-        const [ibcXfer] = await dstIbcBridge.lookupTransferFromIbcMsgId(toDestChainIbcTransfer.id);
-        this.ibcTransfers.push(ibcXfer!);
+        const dstMsgTask = () => fetchIbcXfer(dstIbcBridge, toDestChainIbcTransfer.id);
+        const dstIbcTransfers = await retry<IbcTransferInfo[]>(
+          dstMsgTask,
+          5000,
+          timeout,
+          "Gateway:IbcBridge:LookupDestinationIbcTransfer",
+        );
+        if (!dstIbcTransfers)
+          throw new Error("Destination IBC transfer not found after retries exhausted");
+
+        this.ibcTransfers.push(dstIbcTransfers[0]!);
       }
     } else {
       // Otherwise, we're coming from outside cosmos and
@@ -451,8 +472,8 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
       // Finally, get the IBC transfer to the destination chain
       const destChain = this.wh.getChain(this.transfer.to.chain);
       const destIbcBridge = await destChain.getIbcBridge();
-      //@ts-ignore
-      const destTransferTask = () => fetchIbcXfer(destIbcBridge, wcTransfer.id);
+
+      const destTransferTask = () => fetchIbcXfer(destIbcBridge, wcTransfer!.id);
       const destTransfer = await retry<IbcTransferInfo[]>(
         destTransferTask,
         transferCompleteInterval,
@@ -523,6 +544,68 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
     const vaa = await wh.getVaa(whm, TokenBridge.getTransferDiscriminator(), timeout);
     if (!vaa) throw new Error(`No VAA Available: ${whm.chain}/${whm.emitter}/${whm.sequence}`);
     return vaa;
+  }
+
+  static async destinationOverrides<N extends Network>(
+    srcChain: ChainContext<N>,
+    dstChain: ChainContext<N>,
+    gatewayChain: ChainContext<N, "Wormchain">,
+    transfer: GatewayTransferDetails,
+  ): Promise<GatewayTransferDetails> {
+    const _transfer = { ...transfer };
+
+    // Bit of (temporary) hackery until solana contracts support being
+    // sent a VAA with the primary address
+    // Note: Do _not_ override if automatic or if the destination token is native
+    // gas token
+    if (transfer.to.chain === "Solana") {
+      console.log(_transfer.token);
+      const destinationToken = await GatewayTransfer.lookupDestinationToken(
+        srcChain,
+        dstChain,
+        gatewayChain,
+        _transfer.token,
+      );
+
+      _transfer.to = await dstChain.getTokenAccount(_transfer.to.address, destinationToken.address);
+    }
+
+    return _transfer;
+  }
+
+  // Lookup the token id for the destination chain given the source chain
+  // and token id
+  static async lookupDestinationToken<N extends Network, SC extends Chain, DC extends Chain>(
+    srcChain: ChainContext<N, SC>,
+    dstChain: ChainContext<N, DC>,
+    gatewayChain: ChainContext<N, "Wormchain">,
+    token: TokenId<SC>,
+  ): Promise<TokenId<DC>> {
+    // that will be minted when the transfer is redeemed
+    let lookup: TokenId;
+    if (isNative(token.address)) {
+      // if native, get the wrapped asset id
+      lookup = await srcChain.getNativeWrappedTokenId();
+    } else {
+      try {
+        const tb = await srcChain.getTokenBridge();
+        // otherwise, check to see if it is a wrapped token locally
+        lookup = await tb.getOriginalAsset(token.address);
+      } catch (e) {
+        // not a from-chain native wormhole-wrapped one
+        lookup = token;
+      }
+    }
+
+    // if the token id is actually native to the destination, return it
+    if (lookup.chain === dstChain.chain) {
+      return lookup as TokenId<DC>;
+    }
+
+    // otherwise, figure out what the token address representing the wormhole-wrapped token we're transferring
+    const dstTb = await dstChain.getTokenBridge();
+    const dstAddress = await dstTb.getWrappedAsset(lookup);
+    return { chain: dstChain.chain, address: dstAddress };
   }
 
   // Implicitly determine if the chain is Gateway enabled by
