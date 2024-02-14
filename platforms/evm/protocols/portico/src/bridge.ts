@@ -248,8 +248,6 @@ export class EvmPorticoBridge<
     const nToken = tokens.getTokenByAddress(this.network, this.chain, address);
     if (!nToken) throw new Error('Unsupported source token: ' + address);
 
-    // find the same token by symbol with an origin of Ethereum
-    // this is the token we standardize for transfer
     const xToken = tokens
       .getTokensBySymbol(this.network, this.chain, nToken.symbol)
       ?.find((orig) => {

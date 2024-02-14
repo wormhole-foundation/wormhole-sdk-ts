@@ -493,6 +493,25 @@ const mainnetTokens = [
     },
   ],
   [
+    "KLAY",
+    {
+      key: "KLAY",
+      symbol: "KLAY",
+      coinGeckoId: "klay-token",
+      nativeChain: "Klaytn",
+    },
+  ],
+  [
+    "WKLAY",
+    {
+      key: "WKLAY",
+      symbol: "WKLAY",
+      displayName: "wKLAY",
+      coinGeckoId: "wrapped-klay",
+      nativeChain: "Klaytn",
+    },
+  ],
+  [
     "PYTH",
     {
       key: "PYTH",

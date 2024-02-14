@@ -382,7 +382,7 @@ const testnetTokens = [
     {
       key: "SEI",
       symbol: "SEI",
-      coinGeckoId: "sei",
+      coinGeckoId: "sei-network",
       nativeChain: "Sei",
     },
   ],
@@ -411,6 +411,105 @@ const testnetTokens = [
       symbol: "KUJI",
       coinGeckoId: "kujira",
       nativeChain: "Kujira",
+    },
+  ],
+  [
+    "KLAY",
+    {
+      key: "KLAY",
+      symbol: "KLAY",
+      coinGeckoId: "klay-token",
+      nativeChain: "Klaytn",
+    },
+  ],
+  [
+    "WKLAY",
+    {
+      key: "WKLAY",
+      symbol: "WKLAY",
+      displayName: "wKLAY",
+      coinGeckoId: "wrapped-klay",
+      nativeChain: "Klaytn",
+    },
+  ],
+  [
+    "ETHsepolia",
+    {
+      key: "ETHsepolia",
+      symbol: "ETH",
+      displayName: "ETH (Sepolia)",
+      coinGeckoId: "ethereum",
+      nativeChain: "Sepolia",
+    },
+  ],
+  [
+    "WETHsepolia",
+    {
+      key: "WETHsepolia",
+      symbol: "WETH",
+      displayName: "WETH (Sepolia)",
+      coinGeckoId: "ethereum",
+      nativeChain: "Sepolia",
+    },
+  ],
+  [
+    "ETHarbitrum_sepolia",
+    {
+      key: "ETHarbitrum_sepolia",
+      symbol: "ETH",
+      displayName: "ETH (Arbitrum Sepolia)",
+      coinGeckoId: "ethereum",
+      nativeChain: "ArbitrumSepolia",
+    },
+  ],
+  [
+    "WETHarbitrum_sepolia",
+    {
+      key: "WETHarbitrum_sepolia",
+      symbol: "WETH",
+      displayName: "WETH (Arbitrum Sepolia)",
+      coinGeckoId: "ethereum",
+      nativeChain: "ArbitrumSepolia",
+    },
+  ],
+  [
+    "ETHbase_sepolia",
+    {
+      key: "ETHbase_sepolia",
+      symbol: "ETH",
+      displayName: "ETH (Base Sepolia)",
+      coinGeckoId: "ethereum",
+      nativeChain: "BaseSepolia",
+    },
+  ],
+  [
+    "WETHbase_sepolia",
+    {
+      key: "WETHbase_sepolia",
+      symbol: "WETH",
+      displayName: "WETH (Base Sepolia)",
+      coinGeckoId: "ethereum",
+      nativeChain: "BaseSepolia",
+    },
+  ],
+  [
+    "ETHoptimism_sepolia",
+    {
+      key: "ETHoptimism_sepolia",
+      symbol: "ETH",
+      displayName: "ETH (Optimism Sepolia)",
+      coinGeckoId: "ethereum",
+      nativeChain: "OptimismSepolia",
+    },
+  ],
+  [
+    "WETHoptimism_sepolia",
+    {
+      key: "WETHoptimism_sepolia",
+      symbol: "WETH",
+      displayName: "WETH (Optimism Sepolia)",
+      coinGeckoId: "ethereum",
+      nativeChain: "OptimismSepolia",
     },
   ],
 ] as const satisfies MapLevel<TokenSymbol, TokenExtraDetails>;

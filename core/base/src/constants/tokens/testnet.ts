@@ -215,6 +215,15 @@ const testnetTokenEntries = [
           original: "Sei",
         },
       ],
+      [
+        "WKLAY",
+        {
+          symbol: "WKLAY",
+          decimals: 18,
+          address: "0x327e0c7D5cFa65d4f9E358dC9fA4446C49dBcB6C",
+          original: "Klaytn",
+        },
+      ],
     ],
   ],
   [
@@ -404,6 +413,15 @@ const testnetTokenEntries = [
           decimals: 6,
           address: "0xc5C0229B38564E1E8083031405Be8d6E6e3Bc462",
           original: "Sei",
+        },
+      ],
+      [
+        "WKLAY",
+        {
+          symbol: "WKLAY",
+          decimals: 18,
+          address: "0x7b34f3711705eB2963fB856cda063C979de4749e",
+          original: "Klaytn",
         },
       ],
     ],
@@ -597,6 +615,15 @@ const testnetTokenEntries = [
           decimals: 6,
           address: "0x79A8FFFCED130314eCC8782C846c4d8d4867A900",
           original: "Sei",
+        },
+      ],
+      [
+        "WKLAY",
+        {
+          symbol: "WKLAY",
+          decimals: 18,
+          address: "0x79D34FDb686B5D139949E4F92D83EEe376489176",
+          original: "Klaytn",
         },
       ],
     ],
@@ -3253,6 +3280,116 @@ const testnetTokenEntries = [
           symbol: "KUJI",
           decimals: 6,
           address: "ukuji",
+        },
+      ],
+    ],
+  ],
+  [
+    "Klaytn",
+    [
+      [
+        "KLAY",
+        {
+          symbol: "KLAY",
+          decimals: 18,
+          address: "native",
+          wrappedKey: "WKLAY",
+        },
+      ],
+      [
+        "WKLAY",
+        {
+          symbol: "WKLAY",
+          decimals: 18,
+          address: "0x0339d5Eb6D195Ba90B13ed1BCeAa97EbD198b106",
+        },
+      ],
+    ],
+  ],
+  [
+    "Sepolia",
+    [
+      [
+        "ETHsepolia",
+        {
+          symbol: "ETH",
+          decimals: 18,
+          address: "native",
+          wrappedKey: "WETHsepolia",
+        },
+      ],
+      [
+        "WETHsepolia",
+        {
+          symbol: "WETH",
+          decimals: 18,
+          address: "0xeef12A83EE5b7161D3873317c8E0E7B76e0B5D9c",
+        },
+      ],
+    ],
+  ],
+  [
+    "ArbitrumSepolia",
+    [
+      [
+        "ETHarbitrum_sepolia",
+        {
+          symbol: "ETH",
+          decimals: 18,
+          address: "native",
+          wrappedKey: "WETHarbitrum_sepolia",
+        },
+      ],
+      [
+        "WETHarbitrum_sepolia",
+        {
+          symbol: "WETH",
+          decimals: 18,
+          address: "0x980B62Da83eFf3D4576C647993b0c1D7faf17c73",
+        },
+      ],
+    ],
+  ],
+  [
+    "BaseSepolia",
+    [
+      [
+        "ETHbase_sepolia",
+        {
+          symbol: "ETH",
+          decimals: 18,
+          address: "native",
+          wrappedKey: "WETHbase_sepolia",
+        },
+      ],
+      [
+        "WETHbase_sepolia",
+        {
+          symbol: "WETH",
+          decimals: 18,
+          address: "0x4200000000000000000000000000000000000006",
+        },
+      ],
+    ],
+  ],
+  [
+    "OptimismSepolia",
+    [
+      [
+        "ETHoptimism_sepolia",
+        {
+          symbol: "ETH",
+          decimals: 18,
+          address: "native",
+          wrappedKey: "WETHoptimism_sepolia",
+        },
+      ],
+      [
+        "WETHoptimism_sepolia",
+        {
+          symbol: "WETH",
+          decimals: 18,
+          address: "0x4200000000000000000000000000000000000006",
         },
       ],
     ],
