@@ -105,6 +105,7 @@ export class TokenBridgeRoute<N extends Network>
     try {
       return this.request.displayQuote(
         await TokenTransfer.quoteTransfer(
+          this.wh,
           this.request.fromChain,
           this.request.toChain,
           this.toTransferDetails(params),
