@@ -207,7 +207,6 @@ export class CosmwasmIbcBridge<N extends Network, C extends CosmwasmChains>
         value: sequence.toString(),
       },
     ]);
-    console.log(txResults);
 
     if (txResults.length === 0) return null;
     if (txResults.length > 1)

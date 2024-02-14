@@ -131,10 +131,6 @@ export class CosmwasmEvmSigner<N extends Network, C extends CosmwasmChains>
       const { description, transaction } = tx as CosmwasmUnsignedTransaction<N, C>;
       console.log(`Signing ${description} for ${this.address()}`);
 
-      console.log(transaction);
-      console.log(transaction.msgs);
-      console.log(transaction.msgs[0]!.value.token);
-
       const { signBytes, txRaw } = createTransaction({
         message: transaction.msgs.map((eo) =>
           MsgTransfer.fromJSON({

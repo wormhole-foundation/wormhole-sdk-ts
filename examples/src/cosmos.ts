@@ -4,26 +4,20 @@ import {
   GatewayTransferDetails,
   Network,
   TokenId,
-  TokenTransfer,
   Wormhole,
   amount,
-  encoding,
 } from "@wormhole-foundation/connect-sdk";
 // Import the platform specific packages
-import {
-  CosmwasmAddress,
-  CosmwasmPlatform,
-  Gateway,
-} from "@wormhole-foundation/connect-sdk-cosmwasm";
+import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 
 import { TransferStuff, getStuff } from "./helpers";
 
-import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
-import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 import "@wormhole-foundation/connect-sdk-cosmwasm-ibc";
 import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
+import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
+import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 
 // We're going to transfer into, around, and out of the Cosmos ecosystem
 // First on Avalanche, transparently through gateway and over IBC to Cosmoshub
@@ -46,7 +40,7 @@ import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
   const wh = new Wormhole("Mainnet", [EvmPlatform, SolanaPlatform, CosmwasmPlatform]);
 
   // Pick up where you left off by updating the txids as you go
-  let fakeIt = true;
+  let fakeIt = false;
 
   // Grab chain Contexts for each leg of our journey
   const external = wh.getChain("Solana");

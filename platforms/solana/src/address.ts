@@ -24,8 +24,6 @@ export class SolanaAddress implements Address {
       this.address = address.address;
     } else if (UniversalAddress.instanceof(address)) {
       const bytes = address.toUint8Array();
-      console.log(bytes);
-      console.log(encoding.b58.encode(bytes));
       this.address = new PublicKey(bytes);
     } else if (typeof address === 'string' && encoding.hex.valid(address)) {
       this.address = new PublicKey(encoding.hex.decode(address));
