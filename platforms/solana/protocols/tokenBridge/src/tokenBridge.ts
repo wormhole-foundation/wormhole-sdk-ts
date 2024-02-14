@@ -582,7 +582,6 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
   private async *createAta(sender: AnySolanaAddress, token: AnySolanaAddress) {
     const senderAddress = new SolanaAddress(sender).unwrap();
     const tokenAddress = new SolanaAddress(token).unwrap();
-
     const ata = await getAssociatedTokenAddress(tokenAddress, senderAddress);
 
     // If the ata doesn't exist yet, create it

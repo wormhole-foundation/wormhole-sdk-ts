@@ -23,7 +23,7 @@ declare global {
 
 /** Configuration for a transfer through the Gateway */
 export type GatewayTransferDetails = {
-  token: TokenId<Chain>;
+  token: TokenId;
   amount: bigint;
   from: ChainAddress;
   to: ChainAddress;
@@ -221,11 +221,11 @@ export interface IbcBridge<N extends Network, C extends Chain> {
   lookupMessageFromIbcMsgId(msg: IbcMessageId): Promise<WormholeMessageId | null>;
 
   /** Find the IBCTransferInfo given a transaction id */
-  lookupTransferFromTx(txid: TxHash): Promise<IbcTransferInfo>;
+  lookupTransferFromTx(txid: TxHash): Promise<IbcTransferInfo[]>;
   /** Find the IBCTransferInfo from a message id */
-  lookupTransferFromIbcMsgId(msg: IbcMessageId): Promise<IbcTransferInfo>;
+  lookupTransferFromIbcMsgId(msg: IbcMessageId): Promise<IbcTransferInfo[]>;
   /** Find the IBCTransferInfo from a gateway transfer message */
   lookupTransferFromMsg(
     payload: GatewayTransferMsg | GatewayTransferWithPayloadMsg,
-  ): Promise<IbcTransferInfo>;
+  ): Promise<IbcTransferInfo[]>;
 }

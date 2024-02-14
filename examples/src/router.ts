@@ -15,8 +15,10 @@ import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 import { getStuff } from "./helpers";
 
 import "@wormhole-foundation/connect-sdk-evm-portico";
+import "@wormhole-foundation/connect-sdk-evm-cctp";
 import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
 import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
+import "@wormhole-foundation/connect-sdk-solana-cctp";
 
 (async function () {
   // Setup
@@ -32,7 +34,13 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   const sendToken = Wormhole.tokenId(sendChain.chain, "native");
 
   // create new resolver, passing the set of routes to consider
-  const resolver = wh.resolver([routes.AutomaticTokenBridgeRoute]);
+  const resolver = wh.resolver([
+    routes.AutomaticTokenBridgeRoute,
+    routes.TokenBridgeRoute,
+    routes.CCTPRoute,
+    routes.AutomaticCCTPRoute,
+    routes.AutomaticPorticoRoute,
+  ]);
 
   // what tokens are available on the source chain?
   const srcTokens = await resolver.supportedSourceTokens(sendChain);
@@ -72,6 +80,7 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   const transferParams = { amount: "0.2", options: { nativeGas: 0.1 } };
   let validated = await bestRoute.validate(transferParams);
   if (!validated.valid) throw validated.error;
+  console.log("Validated transfer params: ", validated.params);
 
   const quote = await bestRoute.quote(validated.params);
   if (!quote.success) throw quote.error;
@@ -82,6 +91,7 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
     console.log("Destination native gas: ", amount.display(quote.destinationNativeGas, 4));
   }
 
+  return;
   await execute(bestRoute, sender.signer, receiver.signer, quote);
 })();
 

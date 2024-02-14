@@ -1,7 +1,7 @@
+import { toBech32 } from "@cosmjs/encoding";
 import {
   CONFIG,
   Chain,
-  ChainContext,
   GatewayTransferMsg,
   GatewayTransferWithPayloadMsg,
   Network,
@@ -12,11 +12,12 @@ import {
 } from "@wormhole-foundation/connect-sdk";
 
 import { CosmwasmAddress } from "./address";
+import { CosmwasmChain } from "./chain";
 import { IBC_TRANSFER_PORT } from "./constants";
 import { CosmwasmPlatform } from "./platform";
 import { CosmwasmChains } from "./types";
 
-export class Gateway<N extends Network> extends ChainContext<N, typeof Gateway.chain> {
+export class Gateway<N extends Network> extends CosmwasmChain<N, "Wormchain"> {
   static chain: "Wormchain" = "Wormchain";
 
   static gatewayAddress = (network: Network): string =>
@@ -27,7 +28,6 @@ export class Gateway<N extends Network> extends ChainContext<N, typeof Gateway.c
     CONFIG[network].chains[Gateway.chain]!.contracts.coreBridge!;
 
   // Get the wrapped version of an asset created on wormchain
-  // for a given chain
   async getWrappedAsset(token: TokenId): Promise<CosmwasmAddress> {
     const tb = await this.getTokenBridge();
     const wrappedAsset = new CosmwasmAddress(await tb.getWrappedAsset(token));
@@ -63,6 +63,20 @@ export class Gateway<N extends Network> extends ChainContext<N, typeof Gateway.c
     const hashData = encoding.bytes.encode(`${IBC_TRANSFER_PORT}/${channel}/${denom}`);
     const hash = encoding.hex.encode(sha256(hashData));
     return new CosmwasmAddress(`ibc/${hash.toUpperCase()}`);
+  }
+
+  // Util to convert a factory address to a CW20 address
+  // expects the denom to be base58 encoded
+  // e.g. factoryToCw20("wormhole", "8sYgCzLRJC3J7qPn2bNbx6PiGcarhyx8rBhVaNnfvHCA")
+  static factoryToCw20(address: CosmwasmAddress) {
+    if (address.denomType !== "factory") throw new Error("Invalid address type");
+    return new CosmwasmAddress(toBech32(address.domain!, encoding.b58.decode(address.denom!)));
+  }
+  static cw20ToFactory(network: Network, address: CosmwasmAddress) {
+    // Encode the original address to base58 and add it
+    // to the factory address for cw20 style factory token address
+    const encodedAddress = encoding.b58.encode(address.toUniversalAddress().toUint8Array());
+    return new CosmwasmAddress(`factory/${Gateway.gatewayAddress(network)}/${encodedAddress}`);
   }
 
   static makeTransferMsg(
