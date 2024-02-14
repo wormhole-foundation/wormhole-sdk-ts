@@ -1,4 +1,5 @@
 import { PlatformToChains, UniversalOrNative } from "@wormhole-foundation/connect-sdk";
+import { APTOS_SEPARATOR } from "./constants";
 
 export const unusedNonce = 0;
 export const unusedArbiterFee = 0n;
@@ -30,4 +31,4 @@ export const isValidAptosType = (str: string): boolean => /^(0x)?[0-9a-fA-F]+::\
  * @param str FQT or module address
  * @returns Module address
  */
-export const coalesceModuleAddress = (str: string): string => str.split("::")[0];
+export const coalesceModuleAddress = (str: string): string => str.split(APTOS_SEPARATOR)[0]!;

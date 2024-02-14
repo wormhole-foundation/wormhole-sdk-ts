@@ -1,6 +1,7 @@
 import { CONFIG, Wormhole, amount, api, signSendWait } from "@wormhole-foundation/connect-sdk";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
+import { SuiPlatform } from "@wormhole-foundation/connect-sdk-sui";
 
 import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
 import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
@@ -9,8 +10,13 @@ import { getStuff } from "./helpers";
 
 (async function () {
   // Setup
-  const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform]);
-  const snd = wh.getChain("Sepolia");
+  const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform, SuiPlatform]);
+
+  const snd = wh.getChain("Sui");
+  const rpc = await snd.getRpc();
+  console.log(await snd.platform.utils().chainFromRpc(rpc));
+
+  return;
   const rcv = wh.getChain("Solana");
 
   // get signers from local config

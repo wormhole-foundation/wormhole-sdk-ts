@@ -81,12 +81,12 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
   }
 
   async getOriginalAsset(token: AnyAptosAddress): Promise<TokenId> {
-    const fqt = token.toString();
+    const fqt = token.toString().split(APTOS_SEPARATOR);
     let originInfo: OriginInfo | undefined;
 
     originInfo = (
       await this.connection.getAccountResource(
-        fqt.split("::")[0],
+        fqt[0]!,
         `${this.tokenBridgeAddress}::state::OriginInfo`,
       )
     ).data as OriginInfo;
@@ -111,6 +111,7 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
 
   async getWrappedAsset(token: TokenId) {
     const assetFullyQualifiedType = await this.getAssetFullyQualifiedType(token);
+    if (!assetFullyQualifiedType) throw new Error("Invalid asset address.");
 
     // check to see if we can get origin info from asset address
     await this.connection.getAccountResource(
@@ -154,10 +155,8 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
     token: AnyAptosAddress,
     payer?: AnyAptosAddress,
   ): AsyncGenerator<AptosUnsignedTransaction<N, C>> {
-    const assetType = await this.getAssetFullyQualifiedType({
-      chain: this.chain,
-      address: new AptosAddress(token),
-    });
+    const tokenId: TokenId<AptosChains> = { chain: this.chain, address: new AptosAddress(token) };
+    const assetType = await this.getAssetFullyQualifiedType(tokenId);
     if (!assetType) throw new Error("Invalid asset address.");
 
     yield this.createUnsignedTx(
@@ -319,6 +318,8 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
     tokenBridgeAddress: string,
     tokenId: TokenId,
   ): string {
+    if (isNative(tokenId.address)) throw new Error("Invalid token address");
+
     const data = serializeForeignAddressSeeds({
       chain: tokenId.chain,
       tokenBridgeAddress: new AptosAddress(tokenBridgeAddress).toUniversalAddress(),

@@ -6,15 +6,15 @@ import {
   registerNative,
 } from "@wormhole-foundation/connect-sdk";
 
-import { APTOS_SEPARATOR } from "./constants";
-import { AptosPlatform } from "./platform";
-import { AnyAptosAddress, isValidAptosType, _platform } from "./types";
+import { SUI_SEPARATOR } from "./constants";
+import { SuiPlatform } from "./platform";
+import { AnySuiAddress, isValidSuiType } from "./types";
 
-export const AptosZeroAddress = "0x";
+export const SuiZeroAddress = "0x";
 
-// Sometimes Aptos addresses will be trimmed of leading 0s
+// Sometimes Sui addresses will be trimmed of leading 0s
 // add them back if necessary
-export function ensureFullAptosAddress(address: string) {
+export function ensureFullSuiAddress(address: string) {
   if (address.length % 2 !== 0 || address.length < 66) {
     address = address.startsWith("0x") ? address.slice(2) : address;
     return "0x" + address.padStart(64, "0");
@@ -22,20 +22,17 @@ export function ensureFullAptosAddress(address: string) {
   return address;
 }
 
-export class AptosAddress implements Address {
+export class SuiAddress implements Address {
   static readonly byteSize = 32;
-  public readonly platform: Platform = AptosPlatform._platform;
-
-  readonly type: string = "Native";
+  public readonly platform: Platform = SuiPlatform._platform;
 
   // Full 32 bytes of Address
-  readonly address: Uint8Array;
-
+  private readonly address: Uint8Array;
   // Optional module and contract name
-  readonly module: string | undefined;
+  private readonly module: string | undefined;
 
-  constructor(address: AnyAptosAddress) {
-    if (AptosAddress.instanceof(address)) {
+  constructor(address: AnySuiAddress) {
+    if (SuiAddress.instanceof(address)) {
       this.address = address.address;
       this.module = address.module;
     } else if (UniversalAddress.instanceof(address)) {
@@ -44,14 +41,14 @@ export class AptosAddress implements Address {
       // If we've got an address of the form `0x1234...::module::...` then
       // stuff anything after the first `::` into the module field
       // and continue processing the address
-      if (isValidAptosType(address)) {
-        const chunks = address.split(APTOS_SEPARATOR);
-        this.module = chunks.slice(1).join(APTOS_SEPARATOR);
+      if (isValidSuiType(address)) {
+        const chunks = address.split(SUI_SEPARATOR);
+        this.module = chunks.slice(1).join(SUI_SEPARATOR);
         address = chunks[0]!;
       }
 
-      address = ensureFullAptosAddress(address);
-      if (!encoding.hex.valid(address)) throw new Error("Invalid Aptos address: " + address);
+      address = ensureFullSuiAddress(address);
+      if (!encoding.hex.valid(address)) throw new Error("Invalid Sui address: " + address);
 
       this.address = encoding.hex.decode(address);
     } else {
@@ -61,7 +58,7 @@ export class AptosAddress implements Address {
 
   unwrap(): string {
     const addr = encoding.hex.encode(this.address).replace(/^0+/, "");
-    const module = this.module ? APTOS_SEPARATOR + this.module : "";
+    const module = this.module ? SUI_SEPARATOR + this.module : "";
     return `0x${addr}${module}`;
   }
   toString(): string {
@@ -77,12 +74,12 @@ export class AptosAddress implements Address {
     return new UniversalAddress(this.toUint8Array());
   }
 
-  static instanceof(address: any): address is AptosAddress {
-    return address.platform === AptosPlatform._platform;
+  static instanceof(address: any): address is SuiAddress {
+    return address.platform === SuiPlatform._platform;
   }
 
-  equals(other: AptosAddress | UniversalAddress): boolean {
-    if (AptosAddress.instanceof(other)) {
+  equals(other: SuiAddress | UniversalAddress): boolean {
+    if (SuiAddress.instanceof(other)) {
       return other.unwrap() === this.unwrap();
     } else {
       return this.toUniversalAddress().equals(other);
@@ -91,11 +88,12 @@ export class AptosAddress implements Address {
 }
 
 declare global {
-  namespace Wormhole {
-    export interface PlatformToNativeAddressMapping {
-      Aptos: AptosAddress;
+  namespace WormholeNamespace {
+    interface PlatformToNativeAddressMapping {
+      // @ts-ignore
+      Sui: SuiAddress;
     }
   }
 }
 
-registerNative(_platform, AptosAddress);
+registerNative("Sui", SuiAddress);
