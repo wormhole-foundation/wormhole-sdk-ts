@@ -23,8 +23,7 @@ export class SolanaAddress implements Address {
     if (SolanaAddress.instanceof(address)) {
       this.address = address.address;
     } else if (UniversalAddress.instanceof(address)) {
-      const bytes = address.toUint8Array();
-      this.address = new PublicKey(bytes);
+      this.address = new PublicKey(address.toUint8Array());
     } else if (typeof address === 'string' && encoding.hex.valid(address)) {
       this.address = new PublicKey(encoding.hex.decode(address));
     } else {
