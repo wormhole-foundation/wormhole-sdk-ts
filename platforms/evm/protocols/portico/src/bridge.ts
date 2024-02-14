@@ -242,8 +242,7 @@ export class EvmPorticoBridge<
   // For a given token, return the corresponding
   // Wormhole wrapped token that originated on Ethereum
   getTransferrableToken(address: string): TokenId {
-    if (this.chain === 'Ethereum')
-      return Wormhole.chainAddress('Ethereum', address);
+    if (this.chain === 'Ethereum') return Wormhole.tokenId('Ethereum', address);
 
     // get the nativeTokenDetails
     const nToken = tokens.getTokenByAddress(this.network, this.chain, address);
@@ -261,7 +260,7 @@ export class EvmPorticoBridge<
         `Unsupported symbol for chain ${nToken.symbol}: ${this.chain} `,
       );
 
-    return Wormhole.chainAddress(xToken.chain, xToken.address);
+    return Wormhole.tokenId(xToken.chain, xToken.address);
   }
 
   private async *approve(

@@ -19,11 +19,11 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 
 (async function () {
   // Setup
-  const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform]);
+  const wh = new Wormhole("Mainnet", [EvmPlatform, SolanaPlatform]);
 
   // get signers from local config
-  const sendChain = wh.getChain("Solana");
-  const destChain = wh.getChain("Ethereum");
+  const sendChain = wh.getChain("Ethereum");
+  const destChain = wh.getChain("Arbitrum");
   const sender = await getStuff(sendChain);
   const receiver = await getStuff(destChain);
 
@@ -31,7 +31,7 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   const sendToken = Wormhole.tokenId(sendChain.chain, "native");
 
   // create new resolver, passing the set of routes to consider
-  const resolver = wh.resolver([routes.AutomaticTokenBridgeRoute, routes.TokenBridgeRoute]);
+  const resolver = wh.resolver([routes.AutomaticPorticoRoute]);
 
   // what tokens are available on the source chain?
   const srcTokens = await resolver.supportedSourceTokens(sendChain);

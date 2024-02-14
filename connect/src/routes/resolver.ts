@@ -1,10 +1,16 @@
 import { Network } from "@wormhole-foundation/sdk-base";
-import { ChainContext, TokenId, resolveWrappedToken } from "@wormhole-foundation/sdk-definitions";
+import {
+  ChainContext,
+  TokenId,
+  canonicalAddress,
+  isNative,
+  resolveWrappedToken,
+} from "@wormhole-foundation/sdk-definitions";
 import { Wormhole } from "../wormhole";
 import { RouteTransferRequest } from "./request";
 import { Route, RouteConstructor, isAutomatic } from "./route";
 import { uniqueTokens } from "./token";
-import { Receipt, Options, ValidatedTransferParams } from "./types";
+import { Options, Receipt, ValidatedTransferParams } from "./types";
 
 export class RouteResolver<N extends Network> {
   wh: Wormhole<N>;
@@ -63,11 +69,20 @@ export class RouteResolver<N extends Network> {
             rc.isProtocolSupported(request.fromChain) &&
             rc.isProtocolSupported(request.toChain);
 
+          const sourceTokenAddress = canonicalAddress(
+            isNative(request.source.id.address) ? request.source.wrapped! : request.source.id,
+          );
+
           const sourceTokenSupported =
             (await rc.supportedSourceTokens(request.fromChain)).filter((tokenId: TokenId) => {
-              return tokenId.address.toString() === request.source.id.address.toString();
+              return canonicalAddress(tokenId) === sourceTokenAddress;
             }).length > 0;
 
+          const dstTokenAddress = canonicalAddress(
+            isNative(request.destination.id.address)
+              ? request.destination.wrapped!
+              : request.destination.id,
+          );
           const destinationTokenSupported =
             (
               await rc.supportedDestinationTokens(
@@ -76,7 +91,7 @@ export class RouteResolver<N extends Network> {
                 request.toChain,
               )
             ).filter((tokenId: TokenId) => {
-              return tokenId.address.toString() === request.destination.id.address.toString();
+              return canonicalAddress(tokenId) === dstTokenAddress;
             }).length > 0;
 
           return protocolSupported && sourceTokenSupported && destinationTokenSupported;
