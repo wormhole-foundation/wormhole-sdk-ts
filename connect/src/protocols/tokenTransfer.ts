@@ -458,8 +458,6 @@ export class TokenTransfer<N extends Network = Network>
       getGovernorLimits(wh.config.api),
     ]);
 
-    console.log(tokens);
-    console.log(srcTokenUniversalAddress);
     if (
       limits !== null &&
       srcChain.chain in limits &&

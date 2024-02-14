@@ -402,7 +402,6 @@ export async function getGovernorLimits(rpcUrl: string): Promise<GovernorLimits 
   try {
     const response = await axios.get<{ entries: GovernorAvailableNotionalEntry[] }>(url);
     if (response.data && response.data.entries.length > 0) {
-      console.log(response);
       return response.data.entries.reduce((acc, entry) => {
         // if 0 consider it no limit
         const maxSize =
