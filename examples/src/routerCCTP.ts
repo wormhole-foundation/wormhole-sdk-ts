@@ -49,19 +49,15 @@ import "@wormhole-foundation/connect-sdk-solana-cctp";
   const foundRoutes = await resolver.findRoutes(tr);
   console.log("For the transfer parameters, we found these routes: ", foundRoutes);
 
-  // Sort the routes given some input (not required for mvp)
-  // const bestRoute = (await resolver.sortRoutes(foundRoutes, "cost"))[0]!;
-  //const bestRoute = foundRoutes.filter((route) => routes.isAutomatic(route))[0]!;
+  // Grab _any_ route here,
   const bestRoute = foundRoutes.pop()!;
-
   console.log(bestRoute);
 
   // Specify the amount as a decimal string
-  const transferParams = {
-    amount: "1.5",
-  };
+  const transferParams = { amount: "1.5" };
 
-  let validated = await bestRoute.validate(transferParams);
+  // Validate the inputs, throw if invalid
+  const validated = await bestRoute.validate(transferParams);
   if (!validated.valid) throw validated.error;
   console.log("Validated: ", validated);
 
