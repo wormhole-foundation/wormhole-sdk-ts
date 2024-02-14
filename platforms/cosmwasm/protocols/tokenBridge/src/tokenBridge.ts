@@ -25,6 +25,7 @@ import {
   CosmwasmPlatformType,
   CosmwasmTransaction,
   CosmwasmUnsignedTransaction,
+  Gateway,
   WrappedRegistryResponse,
   buildExecuteMsg,
   computeFee,
@@ -102,9 +103,12 @@ export class CosmwasmTokenBridge<N extends Network, C extends CosmwasmChains>
   }
 
   async getOriginalAsset(token: AnyCosmwasmAddress): Promise<TokenId> {
-    const wrappedAddress = new CosmwasmAddress(token).toString();
+    let wrappedAddress = new CosmwasmAddress(token);
 
-    const response = await this.rpc.queryContractSmart(wrappedAddress, {
+    if (wrappedAddress.denomType === "factory")
+      wrappedAddress = Gateway.factoryToCw20(wrappedAddress);
+
+    const response = await this.rpc.queryContractSmart(wrappedAddress.toString(), {
       wrapped_asset_info: {},
     });
 
