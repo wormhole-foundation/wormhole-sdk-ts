@@ -7,6 +7,7 @@ import {
   TokenTransfer,
   Wormhole,
   amount,
+  encoding,
 } from "@wormhole-foundation/connect-sdk";
 // Import the platform specific packages
 import {
@@ -58,23 +59,6 @@ import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
   const leg2 = await getStuff(cosmos1);
   const leg3 = await getStuff(cosmos2);
 
-  // Lookup the Gateway representation of the wrappd token
-  const denom =
-    "factory/wormhole14ejqjyq8um4p3xfqj74yld5waqljf88fz25yxnma0cngspxe3les00fpjx/8sYgCzLRJC3J7qPn2bNbx6PiGcarhyx8rBhVaNnfvHCA";
-  console.log(denom);
-
-  const cosmosTokenAddress = Wormhole.parseAddress("Wormchain", denom);
-  console.log(cosmosTokenAddress);
-
-  const c = wh.getChain("Wormchain") as Gateway<Network>;
-  const tb = await c.getTokenBridge();
-  const oa = await tb.getOriginalAsset(cosmosTokenAddress.toUniversalAddress());
-  console.log(oa);
-
-  // https://github.com/wormhole-foundation/wormhole/blob/main/cosmwasm/contracts/token-bridge/src/token_address.rs#L26
-
-  return;
-
   // we'll use the native token on the source chain
   const token: TokenId = Wormhole.tokenId(external.chain, "native");
   const amt = amount.units(amount.parse("0.001", external.config.nativeTokenDecimals));
@@ -93,11 +77,8 @@ import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
   console.log("Route 1 (External => Cosmos)", route1);
 
   // Lookup the Gateway representation of the wrappd token
-  ("factory/wormhole14ejqjyq8um4p3xfqj74yld5waqljf88fz25yxnma0cngspxe3les00fpjx/8sYgCzLRJC3J7qPn2bNbx6PiGcarhyx8rBhVaNnfvHCA");
-  // const { denom } = route1.ibcTransfers![0]!.data;
-  //const cosmosTokenAddress = Wormhole.parseAddress("Wormchain", denom);
-
-  return;
+  const { denom } = route1.ibcTransfers![0]!.data;
+  const cosmosTokenAddress = Wormhole.parseAddress("Wormchain", denom);
 
   // Transfer Gateway factory tokens over IBC through gateway to another Cosmos chain
   let route2 = fakeIt
@@ -118,15 +99,13 @@ import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
       );
   console.log("Route 2 (Cosmos -> Cosmos): ", route2);
 
-  fakeIt = false;
-
   // Transfer Gateway factory token through gateway back to source chain
   let route3 = fakeIt
     ? await GatewayTransfer.from(
         wh,
         {
           chain: cosmos2.chain,
-          txid: "10BB9FFB310D1F7F80AE1B142D2B14909E2AAB6E969FA12A7A108CEB6FFB2F0C",
+          txid: "BEDD0CE2FEA8FF5DF81FCA5142E72745E154F87D496CDA147FC4D5D46A7C7D81",
         },
         600_000,
       )
@@ -137,6 +116,8 @@ import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
         leg3,
         leg1,
       );
+
+  console.log(await route3.completeTransfer(leg1.signer));
   console.log("Route 3 (Cosmos => External): ", route3);
 })();
 
@@ -220,7 +201,6 @@ async function transferOutOfCosmos<N extends Network>(
     to: dst.address,
   } as GatewayTransferDetails);
   console.log("Created GatewayTransfer: ", xfer.transfer);
-
   const srcTxIds = await xfer.initiateTransfer(src.signer);
   console.log("Started transfer on source chain", srcTxIds);
 

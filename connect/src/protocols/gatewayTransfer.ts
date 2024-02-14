@@ -15,6 +15,7 @@ import {
   GatewayTransferWithPayloadMsg,
   IbcBridge,
   IbcTransferInfo,
+  NativeAddress,
   Signer,
   TokenBridge,
   TokenId,
@@ -517,12 +518,8 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
     if (!this.vaas) throw new Error("No VAA details available to redeem");
     if (this.vaas.length > 1) throw new Error("Expected 1 vaa");
 
-    const { chain, address } = this.transfer.to;
-
-    const toChain = this.wh.getChain(chain);
-    // TODO: these could be different, but when?
-    //const signerAddress = toNative(signer.chain(), signer.address());
-    const toAddress = address.toUniversalAddress();
+    const toChain = this.wh.getChain(signer.chain());
+    const toAddress = toNative(signer.chain(), signer.address());
 
     const tb = await toChain.getTokenBridge();
 
@@ -559,7 +556,6 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
     // Note: Do _not_ override if automatic or if the destination token is native
     // gas token
     if (transfer.to.chain === "Solana") {
-      console.log(_transfer.token);
       const destinationToken = await GatewayTransfer.lookupDestinationToken(
         srcChain,
         dstChain,
@@ -583,17 +579,23 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
   ): Promise<TokenId<DC>> {
     // that will be minted when the transfer is redeemed
     let lookup: TokenId;
+
     if (isNative(token.address)) {
       // if native, get the wrapped asset id
       lookup = await srcChain.getNativeWrappedTokenId();
     } else {
       try {
-        const tb = await srcChain.getTokenBridge();
         // otherwise, check to see if it is a wrapped token locally
+        const tb = await srcChain.getTokenBridge();
         lookup = await tb.getOriginalAsset(token.address);
       } catch (e) {
-        // not a from-chain native wormhole-wrapped one
-        lookup = token;
+        // not a from-chain native token, check the gateway chain
+        try {
+          const gtb = await gatewayChain.getTokenBridge();
+          lookup = await gtb.getOriginalAsset(token.address as NativeAddress<"Wormchain">);
+        } catch (e) {
+          lookup = token;
+        }
       }
     }
 
