@@ -1,4 +1,4 @@
-import { encoding, toChainId } from "@wormhole-foundation/sdk-base";
+import { Chain, amount, encoding, toChain, toChainId } from "@wormhole-foundation/sdk-base";
 import {
   PayloadDiscriminator,
   PayloadLiteral,
@@ -346,6 +346,93 @@ export async function getGuardianHeartbeats(rpcUrl: string): Promise<GuardianHea
   try {
     const response = await axios.get<{ entries: GuardianHeartbeat[] }>(url);
     if (response.data && response.data.entries.length > 0) return response.data.entries;
+  } catch {}
+  return null;
+}
+
+type GovernorTokenListEntry = {
+  originChainId: number;
+  originAddress: string;
+  // price for 1 whole token
+  price: number;
+};
+
+export type GovernedTokens = {
+  // chain => address => price
+  [chain in Chain]?: Record<string, number>;
+};
+
+export async function getGovernedTokens(rpcUrl: string): Promise<GovernedTokens | null> {
+  const url = `${rpcUrl}/v1/governor/token_list`;
+  try {
+    const response = await axios.get<{ entries: GovernorTokenListEntry[] }>(url);
+    if (response.data && response.data.entries.length > 0) {
+      return response.data.entries.reduce((acc, entry) => {
+        const chain = toChain(entry.originChainId);
+        acc[chain] = acc[chain] || {};
+        acc[chain]![entry.originAddress] = entry.price;
+        return acc;
+      }, {} as GovernedTokens);
+    }
+  } catch {}
+  return null;
+}
+
+type GovernorAvailableNotionalEntry = {
+  chainId: number;
+  remainingAvailableNotional: string;
+  notionalLimit: string;
+  bigTransactionSize: string;
+};
+
+export type GovernorChainLimit = {
+  // amount in usd
+  available: number;
+  // amount in usd
+  limit: number;
+  // amount in usd
+  maxSize?: number;
+};
+export type GovernorLimits = {
+  [chain in Chain]?: GovernorChainLimit;
+};
+
+export async function getGovernorLimits(rpcUrl: string): Promise<GovernorLimits | null> {
+  const url = `${rpcUrl}/v1/governor/available_notional_by_chain`;
+  try {
+    const response = await axios.get<{ entries: GovernorAvailableNotionalEntry[] }>(url);
+    if (response.data && response.data.entries.length > 0) {
+      return response.data.entries.reduce((acc, entry) => {
+        // if 0 consider it no limit
+        const maxSize =
+          entry.bigTransactionSize === "0"
+            ? undefined
+            : amount.whole(amount.parse(entry.bigTransactionSize, 2));
+
+        acc[toChain(entry.chainId)] = {
+          available: amount.whole(amount.parse(entry.remainingAvailableNotional, 2)),
+          limit: amount.whole(amount.parse(entry.notionalLimit, 2)),
+          maxSize,
+        };
+        return acc;
+      }, {} as GovernorLimits);
+    }
+  } catch {}
+  return null;
+}
+
+// TODO: returning bool or null is asking for trouble
+export async function getIsVaaEnqueued(
+  rpcUrl: string,
+  whm: WormholeMessageId,
+): Promise<boolean | null> {
+  const { chain, emitter, sequence } = whm;
+  const chainId = toChainId(chain);
+  const emitterAddress = emitter.toUniversalAddress().toString();
+  const url = `${rpcUrl}/v1/governor/is_vaa_enqueued/${chainId}/${emitterAddress}/${sequence}`;
+  try {
+    const response = await axios.get<{ isEnqueued: boolean }>(url);
+    return response.data.isEnqueued;
   } catch {}
   return null;
 }

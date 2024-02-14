@@ -66,8 +66,16 @@ export function isSameToken(a: TokenId, b: TokenId): boolean {
 /** Utility function to return the string representation of a ChainAddress or TokenId */
 export function canonicalAddress(ca: ChainAddress | TokenId): string {
   if (isTokenId(ca) && isNative(ca.address)) return ca.address;
-  // @ts-ignore -- `toNative` will eval to 'never' until platforms are registered
+  // @ts-ignore
   return ca.address.toNative(ca.chain).toString();
+}
+
+export function universalAddress(ca: ChainAddress | TokenId): string {
+  if (isNative(ca.address))
+    throw new Error(
+      "Invalid address, cannot convert the string literal `native` to a Universal Address",
+    );
+  return ca.address.toUniversalAddress().toString();
 }
 
 /**
