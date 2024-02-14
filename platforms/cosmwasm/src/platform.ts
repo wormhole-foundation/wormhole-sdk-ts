@@ -51,8 +51,8 @@ export class CosmwasmPlatform<N extends Network>
   }
 
   getChain<C extends CosmwasmChains>(chain: C, rpc?: CosmWasmClient): CosmwasmChain<N, C> {
-    if (chain in this.config) return new CosmwasmChain<N, C>(chain, this, rpc);
-    throw new Error("No configuration available for chain: " + chain);
+    if (!(chain in this.config)) throw new Error("No configuration available for chain: " + chain);
+    return new CosmwasmChain<N, C>(chain, this, rpc);
   }
 
   static getQueryClient = (rpc: CosmWasmClient): QueryClient & BankExtension & IbcExtension => {

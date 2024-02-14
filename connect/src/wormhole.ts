@@ -399,11 +399,16 @@ export class Wormhole<N extends Network> {
     timeout: number = DEFAULT_TASK_TIMEOUT,
   ): Promise<WormholeMessageId[]> {
     const task = async () => {
-      const msgs = await chain.parseTransaction(txid);
-      // possible the node we hit does not have this data yet
-      // return null to signal retry
-      if (msgs.length === 0) return null;
-      return msgs;
+      try {
+        const msgs = await chain.parseTransaction(txid);
+        // possible the node we hit does not have this data yet
+        // return null to signal retry
+        if (msgs.length === 0) return null;
+        return msgs;
+      } catch (e) {
+        console.error(e);
+        return null;
+      }
     };
 
     const parsed = await retry<WormholeMessageId[]>(

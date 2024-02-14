@@ -14,8 +14,10 @@ import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 import { getStuff } from "./helpers";
 
 import "@wormhole-foundation/connect-sdk-evm-portico";
+import "@wormhole-foundation/connect-sdk-evm-cctp";
 import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
 import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
+import "@wormhole-foundation/connect-sdk-solana-cctp";
 
 (async function () {
   // Setup
@@ -72,6 +74,7 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   const transferParams = { amount: "0.2", options: { nativeGas: 0.1 } };
   let validated = await bestRoute.validate(transferParams);
   if (!validated.valid) throw validated.error;
+  console.log("Validated transfer params: ", validated.params);
 
   const quote = await bestRoute.quote(validated.params);
   if (!quote.success) throw quote.error;
