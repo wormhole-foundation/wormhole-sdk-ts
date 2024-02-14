@@ -1,4 +1,4 @@
-import { Chain, Network, Platform } from "@wormhole-foundation/sdk-base";
+import { Chain, Network } from "@wormhole-foundation/sdk-base";
 import {
   GatewayTransferMsg,
   GatewayTransferWithPayloadMsg,
@@ -59,11 +59,10 @@ export async function retry<T>(
   });
 }
 
-export async function isTokenBridgeVaaRedeemed<
-  N extends Network,
-  P extends Platform,
-  C extends Chain,
->(tb: TokenBridge<N, C>, vaa: TokenBridge.TransferVAA): Promise<boolean | null> {
+export async function isTokenBridgeVaaRedeemed<N extends Network, C extends Chain>(
+  tb: TokenBridge<N, C>,
+  vaa: TokenBridge.TransferVAA,
+): Promise<boolean | null> {
   try {
     const isRedeemed = await tb.isTransferCompleted(vaa);
     // Only return a real value if its true, otherwise return null

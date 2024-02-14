@@ -110,8 +110,6 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
         leg3,
         leg1,
       );
-
-  console.log(await route3.completeTransfer(leg1.signer));
   console.log("Route 3 (Cosmos => External): ", route3);
 })();
 

@@ -238,10 +238,8 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
 
     const originChain = wh.getChain(chain);
 
-    // If its origin chain is Cosmos, it should be an IBC message
-    // but its not all the time so do this differently?
-    // TODO: check if the chain supports Gateway protocol?
-    if (chainToPlatform(chain) === "Cosmwasm") {
+    // If its origin chain supports IBC, it should be an IBC message
+    if (originChain.supportsIbcBridge()) {
       // Get the ibc tx info from the origin
       const ibcBridge = await originChain.getIbcBridge();
       const [xfer] = await ibcBridge.lookupTransferFromTx(from.txid);
@@ -249,8 +247,10 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
     }
 
     // Otherwise grab the vaa details from the origin tx
-    const [whMsgId] = await originChain.parseTransaction(txid);
-    return await GatewayTransfer._fromMsgId(wh, whMsgId!, timeout);
+    const msgs = await Wormhole.parseMessageFromTx(originChain, txid);
+    if (!msgs) throw new Error("No messages found in transaction");
+
+    return await GatewayTransfer._fromMsgId(wh, msgs[0]!, timeout);
   }
 
   // Recover transfer info the first step in the transfer
@@ -341,8 +341,6 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
     return signSendWait<N, typeof fromChain.chain>(fromChain, xfer, signer);
   }
 
-  // TODO: track the time elapsed and subtract it from the timeout passed with
-  // successive updates
   // wait for the Attestations to be ready
   async fetchAttestation(timeout?: number): Promise<AttestationId[]> {
     // Note: this method probably does too much
@@ -553,8 +551,6 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
 
     // Bit of (temporary) hackery until solana contracts support being
     // sent a VAA with the primary address
-    // Note: Do _not_ override if automatic or if the destination token is native
-    // gas token
     if (transfer.to.chain === "Solana") {
       const destinationToken = await GatewayTransfer.lookupDestinationToken(
         srcChain,
