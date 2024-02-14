@@ -3,7 +3,6 @@ import {
   Signer,
   TransferState,
   Wormhole,
-  amount,
   canonicalAddress,
   isAttested,
   isCompleted,
@@ -20,11 +19,11 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 
 (async function () {
   // Setup
-  const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform]);
+  const wh = new Wormhole("Mainnet", [EvmPlatform, SolanaPlatform]);
 
   // get signers from local config
-  const sendChain = wh.getChain("Solana");
-  const destChain = wh.getChain("Ethereum");
+  const sendChain = wh.getChain("Base");
+  const destChain = wh.getChain("Arbitrum");
   const sender = await getStuff(sendChain);
   const receiver = await getStuff(destChain);
 
@@ -32,7 +31,7 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   const sendToken = Wormhole.tokenId(sendChain.chain, "native");
 
   // create new resolver, passing the set of routes to consider
-  const resolver = wh.resolver([routes.AutomaticTokenBridgeRoute]);
+  const resolver = wh.resolver([routes.TokenBridgeRoute]);
 
   // what tokens are available on the source chain?
   const srcTokens = await resolver.supportedSourceTokens(sendChain);
@@ -69,18 +68,14 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   console.log("This route offers the following default options", bestRoute.getDefaultOptions());
   // Create the transfer params for this request
   // Specify the amount as a decimal string
+  // native gas is optional and specified as a percentage (1.0 == 100%)
   const transferParams = { amount: "0.2", options: { nativeGas: 0.1 } };
   let validated = await bestRoute.validate(transferParams);
   if (!validated.valid) throw validated.error;
 
   const quote = await bestRoute.quote(validated.params);
   if (!quote.success) throw quote.error;
-
   console.log("Best route quote: ", quote);
-
-  if (quote.destinationNativeGas) {
-    console.log("Destination native gas: ", amount.display(quote.destinationNativeGas, 4));
-  }
 
   await execute(bestRoute, sender.signer, receiver.signer, quote);
 })();

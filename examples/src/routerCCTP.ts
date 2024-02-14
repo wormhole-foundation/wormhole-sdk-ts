@@ -1,82 +1,68 @@
 import {
   AttestationReceipt,
+  Chain,
+  Network,
   ProtocolName,
-  TokenId,
   TransferReceipt,
   TransferState,
   Wormhole,
-  routes,
   circle,
+  routes,
 } from "@wormhole-foundation/connect-sdk";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
+import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 
 import { getStuff } from "./helpers";
 
 import "@wormhole-foundation/connect-sdk-evm-cctp";
+import "@wormhole-foundation/connect-sdk-solana-cctp";
 
 (async function () {
   // Setup
-  const wh = new Wormhole("Testnet", [EvmPlatform]);
+  const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform]);
 
   // get signers from local config
   const sendChain = wh.getChain("Avalanche");
+  const rcvChain = wh.getChain("Polygon");
   const sender = await getStuff(sendChain);
-  const receiver = await getStuff(wh.getChain("OptimismSepolia"));
+  const receiver = await getStuff(rcvChain);
 
   // create new resolver
   const resolver = wh.resolver([routes.CCTPRoute, routes.AutomaticCCTPRoute]);
 
-  const usdcAvalanche: TokenId = Wormhole.chainAddress(
-    "Avalanche",
-    circle.usdcContract.get("Testnet", "Avalanche")!,
-  );
-  const usdcPolygon: TokenId = Wormhole.chainAddress(
-    "OptimismSepolia",
-    circle.usdcContract.get("Testnet", "OptimismSepolia")!,
-  );
+  const usdcAddress = (network: Network, chain: Chain) =>
+    Wormhole.chainAddress(chain, circle.usdcContract.get(network, chain)!);
 
-  console.log(sender.address, receiver.address);
+  const srcUsdc = usdcAddress(sendChain.network, sendChain.chain);
+  const dstUsdc = usdcAddress(rcvChain.network, rcvChain.chain);
 
   // Creating a transfer request fetches token details
   // since all routes will need to know about the tokens
   const tr = await routes.RouteTransferRequest.create(wh, {
     from: sender.address,
     to: receiver.address,
-    source: usdcAvalanche,
-    destination: usdcPolygon,
+    source: srcUsdc,
+    destination: dstUsdc,
   });
 
   // resolve the transfer request to a set of routes that can perform it
   const foundRoutes = await resolver.findRoutes(tr);
   console.log("For the transfer parameters, we found these routes: ", foundRoutes);
 
-  // Sort the routes given some input (not required for mvp)
-  // const bestRoute = (await resolver.sortRoutes(foundRoutes, "cost"))[0]!;
-  //const bestRoute = foundRoutes.filter((route) => routes.isAutomatic(route))[0]!;
-  const bestRoute = foundRoutes[1]!;
-
+  // Grab _any_ route here,
+  const bestRoute = foundRoutes.pop()!;
   console.log(bestRoute);
 
   // Specify the amount as a decimal string
-  const transferParams = {
-    amount: "0.20",
-    options: {
-      nativeGas: 0.1,
-    },
-  };
+  const transferParams = { amount: "1.5" };
 
-  let validated = await bestRoute.validate(transferParams);
-  if (!validated.valid) {
-    console.error(validated.error);
-    return;
-  }
+  // Validate the inputs, throw if invalid
+  const validated = await bestRoute.validate(transferParams);
+  if (!validated.valid) throw validated.error;
   console.log("Validated: ", validated);
 
   const quote = await bestRoute.quote(validated.params);
-  if (!quote.success) {
-    console.error(quote.error);
-    return;
-  }
+  if (!quote.success) throw quote.error;
 
   // initiate the transfer
   const receipt = await bestRoute.initiate(sender.signer, quote);

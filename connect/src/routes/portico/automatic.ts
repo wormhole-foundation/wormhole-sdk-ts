@@ -107,7 +107,12 @@ export class AutomaticPorticoRoute<N extends Network>
     fromChain: ChainContext<N>,
     toChain: ChainContext<N>,
   ): Promise<TokenId[]> {
-    const tokenAddress = canonicalAddress(sourceToken);
+    const [, srcTokenAddress] = resolveWrappedToken(
+      fromChain.network,
+      fromChain.chain,
+      sourceToken,
+    );
+    const tokenAddress = canonicalAddress(srcTokenAddress);
 
     // The token that will be used to bridge
     const pb = await fromChain.getPorticoBridge();
