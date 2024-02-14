@@ -31,7 +31,7 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   const sendToken = Wormhole.tokenId(sendChain.chain, "native");
 
   // create new resolver, passing the set of routes to consider
-  const resolver = wh.resolver([routes.AutomaticPorticoRoute]);
+  const resolver = wh.resolver([routes.TokenBridgeRoute]);
 
   // what tokens are available on the source chain?
   const srcTokens = await resolver.supportedSourceTokens(sendChain);
