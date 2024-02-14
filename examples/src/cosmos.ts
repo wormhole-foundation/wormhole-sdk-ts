@@ -37,7 +37,7 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 (async function () {
   // init Wormhole object, passing config for which network
   // to use (e.g. Mainnet/Testnet) and what Platforms to support
-  const wh = new Wormhole("Mainnet", [EvmPlatform, SolanaPlatform, CosmwasmPlatform]);
+  const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform, CosmwasmPlatform]);
 
   // Pick up where you left off by updating the txids as you go
   let fakeIt = false;
