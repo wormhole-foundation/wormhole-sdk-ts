@@ -5,6 +5,7 @@ import {
   TokenTransfer,
   Wormhole,
   amount,
+  encoding,
   isTokenId,
 } from "@wormhole-foundation/connect-sdk";
 import { TransferStuff, getStuff, waitLog } from "./helpers";
@@ -13,11 +14,17 @@ import { TransferStuff, getStuff, waitLog } from "./helpers";
 import { AlgorandPlatform } from "@wormhole-foundation/connect-sdk-algorand";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
+import {
+  CosmwasmAddress,
+  CosmwasmPlatform,
+  Gateway,
+} from "@wormhole-foundation/connect-sdk-cosmwasm";
 
 // Register the protocols
 import "@wormhole-foundation/connect-sdk-algorand-tokenbridge";
 import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
 import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
+import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
 
 // Use .env.example as a template for your .env file and populate it with secrets
 // for funded accounts on the relevant chain+network combos to run the example
@@ -25,14 +32,29 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 (async function () {
   // Init Wormhole object, passing config for which network
   // to use (e.g. Mainnet/Testnet) and what Platforms to support
-  const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform, AlgorandPlatform]);
+  const wh = new Wormhole("Testnet", [
+    EvmPlatform,
+    SolanaPlatform,
+    AlgorandPlatform,
+    CosmwasmPlatform,
+  ]);
 
   // Grab chain Contexts -- these hold a reference to a cached rpc client
-  const sendChain = wh.getChain("Avalanche");
+  const sendChain = wh.getChain("Sei");
   const rcvChain = wh.getChain("Solana");
 
+  const stb = await sendChain.getTokenBridge();
+  const wa = await stb.getWrappedAsset(await rcvChain.getNativeWrappedTokenId());
+  console.log(wa.toString());
   // Shortcut to allow transferring native gas token
-  const token: TokenId = Wormhole.tokenId(sendChain.chain, "native");
+
+  const factoryAddy = new CosmwasmAddress(
+    "factory/sei1dkdwdvknx0qav5cp5kw68mkn3r99m3svkyjfvkztwh97dv2lm0ksj6xrak/GotfBk8VUDfbqgTJgF1nhV7bfZgUxfWiwADNLKv5PEMS",
+  );
+  const cw20 = Gateway.factoryToCw20(factoryAddy);
+  console.log(cw20.toString());
+
+  const token = { chain: "Sei", address: factoryAddy };
 
   // A TokenId is just a `{chain, address}` pair and an alias for ChainAddress
   // The `address` field must be a parsed address.
@@ -136,6 +158,7 @@ async function tokenTransfer<N extends Network>(
   );
 
   const quote = await TokenTransfer.quoteTransfer(
+    wh,
     route.source.chain,
     route.destination.chain,
     xfer.transfer,

@@ -198,6 +198,7 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
     );
     const tx = await publishPackage(build, sender.toString());
     yield this.createUnsignedTx(tx, "Sui.TokenBridge.PrepareCreateWrapped");
+
     // TODO:
     let coinPackageId: string = "";
     while (coinPackageId === "") {
