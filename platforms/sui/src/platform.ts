@@ -5,16 +5,16 @@ import {
   Network,
   PlatformContext,
   SignedTx,
+  StaticPlatformMethods,
   TokenId,
   TxHash,
   chainToPlatform,
   nativeChainIds,
-  networkPlatformConfigs,
   decimals as nativeDecimals,
-  StaticPlatformMethods,
+  networkPlatformConfigs,
 } from "@wormhole-foundation/connect-sdk";
 
-import { Connection, JsonRpcProvider } from "@mysten/sui.js";
+import { SuiClient } from "@mysten/sui.js/client";
 import { SuiChain } from "./chain";
 import { AnySuiAddress, SuiChains, SuiPlatformType, _platform } from "./types";
 
@@ -32,9 +32,8 @@ export class SuiPlatform<N extends Network>
     super(network, _config ?? networkPlatformConfigs(network, SuiPlatform._platform));
   }
 
-  getRpc<C extends SuiChains>(chain: C): JsonRpcProvider {
-    if (chain in this.config)
-      return new JsonRpcProvider(new Connection({ fullnode: this.config[chain]!.rpc }));
+  getRpc<C extends SuiChains>(chain: C): SuiClient {
+    if (chain in this.config) return new SuiClient({ url: this.config[chain]!.rpc });
     throw new Error("No configuration available for chain: " + chain);
   }
 
@@ -67,7 +66,7 @@ export class SuiPlatform<N extends Network>
 
   static async getDecimals(
     chain: Chain,
-    rpc: JsonRpcProvider,
+    rpc: SuiClient,
     token: AnySuiAddress | "native",
   ): Promise<number> {
     if (token === "native") return nativeDecimals.nativeDecimals(SuiPlatform._platform);
@@ -84,7 +83,7 @@ export class SuiPlatform<N extends Network>
 
   static async getBalance(
     chain: Chain,
-    rpc: JsonRpcProvider,
+    rpc: SuiClient,
     walletAddr: string,
     token: AnySuiAddress | "native",
   ): Promise<bigint | null> {
@@ -104,14 +103,14 @@ export class SuiPlatform<N extends Network>
 
   static async getBalances(
     chain: Chain,
-    rpc: JsonRpcProvider,
+    rpc: SuiClient,
     walletAddr: string,
     tokens: (AnySuiAddress | "native")[],
   ): Promise<Balances> {
     throw new Error("Not implemented");
   }
 
-  static async sendWait(chain: Chain, rpc: JsonRpcProvider, stxns: SignedTx[]): Promise<TxHash[]> {
+  static async sendWait(chain: Chain, rpc: SuiClient, stxns: SignedTx[]): Promise<TxHash[]> {
     const txhashes = [];
     for (const stxn of stxns) {
       console.log(stxn);
@@ -122,10 +121,10 @@ export class SuiPlatform<N extends Network>
     return txhashes;
   }
 
-  static async getLatestBlock(rpc: JsonRpcProvider): Promise<number> {
+  static async getLatestBlock(rpc: SuiClient): Promise<number> {
     return Number(await rpc.getLatestCheckpointSequenceNumber());
   }
-  static async getLatestFinalizedBlock(rpc: JsonRpcProvider): Promise<number> {
+  static async getLatestFinalizedBlock(rpc: SuiClient): Promise<number> {
     throw new Error("Not implemented");
   }
 
@@ -141,8 +140,8 @@ export class SuiPlatform<N extends Network>
     return [network, chain];
   }
 
-  static async chainFromRpc(rpc: JsonRpcProvider): Promise<[Network, SuiChains]> {
+  static async chainFromRpc(rpc: SuiClient): Promise<[Network, SuiChains]> {
     const result = await rpc.call("sui_getChainIdentifier", []);
-    return this.chainFromChainId(result);
+    return this.chainFromChainId(result as string);
   }
 }

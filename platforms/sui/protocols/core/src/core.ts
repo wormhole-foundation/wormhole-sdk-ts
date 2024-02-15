@@ -1,4 +1,4 @@
-import { JsonRpcProvider } from "@mysten/sui.js";
+import { SuiClient } from "@mysten/sui.js/client";
 import {
   AccountAddress,
   ChainId,
@@ -26,7 +26,7 @@ export class SuiWormholeCore<N extends Network, C extends SuiChains> implements 
   private constructor(
     readonly network: N,
     readonly chain: C,
-    readonly connection: JsonRpcProvider,
+    readonly connection: SuiClient,
     readonly contracts: Contracts,
   ) {
     this.chainId = toChainId(chain);
@@ -40,7 +40,7 @@ export class SuiWormholeCore<N extends Network, C extends SuiChains> implements 
   }
 
   static async fromRpc<N extends Network>(
-    connection: JsonRpcProvider,
+    connection: SuiClient,
     config: ChainsConfig<N, SuiPlatformType>,
   ) {
     const [network, chain] = await SuiPlatform.chainFromRpc(connection);

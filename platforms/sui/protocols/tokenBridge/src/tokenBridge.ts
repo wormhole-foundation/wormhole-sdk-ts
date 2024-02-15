@@ -1,10 +1,7 @@
-import {
-  JsonRpcProvider,
-  SUI_CLOCK_OBJECT_ID,
-  SUI_TYPE_ARG,
-  TransactionBlock,
-  normalizeSuiObjectId,
-} from "@mysten/sui.js";
+import { SuiClient } from "@mysten/sui.js/client";
+import { TransactionBlock } from "@mysten/sui.js/transactions";
+import { SUI_CLOCK_OBJECT_ID, SUI_TYPE_ARG, normalizeSuiObjectId } from "@mysten/sui.js/utils";
+
 import {
   AccountAddress,
   Chain,
@@ -42,6 +39,7 @@ import {
   publishPackage,
   trimSuiType,
   uint8ArrayToBCS,
+  isMoveStructStruct,
 } from "@wormhole-foundation/connect-sdk-sui";
 import { getTokenCoinType, getTokenFromTokenRegistry } from "./utils";
 
@@ -53,7 +51,7 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
   private constructor(
     readonly network: N,
     readonly chain: C,
-    readonly provider: JsonRpcProvider,
+    readonly provider: SuiClient,
     readonly contracts: Contracts,
   ) {
     this.chainId = nativeChainIds.networkChainToNativeChainId.get(network, chain) as bigint;
@@ -71,7 +69,7 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
   }
 
   static async fromRpc<N extends Network>(
-    provider: JsonRpcProvider,
+    provider: SuiClient,
     config: ChainsConfig<N, Platform>,
   ): Promise<SuiTokenBridge<N, SuiChains>> {
     const [network, chain] = await SuiPlatform.chainFromRpc(provider);
@@ -100,18 +98,25 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
     const fields = getFieldsFromObjectResponse(res);
     if (!fields) throw ErrNotWrapped(coinType);
 
+    if (!isMoveStructStruct(fields)) throw new Error("Expected fields to be a MoveStruct");
+
     // Normalize types
-    const type = trimSuiType(fields["value"].type);
+    const type = trimSuiType(fields.type);
     coinType = trimSuiType(coinType);
 
     // Check if wrapped or native asset. We check inclusion instead of equality
     // because it saves us from making an additional RPC call to fetch the package ID.
     if (type.includes(`wrapped_asset::WrappedAsset<${coinType}>`)) {
+      const info = fields.fields["info"]!;
+      if (!isMoveStructStruct(info)) throw new Error("Expected fields to be a MoveStruct");
+      const address = info.fields["token_address"];
+      if (!isMoveStructStruct(address)) throw new Error("Expected fields to be a MoveStruct");
+
+      console.log("ADDRESS: ", address);
       return {
-        chain: toChain(Number(fields["value"].fields.info.fields.token_chain)),
-        address: new UniversalAddress(
-          fields["value"].fields.info.fields.token_address.fields.value.fields.data,
-        ),
+        chain: toChain(Number(info.fields["token_chain"])),
+        // @ts-ignore
+        address: new UniversalAddress(address.fields["data"]!),
       };
     }
 
@@ -165,7 +170,7 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
 
     const [messageTicket] = tx.moveCall({
       target: `${tokenBridgePackageId}::attest_token::attest_token`,
-      arguments: [tx.object(this.tokenBridgeObjectId), tx.object(metadata.id), tx.pure(nonce)],
+      arguments: [tx.object(this.tokenBridgeObjectId), tx.object(metadata.id!), tx.pure(nonce)],
       typeArguments: [coinType],
     });
 
@@ -190,10 +195,8 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
 
     const decimals = Math.min(vaa.payload.decimals, 8);
     const build = await this.getCoinBuildOutput(
-      this.provider,
       coreBridgePackageId,
       tokenBridgePackageId,
-      this.tokenBridgeObjectId,
       decimals,
     );
     const tx = await publishPackage(build, sender.toString());
@@ -524,21 +527,19 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
   }
 
   private async getCoinBuildOutput(
-    provider: JsonRpcProvider,
     coreBridgePackageId: string,
     tokenBridgePackageId: string,
-    tokenBridgeStateObjectId: string,
     decimals: number,
   ): Promise<SuiBuildOutput> {
     if (decimals > 8) throw new Error("Decimals is capped at 8");
 
     // Construct bytecode, parametrized by token bridge package ID and decimals
     const strippedTokenBridgePackageId = (
-      await getOriginalPackageId(provider, tokenBridgeStateObjectId)
+      await getOriginalPackageId(this.provider, this.tokenBridgeObjectId)
     )?.replace("0x", "");
     if (!strippedTokenBridgePackageId) {
       throw new Error(
-        `Original token bridge package ID not found for object ID ${tokenBridgeStateObjectId}`,
+        `Original token bridge package ID not found for object ID ${this.tokenBridgeObjectId}`,
       );
     }
 

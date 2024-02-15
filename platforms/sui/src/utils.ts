@@ -1,20 +1,34 @@
+import { bcs } from "@mysten/sui.js/bcs";
 import {
-  JsonRpcProvider,
+  MoveValue,
   PaginatedObjectsResponse,
+  SuiClient,
   SuiObjectResponse,
-  TransactionBlock,
-  builder,
-  getObjectType,
-  isValidSuiAddress,
-  normalizeSuiObjectId,
-} from "@mysten/sui.js";
+} from "@mysten/sui.js/client";
+import { TransactionBlock } from "@mysten/sui.js/transactions";
+import { isValidSuiAddress, normalizeSuiObjectId } from "@mysten/sui.js/utils";
+
 import { encoding } from "@wormhole-foundation/connect-sdk";
 import { SuiBuildOutput, isValidSuiType, trimSuiType } from "./types";
 
 const MAX_PURE_ARGUMENT_SIZE = 16 * 1024;
 
 export const uint8ArrayToBCS = (arr: Uint8Array) =>
-  builder.ser("vector<u8>", arr, { maxSize: MAX_PURE_ARGUMENT_SIZE }).toBytes();
+  bcs.ser("vector<u8>", arr, { maxSize: MAX_PURE_ARGUMENT_SIZE }).toBytes();
+
+export function isMoveStructArray(value: any): value is MoveValue[] {
+  return Array.isArray(value);
+}
+
+export function isMoveStructStruct(
+  value: any,
+): value is { fields: { [key: string]: MoveValue }; type: string } {
+  return !Array.isArray(value) && typeof value === "object" && "fields" in value && "type" in value;
+}
+
+export function isMoveStructObject(value: any): value is { [key: string]: MoveValue } {
+  return typeof value === "object" && !isMoveStructArray(value) && !isMoveStructStruct(value);
+}
 
 export const publishPackage = async (
   buildOutput: SuiBuildOutput,
@@ -31,13 +45,14 @@ export const publishPackage = async (
   return tx;
 };
 
-export const getOriginalPackageId = async (provider: JsonRpcProvider, stateObjectId: string) => {
-  return getObjectType(
-    await provider.getObject({
-      id: stateObjectId,
-      options: { showContent: true },
-    }),
-  )?.split("::")[0];
+export const getOriginalPackageId = async (provider: SuiClient, stateObjectId: string) => {
+  const { data, error } = await provider.getObject({
+    id: stateObjectId,
+    options: { showContent: true },
+  });
+  if (error) throw new Error("Error getting object: " + error);
+  if (!data) throw new Error("Cannot get oject for state id: " + stateObjectId);
+  return data.content?.dataType.split("::")[0];
 };
 
 export const getPackageIdFromType = (type: string): string | null => {
@@ -69,13 +84,12 @@ export const getFieldsFromObjectResponse = (object: SuiObjectResponse) => {
 };
 
 export const getObjectFields = async (
-  provider: JsonRpcProvider,
+  provider: SuiClient,
   objectId: string,
 ): Promise<Record<string, any> | null> => {
   if (!isValidSuiAddress(objectId)) {
     throw new Error(`Invalid object ID: ${objectId}`);
   }
-
   const res = await provider.getObject({
     id: objectId,
     options: {
@@ -99,7 +113,7 @@ export const getTableKeyType = (tableType: string): string | null => {
  * @param objectId Core or token bridge state object ID
  * @returns The latest package ID for the provided state object
  */
-export async function getPackageId(provider: JsonRpcProvider, objectId: string): Promise<string> {
+export async function getPackageId(provider: SuiClient, objectId: string): Promise<string> {
   let currentPackage: { objectId: string; name: any } | undefined;
   let nextCursor;
   do {
@@ -120,14 +134,15 @@ export async function getPackageId(provider: JsonRpcProvider, objectId: string):
     },
   });
 
-  const packageId =
-    obj.data?.content && "fields" in obj.data.content
-      ? obj.data.content.fields["value"]?.fields?.package
-      : null;
+  const fields = getFieldsFromObjectResponse(obj);
 
-  if (!packageId) throw new Error("Unable to get current package");
+  if (!fields || !isMoveStructObject(fields))
+    throw new Error("Unable to get fields from object response");
 
-  return packageId;
+  if (!("value" in fields) || !isMoveStructStruct(fields["value"]))
+    throw new Error("Unable to get package id");
+
+  return fields["value"].fields["package"]! as string;
 }
 
 /**
@@ -149,7 +164,7 @@ export const newEmitterCap = (
 };
 
 export const getOldestEmitterCapObjectId = async (
-  provider: JsonRpcProvider,
+  provider: SuiClient,
   coreBridgePackageId: string,
   owner: string,
 ): Promise<string | null> => {

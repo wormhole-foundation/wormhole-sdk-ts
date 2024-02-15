@@ -1,5 +1,6 @@
 import {
   CONFIG,
+  TokenBridge,
   Wormhole,
   amount,
   api,
@@ -32,23 +33,44 @@ import { getStuff } from "./helpers";
   ]);
 
   const suiCtx = wh.getChain("Sui");
-  const tb = await suiCtx.getTokenBridge();
+  const suiTb = await suiCtx.getTokenBridge();
+  const suiStuff = await getStuff(suiCtx);
 
-  // const solCtx = wh.getChain("Solana");
-  // const solNativeWrapped = await solCtx.getNativeWrappedTokenId();
-  // const suiWrappedAsset = await tb.getWrappedAsset(solNativeWrapped);
-  // console.log("Wrapped address", suiWrappedAsset.toString());
-  // console.log("Is wrapped token? ", await tb.isWrappedAsset(suiWrappedAsset));
-  // const orig = await tb.getOriginalAsset(suiWrappedAsset);
-  // console.log("Original: ", orig.chain, canonicalAddress(orig));
+  const solUsdc = Wormhole.tokenId("Solana", "6DNSN2BJsaPFdFFc1zP37kkeNe4Usc1Sqkzr9C9vPWcU");
+  if (!(await suiTb.hasWrappedAsset(solUsdc))) {
+    // console.log("No wrapped asset, creating...");
+    // const solCtx = wh.getChain("Solana");
+    // const solStuff = await getStuff(solCtx);
+    // const solTb = await solCtx.getTokenBridge();
+    // console.log("Attesting on Solana");
+    // const txs = await signSendWait(
+    //   solCtx,
+    //   solTb.createAttestation(solUsdc.address, solStuff.address.address),
+    //   solStuff.signer,
+    // );
+    // console.log("Txids: ", txs);
+    const txid =
+      "4BXZxrLnAH1CzoQaiNfEAaUWGWuwQX73DvUDGAZUfunhvAxeVesXZHnPRgZX1amK2gKYcNTaABU4VCAvpUWhe8G";
+    const vaa = await wh.getVaa(txid, "TokenBridge:AttestMeta", 60_000);
+    if (!vaa) throw new Error("No VAA for attest");
 
+    console.log("Got vaa: ", vaa);
+    console.log(
+      await signSendWait(
+        suiCtx,
+        suiTb.submitAttestation(vaa, suiStuff.address.address),
+        suiStuff.signer,
+      ),
+    );
+  }
+
+  return;
   const usdc = Wormhole.tokenId(
     "Sui",
     "0xaf9ef585e2efd13321d0a2181e1c0715f9ba28ed052055d33a8b164f6c146a56::tusdt::TUSDT",
   );
 
   // get signers from local config
-  const sender = await getStuff(suiCtx);
   console.log(await signSendWait(suiCtx, tb.createAttestation(usdc.address), sender.signer));
   return;
 

@@ -1,4 +1,4 @@
-import { isValidSuiAddress, normalizeSuiAddress } from "@mysten/sui.js";
+import { isValidSuiAddress, normalizeSuiAddress } from "@mysten/sui.js/utils";
 import { PlatformToChains, UniversalOrNative } from "@wormhole-foundation/connect-sdk";
 
 export const _platform: "Sui" = "Sui";

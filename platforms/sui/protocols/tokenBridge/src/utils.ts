@@ -1,15 +1,16 @@
-import { JsonRpcProvider, SuiObjectResponse } from "@mysten/sui.js";
+import { SuiClient, SuiObjectResponse } from "@mysten/sui.js/client";
 import {
   getFieldsFromObjectResponse,
   getObjectFields,
   getPackageIdFromType,
   getTableKeyType,
+  isMoveStructObject,
   isValidSuiType,
   trimSuiType,
 } from "@wormhole-foundation/connect-sdk-sui";
 
 export const getTokenFromTokenRegistry = async (
-  provider: JsonRpcProvider,
+  provider: SuiClient,
   tokenBridgeStateObjectId: string,
   tokenType: string,
 ): Promise<SuiObjectResponse> => {
@@ -48,7 +49,7 @@ export const getTokenFromTokenRegistry = async (
 };
 
 export const getTokenCoinType = async (
-  provider: JsonRpcProvider,
+  provider: SuiClient,
   tokenBridgeStateObjectId: string,
   tokenAddress: Uint8Array,
   tokenChain: number,
@@ -87,6 +88,7 @@ export const getTokenCoinType = async (
   }
   const fields = getFieldsFromObjectResponse(response);
   if (!fields) return null;
+  if (!isMoveStructObject(fields)) throw new Error("What?");
 
-  return "value" in fields ? trimSuiType(fields["value"]) : null;
+  return "value" in fields ? trimSuiType(fields["value"] as string) : null;
 };
