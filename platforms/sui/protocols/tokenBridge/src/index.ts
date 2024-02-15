@@ -13,3 +13,4 @@ declare global {
 registerProtocol(_platform, "TokenBridge", SuiTokenBridge);
 
 export * from "./tokenBridge";
+export * from "./utils";

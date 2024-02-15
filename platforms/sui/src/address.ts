@@ -8,7 +8,7 @@ import {
 
 import { SUI_SEPARATOR } from "./constants";
 import { SuiPlatform } from "./platform";
-import { AnySuiAddress, isValidSuiType } from "./types";
+import { _platform, AnySuiAddress, isValidSuiType } from "./types";
 
 export const SuiZeroAddress = "0x";
 
@@ -27,9 +27,9 @@ export class SuiAddress implements Address {
   public readonly platform: Platform = SuiPlatform._platform;
 
   // Full 32 bytes of Address
-  private readonly address: Uint8Array;
+  readonly address: Uint8Array;
   // Optional module and contract name
-  private readonly module: string | undefined;
+  readonly module: string | undefined;
 
   constructor(address: AnySuiAddress) {
     if (SuiAddress.instanceof(address)) {
@@ -88,12 +88,11 @@ export class SuiAddress implements Address {
 }
 
 declare global {
-  namespace WormholeNamespace {
-    interface PlatformToNativeAddressMapping {
-      // @ts-ignore
+  namespace Wormhole {
+    export interface PlatformToNativeAddressMapping {
       Sui: SuiAddress;
     }
   }
 }
 
-registerNative("Sui", SuiAddress);
+registerNative(_platform, SuiAddress);

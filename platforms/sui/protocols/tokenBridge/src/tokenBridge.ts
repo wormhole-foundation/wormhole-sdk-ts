@@ -11,16 +11,21 @@ import {
   ChainAddress,
   ChainsConfig,
   Contracts,
+  ErrNotWrapped,
   NativeAddress,
   Network,
   Platform,
   TokenAddress,
   TokenBridge,
   TokenId,
+  UniversalAddress,
+  canonicalAddress,
   isNative,
   nativeChainIds,
   serialize,
+  toChain,
   toChainId,
+  toNative,
 } from "@wormhole-foundation/connect-sdk";
 
 import {
@@ -28,14 +33,17 @@ import {
   SuiChains,
   SuiPlatform,
   SuiUnsignedTransaction,
+  getFieldsFromObjectResponse,
   getOldestEmitterCapObjectId,
   getOriginalPackageId,
   getPackageId,
-  getTokenCoinType,
   isSameType,
+  isValidSuiType,
   publishPackage,
+  trimSuiType,
   uint8ArrayToBCS,
 } from "@wormhole-foundation/connect-sdk-sui";
+import { getTokenCoinType, getTokenFromTokenRegistry } from "./utils";
 
 export class SuiTokenBridge<N extends Network, C extends SuiChains> implements TokenBridge<N, C> {
   readonly coreBridgeObjectId: string;
@@ -76,11 +84,38 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
   }
 
   async isWrappedAsset(token: TokenAddress<C>): Promise<boolean> {
-    throw new Error("Not implemented");
+    try {
+      this.getOriginalAsset(token);
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   async getOriginalAsset(token: TokenAddress<C>): Promise<TokenId> {
-    throw new Error("Not implemented");
+    let coinType = token.toString();
+    if (!isValidSuiType(coinType)) throw new Error(`Invalid Sui type: ${coinType}`);
+
+    const res = await getTokenFromTokenRegistry(this.provider, this.tokenBridgeObjectId, coinType);
+    const fields = getFieldsFromObjectResponse(res);
+    if (!fields) throw ErrNotWrapped(coinType);
+
+    // Normalize types
+    const type = trimSuiType(fields["value"].type);
+    coinType = trimSuiType(coinType);
+
+    // Check if wrapped or native asset. We check inclusion instead of equality
+    // because it saves us from making an additional RPC call to fetch the package ID.
+    if (type.includes(`wrapped_asset::WrappedAsset<${coinType}>`)) {
+      return {
+        chain: toChain(Number(fields["value"].fields.info.fields.token_chain)),
+        address: new UniversalAddress(
+          fields["value"].fields.info.fields.token_address.fields.value.fields.data,
+        ),
+      };
+    }
+
+    throw ErrNotWrapped(coinType);
   }
 
   async hasWrappedAsset(token: TokenId): Promise<boolean> {
@@ -92,7 +127,18 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
   }
 
   async getWrappedAsset(token: TokenId<Chain>): Promise<NativeAddress<C>> {
-    throw new Error("Not implemented");
+    if (isNative(token.address))
+      throw new Error("Token Address required, 'native' literal not supported");
+
+    const address = await getTokenCoinType(
+      this.provider,
+      this.tokenBridgeObjectId,
+      token.address.toUint8Array(),
+      toChainId(token.chain),
+    );
+    if (!address) throw ErrNotWrapped(canonicalAddress(token));
+
+    return toNative(this.chain, address);
   }
 
   async isTransferCompleted(
@@ -114,12 +160,15 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
     const [coreBridgePackageId, tokenBridgePackageId] = await this.getPackageIds();
 
     const tx = new TransactionBlock();
+
     const [feeCoin] = tx.splitCoins(tx.gas, [tx.pure(feeAmount)]);
+
     const [messageTicket] = tx.moveCall({
       target: `${tokenBridgePackageId}::attest_token::attest_token`,
       arguments: [tx.object(this.tokenBridgeObjectId), tx.object(metadata.id), tx.pure(nonce)],
       typeArguments: [coinType],
     });
+
     tx.moveCall({
       target: `${coreBridgePackageId}::publish_message::publish_message`,
       arguments: [
@@ -130,7 +179,7 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
       ],
     });
 
-    yield this.createUnsignedTx(tx, "Sui.CreateAttestation");
+    yield this.createUnsignedTx(tx, "Sui.TokenBridge.CreateAttestation");
   }
 
   async *submitAttestation(
@@ -150,7 +199,11 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
     const tx = await publishPackage(build, sender.toString());
     yield this.createUnsignedTx(tx, "Sui.TokenBridge.PrepareCreateWrapped");
     // TODO:
-    // wait for the result of the previous tx to fetch the new coinPackageId
+    let coinPackageId: string = "";
+    while (coinPackageId === "") {
+      await new Promise((r) => setTimeout(r, 1000));
+      // wait for the result of the previous tx to fetch the new coinPackageId
+    }
 
     // const suiPrepareRegistrationTxRes = await executeTransactionBlock(
     //   suiSigner,
@@ -460,7 +513,9 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
   async getWrappedNative(): Promise<NativeAddress<C>> {
     throw new Error("Not implemented");
   }
+
   private async getPackageIds(): Promise<[string, string]> {
+    // TODO: can these be cached?
     return Promise.all([
       getPackageId(this.provider, this.tokenBridgeObjectId),
       getPackageId(this.provider, this.coreBridgeObjectId),
@@ -493,6 +548,7 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
       decimals.toString(16).padStart(2, "0") +
       "0a0138000b012e110238010200";
     const bytecode = Buffer.from(bytecodeHex, "hex").toString("base64");
+
     return {
       modules: [bytecode],
       dependencies: ["0x1", "0x2", tokenBridgePackageId, coreBridgePackageId].map((d) =>

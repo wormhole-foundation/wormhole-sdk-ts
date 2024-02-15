@@ -1,23 +1,53 @@
-import { CONFIG, Wormhole, amount, api, signSendWait } from "@wormhole-foundation/connect-sdk";
+import {
+  CONFIG,
+  Wormhole,
+  amount,
+  api,
+  canonicalAddress,
+  signSendWait,
+} from "@wormhole-foundation/connect-sdk";
+
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
+import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
+import { AlgorandPlatform } from "@wormhole-foundation/connect-sdk-algorand";
 import { SuiPlatform } from "@wormhole-foundation/connect-sdk-sui";
 
 import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
+import "@wormhole-foundation/connect-sdk-algorand-tokenbridge";
+import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
 import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
+import "@wormhole-foundation/connect-sdk-sui-tokenbridge";
 
 import { getStuff } from "./helpers";
 
 (async function () {
   // Setup
-  const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform, SuiPlatform]);
+  const wh = new Wormhole("Testnet", [
+    EvmPlatform,
+    SolanaPlatform,
+    SuiPlatform,
+    AlgorandPlatform,
+    CosmwasmPlatform,
+  ]);
 
-  const snd = wh.getChain("Sui");
-  const rpc = await snd.getRpc();
-  console.log(await snd.platform.utils().chainFromRpc(rpc));
+  const solCtx = wh.getChain("Solana");
+  const solNativeWrapped = await solCtx.getNativeWrappedTokenId();
 
+  const suiCtx = wh.getChain("Sui");
+  const tb = await suiCtx.getTokenBridge();
+  const suiWrappedAsset = await tb.getWrappedAsset(solNativeWrapped);
+  console.log("Wrapped address", suiWrappedAsset.toString());
+  console.log("Is wrapped token? ", await tb.isWrappedAsset(suiWrappedAsset));
+
+  const orig = await tb.getOriginalAsset(suiWrappedAsset);
+  console.log("Original: ", orig.chain, canonicalAddress(orig));
+
+  // const attestTxs = tb.createAttestation(token.address);
+  // for await (const t of attestTxs) {
+  //   console.log(t);
+  // }
   return;
-  const rcv = wh.getChain("Solana");
 
   // get signers from local config
   const sender = await getStuff(snd);

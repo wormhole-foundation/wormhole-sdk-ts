@@ -40,6 +40,13 @@ export const getOriginalPackageId = async (provider: JsonRpcProvider, stateObjec
   )?.split("::")[0];
 };
 
+export const getPackageIdFromType = (type: string): string | null => {
+  if (!isValidSuiType(type)) return null;
+  const packageId = type.split("::")[0];
+  if (!packageId || !isValidSuiAddress(packageId)) return null;
+  return packageId;
+};
+
 /**
  * Get the fully qualified type of a wrapped asset published to the given
  * package ID.
@@ -76,50 +83,6 @@ export const getObjectFields = async (
     },
   });
   return getFieldsFromObjectResponse(res);
-};
-
-export const getTokenCoinType = async (
-  provider: JsonRpcProvider,
-  tokenBridgeStateObjectId: string,
-  tokenAddress: Uint8Array,
-  tokenChain: number,
-): Promise<string | null> => {
-  const tokenBridgeStateFields = await getObjectFields(provider, tokenBridgeStateObjectId);
-
-  if (!tokenBridgeStateFields)
-    throw new Error("Unable to fetch object fields from token bridge state");
-
-  const coinTypes = tokenBridgeStateFields["token_registry"]?.fields?.coin_types;
-  const coinTypesObjectId = coinTypes?.fields?.id?.id;
-  if (!coinTypesObjectId) {
-    throw new Error("Unable to fetch coin types");
-  }
-
-  const keyType = getTableKeyType(coinTypes?.type);
-  if (!keyType) {
-    throw new Error("Unable to get key type");
-  }
-
-  const response = await provider.getDynamicFieldObject({
-    parentId: coinTypesObjectId,
-    name: {
-      type: keyType,
-      value: {
-        addr: [...tokenAddress],
-        chain: tokenChain,
-      },
-    },
-  });
-  if (response.error) {
-    if (response.error.code === "dynamicFieldNotFound") {
-      return null;
-    }
-    throw new Error(`Unexpected getDynamicFieldObject response ${response.error}`);
-  }
-  const fields = getFieldsFromObjectResponse(response);
-  if (!fields) return null;
-
-  return "value" in fields ? trimSuiType(fields["value"]) : null;
 };
 
 export const getTableKeyType = (tableType: string): string | null => {
