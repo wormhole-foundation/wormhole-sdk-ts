@@ -518,8 +518,8 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
   private async getPackageIds(): Promise<[string, string]> {
     // TODO: can these be cached?
     return Promise.all([
-      getPackageId(this.provider, this.tokenBridgeObjectId),
       getPackageId(this.provider, this.coreBridgeObjectId),
+      getPackageId(this.provider, this.tokenBridgeObjectId),
     ]);
   }
 

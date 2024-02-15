@@ -114,6 +114,7 @@ export class SuiPlatform<N extends Network>
   static async sendWait(chain: Chain, rpc: JsonRpcProvider, stxns: SignedTx[]): Promise<TxHash[]> {
     const txhashes = [];
     for (const stxn of stxns) {
+      console.log(stxn);
       const pendingTx = await rpc.executeTransactionBlock(stxn);
       await rpc.waitForTransactionBlock({ digest: pendingTx.digest });
       txhashes.push(pendingTx.digest);

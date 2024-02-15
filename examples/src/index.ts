@@ -7,15 +7,15 @@ import {
   signSendWait,
 } from "@wormhole-foundation/connect-sdk";
 
+import { AlgorandPlatform } from "@wormhole-foundation/connect-sdk-algorand";
+import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
-import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
-import { AlgorandPlatform } from "@wormhole-foundation/connect-sdk-algorand";
 import { SuiPlatform } from "@wormhole-foundation/connect-sdk-sui";
 
-import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
 import "@wormhole-foundation/connect-sdk-algorand-tokenbridge";
 import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
+import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
 import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 import "@wormhole-foundation/connect-sdk-sui-tokenbridge";
 
@@ -31,26 +31,27 @@ import { getStuff } from "./helpers";
     CosmwasmPlatform,
   ]);
 
-  const solCtx = wh.getChain("Solana");
-  const solNativeWrapped = await solCtx.getNativeWrappedTokenId();
-
   const suiCtx = wh.getChain("Sui");
   const tb = await suiCtx.getTokenBridge();
-  const suiWrappedAsset = await tb.getWrappedAsset(solNativeWrapped);
-  console.log("Wrapped address", suiWrappedAsset.toString());
-  console.log("Is wrapped token? ", await tb.isWrappedAsset(suiWrappedAsset));
 
-  const orig = await tb.getOriginalAsset(suiWrappedAsset);
-  console.log("Original: ", orig.chain, canonicalAddress(orig));
+  // const solCtx = wh.getChain("Solana");
+  // const solNativeWrapped = await solCtx.getNativeWrappedTokenId();
+  // const suiWrappedAsset = await tb.getWrappedAsset(solNativeWrapped);
+  // console.log("Wrapped address", suiWrappedAsset.toString());
+  // console.log("Is wrapped token? ", await tb.isWrappedAsset(suiWrappedAsset));
+  // const orig = await tb.getOriginalAsset(suiWrappedAsset);
+  // console.log("Original: ", orig.chain, canonicalAddress(orig));
 
-  // const attestTxs = tb.createAttestation(token.address);
-  // for await (const t of attestTxs) {
-  //   console.log(t);
-  // }
-  return;
+  const usdc = Wormhole.tokenId(
+    "Sui",
+    "0xaf9ef585e2efd13321d0a2181e1c0715f9ba28ed052055d33a8b164f6c146a56::tusdt::TUSDT",
+  );
 
   // get signers from local config
-  const sender = await getStuff(snd);
+  const sender = await getStuff(suiCtx);
+  console.log(await signSendWait(suiCtx, tb.createAttestation(usdc.address), sender.signer));
+  return;
+
   const receiver = await getStuff(rcv);
 
   // Get a Token Bridge contract client on the source

@@ -18,6 +18,7 @@ import { getAlgorandSigner } from "@wormhole-foundation/connect-sdk-algorand/src
 import { getCosmwasmSigner } from "@wormhole-foundation/connect-sdk-cosmwasm/src";
 import { getEvmSignerForKey } from "@wormhole-foundation/connect-sdk-evm/src";
 import { getSolanaSignAndSendSigner } from "@wormhole-foundation/connect-sdk-solana/src";
+import { getSuiSigner } from "@wormhole-foundation/connect-sdk-sui";
 
 // Use .env.example as a template for your .env file and populate it with secrets
 // for funded accounts on the relevant chain+network combos to run the example
@@ -62,6 +63,9 @@ export async function getStuff<N extends Network, C extends Chain>(
       break;
     case "Algorand":
       signer = await getAlgorandSigner(await chain.getRpc(), getEnv("ALGORAND_MNEMONIC"));
+      break;
+    case "Sui":
+      signer = await getSuiSigner(await chain.getRpc(), getEnv("SUI_PRIVATE_KEY"));
       break;
     default:
       throw new Error("Unrecognized platform: " + platform);
