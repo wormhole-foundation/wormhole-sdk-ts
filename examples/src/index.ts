@@ -24,7 +24,7 @@ import { getStuff } from "./helpers";
 
 (async function () {
   // Setup
-  const wh = new Wormhole("Mainnet", [
+  const wh = new Wormhole("Testnet", [
     EvmPlatform,
     SolanaPlatform,
     SuiPlatform,
@@ -35,12 +35,6 @@ import { getStuff } from "./helpers";
   const suiCtx = wh.getChain("Sui");
   const suiTb = await suiCtx.getTokenBridge();
   const suiStuff = await getStuff(suiCtx);
-
-  const solCtx = wh.getChain("Solana");
-  const token = Wormhole.tokenId("Solana", "native");
-  console.log(await solCtx.getBalance("9CC9Z3JrzxKoAHMHaDiFewpMNQeWv6ALJoVPZjSrdAaH", "native"));
-
-  return;
 
   const solUsdc = Wormhole.tokenId("Solana", "6DNSN2BJsaPFdFFc1zP37kkeNe4Usc1Sqkzr9C9vPWcU");
   if (!(await suiTb.hasWrappedAsset(solUsdc))) {

@@ -31,16 +31,21 @@ import {
   SuiChains,
   SuiPlatform,
   SuiUnsignedTransaction,
+  getCoinTypeFromPackageId,
   getFieldsFromObjectResponse,
   getOldestEmitterCapObjectId,
   getOriginalPackageId,
+  getOwnedObjectId,
   getPackageId,
+  getUpgradeCapObjectId,
+  isMoveStructStruct,
   isSameType,
+  isSuiCreateEvent,
+  isSuiPublishEvent,
   isValidSuiType,
   publishPackage,
   trimSuiType,
   uint8ArrayToBCS,
-  isMoveStructStruct,
 } from "@wormhole-foundation/connect-sdk-sui";
 import { getTokenCoinType, getTokenFromTokenRegistry } from "./utils";
 
@@ -206,116 +211,103 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
     console.log(tx);
     // yield this.createUnsignedTx(tx, "Sui.TokenBridge.PrepareCreateWrapped");
 
-    // TODO:
     let coinPackageId: string = "";
-    while (coinPackageId === "") {
+    let wrappedType: string = "";
+    let found = false;
+    while (!found) {
+      // wait for the result of the previous tx to fetch the new coinPackageId
       await new Promise((r) => setTimeout(r, 1000));
 
-      //this.provider.get
-
-      const events = await this.provider.queryEvents({
-        query: { MoveEventType: "published", Package: tokenBridgePackageId },
-        limit: 10,
+      const txBlocks = await this.provider.queryTransactionBlocks({
+        filter: { FromAddress: senderAddress },
+        options: { showObjectChanges: true },
+        limit: 3,
       });
-      if (events.data.length === 0) continue;
 
-      for (const event of events.data) {
-        console.log(event);
+      // Find the txblock with both the coinPackageId and wrappedType
+      for (const txb of txBlocks.data) {
+        if (!("objectChanges" in txb)) continue;
+
+        for (const change of txb.objectChanges!) {
+          if (isSuiPublishEvent(change) && change.packageId !== undefined) {
+            coinPackageId = change.packageId;
+          }
+          if (
+            isSuiCreateEvent(change) &&
+            change.objectType.includes("create_wrapped::WrappedAssetSetup")
+          ) {
+            wrappedType = change.objectType;
+          }
+        }
+
+        if (coinPackageId !== "" && wrappedType !== "") {
+          found = true;
+          break;
+        } else {
+          coinPackageId = "";
+          wrappedType = "";
+        }
       }
-
-      // wait for the result of the previous tx to fetch the new coinPackageId
     }
 
-    // const suiPrepareRegistrationTxRes = await executeTransactionBlock(
-    //   suiSigner,
-    //   suiPrepareRegistrationTxPayload,
-    // );
-    // suiPrepareRegistrationTxRes.effects?.status.status === "failure" &&
-    //   console.log(JSON.stringify(suiPrepareRegistrationTxRes.effects, null, 2));
+    console.log(`out of loop with coinPackageId ${coinPackageId} and wrappedType: ${wrappedType}`);
 
-    // // Complete create wrapped on Sui
-    // const wrappedAssetSetupEvent =
-    //   suiPrepareRegistrationTxRes.objectChanges?.find(
-    //     (oc) =>
-    //       oc.type === "created" && oc.objectType.includes("WrappedAssetSetup")
-    //   );
-    // const wrappedAssetSetupType =
-    //   (wrappedAssetSetupEvent?.type === "created" &&
-    //     wrappedAssetSetupEvent.objectType) ||
-    //   undefined;
-    // const publishEvents = getPublishedObjectChanges(
-    //   suiPrepareRegistrationTxRes
-    // );
-    // const coinPackageId = publishEvents[0].packageId;
-    // const suiCompleteRegistrationTxPayload = await createWrappedOnSui(
-    //   suiProvider,
-    //   SUI_CORE_BRIDGE_STATE_OBJECT_ID,
-    //   SUI_TOKEN_BRIDGE_STATE_OBJECT_ID,
-    //   suiAddress,
-    //   coinPackageId,
-    //   wrappedAssetSetupType,
-    //   slicedAttestVAA
-    // );
-
-    // // Get coin metadata
-    // const coinType = getWrappedCoinType(coinPackageId);
-    // const coinMetadataObjectId = (await this.provider.getCoinMetadata({ coinType }))?.id;
-    // if (!coinMetadataObjectId) {
-    //   throw new Error(`Coin metadata object not found for coin type ${coinType}.`);
-    // }
+    // Get coin metadata
+    const coinType = getCoinTypeFromPackageId(coinPackageId);
+    const coinMetadataObjectId = (await this.provider.getCoinMetadata({ coinType }))?.id;
+    if (!coinMetadataObjectId) {
+      throw new Error(`Coin metadata object not found for coin type ${coinType}.`);
+    }
 
     // // WrappedAssetSetup looks like
     // // 0x92d81f28c167d90f84638c654b412fe7fa8e55bdfac7f638bdcf70306289be86::create_wrapped::WrappedAssetSetup<0xa40e0511f7d6531dd2dfac0512c7fd4a874b76f5994985fb17ee04501a2bb050::coin::COIN, 0x4eb7c5bca3759ab3064b46044edb5668c9066be8a543b28b58375f041f876a80::version_control::V__0_1_1>
-    // const wrappedAssetSetupObjectId = await getOwnedObjectId(
-    //   provider,
-    //   signerAddress,
-    //   wrappedAssetSetupType
-    // );
-    // if (!wrappedAssetSetupObjectId) {
-    //   throw new Error(`WrappedAssetSetup not found`);
-    // }
+    const wrappedAssetSetupObjectId = await getOwnedObjectId(
+      this.provider,
+      senderAddress,
+      wrappedType,
+    );
+    if (!wrappedAssetSetupObjectId) throw new Error(`WrappedAssetSetup not found`);
 
     // // Get coin upgrade capability
-    // const coinUpgradeCapObjectId = await getUpgradeCapObjectId(
-    //   provider,
-    //   signerAddress,
-    //   coinPackageId
-    // );
-    // if (!coinUpgradeCapObjectId) {
-    //   throw new Error(
-    //     `Coin upgrade cap not found for ${coinType} under owner ${signerAddress}. You must call 'createWrappedOnSuiPrepare' first.`
-    //   );
-    // }
+    const coinUpgradeCapObjectId = await getUpgradeCapObjectId(
+      this.provider,
+      senderAddress,
+      coinPackageId,
+    );
+    if (!coinUpgradeCapObjectId) {
+      throw new Error(
+        `Coin upgrade cap not found for ${coinType} under owner ${senderAddress}. You must call 'createWrappedOnSuiPrepare' first.`,
+      );
+    }
 
-    // // Get TokenBridgeMessage
-    // const tx = new TransactionBlock();
-    // const [vaa] = tx.moveCall({
-    //   target: `${coreBridgePackageId}::vaa::parse_and_verify`,
-    //   arguments: [
-    //     tx.object(coreBridgeStateObjectId),
-    //     tx.pure(uint8ArrayToBCS(attestVAA)),
-    //     tx.object(SUI_CLOCK_OBJECT_ID),
-    //   ],
-    // });
-    // const [message] = tx.moveCall({
-    //   target: `${tokenBridgePackageId}::vaa::verify_only_once`,
-    //   arguments: [tx.object(tokenBridgeStateObjectId), vaa],
-    // });
+    const createTx = new TransactionBlock();
+    const [txVaa] = createTx.moveCall({
+      target: `${coreBridgePackageId}::vaa::parse_and_verify`,
+      arguments: [
+        tx.object(this.coreBridgeObjectId),
+        tx.pure(uint8ArrayToBCS(serialize(vaa))),
+        tx.object(SUI_CLOCK_OBJECT_ID),
+      ],
+    });
+    const [message] = createTx.moveCall({
+      target: `${tokenBridgePackageId}::vaa::verify_only_once`,
+      arguments: [tx.object(this.tokenBridgeObjectId), txVaa!],
+    });
 
-    // // Construct complete registration payload
-    // const versionType = wrappedAssetSetupType.split(", ")[1].replace(">", ""); // ugh
-    // tx.moveCall({
-    //   target: `${tokenBridgePackageId}::create_wrapped::complete_registration`,
-    //   arguments: [
-    //     tx.object(tokenBridgeStateObjectId),
-    //     tx.object(coinMetadataObjectId),
-    //     tx.object(wrappedAssetSetupObjectId),
-    //     tx.object(coinUpgradeCapObjectId),
-    //     message,
-    //   ],
-    //   typeArguments: [coinType, versionType],
-    // });
-    // return tx;
+    // Construct complete registration payload
+    const versionType = wrappedType.split(", ")[1]!.replace(">", ""); // ugh
+    createTx.moveCall({
+      target: `${tokenBridgePackageId}::create_wrapped::complete_registration`,
+      arguments: [
+        tx.object(this.tokenBridgeObjectId),
+        tx.object(coinMetadataObjectId),
+        tx.object(wrappedAssetSetupObjectId),
+        tx.object(coinUpgradeCapObjectId),
+        message!,
+      ],
+      typeArguments: [coinType, versionType],
+    });
+    yield this.createUnsignedTx(createTx, "Sui.TokenBridge.SubmitAttestation");
   }
 
   async *transfer(

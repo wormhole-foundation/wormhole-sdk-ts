@@ -1,7 +1,7 @@
 import { bcs } from "@mysten/sui.js/bcs";
 import { PaginatedObjectsResponse, SuiClient } from "@mysten/sui.js/client";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
-import { isValidSuiAddress, normalizeSuiObjectId } from "@mysten/sui.js/utils";
+import { isValidSuiAddress, normalizeSuiAddress, normalizeSuiObjectId } from "@mysten/sui.js/utils";
 
 import { encoding } from "@wormhole-foundation/connect-sdk";
 import {
@@ -10,7 +10,11 @@ import {
   getPackageIdFromType,
   isMoveStructObject,
   isMoveStructStruct,
+  isSameType,
+  normalizeSuiType,
 } from "./types";
+
+const UPGRADE_CAP_TYPE = "0x2::package::UpgradeCap";
 
 const MAX_PURE_ARGUMENT_SIZE = 16 * 1024;
 export const uint8ArrayToBCS = (arr: Uint8Array) =>
@@ -117,6 +121,118 @@ export const getOldestEmitterCapObjectId = async (
     nextCursor = response.hasNextPage ? response.nextCursor : undefined;
   } while (nextCursor);
   return oldestObjectId;
+};
+
+export const getOwnedObjectId = async (
+  provider: SuiClient,
+  owner: string,
+  type: string,
+): Promise<string | null> => {
+  // Upgrade caps are a special case
+  if (isSameType(type, UPGRADE_CAP_TYPE)) {
+    throw new Error(
+      "`getOwnedObjectId` should not be used to get the object ID of an `UpgradeCap`. Use `getUpgradeCapObjectId` instead.",
+    );
+  }
+
+  try {
+    const res = await provider.getOwnedObjects({
+      owner,
+      filter: { StructType: type },
+      options: {
+        showContent: true,
+      },
+    });
+    if (!res || !res.data) {
+      throw new Error("Failed to get owned objects");
+    }
+
+    const objects = res.data.filter((o) => o.data?.objectId);
+    if (!objects || objects.length === 0) return null;
+    if (objects.length === 1) {
+      return objects[0]!.data?.objectId ?? null;
+    } else {
+      const objectsStr = JSON.stringify(objects, null, 2);
+      throw new Error(
+        `Found multiple objects owned by ${owner} of type ${type}. This may mean that we've received an unexpected response from the Sui RPC and \`worm\` logic needs to be updated to handle this. Objects: ${objectsStr}`,
+      );
+    }
+  } catch (error) {
+    // Handle 504 error by using findOwnedObjectByType method
+    const is504HttpError = `${error}`.includes("504 Gateway Time-out");
+    if (error && is504HttpError) {
+      return getOwnedObjectIdPaginated(provider, owner, type);
+    } else {
+      throw error;
+    }
+  }
+};
+
+export const getOwnedObjectIdPaginated = async (
+  provider: SuiClient,
+  owner: string,
+  type: string,
+  cursor?: string,
+): Promise<string | null> => {
+  const res: PaginatedObjectsResponse = await provider.getOwnedObjects({
+    owner,
+    filter: undefined, // Filter must be undefined to avoid 504 responses
+    cursor: cursor || undefined,
+    options: {
+      showType: true,
+    },
+  });
+
+  if (!res || !res.data) {
+    throw new Error("Could not fetch owned object id");
+  }
+
+  const object = res.data.find((d) => isSameType(d.data?.type || "", type));
+  if (!object && res.hasNextPage) {
+    return getOwnedObjectIdPaginated(provider, owner, type, res.nextCursor as string);
+  } else if (!object && !res.hasNextPage) {
+    return null;
+  } else {
+    return object?.data?.objectId ?? null;
+  }
+};
+
+export const getUpgradeCapObjectId = async (
+  provider: SuiClient,
+  owner: string,
+  packageId: string,
+): Promise<string | null> => {
+  const res = await provider.getOwnedObjects({
+    owner,
+    filter: { StructType: normalizeSuiType(UPGRADE_CAP_TYPE) },
+    options: {
+      showContent: true,
+    },
+  });
+  if (!res || !res.data) {
+    throw new Error("Failed to get upgrade caps");
+  }
+
+  const objects = res.data.filter((o) => {
+    const fields = getFieldsFromObjectResponse(o);
+
+    return (
+      isMoveStructStruct(fields) &&
+      normalizeSuiAddress(fields.fields["package"]! as string) === normalizeSuiAddress(packageId)
+    );
+  });
+
+  if (!objects || objects.length === 0) return null;
+
+  if (objects.length === 1) {
+    // We've found the object we're looking for
+    return objects[0]!.data?.objectId ?? null;
+  } else {
+    const objectsStr = JSON.stringify(objects, null, 2);
+    throw new Error(
+      `Found multiple upgrade capabilities owned by ${owner} from package ${packageId}. Objects: ${objectsStr}`,
+    );
+  }
 };
 
 // Create a TransactionBlock to publish a package

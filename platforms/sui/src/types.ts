@@ -19,10 +19,14 @@ export const trimSuiType = (type: string): string => type.replace(/(0x)(0*)/g, "
 
 export const normalizeSuiType = (type: string): string => {
   const tokens = type.split(SUI_SEPARATOR);
-  if (tokens.length !== 3 || !isValidSuiAddress(tokens[0]!))
-    throw new Error(`Invalid Sui type: ${type}`);
+  if (tokens.length !== 3) throw new Error(`Invalid Sui type: ${type}`);
 
-  return [normalizeSuiAddress(tokens[0]), tokens[1], tokens[2]].join(SUI_SEPARATOR);
+  return [normalizeSuiAddress(tokens[0]!), tokens[1], tokens[2]].join(SUI_SEPARATOR);
+};
+
+export const getCoinTypeFromPackageId = (coinPackageId: string): string => {
+  if (!isValidSuiAddress(coinPackageId)) throw new Error(`Invalid package ID: ${coinPackageId}`);
+  return [coinPackageId, "coin", "COIN"].join(SUI_SEPARATOR);
 };
 
 export const getPackageIdFromType = (type: string): string => {
@@ -33,11 +37,6 @@ export const getPackageIdFromType = (type: string): string => {
     throw new Error("Invalid package id: " + packageId);
 
   return packageId;
-};
-
-export const getCoinTypeFromPackageId = (coinPackageId: string): string => {
-  if (!isValidSuiAddress(coinPackageId)) throw new Error(`Invalid package ID: ${coinPackageId}`);
-  return [coinPackageId, "coin", "COIN"].join(SUI_SEPARATOR);
 };
 
 export const getTableKeyType = (tableType: string): string => {
