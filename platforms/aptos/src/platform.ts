@@ -4,6 +4,7 @@ import {
   Network,
   PlatformContext,
   Wormhole,
+  isNative,
 } from "@wormhole-foundation/connect-sdk";
 import { AptosClient } from "aptos";
 import { AptosChain } from "./chain";
@@ -21,7 +22,6 @@ import {
 import { CoinClient, Types } from "aptos";
 import { APTOS_COIN, APTOS_SEPARATOR } from "./constants";
 import { AnyAptosAddress } from "./types";
-import { isNative } from "lodash";
 
 /**
  * @category Aptos

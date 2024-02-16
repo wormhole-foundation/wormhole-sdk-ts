@@ -13,6 +13,7 @@ import {
   decimals,
   nativeChainIds,
   networkPlatformConfigs,
+  isNative,
 } from '@wormhole-foundation/connect-sdk';
 import { SolanaChain } from './chain';
 
@@ -32,7 +33,6 @@ import {
   SolanaPlatformType,
   _platform,
 } from './types';
-import { isNative } from 'lodash';
 
 /**
  * @category Solana
