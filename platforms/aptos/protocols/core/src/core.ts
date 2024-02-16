@@ -45,7 +45,7 @@ export class AptosWormholeCore<N extends Network, C extends AptosChains>
     config: ChainsConfig<N, AptosPlatformType>,
   ): Promise<AptosWormholeCore<N, AptosChains>> {
     const [network, chain] = await AptosPlatform.chainFromRpc(connection);
-    const conf = config[chain];
+    const conf = config[chain]!;
     if (conf.network !== network)
       throw new Error(`Network mismatch: ${conf.network} !== ${network}`);
     return new AptosWormholeCore(network as N, chain, connection, conf.contracts);

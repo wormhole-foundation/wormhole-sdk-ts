@@ -1,19 +1,32 @@
 import { CONFIG, Wormhole, amount, api, signSendWait } from "@wormhole-foundation/connect-sdk";
+
+import { AlgorandPlatform } from "@wormhole-foundation/connect-sdk-algorand";
+import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
+import { SuiPlatform } from "@wormhole-foundation/connect-sdk-sui";
 
+import "@wormhole-foundation/connect-sdk-algorand-tokenbridge";
+import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
 import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
 import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
+import "@wormhole-foundation/connect-sdk-sui-tokenbridge";
 
 import { getStuff } from "./helpers";
 
 (async function () {
   // Setup
-  const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform]);
-  const snd = wh.getChain("Sepolia");
-  const rcv = wh.getChain("Solana");
+  const wh = new Wormhole("Testnet", [
+    EvmPlatform,
+    SolanaPlatform,
+    SuiPlatform,
+    AlgorandPlatform,
+    CosmwasmPlatform,
+  ]);
 
-  // get signers from local config
+  const snd = wh.getChain("Sui");
+  const rcv = wh.getChain("Algorand");
+
   const sender = await getStuff(snd);
   const receiver = await getStuff(rcv);
 

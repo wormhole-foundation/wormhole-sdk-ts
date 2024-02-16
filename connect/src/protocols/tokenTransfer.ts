@@ -443,13 +443,13 @@ export class TokenTransfer<N extends Network = Network>
     dstChain: ChainContext<N, Chain>,
     transfer: TokenTransferDetails,
   ): Promise<TransferQuote> {
+    const srcDecimals = await srcChain.getDecimals(transfer.token.address);
+    const srcAmount = amount.fromBaseUnits(transfer.amount, srcDecimals);
+    const srcAmountTruncated = amount.truncate(srcAmount, TOKEN_BRIDGE_MAX_DECIMALS);
+
     const srcToken = isNative(transfer.token.address)
       ? await srcChain.getNativeWrappedTokenId()
       : transfer.token;
-
-    const srcDecimals = await srcChain.getDecimals(srcToken.address);
-    const srcAmount = amount.fromBaseUnits(transfer.amount, srcDecimals);
-    const srcAmountTruncated = amount.truncate(srcAmount, TOKEN_BRIDGE_MAX_DECIMALS);
     const srcTokenUniversalAddress = universalAddress(srcToken);
 
     // Ensure the transfer would not violate governor transfer limits

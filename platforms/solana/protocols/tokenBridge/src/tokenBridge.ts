@@ -231,7 +231,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
       this.tokenBridge.programId,
       this.coreBridge.address,
       senderAddress,
-      new SolanaAddress(token).toUint8Array(),
+      new SolanaAddress(token).unwrap(),
       messageKey.publicKey,
       nonce,
     );
