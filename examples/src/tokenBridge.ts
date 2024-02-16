@@ -38,8 +38,8 @@ import "@wormhole-foundation/connect-sdk-sui-tokenbridge";
   ]);
 
   // Grab chain Contexts -- these hold a reference to a cached rpc client
-  const sendChain = wh.getChain("Sui");
-  const rcvChain = wh.getChain("Solana");
+  const sendChain = wh.getChain("Solana");
+  const rcvChain = wh.getChain("Sui");
 
   // Shortcut to allow transferring native gas token
   const token = Wormhole.tokenId(sendChain.chain, "native");
