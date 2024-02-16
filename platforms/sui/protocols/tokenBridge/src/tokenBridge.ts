@@ -33,9 +33,11 @@ import {
   SuiUnsignedTransaction,
   getCoinTypeFromPackageId,
   getFieldsFromObjectResponse,
+  getObjectFields,
   getOldestEmitterCapObjectId,
   getOriginalPackageId,
   getPackageId,
+  getTableKeyType,
   isMoveStructStruct,
   isSameType,
   isSuiCreateEvent,
@@ -153,7 +155,33 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
   async isTransferCompleted(
     vaa: TokenBridge.VAA<"Transfer" | "TransferWithPayload">,
   ): Promise<boolean> {
-    throw new Error("Not implemented");
+    const tokenBridgeStateFields = await getObjectFields(this.provider, this.tokenBridgeObjectId);
+
+    if (!tokenBridgeStateFields)
+      throw new Error("Unable to fetch object fields from token bridge state");
+
+    const hashes = tokenBridgeStateFields["consumed_vaas"]?.fields?.hashes;
+
+    const keyType = getTableKeyType(hashes?.fields?.items?.type);
+    if (!keyType) throw new Error("Unable to get key type");
+
+    const tableObjectId = hashes?.fields?.items?.fields?.id?.id;
+    if (!tableObjectId) throw new Error("Unable to fetch consumed VAAs table");
+
+    const response = await this.provider.getDynamicFieldObject({
+      parentId: tableObjectId,
+      name: {
+        type: keyType,
+        value: {
+          data: [...vaa.hash],
+        },
+      },
+    });
+
+    if (!response.error) return true;
+    if (response.error.code === "dynamicFieldNotFound") return false;
+
+    throw new Error(`Unexpected getDynamicFieldObject response ${response.error}`);
   }
 
   async *createAttestation(token: TokenAddress<C>): AsyncGenerator<SuiUnsignedTransaction<N, C>> {
