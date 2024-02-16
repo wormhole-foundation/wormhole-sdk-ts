@@ -17,6 +17,7 @@ import {
   TokenId,
   UniversalAddress,
   canonicalAddress,
+  encoding,
   isNative,
   nativeChainIds,
   serialize,
@@ -193,19 +194,35 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
   ): AsyncGenerator<SuiUnsignedTransaction<N, C>> {
     const [coreBridgePackageId, tokenBridgePackageId] = await this.getPackageIds();
 
+    const senderAddress = sender.toString();
+
     const decimals = Math.min(vaa.payload.decimals, 8);
     const build = await this.getCoinBuildOutput(
       coreBridgePackageId,
       tokenBridgePackageId,
       decimals,
     );
-    const tx = await publishPackage(build, sender.toString());
-    yield this.createUnsignedTx(tx, "Sui.TokenBridge.PrepareCreateWrapped");
+    const tx = await publishPackage(build, senderAddress);
+    console.log(tx);
+    // yield this.createUnsignedTx(tx, "Sui.TokenBridge.PrepareCreateWrapped");
 
     // TODO:
     let coinPackageId: string = "";
     while (coinPackageId === "") {
       await new Promise((r) => setTimeout(r, 1000));
+
+      //this.provider.get
+
+      const events = await this.provider.queryEvents({
+        query: { MoveEventType: "published", Package: tokenBridgePackageId },
+        limit: 10,
+      });
+      if (events.data.length === 0) continue;
+
+      for (const event of events.data) {
+        console.log(event);
+      }
+
       // wait for the result of the previous tx to fetch the new coinPackageId
     }
 
@@ -312,11 +329,6 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
     const feeAmount = 0n;
     const relayerFee = 0n;
     const nonce = 0;
-
-    //   amount: bigint,
-    //   payload: Uint8Array | null = null,
-    //   senderAddress?: string
-
     const senderAddress = sender.toString();
 
     const coinType = isNative(token) ? "0x2::sui::SUI" : token.toString();
@@ -549,7 +561,8 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
       "00020106010000000001090b0031" +
       decimals.toString(16).padStart(2, "0") +
       "0a0138000b012e110238010200";
-    const bytecode = Buffer.from(bytecodeHex, "hex").toString("base64");
+
+    const bytecode = encoding.b64.encode(encoding.hex.decode(bytecodeHex));
 
     return {
       modules: [bytecode],
