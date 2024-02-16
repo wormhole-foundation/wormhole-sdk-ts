@@ -14,7 +14,7 @@ import {
   normalizeSuiType,
 } from "./types";
 
-const UPGRADE_CAP_TYPE = "0x2::package::UpgradeCap";
+export const UPGRADE_CAP_TYPE = "0x2::package::UpgradeCap";
 
 const MAX_PURE_ARGUMENT_SIZE = 16 * 1024;
 export const uint8ArrayToBCS = (arr: Uint8Array) =>

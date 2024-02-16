@@ -35,9 +35,7 @@ import {
   getFieldsFromObjectResponse,
   getOldestEmitterCapObjectId,
   getOriginalPackageId,
-  getOwnedObjectId,
   getPackageId,
-  getUpgradeCapObjectId,
   isMoveStructStruct,
   isSameType,
   isSuiCreateEvent,
@@ -207,16 +205,19 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
       tokenBridgePackageId,
       decimals,
     );
-    const tx = await publishPackage(build, senderAddress);
-    console.log(tx);
-    // yield this.createUnsignedTx(tx, "Sui.TokenBridge.PrepareCreateWrapped");
+    const publishTx = await publishPackage(build, senderAddress);
+    yield this.createUnsignedTx(publishTx, "Sui.TokenBridge.PrepareCreateWrapped");
 
+    // TODO: refactor this to something less embarassing
     let coinPackageId: string = "";
-    let wrappedType: string = "";
+    let wrappedSetupObjectId: string = "";
+    let coinUpgradeCapId: string = "";
+    let coinMetadataObjectId: string = "";
+    let versionType: string = "";
     let found = false;
     while (!found) {
       // wait for the result of the previous tx to fetch the new coinPackageId
-      await new Promise((r) => setTimeout(r, 1000));
+      await new Promise((r) => setTimeout(r, 500));
 
       const txBlocks = await this.provider.queryTransactionBlocks({
         filter: { FromAddress: senderAddress },
@@ -231,78 +232,57 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
         for (const change of txb.objectChanges!) {
           if (isSuiPublishEvent(change) && change.packageId !== undefined) {
             coinPackageId = change.packageId;
-          }
-          if (
-            isSuiCreateEvent(change) &&
-            change.objectType.includes("create_wrapped::WrappedAssetSetup")
-          ) {
-            wrappedType = change.objectType;
+          } else if (isSuiCreateEvent(change) && change.objectType.includes("WrappedAssetSetup")) {
+            wrappedSetupObjectId = change.objectId;
+            // TODO: what
+            versionType = change.objectType.split(", ")[1]!.replace(">", ""); // ugh
+          } else if (isSuiCreateEvent(change) && change.objectType.includes("UpgradeCap")) {
+            coinUpgradeCapId = change.objectId;
+          } else if (isSuiCreateEvent(change) && change.objectType.includes("CoinMetadata")) {
+            coinMetadataObjectId = change.objectId;
           }
         }
 
-        if (coinPackageId !== "" && wrappedType !== "") {
+        if (
+          coinPackageId !== "" &&
+          wrappedSetupObjectId !== "" &&
+          coinUpgradeCapId !== "" &&
+          coinMetadataObjectId !== ""
+        ) {
           found = true;
           break;
         } else {
           coinPackageId = "";
-          wrappedType = "";
+          wrappedSetupObjectId = "";
+          coinUpgradeCapId = "";
+          coinMetadataObjectId = "";
         }
       }
     }
 
-    console.log(`out of loop with coinPackageId ${coinPackageId} and wrappedType: ${wrappedType}`);
-
-    // Get coin metadata
     const coinType = getCoinTypeFromPackageId(coinPackageId);
-    const coinMetadataObjectId = (await this.provider.getCoinMetadata({ coinType }))?.id;
-    if (!coinMetadataObjectId) {
-      throw new Error(`Coin metadata object not found for coin type ${coinType}.`);
-    }
-
-    // // WrappedAssetSetup looks like
-    // // 0x92d81f28c167d90f84638c654b412fe7fa8e55bdfac7f638bdcf70306289be86::create_wrapped::WrappedAssetSetup<0xa40e0511f7d6531dd2dfac0512c7fd4a874b76f5994985fb17ee04501a2bb050::coin::COIN, 0x4eb7c5bca3759ab3064b46044edb5668c9066be8a543b28b58375f041f876a80::version_control::V__0_1_1>
-    const wrappedAssetSetupObjectId = await getOwnedObjectId(
-      this.provider,
-      senderAddress,
-      wrappedType,
-    );
-    if (!wrappedAssetSetupObjectId) throw new Error(`WrappedAssetSetup not found`);
-
-    // // Get coin upgrade capability
-    const coinUpgradeCapObjectId = await getUpgradeCapObjectId(
-      this.provider,
-      senderAddress,
-      coinPackageId,
-    );
-    if (!coinUpgradeCapObjectId) {
-      throw new Error(
-        `Coin upgrade cap not found for ${coinType} under owner ${senderAddress}. You must call 'createWrappedOnSuiPrepare' first.`,
-      );
-    }
 
     const createTx = new TransactionBlock();
     const [txVaa] = createTx.moveCall({
       target: `${coreBridgePackageId}::vaa::parse_and_verify`,
       arguments: [
-        tx.object(this.coreBridgeObjectId),
-        tx.pure(uint8ArrayToBCS(serialize(vaa))),
-        tx.object(SUI_CLOCK_OBJECT_ID),
+        createTx.object(this.coreBridgeObjectId),
+        createTx.pure(uint8ArrayToBCS(serialize(vaa))),
+        createTx.object(SUI_CLOCK_OBJECT_ID),
       ],
     });
     const [message] = createTx.moveCall({
       target: `${tokenBridgePackageId}::vaa::verify_only_once`,
-      arguments: [tx.object(this.tokenBridgeObjectId), txVaa!],
+      arguments: [createTx.object(this.tokenBridgeObjectId), txVaa!],
     });
 
-    // Construct complete registration payload
-    const versionType = wrappedType.split(", ")[1]!.replace(">", ""); // ugh
     createTx.moveCall({
       target: `${tokenBridgePackageId}::create_wrapped::complete_registration`,
       arguments: [
-        tx.object(this.tokenBridgeObjectId),
-        tx.object(coinMetadataObjectId),
-        tx.object(wrappedAssetSetupObjectId),
-        tx.object(coinUpgradeCapObjectId),
+        createTx.object(this.tokenBridgeObjectId),
+        createTx.object(coinMetadataObjectId),
+        createTx.object(wrappedSetupObjectId),
+        createTx.object(coinUpgradeCapId),
         message!,
       ],
       typeArguments: [coinType, versionType],
