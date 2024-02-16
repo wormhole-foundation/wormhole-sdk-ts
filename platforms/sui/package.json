@@ -1,5 +1,5 @@
 {
-  "name": "@wormhole-foundation/connect-sdk-aptos-core",
+  "name": "@wormhole-foundation/connect-sdk-sui",
   "version": "0.4.1",
   "repository": {
     "type": "git",
@@ -10,23 +10,23 @@
   },
   "homepage": "https://github.com/wormhole-foundation/connect-sdk#readme",
   "directories": {
-    "test": "__tests__"
+    "test": "tests"
   },
   "license": "Apache-2.0",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/esm/index.d.ts",
   "author": "",
-  "description": "SDK for Solana, used in conjunction with @wormhole-foundation/connect-sdk",
+  "description": "SDK for EVM chains, used in conjunction with @wormhole-foundation/connect-sdk",
   "files": [
-    "dist"
+    "dist/**/*"
   ],
   "keywords": [
     "wormhole",
     "sdk",
     "typescript",
     "connect",
-    "aptos"
+    "sui"
   ],
   "engines": {
     "node": ">=16"
@@ -41,11 +41,8 @@
     "lint": "npm run prettier && eslint --fix",
     "prettier": "prettier --write ./src"
   },
-  "devDependencies": {
-    "nock": "^13.3.3"
-  },
   "dependencies": {
     "@wormhole-foundation/connect-sdk": "^0.4.1",
-    "@wormhole-foundation/connect-sdk-aptos": "^0.4.1"
+    "@mysten/sui.js": "^0.50.1"
   }
 }

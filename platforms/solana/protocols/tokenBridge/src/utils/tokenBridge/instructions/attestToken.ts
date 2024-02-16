@@ -23,6 +23,15 @@ export function createAttestTokenInstruction(
     connection,
   ).methods.attestToken(nonce);
 
+  console.log(
+    getAttestTokenAccounts(
+      tokenBridgeProgramId,
+      wormholeProgramId,
+      payer,
+      mint,
+      message,
+    ),
+  );
   // @ts-ignore
   return methods._ixFn(...methods._args, {
     accounts: getAttestTokenAccounts(
@@ -74,8 +83,8 @@ export function getAttestTokenAccounts(
   } = coreUtils.getPostMessageAccounts(
     wormholeProgramId,
     payer,
-    tokenBridgeProgramId,
     message,
+    tokenBridgeProgramId,
   );
   return {
     payer: new PublicKey(payer),
