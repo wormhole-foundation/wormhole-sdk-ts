@@ -303,7 +303,8 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
     const nonce = 0;
     const senderAddress = sender.toString();
 
-    const coinType = isNative(token) ? "0x2::sui::SUI" : token.toString();
+    const coinType = (isNative(token) ? SUI_TYPE_ARG : token).toString();
+
     const coins = (
       await this.provider.getCoins({
         owner: senderAddress,
@@ -499,7 +500,9 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
   }
 
   async getWrappedNative(): Promise<NativeAddress<C>> {
-    throw new Error("Not implemented");
+    const md = await this.provider.getCoinMetadata({ coinType: SUI_TYPE_ARG });
+    if (!md) throw new Error("Coin metadata not found");
+    return toNative(this.chain, md.id!);
   }
 
   private async getPackageIds(): Promise<[string, string]> {

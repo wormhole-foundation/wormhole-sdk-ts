@@ -5,26 +5,23 @@ import {
   TokenTransfer,
   Wormhole,
   amount,
-  encoding,
   isTokenId,
 } from "@wormhole-foundation/connect-sdk";
 import { TransferStuff, getStuff, waitLog } from "./helpers";
 
 // Import the platform-specific packages
 import { AlgorandPlatform } from "@wormhole-foundation/connect-sdk-algorand";
+import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
-import {
-  CosmwasmAddress,
-  CosmwasmPlatform,
-  Gateway,
-} from "@wormhole-foundation/connect-sdk-cosmwasm";
+import { SuiPlatform } from "@wormhole-foundation/connect-sdk-sui";
 
 // Register the protocols
 import "@wormhole-foundation/connect-sdk-algorand-tokenbridge";
+import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
 import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
 import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
-import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
+import "@wormhole-foundation/connect-sdk-sui-tokenbridge";
 
 // Use .env.example as a template for your .env file and populate it with secrets
 // for funded accounts on the relevant chain+network combos to run the example
@@ -37,24 +34,15 @@ import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
     SolanaPlatform,
     AlgorandPlatform,
     CosmwasmPlatform,
+    SuiPlatform,
   ]);
 
   // Grab chain Contexts -- these hold a reference to a cached rpc client
-  const sendChain = wh.getChain("Sei");
+  const sendChain = wh.getChain("Sui");
   const rcvChain = wh.getChain("Solana");
 
-  const stb = await sendChain.getTokenBridge();
-  const wa = await stb.getWrappedAsset(await rcvChain.getNativeWrappedTokenId());
-  console.log(wa.toString());
   // Shortcut to allow transferring native gas token
-
-  const factoryAddy = new CosmwasmAddress(
-    "factory/sei1dkdwdvknx0qav5cp5kw68mkn3r99m3svkyjfvkztwh97dv2lm0ksj6xrak/GotfBk8VUDfbqgTJgF1nhV7bfZgUxfWiwADNLKv5PEMS",
-  );
-  const cw20 = Gateway.factoryToCw20(factoryAddy);
-  console.log(cw20.toString());
-
-  const token = { chain: "Sei", address: factoryAddy };
+  const token = Wormhole.tokenId(sendChain.chain, "native");
 
   // A TokenId is just a `{chain, address}` pair and an alias for ChainAddress
   // The `address` field must be a parsed address.
@@ -62,9 +50,9 @@ import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
   // by calling the static `chainAddress` method on the Wormhole class.
   // e.g.
   // wAvax on Solana
-  // const token = Wormhole.chainAddress("Solana", "3Ftc5hTz9sG4huk79onufGiebJNDMZNL8HYgdMJ9E7JR");
+  // const token = Wormhole.tokenId("Solana", "3Ftc5hTz9sG4huk79onufGiebJNDMZNL8HYgdMJ9E7JR");
   // wSol on Avax
-  // const token = Wormhole.chainAddress("Avalanche", "0xb10563644a6AB8948ee6d7f5b0a1fb15AaEa1E03");
+  // const token = Wormhole.tokenId("Avalanche", "0xb10563644a6AB8948ee6d7f5b0a1fb15AaEa1E03");
 
   // Normalized given token decimals later but can just pass bigints as base units
   // Note: The Token bridge will dedust past 8 decimals
@@ -127,6 +115,7 @@ import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
       });
 
   const receipt = await waitLog(wh, xfer);
+
   // Log out the results
   console.log(receipt);
 })();

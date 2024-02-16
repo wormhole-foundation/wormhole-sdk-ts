@@ -10,6 +10,7 @@ import {
   WormholeCore,
   WormholeMessageId,
   toChainId,
+  toNative,
 } from "@wormhole-foundation/connect-sdk";
 import {
   AnySuiAddress,
@@ -21,19 +22,19 @@ import {
 
 export class SuiWormholeCore<N extends Network, C extends SuiChains> implements WormholeCore<N, C> {
   readonly chainId: ChainId;
-  readonly coreBridge: string;
+  readonly coreBridgePackageId: string;
 
   private constructor(
     readonly network: N,
     readonly chain: C,
-    readonly connection: SuiClient,
+    readonly provider: SuiClient,
     readonly contracts: Contracts,
   ) {
     this.chainId = toChainId(chain);
     const coreBridgeAddress = contracts.coreBridge;
     if (!coreBridgeAddress)
       throw new Error(`CoreBridge contract Address for chain ${chain} not found`);
-    this.coreBridge = coreBridgeAddress;
+    this.coreBridgePackageId = coreBridgeAddress;
   }
   getMessageFee(): Promise<bigint> {
     throw new Error("Method not implemented.");
@@ -65,6 +66,26 @@ export class SuiWormholeCore<N extends Network, C extends SuiChains> implements 
   }
 
   async parseTransaction(txid: string): Promise<WormholeMessageId[]> {
-    throw new Error("Not implemented");
+    const txBlock = await this.provider.getTransactionBlock({
+      digest: txid,
+      options: { showEvents: true, showEffects: true, showInput: true },
+    });
+
+    const message = txBlock.events?.find((event) => event.type.endsWith("WormholeMessage"));
+    if (!message || !message.parsedJson) {
+      throw new Error("WormholeMessage not found");
+    }
+    const { sender: emitterAddress, sequence } = message.parsedJson as {
+      sender: string;
+      sequence: number;
+    };
+
+    return [
+      {
+        emitter: toNative(this.chain, emitterAddress).toUniversalAddress(),
+        sequence: BigInt(sequence),
+        chain: this.chain,
+      },
+    ];
   }
 }

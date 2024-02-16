@@ -43,7 +43,7 @@ export class SuiSigner<N extends Network, C extends SuiChains> implements SignAn
         signer: this._signer,
       });
 
-      txids.push(...(result.transaction?.txSignatures ?? []));
+      txids.push(result.digest);
     }
     return txids;
   }

@@ -43,6 +43,7 @@
   },
   "dependencies": {
     "@wormhole-foundation/connect-sdk": "^0.4.1",
-    "@wormhole-foundation/connect-sdk-sui": "^0.4.1"
+    "@wormhole-foundation/connect-sdk-sui": "^0.4.1",
+    "@wormhole-foundation/connect-sdk-sui-core": "^0.4.1"
   }
 }

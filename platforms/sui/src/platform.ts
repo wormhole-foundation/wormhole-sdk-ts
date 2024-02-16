@@ -9,6 +9,7 @@ import {
   TokenId,
   TxHash,
   chainToPlatform,
+  isNative,
   nativeChainIds,
   decimals as nativeDecimals,
   networkPlatformConfigs,
@@ -16,7 +17,14 @@ import {
 
 import { SuiClient } from "@mysten/sui.js/client";
 import { SuiChain } from "./chain";
-import { AnySuiAddress, SuiChains, SuiPlatformType, _platform } from "./types";
+import {
+  AnySuiAddress,
+  SuiChains,
+  SuiPlatformType,
+  _platform,
+  getCoinTypeFromPackageId,
+} from "./types";
+import { getObjectFields } from "./utils";
 
 /**
  * @category Sui
@@ -64,20 +72,20 @@ export class SuiPlatform<N extends Network>
     return platform === SuiPlatform._platform;
   }
 
-  static async getDecimals(
-    chain: Chain,
-    rpc: SuiClient,
-    token: AnySuiAddress | "native",
-  ): Promise<number> {
-    if (token === "native") return nativeDecimals.nativeDecimals(SuiPlatform._platform);
+  static async getDecimals(chain: Chain, rpc: SuiClient, token: AnySuiAddress): Promise<number> {
+    if (isNative(token)) return nativeDecimals.nativeDecimals(SuiPlatform._platform);
 
     const tokenAddress = token.toString();
+
+    try {
+      const fields = await getObjectFields(rpc, tokenAddress);
+      if (fields && "decimals" in fields) return fields["decimals"];
+    } catch {}
+
     const metadata = await rpc.getCoinMetadata({
-      coinType: tokenAddress,
+      coinType: getCoinTypeFromPackageId(tokenAddress),
     });
-
     if (metadata === null) throw new Error(`Can't fetch decimals for token ${tokenAddress}`);
-
     return metadata.decimals;
   }
 
