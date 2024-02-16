@@ -1,12 +1,4 @@
-import {
-  CONFIG,
-  TokenBridge,
-  Wormhole,
-  amount,
-  api,
-  canonicalAddress,
-  signSendWait,
-} from "@wormhole-foundation/connect-sdk";
+import { CONFIG, Wormhole, amount, api, signSendWait } from "@wormhole-foundation/connect-sdk";
 
 import { AlgorandPlatform } from "@wormhole-foundation/connect-sdk-algorand";
 import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
@@ -32,48 +24,10 @@ import { getStuff } from "./helpers";
     CosmwasmPlatform,
   ]);
 
-  const suiCtx = wh.getChain("Sui");
-  const suiTb = await suiCtx.getTokenBridge();
-  const suiStuff = await getStuff(suiCtx);
+  const snd = wh.getChain("Sui");
+  const rcv = wh.getChain("Algorand");
 
-  const solUsdc = Wormhole.tokenId("Solana", "6DNSN2BJsaPFdFFc1zP37kkeNe4Usc1Sqkzr9C9vPWcU");
-  if (!(await suiTb.hasWrappedAsset(solUsdc))) {
-    // console.log("No wrapped asset, creating...");
-    // const solCtx = wh.getChain("Solana");
-    // const solStuff = await getStuff(solCtx);
-    // const solTb = await solCtx.getTokenBridge();
-    // console.log("Attesting on Solana");
-    // const txs = await signSendWait(
-    //   solCtx,
-    //   solTb.createAttestation(solUsdc.address, solStuff.address.address),
-    //   solStuff.signer,
-    // );
-    // console.log("Txids: ", txs);
-    const txid =
-      "4BXZxrLnAH1CzoQaiNfEAaUWGWuwQX73DvUDGAZUfunhvAxeVesXZHnPRgZX1amK2gKYcNTaABU4VCAvpUWhe8G";
-    const vaa = await wh.getVaa(txid, "TokenBridge:AttestMeta", 60_000);
-    if (!vaa) throw new Error("No VAA for attest");
-
-    console.log("Got vaa: ", vaa);
-    console.log(
-      await signSendWait(
-        suiCtx,
-        suiTb.submitAttestation(vaa, suiStuff.address.address),
-        suiStuff.signer,
-      ),
-    );
-  }
-
-  return;
-  const usdc = Wormhole.tokenId(
-    "Sui",
-    "0xaf9ef585e2efd13321d0a2181e1c0715f9ba28ed052055d33a8b164f6c146a56::tusdt::TUSDT",
-  );
-
-  // get signers from local config
-  console.log(await signSendWait(suiCtx, tb.createAttestation(usdc.address), sender.signer));
-  return;
-
+  const sender = await getStuff(snd);
   const receiver = await getStuff(rcv);
 
   // Get a Token Bridge contract client on the source

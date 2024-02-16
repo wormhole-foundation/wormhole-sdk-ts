@@ -342,14 +342,14 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
       typeArguments: [coinType],
     });
 
-    if (payload === null) {
+    if (!payload) {
       const [transferTicket, dust] = tx.moveCall({
         target: `${tokenBridgePackageId}::transfer_tokens::prepare_transfer`,
         arguments: [
           assetInfo!,
           transferCoin!,
           tx.pure(toChainId(recipient.chain)),
-          tx.pure(recipient.address.toUint8Array()),
+          tx.pure(uint8ArrayToBCS(recipient.address.toUint8Array())),
           tx.pure(relayerFee),
           tx.pure(nonce),
         ],
@@ -378,7 +378,7 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
         ],
       });
 
-      return tx;
+      yield this.createUnsignedTx(tx, "Sui.TokenBridge.Transfer");
     } else {
       if (!senderAddress) throw new Error("senderAddress is required for transfer with payload");
 
@@ -442,7 +442,7 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
         tx.transferObjects([emitterCap!], tx.pure(senderAddress));
       }
 
-      return tx;
+      yield this.createUnsignedTx(tx, "Sui.TokenBridge.TransferWithPayload");
     }
   }
 
