@@ -99,6 +99,56 @@ const cosmwasmNativeDenom = [
 export const chainToNativeDenoms = constMap(cosmwasmNativeDenom);
 export const nativeDenomToChain = constMap(cosmwasmNativeDenom, [[0, 2], [1]]);
 
+// Gateway IBC channel consts
+export type IbcChannels = Partial<Record<CosmwasmChains, string>>;
+
+// For each chain, add the channel id for each other chain
+const gatewayConnections = [
+  [
+    "Mainnet",
+    [
+      [
+        "Wormchain",
+        {
+          Osmosis: "channel-3",
+          Evmos: "channel-5",
+          Kujira: "channel-9",
+          Stargaze: "channel-12",
+          Injective: "channel-13",
+          Dymension: "channel-15",
+        },
+      ],
+      ["Osmosis", { Wormchain: "channel-2186" }],
+      ["Evmos", { Wormchain: "channel-94" }],
+      ["Kujira", { Wormchain: "channel-113" }],
+      ["Injective", { Wormchain: "channel-183" }],
+      ["Dymension", { Wormchain: "channel-36" }],
+      ["Stargaze", { Wormchain: "channel-278" }],
+    ],
+  ],
+  [
+    "Testnet",
+    [
+      ["Wormchain", { Cosmoshub: "channel-5", Osmosis: "channel-9" }],
+      ["Cosmoshub", { Wormchain: "channel-3086" }],
+      ["Osmosis", { Wormchain: "channel-3906" }],
+    ],
+  ],
+  [
+    "Devnet",
+    [
+      ["Wormchain", { Cosmoshub: "channel-1", Osmosis: "channel-2" }],
+      ["Cosmoshub", { Wormchain: "channel-1" }],
+      ["Osmosis", { Wormchain: "channel-1" }],
+    ],
+  ],
+] as const satisfies RoArray<readonly [Network, RoArray<readonly [CosmwasmChains, IbcChannels]>]>;
+
+export const networkChainToChannels = constMap(gatewayConnections);
+
+export const evmLikeChains = ["Evmos", "Injective"] as const satisfies RoArray<CosmwasmChains>;
+export type CosmwasmEvmChain = (typeof evmLikeChains)[number];
+
 const cosmwasmNetworkChainRestUrl = [
   [
     "Mainnet",
@@ -124,48 +174,3 @@ const cosmwasmNetworkChainRestUrl = [
 ] as const satisfies RoArray<readonly [Network, RoArray<readonly [CosmwasmChains, string]>]>;
 
 export const cosmwasmNetworkChainToRestUrls = constMap(cosmwasmNetworkChainRestUrl);
-
-export type IbcChannels = Partial<Record<CosmwasmChains, string>>;
-
-// For each chain, add the channel id for each other chain
-const gatewayConnections = [
-  [
-    "Mainnet",
-    [
-      [
-        "Wormchain",
-        {
-          Osmosis: "channel-3",
-          Evmos: "channel-5",
-          Kujira: "channel-9",
-          Injective: "channel-13",
-        },
-      ],
-      ["Osmosis", { Wormchain: "channel-2186" }],
-      ["Evmos", { Wormchain: "channel-94" }],
-      ["Kujira", { Wormchain: "channel-113" }],
-      ["Injective", { Wormchain: "channel-183" }],
-    ],
-  ],
-  [
-    "Testnet",
-    [
-      ["Wormchain", { Cosmoshub: "channel-5", Osmosis: "channel-9" }],
-      ["Cosmoshub", { Wormchain: "channel-3086" }],
-      ["Osmosis", { Wormchain: "channel-3906" }],
-    ],
-  ],
-  [
-    "Devnet",
-    [
-      ["Wormchain", { Cosmoshub: "channel-1", Osmosis: "channel-2" }],
-      ["Cosmoshub", { Wormchain: "channel-1" }],
-      ["Osmosis", { Wormchain: "channel-1" }],
-    ],
-  ],
-] as const satisfies RoArray<readonly [Network, RoArray<readonly [CosmwasmChains, IbcChannels]>]>;
-
-export const networkChainToChannels = constMap(gatewayConnections);
-
-export const evmLikeChains = ["Evmos", "Injective"] as const satisfies RoArray<CosmwasmChains>;
-export type CosmwasmEvmChain = (typeof evmLikeChains)[number];
