@@ -159,11 +159,12 @@ export class CosmwasmIbcBridge<N extends Network, C extends CosmwasmChains>
   async lookupTransferFromTx(txid: TxHash): Promise<IbcTransferInfo[]> {
     const txResults = await this.rpc.getTx(txid);
 
-    if (!txResults) throw new Error(`No transaction found with txid: ${txid}`);
+    if (!txResults) throw new Error(`No IBC transfer found on ${this.chain} with txid: ${txid}`);
     if (txResults.code !== 0) throw new Error(`Transaction failed: ${txResults.rawLog}`);
 
     const xfers = await this.fetchTransferInfo(txResults!);
-    if (xfers.length === 0) throw new Error("No transfers found for tx: " + txid);
+    if (xfers.length === 0)
+      throw new Error(`No IBC transfers found on ${this.chain} with txid: ${txid}`);
 
     return xfers;
   }
@@ -220,10 +221,11 @@ export class CosmwasmIbcBridge<N extends Network, C extends CosmwasmChains>
     // Finds the transaction but there may be multiple
     // IBCTransfers as part of this
     const tx = await this.lookupTxFromIbcMsgId(msg);
-    if (!tx) throw new Error(`No transfers found on ${this.chain} in tx: ${tx}`);
+    if (!tx) throw new Error(`No transfers found on ${this.chain} for msg: ${JSON.stringify(msg)}`);
 
     const xfers = await this.fetchTransferInfo(tx);
-    if (xfers.length === 0) throw new Error(`No transfers found on ${this.chain} in tx: ${tx}`);
+    if (xfers.length === 0)
+      throw new Error(`No transfers found on ${this.chain} for msg: ${JSON.stringify(msg)}`);
 
     return xfers;
   }

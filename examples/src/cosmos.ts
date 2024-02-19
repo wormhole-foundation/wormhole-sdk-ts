@@ -37,14 +37,13 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 (async function () {
   // init Wormhole object, passing config for which network
   // to use (e.g. Mainnet/Testnet) and what Platforms to support
-  const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform, CosmwasmPlatform]);
-
+  const wh = new Wormhole("Mainnet", [EvmPlatform, SolanaPlatform, CosmwasmPlatform]);
   // Pick up where you left off by updating the txids as you go
   let fakeIt = false;
 
   // Grab chain Contexts for each leg of our journey
   const external = wh.getChain("Solana");
-  const cosmos1 = wh.getChain("Osmosis");
+  const cosmos1 = wh.getChain("Dymension");
   const cosmos2 = wh.getChain("Injective");
 
   // Get signer from local key but anything that implements
@@ -57,13 +56,14 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   const token: TokenId = Wormhole.tokenId(external.chain, "native");
   const amt = amount.units(amount.parse("0.001", external.config.nativeTokenDecimals));
 
+  fakeIt = true;
   // Transfer native token from source chain, through gateway, to a cosmos chain
   let route1 = fakeIt
     ? await GatewayTransfer.from(
         wh,
         {
           chain: external.chain,
-          txid: "2JmrNRmKYdPFrv9kAmnzEvmsxGtqHmYyGw4HXD2gpyxSnTNB5K7jdK9Ua295mqBXjk3Sazu3SkxDc5Qs9tL4QMkD",
+          txid: "xoir2db9AVMNu61moxXs9iQdanXoyzAA5uVjcHykSd4dEDvcDPRXZhrvXwjEB5TC747Bu6ftSnaL19SYX6E11YG",
         },
         600_000,
       )
