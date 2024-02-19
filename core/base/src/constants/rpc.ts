@@ -31,7 +31,10 @@ const rpcConfig = [[
     ["Karura",    "https://eth-rpc-karura.aca-api.network"],
     ["Acala",     "https://eth-rpc-acala.aca-api.network"],
     ["Oasis",     "https://emerald.oasis.dev"],
-    ["Dymension", "https://dymension-evm.blockpi.network/v1/rpc/public"]
+    ["Dymension", "https://dymension-rpc.polkachu.com/"],
+    ["Stargaze",  "https://stargaze-rpc.polkachu.com/"],
+    ["Celestia",  "https://celestia-rpc.polkachu.com/"],
+    ["Neutron",   "https://neutron-rpc.polkachu.com/"]
   ]], [
   "Testnet", [
     ["Ethereum",        "https://rpc.ankr.com/eth_goerli"],
