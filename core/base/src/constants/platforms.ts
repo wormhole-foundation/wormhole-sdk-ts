@@ -43,6 +43,10 @@ const platformAndChainsEntries = [[
     "Terra2",
     "Wormchain",
     "Xpla",
+    "Dymension",
+    "Neutron",
+    "Stargaze",
+    "Celestia"
   ]], [
     "Btc", [
       "Btc"

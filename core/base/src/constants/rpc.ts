@@ -31,6 +31,7 @@ const rpcConfig = [[
     ["Karura",    "https://eth-rpc-karura.aca-api.network"],
     ["Acala",     "https://eth-rpc-acala.aca-api.network"],
     ["Oasis",     "https://emerald.oasis.dev"],
+    ["Dymension", "https://dymension-evm.blockpi.network/v1/rpc/public"]
   ]], [
   "Testnet", [
     ["Ethereum",        "https://rpc.ankr.com/eth_goerli"],
