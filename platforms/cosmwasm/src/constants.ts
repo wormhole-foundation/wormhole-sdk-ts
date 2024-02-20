@@ -1,7 +1,7 @@
 import { Network, RoArray, constMap } from "@wormhole-foundation/connect-sdk";
 import { CosmwasmChains } from "./types";
 
-export const DEFAULT_FEE = 1_000_000;
+export const DEFAULT_FEE = 1_000_000_000_000;
 
 export const MSG_EXECUTE_CONTRACT_TYPE_URL = "/cosmwasm.wasm.v1.MsgExecuteContract";
 

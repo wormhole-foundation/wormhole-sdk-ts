@@ -63,7 +63,7 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
         wh,
         {
           chain: external.chain,
-          txid: "xoir2db9AVMNu61moxXs9iQdanXoyzAA5uVjcHykSd4dEDvcDPRXZhrvXwjEB5TC747Bu6ftSnaL19SYX6E11YG",
+          txid: "5y2BnJ1Nwqe4m6KTSrry5Ni88xqVrqo4jdbuNwAPDuXEonQRVLbALf7abViwucKKr8U8cDfJtDmqnuRAAC6i6wtb",
         },
         600_000,
       )
@@ -74,6 +74,7 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   const { denom } = route1.ibcTransfers![0]!.data;
   const cosmosTokenAddress = Wormhole.parseAddress("Wormchain", denom);
 
+  fakeIt = false;
   // Transfer Gateway factory tokens over IBC through gateway to another Cosmos chain
   let route2 = fakeIt
     ? await GatewayTransfer.from(

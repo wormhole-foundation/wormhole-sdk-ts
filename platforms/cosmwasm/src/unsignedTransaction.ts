@@ -16,7 +16,8 @@ export function computeFee<N extends Network, C extends CosmwasmChains>(
   network: N,
   chain: C,
 ): StdFee {
-  return calculateFee(DEFAULT_FEE, `0.1${CosmwasmPlatform.getNativeDenom(network, chain)}`);
+  console.error("how do fees even work");
+  return calculateFee(DEFAULT_FEE, `5000000000${CosmwasmPlatform.getNativeDenom(network, chain)}`);
 }
 
 export function buildExecuteMsg(
