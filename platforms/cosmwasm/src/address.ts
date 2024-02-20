@@ -55,14 +55,14 @@ There are at least 5 types of addresses in Cosmos:
     address = [0x...] // 32 bytes
     domain = undefined
     denom = undefined
-    denomType = "IBC" 
+    denomType = "IBC"
 
   Factory Address
     ex: "factory/inj17vytdwqczqz72j65saukplrktd4gyfme5agf6c/avax"
 
     address = [0x...] 20 bytes
-    domain = "inj" 
-    denom =  "avax" 
+    domain = "inj"
+    denom =  "avax"
     denomType = "factory"
 
   Transfer Denom

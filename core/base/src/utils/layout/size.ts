@@ -2,118 +2,159 @@ import {
   Layout,
   LayoutItem,
   LayoutToType,
-  LayoutItemToType,
   isBytesType,
-} from "./layout";
-import { findIdLayoutPair } from "./utils";
 
-function staticCalcItemSize(item: LayoutItem) {
+} from "./layout";
+import {
+  findIdLayoutPair,
+  isLayout,
+  isLayoutItem,
+  isFixedBytesConversion,
+  checkItemSize,
+} from "./utils";
+
+function calcItemSize(item: LayoutItem, data: any): number | null {
   switch (item.binary) {
     case "int":
-    case "uint": {
+    case "uint":
       return item.size;
-    }
     case "bytes": {
-      if ("size" in item && item.size !== undefined)
-        return item.size;
+      const lengthSize = ("lengthSize" in item) ? item.lengthSize | 0 : 0;
 
-      if (isBytesType(item.custom))
-        return item.custom.length;
+      const { custom } = item;
+      if (isBytesType(custom))
+        return lengthSize + custom.length;
 
-      if (isBytesType(item?.custom?.from))
-        return item!.custom!.from.length;
+      if (isFixedBytesConversion(custom))
+        return lengthSize + custom.from.length;
 
-      throw new Error("Cannot statically determine size of dynamic bytes");
+      if (isLayout(custom)) {
+        const layoutSize = internalCalcLayoutSize(custom, data);
+        if (layoutSize === null)
+          return null;
+
+        return lengthSize + checkItemSize(item, layoutSize);
+      }
+
+      if (custom === undefined)
+        return data ? lengthSize + checkItemSize(item, data.length) : null;
+
+      return data !== undefined ? lengthSize + checkItemSize(item, custom.from(data).length) : null;
     }
-    case "array":
-      throw new Error("Cannot statically determine size of dynamic array");
-    case "object": {
-      return calcLayoutSize(item.layout);
+    case "array": {
+      const length = "length" in item ? item.length : undefined;
+      if (data === undefined) {
+        if (length !== undefined) {
+          const layoutSize = internalCalcLayoutSize(item.layout);
+          if (layoutSize === null)
+            return null;
+
+          return length * layoutSize;
+        }
+        return null;
+      }
+
+      const narrowedData = data as LayoutToType<typeof item>;
+
+      let size = 0;
+      if (length !== undefined && length !== narrowedData.length)
+        throw new Error(
+          `array length mismatch: layout length: ${length}, data length: ${narrowedData.length}`
+        );
+      else if ("lengthSize" in item && item.lengthSize !== undefined)
+        size += item.lengthSize;
+
+      for (let i = 0; i < narrowedData.length; ++i) {
+        const entrySize = internalCalcLayoutSize(item.layout, narrowedData[i]);
+        if (entrySize === null)
+          return null;
+
+        size += entrySize;
+      }
+
+      return size;
     }
     case "switch": {
-      let size = null;
-      if (item.layouts.length === 0)
-        throw new Error(`switch item has no layouts`);
+      if (data !== undefined) {
+        const [_, layout] = findIdLayoutPair(item, data);
+        const layoutSize = internalCalcLayoutSize(layout, data);
+        return layoutSize !== null ? item.idSize + layoutSize : null;
+      }
 
+      let size = null;
       for (const [_, layout] of item.layouts) {
-        const layoutSize = calcLayoutSize(layout);
+        const layoutSize = internalCalcLayoutSize(layout);
         if (size === null)
           size = layoutSize;
         else if (layoutSize !== size)
-          throw new Error(
-            "Cannot statically determine size of switch item with different layout sizes"
-          );
+          return null;
       }
       return item.idSize + size!;
     }
   }
 }
 
-function calcItemSize(item: LayoutItem, data: any) {
-  switch (item.binary) {
-    case "int":
-    case "uint": {
-      return item.size;
+function internalCalcLayoutSize(layout: Layout, data?: any): number | null {
+  if (isLayoutItem(layout))
+    return calcItemSize(layout as LayoutItem, data);
+
+  let size = 0;
+  for (const item of layout) {
+    let itemData;
+    if (data)
+      if (!("omit" in item) || !item.omit) {
+        if (!(item.name in data))
+          throw new Error(`missing data for layout item: ${item.name}`);
+
+        itemData = data[item.name];
+      }
+
+    const itemSize = calcItemSize(item, itemData);
+    if (itemSize === null) {
+      if (data !== undefined)
+        throw new Error(`coding error: couldn't calculate size for layout item: ${item.name}`);
+
+      return null;
     }
-    case "bytes": {
-      if ("size" in item && item.size !== undefined)
-        return item.size;
-
-      if (isBytesType(item.custom))
-        return item.custom.length;
-
-      if (isBytesType(item?.custom?.from))
-        return item!.custom!.from.length;
-
-      let size = 0;
-      if ((item as { lengthSize?: number })?.lengthSize !== undefined)
-        size += (item as { lengthSize: number }).lengthSize;
-
-      return size + (
-        (item.custom !== undefined)
-        ? item.custom.from(data)
-        : (data as LayoutItemToType<typeof item>)
-      ).length;
-    }
-    case "array": {
-      const narrowedData = data as LayoutItemToType<typeof item>;
-
-      let size = 0;
-      if ("length" in item && item.length !== narrowedData.length)
-        throw new Error(`array length mismatch: ` +
-          `layout length: ${item.length}, data length: ${narrowedData.length}`
-        );
-      else if ("lengthSize" in item && item.lengthSize !== undefined)
-        size += item.lengthSize;
-
-      for (let i = 0; i < narrowedData.length; ++i)
-        size += calcLayoutSize(item.layout, narrowedData[i]);
-
-      return size;
-    }
-    case "object": {
-      return calcLayoutSize(item.layout, data as LayoutItemToType<typeof item>)
-    }
-    case "switch": {
-      const [_, layout] = findIdLayoutPair(item, data);
-      return item.idSize + calcLayoutSize(layout, data);
-    }
+    size += itemSize;
   }
+  return size;
 }
 
-export function calcLayoutSize(
-  layout: Layout,
-  data?: LayoutToType<typeof layout>
-): number {
-  return (Array.isArray(layout))
-    ? layout.reduce((acc, item) =>
-        acc + (
-          data !== undefined
-          ? calcItemSize(item, data[item.name])
-          : staticCalcItemSize(item)),
-          0
-        )
-    : data !== undefined
-    ? calcItemSize(layout as LayoutItem, data)
-    : staticCalcItemSize(layout as LayoutItem);
+//no way to use overloading here:
+// export function calcLayoutSize<const L extends Layout>(layout: L): number | null;
+// export function calcLayoutSize<const L extends Layout>(layout: L, data: LayoutToType<L>): number;
+// export function calcLayoutSize<const L extends Layout>(
+//   layout: L,
+//   data?: LayoutToType<L>
+// ): number | null; //impl
+//results in "instantiation too deep" error.
+//
+//Trying to pack everything into a single function definition means we either can't narrow the
+//  return type correctly:
+// export function calcLayoutSize<const L extends Layout>(
+//   layout: L,
+//   data: LayoutToType<L>,
+// ): number | null;
+//or we have to make data overly permissive via:
+// export function calcLayoutSize<
+//   const L extends Layout,
+//   const D extends LayoutToType<L> | undefined,
+//  >(
+//   layout: L,
+//   data?: D, //data can now contain additional properties
+// ): undefined extends D ? number | null : number;
+//so we're stuck with having to use to separate names
+export function calcStaticLayoutSize(layout: Layout): number | null {
+  return internalCalcLayoutSize(layout);
+}
+
+export function calcLayoutSize<const L extends Layout>(layout: L, data: LayoutToType<L>): number {
+  const size = internalCalcLayoutSize(layout, data);
+  if (size === null)
+    throw new Error(
+      `coding error: couldn't calculate layout size for layout ${layout} with data ${data}`
+    );
+
+  return size;
 }

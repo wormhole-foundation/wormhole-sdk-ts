@@ -3,7 +3,6 @@ import {
   serializeLayout,
   deserializeLayout,
   CustomConversion,
-  FixedSizeBytesLayoutItem,
 } from "@wormhole-foundation/sdk-base";
 import { Signature } from "../signature";
 
@@ -24,4 +23,4 @@ export const signatureItem = {
     from: (val: Signature): Uint8Array =>
       serializeLayout(signatureLayout, { r: val.r, s: val.s, v: val.v }),
   } as const satisfies CustomConversion<Uint8Array, Signature>,
-} as const satisfies FixedSizeBytesLayoutItem;
+} as const satisfies Layout;

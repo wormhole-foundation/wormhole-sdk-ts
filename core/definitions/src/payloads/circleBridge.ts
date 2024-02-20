@@ -33,7 +33,7 @@ export const circleMessageLayout = [
   { name: "sender", ...universalAddressItem },
   { name: "recipient", ...universalAddressItem },
   { name: "destinationCaller", ...universalAddressItem },
-  { name: "payload", binary: "object", layout: circleBurnMessageLayout },
+  { name: "payload", binary: "bytes", custom: circleBurnMessageLayout },
 ] as const satisfies Layout;
 
 export const namedPayloads = [["Message", circleMessageLayout]] as const satisfies NamedPayloads;

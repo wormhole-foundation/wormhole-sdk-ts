@@ -10,86 +10,78 @@ import {
 } from "../src";
 
 const testLayout = [
-  { name: "fixedDirectPrimitive", binary: "uint", size: 1, custom: 3 },
+  { name: "uintFixedPrimitive", binary: "uint", size: 1, custom: 3 },
   {
-    name: "fixedDirectCustom",
+    name: "uintFixedCustom",
     binary: "uint",
     size: 1,
-    custom: { to: 42, from: 1 },
+    custom: { to: "fixedConverted", from: 1 },
   },
-  { name: "dynamicDirectPrimitive", binary: "uint", size: 1 },
+  { name: "uintDynamicPrimitive", binary: "uint", size: 1 },
   {
-    name: "dynamicDirectCustom",
+    name: "uintDynamicCustom",
     binary: "uint",
     size: 1,
     custom: { to: (val: number) => val + 1, from: (val: number) => val - 1 },
   },
   {
-    name: "someDynamicObject",
-    binary: "object",
-    layout: [
-      { name: "someDynamicBytes", binary: "bytes", size: 4 },
-      { name: "someDynamicLengthBytes", binary: "bytes", lengthSize: 4 },
+    name: "bytesDynamicCustomLayout",
+    binary: "bytes",
+    custom: [
+      { name: "bytesDynamicSize", binary: "bytes", size: 4 },
+      { name: "bytesDynamicLengthSize", binary: "bytes", lengthSize: 4 },
     ],
   },
   {
-    name: "objectWithOnlyFixed",
-    binary: "object",
-    layout: [
+    name: "bytesFixedItem",
+    binary: "bytes",
+    custom: { binary: "uint", size: 1, custom: { to: 13, from: 1 } },
+  },
+  {
+    name: "bytesDynamicItem",
+    binary: "bytes",
+    custom: { binary: "uint", size: 1 },
+  },
+  {
+    name: "bytesFixedLayout",
+    binary: "bytes",
+    custom: [
       {
-        name: "someFixedObjectUint",
+        name: "uintFixedCustom",
         binary: "uint",
         size: 1,
-        custom: { to: 13, from: 1 },
+        custom: { to: "fixedConverted", from: 1 },
       },
+      { name: "bytesFixedPrimitive", binary: "bytes", custom: new Uint8Array(4) },
     ],
   },
   {
-    name: "objectWithSomeFixed",
-    binary: "object",
-    layout: [
-      {
-        name: "someFixedBytes",
-        binary: "bytes",
-        custom: { to: new Uint8Array(4), from: new Uint8Array(4) },
-      },
-      {
-        name: "someFixedUint",
-        binary: "uint",
-        size: 1,
-        custom: { to: 33, from: 1 },
-      },
-      { name: "someDynamicUint", binary: "uint", size: 1 },
+    name: "bytesMixedLayout",
+    binary: "bytes",
+    custom: [
+      { name: "bytesFixedPrimitive", binary: "bytes", custom: new Uint8Array(4) },
+      { name: "uintFixedCustom", binary: "uint", size: 1, custom: { to: 33, from: 1 } },
+      { name: "uintDynamicPrimitive", binary: "uint", size: 1 },
     ],
   },
   {
-    name: "arrayWithOnlyFixed",
-    binary: "array",
-    lengthSize: 1,
-    layout: { binary: "uint", size: 1, custom: 12 },
-  },
-  {
-    name: "arrayWithSomeFixed",
-    binary: "array",
-    lengthSize: 1,
-    layout: { binary: "object", layout: [
-      { name: "someDynamicUint", binary: "uint", size: 1 },
-      { name: "someFixedUint", binary: "uint", size: 1, custom: 25 },
-      {
-        name: "someFixedBytes",
-        binary: "bytes",
-        custom: { to: new Uint8Array(4), from: new Uint8Array(4) },
-      },
-    ]},
-  },
-  {
-    name: "arrayWithOnlyDynamic",
+    name: "arrayDynamicItem",
     binary: "array",
     lengthSize: 1,
     layout: { binary: "uint", size: 1 },
   },
   {
-    name: "switchWithSomeFixed",
+    name: "arrayMixedLayout",
+    binary: "array",
+    lengthSize: 1,
+    layout: { binary: "bytes", custom: [
+      { name: "uintDynamicPrimitive", binary: "uint", size: 1 },
+      { name: "uintFixedPrimitive", binary: "uint", size: 1, custom: 25 },
+      { name: "bytesFixedPrimitive", binary: "bytes", custom: new Uint8Array(4) },
+    ]},
+  },
+  {
+    name: "switchMixed",
     binary: "switch",
     idSize: 2,
     layouts: [
@@ -115,35 +107,39 @@ const testLayout = [
 describe("Layout tests", function () {
 
   const completeValues = {
-    fixedDirectPrimitive: 3,
-    fixedDirectCustom: 42,
-    dynamicDirectPrimitive: 2,
-    dynamicDirectCustom: 4,
-    someDynamicObject: {
-      someDynamicBytes: new Uint8Array(4),
-      someDynamicLengthBytes: new Uint8Array(5),
+    uintFixedPrimitive: 3,
+    uintFixedCustom: "fixedConverted",
+    uintDynamicPrimitive: 2,
+    uintDynamicCustom: 4,
+    bytesDynamicCustomLayout: {
+      bytesDynamicSize: new Uint8Array(4),
+      bytesDynamicLengthSize: new Uint8Array(5),
     },
-    objectWithOnlyFixed: { someFixedObjectUint: 13 },
-    objectWithSomeFixed: {
-      someDynamicUint: 8,
-      someFixedBytes: new Uint8Array(4),
-      someFixedUint: 33,
+    bytesFixedItem: 13,
+    bytesDynamicItem: 3,
+    bytesFixedLayout: {
+      uintFixedCustom: "fixedConverted",
+      bytesFixedPrimitive: new Uint8Array(4),
     },
-    arrayWithOnlyFixed: [],
-    arrayWithSomeFixed: [
+    bytesMixedLayout: {
+      bytesFixedPrimitive: new Uint8Array(4),
+      uintFixedCustom: 33,
+      uintDynamicPrimitive: 4,
+    },
+    arrayDynamicItem: [1, 2, 3],
+    arrayMixedLayout: [
       {
-        someDynamicUint: 10,
-        someFixedUint: 25,
-        someFixedBytes: new Uint8Array(4),
+        uintDynamicPrimitive: 10,
+        uintFixedPrimitive: 25,
+        bytesFixedPrimitive: new Uint8Array(4),
       },
       {
-        someDynamicUint: 11,
-        someFixedUint: 25,
-        someFixedBytes: new Uint8Array(4),
+        uintDynamicPrimitive: 11,
+        uintFixedPrimitive: 25,
+        bytesFixedPrimitive: new Uint8Array(4),
       },
     ],
-    arrayWithOnlyDynamic: [14, 16],
-    switchWithSomeFixed: {
+    switchMixed: {
       id: 1,
       case1FixedUint: 4,
       case1DynamicUint: 18,
@@ -152,20 +148,22 @@ describe("Layout tests", function () {
 
   it("should correctly add fixed values", function () {
     const dynamicValues = {
-      dynamicDirectPrimitive: 2,
-      dynamicDirectCustom: 4,
-      someDynamicObject: {
-        someDynamicBytes: new Uint8Array(4),
-        someDynamicLengthBytes: new Uint8Array(5),
+      uintDynamicPrimitive: 2,
+      uintDynamicCustom: 4,
+      bytesDynamicCustomLayout: {
+        bytesDynamicSize: new Uint8Array(4),
+        bytesDynamicLengthSize: new Uint8Array(5),
       },
-      arrayWithOnlyFixed: [],
-      objectWithSomeFixed: { someDynamicUint: 8 },
-      arrayWithSomeFixed: [{ someDynamicUint: 10 }, { someDynamicUint: 11 }],
-      arrayWithOnlyDynamic: [14, 16],
-      switchWithOnlyFixed: {
-        customIdName: "case2",
+      bytesDynamicItem: 3,
+      bytesMixedLayout: {
+        uintDynamicPrimitive: 4,
       },
-      switchWithSomeFixed: {
+      arrayDynamicItem: [1, 2, 3],
+      arrayMixedLayout: [
+        { uintDynamicPrimitive: 10 },
+        { uintDynamicPrimitive: 11 },
+      ],
+      switchMixed: {
         id: 1,
         case1DynamicUint: 18,
       }
@@ -204,7 +202,7 @@ describe("Layout tests", function () {
 
     it("should correctly serialize and deserialize Bitset items with default size", function () {
       const bitset = bitsetItem(names);
-      
+
       const encoded = serializeLayout(bitset, converted);
       expect(encoded).toEqual(new Uint8Array([0x01, 0x09]));
       const decoded = deserializeLayout(bitset, encoded);
@@ -213,7 +211,7 @@ describe("Layout tests", function () {
 
     it("should correctly serialize and deserialize Bitset items with manual size", function () {
       const bitset = bitsetItem(names, 3);
-      
+
       const encoded = serializeLayout(bitset, converted);
       expect(encoded).toEqual(new Uint8Array([0x00, 0x01, 0x09]));
       const decoded = deserializeLayout(bitset, encoded);
@@ -221,7 +219,7 @@ describe("Layout tests", function () {
     });
   });
 
-  it("should serialize and deserialze correctly", function () {
+  it("should serialize and deserialize correctly", function () {
     const encoded = serializeLayout(testLayout, completeValues);
     const decoded = deserializeLayout(testLayout, encoded);
     expect(decoded).toEqual(completeValues);

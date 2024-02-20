@@ -1,12 +1,15 @@
 import {
   Layout,
   LayoutItem,
-  LengthPrefixedBytesLayoutItem,
+  LengthPrefixed,
+  BytesType,
   isNumType,
   isBytesType,
 } from "./layout";
 
 import { serializeNum } from "./serialize";
+import { isLayout, isFixedBytesConversion } from "./utils";
+import { calcStaticLayoutSize } from "./size";
 
 //defining a bunch of types for readability
 type Uint = number;
@@ -16,7 +19,7 @@ type BytePos = Uint;
 type ByteVal = Uint; //actually a uint8
 type LayoutIndex = Uint;
 type Candidates = Bitset;
-type FixedBytes = (readonly [BytePos, Uint8Array])[];
+type FixedBytes = (readonly [BytePos, BytesType])[];
 //using a Bounds type (even though currently the upper bound can only either be equal to the lower
 //  bound or Infinity) in anticipation of a future switch layout item that might contain multiple
 //  sublayouts which, unlike arrays currently, could all be bounded but potentially with
@@ -43,18 +46,14 @@ function count(candidates: Candidates) {
   return count;
 }
 
+const lengthSizeMax = (lengthSize: number) =>
+  lengthSize > 0 ? (1 << (8 * lengthSize)) - 1 : Infinity;
+
 function layoutItemMeta(
   item: LayoutItem,
   offset: BytePos | null,
   fixedBytes: FixedBytes,
 ): Bounds {
-  function knownFixed(size: Size, serialized: Uint8Array): Bounds {
-    if (offset !== null)
-      fixedBytes.push([offset, serialized]);
-
-    return [size, size];
-  }
-
   switch (item.binary) {
     case "int":
     case "uint": {
@@ -65,28 +64,62 @@ function layoutItemMeta(
         ? item!.custom!.from
         : null;
 
-      if (fixedVal !== null) {
-        const serialized = new Uint8Array(item.size);
-        serializeNum(serialized, 0, fixedVal, item.size, item.endianness, item.binary === "int");
-        return knownFixed(item.size, serialized);
+      if (fixedVal !== null && offset !== null) {
+        const cursor = {bytes: new Uint8Array(item.size), offset: 0};
+        serializeNum(fixedVal, item.size, cursor, item.endianness, item.binary === "int");
+        fixedBytes.push([offset, cursor.bytes]);
       }
 
       return [item.size, item.size];
     }
     case "bytes": {
-      if ("size" in item && item.size !== undefined)
-        return [item.size, item.size];
+      const lengthSize = ("lengthSize" in item) ? item.lengthSize | 0 : 0;
 
-      if (isBytesType(item?.custom))
-        return knownFixed(item.custom.length, item.custom);
+      const { custom } = item;
+      let fixed;
+      let fixedSize;
+      if (isBytesType(custom)) {
+        fixed = custom;
+        fixedSize = custom.length;
+      }
+      else if (isFixedBytesConversion(custom)) {
+        fixed = custom.from;
+        fixedSize = custom.from.length;
+      }
+      else if (isLayout(custom)) {
+        const layoutSize = calcStaticLayoutSize(custom);
+        if (layoutSize !== null)
+          fixedSize = layoutSize;
+      }
 
-      if (isBytesType(item?.custom?.from))
-        return knownFixed(item!.custom!.from.length, item!.custom!.from);
+      if (lengthSize > 0 && offset !== null) {
+        if (fixedSize !== undefined) {
+          const cursor = {bytes: new Uint8Array(lengthSize), offset: 0};
+          const endianess = (item as LengthPrefixed).lengthEndianness;
+          serializeNum(fixedSize, lengthSize, cursor, endianess, false);
+          fixedBytes.push([offset, cursor.bytes]);
+        }
+        offset += lengthSize;
+      }
 
-      //TODO typescript should be able to infer that at this point the only possible remaining
-      //  type for item is LengthPrefixedBytesLayoutItem, but for some reason it doesn't
-      item = item as LengthPrefixedBytesLayoutItem;
-      return [item.lengthSize !== undefined ? item.lengthSize : 0, Infinity];
+      if (fixed !== undefined) {
+        if (offset !== null)
+          fixedBytes.push([offset, fixed]);
+
+        return [lengthSize + fixed.length, lengthSize + fixed.length];
+      }
+
+      //lengthSize must be 0 if size is defined
+      const ret = ("size" in item && item.size !== undefined)
+        ? [item.size, item.size] as Bounds
+        : undefined;
+
+      if (isLayout(custom)) {
+        const lm = createLayoutMeta(custom, offset, fixedBytes)
+        return ret ?? [lengthSize + lm[0], lengthSize + lm[1]];
+      }
+
+      return ret ?? [lengthSize, lengthSizeMax(lengthSize)];
     }
     case "array": {
       if ("length" in item) {
@@ -110,11 +143,8 @@ function layoutItemMeta(
 
         return [item.length * itemSize[0], item.length * itemSize[1]];
       }
-
-      return [item.lengthSize !== undefined ? item.lengthSize : 0, Infinity];
-    }
-    case "object": {
-      return createLayoutMeta(item.layout, offset, fixedBytes);
+      const lengthSize = (item as LengthPrefixed).lengthSize | 0;
+      return [lengthSize, lengthSizeMax(lengthSize)];
     }
     case "switch": {
       const caseFixedBytes = item.layouts.map(_ => []) as FixedBytes[];
@@ -122,9 +152,9 @@ function layoutItemMeta(
       const caseBounds = item.layouts.map(([idOrConversionId, layout], caseIndex) => {
         const idVal = Array.isArray(idOrConversionId) ? idOrConversionId[0] : idOrConversionId;
         if (offset !== null) {
-          const serializedId = new Uint8Array(idSize);
-          serializeNum(serializedId, 0, idVal, idSize, idEndianness);
-          caseFixedBytes[caseIndex]!.push([0, serializedId]);
+          const cursor = {bytes: new Uint8Array(idSize), offset: 0};
+          serializeNum(idVal, idSize, cursor, idEndianness);
+          caseFixedBytes[caseIndex]!.push([0, cursor.bytes]);
         }
         const ret = createLayoutMeta(layout, offset ? idSize : null, caseFixedBytes[caseIndex]!);
         return [ret[0] + idSize, ret[1] + idSize] as Bounds;
@@ -266,7 +296,7 @@ function buildAscendingBounds(sortedBounds: readonly (readonly [Bounds, LayoutIn
 //  respective layout.
 function generateLayoutDiscriminator(
   layouts: readonly Layout[]
-): [boolean, (encoded: Uint8Array) => readonly LayoutIndex[]] {
+): [boolean, (encoded: BytesType) => readonly LayoutIndex[]] {
 
   if (layouts.length === 0)
     throw new Error("Cannot discriminate empty set of layouts");
@@ -361,7 +391,7 @@ function generateLayoutDiscriminator(
       //we have a perfect byte discriminator -> bail early
       return [
         true,
-        (encoded: Uint8Array) =>
+        (encoded: BytesType) =>
           bitsetToArray(
             encoded.length <= bytePos
             ? outOfBoundsLayouts
@@ -375,7 +405,7 @@ function generateLayoutDiscriminator(
   //if we get here, we know we don't have a perfect byte discriminator so we now check wether we
   //  we have a perfect size discriminator and bail early if so
   if (sizePower === layouts.length - 1)
-    return [true, (encoded: Uint8Array) => bitsetToArray(layoutsWithSize(encoded.length))];
+    return [true, (encoded: BytesType) => bitsetToArray(layoutsWithSize(encoded.length))];
 
   //sort in descending order of power
   bestBytes.sort(([lhsPower], [rhsPower]) => rhsPower - lhsPower);
@@ -490,7 +520,7 @@ function generateLayoutDiscriminator(
     throw new Error("Implementation error in layout discrimination algorithm");
   };
 
-  return [distinguishable, (encoded: Uint8Array) => {
+  return [distinguishable, (encoded: BytesType) => {
     let candidates = allLayouts;
 
     for (
@@ -532,10 +562,10 @@ export function layoutDiscriminator<B extends boolean = false>(
 
   return (
     !allowAmbiguous
-    ? (encoded: Uint8Array) => {
+    ? (encoded: BytesType) => {
       const layout = discriminator(encoded);
       return layout.length === 0 ? null : layout[0];
     }
     : discriminator
-  ) as (encoded: Uint8Array) => B extends false ? LayoutIndex | null : readonly LayoutIndex[];
+  ) as (encoded: BytesType) => B extends false ? LayoutIndex | null : readonly LayoutIndex[];
 }

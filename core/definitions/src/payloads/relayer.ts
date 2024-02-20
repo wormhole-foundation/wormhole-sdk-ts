@@ -1,4 +1,4 @@
-import { LayoutItem } from "@wormhole-foundation/sdk-base";
+import { LayoutItem, FlexBytesLayoutItem } from "@wormhole-foundation/sdk-base";
 import {
   amountItem,
   chainItem,
@@ -11,8 +11,8 @@ import {
 import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../vaa";
 
 const encodedExecutionInfoItem = {
-  binary: "object",
-  layout: [
+  binary: "bytes",
+  custom: [
     { name: "size", binary: "uint", size: 4, custom: 3 * 32, omit: true },
     { name: "waste", binary: "uint", size: 31, custom: 0n, omit: true },
     { name: "version", binary: "uint", size: 1, custom: 0, omit: true },
@@ -22,8 +22,8 @@ const encodedExecutionInfoItem = {
 } as const satisfies LayoutItem;
 
 const addressChainItem = {
-  binary: "object",
-  layout: [
+  binary: "bytes",
+  custom: [
     { name: "chain", ...chainItem() },
     { name: "address", ...universalAddressItem },
   ],
@@ -51,28 +51,27 @@ const messageKeySwitchLayout = {
   ],
 } as const satisfies LayoutItem;
 
+export const deviveryInstructionLayout = <
+  const P extends FlexBytesLayoutItem["custom"] = undefined
+>(customPayload?: P) => [
+  payloadIdItem(1),
+  { name: "target", ...addressChainItem },
+  { name: "payload", binary: "bytes", lengthSize: 4, custom: customPayload as P },
+  { name: "requestedReceiverValue", ...amountItem },
+  { name: "extraReceiverValue", ...amountItem },
+  { name: "executionInfo", ...encodedExecutionInfoItem },
+  { name: "refund", ...addressChainItem },
+  { name: "refundDeliveryProvider", ...universalAddressItem },
+  { name: "sourceDeliveryProvider", ...universalAddressItem },
+  { name: "senderAddress", ...universalAddressItem },
+  { name: "messageKeys", binary: "array", lengthSize: 1, layout: messageKeySwitchLayout },
+] as const;
+
 const namedPayloads = [
-  [
-    "DeliveryInstruction",
-    [
-      payloadIdItem(1),
-      { name: "target", ...addressChainItem },
-      { name: "payload", binary: "bytes", lengthSize: 4 },
-      { name: "requestedReceiverValue", ...amountItem },
-      { name: "extraReceiverValue", ...amountItem },
-      { name: "executionInfo", ...encodedExecutionInfoItem },
-      { name: "refund", ...addressChainItem },
-      { name: "refundDeliveryProvider", ...universalAddressItem },
-      { name: "sourceDeliveryProvider", ...universalAddressItem },
-      { name: "senderAddress", ...universalAddressItem },
-      { name: "messageKeys", binary: "array", lengthSize: 1, layout: messageKeySwitchLayout },
-    ],
-  ],
-  [
-    "RedeliveryInstruction",
-    [
+  [ "DeliveryInstruction", deviveryInstructionLayout() ],
+  [ "RedeliveryInstruction", [
       payloadIdItem(2),
-      { name: "deliveryVaaKey", binary: "object", layout: vaaKeyLayout },
+      { name: "deliveryVaaKey", binary: "bytes", custom: vaaKeyLayout },
       { name: "targetChain", ...chainItem() },
       { name: "newRequestedReceiverValue", ...amountItem },
       { name: "newEncodedExecutionInfo", ...encodedExecutionInfoItem },
