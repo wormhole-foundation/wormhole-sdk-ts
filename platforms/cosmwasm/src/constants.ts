@@ -22,7 +22,7 @@ export const IBC_PACKET_SEQ = "packet_sequence";
 export const IBC_PACKET_DATA = "packet_data";
 export const IBC_PACKET_CONN = "packet_connection";
 
-export const IBC_TIMEOUT_MILLIS = 10 * 60 * 1000; // 10 minutes
+export const IBC_TIMEOUT_MILLIS = 60 * 60 * 1000; // 60 minutes
 
 const cosmwasmAddressPrefix = [
   ["Cosmoshub", "cosmos"],

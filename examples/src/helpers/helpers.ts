@@ -50,15 +50,11 @@ export async function getStuff<N extends Network, C extends Chain>(
   const platform = chain.platform.utils()._platform;
   switch (platform) {
     case "Solana":
-      signer = await getSolanaSignAndSendSigner(
-        await chain.getRpc(),
-        getEnv("MAINNET_SOL_PRIVATE_KEY"),
-        {
-          //computeLimit: 500_000n,
-          //priorityFeeAmount: 100_000n,
-          debug: true,
-        },
-      );
+      signer = await getSolanaSignAndSendSigner(await chain.getRpc(), getEnv("SOL_PRIVATE_KEY"), {
+        //computeLimit: 500_000n,
+        //priorityFeeAmount: 100_000n,
+        debug: true,
+      });
       break;
     case "Cosmwasm":
       signer = await getCosmwasmSigner(await chain.getRpc(), getEnv("COSMOS_MNEMONIC"));

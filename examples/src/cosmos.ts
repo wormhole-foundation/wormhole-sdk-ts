@@ -59,7 +59,6 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   const token: TokenId = Wormhole.tokenId(external.chain, "native");
   const amt = amount.units(amount.parse("0.001", external.config.nativeTokenDecimals));
 
-  fakeIt = true;
   // Transfer native token from source chain, through gateway, to a cosmos chain
   let route1 = fakeIt
     ? await GatewayTransfer.from(
@@ -83,7 +82,7 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
         wh,
         {
           chain: cosmos1.chain,
-          txid: "44338C505E843E993EC8F2548979C0E12A971CEFFC3DD3FDA1D3155B4D440E06",
+          txid: "3014CABA727C8A1BFCBD282095C771ACBAB3B13CC595B702ABFD3A4502315FBD",
         },
         600_000,
       )
@@ -95,8 +94,6 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
         leg3,
       );
   console.log("Route 2 (Cosmos -> Cosmos): ", route2);
-
-  fakeIt = false;
 
   // Transfer Gateway factory token through gateway back to source chain
   let route3 = fakeIt
