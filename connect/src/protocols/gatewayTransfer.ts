@@ -291,7 +291,7 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
   async initiateTransfer(signer: Signer): Promise<TxHash[]> {
     /*
         0) Check current `state` is valid to call this (eg: state == Created)
-        1) Figure out where to call and issue transactions  
+        1) Figure out where to call and issue transactions
         2) Update state
         3) return transaction ids
     */

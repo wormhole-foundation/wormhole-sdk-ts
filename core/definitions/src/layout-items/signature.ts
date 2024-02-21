@@ -1,9 +1,8 @@
 import {
   Layout,
-  serializeLayout,
-  deserializeLayout,
+  BytesLayoutItem,
+  LayoutToType,
   CustomConversion,
-  FixedSizeBytesLayoutItem,
 } from "@wormhole-foundation/sdk-base";
 import { Signature } from "../signature";
 
@@ -15,13 +14,9 @@ const signatureLayout = [
 
 export const signatureItem = {
   binary: "bytes",
-  size: 65,
+  layout: signatureLayout,
   custom: {
-    to: (val: Uint8Array): Signature => {
-      const sig = deserializeLayout(signatureLayout, val);
-      return new Signature(sig.r, sig.s, sig.v);
-    },
-    from: (val: Signature): Uint8Array =>
-      serializeLayout(signatureLayout, { r: val.r, s: val.s, v: val.v }),
-  } as const satisfies CustomConversion<Uint8Array, Signature>,
-} as const satisfies FixedSizeBytesLayoutItem;
+    to: (val: LayoutToType<typeof signatureLayout>) => new Signature(val.r, val.s, val.v),
+    from: (val: Signature) => ({ r: val.r, s: val.s, v: val.v }),
+  } as const satisfies CustomConversion<LayoutToType<typeof signatureLayout>, Signature>,
+} as const satisfies BytesLayoutItem;
