@@ -20,6 +20,9 @@ export * from "./rpc";
 export * from "./attestation";
 export * from "./types";
 
+// Temporary until exported from protocols dir
+export * from "./payloads/ntt";
+
 export * from "./protocols/core";
 export * from "./protocols/tokenBridge";
 export * from "./protocols/circleBridge";
