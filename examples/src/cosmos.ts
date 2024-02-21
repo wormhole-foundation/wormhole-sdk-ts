@@ -9,6 +9,7 @@ import {
 } from "@wormhole-foundation/connect-sdk";
 // Import the platform specific packages
 import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
+import { computeFee } from "@wormhole-foundation/connect-sdk-cosmwasm/src/unsignedTransaction";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 
@@ -37,14 +38,15 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 (async function () {
   // init Wormhole object, passing config for which network
   // to use (e.g. Mainnet/Testnet) and what Platforms to support
-  const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform, CosmwasmPlatform]);
-
+  const wh = new Wormhole("Mainnet", [EvmPlatform, SolanaPlatform, CosmwasmPlatform]);
   // Pick up where you left off by updating the txids as you go
   let fakeIt = false;
 
+  console.log(computeFee("Mainnet", "Dymension"));
+
   // Grab chain Contexts for each leg of our journey
   const external = wh.getChain("Solana");
-  const cosmos1 = wh.getChain("Osmosis");
+  const cosmos1 = wh.getChain("Dymension");
   const cosmos2 = wh.getChain("Injective");
 
   // Get signer from local key but anything that implements
@@ -63,7 +65,7 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
         wh,
         {
           chain: external.chain,
-          txid: "2JmrNRmKYdPFrv9kAmnzEvmsxGtqHmYyGw4HXD2gpyxSnTNB5K7jdK9Ua295mqBXjk3Sazu3SkxDc5Qs9tL4QMkD",
+          txid: "5y2BnJ1Nwqe4m6KTSrry5Ni88xqVrqo4jdbuNwAPDuXEonQRVLbALf7abViwucKKr8U8cDfJtDmqnuRAAC6i6wtb",
         },
         600_000,
       )
@@ -80,7 +82,7 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
         wh,
         {
           chain: cosmos1.chain,
-          txid: "DEDB881D4BA44255A96956FD9097E5A7DD63E4DDD23CD107A8E51B85E0927724",
+          txid: "3014CABA727C8A1BFCBD282095C771ACBAB3B13CC595B702ABFD3A4502315FBD",
         },
         600_000,
       )
