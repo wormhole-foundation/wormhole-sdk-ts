@@ -48,7 +48,7 @@ export const managerMessageLayout = <
   customizableBytes({name: "payload", lengthSize: 2}, customPayload),
 ] as const satisfies Layout;
 
-export type ManagerMessage<P extends CustomizableBytes = undefined> = 
+export type ManagerMessage<P extends CustomizableBytes = undefined> =
   LayoutToType<ReturnType<typeof managerMessageLayout<P>>>;
 
 export const wormholeEndpointMessage = <
