@@ -1,3 +1,7 @@
+import {
+  serializeLayout,
+  deserializeLayout,
+} from "@wormhole-foundation/sdk-base";
 import { signatureItem } from "./layout-items";
 
 /** Signature represents the secp256k1 signature of a Guardian */
@@ -9,10 +13,10 @@ export class Signature {
   ) {}
 
   encode(): Uint8Array {
-    return signatureItem.custom.from(this);
+    return serializeLayout(signatureItem, this);
   }
 
   static decode(data: Uint8Array): Signature {
-    return signatureItem.custom.to(data);
+    return deserializeLayout(signatureItem, data);
   }
 }

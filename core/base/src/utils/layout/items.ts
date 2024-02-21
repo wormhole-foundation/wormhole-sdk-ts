@@ -34,7 +34,7 @@ export const bitsetItem = <
   const S extends number = BitsizeToBytesize<B["length"]>,
 >(bitnames: B, size?: S): BitsetItem<B, S> => ({
   binary: "uint",
-  size: size ?? Math.ceil(bitnames.length / 8) as unknown as S,
+  size: (size ?? Math.ceil(bitnames.length / 8)) as S,
   custom: {
     to: (encoded: NumSizeToPrimitive<S>): Bitset<B> => {
       const ret: Bitset<B> = {} as Bitset<B>;
