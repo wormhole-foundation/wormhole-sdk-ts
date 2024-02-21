@@ -24,13 +24,18 @@ export const safeThreshold = constMap(safeThresholds);
 // prettier-ignore
 // Number of blocks before a transaction is considered "final"
 const finalityThresholds = [
-  ["Ethereum", 64],
   ["Solana",   32],
-  ["Polygon",  32],
+  ["Ethereum", 64],
   ["Bsc",      15],
+  // Checkpointed after 32 blocks
+  ["Polygon",  32],
+  // Single block finality
   ["Fantom",    1],
   ["Celo",      1],
   ["Moonbeam",  1],
+  ["Karura",    1],
+  ["Acala",     1],
+  // Instant finality
   ["Avalanche", 0],
   ["Sui",       0],
   ["Algorand",  0],
@@ -41,8 +46,6 @@ const finalityThresholds = [
   ["Terra2",    0],
   ["Xpla",      0],
   ["Injective", 0],
-  ["Karura",    1],
-  ["Acala",     1],
 ] as const satisfies MapLevel<Chain, number>;
 
 /**
@@ -94,6 +97,10 @@ const blockTimeMilliseconds = [
   ["Wormchain",         5_000],
   ["Btc",             600_000],
   ["Pythnet",             400],
+  ["Dymension",         5_000],
+  ["Celestia",          5_000],
+  ["Neutron",           5_000],
+  ["Stargaze",          5_000],
 ] as const satisfies MapLevel<Chain, number>;
 
 /** The amount of time between block production, in milliseconds  */
