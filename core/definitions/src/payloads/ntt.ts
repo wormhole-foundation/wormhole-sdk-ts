@@ -1,7 +1,6 @@
 import {
   Layout,
   LayoutToType,
-  CombineObjects,
   CustomizableBytes,
   customizableBytes,
 } from "@wormhole-foundation/sdk-base";
@@ -17,12 +16,11 @@ export type NormalizedAmount = LayoutToType<typeof normalizedAmountLayout>;
 
 export type Prefix = readonly [number, number, number, number];
 
-const prefixLayout = <const P extends Prefix>(prefix: P) => [
-  {name: "prefix", binary: "bytes", custom: Uint8Array.from(prefix), omit: true},
-] as const satisfies Layout;
+const prefixItem = (prefix: Prefix) =>
+  ({name: "prefix", binary: "bytes", custom: Uint8Array.from(prefix), omit: true} as const);
 
 export const nativeTokenTransferLayout = [
-  ...prefixLayout([0x99, 0x4E, 0x54, 0x54]),
+  prefixItem([0x99, 0x4E, 0x54, 0x54]),
   {name: "normalizedAmount", binary: "bytes", layout: normalizedAmountLayout},
   {name: "sourceToken", ...universalAddressItem},
   {name: "recipientAddress", ...universalAddressItem},
@@ -31,42 +29,32 @@ export const nativeTokenTransferLayout = [
 
 export type NativeTokenTransfer = LayoutToType<typeof nativeTokenTransferLayout>;
 
-export const endpointMessageBaseLayout = <const PF extends Prefix>(prefix: PF) => [
-  ...prefixLayout(prefix),
-  {name: "sourceManager", ...universalAddressItem},
-] as const satisfies Layout;
-
 export const endpointMessageLayout = <
-  const PF extends Prefix,
   const P extends CustomizableBytes = undefined,
->(prefix: PF, customPayload?: P) => [
-  ...endpointMessageBaseLayout(prefix),
+>(prefix: Prefix, customPayload?: P) => [
+  prefixItem(prefix),
+  {name: "sourceManager", ...universalAddressItem},
   customizableBytes({name: "managerPayload", lengthSize: 2}, customPayload),
 ] as const satisfies Layout;
 
-type EndpointMessageBase = LayoutToType<ReturnType<typeof endpointMessageBaseLayout<Prefix>>>;
-
-export type EndpointMessage<P> = CombineObjects<EndpointMessageBase, {managerPayload: P}>;
-
-export const managerMessageLayoutBase = [
-  {name: "sequence", ...sequenceItem},
-  {name: "sender", ...universalAddressItem},
-] as const satisfies Layout;
-
-type ManagerMessageBase = LayoutToType<typeof managerMessageLayoutBase>;
+export type EndpointMessage<P extends CustomizableBytes = undefined> =
+  LayoutToType<ReturnType<typeof endpointMessageLayout<P>>>;
 
 export const managerMessageLayout = <
   const P extends CustomizableBytes = undefined
 >(customPayload?: P) => [
-  ...managerMessageLayoutBase,
+  {name: "sequence", ...sequenceItem},
+  {name: "sender", ...universalAddressItem},
   customizableBytes({name: "payload", lengthSize: 2}, customPayload),
 ] as const satisfies Layout;
 
-export type ManagerMessage<P> = CombineObjects<ManagerMessageBase, {payload: P}>;
+export type ManagerMessage<P extends CustomizableBytes = undefined> =
+  LayoutToType<ReturnType<typeof managerMessageLayout<P>>>;
 
 export const wormholeEndpointMessage = <
   const P extends CustomizableBytes = undefined
 >(customPayload?: P) =>
   endpointMessageLayout([0x99, 0x45, 0xFF, 0x10], customPayload);
 
-export type WormholeEndpointMessage<P> = EndpointMessage<P>;
+export type WormholeEndpointMessage<P extends CustomizableBytes = undefined> =
+  LayoutToType<ReturnType<typeof wormholeEndpointMessage<P>>>;
