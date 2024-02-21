@@ -16,8 +16,8 @@ export function computeFee<N extends Network, C extends CosmwasmChains>(
   network: N,
   chain: C,
 ): StdFee {
-  const avgFee = averageGasPrices.get(network, chain);
-  if (!avgFee) throw new Error(`No average gas fee configured for ${network} ${chain}`);
+  let avgFee: string = averageGasPrices.get(network, chain) as string;
+  if (!avgFee) avgFee = "0.1";
 
   return calculateFee(
     DEFAULT_FEE * 1.5,
