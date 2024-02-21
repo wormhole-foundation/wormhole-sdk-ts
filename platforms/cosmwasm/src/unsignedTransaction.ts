@@ -1,8 +1,8 @@
 import { Coin, EncodeObject } from "@cosmjs/proto-signing";
 import { StdFee, calculateFee } from "@cosmjs/stargate";
-import { Network, UnsignedTransaction, encoding } from "@wormhole-foundation/connect-sdk";
+import { Network, UnsignedTransaction, amount, encoding } from "@wormhole-foundation/connect-sdk";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
-import { DEFAULT_FEE, MSG_EXECUTE_CONTRACT_TYPE_URL } from "./constants";
+import { DEFAULT_FEE, MSG_EXECUTE_CONTRACT_TYPE_URL, averageGasPrices } from "./constants";
 import { CosmwasmPlatform } from "./platform";
 import { CosmwasmChains } from "./types";
 
@@ -16,8 +16,20 @@ export function computeFee<N extends Network, C extends CosmwasmChains>(
   network: N,
   chain: C,
 ): StdFee {
-  console.error("how do fees even work");
-  return calculateFee(DEFAULT_FEE, `5000000000${CosmwasmPlatform.getNativeDenom(network, chain)}`);
+  const avgFee = averageGasPrices.get(network, chain);
+  if (!avgFee) throw new Error(`No average gas fee configured for ${network} ${chain}`);
+
+  const avgFeeNormalized = avgFee.includes(".")
+    ? Number(avgFee)
+    : Number(amount.display(amount.fromBaseUnits(BigInt(avgFee), 18), 10)).toFixed(10);
+
+  console.log(avgFee);
+  console.log(avgFeeNormalized);
+
+  return calculateFee(
+    DEFAULT_FEE * 1.5,
+    `${avgFee}${CosmwasmPlatform.getNativeDenom(network, chain)}`,
+  );
 }
 
 export function buildExecuteMsg(

@@ -1,7 +1,7 @@
 import { Network, RoArray, constMap } from "@wormhole-foundation/connect-sdk";
 import { CosmwasmChains } from "./types";
 
-export const DEFAULT_FEE = 1_000_000_000_000;
+export const DEFAULT_FEE = 1_000_000;
 
 export const MSG_EXECUTE_CONTRACT_TYPE_URL = "/cosmwasm.wasm.v1.MsgExecuteContract";
 
@@ -174,3 +174,26 @@ const cosmwasmNetworkChainRestUrl = [
 ] as const satisfies RoArray<readonly [Network, RoArray<readonly [CosmwasmChains, string]>]>;
 
 export const cosmwasmNetworkChainToRestUrls = constMap(cosmwasmNetworkChainRestUrl);
+
+const avgPrices = [
+  [
+    "Mainnet",
+    [
+      ["Terra", "28.325"],
+      ["Terra2", "0.015"],
+      ["Osmosis", "0.025"],
+      ["Sei", "0.02"],
+      ["Cosmoshub", "0.025"],
+      ["Kujira", "0.0051"],
+      ["Neutron", "0.075"],
+      ["Celestia", "0.02"],
+      ["Stargaze", "1.1"],
+      ["Injective", "700000000"],
+      ["Xpla", "1147500000000"],
+      ["Evmos", "25000000000"],
+      ["Dymension", "5000000000"],
+    ],
+  ],
+] as const satisfies RoArray<readonly [Network, RoArray<readonly [CosmwasmChains, string]>]>;
+
+export const averageGasPrices = constMap(avgPrices);

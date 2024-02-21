@@ -9,6 +9,7 @@ import {
 } from "@wormhole-foundation/connect-sdk";
 // Import the platform specific packages
 import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
+import { computeFee } from "@wormhole-foundation/connect-sdk-cosmwasm/src/unsignedTransaction";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 
@@ -40,6 +41,8 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   const wh = new Wormhole("Mainnet", [EvmPlatform, SolanaPlatform, CosmwasmPlatform]);
   // Pick up where you left off by updating the txids as you go
   let fakeIt = false;
+
+  console.log(computeFee("Mainnet", "Dymension"));
 
   // Grab chain Contexts for each leg of our journey
   const external = wh.getChain("Solana");
@@ -74,14 +77,13 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   const { denom } = route1.ibcTransfers![0]!.data;
   const cosmosTokenAddress = Wormhole.parseAddress("Wormchain", denom);
 
-  fakeIt = false;
   // Transfer Gateway factory tokens over IBC through gateway to another Cosmos chain
   let route2 = fakeIt
     ? await GatewayTransfer.from(
         wh,
         {
           chain: cosmos1.chain,
-          txid: "DEDB881D4BA44255A96956FD9097E5A7DD63E4DDD23CD107A8E51B85E0927724",
+          txid: "44338C505E843E993EC8F2548979C0E12A971CEFFC3DD3FDA1D3155B4D440E06",
         },
         600_000,
       )
@@ -93,6 +95,8 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
         leg3,
       );
   console.log("Route 2 (Cosmos -> Cosmos): ", route2);
+
+  fakeIt = false;
 
   // Transfer Gateway factory token through gateway back to source chain
   let route3 = fakeIt
