@@ -1,6 +1,6 @@
 import {
+  LayoutItem,
   CustomConversion,
-  FixedSizeBytesLayoutItem,
 } from "@wormhole-foundation/sdk-base";
 import { UniversalAddress } from "../universalAddress";
 
@@ -11,4 +11,4 @@ export const universalAddressItem = {
     to: (val: Uint8Array): UniversalAddress => new UniversalAddress(val),
     from: (val: UniversalAddress): Uint8Array => val.toUint8Array(),
   } satisfies CustomConversion<Uint8Array, UniversalAddress>,
-} as const satisfies FixedSizeBytesLayoutItem;
+} as const satisfies LayoutItem;

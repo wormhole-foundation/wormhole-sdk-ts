@@ -3,211 +3,224 @@ import {
   Layout,
   LayoutItem,
   LayoutToType,
-  FixedPrimitiveBytesLayoutItem,
-  FixedValueBytesLayoutItem,
   CustomConversion,
   NumSizeToPrimitive,
   NumType,
   BytesType,
-  isNumType,
-  isBytesType,
+
   numberMaxSize,
 } from "./layout";
 
-import { checkUint8ArrayDeeplyEqual, checkNumEquals } from "./utils";
+import {
+  isNumType,
+  isBytesType,
+  isFixedBytesConversion,
+  checkBytesTypeEqual,
+  checkNumEquals,
+} from "./utils";
+import { getCachedSerializedFrom } from "./serialize";
 
-export function deserializeLayout<L extends Layout, B extends boolean = true>(
+export function deserializeLayout<const L extends Layout, B extends boolean = true>(
   layout: L,
-  encoded: Uint8Array,
-  offset?: number,
-  consumeAll?: B,
+  bytes: BytesType,
+  opts?: {
+    offset?: number,
+    end?: number,
+    consumeAll?: B,
+  },
 ) {
-  const [decoded, finalOffset] = internalDeserializeLayout(layout, encoded, offset ?? 0);
+  const encoded = {
+    bytes,
+    offset: opts?.offset ?? 0,
+    end: opts?.end ?? bytes.length,
+  };
+  const decoded = internalDeserializeLayout(layout, encoded);
 
-  if ((consumeAll ?? true) && finalOffset !== encoded.length)
-    throw new Error(`encoded data is longer than expected: ${encoded.length} > ${finalOffset}`);
+  if ((opts?.consumeAll ?? true) && encoded.offset !== encoded.end)
+    throw new Error(`encoded data is longer than expected: ${encoded.end} > ${encoded.offset}`);
 
   return (
-    consumeAll ?? true ? decoded : [decoded, finalOffset]
+    (opts?.consumeAll ?? true) ? decoded : [decoded, encoded.offset]
   ) as B extends true ? LayoutToType<L> : readonly [LayoutToType<L>, number];
 }
 
-function internalDeserializeLayout(
-  layout: Layout,
-  encoded: Uint8Array,
+type BytesChunk = {
+  bytes: BytesType,
   offset: number,
-): readonly [any, number] {
+  end: number,
+};
+
+function updateOffset(encoded: BytesChunk, size: number) {
+  const newOffset = encoded.offset + size;
+  if (newOffset > encoded.end)
+    throw new Error(`chunk is shorter than expected: ${encoded.end} < ${newOffset}`);
+
+  encoded.offset = newOffset;
+}
+
+function internalDeserializeLayout(layout: Layout, encoded: BytesChunk): any {
   if (!Array.isArray(layout))
-    return deserializeLayoutItem(layout as LayoutItem, encoded, offset);
+    return deserializeLayoutItem(layout as LayoutItem, encoded);
 
   let decoded = {} as any;
   for (const item of layout)
     try {
-      [((item as any).omit ? {} : decoded)[item.name], offset] =
-        deserializeLayoutItem(item, encoded, offset);
+      ((item as any).omit ? {} : decoded)[item.name] = deserializeLayoutItem(item, encoded);
     }
     catch (e) {
       (e as Error).message = `when deserializing item '${item.name}': ${(e as Error).message}`;
       throw e;
     }
 
-  return [decoded, offset];
-}
-
-function updateOffset(
-  encoded: Uint8Array,
-  offset: number,
-  size: number
-): number {
-  const newOffset = offset + size;
-  if (newOffset > encoded.length)
-    throw new Error(`encoded data is shorter than expected: ${encoded.length} < ${newOffset}`);
-
-  return newOffset;
+  return decoded;
 }
 
 function deserializeNum<S extends number>(
-  encoded: Uint8Array,
-  offset: number,
-  bytes: S,
+  encoded: BytesChunk,
+  size: S,
   endianness: Endianness = "big",
   signed: boolean = false,
-): readonly [NumSizeToPrimitive<S>, number] {
+) {
   let val = 0n;
-  for (let i = 0; i < bytes; ++i)
-    val |= BigInt(encoded[offset + i]!) << BigInt(8 * (endianness === "big" ? bytes - i - 1 : i));
+  for (let i = 0; i < size; ++i)
+    val |= BigInt(encoded.bytes[encoded.offset + i]!)
+        << BigInt(8 * (endianness === "big" ? size - i - 1 : i));
 
   //check sign bit if value is indeed signed and adjust accordingly
-  if (signed && (encoded[offset + (endianness === "big" ? 0 : bytes - 1)]! & 0x80))
-    val -= 1n << BigInt(8 * bytes);
+  if (signed && (encoded.bytes[encoded.offset + (endianness === "big" ? 0 : size - 1)]! & 0x80))
+    val -= 1n << BigInt(8 * size);
 
-  return [
-    ((bytes > numberMaxSize) ? val : Number(val)) as NumSizeToPrimitive<S>,
-    updateOffset(encoded, offset, bytes)
-  ] as const;
+  updateOffset(encoded, size);
+
+  return ((size > numberMaxSize) ? val : Number(val)) as NumSizeToPrimitive<S>;
 }
 
-function deserializeLayoutItem(
-  item: LayoutItem,
-  encoded: Uint8Array,
-  offset: number,
-): readonly [any, number] {
+function deserializeLayoutItem(item: LayoutItem, encoded: BytesChunk): any {
   switch (item.binary) {
     case "int":
     case "uint": {
-      const [value, newOffset] =
-        deserializeNum(encoded, offset, item.size, item.endianness, item.binary === "int");
+      const value = deserializeNum(encoded, item.size, item.endianness, item.binary === "int");
 
-      if (isNumType(item.custom)) {
-        checkNumEquals(item.custom, value);
-        return [item.custom, newOffset];
+      const { custom } = item;
+      if (isNumType(custom)) {
+        checkNumEquals(custom, value);
+        return custom;
+      }
+      if (isNumType(custom?.from)) {
+        checkNumEquals(custom!.from, value);
+        return custom!.to;
       }
 
-      if (isNumType(item?.custom?.from)) {
-        checkNumEquals(item!.custom!.from, value);
-        return [item!.custom!.to, newOffset];
-      }
-
-      //narrowing to CustomConver<UintType, any> is a bit hacky here, since the true type
-      //  would be CustomConver<number, any> | CustomConver<bigint, any>, but then we'd have to
-      //  further tease that apart still for no real gain...
-      type narrowedCustom = CustomConversion<NumType, any>;
-      return [
-        item.custom !== undefined ? (item.custom as narrowedCustom).to(value) : value,
-        newOffset
-      ];
+      //narrowing to CustomConversion<UintType, any> is a bit hacky here, since the true type
+      //  would be CustomConversion<number, any> | CustomConversion<bigint, any>, but then we'd
+      //  have to further tease that apart still for no real gain...
+      return custom !== undefined ? (custom as CustomConversion<NumType, any>).to(value) : value;
     }
     case "bytes": {
-      let newOffset;
-      let fixedFrom;
-      let fixedTo;
-      if (item.custom !== undefined) {
-        if (isBytesType(item.custom))
-          fixedFrom = item.custom;
-        else if (isBytesType(item.custom.from)) {
-          fixedFrom = item.custom.from;
-          fixedTo = item.custom.to;
+      const expectedSize = ("lengthSize" in item && item.lengthSize !== undefined)
+        ? deserializeNum(encoded, item.lengthSize, item.lengthEndianness)
+        : (item as {size?: number})?.size;
+
+      if ("layout" in item) { //handle layout conversions
+        const { custom } = item;
+        const offset = encoded.offset;
+        let layoutData;
+        if (expectedSize === undefined)
+          layoutData = internalDeserializeLayout(item.layout, encoded);
+        else {
+          const subChunk = {...encoded, end: encoded.offset + expectedSize};
+          updateOffset(encoded, expectedSize);
+          layoutData = internalDeserializeLayout(item.layout, subChunk);
+          if (subChunk.offset !== subChunk.end)
+            throw new Error(
+              `read less data than expected: ${subChunk.offset - encoded.offset} < ${expectedSize}`
+            );
+        }
+
+        if (custom !== undefined) {
+          if (typeof custom.from !== "function") {
+            checkBytesTypeEqual(
+              getCachedSerializedFrom(item as any),
+              encoded.bytes,
+              {dataSlize: [offset, encoded.offset]}
+            );
+            return custom.to;
+          }
+          return custom.to(layoutData);
+        }
+
+        return layoutData;
+      }
+
+      const { custom } = item;
+      { //handle fixed conversions
+        let fixedFrom;
+        let fixedTo;
+        if (isBytesType(custom))
+          fixedFrom = custom;
+        else if (isFixedBytesConversion(custom)) {
+          fixedFrom = custom.from;
+          fixedTo = custom.to;
+        }
+        if (fixedFrom !== undefined) {
+          const size = expectedSize ?? fixedFrom.length;
+          const value = encoded.bytes.slice(encoded.offset, encoded.offset + size);
+          checkBytesTypeEqual(fixedFrom, value);
+          updateOffset(encoded, size);
+          return fixedTo ?? fixedFrom;
         }
       }
 
-      if (fixedFrom !== undefined)
-        newOffset = updateOffset(encoded, offset, fixedFrom.length);
-      else {
-        item = item as
-          Exclude<typeof item, FixedPrimitiveBytesLayoutItem | FixedValueBytesLayoutItem>;
-        if ("size" in item && item.size !== undefined)
-          newOffset = updateOffset(encoded, offset, item.size);
-        else if ("lengthSize" in item && item.lengthSize !== undefined) {
-          let length;
-          [length, offset] =
-            deserializeNum(encoded, offset, item.lengthSize, item.lengthEndianness);
-          newOffset = updateOffset(encoded, offset, length);
-        }
-        else
-          newOffset = encoded.length;
-      }
+      //handle no or custom conversions
+      const start = encoded.offset;
+      const end = (expectedSize !== undefined) ? encoded.offset + expectedSize : encoded.end;
+      updateOffset(encoded, end - start);
 
-      const value = encoded.slice(offset, newOffset);
-      if (fixedFrom !== undefined) {
-        checkUint8ArrayDeeplyEqual(fixedFrom, value);
-        return [fixedTo ?? fixedFrom, newOffset];
-      }
-
-      type narrowedCustom = CustomConversion<BytesType, any>;
-      return [
-        item.custom !== undefined ? (item.custom as narrowedCustom).to(value) : value,
-        newOffset
-      ];
+      const value = encoded.bytes.slice(start, end);
+      return custom !== undefined ? (custom as CustomConversion<BytesType, any>).to(value) : value;
     }
     case "array": {
       let ret = [] as any[];
       const { layout } = item;
       const deserializeArrayItem = () => {
-        const [deserializedItem, newOffset] = internalDeserializeLayout(layout, encoded, offset);
+        const deserializedItem = internalDeserializeLayout(layout, encoded);
         ret.push(deserializedItem);
-        offset = newOffset;
       }
 
       let length = null;
-      if ("length" in item)
+      if ("length" in item && item.length !== undefined)
         length = item.length;
-      else if (item.lengthSize !== undefined)
-        [length, offset] =
-          deserializeNum(encoded, offset, item.lengthSize, item.lengthEndianness);
+      else if ("lengthSize" in item && item.lengthSize !== undefined)
+        length = deserializeNum(encoded, item.lengthSize, item.lengthEndianness);
 
       if (length !== null)
         for (let i = 0; i < length; ++i)
           deserializeArrayItem();
       else
-        while (offset < encoded.length)
+        while (encoded.offset < encoded.end)
           deserializeArrayItem();
 
-      return [ret, offset];
-    }
-    case "object": {
-      return internalDeserializeLayout(item.layout, encoded, offset);
+      return ret;
     }
     case "switch": {
-      const [id, newOffset] = deserializeNum(encoded, offset, item.idSize, item.idEndianness);
+      const id = deserializeNum(encoded, item.idSize, item.idEndianness);
       const {layouts} = item;
       if (layouts.length === 0)
         throw new Error(`switch item has no layouts`);
 
       const hasPlainIds = typeof layouts[0]![0] === "number";
-      const pair = (layouts as any[]).find(([idOrConversionId]) =>
+      const pair = (layouts as readonly any[]).find(([idOrConversionId]) =>
         hasPlainIds ? idOrConversionId === id : (idOrConversionId)[0] === id);
 
       if (pair === undefined)
         throw new Error(`unknown id value: ${id}`);
 
       const [idOrConversionId, idLayout] = pair;
-      const [decoded, nextOffset] = internalDeserializeLayout(idLayout, encoded, newOffset);
-      return [
-        { [item.idTag ?? "id"]: hasPlainIds ? id : (idOrConversionId as any)[1],
-          ...decoded
-        },
-        nextOffset
-      ];
+      const decoded = internalDeserializeLayout(idLayout, encoded);
+      return {
+        [item.idTag ?? "id"]: hasPlainIds ? id : (idOrConversionId as any)[1],
+        ...decoded
+      };
     }
   }
 }
