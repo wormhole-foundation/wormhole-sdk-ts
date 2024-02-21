@@ -14,7 +14,6 @@ const signatureLayout = [
 
 export const signatureItem = {
   binary: "bytes",
-  size: 65,
   layout: signatureLayout,
   custom: {
     to: (val: LayoutToType<typeof signatureLayout>) => new Signature(val.r, val.s, val.v),
