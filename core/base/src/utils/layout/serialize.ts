@@ -6,8 +6,9 @@ import {
   CustomConversion,
   NumType,
   BytesType,
-  isNumType,
-  isBytesType,
+  FixedConversion,
+  LayoutObject,
+  LayoutItemBase,
   numberMaxSize,
 } from "./layout";
 import { calcLayoutSize } from "./size";
@@ -17,8 +18,9 @@ import {
   checkNumEquals,
   findIdLayoutPair,
   isFixedBytesConversion,
-  isLayout,
   isLayoutItem,
+  isNumType,
+  isBytesType,
 } from "./utils";
 
 type Cursor = {
@@ -31,7 +33,10 @@ const cursorWrite = (cursor: Cursor, bytes: BytesType) => {
   cursor.offset += bytes.length;
 }
 
-export function serializeLayout<L extends Layout, E extends BytesType | undefined = undefined>(
+export function serializeLayout<
+  const L extends Layout,
+  E extends BytesType | undefined = undefined
+>(
   layout: L,
   data: LayoutToType<L>,
   encoded?: E,
@@ -133,20 +138,32 @@ function serializeLayoutItem(item: LayoutItem, data: any, cursor: Cursor) {
       if ("lengthSize" in item && item.lengthSize !== undefined)
         cursor.offset += item.lengthSize;
 
-      const { custom } = item;
-      if (isBytesType(custom)) {
-        if (!("omit" in item && item.omit))
-          checkBytesTypeEqual(custom, data);
+      if ("layout" in item) {
+        const { custom } = item;
+        let layoutData;
+        if (custom === undefined)
+          layoutData = data;
+        else if (typeof custom.from !== "function")
+          layoutData = custom.from;
+        else
+          layoutData = custom.from(data);
 
-        cursorWrite(cursor, custom);
+        internalSerializeLayout(item.layout, layoutData, cursor);
       }
-      else if (isFixedBytesConversion(custom))
-        //no proper way to deeply check equality of custom.to and data
-        cursorWrite(cursor, custom.from);
-      else if (isLayout(custom))
-        internalSerializeLayout(custom, data, cursor);
-      else
-        cursorWrite(cursor, custom !== undefined ? custom.from(data) : data);
+      else {
+        const { custom } = item;
+        if (isBytesType(custom)) {
+          if (!("omit" in item && item.omit))
+            checkBytesTypeEqual(custom, data);
+
+          cursorWrite(cursor, custom);
+        }
+        else if (isFixedBytesConversion(custom))
+          //no proper way to deeply check equality of custom.to and data
+          cursorWrite(cursor, custom.from);
+        else
+          cursorWrite(cursor, custom !== undefined ? custom.from(data) : data);
+      }
 
       if ("lengthSize" in item && item.lengthSize !== undefined) {
         const itemSize = cursor.offset - offset - item.lengthSize;
@@ -183,3 +200,23 @@ function serializeLayoutItem(item: LayoutItem, data: any, cursor: Cursor) {
     }
   }
 };
+
+//slightly hacky, but the only way to ensure that we are actually deserializing the
+//  right data without having to re-serialize the layout every time
+export function getCachedSerializedFrom(
+  item: LayoutItemBase<"bytes"> & {layout: Layout; custom: FixedConversion<LayoutObject, any>}
+) {
+  const custom =
+    item.custom as FixedConversion<LayoutObject, any> & {cachedSerializedFrom?: BytesType};
+  if (!("cachedSerializedFrom" in custom)) {
+    custom.cachedSerializedFrom = serializeLayout(item.layout, custom.from);
+    if ("size" in item &&
+        item.size !== undefined &&
+        item.size !== custom.cachedSerializedFrom.length
+      )
+      throw new Error(
+        `Layout specification error: custom.from does not serialize to specified size`
+      );
+  }
+  return custom.cachedSerializedFrom!;
+}

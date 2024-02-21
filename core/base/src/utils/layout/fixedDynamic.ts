@@ -2,16 +2,19 @@ import {
   Layout,
   ProperLayout,
   LayoutItem,
-  LayoutItemBase,
-  NamedLayoutItem,
+  NumLayoutItem,
+  BytesLayoutItem,
+  ArrayLayoutItem,
   SwitchLayoutItem,
   LayoutToType,
-  PrimitiveType,
+  NumType,
+  BytesType,
+  LayoutObject,
   FixedConversion,
-  isPrimitiveType,
+  CustomConversion,
 } from "./layout";
 
-import { isLayout, isLayoutItem, isFixedConversion } from "./utils";
+import { isPrimitiveType, isLayoutItem, isFixedPrimitiveConversion } from "./utils";
 
 type NonEmpty = readonly [unknown, ...unknown[]];
 
@@ -28,27 +31,29 @@ type FilterItemsOfIPLPairs<ILA extends readonly IPLPair[], Fixed extends boolean
     : []
   : never;
 
-type GetLayout<I> =
-  I extends { layout: Layout }
-  ? I["layout"]
-  : I extends { custom: Layout }
-  ? I["custom"]
-  : never;
+type FilterLayoutOfItem<Item extends { layout: Layout }, Fixed extends boolean> =
+  FilterItemsOfLayout<Item["layout"], Fixed> extends infer L extends LayoutItem | NonEmpty
+  ? { readonly [K in keyof Item]: K extends "layout" ? L : Item[K] }
+  : void;
 
 type FilterItem<Item extends LayoutItem, Fixed extends boolean> =
   Item extends infer I extends LayoutItem
-  ? I extends { custom: PrimitiveType | FixedConversion<infer From extends PrimitiveType, infer To> }
-    ? Fixed extends true ? I : void
-    : I extends LayoutItemBase<"int" | "uint">
-    ? Fixed extends true ? void : I
-    : I extends LayoutItemBase<"array"> | (LayoutItemBase<"bytes"> & { custom: LayoutItem | NonEmpty })
-    ? FilterItemsOfLayout<GetLayout<I>, Fixed> extends infer L extends Layout | void
-      ? L extends LayoutItem | NonEmpty
-        ? { readonly [K in keyof I]: K extends "layout" | "custom" ? L : I[K] }
-        : void
-      : never
-    : I extends LayoutItemBase<"bytes">
-    ? Fixed extends true ? void : I
+  ? I extends NumLayoutItem
+    ? I["custom"] extends NumType | FixedConversion<infer From extends NumType, infer To>
+      ? Fixed extends true ? I : void
+      : Fixed extends true ? void : I
+    : I extends ArrayLayoutItem
+    ? FilterLayoutOfItem<I, Fixed>
+    : I extends BytesLayoutItem & { layout: Layout }
+    ? I["custom"] extends { custom: FixedConversion<infer From extends LayoutObject, infer To>}
+      ? Fixed extends true ? I : void
+      : I extends { custom: CustomConversion<infer From extends LayoutObject, infer To>}
+      ? Fixed extends true ? void : I
+      : FilterLayoutOfItem<I, Fixed>
+    : I extends BytesLayoutItem
+    ? I["custom"] extends BytesType | FixedConversion<infer From extends BytesType, infer To>
+      ? Fixed extends true ? I : void
+      : Fixed extends true ? void : I
     : I extends SwitchLayoutItem
     ? { readonly [K in keyof I]:
         K extends "layouts" ? FilterItemsOfIPLPairs<I["layouts"], Fixed> : I[K]
@@ -60,9 +65,9 @@ type FilterItemsOfLayout<L extends Layout, Fixed extends boolean> =
   L extends infer LI extends LayoutItem
   ? FilterItem<LI, Fixed>
   : L extends infer P extends ProperLayout
-  ? P extends readonly [infer H extends NamedLayoutItem, ...infer T extends ProperLayout]
+  ? P extends readonly [infer H extends LayoutItem, ...infer T extends ProperLayout]
     ? FilterItem<H, Fixed> extends infer NI
-      ? NI extends NamedLayoutItem
+      ? NI extends LayoutItem
         ? [NI, ...FilterItemsOfLayout<T, Fixed>]
         : FilterItemsOfLayout<T, Fixed>
       : never
@@ -78,19 +83,24 @@ function filterItem(item: LayoutItem, fixed: boolean): LayoutItem | null {
   switch (item.binary) {
     // @ts-ignore - fallthrough is intentional
     case "bytes": {
-      const { custom } = item;
-      if (isLayoutItem(custom)) {
-        return filterItem(custom, fixed) ?? null;
-      }
-      if (isLayout(custom)) {
-        const filteredItems = internalFilterItemsOfProperLayout(custom, fixed);
-        return (filteredItems.length > 0) ? { ...item, custom: filteredItems } : null;
+      if ("layout" in item) {
+        const { custom } = item;
+        if (custom === undefined) {
+          const { layout } = item;
+          if (isLayoutItem(layout))
+            return filterItem(layout, fixed);
+
+          const filteredItems = internalFilterItemsOfProperLayout(layout, fixed);
+          return (filteredItems.length > 0) ? { ...item, layout: filteredItems } : null;
+        }
+        const isFixedItem = typeof custom.from !== "function";
+        return (fixed && isFixedItem || !fixed && !isFixedItem) ? item : null;
       }
     }
     case "int":
     case "uint": {
       const { custom } = item;
-      const isFixedItem = isPrimitiveType(custom) || isFixedConversion(custom);
+      const isFixedItem = isPrimitiveType(custom) || isFixedPrimitiveConversion(custom);
       return (fixed && isFixedItem || !fixed && !isFixedItem) ? item : null;
     }
     case "array": {
@@ -115,7 +125,7 @@ function filterItem(item: LayoutItem, fixed: boolean): LayoutItem | null {
 function internalFilterItemsOfProperLayout(proper: ProperLayout, fixed: boolean): ProperLayout {
   return proper.reduce(
     (acc, item) => {
-      const filtered = filterItem(item, fixed) as NamedLayoutItem | null;
+      const filtered = filterItem(item, fixed) as ProperLayout[number] | null;
       return filtered !== null ? [...acc, filtered] : acc;
     },
     [] as ProperLayout
@@ -126,14 +136,14 @@ function internalFilterItemsOfLayout(layout: Layout, fixed: boolean): any {
   return (Array.isArray(layout)
     ? internalFilterItemsOfProperLayout(layout, fixed)
     : filterItem(layout as LayoutItem, fixed)
-   ) as any;
+   );
 }
 
 function filterItemsOfLayout<L extends Layout, const Fixed extends boolean>(
   layout: L,
   fixed: Fixed
 ): FilterItemsOfLayout<L, Fixed> {
-  return internalFilterItemsOfLayout(layout, fixed) as any;
+  return internalFilterItemsOfLayout(layout, fixed);
 }
 
 export type FixedItemsOfLayout<L extends Layout> = StartFilterItemsOfLayout<L, true>;
@@ -149,9 +159,13 @@ function internalAddFixedValuesItem(item: LayoutItem, dynamicValue: any): any {
   switch (item.binary) {
     // @ts-ignore - fallthrough is intentional
     case "bytes": {
-      const { custom } = item;
-      if (isLayout(custom))
-        return internalAddFixedValues(custom, dynamicValue);
+      if ("layout" in item) {
+        const { custom } = item;
+        if (custom === undefined || typeof custom.from !== "function")
+          return internalAddFixedValues(item.layout, custom ? custom.from : dynamicValue);
+
+        return dynamicValue;
+      }
     }
     case "int":
     case "uint": {
@@ -160,7 +174,7 @@ function internalAddFixedValuesItem(item: LayoutItem, dynamicValue: any): any {
         ? undefined
         : isPrimitiveType(custom)
         ? custom
-        : isFixedConversion(custom)
+        : isFixedPrimitiveConversion(custom)
         ? custom.to
         : dynamicValue;
     }
@@ -198,7 +212,7 @@ function internalAddFixedValues(layout: Layout, dynamicValues: any): any {
   return ret;
 }
 
-export function addFixedValues<L extends Layout>(
+export function addFixedValues<const L extends Layout>(
   layout: L,
   dynamicValues: LayoutToType<DynamicItemsOfLayout<L>>,
 ): LayoutToType<L> {

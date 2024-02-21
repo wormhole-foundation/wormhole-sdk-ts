@@ -1,4 +1,4 @@
-import { LayoutItem, FlexBytesLayoutItem } from "@wormhole-foundation/sdk-base";
+import { LayoutItem, CustomizableBytes, customizableBytes } from "@wormhole-foundation/sdk-base";
 import {
   amountItem,
   chainItem,
@@ -12,7 +12,7 @@ import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../va
 
 const encodedExecutionInfoItem = {
   binary: "bytes",
-  custom: [
+  layout: [
     { name: "size", binary: "uint", size: 4, custom: 3 * 32, omit: true },
     { name: "waste", binary: "uint", size: 31, custom: 0n, omit: true },
     { name: "version", binary: "uint", size: 1, custom: 0, omit: true },
@@ -23,7 +23,7 @@ const encodedExecutionInfoItem = {
 
 const addressChainItem = {
   binary: "bytes",
-  custom: [
+  layout: [
     { name: "chain", ...chainItem() },
     { name: "address", ...universalAddressItem },
   ],
@@ -52,11 +52,11 @@ const messageKeySwitchLayout = {
 } as const satisfies LayoutItem;
 
 export const deviveryInstructionLayout = <
-  const P extends FlexBytesLayoutItem["custom"] = undefined
+  const P extends CustomizableBytes = undefined
 >(customPayload?: P) => [
   payloadIdItem(1),
   { name: "target", ...addressChainItem },
-  { name: "payload", binary: "bytes", lengthSize: 4, custom: customPayload as P },
+  customizableBytes({ name: "payload", lengthSize: 4}, customPayload),
   { name: "requestedReceiverValue", ...amountItem },
   { name: "extraReceiverValue", ...amountItem },
   { name: "executionInfo", ...encodedExecutionInfoItem },
@@ -71,7 +71,7 @@ const namedPayloads = [
   [ "DeliveryInstruction", deviveryInstructionLayout() ],
   [ "RedeliveryInstruction", [
       payloadIdItem(2),
-      { name: "deliveryVaaKey", binary: "bytes", custom: vaaKeyLayout },
+      { name: "deliveryVaaKey", binary: "bytes", layout: vaaKeyLayout },
       { name: "targetChain", ...chainItem() },
       { name: "newRequestedReceiverValue", ...amountItem },
       { name: "newEncodedExecutionInfo", ...encodedExecutionInfoItem },

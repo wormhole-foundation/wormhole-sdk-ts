@@ -2,7 +2,8 @@ import {
   Layout,
   LayoutToType,
   CombineObjects,
-  FlexBytesLayoutItem,
+  CustomizableBytes,
+  customizableBytes,
 } from "@wormhole-foundation/sdk-base";
 
 import { universalAddressItem, chainItem, sequenceItem } from "../layout-items";
@@ -22,7 +23,7 @@ const prefixLayout = <const P extends Prefix>(prefix: P) => [
 
 export const nativeTokenTransferLayout = [
   ...prefixLayout([0x99, 0x4E, 0x54, 0x54]),
-  {name: "normalizedAmount", binary: "bytes", custom: normalizedAmountLayout},
+  {name: "normalizedAmount", binary: "bytes", layout: normalizedAmountLayout},
   {name: "sourceToken", ...universalAddressItem},
   {name: "recipientAddress", ...universalAddressItem},
   {name: "recipientChain", ...chainItem()},
@@ -37,10 +38,10 @@ export const endpointMessageBaseLayout = <const PF extends Prefix>(prefix: PF) =
 
 export const endpointMessageLayout = <
   const PF extends Prefix,
-  const P extends FlexBytesLayoutItem["custom"] = undefined,
+  const P extends CustomizableBytes = undefined,
 >(prefix: PF, customPayload?: P) => [
   ...endpointMessageBaseLayout(prefix),
-  {name: "managerPayload", binary: "bytes", lengthSize: 2, custom: customPayload as P},
+  customizableBytes({name: "managerPayload", lengthSize: 2}, customPayload),
 ] as const satisfies Layout;
 
 type EndpointMessageBase = LayoutToType<ReturnType<typeof endpointMessageBaseLayout<Prefix>>>;
@@ -55,16 +56,16 @@ export const managerMessageLayoutBase = [
 type ManagerMessageBase = LayoutToType<typeof managerMessageLayoutBase>;
 
 export const managerMessageLayout = <
-  const P extends FlexBytesLayoutItem["custom"] = undefined
+  const P extends CustomizableBytes = undefined
 >(customPayload?: P) => [
   ...managerMessageLayoutBase,
-  {name: "payload", binary: "bytes", lengthSize: 2, custom: customPayload as P},
+  customizableBytes({name: "payload", lengthSize: 2}, customPayload),
 ] as const satisfies Layout;
 
 export type ManagerMessage<P> = CombineObjects<ManagerMessageBase, {payload: P}>;
 
 export const wormholeEndpointMessage = <
-  const P extends FlexBytesLayoutItem["custom"] = undefined
+  const P extends CustomizableBytes = undefined
 >(customPayload?: P) =>
   endpointMessageLayout([0x99, 0x45, 0xFF, 0x10], customPayload);
 

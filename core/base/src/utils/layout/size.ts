@@ -2,12 +2,10 @@ import {
   Layout,
   LayoutItem,
   LayoutToType,
-  isBytesType,
-
 } from "./layout";
 import {
   findIdLayoutPair,
-  isLayout,
+  isBytesType,
   isLayoutItem,
   isFixedBytesConversion,
   checkItemSize,
@@ -19,22 +17,23 @@ function calcItemSize(item: LayoutItem, data: any): number | null {
     case "uint":
       return item.size;
     case "bytes": {
+      //items only have a size or a lengthSize, never both
       const lengthSize = ("lengthSize" in item) ? item.lengthSize | 0 : 0;
 
-      const { custom } = item;
-      if (isBytesType(custom))
-        return lengthSize + custom.length;
-
-      if (isFixedBytesConversion(custom))
-        return lengthSize + custom.from.length;
-
-      if (isLayout(custom)) {
-        const layoutSize = internalCalcLayoutSize(custom, data);
+      if ("layout" in item) {
+        const layoutSize = internalCalcLayoutSize(item.layout, data);
         if (layoutSize === null)
-          return null;
+          return ("size" in item ) ? item.size ?? null : null;
 
         return lengthSize + checkItemSize(item, layoutSize);
       }
+
+      const { custom } = item;
+      if (isBytesType(custom))
+        return lengthSize + custom.length; //assumed to equal item.size if it exists
+
+      if (isFixedBytesConversion(custom))
+        return lengthSize + custom.from.length; //assumed to equal item.size if it exists
 
       if (custom === undefined)
         return data ? lengthSize + checkItemSize(item, data.length) : null;
@@ -54,18 +53,16 @@ function calcItemSize(item: LayoutItem, data: any): number | null {
         return null;
       }
 
-      const narrowedData = data as LayoutToType<typeof item>;
-
       let size = 0;
-      if (length !== undefined && length !== narrowedData.length)
+      if (length !== undefined && length !== data.length)
         throw new Error(
-          `array length mismatch: layout length: ${length}, data length: ${narrowedData.length}`
+          `array length mismatch: layout length: ${length}, data length: ${data.length}`
         );
       else if ("lengthSize" in item && item.lengthSize !== undefined)
         size += item.lengthSize;
 
-      for (let i = 0; i < narrowedData.length; ++i) {
-        const entrySize = internalCalcLayoutSize(item.layout, narrowedData[i]);
+      for (let i = 0; i < data.length; ++i) {
+        const entrySize = internalCalcLayoutSize(item.layout, data[i]);
         if (entrySize === null)
           return null;
 
@@ -138,7 +135,7 @@ function internalCalcLayoutSize(layout: Layout, data?: any): number | null {
 // ): number | null;
 //or we have to make data overly permissive via:
 // export function calcLayoutSize<
-//   const L extends Layout,
+//   L extends Layout,
 //   const D extends LayoutToType<L> | undefined,
 //  >(
 //   layout: L,

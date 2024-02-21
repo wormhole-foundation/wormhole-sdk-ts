@@ -27,7 +27,7 @@ const testLayout = [
   {
     name: "bytesDynamicCustomLayout",
     binary: "bytes",
-    custom: [
+    layout: [
       { name: "bytesDynamicSize", binary: "bytes", size: 4 },
       { name: "bytesDynamicLengthSize", binary: "bytes", lengthSize: 4 },
     ],
@@ -35,17 +35,17 @@ const testLayout = [
   {
     name: "bytesFixedItem",
     binary: "bytes",
-    custom: { binary: "uint", size: 1, custom: { to: 13, from: 1 } },
+    layout: { binary: "uint", size: 1, custom: { to: 13, from: 1 } },
   },
   {
     name: "bytesDynamicItem",
     binary: "bytes",
-    custom: { binary: "uint", size: 1 },
+    layout: { binary: "uint", size: 1 },
   },
   {
     name: "bytesFixedLayout",
     binary: "bytes",
-    custom: [
+    layout: [
       {
         name: "uintFixedCustom",
         binary: "uint",
@@ -58,7 +58,7 @@ const testLayout = [
   {
     name: "bytesMixedLayout",
     binary: "bytes",
-    custom: [
+    layout: [
       { name: "bytesFixedPrimitive", binary: "bytes", custom: new Uint8Array(4) },
       { name: "uintFixedCustom", binary: "uint", size: 1, custom: { to: 33, from: 1 } },
       { name: "uintDynamicPrimitive", binary: "uint", size: 1 },
@@ -74,11 +74,11 @@ const testLayout = [
     name: "arrayMixedLayout",
     binary: "array",
     lengthSize: 1,
-    layout: { binary: "bytes", custom: [
+    layout: [
       { name: "uintDynamicPrimitive", binary: "uint", size: 1 },
       { name: "uintFixedPrimitive", binary: "uint", size: 1, custom: 25 },
       { name: "bytesFixedPrimitive", binary: "bytes", custom: new Uint8Array(4) },
-    ]},
+    ],
   },
   {
     name: "switchMixed",
@@ -99,6 +99,7 @@ const testLayout = [
 
 // uncomment the following to "test" correct type resolution:
 // import { LayoutToType, FixedItemsOfLayout, DynamicItemsOfLayout } from "../src";
+// type LT = LayoutToType<typeof testLayout>;
 // type FixedItems = FixedItemsOfLayout<typeof testLayout>;
 // type FixedValues = LayoutToType<FixedItems>;
 // type DynamicItems = DynamicItemsOfLayout<typeof testLayout>;
@@ -174,21 +175,22 @@ describe("Layout tests", function () {
   });
 
   const fixedInt = { name: "fixedSignedInt", binary: "int", size: 2 } as const;
+  const fixedIntData = { fixedSignedInt: -257 };
 
   it("should correctly serialize and deserialize signed integers", function () {
     const layout = [fixedInt] as const;
-    const encoded = serializeLayout(layout, { fixedSignedInt: -257 });
+    const encoded = serializeLayout(layout, fixedIntData);
     expect(encoded).toEqual(new Uint8Array([0xfe, 0xff]));
     const decoded = deserializeLayout(layout, encoded);
-    expect(decoded).toEqual({ fixedSignedInt: -257 });
+    expect(decoded).toEqual(fixedIntData);
   });
 
   it("should correctly serialize and deserialize little endian signed integers", function () {
     const layout = [{...fixedInt, endianness: "little"}] as const;
-    const encoded = serializeLayout(layout, { fixedSignedInt: -257 });
+    const encoded = serializeLayout(layout, fixedIntData);
     expect(encoded).toEqual(new Uint8Array([0xff, 0xfe]));
     const decoded = deserializeLayout(layout, encoded);
-    expect(decoded).toEqual({ fixedSignedInt: -257 });
+    expect(decoded).toEqual(fixedIntData);
   });
 
   describe("Bitset tests", function () {

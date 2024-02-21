@@ -1,7 +1,8 @@
 import {
   Layout,
   UintLayoutItem,
-  LengthPrefixedBytesLayoutItem,
+  CustomizableBytes,
+  customizableBytes,
 } from "@wormhole-foundation/sdk-base";
 import { chainItem, amountItem } from "../layout-items";
 import { RegisterPayloadTypes, NamedPayloads, registerPayloadTypes } from "../vaa";
@@ -9,13 +10,13 @@ import { RegisterPayloadTypes, NamedPayloads, registerPayloadTypes } from "../va
 const bamAddressItem = {
   binary: "bytes",
   lengthSize: 2,
-} as const satisfies LengthPrefixedBytesLayoutItem;
+} as const;
 
 const customOrEmpty = (custom: any) => (custom ? { custom } : {});
 
 export const messageLayout = <
   T extends number,
-  C extends Pick<LengthPrefixedBytesLayoutItem, "custom">,
+  const C extends CustomizableBytes = undefined,
 >(
   type: T,
   customContents?: C,
@@ -28,13 +29,13 @@ export const messageLayout = <
     { name: "targetChain", ...chainItem() },
     { name: "targetAddress", ...bamAddressItem },
     { name: "senderAddress", ...bamAddressItem },
-    { name: "contents", binary: "bytes", lengthSize: 2, ...customOrEmpty(customContents) },
+    customizableBytes({ name: "contents", lengthSize: 2 }, customContents),
   ] as const satisfies Layout;
 
 export const tokenMessageLayout = <
-  C extends Pick<LengthPrefixedBytesLayoutItem, "custom">,
   B extends Pick<UintLayoutItem, "custom">,
   A extends Pick<UintLayoutItem, "custom">,
+  const C extends CustomizableBytes = undefined,
 >(custom?: {
   contents?: C;
   bridge?: B;
@@ -48,15 +49,15 @@ export const tokenMessageLayout = <
   ] as const satisfies Layout;
 
 export const extendedMessageLayout = <
-  C extends Pick<LengthPrefixedBytesLayoutItem, "custom">,
-  R extends Pick<LengthPrefixedBytesLayoutItem, "custom">,
+  const C extends CustomizableBytes = undefined,
+  const R extends CustomizableBytes = undefined,
 >(custom?: {
   contents?: C;
   relaySignal?: R;
 }) =>
   [
     ...messageLayout(2, custom?.contents),
-    { name: "relaySignal", binary: "bytes", lengthSize: 2, ...customOrEmpty(custom?.relaySignal) },
+    customizableBytes({ name: "relaySignal", lengthSize: 2}, custom?.relaySignal),
   ] as const satisfies Layout;
 
 export const namedPayloads = [

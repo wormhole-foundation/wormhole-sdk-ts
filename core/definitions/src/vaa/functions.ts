@@ -37,9 +37,10 @@ export function getPayloadLayout<LL extends LayoutLiteral>(layoutLiteral: LL) {
 }
 
 //annoyingly we can't implicitly declare this using the return type of payloadLiteralToPayloadItem
-export type PayloadLiteralToPayloadItemLayout<PL extends PayloadLiteral> = PL extends infer V
+export type PayloadLiteralToPayloadItemLayout<PL extends PayloadLiteral> =
+  PL extends infer V
   ? V extends LayoutLiteral
-    ? { name: "payload"; binary: "bytes"; custom: LayoutOf<V> }
+    ? { name: "payload"; binary: "bytes"; layout: LayoutOf<V> }
     : V extends "Uint8Array"
     ? { name: "payload"; binary: "bytes" }
     : never
@@ -49,7 +50,7 @@ export function payloadLiteralToPayloadItemLayout<PL extends PayloadLiteral>(pay
   return {
     name: "payload",
     binary: "bytes",
-    ...(payloadLiteral === "Uint8Array" ? {} : {custom: getPayloadLayout(payloadLiteral)})
+    ...(payloadLiteral === "Uint8Array" ? {} : {layout: getPayloadLayout(payloadLiteral)})
   } as PayloadLiteralToPayloadItemLayout<PL>;
 }
 

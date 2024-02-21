@@ -1,14 +1,6 @@
-import {
-  Layout,
-  LayoutItem,
-  LengthPrefixed,
-  BytesType,
-  isNumType,
-  isBytesType,
-} from "./layout";
-
-import { serializeNum } from "./serialize";
-import { isLayout, isFixedBytesConversion } from "./utils";
+import { Layout, LayoutItem, LengthPrefixed, BytesType } from "./layout";
+import { serializeNum, getCachedSerializedFrom } from "./serialize";
+import { isNumType, isBytesType, isFixedBytesConversion } from "./utils";
 import { calcStaticLayoutSize } from "./size";
 
 //defining a bunch of types for readability
@@ -75,21 +67,30 @@ function layoutItemMeta(
     case "bytes": {
       const lengthSize = ("lengthSize" in item) ? item.lengthSize | 0 : 0;
 
-      const { custom } = item;
       let fixed;
       let fixedSize;
-      if (isBytesType(custom)) {
-        fixed = custom;
-        fixedSize = custom.length;
+      if ("layout" in item) {
+        const { custom } = item;
+        if (custom !== undefined && typeof custom.from !== "function") {
+          fixed = getCachedSerializedFrom(item as any);
+          fixedSize = fixed.length;
+        }
+        else {
+          const layoutSize = calcStaticLayoutSize(item.layout);
+          if (layoutSize !== null)
+            fixedSize = layoutSize;
+        }
       }
-      else if (isFixedBytesConversion(custom)) {
-        fixed = custom.from;
-        fixedSize = custom.from.length;
-      }
-      else if (isLayout(custom)) {
-        const layoutSize = calcStaticLayoutSize(custom);
-        if (layoutSize !== null)
-          fixedSize = layoutSize;
+      else {
+        const { custom } = item;
+        if (isBytesType(custom)) {
+          fixed = custom;
+          fixedSize = custom.length;
+        }
+        else if (isFixedBytesConversion(custom)) {
+          fixed = custom.from;
+          fixedSize = custom.from.length;
+        }
       }
 
       if (lengthSize > 0 && offset !== null) {
@@ -114,8 +115,8 @@ function layoutItemMeta(
         ? [item.size, item.size] as Bounds
         : undefined;
 
-      if (isLayout(custom)) {
-        const lm = createLayoutMeta(custom, offset, fixedBytes)
+      if ("layout" in item) {
+        const lm = createLayoutMeta(item.layout, offset, fixedBytes)
         return ret ?? [lengthSize + lm[0], lengthSize + lm[1]];
       }
 

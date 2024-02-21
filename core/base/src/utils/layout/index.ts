@@ -2,22 +2,12 @@ export {
   Layout,
   ProperLayout,
   LayoutItem,
-  NamedLayoutItem,
   NumLayoutItem,
   BytesLayoutItem,
   ArrayLayoutItem,
   SwitchLayoutItem,
   IntLayoutItem,
   UintLayoutItem,
-  FixedPrimitiveNumLayoutItem,
-  OptionalToFromNumLayoutItem,
-  FixedPrimitiveBytesLayoutItem,
-  ManualSizeBytesLayoutItem,
-  LengthPrefixedBytesLayoutItem,
-  FlexBytesLayoutItem,
-  FixedLengthArrayLayoutItem,
-  LengthPrefixedArrayLayoutItem,
-  RemainderArrayLayoutItem,
   LayoutToType,
   FixedConversion,
   CustomConversion,
@@ -34,6 +24,7 @@ export {
 } from "./fixedDynamic";
 
 export { layoutDiscriminator } from "./discriminate";
+export { isLayout, isLayoutItem, CustomizableBytes, customizableBytes } from "./utils";
 
 export * from "./size";
 export * from "./items";

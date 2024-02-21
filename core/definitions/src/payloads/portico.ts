@@ -15,7 +15,7 @@ export const porticoFlagSetLayout = [
 ] as const satisfies Layout;
 
 export const porticoTransferLayout = [
-  { name: "flagSet", binary: "bytes", custom: porticoFlagSetLayout },
+  { name: "flagSet", binary: "bytes", layout: porticoFlagSetLayout },
   { name: "startTokenAddress", ...universalAddressItem },
   { name: "cannonAssetAmount", ...amountItem },
   { name: "finalTokenAddress", ...universalAddressItem },
@@ -28,7 +28,7 @@ export const porticoTransferLayout = [
 ] as const satisfies Layout;
 
 export const porticoPayloadLayout = [
-  { name: "flagSet", binary: "bytes", custom: porticoFlagSetLayout },
+  { name: "flagSet", binary: "bytes", layout: porticoFlagSetLayout },
   { name: "finalTokenAddress", ...universalAddressItem },
   { name: "recipientAddress", ...universalAddressItem },
   { name: "cannonAssetAmount", ...amountItem },

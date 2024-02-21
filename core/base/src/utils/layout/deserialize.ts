@@ -7,17 +7,20 @@ import {
   NumSizeToPrimitive,
   NumType,
   BytesType,
-  isNumType,
-  isBytesType,
+
   numberMaxSize,
 } from "./layout";
 
-import { isLayout, checkBytesTypeEqual, checkNumEquals, isFixedBytesConversion } from "./utils";
+import {
+  isNumType,
+  isBytesType,
+  isFixedBytesConversion,
+  checkBytesTypeEqual,
+  checkNumEquals,
+} from "./utils";
+import { getCachedSerializedFrom } from "./serialize";
 
-//use to avoid excessively deep instantion errors when TypeScript is instantiating overly eagerly
-type AllowTypeCheckSkip<L extends Layout> = Layout extends L ? any : LayoutToType<L>;
-
-export function deserializeLayout<L extends Layout, B extends boolean = true>(
+export function deserializeLayout<const L extends Layout, B extends boolean = true>(
   layout: L,
   bytes: BytesType,
   opts?: {
@@ -37,8 +40,8 @@ export function deserializeLayout<L extends Layout, B extends boolean = true>(
     throw new Error(`encoded data is longer than expected: ${encoded.end} > ${encoded.offset}`);
 
   return (
-    opts?.consumeAll ?? true ? decoded : [decoded, encoded.offset]
-  ) as B extends true ? AllowTypeCheckSkip<L> : readonly [AllowTypeCheckSkip<L>, number];
+    (opts?.consumeAll ?? true) ? decoded : [decoded, encoded.offset]
+  ) as B extends true ? LayoutToType<L> : readonly [LayoutToType<L>, number];
 }
 
 type BytesChunk = {
@@ -114,26 +117,42 @@ function deserializeLayoutItem(item: LayoutItem, encoded: BytesChunk): any {
       return custom !== undefined ? (custom as CustomConversion<NumType, any>).to(value) : value;
     }
     case "bytes": {
-      const expectedSize =
-        ("lengthSize" in item && item.lengthSize !== undefined)
+      const expectedSize = ("lengthSize" in item && item.lengthSize !== undefined)
         ? deserializeNum(encoded, item.lengthSize, item.lengthEndianness)
         : (item as {size?: number})?.size;
 
-      const { custom } = item;
-      if (isLayout(custom)) { //handle layout conversions
+      if ("layout" in item) { //handle layout conversions
+        const { custom } = item;
+        const offset = encoded.offset;
+        let layoutData;
         if (expectedSize === undefined)
-          return internalDeserializeLayout(custom, encoded);
+          layoutData = internalDeserializeLayout(item.layout, encoded);
+        else {
+          const subChunk = {...encoded, end: encoded.offset + expectedSize};
+          updateOffset(encoded, expectedSize);
+          layoutData = internalDeserializeLayout(item.layout, subChunk);
+          if (subChunk.offset !== subChunk.end)
+            throw new Error(
+              `read less data than expected: ${subChunk.offset - encoded.offset} < ${expectedSize}`
+            );
+        }
 
-        const subChunk = {...encoded, end: encoded.offset + expectedSize};
-        updateOffset(encoded, expectedSize);
-        const ret = internalDeserializeLayout(custom, subChunk);
-        if (subChunk.offset !== subChunk.end)
-          throw new Error(
-            `read less data than expected: ${subChunk.offset - encoded.offset} < ${expectedSize}`
-          );
-        return ret;
+        if (custom !== undefined) {
+          if (typeof custom.from !== "function") {
+            checkBytesTypeEqual(
+              getCachedSerializedFrom(item as any),
+              encoded.bytes,
+              {dataSlize: [offset, encoded.offset]}
+            );
+            return custom.to;
+          }
+          return custom.to(layoutData);
+        }
+
+        return layoutData;
       }
 
+      const { custom } = item;
       { //handle fixed conversions
         let fixedFrom;
         let fixedTo;

@@ -1,4 +1,4 @@
-import { Layout, FlexBytesLayoutItem } from "@wormhole-foundation/sdk-base";
+import { Layout, CustomizableBytes, customizableBytes } from "@wormhole-foundation/sdk-base";
 import {
   payloadIdItem,
   universalAddressItem,
@@ -9,14 +9,14 @@ import {
 import { RegisterPayloadTypes, NamedPayloads, registerPayloadTypes } from "../vaa";
 
 //from here: https://github.com/wormhole-foundation/wormhole-circle-integration/blob/105ad59bad687416527003e0241dee4020889341/evm/src/circle_integration/CircleIntegrationMessages.sol#L25
-export const depositWithPayloadLayout = <P extends FlexBytesLayoutItem["custom"] = undefined>(
+export const depositWithPayloadLayout = <const P extends CustomizableBytes = undefined>(
   customPayload?: P,
 ) => [
   payloadIdItem(1),
   {
     name: "token",
     binary: "bytes",
-    custom: [
+    layout: [
       { name: "address", ...universalAddressItem },
       { name: "amount", ...amountItem },
     ],
@@ -26,7 +26,7 @@ export const depositWithPayloadLayout = <P extends FlexBytesLayoutItem["custom"]
   { name: "nonce", ...circleNonceItem },
   { name: "caller", ...universalAddressItem },
   { name: "mintRecipient", ...universalAddressItem },
-  { name: "payload", binary: "bytes", lengthSize: 2 , custom: customPayload as P },
+  customizableBytes({ name: "payload", lengthSize: 2}, customPayload),
 ] as const satisfies Layout;
 
 //from here:
