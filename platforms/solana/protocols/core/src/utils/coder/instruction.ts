@@ -1,8 +1,11 @@
 import { Idl, Instruction, InstructionCoder } from '@project-serum/anchor';
-import { encoding } from '@wormhole-foundation/connect-sdk';
 import { Layout } from 'buffer-layout';
-import { camelCase, upperFirst } from 'lodash';
-import { anchor } from '@wormhole-foundation/connect-sdk-solana';
+import { encoding } from '@wormhole-foundation/connect-sdk';
+import {
+  anchor,
+  camelCase,
+  upperFirst,
+} from '@wormhole-foundation/connect-sdk-solana';
 import * as borsh from '@coral-xyz/borsh';
 import { IdlCoder } from './idl';
 
@@ -76,7 +79,7 @@ export class WormholeInstructionCoder implements InstructionCoder {
     let discriminator = Buffer.from(ix.slice(0, 1)).readInt8();
     let data = Buffer.from(ix.slice(1));
 
-    let name = camelCase(WormholeInstruction[discriminator]);
+    let name = camelCase(WormholeInstruction[discriminator] ?? '');
     let layout = this.ixLayout.get(name);
 
     if (!layout) {

@@ -51,7 +51,6 @@
     "@project-serum/anchor": "0.25.0",
     "@project-serum/borsh": "0.2.5",
     "@solana/spl-token": "0.3.9",
-    "@solana/web3.js": "1.89.1",
-    "lodash": "^4.17.21"
+    "@solana/web3.js": "1.89.1"
   }
 }
