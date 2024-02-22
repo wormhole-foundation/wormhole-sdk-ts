@@ -7,14 +7,11 @@ import {
   encoding,
   toNative,
 } from "@wormhole-foundation/connect-sdk";
-import {
-  CosmwasmChains,
-  CosmwasmPlatform,
-  chainToNativeDenoms
-} from "../../src";
+import { CosmwasmChains, CosmwasmPlatform, chainToNativeDenoms } from "../../src";
 
 import "@wormhole-foundation/connect-sdk-cosmwasm-core";
 import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
+import nock from "nock";
 
 const network: "Testnet" = "Testnet"; //DEFAULT_NETWORK;
 type TNet = typeof network;
@@ -29,29 +26,67 @@ const senderAddress = toNative(chain, sender);
 // address for "turtle" a cw20 on sei
 const nativeTokenAddress = toNative(
   chain,
-  "sei16aa3whueaddmms3qw0apz7ylddg0vwtw2zugafmccdtrxrwyx0kqwxntat"
+  "sei16aa3whueaddmms3qw0apz7ylddg0vwtw2zugafmccdtrxrwyx0kqwxntat",
 );
 
 // Wrapped avax on sei
 const wrappedTokenChain: Chain = "Avalanche";
 const realWrappedAddress = toNative(
   chain,
-  "sei1mgpq67pj7p2acy5x7r5lz7fulxmuxr3uh5f0szyvqgvru3glufzsxk8tnx"
+  "sei1mgpq67pj7p2acy5x7r5lz7fulxmuxr3uh5f0szyvqgvru3glufzsxk8tnx",
 );
 
 // rando address, i think this is the token bridge
 const bogusAddress = toNative(
   chain,
-  "sei1dkdwdvknx0qav5cp5kw68mkn3r99m3svkyjfvkztwh97dv2lm0ksj6xrak"
+  "sei1dkdwdvknx0qav5cp5kw68mkn3r99m3svkyjfvkztwh97dv2lm0ksj6xrak",
 );
+
+// Setup nock to record fixtures
+const nockBack = nock.back;
+nockBack.fixtures = __dirname + "/fixtures";
+
+let nockDone: () => void;
+beforeEach(async () => {
+  nockBack.setMode("lockdown");
+  const fullTestName = expect.getState().currentTestName?.replace(/\s/g, "_");
+  const { nockDone: nd } = await nockBack(`${fullTestName}.json`, {
+    // Remove the `id` from the request body after preparing it but before
+    // trying to match a fixture.
+    after: (scope) => {
+      scope.filteringRequestBody((body: string) => {
+        const o = JSON.parse(body) as { id?: string };
+        delete o.id;
+        return JSON.stringify(o);
+      });
+    },
+    // Remove the `id` from the request body before saving it as a fixture.
+    afterRecord: (defs) => {
+      return defs.map((d: nock.Definition) => {
+        const body = d.body as { id?: string };
+        delete body.id;
+        d.body = body;
+        return d;
+      });
+    },
+  });
+
+  // update global var
+  nockDone = nd;
+});
+
+afterEach(async () => {
+  nockDone();
+  nockBack.setMode("wild");
+});
 
 describe("TokenBridge Tests", () => {
   const p = new CosmwasmPlatform(network, configs);
 
-  let tb: TokenBridge<TNet, 'Cosmwasm', typeof chain>;
+  let tb: TokenBridge<TNet, typeof chain>;
   test("Create TokenBridge", async () => {
     const rpc = await p.getRpc(chain);
-    tb = await p.getProtocol("TokenBridge", rpc)
+    tb = await p.getProtocol("TokenBridge", rpc);
     expect(tb).toBeTruthy();
   });
 
@@ -141,10 +176,7 @@ describe("TokenBridge Tests", () => {
   describe("Create Token Attestation Transactions", () => {
     const tbAddress = p.config[chain]!.contracts.tokenBridge!;
     test("Create Attestation", async () => {
-      const attestation = tb.createAttestation(
-        nativeTokenAddress,
-        senderAddress
-      );
+      const attestation = tb.createAttestation(nativeTokenAddress, senderAddress);
       const allTxns = [];
       for await (const atx of attestation) {
         allTxns.push(atx);
@@ -152,7 +184,7 @@ describe("TokenBridge Tests", () => {
       expect(allTxns).toHaveLength(1);
       const [attestTx] = allTxns;
       expect(attestTx).toBeTruthy();
-      expect(attestTx.chain).toEqual(chain);
+      expect(attestTx!.chain).toEqual(chain);
     });
 
     test("Submit Attestation", async () => {
@@ -184,7 +216,7 @@ describe("TokenBridge Tests", () => {
       expect(allTxns).toHaveLength(1);
       const [attestTx] = allTxns;
       expect(attestTx).toBeTruthy();
-      expect(attestTx.chain).toEqual(chain);
+      expect(attestTx!.chain).toEqual(chain);
     });
   });
 
@@ -211,17 +243,11 @@ describe("TokenBridge Tests", () => {
 
           const [xferTx] = allTxns;
           expect(xferTx).toBeTruthy();
-          expect(xferTx.chain).toEqual(chain);
+          expect(xferTx!.chain).toEqual(chain);
         });
 
         test("Token", async () => {
-          const xfer = tb.transfer(
-            senderAddress,
-            recipient,
-            realWrappedAddress,
-            amount,
-            payload
-          );
+          const xfer = tb.transfer(senderAddress, recipient, realWrappedAddress, amount, payload);
           expect(xfer).toBeTruthy();
 
           const allTxns = [];
@@ -230,7 +256,7 @@ describe("TokenBridge Tests", () => {
           }
           expect(allTxns).toHaveLength(1);
 
-          const msgs = allTxns[0].transaction.msgs;
+          const msgs = allTxns[0]!.transaction.msgs;
           expect(msgs).toHaveLength(2);
 
           const [approveTx, xferTx] = msgs;
