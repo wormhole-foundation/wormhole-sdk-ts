@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/connect-sdk-aptos",
-  "version": "0.4.2-beta.1",
+  "version": "0.4.2-beta.2",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -43,7 +43,7 @@
     "prettier": "prettier --write ./src"
   },
   "dependencies": {
-    "@wormhole-foundation/connect-sdk": "^0.4.2-beta.1",
+    "@wormhole-foundation/connect-sdk": "^0.4.2-beta.2",
     "aptos": "1.5.0"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "connect-sdk",
-  "version": "0.4.3",
+  "version": "0.4.2-beta.2",
   "license": "Apache-2.0",
   "directories": {
     "test": "__tests__"
@@ -30,7 +30,7 @@
     "prettier": "npm run prettier --workspaces --if-present",
     "docs": "NODE_OPTIONS=--max_old_space_size=8192 typedoc --options typedoc.json",
     "sync": "tsx syncVersion.ts && npm install && npm run build",
-    "publish": "npm publish --access public --tag $TAG --workspace core --workspace connect --workspace platforms --workspace platforms/evm/protocols --workspace platforms/solana/protocols --workspace platforms/cosmwasm/protocols --workspace platforms/algorand/protocols",
+    "publish": "npm publish --access public --tag $TAG --workspace core --workspace connect --workspace platforms --workspace platforms/evm/protocols --workspace platforms/solana/protocols --workspace platforms/cosmwasm/protocols --workspace platforms/algorand/protocols --workspace platforms/sui/protocols --workspace platforms/aptos/protocols",
     "pub:beta": "TAG=beta npm run publish",
     "pub:beta:dryrun": "TAG=beta npm run publish --dry-run",
     "pub:latest": "TAG=latest npm run publish",

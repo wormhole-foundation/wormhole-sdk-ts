@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/connect-sdk-aptos-tokenbridge",
-  "version": "0.4.2-beta.1",
+  "version": "0.4.2-beta.2",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -45,8 +45,8 @@
     "nock": "^13.3.3"
   },
   "dependencies": {
-    "@wormhole-foundation/connect-sdk": "^0.4.2-beta.1",
-    "@wormhole-foundation/connect-sdk-aptos": "^0.4.2-beta.1",
-    "@wormhole-foundation/connect-sdk-aptos-core": "^0.4.2-beta.1"
+    "@wormhole-foundation/connect-sdk": "^0.4.2-beta.2",
+    "@wormhole-foundation/connect-sdk-aptos": "^0.4.2-beta.2",
+    "@wormhole-foundation/connect-sdk-aptos-core": "^0.4.2-beta.2"
   }
 }
