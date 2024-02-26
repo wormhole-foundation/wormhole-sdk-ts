@@ -42,7 +42,7 @@
     "prettier": "prettier --write ./src"
   },
   "dependencies": {
-    "@wormhole-foundation/connect-sdk": "^0.4.3-beta.0",
-    "@wormhole-foundation/connect-sdk-sui": "^0.4.3-beta.0"
+    "@wormhole-foundation/connect-sdk": "0.4.3-beta.0",
+    "@wormhole-foundation/connect-sdk-sui": "0.4.3-beta.0"
   }
 }

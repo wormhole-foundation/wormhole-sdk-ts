@@ -43,7 +43,7 @@
     "test": "jest --config ./jest.config.ts"
   },
   "dependencies": {
-    "@wormhole-foundation/connect-sdk": "^0.4.3-beta.0",
+    "@wormhole-foundation/connect-sdk": "0.4.3-beta.0",
     "algosdk": "2.7.0"
   }
 }
