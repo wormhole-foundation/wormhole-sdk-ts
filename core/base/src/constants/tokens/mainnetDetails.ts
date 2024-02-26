@@ -466,15 +466,6 @@ const mainnetTokens = [
     },
   ],
   [
-    "BONK",
-    {
-      key: "BONK",
-      symbol: "BONK",
-      coinGeckoId: "bonk",
-      nativeChain: "Solana",
-    },
-  ],
-  [
     "EVMOS",
     {
       key: "EVMOS",

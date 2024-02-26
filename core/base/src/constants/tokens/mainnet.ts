@@ -260,15 +260,6 @@ const mainnetTokenEntries = [
         },
       ],
       [
-        "BONK",
-        {
-          symbol: "BONK",
-          decimals: 5,
-          address: "0x1151CB3d861920e07a38e03eEAd12C32178567F6",
-          original: "Solana",
-        },
-      ],
-      [
         "WKLAY",
         {
           symbol: "WKLAY",
@@ -547,15 +538,6 @@ const mainnetTokenEntries = [
           decimals: 18,
           address: "0xad80E1A9B5824234afA9dE1F3bbDb8a994796169",
           original: "Ethereum",
-        },
-      ],
-      [
-        "BONK",
-        {
-          symbol: "BONK",
-          decimals: 5,
-          address: "0xA697e272a73744b343528C3Bc4702F2565b2F422",
-          original: "Solana",
         },
       ],
       [
@@ -874,15 +856,6 @@ const mainnetTokenEntries = [
         },
       ],
       [
-        "BONK",
-        {
-          symbol: "BONK",
-          decimals: 5,
-          address: "0xe5B49820e5A1063F6F4DdF851327b5E8B2301048",
-          original: "Solana",
-        },
-      ],
-      [
         "WKLAY",
         {
           symbol: "WKLAY",
@@ -1146,15 +1119,6 @@ const mainnetTokenEntries = [
         },
       ],
       [
-        "BONK",
-        {
-          symbol: "BONK",
-          decimals: 5,
-          address: "0xC07C98a93591504584738e4569928DDb3b9f12A7",
-          original: "Solana",
-        },
-      ],
-      [
         "WKLAY",
         {
           symbol: "WKLAY",
@@ -1408,15 +1372,6 @@ const mainnetTokenEntries = [
           decimals: 18,
           address: "0xeE27799cF29D7F64647B92f47d543B382B49f83E",
           original: "Ethereum",
-        },
-      ],
-      [
-        "BONK",
-        {
-          symbol: "BONK",
-          decimals: 5,
-          address: "0x3fEcdF1248fe7642d29f879a75CFC0339659ab93",
-          original: "Solana",
         },
       ],
       [
@@ -1682,15 +1637,6 @@ const mainnetTokenEntries = [
           decimals: 18,
           address: "0x72878E7d3A8746e0c91b9F16F0b8ee4fDE9DDc06",
           original: "Arbitrum",
-        },
-      ],
-      [
-        "BONK",
-        {
-          symbol: "BONK",
-          decimals: 5,
-          address: "0x3fc50bc066aE2ee280876EeefADfdAbF6cA02894",
-          original: "Solana",
         },
       ],
       [
@@ -2204,14 +2150,6 @@ const mainnetTokenEntries = [
         },
       ],
       [
-        "BONK",
-        {
-          symbol: "BONK",
-          decimals: 5,
-          address: "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263",
-        },
-      ],
-      [
         "PYTH",
         {
           symbol: "PYTH",
@@ -2460,16 +2398,6 @@ const mainnetTokenEntries = [
           address:
             "0xbc3a676894871284b3ccfb2eec66f428612000e2a6e6d23f592ce8833c27c973::coin::COIN",
           original: "Ethereum",
-        },
-      ],
-      [
-        "BONK",
-        {
-          symbol: "BONK",
-          decimals: 5,
-          address:
-            "0x6907963ca849faff0957b9a8269a7a07065e3def2eef49cc33b50ab946ea5a9f::coin::COIN",
-          original: "Solana",
         },
       ],
       [
@@ -2753,16 +2681,6 @@ const mainnetTokenEntries = [
           address:
             "0x9d5a0f8215301fa8096df332b1533f6328f18c32fbac2a7089cfbea73b3068a7::coin::T",
           original: "Ethereum",
-        },
-      ],
-      [
-        "BONK",
-        {
-          symbol: "BONK",
-          decimals: 5,
-          address:
-            "0x2a90fae71afc7460ee42b20ee49a9c9b29272905ad71fef92fbd8b3905a24b56::coin::T",
-          original: "Solana",
         },
       ],
       [
@@ -3054,15 +2972,6 @@ const mainnetTokenEntries = [
           decimals: 18,
           address: "0xEd4e2FD35161c3c0e33cA187fce64C70d44Ce32b",
           original: "Ethereum",
-        },
-      ],
-      [
-        "BONK",
-        {
-          symbol: "BONK",
-          decimals: 5,
-          address: "0xDF1Cf211D38E7762c9691Be4D779A441a17A6cFC",
-          original: "Solana",
         },
       ],
       [
@@ -3361,15 +3270,6 @@ const mainnetTokenEntries = [
           symbol: "wstETH",
           decimals: 18,
           address: "0x5979D7b546E38E414F7E9822514be443A4800529",
-        },
-      ],
-      [
-        "BONK",
-        {
-          symbol: "BONK",
-          decimals: 5,
-          address: "0x09199d9A5F4448D0848e4395D065e1ad9c4a1F74",
-          original: "Solana",
         },
       ],
       [
@@ -3954,16 +3854,6 @@ const mainnetTokenEntries = [
         },
       ],
       [
-        "BONK",
-        {
-          symbol: "BONK",
-          decimals: 5,
-          address:
-            "wormhole10qt8wg0n7z740ssvf3urmvgtjhxpyp74hxqvqt7z226gykuus7eq9mpu8u",
-          original: "Solana",
-        },
-      ],
-      [
         "WKLAY",
         {
           symbol: "WKLAY",
@@ -4184,16 +4074,6 @@ const mainnetTokenEntries = [
           address:
             "ibc/BF75AE1500CB7EC458E91A11731F1B6AC1F1FE1FA937A88564955ED6A83CA2FB",
           original: "Ethereum",
-        },
-      ],
-      [
-        "BONK",
-        {
-          symbol: "BONK",
-          decimals: 5,
-          address:
-            "ibc/CA3733CB0071F480FAE8EF0D9C3D47A49C6589144620A642BBE0D59A293D110E",
-          original: "Solana",
         },
       ],
     ],
