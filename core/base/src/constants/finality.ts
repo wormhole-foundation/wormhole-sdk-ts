@@ -27,8 +27,13 @@ const finalityThresholds = [
   ["Solana",   32],
   ["Ethereum", 64],
   ["Bsc",      15],
+  // Checkpointed to L1 after ~512 blocks
+  ["Optimism",512],
+  ["Arbitrum",512],
+  ["Sepolia", 512],
   // Checkpointed after 32 blocks
   ["Polygon",  32],
+  ["Oasis",     2], // TODO: validate, this is inferred from vaa metrics timing
   // Single block finality
   ["Fantom",    1],
   ["Celo",      1],
@@ -40,8 +45,10 @@ const finalityThresholds = [
   ["Sui",       0],
   ["Algorand",  0],
   ["Aptos",     0],
+  ["Klaytn",    0],
   ["Sei",       0],
   ["Near",      0],
+  ["Osmosis",   0],
   ["Terra",     0],
   ["Terra2",    0],
   ["Xpla",      0],
