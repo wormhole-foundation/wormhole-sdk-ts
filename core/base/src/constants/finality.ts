@@ -30,7 +30,7 @@ const finalityThresholds = [
   // Checkpointed to L1 after ~512 blocks
   ["Optimism",512],
   ["Arbitrum",512],
-  ["Sepolia", 512],
+  ["Base",    512],
   // Checkpointed after 32 blocks
   ["Polygon",  32],
   ["Oasis",     2], // TODO: validate, this is inferred from vaa metrics timing
