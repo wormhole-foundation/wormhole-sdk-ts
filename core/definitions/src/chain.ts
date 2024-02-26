@@ -10,7 +10,7 @@ import { IbcBridge } from "./protocols/ibc";
 import { PorticoBridge } from "./protocols/portico";
 import { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge";
 import { RpcConnection } from "./rpc";
-import { ChainConfig, SignedTx, TokenAddress, TokenId } from "./types";
+import { ChainConfig, SignedTx, TokenAddress, TokenId, canonicalAddress, isNative } from "./types";
 
 /**
  * A ChainContext provides a consistent interface for interacting with a chain.
@@ -63,9 +63,12 @@ export abstract class ChainContext<
    *  @returns the number of decimals for the token
    */
   async getDecimals(token: TokenAddress<C>): Promise<number> {
+    if (isNative(token)) return this.config.nativeTokenDecimals;
+
     // try to find it in the token cache first
     if (this.config.tokenMap) {
-      const found = tokens.getTokenByAddress(this.network, this.chain, token.toString());
+      const tokenAddress = canonicalAddress({ chain: this.chain, address: token });
+      const found = tokens.getTokenByAddress(this.network, this.chain, tokenAddress);
       if (found) return found.decimals;
     }
 
