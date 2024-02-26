@@ -1,8 +1,10 @@
-import { Platform } from "@wormhole-foundation/sdk-base";
+import { Chain, Network, Platform } from "@wormhole-foundation/sdk-base";
 import "../payloads/automaticTokenBridge";
 import "../payloads/tokenBridge";
 import { EmptyPlatformMap } from "../protocol";
-import { ProtocolPayload, ProtocolVAA } from "../vaa";
+import { ProtocolPayload, ProtocolVAA, VAA } from "../vaa";
+import { ChainAddress, NativeAddress } from "../address";
+import { UnsignedTransaction } from "../unsignedTransaction";
 
 declare global {
   namespace Wormhole {
@@ -13,7 +15,7 @@ declare global {
 }
 
 /**
- * @namespace TokenBridge
+ * @namespace NTT
  */
 export namespace NTT {
   const _protocol = "NTT";
@@ -33,4 +35,21 @@ export namespace NTT {
     ProtocolName,
     PayloadName
   >;
+}
+
+export interface NTT<N extends Network, C extends Chain> {
+  // invoke `transfer` against the NTTManager
+  transfer(
+    sender: NativeAddress<C>,
+    amount: bigint,
+    destination: ChainAddress,
+    // ... TODO: options? skip relay?
+  ): AsyncGenerator<UnsignedTransaction<N, C>>;
+
+  // TODO: only for manual NTT?
+  // invoke `receiveMessage` against the WormholeTransceiver
+  redeem(
+    vaa: VAA<"NTT:Transfer">,
+    sender?: NativeAddress<C>,
+  ): AsyncGenerator<UnsignedTransaction<N, C>>;
 }
