@@ -15,7 +15,7 @@
   "license": "Apache-2.0",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
-  "types": "./dist/esm/index.d.ts",
+  "types": "./dist/cjs/index.d.ts",
   "author": "",
   "description": "SDK for EVM chains, used in conjunction with @wormhole-foundation/connect-sdk",
   "files": [
@@ -38,7 +38,7 @@
   "engines": {
     "node": ">=16"
   },
-  "sideEffects": false,
+  "sideEffects": true,
   "scripts": {
     "build:cjs": "tsc -p ./tsconfig.cjs.json",
     "build:esm": "tsc -p ./tsconfig.esm.json",

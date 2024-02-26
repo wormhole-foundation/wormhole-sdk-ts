@@ -62,6 +62,7 @@
     "platforms/sui",
     "platforms/sui/protocols/core",
     "platforms/sui/protocols/tokenBridge",
+    "sdk",
     "examples"
   ],
   "unreleased": [
