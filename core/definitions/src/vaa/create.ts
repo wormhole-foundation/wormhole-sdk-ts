@@ -16,18 +16,18 @@ import { PayloadLiteralToPayloadItemLayout, payloadLiteralToPayloadItemLayout } 
 
 type BodyLayout<PL extends PayloadLiteral> = [
   ...typeof envelopeLayout,
-  ...PayloadLiteralToPayloadItemLayout<PL>,
+  PayloadLiteralToPayloadItemLayout<PL>,
 ];
 
 function bodyLayout<PL extends PayloadLiteral>(payloadLiteral: PL) {
   return [
     ...envelopeLayout,
-    ...payloadLiteralToPayloadItemLayout(payloadLiteral),
+    payloadLiteralToPayloadItemLayout(payloadLiteral),
   ] as BodyLayout<PL>;
 }
 
 type DynamicProperties<PL extends PayloadLiteral> = LayoutToType<
-  DynamicItemsOfLayout<[...typeof baseLayout, ...PayloadLiteralToPayloadItemLayout<PL>]>
+  DynamicItemsOfLayout<[...typeof baseLayout, PayloadLiteralToPayloadItemLayout<PL>]>
 >;
 
 export function createVAA<PL extends PayloadLiteral>(

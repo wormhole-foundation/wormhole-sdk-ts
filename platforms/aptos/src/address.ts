@@ -8,7 +8,7 @@ import {
 
 import { APTOS_SEPARATOR } from "./constants";
 import { AptosPlatform } from "./platform";
-import { AnyAptosAddress, isValidAptosType } from "./types";
+import { AnyAptosAddress, isValidAptosType, _platform } from "./types";
 
 export const AptosZeroAddress = "0x";
 
@@ -26,10 +26,13 @@ export class AptosAddress implements Address {
   static readonly byteSize = 32;
   public readonly platform: Platform = AptosPlatform._platform;
 
+  readonly type: string = "Native";
+
   // Full 32 bytes of Address
   readonly address: Uint8Array;
+
   // Optional module and contract name
-  private readonly module: string | undefined;
+  readonly module: string | undefined;
 
   constructor(address: AnyAptosAddress) {
     if (AptosAddress.instanceof(address)) {
@@ -44,7 +47,7 @@ export class AptosAddress implements Address {
       if (isValidAptosType(address)) {
         const chunks = address.split(APTOS_SEPARATOR);
         this.module = chunks.slice(1).join(APTOS_SEPARATOR);
-        address = chunks[0];
+        address = chunks[0]!;
       }
 
       address = ensureFullAptosAddress(address);
@@ -89,11 +92,10 @@ export class AptosAddress implements Address {
 
 declare global {
   namespace Wormhole {
-    interface PlatformToNativeAddressMapping {
-      // @ts-ignore
+    export interface PlatformToNativeAddressMapping {
       Aptos: AptosAddress;
     }
   }
 }
 
-registerNative("Aptos", AptosAddress);
+registerNative(_platform, AptosAddress);

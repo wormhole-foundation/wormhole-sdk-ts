@@ -4,6 +4,8 @@ import {
   Network,
   PlatformContext,
   Wormhole,
+  ChainsConfig,
+  networkPlatformConfigs,
   isNative,
 } from "@wormhole-foundation/connect-sdk";
 import { AptosClient } from "aptos";
@@ -28,9 +30,13 @@ import { AnyAptosAddress } from "./types";
  */
 export class AptosPlatform<N extends Network>
   extends PlatformContext<N, AptosPlatformType>
-  implements StaticPlatformMethods<typeof AptosPlatform>
+  implements StaticPlatformMethods<AptosPlatformType, typeof AptosPlatform>
 {
   static _platform = _platform;
+
+  constructor(network: N, config?: ChainsConfig<N, AptosPlatformType>) {
+    super(network, config ?? networkPlatformConfigs(network, AptosPlatform._platform));
+  }
 
   getRpc<C extends AptosChains>(chain: C): AptosClient {
     if (chain in this.config) return new AptosClient(this.config[chain]!.rpc);
@@ -67,13 +73,13 @@ export class AptosPlatform<N extends Network>
     chain: Chain,
     rpc: AptosClient,
     token: AnyAptosAddress,
-  ): Promise<bigint> {
-    if (isNative(token)) return BigInt(nativeDecimals.nativeDecimals(AptosPlatform._platform));
+  ): Promise<number> {
+    if (isNative(token)) return nativeDecimals.nativeDecimals(AptosPlatform._platform);
 
     const tokenAddr = token.toString();
     const coinType = `0x1::coin::CoinInfo<${tokenAddr}>`;
     const decimals = (
-      (await rpc.getAccountResource(tokenAddr.split(APTOS_SEPARATOR)[0], coinType)).data as any
+      (await rpc.getAccountResource(tokenAddr.split(APTOS_SEPARATOR)[0]!, coinType)).data as any
     ).decimals;
 
     return decimals;
@@ -157,7 +163,7 @@ export class AptosPlatform<N extends Network>
     return Number(li.block_height);
   }
 
-  static chainFromChainId(chainId: number): [Network, AptosChains] {
+  static chainFromChainId(chainId: string | bigint): [Network, AptosChains] {
     const netChain = nativeChainIds.platformNativeChainIdToNetworkChain(
       AptosPlatform._platform,
       BigInt(chainId),
@@ -173,6 +179,6 @@ export class AptosPlatform<N extends Network>
   static async chainFromRpc(rpc: AptosClient): Promise<[Network, AptosChains]> {
     const conn = rpc as AptosClient;
     const ci = await conn.getChainId();
-    return this.chainFromChainId(ci);
+    return this.chainFromChainId(ci.toString());
   }
 }

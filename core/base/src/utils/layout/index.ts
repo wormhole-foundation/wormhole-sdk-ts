@@ -1,28 +1,18 @@
 export {
   Layout,
+  ProperLayout,
   LayoutItem,
-  NamedLayoutItem,
   NumLayoutItem,
+  BytesLayoutItem,
+  ArrayLayoutItem,
+  SwitchLayoutItem,
   IntLayoutItem,
   UintLayoutItem,
-  BytesLayoutItem,
-  FixedPrimitiveNumLayoutItem,
-  OptionalToFromNumLayoutItem,
-  FixedPrimitiveBytesLayoutItem,
-  FixedValueBytesLayoutItem,
-  FixedSizeBytesLayoutItem,
-  LengthPrefixedBytesLayoutItem,
-  FixedSizeArrayLayoutItem,
-  LengthPrefixedArrayLayoutItem,
-  ArrayLayoutItem,
-  ObjectLayoutItem,
   LayoutToType,
-  LayoutItemToType,
   FixedConversion,
   CustomConversion,
 } from "./layout";
 
-export { calcLayoutSize } from "./size";
 export { serializeLayout } from "./serialize";
 export { deserializeLayout } from "./deserialize";
 export {
@@ -34,5 +24,7 @@ export {
 } from "./fixedDynamic";
 
 export { layoutDiscriminator } from "./discriminate";
+export { isLayout, isLayoutItem, CustomizableBytes, customizableBytes } from "./utils";
 
+export * from "./size";
 export * from "./items";

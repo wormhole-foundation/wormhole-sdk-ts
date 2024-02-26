@@ -25,6 +25,7 @@ import {
   CosmwasmPlatformType,
   CosmwasmTransaction,
   CosmwasmUnsignedTransaction,
+  Gateway,
   WrappedRegistryResponse,
   buildExecuteMsg,
   computeFee,
@@ -102,9 +103,12 @@ export class CosmwasmTokenBridge<N extends Network, C extends CosmwasmChains>
   }
 
   async getOriginalAsset(token: AnyCosmwasmAddress): Promise<TokenId> {
-    const wrappedAddress = new CosmwasmAddress(token).toString();
+    let wrappedAddress = new CosmwasmAddress(token);
 
-    const response = await this.rpc.queryContractSmart(wrappedAddress, {
+    if (wrappedAddress.denomType === "factory")
+      wrappedAddress = Gateway.factoryToCw20(wrappedAddress);
+
+    const response = await this.rpc.queryContractSmart(wrappedAddress.toString(), {
       wrapped_asset_info: {},
     });
 
@@ -202,7 +206,9 @@ export class CosmwasmTokenBridge<N extends Network, C extends CosmwasmChains>
 
     const isNativeToken = isNative(token);
 
-    const tokenAddress = isNativeToken ? denom : token.toString();
+    let tokenAddress = isNativeToken ? denom : token.toString();
+    if (tokenAddress.startsWith("factory"))
+      tokenAddress = Gateway.factoryToCw20(new CosmwasmAddress(tokenAddress)).toString();
 
     const senderAddress = new CosmwasmAddress(sender).toString();
 
@@ -226,6 +232,14 @@ export class CosmwasmTokenBridge<N extends Network, C extends CosmwasmChains>
             initiate_transfer: common,
           };
     };
+
+    // this.createConvertAndTransferMessage(
+    //         senderAddress,
+    //         targetChain,
+    //         targetAddress,
+    //         relayerFee,
+    //         { denom: Gateway.cw20ToFactory(token), amount },
+    //       )
 
     if (isNativeToken) {
       const msgs = [
@@ -264,6 +278,7 @@ export class CosmwasmTokenBridge<N extends Network, C extends CosmwasmChains>
           mk_initiate_transfer({
             token: { contract_addr: tokenAddress },
           }),
+          [{ amount: amount.toString(), denom: tokenAddress }],
         ),
       ];
 

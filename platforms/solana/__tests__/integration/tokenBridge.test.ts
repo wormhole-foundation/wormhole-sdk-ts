@@ -94,7 +94,7 @@ afterEach(async () => {
 describe('TokenBridge Tests', () => {
   const p = new SolanaPlatform(network, configs);
 
-  let tb: TokenBridge<TNet, 'Solana', SolanaChains>;
+  let tb: TokenBridge<TNet, SolanaChains>;
 
   test('Create TokenBridge', async () => {
     const rpc = p.getRpc('Solana');
@@ -201,9 +201,9 @@ describe('TokenBridge Tests', () => {
       expect(allTxns).toHaveLength(1);
       const [attestTx] = allTxns;
       expect(attestTx).toBeTruthy();
-      expect(attestTx.chain).toEqual(chain);
+      expect(attestTx!.chain).toEqual(chain);
 
-      const { transaction } = attestTx;
+      const { transaction } = attestTx!;
       expect(transaction.transaction.instructions).toHaveLength(2);
     });
 
@@ -237,9 +237,9 @@ describe('TokenBridge Tests', () => {
 
       const [verifySig, postVaa, create] = allTxns;
       //
-      expect(verifySig.transaction.transaction.instructions).toHaveLength(2);
-      expect(postVaa.transaction.transaction.instructions).toHaveLength(1);
-      expect(create.transaction.transaction.instructions).toHaveLength(1);
+      expect(verifySig!.transaction.transaction.instructions).toHaveLength(2);
+      expect(postVaa!.transaction.transaction.instructions).toHaveLength(1);
+      expect(create!.transaction.transaction.instructions).toHaveLength(1);
     });
   });
 
@@ -270,7 +270,7 @@ describe('TokenBridge Tests', () => {
           expect(xferTx).toBeTruthy();
           expect(xferTx!.chain).toEqual(chain);
 
-          const { transaction } = xferTx;
+          const { transaction } = xferTx!;
           expect(transaction.transaction.instructions).toHaveLength(6);
           // ...
         });
@@ -293,9 +293,9 @@ describe('TokenBridge Tests', () => {
 
           const [xferTx] = allTxns;
           expect(xferTx).toBeTruthy();
-          expect(xferTx.chain).toEqual(chain);
+          expect(xferTx!.chain).toEqual(chain);
 
-          const { transaction } = xferTx;
+          const { transaction } = xferTx!;
           expect(transaction.transaction.instructions).toHaveLength(2);
         });
       });

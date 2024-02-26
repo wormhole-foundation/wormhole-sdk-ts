@@ -70,7 +70,7 @@ export class CosmwasmIbcBridge<N extends Network, C extends CosmwasmChains>
     if (!networkChainToChannels.has(network, chain))
       throw new Error("Unsupported IBC Chain, no channels available: " + chain);
 
-    this.gatewayAddress = this.contracts.gateway!;
+    this.gatewayAddress = Gateway.gatewayAddress(network);
 
     const channels: IbcChannels = networkChainToChannels.get(network, chain) ?? {};
 
@@ -156,18 +156,17 @@ export class CosmwasmIbcBridge<N extends Network, C extends CosmwasmChains>
     return;
   }
 
-  async lookupTransferFromTx(txid: TxHash): Promise<IbcTransferInfo> {
+  async lookupTransferFromTx(txid: TxHash): Promise<IbcTransferInfo[]> {
     const txResults = await this.rpc.getTx(txid);
 
-    if (!txResults) throw new Error(`No transaction found with txid: ${txid}`);
+    if (!txResults) throw new Error(`No IBC transfer found on ${this.chain} with txid: ${txid}`);
     if (txResults.code !== 0) throw new Error(`Transaction failed: ${txResults.rawLog}`);
 
     const xfers = await this.fetchTransferInfo(txResults!);
+    if (xfers.length === 0)
+      throw new Error(`No IBC transfers found on ${this.chain} with txid: ${txid}`);
 
-    if (xfers.length === 0) throw new Error("No transfers found for tx: " + txid);
-    if (xfers.length > 1) console.error(">1 xfer in tx; why");
-
-    return xfers[0]!;
+    return xfers;
   }
 
   async lookupMessageFromIbcMsgId(msg: IbcMessageId): Promise<WormholeMessageId | null> {
@@ -211,10 +210,6 @@ export class CosmwasmIbcBridge<N extends Network, C extends CosmwasmChains>
     ]);
 
     if (txResults.length === 0) return null;
-    //throw new Error(
-    //  `Found no transactions for message: ` + JSON.stringify(msg),
-    //);
-
     if (txResults.length > 1)
       console.error(`Expected 1 transaction, got ${txResults.length} found for IbcMsgid: ${msg}`);
 
@@ -222,24 +217,23 @@ export class CosmwasmIbcBridge<N extends Network, C extends CosmwasmChains>
     return tx!;
   }
 
-  async lookupTransferFromIbcMsgId(msg: IbcMessageId): Promise<IbcTransferInfo> {
+  async lookupTransferFromIbcMsgId(msg: IbcMessageId): Promise<IbcTransferInfo[]> {
     // Finds the transaction but there may be multiple
     // IBCTransfers as part of this
     const tx = await this.lookupTxFromIbcMsgId(msg);
-    if (!tx) throw new Error(`No transfers found on ${this.chain} in tx: ${tx}`);
+    if (!tx) throw new Error(`No transfers found on ${this.chain} for msg: ${JSON.stringify(msg)}`);
 
     const xfers = await this.fetchTransferInfo(tx);
-    if (xfers.length === 0) throw new Error(`No transfers found on ${this.chain} in tx: ${tx}`);
+    if (xfers.length === 0)
+      throw new Error(`No transfers found on ${this.chain} for msg: ${JSON.stringify(msg)}`);
 
-    if (xfers.length > 1) throw new Error(`Found ${xfers.length} transfers, expected 1`);
-
-    return xfers[0]!;
+    return xfers;
   }
 
   // Returns the IBC Transfer message content and IBC transfer information
   async lookupTransferFromMsg(
     msg: GatewayTransferMsg | GatewayTransferWithPayloadMsg,
-  ): Promise<IbcTransferInfo> {
+  ): Promise<IbcTransferInfo[]> {
     const encodedPayload = encoding.b64.encode(JSON.stringify(msg));
 
     // Find the transaction with matching payload
@@ -261,9 +255,37 @@ export class CosmwasmIbcBridge<N extends Network, C extends CosmwasmChains>
     if (xfers.length === 0)
       throw new Error(`Found no transactions for payload: ` + JSON.stringify(encodedPayload));
 
-    if (xfers.length !== 1) console.error("Expected 1 xfer, got: ", xfers.length);
+    return xfers;
+  }
 
-    return xfers[0]!;
+  // fetch whether or not this transfer is pending
+  private async fetchTransferInfo(tx: IndexedTx): Promise<IbcTransferInfo[]> {
+    // Try to get all IBC packets (sent/received)
+    const xfers = this.parseIbcTransferInfo(tx);
+
+    const transfers: IbcTransferInfo[] = [];
+    for (const xfer of xfers) {
+      // If its present in the commitment results, its interpreted as in-flight
+      // the client throws an error and we report any error as not in-flight
+      const qc = CosmwasmPlatform.getQueryClient(this.rpc);
+      try {
+        await qc.ibc.channel.packetCommitment(
+          IBC_TRANSFER_PORT,
+          xfer.id.srcChannel!,
+          xfer.id.sequence!,
+        );
+        xfer.pending = true;
+      } catch (e) {
+        const notPending = (e as Error).message.includes(
+          "packet commitment hash not found: key not found",
+        );
+        if (!notPending) throw e;
+      }
+
+      transfers.push(xfer);
+    }
+
+    return transfers;
   }
 
   private parseIbcTransferInfo(tx: IndexedTx): IbcTransferInfo[] {
@@ -306,36 +328,6 @@ export class CosmwasmIbcBridge<N extends Network, C extends CosmwasmChains>
       else throw new Error("Invalid IbcTransferInfo: " + JSON.stringify(xfer));
     }
     return Array.from(xfers);
-  }
-
-  // fetch whether or not this transfer is pending
-  private async fetchTransferInfo(tx: IndexedTx): Promise<IbcTransferInfo[]> {
-    // Try to get all IBC packets (sent/received)
-    const xfers = this.parseIbcTransferInfo(tx);
-
-    const transfers: IbcTransferInfo[] = [];
-    for (const xfer of xfers) {
-      // If its present in the commitment results, its interpreted as in-flight
-      // the client throws an error and we report any error as not in-flight
-      const qc = CosmwasmPlatform.getQueryClient(this.rpc);
-      try {
-        await qc.ibc.channel.packetCommitment(
-          IBC_TRANSFER_PORT,
-          xfer.id.srcChannel!,
-          xfer.id.sequence!,
-        );
-        xfer.pending = true;
-      } catch (e) {
-        // TODO: catch http errors unrelated to no commitment in flight
-        // otherwise we might lie about pending = false
-      }
-
-      // TODO other states of packet in-flight-ness?
-
-      transfers.push(xfer);
-    }
-
-    return transfers;
   }
 
   // Fetches the local channel for the given chain

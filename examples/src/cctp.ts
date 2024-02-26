@@ -40,14 +40,13 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
   const amt = amount.units(amount.parse("0.2", 6));
 
   // Choose whether or not to have the attestation delivered for you
-  const automatic = true;
+  const automatic = false;
 
   // If the transfer is requested to be automatic, you can also request that
   // during redemption, the receiver gets some amount of native gas transferred to them
   // so that they may pay for subsequent transactions
   // The amount specified here is denominated in the token being transferred (USDC here)
-  const _nativeGasAmt = "0.01";
-  const nativeGas = automatic ? amount.units(amount.parse(_nativeGasAmt, 6)) : 0n;
+  const nativeGas = automatic ? amount.units(amount.parse("0.0", 6)) : 0n;
 
   await cctpTransfer(wh, source, destination, {
     amount: amt,

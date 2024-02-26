@@ -2,9 +2,7 @@ import { CosmWasmClient, SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate
 import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
 import {
   ChainRestAuthApi,
-  DEFAULT_STD_FEE,
-  MsgExecuteContract,
-  Msgs,
+  MsgTransfer,
   PrivateKey,
   TxClient,
   createTransaction,
@@ -36,7 +34,7 @@ export async function getCosmwasmSigner(rpc: CosmWasmClient, mnemonic: string): 
 
   // Use the EVM signer for Evmos and Injective only
   if (evmLikeChains.includes(chain as CosmwasmEvmChain)) {
-    return new CosmwasmEvmSigner(chain, network, mnemonic);
+    return new CosmwasmEvmSigner(chain as CosmwasmEvmChain, network, mnemonic);
   }
 
   // Otherwise use the default signer
@@ -76,6 +74,8 @@ export class CosmwasmSigner<N extends Network, C extends CosmwasmChains>
       const { description, transaction } = txn as CosmwasmUnsignedTransaction<N, C>;
       console.log(`Signing: ${description} for ${this.address()}`);
 
+      console.log(transaction.msgs, transaction.fee, transaction.memo);
+
       const txRaw = await this._signer.sign(
         this.address(),
         transaction.msgs,
@@ -91,7 +91,7 @@ export class CosmwasmSigner<N extends Network, C extends CosmwasmChains>
   }
 }
 
-export class CosmwasmEvmSigner<N extends Network, C extends CosmwasmChains>
+export class CosmwasmEvmSigner<N extends Network, C extends CosmwasmEvmChain>
   implements SignOnlySigner<N, C>
 {
   private _chainId: string;
@@ -107,10 +107,10 @@ export class CosmwasmEvmSigner<N extends Network, C extends CosmwasmChains>
       cosmwasmNetworkChainToRestUrls(_network, _chain as CosmwasmEvmChain),
     );
 
-    this._chainId = nativeChainIds.networkChainToNativeChainId(
+    this._chainId = nativeChainIds.networkChainToNativeChainId.get(
       _network,
       _chain as CosmwasmEvmChain,
-    );
+    )! as string;
 
     this.prefix = chainToAddressPrefix(_chain as PlatformToChains<"Cosmwasm">);
     this.key = PrivateKey.fromMnemonic(_mnemonic);
@@ -133,24 +133,25 @@ export class CosmwasmEvmSigner<N extends Network, C extends CosmwasmChains>
       const { description, transaction } = tx as CosmwasmUnsignedTransaction<N, C>;
       console.log(`Signing ${description} for ${this.address()}`);
 
-      // need to set contractAddress and msg
-      const message: Msgs[] = transaction.msgs.map((m) => {
-        const f = {
-          ...m.value,
-          msg: JSON.parse(encoding.bytes.decode(m.value.msg)),
-          contractAddress: m.value.contract,
-        };
-        return new MsgExecuteContract(f);
-      });
-
       const { signBytes, txRaw } = createTransaction({
-        message,
+        message: transaction.msgs.map((eo) =>
+          MsgTransfer.fromJSON({
+            port: eo.value.sourcePort,
+            amount: eo.value.token,
+            memo: eo.value.memo,
+            sender: eo.value.sender,
+            receiver: eo.value.receiver,
+            channelId: eo.value.sourceChannel,
+            timeout: eo.value.timeoutTimestamp,
+            height: eo.value.timeoutHeight,
+          }),
+        ),
         pubKey,
         sequence,
         accountNumber,
         chainId: this._chainId,
         memo: transaction.memo,
-        fee: DEFAULT_STD_FEE,
+        fee: transaction.fee,
       });
       // @ts-ignore -- sign wants a `Buffer` but we give it uint8array
       txRaw.signatures = [await this.key.sign(signBytes)];

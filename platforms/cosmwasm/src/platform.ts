@@ -30,6 +30,7 @@ import { Balances, TokenId, chainToPlatform } from "@wormhole-foundation/connect
 import { CosmwasmAddress } from "./address";
 import { IBC_TRANSFER_PORT } from "./constants";
 import { AnyCosmwasmAddress } from "./types";
+import { Gateway } from "./gateway";
 
 /**
  * @category Cosmwasm
@@ -51,8 +52,8 @@ export class CosmwasmPlatform<N extends Network>
   }
 
   getChain<C extends CosmwasmChains>(chain: C, rpc?: CosmWasmClient): CosmwasmChain<N, C> {
-    if (chain in this.config) return new CosmwasmChain<N, C>(chain, this, rpc);
-    throw new Error("No configuration available for chain: " + chain);
+    if (!(chain in this.config)) throw new Error("No configuration available for chain: " + chain);
+    return new CosmwasmChain<N, C>(chain, this, rpc);
   }
 
   static getQueryClient = (rpc: CosmWasmClient): QueryClient & BankExtension & IbcExtension => {
@@ -97,7 +98,12 @@ export class CosmwasmPlatform<N extends Network>
   ): Promise<number> {
     if (isNative(token)) return decimals.nativeDecimals(CosmwasmPlatform._platform);
 
-    const addrStr = new CosmwasmAddress(token).toString();
+    let addrStr = new CosmwasmAddress(token).toString();
+
+    if (addrStr.startsWith("factory")) {
+      addrStr = Gateway.factoryToCw20(new CosmwasmAddress(addrStr)).toString();
+    }
+
     const { decimals: numDecimals } = await rpc.queryContractSmart(addrStr, {
       token_info: {},
     });

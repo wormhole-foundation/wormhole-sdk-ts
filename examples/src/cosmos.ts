@@ -9,15 +9,16 @@ import {
 } from "@wormhole-foundation/connect-sdk";
 // Import the platform specific packages
 import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
+import { computeFee } from "@wormhole-foundation/connect-sdk-cosmwasm/src/unsignedTransaction";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
+import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 
 import { TransferStuff, getStuff } from "./helpers";
 
-import "@wormhole-foundation/connect-sdk-cosmwasm-core";
 import "@wormhole-foundation/connect-sdk-cosmwasm-ibc";
 import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
-import "@wormhole-foundation/connect-sdk-evm-core";
 import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
+import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 
 // We're going to transfer into, around, and out of the Cosmos ecosystem
 // First on Avalanche, transparently through gateway and over IBC to Cosmoshub
@@ -37,15 +38,16 @@ import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
 (async function () {
   // init Wormhole object, passing config for which network
   // to use (e.g. Mainnet/Testnet) and what Platforms to support
-  const wh = new Wormhole("Testnet", [EvmPlatform, CosmwasmPlatform]);
-
+  const wh = new Wormhole("Mainnet", [EvmPlatform, SolanaPlatform, CosmwasmPlatform]);
   // Pick up where you left off by updating the txids as you go
   let fakeIt = false;
 
+  console.log(computeFee("Mainnet", "Dymension"));
+
   // Grab chain Contexts for each leg of our journey
-  const external = wh.getChain("Avalanche");
-  const cosmos1 = wh.getChain("Osmosis");
-  const cosmos2 = wh.getChain("Cosmoshub");
+  const external = wh.getChain("Solana");
+  const cosmos1 = wh.getChain("Dymension");
+  const cosmos2 = wh.getChain("Injective");
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
@@ -54,9 +56,8 @@ import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
   const leg3 = await getStuff(cosmos2);
 
   // we'll use the native token on the source chain
-
   const token: TokenId = Wormhole.tokenId(external.chain, "native");
-  const amt = amount.units(amount.parse("0.01", external.config.nativeTokenDecimals));
+  const amt = amount.units(amount.parse("0.001", external.config.nativeTokenDecimals));
 
   // Transfer native token from source chain, through gateway, to a cosmos chain
   let route1 = fakeIt
@@ -64,17 +65,16 @@ import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
         wh,
         {
           chain: external.chain,
-          txid: "0xb743ba030d731fe4a02a4f56cb3719fb83e8590f108ed78df67bfc7fdd4b61d6",
+          txid: "5y2BnJ1Nwqe4m6KTSrry5Ni88xqVrqo4jdbuNwAPDuXEonQRVLbALf7abViwucKKr8U8cDfJtDmqnuRAAC6i6wtb",
         },
         600_000,
       )
     : await transferIntoCosmos(wh, token, amt, leg1, leg2);
   console.log("Route 1 (External => Cosmos)", route1);
 
-  const { denom } = route1.ibcTransfers![0]!.data;
   // Lookup the Gateway representation of the wrappd token
+  const { denom } = route1.ibcTransfers![0]!.data;
   const cosmosTokenAddress = Wormhole.parseAddress("Wormchain", denom);
-  //console.log("Wrapped Token: ", cosmosTokenAddress.toString());
 
   // Transfer Gateway factory tokens over IBC through gateway to another Cosmos chain
   let route2 = fakeIt
@@ -82,7 +82,7 @@ import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
         wh,
         {
           chain: cosmos1.chain,
-          txid: "E016E2C7AB5F38925AFE3696598CD880B9E801519D4BD348D3F48B7ECD1FC129",
+          txid: "3014CABA727C8A1BFCBD282095C771ACBAB3B13CC595B702ABFD3A4502315FBD",
         },
         600_000,
       )
@@ -101,7 +101,7 @@ import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
         wh,
         {
           chain: cosmos2.chain,
-          txid: "2DD7887DB74E47753E4A05DC15D76252FA3BA073B3BF0D9402ED5C313FF773EE",
+          txid: "BEDD0CE2FEA8FF5DF81FCA5142E72745E154F87D496CDA147FC4D5D46A7C7D81",
         },
         600_000,
       )
@@ -195,7 +195,6 @@ async function transferOutOfCosmos<N extends Network>(
     to: dst.address,
   } as GatewayTransferDetails);
   console.log("Created GatewayTransfer: ", xfer.transfer);
-
   const srcTxIds = await xfer.initiateTransfer(src.signer);
   console.log("Started transfer on source chain", srcTxIds);
 

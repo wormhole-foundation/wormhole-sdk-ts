@@ -234,7 +234,7 @@ type TransformMapping<M extends MappingEntries, S extends Shape | void = void> =
   //check that M has a valid structure for mapping entries
   CartesianRightRecursive<M> extends infer CRR extends RoArray2D
   ? IsRectangular<CRR> extends true
-  //ensure CRR is not empty  
+  //ensure CRR is not empty
   ? CRR extends readonly [RoArray, ...RoArray2D]
   ? S extends Shape
   ? SplitAndReorderKeyValueColumns<CRR, S> extends [

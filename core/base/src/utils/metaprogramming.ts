@@ -50,6 +50,11 @@ export type ConcatStringLiterals<A extends RoArray<string>> =
 
 export type DistributiveOmit<T, K extends keyof any> = T extends any ? Omit<T, K> : never;
 
+//if we were to just use the intersection type T & U, we'd lose strict property checks
+export type CombineObjects<T, U> = {
+  [K in keyof T | keyof U]: K extends keyof T ? T[K] : K extends keyof U ? U[K] : never;
+};
+
 // type MyUnion = 'foo' | 'bar' | 'baz';
 // type Test1 = IsUnionMember<'foo', MyUnion>; // true
 // type Test2 = IsUnionMember<'bar', MyUnion>; // true

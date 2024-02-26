@@ -12,7 +12,7 @@ export const connectPayload = [
 ] as const;
 
 export const namedPayloads = [
-  ["TransferWithRelay", transferWithPayloadLayout({ binary: "object", layout: connectPayload })],
+  ["TransferWithRelay", transferWithPayloadLayout(connectPayload)],
 ] as const satisfies NamedPayloads;
 
 // factory registration:

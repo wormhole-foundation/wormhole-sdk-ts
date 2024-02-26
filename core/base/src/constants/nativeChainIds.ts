@@ -155,6 +155,20 @@ const chainNetworkNativeChainIdEntries = [[
   ]], [
   "Holesky", [
     ["Testnet", 17000n]
+  ]],[
+  "Neutron", [
+    ["Mainnet", "neutron-1"],
+    ["Testnet", "pion-1"],
+  ]],[
+  "Stargaze", [
+    ["Mainnet", "stargaze-1"]
+  ]],[
+  "Celestia", [
+    ["Mainnet", "celestia"],
+    ["Testnet", "mocha-4"]
+  ]],[
+  "Dymension", [
+    ["Mainnet", "dymension_1100-1"]
   ]],
 ] as const satisfies MapLevels<[Chain, Network, bigint | string]>;
 
