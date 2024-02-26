@@ -60,7 +60,7 @@ export const tokenBridgeContracts = [[
     ["OptimismSepolia", "0x99737Ec4B815d816c49A385943baf0380e75c0Ac"],
     ["Xpla",            "xpla1kek6zgdaxcsu35nqfsyvs2t9vs87dqkkq6hjdgczacysjn67vt8sern93x"],
     ["Base",            "0xA31aa3FDb7aF7Db93d18DDA4e19F811342EDF780"],
-    ["BaseSepolia",     "0x99737Ec4B815d816c49A385943baf0380e75c0Ac"],
+    ["BaseSepolia",     "0x86F55A04690fd7815A3D802bD587e83eA888B239"],
     ["Sei",             "sei1jv5xw094mclanxt5emammy875qelf3v62u4tl4lp5nhte3w3s9ts9w9az2"],
     ["Sepolia",         "0xDB5492265f6038831E89f495670FF909aDe94bd9"],
     ["Wormchain",       "wormhole1aaf9r6s7nxhysuegqrxv0wpm27ypyv4886medd3mrkrw6t4yfcnst3qpex"],
