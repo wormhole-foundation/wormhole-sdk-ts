@@ -13,7 +13,7 @@ function updateVersionInPackageJson(dirPath: string, version: string) {
         // Note: this may be wrong if we start importing
         // packages outside the workspaces in this repo
         if (k.startsWith("@wormhole-foundation")) {
-          return [k, `^${version}`];
+          return [k, `${version}`];
         }
         return [k, v];
       }),
