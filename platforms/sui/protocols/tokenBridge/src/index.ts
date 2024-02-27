@@ -5,7 +5,7 @@ import { SuiTokenBridge } from "./tokenBridge";
 import "@wormhole-foundation/connect-sdk-sui-core";
 
 declare global {
-  namespace WormholeNamespace {
+  namespace Wormhole {
     export interface PlatformToProtocolMapping {
       Sui: {};
     }

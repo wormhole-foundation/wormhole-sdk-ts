@@ -3,7 +3,7 @@ import { registerProtocol } from "@wormhole-foundation/connect-sdk";
 import { SuiWormholeCore } from "./core";
 
 declare global {
-  namespace WormholeNamespace {
+  namespace Wormhole {
     export interface PlatformToProtocolMapping {
       Sui: {};
     }

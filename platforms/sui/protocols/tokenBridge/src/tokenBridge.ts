@@ -143,7 +143,7 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
     const address = await getTokenCoinType(
       this.provider,
       this.tokenBridgeObjectId,
-      token.address.toUint8Array(),
+      token.address.toUniversalAddress().toUint8Array(),
       toChainId(token.chain),
     );
     if (!address) throw ErrNotWrapped(canonicalAddress(token));
