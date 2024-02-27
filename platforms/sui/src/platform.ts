@@ -75,16 +75,20 @@ export class SuiPlatform<N extends Network>
   static async getDecimals(chain: Chain, rpc: SuiClient, token: AnySuiAddress): Promise<number> {
     if (isNative(token)) return nativeDecimals.nativeDecimals(SuiPlatform._platform);
 
+    console.log("Got: ", token);
     const tokenAddress = token.toString();
+    console.log("Address: ", tokenAddress);
 
     try {
       const fields = await getObjectFields(rpc, tokenAddress);
+      console.log("fields: ", fields);
       if (fields && "decimals" in fields) return fields["decimals"];
     } catch {}
 
-    const metadata = await rpc.getCoinMetadata({
-      coinType: getCoinTypeFromPackageId(tokenAddress),
-    });
+    const coinType = getCoinTypeFromPackageId(tokenAddress);
+    console.log("Coin type: ", coinType);
+    const metadata = await rpc.getCoinMetadata({ coinType });
+    console.log("Metadata: ", metadata);
     if (metadata === null) throw new Error(`Can't fetch decimals for token ${tokenAddress}`);
     return metadata.decimals;
   }
@@ -93,9 +97,9 @@ export class SuiPlatform<N extends Network>
     chain: Chain,
     rpc: SuiClient,
     walletAddr: string,
-    token: AnySuiAddress | "native",
+    token: AnySuiAddress,
   ): Promise<bigint | null> {
-    if (token === "native") {
+    if (isNative(token)) {
       const { totalBalance } = await rpc.getBalance({
         owner: walletAddr,
       });
@@ -113,7 +117,7 @@ export class SuiPlatform<N extends Network>
     chain: Chain,
     rpc: SuiClient,
     walletAddr: string,
-    tokens: (AnySuiAddress | "native")[],
+    tokens: AnySuiAddress[],
   ): Promise<Balances> {
     throw new Error("Not implemented");
   }

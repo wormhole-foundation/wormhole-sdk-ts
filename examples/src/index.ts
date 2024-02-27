@@ -27,6 +27,9 @@ import { getStuff } from "./helpers";
   const snd = wh.getChain("Sui");
   const rcv = wh.getChain("Algorand");
 
+  console.log(await snd.getDecimals("native"));
+  return;
+
   const sender = await getStuff(snd);
   const receiver = await getStuff(rcv);
 

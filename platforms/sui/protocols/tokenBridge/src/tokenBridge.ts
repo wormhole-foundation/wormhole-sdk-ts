@@ -49,6 +49,8 @@ import {
 } from "@wormhole-foundation/connect-sdk-sui";
 import { getTokenCoinType, getTokenFromTokenRegistry } from "./utils";
 
+import "@wormhole-foundation/connect-sdk-sui-core";
+
 export class SuiTokenBridge<N extends Network, C extends SuiChains> implements TokenBridge<N, C> {
   readonly coreBridgeObjectId: string;
   readonly tokenBridgeObjectId: string;
