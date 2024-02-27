@@ -28,18 +28,18 @@ const finalityThresholds = [
   ["Ethereum", 64],
   ["Bsc",      15],
   // Checkpointed to L1 after ~512 blocks
-  ["Optimism",512],
-  ["Arbitrum",512],
-  ["Base",    512],
+  ["Optimism",  512],
+  ["Base",      512],
+  ["Arbitrum", 4096], // TODO: validate, this is inferred from vaa metrics timing
   // Checkpointed after 32 blocks
   ["Polygon",  32],
-  ["Oasis",     2], // TODO: validate, this is inferred from vaa metrics timing
   // Single block finality
   ["Fantom",    1],
   ["Celo",      1],
   ["Moonbeam",  1],
   ["Karura",    1],
   ["Acala",     1],
+  ["Oasis",     1], 
   // Instant finality
   ["Avalanche", 0],
   ["Sui",       0],
@@ -53,6 +53,15 @@ const finalityThresholds = [
   ["Terra2",    0],
   ["Xpla",      0],
   ["Injective", 0],
+
+  // TODO: validate these
+  ["Cosmoshub", 0],
+  ["Evmos",     0],
+  ["Kujira",    0],
+  ["Neutron",   0],
+  ["Celestia",  0],
+  ["Stargaze",  0],
+  ["Dymension", 0],
 ] as const satisfies MapLevel<Chain, number>;
 
 /**
@@ -67,8 +76,8 @@ const blockTimeMilliseconds = [
   ["Acala",            12_000],
   ["Algorand",          3_300],
   ["Aptos",             4_000],
-  ["Arbitrum",            300],
-  ["ArbitrumSepolia",     300],
+  ["Arbitrum",            260],
+  ["ArbitrumSepolia",     260],
   ["Aurora",            3_000],
   ["Avalanche",         2_000],
   ["Base",              2_000],
