@@ -17,14 +17,9 @@ import {
 
 import { SuiClient } from "@mysten/sui.js/client";
 import { SuiChain } from "./chain";
-import {
-  AnySuiAddress,
-  SuiChains,
-  SuiPlatformType,
-  _platform,
-  getCoinTypeFromPackageId,
-} from "./types";
+import { AnySuiAddress, SuiChains, SuiPlatformType, _platform } from "./types";
 import { getObjectFields } from "./utils";
+import { SuiAddress } from "./address";
 
 /**
  * @category Sui
@@ -75,21 +70,17 @@ export class SuiPlatform<N extends Network>
   static async getDecimals(chain: Chain, rpc: SuiClient, token: AnySuiAddress): Promise<number> {
     if (isNative(token)) return nativeDecimals.nativeDecimals(SuiPlatform._platform);
 
-    console.log("Got: ", token);
-    const tokenAddress = token.toString();
-    console.log("Address: ", tokenAddress);
+    const parsedAddress = new SuiAddress(token);
 
     try {
-      const fields = await getObjectFields(rpc, tokenAddress);
-      console.log("fields: ", fields);
+      const fields = await getObjectFields(rpc, parsedAddress.toString());
       if (fields && "decimals" in fields) return fields["decimals"];
     } catch {}
 
-    const coinType = getCoinTypeFromPackageId(tokenAddress);
-    console.log("Coin type: ", coinType);
-    const metadata = await rpc.getCoinMetadata({ coinType });
-    console.log("Metadata: ", metadata);
-    if (metadata === null) throw new Error(`Can't fetch decimals for token ${tokenAddress}`);
+    const metadata = await rpc.getCoinMetadata({ coinType: parsedAddress.getCoinType() });
+    if (metadata === null)
+      throw new Error(`Can't fetch decimals for token ${parsedAddress.toString()}`);
+
     return metadata.decimals;
   }
 
@@ -125,7 +116,6 @@ export class SuiPlatform<N extends Network>
   static async sendWait(chain: Chain, rpc: SuiClient, stxns: SignedTx[]): Promise<TxHash[]> {
     const txhashes = [];
     for (const stxn of stxns) {
-      console.log(stxn);
       const pendingTx = await rpc.executeTransactionBlock(stxn);
       await rpc.waitForTransactionBlock({ digest: pendingTx.digest });
       txhashes.push(pendingTx.digest);

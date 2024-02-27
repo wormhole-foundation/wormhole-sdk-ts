@@ -7,12 +7,11 @@ import { encoding } from "@wormhole-foundation/connect-sdk";
 import {
   SuiBuildOutput,
   getFieldsFromObjectResponse,
-  getPackageIdFromType,
   isMoveStructObject,
   isMoveStructStruct,
   isSameType,
-  normalizeSuiType,
 } from "./types";
+import { getPackageIdFromType, normalizeSuiType } from "./address";
 
 export const UPGRADE_CAP_TYPE = "0x2::package::UpgradeCap";
 
