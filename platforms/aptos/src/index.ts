@@ -4,3 +4,4 @@ export * from "./chain";
 export * from "./unsignedTransaction";
 export * from "./constants";
 export * from "./types";
+export * from "./signer";
