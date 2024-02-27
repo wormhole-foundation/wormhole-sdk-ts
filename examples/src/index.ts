@@ -4,7 +4,7 @@ import { AlgorandPlatform } from "@wormhole-foundation/connect-sdk-algorand";
 import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
-import { SuiPlatform, isValidSuiType } from "@wormhole-foundation/connect-sdk-sui";
+import { SuiPlatform } from "@wormhole-foundation/connect-sdk-sui";
 
 import "@wormhole-foundation/connect-sdk-algorand-tokenbridge";
 import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
@@ -26,13 +26,6 @@ import { getStuff } from "./helpers";
 
   const snd = wh.getChain("Sui");
   const rcv = wh.getChain("Algorand");
-
-  const addy = "0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf::Coin::COIN";
-  console.log("Address: ", isValidSuiType(addy));
-  const token = Wormhole.parseAddress("Sui", addy);
-  console.log(await snd.getDecimals(token));
-  console.log(await SuiPlatform.getDecimals("Sui", await snd.getRpc(), token));
-  return;
 
   const sender = await getStuff(snd);
   const receiver = await getStuff(rcv);
