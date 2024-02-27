@@ -4,6 +4,7 @@ import "./payloads/relayer";
 import "./payloads/governance";
 import "./payloads/tokenBridge";
 import "./payloads/bam";
+import "./payloads/ntt";
 
 export * from "./address";
 export * from "./protocol";
