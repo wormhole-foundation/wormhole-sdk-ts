@@ -20,15 +20,13 @@ export * from "./rpc";
 export * from "./attestation";
 export * from "./types";
 
-// Temporary until exported from protocols dir
-export * from "./payloads/ntt";
-
 export * from "./protocols/core";
 export * from "./protocols/tokenBridge";
 export * from "./protocols/circleBridge";
 export * from "./protocols/ibc";
 export * from "./protocols/portico";
 export * from "./protocols/relayer";
+export * from "./protocols/ntt";
 
 export * as layoutItems from "./layout-items";
 export * as testing from "./testing";

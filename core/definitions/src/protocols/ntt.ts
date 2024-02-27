@@ -52,4 +52,17 @@ export interface NTT<N extends Network, C extends Chain> {
     vaa: VAA<"NTT:Transfer">,
     sender?: NativeAddress<C>,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
+
+  getCurrentOutboundCapacity(): Promise<string>;
+  getCurrentInboundCapacity(fromChain: Chain): Promise<string>;
+
+  // getInboundQueuedTransfer(
+  //   transceiverMessage: string,
+  //   fromChain: Chain,
+  // ): Promise<InboundQueuedTransfer | undefined>;
+  // completeInboundQueuedTransfer(
+  //   transceiverMessage: string,
+  //   fromChain: Chain,
+  //   payer: string,
+  // ): Promise<string>;
 }
