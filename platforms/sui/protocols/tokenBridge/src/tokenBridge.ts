@@ -49,6 +49,8 @@ import {
 } from "@wormhole-foundation/connect-sdk-sui";
 import { getTokenCoinType, getTokenFromTokenRegistry } from "./utils";
 
+import "@wormhole-foundation/connect-sdk-sui-core";
+
 export class SuiTokenBridge<N extends Network, C extends SuiChains> implements TokenBridge<N, C> {
   readonly coreBridgeObjectId: string;
   readonly tokenBridgeObjectId: string;
@@ -143,7 +145,7 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
     const address = await getTokenCoinType(
       this.provider,
       this.tokenBridgeObjectId,
-      token.address.toUint8Array(),
+      token.address.toUniversalAddress().toUint8Array(),
       toChainId(token.chain),
     );
     if (!address) throw ErrNotWrapped(canonicalAddress(token));

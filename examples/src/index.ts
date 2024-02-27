@@ -16,7 +16,7 @@ import { getStuff } from "./helpers";
 
 (async function () {
   // Setup
-  const wh = new Wormhole("Testnet", [
+  const wh = new Wormhole("Mainnet", [
     EvmPlatform,
     SolanaPlatform,
     SuiPlatform,
