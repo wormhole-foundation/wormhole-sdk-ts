@@ -7,12 +7,12 @@ import {
 
 import { universalAddressItem, chainItem, sequenceItem } from "../layout-items";
 
-export const normalizedAmountLayout = [
+export const trimmedAmountLayout = [
   {name: "decimals", binary: "uint", size: 1},
   {name: "amount", binary: "uint", size: 8},
 ] as const satisfies Layout;
 
-export type NormalizedAmount = LayoutToType<typeof normalizedAmountLayout>;
+export type TrimmedAmount = LayoutToType<typeof trimmedAmountLayout>;
 
 export type Prefix = readonly [number, number, number, number];
 
@@ -21,26 +21,27 @@ const prefixItem = (prefix: Prefix) =>
 
 export const nativeTokenTransferLayout = [
   prefixItem([0x99, 0x4E, 0x54, 0x54]),
-  {name: "normalizedAmount", binary: "bytes", layout: normalizedAmountLayout},
+  {name: "trimmedAmount", binary: "bytes", layout: trimmedAmountLayout},
   {name: "sourceToken", ...universalAddressItem},
   {name: "recipientAddress", ...universalAddressItem},
-  {name: "recipientChain", ...chainItem()},
+  {name: "recipientChain", ...chainItem()}, //TODO restrict to supported chains?
 ] as const satisfies Layout;
 
 export type NativeTokenTransfer = LayoutToType<typeof nativeTokenTransferLayout>;
 
-export const endpointMessageLayout = <
+export const transceiverMessageLayout = <
   const P extends CustomizableBytes = undefined,
 >(prefix: Prefix, customPayload?: P) => [
   prefixItem(prefix),
-  {name: "sourceManager", ...universalAddressItem},
-  customizableBytes({name: "managerPayload", lengthSize: 2}, customPayload),
+  {name: "sourceNttManager", ...universalAddressItem},
+  {name: "recipientNttManager", ...universalAddressItem},
+  customizableBytes({name: "nttManagerPayload", lengthSize: 2}, customPayload),
 ] as const satisfies Layout;
 
-export type EndpointMessage<P extends CustomizableBytes = undefined> =
-  LayoutToType<ReturnType<typeof endpointMessageLayout<P>>>;
+export type TransceiverMessage<P extends CustomizableBytes = undefined> =
+  LayoutToType<ReturnType<typeof transceiverMessageLayout<P>>>;
 
-export const managerMessageLayout = <
+export const nttManagerMessageLayout = <
   const P extends CustomizableBytes = undefined
 >(customPayload?: P) => [
   {name: "sequence", ...sequenceItem},
@@ -48,13 +49,13 @@ export const managerMessageLayout = <
   customizableBytes({name: "payload", lengthSize: 2}, customPayload),
 ] as const satisfies Layout;
 
-export type ManagerMessage<P extends CustomizableBytes = undefined> =
-  LayoutToType<ReturnType<typeof managerMessageLayout<P>>>;
+export type NttManagerMessage<P extends CustomizableBytes = undefined> =
+  LayoutToType<ReturnType<typeof nttManagerMessageLayout<P>>>;
 
-export const wormholeEndpointMessage = <
+export const wormholeTransceiverMessage = <
   const P extends CustomizableBytes = undefined
 >(customPayload?: P) =>
-  endpointMessageLayout([0x99, 0x45, 0xFF, 0x10], customPayload);
+  transceiverMessageLayout([0x99, 0x45, 0xFF, 0x10], customPayload);
 
-export type WormholeEndpointMessage<P extends CustomizableBytes = undefined> =
-  LayoutToType<ReturnType<typeof wormholeEndpointMessage<P>>>;
+export type WormholeTransceiverMessage<P extends CustomizableBytes = undefined> =
+  LayoutToType<ReturnType<typeof wormholeTransceiverMessage<P>>>;
