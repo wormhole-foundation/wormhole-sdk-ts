@@ -4,12 +4,12 @@ import * as _solana_tokenbridge from "@wormhole-foundation/sdk-solana-tokenbridg
 import * as _solana_cctp from "@wormhole-foundation/sdk-solana-cctp";
 /** Platform and protocol definitons for Solana */
 export const solana = {
-  ..._solana,
   ...{
     Address: _solana.SolanaAddress,
     ChainContext: _solana.SolanaChain,
     Platform: _solana.SolanaPlatform,
     Signer: _solana.SolanaSigner,
+    getSigner: _solana.getSolanaSignAndSendSigner,
   },
   protocols: {
     core: _solana_core,
