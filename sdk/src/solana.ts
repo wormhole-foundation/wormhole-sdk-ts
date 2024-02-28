@@ -9,7 +9,7 @@ export const solana = {
     ChainContext: _solana.SolanaChain,
     Platform: _solana.SolanaPlatform,
     Signer: _solana.SolanaSigner,
-    getSigner: _solana.getSolanaSigner,
+    getSigner: _solana.getSolanaSignAndSendSigner,
   },
   protocols: {
     core: _solana_core,

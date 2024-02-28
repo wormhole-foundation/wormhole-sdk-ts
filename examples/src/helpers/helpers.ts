@@ -49,27 +49,23 @@ export async function getStuff<N extends Network, C extends Chain>(
   const platform = chain.platform.utils()._platform;
   switch (platform) {
     case "Solana":
-      signer = await solana.getSolanaSignAndSendSigner(
-        await chain.getRpc(),
-        getEnv("SOL_PRIVATE_KEY"),
-        {
-          //computeLimit: 500_000n,
-          //priorityFeeAmount: 100_000n,
-          debug: true,
-        },
-      );
+      signer = await solana.getSigner(await chain.getRpc(), getEnv("SOL_PRIVATE_KEY"), {
+        //computeLimit: 500_000n,
+        //priorityFeeAmount: 100_000n,
+        debug: true,
+      });
       break;
     case "Cosmwasm":
-      signer = await cosmwasm.getCosmwasmSigner(await chain.getRpc(), getEnv("COSMOS_MNEMONIC"));
+      signer = await cosmwasm.getSigner(await chain.getRpc(), getEnv("COSMOS_MNEMONIC"));
       break;
     case "Evm":
-      signer = await evm.getEvmSignerForKey(await chain.getRpc(), getEnv("ETH_PRIVATE_KEY"));
+      signer = await evm.getSigner(await chain.getRpc(), getEnv("ETH_PRIVATE_KEY"));
       break;
     case "Algorand":
-      signer = await algorand.getAlgorandSigner(await chain.getRpc(), getEnv("ALGORAND_MNEMONIC"));
+      signer = await algorand.getSigner(await chain.getRpc(), getEnv("ALGORAND_MNEMONIC"));
       break;
     case "Sui":
-      signer = await sui.getSuiSigner(await chain.getRpc(), getEnv("SUI_PRIVATE_KEY"));
+      signer = await sui.getSigner(await chain.getRpc(), getEnv("SUI_PRIVATE_KEY"));
       break;
     default:
       throw new Error("Unrecognized platform: " + platform);
