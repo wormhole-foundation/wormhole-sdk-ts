@@ -3,6 +3,7 @@ import * as _solana_core from "@wormhole-foundation/sdk-solana-core";
 import * as _solana_tokenbridge from "@wormhole-foundation/sdk-solana-tokenbridge";
 import * as _solana_cctp from "@wormhole-foundation/sdk-solana-cctp";
 export const solana = {
+  ..._solana,
   ...{
     Address: _solana.SolanaAddress,
     ChainContext: _solana.SolanaChain,

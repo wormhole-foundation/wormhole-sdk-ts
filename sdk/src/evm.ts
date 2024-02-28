@@ -5,6 +5,10 @@ import * as _evm_portico from "@wormhole-foundation/sdk-evm-portico";
 import * as _evm_cctp from "@wormhole-foundation/sdk-evm-cctp";
 export const evm = {
   ...{
+    getEvmSignerForKey: _evm.getEvmSignerForKey,
+    getEvmSignerForSigner: _evm.getEvmSignerForSigner,
+  },
+  ...{
     Address: _evm.EvmAddress,
     ChainContext: _evm.EvmChain,
     Platform: _evm.EvmPlatform,

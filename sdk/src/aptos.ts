@@ -3,6 +3,7 @@ import * as _aptos_core from "@wormhole-foundation/sdk-aptos-core";
 import * as _aptos_tokenbridge from "@wormhole-foundation/sdk-aptos-tokenbridge";
 
 export const aptos = {
+  ..._aptos,
   ...{
     Address: _aptos.AptosAddress,
     ChainContext: _aptos.AptosChain,

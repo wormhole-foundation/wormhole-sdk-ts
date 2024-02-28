@@ -13,12 +13,11 @@ import {
   tasks,
 } from "@wormhole-foundation/sdk";
 
-// Importing from src so we dont have to rebuild to see debug stuff in signer
-import { getAlgorandSigner } from "@wormhole-foundation/sdk-algorand";
-import { getCosmwasmSigner } from "@wormhole-foundation/sdk-cosmwasm";
-import { getEvmSignerForKey } from "@wormhole-foundation/sdk-evm";
-import { getSolanaSignAndSendSigner } from "@wormhole-foundation/sdk-solana";
-import { getSuiSigner } from "@wormhole-foundation/sdk-sui";
+import { algorand } from "@wormhole-foundation/sdk/algorand";
+import { cosmwasm } from "@wormhole-foundation/sdk/cosmwasm";
+import { evm } from "@wormhole-foundation/sdk/evm";
+import { solana } from "@wormhole-foundation/sdk/solana";
+import { sui } from "@wormhole-foundation/sdk/sui";
 
 // Use .env.example as a template for your .env file and populate it with secrets
 // for funded accounts on the relevant chain+network combos to run the example
@@ -50,23 +49,27 @@ export async function getStuff<N extends Network, C extends Chain>(
   const platform = chain.platform.utils()._platform;
   switch (platform) {
     case "Solana":
-      signer = await getSolanaSignAndSendSigner(await chain.getRpc(), getEnv("SOL_PRIVATE_KEY"), {
-        //computeLimit: 500_000n,
-        //priorityFeeAmount: 100_000n,
-        debug: true,
-      });
+      signer = await solana.getSolanaSignAndSendSigner(
+        await chain.getRpc(),
+        getEnv("SOL_PRIVATE_KEY"),
+        {
+          //computeLimit: 500_000n,
+          //priorityFeeAmount: 100_000n,
+          debug: true,
+        },
+      );
       break;
     case "Cosmwasm":
-      signer = await getCosmwasmSigner(await chain.getRpc(), getEnv("COSMOS_MNEMONIC"));
+      signer = await cosmwasm.getCosmwasmSigner(await chain.getRpc(), getEnv("COSMOS_MNEMONIC"));
       break;
     case "Evm":
-      signer = await getEvmSignerForKey(await chain.getRpc(), getEnv("ETH_PRIVATE_KEY"));
+      signer = await evm.getEvmSignerForKey(await chain.getRpc(), getEnv("ETH_PRIVATE_KEY"));
       break;
     case "Algorand":
-      signer = await getAlgorandSigner(await chain.getRpc(), getEnv("ALGORAND_MNEMONIC"));
+      signer = await algorand.getAlgorandSigner(await chain.getRpc(), getEnv("ALGORAND_MNEMONIC"));
       break;
     case "Sui":
-      signer = await getSuiSigner(await chain.getRpc(), getEnv("SUI_PRIVATE_KEY"));
+      signer = await sui.getSuiSigner(await chain.getRpc(), getEnv("SUI_PRIVATE_KEY"));
       break;
     default:
       throw new Error("Unrecognized platform: " + platform);

@@ -4,6 +4,7 @@ import * as _cosmwasm_tokenbridge from "@wormhole-foundation/sdk-cosmwasm-tokenb
 import * as _cosmwasm_ibc from "@wormhole-foundation/sdk-cosmwasm-ibc";
 
 export const cosmwasm = {
+  ..._cosmwasm,
   ...{
     Address: _cosmwasm.CosmwasmAddress,
     ChainContext: _cosmwasm.CosmwasmChain,
