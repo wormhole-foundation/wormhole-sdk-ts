@@ -8,8 +8,6 @@ import {
 import { universalAddressItem, chainItem, sequenceItem } from "../layout-items";
 import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../vaa";
 
-import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../vaa";
-
 export const trimmedAmountLayout = [
   { name: "decimals", binary: "uint", size: 1 },
   { name: "amount", binary: "uint", size: 8 },
