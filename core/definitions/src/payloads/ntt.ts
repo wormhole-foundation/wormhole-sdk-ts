@@ -8,12 +8,14 @@ import {
 import { universalAddressItem, chainItem, sequenceItem } from "../layout-items";
 import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../vaa";
 
-export const normalizedAmountLayout = [
+import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../vaa";
+
+export const trimmedAmountLayout = [
   { name: "decimals", binary: "uint", size: 1 },
   { name: "amount", binary: "uint", size: 8 },
 ] as const satisfies Layout;
 
-export type NormalizedAmount = LayoutToType<typeof normalizedAmountLayout>;
+export type TrimmedAmount = LayoutToType<typeof trimmedAmountLayout>;
 
 export type Prefix = readonly [number, number, number, number];
 
@@ -22,29 +24,36 @@ const prefixItem = (prefix: Prefix) =>
 
 export const nativeTokenTransferLayout = [
   prefixItem([0x99, 0x4e, 0x54, 0x54]),
-  { name: "normalizedAmount", binary: "bytes", layout: normalizedAmountLayout },
+  { name: "trimmedAmount", binary: "bytes", layout: trimmedAmountLayout },
   { name: "sourceToken", ...universalAddressItem },
   { name: "recipientAddress", ...universalAddressItem },
-  { name: "recipientChain", ...chainItem() },
+  { name: "recipientChain", ...chainItem() }, //TODO restrict to supported chains?
 ] as const satisfies Layout;
 
 export type NativeTokenTransfer = LayoutToType<typeof nativeTokenTransferLayout>;
 
-export const endpointMessageLayout = <const P extends CustomizableBytes = undefined>(
+export const transceiverMessageLayout = <
+  const MP extends CustomizableBytes = undefined,
+  const TP extends CustomizableBytes = undefined,
+>(
   prefix: Prefix,
-  customPayload?: P,
+  nttManagerPayload?: MP,
+  transceiverPayload?: TP,
 ) =>
   [
     prefixItem(prefix),
-    { name: "sourceManager", ...universalAddressItem },
-    customizableBytes({ name: "managerPayload", lengthSize: 2 }, customPayload),
+    { name: "sourceNttManager", ...universalAddressItem },
+    { name: "recipientNttManager", ...universalAddressItem },
+    customizableBytes({ name: "nttManagerPayload", lengthSize: 2 }, nttManagerPayload),
+    customizableBytes({ name: "transceiverPayload", lengthSize: 2 }, transceiverPayload),
   ] as const satisfies Layout;
 
-export type EndpointMessage<P extends CustomizableBytes = undefined> = LayoutToType<
-  ReturnType<typeof endpointMessageLayout<P>>
->;
+export type TransceiverMessage<
+  MP extends CustomizableBytes = undefined,
+  TP extends CustomizableBytes = undefined,
+> = LayoutToType<ReturnType<typeof transceiverMessageLayout<MP, TP>>>;
 
-export const managerMessageLayout = <const P extends CustomizableBytes = undefined>(
+export const nttManagerMessageLayout = <const P extends CustomizableBytes = undefined>(
   customPayload?: P,
 ) =>
   [
@@ -53,22 +62,27 @@ export const managerMessageLayout = <const P extends CustomizableBytes = undefin
     customizableBytes({ name: "payload", lengthSize: 2 }, customPayload),
   ] as const satisfies Layout;
 
-export type ManagerMessage<P extends CustomizableBytes = undefined> = LayoutToType<
-  ReturnType<typeof managerMessageLayout<P>>
+export type NttManagerMessage<P extends CustomizableBytes = undefined> = LayoutToType<
+  ReturnType<typeof nttManagerMessageLayout<P>>
 >;
 
-export const wormholeEndpointMessage = <const P extends CustomizableBytes = undefined>(
-  customPayload?: P,
-) => endpointMessageLayout([0x99, 0x45, 0xff, 0x10], customPayload);
+export const wormholeTransceiverMessageLayout = <MP extends CustomizableBytes = undefined>(
+  nttManagerPayload?: MP,
+) => transceiverMessageLayout([0x99, 0x45, 0xff, 0x10], nttManagerPayload, new Uint8Array(0));
 
-export type WormholeEndpointMessage<P extends CustomizableBytes = undefined> = LayoutToType<
-  ReturnType<typeof wormholeEndpointMessage<P>>
+export type WormholeTransceiverMessage<MP extends CustomizableBytes = undefined> = LayoutToType<
+  ReturnType<typeof wormholeTransceiverMessageLayout<MP>>
 >;
+
+const wormholeNativeTokenTransferLayout = wormholeTransceiverMessageLayout(
+  nttManagerMessageLayout(nativeTokenTransferLayout),
+);
 
 export const namedPayloads = [
-  ["Transfer", nativeTokenTransferLayout],
+  ["WormholeTransfer", wormholeNativeTokenTransferLayout],
 ] as const satisfies NamedPayloads;
 
+// factory registration:
 declare global {
   namespace Wormhole {
     interface PayloadLiteralToLayoutMapping
