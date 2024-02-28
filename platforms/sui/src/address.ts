@@ -17,11 +17,10 @@ export const isValidSuiType = (str: string): boolean => /^(0x)?[0-9a-fA-F]+::\w+
 
 // Adds leading 0s to the address to make it 32 bytes long
 export function ensureFullSuiAddress(address: string) {
-  if (address.length % 2 !== 0 || address.length < 66) {
-    address = address.startsWith("0x") ? address.slice(2) : address;
-    return "0x" + address.padStart(64, "0");
-  }
-  return address;
+  // If its already a full address (32 bytes as hex is 64 + 2 char for `0x`)
+  if (address.length === 66) return address;
+
+  return encoding.hex.encode(encoding.bytes.zpad(encoding.hex.decode(address), 32), true);
 }
 
 export const normalizeSuiType = (type: string): string => {
@@ -103,7 +102,7 @@ export class SuiAddress implements Address {
   }
 
   getPackageId(): string {
-    return encoding.hex.encode(this.address, true);
+    return ensureFullSuiAddress(encoding.hex.encode(this.address, true));
   }
 
   getCoinType(): string {
