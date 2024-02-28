@@ -5,13 +5,11 @@ import * as _solana_cctp from "@wormhole-foundation/sdk-solana-cctp";
 /** Platform and protocol definitons for Solana */
 export const solana = {
   ...{
-    getSigner: _solana.getSolanaSigner,
-  },
-  ...{
     Address: _solana.SolanaAddress,
     ChainContext: _solana.SolanaChain,
     Platform: _solana.SolanaPlatform,
     Signer: _solana.SolanaSigner,
+    getSigner: _solana.getSolanaSigner,
   },
   protocols: {
     core: _solana_core,

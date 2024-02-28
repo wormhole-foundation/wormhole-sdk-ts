@@ -5,13 +5,11 @@ import * as _sui_tokenbridge from "@wormhole-foundation/sdk-sui-tokenbridge";
 /** Platform and protocol definitions for Sui */
 export const sui = {
   ...{
-    getSigner: _sui.getSuiSigner,
-  },
-  ...{
     Address: _sui.SuiAddress,
     ChainContext: _sui.SuiChain,
     Platform: _sui.SuiPlatform,
     Signer: _sui.SuiSigner,
+    getSigner: _sui.getSuiSigner,
   },
   protocols: {
     core: _sui_core,
