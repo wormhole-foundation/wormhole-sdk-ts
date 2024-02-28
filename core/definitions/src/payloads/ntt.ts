@@ -31,8 +31,8 @@ export type NativeTokenTransfer = LayoutToType<typeof nativeTokenTransferLayout>
 
 export const transceiverMessageLayout = <
   const MP extends CustomizableBytes = undefined,
-  const EP extends CustomizableBytes = undefined,
->(prefix: Prefix, nttManagerPayload?: MP, transceiverPayload?: EP) => [
+  const TP extends CustomizableBytes = undefined,
+>(prefix: Prefix, nttManagerPayload?: MP, transceiverPayload?: TP) => [
   prefixItem(prefix),
   {name: "sourceNttManager", ...universalAddressItem},
   {name: "recipientNttManager", ...universalAddressItem},
@@ -40,8 +40,10 @@ export const transceiverMessageLayout = <
   customizableBytes({name: "transceiverPayload", lengthSize: 2}, transceiverPayload),
 ] as const satisfies Layout;
 
-export type TransceiverMessage<P extends CustomizableBytes = undefined> =
-  LayoutToType<ReturnType<typeof transceiverMessageLayout<P>>>;
+export type TransceiverMessage<
+  MP extends CustomizableBytes = undefined,
+  TP extends CustomizableBytes = undefined,
+> = LayoutToType<ReturnType<typeof transceiverMessageLayout<MP, TP>>>;
 
 export const nttManagerMessageLayout = <
   const P extends CustomizableBytes = undefined
@@ -55,9 +57,9 @@ export type NttManagerMessage<P extends CustomizableBytes = undefined> =
   LayoutToType<ReturnType<typeof nttManagerMessageLayout<P>>>;
 
 export const wormholeTransceiverMessage = <
-  const P extends CustomizableBytes = undefined
->(customPayload?: P) =>
-  transceiverMessageLayout([0x99, 0x45, 0xFF, 0x10], customPayload);
+  MP extends CustomizableBytes = undefined,
+>(nttManagerPayload?: MP) =>
+  transceiverMessageLayout([0x99, 0x45, 0xFF, 0x10], nttManagerPayload, new Uint8Array(0));
 
-export type WormholeTransceiverMessage<P extends CustomizableBytes = undefined> =
-  LayoutToType<ReturnType<typeof wormholeTransceiverMessage<P>>>;
+export type WormholeTransceiverMessage<MP extends CustomizableBytes = undefined> =
+  LayoutToType<ReturnType<typeof wormholeTransceiverMessage<MP>>>;
