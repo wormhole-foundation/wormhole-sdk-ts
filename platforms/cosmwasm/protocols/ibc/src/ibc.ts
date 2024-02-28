@@ -21,7 +21,7 @@ import {
   isIbcTransferInfo,
   isNative,
   toChainId,
-} from "@wormhole-foundation/connect-sdk";
+} from "@wormhole-foundation/sdk-connect";
 
 import {
   AnyCosmwasmAddress,
@@ -46,9 +46,9 @@ import {
   IbcChannels,
   computeFee,
   networkChainToChannels,
-} from "@wormhole-foundation/connect-sdk-cosmwasm";
+} from "@wormhole-foundation/sdk-cosmwasm";
 
-import { CosmwasmWormholeCore } from "@wormhole-foundation/connect-sdk-cosmwasm-core";
+import { CosmwasmWormholeCore } from "@wormhole-foundation/sdk-cosmwasm-core";
 
 const millisToNano = (seconds: number) => seconds * 1_000_000;
 

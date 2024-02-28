@@ -5,7 +5,7 @@ import {
   chainToPlatform,
   isChain,
   tokens,
-} from "@wormhole-foundation/connect-sdk";
+} from "@wormhole-foundation/sdk-connect";
 import axios from "axios";
 import fs from "fs";
 import * as prettier from "prettier";

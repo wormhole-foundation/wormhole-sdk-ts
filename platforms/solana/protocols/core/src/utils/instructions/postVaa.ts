@@ -17,7 +17,7 @@ import {
   VAA,
   serializePayload,
   toChainId,
-} from '@wormhole-foundation/connect-sdk';
+} from '@wormhole-foundation/sdk-connect';
 import BN from 'bn.js';
 
 /**

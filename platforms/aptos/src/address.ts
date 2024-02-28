@@ -4,7 +4,7 @@ import {
   UniversalAddress,
   encoding,
   registerNative,
-} from "@wormhole-foundation/connect-sdk";
+} from "@wormhole-foundation/sdk-connect";
 
 import { APTOS_SEPARATOR } from "./constants";
 import { AptosPlatform } from "./platform";

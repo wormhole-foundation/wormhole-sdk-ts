@@ -1,7 +1,7 @@
 import {
   PlatformToChains,
   UniversalOrNative,
-} from '@wormhole-foundation/connect-sdk';
+} from '@wormhole-foundation/sdk-connect';
 import { TransactionRequest } from 'ethers';
 
 export const unusedNonce = 0;

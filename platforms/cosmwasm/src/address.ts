@@ -4,7 +4,7 @@ import {
   UniversalAddress,
   encoding,
   registerNative,
-} from "@wormhole-foundation/connect-sdk";
+} from "@wormhole-foundation/sdk-connect";
 import { CosmwasmPlatform } from "./platform";
 import { AnyCosmwasmAddress, _platform } from "./types";
 

@@ -10,14 +10,14 @@ import {
   VAA,
   WormholeCore,
   WormholeMessageId,
-} from "@wormhole-foundation/connect-sdk";
+} from "@wormhole-foundation/sdk-connect";
 import {
   AnyCosmwasmAddress,
   CosmwasmChains,
   CosmwasmPlatform,
   CosmwasmPlatformType,
   CosmwasmUnsignedTransaction,
-} from "@wormhole-foundation/connect-sdk-cosmwasm";
+} from "@wormhole-foundation/sdk-cosmwasm";
 
 export class CosmwasmWormholeCore<N extends Network, C extends CosmwasmChains>
   implements WormholeCore<N, C>

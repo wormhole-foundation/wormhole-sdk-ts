@@ -1,4 +1,4 @@
-import { utils } from '@wormhole-foundation/connect-sdk-solana';
+import { utils } from '@wormhole-foundation/sdk-solana';
 import { PublicKey, PublicKeyInitData } from '@solana/web3.js';
 
 export function deriveTmpTokenAccountAddress(

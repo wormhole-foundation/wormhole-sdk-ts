@@ -1,4 +1,4 @@
-import { registerProtocol } from "@wormhole-foundation/connect-sdk";
+import { registerProtocol } from "@wormhole-foundation/sdk-connect";
 import { AlgorandWormholeCore } from "./core";
 
 registerProtocol("Algorand", "WormholeCore", AlgorandWormholeCore);

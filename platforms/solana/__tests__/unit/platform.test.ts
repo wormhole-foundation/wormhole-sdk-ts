@@ -5,13 +5,13 @@ import {
   DEFAULT_NETWORK,
   CONFIG,
   chainToPlatform,
-  chains
-} from '@wormhole-foundation/connect-sdk';
+  chains,
+} from '@wormhole-foundation/sdk-connect';
 
 import { SolanaChains, SolanaPlatform } from '../../src';
 
-import '@wormhole-foundation/connect-sdk-solana-core'
-import '@wormhole-foundation/connect-sdk-solana-tokenbridge'
+import '@wormhole-foundation/sdk-solana-core';
+import '@wormhole-foundation/sdk-solana-tokenbridge';
 
 // @ts-ignore -- this is the mock we import above
 import { getDefaultProvider } from '@solana/web3.js';
@@ -33,7 +33,7 @@ describe('Solana Platform Tests', () => {
         [SOLANA_CHAINS[0]]: configs[SOLANA_CHAINS[0]],
       });
 
-      const tb = await p.getProtocol("TokenBridge", fakeRpc);
+      const tb = await p.getProtocol('TokenBridge', fakeRpc);
       expect(tb).toBeTruthy();
     });
   });

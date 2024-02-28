@@ -1,6 +1,6 @@
-import * as _sui from "@wormhole-foundation/connect-sdk-sui";
-import * as _sui_core from "@wormhole-foundation/connect-sdk-sui-core";
-import * as _sui_tokenbridge from "@wormhole-foundation/connect-sdk-sui-tokenbridge";
+import * as _sui from "@wormhole-foundation/sdk-sui";
+import * as _sui_core from "@wormhole-foundation/sdk-sui-core";
+import * as _sui_tokenbridge from "@wormhole-foundation/sdk-sui-tokenbridge";
 
 export const sui = {
   ...{

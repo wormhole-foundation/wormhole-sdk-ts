@@ -7,7 +7,7 @@ import {
   ChainsConfig,
   networkPlatformConfigs,
   isNative,
-} from "@wormhole-foundation/connect-sdk";
+} from "@wormhole-foundation/sdk-connect";
 import { AptosClient } from "aptos";
 import { AptosChain } from "./chain";
 import { AptosChains, AptosPlatformType, _platform } from "./types";
@@ -20,7 +20,7 @@ import {
   chainToPlatform,
   nativeChainIds,
   decimals as nativeDecimals,
-} from "@wormhole-foundation/connect-sdk";
+} from "@wormhole-foundation/sdk-connect";
 import { CoinClient, Types } from "aptos";
 import { APTOS_COIN, APTOS_SEPARATOR } from "./constants";
 import { AnyAptosAddress } from "./types";

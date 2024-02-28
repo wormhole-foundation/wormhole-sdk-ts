@@ -10,10 +10,10 @@ import {
   nativeChainIds,
   testing,
   toNative,
-} from '@wormhole-foundation/connect-sdk';
+} from '@wormhole-foundation/sdk-connect';
 
-import '@wormhole-foundation/connect-sdk-evm-core';
-import '@wormhole-foundation/connect-sdk-evm-tokenbridge';
+import '@wormhole-foundation/sdk-evm-core';
+import '@wormhole-foundation/sdk-evm-tokenbridge';
 
 import { EvmChains, EvmPlatform } from '../../src';
 

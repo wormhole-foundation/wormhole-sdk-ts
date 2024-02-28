@@ -8,9 +8,9 @@ import {
   Platform,
   Wormhole,
   Chain,
-} from "@wormhole-foundation/connect-sdk";
-import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
-import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
+} from "@wormhole-foundation/sdk-connect";
+import { EvmPlatform } from "@wormhole-foundation/sdk-evm";
+import { SolanaPlatform } from "@wormhole-foundation/sdk-solana";
 
 const allPlatformCtrs = [SolanaPlatform, EvmPlatform];
 

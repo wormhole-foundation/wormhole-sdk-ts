@@ -14,7 +14,7 @@ import {
   isNative,
   nativeChainIds,
   networkPlatformConfigs,
-} from "@wormhole-foundation/connect-sdk";
+} from "@wormhole-foundation/sdk-connect";
 import {
   Algodv2,
   SignedTransaction,

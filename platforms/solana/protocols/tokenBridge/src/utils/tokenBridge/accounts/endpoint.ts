@@ -8,8 +8,8 @@ import {
   ChainId,
   UniversalAddress,
   toChainId,
-} from '@wormhole-foundation/connect-sdk';
-import { utils } from '@wormhole-foundation/connect-sdk-solana';
+} from '@wormhole-foundation/sdk-connect';
+import { utils } from '@wormhole-foundation/sdk-solana';
 
 export function deriveEndpointKey(
   tokenBridgeProgramId: PublicKeyInitData,

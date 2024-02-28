@@ -6,7 +6,7 @@ import {
   TxHash,
   UnsignedTransaction,
   encoding,
-} from "@wormhole-foundation/connect-sdk";
+} from "@wormhole-foundation/sdk-connect";
 import { AptosAccount, AptosClient, TxnBuilderTypes, Types } from "aptos";
 import { AptosPlatform } from "./platform";
 import { AptosChains } from "./types";

@@ -1,5 +1,5 @@
 import { MoveValue, SuiObjectResponse, SuiTransactionBlockResponse } from "@mysten/sui.js/client";
-import { PlatformToChains, UniversalOrNative } from "@wormhole-foundation/connect-sdk";
+import { PlatformToChains, UniversalOrNative } from "@wormhole-foundation/sdk-connect";
 import { normalizeSuiType } from "./address";
 
 export const _platform: "Sui" = "Sui";

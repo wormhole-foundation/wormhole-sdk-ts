@@ -1,4 +1,4 @@
-import { Chain, ChainContext, Network } from "@wormhole-foundation/connect-sdk";
+import { Chain, ChainContext, Network } from "@wormhole-foundation/sdk-connect";
 import { SuiChains } from "./types";
 
 export class SuiChain<

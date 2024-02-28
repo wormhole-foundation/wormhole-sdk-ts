@@ -1,5 +1,5 @@
-import { encoding, layout, layoutItems } from "@wormhole-foundation/connect-sdk";
-import { APTOS_SEPARATOR } from "@wormhole-foundation/connect-sdk-aptos";
+import { encoding, layout, layoutItems } from "@wormhole-foundation/sdk-connect";
+import { APTOS_SEPARATOR } from "@wormhole-foundation/sdk-aptos";
 
 const foreignAddressSeedLayout = [
   { name: "tokenBridgeAddress", ...layoutItems.universalAddressItem },

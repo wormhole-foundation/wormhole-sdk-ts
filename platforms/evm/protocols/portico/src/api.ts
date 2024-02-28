@@ -13,8 +13,8 @@ import {
   resolveWrappedToken,
   toChainId,
   tokens,
-} from '@wormhole-foundation/connect-sdk';
-import { EvmChains } from '@wormhole-foundation/connect-sdk-evm';
+} from '@wormhole-foundation/sdk-connect';
+import { EvmChains } from '@wormhole-foundation/sdk-evm';
 import axios from 'axios';
 import { porticoAbi } from './abis';
 import { FEE_TIER } from './consts';
