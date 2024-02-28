@@ -110,7 +110,14 @@ export class SuiPlatform<N extends Network>
     walletAddr: string,
     tokens: AnySuiAddress[],
   ): Promise<Balances> {
-    throw new Error("Not implemented");
+    const balancesArr = await Promise.all(
+      tokens.map(async (token) => {
+        const balance = await this.getBalance(chain, rpc, walletAddr, token);
+        const address = isNative(token) ? "native" : new SuiAddress(token).toString();
+        return { [address]: balance };
+      }),
+    );
+    return balancesArr.reduce((obj, item) => Object.assign(obj, item), {});
   }
 
   static async sendWait(chain: Chain, rpc: SuiClient, stxns: SignedTx[]): Promise<TxHash[]> {
