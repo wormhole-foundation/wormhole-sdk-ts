@@ -8,6 +8,7 @@ import {
   StaticPlatformMethods,
   TokenId,
   TxHash,
+  Wormhole,
   chainToPlatform,
   isNative,
   nativeChainIds,
@@ -16,10 +17,11 @@ import {
 } from "@wormhole-foundation/connect-sdk";
 
 import { SuiClient } from "@mysten/sui.js/client";
+import { SuiAddress } from "./address";
 import { SuiChain } from "./chain";
+import { SUI_COIN } from "./constants";
 import { AnySuiAddress, SuiChains, SuiPlatformType, _platform } from "./types";
 import { getObjectFields } from "./utils";
-import { SuiAddress } from "./address";
 
 /**
  * @category Sui
@@ -48,7 +50,7 @@ export class SuiPlatform<N extends Network>
   static nativeTokenId<N extends Network, C extends SuiChains>(network: N, chain: C): TokenId<C> {
     if (!SuiPlatform.isSupportedChain(chain))
       throw new Error(`invalid chain for ${_platform}: ${chain}`);
-    throw new Error("Not implemented");
+    return Wormhole.tokenId(chain, SUI_COIN);
   }
 
   static isNativeTokenId<N extends Network, C extends SuiChains>(
@@ -134,7 +136,7 @@ export class SuiPlatform<N extends Network>
     return Number(await rpc.getLatestCheckpointSequenceNumber());
   }
   static async getLatestFinalizedBlock(rpc: SuiClient): Promise<number> {
-    throw new Error("Not implemented");
+    return this.getLatestBlock(rpc);
   }
 
   static chainFromChainId(chainId: string): [Network, SuiChains] {
