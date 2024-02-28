@@ -8,18 +8,15 @@ import {
   Wormhole,
   circle,
   routes,
-} from "@wormhole-foundation/connect-sdk";
-import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
-import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
+} from "@wormhole-foundation/sdk";
+import { evm } from "@wormhole-foundation/sdk/evm";
+import { solana } from "@wormhole-foundation/sdk/solana";
 
 import { getStuff } from "./helpers";
 
-import "@wormhole-foundation/connect-sdk-evm-cctp";
-import "@wormhole-foundation/connect-sdk-solana-cctp";
-
 (async function () {
   // Setup
-  const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform]);
+  const wh = new Wormhole("Testnet", [evm.Platform, solana.Platform]);
 
   // get signers from local config
   const sendChain = wh.getChain("Avalanche");
