@@ -7,6 +7,8 @@ import {
 
 import { universalAddressItem, chainItem, sequenceItem } from "../layout-items";
 
+import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../vaa";
+
 export const trimmedAmountLayout = [
   {name: "decimals", binary: "uint", size: 1},
   {name: "amount", binary: "uint", size: 8},
@@ -56,10 +58,27 @@ export const nttManagerMessageLayout = <
 export type NttManagerMessage<P extends CustomizableBytes = undefined> =
   LayoutToType<ReturnType<typeof nttManagerMessageLayout<P>>>;
 
-export const wormholeTransceiverMessage = <
+export const wormholeTransceiverMessageLayout = <
   MP extends CustomizableBytes = undefined,
 >(nttManagerPayload?: MP) =>
   transceiverMessageLayout([0x99, 0x45, 0xFF, 0x10], nttManagerPayload, new Uint8Array(0));
 
 export type WormholeTransceiverMessage<MP extends CustomizableBytes = undefined> =
-  LayoutToType<ReturnType<typeof wormholeTransceiverMessage<MP>>>;
+  LayoutToType<ReturnType<typeof wormholeTransceiverMessageLayout<MP>>>;
+
+const wormholeNativeTokenTransferLayout =
+  wormholeTransceiverMessageLayout(nttManagerMessageLayout(nativeTokenTransferLayout));
+
+export const namedPayloads = [
+  ["WormholeTransfer", wormholeNativeTokenTransferLayout],
+] as const satisfies NamedPayloads;
+
+// factory registration:
+declare global {
+  namespace Wormhole {
+    interface PayloadLiteralToLayoutMapping
+      extends RegisterPayloadTypes<"NTT", typeof namedPayloads> {}
+  }
+}
+
+registerPayloadTypes("NTT", namedPayloads);
