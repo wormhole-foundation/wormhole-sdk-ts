@@ -15,7 +15,7 @@ import {
   toChain,
   toChainId,
   toNative,
-} from "@wormhole-foundation/connect-sdk";
+} from "@wormhole-foundation/sdk-connect";
 import {
   APTOS_COIN,
   APTOS_SEPARATOR,
@@ -27,7 +27,7 @@ import {
   AptosUnsignedTransaction,
   coalesceModuleAddress,
   isValidAptosType,
-} from "@wormhole-foundation/connect-sdk-aptos";
+} from "@wormhole-foundation/sdk-aptos";
 import { AptosClient, Types } from "aptos";
 import { serializeForeignAddressSeeds } from "./foreignAddress";
 import { OriginInfo, TokenBridgeState } from "./types";

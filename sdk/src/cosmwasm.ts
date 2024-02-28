@@ -1,7 +1,7 @@
-import * as _cosmwasm from "@wormhole-foundation/connect-sdk-cosmwasm";
-import * as _cosmwasm_core from "@wormhole-foundation/connect-sdk-cosmwasm-core";
-import * as _cosmwasm_tokenbridge from "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
-import * as _cosmwasm_ibc from "@wormhole-foundation/connect-sdk-cosmwasm-ibc";
+import * as _cosmwasm from "@wormhole-foundation/sdk-cosmwasm";
+import * as _cosmwasm_core from "@wormhole-foundation/sdk-cosmwasm-core";
+import * as _cosmwasm_tokenbridge from "@wormhole-foundation/sdk-cosmwasm-tokenbridge";
+import * as _cosmwasm_ibc from "@wormhole-foundation/sdk-cosmwasm-ibc";
 
 export const cosmwasm = {
   ...{

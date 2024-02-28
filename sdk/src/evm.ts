@@ -1,8 +1,8 @@
-import * as _evm from "@wormhole-foundation/connect-sdk-evm";
-import * as _evm_core from "@wormhole-foundation/connect-sdk-evm-core";
-import * as _evm_tokenbridge from "@wormhole-foundation/connect-sdk-evm-tokenbridge";
-import * as _evm_portico from "@wormhole-foundation/connect-sdk-evm-portico";
-import * as _evm_cctp from "@wormhole-foundation/connect-sdk-evm-cctp";
+import * as _evm from "@wormhole-foundation/sdk-evm";
+import * as _evm_core from "@wormhole-foundation/sdk-evm-core";
+import * as _evm_tokenbridge from "@wormhole-foundation/sdk-evm-tokenbridge";
+import * as _evm_portico from "@wormhole-foundation/sdk-evm-portico";
+import * as _evm_cctp from "@wormhole-foundation/sdk-evm-cctp";
 export const evm = {
   ...{
     Address: _evm.EvmAddress,

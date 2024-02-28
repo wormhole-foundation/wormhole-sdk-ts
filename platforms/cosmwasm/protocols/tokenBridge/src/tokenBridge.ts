@@ -15,7 +15,7 @@ import {
   toChain,
   toChainId,
   toNative,
-} from "@wormhole-foundation/connect-sdk";
+} from "@wormhole-foundation/sdk-connect";
 
 import {
   AnyCosmwasmAddress,
@@ -29,9 +29,9 @@ import {
   WrappedRegistryResponse,
   buildExecuteMsg,
   computeFee,
-} from "@wormhole-foundation/connect-sdk-cosmwasm";
+} from "@wormhole-foundation/sdk-cosmwasm";
 
-import "@wormhole-foundation/connect-sdk-cosmwasm-core";
+import "@wormhole-foundation/sdk-cosmwasm-core";
 
 export class CosmwasmTokenBridge<N extends Network, C extends CosmwasmChains>
   implements TokenBridge<N, C>

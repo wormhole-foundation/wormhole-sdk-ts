@@ -1,5 +1,5 @@
 import { PublicKey, PublicKeyInitData } from '@solana/web3.js';
-import { utils } from '@wormhole-foundation/connect-sdk-solana';
+import { utils } from '@wormhole-foundation/sdk-solana';
 
 export function deriveAuthoritySignerKey(
   tokenBridgeProgramId: PublicKeyInitData,

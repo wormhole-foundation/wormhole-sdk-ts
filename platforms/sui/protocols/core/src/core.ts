@@ -11,14 +11,14 @@ import {
   WormholeMessageId,
   toChainId,
   toNative,
-} from "@wormhole-foundation/connect-sdk";
+} from "@wormhole-foundation/sdk-connect";
 import {
   AnySuiAddress,
   SuiChains,
   SuiPlatform,
   SuiPlatformType,
   SuiUnsignedTransaction,
-} from "@wormhole-foundation/connect-sdk-sui";
+} from "@wormhole-foundation/sdk-sui";
 
 export class SuiWormholeCore<N extends Network, C extends SuiChains> implements WormholeCore<N, C> {
   readonly chainId: ChainId;

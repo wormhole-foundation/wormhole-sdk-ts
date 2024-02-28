@@ -9,7 +9,7 @@ import {
   Network,
   Platform,
   circle,
-} from '@wormhole-foundation/connect-sdk';
+} from '@wormhole-foundation/sdk-connect';
 
 import { BN, EventParser, Program } from '@project-serum/anchor';
 import { getAssociatedTokenAddressSync } from '@solana/spl-token';
@@ -19,7 +19,7 @@ import {
   SolanaPlatform,
   SolanaTransaction,
   SolanaUnsignedTransaction,
-} from '@wormhole-foundation/connect-sdk-solana';
+} from '@wormhole-foundation/sdk-solana';
 import { MessageTransmitter, TokenMessenger } from '.';
 import {
   createReadOnlyMessageTransmitterProgramInterface,

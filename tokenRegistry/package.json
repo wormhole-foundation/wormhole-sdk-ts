@@ -33,15 +33,15 @@
   },
   "dependencies": {
     "axios": "^1.4.0",
-    "@wormhole-foundation/connect-sdk": "^0.3.0",
-    "@wormhole-foundation/connect-sdk-evm": "^0.3.0",
-    "@wormhole-foundation/connect-sdk-evm-core": "^0.3.0",
-    "@wormhole-foundation/connect-sdk-evm-tokenbridge": "^0.3.0",
-    "@wormhole-foundation/connect-sdk-solana": "^0.3.0",
-    "@wormhole-foundation/connect-sdk-solana-core": "^0.3.0",
-    "@wormhole-foundation/connect-sdk-solana-tokenbridge": "^0.3.0",
-    "@wormhole-foundation/connect-sdk-cosmwasm": "^0.3.0",
-    "@wormhole-foundation/connect-sdk-cosmwasm-core": "^0.3.0",
-    "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge": "^0.3.0"
+    "@wormhole-foundation/sdk-connect": "^0.3.0",
+    "@wormhole-foundation/sdk-evm": "^0.3.0",
+    "@wormhole-foundation/sdk-evm-core": "^0.3.0",
+    "@wormhole-foundation/sdk-evm-tokenbridge": "^0.3.0",
+    "@wormhole-foundation/sdk-solana": "^0.3.0",
+    "@wormhole-foundation/sdk-solana-core": "^0.3.0",
+    "@wormhole-foundation/sdk-solana-tokenbridge": "^0.3.0",
+    "@wormhole-foundation/sdk-cosmwasm": "^0.3.0",
+    "@wormhole-foundation/sdk-cosmwasm-core": "^0.3.0",
+    "@wormhole-foundation/sdk-cosmwasm-tokenbridge": "^0.3.0"
   }
 }

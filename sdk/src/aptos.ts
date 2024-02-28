@@ -1,6 +1,6 @@
-import * as _aptos from "@wormhole-foundation/connect-sdk-aptos";
-import * as _aptos_core from "@wormhole-foundation/connect-sdk-aptos-core";
-import * as _aptos_tokenbridge from "@wormhole-foundation/connect-sdk-aptos-tokenbridge";
+import * as _aptos from "@wormhole-foundation/sdk-aptos";
+import * as _aptos_core from "@wormhole-foundation/sdk-aptos-core";
+import * as _aptos_tokenbridge from "@wormhole-foundation/sdk-aptos-tokenbridge";
 
 export const aptos = {
   ...{

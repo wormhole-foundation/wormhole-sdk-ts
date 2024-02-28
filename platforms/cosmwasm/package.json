@@ -1,6 +1,6 @@
 {
-  "name": "@wormhole-foundation/connect-sdk-cosmwasm",
-  "version": "0.4.4-beta.6",
+  "name": "@wormhole-foundation/sdk-cosmwasm",
+  "version": "0.5.0-beta.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -17,7 +17,7 @@
   "module": "./dist/esm/index.js",
   "types": "./dist/cjs/index.d.ts",
   "author": "",
-  "description": "SDK for EVM chains, used in conjunction with @wormhole-foundation/connect-sdk",
+  "description": "SDK for EVM chains, used in conjunction with @wormhole-foundation/sdk",
   "files": [
     "dist"
   ],
@@ -50,7 +50,7 @@
     "test": "jest --config ./jest.config.ts"
   },
   "dependencies": {
-    "@wormhole-foundation/connect-sdk": "0.4.4-beta.6",
+    "@wormhole-foundation/sdk-connect": "0.5.0-beta.0",
     "@cosmjs/cosmwasm-stargate": "^0.32.0",
     "@cosmjs/proto-signing": "^0.32.0",
     "@cosmjs/stargate": "^0.32.0",

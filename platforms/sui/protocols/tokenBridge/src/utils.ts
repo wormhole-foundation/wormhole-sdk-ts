@@ -7,7 +7,7 @@ import {
   isMoveStructObject,
   isValidSuiType,
   trimSuiType,
-} from "@wormhole-foundation/connect-sdk-sui";
+} from "@wormhole-foundation/sdk-sui";
 
 export const getTokenFromTokenRegistry = async (
   provider: SuiClient,

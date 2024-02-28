@@ -1,13 +1,13 @@
-import { Wormhole } from "@wormhole-foundation/connect-sdk";
-import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
-import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
+import { Wormhole } from "@wormhole-foundation/sdk-connect";
+import { EvmPlatform } from "@wormhole-foundation/sdk-evm";
+import { SolanaPlatform } from "@wormhole-foundation/sdk-solana";
 import { Chain, Network } from "@wormhole-foundation/sdk-base";
 import * as fs from "fs";
 import { TokensConfig } from "../types";
 import { automaticTokensFilePath } from "./utils";
 
-import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
-import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
+import "@wormhole-foundation/sdk-evm-tokenbridge";
+import "@wormhole-foundation/sdk-solana-tokenbridge";
 
 const checkEnvConfig = async (env: Network, tokensConfig: TokensConfig) => {
   const wh = new Wormhole(env, [EvmPlatform, SolanaPlatform]);

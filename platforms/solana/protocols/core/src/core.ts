@@ -19,7 +19,7 @@ import {
   WormholeCore,
   WormholeMessageId,
   toChainId,
-} from '@wormhole-foundation/connect-sdk';
+} from '@wormhole-foundation/sdk-connect';
 import {
   AnySolanaAddress,
   SolanaAddress,
@@ -27,7 +27,7 @@ import {
   SolanaPlatform,
   SolanaTransaction,
   SolanaUnsignedTransaction,
-} from '@wormhole-foundation/connect-sdk-solana';
+} from '@wormhole-foundation/sdk-solana';
 import { Wormhole as WormholeCoreContract } from './types';
 import {
   BridgeData,

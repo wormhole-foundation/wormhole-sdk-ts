@@ -1,6 +1,6 @@
 import { BN } from '@project-serum/anchor';
 import { PublicKey, PublicKeyInitData } from '@solana/web3.js';
-import { utils } from '@wormhole-foundation/connect-sdk-solana';
+import { utils } from '@wormhole-foundation/sdk-solana';
 
 export interface RegisteredToken {
   swapRate: BN;

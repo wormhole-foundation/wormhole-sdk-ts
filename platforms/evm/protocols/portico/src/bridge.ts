@@ -16,7 +16,7 @@ import {
   serialize,
   toChainId,
   tokens,
-} from '@wormhole-foundation/connect-sdk';
+} from '@wormhole-foundation/sdk-connect';
 import {
   EvmAddress,
   EvmChains,
@@ -24,15 +24,15 @@ import {
   EvmUnsignedTransaction,
   addChainId,
   addFrom,
-} from '@wormhole-foundation/connect-sdk-evm';
+} from '@wormhole-foundation/sdk-evm';
 import { Provider, TransactionRequest, ethers } from 'ethers';
 import { porticoAbi, uniswapQuoterV2Abi } from './abis';
 import { PorticoApi } from './api';
 import { FEE_TIER } from './consts';
 
-import { EvmWormholeCore } from '@wormhole-foundation/connect-sdk-evm-core';
+import { EvmWormholeCore } from '@wormhole-foundation/sdk-evm-core';
 
-import '@wormhole-foundation/connect-sdk-evm-tokenbridge';
+import '@wormhole-foundation/sdk-evm-tokenbridge';
 
 export class EvmPorticoBridge<
   N extends Network,

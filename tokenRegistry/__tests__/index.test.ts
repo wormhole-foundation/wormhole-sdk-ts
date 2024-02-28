@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import { TokensConfig } from "../src/types";
-import { Network } from "@wormhole-foundation/connect-sdk";
+import { Network } from "@wormhole-foundation/sdk-connect";
 
 const testnetTokens = fs.readFileSync("src/tokens/TestnetTokens.json", "utf-8");
 const TESTNET_TOKENS = JSON.parse(testnetTokens) as TokensConfig;

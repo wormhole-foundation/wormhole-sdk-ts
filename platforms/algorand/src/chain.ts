@@ -1,4 +1,4 @@
-import { ChainContext, Network } from "@wormhole-foundation/connect-sdk";
+import { ChainContext, Network } from "@wormhole-foundation/sdk-connect";
 import { AlgorandChains } from "./types";
 
 export class AlgorandChain<

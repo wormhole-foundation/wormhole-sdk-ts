@@ -9,7 +9,7 @@ import {
   encoding,
   sha256,
   toChainId,
-} from "@wormhole-foundation/connect-sdk";
+} from "@wormhole-foundation/sdk-connect";
 
 import { CosmwasmAddress } from "./address";
 import { CosmwasmChain } from "./chain";

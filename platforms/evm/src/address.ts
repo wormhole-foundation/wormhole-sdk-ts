@@ -3,7 +3,7 @@ import {
   UniversalAddress,
   encoding,
   registerNative,
-} from '@wormhole-foundation/connect-sdk';
+} from '@wormhole-foundation/sdk-connect';
 
 import { ethers } from 'ethers';
 import { AnyEvmAddress, _platform } from './types';

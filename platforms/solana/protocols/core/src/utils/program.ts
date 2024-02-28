@@ -1,6 +1,6 @@
 import { Connection, PublicKey, PublicKeyInitData } from '@solana/web3.js';
 import { Program, Provider } from '@project-serum/anchor';
-import { utils } from '@wormhole-foundation/connect-sdk-solana';
+import { utils } from '@wormhole-foundation/sdk-solana';
 import { WormholeCoder } from './coder';
 import { Wormhole } from '../types';
 

@@ -1,5 +1,5 @@
-import { registerProtocol } from '@wormhole-foundation/connect-sdk';
-import { _platform } from '@wormhole-foundation/connect-sdk-evm';
+import { registerProtocol } from '@wormhole-foundation/sdk-connect';
+import { _platform } from '@wormhole-foundation/sdk-evm';
 import { EvmTokenBridge } from './tokenBridge';
 import { EvmAutomaticTokenBridge } from './automaticTokenBridge';
 

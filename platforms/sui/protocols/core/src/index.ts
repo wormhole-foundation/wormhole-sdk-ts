@@ -1,5 +1,5 @@
-import { _platform } from "@wormhole-foundation/connect-sdk-sui";
-import { registerProtocol } from "@wormhole-foundation/connect-sdk";
+import { _platform } from "@wormhole-foundation/sdk-sui";
+import { registerProtocol } from "@wormhole-foundation/sdk-connect";
 import { SuiWormholeCore } from "./core";
 
 registerProtocol(_platform, "WormholeCore", SuiWormholeCore);

@@ -2,7 +2,7 @@ import { PublicKeyInitData } from '@solana/web3.js';
 import {
   PlatformToChains,
   UniversalOrNative,
-} from '@wormhole-foundation/connect-sdk';
+} from '@wormhole-foundation/sdk-connect';
 
 export const unusedNonce = 0;
 export const unusedArbiterFee = 0n;

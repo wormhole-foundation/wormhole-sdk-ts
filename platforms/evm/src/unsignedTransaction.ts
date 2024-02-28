@@ -1,4 +1,4 @@
-import { Network, UnsignedTransaction } from '@wormhole-foundation/connect-sdk';
+import { Network, UnsignedTransaction } from '@wormhole-foundation/sdk-connect';
 import { TransactionRequest } from 'ethers';
 import { EvmChains } from './types';
 

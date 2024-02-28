@@ -6,11 +6,11 @@ import {
   createVAA,
   encoding,
   toNative,
-} from "@wormhole-foundation/connect-sdk";
+} from "@wormhole-foundation/sdk-connect";
 import { CosmwasmChains, CosmwasmPlatform, chainToNativeDenoms } from "../../src";
 
-import "@wormhole-foundation/connect-sdk-cosmwasm-core";
-import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
+import "@wormhole-foundation/sdk-cosmwasm-core";
+import "@wormhole-foundation/sdk-cosmwasm-tokenbridge";
 import nock from "nock";
 
 const network: "Testnet" = "Testnet"; //DEFAULT_NETWORK;

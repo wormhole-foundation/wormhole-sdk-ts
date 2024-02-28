@@ -1,1 +1,1 @@
-export * from "@wormhole-foundation/connect-sdk";
+export * from "@wormhole-foundation/sdk-connect";

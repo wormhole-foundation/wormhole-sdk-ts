@@ -1,4 +1,4 @@
-import { Network } from "@wormhole-foundation/connect-sdk";
+import { Network } from "@wormhole-foundation/sdk-connect";
 
 // Path for tokens that are acceptable to the Automatic Token Bridge
 export const automaticTokensFilePath = (env: Network) => `src/tokens/${env}AutomaticTokens.json`;

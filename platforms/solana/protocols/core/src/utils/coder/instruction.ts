@@ -1,11 +1,7 @@
 import { Idl, Instruction, InstructionCoder } from '@project-serum/anchor';
 import { Layout } from 'buffer-layout';
-import { encoding } from '@wormhole-foundation/connect-sdk';
-import {
-  anchor,
-  camelCase,
-  upperFirst,
-} from '@wormhole-foundation/connect-sdk-solana';
+import { encoding } from '@wormhole-foundation/sdk-connect';
+import { anchor, camelCase, upperFirst } from '@wormhole-foundation/sdk-solana';
 import * as borsh from '@coral-xyz/borsh';
 import { IdlCoder } from './idl';
 

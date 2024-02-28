@@ -14,7 +14,7 @@ import {
   toChain,
   toChainId,
   toNative,
-} from '@wormhole-foundation/connect-sdk';
+} from '@wormhole-foundation/sdk-connect';
 import {
   AnySolanaAddress,
   SolanaAddress,
@@ -22,11 +22,11 @@ import {
   SolanaPlatform,
   SolanaTransaction,
   SolanaUnsignedTransaction,
-} from '@wormhole-foundation/connect-sdk-solana';
+} from '@wormhole-foundation/sdk-solana';
 import {
   SolanaWormholeCore,
   utils as coreUtils,
-} from '@wormhole-foundation/connect-sdk-solana-core';
+} from '@wormhole-foundation/sdk-solana-core';
 
 import { Program } from '@project-serum/anchor';
 import {
@@ -66,7 +66,7 @@ import {
   getWrappedMeta,
 } from './utils';
 
-import '@wormhole-foundation/connect-sdk-solana-core';
+import '@wormhole-foundation/sdk-solana-core';
 
 export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
   implements TokenBridge<N, C>

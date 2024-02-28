@@ -1,7 +1,7 @@
-import * as _solana from "@wormhole-foundation/connect-sdk-solana";
-import * as _solana_core from "@wormhole-foundation/connect-sdk-solana-core";
-import * as _solana_tokenbridge from "@wormhole-foundation/connect-sdk-solana-tokenbridge";
-import * as _solana_cctp from "@wormhole-foundation/connect-sdk-solana-cctp";
+import * as _solana from "@wormhole-foundation/sdk-solana";
+import * as _solana_core from "@wormhole-foundation/sdk-solana-core";
+import * as _solana_tokenbridge from "@wormhole-foundation/sdk-solana-tokenbridge";
+import * as _solana_cctp from "@wormhole-foundation/sdk-solana-cctp";
 export const solana = {
   ...{
     Address: _solana.SolanaAddress,

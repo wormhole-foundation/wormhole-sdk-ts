@@ -4,7 +4,7 @@ import {
   encoding,
   registerNative,
   UniversalAddress,
-} from "@wormhole-foundation/connect-sdk";
+} from "@wormhole-foundation/sdk-connect";
 
 import { SUI_SEPARATOR } from "./constants";
 import { SuiPlatform } from "./platform";

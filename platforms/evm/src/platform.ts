@@ -15,7 +15,7 @@ import {
   isNative,
   nativeChainIds,
   networkPlatformConfigs,
-} from '@wormhole-foundation/connect-sdk';
+} from '@wormhole-foundation/sdk-connect';
 
 import { JsonRpcProvider, Provider } from 'ethers';
 import * as ethers_contracts from './ethers-contracts';

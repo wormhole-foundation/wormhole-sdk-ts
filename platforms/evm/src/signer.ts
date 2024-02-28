@@ -7,7 +7,7 @@ import {
   UnsignedTransaction,
   chainToPlatform,
   isNativeSigner,
-} from '@wormhole-foundation/connect-sdk';
+} from '@wormhole-foundation/sdk-connect';
 import { ethers } from 'ethers';
 import { EvmPlatform } from './platform';
 import { EvmChains, _platform } from './types';

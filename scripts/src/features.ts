@@ -1,25 +1,25 @@
 import fs from "fs";
-import { Chain, Network, Wormhole, chains } from "@wormhole-foundation/connect-sdk";
-import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
-import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
-import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
-import { AlgorandPlatform } from "@wormhole-foundation/connect-sdk-algorand";
+import { Chain, Network, Wormhole, chains } from "@wormhole-foundation/sdk-connect";
+import { EvmPlatform } from "@wormhole-foundation/sdk-evm";
+import { SolanaPlatform } from "@wormhole-foundation/sdk-solana";
+import { CosmwasmPlatform } from "@wormhole-foundation/sdk-cosmwasm";
+import { AlgorandPlatform } from "@wormhole-foundation/sdk-algorand";
 
-import "@wormhole-foundation/connect-sdk-evm-core";
-import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
-import "@wormhole-foundation/connect-sdk-evm-cctp";
-import "@wormhole-foundation/connect-sdk-evm-portico";
+import "@wormhole-foundation/sdk-evm-core";
+import "@wormhole-foundation/sdk-evm-tokenbridge";
+import "@wormhole-foundation/sdk-evm-cctp";
+import "@wormhole-foundation/sdk-evm-portico";
 
-import "@wormhole-foundation/connect-sdk-solana-core";
-import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
-import "@wormhole-foundation/connect-sdk-solana-cctp";
+import "@wormhole-foundation/sdk-solana-core";
+import "@wormhole-foundation/sdk-solana-tokenbridge";
+import "@wormhole-foundation/sdk-solana-cctp";
 
-import "@wormhole-foundation/connect-sdk-cosmwasm-core";
-import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
-import "@wormhole-foundation/connect-sdk-cosmwasm-ibc";
+import "@wormhole-foundation/sdk-cosmwasm-core";
+import "@wormhole-foundation/sdk-cosmwasm-tokenbridge";
+import "@wormhole-foundation/sdk-cosmwasm-ibc";
 
-import "@wormhole-foundation/connect-sdk-algorand-core";
-import "@wormhole-foundation/connect-sdk-algorand-tokenbridge";
+import "@wormhole-foundation/sdk-algorand-core";
+import "@wormhole-foundation/sdk-algorand-tokenbridge";
 
 type SupportedProtocols = Record<string, Record<string, boolean>>;
 
