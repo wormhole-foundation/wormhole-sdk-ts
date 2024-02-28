@@ -103,7 +103,7 @@ export class SuiAddress implements Address {
   }
 
   getPackageId(): string {
-    return encoding.hex.encode(this.address, true);
+    return ensureFullSuiAddress(encoding.hex.encode(this.address, true));
   }
 
   getCoinType(): string {
