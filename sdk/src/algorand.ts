@@ -4,7 +4,9 @@ import * as _algorand_tokenbridge from "@wormhole-foundation/sdk-algorand-tokenb
 
 /** Platform and protocol definitions for Algorand */
 export const algorand = {
-  ..._algorand,
+  ...{
+    getSigner: _algorand.getAlgorandSigner,
+  },
   ...{
     Address: _algorand.AlgorandAddress,
     ChainContext: _algorand.AlgorandChain,

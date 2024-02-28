@@ -11,8 +11,8 @@ export const evm = {
   // a reference to the ethers.TransactionRequest
   // which is apparently not portable
   ...{
-    getEvmSignerForKey: _evm.getEvmSignerForKey,
-    getEvmSignerForSigner: _evm.getEvmSignerForSigner,
+    getSigner: _evm.getEvmSignerForKey,
+    getSignerForSigner: _evm.getEvmSignerForSigner,
   },
   ...{
     Address: _evm.EvmAddress,

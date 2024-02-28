@@ -4,7 +4,9 @@ import * as _aptos_tokenbridge from "@wormhole-foundation/sdk-aptos-tokenbridge"
 
 /** Platform and protocol definitions for Aptos */
 export const aptos = {
-  ..._aptos,
+  ...{
+    getSigner: _aptos.getAptosSigner,
+  },
   ...{
     Address: _aptos.AptosAddress,
     ChainContext: _aptos.AptosChain,

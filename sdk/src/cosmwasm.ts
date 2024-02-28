@@ -5,7 +5,9 @@ import * as _cosmwasm_ibc from "@wormhole-foundation/sdk-cosmwasm-ibc";
 
 /** Platform and protocol definitions for Cosmwasm */
 export const cosmwasm = {
-  ..._cosmwasm,
+  ...{
+    getSigner: _cosmwasm.getCosmwasmSigner,
+  },
   ...{
     Address: _cosmwasm.CosmwasmAddress,
     ChainContext: _cosmwasm.CosmwasmChain,
