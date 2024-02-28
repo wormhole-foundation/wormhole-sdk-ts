@@ -86,7 +86,7 @@ export class SuiAddress implements Address {
   unwrap(): string {
     const packageId = this.getPackageId();
     const module = this.module ? SUI_SEPARATOR + this.module : "";
-    return `0x${packageId}${module}`;
+    return `${packageId}${module}`;
   }
 
   toString(): string {
