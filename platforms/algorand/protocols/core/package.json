@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/connect-sdk-algorand-core",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -42,7 +42,7 @@
     "prettier": "prettier --write ./src"
   },
   "dependencies": {
-    "@wormhole-foundation/connect-sdk": "0.4.4",
-    "@wormhole-foundation/connect-sdk-algorand": "0.4.4"
+    "@wormhole-foundation/connect-sdk": "0.4.5",
+    "@wormhole-foundation/connect-sdk-algorand": "0.4.5"
   }
 }
