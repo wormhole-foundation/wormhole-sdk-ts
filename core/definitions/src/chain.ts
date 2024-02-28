@@ -1,5 +1,4 @@
-import { Chain, Network, Platform, tokens } from "@wormhole-foundation/sdk-base";
-import { ChainToPlatform } from "@wormhole-foundation/sdk-base/src";
+import { Chain, ChainToPlatform, Network, Platform, tokens } from "@wormhole-foundation/sdk-base";
 import { ChainAddress, UniversalOrNative, toNative } from "./address";
 import { WormholeMessageId } from "./attestation";
 import { PlatformContext } from "./platform";

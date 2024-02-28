@@ -28,7 +28,7 @@ describe("Wormhole Tests", () => {
     expect(p).toBeTruthy();
   });
 
-  let c: ChainContext<TNet, "Evm", "Ethereum">;
+  let c: ChainContext<TNet, "Ethereum">;
   test("returns chain", async () => {
     c = wh.getChain("Ethereum");
     expect(c).toBeTruthy();
@@ -80,7 +80,7 @@ describe("Platform Tests", () => {
 });
 
 describe("Chain Tests", () => {
-  let c: ChainContext<"Testnet", "Evm", "Ethereum">;
+  let c: ChainContext<"Testnet", "Ethereum">;
   beforeEach(() => {
     const wh = new Wormhole(network, allPlatformCtrs);
     c = wh.getChain("Ethereum");
