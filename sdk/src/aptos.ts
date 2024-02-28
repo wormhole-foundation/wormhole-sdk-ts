@@ -2,6 +2,7 @@ import * as _aptos from "@wormhole-foundation/sdk-aptos";
 import * as _aptos_core from "@wormhole-foundation/sdk-aptos-core";
 import * as _aptos_tokenbridge from "@wormhole-foundation/sdk-aptos-tokenbridge";
 
+/** Platform and protocol definitions for Aptos */
 export const aptos = {
   ..._aptos,
   ...{

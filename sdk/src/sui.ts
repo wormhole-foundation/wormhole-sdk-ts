@@ -2,6 +2,7 @@ import * as _sui from "@wormhole-foundation/sdk-sui";
 import * as _sui_core from "@wormhole-foundation/sdk-sui-core";
 import * as _sui_tokenbridge from "@wormhole-foundation/sdk-sui-tokenbridge";
 
+/** Platform and protocol definitions for Sui */
 export const sui = {
   ..._sui,
   ...{
