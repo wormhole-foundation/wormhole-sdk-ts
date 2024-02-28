@@ -22,7 +22,7 @@ export namespace NTT {
   /** The compile time type of the NTT protocol */
   export type ProtocolName = typeof _protocol;
 
-  const _payloads = ["Transfer"] as const;
+  const _payloads = ["WormholeTransfer"] as const;
   export type PayloadNames = (typeof _payloads)[number];
 
   /** The VAAs emitted from the NTT protocol */
@@ -49,7 +49,7 @@ export interface NTT<N extends Network, C extends Chain> {
   // TODO: only for manual NTT?
   // invoke `receiveMessage` against the WormholeTransceiver
   redeem(
-    vaa: VAA<"NTT:Transfer">,
+    vaa: VAA<"NTT:WormholeTransfer">,
     sender?: NativeAddress<C>,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
 
