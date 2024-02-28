@@ -30,12 +30,14 @@ export const nativeTokenTransferLayout = [
 export type NativeTokenTransfer = LayoutToType<typeof nativeTokenTransferLayout>;
 
 export const transceiverMessageLayout = <
-  const P extends CustomizableBytes = undefined,
->(prefix: Prefix, customPayload?: P) => [
+  const MP extends CustomizableBytes = undefined,
+  const EP extends CustomizableBytes = undefined,
+>(prefix: Prefix, nttManagerPayload?: MP, transceiverPayload?: EP) => [
   prefixItem(prefix),
   {name: "sourceNttManager", ...universalAddressItem},
   {name: "recipientNttManager", ...universalAddressItem},
-  customizableBytes({name: "nttManagerPayload", lengthSize: 2}, customPayload),
+  customizableBytes({name: "nttManagerPayload", lengthSize: 2}, nttManagerPayload),
+  customizableBytes({name: "transceiverPayload", lengthSize: 2}, transceiverPayload),
 ] as const satisfies Layout;
 
 export type TransceiverMessage<P extends CustomizableBytes = undefined> =
