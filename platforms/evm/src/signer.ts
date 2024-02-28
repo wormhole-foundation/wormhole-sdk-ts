@@ -8,31 +8,36 @@ import {
   chainToPlatform,
   isNativeSigner,
 } from '@wormhole-foundation/sdk-connect';
-import { ethers } from 'ethers';
+import {
+  Provider,
+  Wallet,
+  Signer as EthersSigner,
+  TransactionRequest,
+} from 'ethers';
 import { EvmPlatform } from './platform';
 import { EvmChains, _platform } from './types';
 
 // Get a SignOnlySigner for the EVM platform
 export async function getEvmSignerForKey(
-  rpc: ethers.Provider,
+  rpc: Provider,
   privateKey: string,
 ): Promise<Signer> {
   const [_, chain] = await EvmPlatform.chainFromRpc(rpc);
-  const _signer = new ethers.Wallet(privateKey, rpc);
+  const _signer = new Wallet(privateKey, rpc);
   return getEvmSignerForSigner(chain, _signer);
 }
 
 // Get a SignOnlySigner for the EVM platform
 export async function getEvmSignerForSigner(
   chain: EvmChains,
-  signer: ethers.Signer,
+  signer: EthersSigner,
 ): Promise<Signer> {
   const address = await signer.getAddress();
   return new EvmNativeSigner(chain, address, signer);
 }
 
 export class EvmNativeSigner<N extends Network, C extends EvmChains = EvmChains>
-  extends PlatformNativeSigner<ethers.Signer, N, C>
+  extends PlatformNativeSigner<EthersSigner, N, C>
   implements SignOnlySigner<N, C>
 {
   chain(): C {
@@ -65,7 +70,7 @@ export class EvmNativeSigner<N extends Network, C extends EvmChains = EvmChains>
       const { transaction, description } = txn;
       console.log(`Signing: ${description} for ${this.address()}`);
 
-      const t: ethers.TransactionRequest = {
+      const t: TransactionRequest = {
         ...transaction,
         ...{
           gasLimit,
@@ -98,7 +103,7 @@ export function isEvmNativeSigner<N extends Network>(
 }
 
 // No type guard provided by ethers, instanceof checks will fail on even slightly different versions of ethers
-function isEthersSigner(thing: any): thing is ethers.Signer {
+function isEthersSigner(thing: any): thing is EthersSigner {
   return (
     'provider' in thing &&
     typeof thing.connect === 'function' &&

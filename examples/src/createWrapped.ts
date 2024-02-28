@@ -1,19 +1,14 @@
-import { TokenId, Wormhole, signSendWait } from "@wormhole-foundation/connect-sdk";
-import { getStuff } from "./helpers";
+import { TokenId, Wormhole, signSendWait } from "@wormhole-foundation/sdk";
+
+import { algorand } from "@wormhole-foundation/sdk/algorand";
+import { evm } from "@wormhole-foundation/sdk/evm";
+import { solana } from "@wormhole-foundation/sdk/solana";
+
 import { inspect } from "util";
-
-// Import the platform specific packages
-import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
-import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
-import { AlgorandPlatform } from "@wormhole-foundation/connect-sdk-algorand";
-
-// Register the protocols
-import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
-import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
-import "@wormhole-foundation/connect-sdk-algorand-tokenbridge";
+import { getStuff } from "./helpers";
 
 (async function () {
-  const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform, AlgorandPlatform]);
+  const wh = new Wormhole("Testnet", [evm.Platform, solana.Platform, algorand.Platform]);
 
   // Original Token to Attest
   // const token: TokenId = Wormhole.chainAddress(

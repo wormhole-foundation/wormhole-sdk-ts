@@ -6,35 +6,26 @@ import {
   Wormhole,
   amount,
   isTokenId,
-} from "@wormhole-foundation/connect-sdk";
-import { TransferStuff, getStuff, waitLog } from "./helpers";
+} from "@wormhole-foundation/sdk";
 
 // Import the platform-specific packages
-import { AlgorandPlatform } from "@wormhole-foundation/connect-sdk-algorand";
-import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
-import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
-import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
-import { SuiPlatform } from "@wormhole-foundation/connect-sdk-sui";
+import { algorand } from "@wormhole-foundation/sdk/algorand";
+import { cosmwasm } from "@wormhole-foundation/sdk/cosmwasm";
+import { evm } from "@wormhole-foundation/sdk/evm";
+import { solana } from "@wormhole-foundation/sdk/solana";
+import { sui } from "@wormhole-foundation/sdk/sui";
 
-// Register the protocols
-import "@wormhole-foundation/connect-sdk-algorand-tokenbridge";
-import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
-import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
-import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
-import "@wormhole-foundation/connect-sdk-sui-tokenbridge";
-
-// Use .env.example as a template for your .env file and populate it with secrets
-// for funded accounts on the relevant chain+network combos to run the example
+import { TransferStuff, getStuff, waitLog } from "./helpers";
 
 (async function () {
   // Init Wormhole object, passing config for which network
   // to use (e.g. Mainnet/Testnet) and what Platforms to support
   const wh = new Wormhole("Testnet", [
-    EvmPlatform,
-    SolanaPlatform,
-    AlgorandPlatform,
-    CosmwasmPlatform,
-    SuiPlatform,
+    evm.Platform,
+    solana.Platform,
+    algorand.Platform,
+    cosmwasm.Platform,
+    sui.Platform,
   ]);
 
   // Grab chain Contexts -- these hold a reference to a cached rpc client

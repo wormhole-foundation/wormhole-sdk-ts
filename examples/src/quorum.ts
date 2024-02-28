@@ -1,8 +1,8 @@
-import { Chain, Wormhole, api, toChain } from "@wormhole-foundation/connect-sdk";
-import { AlgorandPlatform } from "@wormhole-foundation/connect-sdk-algorand/src";
-import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
-import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
-import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
+import { Chain, Wormhole, api, toChain } from "@wormhole-foundation/sdk";
+import { algorand } from "@wormhole-foundation/sdk/algorand";
+import { cosmwasm } from "@wormhole-foundation/sdk/cosmwasm";
+import { evm } from "@wormhole-foundation/sdk/evm";
+import { solana } from "@wormhole-foundation/sdk/solana";
 
 type Stats = {
   max: bigint;
@@ -36,10 +36,10 @@ const skipChains = [
 
 (async function () {
   const wh = new Wormhole("Mainnet", [
-    EvmPlatform,
-    SolanaPlatform,
-    CosmwasmPlatform,
-    AlgorandPlatform,
+    evm.Platform,
+    solana.Platform,
+    cosmwasm.Platform,
+    algorand.Platform,
   ]);
 
   const hbc = await getHeartbeats(wh.config.api);

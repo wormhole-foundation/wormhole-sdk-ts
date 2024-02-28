@@ -1,18 +1,12 @@
-import { Wormhole, canonicalAddress, routes } from "@wormhole-foundation/connect-sdk";
-import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
-import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
+import { Wormhole, canonicalAddress, routes } from "@wormhole-foundation/sdk";
+import { evm } from "@wormhole-foundation/sdk/evm";
+import { solana } from "@wormhole-foundation/sdk/solana";
 
 import { getStuff } from "./helpers";
 
-import "@wormhole-foundation/connect-sdk-evm-portico";
-import "@wormhole-foundation/connect-sdk-evm-cctp";
-import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
-import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
-import "@wormhole-foundation/connect-sdk-solana-cctp";
-
 (async function () {
   // Setup
-  const wh = new Wormhole("Mainnet", [EvmPlatform, SolanaPlatform]);
+  const wh = new Wormhole("Mainnet", [evm.Platform, solana.Platform]);
 
   // get signers from local config
   const sendChain = wh.getChain("Base");
