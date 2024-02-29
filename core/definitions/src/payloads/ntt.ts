@@ -5,7 +5,7 @@ import {
   customizableBytes,
 } from "@wormhole-foundation/sdk-base";
 
-import { universalAddressItem, chainItem, sequenceItem } from "../layout-items";
+import { universalAddressItem, chainItem } from "../layout-items";
 import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../vaa";
 
 export const trimmedAmountLayout = [
@@ -55,7 +55,7 @@ export const nttManagerMessageLayout = <const P extends CustomizableBytes = unde
   customPayload?: P,
 ) =>
   [
-    { name: "sequence", ...sequenceItem },
+    { name: "id", binary: "bytes", size: 32 },
     { name: "sender", ...universalAddressItem },
     customizableBytes({ name: "payload", lengthSize: 2 }, customPayload),
   ] as const satisfies Layout;
