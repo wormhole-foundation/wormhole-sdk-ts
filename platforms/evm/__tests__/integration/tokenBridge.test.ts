@@ -114,7 +114,7 @@ const recipient: ChainAddress = {
 
 describe('TokenBridge Tests', () => {
   const p = new EvmPlatform(network, configs);
-  let tb: TokenBridge<typeof network, 'Evm', EvmChains>;
+  let tb: TokenBridge<typeof network, EvmChains>;
 
   test('Create TokenBridge', async () => {
     const rpc = p.getRpc('Ethereum');
@@ -220,9 +220,9 @@ describe('TokenBridge Tests', () => {
       expect(allTxns).toHaveLength(1);
       const [attestTx] = allTxns;
       expect(attestTx).toBeTruthy();
-      expect(attestTx.chain).toEqual(chain);
+      expect(attestTx!.chain).toEqual(chain);
 
-      const { transaction } = attestTx;
+      const { transaction } = attestTx!;
       expect(transaction.chainId).toEqual(
         nativeChainIds.networkChainToNativeChainId.get(network, chain),
       );
@@ -254,9 +254,9 @@ describe('TokenBridge Tests', () => {
       expect(allTxns).toHaveLength(1);
       const [attestTx] = allTxns;
       expect(attestTx).toBeTruthy();
-      expect(attestTx.chain).toEqual(chain);
+      expect(attestTx!.chain).toEqual(chain);
 
-      const { transaction } = attestTx;
+      const { transaction } = attestTx!;
       expect(transaction.chainId).toEqual(
         nativeChainIds.networkChainToNativeChainId.get(network, chain),
       );
@@ -284,9 +284,9 @@ describe('TokenBridge Tests', () => {
 
           const [xferTx] = allTxns;
           expect(xferTx).toBeTruthy();
-          expect(xferTx.chain).toEqual(chain);
+          expect(xferTx!.chain).toEqual(chain);
 
-          const { transaction } = xferTx;
+          const { transaction } = xferTx!;
           expect(transaction.chainId).toEqual(
             nativeChainIds.networkChainToNativeChainId.get(network, chain),
           );
@@ -310,12 +310,12 @@ describe('TokenBridge Tests', () => {
 
           const [approveTx, xferTx] = allTxns;
           expect(approveTx).toBeTruthy();
-          const { transaction: approveTransaction } = approveTx;
+          const { transaction: approveTransaction } = approveTx!;
           expect(approveTransaction.to).toEqual(realWrappedAddress.toString());
 
           expect(xferTx).toBeTruthy();
-          expect(xferTx.chain).toEqual(chain);
-          const { transaction: xferTransaction } = xferTx;
+          expect(xferTx!.chain).toEqual(chain);
+          const { transaction: xferTransaction } = xferTx!;
           expect(xferTransaction.to).toEqual(tbAddress.toString());
           expect(xferTransaction.chainId).toEqual(
             nativeChainIds.networkChainToNativeChainId.get(network, chain),

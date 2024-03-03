@@ -12,15 +12,19 @@ import { _platform, AnySuiAddress } from "./types";
 
 export const SuiZeroAddress = "0x";
 
-export const trimSuiType = (type: string): string => type.replace(/(0x)(0*)/g, "0x");
 export const isValidSuiType = (str: string): boolean => /^(0x)?[0-9a-fA-F]+::\w+::\w+$/.test(str);
 
-// Adds leading 0s to the address to make it 32 bytes long
-export function ensureFullSuiAddress(address: string) {
-  // If its already a full address (32 bytes as hex is 64 + 2 char for `0x`)
-  if (address.length === 66) return address;
+// Removes leading 0s from the address
+export const trimSuiType = (type: string): string => type.replace(/(0x)(0*)/g, "0x");
 
-  return encoding.hex.encode(encoding.bytes.zpad(encoding.hex.decode(address), 32), true);
+// Adds leading 0s to the address to make it 32 bytes long
+export function zpadSuiAddress(address: string) {
+  address = address.startsWith("0x") ? address.slice(2) : address;
+  address = address.length % 2 === 0 ? address : "0" + address;
+
+  return address.length === 64
+    ? address
+    : encoding.hex.encode(encoding.bytes.zpad(encoding.hex.decode(address), 32));
 }
 
 export const normalizeSuiType = (type: string): string => {
@@ -73,7 +77,7 @@ export class SuiAddress implements Address {
         address = chunks[0]!;
       }
 
-      address = ensureFullSuiAddress(address);
+      address = zpadSuiAddress(address);
       if (!encoding.hex.valid(address)) throw new Error("Invalid Sui address: " + address);
 
       this.address = encoding.hex.decode(address);
@@ -85,7 +89,7 @@ export class SuiAddress implements Address {
   unwrap(): string {
     const packageId = this.getPackageId();
     const module = this.module ? SUI_SEPARATOR + this.module : "";
-    return `${packageId}${module}`;
+    return `0x${packageId}${module}`;
   }
 
   toString(): string {
@@ -102,7 +106,7 @@ export class SuiAddress implements Address {
   }
 
   getPackageId(): string {
-    return ensureFullSuiAddress(encoding.hex.encode(this.address, true));
+    return zpadSuiAddress(encoding.hex.encode(this.address));
   }
 
   getCoinType(): string {

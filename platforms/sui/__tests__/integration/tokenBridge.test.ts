@@ -1,3 +1,4 @@
+import { describe, expect, test } from "@jest/globals";
 import {
   CONFIG,
   Signature,
@@ -7,16 +8,13 @@ import {
   testing,
   toNative,
 } from "@wormhole-foundation/connect-sdk";
-
-import "@wormhole-foundation/connect-sdk-aptos-core";
-import "@wormhole-foundation/connect-sdk-aptos-tokenbridge";
-
+import { SUI_COIN } from "../../src/constants";
 import { SuiChains, SuiPlatform } from "../../src/";
 
-import { describe, expect, test } from "@jest/globals";
+import "@wormhole-foundation/connect-sdk-sui-core";
+import "@wormhole-foundation/connect-sdk-sui-tokenbridge";
 
 import nock from "nock";
-import { SUI_COIN } from "../../src/constants";
 
 const network: "Testnet" = "Testnet";
 type TNet = typeof network;
@@ -43,7 +41,7 @@ nockBack.fixtures = __dirname + "/fixtures";
 
 let nockDone: () => void;
 beforeEach(async () => {
-  nockBack.setMode("update");
+  nockBack.setMode("lockdown");
   const fullTestName = expect.getState().currentTestName?.replace(/\s/g, "_");
   const { nockDone: nd } = await nockBack(`${fullTestName}.json`);
   // update global var
