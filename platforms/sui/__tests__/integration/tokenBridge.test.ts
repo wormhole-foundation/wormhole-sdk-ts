@@ -11,11 +11,12 @@ import {
 import "@wormhole-foundation/connect-sdk-aptos-core";
 import "@wormhole-foundation/connect-sdk-aptos-tokenbridge";
 
-import { APTOS_COIN, AptosChains, AptosPlatform } from "../../src/";
+import { SuiChains, SuiPlatform } from "../../src/";
 
 import { describe, expect, test } from "@jest/globals";
 
 import nock from "nock";
+import { SUI_COIN } from "../../src/constants";
 
 const network: "Testnet" = "Testnet";
 type TNet = typeof network;
@@ -23,17 +24,18 @@ const configs = CONFIG[network].chains;
 
 const TOKEN_ADDRESSES = {
   Mainnet: {
-    Aptos: {
-      waptos: APTOS_COIN,
-      wavax: "0xbe8f4301c0b54e870902b9a23eeb95ce74ac190531782aa3262337ceb145401a::coin::T",
+    Sui: {
+      wsui: SUI_COIN,
+      wavax: "0x1e8b532cca6569cab9f9b9ebc73f8c13885012ade714729aa3b450e0339ac766",
     },
   },
 };
 
-const senderAddress = testing.utils.makeNativeAddress("Aptos");
-const bogusAddress = testing.utils.makeNativeAddress("Aptos");
-const realNativeAddress = toNative("Aptos", TOKEN_ADDRESSES["Mainnet"]["Aptos"]["waptos"]);
-const realWrappedAddress = toNative("Aptos", TOKEN_ADDRESSES["Mainnet"]["Aptos"]["wavax"]);
+const senderAddress = testing.utils.makeNativeAddress("Sui");
+const bogusAddress = testing.utils.makeNativeAddress("Sui");
+
+const realNativeAddress = toNative("Sui", TOKEN_ADDRESSES["Mainnet"]["Sui"]["wsui"]);
+const realWrappedAddress = toNative("Sui", TOKEN_ADDRESSES["Mainnet"]["Sui"]["wavax"]);
 
 // Setup nock to record fixtures
 const nockBack = nock.back;
@@ -41,7 +43,7 @@ nockBack.fixtures = __dirname + "/fixtures";
 
 let nockDone: () => void;
 beforeEach(async () => {
-  nockBack.setMode("lockdown");
+  nockBack.setMode("update");
   const fullTestName = expect.getState().currentTestName?.replace(/\s/g, "_");
   const { nockDone: nd } = await nockBack(`${fullTestName}.json`);
   // update global var
@@ -54,12 +56,12 @@ afterEach(async () => {
 });
 
 describe("TokenBridge Tests", () => {
-  const p = new AptosPlatform(network, configs);
+  const p = new SuiPlatform(network, configs);
 
-  let tb: TokenBridge<TNet, AptosChains>;
+  let tb: TokenBridge<TNet, SuiChains>;
 
   test("Create TokenBridge", async () => {
-    const rpc = p.getRpc("Aptos");
+    const rpc = p.getRpc("Sui");
     tb = await p.getProtocol("TokenBridge", rpc);
     expect(tb).toBeTruthy();
   });
@@ -148,7 +150,7 @@ describe("TokenBridge Tests", () => {
   });
 
   describe("Create Token Attestation Transactions", () => {
-    const chain = "Aptos";
+    const chain = "Sui";
     test("Create Attestation", async () => {
       const attestation = tb.createAttestation(realNativeAddress, senderAddress);
       const allTxns = [];
@@ -196,7 +198,7 @@ describe("TokenBridge Tests", () => {
   });
 
   describe("Create TokenBridge Transactions", () => {
-    const chain = "Aptos";
+    const chain = "Sui";
     const destChain = "Ethereum";
 
     const recipient = testing.utils.makeUniversalChainAddress(destChain);
