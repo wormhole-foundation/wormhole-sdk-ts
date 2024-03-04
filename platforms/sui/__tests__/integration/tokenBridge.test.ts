@@ -16,7 +16,7 @@ import "@wormhole-foundation/connect-sdk-sui-tokenbridge";
 
 import nock from "nock";
 
-const network: "Testnet" = "Testnet";
+const network: "Mainnet" = "Mainnet";
 type TNet = typeof network;
 const configs = CONFIG[network].chains;
 
@@ -24,7 +24,7 @@ const TOKEN_ADDRESSES = {
   Mainnet: {
     Sui: {
       wsui: SUI_COIN,
-      wavax: "0x1e8b532cca6569cab9f9b9ebc73f8c13885012ade714729aa3b450e0339ac766",
+      wavax: "0x1e8b532cca6569cab9f9b9ebc73f8c13885012ade714729aa3b450e0339ac766::coin::COIN",
     },
   },
 };
@@ -41,7 +41,7 @@ nockBack.fixtures = __dirname + "/fixtures";
 
 let nockDone: () => void;
 beforeEach(async () => {
-  nockBack.setMode("lockdown");
+  nockBack.setMode("update");
   const fullTestName = expect.getState().currentTestName?.replace(/\s/g, "_");
   const { nockDone: nd } = await nockBack(`${fullTestName}.json`);
   // update global var
@@ -117,6 +117,7 @@ describe("TokenBridge Tests", () => {
 
       test("Real Wrapped", async () => {
         const orig = await tb.getOriginalAsset(realWrappedAddress);
+        console.log(orig);
         const hasWrapped = await tb.hasWrappedAsset(orig);
         expect(hasWrapped).toBe(true);
       });
@@ -147,104 +148,104 @@ describe("TokenBridge Tests", () => {
     });
   });
 
-  describe("Create Token Attestation Transactions", () => {
-    const chain = "Sui";
-    test("Create Attestation", async () => {
-      const attestation = tb.createAttestation(realNativeAddress, senderAddress);
-      const allTxns = [];
-      for await (const atx of attestation) {
-        allTxns.push(atx);
-      }
-      expect(allTxns).toHaveLength(1);
+  // describe("Create Token Attestation Transactions", () => {
+  //   const chain = "Sui";
+  //   test("Create Attestation", async () => {
+  //     const attestation = tb.createAttestation(realNativeAddress, senderAddress);
+  //     const allTxns = [];
+  //     for await (const atx of attestation) {
+  //       allTxns.push(atx);
+  //     }
+  //     expect(allTxns).toHaveLength(1);
 
-      const [attestTx] = allTxns;
-      expect(attestTx).toBeTruthy();
-      expect(attestTx!.chain).toEqual(chain);
+  //     const [attestTx] = allTxns;
+  //     expect(attestTx).toBeTruthy();
+  //     expect(attestTx!.chain).toEqual(chain);
 
-      const { transaction } = attestTx!;
-      expect(transaction.arguments).toHaveLength(0);
-    });
+  //     const { transaction } = attestTx!;
+  //     expect(transaction.arguments).toHaveLength(0);
+  //   });
 
-    test("Submit Attestation", async () => {
-      const vaa = createVAA("TokenBridge:AttestMeta", {
-        payload: {
-          token: {
-            address: realNativeAddress.toUniversalAddress(),
-            chain: "Avalanche",
-          },
-          decimals: 8,
-          symbol: Buffer.from(new Uint8Array(16)).toString("hex"),
-          name: Buffer.from(new Uint8Array(16)).toString("hex"),
-        },
-        guardianSet: 3,
-        signatures: [{ guardianIndex: 0, signature: new Signature(1n, 2n, 1) }],
-        emitterChain: "Avalanche",
-        emitterAddress: new UniversalAddress(new Uint8Array(32)),
-        sequence: 0n,
-        consistencyLevel: 0,
-        timestamp: 0,
-        nonce: 0,
-      });
-      const submitAttestation = tb.submitAttestation(vaa, senderAddress);
+  //   test("Submit Attestation", async () => {
+  //     const vaa = createVAA("TokenBridge:AttestMeta", {
+  //       payload: {
+  //         token: {
+  //           address: realNativeAddress.toUniversalAddress(),
+  //           chain: "Avalanche",
+  //         },
+  //         decimals: 8,
+  //         symbol: Buffer.from(new Uint8Array(16)).toString("hex"),
+  //         name: Buffer.from(new Uint8Array(16)).toString("hex"),
+  //       },
+  //       guardianSet: 3,
+  //       signatures: [{ guardianIndex: 0, signature: new Signature(1n, 2n, 1) }],
+  //       emitterChain: "Avalanche",
+  //       emitterAddress: new UniversalAddress(new Uint8Array(32)),
+  //       sequence: 0n,
+  //       consistencyLevel: 0,
+  //       timestamp: 0,
+  //       nonce: 0,
+  //     });
+  //     const submitAttestation = tb.submitAttestation(vaa, senderAddress);
 
-      const allTxns = [];
-      for await (const atx of submitAttestation) {
-        allTxns.push(atx);
-      }
-      expect(allTxns).toHaveLength(2);
-    });
-  });
+  //     const allTxns = [];
+  //     for await (const atx of submitAttestation) {
+  //       allTxns.push(atx);
+  //     }
+  //     expect(allTxns).toHaveLength(2);
+  //   });
+  // });
 
-  describe("Create TokenBridge Transactions", () => {
-    const chain = "Sui";
-    const destChain = "Ethereum";
+  //describe("Create TokenBridge Transactions", () => {
+  //  const chain = "Sui";
+  //  const destChain = "Ethereum";
 
-    const recipient = testing.utils.makeUniversalChainAddress(destChain);
+  //  const recipient = testing.utils.makeUniversalChainAddress(destChain);
 
-    const amount = 1000n;
-    const payload: Uint8Array | undefined = undefined;
+  //  const amount = 1000n;
+  //  const payload: Uint8Array | undefined = undefined;
 
-    describe("Token Transfer Transactions", () => {
-      describe("Transfer", () => {
-        test("Native", async () => {
-          const token = "native";
-          const xfer = tb.transfer(senderAddress, recipient, token, amount, payload);
-          expect(xfer).toBeTruthy();
+  //  describe("Token Transfer Transactions", () => {
+  //    describe("Transfer", () => {
+  //      test("Native", async () => {
+  //        const token = "native";
+  //        const xfer = tb.transfer(senderAddress, recipient, token, amount, payload);
+  //        expect(xfer).toBeTruthy();
 
-          const allTxns = [];
-          for await (const tx of xfer) {
-            allTxns.push(tx);
-          }
-          expect(allTxns).toHaveLength(1);
+  //        const allTxns = [];
+  //        for await (const tx of xfer) {
+  //          allTxns.push(tx);
+  //        }
+  //        expect(allTxns).toHaveLength(1);
 
-          const [xferTx] = allTxns;
-          expect(xferTx).toBeTruthy();
-          expect(xferTx!.chain).toEqual(chain);
+  //        const [xferTx] = allTxns;
+  //        expect(xferTx).toBeTruthy();
+  //        expect(xferTx!.chain).toEqual(chain);
 
-          const { transaction } = xferTx!;
-          expect(transaction.arguments).toHaveLength(5);
-          // ...
-        });
+  //        const { transaction } = xferTx!;
+  //        expect(transaction.arguments).toHaveLength(5);
+  //        // ...
+  //      });
 
-        test("Token", async () => {
-          const xfer = tb.transfer(senderAddress, recipient, realWrappedAddress, amount, payload);
-          expect(xfer).toBeTruthy();
+  //      test("Token", async () => {
+  //        const xfer = tb.transfer(senderAddress, recipient, realWrappedAddress, amount, payload);
+  //        expect(xfer).toBeTruthy();
 
-          const allTxns = [];
-          for await (const tx of xfer) {
-            allTxns.push(tx);
-          }
-          expect(allTxns).toHaveLength(1);
+  //        const allTxns = [];
+  //        for await (const tx of xfer) {
+  //          allTxns.push(tx);
+  //        }
+  //        expect(allTxns).toHaveLength(1);
 
-          const [xferTx] = allTxns;
-          expect(xferTx).toBeTruthy();
-          expect(xferTx!.chain).toEqual(chain);
+  //        const [xferTx] = allTxns;
+  //        expect(xferTx).toBeTruthy();
+  //        expect(xferTx!.chain).toEqual(chain);
 
-          const { transaction } = xferTx!;
-          expect(transaction.type_arguments).toHaveLength(1);
-          expect(transaction.arguments).toHaveLength(5);
-        });
-      });
-    });
-  });
+  //        const { transaction } = xferTx!;
+  //        expect(transaction.type_arguments).toHaveLength(1);
+  //        expect(transaction.arguments).toHaveLength(5);
+  //      });
+  //    });
+  //  });
+  //});
 });

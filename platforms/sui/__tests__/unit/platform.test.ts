@@ -20,7 +20,7 @@ describe("Sui Platform Tests", () => {
         [SUI_CHAINS[0]]: configs[SUI_CHAINS[0]],
       });
 
-      const client = new SuiClient(configs[SUI_CHAINS[0]].rpc);
+      const client = new SuiClient({ url: configs[SUI_CHAINS[0]].rpc });
       const tb = await p.getProtocol("TokenBridge", client);
       expect(tb).toBeTruthy();
     });

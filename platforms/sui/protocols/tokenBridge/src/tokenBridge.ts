@@ -27,6 +27,7 @@ import {
 } from "@wormhole-foundation/connect-sdk";
 
 import {
+  SuiAddress,
   SuiBuildOutput,
   SuiChains,
   SuiPlatform,
@@ -38,6 +39,7 @@ import {
   getOriginalPackageId,
   getPackageId,
   getTableKeyType,
+  isMoveStructObject,
   isMoveStructStruct,
   isSameType,
   isSuiCreateEvent,
@@ -91,39 +93,54 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
 
   async isWrappedAsset(token: TokenAddress<C>): Promise<boolean> {
     try {
-      this.getOriginalAsset(token);
+      await this.getOriginalAsset(token);
       return true;
-    } catch (e) {
+    } catch {
       return false;
     }
   }
 
   async getOriginalAsset(token: TokenAddress<C>): Promise<TokenId> {
-    let coinType = token.toString();
+    let coinType = (token as SuiAddress).getCoinType();
     if (!isValidSuiType(coinType)) throw new Error(`Invalid Sui type: ${coinType}`);
 
     const res = await getTokenFromTokenRegistry(this.provider, this.tokenBridgeObjectId, coinType);
     const fields = getFieldsFromObjectResponse(res);
     if (!fields) throw ErrNotWrapped(coinType);
 
-    if (!isMoveStructStruct(fields)) throw new Error("Expected fields to be a MoveStruct");
+    if (!isMoveStructObject(fields)) throw new Error("Expected fields to be a MoveStruct");
+
+    if (!("value" in fields)) throw new Error("Expected a `value` key in fields of MoveStruct");
+
+    const val = fields["value"];
+
+    if (!isMoveStructStruct(val)) throw new Error("Expected fields to be a MoveStruct");
 
     // Normalize types
-    const type = trimSuiType(fields.type);
+    const type = trimSuiType(val.type);
     coinType = trimSuiType(coinType);
 
     // Check if wrapped or native asset. We check inclusion instead of equality
     // because it saves us from making an additional RPC call to fetch the package ID.
     if (type.includes(`wrapped_asset::WrappedAsset<${coinType}>`)) {
-      const info = fields.fields["info"]!;
+      const info = val.fields["info"]!;
       if (!isMoveStructStruct(info)) throw new Error("Expected fields to be a MoveStruct");
       const address = info.fields["token_address"];
       if (!isMoveStructStruct(address)) throw new Error("Expected fields to be a MoveStruct");
 
+      if (!isMoveStructObject(address.fields))
+        throw new Error("Expected address data to be a MoveObject");
+
+      if (!("value" in address.fields))
+        throw new Error("Expected a `value` key in fields of MoveStruct");
+      const addressVal = address.fields["value"];
+
+      if (!isMoveStructStruct(addressVal)) throw new Error("Expected fields to be a MoveStruct");
+
       return {
         chain: toChain(Number(info.fields["token_chain"])),
         // @ts-ignore TODO
-        address: new UniversalAddress(address.fields["data"]!),
+        address: new UniversalAddress(addressVal.fields["data"]!),
       };
     }
 

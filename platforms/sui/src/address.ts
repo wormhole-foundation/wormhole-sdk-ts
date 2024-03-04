@@ -22,9 +22,12 @@ export function zpadSuiAddress(address: string) {
   address = address.startsWith("0x") ? address.slice(2) : address;
   address = address.length % 2 === 0 ? address : "0" + address;
 
-  return address.length === 64
-    ? address
-    : encoding.hex.encode(encoding.bytes.zpad(encoding.hex.decode(address), 32));
+  const zpadded =
+    address.length === 64
+      ? address
+      : encoding.hex.encode(encoding.bytes.zpad(encoding.hex.decode(address), 32));
+
+  return `0x${zpadded}`;
 }
 
 export const normalizeSuiType = (type: string): string => {
@@ -89,7 +92,7 @@ export class SuiAddress implements Address {
   unwrap(): string {
     const packageId = this.getPackageId();
     const module = this.module ? SUI_SEPARATOR + this.module : "";
-    return `0x${packageId}${module}`;
+    return `${packageId}${module}`;
   }
 
   toString(): string {
