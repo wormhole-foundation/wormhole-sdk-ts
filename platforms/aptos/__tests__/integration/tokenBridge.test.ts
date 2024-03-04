@@ -11,7 +11,7 @@ import {
 import "@wormhole-foundation/connect-sdk-aptos-core";
 import "@wormhole-foundation/connect-sdk-aptos-tokenbridge";
 
-import { APTOS_COIN, AptosChains, AptosPlatform, AptosPlatformType } from "../../src/";
+import { APTOS_COIN, AptosChains, AptosPlatform } from "../../src/";
 
 import { describe, expect, test } from "@jest/globals";
 
@@ -56,7 +56,7 @@ afterEach(async () => {
 describe("TokenBridge Tests", () => {
   const p = new AptosPlatform(network, configs);
 
-  let tb: TokenBridge<TNet, AptosPlatformType, AptosChains>;
+  let tb: TokenBridge<TNet, AptosChains>;
 
   test("Create TokenBridge", async () => {
     const rpc = p.getRpc("Aptos");

@@ -148,7 +148,9 @@ export class EvmPlatform<N extends Network>
     return await rpc.getBlockNumber();
   }
   static async getLatestFinalizedBlock(rpc: Provider): Promise<number> {
-    throw new Error('Not implemented');
+    const block = await rpc.getBlock('finalized');
+    if (!block) throw new Error('Could not get finalized block');
+    return block?.number;
   }
 
   // Look up the Wormhole Canonical Network and Chain from the EVM chainId

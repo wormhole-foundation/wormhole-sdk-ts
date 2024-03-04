@@ -1,12 +1,12 @@
 import {
-  StaticPlatformMethods,
   Chain,
+  ChainsConfig,
   Network,
   PlatformContext,
+  StaticPlatformMethods,
   Wormhole,
-  ChainsConfig,
-  networkPlatformConfigs,
   isNative,
+  networkPlatformConfigs,
 } from "@wormhole-foundation/connect-sdk";
 import { AptosClient } from "aptos";
 import { AptosChain } from "./chain";
@@ -22,6 +22,7 @@ import {
   decimals as nativeDecimals,
 } from "@wormhole-foundation/connect-sdk";
 import { CoinClient, Types } from "aptos";
+import { AptosAddress } from "./address";
 import { APTOS_COIN, APTOS_SEPARATOR } from "./constants";
 import { AnyAptosAddress } from "./types";
 
@@ -64,7 +65,7 @@ export class AptosPlatform<N extends Network>
     return native == tokenId;
   }
 
-  static isSupportedChain<C extends AptosChains>(chain: C): boolean {
+  static isSupportedChain(chain: Chain): boolean {
     const platform = chainToPlatform(chain);
     return platform === AptosPlatform._platform;
   }
@@ -115,31 +116,14 @@ export class AptosPlatform<N extends Network>
     walletAddress: string,
     tokens: AnyAptosAddress[],
   ): Promise<Balances> {
-    return {};
-    // const tb = await AptosPlatform.getTokenBridge(rpc);
-    // const addresses = await Promise.all(
-    //   tokens.map((tokenId) => await tb.getOriginalAsset(tokenId)),
-    // );
-
-    // let coinBalances: CoinBalance[] = [];
-    // let offset = 0;
-    // const limit = 100;
-    // while (true) {
-    //   const result = await this.fetchCurrentCoins(walletAddress, offset, limit);
-    //   coinBalances = [...coinBalances, ...result.data.current_coin_balances];
-    //   if (result.data.current_coin_balances.length < limit) {
-    //     break;
-    //   }
-    //   offset += result.data.current_coin_balances.length;
-    // }
-
-    // return addresses.map((address) =>
-    //   !address
-    //     ? null
-    //     : BigNumber.from(
-    //       coinBalances.find((bal) => bal.coin_type === address)?.amount || 0,
-    //     ),
-    // );
+    const balancesArr = await Promise.all(
+      tokens.map(async (token) => {
+        const balance = await this.getBalance(chain, rpc, walletAddress, token);
+        const address = isNative(token) ? "native" : new AptosAddress(token).toString();
+        return { [address]: balance };
+      }),
+    );
+    return balancesArr.reduce((obj, item) => Object.assign(obj, item), {});
   }
 
   static async sendWait(chain: Chain, rpc: AptosClient, stxns: SignedTx[]): Promise<TxHash[]> {
