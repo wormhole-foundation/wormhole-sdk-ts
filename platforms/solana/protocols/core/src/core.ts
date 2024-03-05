@@ -4,6 +4,7 @@ import {
   Keypair,
   MessageAccountKeys,
   MessageCompiledInstruction,
+  PublicKey,
   Transaction,
   TransactionResponse,
   VersionedTransactionResponse,
@@ -18,6 +19,7 @@ import {
   VAA,
   WormholeCore,
   WormholeMessageId,
+  createVAA,
   toChainId,
 } from '@wormhole-foundation/connect-sdk';
 import {
@@ -229,6 +231,104 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
     return [emitter, BigInt(sequence)];
   }
 
+  private async getMessageAccountKeys(
+    response: VersionedTransactionResponse,
+  ): Promise<MessageAccountKeys> {
+    // Resolve any LUT accounts if necessary
+    let accounts: MessageAccountKeys;
+    // a string type is indicative of a 'legacy' transaction
+    if (typeof response.transaction.message.version !== 'string') {
+      if (response.meta!.loadedAddresses) {
+        accounts = response.transaction.message.getAccountKeys({
+          accountKeysFromLookups: response.meta!.loadedAddresses,
+        });
+      } else {
+        const atls = await Promise.all(
+          response.transaction.message.addressTableLookups.map(async (atl) => {
+            const lut = await this.connection.getAddressLookupTable(
+              atl.accountKey,
+            );
+
+            if (!lut || !lut.value)
+              throw new Error(
+                'Could not resolve lookup table: ' + atl.accountKey.toBase58(),
+              );
+
+            return lut.value;
+          }),
+        );
+        accounts = response.transaction.message.getAccountKeys({
+          addressLookupTableAccounts: atls,
+        });
+      }
+    } else {
+      accounts = response.transaction.message.getAccountKeys();
+    }
+    return accounts;
+  }
+
+  private async findBridgeInstructions(
+    accounts: MessageAccountKeys,
+    response: VersionedTransactionResponse,
+  ): Promise<MessageCompiledInstruction[]> {
+    // find the instruction where the programId equals the Wormhole ProgramId
+    const iix = response!
+      .meta!.innerInstructions![0]!.instructions.filter((i) => {
+        const programId = accounts.get(i.programIdIndex)!.toString();
+        const wormholeCore = this.coreBridge.programId.toString();
+        return programId === wormholeCore;
+      })
+      .map((ix) => {
+        // map over inner ixs to put it in the same format as the compiled instructions
+        // from the message
+        return {
+          programIdIndex: ix.programIdIndex,
+          accountKeyIndexes: ix.accounts,
+        } as MessageCompiledInstruction;
+      });
+
+    const cix = response.transaction.message.compiledInstructions.filter(
+      (i) => {
+        const programId = accounts.get(i.programIdIndex)!.toString();
+        const wormholeCore = this.coreBridge.programId.toString();
+        return programId === wormholeCore;
+      },
+    );
+
+    // find the instruction where the programId equals the Wormhole ProgramId
+    return [...iix, ...cix];
+  }
+
+  async parsePostMessageAccount(messageAccount: PublicKey): Promise<VAA> {
+    const acctInfo = await this.connection.getAccountInfo(messageAccount);
+    // TODO: use layouting
+    const data = acctInfo?.data!.subarray(4)!;
+    const consistencyLevel = data.readUint8(0); // pub version: u8,
+    // const emitterAuthority = new Uint8Array(data.subarray(1, 33)); // pub emitter_authority: Pubkey,
+    // const status = data.readUint8(33); // pub status: MessageStatus,
+    // // gap 3 bytes
+    const timestamp = data.readUint32LE(37);
+    const nonce = data.readUint32LE(41);
+    const sequence = data.readBigUInt64LE(45);
+    const emitterAddress = new UniversalAddress(
+      new Uint8Array(data.subarray(55, 87)),
+    );
+    const payloadLength = data.readUint32LE(87);
+    const payload = new Uint8Array(data.subarray(91, 91 + payloadLength));
+    const x = {
+      guardianSet: 3, // TODO: should we get this from the contract on init?
+      timestamp, // TODO: Would need to get the full block to get the timestamp
+      emitterChain: this.chain,
+      emitterAddress,
+      consistencyLevel,
+      sequence,
+      nonce,
+      payload,
+      signatures: [],
+    } as Parameters<typeof createVAA<'Uint8Array'>>[1];
+    return createVAA<'Uint8Array'>('Uint8Array', x);
+  }
+
   async parseTransaction(txid: string): Promise<WormholeMessageId[]> {
     const response: VersionedTransactionResponse | null =
       await this.connection.getTransaction(txid, {
@@ -253,78 +353,23 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
       ];
 
     // Otherwise we need to get it from the message account
-
-    // Resolve any LUT accounts if necessary
-    let accounts: MessageAccountKeys;
-    // a string type is indicative of a 'legacy' transaction
-    if (typeof response.transaction.message.version !== 'string') {
-      if (response.meta.loadedAddresses) {
-        accounts = response.transaction.message.getAccountKeys({
-          accountKeysFromLookups: response.meta.loadedAddresses,
-        });
-      } else {
-        const atls = await Promise.all(
-          response.transaction.message.addressTableLookups.map(async (atl) => {
-            const lut = await this.connection.getAddressLookupTable(
-              atl.accountKey,
-            );
-
-            if (!lut || !lut.value)
-              throw new Error(
-                'Could not resolve lookup table: ' + atl.accountKey.toBase58(),
-              );
-
-            return lut.value;
-          }),
-        );
-        accounts = response.transaction.message.getAccountKeys({
-          addressLookupTableAccounts: atls,
-        });
-      }
-    } else {
-      accounts = response.transaction.message.getAccountKeys();
-    }
-
-    // find the instruction where the programId equals the Wormhole ProgramId
-    const iix = response.meta.innerInstructions[0]!.instructions.filter((i) => {
-      const programId = accounts.get(i.programIdIndex)!.toString();
-      const wormholeCore = this.coreBridge.programId.toString();
-      return programId === wormholeCore;
-    }).map((ix) => {
-      // map over inner ixs to put it in the same format as the compiled instructions
-      // from the message
-      return {
-        programIdIndex: ix.programIdIndex,
-        accountKeyIndexes: ix.accounts,
-      } as MessageCompiledInstruction;
-    });
-
-    const cix = response.transaction.message.compiledInstructions.filter(
-      (i) => {
-        const programId = accounts.get(i.programIdIndex)!.toString();
-        const wormholeCore = this.coreBridge.programId.toString();
-        return programId === wormholeCore;
-      },
+    const accounts = await this.getMessageAccountKeys(response);
+    const bridgeInstructions = await this.findBridgeInstructions(
+      accounts,
+      response,
     );
 
-    // find the instruction where the programId equals the Wormhole ProgramId
-    const bridgeInstructions = [...iix, ...cix];
     if (!bridgeInstructions || bridgeInstructions.length === 0)
       throw new Error('no bridge messages found');
 
     const messagePromises = bridgeInstructions.map(async (bi) => {
       const messageAcct = accounts.get(bi.accountKeyIndexes[1]!);
 
-      const acctInfo = await this.connection.getAccountInfo(messageAcct!);
-      const sequence = acctInfo!.data.readBigUInt64LE(49);
-
-      const emitterAddr = new Uint8Array(acctInfo!.data.subarray(59, 91));
-      const emitter = new SolanaAddress(emitterAddr);
-
+      const vaa = await this.parsePostMessageAccount(messageAcct!);
       return {
-        chain: this.chain,
-        emitter: emitter.toUniversalAddress(),
-        sequence: BigInt(sequence),
+        chain: vaa.emitterChain,
+        emitter: vaa.emitterAddress,
+        sequence: vaa.sequence,
       };
     });
 
@@ -332,7 +377,30 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
   }
 
   async parseMessages(txid: string): Promise<VAA[]> {
-    throw new Error('Method not implemented.');
+    const response: VersionedTransactionResponse | null =
+      await this.connection.getTransaction(txid, {
+        maxSupportedTransactionVersion: 0,
+      });
+
+    if (!response || !response.meta || !response.meta.innerInstructions)
+      throw new Error('transaction not found');
+
+    // Otherwise we need to get it from the message account
+    const accounts = await this.getMessageAccountKeys(response);
+    const bridgeInstructions = await this.findBridgeInstructions(
+      accounts,
+      response,
+    );
+
+    if (!bridgeInstructions || bridgeInstructions.length === 0)
+      throw new Error('no bridge messages found');
+
+    const messagePromises = bridgeInstructions.map(async (bi) => {
+      const messageAcct = accounts.get(bi.accountKeyIndexes[1]!);
+      return await this.parsePostMessageAccount(messageAcct!);
+    });
+
+    return await Promise.all(messagePromises);
   }
 
   private createUnsignedTx(
