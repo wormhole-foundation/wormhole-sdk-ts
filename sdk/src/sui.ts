@@ -1,4 +1,4 @@
-import * as _sui from "@wormhole-foundation/sdk-sui";
+const _sui = await import("@wormhole-foundation/sdk-sui");
 
 /** Platform and protocol definitions for Sui */
 export const sui = {

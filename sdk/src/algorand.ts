@@ -1,4 +1,4 @@
-import * as _algorand from "@wormhole-foundation/sdk-algorand";
+const _algorand = await import("@wormhole-foundation/sdk-algorand");
 
 /** Platform and protocol definitions for Algorand */
 export const algorand = {

@@ -1,4 +1,4 @@
-import * as _cosmwasm from "@wormhole-foundation/sdk-cosmwasm";
+const _cosmwasm = await import("@wormhole-foundation/sdk-cosmwasm");
 
 /** Platform and protocol definitions for Cosmwasm */
 export const cosmwasm = {

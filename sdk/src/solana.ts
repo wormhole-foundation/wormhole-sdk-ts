@@ -1,4 +1,4 @@
-import * as _solana from "@wormhole-foundation/sdk-solana";
+const _solana = await import("@wormhole-foundation/sdk-solana");
 /** Platform and protocol definitons for Solana */
 export const solana = {
   ...{

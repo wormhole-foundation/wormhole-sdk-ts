@@ -1,4 +1,4 @@
-import * as _evm from "@wormhole-foundation/sdk-evm";
+const _evm = await import("@wormhole-foundation/sdk-evm");
 /** Platform and protocol definitions for Evm */
 export const evm = {
   ...{

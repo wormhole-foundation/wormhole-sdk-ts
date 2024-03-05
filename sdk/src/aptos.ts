@@ -1,4 +1,4 @@
-import * as _aptos from "@wormhole-foundation/sdk-aptos";
+const _aptos = await import("@wormhole-foundation/sdk-aptos");
 
 /** Platform and protocol definitions for Aptos */
 export const aptos = {
