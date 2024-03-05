@@ -2,13 +2,11 @@ import {
   ChainsConfig,
   Contracts,
   Network,
-  Signature,
   TxHash,
   VAA,
   WormholeCore,
   WormholeMessageId,
   createVAA,
-  deserializePayload,
   isWormholeMessageId,
 } from '@wormhole-foundation/connect-sdk';
 import { Provider, TransactionRequest } from 'ethers';
@@ -139,6 +137,7 @@ export class EvmWormholeCore<N extends Network, C extends EvmChains>
   async parseMessages(txid: string): Promise<VAA[]> {
     const receipt = await this.provider.getTransactionReceipt(txid);
     if (receipt === null) throw new Error('Could not get transaction receipt');
+    const gsIdx = await this.getGuardianSetIndex();
 
     return receipt.logs
       .filter((l: any) => {
@@ -155,19 +154,19 @@ export class EvmWormholeCore<N extends Network, C extends EvmChains>
 
         const emitterAddress = new EvmAddress(parsed.args['sender']);
         const x = {
-          guardianSet: 3, // TODO: should we get this from the contract on init?
+          guardianSet: gsIdx, // TODO: should we get this from the contract on init?
           timestamp: 0, // TODO: Would need to get the full block to get the timestamp
           emitterChain: this.chain,
           emitterAddress: emitterAddress.toUniversalAddress(),
           consistencyLevel: Number(parsed.args['consistencyLevel']),
           sequence: BigInt(parsed.args['sequence']),
           nonce: Number(parsed.args['nonce']),
-          signatures: [] as { guardianIndex: number; signature: Signature }[],
-          payload: deserializePayload('Uint8Array', parsed.args['payload']),
-        } as Parameters<typeof createVAA<'Uint8Array'>>[1];
-        return createVAA<'Uint8Array'>('Uint8Array', x);
+          signatures: [],
+          payload: parsed.args['payload'],
+        };
+        return createVAA('Uint8Array', x);
       })
-      .filter((vaa) => !!vaa) as VAA<'Uint8Array'>[];
+      .filter((vaa) => !!vaa) as VAA[];
   }
 
   private createUnsignedTx(
