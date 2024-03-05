@@ -8,7 +8,8 @@ import {
   amount,
 } from "@wormhole-foundation/connect-sdk";
 // Import the platform specific packages
-import { CosmwasmPlatform, Gateway } from "@wormhole-foundation/connect-sdk-cosmwasm";
+import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
+import { computeFee } from "@wormhole-foundation/connect-sdk-cosmwasm/src/unsignedTransaction";
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 
@@ -41,10 +42,11 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   // Pick up where you left off by updating the txids as you go
   let fakeIt = false;
 
+  console.log(computeFee("Mainnet", "Dymension"));
+
   // Grab chain Contexts for each leg of our journey
   const external = wh.getChain("Solana");
-  const cosmos1 = wh.getChain("Osmosis");
-
+  const cosmos1 = wh.getChain("Dymension");
   const cosmos2 = wh.getChain("Injective");
 
   // Get signer from local key but anything that implements
@@ -54,20 +56,7 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
   const leg3 = await getStuff(cosmos2);
 
   // we'll use the native token on the source chain
-  const token: TokenId = Wormhole.tokenId(
-    external.chain,
-    "6gnCPhXtLnUD76HjQuSYPENLSZdG8RvDB1pTLM5aLSJA",
-  );
-
-  console.log(
-    Gateway.deriveIbcDenom(
-      "Mainnet",
-      "Osmosis",
-      "wormhole15rantn6k68twp4wmsljtk9uu9a0e5rt7g66fdfkvrsr24hj6je7qat93e6",
-    ).toString(),
-  );
-
-  return;
+  const token: TokenId = Wormhole.tokenId(external.chain, "native");
   const amt = amount.units(amount.parse("0.001", external.config.nativeTokenDecimals));
 
   // Transfer native token from source chain, through gateway, to a cosmos chain
