@@ -36,7 +36,7 @@ export class AptosWormholeCore<N extends Network, C extends AptosChains>
       throw new Error(`CoreBridge contract Address for chain ${chain} not found`);
     this.coreBridge = coreBridgeAddress;
   }
-  getGuardianSetIndex(): Promise<bigint> {
+  getGuardianSetIndex(): Promise<number> {
     throw new Error("Method not implemented.");
   }
   getMessageFee(): Promise<bigint> {

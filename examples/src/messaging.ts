@@ -27,16 +27,14 @@ import "@wormhole-foundation/connect-sdk-solana-core";
   const txid = "0x80545f7bfc7c97d8125b074b07831681f27cfb89b7adb41b11cb6a5bb2ac79fc";
 
   const msgs = await coreBridge.parseMessages(txid);
+
   const parsedMsgs = msgs.map((msg) => {
     const e = msg.emitterAddress.toString();
     if (e === "0x000000000000000000000000db5492265f6038831e89f495670ff909ade94bd9") {
       // token bridge
       return deserialize("TokenBridge:TransferWithPayload", serialize(msg));
     } else if (e === "0x0000000000000000000000007b1bd7a6b4e61c2a123ac6bc2cbfc614437d0470") {
-      // relayer
-      const v = deserialize("Relayer:DeliveryInstruction", serialize(msg));
-      console.log(v.payload.messageKeys);
-      return v;
+      return deserialize("Relayer:DeliveryInstruction", serialize(msg));
     }
     return msg;
   });

@@ -91,15 +91,23 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
     );
   }
 
-  async getMessageFee(): Promise<bigint> {
+  private async ensureBridgeConfig() {
     // cache lookups since this should not change frequently
     if (!this.bridgeData)
       this.bridgeData = await getWormholeBridgeData(
         this.connection,
         this.coreBridge.programId,
       );
+  }
 
-    return this.bridgeData.config.fee;
+  async getMessageFee(): Promise<bigint> {
+    await this.ensureBridgeConfig();
+    return this.bridgeData!.config.fee;
+  }
+
+  async getGuardianSetIndex(): Promise<number> {
+    await this.ensureBridgeConfig();
+    return this.bridgeData!.guardianSetIndex;
   }
 
   async *publishMessage(
@@ -323,9 +331,6 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
     return await Promise.all(messagePromises);
   }
 
-  async getGuardianSetIndex(): Promise<bigint> {
-    throw new Error('Method not implemented.');
-  }
   async parseMessages(txid: string): Promise<VAA[]> {
     throw new Error('Method not implemented.');
   }

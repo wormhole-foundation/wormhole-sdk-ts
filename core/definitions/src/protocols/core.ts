@@ -24,7 +24,7 @@ export interface WormholeCore<N extends Network, C extends Chain> {
   getMessageFee(): Promise<bigint>;
 
   /** Get the current guardian set index */
-  getGuardianSetIndex(): Promise<bigint>;
+  getGuardianSetIndex(): Promise<number>;
 
   /**
    * Publish a message

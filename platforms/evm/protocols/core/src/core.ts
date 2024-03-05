@@ -64,8 +64,8 @@ export class EvmWormholeCore<N extends Network, C extends EvmChains>
     return await this.core.messageFee.staticCall();
   }
 
-  async getGuardianSetIndex(): Promise<bigint> {
-    return await this.core.getCurrentGuardianSetIndex.staticCall();
+  async getGuardianSetIndex(): Promise<number> {
+    return Number(await this.core.getCurrentGuardianSetIndex.staticCall());
   }
 
   static async fromRpc<N extends Network>(

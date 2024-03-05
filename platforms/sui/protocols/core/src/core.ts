@@ -89,7 +89,7 @@ export class SuiWormholeCore<N extends Network, C extends SuiChains> implements 
     ];
   }
 
-  async getGuardianSetIndex(): Promise<bigint> {
+  async getGuardianSetIndex(): Promise<number> {
     throw new Error("Method not implemented.");
   }
 

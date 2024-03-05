@@ -162,7 +162,7 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
     return val ? BigInt(val.value.uint) : 0n;
   }
 
-  async getGuardianSetIndex(): Promise<bigint> {
+  async getGuardianSetIndex(): Promise<number> {
     throw new Error("Not implemented");
   }
 
