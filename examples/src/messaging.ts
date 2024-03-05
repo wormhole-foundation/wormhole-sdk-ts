@@ -2,17 +2,19 @@ import { Wormhole, encoding, signSendWait } from "@wormhole-foundation/connect-s
 import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 import { SuiPlatform } from "@wormhole-foundation/connect-sdk-sui";
+import { AptosPlatform } from "@wormhole-foundation/connect-sdk-aptos";
 
 // register the protocol
 import "@wormhole-foundation/connect-sdk-evm-core";
 import "@wormhole-foundation/connect-sdk-solana-core";
 import "@wormhole-foundation/connect-sdk-sui-core";
+import "@wormhole-foundation/connect-sdk-aptos-core";
 import { getStuff } from "./helpers";
 
 (async function () {
-  const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform, SuiPlatform]);
+  const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform, SuiPlatform, AptosPlatform]);
 
-  const chain = wh.getChain("Sui");
+  const chain = wh.getChain("Aptos");
 
   // Get a reference to the core messaging bridge
   const coreBridge = await chain.getWormholeCore();
@@ -27,7 +29,10 @@ import { getStuff } from "./helpers";
   // event or log info
   //const txid = txids[txids.length - 1];
 
-  const txid = { chain: "Sui", txid: "2HztFGzXgrj72SYaXYTwMeGiTdQzknjgNknxzsjEJYjo" };
+  const txid = {
+    chain: "Aptos",
+    txid: "0x2af3d60f7a45740adce4d78c8857a9d992c0c96472d8b5224717ff2975b7c1e7",
+  };
 
   // Grab the wormhole message id from the transaction logs or storage
   const [whm] = await chain.parseTransaction(txid!.txid);

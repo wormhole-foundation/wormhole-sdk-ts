@@ -8,6 +8,8 @@ import {
   VAA,
   WormholeCore,
   WormholeMessageId,
+  createVAA,
+  encoding,
   toChainId,
 } from "@wormhole-foundation/connect-sdk";
 import {
@@ -65,23 +67,51 @@ export class AptosWormholeCore<N extends Network, C extends AptosChains>
   }
 
   async parseTransaction(txid: string): Promise<WormholeMessageId[]> {
+    const msgs = await this.parseMessages(txid);
+
+    return msgs.map((message) => {
+      return {
+        chain: message.emitterChain,
+        emitter: message.emitterAddress,
+        sequence: message.sequence,
+      };
+    });
+  }
+  async parseMessages(txid: string): Promise<VAA[]> {
     const transaction = await this.connection.getTransactionByHash(txid);
     if (transaction.type !== "user_transaction")
       throw new Error(`${txid} is not a user_transaction`);
 
     const userTransaction = transaction as Types.UserTransaction;
-    const message = userTransaction.events.find((event) => event.type.endsWith("WormholeMessage"));
-    if (!message || !message.data) {
+    const messages = userTransaction.events.filter((event) =>
+      event.type.endsWith("WormholeMessage"),
+    );
+    if (!messages || messages.length === 0)
       throw new Error(`WormholeMessage not found for ${txid}`);
-    }
 
-    const { sender, sequence } = message.data as { sender: string; sequence: string };
-    // TODO: make this work for address
-    const emitter = new UniversalAddress(BigInt(sender).toString(16).padStart(64, "0"));
+    return messages.map((message) => {
+      const msg = message.data as {
+        consistency_level: number;
+        nonce: string;
+        payload: string;
+        sender: string;
+        sequence: string;
+        timestamp: string;
+      };
 
-    return [{ chain: this.chain, emitter, sequence: BigInt(sequence) }] as WormholeMessageId[];
-  }
-  async parseMessages(txid: string): Promise<VAA[]> {
-    throw new Error("Not implenmented.");
+      const emitter = new UniversalAddress(BigInt(msg.sender).toString(16).padStart(64, "0"));
+
+      return createVAA("Uint8Array", {
+        guardianSet: 0, // TODO: need to implement guardian set idx
+        emitterChain: this.chain,
+        emitterAddress: emitter,
+        sequence: BigInt(msg.sequence),
+        timestamp: Number(msg.timestamp),
+        consistencyLevel: msg.consistency_level,
+        nonce: Number(msg.nonce),
+        signatures: [],
+        payload: encoding.hex.decode(msg.payload),
+      });
+    });
   }
 }

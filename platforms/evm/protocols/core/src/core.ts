@@ -143,7 +143,7 @@ export class EvmWormholeCore<N extends Network, C extends EvmChains>
       .filter((l: any) => {
         return l.address === this.coreAddress;
       })
-      .map((log): VAA<'Uint8Array'> | undefined => {
+      .map((log): VAA | undefined => {
         const { topics, data } = log;
         const parsed = this.coreIface.parseLog({
           topics: topics.slice(),
