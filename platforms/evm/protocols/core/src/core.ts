@@ -6,6 +6,7 @@ import {
   VAA,
   WormholeCore,
   WormholeMessageId,
+  createVAA,
   isWormholeMessageId,
 } from '@wormhole-foundation/connect-sdk';
 import { Provider, TransactionRequest } from 'ethers';
@@ -59,6 +60,10 @@ export class EvmWormholeCore<N extends Network, C extends EvmChains>
 
   async getMessageFee(): Promise<bigint> {
     return await this.core.messageFee.staticCall();
+  }
+
+  async getGuardianSetIndex(): Promise<number> {
+    return Number(await this.core.getCurrentGuardianSetIndex.staticCall());
   }
 
   static async fromRpc<N extends Network>(
@@ -127,6 +132,39 @@ export class EvmWormholeCore<N extends Network, C extends EvmChains>
         } as WormholeMessageId;
       })
       .filter(isWormholeMessageId);
+  }
+
+  async parseMessages(txid: string): Promise<VAA[]> {
+    const receipt = await this.provider.getTransactionReceipt(txid);
+    if (receipt === null) throw new Error('Could not get transaction receipt');
+    const gsIdx = await this.getGuardianSetIndex();
+
+    return receipt.logs
+      .filter((l: any) => {
+        return l.address === this.coreAddress;
+      })
+      .map((log): VAA | undefined => {
+        const { topics, data } = log;
+        const parsed = this.coreIface.parseLog({
+          topics: topics.slice(),
+          data,
+        });
+        if (parsed === null) return undefined;
+
+        const emitterAddress = new EvmAddress(parsed.args['sender']);
+        return createVAA('Uint8Array', {
+          guardianSet: gsIdx, // TODO: should we get this from the contract on init?
+          timestamp: 0, // TODO: Would need to get the full block to get the timestamp
+          emitterChain: this.chain,
+          emitterAddress: emitterAddress.toUniversalAddress(),
+          consistencyLevel: Number(parsed.args['consistencyLevel']),
+          sequence: BigInt(parsed.args['sequence']),
+          nonce: Number(parsed.args['nonce']),
+          signatures: [],
+          payload: parsed.args['payload'],
+        });
+      })
+      .filter((vaa) => !!vaa) as VAA[];
   }
 
   private createUnsignedTx(

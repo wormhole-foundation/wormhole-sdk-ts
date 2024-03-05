@@ -6,6 +6,7 @@ import {
   VAA,
   WormholeCore,
   WormholeMessageId,
+  createVAA,
   encoding,
   keccak256,
   serialize,
@@ -162,14 +163,30 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
     return val ? BigInt(val.value.uint) : 0n;
   }
 
+  async getGuardianSetIndex(): Promise<number> {
+    throw new Error("Not implemented");
+  }
+
   async parseTransaction(txId: string): Promise<WormholeMessageId[]> {
+    const result = await this.connection.pendingTransactionInformation(txId).do();
+    const ptr = modelsv2.PendingTransactionResponse.from_obj_for_encoding(result);
+    return this.parseTx(ptr).map((v) => {
+      return {
+        chain: v.emitterChain,
+        emitter: v.emitterAddress,
+        sequence: v.sequence,
+      };
+    });
+  }
+
+  async parseMessages(txId: string): Promise<VAA[]> {
     const result = await this.connection.pendingTransactionInformation(txId).do();
     const ptr = modelsv2.PendingTransactionResponse.from_obj_for_encoding(result);
     return this.parseTx(ptr);
   }
 
-  private parseTx(ptr: modelsv2.PendingTransactionResponse): WormholeMessageId[] {
-    const msgs: WormholeMessageId[] = [];
+  private parseTx(ptr: modelsv2.PendingTransactionResponse): VAA[] {
+    const msgs: VAA[] = [];
 
     if (ptr.innerTxns && ptr.innerTxns.length > 0) {
       msgs.push(...ptr.innerTxns.flatMap((tx) => this.parseTx(tx)));
@@ -191,7 +208,22 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
 
     const sequence = encoding.bignum.decode(ptr.logs[0]!);
     const emitter = new AlgorandAddress(ptr.txn.txn.snd).toUniversalAddress();
-    msgs.push({ chain: this.chain, emitter, sequence });
+    const payload = new Uint8Array(args[1]!);
+    const nonce = encoding.bignum.decode(args[2]!);
+
+    msgs.push(
+      createVAA("Uint8Array", {
+        emitterChain: this.chain,
+        emitterAddress: emitter,
+        sequence,
+        guardianSet: 0, // TODO: should we get this from the contract on init?
+        timestamp: 0, // TODO: Would need to get the full block to get the timestamp
+        consistencyLevel: 0,
+        nonce: Number(nonce),
+        payload,
+        signatures: [],
+      }),
+    );
 
     return msgs;
   }

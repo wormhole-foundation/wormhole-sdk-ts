@@ -172,7 +172,7 @@ export class CosmwasmIbcBridge<N extends Network, C extends CosmwasmChains>
   async lookupMessageFromIbcMsgId(msg: IbcMessageId): Promise<WormholeMessageId | null> {
     const tx = await this.lookupTxFromIbcMsgId(msg);
     if (!tx) return null;
-    return CosmwasmWormholeCore.parseWormholeMessage(
+    return CosmwasmWormholeCore.parseWormholeMessageId(
       Gateway.chain,
       Gateway.coreAddress(this.network),
       tx,

@@ -22,6 +22,10 @@ declare global {
 export interface WormholeCore<N extends Network, C extends Chain> {
   /** Get the fee for publishing a message */
   getMessageFee(): Promise<bigint>;
+
+  /** Get the current guardian set index */
+  getGuardianSetIndex(): Promise<number>;
+
   /**
    * Publish a message
    *
@@ -39,6 +43,7 @@ export interface WormholeCore<N extends Network, C extends Chain> {
     nonce: number,
     consistencyLevel: number,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
+
   /**
    * Verify a VAA against the core contract
    * @param sender the sender of the transaction
@@ -47,6 +52,7 @@ export interface WormholeCore<N extends Network, C extends Chain> {
    * @returns a stream of unsigned transactions to be signed and submitted on chain
    */
   verifyMessage(sender: AccountAddress<C>, vaa: VAA): AsyncGenerator<UnsignedTransaction<N, C>>;
+
   /**
    * Parse a transaction to get its message id
    *
@@ -55,4 +61,13 @@ export interface WormholeCore<N extends Network, C extends Chain> {
    * @returns the message ids produced by the transaction
    */
   parseTransaction(txid: TxHash): Promise<WormholeMessageId[]>;
+
+  /**
+   * Parse a transaction to get the VAA message it produced
+   *
+   * @param txid the transaction hash to parse
+   *
+   * @returns the VAA message produced by the transaction
+   */
+  parseMessages(txid: TxHash): Promise<VAA[]>;
 }

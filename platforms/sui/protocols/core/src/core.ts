@@ -9,11 +9,12 @@ import {
   VAA,
   WormholeCore,
   WormholeMessageId,
+  createVAA,
   toChainId,
-  toNative,
 } from "@wormhole-foundation/connect-sdk";
 import {
   AnySuiAddress,
+  SuiAddress,
   SuiChains,
   SuiPlatform,
   SuiPlatformType,
@@ -66,26 +67,50 @@ export class SuiWormholeCore<N extends Network, C extends SuiChains> implements 
   }
 
   async parseTransaction(txid: string): Promise<WormholeMessageId[]> {
+    const messages = await this.parseMessages(txid);
+    return messages.map((message) => {
+      return {
+        emitter: message.emitterAddress,
+        sequence: message.sequence,
+        chain: this.chain,
+      };
+    });
+  }
+
+  async getGuardianSetIndex(): Promise<number> {
+    throw new Error("Method not implemented.");
+  }
+
+  async parseMessages(txid: string): Promise<VAA[]> {
     const txBlock = await this.provider.getTransactionBlock({
       digest: txid,
       options: { showEvents: true, showEffects: true, showInput: true },
     });
 
-    const message = txBlock.events?.find((event) => event.type.endsWith("WormholeMessage"));
-    if (!message || !message.parsedJson) {
-      throw new Error("WormholeMessage not found");
-    }
-    const { sender: emitterAddress, sequence } = message.parsedJson as {
-      sender: string;
-      sequence: number;
-    };
+    const messages = txBlock.events?.filter((event) => event.type.endsWith("WormholeMessage"));
+    if (!messages || messages.length == 0) throw new Error("WormholeMessage not found");
 
-    return [
-      {
-        emitter: toNative(this.chain, emitterAddress).toUniversalAddress(),
-        sequence: BigInt(sequence),
-        chain: this.chain,
-      },
-    ];
+    return messages.map((message) => {
+      const msg = message.parsedJson as {
+        sender: string;
+        sequence: string;
+        consistency_level: number;
+        nonce: number;
+        payload: number[];
+        timestamp: string;
+      };
+
+      return createVAA("Uint8Array", {
+        emitterChain: this.chain,
+        emitterAddress: new SuiAddress(msg.sender).toUniversalAddress(),
+        sequence: BigInt(msg.sequence),
+        guardianSet: 0, // TODO: need to implement guardian set idx
+        timestamp: Number(msg.timestamp),
+        consistencyLevel: msg.consistency_level,
+        nonce: msg.nonce,
+        signatures: [],
+        payload: new Uint8Array(msg.payload),
+      });
+    });
   }
 }
