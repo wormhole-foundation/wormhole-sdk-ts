@@ -1,4 +1,5 @@
 import {
+  PayloadLiteral,
   ChainId,
   ChainsConfig,
   Contracts,
@@ -383,6 +384,16 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
     txs.push({ tx: appTxn });
 
     return { accounts: accts, txs };
+  }
+  async parseMessages<PL extends PayloadLiteral>(
+    payloadLiteral: PL,
+    txId: string,
+  ): Promise<VAA<PL>[]> {
+    throw Error("Not implemented");
+
+    // const result = await this.connection.pendingTransactionInformation(txId).do();
+    // const ptr = modelsv2.PendingTransactionResponse.from_obj_for_encoding(result);
+    // return this.parseVAA(ptr);
   }
 
   private createUnsignedTx(

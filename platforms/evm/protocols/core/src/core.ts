@@ -2,10 +2,15 @@ import {
   ChainsConfig,
   Contracts,
   Network,
+  PayloadLiteral,
+  Signature,
   TxHash,
+  UniversalAddress,
   VAA,
   WormholeCore,
   WormholeMessageId,
+  createVAA,
+  deserializePayload,
   isWormholeMessageId,
 } from '@wormhole-foundation/connect-sdk';
 import { Provider, TransactionRequest } from 'ethers';
@@ -127,6 +132,44 @@ export class EvmWormholeCore<N extends Network, C extends EvmChains>
         } as WormholeMessageId;
       })
       .filter(isWormholeMessageId);
+  }
+
+  async parseMessages<PL extends PayloadLiteral>(
+    payloadLiteral: PL,
+    txid: string,
+  ): Promise<VAA<PL>[]> {
+    const receipt = await this.provider.getTransactionReceipt(txid);
+    if (receipt === null) throw new Error('Could not get transaction receipt');
+
+    if (payloadLiteral !== 'Uint8Array') throw 'fk';
+
+    return receipt.logs
+      .filter((l: any) => {
+        return l.address === this.coreAddress;
+      })
+      .map((log): VAA<PL> | undefined => {
+        const { topics, data } = log;
+        const parsed = this.coreIface.parseLog({
+          topics: topics.slice(),
+          data,
+        });
+        if (parsed === null) return undefined;
+        console.log(parsed);
+        const emitterAddress = new EvmAddress(parsed.args['sender']);
+        return createVAA(payloadLiteral, {
+          guardianSet: 3,
+          consistencyLevel: 0,
+          timestamp: 0,
+          emitterChain: this.chain,
+          emitterAddress:
+            emitterAddress.toUniversalAddress() as UniversalAddress,
+          sequence: BigInt(parsed.args['sequence']),
+          nonce: parsed.args['nonce'] as number,
+          signatures: [] as Signature[],
+          payload: deserializePayload(payloadLiteral, parsed.args['payload']),
+        } as any);
+      })
+      .filter((vaa) => !!vaa) as VAA<PL>[];
   }
 
   private createUnsignedTx(

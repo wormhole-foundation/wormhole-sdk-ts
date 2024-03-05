@@ -9,6 +9,7 @@ import {
   WormholeCore,
   WormholeMessageId,
   toChainId,
+  PayloadLiteral,
 } from "@wormhole-foundation/connect-sdk";
 import {
   AnyAptosAddress,
@@ -77,5 +78,11 @@ export class AptosWormholeCore<N extends Network, C extends AptosChains>
     const emitter = new UniversalAddress(BigInt(sender).toString(16).padStart(64, "0"));
 
     return [{ chain: this.chain, emitter, sequence: BigInt(sequence) }] as WormholeMessageId[];
+  }
+  async parseMessages<PL extends PayloadLiteral>(
+    payloadLiteral: PL,
+    txid: string,
+  ): Promise<VAA<PL>[]> {
+    throw new Error("Not implenmented.");
   }
 }

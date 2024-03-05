@@ -4,7 +4,7 @@ import { WormholeMessageId } from "../attestation";
 import { EmptyPlatformMap } from "../protocol";
 import { TxHash } from "../types";
 import { UnsignedTransaction } from "../unsignedTransaction";
-import { VAA } from "../vaa";
+import { PayloadLiteral, VAA } from "../vaa";
 
 declare global {
   namespace Wormhole {
@@ -55,4 +55,12 @@ export interface WormholeCore<N extends Network, C extends Chain> {
    * @returns the message ids produced by the transaction
    */
   parseTransaction(txid: TxHash): Promise<WormholeMessageId[]>;
+  /**
+   * Parse a transaction to get the VAA message it produced
+   *
+   * @param txid the transaction hash to parse
+   *
+   * @returns the VAA message produced by the transaction
+   */
+  parseMessages<PL extends PayloadLiteral>(payloadLiteral: PL, txid: TxHash): Promise<VAA<PL>[]>;
 }

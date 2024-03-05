@@ -9,6 +9,7 @@ import {
   VersionedTransactionResponse,
 } from '@solana/web3.js';
 import {
+  PayloadLiteral,
   ChainId,
   ChainsConfig,
   Contracts,
@@ -321,6 +322,13 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
     });
 
     return await Promise.all(messagePromises);
+  }
+
+  async parseMessages<PL extends PayloadLiteral>(
+    payloadLiteral: PL,
+    txid: string,
+  ): Promise<VAA<PL>[]> {
+    throw new Error('Method not implemented.');
   }
 
   private createUnsignedTx(

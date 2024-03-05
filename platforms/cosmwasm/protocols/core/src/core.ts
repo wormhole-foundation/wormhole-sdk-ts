@@ -6,6 +6,7 @@ import {
   ChainsConfig,
   Contracts,
   Network,
+  PayloadLiteral,
   UniversalAddress,
   VAA,
   WormholeCore,
@@ -98,5 +99,12 @@ export class CosmwasmWormholeCore<N extends Network, C extends CosmwasmChains>
       emitter: new UniversalAddress(emitter),
       sequence: BigInt(sequence),
     };
+  }
+
+  async parseMessages<PL extends PayloadLiteral>(
+    payloadLiteral: PL,
+    txid: string,
+  ): Promise<VAA<PL>[]> {
+    throw new Error("Not implemented.");
   }
 }
