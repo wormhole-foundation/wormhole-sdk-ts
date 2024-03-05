@@ -24,10 +24,10 @@ import "@wormhole-foundation/connect-sdk-solana-core";
   // event or log info
   // const txid = txids[txids.length - 1];
 
-  const txid = "0xf1ae0a1c26a73d1a8ec7366b14c3b45439eb5322d34ac93964479acad61660f4";
+  const txid = "0x80545f7bfc7c97d8125b074b07831681f27cfb89b7adb41b11cb6a5bb2ac79fc";
 
-  const [msg] = await coreBridge.parseMessages("Uint8Array", txid);
-  console.log(msg);
+  const msgs = await coreBridge.parseMessages("Uint8Array", txid);
+  console.log(msgs);
 
   // // Grab the wormhole message from the transaction logs or storage
   // const [whm] = await chain.parseTransaction(txid!.txid);

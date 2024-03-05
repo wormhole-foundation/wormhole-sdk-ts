@@ -5,7 +5,6 @@ import {
   PayloadLiteral,
   Signature,
   TxHash,
-  UniversalAddress,
   VAA,
   WormholeCore,
   WormholeMessageId,
@@ -153,19 +152,21 @@ export class EvmWormholeCore<N extends Network, C extends EvmChains>
         });
         if (parsed === null) return undefined;
         console.log(parsed);
+
         const emitterAddress = new EvmAddress(parsed.args['sender']);
-        return createVAA(payloadLiteral, {
+        const x = {
+          version: 1,
           guardianSet: 3,
           consistencyLevel: 0,
           timestamp: 0,
           emitterChain: this.chain,
-          emitterAddress:
-            emitterAddress.toUniversalAddress() as UniversalAddress,
+          emitterAddress: emitterAddress.toUniversalAddress(),
           sequence: BigInt(parsed.args['sequence']),
           nonce: parsed.args['nonce'] as number,
-          signatures: [] as Signature[],
+          signatures: [{}] as { guardianIndex: number; signature: Signature }[],
           payload: deserializePayload(payloadLiteral, parsed.args['payload']),
-        } as any);
+        } as Parameters<typeof createVAA<PL>>[1];
+        return createVAA<PL>(payloadLiteral, x);
       })
       .filter((vaa) => !!vaa) as VAA<PL>[];
   }
