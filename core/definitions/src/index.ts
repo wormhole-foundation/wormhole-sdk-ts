@@ -30,4 +30,3 @@ export * from "./protocols/relayer";
 export * from "./protocols/ntt";
 
 export * as layoutItems from "./layout-items";
-export * as testing from "./testing";

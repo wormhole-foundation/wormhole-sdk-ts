@@ -3,12 +3,12 @@ import {
   PlatformContext,
   RpcConnection,
   TokenBridge,
-  testing,
   Network,
   Platform,
   Wormhole,
   Chain,
 } from "@wormhole-foundation/sdk-connect";
+import { utils } from "@wormhole-foundation/sdk-definitions/testing";
 import { EvmPlatform } from "@wormhole-foundation/sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/sdk-solana";
 
@@ -26,7 +26,7 @@ describe("Wormhole Tests", () => {
     expect(p).toBeTruthy();
   });
 
-  let c: ChainContext<Network, Platform, Chain>;
+  let c: ChainContext<Network, Chain>;
   test("returns chain", async () => {
     c = wh.getChain("Ethereum");
     expect(c).toBeTruthy();
@@ -34,7 +34,7 @@ describe("Wormhole Tests", () => {
 
   test("should parse address", () => {
     const chain = "Ethereum";
-    const address = testing.utils.makeNativeAddress(chain);
+    const address = utils.makeNativeAddress(chain);
 
     const result = Wormhole.parseAddress(chain, address.toString());
     expect(result).toBeTruthy();
@@ -60,7 +60,7 @@ describe("Platform Tests", () => {
     expect(rpc).toBeTruthy();
   });
 
-  let tb: TokenBridge<"Devnet", "Evm", "Ethereum">;
+  let tb: TokenBridge<"Devnet", "Ethereum">;
   test("Gets Token Bridge", async () => {
     tb = await p.getProtocol("TokenBridge", rpc);
     expect(tb).toBeTruthy();
@@ -68,7 +68,7 @@ describe("Platform Tests", () => {
 });
 
 describe("Chain Tests", () => {
-  let c: ChainContext<"Devnet", "Evm", "Ethereum">;
+  let c: ChainContext<"Devnet", "Ethereum">;
   beforeEach(() => {
     const wh = new Wormhole<"Devnet">("Devnet", allPlatformCtrs);
     c = wh.getChain("Ethereum");

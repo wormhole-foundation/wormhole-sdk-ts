@@ -2,19 +2,16 @@ import * as publicRpcMock from "./mocks/publicrpc"; // Should be first
 
 import { describe, expect, test } from "@jest/globals";
 import { Platform, platform } from "@wormhole-foundation/sdk-base";
-import {
-  ChainContext,
-  PlatformContext,
-  RpcConnection,
-  testing,
-} from "@wormhole-foundation/sdk-definitions";
+import { ChainContext, PlatformContext, RpcConnection } from "@wormhole-foundation/sdk-definitions";
+
+import { mocks, utils } from "@wormhole-foundation/sdk-definitions/testing";
 import { Wormhole, networkPlatformConfigs } from "../src";
 
 const network: "Testnet" = "Testnet";
 type TNet = typeof network;
 const allPlatformCtrs = platform.platforms.map((p) =>
-  testing.mocks.mockPlatformFactory(p, networkPlatformConfigs(network, p)),
-);
+  mocks.mockPlatformFactory(p, networkPlatformConfigs(network, p)),
+) as any;
 
 describe("Wormhole Tests", () => {
   let wh: Wormhole<TNet>;
@@ -38,7 +35,7 @@ describe("Wormhole Tests", () => {
     test("returns vaa bytes", async function () {
       const vaa = await wh.getVaaBytes({
         chain: "Arbitrum",
-        emitter: testing.utils.makeUniversalAddress("Arbitrum"),
+        emitter: utils.makeUniversalAddress("Arbitrum"),
         sequence: 1n,
       });
       expect(vaa).toBeDefined();
@@ -47,7 +44,7 @@ describe("Wormhole Tests", () => {
     test("returns undefined when vaa bytes not found", async function () {
       publicRpcMock.givenSignedVaaNotFound();
       const vaa = await wh.getVaaBytes(
-        { chain: "Aptos", emitter: testing.utils.makeUniversalAddress("Aptos"), sequence: 1n },
+        { chain: "Aptos", emitter: utils.makeUniversalAddress("Aptos"), sequence: 1n },
         1,
       );
       expect(vaa).toBeNull();
@@ -57,7 +54,7 @@ describe("Wormhole Tests", () => {
       publicRpcMock.givenSignedVaaRequestWorksAfterRetry();
       const vaa = await wh.getVaaBytes({
         chain: "Base",
-        emitter: testing.utils.makeUniversalAddress("Base"),
+        emitter: utils.makeUniversalAddress("Base"),
         sequence: 1n,
       });
       expect(vaa).toBeDefined();
