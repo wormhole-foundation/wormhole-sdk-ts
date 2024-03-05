@@ -2,7 +2,6 @@ import {
   ChainsConfig,
   Contracts,
   Network,
-  PayloadLiteral,
   Signature,
   TxHash,
   VAA,
@@ -63,6 +62,10 @@ export class EvmWormholeCore<N extends Network, C extends EvmChains>
 
   async getMessageFee(): Promise<bigint> {
     return await this.core.messageFee.staticCall();
+  }
+
+  async getGuardianSetIndex(): Promise<bigint> {
+    return await this.core.getCurrentGuardianSetIndex.staticCall();
   }
 
   static async fromRpc<N extends Network>(
@@ -133,10 +136,7 @@ export class EvmWormholeCore<N extends Network, C extends EvmChains>
       .filter(isWormholeMessageId);
   }
 
-  async parseMessages<PL extends PayloadLiteral>(
-    payloadLiteral: PL,
-    txid: string,
-  ): Promise<VAA<PL>[]> {
+  async parseMessages(txid: string): Promise<VAA[]> {
     const receipt = await this.provider.getTransactionReceipt(txid);
     if (receipt === null) throw new Error('Could not get transaction receipt');
 
@@ -144,7 +144,7 @@ export class EvmWormholeCore<N extends Network, C extends EvmChains>
       .filter((l: any) => {
         return l.address === this.coreAddress;
       })
-      .map((log): VAA<PL> | undefined => {
+      .map((log): VAA<'Uint8Array'> | undefined => {
         const { topics, data } = log;
         const parsed = this.coreIface.parseLog({
           topics: topics.slice(),
@@ -155,20 +155,19 @@ export class EvmWormholeCore<N extends Network, C extends EvmChains>
 
         const emitterAddress = new EvmAddress(parsed.args['sender']);
         const x = {
-          version: 1,
-          guardianSet: 3,
-          consistencyLevel: 0,
-          timestamp: 0,
+          guardianSet: 3, // TODO: should we get this from the contract on init?
+          timestamp: 0, // TODO: Would need to get the full block to get the timestamp
           emitterChain: this.chain,
           emitterAddress: emitterAddress.toUniversalAddress(),
+          consistencyLevel: Number(parsed.args['consistencyLevel']),
           sequence: BigInt(parsed.args['sequence']),
-          nonce: parsed.args['nonce'] as number,
-          signatures: [{}] as { guardianIndex: number; signature: Signature }[],
-          payload: deserializePayload(payloadLiteral, parsed.args['payload']),
-        } as Parameters<typeof createVAA<PL>>[1];
-        return createVAA<PL>(payloadLiteral, x);
+          nonce: Number(parsed.args['nonce']),
+          signatures: [] as { guardianIndex: number; signature: Signature }[],
+          payload: deserializePayload('Uint8Array', parsed.args['payload']),
+        } as Parameters<typeof createVAA<'Uint8Array'>>[1];
+        return createVAA<'Uint8Array'>('Uint8Array', x);
       })
-      .filter((vaa) => !!vaa) as VAA<PL>[];
+      .filter((vaa) => !!vaa) as VAA<'Uint8Array'>[];
   }
 
   private createUnsignedTx(

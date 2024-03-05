@@ -6,7 +6,6 @@ import {
   ChainsConfig,
   Contracts,
   Network,
-  PayloadLiteral,
   UniversalAddress,
   VAA,
   WormholeCore,
@@ -36,6 +35,9 @@ export class CosmwasmWormholeCore<N extends Network, C extends CosmwasmChains>
       throw new Error(`Wormhole Token Bridge contract for domain ${chain} not found`);
 
     this.coreAddress = coreAddress;
+  }
+  getGuardianSetIndex(): Promise<bigint> {
+    throw new Error("Method not implemented.");
   }
 
   getMessageFee(): Promise<bigint> {
@@ -101,10 +103,7 @@ export class CosmwasmWormholeCore<N extends Network, C extends CosmwasmChains>
     };
   }
 
-  async parseMessages<PL extends PayloadLiteral>(
-    payloadLiteral: PL,
-    txid: string,
-  ): Promise<VAA<PL>[]> {
+  async parseMessages(txid: string): Promise<VAA[]> {
     throw new Error("Not implemented.");
   }
 }

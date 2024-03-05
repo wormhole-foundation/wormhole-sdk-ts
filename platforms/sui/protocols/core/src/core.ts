@@ -89,10 +89,11 @@ export class SuiWormholeCore<N extends Network, C extends SuiChains> implements 
     ];
   }
 
-  async parseMessages<PL extends PayloadLiteral>(
-    payloadLiteral: PL,
-    txid: string,
-  ): Promise<VAA<PL>[]> {
+  async getGuardianSetIndex(): Promise<bigint> {
+    throw new Error("Method not implemented.");
+  }
+
+  async parseMessages(txid: string): Promise<VAA[]> {
     throw new Error("Not implemented");
   }
 }

@@ -9,7 +9,6 @@ import {
   WormholeCore,
   WormholeMessageId,
   toChainId,
-  PayloadLiteral,
 } from "@wormhole-foundation/connect-sdk";
 import {
   AnyAptosAddress,
@@ -36,6 +35,9 @@ export class AptosWormholeCore<N extends Network, C extends AptosChains>
     if (!coreBridgeAddress)
       throw new Error(`CoreBridge contract Address for chain ${chain} not found`);
     this.coreBridge = coreBridgeAddress;
+  }
+  getGuardianSetIndex(): Promise<bigint> {
+    throw new Error("Method not implemented.");
   }
   getMessageFee(): Promise<bigint> {
     throw new Error("Method not implemented.");
@@ -79,10 +81,7 @@ export class AptosWormholeCore<N extends Network, C extends AptosChains>
 
     return [{ chain: this.chain, emitter, sequence: BigInt(sequence) }] as WormholeMessageId[];
   }
-  async parseMessages<PL extends PayloadLiteral>(
-    payloadLiteral: PL,
-    txid: string,
-  ): Promise<VAA<PL>[]> {
+  async parseMessages(txid: string): Promise<VAA[]> {
     throw new Error("Not implenmented.");
   }
 }
