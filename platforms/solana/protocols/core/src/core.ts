@@ -20,6 +20,8 @@ import {
   WormholeCore,
   WormholeMessageId,
   createVAA,
+  deserializeLayout,
+  toChain,
   toChainId,
 } from '@wormhole-foundation/connect-sdk';
 import {
@@ -41,6 +43,7 @@ import {
   derivePostedVaaKey,
   getWormholeBridgeData,
 } from './utils';
+import { postMessageLayout } from './postMessageLayout';
 
 const SOLANA_SEQ_LOG = 'Program log: Sequence: ';
 
@@ -301,32 +304,29 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
 
   async parsePostMessageAccount(messageAccount: PublicKey): Promise<VAA> {
     const acctInfo = await this.connection.getAccountInfo(messageAccount);
-    // TODO: use layouting
-    const data = acctInfo?.data!.subarray(4)!;
-    const consistencyLevel = data.readUint8(0); // pub version: u8,
-    // const emitterAuthority = new Uint8Array(data.subarray(1, 33)); // pub emitter_authority: Pubkey,
-    // const status = data.readUint8(33); // pub status: MessageStatus,
-    // // gap 3 bytes
-    const timestamp = data.readUint32LE(37);
-    const nonce = data.readUint32LE(41);
-    const sequence = data.readBigUInt64LE(45);
-    const emitterAddress = new UniversalAddress(
-      new Uint8Array(data.subarray(55, 87)),
-    );
-    const payloadLength = data.readUint32LE(87);
-    const payload = new Uint8Array(data.subarray(91, 91 + payloadLength));
-    const x = {
-      guardianSet: 3, // TODO: should we get this from the contract on init?
-      timestamp, // TODO: Would need to get the full block to get the timestamp
-      emitterChain: this.chain,
+    if (!acctInfo?.data) throw new Error('No data found in message account');
+
+    const {
+      timestamp,
+      emitterAddress,
+      emitterChain,
+      consistencyLevel,
+      sequence,
+      nonce,
+      payload,
+    } = deserializeLayout(postMessageLayout, new Uint8Array(acctInfo?.data!));
+
+    return createVAA('Uint8Array', {
+      guardianSet: await this.getGuardianSetIndex(),
+      emitterChain: toChain(emitterChain),
+      timestamp,
       emitterAddress,
       consistencyLevel,
       sequence,
       nonce,
       payload,
       signatures: [],
-    } as Parameters<typeof createVAA<'Uint8Array'>>[1];
-    return createVAA<'Uint8Array'>('Uint8Array', x);
+    });
   }
 
   async parseTransaction(txid: string): Promise<WormholeMessageId[]> {
