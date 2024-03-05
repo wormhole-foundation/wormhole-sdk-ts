@@ -14,7 +14,7 @@ import {
   nativeChainIds,
   networkPlatformConfigs,
   isNative,
-} from '@wormhole-foundation/connect-sdk';
+} from '@wormhole-foundation/sdk-connect';
 import { SolanaChain } from './chain';
 
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';

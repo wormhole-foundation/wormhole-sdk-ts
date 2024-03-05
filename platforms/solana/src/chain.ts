@@ -5,7 +5,7 @@ import {
   NativeAddress,
   Network,
   UniversalOrNative,
-} from '@wormhole-foundation/connect-sdk';
+} from '@wormhole-foundation/sdk-connect';
 import { SolanaAddress } from './address';
 import { SolanaChains } from './types';
 

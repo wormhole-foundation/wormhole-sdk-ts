@@ -4,7 +4,7 @@
   "license": "Apache-2.0",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
-  "types": "./dist/esm/index.d.ts",
+  "types": "./dist/cjs/index.d.ts",
   "author": "",
   "files": [
     "dist"
@@ -29,22 +29,22 @@
     "tsx": "^4.7.0"
   },
   "dependencies": {
-    "@wormhole-foundation/connect-sdk": "^0.4.0-beta.2",
-    "@wormhole-foundation/connect-sdk-evm": "^0.4.0-beta.2",
-    "@wormhole-foundation/connect-sdk-evm-core": "^0.4.0-beta.2",
-    "@wormhole-foundation/connect-sdk-evm-tokenbridge": "^0.4.0-beta.2",
-    "@wormhole-foundation/connect-sdk-evm-cctp": "^0.4.0-beta.2",
-    "@wormhole-foundation/connect-sdk-evm-portico": "^0.4.0-beta.2",
-    "@wormhole-foundation/connect-sdk-solana": "^0.4.0-beta.2",
-    "@wormhole-foundation/connect-sdk-solana-core": "^0.4.0-beta.2",
-    "@wormhole-foundation/connect-sdk-solana-tokenbridge": "^0.4.0-beta.2",
-    "@wormhole-foundation/connect-sdk-solana-cctp": "^0.4.0-beta.2",
-    "@wormhole-foundation/connect-sdk-cosmwasm": "^0.4.0-beta.2",
-    "@wormhole-foundation/connect-sdk-cosmwasm-core": "^0.4.0-beta.2",
-    "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge": "^0.4.0-beta.2",
-    "@wormhole-foundation/connect-sdk-cosmwasm-ibc": "^0.4.0-beta.2",
-    "@wormhole-foundation/connect-sdk-algorand": "^0.4.0-beta.2",
-    "@wormhole-foundation/connect-sdk-algorand-core": "^0.4.0-beta.2",
-    "@wormhole-foundation/connect-sdk-algorand-tokenbridge": "^0.4.0-beta.2"
+    "@wormhole-foundation/sdk-connect": "^0.4.0-beta.2",
+    "@wormhole-foundation/sdk-evm": "^0.4.0-beta.2",
+    "@wormhole-foundation/sdk-evm-core": "^0.4.0-beta.2",
+    "@wormhole-foundation/sdk-evm-tokenbridge": "^0.4.0-beta.2",
+    "@wormhole-foundation/sdk-evm-cctp": "^0.4.0-beta.2",
+    "@wormhole-foundation/sdk-evm-portico": "^0.4.0-beta.2",
+    "@wormhole-foundation/sdk-solana": "^0.4.0-beta.2",
+    "@wormhole-foundation/sdk-solana-core": "^0.4.0-beta.2",
+    "@wormhole-foundation/sdk-solana-tokenbridge": "^0.4.0-beta.2",
+    "@wormhole-foundation/sdk-solana-cctp": "^0.4.0-beta.2",
+    "@wormhole-foundation/sdk-cosmwasm": "^0.4.0-beta.2",
+    "@wormhole-foundation/sdk-cosmwasm-core": "^0.4.0-beta.2",
+    "@wormhole-foundation/sdk-cosmwasm-tokenbridge": "^0.4.0-beta.2",
+    "@wormhole-foundation/sdk-cosmwasm-ibc": "^0.4.0-beta.2",
+    "@wormhole-foundation/sdk-algorand": "^0.4.0-beta.2",
+    "@wormhole-foundation/sdk-algorand-core": "^0.4.0-beta.2",
+    "@wormhole-foundation/sdk-algorand-tokenbridge": "^0.4.0-beta.2"
   }
 }

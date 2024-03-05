@@ -1,6 +1,6 @@
 {
-  "name": "@wormhole-foundation/connect-sdk-sui-tokenbridge",
-  "version": "0.4.6",
+  "name": "@wormhole-foundation/sdk-sui-tokenbridge",
+  "version": "0.5.0-beta.2",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -14,10 +14,10 @@
   },
   "license": "Apache-2.0",
   "main": "./dist/cjs/index.js",
+  "types": "./dist/cjs/index.d.ts",
   "module": "./dist/esm/index.js",
-  "types": "./dist/esm/index.d.ts",
   "author": "",
-  "description": "SDK for Sui chains, used in conjunction with @wormhole-foundation/connect-sdk",
+  "description": "SDK for Sui chains, used in conjunction with @wormhole-foundation/sdk",
   "files": [
     "dist/**/*"
   ],
@@ -42,8 +42,8 @@
     "prettier": "prettier --write ./src"
   },
   "dependencies": {
-    "@wormhole-foundation/connect-sdk": "0.4.6",
-    "@wormhole-foundation/connect-sdk-sui": "0.4.6",
-    "@wormhole-foundation/connect-sdk-sui-core": "0.4.6"
+    "@wormhole-foundation/sdk-connect": "0.5.0-beta.2",
+    "@wormhole-foundation/sdk-sui": "0.5.0-beta.2",
+    "@wormhole-foundation/sdk-sui-core": "0.5.0-beta.2"
   }
 }

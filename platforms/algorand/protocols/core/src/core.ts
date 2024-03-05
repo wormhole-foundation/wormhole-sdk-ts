@@ -11,7 +11,7 @@ import {
   keccak256,
   serialize,
   toChainId,
-} from "@wormhole-foundation/connect-sdk";
+} from "@wormhole-foundation/sdk-connect";
 import {
   AlgorandAddress,
   AlgorandChains,
@@ -21,7 +21,7 @@ import {
   TransactionSet,
   TransactionSignerPair,
   safeBigIntToNumber,
-} from "@wormhole-foundation/connect-sdk-algorand";
+} from "@wormhole-foundation/sdk-algorand";
 import {
   Algodv2,
   LogicSigAccount,

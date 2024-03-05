@@ -5,9 +5,9 @@ import {
   encoding,
   isNative,
   toChainId,
-} from "@wormhole-foundation/connect-sdk";
+} from "@wormhole-foundation/sdk-connect";
 import { Algodv2, LogicSigAccount, decodeAddress, getApplicationAddress, modelsv2 } from "algosdk";
-import { safeBigIntToNumber } from "@wormhole-foundation/connect-sdk-algorand";
+import { safeBigIntToNumber } from "@wormhole-foundation/sdk-algorand";
 
 export const SEED_AMT: number = 1002000;
 export const MAX_KEYS: number = 15;

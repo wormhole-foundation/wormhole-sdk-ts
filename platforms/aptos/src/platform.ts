@@ -7,12 +7,6 @@ import {
   Wormhole,
   isNative,
   networkPlatformConfigs,
-} from "@wormhole-foundation/connect-sdk";
-import { AptosClient } from "aptos";
-import { AptosChain } from "./chain";
-import { AptosChains, AptosPlatformType, _platform } from "./types";
-
-import {
   Balances,
   SignedTx,
   TokenId,
@@ -20,7 +14,11 @@ import {
   chainToPlatform,
   nativeChainIds,
   decimals as nativeDecimals,
-} from "@wormhole-foundation/connect-sdk";
+} from "@wormhole-foundation/sdk-connect";
+import { AptosClient } from "aptos";
+import { AptosChain } from "./chain";
+import { AptosChains, AptosPlatformType, _platform } from "./types";
+
 import { CoinClient, Types } from "aptos";
 import { AptosAddress } from "./address";
 import { APTOS_COIN, APTOS_SEPARATOR } from "./constants";

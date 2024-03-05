@@ -24,7 +24,7 @@ import {
   toChain,
   toChainId,
   toNative,
-} from "@wormhole-foundation/connect-sdk";
+} from "@wormhole-foundation/sdk-connect";
 
 import {
   SuiAddress,
@@ -48,10 +48,10 @@ import {
   publishPackage,
   trimSuiType,
   uint8ArrayToBCS,
-} from "@wormhole-foundation/connect-sdk-sui";
+} from "@wormhole-foundation/sdk-sui";
 import { getTokenCoinType, getTokenFromTokenRegistry } from "./utils";
 
-import "@wormhole-foundation/connect-sdk-sui-core";
+import "@wormhole-foundation/sdk-sui-core";
 
 export class SuiTokenBridge<N extends Network, C extends SuiChains> implements TokenBridge<N, C> {
   readonly coreBridgeObjectId: string;

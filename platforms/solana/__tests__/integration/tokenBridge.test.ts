@@ -7,10 +7,10 @@ import {
   createVAA,
   testing,
   toNative,
-} from '@wormhole-foundation/connect-sdk';
+} from '@wormhole-foundation/sdk-connect';
 
-import '@wormhole-foundation/connect-sdk-solana-core';
-import '@wormhole-foundation/connect-sdk-solana-tokenbridge';
+import '@wormhole-foundation/sdk-solana-core';
+import '@wormhole-foundation/sdk-solana-tokenbridge';
 
 import {
   SolanaChains,

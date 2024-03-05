@@ -1,11 +1,11 @@
 import { expect, test } from "@jest/globals";
 
-import { DEFAULT_NETWORK, CONFIG, chainToPlatform, chains } from "@wormhole-foundation/connect-sdk";
+import { DEFAULT_NETWORK, CONFIG, chainToPlatform, chains } from "@wormhole-foundation/sdk-connect";
 
 import { AptosChains, AptosPlatform } from "../../src";
 
-import "@wormhole-foundation/connect-sdk-aptos-core";
-import "@wormhole-foundation/connect-sdk-aptos-tokenbridge";
+import "@wormhole-foundation/sdk-aptos-core";
+import "@wormhole-foundation/sdk-aptos-tokenbridge";
 import { AptosClient } from "aptos";
 
 const network = DEFAULT_NETWORK;

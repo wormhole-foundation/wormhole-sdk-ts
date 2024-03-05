@@ -1,8 +1,5 @@
 import { expect, test } from "@jest/globals";
-import {
-  chains,
-  CONFIG,
-} from "@wormhole-foundation/connect-sdk";
+import { chains, CONFIG } from "@wormhole-foundation/sdk-connect";
 import { CosmwasmPlatform } from "../../src/platform";
 import { CosmwasmChains } from "../../src";
 
@@ -46,9 +43,7 @@ describe("Cosmwasm Platform Tests", () => {
         [COSMWASM_CHAINS[0]]: configs[COSMWASM_CHAINS[0]],
       });
       expect(async () => await p.getRpc(COSMWASM_CHAINS[0])).not.toThrow();
-      expect(
-        async () => await p.getChain(COSMWASM_CHAINS[0]).getRpc(),
-      ).not.toThrow();
+      expect(async () => await p.getChain(COSMWASM_CHAINS[0]).getRpc()).not.toThrow();
     });
   });
 });

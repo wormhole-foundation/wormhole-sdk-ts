@@ -19,7 +19,7 @@ import {
   toChain,
   toChainId,
   toNative,
-} from '@wormhole-foundation/connect-sdk';
+} from '@wormhole-foundation/sdk-connect';
 import { Provider, TransactionRequest } from 'ethers';
 
 import { ethers_contracts } from '.';
@@ -35,9 +35,9 @@ import {
   addFrom,
   unusedArbiterFee,
   unusedNonce,
-} from '@wormhole-foundation/connect-sdk-evm';
+} from '@wormhole-foundation/sdk-evm';
 
-import '@wormhole-foundation/connect-sdk-evm-core';
+import '@wormhole-foundation/sdk-evm-core';
 
 export class EvmTokenBridge<N extends Network, C extends EvmChains>
   implements TokenBridge<N, C>

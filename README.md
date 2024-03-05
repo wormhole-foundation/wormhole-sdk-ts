@@ -1,6 +1,6 @@
-# Connect SDK
+# Wormhole TS SDK
 
-The Connect SDK is a TypeScript SDK for interacting with the chains Wormhole supports and the [protocols](#protocols) built on top of Wormhole.
+The Wormhole Typescript SDK is useful for interacting with the chains Wormhole supports and the [protocols](#protocols) built on top of Wormhole.
 
 ## Warning 
 
@@ -8,49 +8,46 @@ The Connect SDK is a TypeScript SDK for interacting with the chains Wormhole sup
 
 ## Installation
 
-Install the primary package
+### Basic 
+
+Install the (meta) package
 
 ```bash
-npm install @wormhole-foundation/connect-sdk
+npm install @wormhole-foundation/sdk
 ```
 
-As well as any other platforms you wish to use
+This package combines all the individual packages in a way that makes setup easier while still allowing for tree shaking. 
+
+### Advanced
+
+Alternatively, for an advanced user, install a specific set of the packages published.
 
 ```bash
-npm install @wormhole-foundation/connect-sdk-evm
-npm install @wormhole-foundation/connect-sdk-solana
-npm install @wormhole-foundation/connect-sdk-algorand
-```
+# constants
+npm install @wormhole-foundation/sdk-base
 
-And any protocols you intend to use
+# contract interfaces, basic types, vaa payload definitions
+npm install @wormhole-foundation/sdk-definitions
 
-```bash
-npm install @wormhole-foundation/connect-sdk-evm-tokenbridge
-npm install @wormhole-foundation/connect-sdk-solana-tokenbridge
-npm install @wormhole-foundation/connect-sdk-algorand-tokenbridge
+# Evm specific utilities
+npm install @wormhole-foundation/sdk-evm
+
+# Evm TokenBridge protocol client
+npm install @wormhole-foundation/sdk-evm-tokenbridge
 ```
 
 ## Usage
 
-A developer would use the connect-sdk package in conjunction with one or more of the chain context packages. Most developers don't use every single chain and may only use a couple, which allows developers to import only the dependencies they actually need.
-
 Getting started is simple, just import and pass in the [Platform](#platforms) modules you wish to support as an argument to the Wormhole class.
 
 ```ts
-import { Wormhole, Signer } from "@wormhole-foundation/connect-sdk";
-import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
-import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
-import { AlgorandPlatform } from "@wormhole-foundation/connect-sdk-algorand";
-
-// Include the protocols you wish to use
-// these imports register the protocol to be used by higher level abstractions
-// like WormholeTransfers 
-import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
-import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
-import "@wormhole-foundation/connect-sdk-algorand-tokenbridge";
+import { Wormhole, Signer } from "@wormhole-foundation/sdk";
+import { evm } from "@wormhole-foundation/sdk/evm";
+import { solana } from "@wormhole-foundation/sdk/solana";
+import { algorand } from "@wormhole-foundation/sdk/algorand";
 
 const network = "Mainnet"; // Or "Testnet"
-const wh = new Wormhole(network, [EvmPlatform, SolanaPlatform, AlgorandPlatform]);
+const wh = new Wormhole(network, [evm.Platform, solana.Platform, algorand.Platform]);
 
 // Get a ChainContext object for a specific chain
 // Useful to do things like get the rpc client, make Protocol clients,
@@ -187,11 +184,6 @@ Each Protocol, if available, will have a Platform specific implementation. These
 The protocol that underlies all Wormhole activity is the Core protocol. This protocol is responsible for emitting the message containing the information necessary to perform bridging including [Emitter address](https://docs.wormhole.com/wormhole/reference/glossary#emitter), the [Sequence number](https://docs.wormhole.com/wormhole/reference/glossary#sequence) for the message and the Payload of the message itself.
 
 ```ts
-//  ...
-// register the protocol
-import "@wormhole-foundation/connect-sdk-solana-core";
-
-// ...
 
 // get chain context
 const chain = wh.getChain("Solana");
@@ -215,9 +207,7 @@ Every chain has a `TokenBridge` protocol client that provides a consistent inter
 Using the `WormholeTransfer` abstractions is the recommended way to interact with these protocols but it is possible to use them directly
 
 ```ts
-import { signSendWait } from "@wormhole-foundation/connect-sdk";
-
-import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
+import { signSendWait } from "@wormhole-foundation/sdk";
 
 // ...
 

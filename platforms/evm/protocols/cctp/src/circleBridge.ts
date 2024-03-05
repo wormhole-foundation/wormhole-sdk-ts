@@ -10,7 +10,7 @@ import {
   circle,
   encoding,
   nativeChainIds,
-} from '@wormhole-foundation/connect-sdk';
+} from '@wormhole-foundation/sdk-connect';
 
 import { MessageTransmitter, TokenMessenger } from './ethers-contracts';
 
@@ -21,7 +21,7 @@ import {
   EvmUnsignedTransaction,
   addChainId,
   addFrom,
-} from '@wormhole-foundation/connect-sdk-evm';
+} from '@wormhole-foundation/sdk-evm';
 import { LogDescription, Provider, TransactionRequest, ethers } from 'ethers';
 import { ethers_contracts } from '.';
 //https://github.com/circlefin/evm-cctp-contracts

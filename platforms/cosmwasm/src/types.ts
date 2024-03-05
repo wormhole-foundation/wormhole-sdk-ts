@@ -1,4 +1,4 @@
-import { UniversalOrNative, PlatformToChains } from "@wormhole-foundation/connect-sdk";
+import { UniversalOrNative, PlatformToChains } from "@wormhole-foundation/sdk-connect";
 import { logs as cosmosLogs } from "@cosmjs/stargate";
 
 /**

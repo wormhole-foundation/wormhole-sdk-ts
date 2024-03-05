@@ -7,8 +7,8 @@ import {
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction,
 } from '@solana/web3.js';
-import { toChainId, VAA } from '@wormhole-foundation/connect-sdk';
-import { SolanaAddress, utils } from '@wormhole-foundation/connect-sdk-solana';
+import { toChainId, VAA } from '@wormhole-foundation/sdk-connect';
+import { SolanaAddress, utils } from '@wormhole-foundation/sdk-solana';
 import {
   deriveClaimKey,
   deriveFeeCollectorKey,

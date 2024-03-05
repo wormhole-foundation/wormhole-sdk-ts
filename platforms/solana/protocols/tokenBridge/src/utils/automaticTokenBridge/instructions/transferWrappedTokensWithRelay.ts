@@ -17,7 +17,7 @@ import { getAssociatedTokenAddressSync } from '@solana/spl-token';
 import { getWrappedMeta } from '../../tokenBridge';
 import { BN } from '@project-serum/anchor';
 import { deriveSignerSequenceAddress } from '../accounts/signerSequence';
-import { Chain, toChainId } from '@wormhole-foundation/connect-sdk';
+import { Chain, toChainId } from '@wormhole-foundation/sdk-connect';
 
 export async function createTransferWrappedTokensWithRelayInstruction(
   connection: Connection,

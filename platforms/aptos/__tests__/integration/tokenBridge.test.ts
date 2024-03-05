@@ -6,10 +6,10 @@ import {
   createVAA,
   testing,
   toNative,
-} from "@wormhole-foundation/connect-sdk";
+} from "@wormhole-foundation/sdk-connect";
 
-import "@wormhole-foundation/connect-sdk-aptos-core";
-import "@wormhole-foundation/connect-sdk-aptos-tokenbridge";
+import "@wormhole-foundation/sdk-aptos-core";
+import "@wormhole-foundation/sdk-aptos-tokenbridge";
 
 import { APTOS_COIN, AptosChains, AptosPlatform } from "../../src/";
 

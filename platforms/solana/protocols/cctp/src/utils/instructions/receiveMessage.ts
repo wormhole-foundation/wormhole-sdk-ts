@@ -10,8 +10,8 @@ import {
   CircleBridge,
   circle,
   encoding,
-} from '@wormhole-foundation/connect-sdk';
-import { SolanaAddress } from '@wormhole-foundation/connect-sdk-solana';
+} from '@wormhole-foundation/sdk-connect';
+import { SolanaAddress } from '@wormhole-foundation/sdk-solana';
 import { findProgramAddress } from '../accounts';
 import { createMessageTransmitterProgramInterface } from '../program';
 

@@ -1,5 +1,5 @@
 {
-  "name": "Connect SDK",
+  "name": "Wormhole TS SDK",
   "extends": ["./typedoc.base.json"],
   "entryPointStrategy": "packages" ,
   "entryPoints": [
@@ -19,6 +19,7 @@
     "platforms/cosmwasm/protocols/ibc",
     "platforms/algorand",
     "platforms/algorand/protocols/core",
-    "platforms/algorand/protocols/tokenBridge"
+    "platforms/algorand/protocols/tokenBridge",
+    "sdk"
   ]
 }

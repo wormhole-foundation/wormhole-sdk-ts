@@ -3,12 +3,19 @@ import {
   UniversalAddress,
   encoding,
   registerNative,
-} from '@wormhole-foundation/connect-sdk';
+} from '@wormhole-foundation/sdk-connect';
 
-import { ethers } from 'ethers';
+import {
+  ZeroAddress,
+  getAddress,
+  getBytes,
+  hexlify,
+  isAddress,
+  zeroPadValue,
+} from 'ethers';
 import { AnyEvmAddress, _platform } from './types';
 
-export const EvmZeroAddress = ethers.ZeroAddress;
+export const EvmZeroAddress = ZeroAddress;
 
 export class EvmAddress implements Address {
   static readonly byteSize = 20;
@@ -31,14 +38,14 @@ export class EvmAddress implements Address {
           `Invalid EVM address, expected ${EvmAddress.byteSize}-byte hex string but got ${address}`,
         );
 
-      this.address = ethers.getAddress(address);
+      this.address = getAddress(address);
     } else if (address instanceof Uint8Array) {
       if (address.length !== EvmAddress.byteSize)
         throw new Error(
           `Invalid EVM address, expected ${EvmAddress.byteSize} bytes but got ${address.length}`,
         );
 
-      this.address = ethers.getAddress(ethers.hexlify(address));
+      this.address = getAddress(hexlify(address));
     } else if (UniversalAddress.instanceof(address)) {
       // If its a universal address and we want it to be an ethereum address,
       // we need to chop off the first 12 bytes of padding
@@ -52,7 +59,7 @@ export class EvmAddress implements Address {
         throw new Error(`Invalid EVM address ${address}`);
 
       const suffix = encoding.hex.encode(addressBytes.slice(12));
-      this.address = ethers.getAddress(suffix);
+      this.address = getAddress(suffix);
     } else throw new Error(`Invalid EVM address ${address}`);
   }
 
@@ -66,15 +73,15 @@ export class EvmAddress implements Address {
     return this;
   }
   toUint8Array() {
-    return ethers.getBytes(this.address);
+    return getBytes(this.address);
   }
   toUniversalAddress() {
     return new UniversalAddress(
-      ethers.zeroPadValue(this.address, UniversalAddress.byteSize),
+      zeroPadValue(this.address, UniversalAddress.byteSize),
     );
   }
   static isValidAddress(address: string) {
-    return ethers.isAddress(address);
+    return isAddress(address);
   }
   static instanceof(address: any): address is EvmAddress {
     return address.constructor.platform === EvmAddress.platform;

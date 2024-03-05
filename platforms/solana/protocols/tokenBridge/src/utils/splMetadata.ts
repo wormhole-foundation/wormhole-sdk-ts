@@ -8,7 +8,7 @@ import {
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction,
 } from '@solana/web3.js';
-import { utils } from '@wormhole-foundation/connect-sdk-solana';
+import { utils } from '@wormhole-foundation/sdk-solana';
 
 export class Creator {
   address: PublicKey;

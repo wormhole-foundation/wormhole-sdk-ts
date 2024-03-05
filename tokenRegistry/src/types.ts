@@ -1,4 +1,4 @@
-import { Chain } from "@wormhole-foundation/sdk-base";
+import { Chain } from "@wormhole-foundation/sdk-connect";
 
 export type ForeignAssetCache = {
   address: string;

@@ -4,7 +4,7 @@ import {
   SignedTx,
   Signer,
   UnsignedTransaction,
-} from "@wormhole-foundation/connect-sdk";
+} from "@wormhole-foundation/sdk-connect";
 import { Account, Algodv2, assignGroupID, mnemonicToSecretKey } from "algosdk";
 import { AlgorandChains, TransactionSignerPair } from "./types";
 import { AlgorandPlatform } from "./platform";

@@ -14,7 +14,7 @@ import {
   Signer,
   UnsignedTransaction,
   encoding,
-} from '@wormhole-foundation/connect-sdk';
+} from '@wormhole-foundation/sdk-connect';
 import { SolanaPlatform } from './platform';
 import { SolanaChains } from './types';
 import { SolanaUnsignedTransaction } from './unsignedTransaction';

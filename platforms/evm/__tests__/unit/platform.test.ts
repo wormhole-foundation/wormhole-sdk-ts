@@ -5,16 +5,15 @@ import {
   CONFIG,
   DEFAULT_NETWORK,
   chainToPlatform,
-  chains
-} from '@wormhole-foundation/connect-sdk';
+  chains,
+} from '@wormhole-foundation/sdk-connect';
 
-import '@wormhole-foundation/connect-sdk-evm-core';
-import '@wormhole-foundation/connect-sdk-evm-tokenbridge';
+import '@wormhole-foundation/sdk-evm-core';
+import '@wormhole-foundation/sdk-evm-tokenbridge';
 import { EvmPlatform } from '../../src/platform';
 
 import { getDefaultProvider } from 'ethers';
 import { EvmChains } from '../../src';
-
 
 const EVM_CHAINS = chains.filter(
   (c) => chainToPlatform(c) === EvmPlatform._platform,
@@ -31,7 +30,7 @@ describe('EVM Platform Tests', () => {
     test('No RPC', async () => {
       const p = new EvmPlatform(network, {});
       const rpc = getDefaultProvider('');
-      expect(() => p.getProtocol("TokenBridge", rpc)).rejects.toThrow();
+      expect(() => p.getProtocol('TokenBridge', rpc)).rejects.toThrow();
     });
     test('With RPC', async () => {
       const p = new EvmPlatform(network, {
@@ -39,7 +38,7 @@ describe('EVM Platform Tests', () => {
       });
 
       const rpc = getDefaultProvider('');
-      const tb = await p.getProtocol("TokenBridge", rpc);
+      const tb = await p.getProtocol('TokenBridge', rpc);
       expect(tb).toBeTruthy();
     });
   });
@@ -48,14 +47,16 @@ describe('EVM Platform Tests', () => {
     test('No RPC', async () => {
       const p = new EvmPlatform(network, {});
       const rpc = getDefaultProvider('');
-      expect(() => p.getProtocol("AutomaticTokenBridge", rpc)).rejects.toThrow();
+      expect(() =>
+        p.getProtocol('AutomaticTokenBridge', rpc),
+      ).rejects.toThrow();
     });
     test('With RPC', async () => {
       const p = new EvmPlatform(network, {
         [EVM_CHAINS[0]]: configs[EVM_CHAINS[0]],
       });
       const rpc = getDefaultProvider('');
-      const tb = await p.getProtocol("AutomaticTokenBridge", rpc);
+      const tb = await p.getProtocol('AutomaticTokenBridge', rpc);
       expect(tb).toBeTruthy();
     });
   });
