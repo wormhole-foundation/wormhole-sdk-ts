@@ -141,8 +141,6 @@ export class EvmWormholeCore<N extends Network, C extends EvmChains>
     const receipt = await this.provider.getTransactionReceipt(txid);
     if (receipt === null) throw new Error('Could not get transaction receipt');
 
-    if (payloadLiteral !== 'Uint8Array') throw 'fk';
-
     return receipt.logs
       .filter((l: any) => {
         return l.address === this.coreAddress;
