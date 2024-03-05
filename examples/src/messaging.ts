@@ -4,6 +4,7 @@ import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 import { SuiPlatform } from "@wormhole-foundation/connect-sdk-sui";
 import { AptosPlatform } from "@wormhole-foundation/connect-sdk-aptos";
 import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
+import { AlgorandPlatform } from "@wormhole-foundation/connect-sdk-algorand";
 
 import { getStuff } from "./helpers";
 
@@ -13,6 +14,7 @@ import "@wormhole-foundation/connect-sdk-solana-core";
 import "@wormhole-foundation/connect-sdk-sui-core";
 import "@wormhole-foundation/connect-sdk-aptos-core";
 import "@wormhole-foundation/connect-sdk-cosmwasm-core";
+import "@wormhole-foundation/connect-sdk-algorand-core";
 
 (async function () {
   const wh = new Wormhole("Testnet", [
@@ -21,9 +23,10 @@ import "@wormhole-foundation/connect-sdk-cosmwasm-core";
     SuiPlatform,
     AptosPlatform,
     CosmwasmPlatform,
+    AlgorandPlatform,
   ]);
 
-  const chain = wh.getChain("Injective");
+  const chain = wh.getChain("Algorand");
 
   // Get a reference to the core messaging bridge
   const coreBridge = await chain.getWormholeCore();
@@ -39,8 +42,8 @@ import "@wormhole-foundation/connect-sdk-cosmwasm-core";
   //const txid = txids[txids.length - 1];
 
   const txid = {
-    chain: "Injective",
-    txid: "292bb13b06126e852125c10ba99c26aa4ed15a7eb767b81965cf0d0543ab05e3",
+    chain: "Algorand",
+    txid: "4WTDR6J327D4HHFA6CFCJ3Z6CEICUUY4MW7IZG4XOO4E6W77FLKA",
   };
 
   // Grab the wormhole message id from the transaction logs or storage
