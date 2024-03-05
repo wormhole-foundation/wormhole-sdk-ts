@@ -150,10 +150,9 @@ export class EvmWormholeCore<N extends Network, C extends EvmChains>
           data,
         });
         if (parsed === null) return undefined;
-        console.log(parsed);
 
         const emitterAddress = new EvmAddress(parsed.args['sender']);
-        const x = {
+        return createVAA('Uint8Array', {
           guardianSet: gsIdx, // TODO: should we get this from the contract on init?
           timestamp: 0, // TODO: Would need to get the full block to get the timestamp
           emitterChain: this.chain,
@@ -163,8 +162,7 @@ export class EvmWormholeCore<N extends Network, C extends EvmChains>
           nonce: Number(parsed.args['nonce']),
           signatures: [],
           payload: parsed.args['payload'],
-        };
-        return createVAA('Uint8Array', x);
+        });
       })
       .filter((vaa) => !!vaa) as VAA[];
   }
