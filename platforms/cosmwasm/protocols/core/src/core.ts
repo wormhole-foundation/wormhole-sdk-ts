@@ -10,6 +10,8 @@ import {
   VAA,
   WormholeCore,
   WormholeMessageId,
+  createVAA,
+  encoding,
 } from "@wormhole-foundation/connect-sdk";
 import {
   AnyCosmwasmAddress,
@@ -71,11 +73,16 @@ export class CosmwasmWormholeCore<N extends Network, C extends CosmwasmChains>
   async parseTransaction(txid: string): Promise<WormholeMessageId[]> {
     const tx = await this.rpc.getTx(txid);
     if (!tx) throw new Error("No transaction found for txid: " + txid);
+    return [CosmwasmWormholeCore.parseWormholeMessageId(this.chain, this.coreAddress, tx)];
+  }
+
+  async parseMessages(txid: string): Promise<VAA[]> {
+    const tx = await this.rpc.getTx(txid);
+    if (!tx) throw new Error("No transaction found for txid: " + txid);
     return [CosmwasmWormholeCore.parseWormholeMessage(this.chain, this.coreAddress, tx)];
   }
 
-  // TODO: make consts
-  static parseWormholeMessage(chain: Chain, coreAddress: string, tx: IndexedTx): WormholeMessageId {
+  static parseWormholeMessage(chain: Chain, coreAddress: string, tx: IndexedTx): VAA {
     const events = tx.events.filter(
       (ev) =>
         ev.type === "wasm" &&
@@ -88,22 +95,36 @@ export class CosmwasmWormholeCore<N extends Network, C extends CosmwasmChains>
 
     const [wasm] = events;
 
-    const sequence = wasm!.attributes.find((e) => {
-      return e.key === "message.sequence";
-    })!.value;
+    const obj = Object.fromEntries(
+      wasm!.attributes.map((attr) => {
+        return [attr.key.split(".")[1]!, attr.value];
+      }),
+    );
 
-    const emitter = wasm!.attributes.find((e) => {
-      return e.key === "message.sender";
-    })!.value;
+    return createVAA("Uint8Array", {
+      emitterChain: chain,
+      emitterAddress: new UniversalAddress(encoding.hex.decode(obj["sender"]!)),
+      sequence: BigInt(obj["sequence"]!),
+
+      guardianSet: 0, // TODO: need to implement guardian set idx
+      timestamp: Number(obj["block_time"]),
+      consistencyLevel: 0,
+      nonce: Number(obj["nonce"]),
+      signatures: [],
+      payload: encoding.hex.decode(obj["message"]!),
+    });
+  }
+  static parseWormholeMessageId(
+    chain: Chain,
+    coreAddress: string,
+    tx: IndexedTx,
+  ): WormholeMessageId {
+    const unsignedVaa = CosmwasmWormholeCore.parseWormholeMessage(chain, coreAddress, tx);
 
     return {
-      chain: chain,
-      emitter: new UniversalAddress(emitter),
-      sequence: BigInt(sequence),
+      chain: unsignedVaa.emitterChain,
+      emitter: unsignedVaa.emitterAddress,
+      sequence: unsignedVaa.sequence,
     };
-  }
-
-  async parseMessages(txid: string): Promise<VAA[]> {
-    throw new Error("Not implemented.");
   }
 }

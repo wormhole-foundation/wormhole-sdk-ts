@@ -3,18 +3,27 @@ import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
 import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
 import { SuiPlatform } from "@wormhole-foundation/connect-sdk-sui";
 import { AptosPlatform } from "@wormhole-foundation/connect-sdk-aptos";
+import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
+
+import { getStuff } from "./helpers";
 
 // register the protocol
 import "@wormhole-foundation/connect-sdk-evm-core";
 import "@wormhole-foundation/connect-sdk-solana-core";
 import "@wormhole-foundation/connect-sdk-sui-core";
 import "@wormhole-foundation/connect-sdk-aptos-core";
-import { getStuff } from "./helpers";
+import "@wormhole-foundation/connect-sdk-cosmwasm-core";
 
 (async function () {
-  const wh = new Wormhole("Testnet", [EvmPlatform, SolanaPlatform, SuiPlatform, AptosPlatform]);
+  const wh = new Wormhole("Testnet", [
+    EvmPlatform,
+    SolanaPlatform,
+    SuiPlatform,
+    AptosPlatform,
+    CosmwasmPlatform,
+  ]);
 
-  const chain = wh.getChain("Aptos");
+  const chain = wh.getChain("Injective");
 
   // Get a reference to the core messaging bridge
   const coreBridge = await chain.getWormholeCore();
@@ -30,13 +39,14 @@ import { getStuff } from "./helpers";
   //const txid = txids[txids.length - 1];
 
   const txid = {
-    chain: "Aptos",
-    txid: "0x2af3d60f7a45740adce4d78c8857a9d992c0c96472d8b5224717ff2975b7c1e7",
+    chain: "Injective",
+    txid: "292bb13b06126e852125c10ba99c26aa4ed15a7eb767b81965cf0d0543ab05e3",
   };
 
   // Grab the wormhole message id from the transaction logs or storage
   const [whm] = await chain.parseTransaction(txid!.txid);
   console.log(whm);
+  console.log(await coreBridge.parseMessages(txid!.txid));
 
   //const unsignedVaas = await coreBridge.parseMessages(txid!.txid);
   //console.log(unsignedVaas);
