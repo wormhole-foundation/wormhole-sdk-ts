@@ -1,4 +1,5 @@
 import {
+  nativeChainIds,
   ChainsConfig,
   Contracts,
   Network,
@@ -23,7 +24,6 @@ import {
   addChainId,
   addFrom,
 } from '@wormhole-foundation/sdk-evm';
-import { nativeChainIds } from '@wormhole-foundation/sdk-base';
 
 export class EvmWormholeCore<N extends Network, C extends EvmChains>
   implements WormholeCore<N, C>
