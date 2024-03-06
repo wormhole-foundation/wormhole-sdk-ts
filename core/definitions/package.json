@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-definitions",
-  "version": "0.5.0-beta.2",
+  "version": "0.5.0-beta.3",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -18,12 +18,12 @@
   "files": [
     "dist"
   ],
-  "exports":{
+  "exports": {
     ".": {
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.js"
     },
-    "./testing":{
+    "./testing": {
       "import": "./dist/esm/testing/index.js",
       "require": "./dist/cjs/testing/index.js"
     }
@@ -47,6 +47,6 @@
   },
   "dependencies": {
     "@noble/hashes": "^1.3.1",
-    "@wormhole-foundation/sdk-base": "0.5.0-beta.2"
+    "@wormhole-foundation/sdk-base": "0.5.0-beta.3"
   }
 }
