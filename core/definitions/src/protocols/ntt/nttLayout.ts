@@ -5,8 +5,8 @@ import {
   customizableBytes,
 } from "@wormhole-foundation/sdk-base";
 
-import { universalAddressItem, chainItem } from "../layout-items";
-import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../vaa";
+import { universalAddressItem, chainItem } from "../../layout-items";
+import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../../vaa";
 
 export const trimmedAmountLayout = [
   { name: "decimals", binary: "uint", size: 1 },
@@ -76,7 +76,7 @@ const wormholeNativeTokenTransferLayout = wormholeTransceiverMessageLayout(
   nttManagerMessageLayout(nativeTokenTransferLayout),
 );
 
-export const namedPayloads = [
+export const nttNamedPayloads = [
   ["WormholeTransfer", wormholeNativeTokenTransferLayout],
 ] as const satisfies NamedPayloads;
 
@@ -84,8 +84,8 @@ export const namedPayloads = [
 declare global {
   namespace Wormhole {
     interface PayloadLiteralToLayoutMapping
-      extends RegisterPayloadTypes<"NTT", typeof namedPayloads> {}
+      extends RegisterPayloadTypes<"NTT", typeof nttNamedPayloads> {}
   }
 }
 
-registerPayloadTypes("NTT", namedPayloads);
+registerPayloadTypes("NTT", nttNamedPayloads);

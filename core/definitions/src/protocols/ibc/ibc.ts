@@ -7,11 +7,11 @@ import {
   toChain,
   toChainId,
 } from "@wormhole-foundation/sdk-base";
-import { AccountAddress, ChainAddress, NativeAddress } from "../address";
-import { IbcMessageId, WormholeMessageId } from "../attestation";
-import { EmptyPlatformMap } from "../protocol";
-import { TokenAddress, TokenId, TxHash } from "../types";
-import { UnsignedTransaction } from "../unsignedTransaction";
+import { AccountAddress, ChainAddress, NativeAddress } from "../../address";
+import { IbcMessageId, WormholeMessageId } from "../../attestation";
+import { EmptyPlatformMap } from "../../protocol";
+import { TokenAddress, TokenId, TxHash } from "../../types";
+import { UnsignedTransaction } from "../../unsignedTransaction";
 
 declare global {
   namespace Wormhole {

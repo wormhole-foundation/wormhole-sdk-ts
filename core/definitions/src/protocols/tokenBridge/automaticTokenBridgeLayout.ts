@@ -1,6 +1,6 @@
-import { amountItem, payloadIdItem, universalAddressItem } from "../layout-items";
-import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../vaa";
-import { transferWithPayloadLayout } from "./tokenBridge";
+import { amountItem, payloadIdItem, universalAddressItem } from "../../layout-items";
+import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../../vaa";
+import { transferWithPayloadLayout } from "./tokenBridgeLayout";
 
 //from here:
 // https://github.com/wormhole-foundation/example-token-bridge-relayer/blob/1a04ec51f4cfded04e59160bcf2e64aa29dea1f3/evm/src/token-bridge-relayer/TokenBridgeRelayer.sol#L260-L267
@@ -11,7 +11,7 @@ export const connectPayload = [
   { name: "targetRecipient", ...universalAddressItem },
 ] as const;
 
-export const namedPayloads = [
+export const automaticTokenBridgeNamedPayloads = [
   ["TransferWithRelay", transferWithPayloadLayout(connectPayload)],
 ] as const satisfies NamedPayloads;
 
@@ -19,8 +19,11 @@ export const namedPayloads = [
 declare global {
   namespace Wormhole {
     interface PayloadLiteralToLayoutMapping
-      extends RegisterPayloadTypes<"AutomaticTokenBridge", typeof namedPayloads> {}
+      extends RegisterPayloadTypes<
+        "AutomaticTokenBridge",
+        typeof automaticTokenBridgeNamedPayloads
+      > {}
   }
 }
 
-registerPayloadTypes("AutomaticTokenBridge", namedPayloads);
+registerPayloadTypes("AutomaticTokenBridge", automaticTokenBridgeNamedPayloads);

@@ -1,10 +1,10 @@
 import { Chain, Network, Platform } from "@wormhole-foundation/sdk-base";
-import "../payloads/automaticTokenBridge";
-import "../payloads/tokenBridge";
-import { EmptyPlatformMap } from "../protocol";
-import { ProtocolPayload, ProtocolVAA, VAA } from "../vaa";
-import { ChainAddress, NativeAddress } from "../address";
-import { UnsignedTransaction } from "../unsignedTransaction";
+import "../tokenBridge/automaticTokenBridgeLayout";
+import "../tokenBridge/tokenBridgeLayout";
+import { EmptyPlatformMap } from "../../protocol";
+import { ProtocolPayload, ProtocolVAA, VAA } from "../../vaa";
+import { ChainAddress, NativeAddress } from "../../address";
+import { UnsignedTransaction } from "../../unsignedTransaction";
 
 declare global {
   namespace Wormhole {
@@ -35,6 +35,12 @@ export namespace NTT {
     ProtocolName,
     PayloadName
   >;
+
+  export type InboundQueuedTransfer = {
+    recipient: string;
+    amount: string;
+    rateLimitExpiryTimestamp: number;
+  };
 }
 
 export interface NTT<N extends Network, C extends Chain> {
@@ -56,13 +62,13 @@ export interface NTT<N extends Network, C extends Chain> {
   getCurrentOutboundCapacity(): Promise<string>;
   getCurrentInboundCapacity(fromChain: Chain): Promise<string>;
 
-  // getInboundQueuedTransfer(
-  //   transceiverMessage: string,
-  //   fromChain: Chain,
-  // ): Promise<InboundQueuedTransfer | undefined>;
-  // completeInboundQueuedTransfer(
-  //   transceiverMessage: string,
-  //   fromChain: Chain,
-  //   payer: string,
-  // ): Promise<string>;
+  getInboundQueuedTransfer(
+    transceiverMessage: string,
+    fromChain: Chain,
+  ): Promise<NTT.InboundQueuedTransfer | undefined>;
+  completeInboundQueuedTransfer(
+    transceiverMessage: string,
+    fromChain: Chain,
+    payer: string,
+  ): Promise<string>;
 }

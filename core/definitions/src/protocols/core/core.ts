@@ -1,10 +1,10 @@
 import { Chain, Network, Platform } from "@wormhole-foundation/sdk-base";
-import { AccountAddress } from "../address";
-import { WormholeMessageId } from "../attestation";
-import { EmptyPlatformMap } from "../protocol";
-import { TxHash } from "../types";
-import { UnsignedTransaction } from "../unsignedTransaction";
-import { VAA } from "../vaa";
+import { AccountAddress } from "../../address";
+import { WormholeMessageId } from "../../attestation";
+import { EmptyPlatformMap } from "../../protocol";
+import { TxHash } from "../../types";
+import { UnsignedTransaction } from "../../unsignedTransaction";
+import { VAA } from "../../vaa";
 
 declare global {
   namespace Wormhole {

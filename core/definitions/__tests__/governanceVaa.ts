@@ -10,7 +10,7 @@ import {
   blindDeserializePayload,
   payloadDiscriminator,
 } from "../src/vaa";
-import "../src/payloads/governance";
+import "../src/protocols/core";
 
 //monkey-patch to allow stringifying BigInts
 (BigInt.prototype as any).toJSON = function () {
@@ -109,21 +109,14 @@ const guardianSetUpgrade =
 
 describe("Governance VAA tests", function () {
   const governanceDiscriminator = payloadDiscriminator([
-    ["WormholeCore",
-      ["UpgradeContract", "GuardianSetUpgrade", "SetMessageFee", "TransferFees", "RecoverChainId"]
+    [
+      "WormholeCore",
+      ["UpgradeContract", "GuardianSetUpgrade", "SetMessageFee", "TransferFees", "RecoverChainId"],
     ],
-    ["TokenBridge",
-      ["RegisterChain", "UpgradeContract", "RecoverChainId"]
-    ],
-    ["NftBridge",
-      ["RegisterChain", "UpgradeContract", "RecoverChainId"]
-    ],
-    ["Relayer",
-      ["RegisterChain", "UpgradeContract", "UpdateDefaultProvider"]
-    ],
-    ["CircleBridge",
-      ["UpdateFinality", "RegisterEmitterAndDomain", "UpgradeContract"]
-    ]
+    ["TokenBridge", ["RegisterChain", "UpgradeContract", "RecoverChainId"]],
+    ["NftBridge", ["RegisterChain", "UpgradeContract", "RecoverChainId"]],
+    ["Relayer", ["RegisterChain", "UpgradeContract", "UpdateDefaultProvider"]],
+    ["CircleBridge", ["UpdateFinality", "RegisterEmitterAndDomain", "UpgradeContract"]],
   ]);
 
   it("should create an empty VAA from an object with omitted fixed values", function () {
@@ -163,9 +156,9 @@ describe("Governance VAA tests", function () {
     expect(vaa.payload.guardianSet).toBe(3);
     expect(vaa.payload.guardians.length).toBe(19);
 
-    expect(serialize(vaa))
-      .toEqual(encoding.hex.decode(guardianSetUpgrade));
-    expect(blindDeserializePayload(rawvaa.payload))
-      .toEqual([["WormholeCore:GuardianSetUpgrade", vaa.payload]]);
+    expect(serialize(vaa)).toEqual(encoding.hex.decode(guardianSetUpgrade));
+    expect(blindDeserializePayload(rawvaa.payload)).toEqual([
+      ["WormholeCore:GuardianSetUpgrade", vaa.payload],
+    ]);
   });
 });

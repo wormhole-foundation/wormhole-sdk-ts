@@ -1,9 +1,9 @@
 import { Chain } from "@wormhole-foundation/sdk-base";
 import { ProtocolName } from "./protocol";
-import { AutomaticCircleBridge, CircleBridge } from "./protocols/circleBridge";
-import { IbcTransferData } from "./protocols/ibc";
-import { PorticoBridge } from "./protocols/portico";
-import { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge";
+import { AutomaticCircleBridge, CircleBridge } from "./protocols/circleBridge/circleBridge";
+import { IbcTransferData } from "./protocols/ibc/ibc";
+import { PorticoBridge } from "./protocols/portico/portico";
+import { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge/tokenBridge";
 import { SequenceId } from "./types";
 import { UniversalAddress } from "./universalAddress";
 import { VAA } from "./vaa";
