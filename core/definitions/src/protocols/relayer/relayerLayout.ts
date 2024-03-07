@@ -7,8 +7,8 @@ import {
   payloadIdItem,
   sequenceItem,
   universalAddressItem,
-} from "../layout-items";
-import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../vaa";
+} from "../../layout-items";
+import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../../vaa";
 
 const encodedExecutionInfoItem = {
   binary: "bytes",
@@ -51,25 +51,28 @@ const messageKeySwitchLayout = {
   ],
 } as const satisfies LayoutItem;
 
-export const deviveryInstructionLayout = <
-  const P extends CustomizableBytes = undefined
->(customPayload?: P) => [
-  payloadIdItem(1),
-  { name: "target", ...addressChainItem },
-  customizableBytes({ name: "payload", lengthSize: 4}, customPayload),
-  { name: "requestedReceiverValue", ...amountItem },
-  { name: "extraReceiverValue", ...amountItem },
-  { name: "executionInfo", ...encodedExecutionInfoItem },
-  { name: "refund", ...addressChainItem },
-  { name: "refundDeliveryProvider", ...universalAddressItem },
-  { name: "sourceDeliveryProvider", ...universalAddressItem },
-  { name: "senderAddress", ...universalAddressItem },
-  { name: "messageKeys", binary: "array", lengthSize: 1, layout: messageKeySwitchLayout },
-] as const;
+export const deviveryInstructionLayout = <const P extends CustomizableBytes = undefined>(
+  customPayload?: P,
+) =>
+  [
+    payloadIdItem(1),
+    { name: "target", ...addressChainItem },
+    customizableBytes({ name: "payload", lengthSize: 4 }, customPayload),
+    { name: "requestedReceiverValue", ...amountItem },
+    { name: "extraReceiverValue", ...amountItem },
+    { name: "executionInfo", ...encodedExecutionInfoItem },
+    { name: "refund", ...addressChainItem },
+    { name: "refundDeliveryProvider", ...universalAddressItem },
+    { name: "sourceDeliveryProvider", ...universalAddressItem },
+    { name: "senderAddress", ...universalAddressItem },
+    { name: "messageKeys", binary: "array", lengthSize: 1, layout: messageKeySwitchLayout },
+  ] as const;
 
 const namedPayloads = [
-  [ "DeliveryInstruction", deviveryInstructionLayout() ],
-  [ "RedeliveryInstruction", [
+  ["DeliveryInstruction", deviveryInstructionLayout()],
+  [
+    "RedeliveryInstruction",
+    [
       payloadIdItem(2),
       { name: "deliveryVaaKey", binary: "bytes", layout: vaaKeyLayout },
       { name: "targetChain", ...chainItem() },

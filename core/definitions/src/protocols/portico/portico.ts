@@ -6,13 +6,13 @@ import {
   deserializeLayout,
   serializeLayout,
 } from "@wormhole-foundation/sdk-base";
-import { AccountAddress, ChainAddress } from "../address";
-import "../payloads/portico";
-import { porticoFlagSetLayout, porticoPayloadLayout } from "../payloads/portico";
-import { EmptyPlatformMap } from "../protocol";
-import { TokenAddress, TokenId } from "../types";
-import { UnsignedTransaction } from "../unsignedTransaction";
-import { ProtocolVAA } from "../vaa";
+import { AccountAddress, ChainAddress } from "../../address";
+import "./portico";
+import { porticoFlagSetLayout, porticoPayloadLayout } from "./porticoLayout";
+import { EmptyPlatformMap } from "../../protocol";
+import { TokenAddress, TokenId } from "../../types";
+import { UnsignedTransaction } from "../../unsignedTransaction";
+import { ProtocolVAA } from "../../vaa";
 
 declare global {
   namespace Wormhole {
