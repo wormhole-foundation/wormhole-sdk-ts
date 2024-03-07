@@ -4,9 +4,9 @@ import {
   circleDomainItem,
   circleNonceItem,
   universalAddressItem,
-} from "../layout-items";
-import "./automaticCircleBridge";
-import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../vaa";
+} from "../../layout-items";
+import "./automaticCircleBridgeLayout";
+import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../../vaa";
 
 const messageVersionItem = { binary: "uint", size: 4, custom: 0, omit: true } as const;
 
@@ -36,14 +36,16 @@ export const circleMessageLayout = [
   { name: "payload", binary: "bytes", layout: circleBurnMessageLayout },
 ] as const satisfies Layout;
 
-export const namedPayloads = [["Message", circleMessageLayout]] as const satisfies NamedPayloads;
+export const circleBridgeNamedPayloads = [
+  ["Message", circleMessageLayout],
+] as const satisfies NamedPayloads;
 
 // factory registration:
 declare global {
   namespace Wormhole {
     interface PayloadLiteralToLayoutMapping
-      extends RegisterPayloadTypes<"CircleBridge", typeof namedPayloads> {}
+      extends RegisterPayloadTypes<"CircleBridge", typeof circleBridgeNamedPayloads> {}
   }
 }
 
-registerPayloadTypes("CircleBridge", namedPayloads);
+registerPayloadTypes("CircleBridge", circleBridgeNamedPayloads);

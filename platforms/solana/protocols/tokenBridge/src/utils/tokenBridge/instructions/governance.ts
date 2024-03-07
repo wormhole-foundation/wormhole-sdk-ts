@@ -6,9 +6,9 @@ import {
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction,
 } from '@solana/web3.js';
-import { toChainId, VAA } from '@wormhole-foundation/connect-sdk';
-import { utils } from '@wormhole-foundation/connect-sdk-solana';
-import { utils as CoreUtils } from '@wormhole-foundation/connect-sdk-solana-core';
+import { toChainId, VAA } from '@wormhole-foundation/sdk-connect';
+import { utils } from '@wormhole-foundation/sdk-solana';
+import { utils as CoreUtils } from '@wormhole-foundation/sdk-solana-core';
 import { deriveEndpointKey, deriveTokenBridgeConfigKey } from '../accounts';
 import { createReadOnlyTokenBridgeProgramInterface } from '../program';
 

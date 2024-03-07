@@ -4,12 +4,12 @@ import {
   TokenBridge,
   UniversalAddress,
   createVAA,
-  testing,
   toNative,
-} from "@wormhole-foundation/connect-sdk";
+} from "@wormhole-foundation/sdk-connect";
+import { utils } from "@wormhole-foundation/sdk-definitions/testing";
 
-import "@wormhole-foundation/connect-sdk-aptos-core";
-import "@wormhole-foundation/connect-sdk-aptos-tokenbridge";
+import "@wormhole-foundation/sdk-aptos-core";
+import "@wormhole-foundation/sdk-aptos-tokenbridge";
 
 import { APTOS_COIN, AptosChains, AptosPlatform } from "../../src/";
 
@@ -30,8 +30,8 @@ const TOKEN_ADDRESSES = {
   },
 };
 
-const senderAddress = testing.utils.makeNativeAddress("Aptos");
-const bogusAddress = testing.utils.makeNativeAddress("Aptos");
+const senderAddress = utils.makeNativeAddress("Aptos");
+const bogusAddress = utils.makeNativeAddress("Aptos");
 const realNativeAddress = toNative("Aptos", TOKEN_ADDRESSES["Mainnet"]["Aptos"]["waptos"]);
 const realWrappedAddress = toNative("Aptos", TOKEN_ADDRESSES["Mainnet"]["Aptos"]["wavax"]);
 
@@ -199,7 +199,7 @@ describe("TokenBridge Tests", () => {
     const chain = "Aptos";
     const destChain = "Ethereum";
 
-    const recipient = testing.utils.makeUniversalChainAddress(destChain);
+    const recipient = utils.makeUniversalChainAddress(destChain);
 
     const amount = 1000n;
     const payload: Uint8Array | undefined = undefined;

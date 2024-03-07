@@ -1,15 +1,8 @@
 import { describe, expect, test } from "@jest/globals";
-import {
-  CONFIG,
-  Signature,
-  TokenBridge,
-  UniversalAddress,
-  createVAA,
-  testing,
-  toNative,
-} from "@wormhole-foundation/connect-sdk";
-import { SUI_COIN } from "../../src/constants";
+import { CONFIG, TokenBridge, toNative } from "@wormhole-foundation/sdk-connect";
+import { utils } from "@wormhole-foundation/sdk-definitions/testing";
 import { SuiChains, SuiPlatform } from "../../src/";
+import { SUI_COIN } from "../../src/constants";
 
 import "@wormhole-foundation/connect-sdk-sui-core";
 import "@wormhole-foundation/connect-sdk-sui-tokenbridge";
@@ -29,8 +22,8 @@ const TOKEN_ADDRESSES = {
   },
 };
 
-const senderAddress = testing.utils.makeNativeAddress("Sui");
-const bogusAddress = testing.utils.makeNativeAddress("Sui");
+//const senderAddress = utils.makeNativeAddress("Sui");
+const bogusAddress = utils.makeNativeAddress("Sui");
 
 const realNativeAddress = toNative("Sui", TOKEN_ADDRESSES["Mainnet"]["Sui"]["wsui"]);
 const realWrappedAddress = toNative("Sui", TOKEN_ADDRESSES["Mainnet"]["Sui"]["wavax"]);

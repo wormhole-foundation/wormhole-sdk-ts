@@ -6,19 +6,14 @@ import {
   TokenId,
   Wormhole,
   amount,
-} from "@wormhole-foundation/connect-sdk";
+} from "@wormhole-foundation/sdk";
+
 // Import the platform specific packages
-import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
-import { computeFee } from "@wormhole-foundation/connect-sdk-cosmwasm/src/unsignedTransaction";
-import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
-import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
+import { cosmwasm } from "@wormhole-foundation/sdk/cosmwasm";
+import { evm } from "@wormhole-foundation/sdk/evm";
+import { solana } from "@wormhole-foundation/sdk/solana";
 
 import { TransferStuff, getStuff } from "./helpers";
-
-import "@wormhole-foundation/connect-sdk-cosmwasm-ibc";
-import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
-import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
-import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 
 // We're going to transfer into, around, and out of the Cosmos ecosystem
 // First on Avalanche, transparently through gateway and over IBC to Cosmoshub
@@ -38,11 +33,9 @@ import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
 (async function () {
   // init Wormhole object, passing config for which network
   // to use (e.g. Mainnet/Testnet) and what Platforms to support
-  const wh = new Wormhole("Mainnet", [EvmPlatform, SolanaPlatform, CosmwasmPlatform]);
+  const wh = new Wormhole("Mainnet", [evm.Platform, solana.Platform, cosmwasm.Platform]);
   // Pick up where you left off by updating the txids as you go
   let fakeIt = false;
-
-  console.log(computeFee("Mainnet", "Dymension"));
 
   // Grab chain Contexts for each leg of our journey
   const external = wh.getChain("Solana");

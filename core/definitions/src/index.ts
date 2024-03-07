@@ -1,11 +1,3 @@
-// Make sure payloads are registered
-import "./payloads/automaticCircleBridge";
-import "./payloads/relayer";
-import "./payloads/governance";
-import "./payloads/tokenBridge";
-import "./payloads/bam";
-import "./payloads/ntt";
-
 export * from "./address";
 export * from "./protocol";
 export * from "./universalAddress";
@@ -21,13 +13,6 @@ export * from "./rpc";
 export * from "./attestation";
 export * from "./types";
 
-export * from "./protocols/core";
-export * from "./protocols/tokenBridge";
-export * from "./protocols/circleBridge";
-export * from "./protocols/ibc";
-export * from "./protocols/portico";
-export * from "./protocols/relayer";
-export * from "./protocols/ntt";
+export * from "./protocols";
 
 export * as layoutItems from "./layout-items";
-export * as testing from "./testing";

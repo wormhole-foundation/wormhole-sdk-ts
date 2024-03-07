@@ -20,13 +20,13 @@ import {
   isNative,
   nativeChainIds,
   networkPlatformConfigs,
-} from "@wormhole-foundation/connect-sdk";
+} from "@wormhole-foundation/sdk-connect";
 
 import { CosmwasmChain } from "./chain";
 import { IbcChannels, chainToNativeDenoms, networkChainToChannels } from "./constants";
 import { CosmwasmChains, CosmwasmPlatformType, _platform } from "./types";
 
-import { Balances, TokenId, chainToPlatform } from "@wormhole-foundation/connect-sdk";
+import { Balances, TokenId, chainToPlatform } from "@wormhole-foundation/sdk-connect";
 import { CosmwasmAddress } from "./address";
 import { IBC_TRANSFER_PORT } from "./constants";
 import { AnyCosmwasmAddress } from "./types";

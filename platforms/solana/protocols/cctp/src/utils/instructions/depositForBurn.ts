@@ -3,7 +3,7 @@ import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { PublicKey, TransactionInstruction } from '@solana/web3.js';
 import { findProgramAddress } from '../accounts';
 import { createTokenMessengerProgramInterface } from '../program';
-import { UniversalAddress } from '@wormhole-foundation/connect-sdk';
+import { UniversalAddress } from '@wormhole-foundation/sdk-connect';
 
 export function createDepositForBurnInstruction(
   messageTransmitterProgramId: PublicKey,

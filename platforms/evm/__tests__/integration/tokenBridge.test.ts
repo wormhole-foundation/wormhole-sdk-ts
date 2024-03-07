@@ -8,12 +8,12 @@ import {
   createVAA,
   encoding,
   nativeChainIds,
-  testing,
   toNative,
-} from '@wormhole-foundation/connect-sdk';
+} from '@wormhole-foundation/sdk-connect';
+import { utils } from '@wormhole-foundation/sdk-definitions/testing';
 
-import '@wormhole-foundation/connect-sdk-evm-core';
-import '@wormhole-foundation/connect-sdk-evm-tokenbridge';
+import '@wormhole-foundation/sdk-evm-core';
+import '@wormhole-foundation/sdk-evm-tokenbridge';
 
 import { EvmChains, EvmPlatform } from '../../src';
 
@@ -207,7 +207,7 @@ describe('TokenBridge Tests', () => {
 
   describe('Create Token Attestation Transactions', () => {
     const chain = 'Ethereum';
-    const nativeAddress = testing.utils.makeNativeAddress(chain);
+    const nativeAddress = utils.makeNativeAddress(chain);
 
     const tbAddress = p.config[chain]!.contracts.tokenBridge!;
 

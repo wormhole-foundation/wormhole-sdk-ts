@@ -6,8 +6,8 @@ import {
   customizableBytes,
   range,
 } from "@wormhole-foundation/sdk-base";
-import { payloadIdItem, chainItem, universalAddressItem, amountItem } from "../layout-items";
-import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../vaa";
+import { payloadIdItem, chainItem, universalAddressItem, amountItem } from "../../layout-items";
+import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../../vaa";
 
 const fixedLengthStringItem = {
   binary: "bytes",
@@ -22,29 +22,36 @@ const fixedLengthStringItem = {
 } as const satisfies LayoutItem;
 
 const transferCommonLayout = [
-  { name: "token", binary: "bytes", layout: [
+  {
+    name: "token",
+    binary: "bytes",
+    layout: [
       { name: "amount", ...amountItem },
       { name: "address", ...universalAddressItem },
       { name: "chain", ...chainItem() },
     ],
   },
-  { name: "to", binary: "bytes", layout: [
+  {
+    name: "to",
+    binary: "bytes",
+    layout: [
       { name: "address", ...universalAddressItem },
       { name: "chain", ...chainItem() },
     ],
   },
 ] as const satisfies Layout;
 
-export const transferWithPayloadLayout = <
-  const P extends CustomizableBytes = undefined
->(customPayload?: P) => [
-  payloadIdItem(3),
-  ...transferCommonLayout,
-  { name: "from", ...universalAddressItem },
-  customizableBytes({ name: "payload"}, customPayload),
-] as const;
+export const transferWithPayloadLayout = <const P extends CustomizableBytes = undefined>(
+  customPayload?: P,
+) =>
+  [
+    payloadIdItem(3),
+    ...transferCommonLayout,
+    { name: "from", ...universalAddressItem },
+    customizableBytes({ name: "payload" }, customPayload),
+  ] as const;
 
-export const namedPayloads = [
+export const tokenBridgeNamedPayloads = [
   [
     "AttestMeta",
     [
@@ -71,8 +78,8 @@ export const namedPayloads = [
 declare global {
   namespace Wormhole {
     interface PayloadLiteralToLayoutMapping
-      extends RegisterPayloadTypes<"TokenBridge", typeof namedPayloads> {}
+      extends RegisterPayloadTypes<"TokenBridge", typeof tokenBridgeNamedPayloads> {}
   }
 }
 
-registerPayloadTypes("TokenBridge", namedPayloads);
+registerPayloadTypes("TokenBridge", tokenBridgeNamedPayloads);

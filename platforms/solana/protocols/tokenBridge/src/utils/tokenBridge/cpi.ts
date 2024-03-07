@@ -5,7 +5,7 @@ import {
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
 } from '@solana/web3.js';
-import { utils } from '@wormhole-foundation/connect-sdk-solana-core';
+import { utils } from '@wormhole-foundation/sdk-solana-core';
 import {
   deriveAuthoritySignerKey,
   deriveCustodyKey,
@@ -22,7 +22,7 @@ import {
   getTransferNativeWithPayloadAccounts,
   getTransferWrappedWithPayloadAccounts,
 } from './instructions';
-import { TokenBridge, toChainId } from '@wormhole-foundation/connect-sdk';
+import { TokenBridge, toChainId } from '@wormhole-foundation/sdk-connect';
 
 /**
  * Base Config Account for Token Bridge program.

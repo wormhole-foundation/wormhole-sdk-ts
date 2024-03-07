@@ -1,0 +1,124 @@
+{
+  "name": "@wormhole-foundation/sdk",
+  "version": "0.5.0-beta.5",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/wormhole-foundation/connect-sdk/issues"
+  },
+  "homepage": "https://github.com/wormhole-foundation/connect-sdk#readme",
+  "directories": {
+    "test": "__tests__"
+  },
+  "license": "Apache-2.0",
+  "main": "./dist/cjs/index.js",
+  "types": "./dist/cjs/index.d.ts",
+  "module": "./dist/esm/index.js",
+  "author": "",
+  "description": "The core package for the Connect SDK, used in conjunction with 1 or more of the chain packages",
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "wormhole",
+    "sdk",
+    "typescript",
+    "connect"
+  ],
+  "engines": {
+    "node": ">=16"
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build:cjs": "tsc -p ./tsconfig.cjs.json",
+    "build:esm": "tsc -p ./tsconfig.esm.json",
+    "build": "npm run build:cjs && npm run build:esm",
+    "rebuild": "npm run clean && npm run build:cjs && npm run build:esm",
+    "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo",
+    "lint": "npm run prettier && eslint --fix",
+    "prettier": "prettier --write ./src",
+    "coverage": "jest --config ./jest.config.ts --coverage",
+    "docs": "typedoc"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    },
+    "./evm": {
+      "import": "./dist/esm/evm.js",
+      "require": "./dist/cjs/evm.js"
+    },
+    "./solana": {
+      "import": "./dist/esm/solana.js",
+      "require": "./dist/cjs/solana.js"
+    },
+    "./cosmwasm": {
+      "import": "./dist/esm/cosmwasm.js",
+      "require": "./dist/cjs/cosmwasm.js"
+    },
+    "./aptos": {
+      "import": "./dist/esm/aptos.js",
+      "require": "./dist/cjs/aptos.js"
+    },
+    "./sui": {
+      "import": "./dist/esm/sui.js",
+      "require": "./dist/cjs/sui.js"
+    },
+    "./algorand": {
+      "import": "./dist/esm/algorand.js",
+      "require": "./dist/cjs/algorand.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "evm": [
+        "dist/esm/evm.d.ts"
+      ],
+      "solana": [
+        "dist/esm/solana.d.ts"
+      ],
+      "cosmwasm": [
+        "dist/esm/cosmwasm.d.ts"
+      ],
+      "algorand": [
+        "dist/esm/algorand.d.ts"
+      ],
+      "aptos": [
+        "dist/esm/aptos.d.ts"
+      ],
+      "sui": [
+        "dist/esm/sui.d.ts"
+      ]
+    }
+  },
+  "dependencies": {
+    "@wormhole-foundation/sdk-base": "0.5.0-beta.5",
+    "@wormhole-foundation/sdk-definitions": "0.5.0-beta.5",
+    "@wormhole-foundation/sdk-connect": "0.5.0-beta.5",
+    "@wormhole-foundation/sdk-evm": "0.5.0-beta.5",
+    "@wormhole-foundation/sdk-evm-core": "0.5.0-beta.5",
+    "@wormhole-foundation/sdk-evm-tokenbridge": "0.5.0-beta.5",
+    "@wormhole-foundation/sdk-evm-portico": "0.5.0-beta.5",
+    "@wormhole-foundation/sdk-evm-cctp": "0.5.0-beta.5",
+    "@wormhole-foundation/sdk-solana": "0.5.0-beta.5",
+    "@wormhole-foundation/sdk-solana-core": "0.5.0-beta.5",
+    "@wormhole-foundation/sdk-solana-tokenbridge": "0.5.0-beta.5",
+    "@wormhole-foundation/sdk-solana-cctp": "0.5.0-beta.5",
+    "@wormhole-foundation/sdk-cosmwasm": "0.5.0-beta.5",
+    "@wormhole-foundation/sdk-cosmwasm-core": "0.5.0-beta.5",
+    "@wormhole-foundation/sdk-cosmwasm-tokenbridge": "0.5.0-beta.5",
+    "@wormhole-foundation/sdk-cosmwasm-ibc": "0.5.0-beta.5",
+    "@wormhole-foundation/sdk-sui": "0.5.0-beta.5",
+    "@wormhole-foundation/sdk-sui-core": "0.5.0-beta.5",
+    "@wormhole-foundation/sdk-sui-tokenbridge": "0.5.0-beta.5",
+    "@wormhole-foundation/sdk-aptos": "0.5.0-beta.5",
+    "@wormhole-foundation/sdk-aptos-core": "0.5.0-beta.5",
+    "@wormhole-foundation/sdk-aptos-tokenbridge": "0.5.0-beta.5",
+    "@wormhole-foundation/sdk-algorand": "0.5.0-beta.5",
+    "@wormhole-foundation/sdk-algorand-core": "0.5.0-beta.5",
+    "@wormhole-foundation/sdk-algorand-tokenbridge": "0.5.0-beta.5"
+  }
+}

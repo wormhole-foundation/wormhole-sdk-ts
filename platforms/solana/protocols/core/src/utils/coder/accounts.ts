@@ -1,5 +1,5 @@
 import { AccountsCoder, Idl } from '@project-serum/anchor';
-import { anchor } from '@wormhole-foundation/connect-sdk-solana';
+import { anchor } from '@wormhole-foundation/sdk-solana';
 
 export class WormholeAccountsCoder<A extends string = string>
   implements AccountsCoder

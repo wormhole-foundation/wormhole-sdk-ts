@@ -1,4 +1,4 @@
-import { Network, UnsignedTransaction } from "@wormhole-foundation/connect-sdk";
+import { Network, UnsignedTransaction } from "@wormhole-foundation/sdk-connect";
 import { Types } from "aptos";
 import { AptosChains } from "./types";
 

@@ -1,4 +1,4 @@
-import "../src/payloads/automaticCircleBridge";
+import "../src/protocols/circleBridge/automaticCircleBridgeLayout";
 import { encoding } from "@wormhole-foundation/sdk-base";
 import { deserialize, deserializePayload } from "../src/vaa";
 

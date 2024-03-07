@@ -18,7 +18,7 @@ import {
   toChain,
   toChainId,
   toNative,
-} from "@wormhole-foundation/connect-sdk";
+} from "@wormhole-foundation/sdk-connect";
 import {
   AlgorandAddress,
   AlgorandChains,
@@ -27,11 +27,8 @@ import {
   AnyAlgorandAddress,
   TransactionSignerPair,
   safeBigIntToNumber,
-} from "@wormhole-foundation/connect-sdk-algorand";
-import {
-  AlgorandWormholeCore,
-  StorageLogicSig,
-} from "@wormhole-foundation/connect-sdk-algorand-core";
+} from "@wormhole-foundation/sdk-algorand";
+import { AlgorandWormholeCore, StorageLogicSig } from "@wormhole-foundation/sdk-algorand-core";
 import {
   ABIMethod,
   ABIType,
@@ -48,7 +45,7 @@ import {
   modelsv2,
 } from "algosdk";
 
-import "@wormhole-foundation/connect-sdk-algorand-core";
+import "@wormhole-foundation/sdk-algorand-core";
 
 export const TransferMethodSelector = ABIMethod.fromSignature("portal_transfer(byte[])byte[]");
 

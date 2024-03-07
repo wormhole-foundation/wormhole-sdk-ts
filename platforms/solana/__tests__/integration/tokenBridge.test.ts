@@ -5,12 +5,12 @@ import {
   TokenBridge,
   UniversalAddress,
   createVAA,
-  testing,
   toNative,
-} from '@wormhole-foundation/connect-sdk';
+} from '@wormhole-foundation/sdk-connect';
+import { utils } from '@wormhole-foundation/sdk-definitions/testing';
 
-import '@wormhole-foundation/connect-sdk-solana-core';
-import '@wormhole-foundation/connect-sdk-solana-tokenbridge';
+import '@wormhole-foundation/sdk-solana-core';
+import '@wormhole-foundation/sdk-solana-tokenbridge';
 
 import {
   SolanaChains,
@@ -248,7 +248,7 @@ describe('TokenBridge Tests', () => {
     const destChain = 'Ethereum';
 
     const sender = toNative(chain, senderAddress);
-    const recipient = testing.utils.makeUniversalChainAddress(destChain);
+    const recipient = utils.makeUniversalChainAddress(destChain);
 
     const amount = 1000n;
     const payload: Uint8Array | undefined = undefined;

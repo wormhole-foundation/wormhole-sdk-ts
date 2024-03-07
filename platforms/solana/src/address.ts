@@ -4,7 +4,7 @@ import {
   UniversalAddress,
   encoding,
   registerNative,
-} from '@wormhole-foundation/connect-sdk';
+} from '@wormhole-foundation/sdk-connect';
 
 import { PublicKey } from '@solana/web3.js';
 import { AnySolanaAddress, _platform } from './types';

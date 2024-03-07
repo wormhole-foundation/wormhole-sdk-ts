@@ -6,7 +6,7 @@ import {
   Signer,
   TxHash,
   UnsignedTransaction,
-} from "@wormhole-foundation/connect-sdk";
+} from "@wormhole-foundation/sdk-connect";
 import { SuiPlatform } from "./platform";
 import { SuiChains } from "./types";
 import { SuiUnsignedTransaction } from "./unsignedTransaction";

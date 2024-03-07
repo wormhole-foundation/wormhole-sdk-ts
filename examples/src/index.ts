@@ -1,27 +1,21 @@
-import { CONFIG, Wormhole, amount, api, signSendWait } from "@wormhole-foundation/connect-sdk";
+import { CONFIG, Wormhole, amount, api, signSendWait } from "@wormhole-foundation/sdk";
 
-import { AlgorandPlatform } from "@wormhole-foundation/connect-sdk-algorand";
-import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
-import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
-import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
-import { SuiPlatform } from "@wormhole-foundation/connect-sdk-sui";
-
-import "@wormhole-foundation/connect-sdk-algorand-tokenbridge";
-import "@wormhole-foundation/connect-sdk-cosmwasm-tokenbridge";
-import "@wormhole-foundation/connect-sdk-evm-tokenbridge";
-import "@wormhole-foundation/connect-sdk-solana-tokenbridge";
-import "@wormhole-foundation/connect-sdk-sui-tokenbridge";
+import { algorand } from "@wormhole-foundation/sdk/algorand";
+import { cosmwasm } from "@wormhole-foundation/sdk/cosmwasm";
+import { evm } from "@wormhole-foundation/sdk/evm";
+import { solana } from "@wormhole-foundation/sdk/solana";
+import { sui } from "@wormhole-foundation/sdk/sui";
 
 import { getStuff } from "./helpers";
 
 (async function () {
   // Setup
   const wh = new Wormhole("Mainnet", [
-    EvmPlatform,
-    SolanaPlatform,
-    SuiPlatform,
-    AlgorandPlatform,
-    CosmwasmPlatform,
+    evm.Platform,
+    solana.Platform,
+    sui.Platform,
+    algorand.Platform,
+    cosmwasm.Platform,
   ]);
 
   const snd = wh.getChain("Sui");

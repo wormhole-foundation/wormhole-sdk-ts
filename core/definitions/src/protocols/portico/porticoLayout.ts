@@ -1,6 +1,6 @@
 import { Layout, bitsetItem } from "@wormhole-foundation/sdk-base";
-import { amountItem, universalAddressItem } from "../layout-items";
-import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../vaa";
+import { amountItem, universalAddressItem } from "../../layout-items";
+import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../../vaa";
 
 //weirdly, if defined in place, the type is not inferred properly
 const flagsItem = bitsetItem(["shouldWrapNative", "shouldUnwrapNative"]);

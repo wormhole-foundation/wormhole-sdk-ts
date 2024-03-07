@@ -1,13 +1,13 @@
 import { describe } from "@jest/globals";
 import { platform } from "@wormhole-foundation/sdk-base";
-import { testing } from "@wormhole-foundation/sdk-definitions";
+import { utils, mocks } from "@wormhole-foundation/sdk-definitions/testing";
 import { Wormhole, networkPlatformConfigs } from "../src";
 import { RouteTransferRequest } from "../src/routes";
 
 const network: "Testnet" = "Testnet";
 type TNet = typeof network;
 const allPlatformCtrs = platform.platforms.map((p) =>
-  testing.mocks.mockPlatformFactory(p, networkPlatformConfigs(network, p)),
+  mocks.mockPlatformFactory(p, networkPlatformConfigs(network, p)),
 );
 
 async function createRequest(wh: Wormhole<TNet>): Promise<RouteTransferRequest<TNet>> {
@@ -15,10 +15,10 @@ async function createRequest(wh: Wormhole<TNet>): Promise<RouteTransferRequest<T
   const toChain = wh.getChain("Ethereum");
 
   const req = {
-    from: testing.utils.makeUniversalChainAddress("Solana"),
-    to: testing.utils.makeUniversalChainAddress("Ethereum"),
-    source: testing.utils.makeUniversalChainAddress("Solana"),
-    destination: testing.utils.makeUniversalChainAddress("Ethereum"),
+    from: utils.makeUniversalChainAddress("Solana"),
+    to: utils.makeUniversalChainAddress("Ethereum"),
+    source: utils.makeUniversalChainAddress("Solana"),
+    destination: utils.makeUniversalChainAddress("Ethereum"),
   };
   return RouteTransferRequest.create(wh, req, fromChain, toChain);
 }

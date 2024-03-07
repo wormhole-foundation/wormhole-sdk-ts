@@ -1,4 +1,5 @@
 import {
+  nativeChainIds,
   ChainsConfig,
   Contracts,
   Network,
@@ -8,7 +9,7 @@ import {
   WormholeMessageId,
   createVAA,
   isWormholeMessageId,
-} from '@wormhole-foundation/connect-sdk';
+} from '@wormhole-foundation/sdk-connect';
 import { Provider, TransactionRequest } from 'ethers';
 import { ethers_contracts } from '.';
 import { Implementation, ImplementationInterface } from './ethers-contracts';
@@ -22,8 +23,7 @@ import {
   EvmUnsignedTransaction,
   addChainId,
   addFrom,
-} from '@wormhole-foundation/connect-sdk-evm';
-import { nativeChainIds } from '@wormhole-foundation/sdk-base';
+} from '@wormhole-foundation/sdk-evm';
 
 export class EvmWormholeCore<N extends Network, C extends EvmChains>
   implements WormholeCore<N, C>

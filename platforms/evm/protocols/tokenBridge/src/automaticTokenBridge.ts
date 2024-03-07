@@ -10,7 +10,9 @@ import {
   isNative,
   serialize,
   toNative,
-} from '@wormhole-foundation/connect-sdk';
+  nativeChainIds,
+  toChainId,
+} from '@wormhole-foundation/sdk-connect';
 import {
   EvmAddress,
   EvmChains,
@@ -19,13 +21,11 @@ import {
   EvmUnsignedTransaction,
   addChainId,
   addFrom,
-} from '@wormhole-foundation/connect-sdk-evm';
+} from '@wormhole-foundation/sdk-evm';
 import { Provider, TransactionRequest } from 'ethers';
-
-import { nativeChainIds, toChainId } from '@wormhole-foundation/sdk-base';
 import { ethers_contracts } from '.';
 
-import '@wormhole-foundation/connect-sdk-evm-core';
+import '@wormhole-foundation/sdk-evm-core';
 
 export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
   implements AutomaticTokenBridge<N, C>

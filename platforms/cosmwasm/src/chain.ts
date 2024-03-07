@@ -1,4 +1,4 @@
-import { Chain, ChainContext, Network } from "@wormhole-foundation/connect-sdk";
+import { Chain, ChainContext, Network } from "@wormhole-foundation/sdk-connect";
 import { CosmwasmChains } from "./types";
 
 export class CosmwasmChain<

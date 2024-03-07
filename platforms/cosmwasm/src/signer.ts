@@ -17,7 +17,7 @@ import {
   encoding,
   nativeChainIds,
   rpc as rpcConf,
-} from "@wormhole-foundation/connect-sdk";
+} from "@wormhole-foundation/sdk-connect";
 import { TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
 import {
   CosmwasmEvmChain,

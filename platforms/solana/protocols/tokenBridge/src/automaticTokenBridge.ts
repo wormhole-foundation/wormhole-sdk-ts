@@ -12,14 +12,14 @@ import {
   isNative,
   toChainId,
   toNative,
-} from '@wormhole-foundation/connect-sdk';
+} from '@wormhole-foundation/sdk-connect';
 import {
   SolanaAddress,
   SolanaChains,
   SolanaPlatform,
   SolanaTransaction,
   SolanaUnsignedTransaction,
-} from '@wormhole-foundation/connect-sdk-solana';
+} from '@wormhole-foundation/sdk-solana';
 
 import { BN, Program } from '@project-serum/anchor';
 import { Connection, PublicKey, Transaction } from '@solana/web3.js';
@@ -44,7 +44,7 @@ import {
   getAccount,
   getAssociatedTokenAddressSync,
 } from '@solana/spl-token';
-import '@wormhole-foundation/connect-sdk-solana-core';
+import '@wormhole-foundation/sdk-solana-core';
 import { registeredTokens } from './consts';
 
 const SOL_DECIMALS = 9;

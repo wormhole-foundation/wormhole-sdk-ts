@@ -13,10 +13,10 @@
 //     baseUnits,
 //     parseAmount,
 //     signSendWait,
-// } from "@wormhole-foundation/connect-sdk";
-// import { EvmPlatform } from "@wormhole-foundation/connect-sdk-evm";
-// import { SolanaPlatform } from "@wormhole-foundation/connect-sdk-solana";
-// import { CosmwasmPlatform } from "@wormhole-foundation/connect-sdk-cosmwasm";
+// } from "@wormhole-foundation/sdk-connect";
+// import { EvmPlatform } from "@wormhole-foundation/sdk-evm";
+// import { SolanaPlatform } from "@wormhole-foundation/sdk-solana";
+// import { CosmwasmPlatform } from "@wormhole-foundation/sdk-cosmwasm";
 //
 // import { expect, jest, describe, test } from '@jest/globals';
 //

@@ -4,7 +4,7 @@ import {
   UniversalAddress,
   encoding,
   registerNative,
-} from "@wormhole-foundation/connect-sdk";
+} from "@wormhole-foundation/sdk-connect";
 
 import { decodeAddress, encodeAddress, isValidAddress } from "algosdk";
 import { AlgorandPlatform } from "./platform";

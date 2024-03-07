@@ -14,7 +14,7 @@ import {
   nativeChainIds,
   decimals as nativeDecimals,
   networkPlatformConfigs,
-} from "@wormhole-foundation/connect-sdk";
+} from "@wormhole-foundation/sdk-connect";
 
 import { SuiClient } from "@mysten/sui.js/client";
 import { SuiAddress } from "./address";
