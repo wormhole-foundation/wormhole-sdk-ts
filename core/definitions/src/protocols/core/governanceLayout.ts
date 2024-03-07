@@ -7,9 +7,9 @@ import {
   RoArray,
 } from "@wormhole-foundation/sdk-base";
 
-import { chainItem, universalAddressItem, guardianSetItem } from "../layout-items";
-import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../vaa";
-import { ProtocolName } from "../protocol";
+import { chainItem, universalAddressItem, guardianSetItem } from "../../layout-items";
+import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../../vaa";
+import { ProtocolName } from "../../protocol";
 
 //One thing that's not captured by the payload itself is the fact that governance VAAs should
 //  always have Solana as the emitter chain and address bytes32(4) as the emitter address.

@@ -8,16 +8,17 @@ import {
   lazyInstantiate,
   serializeLayout,
 } from "@wormhole-foundation/sdk-base";
-import { AccountAddress, ChainAddress } from "../address";
-import { CircleMessageId } from "../attestation";
-import { TokenId } from "../types";
-import { UnsignedTransaction } from "../unsignedTransaction";
+import { AccountAddress, ChainAddress } from "../../address";
+import { CircleMessageId } from "../../attestation";
+import { TokenId } from "../../types";
+import { UnsignedTransaction } from "../../unsignedTransaction";
 
-import "../payloads/automaticCircleBridge";
-import { circleMessageLayout } from "../payloads/circleBridge";
-import { EmptyPlatformMap } from "../protocol";
-import { keccak256 } from "../utils";
-import { ProtocolPayload, ProtocolVAA, payloadDiscriminator } from "../vaa";
+import "./automaticCircleBridgeLayout";
+import { circleMessageLayout } from "./circleBridgeLayout";
+
+import { EmptyPlatformMap } from "../../protocol";
+import { keccak256 } from "../../utils";
+import { ProtocolPayload, ProtocolVAA, payloadDiscriminator } from "../../vaa";
 
 declare global {
   namespace Wormhole {

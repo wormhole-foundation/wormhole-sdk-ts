@@ -1,8 +1,8 @@
 import { Chain } from "@wormhole-foundation/sdk-base";
-import { TokenAddress } from "../types";
+import { TokenAddress } from "../../types";
 
 import { Platform } from "@wormhole-foundation/sdk-base";
-import { EmptyPlatformMap } from "../protocol";
+import { EmptyPlatformMap } from "../../protocol";
 
 declare global {
   namespace Wormhole {
