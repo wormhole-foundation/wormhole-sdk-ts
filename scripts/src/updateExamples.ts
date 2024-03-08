@@ -69,7 +69,7 @@ function findTags(src: string): ExampleTag[] {
     }
 
     const src = exampleSources[tag.tag]!;
-    const link = EXAMPLE_URL + src.filename + "#L" + src.line;
+    const link = EXAMPLE_URL + src.filename + "#L" + (src.line + 2);
 
     const exampleLines = ["```ts", ...src.src.split("\n"), "```", `See example [here](${link})`];
 

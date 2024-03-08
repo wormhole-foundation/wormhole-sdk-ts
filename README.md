@@ -46,7 +46,7 @@ import { evm } from "@wormhole-foundation/sdk/evm";
 import { solana } from "@wormhole-foundation/sdk/solana";
 import { sui } from "@wormhole-foundation/sdk/sui";
 ```
-See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/index.ts#L0)
+See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/index.ts#L2)
 <!--EXAMPLE_IMPORTS-->
 
 And pass those to the Wormhole constructor to make them available for use
@@ -61,7 +61,7 @@ And pass those to the Wormhole constructor to make them available for use
     cosmwasm.Platform,
   ]);
 ```
-See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/index.ts#L13)
+See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/index.ts#L15)
 <!--EXAMPLE_WORMHOLE_INIT-->
 
 With a configured Wormhole object, we have the ability to do things like; parse addresses for the platforms we passed, get a [ChainContext](#chain-context) object, or fetch VAAs.
@@ -71,7 +71,7 @@ With a configured Wormhole object, we have the ability to do things like; parse 
   // Grab a ChainContext object from our configured Wormhole instance
   const ctx = wh.getChain("Solana");
 ```
-See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/index.ts#L23)
+See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/index.ts#L25)
 <!--EXAMPLE_WORMHOLE_CHAIN-->
 
 <!--EXAMPLE_WORMHOLE_VAA-->
@@ -86,7 +86,7 @@ See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/
     60_000,
   );
 ```
-See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/index.ts#L52)
+See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/index.ts#L54)
 <!--EXAMPLE_WORMHOLE_VAA-->
 
 
@@ -107,7 +107,7 @@ Optionally, the default configuration may be overriden in the case that you want
     },
   });
 ```
-See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/config.ts#L4)
+See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/config.ts#L6)
 <!--EXAMPLE_CONFIG_OVERRIDE-->
 
 ## Concepts
@@ -274,7 +274,7 @@ The protocol that underlies all Wormhole activity is the Core protocol. This pro
   const verifyTxs = coreBridge.verifyMessage(address.address, vaa!);
   console.log(await signSendWait(chain, verifyTxs, signer));
 ```
-See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/messaging.ts#L5)
+See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/messaging.ts#L7)
 <!--EXAMPLE_CORE_BRIDGE-->
 
 Within the payload is the information necessary to perform whatever action is required based on the Protocol that uses it.
@@ -356,7 +356,7 @@ We can create a new `Wormhole` object and use it to to create `TokenTransfer`, `
   const destTxids = await xfer.completeTransfer(route.destination.signer);
   console.log(`Completed Transfer: `, destTxids);
 ```
-See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/tokenBridge.ts#L128)
+See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/tokenBridge.ts#L130)
 <!--EXAMPLE_TOKEN_TRANSFER-->
 
 
@@ -411,7 +411,7 @@ We can also transfer native USDC using [Circle's CCTP](https://www.circle.com/en
   const dstTxids = await xfer.completeTransfer(dst.signer);
   console.log(`Completed Transfer: `, dstTxids);
 ```
-See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/cctp.ts#L76)
+See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/cctp.ts#L78)
 <!--EXAMPLE_CCTP_TRANSFER-->
 
 
@@ -442,7 +442,7 @@ A transfer into Cosmos from outside cosmos will be automatically delivered to th
   const attests = await xfer.fetchAttestation(600_000);
   console.log("Got Attestations", attests);
 ```
-See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/cosmos.ts#L117)
+See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/cosmos.ts#L119)
 <!--EXAMPLE_GATEWAY_INBOUND-->
 
 A transfer within Cosmos will use IBC to transfer from the origin to the Gateway chain, then out from the Gateway to the destination chain
@@ -468,7 +468,7 @@ A transfer within Cosmos will use IBC to transfer from the origin to the Gateway
   const attests = await xfer.fetchAttestation(60_000);
   console.log("Got attests: ", attests);
 ```
-See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/cosmos.ts#L149)
+See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/cosmos.ts#L151)
 <!--EXAMPLE_GATEWAY_INTERCOSMOS-->
 
 A transfer leaving Cosmos will produce a VAA from the Gateway that must be manually redeemed on the destination chain 
@@ -497,7 +497,7 @@ A transfer leaving Cosmos will produce a VAA from the Gateway that must be manua
   const dstTxIds = await xfer.completeTransfer(dst.signer);
   console.log("Completed transfer on destination chain", dstTxIds);
 ```
-See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/cosmos.ts#L181)
+See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/cosmos.ts#L183)
 <!--EXAMPLE_GATEWAY_OUTBOUND-->
 
 
@@ -518,7 +518,7 @@ A `TransactionId` or `WormholeMessageId` may be used to recover the transfer
   const dstTxIds = await xfer.completeTransfer(signer);
   console.log("Completed transfer: ", dstTxIds);
 ```
-See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/cctp.ts#L127)
+See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/cctp.ts#L129)
 <!--EXAMPLE_RECOVER_TRANSFER-->
 
 ### Routes
@@ -538,7 +538,7 @@ To provide a more flexible and generic interface, the `Wormhole` class provides 
     routes.AutomaticPorticoRoute, // Native eth transfers
   ]);
 ```
-See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/router.ts#L21)
+See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/router.ts#L23)
 <!--EXAMPLE_RESOLVER_CREATE-->
 
 Once created, the resolver can be used to provide a list of input and possible output tokens.
@@ -559,7 +559,7 @@ Once created, the resolver can be used to provide a list of input and possible o
     destTokens.map((t) => canonicalAddress(t)),
   );
 ```
-See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/router.ts#L32)
+See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/router.ts#L34)
 <!--EXAMPLE_RESOLVER_LIST_TOKENS-->
 
 Once the tokens are selected, a `RouteTransferRequest` may be created to provide a list of routes that can fulfil the request
@@ -579,7 +579,7 @@ Once the tokens are selected, a `RouteTransferRequest` may be created to provide
   const foundRoutes = await resolver.findRoutes(tr);
   console.log("For the transfer parameters, we found these routes: ", foundRoutes);
 ```
-See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/router.ts#L48)
+See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/router.ts#L50)
 <!--EXAMPLE_REQUEST_CREATE-->
 
 Choosing the best route is currently left to the developer but strategies might include sorting by output amount or expected time to complete the transfer (no estimate currently provided).
@@ -607,7 +607,7 @@ After choosing the best route, extra parameters like `amount`, `nativeGasDropoff
   if (!quote.success) throw quote.error;
   console.log("Best route quote: ", quote);
 ```
-See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/router.ts#L68)
+See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/router.ts#L70)
 <!--EXAMPLE_REQUEST_VALIDATE-->
 
 
@@ -620,7 +620,7 @@ Finally, assuming the quote looks good, the route can initiate the request with 
     const receipt = await bestRoute.initiate(sender.signer, quote);
     console.log("Initiated transfer with receipt: ", receipt);
 ```
-See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/router.ts#L92)
+See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/router.ts#L94)
 <!--EXAMPLE_REQUEST_INITIATE-->
 
 Note: See the `router.ts` example in the examples directory for a full working example
