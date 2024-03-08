@@ -54,19 +54,23 @@ function findTags(src: string): ExampleTag[] {
     }
   }
 
-  let offset = 1;
+  let offset = 0;
   const lines = readme.split("\n");
   for (const tag of tags) {
-    console.log(exampleSources);
     if (!(tag.tag in exampleSources)) {
       console.log(`No example source found for tag ${tag.tag}`);
       continue;
     }
+
     const exampleLines = ["```ts", ...exampleSources[tag.tag]!.split("\n"), "```"];
 
-    const replaced = lines.splice(offset + tag.start, tag.stop - tag.start - 1, ...exampleLines);
+    const replaced = lines.splice(
+      offset + tag.start + 1,
+      tag.stop - tag.start - 1,
+      ...exampleLines,
+    );
 
-    offset += replaced.length - exampleLines.length + 1;
+    offset += exampleLines.length - replaced.length;
   }
 
   fs.writeFileSync(README_PATH, lines.join("\n"));
