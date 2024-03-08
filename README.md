@@ -25,13 +25,10 @@ Alternatively, for an advanced user, install a specific set of the packages publ
 ```bash
 # constants
 npm install @wormhole-foundation/sdk-base
-
 # contract interfaces, basic types, vaa payload definitions
 npm install @wormhole-foundation/sdk-definitions
-
 # Evm specific utilities
 npm install @wormhole-foundation/sdk-evm
-
 # Evm TokenBridge protocol client
 npm install @wormhole-foundation/sdk-evm-tokenbridge
 ```
@@ -47,22 +44,45 @@ import { solana } from "@wormhole-foundation/sdk/solana";
 import { algorand } from "@wormhole-foundation/sdk/algorand";
 
 const network = "Mainnet"; // Or "Testnet"
+
+// Create a new Wormhole instance, passing the platforms that should be supported
 const wh = new Wormhole(network, [evm.Platform, solana.Platform, algorand.Platform]);
 
 // Get a ChainContext object for a specific chain
-// Useful to do things like get the rpc client, make Protocol clients,
-// look up configuration parameters or  even fetch balances
+// Used to do things like get the rpc client, make Protocol clients,
+// look up configuration parameters or even fetch balances
 const srcChain = wh.getChain("Ethereum");
 
-// In this SDK, the string literal `'native'` is an alias for the gas token
-// native to the chain
+// In this SDK, the string literal 'native' is an 
+// alias for the gas token native to the chain
 const balance = await srcChain.getBalance( "0xdeadbeef...", "native" ) // => BigInt
 
 // returns a TokenBridge client for `srcChain` 
+// which can be used to interact with the token bridge on that chain
 await srcChain.getTokenBridge(); // => TokenBridge<'Evm'>
+
 // util to grab an RPC client, cached after the first call  
 srcChain.getRpc(); // => RpcConnection<'Evm'>
 ```
+
+Optionally, the default configuration may be overriden in the case that you want to support, eg a different RPC endpoint.
+
+<!--EXAMPLE_CONFIG_OVERRIDE-->
+```ts
+  // Pass a partial WormholeConfig object to override specific
+  // fields in the default config
+  const wh = new Wormhole("Testnet", [solana.Platform], {
+    chains: {
+      Solana: {
+        contracts: {
+          coreBridge: "11111111111111111111111111111",
+        },
+        rpc: "https://api.devnet.solana.com",
+      },
+    },
+  });
+```
+<!--EXAMPLE_CONFIG_OVERRIDE-->
 
 ## Concepts
 
@@ -72,7 +92,7 @@ Understanding several higher level concepts of the SDK will help in using it eff
 
 Every chain is its own special snowflake but many of them share similar functionality. The `Platform` modules provide a consistent interface for interacting with the chains that share a platform.
 
-Each platform can be installed separately so that dependencies can stay as minimal as possible.
+Each platform can be installed separately so that dependencies can stay as slim as possible.
 
 ### Chain Context
 
@@ -190,7 +210,16 @@ const chain = wh.getChain("Solana");
 // Get the core brige client for Solana
 const coreBridge = await chain.getWormholeCore();
 // Generate transactions necessary to simply publish a message
-const publishTxs = coreBridge.publishMessage(address.address, encoding.bytes.encode("lol"), 0, 0);
+const publishTxs = coreBridge.publishMessage(
+  // Sender and ultimately the emitter address on the VAA
+  address.address, 
+  // Payload contained in the VAA
+  encoding.bytes.encode("lol"), 
+  // Nonce (user defined, no requirement that it be any specific value)
+  0, 
+  // ConsistencyLevel (ie finality to be achieved before signing, see wormhole docs for more)
+  0
+);
 
 // ... posibly later, after fetching the signed VAA, generate the transactions to verify the VAA
 const verifyTxs = coreBridge.verifyMessage(address.address, vaa);
@@ -352,6 +381,90 @@ const xfer = await TokenTransfer.from({
 });
 
 const dstTxIds = await xfer.completeTransfer(dst.signer);
+```
+
+
+### Routes
+
+While a specific `WormholeTransfer` may be used (TokenTransfer, CCTPTransfer, ...), it requires the developer know exactly which transfer type to use for a given request. 
+
+To provide a more flexible and generic interface, the `Wormhole` class provides a method to produce a `RouteResolver` that can be configured with a set of possible routes to be supported.
+
+See the `router.ts` example in the examples directory for a full working example
+```ts
+//...
+
+// create new resolver, passing the set of routes to consider
+const resolver = wh.resolver([
+  routes.TokenBridgeRoute,
+  routes.AutomaticTokenBridgeRoute,
+  routes.CCTPRoute,
+]);
+
+
+// what tokens are available on the source chain?
+const srcTokens = await resolver.supportedSourceTokens(sendChain);
+console.log(
+  "The following tokens may be sent: ",
+  srcTokens.map((t) => canonicalAddress(t)),
+);
+
+// given the send token, what can we possibly get on the destination chain?
+const destTokens = await resolver.supportedDestinationTokens(sendToken, sendChain, destChain);
+console.log(
+  "For the given source token, the following tokens may be receivable: ",
+  destTokens.map((t) => canonicalAddress(t)),
+);
+
+// creating a transfer request fetches token details
+// since all routes will need to know about the tokens
+const tr = await routes.RouteTransferRequest.create(wh, {
+  from: sender.address,
+  to: receiver.address,
+  source: sendToken,
+  destination: destTokens.pop()!,
+});
+
+// resolve the transfer request to a set of routes that can perform it
+const foundRoutes = await resolver.findRoutes(tr);
+console.log("For the transfer parameters, we found these routes: ", foundRoutes);
+
+// Sort the routes given some input (not required for mvp)
+// const bestRoute = (await resolver.sortRoutes(foundRoutes, "cost"))[0]!;
+const bestRoute = foundRoutes[0]!;
+console.log("Selected: ", bestRoute);
+
+console.log("This route offers the following default options", bestRoute.getDefaultOptions());
+// Specify the amount as a decimal string
+const amt = "0.5";
+// Create the transfer params for this request
+const transferParams = { amount: amt, options: { nativeGas: 0.1 } };
+
+// validate the transfer params passed, this returns a new type of ValidatedTransferParams
+// which (believe it or not) is a validated version of the input params
+// this new var must be passed to the next step, quote
+const validated = await bestRoute.validate(transferParams);
+if (!validated.valid) throw validated.error;
+console.log("Validated parameters: ", validated.params);
+
+// get a quote for the transfer, this too returns a new type that must
+// be passed to the next step, execute (if you like the quote)
+const quote = await bestRoute.quote(validated.params);
+if (!quote.success) throw quote.error;
+console.log("Best route quote: ", quote);
+
+// If you're sure you want to do this, set this to true
+const imSure = false;
+if (imSure) {
+  // Now the transfer may be initiated
+  // A receipt will be returned, guess what you gotta do with that?
+  const receipt = await bestRoute.initiate(sender.signer, quote);
+  console.log("Initiated transfer with receipt: ", receipt);
+
+  // Kick off a wait log, if there is an opportunity to complete, this function will do it
+  // see the implementation for how this works
+  await routes.checkAndCompleteTransfer(bestRoute, receipt, receiver.signer);
+}
 ```
 
 

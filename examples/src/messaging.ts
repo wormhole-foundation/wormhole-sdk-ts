@@ -1,12 +1,12 @@
 import { Wormhole, encoding, signSendWait } from "@wormhole-foundation/sdk";
 import { solana } from "@wormhole-foundation/sdk/solana";
-import { getStuff } from "./helpers";
+import { getSigner } from "./helpers";
 
 (async function () {
   const wh = new Wormhole("Testnet", [solana.Platform]);
 
   const chain = wh.getChain("Solana");
-  const { signer, address } = await getStuff(chain);
+  const { signer, address } = await getSigner(chain);
 
   // Get a reference to the core messaging bridge
   const coreBridge = await chain.getWormholeCore();

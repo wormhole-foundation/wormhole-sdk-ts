@@ -14,15 +14,15 @@
 //
 // import { ETH_PRIVATE_KEY, SOLANA_PRIVATE_KEY, TERRA_PRIVATE_KEY } from "./consts";
 //
-// export interface TransferStuff {
+// export interface SignerStuff {
 //   chain: ChainContext<Platform>;
 //   signer: Signer;
 //   address: ChainAddress;
 // }
 //
-// export async function getStuff(
+// export async function getSigner(
 //   chain: ChainContext<Platform>,
-// ): Promise<TransferStuff> {
+// ): Promise<SignerStuff> {
 //   let signer: Signer;
 //   switch (chain.platform.platform) {
 //     case "Solana":

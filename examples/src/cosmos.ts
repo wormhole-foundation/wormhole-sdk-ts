@@ -13,7 +13,7 @@ import { cosmwasm } from "@wormhole-foundation/sdk/cosmwasm";
 import { evm } from "@wormhole-foundation/sdk/evm";
 import { solana } from "@wormhole-foundation/sdk/solana";
 
-import { TransferStuff, getStuff } from "./helpers";
+import { SignerStuff, getSigner } from "./helpers";
 
 // We're going to transfer into, around, and out of the Cosmos ecosystem
 // First on Avalanche, transparently through gateway and over IBC to Cosmoshub
@@ -44,9 +44,9 @@ import { TransferStuff, getStuff } from "./helpers";
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
-  const leg1 = await getStuff(external);
-  const leg2 = await getStuff(cosmos1);
-  const leg3 = await getStuff(cosmos2);
+  const leg1 = await getSigner(external);
+  const leg2 = await getSigner(cosmos1);
+  const leg3 = await getSigner(cosmos2);
 
   // we'll use the native token on the source chain
   const token: TokenId = Wormhole.tokenId(external.chain, "native");
@@ -112,8 +112,8 @@ async function transferIntoCosmos(
   wh: Wormhole<Network>,
   token: TokenId,
   amount: bigint,
-  src: TransferStuff<Network, Chain>,
-  dst: TransferStuff<Network, Chain>,
+  src: SignerStuff<Network, Chain>,
+  dst: SignerStuff<Network, Chain>,
 ): Promise<GatewayTransfer<Network>> {
   console.log(
     `Beginning transfer into Cosmos from ${src.chain.chain}:${src.address.address.toString()} to ${
@@ -142,8 +142,8 @@ async function transferBetweenCosmos<N extends Network>(
   wh: Wormhole<N>,
   token: TokenId,
   amount: bigint,
-  src: TransferStuff<N, Chain>,
-  dst: TransferStuff<N, Chain>,
+  src: SignerStuff<N, Chain>,
+  dst: SignerStuff<N, Chain>,
 ): Promise<GatewayTransfer<N>> {
   console.log(
     `Beginning transfer within cosmos from ${
@@ -172,8 +172,8 @@ async function transferOutOfCosmos<N extends Network>(
   wh: Wormhole<N>,
   token: TokenId,
   amount: bigint,
-  src: TransferStuff<N, Chain>,
-  dst: TransferStuff<N, Chain>,
+  src: SignerStuff<N, Chain>,
+  dst: SignerStuff<N, Chain>,
 ): Promise<GatewayTransfer<N>> {
   console.log(
     `Beginning transfer out of cosmos from ${

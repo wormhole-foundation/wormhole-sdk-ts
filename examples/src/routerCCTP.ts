@@ -12,7 +12,7 @@ import {
 import { evm } from "@wormhole-foundation/sdk/evm";
 import { solana } from "@wormhole-foundation/sdk/solana";
 
-import { getStuff } from "./helpers";
+import { getSigner } from "./helpers";
 
 (async function () {
   // Setup
@@ -21,8 +21,8 @@ import { getStuff } from "./helpers";
   // get signers from local config
   const sendChain = wh.getChain("Avalanche");
   const rcvChain = wh.getChain("Polygon");
-  const sender = await getStuff(sendChain);
-  const receiver = await getStuff(rcvChain);
+  const sender = await getSigner(sendChain);
+  const receiver = await getSigner(rcvChain);
 
   // create new resolver
   const resolver = wh.resolver([routes.CCTPRoute, routes.AutomaticCCTPRoute]);

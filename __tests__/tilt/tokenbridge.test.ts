@@ -20,7 +20,7 @@
 //
 // import { expect, jest, describe, test } from '@jest/globals';
 //
-// import { TEST_ERC20, TEST_SOLANA_TOKEN, getStuff } from './helpers';
+// import { TEST_ERC20, TEST_SOLANA_TOKEN, getSigner } from './helpers';
 //
 //
 // jest.setTimeout(10 * 60 * 1000)
@@ -60,11 +60,11 @@
 //         let dstBalanceToken: NativeAddress<Platform>;
 //
 //         beforeAll(async () => {
-//             const srcStuff = await getStuff(src);
+//             const srcStuff = await getSigner(src);
 //             srcSigner = srcStuff.signer
 //             srcAcct = srcStuff.address
 //
-//             const dstStuff = await getStuff(dst)
+//             const dstStuff = await getSigner(dst)
 //             dstSigner = dstStuff.signer
 //             dstAcct = dstStuff.address
 //

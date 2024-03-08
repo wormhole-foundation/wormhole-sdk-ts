@@ -9,7 +9,7 @@ import {
 } from "@wormhole-foundation/sdk";
 import { evm } from "@wormhole-foundation/sdk/evm";
 import { solana } from "@wormhole-foundation/sdk/solana";
-import { TransferStuff, getStuff, waitForRelay } from "./helpers";
+import { SignerStuff, getSigner, waitForRelay } from "./helpers";
 
 /*
 Notes:
@@ -29,8 +29,8 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
-  const source = await getStuff(sendChain);
-  const destination = await getStuff(rcvChain);
+  const source = await getSigner(sendChain);
+  const destination = await getSigner(rcvChain);
 
   // 6 decimals for USDC (except for bsc, so check decimals before using this)
   const amt = amount.units(amount.parse("0.2", 6));
@@ -66,8 +66,8 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
 
 async function cctpTransfer<N extends Network>(
   wh: Wormhole<N>,
-  src: TransferStuff<N, Chain>,
-  dst: TransferStuff<N, Chain>,
+  src: SignerStuff<N, Chain>,
+  dst: SignerStuff<N, Chain>,
   req: {
     amount: bigint;
     automatic: boolean;

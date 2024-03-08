@@ -6,7 +6,7 @@ import { evm } from "@wormhole-foundation/sdk/evm";
 import { solana } from "@wormhole-foundation/sdk/solana";
 import { sui } from "@wormhole-foundation/sdk/sui";
 
-import { getStuff } from "./helpers";
+import { getSigner } from "./helpers";
 
 (async function () {
   // Setup
@@ -21,8 +21,8 @@ import { getStuff } from "./helpers";
   const snd = wh.getChain("Sui");
   const rcv = wh.getChain("Algorand");
 
-  const sender = await getStuff(snd);
-  const receiver = await getStuff(rcv);
+  const sender = await getSigner(snd);
+  const receiver = await getSigner(rcv);
 
   // Get a Token Bridge contract client on the source
   const sndTb = await snd.getTokenBridge();

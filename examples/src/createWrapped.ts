@@ -5,7 +5,7 @@ import { evm } from "@wormhole-foundation/sdk/evm";
 import { solana } from "@wormhole-foundation/sdk/solana";
 
 import { inspect } from "util";
-import { getStuff } from "./helpers";
+import { getSigner } from "./helpers";
 
 (async function () {
   const wh = new Wormhole("Testnet", [evm.Platform, solana.Platform, algorand.Platform]);
@@ -22,7 +22,7 @@ import { getStuff } from "./helpers";
 
   // grab context and signer
   const origChain = wh.getChain(token.chain);
-  const { signer: origSigner } = await getStuff(origChain);
+  const { signer: origSigner } = await getSigner(origChain);
 
   // Note: if the VAA is not produced before the attempt to retrieve it times out
   // you should set this value to the txid logged in the previous run
@@ -61,7 +61,7 @@ import { getStuff } from "./helpers";
   // destination chain
   const chain = "Algorand";
   const destChain = wh.getChain(chain);
-  const { signer } = await getStuff(destChain);
+  const { signer } = await getSigner(destChain);
 
   // grab a ref to the token bridge
   const tb = await destChain.getTokenBridge();

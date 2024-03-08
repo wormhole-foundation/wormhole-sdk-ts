@@ -2,35 +2,41 @@ import { Wormhole, canonicalAddress, routes } from "@wormhole-foundation/sdk";
 import { evm } from "@wormhole-foundation/sdk/evm";
 import { solana } from "@wormhole-foundation/sdk/solana";
 
-import { getStuff } from "./helpers";
+import { getSigner } from "./helpers";
 
 (async function () {
   // Setup
   const wh = new Wormhole("Mainnet", [evm.Platform, solana.Platform]);
 
-  // get signers from local config
+  // Get chain contexts
   const sendChain = wh.getChain("Base");
   const destChain = wh.getChain("Arbitrum");
-  const sender = await getStuff(sendChain);
-  const receiver = await getStuff(destChain);
+
+  // get signers from local config
+  const sender = await getSigner(sendChain);
+  const receiver = await getSigner(destChain);
 
   // we're sending the "native" (gas token of src chain)
   const sendToken = Wormhole.tokenId(sendChain.chain, "native");
 
   // create new resolver, passing the set of routes to consider
-  const resolver = wh.resolver([routes.TokenBridgeRoute]);
+  const resolver = wh.resolver([
+    routes.TokenBridgeRoute,
+    routes.AutomaticTokenBridgeRoute,
+    routes.CCTPRoute,
+  ]);
 
   // what tokens are available on the source chain?
   const srcTokens = await resolver.supportedSourceTokens(sendChain);
   console.log(
-    "The following tokens may be sent: ",
+    "Allowed source tokens: ",
     srcTokens.map((t) => canonicalAddress(t)),
   );
 
   // given the send token, what can we possibly get on the destination chain?
   const destTokens = await resolver.supportedDestinationTokens(sendToken, sendChain, destChain);
   console.log(
-    "For the given source token, the following tokens may be receivable: ",
+    "For the given source token and routes configured, the following tokens may be receivable: ",
     destTokens.map((t) => canonicalAddress(t)),
   );
 

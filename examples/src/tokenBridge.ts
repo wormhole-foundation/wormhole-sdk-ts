@@ -15,7 +15,7 @@ import { evm } from "@wormhole-foundation/sdk/evm";
 import { solana } from "@wormhole-foundation/sdk/solana";
 import { sui } from "@wormhole-foundation/sdk/sui";
 
-import { TransferStuff, getStuff, waitLog } from "./helpers";
+import { SignerStuff, getSigner, waitLog } from "./helpers";
 
 (async function () {
   // Init Wormhole object, passing config for which network
@@ -66,8 +66,8 @@ import { TransferStuff, getStuff, waitLog } from "./helpers";
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
-  const source = await getStuff(sendChain);
-  const destination = await getStuff(rcvChain);
+  const source = await getSigner(sendChain);
+  const destination = await getSigner(rcvChain);
 
   // Used to normalize the amount to account for the tokens decimals
   const decimals = isTokenId(token)
@@ -116,8 +116,8 @@ async function tokenTransfer<N extends Network>(
   route: {
     token: TokenId;
     amount: bigint;
-    source: TransferStuff<N, Chain>;
-    destination: TransferStuff<N, Chain>;
+    source: SignerStuff<N, Chain>;
+    destination: SignerStuff<N, Chain>;
     delivery?: {
       automatic: boolean;
       nativeGas?: bigint;
