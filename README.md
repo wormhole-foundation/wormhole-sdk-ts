@@ -105,8 +105,6 @@ Optionally, the default configuration may be overriden in the case that you want
 ```
 <!--EXAMPLE_CONFIG_OVERRIDE-->
 
-Now its possible to 
-
 ## Concepts
 
 Understanding several higher level concepts of the SDK will help in using it effectively.
