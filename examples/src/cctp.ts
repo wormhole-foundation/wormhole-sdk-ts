@@ -74,12 +74,19 @@ async function cctpTransfer<N extends Network>(
     nativeGas?: bigint;
   },
 ) {
+  // EXAMPLE_CCTP_TRANSFER
   const xfer = await wh.circleTransfer(
+    // amount as bigint (base units)
     req.amount,
+    // sender chain/address
     src.address,
+    // receiver chain/address
     dst.address,
+    // automatic delivery boolean
     req.automatic,
+    // payload to be sent with the transfer
     undefined,
+    // If automatic, native gas can be requested to be sent to the receiver
     req.nativeGas,
   );
   console.log(xfer);
@@ -101,13 +108,16 @@ async function cctpTransfer<N extends Network>(
     return;
   }
 
+  // Note: Depending on chain finality, this timeout may need to be increased.
+  // See https://developers.circle.com/stablecoin/docs/cctp-technical-reference#mainnet for more
   console.log("Waiting for Attestation");
-  const attestIds = await xfer.fetchAttestation();
+  const attestIds = await xfer.fetchAttestation(60_000);
   console.log(`Got Attestation: `, attestIds);
 
   console.log("Completing Transfer");
   const dstTxids = await xfer.completeTransfer(dst.signer);
   console.log(`Completed Transfer: `, dstTxids);
+  // EXAMPLE_CCTP_TRANSFER
 }
 
 export async function completeTransfer(
@@ -115,6 +125,7 @@ export async function completeTransfer(
   txid: TransactionId,
   signer: Signer,
 ): Promise<void> {
+  // EXAMPLE_RECOVER_TRANSFER
   // Rebuild the transfer from the source txid
   const xfer = await CircleTransfer.from(wh, txid);
 
@@ -123,4 +134,5 @@ export async function completeTransfer(
 
   const dstTxIds = await xfer.completeTransfer(signer);
   console.log("Completed transfer: ", dstTxIds);
+  // EXAMPLE_RECOVER_TRANSFER
 }

@@ -310,34 +310,50 @@ Performing a Token Transfer is trivial for any source and destination chains.
 
 We can create a new `Wormhole` object and use it to to create `TokenTransfer`, `CircleTransfer`, `GatewayTransfer`, etc. objects to transfer tokens between chains. The transfer object is responsible for tracking the transfer through the process and providing updates on its status.
 
+<!--EXAMPLE_TOKEN_TRANSFER-->
 ```ts
-// We'll send the native gas token on source chain
-const token = "native";
+  // Create a TokenTransfer object to track the state of the transfer over time
+  const xfer = await wh.tokenTransfer(
+    route.token,
+    route.amount,
+    route.source.address,
+    route.destination.address,
+    route.delivery?.automatic ?? false,
+    route.payload,
+    route.delivery?.nativeGas,
+  );
 
-// Format it for base units
-const amount = baseUnits(parseAmount(1, srcChain.config.nativeTokenDecimals));
+  const quote = await TokenTransfer.quoteTransfer(
+    wh,
+    route.source.chain,
+    route.destination.chain,
+    xfer.transfer,
+  );
+  console.log(quote);
 
-// Create a TokenTransfer object, allowing us to shepherd the transfer through the process and get updates on its status
-const manualXfer = wh.tokenTransfer(
-  token, // TokenId of the token to transfer or 'native'
-  amount, // Amount in base units
-  senderAddress, // Sender address on source chain
-  recipientAddress, // Recipient address on destination chain
-  false, // No Automatic transfer
-);
+  if (xfer.transfer.automatic && quote.destinationToken.amount < 0)
+    throw "The amount requested is too low to cover the fee and any native gas requested.";
 
-// 1) Submit the transactions to the source chain, passing a signer to sign any txns
-const srcTxids = await manualXfer.initiateTransfer(src.signer);
+  // 1) Submit the transactions to the source chain, passing a signer to sign any txns
+  console.log("Starting transfer");
+  const srcTxids = await xfer.initiateTransfer(route.source.signer);
+  console.log(`Started transfer: `, srcTxids);
 
-// 2) Wait for the VAA to be signed and ready (not required for auto transfer)
-// Note: Depending on chain finality, this timeout may need to be increased.
-// See https://docs.wormhole.com/wormhole/reference/constants#consistency-levels for more info on specific chain finality.
-const timeout = 60_000;
-const attestIds = await manualXfer.fetchAttestation(timeout);
+  // If automatic, we're done
+  if (route.delivery?.automatic) return xfer;
 
-// 3) Redeem the VAA on the destination chain
-const destTxids = await manualXfer.completeTransfer(dst.signer);
+  // 2) Wait for the VAA to be signed and ready (not required for auto transfer)
+  console.log("Getting Attestation");
+  const attestIds = await xfer.fetchAttestation(60_000);
+  console.log(`Got Attestation: `, attestIds);
+
+  // 3) Redeem the VAA on the dest chain
+  console.log("Completing Transfer");
+  const destTxids = await xfer.completeTransfer(route.destination.signer);
+  console.log(`Completed Transfer: `, destTxids);
 ```
+<!--EXAMPLE_TOKEN_TRANSFER-->
+
 
 Internally, this uses the [TokenBridge](#token-bridge) protocol client to transfer tokens. The `TokenBridge` protocol, like other Protocols, provides a consistent set of methods across all chains to generate a set of transactions for that specific chain.
 
@@ -347,53 +363,138 @@ See the example [here](https://github.com/wormhole-foundation/connect-sdk/blob/m
 
 We can also transfer native USDC using [Circle's CCTP](https://www.circle.com/en/cross-chain-transfer-protocol)
 
+<!--EXAMPLE_CCTP_TRANSFER-->
 ```ts
-// OR for an native USDC transfer
-const usdcXfer = wh.cctpTransfer(
-  1_000_000n, // amount in base units (1 USDC)
-  senderAddress, // Sender address on source chain
-  recipientAddress, // Recipient address on destination chain
-  false, // Automatic transfer
-);
+  const xfer = await wh.circleTransfer(
+    // amount as bigint (base units)
+    req.amount,
+    // sender chain/address
+    src.address,
+    // receiver chain/address
+    dst.address,
+    // automatic delivery boolean
+    req.automatic,
+    // payload to be sent with the transfer
+    undefined,
+    // If automatic, native gas can be requested to be sent to the receiver
+    req.nativeGas,
+  );
+  console.log(xfer);
 
-// 1) Submit the transactions to the source chain, passing a signer to sign any txns
-const srcTxids = await usdcXfer.initiateTransfer(src.signer);
+  // Note, if the transfer is requested to be Automatic, a fee for performing the relay
+  // will be present in the quote. The fee comes out of the amount requested to be sent.
+  // If the user wants to receive 1.0 on the destination, the amount to send should be 1.0 + fee.
+  // The same applies for native gas dropoff
+  const quote = await CircleTransfer.quoteTransfer(src.chain, dst.chain, xfer.transfer);
+  console.log("Quote", quote);
 
-// 2) Wait for the Circle Attestations to be signed and ready (not required for auto transfer)
-// Note: Depending on chain finality, this timeout may need to be increased.
-// See https://developers.circle.com/stablecoin/docs/cctp-technical-reference#mainnet for more
-const timeout = 120_000;
-const attestIds = await usdcXfer.fetchAttestation(timeout);
+  console.log("Starting Transfer");
+  const srcTxids = await xfer.initiateTransfer(src.signer);
+  console.log(`Started Transfer: `, srcTxids);
 
-// 3) Redeem the Circle Attestation on the dest chain
-const destTxids = await usdcXfer.completeTransfer(dst.signer);
+  if (req.automatic) {
+    const relayStatus = await waitForRelay(srcTxids[srcTxids.length - 1]!);
+    console.log(`Finished relay: `, relayStatus);
+    return;
+  }
+
+  // Note: Depending on chain finality, this timeout may need to be increased.
+  // See https://developers.circle.com/stablecoin/docs/cctp-technical-reference#mainnet for more
+  console.log("Waiting for Attestation");
+  const attestIds = await xfer.fetchAttestation(60_000);
+  console.log(`Got Attestation: `, attestIds);
+
+  console.log("Completing Transfer");
+  const dstTxids = await xfer.completeTransfer(dst.signer);
+  console.log(`Completed Transfer: `, dstTxids);
 ```
+<!--EXAMPLE_CCTP_TRANSFER-->
 
 See the [example here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/cctp.ts).
 
-### Automatic Transfers
-
-Some transfers allow for automatic relaying to the destination, in that case only the `initiateTransfer` is required. The status of the transfer can be tracked by periodically checking the status of the transfer object.
-
-```ts
-// OR for an automatic transfer
-const automaticXfer = wh.tokenTransfer(
-  "native", // send native gas on source chain
-  amt, // amount in base units
-  senderAddress, // Sender address on source chain
-  recipientAddress, // Recipient address on destination chain
-  true, // Automatic transfer
-);
-
-// 1) Submit the transactions to the source chain, passing a signer to sign any txns
-const srcTxids = await automaticXfer.initiateTransfer(src.signer);
-// 2) If automatic, we're done, just wait for the transfer to complete
-if (automatic) return waitLog(automaticXfer);
-```
 
 ### Gateway Transfers
 
 Gateway transfers are transfers that are passed through the Wormhole Gateway to or from Cosmos chains.
+
+A transfer into Cosmos from outside cosmos will be automatically delivered to the destination via IBC from the Gateway chain (fka Wormchain)
+<!--EXAMPLE_GATEWAY_INBOUND-->
+```ts
+  console.log(
+    `Beginning transfer into Cosmos from ${src.chain.chain}:${src.address.address.toString()} to ${
+      dst.chain.chain
+    }:${dst.address.address.toString()}`,
+  );
+
+  const xfer = await GatewayTransfer.from(wh, {
+    token: token,
+    amount: amount,
+    from: src.address,
+    to: dst.address,
+  } as GatewayTransferDetails);
+  console.log("Created GatewayTransfer: ", xfer.transfer);
+
+  const srcTxIds = await xfer.initiateTransfer(src.signer);
+  console.log("Started transfer on source chain", srcTxIds);
+
+  const attests = await xfer.fetchAttestation(600_000);
+  console.log("Got Attestations", attests);
+```
+<!--EXAMPLE_GATEWAY_INBOUND-->
+
+A transfer within Cosmos will use IBC to transfer from the origin to the Gateway chain, then out from the Gateway to the destination chain
+<!--EXAMPLE_GATEWAY_INTERCOSMOS-->
+```ts
+  console.log(
+    `Beginning transfer within cosmos from ${
+      src.chain.chain
+    }:${src.address.address.toString()} to ${dst.chain.chain}:${dst.address.address.toString()}`,
+  );
+
+  const xfer = await GatewayTransfer.from(wh, {
+    token: token,
+    amount: amount,
+    from: src.address,
+    to: dst.address,
+  } as GatewayTransferDetails);
+  console.log("Created GatewayTransfer: ", xfer.transfer);
+
+  const srcTxIds = await xfer.initiateTransfer(src.signer);
+  console.log("Started transfer on source chain", srcTxIds);
+
+  const attests = await xfer.fetchAttestation(60_000);
+  console.log("Got attests: ", attests);
+```
+<!--EXAMPLE_GATEWAY_INTERCOSMOS-->
+
+A transfer leaving Cosmos will produce a VAA from the Gateway that must be manually redeemed on the destination chain 
+<!--EXAMPLE_GATEWAY_OUTBOUND-->
+```ts
+  console.log(
+    `Beginning transfer out of cosmos from ${
+      src.chain.chain
+    }:${src.address.address.toString()} to ${dst.chain.chain}:${dst.address.address.toString()}`,
+  );
+
+  const xfer = await GatewayTransfer.from(wh, {
+    token: token,
+    amount: amount,
+    from: src.address,
+    to: dst.address,
+  } as GatewayTransferDetails);
+  console.log("Created GatewayTransfer: ", xfer.transfer);
+  const srcTxIds = await xfer.initiateTransfer(src.signer);
+  console.log("Started transfer on source chain", srcTxIds);
+
+  const attests = await xfer.fetchAttestation(600_000);
+  console.log("Got attests", attests);
+
+  // Since we're leaving cosmos, this is required to complete the transfer
+  const dstTxIds = await xfer.completeTransfer(dst.signer);
+  console.log("Completed transfer on destination chain", dstTxIds);
+```
+<!--EXAMPLE_GATEWAY_OUTBOUND-->
+
 
 See the example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/cosmos.ts).
 
@@ -401,36 +502,20 @@ See the example [here](https://github.com/wormhole-foundation/connect-sdk/blob/m
 
 It may be necessary to recover a transfer that was abandoned before being completed. This can be done by instantiating the Transfer class with the `from` static method and passing one of several types of identifiers.
 
-A `TransactionId` may be used
+A `TransactionId` or `WormholeMessageId` may be used to recover the transfer
 
+<!--EXAMPLE_RECOVER_TRANSFER-->
 ```ts
-// Note, this will attempt to recover the transfer from the source chain
-// and attestation types so it may wait depending on the chain finality
-// and when the transactions were issued.
-const timeout = 60_000;
-const xfer = await TokenTransfer.from(
-  {
-    chain: "Ethereum",
-    txid: "0x1234...",
-  },
-  timeout,
-);
+  // Rebuild the transfer from the source txid
+  const xfer = await CircleTransfer.from(wh, txid);
 
-const dstTxIds = await xfer.completeTransfer(dst.signer);
+  const attestIds = await xfer.fetchAttestation(60 * 60 * 1000);
+  console.log("Got attestation: ", attestIds);
+
+  const dstTxIds = await xfer.completeTransfer(signer);
+  console.log("Completed transfer: ", dstTxIds);
 ```
-
-Or a `WormholeMessageId` if a `VAA` is generated
-
-```ts
-const xfer = await TokenTransfer.from({
-  chain: "Ethereum",
-  emitter: toNative("Ethereum", emitterAddress).toUniversalAddress(),
-  sequence: "0x1234...",
-});
-
-const dstTxIds = await xfer.completeTransfer(dst.signer);
-```
-
+<!--EXAMPLE_RECOVER_TRANSFER-->
 
 ### Routes
 

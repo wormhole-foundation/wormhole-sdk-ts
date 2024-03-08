@@ -115,6 +115,7 @@ async function transferIntoCosmos(
   src: SignerStuff<Network, Chain>,
   dst: SignerStuff<Network, Chain>,
 ): Promise<GatewayTransfer<Network>> {
+  // EXAMPLE_GATEWAY_INBOUND
   console.log(
     `Beginning transfer into Cosmos from ${src.chain.chain}:${src.address.address.toString()} to ${
       dst.chain.chain
@@ -134,6 +135,7 @@ async function transferIntoCosmos(
 
   const attests = await xfer.fetchAttestation(600_000);
   console.log("Got Attestations", attests);
+  // EXAMPLE_GATEWAY_INBOUND
 
   return xfer;
 }
@@ -145,6 +147,7 @@ async function transferBetweenCosmos<N extends Network>(
   src: SignerStuff<N, Chain>,
   dst: SignerStuff<N, Chain>,
 ): Promise<GatewayTransfer<N>> {
+  // EXAMPLE_GATEWAY_INTERCOSMOS
   console.log(
     `Beginning transfer within cosmos from ${
       src.chain.chain
@@ -164,6 +167,7 @@ async function transferBetweenCosmos<N extends Network>(
 
   const attests = await xfer.fetchAttestation(60_000);
   console.log("Got attests: ", attests);
+  // EXAMPLE_GATEWAY_INTERCOSMOS
 
   return xfer;
 }
@@ -175,6 +179,7 @@ async function transferOutOfCosmos<N extends Network>(
   src: SignerStuff<N, Chain>,
   dst: SignerStuff<N, Chain>,
 ): Promise<GatewayTransfer<N>> {
+  // EXAMPLE_GATEWAY_OUTBOUND
   console.log(
     `Beginning transfer out of cosmos from ${
       src.chain.chain
@@ -197,6 +202,7 @@ async function transferOutOfCosmos<N extends Network>(
   // Since we're leaving cosmos, this is required to complete the transfer
   const dstTxIds = await xfer.completeTransfer(dst.signer);
   console.log("Completed transfer on destination chain", dstTxIds);
+  // EXAMPLE_GATEWAY_OUTBOUND
 
   return xfer;
 }
