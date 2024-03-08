@@ -10,7 +10,7 @@ import { getSigner } from "./helpers";
 
 (async function () {
   // Setup
-  const wh = new Wormhole("Mainnet", [
+  const wh = new Wormhole("Testnet", [
     evm.Platform,
     solana.Platform,
     sui.Platform,
@@ -18,7 +18,7 @@ import { getSigner } from "./helpers";
     cosmwasm.Platform,
   ]);
 
-  const snd = wh.getChain("Sui");
+  const snd = wh.getChain("Solana");
   const rcv = wh.getChain("Algorand");
 
   const sender = await getSigner(snd);

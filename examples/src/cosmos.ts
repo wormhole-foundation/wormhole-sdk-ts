@@ -6,6 +6,7 @@ import {
   TokenId,
   Wormhole,
   amount,
+  toChainId,
 } from "@wormhole-foundation/sdk";
 
 // Import the platform specific packages

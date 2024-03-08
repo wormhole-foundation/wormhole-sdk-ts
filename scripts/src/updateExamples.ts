@@ -54,6 +54,7 @@ function findTags(src: string): ExampleTag[] {
     }
   }
 
+  let offset = 0;
   const lines = readme.split("\n");
   for (const tag of tags) {
     if (!(tag.tag in exampleSources)) {
@@ -63,7 +64,9 @@ function findTags(src: string): ExampleTag[] {
     const exampleText = exampleSources[tag.tag]!;
     const exampleLines = ["```ts", ...exampleText.split("\n"), "```"];
 
-    lines.splice(tag.start + 1, tag.stop - tag.start - 1, ...exampleLines);
+    lines.splice(offset + tag.start + 1, tag.stop - tag.start - 1, ...exampleLines);
+
+    offset += exampleLines.length - (tag.stop - tag.start);
   }
 
   fs.writeFileSync(README_PATH, lines.join("\n"));
