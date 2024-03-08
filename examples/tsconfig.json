@@ -1,7 +1,9 @@
 {
   "extends": "../tsconfig.esm.json",
-  "include": ["src"],
+  "include": ["./src", "./src/**/*.ts"],
   "compilerOptions": {
+    "target":"ESNext",
+    "module":"ESNext",
     "outDir": "dist/esm",
     "rootDir": "src",
     "allowUnusedLabels": true,

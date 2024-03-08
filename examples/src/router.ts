@@ -2,38 +2,51 @@ import { Wormhole, canonicalAddress, routes } from "@wormhole-foundation/sdk";
 import { evm } from "@wormhole-foundation/sdk/evm";
 import { solana } from "@wormhole-foundation/sdk/solana";
 
-import { getStuff } from "./helpers";
+import { getSigner } from "./helpers";
 
 (async function () {
   // Setup
   const wh = new Wormhole("Mainnet", [evm.Platform, solana.Platform]);
 
-  // get signers from local config
+  // Get chain contexts
   const sendChain = wh.getChain("Base");
   const destChain = wh.getChain("Arbitrum");
-  const sender = await getStuff(sendChain);
-  const receiver = await getStuff(destChain);
+
+  // get signers from local config
+  const sender = await getSigner(sendChain);
+  const receiver = await getSigner(destChain);
 
   // we're sending the "native" (gas token of src chain)
   const sendToken = Wormhole.tokenId(sendChain.chain, "native");
 
+  // EXAMPLE_RESOLVER_CREATE
   // create new resolver, passing the set of routes to consider
-  const resolver = wh.resolver([routes.TokenBridgeRoute]);
+  const resolver = wh.resolver([
+    routes.TokenBridgeRoute, // manual token bridge
+    routes.AutomaticTokenBridgeRoute, // automatic token bridge
+    routes.CCTPRoute, // manual CCTP
+    routes.AutomaticCCTPRoute, // automatic CCTP
+    routes.AutomaticPorticoRoute, // Native eth transfers
+  ]);
+  // EXAMPLE_RESOLVER_CREATE
 
+  // EXAMPLE_RESOLVER_LIST_TOKENS
   // what tokens are available on the source chain?
   const srcTokens = await resolver.supportedSourceTokens(sendChain);
   console.log(
-    "The following tokens may be sent: ",
+    "Allowed source tokens: ",
     srcTokens.map((t) => canonicalAddress(t)),
   );
 
   // given the send token, what can we possibly get on the destination chain?
   const destTokens = await resolver.supportedDestinationTokens(sendToken, sendChain, destChain);
   console.log(
-    "For the given source token, the following tokens may be receivable: ",
+    "For the given source token and routes configured, the following tokens may be receivable: ",
     destTokens.map((t) => canonicalAddress(t)),
   );
+  // EXAMPLE_RESOLVER_LIST_TOKENS
 
+  // EXAMPLE_REQUEST_CREATE
   // creating a transfer request fetches token details
   // since all routes will need to know about the tokens
   const tr = await routes.RouteTransferRequest.create(wh, {
@@ -46,12 +59,14 @@ import { getStuff } from "./helpers";
   // resolve the transfer request to a set of routes that can perform it
   const foundRoutes = await resolver.findRoutes(tr);
   console.log("For the transfer parameters, we found these routes: ", foundRoutes);
+  // EXAMPLE_REQUEST_CREATE
 
   // Sort the routes given some input (not required for mvp)
   // const bestRoute = (await resolver.sortRoutes(foundRoutes, "cost"))[0]!;
   const bestRoute = foundRoutes[0]!;
   console.log("Selected: ", bestRoute);
 
+  // EXAMPLE_REQUEST_VALIDATE
   console.log("This route offers the following default options", bestRoute.getDefaultOptions());
   // Specify the amount as a decimal string
   const amt = "0.5";
@@ -70,14 +85,17 @@ import { getStuff } from "./helpers";
   const quote = await bestRoute.quote(validated.params);
   if (!quote.success) throw quote.error;
   console.log("Best route quote: ", quote);
+  // EXAMPLE_REQUEST_VALIDATE
 
   // If you're sure you want to do this, set this to true
   const imSure = false;
   if (imSure) {
+    // EXAMPLE_REQUEST_INITIATE
     // Now the transfer may be initiated
     // A receipt will be returned, guess what you gotta do with that?
     const receipt = await bestRoute.initiate(sender.signer, quote);
     console.log("Initiated transfer with receipt: ", receipt);
+    // EXAMPLE_REQUEST_INITIATE
 
     // Kick off a wait log, if there is an opportunity to complete, this function will do it
     // see the implementation for how this works

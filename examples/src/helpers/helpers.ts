@@ -36,15 +36,15 @@ function getEnv(key: string): string {
   return val;
 }
 
-export interface TransferStuff<N extends Network, C extends Chain> {
+export interface SignerStuff<N extends Network, C extends Chain> {
   chain: ChainContext<N, C>;
   signer: Signer<N, C>;
   address: ChainAddress<C>;
 }
 
-export async function getStuff<N extends Network, C extends Chain>(
+export async function getSigner<N extends Network, C extends Chain>(
   chain: ChainContext<N, C>,
-): Promise<TransferStuff<N, C>> {
+): Promise<SignerStuff<N, C>> {
   let signer: Signer;
   const platform = chain.platform.utils()._platform;
   switch (platform) {
