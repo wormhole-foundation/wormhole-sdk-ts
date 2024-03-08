@@ -15,7 +15,7 @@ function findTags(src: string): ExampleTag[] {
     const line = lines[lno];
     const exampleTag = line?.match(/EXAMPLE_.*/g);
     if (!exampleTag) continue;
-    const t = exampleTag[0].replace("-->", "");
+    const t = exampleTag[0].replace(/[^A-Z_]/g, "");
     if (!currentTag) {
       currentTag = { tag: t, start: parseInt(lno), stop: 0 };
     } else {
@@ -54,19 +54,19 @@ function findTags(src: string): ExampleTag[] {
     }
   }
 
-  let offset = 0;
+  let offset = 1;
   const lines = readme.split("\n");
   for (const tag of tags) {
+    console.log(exampleSources);
     if (!(tag.tag in exampleSources)) {
       console.log(`No example source found for tag ${tag.tag}`);
       continue;
     }
-    const exampleText = exampleSources[tag.tag]!;
-    const exampleLines = ["```ts", ...exampleText.split("\n"), "```"];
+    const exampleLines = ["```ts", ...exampleSources[tag.tag]!.split("\n"), "```"];
 
-    lines.splice(offset + tag.start + 1, tag.stop - tag.start - 1, ...exampleLines);
+    const replaced = lines.splice(offset + tag.start, tag.stop - tag.start - 1, ...exampleLines);
 
-    offset += exampleLines.length - (tag.stop - tag.start);
+    offset += replaced.length - exampleLines.length + 1;
   }
 
   fs.writeFileSync(README_PATH, lines.join("\n"));
