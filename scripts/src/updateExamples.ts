@@ -2,8 +2,10 @@ import fs from "fs";
 
 const README_PATH = "../README.md";
 const EXAMPLES_PATH = "../examples/src";
+const EXAMPLE_URL = "https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/";
 
 type ExampleTag = { tag: string; start: number; stop: number };
+type ExampleMeta = { filename: string; src: string; line: number };
 
 function findTags(src: string): ExampleTag[] {
   const tags: ExampleTag[] = [];
@@ -36,7 +38,7 @@ function findTags(src: string): ExampleTag[] {
   if (tags.length === 0) throw new Error("No example snippet flags found in README.md");
 
   // Iterate over examples and find any example snippets
-  const exampleSources: Record<string, string> = {};
+  const exampleSources: Record<string, ExampleMeta> = {};
 
   const examples = fs.readdirSync(EXAMPLES_PATH);
   for (const example of examples) {
@@ -47,10 +49,14 @@ function findTags(src: string): ExampleTag[] {
     const exampleTags = findTags(exampleSource);
 
     for (const tag of exampleTags) {
-      exampleSources[tag.tag] = exampleSource
-        .split("\n")
-        .slice(tag.start + 1, tag.stop)
-        .join("\n");
+      exampleSources[tag.tag] = {
+        src: exampleSource
+          .split("\n")
+          .slice(tag.start + 1, tag.stop)
+          .join("\n"),
+        filename: example,
+        line: tag.start,
+      };
     }
   }
 
@@ -62,7 +68,10 @@ function findTags(src: string): ExampleTag[] {
       continue;
     }
 
-    const exampleLines = ["```ts", ...exampleSources[tag.tag]!.split("\n"), "```"];
+    const src = exampleSources[tag.tag]!;
+    const link = EXAMPLE_URL + src.filename + "#L" + src.line;
+
+    const exampleLines = ["```ts", ...src.src.split("\n"), "```", `See example [here](${link})`];
 
     const replaced = lines.splice(
       offset + tag.start + 1,
