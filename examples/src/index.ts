@@ -1,15 +1,17 @@
-import { CONFIG, Wormhole, amount, api, signSendWait } from "@wormhole-foundation/sdk";
-
+// EXAMPLE_IMPORTS
+import { Wormhole } from "@wormhole-foundation/sdk";
 import { algorand } from "@wormhole-foundation/sdk/algorand";
 import { cosmwasm } from "@wormhole-foundation/sdk/cosmwasm";
 import { evm } from "@wormhole-foundation/sdk/evm";
 import { solana } from "@wormhole-foundation/sdk/solana";
 import { sui } from "@wormhole-foundation/sdk/sui";
+// EXAMPLE_IMPORTS
 
+import { amount, signSendWait } from "@wormhole-foundation/sdk";
 import { getSigner } from "./helpers";
 
 (async function () {
-  // Setup
+  // EXAMPLE_WORMHOLE_INIT
   const wh = new Wormhole("Testnet", [
     evm.Platform,
     solana.Platform,
@@ -17,39 +19,48 @@ import { getSigner } from "./helpers";
     algorand.Platform,
     cosmwasm.Platform,
   ]);
+  // EXAMPLE_WORMHOLE_INIT
 
-  const snd = wh.getChain("Solana");
+  // EXAMPLE_WORMHOLE_CHAIN
+  // Grab a ChainContext object from our configured Wormhole instance
+  const ctx = wh.getChain("Solana");
+  // EXAMPLE_WORMHOLE_CHAIN
+
   const rcv = wh.getChain("Algorand");
 
-  const sender = await getSigner(snd);
+  const sender = await getSigner(ctx);
   const receiver = await getSigner(rcv);
 
   // Get a Token Bridge contract client on the source
-  const sndTb = await snd.getTokenBridge();
+  const sndTb = await ctx.getTokenBridge();
 
   // Create a transaction stream for transfers
   const transfer = sndTb.transfer(
     sender.address.address,
     receiver.address,
     "native",
-    amount.units(amount.parse("0.1", snd.config.nativeTokenDecimals)),
+    amount.units(amount.parse("0.1", ctx.config.nativeTokenDecimals)),
   );
 
   // Sign and send the transaction
-  const txids = await signSendWait(snd, transfer, sender.signer);
+  const txids = await signSendWait(ctx, transfer, sender.signer);
   console.log("Sent: ", txids);
 
   // Get the wormhole message id from the transaction
-  const [whm] = await snd.parseTransaction(txids[txids.length - 1]!.txid);
+  const [whm] = await ctx.parseTransaction(txids[txids.length - 1]!.txid);
   console.log("Wormhole Messages: ", whm);
 
+  // EXAMPLE_WORMHOLE_VAA
   // Get the VAA from the wormhole message id
-  const vaa = await api.getVaaWithRetry(
-    CONFIG["Testnet"].api,
+  const vaa = await wh.getVaa(
+    // Wormhole Message ID
     whm!,
+    // Protocol:Payload name to use for decoding the VAA payload
     "TokenBridge:Transfer",
+    // Timeout in milliseconds, depending on the chain and network, the VAA may take some time to be available
     60_000,
   );
+  // EXAMPLE_WORMHOLE_VAA
 
   // Now get the token bridge on the redeem side
   const rcvTb = await rcv.getTokenBridge();

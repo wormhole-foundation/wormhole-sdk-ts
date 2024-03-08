@@ -35,35 +35,56 @@ npm install @wormhole-foundation/sdk-evm-tokenbridge
 
 ## Usage
 
-Getting started is simple, just import and pass in the [Platform](#platforms) modules you wish to support as an argument to the Wormhole class.
+Getting started is simple, just import Wormhole and the [Platform](#platforms) modules you wish to support
 
+<!--EXAMPLE_IMPORTS-->
 ```ts
-import { Wormhole, Signer } from "@wormhole-foundation/sdk";
+import { Wormhole } from "@wormhole-foundation/sdk";
+import { algorand } from "@wormhole-foundation/sdk/algorand";
+import { cosmwasm } from "@wormhole-foundation/sdk/cosmwasm";
 import { evm } from "@wormhole-foundation/sdk/evm";
 import { solana } from "@wormhole-foundation/sdk/solana";
-import { algorand } from "@wormhole-foundation/sdk/algorand";
-
-const network = "Mainnet"; // Or "Testnet"
-
-// Create a new Wormhole instance, passing the platforms that should be supported
-const wh = new Wormhole(network, [evm.Platform, solana.Platform, algorand.Platform]);
-
-// Get a ChainContext object for a specific chain
-// Used to do things like get the rpc client, make Protocol clients,
-// look up configuration parameters or even fetch balances
-const srcChain = wh.getChain("Ethereum");
-
-// In this SDK, the string literal 'native' is an 
-// alias for the gas token native to the chain
-const balance = await srcChain.getBalance( "0xdeadbeef...", "native" ) // => BigInt
-
-// returns a TokenBridge client for `srcChain` 
-// which can be used to interact with the token bridge on that chain
-await srcChain.getTokenBridge(); // => TokenBridge<'Evm'>
-
-// util to grab an RPC client, cached after the first call  
-srcChain.getRpc(); // => RpcConnection<'Evm'>
+import { sui } from "@wormhole-foundation/sdk/sui";
 ```
+<!--EXAMPLE_IMPORTS-->
+
+And pass those to the Wormhole constructor to make them available for use
+
+<!--EXAMPLE_WORMHOLE_INIT-->
+```ts
+  const wh = new Wormhole("Testnet", [
+    evm.Platform,
+    solana.Platform,
+    sui.Platform,
+    algorand.Platform,
+    cosmwasm.Platform,
+  ]);
+```
+<!--EXAMPLE_WORMHOLE_INIT-->
+
+With a configured Wormhole object, we have the ability to do things like; parse addresses for the platforms we passed, get a [ChainContext](#chain-context) object, or fetch VAAs.
+
+<!--EXAMPLE_WORMHOLE_CHAIN-->
+```ts
+  // Grab a ChainContext object from our configured Wormhole instance
+  const ctx = wh.getChain("Solana");
+```
+<!--EXAMPLE_WORMHOLE_CHAIN-->
+
+<!--EXAMPLE_WORMHOLE_VAA-->
+```ts
+  // Get the VAA from the wormhole message id
+  const vaa = await wh.getVaa(
+    // Wormhole Message ID
+    whm!,
+    // Protocol:Payload name to use for decoding the VAA payload
+    "TokenBridge:Transfer",
+    // Timeout in milliseconds, depending on the chain and network, the VAA may take some time to be available
+    60_000,
+  );
+```
+<!--EXAMPLE_WORMHOLE_VAA-->
+
 
 Optionally, the default configuration may be overriden in the case that you want to support, eg a different RPC endpoint.
 
@@ -83,6 +104,8 @@ Optionally, the default configuration may be overriden in the case that you want
   });
 ```
 <!--EXAMPLE_CONFIG_OVERRIDE-->
+
+Now its possible to 
 
 ## Concepts
 
@@ -203,27 +226,52 @@ Each Protocol, if available, will have a Platform specific implementation. These
 
 The protocol that underlies all Wormhole activity is the Core protocol. This protocol is responsible for emitting the message containing the information necessary to perform bridging including [Emitter address](https://docs.wormhole.com/wormhole/reference/glossary#emitter), the [Sequence number](https://docs.wormhole.com/wormhole/reference/glossary#sequence) for the message and the Payload of the message itself.
 
+<!--EXAMPLE_CORE_BRIDGE-->
 ```ts
+  const wh = new Wormhole("Testnet", [solana.Platform]);
 
-// get chain context
-const chain = wh.getChain("Solana");
-// Get the core brige client for Solana
-const coreBridge = await chain.getWormholeCore();
-// Generate transactions necessary to simply publish a message
-const publishTxs = coreBridge.publishMessage(
-  // Sender and ultimately the emitter address on the VAA
-  address.address, 
-  // Payload contained in the VAA
-  encoding.bytes.encode("lol"), 
-  // Nonce (user defined, no requirement that it be any specific value)
-  0, 
-  // ConsistencyLevel (ie finality to be achieved before signing, see wormhole docs for more)
-  0
-);
+  const chain = wh.getChain("Solana");
+  const { signer, address } = await getSigner(chain);
 
-// ... posibly later, after fetching the signed VAA, generate the transactions to verify the VAA
-const verifyTxs = coreBridge.verifyMessage(address.address, vaa);
+  // Get a reference to the core messaging bridge
+  const coreBridge = await chain.getWormholeCore();
+
+  // Generate transactions, sign and send them
+  const publishTxs = coreBridge.publishMessage(
+    // Address of sender (emitter in VAA)
+    address.address,
+    // Message to send (payload in VAA)
+    encoding.bytes.encode("lol"),
+    // Nonce (user defined, no requirement for a specific value, useful to provide a unique identifier for the message)
+    0,
+    // ConsistencyLevel (ie finality of the message, see wormhole docs for more)
+    0,
+  );
+  // Send the transaction(s) to publish the message
+  const txids = await signSendWait(chain, publishTxs, signer);
+
+  // Take the last txid in case multiple were sent
+  // the last one should be the one containing the relevant
+  // event or log info
+  const txid = txids[txids.length - 1];
+
+  // Grab the wormhole message id from the transaction logs or storage
+  const [whm] = await chain.parseTransaction(txid!.txid);
+
+  // Or pull the full message content as an Unsigned VAA
+  // const msgs = await coreBridge.parseMessages(txid!.txid);
+  // console.log(msgs);
+
+  // Wait for the vaa to be signed and available with a timeout
+  const vaa = await wh.getVaa(whm!, "Uint8Array", 60_000);
+  console.log(vaa);
+  // Also possible to search by txid but it takes longer to show up
+  // console.log(await wh.getVaaByTxHash(txid!.txid, "Uint8Array"));
+
+  const verifyTxs = coreBridge.verifyMessage(address.address, vaa!);
+  console.log(await signSendWait(chain, verifyTxs, signer));
 ```
+<!--EXAMPLE_CORE_BRIDGE-->
 
 Within the payload is the information necessary to perform whatever action is required based on the Protocol that uses it.
 
