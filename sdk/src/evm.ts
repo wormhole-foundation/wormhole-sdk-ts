@@ -1,4 +1,8 @@
 import * as _evm from "@wormhole-foundation/sdk-evm";
+import * as _evm_core from "@wormhole-foundation/sdk-evm-core";
+import * as _evm_tokenbridge from "@wormhole-foundation/sdk-evm-tokenbridge";
+import * as _evm_portico from "@wormhole-foundation/sdk-evm-portico";
+import * as _evm_cctp from "@wormhole-foundation/sdk-evm-cctp";
 /** Platform and protocol definitions for Evm */
 export const evm = {
   ...{
@@ -10,9 +14,9 @@ export const evm = {
     getSignerForSigner: _evm.getEvmSignerForSigner,
   },
   protocols: {
-    core: import("@wormhole-foundation/sdk-evm-core"),
-    tokenbridge: import("@wormhole-foundation/sdk-evm-tokenbridge"),
-    portico: import("@wormhole-foundation/sdk-evm-portico"),
-    cctp: import("@wormhole-foundation/sdk-evm-cctp"),
+    core: _evm_core,
+    tokenbridge: _evm_tokenbridge,
+    portico: _evm_portico,
+    cctp: _evm_cctp,
   },
 };
