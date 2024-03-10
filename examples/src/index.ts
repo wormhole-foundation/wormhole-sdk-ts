@@ -1,5 +1,5 @@
 // EXAMPLE_IMPORTS
-import { Wormhole } from "@wormhole-foundation/sdk";
+import { wormhole } from "@wormhole-foundation/sdk";
 import { algorand } from "@wormhole-foundation/sdk/algorand";
 import { cosmwasm } from "@wormhole-foundation/sdk/cosmwasm";
 import { evm } from "@wormhole-foundation/sdk/evm";
@@ -12,13 +12,7 @@ import { getSigner } from "./helpers";
 
 (async function () {
   // EXAMPLE_WORMHOLE_INIT
-  const wh = new Wormhole("Testnet", [
-    evm.Platform,
-    solana.Platform,
-    sui.Platform,
-    algorand.Platform,
-    cosmwasm.Platform,
-  ]);
+  const wh = await wormhole("Testnet", [evm, solana, algorand, sui, cosmwasm]);
   // EXAMPLE_WORMHOLE_INIT
 
   // EXAMPLE_WORMHOLE_CHAIN
