@@ -47,8 +47,9 @@ export async function wormhole<N extends Network>(
     );
 
     await Promise.all(
-      platforms.flatMap(async (p) =>
-        Object.values(p.protocols).map(async (loaderFn) => await loaderFn()),
+      platforms.map(
+        async (p) =>
+          await Promise.all(Object.values(p.protocols).map(async (loaderFn) => await loaderFn())),
       ),
     );
 
