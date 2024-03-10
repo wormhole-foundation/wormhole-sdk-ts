@@ -1,18 +1,16 @@
-import * as _algorand from "@wormhole-foundation/sdk-algorand";
-import * as _algorand_core from "@wormhole-foundation/sdk-algorand-core";
-import * as _algorand_tokenbridge from "@wormhole-foundation/sdk-algorand-tokenbridge";
-
+import { Network, PlatformDefinition } from ".";
 /** Platform and protocol definitions for Algorand */
-export const algorand = {
-  ...{
+export const algorand = async (): Promise<PlatformDefinition<Network, "Algorand">> => {
+  const _algorand = await import("@wormhole-foundation/sdk-algorand");
+  return {
     Address: _algorand.AlgorandAddress,
     ChainContext: _algorand.AlgorandChain,
     Platform: _algorand.AlgorandPlatform,
     Signer: _algorand.AlgorandSigner,
     getSigner: _algorand.getAlgorandSigner,
-  },
-  protocols: {
-    core: _algorand_core,
-    tokenbridge: _algorand_tokenbridge,
-  },
+    protocols: {
+      core: () => import("@wormhole-foundation/sdk-algorand-core"),
+      tokenbridge: () => import("@wormhole-foundation/sdk-algorand-tokenbridge"),
+    },
+  };
 };

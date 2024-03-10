@@ -1,4 +1,4 @@
-import { Chain, Wormhole, api, toChain } from "@wormhole-foundation/sdk";
+import { Chain, Wormhole, api, toChain, wormhole } from "@wormhole-foundation/sdk";
 import { algorand } from "@wormhole-foundation/sdk/algorand";
 import { cosmwasm } from "@wormhole-foundation/sdk/cosmwasm";
 import { evm } from "@wormhole-foundation/sdk/evm";
@@ -35,12 +35,7 @@ const skipChains = [
 ];
 
 (async function () {
-  const wh = new Wormhole("Mainnet", [
-    evm.Platform,
-    solana.Platform,
-    cosmwasm.Platform,
-    algorand.Platform,
-  ]);
+  const wh = await wormhole("Mainnet", [evm, solana, cosmwasm, algorand]);
 
   const hbc = await getHeartbeats(wh.config.api);
   for (const [chain, heights] of Object.entries(hbc)) {
