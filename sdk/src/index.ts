@@ -36,22 +36,26 @@ export interface PlatformDefinition<
 
 export async function wormhole<N extends Network>(
   network: N,
-  platforms: PlatformDefinition<N>[],
+  platformLoaders: (() => Promise<PlatformDefinition<N>>)[],
 ): Promise<Wormhole<N>> {
   // make sure all protocols are loaded
   try {
+    const platforms = await Promise.all(
+      platformLoaders.map(async (platformLoader) => await platformLoader()),
+    );
+
     await Promise.all(
       platforms.flatMap(async (p) =>
         Object.values(p.protocols).map(async (loaderFn) => await loaderFn()),
       ),
     );
+
+    return new Wormhole(
+      network,
+      platforms.map((p) => p.Platform),
+    );
   } catch (e) {
-    console.error("Failed to load protocols", e);
+    console.error("Failed to load required packages", e);
     throw e;
   }
-
-  return new Wormhole(
-    network,
-    platforms.map((p) => p.Platform),
-  );
 }

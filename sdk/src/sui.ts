@@ -1,14 +1,16 @@
 import { Network, PlatformDefinition } from ".";
-import * as _sui from "@wormhole-foundation/sdk-sui";
 /** Platform and protocol definitions for Sui */
-export const sui: PlatformDefinition<Network, "Sui"> = {
-  Address: _sui.SuiAddress,
-  ChainContext: _sui.SuiChain,
-  Platform: _sui.SuiPlatform,
-  Signer: _sui.SuiSigner,
-  getSigner: _sui.getSuiSigner,
-  protocols: {
-    core: () => import("@wormhole-foundation/sdk-sui-core"),
-    tokenbridge: () => import("@wormhole-foundation/sdk-sui-tokenbridge"),
-  },
+export const sui = async (): Promise<PlatformDefinition<Network, "Sui">> => {
+  const _sui = await import("@wormhole-foundation/sdk-sui");
+  return {
+    Address: _sui.SuiAddress,
+    ChainContext: _sui.SuiChain,
+    Platform: _sui.SuiPlatform,
+    Signer: _sui.SuiSigner,
+    getSigner: _sui.getSuiSigner,
+    protocols: {
+      core: () => import("@wormhole-foundation/sdk-sui-core"),
+      tokenbridge: () => import("@wormhole-foundation/sdk-sui-tokenbridge"),
+    },
+  };
 };
