@@ -1,7 +1,7 @@
-import { PlatformDefinition } from ".";
+import { Network, PlatformDefinition } from ".";
 import * as _solana from "@wormhole-foundation/sdk-solana";
 /** Platform and protocol definitons for Solana */
-export const solana: PlatformDefinition<"Solana"> = {
+export const solana: PlatformDefinition<Network, "Solana"> = {
   Address: _solana.SolanaAddress,
   ChainContext: _solana.SolanaChain,
   Platform: _solana.SolanaPlatform,

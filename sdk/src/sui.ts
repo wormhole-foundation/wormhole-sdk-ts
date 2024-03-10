@@ -1,7 +1,7 @@
-import { PlatformDefinition } from ".";
+import { Network, PlatformDefinition } from ".";
 import * as _sui from "@wormhole-foundation/sdk-sui";
 /** Platform and protocol definitions for Sui */
-export const sui: PlatformDefinition<"Sui"> = {
+export const sui: PlatformDefinition<Network, "Sui"> = {
   Address: _sui.SuiAddress,
   ChainContext: _sui.SuiChain,
   Platform: _sui.SuiPlatform,

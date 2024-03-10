@@ -1,6 +1,10 @@
 import {
+  Chain,
+  ChainContext,
+  NativeAddress,
   Network,
   Platform,
+  PlatformToChains,
   PlatformUtils,
   RpcConnection,
   Signer,
@@ -9,11 +13,21 @@ import {
 
 export * from "@wormhole-foundation/sdk-connect";
 
-export interface PlatformDefinition<P extends Platform> {
+export interface PlatformDefinition<
+  N extends Network = Network,
+  P extends Platform = Platform,
+  C extends Chain = PlatformToChains<P>,
+> {
   Platform: PlatformUtils<P>;
-  ChainContext: any;
-  Address: any;
-  Signer: any;
+  ChainContext: {
+    new <CCN extends N = N, CCC extends C = C>(...args: any): ChainContext<N, C, P>;
+  };
+  Address: {
+    new (...args: any): NativeAddress<PlatformToChains<P>>;
+  };
+  Signer: {
+    new (...args: any): Signer;
+  };
   getSigner: (rpc: RpcConnection<P>, key: string) => Promise<Signer>;
   protocols: {
     [key: string]: () => Promise<any>;
@@ -22,7 +36,7 @@ export interface PlatformDefinition<P extends Platform> {
 
 export async function wormhole<N extends Network>(
   network: N,
-  platforms: PlatformDefinition<Platform>[],
+  platforms: PlatformDefinition<N>[],
 ): Promise<Wormhole<N>> {
   // make sure all protocols are loaded
   try {

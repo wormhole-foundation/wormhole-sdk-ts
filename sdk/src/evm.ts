@@ -1,8 +1,7 @@
-import { PlatformDefinition } from ".";
-
+import { Network, PlatformDefinition } from ".";
 import * as _evm from "@wormhole-foundation/sdk-evm";
 /** Platform and protocol definitions for Evm */
-export const evm: PlatformDefinition<"Evm"> = {
+export const evm: PlatformDefinition<Network, "Evm"> = {
   Address: _evm.EvmAddress,
   ChainContext: _evm.EvmChain,
   Platform: _evm.EvmPlatform,

@@ -1,8 +1,7 @@
-import { PlatformDefinition } from ".";
+import { Network, PlatformDefinition } from ".";
 import * as _algorand from "@wormhole-foundation/sdk-algorand";
-
 /** Platform and protocol definitions for Algorand */
-export const algorand: PlatformDefinition<"Algorand"> = {
+export const algorand: PlatformDefinition<Network, "Algorand"> = {
   Address: _algorand.AlgorandAddress,
   ChainContext: _algorand.AlgorandChain,
   Platform: _algorand.AlgorandPlatform,
