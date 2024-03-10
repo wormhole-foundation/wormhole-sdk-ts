@@ -39,7 +39,7 @@ Getting started is simple, just import Wormhole and the [Platform](#platforms) m
 
 <!--EXAMPLE_IMPORTS-->
 ```ts
-import { Wormhole } from "@wormhole-foundation/sdk";
+import { wormhole } from "@wormhole-foundation/sdk";
 import { algorand } from "@wormhole-foundation/sdk/algorand";
 import { cosmwasm } from "@wormhole-foundation/sdk/cosmwasm";
 import { evm } from "@wormhole-foundation/sdk/evm";
@@ -53,13 +53,7 @@ And pass those to the Wormhole constructor to make them available for use
 
 <!--EXAMPLE_WORMHOLE_INIT-->
 ```ts
-  const wh = new Wormhole("Testnet", [
-    evm.Platform,
-    solana.Platform,
-    sui.Platform,
-    algorand.Platform,
-    cosmwasm.Platform,
-  ]);
+  const wh = await wormhole("Testnet", [evm, solana, algorand, sui, cosmwasm]);
 ```
 See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/index.ts#L15)
 <!--EXAMPLE_WORMHOLE_INIT-->
@@ -71,7 +65,7 @@ With a configured Wormhole object, we have the ability to do things like; parse 
   // Grab a ChainContext object from our configured Wormhole instance
   const ctx = wh.getChain("Solana");
 ```
-See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/index.ts#L25)
+See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/index.ts#L19)
 <!--EXAMPLE_WORMHOLE_CHAIN-->
 
 <!--EXAMPLE_WORMHOLE_VAA-->
@@ -86,7 +80,7 @@ See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/
     60_000,
   );
 ```
-See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/index.ts#L54)
+See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/index.ts#L48)
 <!--EXAMPLE_WORMHOLE_VAA-->
 
 
@@ -96,7 +90,7 @@ Optionally, the default configuration may be overriden in the case that you want
 ```ts
   // Pass a partial WormholeConfig object to override specific
   // fields in the default config
-  const wh = new Wormhole("Testnet", [solana.Platform], {
+  const wh = await wormhole("Testnet", [solana], {
     chains: {
       Solana: {
         contracts: {
@@ -231,7 +225,7 @@ The protocol that underlies all Wormhole activity is the Core protocol. This pro
 
 <!--EXAMPLE_CORE_BRIDGE-->
 ```ts
-  const wh = new Wormhole("Testnet", [solana.Platform]);
+  const wh = await wormhole("Testnet", [solana]);
 
   const chain = wh.getChain("Solana");
   const { signer, address } = await getSigner(chain);
@@ -356,7 +350,7 @@ We can create a new `Wormhole` object and use it to to create `TokenTransfer`, `
   const destTxids = await xfer.completeTransfer(route.destination.signer);
   console.log(`Completed Transfer: `, destTxids);
 ```
-See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/tokenBridge.ts#L130)
+See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/tokenBridge.ts#L125)
 <!--EXAMPLE_TOKEN_TRANSFER-->
 
 
@@ -411,7 +405,7 @@ We can also transfer native USDC using [Circle's CCTP](https://www.circle.com/en
   const dstTxids = await xfer.completeTransfer(dst.signer);
   console.log(`Completed Transfer: `, dstTxids);
 ```
-See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/cctp.ts#L78)
+See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/cctp.ts#L79)
 <!--EXAMPLE_CCTP_TRANSFER-->
 
 
@@ -442,7 +436,7 @@ A transfer into Cosmos from outside cosmos will be automatically delivered to th
   const attests = await xfer.fetchAttestation(600_000);
   console.log("Got Attestations", attests);
 ```
-See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/cosmos.ts#L119)
+See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/cosmos.ts#L120)
 <!--EXAMPLE_GATEWAY_INBOUND-->
 
 A transfer within Cosmos will use IBC to transfer from the origin to the Gateway chain, then out from the Gateway to the destination chain
@@ -468,7 +462,7 @@ A transfer within Cosmos will use IBC to transfer from the origin to the Gateway
   const attests = await xfer.fetchAttestation(60_000);
   console.log("Got attests: ", attests);
 ```
-See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/cosmos.ts#L151)
+See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/cosmos.ts#L152)
 <!--EXAMPLE_GATEWAY_INTERCOSMOS-->
 
 A transfer leaving Cosmos will produce a VAA from the Gateway that must be manually redeemed on the destination chain 
@@ -497,7 +491,7 @@ A transfer leaving Cosmos will produce a VAA from the Gateway that must be manua
   const dstTxIds = await xfer.completeTransfer(dst.signer);
   console.log("Completed transfer on destination chain", dstTxIds);
 ```
-See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/cosmos.ts#L183)
+See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/cosmos.ts#L184)
 <!--EXAMPLE_GATEWAY_OUTBOUND-->
 
 
@@ -518,7 +512,7 @@ A `TransactionId` or `WormholeMessageId` may be used to recover the transfer
   const dstTxIds = await xfer.completeTransfer(signer);
   console.log("Completed transfer: ", dstTxIds);
 ```
-See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/cctp.ts#L129)
+See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/cctp.ts#L130)
 <!--EXAMPLE_RECOVER_TRANSFER-->
 
 ### Routes

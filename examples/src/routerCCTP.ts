@@ -8,6 +8,7 @@ import {
   Wormhole,
   circle,
   routes,
+  wormhole,
 } from "@wormhole-foundation/sdk";
 import { evm } from "@wormhole-foundation/sdk/evm";
 import { solana } from "@wormhole-foundation/sdk/solana";
@@ -16,7 +17,7 @@ import { getSigner } from "./helpers";
 
 (async function () {
   // Setup
-  const wh = new Wormhole("Testnet", [evm.Platform, solana.Platform]);
+  const wh = await wormhole("Testnet", [evm, solana]);
 
   // get signers from local config
   const sendChain = wh.getChain("Avalanche");

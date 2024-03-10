@@ -6,6 +6,7 @@ import {
   TokenId,
   Wormhole,
   amount,
+  wormhole,
 } from "@wormhole-foundation/sdk";
 
 // Import the platform specific packages
@@ -33,7 +34,7 @@ import { SignerStuff, getSigner } from "./helpers";
 (async function () {
   // init Wormhole object, passing config for which network
   // to use (e.g. Mainnet/Testnet) and what Platforms to support
-  const wh = new Wormhole("Mainnet", [evm.Platform, solana.Platform, cosmwasm.Platform]);
+  const wh = await wormhole("Mainnet", [evm, solana, cosmwasm]);
   // Pick up where you left off by updating the txids as you go
   let fakeIt = false;
 
