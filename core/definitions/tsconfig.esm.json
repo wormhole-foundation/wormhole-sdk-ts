@@ -2,6 +2,8 @@
   "extends": "../../tsconfig.esm.json",
   "include": ["src"],
   "compilerOptions": {
+    "target": "ESNext",
+    "module": "Node16",
     "outDir": "dist/esm",
     "rootDir": "src"
   }
