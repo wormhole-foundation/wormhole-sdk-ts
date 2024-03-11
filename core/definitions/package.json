@@ -32,6 +32,9 @@
     "*": {
       "testing": [
         "./dist/esm/testing/index.d.ts"
+      ],
+      "*":[
+        "./dist/esm/index.d.ts"
       ]
     }
   },
