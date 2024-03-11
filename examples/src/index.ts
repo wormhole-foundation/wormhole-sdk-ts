@@ -17,7 +17,7 @@ import { getSigner } from "./helpers";
 
   // EXAMPLE_WORMHOLE_CHAIN
   // Grab a ChainContext object from our configured Wormhole instance
-  const ctx = wh.getChain("Ethereum");
+  const ctx = wh.getChain("Solana");
   // EXAMPLE_WORMHOLE_CHAIN
 
   const rcv = wh.getChain("Algorand");
@@ -27,8 +27,6 @@ import { getSigner } from "./helpers";
 
   // Get a Token Bridge contract client on the source
   const sndTb = await ctx.getTokenBridge();
-
-  const x = await sndTb.getWrappedNative();
 
   // Create a transaction stream for transfers
   const transfer = sndTb.transfer(
