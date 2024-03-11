@@ -1,3 +1,4 @@
+/// <reference path="../../platforms/algorand/dist/esm/address.d.ts" />
 import { Network, PlatformDefinition } from ".";
 /** Platform and protocol definitions for Algorand */
 export const algorand = async (): Promise<PlatformDefinition<Network, "Algorand">> => {

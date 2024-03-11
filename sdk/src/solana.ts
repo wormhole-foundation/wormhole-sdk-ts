@@ -1,3 +1,4 @@
+/// <reference path="../../platforms/solana/dist/esm/address.d.ts" />
 import { Network, PlatformDefinition } from ".";
 /** Platform and protocol definitons for Solana */
 export const solana = async (): Promise<PlatformDefinition<Network, "Solana">> => {

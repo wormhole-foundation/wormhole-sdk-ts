@@ -5,6 +5,7 @@ import {
   chainToPlatform,
   platformToAddressFormat,
 } from "@wormhole-foundation/sdk-base";
+import { WormholeRegistry } from "./registry";
 
 //TODO BRRRR circular include!!
 //I have yet to figure out how to get the equivalent of a forward declaration to work (without
@@ -38,17 +39,11 @@ export interface Address {
   toUniversalAddress(): UniversalAddress;
 }
 
-declare global {
-  namespace Wormhole {
-    export interface PlatformToNativeAddressMapping {}
-  }
-}
-
-export type MappedPlatforms = keyof Wormhole.PlatformToNativeAddressMapping;
+export type MappedPlatforms = keyof WormholeRegistry.PlatformToNativeAddressMapping;
 
 /** Utility type to map platform to its native address implementation */
 type GetNativeAddress<P extends Platform> = P extends MappedPlatforms
-  ? Wormhole.PlatformToNativeAddressMapping[P]
+  ? WormholeRegistry.PlatformToNativeAddressMapping[P]
   : never;
 
 /** An address that has been parsed into its Nativfe Address type */

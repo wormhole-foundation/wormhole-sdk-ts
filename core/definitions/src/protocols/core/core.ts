@@ -6,9 +6,10 @@ import { TxHash } from "../../types";
 import { UnsignedTransaction } from "../../unsignedTransaction";
 import { VAA } from "../../vaa";
 
-declare global {
-  namespace Wormhole {
-    export interface ProtocolToPlatformMapping {
+import "../../registry";
+declare module "../../registry" {
+  export namespace WormholeRegistry {
+    interface ProtocolToPlatformMapping {
       WormholeCore: EmptyPlatformMap<Platform, "WormholeCore">;
     }
   }

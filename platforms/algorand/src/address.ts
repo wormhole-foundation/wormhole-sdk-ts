@@ -83,8 +83,8 @@ export class AlgorandAddress implements Address {
   }
 }
 
-declare global {
-  namespace Wormhole {
+declare module "@wormhole-foundation/sdk-connect" {
+  export namespace WormholeRegistry {
     interface PlatformToNativeAddressMapping {
       Algorand: AlgorandAddress;
     }

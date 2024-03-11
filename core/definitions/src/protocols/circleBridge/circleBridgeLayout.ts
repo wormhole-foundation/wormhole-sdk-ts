@@ -41,8 +41,9 @@ export const circleBridgeNamedPayloads = [
 ] as const satisfies NamedPayloads;
 
 // factory registration:
-declare global {
-  namespace Wormhole {
+import "../../registry";
+declare module "../../registry" {
+  export namespace WormholeRegistry {
     interface PayloadLiteralToLayoutMapping
       extends RegisterPayloadTypes<"CircleBridge", typeof circleBridgeNamedPayloads> {}
   }

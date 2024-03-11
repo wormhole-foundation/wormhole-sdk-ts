@@ -1,16 +1,11 @@
 import { Chain, Network, Platform, chainToPlatform, isChain } from "@wormhole-foundation/sdk-base";
 import { RpcConnection } from "./rpc";
 import { ChainsConfig } from "./types";
-
-declare global {
-  namespace Wormhole {
-    export interface ProtocolToPlatformMapping {}
-  }
-}
+import { WormholeRegistry } from "./registry";
 
 /** A string type representing the name of a protocol */
-export type ProtocolName = keyof Wormhole.ProtocolToPlatformMapping;
-type MappedProtocolPlatforms = keyof Wormhole.ProtocolToPlatformMapping[ProtocolName];
+export type ProtocolName = keyof WormholeRegistry.ProtocolToPlatformMapping;
+type MappedProtocolPlatforms = keyof WormholeRegistry.ProtocolToPlatformMapping[ProtocolName];
 
 export type EmptyPlatformMap<P extends Platform, PN extends ProtocolName> = Map<
   P,
@@ -22,7 +17,7 @@ export type ProtocolImplementation<
   PN extends ProtocolName,
 > = PN extends ProtocolName
   ? T extends MappedProtocolPlatforms
-    ? Wormhole.ProtocolToPlatformMapping[PN][T]
+    ? WormholeRegistry.ProtocolToPlatformMapping[PN][T]
     : any
   : never;
 

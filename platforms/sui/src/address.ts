@@ -129,9 +129,9 @@ export class SuiAddress implements Address {
   }
 }
 
-declare global {
-  namespace Wormhole {
-    export interface PlatformToNativeAddressMapping {
+declare module "@wormhole-foundation/sdk-connect" {
+  export namespace WormholeRegistry {
+    interface PlatformToNativeAddressMapping {
       Sui: SuiAddress;
     }
   }

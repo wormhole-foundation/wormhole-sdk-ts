@@ -1,3 +1,4 @@
+/// <reference path="../../platforms/evm/dist/esm/address.d.ts" />
 import { Network, PlatformDefinition } from ".";
 /** Platform and protocol definitions for Evm */
 export const evm = async (): Promise<PlatformDefinition<Network, "Evm">> => {

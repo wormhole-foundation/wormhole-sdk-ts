@@ -60,11 +60,9 @@ export class SolanaAddress implements Address {
   }
 }
 
-// This is required to make `type Z = NativeAddress<"Solana">;` resolve to SolanaAddress
-// but outside this module it does _not_ resolve correctly
-declare global {
-  namespace Wormhole {
-    export interface PlatformToNativeAddressMapping {
+declare module '@wormhole-foundation/sdk-connect' {
+  export namespace WormholeRegistry {
+    interface PlatformToNativeAddressMapping {
       Solana: SolanaAddress;
     }
   }
