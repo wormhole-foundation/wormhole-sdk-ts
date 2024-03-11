@@ -1,7 +1,9 @@
+/// <reference path="../../platforms/sui/dist/esm/address.d.ts" />
 import { Network, PlatformDefinition } from ".";
+const module = import("@wormhole-foundation/sdk-sui");
 /** Platform and protocol definitions for Sui */
 export const sui = async (): Promise<PlatformDefinition<Network, "Sui">> => {
-  const _sui = await import("@wormhole-foundation/sdk-sui");
+  const _sui = await module;
   return {
     Address: _sui.SuiAddress,
     ChainContext: _sui.SuiChain,

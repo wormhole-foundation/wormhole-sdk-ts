@@ -1,8 +1,9 @@
+/// <reference path="../../platforms/aptos/dist/esm/address.d.ts" />
 import { Network, PlatformDefinition } from ".";
+const module = import("@wormhole-foundation/sdk-aptos");
 /** Platform and protocol definitions for Aptos */
 export const aptos = async (): Promise<PlatformDefinition<Network, "Aptos">> => {
-  const _aptos = await import("@wormhole-foundation/sdk-aptos");
-
+  const _aptos = await module;
   return {
     Address: _aptos.AptosAddress,
     ChainContext: _aptos.AptosChain,

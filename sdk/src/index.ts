@@ -10,6 +10,8 @@ import {
   RpcConnection,
   Signer,
   Wormhole,
+  // @ts-ignore
+  WormholeRegistry,
 } from "@wormhole-foundation/sdk-connect";
 
 export * from "@wormhole-foundation/sdk-connect";

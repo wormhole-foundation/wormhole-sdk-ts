@@ -1,7 +1,9 @@
+/// <reference path="../../platforms/evm/dist/esm/address.d.ts" />
 import { Network, PlatformDefinition } from ".";
+const _module = import("@wormhole-foundation/sdk-evm");
 /** Platform and protocol definitions for Evm */
 export const evm = async (): Promise<PlatformDefinition<Network, "Evm">> => {
-  const _evm = await import("@wormhole-foundation/sdk-evm");
+  const _evm = await _module;
   return {
     Address: _evm.EvmAddress,
     ChainContext: _evm.EvmChain,
