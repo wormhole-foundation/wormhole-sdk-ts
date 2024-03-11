@@ -37,7 +37,7 @@ export interface PlatformDefinition<
 
 export async function wormhole<N extends Network>(
   network: N,
-  platformLoaders: (() => Promise<PlatformDefinition<N>>)[],
+  platformLoaders: (() => Promise<PlatformDefinition>)[],
   config?: ConfigOverrides,
 ): Promise<Wormhole<N>> {
   // make sure all protocols are loaded
@@ -53,7 +53,7 @@ export async function wormhole<N extends Network>(
       ),
     );
 
-    return new Wormhole(
+    return new Wormhole<N>(
       network,
       platforms.map((p) => p.Platform),
       config,
