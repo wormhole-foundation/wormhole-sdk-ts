@@ -6,9 +6,10 @@ import { ProtocolPayload, ProtocolVAA, VAA } from "../../vaa";
 import { ChainAddress, NativeAddress } from "../../address";
 import { UnsignedTransaction } from "../../unsignedTransaction";
 
-declare global {
-  namespace Wormhole {
-    export interface ProtocolToPlatformMapping {
+import "../../registry";
+declare module "../../registry" {
+  export namespace WormholeRegistry {
+    interface ProtocolToPlatformMapping {
       NTT: EmptyPlatformMap<Platform, NTT.ProtocolName>;
     }
   }

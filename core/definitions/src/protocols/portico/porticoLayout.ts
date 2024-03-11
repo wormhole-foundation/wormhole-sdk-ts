@@ -39,8 +39,9 @@ export const porticoPayloadLayout = [
 export const namedPayloads = [["Transfer", porticoFlagSetLayout]] as const satisfies NamedPayloads;
 
 // factory registration:
-declare global {
-  namespace Wormhole {
+import "../../registry";
+declare module "../../registry" {
+  export namespace WormholeRegistry {
     interface PayloadLiteralToLayoutMapping
       extends RegisterPayloadTypes<"PorticoBridge", typeof namedPayloads> {}
   }

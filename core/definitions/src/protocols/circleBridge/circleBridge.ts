@@ -20,9 +20,10 @@ import { EmptyPlatformMap } from "../../protocol";
 import { keccak256 } from "../../utils";
 import { ProtocolPayload, ProtocolVAA, payloadDiscriminator } from "../../vaa";
 
-declare global {
-  namespace Wormhole {
-    export interface ProtocolToPlatformMapping {
+import "../../registry";
+declare module "../../registry" {
+  export namespace WormholeRegistry {
+    interface ProtocolToPlatformMapping {
       CircleBridge: EmptyPlatformMap<Platform, CircleBridge.ProtocolName>;
       AutomaticCircleBridge: EmptyPlatformMap<Platform, AutomaticCircleBridge.ProtocolName>;
     }

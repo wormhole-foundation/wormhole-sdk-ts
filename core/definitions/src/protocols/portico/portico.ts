@@ -14,9 +14,10 @@ import { TokenAddress, TokenId } from "../../types";
 import { UnsignedTransaction } from "../../unsignedTransaction";
 import { ProtocolVAA } from "../../vaa";
 
-declare global {
-  namespace Wormhole {
-    export interface ProtocolToPlatformMapping {
+import "../../registry";
+declare module "../../registry" {
+  export namespace WormholeRegistry {
+    interface ProtocolToPlatformMapping {
       PorticoBridge: EmptyPlatformMap<Platform, PorticoBridge.ProtocolName>;
     }
   }

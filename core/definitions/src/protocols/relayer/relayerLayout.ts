@@ -86,8 +86,9 @@ const namedPayloads = [
 
 // factory registration:
 
-declare global {
-  namespace Wormhole {
+import "../../registry";
+declare module "../../registry" {
+  export namespace WormholeRegistry {
     interface PayloadLiteralToLayoutMapping
       extends RegisterPayloadTypes<"Relayer", typeof namedPayloads> {}
   }

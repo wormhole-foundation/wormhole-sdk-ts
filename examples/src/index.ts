@@ -1,5 +1,5 @@
 // EXAMPLE_IMPORTS
-import { wormhole } from "@wormhole-foundation/sdk";
+import { isNative, wormhole } from "@wormhole-foundation/sdk";
 import { algorand } from "@wormhole-foundation/sdk/algorand";
 import { cosmwasm } from "@wormhole-foundation/sdk/cosmwasm";
 import { evm } from "@wormhole-foundation/sdk/evm";
@@ -17,8 +17,12 @@ import { getSigner } from "./helpers";
 
   // EXAMPLE_WORMHOLE_CHAIN
   // Grab a ChainContext object from our configured Wormhole instance
-  const ctx = wh.getChain("Solana");
+  const ctx = wh.getChain("Ethereum");
+  const y = await ctx.getNativeWrappedTokenId();
+  if (!isNative(y.address)) console.log(y.address.toNative("Ethereum"));
   // EXAMPLE_WORMHOLE_CHAIN
+
+  return;
 
   const rcv = wh.getChain("Algorand");
 
@@ -27,6 +31,8 @@ import { getSigner } from "./helpers";
 
   // Get a Token Bridge contract client on the source
   const sndTb = await ctx.getTokenBridge();
+
+  const x = await sndTb.getWrappedNative();
 
   // Create a transaction stream for transfers
   const transfer = sndTb.transfer(

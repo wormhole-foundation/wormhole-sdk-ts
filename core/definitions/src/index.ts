@@ -1,3 +1,4 @@
+export * from "./registry";
 export * from "./address";
 export * from "./protocol";
 export * from "./universalAddress";

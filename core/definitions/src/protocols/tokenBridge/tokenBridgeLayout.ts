@@ -1,12 +1,12 @@
 import {
-  Layout,
-  LayoutItem,
   CustomConversion,
   CustomizableBytes,
+  Layout,
+  LayoutItem,
   customizableBytes,
   range,
 } from "@wormhole-foundation/sdk-base";
-import { payloadIdItem, chainItem, universalAddressItem, amountItem } from "../../layout-items";
+import { amountItem, chainItem, payloadIdItem, universalAddressItem } from "../../layout-items";
 import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../../vaa";
 
 const fixedLengthStringItem = {
@@ -75,8 +75,8 @@ export const tokenBridgeNamedPayloads = [
 
 // factory registration:
 
-declare global {
-  namespace Wormhole {
+declare module "../../registry" {
+  export namespace WormholeRegistry {
     interface PayloadLiteralToLayoutMapping
       extends RegisterPayloadTypes<"TokenBridge", typeof tokenBridgeNamedPayloads> {}
   }

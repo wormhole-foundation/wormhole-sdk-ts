@@ -95,8 +95,8 @@ export class EvmAddress implements Address {
   }
 }
 
-declare global {
-  namespace Wormhole {
+declare module '@wormhole-foundation/sdk-connect' {
+  export namespace WormholeRegistry {
     interface PlatformToNativeAddressMapping {
       Evm: EvmAddress;
     }

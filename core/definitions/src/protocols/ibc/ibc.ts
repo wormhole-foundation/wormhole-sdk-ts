@@ -13,9 +13,10 @@ import { EmptyPlatformMap } from "../../protocol";
 import { TokenAddress, TokenId, TxHash } from "../../types";
 import { UnsignedTransaction } from "../../unsignedTransaction";
 
-declare global {
-  namespace Wormhole {
-    export interface ProtocolToPlatformMapping {
+import "../../registry";
+declare module "../../registry" {
+  export namespace WormholeRegistry {
+    interface ProtocolToPlatformMapping {
       IbcBridge: EmptyPlatformMap<Platform, "IbcBridge">;
     }
   }
