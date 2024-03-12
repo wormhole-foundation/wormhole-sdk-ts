@@ -16,23 +16,19 @@
   "types": "./dist/cjs/index.d.ts",
   "module": "./dist/esm/index.js",
   "files": [
-    "dist"
+    "dist/cjs",
+    "dist/esm"
   ],
   "exports": {
     ".": {
       "import": "./dist/esm/index.js",
+      "types":"./dist/esm/index.d.ts",
       "require": "./dist/cjs/index.js"
     },
     "./testing": {
       "import": "./dist/esm/testing/index.js",
+      "types": "./dist/esm/testing/index.d.ts",
       "require": "./dist/cjs/testing/index.js"
-    }
-  },
-  "typesVersions": {
-    "*": {
-      "testing": [
-        "./dist/esm/testing/index.d.ts"
-      ]
     }
   },
   "scripts": {
@@ -40,8 +36,8 @@
     "build:cjs": "tsc -p ./tsconfig.cjs.json",
     "build:esm": "tsc -p ./tsconfig.esm.json",
     "build": "npm run build:cjs && npm run build:esm",
-    "rebuild": "npm run clean && npm run build:cjs && npm run build:esm",
-    "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo",
+    "rebuild": "npm run clean && npm run build",
+    "clean": "rm -rf ./dist && rm -rf ./.turbo",
     "lint": "npm run prettier && eslint --fix",
     "prettier": "prettier --write ./src"
   },

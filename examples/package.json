@@ -41,7 +41,7 @@
     "cosmos": "tsx src/cosmos.ts",
     "msg": "tsx src/messaging.ts",
     "quorum": "tsx src/quorum.ts",
-    "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo",
+    "clean": "rm -rf ./dist && rm -rf ./.turbo",
     "lint": "npm run prettier && eslint --fix",
     "prettier": "prettier --write ./src",
     "coverage": "jest --config ../jest.config.ts --coverage",
