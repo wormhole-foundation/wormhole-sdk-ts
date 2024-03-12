@@ -19,7 +19,8 @@
   "author": "",
   "description": "The core package for the Connect SDK, used in conjunction with 1 or more of the chain packages",
   "files": [
-    "dist"
+    "dist/cjs",
+    "dist/esm"
   ],
   "keywords": [
     "wormhole",
@@ -34,10 +35,9 @@
   "scripts": {
     "build:cjs": "tsc -p ./tsconfig.cjs.json",
     "build:esm": "tsc -p ./tsconfig.esm.json",
-    "build:node": "tsc -p ./tsconfig.node.json",
-    "build": "npm run build:cjs && npm run build:esm && npm run build:node",
+    "build": "npm run build:cjs && npm run build:esm",
     "rebuild": "npm run clean && npm run build",
-    "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo",
+    "clean": "rm -rf ./dist && rm -rf ./.turbo",
     "lint": "npm run prettier && eslint --fix",
     "prettier": "prettier --write ./src",
     "coverage": "jest --config ./jest.config.ts --coverage",
