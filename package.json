@@ -25,7 +25,7 @@
   "scripts": {
     "lint": "npx turbo lint",
     "build": "npx turbo build",
-    "rebuild": "npx turbo build --no-cache --force",
+    "rebuild": "npx turbo rebuild --no-cache --force",
     "test": "NETWORK=Mainnet npx turbo test",
     "prettier": "npm run prettier --workspaces --if-present",
     "docs": "NODE_OPTIONS=--max_old_space_size=8192 typedoc --options typedoc.json",
