@@ -4,7 +4,7 @@
 
 import * as borsh from '@coral-xyz/borsh';
 import type { Layout } from 'buffer-layout';
-import type { anchor} from '@wormhole-foundation/sdk-solana';
+import type { anchor } from '@wormhole-foundation/sdk-solana';
 import { camelCase } from '@wormhole-foundation/sdk-solana';
 
 export class IdlCoder {

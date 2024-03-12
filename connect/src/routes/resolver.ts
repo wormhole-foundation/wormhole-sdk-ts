@@ -1,7 +1,5 @@
 import type { Network } from "@wormhole-foundation/sdk-base";
-import type {
-  ChainContext,
-  TokenId} from "@wormhole-foundation/sdk-definitions";
+import type { ChainContext, TokenId } from "@wormhole-foundation/sdk-definitions";
 import {
   canonicalAddress,
   isNative,
@@ -9,7 +7,7 @@ import {
 } from "@wormhole-foundation/sdk-definitions";
 import type { Wormhole } from "../wormhole";
 import type { RouteTransferRequest } from "./request";
-import type { Route, RouteConstructor} from "./route";
+import type { Route, RouteConstructor } from "./route";
 import { isAutomatic } from "./route";
 import { uniqueTokens } from "./token";
 import type { Options, Receipt, ValidatedTransferParams } from "./types";

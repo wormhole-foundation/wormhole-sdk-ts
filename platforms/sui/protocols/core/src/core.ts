@@ -8,20 +8,16 @@ import type {
   PayloadLiteral,
   VAA,
   WormholeCore,
-  WormholeMessageId} from "@wormhole-foundation/sdk-connect";
-import {
-  createVAA,
-  toChainId,
+  WormholeMessageId,
 } from "@wormhole-foundation/sdk-connect";
+import { createVAA, toChainId } from "@wormhole-foundation/sdk-connect";
 import type {
   AnySuiAddress,
   SuiChains,
   SuiPlatformType,
-  SuiUnsignedTransaction} from "@wormhole-foundation/sdk-sui";
-import {
-  SuiAddress,
-  SuiPlatform
+  SuiUnsignedTransaction,
 } from "@wormhole-foundation/sdk-sui";
+import { SuiAddress, SuiPlatform } from "@wormhole-foundation/sdk-sui";
 
 export class SuiWormholeCore<N extends Network, C extends SuiChains> implements WormholeCore<N, C> {
   readonly chainId: ChainId;

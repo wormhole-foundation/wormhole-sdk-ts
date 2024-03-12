@@ -3,10 +3,9 @@ import type {
   ChainAddress,
   NativeAddress,
   Network,
-  UniversalOrNative} from '@wormhole-foundation/sdk-connect';
-import {
-  ChainContext
+  UniversalOrNative,
 } from '@wormhole-foundation/sdk-connect';
+import { ChainContext } from '@wormhole-foundation/sdk-connect';
 import { SolanaAddress } from './address';
 import type { SolanaChains } from './types';
 

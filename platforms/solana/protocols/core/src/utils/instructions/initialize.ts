@@ -1,12 +1,13 @@
 import type {
   Connection,
   PublicKeyInitData,
-  TransactionInstruction} from '@solana/web3.js';
+  TransactionInstruction,
+} from '@solana/web3.js';
 import {
   PublicKey,
   SystemProgram,
   SYSVAR_CLOCK_PUBKEY,
-  SYSVAR_RENT_PUBKEY
+  SYSVAR_RENT_PUBKEY,
 } from '@solana/web3.js';
 import { createReadOnlyWormholeProgramInterface } from '../program';
 import {

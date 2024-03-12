@@ -8,10 +8,9 @@ import type {
   PlatformToChains,
   PlatformUtils,
   RpcConnection,
-  Signer} from "@wormhole-foundation/sdk-connect";
-import {
-  Wormhole,
+  Signer,
 } from "@wormhole-foundation/sdk-connect";
+import { Wormhole } from "@wormhole-foundation/sdk-connect";
 
 export * from "@wormhole-foundation/sdk-connect";
 

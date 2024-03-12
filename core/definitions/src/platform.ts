@@ -2,7 +2,7 @@ import type { Chain, Network, Platform, PlatformToChains } from "@wormhole-found
 import type { WormholeCore } from ".";
 import type { WormholeMessageId } from "./attestation";
 import type { ChainContext } from "./chain";
-import type { ProtocolName} from "./protocol";
+import type { ProtocolName } from "./protocol";
 import { create } from "./protocol";
 import type { RpcConnection } from "./rpc";
 import type { Balances, ChainsConfig, SignedTx, TokenId, TxHash, TokenAddress } from "./types";

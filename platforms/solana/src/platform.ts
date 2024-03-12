@@ -6,7 +6,8 @@ import type {
   SignedTx,
   StaticPlatformMethods,
   TokenId,
-  TxHash} from '@wormhole-foundation/sdk-connect';
+  TxHash,
+} from '@wormhole-foundation/sdk-connect';
 import {
   PlatformContext,
   Wormhole,
@@ -23,19 +24,16 @@ import type {
   Commitment,
   ConnectionConfig,
   ParsedAccountData,
-  SendOptions} from '@solana/web3.js';
-import {
-  Connection,
-  PublicKey
+  SendOptions,
 } from '@solana/web3.js';
+import { Connection, PublicKey } from '@solana/web3.js';
 import { SolanaAddress, SolanaZeroAddress } from './address';
 import type {
   AnySolanaAddress,
   SolanaChains,
-  SolanaPlatformType} from './types';
-import {
-  _platform,
+  SolanaPlatformType,
 } from './types';
+import { _platform } from './types';
 
 /**
  * @category Solana

@@ -5,7 +5,8 @@ import type {
   Contracts,
   Network,
   TokenBridge,
-  TokenId} from "@wormhole-foundation/sdk-connect";
+  TokenId,
+} from "@wormhole-foundation/sdk-connect";
 import {
   ErrNotWrapped,
   UniversalAddress,
@@ -20,7 +21,8 @@ import {
 import type {
   AnyAptosAddress,
   AptosChains,
-  AptosPlatformType} from "@wormhole-foundation/sdk-aptos";
+  AptosPlatformType,
+} from "@wormhole-foundation/sdk-aptos";
 import {
   APTOS_COIN,
   APTOS_SEPARATOR,

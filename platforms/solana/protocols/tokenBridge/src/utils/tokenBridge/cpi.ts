@@ -1,11 +1,6 @@
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import type {
-  PublicKeyInitData} from '@solana/web3.js';
-import {
-  PublicKey,
-  SystemProgram,
-  SYSVAR_RENT_PUBKEY,
-} from '@solana/web3.js';
+import type { PublicKeyInitData } from '@solana/web3.js';
+import { PublicKey, SystemProgram, SYSVAR_RENT_PUBKEY } from '@solana/web3.js';
 import { utils } from '@wormhole-foundation/sdk-solana-core';
 import {
   deriveAuthoritySignerKey,
@@ -23,7 +18,7 @@ import {
   getTransferNativeWithPayloadAccounts,
   getTransferWrappedWithPayloadAccounts,
 } from './instructions';
-import type { TokenBridge} from '@wormhole-foundation/sdk-connect';
+import type { TokenBridge } from '@wormhole-foundation/sdk-connect';
 import { toChainId } from '@wormhole-foundation/sdk-connect';
 
 /**

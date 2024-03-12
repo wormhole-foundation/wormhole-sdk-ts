@@ -2,12 +2,9 @@ import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import type {
   Connection,
   PublicKeyInitData,
-  TransactionInstruction} from '@solana/web3.js';
-import {
-  PublicKey,
-  SystemProgram,
-  SYSVAR_RENT_PUBKEY
+  TransactionInstruction,
 } from '@solana/web3.js';
+import { PublicKey, SystemProgram, SYSVAR_RENT_PUBKEY } from '@solana/web3.js';
 import type { TokenBridge } from '@wormhole-foundation/sdk-connect';
 import { toChainId } from '@wormhole-foundation/sdk-connect';
 import { utils as CoreUtils } from '@wormhole-foundation/sdk-solana-core';

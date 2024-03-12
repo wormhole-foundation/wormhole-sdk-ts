@@ -1,5 +1,5 @@
 import type { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
-import type { IndexedTx, MsgTransferEncodeObject} from "@cosmjs/stargate";
+import type { IndexedTx, MsgTransferEncodeObject } from "@cosmjs/stargate";
 import { coin } from "@cosmjs/stargate";
 import { MsgTransfer } from "cosmjs-types/ibc/applications/transfer/v1/tx";
 
@@ -15,7 +15,8 @@ import type {
   IbcTransferInfo,
   Network,
   TxHash,
-  WormholeMessageId} from "@wormhole-foundation/sdk-connect";
+  WormholeMessageId,
+} from "@wormhole-foundation/sdk-connect";
 import {
   chainToPlatform,
   encoding,
@@ -30,7 +31,8 @@ import type {
   CosmwasmChains,
   CosmwasmPlatformType,
   CosmwasmTransaction,
-  IbcChannels} from "@wormhole-foundation/sdk-cosmwasm";
+  IbcChannels,
+} from "@wormhole-foundation/sdk-cosmwasm";
 import {
   CosmwasmAddress,
   CosmwasmPlatform,

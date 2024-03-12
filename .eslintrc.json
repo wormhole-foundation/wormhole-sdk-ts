@@ -7,7 +7,8 @@
   "plugins": ["@typescript-eslint"],
   "extends": [ ],
   "rules": { 
-    "@typescript-eslint/consistent-type-imports": "error"
+    "@typescript-eslint/consistent-type-imports": "error",
+    "@typescript-eslint/consistent-type-exports": "error"
   },
   "ignorePatterns": ["__tests__", "*.js", "*.d.ts", "ethers-contracts", "jest.*"],
   "parserOptions": {

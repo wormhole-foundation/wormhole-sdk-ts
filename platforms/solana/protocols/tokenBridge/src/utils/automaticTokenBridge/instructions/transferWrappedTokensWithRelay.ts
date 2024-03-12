@@ -1,10 +1,9 @@
 import type {
   Connection,
   PublicKeyInitData,
-  TransactionInstruction} from '@solana/web3.js';
-import {
-  PublicKey
+  TransactionInstruction,
 } from '@solana/web3.js';
+import { PublicKey } from '@solana/web3.js';
 import { getTransferWrappedWithPayloadCpiAccounts } from '../../tokenBridge/cpi';
 import { createTokenBridgeRelayerProgramInterface } from '../program';
 import {
@@ -18,7 +17,7 @@ import { getAssociatedTokenAddressSync } from '@solana/spl-token';
 import { getWrappedMeta } from '../../tokenBridge';
 import { BN } from '@project-serum/anchor';
 import { deriveSignerSequenceAddress } from '../accounts/signerSequence';
-import type { Chain} from '@wormhole-foundation/sdk-connect';
+import type { Chain } from '@wormhole-foundation/sdk-connect';
 import { toChainId } from '@wormhole-foundation/sdk-connect';
 
 export async function createTransferWrappedTokensWithRelayInstruction(

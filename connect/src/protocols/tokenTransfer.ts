@@ -1,11 +1,5 @@
-import type {
-  Chain,
-  Network} from "@wormhole-foundation/sdk-base";
-import {
-  amount,
-  encoding,
-  toChain as toChainName,
-} from "@wormhole-foundation/sdk-base";
+import type { Chain, Network } from "@wormhole-foundation/sdk-base";
+import { amount, encoding, toChain as toChainName } from "@wormhole-foundation/sdk-base";
 import type {
   AttestationId,
   AutomaticTokenBridge,
@@ -16,7 +10,8 @@ import type {
   TransactionId,
   TxHash,
   UnsignedTransaction,
-  WormholeMessageId} from "@wormhole-foundation/sdk-definitions";
+  WormholeMessageId,
+} from "@wormhole-foundation/sdk-definitions";
 import {
   TokenBridge,
   deserialize,
@@ -39,13 +34,9 @@ import type {
   SourceFinalizedTransferReceipt,
   SourceInitiatedTransferReceipt,
   TransferQuote,
-  TransferReceipt} from "../types";
-import {
-  TransferState,
-  isAttested,
-  isSourceFinalized,
-  isSourceInitiated,
+  TransferReceipt,
 } from "../types";
+import { TransferState, isAttested, isSourceFinalized, isSourceInitiated } from "../types";
 import { getGovernedTokens, getGovernorLimits } from "../whscan-api";
 import { Wormhole } from "../wormhole";
 import type { WormholeTransfer } from "./wormholeTransfer";

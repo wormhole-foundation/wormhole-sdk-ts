@@ -1,13 +1,12 @@
-import type { Chain} from "@wormhole-foundation/sdk-base";
+import type { Chain } from "@wormhole-foundation/sdk-base";
 import { amount, encoding, toChain, toChainId } from "@wormhole-foundation/sdk-base";
 import type {
   PayloadDiscriminator,
   PayloadLiteral,
   TxHash,
-  WormholeMessageId} from "@wormhole-foundation/sdk-definitions";
-import {
-  deserialize,
+  WormholeMessageId,
 } from "@wormhole-foundation/sdk-definitions";
+import { deserialize } from "@wormhole-foundation/sdk-definitions";
 import axios from "axios";
 import { retry } from "./tasks";
 

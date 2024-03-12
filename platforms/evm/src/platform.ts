@@ -6,7 +6,8 @@ import type {
   SignedTx,
   StaticPlatformMethods,
   TokenId,
-  TxHash} from '@wormhole-foundation/sdk-connect';
+  TxHash,
+} from '@wormhole-foundation/sdk-connect';
 import {
   PlatformContext,
   Wormhole,
@@ -24,7 +25,7 @@ import * as ethers_contracts from './ethers-contracts';
 
 import { EvmAddress, EvmZeroAddress } from './address';
 import { EvmChain } from './chain';
-import type { AnyEvmAddress, EvmChains, EvmPlatformType} from './types';
+import type { AnyEvmAddress, EvmChains, EvmPlatformType } from './types';
 import { _platform } from './types';
 
 /**

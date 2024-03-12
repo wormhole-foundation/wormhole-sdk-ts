@@ -3,7 +3,8 @@ import type {
   SignOnlySigner,
   SignedTx,
   Signer,
-  UnsignedTransaction} from '@wormhole-foundation/sdk-connect';
+  UnsignedTransaction,
+} from '@wormhole-foundation/sdk-connect';
 import {
   PlatformNativeSigner,
   chainToPlatform,
@@ -12,12 +13,11 @@ import {
 import type {
   Provider,
   Signer as EthersSigner,
-  TransactionRequest} from 'ethers';
-import {
-  Wallet
+  TransactionRequest,
 } from 'ethers';
+import { Wallet } from 'ethers';
 import { EvmPlatform } from './platform';
-import type { EvmChains} from './types';
+import type { EvmChains } from './types';
 import { _platform } from './types';
 
 // Get a SignOnlySigner for the EVM platform

@@ -4,9 +4,11 @@ import { _platform } from '@wormhole-foundation/sdk-solana';
 
 registerProtocol(_platform, 'CircleBridge', SolanaCircleBridge);
 
-import { TokenMessenger, TokenMessengerIdl } from './anchor-idl/tokenMessenger';
+import type { TokenMessenger} from './anchor-idl/tokenMessenger';
+import { TokenMessengerIdl } from './anchor-idl/tokenMessenger';
+import type {
+  MessageTransmitter} from './anchor-idl/messageTransmitter';
 import {
-  MessageTransmitter,
   MessageTransmitterIdl,
 } from './anchor-idl/messageTransmitter';
 
@@ -15,5 +17,5 @@ export const idl = {
   MessageTransmitterIdl,
 };
 
-export { MessageTransmitter, TokenMessenger };
+export type { MessageTransmitter, TokenMessenger };
 export * from './circleBridge';

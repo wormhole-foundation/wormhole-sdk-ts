@@ -6,7 +6,8 @@ import type {
   Network,
   Platform,
   TokenBridge,
-  TokenId} from '@wormhole-foundation/sdk-connect';
+  TokenId,
+} from '@wormhole-foundation/sdk-connect';
 import {
   ErrNotWrapped,
   UniversalAddress,
@@ -19,7 +20,8 @@ import {
 import type {
   AnySolanaAddress,
   SolanaChains,
-  SolanaTransaction} from '@wormhole-foundation/sdk-solana';
+  SolanaTransaction,
+} from '@wormhole-foundation/sdk-solana';
 import {
   SolanaAddress,
   SolanaPlatform,
@@ -43,14 +45,12 @@ import {
   getMinimumBalanceForRentExemptAccount,
   getMint,
 } from '@solana/spl-token';
-import type {
-  Connection,
-  TransactionInstruction} from '@solana/web3.js';
+import type { Connection, TransactionInstruction } from '@solana/web3.js';
 import {
   Keypair,
   PublicKey,
   SystemProgram,
-  Transaction
+  Transaction,
 } from '@solana/web3.js';
 
 import type { TokenBridge as TokenBridgeContract } from './tokenBridgeType';

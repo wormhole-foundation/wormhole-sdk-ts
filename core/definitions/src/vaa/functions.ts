@@ -1,6 +1,4 @@
-import type {
-  Layout,
-  LayoutToType} from "@wormhole-foundation/sdk-base";
+import type { Layout, LayoutToType } from "@wormhole-foundation/sdk-base";
 import {
   encoding,
   layoutDiscriminator,
@@ -13,23 +11,12 @@ import type {
   PayloadLiteral,
   LayoutOf,
   ProtocolName,
-  ComposeLiteral} from "./registration";
-import {
-  composeLiteral,
-  payloadFactory,
+  ComposeLiteral,
 } from "./registration";
+import { composeLiteral, payloadFactory } from "./registration";
 
-import type {
-  VAA,
-  DistributiveVAA,
-  Payload,
-  LayoutLiteralToPayload} from "./vaa";
-import {
-  decomposeLiteral,
-  headerLayout,
-  envelopeLayout,
-  baseLayout,
-} from "./vaa";
+import type { VAA, DistributiveVAA, Payload, LayoutLiteralToPayload } from "./vaa";
+import { decomposeLiteral, headerLayout, envelopeLayout, baseLayout } from "./vaa";
 
 import { keccak256 } from "../utils";
 

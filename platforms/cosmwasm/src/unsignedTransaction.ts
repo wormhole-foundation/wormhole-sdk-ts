@@ -1,7 +1,7 @@
 import type { Coin, EncodeObject } from "@cosmjs/proto-signing";
-import type { StdFee} from "@cosmjs/stargate";
+import type { StdFee } from "@cosmjs/stargate";
 import { calculateFee } from "@cosmjs/stargate";
-import type { Network, UnsignedTransaction} from "@wormhole-foundation/sdk-connect";
+import type { Network, UnsignedTransaction } from "@wormhole-foundation/sdk-connect";
 import { encoding } from "@wormhole-foundation/sdk-connect";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
 import { DEFAULT_FEE, MSG_EXECUTE_CONTRACT_TYPE_URL, averageGasPrices } from "./constants";

@@ -1,11 +1,8 @@
 import type {
   PublicKeyInitData,
-  TransactionInstruction} from '@solana/web3.js';
-import {
-  PublicKey,
-  SystemProgram,
-  SYSVAR_RENT_PUBKEY
+  TransactionInstruction,
 } from '@solana/web3.js';
+import { PublicKey, SystemProgram, SYSVAR_RENT_PUBKEY } from '@solana/web3.js';
 import { createReadOnlyTokenBridgeProgramInterface } from '../program';
 import { deriveTokenBridgeConfigKey } from '../accounts';
 

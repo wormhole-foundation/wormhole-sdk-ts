@@ -1,4 +1,8 @@
-import type { MoveValue, SuiObjectResponse, SuiTransactionBlockResponse } from "@mysten/sui.js/client";
+import type {
+  MoveValue,
+  SuiObjectResponse,
+  SuiTransactionBlockResponse,
+} from "@mysten/sui.js/client";
 import type { PlatformToChains, UniversalOrNative } from "@wormhole-foundation/sdk-connect";
 import { normalizeSuiType } from "./address";
 

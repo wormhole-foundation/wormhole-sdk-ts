@@ -19,10 +19,10 @@ export const gateway = constMap(g.gatewayContracts);
 export const translator = constMap(g.translatorContracts);
 export const portico = constMap(p.porticoContracts);
 
-export { CircleContracts } from "./circle";
+export type { CircleContracts } from "./circle";
 export const circleContracts = constMap(circle.circleContracts);
 
-export { PorticoContracts } from "./portico";
+export type { PorticoContracts } from "./portico";
 export const rollupContracts = constMap(rollup.rollupContractAddresses);
 
 export const tokenBridgeChains = constMap(tb.tokenBridgeContracts, [0, 1]);

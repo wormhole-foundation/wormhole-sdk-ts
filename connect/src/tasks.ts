@@ -7,7 +7,8 @@ import type {
   IbcTransferInfo,
   TokenBridge,
   TransactionId,
-  TxHash} from "@wormhole-foundation/sdk-definitions";
+  TxHash,
+} from "@wormhole-foundation/sdk-definitions";
 import {
   isGatewayTransferMsg,
   isGatewayTransferWithPayloadMsg,

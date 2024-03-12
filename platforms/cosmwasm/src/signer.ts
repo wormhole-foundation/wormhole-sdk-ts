@@ -1,4 +1,4 @@
-import type { CosmWasmClient} from "@cosmjs/cosmwasm-stargate";
+import type { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
 import {
@@ -14,20 +14,12 @@ import type {
   SignOnlySigner,
   SignedTx,
   Signer,
-  UnsignedTransaction} from "@wormhole-foundation/sdk-connect";
-import {
-  encoding,
-  nativeChainIds,
-  rpc as rpcConf,
+  UnsignedTransaction,
 } from "@wormhole-foundation/sdk-connect";
+import { encoding, nativeChainIds, rpc as rpcConf } from "@wormhole-foundation/sdk-connect";
 import { TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
-import type {
-  CosmwasmEvmChain} from "./constants";
-import {
-  chainToAddressPrefix,
-  cosmwasmNetworkChainToRestUrls,
-  evmLikeChains,
-} from "./constants";
+import type { CosmwasmEvmChain } from "./constants";
+import { chainToAddressPrefix, cosmwasmNetworkChainToRestUrls, evmLikeChains } from "./constants";
 import { CosmwasmPlatform } from "./platform";
 import type { CosmwasmChains } from "./types";
 import type { CosmwasmUnsignedTransaction } from "./unsignedTransaction";

@@ -6,7 +6,8 @@ import type {
   ChainsConfig,
   Contracts,
   Network,
-  Platform} from '@wormhole-foundation/sdk-connect';
+  Platform,
+} from '@wormhole-foundation/sdk-connect';
 import {
   chainToChainId,
   circle,
@@ -18,8 +19,7 @@ import type { Provider, TransactionRequest } from 'ethers';
 import { ethers_contracts } from '.';
 import type { CircleRelayer } from './ethers-contracts';
 
-import type {
-  EvmChains} from '@wormhole-foundation/sdk-evm';
+import type { EvmChains } from '@wormhole-foundation/sdk-evm';
 import {
   EvmAddress,
   EvmPlatform,

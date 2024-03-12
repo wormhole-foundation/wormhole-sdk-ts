@@ -5,7 +5,8 @@ import type {
   CircleTransferMessage,
   Contracts,
   Network,
-  Platform} from '@wormhole-foundation/sdk-connect';
+  Platform,
+} from '@wormhole-foundation/sdk-connect';
 import {
   CircleBridge,
   circle,
@@ -15,8 +16,7 @@ import {
 
 import type { MessageTransmitter, TokenMessenger } from './ethers-contracts';
 
-import type {
-  EvmChains} from '@wormhole-foundation/sdk-evm';
+import type { EvmChains } from '@wormhole-foundation/sdk-evm';
 import {
   EvmAddress,
   EvmPlatform,
@@ -24,7 +24,7 @@ import {
   addChainId,
   addFrom,
 } from '@wormhole-foundation/sdk-evm';
-import type { LogDescription, Provider, TransactionRequest} from 'ethers';
+import type { LogDescription, Provider, TransactionRequest } from 'ethers';
 import { ethers } from 'ethers';
 import { ethers_contracts } from '.';
 //https://github.com/circlefin/evm-cctp-contracts

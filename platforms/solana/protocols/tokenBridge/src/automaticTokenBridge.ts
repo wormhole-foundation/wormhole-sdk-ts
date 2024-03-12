@@ -8,7 +8,8 @@ import type {
   Contracts,
   Network,
   Platform,
-  TokenAddress} from '@wormhole-foundation/sdk-connect';
+  TokenAddress,
+} from '@wormhole-foundation/sdk-connect';
 import {
   isNative,
   toChainId,
@@ -16,7 +17,8 @@ import {
 } from '@wormhole-foundation/sdk-connect';
 import type {
   SolanaChains,
-  SolanaTransaction} from '@wormhole-foundation/sdk-solana';
+  SolanaTransaction,
+} from '@wormhole-foundation/sdk-solana';
 import {
   SolanaAddress,
   SolanaPlatform,
@@ -25,14 +27,15 @@ import {
 
 import type { Program } from '@project-serum/anchor';
 import { BN } from '@project-serum/anchor';
-import type { Connection} from '@solana/web3.js';
+import type { Connection } from '@solana/web3.js';
 import { PublicKey, Transaction } from '@solana/web3.js';
 
 import type { TokenBridgeRelayer as TokenBridgeRelayerContract } from './automaticTokenBridgeType';
 import type {
   ForeignContract,
   RedeemerConfig,
-  RegisteredToken} from './utils/automaticTokenBridge';
+  RegisteredToken,
+} from './utils/automaticTokenBridge';
 import {
   createTokenBridgeRelayerProgramInterface,
   createTransferNativeTokensWithRelayInstruction,

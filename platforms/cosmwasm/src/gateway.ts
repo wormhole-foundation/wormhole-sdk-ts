@@ -4,13 +4,9 @@ import type {
   GatewayTransferMsg,
   GatewayTransferWithPayloadMsg,
   Network,
-  TokenId} from "@wormhole-foundation/sdk-connect";
-import {
-  CONFIG,
-  encoding,
-  sha256,
-  toChainId,
+  TokenId,
 } from "@wormhole-foundation/sdk-connect";
+import { CONFIG, encoding, sha256, toChainId } from "@wormhole-foundation/sdk-connect";
 
 import { CosmwasmAddress } from "./address";
 import { CosmwasmChain } from "./chain";

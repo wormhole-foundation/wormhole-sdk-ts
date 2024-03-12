@@ -6,7 +6,8 @@ import type {
   SignedTx,
   StaticPlatformMethods,
   TokenId,
-  TxHash} from "@wormhole-foundation/sdk-connect";
+  TxHash,
+} from "@wormhole-foundation/sdk-connect";
 import {
   PlatformContext,
   Wormhole,
@@ -21,7 +22,7 @@ import { SuiClient } from "@mysten/sui.js/client";
 import { SuiAddress } from "./address";
 import { SuiChain } from "./chain";
 import { SUI_COIN } from "./constants";
-import type { AnySuiAddress, SuiChains, SuiPlatformType} from "./types";
+import type { AnySuiAddress, SuiChains, SuiPlatformType } from "./types";
 import { _platform } from "./types";
 import { getObjectFields } from "./utils";
 

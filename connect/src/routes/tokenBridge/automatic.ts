@@ -1,17 +1,14 @@
-import type { Chain, Network} from "@wormhole-foundation/sdk-base";
+import type { Chain, Network } from "@wormhole-foundation/sdk-base";
 import { amount, contracts } from "@wormhole-foundation/sdk-base";
 import type {
   ChainContext,
   Signer,
   TokenId,
-  TokenTransferDetails} from "@wormhole-foundation/sdk-definitions";
-import {
-  isNative,
-  isTokenId,
-  nativeTokenId,
+  TokenTransferDetails,
 } from "@wormhole-foundation/sdk-definitions";
+import { isNative, isTokenId, nativeTokenId } from "@wormhole-foundation/sdk-definitions";
 import { TokenTransfer } from "../../protocols/tokenTransfer";
-import type { AttestationReceipt, SourceInitiatedTransferReceipt} from "../../types";
+import type { AttestationReceipt, SourceInitiatedTransferReceipt } from "../../types";
 import { TransferState } from "../../types";
 import type { StaticRouteMethods } from "../route";
 import { AutomaticRoute } from "../route";

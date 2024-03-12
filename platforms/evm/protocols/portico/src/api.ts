@@ -3,7 +3,8 @@ import type {
   ChainAddress,
   Network,
   TokenAddress,
-  TokenId} from '@wormhole-foundation/sdk-connect';
+  TokenId,
+} from '@wormhole-foundation/sdk-connect';
 import {
   PorticoBridge,
   canonicalAddress,

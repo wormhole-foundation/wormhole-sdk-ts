@@ -4,11 +4,9 @@ import type {
   Signer,
   TransactionId,
   TxHash,
-  UnsignedTransaction} from "@wormhole-foundation/sdk-definitions";
-import {
-  isSignAndSendSigner,
-  isSigner,
+  UnsignedTransaction,
 } from "@wormhole-foundation/sdk-definitions";
+import { isSignAndSendSigner, isSigner } from "@wormhole-foundation/sdk-definitions";
 
 export async function signSendWait<N extends Network, C extends Chain>(
   chain: ChainContext<N, C>,

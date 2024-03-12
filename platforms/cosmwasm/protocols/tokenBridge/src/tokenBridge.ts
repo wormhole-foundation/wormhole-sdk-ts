@@ -7,7 +7,8 @@ import type {
   Network,
   TokenBridge,
   TokenId,
-  TxHash} from "@wormhole-foundation/sdk-connect";
+  TxHash,
+} from "@wormhole-foundation/sdk-connect";
 import {
   UniversalAddress,
   encoding,
@@ -23,7 +24,8 @@ import type {
   CosmwasmChains,
   CosmwasmPlatformType,
   CosmwasmTransaction,
-  WrappedRegistryResponse} from "@wormhole-foundation/sdk-cosmwasm";
+  WrappedRegistryResponse,
+} from "@wormhole-foundation/sdk-cosmwasm";
 import {
   CosmwasmAddress,
   CosmwasmPlatform,

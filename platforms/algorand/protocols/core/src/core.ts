@@ -5,7 +5,8 @@ import type {
   Network,
   VAA,
   WormholeCore,
-  WormholeMessageId} from "@wormhole-foundation/sdk-connect";
+  WormholeMessageId,
+} from "@wormhole-foundation/sdk-connect";
 import {
   createVAA,
   encoding,
@@ -17,17 +18,15 @@ import type {
   AlgorandChains,
   AnyAlgorandAddress,
   TransactionSet,
-  TransactionSignerPair} from "@wormhole-foundation/sdk-algorand";
+  TransactionSignerPair,
+} from "@wormhole-foundation/sdk-algorand";
 import {
   AlgorandAddress,
   AlgorandPlatform,
   AlgorandUnsignedTransaction,
   safeBigIntToNumber,
 } from "@wormhole-foundation/sdk-algorand";
-import type {
-  Algodv2,
-  SuggestedParams,
-  Transaction} from "algosdk";
+import type { Algodv2, SuggestedParams, Transaction } from "algosdk";
 import {
   LogicSigAccount,
   OnApplicationComplete,

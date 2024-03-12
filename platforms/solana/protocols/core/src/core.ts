@@ -5,11 +5,9 @@ import type {
   MessageCompiledInstruction,
   PublicKey,
   TransactionResponse,
-  VersionedTransactionResponse} from '@solana/web3.js';
-import {
-  Keypair,
-  Transaction
+  VersionedTransactionResponse,
 } from '@solana/web3.js';
+import { Keypair, Transaction } from '@solana/web3.js';
 import type {
   ChainId,
   ChainsConfig,
@@ -19,7 +17,8 @@ import type {
   UniversalAddress,
   VAA,
   WormholeCore,
-  WormholeMessageId} from '@wormhole-foundation/sdk-connect';
+  WormholeMessageId,
+} from '@wormhole-foundation/sdk-connect';
 import {
   createVAA,
   deserializeLayout,
@@ -29,15 +28,15 @@ import {
 import type {
   AnySolanaAddress,
   SolanaChains,
-  SolanaTransaction} from '@wormhole-foundation/sdk-solana';
+  SolanaTransaction,
+} from '@wormhole-foundation/sdk-solana';
 import {
   SolanaAddress,
   SolanaPlatform,
   SolanaUnsignedTransaction,
 } from '@wormhole-foundation/sdk-solana';
 import type { Wormhole as WormholeCoreContract } from './types';
-import type {
-  BridgeData} from './utils';
+import type { BridgeData } from './utils';
 import {
   createBridgeFeeTransferInstruction,
   createPostMessageInstruction,

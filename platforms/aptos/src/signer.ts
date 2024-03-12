@@ -4,10 +4,9 @@ import type {
   SignAndSendSigner,
   Signer,
   TxHash,
-  UnsignedTransaction} from "@wormhole-foundation/sdk-connect";
-import {
-  encoding,
+  UnsignedTransaction,
 } from "@wormhole-foundation/sdk-connect";
+import { encoding } from "@wormhole-foundation/sdk-connect";
 import type { AptosClient, TxnBuilderTypes, Types } from "aptos";
 import { AptosAccount } from "aptos";
 import { AptosPlatform } from "./platform";

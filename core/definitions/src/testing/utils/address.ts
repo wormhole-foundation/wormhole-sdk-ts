@@ -1,5 +1,4 @@
-import type {
-  Chain} from "@wormhole-foundation/sdk-base";
+import type { Chain } from "@wormhole-foundation/sdk-base";
 import {
   chainToPlatform,
   encoding,
@@ -7,7 +6,7 @@ import {
   platformToChains,
 } from "@wormhole-foundation/sdk-base";
 import crypto from "crypto";
-import type { ChainAddress, NativeAddress} from "../../";
+import type { ChainAddress, NativeAddress } from "../../";
 import { UniversalAddress, toNative } from "../../";
 
 // return a random buffer of length n

@@ -1,10 +1,9 @@
 import type {
   Connection,
   PublicKeyInitData,
-  TransactionInstruction} from '@solana/web3.js';
-import {
-  PublicKey
+  TransactionInstruction,
 } from '@solana/web3.js';
+import { PublicKey } from '@solana/web3.js';
 import { createReadOnlyTokenBridgeProgramInterface } from '../program';
 import { utils as coreUtils } from '@wormhole-foundation/sdk-solana-core';
 import { deriveSplTokenMetadataKey } from '../../splMetadata';

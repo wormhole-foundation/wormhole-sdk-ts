@@ -1,11 +1,6 @@
 import { normalizeSuiAddress } from "@mysten/sui.js/utils";
-import type {
-  Address} from "@wormhole-foundation/sdk-connect";
-import {
-  encoding,
-  registerNative,
-  UniversalAddress,
-} from "@wormhole-foundation/sdk-connect";
+import type { Address } from "@wormhole-foundation/sdk-connect";
+import { encoding, registerNative, UniversalAddress } from "@wormhole-foundation/sdk-connect";
 
 import { SUI_SEPARATOR } from "./constants";
 import { SuiPlatform } from "./platform";

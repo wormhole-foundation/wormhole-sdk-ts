@@ -1,10 +1,9 @@
 import type {
   Connection,
   Commitment,
-  PublicKeyInitData} from '@solana/web3.js';
-import {
-  PublicKey
+  PublicKeyInitData,
 } from '@solana/web3.js';
+import { PublicKey } from '@solana/web3.js';
 import { utils } from '@wormhole-foundation/sdk-solana';
 
 export function deriveTokenBridgeConfigKey(

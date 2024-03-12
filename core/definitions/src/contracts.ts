@@ -1,4 +1,4 @@
-import type { Chain, Network} from "@wormhole-foundation/sdk-base";
+import type { Chain, Network } from "@wormhole-foundation/sdk-base";
 import { contracts } from "@wormhole-foundation/sdk-base";
 
 /** The Contract addresses set in configuration for a given chain */

@@ -6,20 +6,15 @@ import type {
   UnsignedTransaction,
   VAA,
   WormholeCore,
-  WormholeMessageId} from "@wormhole-foundation/sdk-connect";
-import {
-  UniversalAddress,
-  createVAA,
-  encoding,
-  toChainId,
+  WormholeMessageId,
 } from "@wormhole-foundation/sdk-connect";
+import { UniversalAddress, createVAA, encoding, toChainId } from "@wormhole-foundation/sdk-connect";
 import type {
   AnyAptosAddress,
   AptosChains,
-  AptosPlatformType} from "@wormhole-foundation/sdk-aptos";
-import {
-  AptosPlatform
+  AptosPlatformType,
 } from "@wormhole-foundation/sdk-aptos";
+import { AptosPlatform } from "@wormhole-foundation/sdk-aptos";
 import type { AptosClient, Types } from "aptos";
 
 export class AptosWormholeCore<N extends Network, C extends AptosChains>

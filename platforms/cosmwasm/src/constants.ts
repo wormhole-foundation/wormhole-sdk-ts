@@ -1,4 +1,4 @@
-import type { Network, RoArray} from "@wormhole-foundation/sdk-connect";
+import type { Network, RoArray } from "@wormhole-foundation/sdk-connect";
 import { constMap } from "@wormhole-foundation/sdk-connect";
 import type { CosmwasmChains } from "./types";
 

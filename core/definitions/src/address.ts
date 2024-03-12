@@ -1,11 +1,5 @@
-import type {
-  Chain,
-  ChainToPlatform,
-  Platform} from "@wormhole-foundation/sdk-base";
-import {
-  chainToPlatform,
-  platformToAddressFormat,
-} from "@wormhole-foundation/sdk-base";
+import type { Chain, ChainToPlatform, Platform } from "@wormhole-foundation/sdk-base";
+import { chainToPlatform, platformToAddressFormat } from "@wormhole-foundation/sdk-base";
 import type { WormholeRegistry } from "./registry";
 
 //TODO BRRRR circular include!!

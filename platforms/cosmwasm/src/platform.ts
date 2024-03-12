@@ -1,12 +1,6 @@
 import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
-import type {
-  BankExtension,
-  IbcExtension} from "@cosmjs/stargate";
-import {
-  QueryClient,
-  setupBankExtension,
-  setupIbcExtension,
-} from "@cosmjs/stargate";
+import type { BankExtension, IbcExtension } from "@cosmjs/stargate";
+import { QueryClient, setupBankExtension, setupIbcExtension } from "@cosmjs/stargate";
 
 import type {
   Chain,
@@ -14,7 +8,8 @@ import type {
   Network,
   SignedTx,
   StaticPlatformMethods,
-  TxHash} from "@wormhole-foundation/sdk-connect";
+  TxHash,
+} from "@wormhole-foundation/sdk-connect";
 import {
   PlatformContext,
   Wormhole,
@@ -25,12 +20,12 @@ import {
 } from "@wormhole-foundation/sdk-connect";
 
 import { CosmwasmChain } from "./chain";
-import type { IbcChannels} from "./constants";
+import type { IbcChannels } from "./constants";
 import { chainToNativeDenoms, networkChainToChannels } from "./constants";
-import type { CosmwasmChains, CosmwasmPlatformType} from "./types";
+import type { CosmwasmChains, CosmwasmPlatformType } from "./types";
 import { _platform } from "./types";
 
-import type { Balances, TokenId} from "@wormhole-foundation/sdk-connect";
+import type { Balances, TokenId } from "@wormhole-foundation/sdk-connect";
 import { chainToPlatform } from "@wormhole-foundation/sdk-connect";
 import { CosmwasmAddress } from "./address";
 import { IBC_TRANSFER_PORT } from "./constants";

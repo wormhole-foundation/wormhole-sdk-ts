@@ -10,7 +10,8 @@ import type {
   Platform,
   TokenAddress,
   TokenBridge,
-  TokenId} from "@wormhole-foundation/sdk-connect";
+  TokenId,
+} from "@wormhole-foundation/sdk-connect";
 import {
   UniversalAddress,
   encoding,
@@ -23,7 +24,8 @@ import {
 import type {
   AlgorandChains,
   AnyAlgorandAddress,
-  TransactionSignerPair} from "@wormhole-foundation/sdk-algorand";
+  TransactionSignerPair,
+} from "@wormhole-foundation/sdk-algorand";
 import {
   AlgorandAddress,
   AlgorandPlatform,
@@ -31,11 +33,7 @@ import {
   safeBigIntToNumber,
 } from "@wormhole-foundation/sdk-algorand";
 import { AlgorandWormholeCore, StorageLogicSig } from "@wormhole-foundation/sdk-algorand-core";
-import type {
-  ABIType,
-  Algodv2,
-  LogicSigAccount,
-  SuggestedParams} from "algosdk";
+import type { ABIType, Algodv2, LogicSigAccount, SuggestedParams } from "algosdk";
 import {
   ABIMethod,
   OnApplicationComplete,

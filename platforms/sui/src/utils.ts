@@ -4,8 +4,7 @@ import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { isValidSuiAddress, normalizeSuiAddress, normalizeSuiObjectId } from "@mysten/sui.js/utils";
 
 import { encoding } from "@wormhole-foundation/sdk-connect";
-import type {
-  SuiBuildOutput} from "./types";
+import type { SuiBuildOutput } from "./types";
 import {
   getFieldsFromObjectResponse,
   isMoveStructObject,

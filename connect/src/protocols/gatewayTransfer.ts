@@ -1,12 +1,5 @@
-import type {
-  Chain,
-  Network,
-  PlatformToChains} from "@wormhole-foundation/sdk-base";
-import {
-  chainToPlatform,
-  encoding,
-  toChain,
-} from "@wormhole-foundation/sdk-base";
+import type { Chain, Network, PlatformToChains } from "@wormhole-foundation/sdk-base";
+import { chainToPlatform, encoding, toChain } from "@wormhole-foundation/sdk-base";
 import type {
   AttestationId,
   ChainAddress,
@@ -21,7 +14,8 @@ import type {
   TokenId,
   TransactionId,
   TxHash,
-  WormholeMessageId} from "@wormhole-foundation/sdk-definitions";
+  WormholeMessageId,
+} from "@wormhole-foundation/sdk-definitions";
 import {
   TokenBridge,
   UniversalAddress,

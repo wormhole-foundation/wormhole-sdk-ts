@@ -1,4 +1,4 @@
-import type { Connection} from '@solana/web3.js';
+import type { Connection } from '@solana/web3.js';
 import { PublicKey, Transaction } from '@solana/web3.js';
 import type {
   AccountAddress,
@@ -7,18 +7,17 @@ import type {
   CircleTransferMessage,
   Contracts,
   Network,
-  Platform} from '@wormhole-foundation/sdk-connect';
-import {
-  CircleBridge,
-  circle,
+  Platform,
 } from '@wormhole-foundation/sdk-connect';
+import { CircleBridge, circle } from '@wormhole-foundation/sdk-connect';
 
 import type { Program } from '@project-serum/anchor';
 import { BN, EventParser } from '@project-serum/anchor';
 import { getAssociatedTokenAddressSync } from '@solana/spl-token';
 import type {
   SolanaChains,
-  SolanaTransaction} from '@wormhole-foundation/sdk-solana';
+  SolanaTransaction,
+} from '@wormhole-foundation/sdk-solana';
 import {
   SolanaAddress,
   SolanaPlatform,

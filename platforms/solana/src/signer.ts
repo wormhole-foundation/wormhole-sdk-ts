@@ -1,7 +1,4 @@
-import type {
-  Connection,
-  SendOptions,
-  Transaction} from '@solana/web3.js';
+import type { Connection, SendOptions, Transaction } from '@solana/web3.js';
 import {
   ComputeBudgetProgram,
   Keypair,
@@ -13,10 +10,9 @@ import type {
   SignAndSendSigner,
   SignOnlySigner,
   Signer,
-  UnsignedTransaction} from '@wormhole-foundation/sdk-connect';
-import {
-  encoding,
+  UnsignedTransaction,
 } from '@wormhole-foundation/sdk-connect';
+import { encoding } from '@wormhole-foundation/sdk-connect';
 import { SolanaPlatform } from './platform';
 import type { SolanaChains } from './types';
 import type { SolanaUnsignedTransaction } from './unsignedTransaction';

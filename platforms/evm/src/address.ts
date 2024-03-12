@@ -1,5 +1,4 @@
-import type {
-  Address} from '@wormhole-foundation/sdk-connect';
+import type { Address } from '@wormhole-foundation/sdk-connect';
 import {
   UniversalAddress,
   encoding,
@@ -14,7 +13,7 @@ import {
   isAddress,
   zeroPadValue,
 } from 'ethers';
-import type { AnyEvmAddress} from './types';
+import type { AnyEvmAddress } from './types';
 import { _platform } from './types';
 
 export const EvmZeroAddress = ZeroAddress;

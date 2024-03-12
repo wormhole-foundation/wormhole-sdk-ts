@@ -13,7 +13,8 @@ import type {
   Platform,
   TokenAddress,
   TokenBridge,
-  TokenId} from "@wormhole-foundation/sdk-connect";
+  TokenId,
+} from "@wormhole-foundation/sdk-connect";
 import {
   ErrNotWrapped,
   UniversalAddress,
@@ -27,10 +28,7 @@ import {
   toNative,
 } from "@wormhole-foundation/sdk-connect";
 
-import type {
-  SuiAddress,
-  SuiBuildOutput,
-  SuiChains} from "@wormhole-foundation/sdk-sui";
+import type { SuiAddress, SuiBuildOutput, SuiChains } from "@wormhole-foundation/sdk-sui";
 import {
   SuiPlatform,
   SuiUnsignedTransaction,

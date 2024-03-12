@@ -1,4 +1,4 @@
-import type { Chain, Network, Platform} from "@wormhole-foundation/sdk-base";
+import type { Chain, Network, Platform } from "@wormhole-foundation/sdk-base";
 import { chainToPlatform, isChain } from "@wormhole-foundation/sdk-base";
 import type { RpcConnection } from "./rpc";
 import type { ChainsConfig } from "./types";

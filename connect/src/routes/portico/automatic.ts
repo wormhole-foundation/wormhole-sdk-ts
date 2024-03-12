@@ -6,7 +6,8 @@ import type {
   Signer,
   SourceInitiatedTransferReceipt,
   TokenId,
-  TransactionId} from "../..";
+  TransactionId,
+} from "../..";
 import {
   PorticoBridge,
   TokenTransfer,

@@ -6,10 +6,9 @@ import type {
   ProtocolName,
   RpcConnection,
   TokenAddress,
-  TokenId} from "../..";
-import {
-  PlatformContext
+  TokenId,
 } from "../..";
+import { PlatformContext } from "../..";
 import { MockChain } from "./chain";
 import { MockRpc } from "./rpc";
 

@@ -1,18 +1,11 @@
 import { TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from '@solana/spl-token';
-import type {
-  AccountMeta,
-  PublicKeyInitData} from '@solana/web3.js';
-import {
-  PublicKey,
-  SystemProgram,
-} from '@solana/web3.js';
+import type { AccountMeta, PublicKeyInitData } from '@solana/web3.js';
+import { PublicKey, SystemProgram } from '@solana/web3.js';
 import type {
   CircleAttestation,
-  circle} from '@wormhole-foundation/sdk-connect';
-import {
-  CircleBridge,
-  encoding,
+  circle,
 } from '@wormhole-foundation/sdk-connect';
+import { CircleBridge, encoding } from '@wormhole-foundation/sdk-connect';
 import { SolanaAddress } from '@wormhole-foundation/sdk-solana';
 import { findProgramAddress } from '../accounts';
 import { createMessageTransmitterProgramInterface } from '../program';

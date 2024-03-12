@@ -9,7 +9,8 @@ import type {
   Platform,
   TokenAddress,
   TokenBridge,
-  TokenId} from '@wormhole-foundation/sdk-connect';
+  TokenId,
+} from '@wormhole-foundation/sdk-connect';
 import {
   ErrNotWrapped,
   UniversalAddress,
@@ -26,8 +27,7 @@ import type { Provider, TransactionRequest } from 'ethers';
 import { ethers_contracts } from '.';
 import type { TokenBridgeContract } from './ethers-contracts';
 
-import type {
-  EvmChains} from '@wormhole-foundation/sdk-evm';
+import type { EvmChains } from '@wormhole-foundation/sdk-evm';
 import {
   EvmAddress,
   EvmPlatform,

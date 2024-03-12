@@ -6,7 +6,8 @@ import type {
   Contracts,
   NativeAddress,
   Network,
-  TokenAddress} from '@wormhole-foundation/sdk-connect';
+  TokenAddress,
+} from '@wormhole-foundation/sdk-connect';
 import {
   isNative,
   serialize,
@@ -14,9 +15,7 @@ import {
   nativeChainIds,
   toChainId,
 } from '@wormhole-foundation/sdk-connect';
-import type {
-  EvmChains,
-  EvmPlatformType} from '@wormhole-foundation/sdk-evm';
+import type { EvmChains, EvmPlatformType } from '@wormhole-foundation/sdk-evm';
 import {
   EvmAddress,
   EvmPlatform,

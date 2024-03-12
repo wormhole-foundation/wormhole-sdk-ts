@@ -5,12 +5,8 @@ import type {
   PublicKeyInitData,
 } from '@solana/web3.js';
 import { utils } from '@wormhole-foundation/sdk-solana';
-import type {
-  SequenceTracker} from './sequence';
-import {
-  deriveEmitterSequenceKey,
-  getSequenceTracker
-} from './sequence';
+import type { SequenceTracker } from './sequence';
+import { deriveEmitterSequenceKey, getSequenceTracker } from './sequence';
 
 export interface EmitterAccounts {
   emitter: PublicKey;

@@ -6,7 +6,8 @@ import type {
   Balances,
   SignedTx,
   TokenId,
-  TxHash} from "@wormhole-foundation/sdk-connect";
+  TxHash,
+} from "@wormhole-foundation/sdk-connect";
 import {
   PlatformContext,
   Wormhole,
@@ -18,7 +19,7 @@ import {
 } from "@wormhole-foundation/sdk-connect";
 import { AptosClient } from "aptos";
 import { AptosChain } from "./chain";
-import type { AptosChains, AptosPlatformType} from "./types";
+import type { AptosChains, AptosPlatformType } from "./types";
 import { _platform } from "./types";
 
 import { CoinClient, Types } from "aptos";

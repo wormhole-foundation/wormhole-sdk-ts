@@ -3,7 +3,8 @@ import type {
   ChainToPlatform,
   Network,
   Platform,
-  PlatformToChains} from "@wormhole-foundation/sdk-base";
+  PlatformToChains,
+} from "@wormhole-foundation/sdk-base";
 import {
   chainToPlatform,
   chains,
@@ -16,9 +17,9 @@ import {
   toChainId,
   tokens,
 } from "@wormhole-foundation/sdk-base";
-import type { ChainAddress, UniversalOrNative} from "./address";
+import type { ChainAddress, UniversalOrNative } from "./address";
 import { toNative } from "./address";
-import type { Contracts} from "./contracts";
+import type { Contracts } from "./contracts";
 import { getContracts } from "./contracts";
 
 /** Alias for string, used to look up transaction details */
