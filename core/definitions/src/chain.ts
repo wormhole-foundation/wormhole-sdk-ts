@@ -1,15 +1,19 @@
-import { Chain, ChainToPlatform, Network, Platform, tokens } from "@wormhole-foundation/sdk-base";
-import { ChainAddress, UniversalOrNative, toNative } from "./address";
-import { WormholeMessageId } from "./attestation";
-import { PlatformContext } from "./platform";
-import { ProtocolName, protocolIsRegistered } from "./protocol";
-import { AutomaticCircleBridge, CircleBridge } from "./protocols/circleBridge/circleBridge";
-import { WormholeCore } from "./protocols/core/core";
-import { IbcBridge } from "./protocols/ibc/ibc";
-import { PorticoBridge } from "./protocols/portico/portico";
-import { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge/tokenBridge";
-import { RpcConnection } from "./rpc";
-import { ChainConfig, SignedTx, TokenAddress, TokenId, canonicalAddress, isNative } from "./types";
+import type { Chain, ChainToPlatform, Network, Platform } from "@wormhole-foundation/sdk-base";
+import { tokens } from "@wormhole-foundation/sdk-base";
+import type { ChainAddress, UniversalOrNative } from "./address";
+import { toNative } from "./address";
+import type { WormholeMessageId } from "./attestation";
+import type { PlatformContext } from "./platform";
+import type { ProtocolName } from "./protocol";
+import { protocolIsRegistered } from "./protocol";
+import type { AutomaticCircleBridge, CircleBridge } from "./protocols/circleBridge/circleBridge";
+import type { WormholeCore } from "./protocols/core/core";
+import type { IbcBridge } from "./protocols/ibc/ibc";
+import type { PorticoBridge } from "./protocols/portico/portico";
+import type { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge/tokenBridge";
+import type { RpcConnection } from "./rpc";
+import type { ChainConfig, SignedTx, TokenAddress, TokenId } from "./types";
+import { canonicalAddress, isNative } from "./types";
 
 /**
  * A ChainContext provides a consistent interface for interacting with a chain.

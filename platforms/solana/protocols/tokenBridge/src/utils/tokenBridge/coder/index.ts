@@ -1,4 +1,4 @@
-import { Coder, Idl } from '@project-serum/anchor';
+import type { Coder, Idl } from '@project-serum/anchor';
 import { TokenBridgeAccountsCoder } from './accounts';
 import { TokenBridgeEventsCoder } from './events';
 import { TokenBridgeInstructionCoder } from './instruction';

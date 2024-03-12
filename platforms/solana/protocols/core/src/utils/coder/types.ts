@@ -1,4 +1,4 @@
-import { Idl, TypesCoder } from '@project-serum/anchor';
+import type { Idl, TypesCoder } from '@project-serum/anchor';
 
 export class WormholeTypesCoder implements TypesCoder {
   constructor(_idl: Idl) {}

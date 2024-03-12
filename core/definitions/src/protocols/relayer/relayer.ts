@@ -1,8 +1,8 @@
-import { Chain } from "@wormhole-foundation/sdk-base";
-import { TokenAddress } from "../../types";
+import type { Chain } from "@wormhole-foundation/sdk-base";
+import type { TokenAddress } from "../../types";
 
-import { Platform } from "@wormhole-foundation/sdk-base";
-import { EmptyPlatformMap } from "../../protocol";
+import type { Platform } from "@wormhole-foundation/sdk-base";
+import type { EmptyPlatformMap } from "../../protocol";
 
 import "../../registry";
 declare module "../../registry" {

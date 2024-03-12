@@ -1,4 +1,4 @@
-import { Layout, LayoutToType } from "@wormhole-foundation/sdk-base";
+import type { Layout, LayoutToType } from "@wormhole-foundation/sdk-base";
 
 import {
   chainItem,
@@ -8,7 +8,7 @@ import {
   guardianSetItem,
 } from "../layout-items";
 
-import {
+import type {
   LayoutLiteral,
   PayloadLiteral,
   LayoutOf,

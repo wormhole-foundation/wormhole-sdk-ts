@@ -1,4 +1,4 @@
-import {
+import type {
   AccountAddress,
   AutomaticCircleBridge,
   Chain,
@@ -7,19 +7,21 @@ import {
   Contracts,
   Network,
   Platform,
+} from '@wormhole-foundation/sdk-connect';
+import {
   chainToChainId,
   circle,
   nativeChainIds,
   toChainId,
 } from '@wormhole-foundation/sdk-connect';
 
-import { Provider, TransactionRequest } from 'ethers';
+import type { Provider, TransactionRequest } from 'ethers';
 import { ethers_contracts } from '.';
-import { CircleRelayer } from './ethers-contracts';
+import type { CircleRelayer } from './ethers-contracts';
 
+import type { EvmChains } from '@wormhole-foundation/sdk-evm';
 import {
   EvmAddress,
-  EvmChains,
   EvmPlatform,
   EvmUnsignedTransaction,
   addChainId,

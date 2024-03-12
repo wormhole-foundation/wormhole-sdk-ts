@@ -1,8 +1,13 @@
-import { Chain, Network } from "@wormhole-foundation/sdk-base";
-import { ChainContext, Signer, TokenId, TransactionId } from "@wormhole-foundation/sdk-definitions";
-import { Wormhole } from "../wormhole";
-import { RouteTransferRequest } from "./request";
-import {
+import type { Chain, Network } from "@wormhole-foundation/sdk-base";
+import type {
+  ChainContext,
+  Signer,
+  TokenId,
+  TransactionId,
+} from "@wormhole-foundation/sdk-definitions";
+import type { Wormhole } from "../wormhole";
+import type { RouteTransferRequest } from "./request";
+import type {
   Options,
   Quote,
   QuoteResult,

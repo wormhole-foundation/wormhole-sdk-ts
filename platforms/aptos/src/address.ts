@@ -1,14 +1,10 @@
-import {
-  Address,
-  Platform,
-  UniversalAddress,
-  encoding,
-  registerNative,
-} from "@wormhole-foundation/sdk-connect";
+import type { Address, Platform } from "@wormhole-foundation/sdk-connect";
+import { UniversalAddress, encoding, registerNative } from "@wormhole-foundation/sdk-connect";
 
 import { APTOS_SEPARATOR } from "./constants";
 import { AptosPlatform } from "./platform";
-import { AnyAptosAddress, isValidAptosType, _platform } from "./types";
+import type { AnyAptosAddress } from "./types";
+import { isValidAptosType, _platform } from "./types";
 
 export const AptosZeroAddress = "0x";
 

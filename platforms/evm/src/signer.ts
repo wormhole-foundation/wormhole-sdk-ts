@@ -1,21 +1,24 @@
-import {
+import type {
   Network,
-  PlatformNativeSigner,
   SignOnlySigner,
   SignedTx,
   Signer,
   UnsignedTransaction,
+} from '@wormhole-foundation/sdk-connect';
+import {
+  PlatformNativeSigner,
   chainToPlatform,
   isNativeSigner,
 } from '@wormhole-foundation/sdk-connect';
-import {
+import type {
   Provider,
-  Wallet,
   Signer as EthersSigner,
   TransactionRequest,
 } from 'ethers';
+import { Wallet } from 'ethers';
 import { EvmPlatform } from './platform';
-import { EvmChains, _platform } from './types';
+import type { EvmChains } from './types';
+import { _platform } from './types';
 
 // Get a SignOnlySigner for the EVM platform
 export async function getEvmSignerForKey(

@@ -1,13 +1,13 @@
 import { getAssociatedTokenAddress } from '@solana/spl-token';
-import {
+import type {
   ChainAddress,
-  ChainContext,
   NativeAddress,
   Network,
   UniversalOrNative,
 } from '@wormhole-foundation/sdk-connect';
+import { ChainContext } from '@wormhole-foundation/sdk-connect';
 import { SolanaAddress } from './address';
-import { SolanaChains } from './types';
+import type { SolanaChains } from './types';
 
 export class SolanaChain<
   N extends Network,

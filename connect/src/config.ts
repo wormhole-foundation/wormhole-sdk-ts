@@ -1,5 +1,7 @@
-import { Network, circle, Platform } from "@wormhole-foundation/sdk-base";
-import { buildConfig, ChainsConfig } from "@wormhole-foundation/sdk-definitions";
+import type { Network, Platform } from "@wormhole-foundation/sdk-base";
+import { circle } from "@wormhole-foundation/sdk-base";
+import type { ChainsConfig } from "@wormhole-foundation/sdk-definitions";
+import { buildConfig } from "@wormhole-foundation/sdk-definitions";
 
 export const DEFAULT_TASK_TIMEOUT = 60 * 1000; // 1 minute in milliseconds
 

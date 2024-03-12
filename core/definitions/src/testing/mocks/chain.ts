@@ -1,11 +1,12 @@
-import {
+import type {
   Chain,
   ChainToPlatform,
   Network,
   Platform,
   PlatformToChains,
 } from "@wormhole-foundation/sdk-base";
-import { ChainContext, PlatformContext } from "../..";
+import type { PlatformContext } from "../..";
+import { ChainContext } from "../..";
 
 export function chainFactory<N extends Network, P extends Platform, C extends PlatformToChains<P>>(
   p: PlatformContext<N, P>,

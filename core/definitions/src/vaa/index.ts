@@ -1,15 +1,10 @@
-export {
-  PayloadLiteral,
-  NamedPayloads,
-  RegisterPayloadTypes,
-  registerPayloadType,
-  registerPayloadTypes,
-} from "./registration";
+export type { PayloadLiteral, NamedPayloads, RegisterPayloadTypes } from "./registration";
+export { registerPayloadType, registerPayloadTypes } from "./registration";
 
-export { VAA, ProtocolVAA, Payload, ProtocolPayload } from "./vaa";
+export type { VAA, ProtocolVAA, Payload, ProtocolPayload } from "./vaa";
 
+export type { PayloadDiscriminator } from "./functions";
 export {
-  PayloadDiscriminator,
   getPayloadLayout,
   serialize,
   serializePayload,

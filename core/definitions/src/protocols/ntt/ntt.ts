@@ -1,10 +1,10 @@
-import { Chain, Network, Platform } from "@wormhole-foundation/sdk-base";
+import type { Chain, Network, Platform } from "@wormhole-foundation/sdk-base";
 import "../tokenBridge/automaticTokenBridgeLayout";
 import "../tokenBridge/tokenBridgeLayout";
-import { EmptyPlatformMap } from "../../protocol";
-import { ProtocolPayload, ProtocolVAA, VAA } from "../../vaa";
-import { ChainAddress, NativeAddress } from "../../address";
-import { UnsignedTransaction } from "../../unsignedTransaction";
+import type { EmptyPlatformMap } from "../../protocol";
+import type { ProtocolPayload, ProtocolVAA, VAA } from "../../vaa";
+import type { ChainAddress, NativeAddress } from "../../address";
+import type { UnsignedTransaction } from "../../unsignedTransaction";
 
 import "../../registry";
 declare module "../../registry" {

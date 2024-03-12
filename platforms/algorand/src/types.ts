@@ -1,5 +1,5 @@
-import { PlatformToChains, UniversalOrNative } from "@wormhole-foundation/sdk-connect";
-import { Transaction } from "algosdk";
+import type { PlatformToChains, UniversalOrNative } from "@wormhole-foundation/sdk-connect";
+import type { Transaction } from "algosdk";
 
 /**
  * Runtime value for the Algorand Platform

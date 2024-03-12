@@ -1,12 +1,8 @@
-import {
-  encoding,
-  PlatformAddressFormat,
-  Layout,
-  serializeLayout,
-  throws,
-} from "@wormhole-foundation/sdk-base";
+import type { PlatformAddressFormat, Layout } from "@wormhole-foundation/sdk-base";
+import { encoding, serializeLayout, throws } from "@wormhole-foundation/sdk-base";
 
-import { Address, NativeAddress, toNative } from "./address";
+import type { Address, NativeAddress } from "./address";
+import { toNative } from "./address";
 import { sha256, sha512_256 } from "./utils";
 
 const algorandAppIdLayout = [

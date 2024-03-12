@@ -3,8 +3,9 @@
 // https://github.com/coral-xyz/anchor/blob/master/ts/packages/anchor/src/coder/borsh/idl.ts
 
 import * as borsh from '@coral-xyz/borsh';
-import { Layout } from 'buffer-layout';
-import { anchor, camelCase } from '@wormhole-foundation/sdk-solana';
+import type { Layout } from 'buffer-layout';
+import type { anchor } from '@wormhole-foundation/sdk-solana';
+import { camelCase } from '@wormhole-foundation/sdk-solana';
 
 export class IdlCoder {
   public static fieldLayout(

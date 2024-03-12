@@ -1,12 +1,6 @@
-import {
-  Chain,
-  Network,
-  PlatformToChains,
-  chainToPlatform,
-  encoding,
-  toChain,
-} from "@wormhole-foundation/sdk-base";
-import {
+import type { Chain, Network, PlatformToChains } from "@wormhole-foundation/sdk-base";
+import { chainToPlatform, encoding, toChain } from "@wormhole-foundation/sdk-base";
+import type {
   AttestationId,
   ChainAddress,
   ChainContext,
@@ -17,12 +11,14 @@ import {
   IbcTransferInfo,
   NativeAddress,
   Signer,
-  TokenBridge,
   TokenId,
   TransactionId,
   TxHash,
-  UniversalAddress,
   WormholeMessageId,
+} from "@wormhole-foundation/sdk-definitions";
+import {
+  TokenBridge,
+  UniversalAddress,
   gatewayTransferMsg,
   isGatewayTransferDetails,
   isNative,
@@ -35,7 +31,7 @@ import { signSendWait } from "../common";
 import { fetchIbcXfer, isTokenBridgeVaaRedeemed, retry } from "../tasks";
 import { TransferState } from "../types";
 import { Wormhole } from "../wormhole";
-import { WormholeTransfer } from "./wormholeTransfer";
+import type { WormholeTransfer } from "./wormholeTransfer";
 
 type GatewayContext<N extends Network> = ChainContext<N, typeof GatewayTransfer.chain>;
 

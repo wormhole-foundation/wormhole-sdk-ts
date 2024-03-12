@@ -1,5 +1,5 @@
-import { UniversalOrNative, PlatformToChains } from "@wormhole-foundation/sdk-connect";
-import { logs as cosmosLogs } from "@cosmjs/stargate";
+import type { UniversalOrNative, PlatformToChains } from "@wormhole-foundation/sdk-connect";
+import type { logs as cosmosLogs } from "@cosmjs/stargate";
 
 /**
  * Runtime value for the Cosmwasm Platform

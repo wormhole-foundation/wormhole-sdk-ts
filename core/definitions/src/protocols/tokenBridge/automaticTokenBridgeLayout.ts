@@ -1,5 +1,6 @@
 import { amountItem, payloadIdItem, universalAddressItem } from "../../layout-items";
-import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../../vaa";
+import type { NamedPayloads, RegisterPayloadTypes} from "../../vaa";
+import { registerPayloadTypes } from "../../vaa";
 import { transferWithPayloadLayout } from "./tokenBridgeLayout";
 
 //from here:

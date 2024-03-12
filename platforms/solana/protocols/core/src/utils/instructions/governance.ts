@@ -1,13 +1,16 @@
-import {
+import type {
   Connection,
-  PublicKey,
   PublicKeyInitData,
+  TransactionInstruction,
+} from '@solana/web3.js';
+import {
+  PublicKey,
   SystemProgram,
   SYSVAR_CLOCK_PUBKEY,
   SYSVAR_RENT_PUBKEY,
-  TransactionInstruction,
 } from '@solana/web3.js';
-import { toChainId, VAA } from '@wormhole-foundation/sdk-connect';
+import type { VAA } from '@wormhole-foundation/sdk-connect';
+import { toChainId } from '@wormhole-foundation/sdk-connect';
 import { SolanaAddress, utils } from '@wormhole-foundation/sdk-solana';
 import {
   deriveClaimKey,

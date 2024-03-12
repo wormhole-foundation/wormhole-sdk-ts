@@ -1,18 +1,19 @@
-import {
+import type {
   Chain,
   LayoutToType,
   Network,
-  Platform,
+  Platform} from "@wormhole-foundation/sdk-base";
+import {
   deserializeLayout,
   serializeLayout,
 } from "@wormhole-foundation/sdk-base";
-import { AccountAddress, ChainAddress } from "../../address";
+import type { AccountAddress, ChainAddress } from "../../address";
 import "./portico";
 import { porticoFlagSetLayout, porticoPayloadLayout } from "./porticoLayout";
-import { EmptyPlatformMap } from "../../protocol";
-import { TokenAddress, TokenId } from "../../types";
-import { UnsignedTransaction } from "../../unsignedTransaction";
-import { ProtocolVAA } from "../../vaa";
+import type { EmptyPlatformMap } from "../../protocol";
+import type { TokenAddress, TokenId } from "../../types";
+import type { UnsignedTransaction } from "../../unsignedTransaction";
+import type { ProtocolVAA } from "../../vaa";
 
 import "../../registry";
 declare module "../../registry" {

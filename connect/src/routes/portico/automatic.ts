@@ -1,14 +1,16 @@
-import {
+import type {
   AttestationReceipt,
   Chain,
   ChainContext,
   Network,
-  PorticoBridge,
   Signer,
   SourceInitiatedTransferReceipt,
   TokenId,
-  TokenTransfer,
   TransactionId,
+} from "../..";
+import {
+  PorticoBridge,
+  TokenTransfer,
   TransferState,
   Wormhole,
   canonicalAddress,
@@ -22,8 +24,9 @@ import {
   tokens,
   amount,
 } from "../..";
-import { AutomaticRoute, StaticRouteMethods } from "../route";
-import {
+import type { StaticRouteMethods } from "../route";
+import { AutomaticRoute } from "../route";
+import type {
   Quote,
   QuoteResult,
   Receipt,

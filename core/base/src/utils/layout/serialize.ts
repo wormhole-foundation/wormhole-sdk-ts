@@ -1,4 +1,4 @@
-import {
+import type {
   Endianness,
   Layout,
   LayoutItem,
@@ -8,7 +8,8 @@ import {
   BytesType,
   FixedConversion,
   LayoutObject,
-  LayoutItemBase,
+  LayoutItemBase} from "./layout";
+import {
   numberMaxSize,
 } from "./layout";
 import { calcLayoutSize } from "./size";

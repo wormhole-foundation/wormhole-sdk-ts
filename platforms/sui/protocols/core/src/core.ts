@@ -1,5 +1,5 @@
-import { SuiClient } from "@mysten/sui.js/client";
-import {
+import type { SuiClient } from "@mysten/sui.js/client";
+import type {
   AccountAddress,
   ChainId,
   ChainsConfig,
@@ -9,17 +9,15 @@ import {
   VAA,
   WormholeCore,
   WormholeMessageId,
-  createVAA,
-  toChainId,
 } from "@wormhole-foundation/sdk-connect";
-import {
+import { createVAA, toChainId } from "@wormhole-foundation/sdk-connect";
+import type {
   AnySuiAddress,
-  SuiAddress,
   SuiChains,
-  SuiPlatform,
   SuiPlatformType,
   SuiUnsignedTransaction,
 } from "@wormhole-foundation/sdk-sui";
+import { SuiAddress, SuiPlatform } from "@wormhole-foundation/sdk-sui";
 
 export class SuiWormholeCore<N extends Network, C extends SuiChains> implements WormholeCore<N, C> {
   readonly chainId: ChainId;

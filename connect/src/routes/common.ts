@@ -1,7 +1,8 @@
-import { Network } from "@wormhole-foundation/sdk-base";
-import { Signer } from "@wormhole-foundation/sdk-definitions";
-import { Receipt } from "./types";
-import { Route, isManual } from "./route";
+import type { Network } from "@wormhole-foundation/sdk-base";
+import type { Signer } from "@wormhole-foundation/sdk-definitions";
+import type { Receipt } from "./types";
+import type { Route } from "./route";
+import { isManual } from "./route";
 import { TransferState, isAttested, isCompleted } from "../types";
 
 /**

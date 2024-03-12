@@ -1,12 +1,14 @@
-import {
+import type {
   Layout,
   LayoutToType,
-  CustomizableBytes,
+  CustomizableBytes} from "@wormhole-foundation/sdk-base";
+import {
   customizableBytes,
 } from "@wormhole-foundation/sdk-base";
 
 import { universalAddressItem, chainItem } from "../../layout-items";
-import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../../vaa";
+import type { NamedPayloads, RegisterPayloadTypes} from "../../vaa";
+import { registerPayloadTypes } from "../../vaa";
 
 export const trimmedAmountLayout = [
   { name: "decimals", binary: "uint", size: 1 },

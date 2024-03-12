@@ -1,4 +1,5 @@
-import { CosmWasmClient, SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
+import type { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
+import { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
 import {
   ChainRestAuthApi,
@@ -7,27 +8,21 @@ import {
   TxClient,
   createTransaction,
 } from "@injectivelabs/sdk-ts";
-import {
+import type {
   Network,
   PlatformToChains,
   SignOnlySigner,
   SignedTx,
   Signer,
   UnsignedTransaction,
-  encoding,
-  nativeChainIds,
-  rpc as rpcConf,
 } from "@wormhole-foundation/sdk-connect";
+import { encoding, nativeChainIds, rpc as rpcConf } from "@wormhole-foundation/sdk-connect";
 import { TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
-import {
-  CosmwasmEvmChain,
-  chainToAddressPrefix,
-  cosmwasmNetworkChainToRestUrls,
-  evmLikeChains,
-} from "./constants";
+import type { CosmwasmEvmChain } from "./constants";
+import { chainToAddressPrefix, cosmwasmNetworkChainToRestUrls, evmLikeChains } from "./constants";
 import { CosmwasmPlatform } from "./platform";
-import { CosmwasmChains } from "./types";
-import { CosmwasmUnsignedTransaction } from "./unsignedTransaction";
+import type { CosmwasmChains } from "./types";
+import type { CosmwasmUnsignedTransaction } from "./unsignedTransaction";
 
 export async function getCosmwasmSigner(rpc: CosmWasmClient, mnemonic: string): Promise<Signer> {
   const [network, chain] = await CosmwasmPlatform.chainFromRpc(rpc);

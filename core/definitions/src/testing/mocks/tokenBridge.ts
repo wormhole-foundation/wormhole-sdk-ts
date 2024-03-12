@@ -1,5 +1,5 @@
-import { Network, Platform, PlatformToChains } from "@wormhole-foundation/sdk-base";
-import {
+import type { Network, Platform, PlatformToChains } from "@wormhole-foundation/sdk-base";
+import type {
   ChainAddress,
   NativeAddress,
   RpcConnection,

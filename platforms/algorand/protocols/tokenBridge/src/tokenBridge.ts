@@ -1,4 +1,4 @@
-import {
+import type {
   AccountAddress,
   Chain,
   ChainAddress,
@@ -11,6 +11,8 @@ import {
   TokenAddress,
   TokenBridge,
   TokenId,
+} from "@wormhole-foundation/sdk-connect";
+import {
   UniversalAddress,
   encoding,
   isNative,
@@ -19,23 +21,22 @@ import {
   toChainId,
   toNative,
 } from "@wormhole-foundation/sdk-connect";
-import {
-  AlgorandAddress,
+import type {
   AlgorandChains,
-  AlgorandPlatform,
-  AlgorandUnsignedTransaction,
   AnyAlgorandAddress,
   TransactionSignerPair,
+} from "@wormhole-foundation/sdk-algorand";
+import {
+  AlgorandAddress,
+  AlgorandPlatform,
+  AlgorandUnsignedTransaction,
   safeBigIntToNumber,
 } from "@wormhole-foundation/sdk-algorand";
 import { AlgorandWormholeCore, StorageLogicSig } from "@wormhole-foundation/sdk-algorand-core";
+import type { ABIType, Algodv2, LogicSigAccount, SuggestedParams } from "algosdk";
 import {
   ABIMethod,
-  ABIType,
-  Algodv2,
-  LogicSigAccount,
   OnApplicationComplete,
-  SuggestedParams,
   bigIntToBytes,
   decodeAddress,
   getApplicationAddress,

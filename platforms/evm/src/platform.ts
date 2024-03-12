@@ -1,13 +1,15 @@
-import {
+import type {
   Balances,
   Chain,
   ChainsConfig,
   Network,
-  PlatformContext,
   SignedTx,
   StaticPlatformMethods,
   TokenId,
   TxHash,
+} from '@wormhole-foundation/sdk-connect';
+import {
+  PlatformContext,
   Wormhole,
   chainToPlatform,
   decimals,
@@ -17,12 +19,14 @@ import {
   networkPlatformConfigs,
 } from '@wormhole-foundation/sdk-connect';
 
-import { JsonRpcProvider, Provider } from 'ethers';
+import type { Provider } from 'ethers';
+import { JsonRpcProvider } from 'ethers';
 import * as ethers_contracts from './ethers-contracts';
 
 import { EvmAddress, EvmZeroAddress } from './address';
 import { EvmChain } from './chain';
-import { AnyEvmAddress, EvmChains, EvmPlatformType, _platform } from './types';
+import type { AnyEvmAddress, EvmChains, EvmPlatformType } from './types';
+import { _platform } from './types';
 
 /**
  * @category EVM

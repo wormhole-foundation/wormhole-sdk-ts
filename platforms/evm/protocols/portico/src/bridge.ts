@@ -1,13 +1,15 @@
-import {
+import type {
   AccountAddress,
   ChainAddress,
   ChainsConfig,
   Contracts,
   Network,
   Platform,
-  PorticoBridge,
   TokenAddress,
   TokenId,
+} from '@wormhole-foundation/sdk-connect';
+import {
+  PorticoBridge,
   Wormhole,
   canonicalAddress,
   contracts,
@@ -17,15 +19,16 @@ import {
   toChainId,
   tokens,
 } from '@wormhole-foundation/sdk-connect';
+import type { EvmChains } from '@wormhole-foundation/sdk-evm';
 import {
   EvmAddress,
-  EvmChains,
   EvmPlatform,
   EvmUnsignedTransaction,
   addChainId,
   addFrom,
 } from '@wormhole-foundation/sdk-evm';
-import { Provider, TransactionRequest, ethers } from 'ethers';
+import type { Provider, TransactionRequest } from 'ethers';
+import { ethers } from 'ethers';
 import { porticoAbi, uniswapQuoterV2Abi } from './abis';
 import { PorticoApi } from './api';
 import { FEE_TIER } from './consts';

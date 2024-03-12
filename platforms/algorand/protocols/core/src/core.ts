@@ -1,4 +1,4 @@
-import {
+import type {
   ChainId,
   ChainsConfig,
   Contracts,
@@ -6,28 +6,30 @@ import {
   VAA,
   WormholeCore,
   WormholeMessageId,
+} from "@wormhole-foundation/sdk-connect";
+import {
   createVAA,
   encoding,
   keccak256,
   serialize,
   toChainId,
 } from "@wormhole-foundation/sdk-connect";
-import {
-  AlgorandAddress,
+import type {
   AlgorandChains,
-  AlgorandPlatform,
-  AlgorandUnsignedTransaction,
   AnyAlgorandAddress,
   TransactionSet,
   TransactionSignerPair,
-  safeBigIntToNumber,
 } from "@wormhole-foundation/sdk-algorand";
 import {
-  Algodv2,
+  AlgorandAddress,
+  AlgorandPlatform,
+  AlgorandUnsignedTransaction,
+  safeBigIntToNumber,
+} from "@wormhole-foundation/sdk-algorand";
+import type { Algodv2, SuggestedParams, Transaction } from "algosdk";
+import {
   LogicSigAccount,
   OnApplicationComplete,
-  SuggestedParams,
-  Transaction,
   getApplicationAddress,
   makeApplicationCallTxnFromObject,
   makeApplicationOptInTxnFromObject,

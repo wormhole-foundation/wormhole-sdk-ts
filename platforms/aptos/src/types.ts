@@ -1,4 +1,4 @@
-import { PlatformToChains, UniversalOrNative } from "@wormhole-foundation/sdk-connect";
+import type { PlatformToChains, UniversalOrNative } from "@wormhole-foundation/sdk-connect";
 import { APTOS_SEPARATOR } from "./constants";
 
 export const unusedNonce = 0;

@@ -1,13 +1,13 @@
+import type { Address, Platform } from '@wormhole-foundation/sdk-connect';
 import {
-  Address,
-  Platform,
   UniversalAddress,
   encoding,
   registerNative,
 } from '@wormhole-foundation/sdk-connect';
 
 import { PublicKey } from '@solana/web3.js';
-import { AnySolanaAddress, _platform } from './types';
+import type { AnySolanaAddress } from './types';
+import { _platform } from './types';
 
 export const SolanaZeroAddress = '11111111111111111111111111111111';
 

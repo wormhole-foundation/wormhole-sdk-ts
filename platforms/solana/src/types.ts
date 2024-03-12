@@ -1,5 +1,5 @@
-import { PublicKeyInitData } from '@solana/web3.js';
-import {
+import type { PublicKeyInitData } from '@solana/web3.js';
+import type {
   PlatformToChains,
   UniversalOrNative,
 } from '@wormhole-foundation/sdk-connect';

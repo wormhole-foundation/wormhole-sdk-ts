@@ -1,5 +1,6 @@
-import { MapLevel, RoArray, column, constMap } from "../utils";
-import { Chain } from "./chains";
+import type { MapLevel, RoArray} from "../utils";
+import { column, constMap } from "../utils";
+import type { Chain } from "./chains";
 
 // prettier-ignore
 const platformAndChainsEntries = [[

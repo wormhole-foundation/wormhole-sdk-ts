@@ -1,4 +1,5 @@
-import { MapLevel, zip } from "../utils";
+import type { MapLevel} from "../utils";
+import { zip } from "../utils";
 import { constMap } from "../utils/mapping";
 
 // prettier-ignore

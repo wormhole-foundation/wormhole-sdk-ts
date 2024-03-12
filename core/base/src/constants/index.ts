@@ -1,24 +1,8 @@
-export { Network } from "./networks";
-export {
-  Chain,
-  ChainId,
-  isChain,
-  toChainId,
-  toChain,
-  chains,
-  chainToChainId,
-  chainIdToChain,
-} from "./chains";
-export {
-  Platform,
-  PlatformToChains,
-  ChainToPlatform,
-  PlatformAddressFormat,
-  isPlatform,
-  platformToChains,
-  chainToPlatform,
-  platformToAddressFormat,
-} from "./platforms";
+export type { Network } from "./networks";
+export type { Chain, ChainId } from './chains';
+export { isChain, toChainId, toChain, chains, chainToChainId, chainIdToChain } from "./chains";
+export type { Platform, PlatformToChains, ChainToPlatform, PlatformAddressFormat } from './platforms';
+export { isPlatform, platformToChains, chainToPlatform, platformToAddressFormat } from "./platforms";
 
 export * as tokens from "./tokens";
 

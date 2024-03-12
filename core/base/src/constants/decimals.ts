@@ -1,5 +1,6 @@
-import { MapLevel, constMap } from "../utils";
-import { Platform } from "./platforms";
+import type { MapLevel} from "../utils";
+import { constMap } from "../utils";
+import type { Platform } from "./platforms";
 
 // prettier-ignore
 const nativeDecimalEntries = [

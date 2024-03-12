@@ -1,4 +1,4 @@
-import {
+import type {
   LayoutItem,
   CustomConversion,
 } from "@wormhole-foundation/sdk-base";

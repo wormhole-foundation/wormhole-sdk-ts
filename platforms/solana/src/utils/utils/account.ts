@@ -1,9 +1,9 @@
-import {
-  PublicKey,
+import type {
   AccountMeta,
   AccountInfo,
   PublicKeyInitData,
 } from '@solana/web3.js';
+import { PublicKey } from '@solana/web3.js';
 
 /**
  * Find valid program address. See {@link PublicKey.findProgramAddressSync} for details.

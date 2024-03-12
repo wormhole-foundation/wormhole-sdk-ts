@@ -1,16 +1,18 @@
-import {
+import type {
   AccountAddress,
   Chain,
   ChainAddress,
   ChainsConfig,
   Contracts,
-  ErrNotWrapped,
   NativeAddress,
   Network,
   Platform,
   TokenAddress,
   TokenBridge,
   TokenId,
+} from '@wormhole-foundation/sdk-connect';
+import {
+  ErrNotWrapped,
   UniversalAddress,
   isNative,
   keccak256,
@@ -20,14 +22,14 @@ import {
   toChainId,
   toNative,
 } from '@wormhole-foundation/sdk-connect';
-import { Provider, TransactionRequest } from 'ethers';
+import type { Provider, TransactionRequest } from 'ethers';
 
 import { ethers_contracts } from '.';
-import { TokenBridgeContract } from './ethers-contracts';
+import type { TokenBridgeContract } from './ethers-contracts';
 
+import type { EvmChains } from '@wormhole-foundation/sdk-evm';
 import {
   EvmAddress,
-  EvmChains,
   EvmPlatform,
   EvmUnsignedTransaction,
   EvmZeroAddress,

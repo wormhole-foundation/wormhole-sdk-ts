@@ -1,5 +1,6 @@
-import { MapLevel, constMap } from "../../utils";
-import { TokenSymbol, TokenExtraDetails } from "./types";
+import type { MapLevel} from "../../utils";
+import { constMap } from "../../utils";
+import type { TokenSymbol, TokenExtraDetails } from "./types";
 
 const mainnetTokens = [
   [

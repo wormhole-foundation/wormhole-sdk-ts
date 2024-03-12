@@ -1,13 +1,15 @@
-import {
+import type {
   Balances,
   Chain,
   ChainsConfig,
   Network,
-  PlatformContext,
   SignedTx,
   StaticPlatformMethods,
   TokenId,
   TxHash,
+} from "@wormhole-foundation/sdk-connect";
+import {
+  PlatformContext,
   Wormhole,
   chainToPlatform,
   decimals,
@@ -15,16 +17,12 @@ import {
   nativeChainIds,
   networkPlatformConfigs,
 } from "@wormhole-foundation/sdk-connect";
-import {
-  Algodv2,
-  SignedTransaction,
-  decodeSignedTransaction,
-  modelsv2,
-  waitForConfirmation,
-} from "algosdk";
+import type { SignedTransaction } from "algosdk";
+import { Algodv2, decodeSignedTransaction, modelsv2, waitForConfirmation } from "algosdk";
 import { AlgorandAddress, AlgorandZeroAddress } from "./address";
 import { AlgorandChain } from "./chain";
-import { AlgorandChains, AlgorandPlatformType, AnyAlgorandAddress, _platform } from "./types";
+import type { AlgorandChains, AlgorandPlatformType, AnyAlgorandAddress } from "./types";
+import { _platform } from "./types";
 
 /**
  * @category Algorand

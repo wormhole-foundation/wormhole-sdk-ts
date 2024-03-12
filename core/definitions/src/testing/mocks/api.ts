@@ -1,4 +1,4 @@
-import { VAA } from "../..";
+import type { VAA } from "../..";
 
 export class MockApi {
   constructor(readonly url: string) {}

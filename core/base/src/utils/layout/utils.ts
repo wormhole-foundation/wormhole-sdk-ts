@@ -1,4 +1,4 @@
-import {
+import type {
   Layout,
   LayoutItem,
   BytesLayoutItem,
@@ -7,7 +7,8 @@ import {
   CustomConversion,
   NumType,
   BytesType,
-  PrimitiveType,
+  PrimitiveType} from "./layout";
+import {
   binaryLiterals,
 } from "./layout";
 

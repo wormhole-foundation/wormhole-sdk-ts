@@ -1,11 +1,9 @@
-import {
+import type {
   Connection,
-  PublicKey,
   PublicKeyInitData,
-  SystemProgram,
-  SYSVAR_RENT_PUBKEY,
   TransactionInstruction,
 } from '@solana/web3.js';
+import { PublicKey, SystemProgram, SYSVAR_RENT_PUBKEY } from '@solana/web3.js';
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { createReadOnlyTokenBridgeProgramInterface } from '../program';
 import { utils } from '@wormhole-foundation/sdk-solana-core';
@@ -15,7 +13,8 @@ import {
   deriveCustodyKey,
   deriveCustodySignerKey,
 } from '../accounts';
-import { TokenBridge, toChainId } from '@wormhole-foundation/sdk-connect';
+import type { TokenBridge } from '@wormhole-foundation/sdk-connect';
+import { toChainId } from '@wormhole-foundation/sdk-connect';
 
 export function createCompleteTransferNativeInstruction(
   connection: Connection,

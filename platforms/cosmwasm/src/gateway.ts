@@ -1,21 +1,18 @@
 import { toBech32 } from "@cosmjs/encoding";
-import {
-  CONFIG,
+import type {
   Chain,
   GatewayTransferMsg,
   GatewayTransferWithPayloadMsg,
   Network,
   TokenId,
-  encoding,
-  sha256,
-  toChainId,
 } from "@wormhole-foundation/sdk-connect";
+import { CONFIG, encoding, sha256, toChainId } from "@wormhole-foundation/sdk-connect";
 
 import { CosmwasmAddress } from "./address";
 import { CosmwasmChain } from "./chain";
 import { IBC_TRANSFER_PORT } from "./constants";
 import { CosmwasmPlatform } from "./platform";
-import { CosmwasmChains } from "./types";
+import type { CosmwasmChains } from "./types";
 
 export class Gateway<N extends Network> extends CosmwasmChain<N, "Wormchain"> {
   static chain: "Wormchain" = "Wormchain";

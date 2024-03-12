@@ -1,15 +1,16 @@
-import {
+import type {
   Network,
   RpcConnection,
   SignAndSendSigner,
   Signer,
   TxHash,
   UnsignedTransaction,
-  encoding,
 } from "@wormhole-foundation/sdk-connect";
-import { AptosAccount, AptosClient, TxnBuilderTypes, Types } from "aptos";
+import { encoding } from "@wormhole-foundation/sdk-connect";
+import type { AptosClient, TxnBuilderTypes, Types } from "aptos";
+import { AptosAccount } from "aptos";
 import { AptosPlatform } from "./platform";
-import { AptosChains } from "./types";
+import type { AptosChains } from "./types";
 
 // returns a SignOnlySigner for the Aptos platform
 export async function getAptosSigner(

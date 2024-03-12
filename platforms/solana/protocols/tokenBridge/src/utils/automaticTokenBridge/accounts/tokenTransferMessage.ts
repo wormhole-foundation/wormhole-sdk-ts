@@ -1,6 +1,7 @@
 import { utils } from '@wormhole-foundation/sdk-solana';
-import { PublicKey, PublicKeyInitData } from '@solana/web3.js';
-import { BN } from '@project-serum/anchor';
+import type { PublicKeyInitData } from '@solana/web3.js';
+import { PublicKey } from '@solana/web3.js';
+import type { BN } from '@project-serum/anchor';
 import { encoding } from '@wormhole-foundation/sdk-connect';
 
 export function deriveTokenTransferMessageAddress(

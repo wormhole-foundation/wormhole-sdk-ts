@@ -2,17 +2,15 @@
 //  memory. For some extra lulz, try turning createVAA into an arrow function (spoiler: also
 //  causes out of memory fireworks)
 
-import {
-  DynamicItemsOfLayout,
-  LayoutToType,
-  addFixedValues,
-  serializeLayout,
-} from "@wormhole-foundation/sdk-base";
+import type { DynamicItemsOfLayout, LayoutToType } from "@wormhole-foundation/sdk-base";
+import { addFixedValues, serializeLayout } from "@wormhole-foundation/sdk-base";
 
 import { keccak256 } from "../utils";
-import { PayloadLiteral } from "./registration";
-import { decomposeLiteral, headerLayout, envelopeLayout, baseLayout, VAA } from "./vaa";
-import { PayloadLiteralToPayloadItemLayout, payloadLiteralToPayloadItemLayout } from "./functions";
+import type { PayloadLiteral } from "./registration";
+import type { baseLayout, VAA } from "./vaa";
+import { decomposeLiteral, headerLayout, envelopeLayout } from "./vaa";
+import type { PayloadLiteralToPayloadItemLayout } from "./functions";
+import { payloadLiteralToPayloadItemLayout } from "./functions";
 
 type BodyLayout<PL extends PayloadLiteral> = [
   ...typeof envelopeLayout,
@@ -20,10 +18,7 @@ type BodyLayout<PL extends PayloadLiteral> = [
 ];
 
 function bodyLayout<PL extends PayloadLiteral>(payloadLiteral: PL) {
-  return [
-    ...envelopeLayout,
-    payloadLiteralToPayloadItemLayout(payloadLiteral),
-  ] as BodyLayout<PL>;
+  return [...envelopeLayout, payloadLiteralToPayloadItemLayout(payloadLiteral)] as BodyLayout<PL>;
 }
 
 type DynamicProperties<PL extends PayloadLiteral> = LayoutToType<

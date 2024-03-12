@@ -1,9 +1,11 @@
-import {
+import type {
   Chain,
   ChainToPlatform,
   Network,
   Platform,
   PlatformToChains,
+} from "@wormhole-foundation/sdk-base";
+import {
   chainToPlatform,
   chains,
   decimals,
@@ -15,8 +17,10 @@ import {
   toChainId,
   tokens,
 } from "@wormhole-foundation/sdk-base";
-import { ChainAddress, UniversalOrNative, toNative } from "./address";
-import { Contracts, getContracts } from "./contracts";
+import type { ChainAddress, UniversalOrNative } from "./address";
+import { toNative } from "./address";
+import type { Contracts } from "./contracts";
+import { getContracts } from "./contracts";
 
 /** Alias for string, used to look up transaction details */
 export type TxHash = string;

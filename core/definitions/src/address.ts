@@ -1,11 +1,6 @@
-import {
-  Chain,
-  ChainToPlatform,
-  Platform,
-  chainToPlatform,
-  platformToAddressFormat,
-} from "@wormhole-foundation/sdk-base";
-import { WormholeRegistry } from "./registry";
+import type { Chain, ChainToPlatform, Platform } from "@wormhole-foundation/sdk-base";
+import { chainToPlatform, platformToAddressFormat } from "@wormhole-foundation/sdk-base";
+import type { WormholeRegistry } from "./registry";
 
 //TODO BRRRR circular include!!
 //I have yet to figure out how to get the equivalent of a forward declaration to work (without

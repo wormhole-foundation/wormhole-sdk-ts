@@ -1,24 +1,21 @@
-import {
+import type {
   ChainId,
   ChainsConfig,
   Contracts,
   Network,
-  UniversalAddress,
   UnsignedTransaction,
   VAA,
   WormholeCore,
   WormholeMessageId,
-  createVAA,
-  encoding,
-  toChainId,
 } from "@wormhole-foundation/sdk-connect";
-import {
+import { UniversalAddress, createVAA, encoding, toChainId } from "@wormhole-foundation/sdk-connect";
+import type {
   AnyAptosAddress,
   AptosChains,
-  AptosPlatform,
   AptosPlatformType,
 } from "@wormhole-foundation/sdk-aptos";
-import { AptosClient, Types } from "aptos";
+import { AptosPlatform } from "@wormhole-foundation/sdk-aptos";
+import type { AptosClient, Types } from "aptos";
 
 export class AptosWormholeCore<N extends Network, C extends AptosChains>
   implements WormholeCore<N, C>

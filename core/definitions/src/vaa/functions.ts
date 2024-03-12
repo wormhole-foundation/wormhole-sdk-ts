@@ -1,32 +1,22 @@
+import type { Layout, LayoutToType } from "@wormhole-foundation/sdk-base";
 import {
   encoding,
-  Layout,
-  LayoutToType,
   layoutDiscriminator,
   serializeLayout,
   deserializeLayout,
 } from "@wormhole-foundation/sdk-base";
 
-import {
+import type {
   LayoutLiteral,
   PayloadLiteral,
   LayoutOf,
   ProtocolName,
   ComposeLiteral,
-  composeLiteral,
-  payloadFactory,
 } from "./registration";
+import { composeLiteral, payloadFactory } from "./registration";
 
-import {
-  VAA,
-  DistributiveVAA,
-  Payload,
-  LayoutLiteralToPayload,
-  decomposeLiteral,
-  headerLayout,
-  envelopeLayout,
-  baseLayout,
-} from "./vaa";
+import type { VAA, DistributiveVAA, Payload, LayoutLiteralToPayload } from "./vaa";
+import { decomposeLiteral, headerLayout, envelopeLayout, baseLayout } from "./vaa";
 
 import { keccak256 } from "../utils";
 
@@ -37,8 +27,7 @@ export function getPayloadLayout<LL extends LayoutLiteral>(layoutLiteral: LL) {
 }
 
 //annoyingly we can't implicitly declare this using the return type of payloadLiteralToPayloadItem
-export type PayloadLiteralToPayloadItemLayout<PL extends PayloadLiteral> =
-  PL extends infer V
+export type PayloadLiteralToPayloadItemLayout<PL extends PayloadLiteral> = PL extends infer V
   ? V extends LayoutLiteral
     ? { name: "payload"; binary: "bytes"; layout: LayoutOf<V> }
     : V extends "Uint8Array"
@@ -50,7 +39,7 @@ export function payloadLiteralToPayloadItemLayout<PL extends PayloadLiteral>(pay
   return {
     name: "payload",
     binary: "bytes",
-    ...(payloadLiteral === "Uint8Array" ? {} : {layout: getPayloadLayout(payloadLiteral)})
+    ...(payloadLiteral === "Uint8Array" ? {} : { layout: getPayloadLayout(payloadLiteral) }),
   } as PayloadLiteralToPayloadItemLayout<PL>;
 }
 
@@ -158,7 +147,7 @@ export function deserialize<T extends PayloadLiteral | PayloadDiscriminator>(
 ): DistributiveVAA<ExtractLiteral<T>> {
   if (typeof data === "string") data = encoding.hex.decode(data);
 
-  const [header, envelopeOffset] = deserializeLayout(headerLayout, data, {consumeAll: false});
+  const [header, envelopeOffset] = deserializeLayout(headerLayout, data, { consumeAll: false });
 
   //ensure that guardian signature indicies are unique and in ascending order - see:
   //https://github.com/wormhole-foundation/wormhole/blob/8e0cf4c31f39b5ba06b0f6cdb6e690d3adf3d6a3/ethereum/contracts/Messages.sol#L121
@@ -166,8 +155,10 @@ export function deserialize<T extends PayloadLiteral | PayloadDiscriminator>(
     if (header.signatures[i]!.guardianIndex <= header.signatures[i - 1]!.guardianIndex)
       throw new Error("Guardian signatures must be in ascending order of guardian set index");
 
-  const [envelope, payloadOffset] =
-    deserializeLayout(envelopeLayout, data, {offset: envelopeOffset, consumeAll: false});
+  const [envelope, payloadOffset] = deserializeLayout(envelopeLayout, data, {
+    offset: envelopeOffset,
+    consumeAll: false,
+  });
 
   const [payloadLiteral, payload] =
     typeof payloadDet === "string"
@@ -196,8 +187,7 @@ type DeserializedPair<LL extends LayoutLiteral = LayoutLiteral> =
   //  instead of [LL1 | LL2, LayoutLiteralToPayload<LL1 | LL2>]
   LL extends LayoutLiteral ? readonly [LL, LayoutLiteralToPayload<LL>] : never;
 
-type DeserializePayloadReturn<T> =
-  T extends infer PL extends PayloadLiteral
+type DeserializePayloadReturn<T> = T extends infer PL extends PayloadLiteral
   ? Payload<PL>
   : T extends PayloadDiscriminator<infer LL>
   ? DeserializedPair<LL>
@@ -214,7 +204,7 @@ export function deserializePayload<T extends PayloadLiteral | PayloadDiscriminat
     if (payloadDet === "Uint8Array") return data.slice(offset);
 
     if (typeof payloadDet === "string")
-      return deserializeLayout(getPayloadLayout(payloadDet) as Layout, data, {offset});
+      return deserializeLayout(getPayloadLayout(payloadDet) as Layout, data, { offset });
 
     //kinda unfortunate that we have to slice here, future improvement would be passing an optional
     //  offset to the discriminator
@@ -222,7 +212,7 @@ export function deserializePayload<T extends PayloadLiteral | PayloadDiscriminat
     if (candidate === null)
       throw new Error(`Encoded data does not match any of the given payload types - ${data}`);
 
-    return [candidate, deserializeLayout(getPayloadLayout(candidate) as Layout, data, {offset})];
+    return [candidate, deserializeLayout(getPayloadLayout(candidate) as Layout, data, { offset })];
   })() as DeserializePayloadReturn<T>;
 }
 

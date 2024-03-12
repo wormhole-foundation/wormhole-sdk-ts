@@ -1,7 +1,9 @@
-import { MapLevels, constMap, ToMapping, Widen } from "../utils";
-import { Chain } from "./chains";
-import { Network } from "./networks";
-import { Platform, PlatformToChains, chainToPlatform } from "./platforms";
+import type { MapLevels, ToMapping, Widen } from "../utils";
+import { constMap } from "../utils";
+import type { Chain } from "./chains";
+import type { Network } from "./networks";
+import type { Platform, PlatformToChains} from "./platforms";
+import { chainToPlatform } from "./platforms";
 
 // prettier-ignore
 const chainNetworkNativeChainIdEntries = [[

@@ -1,5 +1,6 @@
-import { BN } from '@project-serum/anchor';
-import { PublicKey, PublicKeyInitData } from '@solana/web3.js';
+import type { BN } from '@project-serum/anchor';
+import type { PublicKeyInitData } from '@solana/web3.js';
+import { PublicKey } from '@solana/web3.js';
 import { utils } from '@wormhole-foundation/sdk-solana';
 
 export interface RegisteredToken {

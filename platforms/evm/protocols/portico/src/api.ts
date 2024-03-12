@@ -1,10 +1,12 @@
-import {
+import type {
   Chain,
   ChainAddress,
   Network,
-  PorticoBridge,
   TokenAddress,
   TokenId,
+} from '@wormhole-foundation/sdk-connect';
+import {
+  PorticoBridge,
   canonicalAddress,
   contracts,
   encoding,
@@ -14,7 +16,7 @@ import {
   toChainId,
   tokens,
 } from '@wormhole-foundation/sdk-connect';
-import { EvmChains } from '@wormhole-foundation/sdk-evm';
+import type { EvmChains } from '@wormhole-foundation/sdk-evm';
 import axios from 'axios';
 import { porticoAbi } from './abis';
 import { FEE_TIER } from './consts';
