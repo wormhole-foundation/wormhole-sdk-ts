@@ -1,7 +1,4 @@
-import {
-  serializeLayout,
-  deserializeLayout,
-} from "@wormhole-foundation/sdk-base";
+import { serializeLayout, deserializeLayout } from "@wormhole-foundation/sdk-base";
 import { signatureItem } from "./layout-items";
 
 /** Signature represents the secp256k1 signature of a Guardian */

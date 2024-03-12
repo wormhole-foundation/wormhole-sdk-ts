@@ -1,4 +1,4 @@
-import { UintLayoutItem } from "@wormhole-foundation/sdk-base";
+import type { UintLayoutItem } from "@wormhole-foundation/sdk-base";
 
 export const sequenceItem = {
   binary: "uint",

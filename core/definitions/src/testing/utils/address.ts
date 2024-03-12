@@ -1,12 +1,14 @@
+import type {
+  Chain} from "@wormhole-foundation/sdk-base";
 import {
-  Chain,
   chainToPlatform,
   encoding,
   isPlatform,
   platformToChains,
 } from "@wormhole-foundation/sdk-base";
 import crypto from "crypto";
-import { ChainAddress, NativeAddress, UniversalAddress, toNative } from "../../";
+import type { ChainAddress, NativeAddress} from "../../";
+import { UniversalAddress, toNative } from "../../";
 
 // return a random buffer of length n
 function randomBytes(n: number): Uint8Array {

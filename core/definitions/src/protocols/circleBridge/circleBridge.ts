@@ -1,24 +1,26 @@
-import {
+import type {
   Chain,
   LayoutToType,
   Network,
-  Platform,
+  Platform} from "@wormhole-foundation/sdk-base";
+import {
   deserializeLayout,
   encoding,
   lazyInstantiate,
   serializeLayout,
 } from "@wormhole-foundation/sdk-base";
-import { AccountAddress, ChainAddress } from "../../address";
-import { CircleMessageId } from "../../attestation";
-import { TokenId } from "../../types";
-import { UnsignedTransaction } from "../../unsignedTransaction";
+import type { AccountAddress, ChainAddress } from "../../address";
+import type { CircleMessageId } from "../../attestation";
+import type { TokenId } from "../../types";
+import type { UnsignedTransaction } from "../../unsignedTransaction";
 
 import "./automaticCircleBridgeLayout";
 import { circleMessageLayout } from "./circleBridgeLayout";
 
-import { EmptyPlatformMap } from "../../protocol";
+import type { EmptyPlatformMap } from "../../protocol";
 import { keccak256 } from "../../utils";
-import { ProtocolPayload, ProtocolVAA, payloadDiscriminator } from "../../vaa";
+import type { ProtocolPayload, ProtocolVAA} from "../../vaa";
+import { payloadDiscriminator } from "../../vaa";
 
 import "../../registry";
 declare module "../../registry" {

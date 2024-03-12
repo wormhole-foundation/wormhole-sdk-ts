@@ -1,6 +1,6 @@
-import { Chain, Network } from "@wormhole-foundation/sdk-base";
-import { SignedTx, TxHash } from "./types";
-import { UnsignedTransaction } from "./unsignedTransaction";
+import type { Chain, Network } from "@wormhole-foundation/sdk-base";
+import type { SignedTx, TxHash } from "./types";
+import type { UnsignedTransaction } from "./unsignedTransaction";
 
 /**
  * A Signer is an interface that must be provided to certain methods

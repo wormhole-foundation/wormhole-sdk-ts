@@ -1,5 +1,5 @@
-import { Chain, Network } from "@wormhole-foundation/sdk-base";
-import {
+import type { Chain, Network } from "@wormhole-foundation/sdk-base";
+import type {
   GatewayTransferMsg,
   GatewayTransferWithPayloadMsg,
   IbcBridge,
@@ -7,7 +7,8 @@ import {
   IbcTransferInfo,
   TokenBridge,
   TransactionId,
-  TxHash,
+  TxHash} from "@wormhole-foundation/sdk-definitions";
+import {
   isGatewayTransferMsg,
   isGatewayTransferWithPayloadMsg,
   isIbcMessageId,

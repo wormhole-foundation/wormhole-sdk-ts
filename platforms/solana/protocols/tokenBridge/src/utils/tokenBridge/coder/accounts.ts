@@ -1,4 +1,4 @@
-import { AccountsCoder, Idl } from '@project-serum/anchor';
+import type { AccountsCoder, Idl } from '@project-serum/anchor';
 import { anchor } from '@wormhole-foundation/sdk-solana';
 
 export class TokenBridgeAccountsCoder<A extends string = string>

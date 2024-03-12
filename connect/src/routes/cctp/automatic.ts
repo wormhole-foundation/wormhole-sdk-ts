@@ -1,15 +1,19 @@
-import { Chain, Network, circle, contracts, amount } from "@wormhole-foundation/sdk-base";
-import {
+import type { Chain, Network} from "@wormhole-foundation/sdk-base";
+import { circle, contracts, amount } from "@wormhole-foundation/sdk-base";
+import type {
   ChainContext,
   CircleTransferDetails,
   Signer,
-  TokenId,
+  TokenId} from "@wormhole-foundation/sdk-definitions";
+import {
   nativeTokenId,
 } from "@wormhole-foundation/sdk-definitions";
-import { CircleAttestationReceipt, CircleTransfer } from "../../protocols/cctpTransfer";
+import type { CircleAttestationReceipt} from "../../protocols/cctpTransfer";
+import { CircleTransfer } from "../../protocols/cctpTransfer";
 import { TransferState } from "../../types";
-import { AutomaticRoute, StaticRouteMethods } from "../route";
-import {
+import type { StaticRouteMethods } from "../route";
+import { AutomaticRoute } from "../route";
+import type {
   Quote,
   QuoteResult,
   Receipt,

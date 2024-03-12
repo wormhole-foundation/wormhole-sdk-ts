@@ -1,15 +1,16 @@
-import { Program } from '@project-serum/anchor';
-import {
+import type { Program } from '@project-serum/anchor';
+import type {
   Connection,
-  Keypair,
   MessageAccountKeys,
   MessageCompiledInstruction,
   PublicKey,
-  Transaction,
   TransactionResponse,
-  VersionedTransactionResponse,
-} from '@solana/web3.js';
+  VersionedTransactionResponse} from '@solana/web3.js';
 import {
+  Keypair,
+  Transaction
+} from '@solana/web3.js';
+import type {
   ChainId,
   ChainsConfig,
   Contracts,
@@ -18,23 +19,26 @@ import {
   UniversalAddress,
   VAA,
   WormholeCore,
-  WormholeMessageId,
+  WormholeMessageId} from '@wormhole-foundation/sdk-connect';
+import {
   createVAA,
   deserializeLayout,
   toChain,
   toChainId,
 } from '@wormhole-foundation/sdk-connect';
-import {
+import type {
   AnySolanaAddress,
-  SolanaAddress,
   SolanaChains,
+  SolanaTransaction} from '@wormhole-foundation/sdk-solana';
+import {
+  SolanaAddress,
   SolanaPlatform,
-  SolanaTransaction,
   SolanaUnsignedTransaction,
 } from '@wormhole-foundation/sdk-solana';
-import { Wormhole as WormholeCoreContract } from './types';
+import type { Wormhole as WormholeCoreContract } from './types';
+import type {
+  BridgeData} from './utils';
 import {
-  BridgeData,
   createBridgeFeeTransferInstruction,
   createPostMessageInstruction,
   createPostVaaInstruction,

@@ -1,25 +1,27 @@
-import {
-  nativeChainIds,
+import type {
   ChainsConfig,
   Contracts,
   Network,
   TxHash,
   VAA,
   WormholeCore,
-  WormholeMessageId,
+  WormholeMessageId} from '@wormhole-foundation/sdk-connect';
+import {
+  nativeChainIds,
   createVAA,
   isWormholeMessageId,
 } from '@wormhole-foundation/sdk-connect';
-import { Provider, TransactionRequest } from 'ethers';
+import type { Provider, TransactionRequest } from 'ethers';
 import { ethers_contracts } from '.';
-import { Implementation, ImplementationInterface } from './ethers-contracts';
+import type { Implementation, ImplementationInterface } from './ethers-contracts';
 
-import {
+import type {
   AnyEvmAddress,
-  EvmAddress,
   EvmChains,
+  EvmPlatformType} from '@wormhole-foundation/sdk-evm';
+import {
+  EvmAddress,
   EvmPlatform,
-  EvmPlatformType,
   EvmUnsignedTransaction,
   addChainId,
   addFrom,

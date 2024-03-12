@@ -1,4 +1,4 @@
-import { Layout } from "@wormhole-foundation/sdk-base";
+import type { Layout } from "@wormhole-foundation/sdk-base";
 import {
   amountItem,
   circleDomainItem,
@@ -6,7 +6,8 @@ import {
   universalAddressItem,
 } from "../../layout-items";
 import "./automaticCircleBridgeLayout";
-import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../../vaa";
+import type { NamedPayloads, RegisterPayloadTypes} from "../../vaa";
+import { registerPayloadTypes } from "../../vaa";
 
 const messageVersionItem = { binary: "uint", size: 4, custom: 0, omit: true } as const;
 

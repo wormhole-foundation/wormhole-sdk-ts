@@ -1,6 +1,8 @@
-import { Connection, PublicKeyInitData, PublicKey } from '@solana/web3.js';
+import type { Connection, PublicKeyInitData} from '@solana/web3.js';
+import { PublicKey } from '@solana/web3.js';
 import { Program } from '@project-serum/anchor';
-import { IDL, TokenBridgeRelayer } from '../../automaticTokenBridgeType';
+import type { TokenBridgeRelayer } from '../../automaticTokenBridgeType';
+import { IDL } from '../../automaticTokenBridgeType';
 
 export function createTokenBridgeRelayerProgramInterface(
   programId: PublicKeyInitData,

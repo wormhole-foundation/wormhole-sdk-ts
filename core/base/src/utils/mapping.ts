@@ -62,7 +62,7 @@
 //VC = value columns
 //VR = value rows
 
-import {
+import type {
   IndexEs,
   Flatten,
   InnerFlatten,
@@ -71,11 +71,12 @@ import {
   Cartesian,
   OnlyIndexes,
   ExcludeIndexes,
-  Entries,
+  Entries} from "./array";
+import {
   range,
   zip,
 } from "./array";
-import { Function, Widen, RoArray, RoArray2D, RoPair } from "./metaprogramming";
+import type { Function, Widen, RoArray, RoArray2D, RoPair } from "./metaprogramming";
 
 export type ShallowMapping<M extends RoArray<readonly [PropertyKey, unknown]>> =
   { readonly [E in M[number]as E[0]]: E[1] };

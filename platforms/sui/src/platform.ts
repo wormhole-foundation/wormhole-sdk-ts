@@ -1,13 +1,14 @@
-import {
+import type {
   Balances,
   Chain,
   ChainsConfig,
   Network,
-  PlatformContext,
   SignedTx,
   StaticPlatformMethods,
   TokenId,
-  TxHash,
+  TxHash} from "@wormhole-foundation/sdk-connect";
+import {
+  PlatformContext,
   Wormhole,
   chainToPlatform,
   isNative,
@@ -20,7 +21,8 @@ import { SuiClient } from "@mysten/sui.js/client";
 import { SuiAddress } from "./address";
 import { SuiChain } from "./chain";
 import { SUI_COIN } from "./constants";
-import { AnySuiAddress, SuiChains, SuiPlatformType, _platform } from "./types";
+import type { AnySuiAddress, SuiChains, SuiPlatformType} from "./types";
+import { _platform } from "./types";
 import { getObjectFields } from "./utils";
 
 /**

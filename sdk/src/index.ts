@@ -1,4 +1,4 @@
-import {
+import type {
   Chain,
   ChainContext,
   ConfigOverrides,
@@ -8,7 +8,8 @@ import {
   PlatformToChains,
   PlatformUtils,
   RpcConnection,
-  Signer,
+  Signer} from "@wormhole-foundation/sdk-connect";
+import {
   Wormhole,
 } from "@wormhole-foundation/sdk-connect";
 

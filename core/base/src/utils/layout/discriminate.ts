@@ -1,4 +1,4 @@
-import { Layout, LayoutItem, LengthPrefixed, BytesType } from "./layout";
+import type { Layout, LayoutItem, LengthPrefixed, BytesType } from "./layout";
 import { serializeNum, getCachedSerializedFrom } from "./serialize";
 import { isNumType, isBytesType, isFixedBytesConversion } from "./utils";
 import { calcStaticLayoutSize } from "./size";

@@ -1,25 +1,27 @@
-import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
-import { IndexedTx } from "@cosmjs/stargate";
+import type { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
+import type { IndexedTx } from "@cosmjs/stargate";
 
-import {
+import type {
   Chain,
   ChainsConfig,
   Contracts,
   Network,
-  UniversalAddress,
   VAA,
   WormholeCore,
-  WormholeMessageId,
+  WormholeMessageId} from "@wormhole-foundation/sdk-connect";
+import {
+  UniversalAddress,
   createVAA,
   encoding,
 } from "@wormhole-foundation/sdk-connect";
 
-import {
+import type {
   AnyCosmwasmAddress,
   CosmwasmChains,
-  CosmwasmPlatform,
   CosmwasmPlatformType,
-  CosmwasmUnsignedTransaction,
+  CosmwasmUnsignedTransaction} from "@wormhole-foundation/sdk-cosmwasm";
+import {
+  CosmwasmPlatform
 } from "@wormhole-foundation/sdk-cosmwasm";
 
 export class CosmwasmWormholeCore<N extends Network, C extends CosmwasmChains>

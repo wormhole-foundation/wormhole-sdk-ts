@@ -1,5 +1,5 @@
-import { EventCoder, Event, Idl } from '@project-serum/anchor';
-import { anchor } from '@wormhole-foundation/sdk-solana';
+import type { EventCoder, Event, Idl } from '@project-serum/anchor';
+import type { anchor } from '@wormhole-foundation/sdk-solana';
 
 export class TokenBridgeEventsCoder implements EventCoder {
   constructor(_idl: Idl) {}

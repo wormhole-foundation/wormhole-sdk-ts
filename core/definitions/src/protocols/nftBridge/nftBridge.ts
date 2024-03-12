@@ -1,5 +1,5 @@
-import { Platform } from "@wormhole-foundation/sdk-base";
-import { EmptyPlatformMap } from "../../protocol";
+import type { Platform } from "@wormhole-foundation/sdk-base";
+import type { EmptyPlatformMap } from "../../protocol";
 
 import "../../registry";
 declare module "../../registry" {

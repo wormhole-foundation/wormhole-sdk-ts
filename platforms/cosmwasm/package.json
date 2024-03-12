@@ -46,7 +46,7 @@
     "build": "npm run build:cjs && npm run build:esm",
     "rebuild": "npm run clean && npm run build",
     "clean": "rm -rf ./dist && rm -rf ./.turbo",
-    "lint": "npm run prettier && eslint --fix . --ext .ts",
+    "lint": "npm run prettier && eslint --fix ./src --ext .ts",
     "prettier": "prettier --write ./src",
     "test": "jest --config ./jest.config.ts"
   },

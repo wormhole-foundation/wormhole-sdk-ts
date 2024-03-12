@@ -1,4 +1,4 @@
-import { Chain } from "../chains";
+import type { Chain } from "../chains";
 
 // unique name to key off
 export type TokenKey = string;

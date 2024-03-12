@@ -1,12 +1,13 @@
-import {
+import type {
   Commitment,
   Connection,
-  PublicKey,
   PublicKeyInitData,
+  TransactionInstruction} from '@solana/web3.js';
+import {
+  PublicKey,
   SystemProgram,
   SYSVAR_INSTRUCTIONS_PUBKEY,
-  SYSVAR_RENT_PUBKEY,
-  TransactionInstruction,
+  SYSVAR_RENT_PUBKEY
 } from '@solana/web3.js';
 import {
   getGuardianSet,
@@ -14,7 +15,7 @@ import {
   getWormholeBridgeData,
 } from '../accounts';
 import { createReadOnlyWormholeProgramInterface } from '../program';
-import { VAA } from '@wormhole-foundation/sdk-connect';
+import type { VAA } from '@wormhole-foundation/sdk-connect';
 import { createSecp256k1Instruction } from './secp256k1';
 
 const MAX_LEN_GUARDIAN_KEYS = 19;

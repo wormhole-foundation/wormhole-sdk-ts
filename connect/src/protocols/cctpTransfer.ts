@@ -1,10 +1,10 @@
-import { Chain, Network, circle, encoding, toChain } from "@wormhole-foundation/sdk-base";
-import {
+import type { Chain, Network} from "@wormhole-foundation/sdk-base";
+import { circle, encoding, toChain } from "@wormhole-foundation/sdk-base";
+import type {
   Attestation,
   AttestationId,
   AutomaticCircleBridge,
   ChainContext,
-  CircleBridge,
   CircleMessageId,
   CircleTransferDetails,
   Signer,
@@ -12,7 +12,9 @@ import {
   TxHash,
   UniversalOrNative,
   UnsignedTransaction,
-  WormholeMessageId,
+  WormholeMessageId} from "@wormhole-foundation/sdk-definitions";
+import {
+  CircleBridge,
   isCircleMessageId,
   isCircleTransferDetails,
   isTransactionIdentifier,
@@ -21,21 +23,22 @@ import {
 
 import { signSendWait } from "../common";
 import { DEFAULT_TASK_TIMEOUT } from "../config";
-import {
+import type {
   AttestationReceipt,
   AttestedTransferReceipt,
   CompletedTransferReceipt,
   SourceFinalizedTransferReceipt,
   SourceInitiatedTransferReceipt,
   TransferQuote,
-  TransferReceipt,
+  TransferReceipt} from "../types";
+import {
   TransferState,
   isAttested,
   isSourceFinalized,
   isSourceInitiated,
 } from "../types";
 import { Wormhole } from "../wormhole";
-import { WormholeTransfer } from "./wormholeTransfer";
+import type { WormholeTransfer } from "./wormholeTransfer";
 
 type CircleTransferProtocol = "CircleBridge" | "AutomaticCircleBridge";
 

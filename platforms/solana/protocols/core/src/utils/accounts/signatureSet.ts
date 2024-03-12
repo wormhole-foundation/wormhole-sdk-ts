@@ -1,8 +1,9 @@
-import {
+import type {
   Connection,
-  PublicKey,
   Commitment,
-  PublicKeyInitData,
+  PublicKeyInitData} from '@solana/web3.js';
+import {
+  PublicKey
 } from '@solana/web3.js';
 import { utils } from '@wormhole-foundation/sdk-solana';
 

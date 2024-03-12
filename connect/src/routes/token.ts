@@ -1,7 +1,9 @@
-import { Chain, Network, tokens } from "@wormhole-foundation/sdk-base";
-import {
+import type { Chain, Network} from "@wormhole-foundation/sdk-base";
+import { tokens } from "@wormhole-foundation/sdk-base";
+import type {
   ChainContext,
-  TokenId,
+  TokenId} from "@wormhole-foundation/sdk-definitions";
+import {
   canonicalAddress,
   isNative,
 } from "@wormhole-foundation/sdk-definitions";

@@ -1,8 +1,9 @@
+import type {
+  PublicKeyInitData,
+  TransactionInstruction} from '@solana/web3.js';
 import {
   PublicKey,
-  PublicKeyInitData,
-  SystemProgram,
-  TransactionInstruction,
+  SystemProgram
 } from '@solana/web3.js';
 import { deriveFeeCollectorKey } from '../accounts';
 

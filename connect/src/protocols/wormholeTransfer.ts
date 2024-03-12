@@ -1,5 +1,5 @@
-import { Chain, Network } from "@wormhole-foundation/sdk-base";
-import {
+import type { Chain, Network } from "@wormhole-foundation/sdk-base";
+import type {
   AttestationId,
   ChainContext,
   CircleTransferDetails,
@@ -9,8 +9,8 @@ import {
   TokenTransferDetails,
   TxHash,
 } from "@wormhole-foundation/sdk-definitions";
-import { AttestationReceipt, TransferQuote, TransferReceipt, TransferState } from "../types";
-import { Wormhole } from "../wormhole";
+import type { AttestationReceipt, TransferQuote, TransferReceipt, TransferState } from "../types";
+import type { Wormhole } from "../wormhole";
 
 export type TransferRequest<PN extends ProtocolName = ProtocolName> = PN extends
   | "TokenBridge"

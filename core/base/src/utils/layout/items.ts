@@ -1,4 +1,5 @@
-import { NumSizeToPrimitive, numberMaxSize } from "./layout";
+import type { NumSizeToPrimitive} from "./layout";
+import { numberMaxSize } from "./layout";
 
 //TODO implement enum item
 

@@ -1,6 +1,6 @@
-import { SuiClient } from "@mysten/sui.js/client";
+import type { SuiClient } from "@mysten/sui.js/client";
 import { Ed25519Keypair } from "@mysten/sui.js/keypairs/ed25519";
-import {
+import type {
   Network,
   SignAndSendSigner,
   Signer,
@@ -8,8 +8,8 @@ import {
   UnsignedTransaction,
 } from "@wormhole-foundation/sdk-connect";
 import { SuiPlatform } from "./platform";
-import { SuiChains } from "./types";
-import { SuiUnsignedTransaction } from "./unsignedTransaction";
+import type { SuiChains } from "./types";
+import type { SuiUnsignedTransaction } from "./unsignedTransaction";
 
 export async function getSuiSigner(rpc: SuiClient, privateKey: string): Promise<Signer> {
   const [, chain] = await SuiPlatform.chainFromRpc(rpc);

@@ -1,8 +1,8 @@
-import {
+import type {
   PlatformToChains,
   UniversalOrNative,
 } from '@wormhole-foundation/sdk-connect';
-import { TransactionRequest } from 'ethers';
+import type { TransactionRequest } from 'ethers';
 
 export const unusedNonce = 0;
 export const unusedArbiterFee = 0n;

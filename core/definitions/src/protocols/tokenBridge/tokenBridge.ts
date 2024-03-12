@@ -1,11 +1,13 @@
-import { Chain, Network, Platform, lazyInstantiate } from "@wormhole-foundation/sdk-base";
-import { AccountAddress, ChainAddress, NativeAddress, UniversalOrNative } from "../../address";
+import type { Chain, Network, Platform} from "@wormhole-foundation/sdk-base";
+import { lazyInstantiate } from "@wormhole-foundation/sdk-base";
+import type { AccountAddress, ChainAddress, NativeAddress, UniversalOrNative } from "../../address";
 import "./automaticTokenBridgeLayout";
 import "./tokenBridgeLayout";
-import { EmptyPlatformMap } from "../../protocol";
-import { TokenAddress, TokenId } from "../../types";
-import { UnsignedTransaction } from "../../unsignedTransaction";
-import { ProtocolPayload, ProtocolVAA, payloadDiscriminator } from "../../vaa";
+import type { EmptyPlatformMap } from "../../protocol";
+import type { TokenAddress, TokenId } from "../../types";
+import type { UnsignedTransaction } from "../../unsignedTransaction";
+import type { ProtocolPayload, ProtocolVAA} from "../../vaa";
+import { payloadDiscriminator } from "../../vaa";
 
 export const ErrNotWrapped = (token: string) => new Error(`Token ${token} is not a wrapped asset`);
 

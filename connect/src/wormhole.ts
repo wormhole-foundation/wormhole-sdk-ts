@@ -1,5 +1,6 @@
-import { Chain, Network, Platform, chainToPlatform, circle } from "@wormhole-foundation/sdk-base";
-import {
+import type { Chain, Network, Platform} from "@wormhole-foundation/sdk-base";
+import { chainToPlatform, circle } from "@wormhole-foundation/sdk-base";
+import type {
   ChainAddress,
   ChainContext,
   Contracts,
@@ -12,21 +13,24 @@ import {
   TokenId,
   TxHash,
   WormholeMessageId,
+  deserialize} from "@wormhole-foundation/sdk-definitions";
+import {
   canonicalAddress,
-  deserialize,
   isNative,
   nativeTokenId,
   toNative,
 } from "@wormhole-foundation/sdk-definitions";
 import { getCircleAttestationWithRetry } from "./circle-api";
-import { ConfigOverrides, DEFAULT_TASK_TIMEOUT, WormholeConfig, applyOverrides } from "./config";
+import type { ConfigOverrides, WormholeConfig} from "./config";
+import { DEFAULT_TASK_TIMEOUT, applyOverrides } from "./config";
 import { CircleTransfer } from "./protocols/cctpTransfer";
 import { TokenTransfer } from "./protocols/tokenTransfer";
-import { RouteConstructor } from "./routes";
+import type { RouteConstructor } from "./routes";
 import { RouteResolver } from "./routes/resolver";
 import { retry } from "./tasks";
+import type {
+  TransactionStatus} from "./whscan-api";
 import {
-  TransactionStatus,
   getTransactionStatusWithRetry,
   getTxsByAddress,
   getVaaByTxHashWithRetry,

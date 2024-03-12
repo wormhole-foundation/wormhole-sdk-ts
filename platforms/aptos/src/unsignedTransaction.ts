@@ -1,6 +1,6 @@
-import { Network, UnsignedTransaction } from "@wormhole-foundation/sdk-connect";
-import { Types } from "aptos";
-import { AptosChains } from "./types";
+import type { Network, UnsignedTransaction } from "@wormhole-foundation/sdk-connect";
+import type { Types } from "aptos";
+import type { AptosChains } from "./types";
 
 export class AptosUnsignedTransaction<N extends Network, C extends AptosChains>
   implements UnsignedTransaction<N, C>

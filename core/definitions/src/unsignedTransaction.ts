@@ -1,4 +1,4 @@
-import { Chain, Network } from "@wormhole-foundation/sdk-base";
+import type { Chain, Network } from "@wormhole-foundation/sdk-base";
 
 /**
  * An unsigned transaction is a transaction that has not been signed

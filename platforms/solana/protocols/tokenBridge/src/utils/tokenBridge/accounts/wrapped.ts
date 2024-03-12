@@ -1,10 +1,12 @@
-import {
+import type {
   Commitment,
   Connection,
-  PublicKey,
-  PublicKeyInitData,
+  PublicKeyInitData} from '@solana/web3.js';
+import {
+  PublicKey
 } from '@solana/web3.js';
-import { ChainId, toChainId } from '@wormhole-foundation/sdk-connect';
+import type { ChainId} from '@wormhole-foundation/sdk-connect';
+import { toChainId } from '@wormhole-foundation/sdk-connect';
 import { utils } from '@wormhole-foundation/sdk-solana';
 
 export function deriveWrappedMintKey(

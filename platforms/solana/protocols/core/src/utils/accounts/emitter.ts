@@ -1,14 +1,15 @@
-import {
+import type {
   Commitment,
   Connection,
   PublicKey,
   PublicKeyInitData,
 } from '@solana/web3.js';
 import { utils } from '@wormhole-foundation/sdk-solana';
+import type {
+  SequenceTracker} from './sequence';
 import {
   deriveEmitterSequenceKey,
-  getSequenceTracker,
-  SequenceTracker,
+  getSequenceTracker
 } from './sequence';
 
 export interface EmitterAccounts {

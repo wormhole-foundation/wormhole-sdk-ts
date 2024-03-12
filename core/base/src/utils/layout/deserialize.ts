@@ -1,4 +1,4 @@
-import {
+import type {
   Endianness,
   Layout,
   LayoutItem,
@@ -6,7 +6,8 @@ import {
   CustomConversion,
   NumSizeToPrimitive,
   NumType,
-  BytesType,
+  BytesType} from "./layout";
+import {
 
   numberMaxSize,
 } from "./layout";

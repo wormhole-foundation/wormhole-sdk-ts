@@ -24,7 +24,7 @@
     "typescript": "^5.1.1"
   },
   "scripts": {
-    "lint": "npx turbo lint",
+    "lint": "npx turbo lint --no-cache --force",
     "build": "npx turbo build",
     "rebuild": "npx turbo rebuild --no-cache --force",
     "test": "NETWORK=Mainnet npx turbo test",

@@ -1,12 +1,12 @@
-import { Chain } from "../chains";
-import { Network } from "../networks";
+import type { Chain } from "../chains";
+import type { Network } from "../networks";
 
 //import { mainnetTokenDetails } from "./mainnetTokenDetails";
 //import { testnetTokenDetails } from "./testnetTokenDetails";
 
 import { mainnetChainTokens } from "./mainnet";
 import { testnetChainTokens } from "./testnet";
-import { TokenSymbol, TokenKey, ChainTokens, Token } from "./types";
+import type { TokenSymbol, TokenKey, ChainTokens, Token } from "./types";
 
 export * from "./types";
 

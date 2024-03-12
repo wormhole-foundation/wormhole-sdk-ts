@@ -1,4 +1,4 @@
-import { Idl, InstructionCoder } from '@project-serum/anchor';
+import type { Idl, InstructionCoder } from '@project-serum/anchor';
 import { PublicKey } from '@solana/web3.js';
 
 export class TokenBridgeInstructionCoder implements InstructionCoder {

@@ -1,5 +1,5 @@
-import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
-import {
+import type { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
+import type {
   ChainAddress,
   ChainsConfig,
   Contracts,
@@ -7,7 +7,8 @@ import {
   Network,
   TokenBridge,
   TokenId,
-  TxHash,
+  TxHash} from "@wormhole-foundation/sdk-connect";
+import {
   UniversalAddress,
   encoding,
   isNative,
@@ -17,16 +18,17 @@ import {
   toNative,
 } from "@wormhole-foundation/sdk-connect";
 
-import {
+import type {
   AnyCosmwasmAddress,
-  CosmwasmAddress,
   CosmwasmChains,
-  CosmwasmPlatform,
   CosmwasmPlatformType,
   CosmwasmTransaction,
+  WrappedRegistryResponse} from "@wormhole-foundation/sdk-cosmwasm";
+import {
+  CosmwasmAddress,
+  CosmwasmPlatform,
   CosmwasmUnsignedTransaction,
   Gateway,
-  WrappedRegistryResponse,
   buildExecuteMsg,
   computeFee,
 } from "@wormhole-foundation/sdk-cosmwasm";

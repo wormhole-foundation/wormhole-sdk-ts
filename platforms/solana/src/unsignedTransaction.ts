@@ -1,6 +1,6 @@
-import { Keypair, Transaction } from '@solana/web3.js';
-import { Network, UnsignedTransaction } from '@wormhole-foundation/sdk-connect';
-import { SolanaChains } from './types';
+import type { Keypair, Transaction } from '@solana/web3.js';
+import type { Network, UnsignedTransaction } from '@wormhole-foundation/sdk-connect';
+import type { SolanaChains } from './types';
 
 export type SolanaTransaction = {
   transaction: Transaction;

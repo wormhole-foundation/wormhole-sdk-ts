@@ -1,4 +1,4 @@
-import { TokenTypes } from "aptos";
+import type { TokenTypes } from "aptos";
 
 export type TokenBridgeState = {
   consumed_vaas: {

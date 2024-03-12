@@ -1,10 +1,10 @@
-import { Chain, Network, Platform } from "@wormhole-foundation/sdk-base";
-import { AccountAddress } from "../../address";
-import { WormholeMessageId } from "../../attestation";
-import { EmptyPlatformMap } from "../../protocol";
-import { TxHash } from "../../types";
-import { UnsignedTransaction } from "../../unsignedTransaction";
-import { VAA } from "../../vaa";
+import type { Chain, Network, Platform } from "@wormhole-foundation/sdk-base";
+import type { AccountAddress } from "../../address";
+import type { WormholeMessageId } from "../../attestation";
+import type { EmptyPlatformMap } from "../../protocol";
+import type { TxHash } from "../../types";
+import type { UnsignedTransaction } from "../../unsignedTransaction";
+import type { VAA } from "../../vaa";
 
 import "../../registry";
 declare module "../../registry" {

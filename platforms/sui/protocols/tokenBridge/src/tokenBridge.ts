@@ -1,20 +1,21 @@
-import { SuiClient } from "@mysten/sui.js/client";
+import type { SuiClient } from "@mysten/sui.js/client";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { SUI_CLOCK_OBJECT_ID, SUI_TYPE_ARG, normalizeSuiObjectId } from "@mysten/sui.js/utils";
 
-import {
+import type {
   AccountAddress,
   Chain,
   ChainAddress,
   ChainsConfig,
   Contracts,
-  ErrNotWrapped,
   NativeAddress,
   Network,
   Platform,
   TokenAddress,
   TokenBridge,
-  TokenId,
+  TokenId} from "@wormhole-foundation/sdk-connect";
+import {
+  ErrNotWrapped,
   UniversalAddress,
   canonicalAddress,
   encoding,
@@ -26,10 +27,11 @@ import {
   toNative,
 } from "@wormhole-foundation/sdk-connect";
 
-import {
+import type {
   SuiAddress,
   SuiBuildOutput,
-  SuiChains,
+  SuiChains} from "@wormhole-foundation/sdk-sui";
+import {
   SuiPlatform,
   SuiUnsignedTransaction,
   getCoinTypeFromPackageId,

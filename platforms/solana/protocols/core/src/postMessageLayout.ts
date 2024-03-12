@@ -1,4 +1,5 @@
-import { Layout, layoutItems } from '@wormhole-foundation/sdk-connect';
+import type { Layout} from '@wormhole-foundation/sdk-connect';
+import { layoutItems } from '@wormhole-foundation/sdk-connect';
 
 /** Binary layout for postMessage account */
 export const postMessageLayout = [

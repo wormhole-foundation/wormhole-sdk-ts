@@ -1,12 +1,13 @@
-import {
+import type {
   AccountMeta,
   Commitment,
   Connection,
-  PublicKey,
   PublicKeyInitData,
+  TransactionInstruction} from '@solana/web3.js';
+import {
+  PublicKey,
   SystemProgram,
-  SYSVAR_RENT_PUBKEY,
-  TransactionInstruction,
+  SYSVAR_RENT_PUBKEY
 } from '@solana/web3.js';
 import { utils } from '@wormhole-foundation/sdk-solana';
 

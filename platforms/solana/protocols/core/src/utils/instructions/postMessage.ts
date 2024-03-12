@@ -1,11 +1,12 @@
-import {
+import type {
   Connection,
-  PublicKey,
   PublicKeyInitData,
+  TransactionInstruction} from '@solana/web3.js';
+import {
+  PublicKey,
   SYSVAR_CLOCK_PUBKEY,
   SYSVAR_RENT_PUBKEY,
-  SystemProgram,
-  TransactionInstruction,
+  SystemProgram
 } from '@solana/web3.js';
 import {
   deriveWormholeBridgeDataKey,

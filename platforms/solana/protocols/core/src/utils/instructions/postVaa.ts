@@ -1,11 +1,12 @@
-import {
-  PublicKey,
+import type {
   PublicKeyInitData,
   TransactionInstruction,
+  Connection} from '@solana/web3.js';
+import {
+  PublicKey,
   SYSVAR_CLOCK_PUBKEY,
   SYSVAR_RENT_PUBKEY,
-  SystemProgram,
-  Connection,
+  SystemProgram
 } from '@solana/web3.js';
 import { createReadOnlyWormholeProgramInterface } from '../program';
 import {
@@ -13,8 +14,9 @@ import {
   deriveGuardianSetKey,
   derivePostedVaaKey,
 } from '../accounts';
+import type {
+  VAA} from '@wormhole-foundation/sdk-connect';
 import {
-  VAA,
   serializePayload,
   toChainId,
 } from '@wormhole-foundation/sdk-connect';

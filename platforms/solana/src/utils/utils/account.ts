@@ -1,8 +1,9 @@
-import {
-  PublicKey,
+import type {
   AccountMeta,
   AccountInfo,
-  PublicKeyInitData,
+  PublicKeyInitData} from '@solana/web3.js';
+import {
+  PublicKey
 } from '@solana/web3.js';
 
 /**

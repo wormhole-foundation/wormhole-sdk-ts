@@ -1,22 +1,24 @@
-import {
+import type {
   Chain,
-  Network,
+  Network} from "@wormhole-foundation/sdk-base";
+import {
   amount,
   encoding,
   toChain as toChainName,
 } from "@wormhole-foundation/sdk-base";
-import {
+import type {
   AttestationId,
   AutomaticTokenBridge,
   ChainContext,
   Signer,
-  TokenBridge,
   TokenId,
   TokenTransferDetails,
   TransactionId,
   TxHash,
   UnsignedTransaction,
-  WormholeMessageId,
+  WormholeMessageId} from "@wormhole-foundation/sdk-definitions";
+import {
+  TokenBridge,
   deserialize,
   isNative,
   isTokenId,
@@ -30,14 +32,15 @@ import {
 } from "@wormhole-foundation/sdk-definitions";
 import { signSendWait } from "../common";
 import { DEFAULT_TASK_TIMEOUT } from "../config";
-import {
+import type {
   AttestationReceipt,
   AttestedTransferReceipt,
   CompletedTransferReceipt,
   SourceFinalizedTransferReceipt,
   SourceInitiatedTransferReceipt,
   TransferQuote,
-  TransferReceipt,
+  TransferReceipt} from "../types";
+import {
   TransferState,
   isAttested,
   isSourceFinalized,
@@ -45,7 +48,7 @@ import {
 } from "../types";
 import { getGovernedTokens, getGovernorLimits } from "../whscan-api";
 import { Wormhole } from "../wormhole";
-import { WormholeTransfer } from "./wormholeTransfer";
+import type { WormholeTransfer } from "./wormholeTransfer";
 
 export type TokenTransferProtocol = "TokenBridge" | "AutomaticTokenBridge";
 export type TokenTransferVAA = TokenBridge.TransferVAA | AutomaticTokenBridge.VAA;

@@ -1,5 +1,5 @@
-import { Chain } from "@wormhole-foundation/sdk-base";
-import {
+import type { Chain } from "@wormhole-foundation/sdk-base";
+import type {
   Attestation,
   AttestationId,
   ProtocolName,

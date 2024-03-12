@@ -1,12 +1,13 @@
+import type {
+  CustomConversion,
+  FixedConversion,
+  UintLayoutItem,
+  Chain} from "@wormhole-foundation/sdk-base";
 import {
   chains,
   toChainId,
   chainToChainId,
-  chainIdToChain,
-  CustomConversion,
-  FixedConversion,
-  UintLayoutItem,
-  Chain,
+  chainIdToChain
 } from "@wormhole-foundation/sdk-base";
 
 const chainItemBase = { binary: "uint", size: 2 } as const;

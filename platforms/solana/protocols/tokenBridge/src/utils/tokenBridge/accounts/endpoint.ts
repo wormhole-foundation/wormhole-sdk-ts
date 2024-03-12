@@ -1,11 +1,13 @@
-import {
+import type {
   Commitment,
   Connection,
-  PublicKey,
-  PublicKeyInitData,
-} from '@solana/web3.js';
+  PublicKeyInitData} from '@solana/web3.js';
 import {
-  ChainId,
+  PublicKey
+} from '@solana/web3.js';
+import type {
+  ChainId} from '@wormhole-foundation/sdk-connect';
+import {
   UniversalAddress,
   toChainId,
 } from '@wormhole-foundation/sdk-connect';

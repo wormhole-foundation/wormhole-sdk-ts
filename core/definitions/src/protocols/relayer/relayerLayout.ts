@@ -1,4 +1,5 @@
-import { LayoutItem, CustomizableBytes, customizableBytes } from "@wormhole-foundation/sdk-base";
+import type { LayoutItem, CustomizableBytes} from "@wormhole-foundation/sdk-base";
+import { customizableBytes } from "@wormhole-foundation/sdk-base";
 import {
   amountItem,
   chainItem,
@@ -8,7 +9,8 @@ import {
   sequenceItem,
   universalAddressItem,
 } from "../../layout-items";
-import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../../vaa";
+import type { NamedPayloads, RegisterPayloadTypes} from "../../vaa";
+import { registerPayloadTypes } from "../../vaa";
 
 const encodedExecutionInfoItem = {
   binary: "bytes",

@@ -1,4 +1,4 @@
-import {
+import type {
   AccountAddress,
   AutomaticTokenBridge,
   ChainAddress,
@@ -6,23 +6,25 @@ import {
   Contracts,
   NativeAddress,
   Network,
-  TokenAddress,
+  TokenAddress} from '@wormhole-foundation/sdk-connect';
+import {
   isNative,
   serialize,
   toNative,
   nativeChainIds,
   toChainId,
 } from '@wormhole-foundation/sdk-connect';
+import type {
+  EvmChains,
+  EvmPlatformType} from '@wormhole-foundation/sdk-evm';
 import {
   EvmAddress,
-  EvmChains,
   EvmPlatform,
-  EvmPlatformType,
   EvmUnsignedTransaction,
   addChainId,
   addFrom,
 } from '@wormhole-foundation/sdk-evm';
-import { Provider, TransactionRequest } from 'ethers';
+import type { Provider, TransactionRequest } from 'ethers';
 import { ethers_contracts } from '.';
 
 import '@wormhole-foundation/sdk-evm-core';

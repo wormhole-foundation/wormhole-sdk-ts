@@ -1,10 +1,11 @@
-import { Chain, Network } from "@wormhole-foundation/sdk-base";
-import {
+import type { Chain, Network } from "@wormhole-foundation/sdk-base";
+import type {
   ChainContext,
   Signer,
   TransactionId,
   TxHash,
-  UnsignedTransaction,
+  UnsignedTransaction} from "@wormhole-foundation/sdk-definitions";
+import {
   isSignAndSendSigner,
   isSigner,
 } from "@wormhole-foundation/sdk-definitions";

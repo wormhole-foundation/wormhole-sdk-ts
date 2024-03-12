@@ -1,23 +1,25 @@
+import type {
+  Connection,
+  SendOptions,
+  Transaction} from '@solana/web3.js';
 import {
   ComputeBudgetProgram,
-  Connection,
   Keypair,
-  SendOptions,
   SendTransactionError,
-  Transaction,
   TransactionExpiredBlockheightExceededError,
 } from '@solana/web3.js';
-import {
+import type {
   Network,
   SignAndSendSigner,
   SignOnlySigner,
   Signer,
-  UnsignedTransaction,
+  UnsignedTransaction} from '@wormhole-foundation/sdk-connect';
+import {
   encoding,
 } from '@wormhole-foundation/sdk-connect';
 import { SolanaPlatform } from './platform';
-import { SolanaChains } from './types';
-import { SolanaUnsignedTransaction } from './unsignedTransaction';
+import type { SolanaChains } from './types';
+import type { SolanaUnsignedTransaction } from './unsignedTransaction';
 
 // returns a SignOnlySigner for the Solana platform
 export async function getSolanaSigner(

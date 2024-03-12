@@ -1,4 +1,4 @@
-import { Coder, Idl } from '@project-serum/anchor';
+import type { Coder, Idl } from '@project-serum/anchor';
 import { WormholeAccountsCoder } from './accounts';
 import { WormholeEventsCoder } from './events';
 import { WormholeInstructionCoder } from './instruction';

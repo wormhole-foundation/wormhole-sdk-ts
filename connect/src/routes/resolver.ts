@@ -1,16 +1,18 @@
-import { Network } from "@wormhole-foundation/sdk-base";
-import {
+import type { Network } from "@wormhole-foundation/sdk-base";
+import type {
   ChainContext,
-  TokenId,
+  TokenId} from "@wormhole-foundation/sdk-definitions";
+import {
   canonicalAddress,
   isNative,
   resolveWrappedToken,
 } from "@wormhole-foundation/sdk-definitions";
-import { Wormhole } from "../wormhole";
-import { RouteTransferRequest } from "./request";
-import { Route, RouteConstructor, isAutomatic } from "./route";
+import type { Wormhole } from "../wormhole";
+import type { RouteTransferRequest } from "./request";
+import type { Route, RouteConstructor} from "./route";
+import { isAutomatic } from "./route";
 import { uniqueTokens } from "./token";
-import { Options, Receipt, ValidatedTransferParams } from "./types";
+import type { Options, Receipt, ValidatedTransferParams } from "./types";
 
 export class RouteResolver<N extends Network> {
   wh: Wormhole<N>;

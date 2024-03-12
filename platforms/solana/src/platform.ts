@@ -1,13 +1,14 @@
-import {
+import type {
   Balances,
   Chain,
   ChainsConfig,
   Network,
-  PlatformContext,
   SignedTx,
   StaticPlatformMethods,
   TokenId,
-  TxHash,
+  TxHash} from '@wormhole-foundation/sdk-connect';
+import {
+  PlatformContext,
   Wormhole,
   chainToPlatform,
   decimals,
@@ -18,19 +19,21 @@ import {
 import { SolanaChain } from './chain';
 
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import {
+import type {
   Commitment,
-  Connection,
   ConnectionConfig,
   ParsedAccountData,
-  PublicKey,
-  SendOptions,
+  SendOptions} from '@solana/web3.js';
+import {
+  Connection,
+  PublicKey
 } from '@solana/web3.js';
 import { SolanaAddress, SolanaZeroAddress } from './address';
-import {
+import type {
   AnySolanaAddress,
   SolanaChains,
-  SolanaPlatformType,
+  SolanaPlatformType} from './types';
+import {
   _platform,
 } from './types';
 

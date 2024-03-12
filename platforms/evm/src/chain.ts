@@ -1,5 +1,6 @@
-import { Chain, ChainContext, Network } from '@wormhole-foundation/sdk-connect';
-import { EvmChains } from './types';
+import type { Chain, Network } from '@wormhole-foundation/sdk-connect';
+import { ChainContext } from '@wormhole-foundation/sdk-connect';
+import type { EvmChains } from './types';
 
 /**
  * A ChainContext for the EVM platform

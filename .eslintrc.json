@@ -6,9 +6,11 @@
   "parser": "@typescript-eslint/parser",
   "plugins": ["@typescript-eslint"],
   "extends": [ ],
-  "rules": { },
-  "ignorePatterns": ["*.js", "*.d.ts"],
+  "rules": { 
+    "@typescript-eslint/consistent-type-imports": "error"
+  },
+  "ignorePatterns": ["__tests__", "*.js", "*.d.ts", "ethers-contracts", "jest.*"],
   "parserOptions": {
-    "project": "./tsconfig.json"
+    "project": "./tsconfig.esm.json"
   }
 }

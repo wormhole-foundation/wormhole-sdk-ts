@@ -1,13 +1,15 @@
-import {
+import type {
   CustomConversion,
   CustomizableBytes,
   Layout,
-  LayoutItem,
+  LayoutItem} from "@wormhole-foundation/sdk-base";
+import {
   customizableBytes,
   range,
 } from "@wormhole-foundation/sdk-base";
 import { amountItem, chainItem, payloadIdItem, universalAddressItem } from "../../layout-items";
-import { NamedPayloads, RegisterPayloadTypes, registerPayloadTypes } from "../../vaa";
+import type { NamedPayloads, RegisterPayloadTypes} from "../../vaa";
+import { registerPayloadTypes } from "../../vaa";
 
 const fixedLengthStringItem = {
   binary: "bytes",

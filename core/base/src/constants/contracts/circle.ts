@@ -1,6 +1,6 @@
-import { MapLevels } from "../../utils";
-import { Chain } from "../chains";
-import { Network } from "../networks";
+import type { MapLevels } from "../../utils";
+import type { Chain } from "../chains";
+import type { Network } from "../networks";
 
 export type CircleContracts = {
   tokenMessenger: string;

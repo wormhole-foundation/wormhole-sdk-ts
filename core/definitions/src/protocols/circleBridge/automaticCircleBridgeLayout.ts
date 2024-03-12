@@ -1,4 +1,5 @@
-import { Layout, CustomizableBytes, customizableBytes } from "@wormhole-foundation/sdk-base";
+import type { Layout, CustomizableBytes} from "@wormhole-foundation/sdk-base";
+import { customizableBytes } from "@wormhole-foundation/sdk-base";
 import {
   payloadIdItem,
   universalAddressItem,
@@ -6,7 +7,8 @@ import {
   circleDomainItem,
   circleNonceItem,
 } from "../../layout-items";
-import { RegisterPayloadTypes, NamedPayloads, registerPayloadTypes } from "../../vaa";
+import type { RegisterPayloadTypes, NamedPayloads} from "../../vaa";
+import { registerPayloadTypes } from "../../vaa";
 
 //from here: https://github.com/wormhole-foundation/wormhole-circle-integration/blob/105ad59bad687416527003e0241dee4020889341/evm/src/circle_integration/CircleIntegrationMessages.sol#L25
 export const depositWithPayloadLayout = <const P extends CustomizableBytes = undefined>(

@@ -1,12 +1,13 @@
-import {
+import type {
   Network,
   SignOnlySigner,
   SignedTx,
   Signer,
   UnsignedTransaction,
 } from "@wormhole-foundation/sdk-connect";
-import { Account, Algodv2, assignGroupID, mnemonicToSecretKey } from "algosdk";
-import { AlgorandChains, TransactionSignerPair } from "./types";
+import type { Account, Algodv2} from "algosdk";
+import { assignGroupID, mnemonicToSecretKey } from "algosdk";
+import type { AlgorandChains, TransactionSignerPair } from "./types";
 import { AlgorandPlatform } from "./platform";
 
 export async function getAlgorandSigner(

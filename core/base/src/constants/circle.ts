@@ -1,6 +1,7 @@
-import { Column, Flatten, MapLevel, constMap, zip } from "../utils";
-import { Chain } from "./chains";
-import { Network } from "./networks";
+import type { Column, Flatten, MapLevel} from "../utils";
+import { constMap, zip } from "../utils";
+import type { Chain } from "./chains";
+import type { Network } from "./networks";
 
 const circleAPIs = [
   ["Mainnet", "https://iris-api.circle.com/v1/attestations"],

@@ -1,13 +1,14 @@
-import {
+import type {
   ChainAddress,
   ChainId,
   ChainsConfig,
   Contracts,
-  ErrNotWrapped,
   Network,
   Platform,
   TokenBridge,
-  TokenId,
+  TokenId} from '@wormhole-foundation/sdk-connect';
+import {
+  ErrNotWrapped,
   UniversalAddress,
   encoding,
   isNative,
@@ -15,12 +16,13 @@ import {
   toChainId,
   toNative,
 } from '@wormhole-foundation/sdk-connect';
-import {
+import type {
   AnySolanaAddress,
-  SolanaAddress,
   SolanaChains,
+  SolanaTransaction} from '@wormhole-foundation/sdk-solana';
+import {
+  SolanaAddress,
   SolanaPlatform,
-  SolanaTransaction,
   SolanaUnsignedTransaction,
 } from '@wormhole-foundation/sdk-solana';
 import {
@@ -28,7 +30,7 @@ import {
   utils as coreUtils,
 } from '@wormhole-foundation/sdk-solana-core';
 
-import { Program } from '@project-serum/anchor';
+import type { Program } from '@project-serum/anchor';
 import {
   ACCOUNT_SIZE,
   NATIVE_MINT,
@@ -41,16 +43,17 @@ import {
   getMinimumBalanceForRentExemptAccount,
   getMint,
 } from '@solana/spl-token';
-import {
+import type {
   Connection,
+  TransactionInstruction} from '@solana/web3.js';
+import {
   Keypair,
   PublicKey,
   SystemProgram,
-  Transaction,
-  TransactionInstruction,
+  Transaction
 } from '@solana/web3.js';
 
-import { TokenBridge as TokenBridgeContract } from './tokenBridgeType';
+import type { TokenBridge as TokenBridgeContract } from './tokenBridgeType';
 import {
   createApproveAuthoritySignerInstruction,
   createAttestTokenInstruction,

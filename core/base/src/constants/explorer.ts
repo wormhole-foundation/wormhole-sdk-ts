@@ -1,6 +1,7 @@
-import { MapLevels, constMap } from "../utils";
-import { Network } from "./networks";
-import { Chain } from "./chains";
+import type { MapLevels} from "../utils";
+import { constMap } from "../utils";
+import type { Network } from "./networks";
+import type { Chain } from "./chains";
 
 export type ExplorerSettings = {
   name:    string;
