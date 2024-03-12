@@ -1,0 +1,14 @@
+{
+  "env": {
+    "node": true
+  },
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint"],
+  "extends": [ ],
+  "rules": { },
+  "ignorePatterns": ["*.js", "*.d.ts"],
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  }
+}
