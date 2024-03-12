@@ -19,6 +19,13 @@
   "files": [
     "dist"
   ],
+  "exports":{
+     ".": {
+      "import": "./dist/esm/index.js",
+      "types":"./dist/esm/index.d.ts",
+      "require": "./dist/cjs/index.js"
+    }
+  },
   "dependencies": {
     "@scure/base": "^1.1.3"
   },

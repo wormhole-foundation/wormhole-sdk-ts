@@ -34,8 +34,9 @@
   "scripts": {
     "build:cjs": "tsc -p ./tsconfig.cjs.json",
     "build:esm": "tsc -p ./tsconfig.esm.json",
-    "build": "npm run build:cjs && npm run build:esm",
-    "rebuild": "npm run clean && npm run build:cjs && npm run build:esm",
+    "build:node": "tsc -p ./tsconfig.node.json",
+    "build": "npm run build:cjs && npm run build:esm && npm run build:node",
+    "rebuild": "npm run clean && npm run build",
     "clean": "rm -rf ./dist && rm -f ./*.tsbuildinfo",
     "lint": "npm run prettier && eslint --fix",
     "prettier": "prettier --write ./src",
@@ -45,53 +46,45 @@
   "exports": {
     ".": {
       "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.js"
+      "require": "./dist/cjs/index.js",
+      "node":"./dist/node/index.js",
+      "types":"./dist/esm/index.d.ts"
     },
     "./evm": {
       "import": "./dist/esm/evm.js",
-      "require": "./dist/cjs/evm.js"
+      "require": "./dist/cjs/evm.js",
+      "node":"./dist/node/evm.js",
+      "types":"./dist/esm/evm.d.ts"
     },
     "./solana": {
       "import": "./dist/esm/solana.js",
-      "require": "./dist/cjs/solana.js"
+      "require": "./dist/cjs/solana.js",
+      "node":"./dist/node/solana.js",
+      "types":"./dist/esm/solana.d.ts"
     },
     "./cosmwasm": {
       "import": "./dist/esm/cosmwasm.js",
-      "require": "./dist/cjs/cosmwasm.js"
+      "require": "./dist/cjs/cosmwasm.js",
+      "node": "./dist/node/cosmwasm.js",
+      "types":"./dist/esm/cosmwasm.d.ts"
     },
     "./aptos": {
       "import": "./dist/esm/aptos.js",
-      "require": "./dist/cjs/aptos.js"
+      "require": "./dist/cjs/aptos.js",
+      "node": "./dist/node/aptos.js",
+      "types":"./dist/esm/aptos.d.ts"
     },
     "./sui": {
       "import": "./dist/esm/sui.js",
-      "require": "./dist/cjs/sui.js"
+      "require": "./dist/cjs/sui.js",
+      "node": "./dist/node/sui.js",
+      "types":"./dist/esm/sui.d.ts"
     },
     "./algorand": {
       "import": "./dist/esm/algorand.js",
-      "require": "./dist/cjs/algorand.js"
-    }
-  },
-  "typesVersions": {
-    "*": {
-      "evm": [
-        "dist/esm/evm.d.ts"
-      ],
-      "solana": [
-        "dist/esm/solana.d.ts"
-      ],
-      "cosmwasm": [
-        "dist/esm/cosmwasm.d.ts"
-      ],
-      "algorand": [
-        "dist/esm/algorand.d.ts"
-      ],
-      "aptos": [
-        "dist/esm/aptos.d.ts"
-      ],
-      "sui": [
-        "dist/esm/sui.d.ts"
-      ]
+      "require": "./dist/cjs/algorand.js",
+      "node": "./dist/node/algorand.js",
+      "types":"./dist/esm/algorand.d.ts"
     }
   },
   "dependencies": {
