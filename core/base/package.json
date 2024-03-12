@@ -37,7 +37,7 @@
     "build:esm": "tsc -p ./tsconfig.esm.json",
     "build": "npm run build:cjs && npm run build:esm",
     "rebuild": "npm run clean && npm run build",
-    "clean": "rm -rf ./dist && rm -f ./.turbo",
+    "clean": "rm -rf ./dist && rm -rf ./.turbo",
     "typecheck": "cp ./__tests__/typechecks/index.test-d.ts ./dist/esm/ && tsd",
     "lint": "npm run prettier && eslint --fix",
     "prettier": "prettier --write ./src"
