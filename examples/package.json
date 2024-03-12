@@ -42,7 +42,7 @@
     "msg": "tsx src/messaging.ts",
     "quorum": "tsx src/quorum.ts",
     "clean": "rm -rf ./dist && rm -rf ./.turbo",
-    "lint": "npm run prettier && eslint --fix",
+    "lint": "npm run prettier && eslint --fix . --ext .ts",
     "prettier": "prettier --write ./src",
     "coverage": "jest --config ../jest.config.ts --coverage",
     "docs": "typedoc"

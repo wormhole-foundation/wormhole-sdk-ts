@@ -13,7 +13,6 @@
     "test": "__tests__"
   },
   "main": "./dist/cjs/index.js",
-  "types": "./dist/cjs/index.d.ts",
   "module": "./dist/esm/index.js",
   "files": [
     "dist/cjs",
@@ -21,19 +20,16 @@
   ],
   "exports": {
     ".": {
+      "require": "./dist/cjs/index.js",
       "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.js"
+      "node": "./dist/esm/index.js",
+      "types": "./dist/esm/index.d.ts"
     },
     "./testing": {
+      "require": "./dist/cjs/testing/index.js",
       "import": "./dist/esm/testing/index.js",
-      "require": "./dist/cjs/testing/index.js"
-    }
-  },
-  "typesVersions": {
-    "*": {
-      "testing": [
-        "./dist/esm/testing/index.d.ts"
-      ]
+      "node": "./dist/esm/testing/index.js",
+      "types": "./dist/esm/testing/index.d.ts"
     }
   },
   "scripts": {
@@ -43,7 +39,7 @@
     "build": "npm run build:cjs && npm run build:esm",
     "rebuild": "npm run clean && npm run build",
     "clean": "rm -rf ./dist && rm -rf ./.turbo",
-    "lint": "npm run prettier && eslint --fix",
+    "lint": "npm run prettier && eslint --fix . --ext .ts",
     "prettier": "prettier --write ./src"
   },
   "dependencies": {
