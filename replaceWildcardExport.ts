@@ -75,8 +75,11 @@ function updateExportStatements(directoryPath: string) {
   for (const [name, exported] of Object.entries(exports)) {
     if (exported.length === 0) continue;
     // Replace the export statement with named exports (this is a simplified replacement logic)
+    const wildcardExport = `export * from "./${name}";`;
+    // Note: in the case of an export with names that already exist, this will not handle it
+    // and some modification will be required
     const explicitExport = `export {${exported.join(", ")}} from "./${name}";`;
-    fileContent = fileContent.replace(`export * from "./${name}";`, explicitExport);
+    fileContent = fileContent.replace(wildcardExport, explicitExport);
   }
   fs.writeFileSync(index, fileContent, "utf8");
 }
