@@ -1,16 +1,9 @@
-import {
-  Chain,
-  CircleTransfer,
-  Network,
-  Signer,
-  TransactionId,
-  Wormhole,
-  amount,
-  wormhole,
-} from "@wormhole-foundation/sdk";
+import type { Chain, Network, Signer, TransactionId, Wormhole } from "@wormhole-foundation/sdk";
+import { CircleTransfer, amount, wormhole } from "@wormhole-foundation/sdk";
 import { evm } from "@wormhole-foundation/sdk/evm";
 import { solana } from "@wormhole-foundation/sdk/solana";
-import { SignerStuff, getSigner, waitForRelay } from "./helpers";
+import type { SignerStuff } from "./helpers";
+import { getSigner, waitForRelay } from "./helpers";
 
 /*
 Notes:

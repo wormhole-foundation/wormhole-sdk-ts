@@ -1,4 +1,5 @@
-import { TokenId, Wormhole, signSendWait, wormhole } from "@wormhole-foundation/sdk";
+import type { TokenId } from "@wormhole-foundation/sdk";
+import { Wormhole, signSendWait, wormhole } from "@wormhole-foundation/sdk";
 
 import { algorand } from "@wormhole-foundation/sdk/algorand";
 import { evm } from "@wormhole-foundation/sdk/evm";

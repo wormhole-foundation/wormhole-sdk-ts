@@ -1,13 +1,5 @@
-import {
-  Chain,
-  Network,
-  TokenId,
-  TokenTransfer,
-  Wormhole,
-  amount,
-  isTokenId,
-  wormhole,
-} from "@wormhole-foundation/sdk";
+import type { Chain, Network, TokenId } from "@wormhole-foundation/sdk";
+import { TokenTransfer, Wormhole, amount, isTokenId, wormhole } from "@wormhole-foundation/sdk";
 
 // Import the platform-specific packages
 import { algorand } from "@wormhole-foundation/sdk/algorand";
@@ -16,7 +8,8 @@ import { evm } from "@wormhole-foundation/sdk/evm";
 import { solana } from "@wormhole-foundation/sdk/solana";
 import { sui } from "@wormhole-foundation/sdk/sui";
 
-import { SignerStuff, getSigner, waitLog } from "./helpers";
+import type { SignerStuff } from "./helpers";
+import { getSigner, waitLog } from "./helpers";
 
 (async function () {
   // Init Wormhole object, passing config for which network

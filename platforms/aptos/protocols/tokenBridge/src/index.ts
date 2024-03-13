@@ -3,5 +3,5 @@ import { AptosTokenBridge } from "./tokenBridge";
 
 registerProtocol("Aptos", "TokenBridge", AptosTokenBridge);
 
-export * from "./tokenBridge";
-export * from "./types";
+export { AptosTokenBridge } from "./tokenBridge";
+export type { TokenBridgeState, OriginInfo, CreateTokenDataEvent, DepositEvent } from "./types";

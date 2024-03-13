@@ -3,4 +3,4 @@ import { AptosWormholeCore } from "./core";
 
 registerProtocol("Aptos", "WormholeCore", AptosWormholeCore);
 
-export * from "./core";
+export { AptosWormholeCore } from "./core";

@@ -1,2 +1,2 @@
-export * from "./relayer";
-export * from "./relayerLayout";
+export type {Relayer} from "./relayer";
+export {deviveryInstructionLayout} from "./relayerLayout";

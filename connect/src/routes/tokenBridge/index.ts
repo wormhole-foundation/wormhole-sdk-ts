@@ -1,2 +1,2 @@
-export * from "./automatic";
-export * from "./manual";
+export { AutomaticTokenBridgeRoute } from "./automatic";
+export { TokenBridgeRoute } from "./manual";

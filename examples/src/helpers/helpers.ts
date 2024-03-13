@@ -1,14 +1,16 @@
-import {
+import type {
   ChainAddress,
   ChainContext,
-  DEFAULT_TASK_TIMEOUT,
   Network,
   Signer,
+  TxHash,
+  Chain,
+} from "@wormhole-foundation/sdk";
+import {
+  DEFAULT_TASK_TIMEOUT,
   TokenTransfer,
   TransferState,
-  TxHash,
   Wormhole,
-  Chain,
   api,
   tasks,
 } from "@wormhole-foundation/sdk";
@@ -31,7 +33,7 @@ function getEnv(key: string): string {
 
   // Otherwise, return the env var or error
   const val = process.env[key];
-  if (!val) throw new Error(`Missing env var ${key}, did you forget to set valies in '.env'?`);
+  if (!val) throw new Error(`Missing env var ${key}, did you forget to set values in '.env'?`);
 
   return val;
 }

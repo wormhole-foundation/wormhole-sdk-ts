@@ -1,2 +1,2 @@
-export * from "./manual";
-export * from "./automatic";
+export { CCTPRoute } from "./manual";
+export { AutomaticCCTPRoute } from "./automatic";

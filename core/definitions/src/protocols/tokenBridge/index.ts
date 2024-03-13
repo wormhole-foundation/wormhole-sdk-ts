@@ -1,3 +1,4 @@
-export * from "./tokenBridge";
-export * from "./tokenBridgeLayout";
-export * from "./automaticTokenBridgeLayout";
+export type { TokenTransferDetails } from './tokenBridge';
+export { isTokenTransferDetails, ErrNotWrapped, TokenBridge, AutomaticTokenBridge } from "./tokenBridge";
+export {transferWithPayloadLayout, tokenBridgeNamedPayloads} from "./tokenBridgeLayout";
+export {connectPayload, automaticTokenBridgeNamedPayloads} from "./automaticTokenBridgeLayout";

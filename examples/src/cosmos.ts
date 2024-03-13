@@ -1,20 +1,13 @@
-import {
-  Chain,
-  GatewayTransfer,
-  GatewayTransferDetails,
-  Network,
-  TokenId,
-  Wormhole,
-  amount,
-  wormhole,
-} from "@wormhole-foundation/sdk";
+import type { Chain, GatewayTransferDetails, Network, TokenId } from "@wormhole-foundation/sdk";
+import { GatewayTransfer, Wormhole, amount, wormhole } from "@wormhole-foundation/sdk";
 
 // Import the platform specific packages
 import { cosmwasm } from "@wormhole-foundation/sdk/cosmwasm";
 import { evm } from "@wormhole-foundation/sdk/evm";
 import { solana } from "@wormhole-foundation/sdk/solana";
 
-import { SignerStuff, getSigner } from "./helpers";
+import type { SignerStuff } from "./helpers";
+import { getSigner } from "./helpers";
 
 // We're going to transfer into, around, and out of the Cosmos ecosystem
 // First on Avalanche, transparently through gateway and over IBC to Cosmoshub

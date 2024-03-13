@@ -8,7 +8,7 @@ import { mainnetChainTokens } from "./mainnet";
 import { testnetChainTokens } from "./testnet";
 import type { TokenSymbol, TokenKey, ChainTokens, Token } from "./types";
 
-export * from "./types";
+export type {TokenKey, TokenSymbol, ChainTokens, Token, TokenConst, TokenExtraDetails} from "./types";
 
 export function getTokenMap<N extends Network, C extends Chain>(
   network: N,

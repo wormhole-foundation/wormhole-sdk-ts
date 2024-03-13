@@ -7,6 +7,6 @@
     "outDir": "dist/esm",
     "rootDir": "src",
     "allowUnusedLabels": true,
-    "noUnusedLocals": false
+    "noUnusedLocals": false,
   }
 }

@@ -4,4 +4,4 @@ import { CosmwasmWormholeCore } from "./core";
 
 registerProtocol(_platform, "WormholeCore", CosmwasmWormholeCore);
 
-export * from "./core";
+export { CosmwasmWormholeCore } from "./core";
