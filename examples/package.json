@@ -45,7 +45,6 @@
     "prettier": "prettier --write ./src",
     "coverage": "jest --config ../jest.config.ts --coverage",
     "lint": "npm run prettier && eslint --fix ./src --ext .ts",
-
     "docs": "typedoc"
   },
   "devDependencies": {

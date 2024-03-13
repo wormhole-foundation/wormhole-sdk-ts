@@ -60,26 +60,25 @@ function findExports(filePath: string) {
 function updateExportStatements(directoryPath: string) {
   const contents = fs.readdirSync(directoryPath).map((file) => path.join(directoryPath, file));
   const dirs = contents.filter((filePath) => fs.statSync(filePath).isDirectory());
-  const files = contents.filter(
+
+  // Recurse first, then read the index file for the current directory
+  dirs.forEach(updateExportStatements);
+
+  const index = contents.find(
     (filePath) => fs.statSync(filePath).isFile() && path.basename(filePath) === "index.ts",
   );
+  if (!index || !fs.statSync(index).isFile() || path.basename(index) !== "index.ts") return;
 
-  dirs.forEach(updateExportStatements);
-  files.forEach((filePath) => {
-    // Only update index.ts exports directly
-    if (fs.statSync(filePath).isFile() && path.basename(filePath) === "index.ts") {
-      let fileContent = fs.readFileSync(filePath, "utf8");
-      const exports = findExports(filePath);
-      for (const [name, exported] of Object.entries(exports)) {
-        if (exported.length === 0) continue;
-        // Replace the export statement with named exports (this is a simplified replacement logic)
-        const explicitExport = `export {${exported.join(", ")}} from "./${name}";`;
-        fileContent = fileContent.replace(`export * from "./${name}";`, explicitExport);
-      }
-      //console.log(filePath);
-      fs.writeFileSync(filePath, fileContent, "utf8");
-    }
-  });
+  // Only update index.ts exports directly
+  let fileContent = fs.readFileSync(index, "utf8");
+  const exports = findExports(index);
+  for (const [name, exported] of Object.entries(exports)) {
+    if (exported.length === 0) continue;
+    // Replace the export statement with named exports (this is a simplified replacement logic)
+    const explicitExport = `export {${exported.join(", ")}} from "./${name}";`;
+    fileContent = fileContent.replace(`export * from "./${name}";`, explicitExport);
+  }
+  fs.writeFileSync(index, fileContent, "utf8");
 }
 
 function identifyWorkspaces(directoryPath: string) {
