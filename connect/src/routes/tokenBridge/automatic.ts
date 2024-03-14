@@ -7,11 +7,11 @@ import type {
   TokenTransferDetails,
 } from "@wormhole-foundation/sdk-definitions";
 import { isNative, isTokenId, nativeTokenId } from "@wormhole-foundation/sdk-definitions";
-import { TokenTransfer } from "../../protocols/tokenTransfer";
-import type { AttestationReceipt, SourceInitiatedTransferReceipt } from "../../types";
-import { TransferState } from "../../types";
-import type { StaticRouteMethods } from "../route";
-import { AutomaticRoute } from "../route";
+import { TokenTransfer } from '../../protocols/tokenTransfer.js';
+import type { AttestationReceipt, SourceInitiatedTransferReceipt } from '../../types.js';
+import { TransferState } from '../../types.js';
+import type { StaticRouteMethods } from '../route.js';
+import { AutomaticRoute } from '../route.js';
 import type {
   Quote,
   QuoteResult,
@@ -19,7 +19,7 @@ import type {
   TransferParams,
   ValidatedTransferParams,
   ValidationResult,
-} from "../types";
+} from '../types.js';
 
 export namespace AutomaticTokenBridgeRoute {
   export type Options = {

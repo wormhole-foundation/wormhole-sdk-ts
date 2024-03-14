@@ -1,8 +1,8 @@
 import { describe } from "@jest/globals";
 import { platform } from "@wormhole-foundation/sdk-base";
 import { utils, mocks } from "@wormhole-foundation/sdk-definitions/testing";
-import { Wormhole, networkPlatformConfigs } from "../src";
-import { RouteTransferRequest } from "../src/routes";
+import { Wormhole, networkPlatformConfigs } from './../src/index.js';
+import { RouteTransferRequest } from './../src/routes/index.js';
 
 const network: "Testnet" = "Testnet";
 type TNet = typeof network;

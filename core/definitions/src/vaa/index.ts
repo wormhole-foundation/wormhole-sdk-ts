@@ -1,9 +1,9 @@
-export type { PayloadLiteral, NamedPayloads, RegisterPayloadTypes } from "./registration";
-export { registerPayloadType, registerPayloadTypes } from "./registration";
+export type { PayloadLiteral, NamedPayloads, RegisterPayloadTypes } from './registration.js';
+export { registerPayloadType, registerPayloadTypes } from './registration.js';
 
-export type { VAA, ProtocolVAA, Payload, ProtocolPayload } from "./vaa";
+export type { VAA, ProtocolVAA, Payload, ProtocolPayload } from './vaa.js';
 
-export type { PayloadDiscriminator } from "./functions";
+export type { PayloadDiscriminator } from './functions.js';
 export {
   getPayloadLayout,
   serialize,
@@ -12,6 +12,6 @@ export {
   deserialize,
   deserializePayload,
   blindDeserializePayload,
-} from "./functions";
+} from './functions.js';
 
-export { createVAA } from "./create";
+export { createVAA } from './create.js';

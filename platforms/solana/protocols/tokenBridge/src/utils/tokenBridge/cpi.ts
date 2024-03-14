@@ -13,11 +13,11 @@ import {
   deriveTokenBridgeConfigKey,
   deriveWrappedMetaKey,
   deriveWrappedMintKey,
-} from './accounts';
+} from './accounts/index.js';
 import {
   getTransferNativeWithPayloadAccounts,
   getTransferWrappedWithPayloadAccounts,
-} from './instructions';
+} from './instructions/index.js';
 import type { TokenBridge } from '@wormhole-foundation/sdk-connect';
 import { toChainId } from '@wormhole-foundation/sdk-connect';
 

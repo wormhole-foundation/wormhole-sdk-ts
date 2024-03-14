@@ -1,18 +1,23 @@
-import type { Chain, Network, Platform} from "@wormhole-foundation/sdk-base";
+import type { Chain, Network, Platform } from "@wormhole-foundation/sdk-base";
 import { lazyInstantiate } from "@wormhole-foundation/sdk-base";
-import type { AccountAddress, ChainAddress, NativeAddress, UniversalOrNative } from "../../address";
+import type {
+  AccountAddress,
+  ChainAddress,
+  NativeAddress,
+  UniversalOrNative,
+} from "../../address.js";
 import "./automaticTokenBridgeLayout";
 import "./tokenBridgeLayout";
-import type { EmptyPlatformMap } from "../../protocol";
-import type { TokenAddress, TokenId } from "../../types";
-import type { UnsignedTransaction } from "../../unsignedTransaction";
-import type { ProtocolPayload, ProtocolVAA} from "../../vaa";
-import { payloadDiscriminator } from "../../vaa";
+import type { EmptyPlatformMap } from "../../protocol.js";
+import type { TokenAddress, TokenId } from "../../types.js";
+import type { UnsignedTransaction } from "../../unsignedTransaction.js";
+import type { ProtocolPayload, ProtocolVAA } from "./../../vaa/index.js";
+import { payloadDiscriminator } from "./../../vaa/index.js";
 
 export const ErrNotWrapped = (token: string) => new Error(`Token ${token} is not a wrapped asset`);
 
 import "../../registry";
-declare module "../../registry" {
+declare module "../../registry.js" {
   export namespace WormholeRegistry {
     interface ProtocolToPlatformMapping {
       TokenBridge: EmptyPlatformMap<Platform, TokenBridge.ProtocolName>;

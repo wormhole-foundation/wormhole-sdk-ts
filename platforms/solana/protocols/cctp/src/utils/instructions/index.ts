@@ -1,2 +1,2 @@
-export * from './depositForBurn';
-export * from './receiveMessage';
+export * from './depositForBurn.js';
+export * from './receiveMessage.js';

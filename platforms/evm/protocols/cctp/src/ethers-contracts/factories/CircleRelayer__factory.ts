@@ -14,8 +14,8 @@ import type {
   ContractDeployTransaction,
   ContractRunner,
 } from 'ethers';
-import type { NonPayableOverrides } from '../common';
-import type { CircleRelayer, CircleRelayerInterface } from '../CircleRelayer';
+import type { NonPayableOverrides } from '../common.js';
+import type { CircleRelayer, CircleRelayerInterface } from '../CircleRelayer.js';
 
 const _abi = [
   {

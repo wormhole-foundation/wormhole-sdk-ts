@@ -16,8 +16,8 @@ import {
 } from '@wormhole-foundation/sdk-connect';
 
 import type { Provider, TransactionRequest } from 'ethers';
-import { ethers_contracts } from '.';
-import type { CircleRelayer } from './ethers-contracts';
+import { ethers_contracts } from './index.js';
+import type { CircleRelayer } from './ethers-contracts/index.js';
 
 import type { EvmChains } from '@wormhole-foundation/sdk-evm';
 import {

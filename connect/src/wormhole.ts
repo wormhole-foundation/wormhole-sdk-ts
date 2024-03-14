@@ -21,22 +21,22 @@ import {
   nativeTokenId,
   toNative,
 } from "@wormhole-foundation/sdk-definitions";
-import { getCircleAttestationWithRetry } from "./circle-api";
-import type { ConfigOverrides, WormholeConfig } from "./config";
-import { DEFAULT_TASK_TIMEOUT, applyOverrides } from "./config";
-import { CircleTransfer } from "./protocols/cctpTransfer";
-import { TokenTransfer } from "./protocols/tokenTransfer";
-import type { RouteConstructor } from "./routes";
-import { RouteResolver } from "./routes/resolver";
-import { retry } from "./tasks";
-import type { TransactionStatus } from "./whscan-api";
+import { getCircleAttestationWithRetry } from './circle-api.js';
+import type { ConfigOverrides, WormholeConfig } from './config.js';
+import { DEFAULT_TASK_TIMEOUT, applyOverrides } from './config.js';
+import { CircleTransfer } from './protocols/cctpTransfer.js';
+import { TokenTransfer } from './protocols/tokenTransfer.js';
+import type { RouteConstructor } from './routes/index.js';
+import { RouteResolver } from './routes/resolver.js';
+import { retry } from './tasks.js';
+import type { TransactionStatus } from './whscan-api.js';
 import {
   getTransactionStatusWithRetry,
   getTxsByAddress,
   getVaaByTxHashWithRetry,
   getVaaBytesWithRetry,
   getVaaWithRetry,
-} from "./whscan-api";
+} from './whscan-api.js';
 
 type PlatformMap<N extends Network, P extends Platform = Platform> = Map<P, PlatformContext<N, P>>;
 type ChainMap<N extends Network, C extends Chain = Chain> = Map<C, ChainContext<N, C>>;

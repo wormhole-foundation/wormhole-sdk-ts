@@ -6,7 +6,7 @@ import {
   signatureItem,
   sequenceItem,
   guardianSetItem,
-} from "../layout-items";
+} from './../layout-items/index.js';
 
 import type {
   LayoutLiteral,
@@ -14,7 +14,7 @@ import type {
   LayoutOf,
   ProtocolName,
   ComposeLiteral,
-} from "./registration";
+} from './registration.js';
 
 export type LayoutLiteralToPayload<LL extends LayoutLiteral> = LayoutToType<LayoutOf<LL>>;
 

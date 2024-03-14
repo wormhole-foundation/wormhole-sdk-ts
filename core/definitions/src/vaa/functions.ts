@@ -12,13 +12,13 @@ import type {
   LayoutOf,
   ProtocolName,
   ComposeLiteral,
-} from "./registration";
-import { composeLiteral, payloadFactory } from "./registration";
+} from './registration.js';
+import { composeLiteral, payloadFactory } from './registration.js';
 
-import type { VAA, DistributiveVAA, Payload, LayoutLiteralToPayload } from "./vaa";
-import { decomposeLiteral, headerLayout, envelopeLayout, baseLayout } from "./vaa";
+import type { VAA, DistributiveVAA, Payload, LayoutLiteralToPayload } from './vaa.js';
+import { decomposeLiteral, headerLayout, envelopeLayout, baseLayout } from './vaa.js';
 
-import { keccak256 } from "../utils";
+import { keccak256 } from '../utils.js';
 
 export function getPayloadLayout<LL extends LayoutLiteral>(layoutLiteral: LL) {
   const layout = payloadFactory.get(layoutLiteral);

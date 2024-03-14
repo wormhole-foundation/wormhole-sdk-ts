@@ -8,7 +8,7 @@ import type {
 } from "@wormhole-foundation/sdk-definitions";
 import { deserialize } from "@wormhole-foundation/sdk-definitions";
 import axios from "axios";
-import { retry } from "./tasks";
+import { retry } from './tasks.js';
 
 export const WHSCAN_RETRY_INTERVAL = 2000;
 

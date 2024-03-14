@@ -4,8 +4,8 @@ import type { Provider } from '@project-serum/anchor';
 import { Program } from '@project-serum/anchor';
 
 import { utils } from '@wormhole-foundation/sdk-solana';
-import type { TokenMessenger, MessageTransmitter } from '../';
-import { idl } from '../';
+import type { TokenMessenger, MessageTransmitter } from './../index.js';
+import { idl } from './../index.js';
 
 export function createTokenMessengerProgramInterface(
   programId: PublicKeyInitData,

@@ -6,7 +6,7 @@ import type {
   TokenAddress,
   TokenBridge,
   UnsignedTransaction,
-} from "../..";
+} from './../../index.js';
 
 export class MockTokenBridge<N extends Network, P extends Platform, C extends PlatformToChains<P>>
   implements TokenBridge<N, C>

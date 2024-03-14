@@ -1,2 +1,2 @@
-export * from "./portico";
-export * from "./porticoLayout";
+export {PorticoBridge} from './portico.js';
+export {porticoFlagSetLayout, porticoTransferLayout, porticoPayloadLayout, namedPayloads} from './porticoLayout.js';

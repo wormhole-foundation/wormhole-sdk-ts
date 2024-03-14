@@ -1,1 +1,1 @@
-export * from "./nftBridge";
+export * from './nftBridge.js';

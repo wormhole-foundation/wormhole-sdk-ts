@@ -8,7 +8,7 @@ import {
   chains,
 } from '@wormhole-foundation/sdk-connect';
 
-import { SolanaChains, SolanaPlatform } from '../../src';
+import { SolanaChains, SolanaPlatform } from './../../src/index.js';
 
 import '@wormhole-foundation/sdk-solana-core';
 import '@wormhole-foundation/sdk-solana-tokenbridge';

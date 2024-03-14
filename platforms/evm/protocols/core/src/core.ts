@@ -13,11 +13,11 @@ import {
   isWormholeMessageId,
 } from '@wormhole-foundation/sdk-connect';
 import type { Provider, TransactionRequest } from 'ethers';
-import { ethers_contracts } from '.';
+import { ethers_contracts } from './index.js';
 import type {
   Implementation,
   ImplementationInterface,
-} from './ethers-contracts';
+} from './ethers-contracts/index.js';
 
 import type {
   AnyEvmAddress,

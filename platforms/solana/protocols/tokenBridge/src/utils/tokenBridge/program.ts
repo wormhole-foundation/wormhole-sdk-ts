@@ -3,8 +3,8 @@ import { PublicKey } from '@solana/web3.js';
 import type { Provider } from '@project-serum/anchor';
 import { Program } from '@project-serum/anchor';
 import { utils } from '@wormhole-foundation/sdk-solana';
-import { TokenBridgeCoder } from './coder';
-import type { TokenBridge } from '../../tokenBridgeType';
+import { TokenBridgeCoder } from './coder/index.js';
+import type { TokenBridge } from '../../tokenBridgeType.js';
 
 import IDL from '../../anchor-idl/token_bridge.json';
 

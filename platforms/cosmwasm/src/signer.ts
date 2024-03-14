@@ -18,11 +18,11 @@ import type {
 } from "@wormhole-foundation/sdk-connect";
 import { encoding, nativeChainIds, rpc as rpcConf } from "@wormhole-foundation/sdk-connect";
 import { TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
-import type { CosmwasmEvmChain } from "./constants";
-import { chainToAddressPrefix, cosmwasmNetworkChainToRestUrls, evmLikeChains } from "./constants";
-import { CosmwasmPlatform } from "./platform";
-import type { CosmwasmChains } from "./types";
-import type { CosmwasmUnsignedTransaction } from "./unsignedTransaction";
+import type { CosmwasmEvmChain } from './constants.js';
+import { chainToAddressPrefix, cosmwasmNetworkChainToRestUrls, evmLikeChains } from './constants.js';
+import { CosmwasmPlatform } from './platform.js';
+import type { CosmwasmChains } from './types.js';
+import type { CosmwasmUnsignedTransaction } from './unsignedTransaction.js';
 
 export async function getCosmwasmSigner(rpc: CosmWasmClient, mnemonic: string): Promise<Signer> {
   const [network, chain] = await CosmwasmPlatform.chainFromRpc(rpc);

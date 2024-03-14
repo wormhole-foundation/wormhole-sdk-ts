@@ -1,4 +1,4 @@
-import { UniversalAddress } from "../src/universalAddress";
+import { UniversalAddress } from '../src/universalAddress.js';
 
 describe("UniversalAddress tests", function () {
   it("should correctly construct from a 20 byte hex string without 0x prefix", function () {

@@ -7,7 +7,7 @@ import {
   encoding,
   toNative,
 } from "@wormhole-foundation/sdk-connect";
-import { CosmwasmChains, CosmwasmPlatform, chainToNativeDenoms } from "../../src";
+import { CosmwasmChains, CosmwasmPlatform, chainToNativeDenoms } from './../../src/index.js';
 
 import "@wormhole-foundation/sdk-cosmwasm-core";
 import "@wormhole-foundation/sdk-cosmwasm-tokenbridge";

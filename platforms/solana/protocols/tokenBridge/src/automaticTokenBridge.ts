@@ -30,12 +30,12 @@ import { BN } from '@project-serum/anchor';
 import type { Connection } from '@solana/web3.js';
 import { PublicKey, Transaction } from '@solana/web3.js';
 
-import type { TokenBridgeRelayer as TokenBridgeRelayerContract } from './automaticTokenBridgeType';
+import type { TokenBridgeRelayer as TokenBridgeRelayerContract } from './automaticTokenBridgeType.js';
 import type {
   ForeignContract,
   RedeemerConfig,
   RegisteredToken,
-} from './utils/automaticTokenBridge';
+} from './utils/automaticTokenBridge/index.js';
 import {
   createTokenBridgeRelayerProgramInterface,
   createTransferNativeTokensWithRelayInstruction,
@@ -43,7 +43,7 @@ import {
   deriveForeignContractAddress,
   deriveRedeemerConfigAddress,
   deriveRegisteredTokenAddress,
-} from './utils/automaticTokenBridge';
+} from './utils/automaticTokenBridge/index.js';
 
 import {
   NATIVE_MINT,
@@ -53,7 +53,7 @@ import {
   getAssociatedTokenAddressSync,
 } from '@solana/spl-token';
 import '@wormhole-foundation/sdk-solana-core';
-import { registeredTokens } from './consts';
+import { registeredTokens } from './consts.js';
 
 const SOL_DECIMALS = 9;
 const TEN = new BN(10);

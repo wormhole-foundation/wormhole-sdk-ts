@@ -1,19 +1,19 @@
-export type { Network } from "./networks";
-export type { Chain, ChainId } from './chains';
-export { isChain, toChainId, toChain, chains, chainToChainId, chainIdToChain } from "./chains";
-export type { Platform, PlatformToChains, ChainToPlatform, PlatformAddressFormat } from './platforms';
-export { isPlatform, platformToChains, chainToPlatform, platformToAddressFormat } from "./platforms";
+export type { Network } from './networks.js';
+export type { Chain, ChainId } from './chains.js';
+export { isChain, toChainId, toChain, chains, chainToChainId, chainIdToChain } from './chains.js';
+export type { Platform, PlatformToChains, ChainToPlatform, PlatformAddressFormat } from './platforms.js';
+export { isPlatform, platformToChains, chainToPlatform, platformToAddressFormat } from './platforms.js';
 
-export * as tokens from "./tokens";
+export * as tokens from './tokens/index.js';
 
-export * as platform from "./platforms";
-export * as chain from "./chains";
-export * as network from "./networks";
-export * as finality from "./finality";
-export * as decimals from "./decimals";
-export * as explorer from "./explorer";
-export * as rpc from "./rpc";
-export * as nativeChainIds from "./nativeChainIds";
-export * as circle from "./circle";
-export * as contracts from "./contracts";
-export * as guardians from "./guardians";
+export * as platform from './platforms.js';
+export * as chain from './chains.js';
+export * as network from './networks.js';
+export * as finality from './finality.js';
+export * as decimals from './decimals.js';
+export * as explorer from './explorer.js';
+export * as rpc from './rpc.js';
+export * as nativeChainIds from './nativeChainIds.js';
+export * as circle from './circle.js';
+export * as contracts from './contracts/index.js';
+export * as guardians from './guardians.js';

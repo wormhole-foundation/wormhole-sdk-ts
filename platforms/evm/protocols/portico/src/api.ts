@@ -18,8 +18,8 @@ import {
 } from '@wormhole-foundation/sdk-connect';
 import type { EvmChains } from '@wormhole-foundation/sdk-evm';
 import axios from 'axios';
-import { porticoAbi } from './abis';
-import { FEE_TIER } from './consts';
+import { porticoAbi } from './abis.js';
+import { FEE_TIER } from './consts.js';
 
 export const RELAYER_FEE_API_URL =
   'https://gfx.relayers.xlabs.xyz/api/v1/swap/quote';

@@ -10,5 +10,5 @@ export function createReadOnlyProvider(
   return { connection };
 }
 
-export * from './account';
-export * from './bpfLoaderUpgradeable';
+export * from './account.js';
+export * from './bpfLoaderUpgradeable.js';

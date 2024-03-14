@@ -23,17 +23,17 @@ import {
   SolanaPlatform,
   SolanaUnsignedTransaction,
 } from '@wormhole-foundation/sdk-solana';
-import type { MessageTransmitter, TokenMessenger } from '.';
+import type { MessageTransmitter, TokenMessenger } from './index.js';
 import {
   createReadOnlyMessageTransmitterProgramInterface,
   createReadOnlyTokenMessengerProgramInterface,
-} from './utils';
+} from './utils/index.js';
 import {
   calculateFirstNonce,
   createDepositForBurnInstruction,
   createReceiveMessageInstruction,
   nonceAccount,
-} from './utils/instructions';
+} from './utils/instructions/index.js';
 
 export class SolanaCircleBridge<N extends Network, C extends SolanaChains>
   implements CircleBridge<N, C>

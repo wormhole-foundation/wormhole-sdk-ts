@@ -10,7 +10,7 @@ import {
 } from "@wormhole-foundation/sdk";
 import { evm } from "@wormhole-foundation/sdk/evm";
 import { solana } from "@wormhole-foundation/sdk/solana";
-import { SignerStuff, getSigner, waitForRelay } from "./helpers";
+import { SignerStuff, getSigner, waitForRelay } from './helpers/index.js';
 
 /*
 Notes:

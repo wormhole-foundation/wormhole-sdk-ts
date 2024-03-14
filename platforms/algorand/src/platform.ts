@@ -19,10 +19,10 @@ import {
 } from "@wormhole-foundation/sdk-connect";
 import type { SignedTransaction } from "algosdk";
 import { Algodv2, decodeSignedTransaction, modelsv2, waitForConfirmation } from "algosdk";
-import { AlgorandAddress, AlgorandZeroAddress } from "./address";
-import { AlgorandChain } from "./chain";
-import type { AlgorandChains, AlgorandPlatformType, AnyAlgorandAddress } from "./types";
-import { _platform } from "./types";
+import { AlgorandAddress, AlgorandZeroAddress } from './address.js';
+import { AlgorandChain } from './chain.js';
+import type { AlgorandChains, AlgorandPlatformType, AnyAlgorandAddress } from './types.js';
+import { _platform } from './types.js';
 
 /**
  * @category Algorand

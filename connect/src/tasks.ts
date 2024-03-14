@@ -15,7 +15,7 @@ import {
   isIbcMessageId,
   isTransactionIdentifier,
 } from "@wormhole-foundation/sdk-definitions";
-import { DEFAULT_TASK_TIMEOUT } from "./config";
+import { DEFAULT_TASK_TIMEOUT } from './config.js';
 
 // A task is a retryable function, it should return a Thing or null for a failure case
 // It should throw on a permanent failure instead of retrying

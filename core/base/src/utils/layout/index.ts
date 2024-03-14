@@ -11,16 +11,16 @@ export type {
   LayoutToType,
   FixedConversion,
   CustomConversion,
-} from "./layout";
+} from './layout.js';
 
-export { serializeLayout } from "./serialize";
-export { deserializeLayout } from "./deserialize";
-export type { FixedItemsOfLayout, DynamicItemsOfLayout } from './fixedDynamic';
-export { fixedItemsOfLayout, dynamicItemsOfLayout, addFixedValues } from "./fixedDynamic";
+export { serializeLayout } from './serialize.js';
+export { deserializeLayout } from './deserialize.js';
+export type { FixedItemsOfLayout, DynamicItemsOfLayout } from './fixedDynamic.js';
+export { fixedItemsOfLayout, dynamicItemsOfLayout, addFixedValues } from './fixedDynamic.js';
 
-export { layoutDiscriminator } from "./discriminate";
-export type { CustomizableBytes } from './utils';
-export { isLayout, isLayoutItem, customizableBytes } from "./utils";
+export { layoutDiscriminator } from './discriminate.js';
+export type { CustomizableBytes } from './utils.js';
+export { isLayout, isLayoutItem, customizableBytes } from './utils.js';
 
-export * from "./size";
-export * from "./items";
+export {calcStaticLayoutSize, calcLayoutSize} from './size.js';
+export {Bitset, BitsetItem, bitsetItem} from './items.js';

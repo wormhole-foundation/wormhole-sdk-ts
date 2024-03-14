@@ -10,10 +10,10 @@ import {
 
 import '@wormhole-foundation/sdk-evm-core';
 import '@wormhole-foundation/sdk-evm-tokenbridge';
-import { EvmPlatform } from '../../src/platform';
+import { EvmPlatform } from '../../src/platform.js';
 
 import { getDefaultProvider } from 'ethers';
-import { EvmChains } from '../../src';
+import { EvmChains } from './../../src/index.js';
 
 const EVM_CHAINS = chains.filter(
   (c) => chainToPlatform(c) === EvmPlatform._platform,

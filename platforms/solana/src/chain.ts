@@ -5,8 +5,8 @@ import type {
   UniversalOrNative,
 } from '@wormhole-foundation/sdk-connect';
 import { ChainContext } from '@wormhole-foundation/sdk-connect';
-import { SolanaAddress } from './address';
-import type { SolanaChains } from './types';
+import { SolanaAddress } from './address.js';
+import type { SolanaChains } from './types.js';
 
 export class SolanaChain<
   N extends Network,

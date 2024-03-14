@@ -1,7 +1,7 @@
 import { registerProtocol } from "@wormhole-foundation/sdk-connect";
 import { _platform } from "@wormhole-foundation/sdk-algorand";
-import { AlgorandTokenBridge } from "./tokenBridge";
+import { AlgorandTokenBridge } from './tokenBridge.js';
 
 registerProtocol(_platform, "TokenBridge", AlgorandTokenBridge);
 
-export * from "./tokenBridge";
+export {TransferMethodSelector, AlgorandTokenBridge} from './tokenBridge.js';

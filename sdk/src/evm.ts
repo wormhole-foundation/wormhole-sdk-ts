@@ -1,5 +1,5 @@
 /// <reference path="../../platforms/evm/dist/esm/address.d.ts" />
-import type { Network, PlatformDefinition } from ".";
+import type { Network, PlatformDefinition } from './index.js';
 /** Platform and protocol definitions for Evm */
 export const evm = async (): Promise<PlatformDefinition<Network, "Evm">> => {
   const _evm = await import("@wormhole-foundation/sdk-evm");

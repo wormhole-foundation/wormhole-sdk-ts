@@ -1,4 +1,4 @@
-import type { LayoutItem, CustomizableBytes} from "@wormhole-foundation/sdk-base";
+import type { LayoutItem, CustomizableBytes } from "@wormhole-foundation/sdk-base";
 import { customizableBytes } from "@wormhole-foundation/sdk-base";
 import {
   amountItem,
@@ -8,9 +8,9 @@ import {
   payloadIdItem,
   sequenceItem,
   universalAddressItem,
-} from "../../layout-items";
-import type { NamedPayloads, RegisterPayloadTypes} from "../../vaa";
-import { registerPayloadTypes } from "../../vaa";
+} from "./../../layout-items/index.js";
+import type { NamedPayloads, RegisterPayloadTypes } from "./../../vaa/index.js";
+import { registerPayloadTypes } from "./../../vaa/index.js";
 
 const encodedExecutionInfoItem = {
   binary: "bytes",
@@ -89,7 +89,7 @@ const namedPayloads = [
 // factory registration:
 
 import "../../registry";
-declare module "../../registry" {
+declare module "../../registry.js" {
   export namespace WormholeRegistry {
     interface PayloadLiteralToLayoutMapping
       extends RegisterPayloadTypes<"Relayer", typeof namedPayloads> {}

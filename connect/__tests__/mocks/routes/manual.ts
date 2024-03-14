@@ -12,15 +12,15 @@ import {
   encoding,
   nativeTokenId,
   amount,
-} from "../../../src";
-import { ManualRoute, StaticRouteMethods } from "../../../src/routes/route";
+} from './../../../src/index.js';
+import { ManualRoute, StaticRouteMethods } from '../../../src/routes/route.js';
 import {
   Quote,
   Receipt,
   TransferParams,
   ValidatedTransferParams,
   ValidationResult,
-} from "../../../src/routes/types";
+} from '../../../src/routes/types.js';
 
 async function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));

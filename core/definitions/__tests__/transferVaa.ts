@@ -1,5 +1,5 @@
 import { encoding } from "@wormhole-foundation/sdk-base";
-import { payloadDiscriminator, deserialize } from "../src/vaa";
+import { payloadDiscriminator, deserialize } from './../src/vaa/index.js';
 import "../src/protocols/tokenBridge";
 
 const cases = [

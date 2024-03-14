@@ -14,10 +14,10 @@ import {
   getGuardianSet,
   deriveGuardianSetKey,
   getWormholeBridgeData,
-} from '../accounts';
-import { createReadOnlyWormholeProgramInterface } from '../program';
+} from './../accounts/index.js';
+import { createReadOnlyWormholeProgramInterface } from '../program.js';
 import type { VAA } from '@wormhole-foundation/sdk-connect';
-import { createSecp256k1Instruction } from './secp256k1';
+import { createSecp256k1Instruction } from './secp256k1.js';
 
 const MAX_LEN_GUARDIAN_KEYS = 19;
 

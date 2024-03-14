@@ -1,14 +1,9 @@
-import type {
-  Layout,
-  LayoutToType,
-  CustomizableBytes} from "@wormhole-foundation/sdk-base";
-import {
-  customizableBytes,
-} from "@wormhole-foundation/sdk-base";
+import type { Layout, LayoutToType, CustomizableBytes } from "@wormhole-foundation/sdk-base";
+import { customizableBytes } from "@wormhole-foundation/sdk-base";
 
-import { universalAddressItem, chainItem } from "../../layout-items";
-import type { NamedPayloads, RegisterPayloadTypes} from "../../vaa";
-import { registerPayloadTypes } from "../../vaa";
+import { universalAddressItem, chainItem } from "./../../layout-items/index.js";
+import type { NamedPayloads, RegisterPayloadTypes } from "./../../vaa/index.js";
+import { registerPayloadTypes } from "./../../vaa/index.js";
 
 export const trimmedAmountLayout = [
   { name: "decimals", binary: "uint", size: 1 },
@@ -84,7 +79,7 @@ export const nttNamedPayloads = [
 
 // factory registration:
 import "../../registry";
-declare module "../../registry" {
+declare module "../../registry.js" {
   export namespace WormholeRegistry {
     interface PayloadLiteralToLayoutMapping
       extends RegisterPayloadTypes<"NTT", typeof nttNamedPayloads> {}

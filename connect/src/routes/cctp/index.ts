@@ -1,2 +1,2 @@
-export * from "./manual";
-export * from "./automatic";
+export {CCTPRoute} from './manual.js';
+export {AutomaticCCTPRoute} from './automatic.js';

@@ -2,14 +2,17 @@ import type {
   CustomConversion,
   CustomizableBytes,
   Layout,
-  LayoutItem} from "@wormhole-foundation/sdk-base";
-import {
-  customizableBytes,
-  range,
+  LayoutItem,
 } from "@wormhole-foundation/sdk-base";
-import { amountItem, chainItem, payloadIdItem, universalAddressItem } from "../../layout-items";
-import type { NamedPayloads, RegisterPayloadTypes} from "../../vaa";
-import { registerPayloadTypes } from "../../vaa";
+import { customizableBytes, range } from "@wormhole-foundation/sdk-base";
+import {
+  amountItem,
+  chainItem,
+  payloadIdItem,
+  universalAddressItem,
+} from "./../../layout-items/index.js";
+import type { NamedPayloads, RegisterPayloadTypes } from "./../../vaa/index.js";
+import { registerPayloadTypes } from "./../../vaa/index.js";
 
 const fixedLengthStringItem = {
   binary: "bytes",
@@ -77,7 +80,7 @@ export const tokenBridgeNamedPayloads = [
 
 // factory registration:
 
-declare module "../../registry" {
+declare module "../../registry.js" {
   export namespace WormholeRegistry {
     interface PayloadLiteralToLayoutMapping
       extends RegisterPayloadTypes<"TokenBridge", typeof tokenBridgeNamedPayloads> {}

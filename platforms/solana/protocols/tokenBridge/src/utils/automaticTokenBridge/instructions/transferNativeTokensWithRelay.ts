@@ -4,18 +4,18 @@ import type {
   TransactionInstruction,
 } from '@solana/web3.js';
 import { PublicKey } from '@solana/web3.js';
-import { getTransferNativeWithPayloadCpiAccounts } from '../../tokenBridge/cpi';
-import { createTokenBridgeRelayerProgramInterface } from '../program';
+import { getTransferNativeWithPayloadCpiAccounts } from '../../tokenBridge/cpi.js';
+import { createTokenBridgeRelayerProgramInterface } from '../program.js';
 import {
   deriveForeignContractAddress,
   deriveSenderConfigAddress,
   deriveTokenTransferMessageAddress,
   deriveRegisteredTokenAddress,
   deriveTmpTokenAccountAddress,
-} from '../accounts';
+} from './../accounts/index.js';
 import { getAssociatedTokenAddressSync } from '@solana/spl-token';
 import { BN } from '@project-serum/anchor';
-import { deriveSignerSequenceAddress } from '../accounts/signerSequence';
+import { deriveSignerSequenceAddress } from '../accounts/signerSequence.js';
 import type { Chain } from '@wormhole-foundation/sdk-connect';
 import { toChainId } from '@wormhole-foundation/sdk-connect';
 

@@ -1,11 +1,11 @@
 import type { Coder, Idl } from '@project-serum/anchor';
-import { WormholeAccountsCoder } from './accounts';
-import { WormholeEventsCoder } from './events';
-import { WormholeInstructionCoder } from './instruction';
-import { WormholeStateCoder } from './state';
-import { WormholeTypesCoder } from './types';
+import { WormholeAccountsCoder } from './accounts.js';
+import { WormholeEventsCoder } from './events.js';
+import { WormholeInstructionCoder } from './instruction.js';
+import { WormholeStateCoder } from './state.js';
+import { WormholeTypesCoder } from './types.js';
 
-export { WormholeInstruction } from './instruction';
+export { WormholeInstruction } from './instruction.js';
 
 export class WormholeCoder implements Coder {
   readonly instruction: WormholeInstructionCoder;

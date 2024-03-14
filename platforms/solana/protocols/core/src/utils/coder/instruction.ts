@@ -4,7 +4,7 @@ import { encoding } from '@wormhole-foundation/sdk-connect';
 import type { anchor } from '@wormhole-foundation/sdk-solana';
 import { camelCase, upperFirst } from '@wormhole-foundation/sdk-solana';
 import * as borsh from '@coral-xyz/borsh';
-import { IdlCoder } from './idl';
+import { IdlCoder } from './idl.js';
 
 // Inspired by  coral-xyz/anchor
 //

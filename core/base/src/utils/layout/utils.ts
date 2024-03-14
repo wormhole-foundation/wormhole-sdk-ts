@@ -7,10 +7,10 @@ import type {
   CustomConversion,
   NumType,
   BytesType,
-  PrimitiveType} from "./layout";
+  PrimitiveType} from './layout.js';
 import {
   binaryLiterals,
-} from "./layout";
+} from './layout.js';
 
 export const isNumType = (x: any): x is NumType =>
   typeof x === "number" || typeof x === "bigint";

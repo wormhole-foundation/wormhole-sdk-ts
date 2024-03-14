@@ -1,14 +1,14 @@
-import type { Chain } from "../chains";
-import type { Network } from "../networks";
+import type { Chain } from '../chains.js';
+import type { Network } from '../networks.js';
 
-//import { mainnetTokenDetails } from "./mainnetTokenDetails";
-//import { testnetTokenDetails } from "./testnetTokenDetails";
+//import { mainnetTokenDetails } from './mainnetTokenDetails.js';
+//import { testnetTokenDetails } from './testnetTokenDetails.js';
 
-import { mainnetChainTokens } from "./mainnet";
-import { testnetChainTokens } from "./testnet";
-import type { TokenSymbol, TokenKey, ChainTokens, Token } from "./types";
+import { mainnetChainTokens } from './mainnet.js';
+import { testnetChainTokens } from './testnet.js';
+import type { TokenSymbol, TokenKey, ChainTokens, Token } from './types.js';
 
-export * from "./types";
+export {TokenKey, TokenSymbol, ChainTokens, Token, TokenConst, TokenExtraDetails} from './types.js';
 
 export function getTokenMap<N extends Network, C extends Chain>(
   network: N,

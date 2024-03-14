@@ -14,7 +14,7 @@ import {
   nativeChainIds,
 } from '@wormhole-foundation/sdk-connect';
 
-import type { MessageTransmitter, TokenMessenger } from './ethers-contracts';
+import type { MessageTransmitter, TokenMessenger } from './ethers-contracts/index.js';
 
 import type { EvmChains } from '@wormhole-foundation/sdk-evm';
 import {
@@ -26,7 +26,7 @@ import {
 } from '@wormhole-foundation/sdk-evm';
 import type { LogDescription, Provider, TransactionRequest } from 'ethers';
 import { ethers } from 'ethers';
-import { ethers_contracts } from '.';
+import { ethers_contracts } from './index.js';
 //https://github.com/circlefin/evm-cctp-contracts
 
 export class EvmCircleBridge<N extends Network, C extends EvmChains>

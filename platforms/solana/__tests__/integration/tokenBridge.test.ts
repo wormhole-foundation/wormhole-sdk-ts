@@ -16,7 +16,7 @@ import {
   SolanaChains,
   SolanaPlatform,
   SolanaUnsignedTransaction,
-} from '../../src/';
+} from './../../src/index.js';
 
 import { describe, expect, test } from '@jest/globals';
 

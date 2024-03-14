@@ -2,8 +2,8 @@ import { BN } from '@project-serum/anchor';
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import type { TransactionInstruction } from '@solana/web3.js';
 import { PublicKey } from '@solana/web3.js';
-import { findProgramAddress } from '../accounts';
-import { createTokenMessengerProgramInterface } from '../program';
+import { findProgramAddress } from './../accounts/index.js';
+import { createTokenMessengerProgramInterface } from '../program.js';
 import type { UniversalAddress } from '@wormhole-foundation/sdk-connect';
 
 export function createDepositForBurnInstruction(

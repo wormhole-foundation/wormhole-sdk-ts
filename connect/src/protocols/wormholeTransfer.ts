@@ -9,8 +9,8 @@ import type {
   TokenTransferDetails,
   TxHash,
 } from "@wormhole-foundation/sdk-definitions";
-import type { AttestationReceipt, TransferQuote, TransferReceipt, TransferState } from "../types";
-import type { Wormhole } from "../wormhole";
+import type { AttestationReceipt, TransferQuote, TransferReceipt, TransferState } from '../types.js';
+import type { Wormhole } from '../wormhole.js';
 
 export type TransferRequest<PN extends ProtocolName = ProtocolName> = PN extends
   | "TokenBridge"

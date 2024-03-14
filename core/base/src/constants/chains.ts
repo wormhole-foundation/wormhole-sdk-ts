@@ -1,6 +1,6 @@
-import type { MapLevel} from "../utils";
-import { zip } from "../utils";
-import { constMap } from "../utils/mapping";
+import type { MapLevel} from './../utils/index.js';
+import { zip } from './../utils/index.js';
+import { constMap } from '../utils/mapping.js';
 
 // prettier-ignore
 const chainIdAndChainEntries = [

@@ -15,7 +15,7 @@ import { utils } from '@wormhole-foundation/sdk-definitions/testing';
 import '@wormhole-foundation/sdk-evm-core';
 import '@wormhole-foundation/sdk-evm-tokenbridge';
 
-import { EvmChains, EvmPlatform } from '../../src';
+import { EvmChains, EvmPlatform } from './../../src/index.js';
 
 import { describe, expect, test } from '@jest/globals';
 

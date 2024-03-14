@@ -1,13 +1,13 @@
 import type { Chain, Network, Platform } from "@wormhole-foundation/sdk-base";
-import type { AccountAddress } from "../../address";
-import type { WormholeMessageId } from "../../attestation";
-import type { EmptyPlatformMap } from "../../protocol";
-import type { TxHash } from "../../types";
-import type { UnsignedTransaction } from "../../unsignedTransaction";
-import type { VAA } from "../../vaa";
+import type { AccountAddress } from "../../address.js";
+import type { WormholeMessageId } from "../../attestation.js";
+import type { EmptyPlatformMap } from "../../protocol.js";
+import type { TxHash } from "../../types.js";
+import type { UnsignedTransaction } from "../../unsignedTransaction.js";
+import type { VAA } from "./../../vaa/index.js";
 
 import "../../registry";
-declare module "../../registry" {
+declare module "../../registry.js" {
   export namespace WormholeRegistry {
     interface ProtocolToPlatformMapping {
       WormholeCore: EmptyPlatformMap<Platform, "WormholeCore">;

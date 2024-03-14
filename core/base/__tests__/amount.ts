@@ -1,4 +1,4 @@
-import { amount } from "../src/";
+import { amount } from './../src/index.js';
 
 describe("Amount Tests", function () {
   const parseCases: [number | string, number, amount.Amount][] = [

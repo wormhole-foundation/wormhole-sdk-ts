@@ -11,7 +11,7 @@ import { utils } from "@wormhole-foundation/sdk-definitions/testing";
 import "@wormhole-foundation/sdk-aptos-core";
 import "@wormhole-foundation/sdk-aptos-tokenbridge";
 
-import { APTOS_COIN, AptosChains, AptosPlatform } from "../../src/";
+import { APTOS_COIN, AptosChains, AptosPlatform } from './../../src/index.js';
 
 import { describe, expect, test } from "@jest/globals";
 

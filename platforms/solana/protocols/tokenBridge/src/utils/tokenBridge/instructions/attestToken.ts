@@ -4,10 +4,10 @@ import type {
   TransactionInstruction,
 } from '@solana/web3.js';
 import { PublicKey } from '@solana/web3.js';
-import { createReadOnlyTokenBridgeProgramInterface } from '../program';
+import { createReadOnlyTokenBridgeProgramInterface } from '../program.js';
 import { utils as coreUtils } from '@wormhole-foundation/sdk-solana-core';
-import { deriveSplTokenMetadataKey } from '../../splMetadata';
-import { deriveTokenBridgeConfigKey, deriveWrappedMetaKey } from '../accounts';
+import { deriveSplTokenMetadataKey } from '../../splMetadata.js';
+import { deriveTokenBridgeConfigKey, deriveWrappedMetaKey } from './../accounts/index.js';
 
 export function createAttestTokenInstruction(
   connection: Connection,

@@ -1,5 +1,5 @@
 import type { TokenId } from "@wormhole-foundation/sdk-definitions";
-import type { AttestationReceipt, TransferReceipt } from "../types";
+import type { AttestationReceipt, TransferReceipt } from '../types.js';
 import type { amount } from "@wormhole-foundation/sdk-base";
 
 // Extend Options to provide custom options

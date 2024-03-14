@@ -4,10 +4,10 @@ import {
   circleDomainItem,
   circleNonceItem,
   universalAddressItem,
-} from "../../layout-items";
+} from "./../../layout-items/index.js";
 import "./automaticCircleBridgeLayout";
-import type { NamedPayloads, RegisterPayloadTypes} from "../../vaa";
-import { registerPayloadTypes } from "../../vaa";
+import type { NamedPayloads, RegisterPayloadTypes } from "./../../vaa/index.js";
+import { registerPayloadTypes } from "./../../vaa/index.js";
 
 const messageVersionItem = { binary: "uint", size: 4, custom: 0, omit: true } as const;
 
@@ -43,7 +43,7 @@ export const circleBridgeNamedPayloads = [
 
 // factory registration:
 import "../../registry";
-declare module "../../registry" {
+declare module "../../registry.js" {
   export namespace WormholeRegistry {
     interface PayloadLiteralToLayoutMapping
       extends RegisterPayloadTypes<"CircleBridge", typeof circleBridgeNamedPayloads> {}

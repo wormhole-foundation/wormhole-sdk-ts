@@ -1,5 +1,5 @@
-import { SuiAddress } from "../../src";
-import { SUI_COIN } from "../../src/constants";
+import { SuiAddress } from './../../src/index.js';
+import { SUI_COIN } from '../../src/constants.js';
 
 describe("Sui Address Tests", () => {
   describe("Parse Address", () => {

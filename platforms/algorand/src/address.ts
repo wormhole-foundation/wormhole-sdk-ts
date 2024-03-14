@@ -2,9 +2,9 @@ import type { Address, Platform } from "@wormhole-foundation/sdk-connect";
 import { UniversalAddress, encoding, registerNative } from "@wormhole-foundation/sdk-connect";
 
 import { decodeAddress, encodeAddress, isValidAddress } from "algosdk";
-import { AlgorandPlatform } from "./platform";
-import type { AnyAlgorandAddress } from "./types";
-import { _platform, safeBigIntToNumber } from "./types";
+import { AlgorandPlatform } from './platform.js';
+import type { AnyAlgorandAddress } from './types.js';
+import { _platform, safeBigIntToNumber } from './types.js';
 
 export const AlgorandZeroAddress = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ";
 

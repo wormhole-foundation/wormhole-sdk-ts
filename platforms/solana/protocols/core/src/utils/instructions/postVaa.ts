@@ -9,12 +9,12 @@ import {
   SYSVAR_RENT_PUBKEY,
   SystemProgram,
 } from '@solana/web3.js';
-import { createReadOnlyWormholeProgramInterface } from '../program';
+import { createReadOnlyWormholeProgramInterface } from '../program.js';
 import {
   deriveWormholeBridgeDataKey,
   deriveGuardianSetKey,
   derivePostedVaaKey,
-} from '../accounts';
+} from './../accounts/index.js';
 import type { VAA } from '@wormhole-foundation/sdk-connect';
 import { serializePayload, toChainId } from '@wormhole-foundation/sdk-connect';
 import BN from 'bn.js';

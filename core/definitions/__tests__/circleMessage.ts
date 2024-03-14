@@ -1,6 +1,6 @@
 import { deserializeLayout, circle, encoding, contracts } from "@wormhole-foundation/sdk-base";
-import { UniversalAddress } from "../src";
-import { circleMessageLayout } from "../src/protocols/circleBridge";
+import { UniversalAddress } from './../src/index.js';
+import { circleMessageLayout } from './../src/protocols/circleBridge/index.js';
 
 const ethAddressToUniversal = (address: string) => {
   return new UniversalAddress("00".repeat(12) + address.slice(2));
