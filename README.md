@@ -622,4 +622,4 @@ Note: See the `router.ts` example in the examples directory for a full working e
 
 ## See also
 
-The tsdoc is available [here](https://wormhole-foundation.github.io/connect-sdk/)
+The tsdoc is available [here](https://wormhole-foundation.github.io/wormhole-sdk-ts/)
