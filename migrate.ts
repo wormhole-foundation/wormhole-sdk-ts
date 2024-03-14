@@ -53,7 +53,7 @@ function updateImportPaths(filePath: string, fileContent: string) {
 
     try {
       if (fs.statSync(path.join(path.dirname(filePath), p1)).isDirectory()) {
-        p1 = path.join(p1, "index");
+        p1 = "./" + path.join(p1, "index");
       }
     } catch (e) {
       console.error("failed to stat");
@@ -66,7 +66,6 @@ function updateImportPaths(filePath: string, fileContent: string) {
       p1 = "./index";
     }
 
-    console.log(match, `from '${p1}.js'`);
-    return `from '${p1}.js'`; // Append .js to the import path
+    return `from '${p1}.mjs'`; // Append .mjs to the import path
   });
 }
