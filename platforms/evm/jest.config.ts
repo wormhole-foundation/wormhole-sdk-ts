@@ -4,14 +4,7 @@ const jestConfig: JestConfigWithTsJest = {
   preset: 'ts-jest',
   verbose: true,
   modulePathIgnorePatterns: ['mocks'],
-  transform: {
-    '^.+\\.tsx?$': [
-      'ts-jest',
-      {
-        isolatedModules: true,
-      },
-    ],
-  },
+  transform: {},
 };
 
 export default jestConfig;

@@ -3,6 +3,8 @@
   "include": ["src"],
   "compilerOptions": {
     "outDir": "dist/esm",
-    "rootDir": "src"
+    "rootDir": "src",
+    "allowJs":true,
+    "moduleResolution": "Bundler"
   }
 }

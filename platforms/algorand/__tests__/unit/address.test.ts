@@ -1,4 +1,4 @@
-import { AlgorandAddress } from "../../src";
+import { AlgorandAddress } from "../../dist/esm/address.js";
 
 describe("Algorand Address Tests", () => {
   describe("Parse Address", () => {

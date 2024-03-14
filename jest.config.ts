@@ -1,17 +1,10 @@
-import type { JestConfigWithTsJest } from "ts-jest";
+import type { JestConfigWithTsJest } from "jest";
 
 const jestConfig: JestConfigWithTsJest = {
   preset: "ts-jest",
   verbose: true,
   modulePathIgnorePatterns: ["mocks", "helpers", "staging", "typechecks"],
-  transform: {
-    "^.+\\.tsx?$": [
-      "ts-jest",
-      {
-        isolatedModules: true,
-      },
-    ],
-  },
+  transform: {},
 };
 
 export default jestConfig;
