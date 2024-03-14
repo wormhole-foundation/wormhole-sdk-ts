@@ -1,6 +1,7 @@
 {
   "name": "@wormhole-foundation/sdk",
   "version": "0.5.0-beta.10",
+  "type":"module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -13,13 +14,12 @@
     "test": "__tests__"
   },
   "license": "Apache-2.0",
-  "main": "./dist/cjs/index.js",
-  "types": "./dist/cjs/index.d.ts",
+  "main": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
   "module": "./dist/esm/index.js",
   "author": "",
   "description": "The core package for the Connect SDK, used in conjunction with 1 or more of the chain packages",
   "files": [
-    "dist/cjs",
     "dist/esm"
   ],
   "keywords": [
@@ -34,8 +34,7 @@
   "sideEffects": false,
   "scripts": {
     "build:cjs": "tsc -p ./tsconfig.cjs.json",
-    "build:esm": "tsc -p ./tsconfig.esm.json && cp ../package.module.json ./dist/esm/package.json",
-    "build": "npm run build:cjs && npm run build:esm",
+    "build": "tsc -p ./tsconfig.esm.json",
     "rebuild": "npm run clean && npm run build",
     "clean": "rm -rf ./dist && rm -rf ./.turbo",
     "lint": "npm run prettier && eslint --fix ./src --ext .ts",
@@ -45,43 +44,43 @@
   },
   "exports": {
     ".": {
-      "require": "./dist/cjs/index.js",
+      "require": "./dist/esm/index.js",
       "import": "./dist/esm/index.js",
       "node": "./dist/esm/index.js",
       "types": "./dist/esm/index.d.ts"
     },
     "./evm": {
-      "require": "./dist/cjs/evm.js",
+      "require": "./dist/esm/evm.js",
       "import": "./dist/esm/evm.js",
       "node": "./dist/esm/evm.js",
       "types": "./dist/esm/evm.d.ts"
     },
     "./solana": {
-      "require": "./dist/cjs/solana.js",
+      "require": "./dist/esm/solana.js",
       "import": "./dist/esm/solana.js",
       "node": "./dist/esm/solana.js",
       "types": "./dist/esm/solana.d.ts"
     },
     "./cosmwasm": {
-      "require": "./dist/cjs/cosmwasm.js",
+      "require": "./dist/esm/cosmwasm.js",
       "import": "./dist/esm/cosmwasm.js",
       "node": "./dist/esm/cosmwasm.js",
       "types": "./dist/esm/cosmwasm.d.ts"
     },
     "./aptos": {
-      "require": "./dist/cjs/aptos.js",
+      "require": "./dist/esm/aptos.js",
       "import": "./dist/esm/aptos.js",
       "node": "./dist/esm/aptos.js",
       "types": "./dist/esm/aptos.d.ts"
     },
     "./sui": {
-      "require": "./dist/cjs/sui.js",
+      "require": "./dist/esm/sui.js",
       "import": "./dist/esm/sui.js",
       "node": "./dist/esm/sui.js",
       "types": "./dist/esm/sui.d.ts"
     },
     "./algorand": {
-      "require": "./dist/cjs/algorand.js",
+      "require": "./dist/esm/algorand.js",
       "import": "./dist/esm/algorand.js",
       "node": "./dist/esm/algorand.js",
       "types": "./dist/esm/algorand.d.ts"

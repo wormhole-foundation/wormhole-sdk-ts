@@ -13,9 +13,9 @@
     "test": "__tests__"
   },
   "license": "Apache-2.0",
-  "main": "./dist/cjs/index.js",
+  "main": "./dist/esm/index.js",
   "module": "./dist/esm/index.js",
-  "types": "./dist/cjs/index.d.ts",
+  "types": "./dist/esm/index.d.ts",
   "author": "",
   "description": "The core package for the Connect SDK, used in conjunction with 1 or more of the chain packages",
   "files": [
