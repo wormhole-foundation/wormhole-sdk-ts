@@ -1,6 +1,8 @@
 import fs from "fs";
 import path from "path";
 
+// Also need to find and replace `declare module ../../registry` and stand alone imports like `import "../../registry";`
+
 const rootDir = (): string => path.join(__dirname);
 
 updateImportsInWorkspaces();
