@@ -90,7 +90,7 @@ export class EvmPlatform<N extends Network>
       rpc,
       new EvmAddress(token).toString(),
     );
-    return Number(tokenContract.decimals());
+    return Number(await tokenContract.decimals());
   }
 
   static async getBalance(
