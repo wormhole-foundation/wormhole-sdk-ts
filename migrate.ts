@@ -41,31 +41,30 @@ function findTsFiles(dir: string): string[] {
 // Function to modify the import/export statements
 function updateImportPaths(filePath: string, fileContent: string) {
   return fileContent.replace(/from\s+['"]([^'"]*)['"]/g, (match, p1) => {
-    // Check if the path already has a file extension
-    if (path.extname(p1)) {
-      return match; // Skip if the import statement has an extension
-    }
-
     // Check if the path is relative
     if (!p1.startsWith(".") && !p1.startsWith("/")) {
       return match; // Skip if the import is not a relative path
     }
 
+    // TODO: clobber flag?
+    // Check if the path already has a file extension
+    if (path.extname(p1)) {
+      return match; // Skip if the import statement has an extension
+    }
+
+    const maybeDir = path.join(path.dirname(filePath), p1);
     try {
-      if (fs.statSync(path.join(path.dirname(filePath), p1)).isDirectory()) {
+      if (fs.statSync(maybeDir).isDirectory()) {
+        // path.join strips ./ from the beginning of the path
         p1 = "./" + path.join(p1, "index");
       }
     } catch (e) {
-      console.error("failed to stat");
+      console.error("failed to stat", maybeDir);
     }
 
-    if (p1.endsWith("/")) {
-      p1 += "index";
-    }
-    if (p1 === ".") {
-      p1 = "./index";
-    }
+    if (p1 === ".") p1 = "./";
+    if (p1.endsWith("/")) p1 += "index";
 
-    return `from '${p1}.mjs'`; // Append .mjs to the import path
+    return `from '${p1}.js'`; // Append .mjs to the import path
   });
 }
