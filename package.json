@@ -60,13 +60,13 @@
     "platforms/sui",
     "platforms/sui/protocols/core",
     "platforms/sui/protocols/tokenBridge",
+    "platforms/aptos",
+    "platforms/aptos/protocols/core",
+    "platforms/aptos/protocols/tokenBridge",
     "sdk",
     "examples"
   ],
   "unreleased": [
-    "tokenRegistry",
-    "platforms/aptos",
-    "platforms/aptos/protocols/core",
-    "platforms/aptos/protocols/tokenBridge"
+    "tokenRegistry"
   ]
 }

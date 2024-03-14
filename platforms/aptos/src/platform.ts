@@ -1,28 +1,28 @@
 import type {
+  Balances,
   Chain,
   ChainsConfig,
   Network,
-  StaticPlatformMethods,
-  Balances,
   SignedTx,
+  StaticPlatformMethods,
   TokenId,
   TxHash,
 } from "@wormhole-foundation/sdk-connect";
 import {
   PlatformContext,
   Wormhole,
-  isNative,
-  networkPlatformConfigs,
   chainToPlatform,
+  isNative,
   nativeChainIds,
   decimals as nativeDecimals,
+  networkPlatformConfigs,
 } from "@wormhole-foundation/sdk-connect";
 import { AptosClient } from "aptos";
 import { AptosChain } from "./chain";
 import type { AptosChains, AptosPlatformType } from "./types";
 import { _platform } from "./types";
 
-import { CoinClient, Types } from "aptos";
+import { CoinClient } from "aptos";
 import { AptosAddress } from "./address";
 import { APTOS_COIN, APTOS_SEPARATOR } from "./constants";
 import type { AnyAptosAddress } from "./types";
@@ -101,10 +101,7 @@ export class AptosPlatform<N extends Network>
       });
       return balance;
     } catch (e: any) {
-      if (
-        (e instanceof Types.ApiError || e.errorCode === "resource_not_found") &&
-        e.status === 404
-      ) {
+      if (e.errorCode === "resource_not_found" && e.status === 404) {
         return null;
       }
       throw e;
