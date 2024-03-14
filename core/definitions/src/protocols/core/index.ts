@@ -1,2 +1,2 @@
-export * from "./core";
+export {WormholeCore} from "./core";
 export * from "./governanceLayout";

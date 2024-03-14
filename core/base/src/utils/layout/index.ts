@@ -22,5 +22,5 @@ export { layoutDiscriminator } from "./discriminate";
 export type { CustomizableBytes } from './utils';
 export { isLayout, isLayoutItem, customizableBytes } from "./utils";
 
-export * from "./size";
-export * from "./items";
+export {calcStaticLayoutSize, calcLayoutSize} from "./size";
+export {Bitset, BitsetItem, bitsetItem} from "./items";

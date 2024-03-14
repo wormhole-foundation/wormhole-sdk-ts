@@ -4,4 +4,4 @@ import { CosmwasmTokenBridge } from "./tokenBridge";
 
 registerProtocol(_platform, "TokenBridge", CosmwasmTokenBridge);
 
-export * from "./tokenBridge";
+export {CosmwasmTokenBridge} from "./tokenBridge";

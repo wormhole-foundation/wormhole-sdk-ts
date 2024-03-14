@@ -4,4 +4,4 @@ import { SuiWormholeCore } from "./core";
 
 registerProtocol(_platform, "WormholeCore", SuiWormholeCore);
 
-export * from "./core";
+export {SuiWormholeCore} from "./core";

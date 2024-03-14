@@ -4,4 +4,4 @@ import { AlgorandTokenBridge } from "./tokenBridge";
 
 registerProtocol(_platform, "TokenBridge", AlgorandTokenBridge);
 
-export * from "./tokenBridge";
+export {TransferMethodSelector, AlgorandTokenBridge} from "./tokenBridge";

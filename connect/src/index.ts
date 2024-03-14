@@ -1,7 +1,7 @@
-export * from "./wormhole";
-export * from "./config";
-export * from "./common";
-export * from "./types";
+export {Wormhole} from "./wormhole";
+export {networkPlatformConfigs, applyOverrides, DEFAULT_TASK_TIMEOUT, WormholeConfig, ConfigOverrides, CONFIG, DEFAULT_NETWORK} from "./config";
+export {signSendWait} from "./common";
+export {isSourceInitiated, isSourceFinalized, isAttested, isCompleted, isFailed, TransferState, AttestationReceipt, CreatedTransferReceipt, SourceInitiatedTransferReceipt, SourceFinalizedTransferReceipt, AttestedTransferReceipt, CompletedTransferReceipt, FailedTransferReceipt, TransferReceipt, TransferQuote} from "./types";
 
 export * from "./protocols/wormholeTransfer";
 export * from "./protocols/tokenTransfer";

@@ -89,8 +89,13 @@ function identifyWorkspaces(directoryPath: string) {
   const packageFile = fs.readFileSync(path.join(directoryPath, "package.json"), "utf8");
   const packageJson = JSON.parse(packageFile);
   for (const ws of packageJson.workspaces) {
+    console.log("Working on: ", ws);
     updateExportStatements(path.join(directoryPath, ws, "src"));
   }
 }
 
-identifyWorkspaces("/home/ben/connect-sdk");
+function rootDir(): string {
+  return path.join(__dirname);
+}
+
+identifyWorkspaces(rootDir());

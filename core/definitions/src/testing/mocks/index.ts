@@ -1,4 +1,4 @@
-export * from "./api";
-export * from "./chain";
-export * from "./platform";
-export * from "./tokenBridge";
+export {MockApi} from "./api";
+export {chainFactory, MockChain} from "./chain";
+export {mockPlatformFactory, MockPlatform} from "./platform";
+export {MockTokenBridge} from "./tokenBridge";

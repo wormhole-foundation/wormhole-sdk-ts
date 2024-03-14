@@ -4,5 +4,5 @@ import { SuiTokenBridge } from "./tokenBridge";
 
 registerProtocol(_platform, "TokenBridge", SuiTokenBridge);
 
-export * from "./tokenBridge";
-export * from "./utils";
+export {SuiTokenBridge} from "./tokenBridge";
+export {getTokenFromTokenRegistry, getTokenCoinType} from "./utils";
