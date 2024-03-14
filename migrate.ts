@@ -19,7 +19,7 @@ function updateImportsInWorkspaces() {
 function updateTsFilesInDirectory(workspaceDir: string) {
   findTsFiles(workspaceDir).forEach((file) => {
     const content = fs.readFileSync(file, "utf8");
-    const updatedContent = updateImportPaths(content);
+    const updatedContent = updateImportPaths(file, content);
     fs.writeFileSync(file, updatedContent, "utf8");
   });
 }
