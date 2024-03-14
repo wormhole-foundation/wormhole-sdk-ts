@@ -18,22 +18,9 @@ function updateImportsInWorkspaces() {
 
 function updateTsFilesInDirectory(workspaceDir: string) {
   findTsFiles(workspaceDir).forEach((file) => {
-    fs.readFile(file, "utf8", (err, data) => {
-      if (err) {
-        console.error(`Error reading file ${file}:`, err);
-        return;
-      }
-
-      const updatedContent = updateImportPaths(data);
-
-      //fs.writeFile(file, updatedContent, "utf8", (err) => {
-      //  if (err) {
-      //    console.error(`Error writing file ${file}:`, err);
-      //  } else {
-      //    //console.log(`Updated file: ${file}`);
-      //  }
-      //});
-    });
+    const content = fs.readFileSync(file, "utf8");
+    const updatedContent = updateImportPaths(content);
+    fs.writeFileSync(file, updatedContent, "utf8");
   });
 }
 
@@ -52,7 +39,7 @@ function findTsFiles(dir: string): string[] {
 }
 
 // Function to modify the import/export statements
-function updateImportPaths(fileContent: string) {
+function updateImportPaths(filePath: string, fileContent: string) {
   return fileContent.replace(/from\s+['"]([^'"]*)['"]/g, (match, p1) => {
     // Check if the path already has a file extension
     if (path.extname(p1)) {
@@ -62,6 +49,14 @@ function updateImportPaths(fileContent: string) {
     // Check if the path is relative
     if (!p1.startsWith(".") && !p1.startsWith("/")) {
       return match; // Skip if the import is not a relative path
+    }
+
+    try {
+      if (fs.statSync(path.join(path.dirname(filePath), p1)).isDirectory()) {
+        p1 = path.join(p1, "index");
+      }
+    } catch (e) {
+      console.error("failed to stat");
     }
 
     if (p1.endsWith("/")) {
