@@ -67,7 +67,10 @@ function updateExportStatements(directoryPath: string) {
   const index = contents.find(
     (filePath) => fs.statSync(filePath).isFile() && path.basename(filePath) === "index.ts",
   );
-  if (!index || !fs.statSync(index).isFile() || path.basename(index) !== "index.ts") return;
+  if (!index || !fs.statSync(index).isFile() || path.basename(index) !== "index.ts") {
+    console.log("No index.ts file found in", directoryPath);
+    return;
+  }
 
   // Only update index.ts exports directly
   let fileContent = fs.readFileSync(index, "utf8");
@@ -89,7 +92,7 @@ function identifyWorkspaces(directoryPath: string) {
   const packageFile = fs.readFileSync(path.join(directoryPath, "package.json"), "utf8");
   const packageJson = JSON.parse(packageFile);
   for (const ws of packageJson.workspaces) {
-    console.log("Working on: ", ws);
+    console.log("Working on", ws);
     updateExportStatements(path.join(directoryPath, ws, "src"));
   }
 }
