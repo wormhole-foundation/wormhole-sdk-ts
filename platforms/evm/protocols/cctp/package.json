@@ -1,7 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-evm-cctp",
   "version": "0.5.0-beta.10",
-  
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -54,5 +53,6 @@
     "typechain": "^8.2.0",
     "ethers": "^6.5.1",
     "@typechain/ethers-v6": "^0.4.0"
-  }
+  },
+  "type": "module"
 }

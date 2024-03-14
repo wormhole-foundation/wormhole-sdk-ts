@@ -1,9 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "module": "ES2022",
-    "moduleResolution": "NodeNext",
-    "allowSyntheticDefaultImports": true,
-    "verbatimModuleSyntax": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler"
   }
 }

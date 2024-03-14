@@ -18,7 +18,7 @@
   "types": "./dist/esm/index.d.ts",
   "description": "SDK for Solana, used in conjunction with @wormhole-foundation/sdk",
   "files": [
-        "dist/esm"
+    "dist/esm"
   ],
   "keywords": [
     "wormhole",
@@ -34,7 +34,7 @@
   "scripts": {
     "build:cjs": "tsc -p ./tsconfig.cjs.json",
     "build": "tsc -p ./tsconfig.esm.json",
-     "rebuild": "npm run clean && npm run build",
+    "rebuild": "npm run clean && npm run build",
     "test": "jest --config ./jest.config.ts",
     "clean": "rm -rf ./dist && rm -rf ./.turbo",
     "lint": "npm run prettier && eslint --fix ./src --ext .ts",
@@ -50,5 +50,6 @@
     "@project-serum/borsh": "0.2.5",
     "@solana/spl-token": "0.3.9",
     "@solana/web3.js": "1.89.1"
-  }
+  },
+  "type": "module"
 }

@@ -57,9 +57,6 @@
     "platforms/algorand",
     "platforms/algorand/protocols/core",
     "platforms/algorand/protocols/tokenBridge",
-    "platforms/aptos",
-    "platforms/aptos/protocols/core",
-    "platforms/aptos/protocols/tokenBridge",
     "platforms/sui",
     "platforms/sui/protocols/core",
     "platforms/sui/protocols/tokenBridge",
@@ -67,6 +64,9 @@
     "examples"
   ],
   "unreleased": [
-    "tokenRegistry"
+    "tokenRegistry",
+    "platforms/aptos",
+    "platforms/aptos/protocols/core",
+    "platforms/aptos/protocols/tokenBridge"
   ]
 }

@@ -19,6 +19,8 @@ function updateVersionInPackageJson(dirPath: string, version: string) {
       }),
     );
 
+  packageJson.type = "module";
+
   fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
 }
 

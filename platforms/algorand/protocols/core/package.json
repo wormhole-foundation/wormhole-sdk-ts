@@ -1,7 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-algorand-core",
   "version": "0.5.0-beta.10",
-  
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -35,7 +34,6 @@
   "scripts": {
     "build:cjs": "tsc -p ./tsconfig.cjs.json",
     "build": "tsc -p ./tsconfig.esm.json",
-    
     "rebuild": "npm run clean && npm run build",
     "clean": "rm -rf ./dist && rm -rf ./.turbo",
     "lint": "npm run prettier && eslint --fix ./src --ext .ts",
@@ -44,5 +42,6 @@
   "dependencies": {
     "@wormhole-foundation/sdk-connect": "0.5.0-beta.10",
     "@wormhole-foundation/sdk-algorand": "0.5.0-beta.10"
-  }
+  },
+  "type": "module"
 }

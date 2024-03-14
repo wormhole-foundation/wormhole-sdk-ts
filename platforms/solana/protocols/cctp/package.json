@@ -1,6 +1,5 @@
 {
   "name": "@wormhole-foundation/sdk-solana-cctp",
-  
   "version": "0.5.0-beta.10",
   "repository": {
     "type": "git",
@@ -38,7 +37,6 @@
   "scripts": {
     "build:cjs": "tsc -p ./tsconfig.cjs.json",
     "build": "tsc -p ./tsconfig.esm.json",
-    
     "rebuild": "npm run clean && npm run build",
     "clean": "rm -rf ./dist && rm -rf ./.turbo",
     "lint": "npm run prettier && eslint --fix ./src --ext .ts",
@@ -56,5 +54,6 @@
     "@project-serum/borsh": "0.2.5",
     "@solana/spl-token": "0.3.9",
     "@solana/web3.js": "1.89.1"
-  }
+  },
+  "type": "module"
 }

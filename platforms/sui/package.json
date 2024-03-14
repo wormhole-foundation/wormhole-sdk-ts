@@ -1,7 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-sui",
   "version": "0.5.0-beta.10",
-  
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -43,5 +42,6 @@
   "dependencies": {
     "@wormhole-foundation/sdk-connect": "0.5.0-beta.10",
     "@mysten/sui.js": "^0.50.1"
-  }
+  },
+  "type": "module"
 }
