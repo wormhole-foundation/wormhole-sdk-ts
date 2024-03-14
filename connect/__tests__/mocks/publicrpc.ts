@@ -1,3 +1,4 @@
+import { jest } from "@jest/globals";
 const vaaBytes =
   "AQAAAAABAFF+Nf18NSYNieW1ScgE+mB8aQwT38tJfMhfcP9tpIvINkjrdoXQHDRdFvBoLU0e9ubPDXCJ5cfstpBv7Oa/WecAZSV4BAAAAAAACGJB/9wDK2k7+4VEhY8EA97Iby4XIK+fNPjWX+V0tiOMAAAAAAAAF2EAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADJ6zttAAAAAAAAAAAAAAAAu98b+5NUusWMNKhaKUmCvK8+XJwAAgAAAAAAAAAAAAAAAIVCzopf6Qwm6UA2xnYjuVOvQ+dyAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==";
 const sucessfulResponse = {
@@ -16,24 +17,29 @@ const notFoundResponse = {
   },
 };
 
+// @ts-ignore
 let nextGet: jest.Mock = jest.fn().mockResolvedValue(sucessfulResponse);
 
 jest.mock("axios", () => {
   const actualAxios = jest.requireActual("axios");
 
   return {
+    //@ts-ignore
     ...actualAxios,
     get: () => nextGet(),
   };
 });
 
 export const givenSignedVaaNotFound = () => {
+  //@ts-ignore
   nextGet = jest.fn().mockRejectedValue(notFoundResponse);
 };
 
 export const givenSignedVaaRequestWorksAfterRetry = () => {
   nextGet = jest
     .fn()
+    //@ts-ignore
     .mockRejectedValueOnce(notFoundResponse)
+    //@ts-ignore
     .mockResolvedValueOnce(sucessfulResponse);
 };

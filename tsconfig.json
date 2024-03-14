@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
     "target": "ESNext",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "types": ["mocha", "chai", "node", "jest"],
     "esModuleInterop": true,
     "strict": true,

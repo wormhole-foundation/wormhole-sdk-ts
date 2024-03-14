@@ -1,11 +1,11 @@
-import * as publicRpcMock from './mocks/publicrpc.js'; // Should be first
+import * as publicRpcMock from "./mocks/publicrpc.js"; // Should be first
 
 import { describe, expect, test } from "@jest/globals";
 import { Platform, platform } from "@wormhole-foundation/sdk-base";
 import { ChainContext, PlatformContext, RpcConnection } from "@wormhole-foundation/sdk-definitions";
 
 import { mocks, utils } from "@wormhole-foundation/sdk-definitions/testing";
-import { Wormhole, networkPlatformConfigs } from './../src/index.js';
+import { Wormhole, networkPlatformConfigs } from "./../src/index.js";
 
 const network: "Testnet" = "Testnet";
 type TNet = typeof network;
