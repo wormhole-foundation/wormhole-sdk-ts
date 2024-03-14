@@ -7,8 +7,8 @@ import type {
 } from "@wormhole-foundation/sdk-connect";
 import type { Account, Algodv2 } from "algosdk";
 import { assignGroupID, mnemonicToSecretKey } from "algosdk";
-import type { AlgorandChains, TransactionSignerPair } from './types.js';
-import { AlgorandPlatform } from './platform.js';
+import type { AlgorandChains, TransactionSignerPair } from "./types.js";
+import { AlgorandPlatform } from "./platform.js";
 
 export async function getAlgorandSigner(
   rpc: Algodv2,

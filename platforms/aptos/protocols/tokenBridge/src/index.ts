@@ -1,7 +1,7 @@
 import { registerProtocol } from "@wormhole-foundation/sdk-connect";
-import { AptosTokenBridge } from './tokenBridge.js';
+import { AptosTokenBridge } from "./tokenBridge.js";
 
 registerProtocol("Aptos", "TokenBridge", AptosTokenBridge);
 
-export {AptosTokenBridge} from './tokenBridge.js';
-export {TokenBridgeState, OriginInfo, CreateTokenDataEvent, DepositEvent} from './types.js';
+export { AptosTokenBridge } from "./tokenBridge.js";
+export type { TokenBridgeState, OriginInfo, CreateTokenDataEvent, DepositEvent } from "./types.js";

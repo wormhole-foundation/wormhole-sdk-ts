@@ -1,4 +1,4 @@
-import type { VAA } from './../../index.js';
+import type { VAA } from "./../../index.js";
 
 export class MockApi {
   constructor(readonly url: string) {}

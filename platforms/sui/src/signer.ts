@@ -7,9 +7,9 @@ import type {
   TxHash,
   UnsignedTransaction,
 } from "@wormhole-foundation/sdk-connect";
-import { SuiPlatform } from './platform.js';
-import type { SuiChains } from './types.js';
-import type { SuiUnsignedTransaction } from './unsignedTransaction.js';
+import { SuiPlatform } from "./platform.js";
+import type { SuiChains } from "./types.js";
+import type { SuiUnsignedTransaction } from "./unsignedTransaction.js";
 
 export async function getSuiSigner(rpc: SuiClient, privateKey: string): Promise<Signer> {
   const [, chain] = await SuiPlatform.chainFromRpc(rpc);

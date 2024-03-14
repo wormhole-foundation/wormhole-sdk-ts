@@ -7,24 +7,24 @@ import type {
   TokenTransferDetails,
   TransactionId,
 } from "@wormhole-foundation/sdk-definitions";
-import type { TokenTransferVAA } from '../../protocols/tokenTransfer.js';
-import { TokenTransfer } from '../../protocols/tokenTransfer.js';
+import type { TokenTransferVAA } from "../../protocols/tokenTransfer.js";
+import { TokenTransfer } from "../../protocols/tokenTransfer.js";
 import type {
   AttestationReceipt,
   SourceInitiatedTransferReceipt,
   TransferReceipt,
-} from '../../types.js';
-import { TransferState, isAttested } from '../../types.js';
-import { Wormhole } from '../../wormhole.js';
-import type { StaticRouteMethods } from '../route.js';
-import { ManualRoute } from '../route.js';
+} from "../../types.js";
+import { TransferState, isAttested } from "../../types.js";
+import { Wormhole } from "../../wormhole.js";
+import type { StaticRouteMethods } from "../route.js";
+import { ManualRoute } from "../route.js";
 import type {
   Quote,
   QuoteResult,
   TransferParams,
   ValidatedTransferParams,
   ValidationResult,
-} from '../types.js';
+} from "../types.js";
 
 export namespace TokenBridgeRoute {
   export type Options = {

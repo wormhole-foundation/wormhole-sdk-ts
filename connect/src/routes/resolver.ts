@@ -5,12 +5,12 @@ import {
   isNative,
   resolveWrappedToken,
 } from "@wormhole-foundation/sdk-definitions";
-import type { Wormhole } from '../wormhole.js';
-import type { RouteTransferRequest } from './request.js';
-import type { Route, RouteConstructor } from './route.js';
-import { isAutomatic } from './route.js';
-import { uniqueTokens } from './token.js';
-import type { Options, Receipt, ValidatedTransferParams } from './types.js';
+import type { Wormhole } from "../wormhole.js";
+import type { RouteTransferRequest } from "./request.js";
+import type { Route, RouteConstructor } from "./route.js";
+import { isAutomatic } from "./route.js";
+import { uniqueTokens } from "./token.js";
+import type { Options, Receipt, ValidatedTransferParams } from "./types.js";
 
 export class RouteResolver<N extends Network> {
   wh: Wormhole<N>;

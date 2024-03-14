@@ -1,19 +1,19 @@
 import type { Chain, ChainToPlatform, Network, Platform } from "@wormhole-foundation/sdk-base";
 import { tokens } from "@wormhole-foundation/sdk-base";
-import type { ChainAddress, UniversalOrNative } from './address.js';
-import { toNative } from './address.js';
-import type { WormholeMessageId } from './attestation.js';
-import type { PlatformContext } from './platform.js';
-import type { ProtocolName } from './protocol.js';
-import { protocolIsRegistered } from './protocol.js';
-import type { AutomaticCircleBridge, CircleBridge } from './protocols/circleBridge/circleBridge.js';
-import type { WormholeCore } from './protocols/core/core.js';
-import type { IbcBridge } from './protocols/ibc/ibc.js';
-import type { PorticoBridge } from './protocols/portico/portico.js';
-import type { AutomaticTokenBridge, TokenBridge } from './protocols/tokenBridge/tokenBridge.js';
-import type { RpcConnection } from './rpc.js';
-import type { ChainConfig, SignedTx, TokenAddress, TokenId } from './types.js';
-import { canonicalAddress, isNative } from './types.js';
+import type { ChainAddress, UniversalOrNative } from "./address.js";
+import { toNative } from "./address.js";
+import type { WormholeMessageId } from "./attestation.js";
+import type { PlatformContext } from "./platform.js";
+import type { ProtocolName } from "./protocol.js";
+import { protocolIsRegistered } from "./protocol.js";
+import type { AutomaticCircleBridge, CircleBridge } from "./protocols/circleBridge/circleBridge.js";
+import type { WormholeCore } from "./protocols/core/core.js";
+import type { IbcBridge } from "./protocols/ibc/ibc.js";
+import type { PorticoBridge } from "./protocols/portico/portico.js";
+import type { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge/tokenBridge.js";
+import type { RpcConnection } from "./rpc.js";
+import type { ChainConfig, SignedTx, TokenAddress, TokenId } from "./types.js";
+import { canonicalAddress, isNative } from "./types.js";
 
 /**
  * A ChainContext provides a consistent interface for interacting with a chain.

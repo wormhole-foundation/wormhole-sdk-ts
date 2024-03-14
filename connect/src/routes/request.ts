@@ -1,11 +1,11 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
 import { amount } from "@wormhole-foundation/sdk-base";
 import type { ChainAddress, ChainContext, TokenId } from "@wormhole-foundation/sdk-definitions";
-import type { TransferQuote } from '../types.js';
-import type { Wormhole } from '../wormhole.js';
-import type { TokenDetails } from './token.js';
-import { getTokenDetails } from './token.js';
-import type { Quote, ValidatedTransferParams } from './types.js';
+import type { TransferQuote } from "../types.js";
+import type { Wormhole } from "../wormhole.js";
+import type { TokenDetails } from "./token.js";
+import { getTokenDetails } from "./token.js";
+import type { Quote, ValidatedTransferParams } from "./types.js";
 
 export class RouteTransferRequest<N extends Network> {
   from: ChainAddress;

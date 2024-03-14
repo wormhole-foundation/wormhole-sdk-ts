@@ -19,12 +19,12 @@ import {
 } from "@wormhole-foundation/sdk-connect";
 
 import { SuiClient } from "@mysten/sui.js/client";
-import { SuiAddress } from './address.js';
-import { SuiChain } from './chain.js';
-import { SUI_COIN } from './constants.js';
-import type { AnySuiAddress, SuiChains, SuiPlatformType } from './types.js';
-import { _platform } from './types.js';
-import { getObjectFields } from './utils.js';
+import { SuiAddress } from "./address.js";
+import { SuiChain } from "./chain.js";
+import { SUI_COIN } from "./constants.js";
+import type { AnySuiAddress, SuiChains, SuiPlatformType } from "./types.js";
+import { _platform } from "./types.js";
+import { getObjectFields } from "./utils.js";
 
 /**
  * @category Sui

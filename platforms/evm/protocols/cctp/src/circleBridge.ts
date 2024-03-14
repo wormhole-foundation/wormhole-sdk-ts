@@ -14,7 +14,10 @@ import {
   nativeChainIds,
 } from '@wormhole-foundation/sdk-connect';
 
-import type { MessageTransmitter, TokenMessenger } from './ethers-contracts/index.js';
+import type {
+  MessageTransmitter,
+  TokenMessenger,
+} from './ethers-contracts/index.js';
 
 import type { EvmChains } from '@wormhole-foundation/sdk-evm';
 import {

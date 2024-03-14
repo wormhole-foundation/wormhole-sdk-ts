@@ -7,11 +7,11 @@ import type {
   TokenId,
 } from "@wormhole-foundation/sdk-definitions";
 import { nativeTokenId } from "@wormhole-foundation/sdk-definitions";
-import type { CircleAttestationReceipt } from '../../protocols/cctpTransfer.js';
-import { CircleTransfer } from '../../protocols/cctpTransfer.js';
-import { TransferState } from '../../types.js';
-import type { StaticRouteMethods } from '../route.js';
-import { AutomaticRoute } from '../route.js';
+import type { CircleAttestationReceipt } from "../../protocols/cctpTransfer.js";
+import { CircleTransfer } from "../../protocols/cctpTransfer.js";
+import { TransferState } from "../../types.js";
+import type { StaticRouteMethods } from "../route.js";
+import { AutomaticRoute } from "../route.js";
 import type {
   Quote,
   QuoteResult,
@@ -19,8 +19,8 @@ import type {
   TransferParams,
   ValidatedTransferParams,
   ValidationResult,
-} from '../types.js';
-import { Wormhole } from '../../wormhole.js';
+} from "../types.js";
+import { Wormhole } from "../../wormhole.js";
 
 export namespace AutomaticCCTPRoute {
   export type Options = {

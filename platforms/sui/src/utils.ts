@@ -4,14 +4,14 @@ import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { isValidSuiAddress, normalizeSuiAddress, normalizeSuiObjectId } from "@mysten/sui.js/utils";
 
 import { encoding } from "@wormhole-foundation/sdk-connect";
-import type { SuiBuildOutput } from './types.js';
+import type { SuiBuildOutput } from "./types.js";
 import {
   getFieldsFromObjectResponse,
   isMoveStructObject,
   isMoveStructStruct,
   isSameType,
-} from './types.js';
-import { getPackageIdFromType, normalizeSuiType } from './address.js';
+} from "./types.js";
+import { getPackageIdFromType, normalizeSuiType } from "./address.js";
 
 export const UPGRADE_CAP_TYPE = "0x2::package::UpgradeCap";
 

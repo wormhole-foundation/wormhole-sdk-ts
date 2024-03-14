@@ -7,10 +7,10 @@ import type {
   RpcConnection,
   TokenAddress,
   TokenId,
-} from './../../index.js';
-import { PlatformContext } from './../../index.js';
-import { MockChain } from './chain.js';
-import { MockRpc } from './rpc.js';
+} from "./../../index.js";
+import { PlatformContext } from "./../../index.js";
+import { MockChain } from "./chain.js";
+import { MockRpc } from "./rpc.js";
 
 export function mockPlatformFactory<N extends Network, P extends Platform>(
   platform: P,

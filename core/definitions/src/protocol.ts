@@ -1,8 +1,8 @@
 import type { Chain, Network, Platform } from "@wormhole-foundation/sdk-base";
 import { chainToPlatform, isChain } from "@wormhole-foundation/sdk-base";
-import type { RpcConnection } from './rpc.js';
-import type { ChainsConfig } from './types.js';
-import type { WormholeRegistry } from './registry.js';
+import type { RpcConnection } from "./rpc.js";
+import type { ChainsConfig } from "./types.js";
+import type { WormholeRegistry } from "./registry.js";
 
 /** A string type representing the name of a protocol */
 export type ProtocolName = keyof WormholeRegistry.ProtocolToPlatformMapping;

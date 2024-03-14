@@ -1,2 +1,3 @@
 export {NTT} from './ntt.js';
-export {trimmedAmountLayout, TrimmedAmount, Prefix, nativeTokenTransferLayout, NativeTokenTransfer, transceiverMessageLayout, TransceiverMessage, nttManagerMessageLayout, NttManagerMessage, wormholeTransceiverMessageLayout, WormholeTransceiverMessage, nttNamedPayloads} from './nttLayout.js';
+export type { TrimmedAmount, Prefix, NativeTokenTransfer, TransceiverMessage, NttManagerMessage, WormholeTransceiverMessage } from './nttLayout.js';
+export { trimmedAmountLayout, nativeTokenTransferLayout, transceiverMessageLayout, nttManagerMessageLayout, wormholeTransceiverMessageLayout, nttNamedPayloads } from './nttLayout.js';

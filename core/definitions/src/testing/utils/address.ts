@@ -6,8 +6,8 @@ import {
   platformToChains,
 } from "@wormhole-foundation/sdk-base";
 import crypto from "crypto";
-import type { ChainAddress, NativeAddress } from './../../index.js';
-import { UniversalAddress, toNative } from './../../index.js';
+import type { ChainAddress, NativeAddress } from "./../../index.js";
+import { UniversalAddress, toNative } from "./../../index.js";
 
 // return a random buffer of length n
 function randomBytes(n: number): Uint8Array {

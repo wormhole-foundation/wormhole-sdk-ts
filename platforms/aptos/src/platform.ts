@@ -18,14 +18,14 @@ import {
   networkPlatformConfigs,
 } from "@wormhole-foundation/sdk-connect";
 import { AptosClient } from "aptos";
-import { AptosChain } from './chain.js';
-import type { AptosChains, AptosPlatformType } from './types.js';
-import { _platform } from './types.js';
+import { AptosChain } from "./chain.js";
+import type { AptosChains, AptosPlatformType } from "./types.js";
+import { _platform } from "./types.js";
 
 import { CoinClient } from "aptos";
-import { AptosAddress } from './address.js';
-import { APTOS_COIN, APTOS_SEPARATOR } from './constants.js';
-import type { AnyAptosAddress } from './types.js';
+import { AptosAddress } from "./address.js";
+import { APTOS_COIN, APTOS_SEPARATOR } from "./constants.js";
+import type { AnyAptosAddress } from "./types.js";
 
 /**
  * @category Aptos

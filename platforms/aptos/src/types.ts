@@ -1,5 +1,5 @@
 import type { PlatformToChains, UniversalOrNative } from "@wormhole-foundation/sdk-connect";
-import { APTOS_SEPARATOR } from './constants.js';
+import { APTOS_SEPARATOR } from "./constants.js";
 
 export const unusedNonce = 0;
 export const unusedArbiterFee = 0n;

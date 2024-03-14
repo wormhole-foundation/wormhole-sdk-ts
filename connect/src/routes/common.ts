@@ -1,9 +1,9 @@
 import type { Network } from "@wormhole-foundation/sdk-base";
 import type { Signer } from "@wormhole-foundation/sdk-definitions";
-import type { Receipt } from './types.js';
-import type { Route } from './route.js';
-import { isManual } from './route.js';
-import { TransferState, isAttested, isCompleted } from '../types.js';
+import type { Receipt } from "./types.js";
+import type { Route } from "./route.js";
+import { isManual } from "./route.js";
+import { TransferState, isAttested, isCompleted } from "../types.js";
 
 /**
  * track the transfer until the destination is initiated

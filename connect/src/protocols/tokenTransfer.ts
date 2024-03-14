@@ -25,8 +25,8 @@ import {
   toUniversal,
   universalAddress,
 } from "@wormhole-foundation/sdk-definitions";
-import { signSendWait } from '../common.js';
-import { DEFAULT_TASK_TIMEOUT } from '../config.js';
+import { signSendWait } from "../common.js";
+import { DEFAULT_TASK_TIMEOUT } from "../config.js";
 import type {
   AttestationReceipt,
   AttestedTransferReceipt,
@@ -35,11 +35,11 @@ import type {
   SourceInitiatedTransferReceipt,
   TransferQuote,
   TransferReceipt,
-} from '../types.js';
-import { TransferState, isAttested, isSourceFinalized, isSourceInitiated } from '../types.js';
-import { getGovernedTokens, getGovernorLimits } from '../whscan-api.js';
-import { Wormhole } from '../wormhole.js';
-import type { WormholeTransfer } from './wormholeTransfer.js';
+} from "../types.js";
+import { TransferState, isAttested, isSourceFinalized, isSourceInitiated } from "../types.js";
+import { getGovernedTokens, getGovernorLimits } from "../whscan-api.js";
+import { Wormhole } from "../wormhole.js";
+import type { WormholeTransfer } from "./wormholeTransfer.js";
 
 export type TokenTransferProtocol = "TokenBridge" | "AutomaticTokenBridge";
 export type TokenTransferVAA = TokenBridge.TransferVAA | AutomaticTokenBridge.VAA;

@@ -17,10 +17,10 @@ import {
   toChainId,
   tokens,
 } from "@wormhole-foundation/sdk-base";
-import type { ChainAddress, UniversalOrNative } from './address.js';
-import { toNative } from './address.js';
-import type { Contracts } from './contracts.js';
-import { getContracts } from './contracts.js';
+import type { ChainAddress, UniversalOrNative } from "./address.js";
+import { toNative } from "./address.js";
+import type { Contracts } from "./contracts.js";
+import { getContracts } from "./contracts.js";
 
 /** Alias for string, used to look up transaction details */
 export type TxHash = string;

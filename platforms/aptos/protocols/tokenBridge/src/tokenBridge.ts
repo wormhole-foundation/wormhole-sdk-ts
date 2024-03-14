@@ -33,8 +33,8 @@ import {
   isValidAptosType,
 } from "@wormhole-foundation/sdk-aptos";
 import type { AptosClient, Types } from "aptos";
-import { serializeForeignAddressSeeds } from './foreignAddress.js';
-import type { OriginInfo, TokenBridgeState } from './types.js';
+import { serializeForeignAddressSeeds } from "./foreignAddress.js";
+import type { OriginInfo, TokenBridgeState } from "./types.js";
 
 export class AptosTokenBridge<N extends Network, C extends AptosChains>
   implements TokenBridge<N, C>

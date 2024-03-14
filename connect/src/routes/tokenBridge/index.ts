@@ -1,2 +1,2 @@
-export {AutomaticTokenBridgeRoute} from './automatic.js';
-export {TokenBridgeRoute} from './manual.js';
+export { AutomaticTokenBridgeRoute } from "./automatic.js";
+export { TokenBridgeRoute } from "./manual.js";

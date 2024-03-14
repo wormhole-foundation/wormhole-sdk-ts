@@ -49,7 +49,7 @@ import {
   trimSuiType,
   uint8ArrayToBCS,
 } from "@wormhole-foundation/sdk-sui";
-import { getTokenCoinType, getTokenFromTokenRegistry } from './utils.js';
+import { getTokenCoinType, getTokenFromTokenRegistry } from "./utils.js";
 
 import "@wormhole-foundation/sdk-sui-core";
 

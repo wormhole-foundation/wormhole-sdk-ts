@@ -1,2 +1,2 @@
-export {Relayer} from './relayer.js';
+export type {Relayer} from './relayer.js';
 export {deviveryInstructionLayout} from './relayerLayout.js';

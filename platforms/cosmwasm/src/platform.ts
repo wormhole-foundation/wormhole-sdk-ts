@@ -19,18 +19,18 @@ import {
   networkPlatformConfigs,
 } from "@wormhole-foundation/sdk-connect";
 
-import { CosmwasmChain } from './chain.js';
-import type { IbcChannels } from './constants.js';
-import { chainToNativeDenoms, networkChainToChannels } from './constants.js';
-import type { CosmwasmChains, CosmwasmPlatformType } from './types.js';
-import { _platform } from './types.js';
+import { CosmwasmChain } from "./chain.js";
+import type { IbcChannels } from "./constants.js";
+import { chainToNativeDenoms, networkChainToChannels } from "./constants.js";
+import type { CosmwasmChains, CosmwasmPlatformType } from "./types.js";
+import { _platform } from "./types.js";
 
 import type { Balances, TokenId } from "@wormhole-foundation/sdk-connect";
 import { chainToPlatform } from "@wormhole-foundation/sdk-connect";
-import { CosmwasmAddress } from './address.js';
-import { IBC_TRANSFER_PORT } from './constants.js';
-import type { AnyCosmwasmAddress } from './types.js';
-import { Gateway } from './gateway.js';
+import { CosmwasmAddress } from "./address.js";
+import { IBC_TRANSFER_PORT } from "./constants.js";
+import type { AnyCosmwasmAddress } from "./types.js";
+import { Gateway } from "./gateway.js";
 
 /**
  * @category Cosmwasm

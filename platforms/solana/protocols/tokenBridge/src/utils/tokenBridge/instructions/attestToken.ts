@@ -7,7 +7,10 @@ import { PublicKey } from '@solana/web3.js';
 import { createReadOnlyTokenBridgeProgramInterface } from '../program.js';
 import { utils as coreUtils } from '@wormhole-foundation/sdk-solana-core';
 import { deriveSplTokenMetadataKey } from '../../splMetadata.js';
-import { deriveTokenBridgeConfigKey, deriveWrappedMetaKey } from './../accounts/index.js';
+import {
+  deriveTokenBridgeConfigKey,
+  deriveWrappedMetaKey,
+} from './../accounts/index.js';
 
 export function createAttestTokenInstruction(
   connection: Connection,
