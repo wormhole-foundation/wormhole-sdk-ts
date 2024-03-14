@@ -1,4 +1,3 @@
-import { getAssociatedTokenAddress } from '@solana/spl-token';
 import type {
   ChainAddress,
   NativeAddress,
@@ -17,6 +16,7 @@ export class SolanaChain<
     address: UniversalOrNative<C>,
     token: UniversalOrNative<C>,
   ): Promise<ChainAddress<C>> {
+    const { getAssociatedTokenAddress } = await import('@solana/spl-token');
     const mint = new SolanaAddress(token).unwrap();
     const owner = new SolanaAddress(address).unwrap();
 

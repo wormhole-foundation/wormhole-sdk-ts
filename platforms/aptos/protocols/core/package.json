@@ -1,7 +1,7 @@
 {
   "name": "@wormhole-foundation/sdk-aptos-core",
   "version": "0.5.0-beta.10",
-  "type": "module",
+  
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
