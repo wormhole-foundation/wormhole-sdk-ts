@@ -1,6 +1,6 @@
-import type { MapLevel, RoArray} from './../utils/index.js';
-import { column, constMap } from './../utils/index.js';
-import type { Chain } from './chains.js';
+import type { MapLevel, RoArray } from "./../utils/index.js";
+import { column, constMap } from "./../utils/index.js";
+import type { Chain } from "./chains.js";
 
 // prettier-ignore
 const platformAndChainsEntries = [[
@@ -28,6 +28,9 @@ const platformAndChainsEntries = [[
     "BaseSepolia",
     "OptimismSepolia",
     "Holesky",
+    "PolygonSepolia",
+    "Mantle",
+    "Scroll",
   ]], [
   "Solana", [
     "Solana",
@@ -47,7 +50,8 @@ const platformAndChainsEntries = [[
     "Dymension",
     "Neutron",
     "Stargaze",
-    "Celestia"
+    "Celestia",
+    "Seda",
   ]], [
     "Btc", [
       "Btc"

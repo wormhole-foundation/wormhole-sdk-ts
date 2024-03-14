@@ -73,11 +73,12 @@ export const coreBridgeContracts = [[
     ["BaseSepolia",     "0x79A1027a6A159502049F10906D333EC57E95F083"],
     ["OptimismSepolia", "0x31377888146f3253211EFEf5c676D41ECe7D58Fe"],
     ["Holesky",         "0xa10f2eF61dE1f19f586ab8B6F2EbA89bACE63F7a"],
+    ["Neutron",         "neutron1enf63k37nnv9cugggpm06mg70emcnxgj9p64v2s8yx7a2yhhzk2q6xesk4"]
   ]], [
   "Devnet", [
     ["Solana",    "Bridge1p5gheXUvJ6jGWGeCsgPKgnE3YgdGKRVCMY9o"],
     ["Ethereum",  "0xC89Ce4735882C9F0f0FE26686c53074E09B0D550"],
-    ["Terra",     "terra18vd8fpwxzck93qlwghaj6arh4p7c5n896xzem5"],
+    ["Terra",     "terra14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9ssrc8au"],
     ["Bsc",       "0xC89Ce4735882C9F0f0FE26686c53074E09B0D550"],
     ["Algorand",  "1004"],
     ["Near",      "wormhole.test.near"],

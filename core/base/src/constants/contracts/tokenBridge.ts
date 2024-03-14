@@ -69,7 +69,7 @@ export const tokenBridgeContracts = [[
   "Devnet", [
     ["Solana",    "B6RHG3mfcckmrYN1UhmJzyS1XX3fZKbkeUcpJe9Sy3FE"],
     ["Ethereum",  "0x0290FB167208Af455bB137780163b7B7a9a10C16"],
-    ["Terra",     "terra10pyejy66429refv3g35g2t7am0was7ya7kz2a4"],
+    ["Terra",     "terra1nc5tatafv6eyq7llkr2gv50ff9e22mnf70qgjlv737ktmt4eswrquka9l6"],
     ["Bsc",       "0x0290FB167208Af455bB137780163b7B7a9a10C16"],
     ["Algorand",  "1006"],
     ["Near",      "token.test.near"],

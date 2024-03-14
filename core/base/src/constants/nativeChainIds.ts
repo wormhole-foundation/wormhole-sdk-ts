@@ -1,9 +1,9 @@
-import type { MapLevels, ToMapping, Widen } from './../utils/index.js';
-import { constMap } from './../utils/index.js';
-import type { Chain } from './chains.js';
-import type { Network } from './networks.js';
-import type { Platform, PlatformToChains} from './platforms.js';
-import { chainToPlatform } from './platforms.js';
+import type { MapLevels, ToMapping, Widen } from "./../utils/index.js";
+import { constMap } from "./../utils/index.js";
+import type { Chain } from "./chains.js";
+import type { Network } from "./networks.js";
+import type { Platform, PlatformToChains } from "./platforms.js";
+import { chainToPlatform } from "./platforms.js";
 
 // prettier-ignore
 const chainNetworkNativeChainIdEntries = [[
@@ -171,7 +171,10 @@ const chainNetworkNativeChainIdEntries = [[
   ]],[
   "Dymension", [
     ["Mainnet", "dymension_1100-1"]
-  ]],
+  ]], [
+  "PolygonSepolia", [
+    ["Testnet", 80002n]
+  ]]
 ] as const satisfies MapLevels<[Chain, Network, bigint | string]>;
 
 export const networkChainToNativeChainId = constMap(chainNetworkNativeChainIdEntries, [[1, 0], 2]);
