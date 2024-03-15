@@ -6,11 +6,11 @@ import type {
   CustomConversion,
   NumSizeToPrimitive,
   NumType,
-  BytesType} from "./layout";
+  BytesType} from './layout.js';
 import {
 
   numberMaxSize,
-} from "./layout";
+} from './layout.js';
 
 import {
   isNumType,
@@ -18,8 +18,8 @@ import {
   isFixedBytesConversion,
   checkBytesTypeEqual,
   checkNumEquals,
-} from "./utils";
-import { getCachedSerializedFrom } from "./serialize";
+} from './utils.js';
+import { getCachedSerializedFrom } from './serialize.js';
 
 export function deserializeLayout<const L extends Layout, B extends boolean = true>(
   layout: L,

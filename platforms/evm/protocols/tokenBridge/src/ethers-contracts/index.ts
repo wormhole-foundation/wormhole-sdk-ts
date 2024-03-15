@@ -1,3 +1,4 @@
-export * from './factories';
-export { Bridge as TokenBridgeContract } from './Bridge';
-export { TokenBridgeRelayer } from './TokenBridgeRelayer';
+export * from './factories/index.js';
+
+export { Bridge as TokenBridgeContract } from './Bridge.js';
+export { TokenBridgeRelayer } from './TokenBridgeRelayer.js';

@@ -1,6 +1,6 @@
 import type { Network, RoArray } from "@wormhole-foundation/sdk-connect";
 import { constMap } from "@wormhole-foundation/sdk-connect";
-import type { CosmwasmChains } from "./types";
+import type { CosmwasmChains } from "./types.js";
 
 export const DEFAULT_FEE = 1_000_000;
 

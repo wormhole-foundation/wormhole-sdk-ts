@@ -1,6 +1,6 @@
-import type { MapLevel} from "../utils";
-import { constMap } from "../utils";
-import type { Chain } from "./chains";
+import type { MapLevel} from './../utils/index.js';
+import { constMap } from './../utils/index.js';
+import type { Chain } from './chains.js';
 
 // https://www.notion.so/Finality-in-Wormhole-78ffa423abd44b7cbe38483a16040d83
 

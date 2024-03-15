@@ -5,13 +5,13 @@ import type {
   Signer,
   UnsignedTransaction,
 } from "@wormhole-foundation/sdk-connect";
-import type { Account, Algodv2 } from "algosdk";
+import algosdk from "algosdk";
 import { assignGroupID, mnemonicToSecretKey } from "algosdk";
-import type { AlgorandChains, TransactionSignerPair } from "./types";
-import { AlgorandPlatform } from "./platform";
+import type { AlgorandChains, TransactionSignerPair } from "./types.js";
+import { AlgorandPlatform } from "./platform.js";
 
 export async function getAlgorandSigner(
-  rpc: Algodv2,
+  rpc: algosdk.Algodv2,
   mnemonic: string, // 25-word Algorand mnemonic
 ): Promise<Signer> {
   const [network, chain] = await AlgorandPlatform.chainFromRpc(rpc);
@@ -22,10 +22,10 @@ export async function getAlgorandSigner(
 export class AlgorandSigner<N extends Network, C extends AlgorandChains>
   implements SignOnlySigner<N, C>
 {
-  _account: Account;
+  _account: algosdk.Account;
   constructor(
     private _chain: C,
-    _rpc: Algodv2,
+    _rpc: algosdk.Algodv2,
     mnemonic: string,
     private _debug: boolean = false,
   ) {

@@ -5,8 +5,8 @@ import type {
   TokenId,
   TransactionId,
 } from "@wormhole-foundation/sdk-definitions";
-import type { Wormhole } from "../wormhole";
-import type { RouteTransferRequest } from "./request";
+import type { Wormhole } from "../wormhole.js";
+import type { RouteTransferRequest } from "./request.js";
 import type {
   Options,
   Quote,
@@ -15,7 +15,7 @@ import type {
   TransferParams,
   ValidatedTransferParams,
   ValidationResult,
-} from "./types";
+} from "./types.js";
 
 export abstract class Route<
   N extends Network,

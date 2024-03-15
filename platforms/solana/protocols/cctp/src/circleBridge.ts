@@ -12,7 +12,9 @@ import type {
 import { CircleBridge, circle } from '@wormhole-foundation/sdk-connect';
 
 import type { Program } from '@project-serum/anchor';
-import { BN, EventParser } from '@project-serum/anchor';
+import anchor from '@project-serum/anchor';
+const { BN, EventParser } = anchor;
+
 import { getAssociatedTokenAddressSync } from '@solana/spl-token';
 import type {
   SolanaChains,
@@ -23,17 +25,17 @@ import {
   SolanaPlatform,
   SolanaUnsignedTransaction,
 } from '@wormhole-foundation/sdk-solana';
-import type { MessageTransmitter, TokenMessenger } from '.';
+import type { MessageTransmitter, TokenMessenger } from './index.js';
 import {
   createReadOnlyMessageTransmitterProgramInterface,
   createReadOnlyTokenMessengerProgramInterface,
-} from './utils';
+} from './utils/index.js';
 import {
   calculateFirstNonce,
   createDepositForBurnInstruction,
   createReceiveMessageInstruction,
   nonceAccount,
-} from './utils/instructions';
+} from './utils/instructions/index.js';
 
 export class SolanaCircleBridge<N extends Network, C extends SolanaChains>
   implements CircleBridge<N, C>

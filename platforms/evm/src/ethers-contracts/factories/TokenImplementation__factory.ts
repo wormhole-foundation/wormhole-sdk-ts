@@ -8,11 +8,11 @@ import {
   Interface,
 } from 'ethers';
 import type { Signer, ContractDeployTransaction, ContractRunner } from 'ethers';
-import type { NonPayableOverrides } from '../common';
+import type { NonPayableOverrides } from '../common.js';
 import type {
   TokenImplementation,
   TokenImplementationInterface,
-} from '../TokenImplementation';
+} from '../TokenImplementation.js';
 
 const _abi = [
   {

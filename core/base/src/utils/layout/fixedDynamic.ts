@@ -12,9 +12,9 @@ import type {
   LayoutObject,
   FixedConversion,
   CustomConversion,
-} from "./layout";
+} from './layout.js';
 
-import { isPrimitiveType, isLayoutItem, isFixedPrimitiveConversion } from "./utils";
+import { isPrimitiveType, isLayoutItem, isFixedPrimitiveConversion } from './utils.js';
 
 type NonEmpty = readonly [unknown, ...unknown[]];
 

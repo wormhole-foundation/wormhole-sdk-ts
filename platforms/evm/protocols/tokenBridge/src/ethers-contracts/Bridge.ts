@@ -21,7 +21,7 @@ import type {
   TypedLogDescription,
   TypedListener,
   TypedContractMethod,
-} from './common';
+} from './common.js';
 
 export declare namespace BridgeStructs {
   export type TransferStruct = {

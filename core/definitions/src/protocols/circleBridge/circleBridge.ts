@@ -1,29 +1,25 @@
-import type {
-  Chain,
-  LayoutToType,
-  Network,
-  Platform} from "@wormhole-foundation/sdk-base";
+import type { Chain, LayoutToType, Network, Platform } from "@wormhole-foundation/sdk-base";
 import {
   deserializeLayout,
   encoding,
   lazyInstantiate,
   serializeLayout,
 } from "@wormhole-foundation/sdk-base";
-import type { AccountAddress, ChainAddress } from "../../address";
-import type { CircleMessageId } from "../../attestation";
-import type { TokenId } from "../../types";
-import type { UnsignedTransaction } from "../../unsignedTransaction";
+import type { AccountAddress, ChainAddress } from "../../address.js";
+import type { CircleMessageId } from "../../attestation.js";
+import type { TokenId } from "../../types.js";
+import type { UnsignedTransaction } from "../../unsignedTransaction.js";
 
-import "./automaticCircleBridgeLayout";
-import { circleMessageLayout } from "./circleBridgeLayout";
+import "./automaticCircleBridgeLayout.js";
+import { circleMessageLayout } from "./circleBridgeLayout.js";
 
-import type { EmptyPlatformMap } from "../../protocol";
-import { keccak256 } from "../../utils";
-import type { ProtocolPayload, ProtocolVAA} from "../../vaa";
-import { payloadDiscriminator } from "../../vaa";
+import type { EmptyPlatformMap } from "../../protocol.js";
+import { keccak256 } from "../../utils.js";
+import type { ProtocolPayload, ProtocolVAA } from "./../../vaa/index.js";
+import { payloadDiscriminator } from "./../../vaa/index.js";
 
-import "../../registry";
-declare module "../../registry" {
+import "../../registry.js";
+declare module "../../registry.js" {
   export namespace WormholeRegistry {
     interface ProtocolToPlatformMapping {
       CircleBridge: EmptyPlatformMap<Platform, CircleBridge.ProtocolName>;

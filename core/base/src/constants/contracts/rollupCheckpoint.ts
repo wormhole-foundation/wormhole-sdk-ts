@@ -1,6 +1,6 @@
-import type { MapLevels } from "../../utils";
-import type { Network } from "../networks";
-import type { Chain } from "../chains";
+import type { MapLevels } from './../../utils/index.js';
+import type { Network } from '../networks.js';
+import type { Chain } from '../chains.js';
 
 // Some chains are required to post proof of their blocks to other chains
 // and the transaction containing that proof must be finalized

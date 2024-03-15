@@ -11,11 +11,12 @@ import { utils } from "@wormhole-foundation/sdk-definitions/testing";
 import "@wormhole-foundation/sdk-aptos-core";
 import "@wormhole-foundation/sdk-aptos-tokenbridge";
 
-import { APTOS_COIN, AptosChains, AptosPlatform } from "../../src/";
+import { APTOS_COIN, AptosChains, AptosPlatform } from "./../../src/index.js";
 
 import { describe, expect, test } from "@jest/globals";
 
 import nock from "nock";
+import path from "path";
 
 const network: "Testnet" = "Testnet";
 type TNet = typeof network;
@@ -37,7 +38,8 @@ const realWrappedAddress = toNative("Aptos", TOKEN_ADDRESSES["Mainnet"]["Aptos"]
 
 // Setup nock to record fixtures
 const nockBack = nock.back;
-nockBack.fixtures = __dirname + "/fixtures";
+const __dirname = path.resolve();
+nockBack.fixtures = __dirname + "/__tests__/integration/fixtures";
 
 let nockDone: () => void;
 beforeEach(async () => {

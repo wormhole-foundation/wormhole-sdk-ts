@@ -1,17 +1,10 @@
-import type {
-  FixedConversion,
-  Layout,
-  RoArray} from "@wormhole-foundation/sdk-base";
-import {
-  platformToChains,
-  column,
-  constMap
-} from "@wormhole-foundation/sdk-base";
+import type { FixedConversion, Layout, RoArray } from "@wormhole-foundation/sdk-base";
+import { platformToChains, column, constMap } from "@wormhole-foundation/sdk-base";
 
-import { chainItem, universalAddressItem, guardianSetItem } from "../../layout-items";
-import type { NamedPayloads, RegisterPayloadTypes} from "../../vaa";
-import { registerPayloadTypes } from "../../vaa";
-import type { ProtocolName } from "../../protocol";
+import { chainItem, universalAddressItem, guardianSetItem } from "./../../layout-items/index.js";
+import type { NamedPayloads, RegisterPayloadTypes } from "./../../vaa/index.js";
+import { registerPayloadTypes } from "./../../vaa/index.js";
+import type { ProtocolName } from "../../protocol.js";
 
 //One thing that's not captured by the payload itself is the fact that governance VAAs should
 //  always have Solana as the emitter chain and address bytes32(4) as the emitter address.
@@ -227,8 +220,8 @@ const cctpPayloads = [
 ] as const satisfies NamedPayloads;
 
 // factory registration:
-import "../../registry";
-declare module "../../registry" {
+import "../../registry.js";
+declare module "../../registry.js" {
   export namespace WormholeRegistry {
     interface PayloadLiteralToLayoutMapping
       extends RegisterPayloadTypes<"WormholeCore", typeof coreBridgePayloads>,

@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-aptos",
-  "version": "0.5.0-beta.10",
+  "version": "0.5.0-alpha.3",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -13,13 +13,11 @@
     "test": "__tests__"
   },
   "license": "Apache-2.0",
-  "main": "./dist/cjs/index.js",
-  "types": "./dist/cjs/index.d.ts",
+  "main": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
   "module": "./dist/esm/index.js",
-  "author": "",
   "description": "SDK for Solana, used in conjunction with @wormhole-foundation/sdk",
   "files": [
-    "dist/cjs",
     "dist/esm"
   ],
   "keywords": [
@@ -35,8 +33,7 @@
   "sideEffects": true,
   "scripts": {
     "build:cjs": "tsc -p ./tsconfig.cjs.json",
-    "build:esm": "tsc -p ./tsconfig.esm.json",
-    "build": "npm run build:cjs && npm run build:esm",
+    "build": "tsc -p ./tsconfig.esm.json",
     "rebuild": "npm run clean && npm run build",
     "clean": "rm -rf ./dist && rm -rf ./.turbo",
     "lint": "npm run prettier && eslint --fix ./src --ext .ts",
@@ -44,7 +41,8 @@
     "prettier": "prettier --write ./src"
   },
   "dependencies": {
-    "@wormhole-foundation/sdk-connect": "0.5.0-beta.10",
-    "aptos": "1.5.0"
-  }
+    "@wormhole-foundation/sdk-connect": "0.5.0-alpha.3",
+    "aptos": "1.21.0"
+  },
+  "type": "module"
 }

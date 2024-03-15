@@ -2,7 +2,7 @@ import { Wormhole, canonicalAddress, routes, wormhole } from "@wormhole-foundati
 import { evm } from "@wormhole-foundation/sdk/evm";
 import { solana } from "@wormhole-foundation/sdk/solana";
 
-import { getSigner } from "./helpers";
+import { getSigner } from './helpers/index.js';
 
 (async function () {
   // Setup

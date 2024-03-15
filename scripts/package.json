@@ -2,9 +2,9 @@
   "name": "@wormhole-foundation/scripts",
   "version": "0.4.0-beta.2",
   "license": "Apache-2.0",
-  "main": "./dist/cjs/index.js",
+  "main": "./dist/esm/index.js",
   "module": "./dist/esm/index.js",
-  "types": "./dist/cjs/index.d.ts",
+  "types": "./dist/esm/index.d.ts",
   "author": "",
   "files": [
     "dist"

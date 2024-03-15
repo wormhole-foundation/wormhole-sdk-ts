@@ -2,7 +2,7 @@ import { expect, test } from "@jest/globals";
 
 import { DEFAULT_NETWORK, CONFIG, chainToPlatform, chains } from "@wormhole-foundation/connect-sdk";
 
-import { SuiChains, SuiPlatform } from "../../src";
+import { SuiChains, SuiPlatform } from './../../src/index.js';
 
 import "@wormhole-foundation/connect-sdk-sui-core";
 import "@wormhole-foundation/connect-sdk-sui-tokenbridge";

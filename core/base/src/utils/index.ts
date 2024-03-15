@@ -1,11 +1,10 @@
-export * from "./array";
-export * from "./mapping";
-export * from "./metaprogramming";
-export * from "./misc";
+export * from "./array.js";
+export * from "./mapping.js";
+export * from "./metaprogramming.js";
+export * from "./misc.js";
 
-export * as amount from "./amount";
-// TODO
-export * from "./layout";
-export * as layout from "./layout";
+export * from "./layout/index.js";
 
-export * as encoding from "./encoding";
+export * as amount from "./amount.js";
+export * as layout from "./layout/index.js";
+export * as encoding from "./encoding.js";

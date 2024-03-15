@@ -1,8 +1,7 @@
 import { describe } from "@jest/globals";
 import { platform } from "@wormhole-foundation/sdk-base";
-import { utils, mocks } from "@wormhole-foundation/sdk-definitions/testing";
-import { Wormhole, networkPlatformConfigs } from "../src";
-import { RouteTransferRequest } from "../src/routes";
+import { mocks } from "@wormhole-foundation/sdk-definitions/testing";
+import { Wormhole, networkPlatformConfigs } from "./../src/index.js";
 
 const network: "Testnet" = "Testnet";
 type TNet = typeof network;
@@ -10,26 +9,14 @@ const allPlatformCtrs = platform.platforms.map((p) =>
   mocks.mockPlatformFactory(p, networkPlatformConfigs(network, p)),
 );
 
-async function createRequest(wh: Wormhole<TNet>): Promise<RouteTransferRequest<TNet>> {
-  const fromChain = wh.getChain("Solana");
-  const toChain = wh.getChain("Ethereum");
-
-  const req = {
-    from: utils.makeUniversalChainAddress("Solana"),
-    to: utils.makeUniversalChainAddress("Ethereum"),
-    source: utils.makeUniversalChainAddress("Solana"),
-    destination: utils.makeUniversalChainAddress("Ethereum"),
-  };
-  return RouteTransferRequest.create(wh, req, fromChain, toChain);
-}
-
 describe("Wormhole Tests", () => {
   let wh: Wormhole<TNet>;
-  beforeEach(() => {
+  beforeEach(function () {
     wh = new Wormhole(network, allPlatformCtrs);
   });
 
-  test("nothing", () => {
+  test("nothing", function () {
+    console.log(wh.network);
     expect(1).toBe(1);
   });
   // test("Creates route resolver", async () => {

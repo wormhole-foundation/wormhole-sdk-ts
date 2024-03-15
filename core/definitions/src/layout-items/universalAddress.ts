@@ -2,7 +2,7 @@ import type {
   LayoutItem,
   CustomConversion,
 } from "@wormhole-foundation/sdk-base";
-import { UniversalAddress } from "../universalAddress";
+import { UniversalAddress } from '../universalAddress.js';
 
 export const universalAddressItem = {
   binary: "bytes",

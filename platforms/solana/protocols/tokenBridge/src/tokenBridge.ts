@@ -53,7 +53,7 @@ import {
   Transaction,
 } from '@solana/web3.js';
 
-import type { TokenBridge as TokenBridgeContract } from './tokenBridgeType';
+import type { TokenBridge as TokenBridgeContract } from './tokenBridgeType.js';
 import {
   createApproveAuthoritySignerInstruction,
   createAttestTokenInstruction,
@@ -67,7 +67,7 @@ import {
   createTransferWrappedWithPayloadInstruction,
   deriveWrappedMintKey,
   getWrappedMeta,
-} from './utils';
+} from './utils/index.js';
 
 import '@wormhole-foundation/sdk-solana-core';
 

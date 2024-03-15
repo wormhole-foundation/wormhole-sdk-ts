@@ -3,7 +3,7 @@ import {
   ConsistencyLevels,
   finalityThreshold,
   consistencyLevelToBlock,
-} from "../src/constants/finality";
+} from '../src/constants/finality.js';
 
 describe("Finality tests", function () {
   test("Receive expected number of rounds", () => {

@@ -2,8 +2,14 @@
 //
 // https://github.com/coral-xyz/anchor/blob/master/ts/packages/anchor/src/coder/common.ts
 
-import type { Idl, IdlField, IdlTypeDef, IdlEnumVariant, IdlType } from './idl';
-import { IdlError } from './error';
+import type {
+  Idl,
+  IdlField,
+  IdlTypeDef,
+  IdlEnumVariant,
+  IdlType,
+} from './idl.js';
+import { IdlError } from './error.js';
 
 export function accountSize(idl: Idl, idlAccount: IdlTypeDef): number {
   if (idlAccount.type.kind === 'enum') {

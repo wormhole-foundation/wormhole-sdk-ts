@@ -38,7 +38,7 @@ import {
   signLogicSigTransaction,
 } from "algosdk";
 
-import { SEED_AMT, StorageLogicSig } from "./storage";
+import { SEED_AMT, StorageLogicSig } from "./storage.js";
 
 export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
   implements WormholeCore<N, C>

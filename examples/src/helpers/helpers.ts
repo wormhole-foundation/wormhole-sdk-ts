@@ -23,7 +23,7 @@ import { sui } from "@wormhole-foundation/sdk/sui";
 // for funded accounts on the relevant chain+network combos to run the example
 
 // Read in from `.env`
-require("dotenv").config();
+(await import("dotenv")).config();
 
 function getEnv(key: string): string {
   // If we're in the browser, return empty string

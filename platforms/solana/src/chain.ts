@@ -1,4 +1,3 @@
-import { getAssociatedTokenAddress } from '@solana/spl-token';
 import type {
   ChainAddress,
   NativeAddress,
@@ -6,8 +5,8 @@ import type {
   UniversalOrNative,
 } from '@wormhole-foundation/sdk-connect';
 import { ChainContext } from '@wormhole-foundation/sdk-connect';
-import { SolanaAddress } from './address';
-import type { SolanaChains } from './types';
+import { SolanaAddress } from './address.js';
+import type { SolanaChains } from './types.js';
 
 export class SolanaChain<
   N extends Network,
@@ -17,6 +16,7 @@ export class SolanaChain<
     address: UniversalOrNative<C>,
     token: UniversalOrNative<C>,
   ): Promise<ChainAddress<C>> {
+    const { getAssociatedTokenAddress } = await import('@solana/spl-token');
     const mint = new SolanaAddress(token).unwrap();
     const owner = new SolanaAddress(address).unwrap();
 

@@ -13,8 +13,8 @@ import {
   isAddress,
   zeroPadValue,
 } from 'ethers';
-import type { AnyEvmAddress } from './types';
-import { _platform } from './types';
+import type { AnyEvmAddress } from './types.js';
+import { _platform } from './types.js';
 
 export const EvmZeroAddress = ZeroAddress;
 

@@ -3,6 +3,8 @@
   "include": ["src", "buffer-layout.d.ts"],
   "compilerOptions": {
     "outDir": "dist/esm",
-    "rootDir": "src"
+    "rootDir": "src",
+    "module": "ESNext",
+    "moduleResolution": "Bundler"
   }
 }

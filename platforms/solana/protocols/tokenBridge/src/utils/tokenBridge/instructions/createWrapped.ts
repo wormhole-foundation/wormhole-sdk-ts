@@ -11,15 +11,15 @@ import { utils as CoreUtils } from '@wormhole-foundation/sdk-solana-core';
 import {
   deriveSplTokenMetadataKey,
   SplTokenMetadataProgram,
-} from '../../splMetadata';
+} from '../../splMetadata.js';
 import {
   deriveEndpointKey,
   deriveMintAuthorityKey,
   deriveTokenBridgeConfigKey,
   deriveWrappedMetaKey,
   deriveWrappedMintKey,
-} from '../accounts';
-import { createReadOnlyTokenBridgeProgramInterface } from '../program';
+} from './../accounts/index.js';
+import { createReadOnlyTokenBridgeProgramInterface } from '../program.js';
 
 export function createCreateWrappedInstruction(
   connection: Connection,

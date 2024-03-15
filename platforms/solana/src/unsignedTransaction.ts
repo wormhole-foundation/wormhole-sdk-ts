@@ -3,7 +3,7 @@ import type {
   Network,
   UnsignedTransaction,
 } from '@wormhole-foundation/sdk-connect';
-import type { SolanaChains } from './types';
+import type { SolanaChains } from './types.js';
 
 export type SolanaTransaction = {
   transaction: Transaction;

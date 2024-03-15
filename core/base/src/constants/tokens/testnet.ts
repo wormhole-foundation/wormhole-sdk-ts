@@ -1,7 +1,7 @@
-import type { MapLevel} from "../../utils";
-import { constMap } from "../../utils";
-import type { Chain } from "../chains";
-import type { TokenSymbol, TokenConst } from "./types";
+import type { MapLevel} from './../../utils/index.js';
+import { constMap } from './../../utils/index.js';
+import type { Chain } from '../chains.js';
+import type { TokenSymbol, TokenConst } from './types.js';
 
 const testnetTokenEntries = [
   [

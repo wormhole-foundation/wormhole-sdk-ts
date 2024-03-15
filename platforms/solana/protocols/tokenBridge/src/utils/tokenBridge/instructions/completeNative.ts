@@ -5,14 +5,14 @@ import type {
 } from '@solana/web3.js';
 import { PublicKey, SystemProgram, SYSVAR_RENT_PUBKEY } from '@solana/web3.js';
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import { createReadOnlyTokenBridgeProgramInterface } from '../program';
+import { createReadOnlyTokenBridgeProgramInterface } from '../program.js';
 import { utils } from '@wormhole-foundation/sdk-solana-core';
 import {
   deriveEndpointKey,
   deriveTokenBridgeConfigKey,
   deriveCustodyKey,
   deriveCustodySignerKey,
-} from '../accounts';
+} from './../accounts/index.js';
 import type { TokenBridge } from '@wormhole-foundation/sdk-connect';
 import { toChainId } from '@wormhole-foundation/sdk-connect';
 

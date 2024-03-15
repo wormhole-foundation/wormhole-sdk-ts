@@ -15,15 +15,19 @@ import { utils } from '@wormhole-foundation/sdk-definitions/testing';
 import '@wormhole-foundation/sdk-evm-core';
 import '@wormhole-foundation/sdk-evm-tokenbridge';
 
-import { EvmChains, EvmPlatform } from '../../src';
+import { EvmChains, EvmPlatform } from './../../src/index.js';
 
 import { describe, expect, test } from '@jest/globals';
-
+import path from 'path';
 import nock from 'nock';
 
 // Setup nock to record fixtures
 const nockBack = nock.back;
-nockBack.fixtures = __dirname + '/fixtures';
+// Dirname points to the `evm` platform directory
+const __dirname = path.resolve();
+nockBack.fixtures = __dirname + '/__tests__/integration/fixtures';
+
+console.log(nockBack.fixtures);
 
 let nockDone: () => void;
 beforeEach(async () => {

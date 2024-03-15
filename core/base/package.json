@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-base",
-  "version": "0.5.0-beta.10",
+  "version": "0.5.0-alpha.3",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -13,11 +13,18 @@
     "test": "__tests__"
   },
   "license": "Apache-2.0",
-  "main": "./dist/cjs/index.js",
-  "types": "./dist/cjs/index.d.ts",
+  "main": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
+  "typings": "./dist/esm/index.d.ts",
   "module": "./dist/esm/index.js",
+  "exports": {
+    ".": {
+      "main": "./dist/esm/index.js",
+      "import": "./dist/esm/index.js",
+      "types": "./dist/esm/index.d.ts"
+    }
+  },
   "files": [
-    "dist/cjs",
     "dist/esm"
   ],
   "dependencies": {
@@ -28,12 +35,12 @@
     "test": "jest --config ../../jest.config.ts __tests__/*.ts",
     "testamt": "jest --config ../../jest.config.ts __tests__/amount.ts",
     "build:cjs": "tsc -p ./tsconfig.cjs.json",
-    "build:esm": "tsc -p ./tsconfig.esm.json",
-    "build": "npm run build:cjs && npm run build:esm",
+    "build": "tsc -p ./tsconfig.esm.json",
     "rebuild": "npm run clean && npm run build",
     "clean": "rm -rf ./dist && rm -rf ./.turbo",
     "typecheck": "cp ./__tests__/typechecks/index.test-d.ts ./dist/esm/ && tsd",
     "lint": "npm run prettier && eslint --fix ./src --ext .ts",
     "prettier": "prettier --write ./src"
-  }
+  },
+  "type": "module"
 }

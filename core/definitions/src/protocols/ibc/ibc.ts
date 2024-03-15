@@ -1,21 +1,13 @@
-import type {
-  Chain,
-  ChainId,
-  Network,
-  Platform} from "@wormhole-foundation/sdk-base";
-import {
-  encoding,
-  toChain,
-  toChainId,
-} from "@wormhole-foundation/sdk-base";
-import type { AccountAddress, ChainAddress, NativeAddress } from "../../address";
-import type { IbcMessageId, WormholeMessageId } from "../../attestation";
-import type { EmptyPlatformMap } from "../../protocol";
-import type { TokenAddress, TokenId, TxHash } from "../../types";
-import type { UnsignedTransaction } from "../../unsignedTransaction";
+import type { Chain, ChainId, Network, Platform } from "@wormhole-foundation/sdk-base";
+import { encoding, toChain, toChainId } from "@wormhole-foundation/sdk-base";
+import type { AccountAddress, ChainAddress, NativeAddress } from "../../address.js";
+import type { IbcMessageId, WormholeMessageId } from "../../attestation.js";
+import type { EmptyPlatformMap } from "../../protocol.js";
+import type { TokenAddress, TokenId, TxHash } from "../../types.js";
+import type { UnsignedTransaction } from "../../unsignedTransaction.js";
 
-import "../../registry";
-declare module "../../registry" {
+import "../../registry.js";
+declare module "../../registry.js" {
   export namespace WormholeRegistry {
     interface ProtocolToPlatformMapping {
       IbcBridge: EmptyPlatformMap<Platform, "IbcBridge">;

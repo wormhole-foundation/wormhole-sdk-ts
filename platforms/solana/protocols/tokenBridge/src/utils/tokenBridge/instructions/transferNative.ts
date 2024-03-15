@@ -5,14 +5,14 @@ import type {
 } from '@solana/web3.js';
 import { PublicKey } from '@solana/web3.js';
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import { createReadOnlyTokenBridgeProgramInterface } from '../program';
+import { createReadOnlyTokenBridgeProgramInterface } from '../program.js';
 import { utils } from '@wormhole-foundation/sdk-solana-core';
 import {
   deriveAuthoritySignerKey,
   deriveCustodySignerKey,
   deriveTokenBridgeConfigKey,
   deriveCustodyKey,
-} from '../accounts';
+} from './../accounts/index.js';
 
 export function createTransferNativeInstruction(
   connection: Connection,

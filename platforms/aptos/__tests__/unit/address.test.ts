@@ -1,4 +1,4 @@
-import { APTOS_COIN, AptosAddress } from "../../src";
+import { APTOS_COIN, AptosAddress } from './../../src/index.js';
 
 describe("Aptos Address Tests", () => {
   describe("Parse Address", () => {

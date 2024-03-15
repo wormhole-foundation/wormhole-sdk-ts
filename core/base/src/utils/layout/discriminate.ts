@@ -1,7 +1,7 @@
-import type { Layout, LayoutItem, LengthPrefixed, BytesType } from "./layout";
-import { serializeNum, getCachedSerializedFrom } from "./serialize";
-import { isNumType, isBytesType, isFixedBytesConversion } from "./utils";
-import { calcStaticLayoutSize } from "./size";
+import type { Layout, LayoutItem, LengthPrefixed, BytesType } from './layout.js';
+import { serializeNum, getCachedSerializedFrom } from './serialize.js';
+import { isNumType, isBytesType, isFixedBytesConversion } from './utils.js';
+import { calcStaticLayoutSize } from './size.js';
 
 //defining a bunch of types for readability
 type Uint = number;

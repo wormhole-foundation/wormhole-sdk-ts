@@ -16,9 +16,9 @@ import type {
   TransactionRequest,
 } from 'ethers';
 import { Wallet } from 'ethers';
-import { EvmPlatform } from './platform';
-import type { EvmChains } from './types';
-import { _platform } from './types';
+import { EvmPlatform } from './platform.js';
+import type { EvmChains } from './types.js';
+import { _platform } from './types.js';
 
 // Get a SignOnlySigner for the EVM platform
 export async function getEvmSignerForKey(

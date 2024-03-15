@@ -7,8 +7,8 @@ import type {
 } from '@wormhole-foundation/sdk-connect';
 import { CircleBridge, encoding } from '@wormhole-foundation/sdk-connect';
 import { SolanaAddress } from '@wormhole-foundation/sdk-solana';
-import { findProgramAddress } from '../accounts';
-import { createMessageTransmitterProgramInterface } from '../program';
+import { findProgramAddress } from './../accounts/index.js';
+import { createMessageTransmitterProgramInterface } from '../program.js';
 
 const MAX_NONCES_PER_ACCOUNT = 6400n;
 

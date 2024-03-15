@@ -1,7 +1,7 @@
-import { amountItem, payloadIdItem, universalAddressItem } from "../../layout-items";
-import type { NamedPayloads, RegisterPayloadTypes} from "../../vaa";
-import { registerPayloadTypes } from "../../vaa";
-import { transferWithPayloadLayout } from "./tokenBridgeLayout";
+import { amountItem, payloadIdItem, universalAddressItem } from "./../../layout-items/index.js";
+import type { NamedPayloads, RegisterPayloadTypes } from "./../../vaa/index.js";
+import { registerPayloadTypes } from "./../../vaa/index.js";
+import { transferWithPayloadLayout } from "./tokenBridgeLayout.js";
 
 //from here:
 // https://github.com/wormhole-foundation/example-token-bridge-relayer/blob/1a04ec51f4cfded04e59160bcf2e64aa29dea1f3/evm/src/token-bridge-relayer/TokenBridgeRelayer.sol#L260-L267
@@ -17,8 +17,8 @@ export const automaticTokenBridgeNamedPayloads = [
 ] as const satisfies NamedPayloads;
 
 // factory registration:
-import "../../registry";
-declare module "../../registry" {
+import "../../registry.js";
+declare module "../../registry.js" {
   export namespace WormholeRegistry {
     interface PayloadLiteralToLayoutMapping
       extends RegisterPayloadTypes<
