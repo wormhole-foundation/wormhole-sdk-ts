@@ -1,11 +1,14 @@
 {
-  "extends": "../tsconfig.cjs.json",
+  "extends": "../tsconfig.json",
   "include": ["./src", "./src/**/*.ts"],
   "compilerOptions": {
     "rootDir": "src",
     "target":"ESNext",
     "allowUnusedLabels": true,
     "noUnusedLocals": false,
+    "esModuleInterop": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "allowSyntheticDefaultImports": true,
   }
 }

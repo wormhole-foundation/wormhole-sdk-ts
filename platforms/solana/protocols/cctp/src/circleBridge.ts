@@ -12,8 +12,8 @@ import type {
 import { CircleBridge, circle } from '@wormhole-foundation/sdk-connect';
 
 import type { Program } from '@project-serum/anchor';
-import anchor from '@project-serum/anchor';
-const { BN, EventParser } = anchor;
+import { EventParser } from '@project-serum/anchor';
+import BN from 'bn.js';
 
 import { getAssociatedTokenAddressSync } from '@solana/spl-token';
 import type {

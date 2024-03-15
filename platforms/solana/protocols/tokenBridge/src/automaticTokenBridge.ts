@@ -26,7 +26,6 @@ import {
 } from '@wormhole-foundation/sdk-solana';
 
 import type { Program } from '@project-serum/anchor';
-import anchor from '@project-serum/anchor';
 
 import type { Connection } from '@solana/web3.js';
 import { PublicKey, Transaction } from '@solana/web3.js';
@@ -56,7 +55,8 @@ import {
 import '@wormhole-foundation/sdk-solana-core';
 import { registeredTokens } from './consts.js';
 
-const { BN } = anchor;
+import BN from 'bn.js';
+
 const SOL_DECIMALS = 9;
 const TEN = new BN(10);
 const SWAP_RATE_PRECISION = new BN(100_000_000);
@@ -306,10 +306,7 @@ export class SolanaAutomaticTokenBridge<
     );
   }
 
-  private calculateNativeSwapRate(
-    solSwapRate: anchor.BN,
-    swapRate: anchor.BN,
-  ): anchor.BN {
+  private calculateNativeSwapRate(solSwapRate: BN, swapRate: BN): BN {
     return SWAP_RATE_PRECISION.mul(solSwapRate).div(swapRate);
   }
 
