@@ -45,9 +45,7 @@ const bogusAddress = toNative(
 
 // Setup nock to record fixtures
 const nockBack = nock.back;
-// Dirname points to the` platform directory
-const __dirname = path.resolve();
-nockBack.fixtures = __dirname + "/__tests__/integration/fixtures";
+nockBack.fixtures = (__dirname ?? path.resolve() + "/__tests__/integration") + "/fixtures";
 
 let nockDone: () => void;
 beforeEach(async () => {

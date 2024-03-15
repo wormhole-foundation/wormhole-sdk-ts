@@ -59,14 +59,14 @@ describe("Wormhole Tests", function () {
   });
 
   describe("getVaaBytes", () => {
-    //test("returns vaa bytes", async function () {
-    //  const vaa = await wh.getVaaBytes({
-    //    chain: "Avalanche",
-    //    emitter: utils.makeUniversalAddress("Avalanche"),
-    //    sequence: 1n,
-    //  });
-    //  expect(vaa).toBeDefined();
-    //});
+    test("returns vaa bytes", async function () {
+      const vaa = await wh.getVaaBytes({
+        chain: "Avalanche",
+        emitter: utils.makeUniversalAddress("Avalanche"),
+        sequence: 1n,
+      });
+      expect(vaa).toBeDefined();
+    });
     test("returns undefined when vaa bytes not found", async function () {
       publicRpcMock.givenSignedVaaNotFound();
       const vaa = await wh.getVaaBytes(
@@ -75,15 +75,15 @@ describe("Wormhole Tests", function () {
       );
       expect(vaa).toBeNull();
     });
-    //test("returns after first try fails", async function () {
-    //  publicRpcMock.givenSignedVaaRequestWorksAfterRetry();
-    //  const vaa = await wh.getVaaBytes({
-    //    chain: "Base",
-    //    emitter: utils.makeUniversalAddress("Base"),
-    //    sequence: 1n,
-    //  });
-    //  expect(vaa).toBeDefined();
-    //});
+    test("returns after first try fails", async function () {
+      publicRpcMock.givenSignedVaaRequestWorksAfterRetry();
+      const vaa = await wh.getVaaBytes({
+        chain: "Base",
+        emitter: utils.makeUniversalAddress("Base"),
+        sequence: 1n,
+      });
+      expect(vaa).toBeDefined();
+    });
   });
 });
 

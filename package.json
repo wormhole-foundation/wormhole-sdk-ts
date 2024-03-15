@@ -27,7 +27,7 @@
     "lint": "npx turbo lint --no-cache --force",
     "build": "npx turbo build",
     "rebuild": "npx turbo rebuild --no-cache --force",
-    "test": "NODE_OPTIONS=--experimental-vm-modules NETWORK=Mainnet npm run test --workspaces --if-present",
+    "test": "NETWORK=Mainnet npm run test --workspaces --if-present",
     "prettier": "npm run prettier --workspaces --if-present",
     "docs": "NODE_OPTIONS=--max_old_space_size=8192 typedoc --options typedoc.json",
     "sync": "tsx syncVersion.ts && npm install && npm run build",

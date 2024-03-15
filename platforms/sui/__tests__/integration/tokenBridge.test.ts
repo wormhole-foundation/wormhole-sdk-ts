@@ -1,13 +1,14 @@
 import { describe, expect, test } from "@jest/globals";
 import { CONFIG, TokenBridge, toNative } from "@wormhole-foundation/sdk-connect";
 import { utils } from "@wormhole-foundation/sdk-definitions/testing";
-import { SuiChains, SuiPlatform } from './../../src/index.js';
-import { SUI_COIN } from '../../src/constants.js';
+import { SuiChains, SuiPlatform } from "./../../src/index.js";
+import { SUI_COIN } from "../../src/constants.js";
 
 import "@wormhole-foundation/connect-sdk-sui-core";
 import "@wormhole-foundation/connect-sdk-sui-tokenbridge";
 
 import nock from "nock";
+import path from "path";
 
 const network: "Mainnet" = "Mainnet";
 type TNet = typeof network;
@@ -30,7 +31,7 @@ const realWrappedAddress = toNative("Sui", TOKEN_ADDRESSES["Mainnet"]["Sui"]["wa
 
 // Setup nock to record fixtures
 const nockBack = nock.back;
-nockBack.fixtures = __dirname + "/fixtures";
+nockBack.fixtures = __dirname ?? path.resolve() + "/__tests__/integration/fixtures";
 
 let nockDone: () => void;
 beforeEach(async () => {
