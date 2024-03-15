@@ -26,7 +26,8 @@
   "author": "",
   "description": "SDK for EVM chains, used in conjunction with @wormhole-foundation/sdk",
   "files": [
-    "dist/esm"
+    "dist/esm",
+    "dist/cjs"
   ],
   "keywords": [
     "wormhole",
@@ -48,12 +49,13 @@
   "sideEffects": true,
   "scripts": {
     "build:cjs": "tsc -p ./tsconfig.cjs.json",
-    "build": "tsc -p ./tsconfig.esm.json",
+    "build": "npm run build:esm && npm run build:cjs",
     "rebuild": "npm run clean && npm run build",
     "clean": "rm -rf ./dist && rm -rf ./.turbo",
     "lint": "npm run prettier && eslint --fix ./src --ext .ts",
     "prettier": "prettier --write ./src",
-    "test": "jest --config ./jest.config.ts"
+    "test": "jest --config ./jest.config.ts",
+    "build:esm": "tsc -p ./tsconfig.esm.json"
   },
   "devDependencies": {
     "nock": "13.3.8"
@@ -64,5 +66,12 @@
     "ethers": "^6.5.1",
     "@typechain/ethers-v6": "^0.4.0"
   },
-  "type": "module"
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "types": "./dist/esm/index.d.ts",
+      "require": "./dist/cjs/index.js"
+    }
+  }
 }

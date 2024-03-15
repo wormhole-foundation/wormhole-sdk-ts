@@ -18,8 +18,16 @@
   "module": "./dist/esm/index.js",
   "author": "",
   "description": "The core package for the Connect SDK, used in conjunction with 1 or more of the chain packages",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "types": "./dist/esm/index.d.ts"
+    }
+  },
   "files": [
-    "dist/esm"
+    "dist/esm",
+    "dist/cjs"
   ],
   "keywords": [
     "wormhole",
@@ -33,7 +41,8 @@
   "sideEffects": false,
   "scripts": {
     "build:cjs": "tsc -p ./tsconfig.cjs.json",
-    "build": "tsc -p ./tsconfig.esm.json",
+    "build:esm": "tsc -p ./tsconfig.esm.json",
+    "build": "npm run build:esm && npm run build:cjs",
     "rebuild": "npm run clean && npm run build",
     "clean": "rm -rf ./dist && rm -rf ./.turbo",
     "lint": "npm run prettier && eslint --fix ./src --ext .ts",

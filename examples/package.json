@@ -18,8 +18,8 @@
   "author": "",
   "description": "The core package for the Connect SDK, used in conjunction with 1 or more of the chain packages",
   "files": [
-    "dist",
-    "src/**/*"
+    "dist/esm",
+    "dist/cjs"
   ],
   "keywords": [
     "wormhole",
@@ -53,5 +53,12 @@
   "dependencies": {
     "@wormhole-foundation/sdk": "0.5.0-alpha.3"
   },
-  "type": "module"
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "types": "./dist/esm/index.d.ts",
+      "require": "./dist/cjs/index.js"
+    }
+  }
 }

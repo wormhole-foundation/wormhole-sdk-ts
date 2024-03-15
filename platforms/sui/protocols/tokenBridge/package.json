@@ -18,7 +18,8 @@
   "module": "./dist/esm/index.js",
   "description": "SDK for Sui chains, used in conjunction with @wormhole-foundation/sdk",
   "files": [
-    "dist/esm"
+    "dist/esm",
+    "dist/cjs"
   ],
   "keywords": [
     "wormhole",
@@ -33,16 +34,24 @@
   "sideEffects": true,
   "scripts": {
     "build:cjs": "tsc -p ./tsconfig.cjs.json",
-    "build": "tsc -p ./tsconfig.esm.json",
+    "build": "npm run build:esm && npm run build:cjs",
     "rebuild": "npm run clean && npm run build",
     "clean": "rm -rf ./dist && rm -rf ./.turbo",
     "lint": "npm run prettier && eslint --fix ./src --ext .ts",
-    "prettier": "prettier --write ./src"
+    "prettier": "prettier --write ./src",
+    "build:esm": "tsc -p ./tsconfig.esm.json"
   },
   "dependencies": {
     "@wormhole-foundation/sdk-connect": "0.5.0-alpha.3",
     "@wormhole-foundation/sdk-sui": "0.5.0-alpha.3",
     "@wormhole-foundation/sdk-sui-core": "0.5.0-alpha.3"
   },
-  "type": "module"
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "types": "./dist/esm/index.d.ts",
+      "require": "./dist/cjs/index.js"
+    }
+  }
 }
