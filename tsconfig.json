@@ -5,6 +5,7 @@
     "moduleResolution": "NodeNext",
     "types": ["mocha", "chai", "node", "jest"],
     "esModuleInterop": true,
+    "composite": true,
     "strict": true,
     "incremental": true,
     "declaration": true,

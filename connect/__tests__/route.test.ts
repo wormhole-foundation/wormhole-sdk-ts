@@ -16,7 +16,7 @@ describe("Wormhole Tests", () => {
   });
 
   test("nothing", function () {
-    console.log(wh);
+    console.log(wh.network);
     expect(1).toBe(1);
   });
   // test("Creates route resolver", async () => {

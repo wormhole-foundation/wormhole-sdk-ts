@@ -1,5 +1,17 @@
-import { expect, test } from '@jest/globals';
-import '../mocks/ethers';
+import { jest, expect, test } from '@jest/globals';
+
+jest.mock('ethers', () => {
+  const actualEthers = jest.requireActual('ethers');
+  return {
+    __esModule: true,
+    ...(actualEthers as any),
+    getDefaultProvider: jest.fn().mockImplementation(() => {
+      return {
+        getNetwork: jest.fn().mockReturnValue({ chainId: 1 }),
+      };
+    }),
+  };
+});
 
 import {
   CONFIG,
@@ -12,7 +24,7 @@ import '@wormhole-foundation/sdk-evm-core';
 import '@wormhole-foundation/sdk-evm-tokenbridge';
 import { EvmPlatform } from '../../src/platform.js';
 
-import { getDefaultProvider } from 'ethers';
+const ethers = jest.requireMock('ethers') as { getDefaultProvider: jest.Mock };
 import { EvmChains } from './../../src/index.js';
 
 const EVM_CHAINS = chains.filter(
@@ -29,15 +41,15 @@ describe('EVM Platform Tests', () => {
   describe('Get Token Bridge', () => {
     test('No RPC', async () => {
       const p = new EvmPlatform(network, {});
-      const rpc = getDefaultProvider('');
+      const rpc = ethers.getDefaultProvider('');
       expect(() => p.getProtocol('TokenBridge', rpc)).rejects.toThrow();
     });
     test('With RPC', async () => {
       const p = new EvmPlatform(network, {
-        [EVM_CHAINS[0]]: configs[EVM_CHAINS[0]],
+        [EVM_CHAINS[0]!]: configs[EVM_CHAINS[0]!],
       });
 
-      const rpc = getDefaultProvider('');
+      const rpc = ethers.getDefaultProvider('');
       const tb = await p.getProtocol('TokenBridge', rpc);
       expect(tb).toBeTruthy();
     });
@@ -46,16 +58,15 @@ describe('EVM Platform Tests', () => {
   describe('Get Automatic Token Bridge', () => {
     test('No RPC', async () => {
       const p = new EvmPlatform(network, {});
-      const rpc = getDefaultProvider('');
       expect(() =>
-        p.getProtocol('AutomaticTokenBridge', rpc),
+        p.getProtocol('AutomaticTokenBridge', undefined),
       ).rejects.toThrow();
     });
     test('With RPC', async () => {
       const p = new EvmPlatform(network, {
-        [EVM_CHAINS[0]]: configs[EVM_CHAINS[0]],
+        [EVM_CHAINS[0]!]: configs[EVM_CHAINS[0]!],
       });
-      const rpc = getDefaultProvider('');
+      const rpc = ethers.getDefaultProvider('');
       const tb = await p.getProtocol('AutomaticTokenBridge', rpc);
       expect(tb).toBeTruthy();
     });
@@ -65,14 +76,14 @@ describe('EVM Platform Tests', () => {
     test('No conf', () => {
       const p = new EvmPlatform(network, {});
       expect(p.config).toEqual({});
-      expect(() => p.getChain(EVM_CHAINS[0])).toThrow();
+      expect(() => p.getChain(EVM_CHAINS[0]!)).toThrow();
     });
 
     test('With conf', () => {
       const p = new EvmPlatform(network, {
-        [EVM_CHAINS[0]]: configs[EVM_CHAINS[0]],
+        [EVM_CHAINS[0]!]: configs[EVM_CHAINS[0]!],
       });
-      expect(() => p.getChain(EVM_CHAINS[0])).not.toThrow();
+      expect(() => p.getChain(EVM_CHAINS[0]!)).not.toThrow();
     });
   });
 
@@ -83,15 +94,15 @@ describe('EVM Platform Tests', () => {
 
       // expect getRpc to throw an error since we havent provided
       // the conf to figure out how to connect
-      expect(() => p.getRpc(EVM_CHAINS[0])).toThrow();
+      expect(() => p.getRpc(EVM_CHAINS[0]!)).toThrow();
     });
 
     test('With conf', () => {
       const p = new EvmPlatform(network, {
-        [EVM_CHAINS[0]]: configs[EVM_CHAINS[0]],
+        [EVM_CHAINS[0]!]: configs[EVM_CHAINS[0]!],
       });
-      const C = p.getChain(EVM_CHAINS[0]);
-      expect(() => p.getRpc(EVM_CHAINS[0])).not.toThrow();
+      const C = p.getChain(EVM_CHAINS[0]!);
+      expect(() => p.getRpc(EVM_CHAINS[0]!)).not.toThrow();
       expect(() => C.getRpc()).not.toThrow();
     });
   });

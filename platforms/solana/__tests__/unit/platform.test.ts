@@ -1,5 +1,22 @@
-import { expect, test } from '@jest/globals';
-import '../mocks/web3';
+import { jest, expect, test } from '@jest/globals';
+import { nativeChainIds } from '@wormhole-foundation/sdk-connect';
+
+// Mock the genesis hash call for solana so we dont touch the network
+jest.mock('@solana/web3.js', () => {
+  const actualWeb3 = jest.requireActual('@solana/web3.js');
+  return {
+    ...(actualWeb3 as any),
+    getDefaultProvider: jest.fn().mockImplementation(() => {
+      return {
+        getGenesisHash: jest
+          .fn()
+          .mockReturnValue(
+            nativeChainIds.networkChainToNativeChainId('Mainnet', 'Solana'),
+          ),
+      };
+    }),
+  };
+});
 
 import {
   DEFAULT_NETWORK,
@@ -13,8 +30,9 @@ import { SolanaChains, SolanaPlatform } from './../../src/index.js';
 import '@wormhole-foundation/sdk-solana-core';
 import '@wormhole-foundation/sdk-solana-tokenbridge';
 
-// @ts-ignore -- this is the mock we import above
-import { getDefaultProvider } from '@solana/web3.js';
+const { getDefaultProvider } = jest.requireMock('@solana/web3.js') as {
+  getDefaultProvider: jest.Mock;
+};
 
 const network = DEFAULT_NETWORK;
 
@@ -30,7 +48,7 @@ describe('Solana Platform Tests', () => {
   describe('Get Token Bridge', () => {
     test('Hardcoded Genesis mock', async () => {
       const p = new SolanaPlatform(network, {
-        [SOLANA_CHAINS[0]]: configs[SOLANA_CHAINS[0]],
+        [SOLANA_CHAINS[0]!]: configs[SOLANA_CHAINS[0]!],
       });
 
       const tb = await p.getProtocol('TokenBridge', fakeRpc);
@@ -42,14 +60,14 @@ describe('Solana Platform Tests', () => {
     test('No conf', () => {
       const p = new SolanaPlatform(network, {});
       expect(p.config).toEqual({});
-      expect(() => p.getChain(SOLANA_CHAINS[0])).toThrow();
+      expect(() => p.getChain(SOLANA_CHAINS[0]!)).toThrow();
     });
 
     test('With conf', () => {
       const p = new SolanaPlatform(network, {
-        [SOLANA_CHAINS[0]]: configs[SOLANA_CHAINS[0]],
+        [SOLANA_CHAINS[0]!]: configs[SOLANA_CHAINS[0]!],
       });
-      expect(() => p.getChain(SOLANA_CHAINS[0])).not.toThrow();
+      expect(() => p.getChain(SOLANA_CHAINS[0]!)).not.toThrow();
     });
   });
 
@@ -60,16 +78,16 @@ describe('Solana Platform Tests', () => {
 
       // expect getRpc to throw an error since we havent provided
       // the conf to figure out how to connect
-      expect(() => p.getRpc(SOLANA_CHAINS[0])).toThrow();
-      expect(() => p.getChain(SOLANA_CHAINS[0])).toThrow();
+      expect(() => p.getRpc(SOLANA_CHAINS[0]!)).toThrow();
+      expect(() => p.getChain(SOLANA_CHAINS[0]!)).toThrow();
     });
 
     test('With conf', () => {
       const p = new SolanaPlatform(network, {
-        [SOLANA_CHAINS[0]]: configs[SOLANA_CHAINS[0]],
+        [SOLANA_CHAINS[0]!]: configs[SOLANA_CHAINS[0]!],
       });
-      expect(() => p.getRpc(SOLANA_CHAINS[0])).not.toThrow();
-      expect(() => p.getChain(SOLANA_CHAINS[0]).getRpc()).not.toThrow();
+      expect(() => p.getRpc(SOLANA_CHAINS[0]!)).not.toThrow();
+      expect(() => p.getChain(SOLANA_CHAINS[0]!).getRpc()).not.toThrow();
     });
   });
 });

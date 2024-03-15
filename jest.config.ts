@@ -15,7 +15,7 @@ const jestConfig: JestConfigWithTsJest = {
       "ts-jest",
       {
         useESM: true,
-        moduleResolution: "NodeNext",
+        tsconfig: "tsconfig.esm.json",
       },
     ],
   },
