@@ -18,7 +18,7 @@ import {
   networkPlatformConfigs,
 } from "@wormhole-foundation/sdk-connect";
 import type { SignedTransaction } from "algosdk";
-import { Algodv2, decodeSignedTransaction, modelsv2, waitForConfirmation } from "algosdk";
+import algosdk from "algosdk";
 import { AlgorandAddress, AlgorandZeroAddress } from "./address.js";
 import { AlgorandChain } from "./chain.js";
 import type { AlgorandChains, AlgorandPlatformType, AnyAlgorandAddress } from "./types.js";
@@ -37,8 +37,8 @@ export class AlgorandPlatform<N extends Network>
     super(network, _config ?? networkPlatformConfigs(network, AlgorandPlatform._platform));
   }
 
-  getRpc<C extends AlgorandChains>(chain: C): Algodv2 {
-    if (chain in this.config) return new Algodv2("", this.config[chain]!.rpc);
+  getRpc<C extends AlgorandChains>(chain: C): algosdk.Algodv2 {
+    if (chain in this.config) return new algosdk.Algodv2("", this.config[chain]!.rpc);
     throw new Error("No configuration available for chain: " + chain);
   }
 
@@ -72,46 +72,50 @@ export class AlgorandPlatform<N extends Network>
     return platform === AlgorandPlatform._platform;
   }
 
-  static async getDecimals(chain: Chain, rpc: Algodv2, token: AnyAlgorandAddress): Promise<number> {
+  static async getDecimals(
+    chain: Chain,
+    rpc: algosdk.Algodv2,
+    token: AnyAlgorandAddress,
+  ): Promise<number> {
     // It may come in as a universal address
     const assetId = isNative(token) ? 0 : new AlgorandAddress(token).toInt();
 
     if (assetId === 0) return decimals.nativeDecimals(AlgorandPlatform._platform);
 
     const assetResp = await rpc.getAssetByID(assetId).do();
-    const asset = modelsv2.Asset.from_obj_for_encoding(assetResp);
+    const asset = algosdk.modelsv2.Asset.from_obj_for_encoding(assetResp);
     if (!asset.params || !asset.params.decimals) throw new Error("Could not fetch token details");
     return Number(asset.params.decimals);
   }
 
   static async getBalance(
     chain: Chain,
-    rpc: Algodv2,
+    rpc: algosdk.Algodv2,
     walletAddr: string,
     token: AnyAlgorandAddress,
   ): Promise<bigint | null> {
     const assetId = isNative(token) ? 0 : new AlgorandAddress(token).toInt();
     if (assetId === 0) {
       const resp = await rpc.accountInformation(walletAddr).do();
-      const accountInfo = modelsv2.Account.from_obj_for_encoding(resp);
+      const accountInfo = algosdk.modelsv2.Account.from_obj_for_encoding(resp);
       return BigInt(accountInfo.amount);
     }
 
     const acctAssetInfoResp = await rpc.accountAssetInformation(walletAddr, assetId).do();
-    const accountAssetInfo = modelsv2.AssetHolding.from_obj_for_encoding(acctAssetInfoResp);
+    const accountAssetInfo = algosdk.modelsv2.AssetHolding.from_obj_for_encoding(acctAssetInfoResp);
     return BigInt(accountAssetInfo.amount);
   }
 
   static async getBalances(
     chain: Chain,
-    rpc: Algodv2,
+    rpc: algosdk.Algodv2,
     walletAddr: string,
     tokens: AnyAlgorandAddress[],
   ): Promise<Balances> {
     let native: bigint;
     if (tokens.includes("native")) {
       const acctInfoResp = await rpc.accountInformation(walletAddr).do();
-      const accountInfo = modelsv2.Account.from_obj_for_encoding(acctInfoResp);
+      const accountInfo = algosdk.modelsv2.Account.from_obj_for_encoding(acctInfoResp);
       native = BigInt(accountInfo.amount);
     }
     const balancesArr = tokens.map(async (token) => {
@@ -120,18 +124,19 @@ export class AlgorandPlatform<N extends Network>
       }
       const asaId = new AlgorandAddress(token).toInt();
       const acctAssetInfoResp = await rpc.accountAssetInformation(walletAddr, asaId).do();
-      const accountAssetInfo = modelsv2.AssetHolding.from_obj_for_encoding(acctAssetInfoResp);
+      const accountAssetInfo =
+        algosdk.modelsv2.AssetHolding.from_obj_for_encoding(acctAssetInfoResp);
       return BigInt(accountAssetInfo.amount);
     });
 
     return balancesArr.reduce((obj, item) => Object.assign(obj, item), {});
   }
 
-  static async sendWait(chain: Chain, rpc: Algodv2, stxns: SignedTx[]): Promise<TxHash[]> {
+  static async sendWait(chain: Chain, rpc: algosdk.Algodv2, stxns: SignedTx[]): Promise<TxHash[]> {
     const rounds = 4;
 
     const decodedStxns: SignedTransaction[] = stxns.map((val, idx) => {
-      const decodedStxn: SignedTransaction = decodeSignedTransaction(val);
+      const decodedStxn: SignedTransaction = algosdk.decodeSignedTransaction(val);
       return decodedStxn;
     });
 
@@ -144,8 +149,8 @@ export class AlgorandPlatform<N extends Network>
     if (!txId) {
       throw new Error("Transaction(s) failed to send");
     }
-    const confirmResp = await waitForConfirmation(rpc, txId, rounds);
-    const ptr = modelsv2.PendingTransactionResponse.from_obj_for_encoding(confirmResp);
+    const confirmResp = await algosdk.waitForConfirmation(rpc, txId, rounds);
+    const ptr = algosdk.modelsv2.PendingTransactionResponse.from_obj_for_encoding(confirmResp);
     if (!ptr.confirmedRound) {
       throw new Error(`Transaction(s) could not be confirmed in ${rounds} rounds`);
     }
@@ -153,18 +158,18 @@ export class AlgorandPlatform<N extends Network>
     return txIds;
   }
 
-  static async getLatestBlock(rpc: Algodv2): Promise<number> {
+  static async getLatestBlock(rpc: algosdk.Algodv2): Promise<number> {
     const statusResp = await rpc.status().do();
-    const status = modelsv2.NodeStatusResponse.from_obj_for_encoding(statusResp);
+    const status = algosdk.modelsv2.NodeStatusResponse.from_obj_for_encoding(statusResp);
     if (!status.lastRound) {
       throw new Error("Error getting status from node");
     }
     return Number(status.lastRound);
   }
 
-  static async getLatestFinalizedBlock(rpc: Algodv2): Promise<number> {
+  static async getLatestFinalizedBlock(rpc: algosdk.Algodv2): Promise<number> {
     const statusResp = await rpc.status().do();
-    const status = modelsv2.NodeStatusResponse.from_obj_for_encoding(statusResp);
+    const status = algosdk.modelsv2.NodeStatusResponse.from_obj_for_encoding(statusResp);
     if (!status.lastRound) {
       throw new Error("Error getting status from node");
     }
@@ -183,9 +188,9 @@ export class AlgorandPlatform<N extends Network>
     return [network, chain];
   }
 
-  static async chainFromRpc(rpc: Algodv2): Promise<[Network, AlgorandChains]> {
+  static async chainFromRpc(rpc: algosdk.Algodv2): Promise<[Network, AlgorandChains]> {
     const versionResp = await rpc.versionsCheck().do();
-    const version = modelsv2.Version.from_obj_for_encoding(versionResp);
+    const version = algosdk.modelsv2.Version.from_obj_for_encoding(versionResp);
     return this.chainFromChainId(version.genesisId);
   }
 }

@@ -19,6 +19,7 @@
   "module": "./dist/esm/index.js",
   "exports":{
     ".": {
+      "main":"./dist/esm/index.js",
      "import": "./dist/esm/index.js",
      "types":"./dist/esm/index.d.ts"
     }

@@ -4,5 +4,6 @@
   "compilerOptions": {
     "outDir": "dist/esm",
     "rootDir": "src",
+    "verbatimModuleSyntax": true,
   }
 }

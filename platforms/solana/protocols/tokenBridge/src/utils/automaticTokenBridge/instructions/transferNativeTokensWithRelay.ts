@@ -14,7 +14,8 @@ import {
   deriveTmpTokenAccountAddress,
 } from './../accounts/index.js';
 import { getAssociatedTokenAddressSync } from '@solana/spl-token';
-import { BN } from '@project-serum/anchor';
+import anchor from '@project-serum/anchor';
+const { BN } = anchor;
 import { deriveSignerSequenceAddress } from '../accounts/signerSequence.js';
 import type { Chain } from '@wormhole-foundation/sdk-connect';
 import { toChainId } from '@wormhole-foundation/sdk-connect';
