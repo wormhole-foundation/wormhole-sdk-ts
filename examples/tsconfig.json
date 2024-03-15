@@ -5,6 +5,7 @@
     "rootDir": "src",
     "target":"ESNext",
     "allowUnusedLabels": true,
-    "noUnusedLocals": false
+    "noUnusedLocals": false,
+    "allowSyntheticDefaultImports": true,
   }
 }

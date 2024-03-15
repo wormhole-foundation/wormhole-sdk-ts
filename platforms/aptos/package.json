@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-aptos",
-  "version": "0.5.0-alpha.5",
+  "version": "0.5.0-alpha.6",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -43,7 +43,7 @@
     "build:esm": "tsc -p ./tsconfig.esm.json"
   },
   "dependencies": {
-    "@wormhole-foundation/sdk-connect": "0.5.0-alpha.5",
+    "@wormhole-foundation/sdk-connect": "0.5.0-alpha.6",
     "aptos": "1.21.0"
   },
   "type": "module",

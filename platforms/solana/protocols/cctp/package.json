@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-solana-cctp",
-  "version": "0.5.0-alpha.5",
+  "version": "0.5.0-alpha.6",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -48,9 +48,9 @@
     "nock": "^13.3.3"
   },
   "dependencies": {
-    "@wormhole-foundation/sdk-connect": "0.5.0-alpha.5",
-    "@wormhole-foundation/sdk-solana": "0.5.0-alpha.5",
-    "@wormhole-foundation/sdk-solana-core": "0.5.0-alpha.5",
+    "@wormhole-foundation/sdk-connect": "0.5.0-alpha.6",
+    "@wormhole-foundation/sdk-solana": "0.5.0-alpha.6",
+    "@wormhole-foundation/sdk-solana-core": "0.5.0-alpha.6",
     "@coral-xyz/borsh": "0.2.6",
     "@project-serum/anchor": "0.25.0",
     "@project-serum/borsh": "0.2.5",
