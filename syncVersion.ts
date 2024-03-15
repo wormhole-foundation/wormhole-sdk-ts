@@ -19,24 +19,24 @@ function updateVersionInPackageJson(dirPath: string, version: string) {
       }),
     );
 
-  if (!packageJson.exports) {
-    packageJson.exports = {
-      ".": {
-        import: "./dist/esm/index.js",
-        types: "./dist/esm/index.d.ts",
-        require: "./dist/cjs/index.js",
-      },
-    };
-  }
+  // if (!packageJson.exports) {
+  //   packageJson.exports = {
+  //     ".": {
+  //       import: "./dist/esm/index.js",
+  //       types: "./dist/esm/index.d.ts",
+  //       require: "./dist/cjs/index.js",
+  //     },
+  //   };
+  // }
 
-  packageJson.files = ["dist/esm", "dist/cjs"];
+  // packageJson.files = ["dist/esm", "dist/cjs"];
 
-  if ("build" in packageJson.scripts) {
-    if (packageJson.scripts.build.startsWith("tsc")) {
-      packageJson.scripts["build:esm"] = packageJson.scripts.build;
-      packageJson.scripts.build = "npm run build:esm && npm run build:cjs";
-    }
-  }
+  // if ("build" in packageJson.scripts) {
+  //   if (packageJson.scripts.build.startsWith("tsc")) {
+  //     packageJson.scripts["build:esm"] = packageJson.scripts.build;
+  //     packageJson.scripts.build = "npm run build:esm && npm run build:cjs";
+  //   }
+  // }
 
   fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
 }

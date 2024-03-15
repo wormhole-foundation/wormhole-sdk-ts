@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-sui-core",
-  "version": "0.5.0-alpha.3",
+  "version": "0.5.0-alpha.4",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -42,8 +42,8 @@
     "build:esm": "tsc -p ./tsconfig.esm.json"
   },
   "dependencies": {
-    "@wormhole-foundation/sdk-connect": "0.5.0-alpha.3",
-    "@wormhole-foundation/sdk-sui": "0.5.0-alpha.3"
+    "@wormhole-foundation/sdk-connect": "0.5.0-alpha.4",
+    "@wormhole-foundation/sdk-sui": "0.5.0-alpha.4"
   },
   "type": "module",
   "exports": {
