@@ -1,5 +1,4 @@
-import anchor from '@project-serum/anchor';
-const { BN } = anchor;
+import BN from 'bn.js';
 
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import type { TransactionInstruction } from '@solana/web3.js';

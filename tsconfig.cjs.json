@@ -4,6 +4,5 @@
     "module": "CommonJS",
     "moduleResolution": "node",
     "esModuleInterop": true,
-    "resolvePackageJsonExports": true,
   }
 }

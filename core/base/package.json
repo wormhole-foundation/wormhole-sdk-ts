@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-base",
-  "version": "0.5.0-alpha.3",
+  "version": "0.5.0-alpha.7",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -13,19 +13,19 @@
     "test": "__tests__"
   },
   "license": "Apache-2.0",
-  "main": "./dist/esm/index.js",
+  "main": "./dist/cjs/index.js",
   "types": "./dist/esm/index.d.ts",
-  "typings": "./dist/esm/index.d.ts",
   "module": "./dist/esm/index.js",
   "exports": {
     ".": {
-      "main": "./dist/esm/index.js",
       "import": "./dist/esm/index.js",
-      "types": "./dist/esm/index.d.ts"
+      "types": "./dist/esm/index.d.ts",
+      "require": "./dist/cjs/index.js"
     }
   },
   "files": [
-    "dist/esm"
+    "dist/esm",
+    "dist/cjs"
   ],
   "dependencies": {
     "@scure/base": "^1.1.3"
@@ -34,8 +34,9 @@
   "scripts": {
     "test": "jest --config ../../jest.config.ts __tests__/*.ts",
     "testamt": "jest --config ../../jest.config.ts __tests__/amount.ts",
-    "build:cjs": "tsc -p ./tsconfig.cjs.json",
-    "build": "tsc -p ./tsconfig.esm.json",
+    "build:cjs": "tsc -p ./tsconfig.cjs.json  && echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
+    "build:esm": "tsc -p ./tsconfig.esm.json",
+    "build": "npm run build:esm && npm run build:cjs",
     "rebuild": "npm run clean && npm run build",
     "clean": "rm -rf ./dist && rm -rf ./.turbo",
     "typecheck": "cp ./__tests__/typechecks/index.test-d.ts ./dist/esm/ && tsd",
