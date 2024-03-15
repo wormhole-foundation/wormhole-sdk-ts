@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-cosmwasm-ibc",
-  "version": "0.5.0-alpha.6",
+  "version": "0.5.0-alpha.7",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -53,9 +53,9 @@
     "@cosmjs/cosmwasm-stargate": "^0.32.0",
     "@cosmjs/stargate": "^0.32.0",
     "cosmjs-types": "^0.9.0",
-    "@wormhole-foundation/sdk-connect": "0.5.0-alpha.6",
-    "@wormhole-foundation/sdk-cosmwasm": "0.5.0-alpha.6",
-    "@wormhole-foundation/sdk-cosmwasm-core": "0.5.0-alpha.6"
+    "@wormhole-foundation/sdk-connect": "0.5.0-alpha.7",
+    "@wormhole-foundation/sdk-cosmwasm": "0.5.0-alpha.7",
+    "@wormhole-foundation/sdk-cosmwasm-core": "0.5.0-alpha.7"
   },
   "type": "module",
   "exports": {
