@@ -18,7 +18,7 @@ import { deriveSignerSequenceAddress } from '../accounts/signerSequence.js';
 import type { Chain } from '@wormhole-foundation/sdk-connect';
 import { toChainId } from '@wormhole-foundation/sdk-connect';
 
-import anchor from '@project-serum/anchor';
+import * as anchor from '@project-serum/anchor';
 const { BN } = anchor;
 
 export async function createTransferNativeTokensWithRelayInstruction(

@@ -13,7 +13,7 @@
   "directories": {
     "test": "__tests__"
   },
-  "main": "./dist/esm/index.js",
+  "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/esm/index.d.ts",
   "files": [
@@ -21,7 +21,7 @@
   ],
   "scripts": {
     "test": "jest --config ../jest.config.ts __tests__/*.ts",
-    "build:cjs": "tsc -p ./tsconfig.cjs.json",
+    "build:cjs": "tsc -p ./tsconfig.cjs.json  && echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
     "build": "tsc -p ./tsconfig.esm.json",
     "rebuild": "npm run clean && npm run build",
     "clean": "rm -rf ./dist && rm -rf ./.turbo",

@@ -5,14 +5,13 @@ import {
   isPlatform,
   platformToChains,
 } from "@wormhole-foundation/sdk-base";
-import crypto from "crypto";
 import type { ChainAddress, NativeAddress } from "./../../index.js";
 import { UniversalAddress, toNative } from "./../../index.js";
 
 // return a random buffer of length n
 function randomBytes(n: number): Uint8Array {
   const buff = new Uint8Array(n);
-  crypto.getRandomValues(buff);
+  for (let i = 0; i < n; i++) buff[i] = Math.floor(Math.random() * 256);
   return buff;
 }
 

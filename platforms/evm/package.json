@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-evm",
-  "version": "0.5.0-alpha.4",
+  "version": "0.5.0-alpha.5",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -13,7 +13,7 @@
     "test": "tests"
   },
   "license": "Apache-2.0",
-  "main": "./dist/esm/index.js",
+  "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/esm/index.d.ts",
   "typesVersions": {
@@ -48,7 +48,7 @@
   },
   "sideEffects": true,
   "scripts": {
-    "build:cjs": "tsc -p ./tsconfig.cjs.json",
+    "build:cjs": "tsc -p ./tsconfig.cjs.json  && echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
     "build": "npm run build:esm && npm run build:cjs",
     "rebuild": "npm run clean && npm run build",
     "clean": "rm -rf ./dist && rm -rf ./.turbo",
@@ -61,7 +61,7 @@
     "nock": "13.3.8"
   },
   "dependencies": {
-    "@wormhole-foundation/sdk-connect": "0.5.0-alpha.4",
+    "@wormhole-foundation/sdk-connect": "0.5.0-alpha.5",
     "typechain": "^8.2.0",
     "ethers": "^6.5.1",
     "@typechain/ethers-v6": "^0.4.0"

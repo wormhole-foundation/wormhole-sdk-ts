@@ -26,7 +26,7 @@ import {
 } from '@wormhole-foundation/sdk-solana';
 
 import type { Program } from '@project-serum/anchor';
-import anchor from '@project-serum/anchor';
+import * as anchor from '@project-serum/anchor';
 
 import type { Connection } from '@solana/web3.js';
 import { PublicKey, Transaction } from '@solana/web3.js';

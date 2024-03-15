@@ -1,4 +1,4 @@
-import anchor from '@project-serum/anchor';
+import * as anchor from '@project-serum/anchor';
 const { BN } = anchor;
 
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
