@@ -26,7 +26,6 @@ import {
 } from '@wormhole-foundation/sdk-solana';
 
 import type { Program } from '@project-serum/anchor';
-import anchor from '@project-serum/anchor';
 
 import type { Connection } from '@solana/web3.js';
 import { PublicKey, Transaction } from '@solana/web3.js';
@@ -56,9 +55,11 @@ import {
 import '@wormhole-foundation/sdk-solana-core';
 import { registeredTokens } from './consts.js';
 
+import BN from 'bn.js';
+
 const SOL_DECIMALS = 9;
-const TEN = new anchor.BN(10);
-const SWAP_RATE_PRECISION = new anchor.BN(100_000_000);
+const TEN = new BN(10);
+const SWAP_RATE_PRECISION = new BN(100_000_000);
 
 export class SolanaAutomaticTokenBridge<
   N extends Network,
@@ -212,10 +213,10 @@ export class SolanaAutomaticTokenBridge<
       await SolanaPlatform.getDecimals(this.chain, this.connection, token),
     );
 
-    const relayerFee = TEN.pow(new anchor.BN(decimals))
+    const relayerFee = TEN.pow(new BN(decimals))
       .mul(fee)
       .mul(SWAP_RATE_PRECISION)
-      .div(new anchor.BN(relayerFeePrecision).mul(swapRate));
+      .div(new BN(relayerFeePrecision).mul(swapRate));
 
     return BigInt(relayerFee.toString());
   }
@@ -238,14 +239,12 @@ export class SolanaAutomaticTokenBridge<
       decimals > SOL_DECIMALS
         ? maxNativeSwapAmount
             .mul(nativeSwapRate)
-            .mul(TEN.pow(new anchor.BN(decimals - SOL_DECIMALS)))
+            .mul(TEN.pow(new BN(decimals - SOL_DECIMALS)))
             .div(SWAP_RATE_PRECISION)
         : maxNativeSwapAmount
             .mul(nativeSwapRate)
             .div(
-              TEN.pow(new anchor.BN(SOL_DECIMALS - decimals)).mul(
-                SWAP_RATE_PRECISION,
-              ),
+              TEN.pow(new BN(SOL_DECIMALS - decimals)).mul(SWAP_RATE_PRECISION),
             );
 
     return BigInt(maxSwapAmountIn.toString());
@@ -270,11 +269,11 @@ export class SolanaAutomaticTokenBridge<
     const nativeSwapRate = this.calculateNativeSwapRate(solSwapRate, swapRate);
     const swapAmountOut =
       decimals > SOL_DECIMALS
-        ? SWAP_RATE_PRECISION.mul(new anchor.BN(amount.toString())).div(
-            nativeSwapRate.mul(TEN.pow(new anchor.BN(decimals - SOL_DECIMALS))),
+        ? SWAP_RATE_PRECISION.mul(new BN(amount.toString())).div(
+            nativeSwapRate.mul(TEN.pow(new BN(decimals - SOL_DECIMALS))),
           )
-        : SWAP_RATE_PRECISION.mul(new anchor.BN(amount.toString()))
-            .mul(TEN.pow(new anchor.BN(SOL_DECIMALS - decimals)))
+        : SWAP_RATE_PRECISION.mul(new BN(amount.toString()))
+            .mul(TEN.pow(new BN(SOL_DECIMALS - decimals)))
             .div(nativeSwapRate);
 
     return BigInt(swapAmountOut.toString());
@@ -307,10 +306,7 @@ export class SolanaAutomaticTokenBridge<
     );
   }
 
-  private calculateNativeSwapRate(
-    solSwapRate: anchor.BN,
-    swapRate: anchor.BN,
-  ): anchor.BN {
+  private calculateNativeSwapRate(solSwapRate: BN, swapRate: BN): BN {
     return SWAP_RATE_PRECISION.mul(solSwapRate).div(swapRate);
   }
 
