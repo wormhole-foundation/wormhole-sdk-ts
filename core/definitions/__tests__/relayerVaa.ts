@@ -5,7 +5,7 @@ import {
   serialize,
   deserialize,
 } from "./../src/vaa/index.js";
-import "../src/protocols/relayer";
+import "../src/protocols/relayer/index.js";
 
 //monkey-patch to allow stringifying BigInts
 (BigInt.prototype as any).toJSON = function () {

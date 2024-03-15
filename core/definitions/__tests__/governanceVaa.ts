@@ -8,7 +8,7 @@ import {
   blindDeserializePayload,
   payloadDiscriminator,
 } from "./../src/vaa/index.js";
-import "../src/protocols/core";
+import "../src/protocols/core/index.js";
 
 //monkey-patch to allow stringifying BigInts
 (BigInt.prototype as any).toJSON = function () {

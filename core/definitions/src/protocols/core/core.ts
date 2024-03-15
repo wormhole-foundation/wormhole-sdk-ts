@@ -6,7 +6,7 @@ import type { TxHash } from "../../types.js";
 import type { UnsignedTransaction } from "../../unsignedTransaction.js";
 import type { VAA } from "./../../vaa/index.js";
 
-import "../../registry";
+import "../../registry.js";
 declare module "../../registry.js" {
   export namespace WormholeRegistry {
     interface ProtocolToPlatformMapping {

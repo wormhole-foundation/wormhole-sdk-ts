@@ -10,7 +10,7 @@ import type { CircleMessageId } from "../../attestation.js";
 import type { TokenId } from "../../types.js";
 import type { UnsignedTransaction } from "../../unsignedTransaction.js";
 
-import "./automaticCircleBridgeLayout";
+import "./automaticCircleBridgeLayout.js";
 import { circleMessageLayout } from "./circleBridgeLayout.js";
 
 import type { EmptyPlatformMap } from "../../protocol.js";
@@ -18,7 +18,7 @@ import { keccak256 } from "../../utils.js";
 import type { ProtocolPayload, ProtocolVAA } from "./../../vaa/index.js";
 import { payloadDiscriminator } from "./../../vaa/index.js";
 
-import "../../registry";
+import "../../registry.js";
 declare module "../../registry.js" {
   export namespace WormholeRegistry {
     interface ProtocolToPlatformMapping {

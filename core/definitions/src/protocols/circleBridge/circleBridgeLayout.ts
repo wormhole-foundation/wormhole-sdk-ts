@@ -5,7 +5,7 @@ import {
   circleNonceItem,
   universalAddressItem,
 } from "./../../layout-items/index.js";
-import "./automaticCircleBridgeLayout";
+import "./automaticCircleBridgeLayout.js";
 import type { NamedPayloads, RegisterPayloadTypes } from "./../../vaa/index.js";
 import { registerPayloadTypes } from "./../../vaa/index.js";
 
@@ -42,7 +42,7 @@ export const circleBridgeNamedPayloads = [
 ] as const satisfies NamedPayloads;
 
 // factory registration:
-import "../../registry";
+import "../../registry.js";
 declare module "../../registry.js" {
   export namespace WormholeRegistry {
     interface PayloadLiteralToLayoutMapping

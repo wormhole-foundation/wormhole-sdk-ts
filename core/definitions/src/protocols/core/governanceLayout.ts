@@ -220,7 +220,7 @@ const cctpPayloads = [
 ] as const satisfies NamedPayloads;
 
 // factory registration:
-import "../../registry";
+import "../../registry.js";
 declare module "../../registry.js" {
   export namespace WormholeRegistry {
     interface PayloadLiteralToLayoutMapping

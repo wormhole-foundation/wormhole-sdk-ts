@@ -6,8 +6,8 @@ import type {
   NativeAddress,
   UniversalOrNative,
 } from "../../address.js";
-import "./automaticTokenBridgeLayout";
-import "./tokenBridgeLayout";
+import "./automaticTokenBridgeLayout.js";
+import "./tokenBridgeLayout.js";
 import type { EmptyPlatformMap } from "../../protocol.js";
 import type { TokenAddress, TokenId } from "../../types.js";
 import type { UnsignedTransaction } from "../../unsignedTransaction.js";
@@ -16,7 +16,7 @@ import { payloadDiscriminator } from "./../../vaa/index.js";
 
 export const ErrNotWrapped = (token: string) => new Error(`Token ${token} is not a wrapped asset`);
 
-import "../../registry";
+import "../../registry.js";
 declare module "../../registry.js" {
   export namespace WormholeRegistry {
     interface ProtocolToPlatformMapping {
