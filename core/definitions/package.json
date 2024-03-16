@@ -14,23 +14,31 @@
   },
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
-  "types": "./dist/esm/index.d.ts",
+  "types": "./dist/cjs/index.d.ts",
   "files": [
     "dist/esm",
     "dist/cjs"
   ],
   "exports": {
     ".": {
-      "require": "./dist/cjs/index.js",
-      "import": "./dist/esm/index.js",
-      "node": "./dist/esm/index.js",
-      "types": "./dist/esm/index.d.ts"
+      "require": {
+        "default": "./dist/cjs/index.js",
+        "types": "./dist/cjs/index.d.ts"
+      },
+      "import": {
+        "default": "./dist/esm/index.js",
+        "types": "./dist/esm/index.d.ts"
+      } 
     },
     "./testing": {
-      "require": "./dist/cjs/testing/index.js",
-      "import": "./dist/esm/testing/index.js",
-      "node": "./dist/esm/testing/index.js",
-      "types": "./dist/esm/testing/index.d.ts"
+      "require": {
+        "default": "./dist/cjs/testing/index.js",
+        "types": "./dist/cjs/testing/index.d.ts"
+      },
+      "import": {
+        "default": "./dist/esm/testing/index.js",
+        "types": "./dist/esm/testing/index.d.ts"
+      }
     }
   },
   "scripts": {

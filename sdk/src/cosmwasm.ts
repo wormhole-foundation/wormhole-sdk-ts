@@ -1,4 +1,3 @@
-/// <reference path="../../platforms/cosmwasm/dist/esm/address.d.ts" />
 import type { Network, PlatformDefinition } from "./index.js";
 /** Platform and protocol definitions for Cosmwasm */
 export const cosmwasm = async (): Promise<PlatformDefinition<Network, "Cosmwasm">> => {

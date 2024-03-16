@@ -3,12 +3,18 @@
   "include": ["./src", "./src/**/*.ts"],
   "compilerOptions": {
     "rootDir": "src",
-    "target":"ESNext",
-    "allowUnusedLabels": true,
-    "noUnusedLocals": false,
-    "esModuleInterop": true,
+
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "allowSyntheticDefaultImports": true,
+
+    // For `type:"module"`
+    // "module":"NodeNext",
+    // "moduleResolution":"NodeNext",
+
+    // Always consult the package.json `exports` field for module resolution
+    "resolvePackageJsonExports": true,
+    // ignore junk since this is examples
+    "allowUnusedLabels": true,
+    "noUnusedLocals": false,
   }
 }

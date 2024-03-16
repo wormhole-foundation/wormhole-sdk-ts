@@ -1,4 +1,3 @@
-/// <reference path="../../platforms/sui/dist/esm/address.d.ts" />
 import type { Network, PlatformDefinition } from "./index.js";
 /** Platform and protocol definitions for Sui */
 export const sui = async (): Promise<PlatformDefinition<Network, "Sui">> => {

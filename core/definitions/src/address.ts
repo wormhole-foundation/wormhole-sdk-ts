@@ -64,6 +64,7 @@ type NativeAddressCtr = new (ua: UniversalAddress | string | Uint8Array) => Addr
 const nativeFactory = new Map<Platform, NativeAddressCtr>();
 
 export function registerNative<P extends Platform>(platform: P, ctr: NativeAddressCtr): void {
+  console.trace("Register native for: ", platform);
   if (nativeFactory.has(platform)) return; //throw new Error(`Native address type for platform ${platform} has already registered`);
   nativeFactory.set(platform, ctr);
 }
@@ -80,6 +81,7 @@ export function toNative<C extends Chain>(
 ): NativeAddress<C> {
   const platform: Platform = chainToPlatform.get(chain)!;
   const nativeCtr = nativeFactory.get(platform);
+  console.trace("Convert native for: ", chain);
   if (!nativeCtr) throw new Error(`No native address type registered for platform ${platform}`);
   return new nativeCtr(ua) as unknown as NativeAddress<C>;
 }

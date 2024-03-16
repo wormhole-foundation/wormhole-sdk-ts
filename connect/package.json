@@ -14,15 +14,20 @@
   },
   "license": "Apache-2.0",
   "main": "./dist/cjs/index.js",
-  "types": "./dist/esm/index.d.ts",
+  "types": "./dist/cjs/index.d.ts",
   "module": "./dist/esm/index.js",
   "author": "",
   "description": "The core package for the Connect SDK, used in conjunction with 1 or more of the chain packages",
   "exports": {
     ".": {
-      "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.js",
-      "types": "./dist/esm/index.d.ts"
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "default": "./dist/cjs/index.js",
+        "types": "./dist/cjs/index.d.ts"
+      }
     }
   },
   "files": [
