@@ -41,6 +41,18 @@
       }
     }
   },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "./dist/cjs/index.d.ts",
+        "./dist/esm/index.d.ts"
+      ],
+      "testing": [
+        "./dist/cjs/testing/index.d.ts",
+        "./dist/esm/testing/index.d.ts"
+      ]
+    }
+  },
   "scripts": {
     "test": "jest --config ../../jest.config.ts __tests__/*.ts",
     "build:cjs": "tsc -p ./tsconfig.cjs.json  && echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",

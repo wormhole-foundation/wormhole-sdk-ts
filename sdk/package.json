@@ -114,6 +114,38 @@
       }
     }
   },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "dist/cjs/index.d.ts",
+        "dist/esm/index.d.ts"
+      ],
+      "algorand": [
+        "dist/cjs/algorand.d.ts",
+        "dist/esm/algorand.d.ts"
+      ],
+      "evm": [
+        "dist/cjs/evm.d.ts",
+        "dist/esm/evm.d.ts"
+      ],
+      "solana": [
+        "dist/cjs/solana.d.ts",
+        "dist/esm/solana.d.ts"
+      ],
+      "cosmwasm": [
+        "dist/cjs/cosmwasm.d.ts",
+        "dist/esm/cosmwasm.d.ts"
+      ],
+      "aptos": [
+        "dist/cjs/aptos.d.ts",
+        "dist/esm/aptos.d.ts"
+      ],
+      "sui": [
+        "dist/cjs/sui.d.ts",
+        "dist/esm/sui.d.ts"
+      ]
+    }
+  },
   "dependencies": {
     "@wormhole-foundation/sdk-base": "0.5.0-alpha.8",
     "@wormhole-foundation/sdk-definitions": "0.5.0-alpha.8",
