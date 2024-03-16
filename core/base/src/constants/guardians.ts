@@ -1,6 +1,6 @@
-import type { MapLevels} from "../utils";
-import { constMap, column, cartesianRightRecursive } from "../utils";
-import type { Network } from "./networks";
+import type { MapLevels} from './../utils/index.js';
+import { constMap, column, cartesianRightRecursive } from './../utils/index.js';
+import type { Network } from './networks.js';
 
 // prettier-ignore
 const guardianKeyAndNameEntries = [[

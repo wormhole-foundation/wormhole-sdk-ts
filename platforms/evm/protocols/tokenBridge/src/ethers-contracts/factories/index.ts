@@ -1,2 +1,2 @@
-export * from './Bridge__factory';
-export * from './TokenBridgeRelayer__factory';
+export * from './Bridge__factory.js';
+export * from './TokenBridgeRelayer__factory.js';

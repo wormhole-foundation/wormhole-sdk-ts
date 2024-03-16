@@ -7,7 +7,7 @@ import type {
   SourceInitiatedTransferReceipt,
   TokenId,
   TransactionId,
-} from "../..";
+} from "./../../index.js";
 import {
   PorticoBridge,
   TokenTransfer,
@@ -23,9 +23,9 @@ import {
   signSendWait,
   tokens,
   amount,
-} from "../..";
-import type { StaticRouteMethods } from "../route";
-import { AutomaticRoute } from "../route";
+} from "./../../index.js";
+import type { StaticRouteMethods } from "../route.js";
+import { AutomaticRoute } from "../route.js";
 import type {
   Quote,
   QuoteResult,
@@ -33,7 +33,7 @@ import type {
   TransferParams,
   ValidatedTransferParams,
   ValidationResult,
-} from "../types";
+} from "../types.js";
 
 export const SLIPPAGE_BPS = 15n; // 0.15%
 export const BPS_PER_HUNDRED_PERCENT = 10000n;

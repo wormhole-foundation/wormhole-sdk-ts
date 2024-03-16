@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-connect",
-  "version": "0.5.0-beta.10",
+  "version": "0.5.0-alpha.7",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -14,13 +14,20 @@
   },
   "license": "Apache-2.0",
   "main": "./dist/cjs/index.js",
-  "types": "./dist/cjs/index.d.ts",
+  "types": "./dist/esm/index.d.ts",
   "module": "./dist/esm/index.js",
   "author": "",
   "description": "The core package for the Connect SDK, used in conjunction with 1 or more of the chain packages",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "types": "./dist/esm/index.d.ts"
+    }
+  },
   "files": [
-    "dist/cjs",
-    "dist/esm"
+    "dist/esm",
+    "dist/cjs"
   ],
   "keywords": [
     "wormhole",
@@ -33,9 +40,9 @@
   },
   "sideEffects": false,
   "scripts": {
-    "build:cjs": "tsc -p ./tsconfig.cjs.json",
+    "build:cjs": "tsc -p ./tsconfig.cjs.json && echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
     "build:esm": "tsc -p ./tsconfig.esm.json",
-    "build": "npm run build:cjs && npm run build:esm",
+    "build": "npm run build:esm && npm run build:cjs",
     "rebuild": "npm run clean && npm run build",
     "clean": "rm -rf ./dist && rm -rf ./.turbo",
     "lint": "npm run prettier && eslint --fix ./src --ext .ts",
@@ -46,7 +53,8 @@
   },
   "dependencies": {
     "axios": "^1.4.0",
-    "@wormhole-foundation/sdk-base": "0.5.0-beta.10",
-    "@wormhole-foundation/sdk-definitions": "0.5.0-beta.10"
-  }
+    "@wormhole-foundation/sdk-base": "0.5.0-alpha.7",
+    "@wormhole-foundation/sdk-definitions": "0.5.0-alpha.7"
+  },
+  "type": "module"
 }

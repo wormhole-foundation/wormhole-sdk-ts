@@ -1,5 +1,5 @@
 import { expectAssignable, expectType } from 'tsd';
-import { Chain, Network, RoArray, constMap } from "../../src";
+import { Chain, Network, RoArray, constMap } from './../../src/index.js';
 
 
 

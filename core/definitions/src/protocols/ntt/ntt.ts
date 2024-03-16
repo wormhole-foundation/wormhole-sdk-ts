@@ -1,13 +1,13 @@
 import type { Chain, Network, Platform } from "@wormhole-foundation/sdk-base";
-import "../tokenBridge/automaticTokenBridgeLayout";
-import "../tokenBridge/tokenBridgeLayout";
-import type { EmptyPlatformMap } from "../../protocol";
-import type { ProtocolPayload, ProtocolVAA, VAA } from "../../vaa";
-import type { ChainAddress, NativeAddress } from "../../address";
-import type { UnsignedTransaction } from "../../unsignedTransaction";
+import "../tokenBridge/automaticTokenBridgeLayout.js";
+import "../tokenBridge/tokenBridgeLayout.js";
+import type { EmptyPlatformMap } from "../../protocol.js";
+import type { ProtocolPayload, ProtocolVAA, VAA } from "./../../vaa/index.js";
+import type { ChainAddress, NativeAddress } from "../../address.js";
+import type { UnsignedTransaction } from "../../unsignedTransaction.js";
 
-import "../../registry";
-declare module "../../registry" {
+import "../../registry.js";
+declare module "../../registry.js" {
   export namespace WormholeRegistry {
     interface ProtocolToPlatformMapping {
       NTT: EmptyPlatformMap<Platform, NTT.ProtocolName>;

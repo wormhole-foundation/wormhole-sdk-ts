@@ -6,8 +6,8 @@ import {
 } from '@wormhole-foundation/sdk-connect';
 
 import { PublicKey } from '@solana/web3.js';
-import type { AnySolanaAddress } from './types';
-import { _platform } from './types';
+import type { AnySolanaAddress } from './types.js';
+import { _platform } from './types.js';
 
 export const SolanaZeroAddress = '11111111111111111111111111111111';
 
@@ -60,6 +60,8 @@ export class SolanaAddress implements Address {
   }
 }
 
+//@ts-ignore
+import { WormholeRegistry } from '@wormhole-foundation/sdk-connect';
 declare module '@wormhole-foundation/sdk-connect' {
   export namespace WormholeRegistry {
     interface PlatformToNativeAddressMapping {

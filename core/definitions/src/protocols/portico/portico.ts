@@ -1,22 +1,14 @@
-import type {
-  Chain,
-  LayoutToType,
-  Network,
-  Platform} from "@wormhole-foundation/sdk-base";
-import {
-  deserializeLayout,
-  serializeLayout,
-} from "@wormhole-foundation/sdk-base";
-import type { AccountAddress, ChainAddress } from "../../address";
-import "./portico";
-import { porticoFlagSetLayout, porticoPayloadLayout } from "./porticoLayout";
-import type { EmptyPlatformMap } from "../../protocol";
-import type { TokenAddress, TokenId } from "../../types";
-import type { UnsignedTransaction } from "../../unsignedTransaction";
-import type { ProtocolVAA } from "../../vaa";
+import type { Chain, LayoutToType, Network, Platform } from "@wormhole-foundation/sdk-base";
+import { deserializeLayout, serializeLayout } from "@wormhole-foundation/sdk-base";
+import type { AccountAddress, ChainAddress } from "../../address.js";
+import { porticoFlagSetLayout, porticoPayloadLayout } from "./porticoLayout.js";
+import type { EmptyPlatformMap } from "../../protocol.js";
+import type { TokenAddress, TokenId } from "../../types.js";
+import type { UnsignedTransaction } from "../../unsignedTransaction.js";
+import type { ProtocolVAA } from "./../../vaa/index.js";
 
-import "../../registry";
-declare module "../../registry" {
+import "../../registry.js";
+declare module "../../registry.js" {
   export namespace WormholeRegistry {
     interface ProtocolToPlatformMapping {
       PorticoBridge: EmptyPlatformMap<Platform, PorticoBridge.ProtocolName>;

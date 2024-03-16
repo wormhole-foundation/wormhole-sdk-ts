@@ -1,9 +1,9 @@
 import type { PlatformAddressFormat, Layout } from "@wormhole-foundation/sdk-base";
 import { encoding, serializeLayout, throws } from "@wormhole-foundation/sdk-base";
 
-import type { Address, NativeAddress } from "./address";
-import { toNative } from "./address";
-import { sha256, sha512_256 } from "./utils";
+import type { Address, NativeAddress } from "./address.js";
+import { toNative } from "./address.js";
+import { sha256, sha512_256 } from "./utils.js";
 
 const algorandAppIdLayout = [
   { name: "appIdPrefix", binary: "bytes", custom: encoding.bytes.encode("appID"), omit: true },

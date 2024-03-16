@@ -17,7 +17,7 @@ import {
   networkPlatformConfigs,
   isNative,
 } from '@wormhole-foundation/sdk-connect';
-import { SolanaChain } from './chain';
+import { SolanaChain } from './chain.js';
 
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import type {
@@ -27,13 +27,13 @@ import type {
   SendOptions,
 } from '@solana/web3.js';
 import { Connection, PublicKey } from '@solana/web3.js';
-import { SolanaAddress, SolanaZeroAddress } from './address';
+import { SolanaAddress, SolanaZeroAddress } from './address.js';
 import type {
   AnySolanaAddress,
   SolanaChains,
   SolanaPlatformType,
-} from './types';
-import { _platform } from './types';
+} from './types.js';
+import { _platform } from './types.js';
 
 /**
  * @category Solana

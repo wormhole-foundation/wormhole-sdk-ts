@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-solana-core",
-  "version": "0.5.0-beta.10",
+  "version": "0.5.0-alpha.7",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -15,12 +15,11 @@
   "license": "Apache-2.0",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
-  "types": "./dist/cjs/index.d.ts",
-  "author": "",
+  "types": "./dist/esm/index.d.ts",
   "description": "SDK for Solana, used in conjunction with @wormhole-foundation/sdk",
   "files": [
-    "dist/cjs",
-    "dist/esm"
+    "dist/esm",
+    "dist/cjs"
   ],
   "keywords": [
     "wormhole",
@@ -34,9 +33,9 @@
   },
   "sideEffects": true,
   "scripts": {
-    "build:cjs": "tsc -p ./tsconfig.cjs.json",
+    "build:cjs": "tsc -p ./tsconfig.cjs.json  && echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
     "build:esm": "tsc -p ./tsconfig.esm.json",
-    "build": "npm run build:cjs && npm run build:esm",
+    "build": "npm run build:esm && npm run build:cjs",
     "rebuild": "npm run clean && npm run build",
     "clean": "rm -rf ./dist && rm -rf ./.turbo",
     "lint": "npm run prettier && eslint --fix ./src --ext .ts",
@@ -47,12 +46,20 @@
     "nock": "^13.3.3"
   },
   "dependencies": {
-    "@wormhole-foundation/sdk-connect": "0.5.0-beta.10",
-    "@wormhole-foundation/sdk-solana": "0.5.0-beta.10",
+    "@wormhole-foundation/sdk-connect": "0.5.0-alpha.7",
+    "@wormhole-foundation/sdk-solana": "0.5.0-alpha.7",
     "@coral-xyz/borsh": "0.2.6",
     "@project-serum/anchor": "0.25.0",
     "@project-serum/borsh": "0.2.5",
     "@solana/spl-token": "0.3.9",
     "@solana/web3.js": "1.89.1"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "types": "./dist/esm/index.d.ts",
+      "require": "./dist/cjs/index.js"
+    }
   }
 }

@@ -7,11 +7,12 @@ import {
   encoding,
   toNative,
 } from "@wormhole-foundation/sdk-connect";
-import { CosmwasmChains, CosmwasmPlatform, chainToNativeDenoms } from "../../src";
+import { CosmwasmChains, CosmwasmPlatform, chainToNativeDenoms } from "./../../src/index.js";
 
 import "@wormhole-foundation/sdk-cosmwasm-core";
 import "@wormhole-foundation/sdk-cosmwasm-tokenbridge";
 import nock from "nock";
+import path from "path";
 
 const network: "Testnet" = "Testnet"; //DEFAULT_NETWORK;
 type TNet = typeof network;
@@ -44,7 +45,7 @@ const bogusAddress = toNative(
 
 // Setup nock to record fixtures
 const nockBack = nock.back;
-nockBack.fixtures = __dirname + "/fixtures";
+nockBack.fixtures = (__dirname ?? path.resolve() + "/__tests__/integration") + "/fixtures";
 
 let nockDone: () => void;
 beforeEach(async () => {

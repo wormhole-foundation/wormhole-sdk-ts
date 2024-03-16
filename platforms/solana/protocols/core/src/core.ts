@@ -35,8 +35,8 @@ import {
   SolanaPlatform,
   SolanaUnsignedTransaction,
 } from '@wormhole-foundation/sdk-solana';
-import type { Wormhole as WormholeCoreContract } from './types';
-import type { BridgeData } from './utils';
+import type { Wormhole as WormholeCoreContract } from './types.js';
+import type { BridgeData } from './utils/index.js';
 import {
   createBridgeFeeTransferInstruction,
   createPostMessageInstruction,
@@ -45,8 +45,8 @@ import {
   createVerifySignaturesInstructions,
   derivePostedVaaKey,
   getWormholeBridgeData,
-} from './utils';
-import { postMessageLayout } from './postMessageLayout';
+} from './utils/index.js';
+import { postMessageLayout } from './postMessageLayout.js';
 
 const SOLANA_SEQ_LOG = 'Program log: Sequence: ';
 

@@ -2,7 +2,7 @@ import type { Chain, Network } from "@wormhole-foundation/sdk-base";
 import { tokens } from "@wormhole-foundation/sdk-base";
 import type { ChainContext, TokenId } from "@wormhole-foundation/sdk-definitions";
 import { canonicalAddress, isNative } from "@wormhole-foundation/sdk-definitions";
-import { Wormhole } from "../wormhole";
+import { Wormhole } from "../wormhole.js";
 
 export interface TokenDetails {
   id: TokenId;

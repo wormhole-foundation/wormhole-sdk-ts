@@ -1,9 +1,9 @@
 import { _platform } from '@wormhole-foundation/sdk-solana';
 import { registerProtocol } from '@wormhole-foundation/sdk-connect';
-import { SolanaWormholeCore } from './core';
+import { SolanaWormholeCore } from './core.js';
 
 registerProtocol(_platform, 'WormholeCore', SolanaWormholeCore);
 
-export * from './core';
-export * from './types';
-export * as utils from './utils';
+export * from './core.js';
+export * from './types.js';
+export * as utils from './utils/index.js';

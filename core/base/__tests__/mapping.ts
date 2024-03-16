@@ -6,7 +6,7 @@ import {
   contracts,
   RoArray,
   constMap
-} from "../src";
+} from './../src/index.js';
 
 type ComplexConfig = {
   a: string;

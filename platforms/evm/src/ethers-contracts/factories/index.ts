@@ -1,1 +1,1 @@
-export * from './TokenImplementation__factory';
+export * from './TokenImplementation__factory.js';

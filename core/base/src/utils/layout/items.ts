@@ -1,5 +1,5 @@
-import type { NumSizeToPrimitive} from "./layout";
-import { numberMaxSize } from "./layout";
+import type { NumSizeToPrimitive} from './layout.js';
+import { numberMaxSize } from './layout.js';
 
 //TODO implement enum item
 

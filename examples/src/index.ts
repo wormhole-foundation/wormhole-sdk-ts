@@ -8,7 +8,7 @@ import { sui } from "@wormhole-foundation/sdk/sui";
 // EXAMPLE_IMPORTS
 
 import { amount, signSendWait } from "@wormhole-foundation/sdk";
-import { getSigner } from "./helpers";
+import { getSigner } from './helpers/index.js';
 
 (async function () {
   // EXAMPLE_WORMHOLE_INIT

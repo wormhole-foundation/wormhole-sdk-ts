@@ -1,5 +1,6 @@
 import type { Layout } from "@wormhole-foundation/sdk-base";
-import type { WormholeRegistry } from "../registry";
+import type { WormholeRegistry } from "../registry.js";
+import { ProtocolName } from "../protocol.js";
 
 // //LayoutLiteralToLayoutMapping is the compile-time analog/complement to the runtime
 // //  payload factory. It uses TypeScript's interface merging mechanic to "dynamically" extend known
@@ -19,9 +20,6 @@ export type PayloadLiteral = LayoutLiteral | "Uint8Array";
 export type LayoutOf<LL extends LayoutLiteral> = LL extends infer V extends LayoutLiteral
   ? WormholeRegistry.PayloadLiteralToLayoutMapping[V]
   : never;
-
-//we aren't enforcing that Protocol is actually a protocol as to keep things user-extensible
-export type ProtocolName = string | null;
 
 type ToLiteralFormat<PN extends ProtocolName, PayloadName extends string> = PN extends null
   ? PayloadName

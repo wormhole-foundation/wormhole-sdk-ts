@@ -9,8 +9,8 @@ import type {
 import { encoding } from "@wormhole-foundation/sdk-connect";
 import type { AptosClient, TxnBuilderTypes, Types } from "aptos";
 import { AptosAccount } from "aptos";
-import { AptosPlatform } from "./platform";
-import type { AptosChains } from "./types";
+import { AptosPlatform } from "./platform.js";
+import type { AptosChains } from "./types.js";
 
 // returns a SignOnlySigner for the Aptos platform
 export async function getAptosSigner(

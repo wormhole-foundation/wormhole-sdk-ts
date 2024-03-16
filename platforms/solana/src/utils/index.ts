@@ -1,5 +1,5 @@
-export * as utils from './utils';
-export * as anchor from './anchor';
+export * as utils from './utils/index.js';
+export * as anchor from './anchor/index.js';
 
 // camel case a string (from https://stackoverflow.com/a/2970667)
 export function camelCase(str: string): string {

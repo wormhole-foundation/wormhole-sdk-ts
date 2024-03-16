@@ -7,7 +7,7 @@ import {
   addFixedValues,
   layoutDiscriminator,
   bitsetItem,
-} from "../src";
+} from './../src/index.js';
 
 const testLayout = [
   { name: "uintFixedPrimitive", binary: "uint", size: 1, custom: 3 },
@@ -98,7 +98,7 @@ const testLayout = [
 ] as const satisfies Layout;
 
 // uncomment the following to "test" correct type resolution:
-// import { LayoutToType, FixedItemsOfLayout, DynamicItemsOfLayout } from "../src";
+// import { LayoutToType, FixedItemsOfLayout, DynamicItemsOfLayout } from './../src/index.js';
 // type LT = LayoutToType<typeof testLayout>;
 // type FixedItems = FixedItemsOfLayout<typeof testLayout>;
 // type FixedValues = LayoutToType<FixedItems>;

@@ -1,5 +1,5 @@
 import type { Network, UnsignedTransaction } from "@wormhole-foundation/sdk-connect";
-import type { AlgorandChains, TransactionSignerPair } from "./types";
+import type { AlgorandChains, TransactionSignerPair } from "./types.js";
 
 export class AlgorandUnsignedTransaction<N extends Network, C extends AlgorandChains>
   implements UnsignedTransaction<N, C>

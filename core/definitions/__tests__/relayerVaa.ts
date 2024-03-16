@@ -1,8 +1,11 @@
-import { describe, expect, it } from "@jest/globals";
-
 import { circle, encoding } from "@wormhole-foundation/sdk-base";
-import { serializePayload, deserializePayload, serialize, deserialize } from "../src/vaa";
-import "../src/protocols/relayer";
+import {
+  serializePayload,
+  deserializePayload,
+  serialize,
+  deserialize,
+} from "./../src/vaa/index.js";
+import "../src/protocols/relayer/index.js";
 
 //monkey-patch to allow stringifying BigInts
 (BigInt.prototype as any).toJSON = function () {

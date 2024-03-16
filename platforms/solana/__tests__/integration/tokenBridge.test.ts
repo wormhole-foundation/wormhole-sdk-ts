@@ -16,11 +16,12 @@ import {
   SolanaChains,
   SolanaPlatform,
   SolanaUnsignedTransaction,
-} from '../../src/';
+} from './../../src/index.js';
 
 import { describe, expect, test } from '@jest/globals';
 
 import nock from 'nock';
+import path from 'path';
 
 const network = DEFAULT_NETWORK;
 type TNet = typeof network;
@@ -55,7 +56,9 @@ const realWrappedAddress = toNative(
 
 // Setup nock to record fixtures
 const nockBack = nock.back;
-nockBack.fixtures = __dirname + '/fixtures';
+
+nockBack.fixtures =
+  (__dirname ?? path.resolve() + '/__tests__/integration') + '/fixtures';
 
 let nockDone: () => void;
 beforeEach(async () => {

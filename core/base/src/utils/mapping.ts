@@ -71,12 +71,12 @@ import type {
   Cartesian,
   OnlyIndexes,
   ExcludeIndexes,
-  Entries} from "./array";
+  Entries} from './array.js';
 import {
   range,
   zip,
-} from "./array";
-import type { Function, Widen, RoArray, RoArray2D, RoPair } from "./metaprogramming";
+} from './array.js';
+import type { Function, Widen, RoArray, RoArray2D, RoPair } from './metaprogramming.js';
 
 export type ShallowMapping<M extends RoArray<readonly [PropertyKey, unknown]>> =
   { readonly [E in M[number]as E[0]]: E[1] };

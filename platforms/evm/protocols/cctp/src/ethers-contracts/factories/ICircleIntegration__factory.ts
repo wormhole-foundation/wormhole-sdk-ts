@@ -6,7 +6,7 @@ import { Contract, Interface, type ContractRunner } from 'ethers';
 import type {
   ICircleIntegration,
   ICircleIntegrationInterface,
-} from '../ICircleIntegration';
+} from '../ICircleIntegration.js';
 
 const _abi = [
   {

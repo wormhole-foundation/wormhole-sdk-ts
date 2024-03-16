@@ -1,11 +1,11 @@
 import type { Coder, Idl } from '@project-serum/anchor';
-import { TokenBridgeAccountsCoder } from './accounts';
-import { TokenBridgeEventsCoder } from './events';
-import { TokenBridgeInstructionCoder } from './instruction';
-import { TokenBridgeStateCoder } from './state';
-import { TokenBridgeTypesCoder } from './types';
+import { TokenBridgeAccountsCoder } from './accounts.js';
+import { TokenBridgeEventsCoder } from './events.js';
+import { TokenBridgeInstructionCoder } from './instruction.js';
+import { TokenBridgeStateCoder } from './state.js';
+import { TokenBridgeTypesCoder } from './types.js';
 
-export { TokenBridgeInstruction } from './instruction';
+export * from './instruction.js';
 
 export class TokenBridgeCoder implements Coder {
   readonly instruction: TokenBridgeInstructionCoder;

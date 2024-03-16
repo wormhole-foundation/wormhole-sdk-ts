@@ -12,8 +12,11 @@ import type { VAA } from '@wormhole-foundation/sdk-connect';
 import { toChainId } from '@wormhole-foundation/sdk-connect';
 import { utils } from '@wormhole-foundation/sdk-solana';
 import { utils as CoreUtils } from '@wormhole-foundation/sdk-solana-core';
-import { deriveEndpointKey, deriveTokenBridgeConfigKey } from '../accounts';
-import { createReadOnlyTokenBridgeProgramInterface } from '../program';
+import {
+  deriveEndpointKey,
+  deriveTokenBridgeConfigKey,
+} from './../accounts/index.js';
+import { createReadOnlyTokenBridgeProgramInterface } from '../program.js';
 
 export function createRegisterChainInstruction(
   tokenBridgeProgramId: PublicKeyInitData,

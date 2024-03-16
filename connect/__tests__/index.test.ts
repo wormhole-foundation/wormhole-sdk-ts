@@ -1,11 +1,11 @@
-import * as publicRpcMock from "./mocks/publicrpc"; // Should be first
+import * as publicRpcMock from "./mocks/publicrpc.js"; // Should be first
 
 import { describe, expect, test } from "@jest/globals";
 import { Platform, platform } from "@wormhole-foundation/sdk-base";
 import { ChainContext, PlatformContext, RpcConnection } from "@wormhole-foundation/sdk-definitions";
-
 import { mocks, utils } from "@wormhole-foundation/sdk-definitions/testing";
-import { Wormhole, networkPlatformConfigs } from "../src";
+
+import { Wormhole, networkPlatformConfigs } from "./../src/index.js";
 
 const network: "Testnet" = "Testnet";
 type TNet = typeof network;
@@ -40,7 +40,6 @@ describe("Wormhole Tests", () => {
       });
       expect(vaa).toBeDefined();
     });
-
     test("returns undefined when vaa bytes not found", async function () {
       publicRpcMock.givenSignedVaaNotFound();
       const vaa = await wh.getVaaBytes(
@@ -49,7 +48,6 @@ describe("Wormhole Tests", () => {
       );
       expect(vaa).toBeNull();
     });
-
     test("returns after first try fails", async function () {
       publicRpcMock.givenSignedVaaRequestWorksAfterRetry();
       const vaa = await wh.getVaaBytes({
@@ -70,8 +68,8 @@ describe("Platform Tests", () => {
   });
 
   let rpc: RpcConnection<Platform>;
-  test("Gets RPC", () => {
-    rpc = p.getRpc("Ethereum");
+  test("Gets RPC", async () => {
+    rpc = await p.getRpc("Ethereum");
     expect(rpc).toBeTruthy();
   });
 });
@@ -84,8 +82,8 @@ describe("Chain Tests", () => {
   });
 
   let rpc: RpcConnection<Platform>;
-  test("Gets RPC", () => {
-    rpc = c.getRpc();
+  test("Gets RPC", async () => {
+    rpc = await c.getRpc();
     expect(rpc).toBeTruthy();
   });
 });

@@ -13,11 +13,11 @@ import type {
   ContractDeployTransaction,
   ContractRunner,
 } from 'ethers';
-import type { NonPayableOverrides } from '../common';
+import type { NonPayableOverrides } from '../common.js';
 import type {
   TokenBridgeRelayer,
   TokenBridgeRelayerInterface,
-} from '../TokenBridgeRelayer';
+} from '../TokenBridgeRelayer.js';
 
 const _abi = [
   {

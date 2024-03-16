@@ -1,12 +1,14 @@
 {
-  "extends": "../tsconfig.esm.json",
+  "extends": "../tsconfig.json",
   "include": ["./src", "./src/**/*.ts"],
   "compilerOptions": {
-    "target":"ESNext",
-    "module":"ESNext",
-    "outDir": "dist/esm",
     "rootDir": "src",
+    "target":"ESNext",
     "allowUnusedLabels": true,
-    "noUnusedLocals": false
+    "noUnusedLocals": false,
+    "esModuleInterop": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "allowSyntheticDefaultImports": true,
   }
 }

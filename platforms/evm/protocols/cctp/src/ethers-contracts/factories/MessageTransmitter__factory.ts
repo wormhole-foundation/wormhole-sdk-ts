@@ -14,11 +14,11 @@ import type {
   ContractDeployTransaction,
   ContractRunner,
 } from 'ethers';
-import type { NonPayableOverrides } from '../common';
+import type { NonPayableOverrides } from '../common.js';
 import type {
   MessageTransmitter,
   MessageTransmitterInterface,
-} from '../circle_abis/MessageTransmitter';
+} from '../circle_abis/MessageTransmitter.js';
 
 const _abi = [
   {

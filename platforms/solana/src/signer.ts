@@ -13,9 +13,9 @@ import type {
   UnsignedTransaction,
 } from '@wormhole-foundation/sdk-connect';
 import { encoding } from '@wormhole-foundation/sdk-connect';
-import { SolanaPlatform } from './platform';
-import type { SolanaChains } from './types';
-import type { SolanaUnsignedTransaction } from './unsignedTransaction';
+import { SolanaPlatform } from './platform.js';
+import type { SolanaChains } from './types.js';
+import type { SolanaUnsignedTransaction } from './unsignedTransaction.js';
 
 // returns a SignOnlySigner for the Solana platform
 export async function getSolanaSigner(

@@ -1,11 +1,11 @@
 import type { Chain, Network, Platform, PlatformToChains } from "@wormhole-foundation/sdk-base";
-import type { WormholeCore } from ".";
-import type { WormholeMessageId } from "./attestation";
-import type { ChainContext } from "./chain";
-import type { ProtocolName } from "./protocol";
-import { create } from "./protocol";
-import type { RpcConnection } from "./rpc";
-import type { Balances, ChainsConfig, SignedTx, TokenId, TxHash, TokenAddress } from "./types";
+import type { WormholeCore } from "./index.js";
+import type { WormholeMessageId } from "./attestation.js";
+import type { ChainContext } from "./chain.js";
+import type { ProtocolName } from "./protocol.js";
+import { create } from "./protocol.js";
+import type { RpcConnection } from "./rpc.js";
+import type { Balances, ChainsConfig, SignedTx, TokenId, TxHash, TokenAddress } from "./types.js";
 
 /**
  * PlatformUtils represents the _static_ attributes available on

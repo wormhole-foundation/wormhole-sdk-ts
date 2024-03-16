@@ -1,6 +1,6 @@
 import type { PublicKeyInitData } from '@solana/web3.js';
 import { PublicKey } from '@solana/web3.js';
-import { deriveAddress } from './account';
+import { deriveAddress } from './account.js';
 
 export class BpfLoaderUpgradeable {
   static programId: PublicKey = new PublicKey(
