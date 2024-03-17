@@ -1,9 +1,10 @@
 {
-  "extends": "../../../../tsconfig.esm.json",
-  "include": ["src", "buffer-layout.d.ts"],
+  "extends": "../../tsconfig.esm.json",
+  "include": ["src", "../../buffer-layout.d.ts"],
   "compilerOptions": {
     "outDir": "dist/esm",
     "rootDir": "src",
     "resolveJsonModule": true
-  }
+  },
+  "files": ["./src/anchor-idl/token_bridge.json"]
 }
