@@ -3,6 +3,8 @@ import { algorand } from "@wormhole-foundation/sdk/algorand";
 import { cosmwasm } from "@wormhole-foundation/sdk/cosmwasm";
 import { evm } from "@wormhole-foundation/sdk/evm";
 import { solana } from "@wormhole-foundation/sdk/solana";
+import { sui } from "@wormhole-foundation/sdk/sui";
+import { aptos } from "@wormhole-foundation/sdk/aptos";
 
 type Stats = {
   max: bigint;
@@ -20,44 +22,53 @@ type Status = {
 
 type HeightsByChain = Record<string, Record<string, bigint>>;
 
-const skipChains = [
+const skipChains: Chain[] = [
+  // Not supported
   "Pythnet",
+  // Gateway chains,
+  // not tracked individually
   "Evmos",
   "Osmosis",
   "Kujira",
   "Klaytn",
-  "Wormchain",
-  "Near",
-  "Sui",
   "Xpla",
-  "Aptos",
   "Cosmoshub",
+  "Neutron",
+  "Stargaze",
+  "Sei",
+  "Dymension",
+  "Celestia",
+  //
+  "Near",
 ];
 
 (async function () {
-  const wh = await wormhole("Mainnet", [evm, solana, cosmwasm, algorand]);
+  const wh = await wormhole("Mainnet", [evm, solana, cosmwasm, algorand, sui, aptos]);
 
   const hbc = await getHeartbeats(wh.config.api);
-  for (const [chain, heights] of Object.entries(hbc)) {
-    if (skipChains.includes(chain)) continue;
 
-    try {
-      const ctx = wh.getChain(chain as Chain);
-      // ..
-      await ctx.getRpc();
-      const chainLatest = await ctx.getLatestBlock();
-      const stats = getStats(Object.values(heights));
-      console.log(chain, BigInt(chainLatest) - stats.quorum);
-    } catch (e) {
-      console.error(chain, e);
-    }
-  }
+  await Promise.all(
+    Object.entries(hbc)
+      .filter(([chain, _]) => !skipChains.includes(chain as Chain))
+      .map(([chain, heights]) => [chain, getStats(Object.values(heights))] as [Chain, Stats])
+      .map(async ([chain, stats]) => {
+        try {
+          const ctx = wh.getChain(chain as Chain);
+          const latestBlock = await ctx.getLatestBlock();
+          const delta = Number(BigInt(latestBlock) - stats.quorum);
+          const deltaSeconds = (ctx.config.blockTime * delta) / 1000;
+          console.log(`${chain}: ${delta} (~${deltaSeconds}s)`);
+        } catch (e) {
+          console.error(chain, e);
+        }
+      }),
+  );
 })();
 
 async function getHeartbeats(apiUrl: string): Promise<HeightsByChain> {
   const hbs = await api.getGuardianHeartbeats(apiUrl);
   const nets = hbs!
-    .map((hb) => {
+    .map((hb: { rawHeartbeat: { networks: any[] }; verifiedGuardianAddr: any }) => {
       return hb.rawHeartbeat.networks
         .map((n) => {
           return {
