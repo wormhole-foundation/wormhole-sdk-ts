@@ -1,5 +1,5 @@
 // EXAMPLE_IMPORTS
-import { Wormhole, wormhole } from "@wormhole-foundation/sdk";
+import { wormhole } from "@wormhole-foundation/sdk";
 import algorand from "@wormhole-foundation/sdk/algorand";
 import cosmwasm from "@wormhole-foundation/sdk/cosmwasm";
 import evm from "@wormhole-foundation/sdk/evm";
@@ -24,8 +24,6 @@ import { getSigner } from "./helpers/index.js";
 
   const sender = await getSigner(ctx);
   const receiver = await getSigner(rcv);
-
-  Wormhole.chainAddress("Ethereum", "0x1234").address.toNative("Ethereum");
 
   // Get a Token Bridge contract client on the source
   const sndTb = await ctx.getTokenBridge();

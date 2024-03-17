@@ -5,8 +5,8 @@
     "rootDir": "src",
 
     // If package.json type is unset or `commonjs`, use the following
-    // "module":"ESNext",
-    // "moduleResolution":"Bundler",
+    //"module":"ESNext",
+    //"moduleResolution":"Bundler",
 
     // If package.json is set to `module`, use the following
     "module": "NodeNext",
