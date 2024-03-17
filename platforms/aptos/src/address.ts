@@ -86,8 +86,6 @@ export class AptosAddress implements Address {
   }
 }
 
-// @ts-ignore
-import { WormholeRegistry } from "@wormhole-foundation/sdk-connect";
 declare module "@wormhole-foundation/sdk-connect" {
   export namespace WormholeRegistry {
     interface PlatformToNativeAddressMapping {
