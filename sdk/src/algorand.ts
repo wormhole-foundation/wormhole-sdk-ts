@@ -1,6 +1,7 @@
+/// <reference path="../../platforms/algorand/src/index.ts" />
 import type { Network, PlatformDefinition } from "./index.js";
 /** Platform and protocol definitions for Algorand */
-export const algorand = async (): Promise<PlatformDefinition<Network, "Algorand">> => {
+const algorand = async (): Promise<PlatformDefinition<Network, "Algorand">> => {
   const _algorand = await import("@wormhole-foundation/sdk-algorand");
   return {
     Address: _algorand.AlgorandAddress,
@@ -14,3 +15,4 @@ export const algorand = async (): Promise<PlatformDefinition<Network, "Algorand"
     },
   };
 };
+export default algorand;

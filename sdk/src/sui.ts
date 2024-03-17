@@ -1,6 +1,7 @@
+/// <reference path="../../platforms/sui/src/index.ts" />
 import type { Network, PlatformDefinition } from "./index.js";
 /** Platform and protocol definitions for Sui */
-export const sui = async (): Promise<PlatformDefinition<Network, "Sui">> => {
+const sui = async (): Promise<PlatformDefinition<Network, "Sui">> => {
   const _sui = await import("@wormhole-foundation/sdk-sui");
   return {
     Address: _sui.SuiAddress,
@@ -14,3 +15,4 @@ export const sui = async (): Promise<PlatformDefinition<Network, "Sui">> => {
     },
   };
 };
+export default sui;

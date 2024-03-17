@@ -1,14 +1,14 @@
 // EXAMPLE_IMPORTS
-import { wormhole } from "@wormhole-foundation/sdk";
-import { algorand } from "@wormhole-foundation/sdk/algorand";
-import { cosmwasm } from "@wormhole-foundation/sdk/cosmwasm";
-import { evm } from "@wormhole-foundation/sdk/evm";
-import { solana } from "@wormhole-foundation/sdk/solana";
-import { sui } from "@wormhole-foundation/sdk/sui";
+import { Wormhole, wormhole } from "@wormhole-foundation/sdk";
+import algorand from "@wormhole-foundation/sdk/algorand";
+import cosmwasm from "@wormhole-foundation/sdk/cosmwasm";
+import evm from "@wormhole-foundation/sdk/evm";
+import solana from "@wormhole-foundation/sdk/solana";
+import sui from "@wormhole-foundation/sdk/sui";
 // EXAMPLE_IMPORTS
 
 import { amount, signSendWait } from "@wormhole-foundation/sdk";
-import { getSigner } from './helpers/index.js';
+import { getSigner } from "./helpers/index.js";
 
 (async function () {
   // EXAMPLE_WORMHOLE_INIT
@@ -24,6 +24,8 @@ import { getSigner } from './helpers/index.js';
 
   const sender = await getSigner(ctx);
   const receiver = await getSigner(rcv);
+
+  Wormhole.chainAddress("Ethereum", "0x1234").address.toNative("Ethereum");
 
   // Get a Token Bridge contract client on the source
   const sndTb = await ctx.getTokenBridge();
