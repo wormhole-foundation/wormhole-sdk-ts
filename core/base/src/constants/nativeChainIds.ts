@@ -171,20 +171,25 @@ const chainNetworkNativeChainIdEntries = [[
   ]],[
   "Dymension", [
     ["Mainnet", "dymension_1100-1"]
-  ]], [
+  ]],[
   "Seda",[
     ["Testnet", "seda-1-testnet"],
-  ]], [
+  ]],[
   "PolygonSepolia", [
     ["Testnet", 80002n]
-  ]],
-  [
+  ]],[
   "Mantle", [
     ["Mainnet", 5000n],
     ["Testnet", 5003n] // Sepolia testnet
-  ]]
+  ]],
+  [
+  "Scroll", [
+    ["Mainnet", 534352n],
+    ["Testnet", 534351n],
+  ]],
 ] as const satisfies MapLevels<[Chain, Network, bigint | string]>;
 
+// @ts-ignore -- type instantiation too large and possibly infinite??
 export const networkChainToNativeChainId = constMap(chainNetworkNativeChainIdEntries, [[1, 0], 2]);
 
 //When mapping a Platform and native chain id to a network and chain pair, we assume that the

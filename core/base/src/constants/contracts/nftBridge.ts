@@ -1,6 +1,6 @@
-import type { MapLevels } from './../../utils/index.js';
-import type { Network } from '../networks.js';
-import type { Chain } from '../chains.js';
+import type { MapLevels } from "./../../utils/index.js";
+import type { Network } from "../networks.js";
+import type { Chain } from "../chains.js";
 
 // prettier-ignore
 export const nftBridgeContracts = [[
@@ -47,6 +47,9 @@ export const nftBridgeContracts = [[
     ["BaseSepolia",     "0x268557122Ffd64c85750d630b716471118F323c8"],
     ["OptimismSepolia", "0x27812285fbe85BA1DF242929B906B31EE3dd1b9f"],
     ["Holesky",         "0xc8941d483c45eF8FB72E4d1F9dDE089C95fF8171"],
+    ["PolygonSepolia",  "0x23908A62110e21C04F3A4e011d24F901F911744A"],
+    ["Mantle",          "0xD7D732C8Bf5eBF620EA55b5828eae20418eEF083"],
+    ["Scroll",          "0x47B9a1406BEe29a3001BFEB7e45aE45fFFB40c18"],
   ]], [
   "Devnet", [
     ["Solana",    "NFTWqJR8YnRVqPDvTJrYuLrQDitTG5AScqbeghi4zSA"],
