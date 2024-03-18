@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-algorand",
-  "version": "0.5.0-alpha.8",
+  "version": "0.5.0-beta.13",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -56,7 +56,7 @@
     "test": "jest --config ./jest.config.ts"
   },
   "dependencies": {
-    "@wormhole-foundation/sdk-connect": "0.5.0-alpha.8",
+    "@wormhole-foundation/sdk-connect": "0.5.0-beta.13",
     "algosdk": "2.7.0"
   },
   "type": "module"

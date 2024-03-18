@@ -75,6 +75,8 @@ export const coreBridgeContracts = [[
     ["Holesky",         "0xa10f2eF61dE1f19f586ab8B6F2EbA89bACE63F7a"],
     ["Neutron",         "neutron1enf63k37nnv9cugggpm06mg70emcnxgj9p64v2s8yx7a2yhhzk2q6xesk4"],
     ["Mantle",          "0x376428e7f26D5867e69201b275553C45B09EE090"],
+    ["PolygonSepolia",  "0x6b9C8671cdDC8dEab9c719bB87cBd3e782bA6a35"],
+    ["Scroll",          "0x055F47F1250012C6B20c436570a76e52c17Af2D5"],
   ]], [
   "Devnet", [
     ["Solana",    "Bridge1p5gheXUvJ6jGWGeCsgPKgnE3YgdGKRVCMY9o"],

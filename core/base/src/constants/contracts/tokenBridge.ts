@@ -66,6 +66,8 @@ export const tokenBridgeContracts = [[
     ["Wormchain",       "wormhole1aaf9r6s7nxhysuegqrxv0wpm27ypyv4886medd3mrkrw6t4yfcnst3qpex"],
     ["Holesky",         "0x76d093BbaE4529a342080546cAFEec4AcbA59EC6"],
     ["Mantle",          "0x75Bfa155a9D7A3714b0861c8a8aF0C4633c45b5D"],
+    ["PolygonSepolia",  "0xC7A204bDBFe983FCD8d8E61D02b475D4073fF97e"],
+    ["Scroll",          "0x22427d90B7dA3fA4642F7025A854c7254E4e45BF"],
   ]], [
   "Devnet", [
     ["Solana",    "B6RHG3mfcckmrYN1UhmJzyS1XX3fZKbkeUcpJe9Sy3FE"],
