@@ -1,4 +1,4 @@
-import type { AccountsCoder, Idl } from '@project-serum/anchor';
+import type { AccountsCoder, Idl } from '@coral-xyz/anchor';
 import { anchor } from '@wormhole-foundation/sdk-solana';
 
 export class WormholeAccountsCoder<A extends string = string>

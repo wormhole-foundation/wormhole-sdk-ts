@@ -32,7 +32,7 @@ import {
   utils as coreUtils,
 } from '@wormhole-foundation/sdk-solana-core';
 
-import type { Program } from '@project-serum/anchor';
+import type { Program } from '@coral-xyz/anchor';
 import {
   ACCOUNT_SIZE,
   NATIVE_MINT,

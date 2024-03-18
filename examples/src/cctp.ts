@@ -1,11 +1,13 @@
 import {
   Chain,
+  CircleBridge,
   CircleTransfer,
   Network,
   Signer,
   TransactionId,
   Wormhole,
   amount,
+  encoding,
   wormhole,
 } from "@wormhole-foundation/sdk";
 import evm from "@wormhole-foundation/sdk/evm";
@@ -18,6 +20,7 @@ Only a subset of chains are supported by Circle for CCTP, see core/base/src/cons
 
 AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which is 1 usdc
 */
+//
 
 (async function () {
   // init Wormhole object, passing config for which network
@@ -26,7 +29,7 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
 
   // Grab chain Contexts
   const sendChain = wh.getChain("Avalanche");
-  const rcvChain = wh.getChain("BaseSepolia");
+  const rcvChain = wh.getChain("Solana");
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
@@ -90,7 +93,6 @@ async function cctpTransfer<N extends Network>(
     // If automatic, native gas can be requested to be sent to the receiver
     req.nativeGas,
   );
-  console.log(xfer);
 
   // Note, if the transfer is requested to be Automatic, a fee for performing the relay
   // will be present in the quote. The fee comes out of the amount requested to be sent.

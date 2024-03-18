@@ -1,4 +1,4 @@
-import type { Idl, Instruction, InstructionCoder } from '@project-serum/anchor';
+import type { Idl, Instruction, InstructionCoder } from '@coral-xyz/anchor';
 import type { Layout } from 'buffer-layout';
 import { encoding } from '@wormhole-foundation/sdk-connect';
 import type { anchor } from '@wormhole-foundation/sdk-solana';
@@ -17,7 +17,7 @@ export class WormholeInstructionCoder implements InstructionCoder {
   }
 
   private static parseIxLayout(idl: Idl): Map<string, Layout> {
-    const stateMethods = idl.state ? idl.state.methods : [];
+    const stateMethods = idl.instructions ? idl.instructions : [];
 
     const ixLayouts = stateMethods
       .map((m: anchor.IdlStateMethod): [string, Layout<unknown>] => {

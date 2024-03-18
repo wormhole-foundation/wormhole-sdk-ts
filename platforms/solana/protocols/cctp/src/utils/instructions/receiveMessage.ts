@@ -1,4 +1,4 @@
-import { TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from '@solana/spl-token';
+import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import type { AccountMeta, PublicKeyInitData } from '@solana/web3.js';
 import { PublicKey, SystemProgram } from '@solana/web3.js';
 import type {
@@ -7,8 +7,8 @@ import type {
 } from '@wormhole-foundation/sdk-connect';
 import { CircleBridge, encoding } from '@wormhole-foundation/sdk-connect';
 import { SolanaAddress } from '@wormhole-foundation/sdk-solana';
-import { findProgramAddress } from './../accounts/index.js';
 import { createMessageTransmitterProgramInterface } from '../program.js';
+import { findProgramAddress } from './../accounts/index.js';
 
 const MAX_NONCES_PER_ACCOUNT = 6400n;
 
@@ -56,10 +56,6 @@ export async function createReceiveMessageInstruction(
 
   const payerPubkey = payer ? new PublicKey(payer) : receiver;
 
-  const userTokenAccount = await getAssociatedTokenAddress(
-    solanaUsdcAddress,
-    receiver,
-  );
   const srcDomain = circleMessage.sourceDomain.toString();
 
   // Find pdas
@@ -97,6 +93,7 @@ export async function createReceiveMessageInstruction(
   const authorityPda = findProgramAddress(
     'message_transmitter_authority',
     messageTransmitterProgramId,
+    [tokenMessengerProgramId],
   ).publicKey;
 
   // Calculate the nonce PDA.
@@ -104,6 +101,16 @@ export async function createReceiveMessageInstruction(
     circleMessage.nonce,
     circleMessage.sourceDomain as circle.CircleChainId,
     messageTransmitterProgramId,
+  );
+
+  const eventAuthority = findProgramAddress(
+    '__event_authority',
+    messageTransmitterProgramId,
+  );
+
+  const tokenMessengerEventAuthority = findProgramAddress(
+    '__event_authority',
+    tokenMessengerProgramId,
   );
 
   // Build the accountMetas list. These are passed as remainingAccounts for the TokenMessengerMinter CPI
@@ -136,7 +143,7 @@ export async function createReceiveMessageInstruction(
   accountMetas.push({
     isSigner: false,
     isWritable: true,
-    pubkey: userTokenAccount,
+    pubkey: receiver,
   });
   accountMetas.push({
     isSigner: false,
@@ -147,6 +154,16 @@ export async function createReceiveMessageInstruction(
     isSigner: false,
     isWritable: false,
     pubkey: TOKEN_PROGRAM_ID,
+  });
+  accountMetas.push({
+    isSigner: false,
+    isWritable: false,
+    pubkey: tokenMessengerEventAuthority.publicKey,
+  });
+  accountMetas.push({
+    isSigner: false,
+    isWritable: false,
+    pubkey: tokenMessengerProgramId,
   });
 
   const messageTransmitterProgram = createMessageTransmitterProgramInterface(
@@ -167,6 +184,8 @@ export async function createReceiveMessageInstruction(
         usedNonces,
         receiver: tokenMessengerProgramId,
         systemProgram: SystemProgram.programId,
+        eventAuthority: eventAuthority.publicKey,
+        program: messageTransmitterProgram.programId,
       })
       // Add remainingAccounts needed for TokenMessengerMinter CPI
       .remainingAccounts(accountMetas)

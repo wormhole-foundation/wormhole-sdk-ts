@@ -2,16 +2,15 @@
 //
 // https://github.com/coral-xyz/anchor/blob/master/ts/packages/anchor/src/idl.ts
 
-import { Buffer } from 'buffer';
+import * as borsh from '@coral-xyz/borsh';
 import { PublicKey } from '@solana/web3.js';
-import * as borsh from '@project-serum/borsh';
+import { Buffer } from 'buffer';
 
 export type Idl = {
   version: string;
   name: string;
   docs?: string[];
   instructions: IdlInstruction[];
-  state?: IdlState;
   accounts?: IdlAccountDef[];
   types?: IdlTypeDef[];
   events?: IdlEvent[];
@@ -47,20 +46,23 @@ export type IdlInstruction = {
   returns?: IdlType;
 };
 
-export type IdlState = {
-  struct: IdlTypeDef;
-  methods: IdlStateMethod[];
-};
-
 export type IdlStateMethod = IdlInstruction;
 
 export type IdlAccountItem = IdlAccount | IdlAccounts;
+
+export function isIdlAccounts(
+  accountItem: IdlAccountItem,
+): accountItem is IdlAccounts {
+  return 'accounts' in accountItem;
+}
 
 export type IdlAccount = {
   name: string;
   isMut: boolean;
   isSigner: boolean;
+  isOptional?: boolean;
   docs?: string[];
+  relations?: string[];
   pda?: IdlPda;
 };
 
@@ -106,7 +108,15 @@ export type IdlTypeDefTyEnum = {
   variants: IdlEnumVariant[];
 };
 
-export type IdlTypeDefTy = IdlTypeDefTyEnum | IdlTypeDefTyStruct;
+export type IdlTypeDefTyAlias = {
+  kind: 'alias';
+  value: IdlType;
+};
+
+export type IdlTypeDefTy =
+  | IdlTypeDefTyEnum
+  | IdlTypeDefTyStruct
+  | IdlTypeDefTyAlias;
 
 export type IdlTypeDefStruct = Array<IdlField>;
 
@@ -124,6 +134,8 @@ export type IdlType =
   | 'f64'
   | 'u128'
   | 'i128'
+  | 'u256'
+  | 'i256'
   | 'bytes'
   | 'string'
   | 'publicKey'

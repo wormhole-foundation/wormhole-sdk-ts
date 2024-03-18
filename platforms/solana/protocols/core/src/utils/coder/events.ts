@@ -1,4 +1,4 @@
-import type { EventCoder, Event, Idl } from '@project-serum/anchor';
+import type { EventCoder, Event, Idl } from '@coral-xyz/anchor';
 import type { anchor } from '@wormhole-foundation/sdk-solana';
 
 export class WormholeEventsCoder implements EventCoder {

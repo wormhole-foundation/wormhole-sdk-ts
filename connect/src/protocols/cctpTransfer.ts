@@ -120,6 +120,14 @@ export class CircleTransfer<N extends Network = Network>
   ): Promise<CircleTransfer<N>> {
     // This is a new transfer, just return the object
     if (isCircleTransferDetails(from)) {
+      from = {
+        ...from,
+        ...(await CircleTransfer.destinationOverrides(
+          wh.getChain(from.from.chain),
+          wh.getChain(from.to.chain),
+          from,
+        )),
+      };
       return new CircleTransfer(wh, from, fromChain, toChain);
     }
 
@@ -409,7 +417,8 @@ export class CircleTransfer<N extends Network = Network>
 
     const tb = await this.toChain.getCircleBridge();
 
-    const xfer = tb.redeem(this.transfer.to.address, message, signatures!);
+    const sender = Wormhole.parseAddress(signer.chain(), signer.address());
+    const xfer = tb.redeem(sender, message, signatures!);
 
     const txids = await signSendWait<N, Chain>(this.toChain, xfer, signer);
     this.txids?.push(...txids);
@@ -553,6 +562,24 @@ export class CircleTransfer<N extends Network = Network>
     }
 
     return receipt;
+  }
+
+  static async destinationOverrides<N extends Network>(
+    srcChain: ChainContext<N, Chain>,
+    dstChain: ChainContext<N, Chain>,
+    transfer: CircleTransferDetails,
+  ): Promise<CircleTransferDetails> {
+    const _transfer = { ...transfer };
+
+    if (transfer.to.chain === "Solana" && !_transfer.automatic) {
+      const usdcAddress = Wormhole.parseAddress(
+        "Solana",
+        circle.usdcContract.get(dstChain.network, dstChain.chain)!,
+      );
+      _transfer.to = await dstChain.getTokenAccount(_transfer.to.address, usdcAddress);
+    }
+
+    return _transfer;
   }
 
   // AsyncGenerator fn that produces status updates through an async generator
