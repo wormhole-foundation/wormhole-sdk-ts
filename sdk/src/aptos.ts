@@ -1,6 +1,7 @@
+/// <reference path="../../platforms/aptos/src/index.ts" />
 import type { Network, PlatformDefinition } from "./index.js";
 /** Platform and protocol definitions for Aptos */
-export const aptos = async (): Promise<PlatformDefinition<Network, "Aptos">> => {
+const aptos = async (): Promise<PlatformDefinition<Network, "Aptos">> => {
   const _aptos = await import("@wormhole-foundation/sdk-aptos");
   return {
     Address: _aptos.AptosAddress,
@@ -14,3 +15,4 @@ export const aptos = async (): Promise<PlatformDefinition<Network, "Aptos">> => 
     },
   };
 };
+export default aptos;

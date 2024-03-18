@@ -4,5 +4,13 @@
   "compilerOptions": {
     "outDir": "dist/cjs",
     "rootDir": "src"
-  }
+  },
+  "references": [
+    { "path": "../platforms/solana/tsconfig.cjs.json" },
+    { "path": "../platforms/evm/tsconfig.cjs.json" },
+    { "path": "../platforms/algorand/tsconfig.cjs.json" },
+    { "path": "../platforms/sui/tsconfig.cjs.json" },
+    { "path": "../platforms/cosmwasm/tsconfig.cjs.json" },
+    { "path": "../platforms/aptos/tsconfig.cjs.json" },
+  ]
 }

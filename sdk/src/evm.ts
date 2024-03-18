@@ -1,6 +1,7 @@
+/// <reference path="../../platforms/evm/src/index.ts" />
 import type { Network, PlatformDefinition } from "./index.js";
 /** Platform and protocol definitions for Evm */
-export const evm = async (): Promise<PlatformDefinition<Network, "Evm">> => {
+const evm = async (): Promise<PlatformDefinition<Network, "Evm">> => {
   const _evm = await import("@wormhole-foundation/sdk-evm");
   return {
     Address: _evm.EvmAddress,
@@ -18,3 +19,4 @@ export const evm = async (): Promise<PlatformDefinition<Network, "Evm">> => {
     getSignerForSigner: _evm.getEvmSignerForSigner,
   };
 };
+export default evm;

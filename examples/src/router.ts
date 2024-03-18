@@ -1,8 +1,8 @@
 import { Wormhole, canonicalAddress, routes, wormhole } from "@wormhole-foundation/sdk";
-import { evm } from "@wormhole-foundation/sdk/evm";
-import { solana } from "@wormhole-foundation/sdk/solana";
+import evm from "@wormhole-foundation/sdk/evm";
+import solana from "@wormhole-foundation/sdk/solana";
 
-import { getSigner } from './helpers/index.js';
+import { getSigner } from "./helpers/index.js";
 
 (async function () {
   // Setup
