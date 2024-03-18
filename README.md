@@ -296,7 +296,7 @@ const txids = await signSendWait(srcChain, txGenerator, src.signer); // => TxHas
 Supported protocols are defined in the [definitions module](https://github.com/wormhole-foundation/connect-sdk/tree/main/core/definitions/src/protocols).
 
 
-### Wormhole Transfer
+## Transfers
 
 While using the [ChainContext](#chain-context) and [Protocol](#protocols) clients directly is possible, to do things like transfer tokens, the SDK provides some helpful abstractions.
 
@@ -515,7 +515,7 @@ A `TransactionId` or `WormholeMessageId` may be used to recover the transfer
 See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/cctp.ts#L130)
 <!--EXAMPLE_RECOVER_TRANSFER-->
 
-### Routes
+## Routes
 
 While a specific `WormholeTransfer` may be used (TokenTransfer, CCTPTransfer, ...), it requires the developer know exactly which transfer type to use for a given request. 
 
