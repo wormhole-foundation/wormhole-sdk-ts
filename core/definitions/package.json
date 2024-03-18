@@ -22,34 +22,34 @@
   "exports": {
     ".": {
       "require": {
-        "default": "./dist/cjs/index.js",
-        "types": "./dist/cjs/index.d.ts"
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
       },
       "import": {
-        "default": "./dist/esm/index.js",
-        "types": "./dist/esm/index.d.ts"
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
       }
     },
     "./testing": {
       "require": {
-        "default": "./dist/cjs/testing/index.js",
-        "types": "./dist/cjs/testing/index.d.ts"
+        "types": "./dist/cjs/testing/index.d.ts",
+        "default": "./dist/cjs/testing/index.js"
       },
       "import": {
-        "default": "./dist/esm/testing/index.js",
-        "types": "./dist/esm/testing/index.d.ts"
+        "types": "./dist/esm/testing/index.d.ts",
+        "default": "./dist/esm/testing/index.js"
       }
     }
   },
   "typesVersions": {
     "*": {
-      "*": [
-        "./dist/cjs/index.d.ts",
-        "./dist/esm/index.d.ts"
-      ],
       "testing": [
         "./dist/cjs/testing/index.d.ts",
         "./dist/esm/testing/index.d.ts"
+      ],
+      "*": [
+        "./dist/cjs/index.d.ts",
+        "./dist/esm/index.d.ts"
       ]
     }
   },

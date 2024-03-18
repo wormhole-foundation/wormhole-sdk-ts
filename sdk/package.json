@@ -116,10 +116,6 @@
   },
   "typesVersions": {
     "*": {
-      "*": [
-        "dist/cjs/index.d.ts",
-        "dist/esm/index.d.ts"
-      ],
       "algorand": [
         "dist/cjs/algorand.d.ts",
         "dist/esm/algorand.d.ts"
@@ -143,6 +139,10 @@
       "sui": [
         "dist/cjs/sui.d.ts",
         "dist/esm/sui.d.ts"
+      ],
+      "*": [
+        "dist/cjs/index.d.ts",
+        "dist/esm/index.d.ts"
       ]
     }
   },
