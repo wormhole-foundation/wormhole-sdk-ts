@@ -1,6 +1,6 @@
-import type { MapLevel} from './../utils/index.js';
-import { constMap } from './../utils/index.js';
-import type { Chain } from './chains.js';
+import type { MapLevel } from "./../utils/index.js";
+import { constMap } from "./../utils/index.js";
+import type { Chain } from "./chains.js";
 
 // https://www.notion.so/Finality-in-Wormhole-78ffa423abd44b7cbe38483a16040d83
 
@@ -103,11 +103,14 @@ const blockTimeMilliseconds = [
   ["OptimismSepolia",   2_000],
   ["Osmosis",           6_000],
   ["Polygon",           2_000],
+  ["PolygonSepolia",    2_000],
   ["Rootstock",        30_000],
   ["Sei",                 400],
   ["Sepolia",          15_000],
   ["Solana",              400],
   ["Sui",               3_000],
+  ["Scroll",            4_000],
+  ["Mantle",            2_000],
   ["Terra",             6_000],
   ["Terra2",            6_000],
   ["Xpla",              5_000],
@@ -118,6 +121,7 @@ const blockTimeMilliseconds = [
   ["Celestia",          5_000],
   ["Neutron",           5_000],
   ["Stargaze",          5_000],
+  ["Seda",              7_500],
 ] as const satisfies MapLevel<Chain, number>;
 
 /** The amount of time between block production, in milliseconds  */

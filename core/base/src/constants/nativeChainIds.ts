@@ -172,6 +172,10 @@ const chainNetworkNativeChainIdEntries = [[
   "Dymension", [
     ["Mainnet", "dymension_1100-1"]
   ]], [
+  "Seda",[
+    ["Testnet", "seda-1-testnet"],
+  ]],
+  [
   "PolygonSepolia", [
     ["Testnet", 80002n]
   ]]
