@@ -40,6 +40,7 @@ const cosmwasmAddressPrefix = [
   ["Stargaze", "stars"],
   ["Dymension", "dym"],
   ["Neutron", "neutron"],
+  ["Seda", "seda"],
 ] as const satisfies RoArray<readonly [CosmwasmChains, string]>;
 
 export const chainToAddressPrefix = constMap(cosmwasmAddressPrefix);
@@ -78,6 +79,7 @@ const cosmwasmNativeDenom = [
       ["Terra2", "uluna"],
       ["Wormchain", "uworm"],
       ["Xpla", "uxpla"],
+      ["Seda", "aseda"],
     ],
   ],
   [

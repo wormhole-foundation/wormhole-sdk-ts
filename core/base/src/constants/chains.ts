@@ -1,6 +1,6 @@
-import type { MapLevel} from './../utils/index.js';
-import { zip } from './../utils/index.js';
-import { constMap } from '../utils/mapping.js';
+import type { MapLevel } from "./../utils/index.js";
+import { zip } from "./../utils/index.js";
+import { constMap } from "../utils/mapping.js";
 
 // prettier-ignore
 const chainIdAndChainEntries = [
@@ -40,6 +40,8 @@ const chainIdAndChainEntries = [
   [   30, "Base"           ],
   [   32, "Sei"            ],
   [   33, "Rootstock"      ],
+  [   34, "Scroll"         ],
+  [   35, "Mantle"         ],
   [ 3104, "Wormchain"      ],
   [ 4000, "Cosmoshub"      ],
   [ 4001, "Evmos"          ],
@@ -47,12 +49,14 @@ const chainIdAndChainEntries = [
   [ 4003, "Neutron"        ],
   [ 4004, "Celestia"       ],
   [ 4005, "Stargaze"       ],
+  [ 4006, "Seda"           ],
   [ 4007, "Dymension"      ],
   [10002, "Sepolia"        ],
   [10003, "ArbitrumSepolia"],
   [10004, "BaseSepolia"    ],
   [10005, "OptimismSepolia"],
   [10006, "Holesky"        ],
+  [10007, "PolygonSepolia" ],
 ] as const satisfies MapLevel<number, string>;
 
 export const [chainIds, chains] = zip(chainIdAndChainEntries);

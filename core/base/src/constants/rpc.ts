@@ -1,7 +1,7 @@
-import type { MapLevels} from './../utils/index.js';
-import { constMap } from './../utils/index.js';
-import type { Network } from './networks.js';
-import type { Chain } from './chains.js';
+import type { MapLevels } from "./../utils/index.js";
+import { constMap } from "./../utils/index.js";
+import type { Network } from "./networks.js";
+import type { Chain } from "./chains.js";
 
 // prettier-ignore
 const rpcConfig = [[
@@ -65,6 +65,8 @@ const rpcConfig = [[
     ["ArbitrumSepolia", "https://sepolia-rollup.arbitrum.io/rpc"],
     ["OptimismSepolia", "https://sepolia.optimism.io"],
     ["BaseSepolia",     "https://sepolia.base.org"],
+    ["PolygonSepolia",  "https://rpc-amoy.polygon.technology/"],
+    ["Mantle",          "https://mantle-sepolia.drpc.org"],
     ["Karura",          "https://eth-rpc-karura-testnet.aca-staging.network"],
     ["Acala",           "https://eth-rpc-acala-testnet.aca-staging.network"],
   ]], [

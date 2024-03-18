@@ -1,6 +1,6 @@
-import type { MapLevels } from './../../utils/index.js';
-import type { Network } from '../networks.js';
-import type { Chain } from '../chains.js';
+import type { MapLevels } from "./../../utils/index.js";
+import type { Network } from "../networks.js";
+import type { Chain } from "../chains.js";
 
 // prettier-ignore
 export const tokenBridgeContracts = [[
@@ -65,11 +65,12 @@ export const tokenBridgeContracts = [[
     ["Sepolia",         "0xDB5492265f6038831E89f495670FF909aDe94bd9"],
     ["Wormchain",       "wormhole1aaf9r6s7nxhysuegqrxv0wpm27ypyv4886medd3mrkrw6t4yfcnst3qpex"],
     ["Holesky",         "0x76d093BbaE4529a342080546cAFEec4AcbA59EC6"],
+    ["Mantle",          "0x75Bfa155a9D7A3714b0861c8a8aF0C4633c45b5D"],
   ]], [
   "Devnet", [
     ["Solana",    "B6RHG3mfcckmrYN1UhmJzyS1XX3fZKbkeUcpJe9Sy3FE"],
     ["Ethereum",  "0x0290FB167208Af455bB137780163b7B7a9a10C16"],
-    ["Terra",     "terra10pyejy66429refv3g35g2t7am0was7ya7kz2a4"],
+    ["Terra",     "terra1nc5tatafv6eyq7llkr2gv50ff9e22mnf70qgjlv737ktmt4eswrquka9l6"],
     ["Bsc",       "0x0290FB167208Af455bB137780163b7B7a9a10C16"],
     ["Algorand",  "1006"],
     ["Near",      "token.test.near"],
