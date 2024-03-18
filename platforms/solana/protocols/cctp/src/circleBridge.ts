@@ -195,8 +195,6 @@ export class SolanaCircleBridge<N extends Network, C extends SolanaChains>
     if (acctKeys.length < 2) throw new Error('No message account found');
 
     const msgSendAccount = acctKeys.get(1);
-
-    console.log(msgSendAccount);
     const accountData = await this.connection.getAccountInfo(msgSendAccount!);
     if (!accountData) throw new Error('No account data found');
     // TODO: why 44?

@@ -20,21 +20,28 @@ Only a subset of chains are supported by Circle for CCTP, see core/base/src/cons
 
 AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which is 1 usdc
 */
+//
 
-// 0xadced5292f8d01e589f247d996e7691665bb0caf308cd0fa73bf43ad2e5543b5
 (async function () {
   // init Wormhole object, passing config for which network
   // to use (e.g. Mainnet/Testnet) and what Platforms to support
   const wh = await wormhole("Testnet", [evm, solana]);
 
   // Grab chain Contexts
-  const sendChain = wh.getChain("Solana");
-  const rcvChain = wh.getChain("Avalanche");
+  const sendChain = wh.getChain("Avalanche");
+  const rcvChain = wh.getChain("Solana");
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
   const source = await getSigner(sendChain);
   const destination = await getSigner(rcvChain);
+
+  const xfer = await CircleTransfer.from(wh, {
+    chain: "Avalanche",
+    txid: "0x2497be8947d582ac6c607e3e9fa7beb76f9f173c0b41648061c6691eddf1a5ec",
+  });
+  console.log(await xfer.completeTransfer(destination.signer));
+  return;
 
   // 6 decimals for USDC (except for bsc, so check decimals before using this)
   const amt = amount.units(amount.parse("0.2", 6));
@@ -93,7 +100,6 @@ async function cctpTransfer<N extends Network>(
     // If automatic, native gas can be requested to be sent to the receiver
     req.nativeGas,
   );
-  console.log(xfer);
 
   // Note, if the transfer is requested to be Automatic, a fee for performing the relay
   // will be present in the quote. The fee comes out of the amount requested to be sent.
