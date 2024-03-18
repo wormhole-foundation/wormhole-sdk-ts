@@ -163,7 +163,7 @@ export async function createReceiveMessageInstruction(
   accountMetas.push({
     isSigner: false,
     isWritable: false,
-    pubkey: tokenMinter.publicKey,
+    pubkey: tokenMessengerProgramId,
   });
 
   const messageTransmitterProgram = createMessageTransmitterProgramInterface(
@@ -185,6 +185,7 @@ export async function createReceiveMessageInstruction(
         receiver: tokenMessengerProgramId,
         systemProgram: SystemProgram.programId,
         eventAuthority: eventAuthority.publicKey,
+        program: messageTransmitterProgram.programId,
       })
       // Add remainingAccounts needed for TokenMessengerMinter CPI
       .remainingAccounts(accountMetas)
