@@ -1,11 +1,13 @@
 import {
   Chain,
+  CircleBridge,
   CircleTransfer,
   Network,
   Signer,
   TransactionId,
   Wormhole,
   amount,
+  encoding,
   wormhole,
 } from "@wormhole-foundation/sdk";
 import evm from "@wormhole-foundation/sdk/evm";
@@ -19,6 +21,7 @@ Only a subset of chains are supported by Circle for CCTP, see core/base/src/cons
 AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which is 1 usdc
 */
 
+// 0xadced5292f8d01e589f247d996e7691665bb0caf308cd0fa73bf43ad2e5543b5
 (async function () {
   // init Wormhole object, passing config for which network
   // to use (e.g. Mainnet/Testnet) and what Platforms to support

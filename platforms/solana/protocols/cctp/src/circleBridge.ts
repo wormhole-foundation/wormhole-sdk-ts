@@ -1,5 +1,5 @@
 import type { Connection } from '@solana/web3.js';
-import { PublicKey, Transaction } from '@solana/web3.js';
+import { Keypair, PublicKey, Transaction } from '@solana/web3.js';
 import type {
   AccountAddress,
   ChainAddress,
@@ -12,7 +12,6 @@ import type {
 import { CircleBridge, circle } from '@wormhole-foundation/sdk-connect';
 
 import type { Program } from '@coral-xyz/anchor';
-import { EventParser } from '@coral-xyz/anchor';
 import BN from 'bn.js';
 
 import { getAssociatedTokenAddressSync } from '@solana/spl-token';
@@ -134,6 +133,8 @@ export class SolanaCircleBridge<N extends Network, C extends SolanaChains>
     )!;
     const destinationAddress = recipient.address.toUniversalAddress();
 
+    const msgSndEvnet = Keypair.generate();
+
     const ix = await createDepositForBurnInstruction(
       this.messageTransmitter.programId,
       this.tokenMessenger.programId,
@@ -143,13 +144,17 @@ export class SolanaCircleBridge<N extends Network, C extends SolanaChains>
       senderATA,
       destinationAddress,
       amount,
+      msgSndEvnet.publicKey,
     );
 
     const transaction = new Transaction();
     transaction.feePayer = senderPk;
     transaction.add(ix);
 
-    yield this.createUnsignedTx({ transaction }, 'CircleBridge.Transfer');
+    yield this.createUnsignedTx(
+      { transaction, signers: [msgSndEvnet] },
+      'CircleBridge.Transfer',
+    );
   }
 
   async isTransferCompleted(message: CircleBridge.Message): Promise<boolean> {
@@ -186,20 +191,17 @@ export class SolanaCircleBridge<N extends Network, C extends SolanaChains>
     const tx = await this.connection.getTransaction(txid);
     if (!tx || !tx.meta) throw new Error('Transaction not found');
 
-    // this log contains the cctp message information
-    const messageTransmitterParser = new EventParser(
-      this.messageTransmitter.programId,
-      this.messageTransmitter.coder,
-    );
+    const acctKeys = tx.transaction.message.getAccountKeys();
+    if (acctKeys.length < 2) throw new Error('No message account found');
 
-    const messageLogs = [
-      ...messageTransmitterParser.parseLogs(tx.meta.logMessages || []),
-    ];
+    const msgSendAccount = acctKeys.get(1);
 
-    if (messageLogs.length === 0)
-      throw new Error('No CircleTransferMessage found');
+    console.log(msgSendAccount);
+    const accountData = await this.connection.getAccountInfo(msgSendAccount!);
+    if (!accountData) throw new Error('No account data found');
+    // TODO: why 44?
+    const message = new Uint8Array(accountData.data).slice(44);
 
-    const message = new Uint8Array(messageLogs[0]!.data['message'] as Buffer);
     const [msg, hash] = CircleBridge.deserialize(message);
 
     const { payload: body } = msg;
