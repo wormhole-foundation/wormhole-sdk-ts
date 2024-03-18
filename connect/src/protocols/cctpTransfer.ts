@@ -128,7 +128,6 @@ export class CircleTransfer<N extends Network = Network>
           from,
         )),
       };
-      console.log(from);
       return new CircleTransfer(wh, from, fromChain, toChain);
     }
 
@@ -578,7 +577,6 @@ export class CircleTransfer<N extends Network = Network>
         circle.usdcContract.get(dstChain.network, dstChain.chain)!,
       );
       _transfer.to = await dstChain.getTokenAccount(_transfer.to.address, usdcAddress);
-      console.log(_transfer.to);
     }
 
     return _transfer;

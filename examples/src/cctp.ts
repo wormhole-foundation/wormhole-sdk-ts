@@ -36,13 +36,6 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
   const source = await getSigner(sendChain);
   const destination = await getSigner(rcvChain);
 
-  const xfer = await CircleTransfer.from(wh, {
-    chain: "Avalanche",
-    txid: "0x2497be8947d582ac6c607e3e9fa7beb76f9f173c0b41648061c6691eddf1a5ec",
-  });
-  console.log(await xfer.completeTransfer(destination.signer));
-  return;
-
   // 6 decimals for USDC (except for bsc, so check decimals before using this)
   const amt = amount.units(amount.parse("0.2", 6));
 
