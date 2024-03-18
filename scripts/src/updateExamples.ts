@@ -2,7 +2,7 @@ import fs from "fs";
 
 const README_PATH = "../README.md";
 const EXAMPLES_PATH = "../examples/src";
-const EXAMPLE_URL = "https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/";
+const EXAMPLE_URL = "https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/";
 
 type ExampleTag = { tag: string; start: number; stop: number };
 type ExampleMeta = { filename: string; src: string; line: number };
