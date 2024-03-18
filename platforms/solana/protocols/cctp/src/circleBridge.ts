@@ -11,8 +11,8 @@ import type {
 } from '@wormhole-foundation/sdk-connect';
 import { CircleBridge, circle } from '@wormhole-foundation/sdk-connect';
 
-import type { Program } from '@project-serum/anchor';
-import { EventParser } from '@project-serum/anchor';
+import type { Program } from '@coral-xyz/anchor';
+import { EventParser } from '@coral-xyz/anchor';
 import BN from 'bn.js';
 
 import { getAssociatedTokenAddressSync } from '@solana/spl-token';

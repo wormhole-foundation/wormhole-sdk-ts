@@ -25,7 +25,7 @@ import {
   SolanaUnsignedTransaction,
 } from '@wormhole-foundation/sdk-solana';
 
-import type { Program } from '@project-serum/anchor';
+import type { Program } from '@coral-xyz/anchor';
 
 import type { Connection } from '@solana/web3.js';
 import { PublicKey, Transaction } from '@solana/web3.js';

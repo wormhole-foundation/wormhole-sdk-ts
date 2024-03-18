@@ -1,4 +1,4 @@
-import type { Idl, StateCoder } from '@project-serum/anchor';
+import type { Idl, StateCoder } from '@coral-xyz/anchor';
 
 export class TokenBridgeStateCoder implements StateCoder {
   constructor(_idl: Idl) {}

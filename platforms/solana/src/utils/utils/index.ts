@@ -1,4 +1,4 @@
-import type { Provider } from '@project-serum/anchor';
+import type { Provider } from '@coral-xyz/anchor';
 import type { Connection } from '@solana/web3.js';
 
 export function createReadOnlyProvider(

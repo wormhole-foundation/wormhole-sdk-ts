@@ -29,7 +29,7 @@ export function createInitializeInstruction(
     wormholeProgramId,
     connection,
   ).methods.initialize(guardianSetExpirationTime, new BN(fee.toString()), [
-    ...initialGuardians,
+    ...initialGuardians.map((b) => [...new Uint8Array(b)]),
   ]);
 
   // @ts-ignore

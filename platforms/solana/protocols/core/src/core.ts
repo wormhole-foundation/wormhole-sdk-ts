@@ -1,4 +1,4 @@
-import type { Program } from '@project-serum/anchor';
+import type { Program } from '@coral-xyz/anchor';
 import type {
   Connection,
   MessageAccountKeys,
