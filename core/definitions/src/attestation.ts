@@ -1,12 +1,12 @@
 import type { Chain } from "@wormhole-foundation/sdk-base";
-import type { ProtocolName } from "./protocol";
-import type { AutomaticCircleBridge, CircleBridge } from "./protocols/circleBridge/circleBridge";
-import type { IbcTransferData } from "./protocols/ibc/ibc";
-import type { PorticoBridge } from "./protocols/portico/portico";
-import type { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge/tokenBridge";
-import type { SequenceId } from "./types";
-import type { UniversalAddress } from "./universalAddress";
-import type { VAA } from "./vaa";
+import type { ProtocolName } from "./protocol.js";
+import type { AutomaticCircleBridge, CircleBridge } from "./protocols/circleBridge/circleBridge.js";
+import type { IbcTransferData } from "./protocols/ibc/ibc.js";
+import type { PorticoBridge } from "./protocols/portico/portico.js";
+import type { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge/tokenBridge.js";
+import type { SequenceId } from "./types.js";
+import type { UniversalAddress } from "./universalAddress.js";
+import type { VAA } from "./vaa/index.js";
 
 /**
  * The Identifier of an attestation, useful to look up the full attestation

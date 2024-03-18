@@ -4,5 +4,13 @@
   "compilerOptions": {
     "outDir": "dist/esm",
     "rootDir": "src"
-  }
+  },
+  "references": [
+    { "path": "../platforms/solana/tsconfig.esm.json" },
+    { "path": "../platforms/evm/tsconfig.esm.json" },
+    { "path": "../platforms/algorand/tsconfig.esm.json" },
+    { "path": "../platforms/sui/tsconfig.esm.json" },
+    { "path": "../platforms/cosmwasm/tsconfig.esm.json" },
+    { "path": "../platforms/aptos/tsconfig.esm.json" },
+  ]
 }

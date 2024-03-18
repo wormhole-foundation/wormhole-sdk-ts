@@ -1,8 +1,10 @@
 {
-  "extends": "../../../../tsconfig.esm.json",
+  "extends": "../../tsconfig.esm.json",
   "include": ["src", "../../buffer-layout.d.ts"],
   "compilerOptions": {
     "outDir": "dist/esm",
-    "rootDir": "src"
-  }
+    "rootDir": "src",
+    "resolveJsonModule": true,
+  },
+  "files": ["./src/anchor-idl/wormhole.json"]
 }

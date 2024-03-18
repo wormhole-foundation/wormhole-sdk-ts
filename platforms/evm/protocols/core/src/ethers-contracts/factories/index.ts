@@ -1,1 +1,1 @@
-export * from './Implementation__factory';
+export * from './Implementation__factory.js';

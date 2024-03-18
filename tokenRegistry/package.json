@@ -1,6 +1,7 @@
 {
   "name": "@wormhole-foundation/sdk-token-registry",
   "version": "0.3.0",
+  
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -14,16 +15,14 @@
   },
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
-  "types": "./dist/cjs/index.d.ts",
+  "types": "./dist/esm/index.d.ts",
   "files": [
-    "dist/cjs",
     "dist/esm"
   ],
   "scripts": {
     "test": "jest --config ../jest.config.ts __tests__/*.ts",
-    "build:cjs": "tsc -p ./tsconfig.cjs.json",
-    "build:esm": "tsc -p ./tsconfig.esm.json",
-    "build": "npm run build:cjs && npm run build:esm",
+    "build:cjs": "tsc -p ./tsconfig.cjs.json  && echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
+    "build": "tsc -p ./tsconfig.esm.json",
     "rebuild": "npm run clean && npm run build",
     "clean": "rm -rf ./dist && rm -rf ./.turbo",
     "lint": "npm run prettier && eslint --fix ./src --ext .ts",

@@ -1,4 +1,4 @@
-import type { RoArray, RoArray2D, IsUnion } from "./metaprogramming";
+import type { RoArray, RoArray2D, IsUnion } from './metaprogramming.js';
 
 //TODO the intent here is that number represents a number literal, but strictly speaking
 //  the type allows for unions of number literals (and an array of such unions)

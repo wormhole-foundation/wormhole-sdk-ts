@@ -4,7 +4,7 @@ import type {
   LayoutToType,
   CustomConversion,
 } from "@wormhole-foundation/sdk-base";
-import { Signature } from "../signature";
+import { Signature } from '../signature.js';
 
 const signatureLayout = [
   { name: "r", binary: "uint", size: 32 },

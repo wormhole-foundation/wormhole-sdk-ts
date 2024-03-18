@@ -1,14 +1,14 @@
 // EXAMPLE_IMPORTS
 import { wormhole } from "@wormhole-foundation/sdk";
-import { algorand } from "@wormhole-foundation/sdk/algorand";
-import { cosmwasm } from "@wormhole-foundation/sdk/cosmwasm";
-import { evm } from "@wormhole-foundation/sdk/evm";
-import { solana } from "@wormhole-foundation/sdk/solana";
-import { sui } from "@wormhole-foundation/sdk/sui";
+import algorand from "@wormhole-foundation/sdk/algorand";
+import cosmwasm from "@wormhole-foundation/sdk/cosmwasm";
+import evm from "@wormhole-foundation/sdk/evm";
+import solana from "@wormhole-foundation/sdk/solana";
+import sui from "@wormhole-foundation/sdk/sui";
 // EXAMPLE_IMPORTS
 
 import { amount, signSendWait } from "@wormhole-foundation/sdk";
-import { getSigner } from "./helpers";
+import { getSigner } from "./helpers/index.js";
 
 (async function () {
   // EXAMPLE_WORMHOLE_INIT

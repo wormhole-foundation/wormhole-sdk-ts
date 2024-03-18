@@ -4,7 +4,7 @@ import type {
   SuiTransactionBlockResponse,
 } from "@mysten/sui.js/client";
 import type { PlatformToChains, UniversalOrNative } from "@wormhole-foundation/sdk-connect";
-import { normalizeSuiType } from "./address";
+import { normalizeSuiType } from "./address.js";
 
 export const _platform: "Sui" = "Sui";
 export type SuiPlatformType = typeof _platform;

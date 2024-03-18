@@ -3,7 +3,7 @@ import type {
   TransactionInstruction,
 } from '@solana/web3.js';
 import { PublicKey, SystemProgram } from '@solana/web3.js';
-import { deriveFeeCollectorKey } from '../accounts';
+import { deriveFeeCollectorKey } from './../accounts/index.js';
 
 export function createBridgeFeeTransferInstruction(
   wormholeProgramId: PublicKeyInitData,

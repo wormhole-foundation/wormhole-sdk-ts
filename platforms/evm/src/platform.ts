@@ -21,12 +21,12 @@ import {
 
 import type { Provider } from 'ethers';
 import { JsonRpcProvider } from 'ethers';
-import * as ethers_contracts from './ethers-contracts';
+import * as ethers_contracts from './ethers-contracts/index.js';
 
-import { EvmAddress, EvmZeroAddress } from './address';
-import { EvmChain } from './chain';
-import type { AnyEvmAddress, EvmChains, EvmPlatformType } from './types';
-import { _platform } from './types';
+import { EvmAddress, EvmZeroAddress } from './address.js';
+import { EvmChain } from './chain.js';
+import type { AnyEvmAddress, EvmChains, EvmPlatformType } from './types.js';
+import { _platform } from './types.js';
 
 /**
  * @category EVM

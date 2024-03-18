@@ -1,2 +1,2 @@
-export * from "./core";
-export * from "./governanceLayout";
+export type {WormholeCore} from './core.js';
+export * from './governanceLayout.js';

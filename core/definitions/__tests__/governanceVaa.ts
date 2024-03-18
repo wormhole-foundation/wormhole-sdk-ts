@@ -1,7 +1,5 @@
-import { describe, expect, it } from "@jest/globals";
-
 import { encoding } from "@wormhole-foundation/sdk-base";
-import { UniversalAddress } from "../src/universalAddress";
+import { UniversalAddress } from "../src/universalAddress.js";
 import {
   createVAA,
   deserialize,
@@ -9,8 +7,8 @@ import {
   serialize,
   blindDeserializePayload,
   payloadDiscriminator,
-} from "../src/vaa";
-import "../src/protocols/core";
+} from "./../src/vaa/index.js";
+import "../src/protocols/core/index.js";
 
 //monkey-patch to allow stringifying BigInts
 (BigInt.prototype as any).toJSON = function () {

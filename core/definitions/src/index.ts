@@ -1,19 +1,17 @@
-export * from "./registry";
-export * from "./address";
-export * from "./protocol";
-export * from "./universalAddress";
-export * from "./unsignedTransaction";
-export * from "./vaa";
-export * from "./utils";
-export * from "./platform";
-export * from "./chain";
-export * from "./contracts";
-export * from "./signature";
-export * from "./signer";
-export * from "./rpc";
-export * from "./attestation";
-export * from "./types";
-
-export * from "./protocols";
-
-export * as layoutItems from "./layout-items";
+export * from "./registry.js";
+export * from "./address.js";
+export * from "./protocol.js";
+export * from "./universalAddress.js";
+export * from "./unsignedTransaction.js";
+export * from "./vaa/index.js";
+export * from "./utils.js";
+export * from "./platform.js";
+export * from "./chain.js";
+export * from "./contracts.js";
+export * from "./signature.js";
+export * from "./signer.js";
+export * from "./rpc.js";
+export * from "./attestation.js";
+export * from "./types.js";
+export * from "./protocols/index.js";
+export * as layoutItems from "./layout-items/index.js";

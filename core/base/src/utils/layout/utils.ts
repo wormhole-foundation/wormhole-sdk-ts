@@ -7,10 +7,9 @@ import type {
   CustomConversion,
   NumType,
   BytesType,
-  PrimitiveType} from "./layout";
-import {
-  binaryLiterals,
-} from "./layout";
+  PrimitiveType
+} from "./layout.js";
+import { binaryLiterals } from "./layout.js";
 
 export const isNumType = (x: any): x is NumType =>
   typeof x === "number" || typeof x === "bigint";
@@ -54,9 +53,9 @@ type CombineObjects<T, U> = {
   [K in keyof T | keyof U]: K extends keyof T ? T[K] : K extends keyof U ? U[K] : never;
 };
 
-type BytesBase = { readonly name: string } & Omit<BytesLayoutItem, "binary" | "custom" | "layout">;
+export type BytesBase = { readonly name: string } & Omit<BytesLayoutItem, "binary" | "custom" | "layout">;
 
-type CustomizableBytesReturn<B extends BytesBase, P extends CustomizableBytes> =
+export type CustomizableBytesReturn<B extends BytesBase, P extends CustomizableBytes> =
   CombineObjects<
     B,
     P extends undefined

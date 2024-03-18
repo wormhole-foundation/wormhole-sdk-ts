@@ -1,2 +1,2 @@
-export * from './factories';
-export * from './TokenImplementation';
+export * from './factories/index.js';
+export * from './TokenImplementation.js';

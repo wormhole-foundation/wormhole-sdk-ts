@@ -1,2 +1,2 @@
-export * from "./relayer";
-export * from "./relayerLayout";
+export type { Relayer } from "./relayer.js";
+export * from "./relayerLayout.js";

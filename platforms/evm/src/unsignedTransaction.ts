@@ -3,7 +3,7 @@ import type {
   UnsignedTransaction,
 } from '@wormhole-foundation/sdk-connect';
 import type { TransactionRequest } from 'ethers';
-import type { EvmChains } from './types';
+import type { EvmChains } from './types.js';
 
 /**
  * An unsigned transaction for the EVM platform

@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-sui-core",
-  "version": "0.5.0-beta.10",
+  "version": "0.5.0-alpha.8",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -16,11 +16,10 @@
   "main": "./dist/cjs/index.js",
   "types": "./dist/cjs/index.d.ts",
   "module": "./dist/esm/index.js",
-  "author": "",
   "description": "SDK for Sui chains, used in conjunction with @wormhole-foundation/sdk",
   "files": [
-    "dist/cjs",
-    "dist/esm"
+    "dist/esm",
+    "dist/cjs"
   ],
   "keywords": [
     "wormhole",
@@ -34,16 +33,29 @@
   },
   "sideEffects": true,
   "scripts": {
-    "build:cjs": "tsc -p ./tsconfig.cjs.json",
+    "build:cjs": "tsc -p ./tsconfig.cjs.json  && echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
     "build:esm": "tsc -p ./tsconfig.esm.json",
-    "build": "npm run build:cjs && npm run build:esm",
+    "build": "npm run build:esm && npm run build:cjs",
     "rebuild": "npm run clean && npm run build",
     "clean": "rm -rf ./dist && rm -rf ./.turbo",
     "lint": "npm run prettier && eslint --fix ./src --ext .ts",
     "prettier": "prettier --write ./src"
   },
   "dependencies": {
-    "@wormhole-foundation/sdk-connect": "0.5.0-beta.10",
-    "@wormhole-foundation/sdk-sui": "0.5.0-beta.10"
+    "@wormhole-foundation/sdk-connect": "0.5.0-alpha.8",
+    "@wormhole-foundation/sdk-sui": "0.5.0-alpha.8"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "default": "./dist/cjs/index.js",
+        "types": "./dist/cjs/index.d.ts"
+      }
+    }
   }
 }

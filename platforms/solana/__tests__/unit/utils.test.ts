@@ -1,4 +1,4 @@
-import { camelCase, upperFirst } from '../../src';
+import { camelCase, upperFirst } from './../../src/index.js';
 
 const camelCaseCases: [string, string][] = [
   ['foo', 'foo'],

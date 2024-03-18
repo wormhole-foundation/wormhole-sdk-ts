@@ -3,8 +3,8 @@ import { PublicKey } from '@solana/web3.js';
 import type { Provider } from '@project-serum/anchor';
 import { Program } from '@project-serum/anchor';
 import { utils } from '@wormhole-foundation/sdk-solana';
-import { WormholeCoder } from './coder';
-import type { Wormhole } from '../types';
+import { WormholeCoder } from './coder/index.js';
+import type { Wormhole } from '../types.js';
 
 import IDL from '../anchor-idl/wormhole.json';
 

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { retry } from "./tasks";
+import { retry } from "./tasks.js";
 
 // Note: mostly ripped off from https://github.com/circlefin/cctp-sample-app/blob/master/src/services/attestationService.ts
 export const CIRCLE_RETRY_INTERVAL = 2000;

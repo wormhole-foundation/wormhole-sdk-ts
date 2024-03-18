@@ -1,7 +1,7 @@
-/// <reference path="../../platforms/cosmwasm/dist/esm/address.d.ts" />
-import type { Network, PlatformDefinition } from ".";
+/// <reference path="../../platforms/cosmwasm/src/index.ts" />
+import type { Network, PlatformDefinition } from "./index.js";
 /** Platform and protocol definitions for Cosmwasm */
-export const cosmwasm = async (): Promise<PlatformDefinition<Network, "Cosmwasm">> => {
+const cosmwasm = async (): Promise<PlatformDefinition<Network, "Cosmwasm">> => {
   const _cosmwasm = await import("@wormhole-foundation/sdk-cosmwasm");
   return {
     Address: _cosmwasm.CosmwasmAddress,
@@ -16,3 +16,4 @@ export const cosmwasm = async (): Promise<PlatformDefinition<Network, "Cosmwasm"
     },
   };
 };
+export default cosmwasm;

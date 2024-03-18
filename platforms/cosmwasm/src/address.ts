@@ -1,9 +1,9 @@
 import { fromBase64, fromBech32, fromHex, toBech32 } from "@cosmjs/encoding";
 import type { Address } from "@wormhole-foundation/sdk-connect";
 import { UniversalAddress, encoding, registerNative } from "@wormhole-foundation/sdk-connect";
-import { CosmwasmPlatform } from "./platform";
-import type { AnyCosmwasmAddress } from "./types";
-import { _platform } from "./types";
+import { CosmwasmPlatform } from "./platform.js";
+import type { AnyCosmwasmAddress } from "./types.js";
+import { _platform } from "./types.js";
 
 /*
 Categories:

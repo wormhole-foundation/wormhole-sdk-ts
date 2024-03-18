@@ -14,8 +14,8 @@ import {
   deriveFeeCollectorKey,
   deriveEmitterSequenceKey,
   getEmitterKeys,
-} from '../accounts';
-import { createReadOnlyWormholeProgramInterface } from '../program';
+} from './../accounts/index.js';
+import { createReadOnlyWormholeProgramInterface } from '../program.js';
 
 /** All accounts required to make a cross-program invocation with the Core Bridge program */
 export interface PostMessageAccounts {

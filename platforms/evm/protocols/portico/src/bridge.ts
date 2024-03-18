@@ -29,9 +29,9 @@ import {
 } from '@wormhole-foundation/sdk-evm';
 import type { Provider, TransactionRequest } from 'ethers';
 import { ethers } from 'ethers';
-import { porticoAbi, uniswapQuoterV2Abi } from './abis';
-import { PorticoApi } from './api';
-import { FEE_TIER } from './consts';
+import { porticoAbi, uniswapQuoterV2Abi } from './abis.js';
+import { PorticoApi } from './api.js';
+import { FEE_TIER } from './consts.js';
 
 import { EvmWormholeCore } from '@wormhole-foundation/sdk-evm-core';
 

@@ -2,14 +2,14 @@ import type {
   Layout,
   LayoutItem,
   LayoutToType,
-} from "./layout";
+} from './layout.js';
 import {
   findIdLayoutPair,
   isBytesType,
   isLayoutItem,
   isFixedBytesConversion,
   checkItemSize,
-} from "./utils";
+} from './utils.js';
 
 function calcItemSize(item: LayoutItem, data: any): number | null {
   switch (item.binary) {

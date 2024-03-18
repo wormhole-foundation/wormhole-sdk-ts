@@ -1,14 +1,14 @@
-import * as core from "./core";
-import * as tb from "./tokenBridge";
-import * as tbr from "./tokenBridgeRelayer";
-import * as nb from "./nftBridge";
-import * as r from "./relayer";
-import * as circle from "./circle";
-import * as g from "./cosmos";
-import * as rollup from "./rollupCheckpoint";
-import * as p from "./portico";
+import * as core from './core.js';
+import * as tb from './tokenBridge.js';
+import * as tbr from './tokenBridgeRelayer.js';
+import * as nb from './nftBridge.js';
+import * as r from './relayer.js';
+import * as circle from './circle.js';
+import * as g from './cosmos.js';
+import * as rollup from './rollupCheckpoint.js';
+import * as p from './portico.js';
 
-import { constMap } from "../../utils";
+import { constMap } from './../../utils/index.js';
 
 export const coreBridge = constMap(core.coreBridgeContracts);
 export const tokenBridge = constMap(tb.tokenBridgeContracts);
@@ -19,10 +19,10 @@ export const gateway = constMap(g.gatewayContracts);
 export const translator = constMap(g.translatorContracts);
 export const portico = constMap(p.porticoContracts);
 
-export type { CircleContracts } from "./circle";
+export type { CircleContracts } from './circle.js';
 export const circleContracts = constMap(circle.circleContracts);
 
-export type { PorticoContracts } from "./portico";
+export type { PorticoContracts } from './portico.js';
 export const rollupContracts = constMap(rollup.rollupContractAddresses);
 
 export const tokenBridgeChains = constMap(tb.tokenBridgeContracts, [0, 1]);

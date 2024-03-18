@@ -24,7 +24,7 @@ import {
   addFrom,
 } from '@wormhole-foundation/sdk-evm';
 import type { Provider, TransactionRequest } from 'ethers';
-import { ethers_contracts } from '.';
+import { ethers_contracts } from './index.js';
 
 import '@wormhole-foundation/sdk-evm-core';
 

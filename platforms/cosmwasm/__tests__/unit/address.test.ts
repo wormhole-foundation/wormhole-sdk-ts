@@ -1,4 +1,4 @@
-import { CosmwasmAddress } from "../../src";
+import { CosmwasmAddress } from './../../src/index.js';
 
 describe("Cosmwasm Address Tests", () => {
   describe("Parse Address", () => {

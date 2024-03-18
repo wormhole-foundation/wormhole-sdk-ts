@@ -19,8 +19,8 @@ import {
   derivePostedVaaKey,
   deriveUpgradeAuthorityKey,
   deriveWormholeBridgeDataKey,
-} from '../accounts';
-import { createReadOnlyWormholeProgramInterface } from '../program';
+} from './../accounts/index.js';
+import { createReadOnlyWormholeProgramInterface } from '../program.js';
 
 export function createSetFeesInstruction(
   connection: Connection,

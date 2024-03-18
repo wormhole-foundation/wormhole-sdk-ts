@@ -4,13 +4,11 @@ const jestConfig: JestConfigWithTsJest = {
   preset: "ts-jest",
   verbose: true,
   modulePathIgnorePatterns: ["mocks", "helpers", "staging", "typechecks"],
+  moduleNameMapper: {
+    "^(\\.{1,2}/.*)\\.js$": "$1",
+  },
   transform: {
-    "^.+\\.tsx?$": [
-      "ts-jest",
-      {
-        isolatedModules: true,
-      },
-    ],
+    "^.+\\.tsx?$": ["ts-jest", { tsconfig: "tsconfig.esm.json" }],
   },
 };
 

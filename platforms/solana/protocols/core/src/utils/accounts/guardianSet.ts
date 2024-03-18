@@ -4,7 +4,7 @@ import type {
   Commitment,
   PublicKeyInitData,
 } from '@solana/web3.js';
-import { ETHEREUM_KEY_LENGTH } from '../instructions/secp256k1';
+import { ETHEREUM_KEY_LENGTH } from '../instructions/secp256k1.js';
 import { utils } from '@wormhole-foundation/sdk-solana';
 
 export function deriveGuardianSetKey(

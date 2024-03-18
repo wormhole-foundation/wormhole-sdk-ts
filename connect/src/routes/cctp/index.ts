@@ -1,2 +1,2 @@
-export * from "./manual";
-export * from "./automatic";
+export * from "./manual.js";
+export * from "./automatic.js";

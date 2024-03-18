@@ -40,11 +40,11 @@ Getting started is simple, just import Wormhole and the [Platform](#platforms) m
 <!--EXAMPLE_IMPORTS-->
 ```ts
 import { wormhole } from "@wormhole-foundation/sdk";
-import { algorand } from "@wormhole-foundation/sdk/algorand";
-import { cosmwasm } from "@wormhole-foundation/sdk/cosmwasm";
-import { evm } from "@wormhole-foundation/sdk/evm";
-import { solana } from "@wormhole-foundation/sdk/solana";
-import { sui } from "@wormhole-foundation/sdk/sui";
+import algorand from "@wormhole-foundation/sdk/algorand";
+import cosmwasm from "@wormhole-foundation/sdk/cosmwasm";
+import evm from "@wormhole-foundation/sdk/evm";
+import solana from "@wormhole-foundation/sdk/solana";
+import sui from "@wormhole-foundation/sdk/sui";
 ```
 See example [here](https://github.com/wormhole-foundation/connect-sdk/blob/main/examples/src/index.ts#L2)
 <!--EXAMPLE_IMPORTS-->

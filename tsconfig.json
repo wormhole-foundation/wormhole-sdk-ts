@@ -1,13 +1,12 @@
 {
   "compilerOptions": {
-    "lib": ["es2022"],
-    "target": "es2022",
-    "module": "es2022",
+    "target": "ESNext",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "types": ["mocha", "chai", "node", "jest"],
+    "composite": true,
     "esModuleInterop": true,
     "strict": true,
-    "resolveJsonModule": true,
-    "moduleResolution": "node",
     "incremental": true,
     "declaration": true,
     "declarationMap": true,

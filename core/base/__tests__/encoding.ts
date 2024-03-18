@@ -1,5 +1,5 @@
 import { test, describe, expect } from "@jest/globals";
-import { bytes, hex, b64, b58 } from "../src/utils/encoding";
+import { bytes, hex, b64, b58 } from '../src/utils/encoding.js';
 
 // A table of base64 encoded strings and their decoded string equivalents
 const base64Table = [

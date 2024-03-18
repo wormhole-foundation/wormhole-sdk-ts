@@ -1,8 +1,10 @@
 {
-  "extends": "../../../../tsconfig.cjs.json",
+  "extends": "../../tsconfig.cjs.json",
   "include": ["src", "../../buffer-layout.d.ts"],
   "compilerOptions": {
     "outDir": "dist/cjs",
-    "rootDir": "src"
-  }
+    "rootDir": "src",
+    "resolveJsonModule": true,
+  },
+  "files": ["./src/anchor-idl/wormhole.json"]
 }

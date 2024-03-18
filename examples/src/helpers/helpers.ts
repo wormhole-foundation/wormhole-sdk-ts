@@ -13,17 +13,14 @@ import {
   tasks,
 } from "@wormhole-foundation/sdk";
 
-import { algorand } from "@wormhole-foundation/sdk/algorand";
-import { cosmwasm } from "@wormhole-foundation/sdk/cosmwasm";
-import { evm } from "@wormhole-foundation/sdk/evm";
-import { solana } from "@wormhole-foundation/sdk/solana";
-import { sui } from "@wormhole-foundation/sdk/sui";
+import algorand from "@wormhole-foundation/sdk/algorand";
+import cosmwasm from "@wormhole-foundation/sdk/cosmwasm";
+import evm from "@wormhole-foundation/sdk/evm";
+import solana from "@wormhole-foundation/sdk/solana";
+import sui from "@wormhole-foundation/sdk/sui";
 
 // Use .env.example as a template for your .env file and populate it with secrets
 // for funded accounts on the relevant chain+network combos to run the example
-
-// Read in from `.env`
-require("dotenv").config();
 
 function getEnv(key: string): string {
   // If we're in the browser, return empty string
@@ -45,6 +42,9 @@ export interface SignerStuff<N extends Network, C extends Chain> {
 export async function getSigner<N extends Network, C extends Chain>(
   chain: ChainContext<N, C>,
 ): Promise<SignerStuff<N, C>> {
+  // Read in from `.env`
+  (await import("dotenv")).config();
+
   let signer: Signer;
   const platform = chain.platform.utils()._platform;
   switch (platform) {

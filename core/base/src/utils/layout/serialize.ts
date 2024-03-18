@@ -8,11 +8,11 @@ import type {
   BytesType,
   FixedConversion,
   LayoutObject,
-  LayoutItemBase} from "./layout";
+  LayoutItemBase} from './layout.js';
 import {
   numberMaxSize,
-} from "./layout";
-import { calcLayoutSize } from "./size";
+} from './layout.js';
+import { calcLayoutSize } from './size.js';
 import {
   checkItemSize,
   checkBytesTypeEqual,
@@ -22,7 +22,7 @@ import {
   isLayoutItem,
   isNumType,
   isBytesType,
-} from "./utils";
+} from './utils.js';
 
 type Cursor = {
   bytes: BytesType;
