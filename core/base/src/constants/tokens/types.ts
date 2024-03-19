@@ -1,4 +1,4 @@
-import type { Chain } from '../chains.js';
+import type { Chain } from "../chains.js";
 
 // unique name to key off
 export type TokenKey = string;
@@ -7,6 +7,11 @@ export type TokenSymbol = string;
 
 export type ChainTokens = {
   [symbol: TokenKey]: Token;
+};
+
+export type NttContracts = {
+  manager: string;
+  transceiver: string;
 };
 
 export type Token = {
@@ -24,14 +29,8 @@ export type Token = {
   // or a token that should be wrapped before bridging
   // represents the wrapped token on its native chain
   wrappedKey?: TokenKey;
+  // Set if this is a token managed by NTT
+  ntt?: NttContracts;
 };
 
 export type TokenConst = Omit<Token, "chain" | "key">;
-
-export type TokenExtraDetails = {
-  key: string;
-  symbol: TokenSymbol;
-  nativeChain: Chain;
-  coinGeckoId: string;
-  displayName?: string;
-};

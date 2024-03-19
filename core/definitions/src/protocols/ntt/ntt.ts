@@ -1,12 +1,20 @@
-import type { Chain, Network, Platform } from "@wormhole-foundation/sdk-base";
+import {
+  encoding,
+  type Chain,
+  type Network,
+  type Platform,
+  serializeLayout,
+} from "@wormhole-foundation/sdk-base";
+import type { AccountAddress, ChainAddress } from "../../address.js";
+import type { EmptyPlatformMap } from "../../protocol.js";
+import type { UnsignedTransaction } from "../../unsignedTransaction.js";
 import "../tokenBridge/automaticTokenBridgeLayout.js";
 import "../tokenBridge/tokenBridgeLayout.js";
-import type { EmptyPlatformMap } from "../../protocol.js";
 import type { ProtocolPayload, ProtocolVAA, VAA } from "./../../vaa/index.js";
-import type { ChainAddress, NativeAddress } from "../../address.js";
-import type { UnsignedTransaction } from "../../unsignedTransaction.js";
 
 import "../../registry.js";
+import { TokenAddress } from "../../types.js";
+import { transceiverInstructionLayout } from "./nttLayout.js";
 declare module "../../registry.js" {
   export namespace WormholeRegistry {
     interface ProtocolToPlatformMapping {
@@ -42,12 +50,26 @@ export namespace NTT {
     amount: string;
     rateLimitExpiryTimestamp: number;
   };
+
+  export type TransceiverInstruction = {
+    index: number;
+    payload: Uint8Array;
+  };
+
+  export function encodeTransceiverInstructions(ixs: TransceiverInstruction[]) {
+    if (ixs.length > 255) throw new Error(`Too many instructions (${ixs.length})`);
+    return encoding.bytes.concat(
+      new Uint8Array([ixs.length]),
+      ...ixs.map((ix) => serializeLayout(transceiverInstructionLayout(), ix)),
+    );
+  }
 }
 
 export interface NTT<N extends Network, C extends Chain> {
   // invoke `transfer` against the NTTManager
   transfer(
-    sender: NativeAddress<C>,
+    sender: AccountAddress<C>,
+    token: TokenAddress<C>,
     amount: bigint,
     destination: ChainAddress,
     // ... TODO: options? skip relay?
@@ -57,18 +79,21 @@ export interface NTT<N extends Network, C extends Chain> {
   // invoke `receiveMessage` against the WormholeTransceiver
   redeem(
     vaa: VAA<"NTT:WormholeTransfer">,
-    sender?: NativeAddress<C>,
+    token: TokenAddress<C>,
+    sender?: AccountAddress<C>,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
 
-  getCurrentOutboundCapacity(): Promise<string>;
-  getCurrentInboundCapacity(fromChain: Chain): Promise<string>;
+  getCurrentOutboundCapacity(token: TokenAddress<C>): Promise<string>;
+  getCurrentInboundCapacity(fromChain: Chain, token: TokenAddress<C>): Promise<string>;
 
   getInboundQueuedTransfer(
     transceiverMessage: string,
+    token: TokenAddress<C>,
     fromChain: Chain,
   ): Promise<NTT.InboundQueuedTransfer | undefined>;
   completeInboundQueuedTransfer(
     transceiverMessage: string,
+    token: TokenAddress<C>,
     fromChain: Chain,
     payer: string,
   ): Promise<string>;

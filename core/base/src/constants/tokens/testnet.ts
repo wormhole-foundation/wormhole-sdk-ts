@@ -1,7 +1,7 @@
-import type { MapLevel} from './../../utils/index.js';
-import { constMap } from './../../utils/index.js';
-import type { Chain } from '../chains.js';
-import type { TokenSymbol, TokenConst } from './types.js';
+import type { MapLevel } from "./../../utils/index.js";
+import { constMap } from "./../../utils/index.js";
+import type { Chain } from "../chains.js";
+import type { TokenSymbol, TokenConst } from "./types.js";
 
 const testnetTokenEntries = [
   [
@@ -1508,6 +1508,18 @@ const testnetTokenEntries = [
           original: "Sei",
         },
       ],
+      [
+        "TEST_NTTsolana",
+        {
+          symbol: "TEST_NTT",
+          address: "87r5ZS91Q2pQbFTvvneqs7y7mbtegtqMt4LDAS4g23Ax",
+          decimals: 9,
+          ntt: {
+            manager: "nTTh3bZ5Aer6xboWZe39RDEft4MeVxSQ8D1EYAVLZw9",
+            transceiver: "nTTh3bZ5Aer6xboWZe39RDEft4MeVxSQ8D1EYAVLZw9",
+          },
+        },
+      ],
     ],
   ],
   [
@@ -1518,8 +1530,7 @@ const testnetTokenEntries = [
         {
           symbol: "WETH",
           decimals: 8,
-          address:
-            "0x72831f626b1f0e11be201893d5cb641917730b1ccac778e4a77f8ab2052f0784::coin::COIN",
+          address: "0x72831f626b1f0e11be201893d5cb641917730b1ccac778e4a77f8ab2052f0784::coin::COIN",
           original: "Ethereum",
         },
       ],
@@ -1528,8 +1539,7 @@ const testnetTokenEntries = [
         {
           symbol: "USDC",
           decimals: 6,
-          address:
-            "0x9e4396c19ec1c5f2214c79d3af3f31e59869640305560f8f2499c36fa9c8e0f2::coin::COIN",
+          address: "0x9e4396c19ec1c5f2214c79d3af3f31e59869640305560f8f2499c36fa9c8e0f2::coin::COIN",
           original: "Ethereum",
         },
       ],
@@ -1538,8 +1548,7 @@ const testnetTokenEntries = [
         {
           symbol: "DAI",
           decimals: 8,
-          address:
-            "0xe6fc78aa2b52b785bdcb67901cd85793a0b593248f315cb755974d23d0fcb837::coin::COIN",
+          address: "0xe6fc78aa2b52b785bdcb67901cd85793a0b593248f315cb755974d23d0fcb837::coin::COIN",
           original: "Ethereum",
         },
       ],
@@ -1548,8 +1557,7 @@ const testnetTokenEntries = [
         {
           symbol: "WMATIC",
           decimals: 8,
-          address:
-            "0xa516bcbf83b29a2944bb53ec9f934ea7d78c3626d3ae411d2fb9dcb977522e67::coin::COIN",
+          address: "0xa516bcbf83b29a2944bb53ec9f934ea7d78c3626d3ae411d2fb9dcb977522e67::coin::COIN",
           original: "Polygon",
         },
       ],
@@ -1558,8 +1566,7 @@ const testnetTokenEntries = [
         {
           symbol: "WBNB",
           decimals: 8,
-          address:
-            "0xddcf8680a8a4b8a527d8c85ec203274991590c2ea898d1c4635b70164d9c584b::coin::COIN",
+          address: "0xddcf8680a8a4b8a527d8c85ec203274991590c2ea898d1c4635b70164d9c584b::coin::COIN",
           original: "Bsc",
         },
       ],
@@ -1568,8 +1575,7 @@ const testnetTokenEntries = [
         {
           symbol: "WAVAX",
           decimals: 8,
-          address:
-            "0xa600741c469fb57ed01497ddf101e798fa79a9c529bd176675c5c4d970811f80::coin::COIN",
+          address: "0xa600741c469fb57ed01497ddf101e798fa79a9c529bd176675c5c4d970811f80::coin::COIN",
           original: "Avalanche",
         },
       ],
@@ -1578,8 +1584,7 @@ const testnetTokenEntries = [
         {
           symbol: "USDC",
           decimals: 6,
-          address:
-            "0x2aa8c885d04e676c4e87b7d0f94d4f3b243b1b5d93239d1cc41d5528ce1714c1::coin::COIN",
+          address: "0x2aa8c885d04e676c4e87b7d0f94d4f3b243b1b5d93239d1cc41d5528ce1714c1::coin::COIN",
           original: "Avalanche",
         },
       ],
@@ -1588,8 +1593,7 @@ const testnetTokenEntries = [
         {
           symbol: "WFTM",
           decimals: 8,
-          address:
-            "0x14e756ff65e0ac810a5f69ca5276ef5b899a6df3c4717de1f85559d8b5ae6ea6::coin::COIN",
+          address: "0x14e756ff65e0ac810a5f69ca5276ef5b899a6df3c4717de1f85559d8b5ae6ea6::coin::COIN",
           original: "Fantom",
         },
       ],
@@ -1598,8 +1602,7 @@ const testnetTokenEntries = [
         {
           symbol: "CELO",
           decimals: 8,
-          address:
-            "0x81868174a6b11e1acc337b3414f9912455435d486609fb8d50b34312865085f2::coin::COIN",
+          address: "0x81868174a6b11e1acc337b3414f9912455435d486609fb8d50b34312865085f2::coin::COIN",
           original: "Celo",
         },
       ],
@@ -1608,8 +1611,7 @@ const testnetTokenEntries = [
         {
           symbol: "WGLMR",
           decimals: 8,
-          address:
-            "0xeffae382de96981f7ddd2d294429924827e8f325d612487a12d6a0b249171002::coin::COIN",
+          address: "0xeffae382de96981f7ddd2d294429924827e8f325d612487a12d6a0b249171002::coin::COIN",
           original: "Moonbeam",
         },
       ],
@@ -1618,8 +1620,7 @@ const testnetTokenEntries = [
         {
           symbol: "WSOL",
           decimals: 8,
-          address:
-            "0xbc03aaab4c11eb84df8bf39fdc714fa5d5b65b16eb7d155e22c74a68c8d4e17f::coin::COIN",
+          address: "0xbc03aaab4c11eb84df8bf39fdc714fa5d5b65b16eb7d155e22c74a68c8d4e17f::coin::COIN",
           original: "Solana",
         },
       ],
@@ -1636,8 +1637,7 @@ const testnetTokenEntries = [
         {
           symbol: "APT",
           decimals: 8,
-          address:
-            "0x812d6feb8b84e55d47a0bfcae9fb6a4e7e09be5ec86ce0a729e0f67d5f59f477::coin::COIN",
+          address: "0x812d6feb8b84e55d47a0bfcae9fb6a4e7e09be5ec86ce0a729e0f67d5f59f477::coin::COIN",
           original: "Aptos",
         },
       ],
@@ -1646,8 +1646,7 @@ const testnetTokenEntries = [
         {
           symbol: "USDC",
           decimals: 6,
-          address:
-            "0xbbc39df58a11072ceeac1f685393ca912d1a1bfd6e772053ec5a544f36124da::coin::COIN",
+          address: "0xbbc39df58a11072ceeac1f685393ca912d1a1bfd6e772053ec5a544f36124da::coin::COIN",
           original: "Optimism",
         },
       ],
@@ -1656,8 +1655,7 @@ const testnetTokenEntries = [
         {
           symbol: "WETH",
           decimals: 8,
-          address:
-            "0x7b442b988864149dedfb9b6a75a88c7c33b9ddd3d15a87bf25104e1fcdd680ab::coin::COIN",
+          address: "0x7b442b988864149dedfb9b6a75a88c7c33b9ddd3d15a87bf25104e1fcdd680ab::coin::COIN",
           original: "Base",
         },
       ],
@@ -1666,8 +1664,7 @@ const testnetTokenEntries = [
         {
           symbol: "USDC",
           decimals: 6,
-          address:
-            "0x4125940814a0ca87465a1a59092a7344633ad03b48ad7cda36d799d8558012c1::coin::COIN",
+          address: "0x4125940814a0ca87465a1a59092a7344633ad03b48ad7cda36d799d8558012c1::coin::COIN",
           original: "Base",
         },
       ],
@@ -1676,8 +1673,7 @@ const testnetTokenEntries = [
         {
           symbol: "tBTC",
           decimals: 8,
-          address:
-            "0xacf6784120b221a077ab0b84acc0b76930779eb55f157ea2492be4a60b808f6::coin::COIN",
+          address: "0xacf6784120b221a077ab0b84acc0b76930779eb55f157ea2492be4a60b808f6::coin::COIN",
           original: "Ethereum",
         },
       ],
@@ -1686,8 +1682,7 @@ const testnetTokenEntries = [
         {
           symbol: "SEI",
           decimals: 6,
-          address:
-            "0x22c5cdaabaae4b6d3351f9bba9511b0aebb0662a6c209a360f0776e1e77a8438::coin::COIN",
+          address: "0x22c5cdaabaae4b6d3351f9bba9511b0aebb0662a6c209a360f0776e1e77a8438::coin::COIN",
           original: "Sei",
         },
       ],
@@ -1701,8 +1696,7 @@ const testnetTokenEntries = [
         {
           symbol: "WETH",
           decimals: 8,
-          address:
-            "0x381775005cb32cdd3dbf935ae1b978ed40d309c72b009cd4a812aab6d991418a::coin::T",
+          address: "0x381775005cb32cdd3dbf935ae1b978ed40d309c72b009cd4a812aab6d991418a::coin::T",
           original: "Ethereum",
         },
       ],
@@ -1711,8 +1705,7 @@ const testnetTokenEntries = [
         {
           symbol: "WMATIC",
           decimals: 8,
-          address:
-            "0x5f229253e2b2d03fb909f565feca49452582bd633a5816e5ce30aa593cb49d8a::coin::T",
+          address: "0x5f229253e2b2d03fb909f565feca49452582bd633a5816e5ce30aa593cb49d8a::coin::T",
           original: "Polygon",
         },
       ],
@@ -1721,8 +1714,7 @@ const testnetTokenEntries = [
         {
           symbol: "WBNB",
           decimals: 8,
-          address:
-            "0xa5894f5ddb8647e6143102aa336ff07374f7b32e88c1c703aef5b7c9a370bf80::coin::T",
+          address: "0xa5894f5ddb8647e6143102aa336ff07374f7b32e88c1c703aef5b7c9a370bf80::coin::T",
           original: "Bsc",
         },
       ],
@@ -1731,8 +1723,7 @@ const testnetTokenEntries = [
         {
           symbol: "WAVAX",
           decimals: 8,
-          address:
-            "0xbe8f4301c0b54e870902b9a23eeb95ce74ac190531782aa3262337ceb145401a::coin::T",
+          address: "0xbe8f4301c0b54e870902b9a23eeb95ce74ac190531782aa3262337ceb145401a::coin::T",
           original: "Avalanche",
         },
       ],
@@ -1741,8 +1732,7 @@ const testnetTokenEntries = [
         {
           symbol: "USDC",
           decimals: 6,
-          address:
-            "0x02ef7697bdb33361ca39d228671203afc0dea3202e792d79d2072b761d87c834::coin::T",
+          address: "0x02ef7697bdb33361ca39d228671203afc0dea3202e792d79d2072b761d87c834::coin::T",
           original: "Avalanche",
         },
       ],
@@ -1751,8 +1741,7 @@ const testnetTokenEntries = [
         {
           symbol: "WFTM",
           decimals: 8,
-          address:
-            "0x533c6ade00d15d1e014c41e29e34853e87df92c4e01a6a3f41318dbd098048d6::coin::T",
+          address: "0x533c6ade00d15d1e014c41e29e34853e87df92c4e01a6a3f41318dbd098048d6::coin::T",
           original: "Fantom",
         },
       ],
@@ -1761,8 +1750,7 @@ const testnetTokenEntries = [
         {
           symbol: "CELO",
           decimals: 8,
-          address:
-            "0xecbb0f7e7d049499ca83ca1358344f56557886f6f7adc740d6734cce7bfc9a14::coin::T",
+          address: "0xecbb0f7e7d049499ca83ca1358344f56557886f6f7adc740d6734cce7bfc9a14::coin::T",
           original: "Celo",
         },
       ],
@@ -1771,8 +1759,7 @@ const testnetTokenEntries = [
         {
           symbol: "WGLMR",
           decimals: 8,
-          address:
-            "0x338373b6694f71dbeac5ca4a30503bf5f083888d71678aed31255de416be37c0::coin::T",
+          address: "0x338373b6694f71dbeac5ca4a30503bf5f083888d71678aed31255de416be37c0::coin::T",
           original: "Moonbeam",
         },
       ],
@@ -1781,8 +1768,7 @@ const testnetTokenEntries = [
         {
           symbol: "WSOL",
           decimals: 8,
-          address:
-            "0xdd89c0e695df0692205912fb69fc290418bed0dbe6e4573d744a6d5e6bab6c13::coin::T",
+          address: "0xdd89c0e695df0692205912fb69fc290418bed0dbe6e4573d744a6d5e6bab6c13::coin::T",
           original: "Solana",
         },
       ],
@@ -1791,8 +1777,7 @@ const testnetTokenEntries = [
         {
           symbol: "SUI",
           decimals: 8,
-          address:
-            "0x7b22d0e02f653d4fd1caddcfa4719a2b329da56eb81d8f27db703f02466c26a5::coin::T",
+          address: "0x7b22d0e02f653d4fd1caddcfa4719a2b329da56eb81d8f27db703f02466c26a5::coin::T",
           original: "Sui",
         },
       ],
@@ -1809,8 +1794,7 @@ const testnetTokenEntries = [
         {
           symbol: "USDC",
           decimals: 6,
-          address:
-            "0x3f0fdd44d96dae888d6c576218cf655458316a27c7bdc46537f61e531b10d3df::coin::T",
+          address: "0x3f0fdd44d96dae888d6c576218cf655458316a27c7bdc46537f61e531b10d3df::coin::T",
           original: "Arbitrum",
         },
       ],
@@ -1819,8 +1803,7 @@ const testnetTokenEntries = [
         {
           symbol: "USDC",
           decimals: 6,
-          address:
-            "0xcff1d9820851201436ad225dcc4374a2d15f52a74109283eb9881be799677e92::coin::T",
+          address: "0xcff1d9820851201436ad225dcc4374a2d15f52a74109283eb9881be799677e92::coin::T",
           original: "Optimism",
         },
       ],
@@ -1829,8 +1812,7 @@ const testnetTokenEntries = [
         {
           symbol: "WETH",
           decimals: 8,
-          address:
-            "0x5b5f14781164cf77185a7b6acd8e4f3cbb7e7cfb1cd5760d2b8af81075fc153d::coin::T",
+          address: "0x5b5f14781164cf77185a7b6acd8e4f3cbb7e7cfb1cd5760d2b8af81075fc153d::coin::T",
           original: "Base",
         },
       ],
@@ -1839,8 +1821,7 @@ const testnetTokenEntries = [
         {
           symbol: "USDC",
           decimals: 6,
-          address:
-            "0xcfaabb3cb08ad612905dd6b2593d044ce857dfe5360148333b4635fb57d4d13f::coin::T",
+          address: "0xcfaabb3cb08ad612905dd6b2593d044ce857dfe5360148333b4635fb57d4d13f::coin::T",
           original: "Base",
         },
       ],
@@ -1849,8 +1830,7 @@ const testnetTokenEntries = [
         {
           symbol: "tBTC",
           decimals: 8,
-          address:
-            "0x6e2d5d1a6d6d0e0c5db506ce64ead0530847a48b96516abbb08cdebe43fe3036::coin::T",
+          address: "0x6e2d5d1a6d6d0e0c5db506ce64ead0530847a48b96516abbb08cdebe43fe3036::coin::T",
           original: "Ethereum",
         },
       ],
@@ -1859,8 +1839,7 @@ const testnetTokenEntries = [
         {
           symbol: "SEI",
           decimals: 6,
-          address:
-            "0xcae0ba0b7a435730ab65f1c8357d213e5cf9d4b377b96761745a8edaf9c9df6d::coin::T",
+          address: "0xcae0ba0b7a435730ab65f1c8357d213e5cf9d4b377b96761745a8edaf9c9df6d::coin::T",
           original: "Sei",
         },
       ],
@@ -2074,8 +2053,7 @@ const testnetTokenEntries = [
         {
           symbol: "WETH",
           decimals: 8,
-          address:
-            "sei13pzlt9etk44hj22lckncvampq2qu2gxv6r6774f3hma4vc07wqgsmftjx7",
+          address: "sei13pzlt9etk44hj22lckncvampq2qu2gxv6r6774f3hma4vc07wqgsmftjx7",
           original: "Ethereum",
         },
       ],
@@ -2084,8 +2062,7 @@ const testnetTokenEntries = [
         {
           symbol: "USDC",
           decimals: 6,
-          address:
-            "sei1nj32y0h0vzam33ay42h2majlfk7tdkqcuk84srn0v2a52kmujgfsyfe78f",
+          address: "sei1nj32y0h0vzam33ay42h2majlfk7tdkqcuk84srn0v2a52kmujgfsyfe78f",
           original: "Ethereum",
         },
       ],
@@ -2094,8 +2071,7 @@ const testnetTokenEntries = [
         {
           symbol: "WMATIC",
           decimals: 8,
-          address:
-            "sei1dc94as3vgxn3qkr5h0lnnrep69mtfku6jg4t94gfkunuyzr5g5eqyqvj9p",
+          address: "sei1dc94as3vgxn3qkr5h0lnnrep69mtfku6jg4t94gfkunuyzr5g5eqyqvj9p",
           original: "Polygon",
         },
       ],
@@ -2104,8 +2080,7 @@ const testnetTokenEntries = [
         {
           symbol: "WBNB",
           decimals: 8,
-          address:
-            "sei10a7see3f9t2j9l8fdweur3aqy4zgvz583a268hhhln3yzps6l5mqnl4ua6",
+          address: "sei10a7see3f9t2j9l8fdweur3aqy4zgvz583a268hhhln3yzps6l5mqnl4ua6",
           original: "Bsc",
         },
       ],
@@ -2114,8 +2089,7 @@ const testnetTokenEntries = [
         {
           symbol: "WAVAX",
           decimals: 8,
-          address:
-            "sei1mgpq67pj7p2acy5x7r5lz7fulxmuxr3uh5f0szyvqgvru3glufzsxk8tnx",
+          address: "sei1mgpq67pj7p2acy5x7r5lz7fulxmuxr3uh5f0szyvqgvru3glufzsxk8tnx",
           original: "Avalanche",
         },
       ],
@@ -2124,8 +2098,7 @@ const testnetTokenEntries = [
         {
           symbol: "USDC",
           decimals: 6,
-          address:
-            "sei1uyce5s6cc8hveg0maq2lg7wm6v6fvwqmznypj559nzf9wr9tmw3qnd3ce7",
+          address: "sei1uyce5s6cc8hveg0maq2lg7wm6v6fvwqmznypj559nzf9wr9tmw3qnd3ce7",
           original: "Avalanche",
         },
       ],
@@ -2134,8 +2107,7 @@ const testnetTokenEntries = [
         {
           symbol: "WFTM",
           decimals: 8,
-          address:
-            "sei1cr3j7rxq0dhq04ksftmj8n2w096w9g7ck8fngkvk2lrmy3qwz56q9thu9u",
+          address: "sei1cr3j7rxq0dhq04ksftmj8n2w096w9g7ck8fngkvk2lrmy3qwz56q9thu9u",
           original: "Fantom",
         },
       ],
@@ -2144,8 +2116,7 @@ const testnetTokenEntries = [
         {
           symbol: "CELO",
           decimals: 8,
-          address:
-            "sei1yw4wv2zqg9xkn67zvq3azye0t8h0x9kgyg3d53jym24gxt49vdyswk5upj",
+          address: "sei1yw4wv2zqg9xkn67zvq3azye0t8h0x9kgyg3d53jym24gxt49vdyswk5upj",
           original: "Celo",
         },
       ],
@@ -2154,8 +2125,7 @@ const testnetTokenEntries = [
         {
           symbol: "WGLMR",
           decimals: 8,
-          address:
-            "sei140m6xagmw0zesejzhsvk46zprgscr7tu94h36rwsutcsxcs4fmds9sevym",
+          address: "sei140m6xagmw0zesejzhsvk46zprgscr7tu94h36rwsutcsxcs4fmds9sevym",
           original: "Moonbeam",
         },
       ],
@@ -2164,8 +2134,7 @@ const testnetTokenEntries = [
         {
           symbol: "WSOL",
           decimals: 8,
-          address:
-            "sei1at3xuugacwgu3ppx7fxzmtr3q6m3ztjuean9r2mwcnqupw28yezs7unxgz",
+          address: "sei1at3xuugacwgu3ppx7fxzmtr3q6m3ztjuean9r2mwcnqupw28yezs7unxgz",
           original: "Solana",
         },
       ],
@@ -2174,8 +2143,7 @@ const testnetTokenEntries = [
         {
           symbol: "SUI",
           decimals: 8,
-          address:
-            "sei1rhpcprr2pffe6ydf078a0qeslhnlywxh2t3wjax4489z0m29cj9swj5khc",
+          address: "sei1rhpcprr2pffe6ydf078a0qeslhnlywxh2t3wjax4489z0m29cj9swj5khc",
           original: "Sui",
         },
       ],
@@ -2184,8 +2152,7 @@ const testnetTokenEntries = [
         {
           symbol: "APT",
           decimals: 8,
-          address:
-            "sei1em74y5sts4h8y5zuhfdn4w5g8zs285qld3kczpk6rh32jpvjyqqsvv0pdt",
+          address: "sei1em74y5sts4h8y5zuhfdn4w5g8zs285qld3kczpk6rh32jpvjyqqsvv0pdt",
           original: "Aptos",
         },
       ],
@@ -2194,8 +2161,7 @@ const testnetTokenEntries = [
         {
           symbol: "WETH",
           decimals: 8,
-          address:
-            "sei1pf5j3dgngm8yj2xkwmvmvt87g4vyc0szpjz92q8ly9erh23ytn4s983htv",
+          address: "sei1pf5j3dgngm8yj2xkwmvmvt87g4vyc0szpjz92q8ly9erh23ytn4s983htv",
           original: "Arbitrum",
         },
       ],
@@ -2204,8 +2170,7 @@ const testnetTokenEntries = [
         {
           symbol: "WETH",
           decimals: 8,
-          address:
-            "sei1kdqylzcv86t7slg8m30mlfgna9xsrusghdgnavvurkv0rku7jvqqta7lka",
+          address: "sei1kdqylzcv86t7slg8m30mlfgna9xsrusghdgnavvurkv0rku7jvqqta7lka",
           original: "Base",
         },
       ],
@@ -2214,8 +2179,7 @@ const testnetTokenEntries = [
         {
           symbol: "USDC",
           decimals: 6,
-          address:
-            "sei1lf6ghmrkd7gn5jlj6xw64suycpjy7g4s5q92fc2gef4f8q3znanq95mmgv",
+          address: "sei1lf6ghmrkd7gn5jlj6xw64suycpjy7g4s5q92fc2gef4f8q3znanq95mmgv",
           original: "Base",
         },
       ],
@@ -2224,8 +2188,7 @@ const testnetTokenEntries = [
         {
           symbol: "tBTC",
           decimals: 8,
-          address:
-            "sei1aj3uu9ejt8fk6rpjfhzluqnzqmv3enlndjmt8llkr7dn2dtz55xst4s3mn",
+          address: "sei1aj3uu9ejt8fk6rpjfhzluqnzqmv3enlndjmt8llkr7dn2dtz55xst4s3mn",
           original: "Solana",
         },
       ],
@@ -2566,8 +2529,7 @@ const testnetTokenEntries = [
         {
           symbol: "WETH",
           decimals: 8,
-          address:
-            "wormhole1vguuxez2h5ekltfj9gjd62fs5k4rl2zy5hfrncasykzw08rezpfs63pmq2",
+          address: "wormhole1vguuxez2h5ekltfj9gjd62fs5k4rl2zy5hfrncasykzw08rezpfs63pmq2",
           original: "Ethereum",
         },
       ],
@@ -2576,8 +2538,7 @@ const testnetTokenEntries = [
         {
           symbol: "USDC",
           decimals: 6,
-          address:
-            "wormhole1rl8su3hadqqq2v86lscpuklsh2mh84cxqvjdew4jt9yd07dzekyqkmcy3p",
+          address: "wormhole1rl8su3hadqqq2v86lscpuklsh2mh84cxqvjdew4jt9yd07dzekyqkmcy3p",
           original: "Ethereum",
         },
       ],
@@ -2586,8 +2547,7 @@ const testnetTokenEntries = [
         {
           symbol: "USDT",
           decimals: 6,
-          address:
-            "wormhole1v2efcqkp2qtev06t0ksjnx6trxdd0f7fxg2zdrtzr8cr9wdpjkyqkv9ch6",
+          address: "wormhole1v2efcqkp2qtev06t0ksjnx6trxdd0f7fxg2zdrtzr8cr9wdpjkyqkv9ch6",
           original: "Ethereum",
         },
       ],
@@ -2596,8 +2556,7 @@ const testnetTokenEntries = [
         {
           symbol: "DAI",
           decimals: 8,
-          address:
-            "wormhole1uuwad4khwek2h05gmkktzmh8l4t0ep54yydlsqg0l4y2uh3tqfyq3an9k6",
+          address: "wormhole1uuwad4khwek2h05gmkktzmh8l4t0ep54yydlsqg0l4y2uh3tqfyq3an9k6",
           original: "Ethereum",
         },
       ],
@@ -2606,8 +2565,7 @@ const testnetTokenEntries = [
         {
           symbol: "WMATIC",
           decimals: 8,
-          address:
-            "wormhole1vhjnzk9ly03dugffvzfcwgry4dgc8x0sv0nqqtfxj3ajn7rn5ghq6whn2p",
+          address: "wormhole1vhjnzk9ly03dugffvzfcwgry4dgc8x0sv0nqqtfxj3ajn7rn5ghq6whn2p",
           original: "Polygon",
         },
       ],
@@ -2616,8 +2574,7 @@ const testnetTokenEntries = [
         {
           symbol: "WBNB",
           decimals: 8,
-          address:
-            "wormhole1335rlmhujm0gj5e9gh7at9jpqvqckz0mpe4v284ar4lw5mlkryzsnetfsj",
+          address: "wormhole1335rlmhujm0gj5e9gh7at9jpqvqckz0mpe4v284ar4lw5mlkryzsnetfsj",
           original: "Bsc",
         },
       ],
@@ -2626,8 +2583,7 @@ const testnetTokenEntries = [
         {
           symbol: "WAVAX",
           decimals: 8,
-          address:
-            "wormhole1tqwwyth34550lg2437m05mjnjp8w7h5ka7m70jtzpxn4uh2ktsmq8dv649",
+          address: "wormhole1tqwwyth34550lg2437m05mjnjp8w7h5ka7m70jtzpxn4uh2ktsmq8dv649",
           original: "Avalanche",
         },
       ],
@@ -2636,8 +2592,7 @@ const testnetTokenEntries = [
         {
           symbol: "USDC",
           decimals: 6,
-          address:
-            "wormhole1qum2tr7hh4y7ruzew68c64myjec0dq2s2njf6waja5t0w879lutqv2exs9",
+          address: "wormhole1qum2tr7hh4y7ruzew68c64myjec0dq2s2njf6waja5t0w879lutqv2exs9",
           original: "Avalanche",
         },
       ],
@@ -2646,8 +2601,7 @@ const testnetTokenEntries = [
         {
           symbol: "WFTM",
           decimals: 8,
-          address:
-            "wormhole1808lz8dp2c39vhm9gnemt7zzj95nvrmjepxp7v3w4skzrlyzcmnsxkduxf",
+          address: "wormhole1808lz8dp2c39vhm9gnemt7zzj95nvrmjepxp7v3w4skzrlyzcmnsxkduxf",
           original: "Fantom",
         },
       ],
@@ -2656,8 +2610,7 @@ const testnetTokenEntries = [
         {
           symbol: "CELO",
           decimals: 8,
-          address:
-            "wormhole1e8z2wjelypwxw5sey62jvwjyup88w55q3h6m0x8jtwjf6sx5c7ys4mzydk",
+          address: "wormhole1e8z2wjelypwxw5sey62jvwjyup88w55q3h6m0x8jtwjf6sx5c7ys4mzydk",
           original: "Celo",
         },
       ],
@@ -2666,8 +2619,7 @@ const testnetTokenEntries = [
         {
           symbol: "WGLMR",
           decimals: 8,
-          address:
-            "wormhole10sfpr8ykh9xn93u8xec4ed3990nmvh86e0vaegkauqhlkxspysyqwavrxx",
+          address: "wormhole10sfpr8ykh9xn93u8xec4ed3990nmvh86e0vaegkauqhlkxspysyqwavrxx",
           original: "Moonbeam",
         },
       ],
@@ -2676,8 +2628,7 @@ const testnetTokenEntries = [
         {
           symbol: "WSOL",
           decimals: 8,
-          address:
-            "wormhole1gryz69gzl6mz2m66a4twg922jtlc47nlx73sxv88lvq86du5zvyqz3mt23",
+          address: "wormhole1gryz69gzl6mz2m66a4twg922jtlc47nlx73sxv88lvq86du5zvyqz3mt23",
           original: "Solana",
         },
       ],
@@ -2686,8 +2637,7 @@ const testnetTokenEntries = [
         {
           symbol: "USDC",
           decimals: 6,
-          address:
-            "wormhole1ced9v4plkf25q8c6k9gz0guq6l4xyjujpjlvxfg8lpaqywkmamashswq7p",
+          address: "wormhole1ced9v4plkf25q8c6k9gz0guq6l4xyjujpjlvxfg8lpaqywkmamashswq7p",
           original: "Solana",
         },
       ],
@@ -2696,8 +2646,7 @@ const testnetTokenEntries = [
         {
           symbol: "SUI",
           decimals: 8,
-          address:
-            "wormhole1yf4p93xu68j5fseupm4laj4k6f60gy7ynx6r5vvyr9c0hl3uy8vqpqd6h0",
+          address: "wormhole1yf4p93xu68j5fseupm4laj4k6f60gy7ynx6r5vvyr9c0hl3uy8vqpqd6h0",
           original: "Sui",
         },
       ],
@@ -2706,8 +2655,7 @@ const testnetTokenEntries = [
         {
           symbol: "APT",
           decimals: 8,
-          address:
-            "wormhole1u8rft0gee23fa6a0t4t88ualrza5lj8ses4aur0l66c7efpvjezqchv34j",
+          address: "wormhole1u8rft0gee23fa6a0t4t88ualrza5lj8ses4aur0l66c7efpvjezqchv34j",
           original: "Aptos",
         },
       ],
@@ -2716,8 +2664,7 @@ const testnetTokenEntries = [
         {
           symbol: "WETH",
           decimals: 8,
-          address:
-            "wormhole186k0cp83c3wyvapgh8fxf66ededemzrfujvjfsx0xw3vr0u9g8sq2y30vx",
+          address: "wormhole186k0cp83c3wyvapgh8fxf66ededemzrfujvjfsx0xw3vr0u9g8sq2y30vx",
           original: "Arbitrum",
         },
       ],
@@ -2726,8 +2673,7 @@ const testnetTokenEntries = [
         {
           symbol: "USDC",
           decimals: 6,
-          address:
-            "wormhole1s3pk90ccfl6ueehnj8s9pdgyjjlspmr3m5rv46arjh5v4g08dd0qrchjrk",
+          address: "wormhole1s3pk90ccfl6ueehnj8s9pdgyjjlspmr3m5rv46arjh5v4g08dd0qrchjrk",
           original: "Arbitrum",
         },
       ],
@@ -2736,8 +2682,7 @@ const testnetTokenEntries = [
         {
           symbol: "WETH",
           decimals: 8,
-          address:
-            "wormhole12eu6c7f67l8gdl2lt0hz0dgdh24dhune6wjgy5t0es3tpfzhc3yspwnpfy",
+          address: "wormhole12eu6c7f67l8gdl2lt0hz0dgdh24dhune6wjgy5t0es3tpfzhc3yspwnpfy",
           original: "Optimism",
         },
       ],
@@ -2746,8 +2691,7 @@ const testnetTokenEntries = [
         {
           symbol: "USDC",
           decimals: 6,
-          address:
-            "wormhole1u5z7097gm57zvun9wqsx6jxej2gpdjhg9l9xfe58rhpm29rtjmfqfnl4yv",
+          address: "wormhole1u5z7097gm57zvun9wqsx6jxej2gpdjhg9l9xfe58rhpm29rtjmfqfnl4yv",
           original: "Optimism",
         },
       ],
@@ -2756,8 +2700,7 @@ const testnetTokenEntries = [
         {
           symbol: "WETH",
           decimals: 8,
-          address:
-            "wormhole10p89p4zh00dwdg8h52sysrqm0l2j47jj3kmg93pnz2a039ucw7esgl5vl9",
+          address: "wormhole10p89p4zh00dwdg8h52sysrqm0l2j47jj3kmg93pnz2a039ucw7esgl5vl9",
           original: "Base",
         },
       ],
@@ -2766,8 +2709,7 @@ const testnetTokenEntries = [
         {
           symbol: "USDC",
           decimals: 6,
-          address:
-            "wormhole1ja4txt6m0jjq0gmjtmv442f8wk0r5f5apaya0z55wwlrpg3p5xaq3qxw7h",
+          address: "wormhole1ja4txt6m0jjq0gmjtmv442f8wk0r5f5apaya0z55wwlrpg3p5xaq3qxw7h",
           original: "Base",
         },
       ],
@@ -2776,8 +2718,7 @@ const testnetTokenEntries = [
         {
           symbol: "tBTC",
           decimals: 8,
-          address:
-            "wormhole1rm8ztmk20lrd6ex8uqq3yu7a6eyfjwvg53pcuuj22ffe2y8r3yzqr8j4v9",
+          address: "wormhole1rm8ztmk20lrd6ex8uqq3yu7a6eyfjwvg53pcuuj22ffe2y8r3yzqr8j4v9",
           original: "Arbitrum",
         },
       ],
@@ -2786,8 +2727,7 @@ const testnetTokenEntries = [
         {
           symbol: "wstETH",
           decimals: 8,
-          address:
-            "wormhole1u2zdjcczjrenwmf57fmrpensk4the84azdm05m3unm387rm8asdsxqwfeu",
+          address: "wormhole1u2zdjcczjrenwmf57fmrpensk4the84azdm05m3unm387rm8asdsxqwfeu",
           original: "Ethereum",
         },
       ],
@@ -2801,8 +2741,7 @@ const testnetTokenEntries = [
         {
           symbol: "WETH",
           decimals: 8,
-          address:
-            "ibc/A4A8B6AE885DACD75B228031C0D18AD7EE1B914CED30C9F6F4230DDBD4A1CF2B",
+          address: "ibc/A4A8B6AE885DACD75B228031C0D18AD7EE1B914CED30C9F6F4230DDBD4A1CF2B",
           original: "Ethereum",
         },
       ],
@@ -2811,8 +2750,7 @@ const testnetTokenEntries = [
         {
           symbol: "USDC",
           decimals: 6,
-          address:
-            "ibc/3BB8C4BD1C90599B2FA5B5839DD0813EF7B94B0BD0904C4C5A61498AE81E0EE9",
+          address: "ibc/3BB8C4BD1C90599B2FA5B5839DD0813EF7B94B0BD0904C4C5A61498AE81E0EE9",
           original: "Ethereum",
         },
       ],
@@ -2821,8 +2759,7 @@ const testnetTokenEntries = [
         {
           symbol: "USDT",
           decimals: 6,
-          address:
-            "ibc/1941ED1147121BA7DF35559597B6EB3251844DBBBE4557337D957CB95E0978C2",
+          address: "ibc/1941ED1147121BA7DF35559597B6EB3251844DBBBE4557337D957CB95E0978C2",
           original: "Ethereum",
         },
       ],
@@ -2831,8 +2768,7 @@ const testnetTokenEntries = [
         {
           symbol: "DAI",
           decimals: 8,
-          address:
-            "ibc/2864B3418775DDB90EE1410EFF822FDA94E9F0FF77FC8771644761C79EDFE7A3",
+          address: "ibc/2864B3418775DDB90EE1410EFF822FDA94E9F0FF77FC8771644761C79EDFE7A3",
           original: "Ethereum",
         },
       ],
@@ -2841,8 +2777,7 @@ const testnetTokenEntries = [
         {
           symbol: "WMATIC",
           decimals: 8,
-          address:
-            "ibc/43F15553F8598186394E81E18604B8B4532B2D7E855D9FFE68A2EF6802C18BE4",
+          address: "ibc/43F15553F8598186394E81E18604B8B4532B2D7E855D9FFE68A2EF6802C18BE4",
           original: "Polygon",
         },
       ],
@@ -2851,8 +2786,7 @@ const testnetTokenEntries = [
         {
           symbol: "WBNB",
           decimals: 8,
-          address:
-            "ibc/65A67BA10DE2378B32AC5A822321E370966D3D4E180DEFB4C3C5245B21088DDF",
+          address: "ibc/65A67BA10DE2378B32AC5A822321E370966D3D4E180DEFB4C3C5245B21088DDF",
           original: "Bsc",
         },
       ],
@@ -2861,8 +2795,7 @@ const testnetTokenEntries = [
         {
           symbol: "WAVAX",
           decimals: 8,
-          address:
-            "ibc/99EAD53D49EC7CC4E2E2EB26C22CF81C16727DF0C4BF7F7ACBF0D22D910DB5DE",
+          address: "ibc/99EAD53D49EC7CC4E2E2EB26C22CF81C16727DF0C4BF7F7ACBF0D22D910DB5DE",
           original: "Avalanche",
         },
       ],
@@ -2871,8 +2804,7 @@ const testnetTokenEntries = [
         {
           symbol: "USDC",
           decimals: 6,
-          address:
-            "ibc/EC9FA5074F34F0644A025BB0263FDAE8F364C5E08523F6464465EF1010FF5A3A",
+          address: "ibc/EC9FA5074F34F0644A025BB0263FDAE8F364C5E08523F6464465EF1010FF5A3A",
           original: "Avalanche",
         },
       ],
@@ -2881,8 +2813,7 @@ const testnetTokenEntries = [
         {
           symbol: "WFTM",
           decimals: 8,
-          address:
-            "ibc/145C6B688F70B0C2F6D87546A5974A75CE75B3A2940275B750E65797B2996157",
+          address: "ibc/145C6B688F70B0C2F6D87546A5974A75CE75B3A2940275B750E65797B2996157",
           original: "Fantom",
         },
       ],
@@ -2891,8 +2822,7 @@ const testnetTokenEntries = [
         {
           symbol: "CELO",
           decimals: 8,
-          address:
-            "ibc/3A4EA3F8096856C0802F86B218DD74213B4C10224AA44BBD54AEAAA2ABF078BA",
+          address: "ibc/3A4EA3F8096856C0802F86B218DD74213B4C10224AA44BBD54AEAAA2ABF078BA",
           original: "Celo",
         },
       ],
@@ -2901,8 +2831,7 @@ const testnetTokenEntries = [
         {
           symbol: "WGLMR",
           decimals: 8,
-          address:
-            "ibc/7DB06BB67428510AFC3967DC90F5632C679D55D8C487A951A0EEC3160AF492A6",
+          address: "ibc/7DB06BB67428510AFC3967DC90F5632C679D55D8C487A951A0EEC3160AF492A6",
           original: "Moonbeam",
         },
       ],
@@ -2911,8 +2840,7 @@ const testnetTokenEntries = [
         {
           symbol: "WSOL",
           decimals: 8,
-          address:
-            "ibc/B5D53105A7AA2BEC4DA4B3304228F3856219AE7CF84A9023043C481629E3E319",
+          address: "ibc/B5D53105A7AA2BEC4DA4B3304228F3856219AE7CF84A9023043C481629E3E319",
           original: "Solana",
         },
       ],
@@ -2921,8 +2849,7 @@ const testnetTokenEntries = [
         {
           symbol: "USDC",
           decimals: 6,
-          address:
-            "ibc/35A0467DE5744662078DE8B36CBBE0CF0EAA022565A3E6630CB375DDEBB96E05",
+          address: "ibc/35A0467DE5744662078DE8B36CBBE0CF0EAA022565A3E6630CB375DDEBB96E05",
           original: "Solana",
         },
       ],
@@ -2931,8 +2858,7 @@ const testnetTokenEntries = [
         {
           symbol: "SUI",
           decimals: 8,
-          address:
-            "ibc/30778BA41ADF2D8A70B90DB53C2E0251731A40276EF6737215BB1A6ED9E90078",
+          address: "ibc/30778BA41ADF2D8A70B90DB53C2E0251731A40276EF6737215BB1A6ED9E90078",
           original: "Sui",
         },
       ],
@@ -2941,8 +2867,7 @@ const testnetTokenEntries = [
         {
           symbol: "APT",
           decimals: 8,
-          address:
-            "ibc/7C495BD95757ED662A897C139F1C9F18275A86EE7203A0B073E2DB12B1E19D63",
+          address: "ibc/7C495BD95757ED662A897C139F1C9F18275A86EE7203A0B073E2DB12B1E19D63",
           original: "Aptos",
         },
       ],
@@ -2951,8 +2876,7 @@ const testnetTokenEntries = [
         {
           symbol: "WETH",
           decimals: 8,
-          address:
-            "ibc/221A4AADF7972F3BB8F48A6CA984FF0AE65B5D973FF1A695B9642AD702F51789",
+          address: "ibc/221A4AADF7972F3BB8F48A6CA984FF0AE65B5D973FF1A695B9642AD702F51789",
           original: "Arbitrum",
         },
       ],
@@ -2961,8 +2885,7 @@ const testnetTokenEntries = [
         {
           symbol: "USDC",
           decimals: 6,
-          address:
-            "ibc/06ED2700071B5A9C582F51A556537DA94E69EF547E7E6CCD8BFA3D95C818A525",
+          address: "ibc/06ED2700071B5A9C582F51A556537DA94E69EF547E7E6CCD8BFA3D95C818A525",
           original: "Arbitrum",
         },
       ],
@@ -2971,8 +2894,7 @@ const testnetTokenEntries = [
         {
           symbol: "WETH",
           decimals: 8,
-          address:
-            "ibc/80B3FECB24A4CE94537444E5BF937AC4C08A39BF90D59620D278FA185BD2B148",
+          address: "ibc/80B3FECB24A4CE94537444E5BF937AC4C08A39BF90D59620D278FA185BD2B148",
           original: "Optimism",
         },
       ],
@@ -2981,8 +2903,7 @@ const testnetTokenEntries = [
         {
           symbol: "USDC",
           decimals: 6,
-          address:
-            "ibc/0A98A3947189D7C368170C76C3EF49486DDBE095F34B72A3C7F92AEBE1013A1D",
+          address: "ibc/0A98A3947189D7C368170C76C3EF49486DDBE095F34B72A3C7F92AEBE1013A1D",
           original: "Optimism",
         },
       ],
@@ -2991,8 +2912,7 @@ const testnetTokenEntries = [
         {
           symbol: "WETH",
           decimals: 8,
-          address:
-            "ibc/A45069EA82C933945973E66E4222EEE4624498D4483508FE9BEBF9D519F2132F",
+          address: "ibc/A45069EA82C933945973E66E4222EEE4624498D4483508FE9BEBF9D519F2132F",
           original: "Base",
         },
       ],
@@ -3001,8 +2921,7 @@ const testnetTokenEntries = [
         {
           symbol: "USDC",
           decimals: 6,
-          address:
-            "ibc/2E4F8BC7F7AF33752CF7E290CAD4417EE67CD18FFC0D099E6519A440E588E0CE",
+          address: "ibc/2E4F8BC7F7AF33752CF7E290CAD4417EE67CD18FFC0D099E6519A440E588E0CE",
           original: "Base",
         },
       ],
@@ -3019,8 +2938,7 @@ const testnetTokenEntries = [
         {
           symbol: "wstETH",
           decimals: 8,
-          address:
-            "ibc/C66B7DB3ED665D2F5FE8ED15E88B5913A37D80601E161C5E53A743DE12C0FB85",
+          address: "ibc/C66B7DB3ED665D2F5FE8ED15E88B5913A37D80601E161C5E53A743DE12C0FB85",
           original: "Ethereum",
         },
       ],
@@ -3034,8 +2952,7 @@ const testnetTokenEntries = [
         {
           symbol: "WETH",
           decimals: 8,
-          address:
-            "ibc/77FE9153FA76C3107CB9F6633AC33509A58529E9622327F216BA8107C79C2DE3",
+          address: "ibc/77FE9153FA76C3107CB9F6633AC33509A58529E9622327F216BA8107C79C2DE3",
           original: "Ethereum",
         },
       ],
@@ -3044,8 +2961,7 @@ const testnetTokenEntries = [
         {
           symbol: "USDC",
           decimals: 6,
-          address:
-            "ibc/D0EC31D1176BB69EA1A7CF7172CA0380B7AF488AFC6D55B101B8363C2141CD4F",
+          address: "ibc/D0EC31D1176BB69EA1A7CF7172CA0380B7AF488AFC6D55B101B8363C2141CD4F",
           original: "Ethereum",
         },
       ],
@@ -3054,8 +2970,7 @@ const testnetTokenEntries = [
         {
           symbol: "USDT",
           decimals: 6,
-          address:
-            "ibc/755FBC53FFB46FB505B5269F9BEDF47041F2A0EF2FF8D0520315403E5925C80A",
+          address: "ibc/755FBC53FFB46FB505B5269F9BEDF47041F2A0EF2FF8D0520315403E5925C80A",
           original: "Ethereum",
         },
       ],
@@ -3064,8 +2979,7 @@ const testnetTokenEntries = [
         {
           symbol: "DAI",
           decimals: 8,
-          address:
-            "ibc/5F21E975410DA22AF565B1772DC45AD0BD5F6DA004981EBE291763F3D2C72A96",
+          address: "ibc/5F21E975410DA22AF565B1772DC45AD0BD5F6DA004981EBE291763F3D2C72A96",
           original: "Ethereum",
         },
       ],
@@ -3074,8 +2988,7 @@ const testnetTokenEntries = [
         {
           symbol: "WMATIC",
           decimals: 8,
-          address:
-            "ibc/37FB599287C6963C413E915FDE83EFA69A3CE8147675DD5A7F974B45F39C8A31",
+          address: "ibc/37FB599287C6963C413E915FDE83EFA69A3CE8147675DD5A7F974B45F39C8A31",
           original: "Polygon",
         },
       ],
@@ -3084,8 +2997,7 @@ const testnetTokenEntries = [
         {
           symbol: "WBNB",
           decimals: 8,
-          address:
-            "ibc/5B0D5974A56332468DD4B2D07C96A7386FCF8FE7303FF41234F90E410EF51937",
+          address: "ibc/5B0D5974A56332468DD4B2D07C96A7386FCF8FE7303FF41234F90E410EF51937",
           original: "Bsc",
         },
       ],
@@ -3094,8 +3006,7 @@ const testnetTokenEntries = [
         {
           symbol: "WAVAX",
           decimals: 8,
-          address:
-            "ibc/BAEAC83736444C09656FBE666FB625974FCCDEE566EB700EBFD2642C5F6CF13A",
+          address: "ibc/BAEAC83736444C09656FBE666FB625974FCCDEE566EB700EBFD2642C5F6CF13A",
           original: "Avalanche",
         },
       ],
@@ -3104,8 +3015,7 @@ const testnetTokenEntries = [
         {
           symbol: "USDC",
           decimals: 6,
-          address:
-            "ibc/F09E98FA8682FF39130F171E9D89A948B0C3A452F2A31F22B6CC54A3AAE1CD4A",
+          address: "ibc/F09E98FA8682FF39130F171E9D89A948B0C3A452F2A31F22B6CC54A3AAE1CD4A",
           original: "Avalanche",
         },
       ],
@@ -3114,8 +3024,7 @@ const testnetTokenEntries = [
         {
           symbol: "WFTM",
           decimals: 8,
-          address:
-            "ibc/919D8F138B7E71BB067C7301AB5C2D48415E8C3A2D9187861245CEC668F88E3C",
+          address: "ibc/919D8F138B7E71BB067C7301AB5C2D48415E8C3A2D9187861245CEC668F88E3C",
           original: "Fantom",
         },
       ],
@@ -3124,8 +3033,7 @@ const testnetTokenEntries = [
         {
           symbol: "CELO",
           decimals: 8,
-          address:
-            "ibc/009206915358A002C852A2A2CBEDB8446D2D02E519C815087A01F8BDB4DF77BA",
+          address: "ibc/009206915358A002C852A2A2CBEDB8446D2D02E519C815087A01F8BDB4DF77BA",
           original: "Celo",
         },
       ],
@@ -3134,8 +3042,7 @@ const testnetTokenEntries = [
         {
           symbol: "WGLMR",
           decimals: 8,
-          address:
-            "ibc/1EEDF447A6B046B20C00B1497BED5947219AEEBE0D9A85235C85133A554DF7A4",
+          address: "ibc/1EEDF447A6B046B20C00B1497BED5947219AEEBE0D9A85235C85133A554DF7A4",
           original: "Moonbeam",
         },
       ],
@@ -3144,8 +3051,7 @@ const testnetTokenEntries = [
         {
           symbol: "WSOL",
           decimals: 8,
-          address:
-            "ibc/D3EA463A51E31B2B30BED1978575CAC145DBAB354B8A0EA5D4CFB12D737AF790",
+          address: "ibc/D3EA463A51E31B2B30BED1978575CAC145DBAB354B8A0EA5D4CFB12D737AF790",
           original: "Solana",
         },
       ],
@@ -3154,8 +3060,7 @@ const testnetTokenEntries = [
         {
           symbol: "USDC",
           decimals: 6,
-          address:
-            "ibc/26D8D6C63C8D37A5127591DDA905E04CC69CBD3A64F9DA3B1DA3FB0B6A7D9FA5",
+          address: "ibc/26D8D6C63C8D37A5127591DDA905E04CC69CBD3A64F9DA3B1DA3FB0B6A7D9FA5",
           original: "Solana",
         },
       ],
@@ -3164,8 +3069,7 @@ const testnetTokenEntries = [
         {
           symbol: "SUI",
           decimals: 8,
-          address:
-            "ibc/129EC6B8A41BE07F94DD267F552F4AE1D5EAEBB51634A1468556AF06C10C2692",
+          address: "ibc/129EC6B8A41BE07F94DD267F552F4AE1D5EAEBB51634A1468556AF06C10C2692",
           original: "Sui",
         },
       ],
@@ -3174,8 +3078,7 @@ const testnetTokenEntries = [
         {
           symbol: "APT",
           decimals: 8,
-          address:
-            "ibc/0CCA5EB15BC2FE474E71DBC9698302CDE260B6F6548F91C30002F7CBF228197B",
+          address: "ibc/0CCA5EB15BC2FE474E71DBC9698302CDE260B6F6548F91C30002F7CBF228197B",
           original: "Aptos",
         },
       ],
@@ -3184,8 +3087,7 @@ const testnetTokenEntries = [
         {
           symbol: "WETH",
           decimals: 8,
-          address:
-            "ibc/AB4046AF5B6F146C006DE4DECAD929D24F762A701E09EC8B29000EC63A6E649B",
+          address: "ibc/AB4046AF5B6F146C006DE4DECAD929D24F762A701E09EC8B29000EC63A6E649B",
           original: "Arbitrum",
         },
       ],
@@ -3194,8 +3096,7 @@ const testnetTokenEntries = [
         {
           symbol: "USDC",
           decimals: 6,
-          address:
-            "ibc/6D1B6A7A9EF692A279A6B5994C98C0D598D003D9203BE8309F14B6E57A58506E",
+          address: "ibc/6D1B6A7A9EF692A279A6B5994C98C0D598D003D9203BE8309F14B6E57A58506E",
           original: "Arbitrum",
         },
       ],
@@ -3204,8 +3105,7 @@ const testnetTokenEntries = [
         {
           symbol: "WETH",
           decimals: 8,
-          address:
-            "ibc/A0298483510D803A045AA7F49CCBD0F9D01010FE0B1A346EBDFFF4BA820C3D21",
+          address: "ibc/A0298483510D803A045AA7F49CCBD0F9D01010FE0B1A346EBDFFF4BA820C3D21",
           original: "Optimism",
         },
       ],
@@ -3214,8 +3114,7 @@ const testnetTokenEntries = [
         {
           symbol: "USDC",
           decimals: 6,
-          address:
-            "ibc/CE3F2FE630DA6A1187F085CDC8D59BA8B20DA48F4866F2D71C5AB7A1D5859933",
+          address: "ibc/CE3F2FE630DA6A1187F085CDC8D59BA8B20DA48F4866F2D71C5AB7A1D5859933",
           original: "Optimism",
         },
       ],
@@ -3224,8 +3123,7 @@ const testnetTokenEntries = [
         {
           symbol: "WETH",
           decimals: 8,
-          address:
-            "ibc/97035986A4BD0AF555713355A02EA31A4526616B6543E019E0D750007FABE06C",
+          address: "ibc/97035986A4BD0AF555713355A02EA31A4526616B6543E019E0D750007FABE06C",
           original: "Base",
         },
       ],
@@ -3234,8 +3132,7 @@ const testnetTokenEntries = [
         {
           symbol: "USDC",
           decimals: 6,
-          address:
-            "ibc/8560BA5F45C95AE716C05978E364F50C98347ACBEC745840C30F91611FA36698",
+          address: "ibc/8560BA5F45C95AE716C05978E364F50C98347ACBEC745840C30F91611FA36698",
           original: "Base",
         },
       ],
@@ -3244,8 +3141,7 @@ const testnetTokenEntries = [
         {
           symbol: "wstETH",
           decimals: 8,
-          address:
-            "ibc/5BB02667F9F0C8284FCF7716065C2779039817FBCB91E937F5149FE89FD8F202",
+          address: "ibc/5BB02667F9F0C8284FCF7716065C2779039817FBCB91E937F5149FE89FD8F202",
           original: "Ethereum",
         },
       ],
@@ -3325,6 +3221,18 @@ const testnetTokenEntries = [
           symbol: "WETH",
           decimals: 18,
           address: "0xeef12A83EE5b7161D3873317c8E0E7B76e0B5D9c",
+        },
+      ],
+      [
+        "TEST_NTTsepolia",
+        {
+          symbol: "TEST_NTT",
+          decimals: 18,
+          address: "0x1d30E78B7C7fbbcef87ae6e97B5389b2e470CA4a",
+          ntt: {
+            manager: "0xB231aD95f2301bc82eA44c515001F0F746D637e0",
+            transceiver: "0x1fDC902e30b188FD2BA976B421Cb179943F57896",
+          },
         },
       ],
     ],
