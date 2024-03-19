@@ -90,8 +90,8 @@ import "../../registry.js";
 declare module "../../registry.js" {
   export namespace WormholeRegistry {
     interface PayloadLiteralToLayoutMapping
-      extends RegisterPayloadTypes<"NTT", typeof nttNamedPayloads> {}
+      extends RegisterPayloadTypes<"Ntt", typeof nttNamedPayloads> {}
   }
 }
 
-registerPayloadTypes("NTT", nttNamedPayloads);
+registerPayloadTypes("Ntt", nttNamedPayloads);
