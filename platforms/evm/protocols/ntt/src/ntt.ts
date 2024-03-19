@@ -2,7 +2,7 @@ import {
   AccountAddress,
   ChainAddress,
   ChainsConfig,
-  NTT,
+  NTTManager,
   Network,
   ProtocolInitializer,
   TokenAddress,
@@ -28,100 +28,114 @@ import {
 } from '@wormhole-foundation/sdk-connect';
 import '@wormhole-foundation/sdk-evm-core';
 import { ethers_contracts } from './index.js';
+import { NTTTransceiver } from '@wormhole-foundation/sdk-connect';
+import { WormholeNTTTransceiver } from '@wormhole-foundation/sdk-connect';
 
-// TODO: do we want to do this instead of requiring the token address be passed
-// for every method?
-// export function evmNttProtocolFactory<N extends Network, C extends EvmChains>(
-//   token: string,
-// ): ProtocolInitializer<'Evm', 'NTT'> {
-//   class EvmNttManager extends EvmNtt<N, C> {
-//     tokenAddress: string = token;
-//   }
-//   return EvmNttManager;
-// }
+interface NttContracts {
+  manager: string;
+  // TODO: array of transceivers?
+  // map according to attestation protocol?
+  transceiver: string;
+}
 
-export abstract class EvmNtt<N extends Network, C extends EvmChains>
-  implements NTT<N, C>
+export function evmNttProtocolFactory(
+  token: string,
+): ProtocolInitializer<'Evm', 'NTT'> {
+  console.log(token);
+  class _EvmNttManager<
+    N extends Network,
+    C extends EvmChains,
+  > extends EvmNttManager<N, C> {
+    tokenAddress: string = token;
+
+    static async fromRpc<N extends Network>(
+      provider: Provider,
+      config: ChainsConfig<N, EvmPlatformType>,
+    ): Promise<_EvmNttManager<N, EvmChains>> {
+      const [network, chain] = await EvmPlatform.chainFromRpc(provider);
+      const conf = config[chain]!;
+
+      if (conf.network !== network)
+        throw new Error(`Network mismatch: ${conf.network} != ${network}`);
+      if (!conf.tokenMap) throw new Error('Token map not found');
+
+      const maybeToken = tokens.filters.byAddress(conf.tokenMap, token);
+      if (maybeToken === undefined) throw new Error('Token not found');
+      if (!maybeToken.ntt) throw new Error('Token not configured with NTT');
+
+      return new _EvmNttManager(network as N, chain, provider, maybeToken.ntt);
+    }
+  }
+  return _EvmNttManager;
+}
+
+export class EvmNttWormholeTranceiver<N extends Network, C extends EvmChains>
+  implements NTTTransceiver<N, C, WormholeNTTTransceiver.VAA>
+{
+  nttTransceiver: ethers_contracts.WormholeTransceiver;
+  constructor(provider: Provider, address: string) {
+    this.nttTransceiver =
+      ethers_contracts.factories.WormholeTransceiver__factory.connect(
+        address,
+        provider,
+      );
+  }
+
+  redeem(
+    attestation: VAA<'NTT:WormholeTransfer'>,
+    sender?: AccountAddress<C> | undefined,
+  ): AsyncGenerator<UnsignedTransaction<N, C>, any, unknown> {
+    throw new Error('Method not implemented.');
+  }
+}
+
+export abstract class EvmNttManager<N extends Network, C extends EvmChains>
+  implements NTTManager<N, C>
 {
   abstract tokenAddress: string;
   readonly chainId: bigint;
+  nttManager: ethers_contracts.NttManager;
+  nttTransceiver: EvmNttWormholeTranceiver<N, C>;
 
   constructor(
     readonly network: N,
     readonly chain: C,
     readonly provider: Provider,
-    readonly tokens?: tokens.ChainTokens,
+    readonly contracts: NttContracts,
   ) {
     this.chainId = nativeChainIds.networkChainToNativeChainId.get(
       network,
       chain,
     ) as bigint;
-  }
 
-  private async getContractClients(tokenAddress: string) {
-    if (!this.tokens) throw new Error('Token map not found');
-
-    const maybeToken = tokens.filters.byAddress(this.tokens, tokenAddress);
-    if (maybeToken === undefined) throw new Error('Token not found');
-    if (!maybeToken.ntt) throw new Error('Token not configured with NTT');
-
-    const { manager, transceiver } = maybeToken.ntt;
-
-    const nttManager = ethers_contracts.factories.NttManager__factory.connect(
-      manager,
+    this.nttManager = ethers_contracts.factories.NttManager__factory.connect(
+      contracts.manager,
       this.provider,
     );
-    const nttTransceiver =
-      ethers_contracts.factories.WormholeTransceiver__factory.connect(
-        transceiver,
-        this.provider,
-      );
 
-    return [nttManager, nttTransceiver] as [
-      ethers_contracts.NttManager,
-      ethers_contracts.WormholeTransceiver,
-    ];
-  }
-
-  static async fromRpc<N extends Network>(
-    provider: Provider,
-    config: ChainsConfig<N, EvmPlatformType>,
-  ): Promise<EvmNtt<N, EvmChains>> {
-    const [network, chain] = await EvmPlatform.chainFromRpc(provider);
-    const conf = config[chain]!;
-
-    if (conf.network !== network)
-      throw new Error(`Network mismatch: ${conf.network} != ${network}`);
-
-    return new EvmNtt<N, typeof chain>(
-      network as N,
-      chain,
+    this.nttTransceiver = new EvmNttWormholeTranceiver(
       provider,
-      conf.tokenMap,
+      contracts.transceiver,
     );
   }
 
   async *transfer(
     sender: AccountAddress<C>,
-    token: TokenAddress<C>,
     amount: bigint,
     destination: ChainAddress,
   ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
-    //
     const deliveryPrice = 0n;
-    const tokenAddress = token.toString();
-    const [mgr, _] = await this.getContractClients(tokenAddress);
 
     // TODO
     const skipRelay = true;
     const payload = new Uint8Array([skipRelay ? 1 : 0]);
-    const transceiverIxs = NTT.encodeTransceiverInstructions([
+    const transceiverIxs = NTTManager.encodeTransceiverInstructions([
       { index: 0, payload },
     ]);
 
     const senderAddress = new EvmAddress(sender).toString();
 
-    const txReq = await mgr
+    const txReq = await this.nttManager
       .getFunction('transfer(uint256,uint16,bytes32,bool,bytes)')
       .populateTransaction(
         amount,
@@ -151,9 +165,8 @@ export abstract class EvmNtt<N extends Network, C extends EvmChains>
   }
   getInboundQueuedTransfer(
     transceiverMessage: string,
-    token: TokenAddress<C>,
     fromChain: Chain,
-  ): Promise<NTT.InboundQueuedTransfer | undefined> {
+  ): Promise<NTTManager.InboundQueuedTransfer | undefined> {
     throw new Error('Method not implemented.');
   }
   completeInboundQueuedTransfer(

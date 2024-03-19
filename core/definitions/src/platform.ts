@@ -112,8 +112,12 @@ export abstract class PlatformContext<N extends Network, P extends Platform> {
   ): ChainContext<N, C>;
 
   /** Create a new Protocol Client instance by protocol name */
-  getProtocol<PN extends ProtocolName, T>(protocol: PN, rpc: RpcConnection<P>): Promise<T> {
-    return create(this.utils()._platform, protocol, rpc, this.config);
+  getProtocol<PN extends ProtocolName, T>(
+    protocol: PN,
+    rpc: RpcConnection<P>,
+    ...args: any
+  ): Promise<T> {
+    return create(this.utils()._platform, protocol, rpc, this.config, ...args);
   }
 
   /** Look up transaction logs and parse out Wormhole messages */

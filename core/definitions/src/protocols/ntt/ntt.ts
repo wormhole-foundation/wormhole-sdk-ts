@@ -10,7 +10,7 @@ import type { EmptyPlatformMap } from "../../protocol.js";
 import type { UnsignedTransaction } from "../../unsignedTransaction.js";
 import "../tokenBridge/automaticTokenBridgeLayout.js";
 import "../tokenBridge/tokenBridgeLayout.js";
-import type { ProtocolPayload, ProtocolVAA, VAA } from "./../../vaa/index.js";
+import type { ProtocolPayload, ProtocolVAA } from "./../../vaa/index.js";
 
 import "../../registry.js";
 import { TokenAddress } from "../../types.js";
@@ -36,7 +36,6 @@ export namespace NTTManager {
     amount: string;
     rateLimitExpiryTimestamp: number;
   };
-
   /**
    * TransceiverInstruction is a single instruction for the transceiver
    * @property index the index of the instruction, may not be > 255
@@ -81,7 +80,6 @@ export interface NTTManager<N extends Network, C extends Chain> {
     destination: ChainAddress,
     queue: boolean,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
-
   /**
    * getCurrentOutboundCapacity returns the current outbound capacity of the NTT manager
    */
@@ -91,7 +89,6 @@ export interface NTTManager<N extends Network, C extends Chain> {
    * @param fromChain the chain to check the inbound capacity for
    */
   getCurrentInboundCapacity(fromChain: Chain): Promise<string>;
-
   /**
    * getInboundQueuedTransfer returns the details of an inbound queued transfer
    * @param transceiverMessage the transceiver message
@@ -101,7 +98,6 @@ export interface NTTManager<N extends Network, C extends Chain> {
     transceiverMessage: string,
     fromChain: Chain,
   ): Promise<NTTManager.InboundQueuedTransfer | undefined>;
-
   /**
    * completeInboundQueuedTransfer completes an inbound queued transfer
    * @param transceiverMessage the transceiver message
@@ -135,12 +131,10 @@ export interface NTTTransceiver<N extends Network, C extends Chain, A extends at
 export namespace WormholeNTTTransceiver {
   const _payloads = ["WormholeTransfer"] as const;
   export type PayloadNames = (typeof _payloads)[number];
-
   export type VAA<PayloadName extends PayloadNames = PayloadNames> = ProtocolVAA<
     NTT.ProtocolName,
     PayloadName
   >;
-
   export type Payload<PayloadName extends PayloadNames = PayloadNames> = ProtocolPayload<
     NTT.ProtocolName,
     PayloadName
@@ -154,7 +148,10 @@ export namespace WormholeNTTTransceiver {
  * bridge and signaling the NTTManager that it can mint tokens.
  */
 export interface WormholeNTTTransceiver<N extends Network, C extends Chain>
-  extends NTTTransceiver<N, C, VAA<"NTT:WormholeTransfer">> {}
+  extends NTTTransceiver<N, C, WormholeNTTTransceiver.VAA> {}
+
+//export interface ZKTransceiver<N extends Network, C extends Chain>
+//  extends NTTTransceiver<N, C, Uint8Array> {}
 
 declare module "../../registry.js" {
   export namespace WormholeRegistry {

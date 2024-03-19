@@ -47,6 +47,7 @@
     "platforms/evm/protocols/tokenBridge",
     "platforms/evm/protocols/cctp",
     "platforms/evm/protocols/portico",
+    "platforms/evm/protocols/ntt",
     "platforms/solana",
     "platforms/solana/protocols/core",
     "platforms/solana/protocols/tokenBridge",
