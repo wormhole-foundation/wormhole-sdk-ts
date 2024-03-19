@@ -36,6 +36,7 @@
     "router": "tsx src/router.ts",
     "wrapped": "tsx src/createWrapped.ts",
     "tb": "tsx src/tokenBridge.ts",
+    "ntt":"tsx src/ntt.ts",
     "cctp": "tsx src/cctp.ts",
     "demo": "tsx src/index.ts",
     "cosmos": "tsx src/cosmos.ts",
