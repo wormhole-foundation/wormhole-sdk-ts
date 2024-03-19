@@ -53,7 +53,8 @@ type CombineObjects<T, U> = {
   [K in keyof T | keyof U]: K extends keyof T ? T[K] : K extends keyof U ? U[K] : never;
 };
 
-export type BytesBase = { readonly name: string } & Omit<BytesLayoutItem, "binary" | "custom" | "layout">;
+export type BytesBase =
+  { readonly name: string } & Omit<BytesLayoutItem, "binary" | "custom" | "layout">;
 
 export type CustomizableBytesReturn<B extends BytesBase, P extends CustomizableBytes> =
   CombineObjects<
@@ -62,14 +63,9 @@ export type CustomizableBytesReturn<B extends BytesBase, P extends CustomizableB
     ? { readonly binary: "bytes" }
     : P extends Layout
     ? { readonly binary: "bytes", readonly layout: P }
-    : P extends Uint8Array |
-                FixedConversion<Uint8Array, infer To> |
-                CustomConversion<Uint8Array, infer To>
+    : P extends Uint8Array | FixedConversion<Uint8Array, any> | CustomConversion<Uint8Array, any>
     ? { readonly binary: "bytes", readonly custom: P }
-    : P extends readonly [
-        Layout,
-        FixedConversion<infer From, infer To> | CustomConversion<infer From, infer To>
-      ]
+    : P extends readonly [Layout, FixedConversion<any, any> | CustomConversion<any, any>]
     ? { readonly binary: "bytes", readonly layout: P[0], readonly custom: P[1] }
     : never
   >;
