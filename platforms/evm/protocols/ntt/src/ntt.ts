@@ -100,6 +100,7 @@ export abstract class EvmNtt<N extends Network, C extends EvmChains>
   readonly chainId: bigint;
   manager: ethers_contracts.NttManager;
   xcvrs: EvmNttWormholeTranceiver<N, C>[];
+  managerAddress: string;
 
   constructor(
     readonly network: N,
@@ -112,6 +113,7 @@ export abstract class EvmNtt<N extends Network, C extends EvmChains>
       chain,
     ) as bigint;
 
+    this.managerAddress = contracts.manager;
     this.manager = ethers_contracts.factories.NttManager__factory.connect(
       contracts.manager,
       this.provider,
@@ -155,6 +157,28 @@ export abstract class EvmNtt<N extends Network, C extends EvmChains>
       this.encodeFlags(),
     );
     const senderAddress = new EvmAddress(sender).toString();
+
+    //TODO check for ERC-2612 (permit) support on token?
+    const tokenContract = EvmPlatform.getTokenImplementation(
+      this.provider,
+      this.tokenAddress,
+    );
+
+    const allowance = await tokenContract.allowance(
+      senderAddress,
+      this.managerAddress,
+    );
+    if (allowance < amount) {
+      const txReq = await tokenContract.approve.populateTransaction(
+        this.managerAddress,
+        amount,
+      );
+      yield this.createUnsignedTx(
+        addFrom(txReq, senderAddress),
+        'TokenBridge.Approve',
+      );
+    }
+
     const txReq = await this.manager
       .getFunction('transfer(uint256,uint16,bytes32,bool,bytes)')
       .populateTransaction(

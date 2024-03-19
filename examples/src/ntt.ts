@@ -14,7 +14,7 @@ import { getSigner } from "./helpers/index.js";
   const receiver = await getSigner(rcv);
 
   const ntt = await snd.getNtt("0x1d30E78B7C7fbbcef87ae6e97B5389b2e470CA4a");
-  const xferTxs = ntt.transfer(sender.address.address, BigInt(1e9), receiver.address, false);
+  const xferTxs = ntt.transfer(sender.address.address, BigInt(1e10), receiver.address, false);
   const txids = await signSendWait(snd, xferTxs, sender.signer);
   console.log(txids);
 })();
