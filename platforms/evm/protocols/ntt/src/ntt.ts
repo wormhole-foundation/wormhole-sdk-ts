@@ -71,13 +71,21 @@ export class EvmNttWormholeTranceiver<N extends Network, C extends EvmChains>
   implements NttTransceiver<N, C, WormholeNttTransceiver.VAA>
 {
   nttTransceiver: ethers_contracts.WormholeTransceiver;
-  constructor(provider: Provider, address: string) {
+  constructor(
+    provider: Provider,
+    readonly address: string,
+  ) {
     this.nttTransceiver =
       ethers_contracts.factories.WormholeTransceiver__factory.connect(
         address,
         provider,
       );
   }
+
+  skipRelayIx(skip: boolean): Uint8Array {
+    return new Uint8Array([skip ? 1 : 0]);
+  }
+
   receive(
     attestation: WormholeNttTransceiver.VAA,
     sender?: AccountAddress<C> | undefined,
@@ -116,20 +124,35 @@ export abstract class EvmNttManager<N extends Network, C extends EvmChains>
     );
   }
 
+  encodeFlags(): Ntt.TransceiverInstruction[] {
+    // TODO: allow selecting _which_ transceiver to use?
+    const xcvr = this.nttTransceiver;
+    return [
+      // TODO, do we really have to specify index here or can we use the idx in
+      // the array
+      { index: 0, payload: xcvr.skipRelayIx(true) },
+    ];
+  }
+
+  async quoteDeliveryPrice(dstChain: Chain): Promise<[bigint[], bigint]> {
+    return this.nttManager.quoteDeliveryPrice.staticCall(
+      toChainId(dstChain) as number,
+      this.encodeFlags(),
+      [this.nttTransceiver.address],
+    );
+  }
+
   async *transfer(
     sender: AccountAddress<C>,
     amount: bigint,
     destination: ChainAddress,
+    queue: boolean,
   ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
-    const deliveryPrice = 0n;
+    const [_, deliveryPrice] = await this.quoteDeliveryPrice(destination.chain);
 
-    // TODO
-    const skipRelay = true;
-    const payload = new Uint8Array([skipRelay ? 1 : 0]);
-    const transceiverIxs = Ntt.encodeTransceiverInstructions([
-      { index: 0, payload },
-    ]);
-
+    const transceiverIxs = Ntt.encodeTransceiverInstructions(
+      this.encodeFlags(),
+    );
     const senderAddress = new EvmAddress(sender).toString();
 
     const txReq = await this.nttManager
@@ -138,7 +161,7 @@ export abstract class EvmNttManager<N extends Network, C extends EvmChains>
         amount,
         toChainId(destination.chain),
         universalAddress(destination),
-        false,
+        queue,
         transceiverIxs,
         { value: deliveryPrice },
       );
