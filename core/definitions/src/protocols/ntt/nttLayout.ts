@@ -1,5 +1,14 @@
-import type { Layout, LayoutToType, CustomizableBytes } from "@wormhole-foundation/sdk-base";
-import { customizableBytes } from "@wormhole-foundation/sdk-base";
+import type {
+  Layout,
+  LayoutToType,
+  CustomConversion,
+  CustomizableBytes,
+} from "@wormhole-foundation/sdk-base";
+import {
+  customizableBytes,
+  serializeLayout,
+  deserializeLayout,
+} from "@wormhole-foundation/sdk-base";
 
 import { universalAddressItem, chainItem } from "./../../layout-items/index.js";
 import type { NamedPayloads, RegisterPayloadTypes } from "./../../vaa/index.js";
@@ -61,9 +70,37 @@ export type NttManagerMessage<P extends CustomizableBytes = undefined> = LayoutT
   ReturnType<typeof nttManagerMessageLayout<P>>
 >;
 
+const optionalWormholeTransceiverPayloadLayout = [
+  { name: "version", binary: "uint", size: 2, custom: 1, omit: true },
+  { name: "forSpecializedRelayer", binary: "uint", size: 1,
+    custom: {
+      to: (val: number) => val > 0,
+      from: (val: boolean) => val ? 1 : 0,
+    }
+  },
+] as const satisfies Layout;
+
+type OptionalWormholeTransceiverPayload =
+  LayoutToType<typeof optionalWormholeTransceiverPayloadLayout>;
+const optionalWormholeTransceiverPayloadConversion = {
+  to: (encoded: Uint8Array) =>
+    encoded.length === 0
+      ? null
+      : deserializeLayout(optionalWormholeTransceiverPayloadLayout, encoded),
+
+  from: (value: OptionalWormholeTransceiverPayload | null): Uint8Array =>
+    value === null
+      ? new Uint8Array(0)
+      : serializeLayout(optionalWormholeTransceiverPayloadLayout, value),
+} as const satisfies CustomConversion<Uint8Array, OptionalWormholeTransceiverPayload | null>;
+
 export const wormholeTransceiverMessageLayout = <MP extends CustomizableBytes = undefined>(
   nttManagerPayload?: MP,
-) => transceiverMessageLayout([0x99, 0x45, 0xff, 0x10], nttManagerPayload, new Uint8Array(0));
+) => transceiverMessageLayout(
+  [0x99, 0x45, 0xff, 0x10],
+  nttManagerPayload,
+  optionalWormholeTransceiverPayloadConversion
+);
 
 export type WormholeTransceiverMessage<MP extends CustomizableBytes = undefined> = LayoutToType<
   ReturnType<typeof wormholeTransceiverMessageLayout<MP>>
