@@ -11,7 +11,6 @@ import {
   ProtocolInitializer,
   TokenAddress,
   UnsignedTransaction,
-  VAA,
   nativeChainIds,
   tokens,
   Ntt,
@@ -31,25 +30,21 @@ import { ethers_contracts } from './index.js';
 
 interface NttContracts {
   manager: string;
-  // TODO: array of transceivers?
-  // map according to attestation protocol?
-  transceiver: string;
+  transceiver: {
+    wormhole?: string;
+  };
 }
 
 export function evmNttProtocolFactory(
   token: string,
 ): ProtocolInitializer<'Evm', 'Ntt'> {
-  console.log(token);
-  class _EvmNttManager<
-    N extends Network,
-    C extends EvmChains,
-  > extends EvmNttManager<N, C> {
+  class _EvmNtt<N extends Network, C extends EvmChains> extends EvmNtt<N, C> {
     tokenAddress: string = token;
 
     static async fromRpc<N extends Network>(
       provider: Provider,
       config: ChainsConfig<N, EvmPlatformType>,
-    ): Promise<_EvmNttManager<N, EvmChains>> {
+    ): Promise<_EvmNtt<N, EvmChains>> {
       const [network, chain] = await EvmPlatform.chainFromRpc(provider);
       const conf = config[chain]!;
 
@@ -61,10 +56,14 @@ export function evmNttProtocolFactory(
       if (maybeToken === undefined) throw new Error('Token not found');
       if (!maybeToken.ntt) throw new Error('Token not configured with NTT');
 
-      return new _EvmNttManager(network as N, chain, provider, maybeToken.ntt);
+      const { manager, transceiver } = maybeToken.ntt;
+      return new _EvmNtt(network as N, chain, provider, {
+        manager,
+        transceiver: { wormhole: transceiver },
+      });
     }
   }
-  return _EvmNttManager;
+  return _EvmNtt;
 }
 
 export class EvmNttWormholeTranceiver<N extends Network, C extends EvmChains>
@@ -72,8 +71,8 @@ export class EvmNttWormholeTranceiver<N extends Network, C extends EvmChains>
 {
   nttTransceiver: ethers_contracts.WormholeTransceiver;
   constructor(
-    provider: Provider,
     readonly address: string,
+    provider: Provider,
   ) {
     this.nttTransceiver =
       ethers_contracts.factories.WormholeTransceiver__factory.connect(
@@ -82,7 +81,7 @@ export class EvmNttWormholeTranceiver<N extends Network, C extends EvmChains>
       );
   }
 
-  skipRelayIx(skip: boolean): Uint8Array {
+  encodeFlags(skip: boolean): Uint8Array {
     return new Uint8Array([skip ? 1 : 0]);
   }
 
@@ -94,13 +93,13 @@ export class EvmNttWormholeTranceiver<N extends Network, C extends EvmChains>
   }
 }
 
-export abstract class EvmNttManager<N extends Network, C extends EvmChains>
+export abstract class EvmNtt<N extends Network, C extends EvmChains>
   implements Ntt<N, C>
 {
   abstract tokenAddress: string;
   readonly chainId: bigint;
-  nttManager: ethers_contracts.NttManager;
-  nttTransceiver: EvmNttWormholeTranceiver<N, C>;
+  manager: ethers_contracts.NttManager;
+  xcvrs: EvmNttWormholeTranceiver<N, C>[];
 
   constructor(
     readonly network: N,
@@ -113,32 +112,35 @@ export abstract class EvmNttManager<N extends Network, C extends EvmChains>
       chain,
     ) as bigint;
 
-    this.nttManager = ethers_contracts.factories.NttManager__factory.connect(
+    this.manager = ethers_contracts.factories.NttManager__factory.connect(
       contracts.manager,
       this.provider,
     );
 
-    this.nttTransceiver = new EvmNttWormholeTranceiver(
-      provider,
-      contracts.transceiver,
-    );
-  }
-
-  encodeFlags(): Ntt.TransceiverInstruction[] {
-    // TODO: allow selecting _which_ transceiver to use?
-    const xcvr = this.nttTransceiver;
-    return [
-      // TODO, do we really have to specify index here or can we use the idx in
-      // the array
-      { index: 0, payload: xcvr.skipRelayIx(true) },
+    this.xcvrs = [
+      // Enable more Transceivers here
+      new EvmNttWormholeTranceiver(
+        contracts.transceiver.wormhole!,
+        this.provider,
+      ),
     ];
   }
 
+  private encodeFlags(enabledIdxs?: number[]): Ntt.TransceiverInstruction[] {
+    return this.xcvrs
+      .map((xcvr, idx) => {
+        if (!enabledIdxs || enabledIdxs.includes(idx))
+          return { index: idx, payload: xcvr.encodeFlags(true) };
+        return null;
+      })
+      .filter((x) => x !== null) as Ntt.TransceiverInstruction[];
+  }
+
   async quoteDeliveryPrice(dstChain: Chain): Promise<[bigint[], bigint]> {
-    return this.nttManager.quoteDeliveryPrice.staticCall(
-      toChainId(dstChain) as number,
+    return this.manager.quoteDeliveryPrice.staticCall(
+      toChainId(dstChain),
       this.encodeFlags(),
-      [this.nttTransceiver.address],
+      this.xcvrs.map((x) => x.address),
     );
   }
 
@@ -148,14 +150,12 @@ export abstract class EvmNttManager<N extends Network, C extends EvmChains>
     destination: ChainAddress,
     queue: boolean,
   ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
-    const [_, deliveryPrice] = await this.quoteDeliveryPrice(destination.chain);
-
+    const [_, totalPrice] = await this.quoteDeliveryPrice(destination.chain);
     const transceiverIxs = Ntt.encodeTransceiverInstructions(
       this.encodeFlags(),
     );
     const senderAddress = new EvmAddress(sender).toString();
-
-    const txReq = await this.nttManager
+    const txReq = await this.manager
       .getFunction('transfer(uint256,uint16,bytes32,bool,bytes)')
       .populateTransaction(
         amount,
@@ -163,18 +163,10 @@ export abstract class EvmNttManager<N extends Network, C extends EvmChains>
         universalAddress(destination),
         queue,
         transceiverIxs,
-        { value: deliveryPrice },
+        { value: totalPrice },
       );
 
-    yield this.createUnsignedTx(addFrom(txReq, senderAddress), 'NTT.transfer');
-  }
-
-  async *redeem(
-    vaa: VAA<'Ntt:WormholeTransfer'>,
-    token: TokenAddress<C>,
-    sender?: AccountAddress<C> | undefined,
-  ): AsyncGenerator<UnsignedTransaction<N, C>, any, unknown> {
-    throw new Error('Method not implemented.');
+    yield this.createUnsignedTx(addFrom(txReq, senderAddress), 'Ntt.transfer');
   }
 
   getCurrentOutboundCapacity(): Promise<string> {
@@ -183,6 +175,7 @@ export abstract class EvmNttManager<N extends Network, C extends EvmChains>
   getCurrentInboundCapacity(fromChain: Chain): Promise<string> {
     throw new Error('Method not implemented.');
   }
+
   getInboundQueuedTransfer(
     transceiverMessage: string,
     fromChain: Chain,
