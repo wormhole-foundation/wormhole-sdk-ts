@@ -79,7 +79,7 @@ export class SuiWormholeCore<N extends Network, C extends SuiChains> implements 
     throw new Error("Method not implemented.");
   }
 
-  async parseMessages(txid: string): Promise<VAA[]> {
+  async parseMessages(txid: string) {
     const txBlock = await this.provider.getTransactionBlock({
       digest: txid,
       options: { showEvents: true, showEffects: true, showInput: true },
