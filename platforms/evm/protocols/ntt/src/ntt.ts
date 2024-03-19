@@ -1,19 +1,19 @@
 import {
-  Chain,
-  NttTransceiver,
-  WormholeNttTransceiver,
-  toChainId,
-  universalAddress,
   AccountAddress,
+  Chain,
   ChainAddress,
   ChainsConfig,
   Network,
+  Ntt,
+  NttTransceiver,
   ProtocolInitializer,
   TokenAddress,
   UnsignedTransaction,
+  WormholeNttTransceiver,
   nativeChainIds,
+  toChainId,
   tokens,
-  Ntt,
+  universalAddress,
 } from '@wormhole-foundation/sdk-connect';
 import type { EvmChains, EvmPlatformType } from '@wormhole-foundation/sdk-evm';
 import {
@@ -23,8 +23,8 @@ import {
   addChainId,
   addFrom,
 } from '@wormhole-foundation/sdk-evm';
-import type { Provider, TransactionRequest } from 'ethers';
 import '@wormhole-foundation/sdk-evm-core';
+import type { Provider, TransactionRequest } from 'ethers';
 
 import { ethers_contracts } from './index.js';
 
@@ -81,8 +81,8 @@ export class EvmNttWormholeTranceiver<N extends Network, C extends EvmChains>
       );
   }
 
-  encodeFlags(skip: boolean): Uint8Array {
-    return new Uint8Array([skip ? 1 : 0]);
+  encodeFlags(skipRelay: boolean): Uint8Array {
+    return new Uint8Array([skipRelay ? 1 : 0]);
   }
 
   receive(

@@ -11,6 +11,7 @@ import {
   nativeChainIds,
   createVAA,
   isWormholeMessageId,
+  encoding,
 } from '@wormhole-foundation/sdk-connect';
 import type { Provider, TransactionRequest } from 'ethers';
 import { ethers_contracts } from './index.js';
@@ -141,7 +142,7 @@ export class EvmWormholeCore<N extends Network, C extends EvmChains>
       .filter(isWormholeMessageId);
   }
 
-  async parseMessages(txid: string): Promise<VAA[]> {
+  async parseMessages(txid: string) {
     const receipt = await this.provider.getTransactionReceipt(txid);
     if (receipt === null) throw new Error('Could not get transaction receipt');
     const gsIdx = await this.getGuardianSetIndex();
@@ -150,13 +151,13 @@ export class EvmWormholeCore<N extends Network, C extends EvmChains>
       .filter((l: any) => {
         return l.address === this.coreAddress;
       })
-      .map((log): VAA | undefined => {
+      .map((log) => {
         const { topics, data } = log;
         const parsed = this.coreIface.parseLog({
           topics: topics.slice(),
           data,
         });
-        if (parsed === null) return undefined;
+        if (parsed === null) return null;
 
         const emitterAddress = new EvmAddress(parsed.args['sender']);
         return createVAA('Uint8Array', {
@@ -168,10 +169,10 @@ export class EvmWormholeCore<N extends Network, C extends EvmChains>
           sequence: BigInt(parsed.args['sequence']),
           nonce: Number(parsed.args['nonce']),
           signatures: [],
-          payload: parsed.args['payload'],
+          payload: encoding.hex.decode(parsed.args['payload']),
         });
       })
-      .filter((vaa) => !!vaa) as VAA[];
+      .filter((vaa) => !!vaa) as VAA<'Uint8Array'>[];
   }
 
   private createUnsignedTx(
