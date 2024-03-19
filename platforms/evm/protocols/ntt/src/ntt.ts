@@ -4,6 +4,7 @@ import {
   ChainsConfig,
   NTT,
   Network,
+  ProtocolInitializer,
   TokenAddress,
   UnsignedTransaction,
   VAA,
@@ -28,12 +29,24 @@ import {
 import '@wormhole-foundation/sdk-evm-core';
 import { ethers_contracts } from './index.js';
 
-export class EvmNtt<N extends Network, C extends EvmChains>
+// TODO: do we want to do this instead of requiring the token address be passed
+// for every method?
+// export function evmNttProtocolFactory<N extends Network, C extends EvmChains>(
+//   token: string,
+// ): ProtocolInitializer<'Evm', 'NTT'> {
+//   class EvmNttManager extends EvmNtt<N, C> {
+//     tokenAddress: string = token;
+//   }
+//   return EvmNttManager;
+// }
+
+export abstract class EvmNtt<N extends Network, C extends EvmChains>
   implements NTT<N, C>
 {
+  abstract tokenAddress: string;
   readonly chainId: bigint;
 
-  private constructor(
+  constructor(
     readonly network: N,
     readonly chain: C,
     readonly provider: Provider,
