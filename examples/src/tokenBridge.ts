@@ -24,8 +24,8 @@ import { SignerStuff, getSigner, waitLog } from "./helpers/index.js";
   const wh = await wormhole("Testnet", [evm, solana, algorand, cosmwasm, sui]);
 
   // Grab chain Contexts -- these hold a reference to a cached rpc client
-  const sendChain = wh.getChain("Solana");
-  const rcvChain = wh.getChain("Sui");
+  const sendChain = wh.getChain("Moonbeam");
+  const rcvChain = wh.getChain("Solana");
 
   // Shortcut to allow transferring native gas token
   const token = Wormhole.tokenId(sendChain.chain, "native");
