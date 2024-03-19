@@ -29,6 +29,12 @@ export interface ProtocolInitializer<P extends Platform, PN extends ProtocolName
   ): Promise<ProtocolImplementation<P, PN>>;
 }
 
+function isInitializer<P extends Platform, PN extends ProtocolName>(
+  ctr: ProtocolBuilder<P, PN>,
+): ctr is ProtocolInitializer<P, PN> {
+  return typeof ctr === "function" && "fromRpc" in ctr && typeof ctr.fromRpc === "function";
+}
+
 export type ProtocolInitializerFactory<P extends Platform, PN extends ProtocolName> = (
   ...args: any
 ) => ProtocolInitializer<P, PN>;
@@ -94,6 +100,6 @@ export const create = <N extends Network, P extends Platform, PN extends Protoco
   ...args: any
 ): Promise<T> => {
   const pctr = getProtocolBuilder(platform, protocol);
-  if (typeof pctr === "function") return pctr(...args).fromRpc(rpc, config);
-  return pctr.fromRpc(rpc, config);
+  if (isInitializer(pctr)) return pctr.fromRpc(rpc, config);
+  return pctr(...args).fromRpc(rpc, config);
 };
