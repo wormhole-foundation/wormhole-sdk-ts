@@ -3,7 +3,6 @@ import { tokens } from "@wormhole-foundation/sdk-base";
 import type { ChainAddress, UniversalOrNative } from "./address.js";
 import { toNative } from "./address.js";
 import type { WormholeMessageId } from "./attestation.js";
-import { NTTManager } from "./index.js";
 import type { PlatformContext } from "./platform.js";
 import type { ProtocolName } from "./protocol.js";
 import { protocolIsRegistered } from "./protocol.js";
@@ -15,6 +14,7 @@ import type { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge/
 import type { RpcConnection } from "./rpc.js";
 import type { ChainConfig, SignedTx, TokenAddress, TokenId } from "./types.js";
 import { canonicalAddress, isNative } from "./types.js";
+import { Ntt } from "./index.js";
 
 /**
  * A ChainContext provides a consistent interface for interacting with a chain.
@@ -301,7 +301,7 @@ export abstract class ChainContext<
     return this.porticoBridge;
   }
 
-  async getNttManager(tokenAddress: string): Promise<NTTManager<N, C>> {
-    return this.platform.getProtocol("NTT", await this.getRpc(), tokenAddress);
+  async getNtt(tokenAddress: string): Promise<Ntt<N, C>> {
+    return this.platform.getProtocol("Ntt", await this.getRpc(), tokenAddress);
   }
 }

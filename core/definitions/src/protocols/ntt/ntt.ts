@@ -16,15 +16,18 @@ import "../../registry.js";
 import { TokenAddress } from "../../types.js";
 import { transceiverInstructionLayout } from "./nttLayout.js";
 
-/**
- * @namespace NTT
- */
-export namespace NTT {
-  const _protocol = "NTT";
-  export type ProtocolName = typeof _protocol;
-}
+// TODO: what are the set of attestation types for Ntt?
+// can we know this ahead of time or does it need to be
+// flexible enough for folks to add their own somehow?
+type attestation = any;
 
-export namespace NTTManager {
+/**
+ * @namespace Ntt
+ */
+export namespace Ntt {
+  const _protocol = "Ntt";
+  export type ProtocolName = typeof _protocol;
+
   /**
    * InboundQueuedTransfer is a queued transfer from another chain
    * @property recipient the recipient of the transfer
@@ -58,17 +61,17 @@ export namespace NTTManager {
 }
 
 /**
- * NTTManager is the interface for the NTT manager
+ * Ntt is the interface for the Ntt
  *
- * The NTTManager is responsible for managing the coordination between the token contract and
+ * The Ntt is responsible for managing the coordination between the token contract and
  * the transceiver(s). It is also responsible for managing the capacity of inbound or outbount transfers.
  *
  * @typeparam N the network
  * @typeparam C the chain
  */
-export interface NTTManager<N extends Network, C extends Chain> {
+export interface Ntt<N extends Network, C extends Chain> {
   /**
-   * transfer sends a message to the NTT manager to initiate a transfer
+   * transfer sends a message to the Ntt manager to initiate a transfer
    * @param sender the address of the sender
    * @param amount the amount to transfer
    * @param destination the destination chain
@@ -81,11 +84,11 @@ export interface NTTManager<N extends Network, C extends Chain> {
     queue: boolean,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
   /**
-   * getCurrentOutboundCapacity returns the current outbound capacity of the NTT manager
+   * getCurrentOutboundCapacity returns the current outbound capacity of the Ntt manager
    */
   getCurrentOutboundCapacity(): Promise<string>;
   /**
-   * getCurrentInboundCapacity returns the current inbound capacity of the NTT manager
+   * getCurrentInboundCapacity returns the current inbound capacity of the Ntt manager
    * @param fromChain the chain to check the inbound capacity for
    */
   getCurrentInboundCapacity(fromChain: Chain): Promise<string>;
@@ -97,7 +100,7 @@ export interface NTTManager<N extends Network, C extends Chain> {
   getInboundQueuedTransfer(
     transceiverMessage: string,
     fromChain: Chain,
-  ): Promise<NTTManager.InboundQueuedTransfer | undefined>;
+  ): Promise<Ntt.InboundQueuedTransfer | undefined>;
   /**
    * completeInboundQueuedTransfer completes an inbound queued transfer
    * @param transceiverMessage the transceiver message
@@ -113,50 +116,45 @@ export interface NTTManager<N extends Network, C extends Chain> {
   ): Promise<string>;
 }
 
-// TODO: what are the set of attestation types for NTT?
-// can we know this ahead of time or does it need to be
-// flexible enough for folks to add their own somehow?
-type attestation = any;
-
-export interface NTTTransceiver<N extends Network, C extends Chain, A extends attestation> {
+export interface NttTransceiver<N extends Network, C extends Chain, A extends attestation> {
   /**
-   * redeem calls the `receive*` method on the transceiver
+   * receive calls the `receive*` method on the transceiver
    *
    * @param attestation the attestation to redeem against the transceiver
    * @param sender the address of the sender
    */
-  redeem(attestation: A, sender?: AccountAddress<C>): AsyncGenerator<UnsignedTransaction<N, C>>;
+  receive(attestation: A, sender?: AccountAddress<C>): AsyncGenerator<UnsignedTransaction<N, C>>;
 }
 
-export namespace WormholeNTTTransceiver {
+export namespace WormholeNttTransceiver {
   const _payloads = ["WormholeTransfer"] as const;
   export type PayloadNames = (typeof _payloads)[number];
   export type VAA<PayloadName extends PayloadNames = PayloadNames> = ProtocolVAA<
-    NTT.ProtocolName,
+    Ntt.ProtocolName,
     PayloadName
   >;
   export type Payload<PayloadName extends PayloadNames = PayloadNames> = ProtocolPayload<
-    NTT.ProtocolName,
+    Ntt.ProtocolName,
     PayloadName
   >;
 }
 
 /**
- * WormholeNTTTransceiver is the interface for the Wormhole NTT transceiver
+ * WormholeNttTransceiver is the interface for the Wormhole Ntt transceiver
  *
- * The WormholeNTTTransceiver is responsible for verifying VAAs against the core
- * bridge and signaling the NTTManager that it can mint tokens.
+ * The WormholeNttTransceiver is responsible for verifying VAAs against the core
+ * bridge and signaling the NttManager that it can mint tokens.
  */
-export interface WormholeNTTTransceiver<N extends Network, C extends Chain>
-  extends NTTTransceiver<N, C, WormholeNTTTransceiver.VAA> {}
+export interface WormholeNttTransceiver<N extends Network, C extends Chain>
+  extends NttTransceiver<N, C, WormholeNttTransceiver.VAA> {}
 
 //export interface ZKTransceiver<N extends Network, C extends Chain>
-//  extends NTTTransceiver<N, C, Uint8Array> {}
+//  extends NttTransceiver<N, C, Uint8Array> {}
 
 declare module "../../registry.js" {
   export namespace WormholeRegistry {
     interface ProtocolToPlatformMapping {
-      NTT: EmptyPlatformMap<Platform, NTT.ProtocolName>;
+      Ntt: EmptyPlatformMap<Platform, Ntt.ProtocolName>;
     }
   }
 }

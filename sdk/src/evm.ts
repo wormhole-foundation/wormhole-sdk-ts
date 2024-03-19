@@ -14,6 +14,7 @@ const evm = async (): Promise<PlatformDefinition<Network, "Evm">> => {
       tokenbridge: () => import("@wormhole-foundation/sdk-evm-tokenbridge"),
       portico: () => import("@wormhole-foundation/sdk-evm-portico"),
       cctp: () => import("@wormhole-foundation/sdk-evm-cctp"),
+      ntt: () => import("@wormhole-foundation/sdk-evm-ntt"),
     },
     // @ts-ignore
     getSignerForSigner: _evm.getEvmSignerForSigner,

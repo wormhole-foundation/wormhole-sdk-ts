@@ -1,8 +1,12 @@
 import {
+  Chain,
+  NttTransceiver,
+  WormholeNttTransceiver,
+  toChainId,
+  universalAddress,
   AccountAddress,
   ChainAddress,
   ChainsConfig,
-  NTTManager,
   Network,
   ProtocolInitializer,
   TokenAddress,
@@ -10,6 +14,7 @@ import {
   VAA,
   nativeChainIds,
   tokens,
+  Ntt,
 } from '@wormhole-foundation/sdk-connect';
 import type { EvmChains, EvmPlatformType } from '@wormhole-foundation/sdk-evm';
 import {
@@ -20,16 +25,9 @@ import {
   addFrom,
 } from '@wormhole-foundation/sdk-evm';
 import type { Provider, TransactionRequest } from 'ethers';
-
-import {
-  Chain,
-  toChainId,
-  universalAddress,
-} from '@wormhole-foundation/sdk-connect';
 import '@wormhole-foundation/sdk-evm-core';
+
 import { ethers_contracts } from './index.js';
-import { NTTTransceiver } from '@wormhole-foundation/sdk-connect';
-import { WormholeNTTTransceiver } from '@wormhole-foundation/sdk-connect';
 
 interface NttContracts {
   manager: string;
@@ -40,7 +38,7 @@ interface NttContracts {
 
 export function evmNttProtocolFactory(
   token: string,
-): ProtocolInitializer<'Evm', 'NTT'> {
+): ProtocolInitializer<'Evm', 'Ntt'> {
   console.log(token);
   class _EvmNttManager<
     N extends Network,
@@ -70,7 +68,7 @@ export function evmNttProtocolFactory(
 }
 
 export class EvmNttWormholeTranceiver<N extends Network, C extends EvmChains>
-  implements NTTTransceiver<N, C, WormholeNTTTransceiver.VAA>
+  implements NttTransceiver<N, C, WormholeNttTransceiver.VAA>
 {
   nttTransceiver: ethers_contracts.WormholeTransceiver;
   constructor(provider: Provider, address: string) {
@@ -80,9 +78,8 @@ export class EvmNttWormholeTranceiver<N extends Network, C extends EvmChains>
         provider,
       );
   }
-
-  redeem(
-    attestation: VAA<'NTT:WormholeTransfer'>,
+  receive(
+    attestation: WormholeNttTransceiver.VAA,
     sender?: AccountAddress<C> | undefined,
   ): AsyncGenerator<UnsignedTransaction<N, C>, any, unknown> {
     throw new Error('Method not implemented.');
@@ -90,7 +87,7 @@ export class EvmNttWormholeTranceiver<N extends Network, C extends EvmChains>
 }
 
 export abstract class EvmNttManager<N extends Network, C extends EvmChains>
-  implements NTTManager<N, C>
+  implements Ntt<N, C>
 {
   abstract tokenAddress: string;
   readonly chainId: bigint;
@@ -129,7 +126,7 @@ export abstract class EvmNttManager<N extends Network, C extends EvmChains>
     // TODO
     const skipRelay = true;
     const payload = new Uint8Array([skipRelay ? 1 : 0]);
-    const transceiverIxs = NTTManager.encodeTransceiverInstructions([
+    const transceiverIxs = Ntt.encodeTransceiverInstructions([
       { index: 0, payload },
     ]);
 
@@ -150,7 +147,7 @@ export abstract class EvmNttManager<N extends Network, C extends EvmChains>
   }
 
   async *redeem(
-    vaa: VAA<'NTT:WormholeTransfer'>,
+    vaa: VAA<'Ntt:WormholeTransfer'>,
     token: TokenAddress<C>,
     sender?: AccountAddress<C> | undefined,
   ): AsyncGenerator<UnsignedTransaction<N, C>, any, unknown> {
@@ -166,7 +163,7 @@ export abstract class EvmNttManager<N extends Network, C extends EvmChains>
   getInboundQueuedTransfer(
     transceiverMessage: string,
     fromChain: Chain,
-  ): Promise<NTTManager.InboundQueuedTransfer | undefined> {
+  ): Promise<Ntt.InboundQueuedTransfer | undefined> {
     throw new Error('Method not implemented.');
   }
   completeInboundQueuedTransfer(
