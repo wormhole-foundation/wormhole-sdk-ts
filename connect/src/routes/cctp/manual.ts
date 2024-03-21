@@ -7,7 +7,7 @@ import type {
   TokenId,
   TransactionId,
 } from "@wormhole-foundation/sdk-definitions";
-import { CircleBridge } from "@wormhole-foundation/sdk-definitions";
+import { CircleBridge, UniversalAddress } from "@wormhole-foundation/sdk-definitions";
 import { signSendWait } from "../../common.js";
 import type { CircleAttestationReceipt } from "../../protocols/cctpTransfer.js";
 import { CircleTransfer } from "../../protocols/cctpTransfer.js";
@@ -155,7 +155,10 @@ export class CCTPRoute<N extends Network>
       if (!attestation) throw new Error(`No Circle attestation for ${id}`);
 
       let cb = await this.request.toChain.getCircleBridge();
-      let xfer = cb.redeem(this.request.to.address, message, attestation);
+      const recipient = new UniversalAddress(att.message.recipient.address).toNative(
+        this.request.to.chain,
+      );
+      let xfer = cb.redeem(recipient, message, attestation);
       return await signSendWait<N, Chain>(this.request.toChain, xfer, signer);
     } else {
       //
