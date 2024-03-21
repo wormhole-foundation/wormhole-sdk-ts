@@ -129,12 +129,12 @@ export class CCTPRoute<N extends Network>
 
   async initiate(signer: Signer, quote: Q): Promise<R> {
     const { params } = quote;
-    let transfer = await CircleTransfer.destinationOverrides(
+    const transfer = await CircleTransfer.destinationOverrides(
       this.request.fromChain,
       this.request.toChain,
       this.toTransferDetails(params),
     );
-    let txids = await CircleTransfer.transfer<N>(this.request.fromChain, transfer, signer);
+    const txids = await CircleTransfer.transfer<N>(this.request.fromChain, transfer, signer);
     const msg = await CircleTransfer.getTransferMessage(
       this.request.fromChain,
       txids[txids.length - 1]!.txid,
