@@ -1,4 +1,4 @@
-import { canonicalAddress, routes, wormhole } from "@wormhole-foundation/sdk";
+import { Wormhole, canonicalAddress, routes, wormhole } from "@wormhole-foundation/sdk";
 import evm from "@wormhole-foundation/sdk/evm";
 import solana from "@wormhole-foundation/sdk/solana";
 
@@ -19,11 +19,11 @@ import { getSigner } from "./helpers/index.js";
   // EXAMPLE_RESOLVER_CREATE
   // create new resolver, passing the set of routes to consider
   const resolver = wh.resolver([
-    //routes.TokenBridgeRoute, // manual token bridge
-    //routes.AutomaticTokenBridgeRoute, // automatic token bridge
+    routes.TokenBridgeRoute, // manual token bridge
+    routes.AutomaticTokenBridgeRoute, // automatic token bridge
     routes.CCTPRoute, // manual CCTP
-    //routes.AutomaticCCTPRoute, // automatic CCTP
-    //routes.AutomaticPorticoRoute, // Native eth transfers
+    routes.AutomaticCCTPRoute, // automatic CCTP
+    routes.AutomaticPorticoRoute, // Native eth transfers
   ]);
   // EXAMPLE_RESOLVER_CREATE
 
@@ -89,7 +89,7 @@ import { getSigner } from "./helpers/index.js";
   // EXAMPLE_REQUEST_VALIDATE
 
   // If you're sure you want to do this, set this to true
-  const imSure = true;
+  const imSure = false;
   if (imSure) {
     // EXAMPLE_REQUEST_INITIATE
     // Now the transfer may be initiated
