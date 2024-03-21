@@ -65,7 +65,9 @@ export class AutomaticCCTPRoute<N extends Network>
   // get the list of chains this route supports
   static supportedChains(network: Network): Chain[] {
     if (contracts.circleContractChains.has(network)) {
-      return contracts.circleContractChains.get(network)!;
+      return contracts.circleContractChains.get(network)!.filter((c) => {
+        return contracts.circleContracts.get(network, c)?.wormholeRelayer;
+      });
     }
     return [];
   }
