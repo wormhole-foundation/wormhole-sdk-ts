@@ -155,6 +155,7 @@
     "@wormhole-foundation/sdk-evm-tokenbridge": "0.5.1",
     "@wormhole-foundation/sdk-evm-portico": "0.5.1",
     "@wormhole-foundation/sdk-evm-cctp": "0.5.1",
+    "@wormhole-foundation/sdk-evm-ntt": "0.5.1",
     "@wormhole-foundation/sdk-solana": "0.5.1",
     "@wormhole-foundation/sdk-solana-core": "0.5.1",
     "@wormhole-foundation/sdk-solana-tokenbridge": "0.5.1",
