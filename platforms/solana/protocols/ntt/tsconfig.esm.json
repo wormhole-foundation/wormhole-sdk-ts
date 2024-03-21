@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.esm.json",
+  "include": ["src", "../../buffer-layout.d.ts"],
+  "compilerOptions": {
+    "outDir": "dist/esm",
+    "rootDir": "src",
+    "resolveJsonModule": true
+  },
+  "files": [
+    "./src/anchor-idl/example_native_token_transfers.json",
+    "./src/anchor-idl/ntt_quoter.json",
+    "./src/anchor-idl/wormhole_governance.json"
+  ]
+}
