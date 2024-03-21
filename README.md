@@ -531,7 +531,7 @@ To provide a more flexible and generic interface, the `Wormhole` class provides 
     routes.AutomaticPorticoRoute, // Native eth transfers
   ]);
 ```
-See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/router.ts#L20)
+See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/router.ts#L23)
 <!--EXAMPLE_RESOLVER_CREATE-->
 
 Once created, the resolver can be used to provide a list of input and possible output tokens.
@@ -544,8 +544,6 @@ Once created, the resolver can be used to provide a list of input and possible o
     "Allowed source tokens: ",
     srcTokens.map((t) => canonicalAddress(t)),
   );
-  // Grab the first one for the example
-  const sendToken = srcTokens[0]!;
 
   // given the send token, what can we possibly get on the destination chain?
   const destTokens = await resolver.supportedDestinationTokens(sendToken, sendChain, destChain);
@@ -553,10 +551,8 @@ Once created, the resolver can be used to provide a list of input and possible o
     "For the given source token and routes configured, the following tokens may be receivable: ",
     destTokens.map((t) => canonicalAddress(t)),
   );
-  //grab the first one for the example
-  const destinationToken = destTokens[0]!;
 ```
-See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/router.ts#L31)
+See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/router.ts#L34)
 <!--EXAMPLE_RESOLVER_LIST_TOKENS-->
 
 Once the tokens are selected, a `RouteTransferRequest` may be created to provide a list of routes that can fulfil the request
@@ -569,14 +565,14 @@ Once the tokens are selected, a `RouteTransferRequest` may be created to provide
     from: sender.address,
     to: receiver.address,
     source: sendToken,
-    destination: destinationToken,
+    destination: destTokens.pop()!,
   });
 
   // resolve the transfer request to a set of routes that can perform it
   const foundRoutes = await resolver.findRoutes(tr);
   console.log("For the transfer parameters, we found these routes: ", foundRoutes);
 ```
-See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/router.ts#L51)
+See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/router.ts#L50)
 <!--EXAMPLE_REQUEST_CREATE-->
 
 Choosing the best route is currently left to the developer but strategies might include sorting by output amount or expected time to complete the transfer (no estimate currently provided).
@@ -587,9 +583,9 @@ After choosing the best route, extra parameters like `amount`, `nativeGasDropoff
 ```ts
   console.log("This route offers the following default options", bestRoute.getDefaultOptions());
   // Specify the amount as a decimal string
-  const amt = "0.001";
+  const amt = "0.5";
   // Create the transfer params for this request
-  const transferParams = { amount: amt, options: { nativeGas: 0 } };
+  const transferParams = { amount: amt, options: { nativeGas: 0.1 } };
 
   // validate the transfer params passed, this returns a new type of ValidatedTransferParams
   // which (believe it or not) is a validated version of the input params
@@ -604,7 +600,7 @@ After choosing the best route, extra parameters like `amount`, `nativeGasDropoff
   if (!quote.success) throw quote.error;
   console.log("Best route quote: ", quote);
 ```
-See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/router.ts#L71)
+See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/router.ts#L70)
 <!--EXAMPLE_REQUEST_VALIDATE-->
 
 
@@ -617,7 +613,7 @@ Finally, assuming the quote looks good, the route can initiate the request with 
     const receipt = await bestRoute.initiate(sender.signer, quote);
     console.log("Initiated transfer with receipt: ", receipt);
 ```
-See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/router.ts#L95)
+See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/router.ts#L94)
 <!--EXAMPLE_REQUEST_INITIATE-->
 
 Note: See the `router.ts` example in the examples directory for a full working example
