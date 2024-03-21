@@ -16,17 +16,17 @@ import "../../registry.js";
 import { TokenAddress } from "../../types.js";
 import { transceiverInstructionLayout } from "./nttLayout.js";
 
-// TODO: what are the set of attestation types for Ntt?
-// can we know this ahead of time or does it need to be
-// flexible enough for folks to add their own somehow?
-type attestation = any;
-
 /**
  * @namespace Ntt
  */
 export namespace Ntt {
   const _protocol = "Ntt";
   export type ProtocolName = typeof _protocol;
+
+  // TODO: what are the set of attestation types for Ntt?
+  // can we know this ahead of time or does it need to be
+  // flexible enough for folks to add their own somehow?
+  export type Attestation = any;
 
   /**
    * InboundQueuedTransfer is a queued transfer from another chain
@@ -83,6 +83,13 @@ export interface Ntt<N extends Network, C extends Chain> {
     destination: ChainAddress,
     queue: boolean,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
+
+  /**
+   * redeem redeems a set of Attestations to the corresponding transceivers on the destination chain
+   * @param attestations The attestations to redeem, the length should be equal to the number of transceivers
+   */
+  redeem(attestations: Ntt.Attestation[]): AsyncGenerator<UnsignedTransaction<N, C>>;
+
   /**
    * getCurrentOutboundCapacity returns the current outbound capacity of the Ntt manager
    */
@@ -116,7 +123,7 @@ export interface Ntt<N extends Network, C extends Chain> {
   ): Promise<string>;
 }
 
-export interface NttTransceiver<N extends Network, C extends Chain, A extends attestation> {
+export interface NttTransceiver<N extends Network, C extends Chain, A extends Ntt.Attestation> {
   /**
    * receive calls the `receive*` method on the transceiver
    *
