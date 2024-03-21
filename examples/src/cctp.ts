@@ -35,7 +35,7 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
   const destination = await getSigner(rcvChain);
 
   // 6 decimals for USDC (except for bsc, so check decimals before using this)
-  const amt = amount.units(amount.parse("0.01", 6));
+  const amt = amount.units(amount.parse("0.2", 6));
 
   // Choose whether or not to have the attestation delivered for you
   const automatic = false;
@@ -115,9 +115,9 @@ async function cctpTransfer<N extends Network>(
   const attestIds = await xfer.fetchAttestation(60_000);
   console.log(`Got Attestation: `, attestIds);
 
-  //console.log("Completing Transfer");
-  //const dstTxids = await xfer.completeTransfer(dst.signer);
-  //console.log(`Completed Transfer: `, dstTxids);
+  console.log("Completing Transfer");
+  const dstTxids = await xfer.completeTransfer(dst.signer);
+  console.log(`Completed Transfer: `, dstTxids);
   // EXAMPLE_CCTP_TRANSFER
 }
 
