@@ -1,13 +1,11 @@
 import {
   Chain,
-  CircleBridge,
   CircleTransfer,
   Network,
   Signer,
   TransactionId,
   Wormhole,
   amount,
-  encoding,
   wormhole,
 } from "@wormhole-foundation/sdk";
 import evm from "@wormhole-foundation/sdk/evm";

@@ -484,7 +484,7 @@ export class CircleTransfer<N extends Network = Network>
     if (!CircleBridge.isCircleAttestation(attestation))
       throw new Error("Must check for completion with circle message");
     const cb = await toChain.getCircleBridge();
-    return cb.isTransferCompleted(attestation.message);
+    return await cb.isTransferCompleted(attestation.message);
   }
 
   static async getTransferVaa<N extends Network>(

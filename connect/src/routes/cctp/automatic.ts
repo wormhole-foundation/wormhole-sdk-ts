@@ -1,15 +1,15 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
-import { circle, contracts, amount } from "@wormhole-foundation/sdk-base";
+import { amount, circle, contracts } from "@wormhole-foundation/sdk-base";
 import type {
   ChainContext,
   CircleTransferDetails,
   Signer,
   TokenId,
 } from "@wormhole-foundation/sdk-definitions";
-import { nativeTokenId } from "@wormhole-foundation/sdk-definitions";
 import type { CircleAttestationReceipt } from "../../protocols/cctpTransfer.js";
 import { CircleTransfer } from "../../protocols/cctpTransfer.js";
 import { TransferState } from "../../types.js";
+import { Wormhole } from "../../wormhole.js";
 import type { StaticRouteMethods } from "../route.js";
 import { AutomaticRoute } from "../route.js";
 import type {
@@ -20,7 +20,6 @@ import type {
   ValidatedTransferParams,
   ValidationResult,
 } from "../types.js";
-import { Wormhole } from "../../wormhole.js";
 
 export namespace AutomaticCCTPRoute {
   export type Options = {
@@ -65,7 +64,10 @@ export class AutomaticCCTPRoute<N extends Network>
   // get the list of chains this route supports
   static supportedChains(network: Network): Chain[] {
     if (contracts.circleContractChains.has(network)) {
-      return contracts.circleContractChains.get(network)!;
+      const circleSupportedChains = contracts.circleContractChains.get(network) as Chain[];
+      return circleSupportedChains.filter((c: Chain) => {
+        return contracts.circleContracts.get(network, c)?.wormholeRelayer!!;
+      });
     }
     return [];
   }
@@ -85,10 +87,7 @@ export class AutomaticCCTPRoute<N extends Network>
   ): Promise<TokenId[]> {
     const { network, chain } = toChain;
     if (!circle.usdcContract.has(network, chain)) return [];
-    return [
-      nativeTokenId(chain),
-      Wormhole.chainAddress(chain, circle.usdcContract.get(network, chain)!),
-    ];
+    return [Wormhole.chainAddress(chain, circle.usdcContract.get(network, chain)!)];
   }
 
   static isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean {

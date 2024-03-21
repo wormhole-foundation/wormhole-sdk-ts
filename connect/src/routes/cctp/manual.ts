@@ -1,5 +1,5 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
-import { circle, contracts, amount } from "@wormhole-foundation/sdk-base";
+import { amount, circle, contracts } from "@wormhole-foundation/sdk-base";
 import type {
   ChainContext,
   CircleTransferDetails,
@@ -13,6 +13,7 @@ import type { CircleAttestationReceipt } from "../../protocols/cctpTransfer.js";
 import { CircleTransfer } from "../../protocols/cctpTransfer.js";
 import type { TransferReceipt } from "../../types.js";
 import { TransferState, isAttested } from "../../types.js";
+import { Wormhole } from "../../wormhole.js";
 import type { StaticRouteMethods } from "../route.js";
 import { ManualRoute } from "../route.js";
 import type {
@@ -22,7 +23,6 @@ import type {
   ValidatedTransferParams,
   ValidationResult,
 } from "../types.js";
-import { Wormhole } from "../../wormhole.js";
 
 export namespace CCTPRoute {
   export type Options = {
@@ -129,8 +129,12 @@ export class CCTPRoute<N extends Network>
 
   async initiate(signer: Signer, quote: Q): Promise<R> {
     const { params } = quote;
-    let transfer = this.toTransferDetails(params);
-    let txids = await CircleTransfer.transfer<N>(this.request.fromChain, transfer, signer);
+    const transfer = await CircleTransfer.destinationOverrides(
+      this.request.fromChain,
+      this.request.toChain,
+      this.toTransferDetails(params),
+    );
+    const txids = await CircleTransfer.transfer<N>(this.request.fromChain, transfer, signer);
     const msg = await CircleTransfer.getTransferMessage(
       this.request.fromChain,
       txids[txids.length - 1]!.txid,
@@ -154,8 +158,8 @@ export class CCTPRoute<N extends Network>
       const { message, attestation } = att;
       if (!attestation) throw new Error(`No Circle attestation for ${id}`);
 
-      let cb = await this.request.toChain.getCircleBridge();
-      let xfer = cb.redeem(this.request.to.address, message, attestation);
+      const cb = await this.request.toChain.getCircleBridge();
+      const xfer = cb.redeem(this.request.to.address, message, attestation);
       return await signSendWait<N, Chain>(this.request.toChain, xfer, signer);
     } else {
       //

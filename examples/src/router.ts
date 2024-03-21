@@ -1,4 +1,13 @@
-import { Wormhole, canonicalAddress, routes, wormhole } from "@wormhole-foundation/sdk";
+import {
+  Chain,
+  Network,
+  Signer,
+  TransactionId,
+  TransferState,
+  canonicalAddress,
+  routes,
+  wormhole,
+} from "@wormhole-foundation/sdk";
 import evm from "@wormhole-foundation/sdk/evm";
 import solana from "@wormhole-foundation/sdk/solana";
 
@@ -6,18 +15,15 @@ import { getSigner } from "./helpers/index.js";
 
 (async function () {
   // Setup
-  const wh = await wormhole("Mainnet", [evm, solana]);
+  const wh = await wormhole("Testnet", [evm, solana]);
 
   // Get chain contexts
-  const sendChain = wh.getChain("Base");
-  const destChain = wh.getChain("Arbitrum");
+  const sendChain = wh.getChain("Avalanche");
+  const destChain = wh.getChain("Solana");
 
   // get signers from local config
   const sender = await getSigner(sendChain);
   const receiver = await getSigner(destChain);
-
-  // we're sending the "native" (gas token of src chain)
-  const sendToken = Wormhole.tokenId(sendChain.chain, "native");
 
   // EXAMPLE_RESOLVER_CREATE
   // create new resolver, passing the set of routes to consider
@@ -37,6 +43,8 @@ import { getSigner } from "./helpers/index.js";
     "Allowed source tokens: ",
     srcTokens.map((t) => canonicalAddress(t)),
   );
+  // Grab the first one for the example
+  const sendToken = srcTokens[0]!;
 
   // given the send token, what can we possibly get on the destination chain?
   const destTokens = await resolver.supportedDestinationTokens(sendToken, sendChain, destChain);
@@ -44,6 +52,8 @@ import { getSigner } from "./helpers/index.js";
     "For the given source token and routes configured, the following tokens may be receivable: ",
     destTokens.map((t) => canonicalAddress(t)),
   );
+  //grab the first one for the example
+  const destinationToken = destTokens[0]!;
   // EXAMPLE_RESOLVER_LIST_TOKENS
 
   // EXAMPLE_REQUEST_CREATE
@@ -53,7 +63,7 @@ import { getSigner } from "./helpers/index.js";
     from: sender.address,
     to: receiver.address,
     source: sendToken,
-    destination: destTokens.pop()!,
+    destination: destinationToken,
   });
 
   // resolve the transfer request to a set of routes that can perform it
@@ -69,9 +79,9 @@ import { getSigner } from "./helpers/index.js";
   // EXAMPLE_REQUEST_VALIDATE
   console.log("This route offers the following default options", bestRoute.getDefaultOptions());
   // Specify the amount as a decimal string
-  const amt = "0.5";
+  const amt = "0.001";
   // Create the transfer params for this request
-  const transferParams = { amount: amt, options: { nativeGas: 0.1 } };
+  const transferParams = { amount: amt, options: { nativeGas: 0 } };
 
   // validate the transfer params passed, this returns a new type of ValidatedTransferParams
   // which (believe it or not) is a validated version of the input params
@@ -102,3 +112,23 @@ import { getSigner } from "./helpers/index.js";
     await routes.checkAndCompleteTransfer(bestRoute, receipt, receiver.signer);
   }
 })();
+
+// An incomplete transfer can be completed by calling this function
+async function completeTransfer<N extends Network>(
+  route: routes.Route<N>,
+  fromChain: Chain,
+  toChain: Chain,
+  tx: TransactionId,
+  signer: Signer,
+) {
+  const receipt: routes.Receipt = {
+    from: fromChain,
+    to: toChain,
+    state: TransferState.SourceInitiated,
+    originTxs: [tx],
+  };
+
+  // Kick off a wait log, if there is an opportunity to complete, this function will do it
+  // see the implementation for how this works
+  await routes.checkAndCompleteTransfer(route, receipt, signer);
+}

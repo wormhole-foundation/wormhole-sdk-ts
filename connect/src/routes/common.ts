@@ -35,6 +35,7 @@ export async function checkAndCompleteTransfer<N extends Network>(
 
   // if the route is one we need to complete, do it
   if (isManual(route) && isAttested(receipt) && destinationSigner) {
+    log("Completing transfer...");
     const completedTxids = await route.complete(destinationSigner, receipt);
     log("Completed transfer with txids: ", completedTxids);
     // Note: do not return receipt yet, there may be further steps to track, this only completes the bridge transfer
