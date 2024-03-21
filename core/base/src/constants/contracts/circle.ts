@@ -1,6 +1,6 @@
-import type { MapLevels } from './../../utils/index.js';
-import type { Chain } from '../chains.js';
-import type { Network } from '../networks.js';
+import type { MapLevels } from "./../../utils/index.js";
+import type { Chain } from "../chains.js";
+import type { Network } from "../networks.js";
 
 export type CircleContracts = {
   tokenMessenger: string;
@@ -41,6 +41,12 @@ export const circleContracts = [[
       messageTransmitter: "0xAD09780d193884d503182aD4588450C416D6F9D4",
       wormholeRelayer:    "0x4cb69FaE7e7Af841e44E1A1c30Af640739378bb2",
       wormhole:           "0x03faBB06Fa052557143dC28eFCFc63FC12843f1D",
+    }], [
+    "Solana", {
+      tokenMessenger:     "CCTPiPYPc6AsJuwueEnWgSgucamXDZwBd53dQ11YiKX3",
+      messageTransmitter: "CCTPmbSD7gX1bxKPAmg77w8oFzNFpaQiQUWD43TKaecd",
+      wormholeRelayer:    "",
+      wormhole:           "",
     }], [
     "Polygon", {
       tokenMessenger:     "0x9daF8c91AEFAE50b9c0E69629D3F6Ca40cA3B3FE",
