@@ -1,4 +1,13 @@
-import { Wormhole, canonicalAddress, routes, wormhole } from "@wormhole-foundation/sdk";
+import {
+  Chain,
+  Network,
+  Signer,
+  TransactionId,
+  TransferState,
+  canonicalAddress,
+  routes,
+  wormhole,
+} from "@wormhole-foundation/sdk";
 import evm from "@wormhole-foundation/sdk/evm";
 import solana from "@wormhole-foundation/sdk/solana";
 
@@ -103,3 +112,23 @@ import { getSigner } from "./helpers/index.js";
     await routes.checkAndCompleteTransfer(bestRoute, receipt, receiver.signer);
   }
 })();
+
+// An incomplete transfer can be completed by calling this function
+async function completeTransfer<N extends Network>(
+  route: routes.Route<N>,
+  fromChain: Chain,
+  toChain: Chain,
+  tx: TransactionId,
+  signer: Signer,
+) {
+  const receipt: routes.Receipt = {
+    from: fromChain,
+    to: toChain,
+    state: TransferState.SourceInitiated,
+    originTxs: [tx],
+  };
+
+  // Kick off a wait log, if there is an opportunity to complete, this function will do it
+  // see the implementation for how this works
+  await routes.checkAndCompleteTransfer(route, receipt, signer);
+}
