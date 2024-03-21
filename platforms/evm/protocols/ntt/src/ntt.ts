@@ -8,7 +8,6 @@ import {
   NttTransceiver,
   ProtocolInitializer,
   TokenAddress,
-  UnsignedTransaction,
   WormholeNttTransceiver,
   nativeChainIds,
   toChainId,
@@ -26,6 +25,7 @@ import {
 import '@wormhole-foundation/sdk-evm-core';
 import type { Provider, TransactionRequest } from 'ethers';
 
+import { serialize } from 'v8';
 import { ethers_contracts } from './index.js';
 
 interface NttContracts {
@@ -69,15 +69,15 @@ export function evmNttProtocolFactory(
 export class EvmNttWormholeTranceiver<N extends Network, C extends EvmChains>
   implements NttTransceiver<N, C, WormholeNttTransceiver.VAA>
 {
-  nttTransceiver: ethers_contracts.WormholeTransceiver;
+  transceiver: ethers_contracts.WormholeTransceiver;
   constructor(
+    readonly manager: EvmNtt<N, C>,
     readonly address: string,
-    provider: Provider,
   ) {
-    this.nttTransceiver =
+    this.transceiver =
       ethers_contracts.factories.WormholeTransceiver__factory.connect(
         address,
-        provider,
+        manager.provider,
       );
   }
 
@@ -85,11 +85,26 @@ export class EvmNttWormholeTranceiver<N extends Network, C extends EvmChains>
     return new Uint8Array([skipRelay ? 1 : 0]);
   }
 
-  receive(
-    attestation: WormholeNttTransceiver.VAA,
-    sender?: AccountAddress<C> | undefined,
-  ): AsyncGenerator<UnsignedTransaction<N, C>, any, unknown> {
-    throw new Error('Method not implemented.');
+  async *receive(attestation: WormholeNttTransceiver.VAA) {
+    const tx = await this.transceiver.receiveMessage.populateTransaction(
+      serialize(attestation),
+    );
+    yield this.manager.createUnsignedTx(
+      tx,
+      'WormholeTransceiver.receiveMessage',
+    );
+  }
+
+  async isWormholeRelayingEnabled(destChain: Chain): Promise<boolean> {
+    return await this.transceiver.isWormholeRelayingEnabled(
+      toChainId(destChain),
+    );
+  }
+
+  async isSpecialRelayingEnabled(destChain: Chain): Promise<boolean> {
+    return await this.transceiver.isSpecialRelayingEnabled(
+      toChainId(destChain),
+    );
   }
 }
 
@@ -121,10 +136,7 @@ export abstract class EvmNtt<N extends Network, C extends EvmChains>
 
     this.xcvrs = [
       // Enable more Transceivers here
-      new EvmNttWormholeTranceiver(
-        contracts.transceiver.wormhole!,
-        this.provider,
-      ),
+      new EvmNttWormholeTranceiver(this, contracts.transceiver.wormhole!),
     ];
   }
 
@@ -193,6 +205,21 @@ export abstract class EvmNtt<N extends Network, C extends EvmChains>
     yield this.createUnsignedTx(addFrom(txReq, senderAddress), 'Ntt.transfer');
   }
 
+  // TODO: should this be some map of idx to transceiver?
+  async *redeem(attestations: Ntt.Attestation[]) {
+    if (attestations.length !== this.xcvrs.length) throw 'no';
+
+    console.log('o');
+    for (const idx in this.xcvrs) {
+      const xcvr = this.xcvrs[idx]!;
+      console.log('q');
+      yield* xcvr.receive(attestations[idx]);
+    }
+    console.log('p');
+
+    // anything else?
+  }
+
   getCurrentOutboundCapacity(): Promise<string> {
     throw new Error('Method not implemented.');
   }
@@ -215,7 +242,7 @@ export abstract class EvmNtt<N extends Network, C extends EvmChains>
     throw new Error('Method not implemented.');
   }
 
-  private createUnsignedTx(
+  createUnsignedTx(
     txReq: TransactionRequest,
     description: string,
     parallelizable: boolean = false,

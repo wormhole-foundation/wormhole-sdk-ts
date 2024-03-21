@@ -1,17 +1,8 @@
-import {
-  VAA,
-  deserialize,
-  deserializePayload,
-  encoding,
-  finality,
-  serialize,
-  signSendWait,
-  wormhole,
-} from "@wormhole-foundation/sdk";
+import { deserialize, finality, serialize, signSendWait, wormhole } from "@wormhole-foundation/sdk";
 import evm from "@wormhole-foundation/sdk/evm";
 import solana from "@wormhole-foundation/sdk/solana";
 import { getSigner } from "./helpers/index.js";
-import { sign } from "crypto";
+import { send } from "process";
 
 (async function () {
   const wh = await wormhole("Testnet", [evm, solana]);
@@ -25,8 +16,8 @@ import { sign } from "crypto";
   // Prepare to send the transfer
   const ntt = await snd.getNtt("0x1d30E78B7C7fbbcef87ae6e97B5389b2e470CA4a");
   const xferTxs = ntt.transfer(sender.address.address, BigInt(1e10), receiver.address, false);
-  const txids = await signSendWait(snd, xferTxs, sender.signer);
-  console.log("Sent transfer with txids: ", txids);
+  // const txids = await signSendWait(snd, xferTxs, sender.signer);
+  // console.log("Sent transfer with txids: ", txids);
 
   const core = await snd.getWormholeCore();
   const vaa = (
@@ -50,7 +41,7 @@ import { sign } from "crypto";
     return;
   }
 
-  // const dstNtt = await rcv.getNtt("0x1d30E78B7C7fbbcef87ae6e97B5389b2e470CA4a");
-  // const redeemTxs = await dstNtt.redeem(signedNttVaa, receiver.signer);
-  // const redeemTxIds = await signSendWait(rcv, redeemTxs, receiver.signer);
+  // const dstNtt = await src.getNtt("0x1d30E78B7C7fbbcef87ae6e97B5389b2e470CA4a");
+  // const redeemTxs = await ntt.redeem([signedNttVaa]);
+  // const redeemTxIds = await signSendWait(snd, redeemTxs, sender.signer);
 })();
