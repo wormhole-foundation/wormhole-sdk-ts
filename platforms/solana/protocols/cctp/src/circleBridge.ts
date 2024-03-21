@@ -163,12 +163,10 @@ export class SolanaCircleBridge<N extends Network, C extends SolanaChains>
       message.sourceDomain as circle.CircleChainId,
       this.messageTransmitter.programId,
     );
-
     const firstNonce = calculateFirstNonce(message.nonce);
 
     // usedNonces should be a [u64;100] where each bit is a nonce flag
     const { usedNonces } =
-      // @ts-ignore --
       await this.messageTransmitter.account.usedNonces.fetch(usedNoncesAddress);
 
     // get the nonce index based on the account's first nonce
@@ -180,9 +178,8 @@ export class SolanaCircleBridge<N extends Network, C extends SolanaChains>
 
     // get the nonce flag index and build a bitmask
     const nonceBitIndex = nonceIndex % 64;
-    const mask = new BN(1 << nonceBitIndex);
-
-    // If the flag is 0 it is _not_ used
+    // NOTE: js does not correctly handle large bitshifts, leave these as bigint wrapped
+    const mask = new BN((BigInt(1) << BigInt(nonceBitIndex)).toString());
     return !nonceElement.and(mask).isZero();
   }
 

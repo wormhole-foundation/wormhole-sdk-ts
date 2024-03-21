@@ -124,7 +124,11 @@ export class TokenBridgeRoute<N extends Network>
 
   async initiate(signer: Signer, quote: Q): Promise<R> {
     const { params } = quote;
-    const transfer = this.toTransferDetails(params);
+    const transfer = await TokenTransfer.destinationOverrides(
+      this.request.fromChain,
+      this.request.toChain,
+      this.toTransferDetails(params),
+    );
     const txids = await TokenTransfer.transfer<N>(this.request.fromChain, transfer, signer);
     return {
       from: transfer.from.chain,

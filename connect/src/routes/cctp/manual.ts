@@ -1,5 +1,5 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
-import { circle, contracts, amount } from "@wormhole-foundation/sdk-base";
+import { amount, circle, contracts } from "@wormhole-foundation/sdk-base";
 import type {
   ChainContext,
   CircleTransferDetails,
@@ -7,12 +7,13 @@ import type {
   TokenId,
   TransactionId,
 } from "@wormhole-foundation/sdk-definitions";
-import { CircleBridge, UniversalAddress } from "@wormhole-foundation/sdk-definitions";
+import { CircleBridge } from "@wormhole-foundation/sdk-definitions";
 import { signSendWait } from "../../common.js";
 import type { CircleAttestationReceipt } from "../../protocols/cctpTransfer.js";
 import { CircleTransfer } from "../../protocols/cctpTransfer.js";
 import type { TransferReceipt } from "../../types.js";
 import { TransferState, isAttested } from "../../types.js";
+import { Wormhole } from "../../wormhole.js";
 import type { StaticRouteMethods } from "../route.js";
 import { ManualRoute } from "../route.js";
 import type {
@@ -22,7 +23,6 @@ import type {
   ValidatedTransferParams,
   ValidationResult,
 } from "../types.js";
-import { Wormhole } from "../../wormhole.js";
 
 export namespace CCTPRoute {
   export type Options = {
@@ -129,7 +129,11 @@ export class CCTPRoute<N extends Network>
 
   async initiate(signer: Signer, quote: Q): Promise<R> {
     const { params } = quote;
-    let transfer = this.toTransferDetails(params);
+    let transfer = await CircleTransfer.destinationOverrides(
+      this.request.fromChain,
+      this.request.toChain,
+      this.toTransferDetails(params),
+    );
     let txids = await CircleTransfer.transfer<N>(this.request.fromChain, transfer, signer);
     const msg = await CircleTransfer.getTransferMessage(
       this.request.fromChain,
@@ -154,11 +158,8 @@ export class CCTPRoute<N extends Network>
       const { message, attestation } = att;
       if (!attestation) throw new Error(`No Circle attestation for ${id}`);
 
-      let cb = await this.request.toChain.getCircleBridge();
-      const recipient = new UniversalAddress(att.message.recipient.address).toNative(
-        this.request.to.chain,
-      );
-      let xfer = cb.redeem(recipient, message, attestation);
+      const cb = await this.request.toChain.getCircleBridge();
+      const xfer = cb.redeem(this.request.to.address, message, attestation);
       return await signSendWait<N, Chain>(this.request.toChain, xfer, signer);
     } else {
       //
