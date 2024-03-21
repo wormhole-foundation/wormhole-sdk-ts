@@ -34,7 +34,6 @@ import { getSigner } from "./helpers/index.js";
     "Allowed source tokens: ",
     srcTokens.map((t) => canonicalAddress(t)),
   );
-
   // Grab the first one for the example
   const sendToken = srcTokens[0]!;
 
@@ -44,10 +43,9 @@ import { getSigner } from "./helpers/index.js";
     "For the given source token and routes configured, the following tokens may be receivable: ",
     destTokens.map((t) => canonicalAddress(t)),
   );
-  // EXAMPLE_RESOLVER_LIST_TOKENS
-
   //grab the first one for the example
   const destinationToken = destTokens[0]!;
+  // EXAMPLE_RESOLVER_LIST_TOKENS
 
   // EXAMPLE_REQUEST_CREATE
   // creating a transfer request fetches token details
