@@ -194,6 +194,7 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
     );
 
     const tx = new Transaction();
+    tx.feePayer = senderAddress;
     tx.add(approveIx, transferIx, releaseIx);
 
     yield this.createUnsignedTx(
@@ -328,6 +329,7 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
     // just make the second instruction a no-op in case the transfer is delayed.
 
     const tx = new Transaction();
+    tx.feePayer = senderAddress;
     tx.add(
       await this.createReceiveWormholeMessageInstruction(
         senderAddress,
@@ -338,9 +340,8 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
 
     const releaseArgs = {
       payer: senderAddress,
-      nttMessage: nttMessage.payload,
+      nttMessage: nttMessage,
       recipient: new PublicKey(
-        // @ts-ignore
         nttMessage.payload.recipientAddress.toUint8Array(),
       ),
       chain: this.chain,
@@ -349,10 +350,9 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
     };
 
     const releaseIx = await (config.mode.locking != null
-      ? // @ts-ignore
-        this.createReleaseInboundUnlockInstruction(releaseArgs)
-      : // @ts-ignore
-        this.createReleaseInboundMintInstruction(releaseArgs));
+      ? this.createReleaseInboundUnlockInstruction(releaseArgs)
+      : this.createReleaseInboundMintInstruction(releaseArgs));
+
     tx.add(releaseIx);
 
     yield this.createUnsignedTx({ transaction: tx, signers: [] }, 'Ntt.Redeem');
