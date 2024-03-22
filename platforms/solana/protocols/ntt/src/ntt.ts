@@ -151,10 +151,9 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
 
     const outboxItem = Keypair.generate();
 
-    // TODO: probably wrong
     const senderAddress = new SolanaAddress(sender).unwrap();
-    const from = senderAddress;
     const fromAuthority = senderAddress;
+    const from = getAssociatedTokenAddressSync(config.mint, fromAuthority);
 
     const transferArgs: TransferArgs = {
       amount: new BN(amount.toString()),
@@ -168,8 +167,8 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
     const txArgs = {
       transferArgs,
       payer: senderAddress,
-      from: from,
-      fromAuthority: fromAuthority,
+      from,
+      fromAuthority,
       outboxItem: outboxItem.publicKey,
       config,
     };
