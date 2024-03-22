@@ -88,7 +88,10 @@ export interface Ntt<N extends Network, C extends Chain> {
    * redeem redeems a set of Attestations to the corresponding transceivers on the destination chain
    * @param attestations The attestations to redeem, the length should be equal to the number of transceivers
    */
-  redeem(attestations: Ntt.Attestation[]): AsyncGenerator<UnsignedTransaction<N, C>>;
+  redeem(
+    attestations: Ntt.Attestation[],
+    payer?: AccountAddress<C>,
+  ): AsyncGenerator<UnsignedTransaction<N, C>>;
 
   /**
    * getCurrentOutboundCapacity returns the current outbound capacity of the Ntt manager
