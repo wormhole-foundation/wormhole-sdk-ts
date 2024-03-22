@@ -1,5 +1,11 @@
+import * as splToken from '@solana/spl-token';
 import { BN, IdlAccounts, Program } from '@coral-xyz/anchor';
-import { Connection } from '@solana/web3.js';
+import {
+  Connection,
+  Keypair,
+  Transaction,
+  TransactionInstruction,
+} from '@solana/web3.js';
 import {
   AccountAddress,
   Chain,
@@ -14,8 +20,10 @@ import {
   UnsignedTransaction,
   WormholeNttTransceiver,
   tokens,
+  toChainId,
 } from '@wormhole-foundation/sdk-connect';
 import {
+  SolanaAddress,
   SolanaChains,
   SolanaPlatform,
   SolanaPlatformType,
@@ -103,6 +111,8 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
   program: Program<NativeTokenTransfer>;
   pdas: ReturnType<typeof nttAddresses>;
 
+  config?: Config;
+
   constructor(
     readonly network: N,
     readonly chain: C,
@@ -119,16 +129,11 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
     this.xcvrs = [new SolanaNttWormholeTransceiver<N, C>(this, '')];
   }
 
-  /**
-   * Fetches the Config account from the contract.
-   *
-   * @param config If provided, the config is just returned without making a
-   *               network request. This is handy in case multiple config
-   *               accessor functions are used, the config can just be queried
-   *               once and passed around.
-   */
   async getConfig(): Promise<Config> {
-    return await this.program.account.config.fetch(this.pdas.configAccount());
+    this.config =
+      this.config ??
+      (await this.program.account.config.fetch(this.pdas.configAccount()));
+    return this.config;
   }
 
   async *transfer(
@@ -137,8 +142,57 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
     destination: ChainAddress,
     queue: boolean,
   ): AsyncGenerator<UnsignedTransaction<N, C>, any, unknown> {
-    throw new Error('Method not implemented.');
+    const config: Config = await this.getConfig();
+
+    const senderAddress = new SolanaAddress(sender).unwrap();
+    const outboxItem = Keypair.generate();
+
+    const fromAuthority = senderAddress;
+
+    const txArgs = {
+      payer: senderAddress,
+      fromAuthority: fromAuthority,
+      outboxItem: outboxItem.publicKey,
+      config,
+    };
+
+    const transferIx: TransactionInstruction = await (config.mode.locking !=
+    null
+      ? this.createTransferLockInstruction(txArgs)
+      : this.createTransferBurnInstruction(txArgs));
+
+    const releaseIx: TransactionInstruction =
+      await this.createReleaseOutboundInstruction({
+        payer: senderAddress,
+        outboxItem: outboxItem.publicKey,
+        revertOnDelay: !queue,
+      });
+
+    const transferArgs: TransferArgs = {
+      amount: new BN(amount.toString()),
+      recipientChain: { id: toChainId(destination.chain) },
+      recipientAddress: Array.from(
+        destination.address.toUniversalAddress().toUint8Array(),
+      ),
+      shouldQueue: queue,
+    };
+
+    const approveIx = splToken.createApproveInstruction(
+      senderAddress,
+      this.pdas.sessionAuthority(fromAuthority, transferArgs),
+      fromAuthority,
+      amount,
+    );
+
+    const tx = new Transaction();
+    tx.add(approveIx, transferIx, releaseIx);
+
+    yield this.createUnsignedTx(
+      { transaction: tx, signers: [outboxItem] },
+      'Ntt.Transfer',
+    );
   }
+
   async *redeem(
     attestations: any[],
   ): AsyncGenerator<UnsignedTransaction<N, C>, any, unknown> {

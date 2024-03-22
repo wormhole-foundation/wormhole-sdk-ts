@@ -32,7 +32,7 @@ export interface TransferArgs {
   shouldQueue: boolean;
 }
 
-const chainToBytes = (chain: Chain) =>
+const chainToBytes = (chain: Chain | ChainId) =>
   encoding.bignum.toBytes(toChainId(chain), 2);
 
 export const nttAddresses = (programId: PublicKeyInitData) => {
@@ -63,15 +63,16 @@ export const nttAddresses = (programId: PublicKeyInitData) => {
   ): PublicKey => {
     const { amount, recipientChain, recipientAddress, shouldQueue } = args;
 
-    // TODO: ...
     const digest = keccak256(
       encoding.bytes.concat(
-        amount.toArrayLike(Buffer, 'be', 8),
-        Buffer.from(new BN(recipientChain.id).toArrayLike(Buffer, 'be', 2)),
-        Buffer.from(new Uint8Array(recipientAddress)),
-        Buffer.from([shouldQueue ? 1 : 0]),
+        new Uint8Array(amount.toArrayLike(Buffer, 'be', 8)),
+        chainToBytes(recipientChain.id),
+        new Uint8Array(recipientAddress),
+        // TODO: ...
+        new Uint8Array([shouldQueue ? 1 : 0]),
       ),
     );
+
     return derivePda(
       ['session_authority', sender.toBytes(), digest],
       programId,
@@ -121,5 +122,3 @@ export const nttAddresses = (programId: PublicKeyInitData) => {
     registeredTransceiver,
   };
 };
-
-//
