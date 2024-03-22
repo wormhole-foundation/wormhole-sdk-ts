@@ -1,11 +1,10 @@
 import { BN, IdlAccounts, Program } from '@coral-xyz/anchor';
-import { Connection, PublicKey, PublicKeyInitData } from '@solana/web3.js';
-import type { NativeTokenTransfer } from './anchor-idl/index.js';
-import { idl } from './anchor-idl/index.js';
+import { Connection } from '@solana/web3.js';
 import {
   AccountAddress,
   Chain,
   ChainAddress,
+  ChainId,
   ChainsConfig,
   Network,
   Ntt,
@@ -14,8 +13,6 @@ import {
   TokenAddress,
   UnsignedTransaction,
   WormholeNttTransceiver,
-  encoding,
-  toChainId,
   tokens,
 } from '@wormhole-foundation/sdk-connect';
 import {
@@ -25,7 +22,9 @@ import {
   SolanaTransaction,
   SolanaUnsignedTransaction,
 } from '@wormhole-foundation/sdk-solana';
-import { ChainId } from '@wormhole-foundation/sdk-connect';
+import type { NativeTokenTransfer } from './anchor-idl/index.js';
+import { idl } from './anchor-idl/index.js';
+import { nttAddresses } from './utils.js';
 
 interface NttContracts {
   manager: string;
@@ -34,22 +33,8 @@ interface NttContracts {
   };
 }
 
-type Seed = Uint8Array | string;
-export function derivePda(
-  seeds: Seed | readonly Seed[],
-  programId: PublicKeyInitData,
-) {
-  const toBytes = (s: string | Uint8Array) =>
-    typeof s === 'string' ? encoding.bytes.encode(s) : s;
-  return PublicKey.findProgramAddressSync(
-    Array.isArray(seeds) ? seeds.map(toBytes) : [toBytes(seeds as Seed)],
-    new PublicKey(programId),
-  )[0];
-}
-
 export type Config = IdlAccounts<NativeTokenTransfer>['config'];
 export type InboxItem = IdlAccounts<NativeTokenTransfer>['inboxItem'];
-
 export interface TransferArgs {
   amount: BN;
   recipientChain: { id: ChainId };
@@ -116,6 +101,7 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
 {
   xcvrs: SolanaNttWormholeTransceiver<N, C>[];
   program: Program<NativeTokenTransfer>;
+  pdas: ReturnType<typeof nttAddresses>;
 
   constructor(
     readonly network: N,
@@ -129,28 +115,8 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
       this.contracts.manager,
       { connection },
     );
-
+    this.pdas = nttAddresses(this.program.programId);
     this.xcvrs = [new SolanaNttWormholeTransceiver<N, C>(this, '')];
-  }
-
-  private derivePda(seeds: Parameters<typeof derivePda>[0]): PublicKey {
-    return derivePda(seeds, this.program.programId);
-  }
-
-  configAccountAddress(): PublicKey {
-    return this.derivePda('config');
-  }
-
-  outboxRateLimitAccountAddress(): PublicKey {
-    return this.derivePda('outbox_rate_limit');
-  }
-
-  inboxRateLimitAccountAddress(chain: Chain): PublicKey {
-    const chainId = toChainId(chain);
-    return this.derivePda([
-      'inbox_rate_limit',
-      encoding.bignum.toBytes(chainId),
-    ]);
   }
 
   /**
@@ -162,7 +128,7 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
    *               once and passed around.
    */
   async getConfig(): Promise<Config> {
-    return await this.program.account.config.fetch(this.configAccountAddress());
+    return await this.program.account.config.fetch(this.pdas.configAccount());
   }
 
   async *transfer(
