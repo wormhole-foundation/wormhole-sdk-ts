@@ -1,4 +1,4 @@
-import { BN, IdlAccounts, Program } from '@coral-xyz/anchor';
+import { IdlAccounts, Program } from '@coral-xyz/anchor';
 import * as splToken from '@solana/spl-token';
 import { getAssociatedTokenAddressSync } from '@solana/spl-token';
 import {
@@ -12,11 +12,9 @@ import {
   AccountAddress,
   Chain,
   ChainAddress,
-  ChainId,
   ChainsConfig,
   Network,
   Ntt,
-  NttManagerMessage,
   NttTransceiver,
   ProtocolInitializer,
   TokenAddress,
@@ -35,9 +33,10 @@ import {
   SolanaUnsignedTransaction,
 } from '@wormhole-foundation/sdk-solana';
 import { utils } from '@wormhole-foundation/sdk-solana-core';
+import BN from 'bn.js';
 import type { NativeTokenTransfer } from './anchor-idl/index.js';
 import { idl } from './anchor-idl/index.js';
-import { nttAddresses } from './utils.js';
+import { NttMessage, TransferArgs, nttAddresses } from './utils.js';
 
 interface NttContracts {
   manager: string;
@@ -48,12 +47,6 @@ interface NttContracts {
 
 export type Config = IdlAccounts<NativeTokenTransfer>['config'];
 export type InboxItem = IdlAccounts<NativeTokenTransfer>['inboxItem'];
-export interface TransferArgs {
-  amount: BN;
-  recipientChain: { id: ChainId };
-  recipientAddress: number[];
-  shouldQueue: boolean;
-}
 
 export function solanaNttProtocolFactory(
   token: string,
@@ -309,15 +302,13 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
   }
 
   async *redeem(attestations: Ntt.Attestation[], payer: AccountAddress<C>) {
-    if (attestations.length === this.xcvrs.length) throw 'No';
+    if (attestations.length !== this.xcvrs.length) throw 'No';
 
     const config = await this.getConfig();
 
     // TODO: not this
     const wormholeNTT = attestations[0]! as WormholeNttTransceiver.VAA;
-    // @ts-ignore
-    const nttMessage = wormholeNTT.payload
-      .nttManagerPayload as NttManagerMessage<any>;
+    const nttMessage = wormholeNTT.payload.nttManagerPayload;
 
     const senderAddress = new SolanaAddress(payer).unwrap();
 
@@ -347,7 +338,7 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
 
     const releaseArgs = {
       payer: senderAddress,
-      nttMessage,
+      nttMessage: nttMessage.payload,
       recipient: new PublicKey(
         // @ts-ignore
         nttMessage.payload.recipientAddress.toUint8Array(),
@@ -358,8 +349,10 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
     };
 
     const releaseIx = await (config.mode.locking != null
-      ? this.createReleaseInboundUnlockInstruction(releaseArgs)
-      : this.createReleaseInboundMintInstruction(releaseArgs));
+      ? // @ts-ignore
+        this.createReleaseInboundUnlockInstruction(releaseArgs)
+      : // @ts-ignore
+        this.createReleaseInboundMintInstruction(releaseArgs));
     tx.add(releaseIx);
 
     yield this.createUnsignedTx({ transaction: tx, signers: [] }, 'Ntt.Redeem');
@@ -417,8 +410,6 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
         ),
         transceiver: this.pdas.registeredTransceiver(this.program.programId),
         mint: config.mint,
-        // TODO: why?
-        // @ts-ignore
         inboxItem: this.pdas.inboxItemAccount(emitterChain, nttMessage),
         inboxRateLimit,
         outboxRateLimit: this.pdas.outboxRateLimitAccount(),
@@ -431,7 +422,7 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
   async createReleaseInboundMintInstruction(args: {
     payer: PublicKey;
     chain: Chain;
-    nttMessage: NttManagerMessage;
+    nttMessage: NttMessage;
     revertOnDelay: boolean;
     recipient?: PublicKey;
     config?: Config;
@@ -466,7 +457,7 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
   async createReleaseInboundUnlockInstruction(args: {
     payer: PublicKey;
     chain: Chain;
-    nttMessage: NttManagerMessage;
+    nttMessage: NttMessage;
     revertOnDelay: boolean;
     recipient?: PublicKey;
     config?: Config;
@@ -520,10 +511,7 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
     throw new Error('Method not implemented.');
   }
 
-  async getInboxItem(
-    chain: Chain,
-    nttMessage: NttManagerMessage,
-  ): Promise<InboxItem> {
+  async getInboxItem(chain: Chain, nttMessage: NttMessage): Promise<InboxItem> {
     return await this.program.account.inboxItem.fetch(
       this.pdas.inboxItemAccount(chain, nttMessage),
     );

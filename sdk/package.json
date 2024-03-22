@@ -160,6 +160,7 @@
     "@wormhole-foundation/sdk-solana-core": "0.5.1",
     "@wormhole-foundation/sdk-solana-tokenbridge": "0.5.1",
     "@wormhole-foundation/sdk-solana-cctp": "0.5.1",
+    "@wormhole-foundation/sdk-solana-ntt": "0.5.1",
     "@wormhole-foundation/sdk-cosmwasm": "0.5.1",
     "@wormhole-foundation/sdk-cosmwasm-core": "0.5.1",
     "@wormhole-foundation/sdk-cosmwasm-tokenbridge": "0.5.1",

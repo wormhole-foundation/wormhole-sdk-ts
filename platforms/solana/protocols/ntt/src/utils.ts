@@ -1,18 +1,27 @@
 import { PublicKey, PublicKeyInitData } from '@solana/web3.js';
 import {
-  keccak256,
   Chain,
-  encoding,
-  toChainId,
-  serializeLayout,
-  NttManagerMessage,
-  nttManagerMessageLayout,
   ChainId,
+  NttManagerMessage,
+  encoding,
+  keccak256,
+  nativeTokenTransferLayout,
+  nttManagerMessageLayout,
+  serializeLayout,
+  toChainId,
 } from '@wormhole-foundation/sdk-connect';
 import BN from 'bn.js';
 
-type Seed = Uint8Array | string;
+export interface TransferArgs {
+  amount: BN;
+  recipientChain: { id: ChainId };
+  recipientAddress: number[];
+  shouldQueue: boolean;
+}
 
+export type NttMessage = NttManagerMessage<typeof nativeTokenTransferLayout>;
+
+type Seed = Uint8Array | string;
 export function derivePda(
   seeds: Seed | readonly Seed[],
   programId: PublicKeyInitData,
@@ -23,13 +32,6 @@ export function derivePda(
     Array.isArray(seeds) ? seeds.map(toBytes) : [toBytes(seeds as Seed)],
     new PublicKey(programId),
   )[0];
-}
-
-export interface TransferArgs {
-  amount: BN;
-  recipientChain: { id: ChainId };
-  recipientAddress: number[];
-  shouldQueue: boolean;
 }
 
 const chainToBytes = (chain: Chain | ChainId) =>
@@ -46,12 +48,15 @@ export const nttAddresses = (programId: PublicKeyInitData) => {
 
   const inboxItemAccount = (
     chain: Chain,
-    nttMessage: NttManagerMessage,
+    nttMessage: NttMessage,
   ): PublicKey => {
     const digest = keccak256(
       encoding.bytes.concat(
         chainToBytes(chain),
-        serializeLayout(nttManagerMessageLayout(), nttMessage),
+        serializeLayout(
+          nttManagerMessageLayout(nativeTokenTransferLayout),
+          nttMessage,
+        ),
       ),
     );
     return derivePda(['inbox_item', digest], programId);

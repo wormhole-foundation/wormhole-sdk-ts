@@ -13,6 +13,7 @@ const solana = async (): Promise<PlatformDefinition<Network, "Solana">> => {
       core: () => import("@wormhole-foundation/sdk-solana-core"),
       tokenbridge: () => import("@wormhole-foundation/sdk-solana-tokenbridge"),
       cctp: () => import("@wormhole-foundation/sdk-solana-cctp"),
+      ntt: () => import("@wormhole-foundation/sdk-solana-ntt"),
     },
   };
 };

@@ -2,7 +2,6 @@ import { deserialize, finality, serialize, signSendWait, wormhole } from "@wormh
 import evm from "@wormhole-foundation/sdk/evm";
 import solana from "@wormhole-foundation/sdk/solana";
 import { getSigner } from "./helpers/index.js";
-import { send } from "process";
 
 (async function () {
   const wh = await wormhole("Testnet", [evm, solana]);
@@ -28,6 +27,9 @@ import { send } from "process";
   console.log("Wormhole message parsed from logs: ", unsignedNttVaa.payload);
 
   const waitBlocks = finality.consistencyLevelToBlock(snd.chain, vaa.consistencyLevel);
+  console.log(waitBlocks);
+  console.log(snd.config.blockTime);
+
   const waitTime = snd.config.blockTime * Number(waitBlocks);
 
   console.log("Getting signed vaa from the sender, appx wait time: ", waitTime / 1000, "s");
@@ -41,7 +43,7 @@ import { send } from "process";
     return;
   }
 
-  // const dstNtt = await src.getNtt("0x1d30E78B7C7fbbcef87ae6e97B5389b2e470CA4a");
-  // const redeemTxs = await ntt.redeem([signedNttVaa]);
-  // const redeemTxIds = await signSendWait(snd, redeemTxs, sender.signer);
+  const dstNtt = await rcv.getNtt("87r5ZS91Q2pQbFTvvneqs7y7mbtegtqMt4LDAS4g23Ax");
+  const redeemTxs = dstNtt.redeem([signedNttVaa], receiver.address.address);
+  console.log("Sending redeem: ", await signSendWait(rcv, redeemTxs, receiver.signer));
 })();
