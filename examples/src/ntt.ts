@@ -9,10 +9,13 @@ import { getSigner } from "./helpers/index.js";
   const snd = wh.getChain("Solana");
   const rcv = wh.getChain("Sepolia");
 
+  // An NTT Token has specific addresses on each chain and in config they provide the
+  // Manager and Transceiver addresses
+  const { srcToken, dstToken } = getTokenAddresses(snd, rcv, "TEST_NTT");
+
+  // Get the signers for the chains
   const sender = await getSigner(snd);
   const receiver = await getSigner(rcv);
-
-  const { srcToken, dstToken } = getTokenAddresses(snd, rcv, "TEST_NTT");
 
   // Prepare to send the transfer
   const ntt = await snd.getNtt(srcToken);
@@ -20,9 +23,18 @@ import { getSigner } from "./helpers/index.js";
   const txids = await signSendWait(snd, xferTxs, sender.signer);
   console.log("Sent transfer with txids: ", txids);
 
-  const signedNttVaa = await wh.getVaa(txids[0]!.txid, "Ntt:WormholeTransfer");
+  // const txids = [
+  //   {
+  //     chain: "Sepolia",
+  //     txid: "0x9aaedd68bedad933ea55604821828d38f86576bde86f38a2292c3bd33b7ce319",
+  //   },
+  // ];
+
+  // Collect the Attestations
+  const signedNttVaa = await wh.getVaa(txids.pop()!.txid, "Ntt:WormholeTransfer", 15 * 60 * 1000);
   if (!signedNttVaa) throw "Shucks, the VAA was not signed in time. Try again in a bit";
 
+  // Pass attestations to redeem transfer
   const dstNtt = await rcv.getNtt(dstToken);
   const redeemTxs = dstNtt.redeem([signedNttVaa], receiver.address.address);
   console.log("Sending redeem: ", await signSendWait(rcv, redeemTxs, receiver.signer));
@@ -38,5 +50,6 @@ function getTokenAddresses(
 
   const dstToken = tokens.filters.bySymbol(dstChain.config.tokenMap!, tokenSymbol);
   if (!dstToken || dstToken.length === 0) throw `No ${tokenSymbol} token on ${dstChain.chain}`;
+
   return { srcToken: srcToken[0]!.address, dstToken: dstToken[0]!.address };
 }

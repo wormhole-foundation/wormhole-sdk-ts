@@ -32,7 +32,10 @@ import {
   SolanaTransaction,
   SolanaUnsignedTransaction,
 } from '@wormhole-foundation/sdk-solana';
-import { utils } from '@wormhole-foundation/sdk-solana-core';
+import {
+  SolanaWormholeCore,
+  utils,
+} from '@wormhole-foundation/sdk-solana-core';
 import BN from 'bn.js';
 import type { NativeTokenTransfer } from './anchor-idl/index.js';
 import { idl } from './anchor-idl/index.js';
@@ -111,6 +114,7 @@ export class SolanaNttWormholeTransceiver<
 export class SolanaNtt<N extends Network, C extends SolanaChains>
   implements Ntt<N, C>
 {
+  core: SolanaWormholeCore<N, C>;
   xcvrs: SolanaNttWormholeTransceiver<N, C>[];
   program: Program<NativeTokenTransfer>;
   pdas: ReturnType<typeof nttAddresses>;
@@ -130,6 +134,11 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
       this.contracts.manager,
       { connection },
     );
+
+    this.core = new SolanaWormholeCore<N, C>(network, chain, connection, {
+      coreBridge: wormholeId,
+    });
+
     this.pdas = nttAddresses(this.program.programId);
     this.xcvrs = [new SolanaNttWormholeTransceiver<N, C>(this, '')];
   }
@@ -185,10 +194,6 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
         revertOnDelay: !queue,
       });
 
-    releaseIx.keys.forEach((k) => {
-      if (k.isWritable) console.log(k.pubkey.toString());
-    });
-
     const approveIx = splToken.createApproveInstruction(
       from,
       this.pdas.sessionAuthority(fromAuthority, transferArgs),
@@ -221,9 +226,6 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
       args.fromAuthority,
       args.transferArgs,
     );
-    // console.log(sessionAuthority);
-    // console.log(args.fromAuthority);
-    // console.log(args.transferArgs);
 
     const recipientChain = toChain(args.transferArgs.recipientChain.id);
     return await this.program.methods
@@ -311,15 +313,18 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
   }
 
   async *redeem(attestations: Ntt.Attestation[], payer: AccountAddress<C>) {
-    if (attestations.length !== this.xcvrs.length) throw 'No';
-
     const config = await this.getConfig();
+    if (config.paused) throw new Error('Contract is paused');
 
-    // TODO: not this
+    if (attestations.length !== this.xcvrs.length) throw 'No';
+    // TODO: not this, we should iterate over the set of enabled xcvrs?
     const wormholeNTT = attestations[0]! as WormholeNttTransceiver.VAA;
-    const nttMessage = wormholeNTT.payload.nttManagerPayload;
 
-    const senderAddress = new SolanaAddress(payer).unwrap();
+    // Post the VAA that we intend to redeem
+    yield* this.core.postVaa(payer, wormholeNTT);
+
+    const nttMessage = wormholeNTT.payload.nttManagerPayload;
+    const emitterChain = wormholeNTT.emitterChain;
 
     // Here we create a transaction with three instructions:
     // 1. receive wormhole messsage (vaa)
@@ -336,6 +341,8 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
     // To make sure the transaction still succeeds, we set revertOnDelay to false, which will
     // just make the second instruction a no-op in case the transfer is delayed.
 
+    const senderAddress = new SolanaAddress(payer).unwrap();
+
     const tx = new Transaction();
     tx.feePayer = senderAddress;
     tx.add(
@@ -348,13 +355,13 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
 
     const releaseArgs = {
       payer: senderAddress,
-      nttMessage: nttMessage,
+      config,
+      nttMessage,
       recipient: new PublicKey(
         nttMessage.payload.recipientAddress.toUint8Array(),
       ),
-      chain: this.chain,
+      chain: emitterChain,
       revertOnDelay: false,
-      config: config,
     };
 
     const releaseIx = await (config.mode.locking != null
@@ -405,6 +412,7 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
 
     const nttManagerPeer = this.pdas.peerAccount(emitterChain);
     const inboxRateLimit = this.pdas.inboxRateLimitAccount(emitterChain);
+    const inboxItem = this.pdas.inboxItemAccount(emitterChain, nttMessage);
 
     return await this.program.methods
       .redeem({})
@@ -418,7 +426,7 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
         ),
         transceiver: this.pdas.registeredTransceiver(this.program.programId),
         mint: config.mint,
-        inboxItem: this.pdas.inboxItemAccount(emitterChain, nttMessage),
+        inboxItem,
         inboxRateLimit,
         outboxRateLimit: this.pdas.outboxRateLimitAccount(),
       })
@@ -433,10 +441,11 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
     nttMessage: NttMessage;
     revertOnDelay: boolean;
     recipient?: PublicKey;
-    config?: Config;
   }): Promise<TransactionInstruction> {
     const config = await this.getConfig();
     if (config.paused) throw new Error('Contract is paused');
+
+    const inboxItem = this.pdas.inboxItemAccount(args.chain, args.nttMessage);
 
     const recipientAddress =
       args.recipient ??
@@ -450,7 +459,7 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
         common: {
           payer: args.payer,
           config: { config: this.pdas.configAccount() },
-          inboxItem: this.pdas.inboxItemAccount(args.chain, args.nttMessage),
+          inboxItem,
           recipient: getAssociatedTokenAddressSync(
             config.mint,
             recipientAddress,
@@ -468,7 +477,6 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
     nttMessage: NttMessage;
     revertOnDelay: boolean;
     recipient?: PublicKey;
-    config?: Config;
   }): Promise<TransactionInstruction> {
     const config = await this.getConfig();
     if (config.paused) throw new Error('Contract is paused');
@@ -476,6 +484,9 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
     const recipientAddress =
       args.recipient ??
       (await this.getInboxItem(args.chain, args.nttMessage)).recipientAddress;
+
+    const inboxItem = this.pdas.inboxItemAccount(args.chain, args.nttMessage);
+    console.log('Inbox Item', inboxItem.toBase58());
 
     return await this.program.methods
       .releaseInboundUnlock({
@@ -485,7 +496,7 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
         common: {
           payer: args.payer,
           config: { config: this.pdas.configAccount() },
-          inboxItem: this.pdas.inboxItemAccount(args.chain, args.nttMessage),
+          inboxItem: inboxItem,
           recipient: getAssociatedTokenAddressSync(
             config.mint,
             recipientAddress,
