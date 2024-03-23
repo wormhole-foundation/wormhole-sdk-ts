@@ -14,7 +14,11 @@ import type { ProtocolPayload, ProtocolVAA } from "./../../vaa/index.js";
 
 import "../../registry.js";
 import { TokenAddress } from "../../types.js";
-import { transceiverInstructionLayout } from "./nttLayout.js";
+import {
+  NttManagerMessage,
+  nativeTokenTransferLayout,
+  transceiverInstructionLayout,
+} from "./nttLayout.js";
 
 /**
  * @namespace Ntt
@@ -22,6 +26,8 @@ import { transceiverInstructionLayout } from "./nttLayout.js";
 export namespace Ntt {
   const _protocol = "Ntt";
   export type ProtocolName = typeof _protocol;
+
+  export type Message = NttManagerMessage<typeof nativeTokenTransferLayout>;
 
   // TODO: what are the set of attestation types for Ntt?
   // can we know this ahead of time or does it need to be
@@ -34,9 +40,9 @@ export namespace Ntt {
    * @property amount the amount of the transfer
    * @property rateLimitExpiryTimestamp the timestamp when the rate limit expires
    */
-  export type InboundQueuedTransfer = {
-    recipient: string;
-    amount: string;
+  export type InboundQueuedTransfer<C extends Chain> = {
+    recipient: AccountAddress<C>;
+    amount: bigint;
     rateLimitExpiryTimestamp: number;
   };
   /**
@@ -96,21 +102,21 @@ export interface Ntt<N extends Network, C extends Chain> {
   /**
    * getCurrentOutboundCapacity returns the current outbound capacity of the Ntt manager
    */
-  getCurrentOutboundCapacity(): Promise<string>;
+  getCurrentOutboundCapacity(): Promise<bigint>;
   /**
    * getCurrentInboundCapacity returns the current inbound capacity of the Ntt manager
    * @param fromChain the chain to check the inbound capacity for
    */
-  getCurrentInboundCapacity(fromChain: Chain): Promise<string>;
+  getCurrentInboundCapacity(fromChain: Chain): Promise<bigint>;
   /**
    * getInboundQueuedTransfer returns the details of an inbound queued transfer
    * @param transceiverMessage the transceiver message
    * @param fromChain the chain the transfer is from
    */
   getInboundQueuedTransfer(
-    transceiverMessage: string,
     fromChain: Chain,
-  ): Promise<Ntt.InboundQueuedTransfer | undefined>;
+    transceiverMessage: Ntt.Message,
+  ): Promise<Ntt.InboundQueuedTransfer<C> | null>;
   /**
    * completeInboundQueuedTransfer completes an inbound queued transfer
    * @param transceiverMessage the transceiver message
@@ -119,10 +125,10 @@ export interface Ntt<N extends Network, C extends Chain> {
    * @param payer the address to pay for the transfer
    */
   completeInboundQueuedTransfer(
-    transceiverMessage: string,
-    token: TokenAddress<C>,
     fromChain: Chain,
-    payer: string,
+    transceiverMessage: Ntt.Message,
+    token: TokenAddress<C>,
+    payer?: AccountAddress<C>,
   ): Promise<string>;
 }
 

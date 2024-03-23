@@ -39,7 +39,8 @@ import {
 import BN from 'bn.js';
 import type { NativeTokenTransfer } from './anchor-idl/index.js';
 import { idl } from './anchor-idl/index.js';
-import { NttMessage, TransferArgs, nttAddresses } from './utils.js';
+import { TransferArgs, nttAddresses } from './utils.js';
+import { NativeAddress } from '@wormhole-foundation/sdk-connect';
 
 interface NttContracts {
   manager: string;
@@ -438,7 +439,7 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
   async createReleaseInboundMintInstruction(args: {
     payer: PublicKey;
     chain: Chain;
-    nttMessage: NttMessage;
+    nttMessage: Ntt.Message;
     revertOnDelay: boolean;
     recipient?: PublicKey;
   }): Promise<TransactionInstruction> {
@@ -449,7 +450,12 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
 
     const recipientAddress =
       args.recipient ??
-      (await this.getInboxItem(args.chain, args.nttMessage)).recipientAddress;
+      (await this.getInboundQueuedTransfer(
+        args.chain,
+        args.nttMessage,
+      ))!.recipient
+        .toNative(this.chain)
+        .unwrap();
 
     return await this.program.methods
       .releaseInboundMint({
@@ -474,7 +480,7 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
   async createReleaseInboundUnlockInstruction(args: {
     payer: PublicKey;
     chain: Chain;
-    nttMessage: NttMessage;
+    nttMessage: Ntt.Message;
     revertOnDelay: boolean;
     recipient?: PublicKey;
   }): Promise<TransactionInstruction> {
@@ -483,7 +489,12 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
 
     const recipientAddress =
       args.recipient ??
-      (await this.getInboxItem(args.chain, args.nttMessage)).recipientAddress;
+      (await this.getInboundQueuedTransfer(
+        args.chain,
+        args.nttMessage,
+      ))!.recipient
+        .toNative(this.chain)
+        .unwrap();
 
     const inboxItem = this.pdas.inboxItemAccount(args.chain, args.nttMessage);
     console.log('Inbox Item', inboxItem.toBase58());
@@ -509,31 +520,49 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
       .instruction();
   }
 
-  getCurrentOutboundCapacity(): Promise<string> {
-    throw new Error('Method not implemented.');
+  async getCurrentOutboundCapacity(): Promise<bigint> {
+    const rl = await this.program.account.outboxRateLimit.fetch(
+      this.pdas.outboxRateLimitAccount(),
+    );
+    return BigInt(rl.rateLimit.capacityAtLastTx.toString());
   }
-  getCurrentInboundCapacity(fromChain: Chain): Promise<string> {
-    throw new Error('Method not implemented.');
+  async getCurrentInboundCapacity(fromChain: Chain): Promise<bigint> {
+    const rl = await this.program.account.inboxRateLimit.fetch(
+      this.pdas.inboxRateLimitAccount(fromChain),
+    );
+    return BigInt(rl.rateLimit.capacityAtLastTx.toString());
   }
-  getInboundQueuedTransfer(
-    transceiverMessage: string,
-    fromChain: Chain,
-  ): Promise<Ntt.InboundQueuedTransfer | undefined> {
-    throw new Error('Method not implemented.');
-  }
+
   completeInboundQueuedTransfer(
-    transceiverMessage: string,
-    token: TokenAddress<C>,
     fromChain: Chain,
-    payer: string,
+    transceiverMessage: Ntt.Message,
+    token: TokenAddress<C>,
+    payer: AccountAddress<C>,
   ): Promise<string> {
     throw new Error('Method not implemented.');
   }
 
-  async getInboxItem(chain: Chain, nttMessage: NttMessage): Promise<InboxItem> {
-    return await this.program.account.inboxItem.fetch(
+  async getInboundQueuedTransfer(
+    chain: Chain,
+    nttMessage: Ntt.Message,
+  ): Promise<Ntt.InboundQueuedTransfer<C> | null> {
+    const inboxItem = await this.program.account.inboxItem.fetch(
       this.pdas.inboxItemAccount(chain, nttMessage),
     );
+    if (!inboxItem) return null;
+
+    const { recipientAddress, amount, releaseStatus } = inboxItem!;
+    const rateLimitExpiry = releaseStatus.releaseAfter
+      ? releaseStatus.releaseAfter[0].toNumber()
+      : 0;
+
+    const xfer: Ntt.InboundQueuedTransfer<C> = {
+      recipient: new SolanaAddress(recipientAddress) as NativeAddress<C>,
+      amount: BigInt(amount.toString()),
+      rateLimitExpiryTimestamp: rateLimitExpiry,
+    };
+
+    return xfer;
   }
 
   createUnsignedTx(

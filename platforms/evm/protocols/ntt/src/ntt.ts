@@ -13,7 +13,7 @@ import {
   serialize,
   toChainId,
   tokens,
-  universalAddress
+  universalAddress,
 } from '@wormhole-foundation/sdk-connect';
 import type { EvmChains, EvmPlatformType } from '@wormhole-foundation/sdk-evm';
 import {
@@ -216,24 +216,24 @@ export abstract class EvmNtt<N extends Network, C extends EvmChains>
     }
   }
 
-  getCurrentOutboundCapacity(): Promise<string> {
+  getCurrentOutboundCapacity(): Promise<bigint> {
     throw new Error('Method not implemented.');
   }
-  getCurrentInboundCapacity(fromChain: Chain): Promise<string> {
+  getCurrentInboundCapacity(fromChain: Chain): Promise<bigint> {
     throw new Error('Method not implemented.');
   }
 
   getInboundQueuedTransfer(
-    transceiverMessage: string,
     fromChain: Chain,
-  ): Promise<Ntt.InboundQueuedTransfer | undefined> {
+    transceiverMessage: Ntt.Message,
+  ): Promise<Ntt.InboundQueuedTransfer<C> | null> {
     throw new Error('Method not implemented.');
   }
   completeInboundQueuedTransfer(
-    transceiverMessage: string,
-    token: TokenAddress<C>,
     fromChain: Chain,
-    payer: string,
+    transceiverMessage: Ntt.Message,
+    token: TokenAddress<C>,
+    payer?: AccountAddress<C>,
   ): Promise<string> {
     throw new Error('Method not implemented.');
   }

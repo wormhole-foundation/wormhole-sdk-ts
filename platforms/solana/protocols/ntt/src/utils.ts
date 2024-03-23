@@ -2,7 +2,7 @@ import { PublicKey, PublicKeyInitData } from '@solana/web3.js';
 import {
   Chain,
   ChainId,
-  NttManagerMessage,
+  Ntt,
   encoding,
   keccak256,
   nativeTokenTransferLayout,
@@ -18,8 +18,6 @@ export interface TransferArgs {
   recipientAddress: number[];
   shouldQueue: boolean;
 }
-
-export type NttMessage = NttManagerMessage<typeof nativeTokenTransferLayout>;
 
 type Seed = Uint8Array | string;
 export function derivePda(
@@ -37,6 +35,7 @@ export function derivePda(
 const chainToBytes = (chain: Chain | ChainId) =>
   encoding.bignum.toBytes(toChainId(chain), 2);
 
+// TODO: memoize?
 export const nttAddresses = (programId: PublicKeyInitData) => {
   const configAccount = (): PublicKey => derivePda('config', programId);
 
@@ -48,7 +47,7 @@ export const nttAddresses = (programId: PublicKeyInitData) => {
 
   const inboxItemAccount = (
     chain: Chain,
-    nttMessage: NttMessage,
+    nttMessage: Ntt.Message,
   ): PublicKey => {
     const digest = keccak256(
       encoding.bytes.concat(

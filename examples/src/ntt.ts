@@ -23,13 +23,6 @@ import { getSigner } from "./helpers/index.js";
   const txids = await signSendWait(snd, xferTxs, sender.signer);
   console.log("Sent transfer with txids: ", txids);
 
-  // const txids = [
-  //   {
-  //     chain: "Sepolia",
-  //     txid: "0x9aaedd68bedad933ea55604821828d38f86576bde86f38a2292c3bd33b7ce319",
-  //   },
-  // ];
-
   // Collect the Attestations
   const signedNttVaa = await wh.getVaa(txids.pop()!.txid, "Ntt:WormholeTransfer", 15 * 60 * 1000);
   if (!signedNttVaa) throw "Shucks, the VAA was not signed in time. Try again in a bit";
