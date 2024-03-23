@@ -10,9 +10,10 @@ import {
   TokenAddress,
   WormholeNttTransceiver,
   nativeChainIds,
+  serialize,
   toChainId,
   tokens,
-  universalAddress,
+  universalAddress
 } from '@wormhole-foundation/sdk-connect';
 import type { EvmChains, EvmPlatformType } from '@wormhole-foundation/sdk-evm';
 import {
@@ -23,9 +24,8 @@ import {
   addFrom,
 } from '@wormhole-foundation/sdk-evm';
 import '@wormhole-foundation/sdk-evm-core';
-import type { Provider, TransactionRequest } from 'ethers';
 
-import { serialize } from 'v8';
+import type { Provider, TransactionRequest } from 'ethers';
 import { ethers_contracts } from './index.js';
 
 interface NttContracts {
@@ -89,6 +89,7 @@ export class EvmNttWormholeTranceiver<N extends Network, C extends EvmChains>
     const tx = await this.transceiver.receiveMessage.populateTransaction(
       serialize(attestation),
     );
+
     yield this.manager.createUnsignedTx(
       tx,
       'WormholeTransceiver.receiveMessage',
@@ -209,15 +210,10 @@ export abstract class EvmNtt<N extends Network, C extends EvmChains>
   async *redeem(attestations: Ntt.Attestation[]) {
     if (attestations.length !== this.xcvrs.length) throw 'no';
 
-    console.log('o');
     for (const idx in this.xcvrs) {
       const xcvr = this.xcvrs[idx]!;
-      console.log('q');
       yield* xcvr.receive(attestations[idx]);
     }
-    console.log('p');
-
-    // anything else?
   }
 
   getCurrentOutboundCapacity(): Promise<string> {
