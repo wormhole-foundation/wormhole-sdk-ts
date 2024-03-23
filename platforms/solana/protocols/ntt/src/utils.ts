@@ -73,7 +73,6 @@ export const nttAddresses = (programId: PublicKeyInitData) => {
         new Uint8Array(amount.toArrayLike(Buffer, 'be', 8)),
         chainToBytes(recipientChain.id),
         new Uint8Array(recipientAddress),
-        // TODO: ...
         new Uint8Array([shouldQueue ? 1 : 0]),
       ),
     );

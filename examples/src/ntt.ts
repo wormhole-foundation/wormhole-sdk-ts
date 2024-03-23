@@ -1,14 +1,4 @@
-import {
-  ChainContext,
-  Network,
-  canonicalAddress,
-  deserialize,
-  finality,
-  serialize,
-  signSendWait,
-  tokens,
-  wormhole,
-} from "@wormhole-foundation/sdk";
+import { ChainContext, Network, signSendWait, tokens, wormhole } from "@wormhole-foundation/sdk";
 import evm from "@wormhole-foundation/sdk/evm";
 import solana from "@wormhole-foundation/sdk/solana";
 import { getSigner } from "./helpers/index.js";

@@ -185,8 +185,12 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
         revertOnDelay: !queue,
       });
 
+    releaseIx.keys.forEach((k) => {
+      if (k.isWritable) console.log(k.pubkey.toString());
+    });
+
     const approveIx = splToken.createApproveInstruction(
-      senderAddress,
+      from,
       this.pdas.sessionAuthority(fromAuthority, transferArgs),
       fromAuthority,
       amount,
@@ -213,6 +217,14 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
     const config = await this.getConfig();
     if (config.paused) throw new Error('Contract is paused');
 
+    const sessionAuthority = this.pdas.sessionAuthority(
+      args.fromAuthority,
+      args.transferArgs,
+    );
+    // console.log(sessionAuthority);
+    // console.log(args.fromAuthority);
+    // console.log(args.transferArgs);
+
     const recipientChain = toChain(args.transferArgs.recipientChain.id);
     return await this.program.methods
       .transferLock(args.transferArgs)
@@ -229,10 +241,7 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
         peer: this.pdas.peerAccount(recipientChain),
         inboxRateLimit: this.pdas.inboxRateLimitAccount(recipientChain),
         custody: config.custody,
-        sessionAuthority: this.pdas.sessionAuthority(
-          args.fromAuthority,
-          args.transferArgs,
-        ),
+        sessionAuthority: sessionAuthority,
       })
       .instruction();
   }
