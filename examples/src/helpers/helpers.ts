@@ -54,7 +54,7 @@ export async function getSigner<N extends Network, C extends Chain>(
       ).getSigner(await chain.getRpc(), getEnv("SOL_PRIVATE_KEY"), {
         //computeLimit: 500_000n,
         //priorityFeeAmount: 100_000n,
-        debug: true,
+        //debug: true,
       });
       break;
     case "Cosmwasm":
