@@ -7,7 +7,9 @@ import type { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge/
 import type { SequenceId } from "./types.js";
 import type { UniversalAddress } from "./universalAddress.js";
 import type { VAA } from "./vaa/index.js";
+import { WormholeNttTransceiver } from "./index.js";
 
+// prettier-ignore
 /**
  * The Identifier of an attestation, useful to look up the full attestation
  */
@@ -17,6 +19,7 @@ export type AttestationId<PN extends ProtocolName = ProtocolName> = PN extends
   | "WormholeCore"
   | "PorticoBridge"
   | "AutomaticCircleBridge"
+  | "Ntt"
   ? WormholeMessageId
   : PN extends "AutomaticCircleBridge"
   ? WormholeMessageId | CircleMessageId
@@ -26,6 +29,7 @@ export type AttestationId<PN extends ProtocolName = ProtocolName> = PN extends
   ? IbcMessageId
   : never;
 
+// prettier-ignore
 /**
  * The full attestation that represents evidence of a transaction
  */
@@ -43,6 +47,8 @@ export type Attestation<PN extends ProtocolName = ProtocolName> = PN extends
   ? VAA<"Uint8Array">
   : PN extends "PorticoBridge"
   ? PorticoBridge.VAA
+  : PN extends "Ntt"
+  ? WormholeNttTransceiver.VAA 
   : never;
 
 /**

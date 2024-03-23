@@ -18,8 +18,8 @@ import { getSigner } from "./helpers/index.js";
   const wh = await wormhole("Testnet", [evm, solana]);
 
   // Get chain contexts
-  const sendChain = wh.getChain("Avalanche");
-  const destChain = wh.getChain("Solana");
+  const sendChain = wh.getChain("Solana");
+  const destChain = wh.getChain("Sepolia");
 
   // get signers from local config
   const sender = await getSigner(sendChain);
@@ -28,11 +28,12 @@ import { getSigner } from "./helpers/index.js";
   // EXAMPLE_RESOLVER_CREATE
   // create new resolver, passing the set of routes to consider
   const resolver = wh.resolver([
-    routes.TokenBridgeRoute, // manual token bridge
-    routes.AutomaticTokenBridgeRoute, // automatic token bridge
-    routes.CCTPRoute, // manual CCTP
-    routes.AutomaticCCTPRoute, // automatic CCTP
-    routes.AutomaticPorticoRoute, // Native eth transfers
+    routes.NttRoute, // manual NTT
+    // routes.TokenBridgeRoute, // manual token bridge
+    // routes.AutomaticTokenBridgeRoute, // automatic token bridge
+    // routes.CCTPRoute, // manual CCTP
+    // routes.AutomaticCCTPRoute, // automatic CCTP
+    // routes.AutomaticPorticoRoute, // Native eth transfers
   ]);
   // EXAMPLE_RESOLVER_CREATE
 
@@ -98,7 +99,7 @@ import { getSigner } from "./helpers/index.js";
   // EXAMPLE_REQUEST_VALIDATE
 
   // If you're sure you want to do this, set this to true
-  const imSure = false;
+  const imSure = true;
   if (imSure) {
     // EXAMPLE_REQUEST_INITIATE
     // Now the transfer may be initiated

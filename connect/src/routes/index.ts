@@ -7,3 +7,4 @@ export * from "./common.js";
 export * from "./tokenBridge/index.js";
 export * from "./portico/index.js";
 export * from "./cctp/index.js";
+export * from "./ntt/index.js";

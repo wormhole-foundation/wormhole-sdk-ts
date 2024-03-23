@@ -301,6 +301,15 @@ export abstract class ChainContext<
     return this.porticoBridge;
   }
 
+  /**
+   * Check to see if the Ntt protocol is supported by this chain
+   * @returns a boolean indicating if this chain supports the Ntt protocol
+   */
+  supportsNtt = () => this.supportsProtocol("Ntt");
+  /**
+   * Get the Ntt protocol client for this chain
+   * @returns the Ntt protocol client for this chain
+   */
   async getNtt(tokenAddress: string): Promise<Ntt<N, C>> {
     return this.platform.getProtocol("Ntt", await this.getRpc(), tokenAddress);
   }

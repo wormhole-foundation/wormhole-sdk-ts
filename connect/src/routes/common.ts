@@ -47,7 +47,9 @@ export async function checkAndCompleteTransfer<N extends Network>(
     // give it a second, computers need to rest sometimes
     const wait = 2 * 1000;
     log(`Transfer not complete, trying again in a ${wait}ms...`);
-    await Promise.resolve(setTimeout(() => {}, wait));
+    // Wait for 2 seconds
+    await new Promise((resolve) => setTimeout(resolve, wait));
+
     return checkAndCompleteTransfer(route, receipt, destinationSigner, leftover);
   }
 
