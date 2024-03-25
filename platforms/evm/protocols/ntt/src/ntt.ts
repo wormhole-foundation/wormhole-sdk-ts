@@ -4,11 +4,8 @@ import {
   ChainAddress,
   ChainsConfig,
   Network,
-  Ntt,
-  NttTransceiver,
   ProtocolInitializer,
   TokenAddress,
-  WormholeNttTransceiver,
   nativeChainIds,
   serialize,
   toChainId,
@@ -27,6 +24,11 @@ import '@wormhole-foundation/sdk-evm-core';
 
 import type { Provider, TransactionRequest } from 'ethers';
 import { ethers_contracts } from './index.js';
+import {
+  Ntt,
+  NttTransceiver,
+  WormholeNttTransceiver,
+} from '@wormhole-foundation/sdk-definitions-ntt';
 
 interface NttContracts {
   manager: string;

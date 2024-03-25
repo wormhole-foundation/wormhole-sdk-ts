@@ -149,6 +149,7 @@
   "dependencies": {
     "@wormhole-foundation/sdk-base": "0.5.2-beta.0",
     "@wormhole-foundation/sdk-definitions": "0.5.2-beta.0",
+    "@wormhole-foundation/sdk-definitions-ntt": "0.5.2-beta.0",
     "@wormhole-foundation/sdk-connect": "0.5.2-beta.0",
     "@wormhole-foundation/sdk-evm": "0.5.2-beta.0",
     "@wormhole-foundation/sdk-evm-core": "0.5.2-beta.0",

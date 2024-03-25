@@ -49,6 +49,7 @@
     "@wormhole-foundation/sdk-connect": "0.5.2-beta.0",
     "@wormhole-foundation/sdk-solana": "0.5.2-beta.0",
     "@wormhole-foundation/sdk-solana-core": "0.5.2-beta.0",
+    "@wormhole-foundation/sdk-definitions-ntt": "0.5.2-beta.0",
     "@coral-xyz/borsh": "0.29.0",
     "@coral-xyz/anchor": "0.29.0",
     "@solana/spl-token": "0.3.9",

@@ -14,7 +14,6 @@ import type { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge/
 import type { RpcConnection } from "./rpc.js";
 import type { ChainConfig, SignedTx, TokenAddress, TokenId } from "./types.js";
 import { canonicalAddress, isNative } from "./types.js";
-import { Ntt } from "./index.js";
 
 /**
  * A ChainContext provides a consistent interface for interacting with a chain.
@@ -299,9 +298,5 @@ export abstract class ChainContext<
       ? this.porticoBridge
       : await this.platform.getProtocol("PorticoBridge", await this.getRpc());
     return this.porticoBridge;
-  }
-
-  async getNtt(tokenAddress: string): Promise<Ntt<N, C>> {
-    return this.platform.getProtocol("Ntt", await this.getRpc(), tokenAddress);
   }
 }

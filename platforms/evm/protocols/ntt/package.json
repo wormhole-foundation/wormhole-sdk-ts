@@ -52,6 +52,7 @@
     "@wormhole-foundation/sdk-connect": "0.5.2-beta.0",
     "@wormhole-foundation/sdk-evm": "0.5.2-beta.0",
     "@wormhole-foundation/sdk-evm-core": "0.5.2-beta.0",
+    "@wormhole-foundation/sdk-definitions-ntt": "0.5.2-beta.0",
     "typechain": "^8.2.0",
     "ethers": "^6.5.1",
     "@typechain/ethers-v6": "^0.4.0"

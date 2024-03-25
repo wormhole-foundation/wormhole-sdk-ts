@@ -13,17 +13,20 @@ import {
   Chain,
   ChainAddress,
   ChainsConfig,
+  NativeAddress,
   Network,
-  Ntt,
-  NttTransceiver,
   ProtocolInitializer,
   TokenAddress,
   UnsignedTransaction,
-  WormholeNttTransceiver,
   toChain,
   toChainId,
   tokens,
 } from '@wormhole-foundation/sdk-connect';
+import {
+  Ntt,
+  NttTransceiver,
+  WormholeNttTransceiver,
+} from '@wormhole-foundation/sdk-definitions-ntt';
 import {
   SolanaAddress,
   SolanaChains,
@@ -40,7 +43,6 @@ import BN from 'bn.js';
 import type { NativeTokenTransfer } from './anchor-idl/index.js';
 import { idl } from './anchor-idl/index.js';
 import { TransferArgs, nttAddresses } from './utils.js';
-import { NativeAddress } from '@wormhole-foundation/sdk-connect';
 
 interface NttContracts {
   manager: string;

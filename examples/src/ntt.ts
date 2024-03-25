@@ -3,6 +3,17 @@ import evm from "@wormhole-foundation/sdk/evm";
 import solana from "@wormhole-foundation/sdk/solana";
 import { getSigner } from "./helpers/index.js";
 
+import { Ntt } from "@wormhole-foundation/sdk-definitions-ntt";
+
+// Getter for the protocol since it can no longer live on the ChainContext
+const getNtt = async (chain: ChainContext<Network>, token: string) => {
+  // It _should_ be provided on the chain as well and be typed correctly so we dont have to `as` it
+  return (await chain.platform.getProtocol("Ntt", await chain.getRpc(), token)) as Ntt<
+    typeof chain.network,
+    typeof chain.chain
+  >;
+};
+
 (async function () {
   const wh = await wormhole("Testnet", [evm, solana]);
 
@@ -18,7 +29,8 @@ import { getSigner } from "./helpers/index.js";
   const receiver = await getSigner(rcv);
 
   // Prepare to send the transfer
-  const ntt = await snd.getNtt(srcToken);
+  const ntt = await getNtt(snd, srcToken);
+
   const xferTxs = ntt.transfer(sender.address.address, BigInt(1e10), receiver.address, false);
   const txids = await signSendWait(snd, xferTxs, sender.signer);
   console.log("Sent transfer with txids: ", txids);
@@ -28,7 +40,7 @@ import { getSigner } from "./helpers/index.js";
   if (!signedNttVaa) throw "Shucks, the VAA was not signed in time. Try again in a bit";
 
   // Pass attestations to redeem transfer
-  const dstNtt = await rcv.getNtt(dstToken);
+  const dstNtt = await getNtt(rcv, dstToken);
   const redeemTxs = dstNtt.redeem([signedNttVaa], receiver.address.address);
   console.log("Sending redeem: ", await signSendWait(rcv, redeemTxs, receiver.signer));
 })();

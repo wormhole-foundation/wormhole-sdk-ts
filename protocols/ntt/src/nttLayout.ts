@@ -1,9 +1,12 @@
-import type { Layout, LayoutToType, CustomizableBytes } from "@wormhole-foundation/sdk-base";
+import type { CustomizableBytes, Layout, LayoutToType } from "@wormhole-foundation/sdk-base";
 import { customizableBytes } from "@wormhole-foundation/sdk-base";
 
-import { universalAddressItem, chainItem } from "./../../layout-items/index.js";
-import type { NamedPayloads, RegisterPayloadTypes } from "./../../vaa/index.js";
-import { registerPayloadTypes } from "./../../vaa/index.js";
+import {
+  NamedPayloads,
+  RegisterPayloadTypes,
+  layoutItems,
+  registerPayloadTypes,
+} from "@wormhole-foundation/sdk-definitions";
 
 export const trimmedAmountLayout = [
   { name: "decimals", binary: "uint", size: 1 },
@@ -20,9 +23,9 @@ const prefixItem = (prefix: Prefix) =>
 export const nativeTokenTransferLayout = [
   prefixItem([0x99, 0x4e, 0x54, 0x54]),
   { name: "trimmedAmount", binary: "bytes", layout: trimmedAmountLayout },
-  { name: "sourceToken", ...universalAddressItem },
-  { name: "recipientAddress", ...universalAddressItem },
-  { name: "recipientChain", ...chainItem() }, //TODO restrict to supported chains?
+  { name: "sourceToken", ...layoutItems.universalAddressItem },
+  { name: "recipientAddress", ...layoutItems.universalAddressItem },
+  { name: "recipientChain", ...layoutItems.chainItem() }, //TODO restrict to supported chains?
 ] as const satisfies Layout;
 
 export type NativeTokenTransfer = LayoutToType<typeof nativeTokenTransferLayout>;
@@ -37,8 +40,8 @@ export const transceiverMessageLayout = <
 ) =>
   [
     prefixItem(prefix),
-    { name: "sourceNttManager", ...universalAddressItem },
-    { name: "recipientNttManager", ...universalAddressItem },
+    { name: "sourceNttManager", ...layoutItems.universalAddressItem },
+    { name: "recipientNttManager", ...layoutItems.universalAddressItem },
     customizableBytes({ name: "nttManagerPayload", lengthSize: 2 }, nttManagerPayload),
     customizableBytes({ name: "transceiverPayload", lengthSize: 2 }, transceiverPayload),
   ] as const satisfies Layout;
@@ -53,7 +56,7 @@ export const nttManagerMessageLayout = <const P extends CustomizableBytes = unde
 ) =>
   [
     { name: "id", binary: "bytes", size: 32 },
-    { name: "sender", ...universalAddressItem },
+    { name: "sender", ...layoutItems.universalAddressItem },
     customizableBytes({ name: "payload", lengthSize: 2 }, customPayload),
   ] as const satisfies Layout;
 
@@ -86,8 +89,7 @@ export const nttNamedPayloads = [
 ] as const satisfies NamedPayloads;
 
 // factory registration:
-import "../../registry.js";
-declare module "../../registry.js" {
+declare module "@wormhole-foundation/sdk-definitions" {
   export namespace WormholeRegistry {
     interface PayloadLiteralToLayoutMapping
       extends RegisterPayloadTypes<"Ntt", typeof nttNamedPayloads> {}

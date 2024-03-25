@@ -41,6 +41,7 @@
   "workspaces": [
     "core/base",
     "core/definitions",
+    "protocols/ntt",
     "connect",
     "platforms/evm",
     "platforms/evm/protocols/core",

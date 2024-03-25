@@ -1,27 +1,28 @@
 import {
   encoding,
   serializeLayout,
+  toChainId,
   type Chain,
   type Network,
   type Platform,
-  toChainId,
 } from "@wormhole-foundation/sdk-base";
-import type { AccountAddress, ChainAddress } from "../../address.js";
-import type { EmptyPlatformMap } from "../../protocol.js";
-import type { UnsignedTransaction } from "../../unsignedTransaction.js";
-import "../tokenBridge/automaticTokenBridgeLayout.js";
-import "../tokenBridge/tokenBridgeLayout.js";
-import type { ProtocolPayload, ProtocolVAA } from "./../../vaa/index.js";
 
-import "../../registry.js";
-import { TokenAddress } from "../../types.js";
+import {
+  AccountAddress,
+  ChainAddress,
+  EmptyPlatformMap,
+  ProtocolPayload,
+  ProtocolVAA,
+  TokenAddress,
+  UnsignedTransaction,
+  keccak256,
+} from "@wormhole-foundation/sdk-definitions";
 import {
   NttManagerMessage,
   nativeTokenTransferLayout,
   nttManagerMessageLayout,
   transceiverInstructionLayout,
 } from "./nttLayout.js";
-import { keccak256 } from "../../utils.js";
 
 /**
  * @namespace Ntt
@@ -186,7 +187,7 @@ export interface WormholeNttTransceiver<N extends Network, C extends Chain>
 //export interface ZKTransceiver<N extends Network, C extends Chain>
 //  extends NttTransceiver<N, C, Uint8Array> {}
 
-declare module "../../registry.js" {
+declare module "@wormhole-foundation/sdk-definitions" {
   export namespace WormholeRegistry {
     interface ProtocolToPlatformMapping {
       Ntt: EmptyPlatformMap<Platform, Ntt.ProtocolName>;

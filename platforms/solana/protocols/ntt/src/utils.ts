@@ -2,11 +2,11 @@ import { PublicKey, PublicKeyInitData } from '@solana/web3.js';
 import {
   Chain,
   ChainId,
-  Ntt,
   encoding,
   keccak256,
   toChainId,
 } from '@wormhole-foundation/sdk-connect';
+import { Ntt } from '@wormhole-foundation/sdk-definitions-ntt';
 import BN from 'bn.js';
 
 export interface TransferArgs {
