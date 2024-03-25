@@ -4,6 +4,7 @@ import {
   type Chain,
   type Network,
   type Platform,
+  toChainId,
 } from "@wormhole-foundation/sdk-base";
 import type { AccountAddress, ChainAddress } from "../../address.js";
 import type { EmptyPlatformMap } from "../../protocol.js";
@@ -17,8 +18,10 @@ import { TokenAddress } from "../../types.js";
 import {
   NttManagerMessage,
   nativeTokenTransferLayout,
+  nttManagerMessageLayout,
   transceiverInstructionLayout,
 } from "./nttLayout.js";
+import { keccak256 } from "../../utils.js";
 
 /**
  * @namespace Ntt
@@ -62,6 +65,22 @@ export namespace Ntt {
     return encoding.bytes.concat(
       new Uint8Array([ixs.length]),
       ...ixs.map((ix) => serializeLayout(transceiverInstructionLayout(), ix)),
+    );
+  }
+
+  /**
+   * messageDigest hashes a message for the Ntt manager, the digest is used
+   * to uniquely identify the message
+   * @param chain The chain that sent the message
+   * @param message The ntt message to hash
+   * @returns a 32 byte digest of the message
+   */
+  export function messageDigest(chain: Chain, message: Message): Uint8Array {
+    return keccak256(
+      encoding.bytes.concat(
+        encoding.bignum.toBytes(toChainId(chain), 2),
+        serializeLayout(nttManagerMessageLayout(nativeTokenTransferLayout), message),
+      ),
     );
   }
 }
@@ -129,7 +148,7 @@ export interface Ntt<N extends Network, C extends Chain> {
     transceiverMessage: Ntt.Message,
     token: TokenAddress<C>,
     payer?: AccountAddress<C>,
-  ): Promise<string>;
+  ): AsyncGenerator<UnsignedTransaction<N, C>>;
 }
 
 export interface NttTransceiver<N extends Network, C extends Chain, A extends Ntt.Attestation> {

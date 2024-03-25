@@ -216,26 +216,47 @@ export abstract class EvmNtt<N extends Network, C extends EvmChains>
     }
   }
 
-  getCurrentOutboundCapacity(): Promise<bigint> {
-    throw new Error('Method not implemented.');
-  }
-  getCurrentInboundCapacity(fromChain: Chain): Promise<bigint> {
-    throw new Error('Method not implemented.');
+  async getCurrentOutboundCapacity(): Promise<bigint> {
+    return await this.manager.getCurrentOutboundCapacity();
   }
 
-  getInboundQueuedTransfer(
+  async getCurrentInboundCapacity(fromChain: Chain): Promise<bigint> {
+    return await this.manager.getCurrentInboundCapacity(toChainId(fromChain));
+  }
+
+  async getRateLimitDuration(): Promise<bigint> {
+    return await this.manager.rateLimitDuration();
+  }
+
+  async getInboundQueuedTransfer(
     fromChain: Chain,
     transceiverMessage: Ntt.Message,
   ): Promise<Ntt.InboundQueuedTransfer<C> | null> {
-    throw new Error('Method not implemented.');
+    const queuedTransfer = await this.manager.getInboundQueuedTransfer(
+      Ntt.messageDigest(fromChain, transceiverMessage),
+    );
+    if (queuedTransfer.txTimestamp > 0n) {
+      const { recipient, amount, txTimestamp } = queuedTransfer;
+      const duration = await this.getRateLimitDuration();
+      return {
+        recipient: new EvmAddress(recipient) as AccountAddress<C>,
+        amount: amount,
+        rateLimitExpiryTimestamp: Number(txTimestamp + duration),
+      };
+    }
+    return null;
   }
-  completeInboundQueuedTransfer(
+
+  async *completeInboundQueuedTransfer(
     fromChain: Chain,
     transceiverMessage: Ntt.Message,
     token: TokenAddress<C>,
     payer?: AccountAddress<C>,
-  ): Promise<string> {
-    throw new Error('Method not implemented.');
+  ) {
+    const tx = await this.manager.completeInboundQueuedTransfer(
+      Ntt.messageDigest(fromChain, transceiverMessage),
+    );
+    yield this.createUnsignedTx(tx, 'Ntt.completeInboundQueuedTransfer');
   }
 
   createUnsignedTx(

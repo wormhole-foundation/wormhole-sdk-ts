@@ -5,9 +5,6 @@ import {
   Ntt,
   encoding,
   keccak256,
-  nativeTokenTransferLayout,
-  nttManagerMessageLayout,
-  serializeLayout,
   toChainId,
 } from '@wormhole-foundation/sdk-connect';
 import BN from 'bn.js';
@@ -38,77 +35,41 @@ const chainToBytes = (chain: Chain | ChainId) =>
 // TODO: memoize?
 export const nttAddresses = (programId: PublicKeyInitData) => {
   const configAccount = (): PublicKey => derivePda('config', programId);
-
-  const outboxRateLimitAccount = (): PublicKey =>
-    derivePda('outbox_rate_limit', programId);
-
+  const emitterAccount = (): PublicKey => derivePda('emitter', programId);
   const inboxRateLimitAccount = (chain: Chain): PublicKey =>
     derivePda(['inbox_rate_limit', chainToBytes(chain)], programId);
-
-  const inboxItemAccount = (
-    chain: Chain,
-    nttMessage: Ntt.Message,
-  ): PublicKey => {
-    const digest = keccak256(
-      encoding.bytes.concat(
-        chainToBytes(chain),
-        serializeLayout(
-          nttManagerMessageLayout(nativeTokenTransferLayout),
-          nttMessage,
-        ),
-      ),
-    );
-    return derivePda(['inbox_item', digest], programId);
-  };
-
-  const sessionAuthority = (
-    sender: PublicKey,
-    args: TransferArgs,
-  ): PublicKey => {
-    const { amount, recipientChain, recipientAddress, shouldQueue } = args;
-
-    const digest = keccak256(
-      encoding.bytes.concat(
-        new Uint8Array(amount.toArrayLike(Buffer, 'be', 8)),
-        chainToBytes(recipientChain.id),
-        new Uint8Array(recipientAddress),
-        new Uint8Array([shouldQueue ? 1 : 0]),
-      ),
-    );
-
-    return derivePda(
-      ['session_authority', sender.toBytes(), digest],
-      programId,
-    );
-  };
-
+  const inboxItemAccount = (chain: Chain, nttMessage: Ntt.Message): PublicKey =>
+    derivePda(['inbox_item', Ntt.messageDigest(chain, nttMessage)], programId);
+  const outboxRateLimitAccount = (): PublicKey =>
+    derivePda('outbox_rate_limit', programId);
   const tokenAuthority = (): PublicKey =>
     derivePda('token_authority', programId);
-
-  const emitterAccount = (): PublicKey => derivePda('emitter', programId);
-
-  const wormholeMessageAccount = (outboxItem: PublicKey): PublicKey =>
-    derivePda(['message', outboxItem.toBytes()], programId);
-
   const peerAccount = (chain: Chain): PublicKey =>
     derivePda(['peer', chainToBytes(chain)], programId);
-
   const transceiverPeerAccount = (chain: Chain): PublicKey =>
     derivePda(['transceiver_peer', chainToBytes(chain)], programId);
-
-  const transceiverMessageAccount = (
-    chain: Chain,
-    id: Uint8Array,
-  ): PublicKey => {
-    if (id.length != 32) throw new Error('id must be 32 bytes');
-    return derivePda(
-      ['transceiver_message', chainToBytes(chain), id],
-      programId,
-    );
-  };
-
   const registeredTransceiver = (transceiver: PublicKey): PublicKey =>
     derivePda(['registered_transceiver', transceiver.toBytes()], programId);
+  const transceiverMessageAccount = (chain: Chain, id: Uint8Array): PublicKey =>
+    derivePda(['transceiver_message', chainToBytes(chain), id], programId);
+  const wormholeMessageAccount = (outboxItem: PublicKey): PublicKey =>
+    derivePda(['message', outboxItem.toBytes()], programId);
+  const sessionAuthority = (sender: PublicKey, args: TransferArgs): PublicKey =>
+    derivePda(
+      [
+        'session_authority',
+        sender.toBytes(),
+        keccak256(
+          encoding.bytes.concat(
+            new Uint8Array(args.amount.toArrayLike(Buffer, 'be', 8)),
+            chainToBytes(args.recipientChain.id),
+            new Uint8Array(args.recipientAddress),
+            new Uint8Array([args.shouldQueue ? 1 : 0]),
+          ),
+        ),
+      ],
+      programId,
+    );
 
   return {
     configAccount,

@@ -324,35 +324,10 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
     // Post the VAA that we intend to redeem
     yield* this.core.postVaa(payer, wormholeNTT);
 
-    const nttMessage = wormholeNTT.payload.nttManagerPayload;
-    const emitterChain = wormholeNTT.emitterChain;
-
-    // Here we create a transaction with three instructions:
-    // 1. receive wormhole messsage (vaa)
-    // 1. redeem
-    // 2. releaseInboundMint or releaseInboundUnlock (depending on mode)
-    //
-    // The first instruction verifies the VAA.
-    // The second instruction places the transfer in the inbox, then the third instruction
-    // releases it.
-    //
-    // In case the redeemed amount exceeds the remaining inbound rate limit capacity,
-    // the transaction gets delayed. If this happens, the second instruction will not actually
-    // be able to release the transfer yet.
-    // To make sure the transaction still succeeds, we set revertOnDelay to false, which will
-    // just make the second instruction a no-op in case the transfer is delayed.
-
     const senderAddress = new SolanaAddress(payer).unwrap();
 
-    const tx = new Transaction();
-    tx.feePayer = senderAddress;
-    tx.add(
-      await this.createReceiveWormholeMessageInstruction(
-        senderAddress,
-        wormholeNTT,
-      ),
-    );
-    tx.add(await this.createRedeemInstruction(senderAddress, wormholeNTT));
+    const nttMessage = wormholeNTT.payload.nttManagerPayload;
+    const emitterChain = wormholeNTT.emitterChain;
 
     const releaseArgs = {
       payer: senderAddress,
@@ -365,13 +340,23 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
       revertOnDelay: false,
     };
 
-    const releaseIx = await (config.mode.locking != null
-      ? this.createReleaseInboundUnlockInstruction(releaseArgs)
-      : this.createReleaseInboundMintInstruction(releaseArgs));
+    const tx = new Transaction();
+    tx.feePayer = senderAddress;
+    tx.add(
+      await this.createReceiveWormholeMessageInstruction(
+        senderAddress,
+        wormholeNTT,
+      ),
+    );
+    tx.add(await this.createRedeemInstruction(senderAddress, wormholeNTT));
 
-    tx.add(releaseIx);
+    tx.add(
+      await (config.mode.locking != null
+        ? this.createReleaseInboundUnlockInstruction(releaseArgs)
+        : this.createReleaseInboundMintInstruction(releaseArgs)),
+    );
 
-    yield this.createUnsignedTx({ transaction: tx, signers: [] }, 'Ntt.Redeem');
+    yield this.createUnsignedTx({ transaction: tx }, 'Ntt.Redeem');
   }
 
   async createReceiveWormholeMessageInstruction(
@@ -434,8 +419,6 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
       .instruction();
   }
 
-  // TODO: document that if recipient is provided, then the instruction can be
-  // created before the inbox item is created (i.e. they can be put in the same tx)
   async createReleaseInboundMintInstruction(args: {
     payer: PublicKey;
     chain: Chain;
@@ -533,13 +516,39 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
     return BigInt(rl.rateLimit.capacityAtLastTx.toString());
   }
 
-  completeInboundQueuedTransfer(
+  async *completeInboundQueuedTransfer(
     fromChain: Chain,
     transceiverMessage: Ntt.Message,
     token: TokenAddress<C>,
     payer: AccountAddress<C>,
-  ): Promise<string> {
-    throw new Error('Method not implemented.');
+  ) {
+    const config = await this.getConfig();
+    if (config.paused) throw new Error('Contract is paused');
+
+    const senderAddress = new SolanaAddress(payer).unwrap();
+    const tx = new Transaction();
+    tx.feePayer = senderAddress;
+    const releaseArgs = {
+      payer: senderAddress,
+      config,
+      nttMessage: transceiverMessage,
+      recipient: new PublicKey(
+        transceiverMessage.payload.recipientAddress.toUint8Array(),
+      ),
+      chain: fromChain,
+      revertOnDelay: false,
+    };
+
+    tx.add(
+      await (config.mode.locking != null
+        ? this.createReleaseInboundUnlockInstruction(releaseArgs)
+        : this.createReleaseInboundMintInstruction(releaseArgs)),
+    );
+
+    yield this.createUnsignedTx(
+      { transaction: tx },
+      'Ntt.CompleteInboundTransfer',
+    );
   }
 
   async getInboundQueuedTransfer(
