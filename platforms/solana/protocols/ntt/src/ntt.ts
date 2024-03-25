@@ -212,6 +212,124 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
     );
   }
 
+  async *redeem(attestations: Ntt.Attestation[], payer: AccountAddress<C>) {
+    const config = await this.getConfig();
+    if (config.paused) throw new Error('Contract is paused');
+
+    if (attestations.length !== this.xcvrs.length) throw 'No';
+    // TODO: not this, we should iterate over the set of enabled xcvrs?
+    const wormholeNTT = attestations[0]! as WormholeNttTransceiver.VAA;
+
+    // Post the VAA that we intend to redeem
+    yield* this.core.postVaa(payer, wormholeNTT);
+
+    const senderAddress = new SolanaAddress(payer).unwrap();
+
+    const nttMessage = wormholeNTT.payload.nttManagerPayload;
+    const emitterChain = wormholeNTT.emitterChain;
+
+    const releaseArgs = {
+      payer: senderAddress,
+      config,
+      nttMessage,
+      recipient: new PublicKey(
+        nttMessage.payload.recipientAddress.toUint8Array(),
+      ),
+      chain: emitterChain,
+      revertOnDelay: false,
+    };
+
+    const tx = new Transaction();
+    tx.feePayer = senderAddress;
+    tx.add(
+      await this.createReceiveWormholeMessageInstruction(
+        senderAddress,
+        wormholeNTT,
+      ),
+    );
+    tx.add(await this.createRedeemInstruction(senderAddress, wormholeNTT));
+
+    tx.add(
+      await (config.mode.locking != null
+        ? this.createReleaseInboundUnlockInstruction(releaseArgs)
+        : this.createReleaseInboundMintInstruction(releaseArgs)),
+    );
+
+    yield this.createUnsignedTx({ transaction: tx }, 'Ntt.Redeem');
+  }
+
+  async getCurrentOutboundCapacity(): Promise<bigint> {
+    const rl = await this.program.account.outboxRateLimit.fetch(
+      this.pdas.outboxRateLimitAccount(),
+    );
+    return BigInt(rl.rateLimit.capacityAtLastTx.toString());
+  }
+
+  async getCurrentInboundCapacity(fromChain: Chain): Promise<bigint> {
+    const rl = await this.program.account.inboxRateLimit.fetch(
+      this.pdas.inboxRateLimitAccount(fromChain),
+    );
+    return BigInt(rl.rateLimit.capacityAtLastTx.toString());
+  }
+
+  async *completeInboundQueuedTransfer(
+    fromChain: Chain,
+    transceiverMessage: Ntt.Message,
+    token: TokenAddress<C>,
+    payer: AccountAddress<C>,
+  ) {
+    const config = await this.getConfig();
+    if (config.paused) throw new Error('Contract is paused');
+
+    const senderAddress = new SolanaAddress(payer).unwrap();
+    const tx = new Transaction();
+    tx.feePayer = senderAddress;
+    const releaseArgs = {
+      payer: senderAddress,
+      config,
+      nttMessage: transceiverMessage,
+      recipient: new PublicKey(
+        transceiverMessage.payload.recipientAddress.toUint8Array(),
+      ),
+      chain: fromChain,
+      revertOnDelay: false,
+    };
+
+    tx.add(
+      await (config.mode.locking != null
+        ? this.createReleaseInboundUnlockInstruction(releaseArgs)
+        : this.createReleaseInboundMintInstruction(releaseArgs)),
+    );
+
+    yield this.createUnsignedTx(
+      { transaction: tx },
+      'Ntt.CompleteInboundTransfer',
+    );
+  }
+
+  async getInboundQueuedTransfer(
+    chain: Chain,
+    nttMessage: Ntt.Message,
+  ): Promise<Ntt.InboundQueuedTransfer<C> | null> {
+    const inboxItem = await this.program.account.inboxItem.fetch(
+      this.pdas.inboxItemAccount(chain, nttMessage),
+    );
+    if (!inboxItem) return null;
+
+    const { recipientAddress, amount, releaseStatus } = inboxItem!;
+    const rateLimitExpiry = releaseStatus.releaseAfter
+      ? releaseStatus.releaseAfter[0].toNumber()
+      : 0;
+
+    const xfer: Ntt.InboundQueuedTransfer<C> = {
+      recipient: new SolanaAddress(recipientAddress) as NativeAddress<C>,
+      amount: BigInt(amount.toString()),
+      rateLimitExpiryTimestamp: rateLimitExpiry,
+    };
+
+    return xfer;
+  }
+
   async createTransferLockInstruction(args: {
     transferArgs: TransferArgs;
     payer: PublicKey;
@@ -311,52 +429,6 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
         },
       })
       .instruction();
-  }
-
-  async *redeem(attestations: Ntt.Attestation[], payer: AccountAddress<C>) {
-    const config = await this.getConfig();
-    if (config.paused) throw new Error('Contract is paused');
-
-    if (attestations.length !== this.xcvrs.length) throw 'No';
-    // TODO: not this, we should iterate over the set of enabled xcvrs?
-    const wormholeNTT = attestations[0]! as WormholeNttTransceiver.VAA;
-
-    // Post the VAA that we intend to redeem
-    yield* this.core.postVaa(payer, wormholeNTT);
-
-    const senderAddress = new SolanaAddress(payer).unwrap();
-
-    const nttMessage = wormholeNTT.payload.nttManagerPayload;
-    const emitterChain = wormholeNTT.emitterChain;
-
-    const releaseArgs = {
-      payer: senderAddress,
-      config,
-      nttMessage,
-      recipient: new PublicKey(
-        nttMessage.payload.recipientAddress.toUint8Array(),
-      ),
-      chain: emitterChain,
-      revertOnDelay: false,
-    };
-
-    const tx = new Transaction();
-    tx.feePayer = senderAddress;
-    tx.add(
-      await this.createReceiveWormholeMessageInstruction(
-        senderAddress,
-        wormholeNTT,
-      ),
-    );
-    tx.add(await this.createRedeemInstruction(senderAddress, wormholeNTT));
-
-    tx.add(
-      await (config.mode.locking != null
-        ? this.createReleaseInboundUnlockInstruction(releaseArgs)
-        : this.createReleaseInboundMintInstruction(releaseArgs)),
-    );
-
-    yield this.createUnsignedTx({ transaction: tx }, 'Ntt.Redeem');
   }
 
   async createReceiveWormholeMessageInstruction(
@@ -502,78 +574,6 @@ export class SolanaNtt<N extends Network, C extends SolanaChains>
       })
       .instruction();
   }
-
-  async getCurrentOutboundCapacity(): Promise<bigint> {
-    const rl = await this.program.account.outboxRateLimit.fetch(
-      this.pdas.outboxRateLimitAccount(),
-    );
-    return BigInt(rl.rateLimit.capacityAtLastTx.toString());
-  }
-  async getCurrentInboundCapacity(fromChain: Chain): Promise<bigint> {
-    const rl = await this.program.account.inboxRateLimit.fetch(
-      this.pdas.inboxRateLimitAccount(fromChain),
-    );
-    return BigInt(rl.rateLimit.capacityAtLastTx.toString());
-  }
-
-  async *completeInboundQueuedTransfer(
-    fromChain: Chain,
-    transceiverMessage: Ntt.Message,
-    token: TokenAddress<C>,
-    payer: AccountAddress<C>,
-  ) {
-    const config = await this.getConfig();
-    if (config.paused) throw new Error('Contract is paused');
-
-    const senderAddress = new SolanaAddress(payer).unwrap();
-    const tx = new Transaction();
-    tx.feePayer = senderAddress;
-    const releaseArgs = {
-      payer: senderAddress,
-      config,
-      nttMessage: transceiverMessage,
-      recipient: new PublicKey(
-        transceiverMessage.payload.recipientAddress.toUint8Array(),
-      ),
-      chain: fromChain,
-      revertOnDelay: false,
-    };
-
-    tx.add(
-      await (config.mode.locking != null
-        ? this.createReleaseInboundUnlockInstruction(releaseArgs)
-        : this.createReleaseInboundMintInstruction(releaseArgs)),
-    );
-
-    yield this.createUnsignedTx(
-      { transaction: tx },
-      'Ntt.CompleteInboundTransfer',
-    );
-  }
-
-  async getInboundQueuedTransfer(
-    chain: Chain,
-    nttMessage: Ntt.Message,
-  ): Promise<Ntt.InboundQueuedTransfer<C> | null> {
-    const inboxItem = await this.program.account.inboxItem.fetch(
-      this.pdas.inboxItemAccount(chain, nttMessage),
-    );
-    if (!inboxItem) return null;
-
-    const { recipientAddress, amount, releaseStatus } = inboxItem!;
-    const rateLimitExpiry = releaseStatus.releaseAfter
-      ? releaseStatus.releaseAfter[0].toNumber()
-      : 0;
-
-    const xfer: Ntt.InboundQueuedTransfer<C> = {
-      recipient: new SolanaAddress(recipientAddress) as NativeAddress<C>,
-      amount: BigInt(amount.toString()),
-      rateLimitExpiryTimestamp: rateLimitExpiry,
-    };
-
-    return xfer;
-  }
-
   createUnsignedTx(
     txReq: SolanaTransaction,
     description: string,
