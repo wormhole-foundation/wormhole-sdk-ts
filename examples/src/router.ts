@@ -43,6 +43,7 @@ import { getSigner } from "./helpers/index.js";
     "Allowed source tokens: ",
     srcTokens.map((t) => canonicalAddress(t)),
   );
+
   // Grab the first one for the example
   const sendToken = srcTokens[0]!;
 
