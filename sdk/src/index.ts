@@ -38,7 +38,7 @@ export interface PlatformDefinition<
 export async function wormhole<N extends Network>(
   network: N,
   platformLoaders: (() => Promise<PlatformDefinition>)[],
-  config?: ConfigOverrides,
+  config?: ConfigOverrides<N>,
 ): Promise<Wormhole<N>> {
   // make sure all protocols are loaded
   try {

@@ -19,7 +19,7 @@ type RecursivePartial<T> = {
     : T[P];
 };
 
-export type ConfigOverrides = RecursivePartial<WormholeConfig>;
+export type ConfigOverrides<N extends Network> = RecursivePartial<WormholeConfig<N>>;
 
 export const CONFIG = {
   Mainnet: {
@@ -53,13 +53,14 @@ export function networkPlatformConfigs<N extends Network, P extends Platform>(
 // Apply any overrides to the base config
 export function applyOverrides<N extends Network>(
   network: N,
-  overrides?: ConfigOverrides,
+  overrides?: ConfigOverrides<N>,
 ): WormholeConfig {
   let base = CONFIG[network];
   if (!overrides) return base;
 
   // recurse through the overrides and apply them to the base config
   function override(base: any, overrides: any) {
+    if (!base) base = {};
     for (const [key, value] of Object.entries(overrides)) {
       if (typeof value === "object" && !Array.isArray(value)) {
         base[key] = override(base[key], value);
