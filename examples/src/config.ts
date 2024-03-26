@@ -1,5 +1,5 @@
 import { wormhole } from "@wormhole-foundation/sdk";
-import { solana } from "@wormhole-foundation/sdk/solana";
+import solana from "@wormhole-foundation/sdk/solana";
 
 (async function () {
   // EXAMPLE_CONFIG_OVERRIDE
