@@ -4,7 +4,6 @@ import {
   Signer,
   TransactionId,
   TransferState,
-  Wormhole,
   canonicalAddress,
   routes,
   wormhole,
@@ -16,24 +15,10 @@ import { getSigner } from "./helpers/index.js";
 
 (async function () {
   // Setup
-  const wh = await wormhole("Testnet", [evm, solana], {
-    chains: {
-      Sepolia: {
-        tokenMap: {
-          MySweetToken: {
-            key: "MySweetToken",
-            decimals: 18,
-            address: "0x7E399fd2C4B260b1cBC66548c03753aBA9990665",
-            chain: "Sepolia",
-            symbol: "MST",
-          },
-        },
-      },
-    },
-  });
+  const wh = await wormhole("Testnet", [evm, solana]);
 
   // Get chain contexts
-  const sendChain = wh.getChain("Sepolia");
+  const sendChain = wh.getChain("Avalanche");
   const destChain = wh.getChain("Solana");
 
   // get signers from local config
@@ -59,9 +44,8 @@ import { getSigner } from "./helpers/index.js";
     srcTokens.map((t) => canonicalAddress(t)),
   );
 
-  const sendToken = Wormhole.tokenId("Sepolia", "0x7E399fd2C4B260b1cBC66548c03753aBA9990665");
   // Grab the first one for the example
-  //const sendToken = srcTokens[0]!;
+  const sendToken = srcTokens[0]!;
 
   // given the send token, what can we possibly get on the destination chain?
   const destTokens = await resolver.supportedDestinationTokens(sendToken, sendChain, destChain);
