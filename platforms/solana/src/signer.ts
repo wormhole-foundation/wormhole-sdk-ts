@@ -183,7 +183,7 @@ export class SolanaSendSigner<
 
       if (this._priorityFeePercentile && this._priorityFeePercentile)
         transaction.add(
-          ...(await addComputeBudget(
+          ...(await createPriorityFeeInstructions(
             this._rpc,
             transaction,
             [],
@@ -263,7 +263,7 @@ export function logTxDetails(transaction: Transaction) {
   });
 }
 
-export async function addComputeBudget(
+export async function createPriorityFeeInstructions(
   connection: Connection,
   transaction: Transaction,
   lockedWritableAccounts: PublicKey[] = [],
