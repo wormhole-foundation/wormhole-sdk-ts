@@ -23,7 +23,7 @@ import { SolanaPlatform } from './platform.js';
 import type { SolanaChains } from './types.js';
 import type { SolanaUnsignedTransaction } from './unsignedTransaction.js';
 
-// Add priority fee according to 50th percentile of recent fees paid
+// Add priority fee according to 90th percentile of recent fees paid
 const DEFAULT_PRIORITY_FEE_PERCENTILE = 0.9;
 
 // returns a SignOnlySigner for the Solana platform
