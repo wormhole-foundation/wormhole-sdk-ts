@@ -46,11 +46,11 @@ export class Wormhole<N extends Network> {
   protected _platforms: PlatformMap<N>;
   protected _chains: ChainMap<N>;
 
-  readonly config: WormholeConfig;
+  readonly config: WormholeConfig<N>;
 
   constructor(network: N, platforms: PlatformUtils<any>[], config?: ConfigOverrides<N>) {
     this._network = network;
-    this.config = applyOverrides(network, config);
+    this.config = applyOverrides(network, config) as WormholeConfig<N>;
 
     this._chains = new Map();
     this._platforms = new Map();

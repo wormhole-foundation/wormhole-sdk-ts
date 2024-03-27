@@ -74,7 +74,7 @@ export class AptosWormholeCore<N extends Network, C extends AptosChains>
       };
     });
   }
-  async parseMessages(txid: string): Promise<VAA[]> {
+  async parseMessages(txid: string) {
     const transaction = await this.connection.getTransactionByHash(txid);
     if (transaction.type !== "user_transaction")
       throw new Error(`${txid} is not a user_transaction`);

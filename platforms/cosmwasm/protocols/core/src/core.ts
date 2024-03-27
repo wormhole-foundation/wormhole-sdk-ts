@@ -75,13 +75,13 @@ export class CosmwasmWormholeCore<N extends Network, C extends CosmwasmChains>
     return [CosmwasmWormholeCore.parseWormholeMessageId(this.chain, this.coreAddress, tx)];
   }
 
-  async parseMessages(txid: string): Promise<VAA[]> {
+  async parseMessages(txid: string) {
     const tx = await this.rpc.getTx(txid);
     if (!tx) throw new Error("No transaction found for txid: " + txid);
     return [CosmwasmWormholeCore.parseWormholeMessage(this.chain, this.coreAddress, tx)];
   }
 
-  static parseWormholeMessage(chain: Chain, coreAddress: string, tx: IndexedTx): VAA {
+  static parseWormholeMessage(chain: Chain, coreAddress: string, tx: IndexedTx) {
     const events = tx.events.filter(
       (ev) =>
         ev.type === "wasm" &&

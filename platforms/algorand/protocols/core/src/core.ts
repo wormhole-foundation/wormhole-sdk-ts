@@ -181,14 +181,14 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
     });
   }
 
-  async parseMessages(txId: string): Promise<VAA[]> {
+  async parseMessages(txId: string) {
     const result = await this.connection.pendingTransactionInformation(txId).do();
     const ptr = modelsv2.PendingTransactionResponse.from_obj_for_encoding(result);
     return this.parseTx(ptr);
   }
 
-  private parseTx(ptr: modelsv2.PendingTransactionResponse): VAA[] {
-    const msgs: VAA[] = [];
+  private parseTx(ptr: modelsv2.PendingTransactionResponse) {
+    const msgs: VAA<"Uint8Array">[] = [];
 
     if (ptr.innerTxns && ptr.innerTxns.length > 0) {
       msgs.push(...ptr.innerTxns.flatMap((tx) => this.parseTx(tx)));
