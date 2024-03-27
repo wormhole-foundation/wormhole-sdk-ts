@@ -1,4 +1,5 @@
 import {
+  Chain,
   ChainAddress,
   ChainContext,
   DEFAULT_TASK_TIMEOUT,
@@ -8,7 +9,6 @@ import {
   TransferState,
   TxHash,
   Wormhole,
-  Chain,
   api,
   tasks,
 } from "@wormhole-foundation/sdk";
@@ -52,9 +52,8 @@ export async function getSigner<N extends Network, C extends Chain>(
       signer = await (
         await solana()
       ).getSigner(await chain.getRpc(), getEnv("SOL_PRIVATE_KEY"), {
-        //computeLimit: 500_000n,
-        //priorityFeeAmount: 100_000n,
-        debug: true,
+        //debug: true,
+        priorityFeePercentile: 0.9,
       });
       break;
     case "Cosmwasm":
