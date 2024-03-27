@@ -182,7 +182,14 @@ export class SolanaSendSigner<
       console.log(`Signing: ${description} for ${this.address()}`);
 
       if (this._priorityFeePercentile && this._priorityFeePercentile)
-        transaction.add(...(await addComputeBudget(this._rpc, transaction)));
+        transaction.add(
+          ...(await addComputeBudget(
+            this._rpc,
+            transaction,
+            [],
+            this._priorityFeePercentile,
+          )),
+        );
 
       if (this._debug) logTxDetails(transaction);
 
