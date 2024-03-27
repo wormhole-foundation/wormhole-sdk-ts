@@ -70,5 +70,5 @@ export interface WormholeCore<N extends Network, C extends Chain> {
    *
    * @returns the VAA message produced by the transaction
    */
-  parseMessages(txid: TxHash): Promise<VAA[]>;
+  parseMessages(txid: TxHash): Promise<VAA<"Uint8Array">[]>;
 }

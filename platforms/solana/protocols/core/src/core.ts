@@ -305,7 +305,7 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
     return [...iix, ...cix];
   }
 
-  async parsePostMessageAccount(messageAccount: PublicKey): Promise<VAA> {
+  async parsePostMessageAccount(messageAccount: PublicKey) {
     const acctInfo = await this.connection.getAccountInfo(messageAccount);
     if (!acctInfo?.data) throw new Error('No data found in message account');
 
@@ -379,7 +379,7 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
     return await Promise.all(messagePromises);
   }
 
-  async parseMessages(txid: string): Promise<VAA[]> {
+  async parseMessages(txid: string) {
     const response: VersionedTransactionResponse | null =
       await this.connection.getTransaction(txid, {
         maxSupportedTransactionVersion: 0,
