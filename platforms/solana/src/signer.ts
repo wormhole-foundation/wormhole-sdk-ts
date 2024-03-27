@@ -1,13 +1,13 @@
 import type {
-  TransactionInstruction,
   Connection,
   SendOptions,
   Transaction,
+  TransactionInstruction,
 } from '@solana/web3.js';
 import {
   ComputeBudgetProgram,
-  PublicKey,
   Keypair,
+  PublicKey,
   SendTransactionError,
   TransactionExpiredBlockheightExceededError,
 } from '@solana/web3.js';
@@ -42,20 +42,29 @@ export async function getSolanaSigner(
 // returns a SignAndSendSigner for the Solana platform
 export async function getSolanaSignAndSendSigner(
   rpc: Connection,
-  privateKey: string,
+  privateKey: string | Keypair,
   opts?: {
     debug?: boolean;
-    addPriorityFee?: boolean;
+    priorityFeePercentile?: number;
     sendOpts?: SendOptions;
   },
 ): Promise<Signer> {
   const [_, chain] = await SolanaPlatform.chainFromRpc(rpc);
+
+  const kp =
+    typeof privateKey === 'string'
+      ? Keypair.fromSecretKey(encoding.b58.decode(privateKey))
+      : privateKey;
+
+  if (opts?.priorityFeePercentile && opts?.priorityFeePercentile > 1.0)
+    throw new Error('priorityFeePercentile must be a number between 0 and 1');
+
   return new SolanaSendSigner(
     rpc,
     chain,
-    Keypair.fromSecretKey(encoding.b58.decode(privateKey)),
+    kp,
     opts?.debug ?? false,
-    opts?.addPriorityFee ?? false,
+    opts?.priorityFeePercentile ?? 0,
     opts?.sendOpts,
   );
 }
@@ -110,7 +119,7 @@ export class SolanaSendSigner<
     private _chain: C,
     private _keypair: Keypair,
     private _debug: boolean = false,
-    private _addPriorityFee: boolean = false,
+    private _priorityFeePercentile: number = 0.0,
     private _sendOpts?: SendOptions,
   ) {
     this._sendOpts = this._sendOpts ?? {
@@ -172,9 +181,9 @@ export class SolanaSendSigner<
       } = txn as SolanaUnsignedTransaction<N, C>;
       console.log(`Signing: ${description} for ${this.address()}`);
 
-      if (this._addPriorityFee) {
+      if (this._priorityFeePercentile && this._priorityFeePercentile)
         transaction.add(...(await addComputeBudget(this._rpc, transaction)));
-      }
+
       if (this._debug) logTxDetails(transaction);
 
       // Try to send the transaction up to 5 times
