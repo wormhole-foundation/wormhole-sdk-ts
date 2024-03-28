@@ -64,7 +64,7 @@ export class CircleTransfer<N extends Network = Network>
 
   attestations?: AttestationReceipt<CircleTransferProtocol>[];
 
-  constructor(
+  private constructor(
     wh: Wormhole<N>,
     transfer: CircleTransferDetails,
     fromChain?: ChainContext<N, Chain>,

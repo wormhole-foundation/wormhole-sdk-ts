@@ -74,7 +74,7 @@ export class TokenTransfer<N extends Network = Network>
   // on the source chain (if its been completed and finalized)
   attestations?: AttestationReceipt<TokenTransferProtocol>[];
 
-  constructor(
+  private constructor(
     wh: Wormhole<N>,
     transfer: TokenTransferDetails,
     fromChain?: ChainContext<N, Chain>,

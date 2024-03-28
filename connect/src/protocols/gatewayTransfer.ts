@@ -71,7 +71,7 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
   // Any transfers we do over ibc
   ibcTransfers: IbcTransferInfo[] = [];
 
-  constructor(
+  private constructor(
     wh: Wormhole<N>,
     transfer: GatewayTransferDetails,
     gateway: GatewayContext<N>,
