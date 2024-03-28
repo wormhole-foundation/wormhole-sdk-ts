@@ -181,7 +181,7 @@ export class SolanaSendSigner<
       } = txn as SolanaUnsignedTransaction<N, C>;
       console.log(`Signing: ${description} for ${this.address()}`);
 
-      if (this._priorityFeePercentile && this._priorityFeePercentile)
+      if (this._priorityFeePercentile && this._priorityFeePercentile > 0)
         transaction.add(
           ...(await createPriorityFeeInstructions(
             this._rpc,

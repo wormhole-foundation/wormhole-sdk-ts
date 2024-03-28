@@ -40,7 +40,7 @@ export class EvmAutomaticCircleBridge<N extends Network, C extends EvmChains>
 
   // https://github.com/wormhole-foundation/wormhole-connect/blob/development/sdk/src/contexts/eth/context.ts#L379
 
-  private constructor(
+  constructor(
     readonly network: N,
     readonly chain: C,
     readonly provider: Provider,

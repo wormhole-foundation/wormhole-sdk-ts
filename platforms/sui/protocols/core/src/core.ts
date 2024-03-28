@@ -23,7 +23,7 @@ export class SuiWormholeCore<N extends Network, C extends SuiChains> implements 
   readonly chainId: ChainId;
   readonly coreBridgePackageId: string;
 
-  private constructor(
+  constructor(
     readonly network: N,
     readonly chain: C,
     readonly provider: SuiClient,

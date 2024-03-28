@@ -35,7 +35,7 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
   readonly tokenBridge: ethers_contracts.TokenBridgeContract;
   readonly chainId: bigint;
 
-  private constructor(
+  constructor(
     readonly network: N,
     readonly chain: C,
     readonly provider: Provider,

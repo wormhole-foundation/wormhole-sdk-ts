@@ -42,7 +42,7 @@ export class CosmwasmTokenBridge<N extends Network, C extends CosmwasmChains>
 {
   private tokenBridge: string;
   private translator?: string;
-  private constructor(
+  constructor(
     readonly network: N,
     readonly chain: C,
     readonly rpc: CosmWasmClient,

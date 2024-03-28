@@ -48,7 +48,7 @@ export class EvmTokenBridge<N extends Network, C extends EvmChains>
   readonly tokenBridgeAddress: string;
   readonly chainId: bigint;
 
-  private constructor(
+  constructor(
     readonly network: N,
     readonly chain: C,
     readonly provider: Provider,

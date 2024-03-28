@@ -23,7 +23,7 @@ export class AptosWormholeCore<N extends Network, C extends AptosChains>
   readonly chainId: ChainId;
   readonly coreBridge: string;
 
-  private constructor(
+  constructor(
     readonly network: N,
     readonly chain: C,
     readonly connection: AptosClient,
