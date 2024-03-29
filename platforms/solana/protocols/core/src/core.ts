@@ -1,5 +1,6 @@
 import type { Program } from '@coral-xyz/anchor';
 import type {
+  CompiledInstruction,
   Connection,
   MessageAccountKeys,
   MessageCompiledInstruction,
@@ -209,32 +210,41 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
   static parseSequenceFromLog(
     coreBridgeAddress: string,
     transaction: VersionedTransactionResponse | TransactionResponse,
-  ): [UniversalAddress, bigint] | null {
-    if (!transaction || !transaction.meta?.innerInstructions![0]?.instructions)
-      return null;
+  ): [UniversalAddress, bigint][] {
+    if (!transaction.meta?.innerInstructions?.length) return [];
 
-    const instructions = transaction.meta?.innerInstructions![0].instructions;
     const accounts = transaction.transaction.message.staticAccountKeys;
+    const bridgeIx: CompiledInstruction[] = [];
+    for (const inner of transaction.meta?.innerInstructions) {
+      const instructions = inner.instructions;
+      // find the instruction where the programId equals the
+      // Wormhole ProgramId and the emitter equals the Token Bridge
+      bridgeIx.push(
+        ...instructions.filter((i) => {
+          const programId = accounts[i.programIdIndex]!.toString();
+          return programId === coreBridgeAddress;
+        }),
+      );
+    }
 
-    // find the instruction where the programId equals the Wormhole ProgramId and the emitter equals the Token Bridge
-    const bridgeIx = instructions.filter((i) => {
-      const programId = accounts[i.programIdIndex]!.toString();
-      return programId === coreBridgeAddress;
-    });
+    if (bridgeIx.length < 1) return [];
+    if (accounts.length < 3) return [];
 
-    if (bridgeIx.length < 1) return null;
-    if (accounts.length < 3) return null;
+    return bridgeIx
+      .map((ix) => {
+        const emitter = new SolanaAddress(
+          accounts[ix.accounts[2]!]!,
+        ).toUniversalAddress();
 
-    const emitter = new SolanaAddress(
-      accounts[bridgeIx[0]!.accounts[2]!]!,
-    ).toUniversalAddress();
-    const sequence = transaction.meta?.logMessages
-      ?.filter((msg) => msg.startsWith(SOLANA_SEQ_LOG))?.[0]
-      ?.replace(SOLANA_SEQ_LOG, '');
+        const sequence = transaction.meta?.logMessages
+          ?.filter((msg) => msg.startsWith(SOLANA_SEQ_LOG))?.[0]
+          ?.replace(SOLANA_SEQ_LOG, '');
 
-    if (!sequence) return null;
+        if (!sequence) return null;
 
-    return [emitter, BigInt(sequence)];
+        return [emitter, BigInt(sequence)];
+      })
+      .filter((x) => x !== null) as [UniversalAddress, bigint][];
   }
 
   private async getMessageAccountKeys(
@@ -342,18 +352,20 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
       throw new Error('transaction not found');
 
     // The sequence is frequently found in the log, pull from there if we can
-    const loggedSeq = SolanaWormholeCore.parseSequenceFromLog(
+    const loggedSeqs = SolanaWormholeCore.parseSequenceFromLog(
       this.coreBridge.programId.toBase58(),
       response,
     );
-    if (loggedSeq)
+    if (loggedSeqs.length > 0) {
+      const [emitter, seq] = loggedSeqs[0]!;
       return [
         {
           chain: this.chain,
-          emitter: loggedSeq[0],
-          sequence: loggedSeq[1],
+          emitter: emitter,
+          sequence: seq,
         },
       ];
+    }
 
     // Otherwise we need to get it from the message account
     const accounts = await this.getMessageAccountKeys(response);
