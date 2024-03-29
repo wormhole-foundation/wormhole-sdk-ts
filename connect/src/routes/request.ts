@@ -16,7 +16,7 @@ export class RouteTransferRequest<N extends Network> {
   fromChain: ChainContext<N>;
   toChain: ChainContext<N>;
 
-  constructor(
+  private constructor(
     from: ChainAddress,
     to: ChainAddress,
     fromChain: ChainContext<N>,
