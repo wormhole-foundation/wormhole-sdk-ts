@@ -121,16 +121,19 @@ export class SolanaPlatform<N extends Network>
     walletAddress: string,
     token: AnySolanaAddress,
   ): Promise<bigint | null> {
-    if (isNative(token))
-      return BigInt(await rpc.getBalance(new PublicKey(walletAddress)));
+    const address = new PublicKey(walletAddress);
+    if (isNative(token)) return BigInt(await rpc.getBalance(address));
 
-    const splToken = await rpc.getTokenAccountsByOwner(
-      new PublicKey(walletAddress),
-      { mint: new SolanaAddress(token).unwrap() },
-    );
-    if (!splToken.value[0]) return null;
+    // Check to see if we were passed wallet address or token account
+    const splToken = await rpc.getTokenAccountsByOwner(address, {
+      mint: new SolanaAddress(token).unwrap(),
+    });
 
-    const balance = await rpc.getTokenAccountBalance(splToken.value[0].pubkey);
+    // Use the first token account if it exists, otherwise fall back to wallet address
+    const checkAddress =
+      splToken.value.length > 0 ? splToken.value[0]!.pubkey : address;
+
+    const balance = await rpc.getTokenAccountBalance(checkAddress);
     return BigInt(balance.value.amount);
   }
 
