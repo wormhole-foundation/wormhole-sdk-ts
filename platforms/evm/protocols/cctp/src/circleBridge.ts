@@ -45,7 +45,7 @@ export class EvmCircleBridge<N extends Network, C extends EvmChains>
   readonly messageSentEventHash: string;
   readonly messageReceivedEventHash: string;
 
-  private constructor(
+  constructor(
     readonly network: N,
     readonly chain: C,
     readonly provider: Provider,

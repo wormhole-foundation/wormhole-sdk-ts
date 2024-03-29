@@ -43,7 +43,7 @@ export class EvmWormholeCore<N extends Network, C extends EvmChains>
   readonly core: Implementation;
   readonly coreIface: ImplementationInterface;
 
-  private constructor(
+  constructor(
     readonly network: N,
     readonly chain: C,
     readonly provider: Provider,

@@ -44,7 +44,7 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
   readonly tokenBridgeAddress: string;
   readonly coreAddress: string;
 
-  private constructor(
+  constructor(
     readonly network: N,
     readonly chain: C,
     readonly connection: AptosClient,

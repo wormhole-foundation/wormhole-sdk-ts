@@ -72,7 +72,7 @@ export class SolanaAutomaticTokenBridge<
   readonly tokenBridgeProgramId: PublicKey;
   readonly tokenBridgeRelayer: Program<TokenBridgeRelayerContract>;
 
-  private constructor(
+  constructor(
     readonly network: N,
     readonly chain: C,
     readonly connection: Connection,

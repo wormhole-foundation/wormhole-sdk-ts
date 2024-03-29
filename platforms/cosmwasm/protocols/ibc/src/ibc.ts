@@ -66,7 +66,7 @@ export class CosmwasmIbcBridge<N extends Network, C extends CosmwasmChains>
   private channelToChain: Map<string, CosmwasmChains> = new Map();
   private chainToChannel: Map<CosmwasmChains, string> = new Map();
 
-  private constructor(
+  constructor(
     readonly network: N,
     readonly chain: C,
     readonly rpc: CosmWasmClient,

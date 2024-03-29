@@ -42,7 +42,7 @@ export class SolanaCircleBridge<N extends Network, C extends SolanaChains>
   readonly tokenMessenger: Program<TokenMessenger>;
   readonly messageTransmitter: Program<MessageTransmitter>;
 
-  private constructor(
+  constructor(
     readonly network: N,
     readonly chain: C,
     readonly connection: Connection,

@@ -25,7 +25,7 @@ export class CosmwasmWormholeCore<N extends Network, C extends CosmwasmChains>
 {
   private coreAddress: string;
 
-  private constructor(
+  constructor(
     readonly network: N,
     readonly chain: C,
     readonly rpc: CosmWasmClient,

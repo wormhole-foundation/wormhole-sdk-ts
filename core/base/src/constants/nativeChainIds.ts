@@ -66,6 +66,7 @@ const chainNetworkNativeChainIdEntries = [[
   "Solana", [
     ["Mainnet", "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"],
     ["Testnet", "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG"],
+    ["Devnet",  "8wF6jKV3cKwyaVkWcoV9KpDqmkjvEYno9hKZrKx8TbZn"],
   ]], [
   "Sui", [
     ["Mainnet", "35834a8a"],
@@ -94,6 +95,7 @@ const chainNetworkNativeChainIdEntries = [[
   "Bsc", [
     ["Mainnet", 56n],
     ["Testnet", 97n],
+    ["Devnet",  1397n]
   ]], [
   "Celo", [
     ["Mainnet", 42220n],

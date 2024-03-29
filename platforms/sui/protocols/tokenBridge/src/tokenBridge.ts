@@ -58,7 +58,7 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
   readonly tokenBridgeObjectId: string;
   readonly chainId: bigint;
 
-  private constructor(
+  constructor(
     readonly network: N,
     readonly chain: C,
     readonly provider: SuiClient,
