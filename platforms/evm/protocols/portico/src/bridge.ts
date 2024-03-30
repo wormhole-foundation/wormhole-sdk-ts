@@ -48,16 +48,18 @@ export class EvmPorticoBridge<
 
   porticoContract: ethers.Contract;
   uniswapContract: ethers.Contract;
+  core: EvmWormholeCore<N, C>;
 
   constructor(
     readonly network: N,
     readonly chain: C,
     readonly provider: Provider,
     readonly contracts: Contracts,
-    readonly core: EvmWormholeCore<N, C>,
   ) {
     if (!contracts.portico)
       throw new Error('Unsupported chain, no contract addresses for: ' + chain);
+
+    this.core = new EvmWormholeCore(network, chain, provider, contracts);
 
     const { portico: porticoAddress, uniswapQuoterV2: uniswapAddress } =
       contracts.portico;
@@ -89,19 +91,11 @@ export class EvmPorticoBridge<
   ): Promise<EvmPorticoBridge<N, EvmChains>> {
     const [network, chain] = await EvmPlatform.chainFromRpc(provider);
 
-    const core = await EvmWormholeCore.fromRpc(provider, config);
-
     const conf = config[chain]!;
     if (conf.network !== network)
       throw new Error(`Network mismatch: ${conf.network} != ${network}`);
 
-    return new EvmPorticoBridge(
-      network as N,
-      chain,
-      provider,
-      conf.contracts,
-      core,
-    );
+    return new EvmPorticoBridge(network as N, chain, provider, conf.contracts);
   }
 
   async *transfer(
