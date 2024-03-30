@@ -20,14 +20,27 @@ import { EvmPlatform } from './platform.js';
 import type { EvmChains } from './types.js';
 import { _platform } from './types.js';
 
+export async function getEvmSigner(
+  signer: EthersSigner | { rpc: Provider; key: string },
+  chain?: EvmChains,
+): Promise<Signer> {
+  if (!isEthersSigner(signer)) {
+    const { key, rpc } = signer;
+    signer = new Wallet(key, rpc);
+  }
+  if (chain === undefined) {
+    const [, c] = await EvmPlatform.chainFromRpc(signer.provider!);
+    chain = c;
+  }
+  return new EvmNativeSigner(chain, await signer.getAddress(), signer);
+}
+
 // Get a SignOnlySigner for the EVM platform
 export async function getEvmSignerForKey(
   rpc: Provider,
   privateKey: string,
 ): Promise<Signer> {
-  const [_, chain] = await EvmPlatform.chainFromRpc(rpc);
-  const _signer = new Wallet(privateKey, rpc);
-  return getEvmSignerForSigner(chain, _signer);
+  return getEvmSigner({ rpc, key: privateKey });
 }
 
 // Get a SignOnlySigner for the EVM platform
@@ -35,8 +48,7 @@ export async function getEvmSignerForSigner(
   chain: EvmChains,
   signer: EthersSigner,
 ): Promise<Signer> {
-  const address = await signer.getAddress();
-  return new EvmNativeSigner(chain, address, signer);
+  return getEvmSigner(signer, chain);
 }
 
 export class EvmNativeSigner<N extends Network, C extends EvmChains = EvmChains>
@@ -54,13 +66,9 @@ export class EvmNativeSigner<N extends Network, C extends EvmChains = EvmChains>
   async sign(tx: UnsignedTransaction<N, C>[]): Promise<SignedTx[]> {
     const signed = [];
 
-    let nonce = await this._signer.getNonce();
-
     // TODO: Better gas estimation/limits
-    let gasLimit = 500_000n;
     let maxFeePerGas = 1_500_000_000n; // 1.5gwei
     let maxPriorityFeePerGas = 100_000_000n; // 0.1gwei
-
     // Celo does not support this call
     if (this.chain() !== 'Celo') {
       const feeData = await this._signer.provider!.getFeeData();
@@ -69,6 +77,7 @@ export class EvmNativeSigner<N extends Network, C extends EvmChains = EvmChains>
         feeData.maxPriorityFeePerGas ?? maxPriorityFeePerGas;
     }
 
+    let nonce = await this._signer.getNonce();
     for (const txn of tx) {
       const { transaction, description } = txn;
       console.log(`Signing: ${description} for ${this.address()}`);
@@ -76,19 +85,18 @@ export class EvmNativeSigner<N extends Network, C extends EvmChains = EvmChains>
       const t: TransactionRequest = {
         ...transaction,
         ...{
-          gasLimit,
           maxFeePerGas,
           maxPriorityFeePerGas,
           nonce,
         },
       };
 
-      // TODO
-      // const estimate = await this.provider.estimateGas(t)
-      // t.gasLimit = estimate
+      const estimate = await this._signer.provider!.estimateGas(t);
+      t.gasLimit = estimate + estimate / 10n; // Add 10% buffer
 
       signed.push(await this._signer.signTransaction(t));
 
+      // assuming no nonce manager
       nonce += 1;
     }
     return signed;
