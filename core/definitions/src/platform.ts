@@ -120,7 +120,9 @@ export abstract class PlatformContext<N extends Network, P extends Platform> {
   }
 
   /** Get the underlying ProtocolInitializer to construct yourself */
-  getProtocolInitializer<PN extends ProtocolName>(protocol: PN): ProtocolInitializer<P, PN> {
+  getProtocolInitializer<PN extends ProtocolName, C extends PlatformToChains<P>>(
+    protocol: PN,
+  ): ProtocolInitializer<P, PN, C> {
     return getProtocolInitializer(this.utils()._platform, protocol);
   }
 

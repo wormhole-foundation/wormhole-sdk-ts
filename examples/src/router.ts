@@ -4,6 +4,7 @@ import {
   Signer,
   TransactionId,
   TransferState,
+  Wormhole,
   canonicalAddress,
   routes,
   wormhole,
@@ -45,7 +46,8 @@ import { getSigner } from "./helpers/index.js";
   );
 
   // Grab the first one for the example
-  const sendToken = srcTokens[0]!;
+  // const sendToken = srcTokens[0]!;
+  const sendToken = Wormhole.tokenId(sendChain.chain, "native");
 
   // given the send token, what can we possibly get on the destination chain?
   const destTokens = await resolver.supportedDestinationTokens(sendToken, sendChain, destChain);

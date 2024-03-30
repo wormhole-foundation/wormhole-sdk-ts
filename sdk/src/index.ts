@@ -27,7 +27,7 @@ export interface PlatformDefinition<
     new (...args: any): NativeAddress<PlatformToChains<P>>;
   };
   Signer: {
-    new (...args: any): Signer;
+    new (...args: any): Signer<N, C>;
   };
   getSigner: (rpc: RpcConnection<P>, key: string, ...args: any) => Promise<Signer>;
   protocols: {
@@ -37,7 +37,7 @@ export interface PlatformDefinition<
 
 export async function wormhole<N extends Network>(
   network: N,
-  platformLoaders: (() => Promise<PlatformDefinition>)[],
+  platformLoaders: (() => Promise<PlatformDefinition<N, any>>)[],
   config?: ConfigOverrides<N>,
 ): Promise<Wormhole<N>> {
   // make sure all protocols are loaded

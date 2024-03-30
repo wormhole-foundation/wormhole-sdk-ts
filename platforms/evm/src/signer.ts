@@ -22,17 +22,20 @@ import { _platform } from './types.js';
 
 export async function getEvmSigner(
   signer: EthersSigner | { rpc: Provider; key: string },
+  opts?: {
+    maxGasLimit?: bigint;
+  },
   chain?: EvmChains,
 ): Promise<Signer> {
   if (!isEthersSigner(signer)) {
     const { key, rpc } = signer;
     signer = new Wallet(key, rpc);
   }
-  if (chain === undefined) {
+  if (!chain) {
     const [, c] = await EvmPlatform.chainFromRpc(signer.provider!);
     chain = c;
   }
-  return new EvmNativeSigner(chain, await signer.getAddress(), signer);
+  return new EvmNativeSigner(chain, await signer.getAddress(), signer, opts);
 }
 
 // Get a SignOnlySigner for the EVM platform
@@ -48,13 +51,22 @@ export async function getEvmSignerForSigner(
   chain: EvmChains,
   signer: EthersSigner,
 ): Promise<Signer> {
-  return getEvmSigner(signer, chain);
+  return getEvmSigner(signer, {}, chain);
 }
 
 export class EvmNativeSigner<N extends Network, C extends EvmChains = EvmChains>
   extends PlatformNativeSigner<EthersSigner, N, C>
   implements SignOnlySigner<N, C>
 {
+  constructor(
+    _chain: C,
+    _address: string,
+    _signer: EthersSigner,
+    readonly opts?: { maxGasLimit?: bigint },
+  ) {
+    super(_chain, _address, _signer);
+  }
+
   chain(): C {
     return this._chain;
   }
@@ -93,6 +105,11 @@ export class EvmNativeSigner<N extends Network, C extends EvmChains = EvmChains>
 
       const estimate = await this._signer.provider!.estimateGas(t);
       t.gasLimit = estimate + estimate / 10n; // Add 10% buffer
+      if (this.opts?.maxGasLimit && t.gasLimit > this.opts?.maxGasLimit) {
+        throw new Error(
+          `Gas limit ${t.gasLimit} exceeds maxGasLimit ${this.opts?.maxGasLimit}`,
+        );
+      }
 
       signed.push(await this._signer.signTransaction(t));
 

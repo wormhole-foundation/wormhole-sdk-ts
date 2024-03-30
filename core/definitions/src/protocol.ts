@@ -9,10 +9,11 @@ import { Contracts } from "./contracts.js";
 export type ProtocolName = keyof WormholeRegistry.ProtocolToPlatformMapping;
 type MappedProtocolPlatforms = keyof WormholeRegistry.ProtocolToPlatformMapping[ProtocolName];
 
-export type EmptyPlatformMap<P extends Platform, PN extends ProtocolName> = Map<
-  P,
-  ProtocolInitializer<P, PN>
->;
+export type EmptyPlatformMap<
+  P extends Platform,
+  PN extends ProtocolName,
+  C extends PlatformToChains<P> = PlatformToChains<P>,
+> = Map<P, ProtocolInitializer<P, PN, C>>;
 
 export type ProtocolImplementation<
   T extends Platform,
@@ -23,10 +24,14 @@ export type ProtocolImplementation<
     : any
   : never;
 
-export interface ProtocolInitializer<P extends Platform, PN extends ProtocolName> {
+export interface ProtocolInitializer<
+  P extends Platform,
+  PN extends ProtocolName,
+  C extends PlatformToChains<P> = PlatformToChains<P>,
+> {
   new (
     network: Network,
-    chain: PlatformToChains<P>,
+    chain: C,
     connection: RpcConnection<P>,
     contracts: Contracts,
   ): ProtocolImplementation<P, PN>;
@@ -36,9 +41,11 @@ export interface ProtocolInitializer<P extends Platform, PN extends ProtocolName
   ): Promise<ProtocolImplementation<P, PN>>;
 }
 
-export type ProtocolInstance<P extends Platform, PN extends ProtocolName> = InstanceType<
-  ProtocolInitializer<P, PN>
->;
+export type ProtocolInstance<
+  P extends Platform,
+  PN extends ProtocolName,
+  C extends PlatformToChains<P>,
+> = InstanceType<ProtocolInitializer<P, PN, C>>;
 
 export type ProtocolFactoryMap<
   PN extends ProtocolName = ProtocolName,
