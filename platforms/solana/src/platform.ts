@@ -243,7 +243,19 @@ export class SolanaPlatform<N extends Network>
   }
 
   static async chainFromRpc(rpc: Connection): Promise<[Network, SolanaChains]> {
-    const gh = await rpc.getGenesisHash();
-    return SolanaPlatform.chainFromChainId(gh);
+    try {
+      const gh = await rpc.getGenesisHash();
+      return SolanaPlatform.chainFromChainId(gh);
+    } catch (e) {
+      // Override for devnet which will often have a new Genesis hash
+      if (
+        rpc.rpcEndpoint.includes('http://127') ||
+        rpc.rpcEndpoint.includes('http://localhost') ||
+        rpc.rpcEndpoint === 'http://solana-devnet:8899'
+      ) {
+        return ['Devnet', 'Solana'];
+      }
+      throw e;
+    }
   }
 }

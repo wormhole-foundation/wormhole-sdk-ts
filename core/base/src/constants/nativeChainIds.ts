@@ -104,6 +104,7 @@ const chainNetworkNativeChainIdEntries = [[
   "Ethereum", [
     ["Mainnet", 1n],
     ["Testnet", 5n], //goerli
+    ["Devnet",  1337n]
   ]], [
   "Fantom", [
     ["Mainnet", 250n],
