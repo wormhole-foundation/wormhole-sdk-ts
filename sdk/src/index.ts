@@ -15,8 +15,8 @@ import { Wormhole } from "@wormhole-foundation/sdk-connect";
 export * from "@wormhole-foundation/sdk-connect";
 
 export interface PlatformDefinition<
-  N extends Network = Network,
-  P extends Platform = Platform,
+  N extends Network,
+  P extends Platform,
   C extends Chain = PlatformToChains<P>,
 > {
   Platform: PlatformUtils<P>;
@@ -37,7 +37,7 @@ export interface PlatformDefinition<
 
 export async function wormhole<N extends Network>(
   network: N,
-  platformLoaders: (() => Promise<PlatformDefinition<N, any>>)[],
+  platformLoaders: (<_N extends N>() => Promise<PlatformDefinition<_N, any>>)[],
   config?: ConfigOverrides<N>,
 ): Promise<Wormhole<N>> {
   // make sure all protocols are loaded
@@ -55,11 +55,11 @@ export async function wormhole<N extends Network>(
       ),
     );
 
-    return new Wormhole<N>(
+    return new Wormhole(
       network,
       platforms.map((p) => p.Platform),
       config,
-    );
+    ) as Wormhole<N>;
   } catch (e) {
     console.error("Failed to load required packages", e);
     throw e;

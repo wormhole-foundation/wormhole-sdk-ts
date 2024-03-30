@@ -1,7 +1,7 @@
 /// <reference path="../../platforms/solana/src/index.ts" />
 import type { Network, PlatformDefinition } from "./index.js";
 /** Platform and protocol definitons for Solana */
-const solana = async (): Promise<PlatformDefinition<Network, "Solana">> => {
+const solana = async <N extends Network>(): Promise<PlatformDefinition<N, "Solana">> => {
   const _solana = await import("@wormhole-foundation/sdk-solana");
   return {
     Address: _solana.SolanaAddress,
