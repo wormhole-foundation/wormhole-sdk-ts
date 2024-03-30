@@ -9,7 +9,7 @@ const sui = async (): Promise<PlatformDefinition<Network, "Sui">> => {
     Platform: _sui.SuiPlatform,
     Signer: _sui.SuiSigner,
     getSigner: _sui.getSuiSigner,
-    protocols: {
+    protocolLoaders: {
       core: () => import("@wormhole-foundation/sdk-sui-core"),
       tokenbridge: () => import("@wormhole-foundation/sdk-sui-tokenbridge"),
     },

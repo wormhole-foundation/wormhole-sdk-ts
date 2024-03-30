@@ -30,7 +30,7 @@ export interface PlatformDefinition<
     new (...args: any): Signer<N, C>;
   };
   getSigner: (rpc: RpcConnection<P>, key: string, ...args: any) => Promise<Signer>;
-  protocols: {
+  protocolLoaders: {
     [key: string]: () => Promise<any>;
   };
 }
@@ -49,7 +49,9 @@ export async function wormhole<N extends Network>(
     await Promise.all(
       platforms.map(
         async (p) =>
-          await Promise.all(Object.values(p.protocols).map(async (loaderFn) => await loaderFn())),
+          await Promise.all(
+            Object.values(p.protocolLoaders).map(async (loaderFn) => await loaderFn()),
+          ),
       ),
     );
 

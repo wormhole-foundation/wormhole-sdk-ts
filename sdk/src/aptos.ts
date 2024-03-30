@@ -9,7 +9,7 @@ const aptos = async (): Promise<PlatformDefinition<Network, "Aptos">> => {
     Platform: _aptos.AptosPlatform,
     Signer: _aptos.AptosSigner,
     getSigner: _aptos.getAptosSigner,
-    protocols: {
+    protocolLoaders: {
       core: () => import("@wormhole-foundation/sdk-aptos-core"),
       tokenbridge: () => import("@wormhole-foundation/sdk-aptos-tokenbridge"),
     },

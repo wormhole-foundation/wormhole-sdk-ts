@@ -9,7 +9,7 @@ const solana = async (): Promise<PlatformDefinition<Network, "Solana">> => {
     Platform: _solana.SolanaPlatform,
     Signer: _solana.SolanaSigner,
     getSigner: _solana.getSolanaSignAndSendSigner,
-    protocols: {
+    protocolLoaders: {
       core: () => import("@wormhole-foundation/sdk-solana-core"),
       tokenbridge: () => import("@wormhole-foundation/sdk-solana-tokenbridge"),
       cctp: () => import("@wormhole-foundation/sdk-solana-cctp"),

@@ -9,7 +9,7 @@ const cosmwasm = async (): Promise<PlatformDefinition<Network, "Cosmwasm">> => {
     Platform: _cosmwasm.CosmwasmPlatform,
     Signer: _cosmwasm.CosmwasmSigner,
     getSigner: _cosmwasm.getCosmwasmSigner,
-    protocols: {
+    protocolLoaders: {
       core: () => import("@wormhole-foundation/sdk-cosmwasm-core"),
       tokenbridge: () => import("@wormhole-foundation/sdk-cosmwasm-tokenbridge"),
       ibc: () => import("@wormhole-foundation/sdk-cosmwasm-ibc"),

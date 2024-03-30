@@ -9,7 +9,7 @@ const algorand = async (): Promise<PlatformDefinition<Network, "Algorand">> => {
     Platform: _algorand.AlgorandPlatform,
     Signer: _algorand.AlgorandSigner,
     getSigner: _algorand.getAlgorandSigner,
-    protocols: {
+    protocolLoaders: {
       core: () => import("@wormhole-foundation/sdk-algorand-core"),
       tokenbridge: () => import("@wormhole-foundation/sdk-algorand-tokenbridge"),
     },
