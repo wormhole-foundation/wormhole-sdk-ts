@@ -3,6 +3,7 @@ import { chainToPlatform, isChain } from "@wormhole-foundation/sdk-base";
 import type { WormholeRegistry } from "./registry.js";
 import type { RpcConnection } from "./rpc.js";
 import type { ChainsConfig } from "./types.js";
+import { Contracts } from "./contracts.js";
 
 /** A string type representing the name of a protocol */
 export type ProtocolName = keyof WormholeRegistry.ProtocolToPlatformMapping;
@@ -27,13 +28,17 @@ export interface ProtocolInitializer<P extends Platform, PN extends ProtocolName
     network: Network,
     chain: PlatformToChains<P>,
     connection: RpcConnection<P>,
-    contracts: any,
+    contracts: Contracts,
   ): ProtocolImplementation<P, PN>;
   fromRpc(
     rpc: RpcConnection<P>,
     config: ChainsConfig<Network, P>,
   ): Promise<ProtocolImplementation<P, PN>>;
 }
+
+export type ProtocolInstance<P extends Platform, PN extends ProtocolName> = InstanceType<
+  ProtocolInitializer<P, PN>
+>;
 
 export type ProtocolFactoryMap<
   PN extends ProtocolName = ProtocolName,

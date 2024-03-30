@@ -2,7 +2,7 @@ import type { Chain, Network } from "@wormhole-foundation/sdk-base";
 import { contracts } from "@wormhole-foundation/sdk-base";
 
 /** The Contract addresses set in configuration for a given chain */
-export type Contracts = {
+export interface Contracts {
   coreBridge?: string;
   tokenBridge?: string;
   tokenBridgeRelayer?: string;
@@ -12,7 +12,7 @@ export type Contracts = {
   gateway?: string;
   translator?: string;
   portico?: contracts.PorticoContracts;
-};
+}
 
 /**
  *
