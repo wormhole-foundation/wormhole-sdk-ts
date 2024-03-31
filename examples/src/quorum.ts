@@ -1,8 +1,4 @@
 import { Chain, api, toChain, wormhole } from "@wormhole-foundation/sdk";
-import algorand from "@wormhole-foundation/sdk/algorand";
-import cosmwasm from "@wormhole-foundation/sdk/cosmwasm";
-import evm from "@wormhole-foundation/sdk/evm";
-import solana from "@wormhole-foundation/sdk/solana";
 
 type Stats = {
   max: bigint;
@@ -35,7 +31,7 @@ const skipChains = [
 ];
 
 (async function () {
-  const wh = await wormhole("Mainnet", [evm, solana, cosmwasm, algorand]);
+  const wh = await wormhole("Mainnet", ["Evm", "Solana", "Algorand", "Cosmwasm"]);
 
   const hbc = await getHeartbeats(wh.config.api);
   for (const [chain, heights] of Object.entries(hbc)) {

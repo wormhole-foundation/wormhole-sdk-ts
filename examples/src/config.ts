@@ -1,11 +1,9 @@
 import { wormhole } from "@wormhole-foundation/sdk";
-import solana from "@wormhole-foundation/sdk/solana";
-
 (async function () {
   // EXAMPLE_CONFIG_OVERRIDE
   // Pass a partial WormholeConfig object to override specific
   // fields in the default config
-  const wh = await wormhole("Testnet", [solana], {
+  const wh = await wormhole("Testnet", ["Solana"], {
     chains: {
       Solana: {
         contracts: {
@@ -16,6 +14,5 @@ import solana from "@wormhole-foundation/sdk/solana";
     },
   });
   // EXAMPLE_CONFIG_OVERRIDE
-
   console.log(wh.config.chains.Solana);
 })();
