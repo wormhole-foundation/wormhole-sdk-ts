@@ -19,6 +19,7 @@ import { Wallet } from 'ethers';
 import { EvmPlatform } from './platform.js';
 import type { EvmChains } from './types.js';
 import { _platform } from './types.js';
+import { NonceManager } from 'ethers';
 
 export async function getEvmSigner(
   signer: EthersSigner | { rpc: Provider; key: string },
@@ -35,6 +36,8 @@ export async function getEvmSigner(
     const [, c] = await EvmPlatform.chainFromRpc(signer.provider!);
     chain = c;
   }
+
+  signer = new NonceManager(signer);
   return new EvmNativeSigner(chain, await signer.getAddress(), signer, opts);
 }
 

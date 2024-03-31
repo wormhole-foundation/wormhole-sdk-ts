@@ -1,18 +1,16 @@
 /// <reference path="../../platforms/algorand/src/index.ts" />
-import type { Network, PlatformDefinition } from "./index.js";
+import * as _algorand from "@wormhole-foundation/sdk-algorand";
+import { PlatformDefinition } from "./index.js";
+
 /** Platform and protocol definitions for Algorand */
-const algorand = async <N extends Network>(): Promise<PlatformDefinition<N, "Algorand">> => {
-  const _algorand = await import("@wormhole-foundation/sdk-algorand");
-  return {
-    Address: _algorand.AlgorandAddress,
-    ChainContext: _algorand.AlgorandChain,
-    Platform: _algorand.AlgorandPlatform,
-    Signer: _algorand.AlgorandSigner,
-    getSigner: _algorand.getAlgorandSigner,
-    protocolLoaders: {
-      core: () => import("@wormhole-foundation/sdk-algorand-core"),
-      tokenbridge: () => import("@wormhole-foundation/sdk-algorand-tokenbridge"),
-    },
-  };
+const algorand: PlatformDefinition<"Algorand"> = {
+  Address: _algorand.AlgorandAddress,
+  Platform: _algorand.AlgorandPlatform,
+  getSigner: _algorand.getAlgorandSigner,
+  protocolLoaders: {
+    core: () => import("@wormhole-foundation/sdk-algorand-core"),
+    tokenbridge: () => import("@wormhole-foundation/sdk-algorand-tokenbridge"),
+  },
 };
+
 export default algorand;

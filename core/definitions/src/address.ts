@@ -41,6 +41,8 @@ type GetNativeAddress<P extends Platform> = P extends MappedPlatforms
   ? WormholeRegistry.PlatformToNativeAddressMapping[P]
   : never;
 
+export type NativeAddressCtr = new (ua: UniversalAddress | string | Uint8Array) => Address;
+
 /** An address that has been parsed into its Nativfe Address type */
 export type NativeAddress<C extends Chain> = GetNativeAddress<ChainToPlatform<C>>;
 
@@ -58,8 +60,6 @@ export type ChainAddress<C extends Chain = Chain> = {
   readonly chain: C;
   readonly address: UniversalOrNative<C>;
 };
-
-type NativeAddressCtr = new (ua: UniversalAddress | string | Uint8Array) => Address;
 
 const nativeFactory = new Map<Platform, NativeAddressCtr>();
 

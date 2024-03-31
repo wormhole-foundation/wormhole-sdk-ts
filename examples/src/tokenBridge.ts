@@ -7,14 +7,14 @@ import {
   amount,
   isTokenId,
   wormhole,
+  sui,
+  evm,
+  cosmwasm,
+  solana,
+  algorand,
 } from "@wormhole-foundation/sdk";
 
 // Import the platform-specific packages
-import algorand from "@wormhole-foundation/sdk/algorand";
-import cosmwasm from "@wormhole-foundation/sdk/cosmwasm";
-import evm from "@wormhole-foundation/sdk/evm";
-import solana from "@wormhole-foundation/sdk/solana";
-import sui from "@wormhole-foundation/sdk/sui";
 
 import { SignerStuff, getSigner, waitLog } from "./helpers/index.js";
 
