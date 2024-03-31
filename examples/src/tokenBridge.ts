@@ -7,11 +7,7 @@ import {
   amount,
   isTokenId,
   wormhole,
-  sui,
-  evm,
-  cosmwasm,
-  solana,
-  algorand,
+  load,
 } from "@wormhole-foundation/sdk";
 
 // Import the platform-specific packages
@@ -21,7 +17,7 @@ import { SignerStuff, getSigner, waitLog } from "./helpers/index.js";
 (async function () {
   // Init Wormhole object, passing config for which network
   // to use (e.g. Mainnet/Testnet) and what Platforms to support
-  const wh = await wormhole("Testnet", [evm, solana, algorand, cosmwasm, sui]);
+  const wh = await wormhole("Testnet", load("Evm", "Solana"));
 
   // Grab chain Contexts -- these hold a reference to a cached rpc client
   const sendChain = wh.getChain("Avalanche");

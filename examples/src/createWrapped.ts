@@ -1,14 +1,10 @@
-import { TokenId, Wormhole, signSendWait, wormhole } from "@wormhole-foundation/sdk";
-
-import algorand from "@wormhole-foundation/sdk/algorand";
-import evm from "@wormhole-foundation/sdk/evm";
-import solana from "@wormhole-foundation/sdk/solana";
+import { TokenId, Wormhole, load, signSendWait, wormhole } from "@wormhole-foundation/sdk";
 
 import { inspect } from "util";
 import { getSigner } from "./helpers/index.js";
 
 (async function () {
-  const wh = await wormhole("Testnet", [evm, solana, algorand]);
+  const wh = await wormhole("Testnet", load("Evm", "Solana"));
 
   // Original Token to Attest
   // const token: TokenId = Wormhole.chainAddress(
