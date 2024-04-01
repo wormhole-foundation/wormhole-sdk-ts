@@ -11,6 +11,9 @@ import {
 
 // Import the platform specific packages
 
+import cosmwasm from "@wormhole-foundation/sdk/cosmwasm";
+import evm from "@wormhole-foundation/sdk/evm";
+import solana from "@wormhole-foundation/sdk/solana";
 import { SignerStuff, getSigner } from "./helpers/index.js";
 
 // We're going to transfer into, around, and out of the Cosmos ecosystem
@@ -31,7 +34,7 @@ import { SignerStuff, getSigner } from "./helpers/index.js";
 (async function () {
   // init Wormhole object, passing config for which network
   // to use (e.g. Mainnet/Testnet) and what Platforms to support
-  const wh = await wormhole("Mainnet", ["Evm", "Solana", "Cosmwasm"]);
+  const wh = await wormhole("Mainnet", [evm, solana, cosmwasm]);
   // Pick up where you left off by updating the txids as you go
   let fakeIt = false;
 

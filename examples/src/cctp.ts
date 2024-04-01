@@ -8,6 +8,8 @@ import {
   amount,
   wormhole,
 } from "@wormhole-foundation/sdk";
+import evm from "@wormhole-foundation/sdk/evm";
+import solana from "@wormhole-foundation/sdk/solana";
 import { SignerStuff, getSigner, waitForRelay } from "./helpers/index.js";
 
 /*
@@ -21,7 +23,7 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
 (async function () {
   // init Wormhole object, passing config for which network
   // to use (e.g. Mainnet/Testnet) and what Platforms to support
-  const wh = await wormhole("Testnet", ["Evm", "Solana"]);
+  const wh = await wormhole("Testnet", [evm, solana]);
 
   // Grab chain Contexts
   const sendChain = wh.getChain("Avalanche");

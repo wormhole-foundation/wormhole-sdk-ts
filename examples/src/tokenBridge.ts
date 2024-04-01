@@ -11,12 +11,14 @@ import {
 
 // Import the platform-specific packages
 
+import evm from "@wormhole-foundation/sdk/evm";
+import solana from "@wormhole-foundation/sdk/solana";
 import { SignerStuff, getSigner, waitLog } from "./helpers/index.js";
 
 (async function () {
   // Init Wormhole object, passing config for which network
   // to use (e.g. Mainnet/Testnet) and what Platforms to support
-  const wh = await wormhole("Testnet", ["Evm", "Solana"]);
+  const wh = await wormhole("Testnet", [evm, solana]);
 
   // Grab chain Contexts -- these hold a reference to a cached rpc client
   const sendChain = wh.getChain("Avalanche");

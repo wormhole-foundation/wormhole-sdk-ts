@@ -1,9 +1,10 @@
 import { encoding, signSendWait, wormhole } from "@wormhole-foundation/sdk";
 import { getSigner } from "./helpers/index.js";
+import solana from "@wormhole-foundation/sdk/solana";
 
 (async function () {
   // EXAMPLE_CORE_BRIDGE
-  const wh = await wormhole("Testnet", ["Solana"]);
+  const wh = await wormhole("Testnet", [solana]);
 
   const chain = wh.getChain("Solana");
   const { signer, address } = await getSigner(chain);
