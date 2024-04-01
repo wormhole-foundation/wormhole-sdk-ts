@@ -1,11 +1,11 @@
 import type { Chain, Network, Platform, PlatformToChains } from "@wormhole-foundation/sdk-base";
-import type { WormholeCore } from "./index.js";
 import type { WormholeMessageId } from "./attestation.js";
 import type { ChainContext } from "./chain.js";
-import type { ProtocolName } from "./protocol.js";
-import { create } from "./protocol.js";
+import type { WormholeCore } from "./index.js";
+import type { ProtocolImplementation, ProtocolInitializer, ProtocolName } from "./protocol.js";
+import { create, getProtocolInitializer } from "./protocol.js";
 import type { RpcConnection } from "./rpc.js";
-import type { Balances, ChainsConfig, SignedTx, TokenId, TxHash, TokenAddress } from "./types.js";
+import type { Balances, ChainsConfig, SignedTx, TokenAddress, TokenId, TxHash } from "./types.js";
 
 /**
  * PlatformUtils represents the _static_ attributes available on
@@ -111,9 +111,19 @@ export abstract class PlatformContext<N extends Network, P extends Platform> {
     rpc?: RpcConnection<P>,
   ): ChainContext<N, C>;
 
-  /** Create a new Protocol Client instance by protocol name */
-  getProtocol<PN extends ProtocolName, T>(protocol: PN, rpc: RpcConnection<P>): Promise<T> {
+  /** Create a new Protocol Client instance by protocol name using the RPC connection to determine the network */
+  getProtocol<PN extends ProtocolName>(
+    protocol: PN,
+    rpc: RpcConnection<P>,
+  ): Promise<ProtocolImplementation<P, PN>> {
     return create(this.utils()._platform, protocol, rpc, this.config);
+  }
+
+  /** Get the underlying ProtocolInitializer to construct yourself */
+  getProtocolInitializer<PN extends ProtocolName, C extends PlatformToChains<P>>(
+    protocol: PN,
+  ): ProtocolInitializer<P, PN, C> {
+    return getProtocolInitializer(this.utils()._platform, protocol);
   }
 
   /** Look up transaction logs and parse out Wormhole messages */

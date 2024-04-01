@@ -22,7 +22,7 @@ export class RouteResolver<N extends Network> {
     this.routeConstructors = routeConstructors;
   }
 
-  async supportedSourceTokens(chain: ChainContext<Network>): Promise<TokenId[]> {
+  async supportedSourceTokens(chain: ChainContext<N>): Promise<TokenId[]> {
     if (this.inputTokenList) return this.inputTokenList;
     const itl = await Promise.all(
       this.routeConstructors.map(async (rc) => {
@@ -40,8 +40,8 @@ export class RouteResolver<N extends Network> {
 
   async supportedDestinationTokens(
     inputToken: TokenId,
-    fromChain: ChainContext<Network>,
-    toChain: ChainContext<Network>,
+    fromChain: ChainContext<N>,
+    toChain: ChainContext<N>,
   ): Promise<TokenId[]> {
     const [, inputTokenId] = resolveWrappedToken(fromChain.network, fromChain.chain, inputToken);
     const tokens = await Promise.all(

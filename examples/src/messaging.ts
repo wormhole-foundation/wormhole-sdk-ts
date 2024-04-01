@@ -1,6 +1,6 @@
 import { encoding, signSendWait, wormhole } from "@wormhole-foundation/sdk";
-import solana from "@wormhole-foundation/sdk/solana";
 import { getSigner } from "./helpers/index.js";
+import solana from "@wormhole-foundation/sdk/solana";
 
 (async function () {
   // EXAMPLE_CORE_BRIDGE

@@ -35,7 +35,7 @@ const skipChains = [
 ];
 
 (async function () {
-  const wh = await wormhole("Mainnet", [evm, solana, cosmwasm, algorand]);
+  const wh = await wormhole("Mainnet", [evm, solana, algorand, cosmwasm]);
 
   const hbc = await getHeartbeats(wh.config.api);
   for (const [chain, heights] of Object.entries(hbc)) {

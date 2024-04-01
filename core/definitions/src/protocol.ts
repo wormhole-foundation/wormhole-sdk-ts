@@ -1,17 +1,19 @@
-import type { Chain, Network, Platform } from "@wormhole-foundation/sdk-base";
+import type { Chain, Network, Platform, PlatformToChains } from "@wormhole-foundation/sdk-base";
 import { chainToPlatform, isChain } from "@wormhole-foundation/sdk-base";
+import type { WormholeRegistry } from "./registry.js";
 import type { RpcConnection } from "./rpc.js";
 import type { ChainsConfig } from "./types.js";
-import type { WormholeRegistry } from "./registry.js";
+import { Contracts } from "./contracts.js";
 
 /** A string type representing the name of a protocol */
 export type ProtocolName = keyof WormholeRegistry.ProtocolToPlatformMapping;
 type MappedProtocolPlatforms = keyof WormholeRegistry.ProtocolToPlatformMapping[ProtocolName];
 
-export type EmptyPlatformMap<P extends Platform, PN extends ProtocolName> = Map<
-  P,
-  ProtocolInitializer<P, PN>
->;
+export type EmptyPlatformMap<
+  P extends Platform,
+  PN extends ProtocolName,
+  C extends PlatformToChains<P> = PlatformToChains<P>,
+> = Map<P, ProtocolInitializer<P, PN, C>>;
 
 export type ProtocolImplementation<
   T extends Platform,
@@ -22,12 +24,28 @@ export type ProtocolImplementation<
     : any
   : never;
 
-export interface ProtocolInitializer<P extends Platform, PN extends ProtocolName> {
+export interface ProtocolInitializer<
+  P extends Platform,
+  PN extends ProtocolName,
+  C extends PlatformToChains<P> = PlatformToChains<P>,
+> {
+  new (
+    network: Network,
+    chain: C,
+    connection: RpcConnection<P>,
+    contracts: Contracts,
+  ): ProtocolImplementation<P, PN>;
   fromRpc(
     rpc: RpcConnection<P>,
     config: ChainsConfig<Network, P>,
   ): Promise<ProtocolImplementation<P, PN>>;
 }
+
+export type ProtocolInstance<
+  P extends Platform,
+  PN extends ProtocolName,
+  C extends PlatformToChains<P>,
+> = InstanceType<ProtocolInitializer<P, PN, C>>;
 
 export type ProtocolFactoryMap<
   PN extends ProtocolName = ProtocolName,
@@ -35,14 +53,14 @@ export type ProtocolFactoryMap<
 > = Map<PN, Map<P, ProtocolInitializer<P, PN>>>;
 const protocolFactory: ProtocolFactoryMap = new Map();
 
-export function registerProtocol<P extends Platform, PN extends ProtocolName>(
-  platform: P,
-  protocol: PN,
-  ctr: ProtocolInitializer<P, PN>,
-): void {
+export function registerProtocol<
+  P extends Platform,
+  PN extends ProtocolName,
+  PI extends ProtocolInitializer<P, PN>,
+>(platform: P, protocol: PN, ctr: PI): void {
   let platforms = protocolFactory.get(protocol)!;
 
-  if (!platforms) platforms = new Map<Platform, ProtocolInitializer<Platform, ProtocolName>>();
+  if (!platforms) platforms = new Map<P, ProtocolInitializer<P, ProtocolName>>();
 
   if (platforms.has(platform)) return; //throw new Error(`Protocol ${platform} for protocol ${protocol} has already registered`);
 

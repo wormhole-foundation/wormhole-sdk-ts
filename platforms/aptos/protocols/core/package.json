@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-aptos-core",
-  "version": "0.5.2-beta.6",
+  "version": "0.5.2-beta.9",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -45,8 +45,8 @@
     "nock": "^13.3.3"
   },
   "dependencies": {
-    "@wormhole-foundation/sdk-connect": "0.5.2-beta.6",
-    "@wormhole-foundation/sdk-aptos": "0.5.2-beta.6"
+    "@wormhole-foundation/sdk-connect": "0.5.2-beta.9",
+    "@wormhole-foundation/sdk-aptos": "0.5.2-beta.9"
   },
   "type": "module",
   "exports": {
