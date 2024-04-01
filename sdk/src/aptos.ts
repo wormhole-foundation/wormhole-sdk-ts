@@ -1,3 +1,4 @@
+/// <reference path="./platforms/aptos.ts" />
 import { PlatformDefinition } from "./index.js";
 const aptos = async (): Promise<PlatformDefinition<"Aptos">> =>
   (await import("./platforms/aptos.js")).default;
