@@ -10,8 +10,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-        with:
-          ref: ${{ inputs.tag }}
       - uses: actions/setup-node@v3
         with:
           node-version: 20
