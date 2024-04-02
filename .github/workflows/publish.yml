@@ -33,7 +33,7 @@ jobs:
             tag=latest
           fi
 
-          npm publish --access public --tag $TAG \
+          npm publish --access public --tag $tag \
             --dry-run \
             --workspace core \
             --workspace connect \
