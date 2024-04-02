@@ -24,7 +24,6 @@ jobs:
 
           # Sync version number to all package.json files
           npm run version $git_tag
-          npm publish --access public
 
           if [[ $git_tag == *"beta"* ]]; then
             tag=beta
