@@ -20,7 +20,7 @@ jobs:
       - run: npm run build --if-present
       - run: npm test
       - run: |
-          git_tag="0.5.5-alpha.0"
+          git_tag="$GITHUB_REF_NAME"
 
           # Sync version number to all package.json files
           npm run version $git_tag
