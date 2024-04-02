@@ -38,10 +38,9 @@ function updateVersionsInWorkspaces(version: string) {
   });
 }
 
-function getVersion(): string {
-  const versionFilePath = path.join(rootDir(), "VERSION");
-  const v = fs.readFileSync(versionFilePath);
-  return v.toString().replace("\n", "");
-}
+const args = process.argv.slice(2);
+const version = args[0];
 
-updateVersionsInWorkspaces(getVersion());
+if (!version) throw new Error('Need to pass in a version arg');
+
+updateVersionsInWorkspaces(version);
