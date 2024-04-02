@@ -17,14 +17,13 @@ jobs:
           cache: "npm"
           registry-url: "https://registry.npmjs.org"
       - run: npm ci
-      - run: npm run lint:ci
+      - run: npm run build --if-present
+      - run: npm test
       - run: |
           git_tag="$(git describe --tags)"
 
           # Sync version number to all package.json files
           npm run version $git_tag
-          npm install
-          npm run build
           npm publish --access public
 
           if [[ $git_tag == *"beta"* ]]; then
