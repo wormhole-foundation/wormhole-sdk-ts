@@ -37,6 +37,7 @@ jobs:
           fi
 
           npm publish --access public --tag $TAG \
+            --dry-run \
             --workspace core \
             --workspace connect \
             --workspace platforms \
