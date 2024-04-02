@@ -34,7 +34,7 @@
   "engines": {
     "node": ">=16"
   },
-  "sideEffects": true,
+  "sideEffects": ["dist/cjs/index.js", "/dist/esm/index.js"],
   "scripts": {
     "build:cjs": "tsc -p ./tsconfig.cjs.json  && echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
     "build:esm": "tsc -p ./tsconfig.esm.json",

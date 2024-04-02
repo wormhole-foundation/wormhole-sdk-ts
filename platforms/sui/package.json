@@ -31,7 +31,7 @@
   "engines": {
     "node": ">=16"
   },
-  "sideEffects": true,
+  "sideEffects": ["dist/cjs/address.js", "dist/esm/address.js"],
   "scripts": {
     "build:cjs": "tsc -p ./tsconfig.cjs.json  && echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
     "build:esm": "tsc -p ./tsconfig.esm.json",
