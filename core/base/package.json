@@ -26,6 +26,16 @@
         "types": "./dist/cjs/index.d.ts",
         "default": "./dist/cjs/index.js"
       }
+    },
+    "./tokens":{
+      "import": {
+        "types": "./dist/esm/constants/tokens.d.ts",
+        "default": "./dist/esm/constants/tokens.js"
+      },
+      "require": {
+        "types": "./dist/cjs/constants/tokens.d.ts",
+        "default": "./dist/cjs/constants/tokens.js"
+      }
     }
   },
   "files": [

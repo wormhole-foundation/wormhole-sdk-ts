@@ -15,8 +15,9 @@ import {
   nativeChainIds,
   rpc,
   toChainId,
-  tokens,
 } from "@wormhole-foundation/sdk-base";
+
+import { tokens } from "@wormhole-foundation/sdk-base/tokens";
 import type { ChainAddress, UniversalOrNative } from "./address.js";
 import { toNative } from "./address.js";
 import type { Contracts } from "./contracts.js";
