@@ -10,7 +10,7 @@
   },
   "homepage": "https://github.com/wormhole-foundation/connect-sdk#readme",
   "directories": {
-    "test": "tests"
+    "test": "__tests__"
   },
   "license": "Apache-2.0",
   "main": "./dist/cjs/index.js",
