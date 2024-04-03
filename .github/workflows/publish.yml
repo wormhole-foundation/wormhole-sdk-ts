@@ -1,7 +1,6 @@
 name: Publish
 
 on:
-  push:
   release:
     types: [published]
 
@@ -18,9 +17,9 @@ jobs:
           registry-url: "https://registry.npmjs.org"
       - run: npm ci
       - run: npm run build --if-present
+      - run: npm run test
       - run: |
           git_tag="$GITHUB_REF_NAME"
-          git_tag="beta@0.5.3"
 
           IFS='@' read -a git_tag_parts <<< $git_tag
           version="${git_tag_parts[1]}"
@@ -37,7 +36,6 @@ jobs:
           fi
 
           npm publish --access public --tag $tag \
-            --dry-run \
             --workspace core \
             --workspace connect \
             --workspace platforms \
