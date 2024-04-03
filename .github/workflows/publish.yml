@@ -19,17 +19,14 @@ jobs:
       - run: npm run build --if-present
       - run: npm test
       - run: |
-          git_tag="$GITHUB_REF_NAME"
-
-          IFS='@' read -a git_tag_parts <<< $git_tag
-          version="${git_tag_parts[1]}"
+          version="$GITHUB_REF_NAME"
 
           # Sync version number to all package.json files
           npm run version $version
 
-          if [[ $git_tag == *"beta"* ]]; then
+          if [[ $version == *"beta"* ]]; then
             tag=beta
-          elif [[ $git_tag == *"alpha"* ]]; then
+          elif [[ $version == *"alpha"* ]]; then
             tag=alpha
           else
             tag=latest
