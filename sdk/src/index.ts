@@ -9,6 +9,8 @@ import {
 
 export * from "@wormhole-foundation/sdk-connect";
 
+export * from "./addresses.js";
+
 export interface PlatformDefinition<P extends Platform> {
   Platform: PlatformUtils<P>;
   Address: NativeAddressCtr;
