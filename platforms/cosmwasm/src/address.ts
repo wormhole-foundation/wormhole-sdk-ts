@@ -1,4 +1,3 @@
-import { fromBase64, fromBech32, fromHex, toBech32 } from "@cosmjs/encoding";
 import type { Address } from "@wormhole-foundation/sdk-connect";
 import { UniversalAddress, encoding, registerNative } from "@wormhole-foundation/sdk-connect";
 import { CosmwasmPlatform } from "./platform.js";
@@ -6,21 +5,9 @@ import type { AnyCosmwasmAddress } from "./types.js";
 import { _platform } from "./types.js";
 
 /*
-Categories:
-
-Bank Tokens
-
-uatom,ibc/...,factory/...
-
-Contract Tokens
-
-*/
-/*
 Cosmos Addresses
 -----
-
 There are at least 5 types of addresses in Cosmos:
-
 
   Native Denom
     ex: "uatom"
@@ -74,15 +61,16 @@ There are at least 5 types of addresses in Cosmos:
 // Factory type addresses may have hex or b64 or bech32 encoded addresses
 function tryDecode(data: string): { data: Uint8Array; prefix?: string } {
   try {
-    return { ...fromBech32(data) };
+    const decoded = encoding.bech32.decodeToBytes(data);
+    return { data: decoded.bytes, prefix: decoded.prefix };
   } catch {}
 
   try {
-    return { data: fromHex(data) };
+    return { data: encoding.hex.decode(data) };
   } catch {}
 
   try {
-    return { data: fromBase64(data) };
+    return { data: encoding.b64.decode(data) };
   } catch {}
 
   throw new Error(`Cannot decode: ${data}`);
@@ -144,7 +132,7 @@ export class CosmwasmAddress implements Address {
         if (!CosmwasmAddress.isValidAddress(address))
           throw new Error(`Invalid Cosmwasm address:  ${address}`);
 
-        const { data, prefix } = fromBech32(address);
+        const { bytes: data, prefix } = encoding.bech32.decodeToBytes(address);
         this.address = data;
         this.domain = prefix;
       }
@@ -176,11 +164,13 @@ export class CosmwasmAddress implements Address {
       }
 
       // ?/factory/address/denom
-      return `${this.denomType}/${toBech32(this.domain!, this.address)}/${this.denom}`;
+      return `${this.denomType}/${CosmwasmAddress.encode(this.domain!, this.address)}/${
+        this.denom
+      }`;
     }
 
     // contract or account address
-    return toBech32(this.domain!, this.address);
+    return CosmwasmAddress.encode(this.domain!, this.address);
   }
 
   toNative() {
@@ -199,10 +189,13 @@ export class CosmwasmAddress implements Address {
 
   static isValidAddress(address: string): boolean {
     try {
-      const maybe = fromBech32(address);
-      return CosmwasmAddress.validAddressLength(maybe.data);
+      const maybe = encoding.bech32.decodeToBytes(address);
+      return CosmwasmAddress.validAddressLength(maybe.bytes);
     } catch {}
     return false;
+  }
+  private static encode(prefix: string, address: Uint8Array): string {
+    return encoding.bech32.encode(prefix, encoding.bech32.toWords(address));
   }
 
   private static validAddressLength(address: Uint8Array): boolean {
