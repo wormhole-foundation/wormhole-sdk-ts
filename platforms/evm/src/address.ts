@@ -4,19 +4,11 @@ import {
   encoding,
   registerNative,
 } from '@wormhole-foundation/sdk-connect';
-
-import {
-  ZeroAddress,
-  getAddress,
-  getBytes,
-  hexlify,
-  isAddress,
-  zeroPadValue,
-} from 'ethers';
+import { getAddress, isAddress } from 'ethers/address';
 import type { AnyEvmAddress } from './types.js';
 import { _platform } from './types.js';
 
-export const EvmZeroAddress = ZeroAddress;
+export const EvmZeroAddress = '0x0000000000000000000000000000000000000000';
 
 export class EvmAddress implements Address {
   static readonly byteSize = 20;
@@ -46,7 +38,7 @@ export class EvmAddress implements Address {
           `Invalid EVM address, expected ${EvmAddress.byteSize} bytes but got ${address.length}`,
         );
 
-      this.address = getAddress(hexlify(address));
+      this.address = getAddress(encoding.hex.encode(address));
     } else if (UniversalAddress.instanceof(address)) {
       // If its a universal address and we want it to be an ethereum address,
       // we need to chop off the first 12 bytes of padding
@@ -74,12 +66,10 @@ export class EvmAddress implements Address {
     return this;
   }
   toUint8Array() {
-    return getBytes(this.address);
+    return encoding.hex.decode(this.address);
   }
   toUniversalAddress() {
-    return new UniversalAddress(
-      zeroPadValue(this.address, UniversalAddress.byteSize),
-    );
+    return new UniversalAddress(this.address, 'hex');
   }
   static isValidAddress(address: string) {
     return isAddress(address);

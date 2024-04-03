@@ -60,6 +60,13 @@
     "@injectivelabs/sdk-ts": "^1.14.4"
   },
   "type": "module",
+  "typesVersions": {
+    "*": {
+      "*": [
+        "dist/cjs/index.d.ts"
+      ]
+    }
+  },
   "exports": {
     ".": {
       "import": {
