@@ -1,7 +1,6 @@
 name: Publish
 
 on:
-  push:
   release:
     types: [published]
 
@@ -34,7 +33,6 @@ jobs:
           fi
 
           npm publish --access public --tag $tag \
-            --dry-run \
             --workspace core \
             --workspace connect \
             --workspace platforms \
