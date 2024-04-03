@@ -1,8 +1,12 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
 import { contracts } from "@wormhole-foundation/sdk-base";
 
+// Allow contracts to be passed that arent
+// part of the known contract set
+type UnknownContracts = Record<string, any>;
+
 /** The Contract addresses set in configuration for a given chain */
-export interface Contracts {
+export type Contracts = {
   coreBridge?: string;
   tokenBridge?: string;
   tokenBridgeRelayer?: string;
@@ -12,7 +16,7 @@ export interface Contracts {
   gateway?: string;
   translator?: string;
   portico?: contracts.PorticoContracts;
-}
+} & UnknownContracts;
 
 /**
  *

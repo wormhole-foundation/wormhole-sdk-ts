@@ -195,13 +195,14 @@ export abstract class ChainContext<
   async getProtocol<PN extends ProtocolName>(
     protocolName: ProtocolName,
     rpc?: RpcConnection<P>,
+    contracts: any = this.config.contracts,
   ): Promise<ProtocolImplementation<P, PN>> {
     if (!this.protocols.has(protocolName)) {
       const ctor = this.platform.getProtocolInitializer(protocolName);
 
       const protocol = rpc
         ? await this.platform.getProtocol(protocolName, rpc)
-        : new ctor(this.network, this.chain, await this.getRpc(), this.config.contracts);
+        : new ctor(this.network, this.chain, await this.getRpc(), contracts);
 
       this.protocols.set(protocolName, protocol);
     }
