@@ -32,10 +32,6 @@
     "docs": "NODE_OPTIONS=--max_old_space_size=8192 typedoc --options typedoc.json",
     "version": "tsx setVersion.ts",
     "prepublishOnly": "cd scripts && npm run examples && cd - && cp README.md sdk/",
-    "publish": "npm publish --access public --tag $TAG --workspace core --workspace connect --workspace platforms --workspace platforms/evm/protocols --workspace platforms/solana/protocols --workspace platforms/cosmwasm/protocols --workspace platforms/algorand/protocols --workspace platforms/sui/protocols --workspace platforms/aptos/protocols --workspace sdk",
-    "pub:beta": "TAG=beta npm run publish",
-    "pub:alpha": "TAG=alpha npm run publish",
-    "pub:latest": "TAG=latest npm run publish",
     "test:tilt": "jest --verbose --config ./jest.config.ts --roots ./__tests__/tilt"
   },
   "workspaces": [
