@@ -21,8 +21,11 @@ jobs:
       - run: |
           git_tag="$GITHUB_REF_NAME"
 
+          IFS='@' read -a git_tag_parts <<< $git_tag
+          version="${git_tag_parts[1]}"
+
           # Sync version number to all package.json files
-          npm run version $git_tag
+          npm run version $version
 
           if [[ $git_tag == *"beta"* ]]; then
             tag=beta
