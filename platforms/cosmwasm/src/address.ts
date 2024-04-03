@@ -193,7 +193,7 @@ export class CosmwasmAddress implements Address {
     } catch {}
     return false;
   }
-  private static encode(prefix: string, address: Uint8Array): string {
+  static encode(prefix: string, address: Uint8Array): string {
     return encoding.bech32.encode(prefix, encoding.bech32.toWords(address));
   }
 

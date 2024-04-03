@@ -51,13 +51,13 @@
     "test": "jest --config ./jest.config.ts"
   },
   "devDependencies": {
-    "nock": "13.3.8"
+    "nock": "13.3.8",
+    "typechain": "^8.2.0",
+    "@typechain/ethers-v6": "^0.4.0"
   },
   "dependencies": {
     "@wormhole-foundation/sdk-connect": "0.5.2",
-    "typechain": "^8.2.0",
-    "ethers": "^6.5.1",
-    "@typechain/ethers-v6": "^0.4.0"
+    "ethers": "^6.5.1"
   },
   "type": "module",
   "typesVersions": {

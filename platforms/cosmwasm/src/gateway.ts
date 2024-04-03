@@ -1,4 +1,3 @@
-import { toBech32 } from "@cosmjs/encoding";
 import type {
   Chain,
   GatewayTransferMsg,
@@ -67,7 +66,9 @@ export class Gateway<N extends Network> extends CosmwasmChain<N, "Wormchain"> {
   // e.g. factoryToCw20("wormhole", "8sYgCzLRJC3J7qPn2bNbx6PiGcarhyx8rBhVaNnfvHCA")
   static factoryToCw20(address: CosmwasmAddress) {
     if (address.denomType !== "factory") throw new Error("Invalid address type");
-    return new CosmwasmAddress(toBech32(address.domain!, encoding.b58.decode(address.denom!)));
+    return new CosmwasmAddress(
+      CosmwasmAddress.encode(address.domain!, encoding.b58.decode(address.denom!)),
+    );
   }
   static cw20ToFactory(network: Network, address: CosmwasmAddress) {
     // Encode the original address to base58 and add it

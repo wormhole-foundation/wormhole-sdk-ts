@@ -17,7 +17,6 @@ import type {
   UnsignedTransaction,
 } from "@wormhole-foundation/sdk-connect";
 import { encoding, nativeChainIds, rpc as rpcConf } from "@wormhole-foundation/sdk-connect";
-import { TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
 import type { CosmwasmEvmChain } from "./constants.js";
 import {
   chainToAddressPrefix,
@@ -27,6 +26,11 @@ import {
 import { CosmwasmPlatform } from "./platform.js";
 import type { CosmwasmChains } from "./types.js";
 import type { CosmwasmUnsignedTransaction } from "./unsignedTransaction.js";
+
+// TODO: replace this? no hints in the package to resolve it, probably
+// need to find a new package to pull it from
+// @ts-ignore
+import { TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
 
 export async function getCosmwasmSigner(rpc: CosmWasmClient, mnemonic: string): Promise<Signer> {
   const [network, chain] = await CosmwasmPlatform.chainFromRpc(rpc);

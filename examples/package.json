@@ -48,8 +48,7 @@
   },
   "devDependencies": {
     "dotenv": "^16.3.1",
-    "tsx": "^4.7.0",
-    "algosdk": "^2.7.0"
+    "tsx": "^4.7.0"
   },
   "dependencies": {
     "@wormhole-foundation/sdk": "0.5.2"
