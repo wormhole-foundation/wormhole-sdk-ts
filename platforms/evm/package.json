@@ -16,13 +16,6 @@
   "main": "./dist/cjs/index.js",
   "types": "./dist/cjs/index.d.ts",
   "module": "./dist/esm/index.js",
-  "typesVersions": {
-    "*": {
-      "*": [
-        "dist/esm/index.d.ts"
-      ]
-    }
-  },
   "author": "",
   "description": "SDK for EVM chains, used in conjunction with @wormhole-foundation/sdk",
   "files": [
@@ -47,7 +40,6 @@
     "node": ">=16"
   },
   "sideEffects": ["dist/cjs/address.js", "dist/esm/address.js"],
-
   "scripts": {
     "build:cjs": "tsc -p ./tsconfig.cjs.json  && echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
     "build:esm": "tsc -p ./tsconfig.esm.json",
@@ -59,15 +51,22 @@
     "test": "jest --config ./jest.config.ts"
   },
   "devDependencies": {
-    "nock": "13.3.8"
+    "nock": "13.3.8",
+    "typechain": "^8.2.0",
+    "@typechain/ethers-v6": "^0.4.0"
   },
   "dependencies": {
     "@wormhole-foundation/sdk-connect": "0.5.2",
-    "typechain": "^8.2.0",
-    "ethers": "^6.5.1",
-    "@typechain/ethers-v6": "^0.4.0"
+    "ethers": "^6.5.1"
   },
   "type": "module",
+  "typesVersions": {
+    "*": {
+      "*": [
+        "dist/cjs/index.d.ts"
+      ]
+    }
+  },
   "exports": {
     ".": {
       "import": {
@@ -77,6 +76,16 @@
       "require": {
         "types": "./dist/cjs/index.d.ts",
         "default": "./dist/cjs/index.js"
+      }
+    },
+    "./address": {
+      "import": {
+        "types": "./dist/esm/address.d.ts",
+        "default": "./dist/esm/address.js"
+      },
+      "require": {
+        "types": "./dist/cjs/address.d.ts",
+        "default": "./dist/cjs/address.js"
       }
     }
   }

@@ -53,6 +53,16 @@
         "default": "./dist/esm/index.js"
       }
     },
+    "./addresses":{
+      "require": {
+        "types": "./dist/cjs/addresses.d.ts",
+        "default": "./dist/cjs/addresses.js"
+      },
+      "import": {
+        "types": "./dist/esm/addresses.d.ts",
+        "default": "./dist/esm/addresses.js"
+      }
+    },
     "./platforms/evm": {
       "require": {
         "types": "./dist/cjs/platforms/evm.d.ts",

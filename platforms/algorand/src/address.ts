@@ -2,7 +2,6 @@ import type { Address, Platform } from "@wormhole-foundation/sdk-connect";
 import { UniversalAddress, encoding, registerNative } from "@wormhole-foundation/sdk-connect";
 
 import { decodeAddress, encodeAddress, isValidAddress } from "algosdk";
-import { AlgorandPlatform } from "./platform.js";
 import type { AnyAlgorandAddress } from "./types.js";
 import { _platform, safeBigIntToNumber } from "./types.js";
 
@@ -75,7 +74,7 @@ export class AlgorandAddress implements Address {
     }
   }
   static instanceof(address: any): address is AlgorandAddress {
-    return address.constructor.platform === AlgorandPlatform._platform;
+    return address.constructor.platform === _platform;
   }
 }
 

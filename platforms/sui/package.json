@@ -46,6 +46,13 @@
     "@mysten/sui.js": "^0.50.1"
   },
   "type": "module",
+  "typesVersions": {
+    "*": {
+      "*": [
+        "dist/cjs/index.d.ts"
+      ]
+    }
+  },
   "exports": {
     ".": {
       "import": {
@@ -55,6 +62,16 @@
       "require": {
         "types": "./dist/cjs/index.d.ts",
         "default": "./dist/cjs/index.js"
+      }
+    },
+    "./address": {
+      "import": {
+        "types": "./dist/esm/address.d.ts",
+        "default": "./dist/esm/address.js"
+      },
+      "require": {
+        "types": "./dist/cjs/address.d.ts",
+        "default": "./dist/cjs/address.js"
       }
     }
   }

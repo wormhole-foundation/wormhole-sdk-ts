@@ -17,6 +17,13 @@
   "types": "./dist/cjs/index.d.ts",
   "typings": "./dist/esm/index.d.ts",
   "module": "./dist/esm/index.js",
+  "typesVersions": {
+    "*": {
+      "*": [
+        "dist/cjs/index.d.ts"
+      ]
+    }
+  },
   "exports": {
     ".": {
       "import": {
@@ -26,6 +33,16 @@
       "require": {
         "types": "./dist/cjs/index.d.ts",
         "default": "./dist/cjs/index.js"
+      }
+    },
+    "./address":{
+      "import": {
+        "types": "./dist/esm/address.d.ts",
+        "default": "./dist/esm/address.js"
+      },
+      "require": {
+        "types": "./dist/cjs/address.d.ts",
+        "default": "./dist/cjs/address.js"
       }
     }
   },

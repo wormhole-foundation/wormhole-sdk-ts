@@ -41,9 +41,6 @@
     "lint": "npm run prettier && eslint --fix ./src --ext .ts",
     "prettier": "prettier --write ./src"
   },
-  "devDependencies": {
-    "nock": "^13.3.3"
-  },
   "dependencies": {
     "@wormhole-foundation/sdk-connect": "0.5.2",
     "@wormhole-foundation/sdk-aptos": "0.5.2",

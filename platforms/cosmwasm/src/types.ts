@@ -1,5 +1,4 @@
-import type { UniversalOrNative, PlatformToChains } from "@wormhole-foundation/sdk-connect";
-import type { logs as cosmosLogs } from "@cosmjs/stargate";
+import type { PlatformToChains, UniversalOrNative } from "@wormhole-foundation/sdk-connect";
 
 /**
  * Runtime value for the Cosmwasm Platform
@@ -17,14 +16,3 @@ export type AnyCosmwasmAddress = UniversalOrCosmwasm | string | Uint8Array;
 export interface WrappedRegistryResponse {
   address: string;
 }
-
-export const searchCosmosLogs = (key: string, logs: readonly cosmosLogs.Log[]): string | null => {
-  for (const log of logs) {
-    for (const ev of log.events) {
-      for (const attr of ev.attributes) {
-        if (attr.key === key) return attr.value;
-      }
-    }
-  }
-  return null;
-};
