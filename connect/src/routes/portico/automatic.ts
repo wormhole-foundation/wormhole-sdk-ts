@@ -1,3 +1,13 @@
+import type { StaticRouteMethods } from "../route.js";
+import { AutomaticRoute } from "../route.js";
+import type {
+  Quote,
+  QuoteResult,
+  Receipt,
+  TransferParams,
+  ValidatedTransferParams,
+  ValidationResult,
+} from "../types.js";
 import type {
   AttestationReceipt,
   Chain,
@@ -13,6 +23,7 @@ import {
   TokenTransfer,
   TransferState,
   Wormhole,
+  amount,
   canonicalAddress,
   chainToPlatform,
   contracts,
@@ -22,18 +33,7 @@ import {
   resolveWrappedToken,
   signSendWait,
   tokens,
-  amount,
 } from "./../../index.js";
-import type { StaticRouteMethods } from "../route.js";
-import { AutomaticRoute } from "../route.js";
-import type {
-  Quote,
-  QuoteResult,
-  Receipt,
-  TransferParams,
-  ValidatedTransferParams,
-  ValidationResult,
-} from "../types.js";
 
 export const SLIPPAGE_BPS = 15n; // 0.15%
 export const BPS_PER_HUNDRED_PERCENT = 10000n;

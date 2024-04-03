@@ -16,5 +16,6 @@ export * as routes from "./routes/index.js";
 
 // Re-export from core packages
 export * from "@wormhole-foundation/sdk-base";
+export * from "@wormhole-foundation/sdk-base/tokens";
 export * from "@wormhole-foundation/sdk-definitions";
 export * as testing from "@wormhole-foundation/sdk-definitions/testing";
