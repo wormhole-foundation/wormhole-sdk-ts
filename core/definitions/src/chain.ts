@@ -3,6 +3,14 @@ import { tokens } from "@wormhole-foundation/sdk-base";
 import type { ChainAddress, UniversalOrNative } from "./address.js";
 import { toNative } from "./address.js";
 import type { WormholeMessageId } from "./attestation.js";
+import {
+  AutomaticCircleBridge,
+  CircleBridge,
+  Contracts,
+  IbcBridge,
+  PorticoBridge,
+  WormholeCore,
+} from "./index.js";
 import type { PlatformContext } from "./platform.js";
 import type { ProtocolImplementation, ProtocolName } from "./protocol.js";
 import { protocolIsRegistered } from "./protocol.js";
@@ -10,13 +18,6 @@ import type { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge/
 import type { RpcConnection } from "./rpc.js";
 import type { ChainConfig, SignedTx, TokenAddress, TokenId } from "./types.js";
 import { canonicalAddress, isNative } from "./types.js";
-import {
-  AutomaticCircleBridge,
-  CircleBridge,
-  IbcBridge,
-  PorticoBridge,
-  WormholeCore,
-} from "./index.js";
 
 /**
  * A ChainContext provides a consistent interface for interacting with a chain.
@@ -194,8 +195,8 @@ export abstract class ChainContext<
    */
   async getProtocol<PN extends ProtocolName>(
     protocolName: ProtocolName,
+    contracts: Contracts = this.config.contracts,
     rpc?: RpcConnection<P>,
-    contracts: any = this.config.contracts,
   ): Promise<ProtocolImplementation<P, PN>> {
     if (!this.protocols.has(protocolName)) {
       const ctor = this.platform.getProtocolInitializer(protocolName);
