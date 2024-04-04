@@ -1,5 +1,6 @@
 import type { StaticRouteMethods } from "../route.js";
 import { AutomaticRoute } from "../route.js";
+import { tokens } from "@wormhole-foundation/sdk-base/tokens";
 import type {
   Quote,
   QuoteResult,
@@ -32,7 +33,6 @@ import {
   isSourceInitiated,
   resolveWrappedToken,
   signSendWait,
-  tokens,
 } from "./../../index.js";
 
 export const SLIPPAGE_BPS = 15n; // 0.15%
