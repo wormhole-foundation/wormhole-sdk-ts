@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-cosmwasm-ibc",
-  "version": "0.5.2",
+  "version": "0.5.3-beta.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -38,7 +38,10 @@
   "engines": {
     "node": ">=16"
   },
-  "sideEffects": ["dist/cjs/index.js", "/dist/esm/index.js"],
+  "sideEffects": [
+    "dist/cjs/index.js",
+    "/dist/esm/index.js"
+  ],
   "scripts": {
     "recover": "tsx ./scripts/recoverChannels.ts",
     "build:cjs": "tsc -p ./tsconfig.cjs.json  && echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
@@ -53,9 +56,9 @@
     "@cosmjs/cosmwasm-stargate": "^0.32.0",
     "@cosmjs/stargate": "^0.32.0",
     "cosmjs-types": "^0.9.0",
-    "@wormhole-foundation/sdk-connect": "0.5.2",
-    "@wormhole-foundation/sdk-cosmwasm": "0.5.2",
-    "@wormhole-foundation/sdk-cosmwasm-core": "0.5.2"
+    "@wormhole-foundation/sdk-connect": "0.5.3-beta.0",
+    "@wormhole-foundation/sdk-cosmwasm": "0.5.3-beta.0",
+    "@wormhole-foundation/sdk-cosmwasm-core": "0.5.3-beta.0"
   },
   "type": "module",
   "exports": {

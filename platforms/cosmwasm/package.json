@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-cosmwasm",
-  "version": "0.5.2",
+  "version": "0.5.3-beta.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -38,7 +38,10 @@
   "engines": {
     "node": ">=16"
   },
-  "sideEffects": ["dist/cjs/address.js", "dist/esm/address.js"],
+  "sideEffects": [
+    "dist/cjs/address.js",
+    "dist/esm/address.js"
+  ],
   "scripts": {
     "build:cjs": "tsc -p ./tsconfig.cjs.json  && echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
     "build:esm": "tsc -p ./tsconfig.esm.json",
@@ -50,7 +53,7 @@
     "test": "jest --config ./jest.config.ts"
   },
   "dependencies": {
-    "@wormhole-foundation/sdk-connect": "0.5.2",
+    "@wormhole-foundation/sdk-connect": "0.5.3-beta.0",
     "@cosmjs/cosmwasm-stargate": "^0.32.0",
     "@cosmjs/proto-signing": "^0.32.0",
     "@cosmjs/stargate": "^0.32.0",
