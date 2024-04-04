@@ -30,6 +30,13 @@
       }
     }
   },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "./dist/cjs/index.d.ts"
+      ]
+    }
+  },
   "files": [
     "dist/esm",
     "dist/cjs"

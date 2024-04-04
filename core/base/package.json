@@ -27,6 +27,16 @@
         "default": "./dist/cjs/index.js"
       }
     },
+    "./constants":{
+      "import": {
+        "types": "./dist/esm/constants/index.d.ts",
+        "default": "./dist/esm/constants/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/constants/index.d.ts",
+        "default": "./dist/cjs/constants/index.js"
+      }
+    },
     "./tokens":{
       "import": {
         "types": "./dist/esm/constants/tokens.d.ts",
@@ -36,6 +46,23 @@
         "types": "./dist/cjs/constants/tokens.d.ts",
         "default": "./dist/cjs/constants/tokens.js"
       }
+    },
+    "./contracts":{
+      "import": {
+        "types": "./dist/esm/constants/contracts/index.d.ts",
+        "default": "./dist/esm/constants/contracts/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/constants/contracts/index.d.ts",
+        "default": "./dist/cjs/constants/contracts/index.js"
+      }
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "./dist/cjs/index.d.ts"
+      ]
     }
   },
   "files": [
