@@ -120,7 +120,7 @@ export const networkChainToNativeChainId = constMap(chainNetworkNativeChainIdEnt
 type NetworkChainToNativeChainId = ToMapping<typeof chainNetworkNativeChainIdEntries>;
 export type PlatformToNativeChainIds<
   P extends Platform,
-  N extends Network,
+  N extends Network = Network,
 > = PlatformToChains<P> extends infer C
   ? C extends keyof NetworkChainToNativeChainId[N]
     ? NetworkChainToNativeChainId[N][C]
@@ -136,20 +136,18 @@ export type PlatformToNativeChainIds<
 //  has the given chain id.
 //Currently this is the case, in fact only Evm and Aptos share a chain id (1n).
 const nativeChainIdToNetworkChain = constMap(chainNetworkNativeChainIdEntries, [2, [0, 1]]);
-export type PlatformNativeChainIdToNetworkChainPair<
-  P extends Platform,
-  N extends Network = Network,
-> = PlatformToChains<P> extends infer C
-  ? ReturnType<typeof nativeChainIdToNetworkChain>[number] extends infer NCP
-    ? NCP extends readonly [N, C]
-      ? NCP
+export type PlatformNativeChainIdToNetworkChainPair<P extends Platform> =
+  PlatformToChains<P> extends infer C
+    ? ReturnType<typeof nativeChainIdToNetworkChain>[number] extends infer NCP
+      ? NCP extends readonly [Network, C]
+        ? NCP
+        : never
       : never
-    : never
-  : never;
+    : never;
 
 export function platformNativeChainIdToNetworkChain<
   P extends Platform,
-  CI extends PlatformToNativeChainIds<P, Network>,
+  CI extends PlatformToNativeChainIds<P>,
 >(platform: P, chainId: Widen<CI>): PlatformNativeChainIdToNetworkChainPair<P> {
   //typescript really struggles to comprehend the types here so we have to help it out
   //@ts-ignore
