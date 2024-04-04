@@ -1,5 +1,5 @@
 import type { Chain, ChainToPlatform, Network, Platform } from "@wormhole-foundation/sdk-base";
-import { tokens } from "@wormhole-foundation/sdk-base/tokens";
+import * as tokens from "@wormhole-foundation/sdk-base/tokens";
 import type { ChainAddress, UniversalOrNative } from "./address.js";
 import { toNative } from "./address.js";
 import type { WormholeMessageId } from "./attestation.js";

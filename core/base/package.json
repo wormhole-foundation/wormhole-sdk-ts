@@ -39,12 +39,12 @@
     },
     "./tokens":{
       "import": {
-        "types": "./dist/esm/constants/tokens.d.ts",
-        "default": "./dist/esm/constants/tokens.js"
+        "types": "./dist/esm/constants/tokens/index.d.ts",
+        "default": "./dist/esm/constants/tokens/index.js"
       },
       "require": {
-        "types": "./dist/cjs/constants/tokens.d.ts",
-        "default": "./dist/cjs/constants/tokens.js"
+        "types": "./dist/cjs/constants/tokens/index.d.ts",
+        "default": "./dist/cjs/constants/tokens/index.js"
       }
     },
     "./contracts":{
