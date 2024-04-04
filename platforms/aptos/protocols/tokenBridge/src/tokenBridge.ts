@@ -40,9 +40,7 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
   implements TokenBridge<N, C>
 {
   readonly chainId: ChainId;
-
   readonly tokenBridgeAddress: string;
-  readonly coreAddress: string;
 
   constructor(
     readonly network: N,
@@ -56,12 +54,6 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
     if (!tokenBridgeAddress)
       throw new Error(`TokenBridge contract Address for chain ${chain} not found`);
     this.tokenBridgeAddress = tokenBridgeAddress;
-
-    const coreBridgeAddress = contracts.coreBridge;
-    if (!coreBridgeAddress)
-      throw new Error(`CoreBridge contract Address for chain ${chain} not found`);
-
-    this.coreAddress = coreBridgeAddress;
   }
 
   static async fromRpc<N extends Network>(
