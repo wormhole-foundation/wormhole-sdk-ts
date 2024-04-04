@@ -1,5 +1,6 @@
 import type { Chain, ChainToPlatform, Network, Platform } from "@wormhole-foundation/sdk-base";
-import * as tokens from "@wormhole-foundation/sdk-base/tokens";
+import type { Token, TokenSymbol } from "@wormhole-foundation/sdk-base/tokens";
+import { getTokenByAddress } from "@wormhole-foundation/sdk-base/tokens";
 import type { ChainAddress, UniversalOrNative } from "./address.js";
 import { toNative } from "./address.js";
 import type { WormholeMessageId } from "./attestation.js";
@@ -70,7 +71,7 @@ export abstract class ChainContext<
     // try to find it in the token cache first
     if (this.config.tokenMap) {
       const tokenAddress = canonicalAddress({ chain: this.chain, address: token });
-      const found = tokens.getTokenByAddress(this.network, this.chain, tokenAddress);
+      const found = getTokenByAddress(this.network, this.chain, tokenAddress);
       if (found) return found.decimals;
     }
 
@@ -132,7 +133,7 @@ export abstract class ChainContext<
    * @param symbol the symbol of the token to get
    * @returns the token data if available
    */
-  getToken(symbol: tokens.TokenSymbol): tokens.Token | undefined {
+  getToken(symbol: TokenSymbol): Token | undefined {
     if (!this.config.tokenMap) return;
     if (!(symbol in this.config.tokenMap)) return;
     return this.config.tokenMap[symbol];

@@ -17,7 +17,8 @@ import {
   toChainId,
 } from "@wormhole-foundation/sdk-base";
 
-import * as tokens from "@wormhole-foundation/sdk-base/tokens";
+import type { ChainTokens, Token } from "@wormhole-foundation/sdk-base/tokens";
+import { getNative, getTokenByKey, getTokenMap } from "@wormhole-foundation/sdk-base/tokens";
 import type { ChainAddress, UniversalOrNative } from "./address.js";
 import { toNative } from "./address.js";
 import type { Contracts } from "./contracts.js";
@@ -102,11 +103,11 @@ export function resolveWrappedToken<N extends Network, C extends Chain>(
   }
 
   if (isNative(tokenAddr)) {
-    const nativeToken = tokens.getNative(network, chain);
+    const nativeToken = getNative(network, chain);
     if (!nativeToken) throw new Error("Invalid destination token");
 
     const wrappedKey = nativeToken.wrappedKey!;
-    const wrappedToken = tokens.getTokenByKey(network, chain, wrappedKey);
+    const wrappedToken = getTokenByKey(network, chain, wrappedKey);
     if (!wrappedToken) throw new Error("Invalid wrapped token key: " + wrappedKey);
     const destNativeWrapped = { chain, address: toNative(chain, wrappedToken.address) };
 
@@ -152,8 +153,8 @@ export type ChainConfig<N extends Network, C extends Chain> = {
    * Rpc address for this chain
    */
   rpc: string;
-  tokenMap?: tokens.ChainTokens;
-  wrappedNative?: tokens.Token;
+  tokenMap?: ChainTokens;
+  wrappedNative?: Token;
   explorer?: explorer.ExplorerSettings;
 };
 
@@ -169,7 +170,7 @@ export function buildConfig<N extends Network>(n: N): ChainsConfig<N, Platform> 
       try {
         nativeChainId = nativeChainIds.networkChainToNativeChainId.get(n, c)!;
       } catch {}
-      const tokenMap = tokens.getTokenMap(n, c);
+      const tokenMap = getTokenMap(n, c);
 
       const nativeToken = tokenMap
         ? Object.values(tokenMap).find((token) => isNative(token.address) && token.wrappedKey)

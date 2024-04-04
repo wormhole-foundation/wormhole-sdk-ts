@@ -14,8 +14,8 @@ import {
   nativeChainIds,
   resolveWrappedToken,
   toChainId,
-  tokens,
 } from '@wormhole-foundation/sdk-connect';
+import * as tokens from '@wormhole-foundation/sdk-connect/tokens';
 import type { EvmChains } from '@wormhole-foundation/sdk-evm';
 import axios from 'axios';
 import { porticoAbi } from './abis.js';

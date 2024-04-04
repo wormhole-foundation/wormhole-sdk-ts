@@ -1,3 +1,4 @@
+import { filters } from "@wormhole-foundation/sdk-base/tokens";
 import type { StaticRouteMethods } from "../route.js";
 import { AutomaticRoute } from "../route.js";
 import type {
@@ -32,7 +33,6 @@ import {
   isSourceInitiated,
   resolveWrappedToken,
   signSendWait,
-  tokens,
 } from "./../../index.js";
 
 export const SLIPPAGE_BPS = 15n; // 0.15%
@@ -93,7 +93,7 @@ export class AutomaticPorticoRoute<N extends Network>
     const { chain } = fromChain;
     const supported = this._supportedTokens
       .map((symbol) => {
-        return tokens.filters.bySymbol(fromChain.config.tokenMap!, symbol) ?? [];
+        return filters.bySymbol(fromChain.config.tokenMap!, symbol) ?? [];
       })
       .flat()
       .filter((td) => {
@@ -129,14 +129,14 @@ export class AutomaticPorticoRoute<N extends Network>
     );
 
     // Grab the symbol for the token that gets redeemed
-    const redeemTokenDetails = tokens.filters.byAddress(
+    const redeemTokenDetails = filters.byAddress(
       toChain.config.tokenMap!,
       canonicalAddress(redeemToken),
     )!;
 
     // Find the local/native version of the same token by symbol
     const locallyRedeemable = (
-      tokens.filters.bySymbol(toChain.config.tokenMap!, redeemTokenDetails.symbol) ?? []
+      filters.bySymbol(toChain.config.tokenMap!, redeemTokenDetails.symbol) ?? []
     )
       .filter((td) => {
         return !td.original;

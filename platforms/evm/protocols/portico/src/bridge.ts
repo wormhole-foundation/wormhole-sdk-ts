@@ -17,8 +17,8 @@ import {
   resolveWrappedToken,
   serialize,
   toChainId,
-  tokens,
 } from '@wormhole-foundation/sdk-connect';
+import * as tokens from '@wormhole-foundation/sdk-connect/tokens';
 import type { EvmChains } from '@wormhole-foundation/sdk-evm';
 import {
   EvmAddress,
