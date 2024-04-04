@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-base",
-  "version": "0.5.3-beta.0",
+  "version": "0.5.3-beta.1",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -27,7 +27,7 @@
         "default": "./dist/cjs/index.js"
       }
     },
-    "./constants":{
+    "./constants": {
       "import": {
         "types": "./dist/esm/constants/index.d.ts",
         "default": "./dist/esm/constants/index.js"
@@ -37,7 +37,7 @@
         "default": "./dist/cjs/constants/index.js"
       }
     },
-    "./tokens":{
+    "./tokens": {
       "import": {
         "types": "./dist/esm/constants/tokens/index.d.ts",
         "default": "./dist/esm/constants/tokens/index.js"
@@ -47,7 +47,7 @@
         "default": "./dist/cjs/constants/tokens/index.js"
       }
     },
-    "./contracts":{
+    "./contracts": {
       "import": {
         "types": "./dist/esm/constants/contracts/index.d.ts",
         "default": "./dist/esm/constants/contracts/index.js"
