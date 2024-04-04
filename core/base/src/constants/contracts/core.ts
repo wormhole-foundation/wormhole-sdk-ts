@@ -77,6 +77,7 @@ export const coreBridgeContracts = [[
     ["Mantle",          "0x376428e7f26D5867e69201b275553C45B09EE090"],
     ["PolygonSepolia",  "0x6b9C8671cdDC8dEab9c719bB87cBd3e782bA6a35"],
     ["Scroll",          "0x055F47F1250012C6B20c436570a76e52c17Af2D5"],
+    ["Blast",           "0x473e002D7add6fB67a4964F13bFd61280Ca46886"],
   ]], [
   "Devnet", [
     ["Solana",    "Bridge1p5gheXUvJ6jGWGeCsgPKgnE3YgdGKRVCMY9o"],

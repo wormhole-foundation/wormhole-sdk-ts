@@ -183,7 +183,7 @@ export function buildConfig<N extends Network>(n: N): ChainsConfig<N, Platform> 
         network: n,
         chainId: toChainId(c),
         finalityThreshold: finality.finalityThreshold.get(c) ?? 0,
-        blockTime: finality.blockTime(c),
+        blockTime: finality.blockTime.get(c) ?? 0,
         contracts: getContracts(n, c),
         nativeTokenDecimals: decimals.nativeDecimals(platform),
         nativeChainId,

@@ -42,6 +42,7 @@ const chainIdAndChainEntries = [
   [   33, "Rootstock"      ],
   [   34, "Scroll"         ],
   [   35, "Mantle"         ],
+  [   36, "Blast"          ],
   [ 3104, "Wormchain"      ],
   [ 4000, "Cosmoshub"      ],
   [ 4001, "Evmos"          ],
