@@ -31,6 +31,7 @@ const platformAndChainsEntries = [[
     "PolygonSepolia",
     "Mantle",
     "Scroll",
+    "Blast",
   ]], [
   "Solana", [
     "Solana",

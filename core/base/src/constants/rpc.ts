@@ -35,7 +35,8 @@ const rpcConfig = [[
     ["Dymension", "https://dymension-rpc.polkachu.com/"],
     ["Stargaze",  "https://stargaze-rpc.polkachu.com/"],
     ["Celestia",  "https://celestia-rpc.polkachu.com/"],
-    ["Neutron",   "https://neutron-rpc.polkachu.com/"]
+    ["Neutron",   "https://neutron-rpc.polkachu.com/"],
+    ["Blast",     "https://rpc.blast.io"],
   ]], [
   "Testnet", [
     ["Ethereum",        "https://rpc.ankr.com/eth_goerli"],
@@ -69,6 +70,7 @@ const rpcConfig = [[
     ["Mantle",          "https://mantle-sepolia.drpc.org"],
     ["Karura",          "https://eth-rpc-karura-testnet.aca-staging.network"],
     ["Acala",           "https://eth-rpc-acala-testnet.aca-staging.network"],
+    ["Blast",           "https://sepolia.blast.io"],
   ]], [
   "Devnet", [
     ["Ethereum",  "http://eth-devnet:8545"],
