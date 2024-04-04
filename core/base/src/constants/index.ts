@@ -2,8 +2,6 @@ export * from "./networks.js";
 export * from "./chains.js";
 export * from "./platforms.js";
 
-export * as tokens from "./tokens/index.js";
-
 export * as platform from "./platforms.js";
 export * as chain from "./chains.js";
 export * as network from "./networks.js";

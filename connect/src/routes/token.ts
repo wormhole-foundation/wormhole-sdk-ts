@@ -1,5 +1,6 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
-import { tokens } from "@wormhole-foundation/sdk-base";
+import { filters } from "@wormhole-foundation/sdk-base/tokens";
+import { type TokenSymbol } from "@wormhole-foundation/sdk-base/tokens";
 import type { ChainContext, TokenId } from "@wormhole-foundation/sdk-definitions";
 import { canonicalAddress, isNative } from "@wormhole-foundation/sdk-definitions";
 import { Wormhole } from "../wormhole.js";
@@ -7,7 +8,7 @@ import { Wormhole } from "../wormhole.js";
 export interface TokenDetails {
   id: TokenId;
   decimals: number;
-  symbol?: tokens.TokenSymbol;
+  symbol?: TokenSymbol;
   wrapped?: TokenId;
 }
 
@@ -34,7 +35,7 @@ export async function getTokenDetails<N extends Network>(
   const address = canonicalAddress(token);
 
   const details = chain.config.tokenMap
-    ? tokens.filters.byAddress(chain.config.tokenMap!, address)
+    ? filters.byAddress(chain.config.tokenMap!, address)
     : undefined;
 
   const symbol = details ? details.symbol : undefined;
