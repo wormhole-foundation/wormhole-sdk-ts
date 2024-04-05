@@ -1,18 +1,10 @@
 import type { Chain } from "../chains.js";
 import type { Network } from "../networks.js";
+import type { ChainTokens, Token, TokenKey, TokenSymbol } from "../tokens.js";
+import { filters } from "../tokens.js";
 
 import { mainnetChainTokens } from "./mainnet.js";
 import { testnetChainTokens } from "./testnet.js";
-import type { TokenSymbol, TokenKey, ChainTokens, Token } from "./types.js";
-
-export type {
-  TokenKey,
-  TokenSymbol,
-  ChainTokens,
-  Token,
-  TokenConst,
-  TokenExtraDetails,
-} from "./types.js";
 
 export function getTokenMap<N extends Network, C extends Chain>(
   network: N,
@@ -34,27 +26,6 @@ export function getTokenMap<N extends Network, C extends Chain>(
 
   throw "Unsupported network: " + network;
 }
-
-export const isEqualCaseInsensitive = (a: string, b: string): boolean => {
-  return a.toLowerCase() === b.toLowerCase();
-};
-
-export const filters = {
-  byAddress: (tokenMap: ChainTokens, address: string) => {
-    return Object.values(tokenMap).find((token) => isEqualCaseInsensitive(token.address, address));
-  },
-  native: (tokenMap: ChainTokens) => {
-    return filters.byAddress(tokenMap, "native");
-  },
-  bySymbol: (tokenMap: ChainTokens, symbol: TokenSymbol) => {
-    const foundTokens = Object.values(tokenMap).filter((token) => token.symbol === symbol);
-    return foundTokens && foundTokens.length > 0 ? foundTokens : undefined;
-  },
-  byKey: (tokenMap: ChainTokens, key: TokenKey) => {
-    const foundToken = Object.entries(tokenMap).find(([_key]) => key === _key);
-    return foundToken ? foundToken[1] : undefined;
-  },
-};
 
 // The token that represents the native gas token on a given chain
 // also represented as the string 'native' where applicable

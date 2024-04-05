@@ -46,8 +46,7 @@
   },
   "dependencies": {
     "@wormhole-foundation/sdk-connect": "0.5.3-beta.1",
-    "@wormhole-foundation/sdk-aptos": "0.5.3-beta.1",
-    "@wormhole-foundation/sdk-aptos-core": "0.5.3-beta.1"
+    "@wormhole-foundation/sdk-aptos": "0.5.3-beta.1"
   },
   "type": "module",
   "exports": {

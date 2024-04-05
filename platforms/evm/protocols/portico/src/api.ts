@@ -10,11 +10,11 @@ import {
   canonicalAddress,
   contracts,
   encoding,
+  isEqualCaseInsensitive,
   isNative,
   nativeChainIds,
   resolveWrappedToken,
   toChainId,
-  tokens,
 } from '@wormhole-foundation/sdk-connect';
 import type { EvmChains } from '@wormhole-foundation/sdk-evm';
 import axios from 'axios';
@@ -158,7 +158,7 @@ export class PorticoApi {
     request: CreateOrderRequest,
   ): void => {
     if (
-      !tokens.isEqualCaseInsensitive(
+      !isEqualCaseInsensitive(
         request.porticoAddress || '',
         response.transactionTarget,
       )
@@ -210,9 +210,7 @@ export class PorticoApi {
     }
 
     const startTokenAddress: string = decoded[0][1];
-    if (
-      !tokens.isEqualCaseInsensitive(startTokenAddress, request.startingToken)
-    ) {
+    if (!isEqualCaseInsensitive(startTokenAddress, request.startingToken)) {
       throw new Error('start token address mismatch');
     }
 
@@ -223,28 +221,18 @@ export class PorticoApi {
     // }
 
     const finalTokenAddress: string = decoded[0][3];
-    if (
-      !tokens.isEqualCaseInsensitive(
-        finalTokenAddress,
-        request.destinationToken,
-      )
-    ) {
+    if (!isEqualCaseInsensitive(finalTokenAddress, request.destinationToken)) {
       throw new Error('final token address mismatch');
     }
 
     const recipientAddress: string = decoded[0][4];
-    if (
-      !tokens.isEqualCaseInsensitive(
-        recipientAddress,
-        request.destinationAddress,
-      )
-    ) {
+    if (!isEqualCaseInsensitive(recipientAddress, request.destinationAddress)) {
       throw new Error('recipient address mismatch');
     }
 
     const destinationPorticoAddress = decoded[0][5];
     if (
-      !tokens.isEqualCaseInsensitive(
+      !isEqualCaseInsensitive(
         destinationPorticoAddress,
         request.destinationPorticoAddress || '',
       )

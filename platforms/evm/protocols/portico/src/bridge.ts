@@ -13,11 +13,11 @@ import {
   Wormhole,
   canonicalAddress,
   contracts,
+  isEqualCaseInsensitive,
   nativeChainIds,
   resolveWrappedToken,
   serialize,
   toChainId,
-  tokens,
 } from '@wormhole-foundation/sdk-connect';
 import type { EvmChains } from '@wormhole-foundation/sdk-evm';
 import {
@@ -32,6 +32,7 @@ import { ethers } from 'ethers';
 import { porticoAbi, uniswapQuoterV2Abi } from './abis.js';
 import { PorticoApi } from './api.js';
 import { FEE_TIER } from './consts.js';
+import * as tokens from '@wormhole-foundation/sdk-connect/tokens';
 
 import { EvmWormholeCore } from '@wormhole-foundation/sdk-evm-core';
 
@@ -222,8 +223,7 @@ export class EvmPorticoBridge<
     const inputAddress = canonicalAddress(inputTokenId);
     const outputAddress = canonicalAddress(outputTokenId);
 
-    if (tokens.isEqualCaseInsensitive(inputAddress, outputAddress))
-      return amount;
+    if (isEqualCaseInsensitive(inputAddress, outputAddress)) return amount;
 
     const result = await this.uniswapContract
       .getFunction('quoteExactInputSingle')
