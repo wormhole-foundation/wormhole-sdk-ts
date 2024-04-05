@@ -1,4 +1,4 @@
-import { filters } from "@wormhole-foundation/sdk-base/tokens";
+import { filters } from "@wormhole-foundation/sdk-base";
 import type { StaticRouteMethods } from "../route.js";
 import { AutomaticRoute } from "../route.js";
 import type {

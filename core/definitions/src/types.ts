@@ -17,7 +17,7 @@ import {
   toChainId,
 } from "@wormhole-foundation/sdk-base";
 
-import type { ChainTokens, Token } from "@wormhole-foundation/sdk-base/tokens";
+import type { ChainTokens, Token } from "@wormhole-foundation/sdk-base";
 import { getNative, getTokenByKey, getTokenMap } from "@wormhole-foundation/sdk-base/tokens";
 import type { ChainAddress, UniversalOrNative } from "./address.js";
 import { toNative } from "./address.js";

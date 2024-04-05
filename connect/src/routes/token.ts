@@ -1,6 +1,6 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
-import { filters } from "@wormhole-foundation/sdk-base/tokens";
-import { type TokenSymbol } from "@wormhole-foundation/sdk-base/tokens";
+import { filters } from "@wormhole-foundation/sdk-base";
+import { type TokenSymbol } from "@wormhole-foundation/sdk-base";
 import type { ChainContext, TokenId } from "@wormhole-foundation/sdk-definitions";
 import { canonicalAddress, isNative } from "@wormhole-foundation/sdk-definitions";
 import { Wormhole } from "../wormhole.js";
