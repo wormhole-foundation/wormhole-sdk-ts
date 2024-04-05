@@ -1,6 +1,6 @@
-import { test, describe, expect } from "@jest/globals";
-import { TokenSymbol, getCanonicalToken, getTokensBySymbol } from './../src/constants/tokens/index.js';
-import { Chain } from './../src/index.js';
+import { describe, expect, test } from "@jest/globals";
+import { getCanonicalToken, getTokensBySymbol } from "./../src/constants/tokens/index.js";
+import { Chain, TokenSymbol } from "./../src/index.js";
 
 // prettier-ignore
 // A table of chains and expected token addresses
