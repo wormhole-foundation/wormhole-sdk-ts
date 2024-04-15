@@ -70,7 +70,8 @@ export type ProtocolInstance<
   P extends Platform,
   PN extends ProtocolName,
   N extends Network,
-> = InstanceType<ProtocolInitializer<P, PN, N, PlatformToChains<P>>>;
+  C extends PlatformToChains<P> = PlatformToChains<P>,
+> = InstanceType<ProtocolInitializer<P, PN, N, C>>;
 
 // Runtime registry of protocol implementations from which we can initialize the
 // protocol client

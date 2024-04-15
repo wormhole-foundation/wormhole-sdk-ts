@@ -19,7 +19,7 @@ import {
   WormholeCore,
 } from "./index.js";
 import type { PlatformContext } from "./platform.js";
-import type { ProtocolInterface, ProtocolName } from "./protocol.js";
+import type { ProtocolInstance, ProtocolInterface, ProtocolName } from "./protocol.js";
 import { protocolIsRegistered } from "./protocol.js";
 import type { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge/tokenBridge.js";
 import type { RpcConnection } from "./rpc.js";
@@ -201,10 +201,10 @@ export abstract class ChainContext<
    * @returns An instance of the protocol client that implements the protocol interface for the chain
    */
   async getProtocol<PN extends ProtocolName>(
-    protocolName: ProtocolName,
+    protocolName: PN,
     contracts: Contracts = this.config.contracts,
     rpc?: RpcConnection<P>,
-  ): Promise<ProtocolInterface<PN, N, C>> {
+  ): Promise<ProtocolInstance<P, PN, N, C>> {
     if (!this.protocols.has(protocolName)) {
       const ctor = this.platform.getProtocolInitializer(protocolName);
 
