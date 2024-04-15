@@ -41,6 +41,9 @@ export type ProtocolImplementation<
     : never
   : never;
 
+/** The ProtocolInitializer provides a constructor or a static `fromRpc` method
+ * to create an instance of the ProtocolInterface for a given network and chain
+ */
 export interface ProtocolInitializer<
   P extends Platform,
   PN extends ProtocolName,
@@ -53,6 +56,10 @@ export interface ProtocolInitializer<
     connection: RpcConnection<P>,
     contracts: Contracts,
   ): ProtocolInterface<PN, N, C>;
+  /** fromRpc will create a new instance of the Protocol client given the RPC and the config
+   * @param rpc - the RPC connection to the chain, used to query the chain for its native chain id
+   * @param config - the ChainsConfig to use to initialize the protocol client
+   */
   fromRpc(
     rpc: RpcConnection<P>,
     config: ChainsConfig<Network, P>,
@@ -65,6 +72,8 @@ export type ProtocolInstance<
   N extends Network,
 > = InstanceType<ProtocolInitializer<P, PN, N, PlatformToChains<P>>>;
 
+// Runtime registry of protocol implementations from which we can initialize the
+// protocol client
 const protocolFactory: ProtocolImplementationMap = {};
 
 /** registerProtocol sets the Platform specific implementation of a given Protocol interface  */
@@ -81,7 +90,8 @@ export function registerProtocol<
   if (!(protocol in protocolFactory)) protocolFactory[protocol] = {};
 
   const platforms = protocolFactory[protocol]!;
-  if (platform in platforms) return; //throw new Error(`Protocol ${platform} for protocol ${protocol} has already registered`);
+  if (platform in platforms)
+    throw new Error(`Protocol ${platform} for protocol ${protocol} has already registered`);
 
   protocolFactory[protocol]![platform] = ctr;
 }
