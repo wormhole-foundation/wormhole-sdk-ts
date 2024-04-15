@@ -2,6 +2,7 @@ import {
   CONFIG,
   ChainAddress,
   DEFAULT_NETWORK,
+  Network,
   Signature,
   TokenBridge,
   UniversalAddress,
@@ -117,7 +118,7 @@ const recipient: ChainAddress = {
 
 describe('TokenBridge Tests', () => {
   const p = new EvmPlatform(network, configs);
-  let tb: TokenBridge<typeof network, EvmChains>;
+  let tb: TokenBridge<Network, EvmChains>;
 
   test('Create TokenBridge', async () => {
     const rpc = p.getRpc('Ethereum');

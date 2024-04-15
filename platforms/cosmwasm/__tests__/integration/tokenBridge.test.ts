@@ -1,6 +1,7 @@
 import {
   CONFIG,
   Chain,
+  Network,
   Signature,
   TokenBridge,
   createVAA,
@@ -15,7 +16,6 @@ import nock from "nock";
 import path from "path";
 
 const network: "Testnet" = "Testnet"; //DEFAULT_NETWORK;
-type TNet = typeof network;
 const configs = CONFIG[network].chains;
 
 const chain: CosmwasmChains = "Sei";
@@ -84,7 +84,7 @@ afterEach(async () => {
 describe("TokenBridge Tests", () => {
   const p = new CosmwasmPlatform(network, configs);
 
-  let tb: TokenBridge<TNet, typeof chain>;
+  let tb: TokenBridge<Network, CosmwasmChains>;
   test("Create TokenBridge", async () => {
     const rpc = await p.getRpc(chain);
     tb = await p.getProtocol("TokenBridge", rpc);

@@ -1,16 +1,19 @@
-import type { Chain, ChainId, Network, Platform } from "@wormhole-foundation/sdk-base";
+import type { Chain, ChainId, Network } from "@wormhole-foundation/sdk-base";
 import { encoding, toChain, toChainId } from "@wormhole-foundation/sdk-base";
 import type { AccountAddress, ChainAddress, NativeAddress } from "../../address.js";
 import type { IbcMessageId, WormholeMessageId } from "../../attestation.js";
-import type { EmptyPlatformMap } from "../../protocol.js";
 import type { TokenAddress, TokenId, TxHash } from "../../types.js";
 import type { UnsignedTransaction } from "../../unsignedTransaction.js";
 
 import "../../registry.js";
+import { EmptyPlatformMap } from "../../protocol.js";
 declare module "../../registry.js" {
   export namespace WormholeRegistry {
+    interface ProtocolToInterfaceMapping<N, C> {
+      IbcBridge: IbcBridge<N, C>;
+    }
     interface ProtocolToPlatformMapping {
-      IbcBridge: EmptyPlatformMap<Platform, "IbcBridge">;
+      IbcBridge: EmptyPlatformMap<"IbcBridge">;
     }
   }
 }
@@ -192,7 +195,7 @@ export interface IbcTransferData {
  * See more here {@link https://tutorials.cosmos.network/academy/3-ibc/7-token-transfer.html}
  *
  */
-export interface IbcBridge<N extends Network, C extends Chain> {
+export interface IbcBridge<N extends Network = Network, C extends Chain = Chain> {
   /** Initiate an IBC token transfer */
   transfer(
     sender: AccountAddress<C>,

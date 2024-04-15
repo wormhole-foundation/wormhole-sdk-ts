@@ -1,14 +1,15 @@
 import type { Chain } from "@wormhole-foundation/sdk-base";
 import type { TokenAddress } from "../../types.js";
 
-import type { Platform } from "@wormhole-foundation/sdk-base";
-import type { EmptyPlatformMap } from "../../protocol.js";
-
+import { EmptyPlatformMap } from "../../protocol.js";
 import "../../registry.js";
 declare module "../../registry.js" {
   export namespace WormholeRegistry {
+    interface ProtocolToInterfaceMapping<N, C> {
+      Relayer: Relayer;
+    }
     interface ProtocolToPlatformMapping {
-      Relayer: EmptyPlatformMap<Platform, "Relayer">;
+      Relayer: EmptyPlatformMap<"Relayer">;
     }
   }
 }

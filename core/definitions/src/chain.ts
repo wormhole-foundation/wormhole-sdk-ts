@@ -1,5 +1,11 @@
-import type { Chain, ChainToPlatform, Network, Platform } from "@wormhole-foundation/sdk-base";
-import type { Token, TokenSymbol } from "@wormhole-foundation/sdk-base";
+import type {
+  Chain,
+  ChainToPlatform,
+  Network,
+  Platform,
+  Token,
+  TokenSymbol,
+} from "@wormhole-foundation/sdk-base";
 import { getTokenByAddress } from "@wormhole-foundation/sdk-base/tokens";
 import type { ChainAddress, UniversalOrNative } from "./address.js";
 import { toNative } from "./address.js";
@@ -13,7 +19,7 @@ import {
   WormholeCore,
 } from "./index.js";
 import type { PlatformContext } from "./platform.js";
-import type { ProtocolImplementation, ProtocolName } from "./protocol.js";
+import type { ProtocolInterface, ProtocolName } from "./protocol.js";
 import { protocolIsRegistered } from "./protocol.js";
 import type { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge/tokenBridge.js";
 import type { RpcConnection } from "./rpc.js";
@@ -38,7 +44,7 @@ export abstract class ChainContext<
   protected rpc?: RpcConnection<P>;
 
   // Cached Protocol clients
-  protected protocols: Map<ProtocolName, ProtocolImplementation<P, ProtocolName>> = new Map();
+  protected protocols: Map<ProtocolName, ProtocolInterface<ProtocolName, N, C>> = new Map();
 
   constructor(chain: C, platform: PlatformContext<N, P>, rpc?: RpcConnection<P>) {
     this.config = platform.config[chain]!;
@@ -198,7 +204,7 @@ export abstract class ChainContext<
     protocolName: ProtocolName,
     contracts: Contracts = this.config.contracts,
     rpc?: RpcConnection<P>,
-  ): Promise<ProtocolImplementation<P, PN>> {
+  ): Promise<ProtocolInterface<PN, N, C>> {
     if (!this.protocols.has(protocolName)) {
       const ctor = this.platform.getProtocolInitializer(protocolName);
 

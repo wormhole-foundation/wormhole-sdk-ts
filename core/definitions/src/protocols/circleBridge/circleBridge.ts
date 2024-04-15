@@ -1,4 +1,4 @@
-import type { Chain, LayoutToType, Network, Platform } from "@wormhole-foundation/sdk-base";
+import type { Chain, LayoutToType, Network } from "@wormhole-foundation/sdk-base";
 import {
   deserializeLayout,
   encoding,
@@ -13,7 +13,7 @@ import type { UnsignedTransaction } from "../../unsignedTransaction.js";
 import "./automaticCircleBridgeLayout.js";
 import { circleMessageLayout } from "./circleBridgeLayout.js";
 
-import type { EmptyPlatformMap } from "../../protocol.js";
+import { EmptyPlatformMap } from "../../protocol.js";
 import { keccak256 } from "../../utils.js";
 import type { ProtocolPayload, ProtocolVAA } from "./../../vaa/index.js";
 import { payloadDiscriminator } from "./../../vaa/index.js";
@@ -21,9 +21,13 @@ import { payloadDiscriminator } from "./../../vaa/index.js";
 import "../../registry.js";
 declare module "../../registry.js" {
   export namespace WormholeRegistry {
+    interface ProtocolToInterfaceMapping<N, C> {
+      CircleBridge: CircleBridge<N, C>;
+      AutomaticCircleBridge: AutomaticCircleBridge<N, C>;
+    }
     interface ProtocolToPlatformMapping {
-      CircleBridge: EmptyPlatformMap<Platform, CircleBridge.ProtocolName>;
-      AutomaticCircleBridge: EmptyPlatformMap<Platform, AutomaticCircleBridge.ProtocolName>;
+      CircleBridge: EmptyPlatformMap<"CircleBridge">;
+      AutomaticCircleBridge: EmptyPlatformMap<"AutomaticCircleBridge">;
     }
   }
 }
@@ -115,7 +119,7 @@ export function isCircleTransferDetails(thing: any): thing is CircleTransferDeta
  * Find the source contracts here: ${@link https://github.com/circlefin/evm-cctp-contracts}
  *
  */
-export interface CircleBridge<N extends Network, C extends Chain> {
+export interface CircleBridge<N extends Network = Network, C extends Chain = Chain> {
   /**
    * Redeem a circle transfer against the Circle Bridge
    *
@@ -162,7 +166,7 @@ export interface CircleBridge<N extends Network, C extends Chain> {
  * AutomaticCircleBridge protocol definition, providing a consistent client
  * interface for the CircleBridge protocol with Automatic delivery.
  */
-export interface AutomaticCircleBridge<N extends Network, C extends Chain> {
+export interface AutomaticCircleBridge<N extends Network = Network, C extends Chain = Chain> {
   /**
    * Get the fee required by the relayer to cover the costs of redemption on the destination chain
    *
