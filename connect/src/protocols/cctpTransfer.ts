@@ -374,6 +374,15 @@ export class CircleTransfer<N extends Network = Network>
 
     this._state = TransferState.Attested;
 
+    if (this.attestations && this.attestations.length > 0) {
+      for (const _attestation of this.attestations) {
+        const { attestation } = _attestation;
+        if (!CircleBridge.isCircleAttestation(attestation)) continue;
+        const completed = await CircleTransfer.isTransferComplete(this.toChain, attestation!);
+        if (completed) this._state = TransferState.DestinationFinalized;
+      }
+    }
+
     return ids;
   }
 
