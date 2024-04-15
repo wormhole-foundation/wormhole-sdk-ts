@@ -1,16 +1,19 @@
-import type { Chain, Network, Platform } from "@wormhole-foundation/sdk-base";
+import type { Chain, Network } from "@wormhole-foundation/sdk-base";
 import type { AccountAddress } from "../../address.js";
 import type { WormholeMessageId } from "../../attestation.js";
-import type { EmptyPlatformMap } from "../../protocol.js";
 import type { TxHash } from "../../types.js";
 import type { UnsignedTransaction } from "../../unsignedTransaction.js";
 import type { VAA } from "./../../vaa/index.js";
 
 import "../../registry.js";
+import { EmptyPlatformMap } from "../../protocol.js";
 declare module "../../registry.js" {
   export namespace WormholeRegistry {
+    interface ProtocolToInterfaceMapping<N, C> {
+      WormholeCore: WormholeCore<N, C>;
+    }
     interface ProtocolToPlatformMapping {
-      WormholeCore: EmptyPlatformMap<Platform, "WormholeCore">;
+      WormholeCore: EmptyPlatformMap<"WormholeCore">;
     }
   }
 }
@@ -20,7 +23,7 @@ declare module "../../registry.js" {
  * with the Wormhole core messaging protocol.
  *
  */
-export interface WormholeCore<N extends Network, C extends Chain> {
+export interface WormholeCore<N extends Network = Network, C extends Chain = Chain> {
   /** Get the fee for publishing a message */
   getMessageFee(): Promise<bigint>;
 

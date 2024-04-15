@@ -1,4 +1,4 @@
-import type { Chain, Network, Platform } from "@wormhole-foundation/sdk-base";
+import type { Chain, Network } from "@wormhole-foundation/sdk-base";
 import { lazyInstantiate } from "@wormhole-foundation/sdk-base";
 import type {
   AccountAddress,
@@ -6,22 +6,26 @@ import type {
   NativeAddress,
   UniversalOrNative,
 } from "../../address.js";
-import "./automaticTokenBridgeLayout.js";
-import "./tokenBridgeLayout.js";
-import type { EmptyPlatformMap } from "../../protocol.js";
 import type { TokenAddress, TokenId } from "../../types.js";
 import type { UnsignedTransaction } from "../../unsignedTransaction.js";
 import type { ProtocolPayload, ProtocolVAA } from "./../../vaa/index.js";
 import { payloadDiscriminator } from "./../../vaa/index.js";
+import "./automaticTokenBridgeLayout.js";
+import "./tokenBridgeLayout.js";
 
 export const ErrNotWrapped = (token: string) => new Error(`Token ${token} is not a wrapped asset`);
 
+import { EmptyPlatformMap } from "../../protocol.js";
 import "../../registry.js";
 declare module "../../registry.js" {
   export namespace WormholeRegistry {
+    interface ProtocolToInterfaceMapping<N, C> {
+      TokenBridge: TokenBridge<N, C>;
+      AutomaticTokenBridge: AutomaticTokenBridge<N, C>;
+    }
     interface ProtocolToPlatformMapping {
-      TokenBridge: EmptyPlatformMap<Platform, TokenBridge.ProtocolName>;
-      AutomaticTokenBridge: EmptyPlatformMap<Platform, AutomaticTokenBridge.ProtocolName>;
+      TokenBridge: EmptyPlatformMap<"TokenBridge">;
+      AutomaticTokenBridge: EmptyPlatformMap<"AutomaticTokenBridge">;
     }
   }
 }
@@ -120,7 +124,7 @@ export function isTokenTransferDetails(
  * Find details on the TokenBridge protocol here: {@link https://github.com/wormhole-foundation/wormhole/blob/main/whitepapers/0003_token_bridge.md}
  *
  */
-export interface TokenBridge<N extends Network, C extends Chain> {
+export interface TokenBridge<N extends Network = Network, C extends Chain = Chain> {
   /** Checks a native address to see if its a wrapped version
    *
    * @param nativeAddress The address to check
@@ -225,7 +229,7 @@ export interface TokenBridge<N extends Network, C extends Chain> {
  *  AutomaticTokenBridge provides a consistent interface to the
  *  TokenBridge with Automatic redemption on the destination chain
  */
-export interface AutomaticTokenBridge<N extends Network, C extends Chain> {
+export interface AutomaticTokenBridge<N extends Network = Network, C extends Chain = Chain> {
   /** Initiate the transfer over the automatic bridge */
   transfer(
     sender: AccountAddress<C>,

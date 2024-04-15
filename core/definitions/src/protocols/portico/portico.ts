@@ -1,17 +1,20 @@
-import type { Chain, LayoutToType, Network, Platform } from "@wormhole-foundation/sdk-base";
+import type { Chain, LayoutToType, Network } from "@wormhole-foundation/sdk-base";
 import { deserializeLayout, serializeLayout } from "@wormhole-foundation/sdk-base";
 import type { AccountAddress, ChainAddress } from "../../address.js";
-import { porticoFlagSetLayout, porticoPayloadLayout } from "./porticoLayout.js";
-import type { EmptyPlatformMap } from "../../protocol.js";
 import type { TokenAddress, TokenId } from "../../types.js";
 import type { UnsignedTransaction } from "../../unsignedTransaction.js";
 import type { ProtocolVAA } from "./../../vaa/index.js";
+import { porticoFlagSetLayout, porticoPayloadLayout } from "./porticoLayout.js";
+import { EmptyPlatformMap } from "../../protocol.js";
 
 import "../../registry.js";
 declare module "../../registry.js" {
   export namespace WormholeRegistry {
+    interface ProtocolToInterfaceMapping<N, C> {
+      PorticoBridge: PorticoBridge<N, C>;
+    }
     interface ProtocolToPlatformMapping {
-      PorticoBridge: EmptyPlatformMap<Platform, PorticoBridge.ProtocolName>;
+      PorticoBridge: EmptyPlatformMap<"PorticoBridge">;
     }
   }
 }
@@ -68,7 +71,7 @@ export namespace PorticoBridge {
  * PorticoBridge provides a consistent interface to interact with
  * the Portico bridge contracts.
  */
-export interface PorticoBridge<N extends Network, C extends Chain> {
+export interface PorticoBridge<N extends Network = Network, C extends Chain = Chain> {
   // Checks if a transfer VAA has been redeemed
   //isTransferCompleted(vaa: PorticoBridge.VAA): Promise<boolean>;
 

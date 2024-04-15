@@ -1,8 +1,7 @@
 import type { Chain, Network, Platform, PlatformToChains } from "@wormhole-foundation/sdk-base";
 import type { WormholeMessageId } from "./attestation.js";
 import type { ChainContext } from "./chain.js";
-import type { WormholeCore } from "./index.js";
-import type { ProtocolImplementation, ProtocolInitializer, ProtocolName } from "./protocol.js";
+import type { ProtocolInitializer, ProtocolInstance, ProtocolName } from "./protocol.js";
 import { create, getProtocolInitializer } from "./protocol.js";
 import type { RpcConnection } from "./rpc.js";
 import type { Balances, ChainsConfig, SignedTx, TokenAddress, TokenId, TxHash } from "./types.js";
@@ -115,14 +114,14 @@ export abstract class PlatformContext<N extends Network, P extends Platform> {
   getProtocol<PN extends ProtocolName>(
     protocol: PN,
     rpc: RpcConnection<P>,
-  ): Promise<ProtocolImplementation<P, PN>> {
+  ): Promise<ProtocolInstance<P, PN, N>> {
     return create(this.utils()._platform, protocol, rpc, this.config);
   }
 
   /** Get the underlying ProtocolInitializer to construct yourself */
-  getProtocolInitializer<PN extends ProtocolName, C extends PlatformToChains<P>>(
+  getProtocolInitializer<PN extends ProtocolName>(
     protocol: PN,
-  ): ProtocolInitializer<P, PN, C> {
+  ): ProtocolInitializer<P, PN, Network> {
     return getProtocolInitializer(this.utils()._platform, protocol);
   }
 
@@ -132,7 +131,7 @@ export abstract class PlatformContext<N extends Network, P extends Platform> {
     rpc: RpcConnection<P>,
     txid: TxHash,
   ): Promise<WormholeMessageId[]> {
-    const wc: WormholeCore<N, C> = await this.getProtocol("WormholeCore", rpc);
+    const wc = await this.getProtocol("WormholeCore", rpc);
     return wc.parseTransaction(txid);
   }
 }

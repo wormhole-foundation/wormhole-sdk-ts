@@ -64,7 +64,9 @@ export type ChainAddress<C extends Chain = Chain> = {
 const nativeFactory = new Map<Platform, NativeAddressCtr>();
 
 export function registerNative<P extends Platform>(platform: P, ctr: NativeAddressCtr): void {
-  if (nativeFactory.has(platform)) return; //throw new Error(`Native address type for platform ${platform} has already registered`);
+  if (nativeFactory.has(platform)) return;
+  // TODO:
+  // throw new Error(`Native address type for platform ${platform} has already registered`);
   nativeFactory.set(platform, ctr);
 }
 
@@ -80,7 +82,10 @@ export function toNative<C extends Chain>(
 ): NativeAddress<C> {
   const platform: Platform = chainToPlatform.get(chain)!;
   const nativeCtr = nativeFactory.get(platform);
-  if (!nativeCtr) throw new Error(`No native address type registered for platform ${platform}`);
+  if (!nativeCtr)
+    throw new Error(
+      `No native address type registered for platform ${platform}, import the platform directly or, if using sdk package, import the addresses conditional export`,
+    );
   return new nativeCtr(ua) as unknown as NativeAddress<C>;
 }
 
