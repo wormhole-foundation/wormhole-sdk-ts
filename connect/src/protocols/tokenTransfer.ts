@@ -248,6 +248,17 @@ export class TokenTransfer<N extends Network = Network>
       );
     }
     this._state = TransferState.Attested;
+
+    if (this.attestations.length > 0) {
+      // Check if the transfer has been completed
+      const { attestation } = this.attestations[0]!;
+      const completed = await TokenTransfer.isTransferComplete(
+        this.toChain,
+        attestation as TokenTransferVAA,
+      );
+      if (completed) this._state = TransferState.DestinationFinalized;
+    }
+
     return this.attestations.map((vaa) => vaa.id);
   }
 

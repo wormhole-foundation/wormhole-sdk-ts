@@ -360,7 +360,7 @@ export class CircleTransfer<N extends Network = Network>
         2) Once available, pull the VAA and parse it
         3) return seq
     */
-    if (this._state < TransferState.SourceInitiated || this._state > TransferState.Attested)
+    if (this._state < TransferState.SourceInitiated)
       throw new Error("Invalid state transition in `fetchAttestation`");
 
     const ids: AttestationId[] = this.transfer.automatic
@@ -373,6 +373,15 @@ export class CircleTransfer<N extends Network = Network>
       : await this._fetchCircleAttestation(timeout);
 
     this._state = TransferState.Attested;
+
+    if (this.attestations && this.attestations.length > 0) {
+      for (const _attestation of this.attestations) {
+        const { attestation } = _attestation;
+        if (!CircleBridge.isCircleAttestation(attestation)) continue;
+        const completed = await CircleTransfer.isTransferComplete(this.toChain, attestation!);
+        if (completed) this._state = TransferState.DestinationFinalized;
+      }
+    }
 
     return ids;
   }

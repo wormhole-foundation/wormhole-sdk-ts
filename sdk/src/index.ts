@@ -47,7 +47,7 @@ export async function load(
 
 export async function wormhole<N extends Network>(
   network: N,
-  platforms: PlatformLoader<Platform>[],
+  platforms: PlatformLoader<any>[],
   config?: ConfigOverrides<N>,
 ): Promise<Wormhole<N>> {
   const loaded = (await load(platforms)).map((p) => p.Platform);
