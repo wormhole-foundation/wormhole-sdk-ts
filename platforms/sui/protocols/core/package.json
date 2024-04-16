@@ -45,6 +45,7 @@
     "prettier": "prettier --write ./src"
   },
   "dependencies": {
+    "@mysten/sui.js": "^0.50.1",
     "@wormhole-foundation/sdk-connect": "0.5.3-beta.5",
     "@wormhole-foundation/sdk-sui": "0.5.3-beta.5"
   },
