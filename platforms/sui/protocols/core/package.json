@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-sui-core",
-  "version": "0.5.3-beta.4",
+  "version": "0.5.3-beta.5",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -45,8 +45,8 @@
     "prettier": "prettier --write ./src"
   },
   "dependencies": {
-    "@wormhole-foundation/sdk-connect": "0.5.3-beta.4",
-    "@wormhole-foundation/sdk-sui": "0.5.3-beta.4"
+    "@wormhole-foundation/sdk-connect": "0.5.3-beta.5",
+    "@wormhole-foundation/sdk-sui": "0.5.3-beta.5"
   },
   "type": "module",
   "exports": {
