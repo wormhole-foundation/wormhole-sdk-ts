@@ -24,7 +24,7 @@ export type AttestationId<PN extends ProtocolName = ProtocolName> = PN extends
   ? CircleMessageId
   : PN extends "IbcBridge"
   ? IbcMessageId
-  : never;
+  : any;
 
 /**
  * The full attestation that represents evidence of a transaction
@@ -43,7 +43,7 @@ export type Attestation<PN extends ProtocolName = ProtocolName> = PN extends
   ? VAA<"Uint8Array">
   : PN extends "PorticoBridge"
   ? PorticoBridge.VAA
-  : never;
+  : any;
 
 /**
  * Wormhole Message Identifier used to fetch a VAA

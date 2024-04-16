@@ -72,17 +72,17 @@ export interface RouteMeta {
 
 export interface RouteConstructor {
   new <N extends Network>(wh: Wormhole<N>, request: RouteTransferRequest<N>): Route<N>;
-  // Details about the route provided by the implementation
+  /**  Details about the route provided by the implementation */
   readonly meta: RouteMeta;
-  // get the list of networks this route supports
+  /** get the list of networks this route supports */
   supportedNetworks(): Network[];
-  // get the list of chains this route supports
+  /** get the list of chains this route supports */
   supportedChains(network: Network): Chain[];
-  // make sure the underlying protocols are supported
+  /** check that the underlying protocols are supported */
   isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean;
-  // get the list of source tokens that are possible to send
+  /** get the list of source tokens that are possible to send */
   supportedSourceTokens(fromChain: ChainContext<Network>): Promise<TokenId[]>;
-  // get the list of destination tokens that may be recieved on the destination chain
+  /** get the list of destination tokens that may be recieved on the destination chain */
   supportedDestinationTokens<N extends Network>(
     token: TokenId,
     fromChain: ChainContext<N>,
@@ -93,6 +93,10 @@ export interface RouteConstructor {
 // Use this to ensure the static methods defined in the RouteConstructor
 export type StaticRouteMethods<I extends RouteConstructor> = InstanceType<I>;
 
+/**
+ * AutomaticRoute is used whenever a relayer is delivering the
+ * Attestation to the destination chain
+ */
 export abstract class AutomaticRoute<
   N extends Network,
   OP extends Options = Options,
@@ -107,6 +111,10 @@ export function isAutomatic<N extends Network>(route: Route<N>): route is Automa
   return (route as AutomaticRoute<N>).isAvailable !== undefined && route.IS_AUTOMATIC;
 }
 
+/**
+ * Manual route is used whenever a manual delivery of the Attestation
+ * is necessary
+ */
 export abstract class ManualRoute<
   N extends Network,
   OP extends Options = Options,
@@ -120,4 +128,21 @@ export abstract class ManualRoute<
 
 export function isManual<N extends Network>(route: Route<N>): route is ManualRoute<N> {
   return (route as ManualRoute<N>).complete !== undefined;
+}
+
+/**
+ * FinalizableRoute is used whenever the route has a step after
+ * completion that needs to be done
+ */
+export abstract class FinalizableRoute<
+  N extends Network,
+  OP extends Options = Options,
+  VP extends ValidatedTransferParams<OP> = ValidatedTransferParams<OP>,
+  R extends Receipt = Receipt,
+> extends Route<N, OP, VP, R> {
+  public abstract finalize(sender: Signer, receipt: R): Promise<TransactionId[]>;
+}
+
+export function isFinalizable<N extends Network>(route: Route<N>): route is FinalizableRoute<N> {
+  return (route as FinalizableRoute<N>).finalize !== undefined;
 }
