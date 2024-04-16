@@ -28,6 +28,7 @@ import type {
   AttestationReceipt,
   AttestedTransferReceipt,
   CompletedTransferReceipt,
+  RedeemedTransferReceipt,
   SourceFinalizedTransferReceipt,
   SourceInitiatedTransferReceipt,
   TransferQuote,
@@ -567,7 +568,7 @@ export class CircleTransfer<N extends Network = Network>
         ...(receipt as AttestedTransferReceipt<CircleAttestationReceipt>),
         state: TransferState.DestinationInitiated,
         destinationTxs,
-      } satisfies CompletedTransferReceipt<CircleAttestationReceipt>;
+      } satisfies RedeemedTransferReceipt<CircleAttestationReceipt>;
     }
 
     return receipt;
@@ -688,10 +689,10 @@ export class CircleTransfer<N extends Network = Network>
         if (txStatus && txStatus.globalTx?.destinationTx?.txHash) {
           const { chainId, txHash } = txStatus.globalTx.destinationTx;
           receipt = {
-            ...receipt,
+            ...(receipt as AttestedTransferReceipt<CircleAttestationReceipt, SC, DC>),
             destinationTxs: [{ chain: toChain(chainId) as DC, txid: txHash }],
-            state: TransferState.DestinationFinalized,
-          } satisfies CompletedTransferReceipt<CircleAttestationReceipt>;
+            state: TransferState.DestinationInitiated,
+          } satisfies RedeemedTransferReceipt<CircleAttestationReceipt>;
           yield receipt;
         }
       }

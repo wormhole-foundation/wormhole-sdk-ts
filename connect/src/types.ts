@@ -18,8 +18,7 @@ export enum TransferState {
   DestinationFinalized, // Destination transaction is finalized
 }
 
-// Attestation Receipt contains
-// the id to lookup the attestation
+// Attestation Receipt contains the id to lookup the attestation
 // and possibly a cached attestation
 export type AttestationReceipt<PN extends ProtocolName = ProtocolName> = {
   id: AttestationId<PN>;
@@ -61,9 +60,17 @@ export interface AttestedTransferReceipt<AT, SC extends Chain = Chain, DC extend
   attestation: Required<AT>;
 }
 
+export interface RedeemedTransferReceipt<AT, SC extends Chain = Chain, DC extends Chain = Chain>
+  extends BaseTransferReceipt<SC, DC> {
+  state: TransferState.DestinationInitiated;
+  originTxs: TransactionId<SC>[];
+  attestation: Required<AT>;
+  destinationTxs?: TransactionId<DC>[];
+}
+
 export interface CompletedTransferReceipt<AT, SC extends Chain = Chain, DC extends Chain = Chain>
   extends BaseTransferReceipt<SC, DC> {
-  state: TransferState.DestinationInitiated | TransferState.DestinationFinalized;
+  state: TransferState.DestinationFinalized;
   originTxs: TransactionId<SC>[];
   attestation: AT;
   destinationTxs?: TransactionId<DC>[];
@@ -96,10 +103,16 @@ export function isAttested<AT>(
   return receipt.state === TransferState.Attested;
 }
 
+export function isRedeemed<AT>(
+  receipt: TransferReceipt<AT>,
+): receipt is RedeemedTransferReceipt<AT> {
+  return receipt.state === TransferState.DestinationInitiated;
+}
+
 export function isCompleted<AT>(
   receipt: TransferReceipt<AT>,
 ): receipt is CompletedTransferReceipt<AT> {
-  return receipt.state > TransferState.Attested;
+  return receipt.state === TransferState.DestinationFinalized;
 }
 
 export function isFailed<AT>(receipt: TransferReceipt<AT>): receipt is FailedTransferReceipt<AT> {
@@ -112,6 +125,7 @@ export type TransferReceipt<AT, SC extends Chain = Chain, DC extends Chain = Cha
   | SourceInitiatedTransferReceipt<SC, DC>
   | SourceFinalizedTransferReceipt<AT, SC, DC>
   | AttestedTransferReceipt<AT, SC, DC>
+  | RedeemedTransferReceipt<AT, SC, DC>
   | CompletedTransferReceipt<AT, SC, DC>;
 
 // Quote with optional relayer fees if the transfer

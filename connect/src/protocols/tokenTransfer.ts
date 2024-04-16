@@ -31,6 +31,7 @@ import type {
   AttestationReceipt,
   AttestedTransferReceipt,
   CompletedTransferReceipt,
+  RedeemedTransferReceipt,
   SourceFinalizedTransferReceipt,
   SourceInitiatedTransferReceipt,
   TransferQuote,
@@ -638,7 +639,7 @@ export class TokenTransfer<N extends Network = Network>
     if (destinationTxs.length > 0) {
       receipt = {
         ...(receipt as AttestedTransferReceipt<TokenTransferAttestationReceipt>),
-        state: TransferState.DestinationInitiated,
+        state: TransferState.DestinationFinalized,
         destinationTxs: destinationTxs,
       } satisfies CompletedTransferReceipt<TokenTransferAttestationReceipt>;
     }
@@ -704,8 +705,8 @@ export class TokenTransfer<N extends Network = Network>
         receipt = {
           ...receipt,
           destinationTxs: [{ chain: toChainName(chainId) as DC, txid: txHash }],
-          state: TransferState.DestinationFinalized,
-        } satisfies CompletedTransferReceipt<TokenTransferAttestationReceipt>;
+          state: TransferState.DestinationInitiated,
+        } satisfies RedeemedTransferReceipt<TokenTransferAttestationReceipt>;
       }
       yield receipt;
     }
