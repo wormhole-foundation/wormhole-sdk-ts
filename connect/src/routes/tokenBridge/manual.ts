@@ -5,7 +5,6 @@ import type {
   Signer,
   TokenId,
   TokenTransferDetails,
-  TransactionId,
 } from "@wormhole-foundation/sdk-definitions";
 import type { TokenTransferVAA } from "../../protocols/tokenTransfer.js";
 import { TokenTransfer } from "../../protocols/tokenTransfer.js";
@@ -138,15 +137,20 @@ export class TokenBridgeRoute<N extends Network>
     } satisfies SourceInitiatedTransferReceipt;
   }
 
-  async complete(signer: Signer, receipt: R): Promise<TransactionId[]> {
+  async complete(signer: Signer, receipt: R): Promise<R> {
     if (!isAttested(receipt))
       throw new Error("The source must be finalized in order to complete the transfer");
-    return await TokenTransfer.redeem<N>(
+    const dstTxIds = await TokenTransfer.redeem<N>(
       this.request.toChain,
-      // todo: ew?
       receipt.attestation.attestation as TokenTransferVAA,
       signer,
     );
+
+    return {
+      ...receipt,
+      state: TransferState.DestinationInitiated,
+      destinationTxs: dstTxIds,
+    };
   }
 
   public override async *track(receipt: R, timeout?: number) {

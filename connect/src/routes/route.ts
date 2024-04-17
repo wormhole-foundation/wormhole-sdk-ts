@@ -1,10 +1,5 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
-import type {
-  ChainContext,
-  Signer,
-  TokenId,
-  TransactionId,
-} from "@wormhole-foundation/sdk-definitions";
+import type { ChainContext, Signer, TokenId } from "@wormhole-foundation/sdk-definitions";
 import type { Wormhole } from "../wormhole.js";
 import type { RouteTransferRequest } from "./request.js";
 import type {
@@ -123,7 +118,7 @@ export abstract class ManualRoute<
 > extends Route<N, OP, VP, R> {
   NATIVE_GAS_DROPOFF_SUPPORTED = false;
   IS_AUTOMATIC = false;
-  public abstract complete(sender: Signer, receipt: R): Promise<TransactionId[]>;
+  public abstract complete(sender: Signer, receipt: R): Promise<R>;
 }
 
 export function isManual<N extends Network>(route: Route<N>): route is ManualRoute<N> {
@@ -140,7 +135,7 @@ export abstract class FinalizableRoute<
   VP extends ValidatedTransferParams<OP> = ValidatedTransferParams<OP>,
   R extends Receipt = Receipt,
 > extends Route<N, OP, VP, R> {
-  public abstract finalize(sender: Signer, receipt: R): Promise<TransactionId[]>;
+  public abstract finalize(sender: Signer, receipt: R): Promise<R>;
 }
 
 export function isFinalizable<N extends Network>(route: Route<N>): route is FinalizableRoute<N> {

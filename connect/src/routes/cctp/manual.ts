@@ -5,7 +5,6 @@ import type {
   CircleTransferDetails,
   Signer,
   TokenId,
-  TransactionId,
 } from "@wormhole-foundation/sdk-definitions";
 import { CircleBridge } from "@wormhole-foundation/sdk-definitions";
 import { signSendWait } from "../../common.js";
@@ -149,7 +148,7 @@ export class CCTPRoute<N extends Network>
     };
   }
 
-  async complete(signer: Signer, receipt: R): Promise<TransactionId[]> {
+  async complete(signer: Signer, receipt: R): Promise<R> {
     if (!isAttested(receipt))
       throw new Error("The source must be finalized in order to complete the transfer");
 
@@ -160,10 +159,15 @@ export class CCTPRoute<N extends Network>
 
       const cb = await this.request.toChain.getCircleBridge();
       const xfer = cb.redeem(this.request.to.address, message, attestation);
-      return await signSendWait<N, Chain>(this.request.toChain, xfer, signer);
+      const dstTxids = await signSendWait<N, Chain>(this.request.toChain, xfer, signer);
+      return {
+        ...receipt,
+        state: TransferState.DestinationInitiated,
+        destinationTxs: dstTxids,
+      };
     } else {
       //
-      return [];
+      return receipt;
     }
   }
 
