@@ -6,17 +6,13 @@ import type {
 } from '@solana/web3.js';
 import {
   PublicKey,
-  SystemProgram,
   SYSVAR_INSTRUCTIONS_PUBKEY,
   SYSVAR_RENT_PUBKEY,
+  SystemProgram,
 } from '@solana/web3.js';
-import {
-  getGuardianSet,
-  deriveGuardianSetKey,
-  getWormholeBridgeData,
-} from './../accounts/index.js';
-import { createReadOnlyWormholeProgramInterface } from '../program.js';
 import type { VAA } from '@wormhole-foundation/sdk-connect';
+import { createReadOnlyWormholeProgramInterface } from '../program.js';
+import { deriveGuardianSetKey, getGuardianSet } from './../accounts/index.js';
 import { createSecp256k1Instruction } from './secp256k1.js';
 
 const MAX_LEN_GUARDIAN_KEYS = 19;
@@ -49,11 +45,6 @@ export async function createVerifySignaturesInstructions(
   commitment?: Commitment,
 ): Promise<TransactionInstruction[]> {
   const guardianSetIndex = vaa.guardianSet;
-  const info = await getWormholeBridgeData(connection, wormholeProgramId);
-
-  if (guardianSetIndex != info.guardianSetIndex)
-    throw new Error('guardianSetIndex != config.guardianSetIndex');
-
   const guardianSetData = await getGuardianSet(
     connection,
     wormholeProgramId,
