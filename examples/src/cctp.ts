@@ -47,30 +47,30 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
   // The amount specified here is denominated in the token being transferred (USDC here)
   const nativeGas = automatic ? amount.units(amount.parse("0.0", 6)) : 0n;
 
-  //await cctpTransfer(wh, source, destination, {
-  //  amount: amt,
-  //  automatic,
-  //  nativeGas,
-  //});
+  await cctpTransfer(wh, source, destination, {
+    amount: amt,
+    automatic,
+    nativeGas,
+  });
 
   // Note: you can pick up a partial transfer from the origin chain name and txid
   // once created, you can call `fetchAttestations` and `completeTransfer` assuming its a manual transfer.
   // This is especially helpful for chains with longer time to finality where you don't want
   // to have to wait for the attestation to be generated.
-  await completeTransfer(
-    wh,
-    {
-      chain: sendChain.chain,
-      txid: "0x6b431a9172f6c672976294b3a3d6cd79f46a7d6247440c0934af4bfc2b5ad957",
-    },
-    destination.signer,
-  );
+  // await completeTransfer(
+  //   wh,
+  //   {
+  //     chain: sendChain.chain,
+  //     txid: "0x6b431a9172f6c672976294b3a3d6cd79f46a7d6247440c0934af4bfc2b5ad957",
+  //   },
+  //   destination.signer,
+  // );
 })();
 
 async function cctpTransfer<N extends Network>(
   wh: Wormhole<N>,
-  src: SignerStuff<N, Chain>,
-  dst: SignerStuff<N, Chain>,
+  src: SignerStuff<N, any>,
+  dst: SignerStuff<N, any>,
   req: {
     amount: bigint;
     automatic: boolean;
@@ -130,7 +130,6 @@ export async function completeTransfer(
   // EXAMPLE_RECOVER_TRANSFER
   // Rebuild the transfer from the source txid
   const xfer = await CircleTransfer.from(wh, txid);
-  if (xfer.getTransferState() > TransferState.Attested) return;
 
   const attestIds = await xfer.fetchAttestation(60 * 60 * 1000);
   console.log("Got attestation: ", attestIds);

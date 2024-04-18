@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-base",
-  "version": "0.5.3-beta.6",
+  "version": "0.5.3-beta.7",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
