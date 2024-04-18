@@ -33,7 +33,7 @@ function getEnv(key: string): string {
   return val;
 }
 
-export interface SignerStuff<N extends Network, C extends Chain> {
+export interface SignerStuff<N extends Network, C extends Chain = Chain> {
   chain: ChainContext<N, C>;
   signer: Signer<N, C>;
   address: ChainAddress<C>;

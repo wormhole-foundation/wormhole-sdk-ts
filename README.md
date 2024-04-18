@@ -399,7 +399,7 @@ We can also transfer native USDC using [Circle's CCTP](https://www.circle.com/en
   const dstTxids = await xfer.completeTransfer(dst.signer);
   console.log(`Completed Transfer: `, dstTxids);
 ```
-See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/cctp.ts#L80)
+See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/cctp.ts#L81)
 <!--EXAMPLE_CCTP_TRANSFER-->
 
 
@@ -506,7 +506,7 @@ A `TransactionId` or `WormholeMessageId` may be used to recover the transfer
   const dstTxIds = await xfer.completeTransfer(signer);
   console.log("Completed transfer: ", dstTxIds);
 ```
-See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/cctp.ts#L130)
+See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/cctp.ts#L131)
 <!--EXAMPLE_RECOVER_TRANSFER-->
 
 ## Routes
