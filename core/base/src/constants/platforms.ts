@@ -32,6 +32,10 @@ const platformAndChainsEntries = [[
     "Mantle",
     "Scroll",
     "Blast",
+    "Xlayer",
+    "Linea",
+    "Berachain",
+    "Seievm",
   ]], [
   "Solana", [
     "Solana",
@@ -53,6 +57,7 @@ const platformAndChainsEntries = [[
     "Stargaze",
     "Celestia",
     "Seda",
+    "Provenance"
   ]], [
     "Btc", [
       "Btc"

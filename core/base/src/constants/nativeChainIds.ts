@@ -47,9 +47,11 @@ const chainNetworkNativeChainIdEntries = [
       ["Stargaze",  "stargaze-1"],
       ["Celestia",  "celestia"],
       ["Dymension", "dymension_1100-1"],
+      ["Provenance","pio-mainnet-1"],
       ["Mantle",    5000n],
       ["Scroll",    534352n],
       ["Blast",     81457n],
+      ["Linea",     59144n],
     ],
   ],
   [
@@ -100,6 +102,9 @@ const chainNetworkNativeChainIdEntries = [
       ["Blast",           168587773n], // Sepolia testnet
       ["Mantle",          5003n], // Sepolia testnet
       ["Scroll",          534351n],
+      ["Berachain",       80085n],
+      ["Xlayer",          195n],
+      ["Linea",           59141n], // Sepolia
     ],
   ],
   [

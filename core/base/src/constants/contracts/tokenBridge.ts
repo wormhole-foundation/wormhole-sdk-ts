@@ -69,6 +69,9 @@ export const tokenBridgeContracts = [[
     ["PolygonSepolia",  "0xC7A204bDBFe983FCD8d8E61D02b475D4073fF97e"],
     ["Scroll",          "0x22427d90B7dA3fA4642F7025A854c7254E4e45BF"],
     ["Blast",           "0x430855B4D43b8AEB9D2B9869B74d58dda79C0dB2"],
+    ["Xlayer",          "0xdA91a06299BBF302091B053c6B9EF86Eff0f930D"],
+    ["Berachain",       "0xa10f2eF61dE1f19f586ab8B6F2EbA89bACE63F7a"],
+    ["Linea",           "0xC7A204bDBFe983FCD8d8E61D02b475D4073fF97e"],
   ]], [
   "Devnet", [
     ["Solana",    "B6RHG3mfcckmrYN1UhmJzyS1XX3fZKbkeUcpJe9Sy3FE"],
