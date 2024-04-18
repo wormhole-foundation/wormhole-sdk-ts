@@ -2,8 +2,8 @@ import type { Network } from "@wormhole-foundation/sdk-base";
 import type { Signer } from "@wormhole-foundation/sdk-definitions";
 import type { Receipt } from "./types.js";
 import type { Route } from "./route.js";
-import { isManual } from "./route.js";
-import { TransferState, isAttested, isCompleted } from "../types.js";
+import { isFinalizable, isManual } from "./route.js";
+import { TransferState, isAttested, isCompleted, isRedeemed } from "../types.js";
 
 /**
  * track the transfer until the destination is initiated
@@ -38,7 +38,13 @@ export async function checkAndCompleteTransfer<N extends Network>(
     log("Completing transfer...");
     const completedTxids = await route.complete(destinationSigner, receipt);
     log("Completed transfer with txids: ", completedTxids);
-    // Note: do not return receipt yet, there may be further steps to track, this only completes the bridge transfer
+  }
+
+  // if the route is one we need to finalize, do it
+  if (isFinalizable(route) && isRedeemed(receipt) && destinationSigner) {
+    log("Finalizing transfer...");
+    const completedTxids = await route.finalize(destinationSigner, receipt);
+    log("Finalized transfer with txids: ", completedTxids);
   }
 
   const leftover = timeout - (Date.now() - start);
@@ -47,7 +53,7 @@ export async function checkAndCompleteTransfer<N extends Network>(
     // give it a second, computers need to rest sometimes
     const wait = 2 * 1000;
     log(`Transfer not complete, trying again in a ${wait}ms...`);
-    await Promise.resolve(setTimeout(() => {}, wait));
+    await new Promise((resolve) => setTimeout(resolve, wait));
     return checkAndCompleteTransfer(route, receipt, destinationSigner, leftover);
   }
 
