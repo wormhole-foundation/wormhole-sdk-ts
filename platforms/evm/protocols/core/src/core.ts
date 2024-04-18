@@ -74,6 +74,15 @@ export class EvmWormholeCore<N extends Network, C extends EvmChains>
     return Number(await this.core.getCurrentGuardianSetIndex.staticCall());
   }
 
+  async getGuardianSet(index: number): Promise<WormholeCore.GuardianSet> {
+    const guardianSet = await this.core.getGuardianSet(index);
+    return {
+      index: index,
+      keys: guardianSet[0],
+      expiry: guardianSet[1],
+    };
+  }
+
   static async fromRpc<N extends Network>(
     provider: Provider,
     config: ChainsConfig<N, EvmPlatformType>,

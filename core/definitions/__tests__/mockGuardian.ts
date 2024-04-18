@@ -1,6 +1,6 @@
 import { encoding } from "@wormhole-foundation/sdk-base";
-import { VAA, keccak256 } from "../src/index.js";
-import { MockEmitter, MockGuardians, ethValidateSig } from "../src/testing/mocks/guardian.js";
+import { SignatureUtils, VAA, keccak256 } from "../src/index.js";
+import { MockEmitter, MockGuardians } from "../src/testing/mocks/guardian.js";
 import { makeUniversalAddress } from "../src/testing/utils/index.js";
 
 const GUARDIAN_KEY = "cfb12303a19cde580bb4dd771639b0d26bc68353645571a8cff516ab2ee113a0";
@@ -41,8 +41,19 @@ describe("Mock Guardian Tests", function () {
     const pubKeys = gset.getPublicKeys();
     for (const sig of signedVaa.signatures) {
       const pubkey = pubKeys[sig.guardianIndex]!;
-      const valid = ethValidateSig(sig.signature, pubkey, hash);
+      const valid = SignatureUtils.validate(sig.signature, pubkey, hash);
       expect(valid).toBeTruthy();
+    }
+  });
+
+  it("Should recover the public key from the signature and digest", function () {
+    // rehash the hash since we use double hash for sign
+    const hash = keccak256(signedVaa.hash);
+    const pubKeys = gset.getPublicKeys();
+    for (const sig of signedVaa.signatures) {
+      const pubkey = pubKeys[sig.guardianIndex]!;
+      const recovered = SignatureUtils.recover(sig.signature, hash);
+      expect(encoding.bytes.equals(recovered, pubkey)).toBeTruthy();
     }
   });
 });

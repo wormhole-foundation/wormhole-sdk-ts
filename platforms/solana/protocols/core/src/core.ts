@@ -80,6 +80,9 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
       connection,
     );
   }
+  getGuardianSet(index: number): Promise<WormholeCore.GuardianSet> {
+    throw new Error('Method not implemented.');
+  }
 
   static async fromRpc<N extends Network>(
     connection: Connection,
