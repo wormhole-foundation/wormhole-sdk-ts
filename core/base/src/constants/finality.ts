@@ -54,8 +54,7 @@ const finalityThresholds = [
   ["Terra2",    0],
   ["Xpla",      0],
   ["Injective", 0],
-
-  // TODO: validate these
+  ["Berachain", 0],
   ["Cosmoshub", 0],
   ["Evmos",     0],
   ["Kujira",    0],
@@ -63,6 +62,7 @@ const finalityThresholds = [
   ["Celestia",  0],
   ["Stargaze",  0],
   ["Dymension", 0],
+  ["Provenance",0],
 ] as const satisfies MapLevel<Chain, number>;
 
 /**

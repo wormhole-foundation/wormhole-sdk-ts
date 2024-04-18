@@ -37,6 +37,8 @@ const rpcConfig = [[
     ["Celestia",  "https://celestia-rpc.polkachu.com/"],
     ["Neutron",   "https://neutron-rpc.polkachu.com/"],
     ["Blast",     "https://rpc.blast.io"],
+    ["Provenance","https://rpc.provenance.io/"],
+    ["Linea",     "https://rpc.linea.build"],
   ]], [
   "Testnet", [
     ["Ethereum",        "https://rpc.ankr.com/eth_goerli"],
@@ -71,6 +73,9 @@ const rpcConfig = [[
     ["Karura",          "https://eth-rpc-karura-testnet.aca-staging.network"],
     ["Acala",           "https://eth-rpc-acala-testnet.aca-staging.network"],
     ["Blast",           "https://sepolia.blast.io"],
+    ["Berachain",       "https://artio.rpc.berachain.com"],
+    ["Linea",           "https://rpc.sepolia.linea.build"],
+    ["Xlayer",          "https://testrpc.xlayer.tech/"],
   ]], [
   "Devnet", [
     ["Ethereum",  "http://eth-devnet:8545"],
