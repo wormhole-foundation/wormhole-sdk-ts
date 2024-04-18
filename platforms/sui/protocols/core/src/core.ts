@@ -35,6 +35,9 @@ export class SuiWormholeCore<N extends Network, C extends SuiChains> implements 
       throw new Error(`CoreBridge contract Address for chain ${chain} not found`);
     this.coreBridgePackageId = coreBridgeAddress;
   }
+  getGuardianSet(index: number): Promise<WormholeCore.GuardianSet> {
+    throw new Error("Method not implemented.");
+  }
   getMessageFee(): Promise<bigint> {
     throw new Error("Method not implemented.");
   }

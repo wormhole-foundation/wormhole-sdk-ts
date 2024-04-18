@@ -18,6 +18,14 @@ declare module "../../registry.js" {
   }
 }
 
+export namespace WormholeCore {
+  export interface GuardianSet {
+    index: number;
+    keys: string[];
+    expiry: bigint;
+  }
+}
+
 /**
  * WormholeCore provides a consistent interface to interact
  * with the Wormhole core messaging protocol.
@@ -29,6 +37,9 @@ export interface WormholeCore<N extends Network = Network, C extends Chain = Cha
 
   /** Get the current guardian set index */
   getGuardianSetIndex(): Promise<number>;
+
+  /** Get the guardian set data corresponding to the index */
+  getGuardianSet(index: number): Promise<WormholeCore.GuardianSet>;
 
   /**
    * Publish a message

@@ -1,7 +1,7 @@
 import { Chain } from "@wormhole-foundation/sdk-base";
-import { Signature, createVAA, deserialize, serialize } from "../../index.js";
+import { Signature, SignatureUtils, createVAA, deserialize, serialize } from "../../index.js";
 import { UniversalAddress } from "../../universalAddress.js";
-import { keccak256, secp256k1 } from "../../utils.js";
+import { keccak256 } from "../../utils.js";
 
 interface Guardian {
   index: number;
@@ -20,7 +20,7 @@ export class MockGuardians {
   }
 
   getPublicKeys() {
-    return this.signers.map((guardian) => ethPrivateToPublic(guardian.key));
+    return this.signers.map((guardian) => SignatureUtils.toPubkey(guardian.key));
   }
 
   addSignatures(message: Uint8Array, guardianIndices: number[]) {
@@ -34,7 +34,7 @@ export class MockGuardians {
       const signer = signers.at(i);
       if (!signer) throw Error("No signer with index: " + i);
 
-      const signature = ethSignWithPrivate(signer.key, keccak256(vaa.hash));
+      const signature = SignatureUtils.sign(signer.key, keccak256(vaa.hash));
       const s = new Signature(signature.r, signature.s, signature.recovery);
 
       // @ts-ignore -- wants it to be immutable
@@ -81,18 +81,4 @@ export class MockEmitter {
       }),
     );
   }
-}
-
-export function ethPrivateToPublic(privateKey: string) {
-  return secp256k1.getPublicKey(privateKey);
-}
-
-export function ethSignWithPrivate(privateKey: string, hash: Uint8Array) {
-  if (hash.length != 32) throw new Error("hash.length != 32");
-  return secp256k1.sign(hash, privateKey);
-}
-
-export function ethValidateSig(signature: Signature, publicKey: Uint8Array, hash: Uint8Array) {
-  const { r, s } = signature;
-  return secp256k1.verify({ r, s }, hash, publicKey);
 }

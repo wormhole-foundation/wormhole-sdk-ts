@@ -37,6 +37,9 @@ export class CosmwasmWormholeCore<N extends Network, C extends CosmwasmChains>
 
     this.coreAddress = coreAddress;
   }
+  getGuardianSet(index: number): Promise<WormholeCore.GuardianSet> {
+    throw new Error("Method not implemented.");
+  }
   getGuardianSetIndex(): Promise<number> {
     throw new Error("Method not implemented.");
   }
