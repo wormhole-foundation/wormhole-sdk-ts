@@ -197,24 +197,31 @@ export abstract class ChainContext<
   /**
    * Construct a protocol client for the given protocol
    *
+   * Note: If no contracts are passed, we assume the default contracts should be used
+   * and that the protocol client is cacheable
+   *
    * @param protocolName The name of the protocol to construct a client for
    * @returns An instance of the protocol client that implements the protocol interface for the chain
    */
   async getProtocol<PN extends ProtocolName>(
     protocolName: PN,
-    contracts: Contracts = this.config.contracts,
+    contracts?: Contracts,
     rpc?: RpcConnection<P>,
   ): Promise<ProtocolInstance<P, PN, N, C>> {
-    if (!this.protocols.has(protocolName)) {
-      const ctor = this.platform.getProtocolInitializer(protocolName);
+    const _contracts = contracts
+      ? { ...this.config.contracts, ...contracts }
+      : this.config.contracts;
 
-      const protocol = rpc
-        ? await this.platform.getProtocol(protocolName, rpc)
-        : new ctor(this.network, this.chain, await this.getRpc(), contracts);
+    if (!contracts && this.protocols.has(protocolName)) return this.protocols.get(protocolName)!;
 
-      this.protocols.set(protocolName, protocol);
-    }
-    return this.protocols.get(protocolName)!;
+    const ctor = this.platform.getProtocolInitializer(protocolName);
+    const protocol = rpc
+      ? await this.platform.getProtocol(protocolName, rpc)
+      : new ctor(this.network, this.chain, await this.getRpc(), _contracts);
+
+    if (!contracts) this.protocols.set(protocolName, protocol);
+
+    return protocol;
   }
 
   /**
