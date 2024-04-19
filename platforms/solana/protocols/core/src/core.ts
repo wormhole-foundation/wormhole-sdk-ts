@@ -36,6 +36,7 @@ import {
   SolanaPlatform,
   SolanaUnsignedTransaction,
 } from '@wormhole-foundation/sdk-solana';
+import { postMessageLayout } from './postMessageLayout.js';
 import type { Wormhole as WormholeCoreContract } from './types.js';
 import type { BridgeData } from './utils/index.js';
 import {
@@ -45,9 +46,9 @@ import {
   createReadOnlyWormholeProgramInterface,
   createVerifySignaturesInstructions,
   derivePostedVaaKey,
+  getGuardianSet,
   getWormholeBridgeData,
 } from './utils/index.js';
-import { postMessageLayout } from './postMessageLayout.js';
 
 const SOLANA_SEQ_LOG = 'Program log: Sequence: ';
 
@@ -80,8 +81,18 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
       connection,
     );
   }
-  getGuardianSet(index: number): Promise<WormholeCore.GuardianSet> {
-    throw new Error('Method not implemented.');
+
+  async getGuardianSet(index: number): Promise<WormholeCore.GuardianSet> {
+    const gs = await getGuardianSet(
+      this.connection,
+      this.coreBridge.programId,
+      index,
+    );
+    return {
+      index: gs.index,
+      keys: gs.keys.map((k) => k.toString('hex')),
+      expiry: BigInt(gs.expirationTime),
+    };
   }
 
   static async fromRpc<N extends Network>(
