@@ -210,6 +210,30 @@
         "dist/cjs/sui.d.ts",
         "dist/esm/sui.d.ts"
       ],
+      "platforms/algorand": [
+        "dist/cjs/platforms/algorand.d.ts",
+        "dist/esm/platforms/algorand.d.ts"
+      ],
+      "platforms/evm": [
+        "dist/cjs/platforms/evm.d.ts",
+        "dist/esm/platforms/evm.d.ts"
+      ],
+      "platforms/solana": [
+        "dist/cjs/platforms/solana.d.ts",
+        "dist/esm/platforms/solana.d.ts"
+      ],
+      "platforms/cosmwasm": [
+        "dist/cjs/platforms/cosmwasm.d.ts",
+        "dist/esm/platforms/cosmwasm.d.ts"
+      ],
+      "platforms/aptos": [
+        "dist/cjs/platforms/aptos.d.ts",
+        "dist/esm/platforms/aptos.d.ts"
+      ],
+      "platforms/sui": [
+        "dist/cjs/platforms/sui.d.ts",
+        "dist/esm/platforms/sui.d.ts"
+      ],
       "*": [
         "dist/cjs/index.d.ts",
         "dist/esm/index.d.ts"
