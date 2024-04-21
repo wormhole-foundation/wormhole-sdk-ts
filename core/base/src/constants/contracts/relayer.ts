@@ -1,6 +1,6 @@
-import type { MapLevels } from './../../utils/index.js';
-import type { Network } from '../networks.js';
-import type { Chain } from '../chains.js';
+import type { MapLevels } from "./../../utils/index.js";
+import type { Network } from "../networks.js";
+import type { Chain } from "../chains.js";
 
 // prettier-ignore
 export const relayerContracts = [[
@@ -36,7 +36,7 @@ export const relayerContracts = [[
     ["OptimismSepolia", "0x93BAD53DDfB6132b0aC8E37f6029163E63372cEE"]
   ]], [
   "Devnet", [
-    ["Ethereum",  "0xE66C1Bc1b369EF4F376b84373E3Aa004E8F4C083"],
-    ["Bsc",       "0xE66C1Bc1b369EF4F376b84373E3Aa004E8F4C083"],
+    ["Ethereum",  "0x53855d4b64E9A3CF59A84bc768adA716B5536BC5"],
+    ["Bsc",       "0x53855d4b64E9A3CF59A84bc768adA716B5536BC5"],
   ]],
 ] as const satisfies MapLevels<[Network, Chain, string]>;
