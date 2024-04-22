@@ -1,4 +1,8 @@
-import type { Keypair, Transaction } from '@solana/web3.js';
+import type {
+  Keypair,
+  Transaction,
+  VersionedTransaction,
+} from '@solana/web3.js';
 import type {
   Network,
   UnsignedTransaction,
@@ -6,7 +10,7 @@ import type {
 import type { SolanaChains } from './types.js';
 
 export type SolanaTransaction = {
-  transaction: Transaction;
+  transaction: Transaction | VersionedTransaction;
   signers?: Keypair[];
 };
 
@@ -22,4 +26,11 @@ export class SolanaUnsignedTransaction<
     readonly description: string,
     readonly parallelizable: boolean = false,
   ) {}
+}
+
+export function isVersionedTransaction(tx: any): tx is VersionedTransaction {
+  return (
+    (<VersionedTransaction>tx).signatures !== undefined &&
+    (<VersionedTransaction>tx).message !== undefined
+  );
 }

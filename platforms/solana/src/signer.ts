@@ -3,6 +3,7 @@ import type {
   SendOptions,
   Transaction,
   TransactionInstruction,
+  VersionedTransaction,
 } from '@solana/web3.js';
 import {
   ComputeBudgetProgram,
@@ -21,7 +22,10 @@ import type {
 import { encoding } from '@wormhole-foundation/sdk-connect';
 import { SolanaPlatform } from './platform.js';
 import type { SolanaChains } from './types.js';
-import type { SolanaUnsignedTransaction } from './unsignedTransaction.js';
+import {
+  isVersionedTransaction,
+  type SolanaUnsignedTransaction,
+} from './unsignedTransaction.js';
 
 // Add priority fee according to 90th percentile of recent fees paid
 const DEFAULT_PRIORITY_FEE_PERCENTILE = 0.9;
@@ -101,9 +105,15 @@ export class SolanaSigner<N extends Network, C extends SolanaChains = 'Solana'>
 
       if (this._debug) logTxDetails(transaction);
 
-      transaction.recentBlockhash = blockhash;
-      transaction.partialSign(this._keypair, ...(extraSigners ?? []));
-      signed.push(transaction.serialize());
+      if (isVersionedTransaction(transaction)) {
+        transaction.message.recentBlockhash = blockhash;
+        transaction.sign([this._keypair, ...(extraSigners ?? [])]);
+        signed.push(Buffer.from(transaction.serialize()));
+      } else {
+        transaction.recentBlockhash = blockhash;
+        transaction.partialSign(this._keypair, ...(extraSigners ?? []));
+        signed.push(transaction.serialize());
+      }
     }
     return signed;
   }
@@ -181,14 +191,13 @@ export class SolanaSendSigner<
       } = txn as SolanaUnsignedTransaction<N, C>;
       console.log(`Signing: ${description} for ${this.address()}`);
 
+      let priorityFeeIx: TransactionInstruction[] | undefined;
       if (this._priorityFeePercentile && this._priorityFeePercentile > 0)
-        transaction.add(
-          ...(await createPriorityFeeInstructions(
-            this._rpc,
-            transaction,
-            [],
-            this._priorityFeePercentile,
-          )),
+        priorityFeeIx = await createPriorityFeeInstructions(
+          this._rpc,
+          transaction,
+          [],
+          this._priorityFeePercentile,
         );
 
       if (this._debug) logTxDetails(transaction);
@@ -197,14 +206,19 @@ export class SolanaSendSigner<
       const maxRetries = 5;
       for (let i = 0; i < maxRetries; i++) {
         try {
-          transaction.recentBlockhash = blockhash;
-          transaction.partialSign(this._keypair, ...(extraSigners ?? []));
+          if (isVersionedTransaction(transaction)) {
+          } else {
+            if (priorityFeeIx) transaction.add(...priorityFeeIx);
 
-          const txid = await this._rpc.sendRawTransaction(
-            transaction.serialize(),
-            this._sendOpts,
-          );
-          txids.push(txid);
+            transaction.recentBlockhash = blockhash;
+            transaction.partialSign(this._keypair, ...(extraSigners ?? []));
+
+            const txid = await this._rpc.sendRawTransaction(
+              transaction.serialize(),
+              this._sendOpts,
+            );
+            txids.push(txid);
+          }
           break;
         } catch (e) {
           // No point checking if retryable if we're on the last retry
@@ -250,31 +264,54 @@ export class SolanaSendSigner<
   }
 }
 
-export function logTxDetails(transaction: Transaction) {
-  console.log(transaction.signatures);
-  console.log(transaction.feePayer);
-  transaction.instructions.forEach((ix) => {
-    console.log('Program', ix.programId.toBase58());
-    console.log('Data: ', ix.data.toString('hex'));
-    console.log(
-      'Keys: ',
-      ix.keys.map((k) => [k, k.pubkey.toBase58()]),
-    );
-  });
+export function logTxDetails(transaction: Transaction | VersionedTransaction) {
+  if (isVersionedTransaction(transaction)) {
+    console.log(transaction.signatures);
+    const msg = transaction.message;
+    const keys = msg.getAccountKeys();
+    msg.compiledInstructions.forEach((ix) => {
+      console.log('Program', keys.get(ix.programIdIndex)!.toBase58());
+      console.log('Data: ', encoding.hex.encode(ix.data));
+      console.log(
+        'Keys: ',
+        ix.accountKeyIndexes.map((k) => [k, keys.get(k)!.toBase58()]),
+      );
+    });
+  } else {
+    console.log(transaction.signatures);
+    console.log(transaction.feePayer);
+    transaction.instructions.forEach((ix) => {
+      console.log('Program', ix.programId.toBase58());
+      console.log('Data: ', ix.data.toString('hex'));
+      console.log(
+        'Keys: ',
+        ix.keys.map((k) => [k, k.pubkey.toBase58()]),
+      );
+    });
+  }
 }
 
 export async function createPriorityFeeInstructions(
   connection: Connection,
-  transaction: Transaction,
+  transaction: Transaction | VersionedTransaction,
   lockedWritableAccounts: PublicKey[] = [],
   feePercentile: number = DEFAULT_PRIORITY_FEE_PERCENTILE,
   minPriorityFee: number = 0,
 ): Promise<TransactionInstruction[]> {
   if (lockedWritableAccounts.length === 0) {
-    lockedWritableAccounts = transaction.instructions
-      .flatMap((ix) => ix.keys)
-      .map((k) => (k.isWritable ? k.pubkey : null))
-      .filter((k) => k !== null) as PublicKey[];
+    if (isVersionedTransaction(transaction)) {
+      const msg = transaction.message;
+      const keys = msg.getAccountKeys();
+      lockedWritableAccounts = msg.compiledInstructions
+        .flatMap((ix) => ix.accountKeyIndexes)
+        .map((k) => (msg.isAccountWritable(k) ? keys.get(k) : null))
+        .filter((k) => k !== null) as PublicKey[];
+    } else {
+      lockedWritableAccounts = transaction.instructions
+        .flatMap((ix) => ix.keys)
+        .map((k) => (k.isWritable ? k.pubkey : null))
+        .filter((k) => k !== null) as PublicKey[];
+    }
   }
   return await determineComputeBudget(
     connection,
@@ -287,7 +324,7 @@ export async function createPriorityFeeInstructions(
 
 export async function determineComputeBudget(
   connection: Connection,
-  transaction: Transaction,
+  transaction: Transaction | VersionedTransaction,
   lockedWritableAccounts: PublicKey[] = [],
   feePercentile: number = DEFAULT_PRIORITY_FEE_PERCENTILE,
   minPriorityFee: number = 0,
@@ -296,7 +333,9 @@ export async function determineComputeBudget(
   let priorityFee = 1;
 
   try {
-    const simulateResponse = await connection.simulateTransaction(transaction);
+    const simulateResponse = await (isVersionedTransaction(transaction)
+      ? connection.simulateTransaction(transaction)
+      : connection.simulateTransaction(transaction));
 
     if (simulateResponse.value.err) {
       console.error(
