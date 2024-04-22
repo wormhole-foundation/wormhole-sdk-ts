@@ -16,6 +16,7 @@ import {
   SolanaChains,
   SolanaPlatform,
   SolanaUnsignedTransaction,
+  isVersionedTransaction,
 } from './../../src/index.js';
 
 import { describe, expect, test } from '@jest/globals';
@@ -207,6 +208,8 @@ describe('TokenBridge Tests', () => {
       expect(attestTx!.chain).toEqual(chain);
 
       const { transaction } = attestTx!;
+      if (isVersionedTransaction(transaction.transaction))
+        throw new Error('Should not receive versioned transactions (yet)');
       expect(transaction.transaction.instructions).toHaveLength(2);
     });
 
@@ -238,11 +241,23 @@ describe('TokenBridge Tests', () => {
       }
       expect(allTxns).toHaveLength(3);
 
-      const [verifySig, postVaa, create] = allTxns;
+      const [_verifySig, _postVaa, _create] = allTxns;
       //
-      expect(verifySig!.transaction.transaction.instructions).toHaveLength(2);
-      expect(postVaa!.transaction.transaction.instructions).toHaveLength(1);
-      expect(create!.transaction.transaction.instructions).toHaveLength(1);
+
+      const { transaction: verifySig } = _verifySig!;
+      const { transaction: postVaa } = _postVaa!;
+      const { transaction: create } = _create!;
+
+      if (isVersionedTransaction(verifySig!.transaction))
+        throw new Error('Should not receive versioned transactions (yet)');
+      if (isVersionedTransaction(postVaa!.transaction))
+        throw new Error('Should not receive versioned transactions (yet)');
+      if (isVersionedTransaction(create!.transaction))
+        throw new Error('Should not receive versioned transactions (yet)');
+
+      expect(verifySig!.transaction.instructions).toHaveLength(2);
+      expect(postVaa!.transaction.instructions).toHaveLength(1);
+      expect(create!.transaction.instructions).toHaveLength(1);
     });
   });
 
@@ -273,9 +288,13 @@ describe('TokenBridge Tests', () => {
           expect(xferTx).toBeTruthy();
           expect(xferTx!.chain).toEqual(chain);
 
-          const { transaction } = xferTx!;
-          expect(transaction.transaction.instructions).toHaveLength(6);
-          // ...
+          const {
+            transaction: { transaction },
+          } = xferTx!;
+          if (isVersionedTransaction(transaction))
+            throw new Error('Should not receive versioned transactions (yet)');
+
+          expect(transaction.instructions).toHaveLength(6);
         });
 
         test('Token', async () => {
@@ -298,8 +317,12 @@ describe('TokenBridge Tests', () => {
           expect(xferTx).toBeTruthy();
           expect(xferTx!.chain).toEqual(chain);
 
-          const { transaction } = xferTx!;
-          expect(transaction.transaction.instructions).toHaveLength(2);
+          const {
+            transaction: { transaction },
+          } = xferTx!;
+          if (isVersionedTransaction(transaction))
+            throw new Error('Should not receive versioned transactions (yet)');
+          expect(transaction.instructions).toHaveLength(2);
         });
       });
     });
