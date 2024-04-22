@@ -1,4 +1,5 @@
 export * from "./amount.js";
+export * from "./boolean.js";
 export * from "./chain.js";
 export * from "./circle.js";
 export * from "./guardianSet.js";

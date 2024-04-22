@@ -182,7 +182,7 @@ export type BytesLayoutItem =
   LengthPrefixedLayoutBytes;
 export type ArrayLayoutItem = FixedLengthArray | LengthPrefixedArray | RemainderArray;
 export type LayoutItem = NumLayoutItem | BytesLayoutItem | ArrayLayoutItem | SwitchLayoutItem;
-type NamedLayoutItem = LayoutItem & { readonly name: string };
+export type NamedLayoutItem = LayoutItem & { readonly name: string };
 export type ProperLayout = readonly NamedLayoutItem[];
 export type Layout = LayoutItem | ProperLayout;
 
