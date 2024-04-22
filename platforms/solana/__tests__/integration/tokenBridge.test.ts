@@ -16,13 +16,13 @@ import {
   SolanaChains,
   SolanaPlatform,
   SolanaUnsignedTransaction,
+  isVersionedTransaction,
 } from './../../src/index.js';
 
 import { describe, expect, test } from '@jest/globals';
 
 import nock from 'nock';
 import path from 'path';
-import { isVersionedTransaction } from '../../dist/cjs/unsignedTransaction.js';
 
 const network = DEFAULT_NETWORK;
 type TNet = typeof network;
