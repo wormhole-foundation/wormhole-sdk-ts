@@ -40,8 +40,8 @@
     "node": ">=16"
   },
   "sideEffects": [
-    "dist/cjs/index.js",
-    "/dist/esm/index.js"
+    "./dist/cjs/index.js",
+    "./dist/esm/index.js"
   ],
   "scripts": {
     "build:cjs": "tsc -p ./tsconfig.cjs.json  && echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",

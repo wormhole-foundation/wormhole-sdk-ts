@@ -39,8 +39,8 @@
     "node": ">=16"
   },
   "sideEffects": [
-    "dist/cjs/address.js",
-    "dist/esm/address.js"
+    "./dist/cjs/address.js",
+    "./dist/esm/address.js"
   ],
   "scripts": {
     "build:cjs": "tsc -p ./tsconfig.cjs.json  && echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
