@@ -11,6 +11,7 @@ import {
   PublicKey,
   SendTransactionError,
   TransactionExpiredBlockheightExceededError,
+  TransactionMessage,
 } from '@solana/web3.js';
 import type {
   Network,
@@ -207,18 +208,24 @@ export class SolanaSendSigner<
       for (let i = 0; i < maxRetries; i++) {
         try {
           if (isVersionedTransaction(transaction)) {
+            if (priorityFeeIx) {
+              const msg = TransactionMessage.decompile(transaction.message);
+              msg.instructions.push(...priorityFeeIx);
+              transaction.message = msg.compileToV0Message();
+            }
+            transaction.message.recentBlockhash = blockhash;
+            transaction.sign([this._keypair, ...(extraSigners ?? [])]);
           } else {
             if (priorityFeeIx) transaction.add(...priorityFeeIx);
-
             transaction.recentBlockhash = blockhash;
             transaction.partialSign(this._keypair, ...(extraSigners ?? []));
-
-            const txid = await this._rpc.sendRawTransaction(
-              transaction.serialize(),
-              this._sendOpts,
-            );
-            txids.push(txid);
           }
+
+          const txid = await this._rpc.sendRawTransaction(
+            transaction.serialize(),
+            this._sendOpts,
+          );
+          txids.push(txid);
           break;
         } catch (e) {
           // No point checking if retryable if we're on the last retry
