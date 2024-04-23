@@ -34,10 +34,18 @@ export async function getEvmSigner(
   const chain = opts?.chain ?? (await EvmPlatform.chainFromRpc(rpc))[1];
   const managedSigner = new NonceManager(signer);
 
+  if (managedSigner.provider === null) {
+    try {
+      managedSigner.connect(rpc);
+    } catch (e) {
+      console.error('Cannot connect to network for signer', e);
+    }
+  }
+
   return new EvmNativeSigner(
     chain,
     await signer.getAddress(),
-    managedSigner.connect(rpc),
+    managedSigner,
     opts,
   );
 }
