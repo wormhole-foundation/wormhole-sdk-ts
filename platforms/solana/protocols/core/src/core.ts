@@ -22,7 +22,6 @@ import type {
 } from '@wormhole-foundation/sdk-connect';
 import {
   createVAA,
-  deserializeLayout,
   toChain,
   toChainId,
 } from '@wormhole-foundation/sdk-connect';
@@ -36,7 +35,7 @@ import {
   SolanaPlatform,
   SolanaUnsignedTransaction,
 } from '@wormhole-foundation/sdk-solana';
-import { postMessageLayout } from './postMessageLayout.js';
+import { deserializePostMessage } from './postMessageLayout.js';
 import type { Wormhole as WormholeCoreContract } from './types.js';
 import type { BridgeData } from './utils/index.js';
 import {
@@ -225,18 +224,36 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
     coreBridgeAddress: string,
     transaction: VersionedTransactionResponse | TransactionResponse,
   ): [UniversalAddress, bigint][] {
-    if (!transaction.meta?.innerInstructions?.length) return [];
+    const {
+      meta,
+      transaction: { message },
+    } = transaction;
+    if (!meta?.innerInstructions?.length) return [];
 
-    const accounts = transaction.transaction.message.staticAccountKeys;
+    // Only consider transactions where the core bridge is in static keys
+    const accounts = message.staticAccountKeys;
+    if (
+      accounts.filter((pk) => pk.toString() === coreBridgeAddress).length === 0
+    )
+      return [];
+
+    // Do we have a sequence in the log?
+    const sequence = meta?.logMessages
+      ?.filter((msg) => msg.startsWith(SOLANA_SEQ_LOG))?.[0]
+      ?.replace(SOLANA_SEQ_LOG, '');
+    if (!sequence) return [];
+
     const bridgeIx: CompiledInstruction[] = [];
-    for (const inner of transaction.meta?.innerInstructions) {
+    for (const inner of meta?.innerInstructions) {
       const instructions = inner.instructions;
       // find the instruction where the programId equals the
       // Wormhole ProgramId and the emitter equals the Token Bridge
       bridgeIx.push(
         ...instructions.filter((i) => {
-          const programId = accounts[i.programIdIndex]!.toString();
-          return programId === coreBridgeAddress;
+          !(
+            i.programIdIndex in accounts &&
+            accounts[i.programIdIndex]!.toString() === coreBridgeAddress
+          );
         }),
       );
     }
@@ -249,13 +266,6 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
         const emitter = new SolanaAddress(
           accounts[ix.accounts[2]!]!,
         ).toUniversalAddress();
-
-        const sequence = transaction.meta?.logMessages
-          ?.filter((msg) => msg.startsWith(SOLANA_SEQ_LOG))?.[0]
-          ?.replace(SOLANA_SEQ_LOG, '');
-
-        if (!sequence) return null;
-
         return [emitter, BigInt(sequence)];
       })
       .filter((x) => x !== null) as [UniversalAddress, bigint][];
@@ -297,32 +307,37 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
     return accounts;
   }
 
-  private async findBridgeInstructions(
+  private async findInstructions(
     accounts: MessageAccountKeys,
     response: VersionedTransactionResponse,
   ): Promise<MessageCompiledInstruction[]> {
-    // find the instruction where the programId equals the Wormhole ProgramId
-    const iix = response!
-      .meta!.innerInstructions![0]!.instructions.filter((i) => {
-        const programId = accounts.get(i.programIdIndex)!.toString();
-        const wormholeCore = this.coreBridge.programId.toString();
-        return programId === wormholeCore;
-      })
+    const {
+      meta,
+      transaction: { message },
+    } = response;
+
+    const programId = this.coreBridge.programId;
+
+    const iix = meta!.innerInstructions
+      ?.flatMap((ix) =>
+        ix.instructions.filter(
+          // find the instructions where the programId equals the Wormhole ProgramId
+          (i) =>
+            programId.toString() === accounts.get(i.programIdIndex)!.toString(),
+        ),
+      )
       .map((ix) => {
         // map over inner ixs to put it in the same format as the compiled instructions
         // from the message
         return {
           programIdIndex: ix.programIdIndex,
           accountKeyIndexes: ix.accounts,
-        } as MessageCompiledInstruction;
-      });
+        };
+      }) as MessageCompiledInstruction[];
 
-    const cix = response.transaction.message.compiledInstructions.filter(
-      (i) => {
-        const programId = accounts.get(i.programIdIndex)!.toString();
-        const wormholeCore = this.coreBridge.programId.toString();
-        return programId === wormholeCore;
-      },
+    const cix = message.compiledInstructions.filter(
+      (i) =>
+        programId.toString() === accounts.get(i.programIdIndex)!.toString(),
     );
 
     // find the instruction where the programId equals the Wormhole ProgramId
@@ -341,7 +356,7 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
       sequence,
       nonce,
       payload,
-    } = deserializeLayout(postMessageLayout, new Uint8Array(acctInfo?.data!));
+    } = deserializePostMessage(new Uint8Array(acctInfo?.data!));
 
     return createVAA('Uint8Array', {
       guardianSet: await this.getGuardianSetIndex(),
@@ -365,28 +380,30 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
     if (!response || !response.meta || !response.meta.innerInstructions)
       throw new Error('transaction not found');
 
-    // The sequence is frequently found in the log, pull from there if we can
-    const loggedSeqs = SolanaWormholeCore.parseSequenceFromLog(
-      this.coreBridge.programId.toBase58(),
-      response,
-    );
-    if (loggedSeqs.length > 0) {
-      const [emitter, seq] = loggedSeqs[0]!;
-      return [
-        {
-          chain: this.chain,
-          emitter: emitter,
-          sequence: seq,
-        },
-      ];
+    try {
+      // The sequence is frequently found in the log, pull from there if we can
+      const loggedSeqs = SolanaWormholeCore.parseSequenceFromLog(
+        this.coreBridge.programId.toBase58(),
+        response,
+      );
+      if (loggedSeqs.length > 0) {
+        const [emitter, seq] = loggedSeqs[0]!;
+        return [
+          {
+            chain: this.chain,
+            emitter: emitter,
+            sequence: seq,
+          },
+        ];
+      }
+    } catch {
+      // but since  the account keys may need to be resolved, it could fail
     }
 
-    // Otherwise we need to get it from the message account
     const accounts = await this.getMessageAccountKeys(response);
-    const bridgeInstructions = await this.findBridgeInstructions(
-      accounts,
-      response,
-    );
+
+    // Otherwise we need to get it from the message account
+    const bridgeInstructions = await this.findInstructions(accounts, response);
 
     if (!bridgeInstructions || bridgeInstructions.length === 0)
       throw new Error('no bridge messages found');
@@ -416,10 +433,7 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
 
     // Otherwise we need to get it from the message account
     const accounts = await this.getMessageAccountKeys(response);
-    const bridgeInstructions = await this.findBridgeInstructions(
-      accounts,
-      response,
-    );
+    const bridgeInstructions = await this.findInstructions(accounts, response);
 
     if (!bridgeInstructions || bridgeInstructions.length === 0)
       throw new Error('no bridge messages found');
