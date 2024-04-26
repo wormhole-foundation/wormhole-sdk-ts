@@ -1,5 +1,9 @@
 import type { Layout } from '@wormhole-foundation/sdk-connect';
-import { layoutItems } from '@wormhole-foundation/sdk-connect';
+import {
+  LayoutToType,
+  deserializeLayout,
+  layoutItems,
+} from '@wormhole-foundation/sdk-connect';
 
 /** Binary layout for postMessage account */
 export const postMessageLayout = [
@@ -16,3 +20,9 @@ export const postMessageLayout = [
   { name: 'payloadLength', binary: 'uint', size: 4, endianness: 'little' },
   { name: 'payload', binary: 'bytes' },
 ] as const satisfies Layout;
+
+export function deserializePostMessage(
+  data: Uint8Array,
+): LayoutToType<typeof postMessageLayout> {
+  return deserializeLayout(postMessageLayout, data);
+}
