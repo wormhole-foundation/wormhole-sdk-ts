@@ -31,6 +31,8 @@ export const tokenBridgeContracts = [[
     ["Xpla",      "xpla137w0wfch2dfmz7jl2ap8pcmswasj8kg06ay4dtjzw7tzkn77ufxqfw7acv"],
     ["Sei",       "sei1smzlm9t79kur392nu9egl8p8je9j92q4gzguewj56a05kyxxra0qy0nuf3"],
     ["Wormchain", "wormhole1466nf3zuxpya8q9emxukd7vftaf6h4psr0a07srl5zw74zh84yjq4lyjmh"],
+    ["Blast",     "0x24850c6f61C438823F01B7A3BF2B89B72174Fa9d"],
+    ["Scroll",    "0x24850c6f61C438823F01B7A3BF2B89B72174Fa9d"],
   ]], [
   "Testnet", [
     ["Solana",          "DZnkkTmCiFWfYTfT41X3Rd1kDgozqzxWaHqsw6W4x2oe"],
