@@ -1,6 +1,7 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
 import type {
   ChainContext,
+  SignAndSendSigner,
   Signer,
   TransactionId,
   TxHash,
@@ -8,13 +9,15 @@ import type {
 } from "@wormhole-foundation/sdk-definitions";
 import { isSignAndSendSigner, isSigner } from "@wormhole-foundation/sdk-definitions";
 
+type SignSend<N extends Network, C extends Chain> = (
+  txns: UnsignedTransaction<N, C>[],
+) => Promise<TxHash[]>;
+
 export async function signSendWait<N extends Network, C extends Chain>(
   chain: ChainContext<N, C>,
   xfer: AsyncGenerator<UnsignedTransaction<N, C>>,
   signer: Signer<N, C>,
 ): Promise<TransactionId[]> {
-  const txHashes: TxHash[] = [];
-
   if (!isSigner(signer)) throw new Error("Invalid signer, not SignAndSendSigner or SignOnlySigner");
 
   const signSend = async (txns: UnsignedTransaction<N, C>[]): Promise<TxHash[]> =>
@@ -22,6 +25,26 @@ export async function signSendWait<N extends Network, C extends Chain>(
       ? signer.signAndSend(txns)
       : chain.sendWait(await signer.sign(txns));
 
+  const txHashes = await ssw(xfer, signSend);
+  return txHashes.map((txid) => ({ chain: chain.chain, txid }));
+}
+
+export async function signAndSendWait<N extends Network, C extends Chain>(
+  xfer: AsyncGenerator<UnsignedTransaction<N, C>>,
+  signer: SignAndSendSigner<N, C>,
+): Promise<TransactionId[]> {
+  if (!isSignAndSendSigner(signer))
+    throw new Error("Invalid signer, only SignAndSendSigner may call this method");
+
+  const txHashes = await ssw(xfer, signer.signAndSend);
+  return txHashes.map((txid) => ({ chain: signer.chain(), txid }));
+}
+
+async function ssw<N extends Network, C extends Chain>(
+  xfer: AsyncGenerator<UnsignedTransaction<N, C>>,
+  signSend: SignSend<N, C>,
+): Promise<TxHash[]> {
+  const txids: TxHash[] = [];
   let txbuff: UnsignedTransaction<N, C>[] = [];
   for await (const tx of xfer) {
     // buffer transactions as long as they are
@@ -33,20 +56,20 @@ export async function signSendWait<N extends Network, C extends Chain>(
       // flush the buffer then sign and send the
       // current tx
       if (txbuff.length > 0) {
-        txHashes.push(...(await signSend(txbuff)));
+        txids.push(...(await signSend(txbuff)));
         txbuff = [];
       }
       // Note: it may be possible to group this tx with
       // those in the buffer if there are any but
       // the parallelizable flag alone is not enough to signal
       // if this is safe
-      txHashes.push(...(await signSend([tx])));
+      txids.push(...(await signSend([tx])));
     }
   }
 
   if (txbuff.length > 0) {
-    txHashes.push(...(await signSend(txbuff)));
+    txids.push(...(await signSend(txbuff)));
   }
 
-  return txHashes.map((txid) => ({ chain: chain.chain, txid }));
+  return txids;
 }
