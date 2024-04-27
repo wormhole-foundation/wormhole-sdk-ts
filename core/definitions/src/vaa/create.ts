@@ -25,6 +25,13 @@ type DynamicProperties<PL extends PayloadLiteral> = LayoutToType<
   DynamicItemsOfLayout<[...typeof baseLayout, PayloadLiteralToPayloadItemLayout<PL>]>
 >;
 
+/**
+ * Create a VAA from a payload literal and a set of dynamic properties.
+ * @param payloadLiteral The payload literal to create a VAA for.
+ * @param vaaData The dynamic properties to include in the VAA.
+ * @returns A VAA with the given payload literal and dynamic properties.
+ * @throws If the dynamic properties do not match the payload literal.
+ */
 export function createVAA<PL extends PayloadLiteral>(
   payloadLiteral: PL,
   vaaData: DynamicProperties<PL>,
