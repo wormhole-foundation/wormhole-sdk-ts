@@ -298,6 +298,8 @@ function buildAscendingBounds(sortedBounds: readonly (readonly [Bounds, LayoutIn
 function generateLayoutDiscriminator(
   layouts: readonly Layout[]
 ): [boolean, (encoded: BytesType) => readonly LayoutIndex[]] {
+  //for debug output:
+  // const candStr = (candidate: Bitset) => candidate.toString(2).padStart(layouts.length, '0');
 
   if (layouts.length === 0)
     throw new Error("Cannot discriminate empty set of layouts");
@@ -357,6 +359,11 @@ function generateLayoutDiscriminator(
       for (let j = 0; j < serialized.length; ++j)
         fixedKnownBytes[offset + j]!.push([serialized[j]!, i]);
 
+  //debug output:
+  // console.log("fixedKnownBytes:",
+  //   fixedKnownBytes.map((v, i) => v.length > 0 ? [i, v] : undefined).filter(v => v !== undefined)
+  // );
+
   let bestBytes = [];
   for (const [bytePos, fixedKnownByte] of fixedKnownBytes.entries()) {
     //the number of layouts with a given size is an upper bound on the discriminatory power of
@@ -376,7 +383,7 @@ function generateLayoutDiscriminator(
       distinctValues.set(byteVal, distinctValues.get(byteVal)! | 1n << BigInt(candidate));
     }
 
-    let power = count(lwba);
+    let power = layouts.length - Math.max(count(anyValueLayouts), count(outOfBoundsLayouts));
     for (const layoutsWithValue of distinctValues.values()) {
       //if we find the byte value associated with this set of layouts, we can eliminate
       //  all other layouts that don't have this value at this position and all layouts
@@ -384,6 +391,17 @@ function generateLayoutDiscriminator(
       const curPower = fixedKnownByte.length - count(layoutsWithValue) + count(outOfBoundsLayouts);
       power = Math.min(power, curPower);
     }
+
+    //debug output:
+    // console.log(
+    //   "bytePos:", bytePos,
+    //   "\npower:", power,
+    //   "\nfixedKnownByte:", fixedKnownByte,
+    //   "\nlwba:", candStr(lwba),
+    //   "\nanyValueLayouts:", candStr(anyValueLayouts),
+    //   "\noutOfBoundsLayouts:", candStr(outOfBoundsLayouts),
+    //   "\ndistinctValues:", new Map([...distinctValues].map(([k, v]) => [k, candStr(v)]))
+    // );
 
     if (power === 0)
       continue;
@@ -521,14 +539,31 @@ function generateLayoutDiscriminator(
     throw new Error("Implementation error in layout discrimination algorithm");
   };
 
+  //debug output:
+  // console.log("strategies:", JSON.stringify(
+  //     new Map([...strategies].map(([cands, strat]) => [
+  //       candStr(cands),
+  //       typeof strat === "string"
+  //         ? strat
+  //         : [
+  //           strat[0], //bytePos
+  //           candStr(strat[1]), //outOfBoundsLayouts
+  //           new Map([...strat[2]].map(([value, cands]) => [value, candStr(cands)]))
+  //         ]
+  //     ]
+  //   ))
+  // ));
+
   return [distinguishable, (encoded: BytesType) => {
     let candidates = allLayouts;
 
-    for (
-      let strategy = strategies.get(candidates)!;
-      strategy !== "indistinguishable";
-      strategy = strategies.get(candidates) ?? findSmallestSuperSetStrategy(candidates)
-    ) {
+    let strategy = strategies.get(candidates)!;
+    while (strategy !== "indistinguishable") {
+      //debug output:
+      // console.log(
+      //   "applying strategy", strategy,
+      //   "\nfor remaining candidates:", candStr(candidates)
+      // );
       if (strategy === "size")
         candidates &= layoutsWithSize(encoded.length);
       else {
@@ -546,9 +581,13 @@ function generateLayoutDiscriminator(
       }
 
       if (count(candidates) <= 1)
-        return bitsetToArray(candidates);
+        break;
+
+      strategy = strategies.get(candidates) ?? findSmallestSuperSetStrategy(candidates)
     }
 
+    //debug output:
+    // console.log("final candidates", candStr(candidates));
     return bitsetToArray(candidates);
   }];
 }
