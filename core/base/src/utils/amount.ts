@@ -170,10 +170,11 @@ export function display(amount: Amount, precision?: number): string {
 export function whole(amount: Amount): number {
   return Number(display(amount));
 }
+
 /**
- *
- * @param amount
- * @param decimals
+ * fmt formats a bigint amount to a string with the given number of decimals
+ * @param amount bigint amount
+ * @param decimals number of decimals
  */
 export function fmt(amount: bigint, decimals: number): string {
   return display(fromBaseUnits(amount, decimals));

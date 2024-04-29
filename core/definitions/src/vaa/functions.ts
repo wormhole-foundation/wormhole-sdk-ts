@@ -38,6 +38,12 @@ export function payloadLiteralToPayloadItemLayout<PL extends PayloadLiteral>(pay
   } as PayloadLiteralToPayloadItemLayout<PL>;
 }
 
+/**
+ * serialize a VAA to a Uint8Array
+ * @param vaa the VAA to serialize
+ * @returns a Uint8Array representation of the VAA
+ * @throws if the VAA is not valid
+ */
 export function serialize<PL extends PayloadLiteral>(vaa: VAA<PL>): Uint8Array {
   const layout = [
     ...baseLayout,
@@ -46,6 +52,13 @@ export function serialize<PL extends PayloadLiteral>(vaa: VAA<PL>): Uint8Array {
   return serializeLayout(layout, vaa as unknown as LayoutToType<typeof layout>);
 }
 
+/**
+ * serialize a VAA payload to a Uint8Array
+ *
+ * @param payloadLiteral The payload literal to use for serialization
+ * @param payload  The dynamic properties to include in the payload
+ * @returns a Uint8Array representation of the VAA Payload
+ */
 export function serializePayload<PL extends PayloadLiteral>(
   payloadLiteral: PL,
   payload: Payload<PL>,
@@ -136,6 +149,15 @@ export function payloadDiscriminator<
 
 type ExtractLiteral<T> = T extends PayloadDiscriminator<infer LL> ? LL : T;
 
+/**
+ * deserialize a VAA from a Uint8Array
+ *
+ * @param payloadDet The payload literal or discriminator to use for deserialization
+ * @param data the data to deserialize
+ * @returns a VAA object with the given payload literal or discriminator
+ * @throws if the data is not a valid VAA
+ */
+
 export function deserialize<T extends PayloadLiteral | PayloadDiscriminator>(
   payloadDet: T,
   data: Byteish,
@@ -188,6 +210,15 @@ type DeserializePayloadReturn<T> = T extends infer PL extends PayloadLiteral
   ? DeserializedPair<LL>
   : never;
 
+/**
+ * deserialize a payload from a Uint8Array
+ *
+ * @param payloadDet the payload literal or discriminator to use for deserialization
+ * @param data the data to deserialize
+ * @param offset the offset to start deserializing from
+ * @returns the deserialized payload
+ * @throws if the data is not a valid payload
+ */
 export function deserializePayload<T extends PayloadLiteral | PayloadDiscriminator>(
   payloadDet: T,
   data: Byteish,
@@ -211,6 +242,42 @@ export function deserializePayload<T extends PayloadLiteral | PayloadDiscriminat
   })() as DeserializePayloadReturn<T>;
 }
 
+/**
+ * Attempt to deserialize a payload from a Uint8Array using all registered layouts
+ *
+ * @param data the data to deserialize
+ * @returns an array of all possible deserialized payloads
+ * @throws if the data is not a valid payload
+ */
+export const exhaustiveDeserialize = (() => {
+  const rebuildDiscrimininator = () => {
+    const layoutLiterals = Array.from(payloadFactory.keys());
+    const layouts = layoutLiterals.map((l) => payloadFactory.get(l)!);
+    return [layoutLiterals, layoutDiscriminator(layouts, true)] as const;
+  };
+
+  let layoutLiterals = [] as LayoutLiteral[];
+
+  return (data: Byteish): readonly DeserializedPair[] => {
+    if (payloadFactory.size !== layoutLiterals.length) [layoutLiterals] = rebuildDiscrimininator();
+
+    const candidates = layoutLiterals;
+    return candidates.reduce((acc, literal) => {
+      try {
+        acc.push([literal, deserializePayload(literal!, data)] as DeserializedPair);
+      } catch {}
+      return acc;
+    }, [] as DeserializedPair[]);
+  };
+})();
+
+/**
+ * Blindly deserialize a payload from a Uint8Array
+ *
+ * @param data the data to deserialize
+ * @returns an array of all possible deserialized payloads
+ * @throws if the data is not a valid payload
+ */
 export const blindDeserializePayload = (() => {
   const rebuildDiscrimininator = () => {
     const layoutLiterals = Array.from(payloadFactory.keys());
@@ -226,7 +293,6 @@ export const blindDeserializePayload = (() => {
       [layoutLiterals, discriminator] = rebuildDiscrimininator();
 
     if (typeof data === "string") data = encoding.hex.decode(data);
-
     const candidates = discriminator(data).map((c) => layoutLiterals[c]);
     return candidates.reduce((acc, literal) => {
       try {
