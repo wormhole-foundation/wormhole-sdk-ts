@@ -5,7 +5,9 @@ import type {
   ProtocolName,
 } from "@wormhole-foundation/sdk-connect";
 import {
+  ChainContext,
   NativeAddressCtr,
+  PlatformToChains,
   PlatformUtils,
   RpcConnection,
   Signer,
@@ -19,15 +21,23 @@ export * from "./addresses.js";
 export interface PlatformDefinition<P extends Platform> {
   Platform: PlatformUtils<P>;
   Address: NativeAddressCtr;
+  getChain: <N extends Network, C extends PlatformToChains<P>>(
+    network: N,
+    chain: C,
+  ) => ChainContext<N, C, P>;
   getSigner: (rpc: RpcConnection<P>, key: string, ...args: any) => Promise<Signer>;
   protocols: ProtocolLoaders;
 }
 
+export function isPlatformDefinition(obj: any): obj is PlatformDefinition<Platform> {
+  return obj && obj.Platform && obj.Address && obj.getSigner && obj.protocols;
+}
+
+export type PlatformLoader<P extends Platform> = () => Promise<PlatformDefinition<P>>;
+
 export type ProtocolLoaders = {
   [key in ProtocolName]?: () => Promise<any>;
 };
-
-export type PlatformLoader<P extends Platform> = () => Promise<PlatformDefinition<P>>;
 
 export async function loadPlatforms(
   loaders: PlatformLoader<Platform>[],

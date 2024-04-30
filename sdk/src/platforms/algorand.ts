@@ -10,6 +10,7 @@ const algorand: PlatformDefinition<"Algorand"> = {
     WormholeCore: () => import("@wormhole-foundation/sdk-algorand-core"),
     TokenBridge: () => import("@wormhole-foundation/sdk-algorand-tokenbridge"),
   },
+  getChain: (n, c) => new _algorand.AlgorandChain(c, new _algorand.AlgorandPlatform(n)),
 };
 
 export default algorand;

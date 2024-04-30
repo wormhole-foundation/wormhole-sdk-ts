@@ -10,6 +10,7 @@ const aptos: PlatformDefinition<"Aptos"> = {
     WormholeCore: () => import("@wormhole-foundation/sdk-aptos-core"),
     TokenBridge: () => import("@wormhole-foundation/sdk-aptos-tokenbridge"),
   },
+  getChain: (n, c) => new _aptos.AptosChain(c, new _aptos.AptosPlatform(n)),
 };
 
 export default aptos;

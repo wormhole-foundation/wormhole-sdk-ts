@@ -9,5 +9,6 @@ const cosmwasm: PlatformDefinition<"Cosmwasm"> = {
     TokenBridge: () => import("@wormhole-foundation/sdk-cosmwasm-tokenbridge"),
     IbcBridge: () => import("@wormhole-foundation/sdk-cosmwasm-ibc"),
   },
+  getChain: (n, c) => new _cosmwasm.CosmwasmChain(c, new _cosmwasm.CosmwasmPlatform(n)),
 };
 export default cosmwasm;
