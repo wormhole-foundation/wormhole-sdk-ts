@@ -40,6 +40,8 @@ const rpcConfig = [[
     ["Provenance","https://rpc.provenance.io/"],
     ["Linea",     "https://rpc.linea.build"],
     ["Scroll",    "https://rpc.ankr.com/scroll"],
+    ["Gnosis",    "https://rpc.ankr.com/gnosis"],
+    ["Rootstock", "https://public-node.rsk.co"],
   ]], [
   "Testnet", [
     ["Ethereum",        "https://rpc.ankr.com/eth_goerli"],
@@ -78,6 +80,8 @@ const rpcConfig = [[
     ["Linea",           "https://rpc.sepolia.linea.build"],
     ["Xlayer",          "https://testrpc.xlayer.tech/"],
     ["Scroll",          "https://rpc.ankr.com/scroll_sepolia_testnet"],
+    ["Rootstock",       "https://public-node.testnet.rsk.co"],
+    ["Gnosis",          "https://1rpc.io/gnosis"]
   ]], [
   "Devnet", [
     ["Ethereum",  "http://eth-devnet:8545"],
