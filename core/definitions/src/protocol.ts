@@ -55,6 +55,7 @@ export interface ProtocolInitializer<
     chain: C,
     connection: RpcConnection<P>,
     contracts: Contracts,
+    version?: string,
   ): ProtocolInterface<PN, N, C>;
   /** fromRpc will create a new instance of the Protocol client given the RPC and the config
    * @param rpc - the RPC connection to the chain, used to query the chain for its native chain id
@@ -64,6 +65,20 @@ export interface ProtocolInitializer<
     rpc: RpcConnection<P>,
     config: ChainsConfig<Network, P>,
   ): Promise<ProtocolInterface<PN, N, C>>;
+}
+
+export interface VersionedProtocolInitializer<
+  P extends Platform,
+  PN extends ProtocolName,
+  N extends Network,
+> extends ProtocolInitializer<P, PN, N> {
+  getVersion(rpc: RpcConnection<P>, Contracts: Contracts): Promise<string>;
+}
+
+export function isVersionedProtocolInitializer(
+  ctr: ProtocolInitializer<Platform, ProtocolName, Network>,
+): ctr is VersionedProtocolInitializer<Platform, ProtocolName, Network> {
+  return "getVersion" in ctr;
 }
 
 export type ProtocolInstance<
