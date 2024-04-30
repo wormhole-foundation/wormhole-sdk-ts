@@ -39,6 +39,7 @@ const rpcConfig = [[
     ["Blast",     "https://rpc.blast.io"],
     ["Provenance","https://rpc.provenance.io/"],
     ["Linea",     "https://rpc.linea.build"],
+    ["Scroll",    "https://rpc.ankr.com/scroll"],
   ]], [
   "Testnet", [
     ["Ethereum",        "https://rpc.ankr.com/eth_goerli"],
@@ -76,6 +77,7 @@ const rpcConfig = [[
     ["Berachain",       "https://artio.rpc.berachain.com"],
     ["Linea",           "https://rpc.sepolia.linea.build"],
     ["Xlayer",          "https://testrpc.xlayer.tech/"],
+    ["Scroll",          "https://rpc.ankr.com/scroll_sepolia_testnet"],
   ]], [
   "Devnet", [
     ["Ethereum",  "http://eth-devnet:8545"],
