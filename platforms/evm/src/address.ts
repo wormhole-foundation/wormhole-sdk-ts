@@ -4,7 +4,7 @@ import {
   encoding,
   registerNative,
 } from '@wormhole-foundation/sdk-connect';
-import { getAddress, isAddress } from 'ethers/address';
+import { getAddress, isAddress } from 'ethers';
 import type { AnyEvmAddress } from './types.js';
 import { _platform } from './types.js';
 
