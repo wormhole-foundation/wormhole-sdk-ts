@@ -1,7 +1,9 @@
-import "@wormhole-foundation/sdk-evm-core";
+import { loadProtocols } from "@wormhole-foundation/sdk";
 import evm from "@wormhole-foundation/sdk/platforms/evm";
 
 (async function () {
+  await loadProtocols(evm);
+
   const platform = new evm.Platform("Testnet");
   const chain = platform.getChain("Sepolia");
   const core = await chain.getWormholeCore();

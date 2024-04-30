@@ -6,9 +6,9 @@ const aptos: PlatformDefinition<"Aptos"> = {
   Address: _aptos.AptosAddress,
   Platform: _aptos.AptosPlatform,
   getSigner: _aptos.getAptosSigner,
-  protocolLoaders: {
-    core: () => import("@wormhole-foundation/sdk-aptos-core"),
-    tokenbridge: () => import("@wormhole-foundation/sdk-aptos-tokenbridge"),
+  protocols: {
+    WormholeCore: () => import("@wormhole-foundation/sdk-aptos-core"),
+    TokenBridge: () => import("@wormhole-foundation/sdk-aptos-tokenbridge"),
   },
 };
 

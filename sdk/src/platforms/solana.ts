@@ -5,10 +5,10 @@ const solana: PlatformDefinition<"Solana"> = {
   Address: _solana.SolanaAddress,
   Platform: _solana.SolanaPlatform,
   getSigner: _solana.getSolanaSignAndSendSigner,
-  protocolLoaders: {
-    core: () => import("@wormhole-foundation/sdk-solana-core"),
-    tokenbridge: () => import("@wormhole-foundation/sdk-solana-tokenbridge"),
-    cctp: () => import("@wormhole-foundation/sdk-solana-cctp"),
+  protocols: {
+    WormholeCore: () => import("@wormhole-foundation/sdk-solana-core"),
+    TokenBridge: () => import("@wormhole-foundation/sdk-solana-tokenbridge"),
+    CircleBridge: () => import("@wormhole-foundation/sdk-solana-cctp"),
   },
 };
 export default solana;

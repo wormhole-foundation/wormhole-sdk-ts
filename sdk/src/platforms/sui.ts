@@ -5,9 +5,9 @@ const sui: PlatformDefinition<"Sui"> = {
   Address: _sui.SuiAddress,
   Platform: _sui.SuiPlatform,
   getSigner: _sui.getSuiSigner,
-  protocolLoaders: {
-    core: () => import("@wormhole-foundation/sdk-sui-core"),
-    tokenbridge: () => import("@wormhole-foundation/sdk-sui-tokenbridge"),
+  protocols: {
+    WormholeCore: () => import("@wormhole-foundation/sdk-sui-core"),
+    TokenBridge: () => import("@wormhole-foundation/sdk-sui-tokenbridge"),
   },
 };
 export default sui;
