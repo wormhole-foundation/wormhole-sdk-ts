@@ -20,7 +20,7 @@ import {
 } from "./index.js";
 import type { PlatformContext } from "./platform.js";
 import type { ProtocolInstance, ProtocolInterface, ProtocolName } from "./protocol.js";
-import { protocolIsRegistered } from "./protocol.js";
+import { isVersionedProtocolInitializer, protocolIsRegistered } from "./protocol.js";
 import type { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge/tokenBridge.js";
 import type { RpcConnection } from "./rpc.js";
 import type { ChainConfig, SignedTx, TokenAddress, TokenId } from "./types.js";
@@ -208,16 +208,32 @@ export abstract class ChainContext<
     contracts?: Contracts,
     rpc?: RpcConnection<P>,
   ): Promise<ProtocolInstance<P, PN, N, C>> {
+    if (!contracts && this.protocols.has(protocolName)) return this.protocols.get(protocolName)!;
+
     const _contracts = contracts
       ? { ...this.config.contracts, ...contracts }
       : this.config.contracts;
-
-    if (!contracts && this.protocols.has(protocolName)) return this.protocols.get(protocolName)!;
-
+    const _rpc = rpc ?? (await this.getRpc());
     const ctor = this.platform.getProtocolInitializer(protocolName);
-    const protocol = rpc
-      ? await this.platform.getProtocol(protocolName, rpc)
-      : new ctor(this.network, this.chain, await this.getRpc(), _contracts);
+
+    let protocol;
+    if (rpc) {
+      if (contracts)
+        // TODO: the platforms `getProtocol` does not allow passing contracts
+        //  it would need to be updated to allow this
+        throw new Error(
+          "Custom contracts are currently not supported with custom rpc connection. Add the contracts to the base config.",
+        );
+      // This ultimately calls fromRpc which _should_ handle version fetching
+      protocol = await this.platform.getProtocol(protocolName, _rpc);
+    } else {
+      if (isVersionedProtocolInitializer(ctor)) {
+        const version = await ctor.getVersion(_rpc, _contracts);
+        protocol = new ctor(this.network, this.chain, _rpc, _contracts, version);
+      } else {
+        protocol = new ctor(this.network, this.chain, _rpc, _contracts);
+      }
+    }
 
     if (!contracts) this.protocols.set(protocolName, protocol);
 
