@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-evm-cctp",
-  "version": "0.6.5",
+  "version": "0.6.6-beta.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -53,8 +53,8 @@
     "prettier": "prettier --write ./src"
   },
   "dependencies": {
-    "@wormhole-foundation/sdk-connect": "0.6.5",
-    "@wormhole-foundation/sdk-evm": "0.6.5",
+    "@wormhole-foundation/sdk-connect": "0.6.6-beta.0",
+    "@wormhole-foundation/sdk-evm": "0.6.6-beta.0",
     "ethers": "^6.5.1"
   },
   "type": "module",
