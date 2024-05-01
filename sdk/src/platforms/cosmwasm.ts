@@ -4,10 +4,11 @@ const cosmwasm: PlatformDefinition<"Cosmwasm"> = {
   Address: _cosmwasm.CosmwasmAddress,
   Platform: _cosmwasm.CosmwasmPlatform,
   getSigner: _cosmwasm.getCosmwasmSigner,
-  protocolLoaders: {
-    core: () => import("@wormhole-foundation/sdk-cosmwasm-core"),
-    tokenbridge: () => import("@wormhole-foundation/sdk-cosmwasm-tokenbridge"),
-    ibc: () => import("@wormhole-foundation/sdk-cosmwasm-ibc"),
+  protocols: {
+    WormholeCore: () => import("@wormhole-foundation/sdk-cosmwasm-core"),
+    TokenBridge: () => import("@wormhole-foundation/sdk-cosmwasm-tokenbridge"),
+    IbcBridge: () => import("@wormhole-foundation/sdk-cosmwasm-ibc"),
   },
+  getChain: (n, c) => new _cosmwasm.CosmwasmChain(c, new _cosmwasm.CosmwasmPlatform(n)),
 };
 export default cosmwasm;

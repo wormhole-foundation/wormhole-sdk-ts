@@ -6,12 +6,13 @@ const evm: PlatformDefinition<"Evm"> = {
   Address: _evm.EvmAddress,
   Platform: _evm.EvmPlatform,
   getSigner: _evm.getEvmSigner,
-  protocolLoaders: {
-    core: () => import("@wormhole-foundation/sdk-evm-core"),
-    tokenbridge: () => import("@wormhole-foundation/sdk-evm-tokenbridge"),
-    portico: () => import("@wormhole-foundation/sdk-evm-portico"),
-    cctp: () => import("@wormhole-foundation/sdk-evm-cctp"),
+  protocols: {
+    WormholeCore: () => import("@wormhole-foundation/sdk-evm-core"),
+    TokenBridge: () => import("@wormhole-foundation/sdk-evm-tokenbridge"),
+    PorticoBridge: () => import("@wormhole-foundation/sdk-evm-portico"),
+    CircleBridge: () => import("@wormhole-foundation/sdk-evm-cctp"),
   },
+  getChain: (n, c) => new _evm.EvmChain(c, new _evm.EvmPlatform(n)),
 };
 
 export default evm;

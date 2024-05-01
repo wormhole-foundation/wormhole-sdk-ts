@@ -6,10 +6,11 @@ const algorand: PlatformDefinition<"Algorand"> = {
   Address: _algorand.AlgorandAddress,
   Platform: _algorand.AlgorandPlatform,
   getSigner: _algorand.getAlgorandSigner,
-  protocolLoaders: {
-    core: () => import("@wormhole-foundation/sdk-algorand-core"),
-    tokenbridge: () => import("@wormhole-foundation/sdk-algorand-tokenbridge"),
+  protocols: {
+    WormholeCore: () => import("@wormhole-foundation/sdk-algorand-core"),
+    TokenBridge: () => import("@wormhole-foundation/sdk-algorand-tokenbridge"),
   },
+  getChain: (n, c) => new _algorand.AlgorandChain(c, new _algorand.AlgorandPlatform(n)),
 };
 
 export default algorand;
