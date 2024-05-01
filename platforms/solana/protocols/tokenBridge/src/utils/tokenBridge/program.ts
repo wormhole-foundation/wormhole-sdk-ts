@@ -6,7 +6,9 @@ import { utils } from '@wormhole-foundation/sdk-solana';
 import { TokenBridgeCoder } from './coder/index.js';
 import type { TokenBridge } from '../../tokenBridgeType.js';
 
-import IDL from '../../anchor-idl/token_bridge.json';
+// ts-ignoring because of this nonsense https://github.com/microsoft/TypeScript/issues/51783
+/* @ts-ignore */
+import IDL from '../../anchor-idl/token_bridge.json' assert { type: 'json' };;
 
 export function createTokenBridgeProgramInterface(
   programId: PublicKeyInitData,

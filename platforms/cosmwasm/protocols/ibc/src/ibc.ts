@@ -1,7 +1,7 @@
 import type { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import type { IndexedTx, MsgTransferEncodeObject } from "@cosmjs/stargate";
 import { coin } from "@cosmjs/stargate";
-import { MsgTransfer } from "cosmjs-types/ibc/applications/transfer/v1/tx";
+import { MsgTransfer } from "cosmjs-types/ibc/applications/transfer/v1/tx.js";
 
 import type {
   ChainAddress,

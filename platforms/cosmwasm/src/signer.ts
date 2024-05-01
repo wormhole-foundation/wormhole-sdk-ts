@@ -30,7 +30,7 @@ import type { CosmwasmUnsignedTransaction } from "./unsignedTransaction.js";
 // TODO: replace this? no hints in the package to resolve it, probably
 // need to find a new package to pull it from
 // @ts-ignore
-import { TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
+import { TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx.js";
 
 export async function getCosmwasmSigner(rpc: CosmWasmClient, mnemonic: string): Promise<Signer> {
   const [network, chain] = await CosmwasmPlatform.chainFromRpc(rpc);
