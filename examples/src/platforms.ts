@@ -12,7 +12,9 @@ import evm from "@wormhole-foundation/sdk/platforms/evm";
   );
   console.log(blindDeserializePayload(msg!.payload));
 
-  const sepolia = evm.getChain("Testnet", "Sepolia");
+  const sepolia = evm.getChain("Testnet", "Sepolia", {
+    rpc: "https://eth-sepolia-public.unifra.io",
+  });
   const tb = await sepolia.getTokenBridge();
   const address = await tb.getWrappedNative();
   console.log(address.toString());
