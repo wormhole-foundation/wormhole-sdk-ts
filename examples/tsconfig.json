@@ -12,7 +12,6 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
 
-    // Always consult the package.json `exports` field for module resolution
     // ignore junk since this is examples
     "allowUnusedLabels": true,
     "noUnusedLocals": false,
