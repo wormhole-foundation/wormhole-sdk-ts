@@ -1,9 +1,11 @@
 import {
   CONFIG,
   Chain,
+  DEFAULT_NETWORK,
   Network,
   Signature,
   TokenBridge,
+  contracts,
   createVAA,
   encoding,
   toNative,
@@ -15,33 +17,23 @@ import "@wormhole-foundation/sdk-cosmwasm-tokenbridge";
 import nock from "nock";
 import path from "path";
 
-const network: "Testnet" = "Testnet"; //DEFAULT_NETWORK;
+const network = DEFAULT_NETWORK;
 const configs = CONFIG[network].chains;
 
-const chain: CosmwasmChains = "Sei";
+const chain: CosmwasmChains = "Injective";
 const realNativeAddress = toNative(chain, chainToNativeDenoms(network, chain));
 
-const sender = "sei1x76thkmwy03attv3j28ekkfmkhnyah3qnzwvn4";
+const sender = "inj1vhjzaf3uuzfxmaypkuqrf9rmc9xx7677xxegay";
 const senderAddress = toNative(chain, sender);
 
-// address for "turtle" a cw20 on sei
-const nativeTokenAddress = toNative(
-  chain,
-  "sei16aa3whueaddmms3qw0apz7ylddg0vwtw2zugafmccdtrxrwyx0kqwxntat",
-);
+const nativeTokenAddress = toNative(chain, "inj1sthrn5ep8ls5vzz8f9gp89khhmedahhdkqa8z3");
 
 // Wrapped avax on sei
 const wrappedTokenChain: Chain = "Avalanche";
-const realWrappedAddress = toNative(
-  chain,
-  "sei1mgpq67pj7p2acy5x7r5lz7fulxmuxr3uh5f0szyvqgvru3glufzsxk8tnx",
-);
+const realWrappedAddress = toNative(chain, "inj18a2u6az6dzw528rptepfg6n49ak6hdzkny4um6");
 
-// rando address, i think this is the token bridge
-const bogusAddress = toNative(
-  chain,
-  "sei1dkdwdvknx0qav5cp5kw68mkn3r99m3svkyjfvkztwh97dv2lm0ksj6xrak",
-);
+// rando address, just use the token bridge contract address
+const bogusAddress = toNative(chain, contracts.tokenBridge("Mainnet", "Injective"));
 
 // Setup nock to record fixtures
 const nockBack = nock.back;
