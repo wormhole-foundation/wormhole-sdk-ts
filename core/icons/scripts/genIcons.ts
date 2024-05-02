@@ -19,7 +19,9 @@ const makeChainCondition = (chain: Chain): string => {
   } else if (chains.includes(`${chain}Sepolia` as Chain)) {
     // as to avoid the type error without re-typing the array
     return `(chain === "${chain}" || chain === "${chain}Sepolia")`;
-  } else if (chain.includes("Sepolia") || chain.includes("Holesky")) {
+  } else if (chain === "Sei") {
+    return `(chain === "${chain}" || chain === "${chain}evm")`;
+  } else if (chain.includes("Sepolia") || chain.includes("Holesky") || chain === "Seievm") {
     return "";
   } else {
     return `(chain === "${chain}")`;
@@ -30,7 +32,9 @@ let first = true;
 for (const chain of chains) {
   const condition = makeChainCondition(chain);
   if (condition) {
-    const svg = readFileSync(`./src/images/chains/${chain}.svg`, "utf-8").replace(/\r\n/g, "\n");
+    const svg = readFileSync(`./src/images/chains/${chain}.svg`, "utf-8")
+      .replace(/\r\n/g, "\n")
+      .replace(/\n/g, "");
     const b64 = encoding.b64.encode(svg);
     if (first) {
       output += `
