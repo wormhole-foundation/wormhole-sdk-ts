@@ -22,8 +22,8 @@ import {
   toNative,
 } from "@wormhole-foundation/sdk-definitions";
 import { getCircleAttestationWithRetry } from "./circle-api.js";
-import type { ConfigOverrides, WormholeConfig } from "./config.js";
-import { DEFAULT_TASK_TIMEOUT, applyOverrides } from "./config.js";
+import { WormholeConfig, applyWormholeConfigOverrides, WormholeConfigOverrides } from "./config.js";
+import { DEFAULT_TASK_TIMEOUT } from "./config.js";
 import { CircleTransfer } from "./protocols/cctpTransfer.js";
 import { TokenTransfer } from "./protocols/tokenTransfer.js";
 import type { RouteConstructor } from "./routes/index.js";
@@ -48,9 +48,9 @@ export class Wormhole<N extends Network> {
 
   readonly config: WormholeConfig<N>;
 
-  constructor(network: N, platforms: PlatformUtils<any>[], config?: ConfigOverrides<N>) {
+  constructor(network: N, platforms: PlatformUtils<any>[], config?: WormholeConfigOverrides<N>) {
     this._network = network;
-    this.config = applyOverrides(network, config) as WormholeConfig<N>;
+    this.config = applyWormholeConfigOverrides(network, config) as WormholeConfig<N>;
 
     this._chains = new Map();
     this._platforms = new Map();

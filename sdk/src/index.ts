@@ -1,8 +1,9 @@
 import type {
-  ConfigOverrides,
   Network,
+  WormholeConfigOverrides,
   Platform,
   ProtocolName,
+  ChainConfigOverrides,
 } from "@wormhole-foundation/sdk-connect";
 import {
   ChainContext,
@@ -13,10 +14,6 @@ import {
   Signer,
   Wormhole,
 } from "@wormhole-foundation/sdk-connect";
-
-export * from "@wormhole-foundation/sdk-connect";
-
-export * from "./addresses.js";
 
 /**
  * PlatformDefinition is a type that contains the types necessary to
@@ -31,6 +28,7 @@ export interface PlatformDefinition<P extends Platform> {
   getChain: <N extends Network, C extends PlatformToChains<P>>(
     network: N,
     chain: C,
+    overrides?: ChainConfigOverrides<N, C>,
   ) => ChainContext<N, C, P>;
   /** Provides a local signer that implements the Signer interface for the platform */
   getSigner: (rpc: RpcConnection<P>, key: string, ...args: any) => Promise<Signer>;
@@ -98,8 +96,11 @@ export async function loadProtocols<P extends Platform>(
 export async function wormhole<N extends Network>(
   network: N,
   platforms: PlatformLoader<any>[],
-  config?: ConfigOverrides<N>,
+  config?: WormholeConfigOverrides<N>,
 ): Promise<Wormhole<N>> {
   const loaded = (await loadPlatforms(platforms)).map((p) => p.Platform);
   return new Wormhole(network, loaded, config);
 }
+
+export * from "@wormhole-foundation/sdk-connect";
+export * from "./addresses.js";

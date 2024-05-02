@@ -1,6 +1,6 @@
-import type { Network, Platform } from "@wormhole-foundation/sdk-base";
+import type { Chain, Network, Platform } from "@wormhole-foundation/sdk-base";
 import { circle } from "@wormhole-foundation/sdk-base";
-import type { ChainsConfig } from "@wormhole-foundation/sdk-definitions";
+import type { ChainConfig, ChainsConfig } from "@wormhole-foundation/sdk-definitions";
 import { buildConfig } from "@wormhole-foundation/sdk-definitions";
 
 export const DEFAULT_TASK_TIMEOUT = 60 * 1000; // 1 minute in milliseconds
@@ -10,16 +10,6 @@ export type WormholeConfig<N extends Network = Network, P extends Platform = Pla
   circleAPI: string;
   chains: ChainsConfig<N, P>;
 };
-
-type RecursivePartial<T> = {
-  [P in keyof T]?: T[P] extends (infer U)[]
-    ? RecursivePartial<U>[]
-    : T[P] extends object | undefined
-    ? RecursivePartial<T[P]>
-    : T[P];
-};
-
-export type ConfigOverrides<N extends Network> = RecursivePartial<WormholeConfig<N>>;
 
 export const CONFIG = {
   Mainnet: {
@@ -50,28 +40,53 @@ export function networkPlatformConfigs<N extends Network, P extends Platform>(
   ) as ChainsConfig<N, P>;
 }
 
+type RecursivePartial<T> = {
+  [P in keyof T]?: T[P] extends (infer U)[]
+    ? RecursivePartial<U>[]
+    : T[P] extends object | undefined
+    ? RecursivePartial<T[P]>
+    : T[P];
+};
+export type WormholeConfigOverrides<N extends Network> = RecursivePartial<WormholeConfig<N>>;
+export type ChainsConfigOverrides<N extends Network, P extends Platform> = RecursivePartial<
+  ChainsConfig<N, P>
+>;
+export type ChainConfigOverrides<N extends Network, C extends Chain> = RecursivePartial<
+  ChainConfig<N, C>
+>;
+
 // Apply any overrides to the base config
-export function applyOverrides<N extends Network>(
+export function applyWormholeConfigOverrides<N extends Network>(
   network: N,
-  overrides?: ConfigOverrides<N>,
+  overrides?: WormholeConfigOverrides<N>,
 ): WormholeConfig {
   let base = CONFIG[network];
   if (!overrides) return base;
-
-  // recurse through the overrides and apply them to the base config
-  function override(base: any, overrides: any) {
-    if (!base) base = {};
-    for (const [key, value] of Object.entries(overrides)) {
-      if (typeof value === "object" && !Array.isArray(value)) {
-        base[key] = override(base[key], value);
-      } else {
-        base[key] = value;
-      }
-    }
-    return base;
-  }
-
   return override(base, overrides);
+}
+
+// Apply any overrides to the base config
+export function applyChainsConfigConfigOverrides<N extends Network, P extends Platform>(
+  network: N,
+  platform: P,
+  overrides?: ChainsConfigOverrides<N, P>,
+): ChainsConfig<N, P> {
+  const base = networkPlatformConfigs(network, platform);
+  if (!overrides) return base;
+  return override(base, overrides);
+}
+
+// recurse through the overrides and apply them to the base config
+function override(base: any, overrides: any) {
+  if (!base) base = {};
+  for (const [key, value] of Object.entries(overrides)) {
+    if (typeof value === "object" && !Array.isArray(value)) {
+      base[key] = override(base[key], value);
+    } else {
+      base[key] = value;
+    }
+  }
+  return base;
 }
 
 const inNode = typeof process !== "undefined";
