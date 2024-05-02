@@ -1,0 +1,61 @@
+{
+  "name": "@wormhole-foundation/sdk-icons",
+  "version": "0.6.6-beta.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/wormhole-foundation/connect-sdk/issues"
+  },
+  "homepage": "https://github.com/wormhole-foundation/connect-sdk#readme",
+  "directories": {
+    "test": "__tests__"
+  },
+  "license": "Apache-2.0",
+  "main": "./dist/cjs/index.js",
+  "types": "./dist/cjs/index.d.ts",
+  "module": "./dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      }
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "./dist/cjs/index.d.ts"
+      ]
+    }
+  },
+  "files": [
+    "dist/esm",
+    "dist/cjs"
+  ],
+  "dependencies": {
+    "@wormhole-foundation/sdk-base": "0.6.6-beta.0"
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build:cjs": "tsc -p ./tsconfig.cjs.json  && echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
+    "build:esm": "tsc -p ./tsconfig.esm.json",
+    "build": "npm run build:esm && npm run build:cjs",
+    "rebuild": "npm run clean && npm run build",
+    "clean": "rm -rf ./dist && rm -rf ./.turbo",
+    "typecheck": "cp ./__tests__/typechecks/index.test-d.ts ./dist/esm/ && tsd",
+    "lint": "npm run prettier && eslint --fix ./src --ext .ts",
+    "prettier": "prettier --write ./src",
+    "gen": "tsx scripts/genIcons.ts && prettier src/constants/chainIcons.ts -w"
+  },
+  "type": "module",
+  "devDependencies": {
+    "tsx": "^4.7.0"
+  }
+}

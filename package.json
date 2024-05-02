@@ -37,6 +37,7 @@
   "workspaces": [
     "core/base",
     "core/definitions",
+    "core/icons",
     "connect",
     "platforms/evm",
     "platforms/evm/protocols/core",
