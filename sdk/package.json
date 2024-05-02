@@ -53,134 +53,14 @@
         "default": "./dist/esm/index.js"
       }
     },
-    "./addresses": {
+    "./*": {
       "require": {
-        "types": "./dist/cjs/addresses.d.ts",
-        "default": "./dist/cjs/addresses.js"
+        "types": "./dist/cjs/*.d.ts",
+        "default": "./dist/cjs/*.js"
       },
       "import": {
-        "types": "./dist/esm/addresses.d.ts",
-        "default": "./dist/esm/addresses.js"
-      }
-    },
-    "./platforms/evm": {
-      "require": {
-        "types": "./dist/cjs/platforms/evm.d.ts",
-        "default": "./dist/cjs/platforms/evm.js"
-      },
-      "import": {
-        "types": "./dist/esm/platforms/evm.d.ts",
-        "default": "./dist/esm/platforms/evm.js"
-      }
-    },
-    "./platforms/solana": {
-      "require": {
-        "types": "./dist/cjs/platforms/solana.d.ts",
-        "default": "./dist/cjs/platforms/solana.js"
-      },
-      "import": {
-        "types": "./dist/esm/platforms/solana.d.ts",
-        "default": "./dist/esm/platforms/solana.js"
-      }
-    },
-    "./platforms/aptos": {
-      "require": {
-        "types": "./dist/cjs/platforms/aptos.d.ts",
-        "default": "./dist/cjs/platforms/aptos.js"
-      },
-      "import": {
-        "types": "./dist/esm/platforms/aptos.d.ts",
-        "default": "./dist/esm/platforms/aptos.js"
-      }
-    },
-    "./platforms/algorand": {
-      "require": {
-        "types": "./dist/cjs/platforms/algorand.d.ts",
-        "default": "./dist/cjs/platforms/algorand.js"
-      },
-      "import": {
-        "types": "./dist/esm/platforms/algorand.d.ts",
-        "default": "./dist/esm/platforms/algorand.js"
-      }
-    },
-    "./platforms/cosmwasm": {
-      "require": {
-        "types": "./dist/cjs/platforms/cosmwasm.d.ts",
-        "default": "./dist/cjs/platforms/cosmwasm.js"
-      },
-      "import": {
-        "types": "./dist/esm/platforms/cosmwasm.d.ts",
-        "default": "./dist/esm/platforms/cosmwasm.js"
-      }
-    },
-    "./platforms/sui": {
-      "require": {
-        "types": "./dist/cjs/platforms/sui.d.ts",
-        "default": "./dist/cjs/platforms/sui.js"
-      },
-      "import": {
-        "types": "./dist/esm/platforms/sui.d.ts",
-        "default": "./dist/esm/platforms/sui.js"
-      }
-    },
-    "./evm": {
-      "require": {
-        "types": "./dist/cjs/evm.d.ts",
-        "default": "./dist/cjs/evm.js"
-      },
-      "import": {
-        "types": "./dist/esm/evm.d.ts",
-        "default": "./dist/esm/evm.js"
-      }
-    },
-    "./solana": {
-      "require": {
-        "types": "./dist/cjs/solana.d.ts",
-        "default": "./dist/cjs/solana.js"
-      },
-      "import": {
-        "types": "./dist/esm/solana.d.ts",
-        "default": "./dist/esm/solana.js"
-      }
-    },
-    "./cosmwasm": {
-      "require": {
-        "types": "./dist/cjs/cosmwasm.d.ts",
-        "default": "./dist/cjs/cosmwasm.js"
-      },
-      "import": {
-        "types": "./dist/esm/cosmwasm.d.ts",
-        "default": "./dist/esm/cosmwasm.js"
-      }
-    },
-    "./aptos": {
-      "require": {
-        "types": "./dist/cjs/aptos.d.ts",
-        "default": "./dist/cjs/aptos.js"
-      },
-      "import": {
-        "types": "./dist/esm/aptos.d.ts",
-        "default": "./dist/esm/aptos.js"
-      }
-    },
-    "./sui": {
-      "require": {
-        "types": "./dist/cjs/sui.d.ts",
-        "default": "./dist/cjs/sui.js"
-      },
-      "import": {
-        "types": "./dist/esm/sui.d.ts",
-        "default": "./dist/esm/sui.js"
-      }
-    },
-    "./algorand": {
-      "require": {
-        "types": "./dist/cjs/algorand.d.ts",
-        "default": "./dist/cjs/algorand.js"
-      },
-      "import": {
-        "types": "./dist/esm/algorand.d.ts",
-        "default": "./dist/esm/algorand.js"
+        "types": "./dist/esm/*.d.ts",
+        "default": "./dist/esm/*.js"
       }
     }
   },
