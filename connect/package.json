@@ -27,6 +27,10 @@
       "require": {
         "types": "./dist/cjs/index.d.ts",
         "default": "./dist/cjs/index.js"
+      },
+      "default": {
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
       }
     },
     "./tokens": {
@@ -35,6 +39,10 @@
         "default": "./dist/esm/tokens.js"
       },
       "require": {
+        "types": "./dist/cjs/tokens.d.ts",
+        "default": "./dist/cjs/tokens.js"
+      },
+      "default": {
         "types": "./dist/cjs/tokens.d.ts",
         "default": "./dist/cjs/tokens.js"
       }

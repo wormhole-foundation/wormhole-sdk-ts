@@ -66,6 +66,10 @@
       "require": {
         "types": "./dist/cjs/index.d.ts",
         "default": "./dist/cjs/index.js"
+      },
+      "default": {
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
       }
     },
     "./address": {
@@ -74,6 +78,10 @@
         "default": "./dist/esm/index.js"
       },
       "require": {
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      },
+      "default": {
         "types": "./dist/cjs/index.d.ts",
         "default": "./dist/cjs/index.js"
       }

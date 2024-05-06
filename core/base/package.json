@@ -25,6 +25,10 @@
       "require": {
         "types": "./dist/cjs/index.d.ts",
         "default": "./dist/cjs/index.js"
+      },
+      "default": {
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
       }
     },
     "./constants": {
@@ -33,6 +37,10 @@
         "default": "./dist/esm/constants/index.js"
       },
       "require": {
+        "types": "./dist/cjs/constants/index.d.ts",
+        "default": "./dist/cjs/constants/index.js"
+      },
+      "default": {
         "types": "./dist/cjs/constants/index.d.ts",
         "default": "./dist/cjs/constants/index.js"
       }
@@ -45,6 +53,10 @@
       "require": {
         "types": "./dist/cjs/constants/tokens/index.d.ts",
         "default": "./dist/cjs/constants/tokens/index.js"
+      },
+      "default": {
+        "types": "./dist/cjs/constants/tokens/index.d.ts",
+        "default": "./dist/cjs/constants/tokens/index.js"
       }
     },
     "./contracts": {
@@ -53,6 +65,10 @@
         "default": "./dist/esm/constants/contracts/index.js"
       },
       "require": {
+        "types": "./dist/cjs/constants/contracts/index.d.ts",
+        "default": "./dist/cjs/constants/contracts/index.js"
+      },
+      "default": {
         "types": "./dist/cjs/constants/contracts/index.d.ts",
         "default": "./dist/cjs/constants/contracts/index.js"
       }

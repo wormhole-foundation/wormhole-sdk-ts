@@ -28,6 +28,10 @@
       "import": {
         "types": "./dist/esm/index.d.ts",
         "default": "./dist/esm/index.js"
+      },
+      "default": {
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
       }
     },
     "./testing": {
@@ -38,6 +42,10 @@
       "import": {
         "types": "./dist/esm/testing/index.d.ts",
         "default": "./dist/esm/testing/index.js"
+      },
+      "default": {
+        "types": "./dist/cjs/testing/index.d.ts",
+        "default": "./dist/cjs/testing/index.js"
       }
     }
   },

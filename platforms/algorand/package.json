@@ -33,6 +33,10 @@
       "require": {
         "types": "./dist/cjs/index.d.ts",
         "default": "./dist/cjs/index.js"
+      },
+      "default": {
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
       }
     },
     "./address": {
@@ -41,6 +45,10 @@
         "default": "./dist/esm/address.js"
       },
       "require": {
+        "types": "./dist/cjs/address.d.ts",
+        "default": "./dist/cjs/address.js"
+      },
+      "default": {
         "types": "./dist/cjs/address.d.ts",
         "default": "./dist/cjs/address.js"
       }

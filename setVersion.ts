@@ -19,6 +19,16 @@ function updateVersionInPackageJson(dirPath: string, version: string) {
       }),
     );
 
+  if (packageJson.exports) {
+    packageJson.exports = Object.fromEntries(
+      Object.entries(packageJson.exports).map(([path, stuff]) => {
+        // @ts-ignore
+        stuff = { ...stuff, default: stuff["require"] };
+        return [path, stuff];
+      }),
+    );
+  }
+
   fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
 }
 
@@ -41,6 +51,6 @@ function updateVersionsInWorkspaces(version: string) {
 const args = process.argv.slice(2);
 const version = args[0];
 
-if (!version) throw new Error('Need to pass in a version arg');
+if (!version) throw new Error("Need to pass in a version arg");
 
 updateVersionsInWorkspaces(version);
