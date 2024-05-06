@@ -21,6 +21,12 @@
   ],
   "exports": {
     ".": {
+      "react-native": {
+        "import": "./dist/esm/index.js",
+        "require": "./dist/cjs/index.js",
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      },
       "require": {
         "types": "./dist/cjs/index.d.ts",
         "default": "./dist/cjs/index.js"
@@ -35,6 +41,12 @@
       }
     },
     "./testing": {
+      "react-native": {
+        "import": "./dist/esm/testing/index.js",
+        "require": "./dist/cjs/testing/index.js",
+        "types": "./dist/cjs/testing/index.d.ts",
+        "default": "./dist/cjs/testing/index.js"
+      },
       "require": {
         "types": "./dist/cjs/testing/index.d.ts",
         "default": "./dist/cjs/testing/index.js"

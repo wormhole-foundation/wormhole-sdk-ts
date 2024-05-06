@@ -59,6 +59,12 @@
   },
   "exports": {
     ".": {
+      "react-native": {
+        "import": "./dist/esm/index.js",
+        "require": "./dist/cjs/index.js",
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      },
       "import": {
         "types": "./dist/esm/index.d.ts",
         "default": "./dist/esm/index.js"
@@ -73,6 +79,12 @@
       }
     },
     "./address": {
+      "react-native": {
+        "import": "./dist/esm/index.js",
+        "require": "./dist/cjs/index.js",
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      },
       "import": {
         "types": "./dist/esm/index.d.ts",
         "default": "./dist/esm/index.js"

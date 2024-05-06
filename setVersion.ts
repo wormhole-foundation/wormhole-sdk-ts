@@ -22,8 +22,20 @@ function updateVersionInPackageJson(dirPath: string, version: string) {
   if (packageJson.exports) {
     packageJson.exports = Object.fromEntries(
       Object.entries(packageJson.exports).map(([path, stuff]) => {
-        // @ts-ignore
-        stuff = { ...stuff, default: stuff["require"] };
+        stuff = {
+          "react-native": {
+            // @ts-ignore
+            import: stuff["import"]["default"],
+            // @ts-ignore
+            require: stuff["require"]["default"],
+            // @ts-ignore
+            types: stuff["default"]["types"],
+            // @ts-ignore
+            default: stuff["default"]["default"],
+          },
+          // @ts-ignore
+          ...stuff,
+        };
         return [path, stuff];
       }),
     );

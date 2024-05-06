@@ -44,6 +44,12 @@
   },
   "exports": {
     ".": {
+      "react-native": {
+        "import": "./dist/esm/index.js",
+        "require": "./dist/cjs/index.js",
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      },
       "require": {
         "types": "./dist/cjs/index.d.ts",
         "default": "./dist/cjs/index.js"
@@ -58,6 +64,12 @@
       }
     },
     "./addresses": {
+      "react-native": {
+        "import": "./dist/esm/addresses.js",
+        "require": "./dist/cjs/addresses.js",
+        "types": "./dist/cjs/addresses.d.ts",
+        "default": "./dist/cjs/addresses.js"
+      },
       "require": {
         "types": "./dist/cjs/addresses.d.ts",
         "default": "./dist/cjs/addresses.js"
@@ -72,6 +84,12 @@
       }
     },
     "./platforms/evm": {
+      "react-native": {
+        "import": "./dist/esm/platforms/evm.js",
+        "require": "./dist/cjs/platforms/evm.js",
+        "types": "./dist/cjs/platforms/evm.d.ts",
+        "default": "./dist/cjs/platforms/evm.js"
+      },
       "require": {
         "types": "./dist/cjs/platforms/evm.d.ts",
         "default": "./dist/cjs/platforms/evm.js"
@@ -86,6 +104,12 @@
       }
     },
     "./platforms/solana": {
+      "react-native": {
+        "import": "./dist/esm/platforms/solana.js",
+        "require": "./dist/cjs/platforms/solana.js",
+        "types": "./dist/cjs/platforms/solana.d.ts",
+        "default": "./dist/cjs/platforms/solana.js"
+      },
       "require": {
         "types": "./dist/cjs/platforms/solana.d.ts",
         "default": "./dist/cjs/platforms/solana.js"
@@ -100,6 +124,12 @@
       }
     },
     "./platforms/aptos": {
+      "react-native": {
+        "import": "./dist/esm/platforms/aptos.js",
+        "require": "./dist/cjs/platforms/aptos.js",
+        "types": "./dist/cjs/platforms/aptos.d.ts",
+        "default": "./dist/cjs/platforms/aptos.js"
+      },
       "require": {
         "types": "./dist/cjs/platforms/aptos.d.ts",
         "default": "./dist/cjs/platforms/aptos.js"
@@ -114,6 +144,12 @@
       }
     },
     "./platforms/algorand": {
+      "react-native": {
+        "import": "./dist/esm/platforms/algorand.js",
+        "require": "./dist/cjs/platforms/algorand.js",
+        "types": "./dist/cjs/platforms/algorand.d.ts",
+        "default": "./dist/cjs/platforms/algorand.js"
+      },
       "require": {
         "types": "./dist/cjs/platforms/algorand.d.ts",
         "default": "./dist/cjs/platforms/algorand.js"
@@ -128,6 +164,12 @@
       }
     },
     "./platforms/cosmwasm": {
+      "react-native": {
+        "import": "./dist/esm/platforms/cosmwasm.js",
+        "require": "./dist/cjs/platforms/cosmwasm.js",
+        "types": "./dist/cjs/platforms/cosmwasm.d.ts",
+        "default": "./dist/cjs/platforms/cosmwasm.js"
+      },
       "require": {
         "types": "./dist/cjs/platforms/cosmwasm.d.ts",
         "default": "./dist/cjs/platforms/cosmwasm.js"
@@ -142,6 +184,12 @@
       }
     },
     "./platforms/sui": {
+      "react-native": {
+        "import": "./dist/esm/platforms/sui.js",
+        "require": "./dist/cjs/platforms/sui.js",
+        "types": "./dist/cjs/platforms/sui.d.ts",
+        "default": "./dist/cjs/platforms/sui.js"
+      },
       "require": {
         "types": "./dist/cjs/platforms/sui.d.ts",
         "default": "./dist/cjs/platforms/sui.js"
@@ -156,6 +204,12 @@
       }
     },
     "./evm": {
+      "react-native": {
+        "import": "./dist/esm/evm.js",
+        "require": "./dist/cjs/evm.js",
+        "types": "./dist/cjs/evm.d.ts",
+        "default": "./dist/cjs/evm.js"
+      },
       "require": {
         "types": "./dist/cjs/evm.d.ts",
         "default": "./dist/cjs/evm.js"
@@ -170,6 +224,12 @@
       }
     },
     "./solana": {
+      "react-native": {
+        "import": "./dist/esm/solana.js",
+        "require": "./dist/cjs/solana.js",
+        "types": "./dist/cjs/solana.d.ts",
+        "default": "./dist/cjs/solana.js"
+      },
       "require": {
         "types": "./dist/cjs/solana.d.ts",
         "default": "./dist/cjs/solana.js"
@@ -184,6 +244,12 @@
       }
     },
     "./cosmwasm": {
+      "react-native": {
+        "import": "./dist/esm/cosmwasm.js",
+        "require": "./dist/cjs/cosmwasm.js",
+        "types": "./dist/cjs/cosmwasm.d.ts",
+        "default": "./dist/cjs/cosmwasm.js"
+      },
       "require": {
         "types": "./dist/cjs/cosmwasm.d.ts",
         "default": "./dist/cjs/cosmwasm.js"
@@ -198,6 +264,12 @@
       }
     },
     "./aptos": {
+      "react-native": {
+        "import": "./dist/esm/aptos.js",
+        "require": "./dist/cjs/aptos.js",
+        "types": "./dist/cjs/aptos.d.ts",
+        "default": "./dist/cjs/aptos.js"
+      },
       "require": {
         "types": "./dist/cjs/aptos.d.ts",
         "default": "./dist/cjs/aptos.js"
@@ -212,6 +284,12 @@
       }
     },
     "./sui": {
+      "react-native": {
+        "import": "./dist/esm/sui.js",
+        "require": "./dist/cjs/sui.js",
+        "types": "./dist/cjs/sui.d.ts",
+        "default": "./dist/cjs/sui.js"
+      },
       "require": {
         "types": "./dist/cjs/sui.d.ts",
         "default": "./dist/cjs/sui.js"
@@ -226,6 +304,12 @@
       }
     },
     "./algorand": {
+      "react-native": {
+        "import": "./dist/esm/algorand.js",
+        "require": "./dist/cjs/algorand.js",
+        "types": "./dist/cjs/algorand.d.ts",
+        "default": "./dist/cjs/algorand.js"
+      },
       "require": {
         "types": "./dist/cjs/algorand.d.ts",
         "default": "./dist/cjs/algorand.js"

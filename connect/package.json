@@ -20,6 +20,12 @@
   "description": "The core package for the Connect SDK, used in conjunction with 1 or more of the chain packages",
   "exports": {
     ".": {
+      "react-native": {
+        "import": "./dist/esm/index.js",
+        "require": "./dist/cjs/index.js",
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      },
       "import": {
         "types": "./dist/esm/index.d.ts",
         "default": "./dist/esm/index.js"
@@ -34,6 +40,12 @@
       }
     },
     "./tokens": {
+      "react-native": {
+        "import": "./dist/esm/tokens.js",
+        "require": "./dist/cjs/tokens.js",
+        "types": "./dist/cjs/tokens.d.ts",
+        "default": "./dist/cjs/tokens.js"
+      },
       "import": {
         "types": "./dist/esm/tokens.d.ts",
         "default": "./dist/esm/tokens.js"
