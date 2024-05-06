@@ -19,6 +19,28 @@ function updateVersionInPackageJson(dirPath: string, version: string) {
       }),
     );
 
+  //if (packageJson.exports) {
+  //  packageJson.exports = Object.fromEntries(
+  //    Object.entries(packageJson.exports).map(([path, stuff]) => {
+  //      stuff = {
+  //        "react-native": {
+  //          // @ts-ignore
+  //          import: stuff["import"]["default"],
+  //          // @ts-ignore
+  //          require: stuff["require"]["default"],
+  //          // @ts-ignore
+  //          types: stuff["default"]["types"],
+  //          // @ts-ignore
+  //          default: stuff["default"]["default"],
+  //        },
+  //        // @ts-ignore
+  //        ...stuff,
+  //      };
+  //      return [path, stuff];
+  //    }),
+  //  );
+  //}
+
   fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
 }
 
@@ -41,6 +63,6 @@ function updateVersionsInWorkspaces(version: string) {
 const args = process.argv.slice(2);
 const version = args[0];
 
-if (!version) throw new Error('Need to pass in a version arg');
+if (!version) throw new Error("Need to pass in a version arg");
 
 updateVersionsInWorkspaces(version);

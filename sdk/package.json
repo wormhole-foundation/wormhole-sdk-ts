@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk",
-  "version": "0.6.6",
+  "version": "0.6.7-beta.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -44,6 +44,12 @@
   },
   "exports": {
     ".": {
+      "react-native": {
+        "import": "./dist/esm/index.js",
+        "require": "./dist/cjs/index.js",
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      },
       "require": {
         "types": "./dist/cjs/index.d.ts",
         "default": "./dist/cjs/index.js"
@@ -51,9 +57,19 @@
       "import": {
         "types": "./dist/esm/index.d.ts",
         "default": "./dist/esm/index.js"
+      },
+      "default": {
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
       }
     },
     "./addresses": {
+      "react-native": {
+        "import": "./dist/esm/addresses.js",
+        "require": "./dist/cjs/addresses.js",
+        "types": "./dist/cjs/addresses.d.ts",
+        "default": "./dist/cjs/addresses.js"
+      },
       "require": {
         "types": "./dist/cjs/addresses.d.ts",
         "default": "./dist/cjs/addresses.js"
@@ -61,9 +77,19 @@
       "import": {
         "types": "./dist/esm/addresses.d.ts",
         "default": "./dist/esm/addresses.js"
+      },
+      "default": {
+        "types": "./dist/cjs/addresses.d.ts",
+        "default": "./dist/cjs/addresses.js"
       }
     },
     "./platforms/evm": {
+      "react-native": {
+        "import": "./dist/esm/platforms/evm.js",
+        "require": "./dist/cjs/platforms/evm.js",
+        "types": "./dist/cjs/platforms/evm.d.ts",
+        "default": "./dist/cjs/platforms/evm.js"
+      },
       "require": {
         "types": "./dist/cjs/platforms/evm.d.ts",
         "default": "./dist/cjs/platforms/evm.js"
@@ -71,9 +97,19 @@
       "import": {
         "types": "./dist/esm/platforms/evm.d.ts",
         "default": "./dist/esm/platforms/evm.js"
+      },
+      "default": {
+        "types": "./dist/cjs/platforms/evm.d.ts",
+        "default": "./dist/cjs/platforms/evm.js"
       }
     },
     "./platforms/solana": {
+      "react-native": {
+        "import": "./dist/esm/platforms/solana.js",
+        "require": "./dist/cjs/platforms/solana.js",
+        "types": "./dist/cjs/platforms/solana.d.ts",
+        "default": "./dist/cjs/platforms/solana.js"
+      },
       "require": {
         "types": "./dist/cjs/platforms/solana.d.ts",
         "default": "./dist/cjs/platforms/solana.js"
@@ -81,9 +117,19 @@
       "import": {
         "types": "./dist/esm/platforms/solana.d.ts",
         "default": "./dist/esm/platforms/solana.js"
+      },
+      "default": {
+        "types": "./dist/cjs/platforms/solana.d.ts",
+        "default": "./dist/cjs/platforms/solana.js"
       }
     },
     "./platforms/aptos": {
+      "react-native": {
+        "import": "./dist/esm/platforms/aptos.js",
+        "require": "./dist/cjs/platforms/aptos.js",
+        "types": "./dist/cjs/platforms/aptos.d.ts",
+        "default": "./dist/cjs/platforms/aptos.js"
+      },
       "require": {
         "types": "./dist/cjs/platforms/aptos.d.ts",
         "default": "./dist/cjs/platforms/aptos.js"
@@ -91,9 +137,19 @@
       "import": {
         "types": "./dist/esm/platforms/aptos.d.ts",
         "default": "./dist/esm/platforms/aptos.js"
+      },
+      "default": {
+        "types": "./dist/cjs/platforms/aptos.d.ts",
+        "default": "./dist/cjs/platforms/aptos.js"
       }
     },
     "./platforms/algorand": {
+      "react-native": {
+        "import": "./dist/esm/platforms/algorand.js",
+        "require": "./dist/cjs/platforms/algorand.js",
+        "types": "./dist/cjs/platforms/algorand.d.ts",
+        "default": "./dist/cjs/platforms/algorand.js"
+      },
       "require": {
         "types": "./dist/cjs/platforms/algorand.d.ts",
         "default": "./dist/cjs/platforms/algorand.js"
@@ -101,9 +157,19 @@
       "import": {
         "types": "./dist/esm/platforms/algorand.d.ts",
         "default": "./dist/esm/platforms/algorand.js"
+      },
+      "default": {
+        "types": "./dist/cjs/platforms/algorand.d.ts",
+        "default": "./dist/cjs/platforms/algorand.js"
       }
     },
     "./platforms/cosmwasm": {
+      "react-native": {
+        "import": "./dist/esm/platforms/cosmwasm.js",
+        "require": "./dist/cjs/platforms/cosmwasm.js",
+        "types": "./dist/cjs/platforms/cosmwasm.d.ts",
+        "default": "./dist/cjs/platforms/cosmwasm.js"
+      },
       "require": {
         "types": "./dist/cjs/platforms/cosmwasm.d.ts",
         "default": "./dist/cjs/platforms/cosmwasm.js"
@@ -111,9 +177,19 @@
       "import": {
         "types": "./dist/esm/platforms/cosmwasm.d.ts",
         "default": "./dist/esm/platforms/cosmwasm.js"
+      },
+      "default": {
+        "types": "./dist/cjs/platforms/cosmwasm.d.ts",
+        "default": "./dist/cjs/platforms/cosmwasm.js"
       }
     },
     "./platforms/sui": {
+      "react-native": {
+        "import": "./dist/esm/platforms/sui.js",
+        "require": "./dist/cjs/platforms/sui.js",
+        "types": "./dist/cjs/platforms/sui.d.ts",
+        "default": "./dist/cjs/platforms/sui.js"
+      },
       "require": {
         "types": "./dist/cjs/platforms/sui.d.ts",
         "default": "./dist/cjs/platforms/sui.js"
@@ -121,9 +197,19 @@
       "import": {
         "types": "./dist/esm/platforms/sui.d.ts",
         "default": "./dist/esm/platforms/sui.js"
+      },
+      "default": {
+        "types": "./dist/cjs/platforms/sui.d.ts",
+        "default": "./dist/cjs/platforms/sui.js"
       }
     },
     "./evm": {
+      "react-native": {
+        "import": "./dist/esm/evm.js",
+        "require": "./dist/cjs/evm.js",
+        "types": "./dist/cjs/evm.d.ts",
+        "default": "./dist/cjs/evm.js"
+      },
       "require": {
         "types": "./dist/cjs/evm.d.ts",
         "default": "./dist/cjs/evm.js"
@@ -131,9 +217,19 @@
       "import": {
         "types": "./dist/esm/evm.d.ts",
         "default": "./dist/esm/evm.js"
+      },
+      "default": {
+        "types": "./dist/cjs/evm.d.ts",
+        "default": "./dist/cjs/evm.js"
       }
     },
     "./solana": {
+      "react-native": {
+        "import": "./dist/esm/solana.js",
+        "require": "./dist/cjs/solana.js",
+        "types": "./dist/cjs/solana.d.ts",
+        "default": "./dist/cjs/solana.js"
+      },
       "require": {
         "types": "./dist/cjs/solana.d.ts",
         "default": "./dist/cjs/solana.js"
@@ -141,9 +237,19 @@
       "import": {
         "types": "./dist/esm/solana.d.ts",
         "default": "./dist/esm/solana.js"
+      },
+      "default": {
+        "types": "./dist/cjs/solana.d.ts",
+        "default": "./dist/cjs/solana.js"
       }
     },
     "./cosmwasm": {
+      "react-native": {
+        "import": "./dist/esm/cosmwasm.js",
+        "require": "./dist/cjs/cosmwasm.js",
+        "types": "./dist/cjs/cosmwasm.d.ts",
+        "default": "./dist/cjs/cosmwasm.js"
+      },
       "require": {
         "types": "./dist/cjs/cosmwasm.d.ts",
         "default": "./dist/cjs/cosmwasm.js"
@@ -151,9 +257,19 @@
       "import": {
         "types": "./dist/esm/cosmwasm.d.ts",
         "default": "./dist/esm/cosmwasm.js"
+      },
+      "default": {
+        "types": "./dist/cjs/cosmwasm.d.ts",
+        "default": "./dist/cjs/cosmwasm.js"
       }
     },
     "./aptos": {
+      "react-native": {
+        "import": "./dist/esm/aptos.js",
+        "require": "./dist/cjs/aptos.js",
+        "types": "./dist/cjs/aptos.d.ts",
+        "default": "./dist/cjs/aptos.js"
+      },
       "require": {
         "types": "./dist/cjs/aptos.d.ts",
         "default": "./dist/cjs/aptos.js"
@@ -161,9 +277,19 @@
       "import": {
         "types": "./dist/esm/aptos.d.ts",
         "default": "./dist/esm/aptos.js"
+      },
+      "default": {
+        "types": "./dist/cjs/aptos.d.ts",
+        "default": "./dist/cjs/aptos.js"
       }
     },
     "./sui": {
+      "react-native": {
+        "import": "./dist/esm/sui.js",
+        "require": "./dist/cjs/sui.js",
+        "types": "./dist/cjs/sui.d.ts",
+        "default": "./dist/cjs/sui.js"
+      },
       "require": {
         "types": "./dist/cjs/sui.d.ts",
         "default": "./dist/cjs/sui.js"
@@ -171,9 +297,19 @@
       "import": {
         "types": "./dist/esm/sui.d.ts",
         "default": "./dist/esm/sui.js"
+      },
+      "default": {
+        "types": "./dist/cjs/sui.d.ts",
+        "default": "./dist/cjs/sui.js"
       }
     },
     "./algorand": {
+      "react-native": {
+        "import": "./dist/esm/algorand.js",
+        "require": "./dist/cjs/algorand.js",
+        "types": "./dist/cjs/algorand.d.ts",
+        "default": "./dist/cjs/algorand.js"
+      },
       "require": {
         "types": "./dist/cjs/algorand.d.ts",
         "default": "./dist/cjs/algorand.js"
@@ -181,6 +317,10 @@
       "import": {
         "types": "./dist/esm/algorand.d.ts",
         "default": "./dist/esm/algorand.js"
+      },
+      "default": {
+        "types": "./dist/cjs/algorand.d.ts",
+        "default": "./dist/cjs/algorand.js"
       }
     }
   },
@@ -241,31 +381,31 @@
     }
   },
   "dependencies": {
-    "@wormhole-foundation/sdk-base": "0.6.6",
-    "@wormhole-foundation/sdk-definitions": "0.6.6",
-    "@wormhole-foundation/sdk-connect": "0.6.6",
-    "@wormhole-foundation/sdk-evm": "0.6.6",
-    "@wormhole-foundation/sdk-evm-core": "0.6.6",
-    "@wormhole-foundation/sdk-evm-tokenbridge": "0.6.6",
-    "@wormhole-foundation/sdk-evm-portico": "0.6.6",
-    "@wormhole-foundation/sdk-evm-cctp": "0.6.6",
-    "@wormhole-foundation/sdk-solana": "0.6.6",
-    "@wormhole-foundation/sdk-solana-core": "0.6.6",
-    "@wormhole-foundation/sdk-solana-tokenbridge": "0.6.6",
-    "@wormhole-foundation/sdk-solana-cctp": "0.6.6",
-    "@wormhole-foundation/sdk-cosmwasm": "0.6.6",
-    "@wormhole-foundation/sdk-cosmwasm-core": "0.6.6",
-    "@wormhole-foundation/sdk-cosmwasm-tokenbridge": "0.6.6",
-    "@wormhole-foundation/sdk-cosmwasm-ibc": "0.6.6",
-    "@wormhole-foundation/sdk-sui": "0.6.6",
-    "@wormhole-foundation/sdk-sui-core": "0.6.6",
-    "@wormhole-foundation/sdk-sui-tokenbridge": "0.6.6",
-    "@wormhole-foundation/sdk-aptos": "0.6.6",
-    "@wormhole-foundation/sdk-aptos-core": "0.6.6",
-    "@wormhole-foundation/sdk-aptos-tokenbridge": "0.6.6",
-    "@wormhole-foundation/sdk-algorand": "0.6.6",
-    "@wormhole-foundation/sdk-algorand-core": "0.6.6",
-    "@wormhole-foundation/sdk-algorand-tokenbridge": "0.6.6"
+    "@wormhole-foundation/sdk-base": "0.6.7-beta.0",
+    "@wormhole-foundation/sdk-definitions": "0.6.7-beta.0",
+    "@wormhole-foundation/sdk-connect": "0.6.7-beta.0",
+    "@wormhole-foundation/sdk-evm": "0.6.7-beta.0",
+    "@wormhole-foundation/sdk-evm-core": "0.6.7-beta.0",
+    "@wormhole-foundation/sdk-evm-tokenbridge": "0.6.7-beta.0",
+    "@wormhole-foundation/sdk-evm-portico": "0.6.7-beta.0",
+    "@wormhole-foundation/sdk-evm-cctp": "0.6.7-beta.0",
+    "@wormhole-foundation/sdk-solana": "0.6.7-beta.0",
+    "@wormhole-foundation/sdk-solana-core": "0.6.7-beta.0",
+    "@wormhole-foundation/sdk-solana-tokenbridge": "0.6.7-beta.0",
+    "@wormhole-foundation/sdk-solana-cctp": "0.6.7-beta.0",
+    "@wormhole-foundation/sdk-cosmwasm": "0.6.7-beta.0",
+    "@wormhole-foundation/sdk-cosmwasm-core": "0.6.7-beta.0",
+    "@wormhole-foundation/sdk-cosmwasm-tokenbridge": "0.6.7-beta.0",
+    "@wormhole-foundation/sdk-cosmwasm-ibc": "0.6.7-beta.0",
+    "@wormhole-foundation/sdk-sui": "0.6.7-beta.0",
+    "@wormhole-foundation/sdk-sui-core": "0.6.7-beta.0",
+    "@wormhole-foundation/sdk-sui-tokenbridge": "0.6.7-beta.0",
+    "@wormhole-foundation/sdk-aptos": "0.6.7-beta.0",
+    "@wormhole-foundation/sdk-aptos-core": "0.6.7-beta.0",
+    "@wormhole-foundation/sdk-aptos-tokenbridge": "0.6.7-beta.0",
+    "@wormhole-foundation/sdk-algorand": "0.6.7-beta.0",
+    "@wormhole-foundation/sdk-algorand-core": "0.6.7-beta.0",
+    "@wormhole-foundation/sdk-algorand-tokenbridge": "0.6.7-beta.0"
   },
   "type": "module"
 }

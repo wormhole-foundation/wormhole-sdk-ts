@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-cosmwasm-core",
-  "version": "0.6.6",
+  "version": "0.6.7-beta.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -52,8 +52,8 @@
     "prettier": "prettier --write ./src"
   },
   "dependencies": {
-    "@wormhole-foundation/sdk-connect": "0.6.6",
-    "@wormhole-foundation/sdk-cosmwasm": "0.6.6",
+    "@wormhole-foundation/sdk-connect": "0.6.7-beta.0",
+    "@wormhole-foundation/sdk-cosmwasm": "0.6.7-beta.0",
     "@cosmjs/cosmwasm-stargate": "^0.32.0",
     "@cosmjs/stargate": "^0.32.0",
     "@injectivelabs/sdk-ts": "^1.14.4"
@@ -61,11 +61,21 @@
   "type": "module",
   "exports": {
     ".": {
+      "react-native": {
+        "import": "./dist/esm/index.js",
+        "require": "./dist/cjs/index.js",
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      },
       "import": {
         "types": "./dist/esm/index.d.ts",
         "default": "./dist/esm/index.js"
       },
       "require": {
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      },
+      "default": {
         "types": "./dist/cjs/index.d.ts",
         "default": "./dist/cjs/index.js"
       }

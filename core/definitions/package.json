@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-definitions",
-  "version": "0.6.6",
+  "version": "0.6.7-beta.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -21,6 +21,12 @@
   ],
   "exports": {
     ".": {
+      "react-native": {
+        "import": "./dist/esm/index.js",
+        "require": "./dist/cjs/index.js",
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      },
       "require": {
         "types": "./dist/cjs/index.d.ts",
         "default": "./dist/cjs/index.js"
@@ -28,9 +34,19 @@
       "import": {
         "types": "./dist/esm/index.d.ts",
         "default": "./dist/esm/index.js"
+      },
+      "default": {
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
       }
     },
     "./testing": {
+      "react-native": {
+        "import": "./dist/esm/testing/index.js",
+        "require": "./dist/cjs/testing/index.js",
+        "types": "./dist/cjs/testing/index.d.ts",
+        "default": "./dist/cjs/testing/index.js"
+      },
       "require": {
         "types": "./dist/cjs/testing/index.d.ts",
         "default": "./dist/cjs/testing/index.js"
@@ -38,6 +54,10 @@
       "import": {
         "types": "./dist/esm/testing/index.d.ts",
         "default": "./dist/esm/testing/index.js"
+      },
+      "default": {
+        "types": "./dist/cjs/testing/index.d.ts",
+        "default": "./dist/cjs/testing/index.js"
       }
     }
   },
@@ -66,7 +86,7 @@
   "dependencies": {
     "@noble/hashes": "^1.3.1",
     "@noble/curves": "^1.4.0",
-    "@wormhole-foundation/sdk-base": "0.6.6"
+    "@wormhole-foundation/sdk-base": "0.6.7-beta.0"
   },
   "type": "module"
 }
