@@ -35,8 +35,8 @@ export async function signAndSendWait<N extends Network, C extends Chain>(
 ): Promise<TransactionId[]> {
   if (!isSignAndSendSigner(signer))
     throw new Error("Invalid signer, only SignAndSendSigner may call this method");
-
-  const txHashes = await ssw(xfer, signer.signAndSend);
+  const signSend: SignSend<N, C> = (txs) => signer.signAndSend(txs);
+  const txHashes = await ssw(xfer, signSend);
   return txHashes.map((txid) => ({ chain: signer.chain(), txid }));
 }
 
