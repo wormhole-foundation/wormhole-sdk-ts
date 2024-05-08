@@ -108,6 +108,26 @@
         "types": "./dist/cjs/address.d.ts",
         "default": "./dist/cjs/address.js"
       }
+    },
+    "./ethers-contracts": {
+      "react-native": {
+        "import": "./dist/esm/ethers-contracts/index.js",
+        "require": "./dist/cjs/ethers-contracts/index.js",
+        "types": "./dist/cjs/ethers-contracts/index.d.ts",
+        "default": "./dist/cjs/ethers-contracts/index.js"
+      },
+      "import": {
+        "types": "./dist/esm/ethers-contracts/index.d.ts",
+        "default": "./dist/esm/ethers-contracts/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/ethers-contracts/index.d.ts",
+        "default": "./dist/cjs/ethers-contracts/index.js"
+      },
+      "default": {
+        "types": "./dist/cjs/ethers-contracts/index.d.ts",
+        "default": "./dist/cjs/ethers-contracts/index.js"
+      }
     }
   }
 }
