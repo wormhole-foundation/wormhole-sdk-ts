@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-cosmwasm-tokenbridge",
-  "version": "0.6.8-beta.0",
+  "version": "0.6.8-beta.1",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -54,8 +54,8 @@
   "dependencies": {
     "@injectivelabs/sdk-ts": "^1.14.4",
     "@cosmjs/cosmwasm-stargate": "^0.32.0",
-    "@wormhole-foundation/sdk-connect": "0.6.8-beta.0",
-    "@wormhole-foundation/sdk-cosmwasm": "0.6.8-beta.0"
+    "@wormhole-foundation/sdk-connect": "0.6.8-beta.1",
+    "@wormhole-foundation/sdk-cosmwasm": "0.6.8-beta.1"
   },
   "type": "module",
   "exports": {
