@@ -61,6 +61,7 @@ export class CosmwasmSigner<N extends Network, C extends CosmwasmChains>
     private _chain: C,
     private _signer: SigningCosmWasmClient,
     private _account: string,
+    private _debug?: string,
   ) {}
 
   chain(): C {
@@ -75,9 +76,10 @@ export class CosmwasmSigner<N extends Network, C extends CosmwasmChains>
     const signed = [];
     for (const txn of tx) {
       const { description, transaction } = txn as CosmwasmUnsignedTransaction<N, C>;
-      console.log(`Signing: ${description} for ${this.address()}`);
-
-      console.log(transaction.msgs, transaction.fee, transaction.memo);
+      if (this._debug) {
+        console.log(`Signing: ${description} for ${this.address()}`);
+        console.log(transaction.msgs, transaction.fee, transaction.memo);
+      }
 
       const txRaw = await this._signer.sign(
         this.address(),

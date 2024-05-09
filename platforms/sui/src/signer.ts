@@ -22,6 +22,7 @@ export class SuiSigner<N extends Network, C extends SuiChains> implements SignAn
     private _chain: C,
     private _client: SuiClient,
     private _signer: Ed25519Keypair,
+    private _debug?: boolean,
   ) {}
 
   chain(): C {
@@ -36,7 +37,7 @@ export class SuiSigner<N extends Network, C extends SuiChains> implements SignAn
     const txids: TxHash[] = [];
     for (const tx of txns) {
       const { description, transaction } = tx as SuiUnsignedTransaction<N, C>;
-      console.log(`Signing ${description} for ${this.address()}`);
+      if (this._debug) console.log(`Signing ${description} for ${this.address()}`);
 
       const result = await this._client.signAndExecuteTransactionBlock({
         transactionBlock: transaction,
