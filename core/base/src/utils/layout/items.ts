@@ -36,7 +36,7 @@ export function optionItem<const T extends CustomizableBytes>(optVal: T) {
         ? { isSome: false }
         //TODO and this is even more sketch
         : ({ isSome: true, value } as unknown as Exclude<BaseOptionItem<T>, { isSome: false }>),
-    } as const satisfies CustomConversion<BaseOptionItem<T>, BaseOptionValue<T>>
+    } satisfies CustomConversion<BaseOptionItem<T>, BaseOptionValue<T>>
   } as const
 };
 
