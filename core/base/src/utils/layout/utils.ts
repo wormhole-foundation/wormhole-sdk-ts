@@ -54,7 +54,11 @@ type CombineObjects<T, U> = {
 };
 
 export type BytesBase =
-  { readonly name: string } & Omit<BytesLayoutItem, "binary" | "custom" | "layout">;
+  Partial<CombineObjects<
+    { readonly name: string },
+    Omit<BytesLayoutItem, "binary" | "custom" | "layout">
+  >>;
+
 
 export type CustomizableBytesReturn<B extends BytesBase, P extends CustomizableBytes> =
   CombineObjects<
