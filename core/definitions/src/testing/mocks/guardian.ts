@@ -30,6 +30,13 @@ export class MockGuardians {
 
     const vaa = deserialize("Uint8Array", message);
 
+    if (vaa.guardianSet === 0)
+      // @ts-ignore -- wants readonly
+      vaa.guardianSet = this.setIndex;
+
+    if (vaa.guardianSet != this.setIndex)
+      throw new Error(`Mismatched guardian set index: ${vaa.guardianSet} != ${this.setIndex}`);
+
     for (let i = 0; i < signers.length; ++i) {
       const signer = signers.at(i);
       if (!signer) throw Error("No signer with index: " + i);
