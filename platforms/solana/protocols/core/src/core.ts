@@ -247,10 +247,10 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
     for (const inner of meta?.innerInstructions) {
       const instructions = inner.instructions;
       // find the instruction where the programId equals the
-      // Wormhole ProgramId and the emitter equals the Token Bridge
+      // Wormhole ProgramId
       bridgeIx.push(
         ...instructions.filter((i) => {
-          !(
+          return (
             i.programIdIndex in accounts &&
             accounts[i.programIdIndex]!.toString() === coreBridgeAddress
           );
