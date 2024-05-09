@@ -1,7 +1,44 @@
-import type { NumSizeToPrimitive} from './layout.js';
+import type { NumSizeToPrimitive, LayoutToType, CustomConversion } from './layout.js';
 import { numberMaxSize } from './layout.js';
+import type { CustomizableBytes, CustomizableBytesReturn } from './utils.js';
+import { customizableBytes } from './utils.js';
 
 //TODO implement enum item
+
+const baseOptionItem = <const T extends CustomizableBytes>(someType: T) => ({
+  binary: "switch",
+  idSize: 1,
+  idTag: "isSome",
+  layouts: [
+    [[0, false], []],
+    [[1, true ], [customizableBytes({ name: "value"}, someType)]],
+  ]
+} as const);
+
+type BaseOptionItem<T extends CustomizableBytes> =
+  LayoutToType<ReturnType<typeof baseOptionItem<T>>>;
+
+type BaseOptionValue<T extends CustomizableBytes> =
+  LayoutToType<CustomizableBytesReturn<{}, T>> | undefined;
+
+export function optionItem<const T extends CustomizableBytes>(optVal: T) {
+  return {
+    binary: "bytes",
+    layout: baseOptionItem(optVal),
+    custom: {
+      to: (obj: BaseOptionItem<T>): BaseOptionValue<T> =>
+        obj.isSome === true
+        //TODO I'm really not sure why we need to manually narrow the type here
+        ? (obj as Exclude<typeof obj, {isSome: false}>)["value"]
+        : undefined,
+      from: (value: BaseOptionValue<T>): BaseOptionItem<T> =>
+        value === undefined
+        ? { isSome: false }
+        //TODO and this is even more sketch
+        : ({ isSome: true, value } as unknown as Exclude<BaseOptionItem<T>, { isSome: false }>),
+    } as const satisfies CustomConversion<BaseOptionItem<T>, BaseOptionValue<T>>
+  } as const
+};
 
 export type Bitset<B extends readonly (string | undefined)[]> =
   {[K in B[number] as K extends "" | undefined ? never : K]: boolean};
