@@ -22,7 +22,7 @@ import { SignerStuff, getSigner, waitLog } from "./helpers/index.js";
 
   // Grab chain Contexts -- these hold a reference to a cached rpc client
   const sendChain = wh.getChain("Avalanche");
-  const rcvChain = wh.getChain("Solana");
+  const rcvChain = wh.getChain("Oasis");
 
   // Shortcut to allow transferring native gas token
   const token = Wormhole.tokenId(sendChain.chain, "native");
@@ -41,7 +41,7 @@ import { SignerStuff, getSigner, waitLog } from "./helpers/index.js";
   // Note: The Token bridge will dedust past 8 decimals
   // this means any amount specified past that point will be returned
   // to the caller
-  const amt = "0.001";
+  const amt = "0.05";
 
   // With automatic set to true, perform an automatic transfer. This will invoke a relayer
   // contract intermediary that knows to pick up the transfers
@@ -49,7 +49,7 @@ import { SignerStuff, getSigner, waitLog } from "./helpers/index.js";
   // of the token
   // On the destination side, a wrapped version of the token will be minted
   // to the address specified in the transfer VAA
-  const automatic = false;
+  const automatic = true;
 
   // The automatic relayer has the ability to deliver some native gas funds to the destination account
   // The amount specified for native gas will be swapped for the native gas token according

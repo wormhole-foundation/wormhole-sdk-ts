@@ -9,25 +9,17 @@ import { getSigner } from "./helpers/index.js";
   const wh = await wormhole("Testnet", [evm, solana]);
 
   // Original Token to Attest
-  // const token: TokenId = Wormhole.chainAddress(
-  //   "Solana",
-  //   "9rU2jFrzA5zDDmt9yR7vEABvXCUNJ1YgGigdTb9oCaTv",
-  // );
-  const token: TokenId = Wormhole.chainAddress(
-    "Avalanche",
-    "0x3bE4bce46442F5E85c47257145578E724E40cF97",
-  );
 
   // grab context and signer
-  const origChain = wh.getChain(token.chain);
+  const origChain = wh.getChain("Oasis");
+  const token = await origChain.getNativeWrappedTokenId();
   const { signer: origSigner } = await getSigner(origChain);
 
   // Note: if the VAA is not produced before the attempt to retrieve it times out
   // you should set this value to the txid logged in the previous run
   let txid = undefined;
+  // txid = "0x0ed77f6a6354542bc576efe52313f1ab05cfef48823395458ad97f3216d40206";
   // txid = "0x55127b9c8af46aaeea9ef28d8bf91e1aff920422fc1c9831285eb0f39ddca2fe";
-  // txid = "FPNHIFFUZDVPT5SATZQZZ7DFGZMPCCHEFBCB5EZQJV4RRK3ZYTVA";
-  // txid = "GWZU432ERFU3NES4MA7IAAP6DX73F5VRSSIWGJVC5JRHOH6UMWEQ";
 
   if (!txid) {
     // create attestation from origin chain, the same VAA
@@ -57,7 +49,7 @@ import { getSigner } from "./helpers/index.js";
   // Check if its attested and if not
   // submit the attestation to the token bridge on the
   // destination chain
-  const chain = "Algorand";
+  const chain = "Oasis";
   const destChain = wh.getChain(chain);
   const { signer } = await getSigner(destChain);
 
@@ -94,4 +86,4 @@ import { getSigner } from "./helpers/index.js";
   }
 
   console.log("Wrapped: ", await waitForIt());
-})();
+})().catch((e) => console.error(e));
