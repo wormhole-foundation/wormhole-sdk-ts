@@ -28,6 +28,7 @@ export class AptosSigner<N extends Network, C extends AptosChains>
     private _chain: C,
     private _account: AptosAccount,
     private _rpc: AptosClient,
+    private _debug?: boolean,
   ) {}
 
   chain() {
@@ -45,7 +46,7 @@ export class AptosSigner<N extends Network, C extends AptosChains>
         description: string;
         transaction: Types.EntryFunctionPayload;
       };
-      console.log(`Signing: ${description} for ${this.address()}`);
+      if (this._debug) console.log(`Signing: ${description} for ${this.address()}`);
 
       // overwriting `max_gas_amount` and `gas_unit_price` defaults
       // rest of defaults are defined here: https://aptos-labs.github.io/ts-sdk-doc/classes/AptosClient.html#generateTransaction

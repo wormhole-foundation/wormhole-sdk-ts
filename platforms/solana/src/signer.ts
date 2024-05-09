@@ -102,7 +102,8 @@ export class SolanaSigner<N extends Network, C extends SolanaChains = 'Solana'>
         transaction: { transaction, signers: extraSigners },
       } = txn;
 
-      console.log(`Signing: ${description} for ${this.address()}`);
+      if (this._debug)
+        console.log(`Signing: ${description} for ${this.address()}`);
 
       if (this._debug) logTxDetails(transaction);
 
@@ -190,7 +191,9 @@ export class SolanaSendSigner<
         description,
         transaction: { transaction, signers: extraSigners },
       } = txn as SolanaUnsignedTransaction<N, C>;
-      console.log(`Signing: ${description} for ${this.address()}`);
+
+      if (this._debug)
+        console.log(`Signing: ${description} for ${this.address()}`);
 
       let priorityFeeIx: TransactionInstruction[] | undefined;
       if (this._priorityFeePercentile && this._priorityFeePercentile > 0)

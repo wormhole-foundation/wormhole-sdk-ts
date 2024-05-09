@@ -63,12 +63,14 @@ export class AlgorandSigner<N extends Network, C extends AlgorandChains>
       }
 
       if (signer) {
-        console.log(
-          `Signing: ${description} with signer ${signer.address} for address ${this.address()}`,
-        );
+        if (this._debug)
+          console.log(
+            `Signing: ${description} with signer ${signer.address} for address ${this.address()}`,
+          );
         signed.push(await signer.signTxn(tx));
       } else {
-        console.log(`Signing: ${description} without signer for address ${this.address()}`);
+        if (this._debug)
+          console.log(`Signing: ${description} without signer for address ${this.address()}`);
         signed.push(tx.signTxn(this._account.sk));
       }
     }

@@ -26,6 +26,7 @@ export async function getEvmSigner(
   opts?: {
     maxGasLimit?: bigint;
     chain?: EvmChains;
+    debug?: boolean;
   },
 ): Promise<Signer> {
   const signer: EthersSigner =
@@ -74,7 +75,7 @@ export class EvmNativeSigner<N extends Network, C extends EvmChains = EvmChains>
     _chain: C,
     _address: string,
     _signer: EthersSigner,
-    readonly opts?: { maxGasLimit?: bigint },
+    readonly opts?: { maxGasLimit?: bigint; debug?: boolean },
   ) {
     super(_chain, _address, _signer);
   }
@@ -105,7 +106,8 @@ export class EvmNativeSigner<N extends Network, C extends EvmChains = EvmChains>
 
     for (const txn of tx) {
       const { transaction, description } = txn;
-      console.log(`Signing: ${description} for ${this.address()}`);
+      if (this.opts?.debug)
+        console.log(`Signing: ${description} for ${this.address()}`);
 
       const t: TransactionRequest = {
         ...transaction,
