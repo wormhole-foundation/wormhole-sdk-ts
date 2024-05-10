@@ -52,7 +52,7 @@ export const circleContracts = [[
       tokenMessenger:     "0x9daF8c91AEFAE50b9c0E69629D3F6Ca40cA3B3FE",
       messageTransmitter: "0xF3be9355363857F3e001be68856A2f96b4C39Ba9",
       wormholeRelayer:    "0x4cb69FaE7e7Af841e44E1A1c30Af640739378bb2",
-      wormhole:           "0x2703483B1a5a7c577e8680de9Df8Be03c6f30e3c",
+      wormhole:           "0x0FF28217dCc90372345954563486528aa865cDd6",
     }],
   ]], [
   "Testnet", [[
