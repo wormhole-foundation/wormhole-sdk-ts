@@ -13,4 +13,5 @@ export * as rpc from "./rpc.js";
 export * as nativeChainIds from "./nativeChainIds.js";
 export * as circle from "./circle.js";
 export * as contracts from "./contracts/index.js";
+export * as tokens from "./tokens/index.js";
 export * as guardians from "./guardians.js";
