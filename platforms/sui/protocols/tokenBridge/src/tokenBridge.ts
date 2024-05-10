@@ -21,6 +21,7 @@ import {
   canonicalAddress,
   encoding,
   isNative,
+  keccak256,
   nativeChainIds,
   serialize,
   toChain,
@@ -191,7 +192,7 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
       name: {
         type: keyType,
         value: {
-          data: [...vaa.hash],
+          data: [...keccak256(vaa.hash)],
         },
       },
     });
