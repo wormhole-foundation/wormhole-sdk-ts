@@ -6,9 +6,8 @@ import { utils } from '@wormhole-foundation/sdk-solana';
 import { WormholeCoder } from './coder/index.js';
 import type { Wormhole } from '../types.js';
 
-// ts-ignoring because of this nonsense https://github.com/microsoft/TypeScript/issues/51783
-/* @ts-ignore */
-import IDL from '../anchor-idl/wormhole.json' assert { type: 'json' };
+// @ts-ignore
+import IDL from '../anchor-idl/wormhole.json';
 
 export function createWormholeProgramInterface(
   programId: PublicKeyInitData,
