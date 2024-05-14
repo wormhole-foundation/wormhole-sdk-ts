@@ -25,8 +25,8 @@ import {
   toUniversal,
   universalAddress,
 } from "@wormhole-foundation/sdk-definitions";
-import { signSendWait } from "../common.js";
-import { DEFAULT_TASK_TIMEOUT } from "../config.js";
+import { signSendWait } from "../../common.js";
+import { DEFAULT_TASK_TIMEOUT } from "../../config.js";
 import type {
   AttestationReceipt as _AttestationReceipt,
   AttestedTransferReceipt,
@@ -36,11 +36,11 @@ import type {
   SourceInitiatedTransferReceipt,
   TransferQuote,
   TransferReceipt as _TransferReceipt,
-} from "../types.js";
-import { TransferState, isAttested, isSourceFinalized, isSourceInitiated } from "../types.js";
-import { getGovernedTokens, getGovernorLimits } from "../whscan-api.js";
-import { Wormhole } from "../wormhole.js";
-import type { WormholeTransfer } from "./wormholeTransfer.js";
+} from "../../types.js";
+import { TransferState, isAttested, isSourceFinalized, isSourceInitiated } from "../../types.js";
+import { getGovernedTokens, getGovernorLimits } from "../../whscan-api.js";
+import { Wormhole } from "../../wormhole.js";
+import type { WormholeTransfer } from "../wormholeTransfer.js";
 
 export class TokenTransfer<N extends Network = Network>
   implements WormholeTransfer<TokenTransfer.Protocol>

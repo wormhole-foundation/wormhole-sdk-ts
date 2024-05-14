@@ -6,7 +6,7 @@ import type {
   Signer,
   TokenId,
 } from "@wormhole-foundation/sdk-definitions";
-import { CircleTransfer } from "../../protocols/cctpTransfer.js";
+import { CircleTransfer } from "../../protocols/cctp/cctpTransfer.js";
 import { TransferState } from "../../types.js";
 import { Wormhole } from "../../wormhole.js";
 import type { StaticRouteMethods } from "../route.js";

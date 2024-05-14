@@ -8,7 +8,7 @@ import type {
 } from "@wormhole-foundation/sdk-definitions";
 import { CircleBridge } from "@wormhole-foundation/sdk-definitions";
 import { signSendWait } from "../../common.js";
-import { CircleTransfer } from "../../protocols/cctpTransfer.js";
+import { CircleTransfer } from "../../protocols/cctp/cctpTransfer.js";
 import type { TransferReceipt } from "../../types.js";
 import { TransferState, isAttested } from "../../types.js";
 import { Wormhole } from "../../wormhole.js";

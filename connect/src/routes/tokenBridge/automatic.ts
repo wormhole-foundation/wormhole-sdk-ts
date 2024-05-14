@@ -7,7 +7,7 @@ import type {
   TokenTransferDetails,
 } from "@wormhole-foundation/sdk-definitions";
 import { isNative, isTokenId, nativeTokenId } from "@wormhole-foundation/sdk-definitions";
-import { TokenTransfer } from "../../protocols/tokenTransfer.js";
+import { TokenTransfer } from "../../protocols/tokenBridge/tokenTransfer.js";
 import type { AttestationReceipt, SourceInitiatedTransferReceipt } from "../../types.js";
 import { TransferState } from "../../types.js";
 import type { StaticRouteMethods } from "../route.js";

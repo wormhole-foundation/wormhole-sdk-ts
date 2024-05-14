@@ -6,7 +6,7 @@ import type {
   TokenId,
   TokenTransferDetails,
 } from "@wormhole-foundation/sdk-definitions";
-import { TokenTransfer } from "../../protocols/tokenTransfer.js";
+import { TokenTransfer } from "../../protocols/tokenBridge/tokenTransfer.js";
 import type {
   AttestationReceipt,
   SourceInitiatedTransferReceipt,

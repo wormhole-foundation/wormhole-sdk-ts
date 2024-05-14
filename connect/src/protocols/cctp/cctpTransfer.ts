@@ -22,8 +22,8 @@ import {
   isWormholeMessageId,
 } from "@wormhole-foundation/sdk-definitions";
 
-import { signSendWait } from "../common.js";
-import { DEFAULT_TASK_TIMEOUT } from "../config.js";
+import { signSendWait } from "../../common.js";
+import { DEFAULT_TASK_TIMEOUT } from "../../config.js";
 import type {
   AttestationReceipt as _AttestationReceipt,
   AttestedTransferReceipt,
@@ -33,10 +33,10 @@ import type {
   SourceInitiatedTransferReceipt,
   TransferQuote,
   TransferReceipt as _TransferReceipt,
-} from "../types.js";
-import { TransferState, isAttested, isSourceFinalized, isSourceInitiated } from "../types.js";
-import { Wormhole } from "../wormhole.js";
-import type { WormholeTransfer } from "./wormholeTransfer.js";
+} from "../../types.js";
+import { TransferState, isAttested, isSourceFinalized, isSourceInitiated } from "../../types.js";
+import { Wormhole } from "../../wormhole.js";
+import type { WormholeTransfer } from "../wormholeTransfer.js";
 
 export class CircleTransfer<N extends Network = Network>
   implements WormholeTransfer<CircleTransfer.Protocol>
@@ -249,14 +249,6 @@ export class CircleTransfer<N extends Network = Network>
   // start the WormholeTransfer by submitting transactions to the source chain
   // returns a transaction hash
   async initiateTransfer(signer: Signer): Promise<TxHash[]> {
-    /*
-        0) check that the current `state` is valid to call this (eg: state == Created)
-        1) get a token transfer transaction for the token bridge given the context
-        2) sign it given the signer
-        3) submit it to chain
-        4) return transaction id
-    */
-
     if (this._state !== TransferState.Created)
       throw new Error("Invalid state transition in `start`");
 
@@ -322,12 +314,6 @@ export class CircleTransfer<N extends Network = Network>
   // wait for the VAA to be ready
   // returns the sequence number
   async fetchAttestation(timeout?: number): Promise<AttestationId[]> {
-    /*
-        0) check that the current `state` is valid to call this  (eg: state == Started)
-        1) poll the api on an interval to check if the VAA is available
-        2) Once available, pull the VAA and parse it
-        3) return seq
-    */
     if (this._state < TransferState.SourceInitiated)
       throw new Error("Invalid state transition in `fetchAttestation`");
 
@@ -357,12 +343,6 @@ export class CircleTransfer<N extends Network = Network>
   // finish the WormholeTransfer by submitting transactions to the destination chain
   // returns a transaction hash
   async completeTransfer(signer: Signer): Promise<TxHash[]> {
-    /*
-        0) check that the current `state` is valid to call this  (eg: state == Ready)
-        1) prepare the transactions and sign them given the signer
-        2) submit the VAA and transactions on chain
-        3) return txid of submission
-    */
     if (this._state < TransferState.Attested)
       throw new Error("Invalid state transition in `finish`");
 
@@ -374,9 +354,6 @@ export class CircleTransfer<N extends Network = Network>
       ) as CircleTransfer.AutomaticCircleAttestationReceipt;
       if (!vaa) throw new Error("No VAA found");
 
-      //const tb = await toChain.getAutomaticCircleBridge();
-      //const xfer = tb.redeem(vaa);
-      //const txids = await signSendWait(toChain, xfer, signer);
       throw new Error("No method to redeem auto circle bridge tx (yet)");
     }
 
