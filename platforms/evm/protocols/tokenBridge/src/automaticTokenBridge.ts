@@ -1,6 +1,7 @@
 import type {
   AccountAddress,
   AutomaticTokenBridge,
+  Chain,
   ChainAddress,
   ChainsConfig,
   Contracts,
@@ -179,11 +180,10 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
   }
 
   async getRelayerFee(
-    sender: AccountAddress<C>,
-    recipient: ChainAddress,
+    destination: Chain,
     token: TokenAddress<C>,
   ): Promise<bigint> {
-    const destChainId = toChainId(recipient.chain);
+    const destChainId = toChainId(destination);
     const srcTokenAddress = await this.tokenAddress(token);
 
     const tokenContract = EvmPlatform.getTokenImplementation(

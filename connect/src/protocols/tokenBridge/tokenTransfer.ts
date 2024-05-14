@@ -591,7 +591,7 @@ export namespace TokenTransfer {
     wh: Wormhole<N>,
     srcChain: ChainContext<N, Chain>,
     dstChain: ChainContext<N, Chain>,
-    transfer: TokenTransferDetails,
+    transfer: Omit<TokenTransferDetails, "from" | "to">,
   ): Promise<TransferQuote> {
     const srcDecimals = await srcChain.getDecimals(transfer.token.address);
     const srcAmount = amount.fromBaseUnits(transfer.amount, srcDecimals);
@@ -646,7 +646,7 @@ export namespace TokenTransfer {
     // The fee is removed from the amount transferred
     // quoted on the source chain
     const stb = await srcChain.getAutomaticTokenBridge();
-    const fee = await stb.getRelayerFee(transfer.from.address, transfer.to, srcToken.address);
+    const fee = await stb.getRelayerFee(dstChain.chain, srcToken.address);
     const feeAmountDest = amount.scale(
       amount.truncate(amount.fromBaseUnits(fee, srcDecimals), TokenTransfer.MAX_DECIMALS),
       dstDecimals,

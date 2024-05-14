@@ -1,6 +1,6 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
 import { amount } from "@wormhole-foundation/sdk-base";
-import type { ChainAddress, ChainContext, TokenId } from "@wormhole-foundation/sdk-definitions";
+import type { ChainContext, TokenId } from "@wormhole-foundation/sdk-definitions";
 import type { TransferQuote } from "../types.js";
 import type { Wormhole } from "../wormhole.js";
 import type { TokenDetails } from "./token.js";
@@ -8,8 +8,6 @@ import { getTokenDetails } from "./token.js";
 import type { Quote, ValidatedTransferParams } from "./types.js";
 
 export class RouteTransferRequest<N extends Network> {
-  from: ChainAddress;
-  to: ChainAddress;
   source: TokenDetails;
   destination: TokenDetails;
 
@@ -17,16 +15,12 @@ export class RouteTransferRequest<N extends Network> {
   toChain: ChainContext<N>;
 
   private constructor(
-    from: ChainAddress,
-    to: ChainAddress,
     fromChain: ChainContext<N>,
     toChain: ChainContext<N>,
     source: TokenDetails,
     destination: TokenDetails,
   ) {
-    this.from = from;
     this.fromChain = fromChain;
-    this.to = to;
     this.toChain = toChain;
     this.source = source;
     this.destination = destination;
@@ -80,28 +74,19 @@ export class RouteTransferRequest<N extends Network> {
   static async create<N extends Network, FC extends Chain, TC extends Chain>(
     wh: Wormhole<N>,
     params: {
-      from: ChainAddress<FC>;
-      to: ChainAddress<TC>;
       source: TokenId<FC>;
       destination: TokenId<TC>;
     },
     fromChain?: ChainContext<N, FC>,
     toChain?: ChainContext<N, TC>,
   ) {
-    fromChain = fromChain ?? wh.getChain(params.from.chain);
-    toChain = toChain ?? wh.getChain(params.to.chain);
+    fromChain = fromChain ?? wh.getChain(params.source.chain);
+    toChain = toChain ?? wh.getChain(params.destination.chain);
 
     const sourceDetails = await getTokenDetails(fromChain, params.source);
     const destDetails = await getTokenDetails(toChain, params.destination);
 
-    const rtr = new RouteTransferRequest(
-      params.from,
-      params.to,
-      fromChain,
-      toChain,
-      sourceDetails,
-      destDetails,
-    );
+    const rtr = new RouteTransferRequest(fromChain, toChain, sourceDetails, destDetails);
 
     return rtr;
   }

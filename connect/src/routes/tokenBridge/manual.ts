@@ -23,6 +23,7 @@ import type {
   ValidatedTransferParams,
   ValidationResult,
 } from "../types.js";
+import { ChainAddress } from "@wormhole-foundation/sdk-definitions";
 
 export namespace TokenBridgeRoute {
   export type Options = {
@@ -104,12 +105,11 @@ export class TokenBridgeRoute<N extends Network>
   async quote(params: Vp): Promise<QR> {
     try {
       return this.request.displayQuote(
-        await TokenTransfer.quoteTransfer(
-          this.wh,
-          this.request.fromChain,
-          this.request.toChain,
-          this.toTransferDetails(params),
-        ),
+        await TokenTransfer.quoteTransfer(this.wh, this.request.fromChain, this.request.toChain, {
+          token: this.request.source.id,
+          amount: amount.units(params.normalizedParams.amount),
+          ...params.options,
+        }),
         params,
       );
     } catch (e) {
@@ -120,12 +120,12 @@ export class TokenBridgeRoute<N extends Network>
     }
   }
 
-  async initiate(signer: Signer, quote: Q): Promise<R> {
+  async initiate(signer: Signer, quote: Q, to: ChainAddress): Promise<R> {
     const { params } = quote;
     const transfer = await TokenTransfer.destinationOverrides(
       this.request.fromChain,
       this.request.toChain,
-      this.toTransferDetails(params),
+      this.toTransferDetails(params, Wormhole.chainAddress(signer.chain(), signer.address()), to),
     );
     const txids = await TokenTransfer.transfer<N>(this.request.fromChain, transfer, signer);
     return {
@@ -162,11 +162,15 @@ export class TokenBridgeRoute<N extends Network>
     );
   }
 
-  private toTransferDetails(params: Vp): TokenTransferDetails {
+  private toTransferDetails(
+    params: Vp,
+    from: ChainAddress,
+    to: ChainAddress,
+  ): TokenTransferDetails {
     return {
+      from,
+      to,
       token: this.request.source.id,
-      from: this.request.from,
-      to: this.request.to,
       amount: amount.units(params.normalizedParams.amount),
       ...params.options,
     };

@@ -20,6 +20,8 @@ import type {
   ValidatedTransferParams,
   ValidationResult,
 } from "../types.js";
+import { ChainAddress } from "@wormhole-foundation/sdk-definitions";
+import { Wormhole } from "../../wormhole.js";
 
 export namespace AutomaticTokenBridgeRoute {
   export type Options = {
@@ -141,11 +143,7 @@ export class AutomaticTokenBridgeRoute<N extends Network>
       : this.request.source.id;
 
     const atb = await this.request.fromChain.getAutomaticTokenBridge();
-    const fee: bigint = await atb.getRelayerFee(
-      this.request.from.address,
-      this.request.to,
-      inputToken.address,
-    );
+    const fee: bigint = await atb.getRelayerFee(this.request.toChain.chain, inputToken.address);
 
     // Min amount is fee + 5%
     const minAmount = (fee * 105n) / 100n;
@@ -181,7 +179,12 @@ export class AutomaticTokenBridgeRoute<N extends Network>
         this.wh,
         this.request.fromChain,
         this.request.toChain,
-        this.toTransferDetails(params),
+        {
+          automatic: true,
+          amount: amount.units(params.normalizedParams.amount),
+          token: this.request.source.id,
+          nativeGas: amount.units(params.normalizedParams.nativeGasAmount),
+        },
       );
       return this.request.displayQuote(quote, params);
     } catch (e) {
@@ -192,9 +195,13 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     }
   }
 
-  async initiate(signer: Signer, quote: Q): Promise<R> {
+  async initiate(signer: Signer, quote: Q, to: ChainAddress): Promise<R> {
     const { params } = quote;
-    const transfer = this.toTransferDetails(params);
+    const transfer = this.toTransferDetails(
+      params,
+      Wormhole.chainAddress(signer.chain(), signer.address()),
+      to,
+    );
     const txids = await TokenTransfer.transfer<N>(this.request.fromChain, transfer, signer);
     return {
       from: transfer.from.chain,
@@ -218,11 +225,15 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     }
   }
 
-  private toTransferDetails(params: Vp): TokenTransferDetails {
+  private toTransferDetails(
+    params: Vp,
+    from: ChainAddress,
+    to: ChainAddress,
+  ): TokenTransferDetails {
     const transfer = {
+      from,
+      to,
       automatic: true,
-      from: this.request.from,
-      to: this.request.to,
       amount: amount.units(params.normalizedParams.amount),
       token: this.request.source.id,
       nativeGas: amount.units(params.normalizedParams.nativeGasAmount),

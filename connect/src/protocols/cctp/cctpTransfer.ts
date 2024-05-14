@@ -564,7 +564,7 @@ export namespace CircleTransfer {
   export async function quoteTransfer<N extends Network>(
     srcChain: ChainContext<N, Chain>,
     dstChain: ChainContext<N, Chain>,
-    transfer: CircleTransferDetails,
+    transfer: Omit<CircleTransferDetails, "from" | "to">,
   ): Promise<TransferQuote> {
     const dstUsdcAddress = circle.usdcContract.get(dstChain.network, dstChain.chain);
     if (!dstUsdcAddress) throw "Invalid transfer, no USDC contract on destination";

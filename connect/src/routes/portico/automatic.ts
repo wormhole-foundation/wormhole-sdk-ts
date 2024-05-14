@@ -34,6 +34,7 @@ import {
   resolveWrappedToken,
   signSendWait,
 } from "./../../index.js";
+import { ChainAddress } from "@wormhole-foundation/sdk-definitions";
 
 export const SLIPPAGE_BPS = 15n; // 0.15%
 export const BPS_PER_HUNDRED_PERCENT = 10000n;
@@ -172,8 +173,8 @@ export class AutomaticPorticoRoute<N extends Network>
   async validate(params: TP): Promise<VR> {
     try {
       if (
-        chainToPlatform(this.request.from.chain) !== "Evm" ||
-        chainToPlatform(this.request.to.chain) !== "Evm"
+        chainToPlatform(this.request.fromChain.chain) !== "Evm" ||
+        chainToPlatform(this.request.toChain.chain) !== "Evm"
       ) {
         throw new Error("Only EVM chains are supported");
       }
@@ -265,7 +266,7 @@ export class AutomaticPorticoRoute<N extends Network>
     }
   }
 
-  async initiate(sender: Signer<N>, quote: Q) {
+  async initiate(sender: Signer<N>, quote: Q, to: ChainAddress) {
     const { params, details } = quote;
 
     const sourceToken = this.request.source.id.address;
@@ -274,8 +275,8 @@ export class AutomaticPorticoRoute<N extends Network>
     const fromPorticoBridge = await this.request.fromChain.getPorticoBridge();
 
     const xfer = fromPorticoBridge.transfer(
-      this.request.from.address,
-      this.request.to,
+      Wormhole.parseAddress(sender.chain(), sender.address()),
+      to,
       sourceToken,
       amount.units(params.normalizedParams.amount),
       destToken!,
@@ -286,8 +287,8 @@ export class AutomaticPorticoRoute<N extends Network>
     const receipt: SourceInitiatedTransferReceipt = {
       originTxs: txids,
       state: TransferState.SourceInitiated,
-      from: this.request.from.chain,
-      to: this.request.to.chain,
+      from: this.request.fromChain.chain,
+      to: this.request.toChain.chain,
     };
     return receipt;
   }
