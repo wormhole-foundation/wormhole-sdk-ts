@@ -14,7 +14,7 @@ const usdcContracts = [[
   "Mainnet", [
     ["Ethereum",  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"],
     ["Avalanche", "0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e"],
-    ["Optimism",  "0x179522635726710dd7d2035a81d856de4aa7836c"],
+    ["Optimism",  "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"],
     ["Arbitrum",  "0xaf88d065e77c8cC2239327C5EDb3A432268e5831"],
     ["Solana",    "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"],
     ["Base",      "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"],
