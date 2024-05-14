@@ -58,7 +58,9 @@ export async function getSigner<N extends Network, C extends Chain>(
       signer = await cosmwasm.getSigner(await chain.getRpc(), getEnv("COSMOS_MNEMONIC"));
       break;
     case "Evm":
-      signer = await evm.getSigner(await chain.getRpc(), getEnv("ETH_PRIVATE_KEY"));
+      signer = await evm.getSigner(await chain.getRpc(), getEnv("ETH_PRIVATE_KEY"), {
+        debug: true,
+      });
       break;
     case "Algorand":
       signer = await algorand.getSigner(await chain.getRpc(), getEnv("ALGORAND_MNEMONIC"));

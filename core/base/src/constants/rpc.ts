@@ -51,6 +51,7 @@ const rpcConfig = [[
     ["Fantom",          "https://rpc.ankr.com/fantom_testnet"],
     ["Celo",            "https://alfajores-forno.celo-testnet.org"],
     ["Solana",          "https://api.devnet.solana.com"],
+    ["Oasis",           "https://testnet.emerald.oasis.io"],
     ["Moonbeam",        "https://rpc.api.moonbase.moonbeam.network"],
     ["Sui",             "https://fullnode.testnet.sui.io"],
     ["Aptos",           "https://fullnode.testnet.aptoslabs.com/v1"],

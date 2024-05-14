@@ -89,20 +89,41 @@ export class EvmNativeSigner<N extends Network, C extends EvmChains = EvmChains>
   }
 
   async sign(tx: UnsignedTransaction<N, C>[]): Promise<SignedTx[]> {
+    const chain = this.chain();
+
     const signed = [];
 
     // default gas limit
     const gasLimit = this.opts?.maxGasLimit ?? 500_000n;
 
+    let gasPrice = 100_000_000_000n; // 100gwei
     let maxFeePerGas = 1_500_000_000n; // 1.5gwei
     let maxPriorityFeePerGas = 100_000_000n; // 0.1gwei
+
     // Celo does not support this call
-    if (this.chain() !== 'Celo') {
+    if (chain !== 'Celo') {
       const feeData = await this._signer.provider!.getFeeData();
+      gasPrice = feeData.gasPrice ?? gasPrice;
       maxFeePerGas = feeData.maxFeePerGas ?? maxFeePerGas;
       maxPriorityFeePerGas =
         feeData.maxPriorityFeePerGas ?? maxPriorityFeePerGas;
     }
+
+    // Oasis throws malformed errors unless we
+    // set it to use legacy transaction parameters
+    const gasOpts =
+      chain === 'Oasis'
+        ? {
+            gasLimit,
+            gasPrice: gasPrice,
+            // Hardcode type
+            type: 0,
+          }
+        : {
+            maxFeePerGas,
+            maxPriorityFeePerGas,
+            gasLimit,
+          };
 
     for (const txn of tx) {
       const { transaction, description } = txn;
@@ -111,12 +132,9 @@ export class EvmNativeSigner<N extends Network, C extends EvmChains = EvmChains>
 
       const t: TransactionRequest = {
         ...transaction,
-        ...{
-          maxFeePerGas,
-          maxPriorityFeePerGas,
-          gasLimit,
-          nonce: await this._signer.getNonce(),
-        },
+        ...gasOpts,
+        from: this.address(),
+        nonce: await this._signer.getNonce(),
       };
 
       // try {
