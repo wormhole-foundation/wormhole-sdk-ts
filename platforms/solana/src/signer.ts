@@ -28,8 +28,11 @@ import {
   type SolanaUnsignedTransaction,
 } from './unsignedTransaction.js';
 
-// Add priority fee according to 90th percentile of recent fees paid
 const DEFAULT_PRIORITY_FEE_PERCENTILE = 0.9;
+const DEFAULT_MAX_RESUBMITS = 5;
+const DEFAULT_COMPUTE_BUDGET = 250_000;
+const DEFAULT_MIN_PRIORITY_FEE = 1;
+const DEFAULT_MAX_PRIORITY_FEE = 1e9;
 
 // returns a SignOnlySigner for the Solana platform
 export async function getSolanaSigner(
@@ -43,16 +46,25 @@ export async function getSolanaSigner(
     rpc,
   );
 }
+export type PriorityFeeSettings = {
+  percentile?: number;
+  percentileMultiple?: number;
+  max?: number;
+  min?: number;
+};
+
+export type SolanaSendSignerOpts = {
+  debug?: boolean;
+  priorityFee?: PriorityFeeSettings;
+  sendOpts?: SendOptions;
+  retries?: number;
+};
 
 // returns a SignAndSendSigner for the Solana platform
 export async function getSolanaSignAndSendSigner(
   rpc: Connection,
   privateKey: string | Keypair,
-  opts?: {
-    debug?: boolean;
-    priorityFeePercentile?: number;
-    sendOpts?: SendOptions;
-  },
+  opts?: SolanaSendSignerOpts,
 ): Promise<Signer> {
   const [_, chain] = await SolanaPlatform.chainFromRpc(rpc);
 
@@ -61,15 +73,19 @@ export async function getSolanaSignAndSendSigner(
       ? Keypair.fromSecretKey(encoding.b58.decode(privateKey))
       : privateKey;
 
-  if (opts?.priorityFeePercentile && opts?.priorityFeePercentile > 1.0)
-    throw new Error('priorityFeePercentile must be a number between 0 and 1');
+  if (opts?.priorityFee) {
+    if (opts.priorityFee.percentile && opts.priorityFee.percentile > 1.0)
+      throw new Error('priorityFeePercentile must be a number between 0 and 1');
+    // TODO: other validation
+  }
 
   return new SolanaSendSigner(
     rpc,
     chain,
     kp,
     opts?.debug ?? false,
-    opts?.priorityFeePercentile ?? 0,
+    opts?.priorityFee ?? {},
+    opts?.retries ?? DEFAULT_MAX_RESUBMITS,
     opts?.sendOpts,
   );
 }
@@ -131,7 +147,8 @@ export class SolanaSendSigner<
     private _chain: C,
     private _keypair: Keypair,
     private _debug: boolean = false,
-    private _priorityFeePercentile: number = 0.0,
+    private _priorityFee: PriorityFeeSettings,
+    private _maxResubmits: number = DEFAULT_MAX_RESUBMITS,
     private _sendOpts?: SendOptions,
   ) {
     this._sendOpts = this._sendOpts ?? {
@@ -196,19 +213,20 @@ export class SolanaSendSigner<
         console.log(`Signing: ${description} for ${this.address()}`);
 
       let priorityFeeIx: TransactionInstruction[] | undefined;
-      if (this._priorityFeePercentile && this._priorityFeePercentile > 0)
+      if (this._priorityFee?.percentile && this._priorityFee.percentile > 0)
         priorityFeeIx = await createPriorityFeeInstructions(
           this._rpc,
           transaction,
-          [],
-          this._priorityFeePercentile,
+          this._priorityFee.percentile,
+          this._priorityFee.percentileMultiple,
+          this._priorityFee.min,
+          this._priorityFee.max,
         );
 
       if (this._debug) logTxDetails(transaction);
 
       // Try to send the transaction up to 5 times
-      const maxRetries = 5;
-      for (let i = 0; i < maxRetries; i++) {
+      for (let i = 0; i < this._maxResubmits; i++) {
         try {
           if (isVersionedTransaction(transaction)) {
             if (priorityFeeIx) {
@@ -232,7 +250,7 @@ export class SolanaSendSigner<
           break;
         } catch (e) {
           // No point checking if retryable if we're on the last retry
-          if (i === maxRetries - 1) throw e;
+          if (i === this._maxResubmits - 1) throw e;
 
           // If it's not retryable, throw
           if (!this.retryable(e)) throw e;
@@ -304,78 +322,22 @@ export function logTxDetails(transaction: Transaction | VersionedTransaction) {
 export async function createPriorityFeeInstructions(
   connection: Connection,
   transaction: Transaction | VersionedTransaction,
-  lockedWritableAccounts: PublicKey[] = [],
   feePercentile: number = DEFAULT_PRIORITY_FEE_PERCENTILE,
-  minPriorityFee: number = 0,
+  multiple: number = 0,
+  minPriorityFee: number = DEFAULT_MIN_PRIORITY_FEE,
+  maxPriorityFee: number = DEFAULT_MAX_PRIORITY_FEE,
 ): Promise<TransactionInstruction[]> {
-  if (lockedWritableAccounts.length === 0) {
-    if (isVersionedTransaction(transaction)) {
-      const msg = transaction.message;
-      const keys = msg.getAccountKeys();
-      lockedWritableAccounts = msg.compiledInstructions
-        .flatMap((ix) => ix.accountKeyIndexes)
-        .map((k) => (msg.isAccountWritable(k) ? keys.get(k) : null))
-        .filter((k) => k !== null) as PublicKey[];
-    } else {
-      lockedWritableAccounts = transaction.instructions
-        .flatMap((ix) => ix.keys)
-        .map((k) => (k.isWritable ? k.pubkey : null))
-        .filter((k) => k !== null) as PublicKey[];
-    }
-  }
-  return await determineComputeBudget(
-    connection,
-    transaction,
-    lockedWritableAccounts,
-    feePercentile,
-    minPriorityFee,
-  );
-}
-
-export async function determineComputeBudget(
-  connection: Connection,
-  transaction: Transaction | VersionedTransaction,
-  lockedWritableAccounts: PublicKey[] = [],
-  feePercentile: number = DEFAULT_PRIORITY_FEE_PERCENTILE,
-  minPriorityFee: number = 0,
-): Promise<TransactionInstruction[]> {
-  let computeBudget = 250_000;
-  let priorityFee = 1;
-
-  try {
-    const simulateResponse = await (isVersionedTransaction(transaction)
-      ? connection.simulateTransaction(transaction)
-      : connection.simulateTransaction(transaction));
-
-    if (simulateResponse.value.err) {
-      console.error(
-        `Error simulating Solana transaction: ${simulateResponse.value.err}`,
-      );
-    }
-
-    if (simulateResponse?.value?.unitsConsumed) {
-      // Set compute budget to 120% of the units used in the simulated transaction
-      computeBudget = Math.round(simulateResponse.value.unitsConsumed * 1.2);
-    }
-  } catch (e) {
-    console.error(
-      `Failed to calculate compute unit limit for Solana transaction: ${e}`,
-    );
-  }
-
-  try {
-    priorityFee = await determinePriorityFee(
+  const [computeBudget, priorityFee] = await Promise.all([
+    determineComputeBudget(connection, transaction),
+    determinePriorityFee(
       connection,
-      lockedWritableAccounts,
+      transaction,
       feePercentile,
-    );
-  } catch (e) {
-    console.error(
-      `Failed to calculate compute unit price for Solana transaction: ${e}`,
-    );
-    return [];
-  }
-  priorityFee = Math.max(priorityFee, minPriorityFee);
+      multiple,
+      minPriorityFee,
+      maxPriorityFee,
+    ),
+  ]);
 
   return [
     ComputeBudgetProgram.setComputeUnitLimit({
@@ -387,14 +349,72 @@ export async function determineComputeBudget(
   ];
 }
 
-async function determinePriorityFee(
+export async function determineComputeBudget(
   connection: Connection,
-  lockedWritableAccounts: PublicKey[] = [],
+  transaction: Transaction | VersionedTransaction,
+): Promise<number> {
+  let computeBudget = DEFAULT_COMPUTE_BUDGET;
+  try {
+    const simulateResponse = await (isVersionedTransaction(transaction)
+      ? connection.simulateTransaction(transaction)
+      : connection.simulateTransaction(transaction));
+
+    if (simulateResponse.value.err)
+      console.error(
+        `Error simulating Solana transaction: ${simulateResponse.value.err}`,
+      );
+
+    if (simulateResponse?.value?.unitsConsumed) {
+      // Set compute budget to 120% of the units used in the simulated transaction
+      computeBudget = Math.round(simulateResponse.value.unitsConsumed * 1.2);
+    }
+  } catch (e) {
+    console.error(
+      `Failed to calculate compute unit limit for Solana transaction: ${e}`,
+    );
+  }
+  return computeBudget;
+}
+
+/**
+ * A helper function to determine the priority fee to use for a transaction
+ *
+ * @param connection Solana/web3.js Connection to the network
+ * @param transaction The transaction to determine the priority fee for
+ * @param percentile The percentile of recent fees to use
+ * @param multiple The multiple to apply to the percentile fee
+ * @param minPriorityFee The minimum priority fee to use
+ * @param maxPriorityFee The maximum priority fee to use
+ * @returns the priority fee to use according to the recent transactions and the given parameters
+ */
+export async function determinePriorityFee(
+  connection: Connection,
+  transaction: Transaction | VersionedTransaction,
   percentile: number,
+  multiple: number = 0,
+  minPriorityFee: number = DEFAULT_MIN_PRIORITY_FEE,
+  maxPriorityFee: number = DEFAULT_MAX_PRIORITY_FEE,
 ): Promise<number> {
   // https://twitter.com/0xMert_/status/1768669928825962706
 
-  let fee = 1; // Set fee to 1 microlamport by default
+  // Start with min fee
+  let fee = minPriorityFee;
+
+  // Figure out which accounts need write lock
+  let lockedWritableAccounts = [];
+  if (isVersionedTransaction(transaction)) {
+    const msg = transaction.message;
+    const keys = msg.getAccountKeys();
+    lockedWritableAccounts = msg.compiledInstructions
+      .flatMap((ix) => ix.accountKeyIndexes)
+      .map((k) => (msg.isAccountWritable(k) ? keys.get(k) : null))
+      .filter((k) => k !== null) as PublicKey[];
+  } else {
+    lockedWritableAccounts = transaction.instructions
+      .flatMap((ix) => ix.keys)
+      .map((k) => (k.isWritable ? k.pubkey : null))
+      .filter((k) => k !== null) as PublicKey[];
+  }
 
   try {
     const recentFeesResponse = await connection.getRecentPrioritizationFees({
@@ -402,21 +422,26 @@ async function determinePriorityFee(
     });
 
     if (recentFeesResponse) {
-      // Get 75th percentile fee paid in recent slots
+      // Sort fees to find the appropriate percentile
       const recentFees = recentFeesResponse
         .map((dp) => dp.prioritizationFee)
-        .filter((dp) => dp > 0)
         .sort((a, b) => a - b);
 
-      if (recentFees.length > 0) {
-        const medianFee =
-          recentFees[Math.floor(recentFees.length * percentile)];
-        fee = Math.max(fee, medianFee!);
+      // Find the element in the distribution that matches the percentile requested
+      const idx = Math.ceil(recentFees.length * percentile);
+      if (recentFees.length > idx) {
+        let percentileFee = recentFees[idx]!;
+
+        // Apply multiple if provided
+        if (multiple > 0) percentileFee *= multiple;
+
+        fee = Math.max(fee, percentileFee);
       }
     }
   } catch (e) {
     console.error('Error fetching Solana recent fees', e);
   }
 
-  return fee;
+  // Bound the return value by the parameters pased
+  return Math.min(Math.max(fee, minPriorityFee), maxPriorityFee);
 }
