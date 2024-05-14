@@ -18,7 +18,6 @@ import { getSigner } from "./helpers/index.js";
   // Note: if the VAA is not produced before the attempt to retrieve it times out
   // you should set this value to the txid logged in the previous run
   let txid = undefined;
-  // txid = "0x0ed77f6a6354542bc576efe52313f1ab05cfef48823395458ad97f3216d40206";
   // txid = "0x55127b9c8af46aaeea9ef28d8bf91e1aff920422fc1c9831285eb0f39ddca2fe";
 
   if (!txid) {
@@ -49,7 +48,7 @@ import { getSigner } from "./helpers/index.js";
   // Check if its attested and if not
   // submit the attestation to the token bridge on the
   // destination chain
-  const chain = "Oasis";
+  const chain = "Sepolia";
   const destChain = wh.getChain(chain);
   const { signer } = await getSigner(destChain);
 

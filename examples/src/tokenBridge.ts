@@ -22,7 +22,7 @@ import { SignerStuff, getSigner, waitLog } from "./helpers/index.js";
 
   // Grab chain Contexts -- these hold a reference to a cached rpc client
   const sendChain = wh.getChain("Avalanche");
-  const rcvChain = wh.getChain("Oasis");
+  const rcvChain = wh.getChain("Solana");
 
   // Shortcut to allow transferring native gas token
   const token = Wormhole.tokenId(sendChain.chain, "native");
@@ -49,7 +49,7 @@ import { SignerStuff, getSigner, waitLog } from "./helpers/index.js";
   // of the token
   // On the destination side, a wrapped version of the token will be minted
   // to the address specified in the transfer VAA
-  const automatic = true;
+  const automatic = false;
 
   // The automatic relayer has the ability to deliver some native gas funds to the destination account
   // The amount specified for native gas will be swapped for the native gas token according

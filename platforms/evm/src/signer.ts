@@ -96,12 +96,14 @@ export class EvmNativeSigner<N extends Network, C extends EvmChains = EvmChains>
     // default gas limit
     const gasLimit = this.opts?.maxGasLimit ?? 500_000n;
 
+    let gasPrice = 100_000_000_000n; // 100gwei
     let maxFeePerGas = 1_500_000_000n; // 1.5gwei
     let maxPriorityFeePerGas = 100_000_000n; // 0.1gwei
 
     // Celo does not support this call
     if (chain !== 'Celo') {
       const feeData = await this._signer.provider!.getFeeData();
+      gasPrice = feeData.gasPrice ?? gasPrice;
       maxFeePerGas = feeData.maxFeePerGas ?? maxFeePerGas;
       maxPriorityFeePerGas =
         feeData.maxPriorityFeePerGas ?? maxPriorityFeePerGas;
@@ -113,7 +115,7 @@ export class EvmNativeSigner<N extends Network, C extends EvmChains = EvmChains>
       chain === 'Oasis'
         ? {
             gasLimit,
-            gasPrice: maxFeePerGas,
+            gasPrice: gasPrice,
             // Hardcode type
             type: 0,
           }
