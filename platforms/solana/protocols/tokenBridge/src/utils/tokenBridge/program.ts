@@ -6,7 +6,6 @@ import { utils } from '@wormhole-foundation/sdk-solana';
 import { TokenBridgeCoder } from './coder/index.js';
 import type { TokenBridge } from '../../tokenBridgeType.js';
 
-// @ts-ignore
 import IDL from '../../anchor-idl/token_bridge.json';
 
 export function createTokenBridgeProgramInterface(

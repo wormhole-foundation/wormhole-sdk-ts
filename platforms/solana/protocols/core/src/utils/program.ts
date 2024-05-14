@@ -6,7 +6,6 @@ import { utils } from '@wormhole-foundation/sdk-solana';
 import { WormholeCoder } from './coder/index.js';
 import type { Wormhole } from '../types.js';
 
-// @ts-ignore
 import IDL from '../anchor-idl/wormhole.json';
 
 export function createWormholeProgramInterface(
