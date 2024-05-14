@@ -6,7 +6,6 @@ import type {
   TokenId,
   TokenTransferDetails,
 } from "@wormhole-foundation/sdk-definitions";
-import type { TokenTransferVAA } from "../../protocols/tokenTransfer.js";
 import { TokenTransfer } from "../../protocols/tokenTransfer.js";
 import type {
   AttestationReceipt,
@@ -142,7 +141,7 @@ export class TokenBridgeRoute<N extends Network>
       throw new Error("The source must be finalized in order to complete the transfer");
     const dstTxIds = await TokenTransfer.redeem<N>(
       this.request.toChain,
-      receipt.attestation.attestation as TokenTransferVAA,
+      receipt.attestation.attestation as TokenTransfer.VAA,
       signer,
     );
 

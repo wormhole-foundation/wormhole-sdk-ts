@@ -8,7 +8,6 @@ import type {
 } from "@wormhole-foundation/sdk-definitions";
 import { CircleBridge } from "@wormhole-foundation/sdk-definitions";
 import { signSendWait } from "../../common.js";
-import type { CircleAttestationReceipt } from "../../protocols/cctpTransfer.js";
 import { CircleTransfer } from "../../protocols/cctpTransfer.js";
 import type { TransferReceipt } from "../../types.js";
 import { TransferState, isAttested } from "../../types.js";
@@ -45,7 +44,7 @@ type Vr = ValidationResult<Op>;
 
 type Q = Quote<Op, Vp>;
 type QR = QuoteResult<Op, Vp>;
-type R = TransferReceipt<CircleAttestationReceipt>;
+type R = TransferReceipt<CircleTransfer.AttestationReceipt>;
 
 export class CCTPRoute<N extends Network>
   extends ManualRoute<N, Op, Vp, R>

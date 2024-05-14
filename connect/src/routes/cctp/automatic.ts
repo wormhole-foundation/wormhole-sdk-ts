@@ -6,7 +6,6 @@ import type {
   Signer,
   TokenId,
 } from "@wormhole-foundation/sdk-definitions";
-import type { CircleAttestationReceipt } from "../../protocols/cctpTransfer.js";
 import { CircleTransfer } from "../../protocols/cctpTransfer.js";
 import { TransferState } from "../../types.js";
 import { Wormhole } from "../../wormhole.js";
@@ -46,7 +45,7 @@ type Vr = ValidationResult<Op>;
 
 type Q = Quote<Op, Vp>;
 type QR = QuoteResult<Op, Vp>;
-type R = Receipt<CircleAttestationReceipt>;
+type R = Receipt<CircleTransfer.AttestationReceipt>;
 
 export class AutomaticCCTPRoute<N extends Network>
   extends AutomaticRoute<N, Op, Vp, R>
