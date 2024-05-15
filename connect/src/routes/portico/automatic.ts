@@ -29,7 +29,6 @@ import {
   chainToPlatform,
   contracts,
   isAttested,
-  isNative,
   isSourceInitiated,
   resolveWrappedToken,
   signSendWait,
@@ -78,7 +77,8 @@ export class AutomaticPorticoRoute<N extends Network>
     name: "AutomaticPortico",
   };
 
-  private static _supportedTokens = ["WETH", "WSTETH"];
+  // TODO: "ETH"?
+  private static _supportedTokens = ["WETH", "wstETH", "USDT"];
 
   static supportedNetworks(): Network[] {
     return ["Mainnet"];
@@ -99,9 +99,8 @@ export class AutomaticPorticoRoute<N extends Network>
       })
       .flat()
       .filter((td) => {
-        const localOrEth = !td.original || td.original === "Ethereum";
-        const isAvax = chain === "Avalanche" && isNative(td.address);
-        return localOrEth && !isAvax;
+        // Only tokens native to the chain are supported
+        return td.chain === chain;
       });
 
     return supported.map((td) => Wormhole.tokenId(chain, td.address));
@@ -147,8 +146,8 @@ export class AutomaticPorticoRoute<N extends Network>
         switch (td.symbol) {
           case "ETH":
           case "WETH":
-            return Wormhole.tokenId(toChain.chain, td.address);
-          case "WSTETH":
+          case "wstETH":
+          case "USDT":
             return Wormhole.tokenId(toChain.chain, td.address);
           default:
             throw new Error("Unknown symbol: " + redeemTokenDetails.symbol);
@@ -318,10 +317,11 @@ export class AutomaticPorticoRoute<N extends Network>
 
   private async quoteUniswap(request: RouteTransferRequest<N>, params: VP) {
     const fromPorticoBridge = await request.fromChain.getPorticoBridge();
+    const xferAmount = amount.units(params.normalizedParams.amount);
     const startQuote = await fromPorticoBridge.quoteSwap(
       params.normalizedParams.sourceToken.address,
       params.normalizedParams.canonicalSourceToken.address,
-      amount.units(params.normalizedParams.amount),
+      xferAmount,
     );
     const startSlippage = (startQuote * SLIPPAGE_BPS) / BPS_PER_HUNDRED_PERCENT;
 
@@ -352,6 +352,11 @@ export class AutomaticPorticoRoute<N extends Network>
 
     const amountFinish = amountFinishQuote - amountFinishSlippage;
     if (amountFinish <= minAmountFinish) throw new Error("Amount finish too low");
+
+    // if the slippage is more than 50bps, we should throw an error
+    // this likely means that the pools are unbalanced
+    if (minAmountFinish < xferAmount - (xferAmount * 50n) / BPS_PER_HUNDRED_PERCENT)
+      throw new Error("Slippage too high");
 
     return {
       minAmountStart: minAmountStart,
