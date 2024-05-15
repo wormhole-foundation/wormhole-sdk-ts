@@ -96,12 +96,12 @@ export class PorticoApi {
       const sourcePorticoAddress = contracts.portico.get(
         network,
         chain,
-      )!.portico;
+      )!.porticoUniswap;
 
       const destinationPorticoAddress = contracts.portico.get(
         network,
         receiver.chain,
-      )!.portico;
+      )!.porticoUniswap;
 
       const startingChainId = nativeChainIds.networkChainToNativeChainId.get(
         network,
