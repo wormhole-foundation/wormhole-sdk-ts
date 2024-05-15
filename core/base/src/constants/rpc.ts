@@ -44,8 +44,8 @@ const rpcConfig = [[
     ["Rootstock", "https://public-node.rsk.co"],
   ]], [
   "Testnet", [
-    ["Ethereum",        "https://rpc.ankr.com/eth_goerli"],
-    ["Polygon",         "https://polygon-mumbai-bor.publicnode.com"],
+    ["Ethereum",        "https://eth-goerli.public.blastapi.io"],
+    ["Polygon",         "https://rpc-mumbai.polygon.technology"],
     ["Bsc",             "https://data-seed-prebsc-1-s3.binance.org:8545"],
     ["Avalanche",       "https://api.avax-test.network/ext/bc/C/rpc"],
     ["Fantom",          "https://rpc.ankr.com/fantom_testnet"],
@@ -56,9 +56,9 @@ const rpcConfig = [[
     ["Sui",             "https://fullnode.testnet.sui.io"],
     ["Aptos",           "https://fullnode.testnet.aptoslabs.com/v1"],
     ["Sei",             "https://sei-testnet-rpc.polkachu.com"],
-    ["Arbitrum",        "https://arbitrum-goerli.publicnode.com"],
-    ["Optimism",        "https://optimism-goerli.publicnode.com"],
-    ["Base",            "https://goerli.base.org"],
+    ["Arbitrum",        "https://arbitrum-goerli.public.blastapi.io"],
+    ["Optimism",        "https://optimism-goerli.public.blastapi.io"],
+    ["Base",            "https://base-goerli.public.blastapi.io"],
     ["Injective",       "https://testnet.sentry.tm.injective.network"],
     ["Osmosis",         "https://rpc.testnet.osmosis.zone"],
     ["Cosmoshub",       "https://rpc.sentry-02.theta-testnet.polypore.xyz"],
