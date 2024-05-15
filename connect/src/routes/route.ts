@@ -11,6 +11,7 @@ import type {
   ValidatedTransferParams,
   ValidationResult,
 } from "./types.js";
+import { ChainAddress } from "@wormhole-foundation/sdk-definitions";
 
 export abstract class Route<
   N extends Network,
@@ -39,7 +40,7 @@ export abstract class Route<
   public abstract quote(params: ValidatedTransferParams<OP>): Promise<QuoteResult<OP, VP>>;
 
   // Initiate the transfer with the transfer request and passed options
-  public abstract initiate(sender: Signer, quote: Quote<OP, VP>): Promise<R>;
+  public abstract initiate(sender: Signer, quote: Quote<OP, VP>, to: ChainAddress): Promise<R>;
 
   // Track the progress of the transfer over time
   public abstract track(receipt: R, timeout?: number): AsyncGenerator<R>;

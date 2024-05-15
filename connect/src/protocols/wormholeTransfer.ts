@@ -67,9 +67,4 @@ export interface WormholeTransfer<PN extends ProtocolName> {
   // finish the WormholeTransfer by submitting transactions to the destination chain
   // returns a transaction hashes
   completeTransfer(signer: Signer): Promise<TxHash[]>;
-
-  // how many blocks until source is final
-  // sourceFinalized(): Promise<bigint>;
-  // how many blocks until destination is final
-  // destinationFinalized(): Promise<bigint>;
 }

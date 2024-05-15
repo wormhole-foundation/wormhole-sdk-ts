@@ -247,11 +247,7 @@ export interface AutomaticTokenBridge<N extends Network = Network, C extends Cha
     vaa: AutomaticTokenBridge.VAA,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
   /** Fee charged to relay */
-  getRelayerFee(
-    sender: AccountAddress<C>,
-    recipient: ChainAddress,
-    token: TokenAddress<C>,
-  ): Promise<bigint>;
+  getRelayerFee(destination: Chain, token: TokenAddress<C>): Promise<bigint>;
   /** Check if a given token is in the registered token list */
   isRegisteredToken(token: TokenAddress<C>): Promise<boolean>;
   /**  Get the list of tokens that are registered and acceptable to send */

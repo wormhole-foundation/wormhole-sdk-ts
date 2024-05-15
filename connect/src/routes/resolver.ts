@@ -64,8 +64,8 @@ export class RouteResolver<N extends Network> {
         try {
           const protocolSupported =
             rc.supportedNetworks().includes(this.wh.network) &&
-            rc.supportedChains(this.wh.network).includes(request.to.chain) &&
-            rc.supportedChains(this.wh.network).includes(request.from.chain) &&
+            rc.supportedChains(this.wh.network).includes(request.toChain.chain) &&
+            rc.supportedChains(this.wh.network).includes(request.fromChain.chain) &&
             rc.isProtocolSupported(request.fromChain) &&
             rc.isProtocolSupported(request.toChain);
 

@@ -198,13 +198,12 @@ export class SolanaAutomaticTokenBridge<
   }
 
   async getRelayerFee(
-    sender: AccountAddress<C>,
-    recipient: ChainAddress,
+    destination: Chain,
     token: TokenAddress<C>,
   ): Promise<bigint> {
     const tokenAddress = this.mintAddress(token);
     const [{ fee }, { swapRate }, { relayerFeePrecision }] = await Promise.all([
-      this.getForeignContract(recipient.chain),
+      this.getForeignContract(destination),
       this.getRegisteredToken(tokenAddress),
       this.getRedeemerConfig(),
     ]);
