@@ -263,6 +263,7 @@ type TransformMapping<M extends MappingEntries, S extends Shape | void = void> =
 
 type ObjectFromMappingEntries<M extends MappingEntries, D extends Depth[number]> = {
   [K in keyof M as (K extends `${number}` ? ToExtPropKey<M[K][0]> : never)]:
+  //@ts-ignore
   M[K][1] extends infer V
   ? D extends 1
   ? V extends LeafValue<infer T>

@@ -62,6 +62,9 @@
   },
   "typesVersions": {
     "*": {
+      "tokens":[
+        "./dist/cjs/tokens.d.ts"
+      ],
       "*": [
         "./dist/cjs/index.d.ts"
       ]
