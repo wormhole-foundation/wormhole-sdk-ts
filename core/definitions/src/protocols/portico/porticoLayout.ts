@@ -38,7 +38,7 @@ export const porticoPayloadLayout = [
   { name: "relayerFee", ...amountItem },
 ] as const satisfies Layout;
 
-export const namedPayloads = [["Transfer", porticoFlagSetLayout]] as const satisfies NamedPayloads;
+export const namedPayloads = [["Transfer", porticoPayloadLayout]] as const satisfies NamedPayloads;
 
 // factory registration:
 import "../../registry.js";

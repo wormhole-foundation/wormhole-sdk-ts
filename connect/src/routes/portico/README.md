@@ -41,7 +41,7 @@ The current table of input tokens, to bridging tokens,
 to final tokens is as follows
 
 ```
-| inputs           | 'native' | ETH | wETH   | wstETH
-| bridging token   |            xETH         | wstETH
-| outputs          | 'native' | ETH |  wETH  | wstETH
+| inputs           | 'native' | ETH | wETH  |  wstETH |  USDT |
+| bridging token   |           xETH         | xwstETH | xUSDT |
+| outputs          | 'native' | ETH | wETH  |  wstETH |  USDT |
 ```
