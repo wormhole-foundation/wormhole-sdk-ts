@@ -245,20 +245,25 @@ export class SolanaSendSigner<
       }
     }
 
-    if (this._debug) console.log('Waiting for finalization: ', txids);
+    if (this._debug) console.log('Waiting for confirmation for: ', txids);
 
     // Wait for finalization
     const results = await Promise.all(
-      txids.map((signature) =>
-        this._rpc.confirmTransaction(
-          {
-            signature,
-            blockhash,
-            lastValidBlockHeight,
-          },
-          this._rpc.commitment,
-        ),
-      ),
+      txids.map(async (signature) => {
+        try {
+          return await this._rpc.confirmTransaction(
+            {
+              signature,
+              blockhash,
+              lastValidBlockHeight,
+            },
+            this._rpc.commitment,
+          );
+        } catch (e) {
+          console.error('Failed to confirm transaction: ', e);
+          throw e;
+        }
+      }),
     );
 
     const erroredTxs = results

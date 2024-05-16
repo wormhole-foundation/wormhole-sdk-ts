@@ -54,7 +54,7 @@ export async function getSigner<N extends Network, C extends Chain>(
         priorityFee: {
           // take the middle priority fee
           percentile: 0.5,
-          // but juice it
+          // juice the base fee taken from priority fee percentile
           percentileMultiple: 2,
           // at least 1 lamport/compute unit
           min: 1,
