@@ -28,11 +28,45 @@ import {
   type SolanaUnsignedTransaction,
 } from './unsignedTransaction.js';
 
-const DEFAULT_PRIORITY_FEE_PERCENTILE = 0.9;
-const DEFAULT_MAX_RESUBMITS = 5;
-const DEFAULT_COMPUTE_BUDGET = 250_000;
+const DEFAULT_PRIORITY_FEE_PERCENTILE = 0.5;
+const DEFAULT_PERCENTILE_MULTIPLE = 1;
 const DEFAULT_MIN_PRIORITY_FEE = 1;
 const DEFAULT_MAX_PRIORITY_FEE = 1e9;
+
+const DEFAULT_MAX_RESUBMITS = 5;
+const DEFAULT_COMPUTE_BUDGET = 250_000;
+
+/** Options for setting the priority fee for a transaction */
+export type PriorityFeeOptions = {
+  /** The percentile of recent fees to use as a base fee */
+  percentile?: number;
+  /** The multiple to apply to the percentile base fee  */
+  percentileMultiple?: number;
+  /** The minimum priority fee to use */
+  min?: number;
+  /** The maximum priority fee to use */
+  max?: number;
+};
+
+/** Recommended priority fee options */
+export const DefaultPriorityFeeOptions: PriorityFeeOptions = {
+  percentile: DEFAULT_PRIORITY_FEE_PERCENTILE,
+  percentileMultiple: DEFAULT_PERCENTILE_MULTIPLE,
+  min: DEFAULT_MIN_PRIORITY_FEE,
+  max: DEFAULT_MAX_PRIORITY_FEE,
+};
+
+/** Options for the SolanaSendSigner  */
+export type SolanaSendSignerOptions = {
+  /** log details of transaction attempts  */
+  debug?: boolean;
+  /** determine compute budget and priority fees to land a transaction */
+  priorityFee?: PriorityFeeOptions;
+  /** any send options from solana/web3.js */
+  sendOpts?: SendOptions;
+  /** how many times to attempt resubmitting the transaction to the network with a new blockhash */
+  retries?: number;
+};
 
 // returns a SignOnlySigner for the Solana platform
 export async function getSolanaSigner(
@@ -46,25 +80,12 @@ export async function getSolanaSigner(
     rpc,
   );
 }
-export type PriorityFeeSettings = {
-  percentile?: number;
-  percentileMultiple?: number;
-  max?: number;
-  min?: number;
-};
-
-export type SolanaSendSignerOpts = {
-  debug?: boolean;
-  priorityFee?: PriorityFeeSettings;
-  sendOpts?: SendOptions;
-  retries?: number;
-};
 
 // returns a SignAndSendSigner for the Solana platform
 export async function getSolanaSignAndSendSigner(
   rpc: Connection,
   privateKey: string | Keypair,
-  opts?: SolanaSendSignerOpts,
+  opts?: SolanaSendSignerOptions,
 ): Promise<Signer> {
   const [_, chain] = await SolanaPlatform.chainFromRpc(rpc);
 
@@ -90,53 +111,6 @@ export async function getSolanaSignAndSendSigner(
   );
 }
 
-export class SolanaSigner<N extends Network, C extends SolanaChains = 'Solana'>
-  implements SignOnlySigner<N, C>
-{
-  constructor(
-    private _chain: C,
-    private _keypair: Keypair,
-    private _rpc: Connection,
-    private _debug: boolean = false,
-  ) {}
-
-  chain(): C {
-    return this._chain;
-  }
-
-  address(): string {
-    return this._keypair.publicKey.toBase58();
-  }
-
-  async sign(tx: SolanaUnsignedTransaction<N>[]): Promise<Buffer[]> {
-    const { blockhash } = await SolanaPlatform.latestBlock(this._rpc);
-
-    const signed = [];
-    for (const txn of tx) {
-      const {
-        description,
-        transaction: { transaction, signers: extraSigners },
-      } = txn;
-
-      if (this._debug)
-        console.log(`Signing: ${description} for ${this.address()}`);
-
-      if (this._debug) logTxDetails(transaction);
-
-      if (isVersionedTransaction(transaction)) {
-        transaction.message.recentBlockhash = blockhash;
-        transaction.sign([this._keypair, ...(extraSigners ?? [])]);
-        signed.push(Buffer.from(transaction.serialize()));
-      } else {
-        transaction.recentBlockhash = blockhash;
-        transaction.partialSign(this._keypair, ...(extraSigners ?? []));
-        signed.push(transaction.serialize());
-      }
-    }
-    return signed;
-  }
-}
-
 export class SolanaSendSigner<
   N extends Network,
   C extends SolanaChains = 'Solana',
@@ -147,7 +121,7 @@ export class SolanaSendSigner<
     private _chain: C,
     private _keypair: Keypair,
     private _debug: boolean = false,
-    private _priorityFee: PriorityFeeSettings,
+    private _priorityFee: PriorityFeeOptions,
     private _maxResubmits: number = DEFAULT_MAX_RESUBMITS,
     private _sendOpts?: SendOptions,
   ) {
@@ -242,6 +216,7 @@ export class SolanaSendSigner<
             transaction.partialSign(this._keypair, ...(extraSigners ?? []));
           }
 
+          if (this._debug) console.log('Submitting transactions ');
           const txid = await this._rpc.sendRawTransaction(
             transaction.serialize(),
             this._sendOpts,
@@ -250,10 +225,13 @@ export class SolanaSendSigner<
           break;
         } catch (e) {
           // No point checking if retryable if we're on the last retry
-          if (i === this._maxResubmits - 1) throw e;
+          if (i === this._maxResubmits - 1 || !this.retryable(e)) throw e;
 
-          // If it's not retryable, throw
-          if (!this.retryable(e)) throw e;
+          if (this._debug)
+            console.log(
+              `Failed to send transaction on attempt ${i}, retrying: `,
+              e,
+            );
 
           // If it is retryable, we need to grab a new block hash
           const {
@@ -266,6 +244,8 @@ export class SolanaSendSigner<
         }
       }
     }
+
+    if (this._debug) console.log('Waiting for finalization: ', txids);
 
     // Wait for finalization
     const results = await Promise.all(
@@ -319,11 +299,21 @@ export function logTxDetails(transaction: Transaction | VersionedTransaction) {
   }
 }
 
+/**
+ *
+ * @param connection a Solana/web3.js Connection to the network
+ * @param transaction the transaction to determine the compute budget for
+ * @param feePercentile the percentile of recent fees to use
+ * @param multiple the multiple to apply to the percentile fee
+ * @param minPriorityFee the minimum priority fee to use
+ * @param maxPriorityFee the maximum priority fee to use
+ * @returns an array of TransactionInstructions to set the compute budget and priority fee for the transaction
+ */
 export async function createPriorityFeeInstructions(
   connection: Connection,
   transaction: Transaction | VersionedTransaction,
   feePercentile: number = DEFAULT_PRIORITY_FEE_PERCENTILE,
-  multiple: number = 0,
+  multiple: number = DEFAULT_PERCENTILE_MULTIPLE,
   minPriorityFee: number = DEFAULT_MIN_PRIORITY_FEE,
   maxPriorityFee: number = DEFAULT_MAX_PRIORITY_FEE,
 ): Promise<TransactionInstruction[]> {
@@ -349,6 +339,12 @@ export async function createPriorityFeeInstructions(
   ];
 }
 
+/**
+ * A helper function to determine the compute budget to use for a transaction
+ * @param connection Solana/web3.js Connection to the network
+ * @param transaction The transaction to determine the compute budget for
+ * @returns the compute budget to use for the transaction
+ */
 export async function determineComputeBudget(
   connection: Connection,
   transaction: Transaction | VersionedTransaction,
@@ -390,8 +386,8 @@ export async function determineComputeBudget(
 export async function determinePriorityFee(
   connection: Connection,
   transaction: Transaction | VersionedTransaction,
-  percentile: number,
-  multiple: number = 0,
+  percentile: number = DEFAULT_PRIORITY_FEE_PERCENTILE,
+  multiple: number = DEFAULT_PERCENTILE_MULTIPLE,
   minPriorityFee: number = DEFAULT_MIN_PRIORITY_FEE,
   maxPriorityFee: number = DEFAULT_MAX_PRIORITY_FEE,
 ): Promise<number> {
@@ -444,4 +440,51 @@ export async function determinePriorityFee(
 
   // Bound the return value by the parameters pased
   return Math.min(Math.max(fee, minPriorityFee), maxPriorityFee);
+}
+
+export class SolanaSigner<N extends Network, C extends SolanaChains = 'Solana'>
+  implements SignOnlySigner<N, C>
+{
+  constructor(
+    private _chain: C,
+    private _keypair: Keypair,
+    private _rpc: Connection,
+    private _debug: boolean = false,
+  ) {}
+
+  chain(): C {
+    return this._chain;
+  }
+
+  address(): string {
+    return this._keypair.publicKey.toBase58();
+  }
+
+  async sign(tx: SolanaUnsignedTransaction<N>[]): Promise<Buffer[]> {
+    const { blockhash } = await SolanaPlatform.latestBlock(this._rpc);
+
+    const signed = [];
+    for (const txn of tx) {
+      const {
+        description,
+        transaction: { transaction, signers: extraSigners },
+      } = txn;
+
+      if (this._debug)
+        console.log(`Signing: ${description} for ${this.address()}`);
+
+      if (this._debug) logTxDetails(transaction);
+
+      if (isVersionedTransaction(transaction)) {
+        transaction.message.recentBlockhash = blockhash;
+        transaction.sign([this._keypair, ...(extraSigners ?? [])]);
+        signed.push(Buffer.from(transaction.serialize()));
+      } else {
+        transaction.recentBlockhash = blockhash;
+        transaction.partialSign(this._keypair, ...(extraSigners ?? []));
+        signed.push(transaction.serialize());
+      }
+    }
+    return signed;
+  }
 }

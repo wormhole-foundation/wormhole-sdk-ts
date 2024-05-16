@@ -50,8 +50,17 @@ export async function getSigner<N extends Network, C extends Chain>(
   switch (platform) {
     case "Solana":
       signer = await solana.getSigner(await chain.getRpc(), getEnv("SOL_PRIVATE_KEY"), {
-        //debug: true,
-        priorityFeePercentile: 0.9,
+        debug: true,
+        priorityFee: {
+          // take the middle priority fee
+          percentile: 0.5,
+          // but juice it
+          percentileMultiple: 2,
+          // at least 1 lamport/compute unit
+          min: 1,
+          // at most 1000 lamport/compute unit
+          max: 1000,
+        },
       });
       break;
     case "Cosmwasm":
