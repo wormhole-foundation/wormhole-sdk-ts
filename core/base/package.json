@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-base",
-  "version": "0.6.9-beta.1",
+  "version": "0.7.0-beta.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -100,10 +100,10 @@
   },
   "typesVersions": {
     "*": {
-      "tokens":[
+      "tokens": [
         "./dist/cjs/constants/tokens/index.d.ts"
       ],
-      "contracts":[
+      "contracts": [
         "./dist/cjs/constants/contracts/index.d.ts"
       ],
       "*": [
