@@ -5,6 +5,5 @@
     "outDir": "dist/esm",
     "rootDir": "src",
     "resolveJsonModule": true
-  },
-  "files": ["./src/anchor-idl/token_bridge.json"]
+  }
 }
