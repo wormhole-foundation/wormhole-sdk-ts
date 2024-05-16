@@ -1,14 +1,4 @@
-import {
-  Chain,
-  Network,
-  Signer,
-  TransactionId,
-  TransferState,
-  Wormhole,
-  canonicalAddress,
-  routes,
-  wormhole,
-} from "@wormhole-foundation/sdk";
+import { Wormhole, canonicalAddress, routes, wormhole } from "@wormhole-foundation/sdk";
 
 import evm from "@wormhole-foundation/sdk/evm";
 import solana from "@wormhole-foundation/sdk/solana";
@@ -63,8 +53,6 @@ import { getSigner } from "./helpers/index.js";
   // creating a transfer request fetches token details
   // since all routes will need to know about the tokens
   const tr = await routes.RouteTransferRequest.create(wh, {
-    from: sender.address,
-    to: receiver.address,
     source: sendToken,
     destination: destinationToken,
   });
@@ -106,32 +94,14 @@ import { getSigner } from "./helpers/index.js";
     // EXAMPLE_REQUEST_INITIATE
     // Now the transfer may be initiated
     // A receipt will be returned, guess what you gotta do with that?
-    const receipt = await bestRoute.initiate(sender.signer, quote);
+    const receipt = await bestRoute.initiate(sender.signer, quote, receiver.address);
     console.log("Initiated transfer with receipt: ", receipt);
     // EXAMPLE_REQUEST_INITIATE
 
     // Kick off a wait log, if there is an opportunity to complete, this function will do it
     // see the implementation for how this works
     await routes.checkAndCompleteTransfer(bestRoute, receipt, receiver.signer);
+  } else {
+    console.log("Not initiating transfer (set `imSure` to true to do so)");
   }
 })();
-
-// An incomplete transfer can be completed by calling this function
-async function completeTransfer<N extends Network>(
-  route: routes.Route<N>,
-  fromChain: Chain,
-  toChain: Chain,
-  tx: TransactionId,
-  signer: Signer,
-) {
-  const receipt: routes.Receipt = {
-    from: fromChain,
-    to: toChain,
-    state: TransferState.SourceInitiated,
-    originTxs: [tx],
-  };
-
-  // Kick off a wait log, if there is an opportunity to complete, this function will do it
-  // see the implementation for how this works
-  await routes.checkAndCompleteTransfer(route, receipt, signer);
-}
