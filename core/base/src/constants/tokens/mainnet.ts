@@ -560,11 +560,19 @@ const mainnetTokenEntries = [
         },
       ],
       [
-        "USDTbnb",
+        "USDTbsc",
         {
           symbol: "USDT",
           decimals: 6,
           address: "0x55d398326f99059fF775485246999027B3197955",
+        },
+      ],
+      [
+        "wstETHbsc",
+        {
+          symbol: "wstETH",
+          decimals: 18,
+          address: "0x2Bbbdf97295F73175b12CC087cF446765931e1C3",
         },
       ],
     ],
