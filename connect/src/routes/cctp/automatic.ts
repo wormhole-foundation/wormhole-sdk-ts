@@ -1,7 +1,7 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
 import { amount, circle, contracts } from "@wormhole-foundation/sdk-base";
 import {
-  canonicalAddress,
+  isSameToken,
   type ChainAddress,
   type ChainContext,
   type CircleTransferDetails,
@@ -87,8 +87,14 @@ export class AutomaticCCTPRoute<N extends Network>
     toChain: ChainContext<N>,
   ): Promise<TokenId[]> {
     // Ensure the source token is USDC
-    const usdcSourceChain = circle.usdcContract.get(fromChain.network, fromChain.chain);
-    if (!usdcSourceChain || usdcSourceChain !== canonicalAddress(sourceToken)) return [];
+    const sourceChainUsdcContract  = circle.usdcContract.get(fromChain.network, fromChain.chain);
+    if (!sourceChainUsdcContract ) return [];
+    if (!isSameToken(
+      sourceToken,
+      Wormhole.tokenId(fromChain.chain, sourceChainUsdcContract),
+    )){
+      return [];
+    }
 
     const { network, chain } = toChain;
     if (!circle.usdcContract.has(network, chain)) return [];

@@ -6,7 +6,7 @@ import type {
   Signer,
   TokenId,
 } from "@wormhole-foundation/sdk-definitions";
-import { CircleBridge, canonicalAddress } from "@wormhole-foundation/sdk-definitions";
+import { CircleBridge, isSameToken } from "@wormhole-foundation/sdk-definitions";
 import { signSendWait } from "../../common.js";
 import { CircleTransfer } from "../../protocols/cctp/cctpTransfer.js";
 import type { TransferReceipt } from "../../types.js";
@@ -80,8 +80,14 @@ export class CCTPRoute<N extends Network>
     toChain: ChainContext<N>,
   ): Promise<TokenId[]> {
     // Ensure the source token is USDC
-    const usdcSourceChain = circle.usdcContract.get(fromChain.network, fromChain.chain);
-    if (!usdcSourceChain || usdcSourceChain !== canonicalAddress(sourceToken)) return [];
+    const sourceChainUsdcContract = circle.usdcContract.get(fromChain.network, fromChain.chain);
+    if (!sourceChainUsdcContract ) return [];
+    if (!isSameToken(
+      sourceToken,
+      Wormhole.tokenId(fromChain.chain, sourceChainUsdcContract),
+    )){
+      return [];
+    }
 
     const { network, chain } = toChain;
     if (!circle.usdcContract.has(network, chain)) return [];
