@@ -4,9 +4,10 @@ import type { Provider } from '@coral-xyz/anchor';
 import { Program } from '@coral-xyz/anchor';
 import { utils } from '@wormhole-foundation/sdk-solana';
 import { TokenBridgeCoder } from './coder/index.js';
-import type { TokenBridge } from '../../tokenBridgeType.js';
-
-import IDL from '../../anchor-idl/token_bridge.json';
+import {
+  type TokenBridge,
+  TOKEN_BRIDGE_IDL as IDL,
+} from '../../tokenBridgeType.js';
 
 export function createTokenBridgeProgramInterface(
   programId: PublicKeyInitData,
