@@ -68,6 +68,7 @@ type FilterItemsOfLayout<L extends Layout, Fixed extends boolean> =
   ? P extends readonly [infer H extends LayoutItem, ...infer T extends ProperLayout]
     ? FilterItem<H, Fixed> extends infer NI
       ? NI extends LayoutItem
+      // @ts-ignore
         ? [NI, ...FilterItemsOfLayout<T, Fixed>]
         : FilterItemsOfLayout<T, Fixed>
       : never

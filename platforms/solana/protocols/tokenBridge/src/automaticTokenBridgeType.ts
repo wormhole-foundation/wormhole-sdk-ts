@@ -1981,7 +1981,7 @@ export type TokenBridgeRelayer = {
   ];
 };
 
-export const IDL: TokenBridgeRelayer = {
+export const TOKEN_BRIDGE_RELAYER_IDL: TokenBridgeRelayer = {
   version: '0.1.0',
   name: 'token_bridge_relayer',
   constants: [

@@ -4,10 +4,7 @@ import type { Provider } from '@coral-xyz/anchor';
 import { Program } from '@coral-xyz/anchor';
 import { utils } from '@wormhole-foundation/sdk-solana';
 import { WormholeCoder } from './coder/index.js';
-import type { Wormhole } from '../types.js';
-
-// @ts-ignore
-import IDL from '../anchor-idl/wormhole.json';
+import { type Wormhole, IDL } from '../types.js';
 
 export function createWormholeProgramInterface(
   programId: PublicKeyInitData,
