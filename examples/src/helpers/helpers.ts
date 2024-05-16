@@ -28,7 +28,7 @@ function getEnv(key: string): string {
 
   // Otherwise, return the env var or error
   const val = process.env[key];
-  if (!val) throw new Error(`Missing env var ${key}, did you forget to set valies in '.env'?`);
+  if (!val) throw new Error(`Missing env var ${key}, did you forget to set values in '.env'?`);
 
   return val;
 }
@@ -50,8 +50,17 @@ export async function getSigner<N extends Network, C extends Chain>(
   switch (platform) {
     case "Solana":
       signer = await solana.getSigner(await chain.getRpc(), getEnv("SOL_PRIVATE_KEY"), {
-        //debug: true,
-        priorityFeePercentile: 0.9,
+        debug: true,
+        priorityFee: {
+          // take the middle priority fee
+          percentile: 0.5,
+          // juice the base fee taken from priority fee percentile
+          percentileMultiple: 2,
+          // at least 1 lamport/compute unit
+          min: 1,
+          // at most 1000 lamport/compute unit
+          max: 1000,
+        },
       });
       break;
     case "Cosmwasm":
