@@ -28,7 +28,7 @@ function getEnv(key: string): string {
 
   // Otherwise, return the env var or error
   const val = process.env[key];
-  if (!val) throw new Error(`Missing env var ${key}, did you forget to set valies in '.env'?`);
+  if (!val) throw new Error(`Missing env var ${key}, did you forget to set values in '.env'?`);
 
   return val;
 }
