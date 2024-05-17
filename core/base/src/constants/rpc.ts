@@ -40,6 +40,7 @@ const rpcConfig = [[
     ["Provenance","https://rpc.provenance.io/"],
     ["Linea",     "https://rpc.linea.build"],
     ["Scroll",    "https://rpc.ankr.com/scroll"],
+    ["Xlayer",    "https://xlayerrpc.okx.com/"],
     ["Gnosis",    "https://rpc.ankr.com/gnosis"],
     ["Rootstock", "https://public-node.rsk.co"],
   ]], [
