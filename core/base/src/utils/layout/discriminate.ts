@@ -172,9 +172,9 @@ function layoutItemMeta(
           //keep track of the current index in each case's fixed bytes array
           const itIndexes = caseFixedBytes.map(_ => 0);
 
+          let caseIndex = 0;
           for (let bytePos = 0; bytePos < minLen;) {
             let byteVal = null;
-            let caseIndex = 0;
             while (caseIndex < caseFixedBytes.length) {
               let curItIndex = itIndexes[caseIndex];
               const curFixedBytes = caseFixedBytes[caseIndex];
