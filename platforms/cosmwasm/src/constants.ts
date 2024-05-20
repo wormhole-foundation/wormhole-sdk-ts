@@ -107,6 +107,7 @@ export const nativeDenomToChain = constMap(cosmwasmNativeDenom, [[0, 2], [1]]);
 // Gateway IBC channel consts
 export type IbcChannels = Partial<Record<CosmwasmChains, string>>;
 
+// prettier-ignore
 // For each chain, add the channel id for each other chain
 const gatewayConnections = [
   [
@@ -123,20 +124,35 @@ const gatewayConnections = [
           Dymension: "channel-15",
         },
       ],
-      ["Osmosis", { Wormchain: "channel-2186" }],
-      ["Evmos", { Wormchain: "channel-94" }],
-      ["Kujira", { Wormchain: "channel-113" }],
+      ["Osmosis",   { Wormchain: "channel-2186" }],
+      ["Evmos",     { Wormchain: "channel-94" }],
+      ["Kujira",    { Wormchain: "channel-113" }],
       ["Injective", { Wormchain: "channel-183" }],
       ["Dymension", { Wormchain: "channel-36" }],
-      ["Stargaze", { Wormchain: "channel-278" }],
+      ["Stargaze",  { Wormchain: "channel-278" }],
     ],
   ],
   [
     "Testnet",
     [
-      ["Wormchain", { Cosmoshub: "channel-5", Osmosis: "channel-9" }],
+      ["Wormchain", 
+        {
+          Cosmoshub: "channel-5", 
+          Injective: "channel-15",
+          Kujira:"channel-16",
+          Stargaze: "channel-17",
+          Osmosis: "channel-19", 
+          Dymension: "channel-18",
+          Evmos: "channel-20",
+        }
+      ],
       ["Cosmoshub", { Wormchain: "channel-3086" }],
-      ["Osmosis", { Wormchain: "channel-3906" }],
+      ["Injective", { Wormchain: "channel-76973" }],
+      ["Kujira",    { Wormchain: "channel-114" }],
+      ["Osmosis",   { Wormchain: "channel-7904" }],
+      ["Stargaze",  { Wormchain: "channel-949" }],
+      ["Evmos",     { Wormchain: "channel-240" }],
+      ["Dymension", { Wormchain: "channel-23" }]
     ],
   ],
   [
