@@ -32,7 +32,10 @@ import { ethers } from 'ethers';
 import { porticoAbi, uniswapQuoterV2Abi } from './abis.js';
 import { PorticoApi } from './api.js';
 import { FEE_TIER } from './consts.js';
-import * as tokens from '@wormhole-foundation/sdk-connect/tokens';
+import {
+  getTokensBySymbol,
+  getTokenByAddress,
+} from '@wormhole-foundation/sdk-connect/tokens';
 
 import { EvmWormholeCore } from '@wormhole-foundation/sdk-evm-core';
 
@@ -242,14 +245,16 @@ export class EvmPorticoBridge<
     if (this.chain === 'Ethereum') return Wormhole.tokenId('Ethereum', address);
 
     // get the nativeTokenDetails
-    const nToken = tokens.getTokenByAddress(this.network, this.chain, address);
+    const nToken = getTokenByAddress(this.network, this.chain, address);
     if (!nToken) throw new Error('Unsupported source token: ' + address);
 
-    const xToken = tokens
-      .getTokensBySymbol(this.network, this.chain, nToken.symbol)
-      ?.find((orig) => {
-        return orig.original === 'Ethereum';
-      });
+    const xToken = getTokensBySymbol(
+      this.network,
+      this.chain,
+      nToken.symbol,
+    )?.find((orig) => {
+      return orig.original === 'Ethereum';
+    });
     if (!xToken)
       throw new Error(
         `Unsupported symbol for chain ${nToken.symbol}: ${this.chain} `,

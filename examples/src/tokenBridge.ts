@@ -41,7 +41,7 @@ import { SignerStuff, getSigner, waitLog } from "./helpers/index.js";
   // Note: The Token bridge will dedust past 8 decimals
   // this means any amount specified past that point will be returned
   // to the caller
-  const amt = "0.001";
+  const amt = "0.05";
 
   // With automatic set to true, perform an automatic transfer. This will invoke a relayer
   // contract intermediary that knows to pick up the transfers

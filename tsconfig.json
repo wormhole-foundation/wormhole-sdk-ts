@@ -13,6 +13,7 @@
     "sourceMap": true,
     "skipLibCheck": true,
     "noErrorTruncation": true,
+    "resolveJsonModule": true,
     // Strict Checks
     "alwaysStrict": true,
     "noImplicitAny": true,
@@ -22,7 +23,7 @@
     "strictFunctionTypes": true,
     "noImplicitThis": true,
     "strictBindCallApply": true,
-    "noPropertyAccessFromIndexSignature": true,
+    "noPropertyAccessFromIndexSignature": false,
     "noUncheckedIndexedAccess": true,
     //"exactOptionalPropertyTypes": false,
     // Linter Checks

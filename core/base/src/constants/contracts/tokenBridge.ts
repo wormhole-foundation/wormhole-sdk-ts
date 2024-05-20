@@ -28,6 +28,7 @@ export const tokenBridgeContracts = [[
     ["Arbitrum",  "0x0b2402144Bb366A632D14B83F244D2e0e21bD39c"],
     ["Optimism",  "0x1D68124e65faFC907325e3EDbF8c4d84499DAa8b"],
     ["Base",      "0x8d2de8d2f73F1F4cAB472AC9A881C9b123C79627"],
+    ["Xlayer",    "0x5537857664B0f9eFe38C9f320F75fEf23234D904"],
     ["Xpla",      "xpla137w0wfch2dfmz7jl2ap8pcmswasj8kg06ay4dtjzw7tzkn77ufxqfw7acv"],
     ["Sei",       "sei1smzlm9t79kur392nu9egl8p8je9j92q4gzguewj56a05kyxxra0qy0nuf3"],
     ["Wormchain", "wormhole1466nf3zuxpya8q9emxukd7vftaf6h4psr0a07srl5zw74zh84yjq4lyjmh"],

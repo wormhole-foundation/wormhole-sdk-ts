@@ -60,7 +60,7 @@ export class EvmCircleBridge<N extends Network, C extends EvmChains>
     ) as bigint;
 
     const circleChainId = circle.circleChainId.get(network, chain);
-    if (!circleChainId)
+    if (circleChainId === undefined)
       throw new Error(`Circle chain id not found for ${network} ${chain}`);
     this.circleChainId = circleChainId;
 

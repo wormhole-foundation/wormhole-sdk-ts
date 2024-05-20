@@ -24,8 +24,8 @@ import {
 import { getCircleAttestationWithRetry } from "./circle-api.js";
 import { WormholeConfig, applyWormholeConfigOverrides, WormholeConfigOverrides } from "./config.js";
 import { DEFAULT_TASK_TIMEOUT } from "./config.js";
-import { CircleTransfer } from "./protocols/cctpTransfer.js";
-import { TokenTransfer } from "./protocols/tokenTransfer.js";
+import { CircleTransfer } from "./protocols/cctp/cctpTransfer.js";
+import { TokenTransfer } from "./protocols/tokenBridge/tokenTransfer.js";
 import type { RouteConstructor } from "./routes/index.js";
 import { RouteResolver } from "./routes/resolver.js";
 import { retry } from "./tasks.js";

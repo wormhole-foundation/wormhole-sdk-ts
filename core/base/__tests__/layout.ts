@@ -2,13 +2,17 @@ import { describe, expect, it } from "@jest/globals";
 
 import {
   Layout,
-  serializeLayout,
-  deserializeLayout,
+  LayoutToType,
+  RoArray,
   addFixedValues,
-  layoutDiscriminator,
   bitsetItem,
-} from './../src/index.js';
+  column,
+  deserializeLayout,
+  layoutDiscriminator,
+  serializeLayout,
+} from "./../src/index.js";
 
+// prettier-ignore
 const testLayout = [
   { name: "uintFixedPrimitive", binary: "uint", size: 1, custom: 3 },
   {
@@ -105,6 +109,7 @@ const testLayout = [
 // type DynamicItems = DynamicItemsOfLayout<typeof testLayout>;
 // type DynamicValues = LayoutToType<DynamicItems>;
 
+// prettier-ignore
 describe("Layout tests", function () {
 
   const completeValues = {
@@ -335,5 +340,63 @@ describe("Layout tests", function () {
       expect(discriminator(Uint8Array.from([0, 0]))).toEqual([2]);
     });
 
+  });
+});
+
+describe("Switch Layout Size Tests", () => {
+  it("Can discriminate a set of layouts", () => {
+    const layouta = [
+      {
+        name: "payload",
+        binary: "bytes",
+        lengthSize: 2,
+        layout: [
+          {
+            name: "payload",
+            binary: "switch",
+            idSize: 1,
+            layouts: [
+              [[0, "Direct"], []],
+              [[1, "Payload"], [{ name: "data", binary: "bytes", lengthSize: 4 }]],
+            ],
+          },
+        ],
+      },
+    ] as const satisfies Layout;
+
+    const layoutb = [
+      {
+        name: "payload",
+        binary: "bytes",
+        lengthSize: 3,
+        layout: [
+          {
+            name: "payload",
+            binary: "switch",
+            idSize: 1,
+            layouts: [
+              [[0, "Nothing"], []],
+              [[1, "Data"], [{ name: "data", binary: "bytes", lengthSize: 4 }]],
+            ],
+          },
+        ],
+      },
+    ] as const satisfies Layout;
+
+    const messageLayouts = [
+      ["Layout", layouta],
+      ["LayoutB", layoutb],
+    ] as const satisfies RoArray<[string, Layout]>;
+    const messageDiscriminator = layoutDiscriminator(column(messageLayouts, 1));
+
+    const b: LayoutToType<typeof layoutb> = {
+      payload: {
+        payload: { id: "Data", data: new Uint8Array([0, 0, 0, 0]) },
+      },
+    };
+
+    const data = serializeLayout(layoutb, b);
+    const idx = messageDiscriminator(data);
+    expect(idx).toEqual(1);
   });
 });

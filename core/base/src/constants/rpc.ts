@@ -40,6 +40,7 @@ const rpcConfig = [[
     ["Provenance","https://rpc.provenance.io/"],
     ["Linea",     "https://rpc.linea.build"],
     ["Scroll",    "https://rpc.ankr.com/scroll"],
+    ["Xlayer",    "https://xlayerrpc.okx.com/"],
     ["Gnosis",    "https://rpc.ankr.com/gnosis"],
     ["Rootstock", "https://public-node.rsk.co"],
   ]], [
@@ -51,6 +52,7 @@ const rpcConfig = [[
     ["Fantom",          "https://rpc.ankr.com/fantom_testnet"],
     ["Celo",            "https://alfajores-forno.celo-testnet.org"],
     ["Solana",          "https://api.devnet.solana.com"],
+    ["Oasis",           "https://testnet.emerald.oasis.io"],
     ["Moonbeam",        "https://rpc.api.moonbase.moonbeam.network"],
     ["Sui",             "https://fullnode.testnet.sui.io"],
     ["Aptos",           "https://fullnode.testnet.aptoslabs.com/v1"],

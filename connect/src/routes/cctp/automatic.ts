@@ -1,13 +1,14 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
 import { amount, circle, contracts } from "@wormhole-foundation/sdk-base";
-import type {
-  ChainContext,
-  CircleTransferDetails,
-  Signer,
-  TokenId,
+import {
+  isSameToken,
+  type ChainAddress,
+  type ChainContext,
+  type CircleTransferDetails,
+  type Signer,
+  type TokenId,
 } from "@wormhole-foundation/sdk-definitions";
-import type { CircleAttestationReceipt } from "../../protocols/cctpTransfer.js";
-import { CircleTransfer } from "../../protocols/cctpTransfer.js";
+import { CircleTransfer } from "../../protocols/cctp/cctpTransfer.js";
 import { TransferState } from "../../types.js";
 import { Wormhole } from "../../wormhole.js";
 import type { StaticRouteMethods } from "../route.js";
@@ -46,7 +47,7 @@ type Vr = ValidationResult<Op>;
 
 type Q = Quote<Op, Vp>;
 type QR = QuoteResult<Op, Vp>;
-type R = Receipt<CircleAttestationReceipt>;
+type R = Receipt<CircleTransfer.AttestationReceipt>;
 
 export class AutomaticCCTPRoute<N extends Network>
   extends AutomaticRoute<N, Op, Vp, R>
@@ -85,6 +86,16 @@ export class AutomaticCCTPRoute<N extends Network>
     fromChain: ChainContext<N>,
     toChain: ChainContext<N>,
   ): Promise<TokenId[]> {
+    // Ensure the source token is USDC
+    const sourceChainUsdcContract  = circle.usdcContract.get(fromChain.network, fromChain.chain);
+    if (!sourceChainUsdcContract ) return [];
+    if (!isSameToken(
+      sourceToken,
+      Wormhole.tokenId(fromChain.chain, sourceChainUsdcContract),
+    )){
+      return [];
+    }
+
     const { network, chain } = toChain;
     if (!circle.usdcContract.has(network, chain)) return [];
     return [Wormhole.chainAddress(chain, circle.usdcContract.get(network, chain)!)];
@@ -128,11 +139,11 @@ export class AutomaticCCTPRoute<N extends Network>
   async quote(params: Vp): Promise<QR> {
     try {
       return this.request.displayQuote(
-        await CircleTransfer.quoteTransfer(
-          this.request.fromChain,
-          this.request.toChain,
-          this.toTransferDetails(params),
-        ),
+        await CircleTransfer.quoteTransfer(this.request.fromChain, this.request.toChain, {
+          automatic: true,
+          amount: amount.units(params.normalizedParams.amount),
+          nativeGas: amount.units(params.normalizedParams.nativeGasAmount),
+        }),
         params,
       );
     } catch (e) {
@@ -147,7 +158,7 @@ export class AutomaticCCTPRoute<N extends Network>
     const amt = this.request.parseAmount(params.amount);
 
     const ctb = await this.request.fromChain.getAutomaticCircleBridge();
-    const fee = await ctb.getRelayerFee(this.request.to.chain);
+    const fee = await ctb.getRelayerFee(this.request.toChain.chain);
 
     const minAmount = (fee * 105n) / 100n;
     if (amount.units(amt) < minAmount) {
@@ -179,19 +190,27 @@ export class AutomaticCCTPRoute<N extends Network>
     };
   }
 
-  private toTransferDetails(params: Vp): CircleTransferDetails {
+  private toTransferDetails(
+    params: Vp,
+    from: ChainAddress,
+    to: ChainAddress,
+  ): CircleTransferDetails {
     return {
-      from: this.request.from,
-      to: this.request.to,
+      from,
+      to,
       amount: amount.units(params.normalizedParams.amount),
       automatic: true,
       nativeGas: amount.units(params.normalizedParams.nativeGasAmount),
     };
   }
 
-  async initiate(signer: Signer, quote: Q): Promise<R> {
+  async initiate(signer: Signer, quote: Q, to: ChainAddress): Promise<R> {
     const { params } = quote;
-    let transfer = this.toTransferDetails(params);
+    let transfer = this.toTransferDetails(
+      params,
+      Wormhole.chainAddress(signer.chain(), signer.address()),
+      to,
+    );
     let txids = await CircleTransfer.transfer<N>(this.request.fromChain, transfer, signer);
 
     const msg = await CircleTransfer.getTransferMessage(

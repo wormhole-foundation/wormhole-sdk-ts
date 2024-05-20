@@ -27,11 +27,11 @@ import {
   toGatewayMsg,
   toNative,
 } from "@wormhole-foundation/sdk-definitions";
-import { signSendWait } from "../common.js";
-import { fetchIbcXfer, isTokenBridgeVaaRedeemed, retry } from "../tasks.js";
-import { TransferState } from "../types.js";
-import { Wormhole } from "../wormhole.js";
-import type { WormholeTransfer } from "./wormholeTransfer.js";
+import { signSendWait } from "../../common.js";
+import { fetchIbcXfer, isTokenBridgeVaaRedeemed, retry } from "../../tasks.js";
+import { TransferState } from "../../types.js";
+import { Wormhole } from "../../wormhole.js";
+import type { WormholeTransfer } from "../wormholeTransfer.js";
 
 type GatewayContext<N extends Network> = ChainContext<N, typeof GatewayTransfer.chain>;
 
@@ -285,12 +285,6 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
   // start the WormholeTransfer by submitting transactions to the source chain
   // returns a transaction hash
   async initiateTransfer(signer: Signer): Promise<TxHash[]> {
-    /*
-        0) Check current `state` is valid to call this (eg: state == Created)
-        1) Figure out where to call and issue transactions
-        2) Update state
-        3) return transaction ids
-    */
     if (this._state !== TransferState.Created)
       throw new Error("Invalid state transition in `start`");
 
@@ -496,12 +490,6 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
   // finish the WormholeTransfer by submitting transactions to the destination chain
   // returns a transaction hash
   async completeTransfer(signer: Signer): Promise<TxHash[]> {
-    /*
-        0) check that the current `state` is valid to call this  (eg: state == Ready)
-        1) prepare the transactions and sign them given the signer
-        2) submit the VAA and transactions on chain
-        3) return txid of submission
-    */
     if (this._state < TransferState.Attested)
       throw new Error("Invalid state transition in `finish`. Be sure to call `fetchAttestation`.");
 
@@ -527,7 +515,19 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
     return redeemTxs.map(({ txid }) => txid);
   }
 
-  static async getTransferVaa<N extends Network>(
+  // Implicitly determine if the chain is Gateway enabled by
+  // checking to see if the Gateway IBC bridge has a transfer channel setup
+  // If this is a new chain, add the channels to the constants file
+  private fromGateway(): boolean {
+    return this.gatewayIbcBridge.getTransferChannel(this.transfer.from.chain) !== null;
+  }
+  private toGateway(): boolean {
+    return this.gatewayIbcBridge.getTransferChannel(this.transfer.to.chain) !== null;
+  }
+}
+
+export namespace GatewayTransfer {
+  export async function getTransferVaa<N extends Network>(
     wh: Wormhole<N>,
     whm: WormholeMessageId,
     timeout?: number,
@@ -537,7 +537,7 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
     return vaa;
   }
 
-  static async destinationOverrides<N extends Network>(
+  export async function destinationOverrides<N extends Network>(
     srcChain: ChainContext<N>,
     dstChain: ChainContext<N>,
     gatewayChain: ChainContext<N, "Wormchain">,
@@ -563,7 +563,11 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
 
   // Lookup the token id for the destination chain given the source chain
   // and token id
-  static async lookupDestinationToken<N extends Network, SC extends Chain, DC extends Chain>(
+  export async function lookupDestinationToken<
+    N extends Network,
+    SC extends Chain,
+    DC extends Chain,
+  >(
     srcChain: ChainContext<N, SC>,
     dstChain: ChainContext<N, DC>,
     gatewayChain: ChainContext<N, "Wormchain">,
@@ -600,15 +604,5 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
     const dstTb = await dstChain.getTokenBridge();
     const dstAddress = await dstTb.getWrappedAsset(lookup);
     return { chain: dstChain.chain, address: dstAddress };
-  }
-
-  // Implicitly determine if the chain is Gateway enabled by
-  // checking to see if the Gateway IBC bridge has a transfer channel setup
-  // If this is a new chain, add the channels to the constants file
-  private fromGateway(): boolean {
-    return this.gatewayIbcBridge.getTransferChannel(this.transfer.from.chain) !== null;
-  }
-  private toGateway(): boolean {
-    return this.gatewayIbcBridge.getTransferChannel(this.transfer.to.chain) !== null;
   }
 }
