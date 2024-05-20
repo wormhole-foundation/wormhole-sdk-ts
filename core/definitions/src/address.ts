@@ -86,7 +86,12 @@ export function toNative<C extends Chain>(
     throw new Error(
       `No native address type registered for platform ${platform}, import the platform directly or, if using sdk package, import the addresses conditional export`,
     );
-  return new nativeCtr(ua) as unknown as NativeAddress<C>;
+  try {
+    return new nativeCtr(ua) as unknown as NativeAddress<C>;
+  } catch (_) {
+    // try to parse it as a universal address
+    return (UniversalAddress.instanceof(ua) ? ua : new UniversalAddress(ua)).toNative(chain);
+  }
 }
 
 export function toUniversal<C extends Chain>(
