@@ -21,7 +21,15 @@ function calcItemSize(item: LayoutItem, data: any): number | null {
       const lengthSize = ("lengthSize" in item) ? item.lengthSize | 0 : 0;
 
       if ("layout" in item) {
-        const layoutSize = internalCalcLayoutSize(item.layout, data);
+        const { custom } = item;
+        const layoutSize = internalCalcLayoutSize(
+          item.layout,
+          custom === undefined
+          ? data
+          : typeof custom.from === "function"
+          ? custom.from(data)
+          : custom.from
+        );
         if (layoutSize === null)
           return ("size" in item ) ? item.size ?? null : null;
 

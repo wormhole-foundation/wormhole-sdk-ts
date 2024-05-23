@@ -10,6 +10,7 @@ import {
   deserializeLayout,
   layoutDiscriminator,
   serializeLayout,
+  optionItem,
 } from "./../src/index.js";
 
 // prettier-ignore
@@ -225,6 +226,48 @@ describe("Layout tests", function () {
       expect(decoded).toEqual(converted);
     });
   });
+
+  describe("OptionItem tests", () => {
+    it("basic test", () => {
+      const layout = optionItem({binary: "uint", size: 1});
+
+      const testCases = [[32, [1, 32]], [undefined, [0]]] as const;
+      for (const [data, expected] of testCases) {
+        const encoded = serializeLayout(layout, data);
+        expect(encoded).toEqual(new Uint8Array(expected));
+
+        const decoded = deserializeLayout(layout, encoded);
+        expect(decoded).toEqual(data);
+      }
+    })
+
+    it("advanced test", () => {
+      const layout = { binary: "array", layout: [
+        { name: "firstOption", ...optionItem({binary: "uint", size: 1}) },
+        { name: "someUint", binary: "uint", size: 1},
+        { name: "secondOption", ...optionItem({binary: "bytes", size: 4}) },
+      ]} as const satisfies Layout;
+
+      const data = [
+        { firstOption: undefined, someUint: 1, secondOption: undefined},
+        { firstOption: 10,        someUint: 2, secondOption: undefined },
+        { firstOption: undefined, someUint: 3, secondOption: new Uint8Array([1,2,3,4]) },
+        { firstOption: 20,        someUint: 4, secondOption: new Uint8Array([5,6,7,8]) },
+      ] as const;
+      const expected = new Uint8Array([
+        ...[0,     1, 0            ],
+        ...[1, 10, 2, 0            ],
+        ...[0,     3, 1, 1, 2, 3, 4],
+        ...[1, 20, 4, 1, 5, 6, 7, 8],
+      ]);
+
+      const encoded = serializeLayout(layout, data);
+      expect(encoded).toEqual(new Uint8Array(expected));
+
+      const decoded = deserializeLayout(layout, encoded);
+      expect(decoded).toEqual(data);
+    })
+  })
 
   it("should serialize and deserialize correctly", function () {
     const encoded = serializeLayout(testLayout, completeValues);
