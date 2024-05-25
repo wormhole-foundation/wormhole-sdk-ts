@@ -2,11 +2,8 @@ import { describe, expect, it } from "@jest/globals";
 
 import {
   Layout,
-  LayoutToType,
-  RoArray,
   addFixedValues,
   bitsetItem,
-  column,
   deserializeLayout,
   layoutDiscriminator,
   serializeLayout,
@@ -340,63 +337,32 @@ describe("Layout tests", function () {
       expect(discriminator(Uint8Array.from([0, 0]))).toEqual([2]);
     });
 
-  });
-});
-
-describe("Switch Layout Size Tests", () => {
-  it("Can discriminate a set of layouts", () => {
-    const layouta = [
-      {
-        name: "payload",
-        binary: "bytes",
-        lengthSize: 2,
-        layout: [
-          {
-            name: "payload",
-            binary: "switch",
-            idSize: 1,
-            layouts: [
-              [[0, "Direct"], []],
-              [[1, "Payload"], [{ name: "data", binary: "bytes", lengthSize: 4 }]],
-            ],
-          },
+    it("can discriminate a switch layout with the same byte value in all cases", () => {
+      const switchLayout = {
+        binary: "switch",
+        idSize: 1,
+        layouts: [
+          [[0, "first"], [
+            {name: "fixed1", binary: "uint", size: 1, custom: 32 },
+            {name: "variable1", binary: "bytes", lengthSize: 1 },
+          ]],
+          [[1, "second"], [
+            {name: "fixed2", binary: "uint", size: 1, custom: 32 },
+            {name: "variable2", binary: "bytes", lengthSize: 2 },
+          ]],
         ],
-      },
-    ] as const satisfies Layout;
+      } as const satisfies Layout;
 
-    const layoutb = [
-      {
-        name: "payload",
+      const secondByteLayout = {
         binary: "bytes",
-        lengthSize: 3,
-        layout: [
-          {
-            name: "payload",
-            binary: "switch",
-            idSize: 1,
-            layouts: [
-              [[0, "Nothing"], []],
-              [[1, "Data"], [{ name: "data", binary: "bytes", lengthSize: 4 }]],
-            ],
-          },
-        ],
-      },
-    ] as const satisfies Layout;
+        custom: new Uint8Array([1, 33, 0]),
+      } as const satisfies Layout;
 
-    const messageLayouts = [
-      ["Layout", layouta],
-      ["LayoutB", layoutb],
-    ] as const satisfies RoArray<[string, Layout]>;
-    const messageDiscriminator = layoutDiscriminator(column(messageLayouts, 1));
+      const messageDiscriminator = layoutDiscriminator([switchLayout, secondByteLayout]);
 
-    const b: LayoutToType<typeof layoutb> = {
-      payload: {
-        payload: { id: "Data", data: new Uint8Array([0, 0, 0, 0]) },
-      },
-    };
-
-    const data = serializeLayout(layoutb, b);
-    const idx = messageDiscriminator(data);
-    expect(idx).toEqual(1);
+      expect(messageDiscriminator(new Uint8Array([0, 32, 1, 128]))).toEqual(0);
+      expect(messageDiscriminator(new Uint8Array([0, 33, 0]))).toEqual(1);
+      expect(messageDiscriminator(new Uint8Array([0, 34, 0]))).toEqual(null);
+    });
   });
 });
