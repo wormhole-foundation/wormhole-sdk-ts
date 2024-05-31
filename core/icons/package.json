@@ -62,7 +62,8 @@
     "typecheck": "cp ./__tests__/typechecks/index.test-d.ts ./dist/esm/ && tsd",
     "lint": "npm run prettier && eslint --fix ./src --ext .ts",
     "prettier": "prettier --write ./src",
-    "gen": "tsx scripts/genIcons.ts && prettier src/constants/chainIcons.ts -w"
+    "gen": "tsx scripts/genIcons.ts && prettier src/constants/chainIcons.ts -w",
+    "test": "echo noop"
   },
   "type": "module",
   "devDependencies": {
