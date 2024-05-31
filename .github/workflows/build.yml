@@ -15,6 +15,6 @@ jobs:
         with:
           node-version: '18.x' 
       - run: yarn
-      - run: yarn run build --if-present
+      - run: yarn run build
       - run: yarn test
       # - run: cd core/tokenRegistry && npx ts-node src/scripts/checkForeignAssetConfig.ts
