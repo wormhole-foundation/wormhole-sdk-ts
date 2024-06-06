@@ -203,7 +203,7 @@ export class SolanaSendSigner<
       for (let i = 0; i < this._maxResubmits; i++) {
         try {
           if (isVersionedTransaction(transaction)) {
-            if (priorityFeeIx) {
+            if (priorityFeeIx && i === 0) {
               const msg = TransactionMessage.decompile(transaction.message);
               msg.instructions.push(...priorityFeeIx);
               transaction.message = msg.compileToV0Message();
@@ -211,17 +211,19 @@ export class SolanaSendSigner<
             transaction.message.recentBlockhash = blockhash;
             transaction.sign([this._keypair, ...(extraSigners ?? [])]);
           } else {
-            if (priorityFeeIx) transaction.add(...priorityFeeIx);
+            if (priorityFeeIx && i === 0) transaction.add(...priorityFeeIx);
             transaction.recentBlockhash = blockhash;
+            transaction.lastValidBlockHeight = lastValidBlockHeight;
             transaction.partialSign(this._keypair, ...(extraSigners ?? []));
           }
 
           if (this._debug) console.log('Submitting transactions ');
-          const txid = await this._rpc.sendRawTransaction(
+          const { signature } = await SolanaPlatform.sendTxWithRetry(
+            this._rpc,
             transaction.serialize(),
             this._sendOpts,
           );
-          txids.push(txid);
+          txids.push(signature);
           break;
         } catch (e) {
           // No point checking if retryable if we're on the last retry
