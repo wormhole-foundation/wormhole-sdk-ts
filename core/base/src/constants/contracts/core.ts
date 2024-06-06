@@ -37,7 +37,8 @@ export const coreBridgeContracts = [[
     ["Wormchain", "wormhole1ufs3tlq4umljk0qfe8k5ya0x6hpavn897u2cnf9k0en9jr7qarqqaqfk2j"],
     ["Neutron",   "neutron16rerygcpahqcxx5t8vjla46ym8ccn7xz7rtc6ju5ujcd36cmc7zs9zrunh"],
     ["Blast",     "0xbebdb6C8ddC678FfA9f8748f85C815C556Dd8ac6"],
-    ["Scroll",    "0xbebdb6C8ddC678FfA9f8748f85C815C556Dd8ac6"]
+    ["Scroll",    "0xbebdb6C8ddC678FfA9f8748f85C815C556Dd8ac6"],
+    ["Mantle",    "0xbebdb6C8ddC678FfA9f8748f85C815C556Dd8ac6"]
   ]], [
   "Testnet", [
     ["Solana",          "3u8hJUVTA4jH1wYAyUur7FFZVQ8H635K3tSHHF4ssjQ5"],
