@@ -39,7 +39,7 @@ function count(candidates: Candidates) {
 }
 
 const lengthSizeMax = (lengthSize: number) =>
-  lengthSize > 0 ? (1 << (8 * lengthSize)) - 1 : Infinity;
+  lengthSize > 0 ? 2**(8 * lengthSize) - 1 : Infinity;
 
 function layoutItemMeta(
   item: LayoutItem,
@@ -157,13 +157,13 @@ function layoutItemMeta(
           serializeNum(idVal, idSize, cursor, idEndianness);
           caseFixedBytes[caseIndex]!.push([0, cursor.bytes]);
         }
-        const ret = createLayoutMeta(layout, offset ? idSize : null, caseFixedBytes[caseIndex]!);
+        const ret = createLayoutMeta(layout, offset !== null ? idSize : null, caseFixedBytes[caseIndex]!);
         return [ret[0] + idSize, ret[1] + idSize] as Bounds;
       });
 
-      if (offset !== null)
-        //find bytes that have the same value across all cases (turning this into a lambda to enable
-        //  early return from inner loops)
+      if (offset !== null && caseFixedBytes.every(fbs => fbs.length > 0))
+        //find bytes that have the same value across all cases
+        //  (it's a lambda to enable early return from inner loops)
         (() => {
           //constrain search to the minimum length of all cases
           const minLen = Math.min(
@@ -172,23 +172,23 @@ function layoutItemMeta(
           //keep track of the current index in each case's fixed bytes array
           const itIndexes = caseFixedBytes.map(_ => 0);
 
-          let caseIndex = 0;
           for (let bytePos = 0; bytePos < minLen;) {
             let byteVal = null;
+            let caseIndex = 0;
             while (caseIndex < caseFixedBytes.length) {
-              let curItIndex = itIndexes[caseIndex];
-              const curFixedBytes = caseFixedBytes[caseIndex];
-              const [curOffset, curSerialized] = curFixedBytes![curItIndex!]!;
+              let curItIndex = itIndexes[caseIndex]!;
+              const curFixedBytes = caseFixedBytes[caseIndex]!;
+              const [curOffset, curSerialized] = curFixedBytes[curItIndex]!;
               if (curOffset + curSerialized.length <= bytePos) {
                 //no fixed byte at this position in this case
-                ++curItIndex!;
+                ++curItIndex;
 
-                if (curItIndex === curFixedBytes!.length)
+                if (curItIndex === curFixedBytes.length)
                   return; //we have exhausted all fixed bytes in at least one case
 
-                itIndexes[caseIndex] = curItIndex!;
+                itIndexes[caseIndex] = curItIndex;
                 //jump to the next possible bytePos given the fixed bytes of the current case index
-                bytePos = curFixedBytes![curItIndex!]![0];
+                bytePos = curFixedBytes[curItIndex]![0];
                 break;
               }
 
@@ -196,10 +196,12 @@ function layoutItemMeta(
               if (byteVal === null)
                 byteVal = curByteVal;
 
-              if (curByteVal !== byteVal)
+              if (curByteVal !== byteVal) {
+                ++bytePos;
                 break;
+              }
 
-              caseIndex++;
+              ++caseIndex;
             }
 
             //only if we made it through all cases without breaking do we have a fixed byte
