@@ -14,10 +14,10 @@ import type { Options, Receipt, ValidatedTransferParams } from "./types.js";
 
 export class RouteResolver<N extends Network> {
   wh: Wormhole<N>;
-  routeConstructors: RouteConstructor[];
+  routeConstructors: RouteConstructor<N>[];
   inputTokenList?: TokenId[];
 
-  constructor(wh: Wormhole<N>, routeConstructors: RouteConstructor[]) {
+  constructor(wh: Wormhole<N>, routeConstructors: RouteConstructor<N>[]) {
     this.wh = wh;
     this.routeConstructors = routeConstructors;
   }
