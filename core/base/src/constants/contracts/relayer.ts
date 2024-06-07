@@ -38,7 +38,7 @@ export const relayerContracts = [[
     ["OptimismSepolia", "0x93BAD53DDfB6132b0aC8E37f6029163E63372cEE"]
   ]], [
   "Devnet", [
-    ["Ethereum",  "0x53855d4b64E9A3CF59A84bc768adA716B5536BC5"],
-    ["Bsc",       "0x53855d4b64E9A3CF59A84bc768adA716B5536BC5"],
+    ["Ethereum",  "0xcC680D088586c09c3E0E099a676FA4b6e42467b4"],
+    ["Bsc",       "0xcC680D088586c09c3E0E099a676FA4b6e42467b4"],
   ]],
 ] as const satisfies MapLevels<[Network, Chain, string]>;
