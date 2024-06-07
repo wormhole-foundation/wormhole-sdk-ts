@@ -1,5 +1,13 @@
-import { Chain } from "@wormhole-foundation/sdk-base";
-import { Signature, SignatureUtils, createVAA, deserialize, serialize } from "../../index.js";
+import { Chain, guardians } from "@wormhole-foundation/sdk-base";
+import {
+  PayloadLiteral,
+  Signature,
+  SignatureUtils,
+  VAA,
+  createVAA,
+  deserialize,
+  serialize,
+} from "../../index.js";
 import { UniversalAddress } from "../../universalAddress.js";
 import { keccak256 } from "../../utils.js";
 
@@ -23,15 +31,19 @@ export class MockGuardians {
     return this.signers.map((guardian) => SignatureUtils.toPubkey(guardian.key));
   }
 
-  addSignatures(message: Uint8Array, guardianIndices: number[]) {
-    if (guardianIndices.length == 0) throw Error("guardianIndices.length == 0");
+  addSignatures<P extends PayloadLiteral>(
+    message: Uint8Array | VAA<P>,
+    guardianIndices?: number[],
+  ) {
+    if (!guardianIndices || guardianIndices.length === 0)
+      guardianIndices = Array.from(Array(this.signers.length).keys());
 
     const signers = this.signers.filter((signer) => guardianIndices.includes(signer.index));
 
-    const vaa = deserialize("Uint8Array", message);
+    const vaa = message instanceof Uint8Array ? deserialize("Uint8Array", message) : message;
 
     if (vaa.guardianSet === 0)
-      // @ts-ignore -- wants readonly
+      // @ts-expect-error -- wants readonly
       vaa.guardianSet = this.setIndex;
 
     if (vaa.guardianSet != this.setIndex)
@@ -44,11 +56,20 @@ export class MockGuardians {
       const signature = SignatureUtils.sign(signer.key, keccak256(vaa.hash));
       const s = new Signature(signature.r, signature.s, signature.recovery);
 
-      // @ts-ignore -- wants it to be immutable
+      // @ts-expect-error -- wants readonly
       vaa.signatures.push({ guardianIndex: i, signature: s });
     }
 
     return vaa;
+  }
+
+  setSignatures<P extends PayloadLiteral>(message: Uint8Array | VAA<P>) {
+    const vaa = message instanceof Uint8Array ? deserialize("Uint8Array", message) : message;
+
+    // @ts-expect-error -- wants readonly
+    vaa.signatures = [];
+
+    return this.addSignatures<typeof vaa.payloadLiteral>(vaa);
   }
 }
 
@@ -89,3 +110,5 @@ export class MockEmitter {
     );
   }
 }
+
+export const devnetGuardianSet = () => new MockGuardians(0, [guardians.devnetGuardianPrivateKey]);
