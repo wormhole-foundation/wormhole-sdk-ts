@@ -89,7 +89,12 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     fromChain: ChainContext<N>,
     toChain: ChainContext<N>,
   ): Promise<TokenId[]> {
-    return [await TokenTransfer.lookupDestinationToken(fromChain, toChain, sourceToken)];
+    try {
+      return [await TokenTransfer.lookupDestinationToken(fromChain, toChain, sourceToken)];
+    } catch (e) {
+      console.error(`Failed to get destination token: ${e}`);
+      return [];
+    }
   }
 
   static isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean {
