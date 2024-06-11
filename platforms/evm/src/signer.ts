@@ -21,8 +21,6 @@ import type { EvmChains } from './types.js';
 import { _platform } from './types.js';
 
 export type EvmSignerOptions = {
-  // Specify the exact Evm chain to use
-  chain?: EvmChains;
   // Whether or not to log messages
   debug?: boolean;
   // Do not exceed this gas limit
@@ -34,7 +32,7 @@ export type EvmSignerOptions = {
 export async function getEvmSigner(
   rpc: Provider,
   key: string | EthersSigner,
-  opts?: EvmSignerOptions,
+  opts?: EvmSignerOptions & { chain?: EvmChains },
 ): Promise<Signer> {
   const signer: EthersSigner =
     typeof key === 'string' ? new Wallet(key, rpc) : key;
@@ -82,11 +80,7 @@ export class EvmNativeSigner<N extends Network, C extends EvmChains = EvmChains>
     _chain: C,
     _address: string,
     _signer: EthersSigner,
-    readonly opts?: {
-      maxGasLimit?: bigint;
-      debug?: boolean;
-      overrides?: Partial<TransactionRequest>;
-    },
+    readonly opts?: EvmSignerOptions,
   ) {
     super(_chain, _address, _signer);
   }
@@ -149,6 +143,8 @@ export class EvmNativeSigner<N extends Network, C extends EvmChains = EvmChains>
         // Override any existing values with those passed in the constructor
         ...this.opts?.overrides,
       };
+
+      console.log(t);
 
       signed.push(await this._signer.signTransaction(t));
     }
