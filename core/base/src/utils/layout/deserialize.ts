@@ -6,11 +6,9 @@ import type {
   CustomConversion,
   NumSizeToPrimitive,
   NumType,
-  BytesType} from './layout.js';
-import {
-
-  numberMaxSize,
-} from './layout.js';
+  BytesType,
+} from "./layout.js";
+import { numberMaxSize } from "./layout.js";
 
 import {
   isNumType,
@@ -18,16 +16,16 @@ import {
   isFixedBytesConversion,
   checkBytesTypeEqual,
   checkNumEquals,
-} from './utils.js';
-import { getCachedSerializedFrom } from './serialize.js';
+} from "./utils.js";
+import { getCachedSerializedFrom } from "./serialize.js";
 
 export function deserializeLayout<const L extends Layout, B extends boolean = true>(
   layout: L,
   bytes: BytesType,
   opts?: {
-    offset?: number,
-    end?: number,
-    consumeAll?: B,
+    offset?: number;
+    end?: number;
+    consumeAll?: B;
   },
 ) {
   const encoded = {
@@ -40,15 +38,15 @@ export function deserializeLayout<const L extends Layout, B extends boolean = tr
   if ((opts?.consumeAll ?? true) && encoded.offset !== encoded.end)
     throw new Error(`encoded data is longer than expected: ${encoded.end} > ${encoded.offset}`);
 
-  return (
-    (opts?.consumeAll ?? true) ? decoded : [decoded, encoded.offset]
-  ) as B extends true ? LayoutToType<L> : readonly [LayoutToType<L>, number];
+  return (opts?.consumeAll ?? true ? decoded : [decoded, encoded.offset]) as B extends true
+    ? LayoutToType<L>
+    : readonly [LayoutToType<L>, number];
 }
 
 type BytesChunk = {
-  bytes: BytesType,
-  offset: number,
-  end: number,
+  bytes: BytesType;
+  offset: number;
+  end: number;
 };
 
 function updateOffset(encoded: BytesChunk, size: number) {
@@ -60,15 +58,13 @@ function updateOffset(encoded: BytesChunk, size: number) {
 }
 
 function internalDeserializeLayout(layout: Layout, encoded: BytesChunk): any {
-  if (!Array.isArray(layout))
-    return deserializeLayoutItem(layout as LayoutItem, encoded);
+  if (!Array.isArray(layout)) return deserializeLayoutItem(layout as LayoutItem, encoded);
 
   let decoded = {} as any;
   for (const item of layout)
     try {
       ((item as any).omit ? {} : decoded)[item.name] = deserializeLayoutItem(item, encoded);
-    }
-    catch (e) {
+    } catch (e) {
       (e as Error).message = `when deserializing item '${item.name}': ${(e as Error).message}`;
       throw e;
     }
@@ -83,17 +79,21 @@ function deserializeNum<S extends number>(
   signed: boolean = false,
 ) {
   let val = 0n;
-  for (let i = 0; i < size; ++i)
-    val |= BigInt(encoded.bytes[encoded.offset + i]!)
-        << BigInt(8 * (endianness === "big" ? size - i - 1 : i));
+  for (let i = 0; i < size; ++i) {
+    console.log(encoded.bytes);
+    console.log(encoded.offset, i);
+    val |=
+      BigInt(encoded.bytes[encoded.offset + i]!) <<
+      BigInt(8 * (endianness === "big" ? size - i - 1 : i));
+  }
 
   //check sign bit if value is indeed signed and adjust accordingly
-  if (signed && (encoded.bytes[encoded.offset + (endianness === "big" ? 0 : size - 1)]! & 0x80))
+  if (signed && encoded.bytes[encoded.offset + (endianness === "big" ? 0 : size - 1)]! & 0x80)
     val -= 1n << BigInt(8 * size);
 
   updateOffset(encoded, size);
 
-  return ((size > numberMaxSize) ? val : Number(val)) as NumSizeToPrimitive<S>;
+  return (size > numberMaxSize ? val : Number(val)) as NumSizeToPrimitive<S>;
 }
 
 function deserializeLayoutItem(item: LayoutItem, encoded: BytesChunk): any {
@@ -118,33 +118,33 @@ function deserializeLayoutItem(item: LayoutItem, encoded: BytesChunk): any {
       return custom !== undefined ? (custom as CustomConversion<NumType, any>).to(value) : value;
     }
     case "bytes": {
-      const expectedSize = ("lengthSize" in item && item.lengthSize !== undefined)
-        ? deserializeNum(encoded, item.lengthSize, item.lengthEndianness)
-        : (item as {size?: number})?.size;
+      const expectedSize =
+        "lengthSize" in item && item.lengthSize !== undefined
+          ? deserializeNum(encoded, item.lengthSize, item.lengthEndianness)
+          : (item as { size?: number })?.size;
 
-      if ("layout" in item) { //handle layout conversions
+      if ("layout" in item) {
+        //handle layout conversions
         const { custom } = item;
         const offset = encoded.offset;
         let layoutData;
         if (expectedSize === undefined)
           layoutData = internalDeserializeLayout(item.layout, encoded);
         else {
-          const subChunk = {...encoded, end: encoded.offset + expectedSize};
+          const subChunk = { ...encoded, end: encoded.offset + expectedSize };
           updateOffset(encoded, expectedSize);
           layoutData = internalDeserializeLayout(item.layout, subChunk);
           if (subChunk.offset !== subChunk.end)
             throw new Error(
-              `read less data than expected: ${subChunk.offset - encoded.offset} < ${expectedSize}`
+              `read less data than expected: ${subChunk.offset - encoded.offset} < ${expectedSize}`,
             );
         }
 
         if (custom !== undefined) {
           if (typeof custom.from !== "function") {
-            checkBytesTypeEqual(
-              getCachedSerializedFrom(item as any),
-              encoded.bytes,
-              {dataSlize: [offset, encoded.offset]}
-            );
+            checkBytesTypeEqual(getCachedSerializedFrom(item as any), encoded.bytes, {
+              dataSlize: [offset, encoded.offset],
+            });
             return custom.to;
           }
           return custom.to(layoutData);
@@ -154,11 +154,11 @@ function deserializeLayoutItem(item: LayoutItem, encoded: BytesChunk): any {
       }
 
       const { custom } = item;
-      { //handle fixed conversions
+      {
+        //handle fixed conversions
         let fixedFrom;
         let fixedTo;
-        if (isBytesType(custom))
-          fixedFrom = custom;
+        if (isBytesType(custom)) fixedFrom = custom;
         else if (isFixedBytesConversion(custom)) {
           fixedFrom = custom.from;
           fixedTo = custom.to;
@@ -174,7 +174,7 @@ function deserializeLayoutItem(item: LayoutItem, encoded: BytesChunk): any {
 
       //handle no or custom conversions
       const start = encoded.offset;
-      const end = (expectedSize !== undefined) ? encoded.offset + expectedSize : encoded.end;
+      const end = expectedSize !== undefined ? encoded.offset + expectedSize : encoded.end;
       updateOffset(encoded, end - start);
 
       const value = encoded.bytes.slice(start, end);
@@ -186,41 +186,35 @@ function deserializeLayoutItem(item: LayoutItem, encoded: BytesChunk): any {
       const deserializeArrayItem = () => {
         const deserializedItem = internalDeserializeLayout(layout, encoded);
         ret.push(deserializedItem);
-      }
+      };
 
       let length = null;
-      if ("length" in item && item.length !== undefined)
-        length = item.length;
+      if ("length" in item && item.length !== undefined) length = item.length;
       else if ("lengthSize" in item && item.lengthSize !== undefined)
         length = deserializeNum(encoded, item.lengthSize, item.lengthEndianness);
 
-      if (length !== null)
-        for (let i = 0; i < length; ++i)
-          deserializeArrayItem();
-      else
-        while (encoded.offset < encoded.end)
-          deserializeArrayItem();
+      if (length !== null) for (let i = 0; i < length; ++i) deserializeArrayItem();
+      else while (encoded.offset < encoded.end) deserializeArrayItem();
 
       return ret;
     }
     case "switch": {
       const id = deserializeNum(encoded, item.idSize, item.idEndianness);
-      const {layouts} = item;
-      if (layouts.length === 0)
-        throw new Error(`switch item has no layouts`);
+      const { layouts } = item;
+      if (layouts.length === 0) throw new Error(`switch item has no layouts`);
 
       const hasPlainIds = typeof layouts[0]![0] === "number";
       const pair = (layouts as readonly any[]).find(([idOrConversionId]) =>
-        hasPlainIds ? idOrConversionId === id : (idOrConversionId)[0] === id);
+        hasPlainIds ? idOrConversionId === id : idOrConversionId[0] === id,
+      );
 
-      if (pair === undefined)
-        throw new Error(`unknown id value: ${id}`);
+      if (pair === undefined) throw new Error(`unknown id value: ${id}`);
 
       const [idOrConversionId, idLayout] = pair;
       const decoded = internalDeserializeLayout(idLayout, encoded);
       return {
         [item.idTag ?? "id"]: hasPlainIds ? id : (idOrConversionId as any)[1],
-        ...decoded
+        ...decoded,
       };
     }
   }
