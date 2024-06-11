@@ -117,7 +117,7 @@ export class EvmNativeSigner<N extends Network, C extends EvmChains = EvmChains>
       }
     }
 
-    if (this.opts?.maxGasLimit) {
+    if (this.opts?.maxGasLimit !== undefined) {
       // why doesnt math.min work for bigints?
       gasLimit =
         gasLimit > this.opts?.maxGasLimit ? this.opts?.maxGasLimit : gasLimit;
