@@ -9,6 +9,7 @@ import {
   TransferState,
   TxHash,
   Wormhole,
+  amount,
   api,
   tasks,
 } from "@wormhole-foundation/sdk";
@@ -62,6 +63,7 @@ export async function getSigner<N extends Network, C extends Chain>(
           max: 1000,
         },
       });
+
       break;
     case "Cosmwasm":
       signer = await cosmwasm.getSigner(await chain.getRpc(), getEnv("COSMOS_MNEMONIC"));
@@ -69,6 +71,12 @@ export async function getSigner<N extends Network, C extends Chain>(
     case "Evm":
       signer = await evm.getSigner(await chain.getRpc(), getEnv("ETH_PRIVATE_KEY"), {
         debug: true,
+        maxGasLimit: amount.units(amount.parse("0.01", 18)),
+        // overrides is a Partial<TransactionRequest>, so any fields can be overriden
+        //overrides: {
+        //  maxFeePerGas: amount.units(amount.parse("1.5", 9)),
+        //  maxPriorityFeePerGas: amount.units(amount.parse("0.1", 9)),
+        //},
       });
       break;
     case "Algorand":

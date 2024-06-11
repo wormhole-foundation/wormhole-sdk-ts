@@ -20,14 +20,19 @@ import { EvmPlatform } from './platform.js';
 import type { EvmChains } from './types.js';
 import { _platform } from './types.js';
 
+export type EvmSignerOptions = {
+  // Whether or not to log messages
+  debug?: boolean;
+  // Do not exceed this gas limit
+  maxGasLimit?: bigint;
+  // Partially override specific transaction request fields
+  overrides?: Partial<TransactionRequest>;
+};
+
 export async function getEvmSigner(
   rpc: Provider,
   key: string | EthersSigner,
-  opts?: {
-    maxGasLimit?: bigint;
-    chain?: EvmChains;
-    debug?: boolean;
-  },
+  opts?: EvmSignerOptions & { chain?: EvmChains },
 ): Promise<Signer> {
   const signer: EthersSigner =
     typeof key === 'string' ? new Wallet(key, rpc) : key;
@@ -75,7 +80,7 @@ export class EvmNativeSigner<N extends Network, C extends EvmChains = EvmChains>
     _chain: C,
     _address: string,
     _signer: EthersSigner,
-    readonly opts?: { maxGasLimit?: bigint; debug?: boolean },
+    readonly opts?: EvmSignerOptions,
   ) {
     super(_chain, _address, _signer);
   }
@@ -93,37 +98,37 @@ export class EvmNativeSigner<N extends Network, C extends EvmChains = EvmChains>
 
     const signed = [];
 
-    // default gas limit
-    const gasLimit = this.opts?.maxGasLimit ?? 500_000n;
-
+    // Default gas values
+    let gasLimit = 500_000n;
     let gasPrice = 100_000_000_000n; // 100gwei
     let maxFeePerGas = 1_500_000_000n; // 1.5gwei
     let maxPriorityFeePerGas = 100_000_000n; // 0.1gwei
 
-    // Celo does not support this call
-    if (chain !== 'Celo') {
-      const feeData = await this._signer.provider!.getFeeData();
-      gasPrice = feeData.gasPrice ?? gasPrice;
-      maxFeePerGas = feeData.maxFeePerGas ?? maxFeePerGas;
-      maxPriorityFeePerGas =
-        feeData.maxPriorityFeePerGas ?? maxPriorityFeePerGas;
+    // If no overrides were passed, we can get better
+    // gas values from the provider
+    if (this.opts?.overrides === undefined) {
+      // Celo does not support this call
+      if (chain !== 'Celo') {
+        const feeData = await this._signer.provider!.getFeeData();
+        gasPrice = feeData.gasPrice ?? gasPrice;
+        maxFeePerGas = feeData.maxFeePerGas ?? maxFeePerGas;
+        maxPriorityFeePerGas =
+          feeData.maxPriorityFeePerGas ?? maxPriorityFeePerGas;
+      }
+    }
+
+    if (this.opts?.maxGasLimit) {
+      // why doesnt math.min work for bigints?
+      gasLimit =
+        gasLimit > this.opts?.maxGasLimit ? this.opts?.maxGasLimit : gasLimit;
     }
 
     // Oasis throws malformed errors unless we
     // set it to use legacy transaction parameters
     const gasOpts =
       chain === 'Oasis'
-        ? {
-            gasLimit,
-            gasPrice: gasPrice,
-            // Hardcode type
-            type: 0,
-          }
-        : {
-            maxFeePerGas,
-            maxPriorityFeePerGas,
-            gasLimit,
-          };
+        ? { gasLimit, gasPrice, type: 0 } // Hardcoded to legacy transaction type
+        : { gasLimit, maxFeePerGas, maxPriorityFeePerGas };
 
     for (const txn of tx) {
       const { transaction, description } = txn;
@@ -135,20 +140,9 @@ export class EvmNativeSigner<N extends Network, C extends EvmChains = EvmChains>
         ...gasOpts,
         from: this.address(),
         nonce: await this._signer.getNonce(),
+        // Override any existing values with those passed in the constructor
+        ...this.opts?.overrides,
       };
-
-      // try {
-      //   const estimate = await this._signer.provider!.estimateGas(t);
-      //   t.gasLimit = estimate + estimate / 10n; // Add 10% buffer
-      //   if (this.opts?.maxGasLimit && t.gasLimit > this.opts?.maxGasLimit) {
-      //     throw new Error(
-      //       `Gas limit ${t.gasLimit} exceeds maxGasLimit ${this.opts?.maxGasLimit}`,
-      //     );
-      //   }
-      // } catch (e) {
-      //   console.info('Failed to estimate gas for transaction: ', e);
-      //   console.info('Using gas limit: ', t.gasLimit);
-      // }
 
       signed.push(await this._signer.signTransaction(t));
     }
