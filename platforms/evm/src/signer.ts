@@ -106,7 +106,7 @@ export class EvmNativeSigner<N extends Network, C extends EvmChains = EvmChains>
 
     // If no overrides were passed, we can get better
     // gas values from the provider
-    if (!this.opts?.overrides) {
+    if (this.opts?.overrides === undefined) {
       // Celo does not support this call
       if (chain !== 'Celo') {
         const feeData = await this._signer.provider!.getFeeData();
@@ -143,8 +143,6 @@ export class EvmNativeSigner<N extends Network, C extends EvmChains = EvmChains>
         // Override any existing values with those passed in the constructor
         ...this.opts?.overrides,
       };
-
-      console.log(t);
 
       signed.push(await this._signer.signTransaction(t));
     }
