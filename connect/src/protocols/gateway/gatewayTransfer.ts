@@ -605,4 +605,12 @@ export namespace GatewayTransfer {
     const dstAddress = await dstTb.getWrappedAsset(lookup);
     return { chain: dstChain.chain, address: dstAddress };
   }
+
+  export async function transfer<N extends Network, C extends Chain = Chain>(
+    fromChain: ChainContext<N, C>,
+    transfer: GatewayTransferDetails,
+    signer: Signer<N, Chain>,
+  ): Promise<TransactionId[]> {
+
+  }
 }
