@@ -284,10 +284,10 @@ Or define your own
 
   // First define a custom payload layout
   const customPayloadLayout = [
-    // arbitrary bytes
-    { name: "foo", binary: "bytes" },
     // 2 byte integer
-    { name: "bar", binary: "int", size: 2 },
+    { name: "bar", binary: "uint", size: 2 },
+    // arbitrary bytes, note this will take the rest of the payload
+    { name: "foo", binary: "bytes" },
   ] as const satisfies Layout;
 
   // Now serialize a VAA with the custom payload layout
@@ -303,8 +303,8 @@ Or define your own
       signatures: [],
       // Using `serializeLayout` with the custom layout we created above
       payload: serializeLayout(customPayloadLayout, {
-        foo: new Uint8Array([1, 2, 3]),
         bar: 42,
+        foo: new Uint8Array([1, 2, 3]),
       }),
     }),
   );
