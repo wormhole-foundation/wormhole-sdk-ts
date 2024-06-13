@@ -43,6 +43,7 @@ const rpcConfig = [[
     ["Xlayer",    "https://xlayerrpc.okx.com/"],
     ["Gnosis",    "https://rpc.ankr.com/gnosis"],
     ["Rootstock", "https://public-node.rsk.co"],
+    ["Mantle",    "https://rpc.mantle.xyz"],
   ]], [
   "Testnet", [
     ["Ethereum",        "https://eth-goerli.public.blastapi.io"],
