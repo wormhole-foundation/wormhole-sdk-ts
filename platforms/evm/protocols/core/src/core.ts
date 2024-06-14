@@ -12,6 +12,7 @@ import {
   createVAA,
   isWormholeMessageId,
   encoding,
+  serialize,
 } from '@wormhole-foundation/sdk-connect';
 import type { Provider, TransactionRequest } from 'ethers';
 import { ethers_contracts } from './index.js';
@@ -122,7 +123,14 @@ export class EvmWormholeCore<N extends Network, C extends EvmChains>
   }
 
   async *verifyMessage(sender: AnyEvmAddress, vaa: VAA) {
-    throw new Error('Not implemented.');
+    const senderAddr = new EvmAddress(sender).toString();
+    const txReq = await this.core.parseAndVerifyVM.populateTransaction(
+      serialize(vaa),
+    );
+    yield this.createUnsignedTx(
+      addFrom(txReq, senderAddr),
+      'WormholeCore.verifyMessage',
+    );
   }
 
   async parseTransaction(txid: TxHash): Promise<WormholeMessageId[]> {

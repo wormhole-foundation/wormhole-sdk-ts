@@ -1,12 +1,13 @@
 import { encoding, signSendWait, wormhole } from "@wormhole-foundation/sdk";
 import { getSigner } from "./helpers/index.js";
 import solana from "@wormhole-foundation/sdk/solana";
+import evm from "@wormhole-foundation/sdk/evm";
 
 (async function () {
   // EXAMPLE_CORE_BRIDGE
-  const wh = await wormhole("Testnet", [solana]);
+  const wh = await wormhole("Testnet", [solana, evm]);
 
-  const chain = wh.getChain("Solana");
+  const chain = wh.getChain("Avalanche");
   const { signer, address } = await getSigner(chain);
 
   // Get a reference to the core messaging bridge
@@ -35,20 +36,20 @@ import solana from "@wormhole-foundation/sdk/solana";
   const [whm] = await chain.parseTransaction(txid!.txid);
 
   // Or pull the full message content as an Unsigned VAA
-  // const msgs = await coreBridge.parseMessages(txid!.txid);
-  // console.log(msgs);
+  // console.log(await coreBridge.parseMessages(txid!.txid));
 
   // Wait for the vaa to be signed and available with a timeout
   const vaa = await wh.getVaa(whm!, "Uint8Array", 60_000);
   console.log(vaa);
+
   // Also possible to search by txid but it takes longer to show up
   // console.log(await wh.getVaaByTxHash(txid!.txid, "Uint8Array"));
 
+  // Note: calling verifyMessage manually is typically not a useful thing to do
+  // as the VAA is typically submitted to the counterpart contract for
+  // a given protocol and the counterpart contract will verify the VAA
+  // this is simply for demo purposes
   const verifyTxs = coreBridge.verifyMessage(address.address, vaa!);
   console.log(await signSendWait(chain, verifyTxs, signer));
   // EXAMPLE_CORE_BRIDGE
-
-  // reposting the vaa should result in 0 transactions being issued
-  // assuming you're reading your writes
-  // await signSendWait(chain, coreBridge.verifyMessage(address.address, vaa!), signer);
 })();
