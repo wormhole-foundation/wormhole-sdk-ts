@@ -29,6 +29,10 @@ import { getSigner } from "./helpers/index.js";
   // Get a Token Bridge contract client on the source
   const sndTb = await ctx.getTokenBridge();
 
+  // NOTE: If the recipient chain is Solana the ATA _must_ be the recipient address
+  // using a standard wallet account address will result in a failed transfer
+  // and loss of funds
+
   // Create a transaction stream for transfers
   const transfer = sndTb.transfer(
     sender.address.address,
