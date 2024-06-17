@@ -84,7 +84,7 @@ const rpcConfig = [[
     ["Xlayer",          "https://testrpc.xlayer.tech/"],
     ["Scroll",          "https://rpc.ankr.com/scroll_sepolia_testnet"],
     ["Rootstock",       "https://public-node.testnet.rsk.co"],
-    ["Gnosis",          "https://1rpc.io/gnosis"]
+    ["Gnosis",          "https://rpc.chiadochain.net"]
   ]], [
   "Devnet", [
     ["Ethereum",  "http://eth-devnet:8545"],
