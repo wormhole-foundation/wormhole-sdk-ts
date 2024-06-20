@@ -34,6 +34,13 @@ export interface Address {
   toUniversalAddress(): UniversalAddress;
 }
 
+export interface ChainSpecificAddress extends Address {
+  setChain(chain: Chain): void;
+}
+export function isChainSpecificAddress(thing: any): thing is ChainSpecificAddress {
+  return typeof thing === "object" && "setChain" in thing;
+}
+
 export type MappedPlatforms = keyof WormholeRegistry.PlatformToNativeAddressMapping;
 
 /** Utility type to map platform to its native address implementation */
@@ -87,7 +94,14 @@ export function toNative<C extends Chain>(
       `No native address type registered for platform ${platform}, import the platform directly or, if using sdk package, import the addresses conditional export`,
     );
   try {
-    return new nativeCtr(ua) as unknown as NativeAddress<C>;
+    const nativeAddress = new nativeCtr(ua) as unknown as NativeAddress<C>;
+
+    if (isChainSpecificAddress(nativeAddress)) {
+      // idk why but this typeguard doesnt actually work?
+      (nativeAddress as ChainSpecificAddress).setChain(chain);
+    }
+
+    return nativeAddress;
   } catch (_) {
     // try to parse it as a universal address
     return (UniversalAddress.instanceof(ua) ? ua : new UniversalAddress(ua)).toNative(chain);

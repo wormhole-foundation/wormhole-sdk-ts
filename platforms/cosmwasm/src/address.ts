@@ -1,6 +1,7 @@
 import type { Address } from "@wormhole-foundation/sdk-connect";
 import { UniversalAddress, encoding, registerNative } from "@wormhole-foundation/sdk-connect";
-import type { AnyCosmwasmAddress } from "./types.js";
+import { chainToAddressPrefix } from "./constants.js";
+import type { AnyCosmwasmAddress, CosmwasmChains } from "./types.js";
 import { _platform } from "./types.js";
 
 /*
@@ -184,6 +185,11 @@ export class CosmwasmAddress implements Address {
     const buff = new Uint8Array(UniversalAddress.byteSize);
     buff.set(this.address, UniversalAddress.byteSize - this.address.length);
     return new UniversalAddress(buff);
+  }
+
+  setChain(chain: CosmwasmChains): void {
+    // @ts-expect-error -- readonly
+    this.domain = chainToAddressPrefix.get(chain);
   }
 
   static isValidAddress(address: string): boolean {
