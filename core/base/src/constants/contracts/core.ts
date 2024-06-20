@@ -65,7 +65,7 @@ export const coreBridgeContracts = [[
     ["Terra2",          "terra19nv3xr5lrmmr7egvrk2kqgw4kcn43xrtd5g0mpgwwvhetusk4k7s66jyv0"],
     ["Arbitrum",        "0xC7A204bDBFe983FCD8d8E61D02b475D4073fF97e"],
     ["Optimism",        "0x6b9C8671cdDC8dEab9c719bB87cBd3e782bA6a35"],
-    ["Gnosis",          "0xE4eacc10990ba3308DdCC72d985f2a27D20c7d03"],
+    ["Gnosis",          "0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd"],
     ["Pythnet",         "EUrRARh92Cdc54xrDn6qzaqjA77NRrCcfbr8kPwoTL4z"],
     ["Xpla",            "xpla1upkjn4mthr0047kahvn0llqx4qpqfn75lnph4jpxfn8walmm8mqsanyy35"],
     ["Base",            "0x23908A62110e21C04F3A4e011d24F901F911744A"],
