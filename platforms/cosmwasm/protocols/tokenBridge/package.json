@@ -52,7 +52,7 @@
     "prettier": "prettier --write ./src"
   },
   "dependencies": {
-    "@injectivelabs/sdk-ts": "^1.14.4",
+    "@injectivelabs/sdk-ts": "^1.14.13-beta.2",
     "@cosmjs/cosmwasm-stargate": "^0.32.0",
     "@wormhole-foundation/sdk-connect": "0.7.1-beta.0",
     "@wormhole-foundation/sdk-cosmwasm": "0.7.1-beta.0"

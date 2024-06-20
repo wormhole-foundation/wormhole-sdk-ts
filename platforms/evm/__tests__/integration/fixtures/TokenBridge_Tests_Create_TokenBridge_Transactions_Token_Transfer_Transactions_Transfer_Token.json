@@ -24,11 +24,11 @@
         "status": 200,
         "response": [
             "1f8b0800000000000003000000ffff",
-            "8aae56ca2acecf2b2a4856b25232d23350d251ca4c51b23231d3512a4a2d2ecd2951b25232a83054aad5c1a1d01445a1018540a93616000000ffff03003a214b0c92000000"
+            "8aae56ca2acecf2b2a4856b25232d23350d251ca4c51b232b6d0512a4a2d2ecd2951b25232a83054aad5c1a1d01c45a1018540a93616000000ffff03003f62f4cf92000000"
         ],
         "rawHeaders": [
             "Date",
-            "Wed, 25 Oct 2023 15:29:28 GMT",
+            "Wed, 19 Jun 2024 20:37:57 GMT",
             "Content-Type",
             "application/json",
             "Transfer-Encoding",
@@ -56,7 +56,7 @@
             "Server",
             "cloudflare",
             "CF-RAY",
-            "81bb7ec2d9cb4264-EWR",
+            "896651ebee930f7b-EWR",
             "Content-Encoding",
             "gzip"
         ],
