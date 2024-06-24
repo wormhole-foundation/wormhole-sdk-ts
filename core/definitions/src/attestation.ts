@@ -43,7 +43,7 @@ export type Attestation<PN extends ProtocolName = ProtocolName> = PN extends
   ? VAA<"Uint8Array">
   : PN extends "PorticoBridge"
   ? PorticoBridge.VAA
-  : any;
+  : any; // TODO: add AutomaticGateway | Gateway?
 
 /**
  * Wormhole Message Identifier used to fetch a VAA

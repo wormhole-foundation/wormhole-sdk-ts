@@ -1,5 +1,5 @@
-import { AutomaticRoute, Route, type StaticRouteMethods } from "../route.js";
-import { chains, type Chain, type Network } from "@wormhole-foundation/sdk-base";
+import { AutomaticRoute, type StaticRouteMethods } from "../route.js";
+import { chains, chainToPlatform, type Chain, type Network } from "@wormhole-foundation/sdk-base";
 import type {
   ChainAddress,
   ChainContext,
@@ -11,16 +11,21 @@ import { Wormhole } from "../../wormhole.js";
 import type {
   Quote,
   QuoteResult,
-  Receipt,
   TransferParams,
   ValidatedTransferParams,
   ValidationResult,
 } from "../types.js";
 import { GatewayTransfer } from "../../protocols/index.js";
-import { CosmwasmPlatform } from "@wormhole-foundation/sdk-cosmwasm";
 import { amount } from "@wormhole-foundation/sdk-base";
-import { TokenTransferDetails } from "@wormhole-foundation/sdk-definitions";
-import { AttestationReceipt, SourceInitiatedTransferReceipt, TransferState } from "../../types.js";
+import {
+  TransferState,
+  type SourceInitiatedTransferReceipt,
+  type TransferReceipt,
+} from "../../types.js";
+import { isNative } from "@wormhole-foundation/sdk-definitions";
+import { contracts } from "@wormhole-foundation/sdk-base";
+import { networkChainToChannels } from "../../../../platforms/cosmwasm/src/constants.js";
+import { isChain } from "@wormhole-foundation/sdk-base";
 
 export namespace GatewayRoute {
   export type Options = {};
@@ -42,7 +47,7 @@ type Vr = ValidationResult<Op>;
 
 type QR = QuoteResult<Op, Vp>;
 type Q = Quote<Op, Vp>;
-// type R = Receipt<AttestationReceipt<"AutomaticGatewayR">>;
+type R = TransferReceipt<GatewayTransfer.AttestationReceipt>;
 
 export class AutomaticGatewayRoute<N extends Network>
   extends AutomaticRoute<N, Op, Vp, R>
@@ -59,14 +64,31 @@ export class AutomaticGatewayRoute<N extends Network>
   }
 
   static supportedChains(network: Network): Chain[] {
-    // TODO: return cosmos chains only?
-    return chains;
+    const supported = new Set<Chain>();
+    // Chains with token bridge are supported
+    contracts.tokenBridgeChains(network).forEach((chain) => supported.add(chain));
+    // Chains connected to Gateway are supported
+    Object.entries(networkChainToChannels(network, GatewayTransfer.chain)).forEach(
+      ([chainName]) => {
+        if (isChain(chainName)) {
+          supported.add(chainName);
+        }
+      },
+    );
+    return [...supported];
   }
 
   static async supportedSourceTokens(fromChain: ChainContext<Network>): Promise<TokenId[]> {
-    // TODO: native not supported for ibc transfers
-    return Object.values(fromChain.config.tokenMap!).map((td) =>
-      Wormhole.tokenId(td.chain, td.address),
+    let isGatewayEnabled = false;
+    if (chainToPlatform(fromChain.chain) === "Cosmwasm") {
+      const gw = await fromChain.platform.getChain(GatewayTransfer.chain);
+      isGatewayEnabled = await GatewayTransfer.isGatewayEnabled(fromChain.chain, gw);
+    }
+    return (
+      Object.values(fromChain.config.tokenMap!)
+        .map((td) => Wormhole.tokenId(td.chain, td.address))
+        // Native tokens sent from Cosmos chains is not supported
+        .filter((t) => !isGatewayEnabled || !isNative(t.address))
     );
   }
 
@@ -75,21 +97,21 @@ export class AutomaticGatewayRoute<N extends Network>
     fromChain: ChainContext<N>,
     toChain: ChainContext<N>,
   ): Promise<TokenId[]> {
-    throw new Error("Method not implemented.");
-    //const wh = new Wormhole<N>(networks[N], [CosmwasmPlatform]);
-    //const wc = wh.getChain(GatewayTransfer.chain);
-    //try {
-    //  return [await GatewayTransfer.lookupDestinationToken(fromChain, toChain, wc, sourceToken)];
-    //} catch (e) {
-    //  console.error(`Failed to get destination token: ${e}`);
-    //  return [];
-    //}
+    const gateway = (
+      chainToPlatform(fromChain.chain) === "Cosmwasm" ? fromChain.platform : toChain.platform
+    ).getChain(GatewayTransfer.chain);
+    try {
+      return [
+        await GatewayTransfer.lookupDestinationToken(fromChain, toChain, gateway, sourceToken),
+      ];
+    } catch (e) {
+      console.error(`Failed to get destination token: ${e}`);
+      return [];
+    }
   }
 
   static isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean {
-    // TODO: we need both the source and destination chains to determine if the protocol is supported
-    //https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/connect/src/routes/resolver.ts#L59
-    return true;
+    return chain.supportsTokenBridge() || chain.supportsIbcBridge();
   }
 
   async isAvailable(): Promise<boolean> {
@@ -101,39 +123,65 @@ export class AutomaticGatewayRoute<N extends Network>
   }
 
   async validate(params: Tp): Promise<Vr> {
-    throw new Error("Method not implemented.");
+    const validatedParams: Vp = {
+      amount: params.amount,
+      normalizedParams: { amount: amount.parse(params.amount, this.request.source.decimals) },
+      options: {},
+    };
+    return { valid: true, params: validatedParams };
   }
 
   async quote(params: Vp): Promise<QR> {
-    throw new Error("Method not implemented.");
+    try {
+      return this.request.displayQuote(
+        await GatewayTransfer.quoteTransfer(this.wh, this.request.fromChain, this.request.toChain, {
+          token: this.request.source.id,
+          amount: amount.units(params.normalizedParams.amount),
+          ...params.options,
+        }),
+        params,
+      );
+    } catch (e) {
+      return {
+        success: false,
+        error: e as Error,
+      };
+    }
   }
 
   async initiate(signer: Signer, quote: Q, to: ChainAddress): Promise<R> {
-    const { params } = quote;
-    // send to wormchain, recipient is the token translator contract
-    // should pass in a payload that contains the chain id and recipient
     const transfer = await GatewayTransfer.destinationOverrides(
       this.request.fromChain,
       this.request.toChain,
-      this.wh.getChain("Wormchain"),
-      this.toTransferDetails(params, Wormhole.chainAddress(signer.chain(), signer.address()), to),
+      this.wh.getChain(GatewayTransfer.chain),
+      this.toTransferDetails(
+        quote.params,
+        Wormhole.chainAddress(signer.chain(), signer.address()),
+        to,
+      ),
     );
-    const txids = await GatewayTransfer.transfer<N>(this.request.fromChain, transfer, signer);
-    const msg = await GatewayTransfer.getTransferMessage(
+    const txids = await GatewayTransfer.transfer<N>(
+      this.wh,
       this.request.fromChain,
-      txids[txids.length - 1]!.txid,
+      transfer,
+      signer,
     );
     return {
       from: transfer.from.chain,
       to: transfer.to.chain,
-      state: TransferState.SourceFinalized,
+      state: TransferState.SourceInitiated,
       originTxs: txids,
-      attestation: { id: msg.id, attestation: { message: msg.message } },
-    };
+    } satisfies SourceInitiatedTransferReceipt;
   }
 
   public override async *track(receipt: R, timeout?: number) {
-    throw new Error("Method not implemented.");
+    yield* GatewayTransfer.track(
+      this.wh,
+      receipt,
+      timeout,
+      this.request.fromChain,
+      this.request.toChain,
+    );
   }
 
   private toTransferDetails(
@@ -147,7 +195,6 @@ export class AutomaticGatewayRoute<N extends Network>
       token: this.request.source.id,
       amount: amount.units(params.normalizedParams.amount),
       ...params.options,
-      // TODO: payload?
     };
   }
 }
