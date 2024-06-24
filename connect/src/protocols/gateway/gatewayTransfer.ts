@@ -1,5 +1,5 @@
 import type { Chain, Network, PlatformToChains } from "@wormhole-foundation/sdk-base";
-import { chainToPlatform, encoding, toChain } from "@wormhole-foundation/sdk-base";
+import { amount, chainToPlatform, encoding, toChain } from "@wormhole-foundation/sdk-base";
 import type {
   AttestationId,
   ChainAddress,
@@ -8,10 +8,13 @@ import type {
   GatewayTransferMsg,
   GatewayTransferWithPayloadMsg,
   IbcBridge,
+  IbcMessageId,
+  IbcTransferData,
   IbcTransferInfo,
   NativeAddress,
   Signer,
   TokenId,
+  TokenTransferDetails,
   TransactionId,
   TxHash,
   WormholeMessageId,
@@ -29,14 +32,24 @@ import {
 } from "@wormhole-foundation/sdk-definitions";
 import { signSendWait } from "../../common.js";
 import { fetchIbcXfer, isTokenBridgeVaaRedeemed, retry } from "../../tasks.js";
-import { TransferState } from "../../types.js";
+import { TransferState, isAttested, isSourceFinalized, isSourceInitiated } from "../../types.js";
+import type {
+  AttestationReceipt as _AttestationReceipt,
+  TransferQuote,
+  TransferReceipt as _TransferReceipt,
+  SourceFinalizedTransferReceipt,
+  AttestedTransferReceipt,
+} from "../../types.js";
 import { Wormhole } from "../../wormhole.js";
 import type { WormholeTransfer } from "../wormholeTransfer.js";
+import { Gateway } from "@wormhole-foundation/sdk-cosmwasm";
+import { DEFAULT_TASK_TIMEOUT } from "../../config.js";
+import { TokenTransfer } from "../index.js";
 
-type GatewayContext<N extends Network> = ChainContext<N, typeof GatewayTransfer.chain>;
+export type GatewayContext<N extends Network> = ChainContext<N, typeof GatewayTransfer.chain>;
 
 export class GatewayTransfer<N extends Network = Network> implements WormholeTransfer<"IbcBridge"> {
-  static chain: "Wormchain" = "Wormchain";
+  static readonly chain: "Wormchain" = "Wormchain";
 
   private readonly wh: Wormhole<N>;
 
@@ -45,13 +58,13 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
   // Wormchain IBC Bridge
   private readonly gatewayIbcBridge: IbcBridge<N, PlatformToChains<"Cosmwasm">>;
   // Contract address
-  private readonly gatewayAddress: ChainAddress;
+  // private readonly gatewayAddress: ChainAddress;
 
   // state machine tracker
   private _state: TransferState;
 
   // cached message derived from transfer details
-  // note: we dont want to create multiple different ones since
+  // note: we don't want to create multiple different ones since
   // the nonce may change and we want to keep it consistent
   private msg: GatewayTransferMsg | GatewayTransferWithPayloadMsg;
 
@@ -83,13 +96,13 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
 
     // reference from conf instead of asking the module
     // so we can prevent weird imports
-    this.gatewayAddress = {
-      chain: GatewayTransfer.chain,
-      address: toNative(
-        GatewayTransfer.chain,
-        this.wh.config.chains[GatewayTransfer.chain]!.contracts.gateway!,
-      ),
-    };
+    //this.gatewayAddress = {
+    //  chain: GatewayTransfer.chain,
+    //  address: toNative(
+    //    GatewayTransfer.chain,
+    //    this.wh.config.chains[GatewayTransfer.chain]!.contracts.gateway!,
+    //  ),
+    //};
 
     // cache the wormchain chain context since we need it for checks
     this.gateway = gateway;
@@ -156,7 +169,7 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
     gt.transactions = txns;
 
     // Since we're picking up from somewhere we can move the
-    // state maching to initiated
+    // state machine to initiated
     gt._state = TransferState.SourceInitiated;
 
     // Wait for what _can_ complete to complete
@@ -179,7 +192,7 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
       vaa.payloadName === "TransferWithPayload" ? vaa.payload.payload : undefined;
 
     // Nonce for GatewayTransferMessage may be in the payload
-    // and since we use the payload to find the Wormchain transacton
+    // and since we use the payload to find the Wormchain transaction
     // we need to preserve it
     let nonce: number | undefined;
 
@@ -202,7 +215,7 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
         );
         to = Wormhole.chainAddress(destChain, recipientAddress);
       } catch {
-        /*Ignoring, throws if not the payload isnt JSON*/
+        /*Ignoring, throws if not the payload isn't JSON*/
       }
     }
 
@@ -288,48 +301,52 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
     if (this._state !== TransferState.Created)
       throw new Error("Invalid state transition in `start`");
 
-    this.transactions = await (this.fromGateway()
-      ? this._transferIbc(signer)
-      : this._transfer(signer));
+    this.transactions = await GatewayTransfer.transfer(
+      this.wh,
+      this.wh.getChain(this.transfer.from.chain),
+      this.transfer,
+      signer,
+      this.msg,
+    );
 
     // Update State Machine
     this._state = TransferState.SourceInitiated;
     return this.transactions.map((tx) => tx.txid);
   }
 
-  private async _transfer(signer: Signer): Promise<TransactionId[]> {
-    const tokenAddress = this.transfer.token.address;
-    const fromChain = this.wh.getChain(this.transfer.from.chain);
+  //private async _transfer(signer: Signer): Promise<TransactionId[]> {
+  //  const tokenAddress = this.transfer.token.address;
+  //  const fromChain = this.wh.getChain(this.transfer.from.chain);
 
-    // Build the message needed to send a transfer through the gateway
-    const tb = await fromChain.getTokenBridge();
-    const xfer = tb.transfer(
-      this.transfer.from.address,
-      this.gatewayAddress,
-      tokenAddress,
-      this.transfer.amount,
-      encoding.bytes.encode(JSON.stringify(this.msg)),
-    );
+  //  // Build the message needed to send a transfer through the gateway
+  //  const tb = await fromChain.getTokenBridge();
+  //  const xfer = tb.transfer(
+  //    this.transfer.from.address,
+  //    this.gatewayAddress,
+  //    tokenAddress,
+  //    this.transfer.amount,
+  //    encoding.bytes.encode(JSON.stringify(this.msg)),
+  //  );
 
-    return signSendWait<N, typeof fromChain.chain>(fromChain, xfer, signer);
-  }
+  //  return signSendWait<N, typeof fromChain.chain>(fromChain, xfer, signer);
+  //}
 
-  private async _transferIbc(signer: Signer): Promise<TransactionId[]> {
-    if (isNative(this.transfer.token.address))
-      throw new Error("Native not supported for IBC transfers");
+  //private async _transferIbc(signer: Signer): Promise<TransactionId[]> {
+  //  if (isNative(this.transfer.token.address))
+  //    throw new Error("Native not supported for IBC transfers");
 
-    const fromChain = this.wh.getChain(this.transfer.from.chain);
+  //  const fromChain = this.wh.getChain(this.transfer.from.chain);
 
-    const ibcBridge = await fromChain.getIbcBridge();
-    const xfer = ibcBridge.transfer(
-      this.transfer.from.address,
-      this.transfer.to,
-      this.transfer.token.address,
-      this.transfer.amount,
-    );
+  //  const ibcBridge = await fromChain.getIbcBridge();
+  //  const xfer = ibcBridge.transfer(
+  //    this.transfer.from.address,
+  //    this.transfer.to,
+  //    this.transfer.token.address,
+  //    this.transfer.amount,
+  //  );
 
-    return signSendWait<N, typeof fromChain.chain>(fromChain, xfer, signer);
-  }
+  //  return signSendWait<N, typeof fromChain.chain>(fromChain, xfer, signer);
+  //}
 
   // wait for the Attestations to be ready
   async fetchAttestation(timeout?: number): Promise<AttestationId[]> {
@@ -342,7 +359,11 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
 
     const chain = this.wh.getChain(this.transfer.from.chain);
     // collect ibc transfers and additional transaction ids
-    if (this.fromGateway()) {
+    const fromGateway = await GatewayTransfer.isGatewayEnabled(
+      this.transfer.from.chain,
+      this.gateway,
+    );
+    if (fromGateway) {
       // assume all the txs are from the same chain
       // and get the ibc bridge once
       const originIbcbridge = await chain.getIbcBridge();
@@ -363,7 +384,11 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
       if (this.ibcTransfers.length != 1) throw new Error("why?");
 
       const [xfer] = this.ibcTransfers;
-      if (!this.toGateway()) {
+      const toGateway = await GatewayTransfer.isGatewayEnabled(
+        this.transfer.to.chain,
+        this.gateway,
+      );
+      if (!toGateway) {
         // If we're leaving cosmos, grab the VAA from the gateway
         // now find the corresponding wormchain transaction given the ibcTransfer info
         const retryInterval = 5000;
@@ -493,9 +518,11 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
     if (this._state < TransferState.Attested)
       throw new Error("Invalid state transition in `finish`. Be sure to call `fetchAttestation`.");
 
-    if (this.toGateway())
+    const toGateway = await GatewayTransfer.isGatewayEnabled(this.transfer.to.chain, this.gateway);
+    if (toGateway) {
       // TODO: assuming the last transaction captured is the one from gateway to the destination
       return [this.transactions[this.transactions.length - 1]!.txid];
+    }
 
     if (!this.vaas) throw new Error("No VAA details available to redeem");
     if (this.vaas.length > 1) throw new Error("Expected 1 vaa");
@@ -514,19 +541,35 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
     this._state = TransferState.DestinationInitiated;
     return redeemTxs.map(({ txid }) => txid);
   }
+}
+
+export namespace GatewayTransfer {
+  // TODO: is this the right protocol to use for a gateway transfer?
+  // there will always be an ibc transfer
+  export type Protocol = "TokenBridge" | "IbcBridge";
+  // export type Protocol = "IbcBridge";
+
+  export type AttestationReceipt = _AttestationReceipt<GatewayTransfer.Protocol>;
+  export type TransferReceipt<
+    SC extends Chain = Chain,
+    DC extends Chain = Chain,
+  > = _TransferReceipt<GatewayTransfer.AttestationReceipt, SC, DC>;
 
   // Implicitly determine if the chain is Gateway enabled by
   // checking to see if the Gateway IBC bridge has a transfer channel setup
   // If this is a new chain, add the channels to the constants file
-  private fromGateway(): boolean {
-    return this.gatewayIbcBridge.getTransferChannel(this.transfer.from.chain) !== null;
+  export async function isGatewayEnabled<N extends Network>(
+    chain: Chain,
+    gw: GatewayContext<N>,
+  ): Promise<boolean> {
+    const gwIbc = await gw.getIbcBridge();
+    return gwIbc.getTransferChannel(chain) !== null;
   }
-  private toGateway(): boolean {
-    return this.gatewayIbcBridge.getTransferChannel(this.transfer.to.chain) !== null;
-  }
-}
 
-export namespace GatewayTransfer {
+  //toGateway(): boolean {
+  //  return this.gatewayIbcBridge.getTransferChannel(this.transfer.to.chain) !== null;
+  //}
+
   export async function getTransferVaa<N extends Network>(
     wh: Wormhole<N>,
     whm: WormholeMessageId,
@@ -548,6 +591,7 @@ export namespace GatewayTransfer {
     // Bit of (temporary) hackery until solana contracts support being
     // sent a VAA with the primary address
     if (transfer.to.chain === "Solana") {
+      // TODO: make sure that the destination token is right when transfering to solana
       const destinationToken = await GatewayTransfer.lookupDestinationToken(
         srcChain,
         dstChain,
@@ -570,47 +614,300 @@ export namespace GatewayTransfer {
   >(
     srcChain: ChainContext<N, SC>,
     dstChain: ChainContext<N, DC>,
-    gatewayChain: ChainContext<N, "Wormchain">,
+    gateway: GatewayContext<N>,
     token: TokenId<SC>,
   ): Promise<TokenId<DC>> {
-    // that will be minted when the transfer is redeemed
-    let lookup: TokenId;
-
-    if (isNative(token.address)) {
-      // if native, get the wrapped asset id
-      lookup = await srcChain.getNativeWrappedTokenId();
+    // TODO: what if we're transferring from terra classic or xpla to osmosis? they' cosmwasm platforms...
+    const srcIsCosmos = chainToPlatform(srcChain.chain) === "Cosmwasm";
+    if (srcIsCosmos && isNative(token)) {
+      throw new Error("Native transfer from Cosmos not supported");
+    }
+    const _token = isNative(token.address) ? await srcChain.getNativeWrappedTokenId() : token;
+    const dstIsCosmos = chainToPlatform(dstChain.chain) === "Cosmwasm";
+    if (srcIsCosmos && dstIsCosmos) {
+      throw new Error("Unsupported transfer");
+    } else if (srcIsCosmos) {
+      throw new Error("Unsupported transfer");
     } else {
-      try {
-        // otherwise, check to see if it is a wrapped token locally
-        const tb = await srcChain.getTokenBridge();
-        lookup = await tb.getOriginalAsset(token.address);
-      } catch (e) {
-        // not a from-chain native token, check the gateway chain
-        try {
-          const gtb = await gatewayChain.getTokenBridge();
-          lookup = await gtb.getOriginalAsset(token.address as NativeAddress<"Wormchain">);
-        } catch (e) {
-          lookup = token;
-        }
-      }
+      const tb = await gateway.getTokenBridge();
+      const wrapped = await tb.getWrappedAsset(_token);
+      // wrappedAsset: wormhole1ml922hnp59jtq9a87arekvx60ezehwlg2v3j5pduplwkenfa68ksgmzxwr
+      console.log(`${wrapped}`);
+      // factoryAddress: factory/wormhole14ejqjyq8um4p3xfqj74yld5waqljf88fz25yxnma0cngspxe3les00fpjx/G4b8zJq7EUqVTwgbokQiHyYa5PzhQ1bLiyAeK3Yw9en8
+      const factory = Gateway.cw20ToFactory(gateway.network, wrapped);
+      console.log(`${factory}`);
+      const ibcDenom = Gateway.deriveIbcDenom(
+        dstChain.network,
+        //@ts-ignore
+        dstChain.chain,
+        factory.toString(),
+      );
+      // ibcDenom: ibc/22B44C7369EED16089B9840ADE399B80D9483B4E459E67643C96C681D7C463D0
+      console.log(`${ibcDenom}`);
+      return {
+        chain: dstChain.chain,
+        // TODO: Gateway and DC should have the same platform here
+        // How can we get rid of this gross cast?
+        address: ibcDenom as NativeAddress<DC>,
+      };
     }
-
-    // if the token id is actually native to the destination, return it
-    if (lookup.chain === dstChain.chain) {
-      return lookup as TokenId<DC>;
-    }
-
-    // otherwise, figure out what the token address representing the wormhole-wrapped token we're transferring
-    const dstTb = await dstChain.getTokenBridge();
-    const dstAddress = await dstTb.getWrappedAsset(lookup);
-    return { chain: dstChain.chain, address: dstAddress };
   }
 
-  export async function transfer<N extends Network, C extends Chain = Chain>(
-    fromChain: ChainContext<N, C>,
+  export async function transfer<N extends Network>(
+    wh: Wormhole<N>,
+    fromChain: ChainContext<N, Chain>,
+    transfer: GatewayTransferDetails,
+    signer: Signer<N, Chain>,
+    msg?: GatewayTransferMsg | GatewayTransferWithPayloadMsg,
+  ): Promise<TransactionId[]> {
+    const fromCosmos = await GatewayTransfer.isGatewayEnabled(
+      fromChain.chain,
+      wh.getChain(GatewayTransfer.chain),
+    );
+    if (fromCosmos) {
+      return await transferFromCosmos(fromChain, transfer, signer);
+    }
+    return await transferToCosmos(wh, fromChain, transfer, signer, msg);
+  }
+
+  export async function transferToCosmos<N extends Network>(
+    wh: Wormhole<N>,
+    fromChain: ChainContext<N, Chain>,
+    transfer: GatewayTransferDetails,
+    signer: Signer<N, Chain>,
+    msg?: GatewayTransferMsg | GatewayTransferWithPayloadMsg,
+  ): Promise<TransactionId[]> {
+    const tb = await fromChain.getTokenBridge();
+    const gw = await wh.getChain(GatewayTransfer.chain);
+    const gwAddress: ChainAddress = {
+      chain: gw.chain,
+      address: toNative(gw.chain, gw.config.contracts.gateway!),
+    };
+    msg = msg ?? gatewayTransferMsg(transfer);
+    const xfer = tb.transfer(
+      transfer.from.address,
+      gwAddress,
+      transfer.token.address,
+      transfer.amount,
+      encoding.bytes.encode(JSON.stringify(msg)),
+    );
+    return await signSendWait<N, Chain>(fromChain, xfer, signer);
+  }
+
+  export async function transferFromCosmos<N extends Network>(
+    fromChain: ChainContext<N, Chain>, // TODO: CosmwasmChain?
     transfer: GatewayTransferDetails,
     signer: Signer<N, Chain>,
   ): Promise<TransactionId[]> {
+    if (isNative(transfer.token.address)) throw new Error("Native not supported for IBC transfers");
+    const ibcBridge = await fromChain.getIbcBridge();
+    const xfer = ibcBridge.transfer(
+      transfer.from.address,
+      transfer.to,
+      transfer.token.address,
+      transfer.amount,
+    );
+    return signSendWait<N, typeof fromChain.chain>(fromChain, xfer, signer);
+  }
 
+  // TODO: manual cctp just does this in the route
+  /*
+  export async function redeem<N extends Network>(
+    toChain: ChainContext<N, Chain>,
+    vaa: GatewayTransfer.VAA,
+    signer: Signer<N, Chain>,
+  ): Promise<TransactionId[]> {
+    throw new Error("Not implemented");
+  }
+  */
+
+  // AsyncGenerator fn that produces status updates through an async generator
+  // eventually producing a receipt
+  // can be called repeatedly so the receipt is updated as it moves through the
+  // steps of the transfer
+  export async function* track<N extends Network, SC extends Chain, DC extends Chain>(
+    wh: Wormhole<N>,
+    receipt: GatewayTransfer.TransferReceipt<SC, DC>,
+    timeout: number = DEFAULT_TASK_TIMEOUT,
+    fromChain?: ChainContext<N, SC>,
+    toChain?: ChainContext<N, DC>,
+  ): AsyncGenerator<GatewayTransfer.TransferReceipt<SC, DC>> {
+    const start = Date.now();
+    const leftover = (start: number, max: number) => Math.max(max - (Date.now() - start), 0);
+
+    fromChain = fromChain ?? wh.getChain(receipt.from);
+    toChain = toChain ?? wh.getChain(receipt.to);
+
+    // Check the source chain for initiation transaction
+    // and capture the message id
+    if (isSourceInitiated(receipt)) {
+      if (receipt.originTxs.length === 0) throw "Origin transactions required to fetch message id";
+      const { txid } = receipt.originTxs[receipt.originTxs.length - 1]!;
+      const msg = await GatewayTransfer.getTransferMessage(wh, fromChain, txid);
+      receipt = {
+        ...receipt,
+        state: TransferState.SourceFinalized,
+        attestation: { id: msg },
+      } satisfies SourceFinalizedTransferReceipt<GatewayTransfer.AttestationReceipt>;
+      yield receipt;
+    }
+
+    if (isSourceFinalized(receipt)) {
+      if (!receipt.attestation.id) throw "Attestation id required to fetch attestation";
+      const { id } = receipt.attestation;
+      const attestation = await GatewayTransfer.getAttestation(wh, fromChain, toChain, id);
+      if (!attestation) throw new Error("Attestation not found");
+      receipt = {
+        ...receipt,
+        attestation: { id, attestation },
+        state: TransferState.Attested,
+      } satisfies AttestedTransferReceipt<GatewayTransfer.AttestationReceipt>;
+      yield receipt;
+    }
+
+    //// First try to grab the tx status from the API
+    //// Note: this requires a subsequent async step on the backend
+    //// to have the dest txid populated, so it may be delayed by some time
+    if (isAttested(receipt) || isSourceFinalized(receipt)) {
+      if (!receipt.attestation.id) throw "Attestation id required to fetch redeem tx";
+      const { id } = receipt.attestation;
+      const txStatus = await wh.getTransactionStatus(id, leftover(start, timeout));
+      if (txStatus && txStatus.globalTx?.destinationTx?.txHash) {
+        const { chainId, txHash } = txStatus.globalTx.destinationTx;
+        receipt = {
+          ...receipt,
+          destinationTxs: [{ chain: toChainName(chainId) as DC, txid: txHash }],
+          state: TransferState.DestinationInitiated,
+        } satisfies RedeemedTransferReceipt<GatewayTransfer.AttestationReceipt>;
+      }
+      yield receipt;
+    }
+
+    //// Fall back to asking the destination chain if this VAA has been redeemed
+    //// Note: We do not get any destinationTxs with this method
+    //if (isAttested(receipt)) {
+    //  if (!receipt.attestation.attestation) throw "Signed Attestation required to check for redeem";
+
+    //  let isComplete = await TokenTransfer.isTransferComplete(
+    //    toChain,
+    //    receipt.attestation.attestation as TokenTransfer.VAA,
+    //  );
+
+    //  if (isComplete) {
+    //    receipt = {
+    //      ...receipt,
+    //      state: TransferState.DestinationFinalized,
+    //    } satisfies CompletedTransferReceipt<TokenTransfer.AttestationReceipt>;
+    //  }
+
+    //  yield receipt;
+    //}
+
+    yield receipt;
+  }
+
+  // This will return the message id for the transfer
+  // It will be an IBC message id if the origin chain supports IBC
+  // Otherwise it will be a WormholeMessageId
+  export async function getTransferMessage<N extends Network, C extends Chain>(
+    wh: Wormhole<N>,
+    fromChain: ChainContext<N, C>,
+    txid: TxHash,
+  ): Promise<WormholeMessageId | IbcMessageId> {
+    const fromCosmos = await GatewayTransfer.isGatewayEnabled(
+      fromChain.chain,
+      wh.getChain(GatewayTransfer.chain),
+    );
+    if (fromCosmos) {
+      // Get the ibc tx info from the origin
+      const ibcBridge = await fromChain.getIbcBridge();
+      const [xfer] = await ibcBridge.lookupTransferFromTx(txid);
+      if (!xfer) throw new Error("No IBC transfer found in transaction");
+      return xfer.id;
+    }
+
+    // Otherwise grab the vaa details from the origin tx
+    const [msg] = await Wormhole.parseMessageFromTx(fromChain, txid);
+    if (!msg) throw new Error("No messages found in transaction");
+    return msg;
+  }
+
+  // This will return the attestation for the transfer
+  // It will be a GatewayTransferMsg if the origin chain supports IBC
+  // Otherwise it will be a VAA
+  export async function getAttestation<N extends Network>(
+    wh: Wormhole<N>,
+    fromChain: ChainContext<N, Chain>,
+    toChain: ChainContext<N, Chain>,
+    id: WormholeMessageId | IbcMessageId,
+    timeout?: number,
+  ): Promise<TokenBridge.TransferVAA | IbcTransferData> {
+    if (isWormholeMessageId(id)) {
+      // transferring into cosmos
+      return await GatewayTransfer.getTransferVaa(wh, id);
+    }
+    const gw = await wh.getChain(GatewayTransfer.chain);
+    const toCosmos = await GatewayTransfer.isGatewayEnabled(toChain.chain, gw);
+    if (toCosmos) {
+      // transferring between cosmos
+      const ibc = await fromChain.getIbcBridge();
+      const xfers = await fetchIbcXfer(ibc, id);
+      if (!xfers || xfers.length === 0) throw new Error("No IBC transfer found");
+      // TODO: why 1?
+      // IBC message leaving wormchain
+      return xfers[1]!.data;
+    }
+    // transferring out of cosmos
+    // If we're leaving cosmos, grab the VAA from the gateway
+    // now find the corresponding wormchain transaction given the ibcTransfer info
+    const retryInterval = 5000;
+    const gwIbc = await gw.getIbcBridge();
+    const task = () => gwIbc.lookupMessageFromIbcMsgId(id);
+    const whm = await retry<WormholeMessageId>(
+      task,
+      retryInterval,
+      timeout,
+      "Gateway:IbcBridge:LookupWormholeMessageFromIncomingIbcMessage",
+    );
+    if (!whm) throw new Error("Matching wormhole message not found after retries exhausted");
+    return await GatewayTransfer.getTransferVaa(wh, whm);
+  }
+
+  export async function quoteTransfer<N extends Network>(
+    wh: Wormhole<N>,
+    srcChain: ChainContext<N, Chain>,
+    dstChain: ChainContext<N, Chain>,
+    transfer: Omit<TokenTransferDetails, "from" | "to">,
+  ): Promise<TransferQuote> {
+    const fromGateway = await GatewayTransfer.isGatewayEnabled(
+      srcChain.chain,
+      wh.getChain(GatewayTransfer.chain),
+    );
+    if (fromGateway && isNative(transfer.token.address)) {
+      throw new Error("Native token transfer from Cosmos not supported");
+    }
+    const srcDecimals = await srcChain.getDecimals(transfer.token.address);
+    const srcAmount = amount.fromBaseUnits(transfer.amount, srcDecimals);
+    const srcAmountTruncated = amount.truncate(srcAmount, TokenTransfer.MAX_DECIMALS);
+
+    const srcToken = isNative(transfer.token.address)
+      ? await srcChain.getNativeWrappedTokenId()
+      : transfer.token;
+
+    // TODO: check governor limits
+
+    const dstToken = await GatewayTransfer.lookupDestinationToken(
+      srcChain,
+      dstChain,
+      wh.getChain(GatewayTransfer.chain),
+      transfer.token,
+    );
+    const dstDecimals = await dstChain.getDecimals(dstToken.address);
+    const dstAmountReceivable = amount.scale(srcAmountTruncated, dstDecimals);
+
+    return {
+      sourceToken: { token: srcToken, amount: amount.units(srcAmountTruncated) },
+      destinationToken: { token: dstToken, amount: amount.units(dstAmountReceivable) },
+    };
   }
 }
