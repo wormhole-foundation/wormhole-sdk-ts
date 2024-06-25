@@ -574,9 +574,9 @@ export namespace GatewayTransfer {
     // TODO: make sure that the destination token is right when transfering to solana
     const srcIsCosmos = chainToPlatform(srcChain.chain) === "Cosmwasm";
     if (srcIsCosmos && isNative(token)) {
+      // TODO: what if this is a cosmos native token? (not literally "native")?
       throw new Error("Native transfer from Cosmos not supported");
     }
-    const _token = isNative(token.address) ? await srcChain.getNativeWrappedTokenId() : token;
     const dstIsCosmos = chainToPlatform(dstChain.chain) === "Cosmwasm";
     if (srcIsCosmos && dstIsCosmos) {
       // transferring from cosmos to cosmos
@@ -586,8 +586,22 @@ export namespace GatewayTransfer {
       throw new Error("Unsupported transfer");
     } else {
       // transferring from non-cosmos to cosmos
-      const tb = await gateway.getTokenBridge();
-      const wrapped = await tb.getWrappedAsset(_token);
+      let lookup: TokenId;
+      if (isNative(token.address)) {
+        lookup = await srcChain.getNativeWrappedTokenId();
+      } else {
+        try {
+          const srcTb = await srcChain.getTokenBridge();
+          // otherwise, check to see if it is a wrapped token locally
+          lookup = await srcTb.getOriginalAsset(token.address);
+        } catch (e) {
+          // TODO: we should check the actual error here in case it's a network error
+          // not a from-chain native wormhole-wrapped one
+          lookup = token;
+        }
+      }
+      const gwTb = await gateway.getTokenBridge();
+      const wrapped = await gwTb.getWrappedAsset(lookup);
       // wrappedAsset: wormhole1ml922hnp59jtq9a87arekvx60ezehwlg2v3j5pduplwkenfa68ksgmzxwr
       console.log(`${wrapped}`);
       // factoryAddress: factory/wormhole14ejqjyq8um4p3xfqj74yld5waqljf88fz25yxnma0cngspxe3les00fpjx/G4b8zJq7EUqVTwgbokQiHyYa5PzhQ1bLiyAeK3Yw9en8
