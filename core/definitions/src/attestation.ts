@@ -7,6 +7,7 @@ import type { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge/
 import type { SequenceId } from "./types.js";
 import type { UniversalAddress } from "./universalAddress.js";
 import type { VAA } from "./vaa/index.js";
+import { TokenTransfer } from "@wormhole-foundation/sdk-connect";
 
 /**
  * The Identifier of an attestation, useful to look up the full attestation
@@ -43,6 +44,8 @@ export type Attestation<PN extends ProtocolName = ProtocolName> = PN extends
   ? VAA<"Uint8Array">
   : PN extends "PorticoBridge"
   ? PorticoBridge.VAA
+  : PN extends "ManualGateway" | "AutomaticGateway"
+  ? { vaa: TokenBridge.TransferVAA; ibcMsgs: IbcTransferData[] }
   : any; // TODO: add AutomaticGateway | Gateway?
 
 /**
