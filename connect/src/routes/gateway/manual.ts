@@ -1,5 +1,5 @@
-import { AutomaticRoute, type StaticRouteMethods } from "../route.js";
-import { chainToPlatform, type Chain, type Network } from "@wormhole-foundation/sdk-base";
+import { ManualRoute, type StaticRouteMethods } from "../route.js";
+import { type Chain, type Network } from "@wormhole-foundation/sdk-base";
 import type {
   ChainAddress,
   ChainContext,
@@ -7,7 +7,6 @@ import type {
   Signer,
   TokenId,
 } from "@wormhole-foundation/sdk-definitions";
-import { Wormhole } from "../../wormhole.js";
 import type {
   Quote,
   QuoteResult,
@@ -15,20 +14,20 @@ import type {
   ValidatedTransferParams,
   ValidationResult,
 } from "../types.js";
+import type { TokenTransfer } from "../../protocols/index.js";
 import { GatewayTransfer } from "../../protocols/index.js";
 import { amount } from "@wormhole-foundation/sdk-base";
-import {
-  TransferState,
-  type SourceInitiatedTransferReceipt,
-  type TransferReceipt,
+import type {
+  AttestationReceipt as _AttestationReceipt,
+  TransferReceipt as _TransferReceipt,
 } from "../../types.js";
-import { isNative } from "@wormhole-foundation/sdk-definitions";
-import { contracts } from "@wormhole-foundation/sdk-base";
-import { networkChainToChannels } from "../../../../platforms/cosmwasm/src/constants.js";
-import { isChain } from "@wormhole-foundation/sdk-base";
+import { TransferState } from "../../types.js";
+import { isAttested } from "@wormhole-foundation/sdk-connect";
 
-export namespace AutomaticGatewayRoute {
-  export type Options = {};
+export namespace ManualGatewayRoute {
+  export type Options = {
+    payload?: Uint8Array;
+  };
 
   export type NormalizedParams = {
     amount: amount.Amount;
@@ -39,22 +38,27 @@ export namespace AutomaticGatewayRoute {
   }
 }
 
-type Op = AutomaticGatewayRoute.Options;
-type Vp = AutomaticGatewayRoute.ValidatedParams;
+type AttestationReceipt = _AttestationReceipt<TokenBridge.
+type TransferReceipt<SC extends Chain = Chain, DC extends Chain = Chain> = _TransferReceipt<
+  AttestationReceipt,
+  SC,
+  DC
+>;
+
+type Op = ManualGatewayRoute.Options;
+type Vp = ManualGatewayRoute.ValidatedParams;
 
 type Tp = TransferParams<Op>;
 type Vr = ValidationResult<Op>;
 
 type QR = QuoteResult<Op, Vp>;
 type Q = Quote<Op, Vp>;
-type R = TransferReceipt<GatewayTransfer.AttestationReceipt>;
+type R = TransferReceipt;
 
-export class AutomaticGatewayRoute<N extends Network>
-  extends AutomaticRoute<N, Op, Vp, R>
-  implements StaticRouteMethods<typeof AutomaticGatewayRoute>
+export class ManualGatewayRoute<N extends Network>
+  extends ManualRoute<N, Op, Vp, R>
+  implements StaticRouteMethods<typeof ManualGatewayRoute>
 {
-  NATIVE_GAS_DROPOFF_SUPPORTED = false;
-
   static meta = {
     name: "AutomaticGateway",
   };
@@ -64,32 +68,11 @@ export class AutomaticGatewayRoute<N extends Network>
   }
 
   static supportedChains(network: Network): Chain[] {
-    const supported = new Set<Chain>();
-    // Chains with token bridge are supported
-    contracts.tokenBridgeChains(network).forEach((chain) => supported.add(chain));
-    // Chains connected to Gateway are supported
-    Object.entries(networkChainToChannels(network, GatewayTransfer.chain)).forEach(
-      ([chainName]) => {
-        if (isChain(chainName)) {
-          supported.add(chainName);
-        }
-      },
-    );
-    return [...supported];
+    return GatewayTransfer.supportedChains(network);
   }
 
   static async supportedSourceTokens(fromChain: ChainContext<Network>): Promise<TokenId[]> {
-    let isGatewayEnabled = false;
-    if (chainToPlatform(fromChain.chain) === "Cosmwasm") {
-      const gateway = await fromChain.platform.getChain(GatewayTransfer.chain);
-      isGatewayEnabled = await GatewayTransfer.isGatewayEnabled(fromChain.chain, gateway);
-    }
-    return (
-      Object.values(fromChain.config.tokenMap!)
-        .map((td) => Wormhole.tokenId(td.chain, td.address))
-        // Native tokens sent from Cosmos chains is not supported
-        .filter((t) => !isGatewayEnabled || !isNative(t.address))
-    );
+    return await GatewayTransfer.supportedSourceTokens(fromChain);
   }
 
   static async supportedDestinationTokens<N extends Network>(
@@ -97,21 +80,11 @@ export class AutomaticGatewayRoute<N extends Network>
     fromChain: ChainContext<N>,
     toChain: ChainContext<N>,
   ): Promise<TokenId[]> {
-    const gateway = (
-      chainToPlatform(fromChain.chain) === "Cosmwasm" ? fromChain.platform : toChain.platform
-    ).getChain(GatewayTransfer.chain);
-    try {
-      return [
-        await GatewayTransfer.lookupDestinationToken(fromChain, toChain, gateway, sourceToken),
-      ];
-    } catch (e) {
-      console.error(`Failed to get destination token: ${e}`);
-      return [];
-    }
+    return await GatewayTransfer.supportedDestinationTokens(sourceToken, fromChain, toChain);
   }
 
   static isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean {
-    return chain.supportsTokenBridge() || chain.supportsIbcBridge();
+    return GatewayTransfer.isProtocolSupported(chain);
   }
 
   async isAvailable(): Promise<boolean> {
@@ -119,14 +92,14 @@ export class AutomaticGatewayRoute<N extends Network>
   }
 
   getDefaultOptions(): Op {
-    return {};
+    return { payload: undefined };
   }
 
   async validate(params: Tp): Promise<Vr> {
     const validatedParams: Vp = {
       amount: params.amount,
       normalizedParams: { amount: amount.parse(params.amount, this.request.source.decimals) },
-      options: {},
+      options: { payload: params.options?.payload },
     };
     return { valid: true, params: validatedParams };
   }
@@ -150,6 +123,7 @@ export class AutomaticGatewayRoute<N extends Network>
   }
 
   async initiate(signer: Signer, quote: Q, to: ChainAddress): Promise<R> {
+    /*
     const transfer = await GatewayTransfer.destinationOverrides(
       this.request.fromChain,
       this.request.toChain,
@@ -172,16 +146,36 @@ export class AutomaticGatewayRoute<N extends Network>
       state: TransferState.SourceInitiated,
       originTxs: txids,
     } satisfies SourceInitiatedTransferReceipt;
+     */
+    throw new Error("Not implemented");
   }
 
   public override async *track(receipt: R, timeout?: number) {
-    yield* GatewayTransfer.track(
-      this.wh,
-      receipt,
-      timeout,
-      this.request.fromChain,
+    //yield* GatewayTransfer.track(
+    //  this.wh,
+    //  receipt,
+    //  timeout,
+    //  this.request.fromChain,
+    //  this.request.toChain,
+    //);
+    throw new Error("Not implemented");
+  }
+
+  async complete(signer: Signer, receipt: R): Promise<R> {
+    if (!isAttested(receipt))
+      throw new Error("The source must be finalized in order to complete the transfer");
+    const dstTxIds = await GatewayTransfer.redeem<N>(
       this.request.toChain,
+      // TODO: the attestation should be a VAA<"TokenBridge:Transfer"> | VAA<"TokenBridge:TransferWithPayload">
+      // @ts-ignore
+      receipt.attestation.attestation as TokenTransfer.VAA,
+      signer,
     );
+    return {
+      ...receipt,
+      state: TransferState.DestinationInitiated,
+      destinationTxs: dstTxIds,
+    };
   }
 
   private toTransferDetails(
