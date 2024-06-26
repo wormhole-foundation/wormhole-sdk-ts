@@ -4,6 +4,7 @@ import type { AccountAddress, ChainAddress, NativeAddress } from "../../address.
 import type { IbcMessageId, WormholeMessageId } from "../../attestation.js";
 import type { TokenAddress, TokenId, TxHash } from "../../types.js";
 import type { UnsignedTransaction } from "../../unsignedTransaction.js";
+import { CosmwasmAddress } from "@wormhole-foundation/sdk-cosmwasm/address";
 
 import "../../registry.js";
 import { EmptyPlatformMap } from "../../protocol.js";
@@ -225,4 +226,7 @@ export interface IbcBridge<N extends Network = Network, C extends Chain = Chain>
   lookupTransferFromMsg(
     payload: GatewayTransferMsg | GatewayTransferWithPayloadMsg,
   ): Promise<IbcTransferInfo[]>;
+
+  // Get the corresponding Gateway CW20 token address for the given IBC denom
+  lookupGatewayCW20Address(denom: string): Promise<CosmwasmAddress>;
 }

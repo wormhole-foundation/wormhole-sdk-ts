@@ -7,7 +7,6 @@ import type { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge/
 import type { SequenceId } from "./types.js";
 import type { UniversalAddress } from "./universalAddress.js";
 import type { VAA } from "./vaa/index.js";
-import { TokenTransfer } from "@wormhole-foundation/sdk-connect";
 
 /**
  * The Identifier of an attestation, useful to look up the full attestation

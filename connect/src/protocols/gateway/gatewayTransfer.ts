@@ -39,7 +39,7 @@ import {
 } from "@wormhole-foundation/sdk-definitions";
 import { signSendWait } from "../../common.js";
 import { fetchIbcXfer, isTokenBridgeVaaRedeemed, retry } from "../../tasks.js";
-import { TransferState, isAttested, isSourceFinalized, isSourceInitiated } from "../../types.js";
+import { TransferState, isSourceFinalized, isSourceInitiated } from "../../types.js";
 import type {
   AttestationReceipt as _AttestationReceipt,
   TransferQuote,
@@ -583,7 +583,20 @@ export namespace GatewayTransfer {
       throw new Error("Unsupported transfer");
     } else if (srcIsCosmos) {
       // transferring from cosmos to a non-cosmos
-      throw new Error("Unsupported transfer");
+      const srcIbcBridge = await srcChain.getIbcBridge();
+      const gatewayWrapped = await srcIbcBridge.lookupGatewayCW20Address(token.address.toString());
+      const gatewayTokenBridge = await gateway.getTokenBridge();
+      const originalAsset = await gatewayTokenBridge.getOriginalAsset(
+        gatewayWrapped as NativeAddress<"Wormchain">,
+      );
+      if (originalAsset.chain === dstChain.chain) {
+        return originalAsset as TokenId<DC>;
+      }
+      console.log("originalAsset:", originalAsset.address.toString());
+      const dstTokenBridge = await dstChain.getTokenBridge();
+      const foreignAsset = await dstTokenBridge.getWrappedAsset(originalAsset);
+      console.log("foreignAsset:", foreignAsset);
+      return { chain: dstChain.chain, address: foreignAsset };
     } else {
       // transferring from non-cosmos to cosmos
       let lookup: TokenId;
@@ -692,8 +705,8 @@ export namespace GatewayTransfer {
     fromChain?: ChainContext<N, SC>,
     toChain?: ChainContext<N, DC>,
   ): AsyncGenerator<GatewayTransfer.TransferReceipt<SC, DC>> {
-    const start = Date.now();
-    const leftover = (start: number, max: number) => Math.max(max - (Date.now() - start), 0);
+    // const start = Date.now();
+    // const leftover = (start: number, max: number) => Math.max(max - (Date.now() - start), 0);
 
     fromChain = fromChain ?? wh.getChain(receipt.from);
     toChain = toChain ?? wh.getChain(receipt.to);
@@ -728,6 +741,7 @@ export namespace GatewayTransfer {
     //// First try to grab the tx status from the API
     //// Note: this requires a subsequent async step on the backend
     //// to have the dest txid populated, so it may be delayed by some time
+    /*
     if (isAttested(receipt) || isSourceFinalized(receipt)) {
       if (!receipt.attestation.id) throw "Attestation id required to fetch redeem tx";
       const { id } = receipt.attestation;
@@ -742,6 +756,7 @@ export namespace GatewayTransfer {
       }
       yield receipt;
     }
+      */
 
     //// Fall back to asking the destination chain if this VAA has been redeemed
     //// Note: We do not get any destinationTxs with this method

@@ -14,15 +14,15 @@ import type {
   ValidatedTransferParams,
   ValidationResult,
 } from "../types.js";
-import type { TokenTransfer } from "../../protocols/index.js";
 import { GatewayTransfer } from "../../protocols/index.js";
 import { amount } from "@wormhole-foundation/sdk-base";
 import type {
   AttestationReceipt as _AttestationReceipt,
   TransferReceipt as _TransferReceipt,
+  SourceInitiatedTransferReceipt,
 } from "../../types.js";
 import { TransferState } from "../../types.js";
-import { isAttested } from "@wormhole-foundation/sdk-connect";
+import { Wormhole } from "../../wormhole.js";
 
 export namespace ManualGatewayRoute {
   export type Options = {
@@ -38,7 +38,7 @@ export namespace ManualGatewayRoute {
   }
 }
 
-type AttestationReceipt = _AttestationReceipt<TokenBridge.
+type AttestationReceipt = _AttestationReceipt<GatewayTransfer.Protocol>;
 type TransferReceipt<SC extends Chain = Chain, DC extends Chain = Chain> = _TransferReceipt<
   AttestationReceipt,
   SC,
@@ -123,7 +123,6 @@ export class ManualGatewayRoute<N extends Network>
   }
 
   async initiate(signer: Signer, quote: Q, to: ChainAddress): Promise<R> {
-    /*
     const transfer = await GatewayTransfer.destinationOverrides(
       this.request.fromChain,
       this.request.toChain,
@@ -146,8 +145,6 @@ export class ManualGatewayRoute<N extends Network>
       state: TransferState.SourceInitiated,
       originTxs: txids,
     } satisfies SourceInitiatedTransferReceipt;
-     */
-    throw new Error("Not implemented");
   }
 
   public override async *track(receipt: R, timeout?: number) {
@@ -162,20 +159,21 @@ export class ManualGatewayRoute<N extends Network>
   }
 
   async complete(signer: Signer, receipt: R): Promise<R> {
-    if (!isAttested(receipt))
-      throw new Error("The source must be finalized in order to complete the transfer");
-    const dstTxIds = await GatewayTransfer.redeem<N>(
-      this.request.toChain,
-      // TODO: the attestation should be a VAA<"TokenBridge:Transfer"> | VAA<"TokenBridge:TransferWithPayload">
-      // @ts-ignore
-      receipt.attestation.attestation as TokenTransfer.VAA,
-      signer,
-    );
-    return {
-      ...receipt,
-      state: TransferState.DestinationInitiated,
-      destinationTxs: dstTxIds,
-    };
+    throw new Error("Not implemented");
+    //if (!isAttested(receipt))
+    //  throw new Error("The source must be finalized in order to complete the transfer");
+    //const dstTxIds = await GatewayTransfer.redeem<N>(
+    //  this.request.toChain,
+    //  // TODO: the attestation should be a VAA<"TokenBridge:Transfer"> | VAA<"TokenBridge:TransferWithPayload">
+    //  // @ts-ignore
+    //  receipt.attestation.attestation as TokenTransfer.VAA,
+    //  signer,
+    //);
+    //return {
+    //  ...receipt,
+    //  state: TransferState.DestinationInitiated,
+    //  destinationTxs: dstTxIds,
+    //};
   }
 
   private toTransferDetails(

@@ -6,12 +6,12 @@ import { inspect } from "util";
 import { getSigner } from "./helpers/index.js";
 
 (async function () {
-  const wh = await wormhole("Testnet", [evm, solana]);
+  const wh = await wormhole("Mainnet", [evm, solana]);
 
   // Original Token to Attest
 
   // grab context and signer
-  const origChain = wh.getChain("Oasis");
+  const origChain = wh.getChain("Mantle");
   const token = await origChain.getNativeWrappedTokenId();
   const { signer: origSigner } = await getSigner(origChain);
 
@@ -48,7 +48,7 @@ import { getSigner } from "./helpers/index.js";
   // Check if its attested and if not
   // submit the attestation to the token bridge on the
   // destination chain
-  const chain = "Sepolia";
+  const chain = "Avalanche";
   const destChain = wh.getChain(chain);
   const { signer } = await getSigner(destChain);
 
