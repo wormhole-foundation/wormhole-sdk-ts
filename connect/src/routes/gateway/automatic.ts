@@ -1,5 +1,5 @@
 import { AutomaticRoute, type StaticRouteMethods } from "../route.js";
-import { chainToPlatform, type Chain, type Network } from "@wormhole-foundation/sdk-base";
+import { type Chain, type Network } from "@wormhole-foundation/sdk-base";
 import type {
   ChainAddress,
   ChainContext,
@@ -22,10 +22,6 @@ import {
   type SourceInitiatedTransferReceipt,
   type TransferReceipt,
 } from "../../types.js";
-import { isNative } from "@wormhole-foundation/sdk-definitions";
-import { contracts } from "@wormhole-foundation/sdk-base";
-import { networkChainToChannels } from "../../../../platforms/cosmwasm/src/constants.js";
-import { isChain } from "@wormhole-foundation/sdk-base";
 
 export namespace AutomaticGatewayRoute {
   export type Options = {};
@@ -64,32 +60,11 @@ export class AutomaticGatewayRoute<N extends Network>
   }
 
   static supportedChains(network: Network): Chain[] {
-    const supported = new Set<Chain>();
-    // Chains with token bridge are supported
-    contracts.tokenBridgeChains(network).forEach((chain) => supported.add(chain));
-    // Chains connected to Gateway are supported
-    Object.entries(networkChainToChannels(network, GatewayTransfer.chain)).forEach(
-      ([chainName]) => {
-        if (isChain(chainName)) {
-          supported.add(chainName);
-        }
-      },
-    );
-    return [...supported];
+    return GatewayTransfer.supportedChains(network);
   }
 
   static async supportedSourceTokens(fromChain: ChainContext<Network>): Promise<TokenId[]> {
-    let isGatewayEnabled = false;
-    if (chainToPlatform(fromChain.chain) === "Cosmwasm") {
-      const gateway = await fromChain.platform.getChain(GatewayTransfer.chain);
-      isGatewayEnabled = await GatewayTransfer.isGatewayEnabled(fromChain.chain, gateway);
-    }
-    return (
-      Object.values(fromChain.config.tokenMap!)
-        .map((td) => Wormhole.tokenId(td.chain, td.address))
-        // Native tokens sent from Cosmos chains is not supported
-        .filter((t) => !isGatewayEnabled || !isNative(t.address))
-    );
+    return GatewayTransfer.supportedSourceTokens(fromChain);
   }
 
   static async supportedDestinationTokens<N extends Network>(
@@ -97,21 +72,11 @@ export class AutomaticGatewayRoute<N extends Network>
     fromChain: ChainContext<N>,
     toChain: ChainContext<N>,
   ): Promise<TokenId[]> {
-    const gateway = (
-      chainToPlatform(fromChain.chain) === "Cosmwasm" ? fromChain.platform : toChain.platform
-    ).getChain(GatewayTransfer.chain);
-    try {
-      return [
-        await GatewayTransfer.lookupDestinationToken(fromChain, toChain, gateway, sourceToken),
-      ];
-    } catch (e) {
-      console.error(`Failed to get destination token: ${e}`);
-      return [];
-    }
+    return GatewayTransfer.supportedDestinationTokens(sourceToken, fromChain, toChain);
   }
 
   static isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean {
-    return chain.supportsTokenBridge() || chain.supportsIbcBridge();
+    return GatewayTransfer.isProtocolSupported(chain);
   }
 
   async isAvailable(): Promise<boolean> {

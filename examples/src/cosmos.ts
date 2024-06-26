@@ -39,9 +39,9 @@ import { SignerStuff, getSigner } from "./helpers/index.js";
   let fakeIt = false;
 
   // Grab chain Contexts for each leg of our journey
-  const external = wh.getChain("Solana");
-  const cosmos1 = wh.getChain("Dymension");
-  const cosmos2 = wh.getChain("Injective");
+  const external = wh.getChain("Avalanche");
+  const cosmos1 = wh.getChain("Injective");
+  const cosmos2 = wh.getChain("Dymension");
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
@@ -59,14 +59,14 @@ import { SignerStuff, getSigner } from "./helpers/index.js";
         wh,
         {
           chain: external.chain,
-          txid: "5y2BnJ1Nwqe4m6KTSrry5Ni88xqVrqo4jdbuNwAPDuXEonQRVLbALf7abViwucKKr8U8cDfJtDmqnuRAAC6i6wtb",
+          txid: "5njscE23qnPo8uWCAQZJvUyQaxWnzvv78aVFqayFGXH7TUWbD74khpqARvUDQyxUdr7DDeaQ4p8ZtGqDQV2UWTJq",
         },
         600_000,
       )
     : await transferIntoCosmos(wh, token, amt, leg1, leg2);
   console.log("Route 1 (External => Cosmos)", route1);
 
-  // Lookup the Gateway representation of the wrappd token
+  // Lookup the Gateway representation of the wrapped token
   const { denom } = route1.ibcTransfers![0]!.data;
   const cosmosTokenAddress = Wormhole.parseAddress("Wormchain", denom);
 

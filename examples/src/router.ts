@@ -2,14 +2,15 @@ import { Wormhole, canonicalAddress, routes, wormhole } from "@wormhole-foundati
 
 import evm from "@wormhole-foundation/sdk/evm";
 import solana from "@wormhole-foundation/sdk/solana";
+import cosmwasm from "@wormhole-foundation/sdk/cosmwasm";
 import { getSigner } from "./helpers/index.js";
 
 (async function () {
   // Setup
-  const wh = await wormhole("Testnet", [evm, solana]);
+  const wh = await wormhole("Mainnet", [evm, solana, cosmwasm]);
 
   // Get chain contexts
-  const sendChain = wh.getChain("Avalanche");
+  const sendChain = wh.getChain("Injective");
   const destChain = wh.getChain("Solana");
 
   // get signers from local config
@@ -19,11 +20,12 @@ import { getSigner } from "./helpers/index.js";
   // EXAMPLE_RESOLVER_CREATE
   // create new resolver, passing the set of routes to consider
   const resolver = wh.resolver([
-    routes.TokenBridgeRoute, // manual token bridge
-    routes.AutomaticTokenBridgeRoute, // automatic token bridge
-    routes.CCTPRoute, // manual CCTP
-    routes.AutomaticCCTPRoute, // automatic CCTP
-    routes.AutomaticPorticoRoute, // Native eth transfers
+    // routes.TokenBridgeRoute, // manual token bridge
+    //routes.AutomaticTokenBridgeRoute, // automatic token bridge
+    //routes.CCTPRoute, // manual CCTP
+    //routes.AutomaticCCTPRoute, // automatic CCTP
+    //routes.AutomaticPorticoRoute, // Native eth transfers
+    routes.AutomaticGatewayRoute,
   ]);
   // EXAMPLE_RESOLVER_CREATE
 
@@ -37,7 +39,10 @@ import { getSigner } from "./helpers/index.js";
 
   // Grab the first one for the example
   // const sendToken = srcTokens[0]!;
-  const sendToken = Wormhole.tokenId(sendChain.chain, "native");
+  const sendToken = Wormhole.tokenId(
+    sendChain.chain,
+    "ibc/A8B0B746B5AB736C2D8577259B510D56B8AF598008F68041E3D634BCDE72BE97",
+  );
 
   // given the send token, what can we possibly get on the destination chain?
   const destTokens = await resolver.supportedDestinationTokens(sendToken, sendChain, destChain);

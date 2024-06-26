@@ -359,4 +359,16 @@ export class CosmwasmIbcBridge<N extends Network, C extends CosmwasmChains>
       parallelizable,
     );
   }
+
+  // Returns the corresponding Gateway CW20 token address for the given IBC denom
+  async lookupGatewayCW20Address(denom: string): Promise<CosmwasmAddress> {
+    const queryClient = await CosmwasmPlatform.getQueryClient(this.rpc);
+    const { denomTrace } = await queryClient.ibc.transfer.denomTrace(denom);
+    if (!denomTrace) throw new Error("DenomTrace not found for denom: " + denom);
+    const parts = denomTrace.baseDenom.split("/");
+    if (parts.length !== 3) throw new Error("Invalid denom: " + denomTrace.baseDenom);
+    const [, , address] = parts;
+    if (!address) throw new Error("Invalid denom: " + denomTrace.baseDenom);
+    return new CosmwasmAddress(CosmwasmAddress.encode("wormhole", encoding.b58.decode(address)));
+  }
 }
