@@ -570,24 +570,24 @@ export namespace GatewayTransfer {
     gateway: GatewayContext<N>,
     token: TokenId<SC>,
   ): Promise<TokenId<DC>> {
-    // TODO: what if we're transferring from terra classic or xpla to osmosis? they' cosmwasm platforms...
     // TODO: make sure that the destination token is right when transfering to solana
-    const srcIsCosmos = chainToPlatform(srcChain.chain) === "Cosmwasm";
-    if (srcIsCosmos && isNative(token)) {
+    const fromGateway = await GatewayTransfer.isGatewayEnabled(srcChain.chain, gateway);
+    if (fromGateway && isNative(token)) {
       // TODO: what if this is a cosmos native token? (not literally "native")?
       throw new Error("Native transfer from Cosmos not supported");
     }
-    const dstIsCosmos = chainToPlatform(dstChain.chain) === "Cosmwasm";
-    if (srcIsCosmos && dstIsCosmos) {
-      // transferring from cosmos to cosmos
+    const toGateway = await GatewayTransfer.isGatewayEnabled(dstChain.chain, gateway);
+    if (fromGateway && toGateway) {
+      // transferring between two gateway enabled chains
       throw new Error("Unsupported transfer");
-    } else if (srcIsCosmos) {
-      // transferring from cosmos to a non-cosmos
+    } else if (fromGateway) {
+      // transferring from a gateway enabled chain to a non-gateway enabled chain
       const srcIbcBridge = await srcChain.getIbcBridge();
+      // get the wrapped asset on gateway to find the original asset
       const gatewayWrapped = await srcIbcBridge.lookupGatewayCW20Address(token.address.toString());
       const gatewayTokenBridge = await gateway.getTokenBridge();
       const originalAsset = await gatewayTokenBridge.getOriginalAsset(
-        gatewayWrapped as NativeAddress<"Wormchain">,
+        gatewayWrapped as NativeAddress<typeof GatewayTransfer.chain>,
       );
       if (originalAsset.chain === dstChain.chain) {
         return originalAsset as TokenId<DC>;
@@ -598,7 +598,7 @@ export namespace GatewayTransfer {
       console.log("foreignAsset:", foreignAsset);
       return { chain: dstChain.chain, address: foreignAsset };
     } else {
-      // transferring from non-cosmos to cosmos
+      // transferring from a non-gateway enabled chain to a gateway enabled chain
       let lookup: TokenId;
       if (isNative(token.address)) {
         lookup = await srcChain.getNativeWrappedTokenId();
