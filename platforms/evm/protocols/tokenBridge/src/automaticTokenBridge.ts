@@ -83,7 +83,7 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
         serialize(vaa),
       );
 
-    return this.createUnsignedTx(
+    yield this.createUnsignedTx(
       addFrom(txReq, senderAddr),
       'TokenBridgeRelayer.completeTransferWithRelay',
     );
