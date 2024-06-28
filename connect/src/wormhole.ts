@@ -369,7 +369,7 @@ export class Wormhole<N extends Network> {
   }
 
   /**
-   * Parse an address from its canonincal string format to a NativeAddress
+   * Parse an address from its canonical string format to a NativeAddress
    *
    * @param chain The chain the address is for
    * @param address The native address in canonical string format
@@ -380,7 +380,7 @@ export class Wormhole<N extends Network> {
   }
 
   /**
-   * Parse an address from its canonincal string format to a NativeAddress
+   * Parse an address from its canonical string format to a NativeAddress
    *
    * @param chain The chain the address is for
    * @param address The native address in canonical string format or the string "native"

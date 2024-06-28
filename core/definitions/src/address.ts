@@ -50,7 +50,7 @@ type GetNativeAddress<P extends Platform> = P extends MappedPlatforms
 
 export type NativeAddressCtr = new (ua: UniversalAddress | string | Uint8Array) => Address;
 
-/** An address that has been parsed into its Nativfe Address type */
+/** An address that has been parsed into its Native Address type */
 export type NativeAddress<C extends Chain> = GetNativeAddress<ChainToPlatform<C>>;
 
 /** A union type representing a parsed address */
