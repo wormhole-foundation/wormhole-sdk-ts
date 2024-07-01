@@ -217,7 +217,7 @@ export class CosmwasmAddress implements Address {
   }
 
   static instanceof(address: any): address is CosmwasmAddress {
-    return address.platform === _platform;
+    return address.constructor.platform === CosmwasmAddress.platform;
   }
 
   equals(other: CosmwasmAddress | UniversalAddress): boolean {
