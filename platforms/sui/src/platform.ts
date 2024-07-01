@@ -34,7 +34,7 @@ export class SuiPlatform<N extends Network>
   extends PlatformContext<N, SuiPlatformType>
   implements StaticPlatformMethods<SuiPlatformType, typeof SuiPlatform>
 {
-  static _platform: SuiPlatformType = _platform;
+  static _platform = _platform;
 
   constructor(network: N, _config?: ChainsConfig<N, SuiPlatformType>) {
     super(network, _config ?? networkPlatformConfigs(network, SuiPlatform._platform));

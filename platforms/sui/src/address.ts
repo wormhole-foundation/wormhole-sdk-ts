@@ -1,9 +1,8 @@
 import { normalizeSuiAddress } from "@mysten/sui.js/utils";
 import type { Address } from "@wormhole-foundation/sdk-connect";
-import { encoding, registerNative, UniversalAddress } from "@wormhole-foundation/sdk-connect";
+import { UniversalAddress, encoding, registerNative } from "@wormhole-foundation/sdk-connect";
 
 import { SUI_SEPARATOR } from "./constants.js";
-import { SuiPlatform } from "./platform.js";
 import type { AnySuiAddress } from "./types.js";
 import { _platform } from "./types.js";
 
@@ -54,7 +53,7 @@ export const getTableKeyType = (tableType: string): string => {
 
 export class SuiAddress implements Address {
   static readonly byteSize = 32;
-  static readonly platform = SuiPlatform._platform;
+  static readonly platform = _platform;
 
   // Full 32 bytes of Address
   readonly address: Uint8Array;
