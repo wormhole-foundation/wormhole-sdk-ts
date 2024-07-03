@@ -12,6 +12,7 @@ import {
   nativeTokenId,
   amount,
 } from "../../../src";
+import { RouteTransferRequest } from "../../../src/routes/request";
 import { AutomaticRoute, StaticRouteMethods } from "../../../src/routes/route";
 import {
   Quote,
@@ -67,7 +68,10 @@ export class AutomaticMockRoute<N extends Network>
     return true;
   }
 
-  async validate(params: TransferParams<Op>): Promise<ValidationResult<Op>> {
+  async validate(
+    request: RouteTransferRequest<N>,
+    params: TransferParams<Op>,
+  ): Promise<ValidationResult<Op>> {
     await delay(250);
     return {
       valid: true,
@@ -75,38 +79,38 @@ export class AutomaticMockRoute<N extends Network>
     };
   }
 
-  async quote(params: ValidatedTransferParams<Op>): Promise<Q> {
+  async quote(request: RouteTransferRequest<N>, params: ValidatedTransferParams<Op>): Promise<Q> {
     await delay(1000);
     const fakeQuote: Q = {
       success: true,
       sourceToken: {
-        token: this.request.source.id,
-        amount: amount.parse(params.amount, this.request.source.decimals),
+        token: request.source.id,
+        amount: amount.parse(params.amount, request.source.decimals),
       },
       destinationToken: {
-        token: this.request.destination!.id,
-        amount: amount.parse(params.amount, this.request.destination.decimals),
+        token: request.destination!.id,
+        amount: amount.parse(params.amount, request.destination.decimals),
       },
       relayFee: {
-        token: this.request.source.id,
-        amount: amount.parse("0.01", this.request.source.decimals),
+        token: request.source.id,
+        amount: amount.parse("0.01", request.source.decimals),
       },
       params,
     };
     return fakeQuote;
   }
 
-  async initiate(sender: Signer, _quote: Q): Promise<R> {
+  async initiate(request: RouteTransferRequest<N>, sender: Signer, _quote: Q): Promise<R> {
     await delay(1000);
 
     const fakeTxId =
-      this.request.from.chain === "Solana"
+      request.fromChain.chain === "Solana"
         ? encoding.b58.encode(new Uint8Array(64))
         : encoding.hex.encode(new Uint8Array(32));
 
     const fakeReceipt: SourceInitiatedTransferReceipt = {
-      from: this.request.from.chain,
-      to: this.request.to.chain,
+      from: request.fromChain.chain,
+      to: request.toChain.chain,
       state: TransferState.SourceInitiated,
       originTxs: [{ chain: sender.chain(), txid: fakeTxId }],
     };
@@ -122,11 +126,7 @@ export class AutomaticMockRoute<N extends Network>
       attestation: {
         id: {} as WormholeMessageId,
       },
-    } satisfies CompletedTransferReceipt<
-      unknown,
-      typeof this.request.from.chain,
-      typeof this.request.to.chain
-    >;
+    } satisfies CompletedTransferReceipt<unknown, typeof receipt.from, typeof receipt.to>;
     yield fakeReceipt;
   }
 

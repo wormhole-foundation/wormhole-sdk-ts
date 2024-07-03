@@ -1,6 +1,7 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
 import { amount, contracts } from "@wormhole-foundation/sdk-base";
 import type {
+  ChainAddress,
   ChainContext,
   Signer,
   TokenId,
@@ -20,8 +21,8 @@ import type {
   ValidatedTransferParams,
   ValidationResult,
 } from "../types.js";
-import { ChainAddress } from "@wormhole-foundation/sdk-definitions";
 import { Wormhole } from "../../wormhole.js";
+import type { RouteTransferRequest } from "../request.js";
 
 export namespace AutomaticTokenBridgeRoute {
   export type Options = {
@@ -83,7 +84,7 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     ];
   }
 
-  // get the list of destination tokens that may be recieved on the destination chain
+  // get the list of destination tokens that may be received on the destination chain
   static async supportedDestinationTokens<N extends Network>(
     sourceToken: TokenId,
     fromChain: ChainContext<N>,
@@ -105,17 +106,17 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     return { nativeGas: 0.0 };
   }
 
-  async isAvailable(): Promise<boolean> {
-    const atb = await this.request.fromChain.getAutomaticTokenBridge();
+  async isAvailable(request: RouteTransferRequest<N>): Promise<boolean> {
+    const atb = await request.fromChain.getAutomaticTokenBridge();
 
-    if (isTokenId(this.request.source.id)) {
-      return await atb.isRegisteredToken(this.request.source.id.address);
+    if (isTokenId(request.source.id)) {
+      return await atb.isRegisteredToken(request.source.id.address);
     }
 
     return true;
   }
 
-  async validate(params: Tp): Promise<Vr> {
+  async validate(request: RouteTransferRequest<N>, params: Tp): Promise<Vr> {
     try {
       const options = params.options ?? this.getDefaultOptions();
 
@@ -123,13 +124,13 @@ export class AutomaticTokenBridgeRoute<N extends Network>
         throw new Error("Native gas must be between 0.0 and 1.0 (0% and 100%)");
 
       // If destination is native, max out the nativeGas requested
-      const { destination } = this.request;
+      const { destination } = request;
       if (isNative(destination.id.address) && options.nativeGas === 0.0) options.nativeGas = 1.0;
 
       const updatedParams = { ...params, options };
       const validatedParams: Vp = {
         ...updatedParams,
-        normalizedParams: await this.normalizeTransferParams(updatedParams),
+        normalizedParams: await this.normalizeTransferParams(request, updatedParams),
       };
 
       return { valid: true, params: validatedParams };
@@ -139,16 +140,17 @@ export class AutomaticTokenBridgeRoute<N extends Network>
   }
 
   private async normalizeTransferParams(
+    request: RouteTransferRequest<N>,
     params: Tp,
   ): Promise<AutomaticTokenBridgeRoute.NormalizedParams> {
-    const amt = this.request.parseAmount(params.amount);
+    const amt = request.parseAmount(params.amount);
 
-    const inputToken = isNative(this.request.source.id.address)
-      ? await this.request.fromChain.getNativeWrappedTokenId()
-      : this.request.source.id;
+    const inputToken = isNative(request.source.id.address)
+      ? await request.fromChain.getNativeWrappedTokenId()
+      : request.source.id;
 
-    const atb = await this.request.fromChain.getAutomaticTokenBridge();
-    const fee: bigint = await atb.getRelayerFee(this.request.toChain.chain, inputToken.address);
+    const atb = await request.fromChain.getAutomaticTokenBridge();
+    const fee: bigint = await atb.getRelayerFee(request.toChain.chain, inputToken.address);
 
     // Min amount is fee + 5%
     const minAmount = (fee * 105n) / 100n;
@@ -172,26 +174,21 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     }
 
     return {
-      fee: amount.fromBaseUnits(fee, this.request.source.decimals),
+      fee: amount.fromBaseUnits(fee, request.source.decimals),
       amount: amt,
-      nativeGasAmount: amount.fromBaseUnits(nativeGasAmount, this.request.source.decimals),
+      nativeGasAmount: amount.fromBaseUnits(nativeGasAmount, request.source.decimals),
     };
   }
 
-  async quote(params: Vp): Promise<QR> {
+  async quote(request: RouteTransferRequest<N>, params: Vp): Promise<QR> {
     try {
-      let quote = await TokenTransfer.quoteTransfer(
-        this.wh,
-        this.request.fromChain,
-        this.request.toChain,
-        {
-          automatic: true,
-          amount: amount.units(params.normalizedParams.amount),
-          token: this.request.source.id,
-          nativeGas: amount.units(params.normalizedParams.nativeGasAmount),
-        },
-      );
-      return this.request.displayQuote(quote, params);
+      let quote = await TokenTransfer.quoteTransfer(this.wh, request.fromChain, request.toChain, {
+        automatic: true,
+        amount: amount.units(params.normalizedParams.amount),
+        token: request.source.id,
+        nativeGas: amount.units(params.normalizedParams.nativeGasAmount),
+      });
+      return request.displayQuote(quote, params);
     } catch (e) {
       return {
         success: false,
@@ -200,14 +197,20 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     }
   }
 
-  async initiate(signer: Signer, quote: Q, to: ChainAddress): Promise<R> {
+  async initiate(
+    request: RouteTransferRequest<N>,
+    signer: Signer,
+    quote: Q,
+    to: ChainAddress,
+  ): Promise<R> {
     const { params } = quote;
     const transfer = this.toTransferDetails(
+      request,
       params,
       Wormhole.chainAddress(signer.chain(), signer.address()),
       to,
     );
-    const txids = await TokenTransfer.transfer<N>(this.request.fromChain, transfer, signer);
+    const txids = await TokenTransfer.transfer<N>(request.fromChain, transfer, signer);
     return {
       from: transfer.from.chain,
       to: transfer.to.chain,
@@ -218,19 +221,14 @@ export class AutomaticTokenBridgeRoute<N extends Network>
 
   public override async *track(receipt: R, timeout?: number) {
     try {
-      yield* TokenTransfer.track(
-        this.wh,
-        receipt,
-        timeout,
-        this.request.fromChain,
-        this.request.toChain,
-      );
+      yield* TokenTransfer.track(this.wh, receipt, timeout);
     } catch (e) {
       throw e;
     }
   }
 
   private toTransferDetails(
+    request: RouteTransferRequest<N>,
     params: Vp,
     from: ChainAddress,
     to: ChainAddress,
@@ -240,7 +238,7 @@ export class AutomaticTokenBridgeRoute<N extends Network>
       to,
       automatic: true,
       amount: amount.units(params.normalizedParams.amount),
-      token: this.request.source.id,
+      token: request.source.id,
       nativeGas: amount.units(params.normalizedParams.nativeGasAmount),
     };
 

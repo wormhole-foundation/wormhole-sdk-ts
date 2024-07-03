@@ -109,9 +109,9 @@ export class RouteResolver<N extends Network> {
         async (
           rc,
         ): Promise<[Route<N, Options, ValidatedTransferParams<Options>, Receipt>, boolean]> => {
-          const route = new rc(this.wh, request);
+          const route = new rc(this.wh);
           try {
-            const available = isAutomatic(route) ? await route.isAvailable() : true;
+            const available = isAutomatic(route) ? await route.isAvailable(request) : true;
             return [route, available];
           } catch (e) {
             console.error(`failed to check if route is available for ${rc.meta.name}: `, e);
