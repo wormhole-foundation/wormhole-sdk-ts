@@ -138,10 +138,10 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
 
       if (!isMoveStructStruct(addressVal)) throw new Error("Expected fields to be a MoveStruct");
 
+      const universalAddress = new Uint8Array(addressVal.fields["data"]! as Array<number>);
       return {
         chain: toChain(Number(info.fields["token_chain"])),
-        // @ts-ignore TODO
-        address: new UniversalAddress(addressVal.fields["data"]!),
+        address: new UniversalAddress(universalAddress),
       };
     }
 
