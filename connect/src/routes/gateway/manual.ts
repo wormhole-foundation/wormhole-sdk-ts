@@ -60,7 +60,7 @@ export class ManualGatewayRoute<N extends Network>
   implements StaticRouteMethods<typeof ManualGatewayRoute>
 {
   static meta = {
-    name: "AutomaticGateway",
+    name: "ManualGateway",
   };
 
   static supportedNetworks(): Network[] {

@@ -4,7 +4,6 @@ import type { AccountAddress, ChainAddress, NativeAddress } from "../../address.
 import type { IbcMessageId, WormholeMessageId } from "../../attestation.js";
 import type { TokenAddress, TokenId, TxHash } from "../../types.js";
 import type { UnsignedTransaction } from "../../unsignedTransaction.js";
-import { CosmwasmAddress } from "@wormhole-foundation/sdk-cosmwasm/address";
 
 import "../../registry.js";
 import { EmptyPlatformMap } from "../../protocol.js";
@@ -190,6 +189,10 @@ export interface IbcTransferData {
   sender: string;
 }
 
+export namespace IbcBridge {
+  //
+}
+
 /**
  * IbcBridge provides an interface to use the IBC token transfer protocol
  *
@@ -227,6 +230,9 @@ export interface IbcBridge<N extends Network = Network, C extends Chain = Chain>
     payload: GatewayTransferMsg | GatewayTransferWithPayloadMsg,
   ): Promise<IbcTransferInfo[]>;
 
-  // Get the corresponding Gateway CW20 token address for the given IBC denom
-  lookupGatewayCW20Address(denom: string): Promise<CosmwasmAddress>;
+  /** Takes an IBC denom returns its original address */
+  getGatewayAsset(ibcToken: TokenAddress<C>): Promise<TokenAddress<"Wormchain">>;
+
+  /** Takes a local token address and determin */
+  getIbcAsset(gatewayToken: TokenAddress<"Wormchain">): TokenAddress<C>;
 }

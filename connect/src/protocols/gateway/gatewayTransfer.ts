@@ -4,7 +4,6 @@ import {
   chainToPlatform,
   contracts,
   encoding,
-  isChain,
   toChain,
 } from "@wormhole-foundation/sdk-base";
 import type {
@@ -18,7 +17,6 @@ import type {
   IbcMessageId,
   IbcTransferData,
   IbcTransferInfo,
-  NativeAddress,
   Signer,
   TokenId,
   TokenTransferDetails,
@@ -38,20 +36,19 @@ import {
   toNative,
 } from "@wormhole-foundation/sdk-definitions";
 import { signSendWait } from "../../common.js";
-import { fetchIbcXfer, isTokenBridgeVaaRedeemed, retry } from "../../tasks.js";
-import { TransferState, isSourceFinalized, isSourceInitiated } from "../../types.js";
-import type {
-  AttestationReceipt as _AttestationReceipt,
-  TransferQuote,
-  TransferReceipt as _TransferReceipt,
-  SourceFinalizedTransferReceipt,
-  AttestedTransferReceipt,
-} from "../../types.js";
-import { Wormhole } from "../../wormhole.js";
-import type { WormholeTransfer } from "../wormholeTransfer.js";
-import { Gateway, networkChainToChannels } from "@wormhole-foundation/sdk-cosmwasm";
 import { DEFAULT_TASK_TIMEOUT } from "../../config.js";
+import { fetchIbcXfer, isTokenBridgeVaaRedeemed, retry } from "../../tasks.js";
+import type {
+  AttestedTransferReceipt,
+  SourceFinalizedTransferReceipt,
+  TransferQuote,
+  AttestationReceipt as _AttestationReceipt,
+  TransferReceipt as _TransferReceipt,
+} from "../../types.js";
+import { TransferState, isSourceFinalized, isSourceInitiated } from "../../types.js";
+import { Wormhole } from "../../wormhole.js";
 import { TokenTransfer } from "../index.js";
+import type { WormholeTransfer } from "../wormholeTransfer.js";
 
 export type GatewayContext<N extends Network> = ChainContext<N, typeof GatewayTransfer.chain>;
 
@@ -582,13 +579,15 @@ export namespace GatewayTransfer {
       throw new Error("Unsupported transfer");
     } else if (fromGateway) {
       // transferring from a gateway enabled chain to a non-gateway enabled chain
+
+      // get the wrapped asset on gateway from the source chain
+      // given the ibc address
       const srcIbcBridge = await srcChain.getIbcBridge();
-      // get the wrapped asset on gateway to find the original asset
-      const gatewayWrapped = await srcIbcBridge.lookupGatewayCW20Address(token.address.toString());
+      const gatewayWrapped = await srcIbcBridge.getGatewayAsset(token.address);
+
+      // get the original asset for the gateway wrapped asset
       const gatewayTokenBridge = await gateway.getTokenBridge();
-      const originalAsset = await gatewayTokenBridge.getOriginalAsset(
-        gatewayWrapped as NativeAddress<typeof GatewayTransfer.chain>,
-      );
+      const originalAsset = await gatewayTokenBridge.getOriginalAsset(gatewayWrapped);
       if (originalAsset.chain === dstChain.chain) {
         return originalAsset as TokenId<DC>;
       }
@@ -599,41 +598,30 @@ export namespace GatewayTransfer {
       return { chain: dstChain.chain, address: foreignAsset };
     } else {
       // transferring from a non-gateway enabled chain to a gateway enabled chain
-      let lookup: TokenId;
-      if (isNative(token.address)) {
-        lookup = await srcChain.getNativeWrappedTokenId();
-      } else {
+
+      const lookup: TokenId = await (async function () {
+        if (isNative(token.address)) return await srcChain.getNativeWrappedTokenId();
         try {
           const srcTb = await srcChain.getTokenBridge();
           // otherwise, check to see if it is a wrapped token locally
-          lookup = await srcTb.getOriginalAsset(token.address);
+          return await srcTb.getOriginalAsset(token.address);
         } catch (e) {
           // TODO: we should check the actual error here in case it's a network error
           // not a from-chain native wormhole-wrapped one
-          lookup = token;
+          return token;
         }
-      }
+      })();
+
       const gwTb = await gateway.getTokenBridge();
-      const wrapped = await gwTb.getWrappedAsset(lookup);
       // wrappedAsset: wormhole1ml922hnp59jtq9a87arekvx60ezehwlg2v3j5pduplwkenfa68ksgmzxwr
+      const wrapped = await gwTb.getWrappedAsset(lookup);
       console.log(`${wrapped}`);
-      // factoryAddress: factory/wormhole14ejqjyq8um4p3xfqj74yld5waqljf88fz25yxnma0cngspxe3les00fpjx/G4b8zJq7EUqVTwgbokQiHyYa5PzhQ1bLiyAeK3Yw9en8
-      const factory = Gateway.cw20ToFactory(gateway.network, wrapped);
-      console.log(`${factory}`);
-      const ibcDenom = Gateway.deriveIbcDenom(
-        dstChain.network,
-        //@ts-ignore
-        dstChain.chain,
-        factory.toString(),
-      );
-      // ibcDenom: ibc/22B44C7369EED16089B9840ADE399B80D9483B4E459E67643C96C681D7C463D0
-      console.log(`${ibcDenom}`);
-      return {
-        chain: dstChain.chain,
-        // TODO: Gateway and DC should have the same platform here
-        // How can we get rid of this gross cast?
-        address: ibcDenom as NativeAddress<DC>,
-      };
+
+      const dstIbc = await dstChain.getIbcBridge();
+
+      const ibcAsset = dstIbc.getIbcAsset(wrapped);
+
+      return { chain: dstChain.chain, address: ibcAsset };
     }
   }
 
@@ -888,13 +876,13 @@ export namespace GatewayTransfer {
     // Chains with token bridge are supported
     contracts.tokenBridgeChains(network).forEach((chain) => supported.add(chain));
     // Chains connected to Gateway via IBC are supported
-    Object.entries(networkChainToChannels(network, GatewayTransfer.chain)).forEach(
-      ([chainName]) => {
-        if (isChain(chainName)) {
-          supported.add(chainName);
-        }
-      },
-    );
+    //Object.entries(networkChainToChannels(network, GatewayTransfer.chain)).forEach(
+    //  ([chainName]) => {
+    //    if (isChain(chainName)) {
+    //      supported.add(chainName);
+    //    }
+    //  },
+    //);
     return [...supported];
   }
 

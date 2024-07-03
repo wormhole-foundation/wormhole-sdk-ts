@@ -98,12 +98,18 @@ export class CosmwasmPlatform<N extends Network>
   ): Promise<number> {
     if (isNative(token)) return decimals.nativeDecimals(CosmwasmPlatform._platform);
 
-    let addrStr = new CosmwasmAddress(token).toString();
+    let addr = new CosmwasmAddress(token);
 
-    if (addrStr.startsWith("factory")) {
-      addrStr = Gateway.factoryToCw20(new CosmwasmAddress(addrStr)).toString();
+    if (addr.denomType === "factory") {
+      addr = Gateway.factoryToCw20(addr);
     }
 
+    if (addr.denomType === "ibc") {
+      //
+      throw "idk yet";
+    }
+
+    let addrStr = addr.toString();
     const { decimals: numDecimals } = await rpc.queryContractSmart(addrStr, {
       token_info: {},
     });

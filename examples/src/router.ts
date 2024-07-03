@@ -10,8 +10,8 @@ import { getSigner } from "./helpers/index.js";
   const wh = await wormhole("Mainnet", [evm, solana, cosmwasm]);
 
   // Get chain contexts
-  const sendChain = wh.getChain("Injective");
-  const destChain = wh.getChain("Solana");
+  const sendChain = wh.getChain("Solana");
+  const destChain = wh.getChain("Injective");
 
   // get signers from local config
   const sender = await getSigner(sendChain);
@@ -41,7 +41,8 @@ import { getSigner } from "./helpers/index.js";
   // const sendToken = srcTokens[0]!;
   const sendToken = Wormhole.tokenId(
     sendChain.chain,
-    "ibc/A8B0B746B5AB736C2D8577259B510D56B8AF598008F68041E3D634BCDE72BE97",
+    "So11111111111111111111111111111111111111112",
+    //"ibc/A8B0B746B5AB736C2D8577259B510D56B8AF598008F68041E3D634BCDE72BE97",
   );
 
   // given the send token, what can we possibly get on the destination chain?
@@ -67,6 +68,7 @@ import { getSigner } from "./helpers/index.js";
   console.log("For the transfer parameters, we found these routes: ", foundRoutes);
   // EXAMPLE_REQUEST_CREATE
 
+  return;
   // Sort the routes given some input (not required for mvp)
   // const bestRoute = (await resolver.sortRoutes(foundRoutes, "cost"))[0]!;
   const bestRoute = foundRoutes[0]!;
