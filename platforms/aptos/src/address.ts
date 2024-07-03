@@ -1,10 +1,9 @@
-import type { Address, Platform } from "@wormhole-foundation/sdk-connect";
+import type { Address } from "@wormhole-foundation/sdk-connect";
 import { UniversalAddress, encoding, registerNative } from "@wormhole-foundation/sdk-connect";
 
 import { APTOS_SEPARATOR } from "./constants.js";
-import { AptosPlatform } from "./platform.js";
 import type { AnyAptosAddress } from "./types.js";
-import { isValidAptosType, _platform } from "./types.js";
+import { _platform, isValidAptosType } from "./types.js";
 
 export const AptosZeroAddress = "0x";
 
@@ -20,7 +19,7 @@ export function ensureFullAptosAddress(address: string) {
 
 export class AptosAddress implements Address {
   static readonly byteSize = 32;
-  public readonly platform: Platform = AptosPlatform._platform;
+  static readonly platform = _platform;
 
   readonly type: string = "Native";
 
@@ -74,7 +73,7 @@ export class AptosAddress implements Address {
   }
 
   static instanceof(address: any): address is AptosAddress {
-    return address.platform === AptosPlatform._platform;
+    return address.constructor.platform === AptosAddress.platform;
   }
 
   equals(other: AptosAddress | UniversalAddress): boolean {
