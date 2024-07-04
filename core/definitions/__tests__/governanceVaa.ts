@@ -8,7 +8,7 @@ import {
   blindDeserializePayload,
   payloadDiscriminator,
 } from "./../src/vaa/index.js";
-import "../src/protocols/core/index.js";
+import "../src/protocols/governance/index.js";
 
 //monkey-patch to allow stringifying BigInts
 (BigInt.prototype as any).toJSON = function () {
@@ -105,18 +105,24 @@ const guardianSetUpgrade =
   /*guardian*/ "5e1487f35515d02a92753504a8d75471b9f49edb" +
   /*guardian*/ "6fbebc898f403e4773e95feb15e80c9a99c8348d";
 
-describe("Governance VAA tests", function () {
-  const governanceDiscriminator = payloadDiscriminator([
-    [
-      "WormholeCore",
-      ["UpgradeContract", "GuardianSetUpgrade", "SetMessageFee", "TransferFees", "RecoverChainId"],
-    ],
-    ["TokenBridge", ["RegisterChain", "UpgradeContract", "RecoverChainId"]],
-    ["NftBridge", ["RegisterChain", "UpgradeContract", "RecoverChainId"]],
-    ["Relayer", ["RegisterChain", "UpgradeContract", "UpdateDefaultProvider"]],
-    ["CircleBridge", ["UpdateFinality", "RegisterEmitterAndDomain", "UpgradeContract"]],
-  ]);
+const governanceDiscriminator = payloadDiscriminator([
+  [
+    "WormholeCore",
+    ["UpgradeContract", "GuardianSetUpgrade", "SetMessageFee", "TransferFees", "RecoverChainId"],
+  ],
+  ["TokenBridge", ["RegisterChain", "UpgradeContract", "RecoverChainId"]],
+  ["NftBridge", ["RegisterChain", "UpgradeContract", "RecoverChainId"]],
+  ["Relayer", ["RegisterChain", "UpgradeContract", "UpdateDefaultProvider"]],
+  ["CircleBridge", ["UpdateFinality", "RegisterEmitterAndDomain", "UpgradeContract"]],
+  ["IbcBridge", ["ActionUpdateChannelChain"]],
+  ["IbcReceiver", ["ActionUpdateChannelChain"]],
+  ["GlobalAccountant", ["ModifyBalance"]],
+  ["GeneralPurposeGovernance", ["GeneralPurposeEvm", "GeneralPurposeSolana"]],
+  ["WormchainGovernance", ["StoreCode", "InstantiateContract", "MigrateContract", "AddWasmInstantiateAllowlist", "DeleteWasmInstantiateAllowlist"]],
+  ["GatewayGovernance", ["ScheduleUpgrade", "CancelUpgrade", "SetIbcComposabilityMwContract"]],
+]);
 
+describe("WH Core governance VAA tests", function () {
   it("should create an empty VAA from an object with omitted fixed values", function () {
     const vaa = createVAA("WormholeCore:UpgradeContract", {
       guardianSet: 0,
@@ -158,5 +164,95 @@ describe("Governance VAA tests", function () {
     expect(blindDeserializePayload(rawvaa.payload)).toEqual([
       ["WormholeCore:GuardianSetUpgrade", vaa.payload],
     ]);
+  });
+});
+
+
+describe('Wormchain governance VAA tests', () => {
+  it('decodes an add wasm instantiate allowlist VAA', () => {
+    // 1/0000000000000000000000000000000000000000000000000000000000000004/10121401977384960882
+    const vaa = deserialize(
+      'WormchainGovernance:AddWasmInstantiateAllowlist',
+      Buffer.from('AQAAAAMNAGDD/fbZkCX7Ir/PqPaJEobw+nGvXFN+m9EGfBHT4eUheYKXooRrKWrAcHZXeNFzAaf9s5rM7BnM381gpbVgdB0BA5GfSBln3AbJ5XPk30q6PGADZXcqEmf+SjNXt9gzbcbrJlQ+VQnSnLMn7AG2YHBXnSelw55FNrQ8WPdRVoFdFgEBBWp4CrM7BSh3QyhcG7ohoBkze8q2xqfZKCZxhIinHr0YNZi+0ba2aQjs1u3E2RkUtTRVeJMMmVmeKn1054gp5xoABqIgzw1wATfAK6GulSHGDfze/uwZap73NZxX05Way7IwCsNvATmG5ouG/iv+YLrgBvzlH2hYUNnpmhhW9wrw+hMBCCAWgSRyoAPm7qPKIpMPoF58JvF8lO863+DcCTQyDMqtAAzxUww8IGSJiKIYlyWzGJUkSt2DHouqWdC36eRH4MYACXoi1prEl5VqttbJUOZVBbx4cOmSFnL+RbbYMYOGtJH7UYmQ53BAB8j0XhINz/+Fub8l54zYXOvRyviM+dvDRDUBCqqdYFxX45EzjZ7cTglEJvbgULXH04HQzwiX+oKxRVLhLzaGZYkwi83BC8VWWc8NkT8xPzQFle+NuQqsfBEUXp4BCyRJX1GyvScOPtz+D6EYe/oSKGTErIa84DdBcno1LEYGHEAM41vnS616RoC5NMyer8pRLZlcKz6WWKid3anTyjQBDFD7at7KtUicqdeZ4tDbCVm5OIBJM9I4E/i3mzt4XwFJJdHvvAIKdlrgsj0+l2QxK1NhfZk95i1HK2PDbiJcfgEADcISW8SJBTJ3Hz6W16ZjG0S20a4rJR9RebvVzD73eRHHULCOLWfSyB/4QIBCd6sx9o2kcignW4DnMu8PltOzuEEBDi5hEi6Z/QQlbjZYs+xbk1XbfdVCupElFrhYuwPJKYwUeO3GcRu2EfRkdpYOMMcvImK9/2pLQxNS0CoP6s4XVoAAEBSMpeWTtayCcPUNeJNNQgPaRtZlY33YUwPFs9V71/CJUvMrJ7+ch4MB/9nlRvrGvj6c2D6cs9lOK0CBgBJ9WmEAEp+Hophj6pWtnDPSvYy3YUyPr5oo8LVKSaBhLcxh1XdtGeDL/fBJEWVcUO4JEF23mXKr7fVOeqnZmPU0g4x3sFUBAAAAADup86AAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEjHZxeRL3g3IgAAAAAAAAAAAAAAAAAAAAAAAAAAAAV2FzbWRNb2R1bGUEDCCutTTEXDBJ04C52blm+YlfU6vUMBv6/0B/oJ3qiuepJAAAAAAAAAAH', 'base64')
+    );
+
+    expect(vaa.protocolName).toEqual('WormchainGovernance');
+    expect(vaa.payload.action).toEqual('AddWasmInstantiateAllowlist');
+    expect(vaa.payload.chain).toEqual('Wormchain')
+    expect(vaa.payload.contractAddr.toString()).toEqual('0xaeb534c45c3049d380b9d9b966f9895f53abd4301bfaff407fa09dea8ae7a924')
+    expect(vaa.payload.codeId).toEqual(7n)
+  });
+});
+
+describe('CircleIntegration governance VAA tests', () => {
+  it('decodes an update finality VAA', () => {
+    // 1/0000000000000000000000000000000000000000000000000000000000000004/10902023552031577443
+    const vaa = deserialize(
+      'CircleBridge:RegisterEmitterAndDomain',
+      Buffer.from('AQAAAAMNAlS0TwHata7yWnPfleafAQY4EbL/tUuZNngj8j3v37hnBmbol5aF9s4tKXZK+mdk40TTLoneE0qRBIFwcQxCSKEAAxZlfPgagzE+0zKxA8zUH12jViuqBVZ3E1y6n365g2FdOh9MabB6TJP1RKIwFayzFb0CBMSBGIE/qXzm/Ck8cZMABOsEvVSFQrIdx4rdwmHEJ9BcYW/AMFdvPd4O8DOHhlkyFxFIS2FpauXH3H5jMo4w6f1PGoz03b9WtPkRBDdF838ABi7MCFJh1G8bZAA7o9X2EgbAowUPmIu/Y3Um1kWLAFHHOZwKrU+ZRzoLSruMJ4gG6oWF4zoCOTj9jV34Gz4aBGEBB/NTFvM6sVBnFYtjZFBDBY6ZVX3c0fgLPq9SOhhP0nT6NNIuJMz/6lXb3ceOHxZamU/642EeAmfgXVYCbCLmL5sACdEbOyIKPZyWIDIOO0D9M/uIsb00Z1y8uC9iGI2m298zXY0rnGYMqbJhblfs/0ckWYifS7V8Yqcg9xRCXNanNGYBCvzZs22rTHXAZIiSm36c1pn8i/9peh5bvDhC4YW5NcqjClTLICi09X32+NKUQ4ShbuveUv1CbBXYGNK2s0vNvA4BC0j2N4C6arUOzXk5vRbUxA4IicUsXTgucrWbY1RvtzVnUL3DNHG77BiTLViEE1QDFMLCTE+D+vGcCLBVTp1GnnMBDfeaq3DJcory8Ob66iJ5qSZO7I069SCLNmSfDzuo0l8teKa1d3wit7EK24aLcL3KMeJnszYVrm7F9szOKVHk384BDkraQQANDdXBfGsDmGlUWQ3NRBZU5b7qIJkeNDrtPQS6atCEVNLOBTj8chJULRbrOrHTsaDhTs6/HYEQQMqtliwAD0zNgKUWJg/itSM1oW1O/3He6UuC4VoBDQB3KzanTqbEdaUKYybjY8hKAuamEetPtN3fxWvCc0GdN9BfhxM3B/0BEH8VyP2wez8YGOoKC7DAp2z3YIOqP3dqQMvbdK+ttqH9MQQ6+4kiP+Bw6SFUPl+M2eNLhnJRnYi4LzmNOmrWtloAEWm5YUWdvAxGTtoCrqjur/mXovUfHC4+D1xfhsCtwzPLBziobFw53ZHImf+XDmf1kJQ3hAam3soOsuYIokn2u+oAAAAAAK74C0YAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEl0vEqL/I1WMgAAAAAAAAAAAAAAAAAAAAQ2lyY2xlSW50ZWdyYXRpb24CABgAAgAAAAAAAAAAAAAAAKraBb05k3LwsEY3RMCRE8E3Y29qAAAAAA==', 'base64')
+    );
+
+    expect(vaa.protocolName).toEqual('CircleBridge');
+    expect(vaa.payload.action).toEqual('RegisterEmitterAndDomain');
+    expect(vaa.payload.chain).toEqual('Optimism')
+    expect(vaa.payload.emitterChain).toEqual('Ethereum')
+    expect(vaa.payload.emitterAddress.toString()).toEqual('0x000000000000000000000000aada05bd399372f0b0463744c09113c137636f6a')
+    expect(vaa.payload.domain).toEqual(0)
+  });
+});
+
+describe('GeneralPurposeGovernance governance VAA tests', () => {
+  it('decodes a general purpose EVM VAA', () => {
+    // 1/0000000000000000000000000000000000000000000000000000000000000004/13001954670584823858
+    const vaa = deserialize(
+      'GeneralPurposeGovernance:GeneralPurposeEvm',
+      Buffer.from('AQAAAAQNALlAubo5YgZ33iBhWmBQwBcfJijtgTACBrakZ53/8zrmZ5XzGK7jgdsojAvaCG0ULp/7vKCJTGT7Y1/dqiBCytUBAwMiQ8bkGywXnP3lMZck0NgrWb/uQ7kzUXdaVsR8RffOZmbVNC8GqkeBI1DjH9rfqY/MiYK/gIZdZ4kQIxCorTgABVj9WRVVSphAqlPYoMm6QcgttinkmvRFZDA9n7ioWPseSm7UTbr1Orxka+E1hS5vx50WMiNDNLPUxxfh0jFzvUIABjSai4evOMPdOrPKL6ij8/oAq3SRcF6LY452hSza3oa+cdJdC741H+zuS3Wt8Stcx1rytmlgLj7fou+4g6uUJXAABzpTyTvnFFOc16ZNSojTbp2pkmzC/Y3D1q79KlJ0LtRWWUCpWmK+W53i91ov4X17+AgWCluwDtyNNXXGUzj7BGYBCiSvZkZfiny4lnfSHpUWwSeyVddnCQbuCbaFb+83c6l0T9VxOhRXCzIETnNHJL4+YeS5ctRAc0vYnxhsGtpbeQYACzpclWE2u892rP+BpQJlb2F/gnqmMY6dZI6T190hoe/qbnZHIsZl5Mltt77hbNX/9f1rHCr+DsInMmYB/8A8wbYBDAC30j9VTU5rK/oTmV70NthMrUAlU/pJO9twLf+5Kvz5KKkwtG7+ledarbsEVliTnPZzMPPUQlCyE6jLYrNYrTABDd75ZkcKyb3sbyU+jYgRoJKEUdu2pK9+zt+1lFFagmsNHPGvlTxN5iyZPcYZuGpDzgUusmvduj8Mv6g9d+yTw8EBDj7BJ756tj3edrB0OXXAOVGQCZv+iVMmZjcRmTCvcw8UIJG38rhRBbPyefesVHOWh8K5Sd6sIryrMi1nkDGNqaoBEOaqnGVfFN5hag5XziuOesMmeofY8qCzGaeMyK7ObmILEUDrhZHss3jVaNfaCISBXaG8tc4/ig2pfuTvOR4AAQgBEcmjyx+s6t2d3CGSvlP1ArR6W7X44zsNUTctM8+BGV0ANEFO9AJ3l3qBhd12guV8SV6z7pTWqmfvNlTRmP1tqewBEn4n8ocCIfEXtLH0UK2aRa0jaibrwFedBwGysKkAI8NXfJVCIqyi/jPP97ghFkkRZFMyPaiwKzLLnKJHJ9ILXfcAAAAAAIpC21wAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEtHA44rXwgDIgAAAAAAAAAABHZW5lcmFsUHVycG9zZUdvdmVybmFuY2UBAAIj/qVRTfyYIUefvhi6HX4aYfb/z8Bysa7zNu3eWaBJaZ706PqdWUpIAEQYbOYSAAAAAAAAAAAAAAAAAAAAAAAAAAAAUrfS3MgM0uQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQ==', 'base64')
+    );
+
+    expect(vaa.protocolName).toEqual('GeneralPurposeGovernance');
+    expect(vaa.payload.action).toEqual('GeneralPurposeEvm');
+    expect(vaa.payload.chain).toEqual('Ethereum')
+    expect(vaa.payload.governanceContract.toString()).toEqual('0x23fea5514dfc9821479fbe18ba1d7e1a61f6ffcf')
+    expect(vaa.payload.targetContract.toString()).toEqual('0xc072b1aef336edde59a049699ef4e8fa9d594a48')
+    expect(encoding.hex.encode(vaa.payload.payload)).toEqual('186ce61200000000000000000000000000000000000000000052b7d2dcc80cd2e40000000000000000000000000000000000000000000000000000000000000000000001')
+  });
+});
+
+describe('GlobalAccountant governance VAA tests', () => {
+  it('decodes a modify balance VAA', () => {
+    // 1/0000000000000000000000000000000000000000000000000000000000000004/1355529820690165473
+    const vaa = deserialize(
+      'GlobalAccountant:ModifyBalance',
+      Buffer.from('AQAAAAMNAwFLtgbSiISxVEvMuVl66GaNdRjP/XffoimkZIW7EhauY6S4IVNTwIAT6emutu/ETf0c9OIAnwhc5fYX6JyKLhYABG0+PuPys2VpK5pxhxICqsDdbjiy3NxOnAP8weFhykRpD69yM4x0I8X2hk9tY5pd8h8OENlI7H1jiteXNQbd3ggBBdVwN9n8MBst12pbyLzqEBpJXciHglxyVK+DkSUv8kiSM3fJERjEWVTI0KJVgyTxr8tbIHgVwl0g2PKk+IEMMXwABotiFe2+55eiEOKUI4PLvPNm59owPW6s5WfT4UCOOeYrAbiq9o0pEsRF9zYYAqanoHMd0P0KgUkyGExiHO2YVroACGtF+WAMj6JczXe7zjqKCn8/u2fP6yWxEZO8MbL6nFpRerAUy+Pbltnm1T5BURY9yPCDieuPlg5Jr+rmPXyxE/gBCd5wM6ZbDzRdnxaor+4xxlGazayZCzy4QkPmJp7hM2FYUswaLkzfPOh9h96MNy0sZY0PMkXKQS0bHH9/wS6S+K4ACoC1ZcybNyEYievSOApE4B8is2OANByINXPR3nH61jWCeh6JIi6n/BczptIaFCsBFNdGYl1ZgGVbvOjWT5GQTwEBDWL+TsFXCHA+iE/kaJJ8GQdOUb5wpjmyeTvixrTzwyEAeUNAqfAfM62L+zo5vKE9gYVLErl3YHJISyzLjXS2BSwBDuD0b9wmyeL+lp1JRDnoByaltXKoejgtFE0UG6K+bgLEHN9ets1npg8ZoiYBSHe3heS6ACk7AbzgqdTUqgVJIoYBD7oJgB5vD3xSg2P2qZVfDcuL9uwdP9J/mFsczTvY2vCiSCxfG3LtogvvGxsaZtIfoBJlMweuGWm3tgLjIFvHpxYAEOE0KNosm5Osc7Cg0EX5hWarsRRE+7b16+PPhWwF9qCheSLKQ/C4PFEIhkmiw/12qrKym8A/6SfZQV+8mzIcuBUAEciRvYsoAqQu7E/JDwloGnfgHwy/mR9Op+utHZCbxpQaOO2gDfj8lF/YItlUc2MgPM+z28doZhQzvzjvU2hSV28AEjODEpLLexKsdqRhWumMTk0suU1q7qV9A/+ioyMJMT/IdTuug+rN2aDEIPLVgYDT/O6Sx73llIlmNHToe3nqbdYAAAAAAA07xd0AAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEEs/PMKSvruEgAAAAAAAAAAAAAAAAAAAAAEdsb2JhbEFjY291bnRhbnQBDCAAAAAAAAAAAwABAAIAAAAAAAAAAAAAAADAKqo5siP+jQoOXE8n6tkIPHVswgEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAArp97zAACAgICAgICAgICAgICAgICAgICAAAAAAAAAAAAAAAAAA', 'base64')
+    );
+
+    expect(vaa.protocolName).toEqual('GlobalAccountant');
+    expect(vaa.payload.action).toEqual('ModifyBalance');
+    expect(vaa.payload.chain).toEqual('Wormchain')
+    expect(vaa.payload.sequence).toEqual(3n)
+    expect(vaa.payload.modifiedChain).toEqual('Solana')
+    expect(vaa.payload.tokenChain).toEqual('Ethereum')
+    expect(vaa.payload.tokenAddress.toString()).toEqual('0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2')
+    expect(vaa.payload.kind).toEqual('Add')
+    expect(vaa.payload.amount).toEqual(12000000000000n)
+    expect(vaa.payload.reason).toEqual(
+      String.fromCharCode(...(Buffer.from('2020202020202020202020202020202020202000000000000000000000000000', 'hex')))
+    )
+  });
+});
+
+describe('IbcTranslator governance VAA tests', () => {
+  it('decodes an update channel VAA', () => {
+    // 1/0000000000000000000000000000000000000000000000000000000000000004/12204827889220539192
+    const vaa = deserialize(
+      'IbcBridge:ActionUpdateChannelChain',
+      Buffer.from('AQAAAAMNAfG1Ll6XohSBsZI3m0MJXrr/2/YLwZHH82dDpwV4U9cwIzIr759SQwZ15jO3ph5wOJ6fu7sfM5TXY9CgIup9SLUBAp/EsEaCvBE9DKczqqYbUgjTDDDT99QRIYHm/AUGCF1Pf8t55F2G+lmeB/y0t7bECT44rzmmKi043YqRamaNpYcBBeNu9UbmfVsgIVu/OmpilsfIiMcBKbv67gmuXhbQO32vN4Ag0oWw9lvrq1WXvEFGZIkmARjAQJQNrB1+UOcICxwBBpO9xokBhmCPgbz5UeTm4rfSkIFn0hKDHqk7S1Z9Yn07MTn9rcOtewvAqvVtqJ2Dw9ps9vYxclrGcywbpU/Cg8cAB9G6QM8N90+htczrfKuAXhTgrSOdcg3RH1n4WTuMf1mhe3f2R9x/ZcQXIuj8U56QJ0cPRQkd8/m5GBD0pHAeTmUBCOrOypT0AMviFPjx5CXEpEEFFGkSZVD39+nzuYNMm4XIHYVvl6tBMIR8PsT8ru8VRUqRvhivmz9HEVCRfBz0odYACan5mFweKaHj4kkYGszoVs3+6cjFBdBtr1/6DgSi8Z7ObrT4dUHQTOCUaGBTOAisMcqHyBNSpF6EpgXgq7r/AAkBC8iOKy4s9YPz/HMtsBWcg+zC9zJ4G7D2ZPBeOPSalTn8QxbKiP2LwekZrVK5rmnVgk8ROMJa/qdCvntmg/kY5j0BDdIjQT2xrcqgWp25iRd7WXAp8607qinIFjKQIiNBX9rmEs7uKTxjHHw8Xqe6qroJ+Byokx2c3KSZq0XdFRb+9McADm7ak1RV2tlr3ZurJnpkSLl/4VQTqAfpOxZonWZWdccxd9HF/YOAW9+prYlHSa9RRArRcYmRP9bPQFxo2S4mM3EAD9VBC+RtEa+gMCxf+UKXzz7FCrfEQR313Gfqo1wWzhBjGu490tPK3f/0CBmdn0UvZvQ+W1oPU3tFO/nod/UWbB8BENxG5GAGra5+xNnLIChK1fk/+y1PQf+54o9mZi/69Jj9T7bD/Tomv8pg5129vXS1GNJHRxu69epLH6KhPSoLI3QBEZ1Nfx163ojjscR58bNGVzfK0bhAA+VCCqOGaILzRhoMWUR/ofW5QfyULUFxu51vPjQ0Hx5df18vyZ1uOZ8I2b0AAAAAAEJEv3wAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEqWBCTSHFUzggAAAAAAAAAAAAAAAAAAAAAAAAAEliY1RyYW5zbGF0b3IBDCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABjaGFubmVsLTEyD6U=', 'base64')
+    );
+
+    expect(vaa.protocolName).toEqual('IbcBridge');
+    expect(vaa.payload.action).toEqual('ActionUpdateChannelChain');
+    expect(vaa.payload.chain).toEqual('Wormchain')
+    expect(vaa.payload.channelId.length).toEqual('channel-12'.length)
+    expect(vaa.payload.chainId).toEqual('Stargaze')
   });
 });

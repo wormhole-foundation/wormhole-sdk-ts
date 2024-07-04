@@ -81,11 +81,8 @@ export class CCTPRoute<N extends Network>
   ): Promise<TokenId[]> {
     // Ensure the source token is USDC
     const sourceChainUsdcContract = circle.usdcContract.get(fromChain.network, fromChain.chain);
-    if (!sourceChainUsdcContract ) return [];
-    if (!isSameToken(
-      sourceToken,
-      Wormhole.tokenId(fromChain.chain, sourceChainUsdcContract),
-    )){
+    if (!sourceChainUsdcContract) return [];
+    if (!isSameToken(sourceToken, Wormhole.tokenId(fromChain.chain, sourceChainUsdcContract))) {
       return [];
     }
 

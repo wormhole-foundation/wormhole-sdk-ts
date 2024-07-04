@@ -136,7 +136,7 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
       await this.connection.getTableItem(handle, {
         key_type: "vector<u8>",
         value_type: "u8",
-        key: `0x${Buffer.from(keccak256(vaa.hash)).toString('hex')}`,
+        key: `0x${Buffer.from(keccak256(vaa.hash)).toString("hex")}`,
       });
       return true;
     } catch {

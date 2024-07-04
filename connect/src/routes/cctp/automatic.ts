@@ -87,12 +87,9 @@ export class AutomaticCCTPRoute<N extends Network>
     toChain: ChainContext<N>,
   ): Promise<TokenId[]> {
     // Ensure the source token is USDC
-    const sourceChainUsdcContract  = circle.usdcContract.get(fromChain.network, fromChain.chain);
-    if (!sourceChainUsdcContract ) return [];
-    if (!isSameToken(
-      sourceToken,
-      Wormhole.tokenId(fromChain.chain, sourceChainUsdcContract),
-    )){
+    const sourceChainUsdcContract = circle.usdcContract.get(fromChain.network, fromChain.chain);
+    if (!sourceChainUsdcContract) return [];
+    if (!isSameToken(sourceToken, Wormhole.tokenId(fromChain.chain, sourceChainUsdcContract))) {
       return [];
     }
 

@@ -67,7 +67,7 @@ export interface RouteMeta {
 }
 
 export interface RouteConstructor<OP extends Options = Options> {
-  new<N extends Network>(wh: Wormhole<N>, request: RouteTransferRequest<N>): Route<N, OP>;
+  new <N extends Network>(wh: Wormhole<N>, request: RouteTransferRequest<N>): Route<N, OP>;
   /**  Details about the route provided by the implementation */
   readonly meta: RouteMeta;
   /** get the list of networks this route supports */
