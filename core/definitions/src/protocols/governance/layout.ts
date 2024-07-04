@@ -1,5 +1,5 @@
 import type { FixedConversion, Layout, RoArray } from "@wormhole-foundation/sdk-base";
-import { column, constMap, platformToChains, } from "@wormhole-foundation/sdk-base";
+import { column, constMap, encoding, platformToChains, } from "@wormhole-foundation/sdk-base";
 
 import { accountantModificationKindLayoutItem } from "./globalAccountant.js";
 import { amountItem, chainItem, fixedLengthStringItem, guardianSetItem, universalAddressItem } from "../../layout-items/index.js";
@@ -159,7 +159,17 @@ const actionTuples = [
       layout: [
         // TODO: it's a string, but it's not length prefixed,
         // deserializing relies on the fact that the last 8 bytes is the height
-        { name: "name", ...fixedLengthStringItem(32) },
+        // see: https://github.com/wormhole-foundation/wormhole/blob/2eb5cca8e72c5379cd444ae3f25a012c1e04ad65/sdk/vaa/payloads.go#L396-L407
+        {
+          name: "name",
+          binary: "bytes",
+          custom: {
+            to: (val: Uint8Array): string =>
+              encoding.bytes.decode(val.slice(0, -8)),
+            from: (val: string): Uint8Array =>
+              encoding.bytes.encode(val),
+          }
+        },
         { name: "height", binary: "uint", size: 8 },
       ]
     }

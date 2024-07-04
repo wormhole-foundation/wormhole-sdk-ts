@@ -256,3 +256,33 @@ describe('IbcTranslator governance VAA tests', () => {
     expect(vaa.payload.chainId).toEqual('Stargaze')
   });
 });
+
+describe.skip('Gateway governance VAA tests', () => {
+  it('decodes a schedule update VAA', () => {
+    const raw = serialize(createVAA("Uint8Array", {
+      guardianSet: 0,
+      signatures: [],
+      nonce: 0,
+      timestamp: 0,
+      sequence: 0n,
+      emitterChain: "Solana",
+      emitterAddress: new UniversalAddress(new Uint8Array(32)),
+      consistencyLevel: 0,
+      payload: Buffer.from(
+        "00000000000000000000000000000000000000476174657761794d6f64756c65" + // "GatewayModule"
+        "01" + // ScheduleUpgrade action
+        "0c20" + // wormchain chain id (3104)
+        "55706772616465436f6e7472616374" + // "UpgradeContract"
+        "0000000012345678" // height
+      , 'hex'),
+    }));
+
+    const vaa = deserialize('GatewayGovernance:ScheduleUpgrade', raw);
+
+    expect(vaa.protocolName).toEqual('GatewayGovernance');
+    expect(vaa.payload.action).toEqual('ScheduleUpgrade');
+    expect(vaa.payload.chain).toEqual('Wormchain')
+    expect(vaa.payload.name).toEqual('UpgradeContract')
+    expect(vaa.payload.height).toEqual(305419896n)
+  });
+});
