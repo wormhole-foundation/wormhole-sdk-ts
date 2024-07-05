@@ -37,7 +37,13 @@ import type {
   TransferQuote,
   TransferReceipt as _TransferReceipt,
 } from "../../types.js";
-import { TransferState, isAttested, isSourceFinalized, isSourceInitiated } from "../../types.js";
+import {
+  TransferState,
+  isAttested,
+  isRedeemed,
+  isSourceFinalized,
+  isSourceInitiated,
+} from "../../types.js";
 import { getGovernedTokens, getGovernorLimits } from "../../whscan-api.js";
 import { Wormhole } from "../../wormhole.js";
 import type { WormholeTransfer } from "../wormholeTransfer.js";
@@ -392,7 +398,7 @@ export namespace TokenTransfer {
 
     // Fall back to asking the destination chain if this VAA has been redeemed
     // Note: We do not get any destinationTxs with this method
-    if (isAttested(receipt)) {
+    if (isAttested(receipt) || isRedeemed(receipt)) {
       if (!receipt.attestation.attestation) throw "Signed Attestation required to check for redeem";
 
       let isComplete = await TokenTransfer.isTransferComplete(
