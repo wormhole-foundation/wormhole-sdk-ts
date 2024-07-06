@@ -658,7 +658,18 @@ export namespace TokenTransfer {
       dstDecimals,
     );
 
-    const dstNativeGasAmountRequested = transfer.nativeGas ?? 0n;
+    // nativeGas is in source chain decimals
+    const srcNativeGasAmountRequested = transfer.nativeGas ?? 0n;
+    // convert to destination chain decimals
+    const dstNativeGasAmountRequested = amount.units(
+      amount.scale(
+        amount.truncate(
+          amount.fromBaseUnits(srcNativeGasAmountRequested, srcDecimals),
+          TokenTransfer.MAX_DECIMALS,
+        ),
+        dstDecimals,
+      ),
+    );
 
     // The expected destination gas can be pulled from the destination token bridge
     let destinationNativeGas = 0n;
