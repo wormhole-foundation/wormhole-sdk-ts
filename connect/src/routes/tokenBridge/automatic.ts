@@ -123,9 +123,9 @@ export class AutomaticTokenBridgeRoute<N extends Network>
       if (options.nativeGas && (options.nativeGas > 1.0 || options.nativeGas < 0.0))
         throw new Error("Native gas must be between 0.0 and 1.0 (0% and 100%)");
 
-      // If destination is native, max out the nativeGas requested
+      // native gas drop-off when the native token is the destination should be 0
       const { destination } = request;
-      if (isNative(destination.id.address) && options.nativeGas === 0.0) options.nativeGas = 1.0;
+      if (isNative(destination.id.address) && options.nativeGas === 0.0) options.nativeGas = 0;
 
       const updatedParams = { ...params, options };
       const validatedParams: Vp = {
@@ -165,18 +165,33 @@ export class AutomaticTokenBridgeRoute<N extends Network>
 
     const redeemableAmount = amount.units(amt) - fee;
 
-    // Determine nativeGas
-    let nativeGasAmount = 0n;
+    let srcNativeGasAmount = amount.fromBaseUnits(0n, request.source.decimals);
     if (params.options && params.options.nativeGas > 0) {
+      const dtb = await request.toChain.getAutomaticTokenBridge();
+      // the maxSwapAmount is in destination chain decimals
+      const maxSwapAmount = await dtb.maxSwapAmount(request.destination.id.address);
       const scale = 10000;
-      const scaledGas = BigInt(params.options.nativeGas * scale);
-      nativeGasAmount = (redeemableAmount * scaledGas) / BigInt(scale);
+      const scaledGasPercent = BigInt(params.options.nativeGas * scale);
+      const dstNativeGasUnits = (maxSwapAmount * scaledGasPercent) / BigInt(scale);
+      const dstNativeGasAmount = amount.fromBaseUnits(
+        dstNativeGasUnits,
+        request.destination.decimals,
+      );
+      // convert the native gas amount to source chain decimals
+      srcNativeGasAmount = amount.scale(
+        amount.truncate(dstNativeGasAmount, TokenTransfer.MAX_DECIMALS),
+        request.source.decimals,
+      );
+      // can't request more gas than the redeemable amount
+      if (amount.units(srcNativeGasAmount) > redeemableAmount) {
+        srcNativeGasAmount = amount.fromBaseUnits(redeemableAmount, request.source.decimals);
+      }
     }
 
     return {
       fee: amount.fromBaseUnits(fee, request.source.decimals),
       amount: amt,
-      nativeGasAmount: amount.fromBaseUnits(nativeGasAmount, request.source.decimals),
+      nativeGasAmount: srcNativeGasAmount,
     };
   }
 
