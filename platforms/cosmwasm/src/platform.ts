@@ -29,8 +29,8 @@ import type { Balances, TokenId } from "@wormhole-foundation/sdk-connect";
 import { chainToPlatform } from "@wormhole-foundation/sdk-connect";
 import { CosmwasmAddress } from "./address.js";
 import { IBC_TRANSFER_PORT } from "./constants.js";
-import type { AnyCosmwasmAddress } from "./types.js";
 import { Gateway } from "./gateway.js";
+import type { AnyCosmwasmAddress } from "./types.js";
 
 /**
  * @category Cosmwasm
@@ -100,13 +100,16 @@ export class CosmwasmPlatform<N extends Network>
 
     let addr = new CosmwasmAddress(token);
 
-    if (addr.denomType === "factory") {
-      addr = Gateway.factoryToCw20(addr);
+    // An ibc denom must be resolved to the original chain CW20 address
+    // this is done in the CosmwasmChain implementation
+    if (addr.denomType === "ibc") {
+      throw new Error(
+        "Invalid denomType. Please resolve the IBC denom to the origin chain CW20 address first.",
+      );
     }
 
-    if (addr.denomType === "ibc") {
-      //
-      throw "idk yet";
+    if (chain === "Wormchain" && addr.denomType === "factory") {
+      addr = Gateway.factoryToCw20(addr);
     }
 
     let addrStr = addr.toString();
