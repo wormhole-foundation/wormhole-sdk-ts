@@ -4,7 +4,6 @@ import { coin } from "@cosmjs/stargate";
 import { MsgTransfer } from "cosmjs-types/ibc/applications/transfer/v1/tx.js";
 
 import type {
-  AccountAddress,
   ChainAddress,
   ChainsConfig,
   Contracts,
@@ -33,7 +32,6 @@ import type {
   CosmwasmChains,
   CosmwasmPlatformType,
   CosmwasmTransaction,
-  IbcChannels,
 } from "@wormhole-foundation/sdk-cosmwasm";
 import {
   CosmwasmAddress,
@@ -52,7 +50,6 @@ import {
   IBC_TIMEOUT_MILLIS,
   IBC_TRANSFER_PORT,
   computeFee,
-  networkChainToChannels,
 } from "@wormhole-foundation/sdk-cosmwasm";
 
 import { CosmwasmWormholeCore } from "@wormhole-foundation/sdk-cosmwasm-core";
@@ -74,20 +71,14 @@ export class CosmwasmIbcBridge<N extends Network, C extends CosmwasmChains>
     readonly rpc: CosmWasmClient,
     readonly contracts: Contracts,
   ) {
-    if (!networkChainToChannels.has(network, chain))
-      throw new Error("Unsupported IBC Chain, no channels available: " + chain);
+    const channels = CosmwasmPlatform.getIbcChannels(network, chain);
+    if (!channels) throw new Error("Unsupported IBC Chain, no channels available: " + chain);
 
     this.gatewayAddress = Gateway.gatewayAddress(network);
-
-    const channels: IbcChannels = networkChainToChannels.get(network, chain) ?? {};
-
     for (const [chain, channel] of Object.entries(channels)) {
       this.channelToChain.set(channel, chain as CosmwasmChains);
       this.chainToChannel.set(chain as CosmwasmChains, channel);
     }
-  }
-  lookupGatewayCW20Address(denom: AnyCosmwasmAddress): Promise<AccountAddress<C>> {
-    throw new Error("Method not implemented.");
   }
 
   static async fromRpc<N extends Network>(

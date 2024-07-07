@@ -68,7 +68,6 @@ import { getSigner } from "./helpers/index.js";
   console.log("For the transfer parameters, we found these routes: ", foundRoutes);
   // EXAMPLE_REQUEST_CREATE
 
-  return;
   // Sort the routes given some input (not required for mvp)
   // const bestRoute = (await resolver.sortRoutes(foundRoutes, "cost"))[0]!;
   const bestRoute = foundRoutes[0]!;
@@ -96,7 +95,7 @@ import { getSigner } from "./helpers/index.js";
   // EXAMPLE_REQUEST_VALIDATE
 
   // If you're sure you want to do this, set this to true
-  const imSure = false;
+  const imSure = true;
   if (imSure) {
     // EXAMPLE_REQUEST_INITIATE
     // Now the transfer may be initiated
