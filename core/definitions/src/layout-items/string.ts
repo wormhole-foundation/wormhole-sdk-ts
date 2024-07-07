@@ -9,6 +9,11 @@ const trimZeros = (arr: Uint8Array) => {
   return -1 < i ? arr.slice(i) : new Uint8Array([]);
 };
 
+export const stringConversion = {
+  to: encoding.bytes.decode,
+  from: encoding.bytes.encode,
+} as const satisfies CustomConversion<Uint8Array, string>;
+
 export const fixedLengthStringItem = (size: number) => ({
   binary: "bytes",
   size,

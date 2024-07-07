@@ -8,8 +8,17 @@ export type IndexEs = number | RoArray<number>;
 
 export const range = (length: number) => [...Array(length).keys()];
 
-export type Entries<T extends RoArray> =
+export type ElementIndexPairs<T extends RoArray> =
   [...{ [K in keyof T]: K extends `${infer N extends number}` ? [T[K], N] : never }];
+
+export const elementIndexPairs = <const T extends RoArray>(arr: T) =>
+  range(arr.length).map(i => [arr[i], i]) as ElementIndexPairs<T>;
+
+export type Entries<T extends RoArray> =
+  [...{ [K in keyof T]: K extends `${infer N extends number}` ? [N, T[K]] : never }];
+
+export const entries = <const T extends RoArray>(arr: T) =>
+  range(arr.length).map(i => [i, arr[i]]) as Entries<T>;
 
 export type Flatten<T extends RoArray> =
   T extends readonly [infer Head, ...infer Tail extends RoArray]
@@ -89,7 +98,7 @@ export type OnlyIndexes<E extends RoArray, I extends IndexEs> =
 
 type ExcludeIndexesImpl<T extends RoArray, C extends number> =
   T extends readonly [infer Head, ...infer Tail]
-  ? Head extends readonly [infer V, infer I extends number]
+  ? Head extends readonly [infer I extends number, infer V]
     ? I extends C
       ? ExcludeIndexesImpl<Tail, C>
       : [V, ...ExcludeIndexesImpl<Tail, C>]
