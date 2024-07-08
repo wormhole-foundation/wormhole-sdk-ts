@@ -671,7 +671,9 @@ export namespace TokenTransfer {
       ),
     );
 
-    // The expected destination gas can be pulled from the destination token bridge
+    // TODO: consider moving these solana specific checks to its protocol implementation
+    const solanaMinBalanceForRentExemptAccount = 890880n;
+
     let destinationNativeGas = 0n;
     if (transfer.nativeGas) {
       const dtb = await dstChain.getAutomaticTokenBridge();
@@ -692,11 +694,33 @@ export namespace TokenTransfer {
           )}>${amount.fmt(maxNativeAmountIn, dstDecimals)}`,
         );
 
+      // when native gas is requested on solana, the amount must be at least the rent-exempt amount
+      // or the transaction could fail if the account does not have enough lamports
+      if (dstChain.chain === "Solana" && _destinationNativeGas < solanaMinBalanceForRentExemptAccount) {
+        throw new Error(
+          `Native gas amount must be at least ${solanaMinBalanceForRentExemptAccount} lamports`,
+        );
+      }
+
       destinationNativeGas = _destinationNativeGas;
     }
 
     const destAmountLessFee =
       amount.units(dstAmountReceivable) - dstNativeGasAmountRequested - amount.units(feeAmountDest);
+
+    // when sending wsol to solana, the amount must be at least the rent-exempt amount
+    // or the transaction could fail if the account does not have enough lamports
+    if (dstToken.chain === "Solana") {
+      const nativeWrappedTokenId = await dstChain.getNativeWrappedTokenId();
+      if (
+        dstToken.address === nativeWrappedTokenId.address &&
+        destAmountLessFee < solanaMinBalanceForRentExemptAccount
+      ) {
+        throw new Error(
+          `Destination amount must be at least ${solanaMinBalanceForRentExemptAccount} lamports`,
+        );
+      }
+    }
 
     return {
       sourceToken: {

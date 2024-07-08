@@ -183,7 +183,7 @@ export class AutomaticTokenBridgeRoute<N extends Network>
       // the maxSwapAmount is in destination chain decimals
       const maxSwapAmount = await dtb.maxSwapAmount(request.destination.id.address);
       const scale = 10000;
-      const scaledGasPercent = BigInt(params.options.nativeGas * scale);
+      const scaledGasPercent = BigInt(Math.floor(params.options.nativeGas * scale));
       const dstNativeGasUnits = (maxSwapAmount * scaledGasPercent) / BigInt(scale);
       const dstNativeGasAmount = amount.fromBaseUnits(
         dstNativeGasUnits,
