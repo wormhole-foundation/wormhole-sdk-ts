@@ -6,10 +6,17 @@ import type {
   TokenId,
   TokenTransferDetails,
 } from "@wormhole-foundation/sdk-definitions";
-import { isNative, isTokenId, nativeTokenId } from "@wormhole-foundation/sdk-definitions";
+import {
+  canonicalAddress,
+  ChainAddress,
+  isNative,
+  isTokenId,
+  nativeTokenId,
+} from "@wormhole-foundation/sdk-definitions";
 import { TokenTransfer } from "../../protocols/tokenBridge/tokenTransfer.js";
 import type { AttestationReceipt, SourceInitiatedTransferReceipt } from "../../types.js";
 import { TransferState } from "../../types.js";
+import { Wormhole } from "../../wormhole.js";
 import type { StaticRouteMethods } from "../route.js";
 import { AutomaticRoute } from "../route.js";
 import type {
@@ -20,8 +27,6 @@ import type {
   ValidatedTransferParams,
   ValidationResult,
 } from "../types.js";
-import { ChainAddress } from "@wormhole-foundation/sdk-definitions";
-import { Wormhole } from "../../wormhole.js";
 
 export namespace AutomaticTokenBridgeRoute {
   export type Options = {
@@ -90,7 +95,25 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     toChain: ChainContext<N>,
   ): Promise<TokenId[]> {
     try {
-      return [await TokenTransfer.lookupDestinationToken(fromChain, toChain, sourceToken)];
+      const expectedDestinationToken = await TokenTransfer.lookupDestinationToken(
+        fromChain,
+        toChain,
+        sourceToken,
+      );
+
+      const atb = await toChain.getAutomaticTokenBridge();
+      const registered = await atb.getRegisteredTokens();
+
+      const acceptable =
+        registered.filter(
+          (address) => address.toString() === canonicalAddress(expectedDestinationToken),
+        ).length > 0;
+
+      if (!acceptable) {
+        throw new Error("Destination token is not accepted by the AutomaticTokenBridge");
+      }
+
+      return [expectedDestinationToken];
     } catch (e) {
       console.error(`Failed to get destination token: ${e}`);
       return [];
