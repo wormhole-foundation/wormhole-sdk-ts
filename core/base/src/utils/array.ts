@@ -1,12 +1,23 @@
 import type { RoArray, RoArray2D, IsUnion } from './metaprogramming.js';
 
+export const range = (length: number) => [...Array(length).keys()];
+
+export const concat = (...bytes: RoArray<Uint8Array>): Uint8Array => {
+  const len = bytes.reduce((acc, b) => acc + b.length, 0);
+  const result = new Uint8Array(len);
+  let offset = 0;
+  for (const b of bytes) {
+    result.set(b, offset);
+    offset += b.length;
+  }
+  return result;
+}
+
 //TODO the intent here is that number represents a number literal, but strictly speaking
 //  the type allows for unions of number literals (and an array of such unions)
 //The reason for not just sticking to unions is that unions lose order information which is
 //  relevant in some cases (and iterating over them is a pain).
 export type IndexEs = number | RoArray<number>;
-
-export const range = (length: number) => [...Array(length).keys()];
 
 export type ElementIndexPairs<T extends RoArray> =
   [...{ [K in keyof T]: K extends `${infer N extends number}` ? [T[K], N] : never }];
@@ -62,7 +73,7 @@ export type IsRectangular<T extends RoArray> =
 export type Column<A extends RoArray2D, I extends number> =
   [...{ [K in keyof A]: K extends `${number}` ? A[K][I] : never }];
 
-export const column = <A extends RoArray2D, I extends number>(tupArr: A, index: I) =>
+export const column = <const A extends RoArray2D, const I extends number>(tupArr: A, index: I) =>
   tupArr.map((tuple) => tuple[index]) as Column<A, I>;
 
 export type Zip<A extends RoArray2D> =
