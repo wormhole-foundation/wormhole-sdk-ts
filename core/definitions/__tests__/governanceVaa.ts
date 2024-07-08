@@ -135,8 +135,9 @@ describe("WH Core governance VAA tests", function () {
       consistencyLevel: 0,
       payload: {
         chain: "Ethereum",
-        //@ts-ignore
-        newContract: new UniversalAddress(new Uint8Array(32)),
+        actionArgs: {
+          newContract: new UniversalAddress(new Uint8Array(32)),
+        }
       },
     });
 
@@ -214,7 +215,7 @@ describe('GeneralPurposeGovernance governance VAA tests', () => {
     expect(vaa.payload.chain).toEqual('Ethereum')
     expect(vaa.payload.actionArgs.governanceContract.toString()).toEqual('0x23fea5514dfc9821479fbe18ba1d7e1a61f6ffcf')
     expect(vaa.payload.actionArgs.targetContract.toString()).toEqual('0xc072b1aef336edde59a049699ef4e8fa9d594a48')
-    expect(encoding.hex.encode(vaa.payload.payload)).toEqual('186ce61200000000000000000000000000000000000000000052b7d2dcc80cd2e40000000000000000000000000000000000000000000000000000000000000000000001')
+    expect(encoding.hex.encode(vaa.payload.actionArgs.payload)).toEqual('186ce61200000000000000000000000000000000000000000052b7d2dcc80cd2e40000000000000000000000000000000000000000000000000000000000000000000001')
   });
 });
 

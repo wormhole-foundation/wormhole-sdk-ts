@@ -1,5 +1,5 @@
 import type { FixedConversion, Layout, LayoutToType, RoArray, ShallowMapping } from "@wormhole-foundation/sdk-base";
-import { column, constMap, platformToChains, enumItem, calcStaticLayoutSize, deserializeLayout, serializeLayout } from "@wormhole-foundation/sdk-base";
+import { column, encoding, constMap, platformToChains, enumItem, calcStaticLayoutSize, deserializeLayout, serializeLayout } from "@wormhole-foundation/sdk-base";
 
 import { modificationKinds } from "./globalAccountant.js";
 import { amountItem, chainItem, sequenceItem, fixedLengthStringItem, guardianSetItem, universalAddressItem, stringConversion } from "../../layout-items/index.js";
@@ -28,8 +28,14 @@ type ActionTuple = readonly [
   ]
 ];
 
-//TODO better name? better (i.e. custom) type?
-const rawEvmAddressItem = { binary: "bytes", size: 20 } as const;
+const rawEvmAddressItem = {
+  binary: "bytes",
+  size: 20,
+  custom: {
+    to: (encoded: Uint8Array): string => encoding.hex.encode(encoded, true),
+    from: (decoded: string): Uint8Array => encoding.hex.decode(decoded),
+  }
+} as const;
 
 const contractActions = [
   [ "UpgradeContract", [false, [{ name: "newContract", ...universalAddressItem }]] ],
