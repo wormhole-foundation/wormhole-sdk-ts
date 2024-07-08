@@ -253,7 +253,7 @@ describe('IbcTranslator governance VAA tests', () => {
     expect(vaa.payload.action).toEqual('ActionUpdateChannelChain');
     expect(vaa.payload.chain).toEqual('Wormchain')
     expect(vaa.payload.channelId.length).toEqual('channel-12'.length)
-    expect(vaa.payload.chainId).toEqual('Stargaze')
+    expect(vaa.payload.channelChain).toEqual('Stargaze')
   });
 });
 
