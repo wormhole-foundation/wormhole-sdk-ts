@@ -135,8 +135,9 @@ describe("WH Core governance VAA tests", function () {
       consistencyLevel: 0,
       payload: {
         chain: "Ethereum",
-        //@ts-ignore
-        newContract: new UniversalAddress(new Uint8Array(32)),
+        actionArgs: {
+          newContract: new UniversalAddress(new Uint8Array(32)),
+        }
       },
     });
 
@@ -157,8 +158,8 @@ describe("WH Core governance VAA tests", function () {
     expect(vaa.emitterChain).toBe("Solana");
     expect(vaa.payload.protocol).toBe("WormholeCore");
     expect(vaa.payload.action).toBe("GuardianSetUpgrade");
-    expect(vaa.payload.guardianSet).toBe(3);
-    expect(vaa.payload.guardians.length).toBe(19);
+    expect(vaa.payload.actionArgs.guardianSet).toBe(3);
+    expect(vaa.payload.actionArgs.guardians.length).toBe(19);
 
     expect(serialize(vaa)).toEqual(encoding.hex.decode(guardianSetUpgrade));
     expect(blindDeserializePayload(rawvaa.payload)).toEqual([
@@ -179,8 +180,8 @@ describe('Wormchain governance VAA tests', () => {
     expect(vaa.protocolName).toEqual('WormchainGovernance');
     expect(vaa.payload.action).toEqual('AddWasmInstantiateAllowlist');
     expect(vaa.payload.chain).toEqual('Wormchain')
-    expect(vaa.payload.contractAddr.toString()).toEqual('0xaeb534c45c3049d380b9d9b966f9895f53abd4301bfaff407fa09dea8ae7a924')
-    expect(vaa.payload.codeId).toEqual(7n)
+    expect(vaa.payload.actionArgs.contractAddr.toString()).toEqual('0xaeb534c45c3049d380b9d9b966f9895f53abd4301bfaff407fa09dea8ae7a924')
+    expect(vaa.payload.actionArgs.codeId).toEqual(7n)
   });
 });
 
@@ -195,9 +196,9 @@ describe('CircleIntegration governance VAA tests', () => {
     expect(vaa.protocolName).toEqual('CircleBridge');
     expect(vaa.payload.action).toEqual('RegisterEmitterAndDomain');
     expect(vaa.payload.chain).toEqual('Optimism')
-    expect(vaa.payload.emitterChain).toEqual('Ethereum')
-    expect(vaa.payload.emitterAddress.toString()).toEqual('0x000000000000000000000000aada05bd399372f0b0463744c09113c137636f6a')
-    expect(vaa.payload.domain).toEqual(0)
+    expect(vaa.payload.actionArgs.emitterChain).toEqual('Ethereum')
+    expect(vaa.payload.actionArgs.emitterAddress.toString()).toEqual('0x000000000000000000000000aada05bd399372f0b0463744c09113c137636f6a')
+    expect(vaa.payload.actionArgs.domain).toEqual(0)
   });
 });
 
@@ -212,9 +213,9 @@ describe('GeneralPurposeGovernance governance VAA tests', () => {
     expect(vaa.protocolName).toEqual('GeneralPurposeGovernance');
     expect(vaa.payload.action).toEqual('GeneralPurposeEvm');
     expect(vaa.payload.chain).toEqual('Ethereum')
-    expect(vaa.payload.governanceContract.toString()).toEqual('0x23fea5514dfc9821479fbe18ba1d7e1a61f6ffcf')
-    expect(vaa.payload.targetContract.toString()).toEqual('0xc072b1aef336edde59a049699ef4e8fa9d594a48')
-    expect(encoding.hex.encode(vaa.payload.payload)).toEqual('186ce61200000000000000000000000000000000000000000052b7d2dcc80cd2e40000000000000000000000000000000000000000000000000000000000000000000001')
+    expect(vaa.payload.actionArgs.governanceContract.toString()).toEqual('0x23fea5514dfc9821479fbe18ba1d7e1a61f6ffcf')
+    expect(vaa.payload.actionArgs.targetContract.toString()).toEqual('0xc072b1aef336edde59a049699ef4e8fa9d594a48')
+    expect(encoding.hex.encode(vaa.payload.actionArgs.payload)).toEqual('186ce61200000000000000000000000000000000000000000052b7d2dcc80cd2e40000000000000000000000000000000000000000000000000000000000000000000001')
   });
 });
 
@@ -229,13 +230,13 @@ describe('GlobalAccountant governance VAA tests', () => {
     expect(vaa.protocolName).toEqual('GlobalAccountant');
     expect(vaa.payload.action).toEqual('ModifyBalance');
     expect(vaa.payload.chain).toEqual('Wormchain')
-    expect(vaa.payload.sequence).toEqual(3n)
-    expect(vaa.payload.modifiedChain).toEqual('Solana')
-    expect(vaa.payload.tokenChain).toEqual('Ethereum')
-    expect(vaa.payload.tokenAddress.toString()).toEqual('0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2')
-    expect(vaa.payload.kind).toEqual('Add')
-    expect(vaa.payload.amount).toEqual(12000000000000n)
-    expect(vaa.payload.reason).toEqual(
+    expect(vaa.payload.actionArgs.sequence).toEqual(3n)
+    expect(vaa.payload.actionArgs.modifiedChain).toEqual('Solana')
+    expect(vaa.payload.actionArgs.tokenChain).toEqual('Ethereum')
+    expect(vaa.payload.actionArgs.tokenAddress.toString()).toEqual('0x000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2')
+    expect(vaa.payload.actionArgs.kind).toEqual('Add')
+    expect(vaa.payload.actionArgs.amount).toEqual(12000000000000n)
+    expect(vaa.payload.actionArgs.reason).toEqual(
       String.fromCharCode(...(Buffer.from('2020202020202020202020202020202020202000000000000000000000000000', 'hex')))
     )
   });
@@ -252,8 +253,8 @@ describe('IbcTranslator governance VAA tests', () => {
     expect(vaa.protocolName).toEqual('IbcBridge');
     expect(vaa.payload.action).toEqual('ActionUpdateChannelChain');
     expect(vaa.payload.chain).toEqual('Wormchain')
-    expect(vaa.payload.channelId.length).toEqual('channel-12'.length)
-    expect(vaa.payload.chainId).toEqual('Stargaze')
+    expect(vaa.payload.actionArgs.channelId.length).toEqual('channel-12'.length)
+    expect(vaa.payload.actionArgs.channelChain).toEqual('Stargaze')
   });
 });
 
@@ -282,7 +283,7 @@ describe.skip('Gateway governance VAA tests', () => {
     expect(vaa.protocolName).toEqual('GatewayGovernance');
     expect(vaa.payload.action).toEqual('ScheduleUpgrade');
     expect(vaa.payload.chain).toEqual('Wormchain')
-    expect(vaa.payload.name).toEqual('UpgradeContract')
-    expect(vaa.payload.height).toEqual(305419896n)
+    expect(vaa.payload.actionArgs.name).toEqual('UpgradeContract')
+    expect(vaa.payload.actionArgs.height).toEqual(305419896n)
   });
 });

@@ -71,11 +71,9 @@ import type {
   Cartesian,
   OnlyIndexes,
   ExcludeIndexes,
-  Entries} from './array.js';
-import {
-  range,
-  zip,
+  ElementIndexPairs,
 } from './array.js';
+import { range, zip } from './array.js';
 import type { Function, Widen, RoArray, RoArray2D, RoPair } from './metaprogramming.js';
 
 export type ShallowMapping<M extends RoArray<readonly [PropertyKey, unknown]>> =
@@ -131,8 +129,8 @@ type CombineKeyRowIndexes<
     ...infer Tail extends MappingEntries<number>
   ]
   ? Head[0] extends K
-  ? CombineKeyRowIndexes<K, Tail, [...IA, Head[1]], U>
-  : CombineKeyRowIndexes<K, Tail, IA, [...U, Head]>
+    ? CombineKeyRowIndexes<K, Tail, [...IA, Head[1]], U>
+    : CombineKeyRowIndexes<K, Tail, IA, [...U, Head]>
   : [IA, U];
 
 //Takes a key column and its indexes (KCI) and for each key creates the set of all row indices
@@ -143,13 +141,13 @@ type CombineKeyRowIndexes<
 type ToMapEntries<KCI extends MappingEntries<number>, M extends MappingEntries = []> =
   KCI extends readonly [infer Head, ...infer Tail extends MappingEntries<number>]
   ? Head extends RoPair<infer K extends MappableKey, infer V extends number>
-  ? CombineKeyRowIndexes<K, Tail, [V]> extends RoPair<
-    infer IA extends RoArray,
-    infer KCIU extends MappingEntries<number>
-  >
-  ? ToMapEntries<KCIU, [...M, [K, IA]]>
-  : never
-  : never
+    ? CombineKeyRowIndexes<K, Tail, [V]> extends RoPair<
+        infer IA extends RoArray,
+        infer KCIU extends MappingEntries<number>
+      >
+      ? ToMapEntries<KCIU, [...M, [K, IA]]>
+      : never
+    : never
   : M;
 
 type CartesianRightRecursive<M extends RoArray> =
@@ -178,7 +176,7 @@ type ProcessNextKeyColmn<KC extends CartesianSet<MappableKey>, VR extends RoArra
   ? VR
   : ExcludeIndexes<KC, 0> extends infer KCR extends CartesianSet<MappableKey>
   //KRIA = key row indexes array
-  ? ToMapEntries<Entries<KC[0]>> extends infer KRIA extends MappingEntries<RoArray<number>>
+  ? ToMapEntries<ElementIndexPairs<KC[0]>> extends infer KRIA extends MappingEntries<RoArray<number>>
   ? [...{
     [K in keyof KRIA]: [
       KRIA[K][0],
@@ -216,16 +214,16 @@ type SplitAndReorderKeyValueColumns<R extends CartesianSet, S extends Shape> =
 type UnwrapValuesIfAllAreSingletons<M extends MappingEntries, D extends Depth[number]> =
   D extends 1
   ? M extends MappingEntries<readonly [LeafValue]>
-  ? [...{ [K in keyof M]: K extends `${number}` ? [M[K][0], M[K][1][0][1]] : never }]
-  : void
+    ? [...{ [K in keyof M]: K extends `${number}` ? [M[K][0], M[K][1][0][1]] : never }]
+    : void
   : M extends MappingEntries<MappingEntries>
-  ? [...{ [K in keyof M]: K extends `${number}`
-    ? [M[K][0], UnwrapValuesIfAllAreSingletons<M[K][1], Depth[D]>]
-    : never
-  }] extends infer U extends MappingEntries
-  ? U
-  : void
-  : never;
+    ? [...{ [K in keyof M]: K extends `${number}`
+        ? [M[K][0], UnwrapValuesIfAllAreSingletons<M[K][1], Depth[D]>]
+        : never
+      }] extends infer U extends MappingEntries
+      ? U
+      : void
+    : never;
 
 type MaybeUnwrapValuesIfAllAreSingletons<M extends MappingEntries, D extends Depth[number]> =
   UnwrapValuesIfAllAreSingletons<M, D> extends infer V extends MappingEntries ? V : M;
@@ -235,30 +233,30 @@ type TransformMapping<M extends MappingEntries, S extends Shape | void = void> =
   //check that M has a valid structure for mapping entries
   CartesianRightRecursive<M> extends infer CRR extends RoArray2D
   ? IsRectangular<CRR> extends true
-  //ensure CRR is not empty
-  ? CRR extends readonly [RoArray, ...RoArray2D]
-  ? S extends Shape
-  ? SplitAndReorderKeyValueColumns<CRR, S> extends [
-    infer KC extends CartesianSet<MappableKey>,
-    infer VC extends CartesianSet
-  ]
-  ? KC["length"] extends Depth[number]
-  ? CombineValueColumnsToLeafValues<VC> extends infer VR extends RoArray<LeafValue>
-  ? ProcessNextKeyColmn<KC, VR> extends infer TM extends MappingEntries
-  ? [MaybeUnwrapValuesIfAllAreSingletons<TM, KC["length"]>, KC["length"]]
-  : never
-  : never
-  : never
-  : never
-  //if we don't have an explicit shape, take the first row and subtract 1 (for the value
-  //  column) to determine the count of key columns
-  : CRR[0] extends readonly [...infer KC extends RoArray, unknown]
-  ? KC["length"] extends Depth[number]
-  ? [M, KC["length"]]
-  : never
-  : never
-  : never
-  : never
+    //ensure CRR is not empty
+    ? CRR extends readonly [RoArray, ...RoArray2D]
+      ? S extends Shape
+        ? SplitAndReorderKeyValueColumns<CRR, S> extends [
+          infer KC extends CartesianSet<MappableKey>,
+          infer VC extends CartesianSet
+        ]
+        ? KC["length"] extends Depth[number]
+          ? CombineValueColumnsToLeafValues<VC> extends infer VR extends RoArray<LeafValue>
+            ? ProcessNextKeyColmn<KC, VR> extends infer TM extends MappingEntries
+            ? [MaybeUnwrapValuesIfAllAreSingletons<TM, KC["length"]>, KC["length"]]
+            : never
+          : never
+        : never
+      : never
+      //if we don't have an explicit shape, take the first row and subtract 1 (for the value
+      //  column) to determine the count of key columns
+      : CRR[0] extends readonly [...infer KC extends RoArray, unknown]
+        ? KC["length"] extends Depth[number]
+          ? [M, KC["length"]]
+          : never
+        : never
+      : never
+    : never
   : never;
 
 type ObjectFromMappingEntries<M extends MappingEntries, D extends Depth[number]> = {
@@ -266,14 +264,14 @@ type ObjectFromMappingEntries<M extends MappingEntries, D extends Depth[number]>
   //@ts-ignore
   M[K][1] extends infer V
   ? D extends 1
-  ? V extends LeafValue<infer T>
-  ? T
-  : V extends RoArray<LeafValue>
-  ? [...{ [K2 in keyof V]: K2 extends `${number}` ? V[K2][1] : never }]
-  : V
-  : V extends MappingEntries
-  ? ObjectFromMappingEntries<V, Depth[D]>
-  : never
+    ? V extends LeafValue<infer T>
+      ? T
+      : V extends RoArray<LeafValue>
+      ? [...{ [K2 in keyof V]: K2 extends `${number}` ? V[K2][1] : never }]
+      : V
+    : V extends MappingEntries
+    ? ObjectFromMappingEntries<V, Depth[D]>
+    : never
   : never
 };
 
