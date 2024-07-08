@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/connect-sdk-examples",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -51,6 +51,6 @@
     "tsx": "^4.7.0"
   },
   "dependencies": {
-    "@wormhole-foundation/sdk": "0.7.1"
+    "@wormhole-foundation/sdk": "0.7.2"
   }
 }
