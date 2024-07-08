@@ -133,4 +133,4 @@ declare module "@wormhole-foundation/sdk-connect" {
   }
 }
 
-registerNative(_platform, SuiAddress);
+registerNative('Sui', SuiAddress);
