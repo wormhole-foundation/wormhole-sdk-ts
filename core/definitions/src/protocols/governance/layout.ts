@@ -1,5 +1,5 @@
-import type { FixedConversion, Layout, LayoutToType, RoArray, ShallowMapping } from "@wormhole-foundation/sdk-base";
-import { column, constMap, platformToChains, enumItem, calcStaticLayoutSize, deserializeLayout, serializeLayout } from "@wormhole-foundation/sdk-base";
+import type { FixedConversion, Layout, LayoutToType, RoArray, CombineObjects, ShallowMapping } from "@wormhole-foundation/sdk-base";
+import { concat, column, constMap, platformToChains, enumItem, calcStaticLayoutSize, deserializeLayout, serializeLayout } from "@wormhole-foundation/sdk-base";
 
 import { modificationKinds } from "./globalAccountant.js";
 import { amountItem, chainItem, sequenceItem, fixedLengthStringItem, guardianSetItem, universalAddressItem, stringConversion } from "../../layout-items/index.js";
@@ -217,7 +217,7 @@ const actionConversion = <
   from: num,
 } as const satisfies FixedConversion<N, A>);
 
-const governanceLayout = <P extends GovernedProtocols, A extends Action, N extends number>(
+const headerLayout = <P extends GovernedProtocols, A extends Action, N extends number>(
   protocol: P,
   action: A,
   num: N,
@@ -225,8 +225,50 @@ const governanceLayout = <P extends GovernedProtocols, A extends Action, N exten
   { name: "protocol", binary: "bytes", custom: protocolConversion(protocol) },
   { name: "action", binary: "uint", size: 1, custom: actionConversion(action, num) },
   { name: "chain", ...chainItem({allowNull: actionMapping[action][0] as ActionMapping[A][0] }) },
-  { name: "actionArgs", binary: "bytes", layout: actionMapping[action][1] as ActionMapping[A][1] },
 ] as const satisfies Layout;
+
+type GovernanceLayout<P extends GovernedProtocols, A extends Action, N extends number> =
+  CombineObjects<
+    LayoutToType<ReturnType<typeof headerLayout<P, A, N>>>,
+    LayoutToType<ActionMapping[A][1]>
+  >;
+
+const governanceLayout = <P extends GovernedProtocols, A extends Action, N extends number>(
+  protocol: P,
+  action: A,
+  num: N,
+) => ({
+  binary: "bytes",
+  custom: {
+    to: (encoded: Uint8Array): GovernanceLayout<P,A,N> => {
+      const [header, offset] = deserializeLayout(
+        headerLayout(protocol, action, num),
+        encoded,
+        {consumeAll: false}
+      );
+      const payload = deserializeLayout(
+        actionMapping[action][1],
+        encoded.slice(offset),
+      );
+      return { ...header, ...payload } as GovernanceLayout<P,A,N>;
+    },
+    from: (decoded: GovernanceLayout<P,A,N>): Uint8Array => {
+      //alternative impl that precomputes the size and should be used once the size feature on
+      //  custom conversion has been implemented (until then, it will be slower/less efficient
+      //  because custom conversions currently have to serialize their data to determine the
+      //  layout size, essentially causing the data to be serialized twice):
+      // const hl = headerLayout(protocol, action, num);
+      // const size = calcLayoutSize(hl, decoded) + calcLayoutSize(actionMapping[action][1], decoded);
+      // const encoded = new Uint8Array(size);
+      // const offset = serializeLayout(headerLayout(protocol, action, num), decoded, encoded);
+      // serializeLayout(actionMapping[action][1], decoded, encoded, offset);
+      // return encoded;
+      const header = serializeLayout(headerLayout(protocol, action, num), decoded);
+      const payload = serializeLayout(actionMapping[action][1], decoded);
+      return concat(header, payload);
+    }
+  }
+} as const satisfies Layout);
 
 const governancePayload = <P extends GovernedProtocols, A extends Action, N extends number>(
   protocol: P,

@@ -233,7 +233,7 @@ export function getUpgradeContractAccounts(
   vaa: VAA<'WormholeCore:UpgradeContract'>,
   spill?: PublicKeyInitData,
 ): UpgradeContractAccounts {
-  const { newContract } = vaa.payload.actionArgs;
+  const { newContract } = vaa.payload;
 
   return {
     payer: new PublicKey(payer),
