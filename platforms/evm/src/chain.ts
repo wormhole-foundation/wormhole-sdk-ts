@@ -1,4 +1,4 @@
-import type { Chain, Network } from '@wormhole-foundation/sdk-connect';
+import type { Network } from '@wormhole-foundation/sdk-connect';
 import { ChainContext } from '@wormhole-foundation/sdk-connect';
 import type { EvmChains } from './types.js';
 
@@ -7,5 +7,5 @@ import type { EvmChains } from './types.js';
  */
 export class EvmChain<
   N extends Network = Network,
-  C extends Chain = EvmChains,
+  C extends EvmChains = EvmChains,
 > extends ChainContext<N, C> {}
