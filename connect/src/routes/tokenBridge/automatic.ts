@@ -7,7 +7,6 @@ import type {
   TokenTransferDetails,
 } from "@wormhole-foundation/sdk-definitions";
 import {
-  canonicalAddress,
   ChainAddress,
   isNative,
   isTokenId,
@@ -102,13 +101,7 @@ export class AutomaticTokenBridgeRoute<N extends Network>
       );
 
       const atb = await toChain.getAutomaticTokenBridge();
-      const registered = await atb.getRegisteredTokens();
-
-      const acceptable =
-        registered.filter(
-          (address) => address.toString() === canonicalAddress(expectedDestinationToken),
-        ).length > 0;
-
+      const acceptable = await atb.isRegisteredToken(expectedDestinationToken.address);
       if (!acceptable) {
         throw new Error("Destination token is not accepted by the AutomaticTokenBridge");
       }
