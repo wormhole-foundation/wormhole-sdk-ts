@@ -17,10 +17,12 @@ import {
   isNative,
   keccak256,
   nativeChainIds,
+  encoding,
   serialize,
   toChain,
   toChainId,
   toNative,
+  sha3_256,
 } from '@wormhole-foundation/sdk-connect';
 import type { Provider, TransactionRequest } from 'ethers';
 
@@ -117,9 +119,16 @@ export class EvmTokenBridge<N extends Network, C extends EvmChains>
     if (isNative(token.address))
       throw new Error('native asset cannot be a wrapped asset');
 
+    let addr: string = token.address.toUniversalAddress.toString();
+
+    // Idk if this is the right place for this
+    if (token.chain === 'Aptos') {
+      addr = encoding.hex.encode(sha3_256(token.address.toString()), true);
+    }
+
     const wrappedAddress = await this.tokenBridge.wrappedAsset(
       toChainId(token.chain),
-      token.address.toUniversalAddress().toString(),
+      addr,
     );
 
     if (wrappedAddress === EvmZeroAddress)
