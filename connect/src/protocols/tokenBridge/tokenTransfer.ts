@@ -37,7 +37,13 @@ import type {
   TransferQuote,
   TransferReceipt as _TransferReceipt,
 } from "../../types.js";
-import { TransferState, isAttested, isSourceFinalized, isSourceInitiated } from "../../types.js";
+import {
+  TransferState,
+  isAttested,
+  isRedeemed,
+  isSourceFinalized,
+  isSourceInitiated,
+} from "../../types.js";
 import { getGovernedTokens, getGovernorLimits } from "../../whscan-api.js";
 import { Wormhole } from "../../wormhole.js";
 import type { WormholeTransfer } from "../wormholeTransfer.js";
@@ -392,7 +398,7 @@ export namespace TokenTransfer {
 
     // Fall back to asking the destination chain if this VAA has been redeemed
     // Note: We do not get any destinationTxs with this method
-    if (isAttested(receipt)) {
+    if (isAttested(receipt) || isRedeemed(receipt)) {
       if (!receipt.attestation.attestation) throw "Signed Attestation required to check for redeem";
 
       let isComplete = await TokenTransfer.isTransferComplete(
@@ -652,9 +658,22 @@ export namespace TokenTransfer {
       dstDecimals,
     );
 
-    const dstNativeGasAmountRequested = transfer.nativeGas ?? 0n;
+    // nativeGas is in source chain decimals
+    const srcNativeGasAmountRequested = transfer.nativeGas ?? 0n;
+    // convert to destination chain decimals
+    const dstNativeGasAmountRequested = amount.units(
+      amount.scale(
+        amount.truncate(
+          amount.fromBaseUnits(srcNativeGasAmountRequested, srcDecimals),
+          TokenTransfer.MAX_DECIMALS,
+        ),
+        dstDecimals,
+      ),
+    );
 
-    // The expected destination gas can be pulled from the destination token bridge
+    // TODO: consider moving these solana specific checks to its protocol implementation
+    const solanaMinBalanceForRentExemptAccount = 890880n;
+
     let destinationNativeGas = 0n;
     if (transfer.nativeGas) {
       const dtb = await dstChain.getAutomaticTokenBridge();
@@ -675,11 +694,33 @@ export namespace TokenTransfer {
           )}>${amount.fmt(maxNativeAmountIn, dstDecimals)}`,
         );
 
+      // when native gas is requested on solana, the amount must be at least the rent-exempt amount
+      // or the transaction could fail if the account does not have enough lamports
+      if (dstChain.chain === "Solana" && _destinationNativeGas < solanaMinBalanceForRentExemptAccount) {
+        throw new Error(
+          `Native gas amount must be at least ${solanaMinBalanceForRentExemptAccount} lamports`,
+        );
+      }
+
       destinationNativeGas = _destinationNativeGas;
     }
 
     const destAmountLessFee =
       amount.units(dstAmountReceivable) - dstNativeGasAmountRequested - amount.units(feeAmountDest);
+
+    // when sending wsol to solana, the amount must be at least the rent-exempt amount
+    // or the transaction could fail if the account does not have enough lamports
+    if (dstToken.chain === "Solana") {
+      const nativeWrappedTokenId = await dstChain.getNativeWrappedTokenId();
+      if (
+        dstToken.address === nativeWrappedTokenId.address &&
+        destAmountLessFee < solanaMinBalanceForRentExemptAccount
+      ) {
+        throw new Error(
+          `Destination amount must be at least ${solanaMinBalanceForRentExemptAccount} lamports`,
+        );
+      }
+    }
 
     return {
       sourceToken: {

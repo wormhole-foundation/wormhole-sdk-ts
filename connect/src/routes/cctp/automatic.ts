@@ -21,6 +21,7 @@ import type {
   ValidatedTransferParams,
   ValidationResult,
 } from "../types.js";
+import type { RouteTransferRequest } from "../request.js";
 
 export namespace AutomaticCCTPRoute {
   export type Options = {
@@ -80,7 +81,7 @@ export class AutomaticCCTPRoute<N extends Network>
     return [Wormhole.chainAddress(chain, circle.usdcContract.get(network, chain)!)];
   }
 
-  // get the liist of destination tokens that may be recieved on the destination chain
+  // get the list of destination tokens that may be received on the destination chain
   static async supportedDestinationTokens<N extends Network>(
     sourceToken: TokenId,
     fromChain: ChainContext<N>,
@@ -112,10 +113,10 @@ export class AutomaticCCTPRoute<N extends Network>
     return true;
   }
 
-  async validate(params: Tp): Promise<Vr> {
+  async validate(request: RouteTransferRequest<N>, params: Tp): Promise<Vr> {
     try {
       const options = params.options ?? this.getDefaultOptions();
-      const normalizedParams = await this.normalizeTransferParams(params);
+      const normalizedParams = await this.normalizeTransferParams(request, params);
 
       const validatedParams: Vp = {
         normalizedParams,
@@ -133,10 +134,10 @@ export class AutomaticCCTPRoute<N extends Network>
     }
   }
 
-  async quote(params: Vp): Promise<QR> {
+  async quote(request: RouteTransferRequest<N>, params: Vp): Promise<QR> {
     try {
-      return this.request.displayQuote(
-        await CircleTransfer.quoteTransfer(this.request.fromChain, this.request.toChain, {
+      return request.displayQuote(
+        await CircleTransfer.quoteTransfer(request.fromChain, request.toChain, {
           automatic: true,
           amount: amount.units(params.normalizedParams.amount),
           nativeGas: amount.units(params.normalizedParams.nativeGasAmount),
@@ -151,16 +152,19 @@ export class AutomaticCCTPRoute<N extends Network>
     }
   }
 
-  private async normalizeTransferParams(params: Tp): Promise<AutomaticCCTPRoute.NormalizedParams> {
-    const amt = this.request.parseAmount(params.amount);
+  private async normalizeTransferParams(
+    request: RouteTransferRequest<N>,
+    params: Tp,
+  ): Promise<AutomaticCCTPRoute.NormalizedParams> {
+    const amt = request.parseAmount(params.amount);
 
-    const ctb = await this.request.fromChain.getAutomaticCircleBridge();
-    const fee = await ctb.getRelayerFee(this.request.toChain.chain);
+    const ctb = await request.fromChain.getAutomaticCircleBridge();
+    const fee = await ctb.getRelayerFee(request.toChain.chain);
 
     const minAmount = (fee * 105n) / 100n;
     if (amount.units(amt) < minAmount) {
       throw new Error(
-        `Minimum amount is ${amount.display(this.request.amountFromBaseUnits(minAmount))}`,
+        `Minimum amount is ${amount.display(request.amountFromBaseUnits(minAmount))}`,
       );
     }
 
@@ -181,9 +185,9 @@ export class AutomaticCCTPRoute<N extends Network>
     }
 
     return {
-      fee: this.request.amountFromBaseUnits(fee),
+      fee: request.amountFromBaseUnits(fee),
       amount: amt,
-      nativeGasAmount: this.request.amountFromBaseUnits(nativeGasAmount),
+      nativeGasAmount: request.amountFromBaseUnits(nativeGasAmount),
     };
   }
 
@@ -201,17 +205,22 @@ export class AutomaticCCTPRoute<N extends Network>
     };
   }
 
-  async initiate(signer: Signer, quote: Q, to: ChainAddress): Promise<R> {
+  async initiate(
+    request: RouteTransferRequest<N>,
+    signer: Signer,
+    quote: Q,
+    to: ChainAddress,
+  ): Promise<R> {
     const { params } = quote;
     let transfer = this.toTransferDetails(
       params,
       Wormhole.chainAddress(signer.chain(), signer.address()),
       to,
     );
-    let txids = await CircleTransfer.transfer<N>(this.request.fromChain, transfer, signer);
+    let txids = await CircleTransfer.transfer<N>(request.fromChain, transfer, signer);
 
     const msg = await CircleTransfer.getTransferMessage(
-      this.request.fromChain,
+      request.fromChain,
       txids[txids.length - 1]!.txid,
     );
 
@@ -225,12 +234,6 @@ export class AutomaticCCTPRoute<N extends Network>
   }
 
   public override async *track(receipt: R, timeout?: number) {
-    yield* CircleTransfer.track(
-      this.wh,
-      receipt,
-      timeout,
-      this.request.fromChain,
-      this.request.toChain,
-    );
+    yield* CircleTransfer.track(this.wh, receipt, timeout);
   }
 }

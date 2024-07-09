@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-solana-core",
-  "version": "0.7.1-beta.2",
+  "version": "0.7.3-beta.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -45,8 +45,8 @@
     "prettier": "prettier --write ./src"
   },
   "dependencies": {
-    "@wormhole-foundation/sdk-connect": "0.7.1-beta.2",
-    "@wormhole-foundation/sdk-solana": "0.7.1-beta.2",
+    "@wormhole-foundation/sdk-connect": "0.7.3-beta.0",
+    "@wormhole-foundation/sdk-solana": "0.7.3-beta.0",
     "@coral-xyz/borsh": "0.29.0",
     "@coral-xyz/anchor": "0.29.0",
     "@solana/web3.js": "1.91.7"

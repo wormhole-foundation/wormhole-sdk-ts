@@ -1,6 +1,7 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
 import { amount, circle, contracts } from "@wormhole-foundation/sdk-base";
 import type {
+  ChainAddress,
   ChainContext,
   CircleTransferDetails,
   Signer,
@@ -21,7 +22,7 @@ import type {
   ValidatedTransferParams,
   ValidationResult,
 } from "../types.js";
-import { ChainAddress } from "@wormhole-foundation/sdk-definitions";
+import type { RouteTransferRequest } from "../request.js";
 
 export namespace CCTPRoute {
   export type Options = {
@@ -73,7 +74,7 @@ export class CCTPRoute<N extends Network>
     return [Wormhole.chainAddress(chain, circle.usdcContract.get(network, chain)!)];
   }
 
-  // get the liist of destination tokens that may be recieved on the destination chain
+  // get the list of destination tokens that may be received on the destination chain
   static async supportedDestinationTokens<N extends Network>(
     sourceToken: TokenId,
     fromChain: ChainContext<N>,
@@ -101,8 +102,8 @@ export class CCTPRoute<N extends Network>
     };
   }
 
-  async validate(params: Tp): Promise<Vr> {
-    const amount = this.request.parseAmount(params.amount);
+  async validate(request: RouteTransferRequest<N>, params: Tp): Promise<Vr> {
+    const amount = request.parseAmount(params.amount);
 
     const validatedParams: Vp = {
       normalizedParams: {
@@ -115,10 +116,10 @@ export class CCTPRoute<N extends Network>
     return { valid: true, params: validatedParams };
   }
 
-  async quote(params: Vp): Promise<QR> {
+  async quote(request: RouteTransferRequest<N>, params: Vp): Promise<QR> {
     try {
-      return this.request.displayQuote(
-        await CircleTransfer.quoteTransfer(this.request.fromChain, this.request.toChain, {
+      return request.displayQuote(
+        await CircleTransfer.quoteTransfer(request.fromChain, request.toChain, {
           automatic: false,
           amount: amount.units(params.normalizedParams.amount),
           ...params.options,
@@ -133,16 +134,21 @@ export class CCTPRoute<N extends Network>
     }
   }
 
-  async initiate(signer: Signer, quote: Q, to: ChainAddress): Promise<R> {
+  async initiate(
+    request: RouteTransferRequest<N>,
+    signer: Signer,
+    quote: Q,
+    to: ChainAddress,
+  ): Promise<R> {
     const { params } = quote;
     const transfer = await CircleTransfer.destinationOverrides(
-      this.request.fromChain,
-      this.request.toChain,
+      request.fromChain,
+      request.toChain,
       this.toTransferDetails(params, Wormhole.chainAddress(signer.chain(), signer.address()), to),
     );
-    const txids = await CircleTransfer.transfer<N>(this.request.fromChain, transfer, signer);
+    const txids = await CircleTransfer.transfer<N>(request.fromChain, transfer, signer);
     const msg = await CircleTransfer.getTransferMessage(
-      this.request.fromChain,
+      request.fromChain,
       txids[txids.length - 1]!.txid,
     );
 
@@ -164,9 +170,10 @@ export class CCTPRoute<N extends Network>
       const { message, attestation } = att;
       if (!attestation) throw new Error(`No Circle attestation for ${id}`);
 
-      const cb = await this.request.toChain.getCircleBridge();
+      const toChain = await this.wh.getChain(receipt.to);
+      const cb = await toChain.getCircleBridge();
       const xfer = cb.redeem(message.payload.mintRecipient, message, attestation);
-      const dstTxids = await signSendWait<N, Chain>(this.request.toChain, xfer, signer);
+      const dstTxids = await signSendWait<N, Chain>(toChain, xfer, signer);
       return {
         ...receipt,
         state: TransferState.DestinationInitiated,
@@ -179,13 +186,7 @@ export class CCTPRoute<N extends Network>
   }
 
   public override async *track(receipt: R, timeout?: number) {
-    yield* CircleTransfer.track(
-      this.wh,
-      receipt,
-      timeout,
-      this.request.fromChain,
-      this.request.toChain,
-    );
+    yield* CircleTransfer.track(this.wh, receipt, timeout);
   }
 
   private toTransferDetails(
