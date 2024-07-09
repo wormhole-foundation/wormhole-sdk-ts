@@ -363,19 +363,6 @@ type ToConstMap<M extends MappingEntries, S extends Shape | undefined = undefine
   ? ConstMap<TM, D>
   : never;
 
-// type WidenArray<T extends RoArray> =
-//   T extends readonly [infer Head, ...infer Tail extends RoArray]
-//   ? [Widen<Head>, ...WidenArray<Tail>]
-//   : [];
-
-// type WidenParams<F extends Function> = WidenArray<Parameters<F>>;
-
-// //TODO neither Parameters<F> nor ReturnType<F> give the right results for GenericMappingFunc and
-// //  hence the decuded types of Has and Get are wrong too
-// type Has<F extends Function> = Function<WidenParams<F>, boolean>;
-// type Get<F extends Function> = (...args: WidenParams<F>) => ReturnType<F> | undefined;
-// type ConstMapRet<F extends Function> = F & { get: Get<F>, has: Has<F> };
-
 const isRecursiveTuple = (arr: RoArray) =>
   arr.length === 2 && !Array.isArray(arr[0]) && Array.isArray(arr[1]);
 
