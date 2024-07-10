@@ -6,11 +6,9 @@ import type {
   CustomConversion,
   NumSizeToPrimitive,
   NumType,
-  BytesType} from './layout.js';
-import {
-
-  numberMaxSize,
+  BytesType,
 } from './layout.js';
+import { defaultEndianness, numberMaxSize } from './layout.js';
 
 import {
   isNumType,
@@ -79,7 +77,7 @@ function internalDeserializeLayout(layout: Layout, encoded: BytesChunk): any {
 function deserializeNum<S extends number>(
   encoded: BytesChunk,
   size: S,
-  endianness: Endianness = "big",
+  endianness: Endianness = defaultEndianness,
   signed: boolean = false,
 ) {
   let val = 0n;
