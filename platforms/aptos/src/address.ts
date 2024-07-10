@@ -1,5 +1,5 @@
 import type { Address } from "@wormhole-foundation/sdk-connect";
-import { UniversalAddress, encoding, registerNative } from "@wormhole-foundation/sdk-connect";
+import { UniversalAddress, registerNative, encoding } from "@wormhole-foundation/sdk-connect";
 
 import { APTOS_SEPARATOR } from "./constants.js";
 import type { AnyAptosAddress } from "./types.js";

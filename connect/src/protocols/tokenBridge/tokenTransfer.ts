@@ -24,6 +24,8 @@ import {
   toNative,
   toUniversal,
   universalAddress,
+  UniversalAddress,
+  sha3_256,
 } from "@wormhole-foundation/sdk-definitions";
 import { signSendWait } from "../../common.js";
 import { DEFAULT_TASK_TIMEOUT } from "../../config.js";
@@ -503,6 +505,10 @@ export namespace TokenTransfer {
     // if the token id is actually native to the destination, return it
     if (lookup.chain === dstChain.chain) {
       return lookup as TokenId<DC>;
+    }
+
+    if (srcChain.chain === 'Aptos') {
+      lookup.address = new UniversalAddress(encoding.hex.encode(sha3_256(lookup.address.toString()), true));
     }
 
     // otherwise, figure out what the token address representing the wormhole-wrapped token we're transferring
