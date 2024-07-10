@@ -110,8 +110,7 @@ export const toChain = (chain: number | string | bigint): Chain => {
       if (isChainId(chain)) return chainIdToChain(chain);
       break;
     case "bigint":
-      if (chain < (1n << 16n) && isChainId(Number(chain)))
-        return chainIdToChain.get(Number(chain))!;
+      if (isChainId(Number(chain))) return chainIdToChain.get(Number(chain))!;
       break;
   }
   throw Error(`Cannot convert to Chain: ${chain}`);

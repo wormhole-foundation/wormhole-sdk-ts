@@ -7,18 +7,11 @@ export type LayoutObject = { readonly [key: string]: any };
 
 export const binaryLiterals = ["int", "uint", "bytes", "array", "switch"] as const;
 export type BinaryLiterals = typeof binaryLiterals[number];
-export type Endianness = "little" | "big"; //default is always big
+export type Endianness = "little" | "big";
+export const defaultEndianness = "big";
 
-//Why only a max value of 2**(6*8)?
-//quote from here: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isInteger#description
-//"In a similar sense, numbers around the magnitude of Number.MAX_SAFE_INTEGER will suffer from
-//  loss of precision and make Number.isInteger return true even when it's not an integer.
-//  (The actual threshold varies based on how many bits are needed to represent the decimal — for
-//  example, Number.isInteger(4500000000000000.1) is true, but
-//  Number.isInteger(4500000000000000.5) is false.)"
-//So we are being conservative and just stay away from threshold.
+export const numberMaxSize = 6; //Math.log2(Number.MAX_SAFE_INTEGER) / 8 = 6.625;
 export type NumberSize = 1 | 2 | 3 | 4 | 5 | 6;
-export const numberMaxSize = 6;
 
 export type NumSizeToPrimitive<Size extends number> =
   Size extends NumberSize
@@ -50,7 +43,7 @@ interface FixedOmittableCustom<T extends PrimitiveType> {
 //  holds either the number of bytes (for bytes) or elements (for array)
 export interface LengthPrefixed {
   readonly lengthSize: NumberSize,
-  readonly lengthEndianness?: Endianness, //default is big
+  readonly lengthEndianness?: Endianness, //see defaultEndianness
   // //restricts the datarange of lengthSize to a maximum value to prevent out of memory
   // //  attacks/issues
   // readonly maxLength?: number,
@@ -60,7 +53,7 @@ export interface LengthPrefixed {
 interface NumLayoutItemBase<T extends NumType, Signed extends Boolean>
     extends LayoutItemBase<Signed extends true ? "int" : "uint"> {
   size: T extends bigint ? number : NumberSize,
-  endianness?: Endianness, //default is big
+  endianness?: Endianness, //see defaultEndianness
 };
 
 export interface FixedPrimitiveNum<
@@ -155,7 +148,7 @@ type IdProperLayoutPairs =
 type DistributiveAtLeast1<T> = T extends any ? readonly [T, ...T[]] : never;
 export interface SwitchLayoutItem extends LayoutItemBase<"switch"> {
   readonly idSize: NumberSize,
-  readonly idEndianness?: Endianness, //default is big
+  readonly idEndianness?: Endianness, //see defaultEndianness
   readonly idTag?: string,
   readonly layouts:
     DistributiveAtLeast1<IdProperLayoutPair<PlainId> | IdProperLayoutPair<ConversionId>>,
