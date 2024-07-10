@@ -76,6 +76,7 @@ import type {
 import { range, zip } from './array.js';
 import type { Widen, RoArray, RoArray2D, RoPair } from './metaprogramming.js';
 
+
 export type ShallowMapping<M extends RoArray<readonly [PropertyKey, unknown]>> =
   { readonly [E in M[number]as E[0]]: E[1] };
 

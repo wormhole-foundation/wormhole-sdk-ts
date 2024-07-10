@@ -1,9 +1,35 @@
-import type { NumSizeToPrimitive, LayoutToType, CustomConversion } from './layout.js';
+import type {
+  Endianness,
+  NumberSize,
+  NumSizeToPrimitive,
+  LayoutToType,
+  CustomConversion
+} from './layout.js';
 import { numberMaxSize } from './layout.js';
 import type { CustomizableBytes, CustomizableBytesReturn } from './utils.js';
 import { customizableBytes } from './utils.js';
 
-//TODO implement enum item
+export function enumItem<
+  const E extends readonly (readonly [string, number])[]
+>(entries: E, opts?: {size?: NumberSize, endianness?: Endianness}) {
+  const valueToName = Object.fromEntries(entries.map(([name, value]) => [value, name]));
+  const nameToValue = Object.fromEntries(entries);
+  return {
+    binary: "uint",
+    size: opts?.size ?? 1,
+    endianness: opts?.endianness ?? "big",
+    custom: {
+      to: (encoded: number): E[number][0] => {
+        const name = valueToName[encoded];
+        if (name === undefined)
+          throw new Error(`Invalid enum value: ${encoded}`);
+
+        return name;
+      },
+      from: (name: E[number][0]) => nameToValue[name]!,
+    }
+  } as const;
+}
 
 const baseOptionItem = <const T extends CustomizableBytes>(someType: T) => ({
   binary: "switch",
@@ -67,29 +93,31 @@ export type BitsetItem<
   };
 };
 
-export const bitsetItem = <
+export function bitsetItem<
   const B extends readonly (string | undefined)[],
   const S extends number = BitsizeToBytesize<B["length"]>,
->(bitnames: B, size?: S): BitsetItem<B, S> => ({
-  binary: "uint",
-  size: (size ?? Math.ceil(bitnames.length / 8)) as S,
-  custom: {
-    to: (encoded: NumSizeToPrimitive<S>): Bitset<B> => {
-      const ret: Bitset<B> = {} as Bitset<B>;
-      for (let i = 0; i < bitnames.length; ++i)
-        if (bitnames[i]) //skip undefined and empty string
-          //always use bigint for simplicity
-          ret[bitnames[i] as keyof Bitset<B>] = (BigInt(encoded) & (1n << BigInt(i))) !== 0n;
+>(bitnames: B, size?: S): BitsetItem<B, S> {
+  return {
+    binary: "uint",
+    size: (size ?? Math.ceil(bitnames.length / 8)) as S,
+    custom: {
+      to: (encoded: NumSizeToPrimitive<S>): Bitset<B> => {
+        const ret: Bitset<B> = {} as Bitset<B>;
+        for (let i = 0; i < bitnames.length; ++i)
+          if (bitnames[i]) //skip undefined and empty string
+            //always use bigint for simplicity
+            ret[bitnames[i] as keyof Bitset<B>] = (BigInt(encoded) & (1n << BigInt(i))) !== 0n;
 
-      return ret;
-    },
-    from: (obj: Bitset<B>): NumSizeToPrimitive<S> => {
-      let val = 0n;
-      for (let i = 0; i < bitnames.length; ++i)
-        if (bitnames[i] && obj[bitnames[i] as keyof Bitset<B>])
-          val |= 1n << BigInt(i);
+        return ret;
+      },
+      from: (obj: Bitset<B>): NumSizeToPrimitive<S> => {
+        let val = 0n;
+        for (let i = 0; i < bitnames.length; ++i)
+          if (bitnames[i] && obj[bitnames[i] as keyof Bitset<B>])
+            val |= 1n << BigInt(i);
 
-      return (bitnames.length > numberMaxSize ? val : Number(val)) as NumSizeToPrimitive<S>;
+        return (bitnames.length > numberMaxSize ? val : Number(val)) as NumSizeToPrimitive<S>;
+      },
     },
-  },
-});
+  } as const
+}

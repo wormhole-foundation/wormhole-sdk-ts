@@ -66,8 +66,8 @@ export function getRegisterChainAccounts(
     config: deriveTokenBridgeConfigKey(tokenBridgeProgramId),
     endpoint: deriveEndpointKey(
       tokenBridgeProgramId,
-      toChainId(vaa.payload.foreignChain),
-      vaa.payload.foreignAddress.toUint8Array(),
+      toChainId(vaa.payload.actionArgs.foreignChain),
+      vaa.payload.actionArgs.foreignAddress.toUint8Array(),
     ),
     vaa: CoreUtils.derivePostedVaaKey(wormholeProgramId, Buffer.from(vaa.hash)),
     claim: CoreUtils.deriveClaimKey(
@@ -143,7 +143,7 @@ export function getUpgradeContractAccounts(
     ),
     upgradeAuthority: CoreUtils.deriveUpgradeAuthorityKey(tokenBridgeProgramId),
     spill: new PublicKey(spill === undefined ? payer : spill),
-    implementation: new PublicKey(vaa.payload.newContract),
+    implementation: new PublicKey(vaa.payload.actionArgs.newContract),
     programData: utils.deriveUpgradeableProgramKey(tokenBridgeProgramId),
     tokenBridgeProgram: new PublicKey(tokenBridgeProgramId),
     rent: SYSVAR_RENT_PUBKEY,

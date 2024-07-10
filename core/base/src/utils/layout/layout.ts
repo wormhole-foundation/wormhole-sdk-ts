@@ -20,12 +20,16 @@ export type NumSizeToPrimitive<Size extends number> =
   ? bigint
   : number | bigint;
 
+//TODO introduce an optional size property that specifies the number of required bytes to
+//  allow for more efficient size calculation before serialization
 export type FixedConversion<FromType extends PrimitiveType | LayoutObject, ToType> = {
+  //TODO readonly size?: number,
   readonly to: ToType,
   readonly from: FromType,
 };
 
 export type CustomConversion<FromType extends PrimitiveType | LayoutObject, ToType> = {
+  //TODO readonly size?: (val: ToType) => number,
   readonly to: (val: FromType) => ToType,
   readonly from: (val: ToType) => FromType,
 };
