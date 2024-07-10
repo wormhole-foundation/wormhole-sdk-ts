@@ -121,8 +121,7 @@ const chainNetworkNativeChainIdEntries = [
   ],
 ] as const satisfies MapLevels<[Network, Chain, bigint | string]>;
 
-// @ts-ignore
-export const networkChainToNativeChainId = constMap(chainNetworkNativeChainIdEntries, [[0, 1], 2]);
+export const networkChainToNativeChainId = constMap(chainNetworkNativeChainIdEntries);
 
 type NetworkChainToNativeChainId = ToMapping<typeof chainNetworkNativeChainIdEntries>;
 export type PlatformToNativeChainIds<

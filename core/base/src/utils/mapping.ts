@@ -74,7 +74,8 @@ import type {
   ElementIndexPairs,
 } from './array.js';
 import { range, zip } from './array.js';
-import type { Function, Widen, RoArray, RoArray2D, RoPair } from './metaprogramming.js';
+import type { Widen, RoArray, RoArray2D, RoPair } from './metaprogramming.js';
+
 
 export type ShallowMapping<M extends RoArray<readonly [PropertyKey, unknown]>> =
   { readonly [E in M[number]as E[0]]: E[1] };
@@ -177,20 +178,20 @@ type ProcessNextKeyColmn<KC extends CartesianSet<MappableKey>, VR extends RoArra
   : ExcludeIndexes<KC, 0> extends infer KCR extends CartesianSet<MappableKey>
   //KRIA = key row indexes array
   ? ToMapEntries<ElementIndexPairs<KC[0]>> extends infer KRIA extends MappingEntries<RoArray<number>>
-  ? [...{
-    [K in keyof KRIA]: [
-      KRIA[K][0],
-      ProcessNextKeyColmn<
-        Transpose<OnlyIndexes<Transpose<KCR>, KRIA[K][1]>>,
-        OnlyIndexes<VR, KRIA[K][1]>
-      >
-    ]
-  }]
-  : never
+    ? [...{
+      [K in keyof KRIA]: [
+        KRIA[K][0],
+        ProcessNextKeyColmn<
+          Transpose<OnlyIndexes<Transpose<KCR>, KRIA[K][1]>>,
+          OnlyIndexes<VR, KRIA[K][1]>
+        >
+      ]
+    }]
+    : never
   : never;
 
 //We encode leaf values as tuples of void (which does not constitute a value type and hence can't
-//  come from the user) and the actual value. This allows us to later distinguish wheter a value
+//  come from the user) and the actual value. This allows us to later distinguish whether a value
 //  is a single (singleton) leaf value and hence whether the mapping is injective (= only one value
 //  per full key group) or not.
 type LeafValue<T = unknown> = RoPair<void, T>;
@@ -243,11 +244,11 @@ type TransformMapping<M extends MappingEntries, S extends Shape | void = void> =
         ? KC["length"] extends Depth[number]
           ? CombineValueColumnsToLeafValues<VC> extends infer VR extends RoArray<LeafValue>
             ? ProcessNextKeyColmn<KC, VR> extends infer TM extends MappingEntries
-            ? [MaybeUnwrapValuesIfAllAreSingletons<TM, KC["length"]>, KC["length"]]
+              ? [MaybeUnwrapValuesIfAllAreSingletons<TM, KC["length"]>, KC["length"]]
+              : never
             : never
           : never
         : never
-      : never
       //if we don't have an explicit shape, take the first row and subtract 1 (for the value
       //  column) to determine the count of key columns
       : CRR[0] extends readonly [...infer KC extends RoArray, unknown]
@@ -261,16 +262,17 @@ type TransformMapping<M extends MappingEntries, S extends Shape | void = void> =
 
 type ObjectFromMappingEntries<M extends MappingEntries, D extends Depth[number]> = {
   [K in keyof M as (K extends `${number}` ? ToExtPropKey<M[K][0]> : never)]:
-  //@ts-ignore
-  M[K][1] extends infer V
-  ? D extends 1
-    ? V extends LeafValue<infer T>
-      ? T
-      : V extends RoArray<LeafValue>
-      ? [...{ [K2 in keyof V]: K2 extends `${number}` ? V[K2][1] : never }]
-      : V
-    : V extends MappingEntries
-    ? ObjectFromMappingEntries<V, Depth[D]>
+  M[K] extends infer ME extends MappingEntry ? 
+    ME[1] extends infer V
+    ? D extends 1
+      ? V extends LeafValue<infer T>
+        ? T
+        : V extends RoArray<LeafValue>
+        ? [...{ [K2 in keyof V]: K2 extends `${number}` ? V[K2][1] : never }]
+        : V
+      : V extends MappingEntries
+      ? ObjectFromMappingEntries<V, Depth[D]>
+      : never
     : never
   : never
 };
@@ -304,42 +306,63 @@ type RecursiveAccess<M, KA extends RoArray<MappableKey>> =
 //  as to avoid having to hardcode arity...)
 type GenericMappingFunc<M extends Mapped, D extends number> =
   D extends 1
-  ? <K1 extends FromExtPropKey<keyof M>>(...args: [K1]) =>
-    RecursiveAccess<M, [K1]>
+  ? <const K1 extends FromExtPropKey<keyof M>>(...args: [K1]) => RecursiveAccess<M, [K1]>
   : D extends 2
-  ? < K1 extends FromExtPropKey<keyof M>,
-    K2 extends FromExtPropKey<keyof RecursiveAccess<M, [K1]>>,
-  >(...args: [K1, K2]) => RecursiveAccess<M, [K1, K2]>
+  ? <const K1 extends FromExtPropKey<keyof M>,
+     const K2 extends FromExtPropKey<keyof RecursiveAccess<M, [K1]>>,
+    >(...args: [K1, K2]) => RecursiveAccess<M, [K1, K2]>
   : D extends 3
-  ? < K1 extends FromExtPropKey<keyof M>,
-    K2 extends FromExtPropKey<keyof RecursiveAccess<M, [K1]>>,
-    K3 extends FromExtPropKey<keyof RecursiveAccess<M, [K1, K2]>>,
-  >(...args: [K1, K2, K3]) => RecursiveAccess<M, [K1, K2, K3]>
+  ? <const K1 extends FromExtPropKey<keyof M>,
+     const K2 extends FromExtPropKey<keyof RecursiveAccess<M, [K1]>>,
+     const K3 extends FromExtPropKey<keyof RecursiveAccess<M, [K1, K2]>>,
+    >(...args: [K1, K2, K3]) => RecursiveAccess<M, [K1, K2, K3]>
   : D extends 4
-  ? < K1 extends FromExtPropKey<keyof M>,
-    K2 extends FromExtPropKey<keyof RecursiveAccess<M, [K1]>>,
-    K3 extends FromExtPropKey<keyof RecursiveAccess<M, [K1, K2]>>,
-    K4 extends FromExtPropKey<keyof RecursiveAccess<M, [K1, K2, K3]>>,
-  >(...args: [K1, K2, K3, K4]) => RecursiveAccess<M, [K1, K2, K3, K4]>
+  ? <const K1 extends FromExtPropKey<keyof M>,
+     const K2 extends FromExtPropKey<keyof RecursiveAccess<M, [K1]>>,
+     const K3 extends FromExtPropKey<keyof RecursiveAccess<M, [K1, K2]>>,
+     const K4 extends FromExtPropKey<keyof RecursiveAccess<M, [K1, K2, K3]>>,
+    >(...args: [K1, K2, K3, K4]) => RecursiveAccess<M, [K1, K2, K3, K4]>
   : never;
 
-type ToGenericMappingFunc<M extends MappingEntries, S extends Shape | undefined = undefined> =
+type SubMap<M extends Mapped, D extends number, K extends PropertyKey> =
+  K extends keyof M
+  ? M[K] extends Mapped
+    ? ConstMap<M[K], Depth[D]>
+    : never
+  : never;
+
+type SubMapFunc<M extends Mapped, D extends number> =
+  { readonly subMap:
+      <const K extends FromExtPropKey<keyof M>>(key: K) => SubMap<M, D, ToExtPropKey<K>>
+  };
+
+type KeysOfObjectUnion<T extends Object> = T extends Object ? keyof T : never;
+type ValsOfObjectUnion<T extends Object> = T extends Object ? T[keyof T] : never;
+
+type WidenedParamsAndRetRec<M extends Mapped, D extends number> =
+  D extends 1
+  ? [ValsOfObjectUnion<M>]
+  : M[keyof M] extends infer SubMapUnion extends Mapped
+  ? WidenedParamsAndRet<SubMapUnion, Depth[D]>
+  : never;
+
+type WidenedParamsAndRet<M extends Mapped, D extends number> =
+  [Widen<FromExtPropKey<KeysOfObjectUnion<M>>>, ...WidenedParamsAndRetRec<M, D>];
+
+type HasGetFuncs<M extends Mapped, D extends number> = 
+  WidenedParamsAndRet<M, D> extends [...infer P extends RoArray<unknown>, infer R]
+  ? { readonly has: (...args: P) => boolean, readonly get: (...args: P) => R | undefined }
+  : never;
+
+type ConstMap<M extends Mapped, D extends number> =
+  D extends 1
+  ? GenericMappingFunc<M, D> & HasGetFuncs<M, D>
+  : GenericMappingFunc<M, D> & HasGetFuncs<M, D> & SubMapFunc<M, D>;
+
+type ToConstMap<M extends MappingEntries, S extends Shape | undefined = undefined> =
   ToMappingAndDepth<M, S> extends [infer TM extends Mapped, infer D extends Depth[number]]
-  ? GenericMappingFunc<TM, D>
+  ? ConstMap<TM, D>
   : never;
-
-type WidenArray<T extends RoArray> =
-  T extends readonly [infer Head, ...infer Tail extends RoArray]
-  ? [Widen<Head>, ...WidenArray<Tail>]
-  : [];
-
-type WidenParams<F extends Function> = WidenArray<Parameters<F>>;
-
-//TODO neither Parameters<F> nor ReturnType<F> give the right results for GenericMappingFunc and
-//  hence the decuded types of Has and Get are wrong too
-type Has<F extends Function> = Function<WidenParams<F>, boolean>;
-type Get<F extends Function> = (...args: WidenParams<F>) => ReturnType<F> | undefined;
-type ConstMapRet<F extends Function> = F & { get: Get<F>, has: Has<F> };
 
 const isRecursiveTuple = (arr: RoArray) =>
   arr.length === 2 && !Array.isArray(arr[0]) && Array.isArray(arr[1]);
@@ -450,39 +473,28 @@ const toMapping = <
   return ret as ToMapping<M, S>;
 }
 
-const has = <const F extends Function>(f: F) =>
-  (...args: WidenParams<F>) => f(...args) !== undefined;
-
-type MaybeReturnType<F extends Function> = ReturnType<F> | null;
-
-const get = <const F extends Function>(f: F) =>
-  (...args: WidenParams<F>) => f(...args) as MaybeReturnType<F>;
-
 export function constMap<
   const M extends MappingEntries,
-  const S extends Shape | undefined = undefined //const type parameter is truly necessary here
->(
-  mappingEntries: M,
-  shape?: S
-): ConstMapRet<ToGenericMappingFunc<M, S>> {
+  const S extends Shape | undefined = undefined,
+>(mappingEntries: M, shape?: S): ToConstMap<M, S> {
   const mapping = toMapping(mappingEntries, shape);
-  const genericMappingFunc = ((...args: any[]) =>
+  const genericMappingFunc = ((...args: MappableKey[]) =>
     args.reduce((subMapping: any, key) =>
       subMapping ? subMapping[key.toString()] ?? undefined : undefined,
       mapping
-    )) as ToGenericMappingFunc<M, S>;
-
+    ));
   return Object.assign(genericMappingFunc, {
-    "get": get(genericMappingFunc),
-    "has": has(genericMappingFunc),
-  }) as ConstMapRet<ToGenericMappingFunc<M, S>>;
+    has: (...args: readonly MappableKey[]) => genericMappingFunc(...args) !== undefined,
+    get: (...args: readonly MappableKey[]) => genericMappingFunc(...args),
+    subMap: (key: MappableKey) => (mapping as any)[key.toString()],
+  }) as ToConstMap<M, S>;
 }
 
 //--- find a bunch of "tests" below
 
-//It's unclear to me how to even properly test Typescript types, seeing how there isn't even an
+// It's unclear to me how to even properly test Typescript types, seeing how there isn't even an
 //  equals operation...
-//So this will have to do for now...
+// So this will have to do for now...
 
 // const sample = [
 //   [
@@ -525,8 +537,11 @@ export function constMap<
 // const test1Entry1 = test1("Testnet", "Sepolia"); //11155111n
 // const test2 = constMap(sample, [[0,1],2]); //same as test1
 // const test2Entry1 = test2("Testnet", "Sepolia"); //same as test1Entry1
-// const test2Entry2 = test2.get("doesn't", "exist"); //undefined: bigint | undefined
+// const test2Entry2 = test2.get("doesn't", "exist"); //undefined: <bigint chain ids> | undefined
 // const test2Entry3 = test2.has("doesn't", "exist"); //false: boolean
+// const test3SubMap = test2.subMap("Testnet");
+// const test3Entry1 = test3SubMap("Sepolia"); //11155111n
+// const test3Entry2 = test3SubMap("Ethereum"); //5n
 
 // const test10 = constMap(sample, [[0,1],[0,1,2]]);
 // const test10Entry1 = test10("Testnet", "Sepolia"); //["Testnet", "Sepolia", 11155111n]

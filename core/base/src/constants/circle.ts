@@ -93,7 +93,7 @@ export const toCircleChainId = (
 ): CircleChainId => {
   switch (typeof chain) {
     case "string":
-      if (isCircleChain(network, chain)) return circleChainId.get(network, chain) as CircleChainId;
+      if (isCircleChain(network, chain)) return circleChainId.get(network, chain)!;
       break;
     case "number":
       if (isCircleChainId(network, chain)) return chain;

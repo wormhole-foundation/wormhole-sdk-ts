@@ -2,17 +2,6 @@ import type { RoArray, RoArray2D, IsUnion } from './metaprogramming.js';
 
 export const range = (length: number) => [...Array(length).keys()];
 
-export const concat = (...bytes: RoArray<Uint8Array>): Uint8Array => {
-  const len = bytes.reduce((acc, b) => acc + b.length, 0);
-  const result = new Uint8Array(len);
-  let offset = 0;
-  for (const b of bytes) {
-    result.set(b, offset);
-    offset += b.length;
-  }
-  return result;
-}
-
 //TODO the intent here is that number represents a number literal, but strictly speaking
 //  the type allows for unions of number literals (and an array of such unions)
 //The reason for not just sticking to unions is that unions lose order information which is

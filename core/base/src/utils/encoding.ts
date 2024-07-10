@@ -66,10 +66,26 @@ export const bignum = {
    *   optionally specify length, left padded with 0s to length
    */
   toBytes: (input: bigint | number, length?: number) => {
-    const b = hex.decode(bignum.toString(typeof input === "number" ? BigInt(input) : input));
+    if (typeof input === "number") input = bignum.toBigInt(input);
+    const b = hex.decode(bignum.toString(input));
     if (!length) return b;
+    if (length < b.length) throw new Error(`Can't fit ${input} into ${length} bytes.`);
     return bytes.zpad(b, length);
   },
+  /** safe cast from bigint to number */
+  toNumber: (input: bigint) => {
+    if (input > BigInt(Number.MAX_SAFE_INTEGER))
+      throw new Error(`Invalid cast: ${input} exceeds MAX_SAFE_INTEGER`);
+
+    return Number(input);
+  },
+  /** safe cast from number to bigint */
+  toBigInt: (input: number) => {
+    if (input > Number.MAX_SAFE_INTEGER)
+      throw new Error(`Invalid cast: ${input} exceeds MAX_SAFE_INTEGER`);
+
+    return BigInt(input);
+  }
 };
 
 /** Uint8Array encoding and decoding utilities */
