@@ -1,5 +1,5 @@
 import type { Address } from "@wormhole-foundation/sdk-connect";
-import { UniversalAddress, encoding, registerNative } from "@wormhole-foundation/sdk-connect";
+import { UniversalAddress, registerNative, encoding, sha3_256 } from "@wormhole-foundation/sdk-connect";
 
 import { APTOS_SEPARATOR } from "./constants.js";
 import type { AnyAptosAddress } from "./types.js";
@@ -69,7 +69,7 @@ export class AptosAddress implements Address {
     return this.address;
   }
   toUniversalAddress() {
-    return new UniversalAddress(this.toUint8Array());
+    return new UniversalAddress(encoding.hex.encode(sha3_256(this.toString()), true));
   }
 
   static instanceof(address: any): address is AptosAddress {
