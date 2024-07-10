@@ -69,7 +69,11 @@ export class AptosAddress implements Address {
     return this.address;
   }
   toUniversalAddress() {
-    return new UniversalAddress(encoding.hex.encode(sha3_256(this.toString()), true));
+    if (this.module) {
+      return new UniversalAddress(encoding.hex.encode(sha3_256(this.toString()), true));
+    } else {
+      return new UniversalAddress(this.toUint8Array());
+    }
   }
 
   static instanceof(address: any): address is AptosAddress {
