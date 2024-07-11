@@ -53,7 +53,7 @@ const messageKeySwitchLayout = {
   ],
 } as const satisfies LayoutItem;
 
-export const deviveryInstructionLayout = <const P extends CustomizableBytes = undefined>(
+export const deliveryInstructionLayout = <const P extends CustomizableBytes = undefined>(
   customPayload?: P,
 ) =>
   [
@@ -71,7 +71,7 @@ export const deviveryInstructionLayout = <const P extends CustomizableBytes = un
   ] as const;
 
 const namedPayloads = [
-  ["DeliveryInstruction", deviveryInstructionLayout()],
+  ["DeliveryInstruction", deliveryInstructionLayout()],
   [
     "RedeliveryInstruction",
     [
