@@ -5,3 +5,5 @@ export * from "./types.js";
 export * from "./chain.js";
 export * from "./signer.js";
 export * from "./utils.js";
+
+export * from "./constants.js";
