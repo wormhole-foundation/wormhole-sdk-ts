@@ -247,7 +247,6 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
     // Otherwise grab the vaa details from the origin tx
     const msgs = await Wormhole.parseMessageFromTx(originChain, txid);
     if (!msgs) throw new Error("No messages found in transaction");
-
     return await GatewayTransfer._fromMsgId(wh, msgs[0]!, timeout);
   }
 
@@ -445,6 +444,7 @@ export namespace GatewayTransfer {
     return ibcBridge.getTransferChannel(chain) !== null;
   }
 
+  // Get the signed Token Transfer VAA emitted either by the Gateway or the !Cosmos chain
   export async function getTransferVaa<N extends Network>(
     wh: Wormhole<N>,
     whm: WormholeMessageId | IbcMessageId,
@@ -474,6 +474,158 @@ export namespace GatewayTransfer {
     return vaa;
   }
 
+  // This will return the message id for the transfer
+  // It will be an IBC message id if the origin chain supports IBC
+  // Otherwise it will be a WormholeMessageId
+  export async function getTransferMessage<N extends Network, C extends Chain>(
+    wh: Wormhole<N>,
+    fromChain: ChainContext<N, C>,
+    txid: TxHash,
+  ): Promise<WormholeMessageId | IbcMessageId> {
+    const fromCosmos = await GatewayTransfer.isGatewayEnabled(
+      fromChain.chain,
+      wh.getChain(GatewayTransfer.chain),
+    );
+    if (fromCosmos) {
+      // Get the ibc tx info from the origin
+      const ibcBridge = await fromChain.getIbcBridge();
+      const [xfer] = await ibcBridge.lookupTransferFromTx(txid);
+      if (!xfer) throw new Error("No IBC transfer found in transaction");
+      return xfer.id;
+    }
+
+    // Otherwise grab the vaa details from the origin tx
+    const [msg] = await Wormhole.parseMessageFromTx(fromChain, txid);
+    if (!msg) throw new Error("No messages found in transaction");
+    return msg;
+  }
+
+  export async function getAttestation<N extends Network>(
+    wh: Wormhole<N>,
+    fromChain: ChainContext<N, Chain>,
+    toChain: ChainContext<N, Chain>,
+    id: WormholeMessageId | IbcMessageId,
+    timeout?: number,
+  ): Promise<TokenBridge.TransferVAA | IbcTransferData> {
+    if (isWormholeMessageId(id)) {
+      // transferring into cosmos
+      return await GatewayTransfer.getTransferVaa(wh, id);
+    }
+
+    const gw = wh.getChain(GatewayTransfer.chain);
+    const toCosmos = await GatewayTransfer.isGatewayEnabled(toChain.chain, gw);
+    if (toCosmos) {
+      // transferring between cosmos
+      const ibc = await fromChain.getIbcBridge();
+      const xfers = await fetchIbcXfer(ibc, id);
+      if (!xfers || xfers.length === 0) throw new Error("No IBC transfer found");
+      // TODO: why 1?
+      // IBC message leaving wormchain
+      return xfers[1]!.data;
+    }
+    // transferring out of cosmos
+    // If we're leaving cosmos, grab the VAA from the gateway
+    // now find the corresponding wormchain transaction given the ibcTransfer info
+    const retryInterval = 5000;
+    const gwIbc = await gw.getIbcBridge();
+    const task = () => gwIbc.lookupMessageFromIbcMsgId(id);
+    const whm = await retry<WormholeMessageId>(
+      task,
+      retryInterval,
+      timeout,
+      "Gateway:IbcBridge:LookupWormholeMessageFromIncomingIbcMessage",
+    );
+    if (!whm) throw new Error("Matching wormhole message not found after retries exhausted");
+    return await GatewayTransfer.getTransferVaa(wh, whm);
+  }
+
+  export async function getIbcInfo<N extends Network, C extends Chain>(
+    dstChain: ChainContext<N, C>,
+    gatewayTransfer: IbcTransferInfo,
+    timeout?: number,
+  ) {
+    // Finally, get the IBC transfer to the destination chain
+    const destIbcBridge = await dstChain.getIbcBridge();
+
+    const destTransferTask = () => fetchIbcXfer(destIbcBridge, gatewayTransfer.id);
+    const destTransfer = await retry<IbcTransferInfo[]>(
+      destTransferTask,
+      5000,
+      timeout,
+      "Destination:IbcBridge:WormchainTransferCompleted",
+    );
+
+    if (!destTransfer)
+      throw new Error(
+        "IBC Transfer into destination not found after retries exhausted" +
+          JSON.stringify(gatewayTransfer),
+      );
+
+    return destTransfer[0]!;
+  }
+
+  export async function getExternalGatewayRedeem(
+    wh: Wormhole<Network>,
+    vaa: TokenBridge.VAA<"TransferWithPayload">,
+    timeout: number = DEFAULT_TASK_TIMEOUT,
+  ) {
+    const vaaRedeemedRetryInterval = 2000;
+    const gateway = wh.getChain(GatewayTransfer.chain);
+    // Wait until the vaa is redeemed before trying to look up the
+    // transfer message
+    const wcTb = await gateway.getTokenBridge();
+
+    // Since we want to retry until its redeemed, return null
+    // in the case that its not redeemed
+    const isRedeemedTask = () => isTokenBridgeVaaRedeemed(wcTb, vaa);
+    const redeemed = await retry<boolean>(
+      isRedeemedTask,
+      vaaRedeemedRetryInterval,
+      timeout,
+      "Gateway:TokenBridge:IsVaaRedeemed",
+    );
+    if (!redeemed) throw new Error("VAA not redeemed after retries exhausted");
+
+    const msg = encoding.bytes.decode(vaa.payload.payload);
+    console.log(msg);
+
+    // Next, get the IBC transactions from wormchain
+    // Note: Because we search by GatewayTransferMsg payload
+    // there is a possibility of dupe messages being returned
+    // using a nonce should help
+    const gatewayIbcBridge = await gateway.getIbcBridge();
+    const wcTransferTask = () => fetchIbcXfer(gatewayIbcBridge, JSON.parse(msg));
+    const wcTransfers = await retry<IbcTransferInfo[]>(
+      wcTransferTask,
+      vaaRedeemedRetryInterval,
+      timeout,
+      "Gateway:IbcBridge:WormchainTransferInitiated",
+    );
+    if (!wcTransfers) throw new Error("Wormchain transfer not found after retries exhausted");
+    const [wcTransfer] = wcTransfers;
+    if (wcTransfer!.pending) {
+      // TODO: check if pending and bail(?) if so
+    }
+
+    return wcTransfer;
+  }
+
+  export async function getIbcTransfer(
+    chain: ChainContext<Network, Chain>,
+    txids: TransactionId[],
+  ) {
+    //
+    const originIbcbridge = await chain.getIbcBridge();
+
+    const transfers = (
+      await Promise.all(txids.map((tx) => originIbcbridge.lookupTransferFromTx(tx.txid)))
+    ).flat();
+
+    // I don't know why this would happen so lmk if you see this
+    if (transfers.length != 1) throw new Error("why?");
+    return transfers[0]!;
+  }
+
   export async function destinationOverrides<N extends Network>(
     srcChain: ChainContext<N>,
     dstChain: ChainContext<N>,
@@ -498,7 +650,7 @@ export namespace GatewayTransfer {
     return _transfer;
   }
 
-  // Lookup the token id for the destination chain given the source chain
+  // Lookup the token id for the destination chain or gateway given the source chain
   // and token id
   export async function lookupDestinationToken<
     N extends Network,
@@ -509,65 +661,32 @@ export namespace GatewayTransfer {
     dstChain: ChainContext<N, DC>,
     gateway: GatewayContext<N>,
     token: TokenId<SC>,
-  ): Promise<TokenId<DC>> {
-    // TODO: make sure that the destination token is right when transfering to solana
-    const fromGateway = await GatewayTransfer.isGatewayEnabled(srcChain.chain, gateway);
+  ): Promise<TokenId<DC> | TokenId<"Wormchain">> {
+    const [fromGateway, toGateway] = await Promise.all([
+      GatewayTransfer.isGatewayEnabled(srcChain.chain, gateway),
+      GatewayTransfer.isGatewayEnabled(dstChain.chain, gateway),
+    ]);
+
     if (fromGateway && isNative(token)) {
-      // TODO: what if this is a cosmos native token? (not literally "native")?
       throw new Error("Native transfer from Cosmos not supported");
     }
-    const toGateway = await GatewayTransfer.isGatewayEnabled(dstChain.chain, gateway);
-    if (fromGateway && toGateway) {
-      // transferring between two gateway enabled chains
-      throw new Error("Unsupported transfer");
-    } else if (fromGateway) {
-      // transferring from a gateway enabled chain to a non-gateway enabled chain
 
-      // get the wrapped asset on gateway from the source chain
-      // given the ibc address
-      const srcIbcBridge = await srcChain.getIbcBridge();
-      const gatewayWrapped = await srcIbcBridge.getGatewayAsset(token.address);
-
-      // get the original asset for the gateway wrapped asset
-      const gatewayTokenBridge = await gateway.getTokenBridge();
-      const originalAsset = await gatewayTokenBridge.getOriginalAsset(gatewayWrapped);
-      if (originalAsset.chain === dstChain.chain) {
-        return originalAsset as TokenId<DC>;
+    const lookup: TokenId<"Wormchain"> = await (async function () {
+      // Find the cw20 token on gateway, always
+      if (fromGateway) {
+        // we're coming from a gateway enabled chain
+        // find the cw20 address on the gateway
+        // given the ibc address from the source
+        const srcIbcBridge = await srcChain.getIbcBridge();
+        const address = await srcIbcBridge.getGatewayAsset(token.address);
+        return { chain: GatewayTransfer.chain, address };
+      } else {
+        return await TokenTransfer.lookupDestinationToken(srcChain, gateway, token);
       }
+    })();
 
-      const dstTokenBridge = await dstChain.getTokenBridge();
-      const foreignAsset = await dstTokenBridge.getWrappedAsset(originalAsset);
-      return { chain: dstChain.chain, address: foreignAsset };
-    } else {
-      // transferring from a non-gateway enabled chain to a gateway enabled chain
-
-      const lookup: TokenId = await (async function () {
-        if (isNative(token.address)) return await srcChain.getNativeWrappedTokenId();
-        try {
-          const srcTb = await srcChain.getTokenBridge();
-          // otherwise, check to see if it is a wrapped token locally
-          return await srcTb.getOriginalAsset(token.address);
-        } catch (e) {
-          // TODO: we should check the actual error here in case it's a network error
-          // not a from-chain native wormhole-wrapped one
-          return token;
-        }
-      })();
-
-      // First find the wrapped token created on gateway
-      const gwTb = await gateway.getTokenBridge();
-      const wrapped = await gwTb.getWrappedAsset(lookup);
-
-      // Now find the corresponding IBC addres that will show up on the final chain
-      // const dstIbc = await dstChain.getIbcBridge();
-      // const ibcAsset = dstIbc.getIbcAsset(wrapped);
-      // { chain: dstChain.chain, address: ibcAsset };
-
-      // TODO:
-      // we are returning something other than DC here, namely hardcoding to the gateway
-      // chain and gateway token address
-      return { chain: GatewayTransfer.chain, address: wrapped } as TokenId<DC>;
-    }
+    if (toGateway) return lookup;
+    return await TokenTransfer.lookupDestinationToken(gateway, dstChain, lookup);
   }
 
   export async function transfer<N extends Network>(
@@ -723,158 +842,6 @@ export namespace GatewayTransfer {
     }
 
     yield receipt;
-  }
-
-  // This will return the message id for the transfer
-  // It will be an IBC message id if the origin chain supports IBC
-  // Otherwise it will be a WormholeMessageId
-  export async function getTransferMessage<N extends Network, C extends Chain>(
-    wh: Wormhole<N>,
-    fromChain: ChainContext<N, C>,
-    txid: TxHash,
-  ): Promise<WormholeMessageId | IbcMessageId> {
-    const fromCosmos = await GatewayTransfer.isGatewayEnabled(
-      fromChain.chain,
-      wh.getChain(GatewayTransfer.chain),
-    );
-    if (fromCosmos) {
-      // Get the ibc tx info from the origin
-      const ibcBridge = await fromChain.getIbcBridge();
-      const [xfer] = await ibcBridge.lookupTransferFromTx(txid);
-      if (!xfer) throw new Error("No IBC transfer found in transaction");
-      return xfer.id;
-    }
-
-    // Otherwise grab the vaa details from the origin tx
-    const [msg] = await Wormhole.parseMessageFromTx(fromChain, txid);
-    if (!msg) throw new Error("No messages found in transaction");
-    return msg;
-  }
-
-  export async function getAttestation<N extends Network>(
-    wh: Wormhole<N>,
-    fromChain: ChainContext<N, Chain>,
-    toChain: ChainContext<N, Chain>,
-    id: WormholeMessageId | IbcMessageId,
-    timeout?: number,
-  ): Promise<TokenBridge.TransferVAA | IbcTransferData> {
-    if (isWormholeMessageId(id)) {
-      // transferring into cosmos
-      return await GatewayTransfer.getTransferVaa(wh, id);
-    }
-
-    const gw = wh.getChain(GatewayTransfer.chain);
-    const toCosmos = await GatewayTransfer.isGatewayEnabled(toChain.chain, gw);
-    if (toCosmos) {
-      // transferring between cosmos
-      const ibc = await fromChain.getIbcBridge();
-      const xfers = await fetchIbcXfer(ibc, id);
-      if (!xfers || xfers.length === 0) throw new Error("No IBC transfer found");
-      // TODO: why 1?
-      // IBC message leaving wormchain
-      return xfers[1]!.data;
-    }
-    // transferring out of cosmos
-    // If we're leaving cosmos, grab the VAA from the gateway
-    // now find the corresponding wormchain transaction given the ibcTransfer info
-    const retryInterval = 5000;
-    const gwIbc = await gw.getIbcBridge();
-    const task = () => gwIbc.lookupMessageFromIbcMsgId(id);
-    const whm = await retry<WormholeMessageId>(
-      task,
-      retryInterval,
-      timeout,
-      "Gateway:IbcBridge:LookupWormholeMessageFromIncomingIbcMessage",
-    );
-    if (!whm) throw new Error("Matching wormhole message not found after retries exhausted");
-    return await GatewayTransfer.getTransferVaa(wh, whm);
-  }
-
-  export async function getIbcInfo<N extends Network, C extends Chain>(
-    dstChain: ChainContext<N, C>,
-    gatewayTransfer: IbcTransferInfo,
-    timeout?: number,
-  ) {
-    // Finally, get the IBC transfer to the destination chain
-    const destIbcBridge = await dstChain.getIbcBridge();
-
-    const destTransferTask = () => fetchIbcXfer(destIbcBridge, gatewayTransfer.id);
-    const destTransfer = await retry<IbcTransferInfo[]>(
-      destTransferTask,
-      5000,
-      timeout,
-      "Destination:IbcBridge:WormchainTransferCompleted",
-    );
-
-    if (!destTransfer)
-      throw new Error(
-        "IBC Transfer into destination not found after retries exhausted" +
-          JSON.stringify(gatewayTransfer),
-      );
-
-    return destTransfer[0]!;
-  }
-
-  export async function getExternalGatewayRedeem(
-    wh: Wormhole<Network>,
-    vaa: TokenBridge.VAA<"TransferWithPayload">,
-    timeout: number = DEFAULT_TASK_TIMEOUT,
-  ) {
-    const vaaRedeemedRetryInterval = 2000;
-    const gateway = wh.getChain(GatewayTransfer.chain);
-    // Wait until the vaa is redeemed before trying to look up the
-    // transfer message
-    const wcTb = await gateway.getTokenBridge();
-
-    // Since we want to retry until its redeemed, return null
-    // in the case that its not redeemed
-    const isRedeemedTask = () => isTokenBridgeVaaRedeemed(wcTb, vaa);
-    const redeemed = await retry<boolean>(
-      isRedeemedTask,
-      vaaRedeemedRetryInterval,
-      timeout,
-      "Gateway:TokenBridge:IsVaaRedeemed",
-    );
-    if (!redeemed) throw new Error("VAA not redeemed after retries exhausted");
-
-    const msg = encoding.bytes.decode(vaa.payload.payload);
-    console.log(msg);
-
-    // Next, get the IBC transactions from wormchain
-    // Note: Because we search by GatewayTransferMsg payload
-    // there is a possibility of dupe messages being returned
-    // using a nonce should help
-    const gatewayIbcBridge = await gateway.getIbcBridge();
-    const wcTransferTask = () => fetchIbcXfer(gatewayIbcBridge, JSON.parse(msg));
-    const wcTransfers = await retry<IbcTransferInfo[]>(
-      wcTransferTask,
-      vaaRedeemedRetryInterval,
-      timeout,
-      "Gateway:IbcBridge:WormchainTransferInitiated",
-    );
-    if (!wcTransfers) throw new Error("Wormchain transfer not found after retries exhausted");
-    const [wcTransfer] = wcTransfers;
-    if (wcTransfer!.pending) {
-      // TODO: check if pending and bail(?) if so
-    }
-
-    return wcTransfer;
-  }
-
-  export async function getIbcTransfer(
-    chain: ChainContext<Network, Chain>,
-    txids: TransactionId[],
-  ) {
-    //
-    const originIbcbridge = await chain.getIbcBridge();
-
-    const transfers = (
-      await Promise.all(txids.map((tx) => originIbcbridge.lookupTransferFromTx(tx.txid)))
-    ).flat();
-
-    // I don't know why this would happen so lmk if you see this
-    if (transfers.length != 1) throw new Error("why?");
-    return transfers[0]!;
   }
 
   export async function quoteTransfer<N extends Network>(
