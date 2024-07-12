@@ -15,6 +15,7 @@ export enum TransferState {
   SourceFinalized, // Source chain transactions are finalized or whenever we have a message id
   Attested, // VAA or Circle Attestation is available
   DestinationInitiated, // Attestation is submitted to destination chain
+  DestinationQueued, // Transfer is queued on destination chain
   DestinationFinalized, // Destination transaction is finalized
 }
 
@@ -66,6 +67,18 @@ export interface RedeemedTransferReceipt<AT, SC extends Chain = Chain, DC extend
   originTxs: TransactionId<SC>[];
   attestation: Required<AT>;
   destinationTxs?: TransactionId<DC>[];
+}
+
+export interface DestinationQueuedTransferReceipt<
+  AT,
+  SC extends Chain = Chain,
+  DC extends Chain = Chain,
+> extends BaseTransferReceipt<SC, DC> {
+  state: TransferState.DestinationQueued;
+  originTxs: TransactionId<SC>[];
+  attestation: Required<AT>;
+  destinationTxs?: TransactionId<DC>[];
+  queueReleaseTime: Date;
 }
 
 export interface CompletedTransferReceipt<AT, SC extends Chain = Chain, DC extends Chain = Chain>
@@ -126,6 +139,7 @@ export type TransferReceipt<AT, SC extends Chain = Chain, DC extends Chain = Cha
   | SourceFinalizedTransferReceipt<AT, SC, DC>
   | AttestedTransferReceipt<AT, SC, DC>
   | RedeemedTransferReceipt<AT, SC, DC>
+  | DestinationQueuedTransferReceipt<AT, SC, DC>
   | CompletedTransferReceipt<AT, SC, DC>;
 
 // Quote with optional relayer fees if the transfer
