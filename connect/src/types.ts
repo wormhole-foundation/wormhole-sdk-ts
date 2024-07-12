@@ -154,4 +154,12 @@ export interface TransferQuote {
   // this will contain the amount of native gas that is to be minted
   // on the destination chain given the current swap rates
   destinationNativeGas?: bigint;
+  // If the transfer being quoted has any warnings
+  // such as high slippage or a delay, they will be included here
+  warnings?: TransferQuoteWarning[];
+}
+
+export interface TransferQuoteWarning {
+  message: string;
+  url?: string;
 }
