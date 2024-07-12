@@ -170,7 +170,10 @@ export class Wormhole<N extends Network> {
    */
   getPlatform<P extends Platform>(platformName: P): PlatformContext<N, P> {
     const platform = this._platforms.get(platformName);
-    if (!platform) throw new Error(`Not able to retrieve platform ${platform}`);
+    if (!platform)
+      throw new Error(
+        `Not able to retrieve platform ${platformName}. Did it get registered in the constructor?`,
+      );
     return platform as PlatformContext<N, P>;
   }
 

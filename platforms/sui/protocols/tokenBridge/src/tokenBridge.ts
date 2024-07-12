@@ -352,13 +352,7 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
 
     const coinType = (isNative(token) ? SUI_TYPE_ARG : token).toString();
 
-    const coins = (
-      await this.provider.getCoins({
-        owner: senderAddress,
-        coinType,
-      })
-    ).data;
-
+    const coins = await SuiPlatform.getCoins(this.provider, sender, coinType);
     const [primaryCoin, ...mergeCoins] = coins.filter((coin) =>
       isSameType(coin.coinType, coinType),
     );

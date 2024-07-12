@@ -52,7 +52,7 @@ export const getObjectFields = async (
   return getFieldsFromObjectResponse(res);
 };
 
-export async function getPackageId(provider: SuiClient, objectId: string): Promise<string> {
+export const getPackageId = async (provider: SuiClient, objectId: string): Promise<string> => {
   let currentPackage: { objectId: string; name: any } | undefined;
   let nextCursor;
   do {
@@ -82,7 +82,7 @@ export async function getPackageId(provider: SuiClient, objectId: string): Promi
     throw new Error("Unable to get package id");
 
   return fields["value"].fields["package"]! as string;
-}
+};
 
 export const getOldestEmitterCapObjectId = async (
   provider: SuiClient,
