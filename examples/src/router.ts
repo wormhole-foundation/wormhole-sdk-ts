@@ -77,13 +77,13 @@ import { getSigner } from "./helpers/index.js";
   // validate the transfer params passed, this returns a new type of ValidatedTransferParams
   // which (believe it or not) is a validated version of the input params
   // this new var must be passed to the next step, quote
-  const validated = await bestRoute.validate(transferParams);
+  const validated = await bestRoute.validate(tr, transferParams);
   if (!validated.valid) throw validated.error;
   console.log("Validated parameters: ", validated.params);
 
   // get a quote for the transfer, this too returns a new type that must
   // be passed to the next step, execute (if you like the quote)
-  const quote = await bestRoute.quote(validated.params);
+  const quote = await bestRoute.quote(tr, validated.params);
   if (!quote.success) throw quote.error;
   console.log("Best route quote: ", quote);
   // EXAMPLE_REQUEST_VALIDATE
@@ -94,7 +94,7 @@ import { getSigner } from "./helpers/index.js";
     // EXAMPLE_REQUEST_INITIATE
     // Now the transfer may be initiated
     // A receipt will be returned, guess what you gotta do with that?
-    const receipt = await bestRoute.initiate(sender.signer, quote, receiver.address);
+    const receipt = await bestRoute.initiate(tr, sender.signer, quote, receiver.address);
     console.log("Initiated transfer with receipt: ", receipt);
     // EXAMPLE_REQUEST_INITIATE
 
