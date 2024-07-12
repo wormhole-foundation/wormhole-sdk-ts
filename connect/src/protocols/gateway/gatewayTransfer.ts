@@ -7,6 +7,7 @@ import {
   toChain,
 } from "@wormhole-foundation/sdk-base";
 import type {
+  Attestation,
   AttestationId,
   ChainAddress,
   ChainContext,
@@ -40,15 +41,18 @@ import { DEFAULT_TASK_TIMEOUT } from "../../config.js";
 import { fetchIbcXfer, isTokenBridgeVaaRedeemed, retry } from "../../tasks.js";
 import type {
   AttestedTransferReceipt,
+  CompletedTransferReceipt,
+  RedeemedTransferReceipt,
   SourceFinalizedTransferReceipt,
   TransferQuote,
   AttestationReceipt as _AttestationReceipt,
   TransferReceipt as _TransferReceipt,
 } from "../../types.js";
-import { TransferState, isSourceFinalized, isSourceInitiated } from "../../types.js";
+import { TransferState, isAttested, isSourceFinalized, isSourceInitiated } from "../../types.js";
 import { Wormhole } from "../../wormhole.js";
 import { TokenTransfer } from "../index.js";
 import type { WormholeTransfer } from "../wormholeTransfer.js";
+import { isIbcMessageId } from "@wormhole-foundation/sdk-definitions";
 
 export type GatewayContext<N extends Network> = ChainContext<N, typeof GatewayTransfer.chain>;
 
@@ -504,7 +508,11 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
 export namespace GatewayTransfer {
   export type Protocol = "TokenBridge" | "IbcBridge";
 
-  export type AttestationReceipt = _AttestationReceipt<GatewayTransfer.Protocol>;
+  export type AttestationReceipt<PN extends Protocol = GatewayTransfer.Protocol> = {
+    id: AttestationId<PN>;
+    attestation?: Attestation<PN>;
+  };
+
   export type TransferReceipt<
     SC extends Chain = Chain,
     DC extends Chain = Chain,
@@ -591,10 +599,9 @@ export namespace GatewayTransfer {
       if (originalAsset.chain === dstChain.chain) {
         return originalAsset as TokenId<DC>;
       }
-      console.log("originalAsset:", originalAsset.address.toString());
+
       const dstTokenBridge = await dstChain.getTokenBridge();
       const foreignAsset = await dstTokenBridge.getWrappedAsset(originalAsset);
-      console.log("foreignAsset:", foreignAsset);
       return { chain: dstChain.chain, address: foreignAsset };
     } else {
       // transferring from a non-gateway enabled chain to a gateway enabled chain
@@ -612,16 +619,19 @@ export namespace GatewayTransfer {
         }
       })();
 
+      // First find the wrapped token created on gateway
       const gwTb = await gateway.getTokenBridge();
-      // wrappedAsset: wormhole1ml922hnp59jtq9a87arekvx60ezehwlg2v3j5pduplwkenfa68ksgmzxwr
       const wrapped = await gwTb.getWrappedAsset(lookup);
-      console.log(`${wrapped}`);
 
-      const dstIbc = await dstChain.getIbcBridge();
+      // Now find the corresponding IBC addres that will show up on the final chain
+      // const dstIbc = await dstChain.getIbcBridge();
+      // const ibcAsset = dstIbc.getIbcAsset(wrapped);
+      // { chain: dstChain.chain, address: ibcAsset };
 
-      const ibcAsset = dstIbc.getIbcAsset(wrapped);
-
-      return { chain: dstChain.chain, address: ibcAsset };
+      // TODO:
+      // we are returning something other than DC here, namely hardcoding to the gateway
+      // chain and gateway token address
+      return { chain: GatewayTransfer.chain, address: wrapped } as TokenId<DC>;
     }
   }
 
@@ -663,7 +673,7 @@ export namespace GatewayTransfer {
       transfer.amount,
       encoding.bytes.encode(JSON.stringify(msg)),
     );
-    return await signSendWait<N, Chain>(fromChain, xfer, signer);
+    return await signSendWait(fromChain, xfer, signer);
   }
 
   export async function transferFromCosmos<N extends Network>(
@@ -690,21 +700,21 @@ export namespace GatewayTransfer {
     wh: Wormhole<N>,
     receipt: GatewayTransfer.TransferReceipt<SC, DC>,
     timeout: number = DEFAULT_TASK_TIMEOUT,
-    fromChain?: ChainContext<N, SC>,
-    toChain?: ChainContext<N, DC>,
+    srcChain?: ChainContext<N, SC>,
+    dstChain?: ChainContext<N, DC>,
   ): AsyncGenerator<GatewayTransfer.TransferReceipt<SC, DC>> {
     // const start = Date.now();
     // const leftover = (start: number, max: number) => Math.max(max - (Date.now() - start), 0);
 
-    fromChain = fromChain ?? wh.getChain(receipt.from);
-    toChain = toChain ?? wh.getChain(receipt.to);
+    srcChain = srcChain ?? wh.getChain(receipt.from);
+    dstChain = dstChain ?? wh.getChain(receipt.to);
 
     // Check the source chain for initiation transaction
     // and capture the message id
     if (isSourceInitiated(receipt)) {
       if (receipt.originTxs.length === 0) throw "Origin transactions required to fetch message id";
       const { txid } = receipt.originTxs[receipt.originTxs.length - 1]!;
-      const msg = await GatewayTransfer.getTransferMessage(wh, fromChain, txid);
+      const msg = await GatewayTransfer.getTransferMessage(wh, srcChain, txid);
       receipt = {
         ...receipt,
         state: TransferState.SourceFinalized,
@@ -716,7 +726,7 @@ export namespace GatewayTransfer {
     if (isSourceFinalized(receipt)) {
       if (!receipt.attestation.id) throw "Attestation id required to fetch attestation";
       const { id } = receipt.attestation;
-      const attestation = await GatewayTransfer.getAttestation(wh, fromChain, toChain, id);
+      const attestation = await GatewayTransfer.getAttestation(wh, srcChain, dstChain, id);
       if (!attestation) throw new Error("Attestation not found");
       receipt = {
         ...receipt,
@@ -726,45 +736,52 @@ export namespace GatewayTransfer {
       yield receipt;
     }
 
-    //// First try to grab the tx status from the API
-    //// Note: this requires a subsequent async step on the backend
-    //// to have the dest txid populated, so it may be delayed by some time
-    /*
-    if (isAttested(receipt) || isSourceFinalized(receipt)) {
-      if (!receipt.attestation.id) throw "Attestation id required to fetch redeem tx";
-      const { id } = receipt.attestation;
-      const txStatus = await wh.getTransactionStatus(id, leftover(start, timeout));
-      if (txStatus && txStatus.globalTx?.destinationTx?.txHash) {
-        const { chainId, txHash } = txStatus.globalTx.destinationTx;
+    if (isAttested(receipt)) {
+      // Coming from IBC, we need to check the status of the IBC transfer
+      // Currently using the whscan API but could use gateway to see if the ibc message
+      // has been redeemed (and a VAA emitted if we're leaving cosmos)
+      if (isIbcMessageId(receipt.attestation.id)) {
+        // If the attestation is IBC, we have to use the
+        const txStatus = await wh.getTransactionStatus(receipt.originTxs[0]!.txid, timeout);
+        if (txStatus && txStatus.globalTx?.destinationTx?.txHash) {
+          const { chainId, txHash } = txStatus.globalTx.destinationTx;
+          receipt = {
+            ...receipt,
+            destinationTxs: [{ chain: toChain(chainId) as DC, txid: txHash }],
+            state: TransferState.DestinationInitiated,
+          } satisfies RedeemedTransferReceipt<GatewayTransfer.AttestationReceipt>;
+          yield receipt;
+        }
+      } else {
+        const { attestation } =
+          receipt.attestation as GatewayTransfer.AttestationReceipt<"TokenBridge">;
+
+        if (attestation!.payloadName !== "TransferWithPayload")
+          throw new Error("Invalid attestation protocol");
+
+        // If the attestation is a WormholeMessageId, we need to check the status of the VAA
+        const gatewayRedeemData = await GatewayTransfer.getGatewayRedeem(wh, attestation!, timeout);
         receipt = {
           ...receipt,
-          destinationTxs: [{ chain: toChainName(chainId) as DC, txid: txHash }],
+          attestation: { id: gatewayRedeemData!.id, attestation: gatewayRedeemData!.data },
           state: TransferState.DestinationInitiated,
         } satisfies RedeemedTransferReceipt<GatewayTransfer.AttestationReceipt>;
+        yield receipt;
+
+        const dstRedeemData = await GatewayTransfer.getIbcRedeem(
+          dstChain,
+          gatewayRedeemData!,
+          timeout,
+        );
+
+        receipt = {
+          ...receipt,
+          attestation: { id: dstRedeemData!.id, attestation: dstRedeemData!.data },
+          state: TransferState.DestinationFinalized,
+        } satisfies CompletedTransferReceipt<GatewayTransfer.AttestationReceipt>;
+        yield receipt;
       }
-      yield receipt;
     }
-      */
-
-    //// Fall back to asking the destination chain if this VAA has been redeemed
-    //// Note: We do not get any destinationTxs with this method
-    //if (isAttested(receipt)) {
-    //  if (!receipt.attestation.attestation) throw "Signed Attestation required to check for redeem";
-
-    //  let isComplete = await TokenTransfer.isTransferComplete(
-    //    toChain,
-    //    receipt.attestation.attestation as TokenTransfer.VAA,
-    //  );
-
-    //  if (isComplete) {
-    //    receipt = {
-    //      ...receipt,
-    //      state: TransferState.DestinationFinalized,
-    //    } satisfies CompletedTransferReceipt<TokenTransfer.AttestationReceipt>;
-    //  }
-
-    //  yield receipt;
-    //}
 
     yield receipt;
   }
@@ -806,7 +823,8 @@ export namespace GatewayTransfer {
       // transferring into cosmos
       return await GatewayTransfer.getTransferVaa(wh, id);
     }
-    const gw = await wh.getChain(GatewayTransfer.chain);
+
+    const gw = wh.getChain(GatewayTransfer.chain);
     const toCosmos = await GatewayTransfer.isGatewayEnabled(toChain.chain, gw);
     if (toCosmos) {
       // transferring between cosmos
@@ -831,6 +849,77 @@ export namespace GatewayTransfer {
     );
     if (!whm) throw new Error("Matching wormhole message not found after retries exhausted");
     return await GatewayTransfer.getTransferVaa(wh, whm);
+  }
+
+  export async function getIbcRedeem(
+    dstChain: ChainContext<Network, Chain>,
+    gatewayTransfer: IbcTransferInfo,
+    timeout?: number,
+  ) {
+    // Finally, get the IBC transfer to the destination chain
+    const destIbcBridge = await dstChain.getIbcBridge();
+
+    const destTransferTask = () => fetchIbcXfer(destIbcBridge, gatewayTransfer.id);
+    const destTransfer = await retry<IbcTransferInfo[]>(
+      destTransferTask,
+      5000,
+      timeout,
+      "Destination:IbcBridge:WormchainTransferCompleted",
+    );
+
+    if (!destTransfer)
+      throw new Error(
+        "IBC Transfer into destination not found after retries exhausted" +
+          JSON.stringify(gatewayTransfer),
+      );
+
+    return destTransfer[0]!;
+  }
+
+  export async function getGatewayRedeem(
+    wh: Wormhole<Network>,
+    vaa: TokenBridge.VAA<"TransferWithPayload">,
+    timeout: number = DEFAULT_TASK_TIMEOUT,
+  ) {
+    const vaaRedeemedRetryInterval = 2000;
+    const gateway = wh.getChain(GatewayTransfer.chain);
+    // Wait until the vaa is redeemed before trying to look up the
+    // transfer message
+    const wcTb = await gateway.getTokenBridge();
+
+    // Since we want to retry until its redeemed, return null
+    // in the case that its not redeemed
+    const isRedeemedTask = () => isTokenBridgeVaaRedeemed(wcTb, vaa);
+    const redeemed = await retry<boolean>(
+      isRedeemedTask,
+      vaaRedeemedRetryInterval,
+      timeout,
+      "Gateway:TokenBridge:IsVaaRedeemed",
+    );
+    if (!redeemed) throw new Error("VAA not redeemed after retries exhausted");
+
+    const msg = encoding.bytes.decode(vaa.payload.payload);
+    console.log(msg);
+
+    // Next, get the IBC transactions from wormchain
+    // Note: Because we search by GatewayTransferMsg payload
+    // there is a possibility of dupe messages being returned
+    // using a nonce should help
+    const gatewayIbcBridge = await gateway.getIbcBridge();
+    const wcTransferTask = () => fetchIbcXfer(gatewayIbcBridge, JSON.parse(msg));
+    const wcTransfers = await retry<IbcTransferInfo[]>(
+      wcTransferTask,
+      vaaRedeemedRetryInterval,
+      timeout,
+      "Gateway:IbcBridge:WormchainTransferInitiated",
+    );
+    if (!wcTransfers) throw new Error("Wormchain transfer not found after retries exhausted");
+    const [wcTransfer] = wcTransfers;
+    if (wcTransfer!.pending) {
+      // TODO: check if pending and bail(?) if so
+    }
+
+    return wcTransfer;
   }
 
   export async function quoteTransfer<N extends Network>(

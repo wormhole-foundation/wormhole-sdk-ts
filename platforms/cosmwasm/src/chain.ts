@@ -12,9 +12,17 @@ export class CosmwasmChain<
 
     const parsedToken = new CosmwasmAddress(token);
     if (parsedToken.denomType === "ibc") {
-      const ibcBridge = await this.getIbcBridge();
-      const gatewayAsset = await ibcBridge.getGatewayAsset(token);
-      return this.platform.getChain("Wormchain").getDecimals(gatewayAsset);
+      try {
+        const ibcBridge = await this.getIbcBridge();
+        const gatewayAsset = await ibcBridge.getGatewayAsset(token);
+        try {
+          return this.platform.getChain("Wormchain").getDecimals(gatewayAsset);
+        } catch (e) {
+          throw new Error("Could not get original decimals for gateway asset");
+        }
+      } catch (e) {
+        throw new Error("Could not get gateway asset for token");
+      }
     }
 
     return super.getDecimals(token);
