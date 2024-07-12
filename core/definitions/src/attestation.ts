@@ -93,7 +93,7 @@ export type IbcMessageId = {
   dstChannel: string;
   sequence: number;
 };
-export function isIbcMessageId(thing: IbcMessageId | any): thing is IbcMessageId {
+export function isIbcMessageId(thing: any): thing is IbcMessageId {
   return (
     (<IbcMessageId>thing).dstChannel !== undefined &&
     (<IbcMessageId>thing).srcChannel !== undefined &&
