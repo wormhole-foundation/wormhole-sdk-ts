@@ -343,13 +343,11 @@ export namespace TokenTransfer {
     receipt: TokenTransfer.TransferReceipt<SC, DC>,
     timeout: number = DEFAULT_TASK_TIMEOUT,
     fromChain?: ChainContext<N, SC>,
-    toChain?: ChainContext<N, DC>,
   ): AsyncGenerator<TokenTransfer.TransferReceipt<SC, DC>> {
     const start = Date.now();
     const leftover = (start: number, max: number) => Math.max(max - (Date.now() - start), 0);
 
     fromChain = fromChain ?? wh.getChain(receipt.from);
-    toChain = toChain ?? wh.getChain(receipt.to);
 
     // Check the source chain for initiation transaction
     // and capture the message id
@@ -403,8 +401,10 @@ export namespace TokenTransfer {
     if (isAttested(receipt) || isRedeemed(receipt)) {
       if (!receipt.attestation.attestation) throw "Signed Attestation required to check for redeem";
 
+      const ben = wh.getChain(receipt.attestation.attestation.payload.to.chain);
+
       let isComplete = await TokenTransfer.isTransferComplete(
-        toChain,
+        ben,
         receipt.attestation.attestation as TokenTransfer.VAA,
       );
 

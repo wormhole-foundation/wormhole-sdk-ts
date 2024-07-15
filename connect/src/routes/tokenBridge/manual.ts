@@ -168,6 +168,15 @@ export class TokenBridgeRoute<N extends Network>
       destinationTxs: dstTxIds,
     };
   }
+  
+  /*
+  async resume(sourceChain: Chain, sourceTx: string): Promise<R> {
+    const partialReceipt: SourceInitiatedTransferReceipt<typeof sourceChain> = {
+      from: sourceChain,
+      state: TransferState.SourceInitiated,
+    }
+  }
+  */
 
   public override async *track(receipt: R, timeout?: number) {
     yield* TokenTransfer.track(this.wh, receipt, timeout);
