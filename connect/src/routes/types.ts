@@ -70,9 +70,18 @@ export type Quote<
 
   // Route-specific quote details, optional
   details?: D;
+
+  // If the transfer being quoted has any warnings
+  // such as high slippage or a delay, they will be included here
+  warnings?: QuoteWarning[];
 };
 
 export type QuoteError = {
   success: false;
   error: Error;
 };
+
+export interface QuoteWarning {
+  message: string;
+  url?: string;
+}
