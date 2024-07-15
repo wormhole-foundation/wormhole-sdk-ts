@@ -122,6 +122,12 @@ export function isRedeemed<AT>(
   return receipt.state === TransferState.DestinationInitiated;
 }
 
+export function isDestinationQueued<AT>(
+  receipt: TransferReceipt<AT>,
+): receipt is DestinationQueuedTransferReceipt<AT> {
+  return receipt.state === TransferState.DestinationQueued;
+}
+
 export function isCompleted<AT>(
   receipt: TransferReceipt<AT>,
 ): receipt is CompletedTransferReceipt<AT> {
