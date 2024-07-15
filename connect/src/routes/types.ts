@@ -81,7 +81,7 @@ export type QuoteError = {
   error: Error;
 };
 
-export interface QuoteWarning {
+export type QuoteWarning = {
   message: string;
   url?: string;
-}
+};
