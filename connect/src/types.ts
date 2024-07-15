@@ -176,10 +176,12 @@ export interface TransferQuote {
   destinationNativeGas?: bigint;
   // If the transfer being quoted has any warnings
   // such as high slippage or a delay, they will be included here
-  warnings?: TransferQuoteWarning[];
+  warnings?: QuoteWarning[];
 }
 
-export interface TransferQuoteWarning {
-  message: string;
-  url?: string;
-}
+export type QuoteWarning = DestinationCapacityWarning;
+
+export type DestinationCapacityWarning = {
+  type: "DestinationCapacityWarning";
+  delayDurationSec?: number;
+};
