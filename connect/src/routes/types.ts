@@ -1,5 +1,5 @@
 import type { TokenId } from "@wormhole-foundation/sdk-definitions";
-import type { AttestationReceipt, TransferReceipt } from "../types.js";
+import type { AttestationReceipt, QuoteWarning, TransferReceipt } from "../types.js";
 import type { amount } from "@wormhole-foundation/sdk-base";
 
 // Extend Options to provide custom options
@@ -79,9 +79,4 @@ export type Quote<
 export type QuoteError = {
   success: false;
   error: Error;
-};
-
-export type QuoteWarning = {
-  message: string;
-  url?: string;
 };
