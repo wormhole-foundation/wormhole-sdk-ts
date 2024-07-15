@@ -401,6 +401,10 @@ export namespace TokenTransfer {
     if (isAttested(receipt) || isRedeemed(receipt)) {
       if (!receipt.attestation.attestation) throw "Signed Attestation required to check for redeem";
 
+      if (receipt.attestation.attestation.payloadName === 'AttestMeta') {
+        throw new Error('no');
+      }
+
       const ben = wh.getChain(receipt.attestation.attestation.payload.to.chain);
 
       let isComplete = await TokenTransfer.isTransferComplete(

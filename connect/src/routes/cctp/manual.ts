@@ -170,7 +170,7 @@ export class CCTPRoute<N extends Network>
       const { message, attestation } = att;
       if (!attestation) throw new Error(`No Circle attestation for ${id}`);
 
-      const toChain = await this.wh.getChain(receipt.to);
+      const toChain = this.wh.getChain(receipt.to);
       const cb = await toChain.getCircleBridge();
       const xfer = cb.redeem(message.payload.mintRecipient, message, attestation);
       const dstTxids = await signSendWait<N, Chain>(toChain, xfer, signer);
