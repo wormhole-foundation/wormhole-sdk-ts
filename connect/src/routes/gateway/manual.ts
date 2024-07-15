@@ -23,6 +23,7 @@ import type {
 } from "../../types.js";
 import { TransferState } from "../../types.js";
 import { Wormhole } from "../../wormhole.js";
+import { RouteTransferRequest } from "../request.js";
 
 export namespace ManualGatewayRoute {
   export type Options = {
@@ -95,20 +96,20 @@ export class ManualGatewayRoute<N extends Network>
     return { payload: undefined };
   }
 
-  async validate(params: Tp): Promise<Vr> {
+  async validate(request: RouteTransferRequest<N>, params: Tp): Promise<Vr> {
     const validatedParams: Vp = {
       amount: params.amount,
-      normalizedParams: { amount: amount.parse(params.amount, this.request.source.decimals) },
+      normalizedParams: { amount: amount.parse(params.amount, request.source.decimals) },
       options: { payload: params.options?.payload },
     };
     return { valid: true, params: validatedParams };
   }
 
-  async quote(params: Vp): Promise<QR> {
+  async quote(request: RouteTransferRequest<N>, params: Vp): Promise<QR> {
     try {
-      return this.request.displayQuote(
-        await GatewayTransfer.quoteTransfer(this.wh, this.request.fromChain, this.request.toChain, {
-          token: this.request.source.id,
+      return request.displayQuote(
+        await GatewayTransfer.quoteTransfer(this.wh, request.fromChain, request.toChain, {
+          token: request.source.id,
           amount: amount.units(params.normalizedParams.amount),
           ...params.options,
         }),
@@ -122,23 +123,24 @@ export class ManualGatewayRoute<N extends Network>
     }
   }
 
-  async initiate(signer: Signer, quote: Q, to: ChainAddress): Promise<R> {
+  async initiate(
+    request: RouteTransferRequest<N>,
+    signer: Signer,
+    quote: Q,
+    to: ChainAddress,
+  ): Promise<R> {
     const transfer = await GatewayTransfer.destinationOverrides(
-      this.request.fromChain,
-      this.request.toChain,
+      request.fromChain,
+      request.toChain,
       this.wh.getChain(GatewayTransfer.chain),
       this.toTransferDetails(
+        request,
         quote.params,
         Wormhole.chainAddress(signer.chain(), signer.address()),
         to,
       ),
     );
-    const txids = await GatewayTransfer.transfer<N>(
-      this.wh,
-      this.request.fromChain,
-      transfer,
-      signer,
-    );
+    const txids = await GatewayTransfer.transfer<N>(this.wh, request.fromChain, transfer, signer);
     return {
       from: transfer.from.chain,
       to: transfer.to.chain,
@@ -148,14 +150,7 @@ export class ManualGatewayRoute<N extends Network>
   }
 
   public override async *track(receipt: R, timeout?: number) {
-    //yield* GatewayTransfer.track(
-    //  this.wh,
-    //  receipt,
-    //  timeout,
-    //  this.request.fromChain,
-    //  this.request.toChain,
-    //);
-    throw new Error("Not implemented");
+    yield* GatewayTransfer.track(this.wh, receipt, timeout);
   }
 
   async complete(signer: Signer, receipt: R): Promise<R> {
@@ -177,6 +172,7 @@ export class ManualGatewayRoute<N extends Network>
   }
 
   private toTransferDetails(
+    request: RouteTransferRequest<N>,
     params: Vp,
     from: ChainAddress,
     to: ChainAddress,
@@ -184,7 +180,7 @@ export class ManualGatewayRoute<N extends Network>
     return {
       from,
       to,
-      token: this.request.source.id,
+      token: request.source.id,
       amount: amount.units(params.normalizedParams.amount),
       ...params.options,
     };
