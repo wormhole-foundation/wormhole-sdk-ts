@@ -402,7 +402,7 @@ export namespace TokenTransfer {
       if (!receipt.attestation.attestation) throw "Signed Attestation required to check for redeem";
 
       if (receipt.attestation.attestation.payloadName === 'AttestMeta') {
-        throw new Error('no');
+        throw new Error('Unable to track an AttestMeta receipt');
       }
 
       let isComplete = await TokenTransfer.isTransferComplete(
