@@ -6,6 +6,7 @@ import type {
   Signer,
   TokenId,
   TokenTransferDetails,
+  TransactionId,
 } from "@wormhole-foundation/sdk-definitions";
 import { TokenTransfer } from "../../protocols/tokenBridge/tokenTransfer.js";
 import type {
@@ -170,19 +171,19 @@ export class TokenBridgeRoute<N extends Network>
     };
   }
   
-  async resume(fromChain: Chain, txid: string): Promise<R> {
-    const attestation = await TokenTransfer.getTransferVaa(this.wh, txid);
-    const id = await TokenTransfer.getTransferMessage(this.wh.getChain(fromChain), txid);
+  async resume(tx: TransactionId): Promise<R> {
+    const attestation = await TokenTransfer.getTransferVaa(this.wh, tx.txid);
+    const id = await TokenTransfer.getTransferMessage(this.wh.getChain(tx.chain), tx.txid);
 
     return {
-      from: fromChain,
+      from: tx.chain,
       to: attestation.payload.to.chain,
       state: TransferState.Attested,
       attestation: {
         attestation, id
       },
-      originTxs: [{ chain: fromChain, txid }],
-    } satisfies AttestedTransferReceipt<TokenTransfer.AttestationReceipt, typeof fromChain>
+      originTxs: [{ chain: tx.chain, txid: tx.txid }],
+    } satisfies AttestedTransferReceipt<TokenTransfer.AttestationReceipt, typeof tx.chain>
   }
 
   public override async *track(receipt: R, timeout?: number) {

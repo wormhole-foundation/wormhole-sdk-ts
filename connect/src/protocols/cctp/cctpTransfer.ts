@@ -209,7 +209,7 @@ export class CircleTransfer<N extends Network = Network>
   }
 
   // init from source tx hash
-  private static async fromTransaction<N extends Network>(
+  static async fromTransaction<N extends Network>(
     wh: Wormhole<N>,
     from: TransactionId,
     timeout: number,
