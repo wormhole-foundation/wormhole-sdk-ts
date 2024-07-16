@@ -405,10 +405,8 @@ export namespace TokenTransfer {
         throw new Error('no');
       }
 
-      const ben = wh.getChain(receipt.attestation.attestation.payload.to.chain);
-
       let isComplete = await TokenTransfer.isTransferComplete(
-        ben,
+        wh.getChain(receipt.attestation.attestation.payload.to.chain),
         receipt.attestation.attestation as TokenTransfer.VAA,
       );
 
