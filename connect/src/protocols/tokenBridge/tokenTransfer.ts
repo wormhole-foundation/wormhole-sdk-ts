@@ -507,8 +507,10 @@ export namespace TokenTransfer {
       return lookup as TokenId<DC>;
     }
 
-    if (srcChain.chain === 'Aptos') {
-      lookup.address = new UniversalAddress(encoding.hex.encode(sha3_256(lookup.address.toString()), true));
+    if (srcChain.chain === "Aptos") {
+      lookup.address = new UniversalAddress(
+        encoding.hex.encode(sha3_256(lookup.address.toString()), true),
+      );
     }
 
     // otherwise, figure out what the token address representing the wormhole-wrapped token we're transferring
@@ -702,7 +704,10 @@ export namespace TokenTransfer {
 
       // when native gas is requested on solana, the amount must be at least the rent-exempt amount
       // or the transaction could fail if the account does not have enough lamports
-      if (dstChain.chain === "Solana" && _destinationNativeGas < solanaMinBalanceForRentExemptAccount) {
+      if (
+        dstChain.chain === "Solana" &&
+        _destinationNativeGas < solanaMinBalanceForRentExemptAccount
+      ) {
         throw new Error(
           `Native gas amount must be at least ${solanaMinBalanceForRentExemptAccount} lamports`,
         );

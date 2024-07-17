@@ -1,14 +1,14 @@
-import { Chain, guardians } from "@wormhole-foundation/sdk-base";
+import type { Chain} from "@wormhole-foundation/sdk-base";
+import { guardians } from "@wormhole-foundation/sdk-base";
+import type { PayloadLiteral, VAA } from "../../index.js";
 import {
-  PayloadLiteral,
   Signature,
   SignatureUtils,
-  VAA,
   createVAA,
   deserialize,
   serialize,
 } from "../../index.js";
-import { UniversalAddress } from "../../universalAddress.js";
+import type { UniversalAddress } from "../../universalAddress.js";
 import { keccak256 } from "../../utils.js";
 
 interface Guardian {

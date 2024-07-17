@@ -22,7 +22,8 @@ import {
   toNative,
 } from "@wormhole-foundation/sdk-definitions";
 import { getCircleAttestationWithRetry } from "./circle-api.js";
-import { WormholeConfig, applyWormholeConfigOverrides, WormholeConfigOverrides } from "./config.js";
+import type { WormholeConfig, WormholeConfigOverrides } from "./config.js";
+import { applyWormholeConfigOverrides } from "./config.js";
 import { DEFAULT_TASK_TIMEOUT } from "./config.js";
 import { CircleTransfer } from "./protocols/cctp/cctpTransfer.js";
 import { TokenTransfer } from "./protocols/tokenBridge/tokenTransfer.js";

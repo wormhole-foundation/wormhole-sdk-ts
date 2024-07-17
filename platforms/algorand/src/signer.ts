@@ -5,7 +5,7 @@ import type {
   Signer,
   UnsignedTransaction,
 } from "@wormhole-foundation/sdk-connect";
-import algosdk from "algosdk";
+import type algosdk from "algosdk";
 import { assignGroupID, mnemonicToSecretKey } from "algosdk";
 import type { AlgorandChains, TransactionSignerPair } from "./types.js";
 import { AlgorandPlatform } from "./platform.js";

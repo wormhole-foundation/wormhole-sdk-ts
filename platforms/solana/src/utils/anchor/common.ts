@@ -1,4 +1,4 @@
-import { Idl, IdlField, IdlTypeDef, IdlType } from './idl.js';
+import type { Idl, IdlField, IdlTypeDef, IdlType } from './idl.js';
 import { IdlError } from './error.js';
 
 export function accountSize(idl: Idl, idlAccount: IdlTypeDef) {

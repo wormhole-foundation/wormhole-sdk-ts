@@ -1,6 +1,6 @@
 import type { Chain, Network, Platform, PlatformToChains } from "@wormhole-foundation/sdk-base";
 import { chainToPlatform, isChain } from "@wormhole-foundation/sdk-base";
-import { Contracts } from "./contracts.js";
+import type { Contracts } from "./contracts.js";
 import type { WormholeRegistry } from "./registry.js";
 import type { RpcConnection } from "./rpc.js";
 import type { ChainsConfig } from "./types.js";

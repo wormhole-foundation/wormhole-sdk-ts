@@ -4,11 +4,11 @@ import type {
   Transaction,
   TransactionInstruction,
   VersionedTransaction,
-} from '@solana/web3.js';
+
+  PublicKey} from '@solana/web3.js';
 import {
   ComputeBudgetProgram,
   Keypair,
-  PublicKey,
   SendTransactionError,
   TransactionExpiredBlockheightExceededError,
   TransactionMessage,
