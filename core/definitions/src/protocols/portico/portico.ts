@@ -5,7 +5,7 @@ import type { TokenAddress, TokenId } from "../../types.js";
 import type { UnsignedTransaction } from "../../unsignedTransaction.js";
 import type { ProtocolVAA } from "./../../vaa/index.js";
 import { porticoFlagSetLayout, porticoPayloadLayout } from "./porticoLayout.js";
-import { EmptyPlatformMap } from "../../protocol.js";
+import type { EmptyPlatformMap } from "../../protocol.js";
 
 import "../../registry.js";
 declare module "../../registry.js" {

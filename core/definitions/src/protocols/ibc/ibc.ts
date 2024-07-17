@@ -6,7 +6,7 @@ import type { TokenAddress, TokenId, TxHash } from "../../types.js";
 import type { UnsignedTransaction } from "../../unsignedTransaction.js";
 
 import "../../registry.js";
-import { EmptyPlatformMap } from "../../protocol.js";
+import type { EmptyPlatformMap } from "../../protocol.js";
 declare module "../../registry.js" {
   export namespace WormholeRegistry {
     interface ProtocolToInterfaceMapping<N, C> {

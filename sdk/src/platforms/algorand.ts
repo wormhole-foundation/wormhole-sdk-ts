@@ -1,6 +1,6 @@
 import * as _algorand from "@wormhole-foundation/sdk-algorand";
 import { applyChainsConfigConfigOverrides } from "@wormhole-foundation/sdk-connect";
-import { PlatformDefinition } from "../index.js";
+import type { PlatformDefinition } from "../index.js";
 
 /** Platform and protocol definitions for Algorand */
 const algorand: PlatformDefinition<typeof _algorand._platform> = {

@@ -1,4 +1,4 @@
-import { CustomConversion, UintLayoutItem } from "@wormhole-foundation/sdk-base";
+import type { CustomConversion, UintLayoutItem } from "@wormhole-foundation/sdk-base";
 
 export const boolItem = {
   binary: "uint",

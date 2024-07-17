@@ -11,7 +11,7 @@ import type {
   ValidatedTransferParams,
   ValidationResult,
 } from "./types.js";
-import { ChainAddress } from "@wormhole-foundation/sdk-definitions";
+import type { ChainAddress } from "@wormhole-foundation/sdk-definitions";
 
 export abstract class Route<
   N extends Network,

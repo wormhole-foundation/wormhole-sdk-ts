@@ -1,6 +1,6 @@
 import type { Layout } from "@wormhole-foundation/sdk-base";
 import type { WormholeRegistry } from "../registry.js";
-import { ProtocolName } from "../protocol.js";
+import type { ProtocolName } from "../protocol.js";
 
 // //LayoutLiteralToLayoutMapping is the compile-time analog/complement to the runtime
 // //  payload factory. It uses TypeScript's interface merging mechanic to "dynamically" extend known

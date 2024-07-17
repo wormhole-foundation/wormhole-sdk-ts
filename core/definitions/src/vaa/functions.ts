@@ -13,7 +13,7 @@ import type { DistributiveVAA, LayoutLiteralToPayload, Payload, VAA } from "./va
 import { baseLayout, decomposeLiteral, envelopeLayout, headerLayout } from "./vaa.js";
 
 import { sequenceItem, universalAddressItem } from "../layout-items/index.js";
-import { ProtocolName } from "../protocol.js";
+import type { ProtocolName } from "../protocol.js";
 import { keccak256 } from "../utils.js";
 
 export function getPayloadLayout<LL extends LayoutLiteral>(layoutLiteral: LL) {

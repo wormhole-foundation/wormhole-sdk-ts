@@ -1,6 +1,6 @@
-import type { Layout } from '@wormhole-foundation/sdk-connect';
+import type { Layout ,
+  LayoutToType} from '@wormhole-foundation/sdk-connect';
 import {
-  LayoutToType,
   deserializeLayout,
   layoutItems,
 } from '@wormhole-foundation/sdk-connect';

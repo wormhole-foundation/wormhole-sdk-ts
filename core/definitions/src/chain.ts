@@ -10,7 +10,7 @@ import { getTokenByAddress } from "@wormhole-foundation/sdk-base/tokens";
 import type { ChainAddress, UniversalOrNative } from "./address.js";
 import { toNative } from "./address.js";
 import type { WormholeMessageId } from "./attestation.js";
-import {
+import type {
   AutomaticCircleBridge,
   CircleBridge,
   Contracts,

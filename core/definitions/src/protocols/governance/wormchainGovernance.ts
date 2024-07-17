@@ -1,6 +1,6 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
 
-import { EmptyPlatformMap } from "../../protocol.js";
+import type { EmptyPlatformMap } from "../../protocol.js";
 import "../../registry.js";
 declare module "../../registry.js" {
   export namespace WormholeRegistry {
