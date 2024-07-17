@@ -35,7 +35,7 @@ npm install @wormhole-foundation/sdk-evm-tokenbridge
 
 ## Usage
 
-Getting started is simple, just import Wormhole and the [Platform](#platforms) modules you wish to support
+Getting started is simple, just import the 'meta' Wormhole package, that makes sure all [Platform](#platforms) modules are installed.
 
 <!--EXAMPLE_IMPORTS-->
 ```ts
@@ -107,7 +107,8 @@ Understanding several higher level concepts of the SDK will help in using it eff
 
 Every chain is its own special snowflake but many of them share similar functionality. The `Platform` modules provide a consistent interface for interacting with the chains that share a platform.
 
-Each platform can be installed separately so that dependencies can stay as slim as possible.
+Each platform can be installed separately so that dependencies can stay as slim as possible.  
+See all supported platforms [here](https://github.com/wormhole-foundation/connect-sdk/tree/main/platforms)
 
 ### Chain Context
 
