@@ -343,6 +343,7 @@ export namespace TokenTransfer {
     receipt: TokenTransfer.TransferReceipt<SC, DC>,
     timeout: number = DEFAULT_TASK_TIMEOUT,
     fromChain?: ChainContext<N, SC>,
+    toChain?: ChainContext<N, DC>,
   ): AsyncGenerator<TokenTransfer.TransferReceipt<SC, DC>> {
     const start = Date.now();
     const leftover = (start: number, max: number) => Math.max(max - (Date.now() - start), 0);
@@ -406,7 +407,7 @@ export namespace TokenTransfer {
       }
 
       let isComplete = await TokenTransfer.isTransferComplete(
-        wh.getChain(receipt.attestation.attestation.payload.to.chain),
+        toChain ?? wh.getChain(receipt.attestation.attestation.payload.to.chain),
         receipt.attestation.attestation as TokenTransfer.VAA,
       );
 
