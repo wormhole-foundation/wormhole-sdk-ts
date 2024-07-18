@@ -187,7 +187,7 @@ export class CCTPRoute<N extends Network>
   }
 
   async resume(txid: TransactionId): Promise<R> {
-    const xfer = await CircleTransfer.fromTransaction(this.wh, txid, 10 * 1000);
+    const xfer = await CircleTransfer.from(this.wh, txid, 10 * 1000);
     return CircleTransfer.getReceipt(xfer);
   }
 

@@ -171,7 +171,7 @@ export class TokenBridgeRoute<N extends Network>
   }
   
   async resume(txid: TransactionId): Promise<R> {
-    const xfer = await TokenTransfer.fromTransaction(this.wh, txid, 10 * 1000);
+    const xfer = await TokenTransfer.from(this.wh, txid, 10 * 1000);
     return TokenTransfer.getReceipt(xfer);
   }
 
