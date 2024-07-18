@@ -349,7 +349,6 @@ export namespace TokenTransfer {
     const leftover = (start: number, max: number) => Math.max(max - (Date.now() - start), 0);
 
     fromChain = fromChain ?? wh.getChain(receipt.from);
-    toChain = toChain ?? wh.getChain(receipt.to);
 
     // Check the source chain for initiation transaction
     // and capture the message id
@@ -403,8 +402,12 @@ export namespace TokenTransfer {
     if (isAttested(receipt) || isRedeemed(receipt)) {
       if (!receipt.attestation.attestation) throw "Signed Attestation required to check for redeem";
 
+      if (receipt.attestation.attestation.payloadName === 'AttestMeta') {
+        throw new Error('Unable to track an AttestMeta receipt');
+      }
+
       let isComplete = await TokenTransfer.isTransferComplete(
-        toChain,
+        toChain ?? wh.getChain(receipt.attestation.attestation.payload.to.chain),
         receipt.attestation.attestation as TokenTransfer.VAA,
       );
 

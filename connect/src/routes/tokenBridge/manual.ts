@@ -6,6 +6,7 @@ import type {
   Signer,
   TokenId,
   TokenTransferDetails,
+  TransactionId,
 } from "@wormhole-foundation/sdk-definitions";
 import { TokenTransfer } from "../../protocols/tokenBridge/tokenTransfer.js";
 import type {
@@ -167,6 +168,11 @@ export class TokenBridgeRoute<N extends Network>
       state: TransferState.DestinationInitiated,
       destinationTxs: dstTxIds,
     };
+  }
+  
+  async resume(txid: TransactionId): Promise<R> {
+    const xfer = await TokenTransfer.from(this.wh, txid, 10 * 1000);
+    return TokenTransfer.getReceipt(xfer);
   }
 
   public override async *track(receipt: R, timeout?: number) {

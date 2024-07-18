@@ -6,6 +6,7 @@ import type {
   CircleTransferDetails,
   Signer,
   TokenId,
+  TransactionId,
 } from "@wormhole-foundation/sdk-definitions";
 import { CircleBridge, isSameToken } from "@wormhole-foundation/sdk-definitions";
 import { signSendWait } from "../../common.js";
@@ -170,7 +171,7 @@ export class CCTPRoute<N extends Network>
       const { message, attestation } = att;
       if (!attestation) throw new Error(`No Circle attestation for ${id}`);
 
-      const toChain = await this.wh.getChain(receipt.to);
+      const toChain = this.wh.getChain(receipt.to);
       const cb = await toChain.getCircleBridge();
       const xfer = cb.redeem(message.payload.mintRecipient, message, attestation);
       const dstTxids = await signSendWait<N, Chain>(toChain, xfer, signer);
@@ -183,6 +184,11 @@ export class CCTPRoute<N extends Network>
       //
       return receipt;
     }
+  }
+
+  async resume(txid: TransactionId): Promise<R> {
+    const xfer = await CircleTransfer.from(this.wh, txid, 10 * 1000);
+    return CircleTransfer.getReceipt(xfer);
   }
 
   public override async *track(receipt: R, timeout?: number) {
