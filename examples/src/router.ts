@@ -1,16 +1,24 @@
-import { Wormhole, canonicalAddress, routes, wormhole } from "@wormhole-foundation/sdk";
+import {
+  SourceInitiatedTransferReceipt,
+  TransferState,
+  Wormhole,
+  canonicalAddress,
+  routes,
+  wormhole,
+} from "@wormhole-foundation/sdk";
 
 import evm from "@wormhole-foundation/sdk/evm";
 import solana from "@wormhole-foundation/sdk/solana";
+import cosmwasm from "@wormhole-foundation/sdk/cosmwasm";
 import { getSigner } from "./helpers/index.js";
 
 (async function () {
   // Setup
-  const wh = await wormhole("Testnet", [evm, solana]);
+  const wh = await wormhole("Testnet", [evm, solana, cosmwasm]);
 
   // Get chain contexts
-  const sendChain = wh.getChain("Avalanche");
-  const destChain = wh.getChain("Solana");
+  const sendChain = wh.getChain("Solana");
+  const destChain = wh.getChain("Injective");
 
   // get signers from local config
   const sender = await getSigner(sendChain);
@@ -19,11 +27,12 @@ import { getSigner } from "./helpers/index.js";
   // EXAMPLE_RESOLVER_CREATE
   // create new resolver, passing the set of routes to consider
   const resolver = wh.resolver([
-    routes.TokenBridgeRoute, // manual token bridge
-    routes.AutomaticTokenBridgeRoute, // automatic token bridge
-    routes.CCTPRoute, // manual CCTP
-    routes.AutomaticCCTPRoute, // automatic CCTP
-    routes.AutomaticPorticoRoute, // Native eth transfers
+    // routes.TokenBridgeRoute, // manual token bridge
+    //routes.AutomaticTokenBridgeRoute, // automatic token bridge
+    //routes.CCTPRoute, // manual CCTP
+    //routes.AutomaticCCTPRoute, // automatic CCTP
+    //routes.AutomaticPorticoRoute, // Native eth transfers
+    routes.AutomaticGatewayRoute,
   ]);
   // EXAMPLE_RESOLVER_CREATE
 
@@ -37,7 +46,11 @@ import { getSigner } from "./helpers/index.js";
 
   // Grab the first one for the example
   // const sendToken = srcTokens[0]!;
-  const sendToken = Wormhole.tokenId(sendChain.chain, "native");
+  const sendToken = Wormhole.tokenId(
+    sendChain.chain,
+    "So11111111111111111111111111111111111111112",
+    //"ibc/A8B0B746B5AB736C2D8577259B510D56B8AF598008F68041E3D634BCDE72BE97",
+  );
 
   // given the send token, what can we possibly get on the destination chain?
   const destTokens = await resolver.supportedDestinationTokens(sendToken, sendChain, destChain);
@@ -88,20 +101,33 @@ import { getSigner } from "./helpers/index.js";
   console.log("Best route quote: ", quote);
   // EXAMPLE_REQUEST_VALIDATE
 
-  // If you're sure you want to do this, set this to true
-  const imSure = false;
-  if (imSure) {
-    // EXAMPLE_REQUEST_INITIATE
-    // Now the transfer may be initiated
-    // A receipt will be returned, guess what you gotta do with that?
-    const receipt = await bestRoute.initiate(tr, sender.signer, quote, receiver.address);
-    console.log("Initiated transfer with receipt: ", receipt);
-    // EXAMPLE_REQUEST_INITIATE
+  const receipt: SourceInitiatedTransferReceipt = {
+    state: TransferState.SourceInitiated,
+    originTxs: [
+      {
+        chain: "Solana",
+        txid: "5FodP5uPKVq5fD5nsg7s8inCgQw95ZAdtB9ge37VDLdTUDiH7QePn3JfkxXHeWZuwYDBgACK2R3PNdeeYbbHoQLK",
+      },
+    ],
+    from: "Solana",
+    to: "Injective",
+  };
+  console.log(await routes.checkAndCompleteTransfer(bestRoute, receipt, receiver.signer));
 
-    // Kick off a wait log, if there is an opportunity to complete, this function will do it
-    // see the implementation for how this works
-    await routes.checkAndCompleteTransfer(bestRoute, receipt, receiver.signer);
-  } else {
-    console.log("Not initiating transfer (set `imSure` to true to do so)");
-  }
+  // If you're sure you want to do this, set this to true
+  // const imSure = true;
+  // if (imSure) {
+  //   // EXAMPLE_REQUEST_INITIATE
+  //   // Now the transfer may be initiated
+  //   // A receipt will be returned, guess what you gotta do with that?
+  //   const receipt = await bestRoute.initiate(sender.signer, quote, receiver.address);
+  //   console.log("Initiated transfer with receipt: ", receipt);
+  //   // EXAMPLE_REQUEST_INITIATE
+
+  //   // Kick off a wait log, if there is an opportunity to complete, this function will do it
+  //   // see the implementation for how this works
+  //   await routes.checkAndCompleteTransfer(bestRoute, receipt, receiver.signer);
+  // } else {
+  //   console.log("Not initiating transfer (set `imSure` to true to do so)");
+  // }
 })();

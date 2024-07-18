@@ -43,7 +43,9 @@ export type Attestation<PN extends ProtocolName = ProtocolName> = PN extends
   ? VAA<"Uint8Array">
   : PN extends "PorticoBridge"
   ? PorticoBridge.VAA
-  : any;
+  : PN extends "ManualGateway" | "AutomaticGateway"
+  ? { vaa: TokenBridge.TransferVAA; ibcMsgs: IbcTransferData[] }
+  : any; // TODO: add AutomaticGateway | Gateway?
 
 /**
  * Wormhole Message Identifier used to fetch a VAA
@@ -91,7 +93,7 @@ export type IbcMessageId = {
   dstChannel: string;
   sequence: number;
 };
-export function isIbcMessageId(thing: IbcMessageId | any): thing is IbcMessageId {
+export function isIbcMessageId(thing: any): thing is IbcMessageId {
   return (
     (<IbcMessageId>thing).dstChannel !== undefined &&
     (<IbcMessageId>thing).srcChannel !== undefined &&

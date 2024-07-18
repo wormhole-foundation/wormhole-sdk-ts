@@ -151,7 +151,6 @@ export class CCTPRoute<N extends Network>
       request.fromChain,
       txids[txids.length - 1]!.txid,
     );
-
     return {
       from: transfer.from.chain,
       to: transfer.to.chain,

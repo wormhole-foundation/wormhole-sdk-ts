@@ -39,8 +39,8 @@ export async function getTokenDetails<N extends Network>(
     : undefined;
 
   const symbol = details ? details.symbol : undefined;
+  const decimals = details ? details.decimals : Number(await chain.getDecimals(token.address));
   const wrapped = isNative(token.address) ? await chain.getNativeWrappedTokenId() : undefined;
-  const decimals = Number(await chain.getDecimals(token.address));
 
   return {
     id: token,

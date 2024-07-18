@@ -14,6 +14,7 @@ import type {
   IbcMessageId,
   IbcTransferInfo,
   Network,
+  TokenAddress,
   TxHash,
   WormholeMessageId,
 } from "@wormhole-foundation/sdk-connect";
@@ -31,7 +32,6 @@ import type {
   CosmwasmChains,
   CosmwasmPlatformType,
   CosmwasmTransaction,
-  IbcChannels,
 } from "@wormhole-foundation/sdk-cosmwasm";
 import {
   CosmwasmAddress,
@@ -50,7 +50,6 @@ import {
   IBC_TIMEOUT_MILLIS,
   IBC_TRANSFER_PORT,
   computeFee,
-  networkChainToChannels,
 } from "@wormhole-foundation/sdk-cosmwasm";
 
 import { CosmwasmWormholeCore } from "@wormhole-foundation/sdk-cosmwasm-core";
@@ -72,13 +71,10 @@ export class CosmwasmIbcBridge<N extends Network, C extends CosmwasmChains>
     readonly rpc: CosmWasmClient,
     readonly contracts: Contracts,
   ) {
-    if (!networkChainToChannels.has(network, chain))
-      throw new Error("Unsupported IBC Chain, no channels available: " + chain);
+    const channels = CosmwasmPlatform.getIbcChannels(network, chain);
+    if (!channels) throw new Error("Unsupported IBC Chain, no channels available: " + chain);
 
     this.gatewayAddress = Gateway.gatewayAddress(network);
-
-    const channels: IbcChannels = networkChainToChannels.get(network, chain) ?? {};
-
     for (const [chain, channel] of Object.entries(channels)) {
       this.channelToChain.set(channel, chain as CosmwasmChains);
       this.chainToChannel.set(chain as CosmwasmChains, channel);
@@ -358,5 +354,33 @@ export class CosmwasmIbcBridge<N extends Network, C extends CosmwasmChains>
       description,
       parallelizable,
     );
+  }
+
+  // Returns the corresponding Gateway CW20 token address for the given IBC denom
+  async getGatewayAsset(ibcAsset: AnyCosmwasmAddress): Promise<CosmwasmAddress> {
+    const ibcAddress = new CosmwasmAddress(ibcAsset);
+    if (ibcAddress.denomType !== "ibc")
+      throw new Error("Invalid IBC Denom: " + ibcAsset.toString());
+
+    const queryClient = CosmwasmPlatform.getQueryClient(this.rpc);
+    const { denomTrace } = await queryClient.ibc.transfer.denomTrace(ibcAddress.toString());
+    if (!denomTrace) throw new Error("DenomTrace not found for denom: " + ibcAddress);
+
+    const factoryDeom = new CosmwasmAddress(denomTrace.baseDenom);
+    return Gateway.factoryToCw20(factoryDeom);
+  }
+
+  getIbcAsset(gatewayAsset: AnyCosmwasmAddress) {
+    const gatewayAddress = new CosmwasmAddress(gatewayAsset);
+    const factoryAddress =
+      gatewayAddress.denomType === "factory"
+        ? gatewayAddress
+        : Gateway.cw20ToFactory(this.network, gatewayAddress);
+
+    return Gateway.deriveIbcDenom(
+      this.network,
+      this.chain,
+      factoryAddress.toString(),
+    ) as TokenAddress<C>;
   }
 }

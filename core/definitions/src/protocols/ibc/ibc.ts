@@ -189,6 +189,10 @@ export interface IbcTransferData {
   sender: string;
 }
 
+export namespace IbcBridge {
+  //
+}
+
 /**
  * IbcBridge provides an interface to use the IBC token transfer protocol
  *
@@ -225,4 +229,10 @@ export interface IbcBridge<N extends Network = Network, C extends Chain = Chain>
   lookupTransferFromMsg(
     payload: GatewayTransferMsg | GatewayTransferWithPayloadMsg,
   ): Promise<IbcTransferInfo[]>;
+
+  /** Takes an IBC denom returns its original address */
+  getGatewayAsset(ibcToken: TokenAddress<C>): Promise<TokenAddress<"Wormchain">>;
+
+  /** Takes a local token address and determin */
+  getIbcAsset(gatewayToken: TokenAddress<"Wormchain">): TokenAddress<C>;
 }
