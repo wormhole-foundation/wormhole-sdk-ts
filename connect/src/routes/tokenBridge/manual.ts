@@ -11,7 +11,6 @@ import type {
 import { TokenTransfer } from "../../protocols/tokenBridge/tokenTransfer.js";
 import type {
   AttestationReceipt,
-  AttestedTransferReceipt,
   SourceInitiatedTransferReceipt,
   TransferReceipt,
 } from "../../types.js";
@@ -171,19 +170,9 @@ export class TokenBridgeRoute<N extends Network>
     };
   }
   
-  async resume(tx: TransactionId): Promise<R> {
-    const attestation = await TokenTransfer.getTransferVaa(this.wh, tx.txid);
-    const id = await TokenTransfer.getTransferMessage(this.wh.getChain(tx.chain), tx.txid);
-
-    return {
-      from: tx.chain,
-      to: attestation.payload.to.chain,
-      state: TransferState.Attested,
-      attestation: {
-        attestation, id
-      },
-      originTxs: [{ chain: tx.chain, txid: tx.txid }],
-    } satisfies AttestedTransferReceipt<TokenTransfer.AttestationReceipt, typeof tx.chain>
+  async resume(txid: TransactionId): Promise<R> {
+    const xfer = await TokenTransfer.fromTransaction(this.wh, txid, 10 * 1000);
+    return TokenTransfer.getReceipt(xfer);
   }
 
   public override async *track(receipt: R, timeout?: number) {

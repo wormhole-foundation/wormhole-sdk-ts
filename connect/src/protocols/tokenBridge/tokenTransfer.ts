@@ -192,7 +192,7 @@ export class TokenTransfer<N extends Network = Network>
     return tt;
   }
 
-  private static async fromTransaction<N extends Network>(
+  static async fromTransaction<N extends Network>(
     wh: Wormhole<N>,
     from: TransactionId,
     timeout: number,
