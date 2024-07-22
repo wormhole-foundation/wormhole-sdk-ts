@@ -105,6 +105,12 @@ export class EvmTokenBridge<N extends Network, C extends EvmChains>
     return { chain, address };
   }
 
+  async getTokenUniversalAddress(
+    token: TokenAddress<C>,
+  ): Promise<UniversalAddress> {
+    return new EvmAddress(token).toUniversalAddress();
+  }
+
   async hasWrappedAsset(token: TokenId): Promise<boolean> {
     try {
       await this.getWrappedAsset(token);

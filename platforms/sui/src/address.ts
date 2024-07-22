@@ -2,7 +2,7 @@ import { normalizeSuiAddress } from "@mysten/sui.js/utils";
 import type { Address } from "@wormhole-foundation/sdk-connect";
 import { UniversalAddress, encoding, registerNative } from "@wormhole-foundation/sdk-connect";
 
-import { SUI_SEPARATOR } from "./constants.js";
+import { SUI_COIN, SUI_SEPARATOR } from "./constants.js";
 import type { AnySuiAddress } from "./types.js";
 import { _platform } from "./types.js";
 
@@ -109,6 +109,10 @@ export class SuiAddress implements Address {
   }
 
   getCoinType(): string {
+    // Special case for the native gas coin
+    if (this.module === "sui::SUI") {
+      return SUI_COIN;
+    }
     return [this.getPackageId(), "coin", "COIN"].join(SUI_SEPARATOR);
   }
 

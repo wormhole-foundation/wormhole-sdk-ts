@@ -98,6 +98,10 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
     return { chain, address };
   }
 
+  async getTokenUniversalAddress(token: AnyAptosAddress): Promise<UniversalAddress> {
+    return new UniversalAddress(encoding.hex.encode(sha3_256(token.toString()), true));
+  }
+
   async hasWrappedAsset(token: TokenId): Promise<boolean> {
     try {
       await this.getWrappedAsset(token);
