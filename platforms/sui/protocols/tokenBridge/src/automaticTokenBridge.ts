@@ -200,11 +200,9 @@ export class SuiAutomaticTokenBridge<N extends Network, C extends SuiChains>
   }
 
   async getRelayerFee(destination: Chain, token: TokenAddress<C>): Promise<bigint> {
-    const tokenAddress = (
-      isNative(token) ? SuiPlatform.nativeTokenId(this.network, this.chain) : token
-    ).address;
+    const _token = isNative(token) ? SuiPlatform.nativeTokenId(this.network, this.chain) : token;
 
-    const tokenInfo = await this.getTokenInfo(tokenAddress.toString());
+    const tokenInfo = await this.getTokenInfo(_token.toString());
     if (tokenInfo === null) {
       throw new Error("Unsupported token for relay");
     }
@@ -256,11 +254,9 @@ export class SuiAutomaticTokenBridge<N extends Network, C extends SuiChains>
   }
 
   async maxSwapAmount(token: TokenAddress<C>): Promise<bigint> {
-    const tokenAddress = (
-      isNative(token) ? SuiPlatform.nativeTokenId(this.network, this.chain) : token
-    ).address;
+    const _token = isNative(token) ? SuiPlatform.nativeTokenId(this.network, this.chain) : token;
 
-    const coinType = tokenAddress.toString();
+    const coinType = _token.toString();
     const metadata = await this.connection.getCoinMetadata({ coinType });
     if (!metadata) {
       throw new Error("metadata is null");
@@ -291,15 +287,16 @@ export class SuiAutomaticTokenBridge<N extends Network, C extends SuiChains>
     )
       throw Error("swap rate not set");
 
-    return encoding.bignum.decode(new Uint8Array(result.results[0].returnValues[0]![0]!));
+    // The result is a u64 in little-endian, so we need to reverse it for decode
+    return encoding.bignum.decode(
+      new Uint8Array(result.results[0].returnValues[0]![0]!.toReversed()),
+    );
   }
 
   async nativeTokenAmount(token: TokenAddress<C>, amount: bigint): Promise<bigint> {
-    const tokenAddress = (
-      isNative(token) ? SuiPlatform.nativeTokenId(this.network, this.chain) : token
-    ).address;
+    const _token = isNative(token) ? SuiPlatform.nativeTokenId(this.network, this.chain) : token;
 
-    const coinType = tokenAddress.toString();
+    const coinType = _token.toString();
     const metadata = await this.connection.getCoinMetadata({ coinType });
     if (!metadata) {
       throw new Error("metadata is null");
@@ -333,7 +330,10 @@ export class SuiAutomaticTokenBridge<N extends Network, C extends SuiChains>
     )
       throw Error("swap rate not set");
 
-    return encoding.bignum.decode(new Uint8Array(result.results[0].returnValues[0]![0]!));
+    // The result is a u64 in little-endian, so we need to reverse it for decode
+    return encoding.bignum.decode(
+      new Uint8Array(result.results[0].returnValues[0]![0]!.toReversed()),
+    );
   }
 
   async getRegisteredTokens() {

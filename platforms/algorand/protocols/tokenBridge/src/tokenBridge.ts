@@ -146,6 +146,10 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
     return { chain, address };
   }
 
+  async getTokenUniversalAddress(token: TokenAddress<C>): Promise<UniversalAddress> {
+    return new AlgorandAddress(token).toUniversalAddress();
+  }
+
   // Returns the address of the native version of this asset
   async getWrappedAsset(token: TokenId<Chain>): Promise<NativeAddress<C>> {
     const storageAccount = StorageLogicSig.forWrappedAsset(this.tokenBridgeAppId, token);

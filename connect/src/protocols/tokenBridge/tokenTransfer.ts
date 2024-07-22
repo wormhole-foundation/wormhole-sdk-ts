@@ -24,8 +24,6 @@ import {
   toNative,
   toUniversal,
   universalAddress,
-  UniversalAddress,
-  sha3_256,
 } from "@wormhole-foundation/sdk-definitions";
 import { signSendWait } from "../../common.js";
 import { DEFAULT_TASK_TIMEOUT } from "../../config.js";
@@ -402,8 +400,8 @@ export namespace TokenTransfer {
     if (isAttested(receipt) || isRedeemed(receipt)) {
       if (!receipt.attestation.attestation) throw "Signed Attestation required to check for redeem";
 
-      if (receipt.attestation.attestation.payloadName === 'AttestMeta') {
-        throw new Error('Unable to track an AttestMeta receipt');
+      if (receipt.attestation.attestation.payloadName === "AttestMeta") {
+        throw new Error("Unable to track an AttestMeta receipt");
       }
 
       let isComplete = await TokenTransfer.isTransferComplete(
@@ -491,29 +489,27 @@ export namespace TokenTransfer {
   ): Promise<TokenId<DC>> {
     // that will be minted when the transfer is redeemed
     let lookup: TokenId;
+    const tb = await srcChain.getTokenBridge();
     if (isNative(token.address)) {
       // if native, get the wrapped asset id
-      lookup = await srcChain.getNativeWrappedTokenId();
+      const wrappedNative = await tb.getWrappedNative();
+      lookup = {
+        chain: token.chain,
+        address: await tb.getTokenUniversalAddress(wrappedNative),
+      };
     } else {
       try {
-        const tb = await srcChain.getTokenBridge();
         // otherwise, check to see if it is a wrapped token locally
         lookup = await tb.getOriginalAsset(token.address);
       } catch (e) {
         // not a from-chain native wormhole-wrapped one
-        lookup = token;
+        lookup = { chain: token.chain, address: await tb.getTokenUniversalAddress(token.address) };
       }
     }
 
     // if the token id is actually native to the destination, return it
     if (lookup.chain === dstChain.chain) {
       return lookup as TokenId<DC>;
-    }
-
-    if (srcChain.chain === "Aptos") {
-      lookup.address = new UniversalAddress(
-        encoding.hex.encode(sha3_256(lookup.address.toString()), true),
-      );
     }
 
     // otherwise, figure out what the token address representing the wormhole-wrapped token we're transferring

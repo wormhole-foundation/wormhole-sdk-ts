@@ -1,6 +1,7 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
 import { lazyInstantiate } from "@wormhole-foundation/sdk-base";
 import type { AccountAddress, ChainAddress } from "../../address.js";
+import { UniversalAddress } from "../../universalAddress.js";
 import type { TokenAddress, TokenId } from "../../types.js";
 import type { UnsignedTransaction } from "../../unsignedTransaction.js";
 import type { ProtocolPayload, ProtocolVAA } from "./../../vaa/index.js";
@@ -133,6 +134,13 @@ export interface TokenBridge<N extends Network = Network, C extends Chain = Chai
    * @returns The TokenId corresponding to the original asset and chain
    */
   getOriginalAsset(nativeAddress: TokenAddress<C>): Promise<TokenId<Chain>>;
+  /**
+   * Returns the UniversalAddress of the token. This may require retrieving data on-chain.
+   *
+   * @param nativeAddress The address to get the UniversalAddress for
+   * @returns The UniversalAddress of the token
+   */
+  getTokenUniversalAddress(nativeAddress: TokenAddress<C>): Promise<UniversalAddress>;
   /**
    * returns the wrapped version of the native asset
    *

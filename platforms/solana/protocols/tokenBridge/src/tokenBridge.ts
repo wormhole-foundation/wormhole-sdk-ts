@@ -164,6 +164,12 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
     }
   }
 
+  async getTokenUniversalAddress(
+    token: AnySolanaAddress,
+  ): Promise<UniversalAddress> {
+    return new SolanaAddress(token).toUniversalAddress();
+  }
+
   async hasWrappedAsset(token: TokenId): Promise<boolean> {
     try {
       await this.getWrappedAsset(token);

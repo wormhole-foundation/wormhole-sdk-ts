@@ -42,7 +42,8 @@
     "rebuild": "npm run clean && npm run build",
     "clean": "rm -rf ./dist && rm -rf ./.turbo",
     "lint": "npm run prettier && eslint --fix ./src --ext .ts",
-    "prettier": "prettier --write ./src"
+    "prettier": "prettier --write ./src",
+    "test": "jest --config ./jest.config.ts"
   },
   "dependencies": {
     "@wormhole-foundation/sdk-connect": "0.8.2-beta.0",

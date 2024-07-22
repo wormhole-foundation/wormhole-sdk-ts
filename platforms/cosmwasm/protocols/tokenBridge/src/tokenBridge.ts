@@ -125,6 +125,10 @@ export class CosmwasmTokenBridge<N extends Network, C extends CosmwasmChains>
     };
   }
 
+  async getTokenUniversalAddress(token: AnyCosmwasmAddress): Promise<UniversalAddress> {
+    return new CosmwasmAddress(token).toUniversalAddress();
+  }
+
   async isTransferCompleted(vaa: TokenBridge.TransferVAA): Promise<boolean> {
     const data = encoding.b64.encode(serialize(vaa));
     const result = await this.rpc.queryContractSmart(this.tokenBridge, {

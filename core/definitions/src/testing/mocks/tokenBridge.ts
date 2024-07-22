@@ -5,6 +5,7 @@ import type {
   RpcConnection,
   TokenAddress,
   TokenBridge,
+  UniversalAddress,
   UnsignedTransaction,
 } from "./../../index.js";
 
@@ -17,6 +18,9 @@ export class MockTokenBridge<N extends Network, P extends Platform, C extends Pl
     throw new Error("Method not implemented.");
   }
   getOriginalAsset(token: TokenAddress<C>): Promise<ChainAddress> {
+    throw new Error("Method not implemented.");
+  }
+  getTokenUniversalAddress(nativeAddress: TokenAddress<C>): Promise<UniversalAddress> {
     throw new Error("Method not implemented.");
   }
   hasWrappedAsset(original: ChainAddress): Promise<boolean> {
