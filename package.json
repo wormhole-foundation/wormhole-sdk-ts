@@ -1,6 +1,6 @@
 {
   "name": "ts-sdk",
-  "version": "0.8.1",
+  "version": "0.8.2-beta.0",
   "license": "Apache-2.0",
   "directories": {
     "test": "__tests__"
