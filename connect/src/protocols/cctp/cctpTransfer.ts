@@ -221,7 +221,16 @@ export class CircleTransfer<N extends Network = Network>
     // First try to parse out a WormholeMessage
     // If we get one or more, we assume its a Wormhole attested
     // transfer
-    const msgIds: WormholeMessageId[] = await fromChain.parseTransaction(txid);
+    let msgIds: WormholeMessageId[] = [];
+    try {
+      msgIds = await fromChain.parseTransaction(txid);
+    } catch (e: any) {
+      if (e.message.includes('no bridge messages found')) {
+        // This means it's a Circle attestation; swallow
+      } else {
+        throw e
+      }
+    }
 
     // If we found a VAA message, use it
     let ct: CircleTransfer<N>;
