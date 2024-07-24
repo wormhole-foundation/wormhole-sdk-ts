@@ -298,8 +298,8 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
       return typeInfo
         ? [
             typeInfo.account_address,
-            encoding.hex.decode(typeInfo.module_name),
-            encoding.hex.decode(typeInfo.struct_name),
+            String.fromCharCode(...encoding.hex.decode(typeInfo.module_name)),
+            String.fromCharCode(...encoding.hex.decode(typeInfo.struct_name)),
           ].join(APTOS_SEPARATOR)
         : null;
     } catch {
