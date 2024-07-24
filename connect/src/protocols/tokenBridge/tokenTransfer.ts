@@ -644,6 +644,19 @@ export namespace TokenTransfer {
     }
 
     const dstToken = await TokenTransfer.lookupDestinationToken(srcChain, dstChain, transfer.token);
+    // TODO: this is a hack to get the aptos native gas token decimals
+    // which requires us to pass in a token address in canonical form
+    // but the `dstToken.address` here is in universal form
+    if (dstChain.chain === "Aptos" && dstToken.chain === "Aptos") {
+      const dstTb = await dstChain.getTokenBridge();
+      const wrappedNative = await dstTb.getWrappedNative();
+      if (
+        dstToken.address.toString() ===
+        (await dstTb.getTokenUniversalAddress(wrappedNative)).toString()
+      ) {
+        dstToken.address = wrappedNative;
+      }
+    }
     const dstDecimals = await dstChain.getDecimals(dstToken.address);
     const dstAmountReceivable = amount.scale(srcAmountTruncated, dstDecimals);
 
