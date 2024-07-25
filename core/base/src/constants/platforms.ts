@@ -36,6 +36,7 @@ const platformAndChainsEntries = [[
     "Linea",
     "Berachain",
     "Seievm",
+    "Snaxchain",
   ]], [
   "Solana", [
     "Solana",

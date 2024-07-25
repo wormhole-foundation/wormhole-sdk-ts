@@ -47,6 +47,7 @@ const chainIdAndChainEntries = [
   [   38, "Linea"          ],
   [   39, "Berachain"      ],
   [   40, "Seievm"         ],
+  [   43, "Snaxchain"      ],
   [ 3104, "Wormchain"      ],
   [ 4000, "Cosmoshub"      ],
   [ 4001, "Evmos"          ],
