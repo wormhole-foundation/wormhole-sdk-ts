@@ -104,6 +104,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Mantle",          5003n], // Sepolia testnet
       ["Scroll",          534351n],
       ["Berachain",       80085n],
+      ["Snaxchain",       2192n],
       ["Xlayer",          195n],
       ["Linea",           59141n], // Sepolia
     ],
