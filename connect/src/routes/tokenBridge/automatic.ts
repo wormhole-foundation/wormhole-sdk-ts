@@ -181,10 +181,23 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     if (params.options && params.options.nativeGas > 0) {
       const dtb = await request.toChain.getAutomaticTokenBridge();
       // the maxSwapAmount is in destination chain decimals
-      const maxSwapAmount = await dtb.maxSwapAmount(request.destination.id.address);
+      let maxSwapAmount = await dtb.maxSwapAmount(request.destination.id.address);
+      const redeemableAmountTruncated = amount.truncate(
+        amount.fromBaseUnits(redeemableAmount, amt.decimals),
+        TokenTransfer.MAX_DECIMALS,
+      );
+      const dstDecimals = await request.toChain.getDecimals(request.destination.id.address);
+      const dstAmountReceivable = amount.units(
+        amount.scale(redeemableAmountTruncated, dstDecimals),
+      );
+      if (dstAmountReceivable < maxSwapAmount) {
+        // can't swap more than the receivable amount
+        maxSwapAmount = dstAmountReceivable;
+      }
       const scale = 10000;
       const scaledGasPercent = BigInt(Math.floor(params.options.nativeGas * scale));
       const dstNativeGasUnits = (maxSwapAmount * scaledGasPercent) / BigInt(scale);
+      // the native gas percentage is applied to the max swap amount
       const dstNativeGasAmount = amount.fromBaseUnits(
         dstNativeGasUnits,
         request.destination.decimals,
