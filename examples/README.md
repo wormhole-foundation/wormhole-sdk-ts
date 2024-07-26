@@ -6,7 +6,8 @@
 1) git clone this repo and rebuild then cd to this directory
 
 ```sh
-git clone  https://github.com/wormhole-foundation/connect-sdk.git
+git clone  https://github.com/wormhole-foundation/wormhole-sdk-ts.git
+cd wormhole-sdk-ts
 npm install
 npm run build
 cd examples
