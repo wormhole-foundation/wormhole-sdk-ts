@@ -173,7 +173,8 @@ export class CCTPRoute<N extends Network>
 
       const toChain = this.wh.getChain(receipt.to);
       const cb = await toChain.getCircleBridge();
-      const xfer = cb.redeem(message.payload.mintRecipient, message, attestation);
+      const sender = Wormhole.parseAddress(signer.chain(), signer.address());
+      const xfer = cb.redeem(sender, message, attestation);
       const dstTxids = await signSendWait<N, Chain>(toChain, xfer, signer);
       return {
         ...receipt,
