@@ -75,7 +75,7 @@ See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/m
     60_000,
   );
 ```
-See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/index.ts#L49)
+See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/index.ts#L67)
 <!--EXAMPLE_WORMHOLE_VAA-->
 
 
@@ -330,9 +330,9 @@ The protocol that underlies all Wormhole activity is the Core protocol. This pro
 
 <!--EXAMPLE_CORE_BRIDGE-->
 ```ts
-  const wh = await wormhole("Testnet", [solana]);
+  const wh = await wormhole("Testnet", [solana, evm]);
 
-  const chain = wh.getChain("Solana");
+  const chain = wh.getChain("Avalanche");
   const { signer, address } = await getSigner(chain);
 
   // Get a reference to the core messaging bridge
@@ -361,19 +361,23 @@ The protocol that underlies all Wormhole activity is the Core protocol. This pro
   const [whm] = await chain.parseTransaction(txid!.txid);
 
   // Or pull the full message content as an Unsigned VAA
-  // const msgs = await coreBridge.parseMessages(txid!.txid);
-  // console.log(msgs);
+  // console.log(await coreBridge.parseMessages(txid!.txid));
 
   // Wait for the vaa to be signed and available with a timeout
   const vaa = await wh.getVaa(whm!, "Uint8Array", 60_000);
   console.log(vaa);
+
   // Also possible to search by txid but it takes longer to show up
   // console.log(await wh.getVaaByTxHash(txid!.txid, "Uint8Array"));
 
+  // Note: calling verifyMessage manually is typically not a useful thing to do
+  // as the VAA is typically submitted to the counterpart contract for
+  // a given protocol and the counterpart contract will verify the VAA
+  // this is simply for demo purposes
   const verifyTxs = coreBridge.verifyMessage(address.address, vaa!);
   console.log(await signSendWait(chain, verifyTxs, signer));
 ```
-See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/messaging.ts#L7)
+See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/messaging.ts#L8)
 <!--EXAMPLE_CORE_BRIDGE-->
 
 Within the payload is the information necessary to perform whatever action is required based on the Protocol that uses it.
@@ -699,13 +703,13 @@ After choosing the best route, extra parameters like `amount`, `nativeGasDropoff
   // validate the transfer params passed, this returns a new type of ValidatedTransferParams
   // which (believe it or not) is a validated version of the input params
   // this new var must be passed to the next step, quote
-  const validated = await bestRoute.validate(transferParams);
+  const validated = await bestRoute.validate(tr, transferParams);
   if (!validated.valid) throw validated.error;
   console.log("Validated parameters: ", validated.params);
 
   // get a quote for the transfer, this too returns a new type that must
   // be passed to the next step, execute (if you like the quote)
-  const quote = await bestRoute.quote(validated.params);
+  const quote = await bestRoute.quote(tr, validated.params);
   if (!quote.success) throw quote.error;
   console.log("Best route quote: ", quote);
 ```
@@ -719,7 +723,7 @@ Finally, assuming the quote looks good, the route can initiate the request with 
 ```ts
     // Now the transfer may be initiated
     // A receipt will be returned, guess what you gotta do with that?
-    const receipt = await bestRoute.initiate(sender.signer, quote, receiver.address);
+    const receipt = await bestRoute.initiate(tr, sender.signer, quote, receiver.address);
     console.log("Initiated transfer with receipt: ", receipt);
 ```
 See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/router.ts#L95)
