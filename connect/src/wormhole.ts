@@ -32,6 +32,7 @@ import { RouteResolver } from "./routes/resolver.js";
 import { retry } from "./tasks.js";
 import type { TransactionStatus } from "./whscan-api.js";
 import {
+  getIsVaaEnqueued,
   getTransactionStatusWithRetry,
   getTxsByAddress,
   getVaaByTxHashWithRetry,
@@ -193,7 +194,7 @@ export class Wormhole<N extends Network> {
   /**
    * Gets the TokenId for a token representation on any chain
    *  These are the Wormhole wrapped token addresses, not necessarily
-   *  the cannonical version of that token
+   *  the canonical version of that token
    *
    * @param chain The chain name to get the wrapped token address
    * @param tokenId The Token ID (chain/address) of the original token
@@ -209,7 +210,7 @@ export class Wormhole<N extends Network> {
   /**
    *  Taking the original TokenId for some wrapped token chain
    *  These are the Wormhole wrapped token addresses, not necessarily
-   *  the cannonical version of that token
+   *  the canonical version of that token
    *
    * @param tokenId The Token ID of the token we're looking up the original asset for
    * @returns The Original TokenId corresponding to the token id passed,
@@ -300,6 +301,15 @@ export class Wormhole<N extends Network> {
   }
 
   /**
+   * Gets if the token bridge transfer VAA has been enqueued by the Governor.
+   * @param id The WormholeMessageId corresponding to the token bridge transfer VAA to check
+   * @returns True if the transfer has been enqueued, false otherwise
+   */
+  async getIsVaaEnqueued(id: WormholeMessageId): Promise<boolean> {
+    return await getIsVaaEnqueued(this.config.api, id);
+  }
+
+  /**
    * Gets the CircleAttestation corresponding to the message hash logged in the transfer transaction.
    * @param msgHash  The keccak256 hash of the message emitted by the circle contract
    * @param timeout The total amount of time to wait for the VAA to be available
@@ -351,7 +361,7 @@ export class Wormhole<N extends Network> {
   }
 
   /**
-   * Parse an address from its canonincal string format to a NativeAddress
+   * Parse an address from its canonical string format to a NativeAddress
    *
    * @param chain The chain the address is for
    * @param address The address in canonical string format
