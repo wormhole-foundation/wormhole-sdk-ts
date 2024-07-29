@@ -23,7 +23,6 @@ import {
   serialize,
   toNative,
   toUniversal,
-  universalAddress,
 } from "@wormhole-foundation/sdk-definitions";
 import { signSendWait } from "../../common.js";
 import { DEFAULT_TASK_TIMEOUT } from "../../config.js";
@@ -36,10 +35,12 @@ import type {
   SourceInitiatedTransferReceipt,
   TransferQuote,
   TransferReceipt as _TransferReceipt,
+  InReviewTransferReceipt,
 } from "../../types.js";
 import {
   TransferState,
   isAttested,
+  isInReview,
   isRedeemed,
   isSourceFinalized,
   isSourceInitiated,
@@ -47,6 +48,7 @@ import {
 import { getGovernedTokens, getGovernorLimits } from "../../whscan-api.js";
 import { Wormhole } from "../../wormhole.js";
 import type { WormholeTransfer } from "../wormholeTransfer.js";
+import type { QuoteWarning } from "../../warnings.js";
 
 export class TokenTransfer<N extends Network = Network>
   implements WormholeTransfer<TokenTransfer.Protocol>
@@ -155,6 +157,7 @@ export class TokenTransfer<N extends Network = Network>
     timeout?: number,
   ): Promise<TokenTransfer<N>> {
     const vaa = await TokenTransfer.getTransferVaa(wh, id, timeout);
+    if (!vaa) throw new Error("VAA not found");
     const automatic = vaa.protocolName === "AutomaticTokenBridge";
 
     // TODO: the `from.address` here is a lie, but we don't
@@ -236,11 +239,9 @@ export class TokenTransfer<N extends Network = Network>
       // Check if we already have the VAA
       if (this.attestations[idx]!.attestation) continue;
 
-      this.attestations[idx]!.attestation = await TokenTransfer.getTransferVaa(
-        this.wh,
-        this.attestations[idx]!.id,
-        timeout,
-      );
+      const vaa = await TokenTransfer.getTransferVaa(this.wh, this.attestations[idx]!.id, timeout);
+      if (!vaa) throw new Error("VAA not found");
+      this.attestations[idx]!.attestation = vaa;
     }
     this._state = TransferState.Attested;
 
@@ -362,25 +363,38 @@ export namespace TokenTransfer {
       yield receipt;
     }
 
-    // If the source is finalized, we need to fetch the signed attestation
-    // so that we may deliver it to the destination chain
+    // If the source is finalized or in review (governor held), we need to fetch the signed attestation
+    // (once it's available) so that we may deliver it to the destination chain
     // or at least track the transfer through its progress
-    if (isSourceFinalized(receipt)) {
+    if (isSourceFinalized(receipt) || isInReview(receipt)) {
       if (!receipt.attestation.id) throw "Attestation id required to fetch attestation";
       const { id } = receipt.attestation;
       const attestation = await TokenTransfer.getTransferVaa(wh, id, leftover(start, timeout));
-      receipt = {
-        ...receipt,
-        attestation: { id, attestation },
-        state: TransferState.Attested,
-      } satisfies AttestedTransferReceipt<TokenTransfer.AttestationReceipt>;
-      yield receipt;
+      if (attestation) {
+        receipt = {
+          ...receipt,
+          attestation: { id, attestation },
+          state: TransferState.Attested,
+        } satisfies AttestedTransferReceipt<TokenTransfer.AttestationReceipt>;
+        yield receipt;
+      } else {
+        // If the attestation is not found, check if the transfer is held by the governor
+        const isEnqueued = await TokenTransfer.isTransferEnqueued(wh, id);
+        if (isEnqueued) {
+          receipt = {
+            ...receipt,
+            state: TransferState.InReview,
+          } satisfies InReviewTransferReceipt<TokenTransfer.AttestationReceipt>;
+          yield receipt;
+        }
+      }
+      throw new Error("Attestation not found");
     }
 
     // First try to grab the tx status from the API
     // Note: this requires a subsequent async step on the backend
     // to have the dest txid populated, so it may be delayed by some time
-    if (isAttested(receipt) || isSourceFinalized(receipt)) {
+    if (isAttested(receipt) || isSourceFinalized(receipt) || isInReview(receipt)) {
       if (!receipt.attestation.id) throw "Attestation id required to fetch redeem tx";
       const { id } = receipt.attestation;
       const txStatus = await wh.getTransactionStatus(id, leftover(start, timeout));
@@ -544,9 +558,9 @@ export namespace TokenTransfer {
     wh: Wormhole<N>,
     key: WormholeMessageId | TxHash,
     timeout?: number,
-  ): Promise<TokenTransfer.VAA> {
+  ): Promise<TokenTransfer.VAA | null> {
     const vaa = await wh.getVaa(key, TokenBridge.getTransferDiscriminator(), timeout);
-    if (!vaa) throw new Error(`No VAA available after retries exhausted`);
+    if (!vaa) return null;
 
     // Check if its automatic and re-de-serialize
     if (vaa.payloadName === "TransferWithPayload") {
@@ -560,6 +574,13 @@ export namespace TokenTransfer {
     }
 
     return vaa;
+  }
+
+  export async function isTransferEnqueued<N extends Network>(
+    wh: Wormhole<N>,
+    key: WormholeMessageId,
+  ): Promise<boolean> {
+    return await wh.getIsVaaEnqueued(key);
   }
 
   export function validateTransferDetails<N extends Network>(
@@ -613,7 +634,6 @@ export namespace TokenTransfer {
     const srcToken = isNative(transfer.token.address)
       ? await srcChain.getNativeWrappedTokenId()
       : transfer.token;
-    const srcTokenUniversalAddress = universalAddress(srcToken);
 
     // Ensure the transfer would not violate governor transfer limits
     const [tokens, limits] = await Promise.all([
@@ -621,26 +641,47 @@ export namespace TokenTransfer {
       getGovernorLimits(wh.config.api),
     ]);
 
-    if (
-      limits !== null &&
-      srcChain.chain in limits &&
-      tokens !== null &&
-      srcChain.chain in tokens &&
-      srcTokenUniversalAddress in tokens[srcChain.chain]!
-    ) {
-      const limit = limits[srcChain.chain]!;
-      const tokenPrice = tokens[srcChain.chain]![srcTokenUniversalAddress]!;
-      const notionalTransferAmt = tokenPrice * amount.whole(srcAmountTruncated);
+    const warnings: QuoteWarning[] = [];
+    if (limits !== null && srcChain.chain in limits && tokens !== null) {
+      const srcTb = await srcChain.getTokenBridge();
 
-      if (limit.maxSize && notionalTransferAmt > limit.maxSize)
-        throw new Error(
-          `Transfer amount exceeds maximum size: ${notionalTransferAmt} > ${limit.maxSize}`,
-        );
+      let origAsset: TokenId;
+      if (isNative(transfer.token.address)) {
+        origAsset = {
+          chain: srcChain.chain,
+          address: await srcTb.getTokenUniversalAddress(srcToken.address),
+        };
+      } else {
+        try {
+          origAsset = await srcTb.getOriginalAsset(transfer.token.address);
+        } catch (e: any) {
+          if (!e.message.includes("not a wrapped asset")) throw e;
+          origAsset = {
+            chain: srcChain.chain,
+            address: await srcTb.getTokenUniversalAddress(srcToken.address),
+          };
+        }
+      }
 
-      if (notionalTransferAmt > limit.available)
-        throw new Error(
-          `Transfer amount exceeds available governed amount: ${notionalTransferAmt} > ${limit.available}`,
-        );
+      if (origAsset.chain in tokens && origAsset.address.toString() in tokens[origAsset.chain]!) {
+        const limit = limits[srcChain.chain]!;
+        const tokenPrice = tokens[origAsset.chain]![origAsset.address.toString()]!;
+        const notionalTransferAmt = tokenPrice * amount.whole(srcAmountTruncated);
+
+        if (limit.maxSize && notionalTransferAmt > limit.maxSize) {
+          warnings.push({
+            type: "GovernorLimitWarning",
+            reason: "ExceedsLargeTransferLimit",
+          });
+        }
+
+        if (notionalTransferAmt > limit.available) {
+          warnings.push({
+            type: "GovernorLimitWarning",
+            reason: "ExceedsRemainingNotional",
+          });
+        }
+      }
     }
 
     const dstToken = await TokenTransfer.lookupDestinationToken(srcChain, dstChain, transfer.token);
@@ -664,6 +705,7 @@ export namespace TokenTransfer {
       return {
         sourceToken: { token: srcToken, amount: amount.units(srcAmountTruncated) },
         destinationToken: { token: dstToken, amount: amount.units(dstAmountReceivable) },
+        warnings: warnings.length > 0 ? warnings : undefined,
       };
     }
 
@@ -753,6 +795,7 @@ export namespace TokenTransfer {
       destinationToken: { token: dstToken, amount: destAmountLessFee },
       relayFee: { token: srcToken, amount: fee },
       destinationNativeGas,
+      warnings: warnings.length > 0 ? warnings : undefined,
     };
   }
 

@@ -422,18 +422,11 @@ export async function getGovernorLimits(rpcUrl: string): Promise<GovernorLimits 
   return null;
 }
 
-// TODO: returning bool or null is asking for trouble
-export async function getIsVaaEnqueued(
-  rpcUrl: string,
-  whm: WormholeMessageId,
-): Promise<boolean | null> {
+export async function getIsVaaEnqueued(rpcUrl: string, whm: WormholeMessageId): Promise<boolean> {
   const { chain, emitter, sequence } = whm;
   const chainId = toChainId(chain);
   const emitterAddress = emitter.toUniversalAddress().toString();
   const url = `${rpcUrl}/v1/governor/is_vaa_enqueued/${chainId}/${emitterAddress}/${sequence}`;
-  try {
-    const response = await axios.get<{ isEnqueued: boolean }>(url);
-    return response.data.isEnqueued;
-  } catch {}
-  return null;
+  const response = await axios.get<{ isEnqueued: boolean }>(url);
+  return response.data.isEnqueued;
 }
