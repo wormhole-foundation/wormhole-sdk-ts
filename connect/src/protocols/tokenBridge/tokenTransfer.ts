@@ -1,5 +1,5 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
-import { amount, encoding, toChain as toChainName } from "@wormhole-foundation/sdk-base";
+import { amount, encoding, finality, toChain as toChainName } from "@wormhole-foundation/sdk-base";
 import type {
   AttestationId,
   AutomaticTokenBridge,
@@ -701,11 +701,13 @@ export namespace TokenTransfer {
     const dstDecimals = await dstChain.getDecimals(dstToken.address);
     const dstAmountReceivable = amount.scale(srcAmountTruncated, dstDecimals);
 
+    const eta = finality.estimateFinalityTime(srcChain.chain);
     if (!transfer.automatic) {
       return {
         sourceToken: { token: srcToken, amount: amount.units(srcAmountTruncated) },
         destinationToken: { token: dstToken, amount: amount.units(dstAmountReceivable) },
         warnings: warnings.length > 0 ? warnings : undefined,
+        eta,
       };
     }
 
@@ -796,6 +798,7 @@ export namespace TokenTransfer {
       relayFee: { token: srcToken, amount: fee },
       destinationNativeGas,
       warnings: warnings.length > 0 ? warnings : undefined,
+      eta,
     };
   }
 

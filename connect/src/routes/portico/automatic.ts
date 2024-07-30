@@ -36,6 +36,7 @@ import {
 } from "./../../index.js";
 import type { ChainAddress } from "@wormhole-foundation/sdk-definitions";
 import type { RouteTransferRequest } from "../request.js";
+import { finality } from "@wormhole-foundation/sdk-base";
 
 export const SLIPPAGE_BPS = 15n; // 0.15%
 export const BPS_PER_HUNDRED_PERCENT = 10000n;
@@ -255,6 +256,7 @@ export class AutomaticPorticoRoute<N extends Network>
             token: params.normalizedParams.destinationToken,
             amount: fee,
           },
+          eta: finality.estimateFinalityTime(request.fromChain.chain),
         },
         params,
         details,
