@@ -193,4 +193,6 @@ export interface TransferQuote {
   // If the transfer being quoted has any warnings
   // such as high slippage or a delay, they will be included here
   warnings?: QuoteWarning[];
+  // Estimated time to completion in milliseconds
+  eta?: number;
 }

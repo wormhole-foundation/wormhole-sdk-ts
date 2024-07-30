@@ -68,6 +68,8 @@ export class RouteTransferRequest<N extends Network> {
       dq.warnings = [...quote.warnings];
     }
 
+    dq.eta = quote.eta;
+
     if (details) {
       dq.details = details;
     }
