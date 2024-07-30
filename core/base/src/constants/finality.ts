@@ -176,3 +176,18 @@ export function consistencyLevelToBlock(
       throw new Error("Only Ethereum safe is supported for now");
   }
 }
+
+/**
+ * Estimates the time required for a transaction to be considered "final"
+ * @param chain The chain to estimate finality time for
+ * @returns The estimated time in milliseconds
+ */
+export function estimateFinalityTime(chain: Chain): number {
+  const finality = finalityThreshold.get(chain);
+  if (finality === undefined) throw new Error("Cannot find finality for " + chain);
+
+  const time = blockTime.get(chain);
+  if (time === undefined) throw new Error("Cannot find block time for " + chain);
+
+  return finality * time;
+}
