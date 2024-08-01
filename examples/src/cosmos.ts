@@ -1,20 +1,13 @@
-import {
-  Chain,
-  GatewayTransfer,
-  GatewayTransferDetails,
-  Network,
-  TokenId,
-  Wormhole,
-  amount,
-  wormhole,
-} from "@wormhole-foundation/sdk";
+import type { Chain, GatewayTransferDetails, Network, TokenId } from "@wormhole-foundation/sdk";
+import { GatewayTransfer, Wormhole, amount, wormhole } from "@wormhole-foundation/sdk";
 
 // Import the platform specific packages
 
 import cosmwasm from "@wormhole-foundation/sdk/cosmwasm";
 import evm from "@wormhole-foundation/sdk/evm";
 import solana from "@wormhole-foundation/sdk/solana";
-import { SignerStuff, getSigner } from "./helpers/index.js";
+import type { SignerStuff } from "./helpers/index.js";
+import { getSigner } from "./helpers/index.js";
 
 // We're going to transfer into, around, and out of the Cosmos ecosystem
 // First on Avalanche, transparently through gateway and over IBC to Cosmoshub
@@ -66,7 +59,7 @@ import { SignerStuff, getSigner } from "./helpers/index.js";
     : await transferIntoCosmos(wh, token, amt, leg1, leg2);
   console.log("Route 1 (External => Cosmos)", route1);
 
-  // Lookup the Gateway representation of the wrappd token
+  // Lookup the Gateway representation of the wrapped token
   const { denom } = route1.ibcTransfers![0]!.data;
   const cosmosTokenAddress = Wormhole.parseAddress("Wormchain", denom);
 

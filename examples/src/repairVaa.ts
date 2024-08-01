@@ -1,12 +1,5 @@
-import {
-  SignatureUtils,
-  VAA,
-  WormholeCore,
-  encoding,
-  keccak256,
-  serialize,
-  wormhole,
-} from "@wormhole-foundation/sdk";
+import type { VAA, WormholeCore } from "@wormhole-foundation/sdk";
+import { SignatureUtils, encoding, keccak256, serialize, wormhole } from "@wormhole-foundation/sdk";
 import evm from "@wormhole-foundation/sdk/evm";
 
 // If a VAA contains signatures from an older guardian set, it can be repaired by removing the invalid signatures and setting the new guardian set index.

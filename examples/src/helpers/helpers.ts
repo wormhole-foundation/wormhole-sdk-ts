@@ -1,13 +1,15 @@
-import {
+import type {
   Chain,
   ChainAddress,
   ChainContext,
-  DEFAULT_TASK_TIMEOUT,
   Network,
   Signer,
+  TxHash,
+} from "@wormhole-foundation/sdk";
+import {
+  DEFAULT_TASK_TIMEOUT,
   TokenTransfer,
   TransferState,
-  TxHash,
   Wormhole,
   amount,
   api,
