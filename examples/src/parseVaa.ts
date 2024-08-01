@@ -1,13 +1,12 @@
+import type { Layout } from "@wormhole-foundation/sdk";
 import {
   UniversalAddress,
   createVAA,
   deserialize,
   serialize,
   encoding,
-  Layout,
   serializeLayout,
   deserializeLayout,
-  serializePayload,
 } from "@wormhole-foundation/sdk";
 
 (async function () {
