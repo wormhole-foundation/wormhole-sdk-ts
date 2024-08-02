@@ -163,4 +163,15 @@ export class EvmAutomaticCircleBridge<N extends Network, C extends EvmChains>
       parallelizable,
     );
   }
+
+  async nativeTokenAmount(amount: bigint): Promise<bigint> {
+    return await this.circleRelayer.calculateNativeSwapAmountOut(
+      this.tokenAddr,
+      amount,
+    );
+  }
+
+  async maxSwapAmount(): Promise<bigint> {
+    return await this.circleRelayer.calculateMaxSwapAmountIn(this.tokenAddr);
+  }
 }
