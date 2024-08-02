@@ -168,7 +168,7 @@ export class AutomaticCCTPRoute<N extends Network>
       );
     }
 
-    const transferableAmount = amount.units(amt) - fee;
+    const redeemableAmount = amount.units(amt) - fee;
 
     const options = params.options ?? this.getDefaultOptions();
 
@@ -179,9 +179,21 @@ export class AutomaticCCTPRoute<N extends Network>
     let nativeGasAmount = 0n;
 
     if (nativeGasPerc > 0.0) {
+      const dcb = await request.toChain.getAutomaticCircleBridge();
+      let maxSwapAmount = await dcb.maxSwapAmount();
+      if (redeemableAmount < maxSwapAmount) {
+        // can't swap more than the receivable amount
+        maxSwapAmount = redeemableAmount;
+      }
+
       const scale = 10000;
-      const scaledGas = BigInt(nativeGasPerc * scale);
-      nativeGasAmount = (transferableAmount * scaledGas) / BigInt(scale);
+      const scaledGas = BigInt(Math.floor(nativeGasPerc * scale));
+      // the native gas percentage is applied to the max swap amount
+      nativeGasAmount = (maxSwapAmount * scaledGas) / BigInt(scale);
+      if (nativeGasAmount === redeemableAmount && nativeGasAmount > 0n) {
+        // edge case: transfer will revert if the native gas amount is equal to the redeemable amount
+        nativeGasAmount -= 1n;
+      }
     }
 
     return {
