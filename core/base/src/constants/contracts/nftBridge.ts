@@ -32,8 +32,6 @@ export const nftBridgeContracts = [[
     ["Oasis",           "0xC5c25B41AB0b797571620F5204Afa116A44c0ebA"],
     ["Aurora",          "0x8F399607E9BA2405D87F5f3e1B78D950b44b2e24"],
     ["Fantom",          "0x63eD9318628D26BdCB15df58B53BB27231D1B227"],
-    ["Karura",          "0x0A693c2D594292B6Eb89Cb50EFe4B0b63Dd2760D"],
-    ["Acala",           "0x96f1335e0AcAB3cfd9899B30b2374e25a2148a6E"],
     ["Klaytn",          "0x94c994fC51c13101062958b567e743f1a04432dE"],
     ["Celo",            "0xaCD8190F647a31E56A656748bC30F69259f245Db"],
     ["Moonbeam",        "0x98A0F4B96972b32Fcb3BD03cAeB66A44a6aB9Edb"],
