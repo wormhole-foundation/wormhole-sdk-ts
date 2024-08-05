@@ -20,6 +20,8 @@ export const relayerContracts = [[
     ["Optimism",  "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"],
     ["Blast",     "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"],
     ["Scroll",    "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"],
+    ["Mantle",    "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"],
+    ["Xlayer",    "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"],
   ]], [
   "Testnet", [
     ["Ethereum",        "0x28D8F1Be96f97C1387e94A53e00eCcFb4E75175a"],
