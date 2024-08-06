@@ -1,8 +1,10 @@
 import type {
+  Chain,
   ChainAddress,
   ChainId,
   ChainsConfig,
   Contracts,
+  NativeAddress,
   Network,
   Platform,
   TokenBridge,
@@ -157,7 +159,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
 
       return {
         chain: toChain(meta.chain as ChainId),
-        address: new UniversalAddress(meta.tokenAddress),
+        address: new UniversalAddress(new Uint8Array(meta.tokenAddress)),
       };
     } catch (_) {
       throw ErrNotWrapped(token.toString());
@@ -165,9 +167,16 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
   }
 
   async getTokenUniversalAddress(
-    token: AnySolanaAddress,
+    token: NativeAddress<C>,
   ): Promise<UniversalAddress> {
     return new SolanaAddress(token).toUniversalAddress();
+  }
+
+  async getTokenNativeAddress(
+    originChain: Chain,
+    token: UniversalAddress,
+  ): Promise<NativeAddress<C>> {
+    return new SolanaAddress(token).toNative() as NativeAddress<C>;
   }
 
   async hasWrappedAsset(token: TokenId): Promise<boolean> {

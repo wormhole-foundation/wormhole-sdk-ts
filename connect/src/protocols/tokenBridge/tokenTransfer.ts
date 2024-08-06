@@ -5,6 +5,7 @@ import type {
   AutomaticTokenBridge,
   ChainContext,
   Signer,
+  NativeAddress,
   TokenId,
   TokenTransferDetails,
   TransactionId,
@@ -14,6 +15,7 @@ import type {
 } from "@wormhole-foundation/sdk-definitions";
 import {
   TokenBridge,
+  UniversalAddress,
   deserialize,
   isNative,
   isTokenId,
@@ -501,7 +503,6 @@ export namespace TokenTransfer {
     dstChain: ChainContext<N, DC>,
     token: TokenId<SC>,
   ): Promise<TokenId<DC>> {
-    // that will be minted when the transfer is redeemed
     let lookup: TokenId;
     const tb = await srcChain.getTokenBridge();
     if (isNative(token.address)) {
@@ -514,20 +515,37 @@ export namespace TokenTransfer {
     } else {
       try {
         // otherwise, check to see if it is a wrapped token locally
-        lookup = await tb.getOriginalAsset(token.address);
-      } catch (e) {
+        let address: NativeAddress<SC>;
+        if (UniversalAddress.instanceof(token.address)) {
+          address = (await tb.getWrappedAsset(token)) as NativeAddress<SC>;
+        } else {
+          address = token.address;
+        }
+        lookup = await tb.getOriginalAsset(address);
+      } catch (e: any) {
+        if (!e.message.includes("not a wrapped asset")) throw e;
         // not a from-chain native wormhole-wrapped one
-        lookup = { chain: token.chain, address: await tb.getTokenUniversalAddress(token.address) };
+        let address: NativeAddress<SC>;
+        if (UniversalAddress.instanceof(token.address)) {
+          address = await tb.getTokenNativeAddress(srcChain.chain, token.address);
+        } else {
+          address = token.address;
+        }
+        lookup = { chain: token.chain, address: await tb.getTokenUniversalAddress(address) };
       }
     }
 
     // if the token id is actually native to the destination, return it
+    const dstTb = await dstChain.getTokenBridge();
     if (lookup.chain === dstChain.chain) {
-      return lookup as TokenId<DC>;
+      const nativeAddress = await dstTb.getTokenNativeAddress(
+        lookup.chain,
+        lookup.address as UniversalAddress,
+      );
+      return { chain: dstChain.chain, address: nativeAddress };
     }
 
     // otherwise, figure out what the token address representing the wormhole-wrapped token we're transferring
-    const dstTb = await dstChain.getTokenBridge();
     const dstAddress = await dstTb.getWrappedAsset(lookup);
     return { chain: dstChain.chain, address: dstAddress };
   }
@@ -627,13 +645,26 @@ export namespace TokenTransfer {
     dstChain: ChainContext<N, Chain>,
     transfer: Omit<TokenTransferDetails, "from" | "to">,
   ): Promise<TransferQuote> {
-    const srcDecimals = await srcChain.getDecimals(transfer.token.address);
+    const srcTb = await srcChain.getTokenBridge();
+    let srcToken: NativeAddress<Chain>;
+    if (isNative(transfer.token.address)) {
+      srcToken = await srcTb.getWrappedNative();
+    } else if (UniversalAddress.instanceof(transfer.token.address)) {
+      try {
+        srcToken = (await srcTb.getWrappedAsset(transfer.token)) as NativeAddress<Chain>;
+      } catch (e: any) {
+        if (!e.message.includes("not a wrapped asset")) throw e;
+        srcToken = await srcTb.getTokenNativeAddress(srcChain.chain, transfer.token.address);
+      }
+    } else {
+      srcToken = transfer.token.address;
+    }
+    // @ts-ignore: TS2339
+    const srcTokenId = Wormhole.tokenId(srcChain.chain, srcToken.toString());
+
+    const srcDecimals = await srcChain.getDecimals(srcToken);
     const srcAmount = amount.fromBaseUnits(transfer.amount, srcDecimals);
     const srcAmountTruncated = amount.truncate(srcAmount, TokenTransfer.MAX_DECIMALS);
-
-    const srcToken = isNative(transfer.token.address)
-      ? await srcChain.getNativeWrappedTokenId()
-      : transfer.token;
 
     // Ensure the transfer would not violate governor transfer limits
     const [tokens, limits] = await Promise.all([
@@ -643,13 +674,11 @@ export namespace TokenTransfer {
 
     const warnings: QuoteWarning[] = [];
     if (limits !== null && srcChain.chain in limits && tokens !== null) {
-      const srcTb = await srcChain.getTokenBridge();
-
       let origAsset: TokenId;
       if (isNative(transfer.token.address)) {
         origAsset = {
           chain: srcChain.chain,
-          address: await srcTb.getTokenUniversalAddress(srcToken.address),
+          address: await srcTb.getTokenUniversalAddress(srcToken),
         };
       } else {
         try {
@@ -658,7 +687,7 @@ export namespace TokenTransfer {
           if (!e.message.includes("not a wrapped asset")) throw e;
           origAsset = {
             chain: srcChain.chain,
-            address: await srcTb.getTokenUniversalAddress(srcToken.address),
+            address: await srcTb.getTokenUniversalAddress(srcToken),
           };
         }
       }
@@ -685,26 +714,16 @@ export namespace TokenTransfer {
     }
 
     const dstToken = await TokenTransfer.lookupDestinationToken(srcChain, dstChain, transfer.token);
-    // TODO: this is a hack to get the aptos native gas token decimals
-    // which requires us to pass in a token address in canonical form
-    // but the `dstToken.address` here is in universal form
-    if (dstChain.chain === "Aptos" && dstToken.chain === "Aptos") {
-      const dstTb = await dstChain.getTokenBridge();
-      const wrappedNative = await dstTb.getWrappedNative();
-      if (
-        dstToken.address.toString() ===
-        (await dstTb.getTokenUniversalAddress(wrappedNative)).toString()
-      ) {
-        dstToken.address = wrappedNative;
-      }
-    }
     const dstDecimals = await dstChain.getDecimals(dstToken.address);
     const dstAmountReceivable = amount.scale(srcAmountTruncated, dstDecimals);
 
     const eta = finality.estimateFinalityTime(srcChain.chain);
     if (!transfer.automatic) {
       return {
-        sourceToken: { token: srcToken, amount: amount.units(srcAmountTruncated) },
+        sourceToken: {
+          token: srcTokenId,
+          amount: amount.units(srcAmountTruncated),
+        },
         destinationToken: { token: dstToken, amount: amount.units(dstAmountReceivable) },
         warnings: warnings.length > 0 ? warnings : undefined,
         eta,
@@ -716,7 +735,7 @@ export namespace TokenTransfer {
     // The fee is removed from the amount transferred
     // quoted on the source chain
     const stb = await srcChain.getAutomaticTokenBridge();
-    const fee = await stb.getRelayerFee(dstChain.chain, srcToken.address);
+    const fee = await stb.getRelayerFee(dstChain.chain, srcToken);
     const feeAmountDest = amount.scale(
       amount.truncate(amount.fromBaseUnits(fee, srcDecimals), TokenTransfer.MAX_DECIMALS),
       dstDecimals,
@@ -791,11 +810,11 @@ export namespace TokenTransfer {
 
     return {
       sourceToken: {
-        token: srcToken,
+        token: srcTokenId,
         amount: amount.units(srcAmountTruncated),
       },
       destinationToken: { token: dstToken, amount: destAmountLessFee },
-      relayFee: { token: srcToken, amount: fee },
+      relayFee: { token: srcTokenId, amount: fee },
       destinationNativeGas,
       warnings: warnings.length > 0 ? warnings : undefined,
       eta,

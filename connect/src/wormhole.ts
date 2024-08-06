@@ -39,6 +39,7 @@ import {
   getVaaBytesWithRetry,
   getVaaWithRetry,
 } from "./whscan-api.js";
+import { UniversalAddress } from "@wormhole-foundation/sdk-definitions";
 
 type PlatformMap<N extends Network, P extends Platform = Platform> = Map<P, PlatformContext<N, P>>;
 type ChainMap<N extends Network, C extends Chain = Chain> = Map<C, ChainContext<N, C>>;
@@ -220,6 +221,38 @@ export class Wormhole<N extends Network> {
     const ctx = this.getChain(token.chain);
     const tb = await ctx.getTokenBridge();
     return await tb.getOriginalAsset(token.address);
+  }
+
+  /**
+   * Returns the UniversalAddress of the token. This may require fetching on-chain data.
+   * @param chain The chain to get the UniversalAddress for
+   * @param token The address to get the UniversalAddress for
+   * @returns The UniversalAddress of the token
+   */
+  async getTokenUniversalAddress<C extends Chain>(
+    chain: C,
+    token: NativeAddress<C>,
+  ): Promise<UniversalAddress> {
+    const ctx = this.getChain(chain);
+    const tb = await ctx.getTokenBridge();
+    return await tb.getTokenUniversalAddress(token);
+  }
+
+  /**
+   * Returns the native address of the token. This may require fetching on-chain data.
+   * @param chain The chain to get the native address for
+   * @param originChain The chain the token is from / native to
+   * @param token The address to get the native address for
+   * @returns The native address of the token
+   */
+  async getTokenNativeAddress<C extends Chain>(
+    chain: C,
+    originChain: Chain,
+    token: UniversalAddress,
+  ): Promise<NativeAddress<C>> {
+    const ctx = this.getChain(chain);
+    const tb = await ctx.getTokenBridge();
+    return await tb.getTokenNativeAddress(originChain, token);
   }
 
   /**
