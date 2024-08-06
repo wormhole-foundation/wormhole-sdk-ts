@@ -522,7 +522,8 @@ export namespace TokenTransfer {
           address = token.address;
         }
         lookup = await tb.getOriginalAsset(address);
-      } catch (e) {
+      } catch (e: any) {
+        if (!e.message.includes("not a wrapped asset")) throw e;
         // not a from-chain native wormhole-wrapped one
         let address: NativeAddress<SC>;
         if (UniversalAddress.instanceof(token.address)) {
@@ -651,7 +652,8 @@ export namespace TokenTransfer {
     } else if (UniversalAddress.instanceof(transfer.token.address)) {
       try {
         srcToken = (await srcTb.getWrappedAsset(transfer.token)) as NativeAddress<Chain>;
-      } catch (e) {
+      } catch (e: any) {
+        if (!e.message.includes("not a wrapped asset")) throw e;
         srcToken = await srcTb.getTokenNativeAddress(srcChain.chain, transfer.token.address);
       }
     } else {
