@@ -138,7 +138,7 @@ export async function getVaaBytes(
   const { chain, emitter, sequence } = whm;
   const chainId = toChainId(chain);
   const emitterAddress = encoding.stripPrefix("0x", emitter.toString());
-  const url = `${apiUrl}/v1/signed_vaa/${chainId}/${emitterAddress}/${sequence}`;
+  const url = `${trimSlash(apiUrl)}/v1/signed_vaa/${chainId}/${emitterAddress}/${sequence}`;
   try {
     const {
       data: { vaaBytes },
@@ -204,7 +204,7 @@ export async function getTransactionStatus(
   const { chain, emitter, sequence } = whm;
   const chainId = toChainId(chain);
   const emitterAddress = emitter.toUniversalAddress().toString();
-  const url = `${rpcUrl}/api/v1/transactions/${chainId}/${emitterAddress}/${sequence}`;
+  const url = `${trimSlash(rpcUrl)}/api/v1/transactions/${chainId}/${emitterAddress}/${sequence}`;
 
   try {
     const response = await axios.get<TransactionStatus>(url);
@@ -236,7 +236,7 @@ export async function getTransactionStatusWithRetry(
 }
 
 export async function getRelayStatus(rpcUrl: string, txid: TxHash): Promise<RelayData | null> {
-  const url = `${rpcUrl}/v1/relays?txHash=${txid}`;
+  const url = `${trimSlash(rpcUrl)}/v1/relays?txHash=${txid}`;
   try {
     const response = await axios.get<{ data: RelayData }>(url);
     if (response.data.data.to.txHash) return response.data.data;
@@ -263,7 +263,7 @@ export async function getRelayStatusWithRetry(
 }
 
 export async function getVaaByTxHash(rpcUrl: string, txid: string): Promise<ApiVaa | null> {
-  const url = `${rpcUrl}/api/v1/vaas?txHash=${txid}`;
+  const url = `${trimSlash(rpcUrl)}/api/v1/vaas?txHash=${txid}`;
   try {
     const response = await axios.get<{ data: ApiVaa[] }>(url);
     if (response.data.data.length > 0) return response.data.data[0]!;
@@ -305,7 +305,9 @@ export async function getTxsByAddress(
   pageSize: number = 50,
   page: number = 0,
 ): Promise<TransactionStatus[] | null> {
-  const url = `${rpcUrl}/api/v1/transactions?address=${address}&pageSize=${pageSize}&page=${page}`;
+  const url = `${trimSlash(
+    rpcUrl,
+  )}/api/v1/transactions?address=${address}&pageSize=${pageSize}&page=${page}`;
   try {
     const response = await axios.get<{ transactions: TransactionStatus[] }>(url);
     if (response.data.transactions.length > 0) return response.data.transactions;
@@ -343,7 +345,7 @@ export type GuardianHeartbeat = {
 };
 
 export async function getGuardianHeartbeats(rpcUrl: string): Promise<GuardianHeartbeat[] | null> {
-  const url = `${rpcUrl}/v1/heartbeats`;
+  const url = `${trimSlash(rpcUrl)}/v1/heartbeats`;
   try {
     const response = await axios.get<{ entries: GuardianHeartbeat[] }>(url);
     if (response.data && response.data.entries.length > 0) return response.data.entries;
@@ -364,7 +366,7 @@ export type GovernedTokens = {
 };
 
 export async function getGovernedTokens(rpcUrl: string): Promise<GovernedTokens | null> {
-  const url = `${rpcUrl}/v1/governor/token_list`;
+  const url = `${trimSlash(rpcUrl)}/v1/governor/token_list`;
   try {
     const response = await axios.get<{ entries: GovernorTokenListEntry[] }>(url);
     if (response.data && response.data.entries.length > 0) {
@@ -399,7 +401,7 @@ export type GovernorLimits = {
 };
 
 export async function getGovernorLimits(rpcUrl: string): Promise<GovernorLimits | null> {
-  const url = `${rpcUrl}/v1/governor/available_notional_by_chain`;
+  const url = `${trimSlash(rpcUrl)}/v1/governor/available_notional_by_chain`;
   try {
     const response = await axios.get<{ entries: GovernorAvailableNotionalEntry[] }>(url);
     if (response.data && response.data.entries.length > 0) {
@@ -426,7 +428,13 @@ export async function getIsVaaEnqueued(rpcUrl: string, whm: WormholeMessageId): 
   const { chain, emitter, sequence } = whm;
   const chainId = toChainId(chain);
   const emitterAddress = emitter.toUniversalAddress().toString();
-  const url = `${rpcUrl}/v1/governor/is_vaa_enqueued/${chainId}/${emitterAddress}/${sequence}`;
+  const url = `${trimSlash(
+    rpcUrl,
+  )}/v1/governor/is_vaa_enqueued/${chainId}/${emitterAddress}/${sequence}`;
   const response = await axios.get<{ isEnqueued: boolean }>(url);
   return response.data.isEnqueued;
+}
+
+export function trimSlash(url: string): string {
+  return url.endsWith("/") ? url.slice(0, -1) : url;
 }
