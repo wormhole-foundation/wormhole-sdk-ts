@@ -3,7 +3,7 @@ import { CircleTransfer, amount, wormhole } from "@wormhole-foundation/sdk";
 import evm from "@wormhole-foundation/sdk/evm";
 import solana from "@wormhole-foundation/sdk/solana";
 import type { SignerStuff } from "./helpers/index.js";
-import { getSigner, waitForRelay } from "./helpers/index.js";
+import { getSigner } from "./helpers/index.js";
 
 /*
 Notes:
@@ -95,12 +95,6 @@ async function cctpTransfer<N extends Network>(
   console.log("Starting Transfer");
   const srcTxids = await xfer.initiateTransfer(src.signer);
   console.log(`Started Transfer: `, srcTxids);
-
-  if (req.automatic) {
-    const relayStatus = await waitForRelay(srcTxids[srcTxids.length - 1]!);
-    console.log(`Finished relay: `, relayStatus);
-    return;
-  }
 
   // Note: Depending on chain finality, this timeout may need to be increased.
   // See https://developers.circle.com/stablecoin/docs/cctp-technical-reference#mainnet for more
