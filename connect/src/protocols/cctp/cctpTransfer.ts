@@ -1,5 +1,5 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
-import { circle, encoding, toChain } from "@wormhole-foundation/sdk-base";
+import { circle, encoding, finality, toChain } from "@wormhole-foundation/sdk-base";
 import type {
   Attestation,
   AttestationId,
@@ -43,7 +43,6 @@ import {
 } from "../../types.js";
 import { Wormhole } from "../../wormhole.js";
 import type { WormholeTransfer } from "../wormholeTransfer.js";
-import { finality } from "@wormhole-foundation/sdk-base";
 
 export class CircleTransfer<N extends Network = Network>
   implements WormholeTransfer<CircleTransfer.Protocol>

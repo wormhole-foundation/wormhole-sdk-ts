@@ -12,6 +12,7 @@ import type {
   TokenAddress,
   TokenId,
   TxHash,
+  UniversalAddress,
   WormholeMessageId,
   deserialize,
 } from "@wormhole-foundation/sdk-definitions";
@@ -39,7 +40,6 @@ import {
   getVaaBytesWithRetry,
   getVaaWithRetry,
 } from "./whscan-api.js";
-import { UniversalAddress } from "@wormhole-foundation/sdk-definitions";
 
 type PlatformMap<N extends Network, P extends Platform = Platform> = Map<P, PlatformContext<N, P>>;
 type ChainMap<N extends Network, C extends Chain = Chain> = Map<C, ChainContext<N, C>>;
@@ -58,7 +58,7 @@ export class Wormhole<N extends Network> {
     this._chains = new Map();
     this._platforms = new Map();
     for (const p of platforms) {
-      this._platforms.set(p._platform, new p(network));
+      this._platforms.set(p._platform, new p(network, this.config.chains));
     }
   }
 
