@@ -53,7 +53,7 @@ export const getTableKeyType = (tableType: string): string => {
 
 export class SuiAddress implements Address {
   static readonly byteSize = 32;
-  static readonly platform = _platform;
+  static readonly platform = "Sui";
 
   // Full 32 bytes of Address
   readonly address: Uint8Array;
