@@ -55,7 +55,7 @@ export class AutomaticTokenBridgeRoute<N extends Network>
   extends AutomaticRoute<N, Op, Vp, R>
   implements StaticRouteMethods<typeof AutomaticTokenBridgeRoute>
 {
-  NATIVE_GAS_DROPOFF_SUPPORTED = true;
+  static NATIVE_GAS_DROPOFF_SUPPORTED = true;
 
   static meta = {
     name: "AutomaticTokenBridge",
