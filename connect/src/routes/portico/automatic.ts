@@ -72,7 +72,7 @@ export class AutomaticPorticoRoute<N extends Network>
   extends AutomaticRoute<N, OP, VP, R>
   implements StaticRouteMethods<typeof AutomaticPorticoRoute>
 {
-  NATIVE_GAS_DROPOFF_SUPPORTED = false;
+  static NATIVE_GAS_DROPOFF_SUPPORTED = false;
 
   static meta = {
     name: "AutomaticPortico",
