@@ -16,6 +16,7 @@ export enum TransferState {
   SourceFinalized, // Source chain transactions are finalized or whenever we have a message id
   InReview, // Transfer is in review (e.g. held by governor)
   Attested, // VAA or Circle Attestation is available
+  Refunded, // Transfer failed and was refunded on the source chain
   DestinationInitiated, // Attestation is submitted to destination chain
   DestinationQueued, // Transfer is queued on destination chain
   DestinationFinalized, // Destination transaction is finalized
@@ -68,6 +69,14 @@ export interface AttestedTransferReceipt<AT, SC extends Chain = Chain, DC extend
   state: TransferState.Attested;
   originTxs: TransactionId<SC>[];
   attestation: Required<AT>;
+}
+
+export interface RefundedTransferReceipt<AT, SC extends Chain = Chain, DC extends Chain = Chain>
+  extends BaseTransferReceipt<SC, DC> {
+  state: TransferState.Refunded;
+  originTxs: TransactionId<SC>[];
+  refundTxs: TransactionId<SC>[];
+  attestation: AT;
 }
 
 export interface RedeemedTransferReceipt<AT, SC extends Chain = Chain, DC extends Chain = Chain>
@@ -131,6 +140,12 @@ export function isAttested<AT>(
   return receipt.state === TransferState.Attested;
 }
 
+export function isRefunded<AT>(
+  receipt: TransferReceipt<AT>,
+): receipt is RefundedTransferReceipt<AT> {
+  return receipt.state === TransferState.Refunded;
+}
+
 export function isRedeemed<AT>(
   receipt: TransferReceipt<AT>,
 ): receipt is RedeemedTransferReceipt<AT> {
@@ -160,6 +175,7 @@ export type TransferReceipt<AT, SC extends Chain = Chain, DC extends Chain = Cha
   | SourceFinalizedTransferReceipt<AT, SC, DC>
   | InReviewTransferReceipt<AT, SC, DC>
   | AttestedTransferReceipt<AT, SC, DC>
+  | RefundedTransferReceipt<AT, SC, DC>
   | RedeemedTransferReceipt<AT, SC, DC>
   | DestinationQueuedTransferReceipt<AT, SC, DC>
   | CompletedTransferReceipt<AT, SC, DC>;
