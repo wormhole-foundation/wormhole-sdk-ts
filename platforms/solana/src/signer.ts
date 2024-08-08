@@ -4,8 +4,9 @@ import type {
   Transaction,
   TransactionInstruction,
   VersionedTransaction,
-
-  PublicKey} from '@solana/web3.js';
+  PublicKey,
+  AddressLookupTableAccount,
+} from '@solana/web3.js';
 import {
   ComputeBudgetProgram,
   Keypair,
@@ -406,8 +407,19 @@ export async function determinePriorityFee(
   // Figure out which accounts need write lock
   let lockedWritableAccounts = [];
   if (isVersionedTransaction(transaction)) {
+    const luts = (
+      await Promise.all(
+        transaction.message.addressTableLookups.map((acc) =>
+          connection.getAddressLookupTable(acc.accountKey),
+        ),
+      )
+    )
+      .map((lut) => lut.value)
+      .filter((val) => val !== null) as AddressLookupTableAccount[];
     const msg = transaction.message;
-    const keys = msg.getAccountKeys();
+    const keys = msg.getAccountKeys({
+      addressLookupTableAccounts: luts ?? undefined,
+    });
     lockedWritableAccounts = msg.compiledInstructions
       .flatMap((ix) => ix.accountKeyIndexes)
       .map((k) => (msg.isAccountWritable(k) ? keys.get(k) : null))
