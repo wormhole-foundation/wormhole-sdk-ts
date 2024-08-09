@@ -111,11 +111,3 @@ export async function waitLog<N extends Network = Network>(
   }
   return receipt;
 }
-
-// Note: This API may change but it is currently the best place to pull
-// the relay status from
-export async function waitForRelay(txid: TxHash): Promise<api.RelayData | null> {
-  const relayerApi = "https://relayer.dev.stable.io";
-  const task = () => api.getRelayStatus(relayerApi, txid);
-  return tasks.retry<api.RelayData>(task, 5000, 60 * 1000, "Wormhole:GetRelayStatus");
-}
