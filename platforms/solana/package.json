@@ -49,11 +49,12 @@
     "nock": "^13.3.3"
   },
   "dependencies": {
-    "@wormhole-foundation/sdk-connect": "0.10.0",
-    "@coral-xyz/borsh": "0.29.0",
     "@coral-xyz/anchor": "0.29.0",
+    "@coral-xyz/borsh": "0.29.0",
     "@solana/spl-token": "0.3.9",
-    "@solana/web3.js": "1.91.7"
+    "@solana/web3.js": "1.91.7",
+    "@wormhole-foundation/sdk-connect": "0.10.0",
+    "rpc-websockets": "^7.10.0"
   },
   "type": "module",
   "typesVersions": {
