@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-solana-tokenbridge",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -45,9 +45,9 @@
     "prettier": "prettier --write ./src"
   },
   "dependencies": {
-    "@wormhole-foundation/sdk-connect": "0.10.0",
-    "@wormhole-foundation/sdk-solana": "0.10.0",
-    "@wormhole-foundation/sdk-solana-core": "0.10.0",
+    "@wormhole-foundation/sdk-connect": "0.10.1",
+    "@wormhole-foundation/sdk-solana": "0.10.1",
+    "@wormhole-foundation/sdk-solana-core": "0.10.1",
     "@coral-xyz/anchor": "0.29.0",
     "@solana/spl-token": "0.3.9",
     "@solana/web3.js": "1.91.7"
