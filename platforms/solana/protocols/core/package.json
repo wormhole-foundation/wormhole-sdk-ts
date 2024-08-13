@@ -49,7 +49,7 @@
     "@wormhole-foundation/sdk-solana": "0.10.1",
     "@coral-xyz/borsh": "0.29.0",
     "@coral-xyz/anchor": "0.29.0",
-    "@solana/web3.js": "1.91.7"
+    "@solana/web3.js": "^1.95.2"
   },
   "type": "module",
   "exports": {
