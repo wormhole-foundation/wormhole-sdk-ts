@@ -38,3 +38,7 @@ export const guardianKeyToName = constMap(guardianKeyAndNameEntries, [1, [0, 2]]
 
 export const devnetGuardianPrivateKey =
   "cfb12303a19cde580bb4dd771639b0d26bc68353645571a8cff516ab2ee113a0";
+
+// Number of seconds we expect to wait for attestation
+// Used for eta calculation in route code
+export const guardianAttestationEta = 5;
