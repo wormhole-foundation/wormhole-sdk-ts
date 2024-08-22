@@ -32,6 +32,10 @@ const finalityThresholds = [
   ["Optimism",  512],
   ["Base",      512],
   ["Arbitrum", 4096], // TODO: validate, this is inferred from vaa metrics timing
+  ["Blast",     512],
+  ["Xlayer",    300],
+  ["Scroll",    300],
+  ["Mantle",    512],
   // Checkpointed after 32 blocks
   ["Polygon",  32],
   // Single block finality
@@ -84,6 +88,7 @@ const blockTimeMilliseconds = [
   ["Avalanche",         2_000],
   ["Base",              2_000],
   ["BaseSepolia",       2_000],
+  ["Blast",             2_000],
   ["Bsc",               3_000],
   ["Celo",              5_000],
   ["Cosmoshub",         5_000],
@@ -96,6 +101,7 @@ const blockTimeMilliseconds = [
   ["Karura",           12_000],
   ["Klaytn",            1_000],
   ["Kujira",            3_000],
+  ["Mantle",            2_000],
   ["Moonbeam",         12_000],
   ["Near",              1_500],
   ["Neon",             30_000],
@@ -106,6 +112,7 @@ const blockTimeMilliseconds = [
   ["Polygon",           2_000],
   ["PolygonSepolia",    2_000],
   ["Rootstock",        30_000],
+  ["Scroll",            3_000],
   ["Sei",                 400],
   ["Sepolia",          15_000],
   ["Solana",              400],
@@ -115,6 +122,7 @@ const blockTimeMilliseconds = [
   ["Terra",             6_000],
   ["Terra2",            6_000],
   ["Xpla",              5_000],
+  ["Xlayer",            3_000],
   ["Wormchain",         5_000],
   ["Btc",             600_000],
   ["Pythnet",             400],
