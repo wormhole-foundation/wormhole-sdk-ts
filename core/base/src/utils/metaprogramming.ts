@@ -1,5 +1,7 @@
 export type Extends<T, U> = [T] extends [U] ? true : false;
 
+//this is a generic overload of the built-in `Function` type, it should work as a more
+//  powerful drop-in replacement
 export type Function<P extends any[] = any[], R = any> = (...args: P) => R;
 export type RoArray<T = unknown> = readonly T[];
 export type RoArray2D<T = unknown> = RoArray<RoArray<T>>;
@@ -13,9 +15,7 @@ export type Widen<T> =
   T extends object ? object :
   T;
 
-//the Exclude<T, undefined> here seems silly but for some reason TypeScript incorrectly inferred
-//  undefined as a possible value for T when used in conjunction with a generic type parameter
-export type DefinedOrDefault<T, D> = undefined extends T ? D : Exclude<T, undefined>;
+export type DefinedOrDefault<T, D> = undefined extends T ? D : NonNullable<T>;
 
 //see here: https://stackoverflow.com/a/55541672
 export type IsAny<T> = Extends<0, 1 & T>;

@@ -1,8 +1,10 @@
 import type {
+  Chain,
   ChainAddress,
   ChainId,
   ChainsConfig,
   Contracts,
+  NativeAddress,
   Network,
   TokenBridge,
   TokenId,
@@ -98,6 +100,23 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
     return { chain, address };
   }
 
+  async getTokenUniversalAddress(token: NativeAddress<C>): Promise<UniversalAddress> {
+    return new UniversalAddress(encoding.hex.encode(sha3_256(token.toString()), true));
+  }
+
+  async getTokenNativeAddress(
+    originChain: Chain,
+    token: UniversalAddress,
+  ): Promise<NativeAddress<C>> {
+    const assetType =
+      originChain === this.chain
+        ? await this.getTypeFromExternalAddress(token.toString())
+        : await this.getAssetFullyQualifiedType({ chain: originChain, address: token });
+
+    if (!assetType) throw new Error("Invalid asset address.");
+    return new AptosAddress(assetType) as NativeAddress<C>;
+  }
+
   async hasWrappedAsset(token: TokenId): Promise<boolean> {
     try {
       await this.getWrappedAsset(token);
@@ -107,6 +126,7 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
   }
 
   async getWrappedAsset(token: TokenId) {
+    if (isNative(token.address)) throw new Error("native asset cannot be a wrapped asset");
     const assetFullyQualifiedType = await this.getAssetFullyQualifiedType(token);
     if (!assetFullyQualifiedType) throw new Error("Invalid asset address.");
 
@@ -136,7 +156,7 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
       await this.connection.getTableItem(handle, {
         key_type: "vector<u8>",
         value_type: "u8",
-        key: `0x${Buffer.from(keccak256(vaa.hash)).toString('hex')}`,
+        key: `0x${Buffer.from(keccak256(vaa.hash)).toString("hex")}`,
       });
       return true;
     } catch {
@@ -294,8 +314,8 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
       return typeInfo
         ? [
             typeInfo.account_address,
-            encoding.hex.decode(typeInfo.module_name),
-            encoding.hex.decode(typeInfo.struct_name),
+            String.fromCharCode(...encoding.hex.decode(typeInfo.module_name)),
+            String.fromCharCode(...encoding.hex.decode(typeInfo.struct_name)),
           ].join(APTOS_SEPARATOR)
         : null;
     } catch {

@@ -1,10 +1,11 @@
-import type { Network, Platform, PlatformToChains } from "@wormhole-foundation/sdk-base";
+import type { Chain, Network, Platform, PlatformToChains } from "@wormhole-foundation/sdk-base";
 import type {
   ChainAddress,
   NativeAddress,
   RpcConnection,
   TokenAddress,
   TokenBridge,
+  UniversalAddress,
   UnsignedTransaction,
 } from "./../../index.js";
 
@@ -17,6 +18,12 @@ export class MockTokenBridge<N extends Network, P extends Platform, C extends Pl
     throw new Error("Method not implemented.");
   }
   getOriginalAsset(token: TokenAddress<C>): Promise<ChainAddress> {
+    throw new Error("Method not implemented.");
+  }
+  getTokenUniversalAddress(token: NativeAddress<C>): Promise<UniversalAddress> {
+    throw new Error("Method not implemented.");
+  }
+  getTokenNativeAddress(originChain: Chain, token: UniversalAddress): Promise<NativeAddress<C>> {
     throw new Error("Method not implemented.");
   }
   hasWrappedAsset(original: ChainAddress): Promise<boolean> {

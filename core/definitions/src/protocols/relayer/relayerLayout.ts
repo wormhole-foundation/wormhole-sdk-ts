@@ -53,7 +53,7 @@ const messageKeySwitchLayout = {
   ],
 } as const satisfies LayoutItem;
 
-export const deviveryInstructionLayout = <const P extends CustomizableBytes = undefined>(
+export const deliveryInstructionLayout = <const P extends CustomizableBytes = undefined>(
   customPayload?: P,
 ) =>
   [
@@ -71,12 +71,12 @@ export const deviveryInstructionLayout = <const P extends CustomizableBytes = un
   ] as const;
 
 const namedPayloads = [
-  ["DeliveryInstruction", deviveryInstructionLayout()],
+  ["DeliveryInstruction", deliveryInstructionLayout()],
   [
     "RedeliveryInstruction",
     [
       payloadIdItem(2),
-      { name: "deliveryVaaKey", binary: "bytes", layout: vaaKeyLayout },
+      { name: "deliveryVaaKey", binary: "bytes", layout: messageKeySwitchLayout },
       { name: "targetChain", ...chainItem() },
       { name: "newRequestedReceiverValue", ...amountItem },
       { name: "newEncodedExecutionInfo", ...encodedExecutionInfoItem },

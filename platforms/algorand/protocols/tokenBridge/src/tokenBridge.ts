@@ -146,8 +146,20 @@ export class AlgorandTokenBridge<N extends Network, C extends AlgorandChains>
     return { chain, address };
   }
 
+  async getTokenUniversalAddress(token: NativeAddress<C>): Promise<UniversalAddress> {
+    return new AlgorandAddress(token).toUniversalAddress();
+  }
+
+  async getTokenNativeAddress(
+    originChain: Chain,
+    token: UniversalAddress,
+  ): Promise<NativeAddress<C>> {
+    return new AlgorandAddress(token).toNative() as NativeAddress<C>;
+  }
+
   // Returns the address of the native version of this asset
   async getWrappedAsset(token: TokenId<Chain>): Promise<NativeAddress<C>> {
+    if (isNative(token.address)) throw new Error("native asset cannot be a wrapped asset");
     const storageAccount = StorageLogicSig.forWrappedAsset(this.tokenBridgeAppId, token);
     const data = await StorageLogicSig.decodeLocalState(
       this.connection,

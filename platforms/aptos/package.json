@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-aptos",
-  "version": "0.7.0-beta.3",
+  "version": "0.10.2",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -46,7 +46,7 @@
     "prettier": "prettier --write ./src"
   },
   "dependencies": {
-    "@wormhole-foundation/sdk-connect": "0.7.0-beta.3",
+    "@wormhole-foundation/sdk-connect": "0.10.2",
     "aptos": "1.21.0"
   },
   "type": "module",
@@ -80,22 +80,22 @@
     },
     "./address": {
       "react-native": {
-        "import": "./dist/esm/index.js",
-        "require": "./dist/cjs/index.js",
-        "types": "./dist/cjs/index.d.ts",
-        "default": "./dist/cjs/index.js"
+        "import": "./dist/esm/address.js",
+        "require": "./dist/cjs/address.js",
+        "types": "./dist/cjs/address.d.ts",
+        "default": "./dist/cjs/address.js"
       },
       "import": {
-        "types": "./dist/esm/index.d.ts",
-        "default": "./dist/esm/index.js"
+        "types": "./dist/esm/address.d.ts",
+        "default": "./dist/esm/address.js"
       },
       "require": {
-        "types": "./dist/cjs/index.d.ts",
-        "default": "./dist/cjs/index.js"
+        "types": "./dist/cjs/address.d.ts",
+        "default": "./dist/cjs/address.js"
       },
       "default": {
-        "types": "./dist/cjs/index.d.ts",
-        "default": "./dist/cjs/index.js"
+        "types": "./dist/cjs/address.d.ts",
+        "default": "./dist/cjs/address.js"
       }
     }
   }

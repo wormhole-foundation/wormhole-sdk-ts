@@ -9,7 +9,7 @@ import { SolanaAddress } from './address.js';
 import type { SolanaChains } from './types.js';
 
 export class SolanaChain<
-  N extends Network,
+  N extends Network = Network,
   C extends SolanaChains = SolanaChains,
 > extends ChainContext<N, C> {
   override async getTokenAccount(

@@ -29,6 +29,11 @@ type TNet = typeof network;
 
 const configs = CONFIG[network].chains;
 
+// Should change the rpc at least in CI to one that is more permissive
+// resets after 10s https://solana.com/docs/core/clusters#devnet-rate-limits
+const waitForRateLimit = async (seconds: number = 10) =>
+  await new Promise((resolve) => setTimeout(resolve, seconds * 1000));
+
 const TOKEN_ADDRESSES = {
   Mainnet: {
     Solana: {
@@ -158,6 +163,8 @@ describe('TokenBridge Tests', () => {
       });
 
       test('Real Wrapped', async () => {
+        // sleep so we dont hit rate limit
+        await waitForRateLimit(15);
         const orig = await tb.getOriginalAsset(realWrappedAddress);
         const hasWrapped = await tb.hasWrappedAsset(orig);
         expect(hasWrapped).toBe(true);
@@ -166,6 +173,8 @@ describe('TokenBridge Tests', () => {
 
     describe('getWrappedAsset', () => {
       test('Bogus', async () => {
+        // sleep so we dont hit rate limit
+        await waitForRateLimit();
         const hasWrapped = tb.getWrappedAsset({
           chain: 'Avalanche',
           address: bogusAddress,
@@ -174,6 +183,8 @@ describe('TokenBridge Tests', () => {
       });
 
       test('Real Not Wrapped', async () => {
+        // sleep so we dont hit rate limit
+        await waitForRateLimit();
         const hasWrapped = tb.getWrappedAsset({
           chain: 'Avalanche',
           address: realNativeAddress,
@@ -182,6 +193,8 @@ describe('TokenBridge Tests', () => {
       });
 
       test('Real Wrapped', async () => {
+        // sleep so we dont hit rate limit
+        await waitForRateLimit();
         const orig = await tb.getOriginalAsset(realWrappedAddress);
         const wrappedAsset = await tb.getWrappedAsset(orig);
         expect(wrappedAsset.toString()).toBe(realWrappedAddress.toString());
@@ -196,6 +209,8 @@ describe('TokenBridge Tests', () => {
     const tbAddress = p.config[chain]!.contracts.tokenBridge!;
 
     test('Create Attestation', async () => {
+      // sleep so we dont hit rate limit
+      await waitForRateLimit();
       const attestation = tb.createAttestation(bogusAddress, sender);
       const allTxns: SolanaUnsignedTransaction<TNet>[] = [];
       for await (const atx of attestation) {
@@ -214,6 +229,8 @@ describe('TokenBridge Tests', () => {
     });
 
     test('Submit Attestation', async () => {
+      // sleep so we dont hit rate limit
+      await waitForRateLimit();
       const vaa = createVAA('TokenBridge:AttestMeta', {
         payload: {
           token: {

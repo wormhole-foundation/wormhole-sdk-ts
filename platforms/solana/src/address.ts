@@ -1,4 +1,4 @@
-import type { Address, Platform } from '@wormhole-foundation/sdk-connect';
+import type { Address } from '@wormhole-foundation/sdk-connect';
 import {
   UniversalAddress,
   encoding,
@@ -13,7 +13,7 @@ export const SolanaZeroAddress = '11111111111111111111111111111111';
 
 export class SolanaAddress implements Address {
   static readonly byteSize = 32;
-  static readonly platform: Platform = _platform;
+  static readonly platform = _platform;
 
   readonly type: string = 'Native';
 

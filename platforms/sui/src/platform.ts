@@ -18,7 +18,7 @@ import {
   networkPlatformConfigs,
 } from "@wormhole-foundation/sdk-connect";
 
-import { SuiClient } from "@mysten/sui.js/client";
+import { PaginatedCoins, SuiClient } from "@mysten/sui.js/client";
 import { SuiAddress } from "./address.js";
 import { SuiChain } from "./chain.js";
 import { SUI_COIN } from "./constants.js";
@@ -34,7 +34,7 @@ export class SuiPlatform<N extends Network>
   extends PlatformContext<N, SuiPlatformType>
   implements StaticPlatformMethods<SuiPlatformType, typeof SuiPlatform>
 {
-  static _platform: SuiPlatformType = _platform;
+  static _platform = _platform;
 
   constructor(network: N, _config?: ChainsConfig<N, SuiPlatformType>) {
     super(network, _config ?? networkPlatformConfigs(network, SuiPlatform._platform));
@@ -87,6 +87,22 @@ export class SuiPlatform<N extends Network>
       throw new Error(`Can't fetch decimals for token ${parsedAddress.toString()}`);
 
     return metadata.decimals;
+  }
+
+  static async getCoins(connection: SuiClient, account: AnySuiAddress, coinType: string) {
+    let coins: { coinType: string; coinObjectId: string }[] = [];
+    let cursor: string | null = null;
+    const owner = new SuiAddress(account).toString();
+    do {
+      const result: PaginatedCoins = await connection.getCoins({
+        owner,
+        coinType,
+        cursor,
+      });
+      coins = [...coins, ...result.data];
+      cursor = result.hasNextPage ? result.nextCursor! : null;
+    } while (cursor);
+    return coins;
   }
 
   static async getBalance(

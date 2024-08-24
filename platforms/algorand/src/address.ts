@@ -8,7 +8,7 @@ import { _platform, safeBigIntToNumber } from "./types.js";
 export const AlgorandZeroAddress = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ";
 
 // Note: for ASA/App IDs we encode them as 8 bytes at the start of
-// the 32 byte adddress bytes.
+// the 32 byte address bytes.
 
 export class AlgorandAddress implements Address {
   static readonly byteSize = 32;

@@ -1,6 +1,7 @@
 import type { Address } from "@wormhole-foundation/sdk-connect";
 import { UniversalAddress, encoding, registerNative } from "@wormhole-foundation/sdk-connect";
-import type { AnyCosmwasmAddress } from "./types.js";
+import { chainToAddressPrefix } from "./constants.js";
+import type { AnyCosmwasmAddress, CosmwasmChains } from "./types.js";
 import { _platform } from "./types.js";
 
 /*
@@ -78,7 +79,7 @@ function tryDecode(data: string): { data: Uint8Array; prefix?: string } {
 export class CosmwasmAddress implements Address {
   static readonly contractAddressByteSize = 32;
   static readonly accountAddressByteSize = 20;
-  public readonly platform = _platform;
+  static readonly platform = _platform;
 
   // the actual bytes of the address
   readonly address: Uint8Array;
@@ -186,6 +187,11 @@ export class CosmwasmAddress implements Address {
     return new UniversalAddress(buff);
   }
 
+  setChain(chain: CosmwasmChains): void {
+    // @ts-expect-error -- readonly
+    this.domain = chainToAddressPrefix.get(chain);
+  }
+
   static isValidAddress(address: string): boolean {
     try {
       const maybe = encoding.bech32.decodeToBytes(address);
@@ -211,7 +217,7 @@ export class CosmwasmAddress implements Address {
   }
 
   static instanceof(address: any): address is CosmwasmAddress {
-    return address.platform === _platform;
+    return address.constructor.platform === CosmwasmAddress.platform;
   }
 
   equals(other: CosmwasmAddress | UniversalAddress): boolean {

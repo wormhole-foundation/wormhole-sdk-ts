@@ -29,7 +29,8 @@ import {
   toNative,
 } from "@wormhole-foundation/sdk-connect";
 
-import type { SuiAddress, SuiBuildOutput, SuiChains } from "@wormhole-foundation/sdk-sui";
+import type { SuiBuildOutput, SuiChains } from "@wormhole-foundation/sdk-sui";
+import { SuiAddress } from "@wormhole-foundation/sdk-sui";
 import {
   SuiPlatform,
   SuiUnsignedTransaction,
@@ -138,14 +139,72 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
 
       if (!isMoveStructStruct(addressVal)) throw new Error("Expected fields to be a MoveStruct");
 
+      const universalAddress = new Uint8Array(addressVal.fields["data"]! as Array<number>);
       return {
         chain: toChain(Number(info.fields["token_chain"])),
-        // @ts-ignore TODO
-        address: new UniversalAddress(addressVal.fields["data"]!),
+        address: new UniversalAddress(universalAddress),
       };
     }
 
     throw ErrNotWrapped(coinType);
+  }
+
+  async getTokenUniversalAddress(token: NativeAddress<C>): Promise<UniversalAddress> {
+    let coinType = (token as SuiAddress).getCoinType();
+    if (!isValidSuiType(coinType)) throw new Error(`Invalid Sui type: ${coinType}`);
+
+    const res = await getTokenFromTokenRegistry(this.provider, this.tokenBridgeObjectId, coinType);
+    const fields = getFieldsFromObjectResponse(res);
+    if (!fields) {
+      throw new Error(
+        `Token of type ${coinType} has not been registered with the token bridge. Has it been attested?`,
+      );
+    }
+
+    if (!isMoveStructObject(fields)) throw new Error("Expected fields to be a MoveStruct");
+
+    if (!("value" in fields)) throw new Error("Expected a `value` key in fields of MoveStruct");
+
+    const val = fields["value"];
+
+    if (!isMoveStructStruct(val)) throw new Error("Expected fields to be a MoveStruct");
+
+    // Normalize types
+    const type = trimSuiType(val.type);
+    coinType = trimSuiType(coinType);
+
+    // Check if wrapped or native asset. We check inclusion instead of equality
+    // because it saves us from making an additional RPC call to fetch the package ID.
+    if (type.includes(`native_asset::NativeAsset<${coinType}>`)) {
+      // fields.value.fields.token_address.fields.value.fields.data
+      const address = val.fields["token_address"];
+      if (!isMoveStructStruct(address)) throw new Error("Expected fields to be a MoveStruct");
+
+      if (!("value" in address.fields))
+        throw new Error("Expected a `value` key in fields of MoveStruct");
+      const addressVal = address.fields["value"];
+
+      if (!isMoveStructStruct(addressVal)) throw new Error("Expected fields to be a MoveStruct");
+
+      const universalAddress = new Uint8Array(addressVal.fields["data"]! as Array<number>);
+      return new UniversalAddress(universalAddress);
+    }
+
+    throw new Error(`Token of type ${coinType} is not a native asset`);
+  }
+
+  async getTokenNativeAddress(
+    originChain: Chain,
+    token: UniversalAddress,
+  ): Promise<NativeAddress<C>> {
+    const address = await getTokenCoinType(
+      this.provider,
+      this.tokenBridgeObjectId,
+      token.toUint8Array(),
+      toChainId(originChain),
+    );
+    if (!address) throw new Error(`Token ${token.toString()} not found in token registry`);
+    return new SuiAddress(address) as NativeAddress<C>;
   }
 
   async hasWrappedAsset(token: TokenId): Promise<boolean> {
@@ -352,13 +411,7 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
 
     const coinType = (isNative(token) ? SUI_TYPE_ARG : token).toString();
 
-    const coins = (
-      await this.provider.getCoins({
-        owner: senderAddress,
-        coinType,
-      })
-    ).data;
-
+    const coins = await SuiPlatform.getCoins(this.provider, sender, coinType);
     const [primaryCoin, ...mergeCoins] = coins.filter((coin) =>
       isSameType(coin.coinType, coinType),
     );
@@ -547,9 +600,7 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
   }
 
   async getWrappedNative(): Promise<NativeAddress<C>> {
-    const md = await this.provider.getCoinMetadata({ coinType: SUI_TYPE_ARG });
-    if (!md) throw new Error("Coin metadata not found");
-    return toNative(this.chain, md.id!);
+    return toNative(this.chain, SUI_TYPE_ARG);
   }
 
   private async getPackageIds(): Promise<[string, string]> {

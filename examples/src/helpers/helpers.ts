@@ -1,14 +1,17 @@
-import {
+import type {
   Chain,
   ChainAddress,
   ChainContext,
-  DEFAULT_TASK_TIMEOUT,
   Network,
   Signer,
+  TxHash,
+} from "@wormhole-foundation/sdk";
+import {
+  DEFAULT_TASK_TIMEOUT,
   TokenTransfer,
   TransferState,
-  TxHash,
   Wormhole,
+  amount,
   api,
   tasks,
 } from "@wormhole-foundation/sdk";
@@ -62,6 +65,7 @@ export async function getSigner<N extends Network, C extends Chain>(
           max: 1000,
         },
       });
+
       break;
     case "Cosmwasm":
       signer = await cosmwasm.getSigner(await chain.getRpc(), getEnv("COSMOS_MNEMONIC"));
@@ -69,6 +73,12 @@ export async function getSigner<N extends Network, C extends Chain>(
     case "Evm":
       signer = await evm.getSigner(await chain.getRpc(), getEnv("ETH_PRIVATE_KEY"), {
         debug: true,
+        maxGasLimit: amount.units(amount.parse("0.01", 18)),
+        // overrides is a Partial<TransactionRequest>, so any fields can be overriden
+        //overrides: {
+        //  maxFeePerGas: amount.units(amount.parse("1.5", 9)),
+        //  maxPriorityFeePerGas: amount.units(amount.parse("0.1", 9)),
+        //},
       });
       break;
     case "Algorand":
@@ -100,12 +110,4 @@ export async function waitLog<N extends Network = Network>(
     console.log(`${tag}: Current trasfer state: `, TransferState[receipt.state]);
   }
   return receipt;
-}
-
-// Note: This API may change but it is currently the best place to pull
-// the relay status from
-export async function waitForRelay(txid: TxHash): Promise<api.RelayData | null> {
-  const relayerApi = "https://relayer.dev.stable.io";
-  const task = () => api.getRelayStatus(relayerApi, txid);
-  return tasks.retry<api.RelayData>(task, 5000, 60 * 1000, "Wormhole:GetRelayStatus");
 }

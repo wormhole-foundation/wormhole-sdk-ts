@@ -1,10 +1,11 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
-import { amount, encoding, toChain as toChainName } from "@wormhole-foundation/sdk-base";
+import { amount, encoding, finality, guardians, toChain as toChainName } from "@wormhole-foundation/sdk-base";
 import type {
   AttestationId,
   AutomaticTokenBridge,
   ChainContext,
   Signer,
+  NativeAddress,
   TokenId,
   TokenTransferDetails,
   TransactionId,
@@ -14,6 +15,7 @@ import type {
 } from "@wormhole-foundation/sdk-definitions";
 import {
   TokenBridge,
+  UniversalAddress,
   deserialize,
   isNative,
   isTokenId,
@@ -23,7 +25,6 @@ import {
   serialize,
   toNative,
   toUniversal,
-  universalAddress,
 } from "@wormhole-foundation/sdk-definitions";
 import { signSendWait } from "../../common.js";
 import { DEFAULT_TASK_TIMEOUT } from "../../config.js";
@@ -36,11 +37,20 @@ import type {
   SourceInitiatedTransferReceipt,
   TransferQuote,
   TransferReceipt as _TransferReceipt,
+  InReviewTransferReceipt,
 } from "../../types.js";
-import { TransferState, isAttested, isSourceFinalized, isSourceInitiated } from "../../types.js";
+import {
+  TransferState,
+  isAttested,
+  isInReview,
+  isRedeemed,
+  isSourceFinalized,
+  isSourceInitiated,
+} from "../../types.js";
 import { getGovernedTokens, getGovernorLimits } from "../../whscan-api.js";
 import { Wormhole } from "../../wormhole.js";
 import type { WormholeTransfer } from "../wormholeTransfer.js";
+import type { QuoteWarning } from "../../warnings.js";
 
 export class TokenTransfer<N extends Network = Network>
   implements WormholeTransfer<TokenTransfer.Protocol>
@@ -149,6 +159,7 @@ export class TokenTransfer<N extends Network = Network>
     timeout?: number,
   ): Promise<TokenTransfer<N>> {
     const vaa = await TokenTransfer.getTransferVaa(wh, id, timeout);
+    if (!vaa) throw new Error("VAA not found");
     const automatic = vaa.protocolName === "AutomaticTokenBridge";
 
     // TODO: the `from.address` here is a lie, but we don't
@@ -230,11 +241,9 @@ export class TokenTransfer<N extends Network = Network>
       // Check if we already have the VAA
       if (this.attestations[idx]!.attestation) continue;
 
-      this.attestations[idx]!.attestation = await TokenTransfer.getTransferVaa(
-        this.wh,
-        this.attestations[idx]!.id,
-        timeout,
-      );
+      const vaa = await TokenTransfer.getTransferVaa(this.wh, this.attestations[idx]!.id, timeout);
+      if (!vaa) throw new Error("VAA not found");
+      this.attestations[idx]!.attestation = vaa;
     }
     this._state = TransferState.Attested;
 
@@ -341,7 +350,6 @@ export namespace TokenTransfer {
     const leftover = (start: number, max: number) => Math.max(max - (Date.now() - start), 0);
 
     fromChain = fromChain ?? wh.getChain(receipt.from);
-    toChain = toChain ?? wh.getChain(receipt.to);
 
     // Check the source chain for initiation transaction
     // and capture the message id
@@ -357,25 +365,38 @@ export namespace TokenTransfer {
       yield receipt;
     }
 
-    // If the source is finalized, we need to fetch the signed attestation
-    // so that we may deliver it to the destination chain
+    // If the source is finalized or in review (governor held), we need to fetch the signed attestation
+    // (once it's available) so that we may deliver it to the destination chain
     // or at least track the transfer through its progress
-    if (isSourceFinalized(receipt)) {
+    if (isSourceFinalized(receipt) || isInReview(receipt)) {
       if (!receipt.attestation.id) throw "Attestation id required to fetch attestation";
       const { id } = receipt.attestation;
       const attestation = await TokenTransfer.getTransferVaa(wh, id, leftover(start, timeout));
-      receipt = {
-        ...receipt,
-        attestation: { id, attestation },
-        state: TransferState.Attested,
-      } satisfies AttestedTransferReceipt<TokenTransfer.AttestationReceipt>;
-      yield receipt;
+      if (attestation) {
+        receipt = {
+          ...receipt,
+          attestation: { id, attestation },
+          state: TransferState.Attested,
+        } satisfies AttestedTransferReceipt<TokenTransfer.AttestationReceipt>;
+        yield receipt;
+      } else {
+        // If the attestation is not found, check if the transfer is held by the governor
+        const isEnqueued = await TokenTransfer.isTransferEnqueued(wh, id);
+        if (isEnqueued) {
+          receipt = {
+            ...receipt,
+            state: TransferState.InReview,
+          } satisfies InReviewTransferReceipt<TokenTransfer.AttestationReceipt>;
+          yield receipt;
+        }
+      }
+      throw new Error("Attestation not found");
     }
 
     // First try to grab the tx status from the API
     // Note: this requires a subsequent async step on the backend
     // to have the dest txid populated, so it may be delayed by some time
-    if (isAttested(receipt) || isSourceFinalized(receipt)) {
+    if (isAttested(receipt) || isSourceFinalized(receipt) || isInReview(receipt)) {
       if (!receipt.attestation.id) throw "Attestation id required to fetch redeem tx";
       const { id } = receipt.attestation;
       const txStatus = await wh.getTransactionStatus(id, leftover(start, timeout));
@@ -392,11 +413,15 @@ export namespace TokenTransfer {
 
     // Fall back to asking the destination chain if this VAA has been redeemed
     // Note: We do not get any destinationTxs with this method
-    if (isAttested(receipt)) {
+    if (isAttested(receipt) || isRedeemed(receipt)) {
       if (!receipt.attestation.attestation) throw "Signed Attestation required to check for redeem";
 
+      if (receipt.attestation.attestation.payloadName === "AttestMeta") {
+        throw new Error("Unable to track an AttestMeta receipt");
+      }
+
       let isComplete = await TokenTransfer.isTransferComplete(
-        toChain,
+        toChain ?? wh.getChain(receipt.attestation.attestation.payload.to.chain),
         receipt.attestation.attestation as TokenTransfer.VAA,
       );
 
@@ -478,29 +503,49 @@ export namespace TokenTransfer {
     dstChain: ChainContext<N, DC>,
     token: TokenId<SC>,
   ): Promise<TokenId<DC>> {
-    // that will be minted when the transfer is redeemed
     let lookup: TokenId;
+    const tb = await srcChain.getTokenBridge();
     if (isNative(token.address)) {
       // if native, get the wrapped asset id
-      lookup = await srcChain.getNativeWrappedTokenId();
+      const wrappedNative = await tb.getWrappedNative();
+      lookup = {
+        chain: token.chain,
+        address: await tb.getTokenUniversalAddress(wrappedNative),
+      };
     } else {
       try {
-        const tb = await srcChain.getTokenBridge();
         // otherwise, check to see if it is a wrapped token locally
-        lookup = await tb.getOriginalAsset(token.address);
-      } catch (e) {
+        let address: NativeAddress<SC>;
+        if (UniversalAddress.instanceof(token.address)) {
+          address = (await tb.getWrappedAsset(token)) as NativeAddress<SC>;
+        } else {
+          address = token.address;
+        }
+        lookup = await tb.getOriginalAsset(address);
+      } catch (e: any) {
+        if (!e.message.includes("not a wrapped asset")) throw e;
         // not a from-chain native wormhole-wrapped one
-        lookup = token;
+        let address: NativeAddress<SC>;
+        if (UniversalAddress.instanceof(token.address)) {
+          address = await tb.getTokenNativeAddress(srcChain.chain, token.address);
+        } else {
+          address = token.address;
+        }
+        lookup = { chain: token.chain, address: await tb.getTokenUniversalAddress(address) };
       }
     }
 
     // if the token id is actually native to the destination, return it
+    const dstTb = await dstChain.getTokenBridge();
     if (lookup.chain === dstChain.chain) {
-      return lookup as TokenId<DC>;
+      const nativeAddress = await dstTb.getTokenNativeAddress(
+        lookup.chain,
+        lookup.address as UniversalAddress,
+      );
+      return { chain: dstChain.chain, address: nativeAddress };
     }
 
     // otherwise, figure out what the token address representing the wormhole-wrapped token we're transferring
-    const dstTb = await dstChain.getTokenBridge();
     const dstAddress = await dstTb.getWrappedAsset(lookup);
     return { chain: dstChain.chain, address: dstAddress };
   }
@@ -531,9 +576,9 @@ export namespace TokenTransfer {
     wh: Wormhole<N>,
     key: WormholeMessageId | TxHash,
     timeout?: number,
-  ): Promise<TokenTransfer.VAA> {
+  ): Promise<TokenTransfer.VAA | null> {
     const vaa = await wh.getVaa(key, TokenBridge.getTransferDiscriminator(), timeout);
-    if (!vaa) throw new Error(`No VAA available after retries exhausted`);
+    if (!vaa) return null;
 
     // Check if its automatic and re-de-serialize
     if (vaa.payloadName === "TransferWithPayload") {
@@ -547,6 +592,13 @@ export namespace TokenTransfer {
     }
 
     return vaa;
+  }
+
+  export async function isTransferEnqueued<N extends Network>(
+    wh: Wormhole<N>,
+    key: WormholeMessageId,
+  ): Promise<boolean> {
+    return await wh.getIsVaaEnqueued(key);
   }
 
   export function validateTransferDetails<N extends Network>(
@@ -593,14 +645,26 @@ export namespace TokenTransfer {
     dstChain: ChainContext<N, Chain>,
     transfer: Omit<TokenTransferDetails, "from" | "to">,
   ): Promise<TransferQuote> {
-    const srcDecimals = await srcChain.getDecimals(transfer.token.address);
+    const srcTb = await srcChain.getTokenBridge();
+    let srcToken: NativeAddress<Chain>;
+    if (isNative(transfer.token.address)) {
+      srcToken = await srcTb.getWrappedNative();
+    } else if (UniversalAddress.instanceof(transfer.token.address)) {
+      try {
+        srcToken = (await srcTb.getWrappedAsset(transfer.token)) as NativeAddress<Chain>;
+      } catch (e: any) {
+        if (!e.message.includes("not a wrapped asset")) throw e;
+        srcToken = await srcTb.getTokenNativeAddress(srcChain.chain, transfer.token.address);
+      }
+    } else {
+      srcToken = transfer.token.address;
+    }
+    // @ts-ignore: TS2339
+    const srcTokenId = Wormhole.tokenId(srcChain.chain, srcToken.toString());
+
+    const srcDecimals = await srcChain.getDecimals(srcToken);
     const srcAmount = amount.fromBaseUnits(transfer.amount, srcDecimals);
     const srcAmountTruncated = amount.truncate(srcAmount, TokenTransfer.MAX_DECIMALS);
-
-    const srcToken = isNative(transfer.token.address)
-      ? await srcChain.getNativeWrappedTokenId()
-      : transfer.token;
-    const srcTokenUniversalAddress = universalAddress(srcToken);
 
     // Ensure the transfer would not violate governor transfer limits
     const [tokens, limits] = await Promise.all([
@@ -608,36 +672,61 @@ export namespace TokenTransfer {
       getGovernorLimits(wh.config.api),
     ]);
 
-    if (
-      limits !== null &&
-      srcChain.chain in limits &&
-      tokens !== null &&
-      srcChain.chain in tokens &&
-      srcTokenUniversalAddress in tokens[srcChain.chain]!
-    ) {
-      const limit = limits[srcChain.chain]!;
-      const tokenPrice = tokens[srcChain.chain]![srcTokenUniversalAddress]!;
-      const notionalTransferAmt = tokenPrice * amount.whole(srcAmountTruncated);
+    const warnings: QuoteWarning[] = [];
+    if (limits !== null && srcChain.chain in limits && tokens !== null) {
+      let origAsset: TokenId;
+      if (isNative(transfer.token.address)) {
+        origAsset = {
+          chain: srcChain.chain,
+          address: await srcTb.getTokenUniversalAddress(srcToken),
+        };
+      } else {
+        try {
+          origAsset = await srcTb.getOriginalAsset(transfer.token.address);
+        } catch (e: any) {
+          if (!e.message.includes("not a wrapped asset")) throw e;
+          origAsset = {
+            chain: srcChain.chain,
+            address: await srcTb.getTokenUniversalAddress(srcToken),
+          };
+        }
+      }
 
-      if (limit.maxSize && notionalTransferAmt > limit.maxSize)
-        throw new Error(
-          `Transfer amount exceeds maximum size: ${notionalTransferAmt} > ${limit.maxSize}`,
-        );
+      if (origAsset.chain in tokens && origAsset.address.toString() in tokens[origAsset.chain]!) {
+        const limit = limits[srcChain.chain]!;
+        const tokenPrice = tokens[origAsset.chain]![origAsset.address.toString()]!;
+        const notionalTransferAmt = tokenPrice * amount.whole(srcAmountTruncated);
 
-      if (notionalTransferAmt > limit.available)
-        throw new Error(
-          `Transfer amount exceeds available governed amount: ${notionalTransferAmt} > ${limit.available}`,
-        );
+        if (limit.maxSize && notionalTransferAmt > limit.maxSize) {
+          warnings.push({
+            type: "GovernorLimitWarning",
+            reason: "ExceedsLargeTransferLimit",
+          });
+        }
+
+        if (notionalTransferAmt > limit.available) {
+          warnings.push({
+            type: "GovernorLimitWarning",
+            reason: "ExceedsRemainingNotional",
+          });
+        }
+      }
     }
 
     const dstToken = await TokenTransfer.lookupDestinationToken(srcChain, dstChain, transfer.token);
     const dstDecimals = await dstChain.getDecimals(dstToken.address);
     const dstAmountReceivable = amount.scale(srcAmountTruncated, dstDecimals);
 
+    const eta = finality.estimateFinalityTime(srcChain.chain) + guardians.guardianAttestationEta;
     if (!transfer.automatic) {
       return {
-        sourceToken: { token: srcToken, amount: amount.units(srcAmountTruncated) },
+        sourceToken: {
+          token: srcTokenId,
+          amount: amount.units(srcAmountTruncated),
+        },
         destinationToken: { token: dstToken, amount: amount.units(dstAmountReceivable) },
+        warnings: warnings.length > 0 ? warnings : undefined,
+        eta,
       };
     }
 
@@ -646,15 +735,28 @@ export namespace TokenTransfer {
     // The fee is removed from the amount transferred
     // quoted on the source chain
     const stb = await srcChain.getAutomaticTokenBridge();
-    const fee = await stb.getRelayerFee(dstChain.chain, srcToken.address);
+    const fee = await stb.getRelayerFee(dstChain.chain, srcToken);
     const feeAmountDest = amount.scale(
       amount.truncate(amount.fromBaseUnits(fee, srcDecimals), TokenTransfer.MAX_DECIMALS),
       dstDecimals,
     );
 
-    const dstNativeGasAmountRequested = transfer.nativeGas ?? 0n;
+    // nativeGas is in source chain decimals
+    const srcNativeGasAmountRequested = transfer.nativeGas ?? 0n;
+    // convert to destination chain decimals
+    const dstNativeGasAmountRequested = amount.units(
+      amount.scale(
+        amount.truncate(
+          amount.fromBaseUnits(srcNativeGasAmountRequested, srcDecimals),
+          TokenTransfer.MAX_DECIMALS,
+        ),
+        dstDecimals,
+      ),
+    );
 
-    // The expected destination gas can be pulled from the destination token bridge
+    // TODO: consider moving these solana specific checks to its protocol implementation
+    const solanaMinBalanceForRentExemptAccount = 890880n;
+
     let destinationNativeGas = 0n;
     if (transfer.nativeGas) {
       const dtb = await dstChain.getAutomaticTokenBridge();
@@ -675,20 +777,47 @@ export namespace TokenTransfer {
           )}>${amount.fmt(maxNativeAmountIn, dstDecimals)}`,
         );
 
+      // when native gas is requested on solana, the amount must be at least the rent-exempt amount
+      // or the transaction could fail if the account does not have enough lamports
+      if (
+        dstChain.chain === "Solana" &&
+        _destinationNativeGas < solanaMinBalanceForRentExemptAccount
+      ) {
+        throw new Error(
+          `Native gas amount must be at least ${solanaMinBalanceForRentExemptAccount} lamports`,
+        );
+      }
+
       destinationNativeGas = _destinationNativeGas;
     }
 
     const destAmountLessFee =
       amount.units(dstAmountReceivable) - dstNativeGasAmountRequested - amount.units(feeAmountDest);
 
+    // when sending wsol to solana, the amount must be at least the rent-exempt amount
+    // or the transaction could fail if the account does not have enough lamports
+    if (dstToken.chain === "Solana") {
+      const nativeWrappedTokenId = await dstChain.getNativeWrappedTokenId();
+      if (
+        dstToken.address === nativeWrappedTokenId.address &&
+        destAmountLessFee < solanaMinBalanceForRentExemptAccount
+      ) {
+        throw new Error(
+          `Destination amount must be at least ${solanaMinBalanceForRentExemptAccount} lamports`,
+        );
+      }
+    }
+
     return {
       sourceToken: {
-        token: srcToken,
+        token: srcTokenId,
         amount: amount.units(srcAmountTruncated),
       },
       destinationToken: { token: dstToken, amount: destAmountLessFee },
-      relayFee: { token: srcToken, amount: fee },
+      relayFee: { token: srcTokenId, amount: fee },
       destinationNativeGas,
+      warnings: warnings.length > 0 ? warnings : undefined,
+      eta,
     };
   }
 

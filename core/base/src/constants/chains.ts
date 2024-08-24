@@ -47,6 +47,7 @@ const chainIdAndChainEntries = [
   [   38, "Linea"          ],
   [   39, "Berachain"      ],
   [   40, "Seievm"         ],
+  [   43, "Snaxchain"      ],
   [ 3104, "Wormchain"      ],
   [ 4000, "Cosmoshub"      ],
   [ 4001, "Evmos"          ],
@@ -110,7 +111,7 @@ export const toChain = (chain: number | string | bigint): Chain => {
       if (isChainId(chain)) return chainIdToChain(chain);
       break;
     case "bigint":
-      if (isChainId(Number(chain))) return chainIdToChain(Number(chain) as ChainId);
+      if (isChainId(Number(chain))) return chainIdToChain.get(Number(chain))!;
       break;
   }
   throw Error(`Cannot convert to Chain: ${chain}`);

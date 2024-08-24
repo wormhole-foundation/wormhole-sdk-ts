@@ -33,26 +33,11 @@ export class EvmAddress implements Address {
 
       this.address = getAddress(address);
     } else if (address instanceof Uint8Array) {
-      if (address.length !== EvmAddress.byteSize)
-        throw new Error(
-          `Invalid EVM address, expected ${EvmAddress.byteSize} bytes but got ${address.length}`,
-        );
-
+      address = this.trimUniversalAddress(address);
       this.address = getAddress(encoding.hex.encode(address));
     } else if (UniversalAddress.instanceof(address)) {
-      // If its a universal address and we want it to be an ethereum address,
-      // we need to chop off the first 12 bytes of padding
-      const addressBytes = address.toUint8Array();
-      // double check to make sure there are no non zero bytes
-      if (
-        addressBytes.slice(0, 12).some((v) => {
-          v !== 0;
-        })
-      )
-        throw new Error(`Invalid EVM address ${address}`);
-
-      const suffix = encoding.hex.encode(addressBytes.slice(12));
-      this.address = getAddress(suffix);
+      const addressBytes = this.trimUniversalAddress(address.toUint8Array());
+      this.address = getAddress(encoding.hex.encode(addressBytes));
     } else throw new Error(`Invalid EVM address ${address}`);
   }
 
@@ -70,6 +55,30 @@ export class EvmAddress implements Address {
   }
   toUniversalAddress() {
     return new UniversalAddress(this.address, 'hex');
+  }
+
+  private trimUniversalAddress(address: Uint8Array): Uint8Array {
+    if (address.length === EvmAddress.byteSize) return address;
+
+    if (address.length < EvmAddress.byteSize)
+      throw new Error(
+        `Invalid evm address, expected ${EvmAddress.byteSize} bytes`,
+      );
+
+    if (address.length !== UniversalAddress.byteSize)
+      throw new Error(
+        `Invalid universal address, expected ${UniversalAddress.byteSize} bytes`,
+      );
+
+    // If the address is longer than 20 bytes, it is a universal address
+    // that has been padded with 12 bytes of zeros
+    if (encoding.bignum.decode(address.slice(0, 12)) !== 0n) {
+      throw new Error(
+        `Invalid EVM address ${address} expected first 12 bytes to be 0s`,
+      );
+    }
+
+    return address.slice(12);
   }
   static isValidAddress(address: string) {
     return isAddress(address);

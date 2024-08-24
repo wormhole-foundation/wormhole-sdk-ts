@@ -9,7 +9,7 @@
                 "params": [
                     {
                         "to": "0x3ee18b2214aff97000d974cf647e7c347e8fa585",
-                        "data": "0x1ff1e2860000000000000000000000000000000000000000000000000000000000000002000000000000000000000000e204ebef14ff8baf87911e9e76bd6a899241fa29"
+                        "data": "0x1ff1e286000000000000000000000000000000000000000000000000000000000000000200000000000000000000000027335bfe1c5737fa2ec3a36c29193969cc7da997"
                     },
                     "latest"
                 ],
@@ -24,11 +24,11 @@
         "status": 200,
         "response": [
             "1f8b0800000000000003000000ffff",
-            "8aae56ca2acecf2b2a4856b25232d23350d251ca4c51b23231d1512a4a2d2ecd2951b25232a83054aad5c1a1d01845a1018540a93616000000ffff0300ecda684a92000000"
+            "8aae56ca2acecf2b2a4856b25232d23350d251ca4c51b23236d3512a4a2d2ecd2951b25232a83054aad5c1a1d01445a1018540a93616000000ffff030029afc7ac92000000"
         ],
         "rawHeaders": [
             "Date",
-            "Wed, 25 Oct 2023 15:29:27 GMT",
+            "Wed, 19 Jun 2024 20:37:57 GMT",
             "Content-Type",
             "application/json",
             "Transfer-Encoding",
@@ -56,7 +56,7 @@
             "Server",
             "cloudflare",
             "CF-RAY",
-            "81bb7ec12dc44405-EWR",
+            "896651ea39298c69-EWR",
             "Content-Encoding",
             "gzip"
         ],

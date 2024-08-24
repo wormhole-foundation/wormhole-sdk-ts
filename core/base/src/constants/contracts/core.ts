@@ -37,7 +37,8 @@ export const coreBridgeContracts = [[
     ["Wormchain", "wormhole1ufs3tlq4umljk0qfe8k5ya0x6hpavn897u2cnf9k0en9jr7qarqqaqfk2j"],
     ["Neutron",   "neutron16rerygcpahqcxx5t8vjla46ym8ccn7xz7rtc6ju5ujcd36cmc7zs9zrunh"],
     ["Blast",     "0xbebdb6C8ddC678FfA9f8748f85C815C556Dd8ac6"],
-    ["Scroll",    "0xbebdb6C8ddC678FfA9f8748f85C815C556Dd8ac6"]
+    ["Scroll",    "0xbebdb6C8ddC678FfA9f8748f85C815C556Dd8ac6"],
+    ["Mantle",    "0xbebdb6C8ddC678FfA9f8748f85C815C556Dd8ac6"]
   ]], [
   "Testnet", [
     ["Solana",          "3u8hJUVTA4jH1wYAyUur7FFZVQ8H635K3tSHHF4ssjQ5"],
@@ -50,8 +51,8 @@ export const coreBridgeContracts = [[
     ["Algorand",        "86525623"],
     ["Aurora",          "0xBd07292de7b505a4E803CEe286184f7Acf908F5e"],
     ["Fantom",          "0x1BB3B4119b7BA9dfad76B0545fb3F531383c3bB7"],
-    ["Karura",          "0xE4eacc10990ba3308DdCC72d985f2a27D20c7d03"],
-    ["Acala",           "0x4377B49d559c0a9466477195C6AdC3D433e265c0"],
+    ["Karura",          "0x64fb09E405D2043ed7785a29E296C766D56F2056"],
+    ["Acala",           "0x64fb09E405D2043ed7785a29E296C766D56F2056"],
     ["Klaytn",          "0x1830CC6eE66c84D2F177B94D544967c774E624cA"],
     ["Celo",            "0x88505117CA88e7dd2eC6EA1E13f0948db2D50D56"],
     ["Near",            "wormhole.wormhole.testnet"],
@@ -64,7 +65,7 @@ export const coreBridgeContracts = [[
     ["Terra2",          "terra19nv3xr5lrmmr7egvrk2kqgw4kcn43xrtd5g0mpgwwvhetusk4k7s66jyv0"],
     ["Arbitrum",        "0xC7A204bDBFe983FCD8d8E61D02b475D4073fF97e"],
     ["Optimism",        "0x6b9C8671cdDC8dEab9c719bB87cBd3e782bA6a35"],
-    ["Gnosis",          "0xE4eacc10990ba3308DdCC72d985f2a27D20c7d03"],
+    ["Gnosis",          "0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd"],
     ["Pythnet",         "EUrRARh92Cdc54xrDn6qzaqjA77NRrCcfbr8kPwoTL4z"],
     ["Xpla",            "xpla1upkjn4mthr0047kahvn0llqx4qpqfn75lnph4jpxfn8walmm8mqsanyy35"],
     ["Base",            "0x23908A62110e21C04F3A4e011d24F901F911744A"],
@@ -82,6 +83,7 @@ export const coreBridgeContracts = [[
     ["Scroll",          "0x055F47F1250012C6B20c436570a76e52c17Af2D5"],
     ["Blast",           "0x473e002D7add6fB67a4964F13bFd61280Ca46886"],
     ["Berachain",       "0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd"],
+    ["Snaxchain",       "0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd"],
     ["Xlayer",          "0xA31aa3FDb7aF7Db93d18DDA4e19F811342EDF780"],
     ["Linea",           "0x79A1027a6A159502049F10906D333EC57E95F083"],
   ]], [

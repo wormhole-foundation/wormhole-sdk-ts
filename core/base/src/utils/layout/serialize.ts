@@ -8,8 +8,10 @@ import type {
   BytesType,
   FixedConversion,
   LayoutObject,
-  LayoutItemBase} from './layout.js';
+  LayoutItemBase
+} from './layout.js';
 import {
+  defaultEndianness,
   numberMaxSize,
 } from './layout.js';
 import { calcLayoutSize } from './size.js';
@@ -60,7 +62,7 @@ export function serializeNum(
   val: NumType,
   size: number,
   cursor: Cursor,
-  endianness: Endianness = "big",
+  endianness: Endianness = defaultEndianness,
   signed: boolean = false,
 ) {
   if (!signed && val < 0)

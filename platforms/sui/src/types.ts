@@ -60,3 +60,6 @@ export function isMoveStructStruct(
 export function isMoveStructObject(value: any): value is { [key: string]: MoveValue } {
   return typeof value === "object" && !isMoveStructArray(value) && !isMoveStructStruct(value);
 }
+export function isMoveStructId(value: any): value is { id: string } {
+  return typeof value === "object" && "id" in value;
+}

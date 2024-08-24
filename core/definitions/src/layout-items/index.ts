@@ -7,3 +7,4 @@ export * from "./payloadId.js";
 export * from "./sequence.js";
 export * from "./signature.js";
 export * from "./universalAddress.js";
+export * from "./string.js";

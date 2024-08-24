@@ -1,10 +1,12 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
 import { amount, contracts } from "@wormhole-foundation/sdk-base";
 import type {
+  ChainAddress,
   ChainContext,
   Signer,
   TokenId,
   TokenTransferDetails,
+  TransactionId,
 } from "@wormhole-foundation/sdk-definitions";
 import { TokenTransfer } from "../../protocols/tokenBridge/tokenTransfer.js";
 import type {
@@ -23,7 +25,7 @@ import type {
   ValidatedTransferParams,
   ValidationResult,
 } from "../types.js";
-import { ChainAddress } from "@wormhole-foundation/sdk-definitions";
+import type { RouteTransferRequest } from "../request.js";
 
 export namespace TokenBridgeRoute {
   export type Options = {
@@ -73,13 +75,18 @@ export class TokenBridgeRoute<N extends Network>
     );
   }
 
-  // get the liist of destination tokens that may be recieved on the destination chain
+  // get the list of destination tokens that may be received on the destination chain
   static async supportedDestinationTokens<N extends Network>(
     sourceToken: TokenId,
     fromChain: ChainContext<N>,
     toChain: ChainContext<N>,
   ): Promise<TokenId[]> {
-    return [await TokenTransfer.lookupDestinationToken(fromChain, toChain, sourceToken)];
+    try {
+      return [await TokenTransfer.lookupDestinationToken(fromChain, toChain, sourceToken)];
+    } catch (e) {
+      console.error(`Failed to get destination token: ${e}`);
+      return [];
+    }
   }
 
   static isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean {
@@ -90,8 +97,8 @@ export class TokenBridgeRoute<N extends Network>
     return { payload: undefined };
   }
 
-  async validate(params: Tp): Promise<Vr> {
-    const amt = amount.parse(params.amount, this.request.source.decimals);
+  async validate(request: RouteTransferRequest<N>, params: Tp): Promise<Vr> {
+    const amt = amount.parse(params.amount, request.source.decimals);
 
     const validatedParams: Vp = {
       amount: params.amount,
@@ -102,11 +109,11 @@ export class TokenBridgeRoute<N extends Network>
     return { valid: true, params: validatedParams };
   }
 
-  async quote(params: Vp): Promise<QR> {
+  async quote(request: RouteTransferRequest<N>, params: Vp): Promise<QR> {
     try {
-      return this.request.displayQuote(
-        await TokenTransfer.quoteTransfer(this.wh, this.request.fromChain, this.request.toChain, {
-          token: this.request.source.id,
+      return request.displayQuote(
+        await TokenTransfer.quoteTransfer(this.wh, request.fromChain, request.toChain, {
+          token: request.source.id,
           amount: amount.units(params.normalizedParams.amount),
           ...params.options,
         }),
@@ -120,14 +127,24 @@ export class TokenBridgeRoute<N extends Network>
     }
   }
 
-  async initiate(signer: Signer, quote: Q, to: ChainAddress): Promise<R> {
+  async initiate(
+    request: RouteTransferRequest<N>,
+    signer: Signer,
+    quote: Q,
+    to: ChainAddress,
+  ): Promise<R> {
     const { params } = quote;
     const transfer = await TokenTransfer.destinationOverrides(
-      this.request.fromChain,
-      this.request.toChain,
-      this.toTransferDetails(params, Wormhole.chainAddress(signer.chain(), signer.address()), to),
+      request.fromChain,
+      request.toChain,
+      this.toTransferDetails(
+        request,
+        params,
+        Wormhole.chainAddress(signer.chain(), signer.address()),
+        to,
+      ),
     );
-    const txids = await TokenTransfer.transfer<N>(this.request.fromChain, transfer, signer);
+    const txids = await TokenTransfer.transfer<N>(request.fromChain, transfer, signer);
     return {
       from: transfer.from.chain,
       to: transfer.to.chain,
@@ -139,8 +156,9 @@ export class TokenBridgeRoute<N extends Network>
   async complete(signer: Signer, receipt: R): Promise<R> {
     if (!isAttested(receipt))
       throw new Error("The source must be finalized in order to complete the transfer");
+    const toChain = this.wh.getChain(receipt.to);
     const dstTxIds = await TokenTransfer.redeem<N>(
-      this.request.toChain,
+      toChain,
       receipt.attestation.attestation as TokenTransfer.VAA,
       signer,
     );
@@ -151,18 +169,18 @@ export class TokenBridgeRoute<N extends Network>
       destinationTxs: dstTxIds,
     };
   }
+  
+  async resume(txid: TransactionId): Promise<R> {
+    const xfer = await TokenTransfer.from(this.wh, txid, 10 * 1000);
+    return TokenTransfer.getReceipt(xfer);
+  }
 
   public override async *track(receipt: R, timeout?: number) {
-    yield* TokenTransfer.track(
-      this.wh,
-      receipt,
-      timeout,
-      this.request.fromChain,
-      this.request.toChain,
-    );
+    yield* TokenTransfer.track(this.wh, receipt, timeout);
   }
 
   private toTransferDetails(
+    request: RouteTransferRequest<N>,
     params: Vp,
     from: ChainAddress,
     to: ChainAddress,
@@ -170,7 +188,7 @@ export class TokenBridgeRoute<N extends Network>
     return {
       from,
       to,
-      token: this.request.source.id,
+      token: request.source.id,
       amount: amount.units(params.normalizedParams.amount),
       ...params.options,
     };

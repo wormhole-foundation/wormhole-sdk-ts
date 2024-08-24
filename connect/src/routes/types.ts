@@ -1,6 +1,7 @@
 import type { TokenId } from "@wormhole-foundation/sdk-definitions";
 import type { AttestationReceipt, TransferReceipt } from "../types.js";
 import type { amount } from "@wormhole-foundation/sdk-base";
+import type { QuoteWarning } from "../warnings.js";
 
 // Extend Options to provide custom options
 // to use for the transfer
@@ -70,6 +71,13 @@ export type Quote<
 
   // Route-specific quote details, optional
   details?: D;
+
+  // If the transfer being quoted has any warnings
+  // such as high slippage or a delay, they will be included here
+  warnings?: QuoteWarning[];
+
+  // Estimated time to completion in milliseconds
+  eta?: number;
 };
 
 export type QuoteError = {

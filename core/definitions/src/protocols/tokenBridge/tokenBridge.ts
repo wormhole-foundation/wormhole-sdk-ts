@@ -1,11 +1,7 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
 import { lazyInstantiate } from "@wormhole-foundation/sdk-base";
-import type {
-  AccountAddress,
-  ChainAddress,
-  NativeAddress,
-  UniversalOrNative,
-} from "../../address.js";
+import type { AccountAddress, ChainAddress, NativeAddress } from "../../address.js";
+import type { UniversalAddress } from "../../universalAddress.js";
 import type { TokenAddress, TokenId } from "../../types.js";
 import type { UnsignedTransaction } from "../../unsignedTransaction.js";
 import type { ProtocolPayload, ProtocolVAA } from "./../../vaa/index.js";
@@ -15,7 +11,7 @@ import "./tokenBridgeLayout.js";
 
 export const ErrNotWrapped = (token: string) => new Error(`Token ${token} is not a wrapped asset`);
 
-import { EmptyPlatformMap } from "../../protocol.js";
+import type { EmptyPlatformMap } from "../../protocol.js";
 import "../../registry.js";
 declare module "../../registry.js" {
   export namespace WormholeRegistry {
@@ -139,6 +135,20 @@ export interface TokenBridge<N extends Network = Network, C extends Chain = Chai
    */
   getOriginalAsset(nativeAddress: TokenAddress<C>): Promise<TokenId<Chain>>;
   /**
+   * Returns the UniversalAddress of the token. This may require fetching on-chain data.
+   *
+   * @param token The address to get the UniversalAddress for
+   * @returns The UniversalAddress of the token
+   */
+  getTokenUniversalAddress(token: NativeAddress<C>): Promise<UniversalAddress>;
+  /**
+   * Returns the native address of the token. This may require fetching on-chain data.
+   * @param originChain The chain the token is from / native to
+   * @param token The address to get the native address for
+   * @returns The native address of the token
+   */
+  getTokenNativeAddress(originChain: Chain, token: UniversalAddress): Promise<NativeAddress<C>>;
+  /**
    * returns the wrapped version of the native asset
    *
    * @returns The address of the native gas token that has been wrapped
@@ -158,7 +168,7 @@ export interface TokenBridge<N extends Network = Network, C extends Chain = Chai
    * @param foreignToken The token to check
    * @returns The address of the native version of this asset
    */
-  getWrappedAsset(foreignToken: TokenId<Chain>): Promise<NativeAddress<C>>;
+  getWrappedAsset(foreignToken: TokenId<Chain>): Promise<TokenAddress<C>>;
   /**
    * Checks if a transfer VAA has been redeemed
    *
@@ -177,7 +187,7 @@ export interface TokenBridge<N extends Network = Network, C extends Chain = Chai
    */
   createAttestation(
     token: TokenAddress<C>,
-    payer?: UniversalOrNative<C>,
+    payer?: AccountAddress<C>,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
 
   /**
@@ -189,7 +199,7 @@ export interface TokenBridge<N extends Network = Network, C extends Chain = Chai
    */
   submitAttestation(
     vaa: TokenBridge.AttestVAA,
-    payer?: UniversalOrNative<C>,
+    payer?: AccountAddress<C>,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
 
   /**
@@ -251,7 +261,7 @@ export interface AutomaticTokenBridge<N extends Network = Network, C extends Cha
   /** Check if a given token is in the registered token list */
   isRegisteredToken(token: TokenAddress<C>): Promise<boolean>;
   /**  Get the list of tokens that are registered and acceptable to send */
-  getRegisteredTokens(): Promise<NativeAddress<C>[]>;
+  getRegisteredTokens(): Promise<TokenAddress<C>[]>;
   /** Amount of native tokens a user would receive by swapping x amount of sending tokens */
   nativeTokenAmount(token: TokenAddress<C>, amount: bigint): Promise<bigint>;
   /** Maximum amount of sending tokens that can be swapped for native tokens */

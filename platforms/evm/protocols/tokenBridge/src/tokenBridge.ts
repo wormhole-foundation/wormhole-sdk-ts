@@ -105,6 +105,19 @@ export class EvmTokenBridge<N extends Network, C extends EvmChains>
     return { chain, address };
   }
 
+  async getTokenUniversalAddress(
+    token: NativeAddress<C>,
+  ): Promise<UniversalAddress> {
+    return new EvmAddress(token).toUniversalAddress();
+  }
+
+  async getTokenNativeAddress(
+    originChain: Chain,
+    token: UniversalAddress,
+  ): Promise<NativeAddress<C>> {
+    return new EvmAddress(token).toNative() as NativeAddress<C>;
+  }
+
   async hasWrappedAsset(token: TokenId): Promise<boolean> {
     try {
       await this.getWrappedAsset(token);
@@ -270,26 +283,29 @@ export class EvmTokenBridge<N extends Network, C extends EvmChains>
         );
     }
 
-    const wrappedNativeAddr = await this.tokenBridge.WETH();
-    const tokenAddr = new EvmAddress(vaa.payload.token.address).unwrap();
-    if (tokenAddr === wrappedNativeAddr && unwrapNative) {
-      const txReq =
-        await this.tokenBridge.completeTransferAndUnwrapETH.populateTransaction(
-          serialize(vaa),
+    if (vaa.payload.token.chain === this.chain) {
+      const wrappedNativeAddr = await this.tokenBridge.WETH();
+      const tokenAddr = new EvmAddress(vaa.payload.token.address).unwrap();
+      if (tokenAddr === wrappedNativeAddr && unwrapNative) {
+        const txReq =
+          await this.tokenBridge.completeTransferAndUnwrapETH.populateTransaction(
+            serialize(vaa),
+          );
+        yield this.createUnsignedTx(
+          addFrom(txReq, senderAddr),
+          'TokenBridge.completeTransferAndUnwrapETH',
         );
-      yield this.createUnsignedTx(
-        addFrom(txReq, senderAddr),
-        'TokenBridge.completeTransferAndUnwrapETH',
-      );
-    } else {
-      const txReq = await this.tokenBridge.completeTransfer.populateTransaction(
-        serialize(vaa),
-      );
-      yield this.createUnsignedTx(
-        addFrom(txReq, senderAddr),
-        'TokenBridge.completeTransfer',
-      );
+        return;
+      }
     }
+
+    const txReq = await this.tokenBridge.completeTransfer.populateTransaction(
+      serialize(vaa),
+    );
+    yield this.createUnsignedTx(
+      addFrom(txReq, senderAddr),
+      'TokenBridge.completeTransfer',
+    );
   }
 
   async getWrappedNative() {

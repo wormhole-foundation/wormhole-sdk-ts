@@ -43,6 +43,8 @@ const rpcConfig = [[
     ["Xlayer",    "https://xlayerrpc.okx.com/"],
     ["Gnosis",    "https://rpc.ankr.com/gnosis"],
     ["Rootstock", "https://public-node.rsk.co"],
+    ["Mantle",    "https://rpc.mantle.xyz"],
+    ["Klaytn",    "https://rpc.ankr.com/klaytn"],
   ]], [
   "Testnet", [
     ["Ethereum",        "https://eth-goerli.public.blastapi.io"],
@@ -83,7 +85,8 @@ const rpcConfig = [[
     ["Xlayer",          "https://testrpc.xlayer.tech/"],
     ["Scroll",          "https://rpc.ankr.com/scroll_sepolia_testnet"],
     ["Rootstock",       "https://public-node.testnet.rsk.co"],
-    ["Gnosis",          "https://1rpc.io/gnosis"]
+    ["Gnosis",          "https://rpc.chiadochain.net"],
+    ["Klaytn",          "https://rpc.ankr.com/klaytn_testnet"],
   ]], [
   "Devnet", [
     ["Ethereum",  "http://eth-devnet:8545"],

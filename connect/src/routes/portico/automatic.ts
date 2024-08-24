@@ -1,4 +1,4 @@
-import { filters } from "@wormhole-foundation/sdk-base";
+import { filters, finality } from "@wormhole-foundation/sdk-base";
 import type { StaticRouteMethods } from "../route.js";
 import { AutomaticRoute } from "../route.js";
 import type {
@@ -34,7 +34,8 @@ import {
   resolveWrappedToken,
   signSendWait,
 } from "./../../index.js";
-import { ChainAddress } from "@wormhole-foundation/sdk-definitions";
+import type { ChainAddress } from "@wormhole-foundation/sdk-definitions";
+import type { RouteTransferRequest } from "../request.js";
 
 export const SLIPPAGE_BPS = 15n; // 0.15%
 export const BPS_PER_HUNDRED_PERCENT = 10000n;
@@ -71,7 +72,7 @@ export class AutomaticPorticoRoute<N extends Network>
   extends AutomaticRoute<N, OP, VP, R>
   implements StaticRouteMethods<typeof AutomaticPorticoRoute>
 {
-  NATIVE_GAS_DROPOFF_SUPPORTED = false;
+  static NATIVE_GAS_DROPOFF_SUPPORTED = false;
 
   static meta = {
     name: "AutomaticPortico",
@@ -170,16 +171,16 @@ export class AutomaticPorticoRoute<N extends Network>
     return {};
   }
 
-  async validate(params: TP): Promise<VR> {
+  async validate(request: RouteTransferRequest<N>, params: TP): Promise<VR> {
     try {
       if (
-        chainToPlatform(this.request.fromChain.chain) !== "Evm" ||
-        chainToPlatform(this.request.toChain.chain) !== "Evm"
+        chainToPlatform(request.fromChain.chain) !== "Evm" ||
+        chainToPlatform(request.toChain.chain) !== "Evm"
       ) {
         throw new Error("Only EVM chains are supported");
       }
 
-      const { fromChain, toChain, source, destination } = this.request;
+      const { fromChain, toChain, source, destination } = request;
       const { network } = fromChain;
 
       // This may be "native" but we want the token that can actually be bridged
@@ -199,7 +200,7 @@ export class AutomaticPorticoRoute<N extends Network>
         amount: params.amount,
         options: params.options ?? this.getDefaultOptions(),
         normalizedParams: {
-          amount: this.request.parseAmount(params.amount),
+          amount: request.parseAmount(params.amount),
           canonicalSourceToken,
           canonicalDestinationToken,
           sourceToken,
@@ -213,11 +214,11 @@ export class AutomaticPorticoRoute<N extends Network>
     }
   }
 
-  async quote(params: VP): Promise<QR> {
+  async quote(request: RouteTransferRequest<N>, params: VP): Promise<QR> {
     try {
-      const swapAmounts = await this.quoteUniswap(params);
+      const swapAmounts = await this.quoteUniswap(request, params);
 
-      const pb = await this.request.toChain.getPorticoBridge();
+      const pb = await request.toChain.getPorticoBridge();
 
       const fee = await pb.quoteRelay(
         params.normalizedParams.canonicalDestinationToken.address,
@@ -240,7 +241,7 @@ export class AutomaticPorticoRoute<N extends Network>
         };
       }
 
-      return (await this.request.displayQuote(
+      return (await request.displayQuote(
         {
           sourceToken: {
             token: params.normalizedParams.sourceToken,
@@ -254,6 +255,7 @@ export class AutomaticPorticoRoute<N extends Network>
             token: params.normalizedParams.destinationToken,
             amount: fee,
           },
+          eta: finality.estimateFinalityTime(request.fromChain.chain),
         },
         params,
         details,
@@ -266,13 +268,13 @@ export class AutomaticPorticoRoute<N extends Network>
     }
   }
 
-  async initiate(sender: Signer<N>, quote: Q, to: ChainAddress) {
+  async initiate(request: RouteTransferRequest<N>, sender: Signer<N>, quote: Q, to: ChainAddress) {
     const { params, details } = quote;
 
-    const sourceToken = this.request.source.id.address;
-    const destToken = this.request.destination!.id;
+    const sourceToken = request.source.id.address;
+    const destToken = request.destination!.id;
 
-    const fromPorticoBridge = await this.request.fromChain.getPorticoBridge();
+    const fromPorticoBridge = await request.fromChain.getPorticoBridge();
 
     const xfer = fromPorticoBridge.transfer(
       Wormhole.parseAddress(sender.chain(), sender.address()),
@@ -283,12 +285,12 @@ export class AutomaticPorticoRoute<N extends Network>
       details!,
     );
 
-    const txids = await signSendWait(this.request.fromChain, xfer, sender);
+    const txids = await signSendWait(request.fromChain, xfer, sender);
     const receipt: SourceInitiatedTransferReceipt = {
       originTxs: txids,
       state: TransferState.SourceInitiated,
-      from: this.request.fromChain.chain,
-      to: this.request.toChain.chain,
+      from: request.fromChain.chain,
+      to: request.toChain.chain,
     };
     return receipt;
   }
@@ -307,14 +309,15 @@ export class AutomaticPorticoRoute<N extends Network>
   async complete(signer: Signer<N>, receipt: R): Promise<TransactionId[]> {
     if (!isAttested(receipt)) throw new Error("Source must be attested");
 
-    const toPorticoBridge = await this.request.toChain.getPorticoBridge();
+    const toChain = await this.wh.getChain(receipt.to);
+    const toPorticoBridge = await toChain.getPorticoBridge();
     const sender = Wormhole.chainAddress(signer.chain(), signer.address());
     const xfer = toPorticoBridge.redeem(sender.address, receipt.attestation.attestation);
-    return await signSendWait(this.request.toChain, xfer, signer);
+    return await signSendWait(toChain, xfer, signer);
   }
 
-  private async quoteUniswap(params: VP) {
-    const fromPorticoBridge = await this.request.fromChain.getPorticoBridge();
+  private async quoteUniswap(request: RouteTransferRequest<N>, params: VP) {
+    const fromPorticoBridge = await request.fromChain.getPorticoBridge();
     const startQuote = await fromPorticoBridge.quoteSwap(
       params.normalizedParams.sourceToken.address,
       params.normalizedParams.canonicalSourceToken.address,
@@ -324,7 +327,7 @@ export class AutomaticPorticoRoute<N extends Network>
 
     if (startSlippage >= startQuote) throw new Error("Start slippage too high");
 
-    const toPorticoBridge = await this.request.toChain.getPorticoBridge();
+    const toPorticoBridge = await request.toChain.getPorticoBridge();
     const minAmountStart = startQuote - startSlippage;
     const finishQuote = await toPorticoBridge.quoteSwap(
       params.normalizedParams.canonicalDestinationToken.address,

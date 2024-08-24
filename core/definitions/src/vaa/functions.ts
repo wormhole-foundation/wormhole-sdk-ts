@@ -1,19 +1,20 @@
 import type { Layout, LayoutToType } from "@wormhole-foundation/sdk-base";
 import {
+  deserializeLayout,
   encoding,
   layoutDiscriminator,
   serializeLayout,
-  deserializeLayout,
 } from "@wormhole-foundation/sdk-base";
 
-import type { LayoutLiteral, PayloadLiteral, LayoutOf, ComposeLiteral } from "./registration.js";
+import type { ComposeLiteral, LayoutLiteral, LayoutOf, PayloadLiteral } from "./registration.js";
 import { composeLiteral, payloadFactory } from "./registration.js";
 
-import type { VAA, DistributiveVAA, Payload, LayoutLiteralToPayload } from "./vaa.js";
-import { decomposeLiteral, headerLayout, envelopeLayout, baseLayout } from "./vaa.js";
+import type { DistributiveVAA, LayoutLiteralToPayload, Payload, VAA } from "./vaa.js";
+import { baseLayout, decomposeLiteral, envelopeLayout, headerLayout } from "./vaa.js";
 
+import { sequenceItem, universalAddressItem } from "../layout-items/index.js";
+import type { ProtocolName } from "../protocol.js";
 import { keccak256 } from "../utils.js";
-import { ProtocolName } from "../protocol.js";
 
 export function getPayloadLayout<LL extends LayoutLiteral>(layoutLiteral: LL) {
   const layout = payloadFactory.get(layoutLiteral);
@@ -302,3 +303,34 @@ export const blindDeserializePayload = (() => {
     }, [] as DeserializedPair[]);
   };
 })();
+
+/**
+ * Allows deserialization of a VAA with a chain id that is not yet known
+ * by the SDK.
+ * @param data The raw VAA to deserialize
+ * @returns an object with the VAA data and the payload as a Uint8Array
+ */
+export const deserializeUnknownVaa = (data: Uint8Array) => {
+  const envelopeLayout = [
+    { name: "timestamp", binary: "uint", size: 4 },
+    { name: "nonce", binary: "uint", size: 4 },
+    // Note: This is the only difference currently between this and
+    // the envelopeLayout defined in vaa.ts where chain is typechecked
+    { name: "emitterChain", binary: "uint", size: 2 },
+    { name: "emitterAddress", ...universalAddressItem },
+    { name: "sequence", ...sequenceItem },
+    { name: "consistencyLevel", binary: "uint", size: 1 },
+  ] as const satisfies Layout;
+
+  const [header, offset] = deserializeLayout(headerLayout, data, { consumeAll: false });
+  const [envelope, offset2] = deserializeLayout(envelopeLayout, data, {
+    offset: offset,
+    consumeAll: false,
+  });
+
+  return {
+    ...header,
+    ...envelope,
+    payload: data.slice(offset2),
+  };
+};

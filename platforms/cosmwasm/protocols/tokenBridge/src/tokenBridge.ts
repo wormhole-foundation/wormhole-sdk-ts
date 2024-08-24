@@ -1,5 +1,6 @@
 import type { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import type {
+  Chain,
   ChainAddress,
   ChainsConfig,
   Contracts,
@@ -123,6 +124,17 @@ export class CosmwasmTokenBridge<N extends Network, C extends CosmwasmChains>
       chain: origChain,
       address: new UniversalAddress(new Uint8Array(origAddress)),
     };
+  }
+
+  async getTokenUniversalAddress(token: NativeAddress<C>): Promise<UniversalAddress> {
+    return new CosmwasmAddress(token).toUniversalAddress();
+  }
+
+  async getTokenNativeAddress(
+    originChain: Chain,
+    token: UniversalAddress,
+  ): Promise<NativeAddress<C>> {
+    return new CosmwasmAddress(token).toNative() as NativeAddress<C>;
   }
 
   async isTransferCompleted(vaa: TokenBridge.TransferVAA): Promise<boolean> {

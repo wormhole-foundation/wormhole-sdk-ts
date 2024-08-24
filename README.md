@@ -35,7 +35,7 @@ npm install @wormhole-foundation/sdk-evm-tokenbridge
 
 ## Usage
 
-Getting started is simple, just import Wormhole and the [Platform](#platforms) modules you wish to support
+Getting started is simple, just import the 'meta' Wormhole package, that makes sure all [Platform](#platforms) modules are installed.
 
 <!--EXAMPLE_IMPORTS-->
 ```ts
@@ -75,7 +75,7 @@ See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/m
     60_000,
   );
 ```
-See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/index.ts#L49)
+See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/index.ts#L67)
 <!--EXAMPLE_WORMHOLE_VAA-->
 
 
@@ -107,7 +107,8 @@ Understanding several higher level concepts of the SDK will help in using it eff
 
 Every chain is its own special snowflake but many of them share similar functionality. The `Platform` modules provide a consistent interface for interacting with the chains that share a platform.
 
-Each platform can be installed separately so that dependencies can stay as slim as possible.
+Each platform can be installed separately so that dependencies can stay as slim as possible.  
+See all supported platforms [here](https://github.com/wormhole-foundation/connect-sdk/tree/main/platforms)
 
 ### Chain Context
 
@@ -208,6 +209,115 @@ export interface SignAndSendSigner {
 
 See the testing signers ([Evm](https://github.com/wormhole-foundation/connect-sdk/blob/main/platforms/evm/src/signer.ts), [Solana](https://github.com/wormhole-foundation/connect-sdk/blob/main/platforms/solana/src/signer.ts), ...) for an example of how to implement a signer for a specific chain or platform.
 
+### VAAs
+
+Working with VAAs directly may be necessary. The SDK includes an entire layouting package to define the structure of a VAA payload and provides the ability to easily serialize and deserialize the VAAs or VAA payloads.
+
+Using `Uint8Array` as the paylaod type will always work:
+<!--EXAMPLE_PARSE_VAA-->
+```ts
+  // Create a fake vaa and serialize it to bytes
+  // the first argument to `createVAA` describes the payload type
+  // in this case, just a Uint8Array of bytes
+  const fakeVaaBytes = serialize(
+    createVAA("Uint8Array", {
+      guardianSet: 0,
+      timestamp: 0,
+      nonce: 0,
+      emitterChain: "Solana",
+      emitterAddress: new UniversalAddress(new Uint8Array(32)),
+      sequence: 0n,
+      consistencyLevel: 0,
+      signatures: [],
+      payload: encoding.bytes.encode("hi"),
+    }),
+  );
+  // Deserialize the VAA back into a data structure, in this case
+  // decoding the payload back into bytes.
+  // Using Uint8Array will always work but you can use a more specific payload layout type
+  console.log(deserialize("Uint8Array", fakeVaaBytes));
+```
+See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/parseVaa.ts#L15)
+<!--EXAMPLE_PARSE_VAA-->
+
+But more specific types can be used
+<!--EXAMPLE_PARSE_TOKEN_TRANSFER_VAA-->
+```ts
+  // Create a token bridge VAA and serialize it
+  // The payload type argument here is "TokenBridge:Transfer"
+  // which is defined in the the TokenBridge protocol definition
+  const tokenBridgeVaaBytes = serialize(
+    createVAA("TokenBridge:Transfer", {
+      guardianSet: 0,
+      timestamp: 0,
+      nonce: 0,
+      emitterChain: "Solana",
+      emitterAddress: new UniversalAddress(new Uint8Array(32)),
+      sequence: 0n,
+      consistencyLevel: 0,
+      signatures: [],
+      payload: {
+        fee: 0n,
+        token: {
+          amount: 0n,
+          address: new UniversalAddress(new Uint8Array(32)),
+          chain: "Solana",
+        },
+        to: {
+          chain: "Ethereum",
+          address: new UniversalAddress(new Uint8Array(32)),
+        },
+      },
+    }),
+  );
+  // Although we know the payload type is "TokenBridge:Transfer",
+  // we can still deserialize it as a Uint8Array
+  console.log(deserialize("Uint8Array", tokenBridgeVaaBytes));
+  // Or use the correct payload type to get a more specific data structure
+  console.log(deserialize("TokenBridge:Transfer", tokenBridgeVaaBytes));
+```
+See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/parseVaa.ts#L38)
+<!--EXAMPLE_PARSE_TOKEN_TRANSFER_VAA-->
+
+Or define your own
+<!--EXAMPLE_PARSE_CUSTOM_VAA-->
+```ts
+
+  // First define a custom payload layout
+  const customPayloadLayout = [
+    // 2 byte integer
+    { name: "bar", binary: "uint", size: 2 },
+    // arbitrary bytes, note this will take the rest of the payload
+    { name: "foo", binary: "bytes" },
+  ] as const satisfies Layout;
+
+  // Now serialize a VAA with the custom payload layout
+  const customVaaBytes = serialize(
+    createVAA("Uint8Array", {
+      guardianSet: 0,
+      timestamp: 0,
+      nonce: 0,
+      emitterChain: "Solana",
+      emitterAddress: new UniversalAddress(new Uint8Array(32)),
+      sequence: 0n,
+      consistencyLevel: 0,
+      signatures: [],
+      // Using `serializeLayout` with the custom layout we created above
+      payload: serializeLayout(customPayloadLayout, {
+        bar: 42,
+        foo: new Uint8Array([1, 2, 3]),
+      }),
+    }),
+  );
+  // Deserialize the VAA to get the custom payload
+  const vaa = deserialize("Uint8Array", customVaaBytes);
+  console.log(encoding.hex.encode(vaa.payload));
+  console.log(deserializeLayout(customPayloadLayout, vaa.payload));
+```
+See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/parseVaa.ts#L73)
+<!--EXAMPLE_PARSE_CUSTOM_VAA-->
+
+
 ### Protocols
 
 While Wormhole itself is a Generic Message Passing protocol, a number of protocols have been built on top of it to provide specific functionality.
@@ -220,9 +330,9 @@ The protocol that underlies all Wormhole activity is the Core protocol. This pro
 
 <!--EXAMPLE_CORE_BRIDGE-->
 ```ts
-  const wh = await wormhole("Testnet", [solana]);
+  const wh = await wormhole("Testnet", [solana, evm]);
 
-  const chain = wh.getChain("Solana");
+  const chain = wh.getChain("Avalanche");
   const { signer, address } = await getSigner(chain);
 
   // Get a reference to the core messaging bridge
@@ -251,19 +361,23 @@ The protocol that underlies all Wormhole activity is the Core protocol. This pro
   const [whm] = await chain.parseTransaction(txid!.txid);
 
   // Or pull the full message content as an Unsigned VAA
-  // const msgs = await coreBridge.parseMessages(txid!.txid);
-  // console.log(msgs);
+  // console.log(await coreBridge.parseMessages(txid!.txid));
 
   // Wait for the vaa to be signed and available with a timeout
   const vaa = await wh.getVaa(whm!, "Uint8Array", 60_000);
   console.log(vaa);
+
   // Also possible to search by txid but it takes longer to show up
   // console.log(await wh.getVaaByTxHash(txid!.txid, "Uint8Array"));
 
+  // Note: calling verifyMessage manually is typically not a useful thing to do
+  // as the VAA is typically submitted to the counterpart contract for
+  // a given protocol and the counterpart contract will verify the VAA
+  // this is simply for demo purposes
   const verifyTxs = coreBridge.verifyMessage(address.address, vaa!);
   console.log(await signSendWait(chain, verifyTxs, signer));
 ```
-See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/messaging.ts#L7)
+See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/messaging.ts#L8)
 <!--EXAMPLE_CORE_BRIDGE-->
 
 Within the payload is the information necessary to perform whatever action is required based on the Protocol that uses it.
@@ -382,12 +496,6 @@ We can also transfer native USDC using [Circle's CCTP](https://www.circle.com/en
   console.log("Starting Transfer");
   const srcTxids = await xfer.initiateTransfer(src.signer);
   console.log(`Started Transfer: `, srcTxids);
-
-  if (req.automatic) {
-    const relayStatus = await waitForRelay(srcTxids[srcTxids.length - 1]!);
-    console.log(`Finished relay: `, relayStatus);
-    return;
-  }
 
   // Note: Depending on chain finality, this timeout may need to be increased.
   // See https://developers.circle.com/stablecoin/docs/cctp-technical-reference#mainnet for more
@@ -526,7 +634,7 @@ To provide a more flexible and generic interface, the `Wormhole` class provides 
     routes.AutomaticPorticoRoute, // Native eth transfers
   ]);
 ```
-See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/router.ts#L30)
+See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/router.ts#L20)
 <!--EXAMPLE_RESOLVER_CREATE-->
 
 Once created, the resolver can be used to provide a list of input and possible output tokens.
@@ -553,7 +661,7 @@ Once created, the resolver can be used to provide a list of input and possible o
   //grab the first one for the example
   const destinationToken = destTokens[0]!;
 ```
-See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/router.ts#L41)
+See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/router.ts#L31)
 <!--EXAMPLE_RESOLVER_LIST_TOKENS-->
 
 Once the tokens are selected, a `RouteTransferRequest` may be created to provide a list of routes that can fulfil the request
@@ -563,8 +671,6 @@ Once the tokens are selected, a `RouteTransferRequest` may be created to provide
   // creating a transfer request fetches token details
   // since all routes will need to know about the tokens
   const tr = await routes.RouteTransferRequest.create(wh, {
-    from: sender.address,
-    to: receiver.address,
     source: sendToken,
     destination: destinationToken,
   });
@@ -573,7 +679,7 @@ Once the tokens are selected, a `RouteTransferRequest` may be created to provide
   const foundRoutes = await resolver.findRoutes(tr);
   console.log("For the transfer parameters, we found these routes: ", foundRoutes);
 ```
-See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/router.ts#L63)
+See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/router.ts#L53)
 <!--EXAMPLE_REQUEST_CREATE-->
 
 Choosing the best route is currently left to the developer but strategies might include sorting by output amount or expected time to complete the transfer (no estimate currently provided).
@@ -591,17 +697,17 @@ After choosing the best route, extra parameters like `amount`, `nativeGasDropoff
   // validate the transfer params passed, this returns a new type of ValidatedTransferParams
   // which (believe it or not) is a validated version of the input params
   // this new var must be passed to the next step, quote
-  const validated = await bestRoute.validate(transferParams);
+  const validated = await bestRoute.validate(tr, transferParams);
   if (!validated.valid) throw validated.error;
   console.log("Validated parameters: ", validated.params);
 
   // get a quote for the transfer, this too returns a new type that must
   // be passed to the next step, execute (if you like the quote)
-  const quote = await bestRoute.quote(validated.params);
+  const quote = await bestRoute.quote(tr, validated.params);
   if (!quote.success) throw quote.error;
   console.log("Best route quote: ", quote);
 ```
-See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/router.ts#L83)
+See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/router.ts#L71)
 <!--EXAMPLE_REQUEST_VALIDATE-->
 
 
@@ -611,10 +717,10 @@ Finally, assuming the quote looks good, the route can initiate the request with 
 ```ts
     // Now the transfer may be initiated
     // A receipt will be returned, guess what you gotta do with that?
-    const receipt = await bestRoute.initiate(sender.signer, quote);
+    const receipt = await bestRoute.initiate(tr, sender.signer, quote, receiver.address);
     console.log("Initiated transfer with receipt: ", receipt);
 ```
-See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/router.ts#L107)
+See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/router.ts#L95)
 <!--EXAMPLE_REQUEST_INITIATE-->
 
 Note: See the `router.ts` example in the examples directory for a full working example

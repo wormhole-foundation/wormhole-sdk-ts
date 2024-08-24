@@ -32,11 +32,6 @@
                 "jsonrpc": "2.0"
             },
             {
-                "method": "eth_chainId",
-                "params": [],
-                "jsonrpc": "2.0"
-            },
-            {
                 "method": "eth_call",
                 "params": [
                     {
@@ -46,21 +41,15 @@
                     "latest"
                 ],
                 "jsonrpc": "2.0"
-            },
-            {
-                "method": "eth_chainId",
-                "params": [],
-                "jsonrpc": "2.0"
             }
         ],
         "status": 200,
         "response": [
-            "1f8b0800000000000003000000ffff",
-            "8aae56ca2acecf2b2a4856b25232d23350d251ca4c51b23234d0512a4a2d2ecd2951b25232a83054aad5c1a1d01045a1018500b73d46c43ac8844885967472b83135ed3154aa8d05000000ffff0300bd690238b3010000"
+            "1f8b08000000000000038aae56ca2acecf2b2a4856b25232d23350d251ca4c51b2b2d0512a4a2d2ecd2951b25232a830a01028d5ea60b7c612c51a439cea0c0de8e31e43436ada63a8541b0b000000ffff030054029f1760010000"
         ],
         "rawHeaders": [
             "Date",
-            "Wed, 25 Oct 2023 15:29:24 GMT",
+            "Wed, 19 Jun 2024 20:37:55 GMT",
             "Content-Type",
             "application/json",
             "Transfer-Encoding",
@@ -68,7 +57,7 @@
             "Connection",
             "close",
             "CF-Cache-Status",
-            "DYNAMIC",
+            "HIT",
             "Access-Control-Allow-Origin",
             "*",
             "Cache-Control",
@@ -88,7 +77,7 @@
             "Server",
             "cloudflare",
             "CF-RAY",
-            "81bb7eb04a1a42d3-EWR",
+            "896651dce8a45e6a-EWR",
             "Content-Encoding",
             "gzip"
         ],
@@ -125,20 +114,16 @@
                     "latest"
                 ],
                 "jsonrpc": "2.0"
-            },
-            {
-                "method": "eth_chainId",
-                "params": [],
-                "jsonrpc": "2.0"
             }
         ],
         "status": 200,
         "response": [
-            "1f8b0800000000000003a4cd4b0a84301045d1bdbc7190943155215b1107494cc0a651f10342e3de7bec4010bce303b7fde1b34ee3322778d49586c2d0c3132b2c79ddbf1b3cf44138d50d744fa1bd40fd2ebeffc8a34f345498433089b2386bd814edc4068ad2e45aa2b3a5674e82b3fb030000ffff03001516090123010000"
+            "1f8b0800000000000003000000ffff",
+            "8aae56ca2acecf2b2a4856b25232d23350d251ca4c51b23234d6512a4a2d2ecd2951b25232a83054aad5c1a1d00845a10165c00cb73d2644d993646c9866669698689c6c986a6e616a6c669c6660616e9a6898646e926a649e64619a966266966cae541b0b000000ffff03002010bf0efa000000"
         ],
         "rawHeaders": [
             "Date",
-            "Wed, 25 Oct 2023 15:29:24 GMT",
+            "Wed, 19 Jun 2024 20:37:55 GMT",
             "Content-Type",
             "application/json",
             "Transfer-Encoding",
@@ -166,7 +151,7 @@
             "Server",
             "cloudflare",
             "CF-RAY",
-            "81bb7eb18fcbc339-EWR",
+            "896651de1b9b8c7e-EWR",
             "Content-Encoding",
             "gzip"
         ],

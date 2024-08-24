@@ -39,12 +39,26 @@ export class SuiSigner<N extends Network, C extends SuiChains> implements SignAn
       const { description, transaction } = tx as SuiUnsignedTransaction<N, C>;
       if (this._debug) console.log(`Signing ${description} for ${this.address()}`);
 
-      const result = await this._client.signAndExecuteTransactionBlock({
-        transactionBlock: transaction,
-        signer: this._signer,
-      });
+      try {
+        const result = await this._client.signAndExecuteTransactionBlock({
+          transactionBlock: transaction,
+          signer: this._signer,
+        });
+        txids.push(result.digest);
+      } catch (e) {
+        // If the transaction fails on Sui, its often in a dryrun, but im currently
+        // too lazy to write a typeguard to make this safe
+        //const stuff = (e as Error).cause as DryRunTransactionBlockResponse;
+        //const { input, effects } = stuff;
 
-      txids.push(result.digest);
+        //if (input.transaction.kind === "ProgrammableTransaction") {
+        //  console.error("ProgrammableTransaction");
+        //  console.error("Txs\n", input.transaction.transactions);
+        //  console.error("Inputs\n", input.transaction.inputs);
+        //}
+        //console.error("Effects\n", effects);
+        throw e;
+      }
     }
     return txids;
   }

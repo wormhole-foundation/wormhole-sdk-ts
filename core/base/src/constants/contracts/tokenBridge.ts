@@ -34,6 +34,7 @@ export const tokenBridgeContracts = [[
     ["Wormchain", "wormhole1466nf3zuxpya8q9emxukd7vftaf6h4psr0a07srl5zw74zh84yjq4lyjmh"],
     ["Blast",     "0x24850c6f61C438823F01B7A3BF2B89B72174Fa9d"],
     ["Scroll",    "0x24850c6f61C438823F01B7A3BF2B89B72174Fa9d"],
+    ["Mantle",    "0x24850c6f61C438823F01B7A3BF2B89B72174Fa9d"],
   ]], [
   "Testnet", [
     ["Solana",          "DZnkkTmCiFWfYTfT41X3Rd1kDgozqzxWaHqsw6W4x2oe"],
@@ -46,8 +47,8 @@ export const tokenBridgeContracts = [[
     ["Algorand",        "86525641"],
     ["Aurora",          "0xD05eD3ad637b890D68a854d607eEAF11aF456fba"],
     ["Fantom",          "0x599CEa2204B4FaECd584Ab1F2b6aCA137a0afbE8"],
-    ["Karura",          "0xd11De1f930eA1F7Dd0290Fe3a2e35b9C91AEFb37"],
-    ["Acala",           "0xebA00cbe08992EdD08ed7793E07ad6063c807004"],
+    ["Karura",          "0xe157115ef34c93145Fec2FE53706846853B07F42"],
+    ["Acala",           "0xe157115ef34c93145Fec2FE53706846853B07F42"],
     ["Klaytn",          "0xC7A13BE098720840dEa132D860fDfa030884b09A"],
     ["Celo",            "0x05ca6037eC51F8b712eD2E6Fa72219FEaE74E153"],
     ["Near",            "token.wormhole.testnet"],
@@ -74,6 +75,7 @@ export const tokenBridgeContracts = [[
     ["Blast",           "0x430855B4D43b8AEB9D2B9869B74d58dda79C0dB2"],
     ["Xlayer",          "0xdA91a06299BBF302091B053c6B9EF86Eff0f930D"],
     ["Berachain",       "0xa10f2eF61dE1f19f586ab8B6F2EbA89bACE63F7a"],
+    ["Snaxchain",       "0xa10f2eF61dE1f19f586ab8B6F2EbA89bACE63F7a"],
     ["Linea",           "0xC7A204bDBFe983FCD8d8E61D02b475D4073fF97e"],
   ]], [
   "Devnet", [

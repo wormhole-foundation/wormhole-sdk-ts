@@ -13,7 +13,7 @@ import type { UnsignedTransaction } from "../../unsignedTransaction.js";
 import "./automaticCircleBridgeLayout.js";
 import { circleMessageLayout } from "./circleBridgeLayout.js";
 
-import { EmptyPlatformMap } from "../../protocol.js";
+import type { EmptyPlatformMap } from "../../protocol.js";
 import { keccak256 } from "../../utils.js";
 import type { ProtocolPayload, ProtocolVAA } from "./../../vaa/index.js";
 import { payloadDiscriminator } from "./../../vaa/index.js";
@@ -187,4 +187,8 @@ export interface AutomaticCircleBridge<N extends Network = Network, C extends Ch
     amount: bigint,
     nativeGas?: bigint,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
+  /** Amount of native tokens a user would receive by swapping x amount of sending tokens */
+  nativeTokenAmount(amount: bigint): Promise<bigint>;
+  /** Maximum amount of sending tokens that can be swapped for native tokens */
+  maxSwapAmount(): Promise<bigint>;
 }

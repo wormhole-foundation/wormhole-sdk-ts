@@ -64,6 +64,12 @@ export class RouteTransferRequest<N extends Network> {
       dq.destinationNativeGas = amount.fromBaseUnits(quote.destinationNativeGas, dstDecimals);
     }
 
+    if (quote.warnings && quote.warnings.length > 0) {
+      dq.warnings = [...quote.warnings];
+    }
+
+    dq.eta = quote.eta;
+
     if (details) {
       dq.details = details;
     }
