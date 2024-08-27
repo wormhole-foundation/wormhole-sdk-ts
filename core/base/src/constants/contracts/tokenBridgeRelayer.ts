@@ -1,6 +1,6 @@
-import type { MapLevels } from './../../utils/index.js';
-import type { Network } from '../networks.js';
-import type { Chain } from '../chains.js';
+import type { MapLevels } from "./../../utils/index.js";
+import type { Network } from "../networks.js";
+import type { Chain } from "../chains.js";
 
 // prettier-ignore
 export const tokenBridgeRelayerContracts = [[
@@ -15,6 +15,8 @@ export const tokenBridgeRelayerContracts = [[
     ["Solana",    "3vxKRPwUTiEkeUVyoZ9MXFe1V71sRLbLqu1gRYaWmehQ"],
     ["Base",      "0xaE8dc4a7438801Ec4edC0B035EcCCcF3807F4CC1"],
     ["Moonbeam",  "0xcafd2f0a35a4459fa40c0517e17e6fa2939441ca"],
+    ["Arbitrum",  "0xaE8dc4a7438801Ec4edC0B035EcCCcF3807F4CC1"],
+    ["Optimism",  "0xaE8dc4a7438801Ec4edC0B035EcCCcF3807F4CC1"]
   ]], [
   "Testnet", [
     ["Ethereum",        "0x9563a59c15842a6f322b10f69d1dd88b41f2e97b"],
@@ -28,8 +30,8 @@ export const tokenBridgeRelayerContracts = [[
     ["Moonbeam",        "0x9563a59c15842a6f322b10f69d1dd88b41f2e97b"],
     ["Solana",          "3bPRWXqtSfUaCw3S4wdgvypQtsSzcmvDeaqSqPDkncrg"],
     ["Sepolia",         ""],
-    ["ArbitrumSepolia", ""],
-    ["OptimismSepolia", ""],
+    ["ArbitrumSepolia", "0xaE8dc4a7438801Ec4edC0B035EcCCcF3807F4CC1"],
+    ["OptimismSepolia", "0xaE8dc4a7438801Ec4edC0B035EcCCcF3807F4CC1"],
     ["BaseSepolia",     ""],
   ]],
 ] as const satisfies MapLevels<[Network, Chain, string]>;
