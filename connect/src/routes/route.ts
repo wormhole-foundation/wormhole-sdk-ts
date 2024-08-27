@@ -118,7 +118,10 @@ export abstract class AutomaticRoute<
 }
 
 export function isAutomatic<N extends Network>(route: Route<N>): route is AutomaticRoute<N> {
-  return (route as AutomaticRoute<N>).isAvailable !== undefined && (route.constructor as RouteConstructor).IS_AUTOMATIC;
+  return (
+    (route as AutomaticRoute<N>).isAvailable !== undefined &&
+    (route.constructor as RouteConstructor).IS_AUTOMATIC
+  );
 }
 
 /**

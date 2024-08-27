@@ -1,6 +1,6 @@
 // THIS FILE IS AUTO-GENERATED WITH `npm run gen`
 
-import { Chain } from "@wormhole-foundation/sdk-base";
+import type { Chain } from "@wormhole-foundation/sdk-base";
 
 const PREFIX = "data:image/svg+xml;base64,";
 

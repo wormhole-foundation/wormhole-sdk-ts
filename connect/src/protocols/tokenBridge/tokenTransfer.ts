@@ -1,5 +1,11 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
-import { amount, encoding, finality, guardians, toChain as toChainName } from "@wormhole-foundation/sdk-base";
+import {
+  amount,
+  encoding,
+  finality,
+  guardians,
+  toChain as toChainName,
+} from "@wormhole-foundation/sdk-base";
 import type {
   AttestationId,
   AutomaticTokenBridge,

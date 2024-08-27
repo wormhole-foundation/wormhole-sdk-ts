@@ -592,7 +592,8 @@ export namespace CircleTransfer {
 
     // https://developers.circle.com/stablecoins/docs/required-block-confirmations
     const eta =
-      (srcChain.chain === "Polygon" ? 2_000 * 200 : finality.estimateFinalityTime(srcChain.chain)) + guardians.guardianAttestationEta;
+      (srcChain.chain === "Polygon" ? 2_000 * 200 : finality.estimateFinalityTime(srcChain.chain)) +
+      guardians.guardianAttestationEta;
     if (!transfer.automatic) {
       return {
         sourceToken: { token: srcToken, amount: transfer.amount },
