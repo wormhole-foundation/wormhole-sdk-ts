@@ -18,7 +18,8 @@ import {
   networkPlatformConfigs,
 } from "@wormhole-foundation/sdk-connect";
 
-import { PaginatedCoins, SuiClient } from "@mysten/sui.js/client";
+import type { PaginatedCoins } from "@mysten/sui/client";
+import { SuiClient } from "@mysten/sui/client";
 import { SuiAddress } from "./address.js";
 import { SuiChain } from "./chain.js";
 import { SUI_COIN } from "./constants.js";
@@ -145,7 +146,7 @@ export class SuiPlatform<N extends Network>
     const txhashes = [];
     for (const stxn of stxns) {
       const pendingTx = await rpc.executeTransactionBlock(stxn);
-      await rpc.waitForTransactionBlock({ digest: pendingTx.digest });
+      await rpc.waitForTransaction({ digest: pendingTx.digest });
       txhashes.push(pendingTx.digest);
     }
     return txhashes;

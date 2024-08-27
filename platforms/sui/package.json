@@ -46,8 +46,8 @@
     "test": "jest --config ./jest.config.ts"
   },
   "dependencies": {
-    "@wormhole-foundation/sdk-connect": "0.10.2",
-    "@mysten/sui.js": "^0.50.1"
+    "@mysten/sui": "^1.7.0",
+    "@wormhole-foundation/sdk-connect": "0.10.2"
   },
   "type": "module",
   "typesVersions": {

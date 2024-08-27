@@ -6,7 +6,7 @@ import { SuiChains, SuiPlatform } from "./../../src/index.js";
 
 import "@wormhole-foundation/sdk-sui-core";
 import "@wormhole-foundation/sdk-sui-tokenbridge";
-import { SuiClient } from "@mysten/sui.js/client";
+import { SuiClient } from "@mysten/sui/client";
 
 const network = DEFAULT_NETWORK;
 
