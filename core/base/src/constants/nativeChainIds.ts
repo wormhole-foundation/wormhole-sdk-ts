@@ -23,7 +23,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Wormchain", "wormchain"],
       ["Xpla",      "dimension_37-1"],
       ["Kujira",    "kaiyo-1"],
-      ["Solana",    "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"],
+      ["Solana",    "4uhcVJyU9pJkvQyS88uRDiswHXSCkY3zQawwpjk2NsNY"],
       ["Sui",       "35834a8a"],
       ["Acala",     787n],
       ["Arbitrum",  42161n],
