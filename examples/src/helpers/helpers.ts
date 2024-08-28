@@ -21,6 +21,7 @@ import cosmwasm from "../../../sdk/dist/esm/platforms/cosmwasm.js";
 import evm from "../../../sdk/dist/esm/platforms/evm.js";
 import solana from "../../../sdk/dist/esm/platforms/solana.js";
 import sui from "../../../sdk/dist/esm/platforms/sui.js";
+import aptos from "../../../sdk/dist/esm/platforms/aptos.js";
 
 // Use .env.example as a template for your .env file and populate it with secrets
 // for funded accounts on the relevant chain+network combos to run the example
@@ -86,6 +87,9 @@ export async function getSigner<N extends Network, C extends Chain>(
       break;
     case "Sui":
       signer = await sui.getSigner(await chain.getRpc(), getEnv("SUI_PRIVATE_KEY"));
+      break;
+    case "Aptos":
+      signer = await aptos.getSigner(await chain.getRpc(), getEnv("APTOS_PRIVATE_KEY"));
       break;
     default:
       throw new Error("Unrecognized platform: " + platform);
