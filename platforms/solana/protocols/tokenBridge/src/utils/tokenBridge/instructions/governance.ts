@@ -144,11 +144,11 @@ export function getUpgradeContractAccounts(
     upgradeAuthority: CoreUtils.deriveUpgradeAuthorityKey(tokenBridgeProgramId),
     spill: new PublicKey(spill === undefined ? payer : spill),
     implementation: new PublicKey(vaa.payload.actionArgs.newContract),
-    programData: utils.deriveUpgradeableProgramKey(tokenBridgeProgramId),
+    programData: utils.deriveProgramDataAddress(tokenBridgeProgramId),
     tokenBridgeProgram: new PublicKey(tokenBridgeProgramId),
     rent: SYSVAR_RENT_PUBKEY,
     clock: SYSVAR_CLOCK_PUBKEY,
-    bpfLoaderUpgradeable: utils.BpfLoaderUpgradeable.programId,
+    bpfLoaderUpgradeable: utils.BPF_LOADER_UPGRADEABLE_PROGRAM_ID,
     systemProgram: SystemProgram.programId,
   };
 }
