@@ -109,10 +109,6 @@ export class AutomaticCCTPRoute<N extends Network>
     };
   }
 
-  async isAvailable(): Promise<boolean> {
-    return true;
-  }
-
   async validate(request: RouteTransferRequest<N>, params: Tp): Promise<Vr> {
     try {
       const options = params.options ?? this.getDefaultOptions();

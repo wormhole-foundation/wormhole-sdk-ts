@@ -118,16 +118,6 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     return { nativeGas: 0.0 };
   }
 
-  async isAvailable(request: RouteTransferRequest<N>): Promise<boolean> {
-    const atb = await request.fromChain.getAutomaticTokenBridge();
-
-    if (isTokenId(request.source.id)) {
-      return await atb.isRegisteredToken(request.source.id.address);
-    }
-
-    return true;
-  }
-
   async validate(request: RouteTransferRequest<N>, params: Tp): Promise<Vr> {
     try {
       const options = params.options ?? this.getDefaultOptions();
