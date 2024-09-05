@@ -68,7 +68,13 @@ const finalityThresholds = [
   ["Stargaze",  0],
   ["Dymension", 0],
   ["Provenance",0],
-] as const satisfies MapLevel<Chain, number>;
+  // Testnets
+  ["Sepolia", 96],
+  ["ArbitrumSepolia", 4096],
+  ["BaseSepolia", 512],
+  ["OptimismSepolia", 512],
+  ["PolygonSepolia", 32],
+] as const satisfies MapLevel<Chain, number | "?">;
 
 /**
  * The number of blocks before a transaction may be considered "final" and
