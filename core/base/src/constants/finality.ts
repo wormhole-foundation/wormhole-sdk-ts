@@ -74,7 +74,7 @@ const finalityThresholds = [
   ["BaseSepolia", 512],
   ["OptimismSepolia", 512],
   ["PolygonSepolia", 32],
-] as const satisfies MapLevel<Chain, number | "?">;
+] as const satisfies MapLevel<Chain, number>;
 
 /**
  * The number of blocks before a transaction may be considered "final" and
