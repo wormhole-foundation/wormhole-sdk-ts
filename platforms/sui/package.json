@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-sui",
-  "version": "0.10.3",
+  "version": "0.10.4",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -46,7 +46,7 @@
     "test": "jest --config ./jest.config.ts"
   },
   "dependencies": {
-    "@wormhole-foundation/sdk-connect": "0.10.3",
+    "@wormhole-foundation/sdk-connect": "0.10.4",
     "@mysten/sui.js": "^0.50.1"
   },
   "type": "module",
