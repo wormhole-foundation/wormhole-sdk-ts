@@ -68,6 +68,12 @@ const finalityThresholds = [
   ["Stargaze",  0],
   ["Dymension", 0],
   ["Provenance",0],
+  // Testnets
+  ["Sepolia", 96],
+  ["ArbitrumSepolia", 4096],
+  ["BaseSepolia", 512],
+  ["OptimismSepolia", 512],
+  ["PolygonSepolia", 32],
 ] as const satisfies MapLevel<Chain, number>;
 
 /**
