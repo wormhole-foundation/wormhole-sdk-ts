@@ -100,3 +100,14 @@ export class MinAmountError extends Error {
     return this.min;
   }
 }
+
+// Special error to return from quote() or validate() when the
+// protocol can't provide a quote.
+export class UnavailableError extends Error {
+  internalError: Error;
+
+  constructor(internalErr: Error) {
+    super(`Unable to fetch a quote`);
+    this.internalError = internalErr;
+  }
+}
