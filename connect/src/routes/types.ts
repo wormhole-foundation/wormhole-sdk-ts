@@ -34,7 +34,7 @@ export type QuoteResult<
   OP,
   VP extends ValidatedTransferParams<OP> = ValidatedTransferParams<OP>,
   D = any,
-> = Quote<OP, VP, D> | QuoteError;
+> = Quote<OP, VP, D> | QuoteError | QuoteUnavailable;
 
 // Quote containing expected details of the transfer
 export type Quote<
@@ -83,4 +83,9 @@ export type Quote<
 export type QuoteError = {
   success: false;
   error: Error;
+};
+
+export type QuoteUnavailable = {
+  success: false;
+  unavailable: true;
 };
