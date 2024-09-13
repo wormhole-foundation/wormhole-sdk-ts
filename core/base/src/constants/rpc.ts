@@ -45,6 +45,7 @@ const rpcConfig = [[
     ["Rootstock", "https://public-node.rsk.co"],
     ["Mantle",    "https://rpc.mantle.xyz"],
     ["Klaytn",    "https://rpc.ankr.com/klaytn"],
+    ["Snaxchain", "https://mainnet.snaxchain.io"],
   ]], [
   "Testnet", [
     ["Ethereum",        "https://eth-goerli.public.blastapi.io"],
