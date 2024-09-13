@@ -156,7 +156,10 @@ export function display(amount: Amount, precision?: number): string {
       if (partial[partial.length - 1] !== "0") break;
       partial = partial.substring(0, partial.length - 1);
     }
-    partial = partial.padEnd(precision, "0");
+  } else {
+    // If no specific precision is given, just trim trailing zeroes
+    // and return all significant digits.
+    partial = partial.replace(/0+$/, '');
   }
 
   return partial.length > 0 ? `${whole}.${partial}` : whole;
