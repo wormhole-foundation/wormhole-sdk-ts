@@ -1,5 +1,11 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
-import { amount, encoding, finality, guardians, toChain as toChainName } from "@wormhole-foundation/sdk-base";
+import {
+  amount,
+  encoding,
+  finality,
+  guardians,
+  toChain as toChainName,
+} from "@wormhole-foundation/sdk-base";
 import type {
   AttestationId,
   AutomaticTokenBridge,
@@ -167,9 +173,20 @@ export class TokenTransfer<N extends Network = Network>
     let from = { chain: vaa.emitterChain, address: vaa.emitterAddress };
     let { token, to } = vaa.payload;
 
+    let nativeAddress: NativeAddress<Chain>;
+    if (token.chain === from.chain) {
+      nativeAddress = await wh.getTokenNativeAddress(from.chain, token.chain, token.address);
+    } else {
+      const fromChain = await wh.getChain(from.chain);
+      const tb = await fromChain.getTokenBridge();
+      const wrapped = await tb.getWrappedAsset(token);
+      nativeAddress = toNative(from.chain, wrapped.toString());
+    }
+
+    const decimals = await wh.getDecimals(from.chain, nativeAddress);
     const scaledAmount = amount.scale(
-      amount.fromBaseUnits(token.amount, TokenTransfer.MAX_DECIMALS),
-      await wh.getDecimals(token.chain, token.address),
+      amount.fromBaseUnits(token.amount, Math.min(decimals, TokenTransfer.MAX_DECIMALS)),
+      decimals,
     );
 
     let nativeGasAmount: bigint = 0n;
