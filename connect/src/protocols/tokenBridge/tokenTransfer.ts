@@ -180,7 +180,7 @@ export class TokenTransfer<N extends Network = Network>
       const fromChain = await wh.getChain(from.chain);
       const tb = await fromChain.getTokenBridge();
       const wrapped = await tb.getWrappedAsset(token);
-      nativeAddress = toNative(token.chain, wrapped.toString());
+      nativeAddress = toNative(from.chain, wrapped.toString());
     }
 
     const decimals = await wh.getDecimals(from.chain, nativeAddress);
