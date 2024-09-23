@@ -1,5 +1,7 @@
 # Wormhole TS SDK
 
+[![npm version](https://img.shields.io/npm/v/@wormhole-foundation/sdk.svg)](https://www.npmjs.com/package/@wormhole-foundation/sdk)
+
 The Wormhole Typescript SDK is useful for interacting with the chains Wormhole supports and the [protocols](#protocols) built on top of Wormhole.
 
 ## Warning 
