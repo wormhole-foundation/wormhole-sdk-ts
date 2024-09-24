@@ -14,6 +14,9 @@ import { TransferState } from "../../types.js";
 import { Wormhole } from "../../wormhole.js";
 import type { StaticRouteMethods } from "../route.js";
 import { AutomaticRoute } from "../route.js";
+import {
+  MinAmountError,
+} from '../types.js';
 import type {
   Quote,
   QuoteResult,
@@ -167,12 +170,7 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     // Min amount is fee + 5%
     const minAmount = (fee * 105n) / 100n;
     if (amount.units(amt) < minAmount) {
-      throw new Error(
-        `Minimum amount is ${amount.display({
-          amount: minAmount.toString(),
-          decimals: amt.decimals,
-        })}`,
-      );
+      throw new MinAmountError(amount.fromBaseUnits(minAmount, amt.decimals));
     }
 
     const redeemableAmount = amount.units(amt) - fee;

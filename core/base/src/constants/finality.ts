@@ -123,8 +123,6 @@ const blockTimeMilliseconds = [
   ["Sepolia",          15_000],
   ["Solana",              400],
   ["Sui",               3_000],
-  ["Scroll",            4_000],
-  ["Mantle",            2_000],
   ["Terra",             6_000],
   ["Terra2",            6_000],
   ["Xpla",              5_000],
