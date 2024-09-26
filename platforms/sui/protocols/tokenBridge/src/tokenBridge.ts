@@ -1,6 +1,6 @@
-import type { SuiClient } from "@mysten/sui.js/client";
-import { TransactionBlock } from "@mysten/sui.js/transactions";
-import { SUI_CLOCK_OBJECT_ID, SUI_TYPE_ARG, normalizeSuiObjectId } from "@mysten/sui.js/utils";
+import type { SuiClient } from "@mysten/sui/client";
+import { Transaction } from "@mysten/sui/transactions";
+import { SUI_CLOCK_OBJECT_ID, SUI_TYPE_ARG, normalizeSuiObjectId } from "@mysten/sui/utils";
 
 import type {
   AccountAddress,
@@ -274,13 +274,17 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
 
     const [coreBridgePackageId, tokenBridgePackageId] = await this.getPackageIds();
 
-    const tx = new TransactionBlock();
+    const tx = new Transaction();
 
-    const [feeCoin] = tx.splitCoins(tx.gas, [tx.pure(feeAmount)]);
+    const [feeCoin] = tx.splitCoins(tx.gas, [tx.pure.u64(feeAmount)]);
 
     const [messageTicket] = tx.moveCall({
       target: `${tokenBridgePackageId}::attest_token::attest_token`,
-      arguments: [tx.object(this.tokenBridgeObjectId), tx.object(metadata.id!), tx.pure(nonce)],
+      arguments: [
+        tx.object(this.tokenBridgeObjectId),
+        tx.object(metadata.id!),
+        tx.pure.u256(nonce.toString()),
+      ],
       typeArguments: [coinType],
     });
 
@@ -368,7 +372,7 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
 
     const coinType = getCoinTypeFromPackageId(coinPackageId);
 
-    const createTx = new TransactionBlock();
+    const createTx = new Transaction();
     const [txVaa] = createTx.moveCall({
       target: `${coreBridgePackageId}::vaa::parse_and_verify`,
       arguments: [
@@ -420,10 +424,10 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
 
     const [coreBridgePackageId, tokenBridgePackageId] = await this.getPackageIds();
 
-    const tx = new TransactionBlock();
+    const tx = new Transaction();
     const [transferCoin] = (() => {
       if (coinType === SUI_TYPE_ARG) {
-        return tx.splitCoins(tx.gas, [tx.pure(amount)]);
+        return tx.splitCoins(tx.gas, [tx.pure.u64(amount)]);
       } else {
         const primaryCoinInput = tx.object(primaryCoin.coinObjectId);
         if (mergeCoins.length) {
@@ -432,11 +436,11 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
             mergeCoins.map((coin) => tx.object(coin.coinObjectId)),
           );
         }
-        return tx.splitCoins(primaryCoinInput, [tx.pure(amount)]);
+        return tx.splitCoins(primaryCoinInput, [tx.pure.u64(amount)]);
       }
     })();
 
-    const [feeCoin] = tx.splitCoins(tx.gas, [tx.pure(feeAmount)]);
+    const [feeCoin] = tx.splitCoins(tx.gas, [tx.pure.u64(feeAmount)]);
     const [assetInfo] = tx.moveCall({
       target: `${tokenBridgePackageId}::state::verified_asset`,
       arguments: [tx.object(this.tokenBridgeObjectId)],
@@ -449,10 +453,10 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
         arguments: [
           assetInfo!,
           transferCoin!,
-          tx.pure(toChainId(recipient.chain)),
+          tx.pure.u16(toChainId(recipient.chain)),
           tx.pure(uint8ArrayToBCS(recipient.address.toUint8Array())),
-          tx.pure(relayerFee),
-          tx.pure(nonce),
+          tx.pure.u64(relayerFee),
+          tx.pure.u32(nonce),
         ],
         typeArguments: [coinType],
       });
@@ -509,10 +513,10 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
           emitterCap!,
           assetInfo!,
           transferCoin!,
-          tx.pure(toChainId(recipient.chain)),
+          tx.pure.u16(toChainId(recipient.chain)),
           tx.pure(recipient.address.toUint8Array()),
-          tx.pure([...payload!]),
-          tx.pure(nonce),
+          tx.pure.vector("u8", [...payload!]),
+          tx.pure.u32(nonce),
         ],
         typeArguments: [coinType],
       });
@@ -540,7 +544,7 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
       });
 
       if (isNewEmitterCap) {
-        tx.transferObjects([emitterCap!], tx.pure(senderAddress));
+        tx.transferObjects([emitterCap!], tx.pure.address(senderAddress));
       }
 
       yield this.createUnsignedTx(tx, "Sui.TokenBridge.TransferWithPayload");
@@ -564,7 +568,7 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
 
     const [coreBridgePackageId, tokenBridgePackageId] = await this.getPackageIds();
 
-    const tx = new TransactionBlock();
+    const tx = new Transaction();
     const [verifiedVAA] = tx.moveCall({
       target: `${coreBridgePackageId}::vaa::parse_and_verify`,
       arguments: [
@@ -646,7 +650,7 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
   }
 
   private createUnsignedTx(
-    txReq: TransactionBlock,
+    txReq: Transaction,
     description: string,
     parallelizable: boolean = false,
   ): SuiUnsignedTransaction<N, C> {

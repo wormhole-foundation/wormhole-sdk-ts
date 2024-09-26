@@ -1,7 +1,6 @@
-import { StructTag } from "@mysten/sui.js/bcs";
-import type { SuiClient } from "@mysten/sui.js/client";
-import { TransactionBlock } from "@mysten/sui.js/transactions";
-import { parseStructTag, SUI_CLOCK_OBJECT_ID } from "@mysten/sui.js/utils";
+import type { SuiClient } from "@mysten/sui/client";
+import { Transaction } from "@mysten/sui/transactions";
+import { parseStructTag, SUI_CLOCK_OBJECT_ID } from "@mysten/sui/utils";
 import {
   encoding,
   isNative,
@@ -17,6 +16,7 @@ import {
   type Platform,
   type TokenAddress,
 } from "@wormhole-foundation/sdk-connect";
+import type { SuiChains } from "@wormhole-foundation/sdk-sui";
 import {
   getObjectFields,
   getPackageId,
@@ -26,13 +26,20 @@ import {
   SUI_COIN,
   SUI_SEPARATOR,
   SuiAddress,
-  SuiChains,
   SuiPlatform,
   SuiUnsignedTransaction,
   uint8ArrayToBCS,
 } from "@wormhole-foundation/sdk-sui";
 import "@wormhole-foundation/sdk-sui-core";
 import { getTokenCoinType } from "./utils.js";
+
+// https://github.com/MystenLabs/sui/blob/0bffebae576c63de6af21ff8ba07705275b24d94/sdk/typescript/src/utils/sui-types.ts#L33
+type StructTag = {
+  address: string;
+  module: string;
+  name: string;
+  typeParams: (string | StructTag)[];
+};
 
 export interface TokenInfo {
   max_native_swap_amount: string;
@@ -90,12 +97,12 @@ export class SuiAutomaticTokenBridge<N extends Network, C extends SuiChains>
     const { coreBridge: coreBridgePackageId, tokenBridge: tokenBridgePackageId } =
       await this.getPackageIds();
 
-    const tx = new TransactionBlock();
+    const tx = new Transaction();
     const feeAmount = BigInt(0); // TODO: wormhole fee
-    const [feeCoin] = tx.splitCoins(tx.gas, [tx.pure(feeAmount)]);
+    const [feeCoin] = tx.splitCoins(tx.gas, [tx.pure.u64(feeAmount)]);
     const [transferCoin] = await (async () => {
       if (isNative(token)) {
-        return tx.splitCoins(tx.gas, [tx.pure(amount)]);
+        return tx.splitCoins(tx.gas, [tx.pure.u64(amount)]);
       } else {
         const coins = await SuiPlatform.getCoins(this.connection, sender, coinType);
         const [primaryCoin, ...mergeCoins] = coins.filter((coin) => coin.coinType === coinType);
@@ -109,7 +116,7 @@ export class SuiAutomaticTokenBridge<N extends Network, C extends SuiChains>
             mergeCoins.map((coin) => tx.object(coin.coinObjectId)),
           );
         }
-        return tx.splitCoins(primaryCoinInput, [tx.pure(amount)]);
+        return tx.splitCoins(primaryCoinInput, [tx.pure.u64(amount)]);
       }
     })();
 
@@ -168,7 +175,7 @@ export class SuiAutomaticTokenBridge<N extends Network, C extends SuiChains>
       throw new Error("Unable to fetch token coinType");
     }
 
-    const tx = new TransactionBlock();
+    const tx = new Transaction();
     const [verifiedVAA] = tx.moveCall({
       target: `${coreBridgePackageId}::vaa::parse_and_verify`,
       arguments: [
@@ -264,13 +271,13 @@ export class SuiAutomaticTokenBridge<N extends Network, C extends SuiChains>
 
     const packageId = await this.getPackageId();
 
-    const tx = new TransactionBlock();
+    const tx = new Transaction();
     tx.moveCall({
       // Calculates the max number of tokens the recipient can convert to native
       // Sui. The max amount of native assets the contract will swap with the
       // recipient is governed by the `max_native_swap_amount` variable.
       target: `${packageId}::redeem::calculate_max_swap_amount_in`,
-      arguments: [tx.object(this.tokenBridgeRelayerObjectId), tx.pure(metadata.decimals)],
+      arguments: [tx.object(this.tokenBridgeRelayerObjectId), tx.pure.u8(metadata.decimals)],
       typeArguments: [coinType],
     });
 
@@ -304,15 +311,15 @@ export class SuiAutomaticTokenBridge<N extends Network, C extends SuiChains>
 
     const packageId = await this.getPackageId();
 
-    const tx = new TransactionBlock();
+    const tx = new Transaction();
     tx.moveCall({
       // Calculates the amount of native Sui that the recipient will receive
       // for swapping the `to_native_amount` of tokens.
       target: `${packageId}::redeem::calculate_native_swap_amount_out`,
       arguments: [
         tx.object(this.tokenBridgeRelayerObjectId),
-        tx.pure(amount),
-        tx.pure(metadata.decimals),
+        tx.pure.u64(amount),
+        tx.pure.u8(metadata.decimals),
       ],
       typeArguments: [coinType],
     });
@@ -426,7 +433,7 @@ export class SuiAutomaticTokenBridge<N extends Network, C extends SuiChains>
   }
 
   private createUnsignedTx(
-    txReq: TransactionBlock,
+    txReq: Transaction,
     description: string,
     parallelizable: boolean = false,
   ): SuiUnsignedTransaction<N, C> {

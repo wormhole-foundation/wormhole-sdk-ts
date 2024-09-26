@@ -11,6 +11,10 @@ import solana from "@wormhole-foundation/sdk/solana";
 import sui from "@wormhole-foundation/sdk/sui";
 import { getSigner } from "./helpers/index.js";
 
+function delay(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 (async function () {
   // EXAMPLE_WORMHOLE_INIT
   const wh = await wormhole("Testnet", [evm, solana, aptos, algorand, cosmwasm, sui]);
@@ -58,6 +62,8 @@ import { getSigner } from "./helpers/index.js";
   // Sign and send the transaction
   const txids = await signSendWait(ctx, transfer, sender.signer);
   console.log("Sent: ", txids);
+
+  await delay(1000);
 
   // Get the wormhole message id from the transaction
   const [whm] = await ctx.parseTransaction(txids[txids.length - 1]!.txid);

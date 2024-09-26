@@ -4,16 +4,14 @@ import type {
   Platform,
   ProtocolName,
   ChainConfigOverrides,
-
   ChainContext,
   NativeAddressCtr,
   PlatformToChains,
   PlatformUtils,
   RpcConnection,
-  Signer} from "@wormhole-foundation/sdk-connect";
-import {
-  Wormhole,
+  Signer,
 } from "@wormhole-foundation/sdk-connect";
+import { Wormhole } from "@wormhole-foundation/sdk-connect";
 
 /**
  * PlatformDefinition is a type that contains the types necessary to

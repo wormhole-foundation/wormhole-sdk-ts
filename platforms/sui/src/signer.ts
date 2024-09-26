@@ -1,5 +1,5 @@
-import type { SuiClient } from "@mysten/sui.js/client";
-import { Ed25519Keypair } from "@mysten/sui.js/keypairs/ed25519";
+import type { SuiClient } from "@mysten/sui/client";
+import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
 import type {
   Network,
   SignAndSendSigner,
@@ -40,8 +40,8 @@ export class SuiSigner<N extends Network, C extends SuiChains> implements SignAn
       if (this._debug) console.log(`Signing ${description} for ${this.address()}`);
 
       try {
-        const result = await this._client.signAndExecuteTransactionBlock({
-          transactionBlock: transaction,
+        const result = await this._client.signAndExecuteTransaction({
+          transaction: transaction,
           signer: this._signer,
         });
         txids.push(result.digest);

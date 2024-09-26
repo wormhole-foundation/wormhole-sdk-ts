@@ -169,7 +169,7 @@ export class TokenBridgeRoute<N extends Network>
       destinationTxs: dstTxIds,
     };
   }
-  
+
   async resume(txid: TransactionId): Promise<R> {
     const xfer = await TokenTransfer.from(this.wh, txid, 10 * 1000);
     return TokenTransfer.getReceipt(xfer);
