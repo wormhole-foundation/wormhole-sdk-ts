@@ -60,11 +60,11 @@
 | Acala | ManualCCTP | :no_entry_sign: | :no_entry_sign: |
 | Acala | AutomaticCCTP | :no_entry_sign: | :no_entry_sign: |
 | Acala | AutomaticPortico | :no_entry_sign: | :no_entry_sign: |
-| Klaytn | ManualTokenBridge | :white_check_mark: | :white_check_mark: |
-| Klaytn | AutomaticTokenBridge | :no_entry_sign: | :no_entry_sign: |
-| Klaytn | ManualCCTP | :no_entry_sign: | :no_entry_sign: |
-| Klaytn | AutomaticCCTP | :no_entry_sign: | :no_entry_sign: |
-| Klaytn | AutomaticPortico | :no_entry_sign: | :no_entry_sign: |
+| Kaia | ManualTokenBridge | :white_check_mark: | :white_check_mark: |
+| Kaia | AutomaticTokenBridge | :no_entry_sign: | :no_entry_sign: |
+| Kaia | ManualCCTP | :no_entry_sign: | :no_entry_sign: |
+| Kaia | AutomaticCCTP | :no_entry_sign: | :no_entry_sign: |
+| Kaia | AutomaticPortico | :no_entry_sign: | :no_entry_sign: |
 | Celo | ManualTokenBridge | :white_check_mark: | :white_check_mark: |
 | Celo | AutomaticTokenBridge | :white_check_mark: | :white_check_mark: |
 | Celo | ManualCCTP | :no_entry_sign: | :no_entry_sign: |

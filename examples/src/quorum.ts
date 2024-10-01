@@ -26,7 +26,7 @@ const skipChains = [
   "Evmos",
   "Osmosis",
   "Kujira",
-  "Klaytn",
+  "Kaia",
   "Wormchain",
   "Near",
   "Sui",

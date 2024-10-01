@@ -44,7 +44,7 @@ const rpcConfig = [[
     ["Gnosis",    "https://rpc.ankr.com/gnosis"],
     ["Rootstock", "https://public-node.rsk.co"],
     ["Mantle",    "https://rpc.mantle.xyz"],
-    ["Klaytn",    "https://rpc.ankr.com/klaytn"],
+    ["Kaia",      "https://public-en.node.kaia.io"],
     ["Snaxchain", "https://mainnet.snaxchain.io"],
   ]], [
   "Testnet", [
@@ -87,7 +87,7 @@ const rpcConfig = [[
     ["Scroll",          "https://rpc.ankr.com/scroll_sepolia_testnet"],
     ["Rootstock",       "https://public-node.testnet.rsk.co"],
     ["Gnosis",          "https://rpc.chiadochain.net"],
-    ["Klaytn",          "https://rpc.ankr.com/klaytn_testnet"],
+    ["Kaia",            "https://public-en-kairos.node.kaia.io"],
   ]], [
   "Devnet", [
     ["Ethereum",  "http://eth-devnet:8545"],

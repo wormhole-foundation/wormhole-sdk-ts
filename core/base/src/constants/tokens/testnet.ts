@@ -222,7 +222,7 @@ const testnetTokenEntries = [
           symbol: "WKLAY",
           decimals: 18,
           address: "0x327e0c7D5cFa65d4f9E358dC9fA4446C49dBcB6C",
-          original: "Klaytn",
+          original: "Kaia",
         },
       ],
     ],
@@ -422,7 +422,7 @@ const testnetTokenEntries = [
           symbol: "WKLAY",
           decimals: 18,
           address: "0x7b34f3711705eB2963fB856cda063C979de4749e",
-          original: "Klaytn",
+          original: "Kaia",
         },
       ],
     ],
@@ -624,7 +624,7 @@ const testnetTokenEntries = [
           symbol: "WKLAY",
           decimals: 18,
           address: "0x79D34FDb686B5D139949E4F92D83EEe376489176",
-          original: "Klaytn",
+          original: "Kaia",
         },
       ],
     ],
@@ -3170,7 +3170,7 @@ const testnetTokenEntries = [
     ],
   ],
   [
-    "Klaytn",
+    "Kaia",
     [
       [
         "KLAY",

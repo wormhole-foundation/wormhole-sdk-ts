@@ -16,7 +16,7 @@ const platformAndChainsEntries = [[
     "Fantom",
     "Gnosis",
     "Karura",
-    "Klaytn",
+    "Kaia",
     "Moonbeam",
     "Neon",
     "Oasis",

@@ -237,7 +237,7 @@ Using `Uint8Array` as the paylaod type will always work:
   // Using Uint8Array will always work but you can use a more specific payload layout type
   console.log(deserialize("Uint8Array", fakeVaaBytes));
 ```
-See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/parseVaa.ts#L15)
+See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/parseVaa.ts#L14)
 <!--EXAMPLE_PARSE_VAA-->
 
 But more specific types can be used
@@ -276,7 +276,7 @@ But more specific types can be used
   // Or use the correct payload type to get a more specific data structure
   console.log(deserialize("TokenBridge:Transfer", tokenBridgeVaaBytes));
 ```
-See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/parseVaa.ts#L38)
+See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/parseVaa.ts#L37)
 <!--EXAMPLE_PARSE_TOKEN_TRANSFER_VAA-->
 
 Or define your own
@@ -314,7 +314,7 @@ Or define your own
   console.log(encoding.hex.encode(vaa.payload));
   console.log(deserializeLayout(customPayloadLayout, vaa.payload));
 ```
-See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/parseVaa.ts#L73)
+See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/parseVaa.ts#L72)
 <!--EXAMPLE_PARSE_CUSTOM_VAA-->
 
 
@@ -459,7 +459,7 @@ We can create a new `Wormhole` object and use it to to create `TokenTransfer`, `
   const destTxids = await xfer.completeTransfer(route.destination.signer);
   console.log(`Completed Transfer: `, destTxids);
 ```
-See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/tokenBridge.ts#L122)
+See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/tokenBridge.ts#L115)
 <!--EXAMPLE_TOKEN_TRANSFER-->
 
 
@@ -507,7 +507,7 @@ We can also transfer native USDC using [Circle's CCTP](https://www.circle.com/en
   const dstTxids = await xfer.completeTransfer(dst.signer);
   console.log(`Completed Transfer: `, dstTxids);
 ```
-See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/cctp.ts#L81)
+See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/cctp.ts#L73)
 <!--EXAMPLE_CCTP_TRANSFER-->
 
 
@@ -538,7 +538,7 @@ A transfer into Cosmos from outside cosmos will be automatically delivered to th
   const attests = await xfer.fetchAttestation(600_000);
   console.log("Got Attestations", attests);
 ```
-See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/cosmos.ts#L120)
+See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/cosmos.ts#L113)
 <!--EXAMPLE_GATEWAY_INBOUND-->
 
 A transfer within Cosmos will use IBC to transfer from the origin to the Gateway chain, then out from the Gateway to the destination chain
@@ -564,7 +564,7 @@ A transfer within Cosmos will use IBC to transfer from the origin to the Gateway
   const attests = await xfer.fetchAttestation(60_000);
   console.log("Got attests: ", attests);
 ```
-See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/cosmos.ts#L152)
+See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/cosmos.ts#L145)
 <!--EXAMPLE_GATEWAY_INTERCOSMOS-->
 
 A transfer leaving Cosmos will produce a VAA from the Gateway that must be manually redeemed on the destination chain 
@@ -593,7 +593,7 @@ A transfer leaving Cosmos will produce a VAA from the Gateway that must be manua
   const dstTxIds = await xfer.completeTransfer(dst.signer);
   console.log("Completed transfer on destination chain", dstTxIds);
 ```
-See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/cosmos.ts#L184)
+See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/cosmos.ts#L177)
 <!--EXAMPLE_GATEWAY_OUTBOUND-->
 
 
@@ -614,7 +614,7 @@ A `TransactionId` or `WormholeMessageId` may be used to recover the transfer
   const dstTxIds = await xfer.completeTransfer(signer);
   console.log("Completed transfer: ", dstTxIds);
 ```
-See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/cctp.ts#L131)
+See example [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/examples/src/cctp.ts#L117)
 <!--EXAMPLE_RECOVER_TRANSFER-->
 
 ## Routes
