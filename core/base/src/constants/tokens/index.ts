@@ -27,8 +27,10 @@ export function getTokenMap<N extends Network, C extends Chain>(
   throw new Error("Unsupported network: " + network);
 }
 
-// The token that represents the native gas token on a given chain
-// also represented as the string 'native' where applicable
+/**
+ * The token that represents the native gas token on a given chain
+ * also represented as the string 'native' where applicable
+ */
 export function getNative<N extends Network, C extends Chain>(
   network: N,
   chain: C,
@@ -37,7 +39,9 @@ export function getNative<N extends Network, C extends Chain>(
   return tokenMap ? filters.native(tokenMap) : undefined;
 }
 
-// Finds the (first) unique token key for a given chain and address
+/**
+ * Finds the (first) unique token key for a given chain and address
+ */
 export function getTokenByAddress<N extends Network, C extends Chain>(
   network: N,
   chain: C,
@@ -56,7 +60,9 @@ export function getTokensBySymbol<N extends Network, C extends Chain>(
   return tokenMap ? filters.bySymbol(tokenMap, symbol) : undefined;
 }
 
-// Finds the (first) unique token key for a given chain and symbol
+/**
+ * Finds the (first) unique token key for a given chain and symbol
+ */
 export function getTokenByKey<N extends Network, C extends Chain>(
   network: N,
   chain: C,
@@ -66,9 +72,11 @@ export function getTokenByKey<N extends Network, C extends Chain>(
   return tokenMap ? filters.byKey(tokenMap, key) : undefined;
 }
 
-// The Canonical token is the token that the input key resolves to
-// from its original chain. For example, if the input key is
-// USDCeth, the canonical token is USDC on ETH
+/**
+ * The Canonical token is the token that the input key resolves to
+ * from its original chain. For example, if the input key is
+ * USDCeth, the canonical token is USDC on ETH
+ */
 export function getCanonicalToken<N extends Network, C extends Chain>(
   network: N,
   chain: C,
