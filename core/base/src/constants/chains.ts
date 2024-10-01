@@ -21,7 +21,7 @@ const chainIdAndChainEntries = [
   [   10, "Fantom"         ],
   [   11, "Karura"         ],
   [   12, "Acala"          ],
-  [   13, "Klaytn"         ],
+  [   13, "Kaia"           ],
   [   14, "Celo"           ],
   [   15, "Near"           ],
   [   16, "Moonbeam"       ],

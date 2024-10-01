@@ -266,7 +266,7 @@ const mainnetTokenEntries = [
           symbol: "WKLAY",
           decimals: 18,
           address: "0x9AEA32B459e96C8eF5010f69130bf95fd129ac05",
-          original: "Klaytn",
+          original: "Kaia",
         },
       ],
       [
@@ -547,7 +547,7 @@ const mainnetTokenEntries = [
           symbol: "WKLAY",
           decimals: 18,
           address: "0xEA970e7b7D131Ea36c3051C9Ca11e785462fE00c",
-          original: "Klaytn",
+          original: "Kaia",
         },
       ],
       [
@@ -862,7 +862,7 @@ const mainnetTokenEntries = [
           symbol: "WKLAY",
           decimals: 18,
           address: "0x415ce980fde17F1FF102e1c6e4ce860Acc615D74",
-          original: "Klaytn",
+          original: "Kaia",
         },
       ],
       [
@@ -1125,7 +1125,7 @@ const mainnetTokenEntries = [
           symbol: "WKLAY",
           decimals: 18,
           address: "0x126C03982Ad6D7ef7E6aF020bF219e87185a6BC3",
-          original: "Klaytn",
+          original: "Kaia",
         },
       ],
       [
@@ -1381,7 +1381,7 @@ const mainnetTokenEntries = [
           symbol: "WKLAY",
           decimals: 18,
           address: "0x787e2F3509583C0F03A339Be0826463C839CBE5E",
-          original: "Klaytn",
+          original: "Kaia",
         },
       ],
       [
@@ -1646,7 +1646,7 @@ const mainnetTokenEntries = [
           symbol: "WKLAY",
           decimals: 18,
           address: "0xe304254de5c2048F9bFb042dDFB54f84d1d77730",
-          original: "Klaytn",
+          original: "Kaia",
         },
       ],
       [
@@ -1902,7 +1902,7 @@ const mainnetTokenEntries = [
           symbol: "WKLAY",
           decimals: 18,
           address: "0xf0a9476E4712123A807859f9Fd25fe98213379BD",
-          original: "Klaytn",
+          original: "Kaia",
         },
       ],
     ],
@@ -2384,7 +2384,7 @@ const mainnetTokenEntries = [
           symbol: "WKLAY",
           decimals: 8,
           address: "0xa5ec915864d7f37b25ca9144b2db6ebcf29e73603c2ccf9d0e765adcd9049a98::coin::COIN",
-          original: "Klaytn",
+          original: "Kaia",
         },
       ],
       [
@@ -2640,7 +2640,7 @@ const mainnetTokenEntries = [
           symbol: "WKLAY",
           decimals: 8,
           address: "0x539b652f8230a0e42adaeda4706b5639893d22362eda6ea897493c210cb48219::coin::T",
-          original: "Klaytn",
+          original: "Kaia",
         },
       ],
       [
@@ -2929,7 +2929,7 @@ const mainnetTokenEntries = [
           symbol: "WKLAY",
           decimals: 18,
           address: "0x41c433c146c47Dc53FC48cDc69e406e365e298E1",
-          original: "Klaytn",
+          original: "Kaia",
         },
       ],
       [
@@ -3227,7 +3227,7 @@ const mainnetTokenEntries = [
           symbol: "WKLAY",
           decimals: 18,
           address: "0xFA95f6c796E54F9C4a99392CAE84410a25794BB3",
-          original: "Klaytn",
+          original: "Kaia",
         },
       ],
       [
@@ -3525,7 +3525,7 @@ const mainnetTokenEntries = [
           symbol: "WKLAY",
           decimals: 18,
           address: "0xbbeF8233a0d10EEAb84E913FaDB337ab9b62F683",
-          original: "Klaytn",
+          original: "Kaia",
         },
       ],
       [
@@ -3782,7 +3782,7 @@ const mainnetTokenEntries = [
           symbol: "WKLAY",
           decimals: 8,
           address: "wormhole1kyy876kye7k79fuzat532yyqkrzhlr6l7hc7lfa2rk5tygzhy00qrhjgkc",
-          original: "Klaytn",
+          original: "Kaia",
         },
       ],
     ],
@@ -4187,7 +4187,7 @@ const mainnetTokenEntries = [
     ],
   ],
   [
-    "Klaytn",
+    "Kaia",
     [
       [
         "KLAY",

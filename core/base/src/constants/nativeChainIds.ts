@@ -36,7 +36,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Fantom",    250n],
       ["Gnosis",    100n],
       ["Karura",    686n],
-      ["Klaytn",    8217n],
+      ["Kaia",      8217n],
       ["Moonbeam",  1284n],
       ["Neon",      245022934n],
       ["Oasis",     42262n],
@@ -85,7 +85,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Fantom",          4002n],
       ["Gnosis",          10200n],
       ["Karura",          596n],
-      ["Klaytn",          1001n], //baobab
+      ["Kaia",            1001n], //kairos
       ["Moonbeam",        1287n], //moonbase alpha
       ["Neon",            245022940n],
       ["Oasis",           42261n],
