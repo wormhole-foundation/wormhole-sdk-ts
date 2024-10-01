@@ -162,11 +162,6 @@ export class AutomaticPorticoRoute<N extends Network>
     return chain.supportsPorticoBridge();
   }
 
-  async isAvailable(): Promise<boolean> {
-    // TODO:
-    return true;
-  }
-
   getDefaultOptions(): OP {
     return {};
   }

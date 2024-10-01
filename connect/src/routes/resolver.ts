@@ -8,9 +8,7 @@ import {
 import type { Wormhole } from "../wormhole.js";
 import type { RouteTransferRequest } from "./request.js";
 import type { Route, RouteConstructor } from "./route.js";
-import { isAutomatic } from "./route.js";
 import { uniqueTokens } from "./token.js";
-import type { Options, Receipt, ValidatedTransferParams } from "./types.js";
 
 export class RouteResolver<N extends Network> {
   wh: Wormhole<N>;
@@ -58,7 +56,7 @@ export class RouteResolver<N extends Network> {
 
   async findRoutes(request: RouteTransferRequest<N>): Promise<Route<N>[]> {
     // First we find all routes which support the request inputs (network, chains, and tokens)
-    const supportedRoutes = await Promise.all(
+    return await Promise.all(
       this.routeConstructors.map(async (rc) => {
         try {
           const protocolSupported =
@@ -99,28 +97,7 @@ export class RouteResolver<N extends Network> {
         }
       }),
     ).then((routesSupported) =>
-      this.routeConstructors.filter((_, index) => routesSupported[index]),
+      this.routeConstructors.filter((_, index) => routesSupported[index]).map((rc) => new rc(this.wh))
     );
-
-    // Next, we make sure all supported routes are available. For relayed routes, this will ping
-    // the relayer to make sure it's online.
-    return await Promise.all(
-      supportedRoutes.map(
-        async (
-          rc,
-        ): Promise<[Route<N, Options, ValidatedTransferParams<Options>, Receipt>, boolean]> => {
-          const route = new rc(this.wh);
-          try {
-            const available = isAutomatic(route) ? await route.isAvailable(request) : true;
-            return [route, available];
-          } catch (e) {
-            console.error(`failed to check if route is available for ${rc.meta.name}: `, e);
-            return [route, false];
-          }
-        },
-      ),
-    )
-      .then((availableRoutes) => availableRoutes.filter(([_, available]) => available))
-      .then((availableRoutes) => availableRoutes.map(([route, _]) => route!));
   }
 }
