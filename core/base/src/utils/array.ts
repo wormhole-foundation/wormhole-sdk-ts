@@ -108,6 +108,12 @@ type ExcludeIndexesImpl<T extends RoArray, C extends number> =
 export type ExcludeIndexes<T extends RoArray, C extends IndexEs> =
   ExcludeIndexesImpl<Entries<T>, C extends RoArray<number> ? C[number] : C>;
 
+export const excludeIndexes =
+  <const T extends RoArray, const C extends IndexEs>(arr: T, indexes: C) => {
+    const indexSet = new Set(Array.isArray(indexes) ? indexes : [indexes]);
+    return arr.filter((_,i) => !indexSet.has(i)) as ExcludeIndexes<T, C>;
+  };
+
 export type Cartesian<L, R> =
   L extends RoArray
   ? Flatten<[...{ [K in keyof L]: K extends `${number}` ? Cartesian<L[K], R> : never }]>
