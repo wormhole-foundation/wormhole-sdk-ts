@@ -64,7 +64,7 @@ type StripArray<T> = T extends RoArray<infer E> ? E : T;
 export type Flatten<A extends RoArray> =
   A extends RoTuple
   ? TupleFlatten<A>
-  : RoArray<StripArray<A[number]>>;
+  : StripArray<A[number]>[];
 
 export const flatten = <const A extends RoArray>(arr: A) =>
   arr.flat() as Flatten<A>;
@@ -110,7 +110,7 @@ export type TupleZip<T extends RoTuple2D> =
 export type Zip<A extends RoArray2D> =
   A extends RoTuple2D
   ? TupleZip<A>
-  : RoArray2D<Flatten<A>[number]>;
+  : Flatten<A>[number][][];
 
 export const zip = <const Args extends RoArray2D>(arr: Args) =>
   range(arr[0]!.length).map(col =>
