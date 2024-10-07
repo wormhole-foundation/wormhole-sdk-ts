@@ -410,7 +410,7 @@ const toMapping = <
   let leafObjects = [] as any[];
   let allSingletons = true;
   const buildMappingRecursively = (
-    keyCartesianSet: CartesianSet<MappableKey>,
+    keyCartesianSet: MappableKey[][],
     values: RoArray2D
   ): any => {
     const distinctKeys = Array.from(new Set<MappableKey>(keyCartesianSet[0]).values());
@@ -443,7 +443,7 @@ const toMapping = <
       const valuesSubset = rows.map(i => values[i]!);
       return [
         key,
-        buildMappingRecursively(keyCartesianSubset as CartesianSet<MappableKey>, valuesSubset)
+        buildMappingRecursively(keyCartesianSubset, valuesSubset)
       ];
     }));
   };
