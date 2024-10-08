@@ -3,20 +3,31 @@ import type { RoPair, RoTuple, RoArray, Extends, Xor, Not } from './metaprogramm
 export type RoTuple2D<T = unknown> = RoTuple<RoTuple<T>>;
 export type RoArray2D<T = unknown> = RoArray<RoArray<T>>;
 
-export type TupleWithLength<T, L extends number, A extends T[] = []> =
-  A["length"] extends L ? A : TupleWithLength<T, L, [...A, T]>;
-
-export type RoTupleWithLength<T, L extends number> = Readonly<TupleWithLength<T, L>>;
-
-export type TupleRange<L extends number, A extends number[] = []> =
+type TupleRangeImpl<L extends number, A extends number[] = []> =
   A["length"] extends L
   ? A
-  : TupleRange<L, [...A, A["length"]]>;
+  : TupleRangeImpl<L, [...A, A["length"]]>;
+
+export type TupleRange<L extends number> =
+  number extends L
+  ? never
+  : L extends any
+  ? TupleRangeImpl<L>
+  : never;
 
 export type Range<L extends number> =
-  number extends L
-  ? number[]
-  : TupleRange<L>;
+  L extends any
+  ? number extends L
+    ? number[]
+    : TupleRange<L>
+  : never;
+
+export type TupleWithLength<T, L extends number> =
+  TupleRange<L> extends infer R extends RoArray<number>
+  ? [...{ [K in keyof R]: T }]
+  : never;
+
+export type RoTupleWithLength<T, L extends number> = Readonly<TupleWithLength<T, L>>;
 
 export const range = <const L extends number>(length: L) =>
   [...Array(length).keys()] as Range<L>;
@@ -27,7 +38,7 @@ export type IndexEs = number;
 //utility type to reduce boilerplate of iteration code by replacing:
 // `T extends readonly [infer Head extends T[number], ...infer Tail extends RoTuple<T[number]>]`
 //with just:
-// `T extends HeadTail<infer Head, infer Tail>`
+// `T extends HeadTail<T, infer Head, infer Tail>`
 //this also avoids the somewhat common mistake of accidentally dropping the readonly modifier
 export type HeadTail<T extends RoTuple, Head extends T[number], Tail extends RoTuple<T[number]>> =
   readonly [Head, ...Tail];
