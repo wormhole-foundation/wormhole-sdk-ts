@@ -9,7 +9,7 @@ import { getSigner } from "./helpers/index.js";
   const wh = await wormhole("Mainnet", [evm, solana]);
 
   // Get chain contexts
-  const sendChain = wh.getChain("Arbitrum");
+  const sendChain = wh.getChain("Bsc");
   const destChain = wh.getChain("Ethereum");
 
   // get signers from local config
@@ -36,7 +36,7 @@ import { getSigner } from "./helpers/index.js";
   );
 
   // Grab the first one for the example
-  const sendToken = srcTokens[3]!;
+  const sendToken = srcTokens[1]!;
   // const sendToken = Wormhole.tokenId(sendChain.chain, "native");
 
   // given the send token, what can we possibly get on the destination chain?
