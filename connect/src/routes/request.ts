@@ -53,9 +53,16 @@ export class RouteTransferRequest<N extends Network> {
     };
 
     if (quote.relayFee) {
+      // TODO: we need to test this for every route
+      const relayFeeChain =
+        quote.relayFee.token.chain === this.fromChain.chain ? this.fromChain : this.toChain;
+      const relayFeeDecimals = await relayFeeChain.getDecimals(quote.relayFee.token.address);
+
+      console.log(`Relay fee chain: ${relayFeeChain.chain}, decimals: ${relayFeeDecimals}`);
+
       dq.relayFee = {
         token: quote.relayFee.token,
-        amount: amount.fromBaseUnits(quote.relayFee.amount, this.source.decimals),
+        amount: amount.fromBaseUnits(quote.relayFee.amount, relayFeeDecimals),
       };
     }
 
