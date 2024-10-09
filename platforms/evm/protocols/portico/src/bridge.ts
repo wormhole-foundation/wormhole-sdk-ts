@@ -1,4 +1,4 @@
-import type {
+import {
   AccountAddress,
   ChainAddress,
   ChainsConfig,
@@ -12,7 +12,6 @@ import {
   PorticoBridge,
   Wormhole,
   canonicalAddress,
-  contracts,
   isEqualCaseInsensitive,
   nativeChainIds,
   resolveWrappedToken,
@@ -32,17 +31,13 @@ import type { Provider, TransactionRequest } from 'ethers';
 import { ethers } from 'ethers';
 import { porticoAbi, uniswapQuoterV2Abi } from './abis.js';
 import { PorticoApi } from './api.js';
-import { FEE_TIER } from './consts.js';
-import {
-  getTokensBySymbol,
-  getTokenByAddress,
-} from '@wormhole-foundation/sdk-connect/tokens';
+import { FEE_TIER, supportedTokens } from './consts.js';
 
 import { EvmWormholeCore } from '@wormhole-foundation/sdk-evm-core';
+import { EvmTokenBridge } from '@wormhole-foundation/sdk-evm-tokenbridge';
 
+// TODO: is double import going to cause issues?
 import '@wormhole-foundation/sdk-evm-tokenbridge';
-import { getTokenByAddress } from '@wormhole-foundation/sdk-connect/tokens';
-import { isNative } from '@wormhole-foundation/sdk-connect';
 
 export class EvmPorticoBridge<
   N extends Network,
@@ -52,6 +47,8 @@ export class EvmPorticoBridge<
   chainId: bigint;
 
   core: EvmWormholeCore<N, C>;
+
+  tokenBridge: EvmTokenBridge<N, C>;
 
   constructor(
     readonly network: N,
@@ -63,6 +60,8 @@ export class EvmPorticoBridge<
       throw new Error('Unsupported chain, no contract addresses for: ' + chain);
 
     this.core = new EvmWormholeCore(network, chain, provider, contracts);
+
+    this.tokenBridge = new EvmTokenBridge(network, chain, provider, contracts);
 
     this.chainId = nativeChainIds.networkChainToNativeChainId.get(
       network,
@@ -95,6 +94,8 @@ export class EvmPorticoBridge<
     if (minAmountStart === 0n) throw new Error('Invalid min swap amount');
     if (minAmountFinish === 0n) throw new Error('Invalid min swap amount');
 
+    // TODO: sanity check amount vs minAmountOut?
+
     const senderAddress = new EvmAddress(sender).toString();
 
     const [isStartTokenNative, startToken] = resolveWrappedToken(
@@ -112,14 +113,15 @@ export class EvmPorticoBridge<
     const startTokenAddress = canonicalAddress(startToken);
 
     const cannonTokenAddress = canonicalAddress(
-      this.getTransferrableToken(startTokenAddress),
+      await this.getTransferrableToken(startTokenAddress),
     );
 
     const receiverAddress = canonicalAddress(receiver);
 
     const finalTokenAddress = canonicalAddress(finalToken);
 
-    const destinationPorticoAddress = this.getPorticoAddress(destToken);
+    const group = this.getTokenGroup(startToken.address.toString());
+    const destinationPorticoAddress = this.getPorticoAddress(group);
 
     const nonce = new Date().valueOf() % 2 ** 4;
     const flags = PorticoBridge.serializeFlagSet({
@@ -149,9 +151,7 @@ export class EvmPorticoBridge<
       ],
     ]);
 
-    const porticoAddress = this.getPorticoAddress(
-      Wormhole.tokenId(this.chain, startTokenAddress),
-    );
+    const porticoAddress = this.getPorticoAddress(group);
 
     // Approve the token if necessary
     if (!isStartTokenNative)
@@ -180,8 +180,14 @@ export class EvmPorticoBridge<
     const tokenAddress = vaa.payload.finalTokenAddress
       .toNative(recipientChain)
       .toString();
-    const tokenId = Wormhole.tokenId(recipientChain, tokenAddress);
-    const txReq = await this.getPorticoContract(tokenId)
+    const group = this.getTokenGroup(tokenAddress);
+    const porticoAddress = this.getPorticoAddress(group);
+    const contract = new ethers.Contract(
+      porticoAddress,
+      porticoAbi.fragments,
+      this.provider,
+    );
+    const txReq = await contract
       .getFunction('receiveMessageAndSwap')
       .populateTransaction(serialize(vaa));
 
@@ -196,6 +202,7 @@ export class EvmPorticoBridge<
   async quoteSwap(
     input: TokenAddress<C>,
     output: TokenAddress<C>,
+    tokenGroup: string,
     amount: bigint,
   ): Promise<bigint> {
     const [, inputTokenId] = resolveWrappedToken(
@@ -213,9 +220,16 @@ export class EvmPorticoBridge<
     const inputAddress = canonicalAddress(inputTokenId);
     const outputAddress = canonicalAddress(outputTokenId);
 
+    // TODO: necessary?
     if (isEqualCaseInsensitive(inputAddress, outputAddress)) return amount;
 
-    const result = await this.getQuoterContract(inputTokenId)
+    const quoterAddress = this.getQuoterAddress(tokenGroup);
+    const quoter = new ethers.Contract(
+      quoterAddress,
+      uniswapQuoterV2Abi.fragments,
+      this.provider,
+    );
+    const result = await quoter
       .getFunction('quoteExactInputSingle')
       .staticCall([inputAddress, outputAddress, amount, FEE_TIER, 0]);
 
@@ -226,28 +240,59 @@ export class EvmPorticoBridge<
     return await PorticoApi.quoteRelayer(this.chain, startToken, endToken);
   }
 
-  // For a given token, return the corresponding
-  // Wormhole wrapped token that originated on Ethereum
-  getTransferrableToken(address: string): TokenId {
-    if (this.chain === 'Ethereum') return Wormhole.tokenId('Ethereum', address);
-
-    // get the nativeTokenDetails
-    const nToken = getTokenByAddress(this.network, this.chain, address);
-    if (!nToken) throw new Error('Unsupported source token: ' + address);
-
-    const xToken = getTokensBySymbol(
+  // For a given token, return the Wormhole-wrapped/highway token
+  // that actually gets bridged from this chain
+  async getTransferrableToken(address: string): Promise<TokenId> {
+    const token = Wormhole.tokenId(this.chain, address);
+    const [, wrappedToken] = resolveWrappedToken(
       this.network,
       this.chain,
-      nToken.symbol,
-    )?.find((orig) => {
-      return orig.original === 'Ethereum';
-    });
-    if (!xToken)
+      token,
+    );
+    console.log('wrappedToken', wrappedToken);
+    if (this.chain === 'Ethereum') return wrappedToken;
+
+    // Find the group that this token belongs to
+    const group = Object.values(supportedTokens).find((tokens) =>
+      tokens.find(
+        (t) =>
+          t.chain === this.chain &&
+          canonicalAddress(t) === canonicalAddress(wrappedToken),
+      ),
+    );
+    if (!group)
+      throw new Error(`No token group found for ${address} on ${this.chain}`);
+
+    // Find the token in this group that originates on Ethereum
+    const tokenOnEthereum = group.find((t) => t.chain === 'Ethereum');
+    if (!tokenOnEthereum)
       throw new Error(
-        `Unsupported symbol for chain ${nToken.symbol}: ${this.chain} `,
+        `No Ethereum origin token found for ${address} on ${this.chain}`,
       );
 
-    return Wormhole.tokenId(xToken.chain, xToken.address);
+    // Now find the corresponding Wormhole-wrapped/highway token on this chain
+    const highwayTokenAddr =
+      await this.tokenBridge.getWrappedAsset(tokenOnEthereum);
+
+    return Wormhole.tokenId(this.chain, highwayTokenAddr.toString());
+  }
+
+  supportedTokens(): { group: string; token: TokenId }[] {
+    const result = [];
+    for (const [group, tokens] of Object.entries(supportedTokens)) {
+      for (const token of tokens) {
+        if (token.chain === this.chain) result.push({ group, token });
+      }
+    }
+    return result;
+  }
+
+  getTokenGroup(address: string): string {
+    console.log('address', address);
+    const tokens = this.supportedTokens();
+    const token = tokens.find((t) => canonicalAddress(t.token) === address);
+    if (!token) throw new Error('Token not found');
+    return token.group;
   }
 
   private async *approve(
@@ -286,46 +331,21 @@ export class EvmPorticoBridge<
     );
   }
 
-  // The address of the Portico contract depends on the token being transferred
-  // USDT uses PancakeSwap if available
-  private getPorticoAddress(tokenId: TokenId) {
-    const portico = contracts.portico.get(this.network, tokenId.chain);
-    if (!portico) throw new Error('Unsupported chain: ' + tokenId.chain);
-    if (this.isUSDT(tokenId)) {
+  private getPorticoAddress(group: string) {
+    const portico = this.contracts.portico!;
+    if (group === 'USDT') {
+      // Use PancakeSwap if available for USDT
       return portico.porticoPancakeSwap || portico.porticoUniswap;
     }
     return portico.porticoUniswap;
   }
 
-  private getPorticoContract(tokenId: TokenId) {
-    const address = this.getPorticoAddress(tokenId);
-    return new ethers.Contract(address, porticoAbi.fragments, this.provider);
-  }
-
-  // The address of the Quoter contract depends on the token being transferred
-  // USDT uses PancakeSwap if available
-  private getQuoterAddress(tokenId: TokenId) {
-    const portico = contracts.portico.get(this.network, tokenId.chain);
-    if (!portico) throw new Error('Unsupported chain: ' + tokenId.chain);
-    if (this.isUSDT(tokenId)) {
+  private getQuoterAddress(group: string) {
+    const portico = this.contracts.portico!;
+    if (group === 'USDT') {
+      // Use PancakeSwap if available for USDT
       return portico.pancakeSwapQuoterV2 || portico.uniswapQuoterV2;
     }
     return portico.uniswapQuoterV2;
-  }
-
-  private getQuoterContract(tokenId: TokenId) {
-    const address = this.getQuoterAddress(tokenId);
-    return new ethers.Contract(
-      address,
-      uniswapQuoterV2Abi.fragments,
-      this.provider,
-    );
-  }
-
-  private isUSDT(tokenId: TokenId) {
-    const tokenAddress = canonicalAddress(tokenId);
-    if (isNative(tokenAddress)) return false;
-    const token = getTokenByAddress(this.network, tokenId.chain, tokenAddress);
-    return token && token.symbol === 'USDT';
   }
 }
