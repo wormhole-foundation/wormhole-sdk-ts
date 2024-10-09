@@ -6,11 +6,11 @@ import { getSigner } from "./helpers/index.js";
 
 (async function () {
   // Setup
-  const wh = await wormhole("Testnet", [evm, solana]);
+  const wh = await wormhole("Mainnet", [evm, solana]);
 
   // Get chain contexts
-  const sendChain = wh.getChain("Avalanche");
-  const destChain = wh.getChain("Solana");
+  const sendChain = wh.getChain("Arbitrum");
+  const destChain = wh.getChain("Ethereum");
 
   // get signers from local config
   const sender = await getSigner(sendChain);
@@ -19,11 +19,11 @@ import { getSigner } from "./helpers/index.js";
   // EXAMPLE_RESOLVER_CREATE
   // create new resolver, passing the set of routes to consider
   const resolver = wh.resolver([
-    routes.TokenBridgeRoute, // manual token bridge
-    routes.AutomaticTokenBridgeRoute, // automatic token bridge
-    routes.CCTPRoute, // manual CCTP
-    routes.AutomaticCCTPRoute, // automatic CCTP
-    routes.AutomaticPorticoRoute, // Native eth transfers
+    //routes.TokenBridgeRoute, // manual token bridge
+    //routes.AutomaticTokenBridgeRoute, // automatic token bridge
+    //routes.CCTPRoute, // manual CCTP
+    //routes.AutomaticCCTPRoute, // automatic CCTP
+    routes.AutomaticPorticoRoute, // Native ETH, WETH, wstETH, USDT transfers
   ]);
   // EXAMPLE_RESOLVER_CREATE
 
@@ -36,8 +36,8 @@ import { getSigner } from "./helpers/index.js";
   );
 
   // Grab the first one for the example
-  // const sendToken = srcTokens[0]!;
-  const sendToken = Wormhole.tokenId(sendChain.chain, "native");
+  const sendToken = srcTokens[3]!;
+  // const sendToken = Wormhole.tokenId(sendChain.chain, "native");
 
   // given the send token, what can we possibly get on the destination chain?
   const destTokens = await resolver.supportedDestinationTokens(sendToken, sendChain, destChain);
@@ -70,7 +70,7 @@ import { getSigner } from "./helpers/index.js";
   // EXAMPLE_REQUEST_VALIDATE
   console.log("This route offers the following default options", bestRoute.getDefaultOptions());
   // Specify the amount as a decimal string
-  const amt = "0.001";
+  const amt = "100";
   // Create the transfer params for this request
   const transferParams = { amount: amt, options: { nativeGas: 0 } };
 
