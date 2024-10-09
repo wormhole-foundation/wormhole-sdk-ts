@@ -26,7 +26,6 @@ import {
   Wormhole,
   amount,
   canonicalAddress,
-  chainToPlatform,
   contracts,
   isAttested,
   isSourceInitiated,
@@ -37,7 +36,8 @@ import type { ChainAddress } from "@wormhole-foundation/sdk-definitions";
 import type { RouteTransferRequest } from "../request.js";
 
 export const SLIPPAGE_BPS = 15n; // 0.15%
-export const BPS_PER_HUNDRED_PERCENT = 10000n;
+export const MAX_SLIPPAGE_BPS = 100n; // 1%
+export const BPS_PER_HUNDRED_PERCENT = 10_000n;
 
 export namespace PorticoRoute {
   export type Options = {};
@@ -77,8 +77,6 @@ export class AutomaticPorticoRoute<N extends Network>
     name: "AutomaticPortico",
   };
 
-  private static _supportedTokens = ["ETH", "WETH", "wstETH", "USDT"];
-
   static supportedNetworks(): Network[] {
     return ["Mainnet"];
   }
@@ -91,18 +89,15 @@ export class AutomaticPorticoRoute<N extends Network>
   }
 
   static async supportedSourceTokens(fromChain: ChainContext<Network>): Promise<TokenId[]> {
-    const { chain } = fromChain;
-    const supported = this._supportedTokens
-      .map((symbol) => {
-        return filters.bySymbol(fromChain.config.tokenMap!, symbol) ?? [];
-      })
-      .flat()
-      .filter((td) => {
-        // Only tokens native to the chain are supported
-        return td.chain === chain && !td.original;
-      });
-
-    return supported.map((td) => Wormhole.tokenId(chain, td.address));
+    const pb = await fromChain.getPorticoBridge();
+    return pb
+      .supportedTokens()
+      .filter(
+        (t) =>
+          !fromChain.config.tokenMap ||
+          filters.byAddress(fromChain.config.tokenMap, canonicalAddress(t.token)),
+      )
+      .map((t) => t.token);
   }
 
   static async supportedDestinationTokens<N extends Network>(
@@ -117,43 +112,34 @@ export class AutomaticPorticoRoute<N extends Network>
     );
     const tokenAddress = canonicalAddress(srcTokenAddress);
 
-    // The token that will be used to bridge
+    // The highway token that will be used to bridge
     const pb = await fromChain.getPorticoBridge();
-    const transferrableToken = pb.getTransferrableToken(tokenAddress);
+    const transferrableToken = await pb.getTransferrableToken(tokenAddress);
+    // Make sure it exists on the destination chain
+    try {
+      await TokenTransfer.lookupDestinationToken(fromChain, toChain, transferrableToken);
+    } catch {
+      return [];
+    }
+    console.log(transferrableToken);
 
-    // The tokens that _will_ be received on redemption
-    const redeemToken = await TokenTransfer.lookupDestinationToken(
-      fromChain,
-      toChain,
-      transferrableToken,
-    );
-
-    // Grab the symbol for the token that gets redeemed
-    const redeemTokenDetails = filters.byAddress(
-      toChain.config.tokenMap!,
-      canonicalAddress(redeemToken),
-    )!;
-
-    // Find the local/native version of the same token by symbol
-    const locallyRedeemable = (
-      filters.bySymbol(toChain.config.tokenMap!, redeemTokenDetails.symbol) ?? []
-    )
-      .filter((td) => {
-        return !td.original;
-      })
-      .map((td) => {
-        switch (td.symbol) {
-          case "ETH":
-          case "WETH":
-          case "wstETH":
-          case "USDT":
-            return Wormhole.tokenId(toChain.chain, td.address);
-          default:
-            throw new Error("Unknown symbol: " + redeemTokenDetails.symbol);
-        }
-      });
-
-    return locallyRedeemable;
+    // Find the destination token(s) in the same group
+    const toPb = await toChain.getPorticoBridge();
+    const tokens = toPb.supportedTokens();
+    console.log("tokens", tokens);
+    const group = pb.getTokenGroup(tokenAddress);
+    console.log("group", group);
+    return tokens
+      .filter(
+        (t) =>
+          (t.group === group ||
+            // ETH/WETH supports wrapping/unwrapping
+            (t.group === "ETH" && group === "WETH") ||
+            (t.group === "WETH" && group === "ETH")) &&
+          (!toChain.config.tokenMap ||
+            filters.byAddress(toChain.config.tokenMap, canonicalAddress(t.token))),
+      )
+      .map((t) => t.token);
   }
 
   static isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean {
@@ -161,7 +147,6 @@ export class AutomaticPorticoRoute<N extends Network>
   }
 
   async isAvailable(): Promise<boolean> {
-    // TODO:
     return true;
   }
 
@@ -172,10 +157,10 @@ export class AutomaticPorticoRoute<N extends Network>
   async validate(request: RouteTransferRequest<N>, params: TP): Promise<VR> {
     try {
       if (
-        chainToPlatform(request.fromChain.chain) !== "Evm" ||
-        chainToPlatform(request.toChain.chain) !== "Evm"
+        !AutomaticPorticoRoute.isProtocolSupported(request.fromChain) ||
+        !AutomaticPorticoRoute.isProtocolSupported(request.toChain)
       ) {
-        throw new Error("Only EVM chains are supported");
+        throw new Error("Protocol not supported");
       }
 
       const { fromChain, toChain, source, destination } = request;
@@ -188,9 +173,11 @@ export class AutomaticPorticoRoute<N extends Network>
       const fromPb = await fromChain.getPorticoBridge();
       const toPb = await toChain.getPorticoBridge();
 
-      const canonicalSourceToken = fromPb.getTransferrableToken(canonicalAddress(sourceToken));
+      const canonicalSourceToken = await fromPb.getTransferrableToken(
+        canonicalAddress(sourceToken),
+      );
 
-      const canonicalDestinationToken = toPb.getTransferrableToken(
+      const canonicalDestinationToken = await toPb.getTransferrableToken(
         canonicalAddress(destinationToken),
       );
 
@@ -214,7 +201,18 @@ export class AutomaticPorticoRoute<N extends Network>
 
   async quote(request: RouteTransferRequest<N>, params: VP): Promise<QR> {
     try {
-      const swapAmounts = await this.quoteUniswap(request, params);
+      const swapAmounts = await this.fetchSwapQuote(request, params);
+
+      // if the slippage is more than 100bps, we should throw an error
+      // this likely means that the pools are unbalanced
+
+      // TODO: what if we're comparing tokens with different decimals? e.g. 18 vs 6 (USDTbsc vs USDT)
+      //const xferAmount = amount.units(params.normalizedParams.amount);
+      //if (
+      //  swapAmounts.minAmountFinish <
+      //  xferAmount - (xferAmount * MAX_SLIPPAGE_BPS) / BPS_PER_HUNDRED_PERCENT
+      //)
+      //  throw new Error("Slippage too high");
 
       const pb = await request.toChain.getPorticoBridge();
 
@@ -228,9 +226,12 @@ export class AutomaticPorticoRoute<N extends Network>
         relayerFee: fee,
       };
 
-      let destinationAmount = details.swapAmounts.minAmountFinish - fee;
+      const destinationAmount = details.swapAmounts.minAmountFinish - fee;
+      console.log(
+        `Destination amount: ${details.swapAmounts.minAmountFinish} - ${fee} = ${destinationAmount}`,
+      );
 
-      if (Number(destinationAmount) < 0) {
+      if (destinationAmount < 0n) {
         return {
           success: false,
           error: new Error(
@@ -293,6 +294,7 @@ export class AutomaticPorticoRoute<N extends Network>
     return receipt;
   }
 
+  // TODO: beef this up
   async *track(receipt: R, timeout?: number) {
     if (!isSourceInitiated(receipt)) throw new Error("Source must be initiated");
 
@@ -314,23 +316,28 @@ export class AutomaticPorticoRoute<N extends Network>
     return await signSendWait(toChain, xfer, signer);
   }
 
-  private async quoteUniswap(request: RouteTransferRequest<N>, params: VP) {
-    const fromPorticoBridge = await request.fromChain.getPorticoBridge();
+  private async fetchSwapQuote(request: RouteTransferRequest<N>, params: VP) {
+    const fromPb = await request.fromChain.getPorticoBridge();
     const xferAmount = amount.units(params.normalizedParams.amount);
-    const startQuote = await fromPorticoBridge.quoteSwap(
+    const tokenGroup = fromPb.getTokenGroup(canonicalAddress(params.normalizedParams.sourceToken));
+    const startQuote = await fromPb.quoteSwap(
       params.normalizedParams.sourceToken.address,
       params.normalizedParams.canonicalSourceToken.address,
+      tokenGroup,
       xferAmount,
     );
     const startSlippage = (startQuote * SLIPPAGE_BPS) / BPS_PER_HUNDRED_PERCENT;
 
     if (startSlippage >= startQuote) throw new Error("Start slippage too high");
 
-    const toPorticoBridge = await request.toChain.getPorticoBridge();
+    const toPb = await request.toChain.getPorticoBridge();
     const minAmountStart = startQuote - startSlippage;
-    const finishQuote = await toPorticoBridge.quoteSwap(
+    const finishQuote = await toPb.quoteSwap(
       params.normalizedParams.canonicalDestinationToken.address,
       params.normalizedParams.destinationToken.address,
+      tokenGroup,
+      // TODO: I think we need to scale this by the decimals of the token
+      // on the destination chain
       minAmountStart,
     );
     const finishSlippage = (finishQuote * SLIPPAGE_BPS) / BPS_PER_HUNDRED_PERCENT;
@@ -338,29 +345,10 @@ export class AutomaticPorticoRoute<N extends Network>
     if (finishSlippage >= finishQuote) throw new Error("Finish slippage too high");
 
     const minAmountFinish = finishQuote - finishSlippage;
-    const amountFinishQuote = await toPorticoBridge.quoteSwap(
-      params.normalizedParams.canonicalDestinationToken.address,
-      params.normalizedParams.destinationToken.address,
-      startQuote, // no slippage
-    );
-    // the expected receive amount is the amount out from the swap
-    // minus 5bps slippage
-    const amountFinishSlippage = (amountFinishQuote * 5n) / BPS_PER_HUNDRED_PERCENT;
-    if (amountFinishSlippage >= amountFinishQuote)
-      throw new Error("Amount finish slippage too high");
-
-    const amountFinish = amountFinishQuote - amountFinishSlippage;
-    if (amountFinish <= minAmountFinish) throw new Error("Amount finish too low");
-
-    // if the slippage is more than 50bps, we should throw an error
-    // this likely means that the pools are unbalanced
-    if (minAmountFinish < xferAmount - (xferAmount * 50n) / BPS_PER_HUNDRED_PERCENT)
-      throw new Error("Slippage too high");
 
     return {
       minAmountStart: minAmountStart,
       minAmountFinish: minAmountFinish,
-      amountFinish: amountFinish,
     };
   }
 }
