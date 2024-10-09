@@ -90,13 +90,10 @@ export class AutomaticPorticoRoute<N extends Network>
 
   static async supportedSourceTokens(fromChain: ChainContext<Network>): Promise<TokenId[]> {
     const pb = await fromChain.getPorticoBridge();
+    const { tokenMap } = fromChain.config;
     return pb
       .supportedTokens()
-      .filter(
-        (t) =>
-          !fromChain.config.tokenMap ||
-          filters.byAddress(fromChain.config.tokenMap, canonicalAddress(t.token)),
-      )
+      .filter((t) => !tokenMap || filters.byAddress(tokenMap, canonicalAddress(t.token)))
       .map((t) => t.token);
   }
 
@@ -112,20 +109,22 @@ export class AutomaticPorticoRoute<N extends Network>
     );
     const tokenAddress = canonicalAddress(srcTokenAddress);
 
-    // The highway token that will be used to bridge
     const pb = await fromChain.getPorticoBridge();
-    const transferrableToken = await pb.getTransferrableToken(tokenAddress);
-    // Make sure it exists on the destination chain
+
     try {
+      // The highway token that will be used to bridge
+      const transferrableToken = await pb.getTransferrableToken(tokenAddress);
+      console.log("highway token", transferrableToken);
+      // Make sure it exists on the destination chain
       await TokenTransfer.lookupDestinationToken(fromChain, toChain, transferrableToken);
     } catch {
       return [];
     }
-    console.log(transferrableToken);
 
     // Find the destination token(s) in the same group
     const toPb = await toChain.getPorticoBridge();
     const tokens = toPb.supportedTokens();
+    const { tokenMap } = toChain.config;
     console.log("tokens", tokens);
     const group = pb.getTokenGroup(tokenAddress);
     console.log("group", group);
@@ -136,8 +135,7 @@ export class AutomaticPorticoRoute<N extends Network>
             // ETH/WETH supports wrapping/unwrapping
             (t.group === "ETH" && group === "WETH") ||
             (t.group === "WETH" && group === "ETH")) &&
-          (!toChain.config.tokenMap ||
-            filters.byAddress(toChain.config.tokenMap, canonicalAddress(t.token))),
+          (!tokenMap || filters.byAddress(tokenMap, canonicalAddress(t.token))),
       )
       .map((t) => t.token);
   }
@@ -203,16 +201,20 @@ export class AutomaticPorticoRoute<N extends Network>
     try {
       const swapAmounts = await this.fetchSwapQuote(request, params);
 
-      // if the slippage is more than 100bps, we should throw an error
-      // this likely means that the pools are unbalanced
-
-      // TODO: what if we're comparing tokens with different decimals? e.g. 18 vs 6 (USDTbsc vs USDT)
-      //const xferAmount = amount.units(params.normalizedParams.amount);
-      //if (
-      //  swapAmounts.minAmountFinish <
-      //  xferAmount - (xferAmount * MAX_SLIPPAGE_BPS) / BPS_PER_HUNDRED_PERCENT
-      //)
-      //  throw new Error("Slippage too high");
+      const maxDecimals = Math.max(request.source.decimals, request.destination.decimals);
+      const scaledAmount = amount.units(amount.scale(params.normalizedParams.amount, maxDecimals));
+      const scaledMinAmountFinish = amount.units(
+        amount.scale(
+          amount.fromBaseUnits(swapAmounts.minAmountFinish, request.destination.decimals),
+          maxDecimals,
+        ),
+      );
+      // if the slippage is more than 100bps, this likely means that the pools are unbalanced
+      if (
+        scaledMinAmountFinish <
+        scaledAmount - (scaledAmount * MAX_SLIPPAGE_BPS) / BPS_PER_HUNDRED_PERCENT
+      )
+        throw new Error("Slippage too high");
 
       const pb = await request.toChain.getPorticoBridge();
 
