@@ -11,8 +11,10 @@ import type {
 } from "../types.js";
 import type {
   AttestationReceipt,
+  AttestedTransferReceipt,
   Chain,
   ChainContext,
+  CompletedTransferReceipt,
   Network,
   Signer,
   SourceInitiatedTransferReceipt,
@@ -28,11 +30,12 @@ import {
   canonicalAddress,
   contracts,
   isAttested,
+  isSourceFinalized,
   isSourceInitiated,
   resolveWrappedToken,
   signSendWait,
 } from "./../../index.js";
-import type { ChainAddress } from "@wormhole-foundation/sdk-definitions";
+import type { ChainAddress, WormholeMessageId } from "@wormhole-foundation/sdk-definitions";
 import type { RouteTransferRequest } from "../request.js";
 
 export const SLIPPAGE_BPS = 15n; // 0.15%
@@ -114,7 +117,6 @@ export class AutomaticPorticoRoute<N extends Network>
     try {
       // The highway token that will be used to bridge
       const transferrableToken = await pb.getTransferrableToken(tokenAddress);
-      console.log("highway token", transferrableToken);
       // Make sure it exists on the destination chain
       await TokenTransfer.lookupDestinationToken(fromChain, toChain, transferrableToken);
     } catch {
@@ -125,9 +127,7 @@ export class AutomaticPorticoRoute<N extends Network>
     const toPb = await toChain.getPorticoBridge();
     const tokens = toPb.supportedTokens();
     const { tokenMap } = toChain.config;
-    console.log("tokens", tokens);
     const group = pb.getTokenGroup(tokenAddress);
-    console.log("group", group);
     return tokens
       .filter(
         (t) =>
@@ -229,9 +229,6 @@ export class AutomaticPorticoRoute<N extends Network>
       };
 
       const destinationAmount = details.swapAmounts.minAmountFinish - fee;
-      console.log(
-        `Destination amount: ${details.swapAmounts.minAmountFinish} - ${fee} = ${destinationAmount}`,
-      );
 
       if (destinationAmount < 0n) {
         return {
@@ -276,6 +273,9 @@ export class AutomaticPorticoRoute<N extends Network>
     const destToken = request.destination!.id;
 
     const fromPorticoBridge = await request.fromChain.getPorticoBridge();
+    const tokenGroup = fromPorticoBridge.getTokenGroup(sourceToken.toString());
+    const toPorticoBridge = await request.toChain.getPorticoBridge();
+    const destPorticoAddress = toPorticoBridge.getPorticoAddress(tokenGroup);
 
     const xfer = fromPorticoBridge.transfer(
       Wormhole.parseAddress(sender.chain(), sender.address()),
@@ -283,6 +283,7 @@ export class AutomaticPorticoRoute<N extends Network>
       sourceToken,
       amount.units(params.normalizedParams.amount),
       destToken!,
+      destPorticoAddress,
       details!,
     );
 
@@ -296,16 +297,50 @@ export class AutomaticPorticoRoute<N extends Network>
     return receipt;
   }
 
-  // TODO: beef this up
   async *track(receipt: R, timeout?: number) {
-    if (!isSourceInitiated(receipt)) throw new Error("Source must be initiated");
+    if (isSourceInitiated(receipt) || isSourceFinalized(receipt)) {
+      const { txid } = receipt.originTxs[receipt.originTxs.length - 1]!;
 
-    const { txid } = receipt.originTxs[receipt.originTxs.length - 1]!;
-    const vaa = await this.wh.getVaa(txid, "TokenBridge:TransferWithPayload", timeout);
-    if (!vaa) throw new Error("No VAA found for transaction: " + txid);
+      const vaa = await this.wh.getVaa(txid, "PorticoBridge:Transfer", timeout);
+      if (!vaa) throw new Error("No VAA found for transaction: " + txid);
 
-    const parsed = PorticoBridge.deserializePayload(vaa.payload.payload);
-    yield { ...receipt, vaa, parsed };
+      const msgId: WormholeMessageId = {
+        chain: vaa.emitterChain,
+        emitter: vaa.emitterAddress,
+        sequence: vaa.sequence,
+      };
+
+      receipt = {
+        ...receipt,
+        state: TransferState.Attested,
+        attestation: {
+          id: msgId,
+          attestation: vaa,
+        },
+      } satisfies AttestedTransferReceipt<AttestationReceipt<"PorticoBridge">>;
+
+      yield receipt;
+    }
+
+    if (isAttested(receipt)) {
+      const toChain = this.wh.getChain(receipt.to);
+      const toPorticoBridge = await toChain.getPorticoBridge();
+      const isCompleted = await toPorticoBridge.isTransferCompleted(
+        receipt.attestation.attestation,
+      );
+      if (isCompleted) {
+        receipt = {
+          ...receipt,
+          state: TransferState.DestinationFinalized,
+        } satisfies CompletedTransferReceipt<AttestationReceipt<"PorticoBridge">>;
+
+        yield receipt;
+      }
+    }
+
+    // TODO: handle swap failed case (highway token received)
+
+    yield receipt;
   }
 
   async complete(signer: Signer<N>, receipt: R): Promise<TransactionId[]> {
@@ -338,8 +373,6 @@ export class AutomaticPorticoRoute<N extends Network>
       params.normalizedParams.canonicalDestinationToken.address,
       params.normalizedParams.destinationToken.address,
       tokenGroup,
-      // TODO: I think we need to scale this by the decimals of the token
-      // on the destination chain
       minAmountStart,
     );
     const finishSlippage = (finishQuote * SLIPPAGE_BPS) / BPS_PER_HUNDRED_PERCENT;
