@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-icons",
-  "version": "0.10.9",
+  "version": "0.10.11",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -50,7 +50,7 @@
     "dist/cjs"
   ],
   "dependencies": {
-    "@wormhole-foundation/sdk-base": "0.10.9"
+    "@wormhole-foundation/sdk-base": "0.10.11"
   },
   "sideEffects": false,
   "scripts": {
