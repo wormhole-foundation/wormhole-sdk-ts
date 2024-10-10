@@ -60,6 +60,7 @@ const finalityThresholds = [
   ["Injective", 0],
   ["Berachain", 0],
   ["Snaxchain", 0],
+  ["Unichain",  0],
   ["Cosmoshub", 0],
   ["Evmos",     0],
   ["Kujira",    0],
