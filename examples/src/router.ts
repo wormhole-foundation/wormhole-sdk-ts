@@ -1,4 +1,10 @@
-import { Wormhole, canonicalAddress, routes, wormhole } from "@wormhole-foundation/sdk";
+import {
+  TransferState,
+  Wormhole,
+  canonicalAddress,
+  routes,
+  wormhole,
+} from "@wormhole-foundation/sdk";
 
 import evm from "@wormhole-foundation/sdk/evm";
 import solana from "@wormhole-foundation/sdk/solana";
@@ -9,8 +15,8 @@ import { getSigner } from "./helpers/index.js";
   const wh = await wormhole("Mainnet", [evm, solana]);
 
   // Get chain contexts
-  const sendChain = wh.getChain("Bsc");
-  const destChain = wh.getChain("Ethereum");
+  const sendChain = wh.getChain("Ethereum");
+  const destChain = wh.getChain("Arbitrum");
 
   // get signers from local config
   const sender = await getSigner(sendChain);
@@ -36,7 +42,7 @@ import { getSigner } from "./helpers/index.js";
   );
 
   // Grab the first one for the example
-  const sendToken = srcTokens[1]!;
+  const sendToken = srcTokens[0]!;
   // const sendToken = Wormhole.tokenId(sendChain.chain, "native");
 
   // given the send token, what can we possibly get on the destination chain?
@@ -89,14 +95,26 @@ import { getSigner } from "./helpers/index.js";
   // EXAMPLE_REQUEST_VALIDATE
 
   // If you're sure you want to do this, set this to true
-  const imSure = false;
+  const imSure = true;
   if (imSure) {
     // EXAMPLE_REQUEST_INITIATE
     // Now the transfer may be initiated
     // A receipt will be returned, guess what you gotta do with that?
-    const receipt = await bestRoute.initiate(tr, sender.signer, quote, receiver.address);
-    console.log("Initiated transfer with receipt: ", receipt);
+    // const receipt = await bestRoute.initiate(tr, sender.signer, quote, receiver.address);
+    // console.log("Initiated transfer with receipt: ", receipt);
     // EXAMPLE_REQUEST_INITIATE
+
+    const receipt: routes.Receipt = {
+      originTxs: [
+        {
+          chain: sendChain.chain,
+          txid: "0x8cba1d1bc5a62d3ed70d4a1390200f870c1afe5d01b9a04a7f8d51846df047f6",
+        },
+      ],
+      state: TransferState.SourceInitiated,
+      from: sendChain.chain,
+      to: destChain.chain,
+    };
 
     // Kick off a wait log, if there is an opportunity to complete, this function will do it
     // see the implementation for how this works
