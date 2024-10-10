@@ -18,6 +18,35 @@ npm install @wormhole-foundation/sdk
 
 This package combines all the individual packages in a way that makes setup easier while still allowing for tree shaking. 
 
+## Troubleshooting TypeScript Compatibility
+
+If you encounter issues when integrating the Wormhole SDK into a TypeScript project, such as errors related to dependencies like `@coral-xyz/anchor`, `@cosmjs`, or `ethers`, here are some steps to resolve them:
+
+1. **Ensure all dependencies are installed correctly**:
+   ```bash
+   npm install @wormhole-foundation/sdk @coral-xyz/anchor @cosmjs ethers
+
+2. **Adjust your `tsconfig.json`** to include the following settings:
+   ```json
+   {
+     "compilerOptions": {
+       "target": "ES2020",
+       "module": "CommonJS",
+       "esModuleInterop": true,
+       "skipLibCheck": true,
+       "forceConsistentCasingInFileNames": true
+     }
+   }
+   
+ 3. Check for conflicting versions of dependencies, particularly when using multiple packages that depend on the same underlying libraries (e.g., `@cosmjs`).
+Ensure that all dependencies are using compatible versions.
+
+4. **Consider using `npm dedupe`** to resolve any version conflicts:
+   ```bash
+      npm dedupe
+
+If issues persist, refer to the specific package documentation or reach out to the community for further assistance.
+
 ### Advanced
 
 Alternatively, for an advanced user, install a specific set of the packages published.
