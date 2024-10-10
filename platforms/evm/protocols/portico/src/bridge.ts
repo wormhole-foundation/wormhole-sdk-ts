@@ -1,4 +1,4 @@
-import {
+import type {
   AccountAddress,
   ChainAddress,
   ChainsConfig,
@@ -28,7 +28,7 @@ import {
   addFrom,
 } from '@wormhole-foundation/sdk-evm';
 import type { Provider, TransactionRequest } from 'ethers';
-import { ethers } from 'ethers';
+import { ethers, keccak256 } from 'ethers';
 import { porticoAbi, uniswapQuoterV2Abi } from './abis.js';
 import { PorticoApi } from './api.js';
 import { FEE_TIER, supportedTokens } from './consts.js';
@@ -36,7 +36,6 @@ import { FEE_TIER, supportedTokens } from './consts.js';
 import { EvmWormholeCore } from '@wormhole-foundation/sdk-evm-core';
 import { EvmTokenBridge } from '@wormhole-foundation/sdk-evm-tokenbridge';
 
-// TODO: is double import going to cause issues?
 import '@wormhole-foundation/sdk-evm-tokenbridge';
 
 export class EvmPorticoBridge<
@@ -88,13 +87,12 @@ export class EvmPorticoBridge<
     token: TokenAddress<C>,
     amount: bigint,
     destToken: TokenId,
+    destinationPorticoAddress: string,
     quote: PorticoBridge.Quote,
   ) {
     const { minAmountStart, minAmountFinish } = quote.swapAmounts;
     if (minAmountStart === 0n) throw new Error('Invalid min swap amount');
     if (minAmountFinish === 0n) throw new Error('Invalid min swap amount');
-
-    // TODO: sanity check amount vs minAmountOut?
 
     const senderAddress = new EvmAddress(sender).toString();
 
@@ -120,10 +118,8 @@ export class EvmPorticoBridge<
 
     const finalTokenAddress = canonicalAddress(finalToken);
 
-    const group = this.getTokenGroup(startToken.address.toString());
-    const destinationPorticoAddress = this.getPorticoAddress(group);
-
     const nonce = new Date().valueOf() % 2 ** 4;
+
     const flags = PorticoBridge.serializeFlagSet({
       flags: {
         shouldWrapNative: isStartTokenNative,
@@ -151,6 +147,7 @@ export class EvmPorticoBridge<
       ],
     ]);
 
+    const group = this.getTokenGroup(startToken.address.toString());
     const porticoAddress = this.getPorticoAddress(group);
 
     // Approve the token if necessary
@@ -176,8 +173,8 @@ export class EvmPorticoBridge<
   }
 
   async *redeem(sender: AccountAddress<C>, vaa: PorticoBridge.VAA) {
-    const recipientChain = toChain(vaa.payload.flagSet.recipientChain);
-    const tokenAddress = vaa.payload.finalTokenAddress
+    const recipientChain = toChain(vaa.payload.payload.flagSet.recipientChain);
+    const tokenAddress = vaa.payload.payload.finalTokenAddress
       .toNative(recipientChain)
       .toString();
     const group = this.getTokenGroup(tokenAddress);
@@ -197,6 +194,13 @@ export class EvmPorticoBridge<
       addFrom(txReq, address),
       'PorticoBridge.Redeem',
     );
+  }
+
+  async isTransferCompleted(vaa: PorticoBridge.VAA): Promise<boolean> {
+    const isCompleted = await this.tokenBridge.tokenBridge.isTransferCompleted(
+      keccak256(vaa.hash),
+    );
+    return isCompleted;
   }
 
   async quoteSwap(
@@ -220,7 +224,6 @@ export class EvmPorticoBridge<
     const inputAddress = canonicalAddress(inputTokenId);
     const outputAddress = canonicalAddress(outputTokenId);
 
-    // TODO: necessary?
     if (isEqualCaseInsensitive(inputAddress, outputAddress)) return amount;
 
     const quoterAddress = this.getQuoterAddress(tokenGroup);
@@ -249,7 +252,6 @@ export class EvmPorticoBridge<
       this.chain,
       token,
     );
-    console.log('wrappedToken', wrappedToken);
     if (this.chain === 'Ethereum') return wrappedToken;
 
     // Find the group that this token belongs to
@@ -288,7 +290,6 @@ export class EvmPorticoBridge<
   }
 
   getTokenGroup(address: string): string {
-    console.log('address', address);
     const tokens = this.supportedTokens();
     const token = tokens.find((t) => canonicalAddress(t.token) === address);
     if (!token) throw new Error('Token not found');
@@ -331,7 +332,7 @@ export class EvmPorticoBridge<
     );
   }
 
-  private getPorticoAddress(group: string) {
+  getPorticoAddress(group: string) {
     const portico = this.contracts.portico!;
     if (group === 'USDT') {
       // Use PancakeSwap if available for USDT

@@ -41,7 +41,6 @@ export class PorticoApi {
         RELAYER_FEE_API_URL,
         request,
       );
-      console.log(JSON.stringify(response.data));
       return BigInt(response.data.fee);
     } catch (e) {
       if (axios.isAxiosError(e)) {
