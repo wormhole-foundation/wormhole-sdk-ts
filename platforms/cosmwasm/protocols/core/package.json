@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-cosmwasm-core",
-  "version": "0.10.9",
+  "version": "0.10.12",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -52,8 +52,8 @@
     "prettier": "prettier --write ./src"
   },
   "dependencies": {
-    "@wormhole-foundation/sdk-connect": "0.10.9",
-    "@wormhole-foundation/sdk-cosmwasm": "0.10.9",
+    "@wormhole-foundation/sdk-connect": "0.10.12",
+    "@wormhole-foundation/sdk-cosmwasm": "0.10.12",
     "@cosmjs/cosmwasm-stargate": "^0.32.0",
     "@cosmjs/stargate": "^0.32.0",
     "@injectivelabs/sdk-ts": "^1.14.13-beta.2"

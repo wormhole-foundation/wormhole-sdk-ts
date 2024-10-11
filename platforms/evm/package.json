@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-evm",
-  "version": "0.10.9",
+  "version": "0.10.12",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -57,7 +57,7 @@
     "nock": "13.3.8"
   },
   "dependencies": {
-    "@wormhole-foundation/sdk-connect": "0.10.9",
+    "@wormhole-foundation/sdk-connect": "0.10.12",
     "ethers": "^6.5.1"
   },
   "type": "module",
