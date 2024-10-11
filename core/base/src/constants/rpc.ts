@@ -88,8 +88,6 @@ const rpcConfig = [[
     ["Rootstock",       "https://public-node.testnet.rsk.co"],
     ["Gnosis",          "https://rpc.chiadochain.net"],
     ["Klaytn",          "https://rpc.ankr.com/klaytn_testnet"],
-    ["Snaxchain",       "https://testnet.snaxchain.io"],
-    ["Unichain",        "https://sepolia.unichain.org"],
   ]], [
   "Devnet", [
     ["Ethereum",  "http://eth-devnet:8545"],
