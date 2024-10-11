@@ -1548,14 +1548,6 @@ const mainnetTokenEntries = [
         },
       ],
       [
-        "USDT",
-        {
-          symbol: "USDT",
-          decimals: 6,
-          address: "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e",
-        },
-      ],
-      [
         "WGLMR",
         {
           symbol: "WGLMR",
