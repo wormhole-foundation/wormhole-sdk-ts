@@ -9,11 +9,11 @@ RUN npm i typescript -g
 RUN mkdir -p /app
 WORKDIR /app
 
-COPY package.json package-lock.json ./connect-sdk/
+COPY package.json package-lock.json ./wormhole-sdk-ts/
 RUN --mount=type=cache,uid=1000,gid=1000,target=/home/node/.npm \
-  npm ci --prefix connect-sdk 
-COPY . ./connect-sdk
-RUN npm run rebuild --prefix connect-sdk
+  npm ci --prefix wormhole-sdk-ts
+COPY . ./wormhole-sdk-ts
+RUN npm run rebuild --prefix wormhole-sdk-ts
 
 RUN mkdir -p testing
 COPY __tests__/wait-run.sh ./testing

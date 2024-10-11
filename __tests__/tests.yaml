@@ -1,15 +1,15 @@
 kind: Job
 apiVersion: batch/v1
 metadata:
-  name: connect-sdk-ci-tests
+  name: wormhole-sdk-ts-ci-tests
 spec:
   backoffLimit: 0
   template:
     spec:
       restartPolicy: Never
       containers:
-        - name: connect-sdk-ci-tests
-          image: connect-sdk-test
+        - name: wormhole-sdk-ts-ci-tests
+          image: wormhole-sdk-ts-test
           command:
             - /bin/sh
             - -c
