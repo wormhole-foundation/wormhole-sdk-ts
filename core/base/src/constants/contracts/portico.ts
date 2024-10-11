@@ -56,11 +56,5 @@ export const porticoContracts = [
         porticoPancakeSwap: '0x4568aa1eA0ED54db666c58B4526B3FC9BD9be9bf',
         pancakeSwapQuoterV2: '0xB048Bbc1Ee6b733FFfCFb9e9CeF7375518e25997',
       }],
-      ["Celo", {
-        porticoUniswap: '0xE565E118e75304dD3cF83dff409c90034b7EA18a',
-        uniswapQuoterV2: '0x82825d0554fA07f7FC52Ab63c961F330fdEFa8E8',
-        porticoPancakeSwap: undefined,
-        pancakeSwapQuoterV2: undefined,
-      }]
     ]
 ]] as const satisfies MapLevels<[Network, Chain, PorticoContracts]>

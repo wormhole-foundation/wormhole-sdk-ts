@@ -33,6 +33,5 @@ export const supportedTokens = {
     Wormhole.tokenId('Ethereum', '0xdAC17F958D2ee523a2206206994597C13D831ec7'),
     Wormhole.tokenId('Optimism', '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58'),
     Wormhole.tokenId('Polygon', '0xc2132D05D31c914a87C6611C10748AEb04B58e8F'),
-    Wormhole.tokenId('Celo', '0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e'),
   ],
 } as const;
