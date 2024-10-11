@@ -201,6 +201,9 @@ export class AutomaticPorticoRoute<N extends Network>
     try {
       const swapAmounts = await this.fetchSwapQuote(request, params);
 
+      // destination token may have a different number of decimals than the source token
+      // so we need to scale the amounts to the token with the most decimals
+      // before comparing them
       const maxDecimals = Math.max(request.source.decimals, request.destination.decimals);
       const scaledAmount = amount.units(amount.scale(params.normalizedParams.amount, maxDecimals));
       const scaledMinAmountFinish = amount.units(
