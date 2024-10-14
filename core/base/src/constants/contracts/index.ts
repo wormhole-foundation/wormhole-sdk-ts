@@ -28,4 +28,5 @@ export const rollupContracts = constMap(rollup.rollupContractAddresses);
 export const tokenBridgeChains = constMap(tb.tokenBridgeContracts, [0, 1]);
 export const tokenBridgeRelayerChains = constMap(tbr.tokenBridgeRelayerContracts, [0, 1]);
 export const circleContractChains = constMap(circle.circleContracts, [0, 1]);
+export const suiCircleObjects = constMap(circle.suiCircleObjects, [0, 1]);
 export const porticoContractChains = constMap(p.porticoContracts, [0, 1]);
