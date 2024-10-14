@@ -44,6 +44,7 @@ const circleDomains = [[
     ["Solana",    5],
     ["Base",      6],
     ["Polygon",   7],
+    ["Sui",       8],
   ]], [
   "Testnet", [
     ["Sepolia",         0],
@@ -53,6 +54,7 @@ const circleDomains = [[
     ["Solana",          5],
     ["BaseSepolia",     6],
     ["Polygon",         7],
+    ["Sui",             8],
   ]],
 ] as const satisfies MapLevel<Network, MapLevel<Chain, number>>;
 
