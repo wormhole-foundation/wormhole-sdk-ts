@@ -28,7 +28,7 @@ const usdcContracts = [[
     ["Solana",          "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU"],
     ["BaseSepolia",     "0x036CbD53842c5426634e7929541eC2318f3dCF7e"],
     ["Polygon",         "0x9999f7fea5938fd3b1e26a12c3f2fb024e194f97"],
-    ["Sui",             "0xa1ec7fc00a6f40db9693ad1415d0c193ad3906494428cf252621037bd7117e29"],
+    ["Sui",             "0xa1ec7fc00a6f40db9693ad1415d0c193ad3906494428cf252621037bd7117e29::usdc::USDC"],
   ]],
 ] as const satisfies MapLevel<Network, MapLevel<Chain, string>>;
 export const usdcContract = constMap(usdcContracts);
