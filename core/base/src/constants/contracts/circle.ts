@@ -53,6 +53,12 @@ export const circleContracts = [[
       messageTransmitter: "0xF3be9355363857F3e001be68856A2f96b4C39Ba9",
       wormholeRelayer:    "0x4cb69FaE7e7Af841e44E1A1c30Af640739378bb2",
       wormhole:           "0x0FF28217dCc90372345954563486528aa865cDd6",
+    }], [
+    "Sui", {
+      tokenMessenger:     "",
+      messageTransmitter: "",
+      wormholeRelayer:    "",
+      wormhole:           "",
     }],
   ]], [
   "Testnet", [[
@@ -106,3 +112,17 @@ export const circleContracts = [[
     }],
   ]],
 ] as const satisfies MapLevels<[Network, Chain, CircleContracts]>;
+
+export type SuiCircleObjects = {
+  tokenMessengerState: string;
+  messageTransmitterState: string;
+  usdcTreasury: string;
+}
+
+export const suiCircleObjects = [[
+  "Testnet", {
+    tokenMessengerState:"0xf410286d2c2d11722e8ef90260b942e8dd598d1b7dc9c72214ef814a4e2220b8",
+    messageTransmitterState: "0x18855ad15df31f43aa3e5c23433a3c62b15a9297716de66756f06d1464a0a6f7",
+    usdcTreasury: "0x7170137d4a6431bf83351ac025baf462909bffe2877d87716374fb42b9629ebe",
+  }
+]] as const satisfies MapLevels<[Network, SuiCircleObjects]>;
