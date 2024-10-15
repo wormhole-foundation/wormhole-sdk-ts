@@ -20,8 +20,8 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
   const wh = await wormhole("Testnet", [evm, solana, sui]);
 
   // Grab chain Contexts
-  const sendChain = wh.getChain("Sui");
-  const rcvChain = wh.getChain("Solana");
+  const sendChain = wh.getChain("Avalanche");
+  const rcvChain = wh.getChain("Sui");
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
