@@ -1,5 +1,6 @@
 import { registerProtocol } from '@wormhole-foundation/sdk-connect';
 
-import { _platform } from '@wormhole-foundation/sdk-solana';
+import { SuiCircleBridge } from "./circleBridge.js";
 
-
+registerProtocol("Sui", "CircleBridge", SuiCircleBridge);
+export * from './circleBridge.js';
