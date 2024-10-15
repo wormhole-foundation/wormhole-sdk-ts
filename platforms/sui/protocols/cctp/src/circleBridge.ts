@@ -1,9 +1,32 @@
+import type { SuiClient } from "@mysten/sui.js/client";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
-import { SuiPlatform, type SuiBuildOutput, type SuiChains, SuiUnsignedTransaction } from "@wormhole-foundation/sdk-sui";
-import { AccountAddress, ChainAddress, CircleBridge, CircleTransferMessage, circle, contracts } from '@wormhole-foundation/sdk-connect';
+import { SuiPlatform, type SuiChains, SuiUnsignedTransaction } from "@wormhole-foundation/sdk-sui";
+import type {
+  AccountAddress,
+  ChainAddress,
+  ChainsConfig,
+  Network,
+  Platform,
+} from '@wormhole-foundation/sdk-connect';
+import {
+  CircleBridge,
+  CircleTransferMessage,
+  circle,
+  Contracts,
+} from '@wormhole-foundation/sdk-connect';
+
+import { suiCircleObjects } from "./objects.js";
+
 
 export class SuiCircleBridge<N extends Network, C extends SuiChains>
   implements CircleBridge<N, C> {
+
+    readonly usdcId: string;
+    readonly usdcTreasuryId: string;
+    readonly tokenMessengerId: string;
+    readonly tokenMessengerStateId: string;
+    readonly messageTransmitterId: string;
+    readonly messageTransmitterStateId: string;
 
   constructor(
     readonly network: N,
@@ -11,10 +34,38 @@ export class SuiCircleBridge<N extends Network, C extends SuiChains>
     readonly provider: SuiClient,
     readonly contracts: Contracts,
   ) {
+    if (network === 'Devnet')
+      throw new Error('CircleBridge not supported on Devnet');
 
+    const usdcId = circle.usdcContract.get(this.network,  this.chain);
+    if (!usdcId) {
+      throw new Error(`No USDC contract configured for network=${this.network} chain=${this.chain}`);
+    }
+
+    const {
+      tokenMessengerState,
+      messageTransmitterState,
+      usdcTreasury,
+    } = suiCircleObjects(network as "Mainnet" | "Testnet");
+
+    if (!contracts.cctp?.tokenMessenger) 
+      throw new Error(
+        `Circle Token Messenger contract for domain ${chain} not found`,
+      );
+
+    if (!contracts.cctp?.messageTransmitter) 
+      throw new Error(
+        `Circle Message Transmitter contract for domain ${chain} not found`,
+      );
+
+    this.usdcId = usdcId;
+    this.usdcTreasuryId = usdcTreasury;
+    this.tokenMessengerId = contracts.cctp?.tokenMessenger;
+    this.messageTransmitterId = contracts.cctp?.messageTransmitter;
+    this.tokenMessengerStateId = tokenMessengerState;
+    this.messageTransmitterStateId = messageTransmitterState;
+    
   }
-
-
 
   async *transfer(
     sender: AccountAddress<C>,
@@ -23,28 +74,14 @@ export class SuiCircleBridge<N extends Network, C extends SuiChains>
   ): AsyncGenerator<SuiUnsignedTransaction<N, C>> {
     const tx = new TransactionBlock();
 
-    const usdcId = circle.usdcContract.get(this.network,  this.chain);
-    const {
-      tokenMessenger,
-      //messageTransmitter,
-    } = contracts.circleContracts(this.network, this.chain);
-
-    const {
-      tokenMessengerState,
-      messageTransmitterState,
-      usdcTreasury,
-    } = contracts.suiCircleObjects(this.network);
-
-    const destinationDomain = circle.circleChainId.get(
+   const destinationDomain = circle.circleChainId.get(
       this.network,
       recipient.chain,
     )!;
 
-    if (!usdcId) {
-      throw new Error(`No USDC contract configured for network=${this.network} chain=${this.chain}`);
-    }
+    const [usdcStruct] = await SuiPlatform.getCoins(this.provider, sender, this.usdcId);
 
-    const [usdcStruct] = await SuiPlatform.getCoins(this.provider, sender, usdcId);
+    console.log(this.provider, sender, this.usdcId);
 
     if (!usdcStruct) {
       throw new Error('No USDC in wallet');
@@ -63,17 +100,17 @@ export class SuiCircleBridge<N extends Network, C extends SuiChains>
     );
 
     tx.moveCall({
-      target: `${tokenMessenger}::deposit_for_burn::deposit_for_burn`,
+      target: `${this.tokenMessengerId}::deposit_for_burn::deposit_for_burn`,
       arguments: [
-        tx.object(coin), // Coin<USDC>
+        coin!,
         tx.pure.u32(destinationDomain), // destination_domain
         tx.pure.address(recipient.toString()), // mint_recipient
-        tx.object(tokenMessengerState), // token_messenger_minter state
-        tx.object(messageTransmitterState), // message_transmitter state
+        tx.object(this.tokenMessengerStateId), // token_messenger_minter state
+        tx.object(this.messageTransmitterStateId), // message_transmitter state
         tx.object("0x403"), // deny_list id, fixed address
-        tx.object(usdcTreasury) // treasury object Treasury<USDC>
+        tx.object(this.usdcTreasuryId) // treasury object Treasury<USDC>
       ],
-      typeArguments: [usdcId],
+      typeArguments: [this.usdcId],
     });
 
     yield this.createUnsignedTx(tx, "Sui.CircleBridge.Transfer")
@@ -92,8 +129,27 @@ export class SuiCircleBridge<N extends Network, C extends SuiChains>
     /* TODO */
   }
 
+    /* @ts-ignore */
   async parseTransactionDetails(txid: string): Promise<CircleTransferMessage> {
     /* TODO */
+  }
+
+  static async fromRpc<N extends Network>(
+    provider: SuiClient,
+    config: ChainsConfig<N, Platform>,
+  ): Promise<SuiCircleBridge<N, SuiChains>> {
+    const [network, chain] = await SuiPlatform.chainFromRpc(provider);
+    const conf = config[chain]!;
+    if (conf.network !== network) {
+      throw new Error(`Network mismatch: ${conf.network} != ${network}`);
+    }
+
+    return new SuiCircleBridge(
+      network as N,
+      chain,
+      provider,
+      conf.contracts,
+    );
   }
 
   private createUnsignedTx(
