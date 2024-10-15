@@ -1,6 +1,6 @@
 import type { SuiClient } from "@mysten/sui.js/client";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
-import { SuiPlatform, type SuiChains, SuiUnsignedTransaction } from "@wormhole-foundation/sdk-sui";
+import { SuiPlatform, type SuiChains, SuiUnsignedTransaction, uint8ArrayToBCS } from "@wormhole-foundation/sdk-sui";
 import type {
   AccountAddress,
   ChainAddress,
@@ -13,6 +13,7 @@ import {
   CircleTransferMessage,
   circle,
   Contracts,
+  encoding,
 } from '@wormhole-foundation/sdk-connect';
 
 import { suiCircleObjects } from "./objects.js";
@@ -81,8 +82,6 @@ export class SuiCircleBridge<N extends Network, C extends SuiChains>
 
     const [usdcStruct] = await SuiPlatform.getCoins(this.provider, sender, this.usdcId);
 
-    console.log(this.provider, sender, this.usdcId);
-
     if (!usdcStruct) {
       throw new Error('No USDC in wallet');
     }
@@ -126,7 +125,44 @@ export class SuiCircleBridge<N extends Network, C extends SuiChains>
     message: CircleBridge.Message,
     attestation: string,
   ): AsyncGenerator<SuiUnsignedTransaction<N, C>> {
-    /* TODO */
+    const tx = new TransactionBlock();
+
+    // Add receive_message call
+    const [receipt] = tx.moveCall({
+      target: `${this.messageTransmitterId}::receive_message::receive_message`,
+      arguments: [
+        tx.pure(uint8ArrayToBCS(CircleBridge.serialize(message))),
+        tx.pure(uint8ArrayToBCS(encoding.hex.decode(attestation))),
+        tx.object(this.messageTransmitterStateId) // message_transmitter state
+      ]
+    });
+
+    if (!receipt) throw new Error('Failed to produce receipt');
+
+    // Add handle_receive_message call
+    const [stampedReceipt] = tx.moveCall({
+      target: `${this.tokenMessengerId}::handle_receive_message::handle_receive_message`,
+      arguments: [
+        receipt, // Receipt object returned from receive_message call
+        tx.object(this.tokenMessengerStateId), // token_messenger_minter state
+        tx.object(this.messageTransmitterStateId), // message_transmitter state
+        tx.object("0x403"), // deny list, fixed address
+        tx.object(this.usdcTreasuryId), // usdc treasury object Treasury<T>
+      ],
+      typeArguments: [this.usdcId],
+    });
+
+    if (!stampedReceipt) throw new Error('Failed to produce stamped receipt');
+
+    tx.moveCall({
+      target: `${this.messageTransmitterId}::receive_message::complete_receive_message`,
+      arguments: [
+        stampedReceipt, // Stamped receipt object returned from handle_receive_message call
+        tx.object(this.messageTransmitterStateId) // message_transmitter state
+      ]
+    });
+
+    yield this.createUnsignedTx(tx, 'Sui.CircleBridge.Redeem');
   }
 
   async parseTransactionDetails(digest: string): Promise<CircleTransferMessage> {
