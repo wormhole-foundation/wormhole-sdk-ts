@@ -129,9 +129,48 @@ export class SuiCircleBridge<N extends Network, C extends SuiChains>
     /* TODO */
   }
 
-    /* @ts-ignore */
-  async parseTransactionDetails(txid: string): Promise<CircleTransferMessage> {
-    /* TODO */
+  async parseTransactionDetails(digest: string): Promise<CircleTransferMessage> {
+    const tx = await this.provider.waitForTransactionBlock({
+      digest,
+      options: { showEvents: true, showEffects: true, showInput: true },
+    });
+
+    if (!tx) {
+      throw new Error('Transaction not found');
+    }
+    if (!tx.events) {
+      throw new Error('Transaction events not found');
+    }
+
+    const circleMessageSentEvent = (tx.events?.find((event) =>
+      event.type.includes("send_message::MessageSent")
+    ));
+
+    if (!circleMessageSentEvent) {
+      throw new Error('No MessageSent event found');
+    }
+
+    const circleMessage = new Uint8Array((circleMessageSentEvent?.parsedJson as any).message);
+
+    const [msg, hash] = CircleBridge.deserialize(circleMessage);
+    const { payload: body } = msg;
+
+    const xferSender = body.messageSender;
+    const xferReceiver = body.mintRecipient;
+
+    const sendChain = circle.toCircleChain(this.network, msg.sourceDomain);
+    const rcvChain = circle.toCircleChain(this.network, msg.destinationDomain);
+
+    const token = { chain: sendChain, address: body.burnToken };
+
+    return {
+      from: { chain: sendChain, address: xferSender },
+      to: { chain: rcvChain, address: xferReceiver },
+      token: token,
+      amount: body.amount,
+      message: msg,
+      id: { hash },
+    };
   }
 
   static async fromRpc<N extends Network>(
