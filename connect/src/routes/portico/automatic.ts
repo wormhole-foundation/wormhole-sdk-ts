@@ -20,6 +20,7 @@ import type {
   SourceInitiatedTransferReceipt,
   TokenId,
   TransactionId,
+  TransferWarning,
 } from "./../../index.js";
 import {
   PorticoBridge,
@@ -328,20 +329,27 @@ export class AutomaticPorticoRoute<N extends Network>
     if (isAttested(receipt)) {
       const toChain = this.wh.getChain(receipt.to);
       const toPorticoBridge = await toChain.getPorticoBridge();
-      const isCompleted = await toPorticoBridge.isTransferCompleted(
+
+      const { swapResult, receivedToken } = await toPorticoBridge.getTransferResult(
         receipt.attestation.attestation,
       );
-      if (isCompleted) {
+
+      if (swapResult === "success" || swapResult === "failed") {
+        const warnings =
+          swapResult === "failed"
+            ? [{ type: "SwapFailedWarning" } satisfies TransferWarning]
+            : undefined;
+        const transferResult = receivedToken ? { receivedToken, warnings } : undefined;
+
         receipt = {
           ...receipt,
           state: TransferState.DestinationFinalized,
+          transferResult,
         } satisfies CompletedTransferReceipt<AttestationReceipt<"PorticoBridge">>;
-
-        yield receipt;
       }
-    }
 
-    // TODO: handle swap failed case (highway token received)
+      yield receipt;
+    }
 
     yield receipt;
   }

@@ -10,7 +10,9 @@ import type {
 } from '@wormhole-foundation/sdk-connect';
 import {
   PorticoBridge,
+  TokenTransfer,
   Wormhole,
+  amount,
   canonicalAddress,
   isEqualCaseInsensitive,
   nativeChainIds,
@@ -348,5 +350,96 @@ export class EvmPorticoBridge<
       return portico.pancakeSwapQuoterV2 || portico.uniswapQuoterV2;
     }
     return portico.uniswapQuoterV2;
+  }
+
+  async getTransferResult(
+    vaa: PorticoBridge.VAA,
+  ): Promise<PorticoBridge.TransferResult> {
+    // First check if the transfer is completed
+    const isCompleted = await this.isTransferCompleted(vaa);
+    if (!isCompleted) return { swapResult: 'pending' };
+
+    const finalToken = Wormhole.tokenId(
+      this.chain,
+      vaa.payload.payload.flagSet.flags.shouldUnwrapNative
+        ? 'native'
+        : vaa.payload.payload.finalTokenAddress.toNative(this.chain).toString(),
+    );
+
+    const decimals = await EvmPlatform.getDecimals(
+      this.chain,
+      this.provider,
+      finalToken.address,
+    );
+
+    // This is a simplification since there is no swap on Ethereum
+    // since the highway token originates there
+    if (this.chain === 'Ethereum') {
+      const scaledAmount = amount.scale(
+        amount.fromBaseUnits(
+          vaa.payload.token.amount,
+          Math.min(decimals, TokenTransfer.MAX_DECIMALS),
+        ),
+        decimals,
+      );
+      return {
+        swapResult: 'success',
+        receivedToken: {
+          token: finalToken,
+          amount: amount.units(scaledAmount),
+        },
+      };
+    }
+
+    // Check if the swap succeeded or failed
+    const tokenBridge = this.tokenBridge.tokenBridge;
+    const filter = tokenBridge.filters.TransferRedeemed(
+      vaa.emitterChain,
+      vaa.emitterAddress.toString(),
+      vaa.sequence,
+    );
+
+    // NOTE: If we can't find the event, we assume the swap succeeded
+    // and minAmountFinish amount is received
+    const defaultResult: PorticoBridge.TransferResult = {
+      swapResult: 'success',
+      receivedToken: {
+        token: finalToken,
+        amount: vaa.payload.payload.minAmountFinish,
+      },
+    };
+
+    const logs = await tokenBridge.queryFilter(filter);
+    if (logs.length === 0) return defaultResult;
+
+    const txhash = logs[0]!.transactionHash;
+    const receipt = await this.provider.getTransactionReceipt(txhash);
+    if (!receipt) return defaultResult;
+
+    const [event] = receipt.logs
+      .map((log) => porticoAbi.parseLog(log))
+      .filter((log) => log);
+    if (!event) return defaultResult;
+
+    const swapCompleted = event.args.swapCompleted;
+    const finaluserAmount = event.args.finaluserAmount;
+
+    // If the swap failed, the highway / Wormhole-wrapped token is received instead
+    const token = swapCompleted
+      ? finalToken
+      : Wormhole.tokenId(
+          this.chain,
+          (
+            await this.tokenBridge.getWrappedAsset(vaa.payload.token)
+          ).toString(),
+        );
+
+    return {
+      swapResult: swapCompleted ? 'success' : 'failed',
+      receivedToken: {
+        token,
+        amount: finaluserAmount,
+      },
+    };
   }
 }
