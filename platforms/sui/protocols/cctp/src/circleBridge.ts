@@ -65,7 +65,6 @@ export class SuiCircleBridge<N extends Network, C extends SuiChains>
     this.messageTransmitterId = contracts.cctp?.messageTransmitter;
     this.tokenMessengerStateId = tokenMessengerState;
     this.messageTransmitterStateId = messageTransmitterState;
-    
   }
 
   async *transfer(
@@ -75,7 +74,7 @@ export class SuiCircleBridge<N extends Network, C extends SuiChains>
   ): AsyncGenerator<SuiUnsignedTransaction<N, C>> {
     const tx = new TransactionBlock();
 
-   const destinationDomain = circle.circleChainId.get(
+    const destinationDomain = circle.circleChainId.get(
       this.network,
       recipient.chain,
     )!;
@@ -116,8 +115,30 @@ export class SuiCircleBridge<N extends Network, C extends SuiChains>
   }
 
   async isTransferCompleted(message: CircleBridge.Message): Promise<boolean> {
-    /* TODO */
-    return false;
+    const tx = new TransactionBlock();
+
+    tx.moveCall({
+      target: `${this.messageTransmitterId}::state::is_nonce_used`,
+      arguments: [
+        tx.object(this.messageTransmitterStateId),
+        tx.pure.u32(message.sourceDomain),
+        tx.pure.u64(message.nonce),
+      ],
+    });
+
+    const result = await this.provider.devInspectTransactionBlock({
+      sender: "0x0000000000000000000000000000000000000000000000000000000000000000",
+      transactionBlock: tx,
+    });
+
+    try {
+      /* @ts-ignore */
+      const isNonceUsed = Boolean(result.results![0].returnValues![0][0][0]);
+      return isNonceUsed;
+    } catch (e) {
+      console.error(`Error reading if nonce was used: ${e}`);
+      return false;
+    }
   }
 
   async *redeem(
@@ -127,7 +148,6 @@ export class SuiCircleBridge<N extends Network, C extends SuiChains>
   ): AsyncGenerator<SuiUnsignedTransaction<N, C>> {
     const tx = new TransactionBlock();
 
-    // Add receive_message call
     const [receipt] = tx.moveCall({
       target: `${this.messageTransmitterId}::receive_message::receive_message`,
       arguments: [
@@ -139,7 +159,6 @@ export class SuiCircleBridge<N extends Network, C extends SuiChains>
 
     if (!receipt) throw new Error('Failed to produce receipt');
 
-    // Add handle_receive_message call
     const [stampedReceipt] = tx.moveCall({
       target: `${this.tokenMessengerId}::handle_receive_message::handle_receive_message`,
       arguments: [
@@ -234,5 +253,4 @@ export class SuiCircleBridge<N extends Network, C extends SuiChains>
   ): SuiUnsignedTransaction<N, C> {
     return new SuiUnsignedTransaction(txReq, this.network, this.chain, description, parallelizable);
   }
-
 }

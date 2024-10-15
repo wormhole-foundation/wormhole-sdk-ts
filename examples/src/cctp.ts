@@ -1,5 +1,5 @@
 import type { Network, Signer, TransactionId, Wormhole } from "@wormhole-foundation/sdk";
-import { CircleTransfer, amount, wormhole } from "@wormhole-foundation/sdk";
+import { CircleTransfer, TransferState, amount, wormhole } from "@wormhole-foundation/sdk";
 import evm from "@wormhole-foundation/sdk/evm";
 import solana from "@wormhole-foundation/sdk/solana";
 import sui from "@wormhole-foundation/sdk/sui";
@@ -106,6 +106,18 @@ async function cctpTransfer<N extends Network>(
   console.log("Completing Transfer");
   const dstTxids = await xfer.completeTransfer(dst.signer);
   console.log(`Completed Transfer: `, dstTxids);
+
+  console.log("Tracking Transfer Progress");
+  let receipt = CircleTransfer.getReceipt(xfer);
+
+  for await (receipt of CircleTransfer.track(wh, receipt)) {
+    console.log("Receipt State:", receipt.state);
+    if (receipt.state === TransferState.DestinationFinalized) {
+      console.log("Transfer Confirmed Complete");
+      break;
+    }
+  }
+
   // EXAMPLE_CCTP_TRANSFER
 }
 
