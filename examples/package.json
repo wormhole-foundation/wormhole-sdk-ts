@@ -40,7 +40,6 @@
     "demo": "tsx src/index.ts",
     "cosmos": "tsx src/cosmos.ts",
     "msg": "tsx src/messaging.ts",
-    "sui": "tsx src/sui.ts",
     "quorum": "tsx src/quorum.ts",
     "clean": "rm -rf ./dist && rm -rf ./.turbo",
     "prettier": "prettier --write ./src",
