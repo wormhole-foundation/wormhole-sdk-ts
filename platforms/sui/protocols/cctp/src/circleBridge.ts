@@ -102,7 +102,7 @@ export class SuiCircleBridge<N extends Network, C extends SuiChains>
       arguments: [
         coin!,
         tx.pure.u32(destinationDomain), // destination_domain
-        tx.pure.address(recipient.address.toString()), // mint_recipient
+        tx.pure.address(recipient.address.toUniversalAddress().toString()), // mint_recipient
         tx.object(this.tokenMessengerStateId), // token_messenger_minter state
         tx.object(this.messageTransmitterStateId), // message_transmitter state
         tx.object("0x403"), // deny_list id, fixed address
