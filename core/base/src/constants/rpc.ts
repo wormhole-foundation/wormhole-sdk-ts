@@ -90,6 +90,7 @@ const rpcConfig = [[
     ["Klaytn",          "https://rpc.ankr.com/klaytn_testnet"],
     ["Snaxchain",       "https://testnet.snaxchain.io"],
     ["Unichain",        "https://sepolia.unichain.org"],
+    ["Worldchain",      "https://worldchain-sepolia.g.alchemy.com/public"],
   ]], [
   "Devnet", [
     ["Ethereum",  "http://eth-devnet:8545"],

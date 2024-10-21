@@ -107,6 +107,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Berachain",       80084n], // Testnet v2
       ["Snaxchain",       13001n],
       ["Unichain",        1301n],
+      ["Worldchain",      4801n],
       ["Xlayer",          195n],
       ["Linea",           59141n], // Sepolia
     ],
