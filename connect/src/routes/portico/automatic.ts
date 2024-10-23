@@ -346,9 +346,9 @@ export class AutomaticPorticoRoute<N extends Network>
           state: TransferState.DestinationFinalized,
           transferResult,
         } satisfies CompletedTransferReceipt<AttestationReceipt<"PorticoBridge">>;
-      }
 
-      yield receipt;
+        yield receipt;
+      }
     }
 
     yield receipt;
