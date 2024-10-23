@@ -113,7 +113,6 @@ export abstract class AutomaticRoute<
   R extends Receipt = Receipt,
 > extends Route<N, OP, VP, R> {
   static IS_AUTOMATIC = true;
-  // TODO: search for usagees and update arg
   public abstract isAvailable(request: RouteTransferRequest<N>): Promise<boolean>;
 }
 
