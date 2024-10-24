@@ -10,9 +10,7 @@ import type {
 } from '@wormhole-foundation/sdk-connect';
 import {
   PorticoBridge,
-  TokenTransfer,
   Wormhole,
-  amount,
   canonicalAddress,
   isEqualCaseInsensitive,
   nativeChainIds,
@@ -39,6 +37,7 @@ import { EvmWormholeCore } from '@wormhole-foundation/sdk-evm-core';
 import { EvmTokenBridge } from '@wormhole-foundation/sdk-evm-tokenbridge';
 
 import '@wormhole-foundation/sdk-evm-tokenbridge';
+import { finality } from '@wormhole-foundation/sdk-connect';
 
 export class EvmPorticoBridge<
   N extends Network,
@@ -366,51 +365,42 @@ export class EvmPorticoBridge<
         : vaa.payload.payload.finalTokenAddress.toNative(this.chain).toString(),
     );
 
-    const decimals = await EvmPlatform.getDecimals(
-      this.chain,
-      this.provider,
-      finalToken.address,
-    );
+    const finalAmount = (() => {
+      const amountLessFee =
+        vaa.payload.payload.minAmountFinish - vaa.payload.payload.relayerFee;
+      return amountLessFee < 0n ? 0n : amountLessFee;
+    })();
 
-    // This is a simplification since there is no swap on Ethereum
-    // since the highway token originates there
-    if (this.chain === 'Ethereum') {
-      const scaledAmount = amount.scale(
-        amount.fromBaseUnits(
-          vaa.payload.token.amount,
-          Math.min(decimals, TokenTransfer.MAX_DECIMALS),
-        ),
-        decimals,
-      );
-      return {
-        swapResult: 'success',
-        receivedToken: {
-          token: finalToken,
-          amount: amount.units(scaledAmount),
-        },
-      };
-    }
-
-    // Check if the swap succeeded or failed
-    const tokenBridge = this.tokenBridge.tokenBridge;
-    const filter = tokenBridge.filters.TransferRedeemed(
-      vaa.emitterChain,
-      vaa.emitterAddress.toString(),
-      vaa.sequence,
-    );
-
-    // NOTE: If we can't find the event, we assume the swap succeeded
-    // and minAmountFinish amount is received
     const defaultResult: PorticoBridge.TransferResult = {
       swapResult: 'success',
       receivedToken: {
         token: finalToken,
-        amount: vaa.payload.payload.minAmountFinish,
+        amount: finalAmount,
       },
     };
 
-    const logs = await tokenBridge.queryFilter(filter);
-    if (logs.length === 0) return defaultResult;
+    // This is a simplification since there is no swap on Ethereum
+    // since the highway token originates there
+    if (this.chain === 'Ethereum') return defaultResult;
+
+    // Check if the swap succeeded or failed
+    // NOTE: If we can't find the event, assume the swap succeeded
+    const tokenBridge = this.tokenBridge.tokenBridge;
+    const filter = tokenBridge.filters.TransferRedeemed(
+      toChainId(vaa.emitterChain),
+      vaa.emitterAddress.toString(),
+      vaa.sequence,
+    );
+
+    // Search for the event in the last 15 minutes
+    const latestBlock = await EvmPlatform.getLatestBlock(this.provider);
+    const blockTime = finality.blockTime.get(this.chain)!;
+    const fromBlock = latestBlock - Math.floor((15 * 60 * 1000) / blockTime);
+
+    const logs = await tokenBridge
+      .queryFilter(filter, fromBlock, latestBlock)
+      .catch(() => null);
+    if (!logs || logs.length === 0) return defaultResult;
 
     const txhash = logs[0]!.transactionHash;
     const receipt = await this.provider.getTransactionReceipt(txhash);
@@ -425,6 +415,7 @@ export class EvmPorticoBridge<
     const finaluserAmount = event.args.finaluserAmount;
 
     // If the swap failed, the highway / Wormhole-wrapped token is received instead
+    // of the finalToken
     const token = swapCompleted
       ? finalToken
       : Wormhole.tokenId(
