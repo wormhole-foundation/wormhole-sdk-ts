@@ -76,6 +76,7 @@ const finalityThresholds = [
   ["BaseSepolia", 512],
   ["OptimismSepolia", 512],
   ["PolygonSepolia", 32],
+  ["MonadDevnet", 0],
 ] as const satisfies MapLevel<Chain, number>;
 
 /**
