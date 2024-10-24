@@ -91,6 +91,7 @@ const rpcConfig = [[
     ["Snaxchain",       "https://testnet.snaxchain.io"],
     ["Unichain",        "https://sepolia.unichain.org"],
     ["Worldchain",      "https://worldchain-sepolia.g.alchemy.com/public"],
+    ["MonadDevnet",     ""], // TODO: No public rpc is currently available, override with a custom rpc for now.
   ]], [
   "Devnet", [
     ["Ethereum",  "http://eth-devnet:8545"],

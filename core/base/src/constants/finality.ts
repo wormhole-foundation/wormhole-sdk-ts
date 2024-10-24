@@ -58,10 +58,10 @@ const finalityThresholds = [
   ["Terra2",    0],
   ["Xpla",      0],
   ["Injective", 0],
-  ["Berachain", 0],
-  ["Snaxchain", 0],
-  ["Unichain",  0],
-  ["Worldchain",0],
+  ["Berachain", 1],
+  ["Snaxchain", 512],
+  ["Unichain",  512],
+  ["Worldchain",512],
   ["Cosmoshub", 0],
   ["Evmos",     0],
   ["Kujira",    0],
@@ -76,6 +76,7 @@ const finalityThresholds = [
   ["BaseSepolia", 512],
   ["OptimismSepolia", 512],
   ["PolygonSepolia", 32],
+  ["MonadDevnet", 1],
 ] as const satisfies MapLevel<Chain, number>;
 
 /**

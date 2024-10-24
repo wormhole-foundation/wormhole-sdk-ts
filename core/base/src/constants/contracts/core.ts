@@ -89,6 +89,7 @@ export const coreBridgeContracts = [[
     ["Worldchain",      "0xe5E02cD12B6FcA153b0d7fF4bF55730AE7B3C93A"],
     ["Xlayer",          "0xA31aa3FDb7aF7Db93d18DDA4e19F811342EDF780"],
     ["Linea",           "0x79A1027a6A159502049F10906D333EC57E95F083"],
+    ["MonadDevnet",     "0x376428e7f26D5867e69201b275553C45B09EE090"],
   ]], [
   "Devnet", [
     ["Solana",    "Bridge1p5gheXUvJ6jGWGeCsgPKgnE3YgdGKRVCMY9o"],
