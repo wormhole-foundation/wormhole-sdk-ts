@@ -14,9 +14,9 @@ export const _suiCircleObjects = [[
   },
 ], [
   "Mainnet", {
-    tokenMessengerState:"",
-    messageTransmitterState: "",
-    usdcTreasury: "",
+    tokenMessengerState:"0x9887393d8c9eccad3e25d7ac04d7b5a1fb53b557df2f84e48d2846903b109b32",
+    messageTransmitterState: "0xd89e73191571cd3de6247ec00d6af48d89c245a7582c39fde20d08456c9b52f8",
+    usdcTreasury: "0x57d6725e7a8b49a7b2a612f6bd66ab5f39fc95332ca48be421c3229d514a6de7",
   }
 ]] as const satisfies MapLevels<[Network, SuiCircleObjects]>;
 
