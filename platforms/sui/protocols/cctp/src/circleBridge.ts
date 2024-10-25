@@ -79,21 +79,19 @@ export class SuiCircleBridge<N extends Network, C extends SuiChains>
       recipient.chain,
     )!;
 
-    const [usdcStruct] = await SuiPlatform.getCoins(this.provider, sender, this.usdcId);
+    const [primaryCoin, ...mergeCoins] = await SuiPlatform.getCoins(this.provider, sender, this.usdcId);
 
-    if (!usdcStruct) {
+    if (primaryCoin === undefined) {
       throw new Error('No USDC in wallet');
     }
 
-    // It thinks balance is not a property when it is
-    // Maybe need to update SDK?
-    /* @ts-ignore */
-    if (usdcStruct.balance < amount) {
-      throw new Error('Amount exceeds USDC balance');
+    const primaryCoinInput = tx.object(primaryCoin.coinObjectId);
+    if (mergeCoins.length > 0) {
+      tx.mergeCoins(primaryCoinInput, mergeCoins.map((coin) => tx.object(coin.coinObjectId)));
     }
 
     const [coin] = tx.splitCoins(
-      usdcStruct.coinObjectId,
+      primaryCoinInput,
       [amount]
     );
 
