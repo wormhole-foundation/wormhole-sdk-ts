@@ -1,7 +1,8 @@
 import type { Network, Signer, TransactionId, Wormhole } from "@wormhole-foundation/sdk";
-import { CircleTransfer, amount, wormhole } from "@wormhole-foundation/sdk";
+import { CircleTransfer, TransferState, amount, wormhole } from "@wormhole-foundation/sdk";
 import evm from "@wormhole-foundation/sdk/evm";
 import solana from "@wormhole-foundation/sdk/solana";
+import sui from "@wormhole-foundation/sdk/sui";
 import type { SignerStuff } from "./helpers/index.js";
 import { getSigner } from "./helpers/index.js";
 
@@ -16,11 +17,11 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
 (async function () {
   // init Wormhole object, passing config for which network
   // to use (e.g. Mainnet/Testnet) and what Platforms to support
-  const wh = await wormhole("Testnet", [evm, solana]);
+  const wh = await wormhole("Testnet", [evm, solana, sui]);
 
   // Grab chain Contexts
   const sendChain = wh.getChain("Avalanche");
-  const rcvChain = wh.getChain("Solana");
+  const rcvChain = wh.getChain("Sui");
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
@@ -28,7 +29,7 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
   const destination = await getSigner(rcvChain);
 
   // 6 decimals for USDC (except for bsc, so check decimals before using this)
-  const amt = amount.units(amount.parse("0.2", 6));
+  const amt = amount.units(amount.parse("0.01", 6));
 
   // Choose whether or not to have the attestation delivered for you
   const automatic = false;
@@ -105,6 +106,18 @@ async function cctpTransfer<N extends Network>(
   console.log("Completing Transfer");
   const dstTxids = await xfer.completeTransfer(dst.signer);
   console.log(`Completed Transfer: `, dstTxids);
+
+  console.log("Tracking Transfer Progress");
+  let receipt = CircleTransfer.getReceipt(xfer);
+
+  for await (receipt of CircleTransfer.track(wh, receipt)) {
+    console.log("Receipt State:", receipt.state);
+    if (receipt.state === TransferState.DestinationFinalized) {
+      console.log("Transfer Confirmed Complete");
+      break;
+    }
+  }
+
   // EXAMPLE_CCTP_TRANSFER
 }
 

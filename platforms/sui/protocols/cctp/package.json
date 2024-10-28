@@ -1,14 +1,14 @@
 {
-  "name": "@wormhole-foundation/sdk-evm-cctp",
+  "name": "@wormhole-foundation/sdk-sui-cctp",
   "version": "0.12.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
+    "url": "git+https://github.com/wormhole-foundation/wormhole-sdk-ts.git"
   },
   "bugs": {
-    "url": "https://github.com/wormhole-foundation/connect-sdk/issues"
+    "url": "https://github.com/wormhole-foundation/wormhole-sdk-ts/issues"
   },
-  "homepage": "https://github.com/wormhole-foundation/connect-sdk#readme",
+  "homepage": "https://github.com/wormhole-foundation/wormhole-sdk-ts#readme",
   "directories": {
     "test": "tests"
   },
@@ -16,8 +16,7 @@
   "main": "./dist/cjs/index.js",
   "types": "./dist/cjs/index.d.ts",
   "module": "./dist/esm/index.js",
-  "author": "",
-  "description": "SDK for EVM chains, used in conjunction with @wormhole-foundation/sdk",
+  "description": "SDK for Sui chains, used in conjunction with @wormhole-foundation/sdk",
   "files": [
     "dist/esm",
     "dist/cjs"
@@ -27,14 +26,7 @@
     "sdk",
     "typescript",
     "connect",
-    "ethereum",
-    "moonbeam",
-    "celo",
-    "polygon",
-    "fantom",
-    "avalanche",
-    "bsc",
-    "evm"
+    "sui"
   ],
   "engines": {
     "node": ">=16"
@@ -53,9 +45,9 @@
     "prettier": "prettier --write ./src"
   },
   "dependencies": {
+    "@mysten/sui.js": "^0.50.1",
     "@wormhole-foundation/sdk-connect": "0.12.0",
-    "@wormhole-foundation/sdk-evm": "0.12.0",
-    "ethers": "^6.5.1"
+    "@wormhole-foundation/sdk-sui": "0.12.0"
   },
   "type": "module",
   "exports": {

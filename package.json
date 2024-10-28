@@ -58,6 +58,7 @@
     "platforms/sui",
     "platforms/sui/protocols/core",
     "platforms/sui/protocols/tokenBridge",
+    "platforms/sui/protocols/cctp",
     "platforms/aptos",
     "platforms/aptos/protocols/core",
     "platforms/aptos/protocols/tokenBridge",
