@@ -3,12 +3,12 @@
   "version": "0.12.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wormhole-foundation/wormhole-sdk-ts.git"
+    "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
   },
   "bugs": {
-    "url": "https://github.com/wormhole-foundation/wormhole-sdk-ts/issues"
+    "url": "https://github.com/wormhole-foundation/connect-sdk/issues"
   },
-  "homepage": "https://github.com/wormhole-foundation/wormhole-sdk-ts#readme",
+  "homepage": "https://github.com/wormhole-foundation/connect-sdk#readme",
   "directories": {
     "test": "tests"
   },
