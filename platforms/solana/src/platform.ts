@@ -19,7 +19,7 @@ import {
 } from '@wormhole-foundation/sdk-connect';
 import { SolanaChain } from './chain.js';
 
-import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID } from '@solana/spl-token';
 import type {
   Commitment,
   ConnectionConfig,
@@ -157,6 +157,17 @@ export class SolanaPlatform<N extends Network>
       },
     );
 
+    // Fetch 2022 tokens
+    const splParsedToken2022Accounts = await rpc.getParsedTokenAccountsByOwner(
+      new PublicKey(walletAddress),
+      {
+        programId: new PublicKey(TOKEN_2022_PROGRAM_ID),
+      },
+    );
+
+    // Merge the two token account lists
+    splParsedTokenAccounts.value.push(...splParsedToken2022Accounts.value);
+  
     const balancesArr = tokens.map((token) => {
       if (isNative(token)) {
         return { ['native']: native };
