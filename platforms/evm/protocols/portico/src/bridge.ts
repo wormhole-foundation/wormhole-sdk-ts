@@ -385,17 +385,18 @@ export class EvmPorticoBridge<
 
     // Check if the swap succeeded or failed
     // NOTE: If we can't find the event, assume the swap succeeded
-    const tokenBridge = this.tokenBridge.tokenBridge;
+    const { tokenBridge } = this.tokenBridge;
     const filter = tokenBridge.filters.TransferRedeemed(
       toChainId(vaa.emitterChain),
       vaa.emitterAddress.toString(),
       vaa.sequence,
     );
 
-    // Search for the event in the last 15 minutes
+    // Search for the event in the last 15 minutes or 5000 blocks (whichever is smaller)
     const latestBlock = await EvmPlatform.getLatestBlock(this.provider);
     const blockTime = finality.blockTime.get(this.chain)!;
-    const fromBlock = latestBlock - Math.floor((15 * 60 * 1000) / blockTime);
+    const fromBlock =
+      latestBlock - Math.min(5000, Math.floor((15 * 60 * 1000) / blockTime));
 
     const logs = await tokenBridge
       .queryFilter(filter, fromBlock, latestBlock)
