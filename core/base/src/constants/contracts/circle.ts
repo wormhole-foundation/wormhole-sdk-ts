@@ -55,8 +55,8 @@ export const circleContracts = [[
       wormhole:           "0x0FF28217dCc90372345954563486528aa865cDd6",
     }], [
     "Sui", {
-      tokenMessenger:     "0x410d70c8baad60f310f45c13b9656ecbfed46fdf970e051f0cac42891a848856",
-      messageTransmitter: "0x34c884874be4cb4b84e79fa280d7b041f186f4d1ef08be1dc74b20e94376951a",
+      tokenMessenger:     "",
+      messageTransmitter: "",
       wormholeRelayer:    "",
       wormhole:           "",
     }],

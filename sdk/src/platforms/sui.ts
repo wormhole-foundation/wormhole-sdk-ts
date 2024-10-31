@@ -9,7 +9,8 @@ const sui: PlatformDefinition<typeof _sui._platform> = {
   protocols: {
     WormholeCore: () => import("@wormhole-foundation/sdk-sui-core"),
     TokenBridge: () => import("@wormhole-foundation/sdk-sui-tokenbridge"),
-    CircleBridge: () => import("@wormhole-foundation/sdk-sui-cctp"),
+    // TODO uncomment when enabling Sui CCTP
+    //CircleBridge: () => import("@wormhole-foundation/sdk-sui-cctp"),
   },
   getChain: (network, chain, overrides?) =>
     new _sui.SuiChain(
