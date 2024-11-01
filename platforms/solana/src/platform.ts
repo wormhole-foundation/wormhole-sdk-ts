@@ -19,8 +19,9 @@ import {
 } from '@wormhole-foundation/sdk-connect';
 import { SolanaChain } from './chain.js';
 
-import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID } from '@solana/spl-token';
 import type {
+  AccountInfo,
   Commitment,
   ConnectionConfig,
   ParsedAccountData,
@@ -150,19 +151,24 @@ export class SolanaPlatform<N extends Network>
       native = BigInt(await rpc.getBalance(new PublicKey(walletAddress)));
     }
 
-    const splParsedTokenAccounts = await rpc.getParsedTokenAccountsByOwner(
-      new PublicKey(walletAddress),
-      {
-        programId: new PublicKey(TOKEN_PROGRAM_ID),
-      },
-    );
+    const splParsedTokenAccounts = (await Promise.all(
+      [TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID]
+        .map(pid => new PublicKey(pid))
+        .map(programId => rpc.getParsedTokenAccountsByOwner(new PublicKey(walletAddress), { programId })
+        ))).reduce<{
+          pubkey: PublicKey;
+          account: AccountInfo<ParsedAccountData>;
+        }[]
+        >((acc, val) => {
+          return acc.concat(val.value);
+        }, []);
 
     const balancesArr = tokens.map((token) => {
       if (isNative(token)) {
         return { ['native']: native };
       }
       const addrString = new SolanaAddress(token).toString();
-      const amount = splParsedTokenAccounts.value.find(
+      const amount = splParsedTokenAccounts.find(
         (v) => v?.account.data.parsed?.info?.mint === token,
       )?.account.data.parsed?.info?.tokenAmount?.amount;
       if (!amount) return { [addrString]: null };
