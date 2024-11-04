@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-connect",
-  "version": "0.14.0",
+  "version": "1.0.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -98,8 +98,8 @@
   },
   "dependencies": {
     "axios": "^1.4.0",
-    "@wormhole-foundation/sdk-base": "0.14.0",
-    "@wormhole-foundation/sdk-definitions": "0.14.0"
+    "@wormhole-foundation/sdk-base": "1.0.0",
+    "@wormhole-foundation/sdk-definitions": "1.0.0"
   },
   "type": "module"
 }
