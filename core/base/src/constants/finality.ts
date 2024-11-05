@@ -112,6 +112,7 @@ const blockTimeMilliseconds = [
   ["Kujira",            3_000],
   ["Mantle",            2_000],
   ["Moonbeam",         12_000],
+  ["MonadDevnet",       1_000],
   ["Near",              1_500],
   ["Neon",             30_000],
   ["Oasis",             6_000],
