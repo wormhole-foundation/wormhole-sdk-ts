@@ -26,7 +26,7 @@ export const safeThreshold = constMap(safeThresholds);
 // Number of blocks before a transaction is considered "final"
 const finalityThresholds = [
   ["Solana",   32],
-  ["Ethereum", 96],
+  ["Ethereum", 72], // between 64 and 95 blocks; use 72 as a middle ground
   ["Bsc",      15],
   // Checkpointed to L1 after ~512 blocks
   ["Optimism",  512],
