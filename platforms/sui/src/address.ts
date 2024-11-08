@@ -115,7 +115,7 @@ export class SuiAddress implements Address {
     }
 
     if (!this.module) {
-      throw new Error("No module specified for Sui address");
+      throw new Error("No module present in Sui token address");
     }
 
     return this.unwrap();
