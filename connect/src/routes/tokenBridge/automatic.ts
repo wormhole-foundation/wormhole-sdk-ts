@@ -14,9 +14,7 @@ import { TransferState } from "../../types.js";
 import { Wormhole } from "../../wormhole.js";
 import type { StaticRouteMethods } from "../route.js";
 import { AutomaticRoute } from "../route.js";
-import {
-  MinAmountError,
-} from '../types.js';
+import { MinAmountError } from "../types.js";
 import type {
   Quote,
   QuoteResult,
@@ -121,16 +119,6 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     return { nativeGas: 0.0 };
   }
 
-  async isAvailable(request: RouteTransferRequest<N>): Promise<boolean> {
-    const atb = await request.fromChain.getAutomaticTokenBridge();
-
-    if (isTokenId(request.source.id)) {
-      return await atb.isRegisteredToken(request.source.id.address);
-    }
-
-    return true;
-  }
-
   async validate(request: RouteTransferRequest<N>, params: Tp): Promise<Vr> {
     try {
       const options = params.options ?? this.getDefaultOptions();
@@ -219,6 +207,18 @@ export class AutomaticTokenBridgeRoute<N extends Network>
   }
 
   async quote(request: RouteTransferRequest<N>, params: Vp): Promise<QR> {
+    const atb = await request.fromChain.getAutomaticTokenBridge();
+
+    if (isTokenId(request.source.id)) {
+      const isRegistered = await atb.isRegisteredToken(request.source.id.address);
+      if (!isRegistered) {
+        return {
+          success: false,
+          error: new Error("Source token is not registered"),
+        };
+      }
+    }
+
     try {
       let quote = await TokenTransfer.quoteTransfer(this.wh, request.fromChain, request.toChain, {
         automatic: true,
