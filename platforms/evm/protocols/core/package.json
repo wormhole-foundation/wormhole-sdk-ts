@@ -1,6 +1,6 @@
 {
   "name": "@wormhole-foundation/sdk-evm-core",
-  "version": "0.14.0",
+  "version": "1.0.3",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
@@ -52,8 +52,8 @@
     "prettier": "prettier --write ./src"
   },
   "dependencies": {
-    "@wormhole-foundation/sdk-connect": "0.14.0",
-    "@wormhole-foundation/sdk-evm": "0.14.0",
+    "@wormhole-foundation/sdk-connect": "1.0.3",
+    "@wormhole-foundation/sdk-evm": "1.0.3",
     "ethers": "^6.5.1"
   },
   "type": "module",
