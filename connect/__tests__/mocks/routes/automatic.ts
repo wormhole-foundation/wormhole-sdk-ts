@@ -64,10 +64,6 @@ export class AutomaticMockRoute<N extends Network>
     return true;
   }
 
-  async isAvailable(): Promise<boolean> {
-    return true;
-  }
-
   async validate(
     request: RouteTransferRequest<N>,
     params: TransferParams<Op>,
