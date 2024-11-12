@@ -39,6 +39,7 @@ const platformAndChainsEntries = [[
     "Snaxchain",
     "Unichain",
     "Worldchain",
+    "Ink",
     "MonadDevnet",
   ]], [
   "Solana", [

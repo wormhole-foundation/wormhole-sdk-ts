@@ -54,6 +54,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Blast",     81457n],
       ["Linea",     59144n],
       ["Snaxchain", 2192n],
+      ["Worldchain",480n],
     ],
   ],
   [
@@ -108,6 +109,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Snaxchain",       13001n],
       ["Unichain",        1301n],
       ["Worldchain",      4801n],
+      ["Ink",             763373n],
       ["Xlayer",          195n],
       ["Linea",           59141n], // Sepolia
       ["MonadDevnet",     41454n],

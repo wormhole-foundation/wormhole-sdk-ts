@@ -36,6 +36,7 @@ export const tokenBridgeContracts = [[
     ["Scroll",    "0x24850c6f61C438823F01B7A3BF2B89B72174Fa9d"],
     ["Mantle",    "0x24850c6f61C438823F01B7A3BF2B89B72174Fa9d"],
     ["Snaxchain", "0x8B94bfE456B48a6025b92E11Be393BAa86e68410"],
+    ["Worldchain","0xc309275443519adca74c9136b02A38eF96E3a1f6"],
   ]], [
   "Testnet", [
     ["Solana",          "DZnkkTmCiFWfYTfT41X3Rd1kDgozqzxWaHqsw6W4x2oe"],
@@ -79,6 +80,7 @@ export const tokenBridgeContracts = [[
     ["Snaxchain",       "0xa10f2eF61dE1f19f586ab8B6F2EbA89bACE63F7a"],
     ["Unichain",        "0xa10f2eF61dE1f19f586ab8B6F2EbA89bACE63F7a"],
     ["Worldchain",      "0x430855B4D43b8AEB9D2B9869B74d58dda79C0dB2"],
+    ["Ink",             "0x376428e7f26D5867e69201b275553C45B09EE090"],
     ["Linea",           "0xC7A204bDBFe983FCD8d8E61D02b475D4073fF97e"],
   ]], [
   "Devnet", [
