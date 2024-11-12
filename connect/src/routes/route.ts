@@ -87,8 +87,6 @@ export interface RouteConstructor<OP extends Options = Options> {
   supportedNetworks(): Network[];
   /** get the list of chains this route supports */
   supportedChains(network: Network): Chain[];
-  /** check that the underlying protocols are supported */
-  isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean;
   /** get the list of source tokens that are possible to send */
   supportedSourceTokens(fromChain: ChainContext<Network>): Promise<TokenId[]>;
   /** get the list of destination tokens that may be received on the destination chain */

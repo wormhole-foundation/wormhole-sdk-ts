@@ -111,10 +111,6 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     }
   }
 
-  static isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean {
-    return chain.supportsAutomaticTokenBridge();
-  }
-
   getDefaultOptions(): Op {
     return { nativeGas: 0.0 };
   }

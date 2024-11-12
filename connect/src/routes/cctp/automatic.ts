@@ -100,10 +100,6 @@ export class AutomaticCCTPRoute<N extends Network>
     return [Wormhole.chainAddress(chain, circle.usdcContract.get(network, chain)!)];
   }
 
-  static isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean {
-    return chain.supportsAutomaticCircleBridge();
-  }
-
   getDefaultOptions(): Op {
     return {
       nativeGas: 0.0,
