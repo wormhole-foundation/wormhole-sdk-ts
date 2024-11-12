@@ -40,6 +40,7 @@ export const coreBridgeContracts = [[
     ["Scroll",    "0xbebdb6C8ddC678FfA9f8748f85C815C556Dd8ac6"],
     ["Mantle",    "0xbebdb6C8ddC678FfA9f8748f85C815C556Dd8ac6"],
     ["Snaxchain", "0xc1BA3CC4bFE724A08FbbFbF64F8db196738665f4"],
+    ["Worldchain","0xcbcEe4e081464A15d8Ad5f58BB493954421eB506"],
   ]], [
   "Testnet", [
     ["Solana",          "3u8hJUVTA4jH1wYAyUur7FFZVQ8H635K3tSHHF4ssjQ5"],
@@ -87,6 +88,7 @@ export const coreBridgeContracts = [[
     ["Snaxchain",       "0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd"],
     ["Unichain",        "0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd"],
     ["Worldchain",      "0xe5E02cD12B6FcA153b0d7fF4bF55730AE7B3C93A"],
+    ["Ink",             "0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd"],
     ["Xlayer",          "0xA31aa3FDb7aF7Db93d18DDA4e19F811342EDF780"],
     ["Linea",           "0x79A1027a6A159502049F10906D333EC57E95F083"],
     ["MonadDevnet",     "0x376428e7f26D5867e69201b275553C45B09EE090"],

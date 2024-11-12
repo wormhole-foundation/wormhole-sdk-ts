@@ -46,6 +46,7 @@ const rpcConfig = [[
     ["Mantle",    "https://rpc.mantle.xyz"],
     ["Klaytn",    "https://rpc.ankr.com/klaytn"],
     ["Snaxchain", "https://mainnet.snaxchain.io"],
+    ["Worldchain","https://worldchain-mainnet.g.alchemy.com/public"],
   ]], [
   "Testnet", [
     ["Ethereum",        "https://eth-goerli.public.blastapi.io"],
@@ -91,6 +92,7 @@ const rpcConfig = [[
     ["Snaxchain",       "https://testnet.snaxchain.io"],
     ["Unichain",        "https://sepolia.unichain.org"],
     ["Worldchain",      "https://worldchain-sepolia.g.alchemy.com/public"],
+    ["Ink",             "https://rpc-qnd-sepolia.inkonchain.com"],
     ["MonadDevnet",     ""], // TODO: No public rpc is currently available, override with a custom rpc for now.
   ]], [
   "Devnet", [
