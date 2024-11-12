@@ -62,9 +62,7 @@ export class RouteResolver<N extends Network> {
           const protocolSupported =
             rc.supportedNetworks().includes(this.wh.network) &&
             rc.supportedChains(this.wh.network).includes(request.toChain.chain) &&
-            rc.supportedChains(this.wh.network).includes(request.fromChain.chain) &&
-            rc.isProtocolSupported(request.fromChain) &&
-            rc.isProtocolSupported(request.toChain);
+            rc.supportedChains(this.wh.network).includes(request.fromChain.chain)
 
           const sourceTokenAddress = canonicalAddress(
             isNative(request.source.id.address) ? request.source.wrapped! : request.source.id,

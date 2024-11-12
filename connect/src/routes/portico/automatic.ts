@@ -140,10 +140,6 @@ export class AutomaticPorticoRoute<N extends Network>
       .map((t) => t.token);
   }
 
-  static isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean {
-    return chain.supportsPorticoBridge();
-  }
-
   getDefaultOptions(): OP {
     return {};
   }
@@ -151,8 +147,8 @@ export class AutomaticPorticoRoute<N extends Network>
   async validate(request: RouteTransferRequest<N>, params: TP): Promise<VR> {
     try {
       if (
-        !AutomaticPorticoRoute.isProtocolSupported(request.fromChain) ||
-        !AutomaticPorticoRoute.isProtocolSupported(request.toChain)
+        !AutomaticPorticoRoute.supportedChains(request.fromChain.network).includes(request.fromChain.chain) ||
+        !AutomaticPorticoRoute.supportedChains(request.toChain.network).includes(request.toChain.chain)
       ) {
         throw new Error("Protocol not supported");
       }
