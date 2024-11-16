@@ -272,9 +272,7 @@ export class AutomaticPorticoRoute<N extends Network>
     const destToken = request.destination!.id;
 
     const fromPorticoBridge = await request.fromChain.getPorticoBridge();
-    const tokenGroup = fromPorticoBridge.getTokenGroup(sourceToken.toString());
     const toPorticoBridge = await request.toChain.getPorticoBridge();
-    const destPorticoAddress = toPorticoBridge.getPorticoAddress(tokenGroup);
 
     const xfer = fromPorticoBridge.transfer(
       Wormhole.parseAddress(sender.chain(), sender.address()),
@@ -282,7 +280,7 @@ export class AutomaticPorticoRoute<N extends Network>
       sourceToken,
       amount.units(params.normalizedParams.amount),
       destToken!,
-      destPorticoAddress,
+      toPorticoBridge,
       details!,
     );
 
