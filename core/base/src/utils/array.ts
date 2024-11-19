@@ -174,3 +174,18 @@ export type Cartesian<L, R> =
   : R extends RoArray
   ? [...{ [K in keyof R]: K extends `${number}` ? [L, R[K]] : never }]
   : [L, R];
+
+export type ReplaceElement<A extends RoArray, I extends number, NE> = {
+  readonly [K in keyof A]: K extends `${I}` ? NE : A[K];
+};
+
+export const replaceElement = <
+  const A extends RoArray,
+  const I extends number,
+  const NE
+>(arr: A, index: I, newElement: NE,
+) => {
+  const newArr = [...arr];
+  newArr[index] = newElement;
+  return newArr as ReplaceElement<A, I, NE>;
+}
