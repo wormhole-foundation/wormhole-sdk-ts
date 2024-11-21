@@ -1,4 +1,4 @@
-import type { LayoutItem, CustomizableBytes } from "@wormhole-foundation/sdk-base";
+import type { Layout, CustomizableBytes } from "@wormhole-foundation/sdk-base";
 import { customizableBytes } from "@wormhole-foundation/sdk-base";
 import {
   amountItem,
@@ -21,7 +21,7 @@ const encodedExecutionInfoItem = {
     { name: "gasLimit", ...amountItem },
     { name: "targetChainRefundPerGasUnused", ...amountItem },
   ],
-} as const satisfies LayoutItem;
+} as const satisfies Layout;
 
 const addressChainItem = {
   binary: "bytes",
@@ -29,7 +29,7 @@ const addressChainItem = {
     { name: "chain", ...chainItem() },
     { name: "address", ...universalAddressItem },
   ],
-} as const satisfies LayoutItem;
+} as const satisfies Layout;
 
 const vaaKeyLayout = [
   { name: "chain", ...chainItem() },
@@ -51,7 +51,7 @@ const messageKeySwitchLayout = {
     [[1, "VAA"], vaaKeyLayout],
     [[2, "CCTP"], cctpKeyLayout],
   ],
-} as const satisfies LayoutItem;
+} as const satisfies Layout;
 
 export const deliveryInstructionLayout = <const P extends CustomizableBytes = undefined>(
   customPayload?: P,

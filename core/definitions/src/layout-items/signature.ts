@@ -1,6 +1,5 @@
 import type {
   Layout,
-  BytesLayoutItem,
   LayoutToType,
   CustomConversion,
 } from "@wormhole-foundation/sdk-base";
@@ -19,4 +18,4 @@ export const signatureItem = {
     to: (val: LayoutToType<typeof signatureLayout>) => new Signature(val.r, val.s, val.v),
     from: (val: Signature) => ({ r: val.r, s: val.s, v: val.v }),
   } as const satisfies CustomConversion<LayoutToType<typeof signatureLayout>, Signature>,
-} as const satisfies BytesLayoutItem;
+} as const satisfies Layout;

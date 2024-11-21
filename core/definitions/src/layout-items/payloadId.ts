@@ -1,4 +1,4 @@
-import type { UintLayoutItem } from "@wormhole-foundation/sdk-base";
+import type { Layout } from "@wormhole-foundation/sdk-base";
 
 export const payloadIdItem = <ID extends number>(id: ID) =>
   ({
@@ -7,4 +7,4 @@ export const payloadIdItem = <ID extends number>(id: ID) =>
     size: 1,
     custom: id,
     omit: true,
-  } as const satisfies UintLayoutItem & { readonly name: string });
+  } as const satisfies Layout & { readonly name: string });

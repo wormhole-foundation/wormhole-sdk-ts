@@ -1,8 +1,7 @@
 import type {
+  Layout,
   CustomConversion,
   CustomizableBytes,
-  Layout,
-  LayoutItem,
 } from "@wormhole-foundation/sdk-base";
 import { customizableBytes, range } from "@wormhole-foundation/sdk-base";
 import {
@@ -24,7 +23,7 @@ const fixedLengthStringItem = {
         .join(""),
     from: (str: string) => new Uint8Array(str.split("").map((c) => c.charCodeAt(0))),
   } satisfies CustomConversion<Uint8Array, string>,
-} as const satisfies LayoutItem;
+} as const satisfies Layout;
 
 const transferCommonLayout = [
   {
