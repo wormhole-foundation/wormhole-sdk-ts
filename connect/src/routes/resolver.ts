@@ -44,6 +44,16 @@ export class RouteResolver<N extends Network> {
     const [, inputTokenId] = resolveWrappedToken(fromChain.network, fromChain.chain, inputToken);
     const tokens = await Promise.all(
       this.routeConstructors.map(async (rc) => {
+        const supportedNetworks = rc.supportedNetworks();
+        if (!supportedNetworks.includes(fromChain.network)) {
+          return [];
+        }
+
+        const supportedChains = rc.supportedChains(fromChain.network);
+        if (!supportedChains.includes(fromChain.chain) || !supportedChains.includes(toChain.chain)) {
+          return [];
+        }
+
         try {
           return await rc.supportedDestinationTokens(inputTokenId, fromChain, toChain);
         } catch (e) {
