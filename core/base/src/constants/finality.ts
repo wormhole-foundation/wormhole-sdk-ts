@@ -72,7 +72,7 @@ const finalityThresholds = [
   ["Dymension", 0],
   ["Provenance",0],
   // Testnets
-  ["Sepolia", 96],
+  ["Sepolia", 72],
   ["ArbitrumSepolia", 4096],
   ["BaseSepolia", 512],
   ["OptimismSepolia", 512],
