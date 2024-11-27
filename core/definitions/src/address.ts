@@ -110,7 +110,7 @@ export function toNative<C extends Chain>(
     // as a NativeAddress, we try one more time to parse it as a UniversalAddress
     // first and then convert that to a NativeAddress.
     if (
-      (typeof ua === 'string' && ua.length === 32) ||
+      (typeof ua === 'string' && ua.length === 32 && ua.startsWith('0x')) ||
       (ua instanceof Uint8Array && ua.length === 32)
     ) {
       console.error(err);
