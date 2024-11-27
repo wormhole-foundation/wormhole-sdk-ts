@@ -26,7 +26,7 @@ export class UniversalAddress implements Address {
   }
 
   toNative<T extends Parameters<typeof toNative>[0]>(chainOrPlatform: T): NativeAddress<T> {
-    return toNative(chainOrPlatform, this.toUint8Array());
+    return toNative(chainOrPlatform, this);
   }
 
   unwrap(): Uint8Array {
