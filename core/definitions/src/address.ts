@@ -109,10 +109,12 @@ export function toNative<C extends Chain>(
     // NativeAddress or UniversalAddress, and it failed to parse directly
     // as a NativeAddress, we try one more time to parse it as a UniversalAddress
     // first and then convert that to a NativeAddress.
-    if (typeof ua === 'string' && ua.length === 32 && UniversalAddress.isValidAddress(ua)) {
+    if (
+      (typeof ua === 'string' && ua.length === 32) ||
+      (ua instanceof Uint8Array && ua.length === 32)
+    ) {
       console.error(err);
       console.error('Attempting to parse as UniversalAddress');
-      // try to parse it as a universal address
       return (new UniversalAddress(ua)).toNative(chain);
     } else {
       throw new Error(err);
