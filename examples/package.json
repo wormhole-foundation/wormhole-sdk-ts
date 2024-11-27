@@ -37,6 +37,7 @@
     "wrapped": "tsx src/createWrapped.ts",
     "tb": "tsx src/tokenBridge.ts",
     "cctp": "tsx src/cctp.ts",
+    "parseAddress": "tsx src/parseAddress.ts",
     "demo": "tsx src/index.ts",
     "cosmos": "tsx src/cosmos.ts",
     "msg": "tsx src/messaging.ts",
