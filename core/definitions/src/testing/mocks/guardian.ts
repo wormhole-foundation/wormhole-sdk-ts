@@ -31,6 +31,10 @@ export class MockGuardians {
     return this.signers.map((guardian) => SignatureUtils.toPubkey(guardian.key));
   }
 
+  getAddresses() {
+    throw new Error('todo')
+  }
+
   addSignatures<P extends PayloadLiteral>(
     message: Uint8Array | VAA<P>,
     guardianIndices?: number[],
