@@ -34,6 +34,14 @@ export namespace PorticoBridge {
     relayerFee: bigint;
   };
 
+  export type TransferResult = {
+    swapResult: "success" | "failed" | "pending";
+    receivedToken?: {
+      token: TokenId;
+      amount: bigint;
+    };
+  };
+
   const _transferPayloads = ["Transfer"] as const;
   const _payloads = [..._transferPayloads] as const;
 
@@ -113,4 +121,7 @@ export interface PorticoBridge<N extends Network = Network, C extends Chain = Ch
 
   /** Get the Portico contract address for the token group */
   getPorticoAddress(group: string): string;
+
+  /** Get the transfer result on the this chain */
+  getTransferResult(vaa: PorticoBridge.VAA): Promise<PorticoBridge.TransferResult>;
 }
