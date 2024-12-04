@@ -52,7 +52,7 @@
     "@coral-xyz/anchor": "0.29.0",
     "@coral-xyz/borsh": "0.29.0",
     "@solana/spl-token": "0.3.9",
-    "@solana/web3.js": "^1.95.2",
+    "@solana/web3.js": "^1.95.8",
     "@wormhole-foundation/sdk-connect": "1.0.3",
     "rpc-websockets": "^7.10.0"
   },
