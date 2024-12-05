@@ -1,7 +1,7 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
 import { contracts } from "@wormhole-foundation/sdk-base";
 
-// Allow contracts to be passed that arent
+// Allow contracts to be passed that aren't
 // part of the known contract set
 type UnknownContracts = Record<string, any>;
 

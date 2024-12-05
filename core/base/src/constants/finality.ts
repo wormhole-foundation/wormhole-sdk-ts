@@ -28,7 +28,7 @@ const finalityThresholds = [
   ["Solana",   32],
   ["Ethereum", 72], // between 64 and 95 blocks; use 72 as a middle ground
   ["Bsc",      15],
-  // Checkpointed to L1 after ~512 blocks
+  // Check-pointed to L1 after ~512 blocks
   ["Optimism",  512],
   ["Base",      512],
   ["Arbitrum", 4096], // TODO: validate, this is inferred from vaa metrics timing
@@ -36,7 +36,8 @@ const finalityThresholds = [
   ["Xlayer",    300],
   ["Scroll",    300],
   ["Mantle",    512],
-  // Checkpointed after 32 blocks
+  ["Worldchain",512],
+  // Check-pointed after 32 blocks
   ["Polygon",  32],
   // Single block finality
   ["Fantom",    1],
@@ -61,7 +62,6 @@ const finalityThresholds = [
   ["Berachain", 1],
   ["Snaxchain", 512],
   ["Unichain",  512],
-  ["Worldchain",512],
   ["Ink",       512],
   ["Cosmoshub", 0],
   ["Evmos",     0],
@@ -132,6 +132,7 @@ const blockTimeMilliseconds = [
   ["Terra2",            6_000],
   ["Xpla",              5_000],
   ["Xlayer",            3_000],
+  ["Worldchain",        2_000],
   ["Wormchain",         5_000],
   ["Btc",             600_000],
   ["Pythnet",             400],
