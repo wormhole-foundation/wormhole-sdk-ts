@@ -81,6 +81,6 @@ export function getCanonicalToken<N extends Network, C extends Chain>(
   const original = getTokensBySymbol(network, token.original, token.symbol);
   if (!original) return;
 
-  // return the the token with this symbol where no `original` field exists
+  // return the token with this symbol where no `original` field exists
   return original.find((t) => !t.original);
 }
