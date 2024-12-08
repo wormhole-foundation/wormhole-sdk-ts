@@ -211,7 +211,7 @@ See the testing signers ([Evm](https://github.com/wormhole-foundation/connect-sd
 
 Working with VAAs directly may be necessary. The SDK includes an entire layouting package to define the structure of a VAA payload and provides the ability to easily serialize and deserialize the VAAs or VAA payloads.
 
-Using `Uint8Array` as the paylaod type will always work:
+Using `Uint8Array` as the payload type will always work:
 <!--EXAMPLE_PARSE_VAA-->
 ```ts
   // Create a fake vaa and serialize it to bytes
