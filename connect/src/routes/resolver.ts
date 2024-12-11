@@ -8,9 +8,7 @@ import {
 import type { Wormhole } from "../wormhole.js";
 import type { RouteTransferRequest } from "./request.js";
 import type { Route, RouteConstructor } from "./route.js";
-import { isAutomatic } from "./route.js";
 import { uniqueTokens } from "./token.js";
-import type { Options, Receipt, ValidatedTransferParams } from "./types.js";
 
 export class RouteResolver<N extends Network> {
   wh: Wormhole<N>;
@@ -46,6 +44,16 @@ export class RouteResolver<N extends Network> {
     const [, inputTokenId] = resolveWrappedToken(fromChain.network, fromChain.chain, inputToken);
     const tokens = await Promise.all(
       this.routeConstructors.map(async (rc) => {
+        const supportedNetworks = rc.supportedNetworks();
+        if (!supportedNetworks.includes(fromChain.network)) {
+          return [];
+        }
+
+        const supportedChains = rc.supportedChains(fromChain.network);
+        if (!supportedChains.includes(fromChain.chain) || !supportedChains.includes(toChain.chain)) {
+          return [];
+        }
+
         try {
           return await rc.supportedDestinationTokens(inputTokenId, fromChain, toChain);
         } catch (e) {
@@ -64,9 +72,7 @@ export class RouteResolver<N extends Network> {
           const protocolSupported =
             rc.supportedNetworks().includes(this.wh.network) &&
             rc.supportedChains(this.wh.network).includes(request.toChain.chain) &&
-            rc.supportedChains(this.wh.network).includes(request.fromChain.chain) &&
-            rc.isProtocolSupported(request.fromChain) &&
-            rc.isProtocolSupported(request.toChain);
+            rc.supportedChains(this.wh.network).includes(request.fromChain.chain)
 
           const sourceTokenAddress = canonicalAddress(
             isNative(request.source.id.address) ? request.source.wrapped! : request.source.id,
@@ -102,25 +108,6 @@ export class RouteResolver<N extends Network> {
       this.routeConstructors.filter((_, index) => routesSupported[index]),
     );
 
-    // Next, we make sure all supported routes are available. For relayed routes, this will ping
-    // the relayer to make sure it's online.
-    return await Promise.all(
-      supportedRoutes.map(
-        async (
-          rc,
-        ): Promise<[Route<N, Options, ValidatedTransferParams<Options>, Receipt>, boolean]> => {
-          const route = new rc(this.wh);
-          try {
-            const available = isAutomatic(route) ? await route.isAvailable(request) : true;
-            return [route, available];
-          } catch (e) {
-            console.error(`failed to check if route is available for ${rc.meta.name}: `, e);
-            return [route, false];
-          }
-        },
-      ),
-    )
-      .then((availableRoutes) => availableRoutes.filter(([_, available]) => available))
-      .then((availableRoutes) => availableRoutes.map(([route, _]) => route!));
+    return supportedRoutes.map((rc) => new rc(this.wh));
   }
 }

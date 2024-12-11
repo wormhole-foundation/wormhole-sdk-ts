@@ -8,15 +8,21 @@ import { PublicKey } from '@solana/web3.js';
 /**
  * Find valid program address. See {@link PublicKey.findProgramAddressSync} for details.
  *
- * @param {(Buffer | Uint8Array)[]} seeds - seeds for PDA
+ * @param {string | Buffer | Uint8Array |
+ *         readonly (string | Buffer | Uint8Array)[]} seeds - seeds for PDA
  * @param {PublicKeyInitData} programId - program address
  * @returns PDA
  */
+type Seed = string | Buffer | Uint8Array;
+const toBytes = (s: Seed) => typeof s === "string" ? Buffer.from(s) : s;
 export function deriveAddress(
-  seeds: (Buffer | Uint8Array)[],
+  seeds: Seed | readonly Seed[],
   programId: PublicKeyInitData,
 ): PublicKey {
-  return PublicKey.findProgramAddressSync(seeds, new PublicKey(programId))[0];
+  return PublicKey.findProgramAddressSync(
+    Array.isArray(seeds) ? seeds.map(toBytes) : [toBytes(seeds as Seed)],
+    new PublicKey(programId)
+  )[0];
 }
 
 /**

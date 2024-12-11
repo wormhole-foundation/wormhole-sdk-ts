@@ -165,7 +165,7 @@ export function deserialize<T extends PayloadLiteral | PayloadDiscriminator>(
 ): DistributiveVAA<ExtractLiteral<T>> {
   if (typeof data === "string") data = encoding.hex.decode(data);
 
-  const [header, envelopeOffset] = deserializeLayout(headerLayout, data, { consumeAll: false });
+  const [header, headerSize] = deserializeLayout(headerLayout, data, false);
 
   //ensure that guardian signature indicies are unique and in ascending order - see:
   //https://github.com/wormhole-foundation/wormhole/blob/8e0cf4c31f39b5ba06b0f6cdb6e690d3adf3d6a3/ethereum/contracts/Messages.sol#L121
@@ -173,18 +173,18 @@ export function deserialize<T extends PayloadLiteral | PayloadDiscriminator>(
     if (header.signatures[i]!.guardianIndex <= header.signatures[i - 1]!.guardianIndex)
       throw new Error("Guardian signatures must be in ascending order of guardian set index");
 
-  const [envelope, payloadOffset] = deserializeLayout(envelopeLayout, data, {
-    offset: envelopeOffset,
-    consumeAll: false,
-  });
+  const envelopeOffset = headerSize;
+  const [envelope, envelopeSize] =
+    deserializeLayout(envelopeLayout, data.subarray(envelopeOffset), false);
 
+  const payloadOffset = envelopeOffset + envelopeSize;
   const [payloadLiteral, payload] =
     typeof payloadDet === "string"
       ? [
           payloadDet as PayloadLiteral,
-          deserializePayload(payloadDet as PayloadLiteral, data, payloadOffset),
+          deserializePayload(payloadDet as PayloadLiteral, data.subarray(payloadOffset)),
         ]
-      : deserializePayload(payloadDet as PayloadDiscriminator, data, payloadOffset);
+      : deserializePayload(payloadDet as PayloadDiscriminator, data.subarray(payloadOffset));
   const [protocolName, payloadName] = decomposeLiteral(payloadLiteral);
   const hash = keccak256(data.slice(envelopeOffset));
 
@@ -231,7 +231,7 @@ export function deserializePayload<T extends PayloadLiteral | PayloadDiscriminat
     if (payloadDet === "Uint8Array") return data.slice(offset);
 
     if (typeof payloadDet === "string")
-      return deserializeLayout(getPayloadLayout(payloadDet) as Layout, data, { offset });
+      return deserializeLayout(getPayloadLayout(payloadDet) as Layout, data.subarray(offset));
 
     //kinda unfortunate that we have to slice here, future improvement would be passing an optional
     //  offset to the discriminator
@@ -239,7 +239,10 @@ export function deserializePayload<T extends PayloadLiteral | PayloadDiscriminat
     if (candidate === null)
       throw new Error(`Encoded data does not match any of the given payload types - ${data}`);
 
-    return [candidate, deserializeLayout(getPayloadLayout(candidate) as Layout, data, { offset })];
+    return [
+      candidate,
+      deserializeLayout(getPayloadLayout(candidate) as Layout, data.subarray(offset))
+    ];
   })() as DeserializePayloadReturn<T>;
 }
 
@@ -322,11 +325,8 @@ export const deserializeUnknownVaa = (data: Uint8Array) => {
     { name: "consistencyLevel", binary: "uint", size: 1 },
   ] as const satisfies Layout;
 
-  const [header, offset] = deserializeLayout(headerLayout, data, { consumeAll: false });
-  const [envelope, offset2] = deserializeLayout(envelopeLayout, data, {
-    offset: offset,
-    consumeAll: false,
-  });
+  const [header, offset] = deserializeLayout(headerLayout, data, false);
+  const [envelope, offset2] = deserializeLayout(envelopeLayout, data.subarray(offset), false);
 
   return {
     ...header,

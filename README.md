@@ -1,10 +1,8 @@
-# Wormhole TS SDK
+# Wormhole TypeScript SDK
+
+[![npm version](https://img.shields.io/npm/v/@wormhole-foundation/sdk.svg)](https://www.npmjs.com/package/@wormhole-foundation/sdk)
 
 The Wormhole Typescript SDK is useful for interacting with the chains Wormhole supports and the [protocols](#protocols) built on top of Wormhole.
-
-## Warning 
-
-:warning: This package is a Work in Progress so the interface may change and there are likely bugs. Please [report](https://github.com/wormhole-foundation/connect-sdk/issues) any issues you find. :warning:
 
 ## Installation
 
@@ -496,12 +494,6 @@ We can also transfer native USDC using [Circle's CCTP](https://www.circle.com/en
   console.log("Starting Transfer");
   const srcTxids = await xfer.initiateTransfer(src.signer);
   console.log(`Started Transfer: `, srcTxids);
-
-  if (req.automatic) {
-    const relayStatus = await waitForRelay(srcTxids[srcTxids.length - 1]!);
-    console.log(`Finished relay: `, relayStatus);
-    return;
-  }
 
   // Note: Depending on chain finality, this timeout may need to be increased.
   // See https://developers.circle.com/stablecoin/docs/cctp-technical-reference#mainnet for more

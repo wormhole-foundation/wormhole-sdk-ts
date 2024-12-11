@@ -27,7 +27,6 @@ export namespace PorticoBridge {
   export interface SwapAmounts {
     minAmountStart: bigint;
     minAmountFinish: bigint;
-    amountFinish: bigint;
   }
 
   export type Quote = {
@@ -73,7 +72,7 @@ export namespace PorticoBridge {
  */
 export interface PorticoBridge<N extends Network = Network, C extends Chain = Chain> {
   // Checks if a transfer VAA has been redeemed
-  //isTransferCompleted(vaa: PorticoBridge.VAA): Promise<boolean>;
+  isTransferCompleted(vaa: PorticoBridge.VAA): Promise<boolean>;
 
   /** Initiate a transfer of some token to another chain */
   transfer(
@@ -82,6 +81,7 @@ export interface PorticoBridge<N extends Network = Network, C extends Chain = Ch
     token: TokenAddress<C>,
     amount: bigint,
     destToken: TokenId,
+    destPorticoAddress: string,
     quote: PorticoBridge.Quote,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
 
@@ -92,9 +92,25 @@ export interface PorticoBridge<N extends Network = Network, C extends Chain = Ch
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
 
   /** quote token conversion */
-  quoteSwap(input: TokenAddress<C>, output: TokenAddress<C>, amount: bigint): Promise<bigint>;
+  quoteSwap(
+    input: TokenAddress<C>,
+    output: TokenAddress<C>,
+    tokenGroup: string,
+    amount: bigint,
+  ): Promise<bigint>;
+
   /** quote relay on destination with conversion */
   quoteRelay(token: TokenAddress<C>, destination: TokenAddress<C>): Promise<bigint>;
 
-  getTransferrableToken(address: string): TokenId;
+  /** Get the "highway" token for this token */
+  getTransferrableToken(address: string): Promise<TokenId>;
+
+  /** Tokens supported on this chain */
+  supportedTokens(): { group: string; token: TokenId }[];
+
+  /** Get the group that a token belongs to e.g. ETH, WETH, wstETH, USDT */
+  getTokenGroup(address: string): string;
+
+  /** Get the Portico contract address for the token group */
+  getPorticoAddress(group: string): string;
 }

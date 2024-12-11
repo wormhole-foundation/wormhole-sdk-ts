@@ -248,11 +248,11 @@ export function getUpgradeContractAccounts(
     upgradeAuthority: deriveUpgradeAuthorityKey(wormholeProgramId),
     spill: new PublicKey(spill === undefined ? payer : spill),
     implementation: new SolanaAddress(newContract).unwrap(),
-    programData: utils.deriveUpgradeableProgramKey(wormholeProgramId),
+    programData: utils.deriveProgramDataAddress(wormholeProgramId),
     wormholeProgram: new PublicKey(wormholeProgramId),
     rent: SYSVAR_RENT_PUBKEY,
     clock: SYSVAR_CLOCK_PUBKEY,
-    bpfLoaderUpgradeable: utils.BpfLoaderUpgradeable.programId,
+    bpfLoaderUpgradeable: utils.BPF_LOADER_UPGRADEABLE_PROGRAM_ID,
     systemProgram: SystemProgram.programId,
   };
 }

@@ -1,8 +1,10 @@
 import type {
+  Chain,
   ChainAddress,
   ChainId,
   ChainsConfig,
   Contracts,
+  NativeAddress,
   Network,
   TokenBridge,
   TokenId,
@@ -98,8 +100,21 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
     return { chain, address };
   }
 
-  async getTokenUniversalAddress(token: AnyAptosAddress): Promise<UniversalAddress> {
+  async getTokenUniversalAddress(token: NativeAddress<C>): Promise<UniversalAddress> {
     return new UniversalAddress(encoding.hex.encode(sha3_256(token.toString()), true));
+  }
+
+  async getTokenNativeAddress(
+    originChain: Chain,
+    token: UniversalAddress,
+  ): Promise<NativeAddress<C>> {
+    const assetType =
+      originChain === this.chain
+        ? await this.getTypeFromExternalAddress(token.toString())
+        : await this.getAssetFullyQualifiedType({ chain: originChain, address: token });
+
+    if (!assetType) throw new Error("Invalid asset address.");
+    return new AptosAddress(assetType) as NativeAddress<C>;
   }
 
   async hasWrappedAsset(token: TokenId): Promise<boolean> {
@@ -111,6 +126,7 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
   }
 
   async getWrappedAsset(token: TokenId) {
+    if (isNative(token.address)) throw new Error("native asset cannot be a wrapped asset");
     const assetFullyQualifiedType = await this.getAssetFullyQualifiedType(token);
     if (!assetFullyQualifiedType) throw new Error("Invalid asset address.");
 

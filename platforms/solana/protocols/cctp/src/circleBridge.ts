@@ -14,7 +14,10 @@ import { CircleBridge, circle } from '@wormhole-foundation/sdk-connect';
 import type { Program } from '@coral-xyz/anchor';
 import BN from 'bn.js';
 
-import { getAssociatedTokenAddressSync } from '@solana/spl-token';
+import {
+  createAssociatedTokenAccountInstruction,
+  getAssociatedTokenAddressSync,
+} from '@solana/spl-token';
 import type {
   SolanaChains,
   SolanaTransaction,
@@ -99,6 +102,26 @@ export class SolanaCircleBridge<N extends Network, C extends SolanaChains>
     );
 
     const senderPk = new SolanaAddress(sender).unwrap();
+
+    // If the ATA doesn't exist then create it
+    const mintRecipient = new SolanaAddress(
+      message.payload.mintRecipient,
+    ).unwrap();
+    const ata = await this.connection.getAccountInfo(mintRecipient);
+
+    if (!ata) {
+      const transaction = new Transaction().add(
+        createAssociatedTokenAccountInstruction(
+          senderPk,
+          mintRecipient,
+          senderPk,
+          usdc,
+        ),
+      );
+
+      transaction.feePayer = senderPk;
+      yield this.createUnsignedTx({ transaction }, 'CircleBridge.CreateATA');
+    }
 
     const ix = await createReceiveMessageInstruction(
       this.messageTransmitter.programId,

@@ -65,7 +65,7 @@ function getSupportmatrix(n: Network) {
     for (const chain of chains) {
       try {
         const ctx = wh.getChain(chain as Chain);
-        protoSupport[name]![chain] = rc.isProtocolSupported(ctx);
+        protoSupport[name]![chain] = rc.supportedChains(ctx.network).includes(ctx.chain);
       } catch (e) {
         console.log("error on: ", chain);
       }

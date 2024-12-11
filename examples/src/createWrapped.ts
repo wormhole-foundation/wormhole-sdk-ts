@@ -1,4 +1,4 @@
-import { TokenId, Wormhole, signSendWait, wormhole } from "@wormhole-foundation/sdk";
+import { Wormhole, signSendWait, wormhole } from "@wormhole-foundation/sdk";
 
 import evm from "@wormhole-foundation/sdk/evm";
 import solana from "@wormhole-foundation/sdk/solana";

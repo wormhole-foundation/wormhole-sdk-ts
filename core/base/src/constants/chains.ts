@@ -48,6 +48,9 @@ const chainIdAndChainEntries = [
   [   39, "Berachain"      ],
   [   40, "Seievm"         ],
   [   43, "Snaxchain"      ],
+  [   44, "Unichain"       ],
+  [   45, "Worldchain"     ],
+  [   46, "Ink"            ],
   [ 3104, "Wormchain"      ],
   [ 4000, "Cosmoshub"      ],
   [ 4001, "Evmos"          ],
@@ -64,6 +67,7 @@ const chainIdAndChainEntries = [
   [10005, "OptimismSepolia"],
   [10006, "Holesky"        ],
   [10007, "PolygonSepolia" ],
+  [10008, "MonadDevnet"    ],
 ] as const satisfies MapLevel<number, string>;
 
 export const [chainIds, chains] = zip(chainIdAndChainEntries);

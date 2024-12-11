@@ -29,7 +29,8 @@ import {
   toNative,
 } from "@wormhole-foundation/sdk-connect";
 
-import type { SuiAddress, SuiBuildOutput, SuiChains } from "@wormhole-foundation/sdk-sui";
+import type { SuiBuildOutput, SuiChains } from "@wormhole-foundation/sdk-sui";
+import { SuiAddress } from "@wormhole-foundation/sdk-sui";
 import {
   SuiPlatform,
   SuiUnsignedTransaction,
@@ -148,7 +149,7 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
     throw ErrNotWrapped(coinType);
   }
 
-  async getTokenUniversalAddress(token: TokenAddress<C>): Promise<UniversalAddress> {
+  async getTokenUniversalAddress(token: NativeAddress<C>): Promise<UniversalAddress> {
     let coinType = (token as SuiAddress).getCoinType();
     if (!isValidSuiType(coinType)) throw new Error(`Invalid Sui type: ${coinType}`);
 
@@ -190,11 +191,20 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
     }
 
     throw new Error(`Token of type ${coinType} is not a native asset`);
+  }
 
-    //// TODO: implement
-    //return new UniversalAddress(
-    //  Buffer.from("9258181f5ceac8dbffb7030890243caed69a9599d2886d957a9cb7656af3bdb3", "hex"),
-    //);
+  async getTokenNativeAddress(
+    originChain: Chain,
+    token: UniversalAddress,
+  ): Promise<NativeAddress<C>> {
+    const address = await getTokenCoinType(
+      this.provider,
+      this.tokenBridgeObjectId,
+      token.toUint8Array(),
+      toChainId(originChain),
+    );
+    if (!address) throw new Error(`Token ${token.toString()} not found in token registry`);
+    return new SuiAddress(address) as NativeAddress<C>;
   }
 
   async hasWrappedAsset(token: TokenId): Promise<boolean> {

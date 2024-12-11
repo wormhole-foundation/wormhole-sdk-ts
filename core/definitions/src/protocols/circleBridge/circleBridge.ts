@@ -187,4 +187,8 @@ export interface AutomaticCircleBridge<N extends Network = Network, C extends Ch
     amount: bigint,
     nativeGas?: bigint,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
+  /** Amount of native tokens a user would receive by swapping x amount of sending tokens */
+  nativeTokenAmount(amount: bigint): Promise<bigint>;
+  /** Maximum amount of sending tokens that can be swapped for native tokens */
+  maxSwapAmount(): Promise<bigint>;
 }

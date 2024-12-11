@@ -93,10 +93,6 @@ export class CCTPRoute<N extends Network>
     return [Wormhole.chainAddress(chain, circle.usdcContract.get(network, chain)!)];
   }
 
-  static isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean {
-    return chain.supportsCircleBridge();
-  }
-
   getDefaultOptions(): Op {
     return {
       payload: undefined,

@@ -3,11 +3,11 @@ import {
   ConsistencyLevels,
   finalityThreshold,
   consistencyLevelToBlock,
-} from '../src/constants/finality.js';
+} from "../src/constants/finality.js";
 
 describe("Finality tests", function () {
   test("Receive expected number of rounds", () => {
-    expect(finalityThreshold("Ethereum")).toEqual(64);
+    expect(finalityThreshold("Ethereum")).toEqual(72);
     expect(finalityThreshold("Algorand")).toEqual(0);
     expect(finalityThreshold("Solana")).toEqual(32);
   });
@@ -41,7 +41,7 @@ describe("Finality tests", function () {
   test("Estimates rounds from finalized consistency level", () => {
     // 100 + (# final rounds)
     expect(consistencyLevelToBlock("Ethereum", ConsistencyLevels.Finalized, fromBlock)).toEqual(
-      fromBlock + 64n,
+      fromBlock + 72n,
     );
     expect(consistencyLevelToBlock("Solana", ConsistencyLevels.Finalized, fromBlock)).toEqual(
       fromBlock + 32n,

@@ -53,9 +53,13 @@ export class RouteTransferRequest<N extends Network> {
     };
 
     if (quote.relayFee) {
+      const relayFeeChain =
+        quote.relayFee.token.chain === this.fromChain.chain ? this.fromChain : this.toChain;
+      const relayFeeDecimals = await relayFeeChain.getDecimals(quote.relayFee.token.address);
+
       dq.relayFee = {
         token: quote.relayFee.token,
-        amount: amount.fromBaseUnits(quote.relayFee.amount, this.source.decimals),
+        amount: amount.fromBaseUnits(quote.relayFee.amount, relayFeeDecimals),
       };
     }
 
@@ -63,6 +67,12 @@ export class RouteTransferRequest<N extends Network> {
       const dstDecimals = await this.toChain.getDecimals("native");
       dq.destinationNativeGas = amount.fromBaseUnits(quote.destinationNativeGas, dstDecimals);
     }
+
+    if (quote.warnings && quote.warnings.length > 0) {
+      dq.warnings = [...quote.warnings];
+    }
+
+    dq.eta = quote.eta;
 
     if (details) {
       dq.details = details;

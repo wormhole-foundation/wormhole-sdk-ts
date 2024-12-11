@@ -26,12 +26,16 @@ export const safeThreshold = constMap(safeThresholds);
 // Number of blocks before a transaction is considered "final"
 const finalityThresholds = [
   ["Solana",   32],
-  ["Ethereum", 64],
+  ["Ethereum", 72], // between 64 and 95 blocks; use 72 as a middle ground
   ["Bsc",      15],
   // Checkpointed to L1 after ~512 blocks
   ["Optimism",  512],
   ["Base",      512],
   ["Arbitrum", 4096], // TODO: validate, this is inferred from vaa metrics timing
+  ["Blast",     512],
+  ["Xlayer",    300],
+  ["Scroll",    300],
+  ["Mantle",    512],
   // Checkpointed after 32 blocks
   ["Polygon",  32],
   // Single block finality
@@ -54,8 +58,11 @@ const finalityThresholds = [
   ["Terra2",    0],
   ["Xpla",      0],
   ["Injective", 0],
-  ["Berachain", 0],
-  ["Snaxchain", 0],
+  ["Berachain", 1],
+  ["Snaxchain", 512],
+  ["Unichain",  512],
+  ["Worldchain",512],
+  ["Ink",       512],
   ["Cosmoshub", 0],
   ["Evmos",     0],
   ["Kujira",    0],
@@ -64,6 +71,13 @@ const finalityThresholds = [
   ["Stargaze",  0],
   ["Dymension", 0],
   ["Provenance",0],
+  // Testnets
+  ["Sepolia", 72],
+  ["ArbitrumSepolia", 4096],
+  ["BaseSepolia", 512],
+  ["OptimismSepolia", 512],
+  ["PolygonSepolia", 32],
+  ["MonadDevnet", 1],
 ] as const satisfies MapLevel<Chain, number>;
 
 /**
@@ -84,6 +98,7 @@ const blockTimeMilliseconds = [
   ["Avalanche",         2_000],
   ["Base",              2_000],
   ["BaseSepolia",       2_000],
+  ["Blast",             2_000],
   ["Bsc",               3_000],
   ["Celo",              5_000],
   ["Cosmoshub",         5_000],
@@ -96,7 +111,9 @@ const blockTimeMilliseconds = [
   ["Karura",           12_000],
   ["Klaytn",            1_000],
   ["Kujira",            3_000],
+  ["Mantle",            2_000],
   ["Moonbeam",         12_000],
+  ["MonadDevnet",       1_000],
   ["Near",              1_500],
   ["Neon",             30_000],
   ["Oasis",             6_000],
@@ -106,15 +123,15 @@ const blockTimeMilliseconds = [
   ["Polygon",           2_000],
   ["PolygonSepolia",    2_000],
   ["Rootstock",        30_000],
+  ["Scroll",            3_000],
   ["Sei",                 400],
   ["Sepolia",          15_000],
   ["Solana",              400],
   ["Sui",               3_000],
-  ["Scroll",            4_000],
-  ["Mantle",            2_000],
   ["Terra",             6_000],
   ["Terra2",            6_000],
   ["Xpla",              5_000],
+  ["Xlayer",            3_000],
   ["Wormchain",         5_000],
   ["Btc",             600_000],
   ["Pythnet",             400],
@@ -175,4 +192,19 @@ export function consistencyLevelToBlock(
     default:
       throw new Error("Only Ethereum safe is supported for now");
   }
+}
+
+/**
+ * Estimates the time required for a transaction to be considered "final"
+ * @param chain The chain to estimate finality time for
+ * @returns The estimated time in milliseconds
+ */
+export function estimateFinalityTime(chain: Chain): number {
+  const finality = finalityThreshold.get(chain);
+  if (finality === undefined) throw new Error("Cannot find finality for " + chain);
+
+  const time = blockTime.get(chain);
+  if (time === undefined) throw new Error("Cannot find block time for " + chain);
+
+  return finality * time;
 }

@@ -1,5 +1,10 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
-import type { ChainContext, Signer, TokenId, TransactionId } from "@wormhole-foundation/sdk-definitions";
+import type {
+  ChainContext,
+  Signer,
+  TokenId,
+  TransactionId,
+} from "@wormhole-foundation/sdk-definitions";
 import type { Wormhole } from "../wormhole.js";
 import type { RouteTransferRequest } from "./request.js";
 import type {
@@ -20,11 +25,6 @@ export abstract class Route<
   R extends Receipt = Receipt,
 > {
   wh: Wormhole<N>;
-
-  // true means this route supports native gas dropoff
-  abstract readonly NATIVE_GAS_DROPOFF_SUPPORTED: boolean;
-  // true means this is a one-transaction route (using a relayer)
-  abstract readonly IS_AUTOMATIC: boolean;
 
   public constructor(wh: Wormhole<N>) {
     this.wh = wh;
@@ -79,12 +79,14 @@ export interface RouteConstructor<OP extends Options = Options> {
   new <N extends Network>(wh: Wormhole<N>): Route<N, OP>;
   /**  Details about the route provided by the implementation */
   readonly meta: RouteMeta;
+  /** true means this route supports native gas dropoff */
+  readonly NATIVE_GAS_DROPOFF_SUPPORTED: boolean;
+  /** true means this is a one-transaction route (using a relayer) */
+  readonly IS_AUTOMATIC: boolean;
   /** get the list of networks this route supports */
   supportedNetworks(): Network[];
   /** get the list of chains this route supports */
   supportedChains(network: Network): Chain[];
-  /** check that the underlying protocols are supported */
-  isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean;
   /** get the list of source tokens that are possible to send */
   supportedSourceTokens(fromChain: ChainContext<Network>): Promise<TokenId[]>;
   /** get the list of destination tokens that may be received on the destination chain */
@@ -108,13 +110,11 @@ export abstract class AutomaticRoute<
   VP extends ValidatedTransferParams<OP> = ValidatedTransferParams<OP>,
   R extends Receipt = Receipt,
 > extends Route<N, OP, VP, R> {
-  IS_AUTOMATIC = true;
-  // TODO: search for usagees and update arg
-  public abstract isAvailable(request: RouteTransferRequest<N>): Promise<boolean>;
+  static IS_AUTOMATIC = true;
 }
 
 export function isAutomatic<N extends Network>(route: Route<N>): route is AutomaticRoute<N> {
-  return (route as AutomaticRoute<N>).isAvailable !== undefined && route.IS_AUTOMATIC;
+  return !!(route.constructor as RouteConstructor).IS_AUTOMATIC;
 }
 
 /**
@@ -127,8 +127,8 @@ export abstract class ManualRoute<
   VP extends ValidatedTransferParams<OP> = ValidatedTransferParams<OP>,
   R extends Receipt = Receipt,
 > extends Route<N, OP, VP, R> {
-  NATIVE_GAS_DROPOFF_SUPPORTED = false;
-  IS_AUTOMATIC = false;
+  static NATIVE_GAS_DROPOFF_SUPPORTED = false;
+  static IS_AUTOMATIC = false;
   public abstract complete(sender: Signer, receipt: R): Promise<R>;
   public abstract resume(tx: TransactionId): Promise<R>;
 }
@@ -148,6 +148,7 @@ export abstract class FinalizableRoute<
   R extends Receipt = Receipt,
 > extends Route<N, OP, VP, R> {
   public abstract finalize(sender: Signer, receipt: R): Promise<R>;
+  public abstract resume(tx: TransactionId): Promise<R>;
 }
 
 export function isFinalizable<N extends Network>(route: Route<N>): route is FinalizableRoute<N> {
