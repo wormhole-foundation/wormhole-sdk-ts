@@ -1,7 +1,7 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
 import { lazyInstantiate } from "@wormhole-foundation/sdk-base";
-import type { AccountAddress, ChainAddress } from "../../address.js";
-import { UniversalAddress } from "../../universalAddress.js";
+import type { AccountAddress, ChainAddress, NativeAddress } from "../../address.js";
+import type { UniversalAddress } from "../../universalAddress.js";
 import type { TokenAddress, TokenId } from "../../types.js";
 import type { UnsignedTransaction } from "../../unsignedTransaction.js";
 import type { ProtocolPayload, ProtocolVAA } from "./../../vaa/index.js";
@@ -135,19 +135,26 @@ export interface TokenBridge<N extends Network = Network, C extends Chain = Chai
    */
   getOriginalAsset(nativeAddress: TokenAddress<C>): Promise<TokenId<Chain>>;
   /**
-   * Returns the UniversalAddress of the token. This may require retrieving data on-chain.
+   * Returns the UniversalAddress of the token. This may require fetching on-chain data.
    *
-   * @param nativeAddress The address to get the UniversalAddress for
+   * @param token The address to get the UniversalAddress for
    * @returns The UniversalAddress of the token
    */
-  getTokenUniversalAddress(nativeAddress: TokenAddress<C>): Promise<UniversalAddress>;
+  getTokenUniversalAddress(token: NativeAddress<C>): Promise<UniversalAddress>;
+  /**
+   * Returns the native address of the token. This may require fetching on-chain data.
+   * @param originChain The chain the token is from / native to
+   * @param token The address to get the native address for
+   * @returns The native address of the token
+   */
+  getTokenNativeAddress(originChain: Chain, token: UniversalAddress): Promise<NativeAddress<C>>;
   /**
    * returns the wrapped version of the native asset
    *
    * @returns The address of the native gas token that has been wrapped
    * for use where the gas token is not possible to use (e.g. bridging)
    */
-  getWrappedNative(): Promise<TokenAddress<C>>;
+  getWrappedNative(): Promise<NativeAddress<C>>;
   /**
    * Check to see if a foreign token has a wrapped version
    *

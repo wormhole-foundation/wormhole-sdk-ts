@@ -1,5 +1,5 @@
 import type { Layout, CustomizableBytes } from "@wormhole-foundation/sdk-base";
-import { layout } from "@wormhole-foundation/sdk-base";
+import { customizableBytes } from "@wormhole-foundation/sdk-base";
 import {
   payloadIdItem,
   universalAddressItem,
@@ -29,7 +29,7 @@ export const depositWithPayloadLayout = <const P extends CustomizableBytes = und
     { name: "nonce", ...circleNonceItem },
     { name: "caller", ...universalAddressItem },
     { name: "mintRecipient", ...universalAddressItem },
-    layout.customizableBytes({ name: "payload", lengthSize: 2 }, customPayload),
+    customizableBytes({ name: "payload", lengthSize: 2 }, customPayload),
   ] as const satisfies Layout;
 
 //from here:

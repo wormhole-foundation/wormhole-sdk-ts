@@ -1,9 +1,9 @@
-import type { UintLayoutItem } from "@wormhole-foundation/sdk-base";
+import type { Layout } from "@wormhole-foundation/sdk-base";
 
 export const circleDomainItem = {
   binary: "uint",
   size: 4,
-} as const satisfies UintLayoutItem;
+} as const satisfies Layout;
 
 export const circleNonceItem = {
   binary: "uint",

@@ -2,6 +2,7 @@ export * from "./wormhole.js";
 export * from "./config.js";
 export * from "./common.js";
 export * from "./types.js";
+export * from "./warnings.js";
 
 export * from "./protocols/index.js";
 

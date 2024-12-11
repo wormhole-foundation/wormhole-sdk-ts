@@ -53,7 +53,7 @@ export const getTableKeyType = (tableType: string): string => {
 
 export class SuiAddress implements Address {
   static readonly byteSize = 32;
-  static readonly platform = _platform;
+  static readonly platform = "Sui";
 
   // Full 32 bytes of Address
   readonly address: Uint8Array;
@@ -113,7 +113,12 @@ export class SuiAddress implements Address {
     if (this.module === "sui::SUI") {
       return SUI_COIN;
     }
-    return [this.getPackageId(), "coin", "COIN"].join(SUI_SEPARATOR);
+
+    if (!this.module) {
+      throw new Error("No module present in Sui token address");
+    }
+
+    return this.unwrap();
   }
 
   static instanceof(address: any): address is SuiAddress {

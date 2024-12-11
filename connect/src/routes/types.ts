@@ -1,6 +1,7 @@
 import type { TokenId } from "@wormhole-foundation/sdk-definitions";
-import type { AttestationReceipt, QuoteWarning, TransferReceipt } from "../types.js";
-import type { amount } from "@wormhole-foundation/sdk-base";
+import type { AttestationReceipt, TransferReceipt } from "../types.js";
+import { amount } from "@wormhole-foundation/sdk-base";
+import type { QuoteWarning } from "../warnings.js";
 
 // Extend Options to provide custom options
 // to use for the transfer
@@ -74,9 +75,39 @@ export type Quote<
   // If the transfer being quoted has any warnings
   // such as high slippage or a delay, they will be included here
   warnings?: QuoteWarning[];
+
+  // Estimated time to completion in milliseconds
+  eta?: number;
 };
 
 export type QuoteError = {
   success: false;
   error: Error;
 };
+
+// Special error to return from quote() or validate() when the
+// given transfer amount is too small. Used to helpfully
+// show a minimum amount in the interface.
+export class MinAmountError extends Error {
+  min: amount.Amount;
+
+  constructor(min: amount.Amount) {
+    super(`Minimum transfer amount is ${amount.display(min)}`);
+    this.min = min;
+  }
+
+  minAmount(): amount.Amount {
+    return this.min;
+  }
+}
+
+// Special error to return from quote() or validate() when the
+// protocol can't provide a quote.
+export class UnavailableError extends Error {
+  internalError: Error;
+
+  constructor(internalErr: Error) {
+    super(`Unable to fetch a quote`);
+    this.internalError = internalErr;
+  }
+}

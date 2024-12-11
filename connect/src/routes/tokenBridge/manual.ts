@@ -89,10 +89,6 @@ export class TokenBridgeRoute<N extends Network>
     }
   }
 
-  static isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean {
-    return chain.supportsTokenBridge();
-  }
-
   getDefaultOptions(): Op {
     return { payload: undefined };
   }

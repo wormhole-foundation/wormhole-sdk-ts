@@ -1,5 +1,5 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
-import { circle, encoding, toChain } from "@wormhole-foundation/sdk-base";
+import { circle, encoding, finality, guardians, toChain } from "@wormhole-foundation/sdk-base";
 import type {
   Attestation,
   AttestationId,
@@ -34,7 +34,13 @@ import type {
   TransferQuote,
   TransferReceipt as _TransferReceipt,
 } from "../../types.js";
-import { TransferState, isAttested, isSourceFinalized, isSourceInitiated } from "../../types.js";
+import {
+  TransferState,
+  isAttested,
+  isRedeemed,
+  isSourceFinalized,
+  isSourceInitiated,
+} from "../../types.js";
 import { Wormhole } from "../../wormhole.js";
 import type { WormholeTransfer } from "../wormholeTransfer.js";
 
@@ -225,10 +231,10 @@ export class CircleTransfer<N extends Network = Network>
     try {
       msgIds = await fromChain.parseTransaction(txid);
     } catch (e: any) {
-      if (e.message.includes('no bridge messages found')) {
+      if (e.message.includes("no bridge messages found")) {
         // This means it's a Circle attestation; swallow
       } else {
-        throw e
+        throw e;
       }
     }
 
@@ -536,7 +542,7 @@ export namespace CircleTransfer {
     // Fall back to asking the destination chain if this VAA has been redeemed
     // assuming we have the full attestation
 
-    if (isAttested(receipt)) {
+    if (isAttested(receipt) || isRedeemed(receipt)) {
       const isComplete = await CircleTransfer.isTransferComplete(
         _toChain,
         receipt.attestation.attestation,
@@ -584,10 +590,14 @@ export namespace CircleTransfer {
     const dstToken = Wormhole.chainAddress(dstChain.chain, dstUsdcAddress);
     const srcToken = Wormhole.chainAddress(srcChain.chain, srcUsdcAddress);
 
+    // https://developers.circle.com/stablecoins/docs/required-block-confirmations
+    const eta =
+      (srcChain.chain === "Polygon" ? 2_000 * 200 : finality.estimateFinalityTime(srcChain.chain)) + guardians.guardianAttestationEta;
     if (!transfer.automatic) {
       return {
         sourceToken: { token: srcToken, amount: transfer.amount },
         destinationToken: { token: dstToken, amount: transfer.amount },
+        eta,
       };
     }
 
@@ -600,15 +610,15 @@ export namespace CircleTransfer {
 
     // The fee is also removed from the amount transferred
     // quoted on the source chain
-    const stb = await srcChain.getAutomaticCircleBridge();
-    const fee = await stb.getRelayerFee(dstChain.chain);
+    const scb = await srcChain.getAutomaticCircleBridge();
+    const fee = await scb.getRelayerFee(dstChain.chain);
     dstAmount -= fee;
 
     // The expected destination gas can be pulled from the destination token bridge
     let destinationNativeGas = 0n;
     if (transfer.nativeGas) {
-      const dtb = await dstChain.getAutomaticTokenBridge();
-      destinationNativeGas = await dtb.nativeTokenAmount(dstToken.address, _nativeGas);
+      const dcb = await dstChain.getAutomaticCircleBridge();
+      destinationNativeGas = await dcb.nativeTokenAmount(_nativeGas);
     }
 
     return {
@@ -619,6 +629,7 @@ export namespace CircleTransfer {
       destinationToken: { token: dstToken, amount: dstAmount },
       relayFee: { token: srcToken, amount: fee },
       destinationNativeGas,
+      eta,
     };
   }
 

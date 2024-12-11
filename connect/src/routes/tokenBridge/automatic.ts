@@ -14,6 +14,7 @@ import { TransferState } from "../../types.js";
 import { Wormhole } from "../../wormhole.js";
 import type { StaticRouteMethods } from "../route.js";
 import { AutomaticRoute } from "../route.js";
+import { MinAmountError } from "../types.js";
 import type {
   Quote,
   QuoteResult,
@@ -55,7 +56,7 @@ export class AutomaticTokenBridgeRoute<N extends Network>
   extends AutomaticRoute<N, Op, Vp, R>
   implements StaticRouteMethods<typeof AutomaticTokenBridgeRoute>
 {
-  NATIVE_GAS_DROPOFF_SUPPORTED = true;
+  static NATIVE_GAS_DROPOFF_SUPPORTED = true;
 
   static meta = {
     name: "AutomaticTokenBridge",
@@ -110,22 +111,8 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     }
   }
 
-  static isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean {
-    return chain.supportsAutomaticTokenBridge();
-  }
-
   getDefaultOptions(): Op {
     return { nativeGas: 0.0 };
-  }
-
-  async isAvailable(request: RouteTransferRequest<N>): Promise<boolean> {
-    const atb = await request.fromChain.getAutomaticTokenBridge();
-
-    if (isTokenId(request.source.id)) {
-      return await atb.isRegisteredToken(request.source.id.address);
-    }
-
-    return true;
   }
 
   async validate(request: RouteTransferRequest<N>, params: Tp): Promise<Vr> {
@@ -167,12 +154,7 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     // Min amount is fee + 5%
     const minAmount = (fee * 105n) / 100n;
     if (amount.units(amt) < minAmount) {
-      throw new Error(
-        `Minimum amount is ${amount.display({
-          amount: minAmount.toString(),
-          decimals: amt.decimals,
-        })}`,
-      );
+      throw new MinAmountError(amount.fromBaseUnits(minAmount, amt.decimals));
     }
 
     const redeemableAmount = amount.units(amt) - fee;
@@ -221,6 +203,18 @@ export class AutomaticTokenBridgeRoute<N extends Network>
   }
 
   async quote(request: RouteTransferRequest<N>, params: Vp): Promise<QR> {
+    const atb = await request.fromChain.getAutomaticTokenBridge();
+
+    if (isTokenId(request.source.id)) {
+      const isRegistered = await atb.isRegisteredToken(request.source.id.address);
+      if (!isRegistered) {
+        return {
+          success: false,
+          error: new Error("Source token is not registered"),
+        };
+      }
+    }
+
     try {
       let quote = await TokenTransfer.quoteTransfer(this.wh, request.fromChain, request.toChain, {
         automatic: true,

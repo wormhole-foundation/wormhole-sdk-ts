@@ -82,7 +82,7 @@ export class SuiPlatform<N extends Network>
       if (fields && "decimals" in fields) return fields["decimals"];
     } catch {}
 
-    const metadata = await rpc.getCoinMetadata({ coinType: parsedAddress.getCoinType() });
+    const metadata = await rpc.getCoinMetadata({ coinType: parsedAddress.toString() });
     if (metadata === null)
       throw new Error(`Can't fetch decimals for token ${parsedAddress.toString()}`);
 

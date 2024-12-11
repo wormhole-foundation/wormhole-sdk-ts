@@ -13,6 +13,7 @@ import { TransferState } from "../../types.js";
 import { Wormhole } from "../../wormhole.js";
 import type { StaticRouteMethods } from "../route.js";
 import { AutomaticRoute } from "../route.js";
+import { MinAmountError } from "../types.js";
 import type {
   Quote,
   QuoteResult,
@@ -54,7 +55,7 @@ export class AutomaticCCTPRoute<N extends Network>
   extends AutomaticRoute<N, Op, Vp, R>
   implements StaticRouteMethods<typeof AutomaticCCTPRoute>
 {
-  NATIVE_GAS_DROPOFF_SUPPORTED = true;
+  static NATIVE_GAS_DROPOFF_SUPPORTED = true;
 
   static meta = {
     name: "AutomaticCCTP",
@@ -99,18 +100,10 @@ export class AutomaticCCTPRoute<N extends Network>
     return [Wormhole.chainAddress(chain, circle.usdcContract.get(network, chain)!)];
   }
 
-  static isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean {
-    return chain.supportsAutomaticCircleBridge();
-  }
-
   getDefaultOptions(): Op {
     return {
       nativeGas: 0.0,
     };
-  }
-
-  async isAvailable(): Promise<boolean> {
-    return true;
   }
 
   async validate(request: RouteTransferRequest<N>, params: Tp): Promise<Vr> {
@@ -163,12 +156,10 @@ export class AutomaticCCTPRoute<N extends Network>
 
     const minAmount = (fee * 105n) / 100n;
     if (amount.units(amt) < minAmount) {
-      throw new Error(
-        `Minimum amount is ${amount.display(request.amountFromBaseUnits(minAmount))}`,
-      );
+      throw new MinAmountError(amount.fromBaseUnits(minAmount, amt.decimals));
     }
 
-    const transferableAmount = amount.units(amt) - fee;
+    const redeemableAmount = amount.units(amt) - fee;
 
     const options = params.options ?? this.getDefaultOptions();
 
@@ -179,9 +170,21 @@ export class AutomaticCCTPRoute<N extends Network>
     let nativeGasAmount = 0n;
 
     if (nativeGasPerc > 0.0) {
+      const dcb = await request.toChain.getAutomaticCircleBridge();
+      let maxSwapAmount = await dcb.maxSwapAmount();
+      if (redeemableAmount < maxSwapAmount) {
+        // can't swap more than the receivable amount
+        maxSwapAmount = redeemableAmount;
+      }
+
       const scale = 10000;
-      const scaledGas = BigInt(nativeGasPerc * scale);
-      nativeGasAmount = (transferableAmount * scaledGas) / BigInt(scale);
+      const scaledGas = BigInt(Math.floor(nativeGasPerc * scale));
+      // the native gas percentage is applied to the max swap amount
+      nativeGasAmount = (maxSwapAmount * scaledGas) / BigInt(scale);
+      if (nativeGasAmount === redeemableAmount && nativeGasAmount > 0n) {
+        // edge case: transfer will revert if the native gas amount is equal to the redeemable amount
+        nativeGasAmount -= 1n;
+      }
     }
 
     return {

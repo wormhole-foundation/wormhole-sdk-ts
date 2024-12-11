@@ -12,6 +12,7 @@ import { CosmwasmChain } from "./chain.js";
 import { IBC_TRANSFER_PORT } from "./constants.js";
 import { CosmwasmPlatform } from "./platform.js";
 import type { CosmwasmChains } from "./types.js";
+import { isNative } from "@wormhole-foundation/sdk-connect";
 
 export class Gateway<N extends Network> extends CosmwasmChain<N, "Wormchain"> {
   static chain: "Wormchain" = "Wormchain";
@@ -25,6 +26,7 @@ export class Gateway<N extends Network> extends CosmwasmChain<N, "Wormchain"> {
 
   // Get the wrapped version of an asset created on wormchain
   async getWrappedAsset(token: TokenId): Promise<CosmwasmAddress> {
+    if (isNative(token.address)) throw new Error("native asset cannot be a wrapped asset");
     const tb = await this.getTokenBridge();
     const wrappedAsset = new CosmwasmAddress(await tb.getWrappedAsset(token));
 

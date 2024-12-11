@@ -24,7 +24,7 @@ export function getTokenMap<N extends Network, C extends Chain>(
     return Object.fromEntries(chainTokens!.map(([key, token]) => [key, { ...token, chain, key }]));
   }
 
-  throw "Unsupported network: " + network;
+  throw new Error("Unsupported network: " + network);
 }
 
 // The token that represents the native gas token on a given chain

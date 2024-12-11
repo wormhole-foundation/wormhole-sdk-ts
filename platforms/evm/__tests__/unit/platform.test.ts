@@ -20,6 +20,10 @@ import {
   chains,
 } from '@wormhole-foundation/sdk-connect';
 
+import {
+  toNative,
+} from '@wormhole-foundation/sdk-definitions';
+
 import '@wormhole-foundation/sdk-evm-core';
 import '@wormhole-foundation/sdk-evm-tokenbridge';
 import { EvmPlatform } from '../../src/platform.js';
@@ -38,6 +42,26 @@ const configs = CONFIG[network].chains;
 // const satisfiesInterface: PlatformUtils<typeof network> = EvmPlatform;
 
 describe('EVM Platform Tests', () => {
+  describe("Parse Ethereum address", function () {
+    test("should correctly parse Ethereum addresses", () => {
+      expect(() =>
+        toNative('Ethereum', '0xaaee1a9723aadb7afa2810263653a34ba2c21c7a')
+      ).toBeTruthy();
+    });
+
+    test("should correctly handle zero-padded Ethereum addresses (in universal address format)", () => {
+      expect(() =>
+        toNative('Ethereum', '0x000000000000000000000000aaee1a9723aadb7afa2810263653a34ba2c21c7a')
+      ).toBeTruthy();
+    });
+
+    test("should throw when parsing an invalid Ethereum addresses", () => {
+      expect(() =>
+        toNative('Ethereum', '0xabd62c91e3bd89243c592b93b9f45cf9f584be3df4574e05ae31d02fcfef67fc')
+      ).toThrow();
+    });
+  });
+
   describe('Get Token Bridge', () => {
     test('No RPC', async () => {
       const p = new EvmPlatform(network, {});

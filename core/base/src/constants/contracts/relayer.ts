@@ -12,8 +12,6 @@ export const relayerContracts = [[
     ["Fantom",    "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"],
     ["Klaytn",    "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"],
     ["Celo",      "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"],
-    ["Acala",     "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"],
-    ["Karura",    "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"],
     ["Moonbeam",  "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"],
     ["Base",      "0x706f82e9bb5b0813501714ab5974216704980e31"],
     ["Arbitrum",  "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"],
@@ -23,6 +21,7 @@ export const relayerContracts = [[
     ["Mantle",    "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"],
     ["Xlayer",    "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"],
     ["Worldchain","0x1520cc9e779c56dab5866bebfb885c86840c33d3"],
+    ["Snaxchain", "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"],
   ]], [
   "Testnet", [
     ["Ethereum",        "0x28D8F1Be96f97C1387e94A53e00eCcFb4E75175a"],
@@ -39,7 +38,7 @@ export const relayerContracts = [[
     ["ArbitrumSepolia", "0x7B1bD7a6b4E61c2a123AC6BC2cbfC614437D0470"],
     ["BaseSepolia",     "0x93BAD53DDfB6132b0aC8E37f6029163E63372cEE"],
     ["OptimismSepolia", "0x93BAD53DDfB6132b0aC8E37f6029163E63372cEE"],
-    ["Monad",           "0x362fca37E45fe1096b42021b543f462D49a5C8df"]
+    ["MonadDevnet",     "0x362fca37E45fe1096b42021b543f462D49a5C8df"]
   ]], [
   "Devnet", [
     ["Ethereum",  "0xcC680D088586c09c3E0E099a676FA4b6e42467b4"],

@@ -60,14 +60,6 @@ export class AutomaticMockRoute<N extends Network>
     return [nativeTokenId(toChain.chain)];
   }
 
-  static isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean {
-    return true;
-  }
-
-  async isAvailable(): Promise<boolean> {
-    return true;
-  }
-
   async validate(
     request: RouteTransferRequest<N>,
     params: TransferParams<Op>,
