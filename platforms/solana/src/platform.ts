@@ -169,7 +169,7 @@ export class SolanaPlatform<N extends Network>
       }
       const addrString = new SolanaAddress(token).toString();
       const amount = splParsedTokenAccounts.find(
-        (v) => v?.account.data.parsed?.info?.mint === token,
+        (v) => v?.account.data.parsed?.info?.mint === token.toString(),
       )?.account.data.parsed?.info?.tokenAmount?.amount;
       if (!amount) return { [addrString]: null };
       return { [addrString]: BigInt(amount) };
