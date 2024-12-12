@@ -23,6 +23,8 @@ import { _platform } from './types.js';
 export type EvmSignerOptions = {
   // Whether or not to log messages
   debug?: boolean;
+  // Override gas limit
+  gasLimit?: bigint;
   // Do not exceed this gas limit
   maxGasLimit?: bigint;
   // Partially override specific transaction request fields
@@ -115,6 +117,10 @@ export class EvmNativeSigner<N extends Network, C extends EvmChains = EvmChains>
         maxPriorityFeePerGas =
           feeData.maxPriorityFeePerGas ?? maxPriorityFeePerGas;
       }
+    }
+
+    if (this.opts?.gasLimit !== undefined) {
+      gasLimit = this.opts.gasLimit;
     }
 
     if (this.opts?.maxGasLimit !== undefined) {
