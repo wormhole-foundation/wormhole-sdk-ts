@@ -57,8 +57,16 @@ export async function simulateTransaction(
  * Finds the Solana cluster targeted by a connection by comparing its genesis hash with each
  *   cluster's.
  *
- * Note that Solana devnet is what Wormhole calls "testnet" while Solana testnet is not really used
- *   in the Wormhole ecosystem. If you want to get the Wormhole network, call `wormholeNetworkFromConnection`.
+ * @NOTE The Solana cluster name does not match the Wormhole network name:
+ *   ```md
+ *   Environment | Solana       | Wormhole
+ *   -------------------------------------
+ *   Production  | mainnet-beta | Mainnet
+ *   Staging     | devnet       | Testnet
+ *   Local       | undefined    | Devnet
+ *   ```
+ *
+ * @NOTE To get the Wormhole network, call `wormholeNetworkFromConnection`.
  * @param connection
  * @returns The corresponding Solana cluster, or `undefined` if there is no match, typically in the
  *   case of a local connection.
@@ -86,6 +94,17 @@ let genesisHashCache: Record<string, Cluster> | undefined;
 /**
  * Finds the Wormhole network targeted by a connection by comparing its genesis hash with each
  *   cluster's.
+ *
+ * @NOTE The Wormhole network name does not match the Solana cluster name:
+ *   ```md
+ *   Environment | Wormhole | Solana
+ *   -------------------------------------
+ *   Production  | Mainnet  | mainnet-beta
+ *   Staging     | Testnet  | devnet
+ *   Local       | Devnet   | undefined
+ *   ```
+ *
+ * @NOTE To get the Solana cluster, call `solanaClusterFromConnection`.
  * @param connection
  * @returns The corresponding Wormhole network, or `undefined` if there is no match, typically in the
  *   case of a local connection.
@@ -94,12 +113,14 @@ export async function wormholeNetworkFromConnection(
   connection: Connection,
 ): Promise<Network | undefined> {
   switch (await solanaClusterFromConnection(connection)) {
-    case 'testnet':
-      return 'Testnet'; //QUESTION
-    case 'devnet':
-      return 'Devnet';
     case 'mainnet-beta':
       return 'Mainnet';
+    case 'devnet':
+      return 'Testnet';
+    case 'testnet': // Solana Testnet isn't taken into account by Wormhole.
+      return undefined;
+    default: // By default, we assume it is a local environment.
+      return 'Devnet';
   }
 }
 
