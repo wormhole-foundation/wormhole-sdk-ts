@@ -11,5 +11,5 @@ Here is all the code for the Solana Platform. It is divided in 3 sections:
   - A big helper class `TestsHelper` allowing to do everything that is desirable in an integration
     tests package.
   - 2 classes allowing to interact with the Wormhole Core program and the Token Bridge one in a testing
-    environment. They can be instanciated from `TestsHelper` which is supposed to be the class
-    allowing to do everything.
+    environment. They can be instanciated from `TestsHelper` which is supposed to be the one-stop class
+    for writing integration tests.
