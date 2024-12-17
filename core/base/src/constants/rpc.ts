@@ -38,6 +38,7 @@ const rpcConfig = [[
     ["Neutron",   "https://neutron-rpc.polkachu.com/"],
     ["Blast",     "https://rpc.blast.io"],
     ["Provenance","https://rpc.provenance.io/"],
+    ["Noble",     "https://noble-rpc.polkachu.com/"],
     ["Linea",     "https://rpc.linea.build"],
     ["Scroll",    "https://rpc.ankr.com/scroll"],
     ["Xlayer",    "https://xlayerrpc.okx.com/"],

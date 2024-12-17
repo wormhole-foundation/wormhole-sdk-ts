@@ -48,6 +48,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Celestia",  "celestia"],
       ["Dymension", "dymension_1100-1"],
       ["Provenance","pio-mainnet-1"],
+      ["Noble",     "noble-1"],
       ["Xlayer",    196n],
       ["Mantle",    5000n],
       ["Scroll",    534352n],

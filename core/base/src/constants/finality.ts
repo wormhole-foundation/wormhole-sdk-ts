@@ -71,6 +71,7 @@ const finalityThresholds = [
   ["Stargaze",  0],
   ["Dymension", 0],
   ["Provenance",0],
+  ["Noble",     0],
   // Testnets
   ["Sepolia", 72],
   ["ArbitrumSepolia", 4096],
