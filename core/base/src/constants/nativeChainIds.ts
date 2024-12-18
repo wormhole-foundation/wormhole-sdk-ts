@@ -48,6 +48,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Celestia",  "celestia"],
       ["Dymension", "dymension_1100-1"],
       ["Provenance","pio-mainnet-1"],
+      ["Noble",     "noble-1"],
       ["Xlayer",    196n],
       ["Mantle",    5000n],
       ["Scroll",    534352n],
@@ -102,6 +103,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Neutron",         "pion-1"],
       ["Celestia",        "mocha-4"],
       ["Seda",            "seda-1-testnet"],
+      ["Noble",           "grand-1"],
       ["Blast",           168587773n], // Sepolia testnet
       ["Mantle",          5003n], // Sepolia testnet
       ["Scroll",          534351n],

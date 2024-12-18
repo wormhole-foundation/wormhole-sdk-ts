@@ -61,6 +61,7 @@ const chainIdAndChainEntries = [
   [ 4006, "Seda"           ],
   [ 4007, "Dymension"      ],
   [ 4008, "Provenance"     ],
+  [ 4009, "Noble"          ],
   [10002, "Sepolia"        ],
   [10003, "ArbitrumSepolia"],
   [10004, "BaseSepolia"    ],

@@ -62,7 +62,8 @@ const platformAndChainsEntries = [[
     "Stargaze",
     "Celestia",
     "Seda",
-    "Provenance"
+    "Provenance",
+    "Noble"
   ]], [
     "Btc", [
       "Btc"
