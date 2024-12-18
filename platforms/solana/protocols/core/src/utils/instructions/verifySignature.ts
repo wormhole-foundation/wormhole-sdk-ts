@@ -12,7 +12,11 @@ import {
 } from '@solana/web3.js';
 import type { VAA } from '@wormhole-foundation/sdk-connect';
 import { createReadOnlyWormholeProgramInterface } from '../program.js';
-import { deriveGuardianSetKey, getGuardianSet } from './../accounts/index.js';
+import {
+  GuardianSetData,
+  deriveGuardianSetKey,
+  getGuardianSet,
+} from './../accounts/index.js';
 import { createSecp256k1Instruction } from './secp256k1.js';
 
 const MAX_LEN_GUARDIAN_KEYS = 19;
@@ -35,6 +39,7 @@ const MAX_LEN_GUARDIAN_KEYS = 19;
  * @param {SignedVaa | ParsedVaa} vaa - either signed VAA bytes or parsed VAA
  * @param {PublicKeyInitData} signatureSet - address to account of verified signatures
  * @param {web3.ConfirmOptions} [options] - Solana confirmation options
+ * @param {GuardianSetData} [guardianSetData] - guardian set data
  */
 export async function createVerifySignaturesInstructions(
   connection: Connection,
@@ -43,14 +48,17 @@ export async function createVerifySignaturesInstructions(
   vaa: VAA<any>,
   signatureSet: PublicKeyInitData,
   commitment?: Commitment,
+  guardianSetData?: GuardianSetData,
 ): Promise<TransactionInstruction[]> {
   const guardianSetIndex = vaa.guardianSet;
-  const guardianSetData = await getGuardianSet(
-    connection,
-    wormholeProgramId,
-    guardianSetIndex,
-    commitment,
-  );
+  if (guardianSetData === undefined) {
+    guardianSetData = await getGuardianSet(
+      connection,
+      wormholeProgramId,
+      guardianSetIndex,
+      commitment,
+    );
+  }
 
   const guardianSignatures = vaa.signatures;
   const guardianKeys = guardianSetData.keys;
