@@ -25,6 +25,7 @@ export const circleContracts = constMap(circle.circleContracts);
 export type { PorticoContracts } from './portico.js';
 export const rollupContracts = constMap(rollup.rollupContractAddresses);
 
+// @ts-ignore: Adding one more token bridge is causing "Type instantiation is excessively deep and possibly infinite."
 export const tokenBridgeChains = constMap(tb.tokenBridgeContracts, [0, 1]);
 export const tokenBridgeRelayerChains = constMap(tbr.tokenBridgeRelayerContracts, [0, 1]);
 export const circleContractChains = constMap(circle.circleContracts, [0, 1]);
