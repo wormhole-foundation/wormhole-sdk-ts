@@ -89,6 +89,7 @@ export const coreBridgeContracts = [[
     ["Unichain",        "0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd"],
     ["Worldchain",      "0xe5E02cD12B6FcA153b0d7fF4bF55730AE7B3C93A"],
     ["Ink",             "0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd"],
+    ["HyperEVM",        "0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd"],
     ["Xlayer",          "0xA31aa3FDb7aF7Db93d18DDA4e19F811342EDF780"],
     ["Linea",           "0x79A1027a6A159502049F10906D333EC57E95F083"],
     ["MonadDevnet",     "0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd"],

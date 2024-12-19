@@ -63,6 +63,7 @@ const finalityThresholds = [
   ["Snaxchain", 512],
   ["Unichain",  512],
   ["Ink",       512],
+  ["HyperEVM",  1],
   ["Cosmoshub", 0],
   ["Evmos",     0],
   ["Kujira",    0],
