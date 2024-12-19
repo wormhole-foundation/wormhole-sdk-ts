@@ -1,15 +1,10 @@
-import type { Chain} from "@wormhole-foundation/sdk-base";
-import { guardians } from "@wormhole-foundation/sdk-base";
+import type { Chain } from "@wormhole-foundation/sdk-base";
+import { guardians, encoding } from "@wormhole-foundation/sdk-base";
 import type { PayloadLiteral, VAA } from "../../index.js";
-import {
-  Signature,
-  SignatureUtils,
-  createVAA,
-  deserialize,
-  serialize,
-} from "../../index.js";
+import { Signature, SignatureUtils, createVAA, deserialize, serialize } from "../../index.js";
 import type { UniversalAddress } from "../../universalAddress.js";
 import { keccak256 } from "../../utils.js";
+import { computeAddress } from "ethers";
 
 interface Guardian {
   index: number;
@@ -29,6 +24,10 @@ export class MockGuardians {
 
   getPublicKeys() {
     return this.signers.map((guardian) => SignatureUtils.toPubkey(guardian.key));
+  }
+
+  getAddresses() {
+    return this.getPublicKeys().map((key) => computeAddress(encoding.hex.encode(key)));
   }
 
   addSignatures<P extends PayloadLiteral>(
