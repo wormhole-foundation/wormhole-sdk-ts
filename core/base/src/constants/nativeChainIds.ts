@@ -112,6 +112,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Unichain",        1301n],
       ["Worldchain",      4801n],
       ["Ink",             763373n],
+      ["HyperEVM",        998n],
       ["Xlayer",          195n],
       ["Linea",           59141n], // Sepolia
       ["MonadDevnet",     41454n],
