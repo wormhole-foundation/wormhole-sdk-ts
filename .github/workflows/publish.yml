@@ -18,6 +18,8 @@ jobs:
       - run: npm ci
       - run: npm run build --if-present
       - run: npm test
+        env:
+          ETH_RPC: ${{ secrets.ETH_RPC }}
       - run: |
           version="$GITHUB_REF_NAME"
 
