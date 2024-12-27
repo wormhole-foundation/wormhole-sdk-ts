@@ -90,7 +90,7 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
       )
     ).data as OriginInfo;
 
-    if (!originInfo) throw ErrNotWrapped;
+    if (!originInfo) throw ErrNotWrapped(token.toString());
 
     // wrapped asset
     const chain = toChain(parseInt(originInfo.token_chain.number));
