@@ -31,7 +31,7 @@ export const getOriginalPackageId = async (provider: SuiClient, stateObjectId: s
   if (error) throw new Error("Error getting object: " + error);
 
   if (!data || !isMoveStructStruct(data.content))
-    throw new Error(`Cannot get oject for state id ${stateObjectId}: ` + data);
+    throw new Error(`Cannot get object for state id ${stateObjectId}: ` + data);
 
   return getPackageIdFromType(data.content.type);
 };
