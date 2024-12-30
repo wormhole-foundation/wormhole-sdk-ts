@@ -38,6 +38,9 @@ export const relayerContracts = [[
     ["ArbitrumSepolia", "0x7B1bD7a6b4E61c2a123AC6BC2cbfC614437D0470"],
     ["BaseSepolia",     "0x93BAD53DDfB6132b0aC8E37f6029163E63372cEE"],
     ["OptimismSepolia", "0x93BAD53DDfB6132b0aC8E37f6029163E63372cEE"],
+    ["Berachain",       "0x362fca37E45fe1096b42021b543f462D49a5C8df"],
+    ["Unichain",        "0x362fca37E45fe1096b42021b543f462D49a5C8df"],
+    ["Ink",             "0x362fca37E45fe1096b42021b543f462D49a5C8df"],
   ]], [
   "Devnet", [
     ["Ethereum",  "0xcC680D088586c09c3E0E099a676FA4b6e42467b4"],
