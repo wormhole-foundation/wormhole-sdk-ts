@@ -231,7 +231,7 @@ export class CircleTransfer<N extends Network = Network>
     try {
       msgIds = await fromChain.parseTransaction(txid);
     } catch (e: any) {
-      if (e.message.includes("no bridge messages found")) {
+      if (e.message.includes("no bridge messages found") || e.message.includes("not found")) {
         // This means it's a Circle attestation; swallow
       } else {
         throw e;
@@ -592,7 +592,8 @@ export namespace CircleTransfer {
 
     // https://developers.circle.com/stablecoins/docs/required-block-confirmations
     const eta =
-      (srcChain.chain === "Polygon" ? 2_000 * 200 : finality.estimateFinalityTime(srcChain.chain)) + guardians.guardianAttestationEta;
+      (srcChain.chain === "Polygon" ? 2_000 * 200 : finality.estimateFinalityTime(srcChain.chain)) +
+      guardians.guardianAttestationEta;
     if (!transfer.automatic) {
       return {
         sourceToken: { token: srcToken, amount: transfer.amount },

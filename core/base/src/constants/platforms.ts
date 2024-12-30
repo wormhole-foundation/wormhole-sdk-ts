@@ -40,6 +40,7 @@ const platformAndChainsEntries = [[
     "Unichain",
     "Worldchain",
     "Ink",
+    "HyperEVM",
     "MonadDevnet",
   ]], [
   "Solana", [
@@ -62,7 +63,8 @@ const platformAndChainsEntries = [[
     "Stargaze",
     "Celestia",
     "Seda",
-    "Provenance"
+    "Provenance",
+    "Noble"
   ]], [
     "Btc", [
       "Btc"

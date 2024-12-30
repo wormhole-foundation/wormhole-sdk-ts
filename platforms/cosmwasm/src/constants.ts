@@ -42,6 +42,7 @@ const cosmwasmAddressPrefix = [
   ["Neutron", "neutron"],
   ["Seda", "seda"],
   ["Provenance", "pb"],
+  ["Noble", "noble"],
 ] as const satisfies RoArray<readonly [CosmwasmChains, string]>;
 
 export const chainToAddressPrefix = constMap(cosmwasmAddressPrefix);
@@ -66,6 +67,7 @@ const cosmwasmNativeDenom = [
       ["Stargaze", "ustars"],
       ["Neutron", "untrn"],
       ["Provenance", "nhash"],
+      ["Noble", "uusdc"],
     ],
   ],
   [
@@ -214,6 +216,7 @@ const avgPrices = [
       ["Evmos", "25000000000"],
       ["Dymension", "5000000000"],
       ["Provenance", "2100"],
+      ["Noble", "0.1"],
     ],
   ],
 ] as const satisfies RoArray<readonly [Network, RoArray<readonly [CosmwasmChains, string]>]>;

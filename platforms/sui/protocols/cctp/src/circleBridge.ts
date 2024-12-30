@@ -1,33 +1,35 @@
 import type { SuiClient } from "@mysten/sui.js/client";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
-import { SuiPlatform, type SuiChains, SuiUnsignedTransaction, uint8ArrayToBCS } from "@wormhole-foundation/sdk-sui";
+import {
+  SuiPlatform,
+  type SuiChains,
+  SuiUnsignedTransaction,
+  uint8ArrayToBCS,
+} from "@wormhole-foundation/sdk-sui";
 import type {
   AccountAddress,
   ChainAddress,
   ChainsConfig,
   Network,
   Platform,
-} from '@wormhole-foundation/sdk-connect';
+} from "@wormhole-foundation/sdk-connect";
 import {
   CircleBridge,
   CircleTransferMessage,
   circle,
   Contracts,
   encoding,
-} from '@wormhole-foundation/sdk-connect';
+} from "@wormhole-foundation/sdk-connect";
 
 import { suiCircleObjects } from "./objects.js";
 
-
-export class SuiCircleBridge<N extends Network, C extends SuiChains>
-  implements CircleBridge<N, C> {
-
-    readonly usdcId: string;
-    readonly usdcTreasuryId: string;
-    readonly tokenMessengerId: string;
-    readonly tokenMessengerStateId: string;
-    readonly messageTransmitterId: string;
-    readonly messageTransmitterStateId: string;
+export class SuiCircleBridge<N extends Network, C extends SuiChains> implements CircleBridge<N, C> {
+  readonly usdcId: string;
+  readonly usdcTreasuryId: string;
+  readonly tokenMessengerId: string;
+  readonly tokenMessengerStateId: string;
+  readonly messageTransmitterId: string;
+  readonly messageTransmitterStateId: string;
 
   constructor(
     readonly network: N,
@@ -35,29 +37,24 @@ export class SuiCircleBridge<N extends Network, C extends SuiChains>
     readonly provider: SuiClient,
     readonly contracts: Contracts,
   ) {
-    if (network === 'Devnet')
-      throw new Error('CircleBridge not supported on Devnet');
+    if (network === "Devnet") throw new Error("CircleBridge not supported on Devnet");
 
-    const usdcId = circle.usdcContract.get(this.network,  this.chain);
+    const usdcId = circle.usdcContract.get(this.network, this.chain);
     if (!usdcId) {
-      throw new Error(`No USDC contract configured for network=${this.network} chain=${this.chain}`);
+      throw new Error(
+        `No USDC contract configured for network=${this.network} chain=${this.chain}`,
+      );
     }
 
-    const {
-      tokenMessengerState,
-      messageTransmitterState,
-      usdcTreasury,
-    } = suiCircleObjects(network as "Mainnet" | "Testnet");
+    const { tokenMessengerState, messageTransmitterState, usdcTreasury } = suiCircleObjects(
+      network as "Mainnet" | "Testnet",
+    );
 
-    if (!contracts.cctp?.tokenMessenger) 
-      throw new Error(
-        `Circle Token Messenger contract for domain ${chain} not found`,
-      );
+    if (!contracts.cctp?.tokenMessenger)
+      throw new Error(`Circle Token Messenger contract for domain ${chain} not found`);
 
-    if (!contracts.cctp?.messageTransmitter) 
-      throw new Error(
-        `Circle Message Transmitter contract for domain ${chain} not found`,
-      );
+    if (!contracts.cctp?.messageTransmitter)
+      throw new Error(`Circle Message Transmitter contract for domain ${chain} not found`);
 
     this.usdcId = usdcId;
     this.usdcTreasuryId = usdcTreasury;
@@ -74,26 +71,27 @@ export class SuiCircleBridge<N extends Network, C extends SuiChains>
   ): AsyncGenerator<SuiUnsignedTransaction<N, C>> {
     const tx = new TransactionBlock();
 
-    const destinationDomain = circle.circleChainId.get(
-      this.network,
-      recipient.chain,
-    )!;
+    const destinationDomain = circle.circleChainId.get(this.network, recipient.chain)!;
 
-    const [primaryCoin, ...mergeCoins] = await SuiPlatform.getCoins(this.provider, sender, this.usdcId);
+    const [primaryCoin, ...mergeCoins] = await SuiPlatform.getCoins(
+      this.provider,
+      sender,
+      this.usdcId,
+    );
 
     if (primaryCoin === undefined) {
-      throw new Error('No USDC in wallet');
+      throw new Error("No USDC in wallet");
     }
 
     const primaryCoinInput = tx.object(primaryCoin.coinObjectId);
     if (mergeCoins.length > 0) {
-      tx.mergeCoins(primaryCoinInput, mergeCoins.map((coin) => tx.object(coin.coinObjectId)));
+      tx.mergeCoins(
+        primaryCoinInput,
+        mergeCoins.map((coin) => tx.object(coin.coinObjectId)),
+      );
     }
 
-    const [coin] = tx.splitCoins(
-      primaryCoinInput,
-      [amount]
-    );
+    const [coin] = tx.splitCoins(primaryCoinInput, [amount]);
 
     tx.moveCall({
       target: `${this.tokenMessengerId}::deposit_for_burn::deposit_for_burn`,
@@ -104,12 +102,12 @@ export class SuiCircleBridge<N extends Network, C extends SuiChains>
         tx.object(this.tokenMessengerStateId), // token_messenger_minter state
         tx.object(this.messageTransmitterStateId), // message_transmitter state
         tx.object("0x403"), // deny_list id, fixed address
-        tx.object(this.usdcTreasuryId) // treasury object Treasury<USDC>
+        tx.object(this.usdcTreasuryId), // treasury object Treasury<USDC>
       ],
       typeArguments: [this.usdcId],
     });
 
-    yield this.createUnsignedTx(tx, "Sui.CircleBridge.Transfer")
+    yield this.createUnsignedTx(tx, "Sui.CircleBridge.Transfer");
   }
 
   async isTransferCompleted(message: CircleBridge.Message): Promise<boolean> {
@@ -146,40 +144,67 @@ export class SuiCircleBridge<N extends Network, C extends SuiChains>
   ): AsyncGenerator<SuiUnsignedTransaction<N, C>> {
     const tx = new TransactionBlock();
 
+    // Add receive_message move call to MessageTransmitter
     const [receipt] = tx.moveCall({
       target: `${this.messageTransmitterId}::receive_message::receive_message`,
       arguments: [
         tx.pure(uint8ArrayToBCS(CircleBridge.serialize(message))),
         tx.pure(uint8ArrayToBCS(encoding.hex.decode(attestation))),
-        tx.object(this.messageTransmitterStateId) // message_transmitter state
-      ]
+        tx.object(this.messageTransmitterStateId), // message_transmitter state
+      ],
     });
 
-    if (!receipt) throw new Error('Failed to produce receipt');
+    if (!receipt) throw new Error("Failed to produce receipt");
 
-    const [stampedReceipt] = tx.moveCall({
+    // Add handle_receive_message call to TokenMessengerMinter with Receipt from receive_message call
+    const [stampReceiptTicketWithBurnMessage] = tx.moveCall({
       target: `${this.tokenMessengerId}::handle_receive_message::handle_receive_message`,
       arguments: [
         receipt, // Receipt object returned from receive_message call
         tx.object(this.tokenMessengerStateId), // token_messenger_minter state
-        tx.object(this.messageTransmitterStateId), // message_transmitter state
         tx.object("0x403"), // deny list, fixed address
         tx.object(this.usdcTreasuryId), // usdc treasury object Treasury<T>
       ],
       typeArguments: [this.usdcId],
     });
 
-    if (!stampedReceipt) throw new Error('Failed to produce stamped receipt');
+    if (!stampReceiptTicketWithBurnMessage)
+      throw new Error("Failed to produce stamp receipt ticket with burn message");
 
+    // Add deconstruct_stamp_receipt_ticket_with_burn_message call
+    const [stampReceiptTicket] = tx.moveCall({
+      target: `${this.tokenMessengerId}::handle_receive_message::deconstruct_stamp_receipt_ticket_with_burn_message`,
+      arguments: [stampReceiptTicketWithBurnMessage],
+    });
+
+    if (!stampReceiptTicket) throw new Error("Failed to produce stamp receipt ticket");
+
+    // Add stamp_receipt call
+    const [stampedReceipt] = tx.moveCall({
+      target: `${this.messageTransmitterId}::receive_message::stamp_receipt`,
+      arguments: [
+        stampReceiptTicket, // Receipt ticket returned from deconstruct_stamp_receipt_ticket_with_burn_message call
+        tx.object(this.messageTransmitterStateId), // message_transmitter state
+      ],
+      typeArguments: [
+        `${this.tokenMessengerId}::message_transmitter_authenticator::MessageTransmitterAuthenticator`,
+      ],
+    });
+
+    if (!stampedReceipt) throw new Error("Failed to produce stamped receipt");
+
+    // Add complete_receive_message call to MessageTransmitter with StampedReceipt from stamp_receipt call.
+    // Receipt and StampedReceipt are Hot Potatoes so they must be destroyed for the
+    // transaction to succeed.
     tx.moveCall({
       target: `${this.messageTransmitterId}::receive_message::complete_receive_message`,
       arguments: [
         stampedReceipt, // Stamped receipt object returned from handle_receive_message call
-        tx.object(this.messageTransmitterStateId) // message_transmitter state
-      ]
+        tx.object(this.messageTransmitterStateId), // message_transmitter state
+      ],
     });
 
-    yield this.createUnsignedTx(tx, 'Sui.CircleBridge.Redeem');
+    yield this.createUnsignedTx(tx, "Sui.CircleBridge.Redeem");
   }
 
   async parseTransactionDetails(digest: string): Promise<CircleTransferMessage> {
@@ -189,18 +214,18 @@ export class SuiCircleBridge<N extends Network, C extends SuiChains>
     });
 
     if (!tx) {
-      throw new Error('Transaction not found');
+      throw new Error("Transaction not found");
     }
     if (!tx.events) {
-      throw new Error('Transaction events not found');
+      throw new Error("Transaction events not found");
     }
 
-    const circleMessageSentEvent = (tx.events?.find((event) =>
-      event.type.includes("send_message::MessageSent")
-    ));
+    const circleMessageSentEvent = tx.events?.find((event) =>
+      event.type.includes("send_message::MessageSent"),
+    );
 
     if (!circleMessageSentEvent) {
-      throw new Error('No MessageSent event found');
+      throw new Error("No MessageSent event found");
     }
 
     const circleMessage = new Uint8Array((circleMessageSentEvent?.parsedJson as any).message);
@@ -236,12 +261,7 @@ export class SuiCircleBridge<N extends Network, C extends SuiChains>
       throw new Error(`Network mismatch: ${conf.network} != ${network}`);
     }
 
-    return new SuiCircleBridge(
-      network as N,
-      chain,
-      provider,
-      conf.contracts,
-    );
+    return new SuiCircleBridge(network as N, chain, provider, conf.contracts);
   }
 
   private createUnsignedTx(

@@ -55,8 +55,8 @@ export const circleContracts = [[
       wormhole:           "0x0FF28217dCc90372345954563486528aa865cDd6",
     }], [
     "Sui", {
-      tokenMessenger:     "",
-      messageTransmitter: "",
+      tokenMessenger:     "0x2aa6c5d56376c371f88a6cc42e852824994993cb9bab8d3e6450cbe3cb32b94e",
+      messageTransmitter: "0x08d87d37ba49e785dde270a83f8e979605b03dc552b5548f26fdf2f49bf7ed1b",
       wormholeRelayer:    "",
       wormhole:           "",
     }],
@@ -105,8 +105,8 @@ export const circleContracts = [[
       wormhole:           "0x2703483B1a5a7c577e8680de9Df8Be03c6f30e3c",
     }], [
     "Sui", {
-      tokenMessenger:     "0x4e16078afc5ebfc244a8107ded4044970df5d84db384e7194b7fc444090683fd",
-      messageTransmitter: "0x4741a96a5903c80613f2d013492a47741cf10c6246ea38a724d354a09895cf8f",
+      tokenMessenger:     "0x31cc14d80c175ae39777c0238f20594c6d4869cfab199f40b69f3319956b8beb",
+      messageTransmitter: "0x4931e06dce648b3931f890035bd196920770e913e43e45990b383f6486fdd0a5",
       wormholeRelayer:    "",
       wormhole:           "",
     }],

@@ -20,6 +20,7 @@ export const relayerContracts = [[
     ["Scroll",    "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"],
     ["Mantle",    "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"],
     ["Xlayer",    "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"],
+    ["Worldchain","0x1520cc9e779c56dab5866bebfb885c86840c33d3"],
     ["Snaxchain", "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"],
   ]], [
   "Testnet", [
@@ -36,7 +37,7 @@ export const relayerContracts = [[
     ["Sepolia",         "0x7B1bD7a6b4E61c2a123AC6BC2cbfC614437D0470"],
     ["ArbitrumSepolia", "0x7B1bD7a6b4E61c2a123AC6BC2cbfC614437D0470"],
     ["BaseSepolia",     "0x93BAD53DDfB6132b0aC8E37f6029163E63372cEE"],
-    ["OptimismSepolia", "0x93BAD53DDfB6132b0aC8E37f6029163E63372cEE"]
+    ["OptimismSepolia", "0x93BAD53DDfB6132b0aC8E37f6029163E63372cEE"],
   ]], [
   "Devnet", [
     ["Ethereum",  "0xcC680D088586c09c3E0E099a676FA4b6e42467b4"],
