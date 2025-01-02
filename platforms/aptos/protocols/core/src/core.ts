@@ -15,7 +15,7 @@ import type {
   AptosPlatformType,
 } from "@wormhole-foundation/sdk-aptos";
 import { AptosPlatform } from "@wormhole-foundation/sdk-aptos";
-import type { AptosClient, Types } from "aptos";
+import { Aptos } from "@aptos-labs/ts-sdk";
 
 export class AptosWormholeCore<N extends Network, C extends AptosChains>
   implements WormholeCore<N, C>
@@ -26,7 +26,7 @@ export class AptosWormholeCore<N extends Network, C extends AptosChains>
   constructor(
     readonly network: N,
     readonly chain: C,
-    readonly connection: AptosClient,
+    readonly connection: Aptos,
     readonly contracts: Contracts,
   ) {
     this.chainId = toChainId(chain);
@@ -46,7 +46,7 @@ export class AptosWormholeCore<N extends Network, C extends AptosChains>
   }
 
   static async fromRpc<N extends Network>(
-    connection: AptosClient,
+    connection: Aptos,
     config: ChainsConfig<N, AptosPlatformType>,
   ): Promise<AptosWormholeCore<N, AptosChains>> {
     const [network, chain] = await AptosPlatform.chainFromRpc(connection);
@@ -78,14 +78,11 @@ export class AptosWormholeCore<N extends Network, C extends AptosChains>
     });
   }
   async parseMessages(txid: string) {
-    const transaction = await this.connection.getTransactionByHash(txid);
+    const transaction = await this.connection.getTransactionByHash({ transactionHash: txid });
     if (transaction.type !== "user_transaction")
       throw new Error(`${txid} is not a user_transaction`);
 
-    const userTransaction = transaction as Types.UserTransaction;
-    const messages = userTransaction.events.filter((event) =>
-      event.type.endsWith("WormholeMessage"),
-    );
+    const messages = transaction.events.filter((event) => event.type.endsWith("WormholeMessage"));
     if (!messages || messages.length === 0)
       throw new Error(`WormholeMessage not found for ${txid}`);
 
