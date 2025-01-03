@@ -163,7 +163,7 @@ describe("TokenBridge Tests", () => {
       expect(attestTx!.chain).toEqual(chain);
 
       const { transaction } = attestTx!;
-      expect(transaction.arguments).toHaveLength(0);
+      expect(transaction.functionArguments).toHaveLength(0);
     });
 
     test("Submit Attestation", async () => {
@@ -223,7 +223,7 @@ describe("TokenBridge Tests", () => {
           expect(xferTx!.chain).toEqual(chain);
 
           const { transaction } = xferTx!;
-          expect(transaction.arguments).toHaveLength(5);
+          expect(transaction.functionArguments).toHaveLength(5);
           // ...
         });
 
@@ -242,8 +242,8 @@ describe("TokenBridge Tests", () => {
           expect(xferTx!.chain).toEqual(chain);
 
           const { transaction } = xferTx!;
-          expect(transaction.type_arguments).toHaveLength(1);
-          expect(transaction.arguments).toHaveLength(5);
+          expect(transaction.typeArguments).toHaveLength(1);
+          expect(transaction.functionArguments).toHaveLength(5);
         });
       });
     });
