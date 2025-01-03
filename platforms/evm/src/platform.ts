@@ -50,9 +50,9 @@ export class EvmPlatform<N extends Network>
    * @returns Provider instance
    */
   getRpc<C extends EvmChains>(chain: C): Provider {
-    if (chain in this.config && this.config[chain]?.rpc)
+    if (chain in this.config && this.config[chain]!.rpc)
       return new JsonRpcProvider(this.config[chain]!.rpc);
-    throw new Error(`No RPC configuration available for chain: ${chain}`);
+    throw new Error('No RPC configuration available for chain: ${chain}');
   }
 
   /**
