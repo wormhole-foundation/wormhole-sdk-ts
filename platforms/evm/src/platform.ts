@@ -30,29 +30,42 @@ import { _platform } from './types.js';
 
 /**
  * @category EVM
+ * Platform implementation for Ethereum Virtual Machine (EVM) compatible chains
  */
 export class EvmPlatform<N extends Network>
   extends PlatformContext<N, EvmPlatformType>
   implements StaticPlatformMethods<EvmPlatformType, typeof EvmPlatform>
 {
   static _platform = _platform;
+  protected config: ChainsConfig<N, EvmPlatformType>;
 
-  constructor(network: N, _config?: ChainsConfig<N, EvmPlatformType>) {
-    super(
-      network,
-      _config ?? networkPlatformConfigs(network, EvmPlatform._platform),
-    );
+  constructor(network: N, config?: ChainsConfig<N, EvmPlatformType>) {
+    super(network, config ?? networkPlatformConfigs(network, EvmPlatform._platform));
+    this.config = config ?? networkPlatformConfigs(network, EvmPlatform._platform);
   }
 
+  /**
+   * Get RPC provider for specified chain
+   * @param chain - The EVM chain to get RPC for
+   * @returns Provider instance
+   */
   getRpc<C extends EvmChains>(chain: C): Provider {
     if (chain in this.config && this.config[chain]!.rpc)
       return new JsonRpcProvider(this.config[chain]!.rpc);
-    throw new Error('No configuration available for chain: ' + chain);
+    throw new Error('No RPC configuration available for chain: ' + {chain}');
   }
 
+  /**
+   * Get chain instance for specified EVM chain
+   * @param chain - The EVM chain to get instance for
+   * @param rpc - Optional RPC provider
+   * @returns EvmChain instance
+   */
   getChain<C extends EvmChains>(chain: C, rpc?: Provider): EvmChain<N, C> {
-    if (chain in this.config) return new EvmChain<N, C>(chain, this, rpc);
-    throw new Error('No configuration available for chain: ' + chain);
+    if (chain in this.config) {
+      return new EvmChain<N, C>(chain, this, rpc);
+    }
+    throw new Error('No configuration available for chain: ${chain}');
   }
 
   static nativeTokenId<N extends Network, C extends EvmChains>(
