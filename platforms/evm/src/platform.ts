@@ -65,7 +65,7 @@ export class EvmPlatform<N extends Network>
     if (chain in this.config) {
       return new EvmChain<N, C>(chain, this, rpc);
     }
-    throw new Error(`No configuration available for chain: ${chain}`);
+    throw new Error('No configuration available for chain: ${chain}');
   }
 
   static nativeTokenId<N extends Network, C extends EvmChains>(
