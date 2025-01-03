@@ -7,10 +7,16 @@ import type {
   UnsignedTransaction,
 } from "@wormhole-foundation/sdk-connect";
 import { encoding } from "@wormhole-foundation/sdk-connect";
-import type { AptosClient, TxnBuilderTypes, Types } from "aptos";
-import { AptosAccount } from "aptos";
 import { AptosPlatform } from "./platform.js";
 import type { AptosChains } from "./types.js";
+import {
+  Account,
+  AnyRawTransaction,
+  Aptos,
+  CommittedTransactionResponse,
+  Ed25519PrivateKey,
+  InputGenerateTransactionPayloadData,
+} from "@aptos-labs/ts-sdk";
 
 // returns a SignOnlySigner for the Aptos platform
 export async function getAptosSigner(
@@ -18,7 +24,11 @@ export async function getAptosSigner(
   privateKey: string,
 ): Promise<Signer> {
   const [_, chain] = await AptosPlatform.chainFromRpc(rpc);
-  return new AptosSigner(chain, new AptosAccount(encoding.hex.decode(privateKey)), rpc);
+  const account = Account.fromPrivateKey({
+    // TODO: support secp256k1
+    privateKey: new Ed25519PrivateKey(encoding.hex.decode(privateKey)),
+  });
+  return new AptosSigner(chain, account, rpc);
 }
 
 export class AptosSigner<N extends Network, C extends AptosChains>
@@ -26,8 +36,8 @@ export class AptosSigner<N extends Network, C extends AptosChains>
 {
   constructor(
     private _chain: C,
-    private _account: AptosAccount,
-    private _rpc: AptosClient,
+    private _account: Account,
+    private _rpc: Aptos,
     private _debug?: boolean,
   ) {}
 
@@ -36,7 +46,7 @@ export class AptosSigner<N extends Network, C extends AptosChains>
   }
 
   address(): string {
-    return this._account.address().hex();
+    return this._account.accountAddress.toString();
   }
 
   async signAndSend(tx: UnsignedTransaction[]): Promise<TxHash[]> {
@@ -44,23 +54,14 @@ export class AptosSigner<N extends Network, C extends AptosChains>
     for (const txn of tx) {
       const { description, transaction } = txn as {
         description: string;
-        transaction: Types.EntryFunctionPayload;
+        transaction: InputGenerateTransactionPayloadData;
       };
       if (this._debug) console.log(`Signing: ${description} for ${this.address()}`);
 
-      // overwriting `max_gas_amount` and `gas_unit_price` defaults
-      // rest of defaults are defined here: https://aptos-labs.github.io/ts-sdk-doc/classes/AptosClient.html#generateTransaction
-      const customOpts = {
-        gas_unit_price: "100",
-        max_gas_amount: "30000",
-        expiration_timestamp_secs: (BigInt(Date.now() + 8 * 60 * 60 * 1000) / 1000n).toString(),
-      } as Partial<Types.SubmitTransactionRequest>;
-
-      const tx = await this._rpc.generateTransaction(
-        this._account.address(),
-        transaction,
-        customOpts,
-      );
+      const tx = await this._rpc.transaction.build.simple({
+        sender: this._account.accountAddress,
+        data: transaction,
+      });
 
       const { hash } = await this._simSignSend(tx);
       txhashes.push(hash);
@@ -68,20 +69,23 @@ export class AptosSigner<N extends Network, C extends AptosChains>
     return txhashes;
   }
 
-  private async _simSignSend(rawTx: TxnBuilderTypes.RawTransaction): Promise<Types.Transaction> {
+  private async _simSignSend(rawTx: AnyRawTransaction): Promise<CommittedTransactionResponse> {
     // simulate transaction
-    await this._rpc.simulateTransaction(this._account, rawTx).then((sims) =>
-      sims.forEach((tx) => {
-        if (!tx.success) {
-          throw new Error(`Transaction failed: ${tx.vm_status}\n${JSON.stringify(tx, null, 2)}`);
-        }
-      }),
-    );
+    await this._rpc.transaction.simulate
+      .simple({
+        signerPublicKey: this._account.publicKey,
+        transaction: rawTx,
+      })
+      .then((sims) =>
+        sims.forEach((tx) => {
+          if (!tx.success) {
+            throw new Error(`Transaction failed: ${tx.vm_status}\n${JSON.stringify(tx, null, 2)}`);
+          }
+        }),
+      );
 
-    // sign & submit transaction
     return this._rpc
-      .signTransaction(this._account, rawTx)
-      .then((signedTx) => this._rpc.submitTransaction(signedTx))
-      .then((pendingTx) => this._rpc.waitForTransactionWithResult(pendingTx.hash));
+      .signAndSubmitTransaction({ signer: this._account, transaction: rawTx })
+      .then((pendingTx) => this._rpc.waitForTransaction({ transactionHash: pendingTx.hash }));
   }
 }
