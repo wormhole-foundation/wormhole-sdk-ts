@@ -60,6 +60,7 @@ const finalityThresholds = [
   ["Xpla",      0],
   ["Injective", 0],
   ["Berachain", 1],
+  ["Seievm",    1],
   ["Snaxchain", 512],
   ["Unichain",  512],
   ["Ink",       512],

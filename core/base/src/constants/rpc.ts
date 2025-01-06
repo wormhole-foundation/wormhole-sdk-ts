@@ -84,6 +84,7 @@ const rpcConfig = [[
     ["Acala",           "https://eth-rpc-acala-testnet.aca-staging.network"],
     ["Blast",           "https://sepolia.blast.io"],
     ["Berachain",       "https://artio.rpc.berachain.com"],
+    ["Seievm",          "https://evm-rpc-testnet.sei-apis.com/"],
     ["Linea",           "https://rpc.sepolia.linea.build"],
     ["Xlayer",          "https://testrpc.xlayer.tech/"],
     ["Scroll",          "https://rpc.ankr.com/scroll_sepolia_testnet"],

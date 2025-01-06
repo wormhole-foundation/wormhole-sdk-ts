@@ -77,6 +77,7 @@ export const tokenBridgeContracts = [[
     ["Blast",           "0x430855B4D43b8AEB9D2B9869B74d58dda79C0dB2"],
     ["Xlayer",          "0xdA91a06299BBF302091B053c6B9EF86Eff0f930D"],
     ["Berachain",       "0xa10f2eF61dE1f19f586ab8B6F2EbA89bACE63F7a"],
+    ["Seievm",          "0x23908A62110e21C04F3A4e011d24F901F911744A"],
     ["Snaxchain",       "0xa10f2eF61dE1f19f586ab8B6F2EbA89bACE63F7a"],
     ["Unichain",        "0xa10f2eF61dE1f19f586ab8B6F2EbA89bACE63F7a"],
     ["Worldchain",      "0x430855B4D43b8AEB9D2B9869B74d58dda79C0dB2"],
