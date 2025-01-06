@@ -85,6 +85,7 @@ export const coreBridgeContracts = [[
     ["Scroll",          "0x055F47F1250012C6B20c436570a76e52c17Af2D5"],
     ["Blast",           "0x473e002D7add6fB67a4964F13bFd61280Ca46886"],
     ["Berachain",       "0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd"],
+    ["Seievm",          "0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd"],
     ["Snaxchain",       "0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd"],
     ["Unichain",        "0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd"],
     ["Worldchain",      "0xe5E02cD12B6FcA153b0d7fF4bF55730AE7B3C93A"],
