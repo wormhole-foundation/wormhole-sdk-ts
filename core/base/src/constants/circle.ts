@@ -20,8 +20,7 @@ const usdcContracts = [[
     ["Base",      "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"],
     ["Polygon",   "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359"],
     ["Sui",       "0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7::usdc::USDC"],
-    // TODO: mainnet
-    //["Aptos",     ""]
+    ["Aptos",     "0xbae207659db88bea0cbead6da0ed00aac12edcdda169e591cd41c94180b46f3b"]
   ]], [
   "Testnet", [
     ["Sepolia",         "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"],

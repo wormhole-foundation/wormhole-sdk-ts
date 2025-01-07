@@ -117,10 +117,9 @@ export const circleContracts = [[
       wormholeRelayer:    "",
       wormhole:           "",
     }], [
-    // TODO: not sure if addys are correct
     "Aptos", {
       tokenMessenger:     "0x5f9b937419dda90aa06c1836b7847f65bbbe3f1217567758dc2488be31a477b9",
-      messageTransmitter: "0x81e86cebf457a0c6004f35bd648a2794698f52e0dde09a48619dcd3d4cc23d9",
+      messageTransmitter: "0x081e86cebf457a0c6004f35bd648a2794698f52e0dde09a48619dcd3d4cc23d9",
       wormholeRelayer:    "",
       wormhole:           "",
     }],
