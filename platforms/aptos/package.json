@@ -46,8 +46,8 @@
     "prettier": "prettier --write ./src"
   },
   "dependencies": {
-    "@wormhole-foundation/sdk-connect": "1.0.3",
-    "aptos": "1.21.0"
+    "@aptos-labs/ts-sdk": "^1.33.1",
+    "@wormhole-foundation/sdk-connect": "1.0.3"
   },
   "type": "module",
   "typesVersions": {

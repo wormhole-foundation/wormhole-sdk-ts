@@ -6,7 +6,7 @@ import { AptosChains, AptosPlatform } from "./../../src/index.js";
 
 import "@wormhole-foundation/sdk-aptos-core";
 import "@wormhole-foundation/sdk-aptos-tokenbridge";
-import { AptosClient } from "aptos";
+import { Aptos, AptosConfig, Network as AptosNetwork } from "@aptos-labs/ts-sdk";
 
 const network = DEFAULT_NETWORK;
 
@@ -22,7 +22,11 @@ describe("Aptos Platform Tests", () => {
         [APTOS_CHAINS[0]!]: configs[APTOS_CHAINS[0]!],
       });
 
-      const client = new AptosClient(configs[APTOS_CHAINS[0]!]!.rpc);
+      const config = new AptosConfig({
+        fullnode: configs[APTOS_CHAINS[0]!]!.rpc,
+        network: AptosNetwork.MAINNET,
+      });
+      const client = new Aptos(config);
       const tb = await p.getProtocol("TokenBridge", client);
       expect(tb).toBeTruthy();
     });
