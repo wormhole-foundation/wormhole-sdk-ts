@@ -28,7 +28,7 @@ import {
   encoding,
   keccak256,
 } from "@wormhole-foundation/sdk-connect";
-import { PrecompiledMoveScripts, precompiledMoveScripts } from "./moveScripts.js";
+import { AptosCCTPMoveScripts, aptosCCTPMoveScripts } from "./moveScripts.js";
 
 export class AptosCircleBridge<N extends Network, C extends AptosChains>
   implements CircleBridge<N, C>
@@ -36,7 +36,7 @@ export class AptosCircleBridge<N extends Network, C extends AptosChains>
   readonly usdcId: string;
   readonly tokenMessengerId: string;
   readonly messageTransmitterId: string;
-  readonly moveScripts: PrecompiledMoveScripts;
+  readonly moveScripts: AptosCCTPMoveScripts;
 
   constructor(
     readonly network: N,
@@ -59,12 +59,12 @@ export class AptosCircleBridge<N extends Network, C extends AptosChains>
     if (!contracts.cctp?.messageTransmitter)
       throw new Error(`Circle Message Transmitter contract for domain ${chain} not found`);
 
-    if (!precompiledMoveScripts.has(network)) throw new Error("No move scripts found");
+    if (!aptosCCTPMoveScripts.has(network)) throw new Error("No Aptos CCTP move scripts found");
 
     this.usdcId = usdcId;
     this.tokenMessengerId = contracts.cctp?.tokenMessenger;
     this.messageTransmitterId = contracts.cctp.messageTransmitter;
-    this.moveScripts = precompiledMoveScripts.get(network)!;
+    this.moveScripts = aptosCCTPMoveScripts.get(network)!;
   }
 
   async *transfer(
