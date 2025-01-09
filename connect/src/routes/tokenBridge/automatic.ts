@@ -106,7 +106,6 @@ export class AutomaticTokenBridgeRoute<N extends Network>
 
       return [expectedDestinationToken];
     } catch (e) {
-      console.error(`Failed to get destination token: ${e}`);
       return [];
     }
   }
