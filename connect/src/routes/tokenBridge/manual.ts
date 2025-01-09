@@ -84,7 +84,6 @@ export class TokenBridgeRoute<N extends Network>
     try {
       return [await TokenTransfer.lookupDestinationToken(fromChain, toChain, sourceToken)];
     } catch (e) {
-      console.error(`Failed to get destination token: ${e}`);
       return [];
     }
   }
@@ -165,7 +164,7 @@ export class TokenBridgeRoute<N extends Network>
       destinationTxs: dstTxIds,
     };
   }
-  
+
   async resume(txid: TransactionId): Promise<R> {
     const xfer = await TokenTransfer.from(this.wh, txid, 10 * 1000);
     return TokenTransfer.getReceipt(xfer);
