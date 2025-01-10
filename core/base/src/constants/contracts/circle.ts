@@ -60,10 +60,9 @@ export const circleContracts = [[
       wormholeRelayer:    "",
       wormhole:           "",
     }], [
-    // TODO: mainnet
     "Aptos", {
-      tokenMessenger:     "",
-      messageTransmitter: "",
+      tokenMessenger:     "0x9e6702a472080ea3caaf6ba9dfaa6effad2290a9ba9adaacd5af5c618e42782d",
+      messageTransmitter: "0x177e17751820e4b4371873ca8c30279be63bdea63b88ed0f2239c2eea10f1772",
       wormholeRelayer:    "",
       wormhole:           "",
     }],
