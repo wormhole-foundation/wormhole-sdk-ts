@@ -22,6 +22,7 @@ import type {
 import {
   TokenBridge,
   UniversalAddress,
+  canonicalAddress,
   deserialize,
   isNative,
   isTokenId,
@@ -559,6 +560,10 @@ export namespace TokenTransfer {
         lookup.chain,
         lookup.address as UniversalAddress,
       );
+      const destWrappedNative = await dstTb.getWrappedNative();
+      if (canonicalAddress({ chain: dstChain.chain, address: destWrappedNative }) === canonicalAddress({ chain: dstChain.chain, address: nativeAddress })) {
+        return { chain: dstChain.chain, address: 'native' }
+      }
       return { chain: dstChain.chain, address: nativeAddress };
     }
 
