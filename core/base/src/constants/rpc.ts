@@ -96,6 +96,7 @@ const rpcConfig = [[
     ["Worldchain",      "https://worldchain-sepolia.g.alchemy.com/public"],
     ["Ink",             "https://rpc-qnd-sepolia.inkonchain.com"],
     ["HyperEVM",        "https://api.hyperliquid-testnet.xyz/evm"],
+    ["Monad",           ""], // TODO: No public rpc is currently available, override with a custom rpc for now.
     ["MonadDevnet",     ""], // TODO: No public rpc is currently available, override with a custom rpc for now.
     ["Noble",           "https://noble-testnet-rpc.polkachu.com/"],
   ]], [

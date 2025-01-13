@@ -41,6 +41,7 @@ const platformAndChainsEntries = [[
     "Worldchain",
     "Ink",
     "HyperEVM",
+    "Monad",
     "MonadDevnet",
   ]], [
   "Solana", [
