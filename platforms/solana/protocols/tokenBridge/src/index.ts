@@ -8,6 +8,5 @@ registerProtocol(_platform, 'AutomaticTokenBridge', SolanaAutomaticTokenBridge);
 
 export * from './tokenBridgeType.js';
 export * from './automaticTokenBridgeType.js';
-export * from './utils/index.js';
 export * from './tokenBridge.js';
 export * from './automaticTokenBridge.js';

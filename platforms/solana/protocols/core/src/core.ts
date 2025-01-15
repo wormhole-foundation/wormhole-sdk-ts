@@ -1,16 +1,32 @@
-import type { Program } from '@coral-xyz/anchor';
+import { Program } from '@coral-xyz/anchor';
+import { Keypair, Transaction, PublicKey } from '@solana/web3.js';
+import {
+  createVAA,
+  deserializeLayout,
+  toChain,
+} from '@wormhole-foundation/sdk-connect';
+import {
+  SolanaAddress,
+  SolanaPlatform,
+  SolanaUnsignedTransaction,
+} from '@wormhole-foundation/sdk-solana';
+import { accountDataLayout } from './accountLayout.js';
+import { IDL } from './types.js';
+
 import type {
   CompiledInstruction,
   Connection,
   MessageAccountKeys,
   MessageCompiledInstruction,
-  PublicKey,
   TransactionResponse,
   VersionedTransactionResponse,
 } from '@solana/web3.js';
-import { Keypair, Transaction } from '@solana/web3.js';
 import type {
-  ChainId,
+  AnySolanaAddress,
+  SolanaChains,
+  SolanaTransaction,
+} from '@wormhole-foundation/sdk-solana';
+import type {
   ChainsConfig,
   Contracts,
   Network,
@@ -20,44 +36,17 @@ import type {
   WormholeCore,
   WormholeMessageId,
 } from '@wormhole-foundation/sdk-connect';
-import {
-  createVAA,
-  toChain,
-  toChainId,
-} from '@wormhole-foundation/sdk-connect';
-import type {
-  AnySolanaAddress,
-  SolanaChains,
-  SolanaTransaction,
-} from '@wormhole-foundation/sdk-solana';
-import {
-  SolanaAddress,
-  SolanaPlatform,
-  SolanaUnsignedTransaction,
-} from '@wormhole-foundation/sdk-solana';
-import { deserializePostMessage } from './postMessageLayout.js';
 import type { Wormhole as WormholeCoreContract } from './types.js';
-import type { BridgeData } from './utils/index.js';
-import {
-  createBridgeFeeTransferInstruction,
-  createPostMessageInstruction,
-  createPostVaaInstruction,
-  createReadOnlyWormholeProgramInterface,
-  createVerifySignaturesInstructions,
-  derivePostedVaaKey,
-  getGuardianSet,
-  getWormholeBridgeData,
-} from './utils/index.js';
 
 const SOLANA_SEQ_LOG = 'Program log: Sequence: ';
 
 export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
   implements WormholeCore<N, C>
 {
-  readonly chainId: ChainId;
   readonly coreBridge: Program<WormholeCoreContract>;
-  readonly address: string;
-  protected bridgeData?: BridgeData;
+  get address() {
+    return this.coreBridge.programId;
+  }
 
   constructor(
     readonly network: N,
@@ -65,19 +54,15 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
     readonly connection: Connection,
     readonly contracts: Contracts,
   ) {
-    this.chainId = toChainId(chain);
-
-    const coreBridgeAddress = contracts.coreBridge;
-    if (!coreBridgeAddress)
+    if (contracts.coreBridge === undefined) {
       throw new Error(
         `CoreBridge contract Address for chain ${chain} not found`,
       );
+    }
 
-    this.address = coreBridgeAddress;
-
-    this.coreBridge = createReadOnlyWormholeProgramInterface(
-      coreBridgeAddress,
-      connection,
+    this.coreBridge = new Program(
+      { ...IDL, address: contracts.coreBridge },
+      { connection },
     );
   }
 
@@ -123,7 +108,9 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
   }
 
   async getMessageFee(): Promise<bigint> {
+    //return this.coreBridge.account.bridgeData.;
     await this.ensureBridgeConfig();
+
     return this.bridgeData!.config.fee;
   }
 
@@ -356,7 +343,7 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
       sequence,
       nonce,
       payload,
-    } = deserializePostMessage(new Uint8Array(acctInfo?.data!));
+    } = deserializeLayout(accountDataLayout, acctInfo?.data);
 
     return createVAA('Uint8Array', {
       guardianSet: await this.getGuardianSetIndex(),
