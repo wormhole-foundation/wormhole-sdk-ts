@@ -1,15 +1,3 @@
-import type {
-  Chain,
-  ChainAddress,
-  ChainId,
-  ChainsConfig,
-  Contracts,
-  NativeAddress,
-  Network,
-  Platform,
-  TokenBridge,
-  TokenId,
-} from '@wormhole-foundation/sdk-connect';
 import {
   ErrNotWrapped,
   UniversalAddress,
@@ -19,22 +7,12 @@ import {
   toChainId,
   toNative,
 } from '@wormhole-foundation/sdk-connect';
-import type {
-  AnySolanaAddress,
-  SolanaChains,
-  SolanaTransaction,
-} from '@wormhole-foundation/sdk-solana';
 import {
-  SolanaAddress,
-  SolanaPlatform,
-  SolanaUnsignedTransaction,
-} from '@wormhole-foundation/sdk-solana';
-import {
-  SolanaWormholeCore,
-  utils as coreUtils,
-} from '@wormhole-foundation/sdk-solana-core';
-
-import type { Program } from '@coral-xyz/anchor';
+  Keypair,
+  PublicKey,
+  SystemProgram,
+  Transaction,
+} from '@solana/web3.js';
 import {
   ACCOUNT_SIZE,
   NATIVE_MINT,
@@ -47,39 +25,47 @@ import {
   getMinimumBalanceForRentExemptAccount,
   getMint,
 } from '@solana/spl-token';
+import { Program } from '@coral-xyz/anchor';
+import {
+  SolanaAddress,
+  SolanaPlatform,
+  SolanaUnsignedTransaction,
+} from '@wormhole-foundation/sdk-solana';
+import {
+  SolanaWormholeCore,
+  utils as coreUtils,
+} from '@wormhole-foundation/sdk-solana-core';
+import { TOKEN_BRIDGE_IDL } from './tokenBridgeType.js';
+
+import type {
+  Chain,
+  ChainAddress,
+  ChainId,
+  ChainsConfig,
+  Contracts,
+  NativeAddress,
+  Network,
+  Platform,
+  TokenBridge,
+  TokenId,
+} from '@wormhole-foundation/sdk-connect';
 import type { Connection, TransactionInstruction } from '@solana/web3.js';
-import {
-  Keypair,
-  PublicKey,
-  SystemProgram,
-  Transaction,
-} from '@solana/web3.js';
-
+import type {
+  AnySolanaAddress,
+  SolanaChains,
+  SolanaTransaction,
+} from '@wormhole-foundation/sdk-solana';
 import type { TokenBridge as TokenBridgeContract } from './tokenBridgeType.js';
-import {
-  createApproveAuthoritySignerInstruction,
-  createAttestTokenInstruction,
-  createCompleteTransferNativeInstruction,
-  createCompleteTransferWrappedInstruction,
-  createCreateWrappedInstruction,
-  createReadOnlyTokenBridgeProgramInterface,
-  createTransferNativeInstruction,
-  createTransferNativeWithPayloadInstruction,
-  createTransferWrappedInstruction,
-  createTransferWrappedWithPayloadInstruction,
-  deriveWrappedMintKey,
-  getWrappedMeta,
-} from './utils/index.js';
-
 import '@wormhole-foundation/sdk-solana-core';
 
 export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
   implements TokenBridge<N, C>
 {
-  readonly chainId: ChainId;
-
   readonly coreBridge: SolanaWormholeCore<N, C>;
   readonly tokenBridge: Program<TokenBridgeContract>;
+  get address() {
+    return this.tokenBridge.programId;
+  }
 
   constructor(
     readonly network: N,
@@ -87,17 +73,14 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
     readonly connection: Connection,
     readonly contracts: Contracts,
   ) {
-    this.chainId = toChainId(chain);
-
-    const tokenBridgeAddress = contracts.tokenBridge;
-    if (!tokenBridgeAddress)
+    if (contracts.tokenBridge === undefined) {
       throw new Error(
         `TokenBridge contract Address for chain ${chain} not found`,
       );
-
-    this.tokenBridge = createReadOnlyTokenBridgeProgramInterface(
-      tokenBridgeAddress,
-      connection,
+    }
+    this.tokenBridge = new Program(
+      { ...TOKEN_BRIDGE_IDL, address: contracts.tokenBridge },
+      { connection },
     );
 
     this.coreBridge = new SolanaWormholeCore(

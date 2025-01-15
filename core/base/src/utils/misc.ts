@@ -26,15 +26,6 @@ export function throws(fn: () => any): boolean {
   }
 }
 
-export function range<T extends bigint | number>(from: T, to: T): T[] {
-  function* generator(from: T, to: T) {
-    for (let i = from; from < to; i++) {
-      yield i;
-    }
-  }
-  return Array.from(generator(from, to));
-}
-
 /**
  * Maps an object to another by applying the given function to every "leaf" property
  * (_i.e._ neither object nor array).

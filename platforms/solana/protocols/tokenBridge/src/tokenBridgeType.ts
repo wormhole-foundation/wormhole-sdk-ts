@@ -1,9 +1,14 @@
 export type TokenBridge = {
-  version: '0.1.0';
-  name: 'wormhole';
+  address: string;
+  metadata: {
+    name: 'wormhole';
+    version: '0.1.0';
+    spec: '0.1.0';
+  };
   instructions: [
     {
       name: 'initialize';
+      discriminator: [0];
       accounts: [
         {
           name: 'payer';
@@ -29,12 +34,13 @@ export type TokenBridge = {
       args: [
         {
           name: 'wormhole';
-          type: 'publicKey';
+          type: 'pubkey';
         },
       ];
     },
     {
       name: 'attestToken';
+      discriminator: [1];
       accounts: [
         {
           name: 'payer';
@@ -116,6 +122,7 @@ export type TokenBridge = {
     },
     {
       name: 'completeNative';
+      discriminator: [2];
       accounts: [
         {
           name: 'payer';
@@ -192,6 +199,7 @@ export type TokenBridge = {
     },
     {
       name: 'completeWrapped';
+      discriminator: [3];
       accounts: [
         {
           name: 'payer';
@@ -268,6 +276,7 @@ export type TokenBridge = {
     },
     {
       name: 'transferWrapped';
+      discriminator: [4];
       accounts: [
         {
           name: 'payer';
@@ -382,6 +391,7 @@ export type TokenBridge = {
     },
     {
       name: 'transferNative';
+      discriminator: [5];
       accounts: [
         {
           name: 'payer';
@@ -496,6 +506,7 @@ export type TokenBridge = {
     },
     {
       name: 'registerChain';
+      discriminator: [6];
       accounts: [
         {
           name: 'payer';
@@ -542,6 +553,7 @@ export type TokenBridge = {
     },
     {
       name: 'createWrapped';
+      discriminator: [7];
       accounts: [
         {
           name: 'payer';
@@ -618,6 +630,7 @@ export type TokenBridge = {
     },
     {
       name: 'upgradeContract';
+      discriminator: [8];
       accounts: [
         {
           name: 'payer';
@@ -684,6 +697,7 @@ export type TokenBridge = {
     },
     {
       name: 'transferWrappedWithPayload';
+      discriminator: [9];
       accounts: [
         {
           name: 'payer';
@@ -802,13 +816,14 @@ export type TokenBridge = {
         {
           name: 'cpiProgramId';
           type: {
-            option: 'publicKey';
+            option: 'pubkey';
           };
         },
       ];
     },
     {
       name: 'transferNativeWithPayload';
+      discriminator: [10];
       accounts: [
         {
           name: 'payer';
@@ -927,7 +942,7 @@ export type TokenBridge = {
         {
           name: 'cpiProgramId';
           type: {
-            option: 'publicKey';
+            option: 'pubkey';
           };
         },
       ];
@@ -937,11 +952,16 @@ export type TokenBridge = {
 };
 
 export const TOKEN_BRIDGE_IDL: TokenBridge = {
-  version: '0.1.0',
-  name: 'wormhole',
+  address: '',
+  metadata: {
+    name: 'wormhole',
+    version: '0.1.0',
+    spec: '0.1.0',
+  },
   instructions: [
     {
       name: 'initialize',
+      discriminator: [0],
       accounts: [
         {
           name: 'payer',
@@ -967,12 +987,13 @@ export const TOKEN_BRIDGE_IDL: TokenBridge = {
       args: [
         {
           name: 'wormhole',
-          type: 'publicKey',
+          type: 'pubkey',
         },
       ],
     },
     {
       name: 'attestToken',
+      discriminator: [1],
       accounts: [
         {
           name: 'payer',
@@ -1054,6 +1075,7 @@ export const TOKEN_BRIDGE_IDL: TokenBridge = {
     },
     {
       name: 'completeNative',
+      discriminator: [2],
       accounts: [
         {
           name: 'payer',
@@ -1130,6 +1152,7 @@ export const TOKEN_BRIDGE_IDL: TokenBridge = {
     },
     {
       name: 'completeWrapped',
+      discriminator: [3],
       accounts: [
         {
           name: 'payer',
@@ -1206,6 +1229,7 @@ export const TOKEN_BRIDGE_IDL: TokenBridge = {
     },
     {
       name: 'transferWrapped',
+      discriminator: [4],
       accounts: [
         {
           name: 'payer',
@@ -1320,6 +1344,7 @@ export const TOKEN_BRIDGE_IDL: TokenBridge = {
     },
     {
       name: 'transferNative',
+      discriminator: [5],
       accounts: [
         {
           name: 'payer',
@@ -1434,6 +1459,7 @@ export const TOKEN_BRIDGE_IDL: TokenBridge = {
     },
     {
       name: 'registerChain',
+      discriminator: [6],
       accounts: [
         {
           name: 'payer',
@@ -1480,6 +1506,7 @@ export const TOKEN_BRIDGE_IDL: TokenBridge = {
     },
     {
       name: 'createWrapped',
+      discriminator: [7],
       accounts: [
         {
           name: 'payer',
@@ -1556,6 +1583,7 @@ export const TOKEN_BRIDGE_IDL: TokenBridge = {
     },
     {
       name: 'upgradeContract',
+      discriminator: [8],
       accounts: [
         {
           name: 'payer',
@@ -1622,6 +1650,7 @@ export const TOKEN_BRIDGE_IDL: TokenBridge = {
     },
     {
       name: 'transferWrappedWithPayload',
+      discriminator: [9],
       accounts: [
         {
           name: 'payer',
@@ -1740,13 +1769,14 @@ export const TOKEN_BRIDGE_IDL: TokenBridge = {
         {
           name: 'cpiProgramId',
           type: {
-            option: 'publicKey',
+            option: 'pubkey',
           },
         },
       ],
     },
     {
       name: 'transferNativeWithPayload',
+      discriminator: [10],
       accounts: [
         {
           name: 'payer',
@@ -1865,7 +1895,7 @@ export const TOKEN_BRIDGE_IDL: TokenBridge = {
         {
           name: 'cpiProgramId',
           type: {
-            option: 'publicKey',
+            option: 'pubkey',
           },
         },
       ],

@@ -1,9 +1,6 @@
-import {
-  chainToChainId,
-  enumItem,
-  Layout,
-} from '@wormhole-foundation/sdk-base';
-import { layoutItems } from '@wormhole-foundation/sdk-definitions';
+import type { Layout } from '@wormhole-foundation/sdk-connect';
+import { layoutItems } from '@wormhole-foundation/sdk-connect';
+import { chainToChainId, enumItem } from '@wormhole-foundation/sdk-base';
 
 const versionItem = <const N extends number>(custom: N) =>
   ({ name: 'version', binary: 'uint', size: 1, custom, omit: true }) as const;
@@ -81,6 +78,12 @@ const postedVaaV1Layout = [
   ...emitterAddressAndPayloadLayout,
 ] as const satisfies Layout;
 
+/**
+ * Covers:
+ * - A VAA;
+ * - A message;
+ * - An unreliable message.
+ */
 export const accountDataLayout = {
   binary: 'switch',
   idSize: 3,

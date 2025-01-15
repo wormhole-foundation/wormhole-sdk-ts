@@ -3,18 +3,13 @@ import type {
   AutomaticTokenBridge,
   Chain,
   ChainAddress,
-  ChainId,
   ChainsConfig,
   Contracts,
   Network,
   Platform,
   TokenAddress,
 } from '@wormhole-foundation/sdk-connect';
-import {
-  isNative,
-  toChainId,
-  toNative,
-} from '@wormhole-foundation/sdk-connect';
+import { isNative, toNative } from '@wormhole-foundation/sdk-connect';
 import type {
   SolanaChains,
   SolanaTransaction,
@@ -24,26 +19,13 @@ import {
   SolanaPlatform,
   SolanaUnsignedTransaction,
 } from '@wormhole-foundation/sdk-solana';
-
-import type { Program } from '@coral-xyz/anchor';
+import { Program } from '@coral-xyz/anchor';
+import { TOKEN_BRIDGE_RELAYER_IDL } from './automaticTokenBridgeType.js';
 
 import type { Connection } from '@solana/web3.js';
 import { PublicKey, Transaction } from '@solana/web3.js';
 
 import type { TokenBridgeRelayer as TokenBridgeRelayerContract } from './automaticTokenBridgeType.js';
-import type {
-  ForeignContract,
-  RedeemerConfig,
-  RegisteredToken,
-} from './utils/automaticTokenBridge/index.js';
-import {
-  createTokenBridgeRelayerProgramInterface,
-  createTransferNativeTokensWithRelayInstruction,
-  createTransferWrappedTokensWithRelayInstruction,
-  deriveForeignContractAddress,
-  deriveRedeemerConfigAddress,
-  deriveRegisteredTokenAddress,
-} from './utils/automaticTokenBridge/index.js';
 
 import {
   NATIVE_MINT,
@@ -66,8 +48,6 @@ export class SolanaAutomaticTokenBridge<
   C extends SolanaChains,
 > implements AutomaticTokenBridge<N, C>
 {
-  readonly chainId: ChainId;
-
   readonly coreBridgeProgramId: PublicKey;
   readonly tokenBridgeProgramId: PublicKey;
   readonly tokenBridgeRelayer: Program<TokenBridgeRelayerContract>;
@@ -78,22 +58,21 @@ export class SolanaAutomaticTokenBridge<
     readonly connection: Connection,
     readonly contracts: Contracts,
   ) {
-    this.chainId = toChainId(chain);
-
-    const tokenBridgeRelayerAddress = contracts.tokenBridgeRelayer;
-    if (!tokenBridgeRelayerAddress)
+    if (contracts.tokenBridgeRelayer === undefined) {
       throw new Error(
         `TokenBridge contract Address for chain ${chain} not found`,
       );
+    }
 
-    this.tokenBridgeRelayer = createTokenBridgeRelayerProgramInterface(
-      tokenBridgeRelayerAddress,
-      connection,
+    this.tokenBridgeRelayer = new Program(
+      { ...TOKEN_BRIDGE_RELAYER_IDL, address: contracts.tokenBridgeRelayer },
+      { connection },
     );
 
     this.tokenBridgeProgramId = new PublicKey(contracts.tokenBridge!);
     this.coreBridgeProgramId = new PublicKey(contracts.coreBridge!);
   }
+
   static async fromRpc<N extends Network>(
     connection: Connection,
     config: ChainsConfig<N, Platform>,

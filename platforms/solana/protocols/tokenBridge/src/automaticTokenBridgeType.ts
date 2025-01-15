@@ -1,6 +1,10 @@
 export type TokenBridgeRelayer = {
-  version: '0.1.0';
-  name: 'token_bridge_relayer';
+  address: string;
+  metadata: {
+    name: 'token_bridge_relayer';
+    version: '0.1.0';
+    spec: '0.1.0';
+  };
   constants: [
     {
       name: 'SEED_PREFIX_BRIDGED';
@@ -21,6 +25,7 @@ export type TokenBridgeRelayer = {
   instructions: [
     {
       name: 'initialize';
+      discriminator: [0];
       docs: [
         "This instruction is be used to generate your program's config.",
         'And for convenience, we will store Wormhole-related PDAs in the',
@@ -116,16 +121,17 @@ export type TokenBridgeRelayer = {
       args: [
         {
           name: 'feeRecipient';
-          type: 'publicKey';
+          type: 'pubkey';
         },
         {
           name: 'assistant';
-          type: 'publicKey';
+          type: 'pubkey';
         },
       ];
     },
     {
       name: 'registerForeignContract';
+      discriminator: [1];
       docs: [
         'This instruction registers a new foreign contract (from another',
         'network) and saves the emitter information in a ForeignEmitter account.',
@@ -212,6 +218,7 @@ export type TokenBridgeRelayer = {
     },
     {
       name: 'registerToken';
+      discriminator: [2];
       docs: [
         'This instruction registers a new token and saves the initial `swap_rate`',
         'and `max_native_token_amount` in a RegisteredToken account.',
@@ -292,6 +299,7 @@ export type TokenBridgeRelayer = {
     },
     {
       name: 'deregisterToken';
+      discriminator: [3];
       docs: [
         'This instruction deregisters a token by closing the existing',
         '`RegisteredToken` account for a particular mint. This instruction is',
@@ -341,6 +349,7 @@ export type TokenBridgeRelayer = {
     },
     {
       name: 'updateRelayerFee';
+      discriminator: [4];
       docs: [
         'This instruction updates the `relayer_fee` in the `ForeignContract` account.',
         'The `relayer_fee` is scaled by the `relayer_fee_precision`. For example,',
@@ -403,6 +412,7 @@ export type TokenBridgeRelayer = {
     },
     {
       name: 'updateRelayerFeePrecision';
+      discriminator: [5];
       docs: [
         'This instruction updates the `relayer_fee_precision` in the',
         '`SenderConfig` and `RedeemerConfig` accounts. The `relayer_fee_precision`',
@@ -455,6 +465,7 @@ export type TokenBridgeRelayer = {
     },
     {
       name: 'updateSwapRate';
+      discriminator: [6];
       docs: [
         'This instruction updates the `swap_rate` in the `RegisteredToken`',
         'account. This instruction can only be called by the owner or',
@@ -512,6 +523,7 @@ export type TokenBridgeRelayer = {
     },
     {
       name: 'updateMaxNativeSwapAmount';
+      discriminator: [7];
       docs: [
         'This instruction updates the `max_native_swap_amount` in the',
         '`RegisteredToken` account. This instruction is owner-only,',
@@ -574,6 +586,7 @@ export type TokenBridgeRelayer = {
     },
     {
       name: 'setPauseForTransfers';
+      discriminator: [8];
       docs: [
         'This instruction updates the `paused` boolean in the `SenderConfig`',
         'account. This instruction is owner-only, meaning that only the owner',
@@ -611,6 +624,7 @@ export type TokenBridgeRelayer = {
     },
     {
       name: 'submitOwnershipTransferRequest';
+      discriminator: [9];
       docs: [
         'This instruction sets the `pending_owner` field in the `OwnerConfig`',
         'account. This instruction is owner-only, meaning that only the owner',
@@ -642,12 +656,13 @@ export type TokenBridgeRelayer = {
       args: [
         {
           name: 'newOwner';
-          type: 'publicKey';
+          type: 'pubkey';
         },
       ];
     },
     {
       name: 'confirmOwnershipTransferRequest';
+      discriminator: [10];
       docs: [
         'This instruction confirms that the `pending_owner` is the signer of',
         'the transaction and updates the `owner` field in the `SenderConfig`,',
@@ -697,6 +712,7 @@ export type TokenBridgeRelayer = {
     },
     {
       name: 'cancelOwnershipTransferRequest';
+      discriminator: [11];
       docs: [
         'This instruction cancels the ownership transfer request by setting',
         'the `pending_owner` field in the `OwnerConfig` account to `None`.',
@@ -725,6 +741,7 @@ export type TokenBridgeRelayer = {
     },
     {
       name: 'updateAssistant';
+      discriminator: [12];
       docs: [
         'This instruction updates the `assistant` field in the `OwnerConfig`',
         'account. This instruction is owner-only, meaning that only the owner',
@@ -756,12 +773,13 @@ export type TokenBridgeRelayer = {
       args: [
         {
           name: 'newAssistant';
-          type: 'publicKey';
+          type: 'pubkey';
         },
       ];
     },
     {
       name: 'updateFeeRecipient';
+      discriminator: [13];
       docs: [
         'This instruction updates the `fee_recipient` field in the `RedeemerConfig`',
         'account. This instruction is owner-only, meaning that only the owner',
@@ -795,12 +813,13 @@ export type TokenBridgeRelayer = {
       args: [
         {
           name: 'newFeeRecipient';
-          type: 'publicKey';
+          type: 'pubkey';
         },
       ];
     },
     {
       name: 'transferNativeTokensWithRelay';
+      discriminator: [14];
       docs: [
         'This instruction is used to transfer native tokens from Solana to a',
         'foreign blockchain. The user can optionally specify a',
@@ -1006,6 +1025,7 @@ export type TokenBridgeRelayer = {
     },
     {
       name: 'transferWrappedTokensWithRelay';
+      discriminator: [15];
       docs: [
         'This instruction is used to transfer wrapped tokens from Solana to a',
         'foreign blockchain. The user can optionally specify a',
@@ -1197,6 +1217,7 @@ export type TokenBridgeRelayer = {
     },
     {
       name: 'completeNativeTransferWithRelay';
+      discriminator: [16];
       docs: [
         'This instruction is used to redeem token transfers from foreign emitters.',
         'It takes custody of the released native tokens and sends the tokens to the',
@@ -1387,6 +1408,7 @@ export type TokenBridgeRelayer = {
     },
     {
       name: 'completeWrappedTransferWithRelay';
+      discriminator: [17];
       docs: [
         'This instruction is used to redeem token transfers from foreign emitters.',
         'It takes custody of the minted wrapped tokens and sends the tokens to the',
@@ -1582,6 +1604,7 @@ export type TokenBridgeRelayer = {
   accounts: [
     {
       name: 'foreignContract';
+      discriminator: [];
       docs: ['Foreign emitter account data.'];
       type: {
         kind: 'struct';
@@ -1601,7 +1624,7 @@ export type TokenBridgeRelayer = {
           {
             name: 'tokenBridgeForeignEndpoint';
             docs: ["Token Bridge program's foreign endpoint account key."];
-            type: 'publicKey';
+            type: 'pubkey';
           },
           {
             name: 'fee';
@@ -1618,6 +1641,7 @@ export type TokenBridgeRelayer = {
     },
     {
       name: 'ownerConfig';
+      discriminator: [];
       docs: ['Owner account data.'];
       type: {
         kind: 'struct';
@@ -1625,14 +1649,14 @@ export type TokenBridgeRelayer = {
           {
             name: 'owner';
             docs: ["Program's owner."];
-            type: 'publicKey';
+            type: 'pubkey';
           },
           {
             name: 'assistant';
             docs: [
               "Program's assistant. Can be used to update the relayer fee and swap rate.",
             ];
-            type: 'publicKey';
+            type: 'pubkey';
           },
           {
             name: 'pendingOwner';
@@ -1640,7 +1664,7 @@ export type TokenBridgeRelayer = {
               'Intermediate storage for the pending owner. Is used to transfer ownership.',
             ];
             type: {
-              option: 'publicKey';
+              option: 'pubkey';
             };
           },
         ];
@@ -1648,13 +1672,14 @@ export type TokenBridgeRelayer = {
     },
     {
       name: 'redeemerConfig';
+      discriminator: [];
       type: {
         kind: 'struct';
         fields: [
           {
             name: 'owner';
             docs: ["Program's owner."];
-            type: 'publicKey';
+            type: 'pubkey';
           },
           {
             name: 'bump';
@@ -1669,13 +1694,14 @@ export type TokenBridgeRelayer = {
           {
             name: 'feeRecipient';
             docs: ['Recipient of all relayer fees and swap proceeds.'];
-            type: 'publicKey';
+            type: 'pubkey';
           },
         ];
       };
     },
     {
       name: 'registeredToken';
+      discriminator: [];
       docs: ['Registered token account data.'];
       type: {
         kind: 'struct';
@@ -1699,13 +1725,14 @@ export type TokenBridgeRelayer = {
     },
     {
       name: 'senderConfig';
+      discriminator: [];
       type: {
         kind: 'struct';
         fields: [
           {
             name: 'owner';
             docs: ["Program's owner."];
-            type: 'publicKey';
+            type: 'pubkey';
           },
           {
             name: 'bump';
@@ -1734,6 +1761,7 @@ export type TokenBridgeRelayer = {
     },
     {
       name: 'signerSequence';
+      discriminator: [];
       type: {
         kind: 'struct';
         fields: [
@@ -1753,7 +1781,7 @@ export type TokenBridgeRelayer = {
         fields: [
           {
             name: 'sequence';
-            type: 'publicKey';
+            type: 'pubkey';
           },
         ];
       };
@@ -1982,8 +2010,12 @@ export type TokenBridgeRelayer = {
 };
 
 export const TOKEN_BRIDGE_RELAYER_IDL: TokenBridgeRelayer = {
-  version: '0.1.0',
-  name: 'token_bridge_relayer',
+  address: '',
+  metadata: {
+    name: 'token_bridge_relayer',
+    version: '0.1.0',
+    spec: '0.1.0',
+  },
   constants: [
     {
       name: 'SEED_PREFIX_BRIDGED',
@@ -2004,6 +2036,7 @@ export const TOKEN_BRIDGE_RELAYER_IDL: TokenBridgeRelayer = {
   instructions: [
     {
       name: 'initialize',
+      discriminator: [0],
       docs: [
         "This instruction is be used to generate your program's config.",
         'And for convenience, we will store Wormhole-related PDAs in the',
@@ -2099,16 +2132,17 @@ export const TOKEN_BRIDGE_RELAYER_IDL: TokenBridgeRelayer = {
       args: [
         {
           name: 'feeRecipient',
-          type: 'publicKey',
+          type: 'pubkey',
         },
         {
           name: 'assistant',
-          type: 'publicKey',
+          type: 'pubkey',
         },
       ],
     },
     {
       name: 'registerForeignContract',
+      discriminator: [1],
       docs: [
         'This instruction registers a new foreign contract (from another',
         'network) and saves the emitter information in a ForeignEmitter account.',
@@ -2195,6 +2229,7 @@ export const TOKEN_BRIDGE_RELAYER_IDL: TokenBridgeRelayer = {
     },
     {
       name: 'registerToken',
+      discriminator: [2],
       docs: [
         'This instruction registers a new token and saves the initial `swap_rate`',
         'and `max_native_token_amount` in a RegisteredToken account.',
@@ -2275,6 +2310,7 @@ export const TOKEN_BRIDGE_RELAYER_IDL: TokenBridgeRelayer = {
     },
     {
       name: 'deregisterToken',
+      discriminator: [3],
       docs: [
         'This instruction deregisters a token by closing the existing',
         '`RegisteredToken` account for a particular mint. This instruction is',
@@ -2324,6 +2360,7 @@ export const TOKEN_BRIDGE_RELAYER_IDL: TokenBridgeRelayer = {
     },
     {
       name: 'updateRelayerFee',
+      discriminator: [4],
       docs: [
         'This instruction updates the `relayer_fee` in the `ForeignContract` account.',
         'The `relayer_fee` is scaled by the `relayer_fee_precision`. For example,',
@@ -2386,6 +2423,7 @@ export const TOKEN_BRIDGE_RELAYER_IDL: TokenBridgeRelayer = {
     },
     {
       name: 'updateRelayerFeePrecision',
+      discriminator: [5],
       docs: [
         'This instruction updates the `relayer_fee_precision` in the',
         '`SenderConfig` and `RedeemerConfig` accounts. The `relayer_fee_precision`',
@@ -2438,6 +2476,7 @@ export const TOKEN_BRIDGE_RELAYER_IDL: TokenBridgeRelayer = {
     },
     {
       name: 'updateSwapRate',
+      discriminator: [6],
       docs: [
         'This instruction updates the `swap_rate` in the `RegisteredToken`',
         'account. This instruction can only be called by the owner or',
@@ -2495,6 +2534,7 @@ export const TOKEN_BRIDGE_RELAYER_IDL: TokenBridgeRelayer = {
     },
     {
       name: 'updateMaxNativeSwapAmount',
+      discriminator: [7],
       docs: [
         'This instruction updates the `max_native_swap_amount` in the',
         '`RegisteredToken` account. This instruction is owner-only,',
@@ -2557,6 +2597,7 @@ export const TOKEN_BRIDGE_RELAYER_IDL: TokenBridgeRelayer = {
     },
     {
       name: 'setPauseForTransfers',
+      discriminator: [8],
       docs: [
         'This instruction updates the `paused` boolean in the `SenderConfig`',
         'account. This instruction is owner-only, meaning that only the owner',
@@ -2594,6 +2635,7 @@ export const TOKEN_BRIDGE_RELAYER_IDL: TokenBridgeRelayer = {
     },
     {
       name: 'submitOwnershipTransferRequest',
+      discriminator: [9],
       docs: [
         'This instruction sets the `pending_owner` field in the `OwnerConfig`',
         'account. This instruction is owner-only, meaning that only the owner',
@@ -2625,12 +2667,13 @@ export const TOKEN_BRIDGE_RELAYER_IDL: TokenBridgeRelayer = {
       args: [
         {
           name: 'newOwner',
-          type: 'publicKey',
+          type: 'pubkey',
         },
       ],
     },
     {
       name: 'confirmOwnershipTransferRequest',
+      discriminator: [10],
       docs: [
         'This instruction confirms that the `pending_owner` is the signer of',
         'the transaction and updates the `owner` field in the `SenderConfig`,',
@@ -2680,6 +2723,7 @@ export const TOKEN_BRIDGE_RELAYER_IDL: TokenBridgeRelayer = {
     },
     {
       name: 'cancelOwnershipTransferRequest',
+      discriminator: [11],
       docs: [
         'This instruction cancels the ownership transfer request by setting',
         'the `pending_owner` field in the `OwnerConfig` account to `None`.',
@@ -2708,6 +2752,7 @@ export const TOKEN_BRIDGE_RELAYER_IDL: TokenBridgeRelayer = {
     },
     {
       name: 'updateAssistant',
+      discriminator: [12],
       docs: [
         'This instruction updates the `assistant` field in the `OwnerConfig`',
         'account. This instruction is owner-only, meaning that only the owner',
@@ -2739,12 +2784,13 @@ export const TOKEN_BRIDGE_RELAYER_IDL: TokenBridgeRelayer = {
       args: [
         {
           name: 'newAssistant',
-          type: 'publicKey',
+          type: 'pubkey',
         },
       ],
     },
     {
       name: 'updateFeeRecipient',
+      discriminator: [13],
       docs: [
         'This instruction updates the `fee_recipient` field in the `RedeemerConfig`',
         'account. This instruction is owner-only, meaning that only the owner',
@@ -2778,12 +2824,13 @@ export const TOKEN_BRIDGE_RELAYER_IDL: TokenBridgeRelayer = {
       args: [
         {
           name: 'newFeeRecipient',
-          type: 'publicKey',
+          type: 'pubkey',
         },
       ],
     },
     {
       name: 'transferNativeTokensWithRelay',
+      discriminator: [14],
       docs: [
         'This instruction is used to transfer native tokens from Solana to a',
         'foreign blockchain. The user can optionally specify a',
@@ -2989,6 +3036,7 @@ export const TOKEN_BRIDGE_RELAYER_IDL: TokenBridgeRelayer = {
     },
     {
       name: 'transferWrappedTokensWithRelay',
+      discriminator: [15],
       docs: [
         'This instruction is used to transfer wrapped tokens from Solana to a',
         'foreign blockchain. The user can optionally specify a',
@@ -3180,6 +3228,7 @@ export const TOKEN_BRIDGE_RELAYER_IDL: TokenBridgeRelayer = {
     },
     {
       name: 'completeNativeTransferWithRelay',
+      discriminator: [16],
       docs: [
         'This instruction is used to redeem token transfers from foreign emitters.',
         'It takes custody of the released native tokens and sends the tokens to the',
@@ -3370,6 +3419,7 @@ export const TOKEN_BRIDGE_RELAYER_IDL: TokenBridgeRelayer = {
     },
     {
       name: 'completeWrappedTransferWithRelay',
+      discriminator: [17],
       docs: [
         'This instruction is used to redeem token transfers from foreign emitters.',
         'It takes custody of the minted wrapped tokens and sends the tokens to the',
@@ -3565,6 +3615,7 @@ export const TOKEN_BRIDGE_RELAYER_IDL: TokenBridgeRelayer = {
   accounts: [
     {
       name: 'foreignContract',
+      discriminator: [],
       docs: ['Foreign emitter account data.'],
       type: {
         kind: 'struct',
@@ -3584,7 +3635,7 @@ export const TOKEN_BRIDGE_RELAYER_IDL: TokenBridgeRelayer = {
           {
             name: 'tokenBridgeForeignEndpoint',
             docs: ["Token Bridge program's foreign endpoint account key."],
-            type: 'publicKey',
+            type: 'pubkey',
           },
           {
             name: 'fee',
@@ -3601,6 +3652,7 @@ export const TOKEN_BRIDGE_RELAYER_IDL: TokenBridgeRelayer = {
     },
     {
       name: 'ownerConfig',
+      discriminator: [],
       docs: ['Owner account data.'],
       type: {
         kind: 'struct',
@@ -3608,14 +3660,14 @@ export const TOKEN_BRIDGE_RELAYER_IDL: TokenBridgeRelayer = {
           {
             name: 'owner',
             docs: ["Program's owner."],
-            type: 'publicKey',
+            type: 'pubkey',
           },
           {
             name: 'assistant',
             docs: [
               "Program's assistant. Can be used to update the relayer fee and swap rate.",
             ],
-            type: 'publicKey',
+            type: 'pubkey',
           },
           {
             name: 'pendingOwner',
@@ -3623,7 +3675,7 @@ export const TOKEN_BRIDGE_RELAYER_IDL: TokenBridgeRelayer = {
               'Intermediate storage for the pending owner. Is used to transfer ownership.',
             ],
             type: {
-              option: 'publicKey',
+              option: 'pubkey',
             },
           },
         ],
@@ -3631,13 +3683,14 @@ export const TOKEN_BRIDGE_RELAYER_IDL: TokenBridgeRelayer = {
     },
     {
       name: 'redeemerConfig',
+      discriminator: [],
       type: {
         kind: 'struct',
         fields: [
           {
             name: 'owner',
             docs: ["Program's owner."],
-            type: 'publicKey',
+            type: 'pubkey',
           },
           {
             name: 'bump',
@@ -3652,13 +3705,14 @@ export const TOKEN_BRIDGE_RELAYER_IDL: TokenBridgeRelayer = {
           {
             name: 'feeRecipient',
             docs: ['Recipient of all relayer fees and swap proceeds.'],
-            type: 'publicKey',
+            type: 'pubkey',
           },
         ],
       },
     },
     {
       name: 'registeredToken',
+      discriminator: [],
       docs: ['Registered token account data.'],
       type: {
         kind: 'struct',
@@ -3682,13 +3736,14 @@ export const TOKEN_BRIDGE_RELAYER_IDL: TokenBridgeRelayer = {
     },
     {
       name: 'senderConfig',
+      discriminator: [],
       type: {
         kind: 'struct',
         fields: [
           {
             name: 'owner',
             docs: ["Program's owner."],
-            type: 'publicKey',
+            type: 'pubkey',
           },
           {
             name: 'bump',
@@ -3717,6 +3772,7 @@ export const TOKEN_BRIDGE_RELAYER_IDL: TokenBridgeRelayer = {
     },
     {
       name: 'signerSequence',
+      discriminator: [],
       type: {
         kind: 'struct',
         fields: [
@@ -3736,7 +3792,7 @@ export const TOKEN_BRIDGE_RELAYER_IDL: TokenBridgeRelayer = {
         fields: [
           {
             name: 'sequence',
-            type: 'publicKey',
+            type: 'pubkey',
           },
         ],
       },

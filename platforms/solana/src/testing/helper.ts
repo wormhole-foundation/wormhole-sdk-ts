@@ -26,6 +26,7 @@ import { Network } from '@wormhole-foundation/sdk-base';
 import { Contracts } from '@wormhole-foundation/sdk-definitions';
 import { TestingWormholeCore } from './client/wormhole-core.js';
 import { TestingTokenBridge } from './client/token-bridge.js';
+import { encoding } from '@wormhole-foundation/sdk-base';
 
 const execAsync = promisify(exec);
 
@@ -43,7 +44,7 @@ type Tuple<T, N extends number, R extends T[] = []> = R['length'] extends N
  * const [keypair1, keypair2] = await h.airdrop(h.keypair.several(2));
  * ```
  */
-export class TestsHelper {
+export class TestHelper {
   static readonly LOCALHOST = 'http://localhost:8899';
 
   readonly connection: Connection;
@@ -54,13 +55,13 @@ export class TestsHelper {
   > = {};
 
   constructor(finality: Finality = 'confirmed') {
-    if (TestsHelper.connectionsCache[finality] === undefined) {
-      TestsHelper.connectionsCache[finality] = new Connection(
-        TestsHelper.LOCALHOST,
+    if (TestHelper.connectionsCache[finality] === undefined) {
+      TestHelper.connectionsCache[finality] = new Connection(
+        TestHelper.LOCALHOST,
         finality,
       );
     }
-    this.connection = TestsHelper.connectionsCache[finality];
+    this.connection = TestHelper.connectionsCache[finality];
     this.finality = finality;
   }
 
@@ -91,14 +92,14 @@ export class TestsHelper {
 
   universalAddress = {
     generate: (ethereum?: 'ethereum'): UniversalAddress =>
-      ethereum === 'ethereum'
-        ? new UniversalAddress(
-            Buffer.concat([
-              Buffer.alloc(12),
-              PublicKey.unique().toBuffer().subarray(12),
-            ]),
-          )
-        : new UniversalAddress(PublicKey.unique().toBuffer()),
+      new UniversalAddress(
+        ethereum === 'ethereum'
+          ? encoding.bytes.concat(
+              new Uint8Array(12),
+              PublicKey.unique().toBytes().subarray(12),
+            )
+          : PublicKey.unique().toBytes(),
+      ),
     several: <N extends number>(
       amount: number,
       ethereum?: 'ethereum',
@@ -186,7 +187,7 @@ export class TestsHelper {
 
     // Deploy:
     await execAsync(
-      `solana --url ${TestsHelper.LOCALHOST} -k ${authorityKeypair} program deploy ${binary} --program-id ${programKeypair}`,
+      `solana --url ${TestHelper.LOCALHOST} -k ${authorityKeypair} program deploy ${binary} --program-id ${programKeypair}`,
     );
 
     // Wait for deploy to be finalized (otherwise there can be a problem where the

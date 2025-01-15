@@ -1,9 +1,14 @@
 export type Wormhole = {
-  version: '0.1.0';
-  name: 'wormhole';
+  address: string;
+  metadata: {
+    name: 'wormhole';
+    version: '0.1.0';
+    spec: '0.1.0';
+  };
   instructions: [
     {
       name: 'initialize';
+      discriminator: [0];
       accounts: [
         {
           name: 'bridge';
@@ -62,6 +67,7 @@ export type Wormhole = {
     },
     {
       name: 'postMessage';
+      discriminator: [1];
       accounts: [
         {
           name: 'bridge';
@@ -126,6 +132,7 @@ export type Wormhole = {
     },
     {
       name: 'postVaa';
+      discriminator: [2];
       accounts: [
         {
           name: 'guardianSet';
@@ -211,6 +218,7 @@ export type Wormhole = {
     },
     {
       name: 'setFees';
+      discriminator: [3];
       accounts: [
         {
           name: 'payer';
@@ -242,6 +250,7 @@ export type Wormhole = {
     },
     {
       name: 'transferFees';
+      discriminator: [4];
       accounts: [
         {
           name: 'payer';
@@ -288,6 +297,7 @@ export type Wormhole = {
     },
     {
       name: 'upgradeContract';
+      discriminator: [5];
       accounts: [
         {
           name: 'payer';
@@ -359,6 +369,7 @@ export type Wormhole = {
     },
     {
       name: 'upgradeGuardianSet';
+      discriminator: [6];
       accounts: [
         {
           name: 'payer';
@@ -400,6 +411,7 @@ export type Wormhole = {
     },
     {
       name: 'verifySignatures';
+      discriminator: [7];
       accounts: [
         {
           name: 'payer';
@@ -443,6 +455,7 @@ export type Wormhole = {
     },
     {
       name: 'postMessageUnreliable';
+      discriminator: [8];
       accounts: [
         {
           name: 'bridge';
@@ -508,7 +521,46 @@ export type Wormhole = {
   ];
   accounts: [
     {
+      name: 'BridgeData';
+      discriminator: [];
+      type: {
+        kind: 'struct';
+        fields: [
+          {
+            name: 'guardianSetIndex';
+            type: 'u32';
+          },
+          {
+            name: 'lastLamports';
+            type: 'u64';
+          },
+          {
+            name: 'config';
+            type: 'BridgeConfig';
+          },
+        ];
+      };
+    },
+    {
+      name: 'BridgeConfig';
+      discriminator: [];
+      type: {
+        kind: 'struct';
+        fields: [
+          {
+            name: 'guardianSetExpirationTime';
+            type: 'u32';
+          },
+          {
+            name: 'fee';
+            type: 'u64';
+          },
+        ];
+      };
+    },
+    {
       name: 'PostedMessage';
+      discriminator: [];
       type: {
         kind: 'struct';
         fields: [
@@ -526,7 +578,7 @@ export type Wormhole = {
           },
           {
             name: 'vaaSignatureAccount';
-            type: 'publicKey';
+            type: 'pubkey';
           },
           {
             name: 'submissionTime';
@@ -559,6 +611,7 @@ export type Wormhole = {
     },
     {
       name: 'PostedVAA';
+      discriminator: [];
       type: {
         kind: 'struct';
         fields: [
@@ -576,7 +629,7 @@ export type Wormhole = {
           },
           {
             name: 'vaaSignatureAccount';
-            type: 'publicKey';
+            type: 'pubkey';
           },
           {
             name: 'submissionTime';
@@ -611,11 +664,16 @@ export type Wormhole = {
 };
 
 export const IDL: Wormhole = {
-  version: '0.1.0',
-  name: 'wormhole',
+  address: '',
+  metadata: {
+    name: 'wormhole',
+    version: '0.1.0',
+    spec: '0.1.0',
+  },
   instructions: [
     {
       name: 'initialize',
+      discriminator: [0],
       accounts: [
         {
           name: 'bridge',
@@ -674,6 +732,7 @@ export const IDL: Wormhole = {
     },
     {
       name: 'postMessage',
+      discriminator: [1],
       accounts: [
         {
           name: 'bridge',
@@ -738,6 +797,7 @@ export const IDL: Wormhole = {
     },
     {
       name: 'postVaa',
+      discriminator: [2],
       accounts: [
         {
           name: 'guardianSet',
@@ -823,6 +883,7 @@ export const IDL: Wormhole = {
     },
     {
       name: 'setFees',
+      discriminator: [3],
       accounts: [
         {
           name: 'payer',
@@ -854,6 +915,7 @@ export const IDL: Wormhole = {
     },
     {
       name: 'transferFees',
+      discriminator: [4],
       accounts: [
         {
           name: 'payer',
@@ -900,6 +962,7 @@ export const IDL: Wormhole = {
     },
     {
       name: 'upgradeContract',
+      discriminator: [5],
       accounts: [
         {
           name: 'payer',
@@ -971,6 +1034,7 @@ export const IDL: Wormhole = {
     },
     {
       name: 'upgradeGuardianSet',
+      discriminator: [6],
       accounts: [
         {
           name: 'payer',
@@ -1012,6 +1076,7 @@ export const IDL: Wormhole = {
     },
     {
       name: 'verifySignatures',
+      discriminator: [7],
       accounts: [
         {
           name: 'payer',
@@ -1055,6 +1120,7 @@ export const IDL: Wormhole = {
     },
     {
       name: 'postMessageUnreliable',
+      discriminator: [8],
       accounts: [
         {
           name: 'bridge',
@@ -1120,7 +1186,46 @@ export const IDL: Wormhole = {
   ],
   accounts: [
     {
+      name: 'BridgeData',
+      discriminator: [],
+      type: {
+        kind: 'struct',
+        fields: [
+          {
+            name: 'guardianSetIndex',
+            type: 'u32',
+          },
+          {
+            name: 'lastLamports',
+            type: 'u64',
+          },
+          {
+            name: 'config',
+            type: 'BridgeConfig',
+          },
+        ],
+      },
+    },
+    {
+      name: 'BridgeConfig',
+      discriminator: [],
+      type: {
+        kind: 'struct',
+        fields: [
+          {
+            name: 'guardianSetExpirationTime',
+            type: 'u32',
+          },
+          {
+            name: 'fee',
+            type: 'u64',
+          },
+        ],
+      },
+    },
+    {
       name: 'PostedMessage',
+      discriminator: [],
       type: {
         kind: 'struct',
         fields: [
@@ -1138,7 +1243,7 @@ export const IDL: Wormhole = {
           },
           {
             name: 'vaaSignatureAccount',
-            type: 'publicKey',
+            type: 'pubkey',
           },
           {
             name: 'submissionTime',
@@ -1171,6 +1276,7 @@ export const IDL: Wormhole = {
     },
     {
       name: 'PostedVAA',
+      discriminator: [],
       type: {
         kind: 'struct',
         fields: [
@@ -1188,7 +1294,7 @@ export const IDL: Wormhole = {
           },
           {
             name: 'vaaSignatureAccount',
-            type: 'publicKey',
+            type: 'pubkey',
           },
           {
             name: 'submissionTime',
