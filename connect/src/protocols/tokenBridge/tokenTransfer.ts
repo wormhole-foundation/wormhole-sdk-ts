@@ -860,9 +860,9 @@ export namespace TokenTransfer {
         dstChain,
         _transfer.token,
       );
-      // TODO: If the token is native, no need to overwrite the destination address check for native
-      //if (!destinationToken.address.equals((await dstChain.getNativeWrappedTokenId()).address))
-      _transfer.to = await dstChain.getTokenAccount(_transfer.to.address, destinationToken.address);
+      if (!isNative(destinationToken.address)) {
+        _transfer.to = await dstChain.getTokenAccount(_transfer.to.address, destinationToken.address);
+      }
     }
 
     if (_transfer.to.chain === "Sei") {
