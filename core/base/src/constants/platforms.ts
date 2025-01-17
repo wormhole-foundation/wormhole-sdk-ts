@@ -42,7 +42,6 @@ const platformAndChainsEntries = [[
     "Ink",
     "HyperEVM",
     "Monad",
-    "MonadDevnet",
   ]], [
   "Solana", [
     "Solana",
