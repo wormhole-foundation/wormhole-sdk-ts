@@ -25,6 +25,7 @@ import {
   canonicalAddress,
   deserialize,
   isNative,
+  isSameToken,
   isTokenId,
   isTokenTransferDetails,
   isTransactionIdentifier,
@@ -820,7 +821,7 @@ export namespace TokenTransfer {
     // or the transaction could fail if the account does not have enough lamports
     if (dstToken.chain === "Solana") {
       const nativeWrappedTokenId = await dstChain.getNativeWrappedTokenId();
-      const isNativeSol = (isNative(dstToken.address) || dstToken.address === nativeWrappedTokenId.address);
+      const isNativeSol = (isNative(dstToken.address) || isSameToken(dstToken, nativeWrappedTokenId));
       if (
         isNativeSol && destAmountLessFee < solanaMinBalanceForRentExemptAccount
       ) {
