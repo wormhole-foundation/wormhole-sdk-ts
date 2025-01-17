@@ -50,7 +50,7 @@ const rpcConfig = [[
     ["Worldchain","https://worldchain-mainnet.g.alchemy.com/public"],
   ]], [
   "Testnet", [
-    ["Ethereum",        "https://eth-goerli.public.blastapi.io"],
+    ["Ethereum",        "https://eth-sepolia.public.blastapi.io"],
     ["Polygon",         "https://rpc-mumbai.polygon.technology"],
     ["Bsc",             "https://data-seed-prebsc-1-s3.binance.org:8545"],
     ["Avalanche",       "https://api.avax-test.network/ext/bc/C/rpc"],
