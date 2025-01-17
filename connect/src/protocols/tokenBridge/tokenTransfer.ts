@@ -820,9 +820,9 @@ export namespace TokenTransfer {
     // or the transaction could fail if the account does not have enough lamports
     if (dstToken.chain === "Solana") {
       const nativeWrappedTokenId = await dstChain.getNativeWrappedTokenId();
+      const isNativeSol = (isNative(dstToken.address) || dstToken.address === nativeWrappedTokenId.address);
       if (
-        dstToken.address === nativeWrappedTokenId.address &&
-        destAmountLessFee < solanaMinBalanceForRentExemptAccount
+        isNativeSol && destAmountLessFee < solanaMinBalanceForRentExemptAccount
       ) {
         throw new Error(
           `Destination amount must be at least ${solanaMinBalanceForRentExemptAccount} lamports`,
