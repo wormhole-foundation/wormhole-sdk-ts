@@ -860,8 +860,11 @@ export namespace TokenTransfer {
         dstChain,
         _transfer.token,
       );
-      if (!isNative(destinationToken.address)) {
-        _transfer.to = await dstChain.getTokenAccount(_transfer.to.address, destinationToken.address);
+      if (isNative(destinationToken.address)) {
+        const nativeWrappedTokenId = await dstChain.getNativeWrappedTokenId();
+        _transfer.to = await dstChain.getTokenAccount(_transfer.to.address, nativeWrappedTokenId.address);
+      } else {
+        _transfer.to = await dstChain.getTokenAccount(_transfer.to.address, destinationToken.address)
       }
     }
 
