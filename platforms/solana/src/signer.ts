@@ -1,4 +1,4 @@
-import type {
+import {
   Connection,
   SendOptions,
   Transaction,
@@ -6,6 +6,7 @@ import type {
   VersionedTransaction,
   PublicKey,
   AddressLookupTableAccount,
+  RecentPrioritizationFees,
 } from '@solana/web3.js';
 import {
   ComputeBudgetProgram,
@@ -380,6 +381,37 @@ export async function determineComputeBudget(
   return computeBudget;
 }
 
+// Helper function to get the writable accounts from a transaction
+export async function getWritableAccounts(
+  connection: Connection,
+  transaction: Transaction | VersionedTransaction,
+): Promise<PublicKey[]> {
+  if (isVersionedTransaction(transaction)) {
+    const luts = (
+      await Promise.all(
+        transaction.message.addressTableLookups.map((acc) =>
+          connection.getAddressLookupTable(acc.accountKey),
+        ),
+      )
+    )
+      .map((lut) => lut.value)
+      .filter((val) => val !== null) as AddressLookupTableAccount[];
+    const msg = transaction.message;
+    const keys = msg.getAccountKeys({
+      addressLookupTableAccounts: luts ?? undefined,
+    });
+    return msg.compiledInstructions
+      .flatMap((ix) => ix.accountKeyIndexes)
+      .map((k) => (msg.isAccountWritable(k) ? keys.get(k) : null))
+      .filter((k) => !!k) as PublicKey[];
+  } else {
+    return transaction.instructions
+      .flatMap((ix) => ix.keys)
+      .map((k) => (k.isWritable ? k.pubkey : null))
+      .filter((k) => !!k) as PublicKey[];
+  }
+}
+
 /**
  * A helper function to determine the priority fee to use for a transaction
  *
@@ -405,31 +437,10 @@ export async function determinePriorityFee(
   let fee = minPriorityFee;
 
   // Figure out which accounts need write lock
-  let lockedWritableAccounts = [];
-  if (isVersionedTransaction(transaction)) {
-    const luts = (
-      await Promise.all(
-        transaction.message.addressTableLookups.map((acc) =>
-          connection.getAddressLookupTable(acc.accountKey),
-        ),
-      )
-    )
-      .map((lut) => lut.value)
-      .filter((val) => val !== null) as AddressLookupTableAccount[];
-    const msg = transaction.message;
-    const keys = msg.getAccountKeys({
-      addressLookupTableAccounts: luts ?? undefined,
-    });
-    lockedWritableAccounts = msg.compiledInstructions
-      .flatMap((ix) => ix.accountKeyIndexes)
-      .map((k) => (msg.isAccountWritable(k) ? keys.get(k) : null))
-      .filter((k) => k !== null) as PublicKey[];
-  } else {
-    lockedWritableAccounts = transaction.instructions
-      .flatMap((ix) => ix.keys)
-      .map((k) => (k.isWritable ? k.pubkey : null))
-      .filter((k) => k !== null) as PublicKey[];
-  }
+  const lockedWritableAccounts = await getWritableAccounts(
+    connection,
+    transaction,
+  );
 
   try {
     const recentFeesResponse = await connection.getRecentPrioritizationFees({
@@ -458,6 +469,80 @@ export async function determinePriorityFee(
   }
 
   // Bound the return value by the parameters pased
+  return Math.min(Math.max(fee, minPriorityFee), maxPriorityFee);
+}
+
+interface RpcResponse {
+  jsonrpc: String;
+  id?: String;
+  result?: [];
+  error?: any;
+}
+
+// Helper function to calculate the priority fee using the Triton One API
+// See https://docs.triton.one/chains/solana/improved-priority-fees-api
+export async function determinePriorityFeeTritonOne(
+  connection: Connection,
+  transaction: Transaction | VersionedTransaction,
+  percentile: number = DEFAULT_PRIORITY_FEE_PERCENTILE,
+  multiple: number = DEFAULT_PERCENTILE_MULTIPLE,
+  minPriorityFee: number = DEFAULT_MIN_PRIORITY_FEE,
+  maxPriorityFee: number = DEFAULT_MAX_PRIORITY_FEE,
+): Promise<number> {
+  // Start with min fee
+  let fee = minPriorityFee;
+
+  // @ts-ignore
+  const rpcRequest = connection._rpcRequest;
+
+  const accounts = await getWritableAccounts(connection, transaction);
+
+  const args = [
+    accounts,
+    {
+      percentile: percentile * 10_000, // between 1 and 10_000
+    },
+  ];
+
+  try {
+    const response = (await rpcRequest(
+      'getRecentPrioritizationFees',
+      args,
+    )) as RpcResponse;
+
+    if (response.error) {
+      throw new Error(response.error);
+    }
+
+    const recentPrioritizationFees =
+      response.result as RecentPrioritizationFees[];
+
+    if (recentPrioritizationFees.length > 0) {
+      const sortedFees = recentPrioritizationFees.sort(
+        (a, b) => a.prioritizationFee - b.prioritizationFee,
+      );
+
+      // Calculate the median
+      const half = Math.floor(sortedFees.length / 2);
+      if (sortedFees.length % 2 === 0) {
+        fee = Math.floor(
+          (sortedFees[half - 1]!.prioritizationFee +
+            sortedFees[half]!.prioritizationFee) /
+            2,
+        );
+      } else {
+        fee = sortedFees[half]!.prioritizationFee;
+      }
+
+      if (multiple > 0) {
+        fee *= multiple;
+      }
+    }
+  } catch (e) {
+    console.error('Error fetching Triton One Solana recent fees', e);
+  }
+
+  // Bound the return value by the parameters passed
   return Math.min(Math.max(fee, minPriorityFee), maxPriorityFee);
 }
 
