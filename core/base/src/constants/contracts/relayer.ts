@@ -42,6 +42,7 @@ export const relayerContracts = [[
     ["Berachain",       "0x362fca37E45fe1096b42021b543f462D49a5C8df"],
     ["Unichain",        "0x362fca37E45fe1096b42021b543f462D49a5C8df"],
     ["Ink",             "0x362fca37E45fe1096b42021b543f462D49a5C8df"],
+    ["Monad",           "0x362fca37E45fe1096b42021b543f462D49a5C8df"],
   ]], [
   "Devnet", [
     ["Ethereum",  "0xcC680D088586c09c3E0E099a676FA4b6e42467b4"],
