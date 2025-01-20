@@ -403,12 +403,12 @@ export async function getWritableAccounts(
     return msg.compiledInstructions
       .flatMap((ix) => ix.accountKeyIndexes)
       .map((k) => (msg.isAccountWritable(k) ? keys.get(k) : null))
-      .filter((k) => !!k) as PublicKey[];
+      .filter(Boolean) as PublicKey[];
   } else {
     return transaction.instructions
       .flatMap((ix) => ix.keys)
       .map((k) => (k.isWritable ? k.pubkey : null))
-      .filter((k) => !!k) as PublicKey[];
+      .filter(Boolean) as PublicKey[];
   }
 }
 
@@ -481,6 +481,7 @@ interface RpcResponse {
 
 // Helper function to calculate the priority fee using the Triton One API
 // See https://docs.triton.one/chains/solana/improved-priority-fees-api
+// NOTE: this is currently an experimental feature
 export async function determinePriorityFeeTritonOne(
   connection: Connection,
   transaction: Transaction | VersionedTransaction,
@@ -504,42 +505,39 @@ export async function determinePriorityFeeTritonOne(
     },
   ];
 
-  try {
-    const response = (await rpcRequest(
-      'getRecentPrioritizationFees',
-      args,
-    )) as RpcResponse;
+  const response = (await rpcRequest(
+    'getRecentPrioritizationFees',
+    args,
+  )) as RpcResponse;
 
-    if (response.error) {
-      throw new Error(response.error);
-    }
+  if (response.error) {
+    // Allow the error to propagate so the caller can handle it and fall-back if needed
+    throw new Error(response.error);
+  }
 
-    const recentPrioritizationFees =
-      response.result as RecentPrioritizationFees[];
+  const recentPrioritizationFees =
+    response.result as RecentPrioritizationFees[];
 
-    if (recentPrioritizationFees.length > 0) {
-      const sortedFees = recentPrioritizationFees.sort(
-        (a, b) => a.prioritizationFee - b.prioritizationFee,
+  if (recentPrioritizationFees.length > 0) {
+    const sortedFees = recentPrioritizationFees.sort(
+      (a, b) => a.prioritizationFee - b.prioritizationFee,
+    );
+
+    // Calculate the median
+    const half = Math.floor(sortedFees.length / 2);
+    if (sortedFees.length % 2 === 0) {
+      fee = Math.floor(
+        (sortedFees[half - 1]!.prioritizationFee +
+          sortedFees[half]!.prioritizationFee) /
+          2,
       );
-
-      // Calculate the median
-      const half = Math.floor(sortedFees.length / 2);
-      if (sortedFees.length % 2 === 0) {
-        fee = Math.floor(
-          (sortedFees[half - 1]!.prioritizationFee +
-            sortedFees[half]!.prioritizationFee) /
-            2,
-        );
-      } else {
-        fee = sortedFees[half]!.prioritizationFee;
-      }
-
-      if (multiple > 0) {
-        fee *= multiple;
-      }
+    } else {
+      fee = sortedFees[half]!.prioritizationFee;
     }
-  } catch (e) {
-    console.error('Error fetching Triton One Solana recent fees', e);
+
+    if (multiple > 0) {
+      fee *= multiple;
+    }
   }
 
   // Bound the return value by the parameters passed
