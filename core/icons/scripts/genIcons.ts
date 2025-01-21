@@ -21,9 +21,7 @@ const makeChainCondition = (chain: Chain): string => {
     return `(chain === "${chain}" || chain === "${chain}Sepolia")`;
   } else if (chain === "Sei") {
     return `(chain === "${chain}" || chain === "${chain}evm")`;
-  } else if (chain === "Monad") {
-    return `(chain === "${chain}" || chain === "${chain}Devnet")`;    
-  } else if (chain.includes("Sepolia") || chain.includes("Holesky") || chain === "Seievm" || chain === "MonadDevnet") {
+  } else if (chain.includes("Sepolia") || chain.includes("Holesky") || chain === "Seievm") {
     return "";
   } else {
     return `(chain === "${chain}")`;
