@@ -22,7 +22,7 @@ import type {
   Signer,
   UnsignedTransaction,
 } from '@wormhole-foundation/sdk-connect';
-import { encoding } from '@wormhole-foundation/sdk-connect';
+import { bound, encoding, median } from '@wormhole-foundation/sdk-connect';
 import { SolanaPlatform } from './platform.js';
 import type { SolanaChains } from './types.js';
 import {
@@ -490,8 +490,9 @@ export async function determinePriorityFeeTritonOne(
   minPriorityFee: number = DEFAULT_MIN_PRIORITY_FEE,
   maxPriorityFee: number = DEFAULT_MAX_PRIORITY_FEE,
 ): Promise<number> {
-  // Start with min fee
-  let fee = minPriorityFee;
+  if (percentile <= 0 || percentile > 1) {
+    throw new Error('percentile must be between 0 and 1');
+  }
 
   // @ts-ignore
   const rpcRequest = connection._rpcRequest;
@@ -511,37 +512,20 @@ export async function determinePriorityFeeTritonOne(
   )) as RpcResponse;
 
   if (response.error) {
-    // Allow the error to propagate so the caller can handle it and fall-back if needed
     throw new Error(response.error);
   }
 
-  const recentPrioritizationFees =
-    response.result as RecentPrioritizationFees[];
+  const recentPrioritizationFees = (
+    response.result as RecentPrioritizationFees[]
+  ).map((e) => e.prioritizationFee);
 
-  if (recentPrioritizationFees.length > 0) {
-    const sortedFees = recentPrioritizationFees.sort(
-      (a, b) => a.prioritizationFee - b.prioritizationFee,
-    );
+  if (recentPrioritizationFees.length === 0) return minPriorityFee;
 
-    // Calculate the median
-    const half = Math.floor(sortedFees.length / 2);
-    if (sortedFees.length % 2 === 0) {
-      fee = Math.floor(
-        (sortedFees[half - 1]!.prioritizationFee +
-          sortedFees[half]!.prioritizationFee) /
-          2,
-      );
-    } else {
-      fee = sortedFees[half]!.prioritizationFee;
-    }
+  const unboundedFee = Math.floor(
+    median(recentPrioritizationFees) * (multiple > 0 ? multiple : 1),
+  );
 
-    if (multiple > 0) {
-      fee *= multiple;
-    }
-  }
-
-  // Bound the return value by the parameters passed
-  return Math.min(Math.max(fee, minPriorityFee), maxPriorityFee);
+  return bound(unboundedFee, minPriorityFee, maxPriorityFee);
 }
 
 export class SolanaSigner<N extends Network, C extends SolanaChains = 'Solana'>

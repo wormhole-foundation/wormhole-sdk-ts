@@ -174,3 +174,31 @@ export type Cartesian<L, R> =
   : R extends RoArray
   ? [...{ [K in keyof R]: K extends `${number}` ? [L, R[K]] : never }]
   : [L, R];
+
+export const median = <T extends number | bigint>(arr: T[], isSorted: boolean = false): T => {
+  if (arr.length === 0) throw new Error("Can't calculate median of empty array");
+
+  const sorted = isSorted
+    ? arr
+    : [...arr].sort((a, b) => {
+        // handle bigint and number
+        return a > b ? 1 : a < b ? -1 : 0;
+      });
+
+  const mid = Math.floor(sorted.length / 2);
+
+  if (sorted.length % 2 === 1) {
+    return sorted[mid]!;
+  }
+
+  const left = sorted[mid - 1]!;
+  const right = sorted[mid]!;
+
+  if (typeof left === "bigint" && typeof right === "bigint") {
+    return ((left + right) / 2n) as T;
+  } else if (typeof left === "number" && typeof right === "number") {
+    return ((left + right) / 2) as T;
+  } else {
+    throw new Error("Can't calculate median of array with mixed number and bigint");
+  }
+};
