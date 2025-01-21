@@ -86,6 +86,8 @@ export class RouteTransferRequest<N extends Network> {
     params: {
       source: TokenId<FC>;
       destination: TokenId<TC>;
+      sourceDecimals?: number;
+      destinationDecimals?: number;
     },
     fromChain?: ChainContext<N, FC>,
     toChain?: ChainContext<N, TC>,
@@ -93,8 +95,12 @@ export class RouteTransferRequest<N extends Network> {
     fromChain = fromChain ?? wh.getChain(params.source.chain);
     toChain = toChain ?? wh.getChain(params.destination.chain);
 
-    const sourceDetails = await getTokenDetails(fromChain, params.source);
-    const destDetails = await getTokenDetails(toChain, params.destination);
+    const sourceDetails = await getTokenDetails(fromChain, params.source, params.sourceDecimals);
+    const destDetails = await getTokenDetails(
+      toChain,
+      params.destination,
+      params.destinationDecimals,
+    );
 
     const rtr = new RouteTransferRequest(fromChain, toChain, sourceDetails, destDetails);
 
