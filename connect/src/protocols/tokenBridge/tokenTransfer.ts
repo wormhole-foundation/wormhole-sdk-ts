@@ -25,6 +25,7 @@ import {
   canonicalAddress,
   deserialize,
   isNative,
+  isSameToken,
   isTokenId,
   isTokenTransferDetails,
   isTransactionIdentifier,
@@ -820,9 +821,9 @@ export namespace TokenTransfer {
     // or the transaction could fail if the account does not have enough lamports
     if (dstToken.chain === "Solana") {
       const nativeWrappedTokenId = await dstChain.getNativeWrappedTokenId();
+      const isNativeSol = (isNative(dstToken.address) || isSameToken(dstToken, nativeWrappedTokenId));
       if (
-        dstToken.address === nativeWrappedTokenId.address &&
-        destAmountLessFee < solanaMinBalanceForRentExemptAccount
+        isNativeSol && destAmountLessFee < solanaMinBalanceForRentExemptAccount
       ) {
         throw new Error(
           `Destination amount must be at least ${solanaMinBalanceForRentExemptAccount} lamports`,
@@ -860,9 +861,12 @@ export namespace TokenTransfer {
         dstChain,
         _transfer.token,
       );
-      // TODO: If the token is native, no need to overwrite the destination address check for native
-      //if (!destinationToken.address.equals((await dstChain.getNativeWrappedTokenId()).address))
-      _transfer.to = await dstChain.getTokenAccount(_transfer.to.address, destinationToken.address);
+      if (isNative(destinationToken.address)) {
+        const nativeWrappedTokenId = await dstChain.getNativeWrappedTokenId();
+        _transfer.to = await dstChain.getTokenAccount(_transfer.to.address, nativeWrappedTokenId.address);
+      } else {
+        _transfer.to = await dstChain.getTokenAccount(_transfer.to.address, destinationToken.address)
+      }
     }
 
     if (_transfer.to.chain === "Sei") {
