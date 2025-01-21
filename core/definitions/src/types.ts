@@ -63,6 +63,18 @@ export function isTokenId<C extends Chain>(thing: any): thing is TokenId<C> {
   );
 }
 
+/**
+ * An UnattestedTokenId is used to represent a token that has not yet been attested / created
+ *
+ * @interface UnattestedTokenId
+ */
+export type UnattestedTokenId<C extends Chain = Chain> = TokenId<C> & {
+  isUnattested: true;
+};
+export function isUnattestedTokenId<C extends Chain>(thing: any): thing is UnattestedTokenId<C> {
+  return isTokenId(thing) && (<UnattestedTokenId<C>>thing).isUnattested === true;
+}
+
 export function isSameToken(a: TokenId, b: TokenId): boolean {
   if (a.chain !== b.chain) return false;
   if (isNative(a.address) && isNative(b.address)) return true;
