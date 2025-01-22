@@ -490,8 +490,10 @@ export async function determinePriorityFeeTritonOne(
   minPriorityFee: number = DEFAULT_MIN_PRIORITY_FEE,
   maxPriorityFee: number = DEFAULT_MAX_PRIORITY_FEE,
 ): Promise<number> {
-  if (percentile <= 0 || percentile > 1) {
-    throw new Error('percentile must be between 0 and 1');
+  const scaledPercentile = percentile * 10_000;
+
+  if (scaledPercentile < 1 || scaledPercentile > 10_000) {
+    throw new Error('percentile must be between 0.0001 and 1');
   }
 
   // @ts-ignore
@@ -502,7 +504,7 @@ export async function determinePriorityFeeTritonOne(
   const args = [
     accounts,
     {
-      percentile: percentile * 10_000, // between 1 and 10_000
+      percentile: scaledPercentile,
     },
   ];
 

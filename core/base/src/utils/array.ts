@@ -175,15 +175,12 @@ export type Cartesian<L, R> =
   ? [...{ [K in keyof R]: K extends `${number}` ? [L, R[K]] : never }]
   : [L, R];
 
-export const median = <T extends number | bigint>(arr: T[], isSorted: boolean = false): T => {
+export function median(arr: number[], isSorted?: boolean): number;
+export function median(arr: bigint[], isSorted?: boolean): bigint;
+export function median(arr: (number | bigint)[], isSorted: boolean = false): number | bigint {
   if (arr.length === 0) throw new Error("Can't calculate median of empty array");
 
-  const sorted = isSorted
-    ? arr
-    : [...arr].sort((a, b) => {
-        // handle bigint and number
-        return a > b ? 1 : a < b ? -1 : 0;
-      });
+  const sorted = isSorted ? arr : [...arr].sort((a, b) => (a > b ? 1 : a < b ? -1 : 0)); // handle bigint and number
 
   const mid = Math.floor(sorted.length / 2);
 
@@ -195,10 +192,12 @@ export const median = <T extends number | bigint>(arr: T[], isSorted: boolean = 
   const right = sorted[mid]!;
 
   if (typeof left === "bigint" && typeof right === "bigint") {
-    return ((left + right) / 2n) as T;
-  } else if (typeof left === "number" && typeof right === "number") {
-    return ((left + right) / 2) as T;
-  } else {
-    throw new Error("Can't calculate median of array with mixed number and bigint");
+    return (left + right) / 2n;
   }
-};
+
+  if (typeof left === "number" && typeof right === "number") {
+    return (left + right) / 2;
+  }
+
+  throw new Error("Can't calculate median of array with mixed number and bigint");
+}

@@ -26,6 +26,14 @@ export function throws(fn: () => any): boolean {
   }
 }
 
-export function bound<T extends number | bigint>(value: T, min: T, max: T): T {
-  return min > value ? min : max < value ? max : value;
+export function bound(value: number, min: number, max: number): number;
+export function bound(value: bigint, min: bigint, max: bigint): bigint;
+export function bound(
+  value: number | bigint,
+  min: number | bigint,
+  max: number | bigint,
+): number | bigint {
+  if (value < min) return min;
+  if (value > max) return max;
+  return value;
 }
