@@ -175,9 +175,9 @@ export type Cartesian<L, R> =
   ? [...{ [K in keyof R]: K extends `${number}` ? [L, R[K]] : never }]
   : [L, R];
 
-export function median(arr: number[], isSorted?: boolean): number;
-export function median(arr: bigint[], isSorted?: boolean): bigint;
-export function median(arr: (number | bigint)[], isSorted: boolean = false): number | bigint {
+export function median(arr: RoArray<number>, isSorted?: boolean): number;
+export function median(arr: RoArray<bigint>, isSorted?: boolean): bigint;
+export function median(arr: RoArray<number> | RoArray<bigint>, isSorted: boolean = false): number | bigint {
   if (arr.length === 0) throw new Error("Can't calculate median of empty array");
 
   const sorted = isSorted ? arr : [...arr].sort((a, b) => (a > b ? 1 : a < b ? -1 : 0)); // handle bigint and number
