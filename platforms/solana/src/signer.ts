@@ -6,6 +6,7 @@ import type {
   VersionedTransaction,
   PublicKey,
   AddressLookupTableAccount,
+  RecentPrioritizationFees,
 } from '@solana/web3.js';
 import {
   ComputeBudgetProgram,
@@ -21,7 +22,7 @@ import type {
   Signer,
   UnsignedTransaction,
 } from '@wormhole-foundation/sdk-connect';
-import { encoding } from '@wormhole-foundation/sdk-connect';
+import { bound, encoding, median } from '@wormhole-foundation/sdk-connect';
 import { SolanaPlatform } from './platform.js';
 import type { SolanaChains } from './types.js';
 import {
@@ -380,6 +381,37 @@ export async function determineComputeBudget(
   return computeBudget;
 }
 
+// Helper function to get the writable accounts from a transaction
+export async function getWritableAccounts(
+  connection: Connection,
+  transaction: Transaction | VersionedTransaction,
+): Promise<PublicKey[]> {
+  if (isVersionedTransaction(transaction)) {
+    const luts = (
+      await Promise.all(
+        transaction.message.addressTableLookups.map((acc) =>
+          connection.getAddressLookupTable(acc.accountKey),
+        ),
+      )
+    )
+      .map((lut) => lut.value)
+      .filter((val) => val !== null) as AddressLookupTableAccount[];
+    const msg = transaction.message;
+    const keys = msg.getAccountKeys({
+      addressLookupTableAccounts: luts ?? undefined,
+    });
+    return msg.compiledInstructions
+      .flatMap((ix) => ix.accountKeyIndexes)
+      .map((k) => (msg.isAccountWritable(k) ? keys.get(k) : null))
+      .filter(Boolean) as PublicKey[];
+  } else {
+    return transaction.instructions
+      .flatMap((ix) => ix.keys)
+      .map((k) => (k.isWritable ? k.pubkey : null))
+      .filter(Boolean) as PublicKey[];
+  }
+}
+
 /**
  * A helper function to determine the priority fee to use for a transaction
  *
@@ -405,31 +437,10 @@ export async function determinePriorityFee(
   let fee = minPriorityFee;
 
   // Figure out which accounts need write lock
-  let lockedWritableAccounts = [];
-  if (isVersionedTransaction(transaction)) {
-    const luts = (
-      await Promise.all(
-        transaction.message.addressTableLookups.map((acc) =>
-          connection.getAddressLookupTable(acc.accountKey),
-        ),
-      )
-    )
-      .map((lut) => lut.value)
-      .filter((val) => val !== null) as AddressLookupTableAccount[];
-    const msg = transaction.message;
-    const keys = msg.getAccountKeys({
-      addressLookupTableAccounts: luts ?? undefined,
-    });
-    lockedWritableAccounts = msg.compiledInstructions
-      .flatMap((ix) => ix.accountKeyIndexes)
-      .map((k) => (msg.isAccountWritable(k) ? keys.get(k) : null))
-      .filter((k) => k !== null) as PublicKey[];
-  } else {
-    lockedWritableAccounts = transaction.instructions
-      .flatMap((ix) => ix.keys)
-      .map((k) => (k.isWritable ? k.pubkey : null))
-      .filter((k) => k !== null) as PublicKey[];
-  }
+  const lockedWritableAccounts = await getWritableAccounts(
+    connection,
+    transaction,
+  );
 
   try {
     const recentFeesResponse = await connection.getRecentPrioritizationFees({
@@ -459,6 +470,64 @@ export async function determinePriorityFee(
 
   // Bound the return value by the parameters pased
   return Math.min(Math.max(fee, minPriorityFee), maxPriorityFee);
+}
+
+interface RpcResponse {
+  jsonrpc: String;
+  id?: String;
+  result?: [];
+  error?: any;
+}
+
+// Helper function to calculate the priority fee using the Triton One API
+// See https://docs.triton.one/chains/solana/improved-priority-fees-api
+// NOTE: this is currently an experimental feature
+export async function determinePriorityFeeTritonOne(
+  connection: Connection,
+  transaction: Transaction | VersionedTransaction,
+  percentile: number = DEFAULT_PRIORITY_FEE_PERCENTILE,
+  multiple: number = DEFAULT_PERCENTILE_MULTIPLE,
+  minPriorityFee: number = DEFAULT_MIN_PRIORITY_FEE,
+  maxPriorityFee: number = DEFAULT_MAX_PRIORITY_FEE,
+): Promise<number> {
+  const scaledPercentile = percentile * 10_000;
+
+  if (scaledPercentile < 1 || scaledPercentile > 10_000) {
+    throw new Error('percentile must be between 0.0001 and 1');
+  }
+
+  // @ts-ignore
+  const rpcRequest = connection._rpcRequest;
+
+  const accounts = await getWritableAccounts(connection, transaction);
+
+  const args = [
+    accounts,
+    {
+      percentile: scaledPercentile,
+    },
+  ];
+
+  const response = (await rpcRequest(
+    'getRecentPrioritizationFees',
+    args,
+  )) as RpcResponse;
+
+  if (response.error) {
+    throw new Error(response.error);
+  }
+
+  const recentPrioritizationFees = (
+    response.result as RecentPrioritizationFees[]
+  ).map((e) => e.prioritizationFee);
+
+  if (recentPrioritizationFees.length === 0) return minPriorityFee;
+
+  const unboundedFee = Math.floor(
+    median(recentPrioritizationFees) * (multiple > 0 ? multiple : 1),
+  );
+
+  return bound(unboundedFee, minPriorityFee, maxPriorityFee);
 }
 
 export class SolanaSigner<N extends Network, C extends SolanaChains = 'Solana'>
