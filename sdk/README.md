@@ -532,12 +532,7 @@ Once created, the resolver can be used to provide a list of input and possible o
 
 <!--EXAMPLE_RESOLVER_LIST_TOKENS-->
 ```ts
-  // what tokens are available on the source chain?
-  const srcTokens = await resolver.supportedSourceTokens(sendChain);
-  console.log(
-    "Allowed source tokens: ",
-    srcTokens.map((t) => canonicalAddress(t)),
-  );
+  const sendToken = Wormhole.tokenId(sendChain, "native");
 
   // given the send token, what can we possibly get on the destination chain?
   const destTokens = await resolver.supportedDestinationTokens(sendToken, sendChain, destChain);

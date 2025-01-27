@@ -45,10 +45,6 @@ export class ManualMockRoute<N extends Network>
   static supportedChains(network: Network): Chain[] {
     return ["Solana", "Ethereum"];
   }
-  static async supportedSourceTokens(fromChain: ChainContext<Network>): Promise<TokenId[]> {
-    await delay(250);
-    return [nativeTokenId(fromChain.chain)];
-  }
   static async supportedDestinationTokens<N extends Network>(
     sourceToken: TokenId,
     fromChain: ChainContext<N>,
