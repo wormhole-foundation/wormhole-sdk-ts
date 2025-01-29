@@ -105,7 +105,7 @@ export class EvmPlatform<N extends Network>
       rpc,
       new EvmAddress(token).toString(),
     );
-    return await tokenImpl.balanceOf(walletAddr);
+    return tokenImpl.balanceOf(walletAddr);
   }
 
   static async getBalances(
