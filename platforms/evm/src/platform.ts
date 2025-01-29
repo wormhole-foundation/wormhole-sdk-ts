@@ -105,14 +105,7 @@ export class EvmPlatform<N extends Network>
       rpc,
       new EvmAddress(token).toString(),
     );
-    try {
-      return await tokenImpl.balanceOf(walletAddr);
-    } catch (e: any) {
-      if (e?.code === 'BAD_DATA') {
-        return null;
-      }
-      throw e;
-    }
+    return await tokenImpl.balanceOf(walletAddr);
   }
 
   static async getBalances(
