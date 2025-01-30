@@ -10,6 +10,7 @@ const aptos: PlatformDefinition<typeof _aptos._platform> = {
   protocols: {
     WormholeCore: () => import("@wormhole-foundation/sdk-aptos-core"),
     TokenBridge: () => import("@wormhole-foundation/sdk-aptos-tokenbridge"),
+    CircleBridge: () => import("@wormhole-foundation/sdk-aptos-cctp"),
   },
   getChain: (network, chain, overrides?) =>
     new _aptos.AptosChain(

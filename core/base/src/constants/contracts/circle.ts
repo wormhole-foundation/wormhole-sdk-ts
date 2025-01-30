@@ -59,8 +59,14 @@ export const circleContracts = [[
       messageTransmitter: "0x08d87d37ba49e785dde270a83f8e979605b03dc552b5548f26fdf2f49bf7ed1b",
       wormholeRelayer:    "",
       wormhole:           "",
+    }], [
+    "Aptos", {
+      tokenMessenger:     "0x9e6702a472080ea3caaf6ba9dfaa6effad2290a9ba9adaacd5af5c618e42782d",
+      messageTransmitter: "0x177e17751820e4b4371873ca8c30279be63bdea63b88ed0f2239c2eea10f1772",
+      wormholeRelayer:    "",
+      wormhole:           "",
     }],
-  ]], [
+   ]], [
   "Testnet", [[
     "Sepolia", {
       tokenMessenger:     "0x9f3B8679c73C2Fef8b59B4f3444d4e156fb70AA5",
@@ -109,6 +115,12 @@ export const circleContracts = [[
       messageTransmitter: "0x4931e06dce648b3931f890035bd196920770e913e43e45990b383f6486fdd0a5",
       wormholeRelayer:    "",
       wormhole:           "",
+    }], [
+    "Aptos", {
+      tokenMessenger:     "0x5f9b937419dda90aa06c1836b7847f65bbbe3f1217567758dc2488be31a477b9",
+      messageTransmitter: "0x081e86cebf457a0c6004f35bd648a2794698f52e0dde09a48619dcd3d4cc23d9",
+      wormholeRelayer:    "",
+      wormhole:           "",
     }],
-  ]],
+   ]],
 ] as const satisfies MapLevels<[Network, Chain, CircleContracts]>;

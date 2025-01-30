@@ -17,13 +17,13 @@ import {
   decimals as nativeDecimals,
   networkPlatformConfigs,
 } from "@wormhole-foundation/sdk-connect";
-import { Aptos, AptosConfig, Network as AptosNetwork, MoveStructId } from "@aptos-labs/ts-sdk";
+import { Aptos, AptosConfig, Network as AptosNetwork } from "@aptos-labs/ts-sdk";
 import { AptosChain } from "./chain.js";
 import type { AptosChains, AptosPlatformType } from "./types.js";
 import { _platform } from "./types.js";
 
 import { AptosAddress } from "./address.js";
-import { APTOS_COIN, APTOS_SEPARATOR } from "./constants.js";
+import { APTOS_COIN } from "./constants.js";
 import type { AnyAptosAddress } from "./types.js";
 
 /**
@@ -78,12 +78,9 @@ export class AptosPlatform<N extends Network>
     if (isNative(token) || token === APTOS_COIN)
       return nativeDecimals.nativeDecimals(AptosPlatform._platform);
 
-    const tokenAddr = token.toString();
-    const resource = await rpc.getAccountResource({
-      accountAddress: tokenAddr.split(APTOS_SEPARATOR)[0]!,
-      resourceType: `0x1::coin::CoinInfo<${tokenAddr}>`,
-    });
-    return (resource as any).decimals;
+    const assetType = token.toString();
+    const data = await rpc.getFungibleAssetMetadataByAssetType({ assetType });
+    return data.decimals;
   }
 
   static async getBalance(
@@ -92,13 +89,17 @@ export class AptosPlatform<N extends Network>
     walletAddress: string,
     token: AnyAptosAddress,
   ): Promise<bigint | null> {
-    const tokenAddress = isNative(token) ? APTOS_COIN : token.toString();
+    const assetType = isNative(token) ? APTOS_COIN : token.toString();
     try {
-      const balance = await rpc.getAccountCoinAmount({
-        accountAddress: walletAddress,
-        coinType: tokenAddress as MoveStructId,
+      const data = await rpc.getCurrentFungibleAssetBalances({
+        options: {
+          where: {
+            owner_address: { _eq: walletAddress },
+            asset_type: { _eq: assetType },
+          },
+        },
       });
-      return BigInt(balance);
+      return data[0]?.amount ?? null;
     } catch (e: any) {
       if (e.status === 404) {
         return null;

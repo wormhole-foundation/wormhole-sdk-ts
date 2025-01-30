@@ -62,6 +62,7 @@
     "platforms/aptos",
     "platforms/aptos/protocols/core",
     "platforms/aptos/protocols/tokenBridge",
+    "platforms/aptos/protocols/cctp",
     "sdk",
     "examples"
   ],

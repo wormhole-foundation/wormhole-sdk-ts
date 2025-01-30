@@ -407,6 +407,7 @@
     "@wormhole-foundation/sdk-aptos": "1.0.3",
     "@wormhole-foundation/sdk-aptos-core": "1.0.3",
     "@wormhole-foundation/sdk-aptos-tokenbridge": "1.0.3",
+    "@wormhole-foundation/sdk-aptos-cctp": "1.0.3",
     "@wormhole-foundation/sdk-algorand": "1.0.3",
     "@wormhole-foundation/sdk-algorand-core": "1.0.3",
     "@wormhole-foundation/sdk-algorand-tokenbridge": "1.0.3"
