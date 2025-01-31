@@ -31,9 +31,10 @@ import { TokenTransfer } from "./protocols/tokenBridge/tokenTransfer.js";
 import type { RouteConstructor } from "./routes/index.js";
 import { RouteResolver } from "./routes/resolver.js";
 import { retry } from "./tasks.js";
-import type { TransactionStatus } from "./whscan-api.js";
+import type { RelayStatus, TransactionStatus } from "./whscan-api.js";
 import {
   getIsVaaEnqueued,
+  getRelayStatus,
   getTransactionStatusWithRetry,
   getTxsByAddress,
   getVaaByTxHashWithRetry,
@@ -331,6 +332,16 @@ export class Wormhole<N extends Network> {
       return await getVaaByTxHashWithRetry(this.config.api, id, decodeAs, timeout);
 
     return await getVaaWithRetry(this.config.api, id, decodeAs, timeout);
+  }
+
+  /**
+   * Gets the RelayStatus for a given WormholeMessageId
+   *
+   * @param wormholeMessageId The WormholeMessageId corresponding to the relay status to be fetched
+   * @returns The RelayStatus if available otherwise null
+   */
+  async getRelayStatus(wormholeMessageId: WormholeMessageId): Promise<RelayStatus | null> {
+    return await getRelayStatus(this.config.api, wormholeMessageId);
   }
 
   /**
