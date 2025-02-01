@@ -70,8 +70,14 @@ const chainIdAndChainEntries = [
   [10008, "MonadDevnet"    ],
 ] as const satisfies MapLevel<number, string>;
 
+type SuppressExpansionMapping = {
+  readonly [key in (typeof chains)[number]]: never;
+};
+
+export interface UnexpandedChainUnion extends SuppressExpansionMapping {}
+
 export const [chainIds, chains] = zip(chainIdAndChainEntries);
-export type Chain = (typeof chains)[number];
+export type Chain = keyof UnexpandedChainUnion;
 export type ChainId = (typeof chainIds)[number];
 
 export const chainToChainId = constMap(chainIdAndChainEntries, [1, 0]);
