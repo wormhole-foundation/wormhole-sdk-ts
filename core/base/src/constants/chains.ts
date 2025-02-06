@@ -53,6 +53,7 @@ const chainIdAndChainEntries = [
   [   46, "Ink"            ],
   [   47, "HyperEVM"       ],
   [   48, "Monad"          ],
+  [   -1, "Hyperliquid"    ],
   [ 3104, "Wormchain"      ],
   [ 4000, "Cosmoshub"      ],
   [ 4001, "Evmos"          ],
