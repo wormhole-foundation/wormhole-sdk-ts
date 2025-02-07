@@ -65,6 +65,12 @@ export const circleContracts = [[
       messageTransmitter: "0x177e17751820e4b4371873ca8c30279be63bdea63b88ed0f2239c2eea10f1772",
       wormholeRelayer:    "",
       wormhole:           "",
+    }], [
+    "Unichain", {
+      tokenMessenger:     "0x4e744b28E787c3aD0e810eD65A24461D4ac5a762",
+      messageTransmitter: "0x353bE9E2E38AB1D19104534e4edC21c643Df86f4",
+      wormholeRelayer:    "",
+      wormhole:           "",
     }],
    ]], [
   "Testnet", [[
@@ -119,6 +125,12 @@ export const circleContracts = [[
     "Aptos", {
       tokenMessenger:     "0x5f9b937419dda90aa06c1836b7847f65bbbe3f1217567758dc2488be31a477b9",
       messageTransmitter: "0x081e86cebf457a0c6004f35bd648a2794698f52e0dde09a48619dcd3d4cc23d9",
+      wormholeRelayer:    "",
+      wormhole:           "",
+    }], [
+    "Unichain", {
+      tokenMessenger:     "0x8ed94B8dAd2Dc5453862ea5e316A8e71AAed9782",
+      messageTransmitter: "0xbc498c326533d675cf571B90A2Ced265ACb7d086",
       wormholeRelayer:    "",
       wormhole:           "",
     }],
