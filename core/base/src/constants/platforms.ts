@@ -42,13 +42,11 @@ const platformAndChainsEntries = [[
     "Ink",
     "HyperEVM",
     "Monad",
+    "Hyperliquid",
   ]], [
   "Solana", [
     "Solana",
     "Pythnet"
-  ]], [
-    "Hyperliquid", [
-      "Hyperliquid"
   ]], [
   "Cosmwasm", [
     "Cosmoshub",
