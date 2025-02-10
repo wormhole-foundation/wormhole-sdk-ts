@@ -133,6 +133,7 @@ const blockTimeMilliseconds = [
   ["Sui",               3_000],
   ["Terra",             6_000],
   ["Terra2",            6_000],
+  ["Unichain",          1_000],
   ["Xpla",              5_000],
   ["Xlayer",            3_000],
   ["Worldchain",        2_000],
