@@ -55,7 +55,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Blast",     81457n],
       ["Linea",     59144n],
       ["Snaxchain", 2192n],
-      ["Unichain",  130n]
+      ["Unichain",  130n],
       ["Worldchain",480n],
     ],
   ],
