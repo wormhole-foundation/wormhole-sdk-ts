@@ -47,6 +47,7 @@ const rpcConfig = [[
     ["Mantle",    "https://rpc.mantle.xyz"],
     ["Klaytn",    "https://rpc.ankr.com/klaytn"],
     ["Snaxchain", "https://mainnet.snaxchain.io"],
+    ["Unichain",  "https://mainnet.unichain.org"],
     ["Worldchain","https://worldchain-mainnet.g.alchemy.com/public"],
   ]], [
   "Testnet", [
