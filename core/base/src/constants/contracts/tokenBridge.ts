@@ -36,6 +36,7 @@ export const tokenBridgeContracts = [[
     ["Scroll",    "0x24850c6f61C438823F01B7A3BF2B89B72174Fa9d"],
     ["Mantle",    "0x24850c6f61C438823F01B7A3BF2B89B72174Fa9d"],
     ["Snaxchain", "0x8B94bfE456B48a6025b92E11Be393BAa86e68410"],
+    ["Unichain",  "0x3Ff72741fd67D6AD0668d93B41a09248F4700560"],
     ["Worldchain","0xc309275443519adca74c9136b02A38eF96E3a1f6"],
   ]], [
   "Testnet", [
