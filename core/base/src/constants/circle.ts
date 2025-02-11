@@ -20,7 +20,8 @@ const usdcContracts = [[
     ["Base",      "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"],
     ["Polygon",   "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359"],
     ["Sui",       "0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7::usdc::USDC"],
-    ["Aptos",     "0xbae207659db88bea0cbead6da0ed00aac12edcdda169e591cd41c94180b46f3b"]
+    ["Aptos",     "0xbae207659db88bea0cbead6da0ed00aac12edcdda169e591cd41c94180b46f3b"],
+    ["Unichain",  "0x078D782b760474a361dDA0AF3839290b0EF57AD6"],
   ]], [
   "Testnet", [
     ["Sepolia",         "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"],
@@ -31,7 +32,8 @@ const usdcContracts = [[
     ["BaseSepolia",     "0x036CbD53842c5426634e7929541eC2318f3dCF7e"],
     ["Polygon",         "0x9999f7Fea5938fD3b1E26A12c3f2fb024e194f97"],
     ["Sui",             "0xa1ec7fc00a6f40db9693ad1415d0c193ad3906494428cf252621037bd7117e29::usdc::USDC"],
-    ["Aptos",           "0x69091fbab5f7d635ee7ac5098cf0c1efbe31d68fec0f2cd565e8d168daf52832"]
+    ["Aptos",           "0x69091fbab5f7d635ee7ac5098cf0c1efbe31d68fec0f2cd565e8d168daf52832"],
+    ["Unichain",        "0x31d0220469e10c4E71834a79b1f276d740d3768F"],
   ]],
 ] as const satisfies MapLevel<Network, MapLevel<Chain, string>>;
 export const usdcContract = constMap(usdcContracts);
@@ -49,6 +51,7 @@ const circleDomains = [[
     ["Polygon",   7],
     ["Sui",       8],
     ["Aptos",     9],
+    ["Unichain",  10],
   ]], [
   "Testnet", [
     ["Sepolia",         0],
@@ -60,6 +63,7 @@ const circleDomains = [[
     ["Polygon",         7],
     ["Sui",             8],
     ["Aptos",           9],
+    ["Unichain",        10],
   ]],
 ] as const satisfies MapLevel<Network, MapLevel<Chain, number>>;
 
