@@ -62,7 +62,7 @@ const finalityThresholds = [
   ["Berachain", 1],
   ["Seievm",    1],
   ["Snaxchain", 512],
-  ["Unichain",  512],
+  ["Unichain",  1024], // TODO: validate, this is inferred from vaa metrics timing
   ["Ink",       512],
   ["HyperEVM",  1],
   ["Monad",     1],
@@ -133,6 +133,7 @@ const blockTimeMilliseconds = [
   ["Sui",               3_000],
   ["Terra",             6_000],
   ["Terra2",            6_000],
+  ["Unichain",          1_000],
   ["Xpla",              5_000],
   ["Xlayer",            3_000],
   ["Worldchain",        2_000],
