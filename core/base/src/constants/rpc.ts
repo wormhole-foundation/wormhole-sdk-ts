@@ -50,7 +50,6 @@ const rpcConfig = [[
     ["Berachain", "https://rpc.berachain.com"],
     ["Unichain",  "https://mainnet.unichain.org"],
     ["Worldchain","https://worldchain-mainnet.g.alchemy.com/public"],
-    ["Unichain",  "https://mainnet.unichain.org"],
   ]], [
   "Testnet", [
     ["Ethereum",        "https://eth-sepolia.public.blastapi.io"],
@@ -99,7 +98,7 @@ const rpcConfig = [[
     ["Worldchain",      "https://worldchain-sepolia.g.alchemy.com/public"],
     ["Ink",             "https://rpc-qnd-sepolia.inkonchain.com"],
     ["HyperEVM",        "https://api.hyperliquid-testnet.xyz/evm"],
-    ["Monad",           ""], // TODO: No public rpc is currently available, override with a custom rpc for now.
+    ["Monad",           "https://testnet-rpc.monad.xyz"],
     ["Noble",           "https://noble-testnet-rpc.polkachu.com/"],
   ]], [
   "Devnet", [
