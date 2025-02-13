@@ -59,6 +59,7 @@ export class AutomaticCCTPRoute<N extends Network>
 
   static meta = {
     name: "AutomaticCCTP",
+    provider: "Circle",
   };
 
   static supportedNetworks(): Network[] {
