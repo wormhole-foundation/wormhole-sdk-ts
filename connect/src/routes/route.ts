@@ -67,6 +67,8 @@ export interface RouteMeta {
   // Common name for the route,
   //eg "TokenBridge" or "CCTP"
   name: string;
+  // Provider name
+  provider?: string;
   // Url to logo route provider
   logo?: string;
   // If people have trouble, where should they go?
