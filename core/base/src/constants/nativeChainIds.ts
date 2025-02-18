@@ -76,7 +76,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Wormchain",       "wormchain-testnet-0"],
       ["Xpla",            "cube_47-5"],
       ["Kujira",          "harpoon-4"],
-      ["Solana",          "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG"],
+      ["Solana",          "4uhcVJyU9pJkvQyS88uRDiswHXSCkY3zQawwpjk2NsNY"],
       ["Sui",             "4c78adac"],
       ["Acala",           597n],
       ["Arbitrum",        421613n],
@@ -129,7 +129,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Bsc",       1397n],
       ["Ethereum",  1337n],
       ["Injective","injective_devnet_fake"],
-      ["Solana",    "8wF6jKV3cKwyaVkWcoV9KpDqmkjvEYno9hKZrKx8TbZn"],
+      ["Solana",    "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG"],
     ],
   ],
 ] as const satisfies MapLevels<[Network, Chain, bigint | string]>;
