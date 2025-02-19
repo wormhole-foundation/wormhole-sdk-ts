@@ -70,9 +70,6 @@ const chainIdAndChainEntries = [
   [10005, "OptimismSepolia"],
   [10006, "Holesky"        ],
   [10007, "PolygonSepolia" ],
-  // Hack: 50000 is a fake chain ID
-  // Anticipating Hyperliquid chain
-  [50000, "Hyperliquid"    ],
 ] as const satisfies MapLevel<number, string>;
 
 export const [chainIds, chains] = zip(chainIdAndChainEntries);
