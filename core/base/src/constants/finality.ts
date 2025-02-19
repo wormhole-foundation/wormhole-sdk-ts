@@ -145,6 +145,7 @@ const blockTimeMilliseconds = [
   ["Neutron",           5_000],
   ["Stargaze",          5_000],
   ["Seda",              7_500],
+  ["Berachain",         2_000],
 ] as const satisfies MapLevel<Chain, number>;
 
 /** The amount of time between block production, in milliseconds  */
