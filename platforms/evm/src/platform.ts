@@ -28,6 +28,8 @@ import { EvmChain } from './chain.js';
 import type { AnyEvmAddress, EvmChains, EvmPlatformType } from './types.js';
 import { _platform } from './types.js';
 
+import { sendTransaction, waitForTransactionReceipt, type Config } from '@wagmi/core';
+
 /**
  * @category EVM
  */
@@ -130,20 +132,40 @@ export class EvmPlatform<N extends Network>
     chain: Chain,
     rpc: Provider,
     stxns: SignedTx[],
+    wagmiConfig?: { useWagmi: boolean; wagmiConfig: Config }
   ): Promise<TxHash[]> {
     const txhashes: TxHash[] = [];
-    for (const stxn of stxns) {
-      const txRes = await rpc.broadcastTransaction(stxn);
-      txhashes.push(txRes.hash);
 
-      if (chain === 'Celo') {
-        console.error('TODO: override celo block fetching');
-        continue;
+    if (wagmiConfig?.useWagmi) {
+      for (const stxn of stxns) {
+        const hash = await sendTransaction(wagmiConfig.wagmiConfig, {
+          to: stxn.to as `0x${string}`,
+          data: stxn.data as `0x${string}`,
+          value: stxn.value,
+          chainId: Number(stxn.chainId),
+        });
+
+        await waitForTransactionReceipt(wagmiConfig.wagmiConfig, {
+          hash,
+          chainId: Number(stxn.chainId),
+        });
+
+        txhashes.push(hash);
       }
+    } else {
+      for (const stxn of stxns) {
+        const txRes = await rpc.broadcastTransaction(stxn);
+        txhashes.push(txRes.hash);
 
-      // Wait for confirmation
-      const txReceipt = await txRes.wait();
-      if (txReceipt === null) throw new Error('Received null TxReceipt');
+        if (chain === 'Celo') {
+          console.error('TODO: override celo block fetching');
+          continue;
+        }
+
+        // Wait for confirmation
+        const txReceipt = await txRes.wait();
+        if (txReceipt === null) throw new Error('Received null TxReceipt');
+      }
     }
     return txhashes;
   }
