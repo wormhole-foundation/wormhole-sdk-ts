@@ -125,7 +125,6 @@ const blockTimeMilliseconds = [
   ["Osmosis",           6_000],
   ["Polygon",           2_000],
   ["PolygonSepolia",    2_000],
-  ["Rootstock",        30_000],
   ["Scroll",            3_000],
   ["Sei",                 400],
   ["Sepolia",          15_000],

@@ -42,7 +42,6 @@ const chainNetworkNativeChainIdEntries = [
       ["Oasis",     42262n],
       ["Optimism",  10n],
       ["Polygon",   137n],
-      ["Rootstock", 30n],
       ["Neutron",   "neutron-1"],
       ["Stargaze",  "stargaze-1"],
       ["Celestia",  "celestia"],
@@ -95,7 +94,6 @@ const chainNetworkNativeChainIdEntries = [
       ["Oasis",           42261n],
       ["Optimism",        420n],
       ["Polygon",         80001n], //mumbai
-      ["Rootstock",       31n],
       ["Sepolia",         11155111n],
       ["ArbitrumSepolia", 421614n],
       ["BaseSepolia",     84532n],
