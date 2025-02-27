@@ -22,7 +22,6 @@ const platformAndChainsEntries = [[
     "Oasis",
     "Optimism",
     "Polygon",
-    "Rootstock",
     "Sepolia",
     "ArbitrumSepolia",
     "BaseSepolia",
