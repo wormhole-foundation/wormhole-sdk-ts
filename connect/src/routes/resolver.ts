@@ -20,22 +20,6 @@ export class RouteResolver<N extends Network> {
     this.routeConstructors = routeConstructors;
   }
 
-  async supportedSourceTokens(chain: ChainContext<N>): Promise<TokenId[]> {
-    if (this.inputTokenList) return this.inputTokenList;
-    const itl = await Promise.all(
-      this.routeConstructors.map(async (rc) => {
-        try {
-          return await rc.supportedSourceTokens(chain);
-        } catch (e) {
-          console.error(`Failed to get supported source tokens for ${rc.meta.name}: `, e);
-          return [];
-        }
-      }),
-    );
-    this.inputTokenList = uniqueTokens(itl.flat());
-    return this.inputTokenList!;
-  }
-
   async supportedDestinationTokens(
     inputToken: TokenId,
     fromChain: ChainContext<N>,
@@ -50,7 +34,10 @@ export class RouteResolver<N extends Network> {
         }
 
         const supportedChains = rc.supportedChains(fromChain.network);
-        if (!supportedChains.includes(fromChain.chain) || !supportedChains.includes(toChain.chain)) {
+        if (
+          !supportedChains.includes(fromChain.chain) ||
+          !supportedChains.includes(toChain.chain)
+        ) {
           return [];
         }
 
@@ -72,16 +59,7 @@ export class RouteResolver<N extends Network> {
           const protocolSupported =
             rc.supportedNetworks().includes(this.wh.network) &&
             rc.supportedChains(this.wh.network).includes(request.toChain.chain) &&
-            rc.supportedChains(this.wh.network).includes(request.fromChain.chain)
-
-          const sourceTokenAddress = canonicalAddress(
-            isNative(request.source.id.address) ? request.source.wrapped! : request.source.id,
-          );
-
-          const sourceTokenSupported =
-            (await rc.supportedSourceTokens(request.fromChain)).filter((tokenId: TokenId) => {
-              return canonicalAddress(tokenId) === sourceTokenAddress;
-            }).length > 0;
+            rc.supportedChains(this.wh.network).includes(request.fromChain.chain);
 
           const dstTokenAddress = canonicalAddress(
             isNative(request.destination.id.address)
@@ -99,7 +77,7 @@ export class RouteResolver<N extends Network> {
               return canonicalAddress(tokenId) === dstTokenAddress;
             }).length > 0;
 
-          return protocolSupported && sourceTokenSupported && destinationTokenSupported;
+          return protocolSupported && destinationTokenSupported;
         } catch (e) {
           return false;
         }

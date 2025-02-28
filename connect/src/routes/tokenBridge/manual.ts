@@ -67,14 +67,6 @@ export class TokenBridgeRoute<N extends Network>
     return contracts.tokenBridgeChains(network);
   }
 
-  // get the list of source tokens that are possible to send
-  static async supportedSourceTokens(fromChain: ChainContext<Network>): Promise<TokenId[]> {
-    // Default list for the chain
-    return Object.values(fromChain.config.tokenMap!).map((td) =>
-      Wormhole.tokenId(td.chain, td.address),
-    );
-  }
-
   // get the list of destination tokens that may be received on the destination chain
   static async supportedDestinationTokens<N extends Network>(
     sourceToken: TokenId,

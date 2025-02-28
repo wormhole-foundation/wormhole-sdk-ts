@@ -91,15 +91,6 @@ export class AutomaticPorticoRoute<N extends Network>
     return [];
   }
 
-  static async supportedSourceTokens(fromChain: ChainContext<Network>): Promise<TokenId[]> {
-    const pb = await fromChain.getPorticoBridge();
-    const { tokenMap } = fromChain.config;
-    return pb
-      .supportedTokens()
-      .filter((t) => !tokenMap || filters.byAddress(tokenMap, canonicalAddress(t.token)))
-      .map((t) => t.token);
-  }
-
   static async supportedDestinationTokens<N extends Network>(
     sourceToken: TokenId,
     fromChain: ChainContext<N>,
@@ -113,6 +104,10 @@ export class AutomaticPorticoRoute<N extends Network>
     const tokenAddress = canonicalAddress(srcTokenAddress);
 
     const pb = await fromChain.getPorticoBridge();
+    // Make sure the source token is supported
+    if (!pb.supportedTokens().some((t) => canonicalAddress(t.token) === tokenAddress)) {
+      return [];
+    }
 
     try {
       // The highway token that will be used to bridge
@@ -147,8 +142,12 @@ export class AutomaticPorticoRoute<N extends Network>
   async validate(request: RouteTransferRequest<N>, params: TP): Promise<VR> {
     try {
       if (
-        !AutomaticPorticoRoute.supportedChains(request.fromChain.network).includes(request.fromChain.chain) ||
-        !AutomaticPorticoRoute.supportedChains(request.toChain.network).includes(request.toChain.chain)
+        !AutomaticPorticoRoute.supportedChains(request.fromChain.network).includes(
+          request.fromChain.chain,
+        ) ||
+        !AutomaticPorticoRoute.supportedChains(request.toChain.network).includes(
+          request.toChain.chain,
+        )
       ) {
         throw new Error("Protocol not supported");
       }

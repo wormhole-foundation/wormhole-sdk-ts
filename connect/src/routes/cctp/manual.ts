@@ -69,13 +69,6 @@ export class CCTPRoute<N extends Network>
     return [];
   }
 
-  // get the list of source tokens that are possible to send
-  static async supportedSourceTokens(fromChain: ChainContext<Network>): Promise<TokenId[]> {
-    const { network, chain } = fromChain;
-    if (!circle.usdcContract.has(network, chain)) return [];
-    return [Wormhole.chainAddress(chain, circle.usdcContract.get(network, chain)!)];
-  }
-
   // get the list of destination tokens that may be received on the destination chain
   static async supportedDestinationTokens<N extends Network>(
     sourceToken: TokenId,

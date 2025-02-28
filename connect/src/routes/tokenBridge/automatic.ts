@@ -7,7 +7,7 @@ import type {
   TokenId,
   TokenTransferDetails,
 } from "@wormhole-foundation/sdk-definitions";
-import { isNative, isTokenId, nativeTokenId } from "@wormhole-foundation/sdk-definitions";
+import { isNative, isTokenId } from "@wormhole-foundation/sdk-definitions";
 import { TokenTransfer } from "../../protocols/tokenBridge/tokenTransfer.js";
 import type { AttestationReceipt, SourceInitiatedTransferReceipt } from "../../types.js";
 import { TransferState } from "../../types.js";
@@ -73,18 +73,6 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     return [];
   }
 
-  // get the list of source tokens that are possible to send
-  static async supportedSourceTokens(fromChain: ChainContext<Network>): Promise<TokenId[]> {
-    const atb = await fromChain.getAutomaticTokenBridge();
-    const registered = await atb.getRegisteredTokens();
-    return [
-      nativeTokenId(fromChain.chain),
-      ...registered.map((v) => {
-        return { chain: fromChain.chain, address: v };
-      }),
-    ];
-  }
-
   // get the list of destination tokens that may be received on the destination chain
   static async supportedDestinationTokens<N extends Network>(
     sourceToken: TokenId,
@@ -92,6 +80,14 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     toChain: ChainContext<N>,
   ): Promise<TokenId[]> {
     try {
+      if (!isNative(sourceToken)) {
+        const srcAtb = await fromChain.getAutomaticTokenBridge();
+        const srcIsAccepted = await srcAtb.isRegisteredToken(sourceToken.address);
+        if (!srcIsAccepted) {
+          return [];
+        }
+      }
+
       const expectedDestinationToken = await TokenTransfer.lookupDestinationToken(
         fromChain,
         toChain,
@@ -101,7 +97,7 @@ export class AutomaticTokenBridgeRoute<N extends Network>
       const atb = await toChain.getAutomaticTokenBridge();
       const acceptable = await atb.isRegisteredToken(expectedDestinationToken.address);
       if (!acceptable) {
-        throw new Error("Destination token is not accepted by the AutomaticTokenBridge");
+        return [];
       }
 
       return [expectedDestinationToken];
