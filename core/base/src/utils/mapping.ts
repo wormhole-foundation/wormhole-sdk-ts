@@ -338,7 +338,7 @@ type GenericMappingFunc<M extends Mapped, D extends number> =
 type SubMap<M extends Mapped, D extends number, K extends PropertyKey> =
   K extends keyof M
   ? M[K] extends Mapped
-    ? ConstMap<M[K], Depth[D]>
+    ? ConstMapImpl<M[K], Depth[D]>
     : never
   : never;
 
@@ -365,14 +365,14 @@ type HasGetFuncs<M extends Mapped, D extends number> =
   ? { readonly has: (...args: P) => boolean, readonly get: (...args: P) => R | undefined }
   : never;
 
-type ConstMap<M extends Mapped, D extends number> =
+type ConstMapImpl<M extends Mapped, D extends number> =
   D extends 1
   ? GenericMappingFunc<M, D> & HasGetFuncs<M, D>
   : GenericMappingFunc<M, D> & HasGetFuncs<M, D> & SubMapFunc<M, D>;
 
-type ToConstMap<M extends MappingEntries, S extends ShapeLike | undefined = undefined> =
+type ConstMap<M extends MappingEntries, S extends ShapeLike | undefined = undefined> =
   ToMappingAndDepth<M, S> extends [infer TM extends Mapped, infer D extends Depth[number]]
-  ? ConstMap<TM, D>
+  ? ConstMapImpl<TM, D>
   : never;
 
 const isRecursiveTuple = (arr: RoArray) =>
@@ -383,7 +383,7 @@ export const cartesianRightRecursive =
     arr.length === 0
       ? []
       : Array.isArray(arr[0])
-        ? (arr as MappingEntries).map(([key, val]) =>
+        ? (arr as MappingEntries).map(([key, val]: readonly [MappableKey, unknown]) =>
           Array.isArray(val)
             ? (isRecursiveTuple(val) ? cartesianRightRecursive(val as unknown as RoTuple) : val)
               .map(ele => [key, ele].flat())
@@ -484,18 +484,20 @@ const toMapping = <
 export function constMap<
   const M extends MappingEntries,
   const S extends ShapeLike | undefined = undefined,
->(mappingEntries: M, shape?: S): ToConstMap<M, S> {
-  const mapping = toMapping(mappingEntries, shape);
-  const genericMappingFunc = ((...args: MappableKey[]) =>
-    args.reduce((subMapping: any, key) =>
-      subMapping ? subMapping[key.toString()] ?? undefined : undefined,
-      mapping
-    ));
-  return Object.assign(genericMappingFunc, {
-    has: (...args: RoArray<MappableKey>) => genericMappingFunc(...args) !== undefined,
-    get: (...args: RoArray<MappableKey>) => genericMappingFunc(...args),
-    subMap: (key: MappableKey) => (mapping as any)[key.toString()],
-  }) as unknown as ToConstMap<M, S>;
+>(mappingEntries: M, shape?: S): ConstMap<M, S> {
+  const toConstMap = (mapping: Mapped): ConstMap<M, S> => {
+    const genericMappingFunc = ((...args: MappableKey[]) =>
+      args.reduce((subMapping: any, key) =>
+        subMapping ? subMapping[key.toString()] ?? undefined : undefined,
+        mapping
+      ));
+    return Object.assign(genericMappingFunc, {
+      has: (...args: RoArray<MappableKey>) => genericMappingFunc(...args) !== undefined,
+      get: (...args: RoArray<MappableKey>) => genericMappingFunc(...args),
+      subMap: (key: MappableKey) => toConstMap((mapping as any)[key.toString()]),
+    }) as unknown as ConstMap<M, S>;
+  };
+  return toConstMap(toMapping(mappingEntries, shape));
 }
 
 //--- find a bunch of "tests" below
