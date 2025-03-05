@@ -47,7 +47,7 @@ const contractActions = [
   //a word on the chainId for RecoverChainId:
   //The EVM contracts accept an arbitrary number when recovering chain ids however I don't think you
   //  ever want to set the wormhole chain id of a contract (even on a fork) to 0 since this would
-  //  mean that afterwards all the checks that use `vaa.chainId == this.chainId` in the contract
+  //means that afterwards all the checks that use `vaa.chainId == this.chainId` in the contract
   //  would suddenly accept "broadcast VAAs" which is almost certainly not what's intended.
   //TODO should we define governance actions that are platform specific here?
   //     (reason against: we might want to deserialize types that are specific to the platform)
@@ -95,7 +95,7 @@ const wormchainActions = [
 // It has a variable length string that has no length prefix as its first item followed by a uint.
 // So deserialization has to reason backwards to determine the length.
 // see: https://github.com/wormhole-foundation/wormhole/blob/2eb5cca8e72c5379cd444ae3f25a012c1e04ad65/sdk/vaa/payloads.go#L396-L407
-// We have to do a bit of footwork here to accomodate this oddity.
+// We have to do a bit of footwork here to accommodate this oddity.
 const gatewayScheduleUpgradeItem = (() => {
   const stringBytesLayout = (size: number) =>
     ({ binary: "bytes", size, custom: stringConversion } as const satisfies Layout);
