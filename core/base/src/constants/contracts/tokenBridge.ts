@@ -39,6 +39,7 @@ export const tokenBridgeContracts = [[
     ["Berachain", "0x3Ff72741fd67D6AD0668d93B41a09248F4700560"],
     ["Unichain",  "0x3Ff72741fd67D6AD0668d93B41a09248F4700560"],
     ["Worldchain","0xc309275443519adca74c9136b02A38eF96E3a1f6"],
+    ["Ink",       "0x3Ff72741fd67D6AD0668d93B41a09248F4700560"],
   ]], [
   "Testnet", [
     ["Solana",          "DZnkkTmCiFWfYTfT41X3Rd1kDgozqzxWaHqsw6W4x2oe"],
