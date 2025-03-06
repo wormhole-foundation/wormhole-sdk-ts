@@ -838,7 +838,7 @@ export namespace TokenTransfer {
         amount: amount.units(srcAmountTruncated),
       },
       destinationToken: { token: dstToken, amount: destAmountLessFee },
-      relayFee: { token: dstToken, amount: fee },
+      relayFee: { token: dstToken, amount: amount.units(feeAmountDest) },
       destinationNativeGas,
       warnings: warnings.length > 0 ? warnings : undefined,
       eta,
