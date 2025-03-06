@@ -562,8 +562,11 @@ export namespace TokenTransfer {
         lookup.address as UniversalAddress,
       );
       const destWrappedNative = await dstTb.getWrappedNative();
-      if (canonicalAddress({ chain: dstChain.chain, address: destWrappedNative }) === canonicalAddress({ chain: dstChain.chain, address: nativeAddress })) {
-        return { chain: dstChain.chain, address: 'native' }
+      if (
+        canonicalAddress({ chain: dstChain.chain, address: destWrappedNative }) ===
+        canonicalAddress({ chain: dstChain.chain, address: nativeAddress })
+      ) {
+        return { chain: dstChain.chain, address: "native" };
       }
       return { chain: dstChain.chain, address: nativeAddress };
     }
@@ -744,7 +747,7 @@ export namespace TokenTransfer {
     if (!transfer.automatic) {
       return {
         sourceToken: {
-          token: srcTokenId,
+          token: transfer.token,
           amount: amount.units(srcAmountTruncated),
         },
         destinationToken: { token: dstToken, amount: amount.units(dstAmountReceivable) },
@@ -821,10 +824,8 @@ export namespace TokenTransfer {
     // or the transaction could fail if the account does not have enough lamports
     if (dstToken.chain === "Solana") {
       const nativeWrappedTokenId = await dstChain.getNativeWrappedTokenId();
-      const isNativeSol = (isNative(dstToken.address) || isSameToken(dstToken, nativeWrappedTokenId));
-      if (
-        isNativeSol && destAmountLessFee < solanaMinBalanceForRentExemptAccount
-      ) {
+      const isNativeSol = isNative(dstToken.address) || isSameToken(dstToken, nativeWrappedTokenId);
+      if (isNativeSol && destAmountLessFee < solanaMinBalanceForRentExemptAccount) {
         throw new Error(
           `Destination amount must be at least ${solanaMinBalanceForRentExemptAccount} lamports`,
         );
@@ -833,11 +834,11 @@ export namespace TokenTransfer {
 
     return {
       sourceToken: {
-        token: srcTokenId,
+        token: transfer.token,
         amount: amount.units(srcAmountTruncated),
       },
       destinationToken: { token: dstToken, amount: destAmountLessFee },
-      relayFee: { token: srcTokenId, amount: fee },
+      relayFee: { token: dstToken, amount: fee },
       destinationNativeGas,
       warnings: warnings.length > 0 ? warnings : undefined,
       eta,
@@ -863,9 +864,15 @@ export namespace TokenTransfer {
       );
       if (isNative(destinationToken.address)) {
         const nativeWrappedTokenId = await dstChain.getNativeWrappedTokenId();
-        _transfer.to = await dstChain.getTokenAccount(_transfer.to.address, nativeWrappedTokenId.address);
+        _transfer.to = await dstChain.getTokenAccount(
+          _transfer.to.address,
+          nativeWrappedTokenId.address,
+        );
       } else {
-        _transfer.to = await dstChain.getTokenAccount(_transfer.to.address, destinationToken.address)
+        _transfer.to = await dstChain.getTokenAccount(
+          _transfer.to.address,
+          destinationToken.address,
+        );
       }
     }
 
