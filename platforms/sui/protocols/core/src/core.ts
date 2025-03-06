@@ -1,4 +1,4 @@
-import type { SuiClient } from "@mysten/sui.js/client";
+import type { SuiClient } from "@mysten/sui/client";
 import type {
   AccountAddress,
   ChainId,

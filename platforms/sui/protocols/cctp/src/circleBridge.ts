@@ -1,10 +1,9 @@
-import type { SuiClient } from "@mysten/sui.js/client";
-import { TransactionBlock } from "@mysten/sui.js/transactions";
+import type { SuiClient } from "@mysten/sui/client";
+import { Transaction } from "@mysten/sui/transactions";
 import {
   SuiPlatform,
   type SuiChains,
   SuiUnsignedTransaction,
-  uint8ArrayToBCS,
 } from "@wormhole-foundation/sdk-sui";
 import type {
   AccountAddress,
@@ -69,7 +68,7 @@ export class SuiCircleBridge<N extends Network, C extends SuiChains> implements 
     recipient: ChainAddress,
     amount: bigint,
   ): AsyncGenerator<SuiUnsignedTransaction<N, C>> {
-    const tx = new TransactionBlock();
+    const tx = new Transaction();
 
     const destinationDomain = circle.circleChainId.get(this.network, recipient.chain)!;
 
@@ -111,7 +110,7 @@ export class SuiCircleBridge<N extends Network, C extends SuiChains> implements 
   }
 
   async isTransferCompleted(message: CircleBridge.Message): Promise<boolean> {
-    const tx = new TransactionBlock();
+    const tx = new Transaction();
 
     tx.moveCall({
       target: `${this.messageTransmitterId}::state::is_nonce_used`,
@@ -142,14 +141,14 @@ export class SuiCircleBridge<N extends Network, C extends SuiChains> implements 
     message: CircleBridge.Message,
     attestation: string,
   ): AsyncGenerator<SuiUnsignedTransaction<N, C>> {
-    const tx = new TransactionBlock();
+    const tx = new Transaction();
 
     // Add receive_message move call to MessageTransmitter
     const [receipt] = tx.moveCall({
       target: `${this.messageTransmitterId}::receive_message::receive_message`,
       arguments: [
-        tx.pure(uint8ArrayToBCS(CircleBridge.serialize(message))),
-        tx.pure(uint8ArrayToBCS(encoding.hex.decode(attestation))),
+        tx.pure.vector('u8', CircleBridge.serialize(message)),
+        tx.pure.vector('u8', encoding.hex.decode(attestation)),
         tx.object(this.messageTransmitterStateId), // message_transmitter state
       ],
     });
@@ -208,7 +207,7 @@ export class SuiCircleBridge<N extends Network, C extends SuiChains> implements 
   }
 
   async parseTransactionDetails(digest: string): Promise<CircleTransferMessage> {
-    const tx = await this.provider.waitForTransactionBlock({
+    const tx = await this.provider.waitForTransaction({
       digest,
       options: { showEvents: true, showEffects: true, showInput: true },
     });
@@ -265,7 +264,7 @@ export class SuiCircleBridge<N extends Network, C extends SuiChains> implements 
   }
 
   private createUnsignedTx(
-    txReq: TransactionBlock,
+    txReq: Transaction,
     description: string,
     parallelizable: boolean = false,
   ): SuiUnsignedTransaction<N, C> {

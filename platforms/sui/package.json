@@ -16,7 +16,7 @@
   "main": "./dist/cjs/index.js",
   "types": "./dist/cjs/index.d.ts",
   "module": "./dist/esm/index.js",
-  "description": "SDK for EVM chains, used in conjunction with @wormhole-foundation/sdk",
+  "description": "SDK for Sui chains, used in conjunction with @wormhole-foundation/sdk",
   "files": [
     "dist/esm",
     "dist/cjs"
@@ -47,7 +47,7 @@
   },
   "dependencies": {
     "@wormhole-foundation/sdk-connect": "1.0.3",
-    "@mysten/sui.js": "^0.50.1"
+    "@mysten/sui": "^1.21.2"
   },
   "type": "module",
   "typesVersions": {

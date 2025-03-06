@@ -1,7 +1,6 @@
-import { bcs } from "@mysten/sui.js/bcs";
-import type { PaginatedObjectsResponse, SuiClient } from "@mysten/sui.js/client";
-import { TransactionBlock } from "@mysten/sui.js/transactions";
-import { isValidSuiAddress, normalizeSuiAddress, normalizeSuiObjectId } from "@mysten/sui.js/utils";
+import type { PaginatedObjectsResponse, SuiClient } from "@mysten/sui/client";
+import { Transaction } from "@mysten/sui/transactions";
+import { isValidSuiAddress, normalizeSuiAddress, normalizeSuiObjectId } from "@mysten/sui/utils";
 
 import { encoding } from "@wormhole-foundation/sdk-connect";
 import type { SuiBuildOutput } from "./types.js";
@@ -14,10 +13,6 @@ import {
 import { getPackageIdFromType, normalizeSuiType } from "./address.js";
 
 export const UPGRADE_CAP_TYPE = "0x2::package::UpgradeCap";
-
-const MAX_PURE_ARGUMENT_SIZE = 16 * 1024;
-export const uint8ArrayToBCS = (arr: Uint8Array) =>
-  bcs.ser("vector<u8>", arr, { maxSize: MAX_PURE_ARGUMENT_SIZE }).toBytes();
 
 //
 // Utils to fetch data from Sui
@@ -238,14 +233,14 @@ export const getUpgradeCapObjectId = async (
 export const publishPackage = async (
   buildOutput: SuiBuildOutput,
   signerAddress: string,
-): Promise<TransactionBlock> => {
-  const tx = new TransactionBlock();
+): Promise<Transaction> => {
+  const tx = new Transaction();
   const [upgradeCap] = tx.publish({
     modules: buildOutput.modules.map((m) => Array.from(encoding.b64.decode(m))),
     dependencies: buildOutput.dependencies.map((d) => normalizeSuiObjectId(d)),
   });
   // Transfer upgrade capability to recipient
-  tx.transferObjects([upgradeCap!], tx.pure(signerAddress));
+  tx.transferObjects([upgradeCap!], tx.pure.address(signerAddress));
   return tx;
 };
 
@@ -253,12 +248,12 @@ export const newEmitterCap = (
   coreBridgePackageId: string,
   coreBridgeStateObjectId: string,
   owner: string,
-): TransactionBlock => {
-  const tx = new TransactionBlock();
+): Transaction => {
+  const tx = new Transaction();
   const [emitterCap] = tx.moveCall({
     target: `${coreBridgePackageId}::emitter::new`,
     arguments: [tx.object(coreBridgeStateObjectId)],
   });
-  tx.transferObjects([emitterCap!], tx.pure(owner));
+  tx.transferObjects([emitterCap!], tx.pure.address(owner));
   return tx;
 };
