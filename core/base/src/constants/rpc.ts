@@ -49,6 +49,7 @@ const rpcConfig = [[
     ["Berachain", "https://rpc.berachain.com"],
     ["Unichain",  "https://mainnet.unichain.org"],
     ["Worldchain","https://worldchain-mainnet.g.alchemy.com/public"],
+    ["Ink",       "https://rpc-qnd.inkonchain.com"],
   ]], [
   "Testnet", [
     ["Ethereum",        "https://eth-sepolia.public.blastapi.io"],

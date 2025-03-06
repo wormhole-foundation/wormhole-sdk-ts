@@ -136,6 +136,7 @@ const blockTimeMilliseconds = [
   ["Xpla",              5_000],
   ["Xlayer",            3_000],
   ["Worldchain",        2_000],
+  ["Ink",               1_000],
   ["Wormchain",         5_000],
   ["Btc",             600_000],
   ["Pythnet",             400],

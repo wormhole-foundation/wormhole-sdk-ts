@@ -57,6 +57,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Berachain", 80094n],
       ["Unichain",  130n],
       ["Worldchain",480n],
+      ["Ink",       57073n],
     ],
   ],
   [
