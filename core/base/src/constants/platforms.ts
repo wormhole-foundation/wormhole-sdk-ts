@@ -75,7 +75,8 @@ const platformAndChainsEntries = [[
       "Sui"
   ]], [
     "Aptos", [
-      "Aptos"
+      "Aptos",
+      "Movement"
   ]], [
     "Near", [
       "Near"
