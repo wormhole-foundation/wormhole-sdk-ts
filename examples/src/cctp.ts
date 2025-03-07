@@ -60,6 +60,7 @@ AutoRelayer takes a 0.1usdc fee when xfering to any chain beside goerli, which i
   // );
 })();
 
+// Enhanced error handling and comments for cctpTransfer function
 async function cctpTransfer<N extends Network>(
   wh: Wormhole<N>,
   src: SignerStuff<N, any>,
@@ -70,21 +71,41 @@ async function cctpTransfer<N extends Network>(
     nativeGas?: bigint;
   },
 ) {
-  // EXAMPLE_CCTP_TRANSFER
-  const xfer = await wh.circleTransfer(
-    // amount as bigint (base units)
-    req.amount,
-    // sender chain/address
-    src.address,
-    // receiver chain/address
-    dst.address,
-    // automatic delivery boolean
-    req.automatic,
-    // payload to be sent with the transfer
-    undefined,
-    // If automatic, native gas can be requested to be sent to the receiver
-    req.nativeGas,
-  );
+  try {
+    // Initiating a Circle Transfer
+    const xfer = await wh.circleTransfer(
+      req.amount,
+      src.address,
+      dst.address,
+      req.automatic,
+      undefined,
+      req.nativeGas,
+    );
+
+    const quote = await CircleTransfer.quoteTransfer(src.chain, dst.chain, xfer.transfer);
+    console.log("Quote", quote);
+
+    console.log("Starting Transfer");
+    const srcTxids = await xfer.initiateTransfer(src.signer);
+    console.log(`Started Transfer: `, srcTxids);
+
+    // Waiting for the attestation with a timeout
+    console.log("Waiting for Attestation");
+    const attestIds = await xfer.fetchAttestation(60_000);
+    console.log(`Got Attestation: `, attestIds);
+
+    // Completing the transfer on the destination chain
+    console.log("Completing Transfer");
+    const dstTxids = await xfer.completeTransfer(dst.signer);
+    console.log(`Completed Transfer: `, dstTxids);
+
+  } catch (error) {
+    console.error("Error during CCTP transfer:", error);
+    // Additional guidance for troubleshooting
+    console.error("Make sure the chains are correctly configured and the amount is sufficient to cover fees.");
+  }
+}
+
 
   // Note, if the transfer is requested to be Automatic, a fee for performing the relay
   // will be present in the quote. The fee comes out of the amount requested to be sent.
