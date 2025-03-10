@@ -5,3 +5,4 @@ export * from "./portico/index.js";
 export * from "./relayer/index.js";
 export * from "./tokenBridge/index.js";
 export * from "./governance/index.js";
+export * from "./tbtc/index.js";

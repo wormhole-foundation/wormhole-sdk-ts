@@ -1,5 +1,5 @@
 {
-  "name": "@wormhole-foundation/sdk-evm",
+  "name": "@wormhole-foundation/sdk-evm-tbtc",
   "version": "1.0.3",
   "repository": {
     "type": "git",
@@ -27,21 +27,20 @@
     "sdk",
     "typescript",
     "connect",
+    "tbtc",
+    "evm",
     "ethereum",
-    "moonbeam",
-    "celo",
+    "base",
     "polygon",
-    "fantom",
-    "avalanche",
-    "bsc",
-    "evm"
+    "arbitrum",
+    "optimism"
   ],
   "engines": {
     "node": ">=16"
   },
   "sideEffects": [
-    "./dist/cjs/address.js",
-    "./dist/esm/address.js"
+    "./dist/cjs/index.js",
+    "./dist/esm/index.js"
   ],
   "scripts": {
     "build:cjs": "tsc -p ./tsconfig.cjs.json  && echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
@@ -50,24 +49,15 @@
     "rebuild": "npm run clean && npm run build",
     "clean": "rm -rf ./dist && rm -rf ./.turbo",
     "lint": "npm run prettier && eslint --fix ./src --ext .ts",
-    "prettier": "prettier --write ./src",
-    "test": "jest --config ./jest.config.ts"
-  },
-  "devDependencies": {
-    "nock": "13.3.8"
+    "prettier": "prettier --write ./src"
   },
   "dependencies": {
     "@wormhole-foundation/sdk-connect": "1.0.3",
+    "@wormhole-foundation/sdk-evm": "1.0.3",
+    "@wormhole-foundation/sdk-evm-core": "1.0.3",
     "ethers": "^6.5.1"
   },
   "type": "module",
-  "typesVersions": {
-    "*": {
-      "*": [
-        "dist/cjs/index.d.ts"
-      ]
-    }
-  },
   "exports": {
     ".": {
       "react-native": {
@@ -87,46 +77,6 @@
       "default": {
         "types": "./dist/cjs/index.d.ts",
         "default": "./dist/cjs/index.js"
-      }
-    },
-    "./address": {
-      "react-native": {
-        "import": "./dist/esm/address.js",
-        "require": "./dist/cjs/address.js",
-        "types": "./dist/cjs/address.d.ts",
-        "default": "./dist/cjs/address.js"
-      },
-      "import": {
-        "types": "./dist/esm/address.d.ts",
-        "default": "./dist/esm/address.js"
-      },
-      "require": {
-        "types": "./dist/cjs/address.d.ts",
-        "default": "./dist/cjs/address.js"
-      },
-      "default": {
-        "types": "./dist/cjs/address.d.ts",
-        "default": "./dist/cjs/address.js"
-      }
-    },
-    "./ethers-contracts": {
-      "react-native": {
-        "import": "./dist/esm/ethers-contracts/index.js",
-        "require": "./dist/cjs/ethers-contracts/index.js",
-        "types": "./dist/cjs/ethers-contracts/index.d.ts",
-        "default": "./dist/cjs/ethers-contracts/index.js"
-      },
-      "import": {
-        "types": "./dist/esm/ethers-contracts/index.d.ts",
-        "default": "./dist/esm/ethers-contracts/index.js"
-      },
-      "require": {
-        "types": "./dist/cjs/ethers-contracts/index.d.ts",
-        "default": "./dist/cjs/ethers-contracts/index.js"
-      },
-      "default": {
-        "types": "./dist/cjs/ethers-contracts/index.d.ts",
-        "default": "./dist/cjs/ethers-contracts/index.js"
       }
     }
   }

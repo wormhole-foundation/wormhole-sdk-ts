@@ -1,8 +1,4 @@
-import type {
-  Layout,
-  CustomConversion,
-  CustomizableBytes,
-} from "@wormhole-foundation/sdk-base";
+import type { Layout, CustomConversion, CustomizableBytes } from "@wormhole-foundation/sdk-base";
 import { customizableBytes, range } from "@wormhole-foundation/sdk-base";
 import {
   amountItem,
@@ -45,6 +41,12 @@ const transferCommonLayout = [
   },
 ] as const satisfies Layout;
 
+export const transferLayout = [
+  payloadIdItem(1),
+  ...transferCommonLayout,
+  { name: "fee", ...amountItem },
+];
+
 export const transferWithPayloadLayout = <const P extends CustomizableBytes = undefined>(
   customPayload?: P,
 ) =>
@@ -73,7 +75,7 @@ export const tokenBridgeNamedPayloads = [
       { name: "name", ...fixedLengthStringItem },
     ],
   ],
-  ["Transfer", [payloadIdItem(1), ...transferCommonLayout, { name: "fee", ...amountItem }]],
+  ["Transfer", transferLayout],
   ["TransferWithPayload", transferWithPayloadLayout()],
 ] as const satisfies NamedPayloads;
 
