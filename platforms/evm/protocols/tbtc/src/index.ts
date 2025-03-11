@@ -1,7 +1,7 @@
 import { registerProtocol } from '@wormhole-foundation/sdk-connect';
 import { _platform } from '@wormhole-foundation/sdk-evm';
-import { EvmTBTCBridge } from './tbtcBridge.js';
+import { EvmTbtcBridge } from './bridge.js';
 
-registerProtocol(_platform, 'TBTCBridge', EvmTBTCBridge);
+registerProtocol(_platform, 'TbtcBridge', EvmTbtcBridge);
 
-export * from './tbtcBridge.js';
+export * from './bridge.js';
