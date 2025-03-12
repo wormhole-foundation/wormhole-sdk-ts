@@ -7,7 +7,7 @@ import type {
   Platform,
   TokenAddress,
 } from '@wormhole-foundation/sdk-connect';
-import { TbtcBridge, nativeChainIds } from '@wormhole-foundation/sdk-connect';
+import { TBTCBridge, nativeChainIds } from '@wormhole-foundation/sdk-connect';
 import type { EvmChains } from '@wormhole-foundation/sdk-evm';
 import {
   EvmAddress,
@@ -24,8 +24,8 @@ import { EvmTokenBridge } from '@wormhole-foundation/sdk-evm-tokenbridge';
 
 import '@wormhole-foundation/sdk-evm-tokenbridge';
 
-export class EvmTbtcBridge<N extends Network, C extends EvmChains = EvmChains>
-  implements TbtcBridge<N, C>
+export class EvmTBTCBridge<N extends Network, C extends EvmChains = EvmChains>
+  implements TBTCBridge<N, C>
 {
   chainId: bigint;
 
@@ -33,7 +33,7 @@ export class EvmTbtcBridge<N extends Network, C extends EvmChains = EvmChains>
 
   tokenBridge: EvmTokenBridge<N, C>;
 
-  // Only some chains have a Tbtc gateway contract
+  // Not all chains have the tbtc gateway contract
   gatewayAddress?: string;
   gateway?: Contract;
 
@@ -72,14 +72,14 @@ export class EvmTbtcBridge<N extends Network, C extends EvmChains = EvmChains>
   static async fromRpc<N extends Network>(
     provider: Provider,
     config: ChainsConfig<N, Platform>,
-  ): Promise<EvmTbtcBridge<N, EvmChains>> {
+  ): Promise<EvmTBTCBridge<N, EvmChains>> {
     const [network, chain] = await EvmPlatform.chainFromRpc(provider);
 
     const conf = config[chain]!;
     if (conf.network !== network)
       throw new Error(`Network mismatch: ${conf.network} != ${network}`);
 
-    return new EvmTbtcBridge(network as N, chain, provider, conf.contracts);
+    return new EvmTBTCBridge(network as N, chain, provider, conf.contracts);
   }
 
   async *transfer(
@@ -95,8 +95,8 @@ export class EvmTbtcBridge<N extends Network, C extends EvmChains = EvmChains>
 
     /**
      * There are four cases to consider:
-     * 1. Gateway -> Gateway: sendTbtc, receiveTbtc
-     * 2. Gateway -> Non-Gateway: sendTbtc, tokenBridge.receive
+     * 1. Gateway -> Gateway: sendTBTC, receiveTBTC
+     * 2. Gateway -> Non-Gateway: sendTBTC, tokenBridge.receive
      * 3. Non-Gateway -> Gateway: transfer
      * 4. Non-Gateway -> Non-Gateway:
      */
@@ -106,7 +106,7 @@ export class EvmTbtcBridge<N extends Network, C extends EvmChains = EvmChains>
     if (fromGateway) {
       const nonce = new Date().valueOf() % 2 ** 4;
 
-      const tx = await fromGateway.sendTbtc!.populateTransaction(
+      const tx = await fromGateway.sendTBTC!.populateTransaction(
         amount,
         recipient.chain,
         recipient.address.toUniversalAddress(),
@@ -124,7 +124,7 @@ export class EvmTbtcBridge<N extends Network, C extends EvmChains = EvmChains>
 
       yield this.createUnsignedTransaction(
         addFrom(tx, senderAddress),
-        'TbtcBridge.Send',
+        'TBTCBridge.Send',
       );
       return;
     }
@@ -143,15 +143,15 @@ export class EvmTbtcBridge<N extends Network, C extends EvmChains = EvmChains>
     yield* this.tokenBridge.transfer(sender, recipient, token, amount);
   }
 
-  async *redeem(sender: AccountAddress<C>, vaa: TbtcBridge.VAA) {
+  async *redeem(sender: AccountAddress<C>, vaa: TBTCBridge.VAA) {
     const address = new EvmAddress(sender).toString();
 
     if (this.gateway) {
-      const tx = await this.gateway.receiveTbtc!.populateTransaction(vaa);
+      const tx = await this.gateway.receiveTBTC!.populateTransaction(vaa);
 
       yield this.createUnsignedTransaction(
         addFrom(tx, address),
-        'TbtcBridge.Redeem',
+        'TBTCBridge.Redeem',
       );
     } else {
       // yield *this.tokenBridge.redeem(sender, vaa);
@@ -159,11 +159,11 @@ export class EvmTbtcBridge<N extends Network, C extends EvmChains = EvmChains>
 
     //yield this.createUnsignedTransaction(
     //  addFrom(txReq, address),
-    //  'TbtcBridge.Redeem',
+    //  'TBTCBridge.Redeem',
     //);
   }
 
-  async isTransferCompleted(vaa: TbtcBridge.VAA): Promise<boolean> {
+  async isTransferCompleted(vaa: TBTCBridge.VAA): Promise<boolean> {
     const isCompleted = await this.tokenBridge.tokenBridge.isTransferCompleted(
       keccak256(vaa.hash),
     );
@@ -188,7 +188,7 @@ export class EvmTbtcBridge<N extends Network, C extends EvmChains = EvmChains>
       );
       yield this.createUnsignedTransaction(
         addFrom(txReq, senderAddr),
-        'Tbtc.Approve',
+        'TBTC.Approve',
       );
     }
   }

@@ -41,14 +41,14 @@ type Vr = ValidationResult<Op>;
 
 type QR = QuoteResult<Op, Vp>;
 type Q = Quote<Op, Vp>;
-type R = TransferReceipt<AttestationReceipt<"TbtcBridge">>;
+type R = TransferReceipt<AttestationReceipt<"TBTCBridge">>;
 
 export class TBTCRoute<N extends Network>
   extends ManualRoute<N>
   implements StaticRouteMethods<typeof TBTCRoute>
 {
   static meta = {
-    name: "TbtcBridge",
+    name: "TBTCBridge",
     // provider: 'Threshold'
   };
 
@@ -79,10 +79,10 @@ export class TBTCRoute<N extends Network>
     }
 
     const tb = await toChain.getTokenBridge();
-    const ethTbtc = this.getEthTbtcToken(toChain.network);
+    const ethTBTC = this.getEthTBTCToken(toChain.network);
     try {
-      const wrappedTbtc = await tb.getWrappedAsset(ethTbtc);
-      return [Wormhole.tokenId(fromChain.chain, wrappedTbtc.toString())];
+      const wrappedTBTC = await tb.getWrappedAsset(ethTBTC);
+      return [Wormhole.tokenId(fromChain.chain, wrappedTBTC.toString())];
     } catch (e: any) {
       if (e.message.includes("not a wrapped asset")) return [];
       throw e;
@@ -176,17 +176,17 @@ export class TBTCRoute<N extends Network>
 
     // wormhole-wrapped ethereum tbtc is supported
     const tb = await fromChain.getTokenBridge();
-    const ethTbtc = this.getEthTbtcToken(fromChain.network);
+    const ethTBTC = this.getEthTBTCToken(fromChain.network);
     try {
-      const wrappedTbtc = await tb.getWrappedAsset(ethTbtc);
-      return isSameToken(sourceToken, Wormhole.tokenId(fromChain.chain, wrappedTbtc.toString()));
+      const wrappedTBTC = await tb.getWrappedAsset(ethTBTC);
+      return isSameToken(sourceToken, Wormhole.tokenId(fromChain.chain, wrappedTBTC.toString()));
     } catch (e: any) {
       if (e.message.includes("not a wrapped asset")) return false;
       throw e;
     }
   }
 
-  static getEthTbtcToken<N extends Network>(network: N): TokenId {
+  static getEthTBTCToken<N extends Network>(network: N): TokenId {
     const chain = network === "Mainnet" ? "Ethereum" : "Sepolia";
     const addr = tbtc.tbtcTokens.get(network, chain)!;
     return Wormhole.tokenId(chain, addr);

@@ -3,7 +3,7 @@ import type { ProtocolName } from "./protocol.js";
 import type { AutomaticCircleBridge, CircleBridge } from "./protocols/circleBridge/circleBridge.js";
 import type { IbcTransferData } from "./protocols/ibc/ibc.js";
 import type { PorticoBridge } from "./protocols/portico/portico.js";
-import type { TbtcBridge } from "./protocols/tbtc/tbtc.js";
+import type { TBTCBridge } from "./protocols/tbtc/tbtc.js";
 import type { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge/tokenBridge.js";
 import type { SequenceId } from "./types.js";
 import type { UniversalAddress } from "./universalAddress.js";
@@ -18,7 +18,7 @@ export type AttestationId<PN extends ProtocolName = ProtocolName> = PN extends
   | "WormholeCore"
   | "PorticoBridge"
   | "AutomaticCircleBridge"
-  | "TbtcBridge"
+  | "TBTCBridge"
   ? WormholeMessageId
   : PN extends "AutomaticCircleBridge"
   ? WormholeMessageId | CircleMessageId
@@ -45,8 +45,8 @@ export type Attestation<PN extends ProtocolName = ProtocolName> = PN extends
   ? VAA<"Uint8Array">
   : PN extends "PorticoBridge"
   ? PorticoBridge.VAA
-  : PN extends "TbtcBridge"
-  ? TbtcBridge.VAA
+  : PN extends "TBTCBridge"
+  ? TBTCBridge.VAA
   : any;
 
 /**

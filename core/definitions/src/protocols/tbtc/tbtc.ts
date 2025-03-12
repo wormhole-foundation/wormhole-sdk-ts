@@ -9,16 +9,16 @@ import "../../registry.js";
 declare module "../../registry.js" {
   export namespace WormholeRegistry {
     interface ProtocolToInterfaceMapping<N, C> {
-      TbtcBridge: TbtcBridge<N, C>;
+      TBTCBridge: TBTCBridge<N, C>;
     }
     interface ProtocolToPlatformMapping {
-      TbtcBridge: EmptyPlatformMap<"TbtcBridge">;
+      TBTCBridge: EmptyPlatformMap<"TBTCBridge">;
     }
   }
 }
 
-export namespace TbtcBridge {
-  const _protocol = "TbtcBridge";
+export namespace TBTCBridge {
+  const _protocol = "TBTCBridge";
   export type ProtocolName = typeof _protocol;
 
   const _transferPayloads = ["GatewayTransfer", "Transfer"] as const;
@@ -27,14 +27,14 @@ export namespace TbtcBridge {
   export type TransferPayloadNames = (typeof _transferPayloads)[number];
   export type PayloadNames = (typeof _payloads)[number];
 
-  /** The VAA types emitted by the TbtcBridge protocol */
+  /** The VAA types emitted by the TBTCBridge protocol */
   export type VAA<PayloadName extends PayloadNames = PayloadNames> = ProtocolVAA<
     ProtocolName,
     PayloadName
   >;
 }
 
-export interface TbtcBridge<N extends Network = Network, C extends Chain = Chain> {
+export interface TBTCBridge<N extends Network = Network, C extends Chain = Chain> {
   transfer(
     sender: AccountAddress<C>,
     recipient: ChainAddress,
@@ -43,8 +43,8 @@ export interface TbtcBridge<N extends Network = Network, C extends Chain = Chain
     toGateway?: ChainAddress,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
 
-  redeem(sender: AccountAddress<C>, vaa: TbtcBridge.VAA): AsyncGenerator<UnsignedTransaction<N, C>>;
+  redeem(sender: AccountAddress<C>, vaa: TBTCBridge.VAA): AsyncGenerator<UnsignedTransaction<N, C>>;
 
-  isTransferCompleted(vaa: TbtcBridge.VAA): Promise<boolean>;
+  isTransferCompleted(vaa: TBTCBridge.VAA): Promise<boolean>;
   //   parseTransactionDetails(txid: string): Promise<CircleTransferMessage>;
 }

@@ -9,9 +9,9 @@ export const tbtcPayloadLayout = [
 ] as const satisfies Layout;
 
 const namedPayloads = [
-  // Payload when transferring to a chain with a Tbtc L2WormholeGateway contract
+  // Payload when transferring to a chain with a TBTC L2WormholeGateway contract
   ["GatewayTransfer", transferWithPayloadLayout(tbtcPayloadLayout)],
-  // Payload when transferring to a chain without a Tbtc L2WormholeGateway contract
+  // Payload when transferring to a chain without a TBTC L2WormholeGateway contract
   // Just a normal token bridge transfer
   ["Transfer", transferLayout],
 ] as const satisfies NamedPayloads;
@@ -21,8 +21,8 @@ import "../../registry.js";
 declare module "../../registry.js" {
   export namespace WormholeRegistry {
     interface PayloadLiteralToLayoutMapping
-      extends RegisterPayloadTypes<"TbtcBridge", typeof namedPayloads> {}
+      extends RegisterPayloadTypes<"TBTCBridge", typeof namedPayloads> {}
   }
 }
 
-registerPayloadTypes("TbtcBridge", namedPayloads);
+registerPayloadTypes("TBTCBridge", namedPayloads);
