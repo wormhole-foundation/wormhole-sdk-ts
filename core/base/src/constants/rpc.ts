@@ -85,7 +85,7 @@ const rpcConfig = [[
     ["Karura",          "https://eth-rpc-karura-testnet.aca-staging.network"],
     ["Acala",           "https://eth-rpc-acala-testnet.aca-staging.network"],
     ["Blast",           "https://sepolia.blast.io"],
-    ["Berachain",       "https://artio.rpc.berachain.com"],
+    ["Berachain",       "https://bepolia.rpc.berachain.com/"],
     ["Seievm",          "https://evm-rpc-testnet.sei-apis.com/"],
     ["Linea",           "https://rpc.sepolia.linea.build"],
     ["Xlayer",          "https://testrpc.xlayer.tech/"],
