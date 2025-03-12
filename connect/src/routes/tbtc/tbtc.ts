@@ -1,4 +1,4 @@
-import { Chain, contracts, Network } from "@wormhole-foundation/sdk-base";
+import { amount, Chain, contracts, Network, tbtc } from "@wormhole-foundation/sdk-base";
 import { ManualRoute, StaticRouteMethods } from "../route.js";
 import {
   ChainAddress,
@@ -7,7 +7,6 @@ import {
   TokenId,
   TransactionId,
 } from "@wormhole-foundation/sdk-definitions";
-import { isSameToken } from "@wormhole-foundation/sdk-definitions";
 import {
   Options,
   Quote,
@@ -19,10 +18,23 @@ import {
 } from "../types.js";
 import type { AttestationReceipt, TransferReceipt } from "../../types.js";
 import { RouteTransferRequest } from "../request.js";
+import { isSameToken } from "@wormhole-foundation/sdk-definitions";
 import { Wormhole } from "../../wormhole.js";
+import { finality } from "@wormhole-foundation/sdk-base";
+import { guardians } from "@wormhole-foundation/sdk-base";
+
+export namespace TBTCRoute {
+  export type NormalizedParams = {
+    amount: amount.Amount;
+  };
+
+  export interface ValidatedParams extends ValidatedTransferParams<Options> {
+    normalizedParams: NormalizedParams;
+  }
+}
 
 type Op = Options;
-type Vp = ValidatedTransferParams<Op>;
+type Vp = TBTCRoute.ValidatedParams;
 
 type Tp = TransferParams<Op>;
 type Vr = ValidationResult<Op>;
@@ -31,12 +43,13 @@ type QR = QuoteResult<Op, Vp>;
 type Q = Quote<Op, Vp>;
 type R = TransferReceipt<AttestationReceipt<"TbtcBridge">>;
 
-export class TbtcRoute<N extends Network>
+export class TBTCRoute<N extends Network>
   extends ManualRoute<N>
-  implements StaticRouteMethods<typeof TbtcRoute>
+  implements StaticRouteMethods<typeof TBTCRoute>
 {
   static meta = {
-    name: "Tbtc",
+    name: "TbtcBridge",
+    // provider: 'Threshold'
   };
 
   static supportedNetworks(): Network[] {
@@ -44,6 +57,8 @@ export class TbtcRoute<N extends Network>
   }
 
   static supportedChains(network: Network): Chain[] {
+    // wormhole-wrapped ethereum tbtc is the highway token,
+    // so any chain that supports the token bridge is supported
     return contracts.tokenBridgeChains(network);
   }
 
@@ -52,40 +67,26 @@ export class TbtcRoute<N extends Network>
     fromChain: ChainContext<N>,
     toChain: ChainContext<N>,
   ): Promise<TokenId[]> {
-    const fromContracts = contracts.tbtcContracts.get(fromChain.network, fromChain.chain);
-    const toContracts = contracts.tbtcContracts.get(toChain.network, toChain.chain);
-    if (
-      fromContracts &&
-      isSameToken(sourceToken, Wormhole.tokenId(fromChain.chain, fromContracts.tbtcToken))
-    ) {
-      if (toContracts) {
-        return [Wormhole.tokenId(toChain.chain, toContracts.tbtcToken)];
-      }
+    if (sourceToken.chain !== fromChain.chain) return [];
 
-      const toTokenBridge = await toChain.getTokenBridge();
-      try {
-        const wrapped = await toTokenBridge.getWrappedAsset(Wormhole.tokenId("Ethereum", ""));
-        return [Wormhole.tokenId(toChain.chain, wrapped.toString())];
-      } catch (e: any) {
-        if (!e.message.includes("not a wrapped asset")) throw e;
-        return [];
-      }
+    if (!(await this.isSourceTokenSupported(sourceToken, fromChain))) {
+      return [];
     }
 
-    const fromTokenBridge = await fromChain.getTokenBridge();
-    const original = await fromTokenBridge.getOriginalAsset(sourceToken.address);
-    if (isSameToken(original, Wormhole.tokenId("Ethereum", ""))) {
-      const toTokenBridge = await toChain.getTokenBridge();
-      try {
-        const wrapped = await toTokenBridge.getWrappedAsset(Wormhole.tokenId("Ethereum", ""));
-        return [Wormhole.tokenId(toChain.chain, wrapped.toString())];
-      } catch (e: any) {
-        if (!e.message.includes("not a wrapped asset")) throw e;
-        return [];
-      }
+    const tbtcToken = tbtc.tbtcTokens.get(toChain.network, toChain.chain);
+    if (tbtcToken) {
+      return [Wormhole.tokenId(toChain.chain, tbtcToken)];
     }
 
-    return [];
+    const tb = await toChain.getTokenBridge();
+    const ethTbtc = this.getEthTbtcToken(toChain.network);
+    try {
+      const wrappedTbtc = await tb.getWrappedAsset(ethTbtc);
+      return [Wormhole.tokenId(fromChain.chain, wrappedTbtc.toString())];
+    } catch (e: any) {
+      if (e.message.includes("not a wrapped asset")) return [];
+      throw e;
+    }
   }
 
   getDefaultOptions(): Op {
@@ -93,19 +94,36 @@ export class TbtcRoute<N extends Network>
   }
 
   async validate(request: RouteTransferRequest<N>, params: Tp): Promise<Vr> {
-    // const amt = amount.parse(params.amount, request.source.decimals);
+    const amount = request.parseAmount(params.amount);
 
-    const validatedParams: ValidatedTransferParams<Options> = {
-      amount: params.amount,
-      //   normalizedParams: { amount: amt },
-      options: {},
+    const validatedParams: Vp = {
+      normalizedParams: {
+        amount,
+      },
+      options: params.options ?? this.getDefaultOptions(),
+      ...params,
     };
 
     return { valid: true, params: validatedParams };
   }
 
   async quote(request: RouteTransferRequest<N>, params: Vp): Promise<QR> {
-    throw new Error("Method not implemented.");
+    const eta =
+      finality.estimateFinalityTime(request.fromChain.chain) + guardians.guardianAttestationEta;
+
+    return {
+      success: true,
+      params,
+      sourceToken: {
+        token: request.source.id,
+        amount: params.normalizedParams.amount,
+      },
+      destinationToken: {
+        token: request.destination.id,
+        amount: params.normalizedParams.amount,
+      },
+      eta,
+    };
   }
 
   async initiate(
@@ -146,18 +164,31 @@ export class TbtcRoute<N extends Network>
     throw new Error("Method not implemented.");
   }
 
-  //private toTransferDetails(
-  //  request: RouteTransferRequest<N>,
-  //  params: Vp,
-  //  from: ChainAddress,
-  //  to: ChainAddress,
-  //): TokenTransferDetails {
-  //  return {
-  //    from,
-  //    to,
-  //    token: request.source.id,
-  //    amount: amount.units(params.normalizedParams.amount),
-  //    ...params.options,
-  //  };
-  //}
+  static async isSourceTokenSupported<N extends Network>(
+    sourceToken: TokenId,
+    fromChain: ChainContext<N>,
+  ): Promise<boolean> {
+    // tbtc minted by threshold is supported
+    const tbtcAddr = tbtc.tbtcTokens.get(fromChain.network, fromChain.chain);
+    if (tbtcAddr && isSameToken(sourceToken, Wormhole.tokenId(fromChain.chain, tbtcAddr))) {
+      return true;
+    }
+
+    // wormhole-wrapped ethereum tbtc is supported
+    const tb = await fromChain.getTokenBridge();
+    const ethTbtc = this.getEthTbtcToken(fromChain.network);
+    try {
+      const wrappedTbtc = await tb.getWrappedAsset(ethTbtc);
+      return isSameToken(sourceToken, Wormhole.tokenId(fromChain.chain, wrappedTbtc.toString()));
+    } catch (e: any) {
+      if (e.message.includes("not a wrapped asset")) return false;
+      throw e;
+    }
+  }
+
+  static getEthTbtcToken<N extends Network>(network: N): TokenId {
+    const chain = network === "Mainnet" ? "Ethereum" : "Sepolia";
+    const addr = tbtc.tbtcTokens.get(network, chain)!;
+    return Wormhole.tokenId(chain, addr);
+  }
 }
