@@ -1,8 +1,8 @@
-import type { Chain, Network } from "@wormhole-foundation/sdk-base";
-import type { AccountAddress, ChainAddress } from "../../address.js";
-import type { TokenAddress } from "../../types.js";
+import { lazyInstantiate, tbtc, type Chain, type Network } from "@wormhole-foundation/sdk-base";
+import { toNative, type AccountAddress, type ChainAddress } from "../../address.js";
+import type { TokenId } from "../../types.js";
 import type { UnsignedTransaction } from "../../unsignedTransaction.js";
-import type { ProtocolVAA } from "./../../vaa/index.js";
+import { payloadDiscriminator, type ProtocolVAA } from "./../../vaa/index.js";
 import type { EmptyPlatformMap } from "../../protocol.js";
 
 import "../../registry.js";
@@ -32,19 +32,28 @@ export namespace TBTCBridge {
     ProtocolName,
     PayloadName
   >;
+
+  export const getTransferDiscriminator = lazyInstantiate(() =>
+    payloadDiscriminator([_protocol, _transferPayloads]),
+  );
+
+  export const getNativeTbtcToken = (chain: Chain): TokenId | undefined => {
+    const addr = tbtc.tbtcTokens.get("Mainnet", chain);
+    if (addr) {
+      return {
+        chain,
+        address: toNative(chain, addr),
+      };
+    }
+  };
 }
 
 export interface TBTCBridge<N extends Network = Network, C extends Chain = Chain> {
   transfer(
     sender: AccountAddress<C>,
     recipient: ChainAddress,
-    token: TokenAddress<C>,
     amount: bigint,
-    toGateway?: ChainAddress,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
 
   redeem(sender: AccountAddress<C>, vaa: TBTCBridge.VAA): AsyncGenerator<UnsignedTransaction<N, C>>;
-
-  isTransferCompleted(vaa: TBTCBridge.VAA): Promise<boolean>;
-  //   parseTransactionDetails(txid: string): Promise<CircleTransferMessage>;
 }

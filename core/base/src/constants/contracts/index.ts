@@ -7,7 +7,7 @@ import * as circle from "./circle.js";
 import * as g from "./cosmos.js";
 import * as rollup from "./rollupCheckpoint.js";
 import * as p from "./portico.js";
-import * as tbtc from "./tbtc.js";
+import * as t from "./tbtc.js";
 
 import { constMap } from "./../../utils/index.js";
 
@@ -19,7 +19,7 @@ export const relayer = constMap(r.relayerContracts);
 export const gateway = constMap(g.gatewayContracts);
 export const translator = constMap(g.translatorContracts);
 export const portico = constMap(p.porticoContracts);
-export const tbtcContracts = constMap(tbtc.tbtcContracts);
+export const tbtc = constMap(t.tbtcContracts);
 
 export type { CircleContracts } from "./circle.js";
 export const circleContracts = constMap(circle.circleContracts);

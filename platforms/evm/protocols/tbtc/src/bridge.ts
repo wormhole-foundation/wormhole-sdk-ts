@@ -5,7 +5,6 @@ import type {
   Contracts,
   Network,
   Platform,
-  TokenAddress,
 } from '@wormhole-foundation/sdk-connect';
 import { TBTCBridge, nativeChainIds } from '@wormhole-foundation/sdk-connect';
 import type { EvmChains } from '@wormhole-foundation/sdk-evm';
@@ -16,13 +15,14 @@ import {
   addChainId,
   addFrom,
 } from '@wormhole-foundation/sdk-evm';
-import type { Provider, TransactionRequest } from 'ethers';
-import { Contract, keccak256 } from 'ethers';
+import { toChainId } from '@wormhole-foundation/sdk-base';
+import { serialize } from '@wormhole-foundation/sdk-definitions';
+import { Contract, Provider, TransactionRequest } from 'ethers';
 
 import { EvmWormholeCore } from '@wormhole-foundation/sdk-evm-core';
-import { EvmTokenBridge } from '@wormhole-foundation/sdk-evm-tokenbridge';
 
 import '@wormhole-foundation/sdk-evm-tokenbridge';
+import { canonicalAddress } from '@wormhole-foundation/sdk-connect';
 
 export class EvmTBTCBridge<N extends Network, C extends EvmChains = EvmChains>
   implements TBTCBridge<N, C>
@@ -31,13 +31,8 @@ export class EvmTBTCBridge<N extends Network, C extends EvmChains = EvmChains>
 
   core: EvmWormholeCore<N, C>;
 
-  tokenBridge: EvmTokenBridge<N, C>;
-
-  // Not all chains have the tbtc gateway contract
-  gatewayAddress?: string;
-  gateway?: Contract;
-
-  tbtcToken: TokenAddress<C>;
+  gatewayAddress: string;
+  gateway: Contract;
 
   constructor(
     readonly network: N,
@@ -45,6 +40,14 @@ export class EvmTBTCBridge<N extends Network, C extends EvmChains = EvmChains>
     readonly provider: Provider,
     readonly contracts: Contracts,
   ) {
+    if (this.network !== 'Mainnet') {
+      throw new Error('TBTC is only supported on Mainnet');
+    }
+
+    if (!this.contracts.tbtc) {
+      throw new Error('TBTC contract address is required');
+    }
+
     this.chainId = nativeChainIds.networkChainToNativeChainId.get(
       network,
       chain,
@@ -52,21 +55,15 @@ export class EvmTBTCBridge<N extends Network, C extends EvmChains = EvmChains>
 
     this.core = new EvmWormholeCore(network, chain, provider, contracts);
 
-    this.tokenBridge = new EvmTokenBridge(network, chain, provider, contracts);
-
     this.gatewayAddress = this.contracts.tbtc;
-    if (this.gatewayAddress) {
-      this.gateway = new Contract(
-        this.gatewayAddress,
-        [
-          'function sendTbtc(uint256 amount, uint16 recipientChain, bytes32 recipient, uint256 arbiterFee, uint32 nonce) payable returns (uint64)',
-          'function receiveTbtc(bytes calldata encodedVm)',
-        ],
-        provider,
-      );
-    }
-
-    this.tbtcToken = contracts.tbtcToken!;
+    this.gateway = new Contract(
+      this.gatewayAddress,
+      [
+        'function sendTbtc(uint256 amount, uint16 recipientChain, bytes32 recipient, uint256 arbiterFee, uint32 nonce) payable returns (uint64)',
+        'function receiveTbtc(bytes calldata encodedVm)',
+      ],
+      provider,
+    );
   }
 
   static async fromRpc<N extends Network>(
@@ -85,89 +82,48 @@ export class EvmTBTCBridge<N extends Network, C extends EvmChains = EvmChains>
   async *transfer(
     sender: AccountAddress<C>,
     recipient: ChainAddress,
-    token: TokenAddress<C>,
     amount: bigint,
-    toGateway?: ChainAddress,
   ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
     const senderAddress = new EvmAddress(sender).toString();
 
-    // TODO: normalize amount
-
-    /**
-     * There are four cases to consider:
-     * 1. Gateway -> Gateway: sendTBTC, receiveTBTC
-     * 2. Gateway -> Non-Gateway: sendTBTC, tokenBridge.receive
-     * 3. Non-Gateway -> Gateway: transfer
-     * 4. Non-Gateway -> Non-Gateway:
-     */
-
-    const fromGateway = this.gateway;
-
-    if (fromGateway) {
-      const nonce = new Date().valueOf() % 2 ** 4;
-
-      const tx = await fromGateway.sendTBTC!.populateTransaction(
-        amount,
-        recipient.chain,
-        recipient.address.toUniversalAddress(),
-        0n,
-        nonce,
-      );
-      tx.value = await this.core.getMessageFee();
-
-      yield* this.approve(
-        token.toString(),
-        senderAddress,
-        amount,
-        this.gatewayAddress!,
-      );
-
-      yield this.createUnsignedTransaction(
-        addFrom(tx, senderAddress),
-        'TBTCBridge.Send',
-      );
-      return;
+    const tbtcToken = TBTCBridge.getNativeTbtcToken(this.chain);
+    if (!tbtcToken) {
+      throw new Error('Native tbtc token not found');
     }
 
-    if (toGateway) {
-      yield* this.tokenBridge.transfer(
-        sender,
-        toGateway,
-        token,
-        amount,
-        recipient.address.toUniversalAddress().toUint8Array(),
-      );
-      return;
-    }
+    const tx = await this.gateway.sendTbtc!.populateTransaction(
+      amount,
+      toChainId(recipient.chain),
+      recipient.address.toUniversalAddress().toUint8Array(),
+      0n,
+      0n,
+    );
+    tx.value = await this.core.getMessageFee();
 
-    yield* this.tokenBridge.transfer(sender, recipient, token, amount);
+    yield* this.approve(
+      canonicalAddress(tbtcToken),
+      senderAddress,
+      amount,
+      this.gatewayAddress,
+    );
+
+    yield this.createUnsignedTransaction(
+      addFrom(tx, senderAddress),
+      'TBTCBridge.Send',
+    );
   }
 
   async *redeem(sender: AccountAddress<C>, vaa: TBTCBridge.VAA) {
     const address = new EvmAddress(sender).toString();
 
-    if (this.gateway) {
-      const tx = await this.gateway.receiveTBTC!.populateTransaction(vaa);
-
-      yield this.createUnsignedTransaction(
-        addFrom(tx, address),
-        'TBTCBridge.Redeem',
-      );
-    } else {
-      // yield *this.tokenBridge.redeem(sender, vaa);
-    }
-
-    //yield this.createUnsignedTransaction(
-    //  addFrom(txReq, address),
-    //  'TBTCBridge.Redeem',
-    //);
-  }
-
-  async isTransferCompleted(vaa: TBTCBridge.VAA): Promise<boolean> {
-    const isCompleted = await this.tokenBridge.tokenBridge.isTransferCompleted(
-      keccak256(vaa.hash),
+    const tx = await this.gateway.receiveTbtc!.populateTransaction(
+      serialize(vaa),
     );
-    return isCompleted;
+
+    yield this.createUnsignedTransaction(
+      addFrom(tx, address),
+      'TBTCBridge.Redeem',
+    );
   }
 
   private async *approve(
