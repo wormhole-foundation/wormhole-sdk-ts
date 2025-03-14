@@ -10,6 +10,7 @@ const solana: PlatformDefinition<typeof _solana._platform> = {
     WormholeCore: () => import("@wormhole-foundation/sdk-solana-core"),
     TokenBridge: () => import("@wormhole-foundation/sdk-solana-tokenbridge"),
     CircleBridge: () => import("@wormhole-foundation/sdk-solana-cctp"),
+    TBTCBridge: () => import("@wormhole-foundation/sdk-solana-tbtc"),
   },
   getChain: (network, chain, overrides?) =>
     new _solana.SolanaChain(

@@ -27,14 +27,13 @@
     "sdk",
     "typescript",
     "connect",
+    "tbtc",
+    "evm",
     "ethereum",
-    "moonbeam",
-    "celo",
+    "base",
     "polygon",
-    "fantom",
-    "avalanche",
-    "bsc",
-    "evm"
+    "arbitrum",
+    "optimism"
   ],
   "engines": {
     "node": ">=16"
@@ -56,7 +55,6 @@
     "@wormhole-foundation/sdk-connect": "1.0.3",
     "@wormhole-foundation/sdk-evm": "1.0.3",
     "@wormhole-foundation/sdk-evm-core": "1.0.3",
-    "@wormhole-foundation/sdk-evm-tokenbridge": "1.0.3",
     "ethers": "^6.5.1"
   },
   "type": "module",

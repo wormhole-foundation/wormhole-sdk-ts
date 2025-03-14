@@ -16,13 +16,13 @@ import {
   addFrom,
 } from '@wormhole-foundation/sdk-evm';
 import { toChainId } from '@wormhole-foundation/sdk-base';
-import { serialize } from '@wormhole-foundation/sdk-definitions';
+import {
+  canonicalAddress,
+  serialize,
+} from '@wormhole-foundation/sdk-definitions';
 import { Contract, Provider, TransactionRequest } from 'ethers';
 
 import { EvmWormholeCore } from '@wormhole-foundation/sdk-evm-core';
-
-import '@wormhole-foundation/sdk-evm-tokenbridge';
-import { canonicalAddress } from '@wormhole-foundation/sdk-connect';
 
 export class EvmTBTCBridge<N extends Network, C extends EvmChains = EvmChains>
   implements TBTCBridge<N, C>
@@ -56,6 +56,7 @@ export class EvmTBTCBridge<N extends Network, C extends EvmChains = EvmChains>
     this.core = new EvmWormholeCore(network, chain, provider, contracts);
 
     this.gatewayAddress = this.contracts.tbtc;
+
     this.gateway = new Contract(
       this.gatewayAddress,
       [
@@ -113,7 +114,10 @@ export class EvmTBTCBridge<N extends Network, C extends EvmChains = EvmChains>
     );
   }
 
-  async *redeem(sender: AccountAddress<C>, vaa: TBTCBridge.VAA) {
+  async *redeem(
+    sender: AccountAddress<C>,
+    vaa: TBTCBridge.VAA,
+  ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
     const address = new EvmAddress(sender).toString();
 
     const tx = await this.gateway.receiveTbtc!.populateTransaction(
@@ -131,7 +135,7 @@ export class EvmTBTCBridge<N extends Network, C extends EvmChains = EvmChains>
     senderAddr: string,
     amount: bigint,
     contract: string,
-  ) {
+  ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
     const tokenContract = EvmPlatform.getTokenImplementation(
       this.provider,
       token,
@@ -152,7 +156,7 @@ export class EvmTBTCBridge<N extends Network, C extends EvmChains = EvmChains>
   private createUnsignedTransaction(
     txReq: TransactionRequest,
     description: string,
-  ) {
+  ): EvmUnsignedTransaction<N, C> {
     return new EvmUnsignedTransaction(
       addChainId(txReq, this.chainId),
       this.network,

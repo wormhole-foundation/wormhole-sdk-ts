@@ -49,6 +49,7 @@
     "platforms/solana/protocols/core",
     "platforms/solana/protocols/tokenBridge",
     "platforms/solana/protocols/cctp",
+    "platforms/solana/protocols/tbtc",
     "platforms/cosmwasm",
     "platforms/cosmwasm/protocols/core",
     "platforms/cosmwasm/protocols/tokenBridge",
