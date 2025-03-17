@@ -20,8 +20,11 @@ export const relayerContracts = [[
     ["Scroll",    "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"],
     ["Mantle",    "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"],
     ["Xlayer",    "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"],
+    ["Berachain", "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"],
+    ["Ink",       "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"],
     ["Worldchain","0x1520cc9e779c56dab5866bebfb885c86840c33d3"],
     ["Snaxchain", "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"],
+    ["Unichain",  "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"],
   ]], [
   "Testnet", [
     ["Ethereum",        "0x28D8F1Be96f97C1387e94A53e00eCcFb4E75175a"],
