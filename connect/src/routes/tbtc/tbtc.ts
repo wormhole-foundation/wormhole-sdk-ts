@@ -68,7 +68,7 @@ export class TBTCRoute<N extends Network>
   implements StaticRouteMethods<typeof TBTCRoute>
 {
   static meta = {
-    name: "TBTCBridge",
+    name: "ManualTBTC",
   };
 
   static supportedNetworks(): Network[] {
@@ -261,9 +261,23 @@ export class TBTCRoute<N extends Network>
   }
 
   async resume(txid: TransactionId): Promise<R> {
-    //const xfer = await TokenTransfer.from(this.wh, txid, 10 * 1000);
-    //return TokenTransfer.getReceipt(xfer);
-    throw new Error("Method not implemented.");
+    const vaa = await this.wh.getVaa(txid.txid, TBTCBridge.getTransferDiscriminator());
+    if (!vaa) throw new Error("No VAA found for transaction: " + txid);
+
+    return {
+      originTxs: [txid],
+      state: TransferState.Attested,
+      from: vaa.emitterChain,
+      to: vaa.payload.to.chain,
+      attestation: {
+        id: {
+          chain: vaa.emitterChain,
+          emitter: vaa.emitterAddress,
+          sequence: vaa.sequence,
+        },
+        attestation: vaa,
+      },
+    } satisfies AttestedTransferReceipt<AttestationReceipt<"TBTCBridge">>;
   }
 
   async *track(receipt: Receipt, timeout?: number) {
