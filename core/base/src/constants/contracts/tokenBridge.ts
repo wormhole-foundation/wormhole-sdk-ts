@@ -89,6 +89,7 @@ export const tokenBridgeContracts = [[
     ["Linea",           "0xC7A204bDBFe983FCD8d8E61D02b475D4073fF97e"],
     ["Monad",           "0xF323dcDe4d33efe83cf455F78F9F6cc656e6B659"],
     ["Movement",        "0xda075f9cb681e291c17e65562bdd6d4196c7d2f86da1aa3917f2809ff8edb03d"],
+    ["Mezo",            "0xA31aa3FDb7aF7Db93d18DDA4e19F811342EDF780"],
   ]], [
   "Devnet", [
     ["Solana",    "B6RHG3mfcckmrYN1UhmJzyS1XX3fZKbkeUcpJe9Sy3FE"],

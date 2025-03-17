@@ -119,6 +119,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Linea",           59141n], // Sepolia
       ["Monad",           10143n],
       ["Movement",        250n], // Bardock
+      ["Mezo",            31611n],
     ],
   ],
   [
