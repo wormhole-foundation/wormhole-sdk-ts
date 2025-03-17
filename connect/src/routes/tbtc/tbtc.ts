@@ -11,6 +11,7 @@ import {
   ChainAddress,
   ChainContext,
   deserialize,
+  isNative,
   isSameToken,
   serialize,
   Signer,
@@ -326,6 +327,10 @@ export class TBTCRoute<N extends Network>
     sourceToken: TokenId,
     fromChain: ChainContext<N>,
   ): Promise<boolean> {
+    if (isNative(sourceToken.address)) {
+      return false;
+    }
+
     // Native tbtc is supported
     const nativeTbtc = TBTCBridge.getNativeTbtcToken(fromChain.chain);
     if (nativeTbtc && isSameToken(sourceToken, nativeTbtc)) {
