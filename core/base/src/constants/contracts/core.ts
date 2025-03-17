@@ -96,6 +96,7 @@ export const coreBridgeContracts = [[
     ["Linea",           "0x79A1027a6A159502049F10906D333EC57E95F083"],
     ["Monad",           "0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd"],
     ["Movement",        "0xa7b37796439f725373fe4835793cd2eed7a1db639bbb220c72be8904ec5e2a7a"],
+    ["Mezo",            "0x268557122Ffd64c85750d630b716471118F323c8"],
   ]], [
   "Devnet", [
     ["Solana",    "Bridge1p5gheXUvJ6jGWGeCsgPKgnE3YgdGKRVCMY9o"],
