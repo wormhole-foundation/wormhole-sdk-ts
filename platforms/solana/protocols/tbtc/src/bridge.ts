@@ -135,15 +135,15 @@ export class SolanaTBTCBridge<N extends Network, C extends SolanaChains>
 
     const coreFeeCollector = coreUtils.deriveFeeCollectorKey(this.coreBridgeId);
 
+    // NOTE: There is a race condition where the sequence changes
+    // while the transaction is in flight. This would cause the
+    // transaction to fail and the user would have to retry.
     const { sequence } = await coreUtils.getProgramSequenceTracker(
       this.connection,
       this.tokenBridgeId,
       this.coreBridgeId,
     );
 
-    // NOTE: There is a race condition where the sequence changes
-    // before the transaction is confirmed. This would cause the
-    // transaction to fail.
     const coreMessage = getCoreMessagePda(this.gateway.programId, sequence);
 
     const coreBridgeData = coreUtils.deriveWormholeBridgeDataKey(

@@ -34,6 +34,8 @@ export class EvmTBTCBridge<N extends Network, C extends EvmChains = EvmChains>
   gatewayAddress: string;
   gateway: Contract;
 
+  tbtcTokenAddr: string;
+
   constructor(
     readonly network: N,
     readonly chain: C,
@@ -46,6 +48,11 @@ export class EvmTBTCBridge<N extends Network, C extends EvmChains = EvmChains>
 
     if (!this.contracts.tbtc) {
       throw new Error('TBTC contract address is required');
+    }
+
+    const tbtcToken = TBTCBridge.getNativeTbtcToken(this.chain);
+    if (!tbtcToken) {
+      throw new Error('Native tbtc token not found');
     }
 
     this.chainId = nativeChainIds.networkChainToNativeChainId.get(
@@ -65,6 +72,8 @@ export class EvmTBTCBridge<N extends Network, C extends EvmChains = EvmChains>
       ],
       provider,
     );
+
+    this.tbtcTokenAddr = canonicalAddress(tbtcToken);
   }
 
   static async fromRpc<N extends Network>(
@@ -87,11 +96,6 @@ export class EvmTBTCBridge<N extends Network, C extends EvmChains = EvmChains>
   ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
     const senderAddress = new EvmAddress(sender).toString();
 
-    const tbtcToken = TBTCBridge.getNativeTbtcToken(this.chain);
-    if (!tbtcToken) {
-      throw new Error('Native tbtc token not found');
-    }
-
     const tx = await this.gateway.sendTbtc!.populateTransaction(
       amount,
       toChainId(recipient.chain),
@@ -101,12 +105,7 @@ export class EvmTBTCBridge<N extends Network, C extends EvmChains = EvmChains>
     );
     tx.value = await this.core.getMessageFee();
 
-    yield* this.approve(
-      canonicalAddress(tbtcToken),
-      senderAddress,
-      amount,
-      this.gatewayAddress,
-    );
+    yield* this.approve(senderAddress, amount, this.gatewayAddress);
 
     yield this.createUnsignedTransaction(
       addFrom(tx, senderAddress),
@@ -118,6 +117,10 @@ export class EvmTBTCBridge<N extends Network, C extends EvmChains = EvmChains>
     sender: AccountAddress<C>,
     vaa: TBTCBridge.VAA,
   ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
+    if (vaa.payloadName !== 'GatewayTransfer') {
+      throw new Error('Invalid VAA payload');
+    }
+
     const address = new EvmAddress(sender).toString();
 
     const tx = await this.gateway.receiveTbtc!.populateTransaction(
@@ -131,14 +134,13 @@ export class EvmTBTCBridge<N extends Network, C extends EvmChains = EvmChains>
   }
 
   private async *approve(
-    token: string,
     senderAddr: string,
     amount: bigint,
     contract: string,
   ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
     const tokenContract = EvmPlatform.getTokenImplementation(
       this.provider,
-      token,
+      this.tbtcTokenAddr,
     );
     const allowance = await tokenContract.allowance(senderAddr, contract);
     if (allowance < amount) {
