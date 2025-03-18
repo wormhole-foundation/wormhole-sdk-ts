@@ -28,7 +28,6 @@ import {
   addFrom,
 } from '@wormhole-foundation/sdk-evm';
 
-import '@wormhole-foundation/sdk-evm-core';
 import '@wormhole-foundation/sdk-evm-tokenbridge';
 import { EvmWormholeCore } from '@wormhole-foundation/sdk-evm-core';
 
