@@ -28,12 +28,14 @@ import type { Provider, TransactionRequest } from 'ethers';
 import { ethers_contracts } from './index.js';
 
 import '@wormhole-foundation/sdk-evm-core';
+import { EvmWormholeCore } from '@wormhole-foundation/sdk-evm-core';
 
 export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
   implements AutomaticTokenBridge<N, C>
 {
   readonly tokenBridgeRelayer: ethers_contracts.TokenBridgeRelayer;
   readonly tokenBridge: ethers_contracts.TokenBridgeContract;
+  readonly core: EvmWormholeCore<N, C>;
   readonly chainId: bigint;
 
   constructor(
@@ -72,6 +74,7 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
         relayerAddress,
         provider,
       );
+    this.core = new EvmWormholeCore(network, chain, provider, contracts);
   }
   async *redeem(
     sender: AccountAddress<C>,
@@ -117,6 +120,7 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
   ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
     const senderAddr = new EvmAddress(sender).toString();
     const recipientChainId = toChainId(recipient.chain);
+    const messageFee = await this.core.getMessageFee();
 
     const recipientAddress = recipient.address
       .toUniversalAddress()
@@ -131,7 +135,7 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
           recipientChainId,
           recipientAddress,
           0, // skip batching
-          { value: amount },
+          { value: amount + messageFee },
         );
 
       yield this.createUnsignedTx(
@@ -170,6 +174,7 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
           recipientChainId,
           recipientAddress,
           0,
+          { value: messageFee },
         );
 
       yield this.createUnsignedTx(
