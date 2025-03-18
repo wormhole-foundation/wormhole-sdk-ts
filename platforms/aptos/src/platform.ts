@@ -41,12 +41,7 @@ export class AptosPlatform<N extends Network>
 
   getRpc<C extends AptosChains>(chain: C): Aptos {
     if (chain in this.config) {
-      const network =
-        chain === "Aptos"
-          ? this.network === "Mainnet"
-            ? AptosNetwork.MAINNET
-            : AptosNetwork.TESTNET
-          : AptosNetwork.CUSTOM; // e.g. Movement
+      const network = this.network === "Mainnet" ? AptosNetwork.MAINNET : AptosNetwork.TESTNET;
       const config = new AptosConfig({ fullnode: this.config[chain]!.rpc, network });
       return new Aptos(config);
     }
