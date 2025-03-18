@@ -51,7 +51,6 @@ const finalityThresholds = [
   ["Sui",       0],
   ["Algorand",  0],
   ["Aptos",     0],
-  ["Movement",  0],
   ["Klaytn",    0],
   ["Sei",       0],
   ["Near",      0],
@@ -148,7 +147,6 @@ const blockTimeMilliseconds = [
   ["Stargaze",          5_000],
   ["Seda",              7_500],
   ["Berachain",         2_000],
-  ["Movement",          4_000],
   ["Mezo",              4_000],
 ] as const satisfies MapLevel<Chain, number>;
 

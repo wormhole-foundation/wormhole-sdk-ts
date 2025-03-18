@@ -99,7 +99,6 @@ const rpcConfig = [[
     ["HyperEVM",        "https://api.hyperliquid-testnet.xyz/evm"],
     ["Monad",           "https://testnet-rpc.monad.xyz"],
     ["Noble",           "https://noble-testnet-rpc.polkachu.com/"],
-    ["Movement",        "https://aptos.testnet.bardock.movementlabs.xyz/v1"],
     ["Mezo",            "https://rpc.test.mezo.org"],
   ]], [
   "Devnet", [
