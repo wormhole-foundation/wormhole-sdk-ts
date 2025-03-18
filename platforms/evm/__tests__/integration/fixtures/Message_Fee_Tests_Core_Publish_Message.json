@@ -1,0 +1,54 @@
+[
+    {
+        "scope": "https://virginia.rpc.blxrbdn.com:443",
+        "method": "POST",
+        "path": "/",
+        "body": [
+            {
+                "method": "eth_chainId",
+                "params": [],
+                "jsonrpc": "2.0"
+            },
+            {
+                "method": "eth_call",
+                "params": [
+                    {
+                        "to": "0x98f3c9e6e3face36baad05fe09d375ef1464288b",
+                        "data": "0x1a90a219"
+                    },
+                    "latest"
+                ],
+                "jsonrpc": "2.0"
+            }
+        ],
+        "status": 200,
+        "response": [
+            "1f8b08000000000000ff8aae56ca2acecf2b2a4856b25232d23350d251ca4c51b232d4512a4a2d2ecd2951b25232a83054aad5c1aece08459d018540a936960b100000ffffd25f8e0391000000"
+        ],
+        "rawHeaders": [
+            "Date",
+            "Tue, 18 Mar 2025 15:01:51 GMT",
+            "Content-Type",
+            "application/json",
+            "Content-Length",
+            "77",
+            "Connection",
+            "keep-alive",
+            "Server",
+            "nginx/1.22.1",
+            "Content-Encoding",
+            "gzip",
+            "Vary",
+            "Origin",
+            "Access-Control-Allow-Credentials",
+            "true",
+            "Access-Control-Allow-Origin",
+            "*",
+            "Access-Control-Allow-Methods",
+            "GET, POST, OPTIONS",
+            "Access-Control-Allow-Headers",
+            "Content-Type,Authorization,User-Agent"
+        ],
+        "responseIsBinary": false
+    }
+]
