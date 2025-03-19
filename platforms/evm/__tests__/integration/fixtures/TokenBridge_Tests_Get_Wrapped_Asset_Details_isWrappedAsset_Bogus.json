@@ -1,6 +1,10 @@
 [
     {
+<<<<<<< HEAD
         "scope": "https://ethereum-rpc.publicnode.com",
+=======
+        "scope": "https://virginia.rpc.blxrbdn.com:443",
+>>>>>>> c344a479 (use non ankr for tests)
         "method": "POST",
         "path": "/",
         "body": [
@@ -23,41 +27,31 @@
         ],
         "status": 200,
         "response": [
-            "1f8b08000000000000038aae56ca2acecf2b2a4856b25232d23350d251ca4c51b232d2512a4a2d2ecd2951b25232a83054aad5c1aece18459d018540a93616000000ffff0300c46e70b490000000"
+            "1f8b08000000000000ff8aae56ca2acecf2b2a4856b25232d23350d251ca4c51b232d2512a4a2d2ecd2951b25232a83054aad5c1aece18459d018540a936960b100000ffff54706aae91000000"
         ],
         "rawHeaders": [
             "Date",
-            "Wed, 19 Jun 2024 20:37:54 GMT",
+            "Wed, 19 Mar 2025 10:04:09 GMT",
             "Content-Type",
             "application/json",
-            "Transfer-Encoding",
-            "chunked",
+            "Content-Length",
+            "77",
             "Connection",
-            "close",
-            "CF-Cache-Status",
-            "DYNAMIC",
+            "keep-alive",
+            "Server",
+            "nginx/1.22.1",
+            "Content-Encoding",
+            "gzip",
+            "Vary",
+            "Origin",
+            "Access-Control-Allow-Credentials",
+            "true",
             "Access-Control-Allow-Origin",
             "*",
-            "Cache-Control",
-            "public, max-age=2",
-            "Access-Control-Allow-Headers",
-            "Content-Type,Authorization",
             "Access-Control-Allow-Methods",
-            "GET,POST,DELETE,OPTIONS",
-            "Access-Control-Max-Age",
-            "86400",
-            "x-multirpc-response-type",
-            "1",
-            "X-Robots-Tag",
-            "noindex, nofollow",
-            "Vary",
-            "Accept-Encoding",
-            "Server",
-            "cloudflare",
-            "CF-RAY",
-            "896651d7af72431a-EWR",
-            "Content-Encoding",
-            "gzip"
+            "GET, POST, OPTIONS",
+            "Access-Control-Allow-Headers",
+            "Content-Type,Authorization,User-Agent"
         ],
         "responseIsBinary": false
     }

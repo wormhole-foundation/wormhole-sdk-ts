@@ -1,6 +1,10 @@
 [
     {
+<<<<<<< HEAD
         "scope": "https://ethereum-rpc.publicnode.com",
+=======
+        "scope": "https://virginia.rpc.blxrbdn.com:443",
+>>>>>>> c344a479 (use non ankr for tests)
         "method": "POST",
         "path": "/",
         "body": [
@@ -9,7 +13,7 @@
                 "params": [
                     {
                         "to": "0x3ee18b2214aff97000d974cf647e7c347e8fa585",
-                        "data": "0x1ff1e286000000000000000000000000000000000000000000000000000000000000000200000000000000000000000027335bfe1c5737fa2ec3a36c29193969cc7da997"
+                        "data": "0x1ff1e2860000000000000000000000000000000000000000000000000000000000000002000000000000000000000000b2f3f55d046975c6b90ab4083f04d0e2c61dc546"
                     },
                     "latest"
                 ],
@@ -23,42 +27,31 @@
         ],
         "status": 200,
         "response": [
-            "1f8b0800000000000003000000ffff",
-            "8aae56ca2acecf2b2a4856b25232d23350d251ca4c51b23236d3512a4a2d2ecd2951b25232a83054aad5c1a1d01445a1018540a93616000000ffff030029afc7ac92000000"
+            "1f8b08000000000000ff8aae56ca2acecf2b2a4856b25232d23350d251ca4c51b23236d7512a4a2d2ecd2951b25232a830a01028d5eae0b0c702c51e43a5da582e40000000ffff7ca5d0a393000000"
         ],
         "rawHeaders": [
             "Date",
-            "Wed, 19 Jun 2024 20:37:57 GMT",
+            "Wed, 19 Mar 2025 10:04:09 GMT",
             "Content-Type",
             "application/json",
-            "Transfer-Encoding",
-            "chunked",
+            "Content-Length",
+            "79",
             "Connection",
-            "close",
-            "CF-Cache-Status",
-            "DYNAMIC",
+            "keep-alive",
+            "Server",
+            "nginx/1.22.1",
+            "Content-Encoding",
+            "gzip",
+            "Vary",
+            "Origin",
+            "Access-Control-Allow-Credentials",
+            "true",
             "Access-Control-Allow-Origin",
             "*",
-            "Cache-Control",
-            "public, max-age=2",
-            "Access-Control-Allow-Headers",
-            "Content-Type,Authorization",
             "Access-Control-Allow-Methods",
-            "GET,POST,DELETE,OPTIONS",
-            "Access-Control-Max-Age",
-            "86400",
-            "x-multirpc-response-type",
-            "1",
-            "X-Robots-Tag",
-            "noindex, nofollow",
-            "Vary",
-            "Accept-Encoding",
-            "Server",
-            "cloudflare",
-            "CF-RAY",
-            "896651ea39298c69-EWR",
-            "Content-Encoding",
-            "gzip"
+            "GET, POST, OPTIONS",
+            "Access-Control-Allow-Headers",
+            "Content-Type,Authorization,User-Agent"
         ],
         "responseIsBinary": false
     }

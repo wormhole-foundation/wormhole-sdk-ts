@@ -20,6 +20,7 @@ import { EvmChains, EvmPlatform } from './../../src/index.js';
 import { describe, expect, test } from '@jest/globals';
 import path from 'path';
 import nock from 'nock';
+import { ethers } from 'ethers';
 
 // Setup nock to record fixtures
 const nockBack = nock.back;
@@ -120,8 +121,7 @@ describe('TokenBridge Tests', () => {
   let tb: TokenBridge<Network, EvmChains>;
 
   test('Create TokenBridge', async () => {
-    const rpc = p.getRpc('Ethereum');
-    tb = await p.getProtocol('TokenBridge', rpc);
+    tb = await p.getProtocol('TokenBridge', new ethers.JsonRpcProvider('https://virginia.rpc.blxrbdn.com'));
     expect(tb).toBeTruthy();
   });
 
