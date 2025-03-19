@@ -40,11 +40,13 @@ import {
 } from '@wormhole-foundation/sdk-evm';
 
 import '@wormhole-foundation/sdk-evm-core';
+import { EvmWormholeCore } from '@wormhole-foundation/sdk-evm-core';
 
 export class EvmTokenBridge<N extends Network, C extends EvmChains>
   implements TokenBridge<N, C>
 {
   readonly tokenBridge: TokenBridgeContract;
+  readonly core: EvmWormholeCore<N, C>;
   readonly tokenBridgeAddress: string;
   readonly chainId: bigint;
 
@@ -70,6 +72,7 @@ export class EvmTokenBridge<N extends Network, C extends EvmChains>
       this.tokenBridgeAddress,
       provider,
     );
+    this.core = new EvmWormholeCore(network, chain, provider, contracts);
   }
 
   static async fromRpc<N extends Network>(
@@ -160,11 +163,15 @@ export class EvmTokenBridge<N extends Network, C extends EvmChains>
   async *createAttestation(
     token: TokenAddress<C>,
   ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
+    const messageFee = await this.core.getMessageFee();
     const ignoredNonce = 0;
     yield this.createUnsignedTx(
       await this.tokenBridge.attestToken.populateTransaction(
         token.toString(),
         ignoredNonce,
+        {
+          value: messageFee,
+        },
       ),
       'TokenBridge.createAttestation',
     );
@@ -196,6 +203,7 @@ export class EvmTokenBridge<N extends Network, C extends EvmChains>
     const recipientAddress = recipient.address
       .toUniversalAddress()
       .toUint8Array();
+    const messageFee = await this.core.getMessageFee();
 
     if (isNative(token)) {
       const txReq = await (payload === undefined
@@ -204,14 +212,14 @@ export class EvmTokenBridge<N extends Network, C extends EvmChains>
             recipientAddress,
             unusedArbiterFee,
             unusedNonce,
-            { value: amount },
+            { value: amount + messageFee },
           )
         : this.tokenBridge.wrapAndTransferETHWithPayload.populateTransaction(
             recipientChainId,
             recipientAddress,
             unusedNonce,
             payload,
-            { value: amount },
+            { value: amount + messageFee },
           ));
 
       yield this.createUnsignedTx(
@@ -252,11 +260,13 @@ export class EvmTokenBridge<N extends Network, C extends EvmChains>
             ...sharedParams,
             unusedArbiterFee,
             unusedNonce,
+            { value: messageFee },
           )
         : this.tokenBridge.transferTokensWithPayload.populateTransaction(
             ...sharedParams,
             unusedNonce,
             payload,
+            { value: messageFee },
           ));
       yield this.createUnsignedTx(
         addFrom(txReq, senderAddr),

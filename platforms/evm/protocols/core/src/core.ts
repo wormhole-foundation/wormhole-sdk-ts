@@ -109,11 +109,15 @@ export class EvmWormholeCore<N extends Network, C extends EvmChains>
     consistencyLevel: number,
   ) {
     const senderAddr = new EvmAddress(sender).toString();
+    const messageFee = await this.getMessageFee();
 
     const txReq = await this.core.publishMessage.populateTransaction(
       nonce,
       message,
       consistencyLevel,
+      {
+        value: messageFee,
+      },
     );
 
     yield this.createUnsignedTx(

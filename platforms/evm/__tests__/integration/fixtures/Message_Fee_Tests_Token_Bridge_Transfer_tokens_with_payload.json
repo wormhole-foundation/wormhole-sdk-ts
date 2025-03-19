@@ -23,15 +23,15 @@
         ],
         "status": 200,
         "response": [
-            "1f8b08000000000000ff8aae56ca2acecf2b2a4856b25232d23350d251ca4c51b23231d4512a4a2d2ecd2951b25232a830a01028d5eae0b0c708c51e43a5da582e40000000ffffb9d6f2ac93000000"
+            "1f8b08000000000000ff8aae56ca2acecf2b2a4856b25232d23350d251ca4c51b232d5512a4a2d2ecd2951b25232a830a01028d5ea60b7c60cc51a43a5da582e40000000ffffae27f66d91000000"
         ],
         "rawHeaders": [
             "Date",
-            "Wed, 19 Mar 2025 10:04:09 GMT",
+            "Tue, 18 Mar 2025 15:01:51 GMT",
             "Content-Type",
             "application/json",
             "Content-Length",
-            "79",
+            "78",
             "Connection",
             "keep-alive",
             "Server",
@@ -60,7 +60,7 @@
                 "method": "eth_call",
                 "params": [
                     {
-                        "to": "0x85f138bfee4ef8e540890cfb48f620571d67eda3",
+                        "to": "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
                         "data": "0xdd62ed3e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000003ee18b2214aff97000d974cf647e7c347e8fa585"
                     },
                     "latest"
@@ -75,15 +75,15 @@
         ],
         "status": 200,
         "response": [
-            "1f8b08000000000000ff8aae56ca2acecf2b2a4856b25232d23350d251ca4c51b23231d6512a4a2d2ecd2951b25232a830a01028d5eae0b0c704c51e43a5da582e40000000ffffedc40f8493000000"
+            "1f8b08000000000000ff8aae56ca2acecf2b2a4856b25232d23350d251ca4c51b232d7512a4a2d2ecd2951b25232a830a01028d5ea60b7c602c51a43a5da582e40000000ffff85475d0891000000"
         ],
         "rawHeaders": [
             "Date",
-            "Wed, 19 Mar 2025 10:04:09 GMT",
+            "Tue, 18 Mar 2025 15:01:51 GMT",
             "Content-Type",
             "application/json",
             "Content-Length",
-            "79",
+            "78",
             "Connection",
             "keep-alive",
             "Server",

@@ -8,8 +8,8 @@
                 "method": "eth_call",
                 "params": [
                     {
-                        "to": "0x98f3c9e6e3face36baad05fe09d375ef1464288b",
-                        "data": "0x1a90a219"
+                        "to": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+                        "data": "0xdd62ed3e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000004cb69fae7e7af841e44e1a1c30af640739378bb2"
                     },
                     "latest"
                 ],
@@ -23,11 +23,11 @@
         ],
         "status": 200,
         "response": [
-            "1f8b08000000000000ff8aae56ca2acecf2b2a4856b25232d23350d251ca4c51b23231d4512a4a2d2ecd2951b25232a830a01028d5eae0b0c708c51e43a5da582e40000000ffffb9d6f2ac93000000"
+            "1f8b08000000000000ff8aae56ca2acecf2b2a4856b25232d23350d251ca4c51b23232d6512a4a2d2ecd2951b25232a830a01028d5eae0b0c704c51e43a5da582e40000000ffff07404be393000000"
         ],
         "rawHeaders": [
             "Date",
-            "Wed, 19 Mar 2025 10:04:09 GMT",
+            "Tue, 18 Mar 2025 15:01:51 GMT",
             "Content-Type",
             "application/json",
             "Content-Length",
@@ -60,8 +60,8 @@
                 "method": "eth_call",
                 "params": [
                     {
-                        "to": "0x85f138bfee4ef8e540890cfb48f620571d67eda3",
-                        "data": "0xdd62ed3e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000003ee18b2214aff97000d974cf647e7c347e8fa585"
+                        "to": "0x98f3c9e6e3face36baad05fe09d375ef1464288b",
+                        "data": "0x1a90a219"
                     },
                     "latest"
                 ],
@@ -75,11 +75,11 @@
         ],
         "status": 200,
         "response": [
-            "1f8b08000000000000ff8aae56ca2acecf2b2a4856b25232d23350d251ca4c51b23231d6512a4a2d2ecd2951b25232a830a01028d5eae0b0c704c51e43a5da582e40000000ffffedc40f8493000000"
+            "1f8b08000000000000ff8aae56ca2acecf2b2a4856b25232d23350d251ca4c51b23232d5512a4a2d2ecd2951b25232a830a01028d5eae0b0c70cc51e43a5da582e40000000ffff7e6bed9393000000"
         ],
         "rawHeaders": [
             "Date",
-            "Wed, 19 Mar 2025 10:04:09 GMT",
+            "Tue, 18 Mar 2025 15:01:51 GMT",
             "Content-Type",
             "application/json",
             "Content-Length",

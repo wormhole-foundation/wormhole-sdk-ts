@@ -5,6 +5,11 @@
         "path": "/",
         "body": [
             {
+                "method": "eth_chainId",
+                "params": [],
+                "jsonrpc": "2.0"
+            },
+            {
                 "method": "eth_call",
                 "params": [
                     {
@@ -14,24 +19,19 @@
                     "latest"
                 ],
                 "jsonrpc": "2.0"
-            },
-            {
-                "method": "eth_chainId",
-                "params": [],
-                "jsonrpc": "2.0"
             }
         ],
         "status": 200,
         "response": [
-            "1f8b08000000000000ff8aae56ca2acecf2b2a4856b25232d23350d251ca4c51b23236d5512a4a2d2ecd2951b25232a830a01028d5eae0b0c70cc51e43a5da582e40000000ffffadaa8c8293000000"
+            "1f8b08000000000000ff8aae56ca2acecf2b2a4856b25232d23350d251ca4c51b232d4512a4a2d2ecd2951b25232a83054aad5c1aece08459d018540a936960b100000ffffd25f8e0391000000"
         ],
         "rawHeaders": [
             "Date",
-            "Wed, 19 Mar 2025 10:04:09 GMT",
+            "Tue, 18 Mar 2025 15:01:51 GMT",
             "Content-Type",
             "application/json",
             "Content-Length",
-            "79",
+            "77",
             "Connection",
             "keep-alive",
             "Server",
