@@ -1,7 +1,6 @@
 import {
   CONFIG,
   ChainAddress,
-  DEFAULT_NETWORK,
   Network,
   Signature,
   TokenBridge,
@@ -82,7 +81,7 @@ afterEach(async () => {
   nockBack.setMode('wild');
 });
 
-const network = DEFAULT_NETWORK;
+const network = 'Mainnet';
 const configs = CONFIG[network].chains;
 
 const TOKEN_ADDRESSES = {
