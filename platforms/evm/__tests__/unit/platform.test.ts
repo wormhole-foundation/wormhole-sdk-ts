@@ -15,7 +15,6 @@ jest.mock('ethers', () => {
 
 import {
   CONFIG,
-  DEFAULT_NETWORK,
   chainToPlatform,
   chains,
 } from '@wormhole-foundation/sdk-connect';
@@ -35,7 +34,7 @@ const EVM_CHAINS = chains.filter(
   (c) => chainToPlatform(c) === EvmPlatform._platform,
 ) as EvmChains[];
 
-const network = DEFAULT_NETWORK;
+const network = 'Mainnet';
 const configs = CONFIG[network].chains;
 
 // TODO:

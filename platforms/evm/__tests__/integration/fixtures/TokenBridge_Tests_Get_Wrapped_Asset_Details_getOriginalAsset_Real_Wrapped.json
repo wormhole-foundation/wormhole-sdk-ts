@@ -1,8 +1,8 @@
 [
     {
-        "scope": "https://rpc.ankr.com:443",
+        "scope": "https://ethereum-rpc.publicnode.com",
         "method": "POST",
-        "path": "/eth",
+        "path": "/",
         "body": [
             {
                 "method": "eth_call",
@@ -84,9 +84,9 @@
         "responseIsBinary": false
     },
     {
-        "scope": "https://rpc.ankr.com:443",
+        "scope": "https://ethereum-rpc.publicnode.com",
         "method": "POST",
-        "path": "/eth",
+        "path": "/",
         "body": [
             {
                 "method": "eth_call",
