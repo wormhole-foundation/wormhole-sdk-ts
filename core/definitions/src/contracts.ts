@@ -16,6 +16,7 @@ export type Contracts = {
   gateway?: string;
   translator?: string;
   portico?: contracts.PorticoContracts;
+  tbtc?: string;
 } & UnknownContracts;
 
 /**
@@ -33,6 +34,7 @@ export function getContracts(n: Network, c: Chain): Contracts {
     nftBridge: contracts.nftBridge.get(n, c),
     relayer: contracts.relayer.get(n, c),
     tokenBridgeRelayer: contracts.tokenBridgeRelayer.get(n, c),
+    tbtc: contracts.tbtc.get(n, c),
   };
 
   if (contracts.circleContracts.has(n, c)) {
@@ -49,6 +51,10 @@ export function getContracts(n: Network, c: Chain): Contracts {
 
   if (contracts.portico.has(n, c)) {
     ct.portico = contracts.portico.get(n, c);
+  }
+
+  if (contracts.tbtc.has(n, c)) {
+    ct.tbtc = contracts.tbtc.get(n, c);
   }
 
   return ct;

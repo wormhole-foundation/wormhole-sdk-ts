@@ -16,6 +16,7 @@ import type {
   Contracts,
   IbcBridge,
   PorticoBridge,
+  TBTCBridge,
   WormholeCore,
 } from "./index.js";
 import type { PlatformContext } from "./platform.js";
@@ -318,4 +319,16 @@ export abstract class ChainContext<
    * @returns the Portico Bridge protocol client for this chain
    */
   getPorticoBridge = (): Promise<PorticoBridge<N, C>> => this.getProtocol("PorticoBridge");
+
+  /**
+   * Check to see if the TBTC Bridge protocol is supported by this chain
+   * @returns a boolean indicating if this chain supports the TBTC Bridge protocol
+   */
+  supportsTBTCBridge = () => this.supportsProtocol("TBTCBridge");
+
+  /**
+   * Get the TBTC Bridge protocol client for this chain
+   * @returns the TBTC Bridge protocol client for this chain
+   */
+  getTBTCBridge = (): Promise<TBTCBridge<N, C>> => this.getProtocol("TBTCBridge");
 }
