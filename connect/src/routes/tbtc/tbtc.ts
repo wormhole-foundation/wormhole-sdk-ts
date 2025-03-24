@@ -154,7 +154,7 @@ export class TBTCRoute<N extends Network>
     const isNativeTbtc = nativeTbtc && isSameToken(quote.sourceToken.token, nativeTbtc);
 
     if (isNativeTbtc && !isEthereum) {
-      return await this.transferGateway(request, signer, to, amt);
+      return await this.transferNative(request, signer, to, amt);
     }
 
     if (!isNativeTbtc && isEthereum) {
@@ -170,10 +170,10 @@ export class TBTCRoute<N extends Network>
       }
     }
 
-    return await this.transferTokenBridge(request, signer, to, amt);
+    return await this.transferWrapped(request, signer, to, amt);
   }
 
-  private async transferGateway(
+  private async transferNative(
     request: RouteTransferRequest<N>,
     signer: Signer,
     to: ChainAddress,
@@ -194,7 +194,7 @@ export class TBTCRoute<N extends Network>
     return receipt;
   }
 
-  private async transferTokenBridge(
+  private async transferWrapped(
     request: RouteTransferRequest<N>,
     signer: Signer,
     to: ChainAddress,
