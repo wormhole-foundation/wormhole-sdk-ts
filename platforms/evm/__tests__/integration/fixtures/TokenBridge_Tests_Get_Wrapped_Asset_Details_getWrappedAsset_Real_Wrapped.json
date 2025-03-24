@@ -1,10 +1,6 @@
 [
     {
-<<<<<<< HEAD
-        "scope": "https://ethereum-rpc.publicnode.com",
-=======
-        "scope": "https://virginia.rpc.blxrbdn.com:443",
->>>>>>> c344a479 (use non ankr for tests)
+        "scope": "https://ethereum-rpc.publicnode.com:443",
         "method": "POST",
         "path": "/",
         "body": [
@@ -49,40 +45,42 @@
         ],
         "status": 200,
         "response": [
-            "1f8b08000000000000ff8aae56ca2acecf2b2a4856b25232d23350d251ca4c51b23232d3512a4a2d2ecd2951b25232a830a01028d5eae0b0c71cc51e43dc0a2de8e4204b6ada63a8541bcb05080000fffff087592563010000"
+            "1f8b08000000000000038aae56ca2acecf2b2a4856b25232d23350d251ca4c51b23232d3512a4a2d2ecd2951b25232a830a01028d5eae0b0c71cc51e43dc0a2de8e4204b6ada63a8541bcb05000000ffff0300f087592563010000"
         ],
         "rawHeaders": [
             "Date",
-            "Wed, 19 Mar 2025 10:04:09 GMT",
+            "Mon, 24 Mar 2025 11:49:23 GMT",
             "Content-Type",
             "application/json",
-            "Content-Length",
-            "89",
+            "Transfer-Encoding",
+            "chunked",
             "Connection",
             "keep-alive",
+            "access-control-max-age",
+            "1728000",
+            "strict-transport-security",
+            "max-age=31536000; includeSubDomains; preload",
+            "vary",
+            "Origin, accept-encoding",
+            "x-envoy-upstream-service-time",
+            "4",
+            "cf-cache-status",
+            "DYNAMIC",
+            "X-Content-Type-Options",
+            "nosniff",
             "Server",
-            "nginx/1.22.1",
+            "cloudflare",
+            "CF-RAY",
+            "9255f1e2e8fa640f-LHR",
             "Content-Encoding",
             "gzip",
-            "Vary",
-            "Origin",
-            "Access-Control-Allow-Credentials",
-            "true",
-            "Access-Control-Allow-Origin",
-            "*",
-            "Access-Control-Allow-Methods",
-            "GET, POST, OPTIONS",
-            "Access-Control-Allow-Headers",
-            "Content-Type,Authorization,User-Agent"
+            "alt-svc",
+            "h3=\":443\"; ma=86400"
         ],
         "responseIsBinary": false
     },
     {
-<<<<<<< HEAD
-        "scope": "https://ethereum-rpc.publicnode.com",
-=======
-        "scope": "https://virginia.rpc.blxrbdn.com:443",
->>>>>>> c344a479 (use non ankr for tests)
+        "scope": "https://ethereum-rpc.publicnode.com:443",
         "method": "POST",
         "path": "/",
         "body": [
@@ -116,40 +114,42 @@
         ],
         "status": 200,
         "response": [
-            "1f8b08000000000000ff8aae56ca2acecf2b2a4856b25232d23350d251ca4c51b23236d0512a4a2d2ecd2951b25232a830a00c9829d5eae0b0c710c51e43dc0a8d88725092b1619a995962a271b261aab985a9b199719a8185b969a26192b949aa91799285695a8a9959b2b9526d2c17200000fffff9b0fe91fb000000"
+            "1f8b08000000000000038aae56ca2acecf2b2a4856b25232d23350d251ca4c51b23236d0512a4a2d2ecd2951b25232a830a00c9829d5eae0b0c710c51e43dc0a8d88725092b1619a995962a271b261aab985a9b199719a8185b969a26192b949aa91799285695a8a9959b2b9526d2c17000000ffff0300f9b0fe91fb000000"
         ],
         "rawHeaders": [
             "Date",
-            "Wed, 19 Mar 2025 10:04:09 GMT",
+            "Mon, 24 Mar 2025 11:49:23 GMT",
             "Content-Type",
             "application/json",
-            "Content-Length",
-            "125",
+            "Transfer-Encoding",
+            "chunked",
             "Connection",
             "keep-alive",
+            "access-control-max-age",
+            "1728000",
+            "strict-transport-security",
+            "max-age=31536000; includeSubDomains; preload",
+            "vary",
+            "Origin, accept-encoding",
+            "x-envoy-upstream-service-time",
+            "2",
+            "cf-cache-status",
+            "DYNAMIC",
+            "X-Content-Type-Options",
+            "nosniff",
             "Server",
-            "nginx/1.22.1",
+            "cloudflare",
+            "CF-RAY",
+            "9255f1e3393c640f-LHR",
             "Content-Encoding",
             "gzip",
-            "Vary",
-            "Origin",
-            "Access-Control-Allow-Credentials",
-            "true",
-            "Access-Control-Allow-Origin",
-            "*",
-            "Access-Control-Allow-Methods",
-            "GET, POST, OPTIONS",
-            "Access-Control-Allow-Headers",
-            "Content-Type,Authorization,User-Agent"
+            "alt-svc",
+            "h3=\":443\"; ma=86400"
         ],
         "responseIsBinary": false
     },
     {
-<<<<<<< HEAD
-        "scope": "https://ethereum-rpc.publicnode.com",
-=======
-        "scope": "https://virginia.rpc.blxrbdn.com:443",
->>>>>>> c344a479 (use non ankr for tests)
+        "scope": "https://ethereum-rpc.publicnode.com:443",
         "method": "POST",
         "path": "/",
         "body": [
@@ -172,31 +172,37 @@
         ],
         "status": 200,
         "response": [
-            "1f8b08000000000000ff74cd410a02310c05d0bdc7f8eb22e9249d89bd8ab870a60928a2d22a08d2bbbb76d1778177fce2da1ef7fadc9031ed09019782cc1c50adbd6f2f64d087063479645ddd4cccd592901e68f355d4e789d212cbbc5839337a183cf2f744f4d3ee170000ffff0a3e49c793000000"
+            "1f8b08000000000000038aae56ca2acecf2b2a4856b25232d23350d251ca4c51b23236d6512a4a2d2ecd2951b25232a830c0012c4cd30c8d2d92d252534d52d32c524d4d0c2c2c0d92d3924c2cd2cc8c0c4ccd0d53cccc5353128d956a7570d86382628fa1526d2c17000000ffff03000a3e49c793000000"
         ],
         "rawHeaders": [
             "Date",
-            "Wed, 19 Mar 2025 10:04:09 GMT",
+            "Mon, 24 Mar 2025 11:49:23 GMT",
             "Content-Type",
             "application/json",
-            "Content-Length",
-            "118",
+            "Transfer-Encoding",
+            "chunked",
             "Connection",
             "keep-alive",
+            "access-control-max-age",
+            "1728000",
+            "strict-transport-security",
+            "max-age=31536000; includeSubDomains; preload",
+            "vary",
+            "Origin, accept-encoding",
+            "x-envoy-upstream-service-time",
+            "7",
+            "cf-cache-status",
+            "DYNAMIC",
+            "X-Content-Type-Options",
+            "nosniff",
             "Server",
-            "nginx/1.22.1",
+            "cloudflare",
+            "CF-RAY",
+            "9255f1e399a7640f-LHR",
             "Content-Encoding",
             "gzip",
-            "Vary",
-            "Origin",
-            "Access-Control-Allow-Credentials",
-            "true",
-            "Access-Control-Allow-Origin",
-            "*",
-            "Access-Control-Allow-Methods",
-            "GET, POST, OPTIONS",
-            "Access-Control-Allow-Headers",
-            "Content-Type,Authorization,User-Agent"
+            "alt-svc",
+            "h3=\":443\"; ma=86400"
         ],
         "responseIsBinary": false
     }

@@ -13,7 +13,6 @@ import { describe, expect, test } from '@jest/globals';
 import path from 'path';
 import nock from 'nock';
 import { toNative } from '@wormhole-foundation/sdk';
-import { ethers } from 'ethers';
   
 const nockBack = nock.back;
 nockBack.fixtures =
@@ -21,7 +20,7 @@ nockBack.fixtures =
 
 let nockDone: () => void;
 beforeEach(async () => {
-  nockBack.setMode('lockdown');
+  nockBack.setMode('record');
   const fullTestName = expect.getState().currentTestName?.replace(/\s/g, '_');
   const { nockDone: nd } = await nockBack(`${fullTestName}.json`, {
     // Remove the `id` from the request body after preparing it but before
@@ -84,7 +83,7 @@ const transferAmount = 1000000000000000000n;
 describe('Message Fee Tests', () => {
 
   const p = new EvmPlatform(network, configs);
-  const chain = p.getChain('Ethereum', new ethers.JsonRpcProvider('https://virginia.rpc.blxrbdn.com'));
+  const chain = p.getChain('Ethereum');
 
   describe('Core', () => {
     test('Publish Message', async () => {

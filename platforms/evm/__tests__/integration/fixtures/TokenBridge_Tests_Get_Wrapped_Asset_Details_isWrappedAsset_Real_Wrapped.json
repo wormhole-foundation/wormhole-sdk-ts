@@ -1,6 +1,6 @@
 [
     {
-        "scope": "https://ethereum-rpc.publicnode.com",
+        "scope": "https://ethereum-rpc.publicnode.com:443",
         "method": "POST",
         "path": "/",
         "body": [
@@ -23,31 +23,37 @@
         ],
         "status": 200,
         "response": [
-            "1f8b08000000000000ff8aae56ca2acecf2b2a4856b25232d23350d251ca4c51b232d3512a4a2d2ecd2951b25232a830a00c182ad5ea60b7c61cc51a43a5da582e40000000ffff7941077d91000000"
+            "1f8b08000000000000038aae56ca2acecf2b2a4856b25232d23350d251ca4c51b232d3512a4a2d2ecd2951b25232a830a00c182ad5ea60b7c61cc51a43a5da582e00000000ffff03007941077d91000000"
         ],
         "rawHeaders": [
             "Date",
-            "Wed, 19 Mar 2025 10:04:09 GMT",
+            "Mon, 24 Mar 2025 11:49:22 GMT",
             "Content-Type",
             "application/json",
-            "Content-Length",
-            "79",
+            "Transfer-Encoding",
+            "chunked",
             "Connection",
             "keep-alive",
+            "access-control-max-age",
+            "1728000",
+            "strict-transport-security",
+            "max-age=31536000; includeSubDomains; preload",
+            "vary",
+            "Origin, accept-encoding",
+            "x-envoy-upstream-service-time",
+            "2",
+            "cf-cache-status",
+            "DYNAMIC",
+            "X-Content-Type-Options",
+            "nosniff",
             "Server",
-            "nginx/1.22.1",
+            "cloudflare",
+            "CF-RAY",
+            "9255f1e02e0f640f-LHR",
             "Content-Encoding",
             "gzip",
-            "Vary",
-            "Origin",
-            "Access-Control-Allow-Credentials",
-            "true",
-            "Access-Control-Allow-Origin",
-            "*",
-            "Access-Control-Allow-Methods",
-            "GET, POST, OPTIONS",
-            "Access-Control-Allow-Headers",
-            "Content-Type,Authorization,User-Agent"
+            "alt-svc",
+            "h3=\":443\"; ma=86400"
         ],
         "responseIsBinary": false
     }

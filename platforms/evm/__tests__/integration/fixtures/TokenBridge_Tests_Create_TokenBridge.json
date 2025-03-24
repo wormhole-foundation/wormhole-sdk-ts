@@ -1,10 +1,6 @@
 [
     {
-<<<<<<< HEAD
-        "scope": "https://ethereum-rpc.publicnode.com",
-=======
-        "scope": "https://virginia.rpc.blxrbdn.com:443",
->>>>>>> c344a479 (use non ankr for tests)
+        "scope": "https://ethereum-rpc.publicnode.com:443",
         "method": "POST",
         "path": "/",
         "body": {
@@ -13,32 +9,38 @@
             "jsonrpc": "2.0"
         },
         "status": 200,
-        "response": [
-            "1f8b08000000000000ffaa56ca2acecf2b2a4856b25232d23350d251ca4c51b232d4512a4a2d2ecd2951b25232a83054aae502040000ffff00075ea928000000"
-        ],
+        "response": {
+            "jsonrpc": "2.0",
+            "result": "0x1",
+            "id": 1
+        },
         "rawHeaders": [
             "Date",
-            "Wed, 19 Mar 2025 10:04:09 GMT",
+            "Mon, 24 Mar 2025 11:49:22 GMT",
             "Content-Type",
             "application/json",
             "Content-Length",
-            "64",
+            "40",
             "Connection",
             "keep-alive",
+            "access-control-max-age",
+            "1728000",
+            "strict-transport-security",
+            "max-age=31536000; includeSubDomains; preload",
+            "vary",
+            "Origin, accept-encoding",
+            "x-envoy-upstream-service-time",
+            "1",
+            "cf-cache-status",
+            "DYNAMIC",
+            "X-Content-Type-Options",
+            "nosniff",
             "Server",
-            "nginx/1.22.1",
-            "Content-Encoding",
-            "gzip",
-            "Vary",
-            "Origin",
-            "Access-Control-Allow-Credentials",
-            "true",
-            "Access-Control-Allow-Origin",
-            "*",
-            "Access-Control-Allow-Methods",
-            "GET, POST, OPTIONS",
-            "Access-Control-Allow-Headers",
-            "Content-Type,Authorization,User-Agent"
+            "cloudflare",
+            "CF-RAY",
+            "9255f1de7c6e640f-LHR",
+            "alt-svc",
+            "h3=\":443\"; ma=86400"
         ],
         "responseIsBinary": false
     }

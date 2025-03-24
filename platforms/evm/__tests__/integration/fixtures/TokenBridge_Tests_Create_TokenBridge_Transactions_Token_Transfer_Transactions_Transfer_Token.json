@@ -1,11 +1,6 @@
 [
     {
-<<<<<<< HEAD
-        "scope": "https://ethereum-rpc.publicnode.com",
-        "method": "POST",
-        "path": "/",
-=======
-        "scope": "https://virginia.rpc.blxrbdn.com:443",
+        "scope": "https://ethereum-rpc.publicnode.com:443",
         "method": "POST",
         "path": "/",
         "body": [
@@ -28,39 +23,44 @@
         ],
         "status": 200,
         "response": [
-            "1f8b08000000000000ff8aae56ca2acecf2b2a4856b25232d23350d251ca4c51b23231d4512a4a2d2ecd2951b25232a830a01028d5eae0b0c708c51e43a5da582e40000000ffffb9d6f2ac93000000"
+            "1f8b08000000000000038aae56ca2acecf2b2a4856b25232d23350d251ca4c51b23231d4512a4a2d2ecd2951b25232a830a01028d5eae0b0c708c51e43a5da582e00000000ffff0300b9d6f2ac93000000"
         ],
         "rawHeaders": [
             "Date",
-            "Wed, 19 Mar 2025 10:04:09 GMT",
+            "Mon, 24 Mar 2025 11:49:23 GMT",
             "Content-Type",
             "application/json",
-            "Content-Length",
-            "79",
+            "Transfer-Encoding",
+            "chunked",
             "Connection",
             "keep-alive",
+            "access-control-max-age",
+            "1728000",
+            "strict-transport-security",
+            "max-age=31536000; includeSubDomains; preload",
+            "vary",
+            "Origin, accept-encoding",
+            "x-envoy-upstream-service-time",
+            "2",
+            "cf-cache-status",
+            "DYNAMIC",
+            "X-Content-Type-Options",
+            "nosniff",
             "Server",
-            "nginx/1.22.1",
+            "cloudflare",
+            "CF-RAY",
+            "9255f1e50b3e640f-LHR",
             "Content-Encoding",
             "gzip",
-            "Vary",
-            "Origin",
-            "Access-Control-Allow-Credentials",
-            "true",
-            "Access-Control-Allow-Origin",
-            "*",
-            "Access-Control-Allow-Methods",
-            "GET, POST, OPTIONS",
-            "Access-Control-Allow-Headers",
-            "Content-Type,Authorization,User-Agent"
+            "alt-svc",
+            "h3=\":443\"; ma=86400"
         ],
         "responseIsBinary": false
     },
     {
-        "scope": "https://virginia.rpc.blxrbdn.com:443",
+        "scope": "https://ethereum-rpc.publicnode.com:443",
         "method": "POST",
         "path": "/",
->>>>>>> c344a479 (use non ankr for tests)
         "body": [
             {
                 "method": "eth_call",
@@ -81,31 +81,37 @@
         ],
         "status": 200,
         "response": [
-            "1f8b08000000000000ff8aae56ca2acecf2b2a4856b25232d23350d251ca4c51b23231d6512a4a2d2ecd2951b25232a830a01028d5eae0b0c704c51e43a5da582e40000000ffffedc40f8493000000"
+            "1f8b08000000000000038aae56ca2acecf2b2a4856b25232d23350d251ca4c51b23231d6512a4a2d2ecd2951b25232a830a01028d5eae0b0c704c51e43a5da582e00000000ffff0300edc40f8493000000"
         ],
         "rawHeaders": [
             "Date",
-            "Wed, 19 Mar 2025 10:04:09 GMT",
+            "Mon, 24 Mar 2025 11:49:23 GMT",
             "Content-Type",
             "application/json",
-            "Content-Length",
-            "79",
+            "Transfer-Encoding",
+            "chunked",
             "Connection",
             "keep-alive",
+            "access-control-max-age",
+            "1728000",
+            "strict-transport-security",
+            "max-age=31536000; includeSubDomains; preload",
+            "vary",
+            "Origin, accept-encoding",
+            "x-envoy-upstream-service-time",
+            "3",
+            "cf-cache-status",
+            "DYNAMIC",
+            "X-Content-Type-Options",
+            "nosniff",
             "Server",
-            "nginx/1.22.1",
+            "cloudflare",
+            "CF-RAY",
+            "9255f1e56bba640f-LHR",
             "Content-Encoding",
             "gzip",
-            "Vary",
-            "Origin",
-            "Access-Control-Allow-Credentials",
-            "true",
-            "Access-Control-Allow-Origin",
-            "*",
-            "Access-Control-Allow-Methods",
-            "GET, POST, OPTIONS",
-            "Access-Control-Allow-Headers",
-            "Content-Type,Authorization,User-Agent"
+            "alt-svc",
+            "h3=\":443\"; ma=86400"
         ],
         "responseIsBinary": false
     }

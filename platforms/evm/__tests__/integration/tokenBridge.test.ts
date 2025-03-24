@@ -20,7 +20,6 @@ import { EvmChains, EvmPlatform } from './../../src/index.js';
 import { describe, expect, test } from '@jest/globals';
 import path from 'path';
 import nock from 'nock';
-import { ethers } from 'ethers';
 
 // Setup nock to record fixtures
 const nockBack = nock.back;
@@ -31,7 +30,7 @@ console.log(nockBack.fixtures);
 
 let nockDone: () => void;
 beforeEach(async () => {
-  nockBack.setMode('lockdown');
+  nockBack.setMode('record');
   const fullTestName = expect.getState().currentTestName?.replace(/\s/g, '_');
   const { nockDone: nd } = await nockBack(`${fullTestName}.json`, {
     // Remove the `id` from the request body after preparing it but before
@@ -121,7 +120,8 @@ describe('TokenBridge Tests', () => {
   let tb: TokenBridge<Network, EvmChains>;
 
   test('Create TokenBridge', async () => {
-    tb = await p.getProtocol('TokenBridge', new ethers.JsonRpcProvider('https://virginia.rpc.blxrbdn.com'));
+    const rpc = p.getRpc('Ethereum');
+    tb = await p.getProtocol('TokenBridge', rpc);
     expect(tb).toBeTruthy();
   });
 
