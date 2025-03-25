@@ -4,3 +4,5 @@ export * from './platform.js';
 export * from './types.js';
 export * from './chain.js';
 export * from './signer.js';
+
+export * as bundler3 from './bundler3.js';
