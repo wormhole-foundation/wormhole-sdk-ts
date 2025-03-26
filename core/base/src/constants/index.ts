@@ -14,3 +14,4 @@ export * as nativeChainIds from "./nativeChainIds.js";
 export * as circle from "./circle.js";
 export * as contracts from "./contracts/index.js";
 export * as guardians from "./guardians.js";
+export * as tbtc from "./tbtc.js";

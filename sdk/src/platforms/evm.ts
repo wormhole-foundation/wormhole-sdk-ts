@@ -12,6 +12,7 @@ const evm: PlatformDefinition<typeof _evm._platform> = {
     TokenBridge: () => import("@wormhole-foundation/sdk-evm-tokenbridge"),
     PorticoBridge: () => import("@wormhole-foundation/sdk-evm-portico"),
     CircleBridge: () => import("@wormhole-foundation/sdk-evm-cctp"),
+    TBTCBridge: () => import("@wormhole-foundation/sdk-evm-tbtc"),
   },
   getChain: (network, chain, overrides?) =>
     new _evm.EvmChain(

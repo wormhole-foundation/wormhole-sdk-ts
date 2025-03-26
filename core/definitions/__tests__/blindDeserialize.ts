@@ -22,12 +22,12 @@ describe("Blind Deserialize", function () {
 
       console.time("exhaustive");
       const result = exhaustiveDeserialize(vaa.payload);
-      expect(result).toHaveLength(1);
+      expect(result).toHaveLength(2);
       console.timeEnd("exhaustive");
 
       console.time("blind");
       const blind = blindDeserializePayload(vaa.payload);
-      expect(blind).toHaveLength(1);
+      expect(blind).toHaveLength(2);
       console.timeEnd("blind");
     }
   });
