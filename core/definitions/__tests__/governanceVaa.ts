@@ -78,7 +78,7 @@ const guardianSetUpgrade =
   /*nonce*/ "9e0c5dfa" +
   /*emitterChain*/ "0001" +
   /*emitterAddress*/ "0000000000000000000000000000000000000000000000000000000000000004" +
-  /*seqeuence*/ "6c5a054d7833d1e4" +
+  /*sequence*/ "6c5a054d7833d1e4" +
   /*consistencyLevel*/ "20" +
   /*module*/ "00000000000000000000000000000000000000000000000000000000436f7265" +
   /*action*/ "02" +
