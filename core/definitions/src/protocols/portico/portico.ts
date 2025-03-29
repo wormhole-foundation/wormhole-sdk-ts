@@ -81,7 +81,7 @@ export interface PorticoBridge<N extends Network = Network, C extends Chain = Ch
     token: TokenAddress<C>,
     amount: bigint,
     destToken: TokenId,
-    destPorticoAddress: string,
+    toPorticoBridge: PorticoBridge<N>,
     quote: PorticoBridge.Quote,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
 
@@ -113,4 +113,6 @@ export interface PorticoBridge<N extends Network = Network, C extends Chain = Ch
 
   /** Get the Portico contract address for the token group */
   getPorticoAddress(group: string): string;
+
+  getChain(): Chain;
 }
