@@ -265,6 +265,12 @@ export class TBTCRoute<N extends Network>
     const vaa = await this.wh.getVaa(txid.txid, TBTCBridge.getTransferDiscriminator());
     if (!vaa) throw new Error("No VAA found for transaction: " + txid);
 
+    const ethTbtc = TBTCBridge.getNativeTbtcToken("Ethereum")!;
+    const { chain, address } = vaa.payload.token;
+    if (!isSameToken(ethTbtc, { chain, address })) {
+      throw new Error("Can only resume tbtc transfers");
+    }
+
     return {
       originTxs: [txid],
       state: TransferState.Attested,
