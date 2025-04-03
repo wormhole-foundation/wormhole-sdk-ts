@@ -18,7 +18,6 @@ import {
 import type { Provider, TransactionRequest } from 'ethers';
 import { ethers_contracts } from './index.js';
 import type { CircleRelayer } from './ethers-contracts/index.js';
-
 import type { EvmChains } from '@wormhole-foundation/sdk-evm';
 import {
   EvmAddress,
@@ -28,8 +27,8 @@ import {
   addFrom,
 } from '@wormhole-foundation/sdk-evm';
 
-import '@wormhole-foundation/sdk-evm-core';
 import '@wormhole-foundation/sdk-evm-tokenbridge';
+import { EvmWormholeCore } from '@wormhole-foundation/sdk-evm-core';
 
 export class EvmAutomaticCircleBridge<N extends Network, C extends EvmChains>
   implements AutomaticCircleBridge<N, C>
@@ -37,6 +36,7 @@ export class EvmAutomaticCircleBridge<N extends Network, C extends EvmChains>
   readonly circleRelayer: CircleRelayer;
   readonly chainId: bigint;
   readonly tokenAddr: string;
+  readonly core: EvmWormholeCore<N, C>;
 
   // https://github.com/wormhole-foundation/wormhole-connect/blob/development/sdk/src/contexts/eth/context.ts#L379
 
@@ -76,6 +76,7 @@ export class EvmAutomaticCircleBridge<N extends Network, C extends EvmChains>
       );
 
     this.tokenAddr = tokenAddr;
+    this.core = new EvmWormholeCore(network, chain, provider, contracts);
   }
 
   static async fromRpc<N extends Network>(
@@ -135,6 +136,8 @@ export class EvmAutomaticCircleBridge<N extends Network, C extends EvmChains>
       );
     }
 
+    const messageFee = await this.core.getMessageFee();
+
     const txReq =
       await this.circleRelayer.transferTokensWithRelay.populateTransaction(
         this.tokenAddr,
@@ -142,6 +145,7 @@ export class EvmAutomaticCircleBridge<N extends Network, C extends EvmChains>
         nativeTokenGas,
         recipientChainId,
         recipientAddress,
+        { value: messageFee },
       );
 
     yield this.createUnsignedTx(

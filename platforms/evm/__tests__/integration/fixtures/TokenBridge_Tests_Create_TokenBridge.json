@@ -1,6 +1,6 @@
 [
     {
-        "scope": "https://ethereum-rpc.publicnode.com",
+        "scope": "https://ethereum-rpc.publicnode.com:443",
         "method": "POST",
         "path": "/",
         "body": {
@@ -11,40 +11,36 @@
         "status": 200,
         "response": {
             "jsonrpc": "2.0",
-            "id": 1,
-            "result": "0x1"
+            "result": "0x1",
+            "id": 1
         },
         "rawHeaders": [
             "Date",
-            "Wed, 19 Jun 2024 20:37:54 GMT",
+            "Mon, 24 Mar 2025 11:49:22 GMT",
             "Content-Type",
             "application/json",
             "Content-Length",
-            "39",
+            "40",
             "Connection",
-            "close",
-            "CF-Cache-Status",
-            "HIT",
-            "Access-Control-Allow-Origin",
-            "*",
-            "Cache-Control",
-            "public, max-age=86400",
-            "Access-Control-Allow-Headers",
-            "Content-Type,Authorization",
-            "Access-Control-Allow-Methods",
-            "GET,POST,DELETE,OPTIONS",
-            "Access-Control-Max-Age",
-            "86400",
-            "x-multirpc-response-type",
+            "keep-alive",
+            "access-control-max-age",
+            "1728000",
+            "strict-transport-security",
+            "max-age=31536000; includeSubDomains; preload",
+            "vary",
+            "Origin, accept-encoding",
+            "x-envoy-upstream-service-time",
             "1",
-            "X-Robots-Tag",
-            "noindex, nofollow",
-            "Vary",
-            "Accept-Encoding",
+            "cf-cache-status",
+            "DYNAMIC",
+            "X-Content-Type-Options",
+            "nosniff",
             "Server",
             "cloudflare",
             "CF-RAY",
-            "896651d65c2c7c8e-EWR"
+            "9255f1de7c6e640f-LHR",
+            "alt-svc",
+            "h3=\":443\"; ma=86400"
         ],
         "responseIsBinary": false
     }

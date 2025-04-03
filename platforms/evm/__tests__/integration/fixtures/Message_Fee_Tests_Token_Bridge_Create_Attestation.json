@@ -8,8 +8,8 @@
                 "method": "eth_call",
                 "params": [
                     {
-                        "to": "0x3ee18b2214aff97000d974cf647e7c347e8fa585",
-                        "data": "0x1ff1e28600000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000c581f595b53c5cb19bd0b3f8da6c935e2ca0"
+                        "to": "0x98f3c9e6e3face36baad05fe09d375ef1464288b",
+                        "data": "0x1a90a219"
                     },
                     "latest"
                 ],
@@ -23,11 +23,11 @@
         ],
         "status": 200,
         "response": [
-            "1f8b08000000000000038aae56ca2acecf2b2a4856b25232d23350d251ca4c51b23234d5512a4a2d2ecd2951b25232a830a01028d5eae0b0c70cc51e43a5da582e00000000ffff03000b294fa093000000"
+            "1f8b08000000000000038aae56ca2acecf2b2a4856b25232d23350d251ca4c51b232d6512a4a2d2ecd2951b25232a830a01028d5ea60b7c604c51a43a5da582e00000000ffff0300d9bc49d091000000"
         ],
         "rawHeaders": [
             "Date",
-            "Mon, 24 Mar 2025 11:49:22 GMT",
+            "Mon, 24 Mar 2025 11:49:30 GMT",
             "Content-Type",
             "application/json",
             "Transfer-Encoding",
@@ -41,7 +41,7 @@
             "vary",
             "Origin, accept-encoding",
             "x-envoy-upstream-service-time",
-            "2",
+            "8",
             "cf-cache-status",
             "DYNAMIC",
             "X-Content-Type-Options",
@@ -49,7 +49,7 @@
             "Server",
             "cloudflare",
             "CF-RAY",
-            "9255f1e12f0b640f-LHR",
+            "9255f211986f957d-LHR",
             "Content-Encoding",
             "gzip",
             "alt-svc",

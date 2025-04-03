@@ -23,11 +23,69 @@
         ],
         "status": 200,
         "response": [
-            "1f8b08000000000000038aae56ca2acecf2b2a4856b25232d23350d251ca4c51b23231d4512a4a2d2ecd2951b25232a830a01028d5eae0b0c708c51e43a5da582e00000000ffff0300b9d6f2ac93000000"
+            "1f8b08000000000000038aae56ca2acecf2b2a4856b25232d23350d251ca4c51b23234d7512a4a2d2ecd2951b25232a830a01028d5eae0b0c702c51e43a5da582e00000000ffff0300da26138193000000"
         ],
         "rawHeaders": [
             "Date",
-            "Mon, 24 Mar 2025 11:49:23 GMT",
+            "Mon, 24 Mar 2025 11:49:30 GMT",
+            "Content-Type",
+            "application/json",
+            "Transfer-Encoding",
+            "chunked",
+            "Connection",
+            "keep-alive",
+            "access-control-max-age",
+            "1728000",
+            "strict-transport-security",
+            "max-age=31536000; includeSubDomains; preload",
+            "vary",
+            "Origin, accept-encoding",
+            "x-envoy-upstream-service-time",
+            "1",
+            "cf-cache-status",
+            "DYNAMIC",
+            "X-Content-Type-Options",
+            "nosniff",
+            "Server",
+            "cloudflare",
+            "CF-RAY",
+            "9255f2144ab5957d-LHR",
+            "Content-Encoding",
+            "gzip",
+            "alt-svc",
+            "h3=\":443\"; ma=86400"
+        ],
+        "responseIsBinary": false
+    },
+    {
+        "scope": "https://ethereum-rpc.publicnode.com:443",
+        "method": "POST",
+        "path": "/",
+        "body": [
+            {
+                "method": "eth_call",
+                "params": [
+                    {
+                        "to": "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
+                        "data": "0xdd62ed3e0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000cafd2f0a35a4459fa40c0517e17e6fa2939441ca"
+                    },
+                    "latest"
+                ],
+                "jsonrpc": "2.0"
+            },
+            {
+                "method": "eth_chainId",
+                "params": [],
+                "jsonrpc": "2.0"
+            }
+        ],
+        "status": 200,
+        "response": [
+            "1f8b08000000000000038aae56ca2acecf2b2a4856b25232d23350d251ca4c51b232b4d4512a4a2d2ecd2951b25232a830a01028d5ea60b7c7c800c51e43a5da582e00000000ffff0300c2341e9a93000000"
+        ],
+        "rawHeaders": [
+            "Date",
+            "Mon, 24 Mar 2025 11:49:31 GMT",
             "Content-Type",
             "application/json",
             "Transfer-Encoding",
@@ -49,65 +107,7 @@
             "Server",
             "cloudflare",
             "CF-RAY",
-            "9255f1e50b3e640f-LHR",
-            "Content-Encoding",
-            "gzip",
-            "alt-svc",
-            "h3=\":443\"; ma=86400"
-        ],
-        "responseIsBinary": false
-    },
-    {
-        "scope": "https://ethereum-rpc.publicnode.com:443",
-        "method": "POST",
-        "path": "/",
-        "body": [
-            {
-                "method": "eth_call",
-                "params": [
-                    {
-                        "to": "0x85f138bfee4ef8e540890cfb48f620571d67eda3",
-                        "data": "0xdd62ed3e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000003ee18b2214aff97000d974cf647e7c347e8fa585"
-                    },
-                    "latest"
-                ],
-                "jsonrpc": "2.0"
-            },
-            {
-                "method": "eth_chainId",
-                "params": [],
-                "jsonrpc": "2.0"
-            }
-        ],
-        "status": 200,
-        "response": [
-            "1f8b08000000000000038aae56ca2acecf2b2a4856b25232d23350d251ca4c51b23231d6512a4a2d2ecd2951b25232a830a01028d5eae0b0c704c51e43a5da582e00000000ffff0300edc40f8493000000"
-        ],
-        "rawHeaders": [
-            "Date",
-            "Mon, 24 Mar 2025 11:49:23 GMT",
-            "Content-Type",
-            "application/json",
-            "Transfer-Encoding",
-            "chunked",
-            "Connection",
-            "keep-alive",
-            "access-control-max-age",
-            "1728000",
-            "strict-transport-security",
-            "max-age=31536000; includeSubDomains; preload",
-            "vary",
-            "Origin, accept-encoding",
-            "x-envoy-upstream-service-time",
-            "3",
-            "cf-cache-status",
-            "DYNAMIC",
-            "X-Content-Type-Options",
-            "nosniff",
-            "Server",
-            "cloudflare",
-            "CF-RAY",
-            "9255f1e56bba640f-LHR",
+            "9255f214ab1b957d-LHR",
             "Content-Encoding",
             "gzip",
             "alt-svc",

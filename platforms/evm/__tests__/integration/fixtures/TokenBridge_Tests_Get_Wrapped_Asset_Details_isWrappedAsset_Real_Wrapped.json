@@ -1,6 +1,6 @@
 [
     {
-        "scope": "https://ethereum-rpc.publicnode.com",
+        "scope": "https://ethereum-rpc.publicnode.com:443",
         "method": "POST",
         "path": "/",
         "body": [
@@ -23,41 +23,37 @@
         ],
         "status": 200,
         "response": [
-            "1f8b08000000000000038aae56ca2acecf2b2a4856b25232d23350d251ca4c51b232d7512a4a2d2ecd2951b25232a83054aad5c1aece0c459d0165c050a93616000000ffff030035c2a0e490000000"
+            "1f8b08000000000000038aae56ca2acecf2b2a4856b25232d23350d251ca4c51b232d3512a4a2d2ecd2951b25232a830a00c182ad5ea60b7c61cc51a43a5da582e00000000ffff03007941077d91000000"
         ],
         "rawHeaders": [
             "Date",
-            "Wed, 19 Jun 2024 20:37:55 GMT",
+            "Mon, 24 Mar 2025 11:49:22 GMT",
             "Content-Type",
             "application/json",
             "Transfer-Encoding",
             "chunked",
             "Connection",
-            "close",
-            "CF-Cache-Status",
+            "keep-alive",
+            "access-control-max-age",
+            "1728000",
+            "strict-transport-security",
+            "max-age=31536000; includeSubDomains; preload",
+            "vary",
+            "Origin, accept-encoding",
+            "x-envoy-upstream-service-time",
+            "2",
+            "cf-cache-status",
             "DYNAMIC",
-            "Access-Control-Allow-Origin",
-            "*",
-            "Cache-Control",
-            "public, max-age=2",
-            "Access-Control-Allow-Headers",
-            "Content-Type,Authorization",
-            "Access-Control-Allow-Methods",
-            "GET,POST,DELETE,OPTIONS",
-            "Access-Control-Max-Age",
-            "86400",
-            "x-multirpc-response-type",
-            "1",
-            "X-Robots-Tag",
-            "noindex, nofollow",
-            "Vary",
-            "Accept-Encoding",
+            "X-Content-Type-Options",
+            "nosniff",
             "Server",
             "cloudflare",
             "CF-RAY",
-            "896651da7ae30f3d-EWR",
+            "9255f1e02e0f640f-LHR",
             "Content-Encoding",
-            "gzip"
+            "gzip",
+            "alt-svc",
+            "h3=\":443\"; ma=86400"
         ],
         "responseIsBinary": false
     }
