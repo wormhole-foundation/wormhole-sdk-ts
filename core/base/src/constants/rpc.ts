@@ -9,7 +9,7 @@ const rpcConfig = [[
     ["Ethereum",  "https://ethereum-rpc.publicnode.com"],
     ["Solana",    "https://api.mainnet-beta.solana.com"],
     ["Polygon",   "https://polygon-bor-rpc.publicnode.com"],
-    ["Bsc",       "https://bscrpc.com"],
+    ["Bsc",       "https://bsc-rpc.publicnode.com"],
     ["Avalanche", "https://avalanche-c-chain-rpc.publicnode.com"],
     ["Fantom",    "https://rpcapi.fantom.network"],
     ["Celo",      "https://celo-rpc.publicnode.com"],
