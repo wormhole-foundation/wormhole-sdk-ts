@@ -53,7 +53,7 @@ const rpcConfig = [[
   ]], [
   "Testnet", [
     ["Ethereum",        "https://eth-sepolia.public.blastapi.io"],
-    ["Polygon",         "https://rpc-mumbai.polygon.technology"],
+    ["Polygon",         "https://rpc-amoy.polygon.technology"],
     ["Bsc",             "https://data-seed-prebsc-1-s3.binance.org:8545"],
     ["Avalanche",       "https://api.avax-test.network/ext/bc/C/rpc"],
     ["Fantom",          "https://rpc.testnet.fantom.network"],

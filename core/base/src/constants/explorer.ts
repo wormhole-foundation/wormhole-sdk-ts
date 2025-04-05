@@ -136,7 +136,7 @@ const explorerConfig = [[
     }], [
     "Polygon", {
       name: "PolygonScan",
-      baseUrl: "https://mumbai.polygonscan.com/",
+      baseUrl: "https://amoy.polygonscan.com/",
       endpoints: {
         tx: "tx/",
         account: "address/",

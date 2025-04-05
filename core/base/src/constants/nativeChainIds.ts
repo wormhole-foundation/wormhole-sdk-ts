@@ -94,7 +94,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Neon",            245022940n],
       ["Oasis",           42261n],
       ["Optimism",        420n],
-      ["Polygon",         80001n], //mumbai
+      ["Polygon",         80002n], //amoy
       ["Sepolia",         11155111n],
       ["ArbitrumSepolia", 421614n],
       ["BaseSepolia",     84532n],
