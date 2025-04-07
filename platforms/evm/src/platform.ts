@@ -36,6 +36,8 @@ export class EvmPlatform<N extends Network>
   implements StaticPlatformMethods<EvmPlatformType, typeof EvmPlatform>
 {
   static _platform = _platform;
+  private _providers: Partial<Record<EvmChains, JsonRpcProvider | undefined>> =
+    {};
 
   constructor(network: N, _config?: ChainsConfig<N, EvmPlatformType>) {
     super(
@@ -45,9 +47,24 @@ export class EvmPlatform<N extends Network>
   }
 
   getRpc<C extends EvmChains>(chain: C): Provider {
-    if (chain in this.config && this.config[chain]!.rpc)
-      return new JsonRpcProvider(this.config[chain]!.rpc);
-    throw new Error('No configuration available for chain: ' + chain);
+    const cachedProvider = this._providers[chain];
+    if (cachedProvider) {
+      return cachedProvider;
+    }
+
+    if (chain in this.config && this.config[chain]!.rpc) {
+      const provider = new JsonRpcProvider(
+        this.config[chain]!.rpc,
+        nativeChainIds.networkChainToNativeChainId.get(this.network, chain),
+        {
+          staticNetwork: true,
+        },
+      );
+      this._providers[chain] = provider;
+      return provider;
+    } else {
+      throw new Error('No configuration available for chain: ' + chain);
+    }
   }
 
   getChain<C extends EvmChains>(chain: C, rpc?: Provider): EvmChain<N, C> {
