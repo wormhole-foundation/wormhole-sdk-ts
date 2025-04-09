@@ -37,6 +37,7 @@ import {
   addFrom,
   unusedArbiterFee,
   unusedNonce,
+  WETH_CONTRACTS,
 } from '@wormhole-foundation/sdk-evm';
 
 import '@wormhole-foundation/sdk-evm-core';
@@ -294,7 +295,7 @@ export class EvmTokenBridge<N extends Network, C extends EvmChains>
     }
 
     if (vaa.payload.token.chain === this.chain) {
-      const wrappedNativeAddr = await this.tokenBridge.WETH();
+      const wrappedNativeAddr = await this.getWeth();
       const tokenAddr = new EvmAddress(vaa.payload.token.address).unwrap();
       if (tokenAddr === wrappedNativeAddr && unwrapNative) {
         const txReq =
@@ -319,8 +320,12 @@ export class EvmTokenBridge<N extends Network, C extends EvmChains>
   }
 
   async getWrappedNative() {
-    const address = await this.tokenBridge.WETH();
+    const address = await this.getWeth();
     return toNative(this.chain, address);
+  }
+
+  async getWeth(): Promise<string> {
+    return WETH_CONTRACTS[this.network]?.[this.chain] ?? this.tokenBridge.WETH();
   }
 
   private createUnsignedTx(

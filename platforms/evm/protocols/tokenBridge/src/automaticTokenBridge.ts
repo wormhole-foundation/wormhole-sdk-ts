@@ -21,6 +21,7 @@ import {
   EvmAddress,
   EvmPlatform,
   EvmUnsignedTransaction,
+  WETH_CONTRACTS,
   addChainId,
   addFrom,
 } from '@wormhole-foundation/sdk-evm';
@@ -235,8 +236,12 @@ export class EvmAutomaticTokenBridge<N extends Network, C extends EvmChains>
 
   private async tokenAddress(token: TokenAddress<C>): Promise<string> {
     return isNative(token)
-      ? await this.tokenBridge.WETH()
+      ? await this.getWeth()
       : new EvmAddress(token).toString();
+  }
+
+  async getWeth(): Promise<string> {
+    return WETH_CONTRACTS[this.network]?.[this.chain] ?? this.tokenBridge.WETH();
   }
 
   private createUnsignedTx(
