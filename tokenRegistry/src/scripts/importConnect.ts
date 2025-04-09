@@ -1,10 +1,12 @@
-import {
+import type {
   Platform,
   Chain,
   Network,
+  tokens
+} from "@wormhole-foundation/sdk-connect";
+import {
   chainToPlatform,
-  isChain,
-  tokens,
+  isChain
 } from "@wormhole-foundation/sdk-connect";
 import axios from "axios";
 import fs from "fs";
@@ -43,7 +45,7 @@ type TokenConfig = {
 
 const testnetChainMap: Record<string, Chain> = {
   goerli: "Ethereum",
-  mumbai: "Polygon",
+  amoy: "Polygon",
   alfajores: "Celo",
   fuji: "Avalanche",
   moonbasealpha: "Moonbeam",
