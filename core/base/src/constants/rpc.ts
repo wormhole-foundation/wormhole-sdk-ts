@@ -52,8 +52,6 @@ const rpcConfig = [[
     ["Ink",       "https://rpc-qnd.inkonchain.com"],
   ]], [
   "Testnet", [
-    ["Ethereum",        "https://eth-sepolia.public.blastapi.io"],
-    ["Polygon",         "https://rpc-mumbai.polygon.technology"],
     ["Bsc",             "https://data-seed-prebsc-1-s3.binance.org:8545"],
     ["Avalanche",       "https://api.avax-test.network/ext/bc/C/rpc"],
     ["Fantom",          "https://rpc.testnet.fantom.network"],
@@ -64,9 +62,6 @@ const rpcConfig = [[
     ["Sui",             "https://fullnode.testnet.sui.io"],
     ["Aptos",           "https://fullnode.testnet.aptoslabs.com/v1"],
     ["Sei",             "https://sei-testnet-rpc.polkachu.com"],
-    ["Arbitrum",        "https://arbitrum-goerli.public.blastapi.io"],
-    ["Optimism",        "https://optimism-goerli.public.blastapi.io"],
-    ["Base",            "https://base-goerli.public.blastapi.io"],
     ["Injective",       "https://testnet.sentry.tm.injective.network"],
     ["Osmosis",         "https://rpc.testnet.osmosis.zone"],
     ["Cosmoshub",       "https://rpc.sentry-02.theta-testnet.polypore.xyz"],
@@ -81,7 +76,7 @@ const rpcConfig = [[
     ["OptimismSepolia", "https://sepolia.optimism.io"],
     ["BaseSepolia",     "https://sepolia.base.org"],
     ["PolygonSepolia",  "https://rpc-amoy.polygon.technology/"],
-    ["Mantle",          "https://mantle-sepolia.drpc.org"],
+    ["Mantle",          "https://rpc.testnet.mantle.xyz"],
     ["Karura",          "https://eth-rpc-karura-testnet.aca-staging.network"],
     ["Acala",           "https://eth-rpc-acala-testnet.aca-staging.network"],
     ["Blast",           "https://sepolia.blast.io"],
