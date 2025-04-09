@@ -37,7 +37,7 @@ import {
   TransactionInstruction,
   VersionedTransaction,
 } from '@solana/web3.js';
-import { BN, Program } from '@coral-xyz/anchor';
+import { Program } from '@coral-xyz/anchor';
 import { WormholeGateway, WormholeGatewayIdl } from './anchor-idl/gateway.js';
 import {
   getConfigPda,
@@ -51,6 +51,7 @@ import {
   createAssociatedTokenAccountInstruction,
   getAssociatedTokenAddress,
 } from '@solana/spl-token';
+import { BN } from 'bn.js';
 
 export class SolanaTBTCBridge<N extends Network, C extends SolanaChains>
   implements TBTCBridge<N, C>
