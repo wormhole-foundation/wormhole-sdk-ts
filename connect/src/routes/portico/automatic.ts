@@ -1,4 +1,4 @@
-import { filters, finality } from "@wormhole-foundation/sdk-base";
+import { filters, finality, time } from "@wormhole-foundation/sdk-base";
 import type { StaticRouteMethods } from "../route.js";
 import { AutomaticRoute } from "../route.js";
 import type {
@@ -248,6 +248,7 @@ export class AutomaticPorticoRoute<N extends Network>
             amount: fee,
           },
           eta: finality.estimateFinalityTime(request.fromChain.chain),
+          expires: time.expiration(0, 5, 0),
         },
         params,
         details,

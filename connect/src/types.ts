@@ -211,4 +211,6 @@ export interface TransferQuote {
   warnings?: QuoteWarning[];
   // Estimated time to completion in milliseconds
   eta?: number;
+  // Timestamp when the quote expires
+  expires?: Date;
 }

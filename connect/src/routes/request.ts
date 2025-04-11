@@ -73,6 +73,7 @@ export class RouteTransferRequest<N extends Network> {
     }
 
     dq.eta = quote.eta;
+    dq.expires = quote.expires;
 
     if (details) {
       dq.details = details;
