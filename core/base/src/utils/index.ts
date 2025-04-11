@@ -5,4 +5,5 @@ export * from "./misc.js";
 export * from "./layout.js";
 
 export * as amount from "./amount.js";
+export * as time from "./time.js";
 export * as encoding from "./encoding.js";

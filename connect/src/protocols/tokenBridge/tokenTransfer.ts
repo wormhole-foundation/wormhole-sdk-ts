@@ -4,6 +4,7 @@ import {
   encoding,
   finality,
   guardians,
+  time,
   toChain as toChainName,
 } from "@wormhole-foundation/sdk-base";
 import type {
@@ -753,6 +754,7 @@ export namespace TokenTransfer {
         destinationToken: { token: dstToken, amount: amount.units(dstAmountReceivable) },
         warnings: warnings.length > 0 ? warnings : undefined,
         eta,
+        expires: time.expiration(24, 0, 0), // manual transfer quote is good for 24 hours
       };
     }
 
@@ -842,6 +844,7 @@ export namespace TokenTransfer {
       destinationNativeGas,
       warnings: warnings.length > 0 ? warnings : undefined,
       eta,
+      expires: time.expiration(0, 10, 0), // automatic transfer quote is good for 10 minutes
     };
   }
 

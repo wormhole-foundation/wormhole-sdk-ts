@@ -1,4 +1,5 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
+import { time } from "@wormhole-foundation/sdk-base";
 import { circle, encoding, finality, guardians, toChain } from "@wormhole-foundation/sdk-base";
 import type {
   Attestation,
@@ -622,6 +623,10 @@ export namespace CircleTransfer {
       destinationNativeGas = await dcb.nativeTokenAmount(_nativeGas);
     }
 
+    const expires = transfer.automatic ?
+      time.expiration(0, 10, 0) : // 10 minutes for automatic transfers
+      time.expiration(24, 0, 0);  // 24 hours for manual
+
     return {
       sourceToken: {
         token: srcToken,
@@ -631,6 +636,7 @@ export namespace CircleTransfer {
       relayFee: { token: srcToken, amount: fee },
       destinationNativeGas,
       eta,
+      expires,
     };
   }
 

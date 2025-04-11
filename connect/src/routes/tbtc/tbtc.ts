@@ -5,6 +5,7 @@ import {
   finality,
   guardians,
   Network,
+  time,
 } from "@wormhole-foundation/sdk-base";
 import { ManualRoute, StaticRouteMethods } from "../route.js";
 import {
@@ -139,6 +140,7 @@ export class TBTCRoute<N extends Network>
         amount: params.normalizedParams.amount,
       },
       eta,
+      expires: time.expiration(24, 0, 0),
     };
   }
 
