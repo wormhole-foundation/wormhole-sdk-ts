@@ -248,7 +248,7 @@ export class AutomaticPorticoRoute<N extends Network>
             amount: fee,
           },
           eta: finality.estimateFinalityTime(request.fromChain.chain),
-          expires: time.expiration(0, 10, 0),
+          expires: time.expiration(0, 5, 0),
         },
         params,
         details,

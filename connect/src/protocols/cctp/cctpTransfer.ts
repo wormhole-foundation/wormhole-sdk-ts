@@ -624,8 +624,8 @@ export namespace CircleTransfer {
     }
 
     const expires = transfer.automatic ?
-      time.expiration(0, 10, 0) : // 10 minutes for automatic transfers
-      time.expiration(24, 0, 0);  // 24 hours for manual
+      time.expiration(0, 5, 0) : // 5 minutes for automatic transfers
+      time.expiration(24, 0, 0); // 24 hours for manual
 
     return {
       sourceToken: {

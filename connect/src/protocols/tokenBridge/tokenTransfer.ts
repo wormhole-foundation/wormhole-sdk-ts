@@ -844,7 +844,7 @@ export namespace TokenTransfer {
       destinationNativeGas,
       warnings: warnings.length > 0 ? warnings : undefined,
       eta,
-      expires: time.expiration(0, 10, 0), // automatic transfer quote is good for 10 minutes
+      expires: time.expiration(0, 5, 0), // automatic transfer quote is good for 5 minutes
     };
   }
 
