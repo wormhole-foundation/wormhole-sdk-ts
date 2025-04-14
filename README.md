@@ -107,7 +107,7 @@ Understanding several higher level concepts of the SDK will help in using it eff
 Every chain is its own special snowflake but many of them share similar functionality. The `Platform` modules provide a consistent interface for interacting with the chains that share a platform.
 
 Each platform can be installed separately so that dependencies can stay as slim as possible.  
-See all supported platforms [here](https://github.com/wormhole-foundation/connect-sdk/tree/main/platforms)
+See all supported platforms [here](https://github.com/wormhole-foundation/wormhole-sdk-ts/tree/main/platforms)
 
 ### Chain Context
 
@@ -206,7 +206,7 @@ export interface SignAndSendSigner {
 }
 ```
 
-See the testing signers ([Evm](https://github.com/wormhole-foundation/connect-sdk/blob/main/platforms/evm/src/signer.ts), [Solana](https://github.com/wormhole-foundation/connect-sdk/blob/main/platforms/solana/src/signer.ts), ...) for an example of how to implement a signer for a specific chain or platform.
+See the testing signers ([Evm](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/platforms/evm/src/signer.ts), [Solana](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/platforms/solana/src/signer.ts), ...) for an example of how to implement a signer for a specific chain or platform.
 
 ### VAAs
 
@@ -401,7 +401,7 @@ const txGenerator = tb.createAttestation(token); // => AsyncGenerator<UnsignedTr
 const txids = await signSendWait(srcChain, txGenerator, src.signer); // => TxHash[]
 ```
 
-Supported protocols are defined in the [definitions module](https://github.com/wormhole-foundation/connect-sdk/tree/main/core/definitions/src/protocols).
+Supported protocols are defined in the [definitions module](https://github.com/wormhole-foundation/wormhole-sdk-ts/tree/main/core/definitions/src/protocols).
 
 
 ## Transfers

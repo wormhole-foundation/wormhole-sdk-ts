@@ -4,7 +4,7 @@ The Wormhole Typescript SDK is useful for interacting with the chains Wormhole s
 
 ## Warning 
 
-:warning: This package is a Work in Progress so the interface may change and there are likely bugs. Please [report](https://github.com/wormhole-foundation/connect-sdk/issues) any issues you find. :warning:
+:warning: This package is a Work in Progress so the interface may change and there are likely bugs. Please [report](https://github.com/wormhole-foundation/wormhole-sdk-ts/issues) any issues you find. :warning:
 
 ## Installation
 
@@ -211,7 +211,7 @@ export interface SignAndSendSigner {
 }
 ```
 
-See the testing signers ([Evm](https://github.com/wormhole-foundation/connect-sdk/blob/main/platforms/evm/src/signer.ts), [Solana](https://github.com/wormhole-foundation/connect-sdk/blob/main/platforms/solana/src/signer.ts), ...) for an example of how to implement a signer for a specific chain or platform.
+See the testing signers ([Evm](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/platforms/evm/src/signer.ts), [Solana](https://github.com/wormhole-foundation/wormhole-sdk-ts/blob/main/platforms/solana/src/signer.ts), ...) for an example of how to implement a signer for a specific chain or platform.
 
 ### Protocols
 
@@ -293,7 +293,7 @@ const txGenerator = tb.createAttestation(token); // => AsyncGenerator<UnsignedTr
 const txids = await signSendWait(srcChain, txGenerator, src.signer); // => TxHash[]
 ```
 
-Supported protocols are defined in the [definitions module](https://github.com/wormhole-foundation/connect-sdk/tree/main/core/definitions/src/protocols).
+Supported protocols are defined in the [definitions module](https://github.com/wormhole-foundation/wormhole-sdk-ts/tree/main/core/definitions/src/protocols).
 
 
 ## Transfers

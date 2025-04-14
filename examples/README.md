@@ -1,4 +1,4 @@
-# Connect SDK Examples
+# Wormhole Typescript SDK Examples
 
 
 ## Usage
