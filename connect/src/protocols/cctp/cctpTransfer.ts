@@ -595,11 +595,17 @@ export namespace CircleTransfer {
     const eta =
       (srcChain.chain === "Polygon" ? 2_000 * 200 : finality.estimateFinalityTime(srcChain.chain)) +
       guardians.guardianAttestationEta;
+
+    const expires = transfer.automatic ?
+      time.expiration(0, 5, 0) : // 5 minutes for automatic transfers
+      time.expiration(24, 0, 0); // 24 hours for manual
+
     if (!transfer.automatic) {
       return {
         sourceToken: { token: srcToken, amount: transfer.amount },
         destinationToken: { token: dstToken, amount: transfer.amount },
         eta,
+        expires,
       };
     }
 
@@ -622,10 +628,6 @@ export namespace CircleTransfer {
       const dcb = await dstChain.getAutomaticCircleBridge();
       destinationNativeGas = await dcb.nativeTokenAmount(_nativeGas);
     }
-
-    const expires = transfer.automatic ?
-      time.expiration(0, 5, 0) : // 5 minutes for automatic transfers
-      time.expiration(24, 0, 0); // 24 hours for manual
 
     return {
       sourceToken: {
