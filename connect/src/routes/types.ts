@@ -114,3 +114,9 @@ export class UnavailableError extends Error {
     this.internalError = internalErr;
   }
 }
+
+export class RelayFailedError extends Error {
+  constructor(message: string) {
+    super(message);
+  }
+}
