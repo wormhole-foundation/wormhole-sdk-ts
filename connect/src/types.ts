@@ -113,7 +113,7 @@ export interface FailedTransferReceipt<AT, SC extends Chain = Chain, DC extends 
   originTxs: TransactionId<SC>[];
   destinationTxs?: TransactionId<DC>[];
   attestation?: AT;
-  error: string;
+  error: string | Error;
 }
 
 export function isSourceInitiated<AT>(
