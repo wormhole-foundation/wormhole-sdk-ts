@@ -19,7 +19,7 @@ import {
 } from "@wormhole-foundation/sdk-connect";
 
 import { PaginatedCoins, SuiClient } from "@mysten/sui/client";
-import { SuiAddress } from "./address.js";
+import { isValidSuiType, SuiAddress } from "./address.js";
 import { SuiChain } from "./chain.js";
 import { SUI_COIN } from "./constants.js";
 import type { AnySuiAddress, SuiChains, SuiPlatformType } from "./types.js";
@@ -118,9 +118,14 @@ export class SuiPlatform<N extends Network>
       return BigInt(totalBalance);
     }
 
+    const tokenAddress = token.toString();
+    if (!isValidSuiType(tokenAddress)) {
+      return null;
+    }
+
     const { totalBalance } = await rpc.getBalance({
       owner: walletAddr,
-      coinType: token.toString(),
+      coinType: tokenAddress,
     });
     return BigInt(totalBalance);
   }
