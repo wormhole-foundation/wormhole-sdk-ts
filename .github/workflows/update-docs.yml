@@ -1,0 +1,65 @@
+name: Update Documentation
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  update-docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get the latest published NPM version
+        id: get_version
+        run: echo "LATEST_VERSION=$(npm show @wormhole-foundation/sdk version)" >> $GITHUB_ENV
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install the latest published SDK version
+        run: npm install @wormhole-foundation/sdk@$LATEST_VERSION --save-exact
+
+      - name: Update package.json version to match NPM release
+        run: |
+          jq --arg ver "$LATEST_VERSION" '.version=$ver' package.json > package.tmp.json && mv package.tmp.json package.json
+
+      - name: Install other dependencies
+        run: npm ci
+
+      - name: Generate documentation
+        run: npm run docs
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          git checkout -b update-docs-${{ env.LATEST_VERSION }}
+
+          echo "Checking Git Status Before Adding Files:"
+          git status
+
+          git restore package.json package-lock.json
+
+          echo "Checking Git Status After Reset:"
+          git status
+
+          git add docs/
+          git commit -m "Automated documentation update for SDK version $LATEST_VERSION" || exit 0
+
+          git push origin update-docs-${{ env.LATEST_VERSION }}
+
+      - name: Create a pull request using GitHub CLI
+        run: |
+          gh pr create --title "Automated Documentation Update for SDK version ${{ env.LATEST_VERSION }}" \
+                       --body "This PR updates the documentation to match the latest SDK release: **${{ env.LATEST_VERSION }}**." \
+                       --base main \
+                       --head update-docs-${{ env.LATEST_VERSION }} \
+                       --label "automated,documentation"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
