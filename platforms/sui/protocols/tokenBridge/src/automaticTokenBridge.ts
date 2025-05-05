@@ -238,7 +238,7 @@ export class SuiAutomaticTokenBridge<N extends Network, C extends SuiChains>
       throw new Error("Unable to compute relayer fee");
     }
 
-    const decimals = await SuiPlatform.getDecimals(this.chain, this.connection, token.toString());
+    const decimals = await SuiPlatform.getDecimals(this.network, this.chain, this.connection, token.toString());
     const swapRate = tokenInfo.swap_rate;
 
     const relayerFeePrecision = fields.relayer_fee_precision;

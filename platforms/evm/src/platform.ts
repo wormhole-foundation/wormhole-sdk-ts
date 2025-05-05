@@ -25,8 +25,9 @@ import * as ethers_contracts from './ethers-contracts/index.js';
 
 import { EvmAddress, EvmZeroAddress } from './address.js';
 import { EvmChain } from './chain.js';
-import type { AnyEvmAddress, EvmChains, EvmPlatformType } from './types.js';
+import type { AnyEvmAddress, EvmChains, EvmPlatformType, Indexer } from './types.js';
 import { _platform } from './types.js';
+import { GoldRushClient } from './indexer.js';
 
 /**
  * @category EVM
@@ -97,7 +98,8 @@ export class EvmPlatform<N extends Network>
   }
 
   static async getDecimals(
-    chain: Chain,
+    _network: Network,
+    _chain: Chain,
     rpc: Provider,
     token: AnyEvmAddress,
   ): Promise<number> {
@@ -111,7 +113,8 @@ export class EvmPlatform<N extends Network>
   }
 
   static async getBalance(
-    chain: Chain,
+    _network: Network,
+    _chain: Chain,
     rpc: Provider,
     walletAddr: string,
     token: AnyEvmAddress,
@@ -126,21 +129,21 @@ export class EvmPlatform<N extends Network>
   }
 
   static async getBalances(
+    network: Network,
     chain: Chain,
-    rpc: Provider,
+    _rpc: Provider,
     walletAddr: string,
-    tokens: AnyEvmAddress[],
+    indexer?: Indexer,
   ): Promise<Balances> {
-    const balancesArr = await Promise.all(
-      tokens.map(async (token) => {
-        const balance = await this.getBalance(chain, rpc, walletAddr, token);
-        const address = isNative(token)
-          ? 'native'
-          : new EvmAddress(token).toString();
-        return { [address]: balance };
-      }),
-    );
-    return balancesArr.reduce((obj, item) => Object.assign(obj, item), {});
+    if (indexer) {
+      if (indexer.provider === 'GoldRush') {
+        const gr = new GoldRushClient(indexer.apiKey);
+        return gr.getBalances(network, chain, walletAddr);
+      }
+      // TODO add Alchemy support too
+    }
+
+    throw new Error(`Can't get all EVM balances without an indexer. Use getBalance to make individual calls instead.`);
   }
 
   static async sendWait(

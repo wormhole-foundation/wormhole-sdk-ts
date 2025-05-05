@@ -1,5 +1,4 @@
 import type {
-  Balances,
   Chain,
   ChainsConfig,
   Network,
@@ -73,6 +72,7 @@ export class AlgorandPlatform<N extends Network>
   }
 
   static async getDecimals(
+    network: Network,
     chain: Chain,
     rpc: algosdk.Algodv2,
     token: AnyAlgorandAddress,
@@ -89,6 +89,7 @@ export class AlgorandPlatform<N extends Network>
   }
 
   static async getBalance(
+    network: Network,
     chain: Chain,
     rpc: algosdk.Algodv2,
     walletAddr: string,
@@ -104,32 +105,6 @@ export class AlgorandPlatform<N extends Network>
     const acctAssetInfoResp = await rpc.accountAssetInformation(walletAddr, assetId).do();
     const accountAssetInfo = algosdk.modelsv2.AssetHolding.from_obj_for_encoding(acctAssetInfoResp);
     return BigInt(accountAssetInfo.amount);
-  }
-
-  static async getBalances(
-    chain: Chain,
-    rpc: algosdk.Algodv2,
-    walletAddr: string,
-    tokens: AnyAlgorandAddress[],
-  ): Promise<Balances> {
-    let native: bigint;
-    if (tokens.includes("native")) {
-      const acctInfoResp = await rpc.accountInformation(walletAddr).do();
-      const accountInfo = algosdk.modelsv2.Account.from_obj_for_encoding(acctInfoResp);
-      native = BigInt(accountInfo.amount);
-    }
-    const balancesArr = tokens.map(async (token) => {
-      if (isNative(token)) {
-        return { ["native"]: native };
-      }
-      const asaId = new AlgorandAddress(token).toInt();
-      const acctAssetInfoResp = await rpc.accountAssetInformation(walletAddr, asaId).do();
-      const accountAssetInfo =
-        algosdk.modelsv2.AssetHolding.from_obj_for_encoding(acctAssetInfoResp);
-      return BigInt(accountAssetInfo.amount);
-    });
-
-    return balancesArr.reduce((obj, item) => Object.assign(obj, item), {});
   }
 
   static async sendWait(chain: Chain, rpc: algosdk.Algodv2, stxns: SignedTx[]): Promise<TxHash[]> {
