@@ -73,7 +73,7 @@ export class AptosPlatform<N extends Network>
     return platform === AptosPlatform._platform;
   }
 
-  static async getDecimals(chain: Chain, rpc: Aptos, token: AnyAptosAddress): Promise<number> {
+  static async getDecimals(network: Network, chain: Chain, rpc: Aptos, token: AnyAptosAddress): Promise<number> {
     if (isNative(token) || token === APTOS_COIN)
       return nativeDecimals.nativeDecimals(AptosPlatform._platform);
 
@@ -83,6 +83,7 @@ export class AptosPlatform<N extends Network>
   }
 
   static async getBalance(
+    network: Network,
     chain: Chain,
     rpc: Aptos,
     walletAddress: string,
@@ -108,10 +109,10 @@ export class AptosPlatform<N extends Network>
   }
 
   static async getBalances(
+    network: Network,
     chain: Chain,
     rpc: Aptos,
     walletAddress: string,
-    _tokens: AnyAptosAddress[],
   ): Promise<Balances> {
     try {
       const data = await rpc.getCurrentFungibleAssetBalances({

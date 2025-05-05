@@ -36,3 +36,8 @@ export const addValue = (txReq: TransactionRequest, value: bigint) => ({
   ...txReq,
   value,
 });
+
+export type Indexer = {
+  apiKey: string;
+  provider: 'GoldRush';
+} // TODO add Alchemy support for https://docs.alchemy.com/reference/alchemy-gettokenbalances?

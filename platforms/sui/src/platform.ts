@@ -72,7 +72,7 @@ export class SuiPlatform<N extends Network>
     return platform === SuiPlatform._platform;
   }
 
-  static async getDecimals(chain: Chain, rpc: SuiClient, token: AnySuiAddress): Promise<number> {
+  static async getDecimals(network: Network, chain: Chain, rpc: SuiClient, token: AnySuiAddress): Promise<number> {
     if (isNative(token)) return nativeDecimals.nativeDecimals(SuiPlatform._platform);
 
     const parsedAddress = new SuiAddress(token);
@@ -106,6 +106,7 @@ export class SuiPlatform<N extends Network>
   }
 
   static async getBalance(
+    _network: Network,
     chain: Chain,
     rpc: SuiClient,
     walletAddr: string,
@@ -126,14 +127,16 @@ export class SuiPlatform<N extends Network>
   }
 
   static async getBalances(
+    network: Network,
     chain: Chain,
     rpc: SuiClient,
     walletAddr: string,
     tokens: AnySuiAddress[],
   ): Promise<Balances> {
+    // TODO rewrite this to be efficient
     const balancesArr = await Promise.all(
       tokens.map(async (token) => {
-        const balance = await this.getBalance(chain, rpc, walletAddr, token);
+        const balance = await this.getBalance(network, chain, rpc, walletAddr, token);
         const address = isNative(token) ? "native" : new SuiAddress(token).toString();
         return { [address]: balance };
       }),
