@@ -22,7 +22,6 @@ import { AptosChain } from "./chain.js";
 import type { AptosChains, AptosPlatformType } from "./types.js";
 import { _platform } from "./types.js";
 
-import { AptosAddress } from "./address.js";
 import { APTOS_COIN } from "./constants.js";
 import type { AnyAptosAddress } from "./types.js";
 
@@ -112,16 +111,30 @@ export class AptosPlatform<N extends Network>
     chain: Chain,
     rpc: Aptos,
     walletAddress: string,
-    tokens: AnyAptosAddress[],
+    _tokens: AnyAptosAddress[],
   ): Promise<Balances> {
-    const balancesArr = await Promise.all(
-      tokens.map(async (token) => {
-        const balance = await this.getBalance(chain, rpc, walletAddress, token);
-        const address = isNative(token) ? "native" : new AptosAddress(token).toString();
-        return { [address]: balance };
-      }),
-    );
-    return balancesArr.reduce((obj, item) => Object.assign(obj, item), {});
+    try {
+      const data = await rpc.getCurrentFungibleAssetBalances({
+        options: {
+          where: {
+            owner_address: { _eq: walletAddress },
+          },
+        },
+      });
+      let balances: Balances = {};
+      for (const bal of data) {
+        if (bal.asset_type) {
+          let addr = bal.asset_type === '0x1::aptos_coin::AptosCoin' ? 'native' : bal.asset_type;
+          balances[addr] = bal.amount;
+        }
+      }
+      return balances;
+    } catch (e: any) {
+      if (e.status === 404) {
+        return {};
+      }
+      throw e;
+    }
   }
 
   static async sendWait(chain: Chain, rpc: Aptos, stxns: SignedTx[]): Promise<TxHash[]> {
