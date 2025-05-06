@@ -32,7 +32,7 @@ export class GoldRushClient {
     const endpoint = GOLDRUSH_CHAINS[network][chain];
     if (!endpoint) throw new Error('Chain not supported by GoldRush indexer');
 
-    const { data } = await (await fetch(`https://api.covalenthq.com/v1/${endpoint}/address/${walletAddr}/balances_v2?key=${this.key}`)).json();
+    const { data } = await (await fetch(`https://api.covalenthq.com/v1/${endpoint}/address/${walletAddr}/balances_v2/?key=${this.key}`)).json();
 
     const bals: Balances = {};
     for (let item of data.items) {

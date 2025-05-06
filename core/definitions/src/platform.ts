@@ -3,7 +3,7 @@ import type { WormholeMessageId } from "./attestation.js";
 import type { ChainContext } from "./chain.js";
 import type { ProtocolInitializer, ProtocolInstance, ProtocolName } from "./protocol.js";
 import { create, getProtocolInitializer } from "./protocol.js";
-import type { RpcConnection } from "./rpc.js";
+import type { IndexerConnection, RpcConnection } from "./rpc.js";
 import type { Balances, ChainsConfig, SignedTx, TokenAddress, TokenId, TxHash } from "./types.js";
 
 /**
@@ -83,6 +83,7 @@ export interface PlatformIndexerUtils<N extends Network, P extends Platform> {
     chain: PlatformToChains<P>,
     rpc: RpcConnection<P>,
     walletAddress: string,
+    indexer?: IndexerConnection<P>,
   ): Promise<Balances>;
 }
 
