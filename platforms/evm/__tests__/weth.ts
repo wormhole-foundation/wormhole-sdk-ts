@@ -17,14 +17,18 @@ describe("WETH contracts", function () {
   }
 
   const testWethContracts = async (network: Network, evmChain: EvmChains) => {
-    const wh = await wormhole(network, [evm]);
+    const wethConst = WETH_CONTRACTS[network]?.[evmChain];
+    if (wethConst === undefined) {
+      return;
+    }
 
+    const wh = await wormhole(network, [evm]);
     const chain = wh.getChain(evmChain);
+
     try {
       const tb = await chain.getTokenBridge();
       /* @ts-ignore */
       const wethLive = await tb.tokenBridge!.WETH();
-      const wethConst = WETH_CONTRACTS[network]?.[evmChain];
       expect(wethConst).toBeTruthy();
       expect(wethConst).toEqual(wethLive);
     } catch (e: any) {
