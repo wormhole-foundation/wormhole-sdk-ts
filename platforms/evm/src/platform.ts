@@ -131,14 +131,16 @@ export class EvmPlatform<N extends Network>
   static async getBalances(
     network: Network,
     chain: Chain,
-    _rpc: Provider,
+    rpc: Provider,
     walletAddr: string,
     indexer?: Indexer,
   ): Promise<Balances> {
     if (indexer) {
       if (indexer.provider === 'GoldRush') {
         const gr = new GoldRushClient(indexer.apiKey);
-        return gr.getBalances(network, chain, walletAddr);
+        const balances = await gr.getBalances(network, chain, walletAddr);
+        balances['native'] = await rpc.getBalance(walletAddr);
+        return balances
       }
       // TODO add Alchemy support too
     }
