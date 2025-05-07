@@ -92,7 +92,8 @@ export class CosmwasmPlatform<N extends Network>
   }
 
   static async getDecimals<C extends CosmwasmChains>(
-    chain: C,
+    _network: Network,
+    _chain: C,
     rpc: CosmWasmClient,
     token: AnyCosmwasmAddress,
   ): Promise<number> {
@@ -111,6 +112,7 @@ export class CosmwasmPlatform<N extends Network>
   }
 
   static async getBalance<C extends CosmwasmChains>(
+    _network: Network,
     chain: C,
     rpc: CosmWasmClient,
     walletAddress: string,
@@ -128,6 +130,7 @@ export class CosmwasmPlatform<N extends Network>
   }
 
   static async getBalances<C extends CosmwasmChains>(
+    _network: Network,
     chain: C,
     rpc: CosmWasmClient,
     walletAddress: string,
