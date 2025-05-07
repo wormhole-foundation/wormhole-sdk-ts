@@ -131,17 +131,15 @@ export class SuiPlatform<N extends Network>
     chain: Chain,
     rpc: SuiClient,
     walletAddr: string,
-    tokens: AnySuiAddress[],
   ): Promise<Balances> {
     // TODO rewrite this to be efficient
-    const balancesArr = await Promise.all(
-      tokens.map(async (token) => {
-        const balance = await this.getBalance(network, chain, rpc, walletAddr, token);
-        const address = isNative(token) ? "native" : new SuiAddress(token).toString();
-        return { [address]: balance };
-      }),
-    );
-    return balancesArr.reduce((obj, item) => Object.assign(obj, item), {});
+    const result = await rpc.getAllBalances({ owner: walletAddr });
+    const balances: Balances = {};
+    for (const { coinType, totalBalance } of result) {
+      const address = coinType === SUI_COIN ? "native" : coinType;
+      balances[address] = BigInt(totalBalance);
+    }
+    return balances;
   }
 
   static async sendWait(chain: Chain, rpc: SuiClient, stxns: SignedTx[]): Promise<TxHash[]> {
