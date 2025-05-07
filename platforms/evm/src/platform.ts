@@ -25,9 +25,9 @@ import * as ethers_contracts from './ethers-contracts/index.js';
 
 import { EvmAddress, EvmZeroAddress } from './address.js';
 import { EvmChain } from './chain.js';
-import type { AnyEvmAddress, EvmChains, EvmPlatformType, Indexer } from './types.js';
+import type { AnyEvmAddress, EvmChains, EvmPlatformType, IndexerAPIKeys } from './types.js';
 import { _platform } from './types.js';
-import { GoldRushClient } from './indexer.js';
+import { AlchemyClient, GoldRushClient } from './indexer.js';
 
 /**
  * @category EVM
@@ -133,16 +133,28 @@ export class EvmPlatform<N extends Network>
     chain: Chain,
     rpc: Provider,
     walletAddr: string,
-    indexer?: Indexer,
+    indexers?: IndexerAPIKeys,
   ): Promise<Balances> {
-    if (indexer) {
-      if (indexer.provider === 'GoldRush') {
-        const gr = new GoldRushClient(indexer.apiKey);
-        const balances = await gr.getBalances(network, chain, walletAddr);
-        balances['native'] = await rpc.getBalance(walletAddr);
-        return balances
+    if (indexers) {
+
+      if (indexers.goldRush) {
+        const goldRush = new GoldRushClient(indexers.goldRush);
+        if (goldRush.supportsChain(network, chain)) {
+          const balances = await goldRush.getBalances(network, chain, walletAddr);
+          balances['native'] = await rpc.getBalance(walletAddr);
+          return balances
+        }
       }
-      // TODO add Alchemy support too
+      if (indexers.alchemy) {
+        const alchemy = new AlchemyClient(indexers.alchemy);
+        if (alchemy.supportsChain(network, chain)) {
+          const balances = await alchemy.getBalances(network, chain, walletAddr);
+          balances['native'] = await rpc.getBalance(walletAddr);
+          return balances
+        }
+      }
+
+      throw new Error(`Chain ${chain} not supported by the indexers provided`);
     }
 
     throw new Error(`Can't get all EVM balances without an indexer. Use getBalance to make individual calls instead.`);
