@@ -27,7 +27,7 @@ npm run gateway
 
 ## Token Bridge
 
-Demonstrates sending  of th
+Demonstrates sending  of the
 
 [Source File](src/tokenBridge.ts)
 
@@ -40,6 +40,6 @@ Demonstrates sending USDC using either CCTP or CCTP+Wormhole Auto Relayers
 
 ## Gateway (Cosmos)
 
-Demonstrates sending into, around, and out of Cosmos through the GAteway
+Demonstrates sending into, around, and out of Cosmos through the Gateway
 
 [Source File](src/cosmos.ts)
