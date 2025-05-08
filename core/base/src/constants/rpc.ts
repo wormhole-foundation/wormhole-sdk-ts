@@ -56,7 +56,7 @@ const rpcConfig = [[
     ["Avalanche",       "https://api.avax-test.network/ext/bc/C/rpc"],
     ["Fantom",          "https://rpc.testnet.fantom.network"],
     ["Celo",            "https://alfajores-forno.celo-testnet.org"],
-    ["Solana",          "https://api.devnet.solana.com"],
+    ["Solana",          "https://api.testnet.solana.com"],
     ["Oasis",           "https://testnet.emerald.oasis.io"],
     ["Moonbeam",        "https://rpc.api.moonbase.moonbeam.network"],
     ["Sui",             "https://fullnode.testnet.sui.io"],
