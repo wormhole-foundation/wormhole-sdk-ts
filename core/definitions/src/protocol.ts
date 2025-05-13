@@ -4,6 +4,7 @@ import type { Contracts } from "./contracts.js";
 import type { WormholeRegistry } from "./registry.js";
 import type { RpcConnection } from "./rpc.js";
 import type { ChainsConfig } from "./types.js";
+import { makeGlobalFactory } from "./utils.js";
 
 /**
  *  A string type representing the name of a protocol
@@ -90,15 +91,8 @@ export type ProtocolInstance<
 
 // Runtime registry of protocol implementations from which we can initialize the
 // protocol client
-const g = typeof globalThis !== "undefined"
-  ? globalThis
-  : typeof window !== "undefined"
-    ? window
-    : typeof global !== "undefined"
-      ? global
-      : {} as any;
 
-const protocolFactory: ProtocolImplementationMap = (g.__wormholeProtocolFactory__ ??= {});
+const protocolFactory: ProtocolImplementationMap = makeGlobalFactory('protocolFactory', {});
 
 /** registerProtocol sets the Platform specific implementation of a given Protocol interface  */
 export function registerProtocol<
