@@ -109,7 +109,7 @@ export function registerProtocol<
 
   const platforms = protocolFactory[protocol]!;
   if (platform in platforms)
-    throw new Error(`Protocol ${platform} for protocol ${protocol} has already registered`);
+    console.warn(`Protocol ${platform} for protocol ${protocol} was already registered. Overwriting it.`);
 
   protocolFactory[protocol]![platform] = ctr;
 }
