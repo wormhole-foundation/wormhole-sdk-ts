@@ -90,7 +90,15 @@ export type ProtocolInstance<
 
 // Runtime registry of protocol implementations from which we can initialize the
 // protocol client
-const protocolFactory: ProtocolImplementationMap = {};
+const g = typeof globalThis !== "undefined"
+  ? globalThis
+  : typeof window !== "undefined"
+    ? window
+    : typeof global !== "undefined"
+      ? global
+      : {} as any;
+
+const protocolFactory: ProtocolImplementationMap = (g.__wormholeProtocolFactory__ ??= {});
 
 /** registerProtocol sets the Platform specific implementation of a given Protocol interface  */
 export function registerProtocol<
@@ -103,7 +111,7 @@ export function registerProtocol<
     PlatformToChains<P>
   >,
 >(platform: P, protocol: PN, ctr: PI): void {
-  if (!(protocol in protocolFactory)) protocolFactory[protocol] = {};
+  if (!(protocol in protocolFactory)) protocolFactory[protocol] = {} as any;
 
   const platforms = protocolFactory[protocol]!;
   if (platform in platforms)
