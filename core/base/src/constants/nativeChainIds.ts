@@ -58,6 +58,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Unichain",  130n],
       ["Worldchain",480n],
       ["Ink",       57073n],
+      ["Sonic",     146n],
     ],
   ],
   [
@@ -119,6 +120,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Linea",           59141n], // Sepolia
       ["Monad",           10143n],
       ["Mezo",            31611n],
+      ["Sonic",           57054n],
     ],
   ],
   [
