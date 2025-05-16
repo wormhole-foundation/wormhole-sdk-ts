@@ -7,7 +7,7 @@ import type { ProtocolName } from "../protocol.js";
 // //  payload types that are declared in different protocols. This allows us to have full type safety
 // //  when constructing payloads via the factory without having to ever declare the mapping of all
 // //  payloads and their respective layouts in a single place (which, besides being a terrible code
-// //  smell, would also prevent users of the SDK to register their own payload types!)
+// //  smell, would also prevent users of the SDK from registering their own payload types!)
 // export namespace WormholeRegistry {
 //   //effective type: Record<string, Layout>
 //   export interface PayloadLiteralToLayoutMapping {}
