@@ -50,6 +50,7 @@ const rpcConfig = [[
     ["Unichain",  "https://mainnet.unichain.org"],
     ["Worldchain","https://worldchain-mainnet.g.alchemy.com/public"],
     ["Ink",       "https://rpc-qnd.inkonchain.com"],
+    ["Sonic",     "https://rpc.soniclabs.com"],
   ]], [
   "Testnet", [
     ["Bsc",             "https://data-seed-prebsc-1-s3.binance.org:8545"],
@@ -95,6 +96,7 @@ const rpcConfig = [[
     ["Monad",           "https://testnet-rpc.monad.xyz"],
     ["Noble",           "https://noble-testnet-rpc.polkachu.com/"],
     ["Mezo",            "https://rpc.test.mezo.org"],
+    ["Sonic",           "https://rpc.blaze.soniclabs.com"],
   ]], [
   "Devnet", [
     ["Ethereum",  "http://eth-devnet:8545"],
