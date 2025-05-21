@@ -55,6 +55,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Linea",     59144n],
       ["Snaxchain", 2192n],
       ["Berachain", 80094n],
+      ["Seievm",    1329n],
       ["Unichain",  130n],
       ["Worldchain",480n],
       ["Ink",       57073n],

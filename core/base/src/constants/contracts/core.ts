@@ -40,6 +40,7 @@ export const coreBridgeContracts = [[
     ["Mantle",    "0xbebdb6C8ddC678FfA9f8748f85C815C556Dd8ac6"],
     ["Snaxchain", "0xc1BA3CC4bFE724A08FbbFbF64F8db196738665f4"],
     ["Berachain", "0xCa1D5a146B03f6303baF59e5AD5615ae0b9d146D"],
+    ["Seievm",    "0xCa1D5a146B03f6303baF59e5AD5615ae0b9d146D"],
     ["Unichain",  "0xCa1D5a146B03f6303baF59e5AD5615ae0b9d146D"],
     ["Worldchain","0xcbcEe4e081464A15d8Ad5f58BB493954421eB506"],
     ["Ink",       "0xCa1D5a146B03f6303baF59e5AD5615ae0b9d146D"],
