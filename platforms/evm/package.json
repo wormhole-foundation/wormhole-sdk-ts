@@ -58,7 +58,6 @@
   },
   "dependencies": {
     "@wormhole-foundation/sdk-connect": "1.20.0",
-    "@covalenthq/client-sdk": "^2.2.6",
     "ethers": "^6.5.1"
   },
   "type": "module",
