@@ -3,6 +3,8 @@
 [![GitHub build](https://github.com/wormhole-foundation/wormhole-sdk-ts/actions/workflows/build.yml/badge.svg)](https://github.com/wormhole-foundation/wormhole-sdk-ts/actions)
 [![npm version](https://img.shields.io/npm/v/@wormhole-foundation/sdk.svg)](https://www.npmjs.com/package/@wormhole-foundation/sdk)
 
+[![npm version](https://img.shields.io/npm/v/@wormhole-foundation/sdk.svg)](https://www.npmjs.com/package/@wormhole-foundation/sdk)
+
 The Wormhole Typescript SDK is useful for interacting with the chains Wormhole supports and the [protocols](#protocols) built on top of Wormhole.
 
 ## Installation
