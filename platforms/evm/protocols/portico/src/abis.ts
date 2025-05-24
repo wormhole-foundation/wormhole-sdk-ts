@@ -3,6 +3,7 @@ import { ethers } from 'ethers';
 export const porticoAbi = new ethers.Interface([
   'function start((bytes32,address,address,address,address,address,uint256,uint256,uint256,uint256)) returns (address,uint16,uint64)',
   'function receiveMessageAndSwap(bytes)',
+  'event PorticoSwapFinish(bool swapCompleted, uint256 finaluserAmount, uint256 relayerFeeAmount, tuple(bytes32 flags, address finalTokenAddress, address recipientAddress, uint256 canonAssetAmount, uint256 minAmountFinish, uint256 relayerFee) data)',
 ]);
 
 export const porticoSwapFinishedEvent =
