@@ -44,6 +44,7 @@ export const coreBridgeContracts = [[
     ["Unichain",  "0xCa1D5a146B03f6303baF59e5AD5615ae0b9d146D"],
     ["Worldchain","0xcbcEe4e081464A15d8Ad5f58BB493954421eB506"],
     ["Ink",       "0xCa1D5a146B03f6303baF59e5AD5615ae0b9d146D"],
+    ["HyperEVM",  "0x7C0faFc4384551f063e05aee704ab943b8B53aB3"],
   ]], [
   "Testnet", [
     ["Solana",          "3u8hJUVTA4jH1wYAyUur7FFZVQ8H635K3tSHHF4ssjQ5"],

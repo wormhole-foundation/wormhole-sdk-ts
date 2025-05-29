@@ -60,6 +60,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Worldchain",480n],
       ["Ink",       57073n],
       ["Sonic",     146n],
+      ["HyperEVM",  999n],
     ],
   ],
   [

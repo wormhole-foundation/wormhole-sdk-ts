@@ -51,6 +51,7 @@ const rpcConfig = [[
     ["Worldchain","https://worldchain-mainnet.g.alchemy.com/public"],
     ["Ink",       "https://rpc-qnd.inkonchain.com"],
     ["Sonic",     "https://rpc.soniclabs.com"],
+    ["HyperEVM",  "https://rpc.hyperliquid.xyz/evm"],
   ]], [
   "Testnet", [
     ["Bsc",             "https://data-seed-prebsc-1-s3.binance.org:8545"],
