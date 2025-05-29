@@ -107,7 +107,7 @@ export class SuiPlatform<N extends Network>
 
   static async getBalance(
     _network: Network,
-    chain: Chain,
+    _chain: Chain,
     rpc: SuiClient,
     walletAddr: string,
     token: AnySuiAddress,
@@ -127,12 +127,11 @@ export class SuiPlatform<N extends Network>
   }
 
   static async getBalances(
-    network: Network,
-    chain: Chain,
+    _network: Network,
+    _chain: Chain,
     rpc: SuiClient,
     walletAddr: string,
   ): Promise<Balances> {
-    // TODO rewrite this to be efficient
     const result = await rpc.getAllBalances({ owner: walletAddr });
     const balances: Balances = {};
     for (const { coinType, totalBalance } of result) {
