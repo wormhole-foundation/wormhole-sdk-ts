@@ -20,13 +20,15 @@ import {
 } from '@wormhole-foundation/sdk-connect';
 
 import type { Provider } from 'ethers';
-import { JsonRpcProvider } from 'ethers';
+import { Contract, JsonRpcProvider } from 'ethers';
 import * as ethers_contracts from './ethers-contracts/index.js';
 
 import { EvmAddress, EvmZeroAddress } from './address.js';
 import { EvmChain } from './chain.js';
 import type { AnyEvmAddress, EvmChains, EvmPlatformType } from './types.js';
 import { _platform } from './types.js';
+import { WETH_CONTRACTS } from './weth.js';
+import { EvmUnsignedTransaction } from './unsignedTransaction.js';
 
 /**
  * @category EVM
@@ -204,5 +206,31 @@ export class EvmPlatform<N extends Network>
     if (!ti)
       throw new Error(`No token implementation available for: ${address}`);
     return ti;
+  }
+
+  // TODO: add this to the platform interface or add a type guard?
+  async unwrapNativeToken<C extends EvmChains>(
+    chain: C,
+    amount: bigint,
+    owner: string,
+  ): Promise<EvmUnsignedTransaction<N, C>> {
+    const wethAddress = WETH_CONTRACTS[this.network]?.[chain];
+    if (!wethAddress)
+      throw new Error(`No WETH contract for ${chain} on ${this.network}`);
+
+    const wethAbi = ['function withdraw(uint256 wad) public'];
+    const rpc = this.getRpc(chain);
+    const contract = new Contract(wethAddress, wethAbi, rpc);
+
+    const tx = await contract
+      .getFunction('withdraw')
+      .populateTransaction(amount);
+
+    return new EvmUnsignedTransaction<N, C>(
+      tx,
+      this.network,
+      chain,
+      'Unwrap WETH',
+    );
   }
 }

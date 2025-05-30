@@ -19,7 +19,14 @@ import {
 } from '@wormhole-foundation/sdk-connect';
 import { SolanaChain } from './chain.js';
 
-import { TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID } from '@solana/spl-token';
+import {
+  TOKEN_PROGRAM_ID,
+  TOKEN_2022_PROGRAM_ID,
+  getAssociatedTokenAddressSync,
+  NATIVE_MINT,
+  createTransferInstruction,
+  createCloseAccountInstruction,
+} from '@solana/spl-token';
 import type {
   AccountInfo,
   Commitment,
@@ -29,7 +36,13 @@ import type {
   SendOptions,
   SignatureResult,
 } from '@solana/web3.js';
-import { Connection, PublicKey } from '@solana/web3.js';
+import {
+  Connection,
+  Keypair,
+  PublicKey,
+  SystemProgram,
+  Transaction,
+} from '@solana/web3.js';
 import { SolanaAddress, SolanaZeroAddress } from './address.js';
 import type {
   AnySolanaAddress,
@@ -37,6 +50,7 @@ import type {
   SolanaPlatformType,
 } from './types.js';
 import { _platform } from './types.js';
+import { SolanaUnsignedTransaction } from './unsignedTransaction.js';
 
 /**
  * @category Solana
@@ -151,17 +165,24 @@ export class SolanaPlatform<N extends Network>
       native = BigInt(await rpc.getBalance(new PublicKey(walletAddress)));
     }
 
-    const splParsedTokenAccounts = (await Promise.all(
-      [TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID]
-        .map(pid => new PublicKey(pid))
-        .map(programId => rpc.getParsedTokenAccountsByOwner(new PublicKey(walletAddress), { programId })
-        ))).reduce<{
-          pubkey: PublicKey;
-          account: AccountInfo<ParsedAccountData>;
-        }[]
-        >((acc, val) => {
-          return acc.concat(val.value);
-        }, []);
+    const splParsedTokenAccounts = (
+      await Promise.all(
+        [TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID]
+          .map((pid) => new PublicKey(pid))
+          .map((programId) =>
+            rpc.getParsedTokenAccountsByOwner(new PublicKey(walletAddress), {
+              programId,
+            }),
+          ),
+      )
+    ).reduce<
+      {
+        pubkey: PublicKey;
+        account: AccountInfo<ParsedAccountData>;
+      }[]
+    >((acc, val) => {
+      return acc.concat(val.value);
+    }, []);
 
     const balancesArr = tokens.map((token) => {
       if (isNative(token)) {
@@ -298,5 +319,63 @@ export class SolanaPlatform<N extends Network>
       }
       throw e;
     }
+  }
+
+  async unwrapNativeToken<C extends SolanaChains>(
+    chain: C,
+    amount: bigint,
+    owner: string,
+  ): Promise<SolanaUnsignedTransaction<N, C>> {
+    const connection = this.getRpc(chain);
+
+    const ownerPublicKey = new PublicKey(owner);
+
+    const WSOLTokenAccount = getAssociatedTokenAddressSync(
+      NATIVE_MINT,
+      ownerPublicKey,
+    );
+
+    // Create a temporary WSOL account
+    const tempAccount = Keypair.generate();
+    const rentExemptAmount =
+      await connection.getMinimumBalanceForRentExemption(165);
+
+    const transaction = new Transaction();
+    transaction.feePayer = ownerPublicKey;
+
+    transaction.add(
+      SystemProgram.createAccount({
+        fromPubkey: ownerPublicKey,
+        newAccountPubkey: tempAccount.publicKey,
+        space: 165,
+        lamports: rentExemptAmount,
+        programId: TOKEN_PROGRAM_ID,
+      }),
+    );
+
+    transaction.add(
+      createTransferInstruction(
+        WSOLTokenAccount,
+        tempAccount.publicKey,
+        ownerPublicKey,
+        amount,
+      ),
+    );
+
+    transaction.add(
+      // Close the temp WSOL account to unwrap to SOL
+      createCloseAccountInstruction(
+        tempAccount.publicKey,
+        ownerPublicKey, // SOL will be returned here
+        ownerPublicKey,
+      ),
+    );
+
+    return new SolanaUnsignedTransaction<N, C>(
+      { transaction },
+      this.network,
+      chain,
+      'Unwrap WSOL',
+    );
   }
 }

@@ -7,6 +7,7 @@ import type {
   RpcConnection,
   TokenAddress,
   TokenId,
+  UnsignedTransaction,
 } from "./../../index.js";
 import { PlatformContext } from "./../../index.js";
 import { MockChain } from "./chain.js";

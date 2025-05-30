@@ -5,6 +5,7 @@ import type { ProtocolInitializer, ProtocolInstance, ProtocolName } from "./prot
 import { create, getProtocolInitializer } from "./protocol.js";
 import type { RpcConnection } from "./rpc.js";
 import type { Balances, ChainsConfig, SignedTx, TokenAddress, TokenId, TxHash } from "./types.js";
+import { UnsignedTransaction } from "./unsignedTransaction.js";
 
 /**
  * PlatformUtils represents the _static_ attributes available on
@@ -133,5 +134,14 @@ export abstract class PlatformContext<N extends Network, P extends Platform> {
   ): Promise<WormholeMessageId[]> {
     const wc = await this.getProtocol("WormholeCore", rpc);
     return wc.parseTransaction(txid);
+  }
+
+  /** Unwrap the wrapped gas token back to its native form (e.g. WETH -> ETH) */
+  async unwrapNativeToken<C extends PlatformToChains<P>>(
+    chain: C,
+    amount: bigint,
+    owner: string,
+  ): Promise<UnsignedTransaction<N, C>> {
+    throw new Error("Unwrap native token not implemented for this platform");
   }
 }
