@@ -42,7 +42,8 @@ const platformAndChainsEntries = [[
     "HyperEVM",
     "Monad",
     "Mezo",
-    "Sonic"
+    "Sonic",
+    "Converge"
   ]], [
   "Solana", [
     "Solana",
