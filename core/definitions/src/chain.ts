@@ -82,7 +82,7 @@ export abstract class ChainContext<
       if (found) return found.decimals;
     }
 
-    return this.platform.utils().getDecimals(this.chain, await this.getRpc(), token);
+    return this.platform.utils().getDecimals(this.network, this.chain, await this.getRpc(), token);
   }
 
   /**
@@ -94,7 +94,7 @@ export abstract class ChainContext<
    *
    */
   async getBalance(walletAddr: string, token: TokenAddress<C>): Promise<bigint | null> {
-    return this.platform.utils().getBalance(this.chain, await this.getRpc(), walletAddr, token);
+    return this.platform.utils().getBalance(this.network, this.chain, await this.getRpc(), walletAddr, token);
   }
 
   /**

@@ -92,7 +92,8 @@ export class CosmwasmPlatform<N extends Network>
   }
 
   static async getDecimals<C extends CosmwasmChains>(
-    chain: C,
+    _network: Network,
+    _chain: C,
     rpc: CosmWasmClient,
     token: AnyCosmwasmAddress,
   ): Promise<number> {
@@ -111,6 +112,7 @@ export class CosmwasmPlatform<N extends Network>
   }
 
   static async getBalance<C extends CosmwasmChains>(
+    _network: Network,
     chain: C,
     rpc: CosmWasmClient,
     walletAddress: string,
@@ -128,24 +130,25 @@ export class CosmwasmPlatform<N extends Network>
   }
 
   static async getBalances<C extends CosmwasmChains>(
+    _network: Network,
     chain: C,
     rpc: CosmWasmClient,
     walletAddress: string,
-    tokens: AnyCosmwasmAddress[],
   ): Promise<Balances> {
     const client = CosmwasmPlatform.getQueryClient(rpc);
     const allBalances = await client.bank.allBalances(walletAddress);
     const [network, _] = await CosmwasmPlatform.chainFromRpc(rpc);
-    const balancesArr = tokens.map((token) => {
-      const address = isNative(token)
-        ? this.getNativeDenom(network, chain)
-        : new CosmwasmAddress(token).toString();
-      const balance = allBalances.find((balance) => balance.denom === address);
-      const balanceBigInt = balance ? BigInt(balance.amount) : null;
-      return { [address]: balanceBigInt };
-    });
 
-    return balancesArr.reduce((obj, item) => Object.assign(obj, item), {});
+    const balances: Balances = {};
+    for (const balance of allBalances) {
+      const denom = balance.denom;
+      const address = isNative(denom)
+        ? this.getNativeDenom(network, chain)
+        : new CosmwasmAddress(denom).toString();
+      balances[address] = BigInt(balance.amount);
+    }
+
+    return balances;
   }
 
   static getNativeDenom<N extends Network, C extends CosmwasmChains>(network: N, chain: C): string {

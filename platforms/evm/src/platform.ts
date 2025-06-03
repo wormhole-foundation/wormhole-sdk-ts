@@ -25,8 +25,9 @@ import * as ethers_contracts from './ethers-contracts/index.js';
 
 import { EvmAddress, EvmZeroAddress } from './address.js';
 import { EvmChain } from './chain.js';
-import type { AnyEvmAddress, EvmChains, EvmPlatformType } from './types.js';
+import type { AnyEvmAddress, EvmChains, EvmPlatformType, IndexerAPIKeys } from './types.js';
 import { _platform } from './types.js';
+import { AlchemyClient, GoldRushClient } from './indexer.js';
 
 /**
  * @category EVM
@@ -97,7 +98,8 @@ export class EvmPlatform<N extends Network>
   }
 
   static async getDecimals(
-    chain: Chain,
+    _network: Network,
+    _chain: Chain,
     rpc: Provider,
     token: AnyEvmAddress,
   ): Promise<number> {
@@ -111,7 +113,8 @@ export class EvmPlatform<N extends Network>
   }
 
   static async getBalance(
-    chain: Chain,
+    _network: Network,
+    _chain: Chain,
     rpc: Provider,
     walletAddr: string,
     token: AnyEvmAddress,
@@ -126,21 +129,46 @@ export class EvmPlatform<N extends Network>
   }
 
   static async getBalances(
+    network: Network,
     chain: Chain,
     rpc: Provider,
     walletAddr: string,
-    tokens: AnyEvmAddress[],
+    indexers?: IndexerAPIKeys,
   ): Promise<Balances> {
-    const balancesArr = await Promise.all(
-      tokens.map(async (token) => {
-        const balance = await this.getBalance(chain, rpc, walletAddr, token);
-        const address = isNative(token)
-          ? 'native'
-          : new EvmAddress(token).toString();
-        return { [address]: balance };
-      }),
-    );
-    return balancesArr.reduce((obj, item) => Object.assign(obj, item), {});
+    if (indexers) {
+      if (indexers.goldRush) {
+        try {
+          const goldRush = new GoldRushClient(indexers.goldRush);
+          if (goldRush.supportsChain(network, chain)) {
+            const balances = await goldRush.getBalances(network, chain, walletAddr);
+            balances['native'] = await rpc.getBalance(walletAddr);
+            return balances
+          } else {
+            console.error(`Network=${network} Chain=${chain} not supported by Gold Rush indexer API`);
+          }
+        } catch (e) {
+          console.error(`Error querying Gold Rush indexer API: ${e}`);
+        }
+      }
+      if (indexers.alchemy) {
+        try {
+          const alchemy = new AlchemyClient(indexers.alchemy);
+          if (alchemy.supportsChain(network, chain)) {
+            const balances = await alchemy.getBalances(network, chain, walletAddr);
+            balances['native'] = await rpc.getBalance(walletAddr);
+            return balances
+          } else {
+            console.error(`Network=${network} Chain=${chain} not supported by Alchemy indexer API`);
+          }
+        } catch (e) {
+          console.error(`Error querying Alchemy indexer API: ${e}`);
+        }
+      }
+    } else {
+      throw new Error(`Can't get all EVM balances without an indexer. Use getBalance to make individual calls instead.`);
+    }
+
+    throw new Error(`Failed to get a successful response from an EVM indexer`);
   }
 
   static async sendWait(

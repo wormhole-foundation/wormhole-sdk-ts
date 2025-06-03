@@ -100,6 +100,7 @@ export class SolanaPlatform<N extends Network>
   }
 
   static async getDecimals(
+    _network: Network,
     chain: Chain,
     rpc: Connection,
     token: AnySolanaAddress,
@@ -119,6 +120,7 @@ export class SolanaPlatform<N extends Network>
   }
 
   static async getBalance(
+    _network: Network,
     chain: Chain,
     rpc: Connection,
     walletAddress: string,
@@ -141,15 +143,12 @@ export class SolanaPlatform<N extends Network>
   }
 
   static async getBalances(
+    _network: Network,
     chain: Chain,
     rpc: Connection,
     walletAddress: string,
-    tokens: AnySolanaAddress[],
   ): Promise<Balances> {
-    let native: bigint;
-    if (tokens.includes('native')) {
-      native = BigInt(await rpc.getBalance(new PublicKey(walletAddress)));
-    }
+    const native = BigInt(await rpc.getBalance(new PublicKey(walletAddress)));
 
     const splParsedTokenAccounts = (await Promise.all(
       [TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID]
@@ -163,19 +162,17 @@ export class SolanaPlatform<N extends Network>
           return acc.concat(val.value);
         }, []);
 
-    const balancesArr = tokens.map((token) => {
-      if (isNative(token)) {
-        return { ['native']: native };
+    const balances: Balances = { native };
+
+    splParsedTokenAccounts.forEach((accountInfo) => {
+      const mint = accountInfo.account.data.parsed?.info?.mint;
+      const amount = accountInfo.account.data.parsed?.info?.tokenAmount?.amount;
+      if (mint && amount) {
+        balances[mint] = BigInt(amount);
       }
-      const addrString = new SolanaAddress(token).toString();
-      const amount = splParsedTokenAccounts.find(
-        (v) => v?.account.data.parsed?.info?.mint === token.toString(),
-      )?.account.data.parsed?.info?.tokenAmount?.amount;
-      if (!amount) return { [addrString]: null };
-      return { [addrString]: BigInt(amount) };
     });
 
-    return balancesArr.reduce((obj, item) => Object.assign(obj, item), {});
+    return balances;
   }
 
   static async sendWait(
