@@ -136,28 +136,39 @@ export class EvmPlatform<N extends Network>
     indexers?: IndexerAPIKeys,
   ): Promise<Balances> {
     if (indexers) {
-
       if (indexers.goldRush) {
-        const goldRush = new GoldRushClient(indexers.goldRush);
-        if (goldRush.supportsChain(network, chain)) {
-          const balances = await goldRush.getBalances(network, chain, walletAddr);
-          balances['native'] = await rpc.getBalance(walletAddr);
-          return balances
+        try {
+          const goldRush = new GoldRushClient(indexers.goldRush);
+          if (goldRush.supportsChain(network, chain)) {
+            const balances = await goldRush.getBalances(network, chain, walletAddr);
+            balances['native'] = await rpc.getBalance(walletAddr);
+            return balances
+          } else {
+            console.error(`Network=${network} Chain=${chain} not supported by Gold Rush indexer API`);
+          }
+        } catch (e) {
+          console.error(`Error querying Gold Rush indexer API: ${e}`);
         }
       }
       if (indexers.alchemy) {
-        const alchemy = new AlchemyClient(indexers.alchemy);
-        if (alchemy.supportsChain(network, chain)) {
-          const balances = await alchemy.getBalances(network, chain, walletAddr);
-          balances['native'] = await rpc.getBalance(walletAddr);
-          return balances
+        try {
+          const alchemy = new AlchemyClient(indexers.alchemy);
+          if (alchemy.supportsChain(network, chain)) {
+            const balances = await alchemy.getBalances(network, chain, walletAddr);
+            balances['native'] = await rpc.getBalance(walletAddr);
+            return balances
+          } else {
+            console.error(`Network=${network} Chain=${chain} not supported by Alchemy indexer API`);
+          }
+        } catch (e) {
+          console.error(`Error querying Alchemy indexer API: ${e}`);
         }
       }
-
-      throw new Error(`Chain ${chain} not supported by the indexers provided`);
+    } else {
+      throw new Error(`Can't get all EVM balances without an indexer. Use getBalance to make individual calls instead.`);
     }
 
-    throw new Error(`Can't get all EVM balances without an indexer. Use getBalance to make individual calls instead.`);
+    throw new Error(`Failed to get a successful response from an EVM indexer`);
   }
 
   static async sendWait(
