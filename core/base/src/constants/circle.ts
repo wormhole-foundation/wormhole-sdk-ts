@@ -23,7 +23,8 @@ const usdcContracts = [[
     ["Aptos",     "0xbae207659db88bea0cbead6da0ed00aac12edcdda169e591cd41c94180b46f3b"],
     ["Unichain",  "0x078D782b760474a361dDA0AF3839290b0EF57AD6"],
     ["Sonic",     "0x29219dd400f2Bf60E5a23d13Be72B486D4038894"],
-    ["Linea",     "0x176211869cA2b568f2A7D4EE941E073a821EE1ff"]
+    ["Linea",     "0x176211869cA2b568f2A7D4EE941E073a821EE1ff"],
+    ["Worldchain","0x79A02482A880bCe3F13E09da970dC34dB4cD24D1"]
   ]], [
   "Testnet", [
     ["Sepolia",         "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"],
