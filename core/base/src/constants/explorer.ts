@@ -107,22 +107,6 @@ const explorerConfig = [[
         tx: "transaction/",
         account: "address/",
       },
-    }], [
-    "Karura", {
-      name: "Karura Explorer",
-      baseUrl: "https://blockscout.karura.network/",
-      endpoints: {
-        tx: "tx/",
-        account: "address/",
-      },
-    }], [
-    "Acala", {
-      name: "Acala Explorer",
-      baseUrl: "https://blockscout.acala.network/",
-      endpoints: {
-        tx: "tx/",
-        account: "address/",
-      },
     }],
   ]], [
   "Testnet", [[
@@ -226,22 +210,6 @@ const explorerConfig = [[
       baseUrl: "https://sei.explorers.guru/",
       endpoints: {
         tx: "transaction/",
-        account: "address/",
-      },
-    }], [
-    "Karura", {
-      name: "Karura Explorer",
-      baseUrl: "https://blockscout.karura-testnet.aca-staging.network/",
-      endpoints: {
-        tx: "tx/",
-        account: "address/",
-      },
-    }], [
-    "Acala", {
-      name: "Acala Explorer",
-      baseUrl: "https://blockscout.acala-dev.aca-dev.network/",
-      endpoints: {
-        tx: "tx/",
         account: "address/",
       },
     }],
