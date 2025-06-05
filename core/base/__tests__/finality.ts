@@ -24,9 +24,6 @@ describe("Finality tests", function () {
     expect(consistencyLevelToBlock("Solana", ConsistencyLevels.Immediate, fromBlock)).toEqual(
       fromBlock,
     );
-    expect(consistencyLevelToBlock("Terra", ConsistencyLevels.Immediate, fromBlock)).toEqual(
-      fromBlock,
-    );
   });
 
   test("Estimates rounds from safe consistency level", () => {

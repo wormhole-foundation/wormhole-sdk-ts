@@ -5,9 +5,7 @@ import type { Chain } from "./chains.js";
 // prettier-ignore
 const platformAndChainsEntries = [[
   "Evm", [
-    "Acala",
     "Arbitrum",
-    "Aurora",
     "Avalanche",
     "Base",
     "Bsc",
@@ -15,11 +13,9 @@ const platformAndChainsEntries = [[
     "Ethereum",
     "Fantom",
     "Gnosis",
-    "Karura",
     "Klaytn",
     "Moonbeam",
     "Neon",
-    "Oasis",
     "Optimism",
     "Polygon",
     "Sepolia",
@@ -55,10 +51,8 @@ const platformAndChainsEntries = [[
     "Kujira",
     "Osmosis",
     "Sei",
-    "Terra",
     "Terra2",
     "Wormchain",
-    "Xpla",
     "Dymension",
     "Neutron",
     "Stargaze",

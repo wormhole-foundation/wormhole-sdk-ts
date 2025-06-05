@@ -11,7 +11,7 @@ import { getSigner } from "./helpers/index.js";
   // Original Token to Attest
 
   // grab context and signer
-  const origChain = wh.getChain("Oasis");
+  const origChain = wh.getChain("Sepolia");
   const token = await origChain.getNativeWrappedTokenId();
   const { signer: origSigner } = await getSigner(origChain);
 
