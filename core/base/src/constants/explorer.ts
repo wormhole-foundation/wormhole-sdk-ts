@@ -107,6 +107,14 @@ const explorerConfig = [[
         tx: "transaction/",
         account: "address/",
       },
+    }],[
+    "Mezo", {
+      name: "Mezo Explorer",
+      baseUrl: "https://explorer.mezo.org/",
+      endpoints: {
+        tx: "tx/",
+        account: "address/"
+      },
     }],
   ]], [
   "Testnet", [[
@@ -212,7 +220,16 @@ const explorerConfig = [[
         tx: "transaction/",
         account: "address/",
       },
-    }],
+    }], [
+    "Mezo", {
+      name: "Mezo Explorer",
+      baseUrl: "https://explorer.test.mezo.org/",
+      endpoints: {
+        tx: "tx/",
+        account: "address/"
+      },
+    }
+],
   ]],
 ] as const satisfies MapLevels<["Mainnet" | "Testnet", Chain, ExplorerSettings]>;
 
