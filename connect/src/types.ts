@@ -6,7 +6,7 @@ import type {
   TokenId,
   TransactionId,
 } from "@wormhole-foundation/sdk-definitions";
-import type { QuoteWarning } from "./warnings.js";
+import type { TransferWarning, QuoteWarning } from "./warnings.js";
 
 // Transfer state machine states
 export enum TransferState {
@@ -105,6 +105,7 @@ export interface CompletedTransferReceipt<AT, SC extends Chain = Chain, DC exten
   originTxs: TransactionId<SC>[];
   attestation: AT;
   destinationTxs?: TransactionId<DC>[];
+  transferResult?: TransferResult;
 }
 
 export interface FailedTransferReceipt<AT, SC extends Chain = Chain, DC extends Chain = Chain>
@@ -202,7 +203,7 @@ export interface TransferQuote {
     token: TokenId;
     amount: bigint;
   };
-  // If the transfer being quoted asked for native gas dropoff
+  // If the transfer being quoted asked for native gas drop-off
   // this will contain the amount of native gas that is to be minted
   // on the destination chain given the current swap rates
   destinationNativeGas?: bigint;
@@ -213,4 +214,15 @@ export interface TransferQuote {
   eta?: number;
   // Timestamp when the quote expires
   expires?: Date;
+}
+
+// Information about the result of a transfer
+export interface TransferResult {
+  // How much of what token was received
+  receivedToken: {
+    token: TokenId;
+    amount: bigint;
+  }
+  // Any warnings that occurred (e.g. swap failed)
+  warnings?: TransferWarning[];
 }

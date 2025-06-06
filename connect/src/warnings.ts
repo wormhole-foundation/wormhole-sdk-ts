@@ -9,3 +9,9 @@ export type GovernorLimitWarning = {
 };
 
 export type QuoteWarning = DestinationCapacityWarning | GovernorLimitWarning;
+
+export type SwapFailedWarning = {
+  type: "SwapFailedWarning";
+};
+
+export type TransferWarning = SwapFailedWarning;

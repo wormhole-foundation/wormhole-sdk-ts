@@ -5,3 +5,4 @@ import { EvmPorticoBridge } from './bridge.js';
 registerProtocol(_platform, 'PorticoBridge', EvmPorticoBridge);
 
 export * from './bridge.js';
+export * from './consts.js';
