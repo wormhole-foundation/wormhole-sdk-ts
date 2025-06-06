@@ -111,6 +111,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Monad",           10143n],
       ["Mezo",            31611n],
       ["Sonic",           57054n],
+      ["Converge",        52085145n],
     ],
   ],
   [
