@@ -3,6 +3,7 @@ import { EvmChains } from "./types.js";
 
 export const WETH_CONTRACTS: Record<Network, Partial<Record<EvmChains, string>>>= {
   "Mainnet": {
+    "Acala": "0x0000000000000000000000000000000000000000",
     "Arbitrum": "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
     "Avalanche": "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7",
     "Base": "0x4200000000000000000000000000000000000006",
@@ -26,6 +27,7 @@ export const WETH_CONTRACTS: Record<Network, Partial<Record<EvmChains, string>>>
     "Sonic": "0x039e2fB66102314Ce7b64Ce5Ce3E5183bc94aD38",
   },
   "Testnet": {
+    "Acala": "0x0000000000000000000000000000000000000000",
     "Avalanche": "0xd00ae08403B9bbb9124bB305C09058E32C39A48c",
     "Bsc": "0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd",
     "Celo": "0x524d97A67f50F4A062C28c74F60703Aec9028a94",
