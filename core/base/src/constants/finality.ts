@@ -43,6 +43,8 @@ const finalityThresholds = [
   ["Fantom",    1],
   ["Celo",      1],
   ["Moonbeam",  1],
+  ["Karura",    1],
+  ["Acala",     1],
   // Instant finality
   ["Avalanche", 0],
   ["Sui",       0],
@@ -52,6 +54,7 @@ const finalityThresholds = [
   ["Sei",       0],
   ["Near",      0],
   ["Osmosis",   0],
+  ["Terra",     0],
   ["Terra2",    0],
   ["Injective", 0],
   ["Berachain", 1],
@@ -90,6 +93,7 @@ export const finalityThreshold = constMap(finalityThresholds);
 // prettier-ignore
 // number of milliseconds between blocks
 const blockTimeMilliseconds = [
+  ["Acala",            12_000],
   ["Algorand",          3_300],
   ["Aptos",             4_000],
   ["Arbitrum",            260],
@@ -107,6 +111,7 @@ const blockTimeMilliseconds = [
   ["Gnosis",            5_000],
   ["Holesky",          15_000],
   ["Injective",         2_500],
+  ["Karura",           12_000],
   ["Klaytn",            1_000],
   ["Kujira",            3_000],
   ["Mantle",            2_000],
@@ -124,6 +129,7 @@ const blockTimeMilliseconds = [
   ["Sepolia",          15_000],
   ["Solana",              400],
   ["Sui",               3_000],
+  ["Terra",             6_000],
   ["Terra2",            6_000],
   ["Unichain",          1_000],
   ["Xlayer",            3_000],

@@ -32,6 +32,7 @@ const cosmwasmAddressPrefix = [
   ["Kujira", "kuji"],
   ["Osmosis", "osmo"],
   ["Sei", "sei"],
+  ["Terra", "terra"],
   ["Terra2", "terra"],
   ["Wormchain", "wormhole"],
   ["Celestia", "celestia"],
@@ -194,6 +195,7 @@ const avgPrices = [
   [
     "Mainnet",
     [
+      ["Terra", "28.325"],
       ["Terra2", "0.015"],
       ["Osmosis", "0.025"],
       ["Sei", "0.02"],

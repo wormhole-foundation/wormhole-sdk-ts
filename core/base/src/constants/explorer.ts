@@ -115,6 +115,22 @@ const explorerConfig = [[
         tx: "tx/",
         account: "address/"
       },
+    }],[
+    "Karura", {
+      name: "Karura Explorer",
+      baseUrl: "https://blockscout.karura.network/",
+      endpoints: {
+        tx: "tx/",
+        account: "address/",
+      },
+    }], [
+    "Acala", {
+      name: "Acala Explorer",
+      baseUrl: "https://blockscout.acala.network/",
+      endpoints: {
+        tx: "tx/",
+        account: "address/",
+      },
     }],
   ]], [
   "Testnet", [[
