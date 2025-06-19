@@ -43,7 +43,8 @@ const platformAndChainsEntries = [[
   ]], [
   "Solana", [
     "Solana",
-    "Pythnet"
+    "Pythnet",
+    "Fogo"
   ]], [
   "Cosmwasm", [
     "Cosmoshub",

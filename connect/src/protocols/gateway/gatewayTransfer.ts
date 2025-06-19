@@ -547,7 +547,7 @@ export namespace GatewayTransfer {
 
     // Bit of (temporary) hackery until solana contracts support being
     // sent a VAA with the primary address
-    if (transfer.to.chain === "Solana") {
+    if (chainToPlatform(transfer.to.chain) === "Solana") {
       const destinationToken = await GatewayTransfer.lookupDestinationToken(
         srcChain,
         dstChain,
