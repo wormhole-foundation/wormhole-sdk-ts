@@ -113,6 +113,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Mezo",            31611n],
       ["Sonic",           57054n],
       ["Converge",        52085145n],
+      ["Fogo",            "9GGSFo95raqzZxWqKM5tGYvJp5iv4Dm565S4r8h5PEu9"], // genesis hash
     ],
   ],
   [

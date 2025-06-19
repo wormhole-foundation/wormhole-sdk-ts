@@ -47,6 +47,7 @@ const chainIdAndChainEntries = [
   [   47, "HyperEVM"       ],
   [   48, "Monad"          ],
   [   50, "Mezo"           ],
+  [   51, "Fogo"           ],
   [   52, "Sonic"          ],
   [   53, "Converge"       ],
   [ 3104, "Wormchain"      ],
