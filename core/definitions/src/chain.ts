@@ -22,7 +22,11 @@ import type {
 import type { PlatformContext } from "./platform.js";
 import type { ProtocolInstance, ProtocolInterface, ProtocolName } from "./protocol.js";
 import { isVersionedProtocolInitializer, protocolIsRegistered } from "./protocol.js";
-import type { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge/tokenBridge.js";
+import type {
+  AutomaticTokenBridge,
+  TokenBridge,
+  ExecutorTokenBridge,
+} from "./protocols/tokenBridge/tokenBridge.js";
 import type { RpcConnection } from "./rpc.js";
 import type { ChainConfig, SignedTx, TokenAddress, TokenId } from "./types.js";
 import { canonicalAddress, isNative } from "./types.js";
@@ -94,7 +98,9 @@ export abstract class ChainContext<
    *
    */
   async getBalance(walletAddr: string, token: TokenAddress<C>): Promise<bigint | null> {
-    return this.platform.utils().getBalance(this.network, this.chain, await this.getRpc(), walletAddr, token);
+    return this.platform
+      .utils()
+      .getBalance(this.network, this.chain, await this.getRpc(), walletAddr, token);
   }
 
   /**
@@ -274,6 +280,18 @@ export abstract class ChainContext<
    */
   getAutomaticTokenBridge = (): Promise<AutomaticTokenBridge<N, C>> =>
     this.getProtocol("AutomaticTokenBridge");
+
+  /**
+   * Check to see if the Executor Token Bridge protocol is supported by this chain
+   * @returns  a boolean indicating if this chain supports the Executor Token Bridge protocol
+   */
+  supportsExecutorTokenBridge = () => this.supportsProtocol("ExecutorTokenBridge");
+  /**
+   * Get the Executor Token Bridge protocol client for this chain
+   * @returns the Executor Token Bridge protocol client for this chain
+   */
+  getExecutorTokenBridge = (): Promise<ExecutorTokenBridge<N, C>> =>
+    this.getProtocol("ExecutorTokenBridge");
 
   /**
    * Check to see if the Circle Bridge protocol is supported by this chain
