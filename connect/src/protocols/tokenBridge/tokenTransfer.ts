@@ -199,6 +199,9 @@ export class TokenTransfer<N extends Network = Network>
       to = { chain: vaa.payload.to.chain, address: vaa.payload.payload.targetRecipient };
     }
 
+    // TODO: TokenBridgeExecutor supports native gas, but we don't have enough info here
+    // need to fetch details from on-chain
+
     const details: TokenTransferDetails = {
       token: token,
       amount: amount.units(scaledAmount),
@@ -328,12 +331,30 @@ export namespace TokenTransfer {
 
     const token = isTokenId(transfer.token) ? transfer.token.address : transfer.token;
     let xfer: AsyncGenerator<UnsignedTransaction<N>>;
-    if (transfer.automatic) {
+    if (transfer.protocol === "AutomaticTokenBridge") {
       const tb = await fromChain.getAutomaticTokenBridge();
       xfer = tb.transfer(senderAddress, transfer.to, token, transfer.amount, transfer.nativeGas);
-    } else {
+    } else if (transfer.protocol === "TokenBridge") {
       const tb = await fromChain.getTokenBridge();
       xfer = tb.transfer(senderAddress, transfer.to, token, transfer.amount, transfer.payload);
+    } else {
+      throw new Error("not implemented");
+      //// TokenBridgeExecutor protocol
+      //const tb = await fromChain.getTokenBridgeExecutor();
+
+      //if (!transfer.executorQuote) {
+      //  throw new Error(
+      //    "TokenBridgeExecutor protocol requires an executorQuote in transfer details",
+      //  );
+      //}
+
+      //xfer = tb.transfer(
+      //  senderAddress,
+      //  transfer.to,
+      //  token,
+      //  transfer.amount,
+      //  transfer.,
+      //);
     }
 
     return signSendWait<N, Chain>(fromChain, xfer, signer);
@@ -628,6 +649,7 @@ export namespace TokenTransfer {
     return await wh.getIsVaaEnqueued(key);
   }
 
+  // TODO: validate executor
   export function validateTransferDetails<N extends Network>(
     wh: Wormhole<N>,
     transfer: TokenTransferDetails,
@@ -847,6 +869,73 @@ export namespace TokenTransfer {
       expires: time.expiration(0, 5, 0), // automatic transfer quote is good for 5 minutes
     };
   }
+
+  //export async function fetchExecutorQuote<N extends Network>(
+  //  wh: Wormhole<N>,
+  //  srcChain: ChainContext<N, Chain>,
+  //  dstChain: ChainContext<N, Chain>,
+  //  transfer: Omit<TokenTransferDetails, "from" | "to" | "executorQuote">,
+  //  sender: ChainAddress,
+  //  recipient: ChainAddress,
+  //  referrerConfig?: {
+  //    referrerAddress: ChainAddress;
+  //    referrerFeeDbps: bigint;
+  //  },
+  //): Promise<TokenBridgeExecutor.Quote> {
+
+  //  const capabilities = await wh.getExecutorCapabilities()
+
+  //  //// TODO: Get executor API endpoint from config
+  //  //const executorApiUrl = wh.config.api || "https://api.wormhole.com"; // Placeholder
+
+  //  //// Prepare quote request payload
+  //  //const quoteRequest = {
+  //  //  sourceChain: srcChain.chain,
+  //  //  destinationChain: dstChain.chain,
+  //  //  token: transfer.token,
+  //  //  amount: transfer.amount.toString(),
+  //  //  sender: sender.address,
+  //  //  recipient: recipient.address,
+  //  //  nativeGas: transfer.nativeGas?.toString() || "0",
+  //  //  referrer: referrerConfig?.referrerAddress,
+  //  //  referrerFeeDbps: referrerConfig?.referrerFeeDbps?.toString() || "0",
+  //  //};
+
+  //  //try {
+  //  //  // Make HTTP request to executor quote endpoint
+  //  //  const response = await fetch(`${executorApiUrl}/v0/quote`, {
+  //  //    method: "POST",
+  //  //    headers: {
+  //  //      "Content-Type": "application/json",
+  //  //    },
+  //  //    body: JSON.stringify(quoteRequest),
+  //  //  });
+
+  //  //  if (!response.ok) {
+  //  //    throw new Error(`Executor API error: ${response.status} ${response.statusText}`);
+  //  //  }
+
+  //  //  const quoteResponse = await response.json();
+
+  //  //  // Parse and return the quote
+  //  //  return {
+  //  //    signedQuote: new Uint8Array(Buffer.from(quoteResponse.signedQuote, "base64")),
+  //  //    relayInstructions: new Uint8Array(Buffer.from(quoteResponse.relayInstructions, "base64")),
+  //  //    estimatedCost: BigInt(quoteResponse.estimatedCost),
+  //  //    payeeAddress: new Uint8Array(Buffer.from(quoteResponse.payeeAddress, "hex")),
+  //  //    referrer: referrerConfig?.referrerAddress || sender, // Default to sender if no referrer
+  //  //    referrerFee: BigInt(quoteResponse.referrerFee || "0"),
+  //  //    remainingAmount: BigInt(quoteResponse.remainingAmount),
+  //  //    referrerFeeDbps: referrerConfig?.referrerFeeDbps || 0n,
+  //  //    expires: new Date(quoteResponse.expires),
+  //  //    gasDropOff: BigInt(quoteResponse.gasDropOff || "0"),
+  //  //  };
+  //  //} catch (error) {
+  //  //  throw new Error(
+  //  //    `Failed to fetch executor quote: ${error instanceof Error ? error.message : String(error)}`,
+  //  //  );
+  //  //}
+  //}
 
   export async function destinationOverrides<N extends Network>(
     srcChain: ChainContext<N, Chain>,

@@ -8,6 +8,7 @@ export const DEFAULT_TASK_TIMEOUT = 60 * 1000; // 1 minute in milliseconds
 export type WormholeConfig<N extends Network = Network, P extends Platform = Platform> = {
   api: string;
   circleAPI: string;
+  executorAPI: string;
   chains: ChainsConfig<N, P>;
 };
 
@@ -15,16 +16,19 @@ export const CONFIG = {
   Mainnet: {
     api: "https://api.wormholescan.io",
     circleAPI: circle.circleAPI("Mainnet"),
+    executorAPI: "https://executor.labsapis.com/v0",
     chains: buildConfig("Mainnet"),
   },
   Testnet: {
     api: "https://api.testnet.wormholescan.io",
     circleAPI: circle.circleAPI("Testnet"),
+    executorAPI: "https://executor-testnet.labsapis.com/v0",
     chains: buildConfig("Testnet"),
   },
   Devnet: {
     api: "http://guardian:7071", // Tilt Guardian REST api
     circleAPI: "",
+    executorAPI: "",
     chains: buildConfig("Devnet"),
   },
 } as const satisfies Record<Network, WormholeConfig>;

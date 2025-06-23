@@ -8,6 +8,7 @@ import type { ProtocolPayload, ProtocolVAA } from "./../../vaa/index.js";
 import { payloadDiscriminator } from "./../../vaa/index.js";
 import "./automaticTokenBridgeLayout.js";
 import "./tokenBridgeLayout.js";
+import { SignedQuote } from "../executor/signedQuote.js";
 
 export const ErrNotWrapped = (token: string) => new Error(`Token ${token} is not a wrapped asset`);
 
@@ -18,10 +19,12 @@ declare module "../../registry.js" {
     interface ProtocolToInterfaceMapping<N, C> {
       TokenBridge: TokenBridge<N, C>;
       AutomaticTokenBridge: AutomaticTokenBridge<N, C>;
+      TokenBridgeExecutor: TokenBridgeExecutor<N, C>;
     }
     interface ProtocolToPlatformMapping {
       TokenBridge: EmptyPlatformMap<"TokenBridge">;
       AutomaticTokenBridge: EmptyPlatformMap<"AutomaticTokenBridge">;
+      TokenBridgeExecutor: EmptyPlatformMap<"TokenBridgeExecutor">;
     }
   }
 }
@@ -89,6 +92,53 @@ export namespace AutomaticTokenBridge {
   >;
 }
 
+export namespace TokenBridgeExecutor {
+  const _protocol = "TokenBridgeExecutor";
+  export type ProtocolName = typeof _protocol;
+
+  /** The VAA emitted from the TokenBridgeExecutor protocol is the same as the TokenBridge protocol */
+  const _payloads = ["Transfer"] as const;
+
+  export type PayloadNames = (typeof _payloads)[number];
+
+  export type VAA<PayloadName extends PayloadNames = PayloadNames> = ProtocolVAA<
+    ProtocolName,
+    PayloadName
+  >;
+  export type Payload<PayloadName extends PayloadNames = PayloadNames> = ProtocolPayload<
+    ProtocolName,
+    PayloadName
+  >;
+
+  export type ExecutorQuote = {
+    /** The signed quote from the quote endpoint */
+    // signedQuote: SignedQuote; // before: Uint8Array;
+    /** The relay instructions for the transfer */
+    // relayInstructions: Uint8Array;
+    /** The estimated cost of the transfer in native token base units */
+    // estimatedCost: bigint;
+    /** The wallet address on the source chain, designated by the Quoter, to receive funds when requesting an execution */
+    // payeeAddress: Uint8Array;
+    /** The referrer address (to whom the referrer fee should be paid) */
+    // referrer: ChainAddress;
+    /** The referrer fee in token base units */
+    // referrerFee: bigint;
+    /** The remaining amount after the referrer fee in token base units */
+    // remainingAmount: bigint;
+    /** The referrer fee in *tenths* of basis points */
+    // referrerFeeDbps: bigint;
+    /** The expiry time of the quote */
+    // expires: Date;
+    /** The gas drop-off amount in native token base units */
+    // gasDropOff: bigint; // TODO: might not be needed since also on `TokenTransferDetails`
+  };
+}
+
+export type TokenBridgeProtocol =
+  | TokenBridge.ProtocolName
+  | AutomaticTokenBridge.ProtocolName
+  | TokenBridgeExecutor.ProtocolName;
+
 /**
  * Details of a token transfer, used to initiate a transfer
  */
@@ -97,9 +147,12 @@ export type TokenTransferDetails = {
   amount: bigint;
   from: ChainAddress;
   to: ChainAddress;
-  automatic?: boolean;
+  automatic?: boolean; // TODO: remove
+  protocol?: TokenBridgeProtocol;
   payload?: Uint8Array;
   nativeGas?: bigint;
+  /** Quote required when protocol is TokenBridgeExecutor */
+  executorQuote?: TokenBridgeExecutor.ExecutorQuote;
 };
 
 export function isTokenTransferDetails(
@@ -266,4 +319,25 @@ export interface AutomaticTokenBridge<N extends Network = Network, C extends Cha
   nativeTokenAmount(token: TokenAddress<C>, amount: bigint): Promise<bigint>;
   /** Maximum amount of sending tokens that can be swapped for native tokens */
   maxSwapAmount(token: TokenAddress<C>): Promise<bigint>;
+}
+
+export interface TokenBridgeExecutor<N extends Network = Network, C extends Chain = Chain> {
+  transfer(
+    sender: AccountAddress<C>,
+    recipient: ChainAddress,
+    token: TokenAddress<C>,
+    amount: bigint,
+    signedQuote: SignedQuote,
+    estimatedCost: bigint,
+  ): AsyncGenerator<UnsignedTransaction<N, C>>;
+
+  redeem(
+    sender: AccountAddress<C>,
+    vaa: TokenBridge.TransferVAA,
+  ): AsyncGenerator<UnsignedTransaction<N, C>>;
+
+  estimateMsgValueAndGasLimit(recipient?: ChainAddress): Promise<{
+    msgValue: bigint;
+    gasLimit: bigint;
+  }>;
 }

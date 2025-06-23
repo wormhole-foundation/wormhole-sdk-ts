@@ -40,6 +40,7 @@ import {
   getVaaBytesWithRetry,
   getVaaWithRetry,
 } from "./whscan-api.js";
+import * as executorApi from "./executor-api.js";
 
 type PlatformMap<N extends Network, P extends Platform = Platform> = Map<P, PlatformContext<N, P>>;
 type ChainMap<N extends Network, C extends Chain = Chain> = Map<C, ChainContext<N, C>>;
@@ -135,6 +136,7 @@ export class Wormhole<N extends Network> {
     payload?: Uint8Array,
     nativeGas?: bigint,
   ): Promise<TokenTransfer<N>> {
+    // TODO: executor?
     return await TokenTransfer.from(this, {
       token,
       amount,
@@ -377,6 +379,27 @@ export class Wormhole<N extends Network> {
     }
 
     return await getTransactionStatusWithRetry(this.config.api, msgid, timeout);
+  }
+
+  async getExecutorCapabilities(): Promise<executorApi.CapabilitiesResponse> {
+    return await executorApi.fetchCapabilities(this.config.executorAPI);
+  }
+
+  async getExecutorQuote(
+    srcChain: Chain,
+    dstChain: Chain,
+    relayInstructions: string,
+  ): Promise<executorApi.QuoteResponse> {
+    return await executorApi.fetchQuote(
+      this.config.executorAPI,
+      srcChain,
+      dstChain,
+      relayInstructions,
+    );
+  }
+
+  async getExecutorTxStatus(txHash: TxHash, chain: Chain): Promise<executorApi.StatusResponse[]> {
+    return await executorApi.fetchStatus(this.config.executorAPI, txHash, chain);
   }
 
   /**
