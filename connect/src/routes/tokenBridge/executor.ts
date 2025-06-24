@@ -14,6 +14,8 @@ import {
   UniversalAddress,
   type ChainAddress,
   type ChainContext,
+  type RelayInstruction,
+  type SignedQuote,
   type Signer,
   type TokenId,
   type TokenTransferDetails,
@@ -25,7 +27,7 @@ import type {
   SourceInitiatedTransferReceipt,
   TransferReceipt,
 } from "../../types.js";
-import { TransferState /*isAttested*/ } from "../../types.js";
+import { isAttested, isFailed, TransferState } from "../../types.js";
 import { Wormhole } from "../../wormhole.js";
 import type { StaticRouteMethods } from "../route.js";
 import { AutomaticRoute } from "../route.js";
@@ -37,7 +39,8 @@ import type {
   ValidationResult,
 } from "../types.js";
 import type { RouteTransferRequest } from "../request.js";
-import { SignedQuote } from "@wormhole-foundation/sdk-definitions";
+import { RelayStatus } from "../../executor-api.js";
+import { routes } from "../../index.js";
 
 export namespace TokenBridgeExecutorRoute {
   export type Config = {
@@ -77,6 +80,7 @@ export namespace TokenBridgeExecutorRoute {
   export type QuoteDetails = {
     signedQuote: SignedQuote;
     estimatedCost: bigint;
+    relayInstructions: RelayInstruction[];
     // TODO: referrerFee stuff
   };
 }
@@ -193,10 +197,10 @@ export class TokenBridgeExecutorRoute<N extends Network>
         }
       }
 
-      const relayRequests = [];
+      const relayInstructions = [];
 
       // Add the gas instruction
-      relayRequests.push({
+      relayInstructions.push({
         request: {
           type: "GasInstruction" as const,
           gasLimit,
@@ -207,7 +211,7 @@ export class TokenBridgeExecutorRoute<N extends Network>
       // Add the gas drop-off instruction if applicable
       // TODO: if Solana ATA doesn't exist, prolly need to add a gas drop-off instruction
       if (dropOff > 0n) {
-        relayRequests.push({
+        relayInstructions.push({
           request: {
             type: "GasDropOffInstruction" as const,
             dropOff,
@@ -221,14 +225,14 @@ export class TokenBridgeExecutorRoute<N extends Network>
         });
       }
 
-      const relayInstructions = serializeLayout(relayInstructionsLayout, {
-        requests: relayRequests,
+      const relayInstructionsBytes = serializeLayout(relayInstructionsLayout, {
+        requests: relayInstructions,
       });
 
       const executorQuote = await this.wh.getExecutorQuote(
         request.fromChain.chain,
         request.toChain.chain,
-        encoding.hex.encode(relayInstructions, true),
+        encoding.hex.encode(relayInstructionsBytes, true),
       );
 
       if (!executorQuote.estimatedCost) {
@@ -246,6 +250,7 @@ export class TokenBridgeExecutorRoute<N extends Network>
       const details: D = {
         signedQuote,
         estimatedCost,
+        relayInstructions,
       };
 
       // TODO: relay fee and stuff
@@ -258,6 +263,7 @@ export class TokenBridgeExecutorRoute<N extends Network>
         params,
         details,
       );
+      quote.expires = signedQuote.quote.expiryTime;
 
       return quote;
 
@@ -296,18 +302,45 @@ export class TokenBridgeExecutorRoute<N extends Network>
     quote: Q,
     to: ChainAddress,
   ): Promise<R> {
+    const { fromChain, toChain } = request;
     const { params } = quote;
     const transfer = await TokenTransfer.destinationOverrides(
-      request.fromChain,
-      request.toChain,
+      fromChain,
+      toChain,
       this.toTransferDetails(
         request,
         params,
         Wormhole.chainAddress(signer.chain(), signer.address()),
         to,
+        quote,
       ),
     );
-    const txids = await TokenTransfer.transfer<N>(request.fromChain, transfer, signer);
+    const txids = await TokenTransfer.transfer<N>(fromChain, transfer, signer);
+
+    // Status the transfer immediately before returning
+    let statusAttempts = 0;
+
+    const statusTransferImmediately = async () => {
+      while (statusAttempts < 20) {
+        try {
+          const [txStatus] = await this.wh.getExecutorTxStatus(txids.at(-1)!.txid, fromChain.chain);
+
+          if (txStatus) {
+            break;
+          }
+        } catch (_) {
+          // is ok we just try again!
+        }
+        statusAttempts++;
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      }
+    };
+
+    // Spawn a loop in the background that will status this transfer until
+    // the API gives a successful response. We don't await the result
+    // here because we don't need it for the return value.
+    statusTransferImmediately();
+
     return {
       from: transfer.from.chain,
       to: transfer.to.chain,
@@ -316,29 +349,85 @@ export class TokenBridgeExecutorRoute<N extends Network>
     } satisfies SourceInitiatedTransferReceipt;
   }
 
+  async complete(signer: Signer, receipt: R): Promise<R> {
+    console.log("complete");
+    if (!isAttested(receipt) && !isFailed(receipt)) {
+      throw new Error("The source must be finalized in order to complete the transfer");
+    }
+
+    if (!receipt.attestation) {
+      throw new Error("The receipt must have an attestation to complete the transfer");
+    }
+
+    const toChain = this.wh.getChain(receipt.to);
+    const dstTxIds = await TokenTransfer.redeem<N>(
+      toChain,
+      receipt.attestation.attestation as TokenTransfer.VAA,
+      signer,
+    );
+
+    return {
+      ...receipt,
+      state: TransferState.DestinationInitiated,
+      attestation: receipt.attestation as Required<AttestationReceipt<"TokenBridge">>,
+      destinationTxs: dstTxIds,
+    };
+  }
+
   async resume(txid: TransactionId): Promise<R> {
     const xfer = await TokenTransfer.from(this.wh, txid, 10 * 1000);
     return TokenTransfer.getReceipt(xfer);
   }
 
   public override async *track(receipt: R, timeout?: number) {
-    // TODO: Implement executor API tracking logic here
-    // For now, using the standard TokenTransfer.track
+    // Check if the relay was successful or failed
+    if (isAttested(receipt) && !isFailed(receipt)) {
+      const [txStatus] = await this.wh.getExecutorTxStatus(
+        receipt.originTxs.at(-1)!.txid,
+        receipt.from,
+      );
+      if (!txStatus) throw new Error("No transaction status found");
+
+      const relayStatus = txStatus.status;
+      if (
+        relayStatus === RelayStatus.Failed || // this could happen if simulation fails
+        relayStatus === RelayStatus.Underpaid || // only happens if you don't pay at least the costEstimate
+        relayStatus === RelayStatus.Unsupported || // capabilities check didn't pass
+        relayStatus === RelayStatus.Aborted // An unrecoverable error indicating the attempt should stop (bad data, pre-flight checks failed, or chain-specific conditions)
+      ) {
+        receipt = {
+          ...receipt,
+          state: TransferState.Failed,
+          error: new routes.RelayFailedError(`Relay failed with status: ${relayStatus}`),
+        };
+        yield receipt;
+      }
+    }
+
     yield* TokenTransfer.track(this.wh, receipt, timeout);
   }
 
-  // TODO: why need this..
   toTransferDetails(
     request: RouteTransferRequest<N>,
     params: Vp,
     from: ChainAddress,
     to: ChainAddress,
+    quote: Q,
   ): TokenTransferDetails {
+    if (!quote.details) throw new Error("Quote details are missing");
+
+    const { signedQuote, relayInstructions, estimatedCost } = quote.details;
+
     return {
       from,
       to,
       token: request.source.id,
       amount: sdkAmount.units(params.normalizedParams.amount),
+      executorParams: {
+        signedQuote,
+        relayInstructions,
+        estimatedCost,
+      },
       // Note: We intentionally don't set automatic: true here
       // so that tokenTransfer.ts uses the manual logic
       // ...params.options,

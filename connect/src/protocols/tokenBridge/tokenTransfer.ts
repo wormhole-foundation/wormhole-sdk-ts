@@ -338,23 +338,19 @@ export namespace TokenTransfer {
       const tb = await fromChain.getTokenBridge();
       xfer = tb.transfer(senderAddress, transfer.to, token, transfer.amount, transfer.payload);
     } else {
-      throw new Error("not implemented");
-      //// TokenBridgeExecutor protocol
-      //const tb = await fromChain.getTokenBridgeExecutor();
-
-      //if (!transfer.executorQuote) {
-      //  throw new Error(
-      //    "TokenBridgeExecutor protocol requires an executorQuote in transfer details",
-      //  );
-      //}
-
-      //xfer = tb.transfer(
-      //  senderAddress,
-      //  transfer.to,
-      //  token,
-      //  transfer.amount,
-      //  transfer.,
-      //);
+      if (!transfer.executorParams)
+        throw new Error("Executor params required for TokenBridgeExecutor transfers");
+      const tb = await fromChain.getTokenBridgeExecutor();
+      const { signedQuote, estimatedCost, relayInstructions } = transfer.executorParams;
+      xfer = tb.transfer(
+        senderAddress,
+        transfer.to,
+        token,
+        transfer.amount,
+        signedQuote,
+        estimatedCost,
+        relayInstructions,
+      );
     }
 
     return signSendWait<N, Chain>(fromChain, xfer, signer);

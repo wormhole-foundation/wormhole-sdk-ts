@@ -8,7 +8,8 @@ import type { ProtocolPayload, ProtocolVAA } from "./../../vaa/index.js";
 import { payloadDiscriminator } from "./../../vaa/index.js";
 import "./automaticTokenBridgeLayout.js";
 import "./tokenBridgeLayout.js";
-import { SignedQuote } from "../executor/signedQuote.js";
+import { type SignedQuote } from "../executor/signedQuote.js";
+import { type RelayInstruction } from "../executor/relayInstruction.js";
 
 export const ErrNotWrapped = (token: string) => new Error(`Token ${token} is not a wrapped asset`);
 
@@ -151,8 +152,12 @@ export type TokenTransferDetails = {
   protocol?: TokenBridgeProtocol;
   payload?: Uint8Array;
   nativeGas?: bigint;
-  /** Quote required when protocol is TokenBridgeExecutor */
-  executorQuote?: TokenBridgeExecutor.ExecutorQuote;
+  // Required for TokenBridgeExecutor protocol transfers
+  executorParams?: {
+    signedQuote: SignedQuote;
+    relayInstructions: RelayInstruction[];
+    estimatedCost: bigint;
+  };
 };
 
 export function isTokenTransferDetails(
@@ -329,6 +334,8 @@ export interface TokenBridgeExecutor<N extends Network = Network, C extends Chai
     amount: bigint,
     signedQuote: SignedQuote,
     estimatedCost: bigint,
+    relayInstructions: RelayInstruction[],
+    // TODO: payload?
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
 
   redeem(

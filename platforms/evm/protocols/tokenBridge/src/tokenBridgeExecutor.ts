@@ -5,32 +5,47 @@ import type {
   Contracts,
   Network,
   Platform,
+  RelayInstruction,
   TokenAddress,
   TokenBridge,
   TokenBridgeExecutor,
 } from '@wormhole-foundation/sdk-connect';
-import { nativeChainIds } from '@wormhole-foundation/sdk-connect';
+import {
+  nativeChainIds,
+  toChainId,
+  signedQuoteLayout,
+  isNative,
+  serializeLayout,
+} from '@wormhole-foundation/sdk-connect';
 import type { EvmChains } from '@wormhole-foundation/sdk-evm';
 import {
-  //   EvmAddress,
+  EvmAddress,
   EvmPlatform,
   EvmUnsignedTransaction,
   addChainId,
+  addFrom,
 } from '@wormhole-foundation/sdk-evm';
 import type { Provider, TransactionRequest } from 'ethers';
-import { ethers_contracts } from './index.js';
-
+import { Contract } from 'ethers';
 import '@wormhole-foundation/sdk-evm-core';
 import { EvmWormholeCore } from '@wormhole-foundation/sdk-evm-core';
-import { SignedQuote } from '@wormhole-foundation/sdk-definitions';
+import {
+  relayInstructionsLayout,
+  SignedQuote,
+} from '@wormhole-foundation/sdk-definitions';
+
+const EXECUTOR_ABI = [
+  'function transferTokensWithRelay(address token, uint256 amount, uint16 targetChain, bytes32 targetRecipient, uint32 nonce, bytes32 dstTransferRecipient, bytes32 dstExecutionAddress, uint256 executionAmount, address refundAddr, bytes calldata signedQuoteBytes, bytes calldata relayInstructions) payable returns (uint64)',
+  'function wrapAndTransferEthWithRelay(uint16 targetChain, bytes32 targetRecipient, uint32 nonce, bytes32 dstTransferRecipient, bytes32 dstExecutionAddress, uint256 executionAmount, address refundAddr, bytes calldata signedQuoteBytes, bytes calldata relayInstructions) payable returns (uint64)',
+];
 
 export class EvmTokenBridgeExecutor<N extends Network, C extends EvmChains>
   implements TokenBridgeExecutor<N, C>
 {
-  readonly tokenBridge: ethers_contracts.TokenBridgeContract;
-  readonly core: EvmWormholeCore<N, C>;
-  readonly tokenBridgeAddress: string;
   readonly chainId: bigint;
+  readonly executorAddress: string;
+  readonly executorContract: Contract;
+  readonly core: EvmWormholeCore<N, C>;
 
   constructor(
     readonly network: N,
@@ -43,17 +58,19 @@ export class EvmTokenBridgeExecutor<N extends Network, C extends EvmChains>
       chain,
     ) as bigint;
 
-    const tokenBridgeAddress = this.contracts.tokenBridge!;
-    if (!tokenBridgeAddress)
+    const executorAddress = this.contracts.tokenBridgeExecutor;
+    if (!executorAddress)
       throw new Error(
-        `Wormhole Token Bridge contract for domain ${chain} not found`,
+        `Wormhole Token Bridge Executor contract for domain ${chain} not found`,
       );
 
-    this.tokenBridgeAddress = tokenBridgeAddress;
-    this.tokenBridge = ethers_contracts.Bridge__factory.connect(
-      this.tokenBridgeAddress,
+    this.executorAddress = executorAddress;
+    this.executorContract = new Contract(
+      this.executorAddress,
+      EXECUTOR_ABI,
       provider,
     );
+
     this.core = new EvmWormholeCore(network, chain, provider, contracts);
   }
 
@@ -82,18 +99,92 @@ export class EvmTokenBridgeExecutor<N extends Network, C extends EvmChains>
     amount: bigint,
     signedQuote: SignedQuote,
     estimatedCost: bigint,
+    relayInstructions: RelayInstruction[],
   ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
-    // TODO: Implement executor transfer logic
-    // This will need to:
-    // 1. Encode the signed quote data
-    // 2. Create a transaction that includes the executor instructions
-    // 3. Use the appropriate contract method for executor transfers
+    const senderAddr = new EvmAddress(sender).toString();
+    const targetChain = toChainId(recipient.chain);
+    const targetRecipient = recipient.address
+      .toUniversalAddress()
+      .toUint8Array();
 
-    // const senderAddr = new EvmAddress(sender).toString();
+    const signedQuoteBytes = serializeLayout(signedQuoteLayout, signedQuote);
+    const relayInstructionsBytes = serializeLayout(relayInstructionsLayout, {
+      requests: relayInstructions,
+    });
 
-    // Placeholder implementation - this will need to be updated based on the actual
-    // executor contract interface and how signed quotes should be handled
-    throw new Error('TokenBridgeExecutor transfer not yet implemented');
+    const wormholeFee = await this.core.getMessageFee();
+
+    const nonce = 0;
+    const dstTransferRecipient = targetRecipient; // Same as target recipient for now
+    const dstExecutionAddress = targetRecipient; // Executor address on destination
+    const executionAmount = estimatedCost; // Amount for execution
+    const refundAddr = senderAddr; // Refund to sender
+
+    let txReq: TransactionRequest;
+
+    if (isNative(token)) {
+      txReq = await this.executorContract
+        .getFunction('wrapAndTransferEthWithRelay')
+        .populateTransaction(
+          targetChain,
+          targetRecipient,
+          nonce,
+          dstTransferRecipient,
+          dstExecutionAddress,
+          executionAmount,
+          refundAddr,
+          signedQuoteBytes,
+          relayInstructionsBytes,
+          {
+            value: amount + wormholeFee + executionAmount,
+          },
+        );
+    } else {
+      const tokenContract = EvmPlatform.getTokenImplementation(
+        this.provider,
+        token.toString(),
+      );
+
+      const allowance = await tokenContract.allowance(
+        senderAddr,
+        this.executorAddress,
+      );
+
+      if (allowance < amount) {
+        const txReq = await tokenContract.approve.populateTransaction(
+          this.executorAddress,
+          amount,
+        );
+
+        yield this.createUnsignedTx(txReq, 'approve');
+      }
+
+      txReq = await this.executorContract
+        .getFunction('transferTokensWithRelay')
+        .populateTransaction(
+          token.toString(),
+          amount,
+          targetChain,
+          targetRecipient,
+          nonce,
+          dstTransferRecipient,
+          dstExecutionAddress,
+          executionAmount,
+          refundAddr,
+          signedQuoteBytes,
+          relayInstructionsBytes,
+          {
+            value: wormholeFee + executionAmount,
+          },
+        );
+    }
+
+    yield this.createUnsignedTx(
+      addFrom(txReq, senderAddr),
+      isNative(token)
+        ? 'wrapAndTransferEthWithRelay'
+        : 'transferTokensWithRelay',
+    );
   }
 
   async *redeem(
