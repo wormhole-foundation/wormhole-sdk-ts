@@ -5,9 +5,8 @@ import type {
   Contracts,
   Network,
   Platform,
-  RelayInstruction,
+  RelayInstructions,
   TokenAddress,
-  TokenBridge,
   TokenBridgeExecutor,
 } from '@wormhole-foundation/sdk-connect';
 import {
@@ -16,6 +15,7 @@ import {
   signedQuoteLayout,
   isNative,
   serializeLayout,
+  serialize,
 } from '@wormhole-foundation/sdk-connect';
 import type { EvmChains } from '@wormhole-foundation/sdk-evm';
 import {
@@ -33,10 +33,12 @@ import {
   relayInstructionsLayout,
   SignedQuote,
 } from '@wormhole-foundation/sdk-definitions';
+import { contracts } from '@wormhole-foundation/sdk-connect';
 
 const EXECUTOR_ABI = [
   'function transferTokensWithRelay(address token, uint256 amount, uint16 targetChain, bytes32 targetRecipient, uint32 nonce, bytes32 dstTransferRecipient, bytes32 dstExecutionAddress, uint256 executionAmount, address refundAddr, bytes calldata signedQuoteBytes, bytes calldata relayInstructions) payable returns (uint64)',
   'function wrapAndTransferEthWithRelay(uint16 targetChain, bytes32 targetRecipient, uint32 nonce, bytes32 dstTransferRecipient, bytes32 dstExecutionAddress, uint256 executionAmount, address refundAddr, bytes calldata signedQuoteBytes, bytes calldata relayInstructions) payable returns (uint64)',
+  'function executeVAAv1(bytes calldata encodedTransferMessage) payable',
 ];
 
 export class EvmTokenBridgeExecutor<N extends Network, C extends EvmChains>
@@ -99,7 +101,7 @@ export class EvmTokenBridgeExecutor<N extends Network, C extends EvmChains>
     amount: bigint,
     signedQuote: SignedQuote,
     estimatedCost: bigint,
-    relayInstructions: RelayInstruction[],
+    relayInstructions: RelayInstructions,
   ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
     const senderAddr = new EvmAddress(sender).toString();
     const targetChain = toChainId(recipient.chain);
@@ -108,17 +110,29 @@ export class EvmTokenBridgeExecutor<N extends Network, C extends EvmChains>
       .toUint8Array();
 
     const signedQuoteBytes = serializeLayout(signedQuoteLayout, signedQuote);
-    const relayInstructionsBytes = serializeLayout(relayInstructionsLayout, {
-      requests: relayInstructions,
-    });
+    const relayInstructionsBytes = serializeLayout(
+      relayInstructionsLayout,
+      relayInstructions,
+    );
 
     const wormholeFee = await this.core.getMessageFee();
 
     const nonce = 0;
-    const dstTransferRecipient = targetRecipient; // Same as target recipient for now
-    const dstExecutionAddress = targetRecipient; // Executor address on destination
-    const executionAmount = estimatedCost; // Amount for execution
-    const refundAddr = senderAddr; // Refund to sender
+    const dstExecutorAddress = contracts.tokenBridgeExecutor.get(
+      this.network,
+      recipient.chain,
+    );
+    if (!dstExecutorAddress) {
+      throw new Error(
+        `Token Bridge Executor contract for domain ${recipient.chain} not found`,
+      );
+    }
+    const dstTransferRecipient = new EvmAddress(dstExecutorAddress)
+      .toUniversalAddress()
+      .toUint8Array();
+    const dstExecutionAddress = dstTransferRecipient;
+    const executionAmount = estimatedCost;
+    const refundAddr = senderAddr;
 
     let txReq: TransactionRequest;
 
@@ -189,16 +203,22 @@ export class EvmTokenBridgeExecutor<N extends Network, C extends EvmChains>
 
   async *redeem(
     sender: AccountAddress<C>,
-    vaa: TokenBridge.TransferVAA,
+    vaa: TokenBridgeExecutor.VAA,
   ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
-    // TODO: Implement executor redeem logic
-    // This should be similar to regular TokenBridge redeem but may have
-    // executor-specific handling
+    const senderAddr = new EvmAddress(sender).toString();
 
-    // const senderAddr = new EvmAddress(sender).toString();
+    const encodedTransferMessage = serialize(vaa);
 
-    // Placeholder implementation
-    throw new Error('TokenBridgeExecutor redeem not yet implemented');
+    const txReq = await this.executorContract
+      .getFunction('executeVAAv1')
+      .populateTransaction(encodedTransferMessage, {
+        value: 0n,
+      });
+
+    yield this.createUnsignedTx(
+      addFrom(txReq, senderAddr),
+      'TokenBridgeExecutor.executeVAAv1',
+    );
   }
 
   async estimateMsgValueAndGasLimit(recipient?: ChainAddress): Promise<{

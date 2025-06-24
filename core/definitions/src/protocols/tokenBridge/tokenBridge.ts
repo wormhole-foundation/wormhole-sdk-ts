@@ -340,7 +340,7 @@ export interface TokenBridgeExecutor<N extends Network = Network, C extends Chai
 
   redeem(
     sender: AccountAddress<C>,
-    vaa: TokenBridge.TransferVAA,
+    vaa: TokenBridgeExecutor.VAA,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
 
   estimateMsgValueAndGasLimit(recipient?: ChainAddress): Promise<{

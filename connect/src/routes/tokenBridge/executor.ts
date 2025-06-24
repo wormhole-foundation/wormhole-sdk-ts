@@ -14,7 +14,6 @@ import {
   UniversalAddress,
   type ChainAddress,
   type ChainContext,
-  type RelayInstruction,
   type SignedQuote,
   type Signer,
   type TokenId,
@@ -40,7 +39,10 @@ import type {
 } from "../types.js";
 import type { RouteTransferRequest } from "../request.js";
 import { RelayStatus } from "../../executor-api.js";
-import { routes } from "../../index.js";
+import { routes, signSendWait } from "../../index.js";
+import { toNative } from "@wormhole-foundation/sdk-definitions";
+import { TokenBridgeExecutor } from "@wormhole-foundation/sdk-definitions";
+import { RelayInstructions } from "@wormhole-foundation/sdk-definitions";
 
 export namespace TokenBridgeExecutorRoute {
   export type Config = {
@@ -80,7 +82,7 @@ export namespace TokenBridgeExecutorRoute {
   export type QuoteDetails = {
     signedQuote: SignedQuote;
     estimatedCost: bigint;
-    relayInstructions: RelayInstruction[];
+    relayInstructions: RelayInstructions;
     // TODO: referrerFee stuff
   };
 }
@@ -197,10 +199,10 @@ export class TokenBridgeExecutorRoute<N extends Network>
         }
       }
 
-      const relayInstructions = [];
+      const instructions = [];
 
       // Add the gas instruction
-      relayInstructions.push({
+      instructions.push({
         request: {
           type: "GasInstruction" as const,
           gasLimit,
@@ -211,7 +213,7 @@ export class TokenBridgeExecutorRoute<N extends Network>
       // Add the gas drop-off instruction if applicable
       // TODO: if Solana ATA doesn't exist, prolly need to add a gas drop-off instruction
       if (dropOff > 0n) {
-        relayInstructions.push({
+        instructions.push({
           request: {
             type: "GasDropOffInstruction" as const,
             dropOff,
@@ -225,9 +227,11 @@ export class TokenBridgeExecutorRoute<N extends Network>
         });
       }
 
-      const relayInstructionsBytes = serializeLayout(relayInstructionsLayout, {
-        requests: relayInstructions,
-      });
+      const relayInstructions: RelayInstructions = {
+        requests: instructions,
+      };
+
+      const relayInstructionsBytes = serializeLayout(relayInstructionsLayout, relayInstructions);
 
       const executorQuote = await this.wh.getExecutorQuote(
         request.fromChain.chain,
@@ -360,11 +364,13 @@ export class TokenBridgeExecutorRoute<N extends Network>
     }
 
     const toChain = this.wh.getChain(receipt.to);
-    const dstTxIds = await TokenTransfer.redeem<N>(
-      toChain,
-      receipt.attestation.attestation as TokenTransfer.VAA,
-      signer,
+    const tb = await toChain.getTokenBridgeExecutor();
+    const senderAddress = toNative(signer.chain(), signer.address());
+    const xfer = tb.redeem(
+      senderAddress,
+      receipt.attestation.attestation as TokenBridgeExecutor.VAA,
     );
+    const dstTxIds = await signSendWait<N, Chain>(toChain, xfer, signer);
 
     return {
       ...receipt,
