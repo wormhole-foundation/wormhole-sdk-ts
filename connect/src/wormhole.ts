@@ -143,6 +143,7 @@ export class Wormhole<N extends Network> {
       from,
       to,
       automatic,
+      protocol: automatic ? "AutomaticTokenBridge" : "TokenBridge",
       payload,
       nativeGas,
     });

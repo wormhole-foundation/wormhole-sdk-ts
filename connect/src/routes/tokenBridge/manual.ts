@@ -103,6 +103,7 @@ export class TokenBridgeRoute<N extends Network>
           token: request.source.id,
           amount: amount.units(params.normalizedParams.amount),
           ...params.options,
+          protocol: "TokenBridge",
         }),
         params,
       );
@@ -177,6 +178,7 @@ export class TokenBridgeRoute<N extends Network>
       to,
       token: request.source.id,
       amount: amount.units(params.normalizedParams.amount),
+      protocol: "TokenBridge",
       ...params.options,
     };
   }

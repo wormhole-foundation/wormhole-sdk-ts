@@ -262,6 +262,7 @@ export class TokenBridgeExecutorRoute<N extends Network>
           token: request.source.id,
           amount: sdkAmount.units(params.normalizedParams.amount),
           // ...params.options,
+          protocol: "TokenBridgeExecutor",
         }),
         params,
         details,
@@ -430,6 +431,7 @@ export class TokenBridgeExecutorRoute<N extends Network>
       to,
       token: request.source.id,
       amount: sdkAmount.units(params.normalizedParams.amount),
+      protocol: "TokenBridgeExecutor",
       executorParams: {
         signedQuote,
         relayInstructions,

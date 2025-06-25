@@ -209,6 +209,7 @@ export class TokenTransfer<N extends Network = Network>
       from,
       to,
       automatic,
+      protocol: automatic ? "AutomaticTokenBridge" : "TokenBridge", // TODO: executor?
       nativeGas: nativeGasAmount,
     };
 
