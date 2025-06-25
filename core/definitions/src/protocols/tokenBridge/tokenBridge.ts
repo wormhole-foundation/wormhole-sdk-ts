@@ -9,7 +9,7 @@ import { payloadDiscriminator } from "./../../vaa/index.js";
 import "./automaticTokenBridgeLayout.js";
 import "./tokenBridgeLayout.js";
 import { type SignedQuote } from "../executor/signedQuote.js";
-import { type RelayInstruction } from "../executor/relayInstruction.js";
+import { type RelayInstructions } from "../executor/relayInstruction.js";
 
 export const ErrNotWrapped = (token: string) => new Error(`Token ${token} is not a wrapped asset`);
 
@@ -97,8 +97,8 @@ export namespace TokenBridgeExecutor {
   const _protocol = "TokenBridgeExecutor";
   export type ProtocolName = typeof _protocol;
 
-  /** The VAA emitted from the TokenBridgeExecutor protocol is the same as the TokenBridge protocol */
-  const _payloads = ["Transfer"] as const;
+  // TODO: TransferWithExecutorRelay rename
+  const _payloads = ["TransferWithPayload"] as const;
 
   export type PayloadNames = (typeof _payloads)[number];
 
@@ -110,29 +110,6 @@ export namespace TokenBridgeExecutor {
     ProtocolName,
     PayloadName
   >;
-
-  export type ExecutorQuote = {
-    /** The signed quote from the quote endpoint */
-    // signedQuote: SignedQuote; // before: Uint8Array;
-    /** The relay instructions for the transfer */
-    // relayInstructions: Uint8Array;
-    /** The estimated cost of the transfer in native token base units */
-    // estimatedCost: bigint;
-    /** The wallet address on the source chain, designated by the Quoter, to receive funds when requesting an execution */
-    // payeeAddress: Uint8Array;
-    /** The referrer address (to whom the referrer fee should be paid) */
-    // referrer: ChainAddress;
-    /** The referrer fee in token base units */
-    // referrerFee: bigint;
-    /** The remaining amount after the referrer fee in token base units */
-    // remainingAmount: bigint;
-    /** The referrer fee in *tenths* of basis points */
-    // referrerFeeDbps: bigint;
-    /** The expiry time of the quote */
-    // expires: Date;
-    /** The gas drop-off amount in native token base units */
-    // gasDropOff: bigint; // TODO: might not be needed since also on `TokenTransferDetails`
-  };
 }
 
 export type TokenBridgeProtocol =
@@ -148,14 +125,14 @@ export type TokenTransferDetails = {
   amount: bigint;
   from: ChainAddress;
   to: ChainAddress;
+  protocol: TokenBridgeProtocol;
   automatic?: boolean; // TODO: remove
-  protocol?: TokenBridgeProtocol;
   payload?: Uint8Array;
   nativeGas?: bigint;
   // Required for TokenBridgeExecutor protocol transfers
   executorParams?: {
     signedQuote: SignedQuote;
-    relayInstructions: RelayInstruction[];
+    relayInstructions: RelayInstructions;
     estimatedCost: bigint;
   };
 };
@@ -334,8 +311,7 @@ export interface TokenBridgeExecutor<N extends Network = Network, C extends Chai
     amount: bigint,
     signedQuote: SignedQuote,
     estimatedCost: bigint,
-    relayInstructions: RelayInstruction[],
-    // TODO: payload?
+    relayInstructions: RelayInstructions,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
 
   redeem(

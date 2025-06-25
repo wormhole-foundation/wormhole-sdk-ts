@@ -67,7 +67,6 @@ export namespace TokenBridgeExecutorRoute {
   };
 
   export type Options = {
-    payload?: Uint8Array;
     nativeGas?: number;
   };
 
@@ -96,7 +95,7 @@ type Vr = ValidationResult<Op>;
 type QR = QuoteResult<Op, Vp>;
 type D = TokenBridgeExecutorRoute.QuoteDetails;
 type Q = Quote<Op, Vp, D>;
-type R = TransferReceipt<AttestationReceipt<"TokenBridge">>;
+type R = TransferReceipt<AttestationReceipt<"TokenBridgeExecutor">>;
 
 export function tokenBridgeExecutorRoute(config: TokenBridgeExecutorRoute.Config = {}) {
   class TokenBridgeExecutorRouteImpl<N extends Network> extends TokenBridgeExecutorRoute<N> {
@@ -142,7 +141,7 @@ export class TokenBridgeExecutorRoute<N extends Network>
   }
 
   getDefaultOptions(): Op {
-    return { payload: undefined, nativeGas: 0.0 };
+    return { nativeGas: 0.0 };
   }
 
   async validate(request: RouteTransferRequest<N>, params: Tp): Promise<Vr> {
@@ -187,8 +186,8 @@ export class TokenBridgeExecutorRoute<N extends Network>
           : 0n;
 
       const { recipient } = request;
-      const dstTbExec = await request.toChain.getTokenBridgeExecutor();
-      let { msgValue, gasLimit } = await dstTbExec.estimateMsgValueAndGasLimit(recipient);
+      const dstTb = await request.toChain.getTokenBridgeExecutor();
+      let { msgValue, gasLimit } = await dstTb.estimateMsgValueAndGasLimit(recipient);
 
       if (this.staticConfig.perTokenOverrides) {
         const dstTokenAddress = canonicalAddress(request.destination.id);
@@ -354,7 +353,6 @@ export class TokenBridgeExecutorRoute<N extends Network>
   }
 
   async complete(signer: Signer, receipt: R): Promise<R> {
-    console.log("complete");
     if (!isAttested(receipt) && !isFailed(receipt)) {
       throw new Error("The source must be finalized in order to complete the transfer");
     }
@@ -375,14 +373,14 @@ export class TokenBridgeExecutorRoute<N extends Network>
     return {
       ...receipt,
       state: TransferState.DestinationInitiated,
-      attestation: receipt.attestation as Required<AttestationReceipt<"TokenBridge">>,
+      attestation: receipt.attestation as Required<AttestationReceipt<"TokenBridgeExecutor">>,
       destinationTxs: dstTxIds,
     };
   }
 
   async resume(txid: TransactionId): Promise<R> {
     const xfer = await TokenTransfer.from(this.wh, txid, 10 * 1000);
-    return TokenTransfer.getReceipt(xfer);
+    return TokenTransfer.getReceipt(xfer) as R;
   }
 
   public override async *track(receipt: R, timeout?: number) {
@@ -407,10 +405,13 @@ export class TokenBridgeExecutorRoute<N extends Network>
           error: new routes.RelayFailedError(`Relay failed with status: ${relayStatus}`),
         };
         yield receipt;
+        return;
       }
     }
 
-    yield* TokenTransfer.track(this.wh, receipt, timeout);
+    for await (const r of TokenTransfer.track(this.wh, receipt, timeout)) {
+      yield r as R;
+    }
   }
 
   toTransferDetails(

@@ -19,6 +19,7 @@ import type {
   TxHash,
   UnsignedTransaction,
   WormholeMessageId,
+  TokenBridgeExecutor,
 } from "@wormhole-foundation/sdk-definitions";
 import {
   TokenBridge,
@@ -311,8 +312,8 @@ export namespace TokenTransfer {
   /**  8 is maximum precision supported by the token bridge VAA */
   export const MAX_DECIMALS = 8;
 
-  export type Protocol = "TokenBridge" | "AutomaticTokenBridge";
-  export type VAA = TokenBridge.TransferVAA | AutomaticTokenBridge.VAA;
+  export type Protocol = "TokenBridge" | "AutomaticTokenBridge" | "TokenBridgeExecutor";
+  export type VAA = TokenBridge.TransferVAA | AutomaticTokenBridge.VAA | TokenBridgeExecutor.VAA;
 
   export type AttestationReceipt = _AttestationReceipt<TokenTransfer.Protocol>;
   export type TransferReceipt<
@@ -337,7 +338,7 @@ export namespace TokenTransfer {
     } else if (transfer.protocol === "TokenBridge") {
       const tb = await fromChain.getTokenBridge();
       xfer = tb.transfer(senderAddress, transfer.to, token, transfer.amount, transfer.payload);
-    } else {
+    } else if (transfer.protocol === "TokenBridgeExecutor") {
       if (!transfer.executorParams)
         throw new Error("Executor params required for TokenBridgeExecutor transfers");
       const tb = await fromChain.getTokenBridgeExecutor();
@@ -351,6 +352,8 @@ export namespace TokenTransfer {
         estimatedCost,
         relayInstructions,
       );
+    } else {
+      throw new Error(`Unknown transfer protocol: ${transfer.protocol}`);
     }
 
     return signSendWait<N, Chain>(fromChain, xfer, signer);
@@ -633,6 +636,7 @@ export namespace TokenTransfer {
       if (!!relayerAddress && address.equals(relayerAddress)) {
         return deserialize("AutomaticTokenBridge:TransferWithRelay", serialize(vaa));
       }
+      // TODO: deserialize executor vaa
     }
 
     return vaa;
@@ -944,6 +948,7 @@ export namespace TokenTransfer {
     // sent a VAA with the primary address
     // Note: Do _not_ override if automatic or if the destination token is native
     // gas token
+    // TODO: ATA for executor?
     if (transfer.to.chain === "Solana" && !_transfer.automatic) {
       const destinationToken = await TokenTransfer.lookupDestinationToken(
         srcChain,
