@@ -191,6 +191,12 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
     if (isNative(token.address))
       throw new Error('Native cannot be a wrapped asset');
 
+    if (token.chain === this.chain) {
+      throw new Error(
+        `Token ${token.address} is already native to chain ${this.chain}`,
+      );
+    }
+
     const mint = deriveWrappedMintKey(
       this.tokenBridge.programId,
       toChainId(token.chain),
