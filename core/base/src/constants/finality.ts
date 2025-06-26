@@ -64,6 +64,7 @@ const finalityThresholds = [
   ["Mezo",      1],
   ["Sonic",     1],
   ["Converge",  4096],
+  ["Fogo",      32],
   ["Cosmoshub", 0],
   ["Evmos",     0],
   ["Kujira",    0],
@@ -140,7 +141,8 @@ const blockTimeMilliseconds = [
   ["Berachain",         2_000],
   ["Mezo",              4_000],
   ["Sonic",               330],
-  ["Converge",            100]
+  ["Converge",            100],
+  ["Fogo",                400],
 ] as const satisfies MapLevel<Chain, number>;
 
 /** The amount of time between block production, in milliseconds  */
