@@ -102,8 +102,8 @@ export class TokenBridgeRoute<N extends Network>
         await TokenTransfer.quoteTransfer(this.wh, request.fromChain, request.toChain, {
           token: request.source.id,
           amount: amount.units(params.normalizedParams.amount),
-          ...params.options,
           protocol: "TokenBridge",
+          ...params.options,
         }),
         params,
       );

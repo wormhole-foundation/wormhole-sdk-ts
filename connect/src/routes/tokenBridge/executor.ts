@@ -1,17 +1,7 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
-import {
-  amount as sdkAmount,
-  contracts,
-  deserializeLayout,
-  encoding,
-  serializeLayout,
-  toChainId,
-} from "@wormhole-foundation/sdk-base";
+import { amount as sdkAmount, contracts } from "@wormhole-foundation/sdk-base";
 import {
   canonicalAddress,
-  relayInstructionsLayout,
-  signedQuoteLayout,
-  UniversalAddress,
   type ChainAddress,
   type ChainContext,
   type SignedQuote,
@@ -67,6 +57,8 @@ export namespace TokenBridgeExecutorRoute {
   };
 
   export type Options = {
+    // Expressed in percentage terms
+    // e.g. 1.0 = 100%
     nativeGas?: number;
   };
 
@@ -163,32 +155,7 @@ export class TokenBridgeExecutorRoute<N extends Network>
 
   async quote(request: RouteTransferRequest<N>, params: Vp): Promise<QR> {
     try {
-      const capabilities = await this.wh.getExecutorCapabilities();
-
-      const srcCapabilities = capabilities[toChainId(request.fromChain.chain)];
-      if (!srcCapabilities) {
-        throw new Error(
-          `No executor capabilities found for source chain ${request.fromChain.chain}`,
-        );
-      }
-
-      const dstCapabilities = capabilities[toChainId(request.toChain.chain)];
-      if (!dstCapabilities || !dstCapabilities.requestPrefixes.includes("ERV1")) {
-        throw new Error(
-          `No executor capabilities found for destination chain ${request.toChain.chain}`,
-        );
-      }
-
-      const gasDropOffLimit = BigInt(dstCapabilities.gasDropOffLimit);
-      const dropOff =
-        params.options.nativeGas && gasDropOffLimit > 0n
-          ? (BigInt(Math.round(params.options.nativeGas * 100)) * gasDropOffLimit) / 100n
-          : 0n;
-
-      const { recipient } = request;
-      const dstTb = await request.toChain.getTokenBridgeExecutor();
-      let { msgValue, gasLimit } = await dstTb.estimateMsgValueAndGasLimit(recipient);
-
+      let gasLimit: bigint | undefined = undefined;
       if (this.staticConfig.perTokenOverrides) {
         const dstTokenAddress = canonicalAddress(request.destination.id);
         const override =
@@ -198,100 +165,25 @@ export class TokenBridgeExecutorRoute<N extends Network>
         }
       }
 
-      const instructions = [];
+      //let referrerFeeDbps: bigint | undefined = undefined;
+      //if (this.staticConfig.referrerFeeDbps) {
+      //  referrerFeeDbps = this.staticConfig.referrerFeeDbps;
+      //}
 
-      // Add the gas instruction
-      instructions.push({
-        request: {
-          type: "GasInstruction" as const,
-          gasLimit,
-          msgValue,
-        },
-      });
-
-      // Add the gas drop-off instruction if applicable
-      // TODO: if Solana ATA doesn't exist, prolly need to add a gas drop-off instruction
-      if (dropOff > 0n) {
-        instructions.push({
-          request: {
-            type: "GasDropOffInstruction" as const,
-            dropOff,
-            // If the recipient is undefined (e.g. the user hasn’t connected their wallet yet),
-            // we temporarily use a dummy address to fetch a quote.
-            // The recipient address is validated later in the `initiate` method, which will throw if it's still missing.
-            recipient: recipient
-              ? recipient.address.toUniversalAddress()
-              : new UniversalAddress(new Uint8Array(32)),
-          },
-        });
-      }
-
-      const relayInstructions: RelayInstructions = {
-        requests: instructions,
-      };
-
-      const relayInstructionsBytes = serializeLayout(relayInstructionsLayout, relayInstructions);
-
-      const executorQuote = await this.wh.getExecutorQuote(
-        request.fromChain.chain,
-        request.toChain.chain,
-        encoding.hex.encode(relayInstructionsBytes, true),
-      );
-
-      if (!executorQuote.estimatedCost) {
-        throw new Error("No estimated cost");
-      }
-
-      const estimatedCost = BigInt(executorQuote.estimatedCost);
-
-      // const signedQuoteBytes = encoding.hex.decode(quote.signedQuote);
-      const signedQuote = deserializeLayout(
-        signedQuoteLayout,
-        encoding.hex.decode(executorQuote.signedQuote),
-      );
-
-      const details: D = {
-        signedQuote,
-        estimatedCost,
-        relayInstructions,
-      };
-
-      // TODO: relay fee and stuff
-      const quote = await request.displayQuote(
-        await TokenTransfer.quoteTransfer(this.wh, request.fromChain, request.toChain, {
+      const q = await TokenTransfer.quoteTransfer(
+        this.wh,
+        request.fromChain,
+        request.toChain,
+        {
           token: request.source.id,
           amount: sdkAmount.units(params.normalizedParams.amount),
-          // ...params.options,
           protocol: "TokenBridgeExecutor",
-        }),
-        params,
-        details,
+          gasLimit,
+        },
+        request.recipient,
       );
-      quote.expires = signedQuote.quote.expiryTime;
 
-      return quote;
-
-      //return {
-      //  signedQuote: signedQuoteBytes,
-      //  relayInstructions: relayInstructions,
-      //  estimatedCost,
-      //  payeeAddress: signedQuote.quote.payeeAddress,
-      //  referrer,
-      //  referrerFee,
-      //  remainingAmount,
-      //  referrerFeeDbps,
-      //  expires: signedQuote.quote.expiryTime,
-      //  gasDropOff: dropOff,
-      //};
-
-      //return request.displayQuote(
-      //  await TokenTransfer.quoteTransfer(this.wh, request.fromChain, request.toChain, {
-      //    token: request.source.id,
-      //    amount: amount.units(params.normalizedParams.amount),
-      //    // ...params.options,
-      //  }),
-      //  params,
-      //);
+      return request.displayQuote(q, params, q.details);
     } catch (e) {
       return {
         success: false,
@@ -319,6 +211,7 @@ export class TokenBridgeExecutorRoute<N extends Network>
         quote,
       ),
     );
+    // TODO: need to validate gas dropoff recipient
     const txids = await TokenTransfer.transfer<N>(fromChain, transfer, signer);
 
     // Status the transfer immediately before returning
@@ -421,28 +314,19 @@ export class TokenBridgeExecutorRoute<N extends Network>
     from: ChainAddress,
     to: ChainAddress,
     quote: Q,
-  ): TokenTransferDetails {
-    if (!quote.details) throw new Error("Quote details are missing");
-
-    const { signedQuote, relayInstructions, estimatedCost } = quote.details;
-
+  ): TokenTransferDetails<TokenBridgeExecutor.ExecutorQuoteDetails> {
     return {
       from,
       to,
       token: request.source.id,
       amount: sdkAmount.units(params.normalizedParams.amount),
       protocol: "TokenBridgeExecutor",
-      executorParams: {
-        signedQuote,
-        relayInstructions,
-        estimatedCost,
-      },
-      // Note: We intentionally don't set automatic: true here
-      // so that tokenTransfer.ts uses the manual logic
+      details: quote.details,
       // ...params.options,
     };
   }
 
+  // TODO: move this to quoteTransfer
   // TODO: token bridge trims dust. does it refund it?
   static calculateReferrerFee(
     _amount: sdkAmount.Amount,

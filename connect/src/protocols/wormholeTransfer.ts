@@ -20,6 +20,7 @@ import type { Wormhole } from "../wormhole.js";
 export type TransferRequest<PN extends ProtocolName = ProtocolName> = PN extends
   | "TokenBridge"
   | "AutomaticTokenBridge"
+  | "TokenBridgeExecutor"
   ? TokenTransferDetails
   : PN extends "CircleBridge" | "AutomaticCircleBridge"
   ? CircleTransferDetails

@@ -110,6 +110,16 @@ export namespace TokenBridgeExecutor {
     ProtocolName,
     PayloadName
   >;
+
+  export interface QuoteDetails {
+    signedQuote: SignedQuote;
+    estimatedCost: bigint;
+    relayInstructions: RelayInstructions;
+    referrerFeeDbps: bigint;
+    referrerAddress: ChainAddress;
+    gasLimit: bigint;
+    recipient: ChainAddress;
+  }
 }
 
 export type TokenBridgeProtocol =
@@ -117,25 +127,29 @@ export type TokenBridgeProtocol =
   | AutomaticTokenBridge.ProtocolName
   | TokenBridgeExecutor.ProtocolName;
 
-/**
- * Details of a token transfer, used to initiate a transfer
- */
-export type TokenTransferDetails = {
+type BaseTokenTransferDetails = {
   token: TokenId;
   amount: bigint;
   from: ChainAddress;
   to: ChainAddress;
-  protocol: TokenBridgeProtocol;
   automatic?: boolean; // TODO: remove
   payload?: Uint8Array;
   nativeGas?: bigint;
-  // Required for TokenBridgeExecutor protocol transfers
-  executorParams?: {
-    signedQuote: SignedQuote;
-    relayInstructions: RelayInstructions;
-    estimatedCost: bigint;
-  };
 };
+
+export type TokenTransferDetails<T = any> =
+  | (BaseTokenTransferDetails & {
+      protocol: TokenBridge.ProtocolName;
+      details?: never;
+    })
+  | (BaseTokenTransferDetails & {
+      protocol: AutomaticTokenBridge.ProtocolName;
+      details?: never;
+    })
+  | (BaseTokenTransferDetails & {
+      protocol: TokenBridgeExecutor.ProtocolName;
+      details: T;
+    });
 
 export function isTokenTransferDetails(
   thing: TokenTransferDetails | any,
@@ -145,6 +159,20 @@ export function isTokenTransferDetails(
     (<TokenTransferDetails>thing).amount !== undefined &&
     (<TokenTransferDetails>thing).from !== undefined &&
     (<TokenTransferDetails>thing).to !== undefined
+  );
+}
+
+export function isExecutorTransferDetails(
+  thing: TokenTransferDetails | any,
+): thing is TokenTransferDetails<TokenBridgeExecutor.QuoteDetails> & {
+  details: TokenBridgeExecutor.QuoteDetails;
+} {
+  return (
+    isTokenTransferDetails(thing) &&
+    (<TokenTransferDetails>thing).details !== undefined &&
+    (<TokenTransferDetails>thing).details.signedQuote !== undefined &&
+    (<TokenTransferDetails>thing).details.estimatedCost !== undefined &&
+    (<TokenTransferDetails>thing).details.relayInstructions !== undefined
   );
 }
 

@@ -21,7 +21,7 @@ import { getSigner } from "./helpers/index.js";
   const ctx = wh.getChain("Solana");
   // EXAMPLE_WORMHOLE_CHAIN
 
-  const rcv = wh.getChain("Algorand");
+  const rcv = wh.getChain("Fogo");
 
   const sender = await getSigner(ctx);
   const receiver = await getSigner(rcv);

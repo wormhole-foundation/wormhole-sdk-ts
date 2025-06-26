@@ -11,14 +11,14 @@ import { getSigner } from "./helpers/index.js";
   // Original Token to Attest
 
   // grab context and signer
-  const origChain = wh.getChain("Sepolia");
+  const origChain = wh.getChain("Solana");
   const token = await origChain.getNativeWrappedTokenId();
   const { signer: origSigner } = await getSigner(origChain);
 
   // Note: if the VAA is not produced before the attempt to retrieve it times out
   // you should set this value to the txid logged in the previous run
   let txid = undefined;
-  // txid = "0x55127b9c8af46aaeea9ef28d8bf91e1aff920422fc1c9831285eb0f39ddca2fe";
+  // txid = "5qeu3c1cFW6fNBTFKShstVpHjyeHU8FogjYzQtWiR4uTkeEKRbvvMJnprWYSLVwQCuXZY8uSQxXABVuukci7P39z";
 
   if (!txid) {
     // create attestation from origin chain, the same VAA
@@ -48,7 +48,7 @@ import { getSigner } from "./helpers/index.js";
   // Check if its attested and if not
   // submit the attestation to the token bridge on the
   // destination chain
-  const chain = "Sepolia";
+  const chain = "Fogo";
   const destChain = wh.getChain(chain);
   const { signer } = await getSigner(destChain);
 

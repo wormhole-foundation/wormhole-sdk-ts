@@ -182,7 +182,7 @@ export type TransferReceipt<AT, SC extends Chain = Chain, DC extends Chain = Cha
 
 // Quote with optional relayer fees if the transfer
 // is requested to be automatic
-export interface TransferQuote {
+export interface TransferQuote<T = any> {
   // How much of what token will be deducted from sender
   // Note: This will include fees charged for a full
   // estimate of the amount taken from the sender
@@ -213,4 +213,6 @@ export interface TransferQuote {
   eta?: number;
   // Timestamp when the quote expires
   expires?: Date;
+  // Additional protocol-specific details
+  details?: T;
 }

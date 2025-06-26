@@ -154,6 +154,7 @@ export class AutomaticTokenBridgeRoute<N extends Network>
 
     const redeemableAmount = amount.units(amt) - fee;
 
+    // TODO: move this into the quoteTransfer method
     let srcNativeGasAmount = amount.fromBaseUnits(0n, request.source.decimals);
     if (params.options && params.options.nativeGas > 0) {
       const dtb = await request.toChain.getAutomaticTokenBridge();

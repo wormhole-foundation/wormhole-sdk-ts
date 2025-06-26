@@ -6,6 +6,9 @@ import {
   guardians,
   time,
   toChain as toChainName,
+  toChainId,
+  deserializeLayout,
+  serializeLayout,
 } from "@wormhole-foundation/sdk-base";
 import type {
   AttestationId,
@@ -20,6 +23,8 @@ import type {
   UnsignedTransaction,
   WormholeMessageId,
   TokenBridgeExecutor,
+  ChainAddress,
+  RelayInstructions,
 } from "@wormhole-foundation/sdk-definitions";
 import {
   TokenBridge,
@@ -35,6 +40,8 @@ import {
   serialize,
   toNative,
   toUniversal,
+  relayInstructionsLayout,
+  signedQuoteLayout,
 } from "@wormhole-foundation/sdk-definitions";
 import { signSendWait } from "../../common.js";
 import { DEFAULT_TASK_TIMEOUT } from "../../config.js";
@@ -61,6 +68,8 @@ import { getGovernedTokens, getGovernorLimits } from "../../whscan-api.js";
 import { Wormhole } from "../../wormhole.js";
 import type { WormholeTransfer } from "../wormholeTransfer.js";
 import type { QuoteWarning } from "../../warnings.js";
+import { isExecutorTransferDetails } from "@wormhole-foundation/sdk-definitions";
+import { nativeTokenId } from "@wormhole-foundation/sdk-definitions";
 
 export class TokenTransfer<N extends Network = Network>
   implements WormholeTransfer<TokenTransfer.Protocol>
@@ -340,10 +349,10 @@ export namespace TokenTransfer {
       const tb = await fromChain.getTokenBridge();
       xfer = tb.transfer(senderAddress, transfer.to, token, transfer.amount, transfer.payload);
     } else if (transfer.protocol === "TokenBridgeExecutor") {
-      if (!transfer.executorParams)
+      if (!isExecutorTransferDetails(transfer))
         throw new Error("Executor params required for TokenBridgeExecutor transfers");
       const tb = await fromChain.getTokenBridgeExecutor();
-      const { signedQuote, estimatedCost, relayInstructions } = transfer.executorParams;
+      const { signedQuote, estimatedCost, relayInstructions } = transfer.details;
       xfer = tb.transfer(
         senderAddress,
         transfer.to,
@@ -375,6 +384,8 @@ export namespace TokenTransfer {
 
     return signSendWait<N, Chain>(toChain, xfer, signer);
   }
+
+  // TODO: executor?
 
   // AsyncGenerator fn that produces status updates through an async generator
   // eventually producing a receipt
@@ -604,6 +615,7 @@ export namespace TokenTransfer {
   ): Promise<boolean> {
     if (vaa.protocolName === "AutomaticTokenBridge")
       vaa = deserialize("TokenBridge:TransferWithPayload", serialize(vaa));
+    // TODO: executor?
 
     const tb = await toChain.getTokenBridge();
     return tb.isTransferCompleted(vaa);
@@ -768,20 +780,36 @@ export namespace TokenTransfer {
     const dstAmountReceivable = amount.scale(srcAmountTruncated, dstDecimals);
 
     const eta = finality.estimateFinalityTime(srcChain.chain) + guardians.guardianAttestationEta;
-    if (!transfer.automatic) {
+    const baseQuote = {
+      sourceToken: {
+        token: transfer.token,
+        amount: amount.units(srcAmountTruncated),
+      },
+      destinationToken: { token: dstToken, amount: amount.units(dstAmountReceivable) },
+      warnings: warnings.length > 0 ? warnings : undefined,
+      eta,
+    };
+
+    if (transfer.protocol === "TokenBridge") {
       return {
-        sourceToken: {
-          token: transfer.token,
-          amount: amount.units(srcAmountTruncated),
-        },
-        destinationToken: { token: dstToken, amount: amount.units(dstAmountReceivable) },
-        warnings: warnings.length > 0 ? warnings : undefined,
-        eta,
+        ...baseQuote,
         expires: time.expiration(24, 0, 0), // manual transfer quote is good for 24 hours
       };
     }
 
+    if (transfer.protocol === "TokenBridgeExecutor") {
+      const executorQuote = await getExecutorQuote(wh, srcChain, dstChain, transfer);
+      return {
+        ...baseQuote,
+        expires: executorQuote.signedQuote.quote.expiryTime,
+        relayFee: { token: nativeTokenId(srcChain.chain), amount: executorQuote.estimatedCost },
+        details: executorQuote,
+      };
+    }
+
     // Otherwise automatic
+    if (transfer.protocol !== "AutomaticTokenBridge")
+      throw new Error(`Unknown token transfer protocol: ${transfer.protocol}`);
 
     // The fee is removed from the amount transferred
     // quoted on the source chain
@@ -871,72 +899,94 @@ export namespace TokenTransfer {
     };
   }
 
-  //export async function fetchExecutorQuote<N extends Network>(
-  //  wh: Wormhole<N>,
-  //  srcChain: ChainContext<N, Chain>,
-  //  dstChain: ChainContext<N, Chain>,
-  //  transfer: Omit<TokenTransferDetails, "from" | "to" | "executorQuote">,
-  //  sender: ChainAddress,
-  //  recipient: ChainAddress,
-  //  referrerConfig?: {
-  //    referrerAddress: ChainAddress;
-  //    referrerFeeDbps: bigint;
-  //  },
-  //): Promise<TokenBridgeExecutor.Quote> {
+  async function getExecutorQuote<N extends Network>(
+    wh: Wormhole<N>,
+    srcChain: ChainContext<N, Chain>,
+    dstChain: ChainContext<N, Chain>,
+    transfer: Omit<TokenTransferDetails, "from" | "to">,
+  ): Promise<TokenBridgeExecutor.TransferDetails> {
+    const capabilities = await wh.getExecutorCapabilities();
 
-  //  const capabilities = await wh.getExecutorCapabilities()
+    const srcCapabilities = capabilities[toChainId(srcChain.chain)];
+    if (!srcCapabilities) {
+      throw new Error(`No executor capabilities found for source chain ${srcChain.chain}`);
+    }
 
-  //  //// TODO: Get executor API endpoint from config
-  //  //const executorApiUrl = wh.config.api || "https://api.wormhole.com"; // Placeholder
+    const dstCapabilities = capabilities[toChainId(dstChain.chain)];
+    if (!dstCapabilities || !dstCapabilities.requestPrefixes.includes("ERV1")) {
+      throw new Error(`No executor capabilities found for destination chain ${dstChain.chain}`);
+    }
 
-  //  //// Prepare quote request payload
-  //  //const quoteRequest = {
-  //  //  sourceChain: srcChain.chain,
-  //  //  destinationChain: dstChain.chain,
-  //  //  token: transfer.token,
-  //  //  amount: transfer.amount.toString(),
-  //  //  sender: sender.address,
-  //  //  recipient: recipient.address,
-  //  //  nativeGas: transfer.nativeGas?.toString() || "0",
-  //  //  referrer: referrerConfig?.referrerAddress,
-  //  //  referrerFeeDbps: referrerConfig?.referrerFeeDbps?.toString() || "0",
-  //  //};
+    //const gasDropOffLimit = BigInt(dstCapabilities.gasDropOffLimit);
+    const dropOff = 0n;
+    //const dropOff =
+    //  options.nativeGas && gasDropOffLimit > 0n
+    //    ? (BigInt(Math.round(options.nativeGas * 100)) * gasDropOffLimit) / 100n
+    //    : 0n;
 
-  //  //try {
-  //  //  // Make HTTP request to executor quote endpoint
-  //  //  const response = await fetch(`${executorApiUrl}/v0/quote`, {
-  //  //    method: "POST",
-  //  //    headers: {
-  //  //      "Content-Type": "application/json",
-  //  //    },
-  //  //    body: JSON.stringify(quoteRequest),
-  //  //  });
+    const dstTb = await dstChain.getTokenBridgeExecutor();
+    let { msgValue, gasLimit } = await dstTb.estimateMsgValueAndGasLimit(undefined);
 
-  //  //  if (!response.ok) {
-  //  //    throw new Error(`Executor API error: ${response.status} ${response.statusText}`);
-  //  //  }
+    if (transfer.gasLimit) {
+      gasLimit = transfer.gasLimit;
+    }
 
-  //  //  const quoteResponse = await response.json();
+    const instructions = [];
 
-  //  //  // Parse and return the quote
-  //  //  return {
-  //  //    signedQuote: new Uint8Array(Buffer.from(quoteResponse.signedQuote, "base64")),
-  //  //    relayInstructions: new Uint8Array(Buffer.from(quoteResponse.relayInstructions, "base64")),
-  //  //    estimatedCost: BigInt(quoteResponse.estimatedCost),
-  //  //    payeeAddress: new Uint8Array(Buffer.from(quoteResponse.payeeAddress, "hex")),
-  //  //    referrer: referrerConfig?.referrerAddress || sender, // Default to sender if no referrer
-  //  //    referrerFee: BigInt(quoteResponse.referrerFee || "0"),
-  //  //    remainingAmount: BigInt(quoteResponse.remainingAmount),
-  //  //    referrerFeeDbps: referrerConfig?.referrerFeeDbps || 0n,
-  //  //    expires: new Date(quoteResponse.expires),
-  //  //    gasDropOff: BigInt(quoteResponse.gasDropOff || "0"),
-  //  //  };
-  //  //} catch (error) {
-  //  //  throw new Error(
-  //  //    `Failed to fetch executor quote: ${error instanceof Error ? error.message : String(error)}`,
-  //  //  );
-  //  //}
-  //}
+    instructions.push({
+      request: {
+        type: "GasInstruction" as const,
+        gasLimit,
+        msgValue,
+      },
+    });
+
+    if (dropOff > 0n) {
+      instructions.push({
+        request: {
+          type: "GasDropOffInstruction" as const,
+          dropOff,
+          // If the recipient is undefined (e.g. the user hasn't connected their wallet yet),
+          // we temporarily use a dummy address to fetch a quote.
+          // The recipient address is validated later in the `initiate` method, which will throw if it's still missing.
+          // TODO: fix recipient parameter
+          // recipient: recipient
+          //   ? recipient.address.toUniversalAddress()
+          //   : new UniversalAddress(new Uint8Array(32)),
+          recipient: new UniversalAddress(new Uint8Array(32)),
+        },
+      });
+    }
+
+    const relayInstructions: RelayInstructions = {
+      requests: instructions,
+    };
+
+    const relayInstructionsBytes = serializeLayout(relayInstructionsLayout, relayInstructions);
+
+    const executorQuote = await wh.getExecutorQuote(
+      srcChain.chain,
+      dstChain.chain,
+      encoding.hex.encode(relayInstructionsBytes, true),
+    );
+
+    if (!executorQuote.estimatedCost) {
+      throw new Error("No estimated cost");
+    }
+
+    const estimatedCost = BigInt(executorQuote.estimatedCost);
+
+    const signedQuote = deserializeLayout(
+      signedQuoteLayout,
+      encoding.hex.decode(executorQuote.signedQuote),
+    );
+
+    return {
+      signedQuote,
+      estimatedCost,
+      relayInstructions,
+    };
+  }
 
   export async function destinationOverrides<N extends Network>(
     srcChain: ChainContext<N, Chain>,
@@ -949,8 +999,7 @@ export namespace TokenTransfer {
     // sent a VAA with the primary address
     // Note: Do _not_ override if automatic or if the destination token is native
     // gas token
-    // TODO: ATA for executor?
-    if (transfer.to.chain === "Solana" && !_transfer.automatic) {
+    if (transfer.to.chain === "Solana" && transfer.protocol === "TokenBridge") {
       const destinationToken = await TokenTransfer.lookupDestinationToken(
         srcChain,
         dstChain,
