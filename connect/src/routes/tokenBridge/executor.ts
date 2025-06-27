@@ -165,23 +165,28 @@ export class TokenBridgeExecutorRoute<N extends Network>
         }
       }
 
-      //let referrerFeeDbps: bigint | undefined = undefined;
-      //if (this.staticConfig.referrerFeeDbps) {
-      //  referrerFeeDbps = this.staticConfig.referrerFeeDbps;
-      //}
+      let referrerFeeDbps: bigint | undefined = undefined;
+      if (this.staticConfig.referrerFeeDbps) {
+        referrerFeeDbps = this.staticConfig.referrerFeeDbps;
+      }
+      if (this.staticConfig.perTokenOverrides) {
+        const srcTokenAddress = canonicalAddress(request.source.id);
+        const override =
+          this.staticConfig.perTokenOverrides[request.fromChain.chain]?.[srcTokenAddress];
+        if (override?.referrerFeeDbps !== undefined) {
+          referrerFeeDbps = override.referrerFeeDbps;
+        }
+      }
 
-      const q = await TokenTransfer.quoteTransfer(
-        this.wh,
-        request.fromChain,
-        request.toChain,
-        {
-          token: request.source.id,
-          amount: sdkAmount.units(params.normalizedParams.amount),
-          protocol: "TokenBridgeExecutor",
-          gasLimit,
-        },
-        request.recipient,
-      );
+      const q = await TokenTransfer.quoteTransfer(this.wh, request.fromChain, request.toChain, {
+        token: request.source.id,
+        amount: sdkAmount.units(params.normalizedParams.amount),
+        protocol: "TokenBridgeExecutor",
+        gasLimit,
+        referrerFeeDbps,
+        gasDropRecipient: request.recipient,
+        nativeGasPercent: params.options.nativeGas,
+      });
 
       return request.displayQuote(q, params, q.details);
     } catch (e) {
@@ -274,7 +279,10 @@ export class TokenBridgeExecutorRoute<N extends Network>
 
   async resume(txid: TransactionId): Promise<R> {
     const xfer = await TokenTransfer.from(this.wh, txid, 10 * 1000);
-    return TokenTransfer.getReceipt(xfer) as R;
+    if (xfer.transfer.protocol !== "TokenBridgeExecutor") {
+      throw new Error("Transfer is not a TokenBridgeExecutor transfer");
+    }
+    return TokenTransfer.getReceipt(xfer);
   }
 
   public override async *track(receipt: R, timeout?: number) {
@@ -314,15 +322,15 @@ export class TokenBridgeExecutorRoute<N extends Network>
     from: ChainAddress,
     to: ChainAddress,
     quote: Q,
-  ): TokenTransferDetails<TokenBridgeExecutor.ExecutorQuoteDetails> {
+  ): TokenTransferDetails {
+    if (!quote.details) throw new Error("Missing quote details");
     return {
       from,
       to,
       token: request.source.id,
       amount: sdkAmount.units(params.normalizedParams.amount),
       protocol: "TokenBridgeExecutor",
-      details: quote.details,
-      // ...params.options,
+      executorQuote: quote.details,
     };
   }
 

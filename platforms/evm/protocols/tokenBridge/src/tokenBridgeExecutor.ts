@@ -5,7 +5,6 @@ import type {
   Contracts,
   Network,
   Platform,
-  RelayInstructions,
   TokenAddress,
   TokenBridgeExecutor,
 } from '@wormhole-foundation/sdk-connect';
@@ -29,10 +28,7 @@ import type { Provider, TransactionRequest } from 'ethers';
 import { Contract } from 'ethers';
 import '@wormhole-foundation/sdk-evm-core';
 import { EvmWormholeCore } from '@wormhole-foundation/sdk-evm-core';
-import {
-  relayInstructionsLayout,
-  SignedQuote,
-} from '@wormhole-foundation/sdk-definitions';
+import { relayInstructionsLayout } from '@wormhole-foundation/sdk-definitions';
 import { contracts } from '@wormhole-foundation/sdk-connect';
 
 const EXECUTOR_ABI = [
@@ -99,15 +95,15 @@ export class EvmTokenBridgeExecutor<N extends Network, C extends EvmChains>
     recipient: ChainAddress,
     token: TokenAddress<C>,
     amount: bigint,
-    signedQuote: SignedQuote,
-    estimatedCost: bigint,
-    relayInstructions: RelayInstructions,
+    executorQuote: TokenBridgeExecutor.ExecutorQuote,
   ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
     const senderAddr = new EvmAddress(sender).toString();
     const targetChain = toChainId(recipient.chain);
     const targetRecipient = recipient.address
       .toUniversalAddress()
       .toUint8Array();
+
+    const { estimatedCost, signedQuote, relayInstructions } = executorQuote;
 
     const signedQuoteBytes = serializeLayout(signedQuoteLayout, signedQuote);
     const relayInstructionsBytes = serializeLayout(
@@ -209,7 +205,17 @@ export class EvmTokenBridgeExecutor<N extends Network, C extends EvmChains>
 
     const encodedTransferMessage = serialize(vaa);
 
-    const txReq = await this.executorContract
+    const dstExecutorAddress = new EvmAddress(
+      vaa.payload.to.address,
+    ).toString();
+
+    const dstExecutorContract = new Contract(
+      dstExecutorAddress,
+      EXECUTOR_ABI,
+      this.provider,
+    );
+
+    const txReq = await dstExecutorContract
       .getFunction('executeVAAv1')
       .populateTransaction(encodedTransferMessage, {
         value: 0n,

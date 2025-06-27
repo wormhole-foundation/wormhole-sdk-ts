@@ -160,6 +160,9 @@ export class TokenBridgeRoute<N extends Network>
 
   async resume(txid: TransactionId): Promise<R> {
     const xfer = await TokenTransfer.from(this.wh, txid, 10 * 1000);
+    if (xfer.transfer.protocol !== "TokenBridge") {
+      throw new Error("Transfer is not a TokenBridge transfer");
+    }
     return TokenTransfer.getReceipt(xfer);
   }
 

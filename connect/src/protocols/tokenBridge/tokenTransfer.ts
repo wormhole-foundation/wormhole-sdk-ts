@@ -23,7 +23,6 @@ import type {
   UnsignedTransaction,
   WormholeMessageId,
   TokenBridgeExecutor,
-  ChainAddress,
   RelayInstructions,
 } from "@wormhole-foundation/sdk-definitions";
 import {
@@ -68,8 +67,8 @@ import { getGovernedTokens, getGovernorLimits } from "../../whscan-api.js";
 import { Wormhole } from "../../wormhole.js";
 import type { WormholeTransfer } from "../wormholeTransfer.js";
 import type { QuoteWarning } from "../../warnings.js";
-import { isExecutorTransferDetails } from "@wormhole-foundation/sdk-definitions";
 import { nativeTokenId } from "@wormhole-foundation/sdk-definitions";
+import { ChainAddress } from "@wormhole-foundation/sdk-definitions";
 
 export class TokenTransfer<N extends Network = Network>
   implements WormholeTransfer<TokenTransfer.Protocol>
@@ -147,10 +146,7 @@ export class TokenTransfer<N extends Network = Network>
       TokenTransfer.validateTransferDetails(wh, from, fromChain, toChain);
 
       // Apply hackery
-      from = {
-        ...from,
-        ...(await TokenTransfer.destinationOverrides(fromChain, toChain, from)),
-      };
+      from = await TokenTransfer.destinationOverrides(fromChain, toChain, from);
 
       return new TokenTransfer(wh, from, fromChain, toChain);
     }
@@ -179,7 +175,8 @@ export class TokenTransfer<N extends Network = Network>
   ): Promise<TokenTransfer<N>> {
     const vaa = await TokenTransfer.getTransferVaa(wh, id, timeout);
     if (!vaa) throw new Error("VAA not found");
-    const automatic = vaa.protocolName === "AutomaticTokenBridge";
+
+    const protocol = vaa.protocolName;
 
     // TODO: the `from.address` here is a lie, but we don't
     // immediately have enough info to get the _correct_ one
@@ -202,25 +199,38 @@ export class TokenTransfer<N extends Network = Network>
       decimals,
     );
 
-    let nativeGasAmount: bigint = 0n;
-    if (automatic) {
-      nativeGasAmount = vaa.payload.payload.toNativeTokenAmount;
+    if (protocol === "AutomaticTokenBridge" || protocol === "TokenBridgeExecutor") {
       from = { chain: vaa.emitterChain, address: vaa.payload.from };
       to = { chain: vaa.payload.to.chain, address: vaa.payload.payload.targetRecipient };
     }
 
-    // TODO: TokenBridgeExecutor supports native gas, but we don't have enough info here
-    // need to fetch details from on-chain
-
-    const details: TokenTransferDetails = {
-      token: token,
-      amount: amount.units(scaledAmount),
-      from,
-      to,
-      automatic,
-      protocol: automatic ? "AutomaticTokenBridge" : "TokenBridge", // TODO: executor?
-      nativeGas: nativeGasAmount,
-    };
+    let details: TokenTransferDetails;
+    if (protocol === "TokenBridgeExecutor") {
+      details = {
+        token: token,
+        amount: amount.units(scaledAmount),
+        from,
+        to,
+        protocol,
+        // These are placeholder values. When recovering a TokenBridgeExecutor transfer
+        // from a VAA, we don't have access to the original quote details.
+        executorQuote: {
+          signedQuote: { quote: {} } as any,
+          estimatedCost: 0n,
+          relayInstructions: { requests: [] },
+        },
+      };
+    } else {
+      details = {
+        token: token,
+        amount: amount.units(scaledAmount),
+        from,
+        to,
+        protocol,
+        nativeGas:
+          protocol === "AutomaticTokenBridge" ? vaa.payload.payload.toNativeTokenAmount : 0n,
+      };
+    }
 
     // TODO: grab at least the init tx from the api
     const tt = new TokenTransfer(wh, details);
@@ -349,21 +359,29 @@ export namespace TokenTransfer {
       const tb = await fromChain.getTokenBridge();
       xfer = tb.transfer(senderAddress, transfer.to, token, transfer.amount, transfer.payload);
     } else if (transfer.protocol === "TokenBridgeExecutor") {
-      if (!isExecutorTransferDetails(transfer))
-        throw new Error("Executor params required for TokenBridgeExecutor transfers");
+      const gasDropOffInstruction = transfer.executorQuote.relayInstructions.requests.find(
+        (r) => r.request.type === "GasDropOffInstruction",
+      );
+      if (
+        gasDropOffInstruction &&
+        gasDropOffInstruction.request.type === "GasDropOffInstruction" &&
+        gasDropOffInstruction.request.recipient.equals(new UniversalAddress(new Uint8Array(32)))
+      ) {
+        throw new Error("GasDropOffInstruction recipient must be set");
+      }
+      console.log(
+        `GasDropOffInstruction: ${(gasDropOffInstruction as any).request.recipient.toString()}`,
+      );
       const tb = await fromChain.getTokenBridgeExecutor();
-      const { signedQuote, estimatedCost, relayInstructions } = transfer.details;
       xfer = tb.transfer(
         senderAddress,
         transfer.to,
         token,
         transfer.amount,
-        signedQuote,
-        estimatedCost,
-        relayInstructions,
+        transfer.executorQuote,
       );
     } else {
-      throw new Error(`Unknown transfer protocol: ${transfer.protocol}`);
+      throw new Error("Unknown token transfer protocol");
     }
 
     return signSendWait<N, Chain>(fromChain, xfer, signer);
@@ -380,6 +398,8 @@ export namespace TokenTransfer {
     const xfer =
       vaa.protocolName === "AutomaticTokenBridge"
         ? (await toChain.getAutomaticTokenBridge()).redeem(signerAddress, vaa)
+        : vaa.protocolName === "TokenBridgeExecutor"
+        ? (await toChain.getTokenBridgeExecutor()).redeem(signerAddress, vaa)
         : (await toChain.getTokenBridge()).redeem(signerAddress, vaa);
 
     return signSendWait<N, Chain>(toChain, xfer, signer);
@@ -613,10 +633,9 @@ export namespace TokenTransfer {
     toChain: ChainContext<N, C>,
     vaa: TokenTransfer.VAA,
   ): Promise<boolean> {
-    if (vaa.protocolName === "AutomaticTokenBridge")
+    if (vaa.protocolName === "AutomaticTokenBridge" || vaa.protocolName === "TokenBridgeExecutor") {
       vaa = deserialize("TokenBridge:TransferWithPayload", serialize(vaa));
-    // TODO: executor?
-
+    }
     const tb = await toChain.getTokenBridge();
     return tb.isTransferCompleted(vaa);
   }
@@ -649,7 +668,9 @@ export namespace TokenTransfer {
       if (!!relayerAddress && address.equals(relayerAddress)) {
         return deserialize("AutomaticTokenBridge:TransferWithRelay", serialize(vaa));
       }
-      // TODO: deserialize executor vaa
+      try {
+        return deserialize("TokenBridgeExecutor:TransferWithExecutorRelay", serialize(vaa));
+      } catch {}
     }
 
     return vaa;
@@ -662,7 +683,6 @@ export namespace TokenTransfer {
     return await wh.getIsVaaEnqueued(key);
   }
 
-  // TODO: validate executor
   export function validateTransferDetails<N extends Network>(
     wh: Wormhole<N>,
     transfer: TokenTransferDetails,
@@ -677,9 +697,7 @@ export namespace TokenTransfer {
     fromChain = fromChain ?? wh.getChain(transfer.from.chain);
     toChain = toChain ?? wh.getChain(transfer.to.chain);
 
-    if (transfer.automatic) {
-      if (transfer.payload) throw new Error("Payload with automatic delivery is not supported");
-
+    if (transfer.protocol === "AutomaticTokenBridge") {
       if (!fromChain.supportsAutomaticTokenBridge())
         throw new Error(`Automatic Token Bridge not supported on ${transfer.from.chain}`);
 
@@ -689,23 +707,46 @@ export namespace TokenTransfer {
       const nativeGas = transfer.nativeGas ?? 0n;
       if (nativeGas > transfer.amount)
         throw new Error(`Native gas amount  > amount (${nativeGas} > ${transfer.amount})`);
-    } else {
-      if (transfer.nativeGas)
-        throw new Error("Gas Dropoff is only supported for automatic transfers");
-
+    } else if (transfer.protocol === "TokenBridge") {
       if (!fromChain.supportsTokenBridge())
         throw new Error(`Token Bridge not supported on ${transfer.from.chain}`);
 
       if (!toChain.supportsTokenBridge())
         throw new Error(`Token Bridge not supported on ${transfer.to.chain}`);
+    } else if (transfer.protocol === "TokenBridgeExecutor") {
+      if (!fromChain.supportsTokenBridgeExecutor())
+        throw new Error(`Token Bridge Executor not supported on ${transfer.from.chain}`);
+
+      if (!toChain.supportsTokenBridgeExecutor())
+        throw new Error(`Token Bridge Executor not supported on ${transfer.to.chain}`);
     }
+    throw new Error(`Unknown token transfer protocol: ${transfer.protocol}`);
   }
+
+  type BaseQuoteDetails = Omit<TokenTransferDetails, "from" | "to">;
+
+  export type QuoteTransferDetails =
+    | (BaseQuoteDetails & {
+        protocol: TokenBridge.ProtocolName;
+        payload?: Uint8Array;
+      })
+    | (BaseQuoteDetails & {
+        protocol: AutomaticTokenBridge.ProtocolName;
+        nativeGas?: bigint;
+      })
+    | (BaseQuoteDetails & {
+        protocol: TokenBridgeExecutor.ProtocolName;
+        referrerFeeDbps?: bigint;
+        nativeGasPercent?: number;
+        gasDropRecipient?: ChainAddress;
+        gasLimit?: bigint;
+      });
 
   export async function quoteTransfer<N extends Network>(
     wh: Wormhole<N>,
     srcChain: ChainContext<N, Chain>,
     dstChain: ChainContext<N, Chain>,
-    transfer: Omit<TokenTransferDetails, "from" | "to">,
+    transfer: QuoteTransferDetails,
   ): Promise<TransferQuote> {
     const srcTb = await srcChain.getTokenBridge();
     let srcToken: NativeAddress<Chain>;
@@ -798,18 +839,29 @@ export namespace TokenTransfer {
     }
 
     if (transfer.protocol === "TokenBridgeExecutor") {
-      const executorQuote = await getExecutorQuote(wh, srcChain, dstChain, transfer);
+      const details = await getExecutorQuote(wh, srcChain, dstChain, transfer);
+
+      const gasDropOffInstruction = details.relayInstructions.requests.find(
+        (r) => r.request.type === "GasDropOffInstruction",
+      );
+
+      const destinationNativeGas =
+        gasDropOffInstruction?.request.type === "GasDropOffInstruction"
+          ? gasDropOffInstruction.request.dropOff
+          : undefined;
+
       return {
         ...baseQuote,
-        expires: executorQuote.signedQuote.quote.expiryTime,
-        relayFee: { token: nativeTokenId(srcChain.chain), amount: executorQuote.estimatedCost },
-        details: executorQuote,
+        expires: details.signedQuote.quote.expiryTime,
+        relayFee: { token: nativeTokenId(srcChain.chain), amount: details.estimatedCost },
+        details,
+        destinationNativeGas,
       };
     }
 
     // Otherwise automatic
     if (transfer.protocol !== "AutomaticTokenBridge")
-      throw new Error(`Unknown token transfer protocol: ${transfer.protocol}`);
+      throw new Error("Unknown token transfer protocol");
 
     // The fee is removed from the amount transferred
     // quoted on the source chain
@@ -899,12 +951,12 @@ export namespace TokenTransfer {
     };
   }
 
-  async function getExecutorQuote<N extends Network>(
+  export async function getExecutorQuote<N extends Network>(
     wh: Wormhole<N>,
     srcChain: ChainContext<N, Chain>,
     dstChain: ChainContext<N, Chain>,
-    transfer: Omit<TokenTransferDetails, "from" | "to">,
-  ): Promise<TokenBridgeExecutor.TransferDetails> {
+    transfer: Extract<QuoteTransferDetails, { protocol: TokenBridgeExecutor.ProtocolName }>,
+  ): Promise<TokenBridgeExecutor.ExecutorQuote> {
     const capabilities = await wh.getExecutorCapabilities();
 
     const srcCapabilities = capabilities[toChainId(srcChain.chain)];
@@ -917,17 +969,16 @@ export namespace TokenTransfer {
       throw new Error(`No executor capabilities found for destination chain ${dstChain.chain}`);
     }
 
-    //const gasDropOffLimit = BigInt(dstCapabilities.gasDropOffLimit);
-    const dropOff = 0n;
-    //const dropOff =
-    //  options.nativeGas && gasDropOffLimit > 0n
-    //    ? (BigInt(Math.round(options.nativeGas * 100)) * gasDropOffLimit) / 100n
-    //    : 0n;
+    const gasDropOffLimit = BigInt(dstCapabilities.gasDropOffLimit);
+    const dropOff =
+      transfer.nativeGasPercent && gasDropOffLimit > 0n
+        ? (BigInt(Math.round(transfer.nativeGasPercent * 100)) * gasDropOffLimit) / 100n
+        : 0n;
 
     const dstTb = await dstChain.getTokenBridgeExecutor();
     let { msgValue, gasLimit } = await dstTb.estimateMsgValueAndGasLimit(undefined);
 
-    if (transfer.gasLimit) {
+    if (transfer.gasLimit !== undefined) {
       gasLimit = transfer.gasLimit;
     }
 
@@ -946,14 +997,12 @@ export namespace TokenTransfer {
         request: {
           type: "GasDropOffInstruction" as const,
           dropOff,
-          // If the recipient is undefined (e.g. the user hasn't connected their wallet yet),
+          // If the recipient is undefined (maybe the user hasn't connected their destination wallet yet),
           // we temporarily use a dummy address to fetch a quote.
-          // The recipient address is validated later in the `initiate` method, which will throw if it's still missing.
-          // TODO: fix recipient parameter
-          // recipient: recipient
-          //   ? recipient.address.toUniversalAddress()
-          //   : new UniversalAddress(new Uint8Array(32)),
-          recipient: new UniversalAddress(new Uint8Array(32)),
+          // The destination address is validated later in the `transfer` method, which will throw if it's still missing.
+          recipient: transfer.gasDropRecipient
+            ? transfer.gasDropRecipient.address.toUniversalAddress()
+            : new UniversalAddress(new Uint8Array(32)),
         },
       });
     }
@@ -1019,7 +1068,7 @@ export namespace TokenTransfer {
       }
     }
 
-    if (_transfer.to.chain === "Sei") {
+    if (_transfer.to.chain === "Sei" && _transfer.protocol === "TokenBridge") {
       if (_transfer.to.chain === "Sei" && _transfer.payload)
         throw new Error("Arbitrary payloads unsupported for Sei");
 

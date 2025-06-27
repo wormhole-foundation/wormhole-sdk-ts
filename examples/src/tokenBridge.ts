@@ -1,3 +1,4 @@
+// TODO: executor support this script
 import type { Chain, Network, TokenId } from "@wormhole-foundation/sdk";
 import { TokenTransfer, Wormhole, amount, isTokenId, wormhole } from "@wormhole-foundation/sdk";
 
@@ -78,7 +79,7 @@ import { getSigner, waitLog } from "./helpers/index.js";
           source,
           destination,
           delivery: {
-            automatic,
+            protocol: automatic ? "AutomaticTokenBridge" : "TokenBridge",
             nativeGas: nativeGas ? amount.units(amount.parse(nativeGas, decimals)) : undefined,
           },
         },
@@ -104,7 +105,7 @@ async function tokenTransfer<N extends Network>(
     source: SignerStuff<N, Chain>;
     destination: SignerStuff<N, Chain>;
     delivery?: {
-      automatic: boolean;
+      protocol: TokenTransfer.Protocol;
       nativeGas?: bigint;
     };
     payload?: Uint8Array;
@@ -118,7 +119,8 @@ async function tokenTransfer<N extends Network>(
     route.amount,
     route.source.address,
     route.destination.address,
-    route.delivery?.automatic ?? false,
+    // route.delivery?.automatic ?? false,
+    route.delivery?.protocol ?? "TokenBridge",
     route.payload,
     route.delivery?.nativeGas,
   );
@@ -131,16 +133,13 @@ async function tokenTransfer<N extends Network>(
   );
   console.log(quote);
 
-  if (xfer.transfer.automatic && quote.destinationToken.amount < 0)
-    throw "The amount requested is too low to cover the fee and any native gas requested.";
-
   // 1) Submit the transactions to the source chain, passing a signer to sign any txns
   console.log("Starting transfer");
   const srcTxids = await xfer.initiateTransfer(route.source.signer);
   console.log(`Started transfer: `, srcTxids);
 
   // If automatic, we're done
-  if (route.delivery?.automatic) return xfer;
+  if (route.delivery?.protocol !== "TokenBridge") return xfer;
 
   // 2) Wait for the VAA to be signed and ready (not required for auto transfer)
   console.log("Getting Attestation");

@@ -121,7 +121,7 @@ export class Wormhole<N extends Network> {
    * @param amount the amount to transfer
    * @param from the address to transfer from
    * @param to the address to transfer to
-   * @param automatic whether to use automatic delivery
+   * @param protocol the protocol to use for the transfer (e.g., TokenBridge)
    * @param payload the payload to send with the transfer
    * @param nativeGas the amount of native gas to send with the transfer
    * @returns the TokenTransfer object
@@ -132,18 +132,21 @@ export class Wormhole<N extends Network> {
     amount: bigint,
     from: ChainAddress,
     to: ChainAddress,
-    automatic: boolean,
+    protocol: TokenTransfer.Protocol,
+    // TODO: remove these?
     payload?: Uint8Array,
     nativeGas?: bigint,
   ): Promise<TokenTransfer<N>> {
-    // TODO: executor?
+    // TODO: fix?
+    if (protocol === "TokenBridgeExecutor")
+      throw new Error("TokenBridgeExecutor is not supported in this method");
+
     return await TokenTransfer.from(this, {
       token,
       amount,
       from,
       to,
-      automatic,
-      protocol: automatic ? "AutomaticTokenBridge" : "TokenBridge",
+      protocol,
       payload,
       nativeGas,
     });

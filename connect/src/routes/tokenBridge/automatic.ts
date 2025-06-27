@@ -213,7 +213,6 @@ export class AutomaticTokenBridgeRoute<N extends Network>
 
     try {
       let quote = await TokenTransfer.quoteTransfer(this.wh, request.fromChain, request.toChain, {
-        automatic: true,
         protocol: "AutomaticTokenBridge",
         amount: amount.units(params.normalizedParams.amount),
         token: request.source.id,
@@ -267,10 +266,9 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     return {
       from,
       to,
-      automatic: true,
-      protocol: "AutomaticTokenBridge",
       amount: amount.units(params.normalizedParams.amount),
       token: request.source.id,
+      protocol: "AutomaticTokenBridge",
       nativeGas: amount.units(params.normalizedParams.nativeGasAmount),
     };
   }

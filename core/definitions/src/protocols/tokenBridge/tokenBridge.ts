@@ -97,8 +97,7 @@ export namespace TokenBridgeExecutor {
   const _protocol = "TokenBridgeExecutor";
   export type ProtocolName = typeof _protocol;
 
-  // TODO: TransferWithExecutorRelay rename
-  const _payloads = ["TransferWithPayload"] as const;
+  const _payloads = ["TransferWithExecutorRelay"] as const;
 
   export type PayloadNames = (typeof _payloads)[number];
 
@@ -111,14 +110,10 @@ export namespace TokenBridgeExecutor {
     PayloadName
   >;
 
-  export interface QuoteDetails {
+  export interface ExecutorQuote {
     signedQuote: SignedQuote;
     estimatedCost: bigint;
     relayInstructions: RelayInstructions;
-    referrerFeeDbps: bigint;
-    referrerAddress: ChainAddress;
-    gasLimit: bigint;
-    recipient: ChainAddress;
   }
 }
 
@@ -132,23 +127,20 @@ type BaseTokenTransferDetails = {
   amount: bigint;
   from: ChainAddress;
   to: ChainAddress;
-  automatic?: boolean; // TODO: remove
-  payload?: Uint8Array;
-  nativeGas?: bigint;
 };
 
-export type TokenTransferDetails<T = any> =
+export type TokenTransferDetails =
   | (BaseTokenTransferDetails & {
       protocol: TokenBridge.ProtocolName;
-      details?: never;
+      payload?: Uint8Array;
     })
   | (BaseTokenTransferDetails & {
       protocol: AutomaticTokenBridge.ProtocolName;
-      details?: never;
+      nativeGas?: bigint;
     })
   | (BaseTokenTransferDetails & {
       protocol: TokenBridgeExecutor.ProtocolName;
-      details: T;
+      executorQuote: TokenBridgeExecutor.ExecutorQuote;
     });
 
 export function isTokenTransferDetails(
@@ -159,20 +151,6 @@ export function isTokenTransferDetails(
     (<TokenTransferDetails>thing).amount !== undefined &&
     (<TokenTransferDetails>thing).from !== undefined &&
     (<TokenTransferDetails>thing).to !== undefined
-  );
-}
-
-export function isExecutorTransferDetails(
-  thing: TokenTransferDetails | any,
-): thing is TokenTransferDetails<TokenBridgeExecutor.QuoteDetails> & {
-  details: TokenBridgeExecutor.QuoteDetails;
-} {
-  return (
-    isTokenTransferDetails(thing) &&
-    (<TokenTransferDetails>thing).details !== undefined &&
-    (<TokenTransferDetails>thing).details.signedQuote !== undefined &&
-    (<TokenTransferDetails>thing).details.estimatedCost !== undefined &&
-    (<TokenTransferDetails>thing).details.relayInstructions !== undefined
   );
 }
 
@@ -337,9 +315,7 @@ export interface TokenBridgeExecutor<N extends Network = Network, C extends Chai
     recipient: ChainAddress,
     token: TokenAddress<C>,
     amount: bigint,
-    signedQuote: SignedQuote,
-    estimatedCost: bigint,
-    relayInstructions: RelayInstructions,
+    executorQuote: TokenBridgeExecutor.ExecutorQuote,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
 
   redeem(

@@ -39,10 +39,11 @@ export type AttestationId<PN extends ProtocolName = ProtocolName> = PN extends
 export type Attestation<PN extends ProtocolName = ProtocolName> = PN extends
   | "TokenBridge"
   | "AutomaticTokenBridge"
-  ? AutomaticTokenBridge.VAA | TokenBridge.VAA
-  : PN extends "TokenBridgeExecutor"
-  ? TokenBridgeExecutor.VAA
-  : PN extends "AutomaticCircleBridge"
+  | "TokenBridgeExecutor"
+  ? AutomaticTokenBridge.VAA | TokenBridge.VAA | TokenBridgeExecutor.VAA
+  : // : PN extends "TokenBridgeExecutor"
+  // ? TokenBridgeExecutor.VAA
+  PN extends "AutomaticCircleBridge"
   ? AutomaticCircleBridge.VAA | CircleBridge.Attestation
   : PN extends "CircleBridge"
   ? CircleBridge.Attestation
