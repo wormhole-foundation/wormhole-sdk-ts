@@ -1,6 +1,6 @@
 {
   "name": "ts-sdk",
-  "version": "1.20.0",
+  "version": "2.2.0",
   "license": "Apache-2.0",
   "directories": {
     "test": "__tests__"
@@ -23,7 +23,7 @@
     "prettier": "^3.0.3",
     "ts-jest": "^29.1.2",
     "ts-mocha": "^10.0.0",
-    "ts-node": "^10.9.1",
+    "ts-node": "^10.9.2",
     "tsd": "^0.29.0",
     "turbo": "^1.11.2",
     "typedoc": "^0.25.13",
@@ -35,7 +35,7 @@
     "rebuild": "npx turbo rebuild --no-cache --force",
     "test": "NETWORK=Mainnet npm run test --workspaces --if-present",
     "prettier": "npm run prettier --workspaces --if-present",
-    "docs": "NODE_OPTIONS=--max_old_space_size=8192 typedoc --options typedoc.json",
+    "docs": "ts-node docs/scripts/versioned-docs.ts",
     "version": "tsx setVersion.ts",
     "prepublishOnly": "cd scripts && npm run examples && cd - && cp README.md sdk/",
     "test:tilt": "jest --verbose --config ./jest.config.ts --roots ./__tests__/tilt",
