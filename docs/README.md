@@ -16,7 +16,7 @@ Follow these steps whenever you need to update the documentation:
 
     ```json
     {
-    "version": "3.0.0"
+    "version": "2.3.0"
     }
     ```
 
@@ -40,7 +40,7 @@ Follow these steps whenever you need to update the documentation:
 | Version | Description            | Path              |
 |---------|------------------------|-------------------|
 | v1      | First stable release   | [`docs/v1/`](./v1) |
-| latest  | Current version        | [`docs/latest/`](./latest) |
+| latest (v2)  | Current version        | [`docs/latest/`](https://wormhole-foundation.github.io/wormhole-sdk-ts/index.html) |
 
 ## Best Practices
 
