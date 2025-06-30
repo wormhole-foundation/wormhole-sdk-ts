@@ -56,6 +56,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Sonic",     146n],
       ["HyperEVM",  999n],
       ["Mezo",      31612n],
+      ["Plume",     98866n],
     ],
   ],
   [
@@ -114,6 +115,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Sonic",           57054n],
       ["Converge",        52085145n],
       ["Fogo",            "9GGSFo95raqzZxWqKM5tGYvJp5iv4Dm565S4r8h5PEu9"], // genesis hash
+      ["Plume",           98867n],
     ],
   ],
   [

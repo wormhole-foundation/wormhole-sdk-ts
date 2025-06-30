@@ -39,7 +39,8 @@ const platformAndChainsEntries = [[
     "Monad",
     "Mezo",
     "Sonic",
-    "Converge"
+    "Converge",
+    "Plume",
   ]], [
   "Solana", [
     "Solana",
