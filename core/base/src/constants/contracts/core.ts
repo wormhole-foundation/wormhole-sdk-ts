@@ -89,6 +89,7 @@ export const coreBridgeContracts = [[
     ["Mezo",            "0x268557122Ffd64c85750d630b716471118F323c8"],
     ["Converge",        "0x556B259cFaCd9896B2773310080c7c3bcE90Ff01"],
     ["Fogo",            "BhnQyKoQQgpuRTRo6D8Emz93PvXCYfVgHhnrR4T3qhw4"],
+    ["Plume",           "0x81705b969cDcc6FbFde91a0C6777bE0EF3A75855"]
   ]], [
   "Devnet", [
     ["Solana",    "Bridge1p5gheXUvJ6jGWGeCsgPKgnE3YgdGKRVCMY9o"],
