@@ -43,7 +43,7 @@ import { getSigner, waitLog } from "./helpers/index.js";
   // of the token
   // On the destination side, a wrapped version of the token will be minted
   // to the address specified in the transfer VAA
-  const automatic = false;
+  const automatic = true;
 
   // The automatic relayer has the ability to deliver some native gas funds to the destination account
   // The amount specified for native gas will be swapped for the native gas token according
@@ -119,7 +119,6 @@ async function tokenTransfer<N extends Network>(
     route.amount,
     route.source.address,
     route.destination.address,
-    // route.delivery?.automatic ?? false,
     route.delivery?.protocol ?? "TokenBridge",
     route.payload,
     route.delivery?.nativeGas,
@@ -132,6 +131,9 @@ async function tokenTransfer<N extends Network>(
     xfer.transfer,
   );
   console.log(quote);
+
+  if (xfer.transfer.protocol === "AutomaticTokenBridge" && quote.destinationToken.amount < 0)
+    throw "The amount requested is too low to cover the fee and any native gas requested.";
 
   // 1) Submit the transactions to the source chain, passing a signer to sign any txns
   console.log("Starting transfer");

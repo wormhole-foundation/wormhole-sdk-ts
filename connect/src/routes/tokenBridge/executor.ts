@@ -2,9 +2,10 @@ import type { Chain, Network } from "@wormhole-foundation/sdk-base";
 import { amount as sdkAmount, contracts } from "@wormhole-foundation/sdk-base";
 import {
   canonicalAddress,
+  TokenBridgeExecutor,
+  toNative,
   type ChainAddress,
   type ChainContext,
-  type SignedQuote,
   type Signer,
   type TokenId,
   type TokenTransferDetails,
@@ -30,9 +31,6 @@ import type {
 import type { RouteTransferRequest } from "../request.js";
 import { RelayStatus } from "../../executor-api.js";
 import { routes, signSendWait } from "../../index.js";
-import { toNative } from "@wormhole-foundation/sdk-definitions";
-import { TokenBridgeExecutor } from "@wormhole-foundation/sdk-definitions";
-import { RelayInstructions } from "@wormhole-foundation/sdk-definitions";
 
 export namespace TokenBridgeExecutorRoute {
   export type Config = {
@@ -69,13 +67,6 @@ export namespace TokenBridgeExecutorRoute {
   export interface ValidatedParams extends ValidatedTransferParams<Options> {
     normalizedParams: NormalizedParams;
   }
-
-  export type QuoteDetails = {
-    signedQuote: SignedQuote;
-    estimatedCost: bigint;
-    relayInstructions: RelayInstructions;
-    // TODO: referrerFee stuff
-  };
 }
 
 type Op = TokenBridgeExecutorRoute.Options;
@@ -85,7 +76,7 @@ type Tp = TransferParams<Op>;
 type Vr = ValidationResult<Op>;
 
 type QR = QuoteResult<Op, Vp>;
-type D = TokenBridgeExecutorRoute.QuoteDetails;
+type D = TokenBridgeExecutor.ExecutorQuote;
 type Q = Quote<Op, Vp, D>;
 type R = TransferReceipt<AttestationReceipt<"TokenBridgeExecutor">>;
 
@@ -182,10 +173,10 @@ export class TokenBridgeExecutorRoute<N extends Network>
         token: request.source.id,
         amount: sdkAmount.units(params.normalizedParams.amount),
         protocol: "TokenBridgeExecutor",
-        gasLimit,
         referrerFeeDbps,
-        gasDropRecipient: request.recipient,
         nativeGasPercent: params.options.nativeGas,
+        gasDropRecipient: request.recipient,
+        gasLimit,
       });
 
       return request.displayQuote(q, params, q.details);
@@ -216,7 +207,6 @@ export class TokenBridgeExecutorRoute<N extends Network>
         quote,
       ),
     );
-    // TODO: need to validate gas dropoff recipient
     const txids = await TokenTransfer.transfer<N>(fromChain, transfer, signer);
 
     // Status the transfer immediately before returning
@@ -280,7 +270,7 @@ export class TokenBridgeExecutorRoute<N extends Network>
   async resume(txid: TransactionId): Promise<R> {
     const xfer = await TokenTransfer.from(this.wh, txid, 10 * 1000);
     if (xfer.transfer.protocol !== "TokenBridgeExecutor") {
-      throw new Error("Transfer is not a TokenBridgeExecutor transfer");
+      throw new Error("Can only resume TokenBridgeExecutor transfers");
     }
     return TokenTransfer.getReceipt(xfer);
   }

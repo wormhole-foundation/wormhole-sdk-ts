@@ -668,6 +668,8 @@ export namespace TokenTransfer {
       if (!!relayerAddress && address.equals(relayerAddress)) {
         return deserialize("AutomaticTokenBridge:TransferWithRelay", serialize(vaa));
       }
+
+      // We aren't checking the to address here since it could be different than what's in the config
       try {
         return deserialize("TokenBridgeExecutor:TransferWithExecutorRelay", serialize(vaa));
       } catch {}
@@ -719,8 +721,9 @@ export namespace TokenTransfer {
 
       if (!toChain.supportsTokenBridgeExecutor())
         throw new Error(`Token Bridge Executor not supported on ${transfer.to.chain}`);
+    } else {
+      throw new Error("Unknown token transfer protocol");
     }
-    throw new Error(`Unknown token transfer protocol: ${transfer.protocol}`);
   }
 
   type BaseQuoteDetails = Omit<TokenTransferDetails, "from" | "to">;
