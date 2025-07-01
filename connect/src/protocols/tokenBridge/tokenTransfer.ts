@@ -37,6 +37,7 @@ import {
 } from "@wormhole-foundation/sdk-definitions";
 import { signSendWait } from "../../common.js";
 import { DEFAULT_TASK_TIMEOUT } from "../../config.js";
+import { chainToPlatform } from "@wormhole-foundation/sdk-base";
 import type {
   AttestationReceipt as _AttestationReceipt,
   AttestedTransferReceipt,
@@ -808,7 +809,7 @@ export namespace TokenTransfer {
       // when native gas is requested on solana, the amount must be at least the rent-exempt amount
       // or the transaction could fail if the account does not have enough lamports
       if (
-        dstChain.chain === "Solana" &&
+        chainToPlatform(dstChain.chain) === "Solana" &&
         _destinationNativeGas < solanaMinBalanceForRentExemptAccount
       ) {
         throw new Error(
@@ -824,7 +825,7 @@ export namespace TokenTransfer {
 
     // when sending wsol to solana, the amount must be at least the rent-exempt amount
     // or the transaction could fail if the account does not have enough lamports
-    if (dstToken.chain === "Solana") {
+    if (chainToPlatform(dstToken.chain) === "Solana") {
       const nativeWrappedTokenId = await dstChain.getNativeWrappedTokenId();
       const isNativeSol = isNative(dstToken.address) || isSameToken(dstToken, nativeWrappedTokenId);
       if (isNativeSol && destAmountLessFee < solanaMinBalanceForRentExemptAccount) {
@@ -859,7 +860,7 @@ export namespace TokenTransfer {
     // sent a VAA with the primary address
     // Note: Do _not_ override if automatic or if the destination token is native
     // gas token
-    if (transfer.to.chain === "Solana" && !_transfer.automatic) {
+    if (chainToPlatform(transfer.to.chain) === "Solana" && !_transfer.automatic) {
       const destinationToken = await TokenTransfer.lookupDestinationToken(
         srcChain,
         dstChain,

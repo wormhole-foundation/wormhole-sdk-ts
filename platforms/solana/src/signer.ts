@@ -113,10 +113,8 @@ export async function getSolanaSignAndSendSigner(
   );
 }
 
-export class SolanaSendSigner<
-  N extends Network,
-  C extends SolanaChains = 'Solana',
-> implements SignAndSendSigner<N, C>
+export class SolanaSendSigner<N extends Network, C extends SolanaChains>
+  implements SignAndSendSigner<N, C>
 {
   constructor(
     private _rpc: Connection,
@@ -530,7 +528,7 @@ export async function determinePriorityFeeTritonOne(
   return bound(unboundedFee, minPriorityFee, maxPriorityFee);
 }
 
-export class SolanaSigner<N extends Network, C extends SolanaChains = 'Solana'>
+export class SolanaSigner<N extends Network, C extends SolanaChains>
   implements SignOnlySigner<N, C>
 {
   constructor(

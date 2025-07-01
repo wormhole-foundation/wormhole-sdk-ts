@@ -44,6 +44,7 @@ import {
 } from "../../types.js";
 import { Wormhole } from "../../wormhole.js";
 import type { WormholeTransfer } from "../wormholeTransfer.js";
+import { chainToPlatform } from "@wormhole-foundation/sdk-base";
 
 export class CircleTransfer<N extends Network = Network>
   implements WormholeTransfer<CircleTransfer.Protocol>
@@ -566,9 +567,9 @@ export namespace CircleTransfer {
   ): Promise<CircleTransferDetails> {
     const _transfer = { ...transfer };
 
-    if (transfer.to.chain === "Solana" && !_transfer.automatic) {
+    if (chainToPlatform(dstChain.chain) === "Solana" && !_transfer.automatic) {
       const usdcAddress = Wormhole.parseAddress(
-        "Solana",
+        dstChain.chain,
         circle.usdcContract.get(dstChain.network, dstChain.chain)!,
       );
       _transfer.to = await dstChain.getTokenAccount(_transfer.to.address, usdcAddress);

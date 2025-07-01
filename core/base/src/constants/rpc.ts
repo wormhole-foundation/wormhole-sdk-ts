@@ -89,7 +89,8 @@ const rpcConfig = [[
     ["Noble",           "https://noble-testnet-rpc.polkachu.com/"],
     ["Mezo",            "https://rpc.test.mezo.org"],
     ["Sonic",           "https://rpc.blaze.soniclabs.com"],
-    ["Converge",        "https://rpc-converge-testnet-1.t.conduit.xyz"]
+    ["Converge",        "https://rpc-converge-testnet-1.t.conduit.xyz"],
+    ["Fogo",            "https://testnet.fogo.io"]
   ]], [
   "Devnet", [
     ["Ethereum",  "http://eth-devnet:8545"],
