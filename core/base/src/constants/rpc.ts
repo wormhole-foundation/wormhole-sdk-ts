@@ -47,7 +47,8 @@ const rpcConfig = [[
     ["Ink",       "https://rpc-qnd.inkonchain.com"],
     ["Sonic",     "https://rpc.soniclabs.com"],
     ["HyperEVM",  "https://rpc.hyperliquid.xyz/evm"],
-    ["Mezo",      "https://jsonrpc-mezo.boar.network/"]
+    ["Mezo",      "https://jsonrpc-mezo.boar.network/"],
+    ["Plume",     "https://rpc.plume.org/"],
   ]], [
   "Testnet", [
     ["Bsc",             "https://data-seed-prebsc-1-s3.binance.org:8545"],
@@ -90,7 +91,8 @@ const rpcConfig = [[
     ["Mezo",            "https://rpc.test.mezo.org"],
     ["Sonic",           "https://rpc.blaze.soniclabs.com"],
     ["Converge",        "https://rpc-converge-testnet-1.t.conduit.xyz"],
-    ["Fogo",            "https://testnet.fogo.io"]
+    ["Fogo",            "https://testnet.fogo.io"],
+    ["Plume",           "https://testnet-rpc.plume.org"],
   ]], [
   "Devnet", [
     ["Ethereum",  "http://eth-devnet:8545"],

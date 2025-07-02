@@ -50,6 +50,7 @@ const chainIdAndChainEntries = [
   [   51, "Fogo"           ],
   [   52, "Sonic"          ],
   [   53, "Converge"       ],
+  [   55, "Plume"          ],
   [ 3104, "Wormchain"      ],
   [ 4000, "Cosmoshub"      ],
   [ 4001, "Evmos"          ],
