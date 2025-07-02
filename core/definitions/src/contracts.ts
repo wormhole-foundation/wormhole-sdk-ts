@@ -10,7 +10,7 @@ export type Contracts = {
   coreBridge?: string;
   tokenBridge?: string;
   tokenBridgeRelayer?: string;
-  tokenBridgeExecutor?: string;
+  tokenBridgeExecutorRelayer?: string;
   nftBridge?: string;
   relayer?: string;
   cctp?: contracts.CircleContracts;
@@ -18,6 +18,7 @@ export type Contracts = {
   translator?: string;
   portico?: contracts.PorticoContracts;
   tbtc?: string;
+  executor?: string;
 } & UnknownContracts;
 
 /**
@@ -35,8 +36,9 @@ export function getContracts(n: Network, c: Chain): Contracts {
     nftBridge: contracts.nftBridge.get(n, c),
     relayer: contracts.relayer.get(n, c),
     tokenBridgeRelayer: contracts.tokenBridgeRelayer.get(n, c),
-    tokenBridgeExecutor: contracts.tokenBridgeExecutor.get(n, c),
+    tokenBridgeExecutorRelayer: contracts.tokenBridgeExecutorRelayer.get(n, c),
     tbtc: contracts.tbtc.get(n, c),
+    executor: contracts.executor.get(n, c),
   };
 
   if (contracts.circleContracts.has(n, c)) {

@@ -7,6 +7,7 @@ import type {
   TransactionId,
 } from "@wormhole-foundation/sdk-definitions";
 import type { QuoteWarning } from "./warnings.js";
+import { routes } from "./index.js";
 
 // Transfer state machine states
 export enum TransferState {
@@ -166,6 +167,12 @@ export function isCompleted<AT>(
 
 export function isFailed<AT>(receipt: TransferReceipt<AT>): receipt is FailedTransferReceipt<AT> {
   return receipt.state < 0;
+}
+
+export function isRelayFailed<AT>(
+  receipt: TransferReceipt<AT>,
+): receipt is FailedTransferReceipt<AT> & { error: routes.RelayFailedError } {
+  return isFailed(receipt) && receipt.error instanceof routes.RelayFailedError;
 }
 
 export type TransferReceipt<AT, SC extends Chain = Chain, DC extends Chain = Chain> =

@@ -15,6 +15,7 @@ import {
   isNative,
   serializeLayout,
   serialize,
+  contracts,
 } from '@wormhole-foundation/sdk-connect';
 import type { EvmChains } from '@wormhole-foundation/sdk-evm';
 import {
@@ -28,8 +29,10 @@ import type { Provider, TransactionRequest } from 'ethers';
 import { Contract } from 'ethers';
 import '@wormhole-foundation/sdk-evm-core';
 import { EvmWormholeCore } from '@wormhole-foundation/sdk-evm-core';
-import { relayInstructionsLayout } from '@wormhole-foundation/sdk-definitions';
-import { contracts } from '@wormhole-foundation/sdk-connect';
+import {
+  relayInstructionsLayout,
+  toUniversal,
+} from '@wormhole-foundation/sdk-definitions';
 
 const EXECUTOR_ABI = [
   'function transferTokensWithRelay(address token, uint256 amount, uint16 targetChain, bytes32 targetRecipient, uint32 nonce, bytes32 dstTransferRecipient, bytes32 dstExecutionAddress, uint256 executionAmount, address refundAddr, bytes calldata signedQuoteBytes, bytes calldata relayInstructions) payable returns (uint64)',
@@ -56,7 +59,7 @@ export class EvmTokenBridgeExecutor<N extends Network, C extends EvmChains>
       chain,
     ) as bigint;
 
-    const executorAddress = this.contracts.tokenBridgeExecutor;
+    const executorAddress = this.contracts.tokenBridgeExecutorRelayer;
     if (!executorAddress)
       throw new Error(
         `Wormhole Token Bridge Executor contract for domain ${chain} not found`,
@@ -97,11 +100,19 @@ export class EvmTokenBridgeExecutor<N extends Network, C extends EvmChains>
     amount: bigint,
     executorQuote: TokenBridgeExecutor.ExecutorQuote,
   ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
-    const senderAddr = new EvmAddress(sender).toString();
+    const dstRelayer = contracts.tokenBridgeExecutorRelayer.get(
+      this.network,
+      recipient.chain,
+    );
+    if (!dstRelayer) {
+      throw new Error(
+        `Token Bridge Executor contract for domain ${recipient.chain} not found`,
+      );
+    }
+
+    const senderAddr = new EvmAddress(sender).unwrap();
     const targetChain = toChainId(recipient.chain);
-    const targetRecipient = recipient.address
-      .toUniversalAddress()
-      .toUint8Array();
+    const targetRecipient = recipient.address.toUniversalAddress();
 
     const { estimatedCost, signedQuote, relayInstructions } = executorQuote;
 
@@ -114,18 +125,7 @@ export class EvmTokenBridgeExecutor<N extends Network, C extends EvmChains>
     const wormholeFee = await this.core.getMessageFee();
 
     const nonce = 0;
-    const dstExecutorAddress = contracts.tokenBridgeExecutor.get(
-      this.network,
-      recipient.chain,
-    );
-    if (!dstExecutorAddress) {
-      throw new Error(
-        `Token Bridge Executor contract for domain ${recipient.chain} not found`,
-      );
-    }
-    const dstTransferRecipient = new EvmAddress(dstExecutorAddress)
-      .toUniversalAddress()
-      .toUint8Array();
+    const dstTransferRecipient = toUniversal(recipient.chain, dstRelayer);
     const dstExecutionAddress = dstTransferRecipient;
     const executionAmount = estimatedCost;
     const refundAddr = senderAddr;
@@ -137,10 +137,10 @@ export class EvmTokenBridgeExecutor<N extends Network, C extends EvmChains>
         .getFunction('wrapAndTransferEthWithRelay')
         .populateTransaction(
           targetChain,
-          targetRecipient,
+          targetRecipient.toUint8Array(),
           nonce,
-          dstTransferRecipient,
-          dstExecutionAddress,
+          dstTransferRecipient.toUint8Array(),
+          dstExecutionAddress.toUint8Array(),
           executionAmount,
           refundAddr,
           signedQuoteBytes,
@@ -175,10 +175,10 @@ export class EvmTokenBridgeExecutor<N extends Network, C extends EvmChains>
           token.toString(),
           amount,
           targetChain,
-          targetRecipient,
+          targetRecipient.toUint8Array(),
           nonce,
-          dstTransferRecipient,
-          dstExecutionAddress,
+          dstTransferRecipient.toUint8Array(),
+          dstExecutionAddress.toUint8Array(),
           executionAmount,
           refundAddr,
           signedQuoteBytes,

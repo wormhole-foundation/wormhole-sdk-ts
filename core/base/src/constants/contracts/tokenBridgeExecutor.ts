@@ -3,7 +3,7 @@ import type { Network } from "../networks.js";
 import type { Chain } from "../chains.js";
 
 // prettier-ignore
-export const tokenBridgeExecutorContracts = [[
+export const tokenBridgeExecutorRelayerContracts = [[
   "Mainnet", [
     // TODO: Add mainnet addresses when available
   ]], [

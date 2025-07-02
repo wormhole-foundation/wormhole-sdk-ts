@@ -60,6 +60,7 @@ import {
   isAttested,
   isInReview,
   isRedeemed,
+  isRelayFailed,
   isSourceFinalized,
   isSourceInitiated,
 } from "../../types.js";
@@ -69,6 +70,8 @@ import type { WormholeTransfer } from "../wormholeTransfer.js";
 import type { QuoteWarning } from "../../warnings.js";
 import { nativeTokenId } from "@wormhole-foundation/sdk-definitions";
 import { ChainAddress } from "@wormhole-foundation/sdk-definitions";
+import { RelayStatus } from "../../executor-api.js";
+import { routes } from "../../index.js";
 
 export class TokenTransfer<N extends Network = Network>
   implements WormholeTransfer<TokenTransfer.Protocol>
@@ -370,7 +373,7 @@ export namespace TokenTransfer {
         throw new Error("GasDropOffInstruction recipient must be set");
       }
       console.log(
-        `GasDropOffInstruction: ${(gasDropOffInstruction as any).request.recipient.toString()}`,
+        `GasDropOffInstruction: ${(gasDropOffInstruction as any)?.request?.recipient?.toString()}`,
       );
       const tb = await fromChain.getTokenBridgeExecutor();
       xfer = tb.transfer(
@@ -468,8 +471,13 @@ export namespace TokenTransfer {
     // First try to grab the tx status from the API
     // Note: this requires a subsequent async step on the backend
     // to have the dest txid populated, so it may be delayed by some time
-    if (isAttested(receipt) || isSourceFinalized(receipt) || isInReview(receipt)) {
-      if (!receipt.attestation.id) throw "Attestation id required to fetch redeem tx";
+    if (
+      isAttested(receipt) ||
+      isSourceFinalized(receipt) ||
+      isInReview(receipt) ||
+      isRelayFailed(receipt)
+    ) {
+      if (!receipt.attestation?.id) throw "Attestation id required to fetch redeem tx";
       const { id } = receipt.attestation;
       const txStatus = await wh.getTransactionStatus(id, leftover(start, timeout));
       if (txStatus && txStatus.globalTx?.destinationTx?.txHash) {
@@ -478,6 +486,7 @@ export namespace TokenTransfer {
           ...receipt,
           destinationTxs: [{ chain: toChainName(chainId) as DC, txid: txHash }],
           state: TransferState.DestinationInitiated,
+          attestation: receipt.attestation as Required<TokenTransfer.AttestationReceipt>,
         } satisfies RedeemedTransferReceipt<TokenTransfer.AttestationReceipt>;
       }
       yield receipt;
@@ -485,8 +494,9 @@ export namespace TokenTransfer {
 
     // Fall back to asking the destination chain if this VAA has been redeemed
     // Note: We do not get any destinationTxs with this method
-    if (isAttested(receipt) || isRedeemed(receipt)) {
-      if (!receipt.attestation.attestation) throw "Signed Attestation required to check for redeem";
+    if (isAttested(receipt) || isRedeemed(receipt) || isRelayFailed(receipt)) {
+      if (!receipt.attestation?.attestation)
+        throw "Signed Attestation required to check for redeem";
 
       if (receipt.attestation.attestation.payloadName === "AttestMeta") {
         throw new Error("Unable to track an AttestMeta receipt");
@@ -501,10 +511,35 @@ export namespace TokenTransfer {
         receipt = {
           ...receipt,
           state: TransferState.DestinationFinalized,
+          attestation: receipt.attestation,
         } satisfies CompletedTransferReceipt<TokenTransfer.AttestationReceipt>;
       }
 
       yield receipt;
+    }
+
+    // If this is a TokenBridgeExecutor transfer, we need to check the relay status
+    if (
+      isAttested(receipt) &&
+      receipt.attestation.attestation.protocolName === "TokenBridgeExecutor"
+    ) {
+      const [txStatus] = await wh.getExecutorTxStatus(receipt.originTxs.at(-1)!.txid, receipt.from);
+      if (!txStatus) throw new Error("No transaction status found");
+
+      const relayStatus = txStatus.status;
+      if (
+        relayStatus === RelayStatus.Failed ||
+        relayStatus === RelayStatus.Underpaid ||
+        relayStatus === RelayStatus.Unsupported ||
+        relayStatus === RelayStatus.Aborted
+      ) {
+        receipt = {
+          ...receipt,
+          state: TransferState.Failed,
+          error: new routes.RelayFailedError(`Relay failed with status: ${relayStatus}`),
+        };
+        yield receipt;
+      }
     }
 
     yield receipt;

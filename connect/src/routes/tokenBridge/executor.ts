@@ -29,8 +29,7 @@ import type {
   ValidationResult,
 } from "../types.js";
 import type { RouteTransferRequest } from "../request.js";
-import { RelayStatus } from "../../executor-api.js";
-import { routes, signSendWait } from "../../index.js";
+import { signSendWait } from "../../common.js";
 
 export namespace TokenBridgeExecutorRoute {
   export type Config = {
@@ -276,31 +275,6 @@ export class TokenBridgeExecutorRoute<N extends Network>
   }
 
   public override async *track(receipt: R, timeout?: number) {
-    // Check if the relay was successful or failed
-    if (isAttested(receipt) && !isFailed(receipt)) {
-      const [txStatus] = await this.wh.getExecutorTxStatus(
-        receipt.originTxs.at(-1)!.txid,
-        receipt.from,
-      );
-      if (!txStatus) throw new Error("No transaction status found");
-
-      const relayStatus = txStatus.status;
-      if (
-        relayStatus === RelayStatus.Failed || // this could happen if simulation fails
-        relayStatus === RelayStatus.Underpaid || // only happens if you don't pay at least the costEstimate
-        relayStatus === RelayStatus.Unsupported || // capabilities check didn't pass
-        relayStatus === RelayStatus.Aborted // An unrecoverable error indicating the attempt should stop (bad data, pre-flight checks failed, or chain-specific conditions)
-      ) {
-        receipt = {
-          ...receipt,
-          state: TransferState.Failed,
-          error: new routes.RelayFailedError(`Relay failed with status: ${relayStatus}`),
-        };
-        yield receipt;
-        return;
-      }
-    }
-
     for await (const r of TokenTransfer.track(this.wh, receipt, timeout)) {
       yield r as R;
     }
