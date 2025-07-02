@@ -35,7 +35,7 @@ import { getSigner, waitLog } from "./helpers/index.js";
   // Note: The Token bridge will dedust past 8 decimals
   // this means any amount specified past that point will be returned
   // to the caller
-  const amt = "0.05";
+  const amt = "0.01";
 
   // With automatic set to true, perform an automatic transfer. This will invoke a relayer
   // contract intermediary that knows to pick up the transfers
@@ -79,8 +79,8 @@ import { getSigner, waitLog } from "./helpers/index.js";
           source,
           destination,
           delivery: {
-            protocol: automatic ? "AutomaticTokenBridge" : "TokenBridge",
-            nativeGas: nativeGas ? amount.units(amount.parse(nativeGas, decimals)) : undefined,
+            protocol: "TokenBridgeExecutor", //"AutomaticTokenBridge" : "TokenBridge",
+            // nativeGas: nativeGas ? amount.units(amount.parse(nativeGas, decimals)) : undefined,
           },
         },
         roundTrip,

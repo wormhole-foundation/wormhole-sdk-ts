@@ -238,7 +238,7 @@ export class EvmTokenBridgeExecutor<N extends Network, C extends EvmChains>
     // Placeholder values - these should be calculated based on actual requirements
     return {
       msgValue: 0n,
-      gasLimit: 500_000n,
+      gasLimit: 0n,
     };
   }
 

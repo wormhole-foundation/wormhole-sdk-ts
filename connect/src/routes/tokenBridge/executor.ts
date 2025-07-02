@@ -36,18 +36,20 @@ export namespace TokenBridgeExecutorRoute {
     // Referrer Fee in *tenths* of basis points - e.g. 10 = 1 basis point (0.01%)
     referrerFeeDbps?: bigint;
     // The address to which the referrer fee will be sent
-    // TODO: Platform instead of Chain?
-    referrerAddresses?: Partial<Record<Chain, string>>;
+    referrerAddresses?: Partial<Record<Network, Partial<Record<Chain, string>>>>;
     perTokenOverrides?: Partial<
       Record<
-        Chain,
+        Network,
         Record<
-          string,
-          {
-            referrerFeeDbps?: bigint;
-            // Some tokens may require more gas to redeem than the default.
-            gasLimit?: bigint;
-          }
+          Chain,
+          Record<
+            string,
+            {
+              referrerFeeDbps?: bigint;
+              // Some tokens may require more gas to redeem than the default.
+              gasLimit?: bigint;
+            }
+          >
         >
       >
     >;
@@ -149,7 +151,9 @@ export class TokenBridgeExecutorRoute<N extends Network>
       if (this.staticConfig.perTokenOverrides) {
         const dstTokenAddress = canonicalAddress(request.destination.id);
         const override =
-          this.staticConfig.perTokenOverrides[request.destination.id.chain]?.[dstTokenAddress];
+          this.staticConfig.perTokenOverrides[this.wh.network]?.[request.destination.id.chain]?.[
+            dstTokenAddress
+          ];
         if (override?.gasLimit !== undefined) {
           gasLimit = override.gasLimit;
         }
@@ -162,11 +166,15 @@ export class TokenBridgeExecutorRoute<N extends Network>
       if (this.staticConfig.perTokenOverrides) {
         const srcTokenAddress = canonicalAddress(request.source.id);
         const override =
-          this.staticConfig.perTokenOverrides[request.fromChain.chain]?.[srcTokenAddress];
+          this.staticConfig.perTokenOverrides[this.wh.network]?.[request.fromChain.chain]?.[
+            srcTokenAddress
+          ];
         if (override?.referrerFeeDbps !== undefined) {
           referrerFeeDbps = override.referrerFeeDbps;
         }
       }
+
+      // TODO: throw if referrerFeeDbps is > 0 and no referrerAddresses are configured
 
       const q = await TokenTransfer.quoteTransfer(this.wh, request.fromChain, request.toChain, {
         token: request.source.id,

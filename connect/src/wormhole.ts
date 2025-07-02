@@ -133,23 +133,52 @@ export class Wormhole<N extends Network> {
     from: ChainAddress,
     to: ChainAddress,
     protocol: TokenTransfer.Protocol,
-    // TODO: remove these?
     payload?: Uint8Array,
     nativeGas?: bigint,
   ): Promise<TokenTransfer<N>> {
-    // TODO: fix?
-    if (protocol === "TokenBridgeExecutor")
-      throw new Error("TokenBridgeExecutor is not supported in this method");
-
-    return await TokenTransfer.from(this, {
-      token,
-      amount,
-      from,
-      to,
-      protocol,
-      payload,
-      nativeGas,
-    });
+    switch (protocol) {
+      case "TokenBridge":
+        return await TokenTransfer.from(this, {
+          token,
+          amount,
+          from,
+          to,
+          protocol,
+          payload,
+        });
+      case "AutomaticTokenBridge": {
+        return await TokenTransfer.from(this, {
+          token,
+          amount,
+          from,
+          to,
+          protocol,
+          nativeGas,
+        });
+      }
+      case "TokenBridgeExecutor": {
+        const executorQuote = await TokenTransfer.getExecutorQuote(
+          this,
+          this.getChain(from.chain),
+          this.getChain(to.chain),
+          {
+            token,
+            amount,
+            protocol,
+          },
+        );
+        return await TokenTransfer.from(this, {
+          token,
+          amount,
+          from,
+          to,
+          protocol,
+          executorQuote,
+        });
+      }
+      default:
+        throw new Error(`Protocol ${protocol} is not supported`);
+    }
   }
 
   /**
