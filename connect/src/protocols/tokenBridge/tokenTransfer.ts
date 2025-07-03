@@ -24,6 +24,7 @@ import type {
   WormholeMessageId,
   TokenBridgeExecutor,
   RelayInstructions,
+  ChainAddress,
 } from "@wormhole-foundation/sdk-definitions";
 import {
   TokenBridge,
@@ -41,6 +42,7 @@ import {
   toUniversal,
   relayInstructionsLayout,
   signedQuoteLayout,
+  nativeTokenId,
 } from "@wormhole-foundation/sdk-definitions";
 import { signSendWait } from "../../common.js";
 import { DEFAULT_TASK_TIMEOUT } from "../../config.js";
@@ -68,8 +70,6 @@ import { getGovernedTokens, getGovernorLimits } from "../../whscan-api.js";
 import { Wormhole } from "../../wormhole.js";
 import type { WormholeTransfer } from "../wormholeTransfer.js";
 import type { QuoteWarning } from "../../warnings.js";
-import { nativeTokenId } from "@wormhole-foundation/sdk-definitions";
-import { ChainAddress } from "@wormhole-foundation/sdk-definitions";
 import { RelayStatus } from "../../executor-api.js";
 import { routes } from "../../index.js";
 
@@ -774,7 +774,10 @@ export namespace TokenTransfer {
       })
     | (BaseQuoteDetails & {
         protocol: TokenBridgeExecutor.ProtocolName;
-        referrerFeeDbps?: bigint;
+        referrerFee?: {
+          feeDbps: bigint;
+          referrer: ChainAddress;
+        };
         nativeGasPercent?: number;
         gasDropRecipient?: ChainAddress;
         gasLimit?: bigint;
@@ -877,9 +880,9 @@ export namespace TokenTransfer {
     }
 
     if (transfer.protocol === "TokenBridgeExecutor") {
-      const details = await getExecutorQuote(wh, srcChain, dstChain, transfer);
+      const executorQuote = await getExecutorQuote(wh, srcChain, dstChain, transfer);
 
-      const gasDropOffInstruction = details.relayInstructions.requests.find(
+      const gasDropOffInstruction = executorQuote.relayInstructions.requests.find(
         (r) => r.request.type === "GasDropOffInstruction",
       );
 
@@ -888,12 +891,39 @@ export namespace TokenTransfer {
           ? gasDropOffInstruction.request.dropOff
           : undefined;
 
+      let referrerFee: TokenBridgeExecutor.ReferrerFee | undefined;
+
+      if (transfer.referrerFee && transfer.referrerFee.feeDbps > 0n) {
+        const { feeAmount, remainingAmount } = TokenTransfer.calculateReferrerFee(
+          srcAmountTruncated,
+          transfer.referrerFee.feeDbps,
+        );
+
+        if (remainingAmount === 0n) {
+          throw new Error("Remaining amount is 0");
+        }
+
+        referrerFee = {
+          feeDbps: transfer.referrerFee.feeDbps,
+          feeAmount,
+          remainingAmount,
+          referrer: transfer.referrerFee?.referrer,
+        };
+      }
+
       return {
         ...baseQuote,
-        expires: details.signedQuote.quote.expiryTime,
-        relayFee: { token: nativeTokenId(srcChain.chain), amount: details.estimatedCost },
-        details,
+        destinationToken: {
+          token: dstToken,
+          amount: referrerFee?.remainingAmount ?? amount.units(dstAmountReceivable),
+        },
+        expires: executorQuote.signedQuote.quote.expiryTime,
+        relayFee: { token: nativeTokenId(srcChain.chain), amount: executorQuote.estimatedCost },
         destinationNativeGas,
+        details: {
+          executorQuote,
+          referrerFee,
+        },
       };
     }
 
@@ -1127,5 +1157,23 @@ export namespace TokenTransfer {
     }
 
     return _transfer;
+  }
+
+  export function calculateReferrerFee(
+    amt: amount.Amount,
+    dBps: bigint, // tenths of basis points
+  ): { feeAmount: bigint; remainingAmount: bigint } {
+    const MAX_U16 = 65_535n;
+    if (dBps > MAX_U16) {
+      throw new Error("dBps exceeds max u16");
+    }
+    const amtUnits = amount.units(amt);
+    let remainingAmount = amtUnits;
+    let feeAmount = 0n;
+    if (dBps > 0) {
+      feeAmount = (amtUnits * dBps) / 100_000n;
+      remainingAmount = amtUnits - feeAmount;
+    }
+    return { feeAmount, remainingAmount };
   }
 }

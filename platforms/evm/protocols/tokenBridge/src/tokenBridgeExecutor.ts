@@ -33,19 +33,25 @@ import {
   relayInstructionsLayout,
   toUniversal,
 } from '@wormhole-foundation/sdk-definitions';
+import { ZeroAddress } from 'ethers';
 
-const EXECUTOR_ABI = [
+const RELAYER_ABI = [
   'function transferTokensWithRelay(address token, uint256 amount, uint16 targetChain, bytes32 targetRecipient, uint32 nonce, bytes32 dstTransferRecipient, bytes32 dstExecutionAddress, uint256 executionAmount, address refundAddr, bytes calldata signedQuoteBytes, bytes calldata relayInstructions) payable returns (uint64)',
   'function wrapAndTransferEthWithRelay(uint16 targetChain, bytes32 targetRecipient, uint32 nonce, bytes32 dstTransferRecipient, bytes32 dstExecutionAddress, uint256 executionAmount, address refundAddr, bytes calldata signedQuoteBytes, bytes calldata relayInstructions) payable returns (uint64)',
   'function executeVAAv1(bytes calldata encodedTransferMessage) payable',
+];
+
+const RELAYER_WITH_REFERRER_ABI = [
+  'function transferTokensWithRelay(address tokenBridgeRelayer, address token, uint256 amount, uint16 targetChain, bytes32 targetRecipient, uint32 nonce, bytes32 dstTransferRecipient, bytes32 dstExecutionAddress, uint256 executionAmount, address refundAddr, bytes calldata signedQuoteBytes, bytes calldata relayInstructions, tuple(address payee, uint16 dbps) feeArgs) payable returns (uint64)',
+  'function wrapAndTransferEthWithRelay(address tokenBridgeRelayer, uint256 amount, uint16 targetChain, bytes32 targetRecipient, uint32 nonce, bytes32 dstTransferRecipient, bytes32 dstExecutionAddress, uint256 executionAmount, address refundAddr, bytes calldata signedQuoteBytes, bytes calldata relayInstructions, tuple(address payee, uint16 dbps) feeArgs) payable returns (uint64)',
 ];
 
 export class EvmTokenBridgeExecutor<N extends Network, C extends EvmChains>
   implements TokenBridgeExecutor<N, C>
 {
   readonly chainId: bigint;
-  readonly executorAddress: string;
-  readonly executorContract: Contract;
+  readonly relayerWithReferrerAddress: string;
+  readonly relayerWithReferrerContract: Contract;
   readonly core: EvmWormholeCore<N, C>;
 
   constructor(
@@ -59,16 +65,22 @@ export class EvmTokenBridgeExecutor<N extends Network, C extends EvmChains>
       chain,
     ) as bigint;
 
-    const executorAddress = this.contracts.tokenBridgeExecutorRelayer;
-    if (!executorAddress)
+    const tokenBridgeExecutor = this.contracts.tokenBridgeExecutor;
+    if (!tokenBridgeExecutor)
       throw new Error(
-        `Wormhole Token Bridge Executor contract for domain ${chain} not found`,
+        `Wormhole Token Bridge Executor contracts for domain ${chain} not found`,
       );
 
-    this.executorAddress = executorAddress;
-    this.executorContract = new Contract(
-      this.executorAddress,
-      EXECUTOR_ABI,
+    const relayerWithReferrerAddress = tokenBridgeExecutor.relayerWithReferrer;
+    if (!relayerWithReferrerAddress)
+      throw new Error(
+        `Wormhole Token Bridge Relayer With Referrer contract for domain ${chain} not found`,
+      );
+
+    this.relayerWithReferrerAddress = relayerWithReferrerAddress;
+    this.relayerWithReferrerContract = new Contract(
+      this.relayerWithReferrerAddress,
+      RELAYER_WITH_REFERRER_ABI,
       provider,
     );
 
@@ -99,16 +111,18 @@ export class EvmTokenBridgeExecutor<N extends Network, C extends EvmChains>
     token: TokenAddress<C>,
     amount: bigint,
     executorQuote: TokenBridgeExecutor.ExecutorQuote,
+    referrerFee?: TokenBridgeExecutor.ReferrerFee,
   ): AsyncGenerator<EvmUnsignedTransaction<N, C>> {
-    const dstRelayer = contracts.tokenBridgeExecutorRelayer.get(
+    const dstExecutor = contracts.tokenBridgeExecutor.get(
       this.network,
       recipient.chain,
     );
-    if (!dstRelayer) {
+    if (!dstExecutor || !dstExecutor.relayer) {
       throw new Error(
-        `Token Bridge Executor contract for domain ${recipient.chain} not found`,
+        `Token Bridge Executor Relayer contract for domain ${recipient.chain} not found`,
       );
     }
+    const dstRelayer = dstExecutor.relayer;
 
     const senderAddr = new EvmAddress(sender).unwrap();
     const targetChain = toChainId(recipient.chain);
@@ -132,10 +146,23 @@ export class EvmTokenBridgeExecutor<N extends Network, C extends EvmChains>
 
     let txReq: TransactionRequest;
 
+    // TODO: this could be optimized to use the non-referrer contract if referrerFee is not provided
+    const feeArgs = referrerFee
+      ? {
+          payee: referrerFee.referrer.address.toString(),
+          dbps: referrerFee.feeDbps,
+        }
+      : {
+          payee: ZeroAddress,
+          dbps: 0n,
+        };
+
     if (isNative(token)) {
-      txReq = await this.executorContract
+      txReq = await this.relayerWithReferrerContract
         .getFunction('wrapAndTransferEthWithRelay')
         .populateTransaction(
+          this.relayerWithReferrerAddress,
+          amount,
           targetChain,
           targetRecipient.toUint8Array(),
           nonce,
@@ -145,6 +172,7 @@ export class EvmTokenBridgeExecutor<N extends Network, C extends EvmChains>
           refundAddr,
           signedQuoteBytes,
           relayInstructionsBytes,
+          feeArgs,
           {
             value: amount + wormholeFee + executionAmount,
           },
@@ -157,21 +185,22 @@ export class EvmTokenBridgeExecutor<N extends Network, C extends EvmChains>
 
       const allowance = await tokenContract.allowance(
         senderAddr,
-        this.executorAddress,
+        this.relayerWithReferrerAddress,
       );
 
       if (allowance < amount) {
         const txReq = await tokenContract.approve.populateTransaction(
-          this.executorAddress,
+          this.relayerWithReferrerAddress,
           amount,
         );
 
         yield this.createUnsignedTx(txReq, 'approve');
       }
 
-      txReq = await this.executorContract
+      txReq = await this.relayerWithReferrerContract
         .getFunction('transferTokensWithRelay')
         .populateTransaction(
+          this.relayerWithReferrerAddress,
           token.toString(),
           amount,
           targetChain,
@@ -183,6 +212,7 @@ export class EvmTokenBridgeExecutor<N extends Network, C extends EvmChains>
           refundAddr,
           signedQuoteBytes,
           relayInstructionsBytes,
+          feeArgs,
           {
             value: wormholeFee + executionAmount,
           },
@@ -205,17 +235,15 @@ export class EvmTokenBridgeExecutor<N extends Network, C extends EvmChains>
 
     const encodedTransferMessage = serialize(vaa);
 
-    const dstExecutorAddress = new EvmAddress(
-      vaa.payload.to.address,
-    ).toString();
+    const dstRelayerAddress = new EvmAddress(vaa.payload.to.address).toString();
 
-    const dstExecutorContract = new Contract(
-      dstExecutorAddress,
-      EXECUTOR_ABI,
+    const dstRelayerContract = new Contract(
+      dstRelayerAddress,
+      RELAYER_ABI,
       this.provider,
     );
 
-    const txReq = await dstExecutorContract
+    const txReq = await dstRelayerContract
       .getFunction('executeVAAv1')
       .populateTransaction(encodedTransferMessage, {
         value: 0n,

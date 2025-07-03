@@ -10,8 +10,8 @@ registerProtocol(_platform, 'TokenBridgeExecutor', SolanaTokenBridgeExecutor);
 
 export * from './tokenBridgeType.js';
 export * from './automaticTokenBridgeType.js';
+export * from './tokenBridgeExecutorTypes.js';
 export * from './utils/index.js';
 export * from './tokenBridge.js';
 export * from './automaticTokenBridge.js';
 export * from './tokenBridgeExecutor.js';
-export * from './tokenBridgeExecutorTypes.js';

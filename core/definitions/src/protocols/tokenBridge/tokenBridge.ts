@@ -115,6 +115,13 @@ export namespace TokenBridgeExecutor {
     estimatedCost: bigint;
     relayInstructions: RelayInstructions;
   }
+
+  export interface ReferrerFee {
+    feeDbps: bigint;
+    feeAmount: bigint;
+    remainingAmount: bigint;
+    referrer: ChainAddress;
+  }
 }
 
 export type TokenBridgeProtocol =
@@ -141,6 +148,7 @@ export type TokenTransferDetails =
   | (BaseTokenTransferDetails & {
       protocol: TokenBridgeExecutor.ProtocolName;
       executorQuote: TokenBridgeExecutor.ExecutorQuote;
+      referrerFee?: TokenBridgeExecutor.ReferrerFee;
     });
 
 export function isTokenTransferDetails(
@@ -316,6 +324,7 @@ export interface TokenBridgeExecutor<N extends Network = Network, C extends Chai
     token: TokenAddress<C>,
     amount: bigint,
     executorQuote: TokenBridgeExecutor.ExecutorQuote,
+    referrerFee?: TokenBridgeExecutor.ReferrerFee,
   ): AsyncGenerator<UnsignedTransaction<N, C>>;
 
   redeem(

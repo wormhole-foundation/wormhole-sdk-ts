@@ -2,8 +2,6 @@ import type { MapLevels } from "./../../utils/index.js";
 import type { Network } from "../networks.js";
 import type { Chain } from "../chains.js";
 
-// TODO: maybe change the shape to { relayer, relayerWithReferrer }
-
 // prettier-ignore
 export const executorContracts = [[
   "Mainnet", [

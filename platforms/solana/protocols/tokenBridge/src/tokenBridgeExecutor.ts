@@ -11,21 +11,24 @@ import type {
 import {
   contracts,
   isNative,
-  toChainId,
-  signedQuoteLayout,
+  relayInstructionsLayout,
   serializeLayout,
+  signedQuoteLayout,
+  toChainId,
+  toUniversal,
 } from '@wormhole-foundation/sdk-connect';
+import type {
+  SolanaChains,
+  SolanaTransaction,
+} from '@wormhole-foundation/sdk-solana';
 import {
   SolanaAddress,
   SolanaPlatform,
-  SolanaTransaction,
   SolanaUnsignedTransaction,
-  type SolanaChains,
 } from '@wormhole-foundation/sdk-solana';
-import {
-  relayInstructionsLayout,
-  toUniversal,
-} from '@wormhole-foundation/sdk-definitions';
+
+import { Program } from '@coral-xyz/anchor';
+
 import type {
   AddressLookupTableAccount,
   Connection,
@@ -40,25 +43,30 @@ import {
   TransactionMessage,
   VersionedTransaction,
 } from '@solana/web3.js';
+
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   NATIVE_MINT,
+  createAssociatedTokenAccountIdempotentInstruction,
+  createTransferInstruction,
   getAssociatedTokenAddressSync,
 } from '@solana/spl-token';
-import { BN, Program } from '@coral-xyz/anchor';
+import '@wormhole-foundation/sdk-solana-core';
+
+import BN from 'bn.js';
 import {
   TokenBridgeExecutorRelayer,
   TokenBridgeExecutorRelayerIdl,
 } from './tokenBridgeExecutorTypes.js';
-import { SolanaTokenBridge } from './tokenBridge.js';
 import {
   SolanaWormholeCore,
   utils,
 } from '@wormhole-foundation/sdk-solana-core';
+import { SolanaTokenBridge } from './tokenBridge.js';
 import {
+  deriveWrappedMetaKey,
   deriveEndpointKey,
   deriveMintAuthorityKey,
-  deriveWrappedMetaKey,
 } from './utils/index.js';
 
 export class SolanaTokenBridgeExecutor<
@@ -117,16 +125,18 @@ export class SolanaTokenBridgeExecutor<
     token: TokenAddress<C>,
     amount: bigint,
     executorQuote: TokenBridgeExecutor.ExecutorQuote,
+    referrerFee?: TokenBridgeExecutor.ReferrerFee,
   ): AsyncGenerator<SolanaUnsignedTransaction<N, C>> {
-    const dstRelayer = contracts.tokenBridgeExecutorRelayer.get(
+    const dstExecutor = contracts.tokenBridgeExecutor.get(
       this.network,
       recipient.chain,
     );
-    if (!dstRelayer) {
+    if (!dstExecutor || !dstExecutor.relayer) {
       throw new Error(
-        `Relayer contract for domain ${recipient.chain} not found`,
+        `Token Bridge Executor Relayer contract for domain ${recipient.chain} not found`,
       );
     }
+    const dstRelayer = dstExecutor.relayer;
 
     const senderPubkey = new SolanaAddress(sender).unwrap();
     const targetChain = toChainId(recipient.chain);
@@ -163,8 +173,6 @@ export class SolanaTokenBridgeExecutor<
     const payeePubkey = new PublicKey(signedQuote.quote.payeeAddress);
 
     const messageKeypair = Keypair.generate();
-
-    // TODO: what if the recipient chain is another SVM chain (Fogo?)
 
     const dstTransferRecipient = toUniversal(recipient.chain, dstRelayer);
     const dstExecutionAddress = dstTransferRecipient;
@@ -219,9 +227,55 @@ export class SolanaTokenBridgeExecutor<
 
     const instructions: TransactionInstruction[] = [];
 
+    if (referrerFee && referrerFee.feeAmount > 0n) {
+      const referrer = new PublicKey(referrerFee.referrer.address.toString());
+
+      const referrerAta = getAssociatedTokenAddressSync(
+        mint,
+        referrer,
+        true,
+        tokenProgram,
+      );
+
+      const senderAta = getAssociatedTokenAddressSync(
+        mint,
+        senderPubkey,
+        true,
+        tokenProgram,
+      );
+
+      const referrerAtaAccount =
+        await this.connection.getAccountInfo(referrerAta);
+
+      if (!referrerAtaAccount) {
+        instructions.push(
+          createAssociatedTokenAccountIdempotentInstruction(
+            senderPubkey,
+            referrerAta,
+            referrer,
+            mint,
+            tokenProgram,
+          ),
+        );
+      }
+
+      instructions.push(
+        createTransferInstruction(
+          senderAta,
+          referrerAta,
+          senderPubkey,
+          referrerFee.feeAmount,
+          undefined,
+          tokenProgram,
+        ),
+      );
+    }
+
+    const transferAmount = referrerFee ? referrerFee.remainingAmount : amount;
+
     // Build transfer instruction data
     const transferArgs = {
-      amount: new BN(amount.toString()),
+      amount: new BN(transferAmount.toString()),
       recipientChain: targetChain,
       recipientAddress: Array.from(targetRecipient.toUint8Array()),
       nonce: 0,
@@ -360,35 +414,6 @@ export class SolanaTokenBridgeExecutor<
       true,
       tokenProgram,
     );
-
-    // Not necessary, recipientTokenAccount is init_if_needed
-    //// Create ATA if it doesn't exist
-    //const acctInfo = await this.connection.getAccountInfo(
-    //  recipientTokenAccount,
-    //);
-    //if (acctInfo === null) {
-    //  const transaction = new VersionedTransaction(
-    //    new TransactionMessage({
-    //      payerKey: senderPubkey,
-    //      instructions: [
-    //        createAssociatedTokenAccountInstruction(
-    //          senderPubkey,
-    //          recipientTokenAccount,
-    //          recipientPubkey,
-    //          mint,
-    //          tokenProgram,
-    //        ),
-    //      ],
-    //      recentBlockhash: (await this.connection.getLatestBlockhash())
-    //        .blockhash,
-    //    }).compileToV0Message(),
-    //  );
-
-    //  yield this.createUnsignedTx(
-    //    { transaction, signers: [] },
-    //    'TokenBridgeExecutor.CreateATA',
-    //  );
-    //}
 
     // Post VAA if necessary
     const postedVaaKey = utils.derivePostedVaaKey(

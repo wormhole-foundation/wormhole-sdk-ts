@@ -16,7 +16,7 @@ import { constMap } from "./../../utils/index.js";
 export const coreBridge = constMap(core.coreBridgeContracts);
 export const tokenBridge = constMap(tb.tokenBridgeContracts);
 export const tokenBridgeRelayer = constMap(tbr.tokenBridgeRelayerContracts);
-export const tokenBridgeExecutorRelayer = constMap(tbe.tokenBridgeExecutorRelayerContracts);
+export const tokenBridgeExecutor = constMap(tbe.tokenBridgeExecutorContracts);
 export const executor = constMap(e.executorContracts);
 export const nftBridge = constMap(nb.nftBridgeContracts);
 export const relayer = constMap(r.relayerContracts);
@@ -29,13 +29,14 @@ export type { CircleContracts } from "./circle.js";
 export const circleContracts = constMap(circle.circleContracts);
 
 export type { PorticoContracts } from "./portico.js";
+export type { TokenBridgeExecutorContracts } from "./tokenBridgeExecutor.js";
 export const rollupContracts = constMap(rollup.rollupContractAddresses);
 
 // @ts-ignore: Adding one more token bridge is causing "Type instantiation is excessively deep and possibly infinite."
 export const tokenBridgeChains = constMap(tb.tokenBridgeContracts, [0, 1]);
 export const tokenBridgeRelayerChains = constMap(tbr.tokenBridgeRelayerContracts, [0, 1]);
-export const tokenBridgeExecutorRelayerChains = constMap(
-  tbe.tokenBridgeExecutorRelayerContracts,
+export const tokenBridgeExecutorChains = constMap(
+  tbe.tokenBridgeExecutorContracts,
   [0, 1],
 );
 export const executorChains = constMap(e.executorContracts, [0, 1]);

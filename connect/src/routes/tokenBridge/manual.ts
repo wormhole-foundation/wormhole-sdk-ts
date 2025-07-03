@@ -179,9 +179,9 @@ export class TokenBridgeRoute<N extends Network>
     return {
       from,
       to,
+      protocol: "TokenBridge",
       token: request.source.id,
       amount: amount.units(params.normalizedParams.amount),
-      protocol: "TokenBridge",
       ...params.options,
     };
   }

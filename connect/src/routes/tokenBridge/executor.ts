@@ -76,8 +76,12 @@ type Vp = TokenBridgeExecutorRoute.ValidatedParams;
 type Tp = TransferParams<Op>;
 type Vr = ValidationResult<Op>;
 
-type QR = QuoteResult<Op, Vp>;
-type D = TokenBridgeExecutor.ExecutorQuote;
+type D = {
+  executorQuote: TokenBridgeExecutor.ExecutorQuote;
+  referrerFee?: TokenBridgeExecutor.ReferrerFee;
+};
+
+type QR = QuoteResult<Op, Vp, D>;
 type Q = Quote<Op, Vp, D>;
 type R = TransferReceipt<AttestationReceipt<"TokenBridgeExecutor">>;
 
@@ -147,43 +151,58 @@ export class TokenBridgeExecutorRoute<N extends Network>
 
   async quote(request: RouteTransferRequest<N>, params: Vp): Promise<QR> {
     try {
-      let gasLimit: bigint | undefined = undefined;
-      if (this.staticConfig.perTokenOverrides) {
-        const dstTokenAddress = canonicalAddress(request.destination.id);
-        const override =
-          this.staticConfig.perTokenOverrides[this.wh.network]?.[request.destination.id.chain]?.[
-            dstTokenAddress
-          ];
-        if (override?.gasLimit !== undefined) {
-          gasLimit = override.gasLimit;
-        }
-      }
-
       let referrerFeeDbps: bigint | undefined = undefined;
-      if (this.staticConfig.referrerFeeDbps) {
+      let gasLimit: bigint | undefined = undefined;
+
+      if (this.staticConfig.referrerFeeDbps !== undefined) {
         referrerFeeDbps = this.staticConfig.referrerFeeDbps;
       }
+
       if (this.staticConfig.perTokenOverrides) {
         const srcTokenAddress = canonicalAddress(request.source.id);
-        const override =
+        const srcOverride =
           this.staticConfig.perTokenOverrides[this.wh.network]?.[request.fromChain.chain]?.[
             srcTokenAddress
           ];
-        if (override?.referrerFeeDbps !== undefined) {
-          referrerFeeDbps = override.referrerFeeDbps;
+        if (srcOverride?.referrerFeeDbps !== undefined) {
+          referrerFeeDbps = srcOverride.referrerFeeDbps;
+        }
+
+        const dstTokenAddress = canonicalAddress(request.destination.id);
+        const dstOverride =
+          this.staticConfig.perTokenOverrides[this.wh.network]?.[request.destination.id.chain]?.[
+            dstTokenAddress
+          ];
+        if (dstOverride?.gasLimit !== undefined) {
+          gasLimit = dstOverride.gasLimit;
         }
       }
 
-      // TODO: throw if referrerFeeDbps is > 0 and no referrerAddresses are configured
+      let referrerAddress: ChainAddress | undefined = undefined;
+      if (referrerFeeDbps !== undefined && referrerFeeDbps > 0n) {
+        const referrer =
+          this.staticConfig.referrerAddresses?.[this.wh.network]?.[request.fromChain.chain];
+        if (!referrer) {
+          throw new Error(
+            `No referrer address configured for network ${this.wh.network} and chain ${request.fromChain.chain}`,
+          );
+        }
+        referrerAddress = Wormhole.chainAddress(request.fromChain.chain, referrer);
+      }
+
+      const referrerFee =
+        referrerFeeDbps !== undefined && referrerAddress !== undefined
+          ? { feeDbps: referrerFeeDbps, referrer: referrerAddress }
+          : undefined;
 
       const q = await TokenTransfer.quoteTransfer(this.wh, request.fromChain, request.toChain, {
         token: request.source.id,
         amount: sdkAmount.units(params.normalizedParams.amount),
         protocol: "TokenBridgeExecutor",
-        referrerFeeDbps,
         nativeGasPercent: params.options.nativeGas,
         gasDropRecipient: request.recipient,
         gasLimit,
+        referrerFee,
       });
 
       return request.displayQuote(q, params, q.details);
@@ -302,32 +321,8 @@ export class TokenBridgeExecutorRoute<N extends Network>
       token: request.source.id,
       amount: sdkAmount.units(params.normalizedParams.amount),
       protocol: "TokenBridgeExecutor",
-      executorQuote: quote.details,
+      executorQuote: quote.details.executorQuote,
+      referrerFee: quote.details.referrerFee,
     };
-  }
-
-  // TODO: move this to quoteTransfer
-  // TODO: token bridge trims dust. does it refund it?
-  static calculateReferrerFee(
-    _amount: sdkAmount.Amount,
-    dBps: bigint,
-  ): { referrerFee: bigint; remainingAmount: bigint } {
-    const MAX_U16 = 65_535n;
-    if (dBps > MAX_U16) {
-      throw new Error("dBps exceeds max u16");
-    }
-    const amount = sdkAmount.units(_amount);
-    let remainingAmount: bigint = amount;
-    let referrerFee: bigint = 0n;
-    if (dBps > 0) {
-      referrerFee = (amount * dBps) / 100_000n;
-      //// The NttManagerWithExecutor trims the fee before subtracting it from the amount
-      //const trimmedFee = NttRoute.trimAmount(
-      //  sdkAmount.fromBaseUnits(referrerFee, _amount.decimals),
-      //  destinationTokenDecimals,
-      //);
-      remainingAmount = amount - referrerFee;
-    }
-    return { referrerFee, remainingAmount };
   }
 }
