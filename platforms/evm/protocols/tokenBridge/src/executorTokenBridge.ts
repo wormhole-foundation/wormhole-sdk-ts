@@ -266,9 +266,20 @@ export class EvmExecutorTokenBridge<N extends Network, C extends EvmChains>
     msgValue: bigint;
     gasLimit: bigint;
   }> {
+    let gasLimit: bigint;
+    switch (receivedToken.chain) {
+      case 'Arbitrum':
+      case 'Moonbeam':
+        gasLimit = 800_000n;
+        break;
+      default:
+        gasLimit = 425_000n;
+        break;
+    }
+
     return {
       msgValue: 0n,
-      gasLimit: receivedToken.chain === 'Arbitrum' ? 800_000n : 425_000n,
+      gasLimit,
     };
   }
 
