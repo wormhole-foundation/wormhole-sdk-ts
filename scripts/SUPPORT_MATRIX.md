@@ -145,11 +145,6 @@
 | Sei | ManualCCTP | :no_entry_sign: | :no_entry_sign: |
 | Sei | AutomaticCCTP | :no_entry_sign: | :no_entry_sign: |
 | Sei | AutomaticPortico | :no_entry_sign: | :no_entry_sign: |
-| Rootstock | ManualTokenBridge | :no_entry_sign: | :no_entry_sign: |
-| Rootstock | AutomaticTokenBridge | :no_entry_sign: | :no_entry_sign: |
-| Rootstock | ManualCCTP | :no_entry_sign: | :no_entry_sign: |
-| Rootstock | AutomaticCCTP | :no_entry_sign: | :no_entry_sign: |
-| Rootstock | AutomaticPortico | :no_entry_sign: | :no_entry_sign: |
 | Wormchain | ManualTokenBridge | :white_check_mark: | :white_check_mark: |
 | Wormchain | AutomaticTokenBridge | :no_entry_sign: | :no_entry_sign: |
 | Wormchain | ManualCCTP | :no_entry_sign: | :no_entry_sign: |
