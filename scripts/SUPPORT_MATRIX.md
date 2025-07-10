@@ -120,11 +120,6 @@
 | Optimism | ManualCCTP | :white_check_mark: | :no_entry_sign: |
 | Optimism | AutomaticCCTP | :white_check_mark: | :no_entry_sign: |
 | Optimism | AutomaticPortico | :white_check_mark: | :no_entry_sign: |
-| Gnosis | ManualTokenBridge | :no_entry_sign: | :no_entry_sign: |
-| Gnosis | AutomaticTokenBridge | :no_entry_sign: | :no_entry_sign: |
-| Gnosis | ManualCCTP | :no_entry_sign: | :no_entry_sign: |
-| Gnosis | AutomaticCCTP | :no_entry_sign: | :no_entry_sign: |
-| Gnosis | AutomaticPortico | :no_entry_sign: | :no_entry_sign: |
 | Pythnet | ManualTokenBridge | :no_entry_sign: | :no_entry_sign: |
 | Pythnet | AutomaticTokenBridge | :no_entry_sign: | :no_entry_sign: |
 | Pythnet | ManualCCTP | :no_entry_sign: | :no_entry_sign: |
