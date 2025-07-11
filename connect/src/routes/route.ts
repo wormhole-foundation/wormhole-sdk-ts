@@ -95,6 +95,8 @@ export interface RouteConstructor<OP extends Options = Options> {
     fromChain: ChainContext<N>,
     toChain: ChainContext<N>,
   ): Promise<TokenId[]>;
+  /** get if the chain allows same-chain swaps */
+  supportsSameChainSwaps?(network: Network, chain: Chain): boolean;
 }
 
 // Use this to ensure the static methods defined in the RouteConstructor
