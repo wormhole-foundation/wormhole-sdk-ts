@@ -36,18 +36,20 @@ import { getSigner, waitLog } from "./helpers/index.js";
   // to the caller
   const amt = "0.05";
 
-  // With automatic set to true, perform an automatic transfer. This will invoke a relayer
-  // contract intermediary that knows to pick up the transfers
-  // With automatic set to false, perform a manual transfer from source to destination
-  // of the token
+  // Protocol options:
+  // - "TokenBridge": Manual transfer requiring VAA redemption on destination
+  // - "ExecutorTokenBridge": Transfer using executor service for automatic relaying
+  // - "AutomaticTokenBridge": Transfer using legacy relayer service for automatic relaying
   // On the destination side, a wrapped version of the token will be minted
   // to the address specified in the transfer VAA
-  const automatic = false;
+  const protocol: TokenTransfer.Protocol = "TokenBridge";
 
-  // The automatic relayer has the ability to deliver some native gas funds to the destination account
+  // For AutomaticTokenBridge: The relayer can deliver native gas funds to the destination account
   // The amount specified for native gas will be swapped for the native gas token according
   // to the swap rate provided by the contract, denominated in native gas tokens
-  const nativeGas = automatic ? "0.01" : undefined;
+  // For ExecutorTokenBridge: Native gas can also be delivered via the executor service
+  // @ts-ignore
+  const nativeGas = protocol === "AutomaticTokenBridge" ? "0.01" : undefined;
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
@@ -78,7 +80,7 @@ import { getSigner, waitLog } from "./helpers/index.js";
           source,
           destination,
           delivery: {
-            automatic,
+            protocol,
             nativeGas: nativeGas ? amount.units(amount.parse(nativeGas, decimals)) : undefined,
           },
         },
@@ -104,7 +106,7 @@ async function tokenTransfer<N extends Network>(
     source: SignerStuff<N, Chain>;
     destination: SignerStuff<N, Chain>;
     delivery?: {
-      automatic: boolean;
+      protocol: TokenTransfer.Protocol;
       nativeGas?: bigint;
     };
     payload?: Uint8Array;
@@ -113,25 +115,69 @@ async function tokenTransfer<N extends Network>(
 ): Promise<TokenTransfer<N>> {
   // EXAMPLE_TOKEN_TRANSFER
   // Create a TokenTransfer object to track the state of the transfer over time
-  const xfer = await wh.tokenTransfer(
-    route.token,
-    route.amount,
-    route.source.address,
-    route.destination.address,
-    route.delivery?.automatic ?? false,
-    route.payload,
-    route.delivery?.nativeGas,
-  );
+  const protocol = route.delivery?.protocol ?? "TokenBridge";
+  let xfer: TokenTransfer<N>;
 
-  const quote = await TokenTransfer.quoteTransfer(
-    wh,
-    route.source.chain,
-    route.destination.chain,
-    xfer.transfer,
-  );
+  if (protocol === "TokenBridge") {
+    xfer = await wh.tokenTransfer(
+      route.token,
+      route.amount,
+      route.source.address,
+      route.destination.address,
+      protocol,
+      route.payload,
+    );
+  } else if (protocol === "AutomaticTokenBridge") {
+    xfer = await wh.tokenTransfer(
+      route.token,
+      route.amount,
+      route.source.address,
+      route.destination.address,
+      protocol,
+      route.delivery?.nativeGas,
+    );
+  } else if (protocol === "ExecutorTokenBridge") {
+    // ExecutorTokenBridge requires additional setup for msgValue and gasLimit
+    xfer = await wh.tokenTransfer(
+      route.token,
+      route.amount,
+      route.source.address,
+      route.destination.address,
+      protocol,
+    );
+  } else {
+    throw new Error(`Unsupported protocol: ${protocol}`);
+  }
+
+  let quote;
+  if (xfer.transfer.protocol === "ExecutorTokenBridge") {
+    // For ExecutorTokenBridge, we need to estimate msgValue and gasLimit for the destination chain
+    // then get a quote with these parameters to obtain the executor quote
+    const dstTb = await route.destination.chain.getExecutorTokenBridge();
+    const dstToken = await TokenTransfer.lookupDestinationToken(
+      route.source.chain,
+      route.destination.chain,
+      route.token,
+    );
+    const { msgValue, gasLimit } = await dstTb.estimateMsgValueAndGasLimit(dstToken);
+    quote = await TokenTransfer.quoteTransfer(wh, route.source.chain, route.destination.chain, {
+      ...xfer.transfer,
+      msgValue,
+      gasLimit,
+    });
+    // Attach the executor quote to the transfer details for later use
+    xfer.transfer.executorQuote = quote.details.executorQuote;
+  } else {
+    quote = await TokenTransfer.quoteTransfer(
+      wh,
+      route.source.chain,
+      route.destination.chain,
+      xfer.transfer,
+    );
+  }
   console.log(quote);
 
-  if (xfer.transfer.automatic && quote.destinationToken.amount < 0)
+  if (xfer.transfer.protocol === "AutomaticTokenBridge" && quote.destinationToken.amount < 0)
     throw "The amount requested is too low to cover the fee and any native gas requested.";
 
   // 1) Submit the transactions to the source chain, passing a signer to sign any txns
@@ -139,10 +185,30 @@ async function tokenTransfer<N extends Network>(
   const srcTxids = await xfer.initiateTransfer(route.source.signer);
   console.log(`Started transfer: `, srcTxids);
 
-  // If automatic, we're done
-  if (route.delivery?.automatic) return xfer;
+  if (route.delivery?.protocol === "ExecutorTokenBridge") {
+    // For ExecutorTokenBridge transfers, we can track the status via the executor API
+    // This provides real-time updates on the relay progress
+    let retry = 0;
+    while (retry < 5) {
+      try {
+        const [status] = await wh.getExecutorTxStatus(srcTxids.at(-1)!, xfer.fromChain.chain);
+        if (status) {
+          console.log(`Executor transfer status: `, status);
+          break;
+        }
+      } catch (error) {
+        console.error(`Error fetching executor transfer status: `, error);
+      }
+      await new Promise((resolve) => setTimeout(resolve, 5000)); // Wait 5 seconds before retrying
+      retry++;
+    }
+  }
 
-  // 2) Wait for the VAA to be signed and ready (not required for auto transfer)
+  // If using automatic protocols (AutomaticTokenBridge or ExecutorTokenBridge), we're done
+  // Manual TokenBridge requires VAA redemption on the destination chain
+  if (route.delivery?.protocol !== "TokenBridge") return xfer;
+
+  // 2) Wait for the VAA to be signed and ready (not required for automatic protocols)
   console.log("Getting Attestation");
   const attestIds = await xfer.fetchAttestation(60_000);
   console.log(`Got Attestation: `, attestIds);

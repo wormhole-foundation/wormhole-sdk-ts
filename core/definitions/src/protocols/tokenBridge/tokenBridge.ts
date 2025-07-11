@@ -8,6 +8,8 @@ import type { ProtocolPayload, ProtocolVAA } from "./../../vaa/index.js";
 import { payloadDiscriminator } from "./../../vaa/index.js";
 import "./automaticTokenBridgeLayout.js";
 import "./tokenBridgeLayout.js";
+import { type SignedQuote } from "../executor/signedQuote.js";
+import { type RelayInstructions } from "../executor/relayInstruction.js";
 
 export const ErrNotWrapped = (token: string) => new Error(`Token ${token} is not a wrapped asset`);
 
@@ -18,10 +20,12 @@ declare module "../../registry.js" {
     interface ProtocolToInterfaceMapping<N, C> {
       TokenBridge: TokenBridge<N, C>;
       AutomaticTokenBridge: AutomaticTokenBridge<N, C>;
+      ExecutorTokenBridge: ExecutorTokenBridge<N, C>;
     }
     interface ProtocolToPlatformMapping {
       TokenBridge: EmptyPlatformMap<"TokenBridge">;
       AutomaticTokenBridge: EmptyPlatformMap<"AutomaticTokenBridge">;
+      ExecutorTokenBridge: EmptyPlatformMap<"ExecutorTokenBridge">;
     }
   }
 }
@@ -89,18 +93,63 @@ export namespace AutomaticTokenBridge {
   >;
 }
 
-/**
- * Details of a token transfer, used to initiate a transfer
- */
-export type TokenTransferDetails = {
+export namespace ExecutorTokenBridge {
+  const _protocol = "ExecutorTokenBridge";
+  export type ProtocolName = typeof _protocol;
+
+  const _payloads = ["TransferWithExecutorRelay"] as const;
+
+  export type PayloadNames = (typeof _payloads)[number];
+
+  export type VAA<PayloadName extends PayloadNames = PayloadNames> = ProtocolVAA<
+    ProtocolName,
+    PayloadName
+  >;
+  export type Payload<PayloadName extends PayloadNames = PayloadNames> = ProtocolPayload<
+    ProtocolName,
+    PayloadName
+  >;
+
+  export interface ExecutorQuote {
+    signedQuote: SignedQuote;
+    estimatedCost: bigint;
+    relayInstructions: RelayInstructions;
+  }
+
+  export interface ReferrerFee {
+    feeDbps: bigint;
+    feeAmount: bigint;
+    remainingAmount: bigint;
+    referrer: ChainAddress;
+  }
+}
+
+export type TokenBridgeProtocol =
+  | TokenBridge.ProtocolName
+  | AutomaticTokenBridge.ProtocolName
+  | ExecutorTokenBridge.ProtocolName;
+
+type BaseTokenTransferDetails = {
   token: TokenId;
   amount: bigint;
   from: ChainAddress;
   to: ChainAddress;
-  automatic?: boolean;
-  payload?: Uint8Array;
-  nativeGas?: bigint;
 };
+
+export type TokenTransferDetails =
+  | (BaseTokenTransferDetails & {
+      protocol: TokenBridge.ProtocolName;
+      payload?: Uint8Array;
+    })
+  | (BaseTokenTransferDetails & {
+      protocol: AutomaticTokenBridge.ProtocolName;
+      nativeGas?: bigint;
+    })
+  | (BaseTokenTransferDetails & {
+      protocol: ExecutorTokenBridge.ProtocolName;
+      executorQuote?: ExecutorTokenBridge.ExecutorQuote;
+      referrerFee?: ExecutorTokenBridge.ReferrerFee;
+    });
 
 export function isTokenTransferDetails(
   thing: TokenTransferDetails | any,
@@ -266,4 +315,28 @@ export interface AutomaticTokenBridge<N extends Network = Network, C extends Cha
   nativeTokenAmount(token: TokenAddress<C>, amount: bigint): Promise<bigint>;
   /** Maximum amount of sending tokens that can be swapped for native tokens */
   maxSwapAmount(token: TokenAddress<C>): Promise<bigint>;
+}
+
+export interface ExecutorTokenBridge<N extends Network = Network, C extends Chain = Chain> {
+  transfer(
+    sender: AccountAddress<C>,
+    recipient: ChainAddress,
+    token: TokenAddress<C>,
+    amount: bigint,
+    executorQuote: ExecutorTokenBridge.ExecutorQuote,
+    referrerFee?: ExecutorTokenBridge.ReferrerFee,
+  ): AsyncGenerator<UnsignedTransaction<N, C>>;
+
+  redeem(
+    sender: AccountAddress<C>,
+    vaa: ExecutorTokenBridge.VAA,
+  ): AsyncGenerator<UnsignedTransaction<N, C>>;
+
+  estimateMsgValueAndGasLimit(
+    receivedToken: TokenId,
+    recipient?: ChainAddress,
+  ): Promise<{
+    msgValue: bigint;
+    gasLimit: bigint;
+  }>;
 }
