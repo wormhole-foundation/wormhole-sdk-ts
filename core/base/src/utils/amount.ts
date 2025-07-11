@@ -218,11 +218,6 @@ function validateAmount(amount: Amount): void {
  * @returns An Amount representing the percentage portion
  */
 export function getDeciBps(amt: Amount, dBps: bigint): Amount {
-  const MAX_U16 = 65_535n;
-  if (dBps > MAX_U16) {
-    throw new Error("dBps exceeds max u16");
-  }
-
   const amtUnits = units(amt);
   const portionUnits = (amtUnits * dBps) / 100_000n;
 

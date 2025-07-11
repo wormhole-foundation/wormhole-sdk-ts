@@ -1169,6 +1169,11 @@ export namespace TokenTransfer {
     amt: amount.Amount,
     dBps: bigint, // tenths of basis points
   ): { fee: amount.Amount; remaining: amount.Amount } {
+    const MAX_U16 = 65_535n;
+    if (dBps > MAX_U16) {
+      throw new Error("dBps exceeds max u16");
+    }
+
     const fee = amount.getDeciBps(amt, dBps);
     const feeUnits = amount.units(fee);
     const amtUnits = amount.units(amt);
