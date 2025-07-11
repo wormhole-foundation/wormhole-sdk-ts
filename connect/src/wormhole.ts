@@ -43,7 +43,7 @@ import {
   getVaaBytesWithRetry,
   getVaaWithRetry,
 } from "./whscan-api.js";
-import * as executorApi from "./executor-api.js";
+import { fetchCapabilities, fetchQuote, fetchStatus } from "@wormhole-foundation/sdk-definitions";
 
 type PlatformMap<N extends Network, P extends Platform = Platform> = Map<P, PlatformContext<N, P>>;
 type ChainMap<N extends Network, C extends Chain = Chain> = Map<C, ChainContext<N, C>>;
@@ -452,7 +452,7 @@ export class Wormhole<N extends Network> {
   }
 
   async getExecutorCapabilities(): Promise<CapabilitiesResponse> {
-    return await executorApi.fetchCapabilities(this.config.executorAPI);
+    return await fetchCapabilities(this.config.executorAPI);
   }
 
   async getExecutorQuote(
@@ -460,16 +460,11 @@ export class Wormhole<N extends Network> {
     dstChain: Chain,
     relayInstructions: string,
   ): Promise<QuoteResponse> {
-    return await executorApi.fetchQuote(
-      this.config.executorAPI,
-      srcChain,
-      dstChain,
-      relayInstructions,
-    );
+    return await fetchQuote(this.config.executorAPI, srcChain, dstChain, relayInstructions);
   }
 
   async getExecutorTxStatus(txHash: TxHash, chain: Chain): Promise<StatusResponse[]> {
-    return await executorApi.fetchStatus(this.config.executorAPI, txHash, chain);
+    return await fetchStatus(this.config.executorAPI, txHash, chain);
   }
 
   /**

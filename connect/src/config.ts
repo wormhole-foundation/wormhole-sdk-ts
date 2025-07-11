@@ -1,5 +1,5 @@
 import type { Chain, Network, Platform } from "@wormhole-foundation/sdk-base";
-import { circle } from "@wormhole-foundation/sdk-base";
+import { circle, executor } from "@wormhole-foundation/sdk-base";
 import type { ChainConfig, ChainsConfig } from "@wormhole-foundation/sdk-definitions";
 import { buildConfig } from "@wormhole-foundation/sdk-definitions";
 
@@ -16,13 +16,13 @@ export const CONFIG = {
   Mainnet: {
     api: "https://api.wormholescan.io",
     circleAPI: circle.circleAPI("Mainnet"),
-    executorAPI: "https://executor.labsapis.com/v0",
+    executorAPI: executor.executorAPI("Mainnet"),
     chains: buildConfig("Mainnet"),
   },
   Testnet: {
     api: "https://api.testnet.wormholescan.io",
     circleAPI: circle.circleAPI("Testnet"),
-    executorAPI: "https://executor-testnet.labsapis.com/v0",
+    executorAPI: executor.executorAPI("Testnet"),
     chains: buildConfig("Testnet"),
   },
   Devnet: {

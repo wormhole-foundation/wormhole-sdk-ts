@@ -1,4 +1,6 @@
-import type { SignedQuote } from "../../index.js";
+import type { Chain } from "@wormhole-foundation/sdk-base";
+import { toChainId } from "@wormhole-foundation/sdk-base";
+import type { SignedQuote, TxHash } from "../../index.js";
 
 export enum RelayStatus {
   Pending = "pending",
@@ -68,4 +70,82 @@ export interface QuoteResponse {
 export interface StatusResponse extends RelayData {
   signedQuote: SignedQuote;
   estimatedCost: string;
+}
+
+export async function fetchCapabilities(apiBaseUrl: string): Promise<CapabilitiesResponse> {
+  const url = `${apiBaseUrl}/capabilities`;
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return (await response.json()) as CapabilitiesResponse;
+  } catch (error) {
+    throw new Error("Failed to fetch capabilities.");
+  }
+}
+
+export async function fetchQuote(
+  apiBaseUrl: string,
+  srcChain: Chain,
+  dstChain: Chain,
+  relayInstructions: string,
+): Promise<QuoteResponse> {
+  const url = `${apiBaseUrl}/quote`;
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        srcChain: toChainId(srcChain),
+        dstChain: toChainId(dstChain),
+        relayInstructions,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return (await response.json()) as QuoteResponse;
+  } catch (error) {
+    throw new Error(`Failed to fetch signed quote.`);
+  }
+}
+
+export async function fetchStatus(
+  apiBaseUrl: string,
+  txHash: TxHash,
+  chain: Chain,
+): Promise<StatusResponse[]> {
+  const url = `${apiBaseUrl}/status/tx`;
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        txHash,
+        chainId: toChainId(chain),
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return (await response.json()) as StatusResponse[];
+  } catch (error) {
+    throw new Error(`Failed to fetch status for txHash: ${txHash}.`);
+  }
 }
