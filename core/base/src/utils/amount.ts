@@ -160,7 +160,7 @@ export function display(amount: Amount, precision?: number): string {
   } else {
     // If no specific precision is given, just trim trailing zeroes
     // and return all significant digits.
-    partial = partial.replace(/0+$/, '');
+    partial = partial.replace(/0+$/, "");
   }
 
   return partial.length > 0 ? `${whole}.${partial}` : whole;
@@ -209,4 +209,22 @@ function validateAmount(amount: Amount): void {
   if (!isFinite(amount.decimals)) {
     throw new Error("Amount: invalid input. Decimals must be a finite number.");
   }
+}
+
+/**
+ * Calculates a percentage of an amount using tenths of basis points (dBps)
+ * @param amt The amount to calculate percentage from
+ * @param dBps Tenths of basis points (e.g., 100 = 0.1%, 1000 = 1%, 10000 = 10%)
+ * @returns An Amount representing the percentage portion
+ */
+export function getDeciBps(amt: Amount, dBps: bigint): Amount {
+  const MAX_U16 = 65_535n;
+  if (dBps > MAX_U16) {
+    throw new Error("dBps exceeds max u16");
+  }
+
+  const amtUnits = units(amt);
+  const portionUnits = (amtUnits * dBps) / 100_000n;
+
+  return fromBaseUnits(portionUnits, amt.decimals);
 }
