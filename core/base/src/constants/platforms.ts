@@ -12,7 +12,6 @@ const platformAndChainsEntries = [[
     "Celo",
     "Ethereum",
     "Fantom",
-    "Gnosis",
     "Klaytn",
     "Moonbeam",
     "Neon",

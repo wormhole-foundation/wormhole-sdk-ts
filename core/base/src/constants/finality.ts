@@ -106,7 +106,6 @@ const blockTimeMilliseconds = [
   ["Ethereum",         15_000],
   ["Evmos",             2_000],
   ["Fantom",            2_500],
-  ["Gnosis",            5_000],
   ["Holesky",          15_000],
   ["Injective",         2_500],
   ["Klaytn",            1_000],

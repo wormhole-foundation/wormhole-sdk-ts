@@ -28,7 +28,6 @@ const chainIdAndChainEntries = [
   [   22, "Aptos"          ],
   [   23, "Arbitrum"       ],
   [   24, "Optimism"       ],
-  [   25, "Gnosis"         ],
   [   26, "Pythnet"        ],
   [   29, "Btc"            ],
   [   30, "Base"           ],

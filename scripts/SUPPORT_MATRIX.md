@@ -120,11 +120,6 @@
 | Optimism | ManualCCTP | :white_check_mark: | :no_entry_sign: |
 | Optimism | AutomaticCCTP | :white_check_mark: | :no_entry_sign: |
 | Optimism | AutomaticPortico | :white_check_mark: | :no_entry_sign: |
-| Gnosis | ManualTokenBridge | :no_entry_sign: | :no_entry_sign: |
-| Gnosis | AutomaticTokenBridge | :no_entry_sign: | :no_entry_sign: |
-| Gnosis | ManualCCTP | :no_entry_sign: | :no_entry_sign: |
-| Gnosis | AutomaticCCTP | :no_entry_sign: | :no_entry_sign: |
-| Gnosis | AutomaticPortico | :no_entry_sign: | :no_entry_sign: |
 | Pythnet | ManualTokenBridge | :no_entry_sign: | :no_entry_sign: |
 | Pythnet | AutomaticTokenBridge | :no_entry_sign: | :no_entry_sign: |
 | Pythnet | ManualCCTP | :no_entry_sign: | :no_entry_sign: |
@@ -150,11 +145,6 @@
 | Sei | ManualCCTP | :no_entry_sign: | :no_entry_sign: |
 | Sei | AutomaticCCTP | :no_entry_sign: | :no_entry_sign: |
 | Sei | AutomaticPortico | :no_entry_sign: | :no_entry_sign: |
-| Rootstock | ManualTokenBridge | :no_entry_sign: | :no_entry_sign: |
-| Rootstock | AutomaticTokenBridge | :no_entry_sign: | :no_entry_sign: |
-| Rootstock | ManualCCTP | :no_entry_sign: | :no_entry_sign: |
-| Rootstock | AutomaticCCTP | :no_entry_sign: | :no_entry_sign: |
-| Rootstock | AutomaticPortico | :no_entry_sign: | :no_entry_sign: |
 | Wormchain | ManualTokenBridge | :white_check_mark: | :white_check_mark: |
 | Wormchain | AutomaticTokenBridge | :no_entry_sign: | :no_entry_sign: |
 | Wormchain | ManualCCTP | :no_entry_sign: | :no_entry_sign: |
