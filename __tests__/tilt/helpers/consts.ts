@@ -5,15 +5,13 @@ export const SOLANA_PRIVATE_KEY =
 export const ETH_PRIVATE_KEY = "0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d"; // account 0
 export const TERRA_PRIVATE_KEY =
   "noble width taxi input there patrol clown public spell aunt wish punch moment will misery eight excess arena pen turtle minimum grain vague inmate"; // test7
-export const TERRA2_PRIVATE_KEY =
-  "symbol force gallery make bulk round subway violin worry mixture penalty kingdom boring survey tool fringe patrol sausage hard admit remember broken alien absorb"; // test3
 
 export const TEST_ERC20 = "0x2D8BE6BF0baA74e0A907016679CaE9190e80dD0A";
 export const TEST_SOLANA_TOKEN = "2WDq7wSs9zYrpx2kbHDA4RUTRch2CCTP6ZWaH4GNfnQQ";
 
 // account 1 used by NFT tests
 // export const ETH_PRIVATE_KEY2 =
-//     "0x6370fd033278c143179d81c5526140625662b8daa446c22ee2d73db3707e620c"; // account 2 - terra2 tests
+//     "0x6370fd033278c143179d81c5526140625662b8daa446c22ee2d73db3707e620c"; // account 2
 // export const ETH_PRIVATE_KEY3 =
 //     "0x646f1ce2fdad0e6deeeb5c7e8e5543bdde65e86029e2fd9fc169899c440a7913"; // account 3 - solana tests
 // export const ETH_PRIVATE_KEY4 =
@@ -31,17 +29,11 @@ export const TEST_SOLANA_TOKEN = "2WDq7wSs9zYrpx2kbHDA4RUTRch2CCTP6ZWaH4GNfnQQ";
 // export const TERRA_NODE_URL = ci
 //     ? "http://terra-terrad:1317"
 //     : "http://localhost:1317";
-// export const TERRA2_NODE_URL = ci
-//     ? "http://terra2-terrad:1317"
-//     : "http://localhost:1318";
 // export const TERRA_CHAIN_ID = "localterra";
 //
 // export const TERRA_GAS_PRICES_URL = ci
 //     ? "http://terra-fcd:3060/v1/txs/gas_prices"
 //     : "http://localhost:3060/v1/txs/gas_prices";
-// export const TERRA2_GAS_PRICES_URL = ci
-//     ? "http://terra2-fcd:3060/v1/txs/gas_prices"
-//     : "http://localhost:3061/v1/txs/gas_prices";
 //
 // // NOTE: test1 is used by getIsTransferCompletedTerra, so avoid using it in the integration tests
 // // Accounts from https://github.com/terra-money/LocalTerra/blob/main/README.md#accounts
