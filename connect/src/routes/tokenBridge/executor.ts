@@ -126,7 +126,8 @@ export class ExecutorTokenBridgeRoute<N extends Network>
   }
 
   static supportedChains(network: Network): Chain[] {
-    return contracts.tokenBridgeChains(network);
+    if (network === "Devnet") return [];
+    return contracts.executorTokenBridgeChains(network);
   }
 
   static async supportedDestinationTokens<N extends Network>(
@@ -163,6 +164,20 @@ export class ExecutorTokenBridgeRoute<N extends Network>
   }
 
   async quote(request: RouteTransferRequest<N>, params: Vp): Promise<QR> {
+    const supportedChains = ExecutorTokenBridgeRoute.supportedChains(request.fromChain.network);
+    // Check if the fromChain and toChain are supported by the Executor Token Bridge
+    if (
+      !supportedChains.includes(request.fromChain.chain) ||
+      !supportedChains.includes(request.toChain.chain)
+    ) {
+      return {
+        success: false,
+        error: new Error(
+          `Executor Token Bridge does not support transfers from ${request.fromChain.chain} to ${request.toChain.chain}`,
+        ),
+      };
+    }
+
     try {
       let referrerFeeDbps: bigint | undefined = undefined;
 
