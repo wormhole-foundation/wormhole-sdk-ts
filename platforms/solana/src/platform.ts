@@ -150,17 +150,24 @@ export class SolanaPlatform<N extends Network>
   ): Promise<Balances> {
     const native = BigInt(await rpc.getBalance(new PublicKey(walletAddress)));
 
-    const splParsedTokenAccounts = (await Promise.all(
-      [TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID]
-        .map(pid => new PublicKey(pid))
-        .map(programId => rpc.getParsedTokenAccountsByOwner(new PublicKey(walletAddress), { programId })
-        ))).reduce<{
-          pubkey: PublicKey;
-          account: AccountInfo<ParsedAccountData>;
-        }[]
-        >((acc, val) => {
-          return acc.concat(val.value);
-        }, []);
+    const splParsedTokenAccounts = (
+      await Promise.all(
+        [TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID]
+          .map((pid) => new PublicKey(pid))
+          .map((programId) =>
+            rpc.getParsedTokenAccountsByOwner(new PublicKey(walletAddress), {
+              programId,
+            }),
+          ),
+      )
+    ).reduce<
+      {
+        pubkey: PublicKey;
+        account: AccountInfo<ParsedAccountData>;
+      }[]
+    >((acc, val) => {
+      return acc.concat(val.value);
+    }, []);
 
     const balances: Balances = { native };
 
@@ -295,5 +302,31 @@ export class SolanaPlatform<N extends Network>
       }
       throw e;
     }
+  }
+
+  static async getTokenProgramId(
+    rpc: Connection,
+    mint: PublicKey,
+  ): Promise<PublicKey> {
+    const mintAccountInfo = await rpc.getAccountInfo(mint);
+    if (!mintAccountInfo) {
+      throw new Error(`Mint account not found: ${mint.toBase58()}`);
+    }
+
+    const tokenProgram = mintAccountInfo.owner;
+    if (!tokenProgram) {
+      throw new Error(`Mint account has no owner: ${mint.toBase58()}`);
+    }
+
+    if (
+      tokenProgram.equals(TOKEN_PROGRAM_ID) ||
+      tokenProgram.equals(TOKEN_2022_PROGRAM_ID)
+    ) {
+      return tokenProgram;
+    }
+
+    throw new Error(
+      `Mint account has unsupported token program: ${mint.toBase58()} (${tokenProgram.toBase58()})`,
+    );
   }
 }

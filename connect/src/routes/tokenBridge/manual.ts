@@ -102,6 +102,7 @@ export class TokenBridgeRoute<N extends Network>
         await TokenTransfer.quoteTransfer(this.wh, request.fromChain, request.toChain, {
           token: request.source.id,
           amount: amount.units(params.normalizedParams.amount),
+          protocol: "TokenBridge",
           ...params.options,
         }),
         params,
@@ -159,6 +160,9 @@ export class TokenBridgeRoute<N extends Network>
 
   async resume(txid: TransactionId): Promise<R> {
     const xfer = await TokenTransfer.from(this.wh, txid, 10 * 1000);
+    if (xfer.transfer.protocol !== "TokenBridge") {
+      throw new Error("Transfer is not a TokenBridge transfer");
+    }
     return TokenTransfer.getReceipt(xfer);
   }
 
@@ -175,6 +179,7 @@ export class TokenBridgeRoute<N extends Network>
     return {
       from,
       to,
+      protocol: "TokenBridge",
       token: request.source.id,
       amount: amount.units(params.normalizedParams.amount),
       ...params.options,

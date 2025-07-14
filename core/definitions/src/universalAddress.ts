@@ -58,6 +58,8 @@ export class UniversalAddress implements Address {
     );
   }
 
+  static readonly ZERO = new UniversalAddress(new Uint8Array(UniversalAddress.byteSize));
+
   private static stringToUint8Array(address: string, format: PlatformAddressFormat): Uint8Array {
     const decoded = (() => {
       switch (format) {

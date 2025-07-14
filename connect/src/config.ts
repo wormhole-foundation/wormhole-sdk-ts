@@ -1,5 +1,5 @@
 import type { Chain, Network, Platform } from "@wormhole-foundation/sdk-base";
-import { circle } from "@wormhole-foundation/sdk-base";
+import { circle, executor } from "@wormhole-foundation/sdk-base";
 import type { ChainConfig, ChainsConfig } from "@wormhole-foundation/sdk-definitions";
 import { buildConfig } from "@wormhole-foundation/sdk-definitions";
 
@@ -8,6 +8,7 @@ export const DEFAULT_TASK_TIMEOUT = 60 * 1000; // 1 minute in milliseconds
 export type WormholeConfig<N extends Network = Network, P extends Platform = Platform> = {
   api: string;
   circleAPI: string;
+  executorAPI: string;
   chains: ChainsConfig<N, P>;
 };
 
@@ -15,16 +16,19 @@ export const CONFIG = {
   Mainnet: {
     api: "https://api.wormholescan.io",
     circleAPI: circle.circleAPI("Mainnet"),
+    executorAPI: executor.executorAPI("Mainnet"),
     chains: buildConfig("Mainnet"),
   },
   Testnet: {
     api: "https://api.testnet.wormholescan.io",
     circleAPI: circle.circleAPI("Testnet"),
+    executorAPI: executor.executorAPI("Testnet"),
     chains: buildConfig("Testnet"),
   },
   Devnet: {
     api: "http://guardian:7071", // Tilt Guardian REST api
     circleAPI: "",
+    executorAPI: "",
     chains: buildConfig("Devnet"),
   },
 } as const satisfies Record<Network, WormholeConfig>;
