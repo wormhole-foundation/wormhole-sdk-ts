@@ -85,11 +85,6 @@
 | Neon | ManualCCTP | :no_entry_sign: | :no_entry_sign: |
 | Neon | AutomaticCCTP | :no_entry_sign: | :no_entry_sign: |
 | Neon | AutomaticPortico | :no_entry_sign: | :no_entry_sign: |
-| Terra2 | ManualTokenBridge | :white_check_mark: | :white_check_mark: |
-| Terra2 | AutomaticTokenBridge | :no_entry_sign: | :no_entry_sign: |
-| Terra2 | ManualCCTP | :no_entry_sign: | :no_entry_sign: |
-| Terra2 | AutomaticCCTP | :no_entry_sign: | :no_entry_sign: |
-| Terra2 | AutomaticPortico | :no_entry_sign: | :no_entry_sign: |
 | Injective | ManualTokenBridge | :white_check_mark: | :white_check_mark: |
 | Injective | AutomaticTokenBridge | :no_entry_sign: | :no_entry_sign: |
 | Injective | ManualCCTP | :no_entry_sign: | :no_entry_sign: |
