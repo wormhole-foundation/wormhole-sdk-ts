@@ -65,7 +65,7 @@ const finalityThresholds = [
   ["Sonic",     1],
   ["Converge",  4096],
   ["Fogo",      32],
-  ["Plume",     64],
+  ["Plume",     4096], // inferred from testing
   ["Cosmoshub", 0],
   ["Evmos",     0],
   ["Kujira",    0],
