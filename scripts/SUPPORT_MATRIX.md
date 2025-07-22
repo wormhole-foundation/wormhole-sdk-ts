@@ -10,11 +10,6 @@
 | Ethereum | ManualCCTP | :white_check_mark: | :no_entry_sign: |
 | Ethereum | AutomaticCCTP | :white_check_mark: | :no_entry_sign: |
 | Ethereum | AutomaticPortico | :white_check_mark: | :no_entry_sign: |
-| Terra | ManualTokenBridge | :white_check_mark: | :white_check_mark: |
-| Terra | AutomaticTokenBridge | :no_entry_sign: | :no_entry_sign: |
-| Terra | ManualCCTP | :no_entry_sign: | :no_entry_sign: |
-| Terra | AutomaticCCTP | :no_entry_sign: | :no_entry_sign: |
-| Terra | AutomaticPortico | :no_entry_sign: | :no_entry_sign: |
 | Bsc | ManualTokenBridge | :white_check_mark: | :white_check_mark: |
 | Bsc | AutomaticTokenBridge | :white_check_mark: | :white_check_mark: |
 | Bsc | ManualCCTP | :no_entry_sign: | :no_entry_sign: |
@@ -120,11 +115,6 @@
 | Pythnet | ManualCCTP | :no_entry_sign: | :no_entry_sign: |
 | Pythnet | AutomaticCCTP | :no_entry_sign: | :no_entry_sign: |
 | Pythnet | AutomaticPortico | :no_entry_sign: | :no_entry_sign: |
-| Xpla | ManualTokenBridge | :white_check_mark: | :white_check_mark: |
-| Xpla | AutomaticTokenBridge | :no_entry_sign: | :no_entry_sign: |
-| Xpla | ManualCCTP | :no_entry_sign: | :no_entry_sign: |
-| Xpla | AutomaticCCTP | :no_entry_sign: | :no_entry_sign: |
-| Xpla | AutomaticPortico | :no_entry_sign: | :no_entry_sign: |
 | Btc | ManualTokenBridge | :no_entry_sign: | :no_entry_sign: |
 | Btc | AutomaticTokenBridge | :no_entry_sign: | :no_entry_sign: |
 | Btc | ManualCCTP | :no_entry_sign: | :no_entry_sign: |

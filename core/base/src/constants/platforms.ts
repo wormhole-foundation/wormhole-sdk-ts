@@ -25,7 +25,6 @@ const platformAndChainsEntries = [[
     "PolygonSepolia",
     "Mantle",
     "Scroll",
-    "Blast",
     "Xlayer",
     "Linea",
     "Berachain",

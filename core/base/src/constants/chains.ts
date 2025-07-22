@@ -33,7 +33,6 @@ const chainIdAndChainEntries = [
   [   32, "Sei"            ],
   [   34, "Scroll"         ],
   [   35, "Mantle"         ],
-  [   36, "Blast"          ],
   [   37, "Xlayer"         ],
   [   38, "Linea"          ],
   [   39, "Berachain"      ],

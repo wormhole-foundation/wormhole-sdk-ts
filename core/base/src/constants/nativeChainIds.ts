@@ -43,7 +43,6 @@ const chainNetworkNativeChainIdEntries = [
       ["Xlayer",    196n],
       ["Mantle",    5000n],
       ["Scroll",    534352n],
-      ["Blast",     81457n],
       ["Linea",     59144n],
       ["Berachain", 80094n],
       ["Seievm",    1329n],
@@ -93,7 +92,6 @@ const chainNetworkNativeChainIdEntries = [
       ["Celestia",        "mocha-4"],
       ["Seda",            "seda-1-testnet"],
       ["Noble",           "grand-1"],
-      ["Blast",           168587773n], // Sepolia testnet
       ["Mantle",          5003n], // Sepolia testnet
       ["Scroll",          534351n],
       ["Berachain",       80069n], // Testnet v3

@@ -97,7 +97,6 @@ const blockTimeMilliseconds = [
   ["Avalanche",         2_000],
   ["Base",              2_000],
   ["BaseSepolia",       2_000],
-  ["Blast",             2_000],
   ["Bsc",               3_000],
   ["Celo",              5_000],
   ["Cosmoshub",         5_000],
