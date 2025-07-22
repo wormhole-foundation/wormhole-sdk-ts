@@ -138,7 +138,8 @@ const blockTimeMilliseconds = [
   ["Sonic",               330],
   ["Converge",            100],
   ["Fogo",                400],
-  ["Plume",               250]
+  ["Plume",               250],
+  ["Seievm",              400],
 ] as const satisfies MapLevel<Chain, number>;
 
 /** The amount of time between block production, in milliseconds  */
