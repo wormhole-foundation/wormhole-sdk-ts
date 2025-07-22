@@ -69,6 +69,7 @@ export const tokenBridgeContracts = [[
     ["Worldchain",      "0x430855B4D43b8AEB9D2B9869B74d58dda79C0dB2"],
     ["Ink",             "0x376428e7f26D5867e69201b275553C45B09EE090"],
     ["HyperEVM",        "0x4a8bc80Ed5a4067f1CCf107057b8270E0cC11A78"],
+    ["Linea",           "0xC7A204bDBFe983FCD8d8E61D02b475D4073fF97e"],
     ["Monad",           "0xF323dcDe4d33efe83cf455F78F9F6cc656e6B659"],
     ["Mezo",            "0xA31aa3FDb7aF7Db93d18DDA4e19F811342EDF780"],
     ["Fogo",            "78HdStBqCMioGii9D8mF3zQaWDqDZBQWTUwjjpdmbJKX"],
