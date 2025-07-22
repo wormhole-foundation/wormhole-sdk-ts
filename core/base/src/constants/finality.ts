@@ -32,7 +32,6 @@ const finalityThresholds = [
   ["Optimism",  512],
   ["Base",      512],
   ["Arbitrum", 4096], // TODO: validate, this is inferred from vaa metrics timing
-  ["Blast",     512],
   ["Xlayer",    300],
   ["Scroll",    300],
   ["Mantle",    512],
