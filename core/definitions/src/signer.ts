@@ -1,7 +1,6 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
 import type { SignedTx, TxHash } from "./types.js";
 import type { UnsignedTransaction } from "./unsignedTransaction.js";
-
 /**
  * A Signer is an interface that must be provided to certain methods
  * in the SDK to sign transactions. It can be either a SignOnlySigner

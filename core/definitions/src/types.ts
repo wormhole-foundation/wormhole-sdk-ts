@@ -182,8 +182,10 @@ export type ChainsConfig<N extends Network, P extends Platform> = {
 };
 
 export function buildConfig<N extends Network>(n: N): ChainsConfig<N, Platform> {
+  console.log("BUILD CONFIG")
   const cc: ChainsConfig<N, Platform> = chains
     .map(<C extends Chain>(c: C): ChainConfig<N, C> => {
+      console.log(`Mapping ${n} ${c}`)
       const platform = chainToPlatform(c);
       let nativeChainId: bigint | string = "";
       try {

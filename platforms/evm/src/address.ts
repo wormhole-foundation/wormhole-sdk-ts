@@ -24,7 +24,7 @@ export class EvmAddress implements Address {
       this.address = a.address;
       return;
     }
-
+    
     if (typeof address === 'string') {
       if (!EvmAddress.isValidAddress(address))
         throw new Error(

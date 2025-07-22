@@ -56,6 +56,7 @@ const chainNetworkNativeChainIdEntries = [
       ["HyperEVM",  999n],
       ["Mezo",      31612n],
       ["Plume",     98866n],
+      ["Stacks",    "stacks"],
     ],
   ],
   [
@@ -114,6 +115,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Converge",        52085145n],
       ["Fogo",            "9GGSFo95raqzZxWqKM5tGYvJp5iv4Dm565S4r8h5PEu9"], // genesis hash
       ["Plume",           98867n],
+      ["Stacks",          "stacks"], // TODO FG TODO check if stacks has a chain id
     ],
   ],
   [
@@ -125,6 +127,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Ethereum",  1337n],
       ["Injective","injective_devnet_fake"],
       ["Solana",    "8wF6jKV3cKwyaVkWcoV9KpDqmkjvEYno9hKZrKx8TbZn"],
+      ["Stacks",    "stacks"],
     ],
   ],
 ] as const satisfies MapLevels<[Network, Chain, bigint | string]>;

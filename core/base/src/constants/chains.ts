@@ -50,6 +50,7 @@ const chainIdAndChainEntries = [
   [   52, "Sonic"          ],
   [   53, "Converge"       ],
   [   55, "Plume"          ],
+  [   56, "Stacks"         ], // FG TODO - review chain ID
   [ 3104, "Wormchain"      ],
   [ 4000, "Cosmoshub"      ],
   [ 4001, "Evmos"          ],
