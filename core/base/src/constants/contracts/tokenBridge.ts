@@ -25,7 +25,6 @@ export const tokenBridgeContracts = [[
     ["Xlayer",    "0x5537857664B0f9eFe38C9f320F75fEf23234D904"],
     ["Sei",       "sei1smzlm9t79kur392nu9egl8p8je9j92q4gzguewj56a05kyxxra0qy0nuf3"],
     ["Wormchain", "wormhole1466nf3zuxpya8q9emxukd7vftaf6h4psr0a07srl5zw74zh84yjq4lyjmh"],
-    ["Blast",     "0x24850c6f61C438823F01B7A3BF2B89B72174Fa9d"],
     ["Scroll",    "0x24850c6f61C438823F01B7A3BF2B89B72174Fa9d"],
     ["Mantle",    "0x24850c6f61C438823F01B7A3BF2B89B72174Fa9d"],
     ["Berachain", "0x3Ff72741fd67D6AD0668d93B41a09248F4700560"],
