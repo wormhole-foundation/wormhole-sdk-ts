@@ -16,7 +16,6 @@ export const relayerContracts = [[
     ["Base",      "0x706f82e9bb5b0813501714ab5974216704980e31"],
     ["Arbitrum",  "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"],
     ["Optimism",  "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"],
-    ["Blast",     "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"],
     ["Scroll",    "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"],
     ["Mantle",    "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"],
     ["Xlayer",    "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"],
@@ -24,7 +23,6 @@ export const relayerContracts = [[
     ["Seievm",    "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"],
     ["Ink",       "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"],
     ["Worldchain","0x1520cc9e779c56dab5866bebfb885c86840c33d3"],
-    ["Snaxchain", "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"],
     ["Unichain",  "0x27428DD2d3DD32A4D7f7C497eAaa23130d894911"],
   ]], [
   "Testnet", [

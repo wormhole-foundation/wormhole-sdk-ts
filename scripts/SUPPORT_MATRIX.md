@@ -10,11 +10,6 @@
 | Ethereum | ManualCCTP | :white_check_mark: | :no_entry_sign: |
 | Ethereum | AutomaticCCTP | :white_check_mark: | :no_entry_sign: |
 | Ethereum | AutomaticPortico | :white_check_mark: | :no_entry_sign: |
-| Terra | ManualTokenBridge | :white_check_mark: | :white_check_mark: |
-| Terra | AutomaticTokenBridge | :no_entry_sign: | :no_entry_sign: |
-| Terra | ManualCCTP | :no_entry_sign: | :no_entry_sign: |
-| Terra | AutomaticCCTP | :no_entry_sign: | :no_entry_sign: |
-| Terra | AutomaticPortico | :no_entry_sign: | :no_entry_sign: |
 | Bsc | ManualTokenBridge | :white_check_mark: | :white_check_mark: |
 | Bsc | AutomaticTokenBridge | :white_check_mark: | :white_check_mark: |
 | Bsc | ManualCCTP | :no_entry_sign: | :no_entry_sign: |
@@ -85,11 +80,6 @@
 | Neon | ManualCCTP | :no_entry_sign: | :no_entry_sign: |
 | Neon | AutomaticCCTP | :no_entry_sign: | :no_entry_sign: |
 | Neon | AutomaticPortico | :no_entry_sign: | :no_entry_sign: |
-| Terra2 | ManualTokenBridge | :white_check_mark: | :white_check_mark: |
-| Terra2 | AutomaticTokenBridge | :no_entry_sign: | :no_entry_sign: |
-| Terra2 | ManualCCTP | :no_entry_sign: | :no_entry_sign: |
-| Terra2 | AutomaticCCTP | :no_entry_sign: | :no_entry_sign: |
-| Terra2 | AutomaticPortico | :no_entry_sign: | :no_entry_sign: |
 | Injective | ManualTokenBridge | :white_check_mark: | :white_check_mark: |
 | Injective | AutomaticTokenBridge | :no_entry_sign: | :no_entry_sign: |
 | Injective | ManualCCTP | :no_entry_sign: | :no_entry_sign: |
@@ -125,11 +115,6 @@
 | Pythnet | ManualCCTP | :no_entry_sign: | :no_entry_sign: |
 | Pythnet | AutomaticCCTP | :no_entry_sign: | :no_entry_sign: |
 | Pythnet | AutomaticPortico | :no_entry_sign: | :no_entry_sign: |
-| Xpla | ManualTokenBridge | :white_check_mark: | :white_check_mark: |
-| Xpla | AutomaticTokenBridge | :no_entry_sign: | :no_entry_sign: |
-| Xpla | ManualCCTP | :no_entry_sign: | :no_entry_sign: |
-| Xpla | AutomaticCCTP | :no_entry_sign: | :no_entry_sign: |
-| Xpla | AutomaticPortico | :no_entry_sign: | :no_entry_sign: |
 | Btc | ManualTokenBridge | :no_entry_sign: | :no_entry_sign: |
 | Btc | AutomaticTokenBridge | :no_entry_sign: | :no_entry_sign: |
 | Btc | ManualCCTP | :no_entry_sign: | :no_entry_sign: |
