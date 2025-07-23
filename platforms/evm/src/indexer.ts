@@ -17,6 +17,12 @@ const GOLD_RUSH_CHAINS: Record<Network, Partial<Record<Chain, string>>> = {
     Sei: 'sei-mainnet',
     Ink: 'ink-mainnet',
     Solana: 'solana-mainnet',
+    Arbitrum: 'arbitrum-mainnet',
+    Berachain: 'berachain-mainnet',
+    Linea: 'linea-mainnet',
+    Scroll: 'scroll-mainnet',
+    Seievm: 'sei-mainnet',
+    Unichain: 'unichain-mainnet',
   },
   Testnet: {
     Ethereum: 'eth-sepolia',
@@ -28,6 +34,9 @@ const GOLD_RUSH_CHAINS: Record<Network, Partial<Record<Chain, string>>> = {
     Unichain: 'unichain-sepolia-testnet',
     Berachain: 'berachain-testnet',
     Ink: 'ink-sepolia-testnet',
+    Arbitrum: 'arbitrum-sepolia',
+    Linea: 'linea-sepolia-testnet',
+    Scroll: 'scroll-sepolia-testnet',
   },
   Devnet: {},
 }
