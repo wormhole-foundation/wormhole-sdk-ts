@@ -2,8 +2,6 @@ import { applyChainsConfigConfigOverrides } from "@wormhole-foundation/sdk-conne
 import { PlatformDefinition } from "../index.js";
 import * as _stacks from "@wormhole-foundation/sdk-stacks";
 
-
-
 export const stacks: PlatformDefinition<typeof _stacks._platform> = {
   Address: _stacks.StacksAddress,
   Platform: _stacks.StacksPlatform,
@@ -21,6 +19,5 @@ export const stacks: PlatformDefinition<typeof _stacks._platform> = {
         }),
       ),
     ),
-
 }
 export default stacks;

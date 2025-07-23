@@ -1,10 +1,11 @@
-import { Address, UniversalAddress } from "@wormhole-foundation/sdk-connect";
+import { Address, UniversalAddress, registerNative } from "@wormhole-foundation/sdk-connect";
 import { _platform, AnyStacksAddress } from "./types.js";
 import { Address as TransactionsAddress } from "@stacks/transactions";
 
 export const StacksZeroAddress = 'SP000000000000000000002Q6VF78';
 
 export class StacksAddress implements Address {
+  static readonly byteSize = 20; // Assuming 20 bytes like EVM
   static readonly platform = _platform;
   readonly type: string = 'Native';
 
@@ -68,3 +69,13 @@ export class StacksAddress implements Address {
     }
   }
 }
+
+declare module '@wormhole-foundation/sdk-connect' {
+  export namespace WormholeRegistry {
+    interface PlatformToNativeAddressMapping {
+      Stacks: StacksAddress;
+    }
+  }
+}
+
+registerNative(_platform, StacksAddress);
