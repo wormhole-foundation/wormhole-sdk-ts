@@ -1,9 +1,26 @@
+import { Contracts } from "@wormhole-foundation/sdk-connect";
 import { AccountAddress, Network, TxHash, UnsignedTransaction, VAA, WormholeCore, WormholeMessageId } from "@wormhole-foundation/sdk-connect";
-import { StacksChains } from '@wormhole-foundation/sdk-stacks';
+import { StacksChains, StacksPlatform } from '@wormhole-foundation/sdk-stacks';
 
 export class StacksWormholeCore<N extends Network, C extends StacksChains> implements WormholeCore<N, C> {
+
+  readonly coreContractAddress: string;
+
+  constructor(
+    readonly network: N,
+    readonly chain: C,
+    readonly provider: any,
+    readonly contracts: Contracts
+  ) {
+    const coreAddress = this.contracts.coreBridge;
+    if (!coreAddress) throw new Error('Core bridge address not found');
+    this.coreContractAddress = coreAddress;
+  }
+
   getMessageFee(): Promise<bigint> {
-    throw new Error("Method not implemented.");
+    console.log(this.coreContractAddress)
+    return Promise.resolve(999n);
+    // throw new Error("Method not implemented.");
   }
   getGuardianSetIndex(): Promise<number> {
     throw new Error("Method not implemented.");
@@ -28,6 +45,15 @@ export class StacksWormholeCore<N extends Network, C extends StacksChains> imple
     provider: any,
     config: any,
   ): Promise<StacksWormholeCore<N, "Stacks">> {
-    return new StacksWormholeCore<N, "Stacks">();
+    const [network, chain] = await StacksPlatform.chainFromRpc(provider);
+    const conf = config[chain]!;
+
+    
+    return new StacksWormholeCore<N, "Stacks">(
+      network as N,
+      chain,
+      provider,
+      conf.contracts,
+    );
   }
 }

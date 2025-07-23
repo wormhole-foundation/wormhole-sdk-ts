@@ -15,7 +15,7 @@ describe("Stacks Core bridge tests", () => {
     const res = await fetchCallReadOnlyFunction({
       contractName: 'wormhole-core-v4',
       contractAddress: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
-      functionName: 'get-chain-id',
+      functionName: 'get-message-fee',
       functionArgs: [],
       client: {
         baseUrl: 'http://localhost:3999'
@@ -34,10 +34,9 @@ describe("Stacks Core bridge tests", () => {
     // console.log(configs["Berachain"])
     // console.log(configs["Stacks"])
 
-
-    
-
     const coreProtocol = await platform.getProtocol("WormholeCore", undefined)
     console.log(coreProtocol)
+    const messageFee = await coreProtocol.getMessageFee()
+    console.log(messageFee)
   })
 })

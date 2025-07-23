@@ -14,4 +14,3 @@ describe("Stacks Address Tests", () => {
     expect(toString).toBe(StacksZeroAddress)
   })
 })
-

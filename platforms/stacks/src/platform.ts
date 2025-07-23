@@ -96,10 +96,12 @@ export class StacksPlatform<N extends Network> extends PlatformContext<N, Stacks
   }
 
   static chainFromChainId(chainId: string): [Network, StacksChains] {
+    // TODO FG TODO
     throw new Error("Method not implemented.");
   }
 
   static async chainFromRpc(rpc: RpcConnection<"Stacks">): Promise<[Network, StacksChains]> {
-    throw new Error("Method not implemented.");
+    // TODO FG TODO
+    return ["Testnet", "Stacks"];
   }
 }
