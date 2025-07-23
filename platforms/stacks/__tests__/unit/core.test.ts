@@ -1,7 +1,9 @@
 import { fetchCallReadOnlyFunction } from "@stacks/transactions"
-// import { StacksPlatform } from "../../src/platform.js"
 import { CONFIG } from "@wormhole-foundation/sdk-connect";
 import { DEFAULT_NETWORK } from "@wormhole-foundation/sdk-connect";
+import { StacksPlatform } from "../../src/platform.js";
+
+import '@wormhole-foundation/sdk-stacks-core';
 
 describe("Stacks Core bridge tests", () => {
 
@@ -27,9 +29,15 @@ describe("Stacks Core bridge tests", () => {
 
   it("test2", async() => {
 
-    console.log(configs["ArbitrumSepolia"])
-    // const platform = new StacksPlatform(network, configs);
-
+    const platform = new StacksPlatform(network, configs);
     // console.log(platform)
+    // console.log(configs["Berachain"])
+    // console.log(configs["Stacks"])
+
+
+    
+
+    const coreProtocol = await platform.getProtocol("WormholeCore", undefined)
+    console.log(coreProtocol)
   })
 })

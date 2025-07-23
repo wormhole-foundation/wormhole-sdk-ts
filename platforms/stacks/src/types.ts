@@ -1,4 +1,4 @@
-import { PlatformToChains } from "@wormhole-foundation/sdk-connect";
+import { PlatformToChains, UniversalOrNative } from "@wormhole-foundation/sdk-connect";
 
 export const unusedNonce = 0;
 export const unusedArbiterFee = 0n;
@@ -14,5 +14,5 @@ export const _platform: 'Stacks' = 'Stacks';
 export type StacksPlatformType = typeof _platform;
 
 export type StacksChains = PlatformToChains<StacksPlatformType>
-// export type UniversalOrStacks = UniversalOrNative<StacksChains> FG TODO
-export type AnyStacksAddress = string | Uint8Array;
+export type UniversalOrStacks = UniversalOrNative<StacksChains>
+export type AnyStacksAddress = UniversalOrStacks | string | Uint8Array;

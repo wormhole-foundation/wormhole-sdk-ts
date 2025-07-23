@@ -1,6 +1,13 @@
-import { Network, SignedTx, SignOnlySigner, UnsignedTransaction } from "@wormhole-foundation/sdk-connect";
+import { Network, SignedTx, Signer, SignOnlySigner, UnsignedTransaction } from "@wormhole-foundation/sdk-connect";
 import { StacksChains } from "./types.js";
 import { makeContractCall } from "@stacks/transactions";
+
+export async function getStacksSigner(
+  chain: StacksChains,
+  address: string,
+): Promise<Signer> {
+  return new StacksSigner(chain, address);
+}
 
 export class StacksSigner<N extends Network, C extends StacksChains = StacksChains> implements SignOnlySigner<N, C> {
 

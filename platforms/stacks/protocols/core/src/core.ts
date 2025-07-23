@@ -1,5 +1,5 @@
 import { AccountAddress, Network, TxHash, UnsignedTransaction, VAA, WormholeCore, WormholeMessageId } from "@wormhole-foundation/sdk-connect";
-import { StacksChains } from "../src/types.js";
+import { StacksChains } from '@wormhole-foundation/sdk-stacks';
 
 export class StacksWormholeCore<N extends Network, C extends StacksChains> implements WormholeCore<N, C> {
   getMessageFee(): Promise<bigint> {
@@ -22,5 +22,12 @@ export class StacksWormholeCore<N extends Network, C extends StacksChains> imple
   }
   parseMessages(txid: TxHash): Promise<VAA<"Uint8Array">[]> {
     throw new Error("Method not implemented.");
+  }
+
+  static async fromRpc<N extends Network>(
+    provider: any,
+    config: any,
+  ): Promise<StacksWormholeCore<N, "Stacks">> {
+    return new StacksWormholeCore<N, "Stacks">();
   }
 }
