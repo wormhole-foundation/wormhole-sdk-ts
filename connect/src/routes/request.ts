@@ -15,6 +15,7 @@ export class RouteTransferRequest<N extends Network> {
   fromChain: ChainContext<N>;
   toChain: ChainContext<N>;
 
+  sender?: ChainAddress;
   recipient?: ChainAddress;
 
   private constructor(
@@ -23,11 +24,13 @@ export class RouteTransferRequest<N extends Network> {
     source: TokenDetails,
     destination: TokenDetails,
     recipient?: ChainAddress,
+    sender?: ChainAddress,
   ) {
     this.fromChain = fromChain;
     this.toChain = toChain;
     this.source = source;
     this.destination = destination;
+    this.sender = sender;
     this.recipient = recipient;
   }
 
@@ -94,6 +97,7 @@ export class RouteTransferRequest<N extends Network> {
       destination: TokenId<TC>;
       sourceDecimals?: number;
       destinationDecimals?: number;
+      sender?: ChainAddress;
       recipient?: ChainAddress;
     },
     fromChain?: ChainContext<N, FC>,
@@ -114,6 +118,7 @@ export class RouteTransferRequest<N extends Network> {
       toChain,
       sourceDetails,
       destDetails,
+      params.sender,
       params.recipient,
     );
 
