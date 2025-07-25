@@ -23,8 +23,8 @@ export class RouteTransferRequest<N extends Network> {
     toChain: ChainContext<N>,
     source: TokenDetails,
     destination: TokenDetails,
-    recipient?: ChainAddress,
     sender?: ChainAddress,
+    recipient?: ChainAddress,
   ) {
     this.fromChain = fromChain;
     this.toChain = toChain;
