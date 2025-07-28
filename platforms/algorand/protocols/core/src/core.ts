@@ -91,6 +91,7 @@ export class AlgorandWormholeCore<N extends Network, C extends AlgorandChains>
     this.tokenBridgeAppId = tokenBridge;
     this.tokenBridgeAppAddress = getApplicationAddress(tokenBridge);
   }
+  
   getGuardianSet(index: number): Promise<WormholeCore.GuardianSet> {
     throw new Error("Method not implemented.");
   }

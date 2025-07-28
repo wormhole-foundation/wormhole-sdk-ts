@@ -4,6 +4,7 @@ import type { Network } from "./networks.js";
 import type { Chain } from "./chains.js";
 
 // prettier-ignore
+// TODO FG TODO add default rpcs
 const rpcConfig = [[
   "Mainnet", [
     ["Ethereum",  "https://ethereum-rpc.publicnode.com"],
@@ -91,6 +92,7 @@ const rpcConfig = [[
     ["Converge",        "https://rpc-converge-testnet-1.t.conduit.xyz"],
     ["Fogo",            "https://testnet.fogo.io"],
     ["Plume",           "https://testnet-rpc.plume.org"],
+    ["Stacks",          "http://localhost:3999"]
   ]], [
   "Devnet", [
     ["Ethereum",  "http://eth-devnet:8545"],

@@ -89,7 +89,7 @@ export const coreBridgeContracts = [[
     ["Converge",        "0x556B259cFaCd9896B2773310080c7c3bcE90Ff01"],
     ["Fogo",            "BhnQyKoQQgpuRTRo6D8Emz93PvXCYfVgHhnrR4T3qhw4"],
     ["Plume",           "0x81705b969cDcc6FbFde91a0C6777bE0EF3A75855"],
-    ["Stacks",          "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wormhole-core-v4"], // TODO FG TODO real addy and populate other networks
+    ["Stacks",          "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM"], // TODO FG TODO real addy and populate other networks
   ]], [
   "Devnet", [
     ["Solana",    "Bridge1p5gheXUvJ6jGWGeCsgPKgnE3YgdGKRVCMY9o"],

@@ -2,6 +2,7 @@ import { ChainContext, ChainsConfig, chainToPlatform, ChainToPlatform, Network, 
 import { _platform, StacksChains, StacksPlatformType } from "./types.js";
 import { Chain } from "@wormhole-foundation/sdk-connect";
 import { StacksChain } from "./chain.js";
+import { ChainId, TransactionVersion, PeerNetworkId, AddressVersion, StacksNetwork } from "@stacks/network";
 
 export class StacksPlatform<N extends Network> extends PlatformContext<N, StacksPlatformType> 
   implements StaticPlatformMethods<StacksPlatformType, typeof StacksPlatform> {
@@ -15,11 +16,27 @@ export class StacksPlatform<N extends Network> extends PlatformContext<N, Stacks
     );
   }
 
-  override getRpc<C extends "Stacks">(chain: C) {
-    throw new Error("Method not implemented.");
+  override getRpc<C extends StacksChains>(chain: C) {
+    const rpc =  this.config[chain]!.rpc;
+    if(!rpc) {
+      throw new Error("No configuration available for chain: " + chain);
+    }
+    // TODO FG TODO
+    return {
+      chainId: ChainId.Testnet,
+      transactionVersion: TransactionVersion.Testnet,
+      peerNetworkId: PeerNetworkId.Testnet,
+      magicBytes: 'T2',
+      bootAddress: 'ST000000000000000000002AMW42H',
+      addressVersion: {
+        singleSig: AddressVersion.TestnetSingleSig,
+        multiSig: AddressVersion.TestnetMultiSig,
+      },
+      client: { baseUrl: rpc },
+    } as StacksNetwork
   }
 
-  override getChain<C extends "Stacks">(chain: C, rpc?: RpcConnection<"Stacks">): ChainContext<N, C, ChainToPlatform<C>> {
+  override getChain<C extends StacksChains>(chain: C, rpc?: RpcConnection<C>): ChainContext<N, C, ChainToPlatform<C>> {
     if(chain in this.config) {
       return new StacksChain<N, C>(chain, this, rpc);
     }
@@ -37,8 +54,7 @@ export class StacksPlatform<N extends Network> extends PlatformContext<N, Stacks
   ): TokenId<C> {
     if (!StacksPlatform.isSupportedChain(chain))
       throw new Error(`invalid chain for Stacks: ${chain}`);
-    // Replace with the appropriate zero address for Stacks
-    // This is a placeholder - you need to define the actual native token address for Stacks
+    // TODO FG TODO
     return Wormhole.tokenId(chain, "0x00");
   }
 
@@ -49,14 +65,14 @@ export class StacksPlatform<N extends Network> extends PlatformContext<N, Stacks
   ): boolean {
     if (!StacksPlatform.isSupportedChain(chain)) return false;
     if (tokenId.chain !== chain) return false;
-    // Replace with the appropriate check for native token in Stacks
+    // TODO FG TODO
     return tokenId.address.toString() === "0x00";
   }
 
   static async getDecimals<C extends StacksChains>(
     _network: Network,
     _chain: C,
-    rpc: RpcConnection<"Stacks">,
+    rpc: RpcConnection<C>,
     token: TokenAddress<C>,
   ): Promise<number> {
     if (isNative(token)) return decimals.nativeDecimals(StacksPlatform._platform);
@@ -68,30 +84,26 @@ export class StacksPlatform<N extends Network> extends PlatformContext<N, Stacks
   static async getBalance<C extends StacksChains>(
     _network: Network,
     _chain: C,
-    rpc: RpcConnection<"Stacks">,
+    rpc: RpcConnection<C>,
     walletAddr: string,
     token: TokenAddress<C>,
   ): Promise<bigint | null> {
-    // Implement balance lookup for Stacks
     throw new Error("Method not implemented.");
   }
 
-  static async getLatestBlock(rpc: RpcConnection<"Stacks">): Promise<number> {
-    // Implement getting latest block for Stacks
+  static async getLatestBlock<C extends StacksChains>(rpc: RpcConnection<C>): Promise<number> {
     throw new Error("Method not implemented.");
   }
 
-  static async getLatestFinalizedBlock(rpc: RpcConnection<"Stacks">): Promise<number> {
-    // Implement getting latest finalized block for Stacks
+  static async getLatestFinalizedBlock<C extends StacksChains>(rpc: RpcConnection<C>): Promise<number> {
     throw new Error("Method not implemented.");
   }
 
   static async sendWait<C extends StacksChains>(
     chain: C,
-    rpc: RpcConnection<"Stacks">,
+    rpc: RpcConnection<C>,
     stxns: SignedTx[],
   ): Promise<TxHash[]> {
-    // Implement sending transactions and waiting for confirmation
     throw new Error("Method not implemented.");
   }
 
