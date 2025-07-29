@@ -48,7 +48,6 @@ export const tokenBridgeContracts = [[
     ["Aptos",           "0x576410486a2da45eee6c949c995670112ddf2fbeedab20350d506328eefc9d4f"],
     ["Sui",             "0x6fb10cdb7aa299e9a4308752dadecb049ff55a892de92992a1edbd7912b3d6da"],
     ["Moonbeam",        "0xbc976D4b9D57E57c3cA52e1Fd136C45FF7955A96"],
-    ["Neon",            "0xEe3dB83916Ccdc3593b734F7F2d16D630F39F1D0"],
     ["Arbitrum",        "0x23908A62110e21C04F3A4e011d24F901F911744A"],
     ["ArbitrumSepolia", "0xC7A204bDBFe983FCD8d8E61D02b475D4073fF97e"],
     ["Optimism",        "0xC7A204bDBFe983FCD8d8E61D02b475D4073fF97e"],

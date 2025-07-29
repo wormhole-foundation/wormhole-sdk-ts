@@ -29,7 +29,6 @@ export const nftBridgeContracts = [[
     ["Klaytn",          "0x94c994fC51c13101062958b567e743f1a04432dE"],
     ["Celo",            "0xaCD8190F647a31E56A656748bC30F69259f245Db"],
     ["Moonbeam",        "0x98A0F4B96972b32Fcb3BD03cAeB66A44a6aB9Edb"],
-    ["Neon",            "0x66E5BcFD45D2F3f166c567ADa663f9d2ffb292B4"],
     ["Arbitrum",        "0xEe3dB83916Ccdc3593b734F7F2d16D630F39F1D0"],
     ["Optimism",        "0x23908A62110e21C04F3A4e011d24F901F911744A"],
     ["Base",            "0xF681d1cc5F25a3694E348e7975d7564Aa581db59"],
