@@ -23,6 +23,7 @@ import type {
   ValidationResult,
 } from "../types.js";
 import type { RouteTransferRequest } from "../request.js";
+import { checkCircleGeoblock } from "../../circle-api.js";
 
 export namespace AutomaticCCTPRoute {
   export type Options = {
@@ -123,6 +124,12 @@ export class AutomaticCCTPRoute<N extends Network>
 
   async quote(request: RouteTransferRequest<N>, params: Vp): Promise<QR> {
     try {
+      const geoBlockError = await checkCircleGeoblock();
+
+      if (geoBlockError) {
+        return geoBlockError;
+      }
+
       return request.displayQuote(
         await CircleTransfer.quoteTransfer(request.fromChain, request.toChain, {
           automatic: true,
