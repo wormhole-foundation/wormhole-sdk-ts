@@ -24,6 +24,7 @@ import type {
   ValidationResult,
 } from "../types.js";
 import type { RouteTransferRequest } from "../request.js";
+import { checkCircleGeoblock } from "../../circle-api.js";
 
 export namespace CCTPRoute {
   export type Options = {
@@ -109,6 +110,14 @@ export class CCTPRoute<N extends Network>
 
   async quote(request: RouteTransferRequest<N>, params: Vp): Promise<QR> {
     try {
+      const circleApiUrl = circle.circleAPI.get(request.fromChain.network);
+      if (circleApiUrl) {
+        const geoBlockError = await checkCircleGeoblock(circleApiUrl);
+        if (geoBlockError) {
+          return geoBlockError;
+        }
+      }
+
       return request.displayQuote(
         await CircleTransfer.quoteTransfer(request.fromChain, request.toChain, {
           automatic: false,
