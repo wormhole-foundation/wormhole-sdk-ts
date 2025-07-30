@@ -215,10 +215,8 @@ describe("Stacks Core bridge tests", () => {
   }
 
   async function publishMessage(msg: string): Promise<{txId: string, error?: any}> {
-    const stacksChain = platform.getChain("Stacks") as any
     
     const signer = await getStacksSigner(
-      stacksChain,
       rpc,
       WALLET_1_PRIV_KEY,
     )

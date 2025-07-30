@@ -2,7 +2,7 @@ import { ChainContext, ChainsConfig, chainToPlatform, ChainToPlatform, Network, 
 import { _platform, StacksChains, StacksPlatformType } from "./types.js";
 import { Chain } from "@wormhole-foundation/sdk-connect";
 import { StacksChain } from "./chain.js";
-import { networkFromName, StacksNetwork, StacksNetworkName } from "@stacks/network";
+import { networkFromName, STACKS_MAINNET, STACKS_TESTNET, StacksNetwork, StacksNetworkName } from "@stacks/network";
 
 export class StacksPlatform<N extends Network> extends PlatformContext<N, StacksPlatformType> 
   implements StaticPlatformMethods<StacksPlatformType, typeof StacksPlatform> {
@@ -92,12 +92,18 @@ export class StacksPlatform<N extends Network> extends PlatformContext<N, Stacks
   }
 
   static chainFromChainId(chainId: string): [Network, StacksChains] {
-    // TODO FG TODO
     throw new Error("Method not implemented.");
   }
 
-  static async chainFromRpc(rpc: RpcConnection<"Stacks">): Promise<[Network, StacksChains]> {
-    // TODO FG TODO
-    return ["Testnet", "Stacks"];
+  static async chainFromRpc(rpc: StacksNetwork): Promise<[Network, StacksChains]> {
+    const rpcUrl = rpc.client.baseUrl
+    switch (rpcUrl) {
+      case STACKS_MAINNET.client.baseUrl:
+        return ['Mainnet', 'Stacks'];
+      case STACKS_TESTNET.client.baseUrl:
+        return ['Testnet', 'Stacks'];
+      default:
+        return ['Devnet', 'Stacks'];
+    }
   }
 }
