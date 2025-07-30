@@ -33,9 +33,7 @@ export class StacksSigner<N extends Network, C extends StacksChains> implements 
         ...tx.transaction,
         senderKey: this._privKey,
         network: this._network.toLowerCase(),
-        client: {
-          baseUrl: this._provider.client.baseUrl
-        }
+        client: this._provider.client
       })
       signed.push(signedTx)
     }
@@ -43,9 +41,7 @@ export class StacksSigner<N extends Network, C extends StacksChains> implements 
     const txHashes = await Promise.all(signed.map(async (signedTx) => {
       const txBroadcastResult = await broadcastTransaction({
         transaction: signedTx,
-        client: {
-          baseUrl: this._provider.client.baseUrl
-        }
+        client: this._provider.client
       })
       return txBroadcastResult.txid
     }))

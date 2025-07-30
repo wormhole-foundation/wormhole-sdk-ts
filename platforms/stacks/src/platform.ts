@@ -3,6 +3,7 @@ import { _platform, StacksChains, StacksPlatformType } from "./types.js";
 import { Chain } from "@wormhole-foundation/sdk-connect";
 import { StacksChain } from "./chain.js";
 import { networkFromName, STACKS_MAINNET, STACKS_TESTNET, StacksNetwork, StacksNetworkName } from "@stacks/network";
+import { StacksZeroAddress } from "./address.js";
 
 export class StacksPlatform<N extends Network> extends PlatformContext<N, StacksPlatformType> 
   implements StaticPlatformMethods<StacksPlatformType, typeof StacksPlatform> {
@@ -39,7 +40,7 @@ export class StacksPlatform<N extends Network> extends PlatformContext<N, Stacks
     if (!StacksPlatform.isSupportedChain(chain))
       throw new Error(`invalid chain for Stacks: ${chain}`);
     // TODO FG TODO
-    return Wormhole.tokenId(chain, "0x00");
+    return Wormhole.tokenId(chain, StacksZeroAddress);
   }
 
   static isNativeTokenId<N extends Network, C extends StacksChains>(

@@ -41,8 +41,9 @@ export class StacksAddress implements Address {
   }
 
   toUint8Array(): Uint8Array {
-    throw new Error("Method not implemented.");
+    return new Uint8Array(Buffer.from(this.address))
   }
+
   toUniversalAddress(): UniversalAddress {
     return new UniversalAddress(this.address, "keccak256")
   }

@@ -29,8 +29,6 @@ describe("Stacks Core bridge tests", () => {
   let uncompressedGuardianPubKeys: Uint8Array[]
   let mockGuardians: mocks.MockGuardians
 
-  const rpcBaseUrl = "http://localhost:3999"
-
 
   beforeAll(async () => {
     platform = new StacksPlatform(network, configs);
@@ -53,16 +51,12 @@ describe("Stacks Core bridge tests", () => {
           functionArgs: [Cl.none()],
         senderKey: DEPLOYER_PRIV_KEY,
         network: "devnet",
-        client: {
-          baseUrl: rpcBaseUrl
-        }
+        client: rpc.client
       })
 
       const txHash = await broadcastTransaction({
         transaction: initTx,
-        client: {
-          baseUrl: rpcBaseUrl
-        }
+        client: rpc.client
       })
 
       console.log(`Initialize tx hash: ${txHash.txid}`)
@@ -92,16 +86,12 @@ describe("Stacks Core bridge tests", () => {
         functionArgs: [Cl.buffer(serialize(vaa)), Cl.list(uncompressedGuardianPubKeys.map(k => Cl.buffer(k)))],
         senderKey: DEPLOYER_PRIV_KEY,
         network: "devnet",
-        client: {
-          baseUrl: rpcBaseUrl
-        }
+        client: rpc.client
       })
 
       const setGuardianSetTxHash = await broadcastTransaction({
         transaction: setGuardianSetTx,
-        client: {
-          baseUrl: rpcBaseUrl
-        }
+        client: rpc.client
       })
       console.log(`Set guardian set tx hash: ${setGuardianSetTxHash.txid}`)
       console.log(setGuardianSetTxHash)
@@ -238,7 +228,7 @@ describe("Stacks Core bridge tests", () => {
   }
 
   async function waitForTx(txId: string) {
-    const apiUrl = `${rpcBaseUrl}/extended/v1/tx/${txId}`
+    const apiUrl = `${rpc.client.baseUrl}/extended/v1/tx/${txId}`
     const res = await fetch(apiUrl)
     let data = await res.json()
     let tries = 0
