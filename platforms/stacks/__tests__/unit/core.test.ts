@@ -42,30 +42,33 @@ describe("Stacks Core bridge tests", () => {
     guardiansEthKeys = uncompressedGuardianPubKeys.map(k => Buffer.from(keccak256(k)).slice(12,32).toString('hex'))
     mockGuardians = new mocks.MockGuardians(1, guardiansPrivKeys.map(k => Buffer.from(k).toString('hex')));
 
-    // initialize core contract
-    // FG TODO FG - only if it is not already initialized
-    const initTx = await makeContractCall({
-      contractName: coreProtocol.contractName(),
-        contractAddress: coreProtocol.contractAddress(),
-        functionName: 'initialize',
-        functionArgs: [Cl.none()],
+    const isActive = await coreProtocol.isActiveDeployment()
+    console.log(`Is core contract active: ${isActive}`)
+    if(!isActive) {
+      // initialize core contract
+      const initTx = await makeContractCall({
+        contractName: coreProtocol.contractName(),
+          contractAddress: coreProtocol.contractAddress(),
+          functionName: 'initialize',
+          functionArgs: [Cl.none()],
         senderKey: DEPLOYER_PRIV_KEY,
         network: "devnet",
         client: {
           baseUrl: rpcBaseUrl
         }
-    })
+      })
 
-    const txHash = await broadcastTransaction({
-      transaction: initTx,
-      client: {
-        baseUrl: rpcBaseUrl
-      }
-    })
+      const txHash = await broadcastTransaction({
+        transaction: initTx,
+        client: {
+          baseUrl: rpcBaseUrl
+        }
+      })
 
-    console.log(`Initialize tx hash: ${txHash.txid}`)
-    console.log(txHash)
-    await waitForTx(txHash.txid)
+      console.log(`Initialize tx hash: ${txHash.txid}`)
+      console.log(txHash)
+      await waitForTx(txHash.txid)
+    }
 
     let upgradeGuardianSet = false
     try {
@@ -156,31 +159,6 @@ describe("Stacks Core bridge tests", () => {
     // TODO FG TODO
   })
 
-  it("to Wh address", async() => {
-    const r = await makeContractCall({
-      contractName: coreProtocol.contractName(),
-      contractAddress: coreProtocol.coreContractAddress,
-      functionName: 'get-wormhole-address',
-      functionArgs: [
-        Cl.address('ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.wormhole-core-v4')
-      ],
-      client: {
-        baseUrl: rpcBaseUrl
-      },
-      senderKey: DEPLOYER_PRIV_KEY,
-      network: "devnet"
-    })
-    console.log(r)
-
-    const txHash = await broadcastTransaction({
-      transaction: r,
-      client: {
-        baseUrl: rpcBaseUrl
-      }
-    })
-    console.log(txHash)
-  })
-
   it("publish message", async() => {
     const txHash = await publishMessage("yo")
     expect(txHash).toBeDefined()
@@ -253,7 +231,6 @@ describe("Stacks Core bridge tests", () => {
     )
     
     const txHashes = await signAndSendWait(txs, signer)
-    console.log(txHashes)
     const txResult = txHashes[0] as any // in stacks this can contain errors too
     if (!txResult) throw new Error("Transaction not sent")
     return {

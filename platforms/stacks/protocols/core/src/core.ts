@@ -31,12 +31,12 @@ export class StacksWormholeCore<N extends Network, C extends StacksChains> imple
   }
 
   async getMessageFee(): Promise<bigint> {
-    const activeCoreContract = cvToValue(await this.readonly('get-active-wormhole-core-contract', [], this.STATE_CONTRACT_NAME))
+    const activeCoreContract = await this.getActiveCoreContract()
 
     const res = await this.readonly(
       'get-message-fee',
       [
-        Cl.address(activeCoreContract.value)
+        Cl.address(activeCoreContract)
       ],
       this.PROXY_CONTRACT_NAME
     )
@@ -66,15 +66,13 @@ export class StacksWormholeCore<N extends Network, C extends StacksChains> imple
   }
 
   async *publishMessage(sender: AccountAddress<C>, message: string | Uint8Array, nonce: number, consistencyLevel: number): AsyncGenerator<UnsignedTransaction<N, C>, any, any> {
-    const activeCoreContract = cvToValue(await this.readonly('get-active-wormhole-core-contract', [], this.STATE_CONTRACT_NAME))
-    console.log(`Using: ${activeCoreContract}`)
-    console.log(activeCoreContract)
+    const activeCoreContract = await this.getActiveCoreContract()
       const tx = {
         contractName: this.PROXY_CONTRACT_NAME,
         contractAddress: this.coreContractAddress,
         functionName: 'post-message',
         functionArgs: [
-          Cl.address(activeCoreContract.value),
+          Cl.address(activeCoreContract),
           Cl.buffer(message instanceof Uint8Array ? message : new TextEncoder().encode(message)),
           Cl.uint(nonce),
           Cl.some(Cl.uint(consistencyLevel))
@@ -149,6 +147,11 @@ export class StacksWormholeCore<N extends Network, C extends StacksChains> imple
     return this.CORE_CONTRACT_NAME;
   }
 
+  async isActiveDeployment(contractName?: string): Promise<boolean> {
+    const res = await this.readonly('is-active-deployment', [], contractName ?? this.CORE_CONTRACT_NAME)
+    return cvToValue(res)
+  }
+
   private readonly(functionName: string, functionArgs: any[], contractName?: string): Promise<any> {
     return fetchCallReadOnlyFunction({
       contractName: contractName ?? this.contractName(),
@@ -160,6 +163,11 @@ export class StacksWormholeCore<N extends Network, C extends StacksChains> imple
       },
       senderAddress: StacksZeroAddress
     })
+  }
+
+  private async getActiveCoreContract(): Promise<string> {
+    const res = await this.readonly('get-active-wormhole-core-contract', [], this.STATE_CONTRACT_NAME)
+    return cvToValue(res).value
   }
 
   static async fromRpc<N extends Network>(

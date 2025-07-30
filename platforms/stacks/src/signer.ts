@@ -1,23 +1,24 @@
 import { Network, SignedTx, SignAndSendSigner, UnsignedTransaction, TxHash } from "@wormhole-foundation/sdk-connect";
 import { StacksChains } from "./types.js";
 import { broadcastTransaction, makeContractCall, privateKeyToAddress, StacksTransactionWire } from "@stacks/transactions";
+import { StacksNetwork } from "@stacks/network";
 
 export async function getStacksSigner
 <N extends Network, C extends StacksChains>(
   chain: C,
-  provider: any, // TODO FG TODO type
+  provider: StacksNetwork, // TODO FG TODO type
   privateKey: string,
 ): Promise<SignAndSendSigner<N, C>> {
   return new StacksSigner<N, C>(chain, provider, privateKey);
 }
 
-export class StacksSigner<N extends Network, C extends StacksChains = StacksChains> implements SignAndSendSigner<N, C> {
+export class StacksSigner<N extends Network, C extends StacksChains> implements SignAndSendSigner<N, C> {
 
   private readonly _address: string
 
   constructor(
     private _chain: C,
-    private _provider: any, // TODO FG TODO type
+    private _provider: StacksNetwork, // TODO FG TODO type
     private _privKey: string,
   ) {
     this._address = privateKeyToAddress(this._privKey);
@@ -29,7 +30,7 @@ export class StacksSigner<N extends Network, C extends StacksChains = StacksChai
       const signedTx = await makeContractCall({
         ...tx.transaction,
         senderKey: this._privKey,
-        network: "testnet", // FG TODO FG use real network
+        network: (this._chain as any).network.toLowerCase(),
         client: {
           baseUrl: this._provider.client.baseUrl
         }
@@ -44,8 +45,6 @@ export class StacksSigner<N extends Network, C extends StacksChains = StacksChai
           baseUrl: this._provider.client.baseUrl
         }
       })
-      console.log('!!!!!!!!!!!!!!!!!')
-      console.log(txBroadcastResult)
       return txBroadcastResult.txid
     }))
 
