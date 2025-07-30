@@ -44,8 +44,7 @@ export class StacksAddress implements Address {
     throw new Error("Method not implemented.");
   }
   toUniversalAddress(): UniversalAddress {
-    // FG TODO
-    throw new Error("Method not implemented.");
+    return new UniversalAddress(this.address, "keccak256")
   }
   
   static isValidAddress(address: string): boolean {

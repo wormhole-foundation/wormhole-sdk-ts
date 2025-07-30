@@ -4,7 +4,6 @@ import type { Network } from "./networks.js";
 import type { Chain } from "./chains.js";
 
 // prettier-ignore
-// TODO FG TODO add default rpcs
 const rpcConfig = [[
   "Mainnet", [
     ["Ethereum",  "https://ethereum-rpc.publicnode.com"],
@@ -49,6 +48,7 @@ const rpcConfig = [[
     ["HyperEVM",  "https://rpc.hyperliquid.xyz/evm"],
     ["Mezo",      "https://jsonrpc-mezo.boar.network/"],
     ["Plume",     "https://rpc.plume.org/"],
+    ["Stacks",    "https://api.mainnet.hiro.so"],
   ]], [
   "Testnet", [
     ["Bsc",             "https://data-seed-prebsc-1-s3.binance.org:8545"],
@@ -92,12 +92,13 @@ const rpcConfig = [[
     ["Converge",        "https://rpc-converge-testnet-1.t.conduit.xyz"],
     ["Fogo",            "https://testnet.fogo.io"],
     ["Plume",           "https://testnet-rpc.plume.org"],
-    ["Stacks",          "http://localhost:3999"]
+    ["Stacks",          "https://api.testnet.hiro.so"]
   ]], [
   "Devnet", [
     ["Ethereum",  "http://eth-devnet:8545"],
     ["Bsc",       "http://eth-devnet2:8545"],
     ["Solana",    "http://solana-devnet:8899"],
+    ["Stacks",    "http://localhost:3999"],
   ]],
 ] as const satisfies MapLevels<[Network, Chain, string]>;
 

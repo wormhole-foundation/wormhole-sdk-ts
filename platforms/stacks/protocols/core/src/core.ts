@@ -1,8 +1,10 @@
+import { StacksNetwork } from "@stacks/network";
 import { Cl, cvToValue, deserializeCV, fetchCallReadOnlyFunction, PostConditionMode } from "@stacks/transactions";
-import { UniversalAddress } from "@wormhole-foundation/sdk-connect";
+import { ChainsConfig } from "@wormhole-foundation/sdk-connect";
+import { serialize, UniversalAddress } from "@wormhole-foundation/sdk-connect";
 import { Contracts } from "@wormhole-foundation/sdk-connect";
 import { AccountAddress, Network, TxHash, UnsignedTransaction, VAA, WormholeCore, WormholeMessageId } from "@wormhole-foundation/sdk-connect";
-import { StacksChains, StacksPlatform, StacksZeroAddress } from '@wormhole-foundation/sdk-stacks';
+import { StacksChains, StacksPlatform, StacksPlatformType, StacksZeroAddress } from '@wormhole-foundation/sdk-stacks';
 
 export type StacksWormholeMessageId = WormholeMessageId & {
   emitterPrincipal: string
@@ -12,13 +14,15 @@ export class StacksWormholeCore<N extends Network, C extends StacksChains> imple
 
   readonly CORE_CONTRACT_NAME: string = "wormhole-core-v4";
   readonly STATE_CONTRACT_NAME: string = "wormhole-core-state";
+  readonly PROXY_CONTRACT_NAME: string = "wormhole-core-proxy-v2";
+  
 
   readonly coreContractAddress: string;
 
   constructor(
     readonly network: N,
     readonly chain: C,
-    readonly provider: any, // TODO FG TODO type
+    readonly provider: StacksNetwork,
     readonly contracts: Contracts
   ) {
     const coreAddress = this.contracts.coreBridge;
@@ -27,24 +31,50 @@ export class StacksWormholeCore<N extends Network, C extends StacksChains> imple
   }
 
   async getMessageFee(): Promise<bigint> {
-    const res = await this.readonly('get-message-fee', [])
+    const activeCoreContract = cvToValue(await this.readonly('get-active-wormhole-core-contract', [], this.STATE_CONTRACT_NAME))
+
+    const res = await this.readonly(
+      'get-message-fee',
+      [
+        Cl.address(activeCoreContract.value)
+      ],
+      this.PROXY_CONTRACT_NAME
+    )
     return cvToValue(res.value)
   }
   async getGuardianSetIndex(): Promise<number> {
     const res = await this.readonly('get-active-guardian-set', [])
-    return cvToValue(res.value)
+    const value = cvToValue(res.value)
+    return Number(value['set-id'].value)
   }
   
-  getGuardianSet(index: number): Promise<WormholeCore.GuardianSet> {
-    throw new Error("Method not implemented.");
+  async getGuardianSet(index: number): Promise<WormholeCore.GuardianSet> {
+    const res = await this.readonly('get-active-guardian-set', [])
+    const value = cvToValue(res.value)
+    const activeGuardianSetIndex = Number(value['set-id'].value)
+    if(index !== activeGuardianSetIndex) {
+      throw new Error('Only latest guardian set is supported in Stacks')
+    }
+
+    const guardians = value['guardians'].value.map((v: any) => v.value['compressed-public-key'].value)
+
+    return {
+      expiry: 0n,
+      index: activeGuardianSetIndex,
+      keys: guardians
+    }
   }
 
   async *publishMessage(sender: AccountAddress<C>, message: string | Uint8Array, nonce: number, consistencyLevel: number): AsyncGenerator<UnsignedTransaction<N, C>, any, any> {
+    const activeCoreContract = cvToValue(await this.readonly('get-active-wormhole-core-contract', [], this.STATE_CONTRACT_NAME))
+    console.log(`Using: ${activeCoreContract}`)
+    console.log(activeCoreContract)
       const tx = {
-        contractName: this.CORE_CONTRACT_NAME,
+        contractName: this.PROXY_CONTRACT_NAME,
         contractAddress: this.coreContractAddress,
         functionName: 'post-message',
         functionArgs: [
+          Cl.address(activeCoreContract.value),
           Cl.buffer(message instanceof Uint8Array ? message : new TextEncoder().encode(message)),
           Cl.uint(nonce),
           Cl.some(Cl.uint(consistencyLevel))
@@ -60,8 +90,13 @@ export class StacksWormholeCore<N extends Network, C extends StacksChains> imple
       }
   }
 
-  verifyMessage(sender: AccountAddress<C>, vaa: VAA): AsyncGenerator<UnsignedTransaction<N, C>, any, any> {
-    throw new Error("Method not implemented.");
+  // read-only in stacks, failing if we call this function signing a transaction instead of using a call
+  async *verifyMessage(sender: AccountAddress<C>, vaa: VAA): AsyncGenerator<any, any, any> {
+    const res = await this.readonly('parse-and-verify-vaa', [Cl.buffer(serialize(vaa))])
+    if(res.value.type !== 'ok') {
+      throw new Error(`Failed to verify VAA: ${res.value.data}`)
+    }
+    return res.value.data
   }
   
   async parseTransaction(txid: TxHash): Promise<StacksWormholeMessageId[]> {
@@ -72,7 +107,6 @@ export class StacksWormholeCore<N extends Network, C extends StacksChains> imple
       return []
     }
     if(data.tx_status !== 'success') {
-      // FG TODO FG should we throw? should we console debug?
       return []
     }
 
@@ -115,9 +149,9 @@ export class StacksWormholeCore<N extends Network, C extends StacksChains> imple
     return this.CORE_CONTRACT_NAME;
   }
 
-  private readonly(functionName: string, functionArgs: any[]): Promise<any> {
+  private readonly(functionName: string, functionArgs: any[], contractName?: string): Promise<any> {
     return fetchCallReadOnlyFunction({
-      contractName: this.contractName(),
+      contractName: contractName ?? this.contractName(),
       contractAddress: this.coreContractAddress,
       functionName,
       functionArgs,
@@ -129,13 +163,13 @@ export class StacksWormholeCore<N extends Network, C extends StacksChains> imple
   }
 
   static async fromRpc<N extends Network>(
-    provider: any,
-    config: any,
-  ): Promise<StacksWormholeCore<N, "Stacks">> {
+    provider: StacksNetwork,
+    config: ChainsConfig<N, StacksPlatformType>,
+  ): Promise<StacksWormholeCore<N, StacksChains>> {
     const [network, chain] = await StacksPlatform.chainFromRpc(provider);
     const conf = config[chain]!;
 
-    return new StacksWormholeCore<N, "Stacks">(
+    return new StacksWormholeCore<N, typeof chain>(
       network as N,
       chain,
       provider,

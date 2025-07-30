@@ -196,6 +196,7 @@ export class EvmPlatform<N extends Network>
   static async getLatestBlock(rpc: Provider): Promise<number> {
     return await rpc.getBlockNumber();
   }
+  
   static async getLatestFinalizedBlock(rpc: Provider): Promise<number> {
     const block = await rpc.getBlock('finalized');
     if (!block) throw new Error('Could not get finalized block');

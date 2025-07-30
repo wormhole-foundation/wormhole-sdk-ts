@@ -2,7 +2,7 @@ import { ChainContext, ChainsConfig, chainToPlatform, ChainToPlatform, Network, 
 import { _platform, StacksChains, StacksPlatformType } from "./types.js";
 import { Chain } from "@wormhole-foundation/sdk-connect";
 import { StacksChain } from "./chain.js";
-import { ChainId, TransactionVersion, PeerNetworkId, AddressVersion, StacksNetwork } from "@stacks/network";
+import { networkFromName, StacksNetwork, StacksNetworkName } from "@stacks/network";
 
 export class StacksPlatform<N extends Network> extends PlatformContext<N, StacksPlatformType> 
   implements StaticPlatformMethods<StacksPlatformType, typeof StacksPlatform> {
@@ -16,24 +16,8 @@ export class StacksPlatform<N extends Network> extends PlatformContext<N, Stacks
     );
   }
 
-  override getRpc<C extends StacksChains>(chain: C) {
-    const rpc =  this.config[chain]!.rpc;
-    if(!rpc) {
-      throw new Error("No configuration available for chain: " + chain);
-    }
-    // TODO FG TODO
-    return {
-      chainId: ChainId.Testnet,
-      transactionVersion: TransactionVersion.Testnet,
-      peerNetworkId: PeerNetworkId.Testnet,
-      magicBytes: 'T2',
-      bootAddress: 'ST000000000000000000002AMW42H',
-      addressVersion: {
-        singleSig: AddressVersion.TestnetSingleSig,
-        multiSig: AddressVersion.TestnetMultiSig,
-      },
-      client: { baseUrl: rpc },
-    } as StacksNetwork
+  override getRpc(): StacksNetwork {
+    return networkFromName(this.network.toLowerCase() as StacksNetworkName)
   }
 
   override getChain<C extends StacksChains>(chain: C, rpc?: RpcConnection<C>): ChainContext<N, C, ChainToPlatform<C>> {

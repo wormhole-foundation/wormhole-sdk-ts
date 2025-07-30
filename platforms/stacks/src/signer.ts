@@ -38,15 +38,13 @@ export class StacksSigner<N extends Network, C extends StacksChains = StacksChai
     }
 
     const txHashes = await Promise.all(signed.map(async (signedTx) => {
-      console.log(`Broadcasting tx using baseUrl: ${this._provider.client.baseUrl} ...`)
-      console.log(signedTx)
       const txBroadcastResult = await broadcastTransaction({
         transaction: signedTx,
         client: {
           baseUrl: this._provider.client.baseUrl
         }
       })
-      console.log(`Broadcasted tx: ${txBroadcastResult.txid}`)
+      console.log('!!!!!!!!!!!!!!!!!')
       console.log(txBroadcastResult)
       return txBroadcastResult.txid
     }))
