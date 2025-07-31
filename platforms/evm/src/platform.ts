@@ -141,7 +141,9 @@ export class EvmPlatform<N extends Network>
           const goldRush = new GoldRushClient(indexers.goldRush);
           if (goldRush.supportsChain(network, chain)) {
             const balances = await goldRush.getBalances(network, chain, walletAddr);
-            balances['native'] = await rpc.getBalance(walletAddr);
+            if (balances['native'] === undefined) {
+              balances['native'] = await rpc.getBalance(walletAddr);
+            }
             return balances
           } else {
             console.error(`Network=${network} Chain=${chain} not supported by Gold Rush indexer API`);
