@@ -53,3 +53,31 @@ export async function getCircleAttestationWithRetry(
   const task = () => getCircleAttestation(circleApi, msgHash);
   return retry<string>(task, CIRCLE_RETRY_INTERVAL, timeout, "Circle:GetAttestation");
 }
+
+export async function checkCircleGeoblock(): Promise<{
+  success: false;
+  error: Error;
+} | null> {
+  try {
+    const url = "https://api.circle.com/ping";
+
+    await axios.get<{
+      status?: string;
+      message?: string;
+    }>(url, { timeout: 5000 });
+    return null; // No error, continue with quote
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      if (error.response?.status === 403 || error.response?.status === 451) {
+        return {
+          success: false,
+          error: new Error(
+            "You are attempting a transfer from a location that is restricted by Circle.",
+          ),
+        };
+      }
+    }
+    // Other errors are non-blocking, continue with quote
+    return null;
+  }
+}
