@@ -31,7 +31,6 @@ const chainNetworkNativeChainIdEntries = [
       ["Fantom",    250n],
       ["Klaytn",    8217n],
       ["Moonbeam",  1284n],
-      ["Neon",      245022934n],
       ["Optimism",  10n],
       ["Polygon",   137n],
       ["Neutron",   "neutron-1"],
@@ -79,7 +78,6 @@ const chainNetworkNativeChainIdEntries = [
       ["Fantom",          4002n],
       ["Klaytn",          1001n], //baobab
       ["Moonbeam",        1287n], //moonbase alpha
-      ["Neon",            245022940n],
       ["Optimism",        420n],
       ["Polygon",         80001n], //mumbai
       ["Sepolia",         11155111n],

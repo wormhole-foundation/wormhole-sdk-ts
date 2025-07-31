@@ -110,7 +110,6 @@ const blockTimeMilliseconds = [
   ["Moonbeam",         12_000],
   ["Monad",             1_000],
   ["Near",              1_500],
-  ["Neon",             30_000],
   ["Optimism",          2_000],
   ["OptimismSepolia",   2_000],
   ["Osmosis",           6_000],

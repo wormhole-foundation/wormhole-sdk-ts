@@ -75,11 +75,6 @@
 | Moonbeam | ManualCCTP | :no_entry_sign: | :no_entry_sign: |
 | Moonbeam | AutomaticCCTP | :no_entry_sign: | :no_entry_sign: |
 | Moonbeam | AutomaticPortico | :no_entry_sign: | :no_entry_sign: |
-| Neon | ManualTokenBridge | :no_entry_sign: | :white_check_mark: |
-| Neon | AutomaticTokenBridge | :no_entry_sign: | :no_entry_sign: |
-| Neon | ManualCCTP | :no_entry_sign: | :no_entry_sign: |
-| Neon | AutomaticCCTP | :no_entry_sign: | :no_entry_sign: |
-| Neon | AutomaticPortico | :no_entry_sign: | :no_entry_sign: |
 | Injective | ManualTokenBridge | :white_check_mark: | :white_check_mark: |
 | Injective | AutomaticTokenBridge | :no_entry_sign: | :no_entry_sign: |
 | Injective | ManualCCTP | :no_entry_sign: | :no_entry_sign: |

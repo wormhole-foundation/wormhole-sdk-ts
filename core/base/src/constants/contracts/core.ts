@@ -54,7 +54,6 @@ export const coreBridgeContracts = [[
     ["Aptos",           "0x5bc11445584a763c1fa7ed39081f1b920954da14e04b32440cba863d03e19625"],
     ["Sui",             "0x31358d198147da50db32eda2562951d53973a0c0ad5ed738e9b17d88b213d790"],
     ["Moonbeam",        "0xa5B7D85a8f27dd7907dc8FdC21FA5657D5E2F901"],
-    ["Neon",            "0x268557122Ffd64c85750d630b716471118F323c8"],
     ["Arbitrum",        "0xC7A204bDBFe983FCD8d8E61D02b475D4073fF97e"],
     ["Optimism",        "0x6b9C8671cdDC8dEab9c719bB87cBd3e782bA6a35"],
     ["Pythnet",         "EUrRARh92Cdc54xrDn6qzaqjA77NRrCcfbr8kPwoTL4z"],

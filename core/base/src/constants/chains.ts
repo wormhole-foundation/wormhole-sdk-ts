@@ -20,7 +20,6 @@ const chainIdAndChainEntries = [
   [   14, "Celo"           ],
   [   15, "Near"           ],
   [   16, "Moonbeam"       ],
-  [   17, "Neon"           ],
   [   19, "Injective"      ],
   [   20, "Osmosis"        ],
   [   21, "Sui"            ],

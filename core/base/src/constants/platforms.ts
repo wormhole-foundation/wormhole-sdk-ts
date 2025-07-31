@@ -14,7 +14,6 @@ const platformAndChainsEntries = [[
     "Fantom",
     "Klaytn",
     "Moonbeam",
-    "Neon",
     "Optimism",
     "Polygon",
     "Sepolia",
