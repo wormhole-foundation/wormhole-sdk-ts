@@ -52,7 +52,13 @@ export class GoldRushClient {
 
     const bals: Balances = {};
     for (let item of data.items) {
-      bals[item.contract_address] = BigInt(item.balance);
+      let addr = item.contract_address;
+
+      if (item.contract_address.toLowerCase() === '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee') {
+        addr = 'native';
+      }
+
+      bals[addr] = BigInt(item.balance);
     }
 
     return bals;
