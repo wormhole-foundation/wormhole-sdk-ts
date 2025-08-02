@@ -57,7 +57,7 @@ export class SolanaCircleBridge<N extends Network, C extends SolanaChains>
     const msgTransmitterAddress = contracts.cctp?.messageTransmitter;
     if (!msgTransmitterAddress)
       throw new Error(
-        `Circle Messenge Transmitter contract for domain ${chain} not found`,
+        `Circle Messenger Transmitter contract for domain ${chain} not found`,
       );
 
     this.messageTransmitter = createReadOnlyMessageTransmitterProgramInterface(
