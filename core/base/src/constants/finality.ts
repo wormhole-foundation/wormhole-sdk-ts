@@ -103,6 +103,7 @@ const blockTimeMilliseconds = [
   ["Evmos",             2_000],
   ["Fantom",            2_500],
   ["Holesky",          15_000],
+  ["HyperEVM",          1_000],
   ["Injective",         2_500],
   ["Klaytn",            1_000],
   ["Kujira",            3_000],
