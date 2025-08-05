@@ -115,6 +115,14 @@ const explorerConfig = [[
         tx: "tx/",
         account: "address/"
       },
+    }], [
+    "HyperEVM", {
+      name: "HyperEVMScan",
+      baseUrl: "https://hyperevmscan.io/",
+      endpoints: {
+        tx: "tx/",
+        account: "address/"
+      },
     }],
   ]], [
   "Testnet", [[
