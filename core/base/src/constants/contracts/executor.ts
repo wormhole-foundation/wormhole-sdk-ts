@@ -29,11 +29,13 @@ export const executorContracts = [[
   ]], [
   "Testnet", [
     ["Aptos",           "0x139717c339f08af674be77143507a905aa28cbc67a0e53e7095c07b630d73815"],
+    ["ArbitrumSepolia", "0xBF161de6B819c8af8f2230Bcd99a9B3592f6F87b"],
     ["Avalanche",       "0x4661F0E629E4ba8D04Ee90080Aee079740B00381"],
     ["BaseSepolia",     "0x51B47D493CBA7aB97e3F8F163D6Ce07592CE4482"],
     ["Converge",        "0xAab9935349B9c08e0e970720F6D640d5B91C293E"],
     ["Fogo",            "execXUrAsMnqMmTHj5m7N1YQgsDz3cwGLYCYyuDRciV"],
     ["Monad",           "0xC04dE634982cAdF2A677310b73630B7Ac56A3f65"],
+    ["OptimismSepolia", "0x5856651eB82aeb6979B4954317194d48e1891b3c"],
     ["Plume",           "0x8fc2FbA8F962fbE89a9B02f03557a011c335A455"],
     ["Seievm",          "0x25f1c923Fb7A5aEFA5F0A2b419fC70f2368e66e5"],
     ["Sepolia",         "0xD0fb39f5a3361F21457653cB70F9D0C9bD86B66B"],
