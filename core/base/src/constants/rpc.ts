@@ -45,6 +45,7 @@ const rpcConfig = [[
     ["HyperEVM",  "https://rpc.hyperliquid.xyz/evm"],
     ["Mezo",      "https://jsonrpc-mezo.boar.network/"],
     ["Plume",     "https://rpc.plume.org/"],
+    ["XRPLEVM",   "https://rpc.xrplevm.org/"],
   ]], [
   "Testnet", [
     ["Bsc",             "https://data-seed-prebsc-1-s3.binance.org:8545"],
@@ -85,6 +86,7 @@ const rpcConfig = [[
     ["Converge",        "https://rpc-converge-testnet-1.t.conduit.xyz"],
     ["Fogo",            "https://testnet.fogo.io"],
     ["Plume",           "https://testnet-rpc.plume.org"],
+    ["XRPLEVM",         "https://rpc.testnet.xrplevm.org/"],
   ]], [
   "Devnet", [
     ["Ethereum",  "http://eth-devnet:8545"],
