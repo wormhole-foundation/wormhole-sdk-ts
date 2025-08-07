@@ -742,7 +742,7 @@ export type MessageTransmitter = {
       name: 'usedNonces';
       docs: [
         'UsedNonces account holds an array of bits that indicate which nonces were already used',
-        "so they can't be resused to receive new messages. Array starts with the first_nonce and",
+        "so they can't be reused to receive new messages. Array starts with the first_nonce and",
         'holds flags for UsedNonces::MAX_NONCES. Nonces are recorded separately for each remote_domain.',
       ];
       type: {
@@ -2110,7 +2110,7 @@ export const MessageTransmitterIdl: MessageTransmitter = {
       name: 'usedNonces',
       docs: [
         'UsedNonces account holds an array of bits that indicate which nonces were already used',
-        "so they can't be resused to receive new messages. Array starts with the first_nonce and",
+        "so they can't be reused to receive new messages. Array starts with the first_nonce and",
         'holds flags for UsedNonces::MAX_NONCES. Nonces are recorded separately for each remote_domain.',
       ],
       type: {
