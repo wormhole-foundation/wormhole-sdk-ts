@@ -106,6 +106,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Converge",        52085145n],
       ["Fogo",            "9GGSFo95raqzZxWqKM5tGYvJp5iv4Dm565S4r8h5PEu9"], // genesis hash
       ["Plume",           98867n],
+      ["QuaiTestnet",     15000n],
     ],
   ],
   [
