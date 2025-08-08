@@ -87,9 +87,22 @@ export class EvmPorticoBridge<
     token: TokenAddress<C>,
     amount: bigint,
     destToken: TokenId,
-    destinationPorticoAddress: string,
+    toPorticoBridge: PorticoBridge<N>,
     quote: PorticoBridge.Quote,
   ) {
+    const toChain = toPorticoBridge.getChain();
+    if (this.chain === toChain) {
+      throw new Error('Cannot transfer to the same chain');
+    }
+
+    if (receiver.chain !== toChain) {
+      throw new Error('Invalid destination chain');
+    }
+
+    const tokenGroup = this.getTokenGroup(token.toString());
+    const destinationPorticoAddress =
+      toPorticoBridge.getPorticoAddress(tokenGroup);
+
     const { minAmountStart, minAmountFinish } = quote.swapAmounts;
     if (minAmountStart === 0n) throw new Error('Invalid min swap amount');
     if (minAmountFinish === 0n) throw new Error('Invalid min swap amount');
@@ -294,6 +307,10 @@ export class EvmPorticoBridge<
     const token = tokens.find((t) => canonicalAddress(t.token) === address);
     if (!token) throw new Error('Token not found');
     return token.group;
+  }
+
+  getChain() {
+    return this.chain;
   }
 
   private async *approve(
