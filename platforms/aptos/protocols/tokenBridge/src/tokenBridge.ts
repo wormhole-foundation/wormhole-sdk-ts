@@ -37,7 +37,7 @@ import {
 } from "@wormhole-foundation/sdk-aptos";
 import { serializeForeignAddressSeeds } from "./foreignAddress.js";
 import type { OriginInfo, TokenBridgeState } from "./types.js";
-import { Aptos, InputGenerateTransactionPayloadData } from "@aptos-labs/ts-sdk";
+import { Aptos, AptosApiError, InputGenerateTransactionPayloadData } from "@aptos-labs/ts-sdk";
 
 export class AptosTokenBridge<N extends Network, C extends AptosChains>
   implements TokenBridge<N, C>
@@ -82,10 +82,19 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
   async getOriginalAsset(token: AnyAptosAddress): Promise<TokenId> {
     const fqt = token.toString().split(APTOS_SEPARATOR);
 
-    const originInfo = await this.connection.getAccountResource<OriginInfo>({
-      accountAddress: fqt[0]!,
-      resourceType: `${this.tokenBridgeAddress}::state::OriginInfo`,
-    });
+    let originInfo: OriginInfo | null = null;
+    try {
+      originInfo = await this.connection.getAccountResource<OriginInfo>({
+        accountAddress: fqt[0]!,
+        resourceType: `${this.tokenBridgeAddress}::state::OriginInfo`,
+      });
+    } catch (e: unknown) {
+      if (e instanceof AptosApiError && e.message.includes("Resource not found")) {
+        // if we can't find the origin info, it means this is not a wrapped asset
+        throw ErrNotWrapped(token.toString());
+      }
+      throw e;
+    }
 
     if (!originInfo) throw ErrNotWrapped(token.toString());
 
