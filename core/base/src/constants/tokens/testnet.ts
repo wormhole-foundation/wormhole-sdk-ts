@@ -3279,6 +3279,28 @@ const testnetTokenEntries = [
       ],
     ],
   ],
+  [
+    "QuaiTestnet",
+    [
+      [
+        "QUAIquai_testnet",
+        {
+          symbol: "QUAI",
+          decimals: 18,
+          address: "native",
+          wrappedKey: "WQUAIquai_testnet",
+        },
+      ],
+      [
+        "WQUAIquai_testnet",
+        {
+          symbol: "WQUAI",
+          decimals: 18,
+          address: "0x005c46f661Baef20671943f2b4c087Df3E7CEb13",
+        },
+      ],
+    ],
+  ],
 ] as const satisfies MapLevel<Chain, MapLevel<TokenSymbol, TokenConst>>;
 
 export const testnetChainTokens = constMap(testnetTokenEntries, [0, [1, 2]]);

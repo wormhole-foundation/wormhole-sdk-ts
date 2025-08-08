@@ -44,6 +44,7 @@ export const WETH_CONTRACTS: Record<Network, Partial<Record<EvmChains, string>>>
     "Monad": "0x760AfE86e5de5fa0Ee542fc7B7B713e1c5425701",
     "Mezo": "0x0000000000000000000000000000000000000000",
     "Sonic": "0x039e2fB66102314Ce7b64Ce5Ce3E5183bc94aD38",
+    "QuaiTestnet": "0x005c46f661Baef20671943f2b4c087Df3E7CEb13",
   },
   "Devnet": {}
 };
