@@ -51,18 +51,18 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
   private _state: TransferState;
 
   // cached message derived from transfer details
-  // note: we dont want to create multiple different ones since
+  // note: we don't want to create multiple different ones since
   // the nonce may change and we want to keep it consistent
   private msg: GatewayTransferMsg | GatewayTransferWithPayloadMsg;
 
   // Initial Transfer Settings
   transfer: GatewayTransferDetails;
 
-  // Transaction Ids from source chain
+  // Transaction IDs from the source chain
   transactions: TransactionId[] = [];
 
   // The corresponding vaa representing the GatewayTransfer
-  // on the source chain (if it came from outside cosmos and if its been completed and finalized)
+  // on the source chain (if it came from outside cosmos and if it has been completed and finalized)
   vaas?: {
     id: WormholeMessageId;
     vaa?: TokenBridge.TransferVAA;
@@ -146,7 +146,7 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
       gtd = await GatewayTransfer._fromTransaction(wh, from);
     } else if (isWormholeMessageId(from)) {
       // TODO: we're missing the transaction that created this
-      // get it from transaction status search on wormholescan?
+      // get it from a transaction status search on wormholescan?
       gtd = await GatewayTransfer._fromMsgId(wh, from);
     } else {
       throw new Error("Invalid `from` parameter for GatewayTransfer");
@@ -179,13 +179,13 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
       vaa.payloadName === "TransferWithPayload" ? vaa.payload.payload : undefined;
 
     // Nonce for GatewayTransferMessage may be in the payload
-    // and since we use the payload to find the Wormchain transacton
+    // and since we use the payload to find the Wormchain transaction
     // we need to preserve it
     let nonce: number | undefined;
 
     let to: ChainAddress = { ...vaa.payload.to };
     // The payload here may be the message for Gateway
-    // Lets be sure to pull the real payload if its set
+    // Let's be sure to pull the real payload if it's set
     // Otherwise revert to undefined
     if (payload) {
       try {
@@ -202,7 +202,7 @@ export class GatewayTransfer<N extends Network = Network> implements WormholeTra
         );
         to = Wormhole.chainAddress(destChain, recipientAddress);
       } catch {
-        /*Ignoring, throws if not the payload isnt JSON*/
+        /*Ignoring, throws if not the payload isn't JSON*/
       }
     }
 

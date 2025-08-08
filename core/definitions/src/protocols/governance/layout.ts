@@ -47,7 +47,7 @@ const contractActions = [
   //a word on the chainId for RecoverChainId:
   //The EVM contracts accept an arbitrary number when recovering chain ids however I don't think you
   //  ever want to set the wormhole chain id of a contract (even on a fork) to 0 since this would
-  //  mean that afterwards all the checks that use `vaa.chainId == this.chainId` in the contract
+  //means that afterwards all the checks that use `vaa.chainId == this.chainId` in the contract
   //  would suddenly accept "broadcast VAAs" which is almost certainly not what's intended.
   //TODO should we define governance actions that are platform specific here?
   //     (reason against: we might want to deserialize types that are specific to the platform)
