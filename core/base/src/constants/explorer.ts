@@ -1,19 +1,19 @@
-import type { MapLevels} from './../utils/index.js';
+import type { MapLevels } from './../utils/index.js';
 import { constMap } from './../utils/index.js';
 import type { Network } from './networks.js';
 import type { Chain } from './chains.js';
 
 export type ExplorerSettings = {
-  name:    string;
+  name: string;
   baseUrl: string;
   endpoints: {
-    tx:      string;
+    tx: string;
     account: string;
   };
   networkQuery?: {
-    default:  Network;
+    default: Network;
     Mainnet?: string;
-    Devnet?:  string;
+    Devnet?: string;
     Testnet?: string;
   };
 };
@@ -107,7 +107,7 @@ const explorerConfig = [[
         tx: "transaction/",
         account: "address/",
       },
-    }],[
+    }], [
     "Mezo", {
       name: "Mezo Explorer",
       baseUrl: "https://explorer.mezo.org/",
@@ -119,6 +119,14 @@ const explorerConfig = [[
     "HyperEVM", {
       name: "HyperEVMScan",
       baseUrl: "https://hyperevmscan.io/",
+      endpoints: {
+        tx: "tx/",
+        account: "address/"
+      },
+    }], [
+    "XRPLEVM", {
+      name: "XRPL Explorer",
+      baseUrl: "https://explorer.xrplevm.org/",
       endpoints: {
         tx: "tx/",
         account: "address/"
@@ -236,8 +244,15 @@ const explorerConfig = [[
         tx: "tx/",
         account: "address/"
       },
-    }
-],
+    }], [
+    "XRPLEVM", {
+      name: "XRPL Explorer",
+      baseUrl: "https://explorer.testnet.xrplevm.org/",
+      endpoints: {
+        tx: "tx/",
+        account: "address/"
+      },
+    }],
   ]],
 ] as const satisfies MapLevels<["Mainnet" | "Testnet", Chain, ExplorerSettings]>;
 

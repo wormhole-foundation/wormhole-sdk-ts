@@ -37,6 +37,7 @@ const platformAndChainsEntries = [[
     "Sonic",
     "Converge",
     "Plume",
+    "XRPLEVM"
   ]], [
   "Solana", [
     "Solana",
