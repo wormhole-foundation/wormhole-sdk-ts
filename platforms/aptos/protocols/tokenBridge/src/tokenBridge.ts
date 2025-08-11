@@ -89,7 +89,7 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
         resourceType: `${this.tokenBridgeAddress}::state::OriginInfo`,
       });
     } catch (e: unknown) {
-      if (e instanceof AptosApiError && e.message.toLowerCase().includes("resource not found")) {
+      if (e instanceof AptosApiError && e.data?.error_code === "resource_not_found") {
         // if we can't find the origin info, it means this is not a wrapped asset
         throw ErrNotWrapped(token.toString());
       }
