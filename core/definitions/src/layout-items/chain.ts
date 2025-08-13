@@ -21,8 +21,6 @@ export const chainItem = <
     ...chainItemBase,
     custom: {
       to: (val: number): AllowNull<C[number], N> => {
-        console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>")
-        console.log(val)
         if (val === 0) {
           if (!opts?.allowNull)
             throw new Error("ChainId 0 is not valid for this protocol and action");
