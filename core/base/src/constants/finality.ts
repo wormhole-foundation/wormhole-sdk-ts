@@ -78,6 +78,7 @@ const finalityThresholds = [
   ["BaseSepolia", 512],
   ["OptimismSepolia", 512],
   ["PolygonSepolia", 32],
+  ["QuaiTestnet", 5],
 ] as const satisfies MapLevel<Chain, number>;
 
 /**
@@ -140,6 +141,7 @@ const blockTimeMilliseconds = [
   ["Fogo",                400],
   ["Plume",               250],
   ["Seievm",              400],
+  ["QuaiTestnet",       5_000], // ~5 second block time for Quai
 ] as const satisfies MapLevel<Chain, number>;
 
 /** The amount of time between block production, in milliseconds  */
