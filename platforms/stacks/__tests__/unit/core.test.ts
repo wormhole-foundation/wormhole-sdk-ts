@@ -3,7 +3,7 @@ import { StacksPlatform } from "../../src/platform.js";
 import '@wormhole-foundation/sdk-stacks-core';
 import '@wormhole-foundation/sdk-evm-core';
 import { getStacksSigner } from "../../src/signer.js";
-import { StacksNetwork } from "@stacks/network";
+import { StacksNetwork, StacksNetworkName } from "@stacks/network";
 import { createVAA } from "@wormhole-foundation/sdk-connect";
 import { secp256k1 } from "@noble/curves/secp256k1"
 import { broadcastTransaction, Cl, makeContractCall, privateKeyToAddress } from "@stacks/transactions";
@@ -168,7 +168,7 @@ describe("Stacks Core bridge tests", () => {
       whMessageIds = await coreProtocol.parseTransaction(txHash.txId)
     }
 
-    const wallet1Addr = privateKeyToAddress(WALLET_1_PRIV_KEY, platform.network.toString().toLowerCase() as any)
+    const wallet1Addr = privateKeyToAddress(WALLET_1_PRIV_KEY, platform.network.toString().toLowerCase() as StacksNetworkName)
     expect(whMessageIds.length).toBe(1)
     expect(whMessageIds[0].emitter.toString()).toBe(`0x${Buffer.from(keccak256(wallet1Addr)).toString('hex')}`)
     expect(whMessageIds[0].emitterPrincipal).toBe(wallet1Addr)

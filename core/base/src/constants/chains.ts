@@ -50,7 +50,7 @@ const chainIdAndChainEntries = [
   [   52, "Sonic"          ],
   [   53, "Converge"       ],
   [   55, "Plume"          ],
-  [ 50039, "Stacks"         ], // FG TODO - review chain ID - use it in the clarity contracts too 
+  [ 50039, "Stacks"         ], // FG TODO - review chain ID - use it in the clarity contracts too  (core bridge and NTT manager)
   [ 3104, "Wormchain"      ],
   [ 4000, "Cosmoshub"      ],
   [ 4001, "Evmos"          ],

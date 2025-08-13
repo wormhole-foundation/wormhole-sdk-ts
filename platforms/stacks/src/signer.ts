@@ -27,7 +27,6 @@ export class StacksSigner<N extends Network, C extends StacksChains> implements 
 
   async signAndSend(txs: UnsignedTransaction<N, C>[]): Promise<TxHash[]> {
     const signed: StacksTransactionWire[] = []
-    
     for (const tx of txs) {
       const signedTx = await makeContractCall({
         ...tx.transaction,
@@ -39,10 +38,13 @@ export class StacksSigner<N extends Network, C extends StacksChains> implements 
     }
 
     const txHashes = await Promise.all(signed.map(async (signedTx) => {
-      const txBroadcastResult = await broadcastTransaction({
+      const txBroadcastResult: any = await broadcastTransaction({
         transaction: signedTx,
         client: this._provider.client
       })
+      if(txBroadcastResult.error) {
+        throw new Error(`Failed to broadcast transaction: ${txBroadcastResult.error} ${txBroadcastResult.reason}`)
+      }
       return txBroadcastResult.txid
     }))
 

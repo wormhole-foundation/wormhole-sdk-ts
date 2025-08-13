@@ -4,6 +4,7 @@ import { Chain } from "@wormhole-foundation/sdk-connect";
 import { StacksChain } from "./chain.js";
 import { ChainId, networkFromName, StacksNetwork, StacksNetworkName } from "@stacks/network";
 import { StacksZeroAddress } from "./address.js";
+import { cvToValue, fetchCallReadOnlyFunction } from "@stacks/transactions";
 
 export class StacksPlatform<N extends Network> extends PlatformContext<N, StacksPlatformType> 
   implements StaticPlatformMethods<StacksPlatformType, typeof StacksPlatform> {
@@ -61,15 +62,27 @@ export class StacksPlatform<N extends Network> extends PlatformContext<N, Stacks
     token: TokenAddress<C>,
   ): Promise<number> {
     if (isNative(token)) return decimals.nativeDecimals(StacksPlatform._platform);
-    
-    // Implement token decimals lookup for Stacks
-    throw new Error("Method not implemented.");
+    const [contractAddress, contractName] = token.toString().split(".")
+    if(!contractAddress || !contractName) {
+      throw new Error("Invalid token address");
+    }
+    const res = await fetchCallReadOnlyFunction({
+      contractName,
+      contractAddress,
+      functionName: "get-decimals",
+      functionArgs: [],
+      client: {
+        baseUrl: rpc.client.baseUrl,
+      },
+      senderAddress: StacksZeroAddress
+    })
+    return Number(cvToValue(res).value)
   }
 
   static async getBalance<C extends StacksChains>(
     _network: Network,
     _chain: C,
-    rpc: RpcConnection<C>,
+    rpc: StacksNetwork,
     walletAddr: string,
     token: TokenAddress<C>,
   ): Promise<bigint | null> {
