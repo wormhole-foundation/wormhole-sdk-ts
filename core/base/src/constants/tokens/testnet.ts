@@ -3192,6 +3192,28 @@ const testnetTokenEntries = [
     ],
   ],
   [
+    "XRPLEVM",
+    [
+      [
+        "XRP",
+        {
+          symbol: "XRP",
+          decimals: 18,
+          address: "native",
+          wrappedKey: "WXRP",
+        },
+      ],
+      [
+        "WXRP",
+        {
+          symbol: "WXRP",
+          decimals: 18,
+          address: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+        },
+      ],
+    ],
+  ],
+  [
     "Sepolia",
     [
       [
