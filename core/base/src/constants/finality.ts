@@ -63,6 +63,7 @@ const finalityThresholds = [
   ["Converge",  4096],
   ["Fogo",      32],
   ["Plume",     4096], // inferred from testing
+  ["XRPLEVM",   1],
   ["Cosmoshub", 0],
   ["Evmos",     0],
   ["Kujira",    0],
@@ -139,6 +140,7 @@ const blockTimeMilliseconds = [
   ["Converge",            100],
   ["Fogo",                400],
   ["Plume",               250],
+  ["XRPLEVM",           5_000],
   ["Seievm",              400],
 ] as const satisfies MapLevel<Chain, number>;
 
