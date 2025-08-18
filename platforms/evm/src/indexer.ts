@@ -4,7 +4,11 @@
 // We don't use the official @covalenthq/client-sdk client for this because it's over 1MB and all we need
 // is a small subset of one endpoint. This is how you know this code isn't AI slop.
 
-import { Balances, Chain, Network } from "@wormhole-foundation/sdk-connect";
+import type {
+  Balances,
+  Chain,
+  Network,
+} from '@wormhole-foundation/sdk-connect';
 
 const GOLD_RUSH_CHAINS: Record<Network, Partial<Record<Chain, string>>> = {
   Mainnet: {
@@ -39,7 +43,7 @@ const GOLD_RUSH_CHAINS: Record<Network, Partial<Record<Chain, string>>> = {
     Scroll: 'scroll-sepolia-testnet',
   },
   Devnet: {},
-}
+};
 
 export class GoldRushClient {
   private key: string;
@@ -53,21 +57,54 @@ export class GoldRushClient {
     return endpoint !== undefined;
   }
 
-  async getBalances(network: Network, chain: Chain, walletAddr: string): Promise<Balances> {
+  async getBalances(
+    network: Network,
+    chain: Chain,
+    walletAddr: string,
+    signal?: AbortSignal,
+  ): Promise<Balances> {
     const endpoint = GOLD_RUSH_CHAINS[network][chain];
     if (!endpoint) throw new Error('Chain not supported by GoldRush indexer');
 
-    const { data } = await (await fetch(`https://api.covalenthq.com/v1/${endpoint}/address/${walletAddr}/balances_v2/?key=${this.key}`)).json();
+    const response = await fetch(
+      `https://api.covalenthq.com/v1/${endpoint}/address/${walletAddr}/balances_v2/?key=${this.key}`,
+      { signal },
+    ).catch((err) => {
+      if (err.name === 'AbortError') throw new Error('Request aborted');
+      throw err;
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `GoldRush API request failed: ${response.status} ${response.statusText}`,
+      );
+    }
+
+    const { data } = await response.json();
+
+    if (!data || !data.items) {
+      throw new Error('Invalid response structure from GoldRush API');
+    }
 
     const bals: Balances = {};
     for (let item of data.items) {
       let addr = item.contract_address;
 
-      if (item.contract_address.toLowerCase() === '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee') {
+      // GoldRush uses this special address to represent native tokens
+      if (
+        item.contract_address.toLowerCase() ===
+        '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+      ) {
         addr = 'native';
+      } else {
+        addr = addr.toLowerCase();
       }
 
-      bals[addr] = BigInt(item.balance);
+      // Only include tokens with non-zero balance
+      const balance = BigInt(item.balance || '0');
+      if (balance > 0n) {
+        bals[addr] = balance;
+      }
     }
 
     return bals;
@@ -99,7 +136,7 @@ const ALCHEMY_CHAINS: Record<Network, Partial<Record<Chain, string>>> = {
     Monad: 'monad-testnet',
   },
   Devnet: {},
-}
+};
 
 export class AlchemyClient {
   private key: string;
@@ -113,24 +150,73 @@ export class AlchemyClient {
     return endpoint !== undefined;
   }
 
-  async getBalances(network: Network, chain: Chain, walletAddr: string): Promise<Balances> {
+  async getBalances(
+    network: Network,
+    chain: Chain,
+    walletAddr: string,
+    signal?: AbortSignal,
+  ): Promise<Balances> {
     const endpoint = ALCHEMY_CHAINS[network][chain];
     if (!endpoint) throw new Error('Chain not supported by Alchemy indexer');
 
-    const { result } = await (await fetch(`https://${endpoint}.g.alchemy.com/v2/${this.key}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        jsonrpc: "2.0",
-        id: 1,
-        method: "alchemy_getTokenBalances",
-        params: [walletAddr]
-      })
-    })).json();
+    const response = await fetch(
+      `https://${endpoint}.g.alchemy.com/v2/${this.key}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'alchemy_getTokenBalances',
+          params: [walletAddr, 'erc20'], // Use "erc20" to get all ERC-20 tokens
+        }),
+        signal,
+      },
+    ).catch((err) => {
+      if (err.name === 'AbortError') throw new Error('Request aborted');
+      throw err;
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Alchemy API request failed: ${response.status} ${response.statusText}`,
+      );
+    }
+
+    const data = await response.json();
+
+    if (data.error) {
+      throw new Error(
+        `Alchemy API error: ${
+          data.error.message || JSON.stringify(data.error)
+        }`,
+      );
+    }
+
+    if (!data.result?.tokenBalances) {
+      throw new Error('Invalid response structure from Alchemy API');
+    }
 
     const bals: Balances = {};
-    for (let item of result.tokenBalances) {
-      bals[item.contractAddress] = BigInt(parseInt(item.balance, 16));
+    for (const item of data.result.tokenBalances) {
+      // Skip if no contract address
+      if (!item.contractAddress) continue;
+
+      // Alchemy docs show "tokenBalance" but historically might have been "balance"
+      // Support both for compatibility
+      const balanceHex = item.tokenBalance || item.balance;
+      if (!balanceHex || balanceHex === '0x0' || balanceHex === '0x') continue;
+
+      try {
+        const balance = BigInt(balanceHex);
+        if (balance > 0n) {
+          bals[item.contractAddress.toLowerCase()] = balance;
+        }
+      } catch (e) {
+        console.warn(
+          `Failed to parse balance for ${item.contractAddress}: ${balanceHex}`,
+        );
+      }
     }
 
     return bals;

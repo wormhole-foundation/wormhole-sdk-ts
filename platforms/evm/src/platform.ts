@@ -25,7 +25,12 @@ import * as ethers_contracts from './ethers-contracts/index.js';
 
 import { EvmAddress, EvmZeroAddress } from './address.js';
 import { EvmChain } from './chain.js';
-import type { AnyEvmAddress, EvmChains, EvmPlatformType, IndexerAPIKeys } from './types.js';
+import type {
+  AnyEvmAddress,
+  EvmChains,
+  EvmPlatformType,
+  IndexerAPIKeys,
+} from './types.js';
 import { _platform } from './types.js';
 import { AlchemyClient, GoldRushClient } from './indexer.js';
 
@@ -134,40 +139,86 @@ export class EvmPlatform<N extends Network>
     rpc: Provider,
     walletAddr: string,
     indexers?: IndexerAPIKeys,
+    signal?: AbortSignal,
   ): Promise<Balances> {
-    if (indexers) {
-      if (indexers.goldRush) {
-        try {
-          const goldRush = new GoldRushClient(indexers.goldRush);
-          if (goldRush.supportsChain(network, chain)) {
-            const balances = await goldRush.getBalances(network, chain, walletAddr);
-            if (balances['native'] === undefined) {
-              balances['native'] = await rpc.getBalance(walletAddr);
-            }
-            return balances
-          } else {
-            console.error(`Network=${network} Chain=${chain} not supported by Gold Rush indexer API`);
-          }
-        } catch (e) {
-          console.error(`Error querying Gold Rush indexer API: ${e}`);
+    if (!indexers) {
+      throw new Error(
+        `Can't get all EVM balances without an indexer. Use getBalance to make individual calls instead.`,
+      );
+    }
+
+    // Helper to create a timeout promise with abort support
+    const withTimeout = <T>(
+      promise: Promise<T>,
+      ms: number,
+      name: string,
+    ): Promise<T> => {
+      if (signal?.aborted) throw new Error('Request aborted');
+
+      return Promise.race([
+        promise,
+        new Promise<never>((_, reject) => {
+          const timeoutId = setTimeout(
+            () => reject(new Error(`${name} timeout after ${ms}ms`)),
+            ms,
+          );
+          signal?.addEventListener('abort', () => {
+            clearTimeout(timeoutId);
+            reject(new Error('Request aborted'));
+          });
+        }),
+      ]);
+    };
+
+    // Helper to try a provider with timeout
+    const tryProvider = async (
+      provider: GoldRushClient | AlchemyClient,
+      name: string,
+      timeoutMs: number,
+    ): Promise<Balances | null> => {
+      try {
+        if (!provider.supportsChain(network, chain)) {
+          console.error(
+            `Network=${network} Chain=${chain} not supported by ${name} indexer API`,
+          );
+          return null;
         }
+
+        const balances = await withTimeout(
+          provider.getBalances(network, chain, walletAddr, signal),
+          timeoutMs,
+          name,
+        );
+
+        // Ensure native balance is always included
+        balances['native'] ??= await rpc.getBalance(walletAddr);
+        return balances;
+      } catch (e) {
+        console.error(`Error querying ${name} indexer API: ${e}`);
+        return null;
       }
-      if (indexers.alchemy) {
-        try {
-          const alchemy = new AlchemyClient(indexers.alchemy);
-          if (alchemy.supportsChain(network, chain)) {
-            const balances = await alchemy.getBalances(network, chain, walletAddr);
-            balances['native'] = await rpc.getBalance(walletAddr);
-            return balances
-          } else {
-            console.error(`Network=${network} Chain=${chain} not supported by Alchemy indexer API`);
-          }
-        } catch (e) {
-          console.error(`Error querying Alchemy indexer API: ${e}`);
-        }
-      }
-    } else {
-      throw new Error(`Can't get all EVM balances without an indexer. Use getBalance to make individual calls instead.`);
+    };
+
+    // Try providers in order with their respective timeouts
+    const providers: Array<
+      [string, GoldRushClient | AlchemyClient | null, number]
+    > = [
+      [
+        'Gold Rush',
+        indexers.goldRush ? new GoldRushClient(indexers.goldRush) : null,
+        3000,
+      ],
+      [
+        'Alchemy',
+        indexers.alchemy ? new AlchemyClient(indexers.alchemy) : null,
+        5000,
+      ],
+    ];
+
+    for (const [name, provider, timeout] of providers) {
+      if (!provider) continue;
+      const result = await tryProvider(provider, name, timeout);
+      if (result) return result;
     }
 
     throw new Error(`Failed to get a successful response from an EVM indexer`);
