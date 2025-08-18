@@ -59,7 +59,7 @@ export async function checkCircleGeoblock(): Promise<{
   error: Error;
 } | null> {
   try {
-    const url = "https://api.circle.com/ping";
+    const url = "https://iris-api.circle.com/ping";
 
     await axios.get<{
       status?: string;
