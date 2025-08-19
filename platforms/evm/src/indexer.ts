@@ -66,13 +66,17 @@ export class GoldRushClient {
     const endpoint = GOLD_RUSH_CHAINS[network][chain];
     if (!endpoint) throw new Error('Chain not supported by GoldRush indexer');
 
-    const response = await fetch(
-      `https://api.covalenthq.com/v1/${endpoint}/address/${walletAddr}/balances_v2/?key=${this.key}`,
-      { signal },
-    ).catch((err) => {
-      if (err.name === 'AbortError') throw new Error('Request aborted');
+    let response: Response;
+    try {
+      response = await fetch(
+        `https://api.covalenthq.com/v1/${endpoint}/address/${walletAddr}/balances_v2/?key=${this.key}`,
+        { signal },
+      );
+    } catch (err) {
+      const e = err as { name?: string };
+      if (e?.name === 'AbortError') throw new Error('Request aborted');
       throw err;
-    });
+    }
 
     if (!response.ok) {
       throw new Error(
@@ -88,17 +92,10 @@ export class GoldRushClient {
 
     const bals: Balances = {};
     for (let item of data.items) {
-      let addr = item.contract_address;
-
+      const ca = item.contract_address.toLowerCase();
       // GoldRush uses this special address to represent native tokens
-      if (
-        item.contract_address.toLowerCase() ===
-        '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
-      ) {
-        addr = 'native';
-      } else {
-        addr = addr.toLowerCase();
-      }
+      const addr =
+        ca === '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' ? 'native' : ca;
 
       // Only include tokens with non-zero balance
       const balance = BigInt(item.balance || '0');
@@ -159,23 +156,27 @@ export class AlchemyClient {
     const endpoint = ALCHEMY_CHAINS[network][chain];
     if (!endpoint) throw new Error('Chain not supported by Alchemy indexer');
 
-    const response = await fetch(
-      `https://${endpoint}.g.alchemy.com/v2/${this.key}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          jsonrpc: '2.0',
-          id: 1,
-          method: 'alchemy_getTokenBalances',
-          params: [walletAddr, 'erc20'], // Use "erc20" to get all ERC-20 tokens
-        }),
-        signal,
-      },
-    ).catch((err) => {
-      if (err.name === 'AbortError') throw new Error('Request aborted');
+    let response: Response;
+    try {
+      response = await fetch(
+        `https://${endpoint}.g.alchemy.com/v2/${this.key}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'alchemy_getTokenBalances',
+            params: [walletAddr, 'erc20'], // Use "erc20" to get all ERC-20 tokens
+          }),
+          signal,
+        },
+      );
+    } catch (err) {
+      const e = err as { name?: string };
+      if (e?.name === 'AbortError') throw new Error('Request aborted');
       throw err;
-    });
+    }
 
     if (!response.ok) {
       throw new Error(

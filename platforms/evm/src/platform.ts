@@ -200,24 +200,28 @@ export class EvmPlatform<N extends Network>
     };
 
     // Try providers in order with their respective timeouts
-    const providers: Array<
-      [string, GoldRushClient | AlchemyClient | null, number]
-    > = [
-      [
-        'Gold Rush',
-        indexers.goldRush ? new GoldRushClient(indexers.goldRush) : null,
-        3000,
-      ],
-      [
-        'Alchemy',
-        indexers.alchemy ? new AlchemyClient(indexers.alchemy) : null,
-        5000,
-      ],
+    const providers: Array<{
+      name: string;
+      client: GoldRushClient | AlchemyClient | null;
+      timeout: number;
+    }> = [
+      {
+        name: 'Gold Rush',
+        client: indexers.goldRush
+          ? new GoldRushClient(indexers.goldRush)
+          : null,
+        timeout: 3000,
+      },
+      {
+        name: 'Alchemy',
+        client: indexers.alchemy ? new AlchemyClient(indexers.alchemy) : null,
+        timeout: 5000,
+      },
     ];
 
-    for (const [name, provider, timeout] of providers) {
-      if (!provider) continue;
-      const result = await tryProvider(provider, name, timeout);
+    for (const { name, client, timeout } of providers) {
+      if (!client) continue;
+      const result = await tryProvider(client, name, timeout);
       if (result) return result;
     }
 
