@@ -61,6 +61,7 @@ export class GoldRushClient {
     network: Network,
     chain: Chain,
     walletAddr: string,
+    signal?: AbortSignal,
   ): Promise<Balances> {
     const endpoint = GOLD_RUSH_CHAINS[network][chain];
     if (!endpoint) throw new Error('Chain not supported by GoldRush indexer');
@@ -68,19 +69,16 @@ export class GoldRushClient {
     const { data } = await (
       await fetch(
         `https://api.covalenthq.com/v1/${endpoint}/address/${walletAddr}/balances_v2/?key=${this.key}`,
+        { signal },
       )
     ).json();
 
     const bals: Balances = {};
     for (let item of data.items) {
-      let addr = item.contract_address;
-
-      if (
-        item.contract_address.toLowerCase() ===
-        '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
-      ) {
-        addr = 'native';
-      }
+      const ca = item.contract_address.toLowerCase();
+      // GoldRush uses this special address to represent native tokens
+      const addr =
+        ca === '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' ? 'native' : ca;
 
       bals[addr] = BigInt(item.balance);
     }
@@ -132,6 +130,7 @@ export class AlchemyClient {
     network: Network,
     chain: Chain,
     walletAddr: string,
+    signal?: AbortSignal,
   ): Promise<Balances> {
     const endpoint = ALCHEMY_CHAINS[network][chain];
     if (!endpoint) throw new Error('Chain not supported by Alchemy indexer');
@@ -144,8 +143,9 @@ export class AlchemyClient {
           jsonrpc: '2.0',
           id: 1,
           method: 'alchemy_getTokenBalances',
-          params: [walletAddr],
+          params: [walletAddr, 'erc20'],
         }),
+        signal,
       })
     ).json();
 
