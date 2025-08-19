@@ -73,9 +73,7 @@ export class GoldRushClient {
         { signal },
       );
     } catch (err) {
-      const e = err as { name?: string };
-      if (e?.name === 'AbortError') throw new Error('Request aborted');
-      throw err;
+      throw new Error('GoldRush API error: ' + (err as Error).message);
     }
 
     if (!response.ok) {
@@ -173,9 +171,7 @@ export class AlchemyClient {
         },
       );
     } catch (err) {
-      const e = err as { name?: string };
-      if (e?.name === 'AbortError') throw new Error('Request aborted');
-      throw err;
+      throw new Error('Alchemy API error: ' + (err as Error).message);
     }
 
     if (!response.ok) {
@@ -184,22 +180,14 @@ export class AlchemyClient {
       );
     }
 
-    const data = await response.json();
+    const { result } = await response.json();
 
-    if (data.error) {
-      throw new Error(
-        `Alchemy API error: ${
-          data.error.message || JSON.stringify(data.error)
-        }`,
-      );
-    }
-
-    if (!data.result?.tokenBalances) {
+    if (!result?.tokenBalances) {
       throw new Error('Invalid response structure from Alchemy API');
     }
 
     const bals: Balances = {};
-    for (const item of data.result.tokenBalances) {
+    for (const item of result.tokenBalances) {
       // Skip if no contract address
       if (!item.contractAddress) continue;
 
