@@ -4264,6 +4264,28 @@ const mainnetTokenEntries = [
       ],
     ],
   ],
+  [
+    "XRPLEVM",
+    [
+      [
+        "XRP",
+        {
+          symbol: "XRP",
+          decimals: 18,
+          address: "native",
+          wrappedKey: "WXRP",
+        },
+      ],
+      [
+        "WXRP",
+        {
+          symbol: "WXRP",
+          decimals: 18,
+          address: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+        },
+      ],
+    ],
+  ],
 ] as const satisfies MapLevel<Chain, MapLevel<TokenSymbol, TokenConst>>;
 
 export const mainnetChainTokens = constMap(mainnetTokenEntries, [0, [1, 2]]);
