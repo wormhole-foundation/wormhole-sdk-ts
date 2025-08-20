@@ -157,7 +157,7 @@ export class EvmPlatform<N extends Network>
 
       try {
         if (!provider.supportsChain(network, chain)) {
-          console.error(
+          console.info(
             `Network=${network} Chain=${chain} not supported by ${name} indexer API`,
           );
           return null;
@@ -184,7 +184,7 @@ export class EvmPlatform<N extends Network>
         balances['native'] ??= await rpc.getBalance(walletAddr);
         return balances;
       } catch (e) {
-        console.error(`Error querying ${name} indexer API: ${e}`);
+        console.info(`Error querying ${name} indexer API: ${e}`);
         return null;
       }
     };
