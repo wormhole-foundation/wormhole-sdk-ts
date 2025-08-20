@@ -4,7 +4,11 @@
 // We don't use the official @covalenthq/client-sdk client for this because it's over 1MB and all we need
 // is a small subset of one endpoint. This is how you know this code isn't AI slop.
 
-import { Balances, Chain, Network } from "@wormhole-foundation/sdk-connect";
+import type {
+  Balances,
+  Chain,
+  Network,
+} from '@wormhole-foundation/sdk-connect';
 
 const GOLD_RUSH_CHAINS: Record<Network, Partial<Record<Chain, string>>> = {
   Mainnet: {
@@ -39,7 +43,7 @@ const GOLD_RUSH_CHAINS: Record<Network, Partial<Record<Chain, string>>> = {
     Scroll: 'scroll-sepolia-testnet',
   },
   Devnet: {},
-}
+};
 
 export class GoldRushClient {
   private key: string;
@@ -53,19 +57,28 @@ export class GoldRushClient {
     return endpoint !== undefined;
   }
 
-  async getBalances(network: Network, chain: Chain, walletAddr: string): Promise<Balances> {
+  async getBalances(
+    network: Network,
+    chain: Chain,
+    walletAddr: string,
+    signal?: AbortSignal,
+  ): Promise<Balances> {
     const endpoint = GOLD_RUSH_CHAINS[network][chain];
     if (!endpoint) throw new Error('Chain not supported by GoldRush indexer');
 
-    const { data } = await (await fetch(`https://api.covalenthq.com/v1/${endpoint}/address/${walletAddr}/balances_v2/?key=${this.key}`)).json();
+    const { data } = await (
+      await fetch(
+        `https://api.covalenthq.com/v1/${endpoint}/address/${walletAddr}/balances_v2/?key=${this.key}`,
+        { signal },
+      )
+    ).json();
 
     const bals: Balances = {};
     for (let item of data.items) {
-      let addr = item.contract_address;
-
-      if (item.contract_address.toLowerCase() === '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee') {
-        addr = 'native';
-      }
+      const ca = item.contract_address.toLowerCase();
+      // GoldRush uses this special address to represent native tokens
+      const addr =
+        ca === '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' ? 'native' : ca;
 
       bals[addr] = BigInt(item.balance);
     }
@@ -99,7 +112,7 @@ const ALCHEMY_CHAINS: Record<Network, Partial<Record<Chain, string>>> = {
     Monad: 'monad-testnet',
   },
   Devnet: {},
-}
+};
 
 export class AlchemyClient {
   private key: string;
@@ -113,20 +126,28 @@ export class AlchemyClient {
     return endpoint !== undefined;
   }
 
-  async getBalances(network: Network, chain: Chain, walletAddr: string): Promise<Balances> {
+  async getBalances(
+    network: Network,
+    chain: Chain,
+    walletAddr: string,
+    signal?: AbortSignal,
+  ): Promise<Balances> {
     const endpoint = ALCHEMY_CHAINS[network][chain];
     if (!endpoint) throw new Error('Chain not supported by Alchemy indexer');
 
-    const { result } = await (await fetch(`https://${endpoint}.g.alchemy.com/v2/${this.key}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        jsonrpc: "2.0",
-        id: 1,
-        method: "alchemy_getTokenBalances",
-        params: [walletAddr]
+    const { result } = await (
+      await fetch(`https://${endpoint}.g.alchemy.com/v2/${this.key}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'alchemy_getTokenBalances',
+          params: [walletAddr, 'erc20'],
+        }),
+        signal,
       })
-    })).json();
+    ).json();
 
     const bals: Balances = {};
     for (let item of result.tokenBalances) {
