@@ -16,7 +16,7 @@ The `__test__/mocks` directory should contain mocks for things like RPCs and Sig
 
 Each platform should have a `__test__/integration/fixtures` directory that contains fixtures for complex blockchain data structures
 
-Using nock, we can gather the request/responses and using jest.mock, mock the RPC calls to return the fixtures.  This allows us to test the code without having to make RPC calls to the blockchain.
+Using nock, we can gather the requests/responses and use jest.mock, mock the RPC calls to return the fixtures.  This allows us to test the code without having to make RPC calls to the blockchain.
 
 
 ## End-to-End Tests
