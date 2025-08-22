@@ -81,6 +81,10 @@ export type Quote<
 
   // Timestamp when the quote expires
   expires?: Date;
+
+  // Optional provider string to override RouteMeta.provider
+  // Can be useful for an aggregator route which quotes from multiple providers
+  provider?: string;
 };
 
 export type QuoteError = {
