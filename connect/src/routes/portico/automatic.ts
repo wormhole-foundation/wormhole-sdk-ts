@@ -20,9 +20,9 @@ import type {
   SourceInitiatedTransferReceipt,
   TokenId,
   TransactionId,
+  PorticoBridge,
 } from "./../../index.js";
 import {
-  PorticoBridge,
   TokenTransfer,
   TransferState,
   Wormhole,
@@ -141,6 +141,15 @@ export class AutomaticPorticoRoute<N extends Network>
 
   async validate(request: RouteTransferRequest<N>, params: TP): Promise<VR> {
     try {
+      // Check that source and destination chains are different
+      if (request.fromChain.chain === request.toChain.chain) {
+        return {
+          valid: false,
+          params,
+          error: new Error("Source and destination chains cannot be the same"),
+        };
+      }
+
       if (
         !AutomaticPorticoRoute.supportedChains(request.fromChain.network).includes(
           request.fromChain.chain,
