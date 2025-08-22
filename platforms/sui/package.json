@@ -47,7 +47,7 @@
   },
   "dependencies": {
     "@wormhole-foundation/sdk-connect": "1.20.0",
-    "@mysten/sui": "^1.21.2"
+    "@mysten/sui": "1.37.2"
   },
   "type": "module",
   "typesVersions": {
