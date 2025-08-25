@@ -53,6 +53,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Mezo",      31612n],
       ["Plume",     98866n],
       ["XRPLEVM",   1440000n],
+      ["Plasma",       9745n],
     ],
   ],
   [
@@ -108,6 +109,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Fogo",            "9GGSFo95raqzZxWqKM5tGYvJp5iv4Dm565S4r8h5PEu9"], // genesis hash
       ["Plume",           98867n],
       ["XRPLEVM",         1449000n],
+      ["Plasma",           9746n],
     ],
   ],
   [

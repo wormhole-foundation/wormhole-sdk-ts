@@ -131,7 +131,16 @@ const explorerConfig = [[
         tx: "tx/",
         account: "address/"
       },
-    }],
+    }], [
+    "Plasma", {
+      name: "Plasma Explorer",
+      baseUrl: "https://plasmascan.to/",
+      endpoints: {
+        tx: "tx/",
+        account: "address/"
+      }
+    }
+  ]
   ]], [
   "Testnet", [[
     "Ethereum", {
@@ -252,7 +261,16 @@ const explorerConfig = [[
         tx: "tx/",
         account: "address/"
       },
-    }],
+    }], [
+    "Plasma", {
+      name: "Plasma Explorer",
+      baseUrl: "https://testnet.plasmascan.to/",
+      endpoints: {
+        tx: "tx/",
+        account: "address/"
+      }
+    }
+  ]
   ]],
 ] as const satisfies MapLevels<["Mainnet" | "Testnet", Chain, ExplorerSettings]>;
 
