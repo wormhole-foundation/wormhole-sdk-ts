@@ -1,27 +1,23 @@
-import {
-  amount,
-  Chain,
-  contracts,
-  finality,
-  guardians,
-  Network,
-  time,
-} from "@wormhole-foundation/sdk-base";
-import { ManualRoute, StaticRouteMethods } from "../route.js";
-import {
+import type { Chain, Network } from "@wormhole-foundation/sdk-base";
+import { amount, contracts, finality, guardians, time } from "@wormhole-foundation/sdk-base";
+import type { StaticRouteMethods } from "../route.js";
+import { ManualRoute } from "../route.js";
+import type {
   ChainAddress,
   ChainContext,
-  deserialize,
-  isNative,
-  isSameToken,
-  serialize,
   Signer,
-  TBTCBridge,
   TokenId,
   TransactionId,
   WormholeMessageId,
 } from "@wormhole-foundation/sdk-definitions";
 import {
+  deserialize,
+  isNative,
+  isSameToken,
+  serialize,
+  TBTCBridge,
+} from "@wormhole-foundation/sdk-definitions";
+import type {
   Options,
   Quote,
   QuoteResult,
@@ -30,9 +26,8 @@ import {
   ValidatedTransferParams,
   ValidationResult,
 } from "../types.js";
+import type { AttestedTransferReceipt, CompletedTransferReceipt } from "../../types.js";
 import {
-  AttestedTransferReceipt,
-  CompletedTransferReceipt,
   isAttested,
   isSourceFinalized,
   isSourceInitiated,
@@ -41,7 +36,7 @@ import {
   type SourceInitiatedTransferReceipt,
   type TransferReceipt,
 } from "../../types.js";
-import { RouteTransferRequest } from "../request.js";
+import type { RouteTransferRequest } from "../request.js";
 import { Wormhole } from "../../wormhole.js";
 import { signSendWait } from "../../common.js";
 
@@ -111,6 +106,15 @@ export class TBTCRoute<N extends Network>
   }
 
   async validate(request: RouteTransferRequest<N>, params: Tp): Promise<Vr> {
+    // Check that source and destination chains are different
+    if (request.fromChain.chain === request.toChain.chain) {
+      return {
+        valid: false,
+        params,
+        error: new Error("Source and destination chains cannot be the same"),
+      };
+    }
+
     const amount = request.parseAmount(params.amount);
 
     const validatedParams: Vp = {

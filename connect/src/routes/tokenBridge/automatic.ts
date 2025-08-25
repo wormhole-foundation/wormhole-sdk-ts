@@ -112,6 +112,15 @@ export class AutomaticTokenBridgeRoute<N extends Network>
 
   async validate(request: RouteTransferRequest<N>, params: Tp): Promise<Vr> {
     try {
+      // Check that source and destination chains are different
+      if (request.fromChain.chain === request.toChain.chain) {
+        return {
+          valid: false,
+          params,
+          error: new Error("Source and destination chains cannot be the same"),
+        };
+      }
+
       const options = params.options ?? this.getDefaultOptions();
 
       if (options.nativeGas && (options.nativeGas > 1.0 || options.nativeGas < 0.0))

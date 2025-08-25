@@ -85,6 +85,15 @@ export class TokenBridgeRoute<N extends Network>
   }
 
   async validate(request: RouteTransferRequest<N>, params: Tp): Promise<Vr> {
+    // Check that source and destination chains are different
+    if (request.fromChain.chain === request.toChain.chain) {
+      return {
+        valid: false,
+        params,
+        error: new Error("Source and destination chains cannot be the same"),
+      };
+    }
+
     const amt = amount.parse(params.amount, request.source.decimals);
 
     const validatedParams: Vp = {

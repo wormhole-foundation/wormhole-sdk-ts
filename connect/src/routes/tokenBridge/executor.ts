@@ -1,8 +1,8 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
 import { amount as sdkAmount, contracts } from "@wormhole-foundation/sdk-base";
+import type { ExecutorTokenBridge } from "@wormhole-foundation/sdk-definitions";
 import {
   canonicalAddress,
-  ExecutorTokenBridge,
   toNative,
   type ChainAddress,
   type ChainContext,
@@ -147,6 +147,15 @@ export class ExecutorTokenBridgeRoute<N extends Network>
   }
 
   async validate(request: RouteTransferRequest<N>, params: Tp): Promise<Vr> {
+    // Check that source and destination chains are different
+    if (request.fromChain.chain === request.toChain.chain) {
+      return {
+        valid: false,
+        params,
+        error: new Error("Source and destination chains cannot be the same"),
+      };
+    }
+
     const amt = sdkAmount.parse(params.amount, request.source.decimals);
 
     const options = params.options ?? this.getDefaultOptions();
