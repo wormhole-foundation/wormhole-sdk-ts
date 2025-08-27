@@ -37,10 +37,11 @@ Follow these steps whenever you need to update the documentation:
 
 ## Available Documentation Versions
 
-| Version | Description            | Path              |
-|---------|------------------------|-------------------|
-| v1      | First stable release   | [`docs/v1/`](./v1) |
-| latest (v2)  | Current version        | [`docs/latest/`](https://wormhole-foundation.github.io/wormhole-sdk-ts/index.html) |
+| Version     | Description           | Path                                                                               |
+|-------------|-----------------------|------------------------------------------------------------------------------------|
+| v1          | First stable release  | [`docs/v1/`](./v1)                                                                 |
+| v2          | Second stable release | [`docs/v2/`](./v2)                                                                 |
+| latest (v3) | Current version       | [`docs/latest/`](https://wormhole-foundation.github.io/wormhole-sdk-ts/index.html) |
 
 ## Best Practices
 
