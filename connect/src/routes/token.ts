@@ -40,7 +40,16 @@ export async function getTokenDetails<N extends Network>(
     : undefined;
 
   const symbol = details ? details.symbol : undefined;
-  const wrapped = isNative(token.address) ? await chain.getNativeWrappedTokenId() : undefined;
+  let wrapped: TokenId | undefined = undefined;
+
+  if (isNative(token.address)) {
+    try {
+      wrapped = await chain.getNativeWrappedTokenId();
+    } catch {
+      // noop
+    }
+  }
+
   decimals = decimals ?? (await chain.getDecimals(token.address));
 
   return {
