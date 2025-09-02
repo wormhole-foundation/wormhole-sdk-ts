@@ -2,6 +2,7 @@ import type {
   Chain,
   CustomConversion,
   FixedConversion,
+  KnownChain,
   Layout,
 } from "@wormhole-foundation/sdk-base";
 import { chainToChainId, chains, toChain } from "@wormhole-foundation/sdk-base";
@@ -30,12 +31,12 @@ export const chainItem = <
 
         const chain = toChain(val);
         const allowedChains = opts?.allowedChains ?? chains;
-        if (!allowedChains.includes(chain))
+        if (!allowedChains.includes(chain as any))
           throw new Error(`Chain ${chain} not in allowed chains ${allowedChains}`);
 
         return chain;
       },
-      from: (val: AllowNull<C[number], N>): number => (val == null ? 0 : chainToChainId(val)),
+      from: (val: AllowNull<C[number], N>): number => (val == null ? 0 : chainToChainId(val as KnownChain)),
     } satisfies CustomConversion<number, AllowNull<C[number], N>>,
   }) as const satisfies Layout;
 
@@ -44,6 +45,6 @@ export const fixedChainItem = <const C extends Chain>(chain: C) =>
     ...chainItemBase,
     custom: {
       to: chain,
-      from: chainToChainId(chain),
+      from: chainToChainId(chain as KnownChain),
     } satisfies FixedConversion<number, C>,
   }) as const satisfies Layout;
