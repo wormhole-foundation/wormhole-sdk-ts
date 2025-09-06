@@ -121,7 +121,7 @@ export class UnavailableError extends Error {
 
 export interface RelayExplorer {
   url: string;
-  explorerName: string;
+  name: string;
 }
 
 export class RelayFailedError extends Error {
