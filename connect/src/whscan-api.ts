@@ -264,7 +264,7 @@ export async function getRelayStatusWithRetry(
 }
 
 export async function getVaaByTxHash(rpcUrl: string, txid: TransactionId): Promise<ApiVaa | null> {
-  const url = `${rpcUrl}/api/v1/vaas?txHash=${txid}`;
+  const url = `${rpcUrl}/api/v1/vaas?txHash=${txid.txid}`;
   try {
     const response = await axios.get<{ data: ApiVaa[] }>(url);
     if (response.data.data.length > 0) {
