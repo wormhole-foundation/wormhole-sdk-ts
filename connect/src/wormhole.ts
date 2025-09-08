@@ -14,6 +14,7 @@ import type {
   StatusResponse,
   TokenAddress,
   TokenId,
+  TransactionId,
   TxHash,
   UniversalAddress,
   WormholeMessageId,
@@ -22,6 +23,7 @@ import type {
 import {
   canonicalAddress,
   isNative,
+  isTransactionIdentifier,
   nativeTokenId,
   toNative,
 } from "@wormhole-foundation/sdk-definitions";
@@ -388,18 +390,18 @@ export class Wormhole<N extends Network> {
   /**
    * Gets a VAA from the API or Guardian RPC, finality must be met before the VAA will be available.
    *
-   * @param id The WormholeMessageId or Transaction hash corresponding to the VAA to be fetched
+   * @param id The WormholeMessageId or TransactionId corresponding to the VAA to be fetched
    * @param decodeAs The VAA type to decode the bytes as
    * @param timeout The total amount of time to wait for the VAA to be available
    * @returns The VAA if available
    * @throws Errors if the VAA is not available after the retries
    */
   async getVaa<T extends PayloadLiteral | PayloadDiscriminator>(
-    id: WormholeMessageId | TxHash,
+    id: WormholeMessageId | TransactionId,
     decodeAs: T,
     timeout: number = DEFAULT_TASK_TIMEOUT,
   ): Promise<ReturnType<typeof deserialize<T>> | null> {
-    if (typeof id === "string")
+    if (isTransactionIdentifier(id))
       return await getVaaByTxHashWithRetry(this.config.api, id, decodeAs, timeout);
 
     return await getVaaWithRetry(this.config.api, id, decodeAs, timeout);
@@ -435,12 +437,12 @@ export class Wormhole<N extends Network> {
    * @returns the TransactionStatus
    */
   async getTransactionStatus(
-    id: WormholeMessageId | TxHash,
+    id: WormholeMessageId | TransactionId,
     timeout = DEFAULT_TASK_TIMEOUT,
   ): Promise<TransactionStatus | null> {
     let msgid: WormholeMessageId;
     // No txid endpoint exists to get the status by txhash yet
-    if (typeof id === "string") {
+    if (isTransactionIdentifier(id)) {
       const vaa = await getVaaByTxHashWithRetry(this.config.api, id, "Uint8Array", timeout);
       if (!vaa) return null;
       msgid = { emitter: vaa.emitterAddress, chain: vaa.emitterChain, sequence: vaa.sequence };
