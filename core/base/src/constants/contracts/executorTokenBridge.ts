@@ -25,6 +25,7 @@ export const executorTokenBridgeContracts = [[
     ["Solana",          { relayer: "tbr7Qje6qBzPwfM52csL5KFi8ps5c5vDyiVVBLYVdRf" }],
     ["Unichain",        { relayer: "0x9Bca817F67f01557aeD615130825A28F4C5f3b87", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
     ["Worldchain",      { relayer: "0xc0565Bd29b34603C0383598E16843d95Ae9c4f65", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
+    ["XRPLEVM",         { relayer: "0x37bCc9d175124F77Bfce68589d2a8090eF846B85", relayerWithReferrer: "0x13a35c075D6Acc1Fb9BddFE5FE38e7672789e4db" }],
   ]], [
   "Testnet", [
     ["Avalanche",       { relayer: "0x10Ce9a35883C44640e8B12fea4Cc1e77F77D8c52", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
@@ -32,5 +33,6 @@ export const executorTokenBridgeContracts = [[
     ["Fogo",            { relayer: "tbr7Qje6qBzPwfM52csL5KFi8ps5c5vDyiVVBLYVdRf" }],
     ["Sepolia",         { relayer: "0xb0b2119067cF04fa959f654250BD49fE1BD6F53c", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
     ["Solana",          { relayer: "tbr7Qje6qBzPwfM52csL5KFi8ps5c5vDyiVVBLYVdRf" }],
+    ["XRPLEVM",          { relayer: "0xb00224c60fe6ab134c8544dc29350286545f8dcc", relayerWithReferrer: "0x17CFAAf9e8a5ABb1eee758dB9040F945c9EAC907" }],
   ]],
 ] as const satisfies MapLevels<[Network, Chain, ExecutorTokenBridgeContracts]>;

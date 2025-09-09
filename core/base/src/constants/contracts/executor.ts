@@ -26,6 +26,7 @@ export const executorContracts = [[
     ["Sui",             "0xdb0fe8bb1e2b5be628adbea0636063325073e1070ee11e4281457dfd7f158235"],
     ["Unichain",        "0x764dD868eAdD27ce57BCB801E4ca4a193d231Aed"],
     ["Worldchain",      "0x8689b4E6226AdC8fa8FF80aCc3a60AcE31e8804B"],
+    ["XRPLEVM",      "0x8345E90Dcd92f5Cf2FAb0C8E2A56A5bc2c30d896"],
   ]], [
   "Testnet", [
     ["Aptos",           "0x139717c339f08af674be77143507a905aa28cbc67a0e53e7095c07b630d73815"],
@@ -41,5 +42,6 @@ export const executorContracts = [[
     ["Sepolia",         "0xD0fb39f5a3361F21457653cB70F9D0C9bD86B66B"],
     ["Solana",          "execXUrAsMnqMmTHj5m7N1YQgsDz3cwGLYCYyuDRciV"],
     ["Sui",             "0x4000cfe2955d8355b3d3cf186f854fea9f787a457257056926fde1ec977670eb"],
+    ["XPRLEVM",             "0x4d9525D94D275dEB495b7C8840b154Ae04cfaC2A"],
   ]],
 ] as const satisfies MapLevels<[Network, Chain, string]>;
