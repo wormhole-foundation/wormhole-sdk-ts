@@ -43,5 +43,6 @@ export const executorContracts = [[
     ["Solana",          "execXUrAsMnqMmTHj5m7N1YQgsDz3cwGLYCYyuDRciV"],
     ["Sui",             "0x4000cfe2955d8355b3d3cf186f854fea9f787a457257056926fde1ec977670eb"],
     ["XRPLEVM",         "0x4d9525D94D275dEB495b7C8840b154Ae04cfaC2A"],
+    ["Mezo",            "0x0f9b8E144Cc5C5e7C0073829Afd30F26A50c5606"],
   ]],
 ] as const satisfies MapLevels<[Network, Chain, string]>;
