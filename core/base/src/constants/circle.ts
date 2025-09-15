@@ -25,7 +25,8 @@ const usdcContracts = [[
     ["Sonic",     "0x29219dd400f2Bf60E5a23d13Be72B486D4038894"],
     ["Linea",     "0x176211869cA2b568f2A7D4EE941E073a821EE1ff"],
     ["Worldchain","0x79A02482A880bCE3F13e09Da970dC34db4CD24d1"],
-    ["Seievm",    "0xe15fC38F6D8c56aF07bbCBe3BAf5708A2Bf42392"]
+    ["Seievm",    "0xe15fC38F6D8c56aF07bbCBe3BAf5708A2Bf42392"],
+    ["HyperEVM",  "0xb88339CB7199b77E23DB6E890353E22632Ba630f"]
   ]], [
   "Testnet", [
     ["Sepolia",         "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"],
@@ -40,7 +41,8 @@ const usdcContracts = [[
     ["Unichain",        "0x31d0220469e10c4E71834a79b1f276d740d3768F"],
     ["Sonic",           "0xA4879Fed32Ecbef99399e5cbC247E533421C4eC6"],
     ["Linea",           "0xFEce4462D57bD51A6A552365A011b95f0E16d9B7"],
-    ["Seievm",          "0x4fCF1784B31630811181f670Aea7A7bEF803eaED"]
+    ["Seievm",          "0x4fCF1784B31630811181f670Aea7A7bEF803eaED"],
+    ["HyperEVM",        "0x2B3370eE501B4a559b57D449569354196457D8Ab"]
   ]],
 ] as const satisfies MapLevel<Network, MapLevel<Chain, string>>;
 export const usdcContract = constMap(usdcContracts);
