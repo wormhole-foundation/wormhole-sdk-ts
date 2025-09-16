@@ -64,6 +64,7 @@ const finalityThresholds = [
   ["Fogo",      32],
   ["Plume",     4096], // inferred from testing
   ["XRPLEVM",   1],
+  ["CreditCoin",3],
   ["Cosmoshub", 0],
   ["Evmos",     0],
   ["Kujira",    0],
@@ -142,6 +143,7 @@ const blockTimeMilliseconds = [
   ["Plume",               250],
   ["XRPLEVM",           5_000],
   ["Seievm",              400],
+  ["CreditCoin",       15_000],
 ] as const satisfies MapLevel<Chain, number>;
 
 /** The amount of time between block production, in milliseconds  */

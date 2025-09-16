@@ -131,6 +131,22 @@ const explorerConfig = [[
         tx: "tx/",
         account: "address/"
       },
+    }],[
+    "Plume", {
+      name: "Plume Explorer",
+      baseUrl: "https://explorer.plume.org",
+      endpoints: {
+        tx: "tx/",
+        account: "address/"
+      },
+    }], [
+    "CreditCoin", {
+      name: "CreditCoin Explorer",
+      baseUrl: "https://creditcoin-blockscout.com/",
+      endpoints: {
+        tx: "tx/",
+        account: "address/"
+      },
     }],
   ]], [
   "Testnet", [[
@@ -252,7 +268,23 @@ const explorerConfig = [[
         tx: "tx/",
         account: "address/"
       },
-    }],
+    }],[
+    "Plume", {
+      name: "Plume Explorer",
+      baseUrl: "https://testnet-explorer.plume.org/",
+      endpoints: {
+        tx: "tx/",
+        account: "address/"
+      },
+    }],[
+     "CreditCoin", {
+      name: "CreditCoin Explorer",
+      baseUrl: "https://creditcoin-testnet.blockscout.com/",
+      endpoints: {
+        tx: "tx/",
+        account: "address/"
+      },
+    }]
   ]],
 ] as const satisfies MapLevels<["Mainnet" | "Testnet", Chain, ExplorerSettings]>;
 

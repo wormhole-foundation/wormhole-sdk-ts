@@ -46,6 +46,8 @@ const rpcConfig = [[
     ["Mezo",      "https://jsonrpc-mezo.boar.network/"],
     ["Plume",     "https://rpc.plume.org/"],
     ["XRPLEVM",   "https://rpc.xrplevm.org/"],
+    // Plasma mainnet not live ["Plasma",    ""],
+    ["CreditCoin","https://mainnet3.creditcoin.network/"],
   ]], [
   "Testnet", [
     ["Bsc",             "https://data-seed-prebsc-1-s3.binance.org:8545"],
@@ -87,6 +89,8 @@ const rpcConfig = [[
     ["Fogo",            "https://testnet.fogo.io"],
     ["Plume",           "https://testnet-rpc.plume.org"],
     ["XRPLEVM",         "https://rpc.testnet.xrplevm.org/"],
+    ["Plasma",          "https://testnet-rpc.plasma.to"],
+    ["CreditCoin",      "https://rpc.cc3-testnet.creditcoin.network"],
   ]], [
   "Devnet", [
     ["Ethereum",  "http://eth-devnet:8545"],
