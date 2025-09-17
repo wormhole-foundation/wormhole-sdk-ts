@@ -134,7 +134,7 @@ const explorerConfig = [[
     }], [
     "Plume", {
       name: "Plume Explorer",
-      baseUrl: "https://explorer.plume.org",
+      baseUrl: "https://explorer.plume.org/",
       endpoints: {
         tx: "tx/",
         account: "address/"
@@ -143,6 +143,14 @@ const explorerConfig = [[
     "CreditCoin", {
       name: "CreditCoin Explorer",
       baseUrl: "https://creditcoin.blockscout.com/",
+      endpoints: {
+        tx: "tx/",
+        account: "address/"
+      },
+    }], [
+    "Plasma", {
+      name: "Plasma Explorer",
+      baseUrl: "https://plasmascan.to/",
       endpoints: {
         tx: "tx/",
         account: "address/"
@@ -272,6 +280,14 @@ const explorerConfig = [[
     "Plume", {
       name: "Plume Explorer",
       baseUrl: "https://testnet-explorer.plume.org/",
+      endpoints: {
+        tx: "tx/",
+        account: "address/"
+      },
+    }], [
+    "Plasma", {
+      name: "Plasma Testnet Explorer",
+      baseUrl: "https://testnet.plasmascan.to/",
       endpoints: {
         tx: "tx/",
         account: "address/"

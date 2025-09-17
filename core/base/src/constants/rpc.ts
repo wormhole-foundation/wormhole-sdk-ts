@@ -46,7 +46,7 @@ const rpcConfig = [[
     ["Mezo",      "https://jsonrpc-mezo.boar.network/"],
     ["Plume",     "https://rpc.plume.org/"],
     ["XRPLEVM",   "https://rpc.xrplevm.org/"],
-    // Plasma mainnet not live ["Plasma",    ""],
+    ["Plasma",    "https://rpc.plasma.to/"],
     ["CreditCoin","https://mainnet3.creditcoin.network/"],
   ]], [
   "Testnet", [

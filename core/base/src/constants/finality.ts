@@ -63,6 +63,7 @@ const finalityThresholds = [
   ["Converge",  4096],
   ["Fogo",      32],
   ["Plume",     4096], // inferred from testing
+  ["Plasma",    2],
   ["XRPLEVM",   1],
   ["CreditCoin",3],
   ["Cosmoshub", 0],
@@ -141,6 +142,7 @@ const blockTimeMilliseconds = [
   ["Converge",            100],
   ["Fogo",                400],
   ["Plume",               250],
+  ["Plasma",            1_000],
   ["XRPLEVM",           5_000],
   ["Seievm",              400],
   ["CreditCoin",       15_000],
