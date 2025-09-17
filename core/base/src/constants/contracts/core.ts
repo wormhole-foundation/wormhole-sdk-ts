@@ -37,7 +37,9 @@ export const coreBridgeContracts = [[
     ["HyperEVM",  "0x7C0faFc4384551f063e05aee704ab943b8B53aB3"],
     ["Mezo",      "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
     ["Plume",     "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
-    ["XRPLEVM",   "0xaBf89de706B583424328B54dD05a8fC986750Da8"]
+    ["Linea",     "0x0C56aebD76E6D9e4a1Ec5e94F4162B4CBbf77b32"],
+    ["XRPLEVM",   "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
+    ["CreditCoin","0xaBf89de706B583424328B54dD05a8fC986750Da8"],
   ]], [
   "Testnet", [
     ["Solana",          "3u8hJUVTA4jH1wYAyUur7FFZVQ8H635K3tSHHF4ssjQ5"],
@@ -83,7 +85,9 @@ export const coreBridgeContracts = [[
     ["Converge",        "0x556B259cFaCd9896B2773310080c7c3bcE90Ff01"],
     ["Fogo",            "BhnQyKoQQgpuRTRo6D8Emz93PvXCYfVgHhnrR4T3qhw4"],
     ["Plume",           "0x81705b969cDcc6FbFde91a0C6777bE0EF3A75855"],
-    ["XRPLEVM",         "0xaBf89de706B583424328B54dD05a8fC986750Da8"]
+    ["XRPLEVM",         "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
+    ["Plasma",          "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
+    ["CreditCoin",      "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
   ]], [
   "Devnet", [
     ["Solana",    "Bridge1p5gheXUvJ6jGWGeCsgPKgnE3YgdGKRVCMY9o"],

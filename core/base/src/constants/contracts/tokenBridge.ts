@@ -32,7 +32,8 @@ export const tokenBridgeContracts = [[
     ["Unichain",  "0x3Ff72741fd67D6AD0668d93B41a09248F4700560"],
     ["Worldchain","0xc309275443519adca74c9136b02A38eF96E3a1f6"],
     ["Ink",       "0x3Ff72741fd67D6AD0668d93B41a09248F4700560"],
-    ["XRPLEVM",   "0x47F5195163270345fb4d7B9319Eda8C64C75E278"]
+    ["XRPLEVM",   "0x47F5195163270345fb4d7B9319Eda8C64C75E278"],
+    ["Linea",     "0x167E0752de62cb76EFc0Fbb165Bd342c6e2Bb251"],
   ]], [
   "Testnet", [
     ["Solana",          "DZnkkTmCiFWfYTfT41X3Rd1kDgozqzxWaHqsw6W4x2oe"],
@@ -73,7 +74,7 @@ export const tokenBridgeContracts = [[
     ["Monad",           "0xF323dcDe4d33efe83cf455F78F9F6cc656e6B659"],
     ["Mezo",            "0xA31aa3FDb7aF7Db93d18DDA4e19F811342EDF780"],
     ["Fogo",            "78HdStBqCMioGii9D8mF3zQaWDqDZBQWTUwjjpdmbJKX"],
-    ["XRPLEVM",         "0x7d8eBc211C4221eA18E511E4f0fD50c5A539f275"]
+    ["XRPLEVM",         "0x7d8eBc211C4221eA18E511E4f0fD50c5A539f275"],
   ]], [
   "Devnet", [
     ["Solana",    "B6RHG3mfcckmrYN1UhmJzyS1XX3fZKbkeUcpJe9Sy3FE"],
