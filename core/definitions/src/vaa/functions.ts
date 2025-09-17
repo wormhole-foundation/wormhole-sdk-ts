@@ -174,11 +174,8 @@ export function deserialize<T extends PayloadLiteral | PayloadDiscriminator>(
       throw new Error("Guardian signatures must be in ascending order of guardian set index");
 
   const envelopeOffset = headerSize;
-  const [envelope, envelopeSize] = deserializeLayout(
-    envelopeLayout,
-    data.subarray(envelopeOffset),
-    false,
-  );
+  const [envelope, envelopeSize] =
+    deserializeLayout(envelopeLayout, data.subarray(envelopeOffset), false);
 
   const payloadOffset = envelopeOffset + envelopeSize;
   const [payloadLiteral, payload] =
@@ -244,7 +241,7 @@ export function deserializePayload<T extends PayloadLiteral | PayloadDiscriminat
 
     return [
       candidate,
-      deserializeLayout(getPayloadLayout(candidate) as Layout, data.subarray(offset)),
+      deserializeLayout(getPayloadLayout(candidate) as Layout, data.subarray(offset))
     ];
   })() as DeserializePayloadReturn<T>;
 }

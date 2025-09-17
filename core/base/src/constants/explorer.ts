@@ -131,7 +131,7 @@ const explorerConfig = [[
         tx: "tx/",
         account: "address/"
       },
-    }],[
+    }], [
     "Plume", {
       name: "Plume Explorer",
       baseUrl: "https://explorer.plume.org",
@@ -142,7 +142,7 @@ const explorerConfig = [[
     }], [
     "CreditCoin", {
       name: "CreditCoin Explorer",
-      baseUrl: "https://creditcoin-blockscout.com/",
+      baseUrl: "https://creditcoin.blockscout.com/",
       endpoints: {
         tx: "tx/",
         account: "address/"
@@ -268,7 +268,7 @@ const explorerConfig = [[
         tx: "tx/",
         account: "address/"
       },
-    }],[
+    }], [
     "Plume", {
       name: "Plume Explorer",
       baseUrl: "https://testnet-explorer.plume.org/",
@@ -276,8 +276,8 @@ const explorerConfig = [[
         tx: "tx/",
         account: "address/"
       },
-    }],[
-     "CreditCoin", {
+    }], [
+    "CreditCoin", {
       name: "CreditCoin Explorer",
       baseUrl: "https://creditcoin-testnet.blockscout.com/",
       endpoints: {
