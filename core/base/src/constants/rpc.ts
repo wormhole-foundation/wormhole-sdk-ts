@@ -44,6 +44,7 @@ const rpcConfig = [[
     ["Sonic",     "https://rpc.soniclabs.com"],
     ["HyperEVM",  "https://rpc.hyperliquid.xyz/evm"],
     ["Mezo",      "https://jsonrpc-mezo.boar.network/"],
+    // ["HyperCore", "https://rpc.hyperliquid.xyz/evm"],
     ["Plume",     "https://rpc.plume.org/"],
     ["XRPLEVM",   "https://rpc.xrplevm.org/"],
     ["Plasma",    "https://rpc.plasma.to/"],

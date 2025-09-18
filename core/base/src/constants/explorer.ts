@@ -124,6 +124,14 @@ const explorerConfig = [[
         account: "address/"
       },
     }], [
+    // "HyperCore", {
+    //   name: "HyperCoreScan",
+    //   baseUrl: "https://hypercorescan.io/",
+    //   endpoints: {
+    //     tx: "tx/",
+    //     account: "address/"
+    //   },
+    // }], [
     "XRPLEVM", {
       name: "XRPL Explorer",
       baseUrl: "https://explorer.xrplevm.org/",
