@@ -124,6 +124,14 @@ const explorerConfig = [[
         account: "address/"
       },
     }], [
+    // "HyperCore", {
+    //   name: "HyperLiquid Explorer",
+    //   baseUrl: "https://app.hyperliquid.xyz/explorer/",
+    //   endpoints: {
+    //     tx: "tx/",
+    //     account: "address/"
+    //   },
+    // }], [
     "XRPLEVM", {
       name: "XRPL Explorer",
       baseUrl: "https://explorer.xrplevm.org/",

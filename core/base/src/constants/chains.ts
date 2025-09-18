@@ -49,6 +49,7 @@ const chainIdAndChainEntries = [
   [   57, "XRPLEVM"        ],
   [   58, "Plasma"         ],
   [   59, "CreditCoin"     ],
+  [ 20000, "HyperCore"     ],
   [ 3104, "Wormchain"      ],
   [ 4000, "Cosmoshub"      ],
   [ 4001, "Evmos"          ],
