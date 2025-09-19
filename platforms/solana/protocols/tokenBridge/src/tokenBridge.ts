@@ -351,6 +351,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
       ancillaryKeypair.publicKey,
       payerPublicKey,
       amount,
+      TOKEN_PROGRAM_ID,
     );
 
     const tokenBridgeTransferIx = payload
@@ -362,6 +363,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
           message.publicKey,
           ancillaryKeypair.publicKey,
           NATIVE_MINT,
+          TOKEN_PROGRAM_ID,
           nonce,
           amount,
           recipientAddress,
@@ -376,6 +378,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
           message.publicKey,
           ancillaryKeypair.publicKey,
           NATIVE_MINT,
+          TOKEN_PROGRAM_ID,
           nonce,
           amount,
           relayerFee,
@@ -422,9 +425,15 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
 
     const tokenAddress = new SolanaAddress(token).unwrap();
     const senderAddress = new SolanaAddress(sender).unwrap();
+    const tokenProgram = await SolanaPlatform.getTokenProgramId(
+      this.connection,
+      tokenAddress,
+    );
     const senderTokenAddress = await getAssociatedTokenAddress(
       tokenAddress,
       senderAddress,
+      false,
+      tokenProgram,
     );
 
     const recipientAddress = recipient.address
@@ -449,6 +458,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
             message.publicKey,
             senderTokenAddress,
             tokenAddress,
+            tokenProgram,
             nonce,
             amount,
             recipientAddress,
@@ -463,6 +473,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
             message.publicKey,
             senderTokenAddress,
             tokenAddress,
+            tokenProgram,
             nonce,
             amount,
             relayerFee,
@@ -485,6 +496,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
             senderAddress,
             toChainId(originAsset.chain),
             originAsset.address.toUint8Array(),
+            tokenProgram,
             nonce,
             amount,
             recipientAddress,
@@ -501,6 +513,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
             senderAddress,
             toChainId(originAsset.chain),
             originAsset.address.toUint8Array(),
+            tokenProgram,
             nonce,
             amount,
             relayerFee,
@@ -514,12 +527,15 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
       senderTokenAddress,
       senderAddress,
       amount,
+      tokenProgram,
     );
 
     const transaction = new Transaction().add(
       approvalIx,
       tokenBridgeTransferIx,
     );
+
+    console.log('foo');
 
     transaction.feePayer = senderAddress;
     yield this.createUnsignedTx(
