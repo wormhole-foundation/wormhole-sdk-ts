@@ -8,11 +8,14 @@ export function createApproveAuthoritySignerInstruction(
   tokenAccount: PublicKeyInitData,
   owner: PublicKeyInitData,
   amount: number | bigint,
+  tokenProgram: PublicKeyInitData,
 ) {
   return createApproveInstruction(
     new PublicKey(tokenAccount),
     deriveAuthoritySignerKey(tokenBridgeProgramId),
     new PublicKey(owner),
     amount,
+    undefined,
+    new PublicKey(tokenProgram),
   );
 }
