@@ -1,4 +1,4 @@
-import { TokenId, Wormhole, signSendWait, wormhole } from "@wormhole-foundation/sdk";
+import { Wormhole, signSendWait, wormhole } from "@wormhole-foundation/sdk";
 
 import evm from "@wormhole-foundation/sdk/evm";
 import solana from "@wormhole-foundation/sdk/solana";
@@ -11,9 +11,8 @@ import { getSigner } from "./helpers/index.js";
   // Original Token to Attest
 
   // grab context and signer
-  const origChain = wh.getChain("Solana");
-  // const token = await origChain.getNativeWrappedTokenId();
-  const token = Wormhole.tokenId("Solana", "B2UrCbFkMBLGshiaYfPttnQxDa9vPR3MvbuNRCV7o8Vx");
+  const origChain = wh.getChain("Sepolia");
+  const token = await origChain.getNativeWrappedTokenId();
   const { signer: origSigner } = await getSigner(origChain);
 
   // Note: if the VAA is not produced before the attempt to retrieve it times out
@@ -49,7 +48,7 @@ import { getSigner } from "./helpers/index.js";
   // Check if its attested and if not
   // submit the attestation to the token bridge on the
   // destination chain
-  const chain = "Avalanche";
+  const chain = "Sepolia";
   const destChain = wh.getChain(chain);
   const { signer } = await getSigner(destChain);
 
