@@ -27,6 +27,7 @@ const usdcContracts = [[
     ["Worldchain","0x79A02482A880bCE3F13e09Da970dC34db4CD24d1"],
     ["Seievm",    "0xe15fC38F6D8c56aF07bbCBe3BAf5708A2Bf42392"],
     ["HyperEVM",  "0xb88339CB7199b77E23DB6E890353E22632Ba630f"],
+    ["Plume",     "0x222365EF19F7947e5484218551B56bb3965Aa7aF"],
     // ["HyperCore", "not-implemented"],
   ]], [
   "Testnet", [
