@@ -26,7 +26,8 @@ const usdcContracts = [[
     ["Linea",     "0x176211869cA2b568f2A7D4EE941E073a821EE1ff"],
     ["Worldchain","0x79A02482A880bCE3F13e09Da970dC34db4CD24d1"],
     ["Seievm",    "0xe15fC38F6D8c56aF07bbCBe3BAf5708A2Bf42392"],
-    ["HyperEVM",  "0xb88339CB7199b77E23DB6E890353E22632Ba630f"]
+    ["HyperEVM",  "0xb88339CB7199b77E23DB6E890353E22632Ba630f"],
+    // ["HyperCore", "not-implemented"],
   ]], [
   "Testnet", [
     ["Sepolia",         "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"],
@@ -42,7 +43,8 @@ const usdcContracts = [[
     ["Sonic",           "0xA4879Fed32Ecbef99399e5cbC247E533421C4eC6"],
     ["Linea",           "0xFEce4462D57bD51A6A552365A011b95f0E16d9B7"],
     ["Seievm",          "0x4fCF1784B31630811181f670Aea7A7bEF803eaED"],
-    ["HyperEVM",        "0x2B3370eE501B4a559b57D449569354196457D8Ab"]
+    ["HyperEVM",        "0x2B3370eE501B4a559b57D449569354196457D8Ab"],
+    // ["HyperCore",       "not-implemented"]
   ]],
 ] as const satisfies MapLevel<Network, MapLevel<Chain, string>>;
 export const usdcContract = constMap(usdcContracts);

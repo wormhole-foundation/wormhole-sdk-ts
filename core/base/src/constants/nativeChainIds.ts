@@ -50,6 +50,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Ink",       57073n],
       ["Sonic",     146n],
       ["HyperEVM",  999n],
+      ["HyperCore", 20000n],
       ["Mezo",      31612n],
       ["Plume",     98866n],
       ["XRPLEVM",   1440000n],
@@ -99,6 +100,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Worldchain",      4801n],
       ["Ink",             763373n],
       ["HyperEVM",        998n],
+      ["HyperCore",       20000n],
       ["Xlayer",          195n],
       ["Linea",           59141n], // Sepolia
       ["Monad",           10143n],
@@ -126,18 +128,16 @@ const chainNetworkNativeChainIdEntries = [
 export const networkChainToNativeChainId = constMap(chainNetworkNativeChainIdEntries);
 
 type NetworkChainToNativeChainId = ToMapping<typeof chainNetworkNativeChainIdEntries>;
-export type PlatformToNativeChainIds<
-  P extends Platform,
-  N extends Network = Network,
-> = PlatformToChains<P> extends infer C
-  ? C extends keyof NetworkChainToNativeChainId[N]
-    ? NetworkChainToNativeChainId[N][C]
-    : // If the platform doesn't support the network, return the widened type for
-    // mainnet
-    C extends keyof NetworkChainToNativeChainId["Mainnet"]
-    ? Widen<NetworkChainToNativeChainId["Mainnet"][C]>
-    : never
-  : never;
+export type PlatformToNativeChainIds<P extends Platform, N extends Network = Network> =
+  PlatformToChains<P> extends infer C
+    ? C extends keyof NetworkChainToNativeChainId[N]
+      ? NetworkChainToNativeChainId[N][C]
+      : // If the platform doesn't support the network, return the widened type for
+        // mainnet
+        C extends keyof NetworkChainToNativeChainId["Mainnet"]
+        ? Widen<NetworkChainToNativeChainId["Mainnet"][C]>
+        : never
+    : never;
 
 //When mapping a Platform and native chain id to a network and chain pair, we assume that the
 //  mapping is injective, i.e. that for any given platform there is only a single chain that
