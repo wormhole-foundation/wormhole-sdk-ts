@@ -49,7 +49,6 @@ const chainIdAndChainEntries = [
   [   57, "XRPLEVM"        ],
   [   58, "Plasma"         ],
   [   59, "CreditCoin"     ],
-  [ 20000, "HyperCore"     ],
   [ 3104, "Wormchain"      ],
   [ 4000, "Cosmoshub"      ],
   [ 4001, "Evmos"          ],
@@ -67,6 +66,8 @@ const chainIdAndChainEntries = [
   [10005, "OptimismSepolia"],
   [10006, "Holesky"        ],
   [10007, "PolygonSepolia" ],
+  // placeholder; guardians are not connected to HyperCore
+  [20000, "HyperCore"      ],
 ] as const satisfies MapLevel<number, string>;
 
 export const [chainIds, chains] = zip(chainIdAndChainEntries);
