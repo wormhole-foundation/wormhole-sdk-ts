@@ -1,0 +1,42 @@
+{
+  "name": "@wormhole-foundation/sdk-hyperliquid",
+  "version": "0.15.2",
+  "description": "SDK for Hyperliquid",
+  "homepage": "https://github.com/wormhole-foundation/connect-sdk/tree/main/platforms/hyperliquid#readme",
+  "bugs": {
+    "url": "https://github.com/wormhole-foundation/connect-sdk/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
+  },
+  "license": "Apache-2.0",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/esm/index.d.ts",
+      "default": "./dist/esm/index.js"
+    }
+  },
+  "files": [
+    "dist/esm"
+  ],
+  "module": "dist/esm/index.js",
+  "types": "dist/esm/index.d.ts",
+  "scripts": {
+    "build": "tsc -p ./tsconfig.build.json",
+    "watch": "tsc -p ./tsconfig.build.json --watch",
+    "lint": "npx eslint --fix",
+    "prettier": "prettier --write .",
+    "test:unit": "jest --testPathIgnorePatterns=.*\\.integration\\.test\\.ts$ --testPathIgnorePatterns=__mocks__ --coverage",
+    "test:integration": "jest --testPathPattern=.*\\.integration\\.test\\.ts$ --testPathIgnorePatterns=__mocks__",
+    "test": "npm run test:unit && npm run test:integration"
+  },
+  "dependencies": {
+    "@wormhole-foundation/sdk-connect": "0.15.2"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}
