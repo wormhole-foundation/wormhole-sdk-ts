@@ -12,5 +12,6 @@
     { "path": "../platforms/sui/tsconfig.cjs.json" },
     { "path": "../platforms/cosmwasm/tsconfig.cjs.json" },
     { "path": "../platforms/aptos/tsconfig.cjs.json" },
+    { "path": "../platforms/hyperliquid/tsconfig.cjs.json" }
   ]
 }

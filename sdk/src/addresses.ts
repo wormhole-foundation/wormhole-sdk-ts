@@ -7,3 +7,4 @@ import "@wormhole-foundation/sdk-cosmwasm/address";
 import "@wormhole-foundation/sdk-evm/address";
 import "@wormhole-foundation/sdk-solana/address";
 import "@wormhole-foundation/sdk-sui/address";
+import "@wormhole-foundation/sdk-hyperliquid/address";

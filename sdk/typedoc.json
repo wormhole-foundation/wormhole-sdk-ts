@@ -1,4 +1,13 @@
 {
   "extends": ["../typedoc.base.json"],
-  "entryPoints": ["src/index.ts", "src/evm.ts", "src/solana.ts", "src/aptos.ts", "src/algorand.ts", "src/sui.ts", "src/cosmwasm.ts"],
+  "entryPoints": [
+    "src/index.ts",
+    "src/evm.ts",
+    "src/solana.ts",
+    "src/aptos.ts",
+    "src/algorand.ts",
+    "src/sui.ts",
+    "src/cosmwasm.ts",
+    "src/hyperliquid.ts"
+  ]
 }

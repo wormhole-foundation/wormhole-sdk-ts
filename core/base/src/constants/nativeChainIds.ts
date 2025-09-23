@@ -50,7 +50,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Ink",       57073n],
       ["Sonic",     146n],
       ["HyperEVM",  999n],
-      ["HyperCore", 20000n],
+      ["HyperCore", "0x66eee"],
       ["Mezo",      31612n],
       ["Plume",     98866n],
       ["XRPLEVM",   1440000n],
@@ -100,7 +100,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Worldchain",      4801n],
       ["Ink",             763373n],
       ["HyperEVM",        998n],
-      ["HyperCore",       20000n],
+      ["HyperCore",       "0x66eee"],
       ["Xlayer",          195n],
       ["Linea",           59141n], // Sepolia
       ["Monad",           10143n],

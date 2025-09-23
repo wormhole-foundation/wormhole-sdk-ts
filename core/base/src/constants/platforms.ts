@@ -77,7 +77,7 @@ const platformAndChainsEntries = [[
     "Near", [
       "Near"
   ]], [
-    "HyperLiquid", [
+    "Hyperliquid", [
       "HyperCore"
   ]],
 ] as const satisfies MapLevel<string, RoArray<Chain>>;
@@ -104,7 +104,7 @@ const platformAddressFormatEntries = [
   ["Sui",       "hex"],
   ["Aptos",     "hex"],
   ["Near",      "sha256"],
-  ["HyperLiquid", "hex"],
+  ["Hyperliquid", "hex"],
 ] as const;
 
 export const platformToAddressFormat = constMap(platformAddressFormatEntries);

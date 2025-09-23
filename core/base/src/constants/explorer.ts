@@ -133,7 +133,7 @@ const explorerConfig = [[
       },
     }], [
     "HyperCore", {
-      name: "HyperLiquid Explorer",
+      name: "Hyperliquid Explorer",
       baseUrl: "https://app.hyperliquid.xyz/explorer/",
       endpoints: {
         tx: "tx/",

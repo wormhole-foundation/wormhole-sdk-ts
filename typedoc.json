@@ -1,7 +1,7 @@
 {
   "name": "Wormhole TS SDK",
   "extends": ["./typedoc.base.json"],
-  "entryPointStrategy": "packages" ,
+  "entryPointStrategy": "packages",
   "entryPoints": [
     "core/base",
     "core/definitions",
@@ -20,6 +20,7 @@
     "platforms/algorand",
     "platforms/algorand/protocols/core",
     "platforms/algorand/protocols/tokenBridge",
+    "platforms/hyperliquid",
     "sdk"
   ]
 }

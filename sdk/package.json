@@ -206,6 +206,26 @@
         "default": "./dist/cjs/platforms/sui.js"
       }
     },
+    "./platforms/hyperliquid": {
+      "react-native": {
+        "import": "./dist/esm/platforms/hyperliquid.js",
+        "require": "./dist/cjs/platforms/hyperliquid.js",
+        "types": "./dist/cjs/platforms/hyperliquid.d.ts",
+        "default": "./dist/cjs/platforms/hyperliquid.js"
+      },
+      "require": {
+        "types": "./dist/cjs/platforms/hyperliquid.d.ts",
+        "default": "./dist/cjs/platforms/hyperliquid.js"
+      },
+      "import": {
+        "types": "./dist/esm/platforms/hyperliquid.d.ts",
+        "default": "./dist/esm/platforms/hyperliquid.js"
+      },
+      "default": {
+        "types": "./dist/cjs/platforms/hyperliquid.d.ts",
+        "default": "./dist/cjs/platforms/hyperliquid.js"
+      }
+    },
     "./evm": {
       "react-native": {
         "import": "./dist/esm/evm.js",
@@ -306,6 +326,26 @@
         "default": "./dist/cjs/sui.js"
       }
     },
+    "./hyperliquid": {
+      "react-native": {
+        "import": "./dist/esm/hyperliquid.js",
+        "require": "./dist/cjs/hyperliquid.js",
+        "types": "./dist/cjs/hyperliquid.d.ts",
+        "default": "./dist/cjs/hyperliquid.js"
+      },
+      "require": {
+        "types": "./dist/cjs/hyperliquid.d.ts",
+        "default": "./dist/cjs/hyperliquid.js"
+      },
+      "import": {
+        "types": "./dist/esm/hyperliquid.d.ts",
+        "default": "./dist/esm/hyperliquid.js"
+      },
+      "default": {
+        "types": "./dist/cjs/hyperliquid.d.ts",
+        "default": "./dist/cjs/hyperliquid.js"
+      }
+    },
     "./algorand": {
       "react-native": {
         "import": "./dist/esm/algorand.js",
@@ -336,6 +376,10 @@
       "evm": [
         "dist/cjs/evm.d.ts",
         "dist/esm/evm.d.ts"
+      ],
+      "hyperliquid": [
+        "dist/cjs/hyperliquid.d.ts",
+        "dist/esm/hyperliquid.d.ts"
       ],
       "solana": [
         "dist/cjs/solana.d.ts",
@@ -377,6 +421,10 @@
         "dist/cjs/platforms/sui.d.ts",
         "dist/esm/platforms/sui.d.ts"
       ],
+      "platforms/hyperliquid": [
+        "dist/cjs/platforms/hyperliquid.d.ts",
+        "dist/esm/platforms/hyperliquid.d.ts"
+      ],
       "*": [
         "dist/cjs/index.d.ts",
         "dist/esm/index.d.ts"
@@ -412,6 +460,7 @@
     "@wormhole-foundation/sdk-aptos-cctp": "1.20.0",
     "@wormhole-foundation/sdk-algorand": "1.20.0",
     "@wormhole-foundation/sdk-algorand-core": "1.20.0",
+    "@wormhole-foundation/sdk-hyperliquid": "1.20.0",
     "@wormhole-foundation/sdk-algorand-tokenbridge": "1.20.0"
   },
   "type": "module"

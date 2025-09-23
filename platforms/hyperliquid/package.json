@@ -1,0 +1,101 @@
+{
+  "name": "@wormhole-foundation/sdk-hyperliquid",
+  "version": "1.20.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/wormhole-foundation/connect-sdk/issues"
+  },
+  "homepage": "https://github.com/wormhole-foundation/connect-sdk#readme",
+  "directories": {
+    "test": "__tests__"
+  },
+  "license": "Apache-2.0",
+  "main": "./dist/cjs/index.js",
+  "types": "./dist/cjs/index.d.ts",
+  "module": "./dist/esm/index.js",
+  "description": "SDK for Solana, used in conjunction with @wormhole-foundation/sdk",
+  "files": [
+    "dist/esm",
+    "dist/cjs"
+  ],
+  "keywords": [
+    "wormhole",
+    "sdk",
+    "typescript",
+    "connect",
+    "solana"
+  ],
+  "engines": {
+    "node": ">=16"
+  },
+  "sideEffects": [
+    "./dist/cjs/address.js",
+    "./dist/esm/address.js"
+  ],
+  "scripts": {
+    "build:cjs": "tsc -p ./tsconfig.cjs.json  && echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
+    "build:esm": "tsc -p ./tsconfig.esm.json",
+    "build": "npm run build:esm && npm run build:cjs",
+    "rebuild": "npm run clean && npm run build",
+    "clean": "rm -rf ./dist && rm -rf ./.turbo",
+    "lint": "npm run prettier && eslint --fix ./src --ext .ts",
+    "test": "jest --config ./jest.config.ts",
+    "prettier": "prettier --write ./src"
+  },
+  "dependencies": {
+    "@wormhole-foundation/sdk-connect": "1.20.0"
+  },
+  "type": "module",
+  "typesVersions": {
+    "*": {
+      "*": [
+        "dist/cjs/index.d.ts"
+      ]
+    }
+  },
+  "exports": {
+    ".": {
+      "react-native": {
+        "import": "./dist/esm/index.js",
+        "require": "./dist/cjs/index.js",
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      },
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      },
+      "default": {
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      }
+    },
+    "./address": {
+      "react-native": {
+        "import": "./dist/esm/address.js",
+        "require": "./dist/cjs/address.js",
+        "types": "./dist/cjs/address.d.ts",
+        "default": "./dist/cjs/address.js"
+      },
+      "import": {
+        "types": "./dist/esm/address.d.ts",
+        "default": "./dist/esm/address.js"
+      },
+      "require": {
+        "types": "./dist/cjs/address.d.ts",
+        "default": "./dist/cjs/address.js"
+      },
+      "default": {
+        "types": "./dist/cjs/address.d.ts",
+        "default": "./dist/cjs/address.js"
+      }
+    }
+  }
+}
