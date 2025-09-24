@@ -15,6 +15,7 @@ export const executorContracts = [[
     ["Ethereum",        "0x84EEe8dBa37C36947397E1E11251cA9A06Fc6F8a"],
     ["HyperEVM",        "0xd7717899cc4381033Bc200431286D0AC14265F78"],
     // ["HyperCore",       "not-implemented"],
+    ["Ink",             "0x3e44a5F45cbD400acBEF534F51e616043B211Ddd"],
     ["Linea",           "0x23aF2B5296122544A9A7861da43405D5B15a9bD3"],
     ["Mezo",            "0x0f9b8E144Cc5C5e7C0073829Afd30F26A50c5606"],
     ["Moonbeam",        "0x85D06449C78064c2E02d787e9DC71716786F8D19"],
