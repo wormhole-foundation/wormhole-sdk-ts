@@ -17,6 +17,7 @@ export const executorTokenBridgeContracts = [[
     ["Bsc",             { relayer: "0x2513515340fF71DD5AF02fC1BdB9615704d91524", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
     ["Celo",            { relayer: "0xe478DEe705BEae591395B08934FA19F54df316BE", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
     ["Ethereum",        { relayer: "0xa8969F3f8D97b3Ed89D4e2EC19B6B0CfD504b212", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
+    ["Ink",             { relayer: "0x4bFB47F4c8A904d2C24e73601D175FE3a38aAb5B", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
     ["Moonbeam",        { relayer: "0xF6b9616C63Fa48D07D82c93CE02B5d9111c51a3d", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
     ["Optimism",        { relayer: "0x37aC29617AE74c750a1e4d55990296BAF9b8De73", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
     ["Polygon",         { relayer: "0x1d98CA4221516B9ac4869F5CeA7E6bb9C41609D6", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
