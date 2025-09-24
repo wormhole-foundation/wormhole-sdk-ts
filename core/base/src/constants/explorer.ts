@@ -108,6 +108,14 @@ const explorerConfig = [[
         account: "address/",
       },
     }], [
+    "Ink", {
+      name: "Ink Explorer",
+      baseUrl: "https://explorer.inkonchain.com/",
+      endpoints: {
+        tx: "tx/",
+        account: "address/"
+      },
+    }], [
     "Mezo", {
       name: "Mezo Explorer",
       baseUrl: "https://explorer.mezo.org/",
@@ -267,6 +275,14 @@ const explorerConfig = [[
       endpoints: {
         tx: "transaction/",
         account: "address/",
+      },
+    }], [
+    "Ink", {
+      name: "Ink Sepolia Explorer",
+      baseUrl: "https://explorer-sepolia.inkonchain.com/",
+      endpoints: {
+        tx: "tx/",
+        account: "address/"
       },
     }], [
     "Mezo", {
