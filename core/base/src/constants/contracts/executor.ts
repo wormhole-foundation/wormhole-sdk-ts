@@ -12,6 +12,7 @@ export const executorContracts = [[
     ["Berachain",       "0x0Dd7a5a32311b8D87A615Cc7f079B632D3d5e2D3"],
     ["Bsc",             "0xeC8cCCD058DbF28e5D002869Aa9aFa3992bf4ee0"],
     ["Celo",            "0xe6Ea5087c6860B94Cf098a403506262D8F28cF05"],
+    ["CreditCoin",      "0xd2e420188f17607Aa6344ee19c3e76Cf86CA7BDe"],
     ["Ethereum",        "0x84EEe8dBa37C36947397E1E11251cA9A06Fc6F8a"],
     ["HyperEVM",        "0xd7717899cc4381033Bc200431286D0AC14265F78"],
     // ["HyperCore",       "not-implemented"],
