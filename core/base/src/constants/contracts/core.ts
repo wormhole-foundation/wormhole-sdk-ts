@@ -37,7 +37,6 @@ export const coreBridgeContracts = [[
     ["HyperEVM",  "0x7C0faFc4384551f063e05aee704ab943b8B53aB3"],
     // ["HyperCore", "not-implemented"],
     ["Mezo",      "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
-    ["Plume",     "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
     ["Linea",     "0x0C56aebD76E6D9e4a1Ec5e94F4162B4CBbf77b32"],
     ["XRPLEVM",   "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
     ["CreditCoin","0xaBf89de706B583424328B54dD05a8fC986750Da8"],
