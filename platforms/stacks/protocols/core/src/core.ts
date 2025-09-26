@@ -13,7 +13,6 @@ export type StacksWormholeMessageId = WormholeMessageId & {
 
 export class StacksWormholeCore<N extends Network, C extends StacksChains> implements WormholeCore<N, C> {
 
-  static readonly CORE_CONTRACT_NAME: string = "wormhole-core-v4";
   static readonly STATE_CONTRACT_NAME: string = "wormhole-core-state";
   static readonly PROXY_CONTRACT_NAME: string = "wormhole-core-proxy-v2";
   
@@ -152,18 +151,20 @@ export class StacksWormholeCore<N extends Network, C extends StacksChains> imple
     return this.coreContractAddress;
   }
 
-  contractName(): string {
-    return StacksWormholeCore.CORE_CONTRACT_NAME;
+  async contractName(): Promise<string> {
+    const activeContract = await this.getActiveCoreContract();
+    const contractName = activeContract.split('.')[1]!;
+    return contractName;
   }
 
-  async isActiveDeployment(contractName?: string): Promise<boolean> {
-    const res = await this.readonly('is-active-deployment', [], contractName ?? StacksWormholeCore.CORE_CONTRACT_NAME)
+  async isActiveDeployment(contractName: string): Promise<boolean> {
+    const res = await this.readonly('is-active-deployment', [], contractName)
     return cvToValue(res)
   }
 
-  private readonly(functionName: string, functionArgs: any[], contractName?: string): Promise<any> {
+  private async readonly(functionName: string, functionArgs: any[], contractName?: string): Promise<any> {
     return fetchCallReadOnlyFunction({
-      contractName: contractName ?? this.contractName(),
+      contractName: contractName ?? (await this.contractName()),
       contractAddress: this.coreContractAddress,
       functionName,
       functionArgs,
