@@ -41,6 +41,8 @@ export const coreBridgeContracts = [[
     ["Linea",     "0x0C56aebD76E6D9e4a1Ec5e94F4162B4CBbf77b32"],
     ["XRPLEVM",   "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
     ["CreditCoin","0xaBf89de706B583424328B54dD05a8fC986750Da8"],
+    ["Plume",           "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
+    ["Stacks",          "SM1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM"], // TODO - PR when mainnet deployment is final
   ]], [
   "Testnet", [
     ["Solana",          "3u8hJUVTA4jH1wYAyUur7FFZVQ8H635K3tSHHF4ssjQ5"],
@@ -90,6 +92,7 @@ export const coreBridgeContracts = [[
     ["XRPLEVM",         "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
     ["Plasma",          "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
     ["CreditCoin",      "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
+    ["Stacks",          "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM"], // TODO - PR when testnet deployment is final
   ]], [
   "Devnet", [
     ["Solana",    "Bridge1p5gheXUvJ6jGWGeCsgPKgnE3YgdGKRVCMY9o"],
@@ -100,5 +103,6 @@ export const coreBridgeContracts = [[
     ["Aptos",     "0xde0036a9600559e295d5f6802ef6f3f802f510366e0c23912b0655d972166017"],
     ["Sui",       "0x5a5160ca3c2037f4b4051344096ef7a48ebf4400b3f385e57ea90e1628a8bde0"],
     ["Wormchain", "wormhole17p9rzwnnfxcjp32un9ug7yhhzgtkhvl9jfksztgw5uh69wac2pgshdnj3k"],
+    ["Stacks",    "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM"],
   ]],
 ] as const satisfies MapLevels<[Network, Chain, string]>;

@@ -67,6 +67,8 @@
     "platforms/cosmwasm/protocols/core",
     "platforms/cosmwasm/protocols/tokenBridge",
     "platforms/cosmwasm/protocols/ibc",
+    "platforms/stacks",
+    "platforms/stacks/protocols/core",
     "platforms/algorand",
     "platforms/algorand/protocols/core",
     "platforms/algorand/protocols/tokenBridge",
