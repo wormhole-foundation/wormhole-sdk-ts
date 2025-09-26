@@ -83,7 +83,7 @@ export class UniversalAddress implements Address {
     })();
 
     if (!decoded)
-      throw new Error(`string ${address} has invalid length for format ${format}`);
+      throw new Error(`string ${address} could not be decoded for format ${format}`);
 
     if (decoded.length > UniversalAddress.byteSize)
       throw new Error(`string ${address} has invalid length for format ${format}`);
