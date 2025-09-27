@@ -4,7 +4,6 @@ import type {
   TransactionInstruction,
 } from '@solana/web3.js';
 import { PublicKey } from '@solana/web3.js';
-import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { createReadOnlyTokenBridgeProgramInterface } from '../program.js';
 import { utils } from '@wormhole-foundation/sdk-solana-core';
 import {
@@ -22,6 +21,7 @@ export function createTransferNativeInstruction(
   message: PublicKeyInitData,
   from: PublicKeyInitData,
   mint: PublicKeyInitData,
+  tokenProgram: PublicKeyInitData,
   nonce: number,
   amount: bigint,
   fee: bigint,
@@ -48,6 +48,7 @@ export function createTransferNativeInstruction(
       message,
       from,
       mint,
+      tokenProgram,
     ) as any,
     signers: undefined,
     remainingAccounts: undefined,
@@ -83,6 +84,7 @@ export function getTransferNativeAccounts(
   message: PublicKeyInitData,
   from: PublicKeyInitData,
   mint: PublicKeyInitData,
+  tokenProgram: PublicKeyInitData,
 ): TransferNativeAccounts {
   const {
     wormholeBridge,
@@ -115,7 +117,7 @@ export function getTransferNativeAccounts(
     clock,
     rent,
     systemProgram,
-    tokenProgram: TOKEN_PROGRAM_ID,
+    tokenProgram: new PublicKey(tokenProgram),
     wormholeProgram: new PublicKey(wormholeProgramId),
   };
 }

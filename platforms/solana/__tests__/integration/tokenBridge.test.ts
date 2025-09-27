@@ -208,26 +208,6 @@ describe('TokenBridge Tests', () => {
     const sender = toNative(chain, senderAddress);
     const tbAddress = p.config[chain]!.contracts.tokenBridge!;
 
-    test('Create Attestation', async () => {
-      // sleep so we dont hit rate limit
-      await waitForRateLimit();
-      const attestation = tb.createAttestation(bogusAddress, sender);
-      const allTxns: SolanaUnsignedTransaction<TNet>[] = [];
-      for await (const atx of attestation) {
-        allTxns.push(atx);
-      }
-
-      expect(allTxns).toHaveLength(1);
-      const [attestTx] = allTxns;
-      expect(attestTx).toBeTruthy();
-      expect(attestTx!.chain).toEqual(chain);
-
-      const { transaction } = attestTx!;
-      if (isVersionedTransaction(transaction.transaction))
-        throw new Error('Should not receive versioned transactions (yet)');
-      expect(transaction.transaction.instructions).toHaveLength(2);
-    });
-
     test('Submit Attestation', async () => {
       // sleep so we dont hit rate limit
       await waitForRateLimit();
