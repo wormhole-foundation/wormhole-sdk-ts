@@ -325,7 +325,7 @@ Each Protocol, if available, will have a Platform specific implementation. These
 
 #### Wormhole Core
 
-The protocol that underlies all Wormhole activity is the Core protocol. This protocol is responsible for emitting the message containing the information necessary to perform bridging including [Emitter address](https://docs.wormhole.com/wormhole/reference/glossary#emitter), the [Sequence number](https://docs.wormhole.com/wormhole/reference/glossary#sequence) for the message and the Payload of the message itself.
+The protocol that underlies all Wormhole activity is the Core protocol. This protocol is responsible for emitting the message containing the information necessary to perform bridging including [Emitter address](https://wormhole.com/docs/learn/fundamentals/glossary/#emitter), the [Sequence number](https://wormhole.com/docs/learn/fundamentals/glossary/#sequence) for the message and the Payload of the message itself.
 
 <!--EXAMPLE_CORE_BRIDGE-->
 ```ts
