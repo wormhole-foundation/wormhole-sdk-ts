@@ -54,6 +54,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Mezo",      31612n],
       ["Plume",     98866n],
       ["XRPLEVM",   1440000n],
+      ["Stacks",    1n],
     ],
   ],
   [
@@ -110,6 +111,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Fogo",            "9GGSFo95raqzZxWqKM5tGYvJp5iv4Dm565S4r8h5PEu9"], // genesis hash
       ["Plume",           98867n],
       ["XRPLEVM",         1449000n],
+      ["Stacks",          2147483648n],
     ],
   ],
   [
@@ -121,6 +123,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Ethereum",  1337n],
       ["Injective","injective_devnet_fake"],
       ["Solana",    "8wF6jKV3cKwyaVkWcoV9KpDqmkjvEYno9hKZrKx8TbZn"],
+      ["Stacks",    2147483648n],
     ],
   ],
 ] as const satisfies MapLevels<[Network, Chain, bigint | string]>;
