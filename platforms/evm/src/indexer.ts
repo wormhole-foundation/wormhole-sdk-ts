@@ -27,6 +27,11 @@ const GOLD_RUSH_CHAINS: Record<Network, Partial<Record<Chain, string>>> = {
     Scroll: 'scroll-mainnet',
     Seievm: 'sei-mainnet',
     Unichain: 'unichain-mainnet',
+    HyperEVM: 'hyperevm-mainnet',
+    Moonbeam: 'moonbeam-mainnet',
+    Mantle: 'mantle-mainnet',
+    Celo: 'celo-mainnet',
+    Fantom: 'fantom-mainnet',
   },
   Testnet: {
     Ethereum: 'eth-sepolia',
@@ -41,6 +46,9 @@ const GOLD_RUSH_CHAINS: Record<Network, Partial<Record<Chain, string>>> = {
     Arbitrum: 'arbitrum-sepolia',
     Linea: 'linea-sepolia-testnet',
     Scroll: 'scroll-sepolia-testnet',
+    Monad: 'monad-testnet',
+    Mantle: 'mantle-sepolia-testnet',
+    Fantom: 'fantom-testnet'
   },
   Devnet: {},
 };
@@ -98,6 +106,8 @@ const ALCHEMY_CHAINS: Record<Network, Partial<Record<Chain, string>>> = {
     Ink: 'ink-mainnet',
     Unichain: 'unichain-mainnet',
     Berachain: 'berachain-mainnet',
+    Celo: 'celo-mainnet',
+    Linea: 'linea-mainnet',
   },
   Testnet: {
     Ethereum: 'eth-sepolia',
