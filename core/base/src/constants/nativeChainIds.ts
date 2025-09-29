@@ -54,6 +54,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Mezo",      31612n],
       ["Plume",     98866n],
       ["XRPLEVM",   1440000n],
+      ["CreditCoin",   102030n],
     ],
   ],
   [
