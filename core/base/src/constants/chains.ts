@@ -67,8 +67,8 @@ const chainIdAndChainEntries = [
   [10005, "OptimismSepolia"],
   [10006, "Holesky"        ],
   [10007, "PolygonSepolia" ],
-  // placeholder; guardians are not connected to HyperCore
-  [20000, "HyperCore"      ],
+  // guardians are not connected to HyperCore; this is an arbitrary number chosen by Mayan
+  [65000, "HyperCore"      ],
 ] as const satisfies MapLevel<number, string>;
 
 export const [chainIds, chains] = zip(chainIdAndChainEntries);
