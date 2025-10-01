@@ -50,7 +50,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Ink",       57073n],
       ["Sonic",     146n],
       ["HyperEVM",  999n],
-      ["HyperCore", 20000n],
+      ["HyperCore", 65000n],
       ["Mezo",      31612n],
       ["Plume",     98866n],
       ["XRPLEVM",   1440000n],
