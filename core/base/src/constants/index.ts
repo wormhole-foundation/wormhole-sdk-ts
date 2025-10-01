@@ -16,3 +16,6 @@ export * as contracts from "./contracts/index.js";
 export * as guardians from "./guardians.js";
 export * as tbtc from "./tbtc.js";
 export * as executor from "./executor.js";
+export * as dai from "./dai.js";
+export * as usdt from "./usdt.js";
+export * as usds from "./usds.js";
