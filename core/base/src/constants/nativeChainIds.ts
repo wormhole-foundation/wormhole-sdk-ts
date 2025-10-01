@@ -1,6 +1,6 @@
 import type { MapLevels, ToMapping, Widen } from "./../utils/index.js";
 import { constMap } from "./../utils/index.js";
-import type { Chain } from "./chains.js";
+import type { Chain, KnownChain } from "./chains.js";
 import type { Network } from "./networks.js";
 import type { Platform, PlatformToChains } from "./platforms.js";
 import { chainToPlatform } from "./platforms.js";
@@ -161,7 +161,7 @@ export function platformNativeChainIdToNetworkChain<
   //typescript really struggles to comprehend the types here so we have to help it out
   //@ts-ignore
   const candidates = nativeChainIdToNetworkChain(chainId) as readonly (readonly [Network, Chain])[];
-  const mustBeSingleton = candidates.filter(([_, chain]) => chainToPlatform(chain) === platform);
+  const mustBeSingleton = candidates.filter(([_, chain]) => chainToPlatform(chain as KnownChain) === platform);
   if (mustBeSingleton.length !== 1)
     throw new Error(`Platform ${platform} has multiple chains with native chain id ${chainId}`);
 

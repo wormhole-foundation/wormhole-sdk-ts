@@ -1,6 +1,6 @@
 import type { MapLevel, RoArray } from "./../utils/index.js";
 import { column, constMap } from "./../utils/index.js";
-import type { Chain } from "./chains.js";
+import type { Chain, KnownChain } from "./chains.js";
 
 // prettier-ignore
 const platformAndChainsEntries = [[
@@ -78,7 +78,7 @@ const platformAndChainsEntries = [[
     "Near", [
       "Near"
   ]],
-] as const satisfies MapLevel<string, RoArray<Chain>>;
+] as const satisfies MapLevel<string, RoArray<KnownChain>>;
 
 export const platforms = column(platformAndChainsEntries, 0);
 export type Platform = (typeof platforms)[number];
@@ -90,7 +90,10 @@ export const isPlatform = (platform: string): platform is Platform =>
   platformToChains.has(platform);
 
 export type PlatformToChains<P extends Platform> = ReturnType<typeof platformToChains<P>>[number];
-export type ChainToPlatform<C extends Chain> = ReturnType<typeof chainToPlatform<C>>;
+// For known chains, get the platform; for unknown chains, return Platform union
+export type ChainToPlatform<C extends Chain> = C extends KnownChain 
+  ? ReturnType<typeof chainToPlatform<C>>
+  : Platform;
 
 // prettier-ignore
 const platformAddressFormatEntries = [

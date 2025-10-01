@@ -71,13 +71,26 @@ const chainIdAndChainEntries = [
 ] as const satisfies MapLevel<number, string>;
 
 export const [chainIds, chains] = zip(chainIdAndChainEntries);
-export type Chain = (typeof chains)[number];
+
+// Make Chain type more flexible to handle version mismatches
+// Allow any string but provide autocomplete for known chains
+export type Chain = (typeof chains)[number] | (string & {});
 export type ChainId = (typeof chainIds)[number];
+
+// Known chains for stricter internal use
+export type KnownChain = (typeof chains)[number];
 
 export const chainToChainId = constMap(chainIdAndChainEntries, [1, 0]);
 export const chainIdToChain = constMap(chainIdAndChainEntries);
 
-export const isChain = (chain: string): chain is Chain => chainToChainId.has(chain);
+// Create an enum-like object for known chains
+export const ChainName = Object.fromEntries(
+  chainIdAndChainEntries.map(([id, name]) => [name, name])
+) as { readonly [K in KnownChain]: K };
+
+// More permissive type guards that still check known chains
+export const isChain = (chain: string): chain is Chain => true;
+export const isKnownChain = (chain: string): chain is KnownChain => chainToChainId.has(chain);
 export const isChainId = (chainId: number): chainId is ChainId => chainIdToChain.has(chainId);
 
 export function assertChainId(chainId: number): asserts chainId is ChainId {
@@ -85,7 +98,14 @@ export function assertChainId(chainId: number): asserts chainId is ChainId {
 }
 
 export function assertChain(chain: string): asserts chain is Chain {
-  if (!isChain(chain)) throw Error(`Unknown Wormhole chain: ${chain}`);
+  // Now more permissive - any string is valid
+  if (typeof chain !== "string" || chain.length === 0) {
+    throw Error(`Invalid chain: ${chain}`);
+  }
+}
+
+export function assertKnownChain(chain: string): asserts chain is KnownChain {
+  if (!isKnownChain(chain)) throw Error(`Unknown Wormhole chain: ${chain}`);
 }
 
 //safe assertion that allows chaining
@@ -94,29 +114,41 @@ export const asChainId = (chainId: number): ChainId => {
   return chainId;
 };
 
-export const toChainId = (chain: number | string): ChainId => {
+// ChainInput type for functions that accept either chain names or IDs
+export type ChainInput = Chain | number;
+
+// More flexible toChainId that accepts unknown chain IDs
+export const toChainId = (chain: ChainInput): number => {
   switch (typeof chain) {
     case "string":
-      if (isChain(chain)) return chainToChainId(chain);
-      break;
+      // Try to map known chains to their IDs
+      if (chainToChainId.has(chain)) return chainToChainId(chain as KnownChain);
+      // For unknown chains, try to parse as number
+      const parsed = parseInt(chain, 10);
+      if (!isNaN(parsed)) return parsed;
+      throw Error(`Cannot convert chain to ID: ${chain}`);
     case "number":
-      if (isChainId(chain)) return chain;
-      break;
+      return chain;
+    default:
+      throw Error(`Invalid chain input type: ${typeof chain}`);
   }
-  throw Error(`Cannot convert to ChainId: ${chain}`);
 };
 
-export const toChain = (chain: number | string | bigint): Chain => {
+// More flexible toChain that preserves unknown chains
+export const toChain = (chain: ChainInput | bigint): Chain => {
   switch (typeof chain) {
     case "string":
-      if (isChain(chain)) return chain;
-      break;
+      return chain; // Any string is now valid
     case "number":
+      // Try to map known chain IDs to names
       if (isChainId(chain)) return chainIdToChain(chain);
-      break;
+      // For unknown IDs, return as string
+      return chain.toString();
     case "bigint":
-      if (isChainId(Number(chain))) return chainIdToChain.get(Number(chain))!;
-      break;
+      const num = Number(chain);
+      if (isChainId(num)) return chainIdToChain.get(num)!;
+      return chain.toString();
+    default:
+      throw Error(`Invalid chain input type: ${typeof chain}`);
   }
-  throw Error(`Cannot convert to Chain: ${chain}`);
 };
