@@ -49,6 +49,7 @@ const rpcConfig = [[
     ["XRPLEVM",   "https://rpc.xrplevm.org/"],
     ["Plasma",    "https://rpc.plasma.to/"],
     ["CreditCoin","https://mainnet3.creditcoin.network/"],
+    ["Stacks",    "https://api.mainnet.hiro.so"],
   ]], [
   "Testnet", [
     ["Bsc",             "https://data-seed-prebsc-1-s3.binance.org:8545"],
@@ -92,11 +93,13 @@ const rpcConfig = [[
     ["XRPLEVM",         "https://rpc.testnet.xrplevm.org/"],
     ["Plasma",          "https://testnet-rpc.plasma.to"],
     ["CreditCoin",      "https://rpc.cc3-testnet.creditcoin.network"],
+    ["Stacks",          "https://api.testnet.hiro.so"]
   ]], [
   "Devnet", [
     ["Ethereum",  "http://eth-devnet:8545"],
     ["Bsc",       "http://eth-devnet2:8545"],
     ["Solana",    "http://solana-devnet:8899"],
+    ["Stacks",    "http://localhost:3999"],
   ]],
 ] as const satisfies MapLevels<[Network, Chain, string]>;
 
