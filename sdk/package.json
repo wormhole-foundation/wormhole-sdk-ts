@@ -206,6 +206,26 @@
         "default": "./dist/cjs/platforms/sui.js"
       }
     },
+    "./platforms/stacks": {
+      "react-native": {
+        "import": "./dist/esm/platforms/stacks.js",
+        "require": "./dist/cjs/platforms/stacks.js",
+        "types": "./dist/cjs/platforms/stacks.d.ts",
+        "default": "./dist/cjs/platforms/stacks.js"
+      },
+      "require": {
+        "types": "./dist/cjs/platforms/stacks.d.ts",
+        "default": "./dist/cjs/platforms/stacks.js"
+      },
+      "import": {
+        "types": "./dist/esm/platforms/stacks.d.ts",
+        "default": "./dist/esm/platforms/stacks.js"
+      },
+      "default": {
+        "types": "./dist/cjs/platforms/stacks.d.ts",
+        "default": "./dist/cjs/platforms/stacks.js"
+      }
+    },
     "./evm": {
       "react-native": {
         "import": "./dist/esm/evm.js",
@@ -325,6 +345,26 @@
         "types": "./dist/cjs/algorand.d.ts",
         "default": "./dist/cjs/algorand.js"
       }
+    },
+    "./stacks": {
+      "react-native": {
+        "import": "./dist/esm/stacks.js",
+        "require": "./dist/cjs/stacks.js",
+        "types": "./dist/cjs/stacks.d.ts",
+        "default": "./dist/cjs/stacks.js"
+      },
+      "require": {
+        "types": "./dist/cjs/stacks.d.ts",
+        "default": "./dist/cjs/stacks.js"
+      },
+      "import": {
+        "types": "./dist/esm/stacks.d.ts",
+        "default": "./dist/esm/stacks.js"
+      },
+      "default": {
+        "types": "./dist/cjs/stacks.d.ts",
+        "default": "./dist/cjs/stacks.js"
+      }
     }
   },
   "typesVersions": {
@@ -353,6 +393,10 @@
         "dist/cjs/sui.d.ts",
         "dist/esm/sui.d.ts"
       ],
+      "stacks": [
+        "dist/cjs/stacks.d.ts",
+        "dist/esm/stacks.d.ts"
+      ],
       "platforms/algorand": [
         "dist/cjs/platforms/algorand.d.ts",
         "dist/esm/platforms/algorand.d.ts"
@@ -376,6 +420,10 @@
       "platforms/sui": [
         "dist/cjs/platforms/sui.d.ts",
         "dist/esm/platforms/sui.d.ts"
+      ],
+      "platforms/stacks": [
+        "dist/cjs/platforms/stacks.d.ts",
+        "dist/esm/platforms/stacks.d.ts"
       ],
       "*": [
         "dist/cjs/index.d.ts",
@@ -412,7 +460,9 @@
     "@wormhole-foundation/sdk-aptos-cctp": "1.20.0",
     "@wormhole-foundation/sdk-algorand": "1.20.0",
     "@wormhole-foundation/sdk-algorand-core": "1.20.0",
-    "@wormhole-foundation/sdk-algorand-tokenbridge": "1.20.0"
+    "@wormhole-foundation/sdk-algorand-tokenbridge": "1.20.0",
+    "@wormhole-foundation/sdk-stacks": "1.20.0",
+    "@wormhole-foundation/sdk-stacks-core": "1.20.0"
   },
   "type": "module"
 }

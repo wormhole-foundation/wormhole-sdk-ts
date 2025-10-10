@@ -100,5 +100,6 @@ export const coreBridgeContracts = [[
     ["Aptos",     "0xde0036a9600559e295d5f6802ef6f3f802f510366e0c23912b0655d972166017"],
     ["Sui",       "0x5a5160ca3c2037f4b4051344096ef7a48ebf4400b3f385e57ea90e1628a8bde0"],
     ["Wormchain", "wormhole17p9rzwnnfxcjp32un9ug7yhhzgtkhvl9jfksztgw5uh69wac2pgshdnj3k"],
+    ["Stacks",    "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM"],
   ]],
 ] as const satisfies MapLevels<[Network, Chain, string]>;
