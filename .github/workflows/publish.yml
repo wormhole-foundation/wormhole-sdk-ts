@@ -42,6 +42,7 @@ jobs:
             --workspace platforms/algorand/protocols \
             --workspace platforms/sui/protocols \
             --workspace platforms/aptos/protocols \
+            --workspace platforms/stacks/protocols \
             --workspace sdk
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
