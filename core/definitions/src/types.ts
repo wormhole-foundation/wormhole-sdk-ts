@@ -15,6 +15,7 @@ import {
   nativeChainIds,
   rpc,
   toChainId,
+  graphQL,
 } from "@wormhole-foundation/sdk-base";
 
 import type { ChainTokens, Token } from "@wormhole-foundation/sdk-base";
@@ -175,6 +176,7 @@ export type ChainConfig<N extends Network, C extends Chain> = {
   tokenMap?: ChainTokens;
   wrappedNative?: Token;
   explorer?: explorer.ExplorerSettings;
+  graphQL?: string;
 };
 
 export type ChainsConfig<N extends Network, P extends Platform> = {
@@ -211,6 +213,7 @@ export function buildConfig<N extends Network>(n: N): ChainsConfig<N, Platform> 
         wrappedNative,
         explorer: explorer.explorerConfigs(n, c),
         rpc: rpc.rpcAddress(n, c),
+        graphQL: graphQL.graphQLAddress(n, c),
       };
     })
     .reduce((acc, curr) => {

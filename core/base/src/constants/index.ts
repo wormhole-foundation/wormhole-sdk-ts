@@ -19,3 +19,4 @@ export * as executor from "./executor.js";
 export * as dai from "./dai.js";
 export * as usdt from "./usdt.js";
 export * as usds from "./usds.js";
+export * as graphQL from "./graphQL.js";
