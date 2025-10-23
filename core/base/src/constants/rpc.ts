@@ -38,6 +38,7 @@ const rpcConfig = [[
     ["Mantle",    "https://rpc.mantle.xyz"],
     ["Klaytn",    "https://public-en.node.kaia.io"],
     ["Berachain", "https://rpc.berachain.com"],
+    ["Seievm",    "https://evm-rpc.sei-apis.com"],
     ["Unichain",  "https://mainnet.unichain.org"],
     ["Worldchain","https://worldchain-mainnet.g.alchemy.com/public"],
     ["Ink",       "https://rpc-qnd.inkonchain.com"],
