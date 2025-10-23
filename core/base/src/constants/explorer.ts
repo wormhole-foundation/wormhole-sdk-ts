@@ -180,6 +180,15 @@ const explorerConfig = [[
           account: "address/"
         }
       }
+    ], [
+      "Monad", {
+        name: "Monad Explorer",
+        baseUrl: "https://monadexplorer.com/",
+        endpoints: {
+          tx: "tx/",
+          account: "address/"
+        }
+      }
     ]
   ]], [
   "Testnet", [[

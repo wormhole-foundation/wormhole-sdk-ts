@@ -56,6 +56,7 @@ const chainNetworkNativeChainIdEntries = [
       ["XRPLEVM",   1440000n],
       ["Stacks",    1n],
       ["CreditCoin",   102030n],
+      ["Monad",     143n],
     ],
   ],
   [

@@ -30,6 +30,7 @@ const usdcContracts = [[
     ["Plume",     "0x222365EF19F7947e5484218551B56bb3965Aa7aF"],
     ["Ink",       "0x2D270e6886d130D724215A266106e6832161EAEd"],
     ["HyperCore", "0xaf88d065e77c8cC2239327C5EDb3A432268e5831"], // not an actual EVM platform; using Arbitrum address
+    ["Monad",     "0x754704Bc059F8C67012fEd69BC8A327a5aafb603"],
   ]], [
   "Testnet", [
     ["Sepolia",         "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"],
