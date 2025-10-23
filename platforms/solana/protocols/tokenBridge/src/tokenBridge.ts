@@ -731,10 +731,19 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
     );
   }
 
-  private async *createAta(sender: AnySolanaAddress, token: AnySolanaAddress) {
+  private async *createAta(
+    sender: AnySolanaAddress,
+    token: AnySolanaAddress,
+    tokenProgram: PublicKey,
+  ) {
     const senderAddress = new SolanaAddress(sender).unwrap();
     const tokenAddress = new SolanaAddress(token).unwrap();
-    const ata = await getAssociatedTokenAddress(tokenAddress, senderAddress);
+    const ata = await getAssociatedTokenAddress(
+      tokenAddress,
+      senderAddress,
+      false,
+      tokenProgram,
+    );
 
     // If the ata doesn't exist yet, create it
     const acctInfo = await this.connection.getAccountInfo(ata);
@@ -745,6 +754,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
           ata,
           senderAddress,
           tokenAddress,
+          tokenProgram,
         ),
       );
       transaction.feePayer = senderAddress;
@@ -763,8 +773,13 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
         ? vaa.payload.token.address
         : (await this.getWrappedAsset(vaa.payload.token)).toUniversalAddress();
 
+    const tokenProgram = await SolanaPlatform.getTokenProgramId(
+      this.connection,
+      new SolanaAddress(nativeAddress).unwrap(),
+    );
+
     // Create an ATA if necessary
-    yield* this.createAta(sender, nativeAddress);
+    yield* this.createAta(sender, nativeAddress, tokenProgram);
 
     // Post the VAA if necessary
     yield* this.coreBridge.postVaa(sender, vaa);
@@ -798,6 +813,8 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
         this.coreBridge.address,
         senderAddress,
         vaa,
+        undefined,
+        tokenProgram,
       ),
     );
     transaction.feePayer = senderAddress;
