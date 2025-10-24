@@ -464,7 +464,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
     // during redemption.
     if (tokenProgram.equals(TOKEN_2022_PROGRAM_ID)) {
       throw new Error(
-        'Transfers of Token-2022 assets are not supported via the standard Token Bridge. Please use the Executor Token Bridge route instead.',
+        'Transfers of Token-2022 assets are not supported via the Manual Token Bridge route. Please use the Executor Token Bridge route instead.',
       );
     }
 

@@ -2,12 +2,14 @@ import type {
   ChainAddress,
   NativeAddress,
   Network,
+  TokenAddress,
   UniversalOrNative,
 } from '@wormhole-foundation/sdk-connect';
-import { ChainContext } from '@wormhole-foundation/sdk-connect';
+import { ChainContext, isNative } from '@wormhole-foundation/sdk-connect';
 import { SolanaAddress } from './address.js';
 import type { SolanaChains } from './types.js';
 import { SolanaPlatform } from './platform.js';
+import { TOKEN_2022_PROGRAM_ID } from '@solana/spl-token';
 
 export class SolanaChain<
   N extends Network = Network,
@@ -33,5 +35,15 @@ export class SolanaChain<
       chain: this.chain,
       address: new SolanaAddress(ata.toString()) as NativeAddress<C>,
     };
+  }
+
+  override async isToken2022(token: TokenAddress<C>): Promise<boolean> {
+    if (isNative(token)) return false;
+
+    const mint = new SolanaAddress(token).unwrap();
+    const rpc = await this.getRpc();
+    const tokenProgram = await SolanaPlatform.getTokenProgramId(rpc, mint);
+
+    return tokenProgram.equals(TOKEN_2022_PROGRAM_ID);
   }
 }
