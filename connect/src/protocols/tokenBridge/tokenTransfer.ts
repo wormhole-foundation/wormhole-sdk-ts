@@ -846,22 +846,6 @@ export namespace TokenTransfer {
     const dstDecimals = await dstChain.getDecimals(dstToken.address);
     const dstAmountReceivable = amount.scale(srcAmountTruncated, dstDecimals);
 
-    if (transfer.protocol === "TokenBridge" || transfer.protocol === "AutomaticTokenBridge") {
-      // Prevent transfers TO SVM chains if the destination token is Token2022
-      // except when using ExecutorTokenBridge
-      // Attempting to manually redeem Token2022 tokens will fail if recipient account
-      // has the immutableOwner extension, so just disable such transfers here
-      // Executor route creates temporary account without the extension
-      if (chainToPlatform(dstChain.chain) === "Solana") {
-        const isToken2022 = await dstChain.isToken2022(dstToken.address);
-        if (isToken2022) {
-          throw new Error(
-            "Transfers of Token-2022 assets to SVM chains are not supported via the Manual Token Bridge route. Please use the Executor Token Bridge route instead.",
-          );
-        }
-      }
-    }
-
     const eta = finality.estimateFinalityTime(srcChain.chain) + guardians.guardianAttestationEta;
     const baseQuote = {
       sourceToken: {
