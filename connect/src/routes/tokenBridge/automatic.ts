@@ -133,7 +133,7 @@ export class AutomaticTokenBridgeRoute<N extends Network>
             valid: false,
             params,
             error: new Error(
-              "Transfers of Token-2022 assets from SVM chains are not supported via the Manual Token Bridge route. Please use the Executor Token Bridge route instead.",
+              "Transfers of Token-2022 assets from SVM chains are not supported via the Automatic Token Bridge route. Please use the Executor Token Bridge route instead.",
             ),
           };
         }
@@ -145,7 +145,7 @@ export class AutomaticTokenBridgeRoute<N extends Network>
             valid: false,
             params,
             error: new Error(
-              "Transfers of Token-2022 assets to SVM chains are not supported via the Manual Token Bridge route. Please use the Executor Token Bridge route instead.",
+              "Transfers of Token-2022 assets to SVM chains are not supported via the Automatic Token Bridge route. Please use the Executor Token Bridge route instead.",
             ),
           };
         }
