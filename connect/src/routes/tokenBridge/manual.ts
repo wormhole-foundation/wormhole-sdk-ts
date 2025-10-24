@@ -95,7 +95,7 @@ export class TokenBridgeRoute<N extends Network>
       };
     }
 
-    // Prevent transfers TO SVM chains if the destination token is Token2022
+    // Prevent transfers to/from SVM chains if the destination token is Token2022
     // except when using ExecutorTokenBridge
     // Attempting to manually redeem Token2022 tokens will fail if recipient account
     // has the immutableOwner extension, so just disable such transfers here
