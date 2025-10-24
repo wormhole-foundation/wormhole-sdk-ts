@@ -1,5 +1,5 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
-import { amount, contracts } from "@wormhole-foundation/sdk-base";
+import { amount, chainToPlatform, contracts } from "@wormhole-foundation/sdk-base";
 import type {
   ChainAddress,
   ChainContext,
@@ -119,6 +119,36 @@ export class AutomaticTokenBridgeRoute<N extends Network>
           params,
           error: new Error("Source and destination chains cannot be the same"),
         };
+      }
+
+      // Prevent transfers to/from SVM chains if the destination token is Token2022
+      // except when using ExecutorTokenBridge
+      // Attempting to manually redeem Token2022 tokens will fail if recipient account
+      // has the immutableOwner extension, so just disable such transfers here
+      // Executor route creates temporary account without the extension
+      if (chainToPlatform(request.fromChain.chain) === "Solana") {
+        const isToken2022 = await request.fromChain.isToken2022(request.source.id.address);
+        if (isToken2022) {
+          return {
+            valid: false,
+            params,
+            error: new Error(
+              "Transfers of Token-2022 assets from SVM chains are not supported via the Automatic Token Bridge route. Please use the Executor Token Bridge route instead.",
+            ),
+          };
+        }
+      }
+      if (chainToPlatform(request.toChain.chain) === "Solana") {
+        const isToken2022 = await request.toChain.isToken2022(request.destination.id.address);
+        if (isToken2022) {
+          return {
+            valid: false,
+            params,
+            error: new Error(
+              "Transfers of Token-2022 assets to SVM chains are not supported via the Automatic Token Bridge route. Please use the Executor Token Bridge route instead.",
+            ),
+          };
+        }
       }
 
       const options = params.options ?? this.getDefaultOptions();

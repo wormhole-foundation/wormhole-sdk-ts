@@ -190,6 +190,21 @@ export abstract class ChainContext<
   }
 
   /**
+   * Check if a token uses the Token2022 program
+   *
+   * @remarks
+   * This is really only useful in the context of Solana but in order
+   * to provide a consistent interface, we provide it here.
+   *
+   * @param token the token to check
+   * @returns true if the token uses the Token2022 program, false otherwise
+   */
+  async isToken2022(token: TokenAddress<C>): Promise<boolean> {
+    // Return false by default, override in implementation if necessary
+    return false;
+  }
+
+  /**
    * Check to see if a given protocol is supported by this chain
    * by checking if it is registered in the platform and the configuration
    * is available and correct

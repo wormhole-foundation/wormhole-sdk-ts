@@ -23,6 +23,7 @@ export function createCompleteTransferNativeInstruction(
   payer: PublicKeyInitData,
   vaa: TokenBridge.TransferVAA,
   feeRecipient?: PublicKeyInitData,
+  tokenProgramId?: PublicKeyInitData,
 ): TransactionInstruction {
   const methods = createReadOnlyTokenBridgeProgramInterface(
     tokenBridgeProgramId,
@@ -37,6 +38,7 @@ export function createCompleteTransferNativeInstruction(
       payer,
       vaa,
       feeRecipient,
+      tokenProgramId,
     ) as any,
     signers: undefined,
     remainingAccounts: undefined,
@@ -68,6 +70,7 @@ export function getCompleteTransferNativeAccounts(
   payer: PublicKeyInitData,
   vaa: TokenBridge.TransferVAA,
   feeRecipient?: PublicKeyInitData,
+  tokenProgramId?: PublicKeyInitData,
 ): CompleteTransferNativeAccounts {
   const mint = new PublicKey(vaa.payload.token.address.toUint8Array());
   return {
@@ -96,7 +99,9 @@ export function getCompleteTransferNativeAccounts(
     custodySigner: deriveCustodySignerKey(tokenBridgeProgramId),
     rent: SYSVAR_RENT_PUBKEY,
     systemProgram: SystemProgram.programId,
-    tokenProgram: TOKEN_PROGRAM_ID,
+    tokenProgram: tokenProgramId
+      ? new PublicKey(tokenProgramId)
+      : TOKEN_PROGRAM_ID,
     wormholeProgram: new PublicKey(wormholeProgramId),
   };
 }

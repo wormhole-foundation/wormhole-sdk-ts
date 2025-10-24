@@ -4,7 +4,6 @@ import type {
   TransactionInstruction,
 } from '@solana/web3.js';
 import { PublicKey } from '@solana/web3.js';
-import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { createReadOnlyTokenBridgeProgramInterface } from '../program.js';
 import { utils } from '@wormhole-foundation/sdk-solana-core';
 import {
@@ -24,6 +23,7 @@ export function createTransferWrappedInstruction(
   fromOwner: PublicKeyInitData,
   tokenChain: number,
   tokenAddress: Buffer | Uint8Array,
+  tokenProgram: PublicKeyInitData,
   nonce: number,
   amount: bigint,
   fee: bigint,
@@ -52,6 +52,7 @@ export function createTransferWrappedInstruction(
       fromOwner,
       tokenChain,
       tokenAddress,
+      tokenProgram,
     ) as any,
     signers: undefined,
     remainingAccounts: undefined,
@@ -89,6 +90,7 @@ export function getTransferWrappedAccounts(
   fromOwner: PublicKeyInitData,
   tokenChain: number,
   tokenAddress: Buffer | Uint8Array,
+  tokenProgram: PublicKeyInitData,
 ): TransferWrappedAccounts {
   const mint = deriveWrappedMintKey(
     tokenBridgeProgramId,
@@ -127,6 +129,6 @@ export function getTransferWrappedAccounts(
     rent,
     systemProgram,
     wormholeProgram: new PublicKey(wormholeProgramId),
-    tokenProgram: TOKEN_PROGRAM_ID,
+    tokenProgram: new PublicKey(tokenProgram),
   };
 }

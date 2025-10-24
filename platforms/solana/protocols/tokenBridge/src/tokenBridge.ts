@@ -37,13 +37,18 @@ import {
 import type { Program } from '@coral-xyz/anchor';
 import {
   ACCOUNT_SIZE,
+  ExtensionType,
   NATIVE_MINT,
+  TOKEN_2022_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
   createAssociatedTokenAccountInstruction,
   createCloseAccountInstruction,
   createInitializeAccountInstruction,
   createTransferInstruction,
+  getAccount,
   getAssociatedTokenAddress,
+  getExtensionTypes,
+  getMetadataPointerState,
   getMinimumBalanceForRentExemptAccount,
   getMint,
 } from '@solana/spl-token';
@@ -249,6 +254,27 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
       msgFee,
     );
 
+    const tokenAddress = new SolanaAddress(token).unwrap();
+    const tokenProgram = await SolanaPlatform.getTokenProgramId(
+      this.connection,
+      tokenAddress,
+    );
+
+    // Check if the token has a metadata pointer (only applies to token-2022)
+    let metadataAddress: PublicKey | undefined;
+    if (tokenProgram.equals(TOKEN_2022_PROGRAM_ID)) {
+      const mintInfo = await getMint(
+        this.connection,
+        tokenAddress,
+        undefined,
+        tokenProgram,
+      );
+      const metadataPointer = getMetadataPointerState(mintInfo);
+      if (metadataPointer?.metadataAddress) {
+        metadataAddress = metadataPointer?.metadataAddress;
+      }
+    }
+
     const messageKey = Keypair.generate();
     const attestIx = createAttestTokenInstruction(
       this.connection,
@@ -258,6 +284,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
       new SolanaAddress(token).unwrap(),
       messageKey.publicKey,
       nonce,
+      metadataAddress,
     );
 
     const transaction = new Transaction().add(transferIx, attestIx);
@@ -351,6 +378,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
       ancillaryKeypair.publicKey,
       payerPublicKey,
       amount,
+      TOKEN_PROGRAM_ID,
     );
 
     const tokenBridgeTransferIx = payload
@@ -362,6 +390,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
           message.publicKey,
           ancillaryKeypair.publicKey,
           NATIVE_MINT,
+          TOKEN_PROGRAM_ID,
           nonce,
           amount,
           recipientAddress,
@@ -376,6 +405,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
           message.publicKey,
           ancillaryKeypair.publicKey,
           NATIVE_MINT,
+          TOKEN_PROGRAM_ID,
           nonce,
           amount,
           relayerFee,
@@ -422,10 +452,53 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
 
     const tokenAddress = new SolanaAddress(token).unwrap();
     const senderAddress = new SolanaAddress(sender).unwrap();
-    const senderTokenAddress = await getAssociatedTokenAddress(
+    const tokenProgram = await SolanaPlatform.getTokenProgramId(
+      this.connection,
+      tokenAddress,
+    );
+
+    // NOTE: The Solana TB `completeNative` instruction doesn't support Token-2022 tokens
+    // when the recipient associated token account has the immutable owner extension.
+    // Therefore, we throw an error here to prevent such transfers from being initiated.
+    // Use the executor route instead which creates a temporary account without extensions
+    // during redemption.
+    if (tokenProgram.equals(TOKEN_2022_PROGRAM_ID)) {
+      throw new Error(
+        'Transfers of Token-2022 assets are not supported via the Manual Token Bridge route. Please use the Executor Token Bridge route instead.',
+      );
+    }
+
+    let senderTokenAddress = await getAssociatedTokenAddress(
       tokenAddress,
       senderAddress,
+      false,
+      tokenProgram,
     );
+
+    // Check if the source account has immutable owner extension
+    // If it does, we need to create a temporary account without the extension
+    // since the token bridge cannot transfer from an account with immutable owner
+    const isSolanaNative = !(await this.isWrappedAsset(token));
+    let tempAccountKeypair: Keypair | undefined;
+    let hasImmutableOwner = false;
+
+    if (isSolanaNative && tokenProgram.equals(TOKEN_2022_PROGRAM_ID)) {
+      const sourceAccountInfo =
+        await this.connection.getAccountInfo(senderTokenAddress);
+      if (sourceAccountInfo && sourceAccountInfo.data.length > ACCOUNT_SIZE) {
+        const account = await getAccount(
+          this.connection,
+          senderTokenAddress,
+          undefined,
+          tokenProgram,
+        );
+        if (account.tlvData) {
+          hasImmutableOwner = getExtensionTypes(account.tlvData).includes(
+            ExtensionType.ImmutableOwner,
+          );
+        }
+      }
+    }
 
     const recipientAddress = recipient.address
       .toUniversalAddress()
@@ -435,9 +508,57 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
     const nonce = 0;
     const relayerFee = 0n;
 
-    const isSolanaNative = !(await this.isWrappedAsset(token));
-
     const message = Keypair.generate();
+    const instructions: TransactionInstruction[] = [];
+    const signers: Keypair[] = [message];
+
+    // If the account has immutable owner, create a temporary account and transfer to it first
+    if (hasImmutableOwner) {
+      tempAccountKeypair = Keypair.generate();
+      signers.push(tempAccountKeypair);
+
+      // Calculate rent for temporary account without extensions
+      const rentBalance = await getMinimumBalanceForRentExemptAccount(
+        this.connection,
+      );
+
+      // Create temporary account without extensions
+      instructions.push(
+        SystemProgram.createAccount({
+          fromPubkey: senderAddress,
+          newAccountPubkey: tempAccountKeypair.publicKey,
+          lamports: rentBalance,
+          space: ACCOUNT_SIZE,
+          programId: tokenProgram,
+        }),
+      );
+
+      // Initialize temporary account
+      instructions.push(
+        createInitializeAccountInstruction(
+          tempAccountKeypair.publicKey,
+          tokenAddress,
+          senderAddress,
+          tokenProgram,
+        ),
+      );
+
+      // Transfer tokens from ATA to temporary account
+      instructions.push(
+        createTransferInstruction(
+          senderTokenAddress,
+          tempAccountKeypair.publicKey,
+          senderAddress,
+          amount,
+          [],
+          tokenProgram,
+        ),
+      );
+
+      // Use the temporary account for the transfer
+      senderTokenAddress = tempAccountKeypair.publicKey;
+    }
+
     let tokenBridgeTransferIx: TransactionInstruction;
     if (isSolanaNative) {
       tokenBridgeTransferIx = payload
@@ -449,6 +570,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
             message.publicKey,
             senderTokenAddress,
             tokenAddress,
+            tokenProgram,
             nonce,
             amount,
             recipientAddress,
@@ -463,6 +585,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
             message.publicKey,
             senderTokenAddress,
             tokenAddress,
+            tokenProgram,
             nonce,
             amount,
             relayerFee,
@@ -485,6 +608,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
             senderAddress,
             toChainId(originAsset.chain),
             originAsset.address.toUint8Array(),
+            tokenProgram,
             nonce,
             amount,
             recipientAddress,
@@ -501,6 +625,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
             senderAddress,
             toChainId(originAsset.chain),
             originAsset.address.toUint8Array(),
+            tokenProgram,
             nonce,
             amount,
             relayerFee,
@@ -514,16 +639,31 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
       senderTokenAddress,
       senderAddress,
       amount,
+      tokenProgram,
     );
 
-    const transaction = new Transaction().add(
-      approvalIx,
-      tokenBridgeTransferIx,
-    );
+    // Add the approval and transfer instructions
+    instructions.push(approvalIx);
+    instructions.push(tokenBridgeTransferIx);
 
+    // If we used a temporary account, add instruction to close it and recover rent
+    if (tempAccountKeypair) {
+      instructions.push(
+        createCloseAccountInstruction(
+          tempAccountKeypair.publicKey,
+          senderAddress,
+          senderAddress,
+          [],
+          tokenProgram,
+        ),
+      );
+    }
+
+    const transaction = new Transaction().add(...instructions);
     transaction.feePayer = senderAddress;
+
     yield this.createUnsignedTx(
-      { transaction, signers: [message] },
+      { transaction, signers },
       'TokenBridge.TransferTokens',
     );
   }
@@ -603,10 +743,19 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
     );
   }
 
-  private async *createAta(sender: AnySolanaAddress, token: AnySolanaAddress) {
+  private async *createAta(
+    sender: AnySolanaAddress,
+    token: AnySolanaAddress,
+    tokenProgram: PublicKey,
+  ) {
     const senderAddress = new SolanaAddress(sender).unwrap();
     const tokenAddress = new SolanaAddress(token).unwrap();
-    const ata = await getAssociatedTokenAddress(tokenAddress, senderAddress);
+    const ata = await getAssociatedTokenAddress(
+      tokenAddress,
+      senderAddress,
+      false,
+      tokenProgram,
+    );
 
     // If the ata doesn't exist yet, create it
     const acctInfo = await this.connection.getAccountInfo(ata);
@@ -617,6 +766,7 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
           ata,
           senderAddress,
           tokenAddress,
+          tokenProgram,
         ),
       );
       transaction.feePayer = senderAddress;
@@ -635,8 +785,13 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
         ? vaa.payload.token.address
         : (await this.getWrappedAsset(vaa.payload.token)).toUniversalAddress();
 
+    const tokenProgram = await SolanaPlatform.getTokenProgramId(
+      this.connection,
+      new SolanaAddress(nativeAddress).unwrap(),
+    );
+
     // Create an ATA if necessary
-    yield* this.createAta(sender, nativeAddress);
+    yield* this.createAta(sender, nativeAddress, tokenProgram);
 
     // Post the VAA if necessary
     yield* this.coreBridge.postVaa(sender, vaa);
@@ -670,6 +825,8 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
         this.coreBridge.address,
         senderAddress,
         vaa,
+        undefined,
+        tokenProgram,
       ),
     );
     transaction.feePayer = senderAddress;
