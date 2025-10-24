@@ -34,6 +34,7 @@ export const tokenBridgeContracts = [[
     ["Ink",       "0x3Ff72741fd67D6AD0668d93B41a09248F4700560"],
     ["XRPLEVM",   "0x47F5195163270345fb4d7B9319Eda8C64C75E278"],
     ["Linea",     "0x167E0752de62cb76EFc0Fbb165Bd342c6e2Bb251"],
+    ["Monad",     "0x0B2719cdA2F10595369e6673ceA3Ee2EDFa13BA7"]
   ]], [
   "Testnet", [
     ["Solana",          "DZnkkTmCiFWfYTfT41X3Rd1kDgozqzxWaHqsw6W4x2oe"],

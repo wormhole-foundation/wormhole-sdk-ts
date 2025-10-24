@@ -30,6 +30,7 @@ export const executorContracts = [[
     ["Unichain",        "0x764dD868eAdD27ce57BCB801E4ca4a193d231Aed"],
     ["Worldchain",      "0x8689b4E6226AdC8fa8FF80aCc3a60AcE31e8804B"],
     ["XRPLEVM",         "0x8345E90Dcd92f5Cf2FAb0C8E2A56A5bc2c30d896"],
+    ["Monad",           "0xC04dE634982cAdF2A677310b73630B7Ac56A3f65"],
   ]], [
   "Testnet", [
     ["Aptos",           "0x139717c339f08af674be77143507a905aa28cbc67a0e53e7095c07b630d73815"],
