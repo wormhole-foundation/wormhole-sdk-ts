@@ -456,6 +456,18 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
       this.connection,
       tokenAddress,
     );
+
+    // NOTE: The Solana TB `completeNative` instruction doesn't support Token-2022 tokens
+    // when the recipient associated token account has the immutable owner extension.
+    // Therefore, we throw an error here to prevent such transfers from being initiated.
+    // Use the executor route instead which creates a temporary account without extensions
+    // during redemption.
+    if (tokenProgram.equals(TOKEN_2022_PROGRAM_ID)) {
+      throw new Error(
+        'Transfers of Token-2022 assets are not supported via the standard Token Bridge. Please use the Executor Token Bridge route instead.',
+      );
+    }
+
     let senderTokenAddress = await getAssociatedTokenAddress(
       tokenAddress,
       senderAddress,
