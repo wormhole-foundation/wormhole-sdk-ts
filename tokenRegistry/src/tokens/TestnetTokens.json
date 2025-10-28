@@ -14,10 +14,6 @@
           "address": "0xbB5A2dC896Ec4E2fa77F40FA630582ed9c6D0172",
           "decimals": 18
         },
-        "Fantom": {
-          "address": "0x758FEebDDeC06f4bCcEc8F756C8efBD35d5b7124",
-          "decimals": 18
-        },
         "Celo": {
           "address": "0x898471a82737dFFfB61915F9e8381e279076D72b",
           "decimals": 18
@@ -78,10 +74,6 @@
           "address": "0x63A30f239DC8d1c17Bf6653a68Fc6C2F83641E6d",
           "decimals": 6
         },
-        "Fantom": {
-          "address": "0xDF7928AF5B33F7de592594958D8d6Ff8472Eb407",
-          "decimals": 6
-        },
         "Celo": {
           "address": "0xB0524bEF6c61c6150B340b2828a890fD8dEa60C0",
           "decimals": 6
@@ -118,10 +110,6 @@
       "nativeChain": "Ethereum",
       "decimals": 8,
       "foreignAssets": {
-        "Fantom": {
-          "address": "0x32eF19C4b3DF65a24972A489e70AdDef5E54262C",
-          "decimals": 6
-        },
         "Polygon": {
           "address": "0x02E30E84161BE1aBfcBB2b154B11De4C2b5E0a32",
           "decimals": 6
@@ -164,10 +152,6 @@
           "address": "0x3989C9c4bdd30400E6Aa90990683EAd6a1638A16",
           "decimals": 18
         },
-        "Fantom": {
-          "address": "0xE4FE5DF2084f9D81595e4fcba2399020FBE7b233",
-          "decimals": 18
-        },
         "Celo": {
           "address": "0xeBB3fF6E5d61d3793Fdb60f7942BA78E636019f6",
           "decimals": 18
@@ -204,10 +188,6 @@
         },
         "Avalanche": {
           "address": "0x78554394273957d7e55afC841aeA27Cce469AEd4",
-          "decimals": 18
-        },
-        "Fantom": {
-          "address": "0x47a4C4c0f96D6CBe5b5C0A46CB0E22d6A17F1430",
           "decimals": 18
         },
         "Celo": {
@@ -266,10 +246,6 @@
           "address": "0xFB2C24197A92598C633Ed8eE60ee90b104d7B145",
           "decimals": 6
         },
-        "Fantom": {
-          "address": "0x450dC724a1793b0E2182d09Eb883ad76f7F4C0Aa",
-          "decimals": 6
-        },
         "Celo": {
           "address": "0x4364bb251a0F33914AAb2088ed435122694Ce2BD",
           "decimals": 6
@@ -310,10 +286,6 @@
         },
         "Avalanche": {
           "address": "0x10F1053bF2884b28ee0Bd7a2dDBa237Af3511d29",
-          "decimals": 18
-        },
-        "Fantom": {
-          "address": "0xfB174b43228950C2055CFc25AE93f2DCe8E2beF0",
           "decimals": 18
         },
         "Celo": {
@@ -370,10 +342,6 @@
           "address": "0x6cE9E2c8b59bbcf65dA375D3d8AB503c8524caf7",
           "decimals": 18
         },
-        "Fantom": {
-          "address": "0x0f545Be981C37fB15ab7c65404648761e99016e4",
-          "decimals": 18
-        },
         "Celo": {
           "address": "0x502c8C83008D9Dd812a7C5fB886C063060C73Dbf",
           "decimals": 18
@@ -426,10 +394,6 @@
           "address": "0x1cfeCf72bcBE1E429A21A5B11E708C7c397AaC54",
           "decimals": 6
         },
-        "Fantom": {
-          "address": "0x6BC4E8D8c1d54656D1DeBCa96efc53aFd1408aD2",
-          "decimals": 6
-        },
         "Celo": {
           "address": "0xDDB349c976cA2C873644F21f594767Eb5390C831",
           "decimals": 6
@@ -465,64 +429,6 @@
       }
     }
   },
-  "Fantom": {
-    "0xf1277d1Ed8AD466beddF92ef448A132661956621": {
-      "name": "WFTM",
-      "symbol": "WFTM",
-      "nativeChain": "Fantom",
-      "decimals": 18,
-      "foreignAssets": {
-        "Ethereum": {
-          "address": "0x0d7A9Cdbb7C21E64825cF81750A5081a32aFb5d4",
-          "decimals": 18
-        },
-        "Polygon": {
-          "address": "0x84aa9100a36D6c3514605F62342abF3cE77D5b97",
-          "decimals": 18
-        },
-        "Bsc": {
-          "address": "0x9aB305B792DBdb8253bEE909E7006611Cb45175b",
-          "decimals": 18
-        },
-        "Avalanche": {
-          "address": "0x094cB577C21Ab1360178beE74B9591fa12216dAD",
-          "decimals": 18
-        },
-        "Celo": {
-          "address": "0xE6F8710cA14CFe7F5aAAD3A799C3d1D92dCba938",
-          "decimals": 18
-        },
-        "Moonbeam": {
-          "address": "0x566c1cebc6A4AFa1C122E039C4BEBe77043148Ee",
-          "decimals": 18
-        },
-        "Solana": {
-          "address": "DMw2tLaq1bVoAEKtkoUtieSk9bfCPUvubYLatTMsSVop",
-          "decimals": 8
-        },
-        "Sui": {
-          "address": "0x14e756ff65e0ac810a5f69ca5276ef5b899a6df3c4717de1f85559d8b5ae6ea6::coin::COIN",
-          "decimals": 8
-        },
-        "Base": {
-          "address": "0xB4808E58713112AbAbB8167C7187F8988df38bbD",
-          "decimals": 18
-        },
-        "Sei": {
-          "address": "sei1cr3j7rxq0dhq04ksftmj8n2w096w9g7ck8fngkvk2lrmy3qwz56q9thu9u",
-          "decimals": 8
-        },
-        "Arbitrum": {
-          "address": "0xa507f7566B8aDE000E886166B95964677ef3b3Ef",
-          "decimals": 18
-        },
-        "Optimism": {
-          "address": "0x81BA80f5820273AA965086e710042d737993f12c",
-          "decimals": 18
-        }
-      }
-    }
-  },
   "Celo": {
     "0xF194afDf50B03e69Bd7D057c1Aa9e10c9954E4C9": {
       "name": "CELO",
@@ -544,10 +450,6 @@
         },
         "Avalanche": {
           "address": "0xC66d9c2b33c347d4A4441975f4688fcD5DD4c441",
-          "decimals": 18
-        },
-        "Fantom": {
-          "address": "0xB18E73a69c3Aaea39a610372537Cf8482622d199",
           "decimals": 18
         },
         "Moonbeam": {
@@ -604,10 +506,6 @@
           "address": "0xf080782DF38eD5228D2FC2882d13D56c8f1D6f21",
           "decimals": 18
         },
-        "Fantom": {
-          "address": "0x41E3CFDFC255A4bF3C8D3560Bc8D3D9b5080338e",
-          "decimals": 18
-        },
         "Celo": {
           "address": "0x132D2172D89cd9CfD480A8887c6bF92360fB460e",
           "decimals": 18
@@ -656,10 +554,6 @@
         },
         "Avalanche": {
           "address": "0xb10563644a6AB8948ee6d7f5b0a1fb15AaEa1E03",
-          "decimals": 9
-        },
-        "Fantom": {
-          "address": "0xED1a08Fc69A7008d225890A96aaE258c465CC7ad",
           "decimals": 9
         },
         "Celo": {
@@ -728,10 +622,6 @@
           "address": "0xfc5128F8556a6F059466E67740e6cC31EE5C2C47",
           "decimals": 9
         },
-        "Fantom": {
-          "address": "0xd882AB49372eC093E8697B5153f54ab5e7738e3b",
-          "decimals": 9
-        },
         "Celo": {
           "address": "0xa40d9E69ca9867C4bFbeC11Ce79C939991e9bf26",
           "decimals": 9
@@ -782,10 +672,6 @@
           "address": "0x996a3f12C1FcD7339Ea8801f629201e4d42EAD04",
           "decimals": 8
         },
-        "Fantom": {
-          "address": "0xAb2297E8994149BA91737944E40891881aF762a4",
-          "decimals": 8
-        },
         "Celo": {
           "address": "0xAC0a2fF7DD597de863878a3372142b07B614C125",
           "decimals": 8
@@ -826,10 +712,6 @@
         },
         "Avalanche": {
           "address": "0x36Bd1562F874941eE62Ebb2b3A45B4A88A9df90e",
-          "decimals": 18
-        },
-        "Fantom": {
-          "address": "0x456e08952f9091B6c268dC0cECad53d141152C59",
           "decimals": 18
         },
         "Moonbeam": {
@@ -914,10 +796,6 @@
       "nativeChain": "Optimism",
       "decimals": 6,
       "foreignAssets": {
-        "Fantom": {
-          "address": "0x685B29e17440c42758Ab3F80FD3603EF01bebe9A",
-          "decimals": 6
-        },
         "Solana": {
           "address": "5q4ZoWHn5zvySxmev1PHH143tQ8fFnYWzmMWHit87KwZ",
           "decimals": 6
@@ -950,10 +828,6 @@
         },
         "Avalanche": {
           "address": "0xc07c754ef7473d315D973F7D9F7858C2eCe0a0a6",
-          "decimals": 18
-        },
-        "Fantom": {
-          "address": "0x01950A33DfFa63E6Bc23b5dB440505581A4cc0e7",
           "decimals": 18
         },
         "Solana": {
@@ -1004,10 +878,6 @@
         },
         "Avalanche": {
           "address": "0xfe2eCDD1708aaebf1cF802C6124fAFb18B22dfEE",
-          "decimals": 6
-        },
-        "Fantom": {
-          "address": "0x832e8050D6c64724500DE9B0ffe1CAc6c570a26d",
           "decimals": 6
         },
         "Celo": {
