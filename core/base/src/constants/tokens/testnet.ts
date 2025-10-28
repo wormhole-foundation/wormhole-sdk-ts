@@ -93,15 +93,6 @@ const testnetTokenEntries = [
         },
       ],
       [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 18,
-          address: "0x0d7A9Cdbb7C21E64825cF81750A5081a32aFb5d4",
-          original: "Fantom",
-        },
-      ],
-      [
         "CELO",
         {
           symbol: "CELO",
@@ -319,15 +310,6 @@ const testnetTokenEntries = [
         },
       ],
       [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 18,
-          address: "0x84aa9100a36D6c3514605F62342abF3cE77D5b97",
-          original: "Fantom",
-        },
-      ],
-      [
         "CELO",
         {
           symbol: "CELO",
@@ -508,15 +490,6 @@ const testnetTokenEntries = [
           decimals: 6,
           address: "0x1cfeCf72bcBE1E429A21A5B11E708C7c397AaC54",
           original: "Avalanche",
-        },
-      ],
-      [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 18,
-          address: "0x9aB305B792DBdb8253bEE909E7006611Cb45175b",
-          original: "Fantom",
         },
       ],
       [
@@ -703,15 +676,6 @@ const testnetTokenEntries = [
         },
       ],
       [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 18,
-          address: "0x094cB577C21Ab1360178beE74B9591fa12216dAD",
-          original: "Fantom",
-        },
-      ],
-      [
         "CELO",
         {
           symbol: "CELO",
@@ -879,15 +843,6 @@ const testnetTokenEntries = [
         },
       ],
       [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 18,
-          address: "0xE6F8710cA14CFe7F5aAAD3A799C3d1D92dCba938",
-          original: "Fantom",
-        },
-      ],
-      [
         "CELO",
         {
           symbol: "CELO",
@@ -1045,15 +1000,6 @@ const testnetTokenEntries = [
         },
       ],
       [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 18,
-          address: "0x566c1cebc6A4AFa1C122E039C4BEBe77043148Ee",
-          original: "Fantom",
-        },
-      ],
-      [
         "CELO",
         {
           symbol: "CELO",
@@ -1208,15 +1154,6 @@ const testnetTokenEntries = [
           decimals: 6,
           address: "GQtMXZxnuacCFTXVeTvyHi6P9F6chbtzhVc8JgD8hv7c",
           original: "Avalanche",
-        },
-      ],
-      [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 8,
-          address: "DMw2tLaq1bVoAEKtkoUtieSk9bfCPUvubYLatTMsSVop",
-          original: "Fantom",
         },
       ],
       [
@@ -1393,15 +1330,6 @@ const testnetTokenEntries = [
         },
       ],
       [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 8,
-          address: "0x14e756ff65e0ac810a5f69ca5276ef5b899a6df3c4717de1f85559d8b5ae6ea6::coin::COIN",
-          original: "Fantom",
-        },
-      ],
-      [
         "CELO",
         {
           symbol: "CELO",
@@ -1538,15 +1466,6 @@ const testnetTokenEntries = [
           decimals: 6,
           address: "0x02ef7697bdb33361ca39d228671203afc0dea3202e792d79d2072b761d87c834::coin::T",
           original: "Avalanche",
-        },
-      ],
-      [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 8,
-          address: "0x533c6ade00d15d1e014c41e29e34853e87df92c4e01a6a3f41318dbd098048d6::coin::T",
-          original: "Fantom",
         },
       ],
       [
@@ -1713,15 +1632,6 @@ const testnetTokenEntries = [
           decimals: 6,
           address: "0x4C5208246676486064c501E1DAF2dD21596Bc5f5",
           original: "Avalanche",
-        },
-      ],
-      [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 18,
-          address: "0xB4808E58713112AbAbB8167C7187F8988df38bbD",
-          original: "Fantom",
         },
       ],
       [
@@ -1907,15 +1817,6 @@ const testnetTokenEntries = [
         },
       ],
       [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 8,
-          address: "sei1cr3j7rxq0dhq04ksftmj8n2w096w9g7ck8fngkvk2lrmy3qwz56q9thu9u",
-          original: "Fantom",
-        },
-      ],
-      [
         "CELO",
         {
           symbol: "CELO",
@@ -2073,15 +1974,6 @@ const testnetTokenEntries = [
         },
       ],
       [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 18,
-          address: "0xa507f7566B8aDE000E886166B95964677ef3b3Ef",
-          original: "Fantom",
-        },
-      ],
-      [
         "CELO",
         {
           symbol: "CELO",
@@ -2225,15 +2117,6 @@ const testnetTokenEntries = [
           decimals: 18,
           address: "0x427B5a0b0384D7FD3AF81805A166a2d9C1116D7d",
           original: "Polygon",
-        },
-      ],
-      [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 18,
-          address: "0x81BA80f5820273AA965086e710042d737993f12c",
-          original: "Fantom",
         },
       ],
       [
@@ -2398,15 +2281,6 @@ const testnetTokenEntries = [
           decimals: 6,
           address: "wormhole1qum2tr7hh4y7ruzew68c64myjec0dq2s2njf6waja5t0w879lutqv2exs9",
           original: "Avalanche",
-        },
-      ],
-      [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 8,
-          address: "wormhole1808lz8dp2c39vhm9gnemt7zzj95nvrmjepxp7v3w4skzrlyzcmnsxkduxf",
-          original: "Fantom",
         },
       ],
       [
@@ -2613,15 +2487,6 @@ const testnetTokenEntries = [
         },
       ],
       [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 8,
-          address: "ibc/145C6B688F70B0C2F6D87546A5974A75CE75B3A2940275B750E65797B2996157",
-          original: "Fantom",
-        },
-      ],
-      [
         "CELO",
         {
           symbol: "CELO",
@@ -2821,15 +2686,6 @@ const testnetTokenEntries = [
           decimals: 6,
           address: "ibc/F09E98FA8682FF39130F171E9D89A948B0C3A452F2A31F22B6CC54A3AAE1CD4A",
           original: "Avalanche",
-        },
-      ],
-      [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 8,
-          address: "ibc/919D8F138B7E71BB067C7301AB5C2D48415E8C3A2D9187861245CEC668F88E3C",
-          original: "Fantom",
         },
       ],
       [

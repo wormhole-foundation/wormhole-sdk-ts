@@ -110,15 +110,6 @@ const mainnetTokenEntries = [
         },
       ],
       [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 18,
-          address: "0x4cD2690d86284e044cb63E60F1EB218a825a7e92",
-          original: "Fantom",
-        },
-      ],
-      [
         "CELO",
         {
           symbol: "CELO",
@@ -396,15 +387,6 @@ const mainnetTokenEntries = [
           decimals: 6,
           address: "0xc88Dc63bf0c8c8198C97Db0945E3eF25Ca89A8e4",
           original: "Avalanche",
-        },
-      ],
-      [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 18,
-          address: "0xbF8413EE8612E0E4f66Aa63B5ebE27f3C5883d47",
-          original: "Fantom",
         },
       ],
       [
@@ -693,15 +675,6 @@ const mainnetTokenEntries = [
           decimals: 6,
           address: "0xAEA5CC14DefbC1b845FDE729E563B717Ee6825ae",
           original: "Avalanche",
-        },
-      ],
-      [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 18,
-          address: "0x3726831304D77f585f1Aca9d9841cc3Ef80dAa62",
-          original: "Fantom",
         },
       ],
       [
@@ -1010,15 +983,6 @@ const mainnetTokenEntries = [
         },
       ],
       [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 18,
-          address: "0xd19abc09B7b36F7558929b97a866f499a26c2f83",
-          original: "Fantom",
-        },
-      ],
-      [
         "CELO",
         {
           symbol: "CELO",
@@ -1272,15 +1236,6 @@ const mainnetTokenEntries = [
           decimals: 6,
           address: "0x62FFf2D2D1692D52eAf043AeeC727F7918d269D3",
           original: "Avalanche",
-        },
-      ],
-      [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 18,
-          address: "0xd1A342eE2210238233a347FEd61EE7Faf9f251ce",
-          original: "Fantom",
         },
       ],
       [
@@ -1548,15 +1503,6 @@ const mainnetTokenEntries = [
         },
       ],
       [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 18,
-          address: "0x609AedD990bf45926bca9E4eE988b4Fb98587D3A",
-          original: "Fantom",
-        },
-      ],
-      [
         "CELO",
         {
           symbol: "CELO",
@@ -1783,15 +1729,6 @@ const mainnetTokenEntries = [
           decimals: 6,
           address: "FHfba3ov5P3RjaiLVgh8FTv4oirxQDoVXuoUUDvHuXax",
           original: "Avalanche",
-        },
-      ],
-      [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 8,
-          address: "DRQBDBEWmwWGK13fRTLhSPzjbvMSUavhV6nW4RUH8W6T",
-          original: "Fantom",
         },
       ],
       [
@@ -2027,15 +1964,6 @@ const mainnetTokenEntries = [
           decimals: 6,
           address: "0xe596782fbaebef51ae99ffac8731aed98a80642b9dc193ed659c97fbc2cc0f84::coin::COIN",
           original: "Avalanche",
-        },
-      ],
-      [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 8,
-          address: "0x6081300950a4f1e2081580e919c210436a1bed49080502834950d31ee55a2396::coin::COIN",
-          original: "Fantom",
         },
       ],
       [
@@ -2286,15 +2214,6 @@ const mainnetTokenEntries = [
         },
       ],
       [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 8,
-          address: "0xd1aa2ff36a0e93e1b4e4fecdecf8bb95bc5de399061c5e84b515281f48718842::coin::T",
-          original: "Fantom",
-        },
-      ],
-      [
         "CELO",
         {
           symbol: "CELO",
@@ -2530,15 +2449,6 @@ const mainnetTokenEntries = [
           decimals: 6,
           address: "0xD83385fE100E20c269a5975D4Bf92525BcE09F87",
           original: "Avalanche",
-        },
-      ],
-      [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 18,
-          address: "0x936Fa2DE8380Dc5BF34C80F1BaD53a9f3630263B",
-          original: "Fantom",
         },
       ],
       [
@@ -2827,15 +2737,6 @@ const mainnetTokenEntries = [
           decimals: 6,
           address: "0x93e0FcbEd43CD6fC30DF00CcBD4669718dc74e77",
           original: "Avalanche",
-        },
-      ],
-      [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 18,
-          address: "0x7f7dcDb91930033a4Eb269196EBb6fd5f0644E4B",
-          original: "Fantom",
         },
       ],
       [
@@ -3136,15 +3037,6 @@ const mainnetTokenEntries = [
         },
       ],
       [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 18,
-          address: "0x0b0ecbe5C3995541876d27633B63296570FB34Af",
-          original: "Fantom",
-        },
-      ],
-      [
         "CELO",
         {
           symbol: "CELO",
@@ -3442,15 +3334,6 @@ const mainnetTokenEntries = [
         },
       ],
       [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 8,
-          address: "wormhole1e0cwfmla7exa578xddl87paxexw9ymwrzysfjms8c2mstxjkldlqn45jqa",
-          original: "Fantom",
-        },
-      ],
-      [
         "CELO",
         {
           symbol: "CELO",
@@ -3681,15 +3564,6 @@ const mainnetTokenEntries = [
         },
       ],
       [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 8,
-          address: "ibc/397DFE63D87F6940ECA583DFF5461E48BF0BA6554CBBE70278E307DDFDC8E9D5",
-          original: "Fantom",
-        },
-      ],
-      [
         "CELO",
         {
           symbol: "CELO",
@@ -3844,15 +3718,6 @@ const mainnetTokenEntries = [
           decimals: 6,
           address: "ibc/39913E647C3549D663B1ED7F0745E1779515170C5215B98B2C8410B4C073AD30",
           original: "Avalanche",
-        },
-      ],
-      [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 8,
-          address: "ibc/9EFE5F5D75A87197DD257BA7A96A3BCCEC9DB59D257C742FB5AA9D3DF612D476",
-          original: "Fantom",
         },
       ],
       [
