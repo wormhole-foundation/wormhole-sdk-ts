@@ -62,7 +62,6 @@ const chainIdAndChainEntries = [
   [10003, "ArbitrumSepolia"],
   [10004, "BaseSepolia"    ],
   [10005, "OptimismSepolia"],
-  [10006, "Holesky"        ],
   [10007, "PolygonSepolia" ],
   // guardians are not connected to HyperCore; this is an arbitrary number chosen by Mayan
   [65000, "HyperCore"      ],
