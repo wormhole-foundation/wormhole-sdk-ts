@@ -10,7 +10,6 @@ export const nftBridgeContracts = [[
     ["Bsc",       "0x5a58505a96D1dbf8dF91cB21B54419FC36e93fdE"],
     ["Polygon",   "0x90BBd86a6Fe93D3bc3ed6335935447E75fAb7fCf"],
     ["Avalanche", "0xf7B6737Ca9c4e08aE573F75A97B73D7a813f5De5"],
-    ["Fantom",    "0xA9c7119aBDa80d4a4E0C06C8F4d8cF5893234535"],
     ["Klaytn",    "0x3c3c561757BAa0b78c5C025CdEAa4ee24C1dFfEf"],
     ["Celo",      "0xA6A377d75ca5c9052c9a77ED1e865Cc25Bd97bf3"],
     ["Aptos",     "0x1bdffae984043833ed7fe223f7af7a3f8902d04129b14f801823e64827da7130"],
@@ -25,7 +24,6 @@ export const nftBridgeContracts = [[
     ["Bsc",             "0xcD16E5613EF35599dc82B24Cb45B5A93D779f1EE"],
     ["Polygon",         "0x51a02d0dcb5e52F5b92bdAA38FA013C91c7309A9"],
     ["Avalanche",       "0xD601BAf2EEE3C028344471684F6b27E789D9075D"],
-    ["Fantom",          "0x63eD9318628D26BdCB15df58B53BB27231D1B227"],
     ["Klaytn",          "0x94c994fC51c13101062958b567e743f1a04432dE"],
     ["Celo",            "0xaCD8190F647a31E56A656748bC30F69259f245Db"],
     ["Moonbeam",        "0x98A0F4B96972b32Fcb3BD03cAeB66A44a6aB9Edb"],
@@ -37,9 +35,7 @@ export const nftBridgeContracts = [[
     ["ArbitrumSepolia", "0x23908A62110e21C04F3A4e011d24F901F911744A"],
     ["BaseSepolia",     "0x268557122Ffd64c85750d630b716471118F323c8"],
     ["OptimismSepolia", "0x27812285fbe85BA1DF242929B906B31EE3dd1b9f"],
-    ["Holesky",         "0xc8941d483c45eF8FB72E4d1F9dDE089C95fF8171"],
     ["PolygonSepolia",  "0x23908A62110e21C04F3A4e011d24F901F911744A"],
-    ["Mantle",          "0xD7D732C8Bf5eBF620EA55b5828eae20418eEF083"],
     ["Scroll",          "0x47B9a1406BEe29a3001BFEB7e45aE45fFFB40c18"],
   ]], [
   "Devnet", [

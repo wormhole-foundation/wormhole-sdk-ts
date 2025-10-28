@@ -29,7 +29,6 @@ export const relayerContracts = [[
     ["Bsc",             "0x80aC94316391752A193C1c47E27D382b507c93F3"],
     ["Polygon",         "0x0591C25ebd0580E0d4F27A82Fc2e24E7489CB5e0"],
     ["Avalanche",       "0xA3cF45939bD6260bcFe3D66bc73d60f19e49a8BB"],
-    ["Fantom",          "0x7B1bD7a6b4E61c2a123AC6BC2cbfC614437D0470"],
     ["Celo",            "0x306B68267Deb7c5DfCDa3619E22E9Ca39C374f84"],
     ["Seievm",          "0x362fca37E45fe1096b42021b543f462D49a5C8df"],
     ["Moonbeam",        "0x0591C25ebd0580E0d4F27A82Fc2e24E7489CB5e0"],
