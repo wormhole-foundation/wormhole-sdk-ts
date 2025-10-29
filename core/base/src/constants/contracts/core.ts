@@ -44,7 +44,6 @@ export const coreBridgeContracts = [[
     ["Solana",          "3u8hJUVTA4jH1wYAyUur7FFZVQ8H635K3tSHHF4ssjQ5"],
     ["Ethereum",        "0x706abc4E45D419950511e474C7B9Ed348A4a716c"],
     ["Bsc",             "0x68605AD7b15c732a30b1BbC62BE8F2A509D74b4D"],
-    ["Polygon",         "0x0CBE91CF822c73C2315FB05100C2F714765d5c20"],
     ["Avalanche",       "0x7bbcE28e64B3F8b84d876Ab298393c38ad7aac4C"],
     ["Algorand",        "86525623"],
     ["Klaytn",          "0x1830CC6eE66c84D2F177B94D544967c774E624cA"],

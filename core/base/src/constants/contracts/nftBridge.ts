@@ -22,7 +22,6 @@ export const nftBridgeContracts = [[
     ["Solana",          "2rHhojZ7hpu1zA91nvZmT8TqWWvMcKmmNBCr2mKTtMq4"],
     ["Ethereum",        "0xD8E4C2DbDd2e2bd8F1336EA691dBFF6952B1a6eB"],
     ["Bsc",             "0xcD16E5613EF35599dc82B24Cb45B5A93D779f1EE"],
-    ["Polygon",         "0x51a02d0dcb5e52F5b92bdAA38FA013C91c7309A9"],
     ["Avalanche",       "0xD601BAf2EEE3C028344471684F6b27E789D9075D"],
     ["Klaytn",          "0x94c994fC51c13101062958b567e743f1a04432dE"],
     ["Celo",            "0xaCD8190F647a31E56A656748bC30F69259f245Db"],

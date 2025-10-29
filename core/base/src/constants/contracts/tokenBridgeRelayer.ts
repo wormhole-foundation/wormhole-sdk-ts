@@ -20,7 +20,6 @@ export const tokenBridgeRelayerContracts = [[
   "Testnet", [
     ["Ethereum",        "0x9563a59c15842a6f322b10f69d1dd88b41f2e97b"],
     ["Bsc",             "0x9563a59c15842a6f322b10f69d1dd88b41f2e97b"],
-    ["Polygon",         "0x9563a59c15842a6f322b10f69d1dd88b41f2e97b"],
     ["Avalanche",       "0x9563a59c15842a6f322b10f69d1dd88b41f2e97b"],
     ["Celo",            "0x9563a59c15842a6f322b10f69d1dd88b41f2e97b"],
     ["Sui",             "0xb30040e5120f8cb853b691cb6d45981ae884b1d68521a9dc7c3ae881c0031923"],

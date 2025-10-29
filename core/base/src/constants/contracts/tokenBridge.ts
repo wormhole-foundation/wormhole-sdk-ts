@@ -37,7 +37,6 @@ export const tokenBridgeContracts = [[
     ["Solana",          "DZnkkTmCiFWfYTfT41X3Rd1kDgozqzxWaHqsw6W4x2oe"],
     ["Ethereum",        "0xF890982f9310df57d00f659cf4fd87e65adEd8d7"],
     ["Bsc",             "0x9dcF9D205C9De35334D646BeE44b2D2859712A09"],
-    ["Polygon",         "0x377D55a7928c046E18eEbb61977e714d2a76472a"],
     ["Avalanche",       "0x61E44E506Ca5659E6c0bba9b678586fA2d729756"],
     ["Algorand",        "86525641"],
     ["Klaytn",          "0xC7A13BE098720840dEa132D860fDfa030884b09A"],
