@@ -51,7 +51,8 @@ const rpcConfig = [[
     ["Plasma",    "https://rpc.plasma.to/"],
     ["CreditCoin","https://mainnet3.creditcoin.network/"],
     ["Stacks",    "https://api.mainnet.hiro.so"],
-    ["Monad",     ""] // TODO: placeholder until mainnet RPC is available
+    ["Monad",     ""], // TODO: placeholder until mainnet RPC is available
+    ["Fogo",      "https://mainnet.fogo.io"],
   ]], [
   "Testnet", [
     ["Bsc",             "https://data-seed-prebsc-1-s3.binance.org:8545"],
