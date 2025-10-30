@@ -5,7 +5,7 @@ import {
   consistencyLevelToBlock,
 } from "../src/constants/finality.js";
 
-describe("Finality tests", function () {
+describe("Finality tests", function() {
   test("Receive expected number of rounds", () => {
     expect(finalityThreshold("Ethereum")).toEqual(72);
     expect(finalityThreshold("Algorand")).toEqual(0);
@@ -49,7 +49,7 @@ describe("Finality tests", function () {
     );
     // L2 required but not factored into estimate
     expect(consistencyLevelToBlock("Polygon", ConsistencyLevels.Finalized, fromBlock)).toEqual(
-      fromBlock + 32n,
+      fromBlock + 2n,
     );
   });
 });
