@@ -33,11 +33,10 @@ const finalityThresholds = [
   ["Base",      512],
   ["Arbitrum", 4096], // TODO: validate, this is inferred from vaa metrics timing
   ["Xlayer",    300],
-  ["Scroll",    300],
+  ["Scroll",    999], // ~50min finality
   ["Mantle",    512],
   ["Worldchain",512],
-  // Check-pointed after 32 blocks
-  ["Polygon",  32],
+  ["Polygon",  2],  // ~5s finality
   // Single block finality
   ["Fantom",    1],
   ["Celo",      1],
@@ -81,7 +80,7 @@ const finalityThresholds = [
   ["ArbitrumSepolia", 4096],
   ["BaseSepolia", 512],
   ["OptimismSepolia", 512],
-  ["PolygonSepolia", 32],
+  ["PolygonSepolia", 2],
 ] as const satisfies MapLevel<Chain, number>;
 
 /**
