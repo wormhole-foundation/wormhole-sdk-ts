@@ -75,6 +75,7 @@ const finalityThresholds = [
   ["Provenance",0],
   ["Noble",     0],
   ["Stacks",    240], // tied to BTC finality
+  ["Moca",      0],
   // Testnets
   ["Sepolia", 72],
   ["ArbitrumSepolia", 4096],
@@ -147,7 +148,8 @@ const blockTimeMilliseconds = [
   ["XRPLEVM",           5_000],
   ["Seievm",              400],
   ["CreditCoin",       15_000],
-  ["Stacks",           15_000]
+  ["Stacks",           15_000],
+  ["Moca",              1_000],
 ] as const satisfies MapLevel<Chain, number>;
 
 /** The amount of time between block production, in milliseconds  */
