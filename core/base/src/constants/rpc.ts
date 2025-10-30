@@ -53,6 +53,7 @@ const rpcConfig = [[
     ["Stacks",    "https://api.mainnet.hiro.so"],
     ["Monad",     ""], // TODO: placeholder until mainnet RPC is available
     ["Fogo",      "https://mainnet.fogo.io"],
+    ["Moca",      "https://rpc.mocachain.org/"],
   ]], [
   "Testnet", [
     ["Bsc",             "https://data-seed-prebsc-1-s3.binance.org:8545"],
@@ -96,7 +97,8 @@ const rpcConfig = [[
     ["XRPLEVM",         "https://rpc.testnet.xrplevm.org/"],
     ["Plasma",          "https://testnet-rpc.plasma.to"],
     ["CreditCoin",      "https://rpc.cc3-testnet.creditcoin.network"],
-    ["Stacks",          "https://api.testnet.hiro.so"]
+    ["Stacks",          "https://api.testnet.hiro.so"],
+    ["Moca",            "https://testnet-rpc.mocachain.org/"],
   ]], [
   "Devnet", [
     ["Ethereum",  "http://eth-devnet:8545"],

@@ -189,6 +189,15 @@ const explorerConfig = [[
           account: "address/"
         }
       }
+    ], [
+      "Moca", {
+        name: "Moca Explorer",
+        baseUrl: "https://scan.mocachain.org/",
+        endpoints: {
+          tx: "tx/",
+          account: "address/"
+        }
+      }
     ]
   ]], [
   "Testnet", [[
@@ -342,7 +351,16 @@ const explorerConfig = [[
         tx: "tx/",
         account: "address/"
       },
-    }]
+    }], [
+      "Moca", {
+        name: "Moca Explorer",
+        baseUrl: "https://testnet-scan.mocachain.org/",
+        endpoints: {
+          tx: "tx/",
+          account: "address/"
+        }
+      }
+    ]
   ]],
 ] as const satisfies MapLevels<["Mainnet" | "Testnet", Chain, ExplorerSettings]>;
 
