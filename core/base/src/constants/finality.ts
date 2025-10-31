@@ -34,8 +34,7 @@ const finalityThresholds = [
   ["Arbitrum", 4096], // TODO: validate, this is inferred from vaa metrics timing
   ["Scroll",    300],
   ["Worldchain",512],
-  // Check-pointed after 32 blocks
-  ["Polygon",  32],
+  ["Polygon",  2],  // ~5s finality
   // Single block finality
   ["Celo",      1],
   ["Moonbeam",  1],
@@ -73,12 +72,13 @@ const finalityThresholds = [
   ["Provenance",0],
   ["Noble",     0],
   ["Stacks",    240], // tied to BTC finality
+  ["Moca",      0],
   // Testnets
   ["Sepolia", 72],
   ["ArbitrumSepolia", 4096],
   ["BaseSepolia", 512],
   ["OptimismSepolia", 512],
-  ["PolygonSepolia", 32],
+  ["PolygonSepolia", 2],
 ] as const satisfies MapLevel<Chain, number>;
 
 /**
@@ -141,7 +141,8 @@ const blockTimeMilliseconds = [
   ["XRPLEVM",           5_000],
   ["Seievm",              400],
   ["CreditCoin",       15_000],
-  ["Stacks",           15_000]
+  ["Stacks",           15_000],
+  ["Moca",              1_000],
 ] as const satisfies MapLevel<Chain, number>;
 
 /** The amount of time between block production, in milliseconds  */

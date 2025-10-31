@@ -23,6 +23,7 @@ export function createTransferNativeWithPayloadInstruction(
   message: PublicKeyInitData,
   from: PublicKeyInitData,
   mint: PublicKeyInitData,
+  tokenProgram: PublicKeyInitData,
   nonce: number,
   amount: bigint,
   targetAddress: Buffer | Uint8Array,
@@ -50,6 +51,8 @@ export function createTransferNativeWithPayloadInstruction(
       message,
       from,
       mint,
+      undefined,
+      tokenProgram,
     ) as any,
     signers: undefined,
     remainingAccounts: undefined,
@@ -87,6 +90,7 @@ export function getTransferNativeWithPayloadAccounts(
   from: PublicKeyInitData,
   mint: PublicKeyInitData,
   cpiProgramId?: PublicKeyInitData,
+  tokenProgramId?: PublicKeyInitData,
 ): TransferNativeWithPayloadAccounts {
   const {
     wormholeBridge,
@@ -122,7 +126,9 @@ export function getTransferNativeWithPayloadAccounts(
     ),
     rent,
     systemProgram,
-    tokenProgram: TOKEN_PROGRAM_ID,
+    tokenProgram: tokenProgramId
+      ? new PublicKey(tokenProgramId)
+      : TOKEN_PROGRAM_ID,
     wormholeProgram: new PublicKey(wormholeProgramId),
   };
 }

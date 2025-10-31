@@ -19,6 +19,7 @@ export const WETH_CONTRACTS: Record<Network, Partial<Record<EvmChains, string>>>
     "Worldchain": "0x4200000000000000000000000000000000000006",
     "Ink": "0x4200000000000000000000000000000000000006",
     "Sonic": "0x039e2fB66102314Ce7b64Ce5Ce3E5183bc94aD38",
+    "Monad": "0x3bd359C1119dA7Da1D913D1C4D2B7c461115433A",
   },
   "Testnet": {
     "Avalanche": "0xd00ae08403B9bbb9124bB305C09058E32C39A48c",

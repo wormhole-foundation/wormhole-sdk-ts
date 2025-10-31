@@ -26,6 +26,7 @@ export function createTransferWrappedWithPayloadInstruction(
   fromOwner: PublicKeyInitData,
   tokenChain: number,
   tokenAddress: Buffer | Uint8Array,
+  tokenProgram: PublicKeyInitData,
   nonce: number,
   amount: bigint,
   targetAddress: Buffer | Uint8Array,
@@ -55,6 +56,8 @@ export function createTransferWrappedWithPayloadInstruction(
       fromOwner,
       tokenChain,
       tokenAddress,
+      undefined,
+      tokenProgram,
     ) as any,
     signers: undefined,
     remainingAccounts: undefined,
@@ -94,6 +97,7 @@ export function getTransferWrappedWithPayloadAccounts(
   tokenChain: number,
   tokenAddress: Buffer | Uint8Array,
   cpiProgramId?: PublicKeyInitData,
+  tokenProgram?: PublicKeyInitData,
 ): TransferWrappedWithPayloadAccounts {
   const mint = deriveWrappedMintKey(
     tokenBridgeProgramId,
@@ -135,6 +139,6 @@ export function getTransferWrappedWithPayloadAccounts(
     rent,
     systemProgram,
     wormholeProgram: new PublicKey(wormholeProgramId),
-    tokenProgram: TOKEN_PROGRAM_ID,
+    tokenProgram: tokenProgram ? new PublicKey(tokenProgram) : TOKEN_PROGRAM_ID,
   };
 }
