@@ -28,7 +28,6 @@ const chainNetworkNativeChainIdEntries = [
       ["Bsc",       56n],
       ["Celo",      42220n],
       ["Ethereum",  1n],
-      ["Fantom",    250n],
       ["Klaytn",    8217n],
       ["Moonbeam",  1284n],
       ["Optimism",  10n],
@@ -39,8 +38,6 @@ const chainNetworkNativeChainIdEntries = [
       ["Dymension", "dymension_1100-1"],
       ["Provenance","pio-mainnet-1"],
       ["Noble",     "noble-1"],
-      ["Xlayer",    196n],
-      ["Mantle",    5000n],
       ["Scroll",    534352n],
       ["Linea",     59144n],
       ["Berachain", 80094n],
@@ -82,7 +79,6 @@ const chainNetworkNativeChainIdEntries = [
       ["Bsc",             97n],
       ["Celo",            44787n], //alfajores
       ["Ethereum",        5n], //goerli
-      ["Fantom",          4002n],
       ["Klaytn",          1001n], //baobab
       ["Moonbeam",        1287n], //moonbase alpha
       ["Optimism",        420n],
@@ -92,12 +88,10 @@ const chainNetworkNativeChainIdEntries = [
       ["BaseSepolia",     84532n],
       ["OptimismSepolia", 11155420n],
       ["PolygonSepolia",  80002n],
-      ["Holesky",         17000n],
       ["Neutron",         "pion-1"],
       ["Celestia",        "mocha-4"],
       ["Seda",            "seda-1-testnet"],
       ["Noble",           "grand-1"],
-      ["Mantle",          5003n], // Sepolia testnet
       ["Scroll",          534351n],
       ["Berachain",       80069n], // Testnet v3
       ["Seievm",          1328n],
@@ -106,7 +100,6 @@ const chainNetworkNativeChainIdEntries = [
       ["Ink",             763373n],
       ["HyperEVM",        998n],
       ["HyperCore",       65000n],
-      ["Xlayer",          195n],
       ["Linea",           59141n], // Sepolia
       ["Monad",           10143n],
       ["Mezo",            31611n],

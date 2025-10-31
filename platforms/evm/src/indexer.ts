@@ -29,9 +29,7 @@ const GOLD_RUSH_CHAINS: Record<Network, Partial<Record<Chain, string>>> = {
     Unichain: 'unichain-mainnet',
     HyperEVM: 'hyperevm-mainnet',
     Moonbeam: 'moonbeam-mainnet',
-    Mantle: 'mantle-mainnet',
     Celo: 'celo-mainnet',
-    Fantom: 'fantom-mainnet',
   },
   Testnet: {
     Ethereum: 'eth-sepolia',
@@ -47,8 +45,6 @@ const GOLD_RUSH_CHAINS: Record<Network, Partial<Record<Chain, string>>> = {
     Linea: 'linea-sepolia-testnet',
     Scroll: 'scroll-sepolia-testnet',
     Monad: 'monad-testnet',
-    Mantle: 'mantle-sepolia-testnet',
-    Fantom: 'fantom-testnet'
   },
   Devnet: {},
 };

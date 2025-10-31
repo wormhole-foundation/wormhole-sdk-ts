@@ -15,13 +15,13 @@ export function chainToIcon(chain: Chain): string {`;
 
 const makeChainCondition = (chain: Chain): string => {
   if (chain === "Ethereum") {
-    return `(chain === "Ethereum" || chain === "Sepolia" || chain === "Holesky")`;
+    return `(chain === "Ethereum" || chain === "Sepolia")`;
   } else if (chains.includes(`${chain}Sepolia` as Chain)) {
     // as to avoid the type error without re-typing the array
     return `(chain === "${chain}" || chain === "${chain}Sepolia")`;
   } else if (chain === "Sei") {
     return `(chain === "${chain}" || chain === "${chain}evm")`;
-  } else if (chain.includes("Sepolia") || chain.includes("Holesky") || chain === "Seievm") {
+  } else if (chain.includes("Sepolia") || chain === "Seievm") {
     return "";
   } else {
     return `(chain === "${chain}")`;

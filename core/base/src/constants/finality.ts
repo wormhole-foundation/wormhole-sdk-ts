@@ -32,13 +32,10 @@ const finalityThresholds = [
   ["Optimism",  512],
   ["Base",      512],
   ["Arbitrum", 4096], // TODO: validate, this is inferred from vaa metrics timing
-  ["Xlayer",    300],
-  ["Scroll",    999], // ~50min finality
-  ["Mantle",    512],
+  ["Scroll",    300],
   ["Worldchain",512],
   ["Polygon",  2],  // ~5s finality
   // Single block finality
-  ["Fantom",    1],
   ["Celo",      1],
   ["Moonbeam",  1],
   // Instant finality
@@ -105,14 +102,11 @@ const blockTimeMilliseconds = [
   ["Cosmoshub",         5_000],
   ["Ethereum",         15_000],
   ["Evmos",             2_000],
-  ["Fantom",            2_500],
-  ["Holesky",          15_000],
   ["HyperEVM",          1_000],
   ["HyperCore",         1_000],
   ["Injective",         2_500],
   ["Klaytn",            1_000],
   ["Kujira",            3_000],
-  ["Mantle",            2_000],
   ["Moonbeam",         12_000],
   ["Monad",             1_000],
   ["Near",              1_500],
@@ -127,7 +121,6 @@ const blockTimeMilliseconds = [
   ["Solana",              400],
   ["Sui",               3_000],
   ["Unichain",          1_000],
-  ["Xlayer",            3_000],
   ["Worldchain",        2_000],
   ["Ink",               1_000],
   ["Wormchain",         5_000],
