@@ -5,7 +5,7 @@ import { Address as TransactionsAddress } from "@stacks/transactions";
 export const StacksZeroAddress = 'SP000000000000000000002Q6VF78';
 
 export class StacksAddress implements Address {
-  static readonly byteSize = 20; // Assuming 20 bytes like EVM
+  static readonly byteSize = 32;
   static readonly platform = _platform;
   readonly type: string = 'Native';
 
@@ -19,6 +19,10 @@ export class StacksAddress implements Address {
     }
 
     if(typeof address === 'string') {
+      if(address.startsWith("0x")) {
+        this.address = address;
+        return;
+      }
       if(!StacksAddress.isValidAddress(address)) {
         throw new Error(`Invalid Stacks address ${address}`);
       }
@@ -48,6 +52,9 @@ export class StacksAddress implements Address {
   }
   
   static isValidAddress(address: string): boolean {
+    if(address.startsWith("0x")) {
+      return true;
+    }
     try {
       TransactionsAddress.parse(address);
       return true;
