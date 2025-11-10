@@ -45,7 +45,8 @@ describe('WETH contracts', function () {
         );
       } else {
         // Testnet RPCs can be flaky, but Mainnet should be more reliable
-        if (network === 'Mainnet') {
+        // TODO: remove Monad exception when its mainnet RPC is enabled
+        if (network === 'Mainnet' && evmChain !== 'Monad') {
           throw e;
         }
         console.warn(
