@@ -36,9 +36,3 @@ export const addValue = (txReq: TransactionRequest, value: bigint) => ({
   ...txReq,
   value,
 });
-
-export type IndexerAPIKeys = {
-  // User can provide API keys for either (or both)
-  goldRush?: string;
-  alchemy?: string;
-}
