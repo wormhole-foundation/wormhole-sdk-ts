@@ -7,6 +7,7 @@ import type {
   StaticPlatformMethods,
   TokenId,
   TxHash,
+  IndexerConfig,
 } from '@wormhole-foundation/sdk-connect';
 import {
   PlatformContext,
@@ -17,6 +18,7 @@ import {
   isNative,
   nativeChainIds,
   networkPlatformConfigs,
+  getWalletBalances,
 } from '@wormhole-foundation/sdk-connect';
 
 import type { Provider } from 'ethers';
@@ -25,14 +27,8 @@ import * as ethers_contracts from './ethers-contracts/index.js';
 
 import { EvmAddress, EvmZeroAddress } from './address.js';
 import { EvmChain } from './chain.js';
-import type {
-  AnyEvmAddress,
-  EvmChains,
-  EvmPlatformType,
-  IndexerAPIKeys,
-} from './types.js';
+import type { AnyEvmAddress, EvmChains, EvmPlatformType } from './types.js';
 import { _platform } from './types.js';
-import { AlchemyClient, GoldRushClient } from './indexer.js';
 
 /**
  * @category EVM
@@ -138,84 +134,18 @@ export class EvmPlatform<N extends Network>
     chain: Chain,
     rpc: Provider,
     walletAddr: string,
-    indexers?: IndexerAPIKeys,
+    indexers?: IndexerConfig,
   ): Promise<Balances> {
-    if (!indexers) {
-      throw new Error(
-        `Can't get all EVM balances without an indexer. Use getBalance to make individual calls instead.`,
-      );
-    }
+    const balances = await getWalletBalances(
+      walletAddr,
+      network,
+      chain,
+      indexers,
+    );
 
-    const tryProvider = async (
-      provider: GoldRushClient | AlchemyClient | null,
-      name: string,
-      timeoutMs: number,
-    ): Promise<Balances | null> => {
-      if (!provider) {
-        return null;
-      }
+    balances['native'] ??= await rpc.getBalance(walletAddr);
 
-      try {
-        if (!provider.supportsChain(network, chain)) {
-          console.info(
-            `Network=${network} Chain=${chain} not supported by ${name} indexer API`,
-          );
-          return null;
-        }
-
-        const controller = new AbortController();
-        const timeout = setTimeout(() => {
-          controller.abort(
-            new Error(`${name} request timed out after ${timeoutMs}ms`),
-          );
-        }, timeoutMs);
-        let balances: Balances;
-        try {
-          balances = await provider.getBalances(
-            network,
-            chain,
-            walletAddr,
-            controller.signal,
-          );
-        } finally {
-          clearTimeout(timeout);
-        }
-
-        balances['native'] ??= await rpc.getBalance(walletAddr);
-        return balances;
-      } catch (e) {
-        console.info(`Error querying ${name} indexer API: ${e}`);
-        return null;
-      }
-    };
-
-    const providers: Array<{
-      name: string;
-      client: GoldRushClient | AlchemyClient | null;
-      timeout: number;
-    }> = [
-      {
-        name: 'Gold Rush',
-        client: indexers.goldRush
-          ? new GoldRushClient(indexers.goldRush)
-          : null,
-        timeout: 5000,
-      },
-      {
-        name: 'Alchemy',
-        client: indexers.alchemy ? new AlchemyClient(indexers.alchemy) : null,
-        timeout: 5000,
-      },
-    ];
-
-    for (const { name, client, timeout } of providers) {
-      const result = await tryProvider(client, name, timeout);
-      if (result) {
-        return result;
-      }
-    }
-
-    throw new Error(`Failed to get a successful response from an EVM indexer`);
+    return balances;
   }
 
   static async sendWait(
