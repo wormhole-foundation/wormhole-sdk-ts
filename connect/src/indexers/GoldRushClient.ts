@@ -87,8 +87,14 @@ class GoldRushClient {
     for (let item of data.items) {
       const ca = item.contract_address.toLowerCase();
 
-      // GoldRush uses this special address to represent native tokens
-      const addr = ca === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" ? "native" : ca;
+      // GoldRush uses special addresses to represent native tokens:
+      // EVM chains: 0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+      // Solana: 11111111111111111111111111111111
+      const isNativeToken =
+        ca === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" ||
+        ca === "11111111111111111111111111111111";
+
+      const addr = isNativeToken ? "native" : ca;
 
       const bal = parseBalance(item.balance);
 
