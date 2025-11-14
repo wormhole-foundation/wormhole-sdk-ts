@@ -75,20 +75,30 @@ class GoldRushClient {
       throw new Error("Chain not supported by GoldRush indexer");
     }
 
-    const { data } = await (
-      await fetch(
-        `https://api.covalenthq.com/v1/${endpoint}/address/${walletAddr}/balances_v2/?key=${this.key}`,
-        { signal },
-      )
-    ).json();
+    const response = await fetch(
+      `https://api.covalenthq.com/v1/${endpoint}/address/${walletAddr}/balances_v2/?key=${this.key}`,
+      { signal },
+    );
+
+    if (!response.ok) {
+      throw new Error(`GoldRush API request failed with status ${response.status}`);
+    }
+
+    const { data } = await response.json();
 
     const bals: Balances = {};
 
     for (let item of data.items) {
       const ca = item.contract_address.toLowerCase();
 
-      // GoldRush uses this special address to represent native tokens
-      const addr = ca === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" ? "native" : ca;
+      // GoldRush uses special addresses to represent native tokens:
+      // EVM chains: 0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+      // Solana: 11111111111111111111111111111111
+      const isNativeToken =
+        ca === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" ||
+        ca === "11111111111111111111111111111111";
+
+      const addr = isNativeToken ? "native" : ca;
 
       const bal = parseBalance(item.balance);
 
