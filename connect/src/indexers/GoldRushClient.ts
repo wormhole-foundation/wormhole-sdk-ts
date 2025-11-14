@@ -75,12 +75,16 @@ class GoldRushClient {
       throw new Error("Chain not supported by GoldRush indexer");
     }
 
-    const { data } = await (
-      await fetch(
-        `https://api.covalenthq.com/v1/${endpoint}/address/${walletAddr}/balances_v2/?key=${this.key}`,
-        { signal },
-      )
-    ).json();
+    const response = await fetch(
+      `https://api.covalenthq.com/v1/${endpoint}/address/${walletAddr}/balances_v2/?key=${this.key}`,
+      { signal },
+    );
+
+    if (!response.ok) {
+      throw new Error(`GoldRush API request failed with status ${response.status}`);
+    }
+
+    const { data } = await response.json();
 
     const bals: Balances = {};
 

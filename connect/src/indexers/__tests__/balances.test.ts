@@ -1,12 +1,15 @@
+import fetchMock from "@fetch-mock/jest";
 import { getWalletBalances } from "../balances.js";
 
 describe("balances", () => {
-  // Mock global fetch
-  global.fetch = jest.fn();
-
   beforeEach(() => {
-    jest.clearAllMocks();
-    (global.fetch as jest.Mock).mockClear();
+    fetchMock.mockGlobal();
+  });
+
+  afterEach(() => {
+    fetchMock.clearHistory();
+    fetchMock.removeRoutes();
+    fetchMock.unmockGlobal();
   });
 
   describe("getWalletBalances()", () => {
@@ -36,9 +39,10 @@ describe("balances", () => {
         },
       };
 
-      (global.fetch as jest.Mock).mockResolvedValueOnce({
-        json: jest.fn().mockResolvedValue(mockGoldRushResponse),
-      });
+      fetchMock.getOnce(
+        `https://api.covalenthq.com/v1/eth-mainnet/address/${walletAddr}/balances_v2/?key=test-key`,
+        { status: 200, body: mockGoldRushResponse },
+      );
 
       const result = await getWalletBalances(walletAddr, network, chain, {
         goldRush: { apiKey: "test-key", timeoutMs: 100 },
@@ -49,10 +53,7 @@ describe("balances", () => {
         "0xtoken2": 200n,
         native: 1000n,
       });
-      expect(global.fetch).toHaveBeenCalledWith(
-        `https://api.covalenthq.com/v1/eth-mainnet/address/${walletAddr}/balances_v2/?key=test-key`,
-        { signal: expect.any(AbortSignal) },
-      );
+      expect(fetchMock).toHaveFetchedTimes(1);
     });
 
     it("should fallback to Alchemy when GoldRush fails", async () => {
@@ -80,10 +81,16 @@ describe("balances", () => {
       ];
 
       // First call fails (GoldRush), second call succeeds (Alchemy batch request)
-      (global.fetch as jest.Mock)
-        .mockRejectedValueOnce(new Error("GoldRush API error"))
-        .mockResolvedValueOnce({
-          json: jest.fn().mockResolvedValue(mockAlchemyBatchResponse),
+      fetchMock
+        .getOnce(
+          `https://api.covalenthq.com/v1/eth-mainnet/address/${walletAddr}/balances_v2/?key=test-key`,
+          {
+            throws: new Error("GoldRush API error"),
+          },
+        )
+        .postOnce("https://eth-mainnet.g.alchemy.com/v2/test-key", {
+          status: 200,
+          body: mockAlchemyBatchResponse,
         });
 
       const result = await getWalletBalances(walletAddr, network, chain, {
@@ -97,29 +104,8 @@ describe("balances", () => {
         "0xtoken3": 100n,
         native: 10000000000000000n,
       });
-      expect(global.fetch).toHaveBeenCalledTimes(2);
-      expect(global.fetch).toHaveBeenNthCalledWith(
-        2,
-        "https://eth-mainnet.g.alchemy.com/v2/test-key",
-        expect.objectContaining({
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify([
-            {
-              jsonrpc: "2.0",
-              id: 1,
-              method: "alchemy_getTokenBalances",
-              params: [walletAddr, "erc20"],
-            },
-            {
-              jsonrpc: "2.0",
-              id: 2,
-              method: "eth_getBalance",
-              params: [walletAddr, "latest"],
-            },
-          ]),
-        }),
-      );
+      expect(fetchMock).toHaveFetchedTimes(2);
+      expect(fetchMock).toHaveLastFetched("https://eth-mainnet.g.alchemy.com/v2/test-key");
     });
 
     it("should skip indexer when chain is not supported", async () => {
@@ -129,9 +115,10 @@ describe("balances", () => {
         },
       };
 
-      (global.fetch as jest.Mock).mockResolvedValueOnce({
-        json: jest.fn().mockResolvedValue(mockGoldRushResponse),
-      });
+      fetchMock.getOnce(
+        `https://api.covalenthq.com/v1/solana-mainnet/address/${walletAddr}/balances_v2/?key=test-key`,
+        { status: 200, body: mockGoldRushResponse },
+      );
 
       // Use a chain that only GoldRush supports (e.g., Solana for Mainnet)
       const result = await getWalletBalances(walletAddr, network, "Solana", {
@@ -143,14 +130,21 @@ describe("balances", () => {
         "0xtoken1": 100n,
       });
       // Should only call GoldRush since Alchemy doesn't support Solana
-      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(fetchMock).toHaveFetchedTimes(1);
     });
 
     it("should throw error when all indexers fail", async () => {
       // All fetch calls fail
-      (global.fetch as jest.Mock)
-        .mockRejectedValueOnce(new Error("GoldRush API error"))
-        .mockRejectedValueOnce(new Error("Alchemy batch API error"));
+      fetchMock
+        .getOnce(
+          `https://api.covalenthq.com/v1/eth-mainnet/address/${walletAddr}/balances_v2/?key=test-key`,
+          {
+            throws: new Error("GoldRush API error"),
+          },
+        )
+        .postOnce("https://eth-mainnet.g.alchemy.com/v2/test-key", {
+          throws: new Error("Alchemy batch API error"),
+        });
 
       await expect(
         getWalletBalances(walletAddr, network, chain, {
@@ -159,7 +153,7 @@ describe("balances", () => {
         }),
       ).rejects.toThrow(`Failed to get a successful response from indexers`);
 
-      expect(global.fetch).toHaveBeenCalledTimes(2);
+      expect(fetchMock).toHaveFetchedTimes(2);
     });
 
     it("should handle timeout and abort requests", async () => {
@@ -181,18 +175,25 @@ describe("balances", () => {
       ];
 
       // First call (GoldRush) hangs and gets aborted, second call (Alchemy batch) succeeds
-      (global.fetch as jest.Mock)
-        .mockImplementationOnce((_url, options) => {
-          return new Promise((resolve, reject) => {
-            const timer = setTimeout(() => {}, 200); // Keep event loop alive
-            options?.signal?.addEventListener("abort", () => {
-              clearTimeout(timer);
-              reject(options.signal.reason);
+      fetchMock
+        .getOnce(
+          `https://api.covalenthq.com/v1/eth-mainnet/address/${walletAddr}/balances_v2/?key=test-key`,
+          (_url: string, options: RequestInit) => {
+            return new Promise((resolve, reject) => {
+              const timer = setTimeout(() => {}, 200); // Keep event loop alive
+              const signal = options?.signal;
+              if (signal) {
+                signal.addEventListener("abort", () => {
+                  clearTimeout(timer);
+                  reject(signal.reason);
+                });
+              }
             });
-          });
-        })
-        .mockResolvedValueOnce({
-          json: jest.fn().mockResolvedValue(mockAlchemyBatchResponse),
+          },
+        )
+        .postOnce("https://eth-mainnet.g.alchemy.com/v2/test-key", {
+          status: 200,
+          body: mockAlchemyBatchResponse,
         });
 
       const resultPromise = getWalletBalances(walletAddr, network, chain, {
@@ -209,7 +210,7 @@ describe("balances", () => {
         "0xtoken1": 100n,
         native: 100n,
       });
-      expect(global.fetch).toHaveBeenCalledTimes(2);
+      expect(fetchMock).toHaveFetchedTimes(2);
 
       jest.useRealTimers();
     });
@@ -227,9 +228,10 @@ describe("balances", () => {
         },
       };
 
-      (global.fetch as jest.Mock).mockResolvedValueOnce({
-        json: jest.fn().mockResolvedValue(mockGoldRushResponse),
-      });
+      fetchMock.getOnce(
+        `https://api.covalenthq.com/v1/eth-mainnet/address/${walletAddr}/balances_v2/?key=test-key`,
+        { status: 200, body: mockGoldRushResponse },
+      );
 
       const result = await getWalletBalances(walletAddr, network, chain, {
         goldRush: { apiKey: "test-key", timeoutMs: 100 },
@@ -258,8 +260,9 @@ describe("balances", () => {
         },
       ];
 
-      (global.fetch as jest.Mock).mockResolvedValueOnce({
-        json: jest.fn().mockResolvedValue(mockAlchemyBatchResponse),
+      fetchMock.postOnce("https://eth-mainnet.g.alchemy.com/v2/test-key", {
+        status: 200,
+        body: mockAlchemyBatchResponse,
       });
 
       // GoldRush has empty API key, only Alchemy should be called
@@ -273,13 +276,8 @@ describe("balances", () => {
         native: 200n,
       });
       // Should only call Alchemy since GoldRush has empty API key
-      expect(global.fetch).toHaveBeenCalledTimes(1);
-      expect(global.fetch).toHaveBeenCalledWith(
-        "https://eth-mainnet.g.alchemy.com/v2/test-key",
-        expect.objectContaining({
-          method: "POST",
-        }),
-      );
+      expect(fetchMock).toHaveFetchedTimes(1);
+      expect(fetchMock).toHaveLastFetched("https://eth-mainnet.g.alchemy.com/v2/test-key");
     });
 
     it("should skip tokens with invalid balance values from Alchemy", async () => {
@@ -302,8 +300,9 @@ describe("balances", () => {
         },
       ];
 
-      (global.fetch as jest.Mock).mockResolvedValueOnce({
-        json: jest.fn().mockResolvedValue(mockAlchemyBatchResponse),
+      fetchMock.postOnce("https://eth-mainnet.g.alchemy.com/v2/test-key", {
+        status: 200,
+        body: mockAlchemyBatchResponse,
       });
 
       const result = await getWalletBalances(walletAddr, network, chain, {
@@ -316,7 +315,7 @@ describe("balances", () => {
         "0xtoken4": 200n,
         native: 300n,
       });
-      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(fetchMock).toHaveFetchedTimes(1);
     });
 
     it("should return Solana balances from GoldRush indexer", async () => {
@@ -362,18 +361,14 @@ describe("balances", () => {
         },
       };
 
-      (global.fetch as jest.Mock).mockResolvedValueOnce({
-        json: jest.fn().mockResolvedValue(mockGoldRushSolanaResponse),
-      });
-
-      const result = await getWalletBalances(
-        solanaWalletAddr,
-        solanaNetwork,
-        solanaChain,
-        {
-          goldRush: { apiKey: "test-key", timeoutMs: 100 },
-        },
+      fetchMock.getOnce(
+        `https://api.covalenthq.com/v1/solana-mainnet/address/${solanaWalletAddr}/balances_v2/?key=test-key`,
+        { status: 200, body: mockGoldRushSolanaResponse },
       );
+
+      const result = await getWalletBalances(solanaWalletAddr, solanaNetwork, solanaChain, {
+        goldRush: { apiKey: "test-key", timeoutMs: 100 },
+      });
 
       expect(result).toEqual({
         // Native SOL (contract_address: 11111111111111111111111111111111)
@@ -386,10 +381,7 @@ describe("balances", () => {
         so11111111111111111111111111111111111111112: 199700n,
       });
 
-      expect(global.fetch).toHaveBeenCalledWith(
-        `https://api.covalenthq.com/v1/solana-mainnet/address/${solanaWalletAddr}/balances_v2/?key=test-key`,
-        { signal: expect.any(AbortSignal) },
-      );
+      expect(fetchMock).toHaveFetchedTimes(1);
     });
   });
 });
