@@ -40,6 +40,7 @@ export const executorContracts = [[
     ["BaseSepolia",     "0x51B47D493CBA7aB97e3F8F163D6Ce07592CE4482"],
     ["Converge",        "0xAab9935349B9c08e0e970720F6D640d5B91C293E"],
     ["Fogo",            "execXUrAsMnqMmTHj5m7N1YQgsDz3cwGLYCYyuDRciV"],
+    ["Moca",            "0xc4a03f2c47caA4b961101bAD6338DEf37376F052"],
     ["Monad",           "0xC04dE634982cAdF2A677310b73630B7Ac56A3f65"],
     // ["HyperCore",       "not-implemented"],
     ["OptimismSepolia", "0x5856651eB82aeb6979B4954317194d48e1891b3c"],
