@@ -26,7 +26,6 @@ export const WETH_CONTRACTS: Record<Network, Partial<Record<EvmChains, string>>>
   "Testnet": {
     "Avalanche": "0xd00ae08403B9bbb9124bB305C09058E32C39A48c",
     "Bsc": "0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd",
-    "Celo": "0x524d97A67f50F4A062C28c74F60703Aec9028a94",
     "Fantom": "0xf1277d1Ed8AD466beddF92ef448A132661956621",
     "Klaytn": "0x0339d5Eb6D195Ba90B13ed1BCeAa97EbD198b106",
     "Moonbeam": "0xD909178CC99d318e4D46e7E66a972955859670E1",
