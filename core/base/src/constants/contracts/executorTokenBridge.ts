@@ -41,6 +41,7 @@ export const executorTokenBridgeContracts = [[
     ["Sepolia",         { relayer: "0xb0b2119067cF04fa959f654250BD49fE1BD6F53c", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
     ["Seievm",          { relayer: "0x595712bA7e4882af338d60ae37058082a5d0331A", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
     ["Solana",          { relayer: "tbr7Qje6qBzPwfM52csL5KFi8ps5c5vDyiVVBLYVdRf" }],
+    ["Unichain",        { relayer: "0x74D37B2bcD2f8CaB6409c5a5f81C8cF5b4156963", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
     ["XRPLEVM",         { relayer: "0xb00224c60fe6ab134c8544dc29350286545f8dcc", relayerWithReferrer: "0x17CFAAf9e8a5ABb1eee758dB9040F945c9EAC907" }],
     ["Mezo",            { relayer: "0x2002a44b1106DF83671Fb419A2079a75e2a34808", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
   ]],

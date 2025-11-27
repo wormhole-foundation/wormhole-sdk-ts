@@ -50,6 +50,7 @@ export const executorContracts = [[
     ["Sepolia",         "0xD0fb39f5a3361F21457653cB70F9D0C9bD86B66B"],
     ["Solana",          "execXUrAsMnqMmTHj5m7N1YQgsDz3cwGLYCYyuDRciV"],
     ["Sui",             "0x4000cfe2955d8355b3d3cf186f854fea9f787a457257056926fde1ec977670eb"],
+    ["Unichain",        "0x764dD868eAdD27ce57BCB801E4ca4a193d231Aed"],
     ["XRPLEVM",         "0x4d9525D94D275dEB495b7C8840b154Ae04cfaC2A"],
     ["Mezo",            "0x0f9b8E144Cc5C5e7C0073829Afd30F26A50c5606"],
   ]],
