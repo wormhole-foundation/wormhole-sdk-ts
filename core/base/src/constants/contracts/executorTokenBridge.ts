@@ -35,6 +35,7 @@ export const executorTokenBridgeContracts = [[
     ["BaseSepolia",     { relayer: "0x523d25D33B975ad72283f73B1103354352dBCBb8", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
     ["Bsc",             { relayer: "0x26e7e3869b781f360A108728EE8391Cee6051E17", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
     ["Fogo",            { relayer: "tbr7Qje6qBzPwfM52csL5KFi8ps5c5vDyiVVBLYVdRf" }],
+    ["Moca",            { relayer: "0x36b91D24BAba19Af3aD1b5D5E2493A571044f14F", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
     ["Monad",           { relayer: "0x5Ba2c39cF0624BB5fBe94E919519aEA0DdD68454", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
     ["OptimismSepolia",  { relayer: "0xD9AA4f8Ac271B3149b8C3d1D0f999Ef7cb9af9EC", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
     ["PolygonSepolia",  { relayer: "0xC5c0bF6A8419b3d47150B2a6146b7Ed598C9d736", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
