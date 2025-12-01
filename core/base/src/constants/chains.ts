@@ -51,6 +51,7 @@ const chainIdAndChainEntries = [
   [   59, "CreditCoin"     ],
   [   60, "Stacks"         ],
   [   63, "Moca"           ],
+  [   64, "MegaETH"        ],
   [ 3104, "Wormchain"      ],
   [ 4000, "Cosmoshub"      ],
   [ 4001, "Evmos"          ],
