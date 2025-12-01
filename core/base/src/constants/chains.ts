@@ -50,7 +50,7 @@ const chainIdAndChainEntries = [
   [   58, "Plasma"         ],
   [   59, "CreditCoin"     ],
   [   60, "Stacks"         ],
-  [  63,  "Moca"           ],
+  [   63, "Moca"           ],
   [ 3104, "Wormchain"      ],
   [ 4000, "Cosmoshub"      ],
   [ 4001, "Evmos"          ],
