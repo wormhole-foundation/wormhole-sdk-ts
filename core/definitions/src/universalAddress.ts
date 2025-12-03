@@ -3,7 +3,7 @@ import { encoding, serializeLayout, throws } from "@wormhole-foundation/sdk-base
 
 import type { Address, NativeAddress } from "./address.js";
 import { toNative } from "./address.js";
-import { keccak256, sha256, sha512_256 } from "./utils.js";
+import { sha256, sha512_256 } from "./utils.js";
 
 const algorandAppIdLayout = [
   { name: "appIdPrefix", binary: "bytes", custom: encoding.bytes.encode("appID"), omit: true },
@@ -77,15 +77,15 @@ export class UniversalAddress implements Address {
           return sha512_256(serializeLayout(algorandAppIdLayout, { appId: BigInt(address) }));
         case "sha256":
           return sha256(address);
-        case "keccak256":
-          return keccak256(address);
+        case "string":
+          return Buffer.from(address, "utf-8")
       }
     })();
 
     if (!decoded)
       throw new Error(`string ${address} could not be decoded for format ${format}`);
 
-    if (decoded.length > UniversalAddress.byteSize)
+    if (format !== "string" && decoded.length > UniversalAddress.byteSize)
       throw new Error(`string ${address} has invalid length for format ${format}`);
 
     return decoded.length < UniversalAddress.byteSize

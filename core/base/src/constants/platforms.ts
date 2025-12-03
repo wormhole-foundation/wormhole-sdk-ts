@@ -106,7 +106,7 @@ const platformAddressFormatEntries = [
   ["Sui",       "hex"],
   ["Aptos",     "hex"],
   ["Near",      "sha256"],
-  ["Stacks",    "keccak256"],
+  ["Stacks",    "string"],
 ] as const;
 
 export const platformToAddressFormat = constMap(platformAddressFormatEntries);

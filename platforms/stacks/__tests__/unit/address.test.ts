@@ -18,19 +18,20 @@ describe("Stacks Address Tests", () => {
   })
 
   it("universal address", () => {
-    const address = new UniversalAddress(ADDRESS, "keccak256")
-    expect(address.toString()).toBe("0xd46812cb7885790b7096a3e2b8feff7f997b16e6f57e5fb1ac8dc25d9df70ffb")
+    const address = new UniversalAddress(ADDRESS, "string")
+    expect(address.toString()).toBe(`0x${Buffer.from(ADDRESS).toString("hex")}`)
   })
 
   it("contract address to universal", () => {
-    const address = new UniversalAddress(`${ADDRESS}.wormhole-core-v4`, "keccak256")
-    expect(address.toString()).toBe("0x41bb47779fcfb96e8d29ae8883974350cd660649c0269f517f0f966c5ef9bf68")
+    const contractAddress = `${ADDRESS}.wormhole-core-v4`
+    const address = new UniversalAddress(contractAddress, "string")
+    expect(address.toString()).toBe(`0x${Buffer.from(contractAddress).toString("hex")}`)
   })
 
   it("stacks to universal", () => {
     const address = new StacksAddress(ADDRESS)
     const universalAddress = address.toUniversalAddress()
-    expect(universalAddress.toString()).toBe("0xd46812cb7885790b7096a3e2b8feff7f997b16e6f57e5fb1ac8dc25d9df70ffb")
+    expect(universalAddress.toString()).toBe(`0x${Buffer.from(ADDRESS).toString("hex")}`)
   })
 
   it("is valid address", () => {

@@ -93,7 +93,8 @@ export const coreBridgeContracts = [[
     ["XRPLEVM",         "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
     ["Plasma",          "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
     ["CreditCoin",      "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
-    ["Moca",            "0xaBf89de706B583424328B54dD05a8fC986750Da8"]
+    ["Moca",            "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
+    ["Stacks",          "ST2W4SFFKXMGFJW7K7NZFK3AH52ZTXDB74HKV9MRA"],
   ]], [
   "Devnet", [
     ["Solana",    "Bridge1p5gheXUvJ6jGWGeCsgPKgnE3YgdGKRVCMY9o"],

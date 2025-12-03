@@ -1,4 +1,4 @@
-import { Address, UniversalAddress, registerNative } from "@wormhole-foundation/sdk-connect";
+import { Address, UniversalAddress, keccak256, registerNative } from "@wormhole-foundation/sdk-connect";
 import { _platform, AnyStacksAddress } from "./types.js";
 import { Address as TransactionsAddress } from "@stacks/transactions";
 
@@ -10,33 +10,23 @@ export class StacksAddress implements Address {
   readonly type: string = 'Native';
 
   readonly address: string
+  readonly native: string
 
   constructor(address: AnyStacksAddress) {
-    if(StacksAddress.instanceof(address)) {
-      const a = address as unknown as StacksAddress;
-      this.address = a.address;
-      return;
-    }
-
     if(typeof address === 'string') {
-      if(address.startsWith("0x")) {
-        this.address = address;
-        return;
-      }
-      if(!StacksAddress.isValidAddress(address)) {
-        throw new Error(`Invalid Stacks address ${address}`);
-      }
-      this.address = address;
+      this.address = keccak256(address).toString();
+      this.native = address;
     } else {
-      throw new Error(`Invalid Stacks address ${address}`);
+      this.address = keccak256(address.toString()).toString();
+      this.native = address.toString();
     }
   }
   unwrap(): string {
-    return this.address;
+    return this.native;
   }
 
   toString(): string {
-    return this.address;
+    return this.native;
   }
 
   toNative() {
@@ -48,7 +38,7 @@ export class StacksAddress implements Address {
   }
 
   toUniversalAddress(): UniversalAddress {
-    return new UniversalAddress(this.address, "keccak256")
+    return new UniversalAddress(this.native, "string")
   }
   
   static isValidAddress(address: string): boolean {
