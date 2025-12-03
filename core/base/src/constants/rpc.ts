@@ -12,7 +12,7 @@ const rpcConfig = [[
     ["Bsc",       "https://bsc-rpc.publicnode.com"],
     ["Avalanche", "https://avalanche-c-chain-rpc.publicnode.com"],
     ["Fantom",    "https://rpcapi.fantom.network"],
-    ["Celo",      "https://celo-rpc.publicnode.com"],
+    ["Celo",      "https://forno.celo.org"],
     ["Moonbeam",  "https://moonbeam-rpc.publicnode.com"],
     ["Sui",       "https://rpc.mainnet.sui.io"],
     ["Aptos",     "https://fullnode.mainnet.aptoslabs.com/v1"],
@@ -51,7 +51,7 @@ const rpcConfig = [[
     ["Plasma",    "https://rpc.plasma.to/"],
     ["CreditCoin","https://mainnet3.creditcoin.network/"],
     ["Stacks",    "https://api.mainnet.hiro.so"],
-    ["Monad",     ""], // TODO: placeholder until mainnet RPC is available
+    ["Monad",     "https://rpc.monad.xyz"],
     ["Fogo",      "https://mainnet.fogo.io"],
     ["Moca",      "https://rpc.mocachain.org/"],
   ]], [
