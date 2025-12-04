@@ -4285,7 +4285,28 @@ const mainnetTokenEntries = [
         },
       ],
     ],
-  ],
+  ], [
+    "MegaETH",
+    [
+      [
+        "ETH",
+        {
+          symbol: "ETH",
+          decimals: 18,
+          address: "native",
+          wrappedKey: "WETH",
+        }
+      ],
+      [
+        "WETH",
+        {
+          symbol: "WETH",
+          decimals: 18,
+          address: "0x4200000000000000000000000000000000000006"
+        }
+      ]
+    ]
+  ]
 ] as const satisfies MapLevel<Chain, MapLevel<TokenSymbol, TokenConst>>;
 
 export const mainnetChainTokens = constMap(mainnetTokenEntries, [0, [1, 2]]);
