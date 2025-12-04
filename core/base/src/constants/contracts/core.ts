@@ -78,7 +78,7 @@ export const coreBridgeContracts = [[
     ["PolygonSepolia",  "0x6b9C8671cdDC8dEab9c719bB87cBd3e782bA6a35"],
     ["Scroll",          "0x055F47F1250012C6B20c436570a76e52c17Af2D5"],
     ["Berachain",       "0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd"],
-    ["Seievm",          "0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd"],
+    ["Seievm",          "0x23908A62110e21C04F3A4e011d24F901F911744A"],
     ["Unichain",        "0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd"],
     ["Worldchain",      "0xe5E02cD12B6FcA153b0d7fF4bF55730AE7B3C93A"],
     ["Ink",             "0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd"],
