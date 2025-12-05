@@ -31,6 +31,7 @@ export const executorContracts = [[
     ["Worldchain",      "0x8689b4E6226AdC8fa8FF80aCc3a60AcE31e8804B"],
     ["XRPLEVM",         "0x8345E90Dcd92f5Cf2FAb0C8E2A56A5bc2c30d896"],
     ["Monad",           "0xC04dE634982cAdF2A677310b73630B7Ac56A3f65"],
+    ["MegaETH",         "0xD405E0A1f3f9edc25Ea32d0B079d6118328b2EcB"],
     ["Fogo",            "execXUrAsMnqMmTHj5m7N1YQgsDz3cwGLYCYyuDRciV"],
   ]], [
   "Testnet", [
