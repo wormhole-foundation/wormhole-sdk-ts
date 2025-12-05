@@ -18,9 +18,10 @@ export class StacksPlatform<N extends Network> extends PlatformContext<N, Stacks
     );
   }
 
-  override getRpc(): StacksNetwork {
+  override getRpc<C extends StacksChains>(chain: C): StacksNetwork {
     let rpc = networkFromName(this.network.toLowerCase() as StacksNetworkName);
     (rpc as any).getNetwork = () => ({chainId: rpc.chainId})
+    rpc.client.baseUrl = this.config[chain]!.rpc;
     return rpc
   }
 
