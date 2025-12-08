@@ -16,6 +16,7 @@ import {
   relayInstructionsLayout,
   serializeLayout,
   signedQuoteLayout,
+  suiExecutorTokenBridgeState,
   toChainId,
   toUniversal,
 } from '@wormhole-foundation/sdk-connect';
@@ -180,8 +181,19 @@ export class SolanaExecutorTokenBridge<
 
     const messageKeypair = Keypair.generate();
 
-    const dstTransferRecipient = toUniversal(recipient.chain, dstRelayer);
-    const dstExecutionAddress = dstTransferRecipient;
+    // For Sui destinations, dstTransferRecipient (relayer emitter cap) and dstExecutionAddress (PTB resolver) are different
+    let dstTransferRecipient;
+    let dstExecutionAddress;
+    if (recipient.chain === 'Sui') {
+      const suiState = suiExecutorTokenBridgeState(
+        this.network as 'Mainnet' | 'Testnet',
+      );
+      dstTransferRecipient = toUniversal('Sui', suiState.relayerEmitterCap);
+      dstExecutionAddress = toUniversal('Sui', suiState.ptbResolverStateId);
+    } else {
+      dstTransferRecipient = toUniversal(recipient.chain, dstRelayer);
+      dstExecutionAddress = dstTransferRecipient;
+    }
 
     // Derive PDAs
     const tokenBridgeConfig = PublicKey.findProgramAddressSync(

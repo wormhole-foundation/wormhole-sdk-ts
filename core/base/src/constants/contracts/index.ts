@@ -15,6 +15,8 @@ import * as eq from "./executorQuoter.js";
 
 import { constMap } from "./../../utils/index.js";
 
+export * from "../sui/executorTokenBridgeState.js";
+
 export const coreBridge = constMap(core.coreBridgeContracts);
 export const tokenBridge = constMap(tb.tokenBridgeContracts);
 export const tokenBridgeRelayer = constMap(tbr.tokenBridgeRelayerContracts);
