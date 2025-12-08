@@ -18,9 +18,10 @@ export class StacksPlatform<N extends Network> extends PlatformContext<N, Stacks
     );
   }
 
-  override getRpc(): StacksNetwork {
+  override getRpc<C extends StacksChains>(chain: C): StacksNetwork {
     let rpc = networkFromName(this.network.toLowerCase() as StacksNetworkName);
     (rpc as any).getNetwork = () => ({chainId: rpc.chainId})
+    rpc.client.baseUrl = this.config[chain]!.rpc;
     return rpc
   }
 
@@ -87,6 +88,18 @@ export class StacksPlatform<N extends Network> extends PlatformContext<N, Stacks
     walletAddr: string,
     token: TokenAddress<C>,
   ): Promise<bigint | null> {
+    if (isNative(token)) {
+      const apiUrl = `${rpc.client.baseUrl}/extended/v1/address/${walletAddr}/stx`;
+      const res = await fetch(apiUrl);
+      if (!res.ok) {
+        throw new Error(`Failed to fetch STX balance: ${res.status} ${res.statusText}`);
+      }
+      const data = await res.json();
+      if (typeof data.balance !== "string") {
+        throw new Error("Invalid response: missing balance field");
+      }
+      return BigInt(data.balance);
+    }
     const [contractAddress, contractName] = token.toString().split(".")
     if(!contractAddress || !contractName) {
       throw new Error("Invalid token address");

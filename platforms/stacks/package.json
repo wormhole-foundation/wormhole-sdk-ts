@@ -82,6 +82,26 @@
         "types": "./dist/cjs/index.d.ts",
         "default": "./dist/cjs/index.js"
       }
+    },
+    "./address": {
+      "react-native": {
+        "import": "./dist/esm/address.js",
+        "require": "./dist/cjs/address.js",
+        "types": "./dist/cjs/address.d.ts",
+        "default": "./dist/cjs/address.js"
+      },
+      "import": {
+        "types": "./dist/esm/address.d.ts",
+        "default": "./dist/esm/address.js"
+      },
+      "require": {
+        "types": "./dist/cjs/address.d.ts",
+        "default": "./dist/cjs/address.js"
+      },
+      "default": {
+        "types": "./dist/cjs/address.d.ts",
+        "default": "./dist/cjs/address.js"
+      }
     }
   }
 }

@@ -37,6 +37,7 @@ export const tokenBridgeContracts = [[
     ["Monad",     "0x0B2719cdA2F10595369e6673ceA3Ee2EDFa13BA7"],
     ["Fogo",      "wormQuCVWSSmPdjVmEzAWxAXViVyTSWnLyhff5hVYGS"],
     // ["Moca",            "not yet in mainnet"]
+    ["MegaETH",   "0xF97B81E513f53c7a6B57Bd0b103a6c295b3096C5"],
   ]], [
   "Testnet", [
     ["Solana",          "DZnkkTmCiFWfYTfT41X3Rd1kDgozqzxWaHqsw6W4x2oe"],
@@ -78,7 +79,8 @@ export const tokenBridgeContracts = [[
     ["Mezo",            "0xA31aa3FDb7aF7Db93d18DDA4e19F811342EDF780"],
     ["Fogo",            "78HdStBqCMioGii9D8mF3zQaWDqDZBQWTUwjjpdmbJKX"],
     ["XRPLEVM",         "0x7d8eBc211C4221eA18E511E4f0fD50c5A539f275"],
-    ["Moca",            "0xF97B81E513f53c7a6B57Bd0b103a6c295b3096C5"]
+    ["Moca",            "0xF97B81E513f53c7a6B57Bd0b103a6c295b3096C5"],
+    ["MegaETH",         "0x3D5c2c2BEA15Af5D45F084834c535628C48c42A4"],
   ]], [
   "Devnet", [
     ["Solana",    "B6RHG3mfcckmrYN1UhmJzyS1XX3fZKbkeUcpJe9Sy3FE"],

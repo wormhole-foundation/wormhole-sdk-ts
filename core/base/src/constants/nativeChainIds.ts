@@ -59,6 +59,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Monad",     143n],
       ["Fogo",      "CDLtwKnaCoK157uaHQDj4fHu72AyD2519Cphmpiq6hvT"], // genesis hash
       ["Moca",      2288n],
+      ["MegaETH",   4326n],
     ],
   ],
   [
@@ -117,6 +118,7 @@ const chainNetworkNativeChainIdEntries = [
       ["XRPLEVM",         1449000n],
       ["Stacks",          2147483648n],
       ["Moca",            222888n],
+      ["MegaETH",         6343n],
     ],
   ],
   [

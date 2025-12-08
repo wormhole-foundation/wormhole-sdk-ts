@@ -198,6 +198,15 @@ const explorerConfig = [[
           account: "address/"
         }
       }
+    ], [
+      "MegaETH", {
+        name: "MegaETH Explorer",
+        baseUrl: "https://megaeth.blockscout.com/",
+        endpoints: {
+          tx: "tx/",
+          account: "address/"
+        }
+      }
     ]
   ]], [
   "Testnet", [[
@@ -355,6 +364,15 @@ const explorerConfig = [[
       "Moca", {
         name: "Moca Explorer",
         baseUrl: "https://testnet-scan.mocachain.org/",
+        endpoints: {
+          tx: "tx/",
+          account: "address/"
+        }
+      }
+    ], [
+      "MegaETH", {
+        name: "MegaETH Explorer",
+        baseUrl: "https://megaeth-testnet-v2.blockscout.com/",
         endpoints: {
           tx: "tx/",
           account: "address/"
