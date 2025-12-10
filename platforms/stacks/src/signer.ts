@@ -3,6 +3,7 @@ import { StacksChains } from "./types.js";
 import { broadcastTransaction, makeContractCall, privateKeyToAddress, StacksTransactionWire } from "@stacks/transactions";
 import { StacksNetwork, StacksNetworkName } from "@stacks/network";
 import { StacksPlatform } from "./platform.js";
+import { StacksUnsignedTransaction } from "./unsignedTransaction.js";
 
 export async function getStacksSigner(
   rpc: StacksNetwork,
@@ -28,10 +29,11 @@ export class StacksSigner<N extends Network, C extends StacksChains> implements 
   async signAndSend(txs: UnsignedTransaction<N, C>[]): Promise<TxHash[]> {
     const signed: StacksTransactionWire[] = []
     for (const tx of txs) {
+      const stacksTx = tx as StacksUnsignedTransaction<N, C>;
       const signedTx = await makeContractCall({
-        ...tx.transaction,
+        ...stacksTx.transaction,
         senderKey: this._privKey,
-        network: this._network.toLowerCase(),
+        network: this._network.toLowerCase() as StacksNetworkName,
         client: this._provider.client
       })
       signed.push(signedTx)
@@ -59,8 +61,13 @@ export class StacksSigner<N extends Network, C extends StacksChains> implements 
    */
   async sign(tx: UnsignedTransaction<N, C>[]): Promise<SignedTx[]> {
     const signedTxs = tx.map(async (t) => {
-      const transaction = t.transaction;
-      return makeContractCall(transaction)
+      const stacksTx = t as StacksUnsignedTransaction<N, C>;
+      return await makeContractCall({
+        ...stacksTx.transaction,
+        senderKey: this._privKey,
+        network: this._network.toLowerCase() as StacksNetworkName,
+        client: this._provider.client
+      })
     })
     return Promise.all(signedTxs)
   }
