@@ -15,6 +15,14 @@ export const gasDropOffInstructionLayout = [
 
 export type GasDropOffInstruction = DeriveType<typeof gasDropOffInstructionLayout>;
 
+export const stacksNttReceiveInstructionLayout = [
+  { name: "nttManager", binary: "bytes", lengthSize: 1 }, // Stacks contract principal (variable length)
+  { name: "recipient", binary: "bytes", lengthSize: 1 }, // Stacks recipient address (variable length)
+  { name: "gasDropOff", binary: "uint", size: 16 }, // STX amount for gas drop-off
+] as const satisfies Layout;
+
+export type StacksNttReceiveInstruction = DeriveType<typeof stacksNttReceiveInstructionLayout>;
+
 export const relayInstructionLayout = [
   {
     name: "request",
@@ -24,6 +32,7 @@ export const relayInstructionLayout = [
     layouts: [
       [[1, "GasInstruction"], gasInstructionLayout],
       [[2, "GasDropOffInstruction"], gasDropOffInstructionLayout],
+      [[3, "StacksNttReceiveInstruction"], stacksNttReceiveInstructionLayout],
     ],
   },
 ] as const satisfies Layout;
