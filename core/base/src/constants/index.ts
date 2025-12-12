@@ -2,6 +2,7 @@ export * from "./networks.js";
 export * from "./chains.js";
 export * from "./platforms.js";
 export * from "./tokens.js";
+export * from "./sui/executorTokenBridgeState.js";
 
 export * as platform from "./platforms.js";
 export * as chain from "./chains.js";
