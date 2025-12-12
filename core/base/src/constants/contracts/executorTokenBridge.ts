@@ -29,6 +29,7 @@ export const executorTokenBridgeContracts = [[
     ["XRPLEVM",         { relayer: "0x37bCc9d175124F77Bfce68589d2a8090eF846B85", relayerWithReferrer: "0x13a35c075D6Acc1Fb9BddFE5FE38e7672789e4db" }],
     ["Monad",           { relayer: "0xf7E051f93948415952a2239582823028DacA948e", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
     ["Fogo",            { relayer: "tbr7Qje6qBzPwfM52csL5KFi8ps5c5vDyiVVBLYVdRf" }],
+    ["MegaETH",         { relayer: "0x4eEC1c908aD6e778664Efb03386C429fE5710D77", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
   ]], [
   "Testnet", [
     ["Avalanche",       { relayer: "0x10Ce9a35883C44640e8B12fea4Cc1e77F77D8c52", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
