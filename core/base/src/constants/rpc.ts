@@ -54,6 +54,7 @@ const rpcConfig = [[
     ["Monad",     "https://rpc3.monad.xyz"],
     ["Fogo",      "https://mainnet.fogo.io"],
     ["Moca",      "https://rpc.mocachain.org/"],
+    ["MegaETH",   "https://mainnet.megaeth.com/rpc"],
   ]], [
   "Testnet", [
     ["Bsc",             "https://data-seed-prebsc-1-s3.binance.org:8545"],
@@ -99,6 +100,7 @@ const rpcConfig = [[
     ["CreditCoin",      "https://rpc.cc3-testnet.creditcoin.network"],
     ["Stacks",          "https://api.testnet.hiro.so"],
     ["Moca",            "https://testnet-rpc.mocachain.org/"],
+    ["MegaETH",         "https://timothy.megaeth.com/rpc"],
   ]], [
   "Devnet", [
     ["Ethereum",  "http://eth-devnet:8545"],
