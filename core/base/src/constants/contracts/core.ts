@@ -43,8 +43,8 @@ export const coreBridgeContracts = [[
     ["CreditCoin","0xaBf89de706B583424328B54dD05a8fC986750Da8"],
     ["Monad",     "0x194B123c5E96B9b2E49763619985790Dc241CAC0"],
     ["Fogo",      "worm2mrQkG1B1KTz37erMfWN8anHkSK24nzca7UD8BB"],
-    // ["Moca", "not in mainnet"]
-    ["MegaETH",   "0xaBf89de706B583424328B54dD05a8fC986750Da8"]
+    ["Moca",       "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
+    ["MegaETH",   "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
   ]], [
   "Testnet", [
     ["Solana",          "3u8hJUVTA4jH1wYAyUur7FFZVQ8H635K3tSHHF4ssjQ5"],

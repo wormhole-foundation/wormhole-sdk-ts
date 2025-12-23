@@ -53,7 +53,7 @@ const rpcConfig = [[
     ["Stacks",    "https://api.mainnet.hiro.so"],
     ["Monad",     "https://rpc3.monad.xyz"],
     ["Fogo",      "https://mainnet.fogo.io"],
-    ["Moca",      "https://rpc.mocachain.org/"],
+    ["Moca",      "https://rpc.mocachain.dev/"],
     ["MegaETH",   "https://mainnet.megaeth.com/rpc"],
   ]], [
   "Testnet", [
