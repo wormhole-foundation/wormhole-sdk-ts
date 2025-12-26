@@ -19,6 +19,7 @@ export const executorContracts = [[
     ["Ink",             "0x3e44a5F45cbD400acBEF534F51e616043B211Ddd"],
     ["Linea",           "0x23aF2B5296122544A9A7861da43405D5B15a9bD3"],
     ["Mezo",            "0x0f9b8E144Cc5C5e7C0073829Afd30F26A50c5606"],
+    ["Moca",            "0x7b8097af5459846c5A72fCc960D94F31C05915aD"],
     ["Moonbeam",        "0x85D06449C78064c2E02d787e9DC71716786F8D19"],
     ["Optimism",        "0x85B704501f6AE718205C0636260768C4e72ac3e7"],
     ["Polygon",         "0x0B23efA164aB3eD08e9a39AC7aD930Ff4F5A5e81"],
