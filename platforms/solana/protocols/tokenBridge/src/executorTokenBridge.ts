@@ -50,8 +50,9 @@ import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   NATIVE_MINT,
   createAssociatedTokenAccountIdempotentInstruction,
-  createTransferInstruction,
+  createTransferCheckedInstruction,
   getAssociatedTokenAddressSync,
+  getMint,
 } from '@solana/spl-token';
 import '@wormhole-foundation/sdk-solana-core';
 
@@ -273,12 +274,16 @@ export class SolanaExecutorTokenBridge<
           );
         }
 
+        const mintInfo = await getMint(this.connection, mint, undefined, tokenProgram);
+
         instructions.push(
-          createTransferInstruction(
+          createTransferCheckedInstruction(
             senderAta,
+            mint,
             referrerAta,
             senderPubkey,
             referrerFee.feeAmount,
+            mintInfo.decimals,
             undefined,
             tokenProgram,
           ),

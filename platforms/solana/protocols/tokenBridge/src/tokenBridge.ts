@@ -44,7 +44,7 @@ import {
   createAssociatedTokenAccountInstruction,
   createCloseAccountInstruction,
   createInitializeAccountInstruction,
-  createTransferInstruction,
+  createTransferCheckedInstruction,
   getAccount,
   getAssociatedTokenAddress,
   getExtensionTypes,
@@ -544,12 +544,15 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
       );
 
       // Transfer tokens from ATA to temporary account
+      const mintInfo = await getMint(this.connection, tokenAddress, undefined, tokenProgram);
       instructions.push(
-        createTransferInstruction(
+        createTransferCheckedInstruction(
           senderTokenAddress,
+          tokenAddress,
           tempAccountKeypair.publicKey,
           senderAddress,
           amount,
+          mintInfo.decimals,
           [],
           tokenProgram,
         ),
@@ -678,10 +681,9 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
     // (maybe) ATA for this account
     const targetPublicKey = new SolanaAddress(vaa.payload.to.address).unwrap();
 
-    const targetAmount = await getMint(this.connection, NATIVE_MINT).then(
-      (info) =>
-        vaa.payload.token.amount * BigInt(Math.pow(10, info.decimals - 8)),
-    );
+    const mintInfo = await getMint(this.connection, NATIVE_MINT);
+    const targetAmount =
+      vaa.payload.token.amount * BigInt(Math.pow(10, mintInfo.decimals - 8));
 
     const rentBalance = await getMinimumBalanceForRentExemptAccount(
       this.connection,
@@ -714,11 +716,13 @@ export class SolanaTokenBridge<N extends Network, C extends SolanaChains>
     );
 
     //Send in the amount of wSOL which we want converted to SOL
-    const balanceTransferIx = createTransferInstruction(
+    const balanceTransferIx = createTransferCheckedInstruction(
       targetPublicKey,
+      NATIVE_MINT,
       ancillaryKeypair.publicKey,
       payerPublicKey,
-      targetAmount.valueOf(),
+      targetAmount,
+      mintInfo.decimals,
     );
 
     //Close the ancillary account for cleanup. Payer address receives any remaining funds
