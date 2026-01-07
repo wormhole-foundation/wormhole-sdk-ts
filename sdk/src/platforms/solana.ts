@@ -1,7 +1,7 @@
 import { applyChainsConfigConfigOverrides } from "@wormhole-foundation/sdk-connect";
 import * as _solana from "@wormhole-foundation/sdk-solana";
 import type { PlatformDefinition } from "../index.js";
-/** Platform and protocol definitons for Solana */
+/** Platform and protocol definitions for Solana */
 const solana: PlatformDefinition<typeof _solana._platform> = {
   Address: _solana.SolanaAddress,
   Platform: _solana.SolanaPlatform,
