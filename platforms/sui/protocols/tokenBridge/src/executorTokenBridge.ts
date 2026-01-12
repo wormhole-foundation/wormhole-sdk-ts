@@ -21,7 +21,6 @@ import {
   type TokenAddress,
   type TokenId,
 } from "@wormhole-foundation/sdk-connect";
-import type { CoinStruct } from "@mysten/sui/client";
 import {
   getPackageId,
   isSameType,
@@ -114,7 +113,7 @@ export class SuiExecutorTokenBridge<N extends Network, C extends SuiChains = Sui
 
     // 1. Fetch and merge coins (following TokenBridge pattern)
     const coins = await SuiPlatform.getCoins(this.provider, sender, coinType);
-    const [primaryCoin, ...mergeCoins] = coins.filter((coin: CoinStruct) =>
+    const [primaryCoin, ...mergeCoins] = coins.filter((coin) =>
       isSameType(coin.coinType, coinType),
     );
 
@@ -137,7 +136,7 @@ export class SuiExecutorTokenBridge<N extends Network, C extends SuiChains = Sui
         if (mergeCoins.length > 0) {
           tx.mergeCoins(
             primaryCoinInput,
-            mergeCoins.map((coin: CoinStruct) => tx.object(coin.coinObjectId)),
+            mergeCoins.map((coin) => tx.object(coin.coinObjectId)),
           );
         }
         const [refFee] = tx.splitCoins(primaryCoinInput, [tx.pure.u64(referrerFee.feeAmount)]);
@@ -158,7 +157,7 @@ export class SuiExecutorTokenBridge<N extends Network, C extends SuiChains = Sui
           // Only merge if we didn't already merge for referrer fee
           tx.mergeCoins(
             primaryCoinInput,
-            mergeCoins.map((coin: CoinStruct) => tx.object(coin.coinObjectId)),
+            mergeCoins.map((coin) => tx.object(coin.coinObjectId)),
           );
         }
         return tx.splitCoins(primaryCoinInput, [tx.pure.u64(actualTransferAmount)]);

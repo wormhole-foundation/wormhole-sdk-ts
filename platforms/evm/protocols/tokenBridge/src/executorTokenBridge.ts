@@ -17,7 +17,7 @@ import {
   serializeLayout,
   serialize,
   contracts,
-  suiExecutorTokenBridgeState,
+  getExecutorTokenBridgeDestinationAddresses,
 } from '@wormhole-foundation/sdk-connect';
 import type { EvmChains } from '@wormhole-foundation/sdk-evm';
 import {
@@ -144,17 +144,13 @@ export class EvmExecutorTokenBridge<N extends Network, C extends EvmChains>
     const wormholeFee = await this.core.getMessageFee();
 
     const nonce = 0;
-    // For Sui destinations, dstTransferRecipient (relayer emitter cap) and dstExecutionAddress (PTB resolver) are different
-    let dstTransferRecipient;
-    let dstExecutionAddress;
-    if (recipient.chain === 'Sui') {
-      const suiState = suiExecutorTokenBridgeState(this.network as 'Mainnet' | 'Testnet');
-      dstTransferRecipient = toUniversal('Sui', suiState.relayerEmitterCap);
-      dstExecutionAddress = toUniversal('Sui', suiState.ptbResolverStateId);
-    } else {
-      dstTransferRecipient = toUniversal(recipient.chain, dstRelayer);
-      dstExecutionAddress = dstTransferRecipient;
-    }
+    const dstAddresses = getExecutorTokenBridgeDestinationAddresses(
+      this.network as 'Mainnet' | 'Testnet',
+      recipient.chain,
+      dstRelayer,
+    );
+    const dstTransferRecipient = toUniversal(recipient.chain, dstAddresses.dstTransferRecipient);
+    const dstExecutionAddress = toUniversal(recipient.chain, dstAddresses.dstExecutionAddress);
     const executionAmount = estimatedCost;
     const refundAddr = senderAddr;
 
