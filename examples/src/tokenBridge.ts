@@ -5,17 +5,19 @@ import { TokenTransfer, Wormhole, amount, isTokenId, wormhole } from "@wormhole-
 
 import evm from "@wormhole-foundation/sdk/evm";
 import solana from "@wormhole-foundation/sdk/solana";
+import sui from "@wormhole-foundation/sdk/sui";
 import type { SignerStuff } from "./helpers/index.js";
 import { getSigner, waitLog } from "./helpers/index.js";
 
 (async function () {
   // Init Wormhole object, passing config for which network
   // to use (e.g. Mainnet/Testnet) and what Platforms to support
-  const wh = await wormhole("Testnet", [evm, solana]);
+  const wh = await wormhole("Testnet", [evm, solana, sui]);
 
   // Grab chain Contexts -- these hold a reference to a cached rpc client
-  const sendChain = wh.getChain("Avalanche");
-  const rcvChain = wh.getChain("Solana");
+  // For Sui ExecutorTokenBridge testing, use Sui as source or destination
+  const sendChain = wh.getChain("Sui");
+  const rcvChain = wh.getChain("Avalanche");
 
   // Shortcut to allow transferring native gas token
   const token = Wormhole.tokenId(sendChain.chain, "native");
@@ -42,7 +44,8 @@ import { getSigner, waitLog } from "./helpers/index.js";
   // - "AutomaticTokenBridge": Transfer using legacy relayer service for automatic relaying
   // On the destination side, a wrapped version of the token will be minted
   // to the address specified in the transfer VAA
-  const protocol: TokenTransfer.Protocol = "TokenBridge";
+  // Note: For Sui as source or destination, only ExecutorTokenBridge is supported
+  const protocol: TokenTransfer.Protocol = "ExecutorTokenBridge";
 
   // For AutomaticTokenBridge: The relayer can deliver native gas funds to the destination account
   // The amount specified for native gas will be swapped for the native gas token according
