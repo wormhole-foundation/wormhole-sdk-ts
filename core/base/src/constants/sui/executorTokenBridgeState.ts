@@ -1,6 +1,7 @@
 import { constMap } from "../../utils/index.js";
 import type { MapLevels } from "../../utils/index.js";
 import type { Network } from "../networks.js";
+import type { Chain } from "../chains.js";
 
 export type SuiExecutorTokenBridgeState = {
   // Token Bridge Relayer V4 State object ID
@@ -35,3 +36,26 @@ export const _suiExecutorTokenBridgeState = [
 ] as const satisfies MapLevels<[Network, SuiExecutorTokenBridgeState]>;
 
 export const suiExecutorTokenBridgeState = constMap(_suiExecutorTokenBridgeState, [0, 1]);
+
+/**
+ * Get the destination addresses for Executor Token Bridge transfers.
+ * For Sui destinations, dstTransferRecipient (relayer emitter cap) and dstExecutionAddress (PTB resolver) are different.
+ * For other chains, both addresses are the same (the relayer contract address).
+ */
+export function getExecutorTokenBridgeDestinationAddresses(
+  network: "Mainnet" | "Testnet",
+  destinationChain: Chain,
+  dstRelayerAddress: string,
+): { dstTransferRecipient: string; dstExecutionAddress: string } {
+  if (destinationChain === "Sui") {
+    const suiState = suiExecutorTokenBridgeState(network);
+    return {
+      dstTransferRecipient: suiState.relayerEmitterCap,
+      dstExecutionAddress: suiState.ptbResolverStateId,
+    };
+  }
+  return {
+    dstTransferRecipient: dstRelayerAddress,
+    dstExecutionAddress: dstRelayerAddress,
+  };
+}
