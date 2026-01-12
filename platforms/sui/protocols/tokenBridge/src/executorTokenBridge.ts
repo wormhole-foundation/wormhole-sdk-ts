@@ -190,7 +190,7 @@ export class SuiExecutorTokenBridge<N extends Network, C extends SuiChains = Sui
         executorPaymentCoin!,
         tx.object(SUI_CLOCK_OBJECT_ID),
         tx.pure.u16(toChainId(recipient.chain)),
-        tx.pure.vector("u8", Array.from(recipient.address.toUint8Array())), // recipient (32 bytes)
+        tx.pure.vector("u8", Array.from(recipient.address.toUniversalAddress().toUint8Array())), // recipient (32 bytes)
         tx.pure.address(dstExecutionAddress), // dst_execution_address
         tx.pure.address(senderAddress), // refund_addr
         tx.pure.vector("u8", Array.from(signedQuoteBytes)), // signed_quote
