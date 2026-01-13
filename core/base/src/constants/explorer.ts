@@ -378,6 +378,16 @@ const explorerConfig = [[
           account: "address/"
         }
       }
+    ], 
+    [
+      "MonadTestnet", {
+        name: "Monad Testnet Explorer",
+        baseUrl: "https://testnet.monadvision.com/",
+        endpoints: {
+          tx: "tx/",
+          account: "address/"
+        }
+      }
     ]
   ]],
 ] as const satisfies MapLevels<["Mainnet" | "Testnet", Chain, ExplorerSettings]>;

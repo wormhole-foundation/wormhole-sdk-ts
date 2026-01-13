@@ -83,6 +83,7 @@ const finalityThresholds = [
   ["BaseSepolia", 512],
   ["OptimismSepolia", 512],
   ["PolygonSepolia", 2],
+  ["MonadTestnet",   1],
 ] as const satisfies MapLevel<Chain, number>;
 
 /**
@@ -116,6 +117,7 @@ const blockTimeMilliseconds = [
   ["Mantle",            2_000],
   ["Moonbeam",         12_000],
   ["Monad",             1_000],
+  ["MonadTestnet",      1_000],
   ["Near",              1_500],
   ["Optimism",          2_000],
   ["OptimismSepolia",   2_000],

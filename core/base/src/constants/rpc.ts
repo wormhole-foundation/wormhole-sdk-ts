@@ -88,7 +88,7 @@ const rpcConfig = [[
     ["Worldchain",      "https://worldchain-sepolia.g.alchemy.com/public"],
     ["Ink",             "https://rpc-qnd-sepolia.inkonchain.com"],
     ["HyperEVM",        "https://api.hyperliquid-testnet.xyz/evm"],
-    ["Monad",           "https://testnet-rpc.monad.xyz"],
+    ["MonadTestnet",    "https://testnet-rpc.monad.xyz"],
     ["Noble",           "https://noble-testnet-rpc.polkachu.com/"],
     ["Mezo",            "https://rpc.test.mezo.org"],
     ["Sonic",           "https://rpc.blaze.soniclabs.com"],

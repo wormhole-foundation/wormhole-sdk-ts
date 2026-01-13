@@ -75,7 +75,7 @@ export const tokenBridgeContracts = [[
     ["Ink",             "0x376428e7f26D5867e69201b275553C45B09EE090"],
     ["HyperEVM",        "0x4a8bc80Ed5a4067f1CCf107057b8270E0cC11A78"],
     ["Linea",           "0xC7A204bDBFe983FCD8d8E61D02b475D4073fF97e"],
-    ["Monad",           "0xF323dcDe4d33efe83cf455F78F9F6cc656e6B659"],
+    ["MonadTestnet",    "0xF97B81E513f53c7a6B57Bd0b103a6c295b3096C5"],
     ["Mezo",            "0xA31aa3FDb7aF7Db93d18DDA4e19F811342EDF780"],
     ["Fogo",            "78HdStBqCMioGii9D8mF3zQaWDqDZBQWTUwjjpdmbJKX"],
     ["XRPLEVM",         "0x7d8eBc211C4221eA18E511E4f0fD50c5A539f275"],
