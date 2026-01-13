@@ -49,7 +49,6 @@ export const relayerContracts = [[
     ["Ink",             "0x362fca37E45fe1096b42021b543f462D49a5C8df"],
     ["Mezo",            "0x362fca37E45fe1096b42021b543f462D49a5C8df"],
     ["XRPLEVM",         "0x362fca37E45fe1096b42021b543f462D49a5C8df"],
-    ["Monad",           "0x362fca37E45fe1096b42021b543f462D49a5C8df"],
     ["PolygonSepolia",  "0x362fca37E45fe1096b42021b543f462D49a5C8df"],
   ]], [
   "Devnet", [

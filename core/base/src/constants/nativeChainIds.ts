@@ -109,7 +109,6 @@ const chainNetworkNativeChainIdEntries = [
       ["HyperCore",       65000n],
       ["Xlayer",          195n],
       ["Linea",           59141n], // Sepolia
-      ["Monad",           10143n],
       ["Mezo",            31611n],
       ["Sonic",           57054n],
       ["Converge",        52085145n],
@@ -119,6 +118,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Stacks",          2147483648n],
       ["Moca",            222888n],
       ["MegaETH",         6343n],
+      ["MonadTestnet",    10143n],
     ],
   ],
   [

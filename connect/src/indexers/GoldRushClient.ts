@@ -44,7 +44,7 @@ const GOLD_RUSH_CHAINS: Record<Network, Partial<Record<Chain, string>>> = {
     Arbitrum: "arbitrum-sepolia",
     Linea: "linea-sepolia-testnet",
     Scroll: "scroll-sepolia-testnet",
-    Monad: "monad-testnet",
+    MonadTestnet: "monad-testnet",
     Mantle: "mantle-sepolia-testnet",
     Fantom: "fantom-testnet",
   },
