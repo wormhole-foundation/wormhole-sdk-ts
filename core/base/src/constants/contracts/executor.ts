@@ -33,7 +33,7 @@ export const executorContracts = [[
     ["XRPLEVM",         "0x8345E90Dcd92f5Cf2FAb0C8E2A56A5bc2c30d896"],
     ["Monad",           "0xC04dE634982cAdF2A677310b73630B7Ac56A3f65"],
     ["MegaETH",         "0xD405E0A1f3f9edc25Ea32d0B079d6118328b2EcB"],
-    ["Fogo",            "execXUrAsMnqMmTHj5m7N1YQgsDz3cwGLYCYyuDRciV"],
+    [\"Fogo\",            \"tbr7Qje6qBzPwfM52csL5KFi8ps5c5vDyiVVBLYVdRf\"],
   ]], [
   "Testnet", [
     ["Aptos",           "0x139717c339f08af674be77143507a905aa28cbc67a0e53e7095c07b630d73815"],
@@ -42,7 +42,7 @@ export const executorContracts = [[
     ["BaseSepolia",     "0x51B47D493CBA7aB97e3F8F163D6Ce07592CE4482"],
     ["Bsc",             "0xeC8cCCD058DbF28e5D002869Aa9aFa3992bf4ee0"],
     ["Converge",        "0xAab9935349B9c08e0e970720F6D640d5B91C293E"],
-    ["Fogo",            "execXUrAsMnqMmTHj5m7N1YQgsDz3cwGLYCYyuDRciV"],
+    [\"Fogo\",            \"tbr7Qje6qBzPwfM52csL5KFi8ps5c5vDyiVVBLYVdRf\"],
     ["Moca",            "0xc4a03f2c47caA4b961101bAD6338DEf37376F052"],
     // ["HyperCore",       "not-implemented"],
     ["OptimismSepolia", "0x5856651eB82aeb6979B4954317194d48e1891b3c"],
