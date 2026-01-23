@@ -44,6 +44,7 @@ export const executorContracts = [[
     ["Converge",        "0xAab9935349B9c08e0e970720F6D640d5B91C293E"],
     ["Fogo",            "execXUrAsMnqMmTHj5m7N1YQgsDz3cwGLYCYyuDRciV"],
     ["Moca",            "0xc4a03f2c47caA4b961101bAD6338DEf37376F052"],
+    ["MonadTestnet",    "0xe37D3E162B4B1F17131E4e0e6122DbA31243382f"],
     // ["HyperCore",       "not-implemented"],
     ["OptimismSepolia", "0x5856651eB82aeb6979B4954317194d48e1891b3c"],
     ["Plume",           "0x8fc2FbA8F962fbE89a9B02f03557a011c335A455"],
