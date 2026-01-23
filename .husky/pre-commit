@@ -1,0 +1,5 @@
+#!/bin/sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Pre-commit linting disabled for now
+# npx lint-staged

@@ -28,7 +28,6 @@ const channelId = [
       ["Osmosis", { a: "d", b: 4, c: BigInt(4) }],
     ],
   ],
-  ["Devnet", []],
 ] as const satisfies RoArray<
   readonly [
     Network,
@@ -56,9 +55,8 @@ const networkChainCosmwasmChainIds = [
 >;
 
 describe("Mapping tests", function () {
-  let cm;
   it("should correctly create a mapping", function () {
-    cm = constMap(channelId, [0, [1, 2]]);
+    const cm = constMap(channelId, [0, [1, 2]]);
     const vals = cm("Mainnet");
     expect(vals.length).toEqual(2);
   });
@@ -66,6 +64,16 @@ describe("Mapping tests", function () {
     const chainIdToNetworkChainPair = constMap(networkChainCosmwasmChainIds, [2, [0, 1]]);
     const vals = chainIdToNetworkChainPair("evmos_9000-4");
     expect(vals).toEqual(["Testnet", "Evmos"]);
+  });
+  it("should correctly create a submap", function () {
+    const mainMap = constMap(networkChainCosmwasmChainIds);
+    const subMap = mainMap.subMap("Mainnet");
+    expect(subMap.has("Cosmoshub")).toBeTruthy();
+    expect(subMap.has("Evmos")).toBeTruthy();
+    expect(subMap.get("Cosmoshub")).toEqual("cosmoshub-4");
+    expect(subMap.get("Evmos")).toEqual("evmos_9001-2");
+    expect(subMap("Cosmoshub")).toEqual("cosmoshub-4");
+    expect(subMap("Evmos")).toEqual("evmos_9001-2");
   });
 });
 

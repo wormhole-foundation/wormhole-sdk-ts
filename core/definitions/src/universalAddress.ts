@@ -3,7 +3,7 @@ import { encoding, serializeLayout, throws } from "@wormhole-foundation/sdk-base
 
 import type { Address, NativeAddress } from "./address.js";
 import { toNative } from "./address.js";
-import { sha256, sha512_256 } from "./utils.js";
+import { keccak256, sha256, sha512_256 } from "./utils.js";
 
 const algorandAppIdLayout = [
   { name: "appIdPrefix", binary: "bytes", custom: encoding.bytes.encode("appID"), omit: true },
@@ -26,7 +26,7 @@ export class UniversalAddress implements Address {
   }
 
   toNative<T extends Parameters<typeof toNative>[0]>(chainOrPlatform: T): NativeAddress<T> {
-    return toNative(chainOrPlatform, this.toUint8Array());
+    return toNative(chainOrPlatform, this);
   }
 
   unwrap(): Uint8Array {
@@ -58,6 +58,8 @@ export class UniversalAddress implements Address {
     );
   }
 
+  static readonly ZERO = new UniversalAddress(new Uint8Array(UniversalAddress.byteSize));
+
   private static stringToUint8Array(address: string, format: PlatformAddressFormat): Uint8Array {
     const decoded = (() => {
       switch (format) {
@@ -75,8 +77,13 @@ export class UniversalAddress implements Address {
           return sha512_256(serializeLayout(algorandAppIdLayout, { appId: BigInt(address) }));
         case "sha256":
           return sha256(address);
+        case "keccak256":
+          return keccak256(address);
       }
     })();
+
+    if (!decoded)
+      throw new Error(`string ${address} could not be decoded for format ${format}`);
 
     if (decoded.length > UniversalAddress.byteSize)
       throw new Error(`string ${address} has invalid length for format ${format}`);

@@ -1,0 +1,83 @@
+{
+  "name": "@wormhole-foundation/sdk-evm-tbtc",
+  "version": "1.20.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wormhole-foundation/wormhole-sdk-ts.git"
+  },
+  "bugs": {
+    "url": "https://github.com/wormhole-foundation/wormhole-sdk-ts/issues"
+  },
+  "homepage": "https://github.com/wormhole-foundation/wormhole-sdk-ts#readme",
+  "directories": {
+    "test": "tests"
+  },
+  "license": "Apache-2.0",
+  "main": "./dist/cjs/index.js",
+  "types": "./dist/cjs/index.d.ts",
+  "module": "./dist/esm/index.js",
+  "author": "",
+  "description": "SDK for EVM chains, used in conjunction with @wormhole-foundation/sdk",
+  "files": [
+    "dist/esm",
+    "dist/cjs"
+  ],
+  "keywords": [
+    "wormhole",
+    "sdk",
+    "typescript",
+    "connect",
+    "tbtc",
+    "evm",
+    "ethereum",
+    "base",
+    "polygon",
+    "arbitrum",
+    "optimism"
+  ],
+  "engines": {
+    "node": ">=16"
+  },
+  "sideEffects": [
+    "./dist/cjs/index.js",
+    "./dist/esm/index.js"
+  ],
+  "scripts": {
+    "build:cjs": "tsc -p ./tsconfig.cjs.json  && echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
+    "build:esm": "tsc -p ./tsconfig.esm.json",
+    "build": "npm run build:esm && npm run build:cjs",
+    "rebuild": "npm run clean && npm run build",
+    "clean": "rm -rf ./dist && rm -rf ./.turbo",
+    "lint": "npm run prettier && eslint --fix ./src --ext .ts",
+    "prettier": "prettier --write ./src"
+  },
+  "dependencies": {
+    "@wormhole-foundation/sdk-connect": "1.20.0",
+    "@wormhole-foundation/sdk-evm": "1.20.0",
+    "@wormhole-foundation/sdk-evm-core": "1.20.0",
+    "ethers": "^6.5.1"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "react-native": {
+        "import": "./dist/esm/index.js",
+        "require": "./dist/cjs/index.js",
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      },
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      },
+      "default": {
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      }
+    }
+  }
+}

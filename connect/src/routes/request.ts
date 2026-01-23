@@ -1,6 +1,7 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
 import { amount } from "@wormhole-foundation/sdk-base";
 import type { ChainContext, TokenId } from "@wormhole-foundation/sdk-definitions";
+import { ChainAddress } from "@wormhole-foundation/sdk-definitions";
 import type { TransferQuote } from "../types.js";
 import type { Wormhole } from "../wormhole.js";
 import type { TokenDetails } from "./token.js";
@@ -14,16 +15,23 @@ export class RouteTransferRequest<N extends Network> {
   fromChain: ChainContext<N>;
   toChain: ChainContext<N>;
 
+  sender?: ChainAddress;
+  recipient?: ChainAddress;
+
   private constructor(
     fromChain: ChainContext<N>,
     toChain: ChainContext<N>,
     source: TokenDetails,
     destination: TokenDetails,
+    sender?: ChainAddress,
+    recipient?: ChainAddress,
   ) {
     this.fromChain = fromChain;
     this.toChain = toChain;
     this.source = source;
     this.destination = destination;
+    this.sender = sender;
+    this.recipient = recipient;
   }
 
   parseAmount(amt: string): amount.Amount {
@@ -53,9 +61,13 @@ export class RouteTransferRequest<N extends Network> {
     };
 
     if (quote.relayFee) {
+      const relayFeeChain =
+        quote.relayFee.token.chain === this.fromChain.chain ? this.fromChain : this.toChain;
+      const relayFeeDecimals = await relayFeeChain.getDecimals(quote.relayFee.token.address);
+
       dq.relayFee = {
         token: quote.relayFee.token,
-        amount: amount.fromBaseUnits(quote.relayFee.amount, this.source.decimals),
+        amount: amount.fromBaseUnits(quote.relayFee.amount, relayFeeDecimals),
       };
     }
 
@@ -69,6 +81,7 @@ export class RouteTransferRequest<N extends Network> {
     }
 
     dq.eta = quote.eta;
+    dq.expires = quote.expires;
 
     if (details) {
       dq.details = details;
@@ -82,6 +95,10 @@ export class RouteTransferRequest<N extends Network> {
     params: {
       source: TokenId<FC>;
       destination: TokenId<TC>;
+      sourceDecimals?: number;
+      destinationDecimals?: number;
+      sender?: ChainAddress;
+      recipient?: ChainAddress;
     },
     fromChain?: ChainContext<N, FC>,
     toChain?: ChainContext<N, TC>,
@@ -89,10 +106,21 @@ export class RouteTransferRequest<N extends Network> {
     fromChain = fromChain ?? wh.getChain(params.source.chain);
     toChain = toChain ?? wh.getChain(params.destination.chain);
 
-    const sourceDetails = await getTokenDetails(fromChain, params.source);
-    const destDetails = await getTokenDetails(toChain, params.destination);
+    const sourceDetails = await getTokenDetails(fromChain, params.source, params.sourceDecimals);
+    const destDetails = await getTokenDetails(
+      toChain,
+      params.destination,
+      params.destinationDecimals,
+    );
 
-    const rtr = new RouteTransferRequest(fromChain, toChain, sourceDetails, destDetails);
+    const rtr = new RouteTransferRequest(
+      fromChain,
+      toChain,
+      sourceDetails,
+      destDetails,
+      params.sender,
+      params.recipient,
+    );
 
     return rtr;
   }

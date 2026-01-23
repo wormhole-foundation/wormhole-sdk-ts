@@ -12,6 +12,8 @@ export * as api from "./whscan-api.js";
 
 export * as routes from "./routes/index.js";
 
+export * from "./indexers/index.js";
+
 // Re-export from core packages
 export * from "@wormhole-foundation/sdk-base";
 export * from "@wormhole-foundation/sdk-definitions";

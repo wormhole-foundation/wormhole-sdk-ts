@@ -1,7 +1,7 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
 import { contracts } from "@wormhole-foundation/sdk-base";
 
-// Allow contracts to be passed that arent
+// Allow contracts to be passed that aren't
 // part of the known contract set
 type UnknownContracts = Record<string, any>;
 
@@ -10,12 +10,17 @@ export type Contracts = {
   coreBridge?: string;
   tokenBridge?: string;
   tokenBridgeRelayer?: string;
+  executorTokenBridge?: contracts.ExecutorTokenBridgeContracts;
   nftBridge?: string;
   relayer?: string;
   cctp?: contracts.CircleContracts;
   gateway?: string;
   translator?: string;
   portico?: contracts.PorticoContracts;
+  tbtc?: string;
+  executor?: string;
+  customConsistencyLevel?: string;
+  executorQuoter?: string;
 } & UnknownContracts;
 
 /**
@@ -33,7 +38,15 @@ export function getContracts(n: Network, c: Chain): Contracts {
     nftBridge: contracts.nftBridge.get(n, c),
     relayer: contracts.relayer.get(n, c),
     tokenBridgeRelayer: contracts.tokenBridgeRelayer.get(n, c),
+    tbtc: contracts.tbtc.get(n, c),
+    executor: contracts.executor.get(n, c),
+    customConsistencyLevel: contracts.customConsistencyLevel.get(n, c),
+    executorQuoter: contracts.executorQuoter.get(n, c),
   };
+
+  if (contracts.executorTokenBridge.has(n, c)) {
+    ct.executorTokenBridge = contracts.executorTokenBridge.get(n, c);
+  }
 
   if (contracts.circleContracts.has(n, c)) {
     ct.cctp = contracts.circleContracts.get(n, c);
@@ -49,6 +62,10 @@ export function getContracts(n: Network, c: Chain): Contracts {
 
   if (contracts.portico.has(n, c)) {
     ct.portico = contracts.portico.get(n, c);
+  }
+
+  if (contracts.tbtc.has(n, c)) {
+    ct.tbtc = contracts.tbtc.get(n, c);
   }
 
   return ct;

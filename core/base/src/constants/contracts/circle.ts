@@ -53,8 +53,26 @@ export const circleContracts = [[
       messageTransmitter: "0xF3be9355363857F3e001be68856A2f96b4C39Ba9",
       wormholeRelayer:    "0x4cb69FaE7e7Af841e44E1A1c30Af640739378bb2",
       wormhole:           "0x0FF28217dCc90372345954563486528aa865cDd6",
+    }], [
+    "Sui", {
+      tokenMessenger:     "0x2aa6c5d56376c371f88a6cc42e852824994993cb9bab8d3e6450cbe3cb32b94e",
+      messageTransmitter: "0x08d87d37ba49e785dde270a83f8e979605b03dc552b5548f26fdf2f49bf7ed1b",
+      wormholeRelayer:    "",
+      wormhole:           "",
+    }], [
+    "Aptos", {
+      tokenMessenger:     "0x9e6702a472080ea3caaf6ba9dfaa6effad2290a9ba9adaacd5af5c618e42782d",
+      messageTransmitter: "0x177e17751820e4b4371873ca8c30279be63bdea63b88ed0f2239c2eea10f1772",
+      wormholeRelayer:    "",
+      wormhole:           "",
+    }], [
+    "Unichain", {
+      tokenMessenger:     "0x4e744b28E787c3aD0e810eD65A24461D4ac5a762",
+      messageTransmitter: "0x353bE9E2E38AB1D19104534e4edC21c643Df86f4",
+      wormholeRelayer:    "",
+      wormhole:           "",
     }],
-  ]], [
+   ]], [
   "Testnet", [[
     "Sepolia", {
       tokenMessenger:     "0x9f3B8679c73C2Fef8b59B4f3444d4e156fb70AA5",
@@ -97,6 +115,24 @@ export const circleContracts = [[
       messageTransmitter: "0xe09A679F56207EF33F5b9d8fb4499Ec00792eA73",
       wormholeRelayer:    "0x4cb69FaE7e7Af841e44E1A1c30Af640739378bb2",
       wormhole:           "0x2703483B1a5a7c577e8680de9Df8Be03c6f30e3c",
+    }], [
+    "Sui", {
+      tokenMessenger:     "0x31cc14d80c175ae39777c0238f20594c6d4869cfab199f40b69f3319956b8beb",
+      messageTransmitter: "0x4931e06dce648b3931f890035bd196920770e913e43e45990b383f6486fdd0a5",
+      wormholeRelayer:    "",
+      wormhole:           "",
+    }], [
+    "Aptos", {
+      tokenMessenger:     "0x5f9b937419dda90aa06c1836b7847f65bbbe3f1217567758dc2488be31a477b9",
+      messageTransmitter: "0x081e86cebf457a0c6004f35bd648a2794698f52e0dde09a48619dcd3d4cc23d9",
+      wormholeRelayer:    "",
+      wormhole:           "",
+    }], [
+    "Unichain", {
+      tokenMessenger:     "0x8ed94B8dAd2Dc5453862ea5e316A8e71AAed9782",
+      messageTransmitter: "0xbc498c326533d675cf571B90A2Ced265ACb7d086",
+      wormholeRelayer:    "",
+      wormhole:           "",
     }],
-  ]],
+   ]],
 ] as const satisfies MapLevels<[Network, Chain, CircleContracts]>;

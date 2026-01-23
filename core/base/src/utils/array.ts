@@ -1,63 +1,105 @@
-import type { RoArray, RoArray2D, IsUnion } from './metaprogramming.js';
+import type { RoPair, RoTuple, RoArray, Extends, Xor, Not } from './metaprogramming.js';
 
-export const range = (length: number) => [...Array(length).keys()];
+export type RoTuple2D<T = unknown> = RoTuple<RoTuple<T>>;
+export type RoArray2D<T = unknown> = RoArray<RoArray<T>>;
 
-//TODO the intent here is that number represents a number literal, but strictly speaking
-//  the type allows for unions of number literals (and an array of such unions)
-//The reason for not just sticking to unions is that unions lose order information which is
-//  relevant in some cases (and iterating over them is a pain).
-export type IndexEs = number | RoArray<number>;
+type TupleRangeImpl<L extends number, A extends number[] = []> =
+  A["length"] extends L
+  ? A
+  : TupleRangeImpl<L, [...A, A["length"]]>;
 
-export type ElementIndexPairs<T extends RoArray> =
-  [...{ [K in keyof T]: K extends `${infer N extends number}` ? [T[K], N] : never }];
+export type TupleRange<L extends number> =
+  number extends L
+  ? never
+  : L extends any
+  ? TupleRangeImpl<L>
+  : never;
 
-export const elementIndexPairs = <const T extends RoArray>(arr: T) =>
-  range(arr.length).map(i => [arr[i], i]) as ElementIndexPairs<T>;
+export type Range<L extends number> =
+  L extends any
+  ? number extends L
+    ? number[]
+    : TupleRange<L>
+  : never;
 
-export type Entries<T extends RoArray> =
+export type TupleWithLength<T, L extends number> =
+  TupleRange<L> extends infer R extends RoArray<number>
+  ? [...{ [K in keyof R]: T }]
+  : never;
+
+export type RoTupleWithLength<T, L extends number> = Readonly<TupleWithLength<T, L>>;
+
+export const range = <const L extends number>(length: L) =>
+  [...Array(length).keys()] as Range<L>;
+
+//capitalization to highlight that this is intended to be a literal or a union of literals
+export type IndexEs = number;
+
+//utility type to reduce boilerplate of iteration code by replacing:
+// `T extends readonly [infer Head extends T[number], ...infer Tail extends RoTuple<T[number]>]`
+//with just:
+// `T extends HeadTail<T, infer Head, infer Tail>`
+//this also avoids the somewhat common mistake of accidentally dropping the readonly modifier
+export type HeadTail<T extends RoTuple, Head extends T[number], Tail extends RoTuple<T[number]>> =
+  readonly [Head, ...Tail];
+
+export type TupleEntries<T extends RoTuple> =
   [...{ [K in keyof T]: K extends `${infer N extends number}` ? [N, T[K]] : never }];
 
-export const entries = <const T extends RoArray>(arr: T) =>
-  range(arr.length).map(i => [i, arr[i]]) as Entries<T>;
+//const aware version of Array.entries
+export type Entries<T extends RoArray> =
+  T extends RoTuple
+  ? TupleEntries<T>
+  : T extends RoArray<infer U>
+  ? [number, U][]
+  : never;
 
-export type Flatten<T extends RoArray> =
-  T extends readonly [infer Head, ...infer Tail extends RoArray]
-  ? Head extends RoArray
-    ? [...Head, ...Flatten<Tail>]
-    : [Head, ...Flatten<Tail>]
+export function entries<const T extends RoTuple>(arr: T): TupleEntries<T>;
+export function entries<const T extends RoArray>(arr: T): Entries<T>;
+export function entries(arr: readonly any[]): [number, any][] {
+  return [...arr.entries()];
+}
+
+export type IsArray<T> = T extends RoArray<any> ? true : false;
+export type IsFlat<A extends RoArray> = true extends IsArray<A[number]> ? false : true;
+
+export type TupleFlatten<T extends RoTuple> =
+  T extends HeadTail<T, infer Head, infer Tail>
+  ? Head extends RoTuple
+    ? [...Head, ...TupleFlatten<Tail>]
+    : [Head, ...TupleFlatten<Tail>]
   : [];
 
-export type InnerFlatten<T extends RoArray> =
-  [...{ [K in keyof T]:
+type StripArray<T> = T extends RoArray<infer E> ? E : T;
+
+export type Flatten<A extends RoArray> =
+  A extends RoTuple
+  ? TupleFlatten<A>
+  : StripArray<A[number]>[];
+
+export const flatten = <const A extends RoArray>(arr: A) =>
+  arr.flat() as Flatten<A>;
+
+export type InnerFlatten<A extends RoArray> =
+  [...{ [K in keyof A]:
     K extends `${number}`
-    ? T[K] extends RoArray
-      ? Flatten<T[K]>
-      : T[K]
+    ? A[K] extends RoArray
+      ? Flatten<A[K]>
+      : A[K]
     : never
   }];
 
-export type IsFlat<T extends RoArray> =
-  T extends readonly [infer Head, ...infer Tail extends RoArray]
-  ? Head extends RoArray
-    ? false
-    : IsFlat<Tail>
-  : true;
+export type Unflatten<A extends RoArray> =
+  [...{ [K in keyof A]: K extends `${number}` ? [A[K]] : never }];
 
-export type Unflatten<T extends RoArray> =
-  [...{ [K in keyof T]: K extends `${number}` ? [T[K]] : never }];
-
-export type AllSameLength<T extends RoArray2D, L extends number | void = void> =
-  T extends readonly [infer Head extends RoArray, ...infer Tail extends RoArray2D]
-  ? L extends void
-    ? AllSameLength<Tail, Head["length"]>
-    : Head["length"] extends L
-    ? AllSameLength<Tail, L>
-    : false
-  : true;
-
-export type IsRectangular<T extends RoArray> =
-  //1d array is rectangular
-  T extends RoArray2D ? AllSameLength<T> : IsFlat<T>;
+export type IsRectangular<T extends RoTuple> =
+  T extends RoTuple2D
+  ? T extends HeadTail<T, infer Head extends RoTuple, infer Tail extends RoTuple2D>
+    ? Tail extends readonly []
+      ? true //a column is rectangular
+      : Tail[number]["length"] extends Head["length"] ? true : false
+    : true //empty is rectangular
+  : true; //a row is rectangular
 
 export type Column<A extends RoArray2D, I extends number> =
   [...{ [K in keyof A]: K extends `${number}` ? A[K][I] : never }];
@@ -65,48 +107,66 @@ export type Column<A extends RoArray2D, I extends number> =
 export const column = <const A extends RoArray2D, const I extends number>(tupArr: A, index: I) =>
   tupArr.map((tuple) => tuple[index]) as Column<A, I>;
 
-export type Zip<A extends RoArray2D> =
-  //TODO remove, find max length, and return undefined for elements in shorter arrays
-  A["length"] extends 0
-  ? []
-  : IsRectangular<A> extends true
-  ? A[0] extends infer Head extends RoArray
+export type TupleZip<T extends RoTuple2D> =
+  IsRectangular<T> extends true
+  ? T[0] extends infer Head extends RoTuple
     ? [...{ [K in keyof Head]:
         K extends `${number}`
-        ? [...{ [K2 in keyof A]: K extends keyof A[K2] ? A[K2][K] : never }]
+        ? [...{ [K2 in keyof T]: K extends keyof T[K2] ? T[K2][K] : never }]
         : never
       }]
     : []
-  : never
+  : never;
+
+export type Zip<A extends RoArray2D> =
+  A extends RoTuple2D
+  ? TupleZip<A>
+  : Flatten<A>[number][][];
 
 export const zip = <const Args extends RoArray2D>(arr: Args) =>
   range(arr[0]!.length).map(col =>
     range(arr.length).map(row => arr[row]![col])
-  ) as unknown as ([Zip<Args>] extends [never] ? RoArray2D : Zip<Args>);
+  ) as Zip<Args>;
 
 //extracts elements with the given indexes in the specified order, explicitly forbid unions
-export type OnlyIndexes<E extends RoArray, I extends IndexEs> =
-  IsUnion<I> extends false
-    ? I extends number
-    ? OnlyIndexes<E, [I]>
-    : I extends readonly [infer Head extends number, ...infer Tail extends RoArray<number>]
-    ? E[Head] extends undefined
-      ? OnlyIndexes<E, Tail>
-      : [E[Head], ...OnlyIndexes<E, Tail>]
-    : []
-  : never;
+export type TuplePickWithOrder<A extends RoArray, I extends RoTuple<number>> =
+  I extends HeadTail<I, infer Head, infer Tail>
+  ? A[Head] extends undefined
+    ? TuplePickWithOrder<A, Tail>
+    : [A[Head], ...TuplePickWithOrder<A, Tail>]
+  : [];
 
-type ExcludeIndexesImpl<T extends RoArray, C extends number> =
-  T extends readonly [infer Head, ...infer Tail]
-  ? Head extends readonly [infer I extends number, infer V]
-    ? I extends C
-      ? ExcludeIndexesImpl<Tail, C>
-      : [V, ...ExcludeIndexesImpl<Tail, C>]
+export type PickWithOrder<A extends RoArray, I extends RoArray<number>> =
+  [A, I] extends [infer T extends RoTuple, infer TI extends RoTuple<number>]
+  ? TuplePickWithOrder<T, TI>
+  : A;
+
+export const pickWithOrder =
+  <const A extends RoArray, const I extends RoArray<number>>(arr: A, indexes: I) =>
+    indexes.map((i) => arr[i]) as PickWithOrder<A, I>;
+
+type FilterIndexesImpl<T extends RoTuple, I extends IndexEs, E extends boolean> =
+  T extends HeadTail<T, infer Head, infer Tail>
+  ? Head extends RoPair<infer J extends number, infer V>
+    ? Not<Xor<Not<E>, Extends<J, I>>> extends true
+      ? [V, ...FilterIndexesImpl<Tail, I, E>]
+      : FilterIndexesImpl<Tail, I, E>
     : never
   : [];
 
-export type ExcludeIndexes<T extends RoArray, C extends IndexEs> =
-  ExcludeIndexesImpl<Entries<T>, C extends RoArray<number> ? C[number] : C>;
+export type FilterIndexes<A extends RoArray, I extends IndexEs, E extends boolean = false> =
+  A extends infer T extends RoTuple
+  ? FilterIndexesImpl<Entries<T>, I, E>
+  : A;
+
+export const filterIndexes = <
+  const T extends RoArray,
+  const I extends RoArray<number>,
+  const E extends boolean = false
+>(arr: T, indexes: I, exclude?: E) => {
+  const indexSet = new Set(Array.isArray(indexes) ? indexes : [indexes]);
+  return arr.filter((_,i) => indexSet.has(i) !== exclude) as FilterIndexes<T, I[number], E>;
+};
 
 export type Cartesian<L, R> =
   L extends RoArray
@@ -114,3 +174,30 @@ export type Cartesian<L, R> =
   : R extends RoArray
   ? [...{ [K in keyof R]: K extends `${number}` ? [L, R[K]] : never }]
   : [L, R];
+
+export function median(arr: RoArray<number>, isSorted?: boolean): number;
+export function median(arr: RoArray<bigint>, isSorted?: boolean): bigint;
+export function median(arr: RoArray<number> | RoArray<bigint>, isSorted: boolean = false): number | bigint {
+  if (arr.length === 0) throw new Error("Can't calculate median of empty array");
+
+  const sorted = isSorted ? arr : [...arr].sort((a, b) => (a > b ? 1 : a < b ? -1 : 0)); // handle bigint and number
+
+  const mid = Math.floor(sorted.length / 2);
+
+  if (sorted.length % 2 === 1) {
+    return sorted[mid]!;
+  }
+
+  const left = sorted[mid - 1]!;
+  const right = sorted[mid]!;
+
+  if (typeof left === "bigint" && typeof right === "bigint") {
+    return (left + right) / 2n;
+  }
+
+  if (typeof left === "number" && typeof right === "number") {
+    return (left + right) / 2;
+  }
+
+  throw new Error("Can't calculate median of array with mixed number and bigint");
+}

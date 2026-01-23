@@ -16,3 +16,4 @@ export const idl = {
 
 export type { MessageTransmitter, TokenMessenger };
 export * from './circleBridge.js';
+export * from './utils/index.js'

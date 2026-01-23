@@ -5,24 +5,17 @@ import type { Chain } from "./chains.js";
 // prettier-ignore
 const platformAndChainsEntries = [[
   "Evm", [
-    "Acala",
     "Arbitrum",
-    "Aurora",
     "Avalanche",
     "Base",
     "Bsc",
     "Celo",
     "Ethereum",
     "Fantom",
-    "Gnosis",
-    "Karura",
     "Klaytn",
     "Moonbeam",
-    "Neon",
-    "Oasis",
     "Optimism",
     "Polygon",
-    "Rootstock",
     "Sepolia",
     "ArbitrumSepolia",
     "BaseSepolia",
@@ -31,16 +24,31 @@ const platformAndChainsEntries = [[
     "PolygonSepolia",
     "Mantle",
     "Scroll",
-    "Blast",
     "Xlayer",
     "Linea",
     "Berachain",
     "Seievm",
-    "Snaxchain",
+    "Unichain",
+    "Worldchain",
+    "Ink",
+    "HyperEVM",
+    "Monad",
+    "Mezo",
+    "Sonic",
+    "Converge",
+    "Plume",
+    "XRPLEVM",
+    "Plasma",
+    "CreditCoin",
+    "HyperCore", // not an actual EVM platform; treating as EVM
+    "Moca",
+    "MegaETH",
+    "MonadTestnet"
   ]], [
   "Solana", [
     "Solana",
-    "Pythnet"
+    "Pythnet",
+    "Fogo"
   ]], [
   "Cosmwasm", [
     "Cosmoshub",
@@ -49,16 +57,14 @@ const platformAndChainsEntries = [[
     "Kujira",
     "Osmosis",
     "Sei",
-    "Terra",
-    "Terra2",
     "Wormchain",
-    "Xpla",
     "Dymension",
     "Neutron",
     "Stargaze",
     "Celestia",
     "Seda",
-    "Provenance"
+    "Provenance",
+    "Noble"
   ]], [
     "Btc", [
       "Btc"
@@ -74,7 +80,10 @@ const platformAndChainsEntries = [[
   ]], [
     "Near", [
       "Near"
-  ]],
+  ]], [
+    "Stacks", [
+      "Stacks"
+  ]]
 ] as const satisfies MapLevel<string, RoArray<Chain>>;
 
 export const platforms = column(platformAndChainsEntries, 0);
@@ -99,6 +108,7 @@ const platformAddressFormatEntries = [
   ["Sui",       "hex"],
   ["Aptos",     "hex"],
   ["Near",      "sha256"],
+  ["Stacks",    "keccak256"],
 ] as const;
 
 export const platformToAddressFormat = constMap(platformAddressFormatEntries);

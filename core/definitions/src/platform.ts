@@ -3,7 +3,7 @@ import type { WormholeMessageId } from "./attestation.js";
 import type { ChainContext } from "./chain.js";
 import type { ProtocolInitializer, ProtocolInstance, ProtocolName } from "./protocol.js";
 import { create, getProtocolInitializer } from "./protocol.js";
-import type { RpcConnection } from "./rpc.js";
+import type { IndexerConnection, RpcConnection } from "./rpc.js";
 import type { Balances, ChainsConfig, SignedTx, TokenAddress, TokenId, TxHash } from "./types.js";
 
 /**
@@ -45,6 +45,7 @@ export interface PlatformUtils<P extends Platform> {
 
   /** Get the number of decimals for a given token */
   getDecimals<C extends PlatformToChains<P>>(
+    network: Network,
     chain: C,
     rpc: RpcConnection<P>,
     token: TokenAddress<C>,
@@ -52,19 +53,12 @@ export interface PlatformUtils<P extends Platform> {
 
   /** Get the balance of a token for a given wallet address */
   getBalance<C extends PlatformToChains<P>>(
+    network: Network,
     chain: C,
     rpc: RpcConnection<P>,
     walletAddr: string,
     token: TokenAddress<C>,
   ): Promise<bigint | null>;
-
-  /** Look up the balances for a list of tokens for a given wallet address */
-  getBalances<C extends PlatformToChains<P>>(
-    chain: C,
-    rpc: RpcConnection<P>,
-    walletAddress: string,
-    tokens: TokenAddress<C>[],
-  ): Promise<Balances>;
 
   /** Look up the latest block according to the RPC passed */
   getLatestBlock(rpc: RpcConnection<P>): Promise<number>;
@@ -80,6 +74,21 @@ export interface PlatformUtils<P extends Platform> {
     rpc: RpcConnection<P>,
     stxns: SignedTx[],
   ): Promise<TxHash[]>;
+}
+
+export interface PlatformIndexerUtils<N extends Network, P extends Platform> {
+  /** Get balances for all tokens given a wallet address */
+  getBalances(
+    network: Network,
+    chain: PlatformToChains<P>,
+    rpc: RpcConnection<P>,
+    walletAddress: string,
+    indexer?: IndexerConnection<P>,
+  ): Promise<Balances>;
+}
+
+export function supportsIndexerUtils(thing: any): thing is PlatformIndexerUtils<Network, Platform> {
+  return thing.getBalances !== undefined;
 }
 
 // Use this to ensure the static methods defined in the PlatformContext

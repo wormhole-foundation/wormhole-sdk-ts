@@ -16,12 +16,17 @@ import type {
   Contracts,
   IbcBridge,
   PorticoBridge,
+  TBTCBridge,
   WormholeCore,
 } from "./index.js";
 import type { PlatformContext } from "./platform.js";
 import type { ProtocolInstance, ProtocolInterface, ProtocolName } from "./protocol.js";
 import { isVersionedProtocolInitializer, protocolIsRegistered } from "./protocol.js";
-import type { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge/tokenBridge.js";
+import type {
+  AutomaticTokenBridge,
+  TokenBridge,
+  ExecutorTokenBridge,
+} from "./protocols/tokenBridge/tokenBridge.js";
 import type { RpcConnection } from "./rpc.js";
 import type { ChainConfig, SignedTx, TokenAddress, TokenId } from "./types.js";
 import { canonicalAddress, isNative } from "./types.js";
@@ -81,7 +86,7 @@ export abstract class ChainContext<
       if (found) return found.decimals;
     }
 
-    return this.platform.utils().getDecimals(this.chain, await this.getRpc(), token);
+    return this.platform.utils().getDecimals(this.network, this.chain, await this.getRpc(), token);
   }
 
   /**
@@ -93,7 +98,9 @@ export abstract class ChainContext<
    *
    */
   async getBalance(walletAddr: string, token: TokenAddress<C>): Promise<bigint | null> {
-    return this.platform.utils().getBalance(this.chain, await this.getRpc(), walletAddr, token);
+    return this.platform
+      .utils()
+      .getBalance(this.network, this.chain, await this.getRpc(), walletAddr, token);
   }
 
   /**
@@ -180,6 +187,21 @@ export abstract class ChainContext<
   ): Promise<ChainAddress<C>> {
     // Noop by default, override in implementation if necessary
     return { chain: this.chain, address };
+  }
+
+  /**
+   * Check if a token uses the Token2022 program
+   *
+   * @remarks
+   * This is really only useful in the context of Solana but in order
+   * to provide a consistent interface, we provide it here.
+   *
+   * @param token the token to check
+   * @returns true if the token uses the Token2022 program, false otherwise
+   */
+  async isToken2022(token: TokenAddress<C>): Promise<boolean> {
+    // Return false by default, override in implementation if necessary
+    return false;
   }
 
   /**
@@ -275,6 +297,18 @@ export abstract class ChainContext<
     this.getProtocol("AutomaticTokenBridge");
 
   /**
+   * Check to see if the Executor Token Bridge protocol is supported by this chain
+   * @returns  a boolean indicating if this chain supports the Executor Token Bridge protocol
+   */
+  supportsExecutorTokenBridge = () => this.supportsProtocol("ExecutorTokenBridge");
+  /**
+   * Get the Executor Token Bridge protocol client for this chain
+   * @returns the Executor Token Bridge protocol client for this chain
+   */
+  getExecutorTokenBridge = (): Promise<ExecutorTokenBridge<N, C>> =>
+    this.getProtocol("ExecutorTokenBridge");
+
+  /**
    * Check to see if the Circle Bridge protocol is supported by this chain
    * @returns a boolean indicating if this chain supports the Circle Bridge protocol
    */
@@ -318,4 +352,16 @@ export abstract class ChainContext<
    * @returns the Portico Bridge protocol client for this chain
    */
   getPorticoBridge = (): Promise<PorticoBridge<N, C>> => this.getProtocol("PorticoBridge");
+
+  /**
+   * Check to see if the TBTC Bridge protocol is supported by this chain
+   * @returns a boolean indicating if this chain supports the TBTC Bridge protocol
+   */
+  supportsTBTCBridge = () => this.supportsProtocol("TBTCBridge");
+
+  /**
+   * Get the TBTC Bridge protocol client for this chain
+   * @returns the TBTC Bridge protocol client for this chain
+   */
+  getTBTCBridge = (): Promise<TBTCBridge<N, C>> => this.getProtocol("TBTCBridge");
 }

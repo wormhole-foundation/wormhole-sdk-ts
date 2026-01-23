@@ -1,4 +1,5 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
+import { time } from "@wormhole-foundation/sdk-base";
 import { circle, encoding, finality, guardians, toChain } from "@wormhole-foundation/sdk-base";
 import type {
   Attestation,
@@ -43,6 +44,7 @@ import {
 } from "../../types.js";
 import { Wormhole } from "../../wormhole.js";
 import type { WormholeTransfer } from "../wormholeTransfer.js";
+import { chainToPlatform } from "@wormhole-foundation/sdk-base";
 
 export class CircleTransfer<N extends Network = Network>
   implements WormholeTransfer<CircleTransfer.Protocol>
@@ -231,7 +233,7 @@ export class CircleTransfer<N extends Network = Network>
     try {
       msgIds = await fromChain.parseTransaction(txid);
     } catch (e: any) {
-      if (e.message.includes("no bridge messages found")) {
+      if (e.message.includes("no bridge messages found") || e.message.includes("not found")) {
         // This means it's a Circle attestation; swallow
       } else {
         throw e;
@@ -565,9 +567,9 @@ export namespace CircleTransfer {
   ): Promise<CircleTransferDetails> {
     const _transfer = { ...transfer };
 
-    if (transfer.to.chain === "Solana" && !_transfer.automatic) {
+    if (chainToPlatform(dstChain.chain) === "Solana" && !_transfer.automatic) {
       const usdcAddress = Wormhole.parseAddress(
-        "Solana",
+        dstChain.chain,
         circle.usdcContract.get(dstChain.network, dstChain.chain)!,
       );
       _transfer.to = await dstChain.getTokenAccount(_transfer.to.address, usdcAddress);
@@ -581,9 +583,13 @@ export namespace CircleTransfer {
     dstChain: ChainContext<N, Chain>,
     transfer: Omit<CircleTransferDetails, "from" | "to">,
   ): Promise<TransferQuote> {
+    if (!circle.isCircleChain(dstChain.network, dstChain.chain))
+      throw new Error(`Invalid destination chain ${dstChain.chain} for Circle transfer`);
     const dstUsdcAddress = circle.usdcContract.get(dstChain.network, dstChain.chain);
     if (!dstUsdcAddress) throw "Invalid transfer, no USDC contract on destination";
 
+    if (!circle.isCircleChain(srcChain.network, srcChain.chain))
+      throw new Error(`Invalid source chain ${srcChain.chain} for Circle transfer`);
     const srcUsdcAddress = circle.usdcContract.get(srcChain.network, srcChain.chain);
     if (!srcUsdcAddress) throw "Invalid transfer, no USDC contract on source";
 
@@ -592,12 +598,19 @@ export namespace CircleTransfer {
 
     // https://developers.circle.com/stablecoins/docs/required-block-confirmations
     const eta =
-      (srcChain.chain === "Polygon" ? 2_000 * 200 : finality.estimateFinalityTime(srcChain.chain)) + guardians.guardianAttestationEta;
+      (srcChain.chain === "Polygon" ? 2_000 * 200 : finality.estimateFinalityTime(srcChain.chain)) +
+      guardians.guardianAttestationEta;
+
+    const expires = transfer.automatic
+      ? time.expiration(0, 5, 0) // 5 minutes for automatic transfers
+      : time.expiration(24, 0, 0); // 24 hours for manual
+
     if (!transfer.automatic) {
       return {
         sourceToken: { token: srcToken, amount: transfer.amount },
         destinationToken: { token: dstToken, amount: transfer.amount },
         eta,
+        expires,
       };
     }
 
@@ -630,6 +643,7 @@ export namespace CircleTransfer {
       relayFee: { token: srcToken, amount: fee },
       destinationNativeGas,
       eta,
+      expires,
     };
   }
 

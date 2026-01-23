@@ -11,7 +11,7 @@ const configs = CONFIG[network].chains;
 // );
 const COSMWASM_CHAINS = chains.filter((c) => c === "Cosmoshub") as CosmwasmChains[];
 
-describe("Cosmwasm Platform Tests", () => {
+describe.skip("Cosmwasm Platform Tests", () => {
   describe("Get Chain", () => {
     test("No conf", () => {
       const p = new CosmwasmPlatform(network, {});

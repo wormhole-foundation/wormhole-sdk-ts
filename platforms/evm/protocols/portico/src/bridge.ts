@@ -12,11 +12,11 @@ import {
   PorticoBridge,
   Wormhole,
   canonicalAddress,
-  contracts,
   isEqualCaseInsensitive,
   nativeChainIds,
   resolveWrappedToken,
   serialize,
+  toChain,
   toChainId,
 } from '@wormhole-foundation/sdk-connect';
 import type { EvmChains } from '@wormhole-foundation/sdk-evm';
@@ -28,16 +28,13 @@ import {
   addFrom,
 } from '@wormhole-foundation/sdk-evm';
 import type { Provider, TransactionRequest } from 'ethers';
-import { ethers } from 'ethers';
+import { ethers, keccak256 } from 'ethers';
 import { porticoAbi, uniswapQuoterV2Abi } from './abis.js';
 import { PorticoApi } from './api.js';
-import { FEE_TIER } from './consts.js';
-import {
-  getTokensBySymbol,
-  getTokenByAddress,
-} from '@wormhole-foundation/sdk-connect/tokens';
+import { FEE_TIER, supportedTokens } from './consts.js';
 
 import { EvmWormholeCore } from '@wormhole-foundation/sdk-evm-core';
+import { EvmTokenBridge } from '@wormhole-foundation/sdk-evm-tokenbridge';
 
 import '@wormhole-foundation/sdk-evm-tokenbridge';
 
@@ -47,12 +44,10 @@ export class EvmPorticoBridge<
 > implements PorticoBridge<N, C>
 {
   chainId: bigint;
-  porticoAddress: string;
-  uniswapAddress: string;
 
-  porticoContract: ethers.Contract;
-  uniswapContract: ethers.Contract;
   core: EvmWormholeCore<N, C>;
+
+  tokenBridge: EvmTokenBridge<N, C>;
 
   constructor(
     readonly network: N,
@@ -65,28 +60,12 @@ export class EvmPorticoBridge<
 
     this.core = new EvmWormholeCore(network, chain, provider, contracts);
 
-    const { portico: porticoAddress, uniswapQuoterV2: uniswapAddress } =
-      contracts.portico;
-
-    this.porticoAddress = porticoAddress;
-    this.uniswapAddress = uniswapAddress;
+    this.tokenBridge = new EvmTokenBridge(network, chain, provider, contracts);
 
     this.chainId = nativeChainIds.networkChainToNativeChainId.get(
       network,
       chain,
     ) as bigint;
-
-    this.porticoContract = new ethers.Contract(
-      this.porticoAddress,
-      porticoAbi.fragments,
-      this.provider,
-    );
-
-    this.uniswapContract = new ethers.Contract(
-      this.uniswapAddress,
-      uniswapQuoterV2Abi.fragments,
-      this.provider,
-    );
   }
 
   static async fromRpc<N extends Network>(
@@ -108,6 +87,7 @@ export class EvmPorticoBridge<
     token: TokenAddress<C>,
     amount: bigint,
     destToken: TokenId,
+    destinationPorticoAddress: string,
     quote: PorticoBridge.Quote,
   ) {
     const { minAmountStart, minAmountFinish } = quote.swapAmounts;
@@ -131,19 +111,15 @@ export class EvmPorticoBridge<
     const startTokenAddress = canonicalAddress(startToken);
 
     const cannonTokenAddress = canonicalAddress(
-      this.getTransferrableToken(startTokenAddress),
+      await this.getTransferrableToken(startTokenAddress),
     );
 
     const receiverAddress = canonicalAddress(receiver);
 
     const finalTokenAddress = canonicalAddress(finalToken);
 
-    const destinationPorticoAddress = contracts.portico.get(
-      this.network,
-      receiver.chain,
-    )!.portico;
-
     const nonce = new Date().valueOf() % 2 ** 4;
+
     const flags = PorticoBridge.serializeFlagSet({
       flags: {
         shouldWrapNative: isStartTokenNative,
@@ -171,19 +147,22 @@ export class EvmPorticoBridge<
       ],
     ]);
 
+    const group = this.getTokenGroup(startToken.address.toString());
+    const porticoAddress = this.getPorticoAddress(group);
+
     // Approve the token if necessary
     if (!isStartTokenNative)
       yield* this.approve(
         startTokenAddress,
         senderAddress,
         amount,
-        this.porticoAddress,
+        porticoAddress,
       );
 
     const messageFee = await this.core.getMessageFee();
 
     const tx = {
-      to: this.porticoAddress,
+      to: porticoAddress,
       data: transactionData,
       value: messageFee + (isStartTokenNative ? amount : 0n),
     };
@@ -194,7 +173,18 @@ export class EvmPorticoBridge<
   }
 
   async *redeem(sender: AccountAddress<C>, vaa: PorticoBridge.VAA) {
-    const txReq = await this.porticoContract
+    const recipientChain = toChain(vaa.payload.payload.flagSet.recipientChain);
+    const tokenAddress = vaa.payload.payload.finalTokenAddress
+      .toNative(recipientChain)
+      .toString();
+    const group = this.getTokenGroup(tokenAddress);
+    const porticoAddress = this.getPorticoAddress(group);
+    const contract = new ethers.Contract(
+      porticoAddress,
+      porticoAbi.fragments,
+      this.provider,
+    );
+    const txReq = await contract
       .getFunction('receiveMessageAndSwap')
       .populateTransaction(serialize(vaa));
 
@@ -206,9 +196,17 @@ export class EvmPorticoBridge<
     );
   }
 
+  async isTransferCompleted(vaa: PorticoBridge.VAA): Promise<boolean> {
+    const isCompleted = await this.tokenBridge.tokenBridge.isTransferCompleted(
+      keccak256(vaa.hash),
+    );
+    return isCompleted;
+  }
+
   async quoteSwap(
     input: TokenAddress<C>,
     output: TokenAddress<C>,
+    tokenGroup: string,
     amount: bigint,
   ): Promise<bigint> {
     const [, inputTokenId] = resolveWrappedToken(
@@ -228,7 +226,13 @@ export class EvmPorticoBridge<
 
     if (isEqualCaseInsensitive(inputAddress, outputAddress)) return amount;
 
-    const result = await this.uniswapContract
+    const quoterAddress = this.getQuoterAddress(tokenGroup);
+    const quoter = new ethers.Contract(
+      quoterAddress,
+      uniswapQuoterV2Abi.fragments,
+      this.provider,
+    );
+    const result = await quoter
       .getFunction('quoteExactInputSingle')
       .staticCall([inputAddress, outputAddress, amount, FEE_TIER, 0]);
 
@@ -239,28 +243,57 @@ export class EvmPorticoBridge<
     return await PorticoApi.quoteRelayer(this.chain, startToken, endToken);
   }
 
-  // For a given token, return the corresponding
-  // Wormhole wrapped token that originated on Ethereum
-  getTransferrableToken(address: string): TokenId {
-    if (this.chain === 'Ethereum') return Wormhole.tokenId('Ethereum', address);
-
-    // get the nativeTokenDetails
-    const nToken = getTokenByAddress(this.network, this.chain, address);
-    if (!nToken) throw new Error('Unsupported source token: ' + address);
-
-    const xToken = getTokensBySymbol(
+  // For a given token, return the Wormhole-wrapped/highway token
+  // that actually gets bridged from this chain
+  async getTransferrableToken(address: string): Promise<TokenId> {
+    const token = Wormhole.tokenId(this.chain, address);
+    const [, wrappedToken] = resolveWrappedToken(
       this.network,
       this.chain,
-      nToken.symbol,
-    )?.find((orig) => {
-      return orig.original === 'Ethereum';
-    });
-    if (!xToken)
+      token,
+    );
+    if (this.chain === 'Ethereum') return wrappedToken;
+
+    // Find the group that this token belongs to
+    const group = Object.values(supportedTokens).find((tokens) =>
+      tokens.find(
+        (t) =>
+          t.chain === this.chain &&
+          canonicalAddress(t) === canonicalAddress(wrappedToken),
+      ),
+    );
+    if (!group)
+      throw new Error(`No token group found for ${address} on ${this.chain}`);
+
+    // Find the token in this group that originates on Ethereum
+    const tokenOnEthereum = group.find((t) => t.chain === 'Ethereum');
+    if (!tokenOnEthereum)
       throw new Error(
-        `Unsupported symbol for chain ${nToken.symbol}: ${this.chain} `,
+        `No Ethereum origin token found for ${address} on ${this.chain}`,
       );
 
-    return Wormhole.tokenId(xToken.chain, xToken.address);
+    // Now find the corresponding Wormhole-wrapped/highway token on this chain
+    const highwayTokenAddr =
+      await this.tokenBridge.getWrappedAsset(tokenOnEthereum);
+
+    return Wormhole.tokenId(this.chain, highwayTokenAddr.toString());
+  }
+
+  supportedTokens(): { group: string; token: TokenId }[] {
+    const result = [];
+    for (const [group, tokens] of Object.entries(supportedTokens)) {
+      for (const token of tokens) {
+        if (token.chain === this.chain) result.push({ group, token });
+      }
+    }
+    return result;
+  }
+
+  getTokenGroup(address: string): string {
+    const tokens = this.supportedTokens();
+    const token = tokens.find((t) => canonicalAddress(t.token) === address);
+    if (!token) throw new Error('Token not found');
+    return token.group;
   }
 
   private async *approve(
@@ -297,5 +330,23 @@ export class EvmPorticoBridge<
       description,
       false,
     );
+  }
+
+  getPorticoAddress(group: string) {
+    const portico = this.contracts.portico!;
+    if (group === 'USDT') {
+      // Use PancakeSwap if available for USDT
+      return portico.porticoPancakeSwap || portico.porticoUniswap;
+    }
+    return portico.porticoUniswap;
+  }
+
+  private getQuoterAddress(group: string) {
+    const portico = this.contracts.portico!;
+    if (group === 'USDT') {
+      // Use PancakeSwap if available for USDT
+      return portico.pancakeSwapQuoterV2 || portico.uniswapQuoterV2;
+    }
+    return portico.uniswapQuoterV2;
   }
 }

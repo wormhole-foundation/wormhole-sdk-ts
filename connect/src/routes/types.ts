@@ -78,6 +78,13 @@ export type Quote<
 
   // Estimated time to completion in milliseconds
   eta?: number;
+
+  // Timestamp when the quote expires
+  expires?: Date;
+
+  // Optional provider string to override RouteMeta.provider
+  // Can be useful for an aggregator route which quotes from multiple providers
+  provider?: string;
 };
 
 export type QuoteError = {
@@ -109,5 +116,20 @@ export class UnavailableError extends Error {
   constructor(internalErr: Error) {
     super(`Unable to fetch a quote`);
     this.internalError = internalErr;
+  }
+}
+
+export interface RelayExplorer {
+  url: string;
+  name: string;
+}
+
+export class RelayFailedError extends Error {
+  // Optional explorer URL which may provider recovery details
+  readonly relayExplorer?: RelayExplorer;
+
+  constructor(message: string, relayExplorer?: RelayExplorer) {
+    super(message);
+    this.relayExplorer = relayExplorer;
   }
 }

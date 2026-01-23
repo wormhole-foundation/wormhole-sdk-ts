@@ -67,7 +67,7 @@ export class EvmCircleBridge<N extends Network, C extends EvmChains>
     const msgTransmitterAddress = contracts.cctp?.messageTransmitter;
     if (!msgTransmitterAddress)
       throw new Error(
-        `Circle Messenge Transmitter contract for domain ${chain} not found`,
+        `Circle Messenger Transmitter contract for domain ${chain} not found`,
       );
 
     this.msgTransmitter = ethers_contracts.MessageTransmitter__factory.connect(

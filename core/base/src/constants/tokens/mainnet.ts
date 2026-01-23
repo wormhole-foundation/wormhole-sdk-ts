@@ -559,6 +559,14 @@ const mainnetTokenEntries = [
           original: "Solana",
         },
       ],
+      [
+        "USDTbsc",
+        {
+          symbol: "USDT",
+          decimals: 18,
+          address: "0x55d398326f99059fF775485246999027B3197955",
+        },
+      ],
     ],
   ],
   [
@@ -874,6 +882,14 @@ const mainnetTokenEntries = [
           original: "Solana",
         },
       ],
+      [
+        "USDTpolygon",
+        {
+          symbol: "USDT",
+          decimals: 6,
+          address: "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+        },
+      ],
     ],
   ],
   [
@@ -1135,6 +1151,14 @@ const mainnetTokenEntries = [
           decimals: 6,
           address: "0x8A0691e602B7a5FCc51a27E4a08376dE50889B42",
           original: "Solana",
+        },
+      ],
+      [
+        "USDTavax",
+        {
+          symbol: "USDT",
+          decimals: 6,
+          address: "0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7",
         },
       ],
     ],
@@ -1521,6 +1545,14 @@ const mainnetTokenEntries = [
           symbol: "CELO",
           decimals: 18,
           address: "0x471ece3750da237f93b8e339c536989b8978a438",
+        },
+      ],
+      [
+        "USDT",
+        {
+          symbol: "USDT",
+          decimals: 6,
+          address: "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e",
         },
       ],
       [
@@ -2941,6 +2973,14 @@ const mainnetTokenEntries = [
           original: "Solana",
         },
       ],
+      [
+        "USDTbase",
+        {
+          symbol: "USDT",
+          decimals: 6,
+          address: "0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2",
+        },
+      ],
     ],
   ],
   [
@@ -3239,6 +3279,14 @@ const mainnetTokenEntries = [
           original: "Solana",
         },
       ],
+      [
+        "USDTarbitrum",
+        {
+          symbol: "USDT",
+          decimals: 6,
+          address: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
+        },
+      ],
     ],
   ],
   [
@@ -3535,6 +3583,14 @@ const mainnetTokenEntries = [
           decimals: 6,
           address: "0x99C59ACeBFEF3BBFB7129DC90D1a11DB0E91187f",
           original: "Solana",
+        },
+      ],
+      [
+        "USDToptimism",
+        {
+          symbol: "USDT",
+          decimals: 6,
+          address: "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58",
         },
       ],
     ],
@@ -4208,6 +4264,49 @@ const mainnetTokenEntries = [
       ],
     ],
   ],
+  [
+    "XRPLEVM",
+    [
+      [
+        "XRP",
+        {
+          symbol: "XRP",
+          decimals: 18,
+          address: "native",
+          wrappedKey: "WXRP",
+        },
+      ],
+      [
+        "WXRP",
+        {
+          symbol: "WXRP",
+          decimals: 18,
+          address: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+        },
+      ],
+    ],
+  ], [
+    "MegaETH",
+    [
+      [
+        "ETH",
+        {
+          symbol: "ETH",
+          decimals: 18,
+          address: "native",
+          wrappedKey: "WETH",
+        }
+      ],
+      [
+        "WETH",
+        {
+          symbol: "WETH",
+          decimals: 18,
+          address: "0x4200000000000000000000000000000000000006"
+        }
+      ]
+    ]
+  ]
 ] as const satisfies MapLevel<Chain, MapLevel<TokenSymbol, TokenConst>>;
 
 export const mainnetChainTokens = constMap(mainnetTokenEntries, [0, [1, 2]]);

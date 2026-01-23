@@ -1,14 +1,14 @@
 {
   "name": "@wormhole-foundation/sdk-connect",
-  "version": "0.10.5",
+  "version": "1.20.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
+    "url": "git+https://github.com/wormhole-foundation/wormhole-sdk-ts.git"
   },
   "bugs": {
-    "url": "https://github.com/wormhole-foundation/connect-sdk/issues"
+    "url": "https://github.com/wormhole-foundation/wormhole-sdk-ts/issues"
   },
-  "homepage": "https://github.com/wormhole-foundation/connect-sdk#readme",
+  "homepage": "https://github.com/wormhole-foundation/wormhole-sdk-ts#readme",
   "directories": {
     "test": "__tests__"
   },
@@ -92,14 +92,17 @@
     "clean": "rm -rf ./dist && rm -rf ./.turbo",
     "lint": "npm run prettier && eslint --fix ./src --ext .ts",
     "prettier": "prettier --write ./src",
-    "test": "jest --config ./jest.config.ts __tests__/*.ts",
+    "test": "jest --config ./jest.config.ts --testMatch '**/__tests__/**/*.test.ts'",
     "coverage": "jest --config ./jest.config.ts --coverage",
     "docs": "typedoc"
   },
   "dependencies": {
-    "axios": "^1.4.0",
-    "@wormhole-foundation/sdk-base": "0.10.5",
-    "@wormhole-foundation/sdk-definitions": "0.10.5"
+    "@wormhole-foundation/sdk-base": "1.20.0",
+    "@wormhole-foundation/sdk-definitions": "1.20.0",
+    "axios": "^1.4.0"
   },
-  "type": "module"
+  "type": "module",
+  "devDependencies": {
+    "@fetch-mock/jest": "^0.2.20"
+  }
 }

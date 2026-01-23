@@ -95,7 +95,7 @@ const wormchainActions = [
 // It has a variable length string that has no length prefix as its first item followed by a uint.
 // So deserialization has to reason backwards to determine the length.
 // see: https://github.com/wormhole-foundation/wormhole/blob/2eb5cca8e72c5379cd444ae3f25a012c1e04ad65/sdk/vaa/payloads.go#L396-L407
-// We have to do a bit of footwork here to accomodate this oddity.
+// We have to do a bit of footwork here to accommodate this oddity.
 const gatewayScheduleUpgradeItem = (() => {
   const stringBytesLayout = (size: number) =>
     ({ binary: "bytes", size, custom: stringConversion } as const satisfies Layout);

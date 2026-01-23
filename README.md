@@ -1,12 +1,11 @@
-# Wormhole TS SDK
+# Wormhole TypeScript SDK
+
+[![GitHub build](https://github.com/wormhole-foundation/wormhole-sdk-ts/actions/workflows/build.yml/badge.svg)](https://github.com/wormhole-foundation/wormhole-sdk-ts/actions)
+[![npm version](https://img.shields.io/npm/v/@wormhole-foundation/sdk.svg)](https://www.npmjs.com/package/@wormhole-foundation/sdk)
 
 [![npm version](https://img.shields.io/npm/v/@wormhole-foundation/sdk.svg)](https://www.npmjs.com/package/@wormhole-foundation/sdk)
 
 The Wormhole Typescript SDK is useful for interacting with the chains Wormhole supports and the [protocols](#protocols) built on top of Wormhole.
-
-## Warning 
-
-:warning: This package is a Work in Progress so the interface may change and there are likely bugs. Please [report](https://github.com/wormhole-foundation/connect-sdk/issues) any issues you find. :warning:
 
 ## Installation
 
@@ -643,15 +642,6 @@ Once created, the resolver can be used to provide a list of input and possible o
 
 <!--EXAMPLE_RESOLVER_LIST_TOKENS-->
 ```ts
-  // what tokens are available on the source chain?
-  const srcTokens = await resolver.supportedSourceTokens(sendChain);
-  console.log(
-    "Allowed source tokens: ",
-    srcTokens.map((t) => canonicalAddress(t)),
-  );
-
-  // Grab the first one for the example
-  // const sendToken = srcTokens[0]!;
   const sendToken = Wormhole.tokenId(sendChain.chain, "native");
 
   // given the send token, what can we possibly get on the destination chain?

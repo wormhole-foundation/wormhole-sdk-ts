@@ -1,14 +1,14 @@
 {
   "name": "@wormhole-foundation/sdk-icons",
-  "version": "0.10.5",
+  "version": "1.20.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
+    "url": "git+https://github.com/wormhole-foundation/wormhole-sdk-ts.git"
   },
   "bugs": {
-    "url": "https://github.com/wormhole-foundation/connect-sdk/issues"
+    "url": "https://github.com/wormhole-foundation/wormhole-sdk-ts/issues"
   },
-  "homepage": "https://github.com/wormhole-foundation/connect-sdk#readme",
+  "homepage": "https://github.com/wormhole-foundation/wormhole-sdk-ts#readme",
   "directories": {
     "test": "__tests__"
   },
@@ -50,7 +50,7 @@
     "dist/cjs"
   ],
   "dependencies": {
-    "@wormhole-foundation/sdk-base": "0.10.5"
+    "@wormhole-foundation/sdk-base": "1.20.0"
   },
   "sideEffects": false,
   "scripts": {

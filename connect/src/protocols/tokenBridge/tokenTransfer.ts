@@ -1,5 +1,15 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
-import { amount, encoding, finality, guardians, toChain as toChainName } from "@wormhole-foundation/sdk-base";
+import {
+  amount,
+  encoding,
+  finality,
+  guardians,
+  time,
+  toChain as toChainName,
+  toChainId,
+  deserializeLayout,
+  serializeLayout,
+} from "@wormhole-foundation/sdk-base";
 import type {
   AttestationId,
   AutomaticTokenBridge,
@@ -12,12 +22,17 @@ import type {
   TxHash,
   UnsignedTransaction,
   WormholeMessageId,
+  ExecutorTokenBridge,
+  RelayInstructions,
+  ChainAddress,
 } from "@wormhole-foundation/sdk-definitions";
 import {
   TokenBridge,
   UniversalAddress,
+  canonicalAddress,
   deserialize,
   isNative,
+  isSameToken,
   isTokenId,
   isTokenTransferDetails,
   isTransactionIdentifier,
@@ -25,9 +40,13 @@ import {
   serialize,
   toNative,
   toUniversal,
+  relayInstructionsLayout,
+  signedQuoteLayout,
+  nativeTokenId,
 } from "@wormhole-foundation/sdk-definitions";
 import { signSendWait } from "../../common.js";
 import { DEFAULT_TASK_TIMEOUT } from "../../config.js";
+import { chainToPlatform } from "@wormhole-foundation/sdk-base";
 import type {
   AttestationReceipt as _AttestationReceipt,
   AttestedTransferReceipt,
@@ -44,6 +63,7 @@ import {
   isAttested,
   isInReview,
   isRedeemed,
+  isRelayFailed,
   isSourceFinalized,
   isSourceInitiated,
 } from "../../types.js";
@@ -51,6 +71,8 @@ import { getGovernedTokens, getGovernorLimits } from "../../whscan-api.js";
 import { Wormhole } from "../../wormhole.js";
 import type { WormholeTransfer } from "../wormholeTransfer.js";
 import type { QuoteWarning } from "../../warnings.js";
+import { RelayStatus } from "@wormhole-foundation/sdk-definitions";
+import { routes } from "../../index.js";
 
 export class TokenTransfer<N extends Network = Network>
   implements WormholeTransfer<TokenTransfer.Protocol>
@@ -128,10 +150,7 @@ export class TokenTransfer<N extends Network = Network>
       TokenTransfer.validateTransferDetails(wh, from, fromChain, toChain);
 
       // Apply hackery
-      from = {
-        ...from,
-        ...(await TokenTransfer.destinationOverrides(fromChain, toChain, from)),
-      };
+      from = await TokenTransfer.destinationOverrides(fromChain, toChain, from);
 
       return new TokenTransfer(wh, from, fromChain, toChain);
     }
@@ -160,21 +179,31 @@ export class TokenTransfer<N extends Network = Network>
   ): Promise<TokenTransfer<N>> {
     const vaa = await TokenTransfer.getTransferVaa(wh, id, timeout);
     if (!vaa) throw new Error("VAA not found");
-    const automatic = vaa.protocolName === "AutomaticTokenBridge";
+
+    const protocol = vaa.protocolName;
 
     // TODO: the `from.address` here is a lie, but we don't
     // immediately have enough info to get the _correct_ one
     let from = { chain: vaa.emitterChain, address: vaa.emitterAddress };
     let { token, to } = vaa.payload;
 
+    let nativeAddress: NativeAddress<Chain>;
+    if (token.chain === from.chain) {
+      nativeAddress = await wh.getTokenNativeAddress(from.chain, token.chain, token.address);
+    } else {
+      const fromChain = await wh.getChain(from.chain);
+      const tb = await fromChain.getTokenBridge();
+      const wrapped = await tb.getWrappedAsset(token);
+      nativeAddress = toNative(from.chain, wrapped.toString());
+    }
+
+    const decimals = await wh.getDecimals(from.chain, nativeAddress);
     const scaledAmount = amount.scale(
-      amount.fromBaseUnits(token.amount, TokenTransfer.MAX_DECIMALS),
-      await wh.getDecimals(token.chain, token.address),
+      amount.fromBaseUnits(token.amount, Math.min(decimals, TokenTransfer.MAX_DECIMALS)),
+      decimals,
     );
 
-    let nativeGasAmount: bigint = 0n;
-    if (automatic) {
-      nativeGasAmount = vaa.payload.payload.toNativeTokenAmount;
+    if (protocol === "AutomaticTokenBridge" || protocol === "ExecutorTokenBridge") {
       from = { chain: vaa.emitterChain, address: vaa.payload.from };
       to = { chain: vaa.payload.to.chain, address: vaa.payload.payload.targetRecipient };
     }
@@ -184,8 +213,8 @@ export class TokenTransfer<N extends Network = Network>
       amount: amount.units(scaledAmount),
       from,
       to,
-      automatic,
-      nativeGas: nativeGasAmount,
+      protocol,
+      nativeGas: protocol === "AutomaticTokenBridge" ? vaa.payload.payload.toNativeTokenAmount : 0n, // ExecutorTokenBridge: VAA doesn't contain original nativeGas amount from quote
     };
 
     // TODO: grab at least the init tx from the api
@@ -288,8 +317,8 @@ export namespace TokenTransfer {
   /**  8 is maximum precision supported by the token bridge VAA */
   export const MAX_DECIMALS = 8;
 
-  export type Protocol = "TokenBridge" | "AutomaticTokenBridge";
-  export type VAA = TokenBridge.TransferVAA | AutomaticTokenBridge.VAA;
+  export type Protocol = "TokenBridge" | "AutomaticTokenBridge" | "ExecutorTokenBridge";
+  export type VAA = TokenBridge.TransferVAA | AutomaticTokenBridge.VAA | ExecutorTokenBridge.VAA;
 
   export type AttestationReceipt = _AttestationReceipt<TokenTransfer.Protocol>;
   export type TransferReceipt<
@@ -308,12 +337,40 @@ export namespace TokenTransfer {
 
     const token = isTokenId(transfer.token) ? transfer.token.address : transfer.token;
     let xfer: AsyncGenerator<UnsignedTransaction<N>>;
-    if (transfer.automatic) {
+    if (transfer.protocol === "AutomaticTokenBridge") {
       const tb = await fromChain.getAutomaticTokenBridge();
       xfer = tb.transfer(senderAddress, transfer.to, token, transfer.amount, transfer.nativeGas);
-    } else {
+    } else if (transfer.protocol === "TokenBridge") {
       const tb = await fromChain.getTokenBridge();
       xfer = tb.transfer(senderAddress, transfer.to, token, transfer.amount, transfer.payload);
+    } else if (transfer.protocol === "ExecutorTokenBridge") {
+      if (!transfer.executorQuote) {
+        throw new Error("ExecutorTokenBridge transfer requires an executorQuote");
+      }
+
+      const gasDropOffInstruction = transfer.executorQuote.relayInstructions.requests.find(
+        (r) => r.request.type === "GasDropOffInstruction",
+      );
+      if (
+        gasDropOffInstruction &&
+        gasDropOffInstruction.request.type === "GasDropOffInstruction" &&
+        gasDropOffInstruction.request.recipient.equals(UniversalAddress.ZERO)
+      ) {
+        // @ts-ignore
+        gasDropOffInstruction.request.recipient = transfer.to.address.toUniversalAddress();
+      }
+
+      const tb = await fromChain.getExecutorTokenBridge();
+      xfer = tb.transfer(
+        senderAddress,
+        transfer.to,
+        token,
+        transfer.amount,
+        transfer.executorQuote,
+        transfer.referrerFee,
+      );
+    } else {
+      throw new Error("Unknown token transfer protocol");
     }
 
     return signSendWait<N, Chain>(fromChain, xfer, signer);
@@ -330,6 +387,8 @@ export namespace TokenTransfer {
     const xfer =
       vaa.protocolName === "AutomaticTokenBridge"
         ? (await toChain.getAutomaticTokenBridge()).redeem(signerAddress, vaa)
+        : vaa.protocolName === "ExecutorTokenBridge"
+        ? (await toChain.getExecutorTokenBridge()).redeem(signerAddress, vaa)
         : (await toChain.getTokenBridge()).redeem(signerAddress, vaa);
 
     return signSendWait<N, Chain>(toChain, xfer, signer);
@@ -396,8 +455,13 @@ export namespace TokenTransfer {
     // First try to grab the tx status from the API
     // Note: this requires a subsequent async step on the backend
     // to have the dest txid populated, so it may be delayed by some time
-    if (isAttested(receipt) || isSourceFinalized(receipt) || isInReview(receipt)) {
-      if (!receipt.attestation.id) throw "Attestation id required to fetch redeem tx";
+    if (
+      isAttested(receipt) ||
+      isSourceFinalized(receipt) ||
+      isInReview(receipt) ||
+      isRelayFailed(receipt)
+    ) {
+      if (!receipt.attestation?.id) throw "Attestation id required to fetch redeem tx";
       const { id } = receipt.attestation;
       const txStatus = await wh.getTransactionStatus(id, leftover(start, timeout));
       if (txStatus && txStatus.globalTx?.destinationTx?.txHash) {
@@ -406,6 +470,7 @@ export namespace TokenTransfer {
           ...receipt,
           destinationTxs: [{ chain: toChainName(chainId) as DC, txid: txHash }],
           state: TransferState.DestinationInitiated,
+          attestation: receipt.attestation as Required<TokenTransfer.AttestationReceipt>,
         } satisfies RedeemedTransferReceipt<TokenTransfer.AttestationReceipt>;
       }
       yield receipt;
@@ -413,8 +478,9 @@ export namespace TokenTransfer {
 
     // Fall back to asking the destination chain if this VAA has been redeemed
     // Note: We do not get any destinationTxs with this method
-    if (isAttested(receipt) || isRedeemed(receipt)) {
-      if (!receipt.attestation.attestation) throw "Signed Attestation required to check for redeem";
+    if (isAttested(receipt) || isRedeemed(receipt) || isRelayFailed(receipt)) {
+      if (!receipt.attestation?.attestation)
+        throw "Signed Attestation required to check for redeem";
 
       if (receipt.attestation.attestation.payloadName === "AttestMeta") {
         throw new Error("Unable to track an AttestMeta receipt");
@@ -429,10 +495,36 @@ export namespace TokenTransfer {
         receipt = {
           ...receipt,
           state: TransferState.DestinationFinalized,
+          attestation: receipt.attestation,
         } satisfies CompletedTransferReceipt<TokenTransfer.AttestationReceipt>;
       }
 
       yield receipt;
+    }
+
+    // If this is a ExecutorTokenBridge transfer, check if the relay failed
+    // If the relay succeeded, then the token bridge will return the transfer as completed
+    if (
+      isAttested(receipt) &&
+      receipt.attestation.attestation.protocolName === "ExecutorTokenBridge"
+    ) {
+      const [txStatus] = await wh.getExecutorTxStatus(receipt.originTxs.at(-1)!.txid, receipt.from);
+      if (!txStatus) throw new Error("No transaction status found");
+
+      const relayStatus = txStatus.status;
+      if (
+        relayStatus === RelayStatus.Failed ||
+        relayStatus === RelayStatus.Underpaid ||
+        relayStatus === RelayStatus.Unsupported ||
+        relayStatus === RelayStatus.Aborted
+      ) {
+        receipt = {
+          ...receipt,
+          state: TransferState.Failed,
+          error: new routes.RelayFailedError(`Relay failed with status: ${relayStatus}`),
+        };
+        yield receipt;
+      }
     }
 
     yield receipt;
@@ -542,6 +634,13 @@ export namespace TokenTransfer {
         lookup.chain,
         lookup.address as UniversalAddress,
       );
+      const destWrappedNative = await dstTb.getWrappedNative();
+      if (
+        canonicalAddress({ chain: dstChain.chain, address: destWrappedNative }) ===
+        canonicalAddress({ chain: dstChain.chain, address: nativeAddress })
+      ) {
+        return { chain: dstChain.chain, address: "native" };
+      }
       return { chain: dstChain.chain, address: nativeAddress };
     }
 
@@ -554,9 +653,9 @@ export namespace TokenTransfer {
     toChain: ChainContext<N, C>,
     vaa: TokenTransfer.VAA,
   ): Promise<boolean> {
-    if (vaa.protocolName === "AutomaticTokenBridge")
+    if (vaa.protocolName === "AutomaticTokenBridge" || vaa.protocolName === "ExecutorTokenBridge") {
       vaa = deserialize("TokenBridge:TransferWithPayload", serialize(vaa));
-
+    }
     const tb = await toChain.getTokenBridge();
     return tb.isTransferCompleted(vaa);
   }
@@ -589,6 +688,11 @@ export namespace TokenTransfer {
       if (!!relayerAddress && address.equals(relayerAddress)) {
         return deserialize("AutomaticTokenBridge:TransferWithRelay", serialize(vaa));
       }
+
+      // We aren't checking the to address here since it could be different than what's hard-coded in the sdk
+      try {
+        return deserialize("ExecutorTokenBridge:TransferWithExecutorRelay", serialize(vaa));
+      } catch {}
     }
 
     return vaa;
@@ -615,9 +719,7 @@ export namespace TokenTransfer {
     fromChain = fromChain ?? wh.getChain(transfer.from.chain);
     toChain = toChain ?? wh.getChain(transfer.to.chain);
 
-    if (transfer.automatic) {
-      if (transfer.payload) throw new Error("Payload with automatic delivery is not supported");
-
+    if (transfer.protocol === "AutomaticTokenBridge") {
       if (!fromChain.supportsAutomaticTokenBridge())
         throw new Error(`Automatic Token Bridge not supported on ${transfer.from.chain}`);
 
@@ -627,23 +729,50 @@ export namespace TokenTransfer {
       const nativeGas = transfer.nativeGas ?? 0n;
       if (nativeGas > transfer.amount)
         throw new Error(`Native gas amount  > amount (${nativeGas} > ${transfer.amount})`);
-    } else {
-      if (transfer.nativeGas)
-        throw new Error("Gas Dropoff is only supported for automatic transfers");
-
+    } else if (transfer.protocol === "TokenBridge") {
       if (!fromChain.supportsTokenBridge())
         throw new Error(`Token Bridge not supported on ${transfer.from.chain}`);
 
       if (!toChain.supportsTokenBridge())
         throw new Error(`Token Bridge not supported on ${transfer.to.chain}`);
+    } else if (transfer.protocol === "ExecutorTokenBridge") {
+      if (!fromChain.supportsExecutorTokenBridge())
+        throw new Error(`Token Bridge Executor not supported on ${transfer.from.chain}`);
+
+      if (!toChain.supportsExecutorTokenBridge())
+        throw new Error(`Token Bridge Executor not supported on ${transfer.to.chain}`);
+    } else {
+      throw new Error("Unknown token transfer protocol");
     }
   }
+
+  type BaseQuoteDetails = Omit<TokenTransferDetails, "from" | "to">;
+
+  export type QuoteTransferDetails =
+    | (BaseQuoteDetails & {
+        protocol: TokenBridge.ProtocolName;
+        payload?: Uint8Array;
+      })
+    | (BaseQuoteDetails & {
+        protocol: AutomaticTokenBridge.ProtocolName;
+        nativeGas?: bigint;
+      })
+    | (BaseQuoteDetails & {
+        protocol: ExecutorTokenBridge.ProtocolName;
+        msgValue: bigint;
+        gasLimit: bigint;
+        nativeGas?: bigint;
+        referrerFee?: {
+          feeDbps: bigint;
+          referrer: ChainAddress;
+        };
+      });
 
   export async function quoteTransfer<N extends Network>(
     wh: Wormhole<N>,
     srcChain: ChainContext<N, Chain>,
     dstChain: ChainContext<N, Chain>,
-    transfer: Omit<TokenTransferDetails, "from" | "to">,
+    transfer: QuoteTransferDetails,
   ): Promise<TransferQuote> {
     const srcTb = await srcChain.getTokenBridge();
     let srcToken: NativeAddress<Chain>;
@@ -718,19 +847,88 @@ export namespace TokenTransfer {
     const dstAmountReceivable = amount.scale(srcAmountTruncated, dstDecimals);
 
     const eta = finality.estimateFinalityTime(srcChain.chain) + guardians.guardianAttestationEta;
-    if (!transfer.automatic) {
+    const baseQuote = {
+      sourceToken: {
+        token: transfer.token,
+        amount: amount.units(srcAmountTruncated),
+      },
+      destinationToken: { token: dstToken, amount: amount.units(dstAmountReceivable) },
+      warnings: warnings.length > 0 ? warnings : undefined,
+      eta,
+    };
+
+    if (transfer.protocol === "TokenBridge") {
       return {
-        sourceToken: {
-          token: srcTokenId,
-          amount: amount.units(srcAmountTruncated),
+        ...baseQuote,
+        expires: time.expiration(24, 0, 0), // manual transfer quote is good for 24 hours
+      };
+    }
+
+    if (transfer.protocol === "ExecutorTokenBridge") {
+      const executorQuote = await getExecutorQuote(
+        wh,
+        srcChain,
+        dstChain,
+        transfer.gasLimit,
+        transfer.msgValue,
+        transfer.nativeGas,
+      );
+
+      const gasDropOffInstruction = executorQuote.relayInstructions.requests.find(
+        (r) => r.request.type === "GasDropOffInstruction",
+      );
+
+      const destinationNativeGas =
+        gasDropOffInstruction?.request.type === "GasDropOffInstruction"
+          ? gasDropOffInstruction.request.dropOff
+          : undefined;
+
+      let referrerFee: ExecutorTokenBridge.ReferrerFee | undefined;
+
+      if (transfer.referrerFee && transfer.referrerFee.feeDbps > 0n) {
+        const { feeDbps, referrer } = transfer.referrerFee;
+        const result = TokenTransfer.calculateReferrerFee(srcAmountTruncated, feeDbps);
+        const feeAmount = amount.units(result.fee);
+        const remainingAmount = amount.units(result.remaining);
+
+        if (remainingAmount <= 0n) {
+          throw new Error("Remaining amount after referrer fee is <= 0");
+        }
+
+        referrerFee = {
+          feeDbps,
+          feeAmount,
+          remainingAmount,
+          referrer,
+        };
+      }
+
+      return {
+        ...baseQuote,
+        destinationToken: {
+          token: dstToken,
+          amount: referrerFee?.remainingAmount
+            ? amount.units(
+                amount.scale(
+                  amount.fromBaseUnits(referrerFee.remainingAmount, srcDecimals),
+                  dstDecimals,
+                ),
+              )
+            : amount.units(dstAmountReceivable),
         },
-        destinationToken: { token: dstToken, amount: amount.units(dstAmountReceivable) },
-        warnings: warnings.length > 0 ? warnings : undefined,
-        eta,
+        expires: executorQuote.signedQuote.quote.expiryTime,
+        relayFee: { token: nativeTokenId(srcChain.chain), amount: executorQuote.estimatedCost },
+        destinationNativeGas,
+        details: {
+          executorQuote,
+          referrerFee,
+        },
       };
     }
 
     // Otherwise automatic
+    if (transfer.protocol !== "AutomaticTokenBridge")
+      throw new Error("Unknown token transfer protocol");
 
     // The fee is removed from the amount transferred
     // quoted on the source chain
@@ -780,7 +978,7 @@ export namespace TokenTransfer {
       // when native gas is requested on solana, the amount must be at least the rent-exempt amount
       // or the transaction could fail if the account does not have enough lamports
       if (
-        dstChain.chain === "Solana" &&
+        chainToPlatform(dstChain.chain) === "Solana" &&
         _destinationNativeGas < solanaMinBalanceForRentExemptAccount
       ) {
         throw new Error(
@@ -796,12 +994,10 @@ export namespace TokenTransfer {
 
     // when sending wsol to solana, the amount must be at least the rent-exempt amount
     // or the transaction could fail if the account does not have enough lamports
-    if (dstToken.chain === "Solana") {
+    if (chainToPlatform(dstToken.chain) === "Solana") {
       const nativeWrappedTokenId = await dstChain.getNativeWrappedTokenId();
-      if (
-        dstToken.address === nativeWrappedTokenId.address &&
-        destAmountLessFee < solanaMinBalanceForRentExemptAccount
-      ) {
+      const isNativeSol = isNative(dstToken.address) || isSameToken(dstToken, nativeWrappedTokenId);
+      if (isNativeSol && destAmountLessFee < solanaMinBalanceForRentExemptAccount) {
         throw new Error(
           `Destination amount must be at least ${solanaMinBalanceForRentExemptAccount} lamports`,
         );
@@ -810,14 +1006,108 @@ export namespace TokenTransfer {
 
     return {
       sourceToken: {
-        token: srcTokenId,
+        token: transfer.token,
         amount: amount.units(srcAmountTruncated),
       },
       destinationToken: { token: dstToken, amount: destAmountLessFee },
-      relayFee: { token: srcTokenId, amount: fee },
+      relayFee: { token: dstToken, amount: amount.units(feeAmountDest) },
       destinationNativeGas,
       warnings: warnings.length > 0 ? warnings : undefined,
       eta,
+      expires: time.expiration(0, 5, 0), // automatic transfer quote is good for 5 minutes
+    };
+  }
+
+  export async function getExecutorGasDropOffLimit<N extends Network>(
+    wh: Wormhole<N>,
+    dstChain: ChainContext<N, Chain>,
+  ): Promise<bigint> {
+    const capabilities = await wh.getExecutorCapabilities();
+    const dstCapabilities = capabilities[toChainId(dstChain.chain)];
+    if (!dstCapabilities) {
+      throw new Error(`No executor capabilities found for destination chain ${dstChain.chain}`);
+    }
+    return BigInt(dstCapabilities.gasDropOffLimit);
+  }
+
+  export async function getExecutorQuote<N extends Network>(
+    wh: Wormhole<N>,
+    srcChain: ChainContext<N, Chain>,
+    dstChain: ChainContext<N, Chain>,
+    gasLimit: bigint,
+    msgValue: bigint,
+    nativeGas?: bigint,
+  ): Promise<ExecutorTokenBridge.ExecutorQuote> {
+    const capabilities = await wh.getExecutorCapabilities();
+
+    const srcCapabilities = capabilities[toChainId(srcChain.chain)];
+    if (!srcCapabilities) {
+      throw new Error(`No executor capabilities found for source chain ${srcChain.chain}`);
+    }
+
+    const dstCapabilities = capabilities[toChainId(dstChain.chain)];
+    if (!dstCapabilities || !dstCapabilities.requestPrefixes.includes("ERV1")) {
+      throw new Error(`No executor capabilities found for destination chain ${dstChain.chain}`);
+    }
+
+    // Validate nativeGas doesn't exceed limit
+    const dropOff = nativeGas ?? 0n;
+    if (dropOff > BigInt(dstCapabilities.gasDropOffLimit)) {
+      throw new Error(
+        `Native gas amount ${dropOff} exceeds limit ${BigInt(
+          dstCapabilities.gasDropOffLimit,
+        )} for destination chain ${dstChain.chain}`,
+      );
+    }
+
+    const instructions = [];
+
+    instructions.push({
+      request: {
+        type: "GasInstruction" as const,
+        gasLimit,
+        msgValue,
+      },
+    });
+
+    if (dropOff > 0n) {
+      instructions.push({
+        request: {
+          type: "GasDropOffInstruction" as const,
+          dropOff,
+          // Placeholder recipient for gas drop-off. This will be set at transfer time.
+          recipient: UniversalAddress.ZERO,
+        },
+      });
+    }
+
+    const relayInstructions: RelayInstructions = {
+      requests: instructions,
+    };
+
+    const relayInstructionsBytes = serializeLayout(relayInstructionsLayout, relayInstructions);
+
+    const executorQuote = await wh.getExecutorQuote(
+      srcChain.chain,
+      dstChain.chain,
+      encoding.hex.encode(relayInstructionsBytes, true),
+    );
+
+    if (!executorQuote.estimatedCost) {
+      throw new Error("No estimated cost");
+    }
+
+    const estimatedCost = BigInt(executorQuote.estimatedCost);
+
+    const signedQuote = deserializeLayout(
+      signedQuoteLayout,
+      encoding.hex.decode(executorQuote.signedQuote),
+    );
+
+    return {
+      signedQuote,
+      estimatedCost,
+      relayInstructions,
     };
   }
 
@@ -832,18 +1122,27 @@ export namespace TokenTransfer {
     // sent a VAA with the primary address
     // Note: Do _not_ override if automatic or if the destination token is native
     // gas token
-    if (transfer.to.chain === "Solana" && !_transfer.automatic) {
+    if (chainToPlatform(transfer.to.chain) === "Solana" && _transfer.protocol === "TokenBridge") {
       const destinationToken = await TokenTransfer.lookupDestinationToken(
         srcChain,
         dstChain,
         _transfer.token,
       );
-      // TODO: If the token is native, no need to overwrite the destination address check for native
-      //if (!destinationToken.address.equals((await dstChain.getNativeWrappedTokenId()).address))
-      _transfer.to = await dstChain.getTokenAccount(_transfer.to.address, destinationToken.address);
+      if (isNative(destinationToken.address)) {
+        const nativeWrappedTokenId = await dstChain.getNativeWrappedTokenId();
+        _transfer.to = await dstChain.getTokenAccount(
+          _transfer.to.address,
+          nativeWrappedTokenId.address,
+        );
+      } else {
+        _transfer.to = await dstChain.getTokenAccount(
+          _transfer.to.address,
+          destinationToken.address,
+        );
+      }
     }
 
-    if (_transfer.to.chain === "Sei") {
+    if (_transfer.to.chain === "Sei" && _transfer.protocol === "TokenBridge") {
       if (_transfer.to.chain === "Sei" && _transfer.payload)
         throw new Error("Arbitrary payloads unsupported for Sei");
 
@@ -864,5 +1163,25 @@ export namespace TokenTransfer {
     }
 
     return _transfer;
+  }
+
+  export function calculateReferrerFee(
+    amt: amount.Amount,
+    dBps: bigint, // tenths of basis points
+  ): { fee: amount.Amount; remaining: amount.Amount } {
+    const MAX_U16 = 65_535n;
+    if (dBps > MAX_U16) {
+      throw new Error("dBps exceeds max u16");
+    }
+
+    const fee = amount.getDeciBps(amt, dBps);
+    const feeUnits = amount.units(fee);
+    const amtUnits = amount.units(amt);
+    const remainingUnits = amtUnits - feeUnits;
+
+    return {
+      fee,
+      remaining: amount.fromBaseUnits(remainingUnits, amt.decimals),
+    };
   }
 }

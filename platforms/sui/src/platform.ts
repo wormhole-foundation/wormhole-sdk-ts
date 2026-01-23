@@ -18,7 +18,7 @@ import {
   networkPlatformConfigs,
 } from "@wormhole-foundation/sdk-connect";
 
-import { PaginatedCoins, SuiClient } from "@mysten/sui.js/client";
+import { PaginatedCoins, SuiClient } from "@mysten/sui/client";
 import { SuiAddress } from "./address.js";
 import { SuiChain } from "./chain.js";
 import { SUI_COIN } from "./constants.js";
@@ -72,7 +72,7 @@ export class SuiPlatform<N extends Network>
     return platform === SuiPlatform._platform;
   }
 
-  static async getDecimals(chain: Chain, rpc: SuiClient, token: AnySuiAddress): Promise<number> {
+  static async getDecimals(network: Network, chain: Chain, rpc: SuiClient, token: AnySuiAddress): Promise<number> {
     if (isNative(token)) return nativeDecimals.nativeDecimals(SuiPlatform._platform);
 
     const parsedAddress = new SuiAddress(token);
@@ -82,7 +82,7 @@ export class SuiPlatform<N extends Network>
       if (fields && "decimals" in fields) return fields["decimals"];
     } catch {}
 
-    const metadata = await rpc.getCoinMetadata({ coinType: parsedAddress.getCoinType() });
+    const metadata = await rpc.getCoinMetadata({ coinType: parsedAddress.toString() });
     if (metadata === null)
       throw new Error(`Can't fetch decimals for token ${parsedAddress.toString()}`);
 
@@ -106,7 +106,8 @@ export class SuiPlatform<N extends Network>
   }
 
   static async getBalance(
-    chain: Chain,
+    _network: Network,
+    _chain: Chain,
     rpc: SuiClient,
     walletAddr: string,
     token: AnySuiAddress,
@@ -126,26 +127,25 @@ export class SuiPlatform<N extends Network>
   }
 
   static async getBalances(
-    chain: Chain,
+    _network: Network,
+    _chain: Chain,
     rpc: SuiClient,
     walletAddr: string,
-    tokens: AnySuiAddress[],
   ): Promise<Balances> {
-    const balancesArr = await Promise.all(
-      tokens.map(async (token) => {
-        const balance = await this.getBalance(chain, rpc, walletAddr, token);
-        const address = isNative(token) ? "native" : new SuiAddress(token).toString();
-        return { [address]: balance };
-      }),
-    );
-    return balancesArr.reduce((obj, item) => Object.assign(obj, item), {});
+    const result = await rpc.getAllBalances({ owner: walletAddr });
+    const balances: Balances = {};
+    for (const { coinType, totalBalance } of result) {
+      const address = coinType === SUI_COIN ? "native" : coinType;
+      balances[address] = BigInt(totalBalance);
+    }
+    return balances;
   }
 
   static async sendWait(chain: Chain, rpc: SuiClient, stxns: SignedTx[]): Promise<TxHash[]> {
     const txhashes = [];
     for (const stxn of stxns) {
       const pendingTx = await rpc.executeTransactionBlock(stxn);
-      await rpc.waitForTransactionBlock({ digest: pendingTx.digest });
+      await rpc.waitForTransaction({ digest: pendingTx.digest });
       txhashes.push(pendingTx.digest);
     }
     return txhashes;

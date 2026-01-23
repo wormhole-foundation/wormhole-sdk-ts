@@ -31,6 +31,7 @@ export function tokenAddresses(tokens: TokenId[]): string[] {
 export async function getTokenDetails<N extends Network>(
   chain: ChainContext<N>,
   token: TokenId,
+  decimals?: number,
 ): Promise<TokenDetails> {
   const address = canonicalAddress(token);
 
@@ -39,8 +40,17 @@ export async function getTokenDetails<N extends Network>(
     : undefined;
 
   const symbol = details ? details.symbol : undefined;
-  const wrapped = isNative(token.address) ? await chain.getNativeWrappedTokenId() : undefined;
-  const decimals = Number(await chain.getDecimals(token.address));
+  let wrapped: TokenId | undefined = undefined;
+
+  if (isNative(token.address)) {
+    try {
+      wrapped = await chain.getNativeWrappedTokenId();
+    } catch {
+      // noop
+    }
+  }
+
+  decimals = decimals ?? (await chain.getDecimals(token.address));
 
   return {
     id: token,

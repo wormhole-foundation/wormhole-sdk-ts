@@ -3,6 +3,7 @@ import { bitsetItem } from "@wormhole-foundation/sdk-base";
 import { amountItem, universalAddressItem } from "./../../layout-items/index.js";
 import type { NamedPayloads, RegisterPayloadTypes } from "./../../vaa/index.js";
 import { registerPayloadTypes } from "./../../vaa/index.js";
+import { transferWithPayloadLayout } from "../tokenBridge/tokenBridgeLayout.js";
 
 //weirdly, if defined in place, the type is not inferred properly
 const flagsItem = bitsetItem(["shouldWrapNative", "shouldUnwrapNative"]);
@@ -38,7 +39,9 @@ export const porticoPayloadLayout = [
   { name: "relayerFee", ...amountItem },
 ] as const satisfies Layout;
 
-export const namedPayloads = [["Transfer", porticoFlagSetLayout]] as const satisfies NamedPayloads;
+export const namedPayloads = [
+  ["Transfer", transferWithPayloadLayout(porticoPayloadLayout)],
+] as const satisfies NamedPayloads;
 
 // factory registration:
 import "../../registry.js";

@@ -35,9 +35,9 @@ import {
   coalesceModuleAddress,
   isValidAptosType,
 } from "@wormhole-foundation/sdk-aptos";
-import type { AptosClient, Types } from "aptos";
 import { serializeForeignAddressSeeds } from "./foreignAddress.js";
 import type { OriginInfo, TokenBridgeState } from "./types.js";
+import { Aptos, AptosApiError, InputGenerateTransactionPayloadData } from "@aptos-labs/ts-sdk";
 
 export class AptosTokenBridge<N extends Network, C extends AptosChains>
   implements TokenBridge<N, C>
@@ -48,7 +48,7 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
   constructor(
     readonly network: N,
     readonly chain: C,
-    readonly connection: AptosClient,
+    readonly connection: Aptos,
     readonly contracts: Contracts,
   ) {
     this.chainId = toChainId(chain);
@@ -60,7 +60,7 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
   }
 
   static async fromRpc<N extends Network>(
-    connection: AptosClient,
+    connection: Aptos,
     config: ChainsConfig<N, AptosPlatformType>,
   ): Promise<AptosTokenBridge<N, AptosChains>> {
     const [network, chain] = await AptosPlatform.chainFromRpc(connection);
@@ -81,16 +81,22 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
 
   async getOriginalAsset(token: AnyAptosAddress): Promise<TokenId> {
     const fqt = token.toString().split(APTOS_SEPARATOR);
-    let originInfo: OriginInfo | undefined;
 
-    originInfo = (
-      await this.connection.getAccountResource(
-        fqt[0]!,
-        `${this.tokenBridgeAddress}::state::OriginInfo`,
-      )
-    ).data as OriginInfo;
+    let originInfo: OriginInfo | null = null;
+    try {
+      originInfo = await this.connection.getAccountResource<OriginInfo>({
+        accountAddress: fqt[0]!,
+        resourceType: `${this.tokenBridgeAddress}::state::OriginInfo`,
+      });
+    } catch (e: unknown) {
+      if (e instanceof AptosApiError && e.data?.error_code === "resource_not_found") {
+        // if we can't find the origin info, it means this is not a wrapped asset
+        throw ErrNotWrapped(token.toString());
+      }
+      throw e;
+    }
 
-    if (!originInfo) throw ErrNotWrapped;
+    if (!originInfo) throw ErrNotWrapped(token.toString());
 
     // wrapped asset
     const chain = toChain(parseInt(originInfo.token_chain.number));
@@ -131,32 +137,33 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
     if (!assetFullyQualifiedType) throw new Error("Invalid asset address.");
 
     // check to see if we can get origin info from asset address
-    await this.connection.getAccountResource(
-      coalesceModuleAddress(assetFullyQualifiedType),
-      `${this.tokenBridgeAddress}::state::OriginInfo`,
-    );
+    await this.connection.getAccountResource({
+      accountAddress: coalesceModuleAddress(assetFullyQualifiedType),
+      resourceType: `${this.tokenBridgeAddress}::state::OriginInfo`,
+    });
 
     // if successful, we can just return the computed address
     return toNative(this.chain, assetFullyQualifiedType);
   }
 
   async isTransferCompleted(vaa: TokenBridge.TransferVAA): Promise<boolean> {
-    const state = (
-      await this.connection.getAccountResource(
-        this.tokenBridgeAddress,
-        `${this.tokenBridgeAddress}::state::State`,
-      )
-    ).data as TokenBridgeState;
+    const state = await this.connection.getAccountResource<TokenBridgeState>({
+      accountAddress: this.tokenBridgeAddress,
+      resourceType: `${this.tokenBridgeAddress}::state::State`,
+    });
 
     const handle = state.consumed_vaas.elems.handle;
 
     // check if vaa hash is in consumed_vaas
     try {
       // when accessing Set<T>, key is type T and value is 0
-      await this.connection.getTableItem(handle, {
-        key_type: "vector<u8>",
-        value_type: "u8",
-        key: `0x${Buffer.from(keccak256(vaa.hash)).toString("hex")}`,
+      await this.connection.getTableItem({
+        handle,
+        data: {
+          key_type: "vector<u8>",
+          value_type: "u8",
+          key: `0x${Buffer.from(keccak256(vaa.hash)).toString("hex")}`,
+        },
       });
       return true;
     } catch {
@@ -179,8 +186,8 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
     yield this.createUnsignedTx(
       {
         function: `${this.tokenBridgeAddress}::attest_token::attest_token_entry`,
-        type_arguments: [assetType],
-        arguments: [],
+        typeArguments: [assetType],
+        functionArguments: [],
       },
       "Aptos.AttestToken",
     );
@@ -193,8 +200,8 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
     yield this.createUnsignedTx(
       {
         function: `${this.tokenBridgeAddress}::wrapped::create_wrapped_coin_type`,
-        type_arguments: [],
-        arguments: [serialize(vaa)],
+        typeArguments: [],
+        functionArguments: [serialize(vaa)],
       },
       "Aptos.CreateWrappedCoinType",
     );
@@ -205,8 +212,8 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
     yield this.createUnsignedTx(
       {
         function: `${this.tokenBridgeAddress}::wrapped::create_wrapped_coin`,
-        type_arguments: [assetType],
-        arguments: [serialize(vaa)],
+        typeArguments: [assetType],
+        functionArguments: [serialize(vaa)],
       },
       "Aptos.CreateWrappedCoin",
     );
@@ -230,8 +237,8 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
       yield this.createUnsignedTx(
         {
           function: `${this.tokenBridgeAddress}::transfer_tokens::transfer_tokens_with_payload_entry`,
-          type_arguments: [fullyQualifiedType],
-          arguments: [amount, dstChain, dstAddress, nonce, payload],
+          typeArguments: [fullyQualifiedType],
+          functionArguments: [amount, dstChain, dstAddress, nonce, payload],
         },
         "Aptos.TransferTokensWithPayload",
       );
@@ -239,8 +246,8 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
       yield this.createUnsignedTx(
         {
           function: `${this.tokenBridgeAddress}::transfer_tokens::transfer_tokens_entry`,
-          type_arguments: [fullyQualifiedType],
-          arguments: [amount, dstChain, dstAddress, fee, nonce],
+          typeArguments: [fullyQualifiedType],
+          functionArguments: [amount, dstChain, dstAddress, fee, nonce],
         },
         "Aptos.TransferTokens",
       );
@@ -262,8 +269,8 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
     yield this.createUnsignedTx(
       {
         function: `${this.tokenBridgeAddress}::complete_transfer::submit_vaa_and_register_entry`,
-        type_arguments: [assetType],
-        arguments: [serialize(vaa)],
+        typeArguments: [assetType],
+        functionArguments: [serialize(vaa)],
       },
       "Aptos.CompleteTransfer",
     );
@@ -296,19 +303,20 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
   async getTypeFromExternalAddress(address: string): Promise<string | null> {
     try {
       // get handle
-      const state = (
-        await this.connection.getAccountResource(
-          this.tokenBridgeAddress,
-          `${this.tokenBridgeAddress}::state::State`,
-        )
-      ).data as TokenBridgeState;
+      const state = await this.connection.getAccountResource<TokenBridgeState>({
+        accountAddress: this.tokenBridgeAddress,
+        resourceType: `${this.tokenBridgeAddress}::state::State`,
+      });
       const { handle } = state.native_infos;
 
       // get type info
-      const typeInfo = await this.connection.getTableItem(handle, {
-        key_type: `${this.tokenBridgeAddress}::token_hash::TokenHash`,
-        value_type: "0x1::type_info::TypeInfo",
-        key: { hash: address },
+      const typeInfo: any = await this.connection.getTableItem({
+        handle,
+        data: {
+          key_type: `${this.tokenBridgeAddress}::token_hash::TokenHash`,
+          value_type: "0x1::type_info::TypeInfo",
+          key: { hash: address },
+        },
       });
 
       return typeInfo
@@ -346,7 +354,7 @@ export class AptosTokenBridge<N extends Network, C extends AptosChains>
   }
 
   private createUnsignedTx(
-    txReq: Types.EntryFunctionPayload,
+    txReq: InputGenerateTransactionPayloadData,
     description: string,
     parallelizable: boolean = false,
   ): AptosUnsignedTransaction<N, C> {

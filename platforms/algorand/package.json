@@ -1,14 +1,14 @@
 {
   "name": "@wormhole-foundation/sdk-algorand",
-  "version": "0.10.5",
+  "version": "1.20.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
+    "url": "git+https://github.com/wormhole-foundation/wormhole-sdk-ts.git"
   },
   "bugs": {
-    "url": "https://github.com/wormhole-foundation/connect-sdk/issues"
+    "url": "https://github.com/wormhole-foundation/wormhole-sdk-ts/issues"
   },
-  "homepage": "https://github.com/wormhole-foundation/connect-sdk#readme",
+  "homepage": "https://github.com/wormhole-foundation/wormhole-sdk-ts#readme",
   "directories": {
     "test": "tests"
   },
@@ -96,7 +96,7 @@
     "test": "jest --config ./jest.config.ts"
   },
   "dependencies": {
-    "@wormhole-foundation/sdk-connect": "0.10.5",
+    "@wormhole-foundation/sdk-connect": "1.20.0",
     "algosdk": "2.7.0"
   },
   "type": "module"

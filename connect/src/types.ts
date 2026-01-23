@@ -7,6 +7,7 @@ import type {
   TransactionId,
 } from "@wormhole-foundation/sdk-definitions";
 import type { QuoteWarning } from "./warnings.js";
+import { RelayFailedError } from "./routes/types.js";
 
 // Transfer state machine states
 export enum TransferState {
@@ -113,7 +114,7 @@ export interface FailedTransferReceipt<AT, SC extends Chain = Chain, DC extends 
   originTxs: TransactionId<SC>[];
   destinationTxs?: TransactionId<DC>[];
   attestation?: AT;
-  error: string;
+  error: string | Error;
 }
 
 export function isSourceInitiated<AT>(
@@ -168,6 +169,12 @@ export function isFailed<AT>(receipt: TransferReceipt<AT>): receipt is FailedTra
   return receipt.state < 0;
 }
 
+export function isRelayFailed<AT>(
+  receipt: TransferReceipt<AT>,
+): receipt is FailedTransferReceipt<AT> & { error: RelayFailedError } {
+  return isFailed(receipt) && receipt.error instanceof RelayFailedError;
+}
+
 export type TransferReceipt<AT, SC extends Chain = Chain, DC extends Chain = Chain> =
   | FailedTransferReceipt<AT, SC, DC>
   | CreatedTransferReceipt<SC, DC>
@@ -182,7 +189,7 @@ export type TransferReceipt<AT, SC extends Chain = Chain, DC extends Chain = Cha
 
 // Quote with optional relayer fees if the transfer
 // is requested to be automatic
-export interface TransferQuote {
+export interface TransferQuote<D = any> {
   // How much of what token will be deducted from sender
   // Note: This will include fees charged for a full
   // estimate of the amount taken from the sender
@@ -211,4 +218,8 @@ export interface TransferQuote {
   warnings?: QuoteWarning[];
   // Estimated time to completion in milliseconds
   eta?: number;
+  // Timestamp when the quote expires
+  expires?: Date;
+  // Additional protocol-specific quote details
+  details?: D;
 }

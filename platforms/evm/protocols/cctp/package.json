@@ -1,14 +1,14 @@
 {
   "name": "@wormhole-foundation/sdk-evm-cctp",
-  "version": "0.10.5",
+  "version": "1.20.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
+    "url": "git+https://github.com/wormhole-foundation/wormhole-sdk-ts.git"
   },
   "bugs": {
-    "url": "https://github.com/wormhole-foundation/connect-sdk/issues"
+    "url": "https://github.com/wormhole-foundation/wormhole-sdk-ts/issues"
   },
-  "homepage": "https://github.com/wormhole-foundation/connect-sdk#readme",
+  "homepage": "https://github.com/wormhole-foundation/wormhole-sdk-ts#readme",
   "directories": {
     "test": "tests"
   },
@@ -53,8 +53,9 @@
     "prettier": "prettier --write ./src"
   },
   "dependencies": {
-    "@wormhole-foundation/sdk-connect": "0.10.5",
-    "@wormhole-foundation/sdk-evm": "0.10.5",
+    "@wormhole-foundation/sdk-connect": "1.20.0",
+    "@wormhole-foundation/sdk-evm": "1.20.0",
+    "@wormhole-foundation/sdk-evm-core": "1.20.0",
     "ethers": "^6.5.1"
   },
   "type": "module",

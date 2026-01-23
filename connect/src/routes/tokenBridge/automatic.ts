@@ -1,5 +1,5 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
-import { amount, contracts } from "@wormhole-foundation/sdk-base";
+import { amount, chainToPlatform, contracts } from "@wormhole-foundation/sdk-base";
 import type {
   ChainAddress,
   ChainContext,
@@ -7,16 +7,14 @@ import type {
   TokenId,
   TokenTransferDetails,
 } from "@wormhole-foundation/sdk-definitions";
-import { isNative, isTokenId, nativeTokenId } from "@wormhole-foundation/sdk-definitions";
+import { isNative, isTokenId } from "@wormhole-foundation/sdk-definitions";
 import { TokenTransfer } from "../../protocols/tokenBridge/tokenTransfer.js";
 import type { AttestationReceipt, SourceInitiatedTransferReceipt } from "../../types.js";
 import { TransferState } from "../../types.js";
 import { Wormhole } from "../../wormhole.js";
 import type { StaticRouteMethods } from "../route.js";
 import { AutomaticRoute } from "../route.js";
-import {
-  MinAmountError,
-} from '../types.js';
+import { MinAmountError } from "../types.js";
 import type {
   Quote,
   QuoteResult,
@@ -75,18 +73,6 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     return [];
   }
 
-  // get the list of source tokens that are possible to send
-  static async supportedSourceTokens(fromChain: ChainContext<Network>): Promise<TokenId[]> {
-    const atb = await fromChain.getAutomaticTokenBridge();
-    const registered = await atb.getRegisteredTokens();
-    return [
-      nativeTokenId(fromChain.chain),
-      ...registered.map((v) => {
-        return { chain: fromChain.chain, address: v };
-      }),
-    ];
-  }
-
   // get the list of destination tokens that may be received on the destination chain
   static async supportedDestinationTokens<N extends Network>(
     sourceToken: TokenId,
@@ -94,6 +80,14 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     toChain: ChainContext<N>,
   ): Promise<TokenId[]> {
     try {
+      if (!isNative(sourceToken)) {
+        const srcAtb = await fromChain.getAutomaticTokenBridge();
+        const srcIsAccepted = await srcAtb.isRegisteredToken(sourceToken.address);
+        if (!srcIsAccepted) {
+          return [];
+        }
+      }
+
       const expectedDestinationToken = await TokenTransfer.lookupDestinationToken(
         fromChain,
         toChain,
@@ -103,36 +97,60 @@ export class AutomaticTokenBridgeRoute<N extends Network>
       const atb = await toChain.getAutomaticTokenBridge();
       const acceptable = await atb.isRegisteredToken(expectedDestinationToken.address);
       if (!acceptable) {
-        throw new Error("Destination token is not accepted by the AutomaticTokenBridge");
+        return [];
       }
 
       return [expectedDestinationToken];
     } catch (e) {
-      console.error(`Failed to get destination token: ${e}`);
       return [];
     }
-  }
-
-  static isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean {
-    return chain.supportsAutomaticTokenBridge();
   }
 
   getDefaultOptions(): Op {
     return { nativeGas: 0.0 };
   }
 
-  async isAvailable(request: RouteTransferRequest<N>): Promise<boolean> {
-    const atb = await request.fromChain.getAutomaticTokenBridge();
-
-    if (isTokenId(request.source.id)) {
-      return await atb.isRegisteredToken(request.source.id.address);
-    }
-
-    return true;
-  }
-
   async validate(request: RouteTransferRequest<N>, params: Tp): Promise<Vr> {
     try {
+      // Check that source and destination chains are different
+      if (request.fromChain.chain === request.toChain.chain) {
+        return {
+          valid: false,
+          params,
+          error: new Error("Source and destination chains cannot be the same"),
+        };
+      }
+
+      // Prevent transfers to/from SVM chains if the destination token is Token2022
+      // except when using ExecutorTokenBridge
+      // Attempting to manually redeem Token2022 tokens will fail if recipient account
+      // has the immutableOwner extension, so just disable such transfers here
+      // Executor route creates temporary account without the extension
+      if (chainToPlatform(request.fromChain.chain) === "Solana") {
+        const isToken2022 = await request.fromChain.isToken2022(request.source.id.address);
+        if (isToken2022) {
+          return {
+            valid: false,
+            params,
+            error: new Error(
+              "Transfers of Token-2022 assets from SVM chains are not supported via the Automatic Token Bridge route. Please use the Executor Token Bridge route instead.",
+            ),
+          };
+        }
+      }
+      if (chainToPlatform(request.toChain.chain) === "Solana") {
+        const isToken2022 = await request.toChain.isToken2022(request.destination.id.address);
+        if (isToken2022) {
+          return {
+            valid: false,
+            params,
+            error: new Error(
+              "Transfers of Token-2022 assets to SVM chains are not supported via the Automatic Token Bridge route. Please use the Executor Token Bridge route instead.",
+            ),
+          };
+        }
+      }
+
       const options = params.options ?? this.getDefaultOptions();
 
       if (options.nativeGas && (options.nativeGas > 1.0 || options.nativeGas < 0.0))
@@ -219,9 +237,21 @@ export class AutomaticTokenBridgeRoute<N extends Network>
   }
 
   async quote(request: RouteTransferRequest<N>, params: Vp): Promise<QR> {
+    const atb = await request.fromChain.getAutomaticTokenBridge();
+
+    if (isTokenId(request.source.id)) {
+      const isRegistered = await atb.isRegisteredToken(request.source.id.address);
+      if (!isRegistered) {
+        return {
+          success: false,
+          error: new Error("Source token is not registered"),
+        };
+      }
+    }
+
     try {
       let quote = await TokenTransfer.quoteTransfer(this.wh, request.fromChain, request.toChain, {
-        automatic: true,
+        protocol: "AutomaticTokenBridge",
         amount: amount.units(params.normalizedParams.amount),
         token: request.source.id,
         nativeGas: amount.units(params.normalizedParams.nativeGasAmount),
@@ -271,15 +301,13 @@ export class AutomaticTokenBridgeRoute<N extends Network>
     from: ChainAddress,
     to: ChainAddress,
   ): TokenTransferDetails {
-    const transfer = {
+    return {
       from,
       to,
-      automatic: true,
+      protocol: "AutomaticTokenBridge",
       amount: amount.units(params.normalizedParams.amount),
       token: request.source.id,
       nativeGas: amount.units(params.normalizedParams.nativeGasAmount),
     };
-
-    return transfer;
   }
 }

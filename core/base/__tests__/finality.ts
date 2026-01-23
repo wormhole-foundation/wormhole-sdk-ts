@@ -5,9 +5,9 @@ import {
   consistencyLevelToBlock,
 } from "../src/constants/finality.js";
 
-describe("Finality tests", function () {
+describe("Finality tests", function() {
   test("Receive expected number of rounds", () => {
-    expect(finalityThreshold("Ethereum")).toEqual(96);
+    expect(finalityThreshold("Ethereum")).toEqual(72);
     expect(finalityThreshold("Algorand")).toEqual(0);
     expect(finalityThreshold("Solana")).toEqual(32);
   });
@@ -24,9 +24,6 @@ describe("Finality tests", function () {
     expect(consistencyLevelToBlock("Solana", ConsistencyLevels.Immediate, fromBlock)).toEqual(
       fromBlock,
     );
-    expect(consistencyLevelToBlock("Terra", ConsistencyLevels.Immediate, fromBlock)).toEqual(
-      fromBlock,
-    );
   });
 
   test("Estimates rounds from safe consistency level", () => {
@@ -41,7 +38,7 @@ describe("Finality tests", function () {
   test("Estimates rounds from finalized consistency level", () => {
     // 100 + (# final rounds)
     expect(consistencyLevelToBlock("Ethereum", ConsistencyLevels.Finalized, fromBlock)).toEqual(
-      fromBlock + 96n,
+      fromBlock + 72n,
     );
     expect(consistencyLevelToBlock("Solana", ConsistencyLevels.Finalized, fromBlock)).toEqual(
       fromBlock + 32n,
@@ -52,7 +49,7 @@ describe("Finality tests", function () {
     );
     // L2 required but not factored into estimate
     expect(consistencyLevelToBlock("Polygon", ConsistencyLevels.Finalized, fromBlock)).toEqual(
-      fromBlock + 32n,
+      fromBlock + 2n,
     );
   });
 });

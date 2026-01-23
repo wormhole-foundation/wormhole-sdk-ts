@@ -67,6 +67,8 @@ export interface RouteMeta {
   // Common name for the route,
   //eg "TokenBridge" or "CCTP"
   name: string;
+  // Provider name
+  provider?: string;
   // Url to logo route provider
   logo?: string;
   // If people have trouble, where should they go?
@@ -87,16 +89,14 @@ export interface RouteConstructor<OP extends Options = Options> {
   supportedNetworks(): Network[];
   /** get the list of chains this route supports */
   supportedChains(network: Network): Chain[];
-  /** check that the underlying protocols are supported */
-  isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean;
-  /** get the list of source tokens that are possible to send */
-  supportedSourceTokens(fromChain: ChainContext<Network>): Promise<TokenId[]>;
   /** get the list of destination tokens that may be received on the destination chain */
   supportedDestinationTokens<N extends Network>(
     token: TokenId,
     fromChain: ChainContext<N>,
     toChain: ChainContext<N>,
   ): Promise<TokenId[]>;
+  /** get if the chain allows same-chain swaps */
+  supportsSameChainSwaps?(network: Network, chain: Chain): boolean;
 }
 
 // Use this to ensure the static methods defined in the RouteConstructor
@@ -113,12 +113,10 @@ export abstract class AutomaticRoute<
   R extends Receipt = Receipt,
 > extends Route<N, OP, VP, R> {
   static IS_AUTOMATIC = true;
-  // TODO: search for usagees and update arg
-  public abstract isAvailable(request: RouteTransferRequest<N>): Promise<boolean>;
 }
 
 export function isAutomatic<N extends Network>(route: Route<N>): route is AutomaticRoute<N> {
-  return (route as AutomaticRoute<N>).isAvailable !== undefined && (route.constructor as RouteConstructor).IS_AUTOMATIC;
+  return !!(route.constructor as RouteConstructor).IS_AUTOMATIC;
 }
 
 /**

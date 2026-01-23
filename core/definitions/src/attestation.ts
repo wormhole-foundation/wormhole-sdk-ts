@@ -3,7 +3,12 @@ import type { ProtocolName } from "./protocol.js";
 import type { AutomaticCircleBridge, CircleBridge } from "./protocols/circleBridge/circleBridge.js";
 import type { IbcTransferData } from "./protocols/ibc/ibc.js";
 import type { PorticoBridge } from "./protocols/portico/portico.js";
-import type { AutomaticTokenBridge, TokenBridge } from "./protocols/tokenBridge/tokenBridge.js";
+import type { TBTCBridge } from "./protocols/tbtc/tbtc.js";
+import type {
+  AutomaticTokenBridge,
+  TokenBridge,
+  ExecutorTokenBridge,
+} from "./protocols/tokenBridge/tokenBridge.js";
 import type { SequenceId } from "./types.js";
 import type { UniversalAddress } from "./universalAddress.js";
 import type { VAA } from "./vaa/index.js";
@@ -14,9 +19,11 @@ import type { VAA } from "./vaa/index.js";
 export type AttestationId<PN extends ProtocolName = ProtocolName> = PN extends
   | "TokenBridge"
   | "AutomaticTokenBridge"
+  | "ExecutorTokenBridge"
   | "WormholeCore"
   | "PorticoBridge"
   | "AutomaticCircleBridge"
+  | "TBTCBridge"
   ? WormholeMessageId
   : PN extends "AutomaticCircleBridge"
   ? WormholeMessageId | CircleMessageId
@@ -32,7 +39,8 @@ export type AttestationId<PN extends ProtocolName = ProtocolName> = PN extends
 export type Attestation<PN extends ProtocolName = ProtocolName> = PN extends
   | "TokenBridge"
   | "AutomaticTokenBridge"
-  ? AutomaticTokenBridge.VAA | TokenBridge.VAA
+  | "ExecutorTokenBridge"
+  ? AutomaticTokenBridge.VAA | TokenBridge.VAA | ExecutorTokenBridge.VAA
   : PN extends "AutomaticCircleBridge"
   ? AutomaticCircleBridge.VAA | CircleBridge.Attestation
   : PN extends "CircleBridge"
@@ -43,6 +51,8 @@ export type Attestation<PN extends ProtocolName = ProtocolName> = PN extends
   ? VAA<"Uint8Array">
   : PN extends "PorticoBridge"
   ? PorticoBridge.VAA
+  : PN extends "TBTCBridge"
+  ? TBTCBridge.VAA
   : any;
 
 /**

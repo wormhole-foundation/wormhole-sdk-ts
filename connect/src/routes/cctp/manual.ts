@@ -24,6 +24,7 @@ import type {
   ValidationResult,
 } from "../types.js";
 import type { RouteTransferRequest } from "../request.js";
+import { checkCircleGeoblock } from "../../circle-api.js";
 
 export namespace CCTPRoute {
   export type Options = {
@@ -55,6 +56,7 @@ export class CCTPRoute<N extends Network>
 {
   static meta = {
     name: "ManualCCTP",
+    provider: "Circle",
   };
 
   static supportedNetworks(): Network[] {
@@ -66,13 +68,6 @@ export class CCTPRoute<N extends Network>
       return contracts.circleContractChains.get(network)!;
     }
     return [];
-  }
-
-  // get the list of source tokens that are possible to send
-  static async supportedSourceTokens(fromChain: ChainContext<Network>): Promise<TokenId[]> {
-    const { network, chain } = fromChain;
-    if (!circle.usdcContract.has(network, chain)) return [];
-    return [Wormhole.chainAddress(chain, circle.usdcContract.get(network, chain)!)];
   }
 
   // get the list of destination tokens that may be received on the destination chain
@@ -93,10 +88,6 @@ export class CCTPRoute<N extends Network>
     return [Wormhole.chainAddress(chain, circle.usdcContract.get(network, chain)!)];
   }
 
-  static isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean {
-    return chain.supportsCircleBridge();
-  }
-
   getDefaultOptions(): Op {
     return {
       payload: undefined,
@@ -104,6 +95,15 @@ export class CCTPRoute<N extends Network>
   }
 
   async validate(request: RouteTransferRequest<N>, params: Tp): Promise<Vr> {
+    // Check that source and destination chains are different
+    if (request.fromChain.chain === request.toChain.chain) {
+      return {
+        valid: false,
+        params,
+        error: new Error("Source and destination chains cannot be the same"),
+      };
+    }
+
     const amount = request.parseAmount(params.amount);
 
     const validatedParams: Vp = {
@@ -119,6 +119,12 @@ export class CCTPRoute<N extends Network>
 
   async quote(request: RouteTransferRequest<N>, params: Vp): Promise<QR> {
     try {
+      const geoBlockError = await checkCircleGeoblock();
+
+      if (geoBlockError) {
+        return geoBlockError;
+      }
+
       return request.displayQuote(
         await CircleTransfer.quoteTransfer(request.fromChain, request.toChain, {
           automatic: false,

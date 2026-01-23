@@ -1,6 +1,7 @@
 import type { Chain, Network, Platform } from "@wormhole-foundation/sdk-base";
 import { chainToPlatform, circle } from "@wormhole-foundation/sdk-base";
 import type {
+  CapabilitiesResponse,
   ChainAddress,
   ChainContext,
   Contracts,
@@ -9,6 +10,8 @@ import type {
   PayloadLiteral,
   PlatformContext,
   PlatformUtils,
+  QuoteResponse,
+  StatusResponse,
   TokenAddress,
   TokenId,
   TxHash,
@@ -40,6 +43,7 @@ import {
   getVaaBytesWithRetry,
   getVaaWithRetry,
 } from "./whscan-api.js";
+import { fetchCapabilities, fetchQuote, fetchStatus } from "@wormhole-foundation/sdk-definitions";
 
 type PlatformMap<N extends Network, P extends Platform = Platform> = Map<P, PlatformContext<N, P>>;
 type ChainMap<N extends Network, C extends Chain = Chain> = Map<C, ChainContext<N, C>>;
@@ -115,14 +119,13 @@ export class Wormhole<N extends Network> {
   }
 
   /**
-   * Creates a TokenTransfer object to move a token from one chain to another
+   * Creates a TokenTransfer object to move a token from one chain to another using TokenBridge protocol
    * @param token the token to transfer
    * @param amount the amount to transfer
    * @param from the address to transfer from
    * @param to the address to transfer to
-   * @param automatic whether to use automatic delivery
+   * @param protocol the protocol to use (TokenBridge)
    * @param payload the payload to send with the transfer
-   * @param nativeGas the amount of native gas to send with the transfer
    * @returns the TokenTransfer object
    * @throws Errors if the chain or protocol is not supported
    */
@@ -131,19 +134,88 @@ export class Wormhole<N extends Network> {
     amount: bigint,
     from: ChainAddress,
     to: ChainAddress,
-    automatic: boolean,
+    protocol: "TokenBridge",
     payload?: Uint8Array,
+  ): Promise<TokenTransfer<N>>;
+
+  /**
+   * Creates a TokenTransfer object to move a token from one chain to another using AutomaticTokenBridge protocol
+   * @param token the token to transfer
+   * @param amount the amount to transfer
+   * @param from the address to transfer from
+   * @param to the address to transfer to
+   * @param nativeGas optional amount of native gas to drop off with the transfer
+   * @param protocol the protocol to use (AutomaticTokenBridge)
+   * @returns the TokenTransfer object
+   * @throws Errors if the chain or protocol is not supported
+   */
+  async tokenTransfer(
+    token: TokenId,
+    amount: bigint,
+    from: ChainAddress,
+    to: ChainAddress,
+    protocol: "AutomaticTokenBridge",
     nativeGas?: bigint,
+  ): Promise<TokenTransfer<N>>;
+
+  /**
+   * Creates a TokenTransfer object to move a token from one chain to another using ExecutorTokenBridge protocol
+   * @param token the token to transfer
+   * @param amount the amount to transfer
+   * @param from the address to transfer from
+   * @param to the address to transfer to
+   * @param protocol the protocol to use (ExecutorTokenBridge)
+   * @returns the TokenTransfer object
+   * @throws Errors if the chain or protocol is not supported
+   */
+  async tokenTransfer(
+    token: TokenId,
+    amount: bigint,
+    from: ChainAddress,
+    to: ChainAddress,
+    protocol: "ExecutorTokenBridge",
+  ): Promise<TokenTransfer<N>>;
+
+  async tokenTransfer(
+    token: TokenId,
+    amount: bigint,
+    from: ChainAddress,
+    to: ChainAddress,
+    protocol: TokenTransfer.Protocol,
+    options?: Uint8Array | bigint,
   ): Promise<TokenTransfer<N>> {
-    return await TokenTransfer.from(this, {
-      token,
-      amount,
-      from,
-      to,
-      automatic,
-      payload,
-      nativeGas,
-    });
+    switch (protocol) {
+      case "TokenBridge":
+        return await TokenTransfer.from(this, {
+          token,
+          amount,
+          from,
+          to,
+          protocol,
+          payload: options as Uint8Array,
+        });
+      case "AutomaticTokenBridge": {
+        return await TokenTransfer.from(this, {
+          token,
+          amount,
+          from,
+          to,
+          protocol,
+          nativeGas: options as bigint,
+        });
+      }
+      case "ExecutorTokenBridge": {
+        return await TokenTransfer.from(this, {
+          token,
+          amount,
+          from,
+          to,
+          protocol,
+        });
+      }
+      default:
+        throw new Error(`Protocol ${protocol} is not supported`);
+    }
   }
 
   /**
@@ -379,6 +451,22 @@ export class Wormhole<N extends Network> {
     return await getTransactionStatusWithRetry(this.config.api, msgid, timeout);
   }
 
+  async getExecutorCapabilities(): Promise<CapabilitiesResponse> {
+    return await fetchCapabilities(this.config.executorAPI);
+  }
+
+  async getExecutorQuote(
+    srcChain: Chain,
+    dstChain: Chain,
+    relayInstructions: string,
+  ): Promise<QuoteResponse> {
+    return await fetchQuote(this.config.executorAPI, srcChain, dstChain, relayInstructions);
+  }
+
+  async getExecutorTxStatus(txHash: TxHash, chain: Chain): Promise<StatusResponse[]> {
+    return await fetchStatus(this.config.executorAPI, txHash, chain);
+  }
+
   /**
    * Get recent transactions for an address
    *
@@ -416,7 +504,7 @@ export class Wormhole<N extends Network> {
   }
 
   /**
-   * Parse an address from its canonincal string format to a NativeAddress
+   * Parse an address from its canonical string format to a NativeAddress
    *
    * @param chain The chain the address is for
    * @param address The native address in canonical string format
@@ -427,7 +515,7 @@ export class Wormhole<N extends Network> {
   }
 
   /**
-   * Parse an address from its canonincal string format to a NativeAddress
+   * Parse an address from its canonical string format to a NativeAddress
    *
    * @param chain The chain the address is for
    * @param address The native address in canonical string format or the string "native"

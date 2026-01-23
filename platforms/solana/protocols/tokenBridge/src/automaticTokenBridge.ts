@@ -209,7 +209,7 @@ export class SolanaAutomaticTokenBridge<
     ]);
 
     const decimals = Number(
-      await SolanaPlatform.getDecimals(this.chain, this.connection, token),
+      await SolanaPlatform.getDecimals(this.network, this.chain, this.connection, token),
     );
 
     const relayerFee = TEN.pow(new BN(decimals))
@@ -230,7 +230,7 @@ export class SolanaAutomaticTokenBridge<
       ]);
 
     const decimals = Number(
-      await SolanaPlatform.getDecimals(this.chain, this.connection, token),
+      await SolanaPlatform.getDecimals(this.network, this.chain, this.connection, token),
     );
 
     const nativeSwapRate = this.calculateNativeSwapRate(solSwapRate, swapRate);
@@ -258,7 +258,7 @@ export class SolanaAutomaticTokenBridge<
     const mint = this.mintAddress(token);
 
     const decimals = Number(
-      await SolanaPlatform.getDecimals(this.chain, this.connection, token),
+      await SolanaPlatform.getDecimals(this.network, this.chain, this.connection, token),
     );
 
     const [{ swapRate }, { swapRate: solSwapRate }] = await Promise.all([

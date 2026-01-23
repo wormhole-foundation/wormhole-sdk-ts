@@ -1,25 +1,31 @@
 {
   "name": "ts-sdk",
-  "version": "0.10.5",
+  "version": "1.20.0",
   "license": "Apache-2.0",
   "directories": {
     "test": "__tests__"
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
     "@types/chai": "^4.3.5",
     "@types/jest": "^29.5.12",
     "@types/mocha": "^10.0.1",
-    "@types/node": "^20.4.1",
+    "@types/node": "^24.0.0",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "chai": "^4.3.7",
+    "commitizen": "^4.3.1",
+    "cz-conventional-changelog": "^3.3.0",
+    "husky": "^9.1.7",
     "jest": "^29.7.0",
+    "lint-staged": "^16.1.2",
     "mocha": "^10.2.0",
     "prettier": "^3.0.3",
     "ts-jest": "^29.1.2",
     "ts-mocha": "^10.0.0",
     "ts-node": "^10.9.1",
     "tsd": "^0.29.0",
-    "turbo": "^1.11.2",
+    "turbo": "^1.13.4",
     "typedoc": "^0.25.13",
     "typescript": "^5.4.5"
   },
@@ -32,7 +38,14 @@
     "docs": "NODE_OPTIONS=--max_old_space_size=8192 typedoc --options typedoc.json",
     "version": "tsx setVersion.ts",
     "prepublishOnly": "cd scripts && npm run examples && cd - && cp README.md sdk/",
-    "test:tilt": "jest --verbose --config ./jest.config.ts --roots ./__tests__/tilt"
+    "test:tilt": "jest --verbose --config ./jest.config.ts --roots ./__tests__/tilt",
+    "prepare": "husky",
+    "commit": "cz"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
   },
   "workspaces": [
     "core/base",
@@ -44,23 +57,29 @@
     "platforms/evm/protocols/tokenBridge",
     "platforms/evm/protocols/cctp",
     "platforms/evm/protocols/portico",
+    "platforms/evm/protocols/tbtc",
     "platforms/solana",
     "platforms/solana/protocols/core",
     "platforms/solana/protocols/tokenBridge",
     "platforms/solana/protocols/cctp",
+    "platforms/solana/protocols/tbtc",
     "platforms/cosmwasm",
     "platforms/cosmwasm/protocols/core",
     "platforms/cosmwasm/protocols/tokenBridge",
     "platforms/cosmwasm/protocols/ibc",
+    "platforms/stacks",
+    "platforms/stacks/protocols/core",
     "platforms/algorand",
     "platforms/algorand/protocols/core",
     "platforms/algorand/protocols/tokenBridge",
     "platforms/sui",
     "platforms/sui/protocols/core",
     "platforms/sui/protocols/tokenBridge",
+    "platforms/sui/protocols/cctp",
     "platforms/aptos",
     "platforms/aptos/protocols/core",
     "platforms/aptos/protocols/tokenBridge",
+    "platforms/aptos/protocols/cctp",
     "sdk",
     "examples"
   ],

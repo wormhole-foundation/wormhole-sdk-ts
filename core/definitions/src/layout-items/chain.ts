@@ -2,7 +2,7 @@ import type {
   Chain,
   CustomConversion,
   FixedConversion,
-  UintLayoutItem,
+  Layout,
 } from "@wormhole-foundation/sdk-base";
 import { chainToChainId, chains, toChain } from "@wormhole-foundation/sdk-base";
 
@@ -37,7 +37,7 @@ export const chainItem = <
       },
       from: (val: AllowNull<C[number], N>): number => (val == null ? 0 : chainToChainId(val)),
     } satisfies CustomConversion<number, AllowNull<C[number], N>>,
-  }) as const satisfies UintLayoutItem;
+  }) as const satisfies Layout;
 
 export const fixedChainItem = <const C extends Chain>(chain: C) =>
   ({
@@ -46,4 +46,4 @@ export const fixedChainItem = <const C extends Chain>(chain: C) =>
       to: chain,
       from: chainToChainId(chain),
     } satisfies FixedConversion<number, C>,
-  }) as const satisfies UintLayoutItem;
+  }) as const satisfies Layout;

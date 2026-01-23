@@ -1,4 +1,4 @@
-import { normalizeSuiAddress } from "@mysten/sui.js/utils";
+import { normalizeSuiAddress } from "@mysten/sui/utils";
 import type { Address } from "@wormhole-foundation/sdk-connect";
 import { UniversalAddress, encoding, registerNative } from "@wormhole-foundation/sdk-connect";
 
@@ -113,7 +113,12 @@ export class SuiAddress implements Address {
     if (this.module === "sui::SUI") {
       return SUI_COIN;
     }
-    return [this.getPackageId(), "coin", "COIN"].join(SUI_SEPARATOR);
+
+    if (!this.module) {
+      throw new Error("No module present in Sui token address");
+    }
+
+    return this.unwrap();
   }
 
   static instanceof(address: any): address is SuiAddress {

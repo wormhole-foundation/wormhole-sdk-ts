@@ -3192,6 +3192,28 @@ const testnetTokenEntries = [
     ],
   ],
   [
+    "XRPLEVM",
+    [
+      [
+        "XRP",
+        {
+          symbol: "XRP",
+          decimals: 18,
+          address: "native",
+          wrappedKey: "WXRP",
+        },
+      ],
+      [
+        "WXRP",
+        {
+          symbol: "WXRP",
+          decimals: 18,
+          address: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+        },
+      ],
+    ],
+  ],
+  [
     "Sepolia",
     [
       [
@@ -3278,7 +3300,28 @@ const testnetTokenEntries = [
         },
       ],
     ],
-  ],
+  ], [
+    "MegaETH",
+    [
+      [
+        "ETH",
+        {
+          symbol: "ETH",
+          decimals: 18,
+          address: "native",
+          wrappedKey: "WETH",
+        }
+      ],
+      [
+        "WETH",
+        {
+          symbol: "WETH",
+          decimals: 18,
+          address: "0x4200000000000000000000000000000000000006"
+        }
+      ]
+    ]
+  ]
 ] as const satisfies MapLevel<Chain, MapLevel<TokenSymbol, TokenConst>>;
 
 export const testnetChainTokens = constMap(testnetTokenEntries, [0, [1, 2]]);

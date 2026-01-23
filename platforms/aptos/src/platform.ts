@@ -17,14 +17,12 @@ import {
   decimals as nativeDecimals,
   networkPlatformConfigs,
 } from "@wormhole-foundation/sdk-connect";
-import { AptosClient } from "aptos";
+import { Aptos, AptosConfig, Network as AptosNetwork } from "@aptos-labs/ts-sdk";
 import { AptosChain } from "./chain.js";
 import type { AptosChains, AptosPlatformType } from "./types.js";
 import { _platform } from "./types.js";
 
-import { CoinClient } from "aptos";
-import { AptosAddress } from "./address.js";
-import { APTOS_COIN, APTOS_SEPARATOR } from "./constants.js";
+import { APTOS_COIN } from "./constants.js";
 import type { AnyAptosAddress } from "./types.js";
 
 /**
@@ -40,12 +38,16 @@ export class AptosPlatform<N extends Network>
     super(network, config ?? networkPlatformConfigs(network, AptosPlatform._platform));
   }
 
-  getRpc<C extends AptosChains>(chain: C): AptosClient {
-    if (chain in this.config) return new AptosClient(this.config[chain]!.rpc);
+  getRpc<C extends AptosChains>(chain: C): Aptos {
+    if (chain in this.config) {
+      const network = this.network === "Mainnet" ? AptosNetwork.MAINNET : AptosNetwork.TESTNET;
+      const config = new AptosConfig({ fullnode: this.config[chain]!.rpc, network });
+      return new Aptos(config);
+    }
     throw new Error("No configuration available for chain: " + chain);
   }
 
-  getChain<C extends AptosChains>(chain: C, rpc?: AptosClient): AptosChain<N, C> {
+  getChain<C extends AptosChains>(chain: C, rpc?: Aptos): AptosChain<N, C> {
     if (chain in this.config) return new AptosChain(chain, this);
     throw new Error("No configuration available for chain: " + chain);
   }
@@ -71,37 +73,35 @@ export class AptosPlatform<N extends Network>
     return platform === AptosPlatform._platform;
   }
 
-  static async getDecimals(
-    chain: Chain,
-    rpc: AptosClient,
-    token: AnyAptosAddress,
-  ): Promise<number> {
-    if (isNative(token)) return nativeDecimals.nativeDecimals(AptosPlatform._platform);
+  static async getDecimals(network: Network, chain: Chain, rpc: Aptos, token: AnyAptosAddress): Promise<number> {
+    if (isNative(token) || token === APTOS_COIN)
+      return nativeDecimals.nativeDecimals(AptosPlatform._platform);
 
-    const tokenAddr = token.toString();
-    const coinType = `0x1::coin::CoinInfo<${tokenAddr}>`;
-    const decimals = (
-      (await rpc.getAccountResource(tokenAddr.split(APTOS_SEPARATOR)[0]!, coinType)).data as any
-    ).decimals;
-
-    return decimals;
+    const assetType = token.toString();
+    const data = await rpc.getFungibleAssetMetadataByAssetType({ assetType });
+    return data.decimals;
   }
 
   static async getBalance(
+    network: Network,
     chain: Chain,
-    rpc: AptosClient,
+    rpc: Aptos,
     walletAddress: string,
     token: AnyAptosAddress,
   ): Promise<bigint | null> {
-    const tokenAddress = isNative(token) ? APTOS_COIN : token.toString();
-    const cc = new CoinClient(rpc);
+    const assetType = isNative(token) ? APTOS_COIN : token.toString();
     try {
-      const balance = await cc.checkBalance(walletAddress, {
-        coinType: tokenAddress,
+      const data = await rpc.getCurrentFungibleAssetBalances({
+        options: {
+          where: {
+            owner_address: { _eq: walletAddress },
+            asset_type: { _eq: assetType },
+          },
+        },
       });
-      return balance;
+      return data[0]?.amount ?? null;
     } catch (e: any) {
-      if (e.errorCode === "resource_not_found" && e.status === 404) {
+      if (e.status === 404) {
         return null;
       }
       throw e;
@@ -109,38 +109,53 @@ export class AptosPlatform<N extends Network>
   }
 
   static async getBalances(
+    network: Network,
     chain: Chain,
-    rpc: AptosClient,
+    rpc: Aptos,
     walletAddress: string,
-    tokens: AnyAptosAddress[],
   ): Promise<Balances> {
-    const balancesArr = await Promise.all(
-      tokens.map(async (token) => {
-        const balance = await this.getBalance(chain, rpc, walletAddress, token);
-        const address = isNative(token) ? "native" : new AptosAddress(token).toString();
-        return { [address]: balance };
-      }),
-    );
-    return balancesArr.reduce((obj, item) => Object.assign(obj, item), {});
+    try {
+      const data = await rpc.getCurrentFungibleAssetBalances({
+        options: {
+          where: {
+            owner_address: { _eq: walletAddress },
+          },
+        },
+      });
+      let balances: Balances = {};
+      for (const bal of data) {
+        if (bal.asset_type) {
+          let addr = bal.asset_type === '0x1::aptos_coin::AptosCoin' ? 'native' : bal.asset_type;
+          balances[addr] = bal.amount;
+        }
+      }
+      return balances;
+    } catch (e: any) {
+      if (e.status === 404) {
+        return {};
+      }
+      throw e;
+    }
   }
 
-  static async sendWait(chain: Chain, rpc: AptosClient, stxns: SignedTx[]): Promise<TxHash[]> {
-    // TODO: concurrent
+  static async sendWait(chain: Chain, rpc: Aptos, stxns: SignedTx[]): Promise<TxHash[]> {
     const txhashes = [];
     for (const stxn of stxns) {
-      const pendingTx = await rpc.submitTransaction(stxn);
-      const res = await rpc.waitForTransactionWithResult(pendingTx.hash);
+      const pendingTx = await rpc.transaction.submit.simple(stxn.transaction);
+      const res = await rpc.waitForTransaction({
+        transactionHash: pendingTx.hash,
+      });
       txhashes.push(res.hash);
     }
     return txhashes;
   }
 
-  static async getLatestBlock(rpc: AptosClient): Promise<number> {
+  static async getLatestBlock(rpc: Aptos): Promise<number> {
     const li = await rpc.getLedgerInfo();
     return Number(li.block_height);
   }
 
-  static async getLatestFinalizedBlock(rpc: AptosClient): Promise<number> {
+  static async getLatestFinalizedBlock(rpc: Aptos): Promise<number> {
     const li = await rpc.getLedgerInfo();
     return Number(li.block_height);
   }
@@ -158,9 +173,8 @@ export class AptosPlatform<N extends Network>
     return [network, chain];
   }
 
-  static async chainFromRpc(rpc: AptosClient): Promise<[Network, AptosChains]> {
-    const conn = rpc as AptosClient;
-    const ci = await conn.getChainId();
-    return this.chainFromChainId(ci.toString());
+  static async chainFromRpc(rpc: Aptos): Promise<[Network, AptosChains]> {
+    const li = await rpc.getLedgerInfo();
+    return this.chainFromChainId(li.chain_id.toString());
   }
 }

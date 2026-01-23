@@ -1,4 +1,4 @@
-import { filters, finality } from "@wormhole-foundation/sdk-base";
+import { filters, finality, time } from "@wormhole-foundation/sdk-base";
 import type { StaticRouteMethods } from "../route.js";
 import { AutomaticRoute } from "../route.js";
 import type {
@@ -11,34 +11,36 @@ import type {
 } from "../types.js";
 import type {
   AttestationReceipt,
+  AttestedTransferReceipt,
   Chain,
   ChainContext,
+  CompletedTransferReceipt,
   Network,
   Signer,
   SourceInitiatedTransferReceipt,
   TokenId,
   TransactionId,
+  PorticoBridge,
 } from "./../../index.js";
 import {
-  PorticoBridge,
   TokenTransfer,
   TransferState,
   Wormhole,
   amount,
   canonicalAddress,
-  chainToPlatform,
   contracts,
   isAttested,
-  isNative,
+  isSourceFinalized,
   isSourceInitiated,
   resolveWrappedToken,
   signSendWait,
 } from "./../../index.js";
-import type { ChainAddress } from "@wormhole-foundation/sdk-definitions";
+import type { ChainAddress, WormholeMessageId } from "@wormhole-foundation/sdk-definitions";
 import type { RouteTransferRequest } from "../request.js";
 
 export const SLIPPAGE_BPS = 15n; // 0.15%
-export const BPS_PER_HUNDRED_PERCENT = 10000n;
+export const MAX_SLIPPAGE_BPS = 100n; // 1%
+export const BPS_PER_HUNDRED_PERCENT = 10_000n;
 
 export namespace PorticoRoute {
   export type Options = {};
@@ -78,8 +80,6 @@ export class AutomaticPorticoRoute<N extends Network>
     name: "AutomaticPortico",
   };
 
-  private static _supportedTokens = ["WETH", "WSTETH"];
-
   static supportedNetworks(): Network[] {
     return ["Mainnet"];
   }
@@ -89,22 +89,6 @@ export class AutomaticPorticoRoute<N extends Network>
       return contracts.porticoContractChains.get(network)!;
     }
     return [];
-  }
-
-  static async supportedSourceTokens(fromChain: ChainContext<Network>): Promise<TokenId[]> {
-    const { chain } = fromChain;
-    const supported = this._supportedTokens
-      .map((symbol) => {
-        return filters.bySymbol(fromChain.config.tokenMap!, symbol) ?? [];
-      })
-      .flat()
-      .filter((td) => {
-        const localOrEth = !td.original || td.original === "Ethereum";
-        const isAvax = chain === "Avalanche" && isNative(td.address);
-        return localOrEth && !isAvax;
-      });
-
-    return supported.map((td) => Wormhole.tokenId(chain, td.address));
   }
 
   static async supportedDestinationTokens<N extends Network>(
@@ -119,52 +103,36 @@ export class AutomaticPorticoRoute<N extends Network>
     );
     const tokenAddress = canonicalAddress(srcTokenAddress);
 
-    // The token that will be used to bridge
     const pb = await fromChain.getPorticoBridge();
-    const transferrableToken = pb.getTransferrableToken(tokenAddress);
+    // Make sure the source token is supported
+    if (!pb.supportedTokens().some((t) => canonicalAddress(t.token) === tokenAddress)) {
+      return [];
+    }
 
-    // The tokens that _will_ be received on redemption
-    const redeemToken = await TokenTransfer.lookupDestinationToken(
-      fromChain,
-      toChain,
-      transferrableToken,
-    );
+    try {
+      // The highway token that will be used to bridge
+      const transferrableToken = await pb.getTransferrableToken(tokenAddress);
+      // Make sure it exists on the destination chain
+      await TokenTransfer.lookupDestinationToken(fromChain, toChain, transferrableToken);
+    } catch {
+      return [];
+    }
 
-    // Grab the symbol for the token that gets redeemed
-    const redeemTokenDetails = filters.byAddress(
-      toChain.config.tokenMap!,
-      canonicalAddress(redeemToken),
-    )!;
-
-    // Find the local/native version of the same token by symbol
-    const locallyRedeemable = (
-      filters.bySymbol(toChain.config.tokenMap!, redeemTokenDetails.symbol) ?? []
-    )
-      .filter((td) => {
-        return !td.original;
-      })
-      .map((td) => {
-        switch (td.symbol) {
-          case "ETH":
-          case "WETH":
-            return Wormhole.tokenId(toChain.chain, td.address);
-          case "WSTETH":
-            return Wormhole.tokenId(toChain.chain, td.address);
-          default:
-            throw new Error("Unknown symbol: " + redeemTokenDetails.symbol);
-        }
-      });
-
-    return locallyRedeemable;
-  }
-
-  static isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean {
-    return chain.supportsPorticoBridge();
-  }
-
-  async isAvailable(): Promise<boolean> {
-    // TODO:
-    return true;
+    // Find the destination token(s) in the same group
+    const toPb = await toChain.getPorticoBridge();
+    const tokens = toPb.supportedTokens();
+    const { tokenMap } = toChain.config;
+    const group = pb.getTokenGroup(tokenAddress);
+    return tokens
+      .filter(
+        (t) =>
+          (t.group === group ||
+            // ETH/WETH supports wrapping/unwrapping
+            (t.group === "ETH" && group === "WETH") ||
+            (t.group === "WETH" && group === "ETH")) &&
+          (!tokenMap || filters.byAddress(tokenMap, canonicalAddress(t.token))),
+      )
+      .map((t) => t.token);
   }
 
   getDefaultOptions(): OP {
@@ -173,11 +141,24 @@ export class AutomaticPorticoRoute<N extends Network>
 
   async validate(request: RouteTransferRequest<N>, params: TP): Promise<VR> {
     try {
+      // Check that source and destination chains are different
+      if (request.fromChain.chain === request.toChain.chain) {
+        return {
+          valid: false,
+          params,
+          error: new Error("Source and destination chains cannot be the same"),
+        };
+      }
+
       if (
-        chainToPlatform(request.fromChain.chain) !== "Evm" ||
-        chainToPlatform(request.toChain.chain) !== "Evm"
+        !AutomaticPorticoRoute.supportedChains(request.fromChain.network).includes(
+          request.fromChain.chain,
+        ) ||
+        !AutomaticPorticoRoute.supportedChains(request.toChain.network).includes(
+          request.toChain.chain,
+        )
       ) {
-        throw new Error("Only EVM chains are supported");
+        throw new Error("Protocol not supported");
       }
 
       const { fromChain, toChain, source, destination } = request;
@@ -190,9 +171,11 @@ export class AutomaticPorticoRoute<N extends Network>
       const fromPb = await fromChain.getPorticoBridge();
       const toPb = await toChain.getPorticoBridge();
 
-      const canonicalSourceToken = fromPb.getTransferrableToken(canonicalAddress(sourceToken));
+      const canonicalSourceToken = await fromPb.getTransferrableToken(
+        canonicalAddress(sourceToken),
+      );
 
-      const canonicalDestinationToken = toPb.getTransferrableToken(
+      const canonicalDestinationToken = await toPb.getTransferrableToken(
         canonicalAddress(destinationToken),
       );
 
@@ -216,7 +199,25 @@ export class AutomaticPorticoRoute<N extends Network>
 
   async quote(request: RouteTransferRequest<N>, params: VP): Promise<QR> {
     try {
-      const swapAmounts = await this.quoteUniswap(request, params);
+      const swapAmounts = await this.fetchSwapQuote(request, params);
+
+      // destination token may have a different number of decimals than the source token
+      // so we need to scale the amounts to the token with the most decimals
+      // before comparing them
+      const maxDecimals = Math.max(request.source.decimals, request.destination.decimals);
+      const scaledAmount = amount.units(amount.scale(params.normalizedParams.amount, maxDecimals));
+      const scaledMinAmountFinish = amount.units(
+        amount.scale(
+          amount.fromBaseUnits(swapAmounts.minAmountFinish, request.destination.decimals),
+          maxDecimals,
+        ),
+      );
+      // if the slippage is more than 100bps, this likely means that the pools are unbalanced
+      if (
+        scaledMinAmountFinish <
+        scaledAmount - (scaledAmount * MAX_SLIPPAGE_BPS) / BPS_PER_HUNDRED_PERCENT
+      )
+        throw new Error("Slippage too high");
 
       const pb = await request.toChain.getPorticoBridge();
 
@@ -230,9 +231,9 @@ export class AutomaticPorticoRoute<N extends Network>
         relayerFee: fee,
       };
 
-      let destinationAmount = details.swapAmounts.minAmountFinish - fee;
+      const destinationAmount = details.swapAmounts.minAmountFinish - fee;
 
-      if (Number(destinationAmount) < 0) {
+      if (destinationAmount < 0n) {
         return {
           success: false,
           error: new Error(
@@ -256,6 +257,7 @@ export class AutomaticPorticoRoute<N extends Network>
             amount: fee,
           },
           eta: finality.estimateFinalityTime(request.fromChain.chain),
+          expires: time.expiration(0, 5, 0),
         },
         params,
         details,
@@ -275,6 +277,9 @@ export class AutomaticPorticoRoute<N extends Network>
     const destToken = request.destination!.id;
 
     const fromPorticoBridge = await request.fromChain.getPorticoBridge();
+    const tokenGroup = fromPorticoBridge.getTokenGroup(sourceToken.toString());
+    const toPorticoBridge = await request.toChain.getPorticoBridge();
+    const destPorticoAddress = toPorticoBridge.getPorticoAddress(tokenGroup);
 
     const xfer = fromPorticoBridge.transfer(
       Wormhole.parseAddress(sender.chain(), sender.address()),
@@ -282,6 +287,7 @@ export class AutomaticPorticoRoute<N extends Network>
       sourceToken,
       amount.units(params.normalizedParams.amount),
       destToken!,
+      destPorticoAddress,
       details!,
     );
 
@@ -296,14 +302,49 @@ export class AutomaticPorticoRoute<N extends Network>
   }
 
   async *track(receipt: R, timeout?: number) {
-    if (!isSourceInitiated(receipt)) throw new Error("Source must be initiated");
+    if (isSourceInitiated(receipt) || isSourceFinalized(receipt)) {
+      const { txid } = receipt.originTxs[receipt.originTxs.length - 1]!;
 
-    const { txid } = receipt.originTxs[receipt.originTxs.length - 1]!;
-    const vaa = await this.wh.getVaa(txid, "TokenBridge:TransferWithPayload", timeout);
-    if (!vaa) throw new Error("No VAA found for transaction: " + txid);
+      const vaa = await this.wh.getVaa(txid, "PorticoBridge:Transfer", timeout);
+      if (!vaa) throw new Error("No VAA found for transaction: " + txid);
 
-    const parsed = PorticoBridge.deserializePayload(vaa.payload.payload);
-    yield { ...receipt, vaa, parsed };
+      const msgId: WormholeMessageId = {
+        chain: vaa.emitterChain,
+        emitter: vaa.emitterAddress,
+        sequence: vaa.sequence,
+      };
+
+      receipt = {
+        ...receipt,
+        state: TransferState.Attested,
+        attestation: {
+          id: msgId,
+          attestation: vaa,
+        },
+      } satisfies AttestedTransferReceipt<AttestationReceipt<"PorticoBridge">>;
+
+      yield receipt;
+    }
+
+    if (isAttested(receipt)) {
+      const toChain = this.wh.getChain(receipt.to);
+      const toPorticoBridge = await toChain.getPorticoBridge();
+      const isCompleted = await toPorticoBridge.isTransferCompleted(
+        receipt.attestation.attestation,
+      );
+      if (isCompleted) {
+        receipt = {
+          ...receipt,
+          state: TransferState.DestinationFinalized,
+        } satisfies CompletedTransferReceipt<AttestationReceipt<"PorticoBridge">>;
+
+        yield receipt;
+      }
+    }
+
+    // TODO: handle swap failed case (highway token received)
+
+    yield receipt;
   }
 
   async complete(signer: Signer<N>, receipt: R): Promise<TransactionId[]> {
@@ -316,22 +357,26 @@ export class AutomaticPorticoRoute<N extends Network>
     return await signSendWait(toChain, xfer, signer);
   }
 
-  private async quoteUniswap(request: RouteTransferRequest<N>, params: VP) {
-    const fromPorticoBridge = await request.fromChain.getPorticoBridge();
-    const startQuote = await fromPorticoBridge.quoteSwap(
+  private async fetchSwapQuote(request: RouteTransferRequest<N>, params: VP) {
+    const fromPb = await request.fromChain.getPorticoBridge();
+    const xferAmount = amount.units(params.normalizedParams.amount);
+    const tokenGroup = fromPb.getTokenGroup(canonicalAddress(params.normalizedParams.sourceToken));
+    const startQuote = await fromPb.quoteSwap(
       params.normalizedParams.sourceToken.address,
       params.normalizedParams.canonicalSourceToken.address,
-      amount.units(params.normalizedParams.amount),
+      tokenGroup,
+      xferAmount,
     );
     const startSlippage = (startQuote * SLIPPAGE_BPS) / BPS_PER_HUNDRED_PERCENT;
 
     if (startSlippage >= startQuote) throw new Error("Start slippage too high");
 
-    const toPorticoBridge = await request.toChain.getPorticoBridge();
+    const toPb = await request.toChain.getPorticoBridge();
     const minAmountStart = startQuote - startSlippage;
-    const finishQuote = await toPorticoBridge.quoteSwap(
+    const finishQuote = await toPb.quoteSwap(
       params.normalizedParams.canonicalDestinationToken.address,
       params.normalizedParams.destinationToken.address,
+      tokenGroup,
       minAmountStart,
     );
     const finishSlippage = (finishQuote * SLIPPAGE_BPS) / BPS_PER_HUNDRED_PERCENT;
@@ -339,24 +384,10 @@ export class AutomaticPorticoRoute<N extends Network>
     if (finishSlippage >= finishQuote) throw new Error("Finish slippage too high");
 
     const minAmountFinish = finishQuote - finishSlippage;
-    const amountFinishQuote = await toPorticoBridge.quoteSwap(
-      params.normalizedParams.canonicalDestinationToken.address,
-      params.normalizedParams.destinationToken.address,
-      startQuote, // no slippage
-    );
-    // the expected receive amount is the amount out from the swap
-    // minus 5bps slippage
-    const amountFinishSlippage = (amountFinishQuote * 5n) / BPS_PER_HUNDRED_PERCENT;
-    if (amountFinishSlippage >= amountFinishQuote)
-      throw new Error("Amount finish slippage too high");
-
-    const amountFinish = amountFinishQuote - amountFinishSlippage;
-    if (amountFinish <= minAmountFinish) throw new Error("Amount finish too low");
 
     return {
       minAmountStart: minAmountStart,
       minAmountFinish: minAmountFinish,
-      amountFinish: amountFinish,
     };
   }
 }

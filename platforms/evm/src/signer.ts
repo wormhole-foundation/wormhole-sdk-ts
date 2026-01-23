@@ -23,6 +23,8 @@ import { _platform } from './types.js';
 export type EvmSignerOptions = {
   // Whether or not to log messages
   debug?: boolean;
+  // Override gas limit
+  gasLimit?: bigint;
   // Do not exceed this gas limit
   maxGasLimit?: bigint;
   // Partially override specific transaction request fields
@@ -117,18 +119,17 @@ export class EvmNativeSigner<N extends Network, C extends EvmChains = EvmChains>
       }
     }
 
+    if (this.opts?.gasLimit !== undefined) {
+      gasLimit = this.opts.gasLimit;
+    }
+
     if (this.opts?.maxGasLimit !== undefined) {
       // why doesnt math.min work for bigints?
       gasLimit =
         gasLimit > this.opts?.maxGasLimit ? this.opts?.maxGasLimit : gasLimit;
     }
 
-    // Oasis throws malformed errors unless we
-    // set it to use legacy transaction parameters
-    const gasOpts =
-      chain === 'Oasis'
-        ? { gasLimit, gasPrice, type: 0 } // Hardcoded to legacy transaction type
-        : { gasLimit, maxFeePerGas, maxPriorityFeePerGas };
+    const gasOpts = { gasLimit, maxFeePerGas, maxPriorityFeePerGas };
 
     for (const txn of tx) {
       const { transaction, description } = txn;

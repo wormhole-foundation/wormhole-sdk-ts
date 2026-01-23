@@ -1,14 +1,14 @@
 {
   "name": "@wormhole-foundation/sdk-sui",
-  "version": "0.10.5",
+  "version": "1.20.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
+    "url": "git+https://github.com/wormhole-foundation/wormhole-sdk-ts.git"
   },
   "bugs": {
-    "url": "https://github.com/wormhole-foundation/connect-sdk/issues"
+    "url": "https://github.com/wormhole-foundation/wormhole-sdk-ts/issues"
   },
-  "homepage": "https://github.com/wormhole-foundation/connect-sdk#readme",
+  "homepage": "https://github.com/wormhole-foundation/wormhole-sdk-ts#readme",
   "directories": {
     "test": "tests"
   },
@@ -16,7 +16,7 @@
   "main": "./dist/cjs/index.js",
   "types": "./dist/cjs/index.d.ts",
   "module": "./dist/esm/index.js",
-  "description": "SDK for EVM chains, used in conjunction with @wormhole-foundation/sdk",
+  "description": "SDK for Sui chains, used in conjunction with @wormhole-foundation/sdk",
   "files": [
     "dist/esm",
     "dist/cjs"
@@ -46,8 +46,8 @@
     "test": "jest --config ./jest.config.ts"
   },
   "dependencies": {
-    "@wormhole-foundation/sdk-connect": "0.10.5",
-    "@mysten/sui.js": "^0.50.1"
+    "@wormhole-foundation/sdk-connect": "1.20.0",
+    "@mysten/sui": "^1.37.2"
   },
   "type": "module",
   "typesVersions": {

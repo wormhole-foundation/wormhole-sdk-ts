@@ -47,10 +47,6 @@ export class AutomaticMockRoute<N extends Network>
   static supportedChains(network: Network): Chain[] {
     return ["Solana", "Ethereum"];
   }
-  static async supportedSourceTokens(fromChain: ChainContext<Network>): Promise<TokenId[]> {
-    await delay(250);
-    return [nativeTokenId(fromChain.chain)];
-  }
   static async supportedDestinationTokens<N extends Network>(
     sourceToken: TokenId,
     fromChain: ChainContext<N>,
@@ -58,14 +54,6 @@ export class AutomaticMockRoute<N extends Network>
   ): Promise<TokenId[]> {
     await delay(250);
     return [nativeTokenId(toChain.chain)];
-  }
-
-  static isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean {
-    return true;
-  }
-
-  async isAvailable(): Promise<boolean> {
-    return true;
   }
 
   async validate(

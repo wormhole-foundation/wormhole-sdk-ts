@@ -1,5 +1,5 @@
 import type { MapLevels} from './../utils/index.js';
-import { constMap, column, cartesianRightRecursive } from './../utils/index.js';
+import { constMap, filterIndexes, zip, cartesianRightRecursive } from './../utils/index.js';
 import type { Network } from './networks.js';
 
 // prettier-ignore
@@ -30,8 +30,8 @@ const guardianKeyAndNameEntries = [[
   ]]
 ] as const satisfies MapLevels<[Network, string, string]>;
 
-export const guardianKeys = column(cartesianRightRecursive(guardianKeyAndNameEntries), 1);
-export const guardianNames = column(cartesianRightRecursive(guardianKeyAndNameEntries), 2);
+export const [guardianKeys, guardianNames] =
+  filterIndexes(zip(cartesianRightRecursive(guardianKeyAndNameEntries)), [1, 2]);
 
 export const guardianNameToKey = constMap(guardianKeyAndNameEntries, [[0, 2], 1]);
 export const guardianKeyToName = constMap(guardianKeyAndNameEntries, [1, [0, 2]]);

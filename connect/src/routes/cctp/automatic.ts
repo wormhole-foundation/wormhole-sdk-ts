@@ -13,6 +13,7 @@ import { TransferState } from "../../types.js";
 import { Wormhole } from "../../wormhole.js";
 import type { StaticRouteMethods } from "../route.js";
 import { AutomaticRoute } from "../route.js";
+import { MinAmountError } from "../types.js";
 import type {
   Quote,
   QuoteResult,
@@ -22,6 +23,7 @@ import type {
   ValidationResult,
 } from "../types.js";
 import type { RouteTransferRequest } from "../request.js";
+import { checkCircleGeoblock } from "../../circle-api.js";
 
 export namespace AutomaticCCTPRoute {
   export type Options = {
@@ -58,6 +60,7 @@ export class AutomaticCCTPRoute<N extends Network>
 
   static meta = {
     name: "AutomaticCCTP",
+    provider: "Circle",
   };
 
   static supportedNetworks(): Network[] {
@@ -72,13 +75,6 @@ export class AutomaticCCTPRoute<N extends Network>
       });
     }
     return [];
-  }
-
-  // get the list of source tokens that are possible to send
-  static async supportedSourceTokens(fromChain: ChainContext<Network>): Promise<TokenId[]> {
-    const { network, chain } = fromChain;
-    if (!circle.usdcContract.has(network, chain)) return [];
-    return [Wormhole.chainAddress(chain, circle.usdcContract.get(network, chain)!)];
   }
 
   // get the list of destination tokens that may be received on the destination chain
@@ -99,22 +95,23 @@ export class AutomaticCCTPRoute<N extends Network>
     return [Wormhole.chainAddress(chain, circle.usdcContract.get(network, chain)!)];
   }
 
-  static isProtocolSupported<N extends Network>(chain: ChainContext<N>): boolean {
-    return chain.supportsAutomaticCircleBridge();
-  }
-
   getDefaultOptions(): Op {
     return {
       nativeGas: 0.0,
     };
   }
 
-  async isAvailable(): Promise<boolean> {
-    return true;
-  }
-
   async validate(request: RouteTransferRequest<N>, params: Tp): Promise<Vr> {
     try {
+      // Check that source and destination chains are different
+      if (request.fromChain.chain === request.toChain.chain) {
+        return {
+          valid: false,
+          params,
+          error: new Error("Source and destination chains cannot be the same"),
+        };
+      }
+
       const options = params.options ?? this.getDefaultOptions();
       const normalizedParams = await this.normalizeTransferParams(request, params);
 
@@ -136,6 +133,12 @@ export class AutomaticCCTPRoute<N extends Network>
 
   async quote(request: RouteTransferRequest<N>, params: Vp): Promise<QR> {
     try {
+      const geoBlockError = await checkCircleGeoblock();
+
+      if (geoBlockError) {
+        return geoBlockError;
+      }
+
       return request.displayQuote(
         await CircleTransfer.quoteTransfer(request.fromChain, request.toChain, {
           automatic: true,
@@ -163,9 +166,7 @@ export class AutomaticCCTPRoute<N extends Network>
 
     const minAmount = (fee * 105n) / 100n;
     if (amount.units(amt) < minAmount) {
-      throw new Error(
-        `Minimum amount is ${amount.display(request.amountFromBaseUnits(minAmount))}`,
-      );
+      throw new MinAmountError(amount.fromBaseUnits(minAmount, amt.decimals));
     }
 
     const redeemableAmount = amount.units(amt) - fee;

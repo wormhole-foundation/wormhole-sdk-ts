@@ -1,6 +1,6 @@
 import type {
+  Layout,
   CustomConversion,
-  LayoutItem,
 } from "@wormhole-foundation/sdk-base";
 import { encoding } from "@wormhole-foundation/sdk-base";
 
@@ -21,4 +21,4 @@ export const fixedLengthStringItem = (size: number) => ({
     to: (val: Uint8Array): string => encoding.bytes.decode(trimZeros(val)),
     from: (val: string): Uint8Array => encoding.bytes.zpad(encoding.bytes.encode(val), size),
   } satisfies CustomConversion<Uint8Array, string>,
-} as const satisfies LayoutItem);
+} as const satisfies Layout);

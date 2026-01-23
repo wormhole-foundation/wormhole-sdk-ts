@@ -15,6 +15,7 @@ import {
   nativeChainIds,
   rpc,
   toChainId,
+  graphQL,
 } from "@wormhole-foundation/sdk-base";
 
 import type { ChainTokens, Token } from "@wormhole-foundation/sdk-base";
@@ -60,6 +61,25 @@ export function isTokenId<C extends Chain>(thing: any): thing is TokenId<C> {
     (<TokenId<C>>thing).address !== undefined &&
     (<TokenId<C>>thing).chain !== undefined &&
     isChain((<TokenId<C>>thing).chain)
+  );
+}
+
+/**
+ * An UnattestedTokenId is used to represent a token that has not yet been attested / created
+ *
+ * @interface UnattestedTokenId
+ */
+export type UnattestedTokenId<C extends Chain = Chain> = TokenId<C> & {
+  isUnattested: true;
+  decimals: number; // expected decimals for the token
+  originalTokenId: TokenId;
+};
+export function isUnattestedTokenId<C extends Chain>(thing: any): thing is UnattestedTokenId<C> {
+  return (
+    isTokenId(thing) &&
+    (<UnattestedTokenId<C>>thing).isUnattested === true &&
+    (<UnattestedTokenId<C>>thing).decimals !== undefined &&
+    (<UnattestedTokenId<C>>thing).originalTokenId !== undefined
   );
 }
 
@@ -156,6 +176,7 @@ export type ChainConfig<N extends Network, C extends Chain> = {
   tokenMap?: ChainTokens;
   wrappedNative?: Token;
   explorer?: explorer.ExplorerSettings;
+  graphQL?: string;
 };
 
 export type ChainsConfig<N extends Network, P extends Platform> = {
@@ -192,6 +213,7 @@ export function buildConfig<N extends Network>(n: N): ChainsConfig<N, Platform> 
         wrappedNative,
         explorer: explorer.explorerConfigs(n, c),
         rpc: rpc.rpcAddress(n, c),
+        graphQL: graphQL.graphQLAddress(n, c),
       };
     })
     .reduce((acc, curr) => {

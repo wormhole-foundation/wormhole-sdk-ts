@@ -20,6 +20,7 @@ export function createAttestTokenInstruction(
   mint: PublicKeyInitData,
   message: PublicKeyInitData,
   nonce: number,
+  metadataAddress?: PublicKeyInitData,
 ): TransactionInstruction {
   const methods = createReadOnlyTokenBridgeProgramInterface(
     tokenBridgeProgramId,
@@ -33,6 +34,7 @@ export function createAttestTokenInstruction(
       payer,
       mint,
       message,
+      metadataAddress,
     ),
   );
   // @ts-ignore
@@ -43,6 +45,7 @@ export function createAttestTokenInstruction(
       payer,
       mint,
       message,
+      metadataAddress,
     ) as any,
     signers: undefined,
     remainingAccounts: undefined,
@@ -74,6 +77,7 @@ export function getAttestTokenAccounts(
   payer: PublicKeyInitData,
   mint: PublicKeyInitData,
   message: PublicKeyInitData,
+  metadataAddress?: PublicKeyInitData,
 ): AttestTokenAccounts {
   const {
     bridge: wormholeBridge,
@@ -94,7 +98,9 @@ export function getAttestTokenAccounts(
     config: deriveTokenBridgeConfigKey(tokenBridgeProgramId),
     mint: new PublicKey(mint),
     wrappedMeta: deriveWrappedMetaKey(tokenBridgeProgramId, mint),
-    splMetadata: deriveSplTokenMetadataKey(mint),
+    splMetadata: metadataAddress
+      ? new PublicKey(metadataAddress)
+      : deriveSplTokenMetadataKey(mint),
     wormholeBridge,
     wormholeMessage: new PublicKey(message),
     wormholeEmitter,

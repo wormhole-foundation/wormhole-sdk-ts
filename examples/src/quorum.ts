@@ -30,7 +30,6 @@ const skipChains = [
   "Wormchain",
   "Near",
   "Sui",
-  "Xpla",
   "Aptos",
   "Cosmoshub",
 ];

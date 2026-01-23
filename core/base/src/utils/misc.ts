@@ -25,3 +25,15 @@ export function throws(fn: () => any): boolean {
     return true;
   }
 }
+
+export function bound(value: number, min: number, max: number): number;
+export function bound(value: bigint, min: bigint, max: bigint): bigint;
+export function bound(
+  value: number | bigint,
+  min: number | bigint,
+  max: number | bigint,
+): number | bigint {
+  if (value < min) return min;
+  if (value > max) return max;
+  return value;
+}

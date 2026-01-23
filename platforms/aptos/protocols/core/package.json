@@ -1,14 +1,14 @@
 {
   "name": "@wormhole-foundation/sdk-aptos-core",
-  "version": "0.10.5",
+  "version": "1.20.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
+    "url": "git+https://github.com/wormhole-foundation/wormhole-sdk-ts.git"
   },
   "bugs": {
-    "url": "https://github.com/wormhole-foundation/connect-sdk/issues"
+    "url": "https://github.com/wormhole-foundation/wormhole-sdk-ts/issues"
   },
-  "homepage": "https://github.com/wormhole-foundation/connect-sdk#readme",
+  "homepage": "https://github.com/wormhole-foundation/wormhole-sdk-ts#readme",
   "directories": {
     "test": "__tests__"
   },
@@ -16,7 +16,7 @@
   "main": "./dist/cjs/index.js",
   "types": "./dist/cjs/index.d.ts",
   "module": "./dist/esm/index.js",
-  "description": "SDK for Solana, used in conjunction with @wormhole-foundation/connect-sdk",
+  "description": "SDK for Aptos, used in conjunction with @wormhole-foundation/sdk",
   "files": [
     "dist/esm",
     "dist/cjs"
@@ -45,8 +45,8 @@
     "prettier": "prettier --write ./src"
   },
   "dependencies": {
-    "@wormhole-foundation/sdk-connect": "0.10.5",
-    "@wormhole-foundation/sdk-aptos": "0.10.5"
+    "@wormhole-foundation/sdk-connect": "1.20.0",
+    "@wormhole-foundation/sdk-aptos": "1.20.0"
   },
   "type": "module",
   "exports": {

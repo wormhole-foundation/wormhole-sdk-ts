@@ -7,6 +7,7 @@ import type {
   StaticPlatformMethods,
   TokenId,
   TxHash,
+  IndexerConfig,
 } from '@wormhole-foundation/sdk-connect';
 import {
   PlatformContext,
@@ -17,6 +18,7 @@ import {
   isNative,
   nativeChainIds,
   networkPlatformConfigs,
+  getWalletBalances,
 } from '@wormhole-foundation/sdk-connect';
 
 import type { Provider } from 'ethers';
@@ -36,6 +38,8 @@ export class EvmPlatform<N extends Network>
   implements StaticPlatformMethods<EvmPlatformType, typeof EvmPlatform>
 {
   static _platform = _platform;
+  private _providers: Partial<Record<EvmChains, JsonRpcProvider | undefined>> =
+    {};
 
   constructor(network: N, _config?: ChainsConfig<N, EvmPlatformType>) {
     super(
@@ -45,9 +49,24 @@ export class EvmPlatform<N extends Network>
   }
 
   getRpc<C extends EvmChains>(chain: C): Provider {
-    if (chain in this.config && this.config[chain]!.rpc)
-      return new JsonRpcProvider(this.config[chain]!.rpc);
-    throw new Error('No configuration available for chain: ' + chain);
+    const cachedProvider = this._providers[chain];
+    if (cachedProvider) {
+      return cachedProvider;
+    }
+
+    if (chain in this.config && this.config[chain]!.rpc) {
+      const provider = new JsonRpcProvider(
+        this.config[chain]!.rpc,
+        nativeChainIds.networkChainToNativeChainId.get(this.network, chain),
+        {
+          staticNetwork: true,
+        },
+      );
+      this._providers[chain] = provider;
+      return provider;
+    } else {
+      throw new Error('No configuration available for chain: ' + chain);
+    }
   }
 
   getChain<C extends EvmChains>(chain: C, rpc?: Provider): EvmChain<N, C> {
@@ -80,7 +99,8 @@ export class EvmPlatform<N extends Network>
   }
 
   static async getDecimals(
-    chain: Chain,
+    _network: Network,
+    _chain: Chain,
     rpc: Provider,
     token: AnyEvmAddress,
   ): Promise<number> {
@@ -94,7 +114,8 @@ export class EvmPlatform<N extends Network>
   }
 
   static async getBalance(
-    chain: Chain,
+    _network: Network,
+    _chain: Chain,
     rpc: Provider,
     walletAddr: string,
     token: AnyEvmAddress,
@@ -109,21 +130,22 @@ export class EvmPlatform<N extends Network>
   }
 
   static async getBalances(
+    network: Network,
     chain: Chain,
     rpc: Provider,
     walletAddr: string,
-    tokens: AnyEvmAddress[],
+    indexers?: IndexerConfig,
   ): Promise<Balances> {
-    const balancesArr = await Promise.all(
-      tokens.map(async (token) => {
-        const balance = await this.getBalance(chain, rpc, walletAddr, token);
-        const address = isNative(token)
-          ? 'native'
-          : new EvmAddress(token).toString();
-        return { [address]: balance };
-      }),
+    const balances = await getWalletBalances(
+      walletAddr,
+      network,
+      chain,
+      indexers,
     );
-    return balancesArr.reduce((obj, item) => Object.assign(obj, item), {});
+
+    balances['native'] ??= await rpc.getBalance(walletAddr);
+
+    return balances;
   }
 
   static async sendWait(

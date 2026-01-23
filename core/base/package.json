@@ -1,14 +1,14 @@
 {
   "name": "@wormhole-foundation/sdk-base",
-  "version": "0.10.5",
+  "version": "1.20.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wormhole-foundation/connect-sdk.git"
+    "url": "git+https://github.com/wormhole-foundation/wormhole-sdk-ts.git"
   },
   "bugs": {
-    "url": "https://github.com/wormhole-foundation/connect-sdk/issues"
+    "url": "https://github.com/wormhole-foundation/wormhole-sdk-ts/issues"
   },
-  "homepage": "https://github.com/wormhole-foundation/connect-sdk#readme",
+  "homepage": "https://github.com/wormhole-foundation/wormhole-sdk-ts#readme",
   "directories": {
     "test": "__tests__"
   },
@@ -116,7 +116,8 @@
     "dist/cjs"
   ],
   "dependencies": {
-    "@scure/base": "^1.1.3"
+    "@scure/base": "^1.1.3",
+    "binary-layout": "^1.0.3"
   },
   "sideEffects": false,
   "scripts": {

@@ -4,3 +4,4 @@ export * from './platform.js';
 export * from './types.js';
 export * from './chain.js';
 export * from './signer.js';
+export * from './weth.js';
