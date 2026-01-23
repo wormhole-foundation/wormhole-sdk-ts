@@ -12,6 +12,7 @@ import type {
 import {
   canonicalAddress,
   contracts,
+  getExecutorTokenBridgeDestinationAddresses,
   isNative,
   relayInstructionsLayout,
   serializeLayout,
@@ -180,8 +181,13 @@ export class SolanaExecutorTokenBridge<
 
     const messageKeypair = Keypair.generate();
 
-    const dstTransferRecipient = toUniversal(recipient.chain, dstRelayer);
-    const dstExecutionAddress = dstTransferRecipient;
+    const dstAddresses = getExecutorTokenBridgeDestinationAddresses(
+      this.network as 'Mainnet' | 'Testnet',
+      recipient.chain,
+      dstRelayer,
+    );
+    const dstTransferRecipient = toUniversal(recipient.chain, dstAddresses.dstTransferRecipient);
+    const dstExecutionAddress = toUniversal(recipient.chain, dstAddresses.dstExecutionAddress);
 
     // Derive PDAs
     const tokenBridgeConfig = PublicKey.findProgramAddressSync(
