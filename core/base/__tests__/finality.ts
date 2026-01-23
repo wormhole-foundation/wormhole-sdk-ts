@@ -2,14 +2,24 @@ import { test, describe, expect } from "@jest/globals";
 import {
   ConsistencyLevels,
   finalityThreshold,
+  blockTime,
   consistencyLevelToBlock,
 } from "../src/constants/finality.js";
 
-describe("Finality tests", function() {
+describe("Finality tests", function () {
   test("Receive expected number of rounds", () => {
     expect(finalityThreshold("Ethereum")).toEqual(72);
     expect(finalityThreshold("Algorand")).toEqual(0);
     expect(finalityThreshold("Solana")).toEqual(32);
+    expect(finalityThreshold("Linea")).toEqual(10);
+  });
+
+  test("Linea has correct block time", () => {
+    expect(blockTime("Linea")).toEqual(2_000);
+  });
+
+  test("Custom consistency level is defined", () => {
+    expect(ConsistencyLevels.Custom).toEqual(203);
   });
 
   //test.each([chains])("Accesses Finalization thresholds", (chain) => {
@@ -50,6 +60,19 @@ describe("Finality tests", function() {
     // L2 required but not factored into estimate
     expect(consistencyLevelToBlock("Polygon", ConsistencyLevels.Finalized, fromBlock)).toEqual(
       fromBlock + 2n,
+    );
+    expect(consistencyLevelToBlock("Linea", ConsistencyLevels.Finalized, fromBlock)).toEqual(
+      fromBlock + 10n,
+    );
+  });
+
+  test("Custom consistency level uses static finality as fallback", () => {
+    // Custom (203) should use static finality threshold
+    expect(consistencyLevelToBlock("Linea", ConsistencyLevels.Custom, fromBlock)).toEqual(
+      fromBlock + 10n,
+    );
+    expect(consistencyLevelToBlock("Ethereum", ConsistencyLevels.Custom, fromBlock)).toEqual(
+      fromBlock + 72n,
     );
   });
 });
