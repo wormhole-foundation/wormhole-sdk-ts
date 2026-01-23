@@ -8,7 +8,7 @@ import {
 import {
   EvmCustomConsistencyLevel,
   decodeAdditionalBlocksConfig,
-} from '../../protocols/customConsistencyLevel/src/index.js';
+} from '@wormhole-foundation/sdk-evm-core';
 
 describe('Linea Finality Tests', () => {
   const SEPOLIA_LINEA_RPC = 'https://rpc.sepolia.linea.build';

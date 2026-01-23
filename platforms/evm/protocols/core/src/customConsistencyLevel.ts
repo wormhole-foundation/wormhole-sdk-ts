@@ -32,7 +32,10 @@ export class EvmCustomConsistencyLevel<N extends Network, C extends EvmChains> {
   }
 
   async getConfiguration(emitterAddress: string): Promise<CCLConfig> {
-    const configBytes = await this.cclContract.getConfiguration(emitterAddress);
+    // Type assertion needed because ethers Contract methods are dynamically typed
+    const configBytes = await (this.cclContract as any).getConfiguration(
+      emitterAddress,
+    );
     return decodeAdditionalBlocksConfig(configBytes);
   }
 }

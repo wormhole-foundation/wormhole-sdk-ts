@@ -6,3 +6,4 @@ registerProtocol(_platform, 'WormholeCore', EvmWormholeCore);
 
 export * as ethers_contracts from './ethers-contracts/index.js';
 export * from './core.js';
+export * from './customConsistencyLevel.js';
