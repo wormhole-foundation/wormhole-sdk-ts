@@ -10,16 +10,17 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Get the latest published NPM version
         id: get_version
         run: echo "LATEST_VERSION=$(npm show @wormhole-foundation/sdk version)" >> $GITHUB_ENV
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20
+          cache: 'npm'
 
       - name: Install the latest published SDK version
         run: npm install @wormhole-foundation/sdk@$LATEST_VERSION --save-exact
