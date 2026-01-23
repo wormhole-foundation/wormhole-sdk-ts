@@ -43,7 +43,8 @@ const platformAndChainsEntries = [[
     "HyperCore", // not an actual EVM platform; treating as EVM
     "Moca",
     "MegaETH",
-    "MonadTestnet"
+    "MonadTestnet",
+    "ZeroGravity",
   ]], [
   "Solana", [
     "Solana",

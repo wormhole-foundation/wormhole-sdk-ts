@@ -36,15 +36,16 @@ export const coreBridgeContracts = [[
     ["Ink",       "0xCa1D5a146B03f6303baF59e5AD5615ae0b9d146D"],
     ["HyperEVM",  "0x7C0faFc4384551f063e05aee704ab943b8B53aB3"],
     // ["HyperCore", "not-implemented"],
-    ["Mezo",      "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
-    ["Plume",     "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
-    ["Linea",     "0x0C56aebD76E6D9e4a1Ec5e94F4162B4CBbf77b32"],
-    ["XRPLEVM",   "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
-    ["CreditCoin","0xaBf89de706B583424328B54dD05a8fC986750Da8"],
-    ["Monad",     "0x194B123c5E96B9b2E49763619985790Dc241CAC0"],
-    ["Fogo",      "worm2mrQkG1B1KTz37erMfWN8anHkSK24nzca7UD8BB"],
-    ["Moca",       "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
-    ["MegaETH",   "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
+    ["Mezo",        "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
+    ["Plume",       "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
+    ["Linea",       "0x0C56aebD76E6D9e4a1Ec5e94F4162B4CBbf77b32"],
+    ["XRPLEVM",     "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
+    ["CreditCoin",  "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
+    ["Monad",       "0x194B123c5E96B9b2E49763619985790Dc241CAC0"],
+    ["Fogo",        "worm2mrQkG1B1KTz37erMfWN8anHkSK24nzca7UD8BB"],
+    ["Moca",        "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
+    ["MegaETH",     "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
+    ["ZeroGravity", "0xC699482c17d43b7D5349F2D3f58d61fEFA972B8c"],
   ]], [
   "Testnet", [
     ["Solana",          "3u8hJUVTA4jH1wYAyUur7FFZVQ8H635K3tSHHF4ssjQ5"],
@@ -96,6 +97,7 @@ export const coreBridgeContracts = [[
     ["Moca",            "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
     ["MegaETH",         "0x81705b969cDcc6FbFde91a0C6777bE0EF3A75855"],
     ["MonadTestnet",    "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
+    ["ZeroGravity",     "0x059560c0D626bdB982454b5EBd65DC8E7cF7973c"],
   ]], [
   "Devnet", [
     ["Solana",    "Bridge1p5gheXUvJ6jGWGeCsgPKgnE3YgdGKRVCMY9o"],
