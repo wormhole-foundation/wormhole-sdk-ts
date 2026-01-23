@@ -10,6 +10,8 @@ import * as g from "./cosmos.js";
 import * as rollup from "./rollupCheckpoint.js";
 import * as p from "./portico.js";
 import * as t from "./tbtc.js";
+import * as ccl from "./customConsistencyLevel.js";
+import * as eq from "./executorQuoter.js";
 
 import { constMap } from "./../../utils/index.js";
 
@@ -24,6 +26,8 @@ export const gateway = constMap(g.gatewayContracts);
 export const translator = constMap(g.translatorContracts);
 export const portico = constMap(p.porticoContracts);
 export const tbtc = constMap(t.tbtcContracts);
+export const customConsistencyLevel = constMap(ccl.customConsistencyLevelContracts);
+export const executorQuoter = constMap(eq.executorQuoterContracts);
 
 export type { CircleContracts } from "./circle.js";
 export const circleContracts = constMap(circle.circleContracts);
@@ -42,3 +46,5 @@ export const executorTokenBridgeChains = constMap(
 export const executorChains = constMap(e.executorContracts, [0, 1]);
 export const circleContractChains = constMap(circle.circleContracts, [0, 1]);
 export const porticoContractChains = constMap(p.porticoContracts, [0, 1]);
+export const customConsistencyLevelChains = constMap(ccl.customConsistencyLevelContracts, [0, 1]);
+export const executorQuoterChains = constMap(eq.executorQuoterContracts, [0, 1]);

@@ -19,6 +19,8 @@ export type Contracts = {
   portico?: contracts.PorticoContracts;
   tbtc?: string;
   executor?: string;
+  customConsistencyLevel?: string;
+  executorQuoter?: string;
 } & UnknownContracts;
 
 /**
@@ -38,6 +40,8 @@ export function getContracts(n: Network, c: Chain): Contracts {
     tokenBridgeRelayer: contracts.tokenBridgeRelayer.get(n, c),
     tbtc: contracts.tbtc.get(n, c),
     executor: contracts.executor.get(n, c),
+    customConsistencyLevel: contracts.customConsistencyLevel.get(n, c),
+    executorQuoter: contracts.executorQuoter.get(n, c),
   };
 
   if (contracts.executorTokenBridge.has(n, c)) {
