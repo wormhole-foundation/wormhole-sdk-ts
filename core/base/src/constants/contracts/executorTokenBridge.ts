@@ -30,6 +30,7 @@ export const executorTokenBridgeContracts = [[
     ["Monad",           { relayer: "0xf7E051f93948415952a2239582823028DacA948e", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
     ["Fogo",            { relayer: "tbr7Qje6qBzPwfM52csL5KFi8ps5c5vDyiVVBLYVdRf" }],
     ["MegaETH",         { relayer: "0x4eEC1c908aD6e778664Efb03386C429fE5710D77", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
+    ["Sui",             { relayer: "0x9b68b36399a3cd87680878d72253b3e8fdf82edb8ed74f7ec440b8bddd51f85d" }],
   ]], [
   "Testnet", [
     ["Avalanche",       { relayer: "0x10Ce9a35883C44640e8B12fea4Cc1e77F77D8c52", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
@@ -45,5 +46,6 @@ export const executorTokenBridgeContracts = [[
     ["Unichain",        { relayer: "0x74D37B2bcD2f8CaB6409c5a5f81C8cF5b4156963", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
     ["XRPLEVM",         { relayer: "0xb00224c60fe6ab134c8544dc29350286545f8dcc", relayerWithReferrer: "0x17CFAAf9e8a5ABb1eee758dB9040F945c9EAC907" }],
     ["Mezo",            { relayer: "0x2002a44b1106DF83671Fb419A2079a75e2a34808", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
+    ["Sui",             { relayer: "0xb4b86c12d4ee0a813d976fb452b7afb325a2b381d00ccb2e54c5342f5ef2e684" }],
   ]],
 ] as const satisfies MapLevels<[Network, Chain, ExecutorTokenBridgeContracts]>;
