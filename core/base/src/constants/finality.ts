@@ -12,6 +12,7 @@ export enum ConsistencyLevels {
   Finalized = 1,
   Immediate = 200,
   Safe      = 201,
+  Custom    = 203,
 }
 
 // Number of blocks before a transaction is considered "safe"
@@ -35,6 +36,7 @@ const finalityThresholds = [
   ["Xlayer",    300],
   ["Scroll",    999], // ~50min finality
   ["Mantle",    512],
+  ["Linea",     10],
   ["Worldchain",512],
   ["Polygon",  2],  // ~5s finality
   // Single block finality
@@ -114,6 +116,7 @@ const blockTimeMilliseconds = [
   ["Injective",         2_500],
   ["Klaytn",            1_000],
   ["Kujira",            3_000],
+  ["Linea",             2_000],
   ["Mantle",            2_000],
   ["Moonbeam",         12_000],
   ["Monad",             1_000],
@@ -163,6 +166,10 @@ export const blockTime = constMap(blockTimeMilliseconds);
  * Estimate the block number that a VAA might be available
  * for a given chain, initial block where the tx was submitted
  * and consistency level
+ * 
+ * Note: For Custom (203) consistency level, this returns the static finality threshold.
+ * Dynamic resolution via Custom Consistency Level contracts should be done at the
+ * platform/protocol level where provider context is available.
  */
 export function consistencyLevelToBlock(
   chain: Chain,
@@ -185,6 +192,10 @@ export function consistencyLevelToBlock(
 
   // If chain finality threshold is 0, it's always instant
   if (chainFinality === 0) return fromBlock;
+
+  // Custom consistency level uses static finality as fallback
+  // Dynamic resolution should be done at platform level with CCL contract
+  if (consistencyLevel === ConsistencyLevels.Custom) return fromBlock + BigInt(chainFinality);
 
   // We've handled all the other cases so anything != safe is `finalized`
   if (consistencyLevel !== ConsistencyLevels.Safe) return fromBlock + BigInt(chainFinality);
