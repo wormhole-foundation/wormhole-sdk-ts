@@ -4306,6 +4306,27 @@ const mainnetTokenEntries = [
         }
       ]
     ]
+  ], [
+    "ZeroGravity",
+    [
+      [
+        "0G",
+        {
+          symbol: "0G",
+          decimals: 18,
+          address: "native",
+          wrappedKey: "W0G",
+        }
+      ],
+      [
+        "W0G",
+        {
+          symbol: "W0G",
+          decimals: 18,
+          address: "0x1cd0690ff9a693f5ef2dd976660a8dafc81a109c"
+        }
+      ]
+    ]
   ]
 ] as const satisfies MapLevel<Chain, MapLevel<TokenSymbol, TokenConst>>;
 

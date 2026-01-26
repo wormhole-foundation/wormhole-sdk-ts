@@ -207,7 +207,17 @@ const explorerConfig = [[
           account: "address/"
         }
       }
-    ]
+    ],
+    [
+      "ZeroGravity", {
+        name: "0G Blockchain Explorer",
+        baseUrl: "https://chainscan.0g.ai/",
+        endpoints: {
+          tx: "tx/",
+          account: "address/"
+        }
+      }
+    ],
   ]], [
   "Testnet", [[
     "Ethereum", {
@@ -388,7 +398,17 @@ const explorerConfig = [[
           account: "address/"
         }
       }
-    ]
+    ],
+    [
+      "ZeroGravity", {
+        name: "0G Blockchain Explorer",
+        baseUrl: "https://chainscan-galileo.0g.ai/",
+        endpoints: {
+          tx: "tx/",
+          account: "address/"
+        }
+      }
+    ],
   ]],
 ] as const satisfies MapLevels<["Mainnet" | "Testnet", Chain, ExplorerSettings]>;
 

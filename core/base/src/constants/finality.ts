@@ -29,54 +29,55 @@ const finalityThresholds = [
   ["Ethereum", 72], // between 64 and 95 blocks; use 72 as a middle ground
   ["Bsc",      15],
   // Check-pointed to L1 after ~512 blocks
-  ["Optimism",  512],
-  ["Base",      512],
-  ["Arbitrum", 4096], // TODO: validate, this is inferred from vaa metrics timing
-  ["Xlayer",    300],
-  ["Scroll",    999], // ~50min finality
-  ["Mantle",    512],
-  ["Worldchain",512],
-  ["Polygon",  2],  // ~5s finality
+  ["Optimism",   512],
+  ["Base",       512],
+  ["Arbitrum",   4096], // TODO: validate, this is inferred from vaa metrics timing
+  ["Xlayer",     300],
+  ["Scroll",     999], // ~50min finality
+  ["Mantle",     512],
+  ["Worldchain", 512],
+  ["Polygon",    2],  // ~5s finality
   // Single block finality
-  ["Fantom",    1],
-  ["Celo",      1],
-  ["Moonbeam",  1],
+  ["Fantom",     1],
+  ["Celo",       1],
+  ["Moonbeam",   1],
   // Instant finality
-  ["Avalanche", 0],
-  ["Sui",       0],
-  ["Algorand",  0],
-  ["Aptos",     0],
-  ["Klaytn",    0],
-  ["Sei",       0],
-  ["Near",      0],
-  ["Osmosis",   0],
-  ["Injective", 0],
-  ["Berachain", 1],
-  ["Seievm",    1],
-  ["Unichain",  1024], // TODO: validate, this is inferred from vaa metrics timing
-  ["Ink",       512],
-  ["HyperEVM",  1],
-  ["Monad",     1],
-  ["Mezo",      1],
-  ["Sonic",     1],
-  ["Converge",  4096],
-  ["Fogo",      32],
-  ["Plume",     4096], // inferred from testing
-  ["Plasma",    2],
-  ["XRPLEVM",   1],
-  ["CreditCoin",3],
-  ["Cosmoshub", 0],
-  ["Evmos",     0],
-  ["Kujira",    0],
-  ["Neutron",   0],
-  ["Celestia",  0],
-  ["Stargaze",  0],
-  ["Dymension", 0],
-  ["Provenance",0],
-  ["Noble",     0],
-  ["Stacks",    240], // tied to BTC finality
-  ["Moca",      0],
-  ["MegaETH",   4096],
+  ["Avalanche",  0],
+  ["Sui",        0],
+  ["Algorand",   0],
+  ["Aptos",      0],
+  ["Klaytn",     0],
+  ["Sei",        0],
+  ["Near",       0],
+  ["Osmosis",    0],
+  ["Injective",  0],
+  ["Berachain",  1],
+  ["Seievm",     1],
+  ["Unichain",   1024], // TODO: validate, this is inferred from vaa metrics timing
+  ["Ink",        512],
+  ["HyperEVM",   1],
+  ["Monad",      1],
+  ["Mezo",       1],
+  ["Sonic",      1],
+  ["Converge",   4096],
+  ["Fogo",       32],
+  ["Plume",      4096], // inferred from testing
+  ["Plasma",     2],
+  ["XRPLEVM",    1],
+  ["CreditCoin", 3],
+  ["Cosmoshub",  0],
+  ["Evmos",      0],
+  ["Kujira",     0],
+  ["Neutron",    0],
+  ["Celestia",   0],
+  ["Stargaze",   0],
+  ["Dymension",  0],
+  ["Provenance", 0],
+  ["Noble",      0],
+  ["Stacks",     240], // tied to BTC finality
+  ["Moca",       0],
+  ["MegaETH",    4096],
+  ["ZeroGravity",4096],
   // Testnets
   ["Sepolia", 72],
   ["ArbitrumSepolia", 4096],
@@ -154,6 +155,7 @@ const blockTimeMilliseconds = [
   ["Stacks",           15_000],
   ["Moca",              1_000],
   ["MegaETH",           1_000],
+  ["ZeroGravity",       1_000],
 ] as const satisfies MapLevel<Chain, number>;
 
 /** The amount of time between block production, in milliseconds  */
