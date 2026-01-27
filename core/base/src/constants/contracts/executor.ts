@@ -57,6 +57,6 @@ export const executorContracts = [[
     ["Unichain",        "0x764dD868eAdD27ce57BCB801E4ca4a193d231Aed"],
     ["XRPLEVM",         "0x4d9525D94D275dEB495b7C8840b154Ae04cfaC2A"],
     ["Mezo",            "0x0f9b8E144Cc5C5e7C0073829Afd30F26A50c5606"],
-    ["ZeroGravity",            "0x7C43825EeB76DF7aAf3e1D2e8f684d4876F0CC05"],
+    ["ZeroGravity",     "0x7C43825EeB76DF7aAf3e1D2e8f684d4876F0CC05"],
   ]],
 ] as const satisfies MapLevels<[Network, Chain, string]>;
