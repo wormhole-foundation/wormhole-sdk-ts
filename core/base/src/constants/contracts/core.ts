@@ -98,6 +98,7 @@ export const coreBridgeContracts = [[
     ["MegaETH",         "0x81705b969cDcc6FbFde91a0C6777bE0EF3A75855"],
     ["MonadTestnet",    "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
     ["ZeroGravity",     "0x059560c0D626bdB982454b5EBd65DC8E7cF7973c"],
+    ["Stacks",          "ST37PDDGEA78QSPSBZM1ZHPCZV9GKAPDFHA32RWY8"]
   ]], [
   "Devnet", [
     ["Solana",    "Bridge1p5gheXUvJ6jGWGeCsgPKgnE3YgdGKRVCMY9o"],
