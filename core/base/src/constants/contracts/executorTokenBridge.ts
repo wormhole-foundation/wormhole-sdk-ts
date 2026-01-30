@@ -49,5 +49,6 @@ export const executorTokenBridgeContracts = [[
     ["XRPLEVM",         { relayer: "0xb00224c60fe6ab134c8544dc29350286545f8dcc", relayerWithReferrer: "0x17CFAAf9e8a5ABb1eee758dB9040F945c9EAC907" }],
     ["Mezo",            { relayer: "0x2002a44b1106DF83671Fb419A2079a75e2a34808", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
     ["Sui",             { relayer: "0xb4b86c12d4ee0a813d976fb452b7afb325a2b381d00ccb2e54c5342f5ef2e684" }],
+    ["ZeroGravity",     { relayer: "0x57188fC61ce92c8E941504562811660Ab883E895", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
   ]],
 ] as const satisfies MapLevels<[Network, Chain, ExecutorTokenBridgeContracts]>;
