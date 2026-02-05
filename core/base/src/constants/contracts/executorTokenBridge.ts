@@ -31,6 +31,7 @@ export const executorTokenBridgeContracts = [[
     ["Fogo",            { relayer: "tbr7Qje6qBzPwfM52csL5KFi8ps5c5vDyiVVBLYVdRf" }],
     ["MegaETH",         { relayer: "0x4eEC1c908aD6e778664Efb03386C429fE5710D77", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
     ["Sui",             { relayer: "0x9b68b36399a3cd87680878d72253b3e8fdf82edb8ed74f7ec440b8bddd51f85d" }],
+    ["ZeroGravity",     { relayer: "0x3dBb4dCf25dBA8F0C2417E1c34e527De0E465ecc", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
   ]], [
   "Testnet", [
     ["Avalanche",       { relayer: "0x10Ce9a35883C44640e8B12fea4Cc1e77F77D8c52", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
