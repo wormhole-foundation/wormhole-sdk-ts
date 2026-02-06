@@ -673,7 +673,7 @@ export namespace TokenTransfer {
 
   export async function getTransferVaa<N extends Network>(
     wh: Wormhole<N>,
-    key: WormholeMessageId | TxHash,
+    key: WormholeMessageId | TransactionId,
     timeout?: number,
   ): Promise<TokenTransfer.VAA | null> {
     const vaa = await wh.getVaa(key, TokenBridge.getTransferDiscriminator(), timeout);

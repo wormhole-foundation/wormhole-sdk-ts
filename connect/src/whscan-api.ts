@@ -3,6 +3,7 @@ import { amount, encoding, toChain, toChainId } from "@wormhole-foundation/sdk-b
 import type {
   PayloadDiscriminator,
   PayloadLiteral,
+  TransactionId,
   TxHash,
   WormholeMessageId,
 } from "@wormhole-foundation/sdk-definitions";
@@ -262,11 +263,16 @@ export async function getRelayStatusWithRetry(
   return retry<RelayData>(task, WHSCAN_RETRY_INTERVAL, timeout, "Wormholescan:GetRelayStatus");
 }
 
-export async function getVaaByTxHash(rpcUrl: string, txid: string): Promise<ApiVaa | null> {
-  const url = `${rpcUrl}/api/v1/vaas?txHash=${txid}`;
+export async function getVaaByTxHash(rpcUrl: string, txid: TransactionId): Promise<ApiVaa | null> {
+  const url = `${rpcUrl}/api/v1/vaas?txHash=${txid.txid}`;
   try {
     const response = await axios.get<{ data: ApiVaa[] }>(url);
-    if (response.data.data.length > 0) return response.data.data[0]!;
+    if (response.data.data.length > 0) {
+      const matchingVaa = response.data.data.find(
+        (vaa) => toChainId(txid.chain) === vaa.emitterChain,
+      );
+      return matchingVaa || null;
+    }
   } catch (error) {
     if (!error) return null;
     if (typeof error === "object") {
@@ -282,7 +288,7 @@ export async function getVaaByTxHash(rpcUrl: string, txid: string): Promise<ApiV
 
 export async function getVaaByTxHashWithRetry<T extends PayloadLiteral | PayloadDiscriminator>(
   rpcUrl: string,
-  txid: TxHash,
+  txid: TransactionId,
   decodeAs: T,
   timeout: number,
 ): Promise<ReturnType<typeof deserialize<T>> | null> {
