@@ -182,7 +182,7 @@ type KeyColumnToKeyRowIndexes<KC extends RoTuple<MappableKey>> =
   ? ToMapEntries<FIP>
   : never;
 
-//Takes the first of the reamining key columns and splits it into chunks that share the same key
+//Takes the first of the remaining key columns and splits it into chunks that share the same key
 //  value. Then invokes itself for each sub-chunk passing along only those value rows that belong
 //  to that chunk.
 //In our example for the default shape, it starts with the network column and splits it into
