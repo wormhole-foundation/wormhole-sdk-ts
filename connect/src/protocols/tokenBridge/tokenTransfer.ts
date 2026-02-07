@@ -447,9 +447,10 @@ export namespace TokenTransfer {
             state: TransferState.InReview,
           } satisfies InReviewTransferReceipt<TokenTransfer.AttestationReceipt>;
           yield receipt;
+        } else {
+          throw new Error("Attestation not found");
         }
       }
-      throw new Error("Attestation not found");
     }
 
     // First try to grab the tx status from the API
