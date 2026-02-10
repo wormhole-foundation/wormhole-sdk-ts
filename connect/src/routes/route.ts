@@ -181,3 +181,14 @@ export function hasBuildCompleteTransactions<N extends Network>(
 } {
   return typeof (route as any).buildCompleteTransactions === "function";
 }
+
+export function hasBuildFinalizeTransactions<N extends Network>(
+  route: Route<N>,
+): route is Route<N> & {
+  buildFinalizeTransactions: (
+    sender: ChainAddress,
+    receipt: Receipt,
+  ) => Promise<UnsignedTransaction<N, Chain>[]>;
+} {
+  return typeof (route as any).buildFinalizeTransactions === "function";
+}
