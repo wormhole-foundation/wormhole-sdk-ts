@@ -4,6 +4,7 @@ import type {
   Signer,
   TokenId,
   TransactionId,
+  UnsignedTransaction,
 } from "@wormhole-foundation/sdk-definitions";
 import type { Wormhole } from "../wormhole.js";
 import type { RouteTransferRequest } from "./request.js";
@@ -155,4 +156,28 @@ export abstract class FinalizableRoute<
 
 export function isFinalizable<N extends Network>(route: Route<N>): route is FinalizableRoute<N> {
   return (route as FinalizableRoute<N>).finalize !== undefined;
+}
+
+export function hasBuildInitiateTransactions<N extends Network>(
+  route: Route<N>,
+): route is Route<N> & {
+  buildInitiateTransactions: (
+    request: RouteTransferRequest<N>,
+    sender: ChainAddress,
+    recipient: ChainAddress,
+    quote: Quote<Options>,
+  ) => Promise<UnsignedTransaction<N, Chain>[]>;
+} {
+  return typeof (route as any).buildInitiateTransactions === "function";
+}
+
+export function hasBuildCompleteTransactions<N extends Network>(
+  route: Route<N>,
+): route is Route<N> & {
+  buildCompleteTransactions: (
+    sender: ChainAddress,
+    receipt: Receipt,
+  ) => Promise<UnsignedTransaction<N, Chain>[]>;
+} {
+  return typeof (route as any).buildCompleteTransactions === "function";
 }
