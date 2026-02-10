@@ -1,19 +1,24 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
 import { amount as sdkAmount, contracts } from "@wormhole-foundation/sdk-base";
-import type { ExecutorTokenBridge } from "@wormhole-foundation/sdk-definitions";
+import type {
+  ExecutorTokenBridge,
+  UnsignedTransaction,
+} from "@wormhole-foundation/sdk-definitions";
 import {
   canonicalAddress,
+  isTokenId,
   toNative,
+  UniversalAddress,
   type ChainAddress,
   type ChainContext,
   type Signer,
   type TokenId,
-  type TokenTransferDetails,
   type TransactionId,
 } from "@wormhole-foundation/sdk-definitions";
 import { TokenTransfer } from "../../protocols/tokenBridge/tokenTransfer.js";
 import type {
   AttestationReceipt,
+  AttestedTransferReceipt,
   SourceInitiatedTransferReceipt,
   TransferReceipt,
 } from "../../types.js";
@@ -29,7 +34,7 @@ import type {
   ValidationResult,
 } from "../types.js";
 import type { RouteTransferRequest } from "../request.js";
-import { signSendWait } from "../../common.js";
+import { collectTransactions, signSendWait } from "../../common.js";
 
 export namespace ExecutorTokenBridgeRoute {
   export type Config = {
@@ -282,20 +287,10 @@ export class ExecutorTokenBridgeRoute<N extends Network>
     quote: Q,
     to: ChainAddress,
   ): Promise<R> {
-    const { fromChain, toChain } = request;
-    const { params } = quote;
-    const transfer = await TokenTransfer.destinationOverrides(
-      fromChain,
-      toChain,
-      this.toTransferDetails(
-        request,
-        params,
-        Wormhole.chainAddress(signer.chain(), signer.address()),
-        to,
-        quote,
-      ),
-    );
-    const txids = await TokenTransfer.transfer<N>(fromChain, transfer, signer);
+    const { fromChain } = request;
+    const sender = Wormhole.chainAddress(signer.chain(), signer.address());
+    const xfer = await this._buildInitiateXfer(request, sender, to, quote);
+    const txids = await signSendWait(fromChain, xfer, signer);
 
     // Status the transfer immediately before returning
     let statusAttempts = 0;
@@ -322,8 +317,8 @@ export class ExecutorTokenBridgeRoute<N extends Network>
     statusTransferImmediately();
 
     return {
-      from: transfer.from.chain,
-      to: transfer.to.chain,
+      from: fromChain.chain,
+      to: to.chain,
       state: TransferState.SourceInitiated,
       originTxs: txids,
     } satisfies SourceInitiatedTransferReceipt;
@@ -338,13 +333,9 @@ export class ExecutorTokenBridgeRoute<N extends Network>
       throw new Error("The receipt must have an attestation to complete the transfer");
     }
 
+    const sender = Wormhole.chainAddress(signer.chain(), signer.address());
+    const xfer = await this._buildCompleteXfer(sender, receipt);
     const toChain = this.wh.getChain(receipt.to);
-    const tb = await toChain.getExecutorTokenBridge();
-    const senderAddress = toNative(signer.chain(), signer.address());
-    const xfer = tb.redeem(
-      senderAddress,
-      receipt.attestation.attestation as ExecutorTokenBridge.VAA,
-    );
     const dstTxIds = await signSendWait<N, Chain>(toChain, xfer, signer);
 
     return {
@@ -369,22 +360,81 @@ export class ExecutorTokenBridgeRoute<N extends Network>
     }
   }
 
-  toTransferDetails(
+  async _buildInitiateXfer(
     request: RouteTransferRequest<N>,
-    params: Vp,
-    from: ChainAddress,
-    to: ChainAddress,
+    sender: ChainAddress,
+    recipient: ChainAddress,
     quote: Q,
-  ): TokenTransferDetails {
-    if (!quote.details) throw new Error("Missing quote details");
-    return {
-      from,
-      to,
-      token: request.source.id,
-      amount: sdkAmount.units(params.normalizedParams.amount),
-      protocol: "ExecutorTokenBridge",
-      executorQuote: quote.details.executorQuote,
-      referrerFee: quote.details.referrerFee,
-    };
+  ): Promise<AsyncGenerator<UnsignedTransaction<N, Chain>>> {
+    if (!quote.details) {
+      throw new Error("Missing quote details");
+    }
+
+    const { executorQuote, referrerFee } = quote.details;
+
+    if (!executorQuote) {
+      throw new Error("ExecutorTokenBridge transfer requires an executorQuote");
+    }
+
+    // Set gas drop-off recipient if zero
+    const gasDropOffInstruction = executorQuote.relayInstructions.requests.find(
+      (r) => r.request.type === "GasDropOffInstruction",
+    );
+    if (
+      gasDropOffInstruction &&
+      gasDropOffInstruction.request.type === "GasDropOffInstruction" &&
+      gasDropOffInstruction.request.recipient.equals(UniversalAddress.ZERO)
+    ) {
+      // @ts-ignore
+      gasDropOffInstruction.request.recipient = recipient.address.toUniversalAddress();
+    }
+
+    const token = isTokenId(request.source.id) ? request.source.id.address : request.source.id;
+    const senderAddress = toNative(sender.chain, sender.address.toString());
+    const tb = await request.fromChain.getExecutorTokenBridge();
+    return tb.transfer(
+      senderAddress,
+      recipient,
+      token,
+      sdkAmount.units(quote.params.normalizedParams.amount),
+      executorQuote,
+      referrerFee,
+    );
+  }
+
+  async _buildCompleteXfer(
+    sender: ChainAddress,
+    receipt: R,
+  ): Promise<AsyncGenerator<UnsignedTransaction<N, Chain>>> {
+    const toChain = this.wh.getChain(receipt.to);
+    const tb = await toChain.getExecutorTokenBridge();
+    const senderAddress = toNative(sender.chain, sender.address.toString());
+    const vaa = (receipt as AttestedTransferReceipt<AttestationReceipt<"ExecutorTokenBridge">>)
+      .attestation.attestation as ExecutorTokenBridge.VAA;
+    return tb.redeem(senderAddress, vaa);
+  }
+
+  async buildInitiateTransactions(
+    request: RouteTransferRequest<N>,
+    sender: ChainAddress,
+    recipient: ChainAddress,
+    quote: Q,
+  ): Promise<UnsignedTransaction<N, Chain>[]> {
+    return collectTransactions(await this._buildInitiateXfer(request, sender, recipient, quote));
+  }
+
+  async buildCompleteTransactions(
+    sender: ChainAddress,
+    receipt: R,
+  ): Promise<UnsignedTransaction<N, Chain>[]> {
+    if (!isAttested(receipt) && !isFailed(receipt)) {
+      throw new Error("The source must be finalized in order to complete the transfer");
+    }
+
+    if (!receipt.attestation) {
+      throw new Error("The receipt must have an attestation to complete the transfer");
+    }
+
+    return collectTransactions(await this._buildCompleteXfer(sender, receipt));
   }
 }
