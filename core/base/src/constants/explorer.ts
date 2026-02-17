@@ -218,6 +218,16 @@ const explorerConfig = [[
         }
       }
     ],
+    [
+      "Xrpl", {
+        name: "XRPL Explorer",
+        baseUrl: "https://xrpscan.com/",
+        endpoints: {
+          tx: "tx/",
+          account: "account/"
+        }
+      }
+    ],
   ]], [
   "Testnet", [[
     "Ethereum", {
@@ -406,6 +416,16 @@ const explorerConfig = [[
         endpoints: {
           tx: "tx/",
           account: "address/"
+        }
+      }
+    ],
+    [
+      "Xrpl", {
+        name: "XRPL Testnet Explorer",
+        baseUrl: "https://testnet.xrpscan.com/",
+        endpoints: {
+          tx: "tx/",
+          account: "account/"
         }
       }
     ],
