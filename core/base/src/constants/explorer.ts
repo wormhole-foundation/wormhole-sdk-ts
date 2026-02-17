@@ -262,7 +262,7 @@ const explorerConfig = [[
     }], [
     "Celo", {
       name: "Celo Explorer",
-      baseUrl: "https://explorer.celo.org/alfajores/",
+      baseUrl: "https://sepolia.celoscan.io/",
       endpoints: {
         tx: "tx/",
         account: "address/",
