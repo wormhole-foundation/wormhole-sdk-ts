@@ -83,7 +83,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Avalanche",       43113n], //fuji
       ["Base",            84531n],
       ["Bsc",             97n],
-      ["Celo",            44787n], //alfajores
+      ["Celo",            11142220n], //celo-sepolia
       ["Ethereum",        5n], //goerli
       ["Fantom",          4002n],
       ["Klaytn",          1001n], //baobab
