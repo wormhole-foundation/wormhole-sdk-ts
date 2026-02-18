@@ -221,10 +221,10 @@ const explorerConfig = [[
     [
       "Xrpl", {
         name: "XRPL Explorer",
-        baseUrl: "https://xrpscan.com/",
+        baseUrl: "https://livenet.xrpl.org/",
         endpoints: {
-          tx: "tx/",
-          account: "account/"
+          tx: "transactions/",
+          account: "accounts/"
         }
       }
     ],
@@ -422,10 +422,10 @@ const explorerConfig = [[
     [
       "Xrpl", {
         name: "XRPL Testnet Explorer",
-        baseUrl: "https://testnet.xrpscan.com/",
+        baseUrl: "https://testnet.xrpl.org/",
         endpoints: {
-          tx: "tx/",
-          account: "account/"
+          tx: "transactions/",
+          account: "accounts/"
         }
       }
     ],
