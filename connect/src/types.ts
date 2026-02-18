@@ -7,7 +7,20 @@ import type {
   TransactionId,
 } from "@wormhole-foundation/sdk-definitions";
 import type { QuoteWarning } from "./warnings.js";
-import { RelayFailedError } from "./routes/types.js";
+
+export interface RelayExplorer {
+  url: string;
+  name: string;
+}
+
+export class RelayFailedError extends Error {
+  readonly relayExplorer?: RelayExplorer;
+
+  constructor(message: string, relayExplorer?: RelayExplorer) {
+    super(message);
+    this.relayExplorer = relayExplorer;
+  }
+}
 
 // Transfer state machine states
 export enum TransferState {

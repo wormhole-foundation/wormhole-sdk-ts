@@ -1,4 +1,5 @@
-import { Wormhole, canonicalAddress, routes, wormhole } from "@wormhole-foundation/sdk";
+import { Wormhole, canonicalAddress, wormhole } from "@wormhole-foundation/sdk";
+import * as routes from "@wormhole-foundation/sdk-connect/routes";
 
 import evm from "@wormhole-foundation/sdk/evm";
 import solana from "@wormhole-foundation/sdk/solana";

@@ -39,6 +39,26 @@
         "default": "./dist/cjs/index.js"
       }
     },
+    "./routes": {
+      "react-native": {
+        "import": "./dist/esm/routes/index.js",
+        "require": "./dist/cjs/routes/index.js",
+        "types": "./dist/cjs/routes/index.d.ts",
+        "default": "./dist/cjs/routes/index.js"
+      },
+      "import": {
+        "types": "./dist/esm/routes/index.d.ts",
+        "default": "./dist/esm/routes/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/routes/index.d.ts",
+        "default": "./dist/cjs/routes/index.js"
+      },
+      "default": {
+        "types": "./dist/cjs/routes/index.d.ts",
+        "default": "./dist/cjs/routes/index.js"
+      }
+    },
     "./tokens": {
       "react-native": {
         "import": "./dist/esm/tokens.js",
@@ -58,12 +78,84 @@
         "types": "./dist/cjs/tokens.d.ts",
         "default": "./dist/cjs/tokens.js"
       }
+    },
+    "./tasks": {
+      "react-native": {
+        "import": "./dist/esm/tasks.js",
+        "require": "./dist/cjs/tasks.js",
+        "types": "./dist/cjs/tasks.d.ts",
+        "default": "./dist/cjs/tasks.js"
+      },
+      "import": {
+        "types": "./dist/esm/tasks.d.ts",
+        "default": "./dist/esm/tasks.js"
+      },
+      "require": {
+        "types": "./dist/cjs/tasks.d.ts",
+        "default": "./dist/cjs/tasks.js"
+      },
+      "default": {
+        "types": "./dist/cjs/tasks.d.ts",
+        "default": "./dist/cjs/tasks.js"
+      }
+    },
+    "./circle-api": {
+      "react-native": {
+        "import": "./dist/esm/circle-api.js",
+        "require": "./dist/cjs/circle-api.js",
+        "types": "./dist/cjs/circle-api.d.ts",
+        "default": "./dist/cjs/circle-api.js"
+      },
+      "import": {
+        "types": "./dist/esm/circle-api.d.ts",
+        "default": "./dist/esm/circle-api.js"
+      },
+      "require": {
+        "types": "./dist/cjs/circle-api.d.ts",
+        "default": "./dist/cjs/circle-api.js"
+      },
+      "default": {
+        "types": "./dist/cjs/circle-api.d.ts",
+        "default": "./dist/cjs/circle-api.js"
+      }
+    },
+    "./whscan-api": {
+      "react-native": {
+        "import": "./dist/esm/whscan-api.js",
+        "require": "./dist/cjs/whscan-api.js",
+        "types": "./dist/cjs/whscan-api.d.ts",
+        "default": "./dist/cjs/whscan-api.js"
+      },
+      "import": {
+        "types": "./dist/esm/whscan-api.d.ts",
+        "default": "./dist/esm/whscan-api.js"
+      },
+      "require": {
+        "types": "./dist/cjs/whscan-api.d.ts",
+        "default": "./dist/cjs/whscan-api.js"
+      },
+      "default": {
+        "types": "./dist/cjs/whscan-api.d.ts",
+        "default": "./dist/cjs/whscan-api.js"
+      }
     }
   },
   "typesVersions": {
     "*": {
+      "routes": [
+        "./dist/cjs/routes/index.d.ts"
+      ],
       "tokens": [
         "./dist/cjs/tokens.d.ts"
+      ],
+      "tasks": [
+        "./dist/cjs/tasks.d.ts"
+      ],
+      "circle-api": [
+        "./dist/cjs/circle-api.d.ts"
+      ],
+      "whscan-api": [
+        "./dist/cjs/whscan-api.d.ts"
       ],
       "*": [
         "./dist/cjs/index.d.ts"

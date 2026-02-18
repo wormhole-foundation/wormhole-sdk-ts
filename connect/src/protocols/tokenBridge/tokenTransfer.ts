@@ -60,6 +60,7 @@ import type {
 } from "../../types.js";
 import {
   TransferState,
+  RelayFailedError,
   isAttested,
   isInReview,
   isRedeemed,
@@ -72,7 +73,6 @@ import { Wormhole } from "../../wormhole.js";
 import type { WormholeTransfer } from "../wormholeTransfer.js";
 import type { QuoteWarning } from "../../warnings.js";
 import { RelayStatus } from "@wormhole-foundation/sdk-definitions";
-import { routes } from "../../index.js";
 
 export class TokenTransfer<N extends Network = Network>
   implements WormholeTransfer<TokenTransfer.Protocol>
@@ -521,7 +521,7 @@ export namespace TokenTransfer {
         receipt = {
           ...receipt,
           state: TransferState.Failed,
-          error: new routes.RelayFailedError(`Relay failed with status: ${relayStatus}`),
+          error: new RelayFailedError(`Relay failed with status: ${relayStatus}`),
         };
         yield receipt;
       }

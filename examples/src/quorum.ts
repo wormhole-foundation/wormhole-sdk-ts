@@ -1,5 +1,6 @@
 import type { Chain } from "@wormhole-foundation/sdk";
-import { api, toChain, wormhole } from "@wormhole-foundation/sdk";
+import { toChain, wormhole } from "@wormhole-foundation/sdk";
+import * as api from "@wormhole-foundation/sdk-connect/whscan-api";
 import algorand from "@wormhole-foundation/sdk/algorand";
 import cosmwasm from "@wormhole-foundation/sdk/cosmwasm";
 import evm from "@wormhole-foundation/sdk/evm";

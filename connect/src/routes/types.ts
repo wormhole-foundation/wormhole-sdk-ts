@@ -119,17 +119,4 @@ export class UnavailableError extends Error {
   }
 }
 
-export interface RelayExplorer {
-  url: string;
-  name: string;
-}
-
-export class RelayFailedError extends Error {
-  // Optional explorer URL which may provider recovery details
-  readonly relayExplorer?: RelayExplorer;
-
-  constructor(message: string, relayExplorer?: RelayExplorer) {
-    super(message);
-    this.relayExplorer = relayExplorer;
-  }
-}
+export { RelayFailedError, type RelayExplorer } from "../types.js";
