@@ -5,10 +5,6 @@ on:
     types: [created]
   pull_request_review_comment:
     types: [created]
-  pull_request:
-    types: [opened, edited]
-  issues:
-    types: [opened, assigned]
   pull_request_review:
     types: [submitted]
 
@@ -17,9 +13,7 @@ jobs:
     if: |
       (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
       (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
-      (github.event_name == 'pull_request' && contains(github.event.pull_request.body, '@claude')) ||
-      (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
+      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude'))
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -48,7 +42,7 @@ jobs:
 
             Read the user's @claude message carefully and route to the correct task:
 
-            1. **Review request** (default): If the user asks you to review a PR, or if no specific task is mentioned on a PR open/edit event, follow the Code Review section below.
+            1. **Review request** (default): If the user asks you to review a PR, or if no specific task is mentioned, follow the Code Review section below.
             2. **Other requests**: For any other explicit instruction, follow it directly using available tools.
 
             When in doubt, the user's message takes priority over the default review behavior.
