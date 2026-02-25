@@ -33,8 +33,7 @@ export class XrplSigner<N extends Network, C extends XrplChains>
   }
 
   async signAndSend(txs: UnsignedTransaction<N, C>[]): Promise<TxHash[]> {
-    const connected = !this._provider.isConnected();
-    if (connected) await this._provider.connect();
+    if (!this._provider.isConnected()) await this._provider.connect();
 
     try {
       const txHashes: TxHash[] = [];
@@ -47,13 +46,12 @@ export class XrplSigner<N extends Network, C extends XrplChains>
       }
       return txHashes;
     } finally {
-      if (connected) await this._provider.disconnect();
+      if (this._provider.isConnected()) await this._provider.disconnect();
     }
   }
 
   async sign(txs: UnsignedTransaction<N, C>[]): Promise<SignedTx[]> {
-    const connected = !this._provider.isConnected();
-    if (connected) await this._provider.connect();
+    if (!this._provider.isConnected()) await this._provider.connect();
 
     try {
       const signedTxs: SignedTx[] = [];
@@ -65,7 +63,7 @@ export class XrplSigner<N extends Network, C extends XrplChains>
       }
       return signedTxs;
     } finally {
-      if (connected) await this._provider.disconnect();
+      if (this._provider.isConnected()) await this._provider.disconnect();
     }
   }
 

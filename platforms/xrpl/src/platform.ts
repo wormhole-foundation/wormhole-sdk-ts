@@ -94,8 +94,7 @@ export class XrplPlatform<N extends Network>
     token: TokenAddress<C>,
   ): Promise<bigint | null> {
     if (isNative(token)) {
-      const connected = !rpc.isConnected();
-      if (connected) await rpc.connect();
+      if (!rpc.isConnected()) await rpc.connect();
       try {
         const response = await rpc.request({
           command: "account_info",
@@ -104,7 +103,7 @@ export class XrplPlatform<N extends Network>
         });
         return BigInt(response.result.account_data.Balance);
       } finally {
-        if (connected) await rpc.disconnect();
+        if (rpc.isConnected()) await rpc.disconnect();
       }
     }
     throw new Error("Token balance lookup not yet implemented for XRPL");
@@ -135,8 +134,7 @@ export class XrplPlatform<N extends Network>
   }
 
   static async chainFromRpc(rpc: Client): Promise<[Network, XrplChains]> {
-    const connected = !rpc.isConnected();
-    if (connected) await rpc.connect();
+    if (!rpc.isConnected()) await rpc.connect();
     try {
       const response = await rpc.request({
         command: "server_info",
@@ -147,7 +145,7 @@ export class XrplPlatform<N extends Network>
       }
       return ["Testnet", "Xrpl"];
     } finally {
-      if (connected) await rpc.disconnect();
+      if (rpc.isConnected()) await rpc.disconnect();
     }
   }
 }
