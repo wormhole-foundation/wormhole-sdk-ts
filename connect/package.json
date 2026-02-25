@@ -14,7 +14,7 @@
   },
   "license": "Apache-2.0",
   "main": "./dist/cjs/index.js",
-  "types": "./dist/cjs/index.d.ts",
+  "types": "./index.d.cts",
   "module": "./dist/esm/index.js",
   "author": "",
   "description": "The core package for the Connect SDK, used in conjunction with 1 or more of the chain packages",
@@ -23,19 +23,19 @@
       "react-native": {
         "import": "./dist/esm/index.js",
         "require": "./dist/cjs/index.js",
-        "types": "./dist/cjs/index.d.ts",
+        "types": "./index.d.cts",
         "default": "./dist/cjs/index.js"
       },
       "import": {
-        "types": "./dist/esm/index.d.ts",
+        "types": "./index.d.mts",
         "default": "./dist/esm/index.js"
       },
       "require": {
-        "types": "./dist/cjs/index.d.ts",
+        "types": "./index.d.cts",
         "default": "./dist/cjs/index.js"
       },
       "default": {
-        "types": "./dist/cjs/index.d.ts",
+        "types": "./index.d.cts",
         "default": "./dist/cjs/index.js"
       }
     },
@@ -158,13 +158,15 @@
         "./dist/cjs/whscan-api.d.ts"
       ],
       "*": [
-        "./dist/cjs/index.d.ts"
+        "./index.d.cts"
       ]
     }
   },
   "files": [
     "dist/esm",
-    "dist/cjs"
+    "dist/cjs",
+    "index.d.cts",
+    "index.d.mts"
   ],
   "keywords": [
     "wormhole",
