@@ -13,5 +13,6 @@
     { "path": "../platforms/cosmwasm/tsconfig.esm.json" },
     { "path": "../platforms/aptos/tsconfig.esm.json" },
     { "path": "../platforms/stacks/tsconfig.esm.json" },
+    { "path": "../platforms/xrpl/tsconfig.esm.json" }
   ]
 }
