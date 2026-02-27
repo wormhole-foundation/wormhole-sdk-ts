@@ -53,6 +53,7 @@ const chainNetworkNativeChainIdEntries = [
       ["HyperCore",   65000n],
       ["Mezo",        31612n],
       ["Plume",       98866n],
+      ["Xrpl",        0n],
       ["XRPLEVM",     1440000n],
       ["Stacks",      1n],
       ["CreditCoin",  102030n],
@@ -116,6 +117,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Converge",        52085145n],
       ["Fogo",            "9GGSFo95raqzZxWqKM5tGYvJp5iv4Dm565S4r8h5PEu9"], // genesis hash
       ["Plume",           98867n],
+      ["Xrpl",            1n],
       ["XRPLEVM",         1449000n],
       ["Stacks",          2147483648n],
       ["CreditCoin",      102031n],
