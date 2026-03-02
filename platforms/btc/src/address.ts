@@ -49,8 +49,13 @@ export class BtcAddress implements Address {
 
   toUint8Array(): Uint8Array {
     const encoded = new TextEncoder().encode(this.address);
+    if (encoded.length > UniversalAddress.byteSize) {
+      throw new RangeError(
+        `BTC address encoding exceeds UniversalAddress size: encoded length ${encoded.length} > ${UniversalAddress.byteSize} bytes`,
+      );
+    }
     const padded = new Uint8Array(UniversalAddress.byteSize);
-    padded.set(encoded.slice(0, UniversalAddress.byteSize));
+    padded.set(encoded);
     return padded;
   }
 
