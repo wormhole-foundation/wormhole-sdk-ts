@@ -386,6 +386,26 @@
         "default": "./dist/cjs/platforms/xrpl.js"
       }
     },
+    "./platforms/btc": {
+      "react-native": {
+        "import": "./dist/esm/platforms/btc.js",
+        "require": "./dist/cjs/platforms/btc.js",
+        "types": "./dist/cjs/platforms/btc.d.ts",
+        "default": "./dist/cjs/platforms/btc.js"
+      },
+      "require": {
+        "types": "./dist/cjs/platforms/btc.d.ts",
+        "default": "./dist/cjs/platforms/btc.js"
+      },
+      "import": {
+        "types": "./dist/esm/platforms/btc.d.ts",
+        "default": "./dist/esm/platforms/btc.js"
+      },
+      "default": {
+        "types": "./dist/cjs/platforms/btc.d.ts",
+        "default": "./dist/cjs/platforms/btc.js"
+      }
+    },
     "./xrpl": {
       "react-native": {
         "import": "./dist/esm/xrpl.js",
@@ -404,6 +424,26 @@
       "default": {
         "types": "./dist/cjs/xrpl.d.ts",
         "default": "./dist/cjs/xrpl.js"
+      }
+    },
+    "./btc": {
+      "react-native": {
+        "import": "./dist/esm/btc.js",
+        "require": "./dist/cjs/btc.js",
+        "types": "./dist/cjs/btc.d.ts",
+        "default": "./dist/cjs/btc.js"
+      },
+      "require": {
+        "types": "./dist/cjs/btc.d.ts",
+        "default": "./dist/cjs/btc.js"
+      },
+      "import": {
+        "types": "./dist/esm/btc.d.ts",
+        "default": "./dist/esm/btc.js"
+      },
+      "default": {
+        "types": "./dist/cjs/btc.d.ts",
+        "default": "./dist/cjs/btc.js"
       }
     }
   },
@@ -473,6 +513,14 @@
         "dist/cjs/platforms/xrpl.d.ts",
         "dist/esm/platforms/xrpl.d.ts"
       ],
+      "btc": [
+        "dist/cjs/btc.d.ts",
+        "dist/esm/btc.d.ts"
+      ],
+      "platforms/btc": [
+        "dist/cjs/platforms/btc.d.ts",
+        "dist/esm/platforms/btc.d.ts"
+      ],
       "*": [
         "dist/cjs/index.d.ts",
         "dist/esm/index.d.ts"
@@ -511,7 +559,8 @@
     "@wormhole-foundation/sdk-algorand-tokenbridge": "1.20.0",
     "@wormhole-foundation/sdk-stacks": "1.20.0",
     "@wormhole-foundation/sdk-stacks-core": "1.20.0",
-    "@wormhole-foundation/sdk-xrpl": "1.20.0"
+    "@wormhole-foundation/sdk-xrpl": "1.20.0",
+    "@wormhole-foundation/sdk-btc": "1.20.0"
   },
   "type": "module"
 }

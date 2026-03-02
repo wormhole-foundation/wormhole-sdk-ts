@@ -9,3 +9,4 @@ import "@wormhole-foundation/sdk-solana/address";
 import "@wormhole-foundation/sdk-stacks/address";
 import "@wormhole-foundation/sdk-sui/address";
 import "@wormhole-foundation/sdk-xrpl/address";
+import "@wormhole-foundation/sdk-btc/address";
