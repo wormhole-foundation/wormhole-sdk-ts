@@ -30,7 +30,7 @@ export class BtcPlatform<N extends Network>
 
   override getRpc<C extends BtcChains>(_chain: C): never {
     throw new Error(
-      "BtcPlatform does not provide an RPC connection — Bitcoin interactions are handled by SwapKit",
+      "BtcPlatform does not provide an RPC connection — Bitcoin interactions are handled externally",
     );
   }
 

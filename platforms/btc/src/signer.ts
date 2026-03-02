@@ -6,6 +6,6 @@ export async function getBtcSigner(
   _privateKey: string,
 ): Promise<SignAndSendSigner<Network, BtcChains>> {
   throw new Error(
-    "getBtcSigner is not supported — use the SwapKit wallet adapter",
+    "getBtcSigner is not implemented — Bitcoin signing is handled externally via wallet adapters",
   );
 }
