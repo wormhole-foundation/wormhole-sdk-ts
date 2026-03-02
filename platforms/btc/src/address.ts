@@ -23,16 +23,24 @@ export class BtcAddress implements Address {
       return;
     }
 
+    let decoded: string;
     if (typeof address === "string") {
-      this.address = address;
+      decoded = address.trim();
     } else if (address instanceof Uint8Array) {
-      this.address = new TextDecoder().decode(address).replace(/\0+$/, "");
+      decoded = new TextDecoder().decode(address).replace(/\0+$/, "").trim();
     } else {
       // UniversalAddress
-      this.address = new TextDecoder()
+      decoded = new TextDecoder()
         .decode(address.toUint8Array())
-        .replace(/\0+$/, "");
+        .replace(/\0+$/, "")
+        .trim();
     }
+
+    if (!BtcAddress.isValidAddress(decoded)) {
+      throw new Error(`Invalid BTC address: ${JSON.stringify(decoded)}`);
+    }
+
+    this.address = decoded;
   }
 
   unwrap(): string {
@@ -64,7 +72,7 @@ export class BtcAddress implements Address {
   }
 
   static isValidAddress(address: string): boolean {
-    return typeof address === "string" && address.length > 0;
+    return typeof address === "string" && address.trim().length > 0;
   }
 
   static instanceof(address: any): address is BtcAddress {
@@ -74,8 +82,12 @@ export class BtcAddress implements Address {
   equals(other: BtcAddress | UniversalAddress): boolean {
     if (BtcAddress.instanceof(other)) {
       return other.address === this.address;
-    } else {
+    }
+    try {
       return other.equals(this.toUniversalAddress());
+    } catch (e) {
+      if (e instanceof RangeError) return false;
+      throw e;
     }
   }
 }
