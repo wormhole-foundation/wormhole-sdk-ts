@@ -52,6 +52,7 @@ const chainIdAndChainEntries = [
   [   60, "Stacks"         ],
   [   63, "Moca"           ],
   [   64, "MegaETH"        ],
+  [   66, "Xrpl"           ],
   [   67, "ZeroGravity"    ],
   [ 3104, "Wormchain"      ],
   [ 4000, "Cosmoshub"      ],
