@@ -62,7 +62,8 @@ const chainNetworkNativeChainIdEntries = [
       ["Fogo",        "CDLtwKnaCoK157uaHQDj4fHu72AyD2519Cphmpiq6hvT"], // genesis hash
       ["Moca",        2288n],
       ["MegaETH",     4326n],
-      ["ZeroGravity", 16661n]
+      ["ZeroGravity", 16661n],
+      ["Btc",         "bitcoin-mainnet"]
     ],
   ],
   [
