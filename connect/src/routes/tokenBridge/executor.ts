@@ -1,6 +1,7 @@
 import type { Chain, Network } from "@wormhole-foundation/sdk-base";
 import { amount as sdkAmount, contracts } from "@wormhole-foundation/sdk-base";
 import type {
+  CapabilitiesResponse,
   ExecutorTokenBridge,
   UnsignedTransaction,
 } from "@wormhole-foundation/sdk-definitions";
@@ -38,6 +39,10 @@ import { collectTransactions, signSendWait } from "../../common.js";
 
 export namespace ExecutorTokenBridgeRoute {
   export type Config = {
+    executor?: {
+      /** Override the default capabilities fetcher (e.g. to cache or use a custom endpoint). */
+      getCapabilities?: (network: Network) => Promise<CapabilitiesResponse>;
+    };
     referrerFee?: {
       // Referrer Fee in *tenths* of basis points - e.g. 10 = 1 basis point (0.01%)
       referrerFeeDbps: bigint;
@@ -254,6 +259,7 @@ export class ExecutorTokenBridgeRoute<N extends Network>
         const gasDropOffLimit = await TokenTransfer.getExecutorGasDropOffLimit(
           this.wh,
           request.toChain,
+          this.staticConfig.executor?.getCapabilities,
         );
 
         nativeGas =
@@ -262,15 +268,21 @@ export class ExecutorTokenBridgeRoute<N extends Network>
             : 0n;
       }
 
-      const q = await TokenTransfer.quoteTransfer(this.wh, request.fromChain, request.toChain, {
-        token: request.source.id,
-        amount: sdkAmount.units(params.normalizedParams.amount),
-        protocol: "ExecutorTokenBridge",
-        nativeGas,
-        msgValue,
-        gasLimit,
-        referrerFee,
-      });
+      const q = await TokenTransfer.quoteTransfer(
+        this.wh,
+        request.fromChain,
+        request.toChain,
+        {
+          token: request.source.id,
+          amount: sdkAmount.units(params.normalizedParams.amount),
+          protocol: "ExecutorTokenBridge",
+          nativeGas,
+          msgValue,
+          gasLimit,
+          referrerFee,
+        },
+        this.staticConfig.executor?.getCapabilities,
+      );
 
       return request.displayQuote(q, params, q.details);
     } catch (e) {
