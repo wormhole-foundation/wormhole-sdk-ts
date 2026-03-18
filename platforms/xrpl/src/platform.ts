@@ -141,8 +141,8 @@ export class XrplPlatform<N extends Network>
   }
 
   // Query account_lines for IOU trust line balance.
-  // The peer filter scopes results to a single issuer, but account_lines is paginated
-  // (up to 400 lines per page). If an issuer has many currencies this may need pagination.
+  // TODO: account_lines is paginated (up to 400 per page). The peer filter scopes to
+  // one issuer so 400 currencies is sufficient for now; add marker-based pagination if needed.
   // https://xrpl.org/docs/references/http-websocket-apis/public-api-methods/account-methods/account_lines
   private static async getIouBalance(
     rpc: Client,
@@ -177,6 +177,7 @@ export class XrplPlatform<N extends Network>
   }
 
   // Query account_objects for MPToken balance.
+  // TODO: account_objects is paginated (up to 400 per page); add marker-based pagination if needed.
   // https://xrpl.org/docs/references/protocol/ledger-data/ledger-entry-types/mptoken
   private static async getMptBalance(
     rpc: Client,
