@@ -73,3 +73,13 @@ async function ssw<N extends Network, C extends Chain>(
 
   return txids;
 }
+
+export async function collectTransactions<N extends Network, C extends Chain>(
+  xfer: AsyncGenerator<UnsignedTransaction<N, C>>,
+): Promise<UnsignedTransaction<N, C>[]> {
+  const transactions: UnsignedTransaction<N, C>[] = [];
+  for await (const tx of xfer) {
+    transactions.push(tx);
+  }
+  return transactions;
+}

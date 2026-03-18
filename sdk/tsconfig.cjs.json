@@ -12,6 +12,8 @@
     { "path": "../platforms/sui/tsconfig.cjs.json" },
     { "path": "../platforms/cosmwasm/tsconfig.cjs.json" },
     { "path": "../platforms/aptos/tsconfig.cjs.json" },
-    { "path": "../platforms/stacks/tsconfig.cjs.json" }
+    { "path": "../platforms/stacks/tsconfig.cjs.json" },
+    { "path": "../platforms/xrpl/tsconfig.cjs.json" },
+    { "path": "../platforms/btc/tsconfig.cjs.json" }
   ]
 }

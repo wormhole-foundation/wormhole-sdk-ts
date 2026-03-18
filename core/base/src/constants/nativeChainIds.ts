@@ -53,6 +53,7 @@ const chainNetworkNativeChainIdEntries = [
       ["HyperCore",   65000n],
       ["Mezo",        31612n],
       ["Plume",       98866n],
+      ["Xrpl",        0n],
       ["XRPLEVM",     1440000n],
       ["Stacks",      1n],
       ["CreditCoin",  102030n],
@@ -61,7 +62,8 @@ const chainNetworkNativeChainIdEntries = [
       ["Fogo",        "CDLtwKnaCoK157uaHQDj4fHu72AyD2519Cphmpiq6hvT"], // genesis hash
       ["Moca",        2288n],
       ["MegaETH",     4326n],
-      ["ZeroGravity", 16661n]
+      ["ZeroGravity", 16661n],
+      ["Btc",         "bitcoin-mainnet"]
     ],
   ],
   [
@@ -116,6 +118,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Converge",        52085145n],
       ["Fogo",            "9GGSFo95raqzZxWqKM5tGYvJp5iv4Dm565S4r8h5PEu9"], // genesis hash
       ["Plume",           98867n],
+      ["Xrpl",            1n],
       ["XRPLEVM",         1449000n],
       ["Stacks",          2147483648n],
       ["CreditCoin",      102031n],
