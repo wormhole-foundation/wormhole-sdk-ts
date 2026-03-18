@@ -18,7 +18,7 @@ describe("XRPL Address Tests", () => {
     const original = new XrplAddress(VALID_ADDRESS);
     const copy = new XrplAddress(original);
     expect(copy.toString()).toBe(VALID_ADDRESS);
-    expect(copy._format).toBe("account");
+    expect(copy.format).toBe("account");
   });
 
   it("toUint8Array produces the correct 20-byte account ID", () => {
@@ -78,20 +78,20 @@ describe("XRPL IOU Token Identifier Tests", () => {
   it("accepts standard IOU format and round-trips via toString", () => {
     const address = new XrplAddress(IOU_STANDARD);
     expect(address.toString()).toBe(IOU_STANDARD);
-    expect(address._format).toBe("iou");
+    expect(address.format).toBe("iou");
   });
 
   it("accepts hex-code IOU format and round-trips via toString", () => {
     const address = new XrplAddress(IOU_HEX);
     expect(address.toString()).toBe(IOU_HEX);
-    expect(address._format).toBe("iou");
+    expect(address.format).toBe("iou");
   });
 
   it("copy constructor preserves IOU address and format", () => {
     const original = new XrplAddress(IOU_STANDARD);
     const copy = new XrplAddress(original);
     expect(copy.toString()).toBe(IOU_STANDARD);
-    expect(copy._format).toBe("iou");
+    expect(copy.format).toBe("iou");
   });
 
   it("toUint8Array encodes standard IOU as 20-byte canonical code + 20-byte issuer", () => {
@@ -176,14 +176,14 @@ describe("XRPL MPT Token Identifier Tests", () => {
   it("accepts MPT issuance ID and round-trips via toString", () => {
     const address = new XrplAddress(MPT_ID);
     expect(address.toString()).toBe(MPT_ID);
-    expect(address._format).toBe("mpt");
+    expect(address.format).toBe("mpt");
   });
 
   it("copy constructor preserves MPT address and format", () => {
     const original = new XrplAddress(MPT_ID);
     const copy = new XrplAddress(original);
     expect(copy.toString()).toBe(MPT_ID);
-    expect(copy._format).toBe("mpt");
+    expect(copy.format).toBe("mpt");
   });
 
   it("toUint8Array decodes hex to 24 bytes", () => {

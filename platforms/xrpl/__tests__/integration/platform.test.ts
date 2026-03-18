@@ -111,21 +111,20 @@ describe("XrplPlatform — testnet RPC integration", () => {
     );
   });
 
-  it("getBalance throws for non-native token", async () => {
-    await expect(
-      XrplPlatform.getBalance(
-        "Testnet",
-        "Xrpl",
-        client,
-        TESTNET_ACCOUNT,
-        "rNonExistentToken123" as any,
-      ),
-    ).rejects.toThrow("Token balance lookup not yet implemented");
+  it("getBalance returns null for non-existent IOU trust line", async () => {
+    const balance = await XrplPlatform.getBalance(
+      "Testnet",
+      "Xrpl",
+      client,
+      TESTNET_ACCOUNT,
+      "FOO.rBa2jdUu8S2ZzaCJv8y1Lx9Pdrns51hJj" as any,
+    );
+    expect(balance).toBeNull();
   });
 
-  it("getDecimals throws for non-native token", async () => {
-    await expect(
-      XrplPlatform.getDecimals("Testnet", "Xrpl", client as any, "rSomeToken123" as any),
-    ).rejects.toThrow("Token decimals lookup not yet implemented");
+  it("getDecimals returns 9 for IOU tokens", () => {
+    return expect(
+      XrplPlatform.getDecimals("Testnet", "Xrpl", client as any, "USD.rBa2jdUu8S2ZzaCJv8y1Lx9Pdrns51hJj" as any),
+    ).resolves.toBe(9);
   });
 });
