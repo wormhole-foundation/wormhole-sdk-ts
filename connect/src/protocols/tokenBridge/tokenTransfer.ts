@@ -22,6 +22,7 @@ import type {
   TxHash,
   UnsignedTransaction,
   WormholeMessageId,
+  CapabilitiesResponse,
   ExecutorTokenBridge,
   RelayInstructions,
   ChainAddress,
@@ -773,6 +774,7 @@ export namespace TokenTransfer {
     srcChain: ChainContext<N, Chain>,
     dstChain: ChainContext<N, Chain>,
     transfer: QuoteTransferDetails,
+    getCapabilities?: (network: Network) => Promise<CapabilitiesResponse>,
   ): Promise<TransferQuote> {
     const srcTb = await srcChain.getTokenBridge();
     let srcToken: NativeAddress<Chain>;
@@ -872,6 +874,7 @@ export namespace TokenTransfer {
         transfer.gasLimit,
         transfer.msgValue,
         transfer.nativeGas,
+        getCapabilities,
       );
 
       const gasDropOffInstruction = executorQuote.relayInstructions.requests.find(
@@ -1021,8 +1024,11 @@ export namespace TokenTransfer {
   export async function getExecutorGasDropOffLimit<N extends Network>(
     wh: Wormhole<N>,
     dstChain: ChainContext<N, Chain>,
+    getCapabilities?: (network: Network) => Promise<CapabilitiesResponse>,
   ): Promise<bigint> {
-    const capabilities = await wh.getExecutorCapabilities();
+    const capabilities = getCapabilities
+      ? await getCapabilities(wh.network)
+      : await wh.getExecutorCapabilities();
     const dstCapabilities = capabilities[toChainId(dstChain.chain)];
     if (!dstCapabilities) {
       throw new Error(`No executor capabilities found for destination chain ${dstChain.chain}`);
@@ -1037,8 +1043,11 @@ export namespace TokenTransfer {
     gasLimit: bigint,
     msgValue: bigint,
     nativeGas?: bigint,
+    getCapabilities?: (network: Network) => Promise<CapabilitiesResponse>,
   ): Promise<ExecutorTokenBridge.ExecutorQuote> {
-    const capabilities = await wh.getExecutorCapabilities();
+    const capabilities = getCapabilities
+      ? await getCapabilities(wh.network)
+      : await wh.getExecutorCapabilities();
 
     const srcCapabilities = capabilities[toChainId(srcChain.chain)];
     if (!srcCapabilities) {
