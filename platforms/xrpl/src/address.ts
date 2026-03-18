@@ -38,28 +38,27 @@ export class XrplAddress implements Address {
   readonly type: string = "Native";
 
   readonly address: string;
-  /** @internal token-identifier format */
-  readonly _format: XrplAddressFormat;
+  readonly format: XrplAddressFormat;
 
   constructor(address: AnyXrplAddress) {
     // Check if the input is already an XrplAddress instance
     if (XrplAddress.instanceof(address)) {
       const xrplAddress = address as XrplAddress;
       this.address = xrplAddress.address;
-      this._format = xrplAddress._format;
+      this.format = xrplAddress.format;
     } else if (typeof address === "string") {
       if (XrplAddress.isIouTokenId(address)) {
         // IOU format: CODE.rIssuerAddress (e.g. "FOO.rBa2jdUu8S2ZzaCJv8y1Lx9Pdrns51hJj")
         this.address = address;
-        this._format = "iou";
+        this.format = "iou";
       } else if (XrplAddress.isMptTokenId(address)) {
         // MPT format: 48-char hex issuance ID (24-byte Hash192)
         this.address = address;
-        this._format = "mpt";
+        this.format = "mpt";
       } else if (isValidClassicAddress(address)) {
         // Standard r-address
         this.address = address;
-        this._format = "account";
+        this.format = "account";
       } else {
         throw new Error(`Invalid XRPL address or token identifier: ${address}`);
       }
@@ -81,7 +80,7 @@ export class XrplAddress implements Address {
   }
 
   toUint8Array(): Uint8Array {
-    switch (this._format) {
+    switch (this.format) {
       case "account":
         return decodeAccountID(this.address);
       case "mpt":
@@ -109,7 +108,7 @@ export class XrplAddress implements Address {
   //   - iou: 40 bytes of data (20 code + 20 issuer) exceeds 32 bytes, so we SHA-256
   //     hash the full identifier string (same approach as the Stacks platform)
   toUniversalAddress(): UniversalAddress {
-    switch (this._format) {
+    switch (this.format) {
       case "account": {
         const accountId = decodeAccountID(this.address);
         const padded = new Uint8Array(UniversalAddress.byteSize);
@@ -153,13 +152,13 @@ export class XrplAddress implements Address {
     return MPT_ADDRESS_REGEX.test(address) && address.length === 48;
   }
 
-  /** Split an IOU string into code and issuer */
-  private static parseIou(address: string): { code: string; issuer: string } {
-    const dotIndex = address.indexOf(".");
-    return {
-      code: address.substring(0, dotIndex),
-      issuer: address.substring(dotIndex + 1),
-    };
+  /** Split an IOU string (e.g. "FOO.rIssuer...") into code and issuer */
+  static parseIou(address: string): { code: string; issuer: string } {
+    const parts = address.split(".");
+    if (parts.length !== 2 || !parts[0] || !parts[1]) {
+      throw new Error(`Not a valid IOU token identifier: ${address}`);
+    }
+    return { code: parts[0], issuer: parts[1] };
   }
 
   static instanceof(address: any): address is XrplAddress {
