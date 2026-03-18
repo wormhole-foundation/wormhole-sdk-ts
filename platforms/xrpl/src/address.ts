@@ -149,7 +149,7 @@ export class XrplAddress implements Address {
 
   /** MPT format: 48-char hex issuance ID (192-bit Hash192) */
   private static isMptTokenId(address: string): boolean {
-    return MPT_ADDRESS_REGEX.test(address) && address.length === 48;
+    return MPT_ADDRESS_REGEX.test(address);
   }
 
   /** Split an IOU string (e.g. "FOO.rIssuer...") into code and issuer */
@@ -162,7 +162,7 @@ export class XrplAddress implements Address {
   }
 
   static instanceof(address: any): address is XrplAddress {
-    return address.constructor.platform === XrplAddress.platform;
+    return address?.constructor?.platform === XrplAddress.platform;
   }
 
   equals(other: XrplAddress | UniversalAddress): boolean {
