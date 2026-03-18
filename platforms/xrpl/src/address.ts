@@ -33,7 +33,6 @@ function isoToBytes(iso: string): Uint8Array {
 }
 
 export class XrplAddress implements Address {
-  static readonly byteSize = 20;
   static readonly platform = _platform;
   readonly type: string = "Native";
 
@@ -104,9 +103,8 @@ export class XrplAddress implements Address {
   // UniversalAddress is a 32-byte canonical representation used by Wormhole contracts
   // to identify addresses/tokens across chains. Each format is converted as follows:
   //   - account: 20-byte account ID (from decodeAccountID) left-zero-padded to 32 bytes
-  //   - mpt: 24-byte issuance ID (hex decoded) left-zero-padded to 32 bytes
-  //   - iou: 40 bytes of data (20 code + 20 issuer) exceeds 32 bytes, so we SHA-256
-  //     hash the full identifier string (same approach as the Stacks platform)
+  //   - iou/mpt: SHA-256 hash of a domain-prefixed canonical form to avoid collisions
+  //     between formats (same hashing approach as the Stacks platform)
   toUniversalAddress(): UniversalAddress {
     switch (this.format) {
       case "account": {
@@ -115,14 +113,22 @@ export class XrplAddress implements Address {
         padded.set(accountId, UniversalAddress.byteSize - accountId.length);
         return new UniversalAddress(padded);
       }
-      case "mpt": {
-        const bytes = encoding.hex.decode(this.address);
-        const padded = new Uint8Array(UniversalAddress.byteSize);
-        padded.set(bytes, UniversalAddress.byteSize - bytes.length);
-        return new UniversalAddress(padded);
+      case "iou": {
+        // Normalize: encode the code to its 20-byte binary form then to uppercase hex,
+        // so 3-char ISO codes and their 40-char hex equivalents hash to the same value.
+        const { code, issuer } = XrplAddress.parseIou(this.address);
+        const codeBytes = IOU_STANDARD_CODE_REGEX.test(code)
+          ? isoToBytes(code)
+          : encoding.hex.decode(code);
+        const canonicalCode = encoding.hex.encode(codeBytes).toUpperCase();
+        return new UniversalAddress(`iou:${canonicalCode}.${issuer}`, "sha256");
       }
-      case "iou":
-        return new UniversalAddress(this.address, "sha256");
+      case "mpt": {
+        // Normalize hex to uppercase and add domain prefix to avoid
+        // collisions with account addresses that share the same byte range.
+        const canonical = this.address.toUpperCase();
+        return new UniversalAddress(`mpt:${canonical}`, "sha256");
+      }
     }
   }
 

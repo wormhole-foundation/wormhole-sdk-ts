@@ -127,9 +127,9 @@ describe("XRPL IOU Token Identifier Tests", () => {
     const ua = address.toUniversalAddress();
     const bytes = ua.toUint8Array();
     expect(bytes.length).toBe(32);
-    // Verified via: crypto.createHash("sha256").update("FOO.rBa2jdUu8S2ZzaCJv8y1Lx9Pdrns51hJj").digest("hex")
+    // Verified via: crypto.createHash("sha256").update("iou:000000000000000000000000464F4F0000000000.rBa2jdUu8S2ZzaCJv8y1Lx9Pdrns51hJj").digest("hex")
     expect(Buffer.from(bytes).toString("hex")).toBe(
-      "e5272030b636fdd3d2ea2d7309fcb2e0f84fac61887393be9835446839ec35e9",
+      "bd62b8d75492c4278e9637926249944208a208041ae6a1c107efca4e01bb0ec7",
     );
   });
 
@@ -193,15 +193,15 @@ describe("XRPL MPT Token Identifier Tests", () => {
     expect(Buffer.from(bytes).toString("hex")).toBe(MPT_ID.toLowerCase());
   });
 
-  it("toUniversalAddress left-zero-pads to 32 bytes", () => {
+  it("toUniversalAddress produces the correct 32-byte sha256 hash", () => {
     const address = new XrplAddress(MPT_ID);
     const universal = address.toUniversalAddress();
     const bytes = universal.toUint8Array();
     expect(bytes.length).toBe(32);
-    // First 8 bytes should be zero padding (32 - 24 = 8)
-    expect(bytes.slice(0, 8)).toEqual(new Uint8Array(8));
-    // Last 24 bytes should be the decoded issuance ID
-    expect(Buffer.from(bytes.slice(8)).toString("hex")).toBe(MPT_ID.toLowerCase());
+    // Verified via: crypto.createHash("sha256").update("mpt:00EF0C086C1B25B6A159B32B05B9AE9BE1D6C960951A644F").digest("hex")
+    expect(Buffer.from(bytes).toString("hex")).toBe(
+      "3505f691c008fc399f9cecdccb6af3e4df93303d14b0d5c3661ac3ce351b4aa5",
+    );
   });
 
   it("equals returns true for same MPT ID", () => {
