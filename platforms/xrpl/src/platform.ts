@@ -48,8 +48,8 @@ export class XrplPlatform<N extends Network>
   }
 
   override getRpc<C extends XrplChains>(chain: C): Client {
-    const rpcUrl = this.config[chain]!.rpc;
-    return new Client(rpcUrl);
+    const chainConfig = this.config[chain]!;
+    return new Client(chainConfig.rpc, chainConfig.httpHeaders ? { headers: chainConfig.httpHeaders } : undefined);
   }
 
   override getChain<C extends XrplChains>(

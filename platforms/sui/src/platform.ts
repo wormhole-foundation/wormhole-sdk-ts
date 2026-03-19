@@ -18,7 +18,7 @@ import {
   networkPlatformConfigs,
 } from "@wormhole-foundation/sdk-connect";
 
-import { PaginatedCoins, SuiClient } from "@mysten/sui/client";
+import { PaginatedCoins, SuiClient, SuiHTTPTransport } from "@mysten/sui/client";
 import { SuiAddress } from "./address.js";
 import { SuiChain } from "./chain.js";
 import { SUI_COIN } from "./constants.js";
@@ -41,7 +41,18 @@ export class SuiPlatform<N extends Network>
   }
 
   getRpc<C extends SuiChains>(chain: C): SuiClient {
-    if (chain in this.config) return new SuiClient({ url: this.config[chain]!.rpc });
+    if (chain in this.config) {
+      const chainConfig = this.config[chain]!;
+      if (chainConfig.httpHeaders) {
+        return new SuiClient({
+          transport: new SuiHTTPTransport({
+            url: chainConfig.rpc,
+            rpc: { headers: chainConfig.httpHeaders },
+          }),
+        });
+      }
+      return new SuiClient({ url: chainConfig.rpc });
+    }
     throw new Error("No configuration available for chain: " + chain);
   }
 
