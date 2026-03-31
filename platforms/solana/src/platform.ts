@@ -61,8 +61,16 @@ export class SolanaPlatform<N extends Network>
       disableRetryOnRateLimit: true,
     },
   ): Connection {
-    if (chain in this.config)
-      return new Connection(this.config[chain]!.rpc, config);
+    if (chain in this.config) {
+      const chainConfig = this.config[chain]!;
+      if (chainConfig.httpHeaders) {
+        config = {
+          ...config,
+          httpHeaders: { ...chainConfig.httpHeaders, ...config.httpHeaders },
+        };
+      }
+      return new Connection(chainConfig.rpc, config);
+    }
     throw new Error('No configuration available for chain: ' + chain);
   }
 

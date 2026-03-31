@@ -173,6 +173,8 @@ export type ChainConfig<N extends Network, C extends Chain> = {
    * Rpc address for this chain
    */
   rpc: string;
+  /** Custom HTTP headers to include with RPC requests (e.g. { Origin: "https://myapp.com" }) */
+  httpHeaders?: Record<string, string>;
   tokenMap?: ChainTokens;
   wrappedNative?: Token;
   explorer?: explorer.ExplorerSettings;

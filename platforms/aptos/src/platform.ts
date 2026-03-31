@@ -40,8 +40,15 @@ export class AptosPlatform<N extends Network>
 
   getRpc<C extends AptosChains>(chain: C): Aptos {
     if (chain in this.config) {
+      const chainConfig = this.config[chain]!;
       const network = this.network === "Mainnet" ? AptosNetwork.MAINNET : AptosNetwork.TESTNET;
-      const config = new AptosConfig({ fullnode: this.config[chain]!.rpc, network });
+      const config = new AptosConfig({
+        fullnode: chainConfig.rpc,
+        network,
+        ...(chainConfig.httpHeaders && {
+          clientConfig: { HEADERS: chainConfig.httpHeaders },
+        }),
+      });
       return new Aptos(config);
     }
     throw new Error("No configuration available for chain: " + chain);

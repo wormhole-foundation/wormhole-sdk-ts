@@ -22,7 +22,7 @@ import {
 } from '@wormhole-foundation/sdk-connect';
 
 import type { Provider } from 'ethers';
-import { JsonRpcProvider } from 'ethers';
+import { FetchRequest, JsonRpcProvider } from 'ethers';
 import * as ethers_contracts from './ethers-contracts/index.js';
 
 import { EvmAddress, EvmZeroAddress } from './address.js';
@@ -55,8 +55,15 @@ export class EvmPlatform<N extends Network>
     }
 
     if (chain in this.config && this.config[chain]!.rpc) {
+      const chainConfig = this.config[chain]!;
+      let connection: string | FetchRequest = chainConfig.rpc;
+      if (chainConfig.httpHeaders) {
+        connection = new FetchRequest(chainConfig.rpc);
+        for (const [k, v] of Object.entries(chainConfig.httpHeaders))
+          connection.setHeader(k, v);
+      }
       const provider = new JsonRpcProvider(
-        this.config[chain]!.rpc,
+        connection,
         nativeChainIds.networkChainToNativeChainId.get(this.network, chain),
         {
           staticNetwork: true,
