@@ -209,7 +209,7 @@ export function buildConfig<N extends Network>(n: N): ChainsConfig<N, Platform> 
         finalityThreshold: finality.finalityThreshold.get(c) ?? 0,
         blockTime: finality.blockTime.get(c) ?? 0,
         contracts: getContracts(n, c),
-        nativeTokenDecimals: decimals.nativeDecimals(platform),
+        nativeTokenDecimals: decimals.nativeDecimalOverrides.get(c) ?? decimals.nativeDecimals(platform),
         nativeChainId,
         tokenMap,
         wrappedNative,
