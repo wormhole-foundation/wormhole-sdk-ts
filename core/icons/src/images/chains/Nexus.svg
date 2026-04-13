@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 432 496.8">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: url(#radial-gradient-5);
+      }
+
+      .cls-2 {
+        fill: url(#radial-gradient-4);
+      }
+
+      .cls-3 {
+        fill: url(#radial-gradient-3);
+      }
+
+      .cls-4 {
+        fill: url(#radial-gradient-2);
+      }
+
+      .cls-5 {
+        fill: url(#radial-gradient);
+      }
+
+      .cls-6 {
+        fill: url(#linear-gradient);
+      }
+    </style>
+    <radialGradient id="radial-gradient" cx="193.96" cy="226.35" fx="193.96" fy="226.35" r="218.98" gradientTransform="translate(21.93 22.07)" gradientUnits="userSpaceOnUse">
+      <stop offset=".1" stop-color="#666766"/>
+      <stop offset=".63" stop-color="#454545"/>
+      <stop offset="1" stop-color="#333"/>
+    </radialGradient>
+    <radialGradient id="radial-gradient-2" cx="191.47" cy="221.38" fx="191.47" fy="221.38" r="184.92" gradientTransform="translate(21.93 22.07)" gradientUnits="userSpaceOnUse">
+      <stop offset=".1" stop-color="#e7e7e6"/>
+      <stop offset=".28" stop-color="#d3d3d2"/>
+      <stop offset=".76" stop-color="#a3a3a3"/>
+      <stop offset="1" stop-color="#919191"/>
+    </radialGradient>
+    <linearGradient id="linear-gradient" x1=".02" y1="248.4" x2="216" y2="248.4" gradientUnits="userSpaceOnUse">
+      <stop offset=".1" stop-color="#dbdada"/>
+      <stop offset="1" stop-color="#fff"/>
+    </linearGradient>
+    <radialGradient id="radial-gradient-3" cx="191.47" cy="226.35" fx="191.47" fy="226.35" r="218.92" gradientTransform="translate(21.93 22.07)" gradientUnits="userSpaceOnUse">
+      <stop offset=".1" stop-color="#4d4d4d"/>
+      <stop offset=".53" stop-color="#383838"/>
+      <stop offset="1" stop-color="#262626"/>
+    </radialGradient>
+    <radialGradient id="radial-gradient-4" cx="188.99" cy="228.83" fx="188.99" fy="228.83" r="218.58" gradientTransform="translate(21.93 22.07)" gradientUnits="userSpaceOnUse">
+      <stop offset=".1" stop-color="#e6e6e5"/>
+      <stop offset=".49" stop-color="#a8a8a7"/>
+      <stop offset=".83" stop-color="#787978"/>
+      <stop offset="1" stop-color="#666766"/>
+    </radialGradient>
+    <radialGradient id="radial-gradient-5" cx="191.47" cy="228.84" fx="191.47" fy="228.84" r="218.17" gradientTransform="translate(21.93 22.07)" gradientUnits="userSpaceOnUse">
+      <stop offset=".1" stop-color="#fff"/>
+      <stop offset=".14" stop-color="#fbfbfb"/>
+      <stop offset=".72" stop-color="#cbcbcb"/>
+      <stop offset="1" stop-color="#b9b9b9"/>
+    </radialGradient>
+  </defs>
+  <polygon class="cls-5" points="216 248.4 432 372.6 432 372.6 432 124.2 216 248.4"/>
+  <polygon class="cls-4" points="216 248.4 216 0 216 0 0 124.2 216 248.4"/>
+  <polygon class="cls-6" points=".02 124.21 .02 372.59 216 248.4 216 248.4 216 248.4 .02 124.21"/>
+  <polygon class="cls-3" points="216 248.4 216 248.4 216 248.4 216 248.4 216 248.4 216 496.8 216 496.8 432 372.6 216 248.4"/>
+  <polygon class="cls-2" points="216 248.4 216 248.4 432 124.2 432 124.2 216 0 216 248.4"/>
+  <polygon class="cls-1" points="216 496.8 216 248.4 .02 372.59 .02 372.59 0 372.6 0 372.6 216 496.8"/>
+</svg>
