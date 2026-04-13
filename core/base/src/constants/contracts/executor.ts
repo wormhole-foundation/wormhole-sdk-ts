@@ -59,5 +59,7 @@ export const executorContracts = [[
     ["XRPLEVM",         "0x4d9525D94D275dEB495b7C8840b154Ae04cfaC2A"],
     ["Mezo",            "0x0f9b8E144Cc5C5e7C0073829Afd30F26A50c5606"],
     ["ZeroGravity",     "0x7C43825EeB76DF7aAf3e1D2e8f684d4876F0CC05"],
+    ["Tempo",           "0xA3640464E5543182E5F587f346B6Ac1E604d1625"],
+    ["Nexus",           "0xc4b1A023A14d62791ca8C1216575839a0Bd98Ecb"],
   ]],
 ] as const satisfies MapLevels<[Network, Chain, string]>;

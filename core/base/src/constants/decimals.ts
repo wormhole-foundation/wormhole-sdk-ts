@@ -1,5 +1,6 @@
 import type { MapLevel } from "./../utils/index.js";
 import { constMap } from "./../utils/index.js";
+import type { Chain } from "./chains.js";
 import type { Platform } from "./platforms.js";
 
 // prettier-ignore
@@ -18,3 +19,12 @@ const nativeDecimalEntries = [
 
 /** Number of decimals for the native token on a given platform */
 export const nativeDecimals = constMap(nativeDecimalEntries);
+
+// prettier-ignore
+// Chain-specific overrides for native token decimals (takes precedence over platform default)
+const nativeDecimalOverrideEntries = [
+  ["Tempo", 6], // pathUSD native token
+] as const satisfies MapLevel<Chain, number>;
+
+/** Chain-specific native token decimal overrides */
+export const nativeDecimalOverrides = constMap(nativeDecimalOverrideEntries);

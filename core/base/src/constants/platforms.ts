@@ -45,6 +45,8 @@ const platformAndChainsEntries = [[
     "MegaETH",
     "MonadTestnet",
     "ZeroGravity",
+    "Tempo",
+    "Nexus",
   ]], [
   "Solana", [
     "Solana",
