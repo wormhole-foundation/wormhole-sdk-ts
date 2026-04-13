@@ -99,6 +99,7 @@ export const coreBridgeContracts = [[
     ["MonadTestnet",    "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
     ["ZeroGravity",     "0x059560c0D626bdB982454b5EBd65DC8E7cF7973c"],
     ["Stacks",          "ST37PDDGEA78QSPSBZM1ZHPCZV9GKAPDFHA32RWY8"],
+    ["Tempo",           "0xbebdb6C8ddC678FfA9f8748f85C815C556Dd8ac6"],
     ["Nexus",           "0x194B123c5E96B9b2E49763619985790Dc241CAC0"]
   ]], [
   "Devnet", [
