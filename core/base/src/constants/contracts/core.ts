@@ -46,6 +46,7 @@ export const coreBridgeContracts = [[
     ["Moca",        "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
     ["MegaETH",     "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
     ["ZeroGravity", "0xC699482c17d43b7D5349F2D3f58d61fEFA972B8c"],
+    ["Tempo",       "0xbebdb6C8ddC678FfA9f8748f85C815C556Dd8ac6"]
   ]], [
   "Testnet", [
     ["Solana",          "3u8hJUVTA4jH1wYAyUur7FFZVQ8H635K3tSHHF4ssjQ5"],
@@ -99,7 +100,8 @@ export const coreBridgeContracts = [[
     ["MonadTestnet",    "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
     ["ZeroGravity",     "0x059560c0D626bdB982454b5EBd65DC8E7cF7973c"],
     ["Stacks",          "ST37PDDGEA78QSPSBZM1ZHPCZV9GKAPDFHA32RWY8"],
-    ["Nexus",           "0x194B123c5E96B9b2E49763619985790Dc241CAC0"]
+    ["Nexus",           "0x194B123c5E96B9b2E49763619985790Dc241CAC0"],
+    ["Tempo",           "0xa29E8c21924834E6249bCE1FD733f24eC492018c"]
   ]], [
   "Devnet", [
     ["Solana",    "Bridge1p5gheXUvJ6jGWGeCsgPKgnE3YgdGKRVCMY9o"],
