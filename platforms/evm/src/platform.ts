@@ -155,25 +155,45 @@ export class EvmPlatform<N extends Network>
     return balances;
   }
 
+  // Chains with custom transaction types that ethers.js can't parse when
+  // fetching full blocks (used by txRes.wait() for replacement detection).
+  // For these chains, we use waitForTransaction() which polls
+  // getTransactionReceipt() directly, bypassing block fetching.
+  static readonly CHAINS_WITH_CUSTOM_TX_TYPES: Set<string> = new Set([
+    'Celo',
+    'Tempo',
+  ]);
+
   static async sendWait(
     chain: Chain,
     rpc: Provider,
     stxns: SignedTx[],
   ): Promise<TxHash[]> {
     const txhashes: TxHash[] = [];
+
     for (const stxn of stxns) {
       const txRes = await rpc.broadcastTransaction(stxn);
       txhashes.push(txRes.hash);
 
-      if (chain === 'Celo') {
-        console.error('TODO: override celo block fetching');
+      if (EvmPlatform.CHAINS_WITH_CUSTOM_TX_TYPES.has(chain)) {
+        // txRes.wait() fetches full blocks for replacement detection, which
+        // ethers.js can't parse for chains with custom tx types (Celo, Tempo).
+        // waitForTransaction() polls getTransactionReceipt() directly.
+        const timeoutMs = 120_000;
+        const receipt = await rpc.waitForTransaction(txRes.hash, 1, timeoutMs);
+        if (receipt === null)
+          throw new Error(
+            `Transaction was not mined within ${timeoutMs / 1_000}s: ${txRes.hash}`,
+          );
+        if (receipt.status !== 1)
+          throw new Error(`Transaction reverted: ${txRes.hash}`);
         continue;
       }
 
-      // Wait for confirmation
       const txReceipt = await txRes.wait();
       if (txReceipt === null) throw new Error('Received null TxReceipt');
     }
+
     return txhashes;
   }
 
