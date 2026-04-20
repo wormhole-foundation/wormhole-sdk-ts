@@ -56,6 +56,9 @@ class GoldRushClient {
   private customUrl?: string;
 
   constructor(options: { key?: string; url?: string }) {
+    if (!options.key && !options.url) {
+      throw new Error("GoldRushClient requires either an API key or a custom URL");
+    }
     this.key = options.key;
     this.customUrl = options.url;
   }
