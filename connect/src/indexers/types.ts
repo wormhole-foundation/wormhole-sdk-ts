@@ -4,11 +4,19 @@ import type GoldRushClient from "./GoldRushClient.js";
 
 export interface IndexerConfig {
   goldRush?: {
-    apiKey: string;
+    /** API key for direct GoldRush/Covalent access. Not needed when `url` is set. */
+    apiKey?: string;
+    /** Custom base URL (e.g. a proxy that injects the key server-side).
+     *  When set, requests go to `${url}/v1/{chain}/…` with no key param. */
+    url?: string;
     timeoutMs: number;
   };
   alchemy?: {
-    apiKey: string;
+    /** API key for direct Alchemy access. Not needed when `url` is set. */
+    apiKey?: string;
+    /** Custom base URL (e.g. a proxy that injects the key server-side).
+     *  When set, requests go to `${url}/{chain}` with no key in the path. */
+    url?: string;
     timeoutMs: number;
   };
 }

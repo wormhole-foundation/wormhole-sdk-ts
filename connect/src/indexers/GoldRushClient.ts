@@ -52,10 +52,15 @@ const GOLD_RUSH_CHAINS: Record<Network, Partial<Record<Chain, string>>> = {
 };
 
 class GoldRushClient {
-  private key: string;
+  private key?: string;
+  private customUrl?: string;
 
-  constructor(key: string) {
-    this.key = key;
+  constructor(options: { key?: string; url?: string }) {
+    if (!options.key && !options.url) {
+      throw new Error("GoldRushClient requires either an API key or a custom URL");
+    }
+    this.key = options.key;
+    this.customUrl = options.url;
   }
 
   supportsChain(network: Network, chain: Chain) {
@@ -75,10 +80,11 @@ class GoldRushClient {
       throw new Error("Chain not supported by GoldRush indexer");
     }
 
-    const response = await fetch(
-      `https://api.covalenthq.com/v1/${endpoint}/address/${walletAddr}/balances_v2/?key=${this.key}`,
-      { signal },
-    );
+    const fetchUrl = this.customUrl
+      ? `${this.customUrl}/v1/${endpoint}/address/${walletAddr}/balances_v2/`
+      : `https://api.covalenthq.com/v1/${endpoint}/address/${walletAddr}/balances_v2/?key=${this.key}`;
+
+    const response = await fetch(fetchUrl, { signal });
 
     if (!response.ok) {
       throw new Error(`GoldRush API request failed with status ${response.status}`);
