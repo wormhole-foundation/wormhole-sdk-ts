@@ -35,10 +35,12 @@ const RPC_ID_TOKEN_BALANCES = 1;
 const RPC_ID_NATIVE_BALANCE = 2;
 
 class AlchemyClient {
-  private key: string;
+  private key?: string;
+  private customUrl?: string;
 
-  constructor(key: string) {
-    this.key = key;
+  constructor(options: { key?: string; url?: string }) {
+    this.key = options.key;
+    this.customUrl = options.url;
   }
 
   supportsChain(network: Network, chain: Chain) {
@@ -51,7 +53,9 @@ class AlchemyClient {
     requests: Array<{ method: string; params: any[]; id: number }>,
     signal?: AbortSignal,
   ): Promise<Array<{ id: number; result: any }>> {
-    const baseUrl = `https://${endpoint}.g.alchemy.com/v2/${this.key}`;
+    const baseUrl = this.customUrl
+      ? `${this.customUrl}/${endpoint}`
+      : `https://${endpoint}.g.alchemy.com/v2/${this.key}`;
 
     const response = await fetch(baseUrl, {
       method: "POST",

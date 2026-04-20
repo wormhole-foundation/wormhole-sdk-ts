@@ -62,13 +62,19 @@ export async function getWalletBalances(
   const clientConfigs: Array<IndexerClientConfig> = [
     {
       ...commonConfig,
-      client: goldRush?.apiKey ? new GoldRushClient(goldRush.apiKey) : undefined,
+      client:
+        goldRush?.apiKey || goldRush?.url
+          ? new GoldRushClient({ key: goldRush.apiKey, url: goldRush.url })
+          : undefined,
       name: "Gold Rush",
       timeoutMs: goldRush?.timeoutMs,
     },
     {
       ...commonConfig,
-      client: alchemy?.apiKey ? new AlchemyClient(alchemy.apiKey) : undefined,
+      client:
+        alchemy?.apiKey || alchemy?.url
+          ? new AlchemyClient({ key: alchemy.apiKey, url: alchemy.url })
+          : undefined,
       name: "Alchemy",
       timeoutMs: alchemy?.timeoutMs,
     },
