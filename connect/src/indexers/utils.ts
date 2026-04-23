@@ -8,7 +8,7 @@ export function parseBalance(balance: string | undefined): bigint | null {
 
     const trimmedBalance = balance.trim();
     if (trimmedBalance === "0x") {
-      return null;
+      return 0n;
     }
     return encoding.bignum.decode(trimmedBalance);
   } catch {
