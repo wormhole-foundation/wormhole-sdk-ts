@@ -5,7 +5,12 @@ export function parseBalance(balance: string | undefined): bigint | null {
     if (!balance) {
       return null;
     }
-    return encoding.bignum.decode(balance.trim());
+
+    const trimmedBalance = balance.trim();
+    if (trimmedBalance === "0x") {
+      return null;
+    }
+    return encoding.bignum.decode(trimmedBalance);
   } catch {
     return null;
   }
