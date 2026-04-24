@@ -1,6 +1,10 @@
 import type { Chain, Network, Platform } from "@wormhole-foundation/sdk-base";
 import { circle, executor } from "@wormhole-foundation/sdk-base";
-import type { ChainConfig, ChainsConfig } from "@wormhole-foundation/sdk-definitions";
+import type {
+  CapabilitiesResponse,
+  ChainConfig,
+  ChainsConfig,
+} from "@wormhole-foundation/sdk-definitions";
 import { buildConfig } from "@wormhole-foundation/sdk-definitions";
 
 export const DEFAULT_TASK_TIMEOUT = 60 * 1000; // 1 minute in milliseconds
@@ -10,6 +14,10 @@ export type WormholeConfig<N extends Network = Network, P extends Platform = Pla
   circleAPI: string;
   executorAPI: string;
   chains: ChainsConfig<N, P>;
+  executor?: {
+    /** Override the default capabilities fetcher (e.g. to cache or use a custom endpoint). */
+    getCapabilities?: (network: Network) => Promise<CapabilitiesResponse>;
+  };
 };
 
 export const CONFIG = {
@@ -47,6 +55,8 @@ export function networkPlatformConfigs<N extends Network, P extends Platform>(
 type RecursivePartial<T> = {
   [P in keyof T]?: T[P] extends (infer U)[]
     ? RecursivePartial<U>[]
+    : T[P] extends (...args: any[]) => any
+    ? T[P]
     : T[P] extends object | undefined
     ? RecursivePartial<T[P]>
     : T[P];
