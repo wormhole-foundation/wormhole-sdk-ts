@@ -77,7 +77,7 @@ const finalityThresholds = [
   ["Noble",      0],
   ["Stacks",     240], // tied to BTC finality
   ["Moca",       0],
-  ["MegaETH",    4096],
+  ["MegaETH",    2100], // ~35min finality (observed)
   ["ZeroGravity",4096],
   ["Tempo",      1],
   ["Nexus",      1],
