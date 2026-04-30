@@ -2,6 +2,7 @@ import type { Address} from "@wormhole-foundation/sdk-connect";
 import { UniversalAddress, registerNative } from "@wormhole-foundation/sdk-connect";
 import type { AnyBtcAddress } from "./types.js";
 import { _platform } from "./types.js";
+import { isValidBtcAddress } from "./validation.js";
 
 /**
  * Minimal native Bitcoin address.
@@ -72,7 +73,7 @@ export class BtcAddress implements Address {
   }
 
   static isValidAddress(address: string): boolean {
-    return typeof address === "string" && address.trim().length > 0;
+    return isValidBtcAddress(address);
   }
 
   static instanceof(address: any): address is BtcAddress {
