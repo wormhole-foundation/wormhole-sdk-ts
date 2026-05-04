@@ -37,7 +37,6 @@ const finalityThresholds = [
   ["Worldchain", 512],
   ["Polygon",    2],  // ~5s finality
   // Single block finality
-  ["Fantom",     1],
   ["Celo",       1],
   ["Moonbeam",   1],
   // Instant finality
@@ -110,7 +109,6 @@ const blockTimeMilliseconds = [
   ["Cosmoshub",         5_000],
   ["Ethereum",         15_000],
   ["Evmos",             2_000],
-  ["Fantom",            2_500],
   ["Holesky",          15_000],
   ["HyperEVM",          1_000],
   ["HyperCore",         1_000],

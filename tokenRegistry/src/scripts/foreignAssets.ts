@@ -35,7 +35,6 @@ const supportedChains: Chain[] = [
   "Polygon",
   "Celo",
   "Moonbeam",
-  "Fantom",
   "Avalanche",
   "Bsc",
   "Optimism",

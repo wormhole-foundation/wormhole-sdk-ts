@@ -11,7 +11,6 @@ const rpcConfig = [[
     ["Polygon",     "https://polygon-bor-rpc.publicnode.com"],
     ["Bsc",         "https://bsc-rpc.publicnode.com"],
     ["Avalanche",   "https://avalanche-c-chain-rpc.publicnode.com"],
-    ["Fantom",      "https://rpcapi.fantom.network"],
     ["Celo",        "https://forno.celo.org"],
     ["Moonbeam",    "https://moonbeam-rpc.publicnode.com"],
     ["Sui",         "https://rpc.mainnet.sui.io"],
@@ -60,7 +59,6 @@ const rpcConfig = [[
   "Testnet", [
     ["Bsc",             "https://data-seed-prebsc-1-s3.binance.org:8545"],
     ["Avalanche",       "https://api.avax-test.network/ext/bc/C/rpc"],
-    ["Fantom",          "https://rpc.testnet.fantom.network"],
     ["Celo",            "https://alfajores-forno.celo-testnet.org"],
     ["Solana",          "https://api.devnet.solana.com"],
     ["Moonbeam",        "https://rpc.api.moonbase.moonbeam.network"],

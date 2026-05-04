@@ -28,7 +28,6 @@ const GOLD_RUSH_CHAINS: Record<Network, Partial<Record<Chain, string>>> = {
     Moonbeam: "moonbeam-mainnet",
     Mantle: "mantle-mainnet",
     Celo: "celo-mainnet",
-    Fantom: "fantom-mainnet",
   },
   Testnet: {
     Ethereum: "eth-sepolia",
@@ -44,7 +43,6 @@ const GOLD_RUSH_CHAINS: Record<Network, Partial<Record<Chain, string>>> = {
     Linea: "linea-sepolia-testnet",
     MonadTestnet: "monad-testnet",
     Mantle: "mantle-sepolia-testnet",
-    Fantom: "fantom-testnet",
   },
   Devnet: {},
 };
