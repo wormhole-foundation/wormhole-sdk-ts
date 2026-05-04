@@ -32,7 +32,6 @@ const finalityThresholds = [
   ["Optimism",   512],
   ["Base",       512],
   ["Arbitrum",   4096], // TODO: validate, this is inferred from vaa metrics timing
-  ["Xlayer",     300],
   ["Worldchain", 512],
   ["Polygon",    2],  // ~5s finality
   // Single block finality
@@ -128,7 +127,6 @@ const blockTimeMilliseconds = [
   ["Solana",              400],
   ["Sui",               3_000],
   ["Unichain",          1_000],
-  ["Xlayer",            3_000],
   ["Worldchain",        2_000],
   ["Ink",               1_000],
   ["Wormchain",         5_000],
