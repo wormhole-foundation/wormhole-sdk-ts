@@ -33,7 +33,6 @@ const finalityThresholds = [
   ["Base",       512],
   ["Arbitrum",   4096], // TODO: validate, this is inferred from vaa metrics timing
   ["Xlayer",     300],
-  ["Scroll",     999], // ~50min finality
   ["Mantle",     512],
   ["Worldchain", 512],
   ["Polygon",    2],  // ~5s finality
@@ -128,7 +127,6 @@ const blockTimeMilliseconds = [
   ["Osmosis",           6_000],
   ["Polygon",           2_000],
   ["PolygonSepolia",    2_000],
-  ["Scroll",            3_000],
   ["Sei",                 400],
   ["Sepolia",          15_000],
   ["Solana",              400],

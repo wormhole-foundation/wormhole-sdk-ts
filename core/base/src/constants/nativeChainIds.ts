@@ -41,7 +41,6 @@ const chainNetworkNativeChainIdEntries = [
       ["Noble",       "noble-1"],
       ["Xlayer",      196n],
       ["Mantle",      5000n],
-      ["Scroll",      534352n],
       ["Linea",       59144n],
       ["Berachain",   80094n],
       ["Seievm",      1329n],
@@ -103,7 +102,6 @@ const chainNetworkNativeChainIdEntries = [
       ["Seda",            "seda-1-testnet"],
       ["Noble",           "grand-1"],
       ["Mantle",          5003n], // Sepolia testnet
-      ["Scroll",          534351n],
       ["Berachain",       80069n], // Testnet v3
       ["Seievm",          1328n],
       ["Unichain",        1301n],
