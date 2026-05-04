@@ -28,7 +28,6 @@ const chainNetworkNativeChainIdEntries = [
       ["Bsc",         56n],
       ["Celo",        42220n],
       ["Ethereum",    1n],
-      ["Fantom",      250n],
       ["Klaytn",      8217n],
       ["Moonbeam",    1284n],
       ["Optimism",    10n],
@@ -86,7 +85,6 @@ const chainNetworkNativeChainIdEntries = [
       ["Bsc",             97n],
       ["Celo",            44787n], //alfajores
       ["Ethereum",        5n], //goerli
-      ["Fantom",          4002n],
       ["Klaytn",          1001n], //baobab
       ["Moonbeam",        1287n], //moonbase alpha
       ["Optimism",        420n],

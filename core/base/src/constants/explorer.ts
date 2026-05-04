@@ -60,14 +60,6 @@ const explorerConfig = [[
         account: "address/",
       },
     }], [
-    "Fantom", {
-      name: "FTMscan",
-      baseUrl: "https://ftmscan.com/",
-      endpoints: {
-        tx: "tx/",
-        account: "address/",
-      },
-    }], [
     "Celo", {
       name: "Celo Explorer",
       baseUrl: "https://explorer.celo.org/mainnet/",
@@ -257,14 +249,6 @@ const explorerConfig = [[
     "Avalanche", {
       name: "Snowtrace",
       baseUrl: "https://testnet.snowtrace.io/",
-      endpoints: {
-        tx: "tx/",
-        account: "address/",
-      },
-    }], [
-    "Fantom", {
-      name: "FTMscan",
-      baseUrl: "https://testnet.ftmscan.com/",
       endpoints: {
         tx: "tx/",
         account: "address/",

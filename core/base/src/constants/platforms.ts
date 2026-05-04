@@ -11,7 +11,6 @@ const platformAndChainsEntries = [[
     "Bsc",
     "Celo",
     "Ethereum",
-    "Fantom",
     "Klaytn",
     "Moonbeam",
     "Optimism",

@@ -110,15 +110,6 @@ const mainnetTokenEntries = [
         },
       ],
       [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 18,
-          address: "0x4cD2690d86284e044cb63E60F1EB218a825a7e92",
-          original: "Fantom",
-        },
-      ],
-      [
         "CELO",
         {
           symbol: "CELO",
@@ -396,15 +387,6 @@ const mainnetTokenEntries = [
           decimals: 6,
           address: "0xc88Dc63bf0c8c8198C97Db0945E3eF25Ca89A8e4",
           original: "Avalanche",
-        },
-      ],
-      [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 18,
-          address: "0xbF8413EE8612E0E4f66Aa63B5ebE27f3C5883d47",
-          original: "Fantom",
         },
       ],
       [
@@ -693,15 +675,6 @@ const mainnetTokenEntries = [
           decimals: 6,
           address: "0xAEA5CC14DefbC1b845FDE729E563B717Ee6825ae",
           original: "Avalanche",
-        },
-      ],
-      [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 18,
-          address: "0x3726831304D77f585f1Aca9d9841cc3Ef80dAa62",
-          original: "Fantom",
         },
       ],
       [
@@ -1010,15 +983,6 @@ const mainnetTokenEntries = [
         },
       ],
       [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 18,
-          address: "0xd19abc09B7b36F7558929b97a866f499a26c2f83",
-          original: "Fantom",
-        },
-      ],
-      [
         "CELO",
         {
           symbol: "CELO",
@@ -1164,262 +1128,6 @@ const mainnetTokenEntries = [
     ],
   ],
   [
-    "Fantom",
-    [
-      [
-        "WETH",
-        {
-          symbol: "WETH",
-          decimals: 18,
-          address: "0x2A126f043BDEBe5A0A9841c51915E562D9B07289",
-          original: "Ethereum",
-        },
-      ],
-      [
-        "USDCeth",
-        {
-          symbol: "USDC",
-          decimals: 6,
-          address: "0x2Ec752329c3EB419136ca5e4432Aa2CDb1eA23e6",
-          original: "Ethereum",
-        },
-      ],
-      [
-        "WBTC",
-        {
-          symbol: "WBTC",
-          decimals: 8,
-          address: "0x87e9E225aD8a0755B9958fd95BE43DD6A91FF3A7",
-          original: "Ethereum",
-        },
-      ],
-      [
-        "USDT",
-        {
-          symbol: "USDT",
-          decimals: 6,
-          address: "0x14BCb86aEed6a74D3452550a25D37f1c30AA0A66",
-          original: "Ethereum",
-        },
-      ],
-      [
-        "DAI",
-        {
-          symbol: "DAI",
-          decimals: 18,
-          address: "0xEE786D3D73Ea645365c7248E4e40eDba08B1169F",
-          original: "Ethereum",
-        },
-      ],
-      [
-        "WMATIC",
-        {
-          symbol: "WMATIC",
-          decimals: 18,
-          address: "0xb88A6064B1F3FF5B9AE4A82fFD52560b0dF9FBD3",
-          original: "Polygon",
-        },
-      ],
-      [
-        "USDCpolygon",
-        {
-          symbol: "USDC",
-          decimals: 6,
-          address: "0xB4DcfD221048a1Dad989D39456BBd87762c26F06",
-          original: "Polygon",
-        },
-      ],
-      [
-        "WBNB",
-        {
-          symbol: "WBNB",
-          decimals: 18,
-          address: "0xc033551e05907Ddd643AE14b6D4a9CA72BfF509B",
-          original: "Bsc",
-        },
-      ],
-      [
-        "USDCbnb",
-        {
-          symbol: "USDC",
-          decimals: 18,
-          address: "0x0FcbDAC44c67A43607D3E95886dB19871ADc985F",
-          original: "Bsc",
-        },
-      ],
-      [
-        "WAVAX",
-        {
-          symbol: "WAVAX",
-          decimals: 18,
-          address: "0x358CE030DC6116Cc296E8B9F002728e65459C146",
-          original: "Avalanche",
-        },
-      ],
-      [
-        "USDCavax",
-        {
-          symbol: "USDC",
-          decimals: 6,
-          address: "0xEfE7701cb2B80664385Be226d0300912CA92f66A",
-          original: "Avalanche",
-        },
-      ],
-      [
-        "FTM",
-        {
-          symbol: "FTM",
-          decimals: 18,
-          address: "native",
-          wrappedKey: "WFTM",
-        },
-      ],
-      [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 18,
-          address: "0x21be370d5312f44cb42ce377bc9b8a0cef1a4c83",
-        },
-      ],
-      [
-        "CELO",
-        {
-          symbol: "CELO",
-          decimals: 18,
-          address: "0xF432490C6c96C9d3bF523a499a1CEaFd8208A373",
-          original: "Celo",
-        },
-      ],
-      [
-        "WGLMR",
-        {
-          symbol: "WGLMR",
-          decimals: 18,
-          address: "0xBF227E92D6754EB4BFE26C40cb299ff2809Da45f",
-          original: "Moonbeam",
-        },
-      ],
-      [
-        "WSOL",
-        {
-          symbol: "WSOL",
-          decimals: 9,
-          address: "0xd99021C2A33e4Cf243010539c9e9b7c52E0236c1",
-          original: "Solana",
-        },
-      ],
-      [
-        "USDCsol",
-        {
-          symbol: "USDC",
-          decimals: 6,
-          address: "0xb8398DA4FB3BC4306B9D9d9d13d9573e7d0E299f",
-          original: "Solana",
-        },
-      ],
-      [
-        "SUI",
-        {
-          symbol: "SUI",
-          decimals: 9,
-          address: "0xC277423a21F6e32D886BF85Ef6cCB945d5D28347",
-          original: "Sui",
-        },
-      ],
-      [
-        "APT",
-        {
-          symbol: "APT",
-          decimals: 8,
-          address: "0x3Cd9162Ca5256b8E26A0e3Ad14CCfF7C0Da0F174",
-          original: "Aptos",
-        },
-      ],
-      [
-        "WETHarbitrum",
-        {
-          symbol: "WETH",
-          decimals: 18,
-          address: "0xE8367853A0823515D37b1538331B4704089becb4",
-          original: "Arbitrum",
-        },
-      ],
-      [
-        "USDCarbitrum",
-        {
-          symbol: "USDC",
-          decimals: 6,
-          address: "0x2228703672906fEe5eD681Ec28e42B4506b8c336",
-          original: "Arbitrum",
-        },
-      ],
-      [
-        "WETHoptimism",
-        {
-          symbol: "WETH",
-          decimals: 18,
-          address: "0xe8E8f941377A955bFA72880ec0dc2319dbC827a8",
-          original: "Optimism",
-        },
-      ],
-      [
-        "USDCoptimism",
-        {
-          symbol: "USDC",
-          decimals: 6,
-          address: "0x385b219f0C4fa2e84EfE5aaf9692a821C57B8248",
-          original: "Optimism",
-        },
-      ],
-      [
-        "WETHbase",
-        {
-          symbol: "WETH",
-          decimals: 18,
-          address: "0xd3365E7355230c78098b44B172eE27DAB95B041A",
-          original: "Base",
-        },
-      ],
-      [
-        "USDCbase",
-        {
-          symbol: "USDC",
-          decimals: 6,
-          address: "0xd9E4C283d8A49Dc3767A6F5a4dFdc1d0cEf21604",
-          original: "Base",
-        },
-      ],
-      [
-        "tBTC",
-        {
-          symbol: "tBTC",
-          decimals: 18,
-          address: "0xeE27799cF29D7F64647B92f47d543B382B49f83E",
-          original: "Ethereum",
-        },
-      ],
-      [
-        "WKLAY",
-        {
-          symbol: "WKLAY",
-          decimals: 18,
-          address: "0x787e2F3509583C0F03A339Be0826463C839CBE5E",
-          original: "Klaytn",
-        },
-      ],
-      [
-        "PYTH",
-        {
-          symbol: "PYTH",
-          decimals: 6,
-          address: "0x77ad3B2dA29FBd208F12c3C701E969F4422aAD79",
-          original: "Solana",
-        },
-      ],
-    ],
-  ],
-  [
     "Celo",
     [
       [
@@ -1528,15 +1236,6 @@ const mainnetTokenEntries = [
           decimals: 6,
           address: "0x62FFf2D2D1692D52eAf043AeeC727F7918d269D3",
           original: "Avalanche",
-        },
-      ],
-      [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 18,
-          address: "0xd1A342eE2210238233a347FEd61EE7Faf9f251ce",
-          original: "Fantom",
         },
       ],
       [
@@ -1804,15 +1503,6 @@ const mainnetTokenEntries = [
         },
       ],
       [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 18,
-          address: "0x609AedD990bf45926bca9E4eE988b4Fb98587D3A",
-          original: "Fantom",
-        },
-      ],
-      [
         "CELO",
         {
           symbol: "CELO",
@@ -2039,15 +1729,6 @@ const mainnetTokenEntries = [
           decimals: 6,
           address: "FHfba3ov5P3RjaiLVgh8FTv4oirxQDoVXuoUUDvHuXax",
           original: "Avalanche",
-        },
-      ],
-      [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 8,
-          address: "DRQBDBEWmwWGK13fRTLhSPzjbvMSUavhV6nW4RUH8W6T",
-          original: "Fantom",
         },
       ],
       [
@@ -2283,15 +1964,6 @@ const mainnetTokenEntries = [
           decimals: 6,
           address: "0xe596782fbaebef51ae99ffac8731aed98a80642b9dc193ed659c97fbc2cc0f84::coin::COIN",
           original: "Avalanche",
-        },
-      ],
-      [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 8,
-          address: "0x6081300950a4f1e2081580e919c210436a1bed49080502834950d31ee55a2396::coin::COIN",
-          original: "Fantom",
         },
       ],
       [
@@ -2542,15 +2214,6 @@ const mainnetTokenEntries = [
         },
       ],
       [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 8,
-          address: "0xd1aa2ff36a0e93e1b4e4fecdecf8bb95bc5de399061c5e84b515281f48718842::coin::T",
-          original: "Fantom",
-        },
-      ],
-      [
         "CELO",
         {
           symbol: "CELO",
@@ -2786,15 +2449,6 @@ const mainnetTokenEntries = [
           decimals: 6,
           address: "0xD83385fE100E20c269a5975D4Bf92525BcE09F87",
           original: "Avalanche",
-        },
-      ],
-      [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 18,
-          address: "0x936Fa2DE8380Dc5BF34C80F1BaD53a9f3630263B",
-          original: "Fantom",
         },
       ],
       [
@@ -3083,15 +2737,6 @@ const mainnetTokenEntries = [
           decimals: 6,
           address: "0x93e0FcbEd43CD6fC30DF00CcBD4669718dc74e77",
           original: "Avalanche",
-        },
-      ],
-      [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 18,
-          address: "0x7f7dcDb91930033a4Eb269196EBb6fd5f0644E4B",
-          original: "Fantom",
         },
       ],
       [
@@ -3392,15 +3037,6 @@ const mainnetTokenEntries = [
         },
       ],
       [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 18,
-          address: "0x0b0ecbe5C3995541876d27633B63296570FB34Af",
-          original: "Fantom",
-        },
-      ],
-      [
         "CELO",
         {
           symbol: "CELO",
@@ -3698,15 +3334,6 @@ const mainnetTokenEntries = [
         },
       ],
       [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 8,
-          address: "wormhole1e0cwfmla7exa578xddl87paxexw9ymwrzysfjms8c2mstxjkldlqn45jqa",
-          original: "Fantom",
-        },
-      ],
-      [
         "CELO",
         {
           symbol: "CELO",
@@ -3937,15 +3564,6 @@ const mainnetTokenEntries = [
         },
       ],
       [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 8,
-          address: "ibc/397DFE63D87F6940ECA583DFF5461E48BF0BA6554CBBE70278E307DDFDC8E9D5",
-          original: "Fantom",
-        },
-      ],
-      [
         "CELO",
         {
           symbol: "CELO",
@@ -4100,15 +3718,6 @@ const mainnetTokenEntries = [
           decimals: 6,
           address: "ibc/39913E647C3549D663B1ED7F0745E1779515170C5215B98B2C8410B4C073AD30",
           original: "Avalanche",
-        },
-      ],
-      [
-        "WFTM",
-        {
-          symbol: "WFTM",
-          decimals: 8,
-          address: "ibc/9EFE5F5D75A87197DD257BA7A96A3BCCEC9DB59D257C742FB5AA9D3DF612D476",
-          original: "Fantom",
         },
       ],
       [

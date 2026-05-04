@@ -40,11 +40,6 @@
 | Aurora | ManualCCTP | :no_entry_sign: | :no_entry_sign: |
 | Aurora | AutomaticCCTP | :no_entry_sign: | :no_entry_sign: |
 | Aurora | AutomaticPortico | :no_entry_sign: | :no_entry_sign: |
-| Fantom | ManualTokenBridge | :white_check_mark: | :white_check_mark: |
-| Fantom | AutomaticTokenBridge | :white_check_mark: | :white_check_mark: |
-| Fantom | ManualCCTP | :no_entry_sign: | :no_entry_sign: |
-| Fantom | AutomaticCCTP | :no_entry_sign: | :no_entry_sign: |
-| Fantom | AutomaticPortico | :no_entry_sign: | :no_entry_sign: |
 | Karura | ManualTokenBridge | :white_check_mark: | :white_check_mark: |
 | Karura | AutomaticTokenBridge | :no_entry_sign: | :no_entry_sign: |
 | Karura | ManualCCTP | :no_entry_sign: | :no_entry_sign: |

@@ -15,7 +15,6 @@ const chainIdAndChainEntries = [
   [    5, "Polygon"        ],
   [    6, "Avalanche"      ],
   [    8, "Algorand"       ],
-  [   10, "Fantom"         ],
   [   13, "Klaytn"         ],
   [   14, "Celo"           ],
   [   15, "Near"           ],
