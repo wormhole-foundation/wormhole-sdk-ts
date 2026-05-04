@@ -33,7 +33,6 @@ const finalityThresholds = [
   ["Base",       512],
   ["Arbitrum",   4096], // TODO: validate, this is inferred from vaa metrics timing
   ["Xlayer",     300],
-  ["Mantle",     512],
   ["Worldchain", 512],
   ["Polygon",    2],  // ~5s finality
   // Single block finality
@@ -115,7 +114,6 @@ const blockTimeMilliseconds = [
   ["Injective",         2_500],
   ["Klaytn",            1_000],
   ["Kujira",            3_000],
-  ["Mantle",            2_000],
   ["Moonbeam",         12_000],
   ["Monad",             1_000],
   ["MonadTestnet",      1_000],

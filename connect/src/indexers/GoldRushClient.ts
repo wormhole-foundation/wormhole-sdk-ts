@@ -26,7 +26,6 @@ const GOLD_RUSH_CHAINS: Record<Network, Partial<Record<Chain, string>>> = {
     Unichain: "unichain-mainnet",
     HyperEVM: "hyperevm-mainnet",
     Moonbeam: "moonbeam-mainnet",
-    Mantle: "mantle-mainnet",
     Celo: "celo-mainnet",
   },
   Testnet: {
@@ -42,7 +41,6 @@ const GOLD_RUSH_CHAINS: Record<Network, Partial<Record<Chain, string>>> = {
     Arbitrum: "arbitrum-sepolia",
     Linea: "linea-sepolia-testnet",
     MonadTestnet: "monad-testnet",
-    Mantle: "mantle-sepolia-testnet",
   },
   Devnet: {},
 };

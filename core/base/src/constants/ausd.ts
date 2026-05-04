@@ -12,7 +12,6 @@ const ausdContracts = [[
       ["Base", "0x00000000eFE302BEAA2b3e6e1b18d08D69a9012a"],
       ["Bsc", "0x00000000eFE302BEAA2b3e6e1b18d08D69a9012a"],
       ["Ethereum", "0x00000000eFE302BEAA2b3e6e1b18d08D69a9012a"],
-      ["Mantle", "0x00000000eFE302BEAA2b3e6e1b18d08D69a9012a"],
       ["Monad", "0x00000000eFE302BEAA2b3e6e1b18d08D69a9012a"],
       ["Plume", "0x00000000eFE302BEAA2b3e6e1b18d08D69a9012a"],
       ["Polygon", "0x00000000eFE302BEAA2b3e6e1b18d08D69a9012a"],
