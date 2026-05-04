@@ -29,7 +29,6 @@ const chainIdAndChainEntries = [
   [   29, "Btc"            ],
   [   30, "Base"           ],
   [   32, "Sei"            ],
-  [   37, "Xlayer"         ],
   [   38, "Linea"          ],
   [   39, "Berachain"      ],
   [   40, "Seievm"         ],
