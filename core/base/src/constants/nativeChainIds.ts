@@ -39,7 +39,6 @@ const chainNetworkNativeChainIdEntries = [
       ["Provenance",  "pio-mainnet-1"],
       ["Noble",       "noble-1"],
       ["Xlayer",      196n],
-      ["Mantle",      5000n],
       ["Linea",       59144n],
       ["Berachain",   80094n],
       ["Seievm",      1329n],
@@ -99,7 +98,6 @@ const chainNetworkNativeChainIdEntries = [
       ["Celestia",        "mocha-4"],
       ["Seda",            "seda-1-testnet"],
       ["Noble",           "grand-1"],
-      ["Mantle",          5003n], // Sepolia testnet
       ["Berachain",       80069n], // Testnet v3
       ["Seievm",          1328n],
       ["Unichain",        1301n],

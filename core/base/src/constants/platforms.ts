@@ -21,7 +21,6 @@ const platformAndChainsEntries = [[
     "OptimismSepolia",
     "Holesky",
     "PolygonSepolia",
-    "Mantle",
     "Xlayer",
     "Linea",
     "Berachain",
