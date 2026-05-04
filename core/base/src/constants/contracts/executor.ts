@@ -23,7 +23,6 @@ export const executorContracts = [[
     ["Moonbeam",        "0x85D06449C78064c2E02d787e9DC71716786F8D19"],
     ["Optimism",        "0x85B704501f6AE718205C0636260768C4e72ac3e7"],
     ["Polygon",         "0x0B23efA164aB3eD08e9a39AC7aD930Ff4F5A5e81"],
-    ["Scroll",          "0xcFAdDE24640e395F5A71456A825D0D7C3741F075"],
     ["Seievm",          "0x25f1c923fb7a5aefa5f0a2b419fc70f2368e66e5"],
     ["Solana",          "execXUrAsMnqMmTHj5m7N1YQgsDz3cwGLYCYyuDRciV"],
     ["Sonic",           "0x3Fdc36b4260Da38fBDba1125cCBD33DD0AC74812"],

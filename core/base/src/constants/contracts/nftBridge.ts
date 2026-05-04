@@ -40,7 +40,6 @@ export const nftBridgeContracts = [[
     ["Holesky",         "0xc8941d483c45eF8FB72E4d1F9dDE089C95fF8171"],
     ["PolygonSepolia",  "0x23908A62110e21C04F3A4e011d24F901F911744A"],
     ["Mantle",          "0xD7D732C8Bf5eBF620EA55b5828eae20418eEF083"],
-    ["Scroll",          "0x47B9a1406BEe29a3001BFEB7e45aE45fFFB40c18"],
   ]], [
   "Devnet", [
     ["Solana",    "NFTWqJR8YnRVqPDvTJrYuLrQDitTG5AScqbeghi4zSA"],

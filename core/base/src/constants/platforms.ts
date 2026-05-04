@@ -23,7 +23,6 @@ const platformAndChainsEntries = [[
     "Holesky",
     "PolygonSepolia",
     "Mantle",
-    "Scroll",
     "Xlayer",
     "Linea",
     "Berachain",

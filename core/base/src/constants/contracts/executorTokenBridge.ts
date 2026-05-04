@@ -21,7 +21,6 @@ export const executorTokenBridgeContracts = [[
     ["Moonbeam",        { relayer: "0xF6b9616C63Fa48D07D82c93CE02B5d9111c51a3d", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
     ["Optimism",        { relayer: "0x37aC29617AE74c750a1e4d55990296BAF9b8De73", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
     ["Polygon",         { relayer: "0x1d98CA4221516B9ac4869F5CeA7E6bb9C41609D6", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
-    ["Scroll",          { relayer: "0x05129e142e7d5A518D81f19Db342fBF5f7E26A18", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
     ["Seievm",          { relayer: "0x7C129bc8F6188d12c0d1BBDE247F134148B97618", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
     ["Solana",          { relayer: "tbr7Qje6qBzPwfM52csL5KFi8ps5c5vDyiVVBLYVdRf" }],
     ["Unichain",        { relayer: "0x9Bca817F67f01557aeD615130825A28F4C5f3b87", relayerWithReferrer: "0x412f30e9f8B4a1e99eaE90209A6b00f5C3cc8739" }],
