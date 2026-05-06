@@ -41,6 +41,7 @@ export const coreBridgeContracts = [[
     ["Moca",        "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
     ["MegaETH",     "0xaBf89de706B583424328B54dD05a8fC986750Da8"],
     ["ZeroGravity", "0xC699482c17d43b7D5349F2D3f58d61fEFA972B8c"],
+    ["Nexus",       "0xC8aD24fC6063c41cB5C12a8e3851AafC3b3CF027"],
     ["Tempo",       "0xbebdb6C8ddC678FfA9f8748f85C815C556Dd8ac6"]
   ]], [
   "Testnet", [

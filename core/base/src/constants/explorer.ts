@@ -220,6 +220,16 @@ const explorerConfig = [[
         }
       }
     ],
+    [
+      "Nexus", {
+        name: "Nexus Explorer",
+        baseUrl: "https://explorer.nexus.xyz/",
+        endpoints: {
+          tx: "tx/",
+          account: "address/"
+        }
+      }
+    ],
   ]], [
   "Testnet", [[
     "Ethereum", {
