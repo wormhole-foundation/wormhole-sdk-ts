@@ -53,6 +53,7 @@ const rpcConfig = [[
     ["Moca",        "https://rpc.mocachain.dev/"],
     ["MegaETH",     "https://mainnet.megaeth.com/rpc"],
     ["ZeroGravity", "https://evmrpc.0g.ai"],
+    ["Nexus",       "https://mainnet.rpc.nexus.xyz"],
   ]], [
   "Testnet", [
     ["Bsc",             "https://data-seed-prebsc-1-s3.binance.org:8545"],
