@@ -1,5 +1,7 @@
 # Wormhole TypeScript SDK
 
+[![Tracked on web3-discover](https://web3-discover.vercel.app/badge/wormhole-w-unlock.svg)](https://web3-discover.vercel.app/airdrops/wormhole-w-unlock)
+
 [![GitHub build](https://github.com/wormhole-foundation/wormhole-sdk-ts/actions/workflows/build.yml/badge.svg)](https://github.com/wormhole-foundation/wormhole-sdk-ts/actions)
 [![npm version](https://img.shields.io/npm/v/@wormhole-foundation/sdk.svg)](https://www.npmjs.com/package/@wormhole-foundation/sdk)
 
