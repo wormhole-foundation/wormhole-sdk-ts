@@ -7,17 +7,24 @@ on:
 jobs:
   update-docs:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write       # push the update-docs-<version> branch
+      pull-requests: write  # gh pr create
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        # zizmor: ignore[artipacked] credentials are intentionally persisted so the
+        # later `git push origin update-docs-<version>` step can authenticate.
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - name: Get the latest published NPM version
         id: get_version
         run: echo "LATEST_VERSION=$(npm show @wormhole-foundation/sdk version)" >> $GITHUB_ENV
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        # No `cache:` argument here on purpose — see same note in publish.yml.
+        # zizmor: ignore[cache-poisoning]
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 20
 
@@ -39,7 +46,7 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-          git checkout -b update-docs-${{ env.LATEST_VERSION }}
+          git checkout -b update-docs-${LATEST_VERSION}
 
           echo "Checking Git Status Before Adding Files:"
           git status
@@ -52,14 +59,14 @@ jobs:
           git add docs/
           git commit -m "Automated documentation update for SDK version $LATEST_VERSION" || exit 0
 
-          git push origin update-docs-${{ env.LATEST_VERSION }}
+          git push origin update-docs-${LATEST_VERSION}
 
       - name: Create a pull request using GitHub CLI
         run: |
-          gh pr create --title "Automated Documentation Update for SDK version ${{ env.LATEST_VERSION }}" \
-                       --body "This PR updates the documentation to match the latest SDK release: **${{ env.LATEST_VERSION }}**." \
+          gh pr create --title "Automated Documentation Update for SDK version ${LATEST_VERSION}" \
+                       --body "This PR updates the documentation to match the latest SDK release: **${LATEST_VERSION}**." \
                        --base main \
-                       --head update-docs-${{ env.LATEST_VERSION }} \
+                       --head update-docs-${LATEST_VERSION} \
                        --label "automated,documentation"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -12,11 +12,17 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        # No `cache:` argument here on purpose — caching during a `release:
+        # published` workflow risks landing a poisoned PR-built cache in the
+        # published artifact. The install is fast enough without it.
+        # zizmor: ignore[cache-poisoning]
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 24
-          cache: "npm"
           registry-url: "https://registry.npmjs.org"
           # Node 24 ships with npm 11.x which includes OIDC support (requires 11.5.1+)
       - run: npm ci
