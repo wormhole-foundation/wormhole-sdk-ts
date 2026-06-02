@@ -34,6 +34,7 @@ export const executorContracts = [[
     ["MegaETH",         "0xD405E0A1f3f9edc25Ea32d0B079d6118328b2EcB"],
     ["Fogo",            "execXUrAsMnqMmTHj5m7N1YQgsDz3cwGLYCYyuDRciV"],
     ["ZeroGravity",     "0xcD2BffD0C0289e8C0cb89c458dB1B74f1892Fa6c"],
+    ["Tempo",           "0xA3640464E5543182E5F587f346B6Ac1E604d1625"],
     ["Nexus",           "0x3370b6462012a5cAEc48b2707641617A7Ce0Bb27"],
   ]], [
   "Testnet", [
