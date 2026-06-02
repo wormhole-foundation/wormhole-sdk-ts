@@ -53,6 +53,7 @@ const rpcConfig = [[
     ["Moca",        "https://rpc.mocachain.dev/"],
     ["MegaETH",     "https://mainnet.megaeth.com/rpc"],
     ["ZeroGravity", "https://evmrpc.0g.ai"],
+    ["Tempo",       "https://rpc.tempo.xyz"],
     ["Nexus",       "https://mainnet.rpc.nexus.xyz"],
   ]], [
   "Testnet", [

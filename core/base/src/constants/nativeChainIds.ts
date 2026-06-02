@@ -59,6 +59,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Moca",        2288n],
       ["MegaETH",     4326n],
       ["ZeroGravity", 16661n],
+      ["Tempo",       4217n],
       ["Nexus",       3946n],
       ["Btc",         "bitcoin-mainnet"]
     ],
