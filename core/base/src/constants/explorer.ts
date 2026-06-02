@@ -221,6 +221,16 @@ const explorerConfig = [[
       }
     ],
     [
+      "Tempo", {
+        name: "Tempo Explorer",
+        baseUrl: "https://explore.tempo.xyz/",
+        endpoints: {
+          tx: "tx/",
+          account: "address/"
+        }
+      }
+    ],
+    [
       "Nexus", {
         name: "Nexus Explorer",
         baseUrl: "https://explorer.nexus.xyz/",
