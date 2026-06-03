@@ -117,8 +117,8 @@ export namespace ExecutorTokenBridge {
   }
 
   export interface ReferrerFee {
-    feeDbps: bigint;
-    feeAmount: bigint;
+    transferTokenFee: bigint;
+    nativeTokenFee: bigint;
     remainingAmount: bigint;
     referrer: ChainAddress;
   }

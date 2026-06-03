@@ -43,22 +43,7 @@ export namespace ExecutorTokenBridgeRoute {
       /** Override the default capabilities fetcher (e.g. to cache or use a custom endpoint). */
       getCapabilities?: (network: Network) => Promise<CapabilitiesResponse>;
     };
-    referrerFee?: {
-      // Referrer Fee in *tenths* of basis points - e.g. 10 = 1 basis point (0.01%)
-      referrerFeeDbps: bigint;
-      // The address to which the referrer fee will be sent
-      referrerAddresses: Partial<Record<Network, Partial<Record<Chain, string>>>>;
-      // Per-token fee overrides
-      tokenFeeOverrides?: Partial<
-        Record<
-          Network,
-          Record<
-            Chain,
-            Record<string, bigint> // token address -> fee override in dbps
-          >
-        >
-      >;
-    };
+    getFee?: GetFeeCallback;
     tokenOverrides?: Partial<
       Record<
         Network,
@@ -75,6 +60,20 @@ export namespace ExecutorTokenBridgeRoute {
       >
     >;
   };
+
+  export type GetFeeResult = {
+    transferTokenFee: bigint;
+    nativeTokenFee: bigint;
+    referrerAddress: string;
+  };
+
+  export type GetFeeCallback = (params: {
+    amount: bigint;
+    sourceChain: Chain;
+    sourceToken: string;
+    destinationChain: Chain;
+    destinationToken: string;
+  }) => Promise<GetFeeResult>;
 
   export type Options = {
     // Expressed in percentage terms
@@ -198,29 +197,11 @@ export class ExecutorTokenBridgeRoute<N extends Network>
     }
 
     try {
-      let referrerFeeDbps: bigint | undefined = undefined;
-
       const dstTb = await request.toChain.getExecutorTokenBridge();
       let { gasLimit, msgValue } = await dstTb.estimateMsgValueAndGasLimit(
         request.destination.id,
         request.recipient,
       );
-
-      if (this.staticConfig.referrerFee?.referrerFeeDbps !== undefined) {
-        referrerFeeDbps = this.staticConfig.referrerFee.referrerFeeDbps;
-      }
-
-      // Check for per-token fee overrides
-      if (this.staticConfig.referrerFee?.tokenFeeOverrides) {
-        const srcTokenAddress = canonicalAddress(request.source.id);
-        const srcFeeOverride =
-          this.staticConfig.referrerFee.tokenFeeOverrides[this.wh.network]?.[
-            request.fromChain.chain
-          ]?.[srcTokenAddress];
-        if (srcFeeOverride !== undefined) {
-          referrerFeeDbps = srcFeeOverride;
-        }
-      }
 
       // Check for per-token gas limit overrides
       if (this.staticConfig.tokenOverrides) {
@@ -234,24 +215,36 @@ export class ExecutorTokenBridgeRoute<N extends Network>
         }
       }
 
-      let referrerAddress: ChainAddress | undefined = undefined;
-      if (referrerFeeDbps !== undefined && referrerFeeDbps > 0n) {
-        const referrer =
-          this.staticConfig.referrerFee?.referrerAddresses?.[this.wh.network]?.[
-            request.fromChain.chain
-          ];
-        if (!referrer) {
-          throw new Error(
-            `No referrer address configured for network ${this.wh.network} and chain ${request.fromChain.chain}`,
-          );
+      let referrerFee:
+        | { transferTokenFee: bigint; nativeTokenFee: bigint; referrer: ChainAddress }
+        | undefined;
+      if (this.staticConfig.getFee) {
+        // Pass the truncated amount (what will actually be bridged) so the
+        // callback sees the same value that downstream fee math operates on.
+        const truncatedAmount = sdkAmount.truncate(
+          params.normalizedParams.amount,
+          TokenTransfer.MAX_DECIMALS,
+        );
+        const result = await this.staticConfig.getFee({
+          amount: sdkAmount.units(truncatedAmount),
+          sourceChain: request.fromChain.chain,
+          sourceToken: canonicalAddress(request.source.id),
+          destinationChain: request.toChain.chain,
+          destinationToken: canonicalAddress(request.destination.id),
+        });
+        if (result.transferTokenFee > 0n || result.nativeTokenFee > 0n) {
+          if (!result.referrerAddress) {
+            throw new Error(
+              `getFee returned a referrer fee (transferTokenFee=${result.transferTokenFee}, nativeTokenFee=${result.nativeTokenFee}) but no referrerAddress for ${request.fromChain.chain}`,
+            );
+          }
+          referrerFee = {
+            transferTokenFee: result.transferTokenFee,
+            nativeTokenFee: result.nativeTokenFee,
+            referrer: Wormhole.chainAddress(request.fromChain.chain, result.referrerAddress),
+          };
         }
-        referrerAddress = Wormhole.chainAddress(request.fromChain.chain, referrer);
       }
-
-      const referrerFee =
-        referrerFeeDbps !== undefined && referrerAddress !== undefined
-          ? { feeDbps: referrerFeeDbps, referrer: referrerAddress }
-          : undefined;
 
       // Convert nativeGas percentage to actual amount if provided
       let nativeGas: bigint | undefined;

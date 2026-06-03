@@ -44,8 +44,8 @@ const RELAYER_ABI = [
 ];
 
 const RELAYER_WITH_REFERRER_ABI = [
-  'function transferTokensWithRelay(address tokenBridgeRelayer, address token, uint256 amount, uint16 targetChain, bytes32 targetRecipient, uint32 nonce, bytes32 dstTransferRecipient, bytes32 dstExecutionAddress, uint256 executionAmount, address refundAddr, bytes calldata signedQuoteBytes, bytes calldata relayInstructions, tuple(uint16 dbps, address payee) feeArgs) payable returns (uint64)',
-  'function wrapAndTransferEthWithRelay(address tokenBridgeRelayer, uint256 amount, uint16 targetChain, bytes32 targetRecipient, uint32 nonce, bytes32 dstTransferRecipient, bytes32 dstExecutionAddress, uint256 executionAmount, address refundAddr, bytes calldata signedQuoteBytes, bytes calldata relayInstructions, tuple(uint16 dbps, address payee) feeArgs) payable returns (uint64)',
+  'function transferTokensWithRelay(address tokenBridgeRelayer, address token, uint256 amount, uint16 targetChain, bytes32 targetRecipient, uint32 nonce, bytes32 dstTransferRecipient, bytes32 dstExecutionAddress, uint256 executionAmount, address refundAddr, bytes calldata signedQuoteBytes, bytes calldata relayInstructions, tuple(uint256 transferTokenFee, uint256 nativeTokenFee, address payee) feeArgs) payable returns (uint64)',
+  'function wrapAndTransferEthWithRelay(address tokenBridgeRelayer, uint256 amount, uint16 targetChain, bytes32 targetRecipient, uint32 nonce, bytes32 dstTransferRecipient, bytes32 dstExecutionAddress, uint256 executionAmount, address refundAddr, bytes calldata signedQuoteBytes, bytes calldata relayInstructions, tuple(uint256 transferTokenFee, uint256 nativeTokenFee, address payee) feeArgs) payable returns (uint64)',
 ];
 
 export class EvmExecutorTokenBridge<N extends Network, C extends EvmChains>
@@ -156,23 +156,31 @@ export class EvmExecutorTokenBridge<N extends Network, C extends EvmChains>
 
     let txReq: TransactionRequest;
 
-    // TODO: this could be optimized to use the non-referrer contract if referrerFee is not provided
-    const feeArgs = referrerFee
-      ? {
-          dbps: referrerFee.feeDbps,
-          payee: referrerFee.referrer.address.toString(),
-        }
-      : {
-          dbps: 0n,
-          payee: ZeroAddress,
-        };
+    const referrerTransferTokenFee = referrerFee?.transferTokenFee ?? 0n;
+    const referrerNativeTokenFee = referrerFee?.nativeTokenFee ?? 0n;
+    const payee = referrerFee?.referrer.address.toString() ?? ZeroAddress;
+    // The helper contract bridges exactly what we pass as `amount` and then
+    // pulls transferTokenFee separately via _payFee. If we pass the gross
+    // amount we'd double-charge the user. Pass the post-fee remainder so the
+    // helper bridges the right amount; the fee transfers happen on top.
+    const bridgedAmount = referrerFee?.remainingAmount ?? amount;
 
     if (isNative(token)) {
+      // The source token is native gas, so the contract can't pull
+      // transferTokenFee as ERC20 from msg.sender (no WETH approval exists).
+      // Fold it into nativeTokenFee — denominated in the same units — so the
+      // referrer is paid out of msg.value directly.
+      const combinedNativeFee = referrerNativeTokenFee + referrerTransferTokenFee;
+      const feeArgs = {
+        transferTokenFee: 0n,
+        nativeTokenFee: combinedNativeFee,
+        payee,
+      };
       txReq = await this.relayerWithReferrerContract
         .getFunction('wrapAndTransferEthWithRelay')
         .populateTransaction(
           this.relayerAddress,
-          amount,
+          bridgedAmount,
           targetChain,
           targetRecipient.toUint8Array(),
           nonce,
@@ -184,24 +192,35 @@ export class EvmExecutorTokenBridge<N extends Network, C extends EvmChains>
           relayInstructionsBytes,
           feeArgs,
           {
-            value: amount + wormholeFee + executionAmount,
+            value:
+              bridgedAmount + wormholeFee + executionAmount + combinedNativeFee,
           },
         );
     } else {
+      const feeArgs = {
+        transferTokenFee: referrerTransferTokenFee,
+        nativeTokenFee: referrerNativeTokenFee,
+        payee,
+      };
+
       const tokenContract = EvmPlatform.getTokenImplementation(
         this.provider,
         token.toString(),
       );
 
+      // Approval must cover the bridged remainder plus any ERC20-denominated
+      // fee the helper contract will pull via a second safeTransferFrom.
+      // Together this equals the user's original gross input amount.
+      const requiredAllowance = bridgedAmount + referrerTransferTokenFee;
       const allowance = await tokenContract.allowance(
         senderAddr,
         this.relayerWithReferrerAddress,
       );
 
-      if (allowance < amount) {
+      if (allowance < requiredAllowance) {
         const txReq = await tokenContract.approve.populateTransaction(
           this.relayerWithReferrerAddress,
-          amount,
+          requiredAllowance,
         );
 
         yield this.createUnsignedTx(txReq, 'approve');
@@ -212,7 +231,7 @@ export class EvmExecutorTokenBridge<N extends Network, C extends EvmChains>
         .populateTransaction(
           this.relayerAddress,
           token.toString(),
-          amount,
+          bridgedAmount,
           targetChain,
           targetRecipient.toUint8Array(),
           nonce,
@@ -224,7 +243,7 @@ export class EvmExecutorTokenBridge<N extends Network, C extends EvmChains>
           relayInstructionsBytes,
           feeArgs,
           {
-            value: wormholeFee + executionAmount,
+            value: wormholeFee + executionAmount + referrerNativeTokenFee,
           },
         );
     }
