@@ -121,26 +121,45 @@ export class SuiExecutorTokenBridge<N extends Network, C extends SuiChains = Sui
       throw new Error(`No coins of type ${coinType} found for sender ${sender}`);
     }
 
-    // 2. Handle referrer fee (following Solana ExecutorTokenBridge pattern)
+    // 2. Handle referrer fee (following Solana ExecutorTokenBridge pattern).
+    // For native SUI, the token and gas fees are both denominated in MIST —
+    // combine them into a single transfer out of the gas coin. Otherwise pay
+    // transferTokenFee as the source coin and nativeTokenFee as SUI.
     let actualTransferAmount = amount;
-    if (referrerFee && referrerFee.feeDbps > 0n) {
+    let coinsMerged = false;
+    if (referrerFee) {
       const referrerAddress = referrerFee.referrer.address.toString();
 
       if (isNative(token)) {
-        // For native SUI, split fee from gas
-        const [refFee] = tx.splitCoins(tx.gas, [tx.pure.u64(referrerFee.feeAmount)]);
-        tx.transferObjects([refFee!], tx.pure.address(referrerAddress));
-      } else {
-        // For tokens, merge first then split fee
-        const primaryCoinInput = tx.object(primaryCoin.coinObjectId);
-        if (mergeCoins.length > 0) {
-          tx.mergeCoins(
-            primaryCoinInput,
-            mergeCoins.map((coin) => tx.object(coin.coinObjectId)),
-          );
+        const combinedFee =
+          referrerFee.nativeTokenFee + referrerFee.transferTokenFee;
+        if (combinedFee > 0n) {
+          const [refFee] = tx.splitCoins(tx.gas, [tx.pure.u64(combinedFee)]);
+          tx.transferObjects([refFee!], tx.pure.address(referrerAddress));
         }
-        const [refFee] = tx.splitCoins(primaryCoinInput, [tx.pure.u64(referrerFee.feeAmount)]);
-        tx.transferObjects([refFee!], tx.pure.address(referrerAddress));
+      } else {
+        if (referrerFee.transferTokenFee > 0n) {
+          // For tokens, merge first then split fee
+          const primaryCoinInput = tx.object(primaryCoin.coinObjectId);
+          if (mergeCoins.length > 0) {
+            tx.mergeCoins(
+              primaryCoinInput,
+              mergeCoins.map((coin) => tx.object(coin.coinObjectId)),
+            );
+            coinsMerged = true;
+          }
+          const [refFee] = tx.splitCoins(primaryCoinInput, [
+            tx.pure.u64(referrerFee.transferTokenFee),
+          ]);
+          tx.transferObjects([refFee!], tx.pure.address(referrerAddress));
+        }
+
+        if (referrerFee.nativeTokenFee > 0n) {
+          const [refFee] = tx.splitCoins(tx.gas, [
+            tx.pure.u64(referrerFee.nativeTokenFee),
+          ]);
+          tx.transferObjects([refFee!], tx.pure.address(referrerAddress));
+        }
       }
 
       // Use remaining amount for actual transfer
@@ -149,12 +168,12 @@ export class SuiExecutorTokenBridge<N extends Network, C extends SuiChains = Sui
 
     // 3. Split coins for transfer (following TokenBridge pattern)
     const [transferCoin] = (() => {
-      if (coinType === SUI_COIN) {
+      if (isNative(token)) {
         return tx.splitCoins(tx.gas, [tx.pure.u64(actualTransferAmount)]);
       } else {
         const primaryCoinInput = tx.object(primaryCoin.coinObjectId);
-        if (mergeCoins.length && !referrerFee) {
-          // Only merge if we didn't already merge for referrer fee
+        if (mergeCoins.length && !coinsMerged) {
+          // Only merge if we didn't already merge while paying the referrer
           tx.mergeCoins(
             primaryCoinInput,
             mergeCoins.map((coin) => tx.object(coin.coinObjectId)),

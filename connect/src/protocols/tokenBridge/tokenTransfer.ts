@@ -764,7 +764,8 @@ export namespace TokenTransfer {
         gasLimit: bigint;
         nativeGas?: bigint;
         referrerFee?: {
-          feeDbps: bigint;
+          transferTokenFee: bigint;
+          nativeTokenFee: bigint;
           referrer: ChainAddress;
         };
       });
@@ -888,19 +889,29 @@ export namespace TokenTransfer {
 
       let referrerFee: ExecutorTokenBridge.ReferrerFee | undefined;
 
-      if (transfer.referrerFee && transfer.referrerFee.feeDbps > 0n) {
-        const { feeDbps, referrer } = transfer.referrerFee;
-        const result = TokenTransfer.calculateReferrerFee(srcAmountTruncated, feeDbps);
-        const feeAmount = amount.units(result.fee);
-        const remainingAmount = amount.units(result.remaining);
+      if (
+        transfer.referrerFee &&
+        (transfer.referrerFee.transferTokenFee > 0n ||
+          transfer.referrerFee.nativeTokenFee > 0n)
+      ) {
+        const { transferTokenFee, nativeTokenFee, referrer } = transfer.referrerFee;
+
+        // Truncate the source-token fee to the bridge's shared decimal precision
+        // so the bridged remainder doesn't carry sub-MAX_DECIMALS dust.
+        const truncatedFee = amount.truncate(
+          amount.fromBaseUnits(transferTokenFee, srcDecimals),
+          TokenTransfer.MAX_DECIMALS,
+        );
+        const truncatedFeeUnits = amount.units(truncatedFee);
+        const remainingAmount = amount.units(srcAmountTruncated) - truncatedFeeUnits;
 
         if (remainingAmount <= 0n) {
           throw new Error("Remaining amount after referrer fee is <= 0");
         }
 
         referrerFee = {
-          feeDbps,
-          feeAmount,
+          transferTokenFee: truncatedFeeUnits,
+          nativeTokenFee,
           remainingAmount,
           referrer,
         };
@@ -922,6 +933,16 @@ export namespace TokenTransfer {
         expires: executorQuote.signedQuote.quote.expiryTime,
         relayFee: { token: nativeTokenId(srcChain.chain), amount: executorQuote.estimatedCost },
         destinationNativeGas,
+        referrerFee: referrerFee
+          ? {
+              transferTokenFee: { token: srcTokenId, amount: referrerFee.transferTokenFee },
+              nativeTokenFee: {
+                token: nativeTokenId(srcChain.chain),
+                amount: referrerFee.nativeTokenFee,
+              },
+              referrer: referrerFee.referrer,
+            }
+          : undefined,
         details: {
           executorQuote,
           referrerFee,
@@ -1172,25 +1193,5 @@ export namespace TokenTransfer {
     }
 
     return _transfer;
-  }
-
-  export function calculateReferrerFee(
-    amt: amount.Amount,
-    dBps: bigint, // tenths of basis points
-  ): { fee: amount.Amount; remaining: amount.Amount } {
-    const MAX_U16 = 65_535n;
-    if (dBps > MAX_U16) {
-      throw new Error("dBps exceeds max u16");
-    }
-
-    const fee = amount.getDeciBps(amt, dBps);
-    const feeUnits = amount.units(fee);
-    const amtUnits = amount.units(amt);
-    const remainingUnits = amtUnits - feeUnits;
-
-    return {
-      fee,
-      remaining: amount.fromBaseUnits(remainingUnits, amt.decimals),
-    };
   }
 }

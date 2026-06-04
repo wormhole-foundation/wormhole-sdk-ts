@@ -2,6 +2,7 @@ import type { Chain } from "@wormhole-foundation/sdk-base";
 import type {
   Attestation,
   AttestationId,
+  ChainAddress,
   ProtocolName,
   TokenId,
   TransactionId,
@@ -226,6 +227,15 @@ export interface TransferQuote<D = any> {
   // this will contain the amount of native gas that is to be minted
   // on the destination chain given the current swap rates
   destinationNativeGas?: bigint;
+  // If the transfer being quoted includes a referrer fee, this describes
+  // the fee(s) paid to the referrer on top of the transfer. transferTokenFee
+  // is denominated in the transferred (source) token; nativeTokenFee is
+  // denominated in the source chain's native gas token.
+  referrerFee?: {
+    transferTokenFee: { token: TokenId; amount: bigint };
+    nativeTokenFee: { token: TokenId; amount: bigint };
+    referrer: ChainAddress;
+  };
   // If the transfer being quoted has any warnings
   // such as high slippage or a delay, they will be included here
   warnings?: QuoteWarning[];

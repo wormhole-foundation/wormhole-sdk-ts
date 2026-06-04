@@ -239,61 +239,82 @@ export class SolanaExecutorTokenBridge<
 
     const instructions: TransactionInstruction[] = [];
 
-    if (referrerFee && referrerFee.feeAmount > 0n) {
+    if (referrerFee) {
       const referrer = new PublicKey(referrerFee.referrer.address.toString());
 
-      if (mint.equals(NATIVE_MINT)) {
-        instructions.push(
-          SystemProgram.transfer({
-            fromPubkey: senderPubkey,
-            toPubkey: referrer,
-            lamports: referrerFee.feeAmount,
-          }),
-        );
-      } else {
-        const referrerAta = getAssociatedTokenAddressSync(
-          mint,
-          referrer,
-          true,
-          tokenProgram,
-        );
-
-        const senderAta = getAssociatedTokenAddressSync(
-          mint,
-          senderPubkey,
-          true,
-          tokenProgram,
-        );
-
-        const referrerAtaAccount =
-          await this.connection.getAccountInfo(referrerAta);
-
-        if (!referrerAtaAccount) {
+      // When the source is native SOL, the token and gas fees are both
+      // denominated in lamports — combine them into a single SOL transfer.
+      // Otherwise pay transferTokenFee as the SPL token and nativeTokenFee as
+      // lamports separately. (Use isNative(token), not mint.equals(NATIVE_MINT):
+      // a caller passing wrapped SOL explicitly has SPL balance, not lamports.)
+      if (isNative(token)) {
+        const combinedLamports =
+          referrerFee.nativeTokenFee + referrerFee.transferTokenFee;
+        if (combinedLamports > 0n) {
           instructions.push(
-            createAssociatedTokenAccountIdempotentInstruction(
-              senderPubkey,
-              referrerAta,
-              referrer,
+            SystemProgram.transfer({
+              fromPubkey: senderPubkey,
+              toPubkey: referrer,
+              lamports: combinedLamports,
+            }),
+          );
+        }
+      } else {
+        if (referrerFee.transferTokenFee > 0n) {
+          const referrerAta = getAssociatedTokenAddressSync(
+            mint,
+            referrer,
+            true,
+            tokenProgram,
+          );
+
+          const senderAta = getAssociatedTokenAddressSync(
+            mint,
+            senderPubkey,
+            true,
+            tokenProgram,
+          );
+
+          const referrerAtaAccount =
+            await this.connection.getAccountInfo(referrerAta);
+
+          if (!referrerAtaAccount) {
+            instructions.push(
+              createAssociatedTokenAccountIdempotentInstruction(
+                senderPubkey,
+                referrerAta,
+                referrer,
+                mint,
+                tokenProgram,
+              ),
+            );
+          }
+
+          const mintInfo = await getMint(this.connection, mint, undefined, tokenProgram);
+
+          instructions.push(
+            createTransferCheckedInstruction(
+              senderAta,
               mint,
+              referrerAta,
+              senderPubkey,
+              referrerFee.transferTokenFee,
+              mintInfo.decimals,
+              undefined,
               tokenProgram,
             ),
           );
         }
 
-        const mintInfo = await getMint(this.connection, mint, undefined, tokenProgram);
-
-        instructions.push(
-          createTransferCheckedInstruction(
-            senderAta,
-            mint,
-            referrerAta,
-            senderPubkey,
-            referrerFee.feeAmount,
-            mintInfo.decimals,
-            undefined,
-            tokenProgram,
-          ),
-        );
+        if (referrerFee.nativeTokenFee > 0n) {
+          instructions.push(
+            SystemProgram.transfer({
+              fromPubkey: senderPubkey,
+              toPubkey: referrer,
+              lamports: referrerFee.nativeTokenFee,
+            }),
+          );
+        }
       }
     }
 
