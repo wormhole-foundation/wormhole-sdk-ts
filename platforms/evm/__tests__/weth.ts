@@ -1,7 +1,9 @@
-import { wormhole } from '@wormhole-foundation/sdk';
-import { Network, platformToChains } from '@wormhole-foundation/sdk-connect';
-import evm from '@wormhole-foundation/sdk/evm';
-import { EvmChains, WETH_CONTRACTS } from '@wormhole-foundation/sdk-evm';
+import { Network, Wormhole, platformToChains } from '@wormhole-foundation/sdk-connect';
+import { EvmChains, EvmPlatform, WETH_CONTRACTS } from '@wormhole-foundation/sdk-evm';
+// Register the EVM TokenBridge protocol (side effect). Construct Wormhole directly from
+// sdk-connect rather than the full @wormhole-foundation/sdk aggregator, which eagerly
+// imports the ESM-only Sui platform and would break this package's CommonJS jest run.
+import '@wormhole-foundation/sdk-evm-tokenbridge';
 
 describe('WETH contracts', function () {
   const evmChains = platformToChains('Evm');
@@ -21,7 +23,7 @@ describe('WETH contracts', function () {
       return;
     }
 
-    const wh = await wormhole(network, [evm]);
+    const wh = new Wormhole(network, [EvmPlatform]);
     const chain = wh.getChain(evmChain);
 
     try {

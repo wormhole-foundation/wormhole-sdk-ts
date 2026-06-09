@@ -1,4 +1,4 @@
-import type { SuiClient } from "@mysten/sui/client";
+import type { SuiGrpcClient } from "@mysten/sui/grpc";
 import { Transaction } from "@mysten/sui/transactions";
 import { SUI_CLOCK_OBJECT_ID } from "@mysten/sui/utils";
 import {
@@ -21,11 +21,12 @@ import {
   type TokenAddress,
   type TokenId,
 } from "@wormhole-foundation/sdk-connect";
+import type {
+  SuiChains} from "@wormhole-foundation/sdk-sui";
 import {
   getPackageId,
   isSameType,
   SUI_COIN,
-  SuiChains,
   SuiPlatform,
   SuiUnsignedTransaction,
 } from "@wormhole-foundation/sdk-sui";
@@ -47,7 +48,7 @@ export class SuiExecutorTokenBridge<N extends Network, C extends SuiChains = Sui
   constructor(
     readonly network: N,
     readonly chain: C,
-    readonly provider: SuiClient,
+    readonly provider: SuiGrpcClient,
     readonly contracts: Contracts,
   ) {
     this.chainId = nativeChainIds.networkChainToNativeChainId.get(network, chain) as bigint;
@@ -68,7 +69,7 @@ export class SuiExecutorTokenBridge<N extends Network, C extends SuiChains = Sui
   }
 
   static async fromRpc<N extends Network>(
-    provider: SuiClient,
+    provider: SuiGrpcClient,
     config: ChainsConfig<N, "Sui">,
   ): Promise<SuiExecutorTokenBridge<N, SuiChains>> {
     const [network, chain] = await SuiPlatform.chainFromRpc(provider);
@@ -131,8 +132,7 @@ export class SuiExecutorTokenBridge<N extends Network, C extends SuiChains = Sui
       const referrerAddress = referrerFee.referrer.address.toString();
 
       if (isNative(token)) {
-        const combinedFee =
-          referrerFee.nativeTokenFee + referrerFee.transferTokenFee;
+        const combinedFee = referrerFee.nativeTokenFee + referrerFee.transferTokenFee;
         if (combinedFee > 0n) {
           const [refFee] = tx.splitCoins(tx.gas, [tx.pure.u64(combinedFee)]);
           tx.transferObjects([refFee!], tx.pure.address(referrerAddress));
@@ -155,9 +155,7 @@ export class SuiExecutorTokenBridge<N extends Network, C extends SuiChains = Sui
         }
 
         if (referrerFee.nativeTokenFee > 0n) {
-          const [refFee] = tx.splitCoins(tx.gas, [
-            tx.pure.u64(referrerFee.nativeTokenFee),
-          ]);
+          const [refFee] = tx.splitCoins(tx.gas, [tx.pure.u64(referrerFee.nativeTokenFee)]);
           tx.transferObjects([refFee!], tx.pure.address(referrerAddress));
         }
       }

@@ -1,124 +1,149 @@
-import type { PaginatedObjectsResponse, SuiClient } from "@mysten/sui/client";
+import type { SuiGrpcClient } from "@mysten/sui/grpc";
 import { Transaction } from "@mysten/sui/transactions";
+import { bcs } from "@mysten/sui/bcs";
 import { isValidSuiAddress, normalizeSuiAddress, normalizeSuiObjectId } from "@mysten/sui/utils";
 
 import { encoding } from "@wormhole-foundation/sdk-connect";
 import type { SuiBuildOutput } from "./types.js";
-import {
-  getFieldsFromObjectResponse,
-  isMoveStructObject,
-  isMoveStructStruct,
-  isSameType,
-} from "./types.js";
+import { getFieldsFromObjectResponse, isMoveStructObject, isSameType } from "./types.js";
 import { getPackageIdFromType, normalizeSuiType } from "./address.js";
 
 export const UPGRADE_CAP_TYPE = "0x2::package::UpgradeCap";
 
 //
+// gRPC dynamic-field name BCS encoders.
+//
+// The gRPC core API requires dynamic-field names as `{ type, bcs }` where `bcs` is the
+// BCS-encoded key value (the JSON-RPC `name.value` is gone). Helpers below cover the key
+// shapes used across the Sui protocols.
+//
+
+/** Move struct `{ dummy_field: bool=false }` (e.g. `token_registry::Key<T>`) → BCS `[0]`. */
+export const dummyFieldName = (type: string) => ({ type, bcs: new Uint8Array([0]) });
+
+/** `token_registry::CoinTypeKey { chain: u16, addr: vector<u8> }`. */
+const CoinTypeKeyBcs = bcs.struct("CoinTypeKey", {
+  chain: bcs.u16(),
+  addr: bcs.vector(bcs.u8()),
+});
+export const coinTypeKeyName = (type: string, chain: number, addr: Uint8Array) => ({
+  type,
+  bcs: CoinTypeKeyBcs.serialize({ chain, addr: Array.from(addr) }).toBytes(),
+});
+
+/** A `vector<u8>` key (e.g. relayer-fee keys). */
+export const bytesVectorName = (type: string, bytes: Uint8Array) => ({
+  type,
+  bcs: bcs.vector(bcs.u8()).serialize(Array.from(bytes)).toBytes(),
+});
+
+/** A `u16` key (e.g. chain id). */
+export const u16Name = (type: string, value: number) => ({
+  type,
+  bcs: bcs.u16().serialize(value).toBytes(),
+});
+
+//
 // Utils to fetch data from Sui
 //
 
-export const getOriginalPackageId = async (provider: SuiClient, stateObjectId: string) => {
-  const { data, error } = await provider.getObject({
-    id: stateObjectId,
-    options: { showContent: true },
-  });
-  if (error) throw new Error("Error getting object: " + error);
+/**
+ * Fetch a dynamic field's flat value (`object.json.value`) by BCS-encoded name, or null
+ * if the field does not exist.
+ */
+export const getDynamicFieldValue = async (
+  provider: SuiGrpcClient,
+  parentId: string,
+  name: { type: string; bcs: Uint8Array },
+): Promise<any> => {
+  try {
+    const { dynamicField } = await provider.getDynamicField({ parentId, name });
+    const { object } = await provider.getObject({
+      objectId: dynamicField.fieldId,
+      include: { json: true },
+    });
+    const json = (object?.json ?? null) as Record<string, any> | null;
+    return json && "value" in json ? json["value"] : null;
+  } catch {
+    // missing dynamic field → treat as not found
+    return null;
+  }
+};
 
-  if (!data || !isMoveStructStruct(data.content))
-    throw new Error(`Cannot get oject for state id ${stateObjectId}: ` + data);
-
-  return getPackageIdFromType(data.content.type);
+export const getOriginalPackageId = async (provider: SuiGrpcClient, stateObjectId: string) => {
+  const { object } = await provider.getObject({ objectId: stateObjectId, include: { json: true } });
+  if (!object || !object.type) throw new Error(`Cannot get object for state id ${stateObjectId}`);
+  return getPackageIdFromType(object.type);
 };
 
 export const getObjectFields = async (
-  provider: SuiClient,
+  provider: SuiGrpcClient,
   objectId: string,
 ): Promise<Record<string, any> | null> => {
   if (!isValidSuiAddress(objectId)) {
     throw new Error(`Invalid object ID: ${objectId}`);
   }
-  const res = await provider.getObject({
-    id: objectId,
-    options: {
-      showContent: true,
-    },
-  });
-  return getFieldsFromObjectResponse(res);
+  const { object } = await provider.getObject({ objectId, include: { json: true } });
+  return getFieldsFromObjectResponse(object);
 };
 
-export const getPackageId = async (provider: SuiClient, objectId: string): Promise<string> => {
-  let currentPackage: { objectId: string; name: any } | undefined;
-  let nextCursor;
+export const getPackageId = async (provider: SuiGrpcClient, objectId: string): Promise<string> => {
+  let currentPackage: { fieldId: string } | undefined;
+  let nextCursor: string | null | undefined;
   do {
-    const dynamicFields = await provider.getDynamicFields({
+    const dynamicFields = await provider.listDynamicFields({
       parentId: objectId,
       cursor: nextCursor,
     });
-    currentPackage = dynamicFields.data.find((field) => field.name.type.endsWith("CurrentPackage"));
-    nextCursor = dynamicFields.hasNextPage ? dynamicFields.nextCursor : null;
+    currentPackage = dynamicFields.dynamicFields.find((field) =>
+      field.name.type.endsWith("CurrentPackage"),
+    );
+    nextCursor = dynamicFields.hasNextPage ? dynamicFields.cursor : null;
   } while (nextCursor && !currentPackage);
 
   if (!currentPackage) throw new Error("CurrentPackage not found");
 
-  const obj = await provider.getObject({
-    id: currentPackage.objectId,
-    options: {
-      showContent: true,
-    },
+  const { object } = await provider.getObject({
+    objectId: currentPackage.fieldId,
+    include: { json: true },
   });
 
-  const fields = getFieldsFromObjectResponse(obj);
+  const fields = getFieldsFromObjectResponse(object);
 
-  if (!fields || !isMoveStructObject(fields))
-    throw new Error("Unable to get fields from object response");
+  if (!fields || !isMoveStructObject(fields["value"])) throw new Error("Unable to get package id");
 
-  if (!("value" in fields) || !isMoveStructStruct(fields["value"]))
-    throw new Error("Unable to get package id");
-
-  return fields["value"].fields["package"]! as string;
+  return fields["value"]["package"] as string;
 };
 
 export const getOldestEmitterCapObjectId = async (
-  provider: SuiClient,
+  provider: SuiGrpcClient,
   coreBridgePackageId: string,
   owner: string,
 ): Promise<string | null> => {
   let oldestVersion: string | null = null;
   let oldestObjectId: string | null = null;
-  let response: PaginatedObjectsResponse | null = null;
-  let nextCursor;
+  let nextCursor: string | null | undefined;
   do {
-    response = await provider.getOwnedObjects({
+    const response = await provider.listOwnedObjects({
       owner,
-      filter: {
-        StructType: `${coreBridgePackageId}::emitter::EmitterCap`,
-      },
-      options: {
-        showContent: true,
-      },
+      type: `${coreBridgePackageId}::emitter::EmitterCap`,
       cursor: nextCursor,
     });
 
-    if (!response || !response.data) {
-      throw Error("Failed to get owned objects");
-    }
-
-    for (const objectResponse of response.data) {
-      if (!objectResponse.data) continue;
-      const { version, objectId } = objectResponse.data;
+    for (const obj of response.objects) {
+      const { version, objectId } = obj;
       if (oldestVersion === null || version < oldestVersion) {
         oldestVersion = version;
         oldestObjectId = objectId;
       }
     }
-    nextCursor = response.hasNextPage ? response.nextCursor : undefined;
+    nextCursor = response.hasNextPage ? response.cursor : null;
   } while (nextCursor);
   return oldestObjectId;
 };
 
 export const getOwnedObjectId = async (
-  provider: SuiClient,
+  provider: SuiGrpcClient,
   owner: string,
   type: string,
 ): Promise<string | null> => {
@@ -129,98 +154,61 @@ export const getOwnedObjectId = async (
     );
   }
 
-  try {
-    const res = await provider.getOwnedObjects({
-      owner,
-      filter: { StructType: type },
-      options: {
-        showContent: true,
-      },
-    });
-    if (!res || !res.data) {
-      throw new Error("Failed to get owned objects");
-    }
-
-    const objects = res.data.filter((o) => o.data?.objectId);
-    if (!objects || objects.length === 0) return null;
-    if (objects.length === 1) {
-      return objects[0]!.data?.objectId ?? null;
-    } else {
-      const objectsStr = JSON.stringify(objects, null, 2);
-      throw new Error(
-        `Found multiple objects owned by ${owner} of type ${type}. This may mean that we've received an unexpected response from the Sui RPC and \`worm\` logic needs to be updated to handle this. Objects: ${objectsStr}`,
-      );
-    }
-  } catch (error) {
-    // Handle 504 error by using findOwnedObjectByType method
-    const is504HttpError = `${error}`.includes("504 Gateway Time-out");
-    if (error && is504HttpError) {
-      return getOwnedObjectIdPaginated(provider, owner, type);
-    } else {
-      throw error;
-    }
+  const res = await provider.listOwnedObjects({ owner, type });
+  const objects = res.objects.filter((o) => o.objectId);
+  if (objects.length === 0) return null;
+  if (objects.length === 1) {
+    return objects[0]!.objectId ?? null;
+  } else {
+    const objectsStr = JSON.stringify(objects, null, 2);
+    throw new Error(
+      `Found multiple objects owned by ${owner} of type ${type}. This may mean that we've received an unexpected response from the Sui RPC and \`worm\` logic needs to be updated to handle this. Objects: ${objectsStr}`,
+    );
   }
 };
 
 export const getOwnedObjectIdPaginated = async (
-  provider: SuiClient,
+  provider: SuiGrpcClient,
   owner: string,
   type: string,
   cursor?: string,
 ): Promise<string | null> => {
-  const res: PaginatedObjectsResponse = await provider.getOwnedObjects({
-    owner,
-    filter: undefined, // Filter must be undefined to avoid 504 responses
-    cursor: cursor || undefined,
-    options: {
-      showType: true,
-    },
-  });
+  const res = await provider.listOwnedObjects({ owner, cursor: cursor || null });
 
-  if (!res || !res.data) {
-    throw new Error("Could not fetch owned object id");
-  }
-
-  const object = res.data.find((d) => isSameType(d.data?.type || "", type));
+  const object = res.objects.find((d) => isSameType(d.type || "", type));
   if (!object && res.hasNextPage) {
-    return getOwnedObjectIdPaginated(provider, owner, type, res.nextCursor as string);
+    return getOwnedObjectIdPaginated(provider, owner, type, res.cursor as string);
   } else if (!object && !res.hasNextPage) {
     return null;
   } else {
-    return object?.data?.objectId ?? null;
+    return object?.objectId ?? null;
   }
 };
 
 export const getUpgradeCapObjectId = async (
-  provider: SuiClient,
+  provider: SuiGrpcClient,
   owner: string,
   packageId: string,
 ): Promise<string | null> => {
-  const res = await provider.getOwnedObjects({
+  const res = await provider.listOwnedObjects({
     owner,
-    filter: { StructType: normalizeSuiType(UPGRADE_CAP_TYPE) },
-    options: {
-      showContent: true,
-    },
+    type: normalizeSuiType(UPGRADE_CAP_TYPE),
+    include: { json: true },
   });
-  if (!res || !res.data) {
-    throw new Error("Failed to get upgrade caps");
-  }
 
-  const objects = res.data.filter((o) => {
+  const objects = res.objects.filter((o) => {
     const fields = getFieldsFromObjectResponse(o);
-
     return (
-      isMoveStructStruct(fields) &&
-      normalizeSuiAddress(fields.fields["package"]! as string) === normalizeSuiAddress(packageId)
+      isMoveStructObject(fields) &&
+      normalizeSuiAddress(fields["package"] as string) === normalizeSuiAddress(packageId)
     );
   });
 
-  if (!objects || objects.length === 0) return null;
+  if (objects.length === 0) return null;
 
   if (objects.length === 1) {
     // We've found the object we're looking for
-    return objects[0]!.data?.objectId ?? null;
+    return objects[0]!.objectId ?? null;
   } else {
     const objectsStr = JSON.stringify(objects, null, 2);
     throw new Error(

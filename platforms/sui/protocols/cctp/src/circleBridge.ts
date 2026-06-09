@@ -1,22 +1,18 @@
-import type { SuiClient } from "@mysten/sui/client";
+import type { SuiGrpcClient } from "@mysten/sui/grpc";
 import { Transaction } from "@mysten/sui/transactions";
-import {
-  SuiPlatform,
-  type SuiChains,
-  SuiUnsignedTransaction,
-} from "@wormhole-foundation/sdk-sui";
+import { SuiPlatform, type SuiChains, SuiUnsignedTransaction } from "@wormhole-foundation/sdk-sui";
 import type {
   AccountAddress,
   ChainAddress,
   ChainsConfig,
   Network,
   Platform,
-} from "@wormhole-foundation/sdk-connect";
+
+  CircleTransferMessage,
+  Contracts} from "@wormhole-foundation/sdk-connect";
 import {
   CircleBridge,
-  CircleTransferMessage,
   circle,
-  Contracts,
   encoding,
 } from "@wormhole-foundation/sdk-connect";
 
@@ -33,7 +29,7 @@ export class SuiCircleBridge<N extends Network, C extends SuiChains> implements 
   constructor(
     readonly network: N,
     readonly chain: C,
-    readonly provider: SuiClient,
+    readonly provider: SuiGrpcClient,
     readonly contracts: Contracts,
   ) {
     if (network === "Devnet") throw new Error("CircleBridge not supported on Devnet");
@@ -121,14 +117,16 @@ export class SuiCircleBridge<N extends Network, C extends SuiChains> implements 
       ],
     });
 
-    const result = await this.provider.devInspectTransactionBlock({
-      sender: "0x0000000000000000000000000000000000000000000000000000000000000000",
-      transactionBlock: tx,
+    tx.setSenderIfNotSet("0x0000000000000000000000000000000000000000000000000000000000000000");
+    const result = await this.provider.simulateTransaction({
+      transaction: tx,
+      checksEnabled: false,
+      include: { commandResults: true },
     });
 
     try {
-      /* @ts-ignore */
-      const isNonceUsed = Boolean(result.results![0].returnValues![0][0][0]);
+      // single bool return value, BCS-encoded as a single byte
+      const isNonceUsed = Boolean(result.commandResults![0]!.returnValues![0]!.bcs[0]);
       return isNonceUsed;
     } catch (e) {
       console.error(`Error reading if nonce was used: ${e}`);
@@ -147,8 +145,8 @@ export class SuiCircleBridge<N extends Network, C extends SuiChains> implements 
     const [receipt] = tx.moveCall({
       target: `${this.messageTransmitterId}::receive_message::receive_message`,
       arguments: [
-        tx.pure.vector('u8', CircleBridge.serialize(message)),
-        tx.pure.vector('u8', encoding.hex.decode(attestation)),
+        tx.pure.vector("u8", CircleBridge.serialize(message)),
+        tx.pure.vector("u8", encoding.hex.decode(attestation)),
         tx.object(this.messageTransmitterStateId), // message_transmitter state
       ],
     });
@@ -207,10 +205,11 @@ export class SuiCircleBridge<N extends Network, C extends SuiChains> implements 
   }
 
   async parseTransactionDetails(digest: string): Promise<CircleTransferMessage> {
-    const tx = await this.provider.waitForTransaction({
+    const txResult = await this.provider.getTransaction({
       digest,
-      options: { showEvents: true, showEffects: true, showInput: true },
+      include: { events: true },
     });
+    const tx = txResult.Transaction ?? txResult.FailedTransaction;
 
     if (!tx) {
       throw new Error("Transaction not found");
@@ -220,14 +219,14 @@ export class SuiCircleBridge<N extends Network, C extends SuiChains> implements 
     }
 
     const circleMessageSentEvent = tx.events?.find((event) =>
-      event.type.includes("send_message::MessageSent"),
+      event.eventType.includes("send_message::MessageSent"),
     );
 
     if (!circleMessageSentEvent) {
       throw new Error("No MessageSent event found");
     }
 
-    const circleMessage = new Uint8Array((circleMessageSentEvent?.parsedJson as any).message);
+    const circleMessage = new Uint8Array((circleMessageSentEvent?.json as any).message);
 
     const [msg, hash] = CircleBridge.deserialize(circleMessage);
     const { payload: body } = msg;
@@ -251,7 +250,7 @@ export class SuiCircleBridge<N extends Network, C extends SuiChains> implements 
   }
 
   static async fromRpc<N extends Network>(
-    provider: SuiClient,
+    provider: SuiGrpcClient,
     config: ChainsConfig<N, Platform>,
   ): Promise<SuiCircleBridge<N, SuiChains>> {
     const [network, chain] = await SuiPlatform.chainFromRpc(provider);

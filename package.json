@@ -38,7 +38,7 @@
     "docs": "NODE_OPTIONS=--max_old_space_size=8192 typedoc --options typedoc.json",
     "version": "tsx setVersion.ts",
     "prepublishOnly": "cd scripts && npm run examples && cd - && cp README.md sdk/",
-    "test:tilt": "jest --verbose --config ./jest.config.ts --roots ./__tests__/tilt",
+    "test:tilt": "NODE_OPTIONS=--experimental-vm-modules jest --verbose --config ./jest.config.ts --roots ./__tests__/tilt",
     "prepare": "husky",
     "commit": "cz"
   },

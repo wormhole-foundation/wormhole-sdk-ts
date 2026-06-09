@@ -13,13 +13,12 @@
     "test": "tests"
   },
   "license": "Apache-2.0",
-  "main": "./dist/cjs/index.js",
-  "types": "./dist/cjs/index.d.ts",
+  "main": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
   "module": "./dist/esm/index.js",
   "description": "SDK for Algorand, used in conjunction with @wormhole-foundation/sdk",
   "files": [
-    "dist/esm",
-    "dist/cjs"
+    "dist/esm"
   ],
   "keywords": [
     "wormhole",
@@ -29,16 +28,14 @@
     "algorand"
   ],
   "engines": {
-    "node": ">=16"
+    "node": ">=20.19"
   },
   "sideEffects": [
-    "./dist/cjs/index.js",
     "./dist/esm/index.js"
   ],
   "scripts": {
-    "build:cjs": "tsc -p ./tsconfig.cjs.json  && echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
     "build:esm": "tsc -p ./tsconfig.esm.json",
-    "build": "npm run build:esm && npm run build:cjs",
+    "build": "npm run build:esm",
     "rebuild": "npm run clean && npm run build",
     "clean": "rm -rf ./dist && rm -rf ./.turbo",
     "lint": "npm run prettier && eslint --fix ./src --ext .ts",
@@ -52,24 +49,9 @@
   "type": "module",
   "exports": {
     ".": {
-      "react-native": {
-        "import": "./dist/esm/index.js",
-        "require": "./dist/cjs/index.js",
-        "types": "./dist/cjs/index.d.ts",
-        "default": "./dist/cjs/index.js"
-      },
-      "import": {
-        "types": "./dist/esm/index.d.ts",
-        "default": "./dist/esm/index.js"
-      },
-      "require": {
-        "types": "./dist/cjs/index.d.ts",
-        "default": "./dist/cjs/index.js"
-      },
-      "default": {
-        "types": "./dist/cjs/index.d.ts",
-        "default": "./dist/cjs/index.js"
-      }
+      "types": "./dist/esm/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "default": "./dist/esm/index.js"
     }
   }
 }

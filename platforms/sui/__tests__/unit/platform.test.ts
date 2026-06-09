@@ -6,7 +6,7 @@ import { SuiChains, SuiPlatform } from "./../../src/index.js";
 
 import "@wormhole-foundation/sdk-sui-core";
 import "@wormhole-foundation/sdk-sui-tokenbridge";
-import { SuiClient } from "@mysten/sui/client";
+import { SuiGrpcClient } from "@mysten/sui/grpc";
 
 const network = DEFAULT_NETWORK;
 
@@ -23,7 +23,7 @@ describe("Sui Platform Tests", () => {
         [suiChain]: configs[suiChain],
       });
 
-      const client = new SuiClient({ url: configs[suiChain]!.rpc });
+      const client = new SuiGrpcClient({ baseUrl: configs[suiChain]!.rpc, network: "mainnet" });
       const tb = await p.getProtocol("TokenBridge", client);
       expect(tb).toBeTruthy();
     });

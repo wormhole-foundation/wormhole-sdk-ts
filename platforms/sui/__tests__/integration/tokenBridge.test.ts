@@ -9,6 +9,10 @@ import "@wormhole-foundation/sdk-sui-tokenbridge";
 
 import nock from "nock";
 import path from "path";
+import { fileURLToPath } from "url";
+
+// ESM has no __dirname; derive it from import.meta.url (jest runs in ESM mode for v2).
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const network: "Mainnet" = "Mainnet";
 type TNet = typeof network;

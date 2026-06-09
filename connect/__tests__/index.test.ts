@@ -5,7 +5,9 @@ import { Platform, platform } from "@wormhole-foundation/sdk-base";
 import { ChainContext, PlatformContext, RpcConnection } from "@wormhole-foundation/sdk-definitions";
 import { mocks, utils } from "@wormhole-foundation/sdk-definitions/testing";
 
-import { Wormhole, networkPlatformConfigs } from "./../src/index.js";
+// Dynamic import so the axios mock in ./mocks/publicrpc.js (registered via
+// jest.unstable_mockModule) is in place before connect loads axios.
+const { Wormhole, networkPlatformConfigs } = await import("./../src/index.js");
 
 const network: "Testnet" = "Testnet";
 type TNet = typeof network;

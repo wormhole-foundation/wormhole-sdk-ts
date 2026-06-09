@@ -1,3 +1,4 @@
+import { jest } from "@jest/globals";
 import { Interface, ZeroAddress } from 'ethers';
 import { Wormhole } from '@wormhole-foundation/sdk-connect';
 import { EvmAddress, EvmPlatform } from '@wormhole-foundation/sdk-evm';
@@ -44,7 +45,7 @@ describe('EvmExecutorTokenBridge', () => {
     } as any);
     // Stub core.getMessageFee so we don't hit an RPC.
     (executor as any).core = {
-      getMessageFee: jest.fn().mockResolvedValue(WORMHOLE_FEE),
+      getMessageFee: jest.fn<() => Promise<any>>().mockResolvedValue(WORMHOLE_FEE),
     };
     return executor;
   }
@@ -89,7 +90,7 @@ describe('EvmExecutorTokenBridge', () => {
 
   function stubTokenImplementation(allowance: bigint) {
     const fake = {
-      allowance: jest.fn().mockResolvedValue(allowance),
+      allowance: jest.fn<() => Promise<any>>().mockResolvedValue(allowance),
       approve: {
         populateTransaction: jest.fn(
           async (spender: string, value: bigint) => ({

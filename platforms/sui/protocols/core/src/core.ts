@@ -1,4 +1,4 @@
-import type { SuiClient } from "@mysten/sui/client";
+import type { SuiGrpcClient } from "@mysten/sui/grpc";
 import type {
   AccountAddress,
   ChainId,
@@ -10,7 +10,7 @@ import type {
   WormholeCore,
   WormholeMessageId,
 } from "@wormhole-foundation/sdk-connect";
-import { createVAA, toChainId } from "@wormhole-foundation/sdk-connect";
+import { createVAA, encoding, toChainId } from "@wormhole-foundation/sdk-connect";
 import type {
   AnySuiAddress,
   SuiChains,
@@ -26,7 +26,7 @@ export class SuiWormholeCore<N extends Network, C extends SuiChains> implements 
   constructor(
     readonly network: N,
     readonly chain: C,
-    readonly provider: SuiClient,
+    readonly provider: SuiGrpcClient,
     readonly contracts: Contracts,
   ) {
     this.chainId = toChainId(chain);
@@ -43,7 +43,7 @@ export class SuiWormholeCore<N extends Network, C extends SuiChains> implements 
   }
 
   static async fromRpc<N extends Network>(
-    connection: SuiClient,
+    connection: SuiGrpcClient,
     config: ChainsConfig<N, SuiPlatformType>,
   ) {
     const [network, chain] = await SuiPlatform.chainFromRpc(connection);
@@ -83,21 +83,22 @@ export class SuiWormholeCore<N extends Network, C extends SuiChains> implements 
   }
 
   async parseMessages(txid: string) {
-    const txBlock = await this.provider.getTransactionBlock({
+    const txResult = await this.provider.getTransaction({
       digest: txid,
-      options: { showEvents: true, showEffects: true, showInput: true },
+      include: { events: true },
     });
+    const tx = txResult.Transaction ?? txResult.FailedTransaction;
 
-    const messages = txBlock.events?.filter((event) => event.type.endsWith("WormholeMessage"));
+    const messages = tx?.events?.filter((event) => event.eventType.endsWith("WormholeMessage"));
     if (!messages || messages.length == 0) throw new Error("WormholeMessage not found");
 
     return messages.map((message) => {
-      const msg = message.parsedJson as {
+      const msg = message.json as {
         sender: string;
         sequence: string;
         consistency_level: number;
         nonce: number;
-        payload: number[];
+        payload: string;
         timestamp: string;
       };
 
@@ -110,7 +111,7 @@ export class SuiWormholeCore<N extends Network, C extends SuiChains> implements 
         consistencyLevel: msg.consistency_level,
         nonce: msg.nonce,
         signatures: [],
-        payload: new Uint8Array(msg.payload),
+        payload: encoding.b64.decode(msg.payload),
       });
     });
   }
