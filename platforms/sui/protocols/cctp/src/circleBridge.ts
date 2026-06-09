@@ -226,7 +226,13 @@ export class SuiCircleBridge<N extends Network, C extends SuiChains> implements 
       throw new Error("No MessageSent event found");
     }
 
-    const circleMessage = new Uint8Array((circleMessageSentEvent?.json as any).message);
+    // The gRPC core API returns `vector<u8>` event fields as base64 strings
+    // (JSON-RPC returned number[]); decode accordingly.
+    const rawMessage = (circleMessageSentEvent?.json as any).message;
+    const circleMessage =
+      typeof rawMessage === "string"
+        ? encoding.b64.decode(rawMessage)
+        : new Uint8Array(rawMessage);
 
     const [msg, hash] = CircleBridge.deserialize(circleMessage);
     const { payload: body } = msg;
