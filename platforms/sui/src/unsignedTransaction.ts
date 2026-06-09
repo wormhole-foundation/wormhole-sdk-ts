@@ -1,4 +1,4 @@
-import { Transaction } from "@mysten/sui/transactions";
+import type { Transaction } from "@mysten/sui/transactions";
 import type { Network, UnsignedTransaction } from "@wormhole-foundation/sdk-connect";
 import type { SuiChains } from "./types.js";
 

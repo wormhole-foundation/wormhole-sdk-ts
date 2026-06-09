@@ -1,11 +1,14 @@
-import { jest, expect, test } from '@jest/globals';
+import { jest, expect, test, describe } from '@jest/globals';
 import { nativeChainIds } from '@wormhole-foundation/sdk-connect';
+import type { SolanaChains } from './../../src/index.js';
 
-// Mock the genesis hash call for solana so we dont touch the network
-jest.mock('@solana/web3.js', () => {
-  const actualWeb3 = jest.requireActual('@solana/web3.js');
+// Mock the genesis hash call for solana so we don't touch the network.
+// ESM requires unstable_mockModule (jest.mock isn't hoisted/usable under ESM) and the
+// modules that consume the mock must be imported dynamically AFTER it is registered.
+jest.unstable_mockModule('@solana/web3.js', () => {
+  const actualWeb3 = jest.requireActual('@solana/web3.js') as any;
   return {
-    ...(actualWeb3 as any),
+    ...actualWeb3,
     getDefaultProvider: jest.fn().mockImplementation(() => {
       return {
         getGenesisHash: jest
@@ -18,21 +21,14 @@ jest.mock('@solana/web3.js', () => {
   };
 });
 
-import {
-  DEFAULT_NETWORK,
-  CONFIG,
-  chainToPlatform,
-  chains,
-} from '@wormhole-foundation/sdk-connect';
+const { DEFAULT_NETWORK, CONFIG, chainToPlatform, chains } = await import(
+  '@wormhole-foundation/sdk-connect'
+);
+const { SolanaPlatform } = await import('./../../src/index.js');
+await import('@wormhole-foundation/sdk-solana-core');
+await import('@wormhole-foundation/sdk-solana-tokenbridge');
 
-import { SolanaChains, SolanaPlatform } from './../../src/index.js';
-
-import '@wormhole-foundation/sdk-solana-core';
-import '@wormhole-foundation/sdk-solana-tokenbridge';
-
-const { getDefaultProvider } = jest.requireMock('@solana/web3.js') as {
-  getDefaultProvider: jest.Mock;
-};
+const { getDefaultProvider } = (await import('@solana/web3.js')) as any;
 
 const network = DEFAULT_NETWORK;
 
@@ -76,8 +72,6 @@ describe('Solana Platform Tests', () => {
       const p = new SolanaPlatform(network, {});
       expect(p.config).toEqual({});
 
-      // expect getRpc to throw an error since we havent provided
-      // the conf to figure out how to connect
       expect(() => p.getRpc(SOLANA_CHAINS[0]!)).toThrow();
       expect(() => p.getChain(SOLANA_CHAINS[0]!)).toThrow();
     });

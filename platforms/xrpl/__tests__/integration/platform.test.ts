@@ -1,3 +1,4 @@
+import { jest } from "@jest/globals";
 import { Client } from "xrpl";
 import { XrplPlatform } from "../../src/platform.js";
 import { XrplZeroAddress } from "../../src/address.js";

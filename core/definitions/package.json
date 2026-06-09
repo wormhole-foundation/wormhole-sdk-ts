@@ -12,72 +12,40 @@
   "directories": {
     "test": "__tests__"
   },
-  "main": "./dist/cjs/index.js",
+  "main": "./dist/esm/index.js",
   "module": "./dist/esm/index.js",
-  "types": "./dist/cjs/index.d.ts",
+  "types": "./dist/esm/index.d.ts",
   "files": [
-    "dist/esm",
-    "dist/cjs"
+    "dist/esm"
   ],
   "exports": {
     ".": {
-      "react-native": {
-        "import": "./dist/esm/index.js",
-        "require": "./dist/cjs/index.js",
-        "types": "./dist/cjs/index.d.ts",
-        "default": "./dist/cjs/index.js"
-      },
-      "require": {
-        "types": "./dist/cjs/index.d.ts",
-        "default": "./dist/cjs/index.js"
-      },
-      "import": {
-        "types": "./dist/esm/index.d.ts",
-        "default": "./dist/esm/index.js"
-      },
-      "default": {
-        "types": "./dist/cjs/index.d.ts",
-        "default": "./dist/cjs/index.js"
-      }
+      "types": "./dist/esm/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "default": "./dist/esm/index.js"
     },
     "./testing": {
-      "react-native": {
-        "import": "./dist/esm/testing/index.js",
-        "require": "./dist/cjs/testing/index.js",
-        "types": "./dist/cjs/testing/index.d.ts",
-        "default": "./dist/cjs/testing/index.js"
-      },
-      "require": {
-        "types": "./dist/cjs/testing/index.d.ts",
-        "default": "./dist/cjs/testing/index.js"
-      },
-      "import": {
-        "types": "./dist/esm/testing/index.d.ts",
-        "default": "./dist/esm/testing/index.js"
-      },
-      "default": {
-        "types": "./dist/cjs/testing/index.d.ts",
-        "default": "./dist/cjs/testing/index.js"
-      }
+      "types": "./dist/esm/testing/index.d.ts",
+      "import": "./dist/esm/testing/index.js",
+      "default": "./dist/esm/testing/index.js"
     }
   },
   "typesVersions": {
     "*": {
       "testing": [
-        "./dist/cjs/testing/index.d.ts",
+        "./dist/esm/testing/index.d.ts",
         "./dist/esm/testing/index.d.ts"
       ],
       "*": [
-        "./dist/cjs/index.d.ts",
+        "./dist/esm/index.d.ts",
         "./dist/esm/index.d.ts"
       ]
     }
   },
   "scripts": {
-    "test": "jest --config ../../jest.config.ts __tests__/*.ts",
-    "build:cjs": "tsc -p ./tsconfig.cjs.json  && echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --config ./jest.config.ts __tests__/*.ts",
     "build:esm": "tsc -p ./tsconfig.esm.json",
-    "build": "npm run build:esm && npm run build:cjs",
+    "build": "npm run build:esm",
     "rebuild": "npm run clean && npm run build",
     "clean": "rm -rf ./dist && rm -rf ./.turbo",
     "lint": "npm run prettier && eslint --fix ./src --ext .ts",
