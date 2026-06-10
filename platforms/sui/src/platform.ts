@@ -21,11 +21,11 @@ import {
 
 import { SuiGrpcClient, type SuiGrpcClientOptions } from "@mysten/sui/grpc";
 import { fromBase58 } from "@mysten/sui/utils";
-import { SuiAddress } from "./address.js";
+import { SuiAddress, unwrapCoinType } from "./address.js";
 import { SuiChain } from "./chain.js";
 import { SUI_COIN } from "./constants.js";
 import type { AnySuiAddress, SuiChains, SuiPlatformType } from "./types.js";
-import { _platform } from "./types.js";
+import { _platform, isSameType } from "./types.js";
 import { getObjectFields } from "./utils.js";
 
 /**
@@ -113,7 +113,7 @@ export class SuiPlatform<N extends Network>
       const result = await connection.listCoins({ owner, coinType, cursor });
       coins = [
         ...coins,
-        ...result.objects.map((c) => ({ coinType: c.type, coinObjectId: c.objectId })),
+        ...result.objects.map((c) => ({ coinType: unwrapCoinType(c.type), coinObjectId: c.objectId })),
       ];
       cursor = result.hasNextPage ? result.cursor : null;
     } while (cursor);
@@ -144,7 +144,9 @@ export class SuiPlatform<N extends Network>
     do {
       const result = await rpc.listBalances({ owner: walletAddr, cursor });
       for (const { coinType, balance } of result.balances) {
-        const address = coinType === SUI_COIN ? "native" : coinType;
+        // gRPC returns the full-padded coin type (0x0000…0002::sui::SUI), so
+        // compare via isSameType rather than strict-equality with the short SUI_COIN.
+        const address = isSameType(coinType, SUI_COIN) ? "native" : coinType;
         balances[address] = BigInt(balance);
       }
       cursor = result.hasNextPage ? result.cursor : null;
