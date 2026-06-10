@@ -52,6 +52,7 @@ const chainIdAndChainEntries = [
   [   67, "ZeroGravity"    ],
   [   68, "Tempo"          ],
   [   69, "Nexus"          ],
+  [   71, "Arc"            ],
   [ 3104, "Wormchain"      ],
   [ 4000, "Cosmoshub"      ],
   [ 4001, "Evmos"          ],

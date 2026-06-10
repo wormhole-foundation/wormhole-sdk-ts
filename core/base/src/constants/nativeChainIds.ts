@@ -122,7 +122,8 @@ const chainNetworkNativeChainIdEntries = [
       ["MonadTestnet",    10143n],
       ["ZeroGravity",     16602n],
       ["Tempo",           42431n],
-      ["Nexus",           3945n]
+      ["Nexus",           3945n],
+      ["Arc",             5042002n]
     ],
   ],
   [
