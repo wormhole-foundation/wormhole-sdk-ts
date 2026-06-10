@@ -32,6 +32,12 @@ export const normalizeSuiType = (type: string): string => {
   return [normalizeSuiAddress(tokens[0]!), tokens[1], tokens[2]].join(SUI_SEPARATOR);
 };
 
+// Coin objects are typed 0x2::coin::Coin<T>; recover the inner coin type T.
+export const unwrapCoinType = (objectType: string): string => {
+  const match = objectType.match(/::coin::Coin<(.+)>$/);
+  return match ? match[1]! : objectType;
+};
+
 export const getCoinTypeFromPackageId = (packageId: string): string => {
   return new SuiAddress(packageId).getCoinType();
 };
