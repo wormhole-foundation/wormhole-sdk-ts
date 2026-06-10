@@ -77,6 +77,7 @@ const finalityThresholds = [
   ["ZeroGravity",4096],
   ["Tempo",      1],
   ["Nexus",      1],
+  ["Arc",        1],
   // Testnets
   ["Sepolia", 72],
   ["ArbitrumSepolia", 4096],
@@ -154,6 +155,7 @@ const blockTimeMilliseconds = [
   ["ZeroGravity",       1_000],
   ["Tempo",             1_000],
   ["Nexus",             1_000],
+  ["Arc",               1_000],
 ] as const satisfies MapLevel<Chain, number>;
 
 /** The amount of time between block production, in milliseconds  */

@@ -453,6 +453,16 @@ const explorerConfig = [[
         }
       }
     ],
+    [
+      "Arc", {
+        name: "Arc Testnet Explorer",
+        baseUrl: "https://testnet.arcscan.app/",
+        endpoints: {
+          tx: "tx/",
+          account: "address/"
+        }
+      }
+    ],
   ]],
 ] as const satisfies MapLevels<["Mainnet" | "Testnet", Chain, ExplorerSettings]>;
 

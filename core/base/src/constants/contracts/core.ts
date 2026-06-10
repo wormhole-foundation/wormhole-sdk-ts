@@ -92,7 +92,8 @@ export const coreBridgeContracts = [[
     ["ZeroGravity",     "0x059560c0D626bdB982454b5EBd65DC8E7cF7973c"],
     ["Stacks",          "ST37PDDGEA78QSPSBZM1ZHPCZV9GKAPDFHA32RWY8"],
     ["Nexus",           "0x194B123c5E96B9b2E49763619985790Dc241CAC0"],
-    ["Tempo",           "0xa29E8c21924834E6249bCE1FD733f24eC492018c"]
+    ["Tempo",           "0xa29E8c21924834E6249bCE1FD733f24eC492018c"],
+    ["Arc",             "0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd"]
   ]], [
   "Devnet", [
     ["Solana",    "Bridge1p5gheXUvJ6jGWGeCsgPKgnE3YgdGKRVCMY9o"],

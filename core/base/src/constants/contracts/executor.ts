@@ -62,5 +62,6 @@ export const executorContracts = [[
     ["ZeroGravity",     "0x7C43825EeB76DF7aAf3e1D2e8f684d4876F0CC05"],
     ["Tempo",           "0xA3640464E5543182E5F587f346B6Ac1E604d1625"],
     ["Nexus",           "0xc4b1A023A14d62791ca8C1216575839a0Bd98Ecb"],
+    ["Arc",             "0xCD6b0d9635862e715FD8e2df335f8D0fF20Bb798"],
   ]],
 ] as const satisfies MapLevels<[Network, Chain, string]>;

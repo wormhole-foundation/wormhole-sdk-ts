@@ -101,6 +101,7 @@ const rpcConfig = [[
     ["ZeroGravity",     "https://rpc.ankr.com/0g_galileo_testnet_evm"],
     ["Tempo",           "https://rpc.moderato.tempo.xyz"],
     ["Nexus",           "https://testnet.rpc.nexus.xyz"],
+    ["Arc",             "https://rpc.testnet.arc.network"],
   ]], [
   "Devnet", [
     ["Ethereum",  "http://eth-devnet:8545"],
