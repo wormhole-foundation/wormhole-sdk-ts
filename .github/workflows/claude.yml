@@ -64,7 +64,7 @@ jobs:
       - name: Run Claude Code
         id: claude
         if: steps.auth.outputs.authorized == 'true'
-        uses: anthropics/claude-code-action@ade221fd1c400376a4799977d683a4eda09f9d7c # v1.0.60
+        uses: anthropics/claude-code-action@1ba15be4f0b0c9a026c0c7986668f8f2aa998440 # v1.0.74
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }} # zizmor: ignore[secrets-outside-env]
           # Use the workflow token directly so the action does not need OIDC.
