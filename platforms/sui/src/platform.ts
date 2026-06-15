@@ -157,7 +157,7 @@ export class SuiPlatform<N extends Network>
   static async sendWait(chain: Chain, rpc: SuiGrpcClient, stxns: SignedTx[]): Promise<TxHash[]> {
     const txhashes = [];
     for (const stxn of stxns) {
-      const result = await rpc.executeTransaction(stxn as any);
+      const result = await rpc.executeTransaction(stxn);
       const digest = (result.Transaction ?? result.FailedTransaction)!.digest;
       await rpc.waitForTransaction({ digest });
       txhashes.push(digest);
