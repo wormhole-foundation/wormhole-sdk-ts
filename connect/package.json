@@ -68,7 +68,7 @@
         "./dist/esm/whscan-api.d.ts"
       ],
       "*": [
-        "./index.d.cts"
+        "./dist/esm/index.d.ts"
       ]
     }
   },
