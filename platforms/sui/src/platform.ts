@@ -158,7 +158,15 @@ export class SuiPlatform<N extends Network>
     const txhashes = [];
     for (const stxn of stxns) {
       const result = await rpc.executeTransaction(stxn);
-      const digest = (result.Transaction ?? result.FailedTransaction)!.digest;
+      const executed = result.Transaction ?? result.FailedTransaction;
+      if (!executed) throw new Error("Sui transaction execution returned no result");
+
+      const { digest, status } = executed;
+      if (!status.success)
+        throw new Error(
+          `Sui transaction ${digest} failed: ${status.error?.message ?? "unknown error"}`,
+        );
+
       await rpc.waitForTransaction({ digest });
       txhashes.push(digest);
     }
