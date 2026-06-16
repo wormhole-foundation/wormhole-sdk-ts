@@ -55,6 +55,7 @@ const rpcConfig = [[
     ["ZeroGravity", "https://evmrpc.0g.ai"],
     ["Tempo",       "https://rpc.tempo.xyz"],
     ["Nexus",       "https://mainnet.rpc.nexus.xyz"],
+    ["Arc",         "https://rpc.arc.network"],
   ]], [
   "Testnet", [
     ["Bsc",             "https://data-seed-prebsc-1-s3.binance.org:8545"],
