@@ -19,7 +19,7 @@ import {
   networkPlatformConfigs,
 } from "@wormhole-foundation/sdk-connect";
 
-import { SuiGrpcClient, type SuiGrpcClientOptions } from "@mysten/sui/grpc";
+import { GrpcWebFetchTransport, SuiGrpcClient } from "@mysten/sui/grpc";
 import { fromBase58 } from "@mysten/sui/utils";
 import { SuiAddress, unwrapCoinType } from "./address.js";
 import { SuiChain } from "./chain.js";
@@ -48,10 +48,11 @@ export class SuiPlatform<N extends Network>
       // v2 uses the gRPC client; `network` is required. Wormhole networks
       // ("Mainnet" | "Testnet" | "Devnet") lowercase to the Sui network names.
       const network = this.network.toLowerCase();
-      const options: SuiGrpcClientOptions = chainConfig.httpHeaders
-        ? { network, baseUrl: chainConfig.rpc, meta: chainConfig.httpHeaders }
-        : { network, baseUrl: chainConfig.rpc };
-      return new SuiGrpcClient(options);
+      const transport = new GrpcWebFetchTransport({
+        baseUrl: chainConfig.rpc,
+        meta: chainConfig.httpHeaders,
+      });
+      return new SuiGrpcClient({ network, transport });
     }
     throw new Error("No configuration available for chain: " + chain);
   }
