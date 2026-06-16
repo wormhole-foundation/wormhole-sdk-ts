@@ -1,3 +1,4 @@
+import { jest } from "@jest/globals";
 import fetchMock from "@fetch-mock/jest";
 import { getWalletBalances } from "../balances.js";
 

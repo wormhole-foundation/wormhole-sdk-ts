@@ -13,50 +13,33 @@
     "test": "__tests__"
   },
   "license": "Apache-2.0",
-  "main": "./dist/cjs/index.js",
-  "types": "./dist/cjs/index.d.ts",
+  "main": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
   "module": "./dist/esm/index.js",
   "exports": {
     ".": {
-      "react-native": {
-        "import": "./dist/esm/index.js",
-        "require": "./dist/cjs/index.js",
-        "types": "./dist/cjs/index.d.ts",
-        "default": "./dist/cjs/index.js"
-      },
-      "import": {
-        "types": "./dist/esm/index.d.ts",
-        "default": "./dist/esm/index.js"
-      },
-      "require": {
-        "types": "./dist/cjs/index.d.ts",
-        "default": "./dist/cjs/index.js"
-      },
-      "default": {
-        "types": "./dist/cjs/index.d.ts",
-        "default": "./dist/cjs/index.js"
-      }
+      "types": "./dist/esm/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "default": "./dist/esm/index.js"
     }
   },
   "typesVersions": {
     "*": {
       "*": [
-        "./dist/cjs/index.d.ts"
+        "./dist/esm/index.d.ts"
       ]
     }
   },
   "files": [
-    "dist/esm",
-    "dist/cjs"
+    "dist/esm"
   ],
   "dependencies": {
     "@wormhole-foundation/sdk-base": "1.20.0"
   },
   "sideEffects": false,
   "scripts": {
-    "build:cjs": "tsc -p ./tsconfig.cjs.json  && echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
     "build:esm": "tsc -p ./tsconfig.esm.json",
-    "build": "npm run build:esm && npm run build:cjs",
+    "build": "npm run build:esm",
     "rebuild": "npm run clean && npm run build",
     "clean": "rm -rf ./dist && rm -rf ./.turbo",
     "typecheck": "cp ./__tests__/typechecks/index.test-d.ts ./dist/esm/ && tsd",

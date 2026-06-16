@@ -1,7 +1,8 @@
+import { jest } from "@jest/globals";
 import type { Provider, TransactionReceipt, TransactionResponse } from 'ethers';
 import { EvmPlatform } from '@wormhole-foundation/sdk-evm';
 
-function mockProvider(overrides: Partial<Provider> = {}): Provider {
+function mockProvider(overrides: Record<string, unknown> = {}): Provider {
   return overrides as unknown as Provider;
 }
 
@@ -24,9 +25,9 @@ describe('EvmPlatform', () => {
 
     it('uses txRes.wait() for standard chains', async () => {
       const receipt = { status: 1 } as TransactionReceipt;
-      const waitFn = jest.fn().mockResolvedValue(receipt);
+      const waitFn = jest.fn<() => Promise<any>>().mockResolvedValue(receipt);
       const rpc = mockProvider({
-        broadcastTransaction: jest.fn().mockResolvedValue({
+        broadcastTransaction: jest.fn<() => Promise<any>>().mockResolvedValue({
           hash: TX_HASH,
           wait: waitFn,
         } as unknown as TransactionResponse),
@@ -47,10 +48,10 @@ describe('EvmPlatform', () => {
     it('uses waitForTransaction for Tempo', async () => {
       const receipt = { status: 1 } as TransactionReceipt;
       const rpc = mockProvider({
-        broadcastTransaction: jest.fn().mockResolvedValue({
+        broadcastTransaction: jest.fn<() => Promise<any>>().mockResolvedValue({
           hash: TX_HASH,
         } as unknown as TransactionResponse),
-        waitForTransaction: jest.fn().mockResolvedValue(receipt),
+        waitForTransaction: jest.fn<() => Promise<any>>().mockResolvedValue(receipt),
       });
 
       const result = await EvmPlatform.sendWait(
@@ -70,10 +71,10 @@ describe('EvmPlatform', () => {
     it('uses waitForTransaction for Celo', async () => {
       const receipt = { status: 1 } as TransactionReceipt;
       const rpc = mockProvider({
-        broadcastTransaction: jest.fn().mockResolvedValue({
+        broadcastTransaction: jest.fn<() => Promise<any>>().mockResolvedValue({
           hash: TX_HASH,
         } as unknown as TransactionResponse),
-        waitForTransaction: jest.fn().mockResolvedValue(receipt),
+        waitForTransaction: jest.fn<() => Promise<any>>().mockResolvedValue(receipt),
       });
 
       const result = await EvmPlatform.sendWait(
@@ -92,10 +93,10 @@ describe('EvmPlatform', () => {
 
     it('throws on timeout (waitForTransaction returns null)', async () => {
       const rpc = mockProvider({
-        broadcastTransaction: jest.fn().mockResolvedValue({
+        broadcastTransaction: jest.fn<() => Promise<any>>().mockResolvedValue({
           hash: TX_HASH,
         } as unknown as TransactionResponse),
-        waitForTransaction: jest.fn().mockResolvedValue(null),
+        waitForTransaction: jest.fn<() => Promise<any>>().mockResolvedValue(null),
       });
 
       await expect(
@@ -105,12 +106,10 @@ describe('EvmPlatform', () => {
 
     it('throws when receipt.status is 0 (reverted)', async () => {
       const rpc = mockProvider({
-        broadcastTransaction: jest.fn().mockResolvedValue({
+        broadcastTransaction: jest.fn<() => Promise<any>>().mockResolvedValue({
           hash: TX_HASH,
         } as unknown as TransactionResponse),
-        waitForTransaction: jest
-          .fn()
-          .mockResolvedValue({ status: 0 } as TransactionReceipt),
+        waitForTransaction: jest.fn<() => Promise<any>>().mockResolvedValue({ status: 0 } as TransactionReceipt),
       });
 
       await expect(
@@ -120,12 +119,10 @@ describe('EvmPlatform', () => {
 
     it('throws when receipt.status is null (pre-Byzantium)', async () => {
       const rpc = mockProvider({
-        broadcastTransaction: jest.fn().mockResolvedValue({
+        broadcastTransaction: jest.fn<() => Promise<any>>().mockResolvedValue({
           hash: TX_HASH,
         } as unknown as TransactionResponse),
-        waitForTransaction: jest
-          .fn()
-          .mockResolvedValue({ status: null } as unknown as TransactionReceipt),
+        waitForTransaction: jest.fn<() => Promise<any>>().mockResolvedValue({ status: null } as unknown as TransactionReceipt),
       });
 
       await expect(
@@ -141,9 +138,7 @@ describe('EvmPlatform', () => {
           const hash = hashes[callCount++];
           return Promise.resolve({
             hash,
-            wait: jest
-              .fn()
-              .mockResolvedValue({ status: 1 } as TransactionReceipt),
+            wait: jest.fn<() => Promise<any>>().mockResolvedValue({ status: 1 } as TransactionReceipt),
           } as unknown as TransactionResponse);
         }),
       });
@@ -159,9 +154,9 @@ describe('EvmPlatform', () => {
 
     it('throws when txRes.wait() returns null on standard chain', async () => {
       const rpc = mockProvider({
-        broadcastTransaction: jest.fn().mockResolvedValue({
+        broadcastTransaction: jest.fn<() => Promise<any>>().mockResolvedValue({
           hash: TX_HASH,
-          wait: jest.fn().mockResolvedValue(null),
+          wait: jest.fn<() => Promise<any>>().mockResolvedValue(null),
         } as unknown as TransactionResponse),
       });
 

@@ -1,4 +1,4 @@
-import type { SuiClient } from "@mysten/sui/client";
+import type { SuiGrpcClient } from "@mysten/sui/grpc";
 import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
 import type {
   Network,
@@ -11,7 +11,7 @@ import { SuiPlatform } from "./platform.js";
 import type { SuiChains } from "./types.js";
 import type { SuiUnsignedTransaction } from "./unsignedTransaction.js";
 
-export async function getSuiSigner(rpc: SuiClient, privateKey: string): Promise<Signer> {
+export async function getSuiSigner(rpc: SuiGrpcClient, privateKey: string): Promise<Signer> {
   const [, chain] = await SuiPlatform.chainFromRpc(rpc);
   return new SuiSigner(chain, rpc, Ed25519Keypair.deriveKeypair(privateKey, "m/44'/784'/0'/0'/0'"));
 }
@@ -20,7 +20,7 @@ export async function getSuiSigner(rpc: SuiClient, privateKey: string): Promise<
 export class SuiSigner<N extends Network, C extends SuiChains> implements SignAndSendSigner<N, C> {
   constructor(
     private _chain: C,
-    private _client: SuiClient,
+    private _client: SuiGrpcClient,
     private _signer: Ed25519Keypair,
     private _debug?: boolean,
   ) {}
@@ -44,7 +44,8 @@ export class SuiSigner<N extends Network, C extends SuiChains> implements SignAn
           transaction,
           signer: this._signer,
         });
-        txids.push(result.digest);
+        const { digest } = (result.Transaction ?? result.FailedTransaction)!;
+        txids.push(digest);
       } catch (e) {
         // If the transaction fails on Sui, its often in a dryrun, but im currently
         // too lazy to write a typeguard to make this safe

@@ -12,18 +12,20 @@ import {
   PlatformContext,
   Wormhole,
   chainToPlatform,
+  encoding,
   isNative,
   nativeChainIds,
   decimals as nativeDecimals,
   networkPlatformConfigs,
 } from "@wormhole-foundation/sdk-connect";
 
-import { PaginatedCoins, SuiClient, SuiHTTPTransport } from "@mysten/sui/client";
-import { SuiAddress } from "./address.js";
+import { SuiGrpcClient, type SuiGrpcClientOptions } from "@mysten/sui/grpc";
+import { fromBase58 } from "@mysten/sui/utils";
+import { SuiAddress, unwrapCoinType } from "./address.js";
 import { SuiChain } from "./chain.js";
 import { SUI_COIN } from "./constants.js";
 import type { AnySuiAddress, SuiChains, SuiPlatformType } from "./types.js";
-import { _platform } from "./types.js";
+import { _platform, isSameType } from "./types.js";
 import { getObjectFields } from "./utils.js";
 
 /**
@@ -40,18 +42,16 @@ export class SuiPlatform<N extends Network>
     super(network, _config ?? networkPlatformConfigs(network, SuiPlatform._platform));
   }
 
-  getRpc<C extends SuiChains>(chain: C): SuiClient {
+  getRpc<C extends SuiChains>(chain: C): SuiGrpcClient {
     if (chain in this.config) {
       const chainConfig = this.config[chain]!;
-      if (chainConfig.httpHeaders) {
-        return new SuiClient({
-          transport: new SuiHTTPTransport({
-            url: chainConfig.rpc,
-            rpc: { headers: chainConfig.httpHeaders },
-          }),
-        });
-      }
-      return new SuiClient({ url: chainConfig.rpc });
+      // v2 uses the gRPC client; `network` is required. Wormhole networks
+      // ("Mainnet" | "Testnet" | "Devnet") lowercase to the Sui network names.
+      const network = this.network.toLowerCase();
+      const options: SuiGrpcClientOptions = chainConfig.httpHeaders
+        ? { network, baseUrl: chainConfig.rpc, meta: chainConfig.httpHeaders }
+        : { network, baseUrl: chainConfig.rpc };
+      return new SuiGrpcClient(options);
     }
     throw new Error("No configuration available for chain: " + chain);
   }
@@ -83,35 +83,39 @@ export class SuiPlatform<N extends Network>
     return platform === SuiPlatform._platform;
   }
 
-  static async getDecimals(network: Network, chain: Chain, rpc: SuiClient, token: AnySuiAddress): Promise<number> {
+  static async getDecimals(
+    network: Network,
+    chain: Chain,
+    rpc: SuiGrpcClient,
+    token: AnySuiAddress,
+  ): Promise<number> {
     if (isNative(token)) return nativeDecimals.nativeDecimals(SuiPlatform._platform);
 
     const parsedAddress = new SuiAddress(token);
 
     try {
       const fields = await getObjectFields(rpc, parsedAddress.toString());
-      if (fields && "decimals" in fields) return fields["decimals"];
+      if (fields && "decimals" in fields) return Number(fields["decimals"]);
     } catch {}
 
-    const metadata = await rpc.getCoinMetadata({ coinType: parsedAddress.toString() });
-    if (metadata === null)
+    const { coinMetadata } = await rpc.getCoinMetadata({ coinType: parsedAddress.toString() });
+    if (coinMetadata === null)
       throw new Error(`Can't fetch decimals for token ${parsedAddress.toString()}`);
 
-    return metadata.decimals;
+    return coinMetadata.decimals;
   }
 
-  static async getCoins(connection: SuiClient, account: AnySuiAddress, coinType: string) {
+  static async getCoins(connection: SuiGrpcClient, account: AnySuiAddress, coinType: string) {
     let coins: { coinType: string; coinObjectId: string }[] = [];
     let cursor: string | null = null;
     const owner = new SuiAddress(account).toString();
     do {
-      const result: PaginatedCoins = await connection.getCoins({
-        owner,
-        coinType,
-        cursor,
-      });
-      coins = [...coins, ...result.data];
-      cursor = result.hasNextPage ? result.nextCursor! : null;
+      const result = await connection.listCoins({ owner, coinType, cursor });
+      coins = [
+        ...coins,
+        ...result.objects.map((c) => ({ coinType: unwrapCoinType(c.type), coinObjectId: c.objectId })),
+      ];
+      cursor = result.hasNextPage ? result.cursor : null;
     } while (cursor);
     return coins;
   }
@@ -119,53 +123,61 @@ export class SuiPlatform<N extends Network>
   static async getBalance(
     _network: Network,
     _chain: Chain,
-    rpc: SuiClient,
+    rpc: SuiGrpcClient,
     walletAddr: string,
     token: AnySuiAddress,
   ): Promise<bigint | null> {
-    if (isNative(token)) {
-      const { totalBalance } = await rpc.getBalance({
-        owner: walletAddr,
-      });
-      return BigInt(totalBalance);
-    }
-
-    const { totalBalance } = await rpc.getBalance({
-      owner: walletAddr,
-      coinType: token.toString(),
-    });
-    return BigInt(totalBalance);
+    const { balance } = isNative(token)
+      ? await rpc.getBalance({ owner: walletAddr })
+      : await rpc.getBalance({ owner: walletAddr, coinType: token.toString() });
+    return BigInt(balance.balance);
   }
 
   static async getBalances(
     _network: Network,
     _chain: Chain,
-    rpc: SuiClient,
+    rpc: SuiGrpcClient,
     walletAddr: string,
   ): Promise<Balances> {
-    const result = await rpc.getAllBalances({ owner: walletAddr });
     const balances: Balances = {};
-    for (const { coinType, totalBalance } of result) {
-      const address = coinType === SUI_COIN ? "native" : coinType;
-      balances[address] = BigInt(totalBalance);
-    }
+    let cursor: string | null = null;
+    do {
+      const result = await rpc.listBalances({ owner: walletAddr, cursor });
+      for (const { coinType, balance } of result.balances) {
+        // gRPC returns the full-padded coin type (0x0000…0002::sui::SUI), so
+        // compare via isSameType rather than strict-equality with the short SUI_COIN.
+        const address = isSameType(coinType, SUI_COIN) ? "native" : coinType;
+        balances[address] = BigInt(balance);
+      }
+      cursor = result.hasNextPage ? result.cursor : null;
+    } while (cursor);
     return balances;
   }
 
-  static async sendWait(chain: Chain, rpc: SuiClient, stxns: SignedTx[]): Promise<TxHash[]> {
+  static async sendWait(chain: Chain, rpc: SuiGrpcClient, stxns: SignedTx[]): Promise<TxHash[]> {
     const txhashes = [];
     for (const stxn of stxns) {
-      const pendingTx = await rpc.executeTransactionBlock(stxn);
-      await rpc.waitForTransaction({ digest: pendingTx.digest });
-      txhashes.push(pendingTx.digest);
+      const result = await rpc.executeTransaction(stxn);
+      const executed = result.Transaction ?? result.FailedTransaction;
+      if (!executed) throw new Error("Sui transaction execution returned no result");
+
+      const { digest, status } = executed;
+      if (!status.success)
+        throw new Error(
+          `Sui transaction ${digest} failed: ${status.error?.message ?? "unknown error"}`,
+        );
+
+      await rpc.waitForTransaction({ digest });
+      txhashes.push(digest);
     }
     return txhashes;
   }
 
-  static async getLatestBlock(rpc: SuiClient): Promise<number> {
-    return Number(await rpc.getLatestCheckpointSequenceNumber());
+  static async getLatestBlock(rpc: SuiGrpcClient): Promise<number> {
+    const { response } = await rpc.ledgerService.getServiceInfo({});
+    return Number(response.checkpointHeight ?? 0n);
   }
-  static async getLatestFinalizedBlock(rpc: SuiClient): Promise<number> {
+  static async getLatestFinalizedBlock(rpc: SuiGrpcClient): Promise<number> {
     return this.getLatestBlock(rpc);
   }
 
@@ -181,8 +193,11 @@ export class SuiPlatform<N extends Network>
     return [network, chain];
   }
 
-  static async chainFromRpc(rpc: SuiClient): Promise<[Network, SuiChains]> {
-    const result = await rpc.call("sui_getChainIdentifier", []);
-    return this.chainFromChainId(result as string);
+  static async chainFromRpc(rpc: SuiGrpcClient): Promise<[Network, SuiChains]> {
+    // gRPC returns the base58-encoded genesis checkpoint digest; the Sui chain identifier
+    // (as registered in nativeChainIds) is the hex of its first 4 bytes.
+    const { chainIdentifier } = await rpc.core.getChainIdentifier();
+    const chainId = encoding.hex.encode(fromBase58(chainIdentifier).slice(0, 4));
+    return this.chainFromChainId(chainId);
   }
 }

@@ -1,95 +1,90 @@
-import type { SuiClient, SuiObjectResponse } from "@mysten/sui/client";
+import type { SuiGrpcClient } from "@mysten/sui/grpc";
 import {
-  getFieldsFromObjectResponse,
-  getObjectFields,
+  coinTypeKeyName,
+  dummyFieldName,
+  getDynamicFieldValue,
   getPackageIdFromType,
-  getTableKeyType,
-  isMoveStructObject,
   isValidSuiType,
   trimSuiType,
 } from "@wormhole-foundation/sdk-sui";
 
+/** The fetched token-registry entry object (gRPC core), exposing top-level `type` + flat `json`. */
+export interface TokenRegistryEntry {
+  type: string;
+  json: Record<string, any>;
+}
+
 export const getTokenFromTokenRegistry = async (
-  provider: SuiClient,
+  provider: SuiGrpcClient,
   tokenBridgeStateObjectId: string,
   tokenType: string,
-): Promise<SuiObjectResponse> => {
+): Promise<TokenRegistryEntry | null> => {
   if (!isValidSuiType(tokenType)) {
     throw new Error(`Invalid Sui type: ${tokenType}`);
   }
 
-  const tokenBridgeStateFields = await getObjectFields(provider, tokenBridgeStateObjectId);
-  if (!tokenBridgeStateFields) {
+  const { object: state } = await provider.getObject({
+    objectId: tokenBridgeStateObjectId,
+    include: { json: true },
+  });
+  if (!state || !state.json) {
     throw new Error(
       `Unable to fetch object fields from token bridge state. Object ID: ${tokenBridgeStateObjectId}`,
     );
   }
 
-  const tokenRegistryObjectId = tokenBridgeStateFields["token_registry"].fields?.id?.id;
+  // The token registry shares the token bridge's package id (derived from the state type).
+  const tokenRegistryPackageId = getPackageIdFromType(state.type);
+  const tokenRegistryObjectId = (state.json as any)["token_registry"]?.["id"];
   if (!tokenRegistryObjectId) {
     throw new Error("Unable to fetch token registry object ID");
   }
 
-  const tokenRegistryPackageId = getPackageIdFromType(
-    tokenBridgeStateFields["token_registry"]?.type,
-  );
-
-  if (!tokenRegistryPackageId) {
-    throw new Error("Unable to fetch token registry package ID");
+  try {
+    const name = dummyFieldName(`${tokenRegistryPackageId}::token_registry::Key<${tokenType}>`);
+    const { dynamicField } = await provider.getDynamicField({
+      parentId: tokenRegistryObjectId,
+      name,
+    });
+    const { object } = await provider.getObject({
+      objectId: dynamicField.fieldId,
+      include: { json: true },
+    });
+    if (!object || !object.json) return null;
+    return { type: object.type, json: object.json as Record<string, any> };
+  } catch {
+    // dynamic field not found → token not registered
+    return null;
   }
-
-  return provider.getDynamicFieldObject({
-    parentId: tokenRegistryObjectId,
-    name: {
-      type: `${tokenRegistryPackageId}::token_registry::Key<${tokenType}>`,
-      value: {
-        dummy_field: false,
-      },
-    },
-  });
 };
 
 export const getTokenCoinType = async (
-  provider: SuiClient,
+  provider: SuiGrpcClient,
   tokenBridgeStateObjectId: string,
   tokenAddress: Uint8Array,
   tokenChain: number,
 ): Promise<string | null> => {
-  const tokenBridgeStateFields = await getObjectFields(provider, tokenBridgeStateObjectId);
-
-  if (!tokenBridgeStateFields)
+  const { object: state } = await provider.getObject({
+    objectId: tokenBridgeStateObjectId,
+    include: { json: true },
+  });
+  if (!state || !state.json)
     throw new Error("Unable to fetch object fields from token bridge state");
 
-  const coinTypes = tokenBridgeStateFields["token_registry"]?.fields?.coin_types;
-  const coinTypesObjectId = coinTypes?.fields?.id?.id;
+  const tokenRegistryPackageId = getPackageIdFromType(state.type);
+  const coinTypesObjectId = (state.json as any)["token_registry"]?.["coin_types"]?.["id"];
   if (!coinTypesObjectId) {
     throw new Error("Unable to fetch coin types");
   }
 
-  const keyType = getTableKeyType(coinTypes?.type);
-  if (!keyType) {
-    throw new Error("Unable to get key type");
-  }
+  const name = coinTypeKeyName(
+    `${tokenRegistryPackageId}::token_registry::CoinTypeKey`,
+    tokenChain,
+    tokenAddress,
+  );
 
-  const response = await provider.getDynamicFieldObject({
-    parentId: coinTypesObjectId,
-    name: {
-      type: keyType,
-      value: {
-        addr: [...tokenAddress],
-        chain: tokenChain,
-      },
-    },
-  });
-  if (response.error) {
-    if (response.error.code === "dynamicFieldNotFound") {
-      return null;
-    }
-    throw new Error(`Unexpected getDynamicFieldObject response ${response.error}`);
-  }
-  const fields = getFieldsFromObjectResponse(response);
-  if (!fields) return null;
-  if (!isMoveStructObject(fields)) throw new Error("What?");
-
-  return "value" in fields ? trimSuiType(fields["value"] as string) : null;
+  const value = await getDynamicFieldValue(provider, coinTypesObjectId, name);
+  if (value === null || value === undefined) return null;
+  // The value is the coin type as an ascii::String (rendered directly).
+  return trimSuiType(value as string);
 };

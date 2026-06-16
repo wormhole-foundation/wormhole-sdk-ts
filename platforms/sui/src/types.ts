@@ -1,4 +1,3 @@
-import type { MoveValue, SuiObjectResponse, SuiTransactionBlockResponse } from "@mysten/sui/client";
 import type { PlatformToChains, UniversalOrNative } from "@wormhole-foundation/sdk-connect";
 import { normalizeSuiType } from "./address.js";
 
@@ -14,9 +13,31 @@ export type SuiBuildOutput = {
   dependencies: string[];
 };
 
-export const getFieldsFromObjectResponse = (object: SuiObjectResponse) => {
-  const content = object.data?.content;
-  return content && content.dataType === "moveObject" ? content.fields : null;
+/**
+ * gRPC core `getObject({include:{json:true}})` returns a FLAT Move-struct map as
+ * `object.json` (no JSON-RPC `{type, fields}` wrappers; UIDs are plain id strings;
+ * tables are `{ id, size }`). The Move type lives on the top-level `object.type`.
+ */
+export type SuiObjectJson = Record<string, any>;
+
+/** A gRPC core object response (or the unwrapped object) with json content included. */
+export interface SuiJsonObject {
+  type?: string;
+  json?: Record<string, unknown> | null;
+}
+
+/** Returns the flat Move-struct fields (`object.json`) from a gRPC getObject result, or null. */
+export const getFieldsFromObjectResponse = (
+  object: SuiJsonObject | { object?: SuiJsonObject | null } | null | undefined,
+): SuiObjectJson | null => {
+  if (!object) return null;
+  // Accept either the unwrapped object or the `{ object }` response envelope.
+  const obj =
+    "json" in object || "type" in object
+      ? (object as SuiJsonObject)
+      : (object as { object?: SuiJsonObject }).object;
+  const json = obj?.json;
+  return json && typeof json === "object" ? (json as SuiObjectJson) : null;
 };
 
 export const isSameType = (a: string, b: string) => {
@@ -27,35 +48,40 @@ export const isSameType = (a: string, b: string) => {
   }
 };
 
-// Event typeguard helpers
+// Object-change typeguards (used by the create-wrapped discovery path).
+// Operate on entries shaped like `{ type: "created" | "published", ... }`.
 export const isSuiCreateEvent = <
-  T extends NonNullable<SuiTransactionBlockResponse["objectChanges"]>[number],
+  T extends { type: string },
   K extends Extract<T, { type: "created" }>,
 >(
   event: T,
 ): event is K => event?.type === "created";
 
 export const isSuiPublishEvent = <
-  T extends NonNullable<SuiTransactionBlockResponse["objectChanges"]>[number],
+  T extends { type: string },
   K extends Extract<T, { type: "published" }>,
 >(
   event: T,
 ): event is K => event?.type === "published";
 
 //
-// MoveStruct typeguard helpers
+// Flat-json value typeguards.
+// In gRPC `object.json`, nested Move structs are plain nested objects (no `{type,fields}`
+// wrapper), arrays are arrays, and IDs are plain strings.
 //
-export function isMoveStructArray(value: any): value is MoveValue[] {
+export function isMoveStructArray(value: any): value is any[] {
   return Array.isArray(value);
 }
-export function isMoveStructStruct(
-  value: any,
-): value is { fields: { [key: string]: MoveValue }; type: string } {
-  return !Array.isArray(value) && typeof value === "object" && "fields" in value && "type" in value;
+export function isMoveStructObject(value: any): value is { [key: string]: any } {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
-export function isMoveStructObject(value: any): value is { [key: string]: MoveValue } {
-  return typeof value === "object" && !isMoveStructArray(value) && !isMoveStructStruct(value);
+/**
+ * In gRPC flat json there is no `{type, fields}` wrapper, so a "struct" is simply a
+ * non-array object. Kept as a distinct export for call-site readability/compat.
+ */
+export function isMoveStructStruct(value: any): value is { [key: string]: any } {
+  return isMoveStructObject(value);
 }
 export function isMoveStructId(value: any): value is { id: string } {
-  return typeof value === "object" && "id" in value;
+  return isMoveStructObject(value) && "id" in value;
 }

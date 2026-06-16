@@ -1,6 +1,6 @@
-import type { SuiClient } from "@mysten/sui/client";
+import type { SuiGrpcClient } from "@mysten/sui/grpc";
 import { Transaction } from "@mysten/sui/transactions";
-import { parseStructTag, SUI_CLOCK_OBJECT_ID } from "@mysten/sui/utils";
+import { parseStructTag, SUI_CLOCK_OBJECT_ID, normalizeSuiAddress } from "@mysten/sui/utils";
 import {
   encoding,
   isNative,
@@ -16,16 +16,19 @@ import {
   type Platform,
   type TokenAddress,
 } from "@wormhole-foundation/sdk-connect";
+import type {
+  SuiChains} from "@wormhole-foundation/sdk-sui";
 import {
-  getObjectFields,
+  bytesVectorName,
+  dummyFieldName,
+  getDynamicFieldValue,
   getPackageId,
-  isMoveStructId,
-  isMoveStructStruct,
+  getPackageIdFromType,
   isSameType,
+  u16Name,
   SUI_COIN,
   SUI_SEPARATOR,
   SuiAddress,
-  SuiChains,
   SuiPlatform,
   SuiUnsignedTransaction,
 } from "@wormhole-foundation/sdk-sui";
@@ -45,11 +48,12 @@ export class SuiAutomaticTokenBridge<N extends Network, C extends SuiChains>
   coreBridgeObjectId: string;
   tokenBridgeObjectId: string;
   fields?: Record<string, any>;
+  relayerPackageId?: string;
 
   constructor(
     readonly network: N,
     readonly chain: C,
-    readonly connection: SuiClient,
+    readonly connection: SuiGrpcClient,
     readonly contracts: Contracts,
   ) {
     const { tokenBridge, tokenBridgeRelayer, coreBridge } = contracts;
@@ -62,7 +66,7 @@ export class SuiAutomaticTokenBridge<N extends Network, C extends SuiChains>
   }
 
   static async fromRpc<N extends Network>(
-    connection: SuiClient,
+    connection: SuiGrpcClient,
     config: ChainsConfig<N, Platform>,
   ): Promise<SuiAutomaticTokenBridge<N, SuiChains>> {
     const [network, chain] = await SuiPlatform.chainFromRpc(connection);
@@ -171,7 +175,7 @@ export class SuiAutomaticTokenBridge<N extends Network, C extends SuiChains>
       target: `${coreBridgePackageId}::vaa::parse_and_verify`,
       arguments: [
         tx.object(this.coreBridgeObjectId),
-        tx.pure.vector('u8', serialize(vaa)),
+        tx.pure.vector("u8", serialize(vaa)),
         tx.object(SUI_CLOCK_OBJECT_ID),
       ],
     });
@@ -207,43 +211,36 @@ export class SuiAutomaticTokenBridge<N extends Network, C extends SuiChains>
 
     const fields = await this.getFields();
 
-    const relayerFees = await this.connection.getDynamicFieldObject({
-      parentId: this.tokenBridgeRelayerObjectId,
-      name: { type: "vector<u8>", value: Array.from(encoding.bytes.encode("relayer_fees")) },
-    });
-
-    if (!relayerFees.data || !relayerFees.data.content) {
-      if (relayerFees.error)
-        throw new Error("Failed to get relayer fees: " + JSON.stringify(relayerFees.error));
+    // `relayer_fees` is a dynamic field (vector<u8> name) whose value is a Table {id, size};
+    // the per-chain fee is a dynamic field (u16 name) under that table.
+    const relayerFeesTable = await getDynamicFieldValue(
+      this.connection,
+      this.tokenBridgeRelayerObjectId,
+      bytesVectorName("vector<u8>", encoding.bytes.encode("relayer_fees")),
+    );
+    if (!relayerFeesTable || !relayerFeesTable.id) {
       throw new Error("Unable to compute relayer fee");
     }
 
-    const { content } = relayerFees.data;
-    if (!isMoveStructStruct(content) || !isMoveStructId(content.fields.id)) {
+    const fee = await getDynamicFieldValue(
+      this.connection,
+      relayerFeesTable.id,
+      u16Name("u16", toChainId(destination)),
+    );
+    if (fee === null || fee === undefined) {
       throw new Error("Unable to compute relayer fee");
     }
 
-    const entry = await this.connection.getDynamicFieldObject({
-      parentId: content.fields.id.id,
-      name: { type: "u16", value: toChainId(destination) },
-    });
-    if (!entry.data || !entry.data.content) {
-      if (entry.error)
-        throw new Error("Failed to get relayer fees: " + JSON.stringify(relayerFees.error));
-      throw new Error("Unable to compute relayer fee");
-    }
-
-    const { content: feeData } = entry.data;
-    if (!isMoveStructStruct(feeData)) {
-      throw new Error("Unable to compute relayer fee");
-    }
-
-    const decimals = await SuiPlatform.getDecimals(this.network, this.chain, this.connection, token.toString());
+    const decimals = await SuiPlatform.getDecimals(
+      this.network,
+      this.chain,
+      this.connection,
+      token.toString(),
+    );
     const swapRate = tokenInfo.swap_rate;
 
     const relayerFeePrecision = fields.relayer_fee_precision;
     const swapRatePrecision = fields.swap_rate_precision;
-    const fee = feeData.fields.value! as number;
 
     return (
       (10n ** BigInt(decimals) * BigInt(fee) * BigInt(swapRatePrecision)) /
@@ -255,7 +252,7 @@ export class SuiAutomaticTokenBridge<N extends Network, C extends SuiChains>
     const _token = isNative(token) ? SuiPlatform.nativeTokenId(this.network, this.chain) : token;
 
     const coinType = _token.toString();
-    const metadata = await this.connection.getCoinMetadata({ coinType });
+    const { coinMetadata: metadata } = await this.connection.getCoinMetadata({ coinType });
     if (!metadata) {
       throw new Error("metadata is null");
     }
@@ -272,30 +269,14 @@ export class SuiAutomaticTokenBridge<N extends Network, C extends SuiChains>
       typeArguments: [coinType],
     });
 
-    const result = await this.connection.devInspectTransactionBlock({
-      transactionBlock: tx,
-      sender: encoding.hex.encode(new Uint8Array(32)),
-    });
-
-    if (
-      !result.results ||
-      result.results.length == 0 ||
-      !result.results[0]?.returnValues ||
-      result.results[0]?.returnValues.length !== 1
-    )
-      throw Error("swap rate not set");
-
-    // The result is a u64 in little-endian, so we need to reverse it for decode
-    return encoding.bignum.decode(
-      new Uint8Array(result.results[0].returnValues[0]![0]!.toReversed()),
-    );
+    return this.simulateU64(tx);
   }
 
   async nativeTokenAmount(token: TokenAddress<C>, amount: bigint): Promise<bigint> {
     const _token = isNative(token) ? SuiPlatform.nativeTokenId(this.network, this.chain) : token;
 
     const coinType = _token.toString();
-    const metadata = await this.connection.getCoinMetadata({ coinType });
+    const { coinMetadata: metadata } = await this.connection.getCoinMetadata({ coinType });
     if (!metadata) {
       throw new Error("metadata is null");
     }
@@ -315,35 +296,40 @@ export class SuiAutomaticTokenBridge<N extends Network, C extends SuiChains>
       typeArguments: [coinType],
     });
 
-    const result = await this.connection.devInspectTransactionBlock({
-      transactionBlock: tx,
-      sender: encoding.hex.encode(new Uint8Array(32)),
+    return this.simulateU64(tx);
+  }
+
+  /** Simulate a read-only PTB and decode a single u64 (little-endian) return value. */
+  private async simulateU64(tx: Transaction): Promise<bigint> {
+    tx.setSenderIfNotSet(normalizeSuiAddress("0x0"));
+    const result = await this.connection.simulateTransaction({
+      transaction: tx,
+      checksEnabled: false,
+      include: { commandResults: true },
     });
 
-    if (
-      !result.results ||
-      result.results.length == 0 ||
-      !result.results[0]?.returnValues ||
-      result.results[0]?.returnValues.length !== 1
-    )
-      throw Error("swap rate not set");
+    const returnValues = result.commandResults?.[0]?.returnValues;
+    if (!returnValues || returnValues.length !== 1) throw Error("swap rate not set");
 
-    // The result is a u64 in little-endian, so we need to reverse it for decode
-    return encoding.bignum.decode(
-      new Uint8Array(result.results[0].returnValues[0]![0]!.toReversed()),
-    );
+    // The result is a u64 in little-endian, so we reverse it for (big-endian) decode.
+    return encoding.bignum.decode(new Uint8Array([...returnValues[0]!.bcs]).reverse());
   }
 
   async getRegisteredTokens() {
     const fields = await this.getFields();
-    const registeredTokensObjectId = fields.registered_tokens.fields.id.id;
-    const allTokensInfo = await this.connection.getDynamicFields({
+    const registeredTokensObjectId = fields.registered_tokens.id;
+    const allTokensInfo = await this.connection.listDynamicFields({
       parentId: registeredTokensObjectId,
     });
 
-    const tokenAddresses = allTokensInfo.data.map((token) => {
-      const { address, module, name } = parseStructTag(token.objectType);
-      return new SuiAddress([address, module, name].join(SUI_SEPARATOR)) as TokenAddress<C>;
+    const tokenAddresses = allTokensInfo.dynamicFields.map((token) => {
+      // name.type is `${pkg}::registered_tokens::Key<${COIN}>`; the COIN is its type param.
+      const coinTag = parseStructTag(token.name.type).typeParams[0];
+      if (!coinTag || typeof coinTag === "string")
+        throw new Error(`Unexpected registered token key: ${token.name.type}`);
+      return new SuiAddress(
+        [coinTag.address, coinTag.module, coinTag.name].join(SUI_SEPARATOR),
+      ) as TokenAddress<C>;
     });
 
     return tokenAddresses;
@@ -364,55 +350,36 @@ export class SuiAutomaticTokenBridge<N extends Network, C extends SuiChains>
 
   private async getTokenInfo(coinType: string): Promise<TokenInfo | null> {
     const fields = await this.getFields();
-    // Pulling the package id from the registered_tokens field
-    const registeredTokensType = new SuiAddress(fields.registered_tokens.type);
-    const packageId = registeredTokensType.getPackageId();
-    const registeredTokensObjectId = fields.registered_tokens.fields.id.id;
+    const packageId = await this.getPackageId();
+    const registeredTokensObjectId = fields.registered_tokens.id;
 
     // Get the coin type (sui:SUI or ::coin::COIN)
     const parsed = new SuiAddress(coinType);
     const coin = isSameType(SUI_COIN, parsed.unwrap()) ? SUI_COIN : parsed.getCoinType();
-    try {
-      // if the token isn't registered, then this will throw
-      const tokenInfo = await this.connection.getDynamicFieldObject({
-        parentId: registeredTokensObjectId,
-        name: {
-          type: `${packageId}::registered_tokens::Key<${coin}>`,
-          value: { dummy_field: false },
-        },
-      });
 
-      if (tokenInfo.error)
-        throw new Error("Failed to get token info: " + JSON.stringify(tokenInfo.error));
-
-      if (!tokenInfo.data || !tokenInfo.data.content)
-        throw new Error("Failed to get token info: " + JSON.stringify(tokenInfo));
-
-      const { content } = tokenInfo.data;
-      if (isMoveStructStruct(content) && isMoveStructStruct(content.fields.value)) {
-        return content.fields.value.fields as unknown as TokenInfo;
-      }
-
-      return null;
-    } catch (e: any) {
-      if (e?.code === -32000 && e.message?.includes("RPC Error")) {
-        console.error(e);
-        return null;
-      }
-      throw e;
-    }
+    // registered_tokens::Key<COIN> is `{ dummy_field: bool }`; value is the TokenInfo struct.
+    const name = dummyFieldName(`${packageId}::registered_tokens::Key<${coin}>`);
+    const value = await getDynamicFieldValue(this.connection, registeredTokensObjectId, name);
+    if (value === null || value === undefined) return null;
+    return value as unknown as TokenInfo;
   }
   private async getFields() {
     if (!this.fields) {
-      const fields = await getObjectFields(this.connection, this.tokenBridgeRelayerObjectId);
-      if (fields === null) throw new Error("Failed to get fields from token bridge relayer state");
-      this.fields = fields;
+      const { object } = await this.connection.getObject({
+        objectId: this.tokenBridgeRelayerObjectId,
+        include: { json: true },
+      });
+      if (!object || !object.json)
+        throw new Error("Failed to get fields from token bridge relayer state");
+      this.fields = object.json as Record<string, any>;
+      // registered_tokens types are defined in the relayer package (derive from state type)
+      this.relayerPackageId = getPackageIdFromType(object.type);
     }
     return this.fields!;
   }
   private async getPackageId() {
-    const fields = await this.getFields();
-    return new SuiAddress(fields.registered_tokens.type).getPackageId();
+    await this.getFields();
+    return this.relayerPackageId!;
   }
   private async getPackageIds(): Promise<{ coreBridge: string; tokenBridge: string }> {
     const [coreBridge, tokenBridge] = await Promise.all([

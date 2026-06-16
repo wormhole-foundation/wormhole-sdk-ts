@@ -1,6 +1,11 @@
-import type { SuiClient } from "@mysten/sui/client";
+import type { SuiGrpcClient } from "@mysten/sui/grpc";
 import { Transaction } from "@mysten/sui/transactions";
-import { SUI_CLOCK_OBJECT_ID, SUI_TYPE_ARG, normalizeSuiObjectId } from "@mysten/sui/utils";
+import {
+  SUI_CLOCK_OBJECT_ID,
+  SUI_TYPE_ARG,
+  normalizeSuiAddress,
+  normalizeSuiObjectId,
+} from "@mysten/sui/utils";
 
 import type {
   AccountAddress,
@@ -34,18 +39,14 @@ import { SuiAddress } from "@wormhole-foundation/sdk-sui";
 import {
   SuiPlatform,
   SuiUnsignedTransaction,
-  getCoinTypeFromPackageId,
-  getFieldsFromObjectResponse,
+  bytesVectorName,
+  getDynamicFieldValue,
   getObjectFields,
   getOldestEmitterCapObjectId,
   getOriginalPackageId,
   getPackageId,
-  getTableKeyType,
   isMoveStructObject,
-  isMoveStructStruct,
   isSameType,
-  isSuiCreateEvent,
-  isSuiPublishEvent,
   isValidSuiType,
   publishPackage,
   trimSuiType,
@@ -62,7 +63,7 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
   constructor(
     readonly network: N,
     readonly chain: C,
-    readonly provider: SuiClient,
+    readonly provider: SuiGrpcClient,
     readonly contracts: Contracts,
   ) {
     this.chainId = nativeChainIds.networkChainToNativeChainId.get(network, chain) as bigint;
@@ -80,7 +81,7 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
   }
 
   static async fromRpc<N extends Network>(
-    provider: SuiClient,
+    provider: SuiGrpcClient,
     config: ChainsConfig<N, Platform>,
   ): Promise<SuiTokenBridge<N, SuiChains>> {
     const [network, chain] = await SuiPlatform.chainFromRpc(provider);
@@ -106,41 +107,24 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
     if (!isValidSuiType(coinType)) throw new Error(`Invalid Sui type: ${coinType}`);
 
     const res = await getTokenFromTokenRegistry(this.provider, this.tokenBridgeObjectId, coinType);
-    const fields = getFieldsFromObjectResponse(res);
-    if (!fields) throw ErrNotWrapped(coinType);
+    if (!res || !res.json || !("value" in res.json)) throw ErrNotWrapped(coinType);
 
-    if (!isMoveStructObject(fields)) throw new Error("Expected fields to be a MoveStruct");
+    const val = res.json["value"];
 
-    if (!("value" in fields)) throw new Error("Expected a `value` key in fields of MoveStruct");
-
-    const val = fields["value"];
-
-    if (!isMoveStructStruct(val)) throw new Error("Expected fields to be a MoveStruct");
-
-    // Normalize types
-    const type = trimSuiType(val.type);
+    // In gRPC flat json the registry-entry struct type isn't on the value; it's encoded
+    // on the dynamic-field object's top-level type (Field<Key<T>, WrappedAsset<T>>).
+    const type = trimSuiType(res.type);
     coinType = trimSuiType(coinType);
 
     // Check if wrapped or native asset. We check inclusion instead of equality
     // because it saves us from making an additional RPC call to fetch the package ID.
     if (type.includes(`wrapped_asset::WrappedAsset<${coinType}>`)) {
-      const info = val.fields["info"]!;
-      if (!isMoveStructStruct(info)) throw new Error("Expected fields to be a MoveStruct");
-      const address = info.fields["token_address"];
-      if (!isMoveStructStruct(address)) throw new Error("Expected fields to be a MoveStruct");
-
-      if (!isMoveStructObject(address.fields))
-        throw new Error("Expected address data to be a MoveObject");
-
-      if (!("value" in address.fields))
-        throw new Error("Expected a `value` key in fields of MoveStruct");
-      const addressVal = address.fields["value"];
-
-      if (!isMoveStructStruct(addressVal)) throw new Error("Expected fields to be a MoveStruct");
-
-      const universalAddress = new Uint8Array(addressVal.fields["data"]! as Array<number>);
+      const info = val["info"];
+      if (!isMoveStructObject(info)) throw new Error("Expected info to be a MoveStruct");
+      // info.token_address.value.data is a base64-encoded 32-byte address
+      const universalAddress = encoding.b64.decode(info["token_address"]["value"]["data"]);
       return {
-        chain: toChain(Number(info.fields["token_chain"])),
+        chain: toChain(Number(info["token_chain"])),
         address: new UniversalAddress(universalAddress),
       };
     }
@@ -153,39 +137,22 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
     if (!isValidSuiType(coinType)) throw new Error(`Invalid Sui type: ${coinType}`);
 
     const res = await getTokenFromTokenRegistry(this.provider, this.tokenBridgeObjectId, coinType);
-    const fields = getFieldsFromObjectResponse(res);
-    if (!fields) {
+    if (!res || !res.json || !("value" in res.json)) {
       throw new Error(
         `Token of type ${coinType} has not been registered with the token bridge. Has it been attested?`,
       );
     }
 
-    if (!isMoveStructObject(fields)) throw new Error("Expected fields to be a MoveStruct");
+    const val = res.json["value"];
 
-    if (!("value" in fields)) throw new Error("Expected a `value` key in fields of MoveStruct");
-
-    const val = fields["value"];
-
-    if (!isMoveStructStruct(val)) throw new Error("Expected fields to be a MoveStruct");
-
-    // Normalize types
-    const type = trimSuiType(val.type);
+    const type = trimSuiType(res.type);
     coinType = trimSuiType(coinType);
 
     // Check if wrapped or native asset. We check inclusion instead of equality
     // because it saves us from making an additional RPC call to fetch the package ID.
     if (type.includes(`native_asset::NativeAsset<${coinType}>`)) {
-      // fields.value.fields.token_address.fields.value.fields.data
-      const address = val.fields["token_address"];
-      if (!isMoveStructStruct(address)) throw new Error("Expected fields to be a MoveStruct");
-
-      if (!("value" in address.fields))
-        throw new Error("Expected a `value` key in fields of MoveStruct");
-      const addressVal = address.fields["value"];
-
-      if (!isMoveStructStruct(addressVal)) throw new Error("Expected fields to be a MoveStruct");
-
-      const universalAddress = new Uint8Array(addressVal.fields["data"]! as Array<number>);
+      // value.token_address.value.data is a base64-encoded 32-byte address
+      const universalAddress = encoding.b64.decode(val["token_address"]["value"]["data"]);
       return new UniversalAddress(universalAddress);
     }
 
@@ -237,28 +204,17 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
     if (!tokenBridgeStateFields)
       throw new Error("Unable to fetch object fields from token bridge state");
 
-    const hashes = tokenBridgeStateFields["consumed_vaas"]?.fields?.hashes;
-
-    const keyType = getTableKeyType(hashes?.fields?.items?.type);
-    if (!keyType) throw new Error("Unable to get key type");
-
-    const tableObjectId = hashes?.fields?.items?.fields?.id?.id;
+    // consumed_vaas.hashes.items is a `Table` whose UID parents the dynamic fields.
+    const tableObjectId = tokenBridgeStateFields["consumed_vaas"]?.["hashes"]?.["items"]?.["id"];
     if (!tableObjectId) throw new Error("Unable to fetch consumed VAAs table");
 
-    const response = await this.provider.getDynamicFieldObject({
-      parentId: tableObjectId,
-      name: {
-        type: keyType,
-        value: {
-          data: [...keccak256(vaa.hash)],
-        },
-      },
-    });
+    // Key is `${coreBridgePackageId}::bytes32::Bytes32` ({ data: vector<u8> }).
+    const [coreBridgePackageId] = await this.getPackageIds();
+    const keyType = `${coreBridgePackageId}::bytes32::Bytes32`;
+    const name = bytesVectorName(keyType, keccak256(vaa.hash));
 
-    if (!response.error) return true;
-    if (response.error.code === "dynamicFieldNotFound") return false;
-
-    throw new Error(`Unexpected getDynamicFieldObject response ${response.error}`);
+    const value = await getDynamicFieldValue(this.provider, tableObjectId, name);
+    return value !== null;
   }
 
   async *createAttestation(token: TokenAddress<C>): AsyncGenerator<SuiUnsignedTransaction<N, C>> {
@@ -266,9 +222,9 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
     const nonce = 0;
     const coinType = token.toString();
 
-    const metadata = await this.provider.getCoinMetadata({ coinType });
+    const { coinMetadata } = await this.provider.getCoinMetadata({ coinType });
 
-    if (metadata === null || metadata.id === null)
+    if (coinMetadata === null || coinMetadata.id === null)
       throw new Error(`Coin metadata ID for type ${coinType} not found`);
 
     const [coreBridgePackageId, tokenBridgePackageId] = await this.getPackageIds();
@@ -279,7 +235,11 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
 
     const [messageTicket] = tx.moveCall({
       target: `${tokenBridgePackageId}::attest_token::attest_token`,
-      arguments: [tx.object(this.tokenBridgeObjectId), tx.object(metadata.id!), tx.pure.u32(nonce)],
+      arguments: [
+        tx.object(this.tokenBridgeObjectId),
+        tx.object(coinMetadata.id!),
+        tx.pure.u32(nonce),
+      ],
       typeArguments: [coinType],
     });
 
@@ -313,59 +273,54 @@ export class SuiTokenBridge<N extends Network, C extends SuiChains> implements T
     const publishTx = await publishPackage(build, senderAddress);
     yield this.createUnsignedTx(publishTx, "Sui.TokenBridge.PrepareCreateWrapped");
 
-    // TODO: refactor this to something less embarassing
-    let coinPackageId: string = "";
+    // After the publish/prepare tx lands, the artifacts we need are owned by the sender:
+    // the WrappedAssetSetup<COIN, VERSION> (whose type embeds the new coin package + version
+    // type) and the coin's UpgradeCap. The CoinMetadata is a frozen object fetched by type.
+    // gRPC has no transaction-query API, so we discover via the sender's owned objects.
+    let coinType: string = "";
     let wrappedSetupObjectId: string = "";
     let coinUpgradeCapId: string = "";
     let coinMetadataObjectId: string = "";
     let versionType: string = "";
     let found = false;
     while (!found) {
-      // wait for the result of the previous tx to fetch the new coinPackageId
+      // wait for the result of the previous tx to be reflected in owned objects
       await new Promise((r) => setTimeout(r, 500));
 
-      const txBlocks = await this.provider.queryTransactionBlocks({
-        filter: { FromAddress: senderAddress },
-        options: { showObjectChanges: true },
-        limit: 3,
+      const owned = await this.provider.listOwnedObjects({
+        owner: senderAddress,
+        include: { json: true },
       });
 
-      // Find the txblock with both the coinPackageId and wrappedType
-      for (const txb of txBlocks.data) {
-        if (!("objectChanges" in txb)) continue;
+      const setup = owned.objects.find((o) => o.type.includes("create_wrapped::WrappedAssetSetup"));
+      if (!setup) continue;
+      wrappedSetupObjectId = setup.objectId;
 
-        for (const change of txb.objectChanges!) {
-          if (isSuiPublishEvent(change) && change.packageId !== undefined) {
-            coinPackageId = change.packageId;
-          } else if (isSuiCreateEvent(change) && change.objectType.includes("WrappedAssetSetup")) {
-            wrappedSetupObjectId = change.objectId;
-            // TODO: what
-            versionType = change.objectType.split(", ")[1]!.replace(">", ""); // ugh
-          } else if (isSuiCreateEvent(change) && change.objectType.includes("UpgradeCap")) {
-            coinUpgradeCapId = change.objectId;
-          } else if (isSuiCreateEvent(change) && change.objectType.includes("CoinMetadata")) {
-            coinMetadataObjectId = change.objectId;
-          }
-        }
+      // type: `${tbPkg}::create_wrapped::WrappedAssetSetup<${coinPkg}::coin::COIN, ${versionType}>`
+      const generics = setup.type.substring(
+        setup.type.indexOf("<") + 1,
+        setup.type.lastIndexOf(">"),
+      );
+      const [coinTypeArg, versionArg] = generics.split(",").map((s) => s.trim());
+      coinType = coinTypeArg!;
+      versionType = versionArg!;
+      const coinPackageId = new SuiAddress(coinType).getPackageId();
 
-        if (
-          coinPackageId !== "" &&
-          wrappedSetupObjectId !== "" &&
-          coinUpgradeCapId !== "" &&
-          coinMetadataObjectId !== ""
-        ) {
-          found = true;
-          break;
-        } else {
-          coinPackageId = "";
-          wrappedSetupObjectId = "";
-          coinUpgradeCapId = "";
-          coinMetadataObjectId = "";
-        }
-      }
+      // the coin's UpgradeCap, owned by the sender (match on its `package` field)
+      const cap = owned.objects.find(
+        (o) =>
+          o.type.includes("package::UpgradeCap") &&
+          o.json != null &&
+          normalizeSuiAddress((o.json as any)["package"]) === normalizeSuiAddress(coinPackageId),
+      );
+      coinUpgradeCapId = cap?.objectId ?? "";
+
+      // CoinMetadata is frozen/shared; fetch by coin type
+      const { coinMetadata } = await this.provider.getCoinMetadata({ coinType });
+      coinMetadataObjectId = coinMetadata?.id ?? "";
+
+      if (wrappedSetupObjectId && coinUpgradeCapId && coinMetadataObjectId) found = true;
     }
-
-    const coinType = getCoinTypeFromPackageId(coinPackageId);
 
     const createTx = new Transaction();
     const [txVaa] = createTx.moveCall({

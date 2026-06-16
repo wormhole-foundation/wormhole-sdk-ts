@@ -17,6 +17,8 @@ import { describe, expect, test } from "@jest/globals";
 
 import nock from "nock";
 import path from "path";
+import { fileURLToPath } from "url";
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const network: "Testnet" = "Testnet";
 type TNet = typeof network;

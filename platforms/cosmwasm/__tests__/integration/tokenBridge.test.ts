@@ -16,6 +16,8 @@ import "@wormhole-foundation/sdk-cosmwasm-core";
 import "@wormhole-foundation/sdk-cosmwasm-tokenbridge";
 import nock from "nock";
 import path from "path";
+import { fileURLToPath } from "url";
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const network = DEFAULT_NETWORK;
 const configs = CONFIG[network].chains;
