@@ -69,6 +69,24 @@ describe("XRPL Address Tests", () => {
   it("constructor throws for invalid address", () => {
     expect(() => new XrplAddress("invalid")).toThrow("Invalid XRPL address");
   });
+
+  it("constructs from a UniversalAddress and round-trips", () => {
+    const universal = new XrplAddress(VALID_ADDRESS).toUniversalAddress();
+    const address = new XrplAddress(universal);
+    expect(address.format).toBe("account");
+    expect(address.toString()).toBe(VALID_ADDRESS);
+    expect(address.toUniversalAddress().equals(universal)).toBe(true);
+  });
+
+  it("throws when UniversalAddress is not a zero-padded account ID", () => {
+    // Non-zero bytes in the 12-byte padding region (e.g. an iou/mpt hash)
+    const nonAccount = new XrplAddress(
+      "00EF0C086C1B25B6A159B32B05B9AE9BE1D6C960951A644F",
+    ).toUniversalAddress();
+    expect(() => new XrplAddress(nonAccount)).toThrow(
+      "UniversalAddress is not a zero-padded XRPL account ID",
+    );
+  });
 });
 
 describe("XRPL IOU Token Identifier Tests", () => {

@@ -4,7 +4,7 @@ import {
   encoding,
   registerNative,
 } from "@wormhole-foundation/sdk-connect";
-import { isValidClassicAddress, decodeAccountID } from "xrpl";
+import { isValidClassicAddress, decodeAccountID, encodeAccountID } from "xrpl";
 import { _platform, type AnyXrplAddress } from "./types.js";
 
 /** XRPL ACCOUNT_ZERO — the "black hole" account  https://xrpl.org/docs/concepts/accounts/addresses#special-addresses */
@@ -45,6 +45,20 @@ export class XrplAddress implements Address {
       const xrplAddress = address as XrplAddress;
       this.address = xrplAddress.address;
       this.format = xrplAddress.format;
+    } else if (UniversalAddress.instanceof(address)) {
+      // Only the "account" format is recoverable: its UniversalAddress is the
+      // 20-byte account ID left-zero-padded to 32 bytes. The "iou"/"mpt" forms
+      // are one-way sha256 hashes and cannot be reversed.
+      const bytes = address.toUint8Array();
+      const padding = bytes.subarray(0, UniversalAddress.byteSize - 20);
+      if (padding.some((b) => b !== 0)) {
+        throw new Error(
+          `UniversalAddress is not a zero-padded XRPL account ID: ${address.toString()}`,
+        );
+      }
+      const accountId = bytes.subarray(UniversalAddress.byteSize - 20);
+      this.address = encodeAccountID(Buffer.from(accountId));
+      this.format = "account";
     } else if (typeof address === "string") {
       if (XrplAddress.isIouTokenId(address)) {
         // IOU format: CODE.rIssuerAddress (e.g. "FOO.rBa2jdUu8S2ZzaCJv8y1Lx9Pdrns51hJj")
