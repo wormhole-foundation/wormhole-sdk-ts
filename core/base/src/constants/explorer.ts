@@ -240,6 +240,16 @@ const explorerConfig = [[
         }
       }
     ],
+    [
+      "Arc", {
+        name: "Arc Explorer",
+        baseUrl: "https://arcscan.app/",
+        endpoints: {
+          tx: "tx/",
+          account: "address/"
+        }
+      }
+    ],
   ]], [
   "Testnet", [[
     "Ethereum", {

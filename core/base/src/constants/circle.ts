@@ -31,6 +31,7 @@ const usdcContracts = [[
     ["Ink",       "0x2D270e6886d130D724215A266106e6832161EAEd"],
     ["HyperCore", "0xaf88d065e77c8cC2239327C5EDb3A432268e5831"], // not an actual EVM platform; using Arbitrum address
     ["Monad",     "0x754704Bc059F8C67012fEd69BC8A327a5aafb603"],
+    ["Arc",       "0x3600000000000000000000000000000000000000"], // native USDC predeploy (same fixed address on testnet)
   ]], [
   "Testnet", [
     ["Sepolia",         "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"],
