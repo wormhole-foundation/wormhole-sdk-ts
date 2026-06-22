@@ -12,7 +12,6 @@ import {
 } from "@wormhole-foundation/sdk-base";
 import type {
   AttestationId,
-  AutomaticTokenBridge,
   ChainContext,
   Signer,
   NativeAddress,
@@ -33,14 +32,12 @@ import {
   canonicalAddress,
   deserialize,
   isNative,
-  isSameToken,
   isTokenId,
   isTokenTransferDetails,
   isTransactionIdentifier,
   isWormholeMessageId,
   serialize,
   toNative,
-  toUniversal,
   relayInstructionsLayout,
   signedQuoteLayout,
   nativeTokenId,
@@ -204,7 +201,7 @@ export class TokenTransfer<N extends Network = Network>
       decimals,
     );
 
-    if (protocol === "AutomaticTokenBridge" || protocol === "ExecutorTokenBridge") {
+    if (protocol === "ExecutorTokenBridge") {
       from = { chain: vaa.emitterChain, address: vaa.payload.from };
       to = { chain: vaa.payload.to.chain, address: vaa.payload.payload.targetRecipient };
     }
@@ -215,7 +212,7 @@ export class TokenTransfer<N extends Network = Network>
       from,
       to,
       protocol,
-      nativeGas: protocol === "AutomaticTokenBridge" ? vaa.payload.payload.toNativeTokenAmount : 0n, // ExecutorTokenBridge: VAA doesn't contain original nativeGas amount from quote
+      nativeGas: 0n, // ExecutorTokenBridge: VAA doesn't contain original nativeGas amount from quote
     };
 
     // TODO: grab at least the init tx from the api
@@ -318,8 +315,8 @@ export namespace TokenTransfer {
   /**  8 is maximum precision supported by the token bridge VAA */
   export const MAX_DECIMALS = 8;
 
-  export type Protocol = "TokenBridge" | "AutomaticTokenBridge" | "ExecutorTokenBridge";
-  export type VAA = TokenBridge.TransferVAA | AutomaticTokenBridge.VAA | ExecutorTokenBridge.VAA;
+  export type Protocol = "TokenBridge" | "ExecutorTokenBridge";
+  export type VAA = TokenBridge.TransferVAA | ExecutorTokenBridge.VAA;
 
   export type AttestationReceipt = _AttestationReceipt<TokenTransfer.Protocol>;
   export type TransferReceipt<
@@ -338,10 +335,7 @@ export namespace TokenTransfer {
 
     const token = isTokenId(transfer.token) ? transfer.token.address : transfer.token;
     let xfer: AsyncGenerator<UnsignedTransaction<N>>;
-    if (transfer.protocol === "AutomaticTokenBridge") {
-      const tb = await fromChain.getAutomaticTokenBridge();
-      xfer = tb.transfer(senderAddress, transfer.to, token, transfer.amount, transfer.nativeGas);
-    } else if (transfer.protocol === "TokenBridge") {
+    if (transfer.protocol === "TokenBridge") {
       const tb = await fromChain.getTokenBridge();
       xfer = tb.transfer(senderAddress, transfer.to, token, transfer.amount, transfer.payload);
     } else if (transfer.protocol === "ExecutorTokenBridge") {
@@ -386,9 +380,7 @@ export namespace TokenTransfer {
     const signerAddress = toNative(signer.chain(), signer.address());
 
     const xfer =
-      vaa.protocolName === "AutomaticTokenBridge"
-        ? (await toChain.getAutomaticTokenBridge()).redeem(signerAddress, vaa)
-        : vaa.protocolName === "ExecutorTokenBridge"
+      vaa.protocolName === "ExecutorTokenBridge"
         ? (await toChain.getExecutorTokenBridge()).redeem(signerAddress, vaa)
         : (await toChain.getTokenBridge()).redeem(signerAddress, vaa);
 
@@ -654,7 +646,7 @@ export namespace TokenTransfer {
     toChain: ChainContext<N, C>,
     vaa: TokenTransfer.VAA,
   ): Promise<boolean> {
-    if (vaa.protocolName === "AutomaticTokenBridge" || vaa.protocolName === "ExecutorTokenBridge") {
+    if (vaa.protocolName === "ExecutorTokenBridge") {
       vaa = deserialize("TokenBridge:TransferWithPayload", serialize(vaa));
     }
     const tb = await toChain.getTokenBridge();
@@ -680,16 +672,8 @@ export namespace TokenTransfer {
     const vaa = await wh.getVaa(key, TokenBridge.getTransferDiscriminator(), timeout);
     if (!vaa) return null;
 
-    // Check if its automatic and re-de-serialize
+    // Check if it's an executor transfer and re-de-serialize
     if (vaa.payloadName === "TransferWithPayload") {
-      const { chain, address } = vaa.payload.to;
-      const { tokenBridgeRelayer } = wh.config.chains[chain]!.contracts;
-      const relayerAddress = tokenBridgeRelayer ? toUniversal(chain, tokenBridgeRelayer) : null;
-      // If the target address is the relayer address, expect its an automatic token bridge vaa
-      if (!!relayerAddress && address.equals(relayerAddress)) {
-        return deserialize("AutomaticTokenBridge:TransferWithRelay", serialize(vaa));
-      }
-
       // We aren't checking the to address here since it could be different than what's hard-coded in the sdk
       try {
         return deserialize("ExecutorTokenBridge:TransferWithExecutorRelay", serialize(vaa));
@@ -720,17 +704,7 @@ export namespace TokenTransfer {
     fromChain = fromChain ?? wh.getChain(transfer.from.chain);
     toChain = toChain ?? wh.getChain(transfer.to.chain);
 
-    if (transfer.protocol === "AutomaticTokenBridge") {
-      if (!fromChain.supportsAutomaticTokenBridge())
-        throw new Error(`Automatic Token Bridge not supported on ${transfer.from.chain}`);
-
-      if (!toChain.supportsAutomaticTokenBridge())
-        throw new Error(`Automatic Token Bridge not supported on ${transfer.to.chain}`);
-
-      const nativeGas = transfer.nativeGas ?? 0n;
-      if (nativeGas > transfer.amount)
-        throw new Error(`Native gas amount  > amount (${nativeGas} > ${transfer.amount})`);
-    } else if (transfer.protocol === "TokenBridge") {
+    if (transfer.protocol === "TokenBridge") {
       if (!fromChain.supportsTokenBridge())
         throw new Error(`Token Bridge not supported on ${transfer.from.chain}`);
 
@@ -753,10 +727,6 @@ export namespace TokenTransfer {
     | (BaseQuoteDetails & {
         protocol: TokenBridge.ProtocolName;
         payload?: Uint8Array;
-      })
-    | (BaseQuoteDetails & {
-        protocol: AutomaticTokenBridge.ProtocolName;
-        nativeGas?: bigint;
       })
     | (BaseQuoteDetails & {
         protocol: ExecutorTokenBridge.ProtocolName;
@@ -950,96 +920,7 @@ export namespace TokenTransfer {
       };
     }
 
-    // Otherwise automatic
-    if (transfer.protocol !== "AutomaticTokenBridge")
-      throw new Error("Unknown token transfer protocol");
-
-    // The fee is removed from the amount transferred
-    // quoted on the source chain
-    const stb = await srcChain.getAutomaticTokenBridge();
-    const fee = await stb.getRelayerFee(dstChain.chain, srcToken);
-    const feeAmountDest = amount.scale(
-      amount.truncate(amount.fromBaseUnits(fee, srcDecimals), TokenTransfer.MAX_DECIMALS),
-      dstDecimals,
-    );
-
-    // nativeGas is in source chain decimals
-    const srcNativeGasAmountRequested = transfer.nativeGas ?? 0n;
-    // convert to destination chain decimals
-    const dstNativeGasAmountRequested = amount.units(
-      amount.scale(
-        amount.truncate(
-          amount.fromBaseUnits(srcNativeGasAmountRequested, srcDecimals),
-          TokenTransfer.MAX_DECIMALS,
-        ),
-        dstDecimals,
-      ),
-    );
-
-    // TODO: consider moving these solana specific checks to its protocol implementation
-    const solanaMinBalanceForRentExemptAccount = 890880n;
-
-    let destinationNativeGas = 0n;
-    if (transfer.nativeGas) {
-      const dtb = await dstChain.getAutomaticTokenBridge();
-
-      // There is a limit applied to the amount of the source
-      // token that may be swapped for native gas on the destination
-      const [maxNativeAmountIn, _destinationNativeGas] = await Promise.all([
-        dtb.maxSwapAmount(dstToken.address),
-        // Get the actual amount we should receive
-        dtb.nativeTokenAmount(dstToken.address, dstNativeGasAmountRequested),
-      ]);
-
-      if (dstNativeGasAmountRequested > maxNativeAmountIn)
-        throw new Error(
-          `Native gas amount exceeds maximum swap amount: ${amount.fmt(
-            dstNativeGasAmountRequested,
-            dstDecimals,
-          )}>${amount.fmt(maxNativeAmountIn, dstDecimals)}`,
-        );
-
-      // when native gas is requested on solana, the amount must be at least the rent-exempt amount
-      // or the transaction could fail if the account does not have enough lamports
-      if (
-        chainToPlatform(dstChain.chain) === "Solana" &&
-        _destinationNativeGas < solanaMinBalanceForRentExemptAccount
-      ) {
-        throw new Error(
-          `Native gas amount must be at least ${solanaMinBalanceForRentExemptAccount} lamports`,
-        );
-      }
-
-      destinationNativeGas = _destinationNativeGas;
-    }
-
-    const destAmountLessFee =
-      amount.units(dstAmountReceivable) - dstNativeGasAmountRequested - amount.units(feeAmountDest);
-
-    // when sending wsol to solana, the amount must be at least the rent-exempt amount
-    // or the transaction could fail if the account does not have enough lamports
-    if (chainToPlatform(dstToken.chain) === "Solana") {
-      const nativeWrappedTokenId = await dstChain.getNativeWrappedTokenId();
-      const isNativeSol = isNative(dstToken.address) || isSameToken(dstToken, nativeWrappedTokenId);
-      if (isNativeSol && destAmountLessFee < solanaMinBalanceForRentExemptAccount) {
-        throw new Error(
-          `Destination amount must be at least ${solanaMinBalanceForRentExemptAccount} lamports`,
-        );
-      }
-    }
-
-    return {
-      sourceToken: {
-        token: transfer.token,
-        amount: amount.units(srcAmountTruncated),
-      },
-      destinationToken: { token: dstToken, amount: destAmountLessFee },
-      relayFee: { token: dstToken, amount: amount.units(feeAmountDest) },
-      destinationNativeGas,
-      warnings: warnings.length > 0 ? warnings : undefined,
-      eta,
-      expires: time.expiration(0, 5, 0), // automatic transfer quote is good for 5 minutes
-    };
+    throw new Error("Unknown token transfer protocol");
   }
 
   export async function getExecutorGasDropOffLimit<N extends Network>(

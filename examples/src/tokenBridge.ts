@@ -41,18 +41,10 @@ import { getSigner, waitLog } from "./helpers/index.js";
   // Protocol options:
   // - "TokenBridge": Manual transfer requiring VAA redemption on destination
   // - "ExecutorTokenBridge": Transfer using executor service for automatic relaying
-  // - "AutomaticTokenBridge": Transfer using legacy relayer service for automatic relaying
   // On the destination side, a wrapped version of the token will be minted
   // to the address specified in the transfer VAA
   // Note: For Sui as source or destination, only ExecutorTokenBridge is supported
   const protocol: TokenTransfer.Protocol = "ExecutorTokenBridge";
-
-  // For AutomaticTokenBridge: The relayer can deliver native gas funds to the destination account
-  // The amount specified for native gas will be swapped for the native gas token according
-  // to the swap rate provided by the contract, denominated in native gas tokens
-  // For ExecutorTokenBridge: Native gas can also be delivered via the executor service
-  // @ts-ignore
-  const nativeGas = protocol === "AutomaticTokenBridge" ? "0.01" : undefined;
 
   // Get signer from local key but anything that implements
   // Signer interface (e.g. wrapper around web wallet) should work
@@ -84,7 +76,6 @@ import { getSigner, waitLog } from "./helpers/index.js";
           destination,
           delivery: {
             protocol,
-            nativeGas: nativeGas ? amount.units(amount.parse(nativeGas, decimals)) : undefined,
           },
         },
         roundTrip,
@@ -130,15 +121,6 @@ async function tokenTransfer<N extends Network>(
       protocol,
       route.payload,
     );
-  } else if (protocol === "AutomaticTokenBridge") {
-    xfer = await wh.tokenTransfer(
-      route.token,
-      route.amount,
-      route.source.address,
-      route.destination.address,
-      protocol,
-      route.delivery?.nativeGas,
-    );
   } else if (protocol === "ExecutorTokenBridge") {
     // ExecutorTokenBridge requires additional setup for msgValue and gasLimit
     xfer = await wh.tokenTransfer(
@@ -180,9 +162,6 @@ async function tokenTransfer<N extends Network>(
   }
   console.log(quote);
 
-  if (xfer.transfer.protocol === "AutomaticTokenBridge" && quote.destinationToken.amount < 0)
-    throw "The amount requested is too low to cover the fee and any native gas requested.";
-
   // 1) Submit the transactions to the source chain, passing a signer to sign any txns
   console.log("Starting transfer");
   const srcTxids = await xfer.initiateTransfer(route.source.signer);
@@ -207,7 +186,7 @@ async function tokenTransfer<N extends Network>(
     }
   }
 
-  // If using automatic protocols (AutomaticTokenBridge or ExecutorTokenBridge), we're done
+  // If using ExecutorTokenBridge, we're done
   // Manual TokenBridge requires VAA redemption on the destination chain
   if (route.delivery?.protocol !== "TokenBridge") return xfer;
 
