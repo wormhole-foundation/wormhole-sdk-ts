@@ -26,7 +26,6 @@
     "lint": "npm run prettier && eslint --fix ./src --ext .ts",
     "prettier": "prettier --write ./src",
     "importConnect": "tsx src/scripts/importConnect.ts",
-    "automatics": "npx ts-node ./src/scripts/updateAutomaticRegisteredTokens",
     "updateForeignAssets": "npx ts-node ./src/scripts/updateForeignAssetConfig"
   },
   "dependencies": {

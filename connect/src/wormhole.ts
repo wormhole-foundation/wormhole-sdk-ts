@@ -139,26 +139,6 @@ export class Wormhole<N extends Network> {
   ): Promise<TokenTransfer<N>>;
 
   /**
-   * Creates a TokenTransfer object to move a token from one chain to another using AutomaticTokenBridge protocol
-   * @param token the token to transfer
-   * @param amount the amount to transfer
-   * @param from the address to transfer from
-   * @param to the address to transfer to
-   * @param nativeGas optional amount of native gas to drop off with the transfer
-   * @param protocol the protocol to use (AutomaticTokenBridge)
-   * @returns the TokenTransfer object
-   * @throws Errors if the chain or protocol is not supported
-   */
-  async tokenTransfer(
-    token: TokenId,
-    amount: bigint,
-    from: ChainAddress,
-    to: ChainAddress,
-    protocol: "AutomaticTokenBridge",
-    nativeGas?: bigint,
-  ): Promise<TokenTransfer<N>>;
-
-  /**
    * Creates a TokenTransfer object to move a token from one chain to another using ExecutorTokenBridge protocol
    * @param token the token to transfer
    * @param amount the amount to transfer
@@ -194,16 +174,6 @@ export class Wormhole<N extends Network> {
           protocol,
           payload: options as Uint8Array,
         });
-      case "AutomaticTokenBridge": {
-        return await TokenTransfer.from(this, {
-          token,
-          amount,
-          from,
-          to,
-          protocol,
-          nativeGas: options as bigint,
-        });
-      }
       case "ExecutorTokenBridge": {
         return await TokenTransfer.from(this, {
           token,
