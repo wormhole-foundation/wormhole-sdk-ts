@@ -33,7 +33,7 @@ export const executorContracts = [[
     ["Monad",           "0xC04dE634982cAdF2A677310b73630B7Ac56A3f65"],
     ["MegaETH",         "0xD405E0A1f3f9edc25Ea32d0B079d6118328b2EcB"],
     ["Fogo",            "execXUrAsMnqMmTHj5m7N1YQgsDz3cwGLYCYyuDRciV"],
-    ["ZeroGravity",     "0xcD2BffD0C0289e8C0cb89c458dB1B74f1892Fa6c"],
+    ["ZeroGravity",     "0x21928226566A0e0a67a91aAB6A5d5211E297965F"],
     ["Tempo",           "0xA3640464E5543182E5F587f346B6Ac1E604d1625"],
     ["Nexus",           "0x3370b6462012a5cAEc48b2707641617A7Ce0Bb27"],
     ["Arc",             "0xCD6b0d9635862e715FD8e2df335f8D0fF20Bb798"],
