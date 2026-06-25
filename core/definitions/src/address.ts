@@ -11,6 +11,7 @@ import type { WormholeRegistry } from "./registry.js";
 //  even worse solution, as is just throwing everything into this file here and just brushing
 //  things under the rug by not separating them out.
 import { UniversalAddress } from "./universalAddress.js";
+import { makeGlobalFactory } from "./utils.js";
 
 /**
  * Address is the base interface all address types must implement.
@@ -68,7 +69,7 @@ export type ChainAddress<C extends Chain = Chain> = {
   readonly address: UniversalOrNative<C>;
 };
 
-const nativeFactory = new Map<Platform, NativeAddressCtr>();
+const nativeFactory = makeGlobalFactory('nativeFactory', new Map<Platform, NativeAddressCtr>());
 
 export function registerNative<P extends Platform>(platform: P, ctr: NativeAddressCtr): void {
   if (nativeFactory.has(platform)) return;
