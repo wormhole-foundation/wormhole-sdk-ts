@@ -45,7 +45,7 @@ export const transferLayout = [
   payloadIdItem(1),
   ...transferCommonLayout,
   { name: "fee", ...amountItem },
-];
+] as const;
 
 export const transferWithPayloadLayout = <const P extends CustomizableBytes = undefined>(
   customPayload?: P,
