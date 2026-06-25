@@ -74,7 +74,7 @@ const finalityThresholds = [
   ["Stacks",     240], // tied to BTC finality
   ["Moca",       0],
   ["MegaETH",    4096],
-  ["ZeroGravity",4096],
+  ["ZeroGravity",1], // CometBFT-style instant finality
   ["Tempo",      1],
   ["Nexus",      1],
   ["Arc",        1],
