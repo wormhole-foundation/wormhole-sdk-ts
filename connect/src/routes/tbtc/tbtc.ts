@@ -268,8 +268,8 @@ export class TBTCRoute<N extends Network>
   }
 
   async resume(txid: TransactionId): Promise<R> {
-    const vaa = await this.wh.getVaa(txid.txid, TBTCBridge.getTransferDiscriminator());
-    if (!vaa) throw new Error("No VAA found for transaction: " + txid);
+    const vaa = await this.wh.getVaa(txid, TBTCBridge.getTransferDiscriminator());
+    if (!vaa) throw new Error("No VAA found for transaction: " + txid.txid);
 
     const ethTbtc = TBTCBridge.getNativeTbtcToken("Ethereum")!;
     const { chain, address } = vaa.payload.token;
@@ -295,10 +295,10 @@ export class TBTCRoute<N extends Network>
 
   async *track(receipt: Receipt, timeout?: number) {
     if (isSourceInitiated(receipt) || isSourceFinalized(receipt)) {
-      const { txid } = receipt.originTxs[receipt.originTxs.length - 1]!;
+      const txid = receipt.originTxs[receipt.originTxs.length - 1]!;
 
       const vaa = await this.wh.getVaa(txid, TBTCBridge.getTransferDiscriminator(), timeout);
-      if (!vaa) throw new Error("No VAA found for transaction: " + txid);
+      if (!vaa) throw new Error("No VAA found for transaction: " + txid.txid);
 
       const msgId: WormholeMessageId = {
         chain: vaa.emitterChain,

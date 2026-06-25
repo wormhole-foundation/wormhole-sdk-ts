@@ -263,7 +263,7 @@ The protocol that underlies all Wormhole activity is the Core protocol. This pro
   const vaa = await wh.getVaa(whm!, "Uint8Array", 60_000);
   console.log(vaa);
   // Also possible to search by txid but it takes longer to show up
-  // console.log(await wh.getVaaByTxHash(txid!.txid, "Uint8Array"));
+  // console.log(await wh.getVaaByTxHash(txid!, "Uint8Array"));
 
   const verifyTxs = coreBridge.verifyMessage(address.address, vaa!);
   console.log(await signSendWait(chain, verifyTxs, signer));

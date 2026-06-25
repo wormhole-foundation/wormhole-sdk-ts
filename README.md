@@ -367,7 +367,7 @@ The protocol that underlies all Wormhole activity is the Core protocol. This pro
   console.log(vaa);
 
   // Also possible to search by txid but it takes longer to show up
-  // console.log(await wh.getVaaByTxHash(txid!.txid, "Uint8Array"));
+  // console.log(await wh.getVaaByTxHash(txid!, "Uint8Array"));
 
   // Note: calling verifyMessage manually is typically not a useful thing to do
   // as the VAA is typically submitted to the counterpart contract for
