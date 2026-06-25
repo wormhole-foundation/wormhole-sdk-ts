@@ -71,42 +71,51 @@ export interface TransactionStatus {
   };
 }
 
-export interface RelayData {
-  from: {
-    chain: string;
-    chainId: number;
-    txHash: string;
-    senderAddress: string;
-    symbol: string;
-    amountSent: number;
-    amountToSwap: number;
-    estimatedNativeAssetAmount: number;
-  };
-  vaa: string;
-  status: string;
-  fee: {
-    amount: number;
-    symbol: string;
-  };
-  error: any;
-  to: {
-    chain: string;
-    chainId: number;
-    recipientAddress: string;
-    txHash: string;
-    gasUsed: number;
-    nativeAssetSymbol: string;
-    nativeAssetReceived: number;
-  };
-  metrics: {
-    receivedAt: string;
-    completedAt: string;
-    failedAt: any;
-    attempts: number;
+export interface RelayStatus {
+  completedAt: string;
+  data: {
+    delivery: {
+      budget: string;
+      execution: {
+        detail: string;
+        gasUsed: string;
+        refundStatus: string;
+        revertString: string;
+        status: string;
+        transactionHash: string;
+      };
+      maxRefund: string;
+      relayGasUsed: number;
+      targetChainDecimals: number;
+    };
+    fromTxHash: string;
+    instructions: {
+      encodedExecutionInfo: string;
+      extraReceiverValue: {
+        _hex: string;
+        _isBigNumber: boolean;
+      };
+      refundAddress: string;
+      refundChainId: number;
+      refundDeliveryProvider: string;
+      requestedReceiverValue: {
+        _hex: string;
+        _isBigNumber: boolean;
+      };
+      senderAddress: string;
+      sourceDeliveryProvider: string;
+      targetAddress: string;
+      targetChainId: number;
+      vaaKeys: string[];
+    };
     maxAttempts: number;
-    waitingForTxInMs: number;
-    waitingForWalletInMs: number;
+    toTxHash: string;
   };
+  failedAt: string;
+  id: string;
+  receivedAt: string;
+  relayer: string;
+  status: string;
 }
 
 export interface ApiVaa {
@@ -235,11 +244,17 @@ export async function getTransactionStatusWithRetry(
   );
 }
 
-export async function getRelayStatus(rpcUrl: string, txid: TxHash): Promise<RelayData | null> {
-  const url = `${rpcUrl}/v1/relays?txHash=${txid}`;
+export async function getRelayStatus(
+  rpcUrl: string,
+  whm: WormholeMessageId,
+): Promise<RelayStatus | null> {
+  const { chain, emitter, sequence } = whm;
+  const chainId = toChainId(chain);
+  const emitterAddress = emitter.toUniversalAddress().toString();
+  const url = `${rpcUrl}/api/v1/relays/${chainId}/${emitterAddress}/${sequence}`;
   try {
-    const response = await axios.get<{ data: RelayData }>(url);
-    if (response.data.data.to.txHash) return response.data.data;
+    const response = await axios.get<RelayStatus>(url);
+    return response.data || null;
   } catch (error) {
     if (!error) return null;
     if (typeof error === "object") {
@@ -250,16 +265,15 @@ export async function getRelayStatus(rpcUrl: string, txid: TxHash): Promise<Rela
     }
     throw error;
   }
-  return null;
 }
 
 export async function getRelayStatusWithRetry(
   rpcUrl: string,
-  txid: TxHash,
+  whm: WormholeMessageId,
   timeout: number,
-): Promise<RelayData | null> {
-  const task = () => getRelayStatus(rpcUrl, txid);
-  return retry<RelayData>(task, WHSCAN_RETRY_INTERVAL, timeout, "Wormholescan:GetRelayStatus");
+): Promise<RelayStatus | null> {
+  const task = () => getRelayStatus(rpcUrl, whm);
+  return retry<RelayStatus>(task, WHSCAN_RETRY_INTERVAL, timeout, "Wormholescan:GetRelayStatus");
 }
 
 export async function getVaaByTxHash(rpcUrl: string, txid: string): Promise<ApiVaa | null> {
